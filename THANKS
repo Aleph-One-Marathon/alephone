@@ -23,11 +23,14 @@ Aleph One makes use of external libraries including:
 
 ALSA
 Boost
+FFmpeg
 FreeType
 GLEW
 JPEG
+libav
 libpng
 libsndfile
+libvpx
 MAD
 SDL
 SDL_image
