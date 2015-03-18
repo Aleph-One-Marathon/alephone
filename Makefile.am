@@ -28,9 +28,8 @@ EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows	\
   docs/alephone.6 examples/lua/Cheats.lua THANKS			\
   data/powered-by-alephone.svg						\
   PBProjects/AlephOne-Xcode4.xcodeproj/project.pbxproj\
-  PBProjects/AlephOne-Xcode4.xcodeproj/project.xcworkspace/contents.xcworkspacedata\
   PBProjects/Info-AlephOne-Xcode4.plist\
-	PBProjects/AppStore/Marathon/Marathon.plist \
+	PBProjects/AppStore/Marathon/Info.plist \
 	PBProjects/AppStore/Marathon/Marathon.icns \
 	PBProjects/AppStore/Marathon/English.lproj/InfoPlist.strings
 
@@ -41,11 +40,11 @@ dist-hook: AlephOne.spec
 	cp "$(srcdir)/Aleph One Classic SDL.mcp" $(distdir)
 	cp "$(srcdir)/Resources/Aleph One Classic SDL.r" $(distdir)/Resources
 	mkdir -p "$(distdir)/PBProjects/AppStore/Marathon 2/English.lproj"
-	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/Marathon 2.plist" "$(distdir)/PBProjects/AppStore/Marathon 2/"
+	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/Info.plist" "$(distdir)/PBProjects/AppStore/Marathon 2/"
 	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/Marathon 2.icns" "$(distdir)/PBProjects/AppStore/Marathon 2/"
 	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/English.lproj/InfoPlist.strings" "$(distdir)/PBProjects/AppStore/Marathon 2/English.lproj/"
 	mkdir -p "$(distdir)/PBProjects/AppStore/Marathon Infinity/English.lproj"
-	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/Marathon Infinity.plist" "$(distdir)/PBProjects/AppStore/Marathon Infinity/"
+	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/Info.plist" "$(distdir)/PBProjects/AppStore/Marathon Infinity/"
 	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/Marathon Infinity.icns" "$(distdir)/PBProjects/AppStore/Marathon Infinity/"
 	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/English.lproj/InfoPlist.strings" "$(distdir)/PBProjects/AppStore/Marathon Infinity/English.lproj/"
 
