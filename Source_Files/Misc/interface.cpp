@@ -1812,6 +1812,7 @@ static void display_about_dialog()
 	authors.push_back("Matthew Reda");
 	authors.push_back("Ian Rickard");
 	authors.push_back("Etienne Samson (tiennou)");
+	authors.push_back("Catherine Seppanen");
 	authors.push_back("Gregory Smith (treellama)");
 	authors.push_back("Scott Smith (pickle136)");
 	authors.push_back("Wolfgang Sourdeau");
