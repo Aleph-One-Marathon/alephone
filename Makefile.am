@@ -90,7 +90,7 @@ windist: winzip m1-winzip m2-winzip inf-winzip m1-winup m2-winup inf-winup
 
 define cp_no_svn
 mkdir -p "$(2)"
-tar -c --exclude='.svn' -C "$(1)" . | tar -x -C "$(2)"
+tar -c --exclude='.svn' --exclude='Makefile' --exclude='Makefile.*' -C "$(1)" . | tar -x -C "$(2)"
 endef
 
 define windist_common
@@ -103,7 +103,6 @@ cp $(srcdir)/docs/Lua_HUD.html "$(1)/docs/Lua_HUD.html"
 cp $(srcdir)/docs/MML.html "$(1)/docs/MML.html"
 mkdir "$(1)/Extras"
 cp $(srcdir)/data/Software_Transparent_Liquids.mml "$(1)/Extras"
-cp $(srcdir)/data/Transparent_Liquids.mml "$(1)/Extras"
 cp $(srcdir)/data/Carnage_Messages.mml "$(1)/Extras"
 unix2dos -n $(srcdir)/examples/lua/Cheats.lua "$(1)/Extras/Cheats.lua"
 $(call cp_no_svn,$(srcdir)/Resources/Library Licenses,$(1)/docs/Library Licenses)
@@ -118,6 +117,7 @@ $(WINZIP): Source_Files/AlephOne.exe
 	cp Source_Files/AlephOne.exe $(WINDISTDIR)/
 	unix2dos -n $(srcdir)/INSTALL.Windows "$(WINDISTDIR)/docs/INSTALL.Windows.txt"
 	cp $(srcdir)/data/Transparent_Sprites.mml $(WINDISTDIR)/Extras
+	cp $(srcdir)/data/Transparent_Liquids.mml $(WINDISTDIR)/Extras
 	$(call cp_no_svn,$(srcdir)/data/default_theme,$(WINDISTDIR)/Plugins/Default_Theme)
 	rm -f $(WINZIP)
 	zip -r $(WINZIP) $(WINDISTDIR)
