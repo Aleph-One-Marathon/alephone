@@ -146,7 +146,7 @@ static int Send_Ssdp_Discover(UpnpController * c, char ** ssdp_response);
 static int Get_Description_Url(const char * ssdp_response, char ** desc_url);
 static int Get_Description(const char * desc_url, char ** description);
 static int Get_Control_Url(UpnpController * c, const char * desc_url, const char * description);
-static int Parse_Url(const char * desc_url, char * host, char * resource, short int * port);
+static int Parse_Url(const char * desc_url, char * host, char * resource, unsigned short int * port);
 static void Start_Desc_Element(void * userData, const char * name, const char ** atts);
 static void End_Desc_Element(void * userData, const char * name);
 static void Data_Desc_Handler(void * userData, const char * s, int len);
@@ -355,7 +355,7 @@ static int Get_Description(const char * desc_url, char ** description)
 {
   int ret = 0;
   char host[MAX_HOST_LEN];
-  short int port;
+  unsigned short int port;
   char resource[MAX_RESOURCE_LEN];
   GetMessage * gm;
 
@@ -384,7 +384,7 @@ static int Get_Control_Url(UpnpController * c, const char * desc_url,
   int ret;
   char host[MAX_HOST_LEN];
   char host_port[MAX_HOST_LEN];
-  short int port;
+  unsigned short int port;
   XML_Parser parser;
   XmlDescData xdescdat = {0, 0, 0, 0, 0, 0, 0};
 
@@ -737,7 +737,7 @@ static int Get_Local_Ip(const UpnpController * c, char ** ip_map)
   OsSocket * s;
   char host[MAX_HOST_LEN];
   char resource[MAX_RESOURCE_LEN];
-  short int port;
+  unsigned short int port;
 
   /* parse the host, resource, and port out of the url */
   ret = Parse_Url(c->control_url, host, resource, &port);
@@ -847,7 +847,7 @@ static int Send_Action_Message(const UpnpController * c,
   int ret;
   char host[MAX_HOST_LEN];
   char resource[MAX_RESOURCE_LEN];
-  short int port;
+  unsigned short int port;
   char * soap_action_header;
   char * content_length_header;
   PostMessage * pm;
@@ -943,7 +943,7 @@ static int Create_Action_Message(const char * service_type,
 
 
 static int Parse_Url(const char * url, char * host, 
-                     char * resource, short int * port)
+                     char * resource, unsigned short int * port)
 {
   char * loc_of_semicolon;
   char * loc_of_slash;
@@ -992,10 +992,10 @@ static int Parse_Url(const char * url, char * host,
   }
   /* extract the port */
   if(NULL != loc_of_semicolon) {
-    if(sscanf(loc_of_port, "%hd", port) != 1) {
+    if(sscanf(loc_of_port, "%hu", port) != 1) {
       *port = DEFAULT_HTTP_PORT;
     }
-    if(*port < 0 || *port > MAX_PORT_SIZE) {
+    if(*port > MAX_PORT_SIZE) {
       return HTTP_INVALID_URL;
     }
   }

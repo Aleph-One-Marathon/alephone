@@ -142,10 +142,10 @@ struct PostMessage
 */
 int LNat_Generate_Http_Get(const char * host,
                            const char * resource,
-                           short int port,
+                           unsigned short int port,
                            GetMessage ** gm)
 {
-  if(NULL == host || NULL == resource || port < 0 || NULL == gm) {
+  if(NULL == host || NULL == resource || NULL == gm) {
     return BAD_PARAMS;
   }
 
@@ -205,11 +205,11 @@ int LNat_Destroy_Http_Get(GetMessage ** gm)
 */
 int LNat_Generate_Http_Post(const char * host,
                             const char * resource,
-                            short int port,
+                            unsigned short int port,
                             const char * body,
                             PostMessage ** pm)
 {
-  if(NULL == host || NULL == resource || port < 0 || NULL == body || NULL == pm) {
+  if(NULL == host || NULL == resource || NULL == body || NULL == pm) {
     return BAD_PARAMS;
   }
 

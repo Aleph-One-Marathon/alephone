@@ -43,7 +43,7 @@ typedef struct PostMessage PostMessage;
 */
 int LNat_Generate_Http_Get(const char * host,
                            const char * resource,
-                           short int port,
+                           unsigned short int port,
                            GetMessage ** gm);
 
 /* Destroys a GetMessage structure that was allocated by
@@ -61,7 +61,7 @@ int LNat_Destroy_Http_Get(GetMessage ** gm);
 */
 int LNat_Generate_Http_Post(const char * host,
                             const char * resource,
-                            short int port,
+                            unsigned short int port,
                             const char * body,
                             PostMessage ** pm);
 

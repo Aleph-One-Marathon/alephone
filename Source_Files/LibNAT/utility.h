@@ -30,7 +30,7 @@
 #define NULL_TERM                     '\0'
 
 /* maximum size of a port number */
-#define MAX_PORT_SIZE                 16383
+#define MAX_PORT_SIZE                 65535
 /* maximum string length of a port number string */
 #define MAX_PORT_STRING_LEN           5
 
