@@ -2824,7 +2824,7 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->advertise_on_metaserver = false;
 	preferences->attempt_upnp = false;
 	preferences->check_for_updates = true;
-	preferences->verify_https = true;
+	preferences->verify_https = false;
 	strcpy(preferences->metaserver_login, "guest");
 	memset(preferences->metaserver_password, 0, 16);
 	preferences->mute_metaserver_guests = false;
