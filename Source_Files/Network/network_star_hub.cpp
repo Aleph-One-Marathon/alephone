@@ -334,6 +334,8 @@ static void player_acknowledged_up_to_tick(size_t inPlayerIndex, int32 inSmalles
 static bool player_provided_flags_from_tick_to_tick(size_t inPlayerIndex, int32 inFirstNewTick, int32 inSmallestUnreceivedTick);
 static void hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex);
 static void hub_received_identification_packet(AIStream& ps, NetAddrBlock address);
+static void hub_received_ping_request(AIStream& ps, NetAddrBlock address);
+static void hub_received_ping_response(AIStream& ps, NetAddrBlock address);
 static void process_messages(AIStream& ps, int inSenderIndex);
 static void process_optional_message(AIStream& ps, int inSenderIndex, uint16 inMessageType);
 static void make_player_netdead(int inPlayerIndex);
@@ -646,10 +648,6 @@ hub_check_for_completion()
 void
 hub_received_network_packet(DDPPacketBufferPtr inPacket)
 {
-        // Processing packets?
-        if(!sHubActive)
-                return;
-
 	logContextNMT("hub processing a received packet");
 	
         AIStreamBE ps(inPacket->datagramData, inPacket->datagramSize);
@@ -658,6 +656,12 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
 		uint16	thePacketMagic;
 		ps >> thePacketMagic;
 
+		// Processing packets?
+		if(!sHubActive &&
+		   thePacketMagic != kPingRequestPacket &&
+		   thePacketMagic != kPingResponsePacket)
+			return;
+		
 		uint16 thePacketCRC;
 		ps >> thePacketCRC;
 
@@ -706,6 +710,14 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
 				hub_received_identification_packet(ps, inPacket->sourceAddress);
 			break;
 
+					case kPingRequestPacket:
+						hub_received_ping_request(ps, inPacket->sourceAddress);
+						break;
+						
+					case kPingResponsePacket:
+						hub_received_ping_response(ps, inPacket->sourceAddress);
+						break;
+						
                         default:
 			break;
                 }
@@ -732,6 +744,61 @@ hub_received_identification_packet(AIStream& ps, NetAddrBlock address)
 	}
 
 } // hub_received_idetification_packet()
+
+
+static void
+hub_received_ping_request(AIStream& ps, NetAddrBlock address)
+{
+	uint16 pingIdentifier;
+	ps >> pingIdentifier;
+	
+	// respond back to requestor
+	bool initedFrame = false;
+	if (!sOutgoingFrame)
+	{
+		sOutgoingFrame = NetDDPNewFrame();
+		initedFrame = true;
+	}
+	
+	AOStreamBE hdr(sOutgoingFrame->data, kStarPacketHeaderSize);
+	AOStreamBE ops(sOutgoingFrame->data, ddpMaxData, kStarPacketHeaderSize);
+	
+	try {
+		hdr << (uint16)kPingResponsePacket;
+		ops << pingIdentifier;
+		
+		// blank out the CRC field before calculating
+		sOutgoingFrame->data[2] = 0;
+		sOutgoingFrame->data[3] = 0;
+		
+		uint16 crc = calculate_data_crc_ccitt(sOutgoingFrame->data, ops.tellp());
+		hdr << crc;
+		
+		// Send the packet
+		sOutgoingFrame->data_size = ops.tellp();
+		NetDDPSendFrame(sOutgoingFrame, &address, kPROTOCOL_TYPE, 0 /* ignored */);
+	} catch (...) {
+		logWarningNMT("Caught exception while constructing/sending ping response packet");
+	}
+	
+	if (initedFrame)
+	{
+		NetDDPDisposeFrame(sOutgoingFrame);
+		sOutgoingFrame = NULL;
+	}
+} // hub_received_ping_request()
+
+
+static void
+hub_received_ping_response(AIStream& ps, NetAddrBlock address)
+{
+	uint16 pingIdentifier;
+	ps >> pingIdentifier;
+	
+	// we don't send ping requests, so we don't expect to get one
+	logWarningNMT("Received unexpected ping response packet");
+	
+} // hub_received_ping_response()
 
 
 // I suppose to be safer, this should check the entire packet before acting on any of it.

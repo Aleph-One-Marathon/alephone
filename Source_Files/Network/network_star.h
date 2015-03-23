@@ -51,6 +51,8 @@ enum {
 	kSpokeToHubGameDataPacketV1Magic = 0x5331, // 'S1'
 	kHubToSpokeGameDataPacketV1Magic = 0x4831, // 'H1'
 	kHubToSpokeGameDataPacketWithSpokeFlagsV1Magic = 0x4631, // 'F1'
+	kPingRequestPacket = 0x5051, // 'PQ'
+	kPingResponsePacket = 0x5052, // 'PR'
 
         kPregameTicks = TICKS_PER_SECOND * 3,	// Synchronization/timing adjustment before real data
         kActionFlagsSerializedLength = 4,	// bytes for each serialized action_flags_t (should be elsewhere)

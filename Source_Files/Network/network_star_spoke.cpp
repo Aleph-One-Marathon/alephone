@@ -148,6 +148,8 @@ static byte sScratchBuffer[kLossyByteStreamDataBufferSize];
 
 static void spoke_became_disconnected();
 static void spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags);
+static void spoke_received_ping_request(AIStream& ps, NetAddrBlock address);
+static void spoke_received_ping_response(AIStream& ps, NetAddrBlock address);
 static void process_messages(AIStream& ps, IncomingGameDataPacketProcessingContext& context);
 static void handle_end_of_messages_message(AIStream& ps, IncomingGameDataPacketProcessingContext& context);
 static void handle_player_net_dead_message(AIStream& ps, IncomingGameDataPacketProcessingContext& context);
@@ -411,10 +413,6 @@ spoke_received_network_packet(DDPPacketBufferPtr inPacket)
 {
 	logContextNMT("spoke processing a received packet");
 	
-        // If we've already given up on the connection, ignore packets.
-        if(!sConnected || !sSpokeActive)
-                return;
-        
         // Ignore packets not from our hub
 //        if(inPacket->sourceAddress != sHubAddress)
 //                return;
@@ -424,6 +422,12 @@ spoke_received_network_packet(DDPPacketBufferPtr inPacket)
 
 		uint16 thePacketMagic;
 		ps >> thePacketMagic;
+			
+		// If we've already given up on the connection, ignore non-ping packets.
+		if((!sConnected || !sSpokeActive) &&
+		   thePacketMagic != kPingRequestPacket &&
+		   thePacketMagic != kPingResponsePacket)
+			return;
 
 		uint16 thePacketCRC;
 		ps >> thePacketCRC;
@@ -447,7 +451,15 @@ spoke_received_network_packet(DDPPacketBufferPtr inPacket)
 		case kHubToSpokeGameDataPacketWithSpokeFlagsV1Magic:
 			spoke_received_game_data_packet_v1(ps, true);
 			break;
-			
+		
+		case kPingRequestPacket:
+			spoke_received_ping_request(ps, inPacket->sourceAddress);
+			break;
+		
+		case kPingResponsePacket:
+			spoke_received_ping_response(ps, inPacket->sourceAddress);
+			break;
+		
 		default:
 			// Ignore unknown packet types
 			logTraceNMT1("unknown packet type %i", thePacketMagic);
@@ -723,6 +735,60 @@ spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags)
 
 }
 
+
+static void
+spoke_received_ping_request(AIStream& ps, NetAddrBlock address)
+{
+	uint16 pingIdentifier;
+	ps >> pingIdentifier;
+	
+	// respond back to requestor
+	bool initedFrame = false;
+	if (!sOutgoingFrame)
+	{
+		sOutgoingFrame = NetDDPNewFrame();
+		initedFrame = true;
+	}
+	
+	AOStreamBE hdr(sOutgoingFrame->data, kStarPacketHeaderSize);
+	AOStreamBE ops(sOutgoingFrame->data, ddpMaxData, kStarPacketHeaderSize);
+	
+	try {
+		hdr << (uint16)kPingResponsePacket;
+		ops << pingIdentifier;
+		
+		// blank out the CRC field before calculating
+		sOutgoingFrame->data[2] = 0;
+		sOutgoingFrame->data[3] = 0;
+		
+		uint16 crc = calculate_data_crc_ccitt(sOutgoingFrame->data, ops.tellp());
+		hdr << crc;
+		
+		// Send the packet
+		sOutgoingFrame->data_size = ops.tellp();
+		NetDDPSendFrame(sOutgoingFrame, &address, kPROTOCOL_TYPE, 0 /* ignored */);
+	} catch (...) {
+		logWarningNMT("Caught exception while constructing/sending ping response packet");
+	}
+	
+	if (initedFrame)
+	{
+		NetDDPDisposeFrame(sOutgoingFrame);
+		sOutgoingFrame = NULL;
+	}
+} // spoke_received_ping_request()
+
+
+static void
+spoke_received_ping_response(AIStream& ps, NetAddrBlock address)
+{
+	uint16 pingIdentifier;
+	ps >> pingIdentifier;
+	
+	// we don't send ping requests, so we don't expect to get one
+	logWarningNMT("Received unexpected ping response packet");
+	
+} // spoke_received_ping_response()
 
 
 static void
