@@ -2203,7 +2203,7 @@ void dialog::deactivate_currently_active_widget(bool draw)
 		if (active_widget->associated_label)
 			active_widget->associated_label->set_active(false);
 
-		if (draw)
+		if (draw && active_widget->visible())
 		{
 			if (active_widget->associated_label)
 				draw_widget(active_widget->associated_label, false);
