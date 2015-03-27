@@ -222,10 +222,6 @@ static struct random_sound_definition random_sound_definitions[NUMBER_OF_RANDOM_
 
 // #ifndef STATIC_DEFINITIONS
 
-// LP: making this dynamically allocatable;
-// need to keep track of how many definitions are in use
-static int32 number_of_sound_definitions = 0;
-
 /*
 #else
 static struct sound_definition sound_definitions[NUMBER_OF_SOUND_DEFINITIONS]=
