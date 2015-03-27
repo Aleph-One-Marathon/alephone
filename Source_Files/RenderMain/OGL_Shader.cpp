@@ -209,7 +209,7 @@ GLhandleARB parseShader(const GLcharARB* str, GLenum shaderType) {
 		return shader;
 	} else {
 		glDeleteObjectARB(shader);
-		return NULL;		
+		return 0;
 	}
 }
 
@@ -232,7 +232,7 @@ void Shader::unloadAll() {
 	}
 }
 
-Shader::Shader(const std::string& name) : _programObj(NULL), _passes(-1), _loaded(false) {
+Shader::Shader(const std::string& name) : _programObj(0), _passes(-1), _loaded(false) {
     initDefaultPrograms();
     if (defaultVertexPrograms.count(name) > 0) {
 	    _vert = defaultVertexPrograms[name];
@@ -242,7 +242,7 @@ Shader::Shader(const std::string& name) : _programObj(NULL), _passes(-1), _loade
     }
 }    
 
-Shader::Shader(const std::string& name, FileSpecifier& vert, FileSpecifier& frag, int16& passes) : _programObj(NULL), _passes(passes), _loaded(false) {
+Shader::Shader(const std::string& name, FileSpecifier& vert, FileSpecifier& frag, int16& passes) : _programObj(0), _passes(passes), _loaded(false) {
 	initDefaultPrograms();
 	
 	parseFile(vert,  _vert);
@@ -290,7 +290,7 @@ void Shader::init() {
 	glUniform1iARB(getUniformLocation(U_Texture2), 2);
 	glUniform1iARB(getUniformLocation(U_Texture3), 3);	
 
-	glUseProgramObjectARB(NULL);
+	glUseProgramObjectARB(0);
 
 //	assert(glGetError() == GL_NO_ERROR);
 }
@@ -318,13 +318,13 @@ void Shader::enable() {
 }
 
 void Shader::disable() {
-	glUseProgramObjectARB(NULL);
+	glUseProgramObjectARB(0);
 }
 
 void Shader::unload() {
 	if(_programObj) {
 		glDeleteObjectARB(_programObj);
-		_programObj = NULL;
+		_programObj = 0;
 		_loaded = false;
 	}
 }

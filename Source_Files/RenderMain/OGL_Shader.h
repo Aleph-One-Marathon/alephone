@@ -106,7 +106,7 @@ public:
 	static void loadAll();
 	static void unloadAll();
 	
-	Shader() : _programObj(NULL), _passes(-1), _loaded(false) {}
+	Shader() : _programObj(0), _passes(-1), _loaded(false) {}
 	Shader(const std::string& name);
 	Shader(const std::string& name, FileSpecifier& vert, FileSpecifier& frag, int16& passes);
 	~Shader();
