@@ -924,7 +924,6 @@ typedef L_Class<Lua_Fonts_Name> Lua_Fonts;
 int Lua_Fonts_New(lua_State *L)
 {
 	FontSpecifier f = {"Monaco", 12, styleNormal, 0, "mono"};
-    float font_scale = 1.0;
 	
 	lua_pushstring(L, "interface");
 	lua_gettable(L, 1);
@@ -2003,7 +2002,6 @@ static int Lua_HUDPlayer_Get_Dead(lua_State *L)
 
 static int Lua_HUDPlayer_Get_Respawn_Duration(lua_State *L)
 {
-    int delayticks = -1;
     if (PLAYER_IS_DEAD(current_player) &&
         PLAYER_IS_TOTALLY_DEAD(current_player) &&
         (current_player->variables.action==_player_stationary||dynamic_world->player_count==1))

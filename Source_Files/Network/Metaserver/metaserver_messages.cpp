@@ -92,8 +92,6 @@ const int kRoomNameCount = sizeof(sRoomNames) / sizeof(sRoomNames[0]);
 
 static const char* kServiceName = "MARATHON";
 
-const int kKeyLength = 16;
-
 enum
 {
 	kCRYPT_PLAINTEXT = 0,
@@ -113,7 +111,6 @@ enum
 
 };
 
-static const uint16 kPlayerStatus = kSTATE_AWAKE;
 static const uint8 kPlayerIcon = 0;
 static const uint16 kAlephOneClientVersion = 5000;
 

@@ -213,7 +213,6 @@ bool WadImageCache::is_cached(WadImageDescriptor& desc, int width, int height) c
 
 void WadImageCache::cache_image(WadImageDescriptor& desc, int width, int height, SDL_Surface *image)
 {
-	bool changed = false;
 	std::string name = retrieve_name(desc, width, height, true);
 	if (!name.empty())
 	{

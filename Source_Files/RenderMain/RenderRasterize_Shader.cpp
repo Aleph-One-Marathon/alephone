@@ -1318,8 +1318,6 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
         return;
 
 	clipping_window_data *win;
-	rectangle_definition& rect = object->rectangle;
-	const world_point3d& pos = rect.Position;
 
 	// To properly handle sprites in media, we render above and below
 	// the media boundary in separate passes, just like the original

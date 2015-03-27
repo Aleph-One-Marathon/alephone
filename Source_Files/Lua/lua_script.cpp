@@ -200,9 +200,6 @@ int GetLuaGameEndCondition() {
 
 #else /* HAVE_LUA */
 
-// LP: used by several functions here
-const float AngleConvert = 360/float(FULL_CIRCLE);
-
 bool mute_lua = false;
 
 // Steal all this stuff

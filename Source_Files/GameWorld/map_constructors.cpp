@@ -44,7 +44,9 @@ Dec 14, 2000 (Loren Petrich):
 	Added growable lists for lists of intersecting endpoints, lines, and polygons
 */
 
+#if defined(NEW_AND_BROKEN) || defined(WITH_ORIGINAL_DATA_STRUCTURES)
 const bool DoIncorrectCountVWarn = true;
+#endif
 
 
 #include "cseries.h"

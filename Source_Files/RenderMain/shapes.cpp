@@ -1677,9 +1677,6 @@ void extended_get_shape_bitmap_and_shading_table(
 	}
 }
 
-// Because this object has to continue to exist after exiting the next function
-static low_level_shape_definition AdjustedFrame;
-
 struct shape_information_data *extended_get_shape_information(
 	short collection_code,
 	short low_level_shape_index)

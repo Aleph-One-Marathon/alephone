@@ -546,6 +546,7 @@ int Lua_Monster_Accelerate(lua_State *L)
 
 	short monster_index = Lua_Monster::Index(L, 1);
 	monster_data *monster = get_monster_data(monster_index);
+	(void)monster;
 	double direction = static_cast<double>(lua_tonumber(L, 2));
 	double velocity = static_cast<double>(lua_tonumber(L, 3));
 	double vertical_velocity = static_cast<double>(lua_tonumber(L, 4));

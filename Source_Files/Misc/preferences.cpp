@@ -372,6 +372,7 @@ static void crosshair_dialog(void *arg)
 	crosshair_binders.reset(new BinderSet);
 
 	dialog *parent = (dialog *) arg;
+	(void)parent;
 
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
