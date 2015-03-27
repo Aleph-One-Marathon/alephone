@@ -134,9 +134,9 @@ void HUD_Class::update_suit_energy(short time_elapsed)
 		suit_energy = current_player->suit_energy%PLAYER_MAXIMUM_SUIT_ENERGY;
 
 		if(	!suit_energy && 
-			current_player->suit_energy==PLAYER_MAXIMUM_SUIT_ENERGY ||
+		   (current_player->suit_energy==PLAYER_MAXIMUM_SUIT_ENERGY ||
 			current_player->suit_energy==2*PLAYER_MAXIMUM_SUIT_ENERGY || 
-			current_player->suit_energy==3*PLAYER_MAXIMUM_SUIT_ENERGY) 
+			current_player->suit_energy==3*PLAYER_MAXIMUM_SUIT_ENERGY))
 		{
 			suit_energy= PLAYER_MAXIMUM_SUIT_ENERGY;
 		}

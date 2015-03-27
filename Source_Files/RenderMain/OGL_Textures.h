@@ -226,8 +226,8 @@ public:
 	bool IsGlowMapped() {return IsGlowing;}
 	bool IsBlended() {return (TxtrOptsPtr->OpacityType != OGL_OpacType_Crisp);}
 	bool VoidVisible() {return (TxtrOptsPtr->VoidVisible);}
-	short NormalBlend() {return (TxtrOptsPtr->NormalBlend) + (NormalImage.get() && NormalImage.get()->IsPremultiplied() && TxtrOptsPtr->NormalBlend < OGL_FIRST_PREMULT_ALPHA) ? OGL_FIRST_PREMULT_ALPHA : 0; }
-	short GlowBlend() {return (TxtrOptsPtr->GlowBlend) + (GlowImage.get() && GlowImage.get()->IsPremultiplied() && TxtrOptsPtr->GlowBlend < OGL_FIRST_PREMULT_ALPHA) ? OGL_FIRST_PREMULT_ALPHA : 0; }
+	short NormalBlend() {return (TxtrOptsPtr->NormalBlend) + ((NormalImage.get() && NormalImage.get()->IsPremultiplied() && TxtrOptsPtr->NormalBlend < OGL_FIRST_PREMULT_ALPHA) ? OGL_FIRST_PREMULT_ALPHA : 0); }
+	short GlowBlend() {return (TxtrOptsPtr->GlowBlend) + ((GlowImage.get() && GlowImage.get()->IsPremultiplied() && TxtrOptsPtr->GlowBlend < OGL_FIRST_PREMULT_ALPHA) ? OGL_FIRST_PREMULT_ALPHA : 0); }
 	float MinGlowIntensity() {return (TxtrOptsPtr->MinGlowIntensity);}
 	float BloomScale() {return (TxtrOptsPtr->BloomScale);}
 	float BloomShift() {return (TxtrOptsPtr->BloomShift);}

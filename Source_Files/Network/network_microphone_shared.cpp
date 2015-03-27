@@ -101,7 +101,7 @@ inline int16 getSample(void *data)
 	{
 		if (stereo)
 		{
-			return ((int16 *) data)[0] >> 1 + ((int16 *)data)[1] >> 1;
+			return (((int16 *) data)[0] >> 1) + (((int16 *)data)[1] >> 1);
 		}
 		else
 		{
