@@ -47,6 +47,7 @@ struct WadImageDescriptor {
 			return index < other.index;
 		else if (tag != other.tag)
 			return tag < other.tag;
+		return false;
 	}
 	
 	bool operator==(const WadImageDescriptor& other) const {
