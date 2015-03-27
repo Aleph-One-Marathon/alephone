@@ -233,6 +233,7 @@ Closure* luaU_undump (lua_State* L, ZIO* Z, Mbuffer* buff, const char* name)
 }
 
 #define MYINT(s)	(s[0]-'0')
+#undef VERSION				/* avoid redefine warnings */
 #define VERSION		MYINT(LUA_VERSION_MAJOR)*16+MYINT(LUA_VERSION_MINOR)
 #define FORMAT		0		/* this is the official format */
 
