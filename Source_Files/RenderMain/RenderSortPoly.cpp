@@ -476,7 +476,7 @@ void RenderSortPolyClass::calculate_vertical_clip_data(
 					locally_highest_line= line;
 				}
 			}
-			vassert(locally_highest_line, csprintf(temporary, "didnÕt find diddly at #%d [#%d,#%d]", x, x0, x1));
+			vassert(locally_highest_line, csprintf(temporary, "didn't find diddly at #%d [#%d,#%d]", x, x0, x1));
 				
 			if (!highest_line || locally_highest_line->top_y<highest_line->top_y)
 			{
@@ -510,7 +510,7 @@ void RenderSortPolyClass::calculate_vertical_clip_data(
 					locally_highest_line= line;
 				}
 			}
-			vassert(locally_highest_line, csprintf(temporary, "didnÕt find diddly at #%d [#%d,#%d]", x, x0, x1));
+			vassert(locally_highest_line, csprintf(temporary, "didn't find diddly at #%d [#%d,#%d]", x, x0, x1));
 				
 			if (!highest_line || locally_highest_line->bottom_y>highest_line->bottom_y)
 			{

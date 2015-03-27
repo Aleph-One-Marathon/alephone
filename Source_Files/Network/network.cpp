@@ -1947,7 +1947,7 @@ static void NetUpdateTopology(
 		if (topology->players[localPlayerIndex].identifier==localPlayerIdentifier) break;
 	}
 #ifdef DEBUG
-	if (localPlayerIndex==topology->player_count) fdprintf("couldnÕt find my identifier: %p", topology);
+	if (localPlayerIndex==topology->player_count) fdprintf("couldn't find my identifier: %p", topology);
 #endif
 }
 

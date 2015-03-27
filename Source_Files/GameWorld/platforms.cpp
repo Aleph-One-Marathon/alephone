@@ -1113,7 +1113,7 @@ static void adjust_platform_sides(
 					break;
 			
 				default:
-					vhalt(csprintf(temporary, "wasnÕt expecting side #%d to have type #%d", side_index, side->type));
+					vhalt(csprintf(temporary, "wasn't expecting side #%d to have type #%d", side_index, side->type));
 					break;
 			}
 		}

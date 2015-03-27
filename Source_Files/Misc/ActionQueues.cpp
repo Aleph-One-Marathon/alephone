@@ -117,7 +117,7 @@ ActionQueues::enqueueActionFlags(
 		queue->buffer[queue->write_index]= *action_flags++;
 		queue->write_index= (queue->write_index+1) % mQueueSize;
 		if (queue->write_index==queue->read_index)
-			logError1("blew player %d’s queue", player_index);
+			logError1("blew player %d's queue", player_index);
 	}
 	
 	return;

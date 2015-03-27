@@ -54,7 +54,7 @@ static const char* sStringSetNumber128[] = {
     "Sorry, $appName$ requires Color QuickDraw.",
     "Sorry, $appName$ requires System Software 7.0 or higher.",
     "Sorry, $appName$ requires at least 3000k of free RAM.",
-    "Sorry, $appName$ requires a 13” monitor (640x480) or larger which can be set to at least 256 colors or grays.",
+    "Sorry, $appName$ requires a 13\" monitor (640x480) or larger which can be set to at least 256 colors or grays.",
     "Please be sure the files 'Map', 'Shapes', 'Images' and 'Sounds' are correctly installed and try again.",
     "$appName$ couldn't initialize the sound.",
     "$appName$ has encountered a file system error.  Check to make sure you have enough disk space and that you are not trying to save to a locked volume.",
@@ -311,7 +311,7 @@ static const char* sStringSetNumber133[] = {
 static const char* sStringSetNumber134[] = {
     "Be sure your external speakers or headphones are connected properly, and that you have enabled stereo output from the Sound Control Panel.",
     "Be sure that your Cybermaxx helmet is properly hooked up to the serial port and turned on.",
-    "Please check to be sure you have the file “QuickTime[TM] Musical Instruments” in your “Extensions” folder, because $appName$'s background music will sound really, really stupid without it.",
+    "Please check to be sure you have the file \"QuickTime[TM] Musical Instruments\" in your \"Extensions\" folder, because $appName$'s background music will sound really, really stupid without it.",
 };
 
 // STR# Resource: "Computer Interface"
@@ -332,7 +332,7 @@ static const char* sStringSetNumber135[] = {
 static const char* sStringSetNumber136[] = {
     "Click 'Join' to wait for an invitation into a network game of $appName$.",
     "Now waiting to be gathered into a network game by a server.  Click 'Cancel' to give up.",
-    "You have been accepted into a game.  Now waiting for the server to add the remaining players… ",
+    "You have been accepted into a game.  Now waiting for the server to add the remaining players... ",
 };
 
 // STR# Resource: "Weapon Names"
@@ -351,7 +351,7 @@ static const char* sStringSetNumber137[] = {
 
 // STR# Resource: "file search path"
 static const char* sStringSetNumber138[] = {
-    "Marathon Trilogy:Marathon Infinity ƒ:Marathon Infinity:",
+    "Marathon Trilogy:Marathon Infinity \xc4:Marathon Infinity:",
 };
 
 // STR# Resource: "Preferences Groupings"
@@ -516,11 +516,11 @@ static const char* sStringSetNumber150[] = {
     "THE PLANS",
     "WSTE-M COMBAT SHOTGUN",
     "WSTE-M COMBAT SHOTGUNS",
-    "S’PHT CARD KEY",
-    "S’PHT CARD KEYS",
+    "S\xd5PHT CARD KEY",
+    "S\xd5PHT CARD KEYS",
     "UPLINK CHIP",
     "UPLINK CHIPS",
-    "Ryan’s Light Blue Ball",
+    "Ryan\xd5s Light Blue Ball",
     "SKULL",
     "Violet Ball",
     "Yellow Ball",
