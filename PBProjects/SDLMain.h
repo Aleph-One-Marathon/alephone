@@ -7,6 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface SDLMain : NSObject <NSApplicationDelegate, NSFileManagerDelegate>
+@interface SDLMain : NSObject
 
 @end
