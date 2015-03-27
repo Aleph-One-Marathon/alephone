@@ -1654,8 +1654,6 @@ const NetworkStats& hub_stats(int player_index)
 	return getNetworkPlayer(player_index).mStats;
 }
 
-static inline const char *BoolString(bool B) {return (B ? "true" : "false");}
-
 enum {
 	// kOutgoingFlagsQueueSizeAttribute,
 	kPregameTicksBeforeNetDeathAttribute,

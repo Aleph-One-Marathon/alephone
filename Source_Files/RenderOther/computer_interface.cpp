@@ -400,14 +400,6 @@ static struct terminal_key terminal_keys[]= {
 
 
 // Emulation of MacOS functions
-static void SetRect(Rect *r, int left, int top, int right, int bottom)
-{
-	r->top = top;
-	r->left = left;
-	r->bottom = bottom;
-	r->right = right;
-}
-
 static void InsetRect(Rect *r, int dx, int dy)
 {
 	r->top += dy;
