@@ -3310,7 +3310,7 @@ static void update_sequence(
 		case _weapon_firing:
 		case _weapon_recovering:
 			prevent_wrap = true;	// These animations should not repeat
-			if(which_trigger==_primary_weapon && (definition->flags & _weapon_is_automatic)
+			if((which_trigger==_primary_weapon && (definition->flags & _weapon_is_automatic))
 				|| (which_trigger==_secondary_weapon && (definition->flags & _weapon_is_automatic) && (definition->flags & _weapon_secondary_has_angular_flipping)))
 			{
 			} else if (trigger->state == _weapon_recovering && (definition->flags & _weapon_is_marathon_1)) {

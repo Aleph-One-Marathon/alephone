@@ -1350,12 +1350,12 @@ static void update_player_teleport(
 	{
 		/* Note that control panels can set the teleporting destination. */
 		if (player->teleporting_destination!=NO_TELEPORTATION_DESTINATION ||
-			((polygon->type==_polygon_is_automatic_exit && calculate_level_completion_state()!=_level_unfinished) || polygon->type==_polygon_is_teleporter) &&
+			(((polygon->type==_polygon_is_automatic_exit && calculate_level_completion_state()!=_level_unfinished) || polygon->type==_polygon_is_teleporter) &&
 				player->variables.position.x==player->variables.last_position.x &&
 				player->variables.position.y==player->variables.last_position.y &&
 				player->variables.position.z==player->variables.last_position.z &&
 				player->variables.last_direction==player->variables.direction &&
-				object->location.z==polygon->floor_height)
+				object->location.z==polygon->floor_height))
 		{
 			if(--player->delay_before_teleport<0)
 			{
