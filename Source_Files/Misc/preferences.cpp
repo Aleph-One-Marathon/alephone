@@ -2578,11 +2578,11 @@ void write_preferences(
 	for (int k=0; k<OGL_NUMBER_OF_TEXTURE_TYPES; k++)
 	{
 		OGL_Texture_Configure& TxtrConfig = graphics_preferences->OGL_Configure.TxtrConfigList[k];
-		fprintf(F,"  <texture index=\"%hd\" near_filter=\"%hd\" far_filter=\"%hd\" resolution=\"%hd\" color_format=\"%d\" max_size=\"%d\"/>\n",
+		fprintf(F,"  <texture index=\"%d\" near_filter=\"%hd\" far_filter=\"%hd\" resolution=\"%hd\" color_format=\"%d\" max_size=\"%d\"/>\n",
 			k, TxtrConfig.NearFilter, TxtrConfig.FarFilter, TxtrConfig.Resolution, TxtrConfig.ColorFormat, TxtrConfig.MaxSize);
 	}
 	OGL_Texture_Configure& TxtrConfig = graphics_preferences->OGL_Configure.ModelConfig;
-	fprintf(F,"  <texture index=\"%hd\" near_filter=\"%hd\" far_filter=\"%hd\" resolution=\"%hd\" color_format=\"%d\" max_size=\"%d\"/>\n",
+	fprintf(F,"  <texture index=\"%u\" near_filter=\"%hd\" far_filter=\"%hd\" resolution=\"%hd\" color_format=\"%d\" max_size=\"%d\"/>\n",
 		OGL_NUMBER_OF_TEXTURE_TYPES, TxtrConfig.NearFilter, TxtrConfig.FarFilter, TxtrConfig.Resolution, TxtrConfig.ColorFormat, TxtrConfig.MaxSize);
 	fprintf(F,"</graphics>\n\n");
 	
@@ -2621,16 +2621,16 @@ void write_preferences(
 
 	fprintf(F,">\n");
 	for (int i = 0; i < MAX_BUTTONS; i++)
-		fprintf(F,"  <mouse_button index=\"%hd\" action=\"%s\"/>\n", i,
+		fprintf(F,"  <mouse_button index=\"%d\" action=\"%s\"/>\n", i,
 			input_preferences->mouse_button_actions[i] == _mouse_button_fires_left_trigger ? "left_trigger" : 
 			input_preferences->mouse_button_actions[i] == _mouse_button_fires_right_trigger ? "right_trigger" : "none");
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
-		fprintf(F,"  <joystick_axis_mapping index=\"%hd\" axis=\"%hd\" axis_sensitivity=\"%f\" bound=\"%hd\"/>\n", i, input_preferences->joystick_axis_mappings[i], input_preferences->joystick_axis_sensitivities[i], input_preferences->joystick_axis_bounds[i]);
+		fprintf(F,"  <joystick_axis_mapping index=\"%d\" axis=\"%hd\" axis_sensitivity=\"%f\" bound=\"%hd\"/>\n", i, input_preferences->joystick_axis_mappings[i], input_preferences->joystick_axis_sensitivities[i], input_preferences->joystick_axis_bounds[i]);
 	for (int k=0; k<NUMBER_OF_KEYS; k++)
-		fprintf(F,"  <sdl_key index=\"%hd\" value=\"%hd\"/>\n",
+		fprintf(F,"  <sdl_key index=\"%d\" value=\"%hd\"/>\n",
 			k,input_preferences->keycodes[k]);
 	for (int k=0; k<NUMBER_OF_SHELL_KEYS;k++)
-		fprintf(F,"  <sdl_key index=\"%hd\" value=\"%hd\"/>\n",
+		fprintf(F,"  <sdl_key index=\"%d\" value=\"%hd\"/>\n",
 			k + NUMBER_OF_KEYS, input_preferences->shell_keycodes[k]);
 	fprintf(F,"</input>\n\n");
 	

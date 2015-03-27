@@ -2693,7 +2693,7 @@ WriteRingPreferences(FILE* F)
 	fprintf(F,"  <ring_protocol\n");
 	fprintf(F,"    accept_packets_from_anyone=\"%s\"\n",BoolString(sRingPreferences.mAcceptPacketsFromAnyone));
 	fprintf(F,"    adapt_to_latency=\"%s\"\n",BoolString(sRingPreferences.mAdaptToLatency));
-	fprintf(F,"    latency_hold_ticks=\"%hd\"\n",sRingPreferences.mLatencyHoldTicks);
+	fprintf(F,"    latency_hold_ticks=\"%d\"\n",sRingPreferences.mLatencyHoldTicks);
 	fprintf(F,"  />\n");
 }
 
