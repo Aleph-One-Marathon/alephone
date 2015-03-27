@@ -120,8 +120,6 @@ static void createDirectory(NSString *path)
 	bundle_resource_path = strdup([bundleRes UTF8String]);
 
 	/* Find other system directories we need. */
-	NSFileManager *fileManager = [NSFileManager defaultManager];
-	
 	NSArray *arr = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
 	NSString *libraryPath = [arr objectAtIndex:0];
 	if (libraryPath != nil)
