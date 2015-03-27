@@ -1990,9 +1990,10 @@ static void calculate_weapon_origin_and_vector(
 
 	/* Do left/right translation */
 	/* if it is twofisted, and both weapons aren't up, don't translate.. */
-	if(definition->weapon_class==_twofisted_pistol_class && 
-		(PRIMARY_WEAPON_IS_VALID(weapon_data) && !SECONDARY_WEAPON_IS_VALID(weapon_data)) ||
-		(!PRIMARY_WEAPON_IS_VALID(weapon_data) && SECONDARY_WEAPON_IS_VALID(weapon_data)))
+	/* JM: Bungie originally had precedence wrong, but it didn't matter in practice */
+	if(definition->weapon_class==_twofisted_pistol_class &&
+	   ((PRIMARY_WEAPON_IS_VALID(weapon_data) && !SECONDARY_WEAPON_IS_VALID(weapon_data)) ||
+	    (!PRIMARY_WEAPON_IS_VALID(weapon_data) && SECONDARY_WEAPON_IS_VALID(weapon_data))))
 	{
 		dx_translation_amount= 0;
 	} else {
