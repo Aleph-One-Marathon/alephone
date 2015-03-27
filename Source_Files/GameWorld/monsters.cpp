@@ -4158,6 +4158,7 @@ bool XML_MonsterParser::ResetValues()
 {
 	monster_must_be_exterminated.clear();
 	monster_must_be_exterminated.resize(NUMBER_OF_MONSTER_TYPES, false);
+	return true;
 }
 
 static XML_MonsterParser MonsterParser;
