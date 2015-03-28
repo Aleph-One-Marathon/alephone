@@ -222,8 +222,13 @@ AX_CHECK_FEATURE_LIB([smpeg], [SMPEG],
 
 AX_CHECK_FEATURE_LIB([speex], [SPEEX],
                      [speex/speex.h], [speex], [speex_decoder_init])
-AS_IF([test "x$have_speex" = "xyes"],
-      [AC_CHECK_LIB([speexdsp], [speex_preprocess_state_init])])
+AS_IF([test "x$have_speex" = "xtrue"],
+      [ AC_CHECK_LIB([speexdsp], [speex_preprocess_state_init])
+        AS_IF([test "x$ac_cv_lib_speexdsp_speex_preprocess_state_init" = "xyes"],
+              [ CPPFLAGS="$CPPFLAGS -DSPEEX" ],
+              [ have_speex=false
+                AS_IF([test "x$with_speex" = "xyes"],
+                      [AC_MSG_ERROR([$desc_speex requested but not available])])])])
 
 AX_CHECK_FEATURE_LIB([alsa], [ALSA],
                      [alsa/asoundlib.h], [asound], [snd_pcm_open])
