@@ -47,23 +47,27 @@ static inline void offset_rect(screen_rectangle *rect, short dx, short dy)
  *  Update all HUD elements
  */
 
+extern bool shapes_file_is_m1();
+
 bool HUD_Class::update_everything(short time_elapsed)
 {
 	ForceUpdate = false;
 
 	if (!LuaTexturePaletteSize())
 	{
+		if (!shapes_file_is_m1())
+		{
+			update_motion_sensor(time_elapsed);
+			update_inventory_panel((time_elapsed == NONE) ? true : false);
+			update_weapon_panel((time_elapsed == NONE) ? true : false);
+			update_ammo_display((time_elapsed == NONE) ? true : false);
+			update_suit_energy(time_elapsed);
+			update_suit_oxygen(time_elapsed);
 
-		update_motion_sensor(time_elapsed);
-		update_inventory_panel((time_elapsed == NONE) ? true : false);
-		update_weapon_panel((time_elapsed == NONE) ? true : false);
-		update_ammo_display((time_elapsed == NONE) ? true : false);
-		update_suit_energy(time_elapsed);
-		update_suit_oxygen(time_elapsed);
-
-		// Draw the message area if the player count is greater than one
-		if (dynamic_world->player_count > 1)
-			draw_message_area(time_elapsed);
+			// Draw the message area if the player count is greater than one
+			if (dynamic_world->player_count > 1)
+				draw_message_area(time_elapsed);
+		}
 	}
 	else
 	{
