@@ -2188,6 +2188,7 @@ public:
 		success_group.type = 0;
 		failure_group.type = 0;
 		unfinished_group.type = 0;
+		group.type = NONE;
 	}
 	terminal_text_t* Compile();
 
