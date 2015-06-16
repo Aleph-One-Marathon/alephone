@@ -2161,7 +2161,7 @@
 		AE437C8E08779BE500038E30 /* shared_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = shared_widgets.cpp; path = ../Source_Files/Misc/shared_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE48F3551421900900051D61 /* Statistics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Statistics.h; path = ../Source_Files/Misc/Statistics.h; sourceTree = "<group>"; };
 		AE505D0B141D45E600915344 /* Marathon 2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Marathon 2.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		AE505D12141D46A900915344 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = "AppStore/Marathon 2/Info.plist"; sourceTree = "<group>"; };
+		AE505D12141D46A900915344 /* Info-MAS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Info-MAS.plist"; path = "AppStore/Marathon 2/Info-MAS.plist"; sourceTree = "<group>"; };
 		AE505D15141D46B100915344 /* English */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = English; path = "AppStore/Marathon 2/English.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		AE505D20141D47BF00915344 /* Marathon 2.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = "Marathon 2.icns"; path = "AppStore/Marathon 2/Marathon 2.icns"; sourceTree = "<group>"; };
 		AE51545D0D46E84A00506B58 /* lua_map.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_map.cpp; sourceTree = "<group>"; };
@@ -2192,7 +2192,7 @@
 		AE69B5DC0D404F0400C42C11 /* lua_player.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_player.h; sourceTree = "<group>"; };
 		AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ImageLoader_Shared.cpp; path = ../Source_Files/RenderMain/ImageLoader_Shared.cpp; sourceTree = SOURCE_ROOT; };
 		AE791CF60968E49100350190 /* DDS.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = DDS.h; path = ../Source_Files/RenderMain/DDS.h; sourceTree = SOURCE_ROOT; };
-		AE7A1438141D15D600834C2D /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = AppStore/Marathon/Info.plist; sourceTree = "<group>"; };
+		AE7A1438141D15D600834C2D /* Info-MAS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Info-MAS.plist"; path = "AppStore/Marathon/Info-MAS.plist"; sourceTree = "<group>"; };
 		AE7A143B141D16D000834C2D /* English */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = English; path = AppStore/Marathon/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AE7C21800BFF67B700CE63EC /* lapi.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = lapi.c; sourceTree = "<group>"; };
 		AE7C21810BFF67B700CE63EC /* lauxlib.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = lauxlib.c; sourceTree = "<group>"; };
@@ -2261,7 +2261,7 @@
 		AEB4A2AD14296CAE00537AE7 /* Marathon Infinity.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Marathon Infinity.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEB4A2B214296DC000537AE7 /* Marathon Infinity.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = "Marathon Infinity.icns"; path = "AppStore/Marathon Infinity/Marathon Infinity.icns"; sourceTree = "<group>"; };
 		AEB4A2B514296DC700537AE7 /* English */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = English; path = "AppStore/Marathon Infinity/English.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		AEB4A2B714296DCF00537AE7 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = "AppStore/Marathon Infinity/Info.plist"; sourceTree = "<group>"; };
+		AEB4A2B714296DCF00537AE7 /* Info-MAS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Info-MAS.plist"; path = "AppStore/Marathon Infinity/Info-MAS.plist"; sourceTree = "<group>"; };
 		AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SW_Texture_Extras.cpp; sourceTree = "<group>"; };
 		AEC3C89609AD68AE003258E4 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
@@ -2825,7 +2825,7 @@
 			isa = PBXGroup;
 			children = (
 				AE7A143A141D16D000834C2D /* InfoPlist.strings */,
-				AE7A1438141D15D600834C2D /* Info.plist */,
+				AE7A1438141D15D600834C2D /* Info-MAS.plist */,
 				AE0E4EC1141D148F00AAA02F /* Marathon.icns */,
 				27EFC4C81A7D9A2F00A95592 /* Marathon.entitlements */,
 			);
@@ -2867,7 +2867,7 @@
 			children = (
 				AE505D20141D47BF00915344 /* Marathon 2.icns */,
 				AE505D14141D46B100915344 /* InfoPlist.strings */,
-				AE505D12141D46A900915344 /* Info.plist */,
+				AE505D12141D46A900915344 /* Info-MAS.plist */,
 				27EFC4C71A7D9A1C00A95592 /* Marathon 2.entitlements */,
 			);
 			name = "Marathon 2";
@@ -2944,7 +2944,7 @@
 		AEB4A2B114296D8800537AE7 /* Marathon Infinity */ = {
 			isa = PBXGroup;
 			children = (
-				AEB4A2B714296DCF00537AE7 /* Info.plist */,
+				AEB4A2B714296DCF00537AE7 /* Info-MAS.plist */,
 				AEB4A2B414296DC700537AE7 /* InfoPlist.strings */,
 				AEB4A2B214296DC000537AE7 /* Marathon Infinity.icns */,
 				27EFC4C61A7D99E300A95592 /* Marathon Infinity.entitlements */,
@@ -4735,7 +4735,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0460;
+				LastUpgradeCheck = 0630;
 				TargetAttributes = {
 					AE505B3A141D45E600915344 = {
 						SystemCapabilities = {
@@ -4931,7 +4931,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\ncopy_removing_ppc \"boost_filesystem.framework\"\ncopy_removing_ppc \"boost_system.framework\"\n";
+			shellScript = "function copy_removing_ppc() {\n    ditto --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\ncopy_removing_ppc \"boost_filesystem.framework\"\ncopy_removing_ppc \"boost_system.framework\"\n";
 		};
 		AE505D06141D45E600915344 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4969,7 +4969,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\ncopy_removing_ppc \"boost_filesystem.framework\"\ncopy_removing_ppc \"boost_system.framework\"\n";
+			shellScript = "function copy_removing_ppc() {\n    ditto --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\ncopy_removing_ppc \"boost_filesystem.framework\"\ncopy_removing_ppc \"boost_system.framework\"\n";
 		};
 		AEB4A2A814296CAE00537AE7 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -5019,7 +5019,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\ncopy_removing_ppc \"boost_filesystem.framework\"\ncopy_removing_ppc \"boost_system.framework\"\n";
+			shellScript = "function copy_removing_ppc() {\n    ditto --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\ncopy_removing_ppc \"boost_filesystem.framework\"\ncopy_removing_ppc \"boost_system.framework\"\n";
 		};
 		AEFD87D713EB944800C1E687 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -6103,14 +6103,11 @@
 		AE2A41540B5EFC1F00C567E6 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				ENABLE_OPENMP_SUPPORT = YES;
 				GCC_VERSION = "";
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				"MACOSX_DEPLOYMENT_TARGET[arch=x86_64]" = 10.6;
-				ONLY_ACTIVE_ARCH = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				STRIP_INSTALLED_PRODUCT = NO;
 			};
 			name = Development;
@@ -6180,14 +6177,11 @@
 		AE2A41770B5EFEA000C567E6 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				ENABLE_OPENMP_SUPPORT = YES;
 				GCC_VERSION = "";
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				"MACOSX_DEPLOYMENT_TARGET[arch=x86_64]" = 10.6;
-				ONLY_ACTIVE_ARCH = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 			};
 			name = "Deployment (Native)";
 		};
@@ -6276,7 +6270,7 @@
 					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
-				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info-MAS.plist";
 				INFOPLIST_PREPROCESS = NO;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
@@ -6345,7 +6339,7 @@
 					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
-				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info-MAS.plist";
 				INFOPLIST_PREPROCESS = NO;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
@@ -6413,7 +6407,7 @@
 					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
-				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info-MAS.plist";
 				INFOPLIST_PREPROCESS = NO;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRODUCT_NAME = "Marathon 2";
@@ -6488,14 +6482,11 @@
 		AE78B59E09B00C34002CACF8 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				ENABLE_OPENMP_SUPPORT = YES;
 				GCC_VERSION = "";
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				"MACOSX_DEPLOYMENT_TARGET[arch=x86_64]" = 10.6;
-				ONLY_ACTIVE_ARCH = NO;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 			};
 			name = "Deployment (Universal)";
 		};
@@ -6557,7 +6548,7 @@
 					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
-				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info-MAS.plist";
 				INFOPLIST_PREPROCESS = NO;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
@@ -6626,7 +6617,7 @@
 					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
-				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info-MAS.plist";
 				INFOPLIST_PREPROCESS = NO;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
@@ -6694,7 +6685,7 @@
 					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
-				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info-MAS.plist";
 				INFOPLIST_PREPROCESS = NO;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRODUCT_NAME = "Marathon Infinity";
@@ -6761,7 +6752,7 @@
 					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
-				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info-MAS.plist";
 				INFOPLIST_PREPROCESS = NO;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
@@ -6830,7 +6821,7 @@
 					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
-				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info-MAS.plist";
 				INFOPLIST_PREPROCESS = NO;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
@@ -6898,7 +6889,7 @@
 					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
-				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info-MAS.plist";
 				INFOPLIST_PREPROCESS = NO;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRODUCT_NAME = Marathon;
