@@ -364,6 +364,7 @@ void Console::report_kill(int16 player_index, int16 aggressor_player_index, int1
 void Console::clear_carnage_messages()
 {
 	m_carnage_messages.clear();
+	m_carnage_messages.resize(NUMBER_OF_PROJECTILE_TYPES);
 	m_carnage_messages_exist = false;
 }
 
