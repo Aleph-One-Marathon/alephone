@@ -546,15 +546,15 @@ end
 
     <table name="level" singleton="true">
       <note>all items in Level are read-only</note>
-      <variable name="name" version="SVN">
+      <variable name="name" version="20150619">
         <description>level name</description>
         <type>string</type>
       </variable>
-      <variable name="index" version="SVN">
+      <variable name="index" version="20150619">
         <description>level index in the map file (starting from 0)</description>
         <type>number</type>
       </variable>
-      <variable name="map_checksum" version="SVN">
+      <variable name="map_checksum" version="20150619">
         <description>checksum of map file</description>
         <type>number</type>
       </variable>      

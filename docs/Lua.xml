@@ -321,7 +321,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <argument name="item"><type>item</type></argument>
       <note>does not trigger on initial item placement because the initial item placement is done before Lua becomes initialised.</note>
     </function>
-    <function name="projectile_created" version="SVN">
+    <function name="projectile_created" version="20150619">
       <description>whenever a projectile is created</description>
       <argument name="projectile"><type>projectile</type></argument>
     </function>
@@ -444,7 +444,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </variable>
     </table>
     <table name="game" singleton="true">
-      <variable name="dead_players_drop_items" version="SVN">
+      <variable name="dead_players_drop_items" version="20150619">
         <description>whether dead players drop items</description>
         <type>boolean</type>
       </variable>
@@ -673,11 +673,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>level name</description>
 	<type>string</type>
       </variable>
-      <variable name="index" access="read-only" version="SVN">
+      <variable name="index" access="read-only" version="20150619">
 	<description>level index in the map file (starting from 0)</description>
 	<type>number</type>
       </variable>
-      <variable name="map_checksum" access="read-only" version="SVN">
+      <variable name="map_checksum" access="read-only" version="20150619">
 	<description>checksum of map file</description>
 	<type>number</type>
       </variable>
@@ -790,7 +790,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>whether line is solid</description>
 	<type>boolean</type>
       </variable>
-      <variable name="visible_on_automap" version="SVN">
+      <variable name="visible_on_automap" version="20150619">
 	<description>whether line is revealed on local player's automap</description>
 	<type>boolean</type>
       </variable>
@@ -1556,7 +1556,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>polygon type</description>
 	<type>polygon_type</type>
       </variable>
-      <variable name="visible_on_automap" version="SVN">
+      <variable name="visible_on_automap" version="20150619">
 	<description>whether polygon is revealed on local player's automap</description>
 	<type>boolean</type>
       </variable>
