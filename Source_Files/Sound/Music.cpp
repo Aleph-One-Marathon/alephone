@@ -40,6 +40,7 @@ Music::Music() :
 	macos_buffer_length(0),
 #endif
 	decoder(0),
+	marathon_1_song_index(NONE),
 	song_number(0),
 	random_order(false)
 {
