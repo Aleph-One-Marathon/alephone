@@ -1944,7 +1944,7 @@ bool process_map_wad(
 			assert(map_index_count*sizeof(short)==data_length);
 		}
 
-		assert(is_preprocessed_map&&map_index_count || !is_preprocessed_map&&!map_index_count);
+		assert((is_preprocessed_map && map_index_count) || (!is_preprocessed_map && !map_index_count));
 
 		data= (uint8 *)extract_type_from_wad(wad, PLATFORM_STATIC_DATA_TAG, &data_length);
 		count= data_length/SIZEOF_static_platform_data;

@@ -1374,7 +1374,7 @@ extern SDL_PixelFormat pixel_format_32;
 template <>
 inline uint32 randomize_pixel(uint16 pixel)
 {
-	return (uint32)pixel^(((uint32)pixel)<<8) | pixel_format_32.Amask;
+	return ((uint32)pixel^(((uint32)pixel)<<8)) | pixel_format_32.Amask;
 }
 
 template <typename T>
