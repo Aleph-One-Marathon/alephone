@@ -213,6 +213,8 @@ std::streampos opened_file_device::seek(io::stream_offset off, std::ios_base::se
 	case std::ios_base::cur:
 		pos = SDL_RWseek(f.GetRWops(), off, SEEK_CUR);
 		break;
+	default:
+		break;
 	}
 
 	return pos - static_cast<std::streampos>(f.fork_offset);
