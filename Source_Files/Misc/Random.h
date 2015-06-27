@@ -36,11 +36,11 @@ struct GM_Random
 	uint32 znew() {return (z=36969*(z&65535)+(z>>16));}
 	uint32 wnew() {return (w=18000*(w&65535)+(w>>16));}
 	uint32 MWC() {return ((znew()<<16)+wnew());}
-	uint32 SHR3() {return (jsr=(jsr=(jsr=jsr^(jsr<<17))^(jsr>>13))^(jsr<<5));}
+	uint32 SHR3() {jsr=jsr^(jsr<<17); jsr=jsr^(jsr>>13); jsr=jsr^(jsr<<5); return jsr;}
 	uint32 CONG() {return (jcong=69069*jcong+1234567);}
 	uint32 KISS() {return ((MWC()^CONG())+SHR3());}
 	uint32 LFIB4() {t[c]=t[c]+t[c+58]+t[c+119]+t[c+178]; return t[++c];}
-	uint32 SWB() {t[c+237]=(x=t[c+15])-(y=t[c]+(x<y)); return t[++c];}
+	uint32 SWB() {x=t[c+15]; y=t[c]+(x<y); t[c+237]=x-y; return t[++c];}
 	float UNI() {return (float)(KISS()*2.328306e-10);}
 	float VNI() {return (float)(((int32) KISS())*4.656613e-10);}
 
