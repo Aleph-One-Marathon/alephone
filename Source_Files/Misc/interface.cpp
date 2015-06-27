@@ -1799,6 +1799,7 @@ static void display_about_dialog()
 	authors.push_back("Bo Lindbergh");
 	authors.push_back("Chris Lovell");
 	authors.push_back("Jesse Luehrs");
+	authors.push_back("Marshall (darealshinji)");
 	authors.push_back("Derek Moeller");
 	authors.push_back("Jeremiah Morris");
 	authors.push_back("Sam Morris");
