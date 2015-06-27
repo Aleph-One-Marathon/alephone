@@ -2065,11 +2065,11 @@ void draw_team_total_scores_graph(
     
 		if (team_is_valid) {
 			ranks[team_count].kills = kills;
-			ranks[team_index].deaths = deaths;
+			ranks[team_count].deaths = deaths;
 			ranks[team_count].player_index = NONE;
 			ranks[team_count].color = team_index;
 			ranks[team_count].game_ranking = ranking;
-			ranks[team_count].friendly_fire_kills = team_friendly_fire[NUMBER_OF_TEAM_COLORS].kills;
+			ranks[team_count].friendly_fire_kills = team_friendly_fire[team_index].kills;
 			team_count++;
 		}
 	}
