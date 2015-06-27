@@ -2234,9 +2234,7 @@ static bool switch_target_check(
 		else
 		{
 			struct monster_definition *definition= get_monster_definition(monster->type);
-			short target_index= MONSTER_HAS_VALID_TARGET(monster) ? monster->target_index : NONE;
 			struct monster_data *attacker= get_monster_data(attacker_index);
-			short attacker_attitude, target_attitude;
 			
 			CLEAR_TARGET_DAMAGE_FLAG(monster);
 
@@ -2246,13 +2244,8 @@ static bool switch_target_check(
 						a) weÕre inactive, or,
 						b) idle, or,
 						c) unlocked, or,
-						d) our current target has not done any damage, or,
-//						e) attacker is an enemy and our current target is neutral or friendly, or,
-//						f) attacker is a neutral and our current target is friendly, or,
-						g) we canÕt attack and somebody just did damage to us
+						d) our current target has not done any damage
 					then go kick his ass. */
-				attacker_attitude= get_monster_attitude(monster_index, attacker_index);
-				if (target_index!=NONE) target_attitude= get_monster_attitude(monster_index, target_index);
 				if (mTYPE_IS_ENEMY(definition, attacker->type) ||
 					(TYPE_IS_NEUTRAL(definition, attacker->type)&&delta_vitality) ||
 					MONSTER_IS_BERSERK(monster))
@@ -2261,9 +2254,6 @@ static bool switch_target_check(
 						MONSTER_IS_IDLE(monster) ||
 						monster->mode!=_monster_locked ||
 						!TARGET_HAS_DONE_DAMAGE(monster))
-//						(attacker_attitude==_hostile&&target_attitude!=_hostile) ||
-//						(attacker_attitude==_neutral&&target_attitude==_friendly) ||
-//						(delta_vitality&&(definition->flags&_monster_cannot_attack)))
 					{
 						change_monster_target(monster_index, attacker_index);
 						if (delta_vitality) SET_TARGET_DAMAGE_FLAG(monster);

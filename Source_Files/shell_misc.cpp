@@ -161,8 +161,6 @@ void AddOneItemToPlayer(short ItemType, short MaxNumber)
 void handle_keyword(int tag)
 {
 
-	bool cheated= true;
-
 	switch (tag)
 	{
 		case _tag_health:
@@ -302,26 +300,9 @@ void handle_keyword(int tag)
 			break;
 			
 		default:
-			cheated= false;
 			break;
 	}
 
-//	/ can't use computer terminals or save in the final version if we've cheated 
-//	if (cheated) SET_PLAYER_HAS_CHEATED(local_player);
-#if 0
-	if (cheated)
-	{
-		int32 final_ticks;
-		
-		SetSoundVol(7);
-		play_local_sound(20110);
-		Delay(45, &final_ticks);
-		play_local_sound(20110);
-		Delay(45, &final_ticks);
-		play_local_sound(20110);
-	}
-#endif
-	
 	return;
 
 }

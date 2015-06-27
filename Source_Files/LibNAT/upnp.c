@@ -685,7 +685,6 @@ int LNat_Upnp_Set_Port_Mapping(const UpnpController * c,
   char * response;
   char * params;
   char * local_ip = NULL;
-  int retreived_local_ip = 0;
 
   /* if ipMap is null, attempt to get own ip address */
   if(ip_map == NULL) {
@@ -693,7 +692,6 @@ int LNat_Upnp_Set_Port_Mapping(const UpnpController * c,
       return ret;
     }
     ip_map = local_ip;
-    retreived_local_ip = 1;
   }
 
   params = (char *)malloc(strlen(SET_PORT_MAPPING_PARAMS) + 

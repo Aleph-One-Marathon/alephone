@@ -36,7 +36,6 @@ static snd_pcm_t *capture_handle = 0;
 static snd_pcm_hw_params_t *hw_params;
 
 static bool initialized = false;
-static bool active;
 
 static const int bytes_per_frame = 2; // 16-bit, mono
 static snd_pcm_uframes_t frames = 0;  // period

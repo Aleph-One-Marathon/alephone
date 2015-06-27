@@ -2031,7 +2031,7 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 {
 	short playerIndex, message_id;
 	OSErr error= noErr;
-	int32 total_length, length_written;
+	int32 total_length;
 	uint32 initial_ticks= machine_tick_count();
 	short physics_message_id;
 	byte *physics_buffer;
@@ -2043,7 +2043,6 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 	
 	/* For updating our progress bar.. */
 	total_length= (topology->player_count-1)*wad_length;
-	length_written= 0l;
 	
 	/* Get the physics */
 	if(do_physics)

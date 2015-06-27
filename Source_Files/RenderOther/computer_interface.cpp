@@ -895,7 +895,7 @@ static void _draw_computer_text(
 	short current_line)
 {
 	bool done= false;
-	short line_count, start_index;
+	short start_index;
 	struct terminal_groupings *current_group= get_indexed_grouping(terminal_text, group_index);
 	// LP change: just in case...
 	if (!current_group) return;
@@ -915,7 +915,6 @@ static void _draw_computer_text(
 	// current_style = _get_font_spec(_computer_interface_font)->style;
 #endif
 
-	line_count= 0;
 	start_index= current_group->start_index;
 	end_index= current_group->length+current_group->start_index;
 	

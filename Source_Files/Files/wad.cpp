@@ -982,7 +982,6 @@ static int32 calculate_directory_offset(
 {
 	int32 offset;
 	int32 unit_size;
-	int32 additional_offset;
 
 	switch(header->version)
 	{
@@ -995,7 +994,6 @@ static int32 calculate_directory_offset(
 		case WADFILE_HAS_INFINITY_STUFF:
 			assert(header->application_specific_directory_data_size>=0);
 			unit_size= header->application_specific_directory_data_size+get_directory_base_length(header);
-			additional_offset= header->application_specific_directory_data_size;
 			break;
 			
 		default:

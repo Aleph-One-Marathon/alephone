@@ -2191,7 +2191,6 @@ bool line_is_obstructed(
 	world_point2d *p2)
 {
 	short polygon_index= polygon_index1;
-	short last_polygon_index= NONE;
 	bool obstructed= false;
 	short line_index;
 	
@@ -2255,8 +2254,6 @@ bool line_is_obstructed(
 				}
 			}
 		}
-		
-		last_polygon_index= polygon_index;
 	}
 	while (!obstructed&&line_index!=NONE);
 

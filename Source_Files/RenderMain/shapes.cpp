@@ -360,20 +360,17 @@ SDL_Surface *get_shape_surface(int shape, int inCollection, byte** outPointerToP
                 // We always go forward through the source data.  Thus, the offsets for where the next run
                 // or element goes into the destination data area change depending on the circumstances.
                 int16	theNumRuns;
-                int16	theNumElementsPerRun;
                 int16	theDestDataNextRunOffset;
                 int16	theDestDataNextElementOffset;
 
                 // Is this row-major or column-major?
                 if(bitmap->flags & _COLUMN_ORDER_BIT) {
                     theNumRuns				= bitmap->width;
-                    theNumElementsPerRun		= bitmap->height;
                     theDestDataNextRunOffset		= (low_level_shape->flags & _X_MIRRORED_BIT) ? -1 : 1;
                     theDestDataNextElementOffset	= (low_level_shape->flags & _Y_MIRRORED_BIT) ? -bitmap->width : bitmap->width;
                 }
                 else {
                     theNumRuns				= bitmap->height;
-                    theNumElementsPerRun		= bitmap->width;
                     theDestDataNextElementOffset	= (low_level_shape->flags & _X_MIRRORED_BIT) ? -1 : 1;
                     theDestDataNextRunOffset		= (low_level_shape->flags & _Y_MIRRORED_BIT) ? -bitmap->width : bitmap->width;
                 }

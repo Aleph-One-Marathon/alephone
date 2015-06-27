@@ -357,12 +357,11 @@ void TS_PutCString(short ID, short Index, const char *String)
 unsigned char *TS_GetString(short ID, size_t Index)
 {
 	// Search for string set:
-	StringSet *PrevStringSet = NULL, *CurrStringSet = StringSetRoot;
+	StringSet *CurrStringSet = StringSetRoot;
 	
 	while(CurrStringSet)
 	{
 		if (CurrStringSet->GetID() == ID) break;
-		PrevStringSet = CurrStringSet;
 		CurrStringSet = CurrStringSet->Next;
 	}
 	
@@ -387,12 +386,11 @@ char *TS_GetCString(short ID, size_t Index)
 bool TS_IsPresent(short ID)
 {
 	// Search for string set:
-	StringSet *PrevStringSet = NULL, *CurrStringSet = StringSetRoot;
+	StringSet *CurrStringSet = StringSetRoot;
 	
 	while(CurrStringSet)
 	{
 		if (CurrStringSet->GetID() == ID) return true;
-		PrevStringSet = CurrStringSet;
 		CurrStringSet = CurrStringSet->Next;
 	}
 	
@@ -404,12 +402,11 @@ bool TS_IsPresent(short ID)
 size_t TS_CountStrings(short ID)
 {
 	// Search for string set:
-	StringSet *PrevStringSet = NULL, *CurrStringSet = StringSetRoot;
+	StringSet *CurrStringSet = StringSetRoot;
 	
 	while(CurrStringSet)
 	{
 		if (CurrStringSet->GetID() == ID) break;
-		PrevStringSet = CurrStringSet;
 		CurrStringSet = CurrStringSet->Next;
 	}
 	
@@ -423,12 +420,11 @@ size_t TS_CountStrings(short ID)
 void TS_DeleteString(short ID, short Index)
 {
 	// Search for string set:
-	StringSet *PrevStringSet = NULL, *CurrStringSet = StringSetRoot;
+	StringSet *CurrStringSet = StringSetRoot;
 	
 	while(CurrStringSet)
 	{
 		if (CurrStringSet->GetID() == ID) break;
-		PrevStringSet = CurrStringSet;
 		CurrStringSet = CurrStringSet->Next;
 	}
 

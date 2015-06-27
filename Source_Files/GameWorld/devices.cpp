@@ -623,10 +623,9 @@ short find_action_key_target(
 		} 
 		else 
 		{
-			struct line_data *line;
 			short original_polygon;
 
-			line= get_line_data(line_index);
+			(void)get_line_data(line_index); // verify line is valid
 			original_polygon= current_polygon;
 			current_polygon= find_adjacent_polygon(current_polygon, line_index);
 

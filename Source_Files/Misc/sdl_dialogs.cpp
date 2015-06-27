@@ -1498,7 +1498,6 @@ void table_placer::place(const SDL_Rect &r, placement_flags flags)
 	int w = min_width();
 
 	std::vector<int> column_widths(m_columns);
-	bool fill_all_columns;
 
 	if (m_balance_widths)
 	{
@@ -1540,7 +1539,6 @@ void table_placer::place(const SDL_Rect &r, placement_flags flags)
 
 		if (columns_remaining == m_columns || columns_remaining == 0)
 		{
-			fill_all_columns = true;
 			for (int i = 0; i < column_widths.size(); i++)
 			{
 				column_widths[i] = col_width(i) + (pool / m_columns);
@@ -1564,7 +1562,6 @@ void table_placer::place(const SDL_Rect &r, placement_flags flags)
 				if (pool < 0)
 				{
 					// bail!
-					fill_all_columns = true;
 					for (int i = 0; i < column_widths.size(); i++)
 					{
 						column_widths[i] = col_width(i) + (pool / m_columns);
@@ -1967,20 +1964,6 @@ void tab_placer::choose_tab(int new_tab)
 
 void tab_placer::place(const SDL_Rect& r, placement_flags flags)
 {
-	int x_offset;
-	if (flags & kAlignLeft)
-	{
-		x_offset = 0;
-	}
-	else if (flags & kAlignRight)
-	{
-		x_offset = r.w - min_width();
-	}
-	else
-	{
-		x_offset = (r.w - min_width()) / 2;
-	}
-
 	int h = (flags & kFill) ? r.h : min_height();
 
 	for (std::vector<placeable *>::iterator it = m_tabs.begin(); it != m_tabs.end(); ++it)

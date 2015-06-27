@@ -440,11 +440,6 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 
 	// allocate a buffer
 
-	int bpp = 0;
-	if (Format == RGBA8) bpp = 32;
-	else if (Format == DXTC1) bpp = 4;
-	else if (Format == DXTC3 || Format == DXTC5) bpp = 8;
-
 	this->Width = Width;
 	this->Height = Height;
 

@@ -266,7 +266,6 @@ static void import_physics_wad_data(
 	size_t data_length;
 	byte *data;
 	size_t count;
-	bool PhysicsModelLoaded = false;
 	
 	data= (unsigned char *)extract_type_from_wad(wad, MONSTER_PHYSICS_TAG, &data_length);
 	count = data_length/SIZEOF_monster_definition;
@@ -274,7 +273,6 @@ static void import_physics_wad_data(
 	assert(count <= NUMBER_OF_MONSTER_TYPES);
 	if (data_length > 0)
 	{
-		PhysicsModelLoaded = true;
 		unpack_monster_definition(data,count);
 	}
 	
@@ -284,7 +282,6 @@ static void import_physics_wad_data(
 	assert(count <= NUMBER_OF_EFFECT_TYPES);
 	if (data_length > 0)
 	{
-		PhysicsModelLoaded = true;
 		unpack_effect_definition(data,count);
 	}
 	
@@ -294,7 +291,6 @@ static void import_physics_wad_data(
 	assert(count <= NUMBER_OF_PROJECTILE_TYPES);
 	if (data_length > 0)
 	{
-		PhysicsModelLoaded = true;
 		unpack_projectile_definition(data,count);
 	}
 	
@@ -304,7 +300,6 @@ static void import_physics_wad_data(
 	assert(count <= get_number_of_physics_models());
 	if (data_length > 0)
 	{
-		PhysicsModelLoaded = true;
 		unpack_physics_constants(data,count);
 	}
 	
@@ -314,7 +309,6 @@ static void import_physics_wad_data(
 	assert(count <= get_number_of_weapon_types());
 	if (data_length > 0)
 	{
-		PhysicsModelLoaded = true;
 		unpack_weapon_definition(data,count);
 	}
 }
