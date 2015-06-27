@@ -1,4 +1,4 @@
-/*  DefaultStringSets.cpp - support for compiled-in 
+/*  DefaultStringSets.cpp - support for compiled-in text strings
 
 	Copyright (C) 2002 and beyond by the "Aleph One" developers.
  
@@ -24,25 +24,20 @@
 */
 
 #include    "cseries.h"
-
+#include    "DefaultStringSets.h"
 #include    "TextStrings.h"
 
-// This works through what may seem like some weird voodoo.  Static objects are instantiated
-// (despite the fact they have no storage); this results in the creation of StringSets in the
-// normal StringSet storage area.  Nobody outside this file needs to know it exists; you just
-// compile and link it, and the C++ runtime takes care of the instantiations.
 
-class AutoStringSetBuilder {
-public:
-    AutoStringSetBuilder(short inStringSetID, const char** inStrings, short inNumStrings) {
-        for(int i = 0; i < inNumStrings; i++)
-            TS_PutCString(inStringSetID, i, inStrings[i]);
-    }
-};
+static inline void BuildStringSet(short inStringSetID,
+                                  const char** inStrings,
+                                  short inNumStrings) {
+	for (int i = 0; i < inNumStrings; i++)
+		TS_PutCString(inStringSetID, i, inStrings[i]);
+}
 
 #define NUMBER_OF_STRINGS(sa)   (sizeof(sa) / sizeof((sa)[0]))
 
-#define BUILD_STRINGSET(id, strs)   static AutoStringSetBuilder (strs ## Builder) (id, strs, NUMBER_OF_STRINGS(strs))
+#define BUILD_STRINGSET(id, strs)   BuildStringSet(id, strs, NUMBER_OF_STRINGS(strs))
 
 
 
@@ -422,24 +417,6 @@ static const char* sStringSetNumber143[] = {
     "Checking for updates..."
 };
 
-BUILD_STRINGSET(128, sStringSetNumber128);
-BUILD_STRINGSET(129, sStringSetNumber129);
-BUILD_STRINGSET(130, sStringSetNumber130);
-BUILD_STRINGSET(131, sStringSetNumber131);
-BUILD_STRINGSET(132, sStringSetNumber132);
-BUILD_STRINGSET(133, sStringSetNumber133);
-BUILD_STRINGSET(134, sStringSetNumber134);
-BUILD_STRINGSET(135, sStringSetNumber135);
-BUILD_STRINGSET(136, sStringSetNumber136);
-BUILD_STRINGSET(137, sStringSetNumber137);
-BUILD_STRINGSET(138, sStringSetNumber138);
-BUILD_STRINGSET(139, sStringSetNumber139);
-BUILD_STRINGSET(140, sStringSetNumber140);
-BUILD_STRINGSET(141, sStringSetNumber141);
-BUILD_STRINGSET(142, sStringSetNumber142);
-BUILD_STRINGSET(143, sStringSetNumber143);
-
-
 
 // Stringsets for SDL w_select widgets.
 // -----------------------------------------------------------------------------------------
@@ -475,13 +452,6 @@ static const char*	sSingleOrNetworkStrings[] = {
     "Single-player game",
     "Network game"
 };
-
-
-BUILD_STRINGSET(kDifficultyLevelsStringSetID,   sDifficultyLevelsStrings);
-BUILD_STRINGSET(kNetworkGameTypesStringSetID,   sNetworkGameTypesStrings);
-BUILD_STRINGSET(kEndConditionTypeStringSetID,   sEndConditionTypeStrings);
-BUILD_STRINGSET(kSingleOrNetworkStringSetID,	sSingleOrNetworkStrings);
-
 
 // More Mac OS string-resource stringsets.
 // -----------------------------------------------------------------------------------------
@@ -581,12 +551,6 @@ static const char* sStringSetNumber200[] = {
     "What fog color?",
 };
 
-BUILD_STRINGSET(150, sStringSetNumber150);
-BUILD_STRINGSET(151, sStringSetNumber151);
-BUILD_STRINGSET(153, sStringSetNumber153);
-BUILD_STRINGSET(200, sStringSetNumber200);
-
-
 #include "player.h" // for kTeamColorsStringSetID
 
 static const char* sTeamColorNamesStrings[] = {
@@ -600,5 +564,31 @@ static const char* sTeamColorNamesStrings[] = {
     "Green",
 };
 
-BUILD_STRINGSET(kTeamColorsStringSetID, sTeamColorNamesStrings);
 
+void InitDefaultStringSets() {
+	BUILD_STRINGSET(128, sStringSetNumber128);
+	BUILD_STRINGSET(129, sStringSetNumber129);
+	BUILD_STRINGSET(130, sStringSetNumber130);
+	BUILD_STRINGSET(131, sStringSetNumber131);
+	BUILD_STRINGSET(132, sStringSetNumber132);
+	BUILD_STRINGSET(133, sStringSetNumber133);
+	BUILD_STRINGSET(134, sStringSetNumber134);
+	BUILD_STRINGSET(135, sStringSetNumber135);
+	BUILD_STRINGSET(136, sStringSetNumber136);
+	BUILD_STRINGSET(137, sStringSetNumber137);
+	BUILD_STRINGSET(138, sStringSetNumber138);
+	BUILD_STRINGSET(139, sStringSetNumber139);
+	BUILD_STRINGSET(140, sStringSetNumber140);
+	BUILD_STRINGSET(141, sStringSetNumber141);
+	BUILD_STRINGSET(142, sStringSetNumber142);
+	BUILD_STRINGSET(143, sStringSetNumber143);
+	BUILD_STRINGSET(kDifficultyLevelsStringSetID,   sDifficultyLevelsStrings);
+	BUILD_STRINGSET(kNetworkGameTypesStringSetID,   sNetworkGameTypesStrings);
+	BUILD_STRINGSET(kEndConditionTypeStringSetID,   sEndConditionTypeStrings);
+	BUILD_STRINGSET(kSingleOrNetworkStringSetID,	sSingleOrNetworkStrings);
+	BUILD_STRINGSET(150, sStringSetNumber150);
+	BUILD_STRINGSET(151, sStringSetNumber151);
+	BUILD_STRINGSET(153, sStringSetNumber153);
+	BUILD_STRINGSET(200, sStringSetNumber200);
+	BUILD_STRINGSET(kTeamColorsStringSetID, sTeamColorNamesStrings);
+}

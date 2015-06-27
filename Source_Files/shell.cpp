@@ -76,6 +76,7 @@
 #include "sdl_fonts.h"
 #include "sdl_widgets.h"
 
+#include "DefaultStringSets.h"
 #include "TextStrings.h"
 
 #ifdef HAVE_CONFIG_H
@@ -410,6 +411,7 @@ static void initialize_application(void)
 #endif
 
 	// Find data directories, construct search path
+	InitDefaultStringSets();
 
 #if defined(unix) || defined(__NetBSD__) || defined(__OpenBSD__) || (defined(__APPLE__) && defined(__MACH__) && !defined(HAVE_BUNDLE_NAME))
 

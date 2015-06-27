@@ -9,7 +9,7 @@ THREAD_PRIORITY = thread_priority_sdl_posix.cpp
 endif
 
 libmisc_a_SOURCES = ActionQueues.h alephversion.h binders.h CircularByteBuffer.h \
-  CircularQueue.h Console.h game_errors.h \
+  CircularQueue.h Console.h DefaultStringSets.h game_errors.h \
   interface.h interface_menus.h key_definitions.h Logging.h Logging_gruntwork.h \
   PlayerImage_sdl.h \
   PlayerName.h preference_dialogs.h preferences.h \
@@ -18,7 +18,7 @@ libmisc_a_SOURCES = ActionQueues.h alephversion.h binders.h CircularByteBuffer.h
   WindowedNthElementFinder.h AlephSansMono-Bold.h powered_by_alephone.h \
   Statistics.h \
   \
-  ActionQueues.cpp CircularByteBuffer.cpp Console.cpp game_errors.cpp \
+  ActionQueues.cpp CircularByteBuffer.cpp Console.cpp DefaultStringSets.cpp game_errors.cpp \
   interface.cpp \
   Logging.cpp PlayerImage_sdl.cpp PlayerName.cpp preferences.cpp \
   preference_dialogs.cpp preferences_widgets_sdl.cpp Scenario.cpp sdl_dialogs.cpp $(THREAD_PRIORITY) \
