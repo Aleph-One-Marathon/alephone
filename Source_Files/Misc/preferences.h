@@ -140,7 +140,7 @@ struct network_preferences_data
 
 struct player_preferences_data
 {
-	unsigned char name[PREFERENCES_NAME_LENGTH+1];
+	char name[PREFERENCES_NAME_LENGTH+1];
 	int16 color;
 	int16 team;
 	uint32 last_time_ran;

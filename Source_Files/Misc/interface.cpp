@@ -536,8 +536,7 @@ static void construct_single_player_start(player_start_data* outStartArray, shor
         outStartArray[0].team = player_preferences->color;
         outStartArray[0].color = player_preferences->color;
         outStartArray[0].identifier = 0;
-        memcpy(outStartArray[0].name, &(player_preferences->name[1]), player_preferences->name[0]);
-        outStartArray[0].name[player_preferences->name[0]] = '\0';
+        strcpy(outStartArray[0].name, player_preferences->name);
 				
         set_player_start_doesnt_auto_recenter_status(&outStartArray[0], dont_auto_recenter());
         set_player_start_doesnt_auto_switch_weapons_status(&outStartArray[0], dont_switch_to_new_weapon());
@@ -559,11 +558,7 @@ static void construct_multiplayer_starts(player_start_data* outStartArray, short
                 outStartArray[player_index].team = player_information->team;
                 outStartArray[player_index].color= player_information->color;
                 outStartArray[player_index].identifier = NetGetPlayerIdentifier(player_index);
-    
-                /* Copy and translate from pascal string to cstring */
-                memcpy(outStartArray[player_index].name, &player_information->name[1],
-                        player_information->name[0]);
-                outStartArray[player_index].name[player_information->name[0]]= 0;
+                strcpy(outStartArray[player_index].name, player_information->name);
         }
 }
 #endif // !defined(DISABLE_NETWORKING)

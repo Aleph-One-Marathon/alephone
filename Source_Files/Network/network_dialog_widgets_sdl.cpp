@@ -323,15 +323,9 @@ w_players_in_game2::update_display(bool inFromDynamicWorld /* default=false */) 
                     // Get player information from topology
                     player_info*	thePlayerInfo	= (player_info*)NetGetPlayerData(i);
                     
-                    // Alias the player entry's name field as a pstring
-                    unsigned char* thePlayerEntryNameP = (unsigned char*) thePlayerEntry.player_name;
-                    
                     // Copy the player name.  We will store it as a cstring...
-                    pstrncpy(thePlayerEntryNameP, thePlayerInfo->name, MAXIMUM_PLAYER_NAME_LENGTH + 1);
-    
-                    // In-place conversion.
-                    a1_p2cstr(thePlayerEntryNameP);
-                    
+                    strncpy(thePlayerEntry.player_name, thePlayerInfo->name, MAXIMUM_PLAYER_NAME_LENGTH + 1);
+
                     // Look up colors
                     thePlayerTeam	= thePlayerInfo->team;
                     thePlayerColor	= thePlayerInfo->color;

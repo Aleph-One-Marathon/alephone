@@ -95,7 +95,7 @@ typedef struct game_info
 
 typedef struct player_info
 {
-	unsigned char name[MAX_NET_PLAYER_NAME_LENGTH+1];
+	char name[MAX_NET_PLAYER_NAME_LENGTH+1];
 	int16 desired_color;
 	int16 team;   // from player.h
 	int16 color;
@@ -105,7 +105,7 @@ typedef struct player_info
 
 struct prospective_joiner_info {
 	uint16 stream_id;
-	unsigned char name[MAX_NET_PLAYER_NAME_LENGTH];
+	char name[MAX_NET_PLAYER_NAME_LENGTH];
 	int16 color;
 	int16 team;
 	bool gathering;

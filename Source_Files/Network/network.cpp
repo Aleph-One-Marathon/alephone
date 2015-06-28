@@ -520,14 +520,11 @@ void Client::handleJoinerInfoMessage(JoinerInfoMessage* joinerInfoMessage, Commu
 {
   if (netState == netGathering) {
     if (joinerInfoMessage->version() == kNetworkSetupProtocolID) {
-      pstrcpy(name, joinerInfoMessage->info()->name);
+      strcpy(name, joinerInfoMessage->info()->name);
 
-      unsigned char pname[1024];
-      pstrcpy(pname, joinerInfoMessage->info()->name);
-      a1_p2cstr(pname);
       int16 stream_id = getStreamIdFromChannel(channel);
       client_chat_info[stream_id] = new ClientChatInfo;
-      client_chat_info[stream_id]->name = (char *) pname;
+      client_chat_info[stream_id]->name = joinerInfoMessage->info()->name;
       client_chat_info[stream_id]->color = joinerInfoMessage->info()->color;
       client_chat_info[stream_id]->team = joinerInfoMessage->info()->team;
 
@@ -705,10 +702,7 @@ void Client::handleChatMessage(NetworkChatMessage* netChatMessage,
 				for (int playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
 					if (topology->players[playerIndex].stream_id == getStreamIdFromChannel(channel)) {
 						if (player_is_ignored(playerIndex)) return;
-						static unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
-						pstrcpy(name, topology->players[playerIndex].player_data.name);
-						a1_p2cstr(name);
-						chatCallbacks->ReceivedMessageFromPlayer((char *)name, netChatMessage->chatText());
+						chatCallbacks->ReceivedMessageFromPlayer(topology->players[playerIndex].player_data.name, netChatMessage->chatText());
 						return;
 					}
 				}
@@ -756,7 +750,7 @@ static void handleHelloMessage(HelloMessage* helloMessage, CommunicationsChannel
 		if (helloMessage->version() == kNetworkSetupProtocolID) {
 			prospective_joiner_info my_info;
       
-			pstrcpy(my_info.name, player_preferences->name);
+			strcpy(my_info.name, player_preferences->name);
 			my_info.color = player_preferences->color;
 			my_info.team = player_preferences->team;
 
@@ -891,10 +885,7 @@ static void handleNetworkChatMessage(NetworkChatMessage *chatMessage, Communicat
 			for (int playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
 				if (topology->players[playerIndex].stream_id == chatMessage->senderID()) {
 					if (player_is_ignored(playerIndex)) return;
-					static unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
-					pstrcpy(name, topology->players[playerIndex].player_data.name);
-					a1_p2cstr(name);
-					chatCallbacks->ReceivedMessageFromPlayer((char *)name, chatMessage->chatText());
+					chatCallbacks->ReceivedMessageFromPlayer(topology->players[playerIndex].player_data.name, chatMessage->chatText());
 					return;
 				}
 			}
@@ -1095,10 +1086,7 @@ void ChatCallbacks::SendChatMessage(const std::string& message)
 			if (chatCallbacks) {
 				for (int playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
 					if (playerIndex == localPlayerIndex) {
-						static unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
-						pstrcpy(name, topology->players[playerIndex].player_data.name);
-						a1_p2cstr(name);
-						chatCallbacks->ReceivedMessageFromPlayer((char *)name, message.c_str());
+						chatCallbacks->ReceivedMessageFromPlayer(topology->players[playerIndex].player_data.name, message.c_str());
 					}
 				}
 			}
@@ -1133,10 +1121,7 @@ InGameChatCallbacks *InGameChatCallbacks::instance() {
 };
 
 std::string InGameChatCallbacks::prompt() {
-  unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
-  pstrcpy(name, player_preferences->name);
-  a1_p2cstr((unsigned char *) name);
-  return (std::string((char *)name) + ":");
+  return (std::string(player_preferences->name) + ":");
 }
 
 void InGameChatCallbacks::ReceivedMessageFromPlayer(const char *player_name, const char *message) {
@@ -1545,11 +1530,8 @@ bool NetGather(
 	
 	netState= netGathering;
 
-	unsigned char pname[1024];
-	pstrcpy(pname, player_preferences->name);
-	a1_p2cstr(pname);
 	client_chat_info[0] = new ClientChatInfo;
-	client_chat_info[0]->name = (char *) pname;
+	client_chat_info[0]->name = player_preferences->name;
 	client_chat_info[0]->color = player_preferences->color;
 	client_chat_info[0]->team = player_preferences->team;
 	
@@ -1815,9 +1797,8 @@ void NetSetupTopologyFromStarts(const player_start_data* inStartArray, short inS
                         topology->players[s].identifier = NONE;
                         // XXX ZZZ violation of separation of church and state - oops I mean net code and game code
                         player_info* thePlayerInfo = (player_info*) &topology->players[s].player_data;
-                        // XXX ZZZ faux security - we strncpy but the following line assumes the length is within range (i.e. that there's a null)
-                        strncpy((char*)&(thePlayerInfo->name[1]), inStartArray[s].name, MAX_NET_PLAYER_NAME_LENGTH);
-                        thePlayerInfo->name[0] = strlen(inStartArray[s].name);
+                        strncpy(thePlayerInfo->name, inStartArray[s].name, MAX_NET_PLAYER_NAME_LENGTH);
+                        thePlayerInfo->name[MAX_NET_PLAYER_NAME_LENGTH] = '\0';
                         thePlayerInfo->desired_color = 0; // currently unused
                         thePlayerInfo->team = inStartArray[s].team;
                         thePlayerInfo->color = inStartArray[s].color;
@@ -2338,7 +2319,7 @@ bool NetCheckForNewJoiner (prospective_joiner_info &info)
 	while (it != connections_to_clients.end()) {
 		if (it->second->state == Client::_connected_but_not_yet_shown) {
 			info.stream_id = it->first;
-			pstrcpy(info.name, it->second->name);
+			strcpy(info.name, it->second->name);
 			it->second->state = Client::_connected;
 			info.gathering = false;
 			return true;

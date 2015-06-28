@@ -445,7 +445,7 @@ struct Client {
 	short state;
 	uint16 network_version;
 	Capabilities capabilities;
-	unsigned char name[MAX_NET_PLAYER_NAME_LENGTH];
+	char name[MAX_NET_PLAYER_NAME_LENGTH];
 
 	static CheckPlayerProcPtr check_player;
 

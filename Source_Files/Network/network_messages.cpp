@@ -77,7 +77,7 @@ static void deflateNetPlayer(AOStream& outputStream, const NetPlayer &player) {
   outputStream << player.net_dead;
 
 
-  write_pstring(outputStream, player.player_data.name);
+  write_string(outputStream, player.player_data.name);
   outputStream << player.player_data.desired_color;
   outputStream << player.player_data.team;
   outputStream << player.player_data.color;
@@ -95,7 +95,7 @@ static void inflateNetPlayer(AIStream& inputStream, NetPlayer &player) {
   inputStream >> player.stream_id;
   inputStream >> player.net_dead;
 
-  read_pstring(inputStream, player.player_data.name, sizeof(player.player_data.name));  
+  read_string(inputStream, player.player_data.name, sizeof(player.player_data.name));
   inputStream >> player.player_data.desired_color;
   inputStream >> player.player_data.team;
   inputStream >> player.player_data.color;
@@ -230,7 +230,7 @@ bool HelloMessage::reallyInflateFrom(AIStream& inputStream) {
 
 void JoinerInfoMessage::reallyDeflateTo(AOStream& outputStream) const {
   outputStream << mInfo.stream_id;
-  write_pstring(outputStream, mInfo.name);
+  write_string(outputStream, mInfo.name);
   write_string(outputStream, mVersion.c_str());
   outputStream << mInfo.color;
   outputStream << mInfo.team;
@@ -238,7 +238,7 @@ void JoinerInfoMessage::reallyDeflateTo(AOStream& outputStream) const {
 
 bool JoinerInfoMessage::reallyInflateFrom(AIStream& inputStream) {
   inputStream >> mInfo.stream_id;
-  read_pstring(inputStream, mInfo.name, MAX_NET_PLAYER_NAME_LENGTH);
+  read_string(inputStream, mInfo.name, MAX_NET_PLAYER_NAME_LENGTH);
   char version[1024];
   read_string(inputStream, version, 1024);
   mVersion = version;

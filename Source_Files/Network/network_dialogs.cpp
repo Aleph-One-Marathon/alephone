@@ -595,7 +595,7 @@ const int JoinDialog::JoinNetworkGameByRunning ()
 	BoolPref joinByAddressPref (network_preferences->join_by_address);
 	binders.insert<bool> (m_joinByAddressWidget, &joinByAddressPref);
 	
-	PStringPref namePref (player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH);
+	CStringPref namePref (player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH);
 	binders.insert<std::string> (m_nameWidget, &namePref);
 	Int16Pref colourPref (player_preferences->color);
 	binders.insert<int> (m_colourWidget, &colourPref);
@@ -638,7 +638,7 @@ void JoinDialog::attemptJoin ()
 	}
 	
 	player_info myPlayerInfo;
-	copy_string_to_pstring (m_nameWidget->get_text (), myPlayerInfo.name, MAX_NET_PLAYER_NAME_LENGTH);
+	copy_string_to_cstring (m_nameWidget->get_text (), myPlayerInfo.name, MAX_NET_PLAYER_NAME_LENGTH);
 	myPlayerInfo.team = m_teamWidget->get_value ();
 	myPlayerInfo.desired_color = m_colourWidget->get_value ();
 	
@@ -1129,7 +1129,7 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	
 	BinderSet binders;
 	
-	PStringPref namePref (player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH);
+	CStringPref namePref (player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH);
 	binders.insert<std::string> (m_nameWidget, &namePref);
 	Int16Pref colourPref (player_preferences->color);
 	binders.insert<int> (m_colourWidget, &colourPref);
@@ -1226,7 +1226,7 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 		// migrate widget settings to preferences structure
 		binders.migrate_all_first_to_second ();
 	
-		pstrcpy (player_information->name, player_preferences->name);
+		strcpy (player_information->name, player_preferences->name);
 		player_information->color = player_preferences->color;
 		player_information->team = player_preferences->team;
 

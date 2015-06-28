@@ -52,10 +52,7 @@ void
 setupAndConnectClient(MetaserverClient& client)
 {
 	{
-		unsigned char* playerNameCStringStorage = pstrdup(player_preferences->name);
-		char* playerNameCString = a1_p2cstr(playerNameCStringStorage);
-		client.setPlayerName(playerNameCString);
-		free(playerNameCStringStorage);
+		client.setPlayerName(player_preferences->name);
 	}
 
 	// Check the updates URL for updates
