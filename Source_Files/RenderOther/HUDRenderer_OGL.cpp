@@ -132,7 +132,9 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 
 void HUD_OGL_Class::update_motion_sensor(short time_elapsed)
 {
-	render_motion_sensor(time_elapsed);
+	if (!(GET_GAME_OPTIONS() & _motion_sensor_does_not_work) && MotionSensorActive) {
+		render_motion_sensor(time_elapsed);
+	}
 }
 
 
