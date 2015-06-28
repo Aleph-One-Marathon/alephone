@@ -1974,6 +1974,10 @@
 		AEFE7C2C0DB03FA700D11DE2 /* ascii.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C270DB03F8300D11DE2 /* ascii.h */; };
 		AEFE7C2D0DB03FA700D11DE2 /* expat.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C280DB03F8300D11DE2 /* expat.h */; };
 		AEFE7C2E0DB03FA800D11DE2 /* expat_external.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C290DB03F8300D11DE2 /* expat_external.h */; };
+		C13C71E71B3FB4C500F1188D /* DefaultStringSets.h in Headers */ = {isa = PBXBuildFile; fileRef = C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */; };
+		C13C71E81B3FB4C500F1188D /* DefaultStringSets.h in Headers */ = {isa = PBXBuildFile; fileRef = C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */; };
+		C13C71E91B3FB4C500F1188D /* DefaultStringSets.h in Headers */ = {isa = PBXBuildFile; fileRef = C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */; };
+		C13C71EA1B3FB4C500F1188D /* DefaultStringSets.h in Headers */ = {isa = PBXBuildFile; fileRef = C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2281,6 +2285,7 @@
 		AEFE7C280DB03F8300D11DE2 /* expat.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = expat.h; path = ../Source_Files/Expat/expat.h; sourceTree = "<group>"; };
 		AEFE7C290DB03F8300D11DE2 /* expat_external.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = expat_external.h; path = ../Source_Files/Expat/expat_external.h; sourceTree = "<group>"; };
 		AEFE7C2A0DB03F8300D11DE2 /* internal.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = internal.h; path = ../Source_Files/Expat/internal.h; sourceTree = "<group>"; };
+		C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DefaultStringSets.h; path = ../Source_Files/Misc/DefaultStringSets.h; sourceTree = "<group>"; };
 		EF2EF5C804819BD700A8000D /* network_star_hub.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_star_hub.cpp; path = ../Source_Files/Network/network_star_hub.cpp; sourceTree = "<group>"; };
 		EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_star_spoke.cpp; path = ../Source_Files/Network/network_star_spoke.cpp; sourceTree = "<group>"; };
 		EF2EF5CA04819BD700A8000D /* network_star.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = network_star.h; path = ../Source_Files/Network/network_star.h; sourceTree = "<group>"; };
@@ -3144,6 +3149,7 @@
 		F522144F0136C0C401000001 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */,
 				276BECFE1A846FD900AE52F4 /* AlephSansMono-Bold.h */,
 				276BED2B1A8470A900AE52F4 /* binders.h */,
 				276BECFF1A846FD900AE52F4 /* CourierPrime.h */,
@@ -3882,6 +3888,7 @@
 				AE505BB8141D45E600915344 /* ViewControl.h in Headers */,
 				AE505BB9141D45E600915344 /* song_definitions.h in Headers */,
 				AE505BBA141D45E600915344 /* sound_definitions.h in Headers */,
+				C13C71E91B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
 				AE505BBB141D45E600915344 /* ColorParser.h in Headers */,
 				AE505BBC141D45E600915344 /* DamageParser.h in Headers */,
 				AE505BBD141D45E600915344 /* ShapesParser.h in Headers */,
@@ -4107,6 +4114,7 @@
 				AEB4A15814296CAE00537AE7 /* ViewControl.h in Headers */,
 				AEB4A15914296CAE00537AE7 /* song_definitions.h in Headers */,
 				AEB4A15A14296CAE00537AE7 /* sound_definitions.h in Headers */,
+				C13C71EA1B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
 				AEB4A15B14296CAE00537AE7 /* ColorParser.h in Headers */,
 				AEB4A15C14296CAE00537AE7 /* DamageParser.h in Headers */,
 				AEB4A15D14296CAE00537AE7 /* ShapesParser.h in Headers */,
@@ -4344,6 +4352,7 @@
 				AEC3C79C09AD68AC003258E4 /* XML_Loader_SDL.h in Headers */,
 				AEC3C79D09AD68AC003258E4 /* XML_ParseTreeRoot.h in Headers */,
 				AEC3C79E09AD68AC003258E4 /* SDLMain.h in Headers */,
+				C13C71E71B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
 				AEC3C79F09AD68AC003258E4 /* precompiled_headers.h in Headers */,
 				AEC3C7A009AD68AC003258E4 /* alephversion.h in Headers */,
 				AEC3C7A109AD68AC003258E4 /* Logging.h in Headers */,
@@ -4558,6 +4567,7 @@
 				AEFD866613EB84CF00C1E687 /* ViewControl.h in Headers */,
 				AEFD866713EB84CF00C1E687 /* song_definitions.h in Headers */,
 				AEFD866813EB84CF00C1E687 /* sound_definitions.h in Headers */,
+				C13C71E81B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
 				AEFD866913EB84CF00C1E687 /* ColorParser.h in Headers */,
 				AEFD866A13EB84CF00C1E687 /* DamageParser.h in Headers */,
 				AEFD866B13EB84CF00C1E687 /* ShapesParser.h in Headers */,
