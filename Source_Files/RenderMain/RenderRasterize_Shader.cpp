@@ -607,7 +607,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	Shader *s = NULL;
 
 	TextureManager TMgr;
-	LandscapeOptions *opts;
+	LandscapeOptions *opts = NULL;
 	TMgr.ShapeDesc = Texture;
 	if (TMgr.ShapeDesc == UNONE) { return TMgr; }
 	get_shape_bitmap_and_shading_table(Texture, &TMgr.Texture, &TMgr.ShadingTables,
@@ -678,7 +678,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 
 	TMgr.SetupTextureMatrix();
 	
-	if (TMgr.TextureType == OGL_Txtr_Landscape) {
+	if (TMgr.TextureType == OGL_Txtr_Landscape && opts) {
 		double TexScale = ABS(TMgr.U_Scale);
 		double HorizScale = double(1 << opts->HorizExp);
 		s->setFloat(Shader::U_ScaleX, HorizScale * (npotTextures ? 1.0 : TexScale) * Radian2Circle);

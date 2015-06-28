@@ -1443,7 +1443,7 @@ send_packets()
 {
 	// Currently, at most one lossy data descriptor is used per trip through this function.  So,
 	// we do some processing here outside the loop since the results'd be the same every time.
-	HubLossyByteStreamChunkDescriptor theDescriptor;
+	HubLossyByteStreamChunkDescriptor theDescriptor = { 0, 0, 0, 0 };
 	bool haveLossyData = false;
 	if(sOutgoingLossyByteStreamDescriptors.getCountOfElements() > 0)
 	{

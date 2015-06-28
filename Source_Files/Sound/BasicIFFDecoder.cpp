@@ -47,7 +47,7 @@ bool BasicIFFDecoder::Open(FileSpecifier& File)
 
 	SDL_RWops *music_rw = file.GetRWops();
 
-	uint32 sample_rate;
+	uint32 sample_rate = 0;
 	
 	// Read magic ID
 	uint32 magic = SDL_ReadBE32(music_rw);

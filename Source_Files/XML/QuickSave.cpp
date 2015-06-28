@@ -562,9 +562,10 @@ void create_updated_save(QuickSave& save)
 {
 	// read data from existing save file
 	struct wad_header header;
-	struct wad_data *game_wad, *orig_meta_wad, *new_meta_wad;
-	int32 game_wad_length;
+	struct wad_data *game_wad = NULL, *orig_meta_wad = NULL, *new_meta_wad;
+	int32 game_wad_length = 0;
 	std::string imagedata;
+	short err = 0;
 	
 	OpenedFile currentFile;
 	if (save.save_file.Open(currentFile))
@@ -583,18 +584,18 @@ void create_updated_save(QuickSave& save)
 				imagedata = std::string(raw_imagedata, data_length);
 			}
 		}
+		err = currentFile.GetError();
 		close_wad_file(currentFile);
 	}
 	
 	// create updated save file
-	short err = 0;
 	int32 offset, meta_wad_length;
 	struct directory_entry entries[2];
 	
 	FileSpecifier TempFile;
 	TempFile.SetTempName(save.save_file);
 	
-	if (create_wadfile(TempFile, _typecode_savegame))
+	if (!err && !error_pending() && game_wad && create_wadfile(TempFile, _typecode_savegame))
 	{
 		OpenedFile SaveFile;
 		if(open_wad_file_for_writing(TempFile, SaveFile))

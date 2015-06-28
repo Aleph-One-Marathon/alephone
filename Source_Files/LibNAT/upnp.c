@@ -180,7 +180,7 @@ int LNat_Upnp_Discover(UpnpController ** c)
 {
   int ret;
   char * ssdp_response;
-  char * desc_url;
+  char * desc_url = NULL;
   char * description;
 
   /* allocate space for our controller object, and initialize it's members */

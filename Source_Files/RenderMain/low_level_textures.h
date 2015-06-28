@@ -96,9 +96,9 @@ void texture_horizontal_polygon_lines
 {
 	(void) (view);
 
-	pixel32 rmask;
-	pixel32 gmask;
-	pixel32 bmask;
+	pixel32 rmask = 0;
+	pixel32 gmask = 0;
+	pixel32 bmask = 0;
 
 	if (sw_alpha_blend == _sw_alpha_nice)
 	{
@@ -203,9 +203,9 @@ void texture_vertical_polygon_lines(
 
 	(void) (view);
 
-	pixel32 rmask;
-	pixel32 gmask;
-	pixel32 bmask;
+	pixel32 rmask = 0;
+	pixel32 gmask = 0;
+	pixel32 bmask = 0;
 
 	if (sw_alpha_blend == _sw_alpha_nice) {
 		extern SDL_Surface *world_pixels;

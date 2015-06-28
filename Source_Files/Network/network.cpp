@@ -2034,7 +2034,7 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 	int32 total_length;
 	uint32 initial_ticks= machine_tick_count();
 	short physics_message_id;
-	byte *physics_buffer;
+	byte *physics_buffer = NULL;
 	int32 physics_length;
 	
 	message_id= (topology->player_count==2) ? (_distribute_map_single) : (_distribute_map_multiple);
@@ -2081,7 +2081,7 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 	set_progress_dialog_message(message_id);
 	reset_progress_bar();
 	
-	if (do_physics) 
+	if (physics_buffer)
 	{
 		if (zipCapableChannels.size())
 		{
@@ -2157,7 +2157,7 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
   
 	if (!error) {
 		/* Process the physics file & frees it!.. */
-		if (do_physics)
+		if (physics_buffer)
 			process_network_physics_model(physics_buffer);
 		
 		draw_progress_bar(total_length, total_length);

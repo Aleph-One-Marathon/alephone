@@ -1081,6 +1081,13 @@ uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 			OGLWidthFinish = TxtrWidth;
 		}
 	}
+	else
+	{
+		// set later for each row
+		OrigWidthOffset = 0;
+		OGLWidthOffset = 0;
+		OGLWidthFinish = 0;
+	}
 
 	uint32 rgb_mask;
 #ifdef ALEPHONE_LITTLE_ENDIAN

@@ -1177,7 +1177,7 @@ static void graphics_dialog(void *arg)
 	table->dual_add(size_w->label("Screen Size"), d);
 	table->dual_add(size_w, d);
 
-	w_toggle *fill_screen_w;
+	w_toggle *fill_screen_w = NULL;
 	const SDL_version *version = SDL_Linked_Version();
 	if (SDL_VERSIONNUM(version->major, version->minor, version->patch) >= SDL_VERSIONNUM(1, 2, 10))
 	{
@@ -1331,8 +1331,7 @@ static void graphics_dialog(void *arg)
 			changed = true;
 		}
 		
-	    const SDL_version *version = SDL_Linked_Version();
-	    if (SDL_VERSIONNUM(version->major, version->minor, version->patch) >= SDL_VERSIONNUM(1, 2, 10))
+	    if (fill_screen_w)
 	    {
 		    bool fill_the_screen = fill_screen_w->get_selection() != 0;
 		    if (fill_the_screen != graphics_preferences->screen_mode.fill_the_screen) {

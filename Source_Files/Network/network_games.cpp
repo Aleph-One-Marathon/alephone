@@ -209,7 +209,7 @@ long get_team_net_ranking(short team, short *kills, short *deaths,
 			  bool game_is_over)
 {
   long total_monster_damage, monster_damage;
-  long ranking;
+  long ranking = NONE;
   *kills = team_damage_given[team].kills;
   *deaths = team_damage_taken[team].kills + team_monster_damage_taken[team].kills;
   

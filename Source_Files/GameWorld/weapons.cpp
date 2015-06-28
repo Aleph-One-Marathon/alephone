@@ -3428,6 +3428,8 @@ static bool get_weapon_data_type_for_count(
 	bool valid= true;
 		
 	*flags= 0;
+	*type= NONE;
+	*index= NONE;
 	
 	if ((definition->flags & _weapon_is_marathon_1) &&
 		(definition == get_weapon_definition(_weapon_missile_launcher)) &&

@@ -3357,6 +3357,7 @@ static short find_obstructing_terrain_feature(
 	ray_to_line_segment((world_point2d *)&object->location, &p1, object->facing, MONSTER_PLATFORM_BUFFER_DISTANCE+definition->radius);
 	
 	feature_type= NONE;
+	*feature_index= NONE;
 	*relevant_polygon_index= polygon_index= object->polygon;
 	do
 	{
