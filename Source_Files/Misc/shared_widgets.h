@@ -39,19 +39,6 @@
 
 #include "binders.h"
 
-class PStringPref : public Bindable<std::string>
-{
-public:
-	PStringPref (unsigned char* pref, int length) : m_pref (pref), m_length (length) {};
-
-	virtual std::string bind_export () { return pstring_to_string (m_pref); }
-	virtual void bind_import (std::string s) { copy_string_to_pstring (s, m_pref, m_length); }
-	
-protected:
-	unsigned char* m_pref;
-	int m_length;
-};
-
 class CStringPref : public Bindable<std::string>
 {
 public:

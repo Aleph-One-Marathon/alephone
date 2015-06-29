@@ -77,28 +77,6 @@ size_t countstr(
 
 
 /*
- *  Get pascal string
- */
-unsigned char *getpstr(
-		       unsigned char *string,
-		       short resid,
-		       size_t item)
-{
-	unsigned char *CollString = TS_GetString(resid,item);
-	if (CollString)
-	{
-		memcpy(string,CollString,CollString[0]+1);
-	}
-	else
-	{
-		string[0] = 0;
-	}
-	return string;
-}
-
-
-
-/*
  *  Get C string
  */
 char *getcstr(
@@ -139,19 +117,6 @@ char *getcstr(
 
 
 /*
- *  Copy pascal string
- */
-unsigned char *pstrcpy(
-		       unsigned char *dst,
-		       const unsigned char *src)
-{
-	memcpy(dst,src,src[0]+1);
-	return dst;
-}
-
-
-
-/*
  *  Create String Vector
  */
 
@@ -186,23 +151,6 @@ char *csprintf(
 
 
 
-unsigned char *psprintf(
-			unsigned char *buffer,
-			const char *format,
-			...)
-{
-	va_list list;
-
-	va_start(list,format);
-	vsprintf((char *)buffer+1,format,list);
-	va_end(list);
-	buffer[0] = strlen((char *)buffer+1);
-
-	return buffer;
-}
-
-
-
 // dprintf() is obsolete with the general logging framework.  Migrate to log* (see Logging.h)
 // (if Logging doesn't do what you need, improve it :) )
 void
@@ -227,88 +175,12 @@ fdprintf(const char* format, ...) {
 
 
 
-void copy_string_to_pstring (const std::string &s, unsigned char* dst, int maxlen)
-{
-	dst[0] = s.copy (reinterpret_cast<char *>(dst+1), maxlen);
-}
-
-
-
 void copy_string_to_cstring (const std::string &s, char* dst, int maxlen)
 {
 	dst [s.copy (dst, maxlen)] = '\0';
 }
 
 
-
-const std::string pstring_to_string (const unsigned char* ps)
-{
-	return std::string(reinterpret_cast<const char*>(ps) + 1, ps[0]);
-}
-
-
-
-/*
- *  String conversion routines (ZZZ)
- */
-
-// a1 prefix is to avoid conflict with any already-existing functions.
-
-// In-place conversion of Pstring to Cstring
-char *a1_p2cstr(unsigned char* inoutStringBuffer)
-{
-	unsigned char length = inoutStringBuffer[0];
-	memmove(inoutStringBuffer, &inoutStringBuffer[1], length);
-	inoutStringBuffer[length] = '\0';
-	return (char *)inoutStringBuffer;
-}
-
-
-
-// In-place conversion of Cstring to Pstring.  Quietly truncates string to 255 chars.
-unsigned char *a1_c2pstr(char *inoutStringBuffer)
-{
-	size_t length = strlen(inoutStringBuffer);
-	if (length > 255)
-		length = 255;
-	memmove(&inoutStringBuffer[1], inoutStringBuffer, length);
-	inoutStringBuffer[0] = (char)length;
-	return (unsigned char *)inoutStringBuffer;
-}
-
-
-
-// ZZZ: added for safety
-// Overwrites total_byte_count of Pstring 'dest' with nonoverlapping Pstring 'source' and null padding
-unsigned char *pstrncpy(unsigned char *dest, const unsigned char *source, size_t total_byte_count)
-{
-	size_t source_count = source[0];
-	if (total_byte_count <= source_count) {
-		// copy truncated
-		dest[0] = (unsigned char)total_byte_count - 1;
-		memcpy(&dest[1], &source[1], dest[0]);
-		return dest;
-	} else {
-		// copy full
-		memcpy(dest, source, source_count + 1);
-		if (source_count + 1 < total_byte_count) {
-			// pad
-			memset(&dest[source_count + 1], 0, total_byte_count - (source_count + 1));
-		}
-		return dest;
-	}
-}
-
-
-
-// ZZZ: added for convenience
-// Duplicate a Pstring.  Result should be free()d when no longer needed.
-unsigned char *pstrdup(const unsigned char *inString)
-{
-	unsigned char *out = (unsigned char *)malloc(inString[0] + 1);
-	pstrcpy(out, inString);
-	return out;
-}
 
 class MacRomanUnicodeConverter
 {

@@ -102,17 +102,6 @@ extern void insert_number_into_text_item(
 	short item,
 	int32 number);
 
-extern void copy_pstring_from_text_field(
-        DialogPtr dialog,
-        short item,
-        unsigned char* pstring);
-
-extern void copy_pstring_to_text_field(
-        DialogPtr dialog,
-        short item,
-        const unsigned char* pstring);
-
-extern void copy_pstring_to_static_text(DialogPtr dialog, short item, const unsigned char* pstring);
 extern void copy_cstring_to_static_text(DialogPtr dialog, short item, const char* cstring);
 
 

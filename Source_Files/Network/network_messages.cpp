@@ -36,13 +36,6 @@ static void write_string(AOStream& outputStream, const char *s) {
   outputStream.write(const_cast<char *>(s), strlen(s) + 1);
 }
 
-static void write_pstring(AOStream& outputStream, const unsigned char *s) {
-  char cs[256];
-  pstrcpy((unsigned char *) cs, s);
-  a1_p2cstr((unsigned char *) cs);
-  write_string(outputStream, cs);
-}
-
 static void read_string(AIStream& inputStream, char *s, size_t length) {
   char c;
   size_t i = 0;
@@ -52,13 +45,6 @@ static void read_string(AIStream& inputStream, char *s, size_t length) {
     inputStream >> (int8&) c;
   }
   s[i] = '\0';
-}
-
-static void read_pstring(AIStream& inputStream, unsigned char *s, size_t length) {
-  unsigned char ps[256];
-  read_string(inputStream, (char *) ps, length > 256 ? 256 : length);
-  a1_c2pstr((char *) ps);
-  pstrcpy(s, ps);
 }
 
 // ghs: if you're trying to preserve network compatibility, and you want

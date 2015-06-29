@@ -37,15 +37,9 @@
 #include <vector>
 
 extern char temporary[256];
-#define ptemporary (*(Str255 *)temporary)
 
 extern size_t countstr(
 	short resid);
-
-extern unsigned char *getpstr(
-	unsigned char *string,
-	short resid,
-	size_t item);
 
 extern char *getcstr(
 	char *string,
@@ -55,34 +49,8 @@ extern char *getcstr(
 // jkvw addition
 extern const std::vector<std::string> build_stringvector_from_stringset (int resid);
 
-// ZZZ: changed to 'const' on src parameter
-extern unsigned char *pstrcpy(
-	unsigned char *dst,
-	const unsigned char *src);
-
-// START ZZZ additions
-extern unsigned char* pstrncpy(
-	unsigned char* dest,
-	const unsigned char* source,
-	size_t total_byte_count);
-
-extern unsigned char* pstrdup(
-	const unsigned char* source);
-
-extern unsigned char* a1_c2pstr(
-	char* inoutStringBuffer);
-
-extern char* a1_p2cstr(
-	unsigned char* inoutStringBuffer);
-// END ZZZ additions
-
 extern char *csprintf(
 	char *buffer,
-	const char *format,
-	...) PRINTF_STYLE_ARGS(2,3);
-
-extern unsigned char *psprintf(
-	unsigned char *buffer,
 	const char *format,
 	...) PRINTF_STYLE_ARGS(2,3);
 
@@ -94,11 +62,7 @@ extern void fdprintf(
 	const char *format,
 	...) PRINTF_STYLE_ARGS(1,2);
 
-// jkvw additions
-extern void copy_string_to_pstring (const std::string &s, unsigned char* dst, int maxlen = 255);
 extern void copy_string_to_cstring (const std::string &s, char* dst, int maxlen = 255);
-
-extern const std::string pstring_to_string (const unsigned char* ps);
 
 extern uint16 mac_roman_to_unicode(char c);
 extern char unicode_to_mac_roman(uint16 c);

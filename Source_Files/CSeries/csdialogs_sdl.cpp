@@ -190,65 +190,6 @@ get_boolean_control_value(DialogPtr dialog, short which_control)
 }
 
 
-
-void
-copy_pstring_from_text_field(DialogPtr dialog, short item, unsigned char* pstring) {
-    assert(dialog != NULL);
-    
-    w_text_entry*	theTextField = dynamic_cast<w_text_entry*>(dialog->get_widget_by_id(item));
-    
-    assert(theTextField != NULL);
-    
-    const char* 	source	= theTextField->get_text();
-    char*		dest	= (char*) pstring;
-
-    // pstring buffer is probably not going to be bigger than 256 bytes since that's max length of a pstr.
-    if(strlen(source) > 255)
-        strncpy(dest, source, 255);	// (leave room for terminating NULL)
-    // OTOH don't want to fill all 256 memory locations (strncpy pads with '\0') if, say, caller only has 32 bytes for us...
-    else
-        strcpy(dest, source);
-    
-    // in-place conversion
-    a1_c2pstr(dest);
-}
-
-
-
-void
-copy_pstring_to_text_field(DialogPtr dialog, short item, const unsigned char* pstring) {
-    assert(dialog != NULL);
-    
-    w_text_entry*	theTextField = dynamic_cast<w_text_entry*>(dialog->get_widget_by_id(item));
-    
-    assert(theTextField != NULL);
-    
-    unsigned char*	source	= pstrdup(pstring);
-    char* 		string	= a1_p2cstr(source);
-    
-    theTextField->set_text(string);
-   
-    free(source);
-}
-
-
-
-void
-copy_pstring_to_static_text(DialogPtr dialog, short item, const unsigned char* pstring) {
-    assert(dialog != NULL);
-    
-    w_static_text*	theStaticText = dynamic_cast<w_static_text*>(dialog->get_widget_by_id(item));
-    
-    assert(theStaticText != NULL);
-    
-    unsigned char*	source	= pstrdup(pstring);
-    char* 		string	= a1_p2cstr(source);
-    
-    theStaticText->set_text(string);
-    
-    free(source);
-}
-
 void
 copy_cstring_to_static_text(DialogPtr dialog, short item, const char* cstring) {
 	assert(dialog != NULL);
