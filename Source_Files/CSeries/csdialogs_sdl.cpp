@@ -249,6 +249,17 @@ copy_pstring_to_static_text(DialogPtr dialog, short item, const unsigned char* p
     free(source);
 }
 
+void
+copy_cstring_to_static_text(DialogPtr dialog, short item, const char* cstring) {
+	assert(dialog != NULL);
+	
+	w_static_text*	theStaticText = dynamic_cast<w_static_text*>(dialog->get_widget_by_id(item));
+	
+	assert(theStaticText != NULL);
+	
+	theStaticText->set_text(cstring);
+}
+
 
 bool QQ_control_exists (DialogPTR dlg, int item)
 {

@@ -163,8 +163,7 @@ void
 w_found_players::draw_item(vector<prospective_joiner_info>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const {
 	char	theNameBuffer[SSLP_MAX_NAME_LENGTH + 12];
 
-	pstrncpy((unsigned char*)theNameBuffer, (unsigned char*)(*i).name, SSLP_MAX_NAME_LENGTH - 1);
-	a1_p2cstr((unsigned char *) theNameBuffer);
+	strncpy(theNameBuffer, (*i).name, SSLP_MAX_NAME_LENGTH - 1);
 	if ((*i).gathering) {
 	  strcat(theNameBuffer, " (gathering)");
 	}

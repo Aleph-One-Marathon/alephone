@@ -113,6 +113,7 @@ extern void copy_pstring_to_text_field(
         const unsigned char* pstring);
 
 extern void copy_pstring_to_static_text(DialogPtr dialog, short item, const unsigned char* pstring);
+extern void copy_cstring_to_static_text(DialogPtr dialog, short item, const char* cstring);
 
 
 
