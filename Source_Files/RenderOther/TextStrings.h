@@ -40,7 +40,7 @@ void TS_PutCString(short ID, short Index, const char *String);
 // Returns a pointer to a string;
 // if the ID and the index do not point to a valid string,
 // this function will then return NULL
-char *TS_GetCString(short ID, size_t Index);
+const char *TS_GetCString(short ID, short Index);
 
 // Checks on the presence of a string set
 bool TS_IsPresent(short ID);

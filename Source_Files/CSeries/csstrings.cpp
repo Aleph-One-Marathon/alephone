@@ -84,7 +84,7 @@ char *getcstr(
 	      short resid,
 	      size_t item)
 {
-	char *cCollString = TS_GetCString(resid,item);
+	const char *cCollString = TS_GetCString(resid,item);
 	if (cCollString)
 	{
 		// expand app-name placeholder, depending on IDs

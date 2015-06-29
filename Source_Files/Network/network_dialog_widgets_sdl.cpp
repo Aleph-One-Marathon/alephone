@@ -638,7 +638,7 @@ w_players_in_game2::draw_bar_or_bars(SDL_Surface* s, size_t rank_index, int cent
             // Draw suicides/friendly-fires
             bar_info    theBarInfo;
 
-            char*	theSuicidesFormat = TS_GetCString(strNET_STATS_STRINGS, strSUICIDES_STRING);
+            const char*	theSuicidesFormat = TS_GetCString(strNET_STATS_STRINGS, strSUICIDES_STRING);
             int		theNumberOfSuicides = net_rankings[rank_index].kills;
             sprintf(temporary, theSuicidesFormat, theNumberOfSuicides);
             theBarInfo.label_text = temporary;  // this makes a copy
