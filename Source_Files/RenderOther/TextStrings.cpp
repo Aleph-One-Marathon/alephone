@@ -319,15 +319,6 @@ static XML_StringParser StringParser;
 
 
 // Set up a string in the repository; a repeated call will replace an old string
-void TS_PutString(short ID, short Index, unsigned char *String)
-{
-	// Search for string set:
-	StringSet *CurrStringSet = FindStringSet(ID);
-	CurrStringSet->Add(Index,String);
-}
-
-
-// ZZZ: Set up a C-string in the repository; a repeated call will replace an old string
 void TS_PutCString(short ID, short Index, const char *String)
 {
 	// Search for string set: (FindStringSet() creates a new one if necessary)
@@ -354,7 +345,7 @@ void TS_PutCString(short ID, short Index, const char *String)
 
 // Returns a pointer to a string; if the ID and the index do not point to a valid string,
 // this function will then return NULL
-unsigned char *TS_GetString(short ID, size_t Index)
+char *TS_GetCString(short ID, size_t Index)
 {
 	// Search for string set:
 	StringSet *CurrStringSet = StringSetRoot;
@@ -367,14 +358,7 @@ unsigned char *TS_GetString(short ID, size_t Index)
 	
 	if (!CurrStringSet) return NULL;
 	
-	return CurrStringSet->GetString(Index);
-}
-
-
-// Here is that string in C form
-char *TS_GetCString(short ID, size_t Index)
-{
-	unsigned char *String = TS_GetString(ID,Index);
+	unsigned char *String = CurrStringSet->GetString(Index);
 	if (!String) return NULL;
 	
 	// Move away from the length byte to the first content byte

@@ -35,16 +35,11 @@
 */
 
 // Set up a string in the repository; a repeated call will replace an old string
-void TS_PutString(short ID, short Index, unsigned char *String);
-// ZZZ: as you might expect... just like TS_PutString but takes a C-style (NULL-terminated) string instead.
 void TS_PutCString(short ID, short Index, const char *String);
 
-// Returns a pointer to a string in Pascal form;
+// Returns a pointer to a string;
 // if the ID and the index do not point to a valid string,
 // this function will then return NULL
-unsigned char *TS_GetString(short ID, size_t Index);
-
-// Here is that string in C form
 char *TS_GetCString(short ID, size_t Index);
 
 // Checks on the presence of a string set

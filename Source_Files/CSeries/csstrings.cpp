@@ -84,13 +84,9 @@ char *getcstr(
 	      short resid,
 	      size_t item)
 {
-	unsigned char *CollString = TS_GetString(resid,item);
-	if (CollString)
+	char *cCollString = TS_GetCString(resid,item);
+	if (cCollString)
 	{
-		// The C string is offset one from the Pascal string
-		// but it should still have a null terminator
-		char *cCollString = reinterpret_cast<char *>(CollString+1);
-		
 		// expand app-name placeholder, depending on IDs
 		switch (resid)
 		{
@@ -104,7 +100,7 @@ char *getcstr(
 				expand_app_variables(string, cCollString);
 				break;
 			default:
-				memcpy(string,cCollString,CollString[0]+1);
+				strcpy(string,cCollString);
 		}
 	}
 	else
