@@ -25,163 +25,17 @@
 */
 
 
-#include <string.h>
+#include <string>
+#include <map>
 #include "cseries.h"
 #include "TextStrings.h"
 
 #include "XML_ElementParser.h"
 
+typedef std::map<short, std::string> StringSet;
+typedef std::map<short, StringSet> StringSetMap;
 
-// Private objects: the string collections, which form a linked list.
-class StringSet
-{
-	short ID;
-	size_t NumStrings;
-	// Pointer to string pointers:
-	unsigned char **Strings;
-
-public:
-	// What's the ID
-	short GetID() {return ID;}
-	
-	// How many strings (contiguous from index zero)
-	size_t CountStrings();
-	
-	// Create a stringset with some ID
-	StringSet(short _ID);
-	~StringSet();
-
-	// Assumes a MacOS Pascal string; the resulting string will have
-	// a null byte at the end.
-	void Add(size_t Index, unsigned char *String);
-        
-	// Get a string; return NULL if not found
-	unsigned char *GetString(size_t Index);
-	
-	// Delete a string
-	void Delete(size_t Index);
-	
-	// For making a linked list (I'll let Rhys Hill find more efficient data structures)
-	StringSet *Next;
-};
-
-
-// How many strings (contiguous from index zero)
-size_t StringSet::CountStrings()
-{
-	size_t StringCount = 0;
-	
-	for (size_t k=0; k<NumStrings; k++)
-	{
-		if (Strings[k])
-			StringCount++;
-		else
-			break;
-	}
-	
-	return StringCount;
-}
-
-
-StringSet::StringSet(short _ID)
-{
-	// Of course
-	ID = _ID;
-	
-	NumStrings = 16;	// Reasonable starting number; what Sun uses in Java
-	Strings = new unsigned char *[NumStrings];
-	
-	// Set all the string pointers to NULL
-	objlist_clear(Strings,NumStrings);
-	
-	// Last, but not least:
-	Next = NULL;
-}
-
-StringSet::~StringSet()
-{
-	for (size_t k=0; k<NumStrings; k++)
-	{
-		unsigned char *StringPtr = Strings[k];
-		if (StringPtr) delete []StringPtr;
-	}
-	delete []Strings;
-}
-
-// Assumes a MacOS Pascal string; the resulting string will have
-// a null byte at the end.
-void StringSet::Add(size_t Index, unsigned char *String)
-{
-	if (Index < 0) return;
-	
-	// Replace string list with longer one if necessary
-	size_t NewNumStrings = NumStrings;
-	while (Index >= NewNumStrings) {NewNumStrings <<= 1;}
-	
-	if (NewNumStrings > NumStrings)
-	{
-		unsigned char **NewStrings = new unsigned char *[NewNumStrings];
-		objlist_clear(NewStrings+NumStrings,(NewNumStrings-NumStrings));
-		objlist_copy(NewStrings,Strings,NumStrings);
-		delete []Strings;
-		Strings = NewStrings;
-		NumStrings = NewNumStrings;
-	}
-	
-	// Delete the old string if necessary
-	if (Strings[Index]) delete []Strings[Index];
-	
-	unsigned short Length = String[0];
-	unsigned char *_String = new unsigned char[Length+2];
-	memcpy(_String,String,Length+2);
-	_String[Length+1] = 0;	//  for making an in-place C string
-	
-	Strings[Index] = _String;
-}
-
-// Get a string; return NULL if not found
-unsigned char *StringSet::GetString(size_t Index)
-{
-	if (Index < 0 || Index >= NumStrings) return NULL;
-	
-	return Strings[Index];
-}
-
-// Delete a string
-void StringSet::Delete(size_t Index)
-{
-	if (Index < 0 || Index >= NumStrings) return;
-	
-	unsigned char *StringPtr = Strings[Index];
-	if (StringPtr) {delete []StringPtr; Strings[Index] = 0;}
-}
-
-static StringSet *StringSetRoot = NULL;
-
-static StringSet *FindStringSet(short ID)
-{
-	StringSet *PrevStringSet = NULL, *CurrStringSet = StringSetRoot;
-	while(CurrStringSet)
-	{
-		PrevStringSet = CurrStringSet;
-		if (CurrStringSet->GetID() == ID) break;
-		CurrStringSet = CurrStringSet->Next;
-	}
-	
-	// Add to the end if not found
-	if (!CurrStringSet)
-	{
-		StringSet *NewStringSet = new StringSet(ID);
-		assert(NewStringSet);
-		if (PrevStringSet)
-			PrevStringSet->Next = NewStringSet;
-		else
-			StringSetRoot = NewStringSet;
-		CurrStringSet = NewStringSet;
-	}
-	
-	return CurrStringSet;
-}
+static StringSetMap StringSetRoot;
 
 // Error strings
 static const char IndexNotFound[] = "\"index\" attribute not found";
@@ -193,10 +47,11 @@ class XML_StringSetParser: public XML_ElementParser
 {
 public:
 	// Pointer to current stringset
-	StringSet *CurrStringSet;
+	short Index;
+	bool IndexPresent;
 		
 	// Callbacks
-	bool Start() {CurrStringSet = NULL; return true;}
+	bool Start() {IndexPresent = false; return true;}
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
 	
@@ -207,10 +62,9 @@ bool XML_StringSetParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (StringsEqual(Tag,"index"))
 	{
-		short ID;
-		if (ReadInt16Value(Value,ID))
+		if (ReadInt16Value(Value,Index))
 		{
-			CurrStringSet = FindStringSet(ID);
+			IndexPresent = true;
 			return true;
 		}
 		else return false;
@@ -221,7 +75,7 @@ bool XML_StringSetParser::HandleAttribute(const char *Tag, const char *Value)
 
 bool XML_StringSetParser::AttributesDone()
 {
-	if (!CurrStringSet)
+	if (!IndexPresent)
 	{
 		ErrorString = IndexNotFound;
 		return false;
@@ -242,7 +96,7 @@ class XML_StringParser: public XML_ElementParser
 	bool IndexPresent;
 	
 	// Build up the string; Expat may not return all characters at once
-	Str255 CurBuffer;
+	std::string CurBuffer;
 
 public:
 	// Callbacks
@@ -262,7 +116,7 @@ public:
 bool XML_StringParser::Start() {
 
 	IndexPresent = false;
-	CurBuffer[0] = 0;
+	CurBuffer = "";
 	return true;
 }
 
@@ -270,7 +124,7 @@ bool XML_StringParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadInt16Value(Value,Index))
+		if (ReadBoundedInt16Value(Value,Index,0,INT16_MAX))
 		{
 			IndexPresent = true;
 			return true;
@@ -283,15 +137,9 @@ bool XML_StringParser::HandleAttribute(const char *Tag, const char *Value)
 
 bool XML_StringParser::HandleString(const char *String, int Length)
 {
-	// Copy into Pascal string
-	Str255 StringBuffer;
-	DeUTF8_Pas(String,Length,StringBuffer,255);
-	
-	int curlen = CurBuffer[0];
-	int newlen = StringBuffer[0];
-	assert(curlen + newlen <= 255);
-	memcpy(&CurBuffer[curlen + 1], &StringBuffer[1], newlen);
-	CurBuffer[0] = curlen + newlen;
+	char cbuf[256];
+	DeUTF8_C(String, Length, cbuf, 255);
+	CurBuffer += cbuf;
 	return true;
 }
 
@@ -307,8 +155,9 @@ bool XML_StringParser::AttributesDone()
 	
 bool XML_StringParser::End()
 {
-	assert(StringSetParser.CurrStringSet);
-	StringSetParser.CurrStringSet->Add(Index,CurBuffer);
+	assert(StringSetParser.IndexPresent);
+	
+	StringSetRoot[StringSetParser.Index][Index] = CurBuffer.substr(0, 255);
 	return true;
 }
 
@@ -321,25 +170,10 @@ static XML_StringParser StringParser;
 // Set up a string in the repository; a repeated call will replace an old string
 void TS_PutCString(short ID, short Index, const char *String)
 {
-	// Search for string set: (FindStringSet() creates a new one if necessary)
-	StringSet *CurrStringSet = FindStringSet(ID);
-        
-        // Create a PString of the incoming CString, truncate to fit
-        unsigned char	thePStringStagingBuffer[256];
-
-        size_t theStringLength = strlen(String);
-
-        if(theStringLength > 255)
-            theStringLength = 255;
-
-        // Fill in the string length.
-        thePStringStagingBuffer[0] = (char)theStringLength;
-        
-        // Copy exactly the string bytes (no termination etc.)
-        memcpy(&(thePStringStagingBuffer[1]), String, theStringLength);
-        
-        // Add() copies the string, so using the stack here is OK.
-	CurrStringSet->Add(Index,thePStringStagingBuffer);
+	if (Index >= 0)
+	{
+		StringSetRoot[ID][Index] = String;
+	}
 }
 
 
@@ -347,118 +181,54 @@ void TS_PutCString(short ID, short Index, const char *String)
 // this function will then return NULL
 const char *TS_GetCString(short ID, short Index)
 {
-	// Search for string set:
-	StringSet *CurrStringSet = StringSetRoot;
-	
-	while(CurrStringSet)
-	{
-		if (CurrStringSet->GetID() == ID) break;
-		CurrStringSet = CurrStringSet->Next;
-	}
-	
-	if (!CurrStringSet) return NULL;
-	
-	unsigned char *String = CurrStringSet->GetString(Index);
-	if (!String) return NULL;
-	
-	// Move away from the length byte to the first content byte
-	return (char *)(String+1);
+	StringSetMap::const_iterator setIter = StringSetRoot.find(ID);
+	if (setIter == StringSetRoot.end())
+		return NULL;
+	StringSet::const_iterator strIter = setIter->second.find(Index);
+	if (strIter == setIter->second.end())
+		return NULL;
+	return strIter->second.c_str();
 }
 
 
 // Checks on the presence of a string set
 bool TS_IsPresent(short ID)
 {
-	// Search for string set:
-	StringSet *CurrStringSet = StringSetRoot;
-	
-	while(CurrStringSet)
-	{
-		if (CurrStringSet->GetID() == ID) return true;
-		CurrStringSet = CurrStringSet->Next;
-	}
-	
-	return false;
+	return StringSetRoot.count(ID);
 }
 
 
 // Count the strings (contiguous from index zero)
 size_t TS_CountStrings(short ID)
 {
-	// Search for string set:
-	StringSet *CurrStringSet = StringSetRoot;
-	
-	while(CurrStringSet)
-	{
-		if (CurrStringSet->GetID() == ID) break;
-		CurrStringSet = CurrStringSet->Next;
-	}
-	
-	if (!CurrStringSet) return 0;
-	
-	return CurrStringSet->CountStrings();
+	StringSetMap::const_iterator setIter = StringSetRoot.find(ID);
+	if (setIter == StringSetRoot.end())
+		return 0;
+	return setIter->second.size();
 }
 
 
 // Deletes a string, should one ever want to do that
 void TS_DeleteString(short ID, short Index)
 {
-	// Search for string set:
-	StringSet *CurrStringSet = StringSetRoot;
-	
-	while(CurrStringSet)
-	{
-		if (CurrStringSet->GetID() == ID) break;
-		CurrStringSet = CurrStringSet->Next;
-	}
-
-	if (!CurrStringSet) return;
-	
-	CurrStringSet->Delete(Index);
+	StringSetMap::iterator setIter = StringSetRoot.find(ID);
+	if (setIter == StringSetRoot.end())
+		return;
+	setIter->second.erase(Index);
 }
 
 
 // Deletes the stringset with some ID
 void TS_DeleteStringSet(short ID)
 {
-	// Search for string set:
-	StringSet *PrevStringSet = NULL, *CurrStringSet = StringSetRoot;
-	
-	while(CurrStringSet)
-	{
-		if (CurrStringSet->GetID() == ID) break;
-		PrevStringSet = CurrStringSet;
-		CurrStringSet = CurrStringSet->Next;
-	}
-
-	if (!CurrStringSet) return;
-	
-	// Get the next string set:
-	StringSet *NextStringSet = CurrStringSet->Next;
-	
-	// Clip out that string set
-	if (PrevStringSet)
-		PrevStringSet->Next = NextStringSet;
-	else
-		StringSetRoot = NextStringSet;
-	
-	delete CurrStringSet;
+	StringSetRoot.erase(ID);
 }
 
 
 // Deletes all of the stringsets
 void TS_DeleteAllStrings()
 {
-	StringSet *CurrStringSet = StringSetRoot;
-	
-	while(CurrStringSet)
-	{
-		StringSet *NextStringSet = CurrStringSet->Next;
-		delete CurrStringSet;
-		CurrStringSet = NextStringSet;
-	}
-	
-	StringSetRoot = NULL;
+	StringSetRoot.clear();
 }
 
 
