@@ -2345,10 +2345,9 @@ template<class CType> void WriteColorWithIndex(FILE *F,
 		Prefix,Index,CNorm*Color.red,CNorm*Color.green,CNorm*Color.blue,Suffix);
 }
 
-// For writing out text strings: have both Pascal and C versions
+// For writing out text strings
 // These special routines are necessary in order to make the writing-out XML-friendly,
 // converting XML's reserved characters into appropriate strings.
-void WriteXML_PasString(FILE *F, const char *Prefix, const unsigned char *String, const char *Suffix);
 void WriteXML_CString(FILE *F, const char *Prefix, const char *String, int MaxLen, const char *Suffix);
 void WriteXML_Pathname(FILE *F, const char *Prefix, const char *String, const char *Suffix);
 void WriteXML_Char(FILE *F, unsigned char c);
@@ -3171,17 +3170,9 @@ dont_auto_recenter() {
 }
 
 
-// For writing out text strings: have both Pascal and C versions
+// For writing out text strings
 // These special routines are necessary in order to make the writing-out XML-friendly,
 // converting XML's reserved characters into appropriate strings.
-
-void WriteXML_PasString(FILE *F, const char *Prefix, const unsigned char *String, const char *Suffix)
-{
-	fprintf(F,"%s",Prefix);
-	for (int k=1; k<=String[0]; k++)
-		WriteXML_Char(F,String[k]);
-	fprintf(F,"%s",Suffix);
-}
 
 void WriteXML_CString(FILE *F, const char *Prefix, const char *String, int MaxLen, const char *Suffix)
 {

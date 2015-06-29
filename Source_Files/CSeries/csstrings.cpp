@@ -34,12 +34,6 @@
 	csstrings.cpp (Macintosh) and csstrings_sdl.cpp into this file.
  */
 
-// When building SDL, XML_ElementParser.h, when included here, whined that Str255 was undefined.
-// (presumably, carbon target acts similarly without precompiled headers)
-// So, here you go, XML_ElementParser.h.
-// This is an ugly hack.  Please fix.
-typedef unsigned char Str255[256];
-
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>

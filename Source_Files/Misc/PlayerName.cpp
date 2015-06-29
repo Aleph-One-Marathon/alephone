@@ -29,11 +29,11 @@
 #include "PlayerName.h"
 #include <string.h>
 
-static unsigned char PlayerName[256];
+static char PlayerName[256];
 
 
 // Get that name
-unsigned char *GetPlayerName() {return PlayerName;}
+const char *GetPlayerName() {return PlayerName;}
 
 
 class XML_SimpleStringParser: public XML_ElementParser
@@ -53,8 +53,7 @@ public:
 
 bool XML_SimpleStringParser::HandleString(const char *String, int Length)
 {
-	// Copy into Pascal string
-	DeUTF8_Pas(String,Length,PlayerName,255);
+	DeUTF8_C(String,Length,PlayerName,255);
 	
 	return true;
 }

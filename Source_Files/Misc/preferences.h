@@ -88,8 +88,8 @@ struct serial_number_data
 {
 	bool network_only;
 	byte long_serial_number[10];
-	Str255 user_name;
-	Str255 tokenized_serial_number;
+	unsigned char user_name[256];
+	unsigned char tokenized_serial_number[256];
 };
 
 enum {

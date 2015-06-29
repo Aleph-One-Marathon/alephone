@@ -58,10 +58,9 @@ bool StringsEqual(const char *String1, const char *String2, int MaxStrLen = 32);
 // Returns how many characters resulted.
 size_t DeUTF8(const char *InString, size_t InLen, char *OutString, size_t OutMaxLen);
 
-// Write output as a Pascal or C string, as the case may be;
+// Write output as a C string;
 // Returns how many characters resulted.
 // Needs at least (OutMaxLen + 1) characters allocated.
-size_t DeUTF8_Pas(const char *InString, size_t InLen, Str255 OutString, size_t OutMaxLen);
 size_t DeUTF8_C(const char *InString, size_t InLen, char *OutString, size_t OutMaxLen);
 
 

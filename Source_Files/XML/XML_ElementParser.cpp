@@ -374,17 +374,9 @@ size_t DeUTF8(const char *InString, size_t InLen, char *OutString, size_t OutMax
 	return Len;
 }
 
-// Write output as a Pascal or C string, as the case may be;
+// Write output as a C string;
 // Returns how many characters resulted.
 // Needs at least (OutMaxLen + 1) characters allocated.
-
-size_t DeUTF8_Pas(const char *InString, size_t InLen, unsigned char *OutString, size_t OutMaxLen)
-{
-	size_t Len = DeUTF8(InString,InLen,reinterpret_cast<char*>(OutString+1),OutMaxLen);
-	assert(Len < 256);
-	OutString[0] = static_cast<char>(Len);
-	return Len;
-}
 
 size_t DeUTF8_C(const char *InString, size_t InLen, char *OutString, size_t OutMaxLen)
 {

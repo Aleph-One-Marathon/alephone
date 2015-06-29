@@ -26,10 +26,6 @@
 	These functions replace the getting of MacOS STR# resources,
 	and are called in much the same fashion.
 	
-	Each string is a MacOS Pascal string (length byte + characters)
-	with a null byte at the end, so it can also be treated as a C string.
-	[length] [characters] [null]
-	
 	They are referenced by resource-ID number, which defines a string set,
 	and an index inside that string set, which starts from 0.
 */

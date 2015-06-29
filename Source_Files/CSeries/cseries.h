@@ -81,7 +81,6 @@ using namespace std;	// Visual C++ doesn't like that other way of using the name
 #include <CoreFoundation/CoreFoundation.h>
 #elif !defined(TARGET_API_MAC_CARBON)
 typedef int OSErr;
-typedef unsigned char Str255[256];
 
 struct Rect {
 	int16 top, left;
