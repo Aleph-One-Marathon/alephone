@@ -40,7 +40,7 @@
 #include "TickBasedCircularQueue.h"
 #include "player.h" // GetRealActionQueues
 #include "interface.h" // process_action_flags (despite paf() being defined in vbl.*)
-
+#include "InfoTree.h"
 
 // This is a bit hacky yeah, we really ought to check both RealActionQueues and the recording queues, etc.
 template <typename tValueType>
@@ -239,9 +239,9 @@ call_distribution_response_function_if_available(byte* inBuffer, uint16 inBuffer
 
 
 void
-StarGameProtocol::ParsePreferencesTree(boost::property_tree::ptree prefs, std::string version)
+StarGameProtocol::ParsePreferencesTree(InfoTree prefs, std::string version)
 {
-	boost::optional<boost::property_tree::ptree> ochild;
+	boost::optional<InfoTree> ochild;
 	
 	if ((ochild = prefs.get_child_optional("hub")))
 		HubParsePreferencesTree(*ochild, version);
@@ -260,9 +260,9 @@ DefaultStarPreferences()
 
 
 
-boost::property_tree::ptree StarPreferencesTree()
+InfoTree StarPreferencesTree()
 {
-	boost::property_tree::ptree root;
+	InfoTree root;
 	root.put_child("hub", HubPreferencesTree());
 	root.put_child("spoke", SpokePreferencesTree());
 	return root;

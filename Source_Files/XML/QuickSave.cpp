@@ -27,7 +27,6 @@
 #include <sstream>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/property_tree/ini_parser.hpp>
 
 #ifdef HAVE_SDL_IMAGE_H
 #include <SDL_image.h>
@@ -55,6 +54,7 @@
 #include "sdl_resize.h"
 #include "SDL_rwops_ostream.h"
 #include "WadImageCache.h"
+#include "InfoTree.h"
 
 namespace algo = boost::algorithm;
 
@@ -541,9 +541,7 @@ static bool build_map_preview(std::ostringstream& ostream)
 
 std::string build_save_metadata(QuickSave& save)
 {
-	std::string lev_name = mac_roman_to_utf8(static_world->level_name);
-	
-	boost::property_tree::ptree pt;
+	InfoTree pt;
 	pt.put("name", save.name);
 	pt.put("level_name", save.level_name);
 	pt.put("ticks", save.ticks);
@@ -553,7 +551,7 @@ std::string build_save_metadata(QuickSave& save)
 	pt.put("players", save.players);
 	
 	std::ostringstream xout;
-	boost::property_tree::ini_parser::write_ini(xout, pt);
+	pt.save_ini(xout);
 	
 	return xout.str();
 }
@@ -727,23 +725,23 @@ bool QuickSaveLoader::ParseQuickSave(FileSpecifier& file_name)
 				char *raw_metadata = (char *)extract_type_from_wad(wad, SAVE_META_TAG, &data_length);
 				std::string metadata = std::string(raw_metadata, data_length);
 				
-				boost::property_tree::ptree pt;
+				InfoTree pt;
 				std::istringstream strm(metadata);
 				try {
-					boost::property_tree::ini_parser::read_ini(strm, pt);
-				} catch (...) {
+					pt = InfoTree::load_ini(strm);
+				} catch (InfoTree::ini_error e) {
 					return false;
 				}
 				
 				QuickSave Data = QuickSave();
 				Data.save_file = file_name;
-				Data.name = pt.get("name", Data.name);
-				Data.level_name = pt.get("level_name", Data.level_name);
-				Data.ticks = pt.get("ticks", Data.ticks);
-				Data.formatted_ticks = pt.get("ticks_formatted", Data.formatted_ticks);
-				Data.save_time = pt.get("time", Data.save_time);
-				Data.formatted_time = pt.get("time_formatted", Data.formatted_time);
-				Data.players = pt.get("players", Data.players);
+				pt.read("name", Data.name);
+				pt.read("level_name", Data.level_name);
+				pt.read("ticks", Data.ticks);
+				pt.read("ticks_formatted", Data.formatted_ticks);
+				pt.read("time", Data.save_time);
+				pt.read("time_formatted", Data.formatted_time);
+				pt.read("players", Data.players);
 				QuickSaves::instance()->add(Data);
 				
 				free_wad(wad);

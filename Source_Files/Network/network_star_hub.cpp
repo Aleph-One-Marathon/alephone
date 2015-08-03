@@ -54,7 +54,7 @@
 #include "Logging.h"
 #include "WindowedNthElementFinder.h"
 #include "CircularByteBuffer.h"
-#include "XML_ElementParser.h"
+#include "InfoTree.h"
 #include "SDL_timer.h" // SDL_Delay()
 
 #include <vector>
@@ -1709,67 +1709,59 @@ static const int32 sDefaultHubPreferences[kNumAttributes] = {
 };
 
 
-void HubParsePreferencesTree(boost::property_tree::ptree prefs, std::string version)
+void HubParsePreferencesTree(InfoTree prefs, std::string version)
 {
-	boost::optional<boost::property_tree::ptree> oattrs;
-	if ((oattrs = prefs.get_child_optional("<xmlattr>")))
+	for (size_t i = 0; i < kNumAttributes; ++i)
 	{
-		boost::property_tree::ptree attrs = *oattrs;
-		
-		for (size_t i = 0; i < kNumAttributes; ++i)
-		{
-			int32 value = attrs.get(sAttributeStrings[i], *(sAttributeDestinations[i]));
-			int32 min = INT32_MIN;
-			switch (i) {
-				case kPregameTicksBeforeNetDeathAttribute:
-				case kInGameTicksBeforeNetDeathAttribute:
-				case kRecoverySendPeriodAttribute:
-				case kSendPeriodAttribute:
-				case kPregameWindowSizeAttribute:
-				case kInGameWindowSizeAttribute:
-					min = 1;
-					break;
-				case kPregameNthElementAttribute:
-				case kInGameNthElementAttribute:
-				case kMinimumSendPeriodAttribute:
-					min = 0;
-					break;
-			}
-			if (value < min)
-				logWarning4("improper value %d for attribute %s of <hub>; must be at least %d. using default of %d", value, sAttributeStrings[i], min, *(sAttributeDestinations[i]));
-			else
-				*(sAttributeDestinations[i]) = value;
+		int32 value = prefs.read_attr(sAttributeStrings[i], *(sAttributeDestinations[i]));
+		int32 min = INT32_MIN;
+		switch (i) {
+			case kPregameTicksBeforeNetDeathAttribute:
+			case kInGameTicksBeforeNetDeathAttribute:
+			case kRecoverySendPeriodAttribute:
+			case kSendPeriodAttribute:
+			case kPregameWindowSizeAttribute:
+			case kInGameWindowSizeAttribute:
+				min = 1;
+				break;
+			case kPregameNthElementAttribute:
+			case kInGameNthElementAttribute:
+			case kMinimumSendPeriodAttribute:
+				min = 0;
+				break;
 		}
+		if (value < min)
+			logWarning4("improper value %d for attribute %s of <hub>; must be at least %d. using default of %d", value, sAttributeStrings[i], min, *(sAttributeDestinations[i]));
+		else
+			*(sAttributeDestinations[i]) = value;
+	}
 
-		sHubPreferences.mBandwidthReduction = attrs.get("use_bandwidth_reduction", sHubPreferences.mBandwidthReduction);
+	sHubPreferences.mBandwidthReduction = prefs.read_attr("use_bandwidth_reduction", sHubPreferences.mBandwidthReduction);
 
 		
-		// The checks above are not sufficient to catch all bad cases; if user specified a window size
-		// smaller than default, this is our only chance to deal with it.
-		if(sHubPreferences.mPregameNthElement >= sHubPreferences.mPregameWindowSize) {
-			logWarning5("value for <hub> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kPregameNthElementAttribute], sHubPreferences.mPregameNthElement, sAttributeStrings[kPregameWindowSizeAttribute], sHubPreferences.mPregameWindowSize, sHubPreferences.mPregameWindowSize - 1);
-			
-			sHubPreferences.mPregameNthElement = sHubPreferences.mPregameWindowSize - 1;
-		}
+	// The checks above are not sufficient to catch all bad cases; if user specified a window size
+	// smaller than default, this is our only chance to deal with it.
+	if(sHubPreferences.mPregameNthElement >= sHubPreferences.mPregameWindowSize) {
+		logWarning5("value for <hub> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kPregameNthElementAttribute], sHubPreferences.mPregameNthElement, sAttributeStrings[kPregameWindowSizeAttribute], sHubPreferences.mPregameWindowSize, sHubPreferences.mPregameWindowSize - 1);
 		
-		if(sHubPreferences.mInGameNthElement >= sHubPreferences.mInGameWindowSize) {
-			logWarning5("value for <hub> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kInGameNthElementAttribute], sHubPreferences.mInGameNthElement, sAttributeStrings[kInGameWindowSizeAttribute], sHubPreferences.mInGameWindowSize, sHubPreferences.mInGameWindowSize - 1);
-			
-			sHubPreferences.mInGameNthElement = sHubPreferences.mInGameWindowSize - 1;
-		}
+		sHubPreferences.mPregameNthElement = sHubPreferences.mPregameWindowSize - 1;
+	}
+	
+	if(sHubPreferences.mInGameNthElement >= sHubPreferences.mInGameWindowSize) {
+		logWarning5("value for <hub> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kInGameNthElementAttribute], sHubPreferences.mInGameNthElement, sAttributeStrings[kInGameWindowSizeAttribute], sHubPreferences.mInGameWindowSize, sHubPreferences.mInGameWindowSize - 1);
+		
+		sHubPreferences.mInGameNthElement = sHubPreferences.mInGameWindowSize - 1;
 	}
 }
 
-boost::property_tree::ptree HubPreferencesTree()
+InfoTree HubPreferencesTree()
 {
-	boost::property_tree::ptree attrs;
+	InfoTree root;
 	
 	for (size_t i = 0; i < kNumAttributes; ++i)
-		attrs.put(sAttributeStrings[i], *(sAttributeDestinations[i]));
-	attrs.put("use_bandwidth_reduction", sHubPreferences.mBandwidthReduction);
+		root.put_attr(sAttributeStrings[i], *(sAttributeDestinations[i]));
+	root.put_attr("use_bandwidth_reduction", sHubPreferences.mBandwidthReduction);
 	
-	boost::property_tree::ptree root;
-	root.put_child("<xmlattr>", attrs);
 	return root;
 }
 

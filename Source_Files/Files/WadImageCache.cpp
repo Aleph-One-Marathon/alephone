@@ -26,8 +26,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
+#include "InfoTree.h"
 
 #ifdef HAVE_SDL_IMAGE_H
 #include <SDL_image.h>
@@ -38,7 +37,7 @@
 
 #include "game_errors.h"
 #include "sdl_resize.h"
-
+#include "Logging.h"
 
 WadImageCache* WadImageCache::m_instance = 0;
 WadImageCache* WadImageCache::instance() {
@@ -320,26 +319,34 @@ void WadImageCache::initialize_cache()
 	if (!info.Exists())
 		return;
 	
-	boost::property_tree::ptree pt;
+	InfoTree pt;
 	try {
-		boost::property_tree::ini_parser::read_ini(info.GetPath(), pt);
-	} catch (...) {
-		return;
+		pt = InfoTree::load_ini(info);
+	} catch (InfoTree::ini_error e) {
+		logError2("Could not read image cache from %s (%s)", info.GetPath(), e.what());
 	}
 	
-	for (boost::property_tree::ptree::iterator it = pt.begin(); it != pt.end(); ++it)
+	for (InfoTree::iterator it = pt.begin(); it != pt.end(); ++it)
 	{
 		std::string name = it->first;
-		boost::property_tree::ptree ptc = it->second;
+		InfoTree ptc = it->second;
 		
 		WadImageDescriptor desc;
-		desc.file = FileSpecifier(ptc.get<std::string>("path"));
-		desc.checksum = ptc.get<uint32>("checksum");
-		desc.index = ptc.get<short>("index");
-		desc.tag = ptc.get<WadDataType>("tag");
-		int width = ptc.get<int>("width");
-		int height = ptc.get<int>("height");
-		size_t filesize = ptc.get<size_t>("filesize");
+		
+		std::string path;
+		ptc.read("path", path);
+		desc.file = FileSpecifier(path);
+		
+		ptc.read("checksum", desc.checksum);
+		ptc.read("index", desc.index);
+		ptc.read("tag", desc.tag);
+		
+		int width = 0;
+		ptc.read("width", width);
+		int height = 0;
+		ptc.read("height", height);
+		size_t filesize = 0;
+		ptc.read("filesize", filesize);
 		
 		cache_key_t key = cache_key_t(desc, width, height);
 		cache_value_t val = cache_value_t(name, filesize);
@@ -354,7 +361,7 @@ void WadImageCache::save_cache()
 	if (!m_cache_dirty)
 		return;
 	
-	boost::property_tree::ptree pt;
+	InfoTree pt;
 	
 	for (cache_iter_t it = m_used.begin(); it != m_used.end(); ++it)
 	{
@@ -374,9 +381,10 @@ void WadImageCache::save_cache()
 	info.SetToImageCacheDir();
 	info.AddPart("Cache.ini");
 	try {
-		boost::property_tree::ini_parser::write_ini(info.GetPath(), pt);
+		pt.save_ini(info);
 		m_cache_dirty = false;
-	} catch (...) {
+	} catch (InfoTree::ini_error e) {
+		logError2("Could not save image cache to %s (%s)", info.GetPath(), e.what());
 		return;
 	}
 }

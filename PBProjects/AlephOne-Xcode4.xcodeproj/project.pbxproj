@@ -224,6 +224,14 @@
 		27FC2E0B1A7DF51E0057BF42 /* Statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FC2E091A7DF51E0057BF42 /* Statistics.cpp */; };
 		27FC2E0C1A7DF51E0057BF42 /* Statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FC2E091A7DF51E0057BF42 /* Statistics.cpp */; };
 		27FC2E0D1A7DF51E0057BF42 /* Statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FC2E091A7DF51E0057BF42 /* Statistics.cpp */; };
+		27FF265A1B6F169200DA0A19 /* InfoTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 27FF26591B6F169200DA0A19 /* InfoTree.h */; };
+		27FF265B1B6F169200DA0A19 /* InfoTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 27FF26591B6F169200DA0A19 /* InfoTree.h */; };
+		27FF265C1B6F169200DA0A19 /* InfoTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 27FF26591B6F169200DA0A19 /* InfoTree.h */; };
+		27FF265D1B6F169200DA0A19 /* InfoTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 27FF26591B6F169200DA0A19 /* InfoTree.h */; };
+		27FF26601B6F170600DA0A19 /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
+		27FF26611B6F170600DA0A19 /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
+		27FF26621B6F170600DA0A19 /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
+		27FF26631B6F1E0700DA0A19 /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
 		3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
 		3D22CF8D0FD86EBD00B17822 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF8C0FD86EBD00B17822 /* libz.dylib */; };
 		3D22CFAC0FD8707C00B17822 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */; };
@@ -2098,6 +2106,8 @@
 		27EFC4C71A7D9A1C00A95592 /* Marathon 2.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = "Marathon 2.entitlements"; path = "AppStore/Marathon 2/Marathon 2.entitlements"; sourceTree = "<group>"; };
 		27EFC4C81A7D9A2F00A95592 /* Marathon.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = Marathon.entitlements; path = AppStore/Marathon/Marathon.entitlements; sourceTree = "<group>"; };
 		27FC2E091A7DF51E0057BF42 /* Statistics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Statistics.cpp; path = ../Source_Files/Misc/Statistics.cpp; sourceTree = "<group>"; };
+		27FF26591B6F169200DA0A19 /* InfoTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InfoTree.h; sourceTree = "<group>"; };
+		27FF265E1B6F170600DA0A19 /* InfoTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InfoTree.cpp; sourceTree = "<group>"; };
 		3D22CF880FD86EAE00B17822 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		3D22CF8C0FD86EBD00B17822 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
 		3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = /System/Library/Frameworks/CoreAudio.framework; sourceTree = "<absolute>"; };
@@ -3644,6 +3654,7 @@
 				F5CC94340240DE0E01A80001 /* Macintosh */,
 				F5CC94370240DE0E01A80001 /* SDL */,
 				F5CC943A0240DE0E01A80001 /* ColorParser.cpp */,
+				27FF265E1B6F170600DA0A19 /* InfoTree.cpp */,
 				F5CC943B0240DE0E01A80001 /* DamageParser.cpp */,
 				276D4E761A2E734E00C16CF5 /* QuickSave.cpp */,
 				277AB97E10A26AF40003402A /* Plugins.cpp */,
@@ -3664,6 +3675,7 @@
 				277AB98010A26B020003402A /* Plugins.h */,
 				276D4E751A2E710F00C16CF5 /* QuickSave.h */,
 				F5CC942C0240DE0E01A80001 /* ColorParser.h */,
+				27FF26591B6F169200DA0A19 /* InfoTree.h */,
 				F5CC942D0240DE0E01A80001 /* DamageParser.h */,
 				F5CC942E0240DE0E01A80001 /* ShapesParser.h */,
 				F5CC942F0240DE0E01A80001 /* XML_Configure.h */,
@@ -3828,6 +3840,7 @@
 				AE505B83141D45E600915344 /* physics_models.h in Headers */,
 				AE505B84141D45E600915344 /* platform_definitions.h in Headers */,
 				276BED0A1A846FD900AE52F4 /* CourierPrime.h in Headers */,
+				27FF265C1B6F169200DA0A19 /* InfoTree.h in Headers */,
 				AE505B85141D45E600915344 /* platforms.h in Headers */,
 				AE505B86141D45E600915344 /* player.h in Headers */,
 				AE505B87141D45E600915344 /* projectile_definitions.h in Headers */,
@@ -4054,6 +4067,7 @@
 				AEB4A12314296CAE00537AE7 /* physics_models.h in Headers */,
 				AEB4A12414296CAE00537AE7 /* platform_definitions.h in Headers */,
 				276BED0B1A846FD900AE52F4 /* CourierPrime.h in Headers */,
+				27FF265D1B6F169200DA0A19 /* InfoTree.h in Headers */,
 				AEB4A12514296CAE00537AE7 /* platforms.h in Headers */,
 				AEB4A12614296CAE00537AE7 /* player.h in Headers */,
 				AEB4A12714296CAE00537AE7 /* projectile_definitions.h in Headers */,
@@ -4213,6 +4227,7 @@
 				AEC3C70B09AD68AC003258E4 /* sdl_widgets.h in Headers */,
 				AEC3C70C09AD68AC003258E4 /* shell.h in Headers */,
 				AEC3C70D09AD68AC003258E4 /* vbl_definitions.h in Headers */,
+				27FF265A1B6F169200DA0A19 /* InfoTree.h in Headers */,
 				AEC3C70E09AD68AC003258E4 /* vbl.h in Headers */,
 				AEC3C70F09AD68AC003258E4 /* xmltok.h in Headers */,
 				AEC3C71009AD68AC003258E4 /* xmltok_impl.h in Headers */,
@@ -4507,6 +4522,7 @@
 				AEFD863113EB84CF00C1E687 /* physics_models.h in Headers */,
 				AEFD863213EB84CF00C1E687 /* platform_definitions.h in Headers */,
 				276BED091A846FD900AE52F4 /* CourierPrime.h in Headers */,
+				27FF265B1B6F169200DA0A19 /* InfoTree.h in Headers */,
 				AEFD863313EB84CF00C1E687 /* platforms.h in Headers */,
 				AEFD863413EB84CF00C1E687 /* player.h in Headers */,
 				AEFD863513EB84CF00C1E687 /* projectile_definitions.h in Headers */,
@@ -5178,6 +5194,7 @@
 				AE505C86141D45E600915344 /* OGL_Model_Def.cpp in Sources */,
 				AE505C87141D45E600915344 /* OGL_Subst_Texture_Def.cpp in Sources */,
 				AE505C88141D45E600915344 /* network_star_hub.cpp in Sources */,
+				27FF26611B6F170600DA0A19 /* InfoTree.cpp in Sources */,
 				AE505C89141D45E600915344 /* network_star_spoke.cpp in Sources */,
 				AE505C8B141D45E600915344 /* RingGameProtocol.cpp in Sources */,
 				AE505C8C141D45E600915344 /* StarGameProtocol.cpp in Sources */,
@@ -5417,6 +5434,7 @@
 				AEB4A22714296CAE00537AE7 /* OGL_Model_Def.cpp in Sources */,
 				AEB4A22814296CAE00537AE7 /* OGL_Subst_Texture_Def.cpp in Sources */,
 				AEB4A22914296CAE00537AE7 /* network_star_hub.cpp in Sources */,
+				27FF26621B6F170600DA0A19 /* InfoTree.cpp in Sources */,
 				AEB4A22A14296CAE00537AE7 /* network_star_spoke.cpp in Sources */,
 				AEB4A22C14296CAE00537AE7 /* RingGameProtocol.cpp in Sources */,
 				AEB4A22D14296CAE00537AE7 /* StarGameProtocol.cpp in Sources */,
@@ -5656,6 +5674,7 @@
 				AEC3C85409AD68AC003258E4 /* OGL_Model_Def.cpp in Sources */,
 				AEC3C85509AD68AC003258E4 /* OGL_Subst_Texture_Def.cpp in Sources */,
 				AEC3C85609AD68AC003258E4 /* network_star_hub.cpp in Sources */,
+				27FF26631B6F1E0700DA0A19 /* InfoTree.cpp in Sources */,
 				AEC3C85709AD68AC003258E4 /* network_star_spoke.cpp in Sources */,
 				AEC3C85909AD68AC003258E4 /* RingGameProtocol.cpp in Sources */,
 				AEC3C85A09AD68AC003258E4 /* StarGameProtocol.cpp in Sources */,
@@ -5895,6 +5914,7 @@
 				AEFD873313EB84CF00C1E687 /* OGL_Model_Def.cpp in Sources */,
 				AEFD873413EB84CF00C1E687 /* OGL_Subst_Texture_Def.cpp in Sources */,
 				AEFD873513EB84CF00C1E687 /* network_star_hub.cpp in Sources */,
+				27FF26601B6F170600DA0A19 /* InfoTree.cpp in Sources */,
 				AEFD873613EB84CF00C1E687 /* network_star_spoke.cpp in Sources */,
 				AEFD873813EB84CF00C1E687 /* RingGameProtocol.cpp in Sources */,
 				AEFD873913EB84CF00C1E687 /* StarGameProtocol.cpp in Sources */,

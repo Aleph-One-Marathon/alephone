@@ -45,6 +45,7 @@
 #include "Logging.h"
 #include "crc.h"
 #include "player.h"
+#include "InfoTree.h"
 
 #include <map>
 
@@ -1181,60 +1182,52 @@ static int32* sAttributeDestinations[kNumInt32Attributes] =
 };
 
 
-void SpokeParsePreferencesTree(boost::property_tree::ptree prefs, std::string version)
+void SpokeParsePreferencesTree(InfoTree prefs, std::string version)
 {
-	boost::optional<boost::property_tree::ptree> oattrs;
-	if ((oattrs = prefs.get_child_optional("<xmlattr>")))
+	for (size_t i = 0; i < kNumInt32Attributes; ++i)
 	{
-		boost::property_tree::ptree attrs = *oattrs;
-		
-		for (size_t i = 0; i < kNumInt32Attributes; ++i)
-		{
-			int32 value = *(sAttributeDestinations[i]);
-			value = attrs.get(sAttributeStrings[i], value);
-			int32 min = INT32_MIN;
-			switch (i) {
-				case kPregameTicksBeforeNetDeathAttribute:
-				case kInGameTicksBeforeNetDeathAttribute:
-				case kRecoverySendPeriodAttribute:
-				case kTimingWindowSizeAttribute:
-					min = 1;
-					break;
-				case kTimingNthElementAttribute:
-					min = 0;
-					break;
-			}
-			if (value < min)
-				logWarning4("improper value %d for attribute %s of <spoke>; must be at least %d. using default of %d", value, sAttributeStrings[i], min, *(sAttributeDestinations[i]));
-			else
-				*(sAttributeDestinations[i]) = value;
+		int32 value = *(sAttributeDestinations[i]);
+		value = prefs.read_attr(sAttributeStrings[i], value);
+		int32 min = INT32_MIN;
+		switch (i) {
+			case kPregameTicksBeforeNetDeathAttribute:
+			case kInGameTicksBeforeNetDeathAttribute:
+			case kRecoverySendPeriodAttribute:
+			case kTimingWindowSizeAttribute:
+				min = 1;
+				break;
+			case kTimingNthElementAttribute:
+				min = 0;
+				break;
 		}
+		if (value < min)
+			logWarning4("improper value %d for attribute %s of <spoke>; must be at least %d. using default of %d", value, sAttributeStrings[i], min, *(sAttributeDestinations[i]));
+		else
+			*(sAttributeDestinations[i]) = value;
+	}
+
+	sSpokePreferences.mAdjustTiming = prefs.read_attr("adjust_timing", sSpokePreferences.mAdjustTiming);
+	
+	
+	// The checks above are not sufficient to catch all bad cases; if user specified a window size
+	// smaller than default, this is our only chance to deal with it.
+	if(sSpokePreferences.mTimingNthElement >= sSpokePreferences.mTimingWindowSize)
+	{
+		logWarning5("value for <spoke> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kTimingNthElementAttribute], sSpokePreferences.mTimingNthElement, sAttributeStrings[kTimingWindowSizeAttribute], sSpokePreferences.mTimingWindowSize, sSpokePreferences.mTimingWindowSize - 1);
 		
-		sSpokePreferences.mAdjustTiming = attrs.get("adjust_timing", sSpokePreferences.mAdjustTiming);
-		
-		
-		// The checks above are not sufficient to catch all bad cases; if user specified a window size
-		// smaller than default, this is our only chance to deal with it.
-		if(sSpokePreferences.mTimingNthElement >= sSpokePreferences.mTimingWindowSize)
-		{
-			logWarning5("value for <spoke> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kTimingNthElementAttribute], sSpokePreferences.mTimingNthElement, sAttributeStrings[kTimingWindowSizeAttribute], sSpokePreferences.mTimingWindowSize, sSpokePreferences.mTimingWindowSize - 1);
-			
-			sSpokePreferences.mTimingNthElement = sSpokePreferences.mTimingWindowSize - 1;
-		}
+		sSpokePreferences.mTimingNthElement = sSpokePreferences.mTimingWindowSize - 1;
 	}
 }
 
 
-boost::property_tree::ptree SpokePreferencesTree()
+InfoTree SpokePreferencesTree()
 {
-	boost::property_tree::ptree attrs;
+	InfoTree root;
 	
 	for (size_t i = 0; i < kNumInt32Attributes; ++i)
-		attrs.put(sAttributeStrings[i], *(sAttributeDestinations[i]));
-	attrs.put("adjust_timing", sSpokePreferences.mAdjustTiming);
+		root.put_attr(sAttributeStrings[i], *(sAttributeDestinations[i]));
+	root.put_attr("adjust_timing", sSpokePreferences.mAdjustTiming);
 	
-	boost::property_tree::ptree root;
-	root.put_child("<xmlattr>", attrs);
 	return root;
 }
 

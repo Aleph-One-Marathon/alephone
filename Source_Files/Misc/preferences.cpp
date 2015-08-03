@@ -74,9 +74,7 @@ May 22, 2003 (Woody Zenfell):
 #include "Console.h"
 #include "Plugins.h"
 
-#include "XML_ElementParser.h"
-#include "XML_DataBlock.h"
-#include "ColorParser.h"
+#include "InfoTree.h"
 #include "StarGameProtocol.h"
 #include "RingGameProtocol.h"
 
@@ -102,8 +100,6 @@ May 22, 2003 (Woody Zenfell):
 #include <sstream>
 #include <boost/algorithm/hex.hpp>
 #include <boost/foreach.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-namespace pt = boost::property_tree;
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -173,12 +169,12 @@ static bool validate_input_preferences(input_preferences_data *preferences);
 static void default_environment_preferences(environment_preferences_data *preferences);
 static bool validate_environment_preferences(environment_preferences_data *preferences);
 
-void parse_graphics_preferences(pt::ptree root, std::string version);
-void parse_player_preferences(pt::ptree root, std::string version);
-void parse_input_preferences(pt::ptree root, std::string version);
-void parse_sound_preferences(pt::ptree root, std::string version);
-void parse_network_preferences(pt::ptree root, std::string version);
-void parse_environment_preferences(pt::ptree root, std::string version);
+void parse_graphics_preferences(InfoTree root, std::string version);
+void parse_player_preferences(InfoTree root, std::string version);
+void parse_input_preferences(InfoTree root, std::string version);
+void parse_sound_preferences(InfoTree root, std::string version);
+void parse_network_preferences(InfoTree root, std::string version);
+void parse_environment_preferences(InfoTree root, std::string version);
 
 // Prototypes
 static void player_dialog(void *arg);
@@ -2317,33 +2313,6 @@ static void environment_dialog(void *arg)
 		parent->quit(0);	// Quit the parent dialog so it won't draw in the old theme
 }
 
-// For writing out color values
-const float CNorm = 1/float(65535);	// Maximum uint16
-
-// These are template classes so as to be able to handle both
-// "rgb_color" and "RGBColor" declarations (both are uint16 red, green, blue)
-
-template<class CType> pt::ptree ColorTree(CType& Color)
-{
-	pt::ptree pt;
-	pt.put("<xmlattr>.red", CNorm * Color.red);
-	pt.put("<xmlattr>.green", CNorm * Color.green);
-	pt.put("<xmlattr>.blue", CNorm * Color.blue);
-	return pt;
-}
-
-template<class CType> pt::ptree ColorTreeWithIndex(CType& Color, int Index)
-{
-	pt::ptree pt;
-	pt.put("<xmlattr>.index", Index);
-	pt.put("<xmlattr>.red", CNorm * Color.red);
-	pt.put("<xmlattr>.green", CNorm * Color.green);
-	pt.put("<xmlattr>.blue", CNorm * Color.blue);
-	return pt;
-}
-
-// path with symbolic prefixes
-std::string XML_Pathname(const char *String);
 
 extern void hub_set_minimum_send_period(int32);
 extern int32& hub_get_minimum_send_period();
@@ -2417,58 +2386,6 @@ void initialize_preferences(
 	}
 }
 
-// Reading from property trees
-
-template<typename T> bool GetTreeAttr(pt::ptree tree, std::string path, T& value)
-{
-	try {
-		value = tree.get_child("<xmlattr>").get_child(path).get_value<T>();
-		return true;
-	} catch (pt::ptree_bad_path ep) {} catch (pt::ptree_bad_data ed) {}
-	return false;
-}
-
-template<typename T> bool GetTreeAttrBounded(pt::ptree tree, std::string path, T& value, T min, T max)
-{
-	T temp;
-	if (GetTreeAttr(tree, path, temp) && temp >= min && temp <= max)
-	{
-		value = temp;
-		return true;
-	}
-	return false;
-}
-
-template<typename T> bool GetTreeColor(pt::ptree tree, T& color)
-{
-	bool found_r = GetTreeAttr(tree, "red", color.red);
-	bool found_g = GetTreeAttr(tree, "green", color.green);
-	bool found_b = GetTreeAttr(tree, "blue", color.blue);
-	return found_r || found_g || found_b;
-}
-
-bool GetTreePath(pt::ptree root, std::string key, char *dest)
-{
-	std::string path;
-	if (GetTreeAttr(root, key, path))
-	{
-		expand_symbolic_paths(dest, path.c_str(), 255);
-		return true;
-	}
-	return false;
-}
-
-bool GetTreeCStr(pt::ptree root, std::string key, char *dest, int maxlen)
-{
-	std::string str;
-	if (GetTreeAttr(root, key, str))
-	{
-		DeUTF8_C(str.c_str(), str.length(), dest, maxlen);
-		return true;
-	}
-	return false;
-}
-
 void read_preferences ()
 {
 	// Set to defaults; will be overridden by reading in the XML stuff
@@ -2502,12 +2419,11 @@ void read_preferences ()
 	{
 		OFile.Close();
 		try {
-			pt::ptree prefs;
-			pt::read_xml(FileSpec.GetPath(), prefs);
-			pt::ptree root = prefs.get_child("mara_prefs");
+			InfoTree prefs = InfoTree::load_xml(FileSpec);
+			InfoTree root = prefs.get_child("mara_prefs");
 			
 			std::string version = "";
-			GetTreeAttr(root, "version", version);
+			root.read_attr("version", version);
 			if (!version.length())
 				logWarning2("Reading older preferences of unknown version. Preferences will be upgraded to version %s when saved. (%s)", A1_DATE_VERSION, FileSpec.GetPath());
 			else if (version < A1_DATE_VERSION)
@@ -2515,7 +2431,7 @@ void read_preferences ()
 			else if (version > A1_DATE_VERSION)
 				logWarning3("Reading newer preferences of version %s. Preferences will be downgraded to version %s when saved. (%s)", version.c_str(), A1_DATE_VERSION, FileSpec.GetPath());
 			
-			boost::optional<pt::ptree> ochild;
+			boost::optional<InfoTree> ochild;
 			
 			if ((ochild = root.get_child_optional("graphics")))
 				parse_graphics_preferences(*ochild, version);
@@ -2532,16 +2448,16 @@ void read_preferences ()
 			if ((ochild = root.get_child_optional("environment")))
 				parse_environment_preferences(*ochild, version);
 			
-		} catch (pt::xml_parser_error ex) {
+		} catch (InfoTree::parse_error ex) {
 			logError2("Error parsing preferences file (%s): %s", FileSpec.GetPath(), ex.what());
 			parse_error = true;
-		} catch (pt::ptree_bad_path ep) {
+		} catch (InfoTree::path_error ep) {
 			logError2("Could not find mara_prefs in preferences file (%s): %s", FileSpec.GetPath(), ep.what());
 			parse_error = true;
-		} catch (pt::ptree_bad_data ed) {
+		} catch (InfoTree::data_error ed) {
 			logError2("Unexpected data error in preferences file (%s): %s", FileSpec.GetPath(), ed.what());
 			parse_error = true;
-		} catch (pt::ptree_error ee) {
+		} catch (InfoTree::unexpected_error ee) {
 			logError2("Unexpected error in preferences file (%s): %s", FileSpec.GetPath(), ee.what());
 			parse_error = true;
 		}
@@ -2580,130 +2496,127 @@ void read_preferences ()
  */
 
 
-pt::ptree graphics_preferences_tree()
+InfoTree graphics_preferences_tree()
 {
-	pt::ptree root, attrs;
+	InfoTree root;
 
-	attrs.put("scmode_width", graphics_preferences->screen_mode.width);
-	attrs.put("scmode_height", graphics_preferences->screen_mode.height);
-	attrs.put("scmode_auto_resolution", graphics_preferences->screen_mode.auto_resolution);
-	attrs.put("scmode_hud", graphics_preferences->screen_mode.hud);
-	attrs.put("scmode_hud_scale", graphics_preferences->screen_mode.hud_scale_level);
-	attrs.put("scmode_term_scale", graphics_preferences->screen_mode.term_scale_level);
-	attrs.put("scmode_translucent_map", graphics_preferences->screen_mode.translucent_map);
-	attrs.put("scmode_camera_bob", graphics_preferences->screen_mode.camera_bob);
-	attrs.put("scmode_accel", graphics_preferences->screen_mode.acceleration);
-	attrs.put("scmode_highres", graphics_preferences->screen_mode.high_resolution);
-	attrs.put("scmode_fullscreen", graphics_preferences->screen_mode.fullscreen);
-	attrs.put("scmode_fill_the_screen", graphics_preferences->screen_mode.fill_the_screen);
-	attrs.put("scmode_bitdepth", graphics_preferences->screen_mode.bit_depth);
-	attrs.put("scmode_gamma", graphics_preferences->screen_mode.gamma_level);
-	attrs.put("scmode_fix_h_not_v", graphics_preferences->screen_mode.fix_h_not_v);
-	attrs.put("ogl_flags", graphics_preferences->OGL_Configure.Flags);
-	attrs.put("software_alpha_blending", graphics_preferences->software_alpha_blending);
-	attrs.put("anisotropy_level", graphics_preferences->OGL_Configure.AnisotropyLevel);
-	attrs.put("multisamples", graphics_preferences->OGL_Configure.Multisamples);
-	attrs.put("geforce_fix", graphics_preferences->OGL_Configure.GeForceFix);
-	attrs.put("wait_for_vsync", graphics_preferences->OGL_Configure.WaitForVSync);
-	attrs.put("gamma_corrected_blending", graphics_preferences->OGL_Configure.Use_sRGB);
-	attrs.put("use_npot", graphics_preferences->OGL_Configure.Use_NPOT);
-	attrs.put("double_corpse_limit", graphics_preferences->double_corpse_limit);
-	attrs.put("hog_the_cpu", graphics_preferences->hog_the_cpu);
-	attrs.put("movie_export_video_quality", graphics_preferences->movie_export_video_quality);
-	attrs.put("movie_export_audio_quality", graphics_preferences->movie_export_audio_quality);
-	root.put_child("<xmlattr>", attrs);
+	root.put_attr("scmode_width", graphics_preferences->screen_mode.width);
+	root.put_attr("scmode_height", graphics_preferences->screen_mode.height);
+	root.put_attr("scmode_auto_resolution", graphics_preferences->screen_mode.auto_resolution);
+	root.put_attr("scmode_hud", graphics_preferences->screen_mode.hud);
+	root.put_attr("scmode_hud_scale", graphics_preferences->screen_mode.hud_scale_level);
+	root.put_attr("scmode_term_scale", graphics_preferences->screen_mode.term_scale_level);
+	root.put_attr("scmode_translucent_map", graphics_preferences->screen_mode.translucent_map);
+	root.put_attr("scmode_camera_bob", graphics_preferences->screen_mode.camera_bob);
+	root.put_attr("scmode_accel", graphics_preferences->screen_mode.acceleration);
+	root.put_attr("scmode_highres", graphics_preferences->screen_mode.high_resolution);
+	root.put_attr("scmode_fullscreen", graphics_preferences->screen_mode.fullscreen);
+	root.put_attr("scmode_fill_the_screen", graphics_preferences->screen_mode.fill_the_screen);
+	root.put_attr("scmode_bitdepth", graphics_preferences->screen_mode.bit_depth);
+	root.put_attr("scmode_gamma", graphics_preferences->screen_mode.gamma_level);
+	root.put_attr("scmode_fix_h_not_v", graphics_preferences->screen_mode.fix_h_not_v);
+	root.put_attr("ogl_flags", graphics_preferences->OGL_Configure.Flags);
+	root.put_attr("software_alpha_blending", graphics_preferences->software_alpha_blending);
+	root.put_attr("anisotropy_level", graphics_preferences->OGL_Configure.AnisotropyLevel);
+	root.put_attr("multisamples", graphics_preferences->OGL_Configure.Multisamples);
+	root.put_attr("geforce_fix", graphics_preferences->OGL_Configure.GeForceFix);
+	root.put_attr("wait_for_vsync", graphics_preferences->OGL_Configure.WaitForVSync);
+	root.put_attr("gamma_corrected_blending", graphics_preferences->OGL_Configure.Use_sRGB);
+	root.put_attr("use_npot", graphics_preferences->OGL_Configure.Use_NPOT);
+	root.put_attr("double_corpse_limit", graphics_preferences->double_corpse_limit);
+	root.put_attr("hog_the_cpu", graphics_preferences->hog_the_cpu);
+	root.put_attr("movie_export_video_quality", graphics_preferences->movie_export_video_quality);
+	root.put_attr("movie_export_audio_quality", graphics_preferences->movie_export_audio_quality);
 	
-	root.put_child("void.color", ColorTree(graphics_preferences->OGL_Configure.VoidColor));
+	root.add_color("void.color", graphics_preferences->OGL_Configure.VoidColor);
 
 	for (int i = 0; i < 4; ++i)
 		for (int j = 0; j < 2; ++j)
-			root.add_child("landscapes.color", ColorTreeWithIndex(graphics_preferences->OGL_Configure.LscpColors[i][j], 2*i+j));
+			root.add_color("landscapes.color", graphics_preferences->OGL_Configure.LscpColors[i][j], 2*i+j);
 
 	for (int i = 0; i <= OGL_NUMBER_OF_TEXTURE_TYPES; ++i)
 	{
 		OGL_Texture_Configure& Config = (i == OGL_NUMBER_OF_TEXTURE_TYPES) ? graphics_preferences->OGL_Configure.ModelConfig : graphics_preferences->OGL_Configure.TxtrConfigList[i];
 		
-		pt::ptree tex;
-		tex.put("<xmlattr>.index", i);
-		tex.put("<xmlattr>.near_filter", Config.NearFilter);
-		tex.put("<xmlattr>.far_filter", Config.FarFilter);
-		tex.put("<xmlattr>.resolution", Config.Resolution);
-		tex.put("<xmlattr>.color_format", Config.ColorFormat);
-		tex.put("<xmlattr>.max_size", Config.MaxSize);
+		InfoTree tex;
+		tex.put_attr("index", i);
+		tex.put_attr("near_filter", Config.NearFilter);
+		tex.put_attr("far_filter", Config.FarFilter);
+		tex.put_attr("resolution", Config.Resolution);
+		tex.put_attr("color_format", Config.ColorFormat);
+		tex.put_attr("max_size", Config.MaxSize);
 		root.add_child("texture", tex);
 	}
 	return root;
 }
 
-pt::ptree player_preferences_tree()
+InfoTree player_preferences_tree()
 {
-	pt::ptree root, attrs;
+	InfoTree root;
 	
-	attrs.put("name", mac_roman_to_utf8(player_preferences->name).c_str());
-	attrs.put("color", player_preferences->color);
-	attrs.put("team", player_preferences->team);
-	attrs.put("last_time_ran", player_preferences->last_time_ran);
-	attrs.put("difficulty", player_preferences->difficulty_level);
-	attrs.put("bkgd_music", player_preferences->background_music_on);
-	attrs.put("crosshairs_active", player_preferences->crosshairs_active);
-	root.put_child("<xmlattr>", attrs);
+	root.put_attr_cstr("name", player_preferences->name);
+	root.put_attr("color", player_preferences->color);
+	root.put_attr("team", player_preferences->team);
+	root.put_attr("last_time_ran", player_preferences->last_time_ran);
+	root.put_attr("difficulty", player_preferences->difficulty_level);
+	root.put_attr("bkgd_music", player_preferences->background_music_on);
+	root.put_attr("crosshairs_active", player_preferences->crosshairs_active);
 	
 	ChaseCamData& ChaseCam = player_preferences->ChaseCam;
-	pt::ptree camattrs;
-	camattrs.put("behind", ChaseCam.Behind);
-	camattrs.put("upward", ChaseCam.Upward);
-	camattrs.put("rightward", ChaseCam.Rightward);
-	camattrs.put("flags", ChaseCam.Flags);
-	camattrs.put("damping", ChaseCam.Damping);
-	camattrs.put("spring", ChaseCam.Spring);
-	camattrs.put("opacity", ChaseCam.Opacity);
-	root.put_child("chase_cam.<xmlattr>", camattrs);
+	InfoTree cam;
+	cam.put_attr("behind", ChaseCam.Behind);
+	cam.put_attr("upward", ChaseCam.Upward);
+	cam.put_attr("rightward", ChaseCam.Rightward);
+	cam.put_attr("flags", ChaseCam.Flags);
+	cam.put_attr("damping", ChaseCam.Damping);
+	cam.put_attr("spring", ChaseCam.Spring);
+	cam.put_attr("opacity", ChaseCam.Opacity);
+	root.put_child("chase_cam", cam);
 	
 	CrosshairData& Crosshairs = player_preferences->Crosshairs;
-	pt::ptree chattrs;
-	chattrs.put("thickness", Crosshairs.Thickness);
-	chattrs.put("from_center", Crosshairs.FromCenter);
-	chattrs.put("length", Crosshairs.Length);
-	chattrs.put("shape", Crosshairs.Shape);
-	chattrs.put("opacity", Crosshairs.Opacity);
-	root.put_child("crosshairs.<xmlattr>", chattrs);
-	root.put_child("crosshairs.color", ColorTree(Crosshairs.Color));
+	InfoTree cross;
+	cross.put_attr("thickness", Crosshairs.Thickness);
+	cross.put_attr("from_center", Crosshairs.FromCenter);
+	cross.put_attr("length", Crosshairs.Length);
+	cross.put_attr("shape", Crosshairs.Shape);
+	cross.put_attr("opacity", Crosshairs.Opacity);
+	cross.add_color("color", Crosshairs.Color);
+	root.put_child("crosshairs", cross);
 
 	return root;
 }
 
-pt::ptree input_preferences_tree()
+InfoTree input_preferences_tree()
 {
-	pt::ptree root, attrs;
+	InfoTree root;
 	
-	attrs.put("device", input_preferences->input_device);
-	attrs.put("modifiers", input_preferences->modifiers);
-	attrs.put("sens_horizontal", input_preferences->sens_horizontal);
-	attrs.put("sens_vertical", input_preferences->sens_vertical);
-	attrs.put("mouse_acceleration", input_preferences->mouse_acceleration);
-	attrs.put("joystick_id", input_preferences->joystick_id);
-	root.put_child("<xmlattr>", attrs);
+	root.put_attr("device", input_preferences->input_device);
+	root.put_attr("modifiers", input_preferences->modifiers);
+	root.put_attr("sens_horizontal", input_preferences->sens_horizontal);
+	root.put_attr("sens_vertical", input_preferences->sens_vertical);
+	root.put_attr("mouse_acceleration", input_preferences->mouse_acceleration);
+	root.put_attr("joystick_id", input_preferences->joystick_id);
 
 	for (int i = 0; i < MAX_BUTTONS; i++)
 	{
-		pt::ptree mbutton;
-		mbutton.put("<xmlattr>.index", i);
+		InfoTree mbutton;
+		mbutton.put_attr("index", i);
 		if (input_preferences->mouse_button_actions[i] == _mouse_button_fires_left_trigger)
-			mbutton.put("<xmlattr>.action", "left_trigger");
+			mbutton.put_attr("action", "left_trigger");
 		else if (input_preferences->mouse_button_actions[i] == _mouse_button_fires_right_trigger)
-			mbutton.put("<xmlattr>.action", "right_trigger");
+			mbutton.put_attr("action", "right_trigger");
 		else
-			mbutton.put("<xmlattr>.action", "none");
+			mbutton.put_attr("action", "none");
 		root.add_child("mouse_button", mbutton);
 	}
 	
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
 	{
-		pt::ptree joyaxis;
-		joyaxis.put("<xmlattr>.index", i);
-		joyaxis.put("<xmlattr>.axis", input_preferences->joystick_axis_mappings[i]);
-		joyaxis.put("<xmlattr>.axis_sensitivity", input_preferences->joystick_axis_sensitivities[i]);
-		joyaxis.put("<xmlattr>.bound", input_preferences->joystick_axis_bounds[i]);
+		InfoTree joyaxis;
+		joyaxis.put_attr("index", i);
+		joyaxis.put_attr("axis", input_preferences->joystick_axis_mappings[i]);
+		joyaxis.put_attr("axis_sensitivity", input_preferences->joystick_axis_sensitivities[i]);
+		joyaxis.put_attr("bound", input_preferences->joystick_axis_bounds[i]);
 		root.add_child("joystick_axis_mapping", joyaxis);
 	}
 
@@ -2715,74 +2628,72 @@ pt::ptree input_preferences_tree()
 		else
 			code = input_preferences->shell_keycodes[i - NUMBER_OF_KEYS];
 		
-		pt::ptree key;
-		key.put("<xmlattr>.index", i);
-		key.put("<xmlattr>.value", code);
+		InfoTree key;
+		key.put_attr("index", i);
+		key.put_attr("value", code);
 		root.add_child("sdl_key", key);
 	}
 	
 	return root;
 }
 
-pt::ptree sound_preferences_tree()
+InfoTree sound_preferences_tree()
 {
-	pt::ptree root, attrs;
+	InfoTree root;
 	
-	attrs.put("channels", sound_preferences->channel_count);
-	attrs.put("volume", sound_preferences->volume);
-	attrs.put("music_volume", sound_preferences->music);
-	attrs.put("flags", sound_preferences->flags);
-	attrs.put("rate", sound_preferences->rate);
-	attrs.put("samples", sound_preferences->samples);
-	attrs.put("volume_while_speaking", sound_preferences->volume_while_speaking);
-	attrs.put("mute_while_transmitting", sound_preferences->mute_while_transmitting);
-	root.put_child("<xmlattr>", attrs);
+	root.put_attr("channels", sound_preferences->channel_count);
+	root.put_attr("volume", sound_preferences->volume);
+	root.put_attr("music_volume", sound_preferences->music);
+	root.put_attr("flags", sound_preferences->flags);
+	root.put_attr("rate", sound_preferences->rate);
+	root.put_attr("samples", sound_preferences->samples);
+	root.put_attr("volume_while_speaking", sound_preferences->volume_while_speaking);
+	root.put_attr("mute_while_transmitting", sound_preferences->mute_while_transmitting);
 	
 	return root;
 }
 
-pt::ptree network_preferences_tree()
+InfoTree network_preferences_tree()
 {
-	pt::ptree root, attrs;
+	InfoTree root;
 
-	attrs.put("microphone", network_preferences->allow_microphone);
-	attrs.put("untimed", network_preferences->game_is_untimed);
-	attrs.put("type", network_preferences->type);
-	attrs.put("game_type", network_preferences->game_type);
-	attrs.put("difficulty", network_preferences->difficulty_level);
-	attrs.put("game_options", network_preferences->game_options);
-	attrs.put("time_limit", network_preferences->time_limit);
-	attrs.put("kill_limit", network_preferences->kill_limit);
-	attrs.put("entry_point", network_preferences->entry_point);
-	attrs.put("autogather", network_preferences->autogather);
-	attrs.put("join_by_address", network_preferences->join_by_address);
-	attrs.put("join_address", network_preferences->join_address);
-	attrs.put("local_game_port", network_preferences->game_port);
-	attrs.put("game_protocol", sNetworkGameProtocolNames[network_preferences->game_protocol]);
-	attrs.put("use_speex_netmic_encoder", network_preferences->use_speex_encoder);
-	attrs.put("use_netscript", network_preferences->use_netscript);
-	attrs.put("netscript_file", XML_Pathname(network_preferences->netscript_file));
-	attrs.put("cheat_flags", network_preferences->cheat_flags);
-	attrs.put("advertise_on_metaserver", network_preferences->advertise_on_metaserver);
-	attrs.put("attempt_upnp", network_preferences->attempt_upnp);
-	attrs.put("check_for_updates", network_preferences->check_for_updates);
-	attrs.put("verify_https", network_preferences->verify_https);
-	attrs.put("metaserver_login", network_preferences->metaserver_login);
+	root.put_attr("microphone", network_preferences->allow_microphone);
+	root.put_attr("untimed", network_preferences->game_is_untimed);
+	root.put_attr("type", network_preferences->type);
+	root.put_attr("game_type", network_preferences->game_type);
+	root.put_attr("difficulty", network_preferences->difficulty_level);
+	root.put_attr("game_options", network_preferences->game_options);
+	root.put_attr("time_limit", network_preferences->time_limit);
+	root.put_attr("kill_limit", network_preferences->kill_limit);
+	root.put_attr("entry_point", network_preferences->entry_point);
+	root.put_attr("autogather", network_preferences->autogather);
+	root.put_attr("join_by_address", network_preferences->join_by_address);
+	root.put_attr("join_address", network_preferences->join_address);
+	root.put_attr("local_game_port", network_preferences->game_port);
+	root.put_attr("game_protocol", sNetworkGameProtocolNames[network_preferences->game_protocol]);
+	root.put_attr("use_speex_netmic_encoder", network_preferences->use_speex_encoder);
+	root.put_attr("use_netscript", network_preferences->use_netscript);
+	root.put_attr_path("netscript_file", network_preferences->netscript_file);
+	root.put_attr("cheat_flags", network_preferences->cheat_flags);
+	root.put_attr("advertise_on_metaserver", network_preferences->advertise_on_metaserver);
+	root.put_attr("attempt_upnp", network_preferences->attempt_upnp);
+	root.put_attr("check_for_updates", network_preferences->check_for_updates);
+	root.put_attr("verify_https", network_preferences->verify_https);
+	root.put_attr("metaserver_login", network_preferences->metaserver_login);
 
 	char passwd[33];
 	for (int i = 0; i < 16; i++)
 		sprintf(&passwd[2*i], "%.2x", network_preferences->metaserver_password[i] ^ sPasswordMask[i]);
 	passwd[32] = '\0';
-	attrs.put("metaserver_password", passwd);
+	root.put_attr("metaserver_password", passwd);
 	
-	attrs.put("use_custom_metaserver_colors", network_preferences->use_custom_metaserver_colors);
-	attrs.put("mute_metaserver_guests", network_preferences->mute_metaserver_guests);
-	attrs.put("join_metaserver_by_default", network_preferences->join_metaserver_by_default);
-	attrs.put("allow_stats", network_preferences->allow_stats);
-	root.put_child("<xmlattr>", attrs);
+	root.put_attr("use_custom_metaserver_colors", network_preferences->use_custom_metaserver_colors);
+	root.put_attr("mute_metaserver_guests", network_preferences->mute_metaserver_guests);
+	root.put_attr("join_metaserver_by_default", network_preferences->join_metaserver_by_default);
+	root.put_attr("allow_stats", network_preferences->allow_stats);
 
 	for (int i = 0; i < 2; i++)
-		root.add_child("color", ColorTreeWithIndex(network_preferences->metaserver_colors[i], i));
+		root.add_color("color", network_preferences->metaserver_colors[i], i);
 
 	root.put_child("star_protocol", StarPreferencesTree());
 	root.put_child("ring_protocol", RingPreferencesTree());
@@ -2790,34 +2701,33 @@ pt::ptree network_preferences_tree()
 	return root;
 }
 
-pt::ptree environment_preferences_tree()
+InfoTree environment_preferences_tree()
 {
-	pt::ptree root, attrs;
+	InfoTree root;
 
-	attrs.put("map_file", XML_Pathname(environment_preferences->map_file));
-	attrs.put("physics_file", XML_Pathname(environment_preferences->physics_file));
-	attrs.put("shapes_file", XML_Pathname(environment_preferences->shapes_file));
-	attrs.put("sounds_file", XML_Pathname(environment_preferences->sounds_file));
-	attrs.put("resources_file", XML_Pathname(environment_preferences->resources_file));
-	attrs.put("map_checksum", environment_preferences->map_checksum);
-	attrs.put("physics_checksum", environment_preferences->physics_checksum);
-	attrs.put("shapes_mod_date", static_cast<uint32>(environment_preferences->shapes_mod_date));
-	attrs.put("sounds_mod_date", static_cast<uint32>(environment_preferences->sounds_mod_date));
-	attrs.put("group_by_directory", environment_preferences->group_by_directory);
-	attrs.put("reduce_singletons", environment_preferences->reduce_singletons);
-	attrs.put("smooth_text", environment_preferences->smooth_text);
-	attrs.put("solo_lua_file", XML_Pathname(environment_preferences->solo_lua_file));
-	attrs.put("use_solo_lua", environment_preferences->use_solo_lua);
-	attrs.put("use_replay_net_lua", environment_preferences->use_replay_net_lua);
-	attrs.put("hide_alephone_extensions", environment_preferences->hide_extensions);
-	attrs.put("film_profile", static_cast<uint32>(environment_preferences->film_profile));
-	attrs.put("maximum_quick_saves", environment_preferences->maximum_quick_saves);
-	root.put_child("<xmlattr>", attrs);
+	root.put_attr_path("map_file", environment_preferences->map_file);
+	root.put_attr_path("physics_file", environment_preferences->physics_file);
+	root.put_attr_path("shapes_file", environment_preferences->shapes_file);
+	root.put_attr_path("sounds_file", environment_preferences->sounds_file);
+	root.put_attr_path("resources_file", environment_preferences->resources_file);
+	root.put_attr("map_checksum", environment_preferences->map_checksum);
+	root.put_attr("physics_checksum", environment_preferences->physics_checksum);
+	root.put_attr("shapes_mod_date", static_cast<uint32>(environment_preferences->shapes_mod_date));
+	root.put_attr("sounds_mod_date", static_cast<uint32>(environment_preferences->sounds_mod_date));
+	root.put_attr("group_by_directory", environment_preferences->group_by_directory);
+	root.put_attr("reduce_singletons", environment_preferences->reduce_singletons);
+	root.put_attr("smooth_text", environment_preferences->smooth_text);
+	root.put_attr_path("solo_lua_file", environment_preferences->solo_lua_file);
+	root.put_attr("use_solo_lua", environment_preferences->use_solo_lua);
+	root.put_attr("use_replay_net_lua", environment_preferences->use_replay_net_lua);
+	root.put_attr("hide_alephone_extensions", environment_preferences->hide_extensions);
+	root.put_attr("film_profile", static_cast<uint32>(environment_preferences->film_profile));
+	root.put_attr("maximum_quick_saves", environment_preferences->maximum_quick_saves);
 
 	for (Plugins::iterator it = Plugins::instance()->begin(); it != Plugins::instance()->end(); ++it) {
 		if (it->compatible() && !it->enabled) {
-			pt::ptree disable;
-			disable.put("<xmlattr>.path", XML_Pathname(it->directory.GetPath()));
+			InfoTree disable;
+			disable.put_attr_path("path", it->directory.GetPath());
 			root.add_child("disable_plugin", disable);
 		}
 	}
@@ -2827,8 +2737,8 @@ pt::ptree environment_preferences_tree()
 
 void write_preferences()
 {
-	pt::ptree root;
-	root.put("<xmlattr>.version", A1_DATE_VERSION);
+	InfoTree root;
+	root.put_attr("version", A1_DATE_VERSION);
 	
 	root.put_child("graphics", graphics_preferences_tree());
 	root.put_child("player", player_preferences_tree());
@@ -2839,15 +2749,18 @@ void write_preferences()
 #endif
 	root.put_child("environment", environment_preferences_tree());
 	
-	pt::ptree fileroot;
+	InfoTree fileroot;
 	fileroot.put_child("mara_prefs", root);
 	
 	FileSpecifier FileSpec;
 	FileSpec.SetToPreferencesDir();
 	FileSpec += getcstr(temporary, strFILENAMES, filenamePREFERENCES);
 	
-	pt::write_xml(FileSpec.GetPath(), fileroot, std::locale(),
-				  pt::xml_writer_make_settings(' ', 2));
+	try {
+		fileroot.save_xml(FileSpec);
+	} catch (InfoTree::parse_error ex) {
+		logError2("Error saving preferences file (%s): %s", FileSpec.GetPath(), ex.what());
+	}
 }
 
 /*
@@ -3308,12 +3221,6 @@ dont_auto_recenter() {
 }
 
 
-std::string XML_Pathname(const char *String)
-{
-	contract_symbolic_paths(temporary, String, 255);
-	return std::string(temporary);
-}
-
 // LP additions: MML-like prefs stuff
 // These parsers are intended to work correctly on both Mac and SDL prefs files;
 // including one crossing over to the other platform (uninterpreted fields become defaults)
@@ -3370,12 +3277,12 @@ const ViewSizeData LegacyViewSizes[32] =
 	{ 1280, 720, false}
 };
 
-void parse_graphics_preferences(pt::ptree root, std::string version)
+void parse_graphics_preferences(InfoTree root, std::string version)
 {
 	const SDL_version *sdl_version = SDL_Linked_Version();
 	
 	int scmode = -1;
-	GetTreeAttr(root, "scmode_size", scmode);
+	root.read_attr("scmode_size", scmode);
 	if (scmode >= 0 && scmode < 32)
 	{
 		graphics_preferences->screen_mode.height = LegacyViewSizes[scmode].Height;
@@ -3383,138 +3290,136 @@ void parse_graphics_preferences(pt::ptree root, std::string version)
 		graphics_preferences->screen_mode.hud = LegacyViewSizes[scmode].HUD;
 	}
 
-	GetTreeAttr(root, "scmode_height", graphics_preferences->screen_mode.height);
-	GetTreeAttr(root, "scmode_width", graphics_preferences->screen_mode.width);
-	GetTreeAttr(root, "scmode_auto_resolution", graphics_preferences->screen_mode.auto_resolution);
-	GetTreeAttr(root, "scmode_hud", graphics_preferences->screen_mode.hud);
-	GetTreeAttr(root, "scmode_hud_scale", graphics_preferences->screen_mode.hud_scale_level);
-	GetTreeAttr(root, "scmode_term_scale", graphics_preferences->screen_mode.term_scale_level);
-	GetTreeAttr(root, "scmode_translucent_map", graphics_preferences->screen_mode.translucent_map);
-	GetTreeAttr(root, "scmode_camera_bob", graphics_preferences->screen_mode.camera_bob);
-	GetTreeAttr(root, "scmode_accel", graphics_preferences->screen_mode.acceleration);
-	GetTreeAttr(root, "scmode_highres", graphics_preferences->screen_mode.high_resolution);
-	GetTreeAttr(root, "scmode_fullscreen", graphics_preferences->screen_mode.fullscreen);
+	root.read_attr("scmode_height", graphics_preferences->screen_mode.height);
+	root.read_attr("scmode_width", graphics_preferences->screen_mode.width);
+	root.read_attr("scmode_auto_resolution", graphics_preferences->screen_mode.auto_resolution);
+	root.read_attr("scmode_hud", graphics_preferences->screen_mode.hud);
+	root.read_attr("scmode_hud_scale", graphics_preferences->screen_mode.hud_scale_level);
+	root.read_attr("scmode_term_scale", graphics_preferences->screen_mode.term_scale_level);
+	root.read_attr("scmode_translucent_map", graphics_preferences->screen_mode.translucent_map);
+	root.read_attr("scmode_camera_bob", graphics_preferences->screen_mode.camera_bob);
+	root.read_attr("scmode_accel", graphics_preferences->screen_mode.acceleration);
+	root.read_attr("scmode_highres", graphics_preferences->screen_mode.high_resolution);
+	root.read_attr("scmode_fullscreen", graphics_preferences->screen_mode.fullscreen);
 
 	if (SDL_VERSIONNUM(sdl_version->major, sdl_version->minor, sdl_version->patch) >= SDL_VERSIONNUM(1, 2, 10))
-		GetTreeAttr(root, "scmode_fill_the_screen", graphics_preferences->screen_mode.fill_the_screen);
+		root.read_attr("scmode_fill_the_screen", graphics_preferences->screen_mode.fill_the_screen);
 	else
 		graphics_preferences->screen_mode.fill_the_screen = true;
 	
-	GetTreeAttr(root, "scmode_fix_h_not_v", graphics_preferences->screen_mode.fix_h_not_v);
-	GetTreeAttr(root, "scmode_bitdepth", graphics_preferences->screen_mode.bit_depth);
-	GetTreeAttr(root, "scmode_gamma", graphics_preferences->screen_mode.gamma_level);
-	GetTreeAttr(root, "ogl_flags", graphics_preferences->OGL_Configure.Flags);
-	GetTreeAttr(root, "software_alpha_blending", graphics_preferences->software_alpha_blending);
-	GetTreeAttr(root, "anisotropy_level", graphics_preferences->OGL_Configure.AnisotropyLevel);
-	GetTreeAttr(root, "multisamples", graphics_preferences->OGL_Configure.Multisamples);
-	GetTreeAttr(root, "geforce_fix", graphics_preferences->OGL_Configure.GeForceFix);
-	GetTreeAttr(root, "wait_for_vsync", graphics_preferences->OGL_Configure.WaitForVSync);
-	GetTreeAttr(root, "gamma_corrected_blending", graphics_preferences->OGL_Configure.Use_sRGB);
-	GetTreeAttr(root, "use_npot", graphics_preferences->OGL_Configure.Use_NPOT);
-	GetTreeAttr(root, "double_corpse_limit", graphics_preferences->double_corpse_limit);
-	GetTreeAttr(root, "hog_the_cpu", graphics_preferences->hog_the_cpu);
-	GetTreeAttrBounded<int16>(root, "movie_export_video_quality", graphics_preferences->movie_export_video_quality, 0, 100);
-	GetTreeAttrBounded<int16>(root, "movie_export_audio_quality", graphics_preferences->movie_export_audio_quality, 0, 100);
+	root.read_attr("scmode_fix_h_not_v", graphics_preferences->screen_mode.fix_h_not_v);
+	root.read_attr("scmode_bitdepth", graphics_preferences->screen_mode.bit_depth);
+	root.read_attr("scmode_gamma", graphics_preferences->screen_mode.gamma_level);
+	root.read_attr("ogl_flags", graphics_preferences->OGL_Configure.Flags);
+	root.read_attr("software_alpha_blending", graphics_preferences->software_alpha_blending);
+	root.read_attr("anisotropy_level", graphics_preferences->OGL_Configure.AnisotropyLevel);
+	root.read_attr("multisamples", graphics_preferences->OGL_Configure.Multisamples);
+	root.read_attr("geforce_fix", graphics_preferences->OGL_Configure.GeForceFix);
+	root.read_attr("wait_for_vsync", graphics_preferences->OGL_Configure.WaitForVSync);
+	root.read_attr("gamma_corrected_blending", graphics_preferences->OGL_Configure.Use_sRGB);
+	root.read_attr("use_npot", graphics_preferences->OGL_Configure.Use_NPOT);
+	root.read_attr("double_corpse_limit", graphics_preferences->double_corpse_limit);
+	root.read_attr("hog_the_cpu", graphics_preferences->hog_the_cpu);
+	root.read_attr_bounded<int16>("movie_export_video_quality", graphics_preferences->movie_export_video_quality, 0, 100);
+	root.read_attr_bounded<int16>("movie_export_audio_quality", graphics_preferences->movie_export_audio_quality, 0, 100);
 	
-	boost::optional<pt::ptree> ochild;
+	boost::optional<InfoTree> ochild;
 	
-	if ((ochild = root.get_child_optional("void")))
+	if ((ochild = root.get_child_optional("void.color")))
 	{
-		boost::optional<pt::ptree> ocolor;
-		if ((ocolor = ochild->get_child_optional("color")))
-			GetTreeColor(*ocolor, graphics_preferences->OGL_Configure.VoidColor);
+		ochild->read_color(graphics_preferences->OGL_Configure.VoidColor);
 	}
 	
 	if ((ochild = root.get_child_optional("landscapes")))
 	{
-		BOOST_FOREACH(pt::ptree::value_type &v, ochild->equal_range("color"))
+		BOOST_FOREACH(InfoTree::value_type &v, ochild->equal_range("color"))
 		{
-			pt::ptree color = v.second;
+			InfoTree color = v.second;
 			int index = -1;
-			GetTreeAttr(color, "index", index);
+			color.read_attr("index", index);
 			if (index >= 0 && index < 8)
-				GetTreeColor(color, graphics_preferences->OGL_Configure.LscpColors[index / 2][index % 2]);
+				color.read_color(graphics_preferences->OGL_Configure.LscpColors[index / 2][index % 2]);
 		}
 	}
 	
-	BOOST_FOREACH(pt::ptree::value_type &v, root.equal_range("texture"))
+	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("texture"))
 	{
-		pt::ptree tex = v.second;
+		InfoTree tex = v.second;
 		int index = -1;
-		GetTreeAttr(tex, "index", index);
+		tex.read_attr("index", index);
 		if (index >= 0 && index < OGL_NUMBER_OF_TEXTURE_TYPES)
 		{
 			OGL_Texture_Configure& Config = (index == OGL_NUMBER_OF_TEXTURE_TYPES) ? graphics_preferences->OGL_Configure.ModelConfig : graphics_preferences->OGL_Configure.TxtrConfigList[index];
-			GetTreeAttr(tex, "near_filter", Config.NearFilter);
-			GetTreeAttr(tex, "far_filter", Config.FarFilter);
-			GetTreeAttr(tex, "resolution", Config.Resolution);
-			GetTreeAttr(tex, "color_format", Config.ColorFormat);
-			GetTreeAttr(tex, "max_size", Config.MaxSize);
+			tex.read_attr("near_filter", Config.NearFilter);
+			tex.read_attr("far_filter", Config.FarFilter);
+			tex.read_attr("resolution", Config.Resolution);
+			tex.read_attr("color_format", Config.ColorFormat);
+			tex.read_attr("max_size", Config.MaxSize);
 		}
 	}
 }
 
 
-void parse_player_preferences(pt::ptree root, std::string version)
+void parse_player_preferences(InfoTree root, std::string version)
 {
-	GetTreeCStr(root, "name", player_preferences->name, PREFERENCES_NAME_LENGTH);
-	GetTreeAttr(root, "color", player_preferences->color);
-	GetTreeAttr(root, "team", player_preferences->team);
-	GetTreeAttr(root, "last_time_ran", player_preferences->last_time_ran);
-	GetTreeAttr(root, "difficulty", player_preferences->difficulty_level);
-	GetTreeAttr(root, "bkgd_music", player_preferences->background_music_on);
-	GetTreeAttr(root, "crosshairs_active", player_preferences->crosshairs_active);
+	root.read_cstr("name", player_preferences->name, PREFERENCES_NAME_LENGTH);
+	root.read_attr("color", player_preferences->color);
+	root.read_attr("team", player_preferences->team);
+	root.read_attr("last_time_ran", player_preferences->last_time_ran);
+	root.read_attr("difficulty", player_preferences->difficulty_level);
+	root.read_attr("bkgd_music", player_preferences->background_music_on);
+	root.read_attr("crosshairs_active", player_preferences->crosshairs_active);
 	
-	boost::optional<pt::ptree> ochild;
+	boost::optional<InfoTree> ochild;
 	if ((ochild = root.get_child_optional("chase_cam")))
 	{
-		GetTreeAttr(*ochild, "behind", player_preferences->ChaseCam.Behind);
-		GetTreeAttr(*ochild, "upward", player_preferences->ChaseCam.Upward);
-		GetTreeAttr(*ochild, "rightward", player_preferences->ChaseCam.Rightward);
-		GetTreeAttr(*ochild, "flags", player_preferences->ChaseCam.Flags);
-		GetTreeAttr(*ochild, "damping", player_preferences->ChaseCam.Damping);
-		GetTreeAttr(*ochild, "spring", player_preferences->ChaseCam.Spring);
-		GetTreeAttr(*ochild, "opacity", player_preferences->ChaseCam.Opacity);
+		ochild->read_attr("behind", player_preferences->ChaseCam.Behind);
+		ochild->read_attr("upward", player_preferences->ChaseCam.Upward);
+		ochild->read_attr("rightward", player_preferences->ChaseCam.Rightward);
+		ochild->read_attr("flags", player_preferences->ChaseCam.Flags);
+		ochild->read_attr("damping", player_preferences->ChaseCam.Damping);
+		ochild->read_attr("spring", player_preferences->ChaseCam.Spring);
+		ochild->read_attr("opacity", player_preferences->ChaseCam.Opacity);
 	}
 	
 	if ((ochild = root.get_child_optional("crosshairs")))
 	{
-		GetTreeAttr(*ochild, "thickness", player_preferences->Crosshairs.Thickness);
-		GetTreeAttr(*ochild, "from_center", player_preferences->Crosshairs.FromCenter);
-		GetTreeAttr(*ochild, "length", player_preferences->Crosshairs.Length);
-		GetTreeAttr(*ochild, "shape", player_preferences->Crosshairs.Shape);
-		GetTreeAttr(*ochild, "opacity", player_preferences->Crosshairs.Opacity);
+		ochild->read_attr("thickness", player_preferences->Crosshairs.Thickness);
+		ochild->read_attr("from_center", player_preferences->Crosshairs.FromCenter);
+		ochild->read_attr("length", player_preferences->Crosshairs.Length);
+		ochild->read_attr("shape", player_preferences->Crosshairs.Shape);
+		ochild->read_attr("opacity", player_preferences->Crosshairs.Opacity);
 		
-		boost::optional<pt::ptree> ocolor;
+		boost::optional<InfoTree> ocolor;
 		if ((ocolor = root.get_child_optional("color")))
-			GetTreeColor(*ocolor, player_preferences->Crosshairs.Color);
+			ocolor->read_color(player_preferences->Crosshairs.Color);
 	}
 }
 
-void parse_input_preferences(pt::ptree root, std::string version)
+void parse_input_preferences(InfoTree root, std::string version)
 {
-	GetTreeAttr(root, "device", input_preferences->input_device);
-	GetTreeAttr(root, "modifiers", input_preferences->modifiers);
+	root.read_attr("device", input_preferences->input_device);
+	root.read_attr("modifiers", input_preferences->modifiers);
 
 	// old prefs may have combined sensitivity
-	GetTreeAttr(root, "sensitivity", input_preferences->sens_horizontal);
-	GetTreeAttr(root, "sensitivity", input_preferences->sens_vertical);
-	GetTreeAttr(root, "sens_horizontal", input_preferences->sens_horizontal);
-	GetTreeAttr(root, "sens_vertical", input_preferences->sens_vertical);
+	root.read_attr("sensitivity", input_preferences->sens_horizontal);
+	root.read_attr("sensitivity", input_preferences->sens_vertical);
+	root.read_attr("sens_horizontal", input_preferences->sens_horizontal);
+	root.read_attr("sens_vertical", input_preferences->sens_vertical);
 	
-	GetTreeAttr(root, "mouse_acceleration", input_preferences->mouse_acceleration);
-	GetTreeAttr(root, "joystick_id", input_preferences->joystick_id);
+	root.read_attr("mouse_acceleration", input_preferences->mouse_acceleration);
+	root.read_attr("joystick_id", input_preferences->joystick_id);
 
 	
-	BOOST_FOREACH(pt::ptree::value_type &v, root.equal_range("mouse_button"))
+	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("mouse_button"))
 	{
-		pt::ptree mb = v.second;
+		InfoTree mb = v.second;
 		int16 index = -1;
-		GetTreeAttr(mb, "index", index);
+		mb.read_attr("index", index);
 		if (index >= 0 && index < MAX_BUTTONS)
 		{
 			std::string action;
-			GetTreeAttr(mb, "action", action);
+			mb.read_attr("action", action);
 			if (action == "none")
 				input_preferences->mouse_button_actions[index] = _mouse_button_does_nothing;
 			else if (action == "left_trigger")
@@ -3524,76 +3429,76 @@ void parse_input_preferences(pt::ptree root, std::string version)
 		}
 	}
 	
-	BOOST_FOREACH(pt::ptree::value_type &v, root.equal_range("joystick_axis_mapping"))
+	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("joystick_axis_mapping"))
 	{
-		pt::ptree mapping = v.second;
+		InfoTree mapping = v.second;
 		int16 index = -1;
-		GetTreeAttr(mapping, "index", index);
+		mapping.read_attr("index", index);
 		if (index >= 0 && index < NUMBER_OF_JOYSTICK_MAPPINGS)
 		{
 			int16 axis = -2;
-			GetTreeAttr(mapping, "axis", axis);
+			mapping.read_attr("axis", axis);
 			if (axis >= -1 && axis <= 7)
 			{
 				input_preferences->joystick_axis_mappings[index] = axis;
-				GetTreeAttr(mapping, "axis_sensitivity",
-							input_preferences->joystick_axis_sensitivities[index]);
-				GetTreeAttrBounded<int16>(mapping, "bound",
-								   input_preferences->joystick_axis_bounds[index],
-								   0, SHRT_MAX);
+				mapping.read_attr("axis_sensitivity",
+								 input_preferences->joystick_axis_sensitivities[index]);
+				mapping.read_attr_bounded<int16>("bound",
+								 input_preferences->joystick_axis_bounds[index],
+								 0, SHRT_MAX);
 			}
 		}
 	}
 	
-	BOOST_FOREACH(pt::ptree::value_type &v, root.equal_range("sdl_key"))
+	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("sdl_key"))
 	{
-		pt::ptree key = v.second;
+		InfoTree key = v.second;
 		int16 index = -1;
-		GetTreeAttr(key, "index", index);
+		key.read_attr("index", index);
 		if (index >= 0 && index < NUMBER_OF_KEYS)
 		{
-			GetTreeAttr(key, "value", input_preferences->keycodes[index]);
+			key.read_attr("value", input_preferences->keycodes[index]);
 		}
 		else if (index >= 0 && index < (NUMBER_OF_KEYS + NUMBER_OF_SHELL_KEYS))
 		{
-			GetTreeAttr(key, "value",
+			key.read_attr("value",
 						input_preferences->shell_keycodes[index - NUMBER_OF_KEYS]);
 		}
 	}
 }
 
-void parse_sound_preferences(pt::ptree root, std::string version)
+void parse_sound_preferences(InfoTree root, std::string version)
 {
-	GetTreeAttr(root, "channels", sound_preferences->channel_count);
-	GetTreeAttr(root, "volume", sound_preferences->volume);
-	GetTreeAttr(root, "music_volume", sound_preferences->music);
-	GetTreeAttr(root, "flags", sound_preferences->flags);
-	GetTreeAttr(root, "rate", sound_preferences->rate);
-	GetTreeAttr(root, "samples", sound_preferences->samples);
-	GetTreeAttr(root, "volume_while_speaking", sound_preferences->volume_while_speaking);
-	GetTreeAttr(root, "mute_while_transmitting", sound_preferences->mute_while_transmitting);
+	root.read_attr("channels", sound_preferences->channel_count);
+	root.read_attr("volume", sound_preferences->volume);
+	root.read_attr("music_volume", sound_preferences->music);
+	root.read_attr("flags", sound_preferences->flags);
+	root.read_attr("rate", sound_preferences->rate);
+	root.read_attr("samples", sound_preferences->samples);
+	root.read_attr("volume_while_speaking", sound_preferences->volume_while_speaking);
+	root.read_attr("mute_while_transmitting", sound_preferences->mute_while_transmitting);
 }
 
 
 
-void parse_network_preferences(pt::ptree root, std::string version)
+void parse_network_preferences(InfoTree root, std::string version)
 {
-	GetTreeAttr(root, "microphone", network_preferences->allow_microphone);
-	GetTreeAttr(root, "untimed", network_preferences->game_is_untimed);
-	GetTreeAttr(root, "type", network_preferences->type);
-	GetTreeAttr(root, "game_type", network_preferences->game_type);
-	GetTreeAttr(root, "difficulty", network_preferences->difficulty_level);
-	GetTreeAttr(root, "game_options", network_preferences->game_options);
-	GetTreeAttr(root, "time_limit", network_preferences->time_limit);
-	GetTreeAttr(root, "kill_limit", network_preferences->kill_limit);
-	GetTreeAttr(root, "entry_point", network_preferences->entry_point);
-	GetTreeAttr(root, "autogather", network_preferences->autogather);
-	GetTreeAttr(root, "join_by_address", network_preferences->join_by_address);
-	GetTreeCStr(root, "join_address", network_preferences->join_address, 255);
-	GetTreeAttr(root, "local_game_port", network_preferences->game_port);
+	root.read_attr("microphone", network_preferences->allow_microphone);
+	root.read_attr("untimed", network_preferences->game_is_untimed);
+	root.read_attr("type", network_preferences->type);
+	root.read_attr("game_type", network_preferences->game_type);
+	root.read_attr("difficulty", network_preferences->difficulty_level);
+	root.read_attr("game_options", network_preferences->game_options);
+	root.read_attr("time_limit", network_preferences->time_limit);
+	root.read_attr("kill_limit", network_preferences->kill_limit);
+	root.read_attr("entry_point", network_preferences->entry_point);
+	root.read_attr("autogather", network_preferences->autogather);
+	root.read_attr("join_by_address", network_preferences->join_by_address);
+	root.read_cstr("join_address", network_preferences->join_address, 255);
+	root.read_attr("local_game_port", network_preferences->game_port);
 
 	std::string protocol;
-	if (GetTreeAttr(root, "game_protocol", protocol))
+	if (root.read_attr("game_protocol", protocol))
 	{
 		for (int i = 0; i < NUMBER_OF_NETWORK_GAME_PROTOCOL_NAMES; ++i)
 		{
@@ -3605,21 +3510,21 @@ void parse_network_preferences(pt::ptree root, std::string version)
 		}
 	}
 	
-	GetTreeAttr(root, "use_speex_netmic_encoder", network_preferences->use_speex_encoder);
-	GetTreeAttr(root, "use_netscript", network_preferences->use_netscript);
-	GetTreePath(root, "netscript_file", network_preferences->netscript_file);
-	GetTreeAttr(root, "cheat_flags", network_preferences->cheat_flags);
-	GetTreeAttr(root, "advertise_on_metaserver", network_preferences->advertise_on_metaserver);
-	GetTreeAttr(root, "attempt_upnp", network_preferences->attempt_upnp);
-	GetTreeAttr(root, "check_for_updates", network_preferences->check_for_updates);
-	GetTreeAttr(root, "verify_https", network_preferences->verify_https);
-	GetTreeAttr(root, "use_custom_metaserver_colors", network_preferences->use_custom_metaserver_colors);
-	GetTreeCStr(root, "metaserver_login", network_preferences->metaserver_login, 15);
-	GetTreeAttr(root, "mute_metaserver_guests", network_preferences->mute_metaserver_guests);
-	GetTreeCStr(root, "metaserver_clear_password", network_preferences->metaserver_password, 15);
+	root.read_attr("use_speex_netmic_encoder", network_preferences->use_speex_encoder);
+	root.read_attr("use_netscript", network_preferences->use_netscript);
+	root.read_path("netscript_file", network_preferences->netscript_file);
+	root.read_attr("cheat_flags", network_preferences->cheat_flags);
+	root.read_attr("advertise_on_metaserver", network_preferences->advertise_on_metaserver);
+	root.read_attr("attempt_upnp", network_preferences->attempt_upnp);
+	root.read_attr("check_for_updates", network_preferences->check_for_updates);
+	root.read_attr("verify_https", network_preferences->verify_https);
+	root.read_attr("use_custom_metaserver_colors", network_preferences->use_custom_metaserver_colors);
+	root.read_cstr("metaserver_login", network_preferences->metaserver_login, 15);
+	root.read_attr("mute_metaserver_guests", network_preferences->mute_metaserver_guests);
+	root.read_cstr("metaserver_clear_password", network_preferences->metaserver_password, 15);
 	
 	char obscured_password[33];
-	if (GetTreeCStr(root, "metaserver_password", obscured_password, 32))
+	if (root.read_cstr("metaserver_password", obscured_password, 32))
 	{
 		for (int i = 0; i < 15; i++)
 		{
@@ -3630,19 +3535,19 @@ void parse_network_preferences(pt::ptree root, std::string version)
 		network_preferences->metaserver_password[15] = '\0';
 	}
 	
-	GetTreeAttr(root, "join_metaserver_by_default", network_preferences->join_metaserver_by_default);
-	GetTreeAttr(root, "allow_stats", network_preferences->allow_stats);
+	root.read_attr("join_metaserver_by_default", network_preferences->join_metaserver_by_default);
+	root.read_attr("allow_stats", network_preferences->allow_stats);
 
-	BOOST_FOREACH(pt::ptree::value_type &v, root.equal_range("color"))
+	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("color"))
 	{
-		pt::ptree color = v.second;
+		InfoTree color = v.second;
 		int index = -1;
-		GetTreeAttr(color, "index", index);
+		color.read_attr("index", index);
 		if (index >= 0 && index < 2)
-			GetTreeColor(color, network_preferences->metaserver_colors[index]);
+			color.read_color(network_preferences->metaserver_colors[index]);
 	}
 	
-	boost::optional<pt::ptree> ochild;
+	boost::optional<InfoTree> ochild;
 	
 	if ((ochild = root.get_child_optional("star_protocol")))
 		StarGameProtocol::ParsePreferencesTree(*ochild, version);
@@ -3650,37 +3555,37 @@ void parse_network_preferences(pt::ptree root, std::string version)
 		RingGameProtocol::ParsePreferencesTree(*ochild, version);
 }
 
-void parse_environment_preferences(pt::ptree root, std::string version)
+void parse_environment_preferences(InfoTree root, std::string version)
 {
-	GetTreePath(root, "map_file", environment_preferences->map_file);
-	GetTreePath(root, "physics_file", environment_preferences->physics_file);
-	GetTreePath(root, "shapes_file", environment_preferences->shapes_file);
-	GetTreePath(root, "sounds_file", environment_preferences->sounds_file);
-	GetTreePath(root, "resources_file", environment_preferences->resources_file);
-	GetTreeAttr(root, "map_checksum", environment_preferences->map_checksum);
-	GetTreeAttr(root, "physics_checksum", environment_preferences->physics_checksum);
-	GetTreeAttr(root, "shapes_mod_date", environment_preferences->shapes_mod_date);
-	GetTreeAttr(root, "sounds_mod_date", environment_preferences->sounds_mod_date);
-	GetTreeAttr(root, "group_by_directory", environment_preferences->group_by_directory);
-	GetTreeAttr(root, "reduce_singletons", environment_preferences->reduce_singletons);
-	GetTreeAttr(root, "smooth_text", environment_preferences->smooth_text);
-	GetTreePath(root, "solo_lua_file", environment_preferences->solo_lua_file);
-	GetTreeAttr(root, "use_solo_lua", environment_preferences->use_solo_lua);
-	GetTreeAttr(root, "use_replay_net_lua", environment_preferences->use_replay_net_lua);
-	GetTreeAttr(root, "hide_alephone_extensions", environment_preferences->hide_extensions);
+	root.read_path("map_file", environment_preferences->map_file);
+	root.read_path("physics_file", environment_preferences->physics_file);
+	root.read_path("shapes_file", environment_preferences->shapes_file);
+	root.read_path("sounds_file", environment_preferences->sounds_file);
+	root.read_path("resources_file", environment_preferences->resources_file);
+	root.read_attr("map_checksum", environment_preferences->map_checksum);
+	root.read_attr("physics_checksum", environment_preferences->physics_checksum);
+	root.read_attr("shapes_mod_date", environment_preferences->shapes_mod_date);
+	root.read_attr("sounds_mod_date", environment_preferences->sounds_mod_date);
+	root.read_attr("group_by_directory", environment_preferences->group_by_directory);
+	root.read_attr("reduce_singletons", environment_preferences->reduce_singletons);
+	root.read_attr("smooth_text", environment_preferences->smooth_text);
+	root.read_path("solo_lua_file", environment_preferences->solo_lua_file);
+	root.read_attr("use_solo_lua", environment_preferences->use_solo_lua);
+	root.read_attr("use_replay_net_lua", environment_preferences->use_replay_net_lua);
+	root.read_attr("hide_alephone_extensions", environment_preferences->hide_extensions);
 	
 	uint32 profile = FILM_PROFILE_DEFAULT + 1;
-	GetTreeAttr(root, "film_profile", profile);
+	root.read_attr("film_profile", profile);
 	if (profile <= FILM_PROFILE_DEFAULT)
 		environment_preferences->film_profile = static_cast<FilmProfileType>(profile);
 	
-	GetTreeAttr(root, "maximum_quick_saves", environment_preferences->maximum_quick_saves);
+	root.read_attr("maximum_quick_saves", environment_preferences->maximum_quick_saves);
 	
-	BOOST_FOREACH(pt::ptree::value_type &v, root.equal_range("disable_plugin"))
+	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("disable_plugin"))
 	{
-		pt::ptree plugin = v.second;
+		InfoTree plugin = v.second;
 		char tempstr[256];
-		if (GetTreePath(plugin, "path", tempstr))
+		if (plugin.read_path("path", tempstr))
 		{
 			Plugins::instance()->disable(tempstr);
 		}

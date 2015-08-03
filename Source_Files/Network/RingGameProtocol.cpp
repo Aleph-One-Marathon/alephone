@@ -42,7 +42,7 @@
 #include "map.h" // TICKS_PER_SECOND
 #include "vbl.h" // parse_keymap
 #include "interface.h" // process_action_flags
-
+#include "InfoTree.h"
 #include "Logging.h"
 
 // Optional features, disabled by default on Mac to preserve existing behavior (I hope ;) )
@@ -2564,24 +2564,20 @@ record_profile(int req_action_flags) {
 
 
 void
-RingGameProtocol::ParsePreferencesTree(boost::property_tree::ptree prefs, std::string version)
+RingGameProtocol::ParsePreferencesTree(InfoTree prefs, std::string version)
 {
-	sRingPreferences.mAcceptPacketsFromAnyone = prefs.get("<xmlattr>.accept_packets_from_anyone", sRingPreferences.mAcceptPacketsFromAnyone);
-	sRingPreferences.mAdaptToLatency = prefs.get("<xmlattr>.adapt_to_latency", sRingPreferences.mAdaptToLatency);
-	int32 ticks = prefs.get("<xmlattr>.latency_hold_ticks", sRingPreferences.mLatencyHoldTicks);
-	if (ticks >= 2)
-		sRingPreferences.mLatencyHoldTicks = ticks;
+	prefs.read_attr("accept_packets_from_anyone", sRingPreferences.mAcceptPacketsFromAnyone);
+	prefs.read_attr("adapt_to_latency", sRingPreferences.mAdaptToLatency);
+	prefs.read_attr_bounded<int32>("latency_hold_ticks", sRingPreferences.mLatencyHoldTicks, 2, INT32_MAX);
 }
 
-boost::property_tree::ptree RingPreferencesTree()
+InfoTree RingPreferencesTree()
 {
-	boost::property_tree::ptree attrs;
-	attrs.put("accept_packets_from_anyone", sRingPreferences.mAcceptPacketsFromAnyone);
-	attrs.put("adapt_to_latency", sRingPreferences.mAdaptToLatency);
-	attrs.put("latency_hold_ticks", sRingPreferences.mLatencyHoldTicks);
+	InfoTree root;
+	root.put_attr("accept_packets_from_anyone", sRingPreferences.mAcceptPacketsFromAnyone);
+	root.put_attr("adapt_to_latency", sRingPreferences.mAdaptToLatency);
+	root.put_attr("latency_hold_ticks", sRingPreferences.mLatencyHoldTicks);
 	
-	boost::property_tree::ptree root;
-	root.put_child("<xmlattr>", attrs);
 	return root;
 }
 

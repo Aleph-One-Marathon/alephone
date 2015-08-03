@@ -29,7 +29,8 @@
 #include "NetworkGameProtocol.h"
 
 #include <stdio.h>
-#include <boost/property_tree/ptree.hpp>
+
+class InfoTree;
 
 class StarGameProtocol : public NetworkGameProtocol
 {
@@ -43,7 +44,7 @@ public:
 	int32	GetNetTime();
 	void	PacketHandler(DDPPacketBuffer* inPacket);
 
-	static void ParsePreferencesTree(boost::property_tree::ptree prefs, std::string version);
+	static void ParsePreferencesTree(InfoTree prefs, std::string version);
 
 	int32   GetUnconfirmedActionFlagsCount();
 	uint32  PeekUnconfirmedActionFlag(int32 offset);
@@ -51,6 +52,6 @@ public:
 };
 
 extern void DefaultStarPreferences();
-boost::property_tree::ptree StarPreferencesTree();
+InfoTree StarPreferencesTree();
 
 #endif // STARGAMEPROTOCOL_H

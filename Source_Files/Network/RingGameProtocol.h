@@ -29,7 +29,8 @@
 #include "NetworkGameProtocol.h"
 
 #include <stdio.h>
-#include <boost/property_tree/ptree.hpp>
+
+class InfoTree;
 
 class RingGameProtocol : public NetworkGameProtocol
 {
@@ -47,10 +48,10 @@ public:
 	uint32  PeekUnconfirmedActionFlag(int32 offset);
 	void    UpdateUnconfirmedActionFlags();
 
-	static void ParsePreferencesTree(boost::property_tree::ptree prefs, std::string version);
+	static void ParsePreferencesTree(InfoTree prefs, std::string version);
 };
 
 extern void DefaultRingPreferences();
-boost::property_tree::ptree RingPreferencesTree();
+InfoTree RingPreferencesTree();
 
 #endif // NETWORK_RING

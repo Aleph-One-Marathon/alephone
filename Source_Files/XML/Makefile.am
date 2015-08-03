@@ -3,12 +3,12 @@
 noinst_LIBRARIES = libxml.a
 
 libxml_a_SOURCES = ColorParser.h DamageParser.h Plugins.h		\
-  QuickSave.h		\
+  QuickSave.h InfoTree.h		\
   ShapesParser.h XML_Configure.h XML_DataBlock.h XML_ElementParser.h	\
   XML_LevelScript.h XML_Loader_SDL.h XML_ParseTreeRoot.h		\
 									\
   ColorParser.cpp DamageParser.cpp ShapesParser.cpp Plugins.cpp		\
-  QuickSave.cpp		\
+  QuickSave.cpp InfoTree.cpp		\
   XML_Configure.cpp XML_DataBlock.cpp XML_ElementParser.cpp		\
   XML_LevelScript.cpp XML_Loader_SDL.cpp XML_MakeRoot.cpp
 

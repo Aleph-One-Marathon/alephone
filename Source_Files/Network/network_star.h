@@ -39,7 +39,6 @@ enum {
 #endif
 
 #include <stdio.h>
-#include <boost/property_tree/ptree.hpp>
 
 enum {
         kEndOfMessagesMessageType = 0x454d,	// 'EM'
@@ -66,14 +65,14 @@ typedef ConcreteTickBasedCircularQueue<action_flags_t> TickBasedActionQueue;
 typedef WritableTickBasedCircularQueue<action_flags_t> WritableTickBasedActionQueue;
 
 
-class XML_ElementParser;
+class InfoTree;
 
 extern void hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* const* inPlayerAddresses, size_t inLocalPlayerIndex);
 extern void hub_cleanup(bool inGraceful, int32 inSmallestPostGameTick);
 extern void hub_received_network_packet(DDPPacketBufferPtr inPacket);
 extern void DefaultHubPreferences();
-extern boost::property_tree::ptree HubPreferencesTree();
-extern void HubParsePreferencesTree(boost::property_tree::ptree prefs, std::string version);
+extern InfoTree HubPreferencesTree();
+extern void HubParsePreferencesTree(InfoTree prefs, std::string version);
 
 extern void spoke_initialize(const NetAddrBlock& inHubAddress, int32 inFirstTick, size_t inNumberOfPlayers, WritableTickBasedActionQueue* const inPlayerQueues[], bool inPlayerConnectedStatus[], size_t inLocalPlayerIndex, bool inHubIsLocal);
 extern void spoke_cleanup(bool inGraceful);
@@ -89,7 +88,7 @@ extern int32 hub_latency(int player_index); // in ms, kNetLatencyInvalid if not 
 extern TickBasedActionQueue* spoke_get_unconfirmed_flags_queue();
 extern int32 spoke_get_smallest_unconfirmed_tick();
 extern void DefaultSpokePreferences();
-extern boost::property_tree::ptree SpokePreferencesTree();
-extern void SpokeParsePreferencesTree(boost::property_tree::ptree prefs, std::string version);
+extern InfoTree SpokePreferencesTree();
+extern void SpokeParsePreferencesTree(InfoTree prefs, std::string version);
 
 #endif // NETWORK_STAR_H
