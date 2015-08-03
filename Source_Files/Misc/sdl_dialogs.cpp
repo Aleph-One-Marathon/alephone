@@ -1288,7 +1288,11 @@ SDL_Surface *get_theme_image(int widget_type, int state, int which, int width, i
 	// Otherwise, a new tiled/rescaled surface is created which
 	// must be freed by the caller
 	int req_width = width ? width : s->w;
+	if (req_width < 1)
+		req_width = 1;
 	int req_height = height ? height : s->h;
+	if (req_height < 1)
+		req_height = 1;
 	SDL_Surface *s2 = scale ? rescale_surface(s, req_width, req_height) : tile_surface(s, req_width, req_height);
 	SDL_SetColorKey(s2, SDL_SRCCOLORKEY, SDL_MapRGB(s2->format, 0x00, 0xff, 0xff));
 	return s2;
