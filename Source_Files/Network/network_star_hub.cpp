@@ -1708,179 +1708,69 @@ static const int32 sDefaultHubPreferences[kNumAttributes] = {
 	kDefaultMinimumSendPeriod,
 };
 
-class XML_HubConfigurationParser: public XML_ElementParser
+
+void HubParsePreferencesTree(boost::property_tree::ptree prefs, std::string version)
 {
-public:
-	bool Start();
-	bool HandleAttribute(const char *Tag, const char *Value);
-	bool AttributesDone();
-
-	XML_HubConfigurationParser(): XML_ElementParser("hub") {}
-
-protected:
-
-        bool	mAttributePresent[kNumAttributes];
-	int32	mAttribute[kNumAttributes];
-};
-
-bool XML_HubConfigurationParser::Start()
-{
-        for(int i = 0; i < kNumAttributes; i++)
-                mAttributePresent[i] = false;
-
-	return true;
-}
-
-static const char* sAttributeMultiplySpecifiedString = "attribute multiply specified";
-
-bool XML_HubConfigurationParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	for(size_t i = 0; i < kNumAttributes; i++)
+	boost::optional<boost::property_tree::ptree> oattrs;
+	if ((oattrs = prefs.get_child_optional("<xmlattr>")))
 	{
-		if(StringsEqual(Tag,sAttributeStrings[i]))
+		boost::property_tree::ptree attrs = *oattrs;
+		
+		for (size_t i = 0; i < kNumAttributes; ++i)
 		{
-			if(!mAttributePresent[i]) {
-				if(ReadInt32Value(Value,mAttribute[i])) {
-					mAttributePresent[i] = true;
-					return true;
-				}
-				else
-					return false;
+			int32 value = attrs.get(sAttributeStrings[i], *(sAttributeDestinations[i]));
+			int32 min = INT32_MIN;
+			switch (i) {
+				case kPregameTicksBeforeNetDeathAttribute:
+				case kInGameTicksBeforeNetDeathAttribute:
+				case kRecoverySendPeriodAttribute:
+				case kSendPeriodAttribute:
+				case kPregameWindowSizeAttribute:
+				case kInGameWindowSizeAttribute:
+					min = 1;
+					break;
+				case kPregameNthElementAttribute:
+				case kInGameNthElementAttribute:
+				case kMinimumSendPeriodAttribute:
+					min = 0;
+					break;
 			}
-			else {
-				ErrorString = sAttributeMultiplySpecifiedString;
-				return false;
-			}
+			if (value < min)
+				logWarning4("improper value %d for attribute %s of <hub>; must be at least %d. using default of %d", value, sAttributeStrings[i], min, *(sAttributeDestinations[i]));
+			else
+				*(sAttributeDestinations[i]) = value;
 		}
-		else if (StringsEqual(Tag, "use_bandwidth_reduction"))
-		{
-			return ReadBooleanValueAsBool(Value, sHubPreferences.mBandwidthReduction);
-		}
-	}
-	
-	UnrecognizedTag();
-	return false;
-}
 
-bool XML_HubConfigurationParser::AttributesDone() {
-	// Ignore out-of-range values
-	for(int i = 0; i < kNumAttributes; i++)
-	{
-		if(mAttributePresent[i])
-		{
-			switch(i)
-			{
-			case kPregameTicksBeforeNetDeathAttribute:
-			case kInGameTicksBeforeNetDeathAttribute:
-			case kRecoverySendPeriodAttribute:
-			case kSendPeriodAttribute:
-			case kPregameWindowSizeAttribute:
-			case kInGameWindowSizeAttribute:
-				if(mAttribute[i] < 1)
-				{
-					// I don't know whether this actually does anything if I don't return false,
-					// but I'd like to honor the user's wishes as far as I can without just throwing
-					// up my hands.
-					BadNumericalValue();
-					logWarning3("improper value %d for attribute %s of <hub>; must be at least 1.  using default of %d", mAttribute[i], sAttributeStrings[i], *(sAttributeDestinations[i]));
-					mAttributePresent[i] = false;
-				}
-				else
-				{
-					*(sAttributeDestinations[i]) = mAttribute[i];
-				}
-				break;
-				
-			case kPregameNthElementAttribute:
-			case kInGameNthElementAttribute:
-				if(mAttribute[i] < 0)
-				{
-					BadNumericalValue();
-					logWarning3("improper value %d for attribute %s of <hub>; must be at least 1.  using default of %d", mAttribute[i], sAttributeStrings[i], *(sAttributeDestinations[i]));
-					mAttributePresent[i] = false;
-				}
-				else
-				{
-					*(sAttributeDestinations[i]) = mAttribute[i];
-				}
-				break;
-				
-			case kMinimumSendPeriodAttribute:
-				if (mAttribute[i] < 0)
-				{
-					BadNumericalValue();
-					logWarning3("improper value %d for attribute %s of <hub>; must be at least 0. using default of %d", mAttribute[i], sAttributeStrings[i], *(sAttributeDestinations[i]));
-					mAttributePresent[i] = false;
-				} 
-				else
-				{
-					// For some reason, the line below doesn't work in gcc
-					// Even more strangely, if you fprintf the value of
-					// &sHubPreferences.mMinimumSendPeriod, then it works!
-					// *(sAttributeDestinations[i]) = mAttribute[i];
-					sHubPreferences.mMinimumSendPeriod = mAttribute[i];
-				}
-				break;
-				
-				
-			default:
-				assert(false);
-				break;
-			} // switch(attribute)
+		sHubPreferences.mBandwidthReduction = attrs.get("use_bandwidth_reduction", sHubPreferences.mBandwidthReduction);
+
+		
+		// The checks above are not sufficient to catch all bad cases; if user specified a window size
+		// smaller than default, this is our only chance to deal with it.
+		if(sHubPreferences.mPregameNthElement >= sHubPreferences.mPregameWindowSize) {
+			logWarning5("value for <hub> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kPregameNthElementAttribute], sHubPreferences.mPregameNthElement, sAttributeStrings[kPregameWindowSizeAttribute], sHubPreferences.mPregameWindowSize, sHubPreferences.mPregameWindowSize - 1);
 			
-		} // if attribute present
+			sHubPreferences.mPregameNthElement = sHubPreferences.mPregameWindowSize - 1;
+		}
 		
-	} // loop over attributes
-	
-	// The checks above are not sufficient to catch all bad cases; if user specified a window size
-	// smaller than default, this is our only chance to deal with it.
-	if(sHubPreferences.mPregameNthElement >= sHubPreferences.mPregameWindowSize) {
-		logWarning5("value for <hub> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kPregameNthElementAttribute], sHubPreferences.mPregameNthElement, sAttributeStrings[kPregameWindowSizeAttribute], sHubPreferences.mPregameWindowSize, sHubPreferences.mPregameWindowSize - 1);
-		
-		sHubPreferences.mPregameNthElement = sHubPreferences.mPregameWindowSize - 1;
+		if(sHubPreferences.mInGameNthElement >= sHubPreferences.mInGameWindowSize) {
+			logWarning5("value for <hub> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kInGameNthElementAttribute], sHubPreferences.mInGameNthElement, sAttributeStrings[kInGameWindowSizeAttribute], sHubPreferences.mInGameWindowSize, sHubPreferences.mInGameWindowSize - 1);
+			
+			sHubPreferences.mInGameNthElement = sHubPreferences.mInGameWindowSize - 1;
+		}
 	}
-	
-	if(sHubPreferences.mInGameNthElement >= sHubPreferences.mInGameWindowSize) {
-		logWarning5("value for <hub> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kInGameNthElementAttribute], sHubPreferences.mInGameNthElement, sAttributeStrings[kInGameWindowSizeAttribute], sHubPreferences.mInGameWindowSize, sHubPreferences.mInGameWindowSize - 1);
-		
-		sHubPreferences.mInGameNthElement = sHubPreferences.mInGameWindowSize - 1;
-	}
-	
-	return true;
 }
 
-
-static XML_HubConfigurationParser HubConfigurationParser;
-
-
-XML_ElementParser*
-Hub_GetParser() {
-	return &HubConfigurationParser;
-}
-
-
-
-void
-WriteHubPreferences(FILE* F)
+boost::property_tree::ptree HubPreferencesTree()
 {
-	fprintf(F, "    <hub\n");
-	for(size_t i = 0; i < kNumAttributes; i++)
-	{
-		if(*(sAttributeDestinations[i]) != sDefaultHubPreferences[i])
-			fprintf(F, "      %s=\"%d\"\n", sAttributeStrings[i], *(sAttributeDestinations[i]));
-	}
-	if (!sHubPreferences.mBandwidthReduction)
-	{
-		fprintf(F, "      use_bandwidth_reduction=\"false\"\n");
-	}
-	fprintf(F, "    />\n");
-
-	fprintf(F, "    <!-- current hub defaults:\n");
-	fprintf(F, "      DO NOT EDIT THE FOLLOWING - they're FYI only.  Make settings in 'hub' tag above.\n");
-	for(size_t i = 0; i < kNumAttributes; i++)
-		fprintf(F, "      %s=\"%d\"\n", sAttributeStrings[i], sDefaultHubPreferences[i]);
-	fprintf(F, "      use_bandwidth_reduction=\"true\"\n");
-	fprintf(F, "    -->\n");
+	boost::property_tree::ptree attrs;
+	
+	for (size_t i = 0; i < kNumAttributes; ++i)
+		attrs.put(sAttributeStrings[i], *(sAttributeDestinations[i]));
+	attrs.put("use_bandwidth_reduction", sHubPreferences.mBandwidthReduction);
+	
+	boost::property_tree::ptree root;
+	root.put_child("<xmlattr>", attrs);
+	return root;
 }
 
 

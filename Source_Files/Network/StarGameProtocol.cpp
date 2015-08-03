@@ -238,20 +238,15 @@ call_distribution_response_function_if_available(byte* inBuffer, uint16 inBuffer
 
 
 
-static XML_ElementParser sStarParser("star_protocol");
-
-
-XML_ElementParser*
-StarGameProtocol::GetParser() {
-	static bool sAddedChildren = false;
-	if(!sAddedChildren)
-	{
-		sStarParser.AddChild(Hub_GetParser());
-		sStarParser.AddChild(Spoke_GetParser());
-		sAddedChildren = true;
-	}
-
-	return &sStarParser;
+void
+StarGameProtocol::ParsePreferencesTree(boost::property_tree::ptree prefs, std::string version)
+{
+	boost::optional<boost::property_tree::ptree> ochild;
+	
+	if ((ochild = prefs.get_child_optional("hub")))
+		HubParsePreferencesTree(*ochild, version);
+	if ((ochild = prefs.get_child_optional("spoke")))
+		SpokeParsePreferencesTree(*ochild, version);
 }
 
 
@@ -265,13 +260,12 @@ DefaultStarPreferences()
 
 
 
-void
-WriteStarPreferences(FILE* F)
+boost::property_tree::ptree StarPreferencesTree()
 {
-	fprintf(F,"  <star_protocol>\n");
-	WriteHubPreferences(F);
-	WriteSpokePreferences(F);
-	fprintf(F,"  </star_protocol>\n");
+	boost::property_tree::ptree root;
+	root.put_child("hub", HubPreferencesTree());
+	root.put_child("spoke", SpokePreferencesTree());
+	return root;
 }
 
 #endif // !defined(DISABLE_NETWORKING)

@@ -1148,8 +1148,6 @@ int32 spoke_get_smallest_unconfirmed_tick()
 }
 		
 
-static inline const char *BoolString(bool B) {return (B ? "true" : "false");}
-
 enum {
 	kPregameTicksBeforeNetDeathAttribute,
 	kInGameTicksBeforeNetDeathAttribute,
@@ -1182,159 +1180,62 @@ static int32* sAttributeDestinations[kNumInt32Attributes] =
 	&sSpokePreferences.mTimingNthElement
 };
 
-class XML_SpokeConfigurationParser: public XML_ElementParser
+
+void SpokeParsePreferencesTree(boost::property_tree::ptree prefs, std::string version)
 {
-public:
-	bool Start();
-	bool HandleAttribute(const char *Tag, const char *Value);
-	bool AttributesDone();
-
-	XML_SpokeConfigurationParser(): XML_ElementParser("spoke") {}
-
-protected:
-	bool	mAttributePresent[kNumAttributes];
-	int32	mAttribute[kNumInt32Attributes];
-	bool	mAdjustTiming;
-};
-
-bool XML_SpokeConfigurationParser::Start()
-{
-        for(int i = 0; i < kNumAttributes; i++)
-                mAttributePresent[i] = false;
-
-	return true;
-}
-
-static const char* sAttributeMultiplySpecifiedString = "attribute multiply specified";
-
-bool XML_SpokeConfigurationParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"adjust_timing"))
+	boost::optional<boost::property_tree::ptree> oattrs;
+	if ((oattrs = prefs.get_child_optional("<xmlattr>")))
 	{
-                if(!mAttributePresent[kAdjustTimingAttribute]) {
-                        if(ReadBooleanValueAsBool(Value,mAdjustTiming)) {
-                                mAttributePresent[kAdjustTimingAttribute] = true;
-                                return true;
-                        }
-                        else
-                                return false;
-                }
-		else {
-                        ErrorString = sAttributeMultiplySpecifiedString;
-                        return false;
-                }
-	}
-
-	else
-	{
-		for(size_t i = 0; i < kNumInt32Attributes; i++)
+		boost::property_tree::ptree attrs = *oattrs;
+		
+		for (size_t i = 0; i < kNumInt32Attributes; ++i)
 		{
-			if(StringsEqual(Tag,sAttributeStrings[i]))
-			{
-				if(!mAttributePresent[i]) {
-					if(ReadInt32Value(Value,mAttribute[i])) {
-						mAttributePresent[i] = true;
-						return true;
-					}
-					else
-						return false;
-				}
-				else {
-					ErrorString = sAttributeMultiplySpecifiedString;
-					return false;
-				}
-			}
-		}
-	}
-
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_SpokeConfigurationParser::AttributesDone() {
-	// Ignore out-of-range values
-	for(int i = 0; i < kNumAttributes; i++)
-	{
-		if(mAttributePresent[i])
-		{
-			switch(i)
-			{
+			int32 value = *(sAttributeDestinations[i]);
+			value = attrs.get(sAttributeStrings[i], value);
+			int32 min = INT32_MIN;
+			switch (i) {
 				case kPregameTicksBeforeNetDeathAttribute:
 				case kInGameTicksBeforeNetDeathAttribute:
 				case kRecoverySendPeriodAttribute:
 				case kTimingWindowSizeAttribute:
-					if(mAttribute[i] < 1)
-					{
-						// I don't know whether this actually does anything if I don't return false,
-						// but I'd like to honor the user's wishes as far as I can without just throwing
-						// up my hands.
-						BadNumericalValue();
-						logWarning3("improper value %d for attribute %s of <spoke>; must be at least 1.  using default of %d", mAttribute[i], sAttributeStrings[i], *(sAttributeDestinations[i]));
-						mAttributePresent[i] = false;
-					}
-					else
-					{
-						*(sAttributeDestinations[i]) = mAttribute[i];
-					}
+					min = 1;
 					break;
-
 				case kTimingNthElementAttribute:
-					if(mAttribute[i] < 0 || mAttribute[i] >= *(sAttributeDestinations[kTimingWindowSizeAttribute]))
-					{
-						BadNumericalValue();
-						logWarning4("improper value %d for attribute %s of <spoke>; must be at least 0 but less than %s.  using default of %d", mAttribute[i], sAttributeStrings[i], sAttributeStrings[kTimingWindowSizeAttribute], *(sAttributeDestinations[i]));
-						mAttributePresent[i] = false;
-					}
-					else
-					{
-						*(sAttributeDestinations[i]) = mAttribute[i];
-					}
+					min = 0;
 					break;
-
-				case kAdjustTimingAttribute:
-					sSpokePreferences.mAdjustTiming = mAdjustTiming;
-					break;
-
-				default:
-					assert(false);
-					break;
-			} // switch(attribute)
-			
-		} // if attribute present
+			}
+			if (value < min)
+				logWarning4("improper value %d for attribute %s of <spoke>; must be at least %d. using default of %d", value, sAttributeStrings[i], min, *(sAttributeDestinations[i]));
+			else
+				*(sAttributeDestinations[i]) = value;
+		}
 		
-	} // loop over attributes
-
-	// The checks above are not sufficient to catch all bad cases; if user specified a window size
-	// smaller than default, this is our only chance to deal with it.
-	if(sSpokePreferences.mTimingNthElement >= sSpokePreferences.mTimingWindowSize)
-	{
-		logWarning5("value for <spoke> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kTimingNthElementAttribute], mAttribute[kTimingNthElementAttribute], sAttributeStrings[kTimingWindowSizeAttribute], mAttribute[kTimingWindowSizeAttribute], sSpokePreferences.mTimingWindowSize - 1);
+		sSpokePreferences.mAdjustTiming = attrs.get("adjust_timing", sSpokePreferences.mAdjustTiming);
+		
+		
+		// The checks above are not sufficient to catch all bad cases; if user specified a window size
+		// smaller than default, this is our only chance to deal with it.
+		if(sSpokePreferences.mTimingNthElement >= sSpokePreferences.mTimingWindowSize)
+		{
+			logWarning5("value for <spoke> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kTimingNthElementAttribute], sSpokePreferences.mTimingNthElement, sAttributeStrings[kTimingWindowSizeAttribute], sSpokePreferences.mTimingWindowSize, sSpokePreferences.mTimingWindowSize - 1);
 			
-		sSpokePreferences.mTimingNthElement = sSpokePreferences.mTimingWindowSize - 1;
+			sSpokePreferences.mTimingNthElement = sSpokePreferences.mTimingWindowSize - 1;
+		}
 	}
-
-        return true;
 }
 
 
-static XML_SpokeConfigurationParser SpokeConfigurationParser;
-
-
-XML_ElementParser*
-Spoke_GetParser() {
-	return &SpokeConfigurationParser;
-}
-
-
-
-void
-WriteSpokePreferences(FILE* F)
+boost::property_tree::ptree SpokePreferencesTree()
 {
-	fprintf(F, "    <spoke\n");
-	for(size_t i = 0; i < kNumInt32Attributes; i++)
-		fprintf(F, "      %s=\"%d\"\n", sAttributeStrings[i], *(sAttributeDestinations[i]));
-	fprintf(F, "      adjust_timing=\"%s\"\n", BoolString(sSpokePreferences.mAdjustTiming));
-	fprintf(F, "    />\n");
+	boost::property_tree::ptree attrs;
+	
+	for (size_t i = 0; i < kNumInt32Attributes; ++i)
+		attrs.put(sAttributeStrings[i], *(sAttributeDestinations[i]));
+	attrs.put("adjust_timing", sSpokePreferences.mAdjustTiming);
+	
+	boost::property_tree::ptree root;
+	root.put_child("<xmlattr>", attrs);
+	return root;
 }
 
 

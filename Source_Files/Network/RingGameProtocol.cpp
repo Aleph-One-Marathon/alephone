@@ -42,7 +42,6 @@
 #include "map.h" // TICKS_PER_SECOND
 #include "vbl.h" // parse_keymap
 #include "interface.h" // process_action_flags
-#include "XML_ElementParser.h"
 
 #include "Logging.h"
 
@@ -2564,137 +2563,26 @@ record_profile(int req_action_flags) {
 
 
 
-static inline const char *BoolString(bool B) {return (B ? "true" : "false");}
-
-class XML_RingConfigurationParser: public XML_ElementParser
-{
-public:
-	bool Start();
-	bool HandleAttribute(const char *Tag, const char *Value);
-	bool AttributesDone();
-
-	XML_RingConfigurationParser(): XML_ElementParser("ring_protocol") {}
-
-protected:
-
-		enum {
-			kAcceptPacketsFromAnyoneAttribute,
-			kAdaptToLatencyAttribute,
-			kLatencyHoldTicksAttribute,
-			kNumAttributes
-		};
-        bool	mAttributePresent[kNumAttributes];
-
-	bool	mAcceptPacketsFromAnyone;
-	bool	mAdaptToLatency;
-	int32	mLatencyHoldTicks;
-};
-
-bool XML_RingConfigurationParser::Start()
-{
-        for(int i = 0; i < kNumAttributes; i++)
-                mAttributePresent[i] = false;
-
-	return true;
-}
-
-static const char* sAttributeMultiplySpecifiedString = "attribute multiply specified";
-
-bool XML_RingConfigurationParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"accept_packets_from_anyone"))
-	{
-                if(!mAttributePresent[kAcceptPacketsFromAnyoneAttribute]) {
-                        if(ReadBooleanValueAsBool(Value,mAcceptPacketsFromAnyone)) {
-                                mAttributePresent[kAcceptPacketsFromAnyoneAttribute] = true;
-                                return true;
-                        }
-                        else
-                                return false;
-                }
-		else {
-                        ErrorString = sAttributeMultiplySpecifiedString;
-                        return false;
-                }
-	}
-
-	if (StringsEqual(Tag,"adapt_to_latency"))
-	{
-                if(!mAttributePresent[kAdaptToLatencyAttribute]) {
-                        if(ReadBooleanValueAsBool(Value,mAdaptToLatency)) {
-                                mAttributePresent[kAdaptToLatencyAttribute] = true;
-                                return true;
-                        }
-                        else
-                                return false;
-                }
-		else {
-                        ErrorString = sAttributeMultiplySpecifiedString;
-                        return false;
-                }
-	}
-
-	if (StringsEqual(Tag,"latency_hold_ticks"))
-	{
-                if(!mAttributePresent[kLatencyHoldTicksAttribute]) {
-                        if(ReadInt32Value(Value,mLatencyHoldTicks)) {
-                                mAttributePresent[kLatencyHoldTicksAttribute] = true;
-                                return true;
-                        }
-                        else
-                                return false;
-                }
-		else {
-                        ErrorString = sAttributeMultiplySpecifiedString;
-                        return false;
-                }
-	}
-
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_RingConfigurationParser::AttributesDone() {
-	if(mAttributePresent[kAcceptPacketsFromAnyoneAttribute])
-		sRingPreferences.mAcceptPacketsFromAnyone = mAcceptPacketsFromAnyone;
-
-	if(mAttributePresent[kAdaptToLatencyAttribute])
-		sRingPreferences.mAdaptToLatency = mAdaptToLatency;
-
-	if(mAttributePresent[kLatencyHoldTicksAttribute])
-	{
-		// Ignore out-of-range values
-		if(mLatencyHoldTicks < 2)
-		{
-			BadNumericalValue();
-			logWarning2("improper value %d for attribute latency_hold_ticks of <ring_protocol>; must be at least 2.  using default of %d", mLatencyHoldTicks, sRingPreferences.mLatencyHoldTicks);
-		}
-		else
-			sRingPreferences.mLatencyHoldTicks = mLatencyHoldTicks;
-	}
-
-        return true;
-}
-
-
-static XML_RingConfigurationParser RingConfigurationParser;
-
-
-XML_ElementParser*
-RingGameProtocol::GetParser() {
-	return &RingConfigurationParser;
-}
-
-
-
 void
-WriteRingPreferences(FILE* F)
+RingGameProtocol::ParsePreferencesTree(boost::property_tree::ptree prefs, std::string version)
 {
-	fprintf(F,"  <ring_protocol\n");
-	fprintf(F,"    accept_packets_from_anyone=\"%s\"\n",BoolString(sRingPreferences.mAcceptPacketsFromAnyone));
-	fprintf(F,"    adapt_to_latency=\"%s\"\n",BoolString(sRingPreferences.mAdaptToLatency));
-	fprintf(F,"    latency_hold_ticks=\"%d\"\n",sRingPreferences.mLatencyHoldTicks);
-	fprintf(F,"  />\n");
+	sRingPreferences.mAcceptPacketsFromAnyone = prefs.get("<xmlattr>.accept_packets_from_anyone", sRingPreferences.mAcceptPacketsFromAnyone);
+	sRingPreferences.mAdaptToLatency = prefs.get("<xmlattr>.adapt_to_latency", sRingPreferences.mAdaptToLatency);
+	int32 ticks = prefs.get("<xmlattr>.latency_hold_ticks", sRingPreferences.mLatencyHoldTicks);
+	if (ticks >= 2)
+		sRingPreferences.mLatencyHoldTicks = ticks;
+}
+
+boost::property_tree::ptree RingPreferencesTree()
+{
+	boost::property_tree::ptree attrs;
+	attrs.put("accept_packets_from_anyone", sRingPreferences.mAcceptPacketsFromAnyone);
+	attrs.put("adapt_to_latency", sRingPreferences.mAdaptToLatency);
+	attrs.put("latency_hold_ticks", sRingPreferences.mLatencyHoldTicks);
+	
+	boost::property_tree::ptree root;
+	root.put_child("<xmlattr>", attrs);
+	return root;
 }
 
 
