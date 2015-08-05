@@ -30,7 +30,7 @@
 #include "game_errors.h"
 #include "Logging.h"
 #include "preferences.h"
-#include "XML_Configure.h"
+#include "InfoTree.h"
 #include "XML_Loader_SDL.h"
 #include "XML_ParseTreeRoot.h"
 #include "Scenario.h"
@@ -40,27 +40,17 @@
 #endif
 
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/foreach.hpp>
 
 namespace algo = boost::algorithm;
 
-class PluginLoader : public XML_Configure {
+class PluginLoader {
 public:
 	PluginLoader() { }
 	~PluginLoader() { }
 	
 	bool ParsePlugin(FileSpecifier& file);
 	bool ParseDirectory(FileSpecifier& dir);
-
-protected:
-	virtual bool GetData();
-	virtual void ReportReadError();
-	virtual void ReportParseError(const char *ErrorString, int LineNumber);
-	virtual void ReportInterpretError(const char* ErrorString);
-	virtual bool RequestAbort();
-
-private:
-	std::string m_name;
-	std::vector<char> m_data;
 };
 
 bool Plugin::compatible() const {
@@ -243,276 +233,10 @@ const Plugin* Plugins::find_theme()
 	return 0;
 }
 
-static Plugin Data;
-
-static bool plugin_file_exists(const char* Path)
+static bool plugin_file_exists(const Plugin& Data, std::string Path)
 {
 	FileSpecifier f = Data.directory + Path;
 	return f.Exists();
-}
-
-class XML_PluginMMLParser : public XML_ElementParser 
-{
-public:
-	bool HandleAttribute(const char* Tag, const char* Value);
-
-	XML_PluginMMLParser() : XML_ElementParser("mml") {}
-};
-
-bool XML_PluginMMLParser::HandleAttribute(const char* Tag, const char* Value)
-{
-	if (StringsEqual(Tag, "file")) {
-		if (plugin_file_exists(Value)) {
-			Data.mmls.push_back(Value);
-		}
-		return true;
-	}
-
-	UnrecognizedTag();
-	return false;
-}
-
-XML_PluginMMLParser PluginMMLParser;
-
-class XML_PluginShapesPatchParser : public XML_ElementParser
-{
-public:
-	bool HandleAttribute(const char* Tag, const char* Value);
-	bool AttributesDone();
-	bool End();
-
-	XML_PluginShapesPatchParser() : XML_ElementParser("shapes_patch"), RequiresOpenGL(false) {}
-
-private:
-	bool RequiresOpenGL;
-	std::string Path;
-};
-
-bool XML_PluginShapesPatchParser::HandleAttribute(const char* Tag, const char* Value)
-{
-	if (StringsEqual(Tag, "file"))
-	{
-		Path = Value;
-		return true;
-	}
-	else if (StringsEqual(Tag, "requires_opengl"))
-	{
-		return ReadBooleanValue(Value, RequiresOpenGL);
-		return true;
-	}
-	
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_PluginShapesPatchParser::AttributesDone()
-{
-	if (Path.empty())
-	{
-		AttribsMissing();
-		return false;
-	}
-
-	return true;
-}
-
-bool XML_PluginShapesPatchParser::End()
-{
-	if (plugin_file_exists(Path.c_str())) {
-		ShapesPatch patch;
-		patch.requires_opengl = RequiresOpenGL;
-		patch.path = Path;
-	
-		Data.shapes_patches.push_back(patch);
-	}
-	return true;
-}
-
-XML_PluginShapesPatchParser PluginShapesPatchParser;
-
-class XML_PluginScenarioInfoParser : public XML_ElementParser
-{
-public:
-    bool HandleAttribute(const char* Tag, const char* Value);
-    bool AttributesDone();
-    bool End();
-    
-    XML_PluginScenarioInfoParser() : XML_ElementParser("scenario") {}
-    
-private:
-    std::string Name;
-    std::string ID;
-    std::string Version;
-};
-
-bool XML_PluginScenarioInfoParser::HandleAttribute(const char* Tag, const char* Value)
-{
-    if (StringsEqual(Tag, "name"))
-    {
-        Name = std::string(Value, 0, 31);
-        return true;
-    }
-    if (StringsEqual(Tag, "id"))
-    {
-        ID = std::string(Value, 0, 23);
-        return true;
-    }
-    else if (StringsEqual(Tag, "version"))
-    {
-        Version = std::string(Value, 0, 7);
-        return true;
-    }
-    
-    UnrecognizedTag();
-    return false;
-}
-
-bool XML_PluginScenarioInfoParser::AttributesDone()
-{
-    if (Name.empty() && ID.empty())
-    {
-        AttribsMissing();
-        return false;
-    }
-    
-    return true;
-}
-
-bool XML_PluginScenarioInfoParser::End()
-{
-    ScenarioInfo info;
-    info.name = Name;
-    info.scenario_id = ID;
-    info.version = Version;
-    
-    Data.required_scenarios .push_back(info);
-    return true;
-}
-
-XML_PluginScenarioInfoParser PluginScenarioInfoParser;
-
-static DirectorySpecifier current_plugin_directory;
-
-class XML_PluginParser : public XML_ElementParser
-{
-	friend class XML_PluginMMLParser;
-public:
-	bool Start();
-	bool HandleAttribute(const char* Tag, const char* Value);
-	bool AttributesDone();
-	bool End();
-	
-	XML_PluginParser() : XML_ElementParser("plugin") {}
-};
-
-bool XML_PluginParser::Start() {
-	Data = Plugin();
-	Data.directory = current_plugin_directory;
-	Data.enabled = true;
-	return true;
-}
-
-bool XML_PluginParser::HandleAttribute(const char* Tag, const char* Value)
-{
-	if (StringsEqual(Tag, "name")) {
-		Data.name = Value;
-		return true;
-	} else if (StringsEqual(Tag, "version")) {
-		Data.version = Value;
-		return true;
-	} else if (StringsEqual(Tag, "description")) {
-		Data.description = Value;
-		return true;
-	} else if (StringsEqual(Tag, "minimum_version")) {
-		Data.required_version = Value;
-		return true;
-	} else if (StringsEqual(Tag, "hud_lua")) {
-		if (plugin_file_exists(Value)) {
-			Data.hud_lua = Value;
-		}
-		return true;
-	} else if (StringsEqual(Tag, "solo_lua")) {
-		if (plugin_file_exists(Value)) {
-			Data.solo_lua = Value;
-		}
-		return true;
-	} else if (StringsEqual(Tag, "stats_lua")) {
-		if (plugin_file_exists(Value)) {
-			Data.stats_lua = Value;
-		}
-		return true;
-	} else if (StringsEqual(Tag, "theme_dir")) {
-		std::string theme_mml = Value;
-		theme_mml += "/theme2.mml";
-		if (plugin_file_exists(theme_mml.c_str())) {
-			Data.theme = Value;
-		}
-		return true;
-	}
-
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_PluginParser::AttributesDone()
-{
-	if (Data.name == "") {
-		AttribsMissing();
-		return false;
-	}
-	
-	return true;
-}
-
-bool XML_PluginParser::End() {
-	std::sort(Data.mmls.begin(), Data.mmls.end());
-	if (Data.theme.size()) {
-		Data.hud_lua = "";
-		Data.solo_lua = "";
-		Data.shapes_patches.clear();
-	}
-	Plugins::instance()->add(Data);
-	return true;
-}
-
-XML_ElementParser PluginRootParser("");
-XML_PluginParser PluginParser;
-
-bool PluginLoader::GetData()
-{
-	if (m_data.size() == 0) {
-		return false;
-	}
-
-	Buffer = &m_data[0];
-	BufLen = m_data.size();
-	LastOne = true;
-
-	return true;
-}
-
-void PluginLoader::ReportReadError()
-{
-	logError1("Error reading %s plugin resources", m_name.c_str());
-}
-
-void PluginLoader::ReportParseError(const char* ErrorString, int LineNumber) 
-{
-	logError3("XML parsing error: %s at line %d in %s Plugin.xml", ErrorString, LineNumber, m_name.c_str());
-}
-
-const int MaxErrorsToShow = 7;
-
-void PluginLoader::ReportInterpretError(const char* ErrorString)
-{
-	if (GetNumInterpretErrors() < MaxErrorsToShow) {
-		logError(ErrorString);
-	}
-}
-
-bool PluginLoader::RequestAbort()
-{
-	return (GetNumInterpretErrors() >= MaxErrorsToShow);
 }
 
 bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
@@ -520,26 +244,104 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 	OpenedFile file;
 	if (file_name.Open(file)) 
 	{
-		
 		int32 data_size;
 		file.GetLength(data_size);
-		m_data.resize(data_size);
+		std::vector<char> file_data;
+		file_data.resize(data_size);
 
-		if (file.Read(data_size, &m_data[0])) 
+		if (file.Read(data_size, &file_data[0]))
 		{
+			DirectorySpecifier current_plugin_directory;
 			file_name.ToDirectory(current_plugin_directory);
 
 			char name[256];
 			current_plugin_directory.GetName(name);
-			m_name = name;
 			
-			if (!DoParse()) 
-			{
-				logError1("There were parsing errors in %s Plugin.xml\n", m_name.c_str());
+			std::istringstream strm(std::string(file_data.begin(), file_data.end()));
+			try {
+				InfoTree root = InfoTree::load_xml(strm).get_child("plugin");
+				
+				Plugin Data = Plugin();
+				Data.directory = current_plugin_directory;
+				Data.enabled = true;
+				
+				root.read_attr("name", Data.name);
+				root.read_attr("version", Data.version);
+				root.read_attr("description", Data.description);
+				root.read_attr("minimum_version", Data.required_version);
+				
+				if (root.read_attr("hud_lua", Data.hud_lua) &&
+					!plugin_file_exists(Data, Data.hud_lua))
+					Data.hud_lua = "";
+				
+				if (root.read_attr("solo_lua", Data.solo_lua) &&
+					!plugin_file_exists(Data, Data.solo_lua))
+					Data.solo_lua = "";
+				
+				if (root.read_attr("stats_lua", Data.stats_lua) &&
+					!plugin_file_exists(Data, Data.stats_lua))
+					Data.stats_lua = "";
+				
+				if (root.read_attr("theme_dir", Data.theme) &&
+					!plugin_file_exists(Data, Data.theme + "/theme2.mml"))
+					Data.theme = "";
+				
+				BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("mml"))
+				{
+					InfoTree tree = v.second;
+					std::string mml_path;
+					if (tree.read_attr("file", mml_path) &&
+						plugin_file_exists(Data, mml_path))
+						Data.mmls.push_back(mml_path);
+				}
+
+				BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("shapes_patch"))
+				{
+					InfoTree tree = v.second;
+					ShapesPatch patch;
+					tree.read_attr("file", patch.path);
+					tree.read_attr("requires_opengl", patch.requires_opengl);
+					if (plugin_file_exists(Data, patch.path))
+						Data.shapes_patches.push_back(patch);
+				}
+
+				BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("scenario"))
+				{
+					InfoTree tree = v.second;
+					ScenarioInfo info;
+					tree.read_attr("name", info.name);
+					if (info.name.size() > 31)
+						info.name.erase(31);
+					
+					tree.read_attr("id", info.scenario_id);
+					if (info.scenario_id.size() > 23)
+						info.scenario_id.erase(23);
+					
+					tree.read_attr("version", info.version);
+					if (info.version.size() > 7)
+						info.version.erase(7);
+					
+					if (info.name.size() || info.scenario_id.size())
+						Data.required_scenarios.push_back(info);
+				}
+				
+				if (Data.name.length()) {
+					std::sort(Data.mmls.begin(), Data.mmls.end());
+					if (Data.theme.size()) {
+						Data.hud_lua = "";
+						Data.solo_lua = "";
+						Data.shapes_patches.clear();
+					}
+					Plugins::instance()->add(Data);
+				}
+				
+			} catch (InfoTree::parse_error e) {
+				logError2("There were parsing errors in %s Plugin.xml: %s", name, e.what());
+			} catch (InfoTree::path_error e) {
+				logError2("There were parsing errors in %s Plugin.xml: %s", name, e.what());
 			}
 		}
 
-		m_data.clear();
 		return true;
 	}
 	return false;
@@ -590,14 +392,9 @@ bool PluginLoader::ParseDirectory(FileSpecifier& dir)
 extern std::vector<DirectorySpecifier> data_search_path;
 
 void Plugins::enumerate() {
-	PluginParser.AddChild(&PluginMMLParser);
-	PluginParser.AddChild(&PluginShapesPatchParser);
-	PluginParser.AddChild(&PluginScenarioInfoParser);
-	PluginRootParser.AddChild(&PluginParser);
 
 	logContext("parsing plugins");
 	PluginLoader loader;
-	loader.CurrentElement = &PluginRootParser;
 	
 	for (std::vector<DirectorySpecifier>::const_iterator it = data_search_path.begin(); it != data_search_path.end(); ++it) {
 		DirectorySpecifier path = *it + "Plugins";

@@ -64,7 +64,7 @@ struct Plugin {
 };
 
 class Plugins {
-	friend class XML_PluginParser;
+	friend class PluginLoader;
 public:
 	static Plugins* instance();
 	typedef std::vector<Plugin>::iterator iterator;

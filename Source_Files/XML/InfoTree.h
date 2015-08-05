@@ -46,7 +46,9 @@ public:
 	InfoTree(const boost::property_tree::ptree &rhs) : boost::property_tree::ptree(rhs) {}
 	
 	static InfoTree load_xml(FileSpecifier filename);
+	static InfoTree load_xml(std::istringstream& stream);
 	void save_xml(FileSpecifier filename) const;
+	void save_xml(std::ostringstream& stream) const;
 	
 	static InfoTree load_ini(FileSpecifier filename);
 	static InfoTree load_ini(std::istringstream& stream);

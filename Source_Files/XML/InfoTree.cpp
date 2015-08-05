@@ -31,11 +31,25 @@ InfoTree InfoTree::load_xml(FileSpecifier filename)
 	return InfoTree(xtree);
 }
 
+InfoTree InfoTree::load_xml(std::istringstream& stream)
+{
+	boost::property_tree::ptree xtree;
+	boost::property_tree::read_xml(stream, xtree);
+	return InfoTree(xtree);
+}
+
 void InfoTree::save_xml(FileSpecifier filename) const
 {
 	boost::property_tree::write_xml(filename.GetPath(),
 									boost::property_tree::ptree(*this),
 									std::locale(),
+									boost::property_tree::xml_writer_make_settings(' ', 2));
+}
+
+void InfoTree::save_xml(std::ostringstream& stream) const
+{
+	boost::property_tree::write_xml(stream,
+									boost::property_tree::ptree(*this),
 									boost::property_tree::xml_writer_make_settings(' ', 2));
 }
 
