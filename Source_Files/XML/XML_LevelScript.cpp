@@ -37,6 +37,8 @@ Jul 31, 2002 (Loren Petrich):
 */
 
 #include <vector>
+#include <sstream>
+#include <boost/foreach.hpp>
 using namespace std;
 
 #include "cseries.h"
@@ -47,10 +49,12 @@ using namespace std;
 #include "XML_DataBlock.h"
 #include "XML_LevelScript.h"
 #include "XML_ParseTreeRoot.h"
+#include "InfoTree.h"
 #include "Plugins.h"
 #include "Random.h"
 #include "images.h"
 #include "lua_script.h"
+#include "Logging.h"
 
 #include "OGL_LoadScreen.h"
 
@@ -161,16 +165,9 @@ short NumEndScreens = 1;
 // because they operate on per-level data.
 
 static XML_DataBlock LSXML_Loader;
-static XML_ElementParser LSRootParser("");
-static XML_ElementParser LevelScriptSetParser("marathon_levels");
 
-// Get parsers for other stuff
-static XML_ElementParser *LevelScript_GetParser();
-static XML_ElementParser *EndLevelScript_GetParser();
-static XML_ElementParser *DefaultLevelScript_GetParser();
-static XML_ElementParser *RestoreLevelScript_GetParser();
-static XML_ElementParser *EndScreens_GetParser();
-
+// Parse marathon_levels script
+static void parse_levels_xml(InfoTree root);
 
 // This is for searching for a script and running it -- works for pseudo-levels
 static void GeneralRunScript(int LevelIndex);
@@ -180,25 +177,6 @@ static void FindMovieInScript(int LevelIndex);
 
 // Defined in images.cpp and 
 extern bool get_text_resource_from_scenario(int resource_number, LoadedResource& TextRsrc);
-
-static void SetupLSParseTree()
-{
-	// Don't set up more than once!
-	static bool WasSetUp = false;
-	if (WasSetUp)
-		return;
-	else
-		WasSetUp = true;
-	
-	LSRootParser.AddChild(&LevelScriptSetParser);
-	
-	LevelScriptSetParser.AddChild(LevelScript_GetParser());
-	LevelScriptSetParser.AddChild(EndLevelScript_GetParser());
-	LevelScriptSetParser.AddChild(DefaultLevelScript_GetParser());
-	LevelScriptSetParser.AddChild(RestoreLevelScript_GetParser());
-	LevelScriptSetParser.AddChild(EndScreens_GetParser());
-}
-
 
 // Loads all those in resource 128 in a map file (or some appropriate equivalent)
 void LoadLevelScripts(FileSpecifier& MapFile)
@@ -219,10 +197,6 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 	EndScreenIndex = 99;
 	NumEndScreens = 1;
 	
-	// Lazy setup of XML parsing definitions
-	SetupLSParseTree();
-	LSXML_Loader.CurrentElement = &LSRootParser;
-
 	// OpenedResourceFile OFile;
 	// if (!MapFile.Open(OFile)) return;
 	
@@ -234,8 +208,15 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 	if (!get_text_resource_from_scenario(128,ScriptRsrc)) return;
 	
 	// Load the script
-	LSXML_Loader.SourceName = "[Map Script]";
-	LSXML_Loader.ParseData((char *)ScriptRsrc.GetPointer(),ScriptRsrc.GetLength());
+	std::istringstream strm(std::string((char *)ScriptRsrc.GetPointer(), ScriptRsrc.GetLength()));
+	try {
+		InfoTree root = InfoTree::load_xml(strm).get_child("marathon_levels");
+		parse_levels_xml(root);
+	} catch (InfoTree::parse_error e) {
+		logError2("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
+	} catch (InfoTree::path_error e) {
+		logError2("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
+	}
 }
 
 void ResetLevelScript()
@@ -650,12 +631,7 @@ bool XML_LSCommandParser::End()
 	return true;
 }
 
-static XML_LSCommandParser MMLParser("mml",LevelScriptCommand::MML);
 static XML_LSCommandParser MusicParser("music",LevelScriptCommand::Music);
-static XML_LSCommandParser MovieParser("movie",LevelScriptCommand::Movie);
-#ifdef HAVE_LUA
-static XML_LSCommandParser LuaParser("lua",LevelScriptCommand::Lua);
-#endif /* HAVE_LUA */
 #ifdef HAVE_OPENGL
 static XML_LSCommandParser LoadScreenParser("load_screen", LevelScriptCommand::LoadScreen);
 #endif
@@ -687,22 +663,6 @@ public:
 static XML_RandomOrderParser RandomOrderParser;
 
 	
-static void AddScriptCommands(XML_ElementParser& ElementParser)
-{
-	ElementParser.AddChild(&MMLParser);
-	ElementParser.AddChild(&MusicParser);
-	ElementParser.AddChild(&RandomOrderParser);
-	ElementParser.AddChild(&MovieParser);
-#ifdef HAVE_LUA
-        ElementParser.AddChild(&LuaParser);
-#endif /* HAVE_LUA */
-#ifdef HAVE_OPENGL
-	ElementParser.AddChild(&LoadScreenParser);
-	LoadScreenParser.AddChild(Color_GetParser());
-#endif
-}
-
-
 // Generalized parser for level scripts; for also parsing default and restoration scripts
 
 class XML_GeneralLevelScriptParser: public XML_ElementParser
@@ -740,44 +700,6 @@ void XML_GeneralLevelScriptParser::SetLevel(short Level)
 }
 
 
-// For setting up scripting for levels in general
-class XML_LevelScriptParser: public XML_GeneralLevelScriptParser
-{
-	// Need to get a level ID
-	bool LevelWasFound;
-	
-public:
-	bool Start() {LevelWasFound = false; return true;}
-	bool AttributesDone() {return LevelWasFound;}
-
-	// For grabbing the level ID
-	bool HandleAttribute(const char *Tag, const char *Value);
-	
-	XML_LevelScriptParser(): XML_GeneralLevelScriptParser("level") {}
-};
-
-
-bool XML_LevelScriptParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"index"))
-	{
-		short Level;
-		if (ReadBoundedInt16Value(Value,Level,0,SHRT_MAX))
-		{
-			SetLevel(Level);
-			LevelWasFound = true;
-			return true;
-		}
-		else
-			return false;
-	}
-	UnrecognizedTag();
-	return false;
-}
-
-static XML_LevelScriptParser LevelScriptParser;
-
-
 // For setting up scripting for special pseudo-levels: the default and the restore
 class XML_SpecialLevelScriptParser: public XML_GeneralLevelScriptParser
 {
@@ -789,62 +711,7 @@ public:
 	XML_SpecialLevelScriptParser(const char *_Name, short _Level): XML_GeneralLevelScriptParser(_Name), Level(_Level) {}
 };
 
-static XML_SpecialLevelScriptParser
-	EndScriptParser("end",LevelScriptHeader::End),
-	DefaultScriptParser("default",LevelScriptHeader::Default),
-	RestoreScriptParser("restore",LevelScriptHeader::Restore);
-
 static  XML_SpecialLevelScriptParser ExternalDefaultScriptParser("default_levels", LevelScriptHeader::Default);
-
-// For setting up end-screen control
-class XML_EndScreenParser: public XML_ElementParser
-{
-	// Need to get a level ID
-	bool LevelWasFound;
-	
-public:
-	bool HandleAttribute(const char *Tag, const char *Value);
-	
-	XML_EndScreenParser(): XML_ElementParser("end_screens") {}
-};
-
-
-bool XML_EndScreenParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"index"))
-	{
-		return ReadInt16Value(Value,EndScreenIndex);
-	}
-	else if (StringsEqual(Tag,"count"))
-	{
-		return ReadBoundedInt16Value(Value,NumEndScreens,0,SHRT_MAX);
-	}
-	UnrecognizedTag();
-	return false;
-}
-
-static XML_EndScreenParser EndScreenParser;
-
-
-// XML-parser support
-XML_ElementParser *LevelScript_GetParser()
-{
-	AddScriptCommands(LevelScriptParser);
-
-	return &LevelScriptParser;
-}
-XML_ElementParser *EndLevelScript_GetParser()
-{
-	AddScriptCommands(EndScriptParser);
-
-	return &EndScriptParser;
-}
-XML_ElementParser *DefaultLevelScript_GetParser()
-{
-	AddScriptCommands(DefaultScriptParser);
-
-	return &DefaultScriptParser;
-}
 
 XML_ElementParser *ExternalDefaultLevelScript_GetParser()
 {
@@ -854,17 +721,161 @@ XML_ElementParser *ExternalDefaultLevelScript_GetParser()
 #endif
 	ExternalDefaultScriptParser.AddChild(&MusicParser);
 	ExternalDefaultScriptParser.AddChild(&RandomOrderParser);
-
+	
 	return &ExternalDefaultScriptParser;
 }
 
-XML_ElementParser *RestoreLevelScript_GetParser()
+void parse_level_commands(InfoTree root, int index)
 {
-	AddScriptCommands(RestoreScriptParser);
+	// Find or create command list for this level
+	LevelScriptHeader *ls_ptr = NULL;
+	for (vector<LevelScriptHeader>::iterator it = LevelScripts.begin(); it < LevelScripts.end(); it++)
+	{
+		if (it->Level == index)
+		{
+			ls_ptr = &(*it);
+			break;
+		}
+	}
+	
+	// Not found, so add it
+	if (!ls_ptr)
+	{
+		LevelScriptHeader new_header;
+		new_header.Level = index;
+		LevelScripts.push_back(new_header);
+		ls_ptr = &LevelScripts.back();
+	}
 
-	return &RestoreScriptParser;
+	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("mml"))
+	{
+		InfoTree child = v.second;
+		LevelScriptCommand cmd;
+		cmd.Type = LevelScriptCommand::MML;
+		
+		if (!child.read_attr_bounded<int16>("resource", cmd.RsrcID, 0, SHRT_MAX))
+			continue;
+		
+		ls_ptr->Commands.push_back(cmd);
+	}
+
+#ifdef HAVE_LUA
+	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("lua"))
+	{
+		InfoTree child = v.second;
+		LevelScriptCommand cmd;
+		cmd.Type = LevelScriptCommand::Lua;
+		
+		if (!child.read_attr_bounded<int16>("resource", cmd.RsrcID, 0, SHRT_MAX))
+			continue;
+		
+		ls_ptr->Commands.push_back(cmd);
+	}
+#endif
+	
+	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("music"))
+	{
+		InfoTree child = v.second;
+		LevelScriptCommand cmd;
+		cmd.Type = LevelScriptCommand::Music;
+		
+		std::string filename;
+		if (!child.read_attr("file", filename))
+			continue;
+		cmd.FileSpec = std::vector<char>(filename.begin(), filename.end());
+		cmd.FileSpec.resize(filename.size()+1);
+		
+		ls_ptr->Commands.push_back(cmd);
+	}
+	
+	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("random_order"))
+	{
+		InfoTree child = v.second;
+		child.read_attr("on", ls_ptr->RandomOrder);
+	}
+	
+	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("movie"))
+	{
+		InfoTree child = v.second;
+		LevelScriptCommand cmd;
+		cmd.Type = LevelScriptCommand::Movie;
+		
+		std::string filename;
+		if (!child.read_attr("file", filename))
+			continue;
+		cmd.FileSpec = std::vector<char>(filename.begin(), filename.end());
+		cmd.FileSpec.resize(filename.size()+1);
+
+		child.read_attr("size", cmd.Size);
+		
+		ls_ptr->Commands.push_back(cmd);
+	}
+	
+#ifdef HAVE_OPENGL
+	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("load_screen"))
+	{
+		InfoTree child = v.second;
+		LevelScriptCommand cmd;
+		cmd.Type = LevelScriptCommand::LoadScreen;
+		
+		std::string filename;
+		if (!child.read_attr("file", filename))
+			continue;
+		cmd.FileSpec = std::vector<char>(filename.begin(), filename.end());
+		cmd.FileSpec.resize(filename.size()+1);
+		
+		child.read_attr("stretch", cmd.Stretch);
+		child.read_attr("scale", cmd.Scale);
+		child.read_attr("progress_top", cmd.T);
+		child.read_attr("progress_bottom", cmd.B);
+		child.read_attr("progress_left", cmd.L);
+		child.read_attr("progress_right", cmd.R);
+		
+		BOOST_FOREACH(InfoTree::value_type &v, child.equal_range("color"))
+		{
+			InfoTree color = v.second;
+			int index = -1;
+			if (color.read_attr_bounded("index", index, 0, 1))
+			{
+				color.read_color(cmd.Colors[index]);
+			}
+		}
+		
+		ls_ptr->Commands.push_back(cmd);
+	}
+#endif
 }
-XML_ElementParser *EndScreens_GetParser()
+
+void parse_levels_xml(InfoTree root)
 {
-	return &EndScreenParser;
+	boost::optional<InfoTree> ochild;
+	
+	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("level"))
+	{
+		InfoTree lev = v.second;
+		int16 index = -1;
+		if (lev.read_attr_bounded<int16>("index", index, 0, SHRT_MAX))
+		{
+			parse_level_commands(lev, index);
+		}
+	}
+	
+	if ((ochild = root.get_child_optional("end")))
+	{
+		parse_level_commands(*ochild, LevelScriptHeader::End);
+	}
+	if ((ochild = root.get_child_optional("default")))
+	{
+		parse_level_commands(*ochild, LevelScriptHeader::Default);
+	}
+	if ((ochild = root.get_child_optional("restore")))
+	{
+		parse_level_commands(*ochild, LevelScriptHeader::Restore);
+	}
+	
+	if ((ochild = root.get_child_optional("end_screens")))
+	{
+		ochild->read_attr("index", EndScreenIndex);
+		ochild->read_attr_bounded<int16>("count", NumEndScreens, 0, SHRT_MAX);
+	}
 }
