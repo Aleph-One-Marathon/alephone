@@ -50,7 +50,7 @@ bool OGL_LoadScreen::Start()
 	// load the image
 	FileSpecifier File;
 	if (path.size() == 0) return use = false;
-	if (!File.SetNameWithPath(&path[0])) return use = false;
+	if (!File.SetNameWithPath(path.c_str())) return use = false;
 	if (!image.LoadFromFile(File, ImageLoader_Colors, 0)) return use = false;
 
 	if (!blitter.Load(image)) return use = false;
@@ -163,13 +163,13 @@ void OGL_LoadScreen::Progress(const int progress)
 	
 }
 
-void OGL_LoadScreen::Set(const vector<char> Path, bool Stretch, bool Scale)
+void OGL_LoadScreen::Set(std::string Path, bool Stretch, bool Scale)
 {
 	OGL_LoadScreen::Set(Path, Stretch, Scale, 0, 0, 0, 0);
 	useProgress = false;
 }
 
-void OGL_LoadScreen::Set(const vector<char> Path, bool Stretch, bool Scale, short X, short Y, short W, short H)
+void OGL_LoadScreen::Set(std::string Path, bool Stretch, bool Scale, short X, short Y, short W, short H)
 {
 	path = Path;
 	x = X;

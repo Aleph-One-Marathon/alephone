@@ -92,7 +92,7 @@ struct LevelScriptCommand
 	// This is a Unix-style filespec, with form
 	// <dirname>/<dirname>/<filename>
 	// with the root directory being the map file's directory
-	vector<char> FileSpec;
+	std::string FileSpec;
 	
 	// Additional data:
 	
@@ -412,7 +412,7 @@ void GeneralRunScript(int LevelIndex)
 		case LevelScriptCommand::Music:
 			{
 				FileSpecifier MusicFile;
-				if (MusicFile.SetNameWithPath(&Cmd.FileSpec[0]))
+				if (MusicFile.SetNameWithPath(Cmd.FileSpec.c_str()))
 					Music::instance()->PushBackLevelMusic(MusicFile);
 			}
 			break;
@@ -423,7 +423,7 @@ void GeneralRunScript(int LevelIndex)
 			{
 				if (Cmd.L || Cmd.T || Cmd.R || Cmd.B)
 				{
-					OGL_LoadScreen::instance()->Set(Cmd.FileSpec, Cmd.Stretch, Cmd.Scale, Cmd.L, Cmd.T, Cmd.R - Cmd.L, Cmd.B - Cmd.T);
+					OGL_LoadScreen::instance()->Set(Cmd.FileSpec.c_str(), Cmd.Stretch, Cmd.Scale, Cmd.L, Cmd.T, Cmd.R - Cmd.L, Cmd.B - Cmd.T);
 					OGL_LoadScreen::instance()->Colors()[0] = Cmd.Colors[0];
 					OGL_LoadScreen::instance()->Colors()[1] = Cmd.Colors[1];
 				}
@@ -463,7 +463,7 @@ void FindMovieInScript(int LevelIndex)
 		{
 		case LevelScriptCommand::Movie:
 			{
-				MovieFileExists = MovieFile.SetNameWithPath(&Cmd.FileSpec[0]);
+				MovieFileExists = MovieFile.SetNameWithPath(Cmd.FileSpec.c_str());
 
 				// Set the size only if there was a movie file here
 				if (MovieFileExists)
@@ -583,9 +583,7 @@ bool XML_LSCommandParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"file"))
 	{
-		size_t vlen = strlen(Value) + 1;
-		Cmd.FileSpec.resize(vlen);
-		memcpy(&Cmd.FileSpec[0],Value,vlen);
+		Cmd.FileSpec = Value;
 		ObjectWasFound = true;
 		return true;
 	}
@@ -779,11 +777,8 @@ void parse_level_commands(InfoTree root, int index)
 		LevelScriptCommand cmd;
 		cmd.Type = LevelScriptCommand::Music;
 		
-		std::string filename;
-		if (!child.read_attr("file", filename))
+		if (!child.read_attr("file", cmd.FileSpec))
 			continue;
-		cmd.FileSpec = std::vector<char>(filename.begin(), filename.end());
-		cmd.FileSpec.resize(filename.size()+1);
 		
 		ls_ptr->Commands.push_back(cmd);
 	}
@@ -800,11 +795,8 @@ void parse_level_commands(InfoTree root, int index)
 		LevelScriptCommand cmd;
 		cmd.Type = LevelScriptCommand::Movie;
 		
-		std::string filename;
-		if (!child.read_attr("file", filename))
+		if (!child.read_attr("file", cmd.FileSpec))
 			continue;
-		cmd.FileSpec = std::vector<char>(filename.begin(), filename.end());
-		cmd.FileSpec.resize(filename.size()+1);
 
 		child.read_attr("size", cmd.Size);
 		
@@ -818,11 +810,8 @@ void parse_level_commands(InfoTree root, int index)
 		LevelScriptCommand cmd;
 		cmd.Type = LevelScriptCommand::LoadScreen;
 		
-		std::string filename;
-		if (!child.read_attr("file", filename))
+		if (!child.read_attr("file", cmd.FileSpec))
 			continue;
-		cmd.FileSpec = std::vector<char>(filename.begin(), filename.end());
-		cmd.FileSpec.resize(filename.size()+1);
 		
 		child.read_attr("stretch", cmd.Stretch);
 		child.read_attr("scale", cmd.Scale);

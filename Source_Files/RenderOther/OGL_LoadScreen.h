@@ -42,8 +42,8 @@ public:
 	void Stop();
 	void Progress(const int percent);
 
-	void Set(const vector<char> Path, bool Stretch, bool Scale);
-	void Set(const vector<char> Path, bool Stretch, bool Scale, short X, short Y, short W, short H);
+	void Set(std::string Path, bool Stretch, bool Scale);
+	void Set(std::string Path, bool Stretch, bool Scale, short X, short Y, short W, short H);
 	void Clear();
 
 	bool Use() { return use; }
@@ -54,7 +54,7 @@ private:
 OGL_LoadScreen() : x(0), y(0), w(0), h(0), use(false), useProgress(false), percent(0) { }
 	~OGL_LoadScreen();
 
-	vector<char> path;
+	std::string path;
 	ImageDescriptor image;
 	short x, y, w, h;
 
