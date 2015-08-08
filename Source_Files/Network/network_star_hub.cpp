@@ -1713,30 +1713,33 @@ void HubParsePreferencesTree(InfoTree prefs, std::string version)
 {
 	for (size_t i = 0; i < kNumAttributes; ++i)
 	{
-		int32 value = prefs.read_attr(sAttributeStrings[i], *(sAttributeDestinations[i]));
-		int32 min = INT32_MIN;
-		switch (i) {
-			case kPregameTicksBeforeNetDeathAttribute:
-			case kInGameTicksBeforeNetDeathAttribute:
-			case kRecoverySendPeriodAttribute:
-			case kSendPeriodAttribute:
-			case kPregameWindowSizeAttribute:
-			case kInGameWindowSizeAttribute:
-				min = 1;
-				break;
-			case kPregameNthElementAttribute:
-			case kInGameNthElementAttribute:
-			case kMinimumSendPeriodAttribute:
-				min = 0;
-				break;
+		int32 value = *(sAttributeDestinations[i]);
+		if (prefs.read_attr(sAttributeStrings[i], value))
+		{
+			int32 min = INT32_MIN;
+			switch (i) {
+				case kPregameTicksBeforeNetDeathAttribute:
+				case kInGameTicksBeforeNetDeathAttribute:
+				case kRecoverySendPeriodAttribute:
+				case kSendPeriodAttribute:
+				case kPregameWindowSizeAttribute:
+				case kInGameWindowSizeAttribute:
+					min = 1;
+					break;
+				case kPregameNthElementAttribute:
+				case kInGameNthElementAttribute:
+				case kMinimumSendPeriodAttribute:
+					min = 0;
+					break;
+			}
+			if (value < min)
+				logWarning4("improper value %d for attribute %s of <hub>; must be at least %d. using default of %d", value, sAttributeStrings[i], min, *(sAttributeDestinations[i]));
+			else
+				*(sAttributeDestinations[i]) = value;
 		}
-		if (value < min)
-			logWarning4("improper value %d for attribute %s of <hub>; must be at least %d. using default of %d", value, sAttributeStrings[i], min, *(sAttributeDestinations[i]));
-		else
-			*(sAttributeDestinations[i]) = value;
 	}
 
-	sHubPreferences.mBandwidthReduction = prefs.read_attr("use_bandwidth_reduction", sHubPreferences.mBandwidthReduction);
+	prefs.read_attr("use_bandwidth_reduction", sHubPreferences.mBandwidthReduction);
 
 		
 	// The checks above are not sufficient to catch all bad cases; if user specified a window size

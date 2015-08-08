@@ -1187,26 +1187,28 @@ void SpokeParsePreferencesTree(InfoTree prefs, std::string version)
 	for (size_t i = 0; i < kNumInt32Attributes; ++i)
 	{
 		int32 value = *(sAttributeDestinations[i]);
-		value = prefs.read_attr(sAttributeStrings[i], value);
-		int32 min = INT32_MIN;
-		switch (i) {
-			case kPregameTicksBeforeNetDeathAttribute:
-			case kInGameTicksBeforeNetDeathAttribute:
-			case kRecoverySendPeriodAttribute:
-			case kTimingWindowSizeAttribute:
-				min = 1;
-				break;
-			case kTimingNthElementAttribute:
-				min = 0;
-				break;
+		if (prefs.read_attr(sAttributeStrings[i], value))
+		{
+			int32 min = INT32_MIN;
+			switch (i) {
+				case kPregameTicksBeforeNetDeathAttribute:
+				case kInGameTicksBeforeNetDeathAttribute:
+				case kRecoverySendPeriodAttribute:
+				case kTimingWindowSizeAttribute:
+					min = 1;
+					break;
+				case kTimingNthElementAttribute:
+					min = 0;
+					break;
+			}
+			if (value < min)
+				logWarning4("improper value %d for attribute %s of <spoke>; must be at least %d. using default of %d", value, sAttributeStrings[i], min, *(sAttributeDestinations[i]));
+			else
+				*(sAttributeDestinations[i]) = value;
 		}
-		if (value < min)
-			logWarning4("improper value %d for attribute %s of <spoke>; must be at least %d. using default of %d", value, sAttributeStrings[i], min, *(sAttributeDestinations[i]));
-		else
-			*(sAttributeDestinations[i]) = value;
 	}
 
-	sSpokePreferences.mAdjustTiming = prefs.read_attr("adjust_timing", sSpokePreferences.mAdjustTiming);
+	prefs.read_attr("adjust_timing", sSpokePreferences.mAdjustTiming);
 	
 	
 	// The checks above are not sufficient to catch all bad cases; if user specified a window size
