@@ -37,9 +37,9 @@ Jul 31, 2002 (Loren Petrich):
 */
 
 #include <vector>
+#include <map>
 #include <sstream>
 #include <boost/foreach.hpp>
-using namespace std;
 
 #include "cseries.h"
 #include "shell.h"
@@ -120,9 +120,8 @@ struct LevelScriptHeader
 		Default = -2,
 		End = -1
 	};
-	int Level;
 	
-	vector<LevelScriptCommand> Commands;
+	std::vector<LevelScriptCommand> Commands;
 	
 	// Thanx to the Standard Template Library,
 	// the copy constructor and the assignment operator will be automatically implemented
@@ -131,11 +130,11 @@ struct LevelScriptHeader
 	// it defaults to false (sequential order)
 	bool RandomOrder;
 	
-	LevelScriptHeader(): Level(Default), RandomOrder(false) {}
+	LevelScriptHeader(): RandomOrder(false) {}
 };
 
 // Scripts for current map file
-static vector<LevelScriptHeader> LevelScripts;
+static std::map<int, LevelScriptHeader> LevelScripts;
 
 // Current script for adding commands to and for running
 static LevelScriptHeader *CurrScriptPtr = NULL;
@@ -337,16 +336,8 @@ void RunRestorationScript()
 void GeneralRunScript(int LevelIndex)
 {
 	// Find the pointer to the current script
-	CurrScriptPtr = NULL;
-	for (vector<LevelScriptHeader>::iterator ScriptIter = LevelScripts.begin(); ScriptIter < LevelScripts.end(); ScriptIter++)
-	{
-		if (ScriptIter->Level == LevelIndex)
-		{
-			CurrScriptPtr = &(*ScriptIter);	// Iterator to pointer
-			break;
-		}
-	}
-	if (!CurrScriptPtr) return;
+	if (LevelScripts.find(LevelIndex) == LevelScripts.end()) return;
+	CurrScriptPtr = &(LevelScripts[LevelIndex]);
 	
 	// Insures that this order is the last order set
 	Music::instance()->LevelMusicRandom(CurrScriptPtr->RandomOrder);
@@ -444,17 +435,9 @@ void GeneralRunScript(int LevelIndex)
 void FindMovieInScript(int LevelIndex)
 {
 	// Find the pointer to the current script
-	CurrScriptPtr = NULL;
-	for (vector<LevelScriptHeader>::iterator ScriptIter = LevelScripts.begin(); ScriptIter < LevelScripts.end(); ScriptIter++)
-	{
-		if (ScriptIter->Level == LevelIndex)
-		{
-			CurrScriptPtr = &(*ScriptIter);	// Iterator to pointer
-			break;
-		}
-	}
-	if (!CurrScriptPtr) return;
-		
+	if (LevelScripts.find(LevelIndex) == LevelScripts.end()) return;
+	CurrScriptPtr = &(LevelScripts[LevelIndex]);
+	
 	for (unsigned k=0; k<CurrScriptPtr->Commands.size(); k++)
 	{
 		LevelScriptCommand& Cmd = CurrScriptPtr->Commands[k];
@@ -676,25 +659,7 @@ public:
 
 void XML_GeneralLevelScriptParser::SetLevel(short Level)
 {
-	// Scan for current level
-	CurrScriptPtr = NULL;
-	for (vector<LevelScriptHeader>::iterator ScriptIter = LevelScripts.begin(); ScriptIter < LevelScripts.end(); ScriptIter++)
-	{
-		if (ScriptIter->Level == Level)
-		{
-			CurrScriptPtr = &(*ScriptIter);	// Iterator to pointer
-			break;
-		}
-	}
-	
-	// Not found, so add it
-	if (!CurrScriptPtr)
-	{
-		LevelScriptHeader NewHdr;
-		NewHdr.Level = Level;
-		LevelScripts.push_back(NewHdr);
-		CurrScriptPtr = &LevelScripts.back();
-	}
+	CurrScriptPtr = &(LevelScripts[Level]);
 }
 
 
@@ -726,24 +691,7 @@ XML_ElementParser *ExternalDefaultLevelScript_GetParser()
 void parse_level_commands(InfoTree root, int index)
 {
 	// Find or create command list for this level
-	LevelScriptHeader *ls_ptr = NULL;
-	for (vector<LevelScriptHeader>::iterator it = LevelScripts.begin(); it < LevelScripts.end(); it++)
-	{
-		if (it->Level == index)
-		{
-			ls_ptr = &(*it);
-			break;
-		}
-	}
-	
-	// Not found, so add it
-	if (!ls_ptr)
-	{
-		LevelScriptHeader new_header;
-		new_header.Level = index;
-		LevelScripts.push_back(new_header);
-		ls_ptr = &LevelScripts.back();
-	}
+	LevelScriptHeader *ls_ptr = &(LevelScripts[index]);
 
 	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("mml"))
 	{
