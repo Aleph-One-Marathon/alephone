@@ -21,11 +21,41 @@
 */
 
 #include "InfoTree.h"
+#include "cseries.h"
+#include "game_errors.h"
 #include "shell.h"
 #include "XML_ElementParser.h"  // for DeUTF8_C
 
 InfoTree InfoTree::load_xml(FileSpecifier filename)
 {
+	// use rwops, in case file is inside a zip archive
+	OpenedFile file;
+	if (filename.Open(file))
+	{
+		int32 data_size;
+		file.GetLength(data_size);
+		std::vector<char> file_data;
+		file_data.resize(data_size);
+		
+		if (file.Read(data_size, &file_data[0]))
+		{
+			std::istringstream strm(std::string(file_data.begin(), file_data.end()));
+			return load_xml(strm);
+		}
+	}
+	else
+	{
+		short err, errtype;
+		err = get_game_error(&errtype);
+		clear_game_error();
+		
+		std::string errstr = "could not open XML file ";
+		errstr += filename.GetPath();
+		errstr += ": system error ";
+		errstr += errtype;
+		throw InfoTree::unexpected_error(errstr);
+	}
+	
 	boost::property_tree::ptree xtree;
 	boost::property_tree::read_xml(filename.GetPath(), xtree);
 	return InfoTree(xtree);
