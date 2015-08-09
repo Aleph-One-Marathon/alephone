@@ -215,6 +215,10 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 		logError2("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
 	} catch (InfoTree::path_error e) {
 		logError2("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
+	} catch (InfoTree::data_error e) {
+		logError2("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
+	} catch (InfoTree::unexpected_error e) {
+		logError2("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
 	}
 }
 

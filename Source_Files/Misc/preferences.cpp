@@ -2760,6 +2760,8 @@ void write_preferences()
 		fileroot.save_xml(FileSpec);
 	} catch (InfoTree::parse_error ex) {
 		logError2("Error saving preferences file (%s): %s", FileSpec.GetPath(), ex.what());
+	} catch (InfoTree::unexpected_error ex) {
+		logError2("Error saving preferences file (%s): %s", FileSpec.GetPath(), ex.what());
 	}
 }
 
