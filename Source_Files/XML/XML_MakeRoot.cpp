@@ -56,10 +56,6 @@
 #include "Console.h"
 #include "XML_LevelScript.h"
 
-#ifdef SDL
-#include "sdl_dialogs.h"
-#endif
-
 
 // The absolute root element is a global, of course
 XML_ElementParser RootParser("");
@@ -101,9 +97,6 @@ void SetupParseTree()
 	MarathonParser.AddChild(Monsters_GetParser());
 	MarathonParser.AddChild(Logging_GetParser());
 	MarathonParser.AddChild(Scenario_GetParser());
-#ifdef SDL
-	MarathonParser.AddChild(Theme_GetParser());
-#endif
 	MarathonParser.AddChild(SW_Texture_Extras_GetParser());
 	MarathonParser.AddChild(Console_GetParser());
 	MarathonParser.AddChild(ExternalDefaultLevelScript_GetParser());

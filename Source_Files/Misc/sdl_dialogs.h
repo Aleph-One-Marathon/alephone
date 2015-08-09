@@ -445,8 +445,4 @@ class w_text_entry;
 extern void dialog_try_ok(w_text_entry* text_entry);
 extern void dialog_disable_ok_if_empty(w_text_entry* inTextEntry);
 
-// Get the parser for themes (name "theme")
-class XML_ElementParser;
-XML_ElementParser *Theme_GetParser();
-
 #endif

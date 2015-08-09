@@ -58,10 +58,12 @@
 
 #include "XML_Loader_SDL.h"
 #include "XML_ParseTreeRoot.h"
+#include "InfoTree.h"
+#include "Logging.h"
 
 #include <map>
-
 #include <string>
+#include <boost/foreach.hpp>
 
 // Global variables
 dialog *top_dialog = NULL;
@@ -145,774 +147,475 @@ static void shutdown_dialogs(void)
  *  Theme MML parser
  */
 
-class XML_ImageParser : public XML_ElementParser {
-public:
-	XML_ImageParser(int _type, int _state, int max = 0) : XML_ElementParser("image"), type(_type), state(_state), max_index(max) {}
-
-	bool Start()
-	{
-		have_index = have_name = false;
-		scale = false;
-		return true;
-	}
-
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "index")) {
-			if (ReadBoundedNumericalValue(value, "%d", index, 0, max_index))
-				have_index = true;
-			else
-				return false;
-		} else if (StringsEqual(tag, "file")) {
-			name = value;
-			have_name = true;
-		} else if (StringsEqual(tag, "scale")) {
-			return ReadBooleanValue(value, scale);
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-
-	bool AttributesDone()
-	{
-		if (!have_index || !have_name) {
-			AttribsMissing();
-			return false;
-		}
-		dialog_theme[type].states[state].image_specs[index].name = name;
-		dialog_theme[type].states[state].image_specs[index].scale = scale;
-		return true;
-	}
-
-private:
-	int max_index;
-	int type, state;
-	bool have_index, have_name;
-
-	int index;
-	string name;
-	bool scale;
-};
-
-static XML_ImageParser FrameImageParser(DIALOG_FRAME, DEFAULT_STATE, 8);
-static XML_ImageParser ListImageParser(LIST_WIDGET, DEFAULT_STATE, 8);
-static XML_ImageParser ThumbImageParser(LIST_THUMB, DEFAULT_STATE, 5);
-static XML_ImageParser SliderImageParser(SLIDER_WIDGET, DEFAULT_STATE, 3);
-static XML_ImageParser SliderThumbImageParser(SLIDER_THUMB, DEFAULT_STATE, 1);
-static XML_ImageParser DefaultButtonImageParser(BUTTON_WIDGET, DEFAULT_STATE, 3);
-static XML_ImageParser ActiveButtonImageParser(BUTTON_WIDGET, ACTIVE_STATE, 3);
-static XML_ImageParser DisabledButtonImageParser(BUTTON_WIDGET, DISABLED_STATE, 3);
-static XML_ImageParser PressedButtonImageParser(BUTTON_WIDGET, PRESSED_STATE, 3);
-static XML_ImageParser DefaultTinyButtonImageParser(TINY_BUTTON, DEFAULT_STATE, 3);
-static XML_ImageParser ActiveTinyButtonImageParser(TINY_BUTTON, ACTIVE_STATE, 3);
-static XML_ImageParser DisabledTinyButtonImageParser(TINY_BUTTON, DISABLED_STATE, 3);
-static XML_ImageParser PressedTinyButtonImageParser(TINY_BUTTON, PRESSED_STATE, 3);
-static XML_ImageParser TabImageParser(TAB_WIDGET, DEFAULT_STATE, 5);
-static XML_ImageParser ActiveTabImageParser(TAB_WIDGET, ACTIVE_STATE, 5);
-static XML_ImageParser PressedTabImageParser(TAB_WIDGET, PRESSED_STATE, 5);
-static XML_ImageParser DisabledTabImageParser(TAB_WIDGET, DISABLED_STATE, 5);
-static XML_ImageParser CheckboxImageParser(CHECKBOX, DEFAULT_STATE, 2);
-static XML_ImageParser ActiveCheckboxImageParser(CHECKBOX, ACTIVE_STATE, 2);
-static XML_ImageParser DisabledCheckboxImageParser(CHECKBOX, DISABLED_STATE, 2);
-
-class XML_DColorParser : public XML_ElementParser {
-public:
-	XML_DColorParser(int _type, int _state, int max = 0) : XML_ElementParser("color"), type(_type), state(_state), max_index(max) {}
-
-	bool Start()
-	{
-		have_red = have_green = have_blue = false;
-		idx = 0;
-		return true;
-	}
-	
-		bool HandleAttribute(const char *tag, const char *value)
-	{
-		float v;
-		if (StringsEqual(tag, "index")) {
-			return ReadBoundedNumericalValue(value, "%d", idx, 0, max_index);
-		} else if (StringsEqual(tag, "red")) {
-			if (ReadNumericalValue(value, "%f", v)) {
-				have_red = true;
-				color.r = uint8(PIN(255 * v + 0.5, 0, 255));
-			} else
-				return false;
-		} else if (StringsEqual(tag, "green")) {
-			if (ReadNumericalValue(value, "%f", v)) {
-				have_green = true;
-				color.g = uint8(PIN(255 * v + 0.5, 0, 255));
-			} else
-				return false;
-		} else if (StringsEqual(tag, "blue")) {
-			if (ReadNumericalValue(value, "%f", v)) {
-				have_blue = true;
-				color.b = uint8(PIN(255 * v + 0.5, 0, 255));
-			} else
-				return false;
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-
-	bool AttributesDone()
-	{
-		if (!have_red || !have_green || !have_blue) {
-			AttribsMissing();
-			return false;
-		}
-		dialog_theme[type].states[state].colors[idx] = color;
-		return true;
-	}
-private:
-	int max_index;
-	int type, state;
-	bool have_red, have_green, have_blue;
-	SDL_Color color;
-protected:
-	int idx;
-};
-
-static XML_DColorParser DefaultColorParser(DEFAULT_WIDGET, DEFAULT_STATE, 3);
-static XML_DColorParser FrameColorParser(DIALOG_FRAME, DEFAULT_STATE, 3);
-static XML_DColorParser ListColorParser(LIST_WIDGET, DEFAULT_STATE, 3);
-static XML_DColorParser ThumbColorParser(LIST_THUMB, DEFAULT_STATE, 3);
-static XML_DColorParser TitleColorParser(TITLE_WIDGET, DEFAULT_STATE);
-static XML_DColorParser DefaultButtonColorParser(BUTTON_WIDGET, DEFAULT_STATE, 3);
-static XML_DColorParser ActiveButtonColorParser(BUTTON_WIDGET, ACTIVE_STATE, 3);
-static XML_DColorParser DisabledButtonColorParser(BUTTON_WIDGET, DISABLED_STATE, 3);
-static XML_DColorParser PressedButtonColorParser(BUTTON_WIDGET, PRESSED_STATE, 3);
-static XML_DColorParser DefaultTinyButtonColorParser(TINY_BUTTON, DEFAULT_STATE, 3);
-static XML_DColorParser ActiveTinyButtonColorParser(TINY_BUTTON, ACTIVE_STATE, 3);
-static XML_DColorParser DisabledTinyButtonColorParser(TINY_BUTTON, DISABLED_STATE, 3);
-static XML_DColorParser PressedTinyButtonColorParser(TINY_BUTTON, PRESSED_STATE, 3);
-static XML_DColorParser DefaultHyperlinkColorParser(HYPERLINK_WIDGET, DEFAULT_STATE, 3);
-static XML_DColorParser ActiveHyperlinkColorParser(HYPERLINK_WIDGET, ACTIVE_STATE, 3);
-static XML_DColorParser DisabledHyperlinkColorParser(HYPERLINK_WIDGET, DISABLED_STATE, 3);
-static XML_DColorParser PressedHyperlinkColorParser(HYPERLINK_WIDGET, PRESSED_STATE, 3);
-static XML_DColorParser DefaultLabelColorParser(LABEL_WIDGET, DEFAULT_STATE);
-static XML_DColorParser ActiveLabelColorParser(LABEL_WIDGET, ACTIVE_STATE);
-static XML_DColorParser DisabledLabelColorParser(LABEL_WIDGET, DISABLED_STATE);
-static XML_DColorParser DefaultItemColorParser(ITEM_WIDGET, DEFAULT_STATE);
-static XML_DColorParser ActiveItemColorParser(ITEM_WIDGET, ACTIVE_STATE);
-static XML_DColorParser DisabledItemColorParser(ITEM_WIDGET, DISABLED_STATE);
-static XML_DColorParser MessageColorParser(MESSAGE_WIDGET, DEFAULT_STATE);
-static XML_DColorParser DefaultTextEntryColorParser(TEXT_ENTRY_WIDGET, DEFAULT_STATE);
-static XML_DColorParser ActiveTextEntryColorParser(TEXT_ENTRY_WIDGET, ACTIVE_STATE);
-static XML_DColorParser DisabledTextEntryColorParser(TEXT_ENTRY_WIDGET, DISABLED_STATE);
-static XML_DColorParser CursorTextEntryColorParser(TEXT_ENTRY_WIDGET, CURSOR_STATE);
-static XML_DColorParser SliderColorParser(SLIDER_WIDGET, DEFAULT_STATE, 3);
-static XML_DColorParser SliderThumbColorParser(SLIDER_THUMB, DEFAULT_STATE, 3);
-static XML_DColorParser TabColorParser(TAB_WIDGET, DEFAULT_STATE, 3);
-static XML_DColorParser ActiveTabColorParser(TAB_WIDGET, ACTIVE_STATE, 3);
-static XML_DColorParser PressedTabColorParser(TAB_WIDGET, PRESSED_STATE, 3);
-static XML_DColorParser DisabledTabColorParser(TAB_WIDGET, DISABLED_STATE, 3);
-static XML_DColorParser ChatEntryColorParser(CHAT_ENTRY, DEFAULT_STATE, 1);
-static XML_DColorParser MetaserverGamesColorParser(METASERVER_GAMES, w_games_in_room::GAME, 3);
-static XML_DColorParser RunningMetaserverGamesColorParser(METASERVER_GAMES, w_games_in_room::RUNNING_GAME, 3);
-static XML_DColorParser IncompatibleMetaserverGamesColorParser(METASERVER_GAMES, w_games_in_room::INCOMPATIBLE_GAME, 3);
-static XML_DColorParser SelectedMetaserverGamesColorParser(METASERVER_GAMES, w_games_in_room::SELECTED_GAME, 3);
-static XML_DColorParser SelectedRunningMetaserverGamesColorParser(METASERVER_GAMES, w_games_in_room::SELECTED_RUNNING_GAME, 3);
-static XML_DColorParser SelectedIncompatibleMetaserverGamesColorParser(METASERVER_GAMES, w_games_in_room::SELECTED_INCOMPATIBLE_GAME, 3);
-
-
-class XML_DFontParser : public XML_ElementParser {
-public:
-	XML_DFontParser(int _type) : XML_ElementParser("font"), type(_type), id(kFontIDMonaco), size(12), style(styleNormal), adjust_height(0) {}
-	
-	bool Start()
-	{
-		have_id = have_size = false;
-		style = 0;
-		adjust_height = 0;
-		return true;
-	}
-
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "id")) {
-			if (ReadNumericalValue(value, "%d", id))
-				have_id = true;
-			else
-				return false;
-		} else if (StringsEqual(tag, "size")) {
-			if (ReadNumericalValue(value, "%d", size))
-				have_size = true;
-			else
-				return false;
-		} else if (StringsEqual(tag, "style")) {
-			return ReadNumericalValue(value, "%d", style);
-		} else if (StringsEqual(tag, "file")) {
-			normal = value;
-			have_path = true;
-			return true;
-		} else if (StringsEqual(tag, "bold_file")) {
-			bold = value;
-			return true;
-		} else if (StringsEqual(tag, "italic_file")) {
-			oblique = value;
-			return true;
-		} else if (StringsEqual(tag, "bold_italic_file")) {
-			bold_oblique = value;
-			return true;
-		} else if (StringsEqual(tag, "adjust_height")) {
-			if (!ReadNumericalValue(value, "%d", adjust_height))
-				return false;
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-
-	bool AttributesDone()
-	{
-		if (!(have_id || have_path) || !have_size) {
-			AttribsMissing();
-			return false;
-		}
-		dialog_theme[type].font_spec.font = id;
-		dialog_theme[type].font_spec.style = style;
-		dialog_theme[type].font_spec.size = size;
-		dialog_theme[type].font_spec.normal = normal;
-		dialog_theme[type].font_spec.bold = bold;
-		dialog_theme[type].font_spec.oblique = oblique;
-		dialog_theme[type].font_spec.bold_oblique = bold_oblique;
-		dialog_theme[type].font_spec.adjust_height = adjust_height;
-		dialog_theme[type].font_set = true;
-		return true;
-	}
-
-private:
-	bool have_id, have_size, have_path;
-
-	int id, size, style, adjust_height;
-	int type;
-
-	std::string normal, bold, oblique, bold_oblique;
-};
-
-static XML_DFontParser DefaultFontParser(DEFAULT_WIDGET);
-static XML_DFontParser TitleFontParser(TITLE_WIDGET);
-static XML_DFontParser ButtonFontParser(BUTTON_WIDGET);
-static XML_DFontParser TinyButtonFontParser(TINY_BUTTON);
-static XML_DFontParser HyperlinkFontParser(HYPERLINK_WIDGET);
-static XML_DFontParser LabelFontParser(LABEL_WIDGET);
-static XML_DFontParser ItemFontParser(ITEM_WIDGET);
-static XML_DFontParser MessageFontParser(MESSAGE_WIDGET);
-static XML_DFontParser TextEntryFontParser(TEXT_ENTRY_WIDGET);
-static XML_DFontParser ChatEntryFontParser(CHAT_ENTRY);
-static XML_DFontParser CheckboxFontParser(CHECKBOX);
-static XML_DFontParser TabFontParser(TAB_WIDGET);
-static XML_DFontParser MetaserverPlayersFontParser(METASERVER_PLAYERS);
-static XML_DFontParser MetaserverGamesFontParser(METASERVER_GAMES);
-
-class XML_DFrameParser : public XML_ElementParser {
-public:
-	XML_DFrameParser() : XML_ElementParser("frame") {}
-
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[DIALOG_FRAME].spaces[T_SPACE]);
-		} else if (StringsEqual(tag, "bottom")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[DIALOG_FRAME].spaces[B_SPACE]);
-		} else if (StringsEqual(tag, "left")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[DIALOG_FRAME].spaces[L_SPACE]);
-		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[DIALOG_FRAME].spaces[R_SPACE]);
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-};
-
-class XML_ThemeWidgetParser : public XML_ElementParser
+static void parse_theme_image(InfoTree root, int type, int state, int max_index)
 {
-public:
-	XML_ThemeWidgetParser(const char *name, int theme_widget) : XML_ElementParser(name), m_theme_widget(theme_widget) { }
-
-	bool Start() { 
-		if (dialog_theme.find(m_theme_widget) != dialog_theme.end())
-			dialog_theme[m_theme_widget].states.clear();
-		return true;
-	}
-
-private:
-	int m_theme_widget;
-};
-
-static XML_ThemeWidgetParser DefaultParser("default", DEFAULT_WIDGET);
-
-static XML_DFrameParser FrameParser;
-
-struct XML_TitleParser : public XML_ElementParser {XML_TitleParser() : XML_ElementParser("title") {}};
-static XML_TitleParser TitleParser;
-
-class XML_SpacerParser : public XML_ElementParser {
-public:
-	XML_SpacerParser() : XML_ElementParser("spacer") {}
-
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "height")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[SPACER_WIDGET].spaces[0]);
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-};
-
-static XML_SpacerParser SpacerParser;
-
-class XML_ButtonParser : public XML_ThemeWidgetParser {
-public:
-	XML_ButtonParser() : XML_ThemeWidgetParser("button", BUTTON_WIDGET) {}
-
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[BUTTON_WIDGET].spaces[BUTTON_T_SPACE]);
-		} else if (StringsEqual(tag, "left")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[BUTTON_WIDGET].spaces[BUTTON_L_SPACE]);
-		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[BUTTON_WIDGET].spaces[BUTTON_R_SPACE]);
-		} else if (StringsEqual(tag, "height")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[BUTTON_WIDGET].spaces[BUTTON_HEIGHT]);
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-};
-
-static XML_ButtonParser ButtonParser;
-static XML_ElementParser ActiveButtonParser("active");
-static XML_ElementParser DisabledButtonParser("disabled");
-static XML_ElementParser PressedButtonParser("pressed");
-
-class XML_TinyButtonParser : public XML_ThemeWidgetParser {
-public:
-	XML_TinyButtonParser() : XML_ThemeWidgetParser("tiny_button", TINY_BUTTON) {}
-
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[TINY_BUTTON].spaces[BUTTON_T_SPACE]);
-		} else if (StringsEqual(tag, "left")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[TINY_BUTTON].spaces[BUTTON_L_SPACE]);
-		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[TINY_BUTTON].spaces[BUTTON_R_SPACE]);
-		} else if (StringsEqual(tag, "height")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[TINY_BUTTON].spaces[BUTTON_HEIGHT]);
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-};
-
-static XML_TinyButtonParser TinyButtonParser;
-static XML_ElementParser ActiveTinyButtonParser("active");
-static XML_ElementParser DisabledTinyButtonParser("disabled");
-static XML_ElementParser PressedTinyButtonParser("pressed");
-
-static XML_ThemeWidgetParser HyperlinkParser("hyperlink", HYPERLINK_WIDGET);
-static XML_ElementParser ActiveHyperlinkParser("active");
-static XML_ElementParser DisabledHyperlinkParser("disabled");
-static XML_ElementParser PressedHyperlinkParser("pressed");
-
-static XML_ThemeWidgetParser LabelParser("label", LABEL_WIDGET);
-static XML_ElementParser ActiveLabelParser("active");
-static XML_ElementParser DisabledLabelParser("disabled");
-
-class XML_DItemParser : public XML_ThemeWidgetParser {
-public:
-	XML_DItemParser() : XML_ThemeWidgetParser("item", ITEM_WIDGET) {}
-
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "space")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[ITEM_WIDGET].spaces[0]);
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-};
-
-static XML_DItemParser ItemParser;
-static XML_ElementParser ActiveItemParser("active");
-static XML_ElementParser DisabledItemParser("disabled");
-
-static XML_ThemeWidgetParser MessageParser("message", MESSAGE_WIDGET);
-
-static XML_ThemeWidgetParser TextEntryParser("text_entry", TEXT_ENTRY_WIDGET);
-static XML_ElementParser ActiveTextEntryParser("active");
-static XML_ElementParser DisabledTextEntryParser("disabled");
-static XML_ElementParser CursorTextEntryParser("cursor");
-
-class XML_ChatEntryParser : public XML_ThemeWidgetParser {
-public:
-	XML_ChatEntryParser() : XML_ThemeWidgetParser("chat_entry", CHAT_ENTRY) {}
+	int index = -1;
+	std::string name;
+	if (!root.read_attr("file", name) ||
+		!root.read_attr_bounded("index", index, 0, max_index))
+		return;
 	
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "name_width")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[CHAT_ENTRY].spaces[0]);
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-	}
-};
-
-static XML_ChatEntryParser ChatEntryParser;
-
-class XML_TroughParser : public XML_ElementParser {
-public:
-	XML_TroughParser() : XML_ElementParser("trough") {}
-
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[LIST_WIDGET].spaces[TROUGH_T_SPACE]);
-		} else if (StringsEqual(tag, "bottom")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[LIST_WIDGET].spaces[TROUGH_B_SPACE]);
-		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[LIST_WIDGET].spaces[TROUGH_R_SPACE]);
-		} else if (StringsEqual(tag, "width")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[LIST_WIDGET].spaces[TROUGH_WIDTH]);
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-};
-
-static XML_TroughParser TroughParser;
-
-static XML_ThemeWidgetParser ThumbParser("thumb", LIST_THUMB);
-static XML_ThemeWidgetParser SliderThumbParser("thumb", SLIDER_THUMB);
-
-class XML_CheckboxParser : public XML_ThemeWidgetParser {
-public:
-	XML_CheckboxParser() : XML_ThemeWidgetParser("checkbox", CHECKBOX) {}
-
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "height")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[CHECKBOX].spaces[BUTTON_HEIGHT]);
-		} else if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[CHECKBOX].spaces[BUTTON_T_SPACE]);
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-};
-static XML_CheckboxParser CheckboxParser;
-static XML_ElementParser ActiveCheckboxParser("active");
-static XML_ElementParser DisabledCheckboxParser("disabled");
-
-class XML_ListParser : public XML_ThemeWidgetParser {
-public:
-	XML_ListParser() : XML_ThemeWidgetParser("list", LIST_WIDGET) {}
-
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[LIST_WIDGET].spaces[T_SPACE]);
-		} else if (StringsEqual(tag, "bottom")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[LIST_WIDGET].spaces[B_SPACE]);
-		} else if (StringsEqual(tag, "left")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[LIST_WIDGET].spaces[L_SPACE]);
-		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[LIST_WIDGET].spaces[R_SPACE]);
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-};
-
-static XML_ListParser ListParser;
-
-class XML_SliderParser : public XML_ThemeWidgetParser {
-public:
-	XML_SliderParser() : XML_ThemeWidgetParser("slider", SLIDER_WIDGET) {}
-
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[SLIDER_WIDGET].spaces[SLIDER_T_SPACE]);
-		} else if (StringsEqual(tag, "left")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[SLIDER_WIDGET].spaces[SLIDER_L_SPACE]);
-		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[SLIDER_WIDGET].spaces[SLIDER_R_SPACE]);
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-};
-
-static XML_SliderParser SliderParser;
-
-class XML_TabParser : public XML_ThemeWidgetParser {
-public:
-	XML_TabParser() : XML_ThemeWidgetParser("tab", TAB_WIDGET) {}
-
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[TAB_WIDGET].spaces[BUTTON_T_SPACE]);
-		} else if (StringsEqual(tag, "height")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[TAB_WIDGET].spaces[BUTTON_HEIGHT]);
-		} else if (StringsEqual(tag, "left")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[TAB_WIDGET].spaces[BUTTON_L_SPACE]);
-		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[TAB_WIDGET].spaces[BUTTON_R_SPACE]);
-		} else if (StringsEqual(tag, "inner_left")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[TAB_WIDGET].spaces[TAB_LC_SPACE]);
-		} else if (StringsEqual(tag, "inner_right")) {
-			return ReadNumericalValue(value, "%hu", dialog_theme[TAB_WIDGET].spaces[TAB_RC_SPACE]);
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-};
-
-static XML_TabParser TabParser;
-static XML_ElementParser ActiveTabParser("active");
-static XML_ElementParser DisabledTabParser("disabled");
-static XML_ElementParser PressedTabParser("pressed");
-
-class XML_MetaserverPlayersParser : public XML_ThemeWidgetParser {
-public:
-	XML_MetaserverPlayersParser() : XML_ThemeWidgetParser("players", METASERVER_PLAYERS) {}
-	
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "lines"))
-		{
-			return ReadNumericalValue(value, "%hu", dialog_theme[METASERVER_PLAYERS].spaces[0]);
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-};
-
-static XML_MetaserverPlayersParser MetaserverPlayersParser;
-
-class XML_MetaserverGamesParser : public XML_ThemeWidgetParser {
-public:
-	XML_MetaserverGamesParser() : XML_ThemeWidgetParser("games", METASERVER_GAMES) {}
-
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "entries"))
-		{
-			return ReadNumericalValue(value, "%hu", dialog_theme[METASERVER_GAMES].spaces[w_games_in_room::GAME_ENTRIES]);
-		} else if (StringsEqual(tag, "spacing"))
-		{
-			return ReadNumericalValue(value, "%hu", dialog_theme[METASERVER_GAMES].spaces[w_games_in_room::GAME_SPACING]);
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-};
-
-static XML_MetaserverGamesParser MetaserverGamesParser;
-static XML_ElementParser SelectedMetaserverGamesParser("selected");
-static XML_ElementParser RunningMetaserverGamesParser("running");
-static XML_ElementParser SelectedRunningMetaserverGamesParser("selected");
-static XML_ElementParser IncompatibleMetaserverGamesParser("incompatible");
-static XML_ElementParser SelectedIncompatibleMetaserverGamesParser("selected");
-
-
-class XML_MetaserverParser : public XML_ThemeWidgetParser {
-public:
-	XML_MetaserverParser() : XML_ThemeWidgetParser("metaserver", METASERVER_WIDGETS) {}
-
-};
-
-static XML_MetaserverParser MetaserverParser;
-		
-
-class XML_ThemeParser : public XML_ElementParser {
-public:
-	XML_ThemeParser() : XML_ElementParser("theme") {}
-};
-
-static XML_ThemeParser ThemeParser;
-
-XML_ElementParser *Theme_GetParser()
-{
-	DefaultParser.AddChild(&DefaultColorParser);
-	DefaultParser.AddChild(&DefaultFontParser);
-	ThemeParser.AddChild(&DefaultParser);
-
-	FrameParser.AddChild(&FrameImageParser);
-	FrameParser.AddChild(&FrameColorParser);
-	ThemeParser.AddChild(&FrameParser);
-
-	TitleParser.AddChild(&TitleFontParser);
-	TitleParser.AddChild(&TitleColorParser);
-	ThemeParser.AddChild(&TitleParser);
-
-	ThemeParser.AddChild(&SpacerParser);
-
-	ButtonParser.AddChild(&ButtonFontParser);
-	ButtonParser.AddChild(&DefaultButtonColorParser);
-	ActiveButtonParser.AddChild(&ActiveButtonColorParser);
-	ActiveButtonParser.AddChild(&ActiveButtonImageParser);
-	DisabledButtonParser.AddChild(&DisabledButtonColorParser);
-	DisabledButtonParser.AddChild(&DisabledButtonImageParser);
-	PressedButtonParser.AddChild(&PressedButtonColorParser);
-	PressedButtonParser.AddChild(&PressedButtonImageParser);
-	ButtonParser.AddChild(&ActiveButtonParser);
-	ButtonParser.AddChild(&DisabledButtonParser);
-	ButtonParser.AddChild(&DefaultButtonImageParser);
-	ButtonParser.AddChild(&PressedButtonParser);
-	ThemeParser.AddChild(&ButtonParser);
-
-	TinyButtonParser.AddChild(&TinyButtonFontParser);
-	TinyButtonParser.AddChild(&DefaultTinyButtonColorParser);
-	ActiveTinyButtonParser.AddChild(&ActiveTinyButtonColorParser);
-	ActiveTinyButtonParser.AddChild(&ActiveTinyButtonImageParser);
-	DisabledTinyButtonParser.AddChild(&DisabledTinyButtonColorParser);
-	DisabledTinyButtonParser.AddChild(&DisabledTinyButtonImageParser);
-	PressedTinyButtonParser.AddChild(&PressedTinyButtonColorParser);
-	PressedTinyButtonParser.AddChild(&PressedTinyButtonImageParser);
-	TinyButtonParser.AddChild(&ActiveTinyButtonParser);
-	TinyButtonParser.AddChild(&DisabledTinyButtonParser);
-	TinyButtonParser.AddChild(&DefaultTinyButtonImageParser);
-	TinyButtonParser.AddChild(&PressedTinyButtonParser);
-	ThemeParser.AddChild(&TinyButtonParser);
-	
-	HyperlinkParser.AddChild(&HyperlinkFontParser);
-	HyperlinkParser.AddChild(&DefaultHyperlinkColorParser);
-	ActiveHyperlinkParser.AddChild(&ActiveHyperlinkColorParser);
-	DisabledHyperlinkParser.AddChild(&DisabledHyperlinkColorParser);
-	PressedHyperlinkParser.AddChild(&PressedHyperlinkColorParser);
-	HyperlinkParser.AddChild(&ActiveHyperlinkParser);
-	HyperlinkParser.AddChild(&DisabledHyperlinkParser);
-	HyperlinkParser.AddChild(&PressedHyperlinkParser);
-	ThemeParser.AddChild(&HyperlinkParser);
-
-	LabelParser.AddChild(&LabelFontParser);
-	LabelParser.AddChild(&DefaultLabelColorParser);
-	ActiveLabelParser.AddChild(&ActiveLabelColorParser);
-	DisabledLabelParser.AddChild(&DisabledLabelColorParser);
-	LabelParser.AddChild(&ActiveLabelParser);
-	LabelParser.AddChild(&DisabledLabelParser);
-	ThemeParser.AddChild(&LabelParser);
-
-	ItemParser.AddChild(&ItemFontParser);
-	ItemParser.AddChild(&DefaultItemColorParser);
-	ActiveItemParser.AddChild(&ActiveItemColorParser);
-	DisabledItemParser.AddChild(&DisabledItemColorParser);
-	ItemParser.AddChild(&ActiveItemParser);
-	ItemParser.AddChild(&DisabledItemParser);
-	ThemeParser.AddChild(&ItemParser);
-
-	MessageParser.AddChild(&MessageFontParser);
-	MessageParser.AddChild(&MessageColorParser);
-	ThemeParser.AddChild(&MessageParser);
-
-	TextEntryParser.AddChild(&TextEntryFontParser);
-	TextEntryParser.AddChild(&DefaultTextEntryColorParser);
-	ActiveTextEntryParser.AddChild(&ActiveTextEntryColorParser);
-	DisabledTextEntryParser.AddChild(&DisabledTextEntryColorParser);
-	CursorTextEntryParser.AddChild(&CursorTextEntryColorParser);
-	TextEntryParser.AddChild(&ActiveTextEntryParser);
-	TextEntryParser.AddChild(&DisabledTextEntryParser);
-	TextEntryParser.AddChild(&CursorTextEntryParser);
-	ThemeParser.AddChild(&TextEntryParser);
-
-	ChatEntryParser.AddChild(&ChatEntryFontParser);
-	ChatEntryParser.AddChild(&ChatEntryColorParser);
-	ThemeParser.AddChild(&ChatEntryParser);
-
-	ListParser.AddChild(&ListImageParser);
-	ListParser.AddChild(&ListColorParser);
-	ListParser.AddChild(&TroughParser);
-	ThumbParser.AddChild(&ThumbImageParser);
-	ThumbParser.AddChild(&ThumbColorParser);
-	ListParser.AddChild(&ThumbParser);
-	ThemeParser.AddChild(&ListParser);
-
-	SliderParser.AddChild(&SliderImageParser);
-	SliderParser.AddChild(&SliderColorParser);
-	SliderThumbParser.AddChild(&SliderThumbColorParser);
-	SliderThumbParser.AddChild(&SliderThumbImageParser);
-	SliderParser.AddChild(&SliderThumbParser);
-	ThemeParser.AddChild(&SliderParser);
-
-	ActiveCheckboxParser.AddChild(&ActiveCheckboxImageParser);
-	DisabledCheckboxParser.AddChild(&DisabledCheckboxImageParser);
-	CheckboxParser.AddChild(&CheckboxImageParser);
-	CheckboxParser.AddChild(&ActiveCheckboxParser);
-	CheckboxParser.AddChild(&DisabledCheckboxParser);
-	CheckboxParser.AddChild(&CheckboxFontParser);
-	ThemeParser.AddChild(&CheckboxParser);
-
-	TabParser.AddChild(&TabImageParser);
-	TabParser.AddChild(&TabColorParser);
-	TabParser.AddChild(&TabFontParser);
-	ActiveTabParser.AddChild(&ActiveTabColorParser);
-	ActiveTabParser.AddChild(&ActiveTabImageParser);
-	DisabledTabParser.AddChild(&DisabledTabColorParser);
-	DisabledTabParser.AddChild(&DisabledTabImageParser);
-	PressedTabParser.AddChild(&PressedTabColorParser);
-	PressedTabParser.AddChild(&PressedTabImageParser);
-	TabParser.AddChild(&ActiveTabParser);
-	TabParser.AddChild(&DisabledTabParser);
-	TabParser.AddChild(&PressedTabParser);
-	ThemeParser.AddChild(&TabParser);
-
-	SelectedMetaserverGamesParser.AddChild(&SelectedMetaserverGamesColorParser);
-	SelectedRunningMetaserverGamesParser.AddChild(&SelectedRunningMetaserverGamesColorParser);
-	RunningMetaserverGamesParser.AddChild(&SelectedRunningMetaserverGamesParser);
-	RunningMetaserverGamesParser.AddChild(&RunningMetaserverGamesColorParser);
-	SelectedIncompatibleMetaserverGamesParser.AddChild(&SelectedIncompatibleMetaserverGamesColorParser);
-	IncompatibleMetaserverGamesParser.AddChild(&SelectedIncompatibleMetaserverGamesParser);
-	IncompatibleMetaserverGamesParser.AddChild(&IncompatibleMetaserverGamesColorParser);
-	MetaserverGamesParser.AddChild(&MetaserverGamesColorParser);
-	MetaserverGamesParser.AddChild(&SelectedMetaserverGamesParser);
-	MetaserverGamesParser.AddChild(&RunningMetaserverGamesParser);
-	MetaserverGamesParser.AddChild(&IncompatibleMetaserverGamesParser);
-	MetaserverGamesParser.AddChild(&MetaserverGamesFontParser);
-	MetaserverParser.AddChild(&MetaserverGamesParser);
-
-	MetaserverPlayersParser.AddChild(&MetaserverPlayersFontParser);
-	MetaserverParser.AddChild(&MetaserverPlayersParser);
-	ThemeParser.AddChild(&MetaserverParser);
-
-	return &ThemeParser;
+	bool scale = false;
+	root.read_attr("scale", scale);
+	dialog_theme[type].states[state].image_specs[index].name = name;
+	dialog_theme[type].states[state].image_specs[index].scale = scale;
 }
 
+static void parse_theme_images(InfoTree root, int type, int state, int num_items = 1)
+{
+	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("image")) {
+		parse_theme_image(v.second, type, state, num_items - 1);
+	}
+}
+
+static void parse_theme_color(InfoTree root, int type, int state, int max_index)
+{
+	int index = 0;
+	root.read_attr_bounded("index", index, 0, max_index);
+	
+	float red, green, blue;
+	if (!root.read_attr("red", red) ||
+		!root.read_attr("green", green) ||
+		!root.read_attr("blue", blue))
+		return;
+	
+	SDL_Color color;
+	color.r = uint8(PIN(255 * red + 0.5, 0, 255));
+	color.g = uint8(PIN(255 * green + 0.5, 0, 255));
+	color.b = uint8(PIN(255 * blue + 0.5, 0, 255));
+	dialog_theme[type].states[state].colors[index] = color;
+}
+
+static void parse_theme_colors(InfoTree root, int type, int state, int num_items = 1)
+{
+	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("color")) {
+		parse_theme_color(v.second, type, state, num_items - 1);
+	}
+}
+
+static void parse_theme_font(InfoTree root, int type)
+{
+	int size = -1;
+	if (!root.read_attr("size", size))
+		return;
+
+	int id = kFontIDMonaco;
+	bool have_id = root.read_attr("id", id);
+	std::string path;
+	bool have_path = root.read_attr("file", path);
+	if (!have_id && !have_path)
+		return;
+
+	dialog_theme[type].font_spec.font = id;
+	dialog_theme[type].font_spec.size = size;
+	dialog_theme[type].font_spec.normal = path;
+	
+	dialog_theme[type].font_spec.style = 0;
+	root.read_attr("style", dialog_theme[type].font_spec.style);
+	dialog_theme[type].font_spec.adjust_height = 0;
+	root.read_attr("adjust_height", dialog_theme[type].font_spec.adjust_height);
+	root.read_attr("bold_file", dialog_theme[type].font_spec.bold);
+	root.read_attr("italic_file", dialog_theme[type].font_spec.oblique);
+	root.read_attr("bold_italic_file", dialog_theme[type].font_spec.bold_oblique);
+	
+	dialog_theme[type].font_set = true;
+}
+
+static void parse_theme_fonts(InfoTree root, int type)
+{
+	boost::optional<InfoTree> ochild;
+	if ((ochild = root.get_child_optional("font")))
+		parse_theme_font(*ochild, type);
+}
+
+void start_parse_widget(int theme_widget)
+{
+	if (dialog_theme.find(theme_widget) != dialog_theme.end())
+		dialog_theme[theme_widget].states.clear();
+}
+
+static void parse_default(InfoTree root)
+{
+	start_parse_widget(DEFAULT_WIDGET);
+	parse_theme_colors(root, DEFAULT_WIDGET, DEFAULT_STATE, 3);
+	parse_theme_fonts(root, DEFAULT_WIDGET);
+}
+
+static void parse_frame(InfoTree root)
+{
+	root.read_attr("top", dialog_theme[DIALOG_FRAME].spaces[T_SPACE]);
+	root.read_attr("bottom", dialog_theme[DIALOG_FRAME].spaces[B_SPACE]);
+	root.read_attr("left", dialog_theme[DIALOG_FRAME].spaces[L_SPACE]);
+	root.read_attr("right", dialog_theme[DIALOG_FRAME].spaces[R_SPACE]);
+	
+	parse_theme_colors(root, DIALOG_FRAME, DEFAULT_STATE, 3);
+	parse_theme_images(root, DIALOG_FRAME, DEFAULT_STATE, 8);
+}
+
+static void parse_title(InfoTree root)
+{
+	parse_theme_colors(root, TITLE_WIDGET, DEFAULT_STATE);
+	parse_theme_fonts(root, TITLE_WIDGET);
+}
+
+static void parse_spacer(InfoTree root)
+{
+	root.read_attr("height", dialog_theme[SPACER_WIDGET].spaces[0]);
+}
+
+static void parse_button(InfoTree root)
+{
+	start_parse_widget(BUTTON_WIDGET);
+	root.read_attr("top", dialog_theme[BUTTON_WIDGET].spaces[BUTTON_T_SPACE]);
+	root.read_attr("left", dialog_theme[BUTTON_WIDGET].spaces[BUTTON_L_SPACE]);
+	root.read_attr("right", dialog_theme[BUTTON_WIDGET].spaces[BUTTON_R_SPACE]);
+	root.read_attr("height", dialog_theme[BUTTON_WIDGET].spaces[BUTTON_HEIGHT]);
+	
+	parse_theme_colors(root, BUTTON_WIDGET, DEFAULT_STATE, 3);
+	parse_theme_fonts(root, BUTTON_WIDGET);
+	parse_theme_images(root, BUTTON_WIDGET, DEFAULT_STATE, 3);
+	
+	boost::optional<InfoTree> ochild;
+	if ((ochild = root.get_child_optional("active")))
+	{
+		parse_theme_colors(*ochild, BUTTON_WIDGET, ACTIVE_STATE, 3);
+		parse_theme_images(*ochild, BUTTON_WIDGET, ACTIVE_STATE, 3);
+	}
+	if ((ochild = root.get_child_optional("disabled")))
+	{
+		parse_theme_colors(*ochild, BUTTON_WIDGET, DISABLED_STATE, 3);
+		parse_theme_images(*ochild, BUTTON_WIDGET, DISABLED_STATE, 3);
+	}
+	if ((ochild = root.get_child_optional("pressed")))
+	{
+		parse_theme_colors(*ochild, BUTTON_WIDGET, PRESSED_STATE, 3);
+		parse_theme_images(*ochild, BUTTON_WIDGET, PRESSED_STATE, 3);
+	}
+}
+
+static void parse_tiny_button(InfoTree root)
+{
+	start_parse_widget(TINY_BUTTON);
+	root.read_attr("top", dialog_theme[TINY_BUTTON].spaces[BUTTON_T_SPACE]);
+	root.read_attr("left", dialog_theme[TINY_BUTTON].spaces[BUTTON_L_SPACE]);
+	root.read_attr("right", dialog_theme[TINY_BUTTON].spaces[BUTTON_R_SPACE]);
+	root.read_attr("height", dialog_theme[TINY_BUTTON].spaces[BUTTON_HEIGHT]);
+	
+	parse_theme_colors(root, TINY_BUTTON, DEFAULT_STATE, 3);
+	parse_theme_fonts(root, TINY_BUTTON);
+	parse_theme_images(root, TINY_BUTTON, DEFAULT_STATE, 3);
+	
+	boost::optional<InfoTree> ochild;
+	if ((ochild = root.get_child_optional("active")))
+	{
+		parse_theme_colors(*ochild, TINY_BUTTON, ACTIVE_STATE, 3);
+		parse_theme_images(*ochild, TINY_BUTTON, ACTIVE_STATE, 3);
+	}
+	if ((ochild = root.get_child_optional("disabled")))
+	{
+		parse_theme_colors(*ochild, TINY_BUTTON, DISABLED_STATE, 3);
+		parse_theme_images(*ochild, TINY_BUTTON, DISABLED_STATE, 3);
+	}
+	if ((ochild = root.get_child_optional("pressed")))
+	{
+		parse_theme_colors(*ochild, TINY_BUTTON, PRESSED_STATE, 3);
+		parse_theme_images(*ochild, TINY_BUTTON, PRESSED_STATE, 3);
+	}
+}
+
+static void parse_hyperlink(InfoTree root)
+{
+	start_parse_widget(HYPERLINK_WIDGET);
+	
+	parse_theme_colors(root, HYPERLINK_WIDGET, DEFAULT_STATE, 3);
+	parse_theme_fonts(root, HYPERLINK_WIDGET);
+	
+	boost::optional<InfoTree> ochild;
+	if ((ochild = root.get_child_optional("active")))
+	{
+		parse_theme_colors(*ochild, HYPERLINK_WIDGET, ACTIVE_STATE, 3);
+	}
+	if ((ochild = root.get_child_optional("disabled")))
+	{
+		parse_theme_colors(*ochild, HYPERLINK_WIDGET, DISABLED_STATE, 3);
+	}
+	if ((ochild = root.get_child_optional("pressed")))
+	{
+		parse_theme_colors(*ochild, HYPERLINK_WIDGET, PRESSED_STATE, 3);
+	}
+}
+
+static void parse_item(InfoTree root)
+{
+	start_parse_widget(ITEM_WIDGET);
+	root.read_attr("space", dialog_theme[ITEM_WIDGET].spaces[0]);
+	
+	parse_theme_colors(root, ITEM_WIDGET, DEFAULT_STATE);
+	parse_theme_fonts(root, ITEM_WIDGET);
+	
+	boost::optional<InfoTree> ochild;
+	if ((ochild = root.get_child_optional("active")))
+	{
+		parse_theme_colors(*ochild, ITEM_WIDGET, ACTIVE_STATE);
+	}
+	if ((ochild = root.get_child_optional("disabled")))
+	{
+		parse_theme_colors(*ochild, ITEM_WIDGET, DISABLED_STATE);
+	}
+}
+
+static void parse_label(InfoTree root)
+{
+	start_parse_widget(LABEL_WIDGET);
+	
+	parse_theme_colors(root, LABEL_WIDGET, DEFAULT_STATE);
+	parse_theme_fonts(root, LABEL_WIDGET);
+	
+	boost::optional<InfoTree> ochild;
+	if ((ochild = root.get_child_optional("active")))
+	{
+		parse_theme_colors(*ochild, LABEL_WIDGET, ACTIVE_STATE);
+	}
+	if ((ochild = root.get_child_optional("disabled")))
+	{
+		parse_theme_colors(*ochild, LABEL_WIDGET, DISABLED_STATE);
+	}
+}
+
+static void parse_message(InfoTree root)
+{
+	start_parse_widget(MESSAGE_WIDGET);
+	parse_theme_colors(root, MESSAGE_WIDGET, DEFAULT_STATE);
+	parse_theme_fonts(root, MESSAGE_WIDGET);
+}
+
+static void parse_text_entry(InfoTree root)
+{
+	start_parse_widget(TEXT_ENTRY_WIDGET);
+	
+	parse_theme_colors(root, TEXT_ENTRY_WIDGET, DEFAULT_STATE);
+	parse_theme_fonts(root, TEXT_ENTRY_WIDGET);
+	
+	boost::optional<InfoTree> ochild;
+	if ((ochild = root.get_child_optional("active")))
+	{
+		parse_theme_colors(*ochild, TEXT_ENTRY_WIDGET, ACTIVE_STATE);
+	}
+	if ((ochild = root.get_child_optional("disabled")))
+	{
+		parse_theme_colors(*ochild, TEXT_ENTRY_WIDGET, DISABLED_STATE);
+	}
+	if ((ochild = root.get_child_optional("cursor")))
+	{
+		parse_theme_colors(*ochild, TEXT_ENTRY_WIDGET, CURSOR_STATE);
+	}
+}
+
+static void parse_chat_entry(InfoTree root)
+{
+	start_parse_widget(CHAT_ENTRY);
+	root.read_attr("name_width", dialog_theme[CHAT_ENTRY].spaces[0]);
+	
+	parse_theme_colors(root, CHAT_ENTRY, DEFAULT_STATE);
+	parse_theme_fonts(root, CHAT_ENTRY);
+}
+
+static void parse_list(InfoTree root)
+{
+	start_parse_widget(LIST_WIDGET);
+	root.read_attr("top", dialog_theme[LIST_WIDGET].spaces[T_SPACE]);
+	root.read_attr("bottom", dialog_theme[LIST_WIDGET].spaces[B_SPACE]);
+	root.read_attr("left", dialog_theme[LIST_WIDGET].spaces[L_SPACE]);
+	root.read_attr("right", dialog_theme[LIST_WIDGET].spaces[R_SPACE]);
+	
+	parse_theme_colors(root, LIST_WIDGET, DEFAULT_STATE, 3);
+	parse_theme_images(root, LIST_WIDGET, DEFAULT_STATE, 8);
+	
+	boost::optional<InfoTree> ochild;
+	if ((ochild = root.get_child_optional("trough")))
+	{
+		ochild->read_attr("top", dialog_theme[LIST_WIDGET].spaces[TROUGH_T_SPACE]);
+		ochild->read_attr("bottom", dialog_theme[LIST_WIDGET].spaces[TROUGH_B_SPACE]);
+		ochild->read_attr("right", dialog_theme[LIST_WIDGET].spaces[TROUGH_R_SPACE]);
+		ochild->read_attr("width", dialog_theme[LIST_WIDGET].spaces[TROUGH_WIDTH]);
+	}
+	if ((ochild = root.get_child_optional("thumb")))
+	{
+		start_parse_widget(LIST_THUMB);
+		parse_theme_colors(*ochild, LIST_THUMB, DEFAULT_STATE, 3);
+		parse_theme_images(*ochild, LIST_THUMB, DEFAULT_STATE, 5);
+	}
+}
+
+static void parse_slider(InfoTree root)
+{
+	start_parse_widget(SLIDER_WIDGET);
+	root.read_attr("top", dialog_theme[SLIDER_WIDGET].spaces[SLIDER_T_SPACE]);
+	root.read_attr("left", dialog_theme[SLIDER_WIDGET].spaces[SLIDER_L_SPACE]);
+	root.read_attr("right", dialog_theme[SLIDER_WIDGET].spaces[SLIDER_R_SPACE]);
+	
+	parse_theme_colors(root, SLIDER_WIDGET, DEFAULT_STATE, 3);
+	parse_theme_images(root, SLIDER_WIDGET, DEFAULT_STATE, 3);
+	
+	boost::optional<InfoTree> ochild;
+	if ((ochild = root.get_child_optional("thumb")))
+	{
+		start_parse_widget(SLIDER_THUMB);
+		parse_theme_colors(*ochild, SLIDER_THUMB, DEFAULT_STATE, 3);
+		parse_theme_images(*ochild, SLIDER_THUMB, DEFAULT_STATE);
+	}
+}
+
+static void parse_checkbox(InfoTree root)
+{
+	start_parse_widget(CHECKBOX);
+	root.read_attr("top", dialog_theme[CHECKBOX].spaces[BUTTON_T_SPACE]);
+	root.read_attr("height", dialog_theme[CHECKBOX].spaces[BUTTON_HEIGHT]);
+	
+	parse_theme_fonts(root, CHECKBOX);
+	parse_theme_images(root, CHECKBOX, DEFAULT_STATE, 2);
+	
+	boost::optional<InfoTree> ochild;
+	if ((ochild = root.get_child_optional("active")))
+	{
+		parse_theme_images(*ochild, CHECKBOX, ACTIVE_STATE, 2);
+	}
+	if ((ochild = root.get_child_optional("disabled")))
+	{
+		parse_theme_images(*ochild, CHECKBOX, DISABLED_STATE, 2);
+	}
+}
+
+static void parse_tab(InfoTree root)
+{
+	start_parse_widget(TAB_WIDGET);
+	root.read_attr("top", dialog_theme[TAB_WIDGET].spaces[BUTTON_T_SPACE]);
+	root.read_attr("left", dialog_theme[TAB_WIDGET].spaces[BUTTON_L_SPACE]);
+	root.read_attr("right", dialog_theme[TAB_WIDGET].spaces[BUTTON_R_SPACE]);
+	root.read_attr("height", dialog_theme[TAB_WIDGET].spaces[BUTTON_HEIGHT]);
+	root.read_attr("inner_left", dialog_theme[TAB_WIDGET].spaces[TAB_LC_SPACE]);
+	root.read_attr("inner_right", dialog_theme[TAB_WIDGET].spaces[TAB_RC_SPACE]);
+	
+	parse_theme_colors(root, TAB_WIDGET, DEFAULT_STATE, 3);
+	parse_theme_fonts(root, TAB_WIDGET);
+	parse_theme_images(root, TAB_WIDGET, DEFAULT_STATE, 5);
+	
+	boost::optional<InfoTree> ochild;
+	if ((ochild = root.get_child_optional("active")))
+	{
+		parse_theme_colors(*ochild, TAB_WIDGET, ACTIVE_STATE, 3);
+		parse_theme_images(*ochild, TAB_WIDGET, ACTIVE_STATE, 5);
+	}
+	if ((ochild = root.get_child_optional("disabled")))
+	{
+		parse_theme_colors(*ochild, TAB_WIDGET, DISABLED_STATE, 3);
+		parse_theme_images(*ochild, TAB_WIDGET, DISABLED_STATE, 5);
+	}
+	if ((ochild = root.get_child_optional("pressed")))
+	{
+		parse_theme_colors(*ochild, TAB_WIDGET, PRESSED_STATE, 3);
+		parse_theme_images(*ochild, TAB_WIDGET, PRESSED_STATE, 5);
+	}
+}
+
+static void parse_metaserver(InfoTree root)
+{
+	start_parse_widget(METASERVER_WIDGETS);
+	boost::optional<InfoTree> ochild;
+	if ((ochild = root.get_child_optional("games")))
+	{
+		start_parse_widget(METASERVER_GAMES);
+		ochild->read_attr("entries", dialog_theme[METASERVER_GAMES].spaces[w_games_in_room::GAME_ENTRIES]);
+		ochild->read_attr("spacing", dialog_theme[METASERVER_GAMES].spaces[w_games_in_room::GAME_SPACING]);
+		
+		parse_theme_colors(*ochild, METASERVER_GAMES, w_games_in_room::GAME, 3);
+		parse_theme_fonts(*ochild, METASERVER_GAMES);
+		
+		boost::optional<InfoTree> gtype;
+		if ((gtype = ochild->get_child_optional("selected")))
+		{
+			parse_theme_colors(*gtype, METASERVER_GAMES, w_games_in_room::SELECTED_GAME, 3);
+		}
+		if ((gtype = ochild->get_child_optional("running")))
+		{
+			parse_theme_colors(*gtype, METASERVER_GAMES, w_games_in_room::RUNNING_GAME, 3);
+			if ((gtype = gtype->get_child_optional("selected")))
+			{
+				parse_theme_colors(*gtype, METASERVER_GAMES, w_games_in_room::SELECTED_RUNNING_GAME, 3);
+			}
+		}
+		if ((gtype = ochild->get_child_optional("incompatible")))
+		{
+			parse_theme_colors(*gtype, METASERVER_GAMES, w_games_in_room::INCOMPATIBLE_GAME, 3);
+			if ((gtype = gtype->get_child_optional("selected")))
+			{
+				parse_theme_colors(*gtype, METASERVER_GAMES, w_games_in_room::SELECTED_INCOMPATIBLE_GAME, 3);
+			}
+		}
+	}
+	if ((ochild = root.get_child_optional("players")))
+	{
+		start_parse_widget(METASERVER_PLAYERS);
+		ochild->read_attr("lines", dialog_theme[METASERVER_PLAYERS].spaces[0]);
+		
+		parse_theme_fonts(*ochild, METASERVER_PLAYERS);
+	}
+}
+
+static bool parse_theme_file(FileSpecifier& theme_mml)
+{
+	bool success = false;
+	try {
+		InfoTree root = InfoTree::load_xml(theme_mml).get_child("marathon.theme");
+		
+		boost::optional<InfoTree> ochild;
+		if ((ochild = root.get_child_optional("default")))
+			parse_default(*ochild);
+		if ((ochild = root.get_child_optional("frame")))
+			parse_frame(*ochild);
+		if ((ochild = root.get_child_optional("title")))
+			parse_title(*ochild);
+		if ((ochild = root.get_child_optional("spacer")))
+			parse_spacer(*ochild);
+		if ((ochild = root.get_child_optional("button")))
+			parse_button(*ochild);
+		if ((ochild = root.get_child_optional("tiny_button")))
+			parse_tiny_button(*ochild);
+		if ((ochild = root.get_child_optional("hyperlink")))
+			parse_hyperlink(*ochild);
+		if ((ochild = root.get_child_optional("item")))
+			parse_item(*ochild);
+		if ((ochild = root.get_child_optional("label")))
+			parse_label(*ochild);
+		if ((ochild = root.get_child_optional("message")))
+			parse_message(*ochild);
+		if ((ochild = root.get_child_optional("text_entry")))
+			parse_text_entry(*ochild);
+		if ((ochild = root.get_child_optional("chat_entry")))
+			parse_chat_entry(*ochild);
+		if ((ochild = root.get_child_optional("list")))
+			parse_list(*ochild);
+		if ((ochild = root.get_child_optional("slider")))
+			parse_slider(*ochild);
+		if ((ochild = root.get_child_optional("checkbox")))
+			parse_checkbox(*ochild);
+		if ((ochild = root.get_child_optional("tab")))
+			parse_tab(*ochild);
+		if ((ochild = root.get_child_optional("metaserver")))
+			parse_metaserver(*ochild);
+		
+		success = true;
+	} catch (InfoTree::parse_error e) {
+		logError2("error parsing %s: %s", theme_mml.GetPath(), e.what());
+	} catch (InfoTree::path_error e) {
+		logError2("error parsing %s: %s", theme_mml.GetPath(), e.what());
+	} catch (InfoTree::data_error e) {
+		logError2("error parsing %s: %s", theme_mml.GetPath(), e.what());
+	} catch (InfoTree::unexpected_error e) {
+		logError2("error parsing %s: %s", theme_mml.GetPath(), e.what());
+	}
+	return success;
+}
 
 /*
  *  Load theme
@@ -949,9 +652,7 @@ bool load_theme(FileSpecifier &theme)
 
 	// Parse theme MML script
 	FileSpecifier theme_mml = theme + "theme2.mml";
-	XML_Loader_SDL loader;
-	loader.CurrentElement = &RootParser;
-	bool success = loader.ParseFile(theme_mml);
+	bool success = parse_theme_file(theme_mml);
 	theme_path = theme;
 
 	// Open resource file
