@@ -26,8 +26,6 @@
 May 1, 2000 (Loren Petrich): Added XML parser object for the stuff here.
 */
 
-#include "XML_ElementParser.h"
-
 #define OVERHEAD_MAP_MINIMUM_SCALE 1
 #define OVERHEAD_MAP_MAXIMUM_SCALE 4
 #define DEFAULT_OVERHEAD_MAP_SCALE 3
@@ -53,9 +51,6 @@ struct overhead_map_data
 };
 
 void _render_overhead_map(struct overhead_map_data *data);
-
-// LP addition: get the parser for the overhead-map elements (name "overhead_map")
-XML_ElementParser *OverheadMap_GetParser();
 
 class InfoTree;
 void parse_mml_overhead_map(const InfoTree& root);

@@ -33,8 +33,6 @@ Jan 31, 2001 (Loren Petrich):
 	Added delayed action for the fader effect, so as to get around certain MacOS oddities
 */
 
-#include "XML_ElementParser.h"
-
 /* ---------- constants */
 
 enum
@@ -135,9 +133,6 @@ bool fade_blacked_screen(void);
 // this is a workaround for a MacOS-version bug where something gets painted on the screen
 // after certain dialog boxes are cleared, thus canceling out the fader effect.
 void SetFadeEffectDelay(int _FadeEffectDelay);
-
-// LP change: added fader-parser export
-XML_ElementParser *Faders_GetParser();
 
 class InfoTree;
 void parse_mml_faders(const InfoTree& root);

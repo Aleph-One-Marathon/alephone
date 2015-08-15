@@ -27,8 +27,6 @@ May 18, 2000 (Loren Petrich):
 	Added XML-parser support
 */
 
-#include "XML_ElementParser.h"
-
 /* ---------- prototypes/SCENERY.C */
 
 void initialize_scenery(void);
@@ -48,9 +46,6 @@ void damage_scenery(short object_index);
 
 bool get_scenery_collection(short scenery_type, short &collection);
 bool get_damaged_scenery_collection(short scenery_type, short& collection);
-
-// LP change: added scenery-parser export
-XML_ElementParser *Scenery_GetParser();
 
 class InfoTree;
 void parse_mml_scenery(const InfoTree& root);

@@ -52,7 +52,7 @@ May 16, 2002 (Woody Zenfell):
     for films and netplay.
 */
 
-#include "XML_ElementParser.h"
+#include "cseries.h"
 
 class FileSpecifier;
 class OpenedResourceFile;
@@ -461,13 +461,6 @@ bool is_player_behavior_standard();
 
 // LP change: force reload of view context
 void ReloadViewContext();
-
-// LP change: added infravision-parser export
-XML_ElementParser *Infravision_GetParser();
-
-// LP change: added control-panel-parser export
-XML_ElementParser *ControlPanels_GetParser();
-
 
 class InfoTree;
 void parse_mml_infravision(const InfoTree& root);

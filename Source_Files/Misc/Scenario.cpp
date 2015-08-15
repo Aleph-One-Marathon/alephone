@@ -53,60 +53,6 @@ bool Scenario::IsCompatible(const string Compatible)
 	return false;
 }
 
-class XML_ScenarioParser : public XML_ElementParser
-{
-public:
-	bool HandleAttribute(const char *Tag, const char *Value);
-
-	XML_ScenarioParser() : XML_ElementParser("scenario") { }
-};
-
-bool XML_ScenarioParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag, "name"))
-	{
-		Scenario::instance()->SetName(Value);
-		return true;
-	}
-	else if (StringsEqual(Tag, "version"))
-	{
-		Scenario::instance()->SetVersion(Value);
-		return true;
-	}
-	else if (StringsEqual(Tag, "id"))
-	{
-		Scenario::instance()->SetID(Value);
-		return true;
-	}
-	
-	UnrecognizedTag();
-	return false;
-}
-
-class XML_CanJoinParser : public XML_ElementParser
-{
-public:
-	bool HandleString(const char *String, int Length);
-	
-	XML_CanJoinParser() : XML_ElementParser("can_join") { }
-};
-
-bool XML_CanJoinParser::HandleString(const char *String, int Length)
-{
-	Scenario::instance()->AddCompatible(string(String, Length));
-	return true;
-}
-
-static XML_ScenarioParser ScenarioParser;
-
-static XML_CanJoinParser CanJoinParser;
-
-
-XML_ElementParser *Scenario_GetParser()
-{	
-	ScenarioParser.AddChild(&CanJoinParser);
-	return &ScenarioParser;
-}
 
 void reset_mml_scenario()
 {

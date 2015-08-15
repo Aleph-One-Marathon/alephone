@@ -28,7 +28,6 @@
 */
 
 #include "OGL_Texture_Def.h"
-#include "XML_ElementParser.h"
 
 
 #ifdef HAVE_OPENGL
@@ -53,10 +52,6 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 int OGL_CountTextures(short Collection);
 void OGL_LoadTextures(short Collection);
 void OGL_UnloadTextures(short Collection);
-
-// XML support:
-XML_ElementParser *TextureOptions_GetParser();
-XML_ElementParser *TO_Clear_GetParser();
 
 class InfoTree;
 void parse_mml_opengl_texture(const InfoTree& root);

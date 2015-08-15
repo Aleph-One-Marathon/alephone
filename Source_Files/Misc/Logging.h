@@ -63,8 +63,6 @@ public:
 Logger* GetCurrentLogger();
 
 // Other functions
-class XML_ElementParser;
-XML_ElementParser* Logging_GetParser();
 void setLoggingThreshhold(const char* inDomain, short inThreshhold); // message appears if its level < inThreshhold
 void setShowLoggingLocations(const char* inDomain, bool inShowLocations);	// show file and line?
 void setFlushLoggingOutput(const char* inDomain, bool inFlushOutput);	// flush output file after every log message?

@@ -30,7 +30,6 @@ Jul 2, 2000 (Loren Petrich):
 	The HUD is now always buffered
 */
 
-#include "XML_ElementParser.h"
 #include	"shape_descriptors.h"
 #include "sdl_fonts.h"
 
@@ -175,12 +174,6 @@ void _frame_rect(screen_rectangle *rectangle, short color_index);
 
 // LP addition: stuff to use a buffer for the Heads-Up Display
 void _set_port_to_HUD();
-
-// LP addition: get the parser for the interface rectangles
-XML_ElementParser *InterfaceRectangles_GetParser();
-
-// Makes the color and font parsers use screen-drawing stuff
-void SetColorFontParserToScreenDrawing();
 
 #ifdef SDL
 struct world_point2d;

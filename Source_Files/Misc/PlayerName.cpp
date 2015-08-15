@@ -27,6 +27,7 @@
 #include "cseries.h"
 
 #include "PlayerName.h"
+#include "XML_ElementParser.h"
 #include "InfoTree.h"
 #include <string.h>
 
@@ -36,44 +37,6 @@ static char PlayerName[256];
 // Get that name
 const char *GetPlayerName() {return PlayerName;}
 
-
-class XML_SimpleStringParser: public XML_ElementParser
-{
-	// Was the string loaded? If not, then load a blank string at the end
-	bool StringLoaded;
-
-public:
-	// Callbacks
-	bool HandleString(const char *String, int Length);
-	
-	// The string's index value
-	short Index;
-
-	XML_SimpleStringParser(): XML_ElementParser("player_name") {}
-};
-
-bool XML_SimpleStringParser::HandleString(const char *String, int Length)
-{
-	DeUTF8_C(String,Length,PlayerName,255);
-	
-	return true;
-}
-
-static XML_SimpleStringParser PlayerNameParser;
-
-
-
-// Player-name parser: name is "player_name"
-XML_ElementParser *PlayerName_GetParser()
-{
-	const char DefaultPlayerName[] = "Marathon Player";
-	size_t Length = strlen(DefaultPlayerName);
-	assert(Length == static_cast<size_t>(static_cast<char>(Length)));
-	PlayerName[0] = (char)Length;
-	memcpy(PlayerName+1,DefaultPlayerName,Length);
-	
-	return &PlayerNameParser;
-}
 
 void reset_mml_player_name()
 {

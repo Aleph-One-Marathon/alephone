@@ -57,58 +57,15 @@
 #include "XML_LevelScript.h"
 #include "InfoTree.h"
 
-// The absolute root element is a global, of course
-XML_ElementParser RootParser("");
-
-// This is the canonical root element in the XML setup files:
-XML_ElementParser MarathonParser("marathon");
-
-
 void SetupParseTree()
 {
-	// Add the only recognized XML-document-root object here
-	RootParser.AddChild(&MarathonParser);
-
-	return;
-	
-	// Add all its subobjects
-	MarathonParser.AddChild(TS_GetParser());		// Text strings
-	MarathonParser.AddChild(Interface_GetParser());
-	MarathonParser.AddChild(PlayerName_GetParser());
-	MarathonParser.AddChild(Infravision_GetParser());
-	MarathonParser.AddChild(MotionSensor_GetParser());
-	MarathonParser.AddChild(OverheadMap_GetParser());
-	MarathonParser.AddChild(DynamicLimits_GetParser());
-	MarathonParser.AddChild(AnimatedTextures_GetParser());
-	MarathonParser.AddChild(Player_GetParser());
-	MarathonParser.AddChild(Items_GetParser());
-	MarathonParser.AddChild(ControlPanels_GetParser());
-	MarathonParser.AddChild(Liquids_GetParser());
-	MarathonParser.AddChild(Sounds_GetParser());
-	MarathonParser.AddChild(Platforms_GetParser());
-	MarathonParser.AddChild(Scenery_GetParser());
-	MarathonParser.AddChild(Faders_GetParser());
-	MarathonParser.AddChild(View_GetParser());
-	MarathonParser.AddChild(Landscapes_GetParser());
-	MarathonParser.AddChild(Weapons_GetParser());
-	MarathonParser.AddChild(OpenGL_GetParser());
-	MarathonParser.AddChild(Cheats_GetParser());
-	MarathonParser.AddChild(TextureLoading_GetParser());
-	MarathonParser.AddChild(Keyboard_GetParser());
-	MarathonParser.AddChild(DamageKicks_GetParser());
-	MarathonParser.AddChild(Monsters_GetParser());
-	MarathonParser.AddChild(Logging_GetParser());
-	MarathonParser.AddChild(Scenario_GetParser());
-	MarathonParser.AddChild(SW_Texture_Extras_GetParser());
-	MarathonParser.AddChild(Console_GetParser());
-	MarathonParser.AddChild(ExternalDefaultLevelScript_GetParser());
+	// no setup needed
 }
 
 // This will reset all values changed by MML scripts which implement ResetValues() method
 // and are part of the master MarathonParser tree.
 void ResetAllMMLValues()
 {
-//  MarathonParser.ResetChildrenValues();
 	reset_mml_stringset();
 	reset_mml_interface();
 	reset_mml_motion_sensor();

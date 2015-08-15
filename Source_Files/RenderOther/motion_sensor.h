@@ -29,8 +29,6 @@ Jan 30, 2000 (Loren Petrich)
 May 1, 2000 (Loren Petrich): Added XML parser object for the stuff here.
 */
 
-#include "XML_ElementParser.h"
-
 enum {
 	MType_Friend,	// What you, friendly players, and the Bobs are
 	MType_Alien,	// What the other critters are
@@ -48,9 +46,6 @@ void reset_motion_sensor(short monster_index);
 void motion_sensor_scan(void);
 bool motion_sensor_has_changed(void);
 void adjust_motion_sensor_range(void);
-
-// LP addition: get the parser for the motion-sensor elements (name "motion_sensor")
-XML_ElementParser *MotionSensor_GetParser();
 
 class InfoTree;
 void parse_mml_motion_sensor(const InfoTree& root);

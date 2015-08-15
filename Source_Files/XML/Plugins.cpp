@@ -31,7 +31,6 @@
 #include "Logging.h"
 #include "preferences.h"
 #include "InfoTree.h"
-#include "XML_Loader_SDL.h"
 #include "XML_ParseTreeRoot.h"
 #include "Scenario.h"
 
@@ -106,7 +105,7 @@ void Plugins::disable(const std::string& path) {
 	}
 }
 
-static void load_mmls(const Plugin& plugin, XML_Loader_SDL& loader) 
+static void load_mmls(const Plugin& plugin) 
 {
 	ScopedSearchPath ssp(plugin.directory);
 	for (std::vector<std::string>::const_iterator it = plugin.mmls.begin(); it != plugin.mmls.end(); ++it) 
@@ -115,7 +114,6 @@ static void load_mmls(const Plugin& plugin, XML_Loader_SDL& loader)
 		if (file.SetNameWithPath(it->c_str()))
 		{
 			ParseMMLFromFile(file);
-//			loader.ParseFile(file);
 		}
 		else
 		{
@@ -126,14 +124,12 @@ static void load_mmls(const Plugin& plugin, XML_Loader_SDL& loader)
 
 void Plugins::load_mml() {
 	validate();
-	XML_Loader_SDL loader;
-	loader.CurrentElement = &RootParser;
 
 	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it) 
 	{
 		if (it->valid())
 		{
-			load_mmls(*it, loader);
+			load_mmls(*it);
 		}
 	}
 }

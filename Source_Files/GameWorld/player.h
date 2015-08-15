@@ -66,7 +66,6 @@ May 20, 2002 (Woody Zenfell):
 #include "cseries.h"
 #include "world.h"
 #include "map.h"
-#include "XML_ElementParser.h"
 // ZZZ addition: same deal
 #include "weapons.h"
 
@@ -562,9 +561,6 @@ size_t get_number_of_physics_models();
 // ZZZ addition: get number of ticks (NOT measured carefully, beware)
 // since local player was in terminal mode.
 int get_ticks_since_local_player_in_terminal();
-
-// XML-parser support
-XML_ElementParser *Player_GetParser();
 
 class InfoTree;
 void parse_mml_player(const InfoTree& root);

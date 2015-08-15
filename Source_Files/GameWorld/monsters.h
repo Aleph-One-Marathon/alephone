@@ -47,8 +47,8 @@ Oct 24, 2000 (Mark Levin)
 
 // LP additions:
 #include "dynamic_limits.h"
-#include "XML_ElementParser.h"
 #include <vector>
+using namespace std;
 
 /* ---------- constants */
 
@@ -339,9 +339,6 @@ uint8 *unpack_monster_definition(uint8 *Stream, size_t Count);
 uint8 *pack_monster_definition(uint8 *Stream, size_t Count);
 uint8* unpack_m1_monster_definition(uint8* Stream, size_t Count);
 void init_monster_definitions();
-
-XML_ElementParser *DamageKicks_GetParser();
-XML_ElementParser* Monsters_GetParser();
 
 class InfoTree;
 void parse_mml_damage_kicks(const InfoTree& root);

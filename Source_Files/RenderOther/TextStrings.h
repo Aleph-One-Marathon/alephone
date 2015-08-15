@@ -54,12 +54,6 @@ void TS_DeleteStringSet(short ID);
 void TS_DeleteAllStrings();
 
 
-// Set up a text-string XML parser and return a pointer to it.
-// Its name is "stringset".
-// Don't try to delete it when one is finished with it
-class XML_ElementParser;
-XML_ElementParser *TS_GetParser();
-
 class InfoTree;
 void parse_mml_stringset(const InfoTree& root);
 void reset_mml_stringset();

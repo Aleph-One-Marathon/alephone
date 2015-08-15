@@ -44,7 +44,6 @@ Dec 17, 2000 (Loren Petrich:
 #include "world.h"
 #include "FontHandler.h"
 #include "shape_descriptors.h"
-#include "XML_ElementParser.h"
 
 // Returns whether or not the overhead map can possibly be active
 bool View_MapActive();
@@ -107,10 +106,6 @@ struct LandscapeOptions
 
 LandscapeOptions *View_GetLandscapeOptions(shape_descriptor Desc);
 
-
-// XML support:
-XML_ElementParser *View_GetParser();
-XML_ElementParser *Landscapes_GetParser();
 
 class InfoTree;
 void parse_mml_view(const InfoTree& root);

@@ -162,8 +162,6 @@ short NumEndScreens = 1;
 // The level-script parsers are separate from the main MML ones,
 // because they operate on per-level data.
 
-static XML_DataBlock LSXML_Loader;
-
 // Parse marathon_levels script
 static void parse_levels_xml(InfoTree root);
 
@@ -287,9 +285,6 @@ void RunScriptChunks()
 
 		if (length)
 		{
-//			LSXML_Loader.SourceName = name;
-//			LSXML_Loader.CurrentElement = &RootParser;
-//			LSXML_Loader.ParseData(reinterpret_cast<char *>(&mmls_chunk[offset]), length);
 			ParseMMLFromData(reinterpret_cast<char *>(&mmls_chunk[offset]), length);
 		}
 
@@ -384,9 +379,6 @@ void GeneralRunScript(int LevelIndex)
 				// Set to the MML root parser
 //				char ObjName[256];
 //				sprintf(ObjName,"[Map Rsrc %hd for Level %d]",Cmd.RsrcID,LevelIndex);
-//				LSXML_Loader.SourceName = ObjName;
-//				LSXML_Loader.CurrentElement = &RootParser;
-//				LSXML_Loader.ParseData(Data,DataLen);
 				ParseMMLFromData(Data, DataLen);
 			}
 			break;
@@ -527,171 +519,6 @@ uint8* GetLUAS(size_t& length)
 	return length ? &luas_chunk[0] : 0;
 }
 
-// Generalized parser for level-script commands; they all use the same format,
-// but will be distinguished by their names
-class XML_LSCommandParser: public XML_ElementParser
-{
-	// Need to get an object ID (either resource ID or filename)
-	bool ObjectWasFound;
-	
-	// New script command to compose	
-	LevelScriptCommand Cmd;
-	
-public:
-	bool Start();
-	bool End();
-
-	// For grabbing the level ID
-	bool HandleAttribute(const char *Tag, const char *Value);
-
-	XML_LSCommandParser(const char *_Name, int _CmdType): XML_ElementParser(_Name) {Cmd.Type = _CmdType;}
-};
-
-bool XML_LSCommandParser::Start()
-{
-	ObjectWasFound = false;
-	Color_SetArray(Cmd.Colors, 2);
-	return true;
-}
-
-
-bool XML_LSCommandParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"resource"))
-	{
-		short RsrcID;
-		if (ReadBoundedInt16Value(Value,RsrcID,0,SHRT_MAX))
-		{
-			Cmd.RsrcID = RsrcID;
-			ObjectWasFound = true;
-			return true;
-		}
-		else
-			return false;
-	}
-	else if (StringsEqual(Tag,"file"))
-	{
-		Cmd.FileSpec = Value;
-		ObjectWasFound = true;
-		return true;
-	}
-	else if (StringsEqual(Tag, "stretch"))
-	{
-		return ReadBooleanValueAsBool(Value, Cmd.Stretch);
-	}
-	else if (StringsEqual(Tag, "scale"))
-	{
-		return ReadBooleanValueAsBool(Value, Cmd.Scale);
-	}
-	else if (StringsEqual(Tag,"size"))
-	{
-		return ReadFloatValue(Value,Cmd.Size);
-	}
-	else if (StringsEqual(Tag, "progress_top"))
-	{
-		return ReadInt16Value(Value, Cmd.T);
-	}
-	else if (StringsEqual(Tag, "progress_bottom"))
-	{
-		return ReadInt16Value(Value, Cmd.B);
-	}
-	else if (StringsEqual(Tag, "progress_left"))
-	{
-		return ReadInt16Value(Value, Cmd.L);
-	}
-	else if (StringsEqual(Tag, "progress_right"))
-	{
-		return ReadInt16Value(Value, Cmd.R);
-	}
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_LSCommandParser::End()
-{
-	if (!ObjectWasFound) return false;
-
-	
-	assert(CurrScriptPtr);
-	CurrScriptPtr->Commands.push_back(Cmd);
-	return true;
-}
-
-static XML_LSCommandParser MusicParser("music",LevelScriptCommand::Music);
-#ifdef HAVE_OPENGL
-static XML_LSCommandParser LoadScreenParser("load_screen", LevelScriptCommand::LoadScreen);
-#endif
-
-class XML_RandomOrderParser: public XML_ElementParser
-{
-public:
-	bool HandleAttribute(const char *Tag, const char *Value)
-	{
-		if (StringsEqual(Tag,"on"))
-		{
-			bool RandomOrder;
-			bool Success = ReadBooleanValueAsBool(Value,RandomOrder);
-			if (Success)
-			{
-				assert(CurrScriptPtr);
-				CurrScriptPtr->RandomOrder = RandomOrder;
-			}
-			return Success;
-		}
-		UnrecognizedTag();
-		return false;
-	}
-	
-	XML_RandomOrderParser(): XML_ElementParser("random_order") {}
-};
-
-
-static XML_RandomOrderParser RandomOrderParser;
-
-	
-// Generalized parser for level scripts; for also parsing default and restoration scripts
-
-class XML_GeneralLevelScriptParser: public XML_ElementParser
-{
-protected:
-	// Tell the level script and the parser for its contents what level we are currently doing
-	void SetLevel(short Level);
-	
-public:
-	
-	XML_GeneralLevelScriptParser(const char *_Name): XML_ElementParser(_Name) {}
-};
-
-void XML_GeneralLevelScriptParser::SetLevel(short Level)
-{
-	CurrScriptPtr = &(LevelScripts[Level]);
-}
-
-
-// For setting up scripting for special pseudo-levels: the default and the restore
-class XML_SpecialLevelScriptParser: public XML_GeneralLevelScriptParser
-{
-	short Level;
-	
-public:
-	bool Start() {SetLevel(Level); return true;}
-	
-	XML_SpecialLevelScriptParser(const char *_Name, short _Level): XML_GeneralLevelScriptParser(_Name), Level(_Level) {}
-};
-
-static  XML_SpecialLevelScriptParser ExternalDefaultScriptParser("default_levels", LevelScriptHeader::Default);
-
-XML_ElementParser *ExternalDefaultLevelScript_GetParser()
-{
-#ifdef HAVE_OPENGL
-	ExternalDefaultScriptParser.AddChild(&LoadScreenParser);
-	LoadScreenParser.AddChild(Color_GetParser());
-#endif
-	ExternalDefaultScriptParser.AddChild(&MusicParser);
-	ExternalDefaultScriptParser.AddChild(&RandomOrderParser);
-	
-	return &ExternalDefaultScriptParser;
-}
 
 void reset_mml_default_levels()
 {

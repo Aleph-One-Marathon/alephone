@@ -105,57 +105,6 @@ const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] =
 	"bump_bloom"
 };
 
-class XML_ShaderParser: public XML_ElementParser {
-
-	FileSpecifier _vert, _frag;
-	std::string _name;
-	int16 _passes;
-public:
-
-	virtual bool HandleAttribute(const char *Tag, const char *Value);
-	virtual bool AttributesDone();
-	virtual bool ResetValues();
-	XML_ShaderParser(): XML_ElementParser("shader"), _passes(-1) {}
-};
-
-bool XML_ShaderParser::HandleAttribute(const char *Tag, const char *Value) {
-
-	if(StringsEqual(Tag,"name")) {
-		_name = Value;
-		return true;
-	} else if(StringsEqual(Tag,"vert")) {
-		_vert.SetNameWithPath(Value);
-		return true;
-	} else if(StringsEqual(Tag,"frag")) {
-		_frag.SetNameWithPath(Value);
-		return true;
-	} else if(StringsEqual(Tag,"passes")) {
-		return ReadInt16Value(Value,_passes);
-	}
-	UnrecognizedTag();
-	return true;
-};
-
-bool XML_ShaderParser::AttributesDone() {
-	initDefaultPrograms();
-	Shader::loadAll();
-	
-	for (int i = 0; i < Shader::NUMBER_OF_SHADER_TYPES; ++i) {
-		if (_name == Shader::_shader_names[i]) {
-			Shader::_shaders[i] = Shader(_name, _vert, _frag, _passes);
-			return true;
-		}
-	}
-	return false;
-}
-
-bool XML_ShaderParser::ResetValues() {
-	Shader::_shaders.clear();
-	return true;
-}
-
-static XML_ShaderParser ShaderParser;
-XML_ElementParser *Shader_GetParser() {return &ShaderParser;}
 
 class Shader_MML_Parser {
 public:

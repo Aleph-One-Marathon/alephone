@@ -63,7 +63,6 @@ Aug 21, 2001 (Loren Petrich):
 */
 
 
-#include "XML_ElementParser.h"
 #include "OGL_Subst_Texture_Def.h"
 #include "OGL_Model_Def.h"
 
@@ -406,9 +405,6 @@ enum
 
 OGL_FogData *OGL_GetFogData(int Type);
 
-
-// XML support:
-XML_ElementParser *OpenGL_GetParser();
 
 class InfoTree;
 void parse_mml_opengl(const InfoTree& root);

@@ -47,10 +47,6 @@ void mark_player_network_stats_as_dirty(short player_index);
 
 void set_interface_microphone_recording_state(bool state);
 
-// LP addition: get the parser for the interface elements (name "interface")
-class XML_ElementParser;
-XML_ElementParser *Interface_GetParser();
-
 class InfoTree;
 void parse_mml_interface(const InfoTree& root);
 void reset_mml_interface();

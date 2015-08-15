@@ -26,7 +26,6 @@
 */
 
 
-#include "XML_ElementParser.h"
 #include <string>
 #include <vector>
 
@@ -60,9 +59,6 @@ private:
 	
 	static Scenario *m_instance;
 };
-
-// Scenario parser: name is "scenario"
-XML_ElementParser *Scenario_GetParser();
 
 class InfoTree;
 void parse_mml_scenario(const InfoTree& root);

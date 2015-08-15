@@ -28,7 +28,6 @@
 
 #include "OGL_Texture_Def.h"
 #include "Model3D.h"
-#include "XML_ElementParser.h"
 
 
 #ifdef HAVE_OPENGL
@@ -145,10 +144,6 @@ void OGL_UnloadModels(short Collection);
 // for managing the sprite depth-buffer override (see ForceSpriteDepth above)
 void OGL_ResetForceSpriteDepth();  // to clear before calling OGL_LoadModels
 bool OGL_ForceSpriteDepth();
-
-// XML support:
-XML_ElementParser *ModelData_GetParser();
-XML_ElementParser *Mdl_Clear_GetParser();
 
 class InfoTree;
 void parse_mml_opengl_model(const InfoTree& root);

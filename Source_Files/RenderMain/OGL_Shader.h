@@ -124,10 +124,6 @@ public:
 	static void disable();
 };
 
-#include "cseries.h"
-#include "XML_ElementParser.h"
-
-XML_ElementParser *Shader_GetParser();
 
 class InfoTree;
 void parse_mml_opengl_shader(const InfoTree& root);

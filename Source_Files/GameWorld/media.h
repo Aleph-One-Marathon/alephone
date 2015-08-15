@@ -43,7 +43,6 @@ Aug 29, 2000 (Loren Petrich):
 
 #include <vector>
 #include "map.h"
-#include "XML_ElementParser.h"
 
 /* ---------- constants */
 
@@ -169,9 +168,6 @@ size_t count_number_of_medias_used();
 
 uint8 *unpack_media_data(uint8 *Stream, media_data* Objects, size_t Count);
 uint8 *pack_media_data(uint8 *Stream, media_data* Objects, size_t Count);
-
-// LP change: added liquid-parser export
-XML_ElementParser *Liquids_GetParser();
 
 class InfoTree;
 void parse_mml_liquids(const InfoTree& root);

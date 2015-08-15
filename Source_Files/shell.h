@@ -43,8 +43,6 @@ class FileSpecifier;
 
 /* ---------- constants */
 
-#include "XML_ElementParser.h"
-
 /* ---------- resources */
 
 enum {
@@ -97,9 +95,6 @@ enum // input devices
 /* ---------- prototypes/SHELL.C [now shell_misc.cpp, shell_macintosh.cpp, shell_sdl.cpp] */
 
 void global_idle_proc(void);
-
-// LP addition for handling XML stuff:
-XML_ElementParser *Cheats_GetParser();
 
 class InfoTree;
 void parse_mml_cheats(const InfoTree& root);

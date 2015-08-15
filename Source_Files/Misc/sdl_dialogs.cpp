@@ -56,8 +56,6 @@
 #include "OGL_Blitter.h"
 #endif
 
-#include "XML_Loader_SDL.h"
-#include "XML_ParseTreeRoot.h"
 #include "InfoTree.h"
 #include "Logging.h"
 

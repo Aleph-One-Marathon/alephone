@@ -26,7 +26,6 @@
 #include <string>
 #include <map>
 #include <boost/function.hpp>
-#include "XML_ElementParser.h"
 #include "preferences.h"
 
 class CommandParser
@@ -109,8 +108,6 @@ private:
 
 	void register_save_commands();
 };
-
-XML_ElementParser *Console_GetParser();
 
 class InfoTree;
 void parse_mml_console(const InfoTree& root);

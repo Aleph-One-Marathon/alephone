@@ -31,8 +31,6 @@ May 4, 2000
 #ifndef MARATHON_DYNAMIC_ENTITY_LIMITS
 #define MARATHON_DYNAMIC_ENTITY_LIMITS
 
-#include "XML_ElementParser.h"
-
 
 // Limit types:
 enum {
@@ -47,9 +45,6 @@ enum {
 	NUMBER_OF_DYNAMIC_LIMITS
 };
 
-
-// XML-parser support
-XML_ElementParser *DynamicLimits_GetParser();
 
 class InfoTree;
 void parse_mml_dynamic_limits(const InfoTree& root);

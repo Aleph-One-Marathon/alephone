@@ -34,8 +34,6 @@ May 15, 2000 (Loren Petrich):
 	Added XML support for configuring various item features
 */
 
-#include "XML_ElementParser.h"
-
 /* ---------- constants */
 
 enum /* item types (class) */
@@ -129,9 +127,6 @@ short find_player_ball_color(short player_index);
 // LP addition: initializer and animator of items
 void initialize_items(void);
 void animate_items(void);
-
-// LP addition: XML-parser support
-XML_ElementParser *Items_GetParser();
 
 class InfoTree;
 void parse_mml_items(const InfoTree& root);

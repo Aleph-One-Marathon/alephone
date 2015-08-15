@@ -25,7 +25,6 @@ SW_TEXTURE_EXTRAS.H
 #include "cseries.h"
 #include "cstypes.h"
 #include "shape_descriptors.h"
-#include "XML_ElementParser.h"
 #include <vector>
 
 class SW_Texture
@@ -77,8 +76,6 @@ private:
 
 	std::vector<SW_Texture> texture_list[NUMBER_OF_COLLECTIONS];
 };
-
-XML_ElementParser *SW_Texture_Extras_GetParser();
 
 class InfoTree;
 void parse_mml_software(const InfoTree& root);

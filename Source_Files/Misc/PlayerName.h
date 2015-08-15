@@ -27,13 +27,8 @@
 */
 
 
-#include "XML_ElementParser.h"
-
 // Get that name
 const char *GetPlayerName();
-
-// Player-name parser: name is "player_name"
-XML_ElementParser *PlayerName_GetParser();
 
 class InfoTree;
 void parse_mml_player_name(const InfoTree& root);

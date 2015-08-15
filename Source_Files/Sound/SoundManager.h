@@ -26,7 +26,6 @@
 #include "FileHandler.h"
 #include "SoundFile.h"
 #include "world.h"
-#include "XML_ElementParser.h"
 
 #include "SoundManagerEnums.h"
 
@@ -255,9 +254,6 @@ short Sound_ButtonFailure();
 short Sound_ButtonInoperative();
 short Sound_OGL_Reset();
 short Sound_Center_Button();
-
-// LP change: get the parser for the sound elements (name "sounds")
-XML_ElementParser *Sounds_GetParser();
 
 class InfoTree;
 void parse_mml_sounds(const InfoTree& root);

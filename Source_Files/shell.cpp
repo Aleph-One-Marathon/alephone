@@ -71,7 +71,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
-#include "XML_Loader_SDL.h"
 #include "resource_manager.h"
 #include "sdl_dialogs.h"
 #include "sdl_fonts.h"
@@ -1603,19 +1602,13 @@ static bool _ParseMMLDirectory(DirectorySpecifier& dir)
 
 void LoadBaseMMLScripts()
 {
-	XML_Loader_SDL loader;
-	loader.CurrentElement = &RootParser;
-	{
-		vector <DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
-		while (i != end) {
-			DirectorySpecifier path = *i + "MML";
-//			loader.ParseDirectory(path);
-			_ParseMMLDirectory(path);
-			path = *i + "Scripts";
-//			loader.ParseDirectory(path);
-			_ParseMMLDirectory(path);
-			i++;
-		}
+	vector <DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
+	while (i != end) {
+		DirectorySpecifier path = *i + "MML";
+		_ParseMMLDirectory(path);
+		path = *i + "Scripts";
+		_ParseMMLDirectory(path);
+		i++;
 	}
 }
 			   

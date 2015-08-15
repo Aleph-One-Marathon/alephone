@@ -37,7 +37,6 @@ Jan 14, 2001 (Loren Petrich):
 
 
 #include "cseries.h"
-#include "XML_ElementParser.h"
 
 #include "sdl_fonts.h"
 
@@ -140,15 +139,5 @@ public:
 #endif
 };
 
-
-// Returns a parser for the fonts;
-// several elements may have colors, so this ought to be callable several times.
-XML_ElementParser *Font_GetParser();
-
-// This sets the list of fonts to be read into.
-// Its args are the pointer to that list and the number of fonts in it.
-// If that number is <= 0, then the color value is assumed to be non-indexed,
-// and no "index" attribute will be searched for.
-void Font_SetArray(FontSpecifier *FontList, int NumColors = 0);
 
 #endif

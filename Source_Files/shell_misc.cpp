@@ -108,18 +108,6 @@ void AddOneItemToPlayer(short ItemType, short MaxNumber);
 // LP addition: XML support for controlling whether cheats are active
 keyword_data *original_keywords = NULL;
 
-class XML_CheatsParser: public XML_ElementParser
-{
-	
-public:
-	bool Start();
-	bool HandleAttribute(const char *Tag, const char *Value);
-	bool ResetValues();
-	
-	XML_CheatsParser(): XML_ElementParser("cheats") {}
-};
-
-
 static keyword_data keywords[]=
 {
 	{_tag_health, "NRG"},
@@ -364,113 +352,6 @@ void *level_transition_malloc(
 #define NUMBER_OF_KEYWORDS (sizeof(keywords)/sizeof(keyword_data))
 
 static char keyword_buffer[MAXIMUM_KEYWORD_LENGTH+1];
-
-// Note: This does not implement ResetValues() because the reset is handled by XML_CheatParser.
-class XML_CheatKeywordParser: public XML_ElementParser
-{
-	bool IsPresent;
-	short Index;
-
-public:
-	bool Start();
-	bool HandleAttribute(const char *Tag, const char *Value);
-	bool AttributesDone();
-	bool HandleString(const char *String, int Length);
-	
-	XML_CheatKeywordParser(): XML_ElementParser("keyword") {}
-};
-
-bool XML_CheatKeywordParser::Start()
-{
-	IsPresent = false;
-	return true;
-}
-
-bool XML_CheatKeywordParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"index"))
-	{
-		if (ReadBoundedInt16Value(Value,Index,0,int(NUMBER_OF_KEYWORDS-1)))
-		{
-			IsPresent = true;
-			return true;
-		}
-		else return false;
-	}
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_CheatKeywordParser::AttributesDone()
-{
-	return IsPresent;
-}
-
-bool XML_CheatKeywordParser::HandleString(const char *String, int Length)
-{
-	char *DestString = keywords[Index].keyword;
-	size_t DecodedLength = DeUTF8_C(String,Length,DestString,MAXIMUM_KEYWORD_LENGTH);
-	
-	for (size_t c=0; c<DecodedLength; c++, DestString++)
-		*DestString = toupper(*DestString);
-	
-	return true;
-}
-
-
-static XML_CheatKeywordParser CheatKeywordParser;
-
-bool XML_CheatsParser::Start()
-{
-	// back up old values first
-	if (!original_keywords)
-	{
-		original_keywords = (keyword_data *) malloc(sizeof(keywords));
-		assert(original_keywords);
-		for (int i = 0; i < NUMBER_OF_KEYWORDS; i++)
-			original_keywords[i] = keywords[i];
-	}
-	return true;
-}
-
-bool XML_CheatsParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"on"))
-	{
-		return ReadBooleanValueAsBool(Value,CheatsActive);
-	}
-	else if (StringsEqual(Tag,"mac_keymod"))
-	{
-#ifdef mac
-		return ReadUInt16Value(Value,CheatCodeModMask);
-#else
-		return true;
-#endif
-	}
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_CheatsParser::ResetValues()
-{
-	CheatsActive = false;
-	if (original_keywords)
-	{
-		for (int i = 0; i < NUMBER_OF_KEYWORDS; i++)
-			keywords[i] = original_keywords[i];
-	}
-	
-	return true;
-}
-
-static XML_CheatsParser CheatsParser;
-
-XML_ElementParser *Cheats_GetParser()
-{
-	CheatsParser.AddChild(&CheatKeywordParser);
-	return &CheatsParser;
-}
-
 
 int process_keyword_key(
 	char key)

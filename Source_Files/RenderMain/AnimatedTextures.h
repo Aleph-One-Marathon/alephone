@@ -31,7 +31,6 @@
 #define _ANIMATED_TEXTURES
 
 #include "shape_descriptors.h"
-#include "XML_ElementParser.h"
 
 // Updates the animated textures
 void AnimTxtr_Update();
@@ -39,9 +38,6 @@ void AnimTxtr_Update();
 // Does animated-texture translation.
 // Note: a shape_descriptor is really a short integer
 shape_descriptor AnimTxtr_Translate(shape_descriptor Texture);
-
-// XML-parser support
-XML_ElementParser *AnimatedTextures_GetParser();
 
 class InfoTree;
 void parse_mml_animated_textures(const InfoTree& root);

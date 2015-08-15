@@ -30,8 +30,6 @@ May 18, 2000 (Loren Petrich):
 	Added XML-parser support
 */
 
-#include "XML_ElementParser.h"
-
 /* ---------- constants */
 
 // #define MAXIMUM_PLATFORMS_PER_MAP 64
@@ -313,9 +311,6 @@ uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data *Objects,
 uint8 *pack_static_platform_data(uint8 *Stream, static_platform_data *Objects, size_t Count);
 uint8 *unpack_platform_data(uint8 *Stream, platform_data *Objects, size_t Count);
 uint8 *pack_platform_data(uint8 *Stream, platform_data *Objects, size_t Count);
-
-// LP change: added platform-parser export
-XML_ElementParser *Platforms_GetParser();
 
 class InfoTree;
 void parse_mml_platforms(const InfoTree& root);
