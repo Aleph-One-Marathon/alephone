@@ -36,6 +36,7 @@ Feb 19, 2000 (Loren Petrich):
 #include "monsters.h"
 #include "projectiles.h"
 #include "flood_map.h"
+#include "InfoTree.h"
 
 // original defaults
 static uint16 m2_dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
@@ -216,6 +217,37 @@ XML_ElementParser *DynamicLimits_GetParser()
 	return &DynamicLimitsParser;
 }
 
+void reset_mml_dynamic_limits()
+{
+	reset_dynamic_limits();
+}
+
+void parse_limit_value(const InfoTree& root, std::string child, int type)
+{
+	BOOST_FOREACH(InfoTree limit, root.children_named(child))
+		limit.read_attr_bounded<uint16>("value", dynamic_limits[type], 0, 32767);
+}
+
+void parse_mml_dynamic_limits(const InfoTree& root)
+{
+	parse_limit_value(root, "objects", _dynamic_limit_objects);
+	parse_limit_value(root, "monsters", _dynamic_limit_monsters);
+	parse_limit_value(root, "paths", _dynamic_limit_paths);
+	parse_limit_value(root, "projectiles", _dynamic_limit_projectiles);
+	parse_limit_value(root, "effects", _dynamic_limit_effects);
+	parse_limit_value(root, "rendered", _dynamic_limit_rendered);
+	parse_limit_value(root, "local_collision", _dynamic_limit_local_collision);
+	parse_limit_value(root, "global_collision", _dynamic_limit_global_collision);
+
+	// Resize the arrays of objects, monsters, effects, and projectiles
+	EffectList.resize(MAXIMUM_EFFECTS_PER_MAP);
+	ObjectList.resize(MAXIMUM_OBJECTS_PER_MAP);
+	MonsterList.resize(MAXIMUM_MONSTERS_PER_MAP);
+	ProjectileList.resize(MAXIMUM_PROJECTILES_PER_MAP);
+
+	// Resize the array of paths also
+	allocate_pathfinding_memory();
+}
 
 
 // Accessor

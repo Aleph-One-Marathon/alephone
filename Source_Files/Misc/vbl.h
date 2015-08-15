@@ -75,4 +75,8 @@ static void close_stream_file(void);
 // LP addition for handling XML stuff:
 XML_ElementParser *Keyboard_GetParser();
 
+class InfoTree;
+void parse_mml_keyboard(const InfoTree& root);
+void reset_mml_keyboard();
+
 #endif

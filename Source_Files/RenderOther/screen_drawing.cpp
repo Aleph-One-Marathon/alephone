@@ -212,7 +212,7 @@ screen_rectangle *get_interface_rectangle(short index)
 	return interface_rectangles + index;
 }
 
-const rgb_color &get_interface_color(short index)
+rgb_color &get_interface_color(short index)
 {
 	assert(index>=0 && index<NumInterfaceColors);
 	return InterfaceColors[index];

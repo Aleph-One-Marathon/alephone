@@ -80,4 +80,8 @@ private:
 
 XML_ElementParser *SW_Texture_Extras_GetParser();
 
+class InfoTree;
+void parse_mml_software(const InfoTree& root);
+void reset_mml_software();
+
 #endif

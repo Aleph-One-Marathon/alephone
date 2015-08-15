@@ -287,9 +287,10 @@ void RunScriptChunks()
 
 		if (length)
 		{
-			LSXML_Loader.SourceName = name;
-			LSXML_Loader.CurrentElement = &RootParser;
-			LSXML_Loader.ParseData(reinterpret_cast<char *>(&mmls_chunk[offset]), length);
+//			LSXML_Loader.SourceName = name;
+//			LSXML_Loader.CurrentElement = &RootParser;
+//			LSXML_Loader.ParseData(reinterpret_cast<char *>(&mmls_chunk[offset]), length);
+			ParseMMLFromData(reinterpret_cast<char *>(&mmls_chunk[offset]), length);
 		}
 
 		offset += length;
@@ -381,11 +382,12 @@ void GeneralRunScript(int LevelIndex)
 				if (Data == NULL || DataLen <= 0) break;
 				
 				// Set to the MML root parser
-				char ObjName[256];
-				sprintf(ObjName,"[Map Rsrc %hd for Level %d]",Cmd.RsrcID,LevelIndex);
-				LSXML_Loader.SourceName = ObjName;
-				LSXML_Loader.CurrentElement = &RootParser;
-				LSXML_Loader.ParseData(Data,DataLen);
+//				char ObjName[256];
+//				sprintf(ObjName,"[Map Rsrc %hd for Level %d]",Cmd.RsrcID,LevelIndex);
+//				LSXML_Loader.SourceName = ObjName;
+//				LSXML_Loader.CurrentElement = &RootParser;
+//				LSXML_Loader.ParseData(Data,DataLen);
+				ParseMMLFromData(Data, DataLen);
 			}
 			break;
 		
@@ -689,6 +691,61 @@ XML_ElementParser *ExternalDefaultLevelScript_GetParser()
 	ExternalDefaultScriptParser.AddChild(&RandomOrderParser);
 	
 	return &ExternalDefaultScriptParser;
+}
+
+void reset_mml_default_levels()
+{
+	// no reset
+}
+
+void parse_mml_default_levels(const InfoTree& root)
+{
+	LevelScriptHeader *ls_ptr = &(LevelScripts[LevelScriptHeader::Default]);
+	
+	BOOST_FOREACH(InfoTree child, root.children_named("music"))
+	{
+		LevelScriptCommand cmd;
+		cmd.Type = LevelScriptCommand::Music;
+		
+		if (!child.read_attr("file", cmd.FileSpec))
+			continue;
+		
+		ls_ptr->Commands.push_back(cmd);
+	}
+	
+	BOOST_FOREACH(InfoTree child, root.children_named("random_order"))
+	{
+		child.read_attr("on", ls_ptr->RandomOrder);
+	}
+	
+#ifdef HAVE_OPENGL
+	BOOST_FOREACH(InfoTree child, root.children_named("load_screen"))
+	{
+		LevelScriptCommand cmd;
+		cmd.Type = LevelScriptCommand::LoadScreen;
+		
+		if (!child.read_attr("file", cmd.FileSpec))
+			continue;
+		
+		child.read_attr("stretch", cmd.Stretch);
+		child.read_attr("scale", cmd.Scale);
+		child.read_attr("progress_top", cmd.T);
+		child.read_attr("progress_bottom", cmd.B);
+		child.read_attr("progress_left", cmd.L);
+		child.read_attr("progress_right", cmd.R);
+		
+		BOOST_FOREACH(InfoTree color, child.children_named("color"))
+		{
+			int index = -1;
+			if (color.read_attr_bounded("index", index, 0, 1))
+			{
+				color.read_color(cmd.Colors[index]);
+			}
+		}
+		
+		ls_ptr->Commands.push_back(cmd);
+	}
+#endif
 }
 
 void parse_level_commands(InfoTree root, int index)

@@ -36,6 +36,7 @@
 #include "StudioLoader.h"
 #include "WavefrontLoader.h"
 #include "QD3D_Loader.h"
+#include "InfoTree.h"
 
 
 // Model-data stuff;
@@ -50,6 +51,14 @@ struct SequenceMapEntry
 {
 	int16 Sequence;
 	int16 ModelSequence;
+	bool operator==(const SequenceMapEntry& other) const
+	{
+		return (Sequence == other.Sequence && ModelSequence == other.ModelSequence);
+	}
+	bool operator<(const SequenceMapEntry& other) const
+	{
+		return (Sequence < other.Sequence || ModelSequence < other.ModelSequence);
+	}
 };
 
 
@@ -1104,5 +1113,193 @@ XML_ElementParser *ModelData_GetParser()
 	return &ModelDataParser;
 }
 XML_ElementParser *Mdl_Clear_GetParser() {return &Mdl_ClearParser;}
+
+void reset_mml_opengl_model()
+{
+	MdlDeleteAll();
+}
+
+void parse_mml_opengl_model_clear(const InfoTree& root)
+{
+	int16 coll;
+	if (root.read_indexed("coll", coll, NUMBER_OF_COLLECTIONS))
+		MdlDelete(coll);
+	else
+		MdlDeleteAll();
+}
+
+static bool read_sign_val(const InfoTree& root, std::string key, int16& val)
+{
+	std::string sign;
+	if (!root.read_attr(key, sign))
+		return false;
+	if (sign == "+") {
+		val = 1;
+		return true;
+	} else if (sign == "-") {
+		val = -1;
+		return true;
+	} else if (sign == "0") {
+		val = 0;
+		return true;
+	}
+	return root.read_attr(key, val);
+}
+
+void parse_mml_opengl_model(const InfoTree& root)
+{
+	int16 coll;
+	if (!root.read_indexed("coll", coll, NUMBER_OF_COLLECTIONS))
+		return;
+	
+	ModelDataEntry entry;
+	entry.ModelData = DefaultModelData;
+	entry.Sequence = NONE;
+	entry.SequenceMap.clear();
+	
+	root.read_indexed("seq", entry.Sequence, MAXIMUM_SHAPES_PER_COLLECTION);
+		
+	OGL_ModelData& def = entry.ModelData;
+	root.read_attr("scale", def.Scale);
+	root.read_attr("x_rot", def.XRot);
+	root.read_attr("y_rot", def.YRot);
+	root.read_attr("z_rot", def.ZRot);
+	root.read_attr("x_shift", def.XShift);
+	root.read_attr("y_shift", def.YShift);
+	root.read_attr("z_shift", def.ZShift);
+	read_sign_val(root, "side", def.Sidedness);
+	root.read_indexed("norm_type", def.NormalType, Model3D::NUMBER_OF_NORMAL_TYPES);
+	root.read_attr("norm_split", def.NormalSplit);
+	root.read_indexed("light_type", def.LightType, NUMBER_OF_MODEL_LIGHT_TYPES);
+	read_sign_val(root, "depth_type", def.DepthType);
+	root.read_attr("force_sprite_depth", def.ForceSpriteDepth);
+	root.read_path("file", def.ModelFile);
+	root.read_path("file1", def.ModelFile1);
+	root.read_path("file2", def.ModelFile2);
+	
+	std::string mtype;
+	if (root.read_attr("type", mtype))
+	{
+		def.ModelType.assign(mtype.begin(), mtype.end());
+		def.ModelType.push_back('\0');
+	}
+	
+	BOOST_FOREACH(InfoTree seqmap, root.children_named("seq_map"))
+	{
+		SequenceMapEntry e;
+		if (!seqmap.read_indexed("seq", e.Sequence, MAXIMUM_SHAPES_PER_COLLECTION))
+			continue;
+		if (!seqmap.read_indexed("model_seq", e.ModelSequence, MAXIMUM_SHAPES_PER_COLLECTION, true))
+			continue;
+		entry.SequenceMap.push_back(e);
+	}
+	
+	BOOST_FOREACH(InfoTree skin, root.children_named("skin"))
+	{
+		int16 clut = ALL_CLUTS;
+		skin.read_attr_bounded<int16>("clut", clut, ALL_CLUTS, SILHOUETTE_BITMAP_SET);
+		
+		int16 clut_variant = CLUT_VARIANT_NORMAL;
+		skin.read_attr_bounded<int16>("clut_variant", clut_variant, ALL_CLUT_VARIANTS, NUMBER_OF_CLUT_VARIANTS-1);
+		
+		OGL_SkinData sdef = DefaultSkinData;
+		sdef.CLUT = clut;
+		skin.read_indexed("opac_type", sdef.OpacityType, OGL_NUMBER_OF_OPACITY_TYPES);
+		skin.read_attr("opac_scale", sdef.OpacityScale);
+		skin.read_attr("opac_shift", sdef.OpacityShift);
+		skin.read_path("normal_image", sdef.NormalColors);
+		skin.read_path("offset_image", sdef.OffsetMap);
+		skin.read_path("normal_mask", sdef.NormalMask);
+		skin.read_path("glow_image", sdef.GlowColors);
+		skin.read_path("glow_mask", sdef.GlowMask);
+		skin.read_indexed("normal_blend", sdef.NormalBlend, OGL_NUMBER_OF_BLEND_TYPES);
+		skin.read_indexed("glow_blend", sdef.GlowBlend, OGL_NUMBER_OF_BLEND_TYPES);
+		skin.read_attr("normal_bloom_scale", sdef.BloomScale);
+		skin.read_attr("normal_bloom_shift", sdef.BloomShift);
+		skin.read_attr("glow_bloom_scale", sdef.GlowBloomScale);
+		skin.read_attr("glow_bloom_shift", sdef.GlowBloomShift);
+		skin.read_attr("minimum_glow_intensity", sdef.MinGlowIntensity);
+		
+		// translate deprecated clut options
+		if (clut == INFRAVISION_BITMAP_SET)
+		{
+			clut = ALL_CLUTS;
+			clut_variant = CLUT_VARIANT_INFRAVISION;
+		}
+		else if (clut == SILHOUETTE_BITMAP_SET)
+		{
+			clut = ALL_CLUTS;
+			clut_variant = CLUT_VARIANT_SILHOUETTE;
+		}
+		
+		// loop so we can apply "all variants" mode if needed
+		for (short var = CLUT_VARIANT_NORMAL; var < NUMBER_OF_CLUT_VARIANTS; var++)
+		{
+			if (clut_variant != ALL_CLUT_VARIANTS && clut_variant != var)
+				continue;
+			
+			// translate clut+variant to internal clut number
+			short actual_clut = clut;
+			if (var == CLUT_VARIANT_INFRAVISION)
+			{
+				if (clut == ALL_CLUTS)
+					actual_clut = INFRAVISION_BITMAP_SET;
+				else
+					actual_clut = INFRAVISION_BITMAP_CLUTSPECIFIC + clut;
+			}
+			else if (var == CLUT_VARIANT_SILHOUETTE)
+			{
+				if (clut == ALL_CLUTS)
+					actual_clut = SILHOUETTE_BITMAP_SET;
+				else
+					actual_clut = SILHOUETTE_BITMAP_CLUTSPECIFIC + clut;
+			}
+			
+			bool found = false;
+			for (vector<OGL_SkinData>::iterator it = def.SkinData.begin(); it != def.SkinData.end(); ++it)
+			{
+				if (it->CLUT == clut)
+				{
+					*it = sdef;
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				def.SkinData.push_back(sdef);
+			}
+		}
+	}
+	
+	// Add parsed model to list
+	// Check to see if a frame is already accounted for
+	bool found = false;
+	vector<ModelDataEntry>& ML = MdlList[coll];
+	for (vector<ModelDataEntry>::iterator MdlIter = ML.begin(); MdlIter < ML.end(); MdlIter++)
+	{
+		// Sequence and map must match
+		if (MdlIter->Sequence != entry.Sequence) continue;
+		if (MdlIter->SequenceMap.size() != entry.SequenceMap.size()) continue;
+		
+		// Sort and compare sequence maps
+		std::vector<SequenceMapEntry> omap = MdlIter->SequenceMap;
+		std::vector<SequenceMapEntry> nmap = entry.SequenceMap;
+		std::sort(omap.begin(), omap.end());
+		std::sort(nmap.begin(), nmap.end());
+		if (omap != nmap) continue;
+		
+		// Replace the data; it passed the tests
+		MdlIter->ModelData = def;
+		found = true;
+		break;
+	}
+	
+	// If not, then add a new frame entry
+	if (!found)
+	{
+		ML.push_back(entry);
+	}
+}
 
 #endif

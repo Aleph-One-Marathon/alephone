@@ -58,6 +58,11 @@ void OGL_UnloadTextures(short Collection);
 XML_ElementParser *TextureOptions_GetParser();
 XML_ElementParser *TO_Clear_GetParser();
 
+class InfoTree;
+void parse_mml_opengl_texture(const InfoTree& root);
+void reset_mml_opengl_texture();
+void parse_mml_opengl_txtr_clear(const InfoTree& root);
+
 #endif // def HAVE_OPENGL
 
 #endif

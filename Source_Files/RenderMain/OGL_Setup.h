@@ -410,4 +410,8 @@ OGL_FogData *OGL_GetFogData(int Type);
 // XML support:
 XML_ElementParser *OpenGL_GetParser();
 
+class InfoTree;
+void parse_mml_opengl(const InfoTree& root);
+void reset_mml_opengl();
+
 #endif

@@ -468,4 +468,11 @@ XML_ElementParser *Infravision_GetParser();
 // LP change: added control-panel-parser export
 XML_ElementParser *ControlPanels_GetParser();
 
+
+class InfoTree;
+void parse_mml_infravision(const InfoTree& root);
+void reset_mml_infravision();
+void parse_mml_control_panels(const InfoTree& root);
+void reset_mml_control_panels();
+
 #endif

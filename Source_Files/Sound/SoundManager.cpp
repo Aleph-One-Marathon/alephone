@@ -27,6 +27,7 @@ SOUND.C
 #include "sound_definitions.h"
 #include "Mixer.h"
 #include "images.h"
+#include "InfoTree.h"
 
 #define SLOT_IS_USED(o) ((o)->flags&(uint16)0x8000)
 #define SLOT_IS_FREE(o) (!SLOT_IS_USED(o))
@@ -1722,4 +1723,123 @@ XML_ElementParser *Sounds_GetParser()
 	SoundsParser.AddChild(&SO_ClearParser);
 	
 	return &SoundsParser;
+}
+
+void reset_mml_sounds()
+{
+	if (original_ambient_sound_definitions) {
+		for (int i = 0; i < NUMBER_OF_AMBIENT_SOUND_DEFINITIONS; i++)
+			ambient_sound_definitions[i] = original_ambient_sound_definitions[i];
+		free(original_ambient_sound_definitions);
+		original_ambient_sound_definitions = NULL;
+	}
+	if (original_random_sound_definitions) {
+		for (int i = 0; i < NUMBER_OF_RANDOM_SOUND_DEFINITIONS; i++)
+			random_sound_definitions[i] = original_random_sound_definitions[i];
+		free(original_random_sound_definitions);
+		original_random_sound_definitions = NULL;
+	}
+	if (original_dialog_sound_definitions)
+	{
+		for (int i = 0; i < number_of_dialog_sounds(); ++i)
+		{
+			dialog_sound_definitions[i] = original_dialog_sound_definitions[i];
+		}
+		free(original_dialog_sound_definitions);
+		original_dialog_sound_definitions = 0;
+	}
+	SoundReplacements::instance()->Reset();
+}
+
+void parse_mml_sounds(const InfoTree& root)
+{
+	// back up old values first
+	if (!original_ambient_sound_definitions) {
+		original_ambient_sound_definitions = (struct ambient_sound_definition *) malloc(sizeof(struct ambient_sound_definition) * NUMBER_OF_AMBIENT_SOUND_DEFINITIONS);
+		assert(original_ambient_sound_definitions);
+		for (int i = 0; i < NUMBER_OF_AMBIENT_SOUND_DEFINITIONS; i++)
+			original_ambient_sound_definitions[i] = ambient_sound_definitions[i];
+	}
+	if (!original_random_sound_definitions) {
+		original_random_sound_definitions = (struct random_sound_definition *) malloc(sizeof(struct random_sound_definition) * NUMBER_OF_RANDOM_SOUND_DEFINITIONS);
+		assert(original_random_sound_definitions);
+		for (int i = 0; i < NUMBER_OF_RANDOM_SOUND_DEFINITIONS; i++)
+			original_random_sound_definitions[i] = random_sound_definitions[i];
+	}
+	if (!original_dialog_sound_definitions)
+	{
+		original_dialog_sound_definitions = (int16*) malloc(sizeof(int16) * number_of_dialog_sounds());
+		for (int i = 0; i < number_of_dialog_sounds(); ++i)
+		{
+			original_dialog_sound_definitions[i] = dialog_sound_definitions[i];
+		}
+	}
+	
+	root.read_attr("terminal_logon", _Sound_TerminalLogon);
+	root.read_attr("terminal_logoff", _Sound_TerminalLogoff);
+	root.read_attr("terminal_page", _Sound_TerminalPage);
+	root.read_attr("teleport_in", _Sound_TeleportIn);
+	root.read_attr("teleport_out", _Sound_TeleportOut);
+	root.read_attr("got_powerup", _Sound_GotPowerup);
+	root.read_attr("got_item", _Sound_GotItem);
+	root.read_attr("crunched", _Sound_Crunched);
+	root.read_attr("exploding", _Sound_Exploding);
+	root.read_attr("breathing", _Sound_Breathing);
+	root.read_attr("oxygen_warning", _Sound_OxygenWarning);
+	root.read_attr("adjust_volume", _Sound_AdjustVolume);
+	root.read_attr("button_success", _Sound_ButtonSuccess);
+	root.read_attr("button_failure", _Sound_ButtonFailure);
+	root.read_attr("button_inoperative", _Sound_ButtonInoperative);
+	root.read_attr("ogl_reset", _Sound_OGL_Reset);
+	root.read_attr("center_button", _Sound_Center_Button);
+	
+	BOOST_FOREACH(InfoTree ambient, root.children_named("ambient"))
+	{
+		int16 index;
+		if (!ambient.read_indexed("index", index, NUMBER_OF_AMBIENT_SOUND_DEFINITIONS))
+			continue;
+		ambient.read_indexed("sound", ambient_sound_definitions[index].sound_index, SHRT_MAX+1, true);
+	}
+	BOOST_FOREACH(InfoTree random, root.children_named("random"))
+	{
+		int16 index;
+		if (!random.read_indexed("index", index, NUMBER_OF_RANDOM_SOUND_DEFINITIONS))
+			continue;
+		random.read_indexed("sound", random_sound_definitions[index].sound_index, SHRT_MAX+1, true);
+	}
+	BOOST_FOREACH(InfoTree dialog, root.children_named("dialog"))
+	{
+		int16 index;
+		if (!dialog.read_indexed("index", index, number_of_dialog_sounds()))
+			continue;
+		dialog.read_indexed("sound", dialog_sound_definitions[index], SHRT_MAX+1, true);
+	}
+	
+	// external sounds: set or clear in order
+	BOOST_FOREACH(const InfoTree::value_type &v, root)
+	{
+		std::string name = v.first;
+		if (name == "sound_clear")
+		{
+			SoundReplacements::instance()->Reset();
+		}
+		else if (name == "sound")
+		{
+			InfoTree external = v.second;
+			int16 index;
+			if (!external.read_attr("index", index))
+				continue;
+			
+			int16 slot = 0;
+			external.read_indexed("slot", slot, MAXIMUM_PERMUTATIONS_PER_SOUND);
+			
+			SoundOptions data;
+			data.File = FileSpecifier();
+			std::string filename;
+			if (external.read_attr("file", filename))
+				data.File.SetNameWithPath(filename.c_str());
+			
+			SoundReplacements::instance()->Add(data, index, slot);
+		}
+	}
 }

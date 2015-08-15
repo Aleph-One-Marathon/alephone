@@ -154,6 +154,7 @@ May 22, 2003 (Woody Zenfell):
 #include "shell.h" // for screen_printf()
 #include "Console.h"
 #include "ViewControl.h"
+#include "InfoTree.h"
 
 /*
 //anybody on the receiving pad of a teleport should explode (what happens to invincible guys?)
@@ -2926,5 +2927,195 @@ XML_ElementParser *Player_GetParser()
 	PlayerParser.AddChild(&PlayerShapeParser);
 
 	return &PlayerParser;
+}
+
+void reset_mml_player()
+{
+	if (original_player_settings) {
+		player_settings = *original_player_settings;
+		free(original_player_settings);
+		original_player_settings = NULL;
+	}
+	if (original_player_initial_items) {
+		for (unsigned i = 0; i < NUMBER_OF_PLAYER_INITIAL_ITEMS; i++)
+			player_initial_items[i] = original_player_initial_items[i];
+		free(original_player_initial_items);
+		original_player_initial_items = NULL;
+	}
+	if (original_damage_response_definitions) {
+		for (unsigned i = 0; i < NUMBER_OF_DAMAGE_RESPONSE_DEFINITIONS; i++)
+			damage_response_definitions[i] = original_damage_response_definitions[i];
+		free(original_damage_response_definitions);
+		original_damage_response_definitions = NULL;
+	}
+	if (original_player_powerup_durations) {
+		player_powerup_durations = *original_player_powerup_durations;
+		free(original_player_powerup_durations);
+		original_player_powerup_durations = NULL;
+	}
+	if (original_player_powerups) {
+		player_powerups = *original_player_powerups;
+		free(original_player_powerups);
+		original_player_powerups = NULL;
+	}
+	if (original_player_shapes) {
+		player_shapes = *original_player_shapes;
+		free(original_player_shapes);
+		original_player_shapes = NULL;
+	}
+}
+
+void parse_mml_player(const InfoTree& root)
+{
+	// back up old values first
+	if (!original_player_settings) {
+		original_player_settings = (struct player_settings_definition *) malloc(sizeof(struct player_settings_definition));
+		*original_player_settings = player_settings;
+	}
+	if (!original_player_initial_items) {
+		original_player_initial_items = (short *) malloc(sizeof(short) * NUMBER_OF_PLAYER_INITIAL_ITEMS);
+		assert(original_player_initial_items);
+		for (unsigned i = 0; i < NUMBER_OF_PLAYER_INITIAL_ITEMS; i++)
+			original_player_initial_items[i] = player_initial_items[i];
+	}
+	if (!original_damage_response_definitions) {
+		original_damage_response_definitions = (struct damage_response_definition *) malloc(sizeof(struct damage_response_definition) * NUMBER_OF_DAMAGE_RESPONSE_DEFINITIONS);
+		assert(original_damage_response_definitions);
+		for (unsigned i = 0; i < NUMBER_OF_DAMAGE_RESPONSE_DEFINITIONS; i++)
+			original_damage_response_definitions[i] = damage_response_definitions[i];
+	}
+	if (!original_player_powerup_durations) {
+		original_player_powerup_durations = (struct player_powerup_durations_definition *) malloc(sizeof(struct player_powerup_durations_definition));
+		assert(original_player_powerup_durations);
+		*original_player_powerup_durations = player_powerup_durations;
+	}
+	if (!original_player_powerups) {
+		original_player_powerups = (struct player_powerup_definition *) malloc(sizeof(struct player_powerup_definition));
+		assert(original_player_powerups);
+		*original_player_powerups = player_powerups;
+	}
+	if (!original_player_shapes) {
+		original_player_shapes = (struct player_shape_definitions *) malloc(sizeof(struct player_shape_definitions));
+		*original_player_shapes = player_shapes;
+	}
+	
+	root.read_attr_bounded<int16>("energy", player_settings.InitialEnergy, 0, SHRT_MAX);
+	root.read_attr_bounded<int16>("oxygen", player_settings.InitialOxygen, 0, SHRT_MAX);
+	root.read_attr_bounded<int16>("stripped", player_settings.StrippedEnergy, 0, SHRT_MAX);
+	root.read_fixed("light", player_settings.PlayerSelfLuminosity, 0, SHRT_MAX);
+	root.read_attr("oxygen_deplete", player_settings.OxygenDepletion);
+	root.read_attr("oxygen_replenish", player_settings.OxygenReplenishment);
+	root.read_indexed("vulnerability", player_settings.Vulnerability, NUMBER_OF_DAMAGE_TYPES, true);
+	root.read_attr("guided", player_settings.PlayerShotsGuided);
+	root.read_attr("half_visual_arc", player_settings.PlayerHalfVisualArc);
+	root.read_attr("half_vertical_visual_arc", player_settings.PlayerHalfVertVisualArc);
+	root.read_attr("visual_range", player_settings.PlayerVisualRange);
+	root.read_attr("dark_visual_range", player_settings.PlayerDarkVisualRange);
+	root.read_attr("single_energy", player_settings.SingleEnergy);
+	root.read_attr("double_energy", player_settings.DoubleEnergy);
+	root.read_attr("triple_energy", player_settings.TripleEnergy);
+	root.read_attr("can_swim", player_settings.CanSwim);
+	
+	BOOST_FOREACH(InfoTree item, root.children_named("item"))
+	{
+		int16 index;
+		if (!item.read_indexed("index", index, NUMBER_OF_PLAYER_INITIAL_ITEMS))
+			continue;
+		item.read_indexed("type", player_initial_items[index], NUMBER_OF_DEFINED_ITEMS);
+	}
+	
+	BOOST_FOREACH(InfoTree dmg, root.children_named("damage"))
+	{
+		int16 index;
+		if (!dmg.read_indexed("index", index, NUMBER_OF_DAMAGE_RESPONSE_DEFINITIONS))
+			continue;
+		damage_response_definition& def = damage_response_definitions[index];
+		
+		dmg.read_attr("threshold", def.damage_threshhold);
+		dmg.read_attr("fade", def.fade);
+		dmg.read_attr("sound", def.sound);
+		dmg.read_attr("death_sound", def.death_sound);
+		dmg.read_attr("death_action", def.death_action);
+	}
+	
+	BOOST_FOREACH(InfoTree assign, root.children_named("powerup_assign"))
+	{
+		assign.read_indexed("invincibility", player_powerups.Powerup_Invincibility, NUMBER_OF_DEFINED_ITEMS, true);
+		assign.read_indexed("invisibility", player_powerups.Powerup_Invisibility, NUMBER_OF_DEFINED_ITEMS, true);
+		assign.read_indexed("infravision", player_powerups.Powerup_Infravision, NUMBER_OF_DEFINED_ITEMS, true);
+		assign.read_indexed("extravision", player_powerups.Powerup_Extravision, NUMBER_OF_DEFINED_ITEMS, true);
+		assign.read_indexed("triple_energy", player_powerups.Powerup_TripleEnergy, NUMBER_OF_DEFINED_ITEMS, true);
+		assign.read_indexed("double_energy", player_powerups.Powerup_DoubleEnergy, NUMBER_OF_DEFINED_ITEMS, true);
+		assign.read_indexed("energy", player_powerups.Powerup_Energy, NUMBER_OF_DEFINED_ITEMS, true);
+		assign.read_indexed("oxygen", player_powerups.Powerup_Oxygen, NUMBER_OF_DEFINED_ITEMS, true);
+	}
+	
+	BOOST_FOREACH(InfoTree powerup, root.children_named("powerup"))
+	{
+		powerup.read_attr_bounded<int16>("invincibility", kINVINCIBILITY_DURATION, 0, SHRT_MAX);
+		powerup.read_attr_bounded<int16>("invisibility", kINVISIBILITY_DURATION, 0, SHRT_MAX);
+		powerup.read_attr_bounded<int16>("infravision", kINFRAVISION_DURATION, 0, SHRT_MAX);
+		powerup.read_attr_bounded<int16>("extravision", kEXTRAVISION_DURATION, 0, SHRT_MAX);
+	}
+	
+	BOOST_FOREACH(InfoTree shp, root.children_named("shape"))
+	{
+		int16 type;
+		if (!shp.read_indexed("type", type, 4))
+			continue;
+		
+		if (type == 0)
+		{
+			int16 subtype;
+			if (!shp.read_indexed("subtype", subtype, 5))
+				continue;
+			switch (subtype)
+			{
+				case 0:
+					shp.read_indexed("value", player_shapes.collection, MAXIMUM_COLLECTIONS);
+					break;
+				case 1:
+					shp.read_indexed("value", player_shapes.dying_hard, MAXIMUM_SHAPES_PER_COLLECTION);
+					break;
+				case 2:
+					shp.read_indexed("value", player_shapes.dying_soft, MAXIMUM_SHAPES_PER_COLLECTION);
+					break;
+				case 3:
+					shp.read_indexed("value", player_shapes.dead_hard, MAXIMUM_SHAPES_PER_COLLECTION);
+					break;
+				case 4:
+					shp.read_indexed("value", player_shapes.dead_soft, MAXIMUM_SHAPES_PER_COLLECTION);
+					break;
+			}
+		}
+		else if (type == 1)
+		{
+			int16 subtype;
+			if (!shp.read_indexed("subtype", subtype, NUMBER_OF_PLAYER_ACTIONS))
+				continue;
+			shp.read_indexed("value", player_shapes.legs[subtype], MAXIMUM_SHAPES_PER_COLLECTION);
+		}
+		else if (type == 2)
+		{
+			int16 subtype;
+			if (!shp.read_indexed("subtype", subtype, PLAYER_TORSO_SHAPE_COUNT))
+				continue;
+			shp.read_indexed("value", player_shapes.torsos[subtype], MAXIMUM_SHAPES_PER_COLLECTION);
+		}
+		else if (type == 3)
+		{
+			int16 subtype;
+			if (!shp.read_indexed("subtype", subtype, PLAYER_TORSO_SHAPE_COUNT))
+				continue;
+			shp.read_indexed("value", player_shapes.charging_torsos[subtype], MAXIMUM_SHAPES_PER_COLLECTION);
+		}
+		else if (type == 4)
+		{
+			int16 subtype;
+			if (!shp.read_indexed("subtype", subtype, PLAYER_TORSO_SHAPE_COUNT))
+				continue;
+			shp.read_indexed("value", player_shapes.firing_torsos[subtype], MAXIMUM_SHAPES_PER_COLLECTION);
+		}
+	}
 }
 

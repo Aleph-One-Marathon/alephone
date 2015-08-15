@@ -24,6 +24,7 @@ SW_TEXTURE_EXTRAS.CPP
 #include "interface.h"
 #include "render.h"
 #include "scottish_textures.h"
+#include "InfoTree.h"
 
 SW_Texture_Extras *SW_Texture_Extras::m_instance;
 
@@ -226,4 +227,34 @@ XML_ElementParser *SW_Texture_Extras_GetParser()
 	return &SW_Texture_Extras_Parser;
 }
 
+void reset_mml_software()
+{
+	SW_Texture_Extras::instance()->Reset();
+}
+
+void parse_mml_software(const InfoTree& root)
+{
+	BOOST_FOREACH(InfoTree ttree, root.children_named("texture"))
+	{
+		int16 coll, bitmap;
+		if (!ttree.read_indexed("coll", coll, NUMBER_OF_COLLECTIONS) ||
+			!ttree.read_indexed("bitmap", bitmap, MAXIMUM_SHAPES_PER_COLLECTION))
+			continue;
+		
+		SW_Texture *tex = SW_Texture_Extras::instance()->AddTexture(BUILD_DESCRIPTOR(coll, bitmap));
+		tex->descriptor(BUILD_DESCRIPTOR(coll, bitmap));
+		
+		int16 opac_type = 0;
+		ttree.read_indexed("opac_type", opac_type, 4);
+		tex->opac_type(opac_type);
+		
+		float opac_scale = 1.0;
+		ttree.read_attr("opac_scale", opac_scale);
+		tex->opac_scale(opac_scale);
+		
+		float opac_shift = 0.0;
+		ttree.read_attr("opac_shift", opac_shift);
+		tex->opac_shift(opac_shift);
+	}
+}
 

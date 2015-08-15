@@ -60,4 +60,8 @@ void TS_DeleteAllStrings();
 class XML_ElementParser;
 XML_ElementParser *TS_GetParser();
 
+class InfoTree;
+void parse_mml_stringset(const InfoTree& root);
+void reset_mml_stringset();
+
 #endif

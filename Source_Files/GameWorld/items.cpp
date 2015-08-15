@@ -76,6 +76,7 @@ Feb 11, 2001 (Loren Petrich):
 #include "game_window.h"
 #include "weapons.h" /* needed for process_new_item_for_reloading */
 #include "network_games.h"
+#include "InfoTree.h"
 
 // LP addition: for the XML stuff
 #include <string.h>
@@ -965,4 +966,40 @@ XML_ElementParser *Items_GetParser()
 	return &ItemsParser;
 }
 
+void reset_mml_items()
+{
+	if (original_item_definitions) {
+		for (unsigned i = 0; i < NUMBER_OF_DEFINED_ITEMS; i++)
+			item_definitions[i] = original_item_definitions[i];
+		free(original_item_definitions);
+		original_item_definitions = NULL;
+	}
+}
 
+void parse_mml_items(const InfoTree& root)
+{
+	// back up old values first
+	if (!original_item_definitions) {
+		original_item_definitions = (struct item_definition *) malloc(sizeof(struct item_definition) * NUMBER_OF_DEFINED_ITEMS);
+		assert(original_item_definitions);
+		for (unsigned i = 0; i < NUMBER_OF_DEFINED_ITEMS; i++)
+			original_item_definitions[i] = item_definitions[i];
+	}
+	
+	BOOST_FOREACH(InfoTree itree, root.children_named("item"))
+	{
+		int16 index;
+		if (!itree.read_indexed("index", index, NUMBER_OF_DEFINED_ITEMS))
+			continue;
+		
+		item_definition& def = item_definitions[index];
+		itree.read_attr("singular", def.singular_name_id);
+		itree.read_attr("plural", def.plural_name_id);
+		itree.read_indexed("maximum", def.maximum_count_per_player, SHRT_MAX+1);
+		itree.read_attr("invalid", def.invalid_environments);
+		itree.read_indexed("type", def.item_kind, NUMBER_OF_ITEM_TYPES);
+		
+		BOOST_FOREACH(InfoTree shape, itree.children_named("shape"))
+			shape.read_shape(def.base_shape);
+	}
+}

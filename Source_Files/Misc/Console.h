@@ -112,6 +112,10 @@ private:
 
 XML_ElementParser *Console_GetParser();
 
+class InfoTree;
+void parse_mml_console(const InfoTree& root);
+void reset_mml_console();
+
 #endif
 
  

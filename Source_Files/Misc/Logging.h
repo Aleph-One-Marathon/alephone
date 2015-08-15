@@ -69,6 +69,11 @@ void setLoggingThreshhold(const char* inDomain, short inThreshhold); // message 
 void setShowLoggingLocations(const char* inDomain, bool inShowLocations);	// show file and line?
 void setFlushLoggingOutput(const char* inDomain, bool inFlushOutput);	// flush output file after every log message?
 
+
+class InfoTree;
+void parse_mml_logging(const InfoTree& root);
+void reset_mml_logging();
+
 // Log file name, for display in error messages
 const char *loggingFileName();
 

@@ -98,6 +98,7 @@ Feb 20, 2002 (Woody Zenfell):
 #include "Console.h"
 #include "joystick.h"
 #include "Movie.h"
+#include "InfoTree.h"
 
 #ifdef env68k
 #pragma segment input
@@ -1170,6 +1171,32 @@ XML_ElementParser *Keyboard_GetParser()
 	
 	return &KeyboardParser;
 }
+
+void reset_mml_keyboard()
+{
+	// no reset
+}
+
+void parse_mml_keyboard(const InfoTree& root)
+{
+	int16 which_set;
+	if (!root.read_indexed("set", which_set, NUMBER_OF_KEY_SETUPS))
+		return;
+	
+	BOOST_FOREACH(InfoTree ktree, root.children_named("key"))
+	{
+		int16 index;
+		if (!ktree.read_indexed("index", index, NUMBER_OF_STANDARD_KEY_DEFINITIONS))
+			continue;
+		
+		int16 keycode;
+		if (!ktree.read_attr("sdl", keycode))
+			continue;
+		
+		all_key_definitions[which_set][index].offset = static_cast<SDLKey>(keycode);
+	}
+}
+
 
 static void StreamToPlayerStart(uint8* &S, player_start_data& Object)
 {

@@ -72,6 +72,7 @@ Feb 3, 2003 (Woody Zenfell):
 #include "shell.h"	// screen_printf()
 //MH: Lua scripting
 #include "lua_script.h"
+#include "InfoTree.h"
 
 #include <string.h>
 #include <limits.h>
@@ -1261,4 +1262,69 @@ XML_ElementParser *ControlPanels_GetParser()
 	ControlPanelsParser.AddChild(&ControlPanelParser);
 
 	return &ControlPanelsParser;
+}
+
+void reset_mml_control_panels()
+{
+	if (original_control_panel_settings) {
+		control_panel_settings = *original_control_panel_settings;
+		free(original_control_panel_settings);
+		original_control_panel_settings = NULL;
+	}
+	
+	if (original_control_panel_definitions) {
+		for (unsigned i = 0; i < NUMBER_OF_CONTROL_PANEL_DEFINITIONS; i++)
+			control_panel_definitions[i] = original_control_panel_definitions[i];
+		free(original_control_panel_definitions);
+		original_control_panel_definitions = NULL;
+	}
+}
+
+void parse_mml_control_panels(const InfoTree& root)
+{
+	// back up old values first
+	if (!original_control_panel_settings) {
+		original_control_panel_settings = (struct control_panel_settings_definition *) malloc(sizeof(struct control_panel_settings_definition));
+		*original_control_panel_settings = control_panel_settings;
+	}
+
+	if (!original_control_panel_definitions) {
+		original_control_panel_definitions = (struct control_panel_definition *) malloc(sizeof(struct control_panel_definition) * NUMBER_OF_CONTROL_PANEL_DEFINITIONS);
+		assert(original_control_panel_definitions);
+		for (unsigned i = 0; i < NUMBER_OF_CONTROL_PANEL_DEFINITIONS; i++)
+			original_control_panel_definitions[i] = control_panel_definitions[i];
+	}
+
+	root.read_wu("reach", control_panel_settings.ReachDistance);
+	root.read_attr("horiz", control_panel_settings.ReachHorizontal);
+	root.read_attr("single_energy", control_panel_settings.SingleEnergy);
+	root.read_attr("single_energy_rate", control_panel_settings.SingleEnergyRate);
+	root.read_attr("double_energy", control_panel_settings.DoubleEnergy);
+	root.read_attr("double_energy_rate", control_panel_settings.DoubleEnergyRate);
+	root.read_attr("triple_energy", control_panel_settings.TripleEnergy);
+	root.read_attr("triple_energy_rate", control_panel_settings.TripleEnergyRate);
+	
+	BOOST_FOREACH(InfoTree panel, root.children_named("panel"))
+	{
+		int16 index;
+		if (!panel.read_indexed("index", index, NUMBER_OF_CONTROL_PANEL_DEFINITIONS))
+			continue;
+		
+		control_panel_definition& def = control_panel_definitions[index];
+		panel.read_indexed("type", def._class, NUMBER_OF_CONTROL_PANELS);
+		panel.read_indexed("coll", def.collection, NUMBER_OF_COLLECTIONS);
+		panel.read_indexed("active_frame", def.active_shape, MAXIMUM_SHAPES_PER_COLLECTION);
+		panel.read_indexed("inactive_frame", def.inactive_shape, MAXIMUM_SHAPES_PER_COLLECTION);
+		panel.read_indexed("item", def.item, NUMBER_OF_DEFINED_ITEMS, true);
+		panel.read_fixed("pitch", def.sound_frequency, 0, SHRT_MAX+1);
+		
+		BOOST_FOREACH(InfoTree sound, panel.children_named("sound"))
+		{
+			int16 type, which;
+			if (!sound.read_indexed("type", type, NUMBER_OF_CONTROL_PANEL_SOUNDS) ||
+				!sound.read_indexed("which", which, SHRT_MAX+1, true))
+				continue;
+			def.sounds[type] = which;
+		}
+	}
 }

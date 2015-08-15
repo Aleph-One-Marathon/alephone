@@ -36,6 +36,7 @@ Oct 13, 2000 (Loren Petrich)
 #include "cseries.h"
 #include "AnimatedTextures.h"
 #include "interface.h"
+#include "InfoTree.h"
 
 
 class AnimTxtr
@@ -483,3 +484,59 @@ XML_ElementParser *AnimatedTextures_GetParser()
 	
 	return &AnimatedTexturesParser;
 }
+
+
+void reset_mml_animated_textures()
+{
+	ATDeleteAll();
+}
+
+void parse_mml_animated_textures(const InfoTree& root)
+{
+	BOOST_FOREACH(const InfoTree::value_type &v, root)
+	{
+		std::string name = v.first;
+		const InfoTree& child = v.second;
+		
+		if (v.first == "clear")
+		{
+			int16 coll = -1;
+			if (child.read_indexed("coll", coll, NUMBER_OF_COLLECTIONS))
+				ATDelete(coll);
+			else
+				ATDeleteAll();
+		}
+		else if (v.first == "sequence")
+		{
+			int16 coll = -1;
+			int16 numticks = -1;
+			if (!child.read_indexed("coll", coll, NUMBER_OF_COLLECTIONS) ||
+				!child.read_attr("numticks", numticks))
+				continue;
+			
+			vector<short> frames;
+			BOOST_FOREACH(InfoTree frame, child.children_named("frame"))
+			{
+				int16 index = -1;
+				if (frame.read_indexed("index", index, 255))
+					frames.push_back(index);
+			}
+			if (!frames.size())
+				continue;
+			
+			uint16 frame_phase = 0;
+			child.read_attr("framephase", frame_phase);
+			uint16 tick_phase = 0;
+			child.read_attr("tickphase", tick_phase);
+			int16 select = -1;
+			child.read_attr("select", select);
+			
+			AnimTxtr new_anim;
+			new_anim.Load(frames);
+			new_anim.SetTiming(numticks, frame_phase, tick_phase);
+			new_anim.Select = select;
+			AnimTxtrList[coll].push_back(new_anim);
+		}
+	}
+}
+

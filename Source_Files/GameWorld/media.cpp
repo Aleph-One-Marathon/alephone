@@ -48,6 +48,7 @@ Feb 8, 2001 (Loren Petrich):
 #include "fades.h"
 #include "lightsource.h"
 #include "SoundManager.h"
+#include "InfoTree.h"
 
 #include "Packing.h"
 
@@ -668,4 +669,58 @@ XML_ElementParser *Liquids_GetParser()
 	LiquidsParser.AddChild(&LiquidParser);
 	
 	return &LiquidsParser;
+}
+
+void reset_mml_liquids()
+{
+	if (original_media_definitions) {
+		for (int i = 0; i < NUMBER_OF_MEDIA_TYPES; i++)
+			media_definitions[i] = original_media_definitions[i];
+		free(original_media_definitions);
+		original_media_definitions = NULL;
+	}
+}
+
+void parse_mml_liquids(const InfoTree& root)
+{
+	// back up old values first
+	if (!original_media_definitions) {
+		original_media_definitions = (struct media_definition *) malloc(sizeof(struct media_definition) * NUMBER_OF_MEDIA_TYPES);
+		assert(original_media_definitions);
+		for (int i = 0; i < NUMBER_OF_MEDIA_TYPES; i++)
+			original_media_definitions[i] = media_definitions[i];
+	}
+	
+	BOOST_FOREACH(InfoTree liquid, root.children_named("liquid"))
+	{
+		int16 index;
+		if (!liquid.read_indexed("index", index, NUMBER_OF_MEDIA_TYPES))
+			continue;
+		media_definition& def = media_definitions[index];
+		
+		liquid.read_indexed("coll", def.collection, NUMBER_OF_COLLECTIONS);
+		liquid.read_indexed("frame", def.shape, MAXIMUM_SHAPES_PER_COLLECTION);
+		liquid.read_indexed("transfer", def.transfer_mode, NUMBER_OF_TRANSFER_MODES);
+		liquid.read_attr("damage_freq", def.damage_frequency);
+		liquid.read_indexed("submerged", def.submerged_fade_effect, NUMBER_OF_FADE_EFFECT_TYPES);
+		
+		BOOST_FOREACH(InfoTree sound, root.children_named("sound"))
+		{
+			int16 type;
+			if (!sound.read_indexed("type", type, NUMBER_OF_MEDIA_SOUNDS))
+				continue;
+			sound.read_indexed("which", def.sounds[type], SHRT_MAX+1, true);
+		}
+		BOOST_FOREACH(InfoTree effect, root.children_named("effect"))
+		{
+			int16 type;
+			if (!effect.read_indexed("type", type, NUMBER_OF_MEDIA_DETONATION_TYPES))
+				continue;
+			effect.read_indexed("which", def.detonation_effects[type], NUMBER_OF_EFFECT_TYPES);
+		}
+		BOOST_FOREACH(InfoTree dmg, root.children_named("damage"))
+		{
+			dmg.read_damage(def.damage);
+		}
+	}
 }

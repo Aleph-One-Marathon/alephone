@@ -139,5 +139,9 @@ void SetFadeEffectDelay(int _FadeEffectDelay);
 // LP change: added fader-parser export
 XML_ElementParser *Faders_GetParser();
 
+class InfoTree;
+void parse_mml_faders(const InfoTree& root);
+void reset_mml_faders();
+
 #endif
 

@@ -28,6 +28,7 @@
 #include "cseries.h"
 #include "OGL_Subst_Texture_Def.h"
 #include "Logging.h"
+#include "InfoTree.h"
 
 #include <set>
 #include <string>
@@ -544,5 +545,103 @@ static XML_TextureOptionsParser TextureOptionsParser;
 // XML-parser support:
 XML_ElementParser *TextureOptions_GetParser() {return &TextureOptionsParser;}
 XML_ElementParser *TO_Clear_GetParser() {return &TO_ClearParser;}
+
+void reset_mml_opengl_texture()
+{
+	TODelete_All();
+}
+
+void parse_mml_opengl_texture(const InfoTree& root)
+{
+	int16 coll;
+	if (!root.read_indexed("coll", coll, NUMBER_OF_COLLECTIONS))
+		return;
+	
+	int16 bitmap;
+	if (!root.read_indexed("bitmap", bitmap, INT16_MAX+1))
+		return;
+	
+	int16 clut = ALL_CLUTS;
+	root.read_attr_bounded<int16>("clut", clut, ALL_CLUTS, SILHOUETTE_BITMAP_SET);
+	
+	int16 clut_variant = CLUT_VARIANT_NORMAL;
+	root.read_attr_bounded<int16>("clut_variant", clut_variant, ALL_CLUT_VARIANTS, NUMBER_OF_CLUT_VARIANTS-1);
+
+	// translate deprecated clut options
+	if (clut == INFRAVISION_BITMAP_SET)
+	{
+		clut = ALL_CLUTS;
+		clut_variant = CLUT_VARIANT_INFRAVISION;
+	}
+	else if (clut == SILHOUETTE_BITMAP_SET)
+	{
+		clut = ALL_CLUTS;
+		clut_variant = CLUT_VARIANT_SILHOUETTE;
+	}
+	
+	// loop so we can apply "all variants" mode if needed
+	for (short var = CLUT_VARIANT_NORMAL; var < NUMBER_OF_CLUT_VARIANTS; var++)
+	{
+		if (clut_variant != ALL_CLUT_VARIANTS && clut_variant != var)
+			continue;
+		
+		// translate clut+variant to internal clut number
+		short actual_clut = clut;
+		if (var == CLUT_VARIANT_INFRAVISION)
+		{
+			if (clut == ALL_CLUTS)
+				actual_clut = INFRAVISION_BITMAP_SET;
+			else
+				actual_clut = INFRAVISION_BITMAP_CLUTSPECIFIC + clut;
+		}
+		else if (var == CLUT_VARIANT_SILHOUETTE)
+		{
+			if (clut == ALL_CLUTS)
+				actual_clut = SILHOUETTE_BITMAP_SET;
+			else
+				actual_clut = SILHOUETTE_BITMAP_CLUTSPECIFIC + clut;
+		}
+		
+		TOHash::iterator it = Collections[coll].find(TOKey(actual_clut, bitmap));
+		if (it == Collections[coll].end())
+		{
+			Collections[coll][TOKey(actual_clut, bitmap)] = DefaultTextureOptions;
+			it = Collections[coll].find(TOKey(actual_clut, bitmap));
+		}
+		
+		OGL_TextureOptions& def = it->second;
+		root.read_indexed("opac_type", def.OpacityType, OGL_NUMBER_OF_OPACITY_TYPES);
+		root.read_attr("opac_scale", def.OpacityScale);
+		root.read_attr("opac_shift", def.OpacityShift);
+		root.read_attr("void_visible", def.VoidVisible);
+		root.read_path("normal_image", def.NormalColors);
+		root.read_path("offset_image", def.OffsetMap);
+		root.read_path("normal_mask", def.NormalMask);
+		root.read_path("glow_image", def.GlowColors);
+		root.read_path("glow_mask", def.GlowMask);
+		root.read_indexed("normal_blend", def.NormalBlend, OGL_NUMBER_OF_BLEND_TYPES);
+		root.read_indexed("glow_blend", def.GlowBlend, OGL_NUMBER_OF_BLEND_TYPES);
+		root.read_attr("actual_height", def.actual_height);
+		root.read_attr("actual_width", def.actual_width);
+		root.read_attr("type", def.Type);
+		root.read_attr("normal_premultiply", def.NormalIsPremultiplied);
+		root.read_attr("glow_premultiply", def.GlowIsPremultiplied);
+		root.read_attr("normal_bloom_scale", def.BloomScale);
+		root.read_attr("normal_bloom_shift", def.BloomShift);
+		root.read_attr("glow_bloom_scale", def.GlowBloomScale);
+		root.read_attr("glow_bloom_shift", def.GlowBloomShift);
+		root.read_attr("landscape_bloom", def.LandscapeBloom);
+		root.read_attr("minimum_glow_intensity", def.MinGlowIntensity);
+	}
+}
+
+void parse_mml_opengl_txtr_clear(const InfoTree& root)
+{
+	int16 coll;
+	if (root.read_indexed("coll", coll, NUMBER_OF_COLLECTIONS))
+		TODelete(coll);
+	else
+		TODelete_All();
+}
 
 #endif

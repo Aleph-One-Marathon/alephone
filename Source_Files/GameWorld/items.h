@@ -133,5 +133,9 @@ void animate_items(void);
 // LP addition: XML-parser support
 XML_ElementParser *Items_GetParser();
 
+class InfoTree;
+void parse_mml_items(const InfoTree& root);
+void reset_mml_items();
+
 #endif
 

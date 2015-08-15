@@ -51,6 +51,10 @@ enum {
 // XML-parser support
 XML_ElementParser *DynamicLimits_GetParser();
 
+class InfoTree;
+void parse_mml_dynamic_limits(const InfoTree& root);
+void reset_mml_dynamic_limits();
+
 // Accessor
 uint16 get_dynamic_limit(int which);
 

@@ -150,6 +150,11 @@ bool OGL_ForceSpriteDepth();
 XML_ElementParser *ModelData_GetParser();
 XML_ElementParser *Mdl_Clear_GetParser();
 
+class InfoTree;
+void parse_mml_opengl_model(const InfoTree& root);
+void reset_mml_opengl_model();
+void parse_mml_opengl_model_clear(const InfoTree& root);
+
 #endif // def HAVE_OPENGL
 
 #endif

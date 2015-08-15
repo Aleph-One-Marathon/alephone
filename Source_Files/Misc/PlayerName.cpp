@@ -27,6 +27,7 @@
 #include "cseries.h"
 
 #include "PlayerName.h"
+#include "InfoTree.h"
 #include <string.h>
 
 static char PlayerName[256];
@@ -72,4 +73,16 @@ XML_ElementParser *PlayerName_GetParser()
 	memcpy(PlayerName+1,DefaultPlayerName,Length);
 	
 	return &PlayerNameParser;
+}
+
+void reset_mml_player_name()
+{
+	// no reset
+}
+
+void parse_mml_player_name(const InfoTree& root)
+{
+	boost::optional<std::string> name_opt;
+	if ((name_opt = root.get_value_optional<std::string>()))
+		DeUTF8_C(name_opt->c_str(), name_opt->size(), PlayerName, 255);
 }

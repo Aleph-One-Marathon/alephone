@@ -64,6 +64,7 @@ Oct 13, 2000 (Loren Petrich):
 #include "player.h"
 #include "platforms.h"
 #include "scenery.h"
+#include "InfoTree.h"
 
 #ifdef env68k
 #pragma segment objects
@@ -420,3 +421,45 @@ XML_ElementParser *Scenery_GetParser()
 	return &SceneryParser;
 }
 
+void reset_mml_scenery()
+{
+	if (original_scenery_definitions) {
+		for (unsigned i = 0; i < NUMBER_OF_SCENERY_DEFINITIONS; i++)
+			scenery_definitions[i] = original_scenery_definitions[i];
+		free(original_scenery_definitions);
+		original_scenery_definitions = NULL;
+	}
+}
+
+void parse_mml_scenery(const InfoTree& root)
+{
+	// back up old values first
+	if (!original_scenery_definitions) {
+		original_scenery_definitions = (struct scenery_definition *) malloc(sizeof(struct scenery_definition) * NUMBER_OF_SCENERY_DEFINITIONS);
+		assert(original_scenery_definitions);
+		for (unsigned i = 0; i < NUMBER_OF_SCENERY_DEFINITIONS; i++)
+			original_scenery_definitions[i] = scenery_definitions[i];
+	}
+	
+	BOOST_FOREACH(InfoTree object, root.children_named("object"))
+	{
+		int16 index;
+		if (!object.read_indexed("index", index, NUMBER_OF_SCENERY_DEFINITIONS))
+			continue;
+		scenery_definition& def = scenery_definitions[index];
+		
+		object.read_attr("flags", def.flags);
+		object.read_attr("radius", def.radius);
+		object.read_attr("height", def.height);
+		object.read_indexed("destruction", def.destroyed_effect, NUMBER_OF_EFFECT_TYPES, true);
+		
+		BOOST_FOREACH(InfoTree child, object.children_named("normal"))
+			BOOST_FOREACH(InfoTree shape, child.children_named("shape"))
+				shape.read_shape(def.shape);
+		BOOST_FOREACH(InfoTree child, object.children_named("destroyed"))
+			BOOST_FOREACH(InfoTree shape, child.children_named("shape"))
+				shape.read_shape(def.destroyed_shape);
+	}
+	
+	reset_scenery_solidity();
+}

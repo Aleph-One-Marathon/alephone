@@ -112,4 +112,10 @@ LandscapeOptions *View_GetLandscapeOptions(shape_descriptor Desc);
 XML_ElementParser *View_GetParser();
 XML_ElementParser *Landscapes_GetParser();
 
+class InfoTree;
+void parse_mml_view(const InfoTree& root);
+void reset_mml_view();
+void parse_mml_landscapes(const InfoTree& root);
+void reset_mml_landscapes();
+
 #endif

@@ -163,7 +163,7 @@ void _scroll_window(short dy, short rectangle_id, short background_color_index);
 void _fill_screen_rectangle(screen_rectangle *rectangle, short color_index);
 	
 screen_rectangle *get_interface_rectangle(short index);
-const rgb_color &get_interface_color(short index);
+rgb_color &get_interface_color(short index);
 class FontSpecifier;
 FontSpecifier &get_interface_font(short index);
 

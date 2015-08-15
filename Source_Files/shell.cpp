@@ -69,6 +69,7 @@
 
 #include <sstream>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 
 #include "XML_Loader_SDL.h"
 #include "resource_manager.h"
@@ -1571,6 +1572,35 @@ void dump_screen(void)
 #endif
 }
 
+static bool _ParseMMLDirectory(DirectorySpecifier& dir)
+{
+	// Get sorted list of files in directory
+	vector<dir_entry> de;
+	if (!dir.ReadDirectory(de))
+		return false;
+	sort(de.begin(), de.end());
+	
+	// Parse each file
+	vector<dir_entry>::const_iterator i, end = de.end();
+	for (i=de.begin(); i!=end; i++) {
+		if (i->is_directory)
+			continue;
+		if (i->name[i->name.length() - 1] == '~')
+			continue;
+		// people stick Lua scripts in Scripts/
+		if (boost::algorithm::ends_with(i->name, ".lua"))
+			continue;
+		
+		// Construct full path name
+		FileSpecifier file_name = dir + i->name;
+		
+		// Parse file
+		ParseMMLFromFile(file_name);
+	}
+	
+	return true;
+}
+
 void LoadBaseMMLScripts()
 {
 	XML_Loader_SDL loader;
@@ -1579,9 +1609,11 @@ void LoadBaseMMLScripts()
 		vector <DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
 		while (i != end) {
 			DirectorySpecifier path = *i + "MML";
-			loader.ParseDirectory(path);
+//			loader.ParseDirectory(path);
+			_ParseMMLDirectory(path);
 			path = *i + "Scripts";
-			loader.ParseDirectory(path);
+//			loader.ParseDirectory(path);
+			_ParseMMLDirectory(path);
 			i++;
 		}
 	}

@@ -25,6 +25,7 @@
 #include "OGL_Shader.h"
 #include "FileHandler.h"
 #include "OGL_Setup.h"
+#include "InfoTree.h"
 
 
 // gl_ClipVertex workaround
@@ -155,6 +156,50 @@ bool XML_ShaderParser::ResetValues() {
 
 static XML_ShaderParser ShaderParser;
 XML_ElementParser *Shader_GetParser() {return &ShaderParser;}
+
+class Shader_MML_Parser {
+public:
+	static void reset();
+	static void parse(const InfoTree& root);
+};
+
+void Shader_MML_Parser::reset()
+{
+	Shader::_shaders.clear();
+}
+
+void Shader_MML_Parser::parse(const InfoTree& root)
+{
+	std::string name;
+	if (!root.read_attr("name", name))
+		return;
+	
+	for (int i = 0; i < Shader::NUMBER_OF_SHADER_TYPES; ++i) {
+		if (name == Shader::_shader_names[i]) {
+			initDefaultPrograms();
+			Shader::loadAll();
+			
+			FileSpecifier vert, frag;
+			root.read_path("vert", vert);
+			root.read_path("frag", frag);
+			int16 passes;
+			root.read_attr("passes", passes);
+			
+			Shader::_shaders[i] = Shader(name, vert, frag, passes);
+			break;
+		}
+	}
+}
+
+void reset_mml_opengl_shader()
+{
+	Shader_MML_Parser::reset();
+}
+
+void parse_mml_opengl_shader(const InfoTree& root)
+{
+	Shader_MML_Parser::parse(root);
+}
 
 void parseFile(FileSpecifier& fileSpec, std::string& s) {
 

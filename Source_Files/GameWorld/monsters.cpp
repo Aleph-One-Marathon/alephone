@@ -113,6 +113,7 @@ Jan 12, 2003 (Loren Petrich)
 #include "Packing.h"
 #include "lua_script.h"
 #include "Logging.h"
+#include "InfoTree.h"
 
 
 #ifdef env68k
@@ -4160,4 +4161,57 @@ XML_ElementParser* Monsters_GetParser()
 {
 	MonstersParser.AddChild(&MonsterParser);
 	return &MonstersParser;
+}
+
+void reset_mml_damage_kicks()
+{
+	if (original_damage_kick_definitions) {
+		for (unsigned i = 0; i < NUMBER_OF_DAMAGE_TYPES; i++)
+			damage_kick_definitions[i] = original_damage_kick_definitions[i];
+		free(original_damage_kick_definitions);
+		original_damage_kick_definitions = NULL;
+	}
+}
+
+void parse_mml_damage_kicks(const InfoTree& root)
+{
+	// back up old values first
+	if (!original_damage_kick_definitions) {
+		original_damage_kick_definitions = (struct damage_kick_definition *) malloc(sizeof(struct damage_kick_definition) * NUMBER_OF_DAMAGE_TYPES);
+		assert(original_damage_kick_definitions);
+		for (unsigned i = 0; i < NUMBER_OF_DAMAGE_TYPES; i++)
+			original_damage_kick_definitions[i] = damage_kick_definitions[i];
+	}
+	
+	BOOST_FOREACH(InfoTree kick, root.children_named("kick"))
+	{
+		int16 index;
+		if (!kick.read_indexed("index", index, NUMBER_OF_DAMAGE_TYPES))
+			continue;
+		damage_kick_definition& def = damage_kick_definitions[index];
+		
+		kick.read_attr("base", def.base_value);
+		kick.read_attr("mult", def.delta_vitality_multiplier);
+		kick.read_attr("vertical", def.is_also_vertical);
+		kick.read_attr("death_action", def.death_action);
+	}
+}
+
+void reset_mml_monsters()
+{
+	monster_must_be_exterminated.clear();
+	monster_must_be_exterminated.resize(NUMBER_OF_MONSTER_TYPES, false);
+}
+
+void parse_mml_monsters(const InfoTree& root)
+{
+	BOOST_FOREACH(InfoTree monster, root.children_named("monster"))
+	{
+		int16 index;
+		if (!monster.read_indexed("index", index, NUMBER_OF_MONSTER_TYPES))
+			continue;
+		bool exterminate;
+		if (monster.read_attr("must_be_exterminated", exterminate))
+			monster_must_be_exterminated[index] = exterminate;
+	}
 }

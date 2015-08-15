@@ -317,4 +317,8 @@ uint8 *pack_platform_data(uint8 *Stream, platform_data *Objects, size_t Count);
 // LP change: added platform-parser export
 XML_ElementParser *Platforms_GetParser();
 
+class InfoTree;
+void parse_mml_platforms(const InfoTree& root);
+void reset_mml_platforms();
+
 #endif

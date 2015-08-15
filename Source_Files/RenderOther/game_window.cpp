@@ -81,6 +81,7 @@ Mar 08, 2002 (Woody Zenfell):
 #include "screen.h"
 #include "screen_definitions.h"
 #include "images.h"
+#include "InfoTree.h"
 
 #include    "network_sound.h"
 
@@ -989,4 +990,108 @@ XML_ElementParser *Interface_GetParser()
 	InterfaceParser.AddChild(&VidmasterParser);
 	
 	return &InterfaceParser;
+}
+
+void reset_mml_interface()
+{
+	if (original_weapon_interface_definitions) {
+		for (unsigned i = 0; i < NUMBER_OF_WEAPON_INTERFACE_DEFINITIONS; i++)
+			weapon_interface_definitions[i] = original_weapon_interface_definitions[i];
+		free(original_weapon_interface_definitions);
+		original_weapon_interface_definitions = NULL;
+	}
+}
+
+void parse_mml_interface(const InfoTree& root)
+{
+	// back up old values first
+	if (!original_weapon_interface_definitions) {
+		original_weapon_interface_definitions = (struct weapon_interface_data *) malloc(sizeof(struct weapon_interface_data) * NUMBER_OF_WEAPON_INTERFACE_DEFINITIONS);
+		assert(original_weapon_interface_definitions);
+		for (unsigned i = 0; i < NUMBER_OF_WEAPON_INTERFACE_DEFINITIONS; i++)
+			original_weapon_interface_definitions[i] = weapon_interface_definitions[i];
+	}
+	
+	root.read_attr("motion_sensor", MotionSensorActive);
+	
+	BOOST_FOREACH(InfoTree rect, root.children_named("rect"))
+	{
+		int16 index;
+		if (!rect.read_indexed("index", index, NUMBER_OF_INTERFACE_RECTANGLES))
+			continue;
+		screen_rectangle *r = get_interface_rectangle(index);
+		
+		int16 top, left, bottom, right;
+		if (rect.read_attr("top", top) &&
+			rect.read_attr("left", left) &&
+			rect.read_attr("bottom", bottom) &&
+			rect.read_attr("right", right))
+		{
+			r->top = top;
+			r->left = left;
+			r->bottom = bottom;
+			r->right = right;
+		}
+	}
+	
+	BOOST_FOREACH(InfoTree color, root.children_named("color"))
+	{
+		int16 index;
+		if (!color.read_indexed("index", index, NUMBER_OF_INTERFACE_COLORS))
+			continue;
+		color.read_color(get_interface_color(index));
+	}
+	BOOST_FOREACH(InfoTree font, root.children_named("font"))
+	{
+		int16 index;
+		if (!font.read_indexed("index", index, NUMBER_OF_INTERFACE_FONTS))
+			continue;
+		font.read_font(get_interface_font(index));
+	}
+	
+	BOOST_FOREACH(InfoTree vid, root.children_named("vidmaster"))
+	{
+		vidmasterStringSetID = -1;
+		vid.read_attr_bounded<int16>("stringset_index", vidmasterStringSetID, -1, SHRT_MAX);
+	}
+	
+	BOOST_FOREACH(InfoTree weapon, root.children_named("weapon"))
+	{
+		int16 index;
+		if (!weapon.read_indexed("index", index, MAXIMUM_WEAPON_INTERFACE_DEFINITIONS))
+			continue;
+		weapon_interface_data& def = weapon_interface_definitions[index];
+		
+		weapon.read_attr("shape", def.weapon_panel_shape);
+		weapon.read_attr("start_y", def.weapon_name_start_y);
+		weapon.read_attr("end_y", def.weapon_name_end_y);
+		weapon.read_attr("start_x", def.weapon_name_start_x);
+		weapon.read_attr("end_x", def.weapon_name_end_x);
+		weapon.read_attr("top", def.standard_weapon_panel_top);
+		weapon.read_attr("left", def.standard_weapon_panel_left);
+		weapon.read_attr("multiple", def.multi_weapon);
+		weapon.read_attr("multiple_shape", def.multiple_shape);
+		weapon.read_attr("multiple_unusable_shape", def.multiple_unusable_shape);
+		weapon.read_attr("multiple_delta_x", def.multiple_delta_x);
+		weapon.read_attr("multiple_delta_y", def.multiple_delta_y);
+		
+		BOOST_FOREACH(InfoTree ammo, weapon.children_named("ammo"))
+		{
+			int16 index;
+			if (!ammo.read_indexed("index", index, NUMBER_OF_WEAPON_INTERFACE_ITEMS))
+				continue;
+			weapon_interface_ammo_data& adef = def.ammo_data[index];
+			
+			ammo.read_attr("type", adef.type);
+			ammo.read_attr("left", adef.screen_left);
+			ammo.read_attr("top", adef.screen_top);
+			ammo.read_attr("across", adef.ammo_across);
+			ammo.read_attr("down", adef.ammo_down);
+			ammo.read_attr("delta_x", adef.delta_x);
+			ammo.read_attr("delta_y", adef.delta_y);
+			ammo.read_attr("bullet_shape", adef.bullet);
+			ammo.read_attr("empty_shape", adef.empty_bullet);
+			ammo.read_attr("right_to_left", adef.right_to_left);
+		}
+	}
 }

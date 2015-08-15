@@ -74,4 +74,8 @@ extern short NumEndScreens;
 
 XML_ElementParser *ExternalDefaultLevelScript_GetParser();
 
+class InfoTree;
+void parse_mml_default_levels(const InfoTree& root);
+void reset_mml_default_levels();
+
 #endif

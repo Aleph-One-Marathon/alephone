@@ -64,4 +64,8 @@ private:
 // Scenario parser: name is "scenario"
 XML_ElementParser *Scenario_GetParser();
 
+class InfoTree;
+void parse_mml_scenario(const InfoTree& root);
+void reset_mml_scenario();
+
 #endif

@@ -23,6 +23,7 @@
 #include "cseries.h"
 #include "Console.h"
 #include "Logging.h"
+#include "InfoTree.h"
 
 #include <string>
 #include <boost/bind.hpp>
@@ -574,5 +575,43 @@ XML_ElementParser *Console_GetParser()
 	ConsoleParser.AddChild(&CarnageMessageParser);
 
 	return &ConsoleParser;
+}
+
+void reset_mml_console()
+{
+	Console *console = Console::instance();
+	console->use_lua_console(true);
+	console->clear_macros();
+	console->clear_carnage_messages();
+}
+
+void parse_mml_console(const InfoTree& root)
+{
+	Console *console = Console::instance();
+
+	bool use_lua_console = true;
+	if (root.read_attr("use_lua_console", use_lua_console))
+		console->use_lua_console(use_lua_console);
+	
+	BOOST_FOREACH(InfoTree macro, root.children_named("macro"))
+	{
+		std::string input, output;
+		if (!macro.read_attr("input", input) || !input.size())
+			continue;
+		
+		macro.read_attr("output", output);
+		console->register_macro(input, output);
+	}
+	BOOST_FOREACH(InfoTree message, root.children_named("carnage_message"))
+	{
+		int16 projectile_type;
+		if (!message.read_indexed("projectile_type", projectile_type, NUMBER_OF_PROJECTILE_TYPES))
+			continue;
+		
+		std::string on_kill, on_suicide;
+		message.read_attr("on_kill", on_kill);
+		message.read_attr("on_suicide", on_suicide);
+		console->set_carnage_message(projectile_type, on_kill, on_suicide);
+	}
 }
 

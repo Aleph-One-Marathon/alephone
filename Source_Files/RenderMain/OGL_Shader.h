@@ -30,6 +30,7 @@
 class Shader {
 
 friend class XML_ShaderParser;
+friend class Shader_MML_Parser;
 public:
 	enum UniformName {
 		U_Texture0,
@@ -127,5 +128,9 @@ public:
 #include "XML_ElementParser.h"
 
 XML_ElementParser *Shader_GetParser();
+
+class InfoTree;
+void parse_mml_opengl_shader(const InfoTree& root);
+void reset_mml_opengl_shader();
 
 #endif

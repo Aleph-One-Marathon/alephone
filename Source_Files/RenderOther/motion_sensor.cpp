@@ -46,6 +46,7 @@ Sep 2, 2000 (Loren Petrich):
 #include "motion_sensor.h"
 #include "player.h"
 #include "network_games.h"
+#include "InfoTree.h"
 
 #include "HUDRenderer_SW.h"
 #include "HUDRenderer_OGL.h"
@@ -982,4 +983,52 @@ XML_ElementParser *MotionSensor_GetParser()
 	MotSensParser.AddChild(&MotSensAssignParser);
 	
 	return &MotSensParser;
+}
+
+void reset_mml_motion_sensor()
+{
+	if (original_motion_sensor_settings) {
+		motion_sensor_settings = *original_motion_sensor_settings;
+		free(original_motion_sensor_settings);
+		original_motion_sensor_settings = NULL;
+	}
+
+	if (OriginalMonsterDisplays) {
+		for (int i = 0; i < NUMBER_OF_MONSTER_TYPES; i++)
+			MonsterDisplays[i] = OriginalMonsterDisplays[i];
+		free(OriginalMonsterDisplays);
+		OriginalMonsterDisplays = NULL;
+	}
+}
+
+void parse_mml_motion_sensor(const InfoTree& root)
+{
+	// back up old values first
+	if (!original_motion_sensor_settings) {
+		original_motion_sensor_settings = (struct motion_sensor_definition *) malloc(sizeof(struct motion_sensor_definition));
+		assert(original_motion_sensor_settings);
+		*original_motion_sensor_settings = motion_sensor_settings;
+	}
+	
+	if (!OriginalMonsterDisplays) {
+		OriginalMonsterDisplays = (short *) malloc(sizeof(short) * NUMBER_OF_MONSTER_TYPES);
+		assert(OriginalMonsterDisplays);
+		for (int i = 0; i < NUMBER_OF_MONSTER_TYPES; i++)
+			OriginalMonsterDisplays[i] = MonsterDisplays[i];
+	}
+
+	root.read_attr("scale", MOTION_SENSOR_SCALE);
+	short range;
+	if (root.read_wu("range", range))
+		MOTION_SENSOR_RANGE = range;
+	root.read_attr("update_frequency", MOTION_SENSOR_UPDATE_FREQUENCY);
+	root.read_attr("rescan_frequency", MOTION_SENSOR_RESCAN_FREQUENCY);
+	
+	BOOST_FOREACH(InfoTree assign, root.children_named("assign"))
+	{
+		int16 index;
+		if (!assign.read_indexed("monster", index, NUMBER_OF_MONSTER_TYPES))
+			continue;
+		assign.read_indexed("type", MonsterDisplays[index], NUMBER_OF_MDISPTYPES);
+	}
 }

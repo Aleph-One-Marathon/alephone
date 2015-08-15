@@ -216,5 +216,9 @@ size_t get_number_of_weapon_types();
 // LP addition: XML-parser support
 XML_ElementParser *Weapons_GetParser();
 
+class InfoTree;
+void parse_mml_weapons(const InfoTree& root);
+void reset_mml_weapons();
+
 #endif
 

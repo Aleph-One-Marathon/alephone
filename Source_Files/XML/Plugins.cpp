@@ -114,7 +114,8 @@ static void load_mmls(const Plugin& plugin, XML_Loader_SDL& loader)
 		FileSpecifier file;
 		if (file.SetNameWithPath(it->c_str()))
 		{
-			loader.ParseFile(file);
+			ParseMMLFromFile(file);
+//			loader.ParseFile(file);
 		}
 		else
 		{

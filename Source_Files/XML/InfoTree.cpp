@@ -113,6 +113,55 @@ void InfoTree::save_ini(std::ostringstream& stream) const
 									boost::property_tree::ptree(*this));
 }
 
+bool InfoTree::read_fixed(std::string path, _fixed& value, float min, float max) const
+{
+	float temp;
+	if (read_attr_bounded(path, temp, min, max))
+	{
+		value = FIXED_ONE * temp + 0.5;
+		return true;
+	}
+	return false;
+}
+
+bool InfoTree::read_wu(std::string path, short& value, float min, float max) const
+{
+	float temp;
+	if (read_attr_bounded(path, temp, min, max))
+	{
+		value = WORLD_ONE * temp + 0.5;
+		return true;
+	}
+	return false;
+}
+
+bool InfoTree::read_angle(std::string path, angle& value) const
+{
+	float temp;
+	if (read_attr(path, temp))
+	{
+		temp = temp - 360*static_cast<int>(temp/360);
+		while (temp < 0)
+			temp += 360;
+		while (temp >= 360)
+			temp -= 360;
+		value = FULL_CIRCLE*(temp/360) + 0.5;
+		return true;
+	}
+	return false;
+}
+
+bool InfoTree::read_path(std::string key, FileSpecifier& file) const
+{
+	std::string path;
+	if (read_attr(key, path))
+	{
+		file.SetNameWithPath(path.c_str());
+		return true;
+	}
+	return false;
+}
+
 bool InfoTree::read_path(std::string key, char *dest) const
 {
 	std::string path;
@@ -225,6 +274,51 @@ void InfoTree::add_color(std::string path, const rgb_color& color)
 void InfoTree::add_color(std::string path, const rgb_color& color, size_t index)
 {
 	add_child(path, _make_color(color, index));
+}
+
+bool InfoTree::read_shape(shape_descriptor& descriptor, bool allow_empty) const
+{
+	uint16 seq = UNONE;
+	bool seq_present = read_attr_bounded<uint16>("seq", seq, 0, MAXIMUM_SHAPES_PER_COLLECTION-1);
+	if (!seq_present)
+		seq_present = read_attr_bounded<uint16>("frame", seq, 0, MAXIMUM_SHAPES_PER_COLLECTION-1);
+	
+	uint16 coll = UNONE;
+	bool coll_present = read_attr_bounded<uint16>("coll", coll, 0, MAXIMUM_COLLECTIONS-1);
+	
+	uint16 clut = 0;
+	read_attr_bounded<uint16>("clut", clut, 0, MAXIMUM_CLUTS_PER_COLLECTION-1);
+	
+	if (coll_present && seq_present)
+	{
+		descriptor = BUILD_DESCRIPTOR(BUILD_COLLECTION(coll, clut), seq);
+		return true;
+	}
+	else if (!coll_present && !seq_present && allow_empty)
+	{
+		descriptor = UNONE;
+		return true;
+	}
+	return false;
+}
+
+bool InfoTree::read_damage(damage_definition& def) const
+{
+	return (read_indexed("type", def.type, NUMBER_OF_DAMAGE_TYPES, true) ||
+			read_indexed("flags", def.flags, 2) ||
+			read_attr("base", def.base) ||
+			read_attr("random", def.random) ||
+			read_fixed("scale", def.scale));
+}
+
+bool InfoTree::read_font(FontSpecifier& font) const
+{
+	bool status = (read_attr("size", font.Size) ||
+				   read_attr("style", font.Style) ||
+				   read_attr("file", font.File));
+	if (status)
+		font.Update();
+	return status;
 }
 
 

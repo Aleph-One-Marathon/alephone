@@ -97,6 +97,7 @@ Nov 12, 2000 (Loren Petrich):
 #include "flood_map.h"
 #include "platforms.h"
 #include "media.h"
+#include "InfoTree.h"
 
 // LP addition: to parse the colors:
 #include "ColorParser.h"
@@ -832,4 +833,146 @@ XML_ElementParser *OverheadMap_GetParser()
 	OvhdMapParser.AddChild(Font_GetParser());
 	
 	return &OvhdMapParser;
+}
+
+void reset_mml_overhead_map()
+{
+	OverheadMapMode = original_OverheadMapMode;
+	OvhdMap_ConfigData = original_OvhdMap_ConfigData;
+}
+
+void parse_mml_overhead_map(const InfoTree& root)
+{
+	root.read_indexed("mode", OverheadMapMode, NUMBER_OF_OVERHEAD_MAP_MODES);
+	root.read_attr("title_offset", OvhdMap_ConfigData.map_name_data.offset_down);
+
+	BOOST_FOREACH(InfoTree assign, root.children_named("assign_live"))
+	{
+		int16 monster;
+		if (!assign.read_indexed("monster", monster, NUMBER_OF_MONSTER_TYPES))
+			continue;
+		assign.read_attr_bounded<int16>("type", OvhdMap_ConfigData.monster_displays[monster], -1, 1);
+	}
+	
+	BOOST_FOREACH(InfoTree assign, root.children_named("assign_dead"))
+	{
+		int16 coll;
+		if (!assign.read_indexed("coll", coll, NUMBER_OF_COLLECTIONS))
+			continue;
+		assign.read_attr_bounded<int16>("type", OvhdMap_ConfigData.dead_monster_displays[coll], -1, 1);
+	}
+	
+	BOOST_FOREACH(InfoTree child, root.children_named("aliens"))
+	{
+		child.read_attr("on", OvhdMap_ConfigData.ShowAliens);
+	}
+	BOOST_FOREACH(InfoTree child, root.children_named("items"))
+	{
+		child.read_attr("on", OvhdMap_ConfigData.ShowItems);
+	}
+	BOOST_FOREACH(InfoTree child, root.children_named("projectiles"))
+	{
+		child.read_attr("on", OvhdMap_ConfigData.ShowProjectiles);
+	}
+	BOOST_FOREACH(InfoTree child, root.children_named("paths"))
+	{
+		child.read_attr("on", OvhdMap_ConfigData.ShowPaths);
+	}
+
+	BOOST_FOREACH(InfoTree line, root.children_named("line_width"))
+	{
+		int16 index;
+		if (!line.read_indexed("index", index, NUMBER_OF_LINE_DEFINITIONS))
+			continue;
+		
+		int16 scale;
+		if (!line.read_indexed("scale", scale, OVERHEAD_MAP_MAXIMUM_SCALE-OVERHEAD_MAP_MINIMUM_SCALE))
+			continue;
+		
+		line.read_attr("width", OvhdMap_ConfigData.line_definitions[index].pen_sizes[scale]);
+	}
+
+	BOOST_FOREACH(InfoTree color, root.children_named("color"))
+	{
+		int16 index;
+		if (!color.read_indexed("index", index, TOTAL_NUMBER_OF_COLORS))
+			continue;
+		
+		if (index < NUMBER_OF_OLD_POLYGON_COLORS)
+		{
+			color.read_color(OvhdMap_ConfigData.polygon_colors[index]);
+			continue;
+		}
+		index -= NUMBER_OF_OLD_POLYGON_COLORS;
+		
+		if (index < NUMBER_OF_LINE_DEFINITIONS)
+		{
+			color.read_color(OvhdMap_ConfigData.line_definitions[index].color);
+			continue;
+		}
+		index -= NUMBER_OF_LINE_DEFINITIONS;
+		
+		if (index < NUMBER_OF_THINGS)
+		{
+			color.read_color(OvhdMap_ConfigData.thing_definitions[index].color);
+			continue;
+		}
+		index -= NUMBER_OF_THINGS;
+		
+		if (index < NUMBER_OF_ANNOTATION_DEFINITIONS)
+		{
+			color.read_color(OvhdMap_ConfigData.annotation_definitions[index].color);
+			continue;
+		}
+		index -= NUMBER_OF_ANNOTATION_DEFINITIONS;
+		
+		if (index == 0)
+		{
+			color.read_color(OvhdMap_ConfigData.map_name_data.color);
+			continue;
+		}
+		--index;
+
+		if (index == 0)
+		{
+			color.read_color(OvhdMap_ConfigData.path_color);
+			continue;
+		}
+		--index;
+
+		index += NUMBER_OF_OLD_POLYGON_COLORS;
+		if (index < NUMBER_OF_POLYGON_COLORS)
+		{
+			color.read_color(OvhdMap_ConfigData.polygon_colors[index]);
+			continue;
+		}
+		index -= NUMBER_OF_POLYGON_COLORS;
+	}
+	
+	BOOST_FOREACH(InfoTree font, root.children_named("font"))
+	{
+		int16 index;
+		if (!font.read_indexed("index", index, TOTAL_NUMBER_OF_FONTS))
+			continue;
+		
+		bool found = false;
+		for (int i = 0; !found && i < NUMBER_OF_ANNOTATION_DEFINITIONS; ++i)
+		{
+			if (index < NUMBER_OF_ANNOTATION_SIZES)
+			{
+				font.read_font(OvhdMap_ConfigData.annotation_definitions[i].Fonts[index]);
+				found = true;
+			}
+			index -= NUMBER_OF_ANNOTATION_SIZES;
+		}
+		if (found)
+			continue;
+		
+		if (index == 0)
+		{
+			font.read_font(OvhdMap_ConfigData.map_name_data.Font);
+			continue;
+		}
+		--index;
+	}
 }

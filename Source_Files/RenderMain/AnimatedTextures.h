@@ -43,4 +43,8 @@ shape_descriptor AnimTxtr_Translate(shape_descriptor Texture);
 // XML-parser support
 XML_ElementParser *AnimatedTextures_GetParser();
 
+class InfoTree;
+void parse_mml_animated_textures(const InfoTree& root);
+void reset_mml_animated_textures();
+
 #endif

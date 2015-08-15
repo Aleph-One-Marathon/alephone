@@ -116,6 +116,7 @@ find_line_crossed leaving polygon could be sped up considerable by reversing the
 #include "scenery.h"
 #include "SoundManager.h"
 #include "Console.h"
+#include "InfoTree.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -2881,3 +2882,44 @@ XML_ElementParser *TextureLoading_GetParser()
 	return &TextureLoadingParser;
 }
 
+void reset_mml_texture_loading()
+{
+	LandscapesLoaded = true;
+	if (OriginalEnvironments) {
+		for (int i = 0; i < NUMBER_OF_ENVIRONMENTS; i++) {
+			for (int j = 0; j < NUMBER_OF_ENV_COLLECTIONS; j++)
+				Environments[i][j] = OriginalEnvironments[i][j];
+			free(OriginalEnvironments[i]);
+		}
+		free(OriginalEnvironments);
+		OriginalEnvironments = NULL;
+	}
+}
+
+void parse_mml_texture_loading(const InfoTree& root)
+{
+	// back up old values first
+	if (!OriginalEnvironments) {
+		OriginalEnvironments = (short **) malloc(sizeof(short *) * NUMBER_OF_ENVIRONMENTS);
+		assert(OriginalEnvironments);
+		for (int i = 0; i < NUMBER_OF_ENVIRONMENTS; i++) {
+			OriginalEnvironments[i] = (short *) malloc(sizeof(short) * NUMBER_OF_ENV_COLLECTIONS);
+			assert(OriginalEnvironments[i]);
+			for (int j = 0; j < NUMBER_OF_ENV_COLLECTIONS; j++)
+				OriginalEnvironments[i][j] = Environments[i][j];
+		}
+	}
+	
+	root.read_attr("landscapes", LandscapesLoaded);
+	
+	BOOST_FOREACH(InfoTree env, root.children_named("texture_env"))
+	{
+		int16 index, which, coll;
+		if (env.read_indexed("index", index, NUMBER_OF_ENVIRONMENTS) &&
+			env.read_indexed("which", which, NUMBER_OF_ENV_COLLECTIONS) &&
+			env.read_indexed("coll", coll, MAXIMUM_COLLECTIONS, true))
+		{
+			Environments[index][which] = coll;
+		}
+	}
+}

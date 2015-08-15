@@ -51,4 +51,8 @@ void set_interface_microphone_recording_state(bool state);
 class XML_ElementParser;
 XML_ElementParser *Interface_GetParser();
 
+class InfoTree;
+void parse_mml_interface(const InfoTree& root);
+void reset_mml_interface();
+
 #endif

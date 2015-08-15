@@ -90,6 +90,7 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 #include "ColorParser.h"
 #include "OGL_LoadScreen.h"
 #include "progress.h"
+#include "InfoTree.h"
 
 // Whether or not OpenGL is present and usable
 static bool _OGL_IsPresent = false;
@@ -591,6 +592,70 @@ XML_ElementParser *OpenGL_GetParser()
 	OpenGL_Parser.AddChild(&FogParser);
 	
 	return &OpenGL_Parser;
+}
+
+void reset_mml_opengl()
+{
+	reset_mml_opengl_texture();
+	reset_mml_opengl_model();
+	reset_mml_opengl_shader();
+	
+	if (OriginalFogData) {
+		for (unsigned i = 0; i < OGL_NUMBER_OF_FOG_TYPES; i++)
+			FogData[i] = OriginalFogData[i];
+		free(OriginalFogData);
+		OriginalFogData = NULL;
+	}
+}
+
+void parse_mml_opengl(const InfoTree& root)
+{
+	// back up old values first
+	if (!OriginalFogData) {
+		OriginalFogData = (OGL_FogData *) malloc(sizeof(OGL_FogData) * OGL_NUMBER_OF_FOG_TYPES);
+		assert(OriginalFogData);
+		for (unsigned i = 0; i < OGL_NUMBER_OF_FOG_TYPES; i++)
+			OriginalFogData[i] = FogData[i];
+	}
+
+	// texture options / clear, in order
+	BOOST_FOREACH(const InfoTree::value_type &v, root)
+	{
+		if (v.first == "texture")
+			parse_mml_opengl_texture(v.second);
+		else if (v.first == "txtr_clear")
+			parse_mml_opengl_txtr_clear(v.second);
+	}
+	
+	// model data / clear, in order
+	BOOST_FOREACH(const InfoTree::value_type &v, root)
+	{
+		if (v.first == "model")
+			parse_mml_opengl_model(v.second);
+		else if (v.first == "model_clear")
+			parse_mml_opengl_model_clear(v.second);
+	}
+	
+	BOOST_FOREACH(InfoTree shader, root.children_named("shader"))
+	{
+		parse_mml_opengl_shader(shader);
+	}
+	
+	BOOST_FOREACH(InfoTree fog, root.children_named("fog"))
+	{
+		int16 type = 0;
+		fog.read_indexed("type", type, OGL_NUMBER_OF_FOG_TYPES);
+		OGL_FogData& def = FogData[type];
+		
+		fog.read_attr("on", def.IsPresent);
+		fog.read_attr("depth", def.Depth);
+		fog.read_attr("landscapes", def.AffectsLandscapes);
+		
+		BOOST_FOREACH(InfoTree color, fog.children_named("color"))
+		{
+			color.read_color(def.Color);
+		}
+	}
 }
 
 #ifdef HAVE_OPENGL

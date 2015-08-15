@@ -259,4 +259,8 @@ short Sound_Center_Button();
 // LP change: get the parser for the sound elements (name "sounds")
 XML_ElementParser *Sounds_GetParser();
 
+class InfoTree;
+void parse_mml_sounds(const InfoTree& root);
+void reset_mml_sounds();
+
 #endif

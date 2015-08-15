@@ -56,4 +56,9 @@ void _render_overhead_map(struct overhead_map_data *data);
 
 // LP addition: get the parser for the overhead-map elements (name "overhead_map")
 XML_ElementParser *OverheadMap_GetParser();
+
+class InfoTree;
+void parse_mml_overhead_map(const InfoTree& root);
+void reset_mml_overhead_map();
+
 #endif

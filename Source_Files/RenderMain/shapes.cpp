@@ -107,6 +107,7 @@ Jan 17, 2001 (Loren Petrich):
 
 // LP addition: infravision XML setup needs colors
 #include "ColorParser.h"
+#include "InfoTree.h"
 
 #include "Packing.h"
 #include "SW_Texture_Extras.h"
@@ -2990,4 +2991,56 @@ XML_ElementParser *Infravision_GetParser()
 	InfravisionParser.AddChild(Color_GetParser());
 
 	return &InfravisionParser;
+}
+
+void reset_mml_infravision()
+{
+	if (original_tint_colors16) {
+		for (int i = 0; i < NUMBER_OF_TINT_COLORS; i++)
+			tint_colors16[i] = original_tint_colors16[i];
+		free(original_tint_colors16);
+		original_tint_colors16 = NULL;
+	}
+
+	if (OriginalCollectionTints) {
+		for (int i = 0; i < NUMBER_OF_COLLECTIONS; i++)
+			CollectionTints[i] = OriginalCollectionTints[i];
+		free(OriginalCollectionTints);
+		OriginalCollectionTints = NULL;
+	}
+}
+
+void parse_mml_infravision(const InfoTree& root)
+{
+	// back up old values first
+	if (!original_tint_colors16) {
+		original_tint_colors16 = (struct rgb_color *) malloc(sizeof(struct rgb_color) * NUMBER_OF_TINT_COLORS);
+		assert(original_tint_colors16);
+		for (int i = 0; i < NUMBER_OF_TINT_COLORS; i++)
+			original_tint_colors16[i] = tint_colors16[i];
+	}
+	
+	if (!OriginalCollectionTints) {
+		OriginalCollectionTints = (short *) malloc(sizeof(short) * NUMBER_OF_COLLECTIONS);
+		assert(OriginalCollectionTints);
+		for (int i = 0; i < NUMBER_OF_COLLECTIONS; i++)
+			OriginalCollectionTints[i] = CollectionTints[i];
+	}
+
+	BOOST_FOREACH(InfoTree color, root.children_named("color"))
+	{
+		int16 index;
+		if (!color.read_indexed("index", index, NUMBER_OF_TINT_COLORS))
+			continue;
+		color.read_color(tint_colors16[index]);
+	}
+	
+	BOOST_FOREACH(InfoTree assign, root.children_named("assign"))
+	{
+		int16 coll, color;
+		if (!assign.read_indexed("coll", coll, NUMBER_OF_COLLECTIONS) ||
+			!assign.read_indexed("color", color, NUMBER_OF_TINT_COLORS))
+			continue;
+		CollectionTints[coll] = color;
+	}
 }

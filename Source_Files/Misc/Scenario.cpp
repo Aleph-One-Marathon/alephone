@@ -26,6 +26,7 @@
 
 #include "cseries.h"
 #include "Scenario.h"
+#include "InfoTree.h"
 
 Scenario *Scenario::m_instance;
 
@@ -105,4 +106,27 @@ XML_ElementParser *Scenario_GetParser()
 {	
 	ScenarioParser.AddChild(&CanJoinParser);
 	return &ScenarioParser;
+}
+
+void reset_mml_scenario()
+{
+	// no reset
+}
+
+void parse_mml_scenario(const InfoTree& root)
+{
+	std::string str;
+	if (root.read_attr("name", str))
+		Scenario::instance()->SetName(str);
+	if (root.read_attr("id", str))
+		Scenario::instance()->SetID(str);
+	if (root.read_attr("version", str))
+		Scenario::instance()->SetVersion(str);
+	
+	BOOST_FOREACH(InfoTree can_join, root.children_named("can_join"))
+	{
+		std::string compat = can_join.get_value("");
+		if (compat.size())
+			Scenario::instance()->AddCompatible(compat);
+	}
 }

@@ -71,6 +71,7 @@ Jun 30, 2002 (tiennou):
 #include "SoundManager.h"
 #include "player.h"
 #include "media.h"
+#include "InfoTree.h"
 
 // LP addition: XML parser for damage
 #include "items.h"
@@ -1434,4 +1435,47 @@ XML_ElementParser *Platforms_GetParser()
 	PlatformsParser.AddChild(&PlatformParser);
 	
 	return &PlatformsParser;
+}
+
+void reset_mml_platforms()
+{
+	if (original_platform_definitions) {
+		for (int i = 0; i < NUMBER_OF_PLATFORM_TYPES; i++)
+			platform_definitions[i] = original_platform_definitions[i];
+		free(original_platform_definitions);
+		original_platform_definitions = NULL;
+	}
+}
+
+void parse_mml_platforms(const InfoTree& root)
+{
+	// back up old values first
+	if (!original_platform_definitions) {
+		original_platform_definitions = (struct platform_definition *) malloc(sizeof(struct platform_definition) * NUMBER_OF_PLATFORM_TYPES);
+		assert(original_platform_definitions);
+		for (int i = 0; i < NUMBER_OF_PLATFORM_TYPES; i++)
+			original_platform_definitions[i] = platform_definitions[i];
+	}
+	
+	BOOST_FOREACH(InfoTree ptree, root.children_named("platform"))
+	{
+		int16 index;
+		if (!ptree.read_indexed("index", index, NUMBER_OF_PLATFORM_TYPES))
+			continue;
+		platform_definition& def = platform_definitions[index];
+		
+		ptree.read_indexed("start_extend", def.starting_extension, SHRT_MAX+1, true);
+		ptree.read_indexed("start_contract", def.starting_contraction, SHRT_MAX+1, true);
+		ptree.read_indexed("stop_extend", def.stopping_extension, SHRT_MAX+1, true);
+		ptree.read_indexed("stop_contract", def.stopping_contraction, SHRT_MAX+1, true);
+		ptree.read_indexed("obstructed", def.obstructed_sound, SHRT_MAX+1, true);
+		ptree.read_indexed("uncontrollable", def.uncontrollable_sound, SHRT_MAX+1, true);
+		ptree.read_indexed("moving", def.moving_sound, SHRT_MAX+1, true);
+		ptree.read_indexed("item", def.key_item_index, NUMBER_OF_DEFINED_ITEMS, true);
+		
+		BOOST_FOREACH(InfoTree dmg, ptree.children_named("damage"))
+		{
+			dmg.read_damage(def.damage);
+		}
+	}
 }

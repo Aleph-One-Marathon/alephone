@@ -40,6 +40,7 @@ Dec 17, 2000 (Loren Petrich:
 #include "shell.h"
 #include "screen.h"
 #include "ViewControl.h"
+#include "InfoTree.h"
 
 
 struct view_settings_definition {
@@ -508,4 +509,122 @@ XML_ElementParser *Landscapes_GetParser()
 	LandscapesParser.AddChild(&LO_ClearParser);
 	
 	return &LandscapesParser;
+}
+
+void reset_mml_view()
+{
+	if (original_view_settings) {
+		view_settings = *original_view_settings;
+		free(original_view_settings);
+		original_view_settings = NULL;
+	}
+	
+	// reset on-screen font and update if needed
+	OnScreenFont = original_OnScreenFont;
+	if (ScreenFontInited) {
+		OnScreenFont.Update();
+	}
+	
+	if (original_FOV_settings) {
+		FOV_settings = *original_FOV_settings;
+		free(original_FOV_settings);
+		original_FOV_settings = NULL;
+	}
+}
+
+void parse_mml_view(const InfoTree& root)
+{
+	// backup old values first
+	if (!original_view_settings) {
+		original_view_settings = (struct view_settings_definition *) malloc(sizeof(struct view_settings_definition));
+		assert(original_view_settings);
+		*original_view_settings = view_settings;
+	}
+	
+	if (!original_FOV_settings) {
+		original_FOV_settings = (struct FOV_settings_definition *) malloc(sizeof(struct FOV_settings_definition));
+		assert(original_FOV_settings);
+		*original_FOV_settings = FOV_settings;
+	}
+	
+	root.read_attr("map", view_settings.MapActive);
+	root.read_attr("fold_effect", view_settings.DoFoldEffect);
+	root.read_attr("static_effect", view_settings.DoStaticEffect);
+	root.read_attr("interlevel_in_effects", view_settings.DoInterlevelTeleportInEffects);
+	root.read_attr("interlevel_out_effects", view_settings.DoInterlevelTeleportOutEffects);
+	
+	BOOST_FOREACH(InfoTree font, root.children_named("font"))
+	{
+		font.read_font(OnScreenFont);
+	}
+	
+	BOOST_FOREACH(InfoTree fov, root.children_named("fov"))
+	{
+		fov.read_attr_bounded<float>("normal", FOV_Normal, 0, 180);
+		fov.read_attr_bounded<float>("extra", FOV_ExtraVision, 0, 180);
+		fov.read_attr_bounded<float>("tunnel", FOV_TunnelVision, 0, 180);
+		fov.read_attr_bounded<float>("rate", FOV_ChangeRate, 0, 180);
+		fov.read_attr("fix_h_not_v", FOV_FixHorizontalNotVertical);
+	}
+}
+
+void reset_mml_landscapes()
+{
+	LODeleteAll();
+}
+
+void parse_mml_landscapes(const InfoTree& root)
+{
+	BOOST_FOREACH(const InfoTree::value_type &v, root)
+	{
+		const std::string& name = v.first;
+		const InfoTree& child = v.second;
+		if (name == "clear")
+		{
+			int16 coll;
+			if (child.read_indexed("coll", coll, NUMBER_OF_COLLECTIONS))
+				LODelete(coll);
+			else
+				LODeleteAll();
+		}
+		else if (name == "landscape")
+		{
+			int16 coll;
+			if (!child.read_indexed("coll", coll, NUMBER_OF_COLLECTIONS))
+				continue;
+			
+			int16 frame = AnyFrame;
+			child.read_indexed("frame", frame, MAXIMUM_SHAPES_PER_COLLECTION);
+			
+			LandscapeOptions data = DefaultLandscape;
+			child.read_attr("horiz_exp", data.HorizExp);
+			child.read_attr("vert_exp", data.VertExp);
+			child.read_attr("vert_repeat", data.VertRepeat);
+			child.read_attr("ogl_asprat_exp", data.OGL_AspRatExp);
+			child.read_angle("azimuth", data.Azimuth);
+			
+			// Check to see if a frame is already accounted for
+			bool found = false;
+			vector<LandscapeOptionsEntry>& LOL = LOList[coll];
+			for (vector<LandscapeOptionsEntry>::iterator LOIter = LOL.begin(); LOIter < LOL.end(); LOIter++)
+			{
+				if (LOIter->Frame == frame)
+				{
+					// Replace the data
+					LOIter->OptionsData = data;
+					found = true;
+					break;
+				}
+			}
+			
+			// If not, then add a new frame entry
+			if (!found)
+			{
+				LandscapeOptionsEntry DataEntry;
+				DataEntry.Frame = frame;
+				DataEntry.OptionsData = data;
+				LOL.push_back(DataEntry);
+			}
+		}
+	}
 }

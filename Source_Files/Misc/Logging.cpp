@@ -40,6 +40,7 @@
 #include <stdio.h>
 #include "XML_ElementParser.h"
 #include "FileHandler.h"
+#include "InfoTree.h"
 
 #ifndef NO_STD_NAMESPACE
 using std::vector;
@@ -412,4 +413,29 @@ Logging_GetParser() {
 	LoggingParser.AddChild(&LoggingConfigurationParser);
 	
 	return &LoggingParser;
+}
+
+void reset_mml_logging()
+{
+	// no reset
+}
+
+void parse_mml_logging(const InfoTree& root)
+{
+	BOOST_FOREACH(InfoTree dtree, root.children_named("logging_domain"))
+	{
+		std::string domain;
+		if (!dtree.read_attr("domain", domain) || !domain.size())
+			continue;
+		
+		int16 threshhold;
+		if (dtree.read_attr("threshhold", threshhold))
+			setLoggingThreshhold(domain.c_str(), threshhold);
+		bool locations;
+		if (dtree.read_attr("show_locations", locations))
+			setShowLoggingLocations(domain.c_str(), locations);
+		bool flush;
+		if (dtree.read_attr("flush", flush))
+			setFlushLoggingOutput(domain.c_str(), flush);
+	}
 }

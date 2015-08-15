@@ -103,6 +103,7 @@ Apr 10, 2003 (Woody Zenfell):
 #include "monsters.h"
 #include "game_window.h"
 #include "preferences.h"
+#include "InfoTree.h"
 
 #include "Packing.h"
 #include "shell.h"
@@ -4777,4 +4778,64 @@ XML_ElementParser *Weapons_GetParser()
 	WeaponsParser.AddChild(&WeaponOrderParser);
 	
 	return &WeaponsParser;
+}
+
+void reset_mml_weapons()
+{
+	if (original_shell_casing_definitions) {
+		for (unsigned i = 0; i < NUMBER_OF_SHELL_CASING_TYPES; i++)
+			shell_casing_definitions[i] = original_shell_casing_definitions[i];
+		free(original_shell_casing_definitions);
+		original_shell_casing_definitions = NULL;
+	}
+
+	if (original_weapon_ordering_array) {
+		for (unsigned i = 0; i < NUMBER_OF_WEAPONS; i++)
+			weapon_ordering_array[i] = original_weapon_ordering_array[i];
+		free(original_weapon_ordering_array);
+		original_weapon_ordering_array = NULL;
+	}
+}
+
+void parse_mml_weapons(const InfoTree& root)
+{
+	// back up old values first
+	if (!original_shell_casing_definitions) {
+		original_shell_casing_definitions = (struct shell_casing_definition *) malloc(sizeof(struct shell_casing_definition) * NUMBER_OF_SHELL_CASING_TYPES);
+		assert(original_shell_casing_definitions);
+		for (unsigned i = 0; i < NUMBER_OF_SHELL_CASING_TYPES; i++)
+			original_shell_casing_definitions[i] = shell_casing_definitions[i];
+	}
+	
+	if (!original_weapon_ordering_array) {
+		original_weapon_ordering_array = (int16 *) malloc(sizeof(int16) * NUMBER_OF_WEAPONS);
+		assert(original_weapon_ordering_array);
+		for (unsigned i = 0; i < NUMBER_OF_WEAPONS; i++)
+			original_weapon_ordering_array[i] = weapon_ordering_array[i];
+	}
+	
+	BOOST_FOREACH(InfoTree casing, root.children_named("shell_casings"))
+	{
+		int16 index;
+		if (!casing.read_indexed("index", index, NUMBER_OF_SHELL_CASING_TYPES))
+			continue;
+		shell_casing_definition& def = shell_casing_definitions[index];
+		
+		casing.read_indexed("coll", def.collection, MAXIMUM_COLLECTIONS);
+		casing.read_indexed("seq", def.shape, MAXIMUM_SHAPES_PER_COLLECTION);
+		casing.read_fixed("x0", def.x0);
+		casing.read_fixed("y0", def.y0);
+		casing.read_fixed("vx0", def.vx0);
+		casing.read_fixed("vy0", def.vy0);
+		casing.read_fixed("dvx", def.dvx);
+		casing.read_fixed("dvy", def.dvy);
+	}
+	
+	BOOST_FOREACH(InfoTree order, root.children_named("order"))
+	{
+		int16 index;
+		if (!order.read_indexed("index", index, NUMBER_OF_WEAPONS))
+			continue;
+		order.read_indexed("weapon", weapon_ordering_array[index], NUMBER_OF_WEAPONS);
+	}
 }

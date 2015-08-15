@@ -44,6 +44,7 @@ bool chat_input_mode = false;
 #include "Music.h"
 #include "items.h"
 #include "network_sound.h"
+#include "InfoTree.h"
 
 #include <ctype.h>
 
@@ -497,4 +498,41 @@ int process_keyword_key(
 	}
 	
 	return tag;
+}
+
+void reset_mml_cheats()
+{
+	CheatsActive = false;
+	if (original_keywords)
+	{
+		for (int i = 0; i < NUMBER_OF_KEYWORDS; i++)
+			keywords[i] = original_keywords[i];
+	}
+}
+
+void parse_mml_cheats(const InfoTree& root)
+{
+	// back up old values first
+	if (!original_keywords)
+	{
+		original_keywords = (keyword_data *) malloc(sizeof(keywords));
+		assert(original_keywords);
+		for (int i = 0; i < NUMBER_OF_KEYWORDS; i++)
+			original_keywords[i] = keywords[i];
+	}
+	
+	root.read_attr("on", CheatsActive);
+	
+	BOOST_FOREACH(InfoTree ktree, root.children_named("keyword"))
+	{
+		int16 index;
+		if (!ktree.read_indexed("index", index, NUMBER_OF_KEYWORDS))
+			continue;
+		
+		std::string word = ktree.get_value(std::string(""));
+		char *dest = keywords[index].keyword;
+		size_t decoded_len = DeUTF8_C(word.c_str(), word.size(), dest, MAXIMUM_KEYWORD_LENGTH);
+		for (size_t c = 0; c < decoded_len; c++, dest++)
+			*dest = toupper(*dest);
+	}
 }

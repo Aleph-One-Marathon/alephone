@@ -52,4 +52,8 @@ bool get_damaged_scenery_collection(short scenery_type, short& collection);
 // LP change: added scenery-parser export
 XML_ElementParser *Scenery_GetParser();
 
+class InfoTree;
+void parse_mml_scenery(const InfoTree& root);
+void reset_mml_scenery();
+
 #endif

@@ -65,6 +65,7 @@ Jan 31, 2001 (Loren Petrich):
 #include "screen.h"
 #include "interface.h"
 #include "map.h" // for TICKS_PER_SECOND
+#include "InfoTree.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -1066,4 +1067,96 @@ XML_ElementParser *Faders_GetParser()
 	FadersParser.AddChild(&LiquidFaderParser);
 	
 	return &FadersParser;
+}
+
+void reset_mml_faders()
+{
+	if (original_fade_definitions) {
+		for (int i = 0; i < NUMBER_OF_FADE_TYPES; i++)
+			fade_definitions[i] = original_fade_definitions[i];
+		free(original_fade_definitions);
+		original_fade_definitions = NULL;
+	}
+
+	if (original_fade_effect_definitions) {
+		for (int i = 0; i < NUMBER_OF_FADE_EFFECT_TYPES; i++)
+			fade_effect_definitions[i] = original_fade_effect_definitions[i];
+		free(original_fade_effect_definitions);
+		original_fade_effect_definitions = NULL;
+	}
+}
+
+void parse_mml_faders(const InfoTree& root)
+{
+	// back up old values first
+	if (!original_fade_definitions) {
+		original_fade_definitions = (struct fade_definition *) malloc(sizeof(struct fade_definition) * NUMBER_OF_FADE_TYPES);
+		assert(original_fade_definitions);
+		for (int i = 0; i < NUMBER_OF_FADE_TYPES; i++)
+			original_fade_definitions[i] = fade_definitions[i];
+	}
+
+	if (!original_fade_effect_definitions) {
+		original_fade_effect_definitions = (struct fade_effect_definition *) malloc(sizeof(struct fade_effect_definition) * NUMBER_OF_FADE_EFFECT_TYPES);
+		assert(original_fade_effect_definitions);
+		for (int i = 0; i < NUMBER_OF_FADE_EFFECT_TYPES; i++)
+			original_fade_effect_definitions[i] = fade_effect_definitions[i];
+	}
+	
+	BOOST_FOREACH(InfoTree ftree, root.children_named("fader"))
+	{
+		int16 index;
+		if (!ftree.read_indexed("index", index, NUMBER_OF_FADE_TYPES))
+			continue;
+		
+		fade_definition& def = fade_definitions[index];
+		int16 fade_type;
+		if (ftree.read_indexed("type", fade_type, NUMBER_OF_FADER_FUNCTIONS))
+		{
+			switch (fade_type) {
+				case _tint_fader_type:
+					def.proc = tint_color_table;
+					break;
+				case _randomize_fader_type:
+					def.proc = randomize_color_table;
+					break;
+				case _negate_fader_type:
+					def.proc = negate_color_table;
+					break;
+				case _dodge_fader_type:
+					def.proc = dodge_color_table;
+					break;
+				case _burn_fader_type:
+					def.proc = burn_color_table;
+					break;
+				case _soft_tint_fader_type:
+					def.proc = soft_tint_color_table;
+					break;
+				default:
+					break;
+			}
+		}
+		
+		ftree.read_fixed("initial_opacity", def.initial_transparency);
+		ftree.read_fixed("final_opacity", def.final_transparency);
+		ftree.read_attr("flags", def.flags);
+		ftree.read_attr("priority", def.priority);
+		int16 period;
+		if (ftree.read_attr("period", period))
+			def.period = static_cast<int32>(period) * 1000 / MACHINE_TICKS_PER_SECOND;
+		
+		BOOST_FOREACH(InfoTree color, ftree.children_named("color"))
+			color.read_color(def.color);
+	}
+	
+	BOOST_FOREACH(InfoTree ltree, root.children_named("liquid"))
+	{
+		int16 index;
+		if (!ltree.read_indexed("index", index, NUMBER_OF_FADE_EFFECT_TYPES))
+			continue;
+		
+		fade_effect_definition& def = fade_effect_definitions[index];
+		ltree.read_indexed("fader", def.fade_type, NUMBER_OF_FADE_TYPES, true);
+		ltree.read_fixed("opacity", def.transparency);
+	}
 }

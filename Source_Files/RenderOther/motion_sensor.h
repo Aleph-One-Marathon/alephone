@@ -52,4 +52,8 @@ void adjust_motion_sensor_range(void);
 // LP addition: get the parser for the motion-sensor elements (name "motion_sensor")
 XML_ElementParser *MotionSensor_GetParser();
 
+class InfoTree;
+void parse_mml_motion_sensor(const InfoTree& root);
+void reset_mml_motion_sensor();
+
 #endif

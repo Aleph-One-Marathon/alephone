@@ -1411,4 +1411,8 @@ bool goto_level(struct entry_point *entry, bool new_game, short number_of_player
 // LP addition: get the parser for the texture-loading control (name "texture_loading")
 XML_ElementParser *TextureLoading_GetParser();
 
+class InfoTree;
+void parse_mml_texture_loading(const InfoTree& root);
+void reset_mml_texture_loading();
+
 #endif
