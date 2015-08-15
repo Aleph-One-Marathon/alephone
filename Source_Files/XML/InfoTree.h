@@ -31,6 +31,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <boost/foreach.hpp>
+#include <boost/range/any_range.hpp>
 
 class InfoTree : public boost::property_tree::ptree
 {
@@ -79,6 +81,11 @@ public:
 		}
 		return false;
 	}
+	
+	bool read_indexed(std::string path, int16& value, int num_slots, bool allow_none = false) const
+	{
+		return read_attr_bounded<int16>(path, value, (allow_none ? NONE : 0), num_slots - 1);
+	}
 
 	template<typename T> void put_attr(std::string path, const T value)
 	{
@@ -99,6 +106,9 @@ public:
 	void put_attr_path(std::string path, std::string filepath);
 	void put_cstr(std::string path, std::string cstr);
 	void put_attr_cstr(std::string path, std::string cstr);
+	
+	typedef boost::any_range<InfoTree, boost::forward_traversal_tag, InfoTree, std::ptrdiff_t> const_child_range;
+	const_child_range children_named(std::string key) const;
 };
 
 #endif

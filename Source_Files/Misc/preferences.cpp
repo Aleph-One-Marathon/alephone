@@ -99,7 +99,6 @@ May 22, 2003 (Woody Zenfell):
 #include <cmath>
 #include <sstream>
 #include <boost/algorithm/hex.hpp>
-#include <boost/foreach.hpp>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -2431,22 +2430,20 @@ void read_preferences ()
 			else if (version > A1_DATE_VERSION)
 				logWarning3("Reading newer preferences of version %s. Preferences will be downgraded to version %s when saved. (%s)", version.c_str(), A1_DATE_VERSION, FileSpec.GetPath());
 			
-			boost::optional<InfoTree> ochild;
-			
-			if ((ochild = root.get_child_optional("graphics")))
-				parse_graphics_preferences(*ochild, version);
-			if ((ochild = root.get_child_optional("player")))
-				parse_player_preferences(*ochild, version);
-			if ((ochild = root.get_child_optional("input")))
-				parse_input_preferences(*ochild, version);
-			if ((ochild = root.get_child_optional("sound")))
-				parse_sound_preferences(*ochild, version);
+			BOOST_FOREACH(InfoTree child, root.children_named("graphics"))
+				parse_graphics_preferences(child, version);
+			BOOST_FOREACH(InfoTree child, root.children_named("player"))
+				parse_player_preferences(child, version);
+			BOOST_FOREACH(InfoTree child, root.children_named("input"))
+				parse_input_preferences(child, version);
+			BOOST_FOREACH(InfoTree child, root.children_named("sound"))
+				parse_sound_preferences(child, version);
 #if !defined(DISABLE_NETWORKING)
-			if ((ochild = root.get_child_optional("network")))
-				parse_network_preferences(*ochild, version);
+			BOOST_FOREACH(InfoTree child, root.children_named("network"))
+				parse_network_preferences(child, version);
 #endif
-			if ((ochild = root.get_child_optional("environment")))
-				parse_environment_preferences(*ochild, version);
+			BOOST_FOREACH(InfoTree child, root.children_named("environment"))
+				parse_environment_preferences(child, version);
 			
 		} catch (InfoTree::parse_error ex) {
 			logError2("Error parsing preferences file (%s): %s", FileSpec.GetPath(), ex.what());
@@ -3325,31 +3322,29 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr_bounded<int16>("movie_export_video_quality", graphics_preferences->movie_export_video_quality, 0, 100);
 	root.read_attr_bounded<int16>("movie_export_audio_quality", graphics_preferences->movie_export_audio_quality, 0, 100);
 	
-	boost::optional<InfoTree> ochild;
 	
-	if ((ochild = root.get_child_optional("void.color")))
+	BOOST_FOREACH(InfoTree vtree, root.children_named("void"))
 	{
-		ochild->read_color(graphics_preferences->OGL_Configure.VoidColor);
+		BOOST_FOREACH(InfoTree color, vtree.children_named("color"))
+		{
+			color.read_color(graphics_preferences->OGL_Configure.VoidColor);
+		}
 	}
 	
-	if ((ochild = root.get_child_optional("landscapes")))
+	BOOST_FOREACH(InfoTree landscape, root.children_named("landscapes"))
 	{
-		BOOST_FOREACH(InfoTree::value_type &v, ochild->equal_range("color"))
+		BOOST_FOREACH(InfoTree color, root.children_named("color"))
 		{
-			InfoTree color = v.second;
-			int index = -1;
-			color.read_attr("index", index);
-			if (index >= 0 && index < 8)
+			int16 index;
+			if (color.read_indexed("index", index, 8))
 				color.read_color(graphics_preferences->OGL_Configure.LscpColors[index / 2][index % 2]);
 		}
 	}
 	
-	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("texture"))
+	BOOST_FOREACH(InfoTree tex, root.children_named("texture"))
 	{
-		InfoTree tex = v.second;
-		int index = -1;
-		tex.read_attr("index", index);
-		if (index >= 0 && index < OGL_NUMBER_OF_TEXTURE_TYPES)
+		int16 index;
+		if (tex.read_indexed("index", index, OGL_NUMBER_OF_TEXTURE_TYPES+1))
 		{
 			OGL_Texture_Configure& Config = (index == OGL_NUMBER_OF_TEXTURE_TYPES) ? graphics_preferences->OGL_Configure.ModelConfig : graphics_preferences->OGL_Configure.TxtrConfigList[index];
 			tex.read_attr("near_filter", Config.NearFilter);
@@ -3372,29 +3367,27 @@ void parse_player_preferences(InfoTree root, std::string version)
 	root.read_attr("bkgd_music", player_preferences->background_music_on);
 	root.read_attr("crosshairs_active", player_preferences->crosshairs_active);
 	
-	boost::optional<InfoTree> ochild;
-	if ((ochild = root.get_child_optional("chase_cam")))
+	BOOST_FOREACH(InfoTree child, root.children_named("chase_cam"))
 	{
-		ochild->read_attr("behind", player_preferences->ChaseCam.Behind);
-		ochild->read_attr("upward", player_preferences->ChaseCam.Upward);
-		ochild->read_attr("rightward", player_preferences->ChaseCam.Rightward);
-		ochild->read_attr("flags", player_preferences->ChaseCam.Flags);
-		ochild->read_attr("damping", player_preferences->ChaseCam.Damping);
-		ochild->read_attr("spring", player_preferences->ChaseCam.Spring);
-		ochild->read_attr("opacity", player_preferences->ChaseCam.Opacity);
+		child.read_attr("behind", player_preferences->ChaseCam.Behind);
+		child.read_attr("upward", player_preferences->ChaseCam.Upward);
+		child.read_attr("rightward", player_preferences->ChaseCam.Rightward);
+		child.read_attr("flags", player_preferences->ChaseCam.Flags);
+		child.read_attr("damping", player_preferences->ChaseCam.Damping);
+		child.read_attr("spring", player_preferences->ChaseCam.Spring);
+		child.read_attr("opacity", player_preferences->ChaseCam.Opacity);
 	}
 	
-	if ((ochild = root.get_child_optional("crosshairs")))
+	BOOST_FOREACH(InfoTree child, root.children_named("crosshairs"))
 	{
-		ochild->read_attr("thickness", player_preferences->Crosshairs.Thickness);
-		ochild->read_attr("from_center", player_preferences->Crosshairs.FromCenter);
-		ochild->read_attr("length", player_preferences->Crosshairs.Length);
-		ochild->read_attr("shape", player_preferences->Crosshairs.Shape);
-		ochild->read_attr("opacity", player_preferences->Crosshairs.Opacity);
+		child.read_attr("thickness", player_preferences->Crosshairs.Thickness);
+		child.read_attr("from_center", player_preferences->Crosshairs.FromCenter);
+		child.read_attr("length", player_preferences->Crosshairs.Length);
+		child.read_attr("shape", player_preferences->Crosshairs.Shape);
+		child.read_attr("opacity", player_preferences->Crosshairs.Opacity);
 		
-		boost::optional<InfoTree> ocolor;
-		if ((ocolor = root.get_child_optional("color")))
-			ocolor->read_color(player_preferences->Crosshairs.Color);
+		BOOST_FOREACH(InfoTree color, child.children_named("color"))
+			color.read_color(player_preferences->Crosshairs.Color);
 	}
 }
 
@@ -3413,12 +3406,10 @@ void parse_input_preferences(InfoTree root, std::string version)
 	root.read_attr("joystick_id", input_preferences->joystick_id);
 
 	
-	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("mouse_button"))
+	BOOST_FOREACH(InfoTree mb, root.children_named("mouse_button"))
 	{
-		InfoTree mb = v.second;
-		int16 index = -1;
-		mb.read_attr("index", index);
-		if (index >= 0 && index < MAX_BUTTONS)
+		int16 index;
+		if (mb.read_indexed("index", index, MAX_BUTTONS))
 		{
 			std::string action;
 			mb.read_attr("action", action);
@@ -3431,16 +3422,13 @@ void parse_input_preferences(InfoTree root, std::string version)
 		}
 	}
 	
-	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("joystick_axis_mapping"))
+	BOOST_FOREACH(InfoTree mapping, root.children_named("joystick_axis_mapping"))
 	{
-		InfoTree mapping = v.second;
-		int16 index = -1;
-		mapping.read_attr("index", index);
-		if (index >= 0 && index < NUMBER_OF_JOYSTICK_MAPPINGS)
+		int16 index;
+		if (mapping.read_indexed("index", index, NUMBER_OF_JOYSTICK_MAPPINGS))
 		{
-			int16 axis = -2;
-			mapping.read_attr("axis", axis);
-			if (axis >= -1 && axis <= 7)
+			int16 axis;
+			if (mapping.read_indexed("axis", axis, 8, true))
 			{
 				input_preferences->joystick_axis_mappings[index] = axis;
 				mapping.read_attr("axis_sensitivity",
@@ -3452,16 +3440,14 @@ void parse_input_preferences(InfoTree root, std::string version)
 		}
 	}
 	
-	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("sdl_key"))
+	BOOST_FOREACH(InfoTree key, root.children_named("sdl_key"))
 	{
-		InfoTree key = v.second;
-		int16 index = -1;
-		key.read_attr("index", index);
-		if (index >= 0 && index < NUMBER_OF_KEYS)
+		int16 index;
+		if (key.read_indexed("index", index, NUMBER_OF_KEYS))
 		{
 			key.read_attr("value", input_preferences->keycodes[index]);
 		}
-		else if (index >= 0 && index < (NUMBER_OF_KEYS + NUMBER_OF_SHELL_KEYS))
+		else if (key.read_indexed("index", index, NUMBER_OF_KEYS + NUMBER_OF_SHELL_KEYS))
 		{
 			key.read_attr("value",
 						input_preferences->shell_keycodes[index - NUMBER_OF_KEYS]);
@@ -3540,21 +3526,17 @@ void parse_network_preferences(InfoTree root, std::string version)
 	root.read_attr("join_metaserver_by_default", network_preferences->join_metaserver_by_default);
 	root.read_attr("allow_stats", network_preferences->allow_stats);
 
-	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("color"))
+	BOOST_FOREACH(InfoTree color, root.children_named("color"))
 	{
-		InfoTree color = v.second;
-		int index = -1;
-		color.read_attr("index", index);
-		if (index >= 0 && index < 2)
+		int16 index;
+		if (color.read_indexed("index", index, 2))
 			color.read_color(network_preferences->metaserver_colors[index]);
 	}
 	
-	boost::optional<InfoTree> ochild;
-	
-	if ((ochild = root.get_child_optional("star_protocol")))
-		StarGameProtocol::ParsePreferencesTree(*ochild, version);
-	if ((ochild = root.get_child_optional("ring_protocol")))
-		RingGameProtocol::ParsePreferencesTree(*ochild, version);
+	BOOST_FOREACH(InfoTree child, root.children_named("star_protocol"))
+		StarGameProtocol::ParsePreferencesTree(child, version);
+	BOOST_FOREACH(InfoTree child, root.children_named("ring_protocol"))
+		RingGameProtocol::ParsePreferencesTree(child, version);
 }
 
 void parse_environment_preferences(InfoTree root, std::string version)
@@ -3583,9 +3565,8 @@ void parse_environment_preferences(InfoTree root, std::string version)
 	
 	root.read_attr("maximum_quick_saves", environment_preferences->maximum_quick_saves);
 	
-	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("disable_plugin"))
+	BOOST_FOREACH(InfoTree plugin, root.children_named("disable_plugin"))
 	{
-		InfoTree plugin = v.second;
 		char tempstr[256];
 		if (plugin.read_path("path", tempstr))
 		{

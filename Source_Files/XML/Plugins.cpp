@@ -40,7 +40,6 @@
 #endif
 
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/foreach.hpp>
 
 namespace algo = boost::algorithm;
 
@@ -286,18 +285,16 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 					!plugin_file_exists(Data, Data.theme + "/theme2.mml"))
 					Data.theme = "";
 				
-				BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("mml"))
+				BOOST_FOREACH(InfoTree tree, root.children_named("mml"))
 				{
-					InfoTree tree = v.second;
 					std::string mml_path;
 					if (tree.read_attr("file", mml_path) &&
 						plugin_file_exists(Data, mml_path))
 						Data.mmls.push_back(mml_path);
 				}
 
-				BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("shapes_patch"))
+				BOOST_FOREACH(InfoTree tree, root.children_named("shapes_patch"))
 				{
-					InfoTree tree = v.second;
 					ShapesPatch patch;
 					tree.read_attr("file", patch.path);
 					tree.read_attr("requires_opengl", patch.requires_opengl);
@@ -305,9 +302,8 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 						Data.shapes_patches.push_back(patch);
 				}
 
-				BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("scenario"))
+				BOOST_FOREACH(InfoTree tree, root.children_named("scenario"))
 				{
-					InfoTree tree = v.second;
 					ScenarioInfo info;
 					tree.read_attr("name", info.name);
 					if (info.name.size() > 31)

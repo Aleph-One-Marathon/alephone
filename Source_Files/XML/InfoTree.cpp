@@ -26,6 +26,10 @@
 #include "shell.h"
 #include "XML_ElementParser.h"  // for DeUTF8_C
 
+#include <boost/function.hpp>
+#include <boost/iterator/filter_iterator.hpp>
+#include <boost/iterator/transform_iterator.hpp>
+
 InfoTree InfoTree::load_xml(FileSpecifier filename)
 {
 	// use rwops, in case file is inside a zip archive
@@ -221,4 +225,43 @@ void InfoTree::add_color(std::string path, const rgb_color& color)
 void InfoTree::add_color(std::string path, const rgb_color& color, size_t index)
 {
 	add_child(path, _make_color(color, index));
+}
+
+
+// children_named support
+
+class _find_children_filter {
+public:
+	_find_children_filter(std::string key) : m_key(key) { }
+	
+	bool operator()(const InfoTree::value_type &v) const
+	{
+		return (m_key == v.first);
+	}
+	
+	std::string m_key;
+};
+
+static InfoTree _find_children_unpack(const InfoTree::value_type &v)
+{
+	return v.second;
+}
+
+typedef boost::function<bool (const InfoTree::value_type&)> _filt_func;
+typedef boost::filter_iterator<_filt_func, InfoTree::const_iterator> _filt_iter;
+typedef boost::function<InfoTree (const InfoTree::value_type&)> _xform_func;
+typedef boost::transform_iterator<_xform_func, _filt_iter> _xform_iter;
+
+static _xform_iter _children_named_helper(std::string key, InfoTree::const_iterator begin, InfoTree::const_iterator end)
+{
+	return boost::make_transform_iterator(
+										  boost::make_filter_iterator<_filt_func, InfoTree::const_iterator>(_find_children_filter(key), begin, end),
+										  _find_children_unpack);
+}
+
+InfoTree::const_child_range InfoTree::children_named(std::string key) const
+{
+	
+	return InfoTree::const_child_range(_children_named_helper(key, begin(), end()),
+									   _children_named_helper(key, end(), end()));
 }

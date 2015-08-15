@@ -241,12 +241,10 @@ call_distribution_response_function_if_available(byte* inBuffer, uint16 inBuffer
 void
 StarGameProtocol::ParsePreferencesTree(InfoTree prefs, std::string version)
 {
-	boost::optional<InfoTree> ochild;
-	
-	if ((ochild = prefs.get_child_optional("hub")))
-		HubParsePreferencesTree(*ochild, version);
-	if ((ochild = prefs.get_child_optional("spoke")))
-		SpokeParsePreferencesTree(*ochild, version);
+	BOOST_FOREACH(InfoTree child, prefs.children_named("hub"))
+		HubParsePreferencesTree(child, version);
+	BOOST_FOREACH(InfoTree child, prefs.children_named("spoke"))
+		SpokeParsePreferencesTree(child, version);
 }
 
 

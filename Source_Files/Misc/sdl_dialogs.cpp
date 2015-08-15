@@ -63,7 +63,6 @@
 
 #include <map>
 #include <string>
-#include <boost/foreach.hpp>
 
 // Global variables
 dialog *top_dialog = NULL;
@@ -163,8 +162,9 @@ static void parse_theme_image(InfoTree root, int type, int state, int max_index)
 
 static void parse_theme_images(InfoTree root, int type, int state, int num_items = 1)
 {
-	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("image")) {
-		parse_theme_image(v.second, type, state, num_items - 1);
+	BOOST_FOREACH(InfoTree img, root.children_named("image"))
+	{
+		parse_theme_image(img, type, state, num_items - 1);
 	}
 }
 
@@ -188,8 +188,9 @@ static void parse_theme_color(InfoTree root, int type, int state, int max_index)
 
 static void parse_theme_colors(InfoTree root, int type, int state, int num_items = 1)
 {
-	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("color")) {
-		parse_theme_color(v.second, type, state, num_items - 1);
+	BOOST_FOREACH(InfoTree color, root.children_named("color"))
+	{
+		parse_theme_color(color, type, state, num_items - 1);
 	}
 }
 
@@ -223,9 +224,8 @@ static void parse_theme_font(InfoTree root, int type)
 
 static void parse_theme_fonts(InfoTree root, int type)
 {
-	boost::optional<InfoTree> ochild;
-	if ((ochild = root.get_child_optional("font")))
-		parse_theme_font(*ochild, type);
+	BOOST_FOREACH(InfoTree child, root.children_named("font"))
+		parse_theme_font(child, type);
 }
 
 void start_parse_widget(int theme_widget)
@@ -275,21 +275,20 @@ static void parse_button(InfoTree root)
 	parse_theme_fonts(root, BUTTON_WIDGET);
 	parse_theme_images(root, BUTTON_WIDGET, DEFAULT_STATE, 3);
 	
-	boost::optional<InfoTree> ochild;
-	if ((ochild = root.get_child_optional("active")))
+	BOOST_FOREACH(InfoTree child, root.children_named("active"))
 	{
-		parse_theme_colors(*ochild, BUTTON_WIDGET, ACTIVE_STATE, 3);
-		parse_theme_images(*ochild, BUTTON_WIDGET, ACTIVE_STATE, 3);
+		parse_theme_colors(child, BUTTON_WIDGET, ACTIVE_STATE, 3);
+		parse_theme_images(child, BUTTON_WIDGET, ACTIVE_STATE, 3);
 	}
-	if ((ochild = root.get_child_optional("disabled")))
+	BOOST_FOREACH(InfoTree child, root.children_named("disabled"))
 	{
-		parse_theme_colors(*ochild, BUTTON_WIDGET, DISABLED_STATE, 3);
-		parse_theme_images(*ochild, BUTTON_WIDGET, DISABLED_STATE, 3);
+		parse_theme_colors(child, BUTTON_WIDGET, DISABLED_STATE, 3);
+		parse_theme_images(child, BUTTON_WIDGET, DISABLED_STATE, 3);
 	}
-	if ((ochild = root.get_child_optional("pressed")))
+	BOOST_FOREACH(InfoTree child, root.children_named("pressed"))
 	{
-		parse_theme_colors(*ochild, BUTTON_WIDGET, PRESSED_STATE, 3);
-		parse_theme_images(*ochild, BUTTON_WIDGET, PRESSED_STATE, 3);
+		parse_theme_colors(child, BUTTON_WIDGET, PRESSED_STATE, 3);
+		parse_theme_images(child, BUTTON_WIDGET, PRESSED_STATE, 3);
 	}
 }
 
@@ -305,21 +304,20 @@ static void parse_tiny_button(InfoTree root)
 	parse_theme_fonts(root, TINY_BUTTON);
 	parse_theme_images(root, TINY_BUTTON, DEFAULT_STATE, 3);
 	
-	boost::optional<InfoTree> ochild;
-	if ((ochild = root.get_child_optional("active")))
+	BOOST_FOREACH(InfoTree child, root.children_named("active"))
 	{
-		parse_theme_colors(*ochild, TINY_BUTTON, ACTIVE_STATE, 3);
-		parse_theme_images(*ochild, TINY_BUTTON, ACTIVE_STATE, 3);
+		parse_theme_colors(child, TINY_BUTTON, ACTIVE_STATE, 3);
+		parse_theme_images(child, TINY_BUTTON, ACTIVE_STATE, 3);
 	}
-	if ((ochild = root.get_child_optional("disabled")))
+	BOOST_FOREACH(InfoTree child, root.children_named("disabled"))
 	{
-		parse_theme_colors(*ochild, TINY_BUTTON, DISABLED_STATE, 3);
-		parse_theme_images(*ochild, TINY_BUTTON, DISABLED_STATE, 3);
+		parse_theme_colors(child, TINY_BUTTON, DISABLED_STATE, 3);
+		parse_theme_images(child, TINY_BUTTON, DISABLED_STATE, 3);
 	}
-	if ((ochild = root.get_child_optional("pressed")))
+	BOOST_FOREACH(InfoTree child, root.children_named("pressed"))
 	{
-		parse_theme_colors(*ochild, TINY_BUTTON, PRESSED_STATE, 3);
-		parse_theme_images(*ochild, TINY_BUTTON, PRESSED_STATE, 3);
+		parse_theme_colors(child, TINY_BUTTON, PRESSED_STATE, 3);
+		parse_theme_images(child, TINY_BUTTON, PRESSED_STATE, 3);
 	}
 }
 
@@ -330,18 +328,17 @@ static void parse_hyperlink(InfoTree root)
 	parse_theme_colors(root, HYPERLINK_WIDGET, DEFAULT_STATE, 3);
 	parse_theme_fonts(root, HYPERLINK_WIDGET);
 	
-	boost::optional<InfoTree> ochild;
-	if ((ochild = root.get_child_optional("active")))
+	BOOST_FOREACH(InfoTree child, root.children_named("active"))
 	{
-		parse_theme_colors(*ochild, HYPERLINK_WIDGET, ACTIVE_STATE, 3);
+		parse_theme_colors(child, HYPERLINK_WIDGET, ACTIVE_STATE, 3);
 	}
-	if ((ochild = root.get_child_optional("disabled")))
+	BOOST_FOREACH(InfoTree child, root.children_named("disabled"))
 	{
-		parse_theme_colors(*ochild, HYPERLINK_WIDGET, DISABLED_STATE, 3);
+		parse_theme_colors(child, HYPERLINK_WIDGET, DISABLED_STATE, 3);
 	}
-	if ((ochild = root.get_child_optional("pressed")))
+	BOOST_FOREACH(InfoTree child, root.children_named("pressed"))
 	{
-		parse_theme_colors(*ochild, HYPERLINK_WIDGET, PRESSED_STATE, 3);
+		parse_theme_colors(child, HYPERLINK_WIDGET, PRESSED_STATE, 3);
 	}
 }
 
@@ -353,14 +350,13 @@ static void parse_item(InfoTree root)
 	parse_theme_colors(root, ITEM_WIDGET, DEFAULT_STATE);
 	parse_theme_fonts(root, ITEM_WIDGET);
 	
-	boost::optional<InfoTree> ochild;
-	if ((ochild = root.get_child_optional("active")))
+	BOOST_FOREACH(InfoTree child, root.children_named("active"))
 	{
-		parse_theme_colors(*ochild, ITEM_WIDGET, ACTIVE_STATE);
+		parse_theme_colors(child, ITEM_WIDGET, ACTIVE_STATE);
 	}
-	if ((ochild = root.get_child_optional("disabled")))
+	BOOST_FOREACH(InfoTree child, root.children_named("disabled"))
 	{
-		parse_theme_colors(*ochild, ITEM_WIDGET, DISABLED_STATE);
+		parse_theme_colors(child, ITEM_WIDGET, DISABLED_STATE);
 	}
 }
 
@@ -371,14 +367,13 @@ static void parse_label(InfoTree root)
 	parse_theme_colors(root, LABEL_WIDGET, DEFAULT_STATE);
 	parse_theme_fonts(root, LABEL_WIDGET);
 	
-	boost::optional<InfoTree> ochild;
-	if ((ochild = root.get_child_optional("active")))
+	BOOST_FOREACH(InfoTree child, root.children_named("active"))
 	{
-		parse_theme_colors(*ochild, LABEL_WIDGET, ACTIVE_STATE);
+		parse_theme_colors(child, LABEL_WIDGET, ACTIVE_STATE);
 	}
-	if ((ochild = root.get_child_optional("disabled")))
+	BOOST_FOREACH(InfoTree child, root.children_named("disabled"))
 	{
-		parse_theme_colors(*ochild, LABEL_WIDGET, DISABLED_STATE);
+		parse_theme_colors(child, LABEL_WIDGET, DISABLED_STATE);
 	}
 }
 
@@ -396,18 +391,17 @@ static void parse_text_entry(InfoTree root)
 	parse_theme_colors(root, TEXT_ENTRY_WIDGET, DEFAULT_STATE);
 	parse_theme_fonts(root, TEXT_ENTRY_WIDGET);
 	
-	boost::optional<InfoTree> ochild;
-	if ((ochild = root.get_child_optional("active")))
+	BOOST_FOREACH(InfoTree child, root.children_named("active"))
 	{
-		parse_theme_colors(*ochild, TEXT_ENTRY_WIDGET, ACTIVE_STATE);
+		parse_theme_colors(child, TEXT_ENTRY_WIDGET, ACTIVE_STATE);
 	}
-	if ((ochild = root.get_child_optional("disabled")))
+	BOOST_FOREACH(InfoTree child, root.children_named("disabled"))
 	{
-		parse_theme_colors(*ochild, TEXT_ENTRY_WIDGET, DISABLED_STATE);
+		parse_theme_colors(child, TEXT_ENTRY_WIDGET, DISABLED_STATE);
 	}
-	if ((ochild = root.get_child_optional("cursor")))
+	BOOST_FOREACH(InfoTree child, root.children_named("cursor"))
 	{
-		parse_theme_colors(*ochild, TEXT_ENTRY_WIDGET, CURSOR_STATE);
+		parse_theme_colors(child, TEXT_ENTRY_WIDGET, CURSOR_STATE);
 	}
 }
 
@@ -431,19 +425,18 @@ static void parse_list(InfoTree root)
 	parse_theme_colors(root, LIST_WIDGET, DEFAULT_STATE, 3);
 	parse_theme_images(root, LIST_WIDGET, DEFAULT_STATE, 8);
 	
-	boost::optional<InfoTree> ochild;
-	if ((ochild = root.get_child_optional("trough")))
+	BOOST_FOREACH(InfoTree child, root.children_named("trough"))
 	{
-		ochild->read_attr("top", dialog_theme[LIST_WIDGET].spaces[TROUGH_T_SPACE]);
-		ochild->read_attr("bottom", dialog_theme[LIST_WIDGET].spaces[TROUGH_B_SPACE]);
-		ochild->read_attr("right", dialog_theme[LIST_WIDGET].spaces[TROUGH_R_SPACE]);
-		ochild->read_attr("width", dialog_theme[LIST_WIDGET].spaces[TROUGH_WIDTH]);
+		child.read_attr("top", dialog_theme[LIST_WIDGET].spaces[TROUGH_T_SPACE]);
+		child.read_attr("bottom", dialog_theme[LIST_WIDGET].spaces[TROUGH_B_SPACE]);
+		child.read_attr("right", dialog_theme[LIST_WIDGET].spaces[TROUGH_R_SPACE]);
+		child.read_attr("width", dialog_theme[LIST_WIDGET].spaces[TROUGH_WIDTH]);
 	}
-	if ((ochild = root.get_child_optional("thumb")))
+	BOOST_FOREACH(InfoTree child, root.children_named("thumb"))
 	{
 		start_parse_widget(LIST_THUMB);
-		parse_theme_colors(*ochild, LIST_THUMB, DEFAULT_STATE, 3);
-		parse_theme_images(*ochild, LIST_THUMB, DEFAULT_STATE, 5);
+		parse_theme_colors(child, LIST_THUMB, DEFAULT_STATE, 3);
+		parse_theme_images(child, LIST_THUMB, DEFAULT_STATE, 5);
 	}
 }
 
@@ -457,12 +450,11 @@ static void parse_slider(InfoTree root)
 	parse_theme_colors(root, SLIDER_WIDGET, DEFAULT_STATE, 3);
 	parse_theme_images(root, SLIDER_WIDGET, DEFAULT_STATE, 3);
 	
-	boost::optional<InfoTree> ochild;
-	if ((ochild = root.get_child_optional("thumb")))
+	BOOST_FOREACH(InfoTree child, root.children_named("thumb"))
 	{
 		start_parse_widget(SLIDER_THUMB);
-		parse_theme_colors(*ochild, SLIDER_THUMB, DEFAULT_STATE, 3);
-		parse_theme_images(*ochild, SLIDER_THUMB, DEFAULT_STATE);
+		parse_theme_colors(child, SLIDER_THUMB, DEFAULT_STATE, 3);
+		parse_theme_images(child, SLIDER_THUMB, DEFAULT_STATE);
 	}
 }
 
@@ -475,14 +467,13 @@ static void parse_checkbox(InfoTree root)
 	parse_theme_fonts(root, CHECKBOX);
 	parse_theme_images(root, CHECKBOX, DEFAULT_STATE, 2);
 	
-	boost::optional<InfoTree> ochild;
-	if ((ochild = root.get_child_optional("active")))
+	BOOST_FOREACH(InfoTree child, root.children_named("active"))
 	{
-		parse_theme_images(*ochild, CHECKBOX, ACTIVE_STATE, 2);
+		parse_theme_images(child, CHECKBOX, ACTIVE_STATE, 2);
 	}
-	if ((ochild = root.get_child_optional("disabled")))
+	BOOST_FOREACH(InfoTree child, root.children_named("disabled"))
 	{
-		parse_theme_images(*ochild, CHECKBOX, DISABLED_STATE, 2);
+		parse_theme_images(child, CHECKBOX, DISABLED_STATE, 2);
 	}
 }
 
@@ -500,65 +491,62 @@ static void parse_tab(InfoTree root)
 	parse_theme_fonts(root, TAB_WIDGET);
 	parse_theme_images(root, TAB_WIDGET, DEFAULT_STATE, 5);
 	
-	boost::optional<InfoTree> ochild;
-	if ((ochild = root.get_child_optional("active")))
+	BOOST_FOREACH(InfoTree child, root.children_named("active"))
 	{
-		parse_theme_colors(*ochild, TAB_WIDGET, ACTIVE_STATE, 3);
-		parse_theme_images(*ochild, TAB_WIDGET, ACTIVE_STATE, 5);
+		parse_theme_colors(child, TAB_WIDGET, ACTIVE_STATE, 3);
+		parse_theme_images(child, TAB_WIDGET, ACTIVE_STATE, 5);
 	}
-	if ((ochild = root.get_child_optional("disabled")))
+	BOOST_FOREACH(InfoTree child, root.children_named("disabled"))
 	{
-		parse_theme_colors(*ochild, TAB_WIDGET, DISABLED_STATE, 3);
-		parse_theme_images(*ochild, TAB_WIDGET, DISABLED_STATE, 5);
+		parse_theme_colors(child, TAB_WIDGET, DISABLED_STATE, 3);
+		parse_theme_images(child, TAB_WIDGET, DISABLED_STATE, 5);
 	}
-	if ((ochild = root.get_child_optional("pressed")))
+	BOOST_FOREACH(InfoTree child, root.children_named("pressed"))
 	{
-		parse_theme_colors(*ochild, TAB_WIDGET, PRESSED_STATE, 3);
-		parse_theme_images(*ochild, TAB_WIDGET, PRESSED_STATE, 5);
+		parse_theme_colors(child, TAB_WIDGET, PRESSED_STATE, 3);
+		parse_theme_images(child, TAB_WIDGET, PRESSED_STATE, 5);
 	}
 }
 
 static void parse_metaserver(InfoTree root)
 {
 	start_parse_widget(METASERVER_WIDGETS);
-	boost::optional<InfoTree> ochild;
-	if ((ochild = root.get_child_optional("games")))
+	BOOST_FOREACH(InfoTree child, root.children_named("games"))
 	{
 		start_parse_widget(METASERVER_GAMES);
-		ochild->read_attr("entries", dialog_theme[METASERVER_GAMES].spaces[w_games_in_room::GAME_ENTRIES]);
-		ochild->read_attr("spacing", dialog_theme[METASERVER_GAMES].spaces[w_games_in_room::GAME_SPACING]);
+		child.read_attr("entries", dialog_theme[METASERVER_GAMES].spaces[w_games_in_room::GAME_ENTRIES]);
+		child.read_attr("spacing", dialog_theme[METASERVER_GAMES].spaces[w_games_in_room::GAME_SPACING]);
 		
-		parse_theme_colors(*ochild, METASERVER_GAMES, w_games_in_room::GAME, 3);
-		parse_theme_fonts(*ochild, METASERVER_GAMES);
+		parse_theme_colors(child, METASERVER_GAMES, w_games_in_room::GAME, 3);
+		parse_theme_fonts(child, METASERVER_GAMES);
 		
-		boost::optional<InfoTree> gtype;
-		if ((gtype = ochild->get_child_optional("selected")))
+		BOOST_FOREACH(InfoTree gtype, child.children_named("selected"))
 		{
-			parse_theme_colors(*gtype, METASERVER_GAMES, w_games_in_room::SELECTED_GAME, 3);
+			parse_theme_colors(gtype, METASERVER_GAMES, w_games_in_room::SELECTED_GAME, 3);
 		}
-		if ((gtype = ochild->get_child_optional("running")))
+		BOOST_FOREACH(InfoTree gtype, child.children_named("running"))
 		{
-			parse_theme_colors(*gtype, METASERVER_GAMES, w_games_in_room::RUNNING_GAME, 3);
-			if ((gtype = gtype->get_child_optional("selected")))
+			parse_theme_colors(gtype, METASERVER_GAMES, w_games_in_room::RUNNING_GAME, 3);
+			BOOST_FOREACH(InfoTree stype, gtype.children_named("selected"))
 			{
-				parse_theme_colors(*gtype, METASERVER_GAMES, w_games_in_room::SELECTED_RUNNING_GAME, 3);
+				parse_theme_colors(stype, METASERVER_GAMES, w_games_in_room::SELECTED_RUNNING_GAME, 3);
 			}
 		}
-		if ((gtype = ochild->get_child_optional("incompatible")))
+		BOOST_FOREACH(InfoTree gtype, child.children_named("incompatible"))
 		{
-			parse_theme_colors(*gtype, METASERVER_GAMES, w_games_in_room::INCOMPATIBLE_GAME, 3);
-			if ((gtype = gtype->get_child_optional("selected")))
+			parse_theme_colors(gtype, METASERVER_GAMES, w_games_in_room::INCOMPATIBLE_GAME, 3);
+			BOOST_FOREACH(InfoTree stype, gtype.children_named("selected"))
 			{
-				parse_theme_colors(*gtype, METASERVER_GAMES, w_games_in_room::SELECTED_INCOMPATIBLE_GAME, 3);
+				parse_theme_colors(stype, METASERVER_GAMES, w_games_in_room::SELECTED_INCOMPATIBLE_GAME, 3);
 			}
 		}
 	}
-	if ((ochild = root.get_child_optional("players")))
+	BOOST_FOREACH(InfoTree child, root.children_named("players"))
 	{
 		start_parse_widget(METASERVER_PLAYERS);
-		ochild->read_attr("lines", dialog_theme[METASERVER_PLAYERS].spaces[0]);
+		child.read_attr("lines", dialog_theme[METASERVER_PLAYERS].spaces[0]);
 		
-		parse_theme_fonts(*ochild, METASERVER_PLAYERS);
+		parse_theme_fonts(child, METASERVER_PLAYERS);
 	}
 }
 
@@ -568,41 +556,40 @@ static bool parse_theme_file(FileSpecifier& theme_mml)
 	try {
 		InfoTree root = InfoTree::load_xml(theme_mml).get_child("marathon.theme");
 		
-		boost::optional<InfoTree> ochild;
-		if ((ochild = root.get_child_optional("default")))
-			parse_default(*ochild);
-		if ((ochild = root.get_child_optional("frame")))
-			parse_frame(*ochild);
-		if ((ochild = root.get_child_optional("title")))
-			parse_title(*ochild);
-		if ((ochild = root.get_child_optional("spacer")))
-			parse_spacer(*ochild);
-		if ((ochild = root.get_child_optional("button")))
-			parse_button(*ochild);
-		if ((ochild = root.get_child_optional("tiny_button")))
-			parse_tiny_button(*ochild);
-		if ((ochild = root.get_child_optional("hyperlink")))
-			parse_hyperlink(*ochild);
-		if ((ochild = root.get_child_optional("item")))
-			parse_item(*ochild);
-		if ((ochild = root.get_child_optional("label")))
-			parse_label(*ochild);
-		if ((ochild = root.get_child_optional("message")))
-			parse_message(*ochild);
-		if ((ochild = root.get_child_optional("text_entry")))
-			parse_text_entry(*ochild);
-		if ((ochild = root.get_child_optional("chat_entry")))
-			parse_chat_entry(*ochild);
-		if ((ochild = root.get_child_optional("list")))
-			parse_list(*ochild);
-		if ((ochild = root.get_child_optional("slider")))
-			parse_slider(*ochild);
-		if ((ochild = root.get_child_optional("checkbox")))
-			parse_checkbox(*ochild);
-		if ((ochild = root.get_child_optional("tab")))
-			parse_tab(*ochild);
-		if ((ochild = root.get_child_optional("metaserver")))
-			parse_metaserver(*ochild);
+		BOOST_FOREACH(InfoTree child, root.children_named("default"))
+			parse_default(child);
+		BOOST_FOREACH(InfoTree child, root.children_named("frame"))
+			parse_frame(child);
+		BOOST_FOREACH(InfoTree child, root.children_named("title"))
+			parse_title(child);
+		BOOST_FOREACH(InfoTree child, root.children_named("spacer"))
+			parse_spacer(child);
+		BOOST_FOREACH(InfoTree child, root.children_named("button"))
+			parse_button(child);
+		BOOST_FOREACH(InfoTree child, root.children_named("tiny_button"))
+			parse_tiny_button(child);
+		BOOST_FOREACH(InfoTree child, root.children_named("hyperlink"))
+			parse_hyperlink(child);
+		BOOST_FOREACH(InfoTree child, root.children_named("item"))
+			parse_item(child);
+		BOOST_FOREACH(InfoTree child, root.children_named("label"))
+			parse_label(child);
+		BOOST_FOREACH(InfoTree child, root.children_named("message"))
+			parse_message(child);
+		BOOST_FOREACH(InfoTree child, root.children_named("text_entry"))
+			parse_text_entry(child);
+		BOOST_FOREACH(InfoTree child, root.children_named("chat_entry"))
+			parse_chat_entry(child);
+		BOOST_FOREACH(InfoTree child, root.children_named("list"))
+			parse_list(child);
+		BOOST_FOREACH(InfoTree child, root.children_named("slider"))
+			parse_slider(child);
+		BOOST_FOREACH(InfoTree child, root.children_named("checkbox"))
+			parse_checkbox(child);
+		BOOST_FOREACH(InfoTree child, root.children_named("tab"))
+			parse_tab(child);
+		BOOST_FOREACH(InfoTree child, root.children_named("metaserver"))
+			parse_metaserver(child);
 		
 		success = true;
 	} catch (InfoTree::parse_error e) {

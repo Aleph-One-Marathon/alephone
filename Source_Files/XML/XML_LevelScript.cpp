@@ -39,7 +39,6 @@ Jul 31, 2002 (Loren Petrich):
 #include <vector>
 #include <map>
 #include <sstream>
-#include <boost/foreach.hpp>
 
 #include "cseries.h"
 #include "shell.h"
@@ -697,9 +696,8 @@ void parse_level_commands(InfoTree root, int index)
 	// Find or create command list for this level
 	LevelScriptHeader *ls_ptr = &(LevelScripts[index]);
 
-	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("mml"))
+	BOOST_FOREACH(InfoTree child, root.children_named("mml"))
 	{
-		InfoTree child = v.second;
 		LevelScriptCommand cmd;
 		cmd.Type = LevelScriptCommand::MML;
 		
@@ -710,9 +708,8 @@ void parse_level_commands(InfoTree root, int index)
 	}
 
 #ifdef HAVE_LUA
-	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("lua"))
+	BOOST_FOREACH(InfoTree child, root.children_named("lua"))
 	{
-		InfoTree child = v.second;
 		LevelScriptCommand cmd;
 		cmd.Type = LevelScriptCommand::Lua;
 		
@@ -723,9 +720,8 @@ void parse_level_commands(InfoTree root, int index)
 	}
 #endif
 	
-	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("music"))
+	BOOST_FOREACH(InfoTree child, root.children_named("music"))
 	{
-		InfoTree child = v.second;
 		LevelScriptCommand cmd;
 		cmd.Type = LevelScriptCommand::Music;
 		
@@ -735,15 +731,13 @@ void parse_level_commands(InfoTree root, int index)
 		ls_ptr->Commands.push_back(cmd);
 	}
 	
-	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("random_order"))
+	BOOST_FOREACH(InfoTree child, root.children_named("random_order"))
 	{
-		InfoTree child = v.second;
 		child.read_attr("on", ls_ptr->RandomOrder);
 	}
 	
-	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("movie"))
+	BOOST_FOREACH(InfoTree child, root.children_named("movie"))
 	{
-		InfoTree child = v.second;
 		LevelScriptCommand cmd;
 		cmd.Type = LevelScriptCommand::Movie;
 		
@@ -756,9 +750,8 @@ void parse_level_commands(InfoTree root, int index)
 	}
 	
 #ifdef HAVE_OPENGL
-	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("load_screen"))
+	BOOST_FOREACH(InfoTree child, root.children_named("load_screen"))
 	{
-		InfoTree child = v.second;
 		LevelScriptCommand cmd;
 		cmd.Type = LevelScriptCommand::LoadScreen;
 		
@@ -772,11 +765,10 @@ void parse_level_commands(InfoTree root, int index)
 		child.read_attr("progress_left", cmd.L);
 		child.read_attr("progress_right", cmd.R);
 		
-		BOOST_FOREACH(InfoTree::value_type &v, child.equal_range("color"))
+		BOOST_FOREACH(InfoTree color, child.children_named("color"))
 		{
-			InfoTree color = v.second;
-			int index = -1;
-			if (color.read_attr_bounded("index", index, 0, 1))
+			int16 index;
+			if (color.read_indexed("index", index, 2))
 			{
 				color.read_color(cmd.Colors[index]);
 			}
@@ -789,34 +781,31 @@ void parse_level_commands(InfoTree root, int index)
 
 void parse_levels_xml(InfoTree root)
 {
-	boost::optional<InfoTree> ochild;
-	
-	BOOST_FOREACH(InfoTree::value_type &v, root.equal_range("level"))
+	BOOST_FOREACH(InfoTree lev, root.children_named("level"))
 	{
-		InfoTree lev = v.second;
-		int16 index = -1;
-		if (lev.read_attr_bounded<int16>("index", index, 0, SHRT_MAX))
+		int16 index;
+		if (lev.read_indexed("index", index, SHRT_MAX+1))
 		{
 			parse_level_commands(lev, index);
 		}
 	}
 	
-	if ((ochild = root.get_child_optional("end")))
+	BOOST_FOREACH(InfoTree child, root.children_named("end"))
 	{
-		parse_level_commands(*ochild, LevelScriptHeader::End);
+		parse_level_commands(child, LevelScriptHeader::End);
 	}
-	if ((ochild = root.get_child_optional("default")))
+	BOOST_FOREACH(InfoTree child, root.children_named("default"))
 	{
-		parse_level_commands(*ochild, LevelScriptHeader::Default);
+		parse_level_commands(child, LevelScriptHeader::Default);
 	}
-	if ((ochild = root.get_child_optional("restore")))
+	BOOST_FOREACH(InfoTree child, root.children_named("restore"))
 	{
-		parse_level_commands(*ochild, LevelScriptHeader::Restore);
+		parse_level_commands(child, LevelScriptHeader::Restore);
 	}
 	
-	if ((ochild = root.get_child_optional("end_screens")))
+	BOOST_FOREACH(InfoTree child, root.children_named("end_screens"))
 	{
-		ochild->read_attr("index", EndScreenIndex);
-		ochild->read_attr_bounded<int16>("count", NumEndScreens, 0, SHRT_MAX);
+		child.read_attr("index", EndScreenIndex);
+		child.read_indexed("count", NumEndScreens, SHRT_MAX+1);
 	}
 }
