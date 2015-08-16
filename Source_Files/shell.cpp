@@ -564,7 +564,6 @@ static void initialize_application(void)
 	load_film_profile(FILM_PROFILE_DEFAULT, false);
 
 	// Parse MML files
-	SetupParseTree();
 	LoadBaseMMLScripts();
 
 	// Check for presence of strings
@@ -587,7 +586,6 @@ static void initialize_application(void)
 			
 			// Parse MML files again, now that we have a new dir to search
 			initialize_fonts(false);
-			SetupParseTree();
 			LoadBaseMMLScripts();
 		}
 	}

@@ -106,7 +106,6 @@ Jan 17, 2001 (Loren Petrich):
 #include "OGL_LoadScreen.h"
 
 // LP addition: infravision XML setup needs colors
-#include "ColorParser.h"
 #include "InfoTree.h"
 
 #include "Packing.h"

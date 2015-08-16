@@ -27,7 +27,7 @@
 #include "cseries.h"
 
 #include "PlayerName.h"
-#include "XML_ElementParser.h"
+#include "TextStrings.h"
 #include "InfoTree.h"
 #include <string.h>
 

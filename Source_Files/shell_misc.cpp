@@ -44,6 +44,7 @@ bool chat_input_mode = false;
 #include "Music.h"
 #include "items.h"
 #include "network_sound.h"
+#include "TextStrings.h"
 #include "InfoTree.h"
 
 #include <ctype.h>

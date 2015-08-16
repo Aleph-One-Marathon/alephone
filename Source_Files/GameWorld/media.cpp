@@ -52,9 +52,6 @@ Feb 8, 2001 (Loren Petrich):
 
 #include "Packing.h"
 
-// LP addition: XML parser for damage
-#include "DamageParser.h"
-
 #include <string.h>
 
 #ifdef env68k

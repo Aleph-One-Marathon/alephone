@@ -87,7 +87,6 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 
 #include "shape_descriptors.h"
 #include "OGL_Setup.h"
-#include "ColorParser.h"
 #include "OGL_LoadScreen.h"
 #include "progress.h"
 #include "InfoTree.h"

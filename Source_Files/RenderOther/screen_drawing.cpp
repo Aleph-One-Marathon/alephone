@@ -50,7 +50,6 @@ Dec 17, 2000 (Loren Petrich):
 #include "screen.h"
 
 // LP addition: color and font parsers
-#include "ColorParser.h"
 #include "FontHandler.h"
 
 #include "sdl_fonts.h"

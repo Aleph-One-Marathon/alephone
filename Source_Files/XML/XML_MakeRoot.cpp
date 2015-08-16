@@ -57,11 +57,6 @@
 #include "XML_LevelScript.h"
 #include "InfoTree.h"
 
-void SetupParseTree()
-{
-	// no setup needed
-}
-
 // This will reset all values changed by MML scripts which implement ResetValues() method
 // and are part of the master MarathonParser tree.
 void ResetAllMMLValues()

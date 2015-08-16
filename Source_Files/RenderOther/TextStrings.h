@@ -53,6 +53,10 @@ void TS_DeleteStringSet(short ID);
 // Deletes all of the stringsets
 void TS_DeleteAllStrings();
 
+// Write output as a C string;
+// Returns how many characters resulted.
+// Needs at least (OutMaxLen + 1) characters allocated.
+size_t DeUTF8_C(const char *InString, size_t InLen, char *OutString, size_t OutMaxLen);
 
 class InfoTree;
 void parse_mml_stringset(const InfoTree& root);

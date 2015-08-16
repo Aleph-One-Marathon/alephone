@@ -44,8 +44,6 @@ Jul 31, 2002 (Loren Petrich):
 #include "shell.h"
 #include "game_wad.h"
 #include "Music.h"
-#include "ColorParser.h"
-#include "XML_DataBlock.h"
 #include "XML_LevelScript.h"
 #include "XML_ParseTreeRoot.h"
 #include "InfoTree.h"

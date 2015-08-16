@@ -76,7 +76,6 @@ Jun 30, 2002 (tiennou):
 // LP addition: XML parser for damage
 #include "items.h"
 #include "Packing.h"
-#include "DamageParser.h"
 
 //MH: Lua scripting
 #include "lua_script.h"

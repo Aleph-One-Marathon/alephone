@@ -35,5 +35,5 @@ AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/
   -I$(top_srcdir)/Source_Files/FFmpeg -I$(top_srcdir)/Source_Files/RenderMain \
   -I$(top_srcdir)/Source_Files/RenderOther -I$(top_srcdir)/Source_Files/Sound \
   -I$(top_srcdir)/Source_Files/TCPMess \
-  -I$(top_srcdir)/Source_Files/XML -I$(top_srcdir)/Source_Files/Expat \
+  -I$(top_srcdir)/Source_Files/XML \
   -I$(top_srcdir)/Source_Files

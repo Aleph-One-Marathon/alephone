@@ -31,8 +31,6 @@
 #include "TextStrings.h"
 #include "InfoTree.h"
 
-#include "XML_ElementParser.h"
-
 typedef std::map<short, std::string> StringSet;
 typedef std::map<short, StringSet> StringSetMap;
 
@@ -129,4 +127,139 @@ void parse_mml_stringset(const InfoTree& root)
 		DeUTF8_C(val.c_str(), val.size(), cbuf, 255);
 		StringSetRoot[index][cindex] = std::string(cbuf);
 	}
+}
+
+// For turning UTF-8 strings into plain ASCII ones;
+// needs at least (OutMaxLen) characters preallocated.
+// Will not null-terminate the string or Pascalify it.
+// Returns how many characters resulted.
+
+static size_t DeUTF8(const char *InString, size_t InLen, char *OutString, size_t OutMaxLen)
+{
+	// Character and masked version for bit tests;
+	// unsigned char to avoid problems with interpreting the sign bit
+	uint8 c, cmsk;
+	
+	// Result character, in its full glory
+	uint32 uc;
+	
+	int NumExtra = 0;	// Initial: as if previous string had ended
+	const int BAD_CHARACTER = -1; // NumExtra value that means
+	// "end string, but don't emit the character"
+	// Won't try to test for overlong characters.
+	
+	// How many characters processed
+	size_t Len = 0;
+	
+	for (size_t ic=0; ic<InLen; ic++)
+	{
+		c = uint8(InString[ic]);
+		
+		if (NumExtra <= 0)
+		{
+			// Start character string if previous one had ended or was bad
+			// Note that cmsk is calculated in each if() statement,
+			// so it can be used inside of its statement block,
+			// and so as to get a more elegant overall organization.
+			if ((cmsk = c & 0x80) != 0x80)
+			{
+				// 0 to 7 bits long: straight ASCII
+				uc = uint32(c & 0x7f);
+				NumExtra = 0;
+			}
+			else if ((cmsk = c & 0xe0) != 0xe0)
+			{
+				if (cmsk == 0xc0)
+				{
+					// 8 to 11 bits long
+					uc = uint32(c & 0x1f);
+					NumExtra = 1;
+				}
+				else
+					NumExtra = BAD_CHARACTER;
+			}
+			else if ((cmsk = c & 0xf0) != 0xf0)
+			{
+				if (cmsk == 0xe0)
+				{
+					// 12 to 16 bits long
+					uc = uint32(c & 0x0f);
+					NumExtra = 2;
+				}
+				else
+					NumExtra = BAD_CHARACTER;
+			}
+			else if ((cmsk = c & 0xf8) != 0xf8)
+			{
+				if (cmsk == 0xf0)
+				{
+					// 17 to 21 bits long
+					uc = uint32(c & 0x07);
+					NumExtra = 3;
+				}
+				else
+					NumExtra = BAD_CHARACTER;
+			}
+			else if ((cmsk = c & 0xfc) != 0xfc)
+			{
+				if (cmsk == 0xf8)
+				{
+					// 22 to 26 bits long
+					uc = uint32(c & 0x03);
+					NumExtra = 4;
+				}
+				else
+					NumExtra = BAD_CHARACTER;
+			}
+			else if ((cmsk = c & 0xfe) != 0xfe)
+			{
+				if (cmsk == 0xfc)
+				{
+					// 27 to 31 bits long
+					uc = uint32(c & 0x01);
+					NumExtra = 5;
+				}
+				else
+					NumExtra = BAD_CHARACTER;
+			}
+			else
+				NumExtra = BAD_CHARACTER;
+		}
+		else
+		{
+			cmsk = c & 0xc0;
+			if (cmsk == 0x80)
+			{
+				uc <<= 6;
+				uc |= uint32(c & 0x3f);
+				NumExtra--;
+			}
+			else
+				NumExtra = BAD_CHARACTER;
+		}
+		
+		// Overlong test would go here
+		
+		if (NumExtra == 0)
+		{
+			// Bad characters become a dollar sign
+			//			uint8 oc = (uc >= 0x20 && uc != 0x7f && uc <= 0xff) ? uint8(uc) : '$';
+			uint8 oc = (uc >= 0x20 && uc != 0x7f && uc < 0x10000) ? unicode_to_mac_roman((uint16) uc) : '$';
+			OutString[Len++] = char(oc);
+			if (Len >= OutMaxLen) break;
+		}
+	}
+	
+	return Len;
+}
+
+// Write output as a C string;
+// Returns how many characters resulted.
+// Needs at least (OutMaxLen + 1) characters allocated.
+
+size_t DeUTF8_C(const char *InString, size_t InLen, char *OutString, size_t OutMaxLen)
+{
+	size_t Len = DeUTF8(InString,InLen,OutString,OutMaxLen);
+	OutString[Len] = 0;
+	return Len;
 }

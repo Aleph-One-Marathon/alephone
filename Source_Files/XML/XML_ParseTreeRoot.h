@@ -28,13 +28,6 @@
 	including that root element, of course.
 */
 
-#include "XML_ElementParser.h"
-
-// That absolute root element
-extern XML_ElementParser RootParser;
-
-// That parse-tree setup routine; call it before doing anything with the tree
-extern void SetupParseTree();
 extern void ResetAllMMLValues(); // reset everything that's been changed to hard-coded defaults
 
 class FileSpecifier;

@@ -24,7 +24,7 @@
 #include "cseries.h"
 #include "game_errors.h"
 #include "shell.h"
-#include "XML_ElementParser.h"  // for DeUTF8_C
+#include "TextStrings.h"
 
 #include <boost/function.hpp>
 #include <boost/iterator/filter_iterator.hpp>

@@ -36,7 +36,6 @@
 #include "StudioLoader.h"
 #include "WavefrontLoader.h"
 #include "QD3D_Loader.h"
-#include "XML_ElementParser.h"
 #include "InfoTree.h"
 
 
@@ -347,6 +346,28 @@ static void MatVecMult(const GLfloat Mat[3][3], const GLfloat *SrcVec, GLfloat *
 inline bool StringPresent(vector<char>& String)
 {
 	return (String.size() > 1);
+}
+
+static bool StringsEqual(const char *String1, const char *String2, int MaxStrLen)
+{
+	// Convert and do the comparison by hand:
+	const char *S1 = String1;
+	const char *S2 = String2;
+	
+	for (int k=0; k<MaxStrLen; k++, S1++, S2++)
+	{
+		// Make the characters the same case
+		char c1 = toupper(*S1);
+		char c2 = toupper(*S2);
+		
+		// Compare!
+		if (c1 == 0 && c2 == 0) return true;	// All in both strings equal
+		else if (c1 != c2) return false;		// At least one unequal
+		// else equal but non-terminating; continue comparing
+	}
+	
+	// All those within the length range are equal
+	return true;
 }
 
 

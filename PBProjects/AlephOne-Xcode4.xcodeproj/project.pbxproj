@@ -385,14 +385,7 @@
 		AE505BB8141D45E600915344 /* ViewControl.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93A60240D85D01A80001 /* ViewControl.h */; };
 		AE505BB9141D45E600915344 /* song_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94140240DA4301A80001 /* song_definitions.h */; };
 		AE505BBA141D45E600915344 /* sound_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94150240DA4301A80001 /* sound_definitions.h */; };
-		AE505BBB141D45E600915344 /* ColorParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942C0240DE0E01A80001 /* ColorParser.h */; };
-		AE505BBC141D45E600915344 /* DamageParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942D0240DE0E01A80001 /* DamageParser.h */; };
-		AE505BBD141D45E600915344 /* ShapesParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942E0240DE0E01A80001 /* ShapesParser.h */; };
-		AE505BBE141D45E600915344 /* XML_Configure.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942F0240DE0E01A80001 /* XML_Configure.h */; };
-		AE505BBF141D45E600915344 /* XML_DataBlock.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94300240DE0E01A80001 /* XML_DataBlock.h */; };
-		AE505BC0141D45E600915344 /* XML_ElementParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94310240DE0E01A80001 /* XML_ElementParser.h */; };
 		AE505BC1141D45E600915344 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
-		AE505BC2141D45E600915344 /* XML_Loader_SDL.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94380240DE0E01A80001 /* XML_Loader_SDL.h */; };
 		AE505BC3141D45E600915344 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
 		AE505BC4141D45E600915344 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
 		AE505BC5141D45E600915344 /* precompiled_headers.h in Headers */ = {isa = PBXBuildFile; fileRef = F50D2BD502F86DDA01000105 /* precompiled_headers.h */; };
@@ -567,14 +560,7 @@
 		AE505C74141D45E600915344 /* TextLayoutHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A10240D85D01A80001 /* TextLayoutHelper.cpp */; };
 		AE505C75141D45E600915344 /* TextStrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A30240D85D01A80001 /* TextStrings.cpp */; };
 		AE505C76141D45E600915344 /* ViewControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A50240D85D01A80001 /* ViewControl.cpp */; };
-		AE505C77141D45E600915344 /* ColorParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943A0240DE0E01A80001 /* ColorParser.cpp */; };
-		AE505C78141D45E600915344 /* DamageParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943B0240DE0E01A80001 /* DamageParser.cpp */; };
-		AE505C79141D45E600915344 /* ShapesParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943C0240DE0E01A80001 /* ShapesParser.cpp */; };
-		AE505C7A141D45E600915344 /* XML_Configure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943D0240DE0E01A80001 /* XML_Configure.cpp */; };
-		AE505C7B141D45E600915344 /* XML_DataBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943E0240DE0E01A80001 /* XML_DataBlock.cpp */; };
-		AE505C7C141D45E600915344 /* XML_ElementParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943F0240DE0E01A80001 /* XML_ElementParser.cpp */; };
 		AE505C7D141D45E600915344 /* XML_LevelScript.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94400240DE0E01A80001 /* XML_LevelScript.cpp */; };
-		AE505C7E141D45E600915344 /* XML_Loader_SDL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94390240DE0E01A80001 /* XML_Loader_SDL.cpp */; };
 		AE505C7F141D45E600915344 /* XML_MakeRoot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94410240DE0E01A80001 /* XML_MakeRoot.cpp */; };
 		AE505C80141D45E600915344 /* Packing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5837191031EEE0201000105 /* Packing.cpp */; };
 		AE505C81141D45E600915344 /* DefaultStringSets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC27A503DC9D1C00000104 /* DefaultStringSets.cpp */; };
@@ -883,14 +869,7 @@
 		AEB4A15814296CAE00537AE7 /* ViewControl.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93A60240D85D01A80001 /* ViewControl.h */; };
 		AEB4A15914296CAE00537AE7 /* song_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94140240DA4301A80001 /* song_definitions.h */; };
 		AEB4A15A14296CAE00537AE7 /* sound_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94150240DA4301A80001 /* sound_definitions.h */; };
-		AEB4A15B14296CAE00537AE7 /* ColorParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942C0240DE0E01A80001 /* ColorParser.h */; };
-		AEB4A15C14296CAE00537AE7 /* DamageParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942D0240DE0E01A80001 /* DamageParser.h */; };
-		AEB4A15D14296CAE00537AE7 /* ShapesParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942E0240DE0E01A80001 /* ShapesParser.h */; };
-		AEB4A15E14296CAE00537AE7 /* XML_Configure.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942F0240DE0E01A80001 /* XML_Configure.h */; };
-		AEB4A15F14296CAE00537AE7 /* XML_DataBlock.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94300240DE0E01A80001 /* XML_DataBlock.h */; };
-		AEB4A16014296CAE00537AE7 /* XML_ElementParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94310240DE0E01A80001 /* XML_ElementParser.h */; };
 		AEB4A16114296CAE00537AE7 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
-		AEB4A16214296CAE00537AE7 /* XML_Loader_SDL.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94380240DE0E01A80001 /* XML_Loader_SDL.h */; };
 		AEB4A16314296CAE00537AE7 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
 		AEB4A16414296CAE00537AE7 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
 		AEB4A16514296CAE00537AE7 /* precompiled_headers.h in Headers */ = {isa = PBXBuildFile; fileRef = F50D2BD502F86DDA01000105 /* precompiled_headers.h */; };
@@ -1066,14 +1045,7 @@
 		AEB4A21514296CAE00537AE7 /* TextLayoutHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A10240D85D01A80001 /* TextLayoutHelper.cpp */; };
 		AEB4A21614296CAE00537AE7 /* TextStrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A30240D85D01A80001 /* TextStrings.cpp */; };
 		AEB4A21714296CAE00537AE7 /* ViewControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A50240D85D01A80001 /* ViewControl.cpp */; };
-		AEB4A21814296CAE00537AE7 /* ColorParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943A0240DE0E01A80001 /* ColorParser.cpp */; };
-		AEB4A21914296CAE00537AE7 /* DamageParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943B0240DE0E01A80001 /* DamageParser.cpp */; };
-		AEB4A21A14296CAE00537AE7 /* ShapesParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943C0240DE0E01A80001 /* ShapesParser.cpp */; };
-		AEB4A21B14296CAE00537AE7 /* XML_Configure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943D0240DE0E01A80001 /* XML_Configure.cpp */; };
-		AEB4A21C14296CAE00537AE7 /* XML_DataBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943E0240DE0E01A80001 /* XML_DataBlock.cpp */; };
-		AEB4A21D14296CAE00537AE7 /* XML_ElementParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943F0240DE0E01A80001 /* XML_ElementParser.cpp */; };
 		AEB4A21E14296CAE00537AE7 /* XML_LevelScript.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94400240DE0E01A80001 /* XML_LevelScript.cpp */; };
-		AEB4A21F14296CAE00537AE7 /* XML_Loader_SDL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94390240DE0E01A80001 /* XML_Loader_SDL.cpp */; };
 		AEB4A22014296CAE00537AE7 /* XML_MakeRoot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94410240DE0E01A80001 /* XML_MakeRoot.cpp */; };
 		AEB4A22114296CAE00537AE7 /* Packing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5837191031EEE0201000105 /* Packing.cpp */; };
 		AEB4A22214296CAE00537AE7 /* DefaultStringSets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC27A503DC9D1C00000104 /* DefaultStringSets.cpp */; };
@@ -1327,14 +1299,7 @@
 		AEC3C78F09AD68AC003258E4 /* ViewControl.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93A60240D85D01A80001 /* ViewControl.h */; };
 		AEC3C79209AD68AC003258E4 /* song_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94140240DA4301A80001 /* song_definitions.h */; };
 		AEC3C79309AD68AC003258E4 /* sound_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94150240DA4301A80001 /* sound_definitions.h */; };
-		AEC3C79509AD68AC003258E4 /* ColorParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942C0240DE0E01A80001 /* ColorParser.h */; };
-		AEC3C79609AD68AC003258E4 /* DamageParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942D0240DE0E01A80001 /* DamageParser.h */; };
-		AEC3C79709AD68AC003258E4 /* ShapesParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942E0240DE0E01A80001 /* ShapesParser.h */; };
-		AEC3C79809AD68AC003258E4 /* XML_Configure.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942F0240DE0E01A80001 /* XML_Configure.h */; };
-		AEC3C79909AD68AC003258E4 /* XML_DataBlock.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94300240DE0E01A80001 /* XML_DataBlock.h */; };
-		AEC3C79A09AD68AC003258E4 /* XML_ElementParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94310240DE0E01A80001 /* XML_ElementParser.h */; };
 		AEC3C79B09AD68AC003258E4 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
-		AEC3C79C09AD68AC003258E4 /* XML_Loader_SDL.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94380240DE0E01A80001 /* XML_Loader_SDL.h */; };
 		AEC3C79D09AD68AC003258E4 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
 		AEC3C79E09AD68AC003258E4 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
 		AEC3C79F09AD68AC003258E4 /* precompiled_headers.h in Headers */ = {isa = PBXBuildFile; fileRef = F50D2BD502F86DDA01000105 /* precompiled_headers.h */; };
@@ -1485,14 +1450,7 @@
 		AEC3C84009AD68AC003258E4 /* TextLayoutHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A10240D85D01A80001 /* TextLayoutHelper.cpp */; };
 		AEC3C84109AD68AC003258E4 /* TextStrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A30240D85D01A80001 /* TextStrings.cpp */; };
 		AEC3C84209AD68AC003258E4 /* ViewControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A50240D85D01A80001 /* ViewControl.cpp */; };
-		AEC3C84409AD68AC003258E4 /* ColorParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943A0240DE0E01A80001 /* ColorParser.cpp */; };
-		AEC3C84509AD68AC003258E4 /* DamageParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943B0240DE0E01A80001 /* DamageParser.cpp */; };
-		AEC3C84609AD68AC003258E4 /* ShapesParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943C0240DE0E01A80001 /* ShapesParser.cpp */; };
-		AEC3C84709AD68AC003258E4 /* XML_Configure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943D0240DE0E01A80001 /* XML_Configure.cpp */; };
-		AEC3C84809AD68AC003258E4 /* XML_DataBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943E0240DE0E01A80001 /* XML_DataBlock.cpp */; };
-		AEC3C84909AD68AC003258E4 /* XML_ElementParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943F0240DE0E01A80001 /* XML_ElementParser.cpp */; };
 		AEC3C84A09AD68AC003258E4 /* XML_LevelScript.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94400240DE0E01A80001 /* XML_LevelScript.cpp */; };
-		AEC3C84B09AD68AC003258E4 /* XML_Loader_SDL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94390240DE0E01A80001 /* XML_Loader_SDL.cpp */; };
 		AEC3C84C09AD68AC003258E4 /* XML_MakeRoot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94410240DE0E01A80001 /* XML_MakeRoot.cpp */; };
 		AEC3C84D09AD68AC003258E4 /* Packing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5837191031EEE0201000105 /* Packing.cpp */; };
 		AEC3C84E09AD68AC003258E4 /* DefaultStringSets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC27A503DC9D1C00000104 /* DefaultStringSets.cpp */; };
@@ -1666,14 +1624,7 @@
 		AEFD866613EB84CF00C1E687 /* ViewControl.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93A60240D85D01A80001 /* ViewControl.h */; };
 		AEFD866713EB84CF00C1E687 /* song_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94140240DA4301A80001 /* song_definitions.h */; };
 		AEFD866813EB84CF00C1E687 /* sound_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94150240DA4301A80001 /* sound_definitions.h */; };
-		AEFD866913EB84CF00C1E687 /* ColorParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942C0240DE0E01A80001 /* ColorParser.h */; };
-		AEFD866A13EB84CF00C1E687 /* DamageParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942D0240DE0E01A80001 /* DamageParser.h */; };
-		AEFD866B13EB84CF00C1E687 /* ShapesParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942E0240DE0E01A80001 /* ShapesParser.h */; };
-		AEFD866C13EB84CF00C1E687 /* XML_Configure.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942F0240DE0E01A80001 /* XML_Configure.h */; };
-		AEFD866D13EB84CF00C1E687 /* XML_DataBlock.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94300240DE0E01A80001 /* XML_DataBlock.h */; };
-		AEFD866E13EB84CF00C1E687 /* XML_ElementParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94310240DE0E01A80001 /* XML_ElementParser.h */; };
 		AEFD866F13EB84CF00C1E687 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
-		AEFD867013EB84CF00C1E687 /* XML_Loader_SDL.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94380240DE0E01A80001 /* XML_Loader_SDL.h */; };
 		AEFD867113EB84CF00C1E687 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
 		AEFD867213EB84CF00C1E687 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
 		AEFD867313EB84CF00C1E687 /* precompiled_headers.h in Headers */ = {isa = PBXBuildFile; fileRef = F50D2BD502F86DDA01000105 /* precompiled_headers.h */; };
@@ -1847,14 +1798,7 @@
 		AEFD872113EB84CF00C1E687 /* TextLayoutHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A10240D85D01A80001 /* TextLayoutHelper.cpp */; };
 		AEFD872213EB84CF00C1E687 /* TextStrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A30240D85D01A80001 /* TextStrings.cpp */; };
 		AEFD872313EB84CF00C1E687 /* ViewControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A50240D85D01A80001 /* ViewControl.cpp */; };
-		AEFD872413EB84CF00C1E687 /* ColorParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943A0240DE0E01A80001 /* ColorParser.cpp */; };
-		AEFD872513EB84CF00C1E687 /* DamageParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943B0240DE0E01A80001 /* DamageParser.cpp */; };
-		AEFD872613EB84CF00C1E687 /* ShapesParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943C0240DE0E01A80001 /* ShapesParser.cpp */; };
-		AEFD872713EB84CF00C1E687 /* XML_Configure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943D0240DE0E01A80001 /* XML_Configure.cpp */; };
-		AEFD872813EB84CF00C1E687 /* XML_DataBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943E0240DE0E01A80001 /* XML_DataBlock.cpp */; };
-		AEFD872913EB84CF00C1E687 /* XML_ElementParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943F0240DE0E01A80001 /* XML_ElementParser.cpp */; };
 		AEFD872A13EB84CF00C1E687 /* XML_LevelScript.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94400240DE0E01A80001 /* XML_LevelScript.cpp */; };
-		AEFD872B13EB84CF00C1E687 /* XML_Loader_SDL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94390240DE0E01A80001 /* XML_Loader_SDL.cpp */; };
 		AEFD872C13EB84CF00C1E687 /* XML_MakeRoot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94410240DE0E01A80001 /* XML_MakeRoot.cpp */; };
 		AEFD872D13EB84CF00C1E687 /* Packing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5837191031EEE0201000105 /* Packing.cpp */; };
 		AEFD872E13EB84CF00C1E687 /* DefaultStringSets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC27A503DC9D1C00000104 /* DefaultStringSets.cpp */; };
@@ -2566,22 +2510,8 @@
 		F5CC93A60240D85D01A80001 /* ViewControl.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ViewControl.h; sourceTree = "<group>"; };
 		F5CC94140240DA4301A80001 /* song_definitions.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = song_definitions.h; sourceTree = "<group>"; };
 		F5CC94150240DA4301A80001 /* sound_definitions.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = sound_definitions.h; sourceTree = "<group>"; };
-		F5CC942C0240DE0E01A80001 /* ColorParser.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ColorParser.h; sourceTree = "<group>"; };
-		F5CC942D0240DE0E01A80001 /* DamageParser.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DamageParser.h; sourceTree = "<group>"; };
-		F5CC942E0240DE0E01A80001 /* ShapesParser.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ShapesParser.h; sourceTree = "<group>"; };
-		F5CC942F0240DE0E01A80001 /* XML_Configure.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XML_Configure.h; sourceTree = "<group>"; };
-		F5CC94300240DE0E01A80001 /* XML_DataBlock.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XML_DataBlock.h; sourceTree = "<group>"; };
-		F5CC94310240DE0E01A80001 /* XML_ElementParser.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XML_ElementParser.h; sourceTree = "<group>"; usesTabs = 1; };
 		F5CC94320240DE0E01A80001 /* XML_LevelScript.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XML_LevelScript.h; sourceTree = "<group>"; };
 		F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XML_ParseTreeRoot.h; sourceTree = "<group>"; };
-		F5CC94380240DE0E01A80001 /* XML_Loader_SDL.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XML_Loader_SDL.h; sourceTree = "<group>"; };
-		F5CC94390240DE0E01A80001 /* XML_Loader_SDL.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XML_Loader_SDL.cpp; sourceTree = "<group>"; };
-		F5CC943A0240DE0E01A80001 /* ColorParser.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ColorParser.cpp; sourceTree = "<group>"; };
-		F5CC943B0240DE0E01A80001 /* DamageParser.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DamageParser.cpp; sourceTree = "<group>"; };
-		F5CC943C0240DE0E01A80001 /* ShapesParser.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ShapesParser.cpp; sourceTree = "<group>"; };
-		F5CC943D0240DE0E01A80001 /* XML_Configure.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XML_Configure.cpp; sourceTree = "<group>"; };
-		F5CC943E0240DE0E01A80001 /* XML_DataBlock.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XML_DataBlock.cpp; sourceTree = "<group>"; };
-		F5CC943F0240DE0E01A80001 /* XML_ElementParser.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XML_ElementParser.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		F5CC94400240DE0E01A80001 /* XML_LevelScript.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XML_LevelScript.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		F5CC94410240DE0E01A80001 /* XML_MakeRoot.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XML_MakeRoot.cpp; sourceTree = "<group>"; };
 		F5CFAD390200F9D201D80110 /* Dim3_Loader.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Dim3_Loader.cpp; sourceTree = "<group>"; };
@@ -3651,17 +3581,9 @@
 			isa = PBXGroup;
 			children = (
 				F5CC942B0240DE0E01A80001 /* Headers */,
-				F5CC94340240DE0E01A80001 /* Macintosh */,
-				F5CC94370240DE0E01A80001 /* SDL */,
-				F5CC943A0240DE0E01A80001 /* ColorParser.cpp */,
 				27FF265E1B6F170600DA0A19 /* InfoTree.cpp */,
-				F5CC943B0240DE0E01A80001 /* DamageParser.cpp */,
 				276D4E761A2E734E00C16CF5 /* QuickSave.cpp */,
 				277AB97E10A26AF40003402A /* Plugins.cpp */,
-				F5CC943C0240DE0E01A80001 /* ShapesParser.cpp */,
-				F5CC943D0240DE0E01A80001 /* XML_Configure.cpp */,
-				F5CC943E0240DE0E01A80001 /* XML_DataBlock.cpp */,
-				F5CC943F0240DE0E01A80001 /* XML_ElementParser.cpp */,
 				F5CC94400240DE0E01A80001 /* XML_LevelScript.cpp */,
 				F5CC94410240DE0E01A80001 /* XML_MakeRoot.cpp */,
 			);
@@ -3674,33 +3596,11 @@
 			children = (
 				277AB98010A26B020003402A /* Plugins.h */,
 				276D4E751A2E710F00C16CF5 /* QuickSave.h */,
-				F5CC942C0240DE0E01A80001 /* ColorParser.h */,
 				27FF26591B6F169200DA0A19 /* InfoTree.h */,
-				F5CC942D0240DE0E01A80001 /* DamageParser.h */,
-				F5CC942E0240DE0E01A80001 /* ShapesParser.h */,
-				F5CC942F0240DE0E01A80001 /* XML_Configure.h */,
-				F5CC94300240DE0E01A80001 /* XML_DataBlock.h */,
-				F5CC94310240DE0E01A80001 /* XML_ElementParser.h */,
 				F5CC94320240DE0E01A80001 /* XML_LevelScript.h */,
 				F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */,
 			);
 			name = Headers;
-			sourceTree = "<group>";
-		};
-		F5CC94340240DE0E01A80001 /* Macintosh */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Macintosh;
-			sourceTree = "<group>";
-		};
-		F5CC94370240DE0E01A80001 /* SDL */ = {
-			isa = PBXGroup;
-			children = (
-				F5CC94380240DE0E01A80001 /* XML_Loader_SDL.h */,
-				F5CC94390240DE0E01A80001 /* XML_Loader_SDL.cpp */,
-			);
-			name = SDL;
 			sourceTree = "<group>";
 		};
 		F5CC94680240F38101A80001 /* Macintosh */ = {
@@ -3902,14 +3802,7 @@
 				AE505BB9141D45E600915344 /* song_definitions.h in Headers */,
 				AE505BBA141D45E600915344 /* sound_definitions.h in Headers */,
 				C13C71E91B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
-				AE505BBB141D45E600915344 /* ColorParser.h in Headers */,
-				AE505BBC141D45E600915344 /* DamageParser.h in Headers */,
-				AE505BBD141D45E600915344 /* ShapesParser.h in Headers */,
-				AE505BBE141D45E600915344 /* XML_Configure.h in Headers */,
-				AE505BBF141D45E600915344 /* XML_DataBlock.h in Headers */,
-				AE505BC0141D45E600915344 /* XML_ElementParser.h in Headers */,
 				AE505BC1141D45E600915344 /* XML_LevelScript.h in Headers */,
-				AE505BC2141D45E600915344 /* XML_Loader_SDL.h in Headers */,
 				AE505BC3141D45E600915344 /* XML_ParseTreeRoot.h in Headers */,
 				AE505BC4141D45E600915344 /* SDLMain.h in Headers */,
 				AE505BC5141D45E600915344 /* precompiled_headers.h in Headers */,
@@ -4129,14 +4022,7 @@
 				AEB4A15914296CAE00537AE7 /* song_definitions.h in Headers */,
 				AEB4A15A14296CAE00537AE7 /* sound_definitions.h in Headers */,
 				C13C71EA1B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
-				AEB4A15B14296CAE00537AE7 /* ColorParser.h in Headers */,
-				AEB4A15C14296CAE00537AE7 /* DamageParser.h in Headers */,
-				AEB4A15D14296CAE00537AE7 /* ShapesParser.h in Headers */,
-				AEB4A15E14296CAE00537AE7 /* XML_Configure.h in Headers */,
-				AEB4A15F14296CAE00537AE7 /* XML_DataBlock.h in Headers */,
-				AEB4A16014296CAE00537AE7 /* XML_ElementParser.h in Headers */,
 				AEB4A16114296CAE00537AE7 /* XML_LevelScript.h in Headers */,
-				AEB4A16214296CAE00537AE7 /* XML_Loader_SDL.h in Headers */,
 				AEB4A16314296CAE00537AE7 /* XML_ParseTreeRoot.h in Headers */,
 				AEB4A16414296CAE00537AE7 /* SDLMain.h in Headers */,
 				AEB4A16514296CAE00537AE7 /* precompiled_headers.h in Headers */,
@@ -4357,14 +4243,7 @@
 				AEC3C79209AD68AC003258E4 /* song_definitions.h in Headers */,
 				276BED1D1A846FF600AE52F4 /* VecOps.h in Headers */,
 				AEC3C79309AD68AC003258E4 /* sound_definitions.h in Headers */,
-				AEC3C79509AD68AC003258E4 /* ColorParser.h in Headers */,
-				AEC3C79609AD68AC003258E4 /* DamageParser.h in Headers */,
-				AEC3C79709AD68AC003258E4 /* ShapesParser.h in Headers */,
-				AEC3C79809AD68AC003258E4 /* XML_Configure.h in Headers */,
-				AEC3C79909AD68AC003258E4 /* XML_DataBlock.h in Headers */,
-				AEC3C79A09AD68AC003258E4 /* XML_ElementParser.h in Headers */,
 				AEC3C79B09AD68AC003258E4 /* XML_LevelScript.h in Headers */,
-				AEC3C79C09AD68AC003258E4 /* XML_Loader_SDL.h in Headers */,
 				AEC3C79D09AD68AC003258E4 /* XML_ParseTreeRoot.h in Headers */,
 				AEC3C79E09AD68AC003258E4 /* SDLMain.h in Headers */,
 				C13C71E71B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
@@ -4584,14 +4463,7 @@
 				AEFD866713EB84CF00C1E687 /* song_definitions.h in Headers */,
 				AEFD866813EB84CF00C1E687 /* sound_definitions.h in Headers */,
 				C13C71E81B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
-				AEFD866913EB84CF00C1E687 /* ColorParser.h in Headers */,
-				AEFD866A13EB84CF00C1E687 /* DamageParser.h in Headers */,
-				AEFD866B13EB84CF00C1E687 /* ShapesParser.h in Headers */,
-				AEFD866C13EB84CF00C1E687 /* XML_Configure.h in Headers */,
-				AEFD866D13EB84CF00C1E687 /* XML_DataBlock.h in Headers */,
-				AEFD866E13EB84CF00C1E687 /* XML_ElementParser.h in Headers */,
 				AEFD866F13EB84CF00C1E687 /* XML_LevelScript.h in Headers */,
-				AEFD867013EB84CF00C1E687 /* XML_Loader_SDL.h in Headers */,
 				AEFD867113EB84CF00C1E687 /* XML_ParseTreeRoot.h in Headers */,
 				AEFD867213EB84CF00C1E687 /* SDLMain.h in Headers */,
 				AEFD867313EB84CF00C1E687 /* precompiled_headers.h in Headers */,
@@ -5174,15 +5046,8 @@
 				AE505C74141D45E600915344 /* TextLayoutHelper.cpp in Sources */,
 				AE505C75141D45E600915344 /* TextStrings.cpp in Sources */,
 				AE505C76141D45E600915344 /* ViewControl.cpp in Sources */,
-				AE505C77141D45E600915344 /* ColorParser.cpp in Sources */,
-				AE505C78141D45E600915344 /* DamageParser.cpp in Sources */,
-				AE505C79141D45E600915344 /* ShapesParser.cpp in Sources */,
-				AE505C7A141D45E600915344 /* XML_Configure.cpp in Sources */,
-				AE505C7B141D45E600915344 /* XML_DataBlock.cpp in Sources */,
-				AE505C7C141D45E600915344 /* XML_ElementParser.cpp in Sources */,
 				AE505C7D141D45E600915344 /* XML_LevelScript.cpp in Sources */,
 				27EFC4B61A7C933C00A95592 /* QuickSave.cpp in Sources */,
-				AE505C7E141D45E600915344 /* XML_Loader_SDL.cpp in Sources */,
 				AE505C7F141D45E600915344 /* XML_MakeRoot.cpp in Sources */,
 				27EFC4C01A7D8CBF00A95592 /* sdl_resize.cpp in Sources */,
 				AE505C80141D45E600915344 /* Packing.cpp in Sources */,
@@ -5414,15 +5279,8 @@
 				AEB4A21514296CAE00537AE7 /* TextLayoutHelper.cpp in Sources */,
 				AEB4A21614296CAE00537AE7 /* TextStrings.cpp in Sources */,
 				AEB4A21714296CAE00537AE7 /* ViewControl.cpp in Sources */,
-				AEB4A21814296CAE00537AE7 /* ColorParser.cpp in Sources */,
-				AEB4A21914296CAE00537AE7 /* DamageParser.cpp in Sources */,
-				AEB4A21A14296CAE00537AE7 /* ShapesParser.cpp in Sources */,
-				AEB4A21B14296CAE00537AE7 /* XML_Configure.cpp in Sources */,
-				AEB4A21C14296CAE00537AE7 /* XML_DataBlock.cpp in Sources */,
-				AEB4A21D14296CAE00537AE7 /* XML_ElementParser.cpp in Sources */,
 				AEB4A21E14296CAE00537AE7 /* XML_LevelScript.cpp in Sources */,
 				27EFC4B71A7C933D00A95592 /* QuickSave.cpp in Sources */,
-				AEB4A21F14296CAE00537AE7 /* XML_Loader_SDL.cpp in Sources */,
 				AEB4A22014296CAE00537AE7 /* XML_MakeRoot.cpp in Sources */,
 				27EFC4C11A7D8CBF00A95592 /* sdl_resize.cpp in Sources */,
 				AEB4A22114296CAE00537AE7 /* Packing.cpp in Sources */,
@@ -5655,14 +5513,7 @@
 				AEC3C84009AD68AC003258E4 /* TextLayoutHelper.cpp in Sources */,
 				AEC3C84109AD68AC003258E4 /* TextStrings.cpp in Sources */,
 				AEC3C84209AD68AC003258E4 /* ViewControl.cpp in Sources */,
-				AEC3C84409AD68AC003258E4 /* ColorParser.cpp in Sources */,
-				AEC3C84509AD68AC003258E4 /* DamageParser.cpp in Sources */,
-				AEC3C84609AD68AC003258E4 /* ShapesParser.cpp in Sources */,
-				AEC3C84709AD68AC003258E4 /* XML_Configure.cpp in Sources */,
-				AEC3C84809AD68AC003258E4 /* XML_DataBlock.cpp in Sources */,
-				AEC3C84909AD68AC003258E4 /* XML_ElementParser.cpp in Sources */,
 				AEC3C84A09AD68AC003258E4 /* XML_LevelScript.cpp in Sources */,
-				AEC3C84B09AD68AC003258E4 /* XML_Loader_SDL.cpp in Sources */,
 				AEC3C84C09AD68AC003258E4 /* XML_MakeRoot.cpp in Sources */,
 				27EFC4BE1A7D8CBF00A95592 /* sdl_resize.cpp in Sources */,
 				AEC3C84D09AD68AC003258E4 /* Packing.cpp in Sources */,
@@ -5894,15 +5745,8 @@
 				AEFD872113EB84CF00C1E687 /* TextLayoutHelper.cpp in Sources */,
 				AEFD872213EB84CF00C1E687 /* TextStrings.cpp in Sources */,
 				AEFD872313EB84CF00C1E687 /* ViewControl.cpp in Sources */,
-				AEFD872413EB84CF00C1E687 /* ColorParser.cpp in Sources */,
-				AEFD872513EB84CF00C1E687 /* DamageParser.cpp in Sources */,
-				AEFD872613EB84CF00C1E687 /* ShapesParser.cpp in Sources */,
-				AEFD872713EB84CF00C1E687 /* XML_Configure.cpp in Sources */,
-				AEFD872813EB84CF00C1E687 /* XML_DataBlock.cpp in Sources */,
-				AEFD872913EB84CF00C1E687 /* XML_ElementParser.cpp in Sources */,
 				AEFD872A13EB84CF00C1E687 /* XML_LevelScript.cpp in Sources */,
 				27EFC4B51A7C933C00A95592 /* QuickSave.cpp in Sources */,
-				AEFD872B13EB84CF00C1E687 /* XML_Loader_SDL.cpp in Sources */,
 				AEFD872C13EB84CF00C1E687 /* XML_MakeRoot.cpp in Sources */,
 				27EFC4BF1A7D8CBF00A95592 /* sdl_resize.cpp in Sources */,
 				AEFD872D13EB84CF00C1E687 /* Packing.cpp in Sources */,

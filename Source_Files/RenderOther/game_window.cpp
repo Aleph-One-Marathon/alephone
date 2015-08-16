@@ -72,7 +72,6 @@ Mar 08, 2002 (Woody Zenfell):
 #include "game_window.h"
 
 // LP addition: color and font parsers
-#include "ColorParser.h"
 #include "FontHandler.h"
 #include "screen.h"
 

@@ -81,7 +81,6 @@ Feb 11, 2001 (Loren Petrich):
 // LP addition: for the XML stuff
 #include <string.h>
 #include <limits.h>
-#include "ShapesParser.h"
 
 //MH: Lua scripting
 #include "lua_script.h"

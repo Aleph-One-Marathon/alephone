@@ -99,9 +99,6 @@ Nov 12, 2000 (Loren Petrich):
 #include "media.h"
 #include "InfoTree.h"
 
-// LP addition: to parse the colors:
-#include "ColorParser.h"
-
 // Object-oriented setup of overhead-map rendering
 #ifdef mac
 #include "OverheadMap_QD.h"

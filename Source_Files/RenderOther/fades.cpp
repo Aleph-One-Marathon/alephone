@@ -74,7 +74,6 @@ Jan 31, 2001 (Loren Petrich):
 
 // LP additions:
 #include <string.h>
-#include "ColorParser.h"
 #include "OGL_Faders.h"
 
 #include "Music.h"
