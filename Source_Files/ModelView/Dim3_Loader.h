@@ -24,7 +24,6 @@
 #ifndef DIM3_LOADER
 #define DIM3_LOADER
 
-#include <stdio.h>
 #include "Model3D.h"
 #include "FileHandler.h"
 
@@ -38,8 +37,5 @@ enum
 };
 
 bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass);
-
-// Where to emit status messages
-void SetDebugOutput_Dim3(FILE *DebugOutput);
 
 #endif

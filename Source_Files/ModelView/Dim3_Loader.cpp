@@ -38,8 +38,8 @@
 
 #include "Dim3_Loader.h"
 #include "world.h"
-#include "XML_Configure.h"
-#include "XML_ElementParser.h"
+#include "InfoTree.h"
+#include "Logging.h"
 
 
 const float DegreesToInternal = float(FULL_CIRCLE)/float(360);
@@ -51,54 +51,6 @@ static int16 GetAngle(float InAngle)
 	int16 IA = (A >= 0) ? int16(A + 0.5) : - int16(-A + 0.5);
 	return NORMALIZE_ANGLE(IA);
 }
-
-
-// Debug-message destination
-static FILE *DBOut = NULL;
-
-void SetDebugOutput_Dim3(FILE *DebugOutput)
-{
-	DBOut = DebugOutput;
-}
-
-
-class XML_Dim3DataBlock: public XML_Configure
-{
-	// Gets some XML data to parse
-	bool GetData();
-	
-	// Reports a read error
-	void ReportReadError();
-	
-	// Reports an XML parsing error
-	void ReportParseError(const char *ErrorString, int LineNumber);
-	
-	// Reports an interpretation error
-	void ReportInterpretError(const char *ErrorString);
-	
-	// Requests aborting of parsing (reasonable if there were lots of errors)
-	bool RequestAbort();
-
-public:
-
-	// Parse a data block:
-	bool ParseData(char *_Buffer, int _BufLen)
-		{Buffer = _Buffer; BufLen = _BufLen; return DoParse();}
-		
-	// Pointer to name of XML-code source for error-message convenience (C string)
-	char *SourceName;
-
-	XML_Dim3DataBlock(): SourceName(NULL) {Buffer = NULL;}
-};
-
-
-// XML root parser stuff; set up for a lazy init.
-// Child parsers are toward the end of the file.
-static XML_Dim3DataBlock XML_DataBlockLoader;
-static XML_ElementParser Dim3_RootParser(""), Dim3_Parser("Model");
-bool Dim3_ParserInited = false;
-
-static void Dim3_SetupParseTree();
 
 
 // Local globals; these are to be persistent across calls when loading several files.
@@ -130,21 +82,278 @@ struct NameTagWrapper
 
 static vector<NameTagWrapper> FrameTags;
 
-// Where the data for each frame goes before it's loaded into the model array;
-// the bones may be only partially listed or not listed at all.
-static vector<Model3D_Frame> ReadFrame;
-
 // Normals (per vertex source)
 static vector<GLfloat> Normals;
 
 
-// For feeding into the read-in routines
-static Model3D *ModelPtr = NULL;
+static void parse_bounding_box(const InfoTree& root, Model3D& Model)
+{
+	float x_size = 0;
+	float y_size = 0;
+	float z_size = 0;
+	float x_offset = 0;
+	float y_offset = 0;
+	float z_offset = 0;
+	
+	std::string tempstr;
+	if (root.read_attr("size", tempstr))
+		sscanf(tempstr.c_str(), "%f,%f,%f", &x_size, &y_size, &z_size);
+	if (root.read_attr("offset", tempstr))
+		sscanf(tempstr.c_str(), "%f,%f,%f", &x_offset, &y_offset, &z_offset);
+	root.read_attr("x_size", x_size);
+	root.read_attr("y_size", x_size);
+	root.read_attr("z_size", x_size);
+	root.read_attr("x_offset", x_offset);
+	root.read_attr("y_offset", y_offset);
+	root.read_attr("z_offset", z_offset);
+	
+	Model.BoundingBox[0][0] = x_offset - x_size/2;
+	Model.BoundingBox[0][1] = y_offset - y_size;
+	Model.BoundingBox[0][2] = z_offset - z_size/2;
+	
+	Model.BoundingBox[1][0] = x_offset + x_size/2;
+	Model.BoundingBox[1][1] = y_offset;
+	Model.BoundingBox[1][2] = z_offset + z_size/2;
+}
+
+static void parse_dim3(const InfoTree& root, Model3D& Model)
+{
+	// ignored: Creator Center Light Shading Shadow_Box Effects
+	
+	BOOST_FOREACH(InfoTree bound_box, root.children_named("Bound_Box"))
+	{
+		parse_bounding_box(bound_box, Model);
+	}
+	BOOST_FOREACH(InfoTree view_box, root.children_named("View_Box"))
+	{
+		parse_bounding_box(view_box, Model);
+	}
+	BOOST_FOREACH(InfoTree vertexes, root.children_named("Vertexes"))
+	{
+		BOOST_FOREACH(InfoTree v, vertexes.children_named("v"))
+		{
+			Model3D_VertexSource data;
+			data.Position[0] = data.Position[1] = data.Position[2] = 0;
+			data.Bone0 = data.Bone1 = static_cast<GLushort>(NONE);
+			data.Blend = 0;
+			
+			float norm[3];
+			norm[0] = norm[1] = norm[2] = 0;
+			
+			BoneTagWrapper bt;
+			bt.Tag0[0] = bt.Tag1[0] = '\0';
+			
+			std::string tempstr;
+			if (root.read_attr("c3", tempstr))
+				sscanf(tempstr.c_str(), "%f,%f,%f", &data.Position[0], &data.Position[1], &data.Position[2]);
+			if (root.read_attr("n3", tempstr))
+				sscanf(tempstr.c_str(), "%f,%f,%f", &norm[0], &norm[1], &norm[2]);
+			root.read_attr("x", data.Position[0]);
+			root.read_attr("y", data.Position[1]);
+			root.read_attr("z", data.Position[2]);
+			
+			if (root.read_attr("major", tempstr))
+				strncpy(bt.Tag0, tempstr.c_str(), BoneTagSize);
+			if (root.read_attr("minor", tempstr))
+				strncpy(bt.Tag1, tempstr.c_str(), BoneTagSize);
+			
+			float factor;
+			if (root.read_attr("factor", factor))
+				data.Blend = 1 - factor/100;
+			
+			Model.VtxSources.push_back(data);
+			Normals.push_back(norm[0]);
+			Normals.push_back(norm[1]);
+			Normals.push_back(norm[2]);
+			VertexBoneTags.push_back(bt);
+		}
+	}
+	BOOST_FOREACH(InfoTree bones, root.children_named("Bones"))
+	{
+		BOOST_FOREACH(InfoTree bone, root.children_named("Bone"))
+		{
+			Model3D_Bone data;
+			data.Position[0] = data.Position[1] = data.Position[2] = 0;
+			data.Flags = 0;
+			
+			std::string tempstr;
+			if (root.read_attr("c3", tempstr))
+				sscanf(tempstr.c_str(), "%f,%f,%f", &data.Position[0], &data.Position[1], &data.Position[2]);
+			root.read_attr("x", data.Position[0]);
+			root.read_attr("y", data.Position[1]);
+			root.read_attr("z", data.Position[2]);
+			
+			BoneTagWrapper bt;
+			bt.Tag0[0] = bt.Tag1[0] = '\0';
+			if (bone.read_attr("tag", tempstr))
+				strncpy(bt.Tag0, tempstr.c_str(), BoneTagSize);
+			if (bone.read_attr("parent", tempstr))
+				strncpy(bt.Tag1, tempstr.c_str(), BoneTagSize);
+			
+			Model.Bones.push_back(data);
+			BoneOwnTags.push_back(bt);
+		}
+	}
+	BOOST_FOREACH(InfoTree fills, root.children_named("Fills"))
+	{
+		BOOST_FOREACH(InfoTree fill, fills.children_named("Fill"))
+		{
+			BOOST_FOREACH(InfoTree triangles, fill.children_named("Triangles"))
+			{
+				BOOST_FOREACH(InfoTree v, triangles.children_named("v"))
+				{
+					uint16 vid = static_cast<uint16>(NONE);
+					float txtr_x, txtr_y;
+					txtr_x = txtr_y = 0.5;
+					float norm_x, norm_y, norm_z;
+					norm_x = norm_y = norm_z = 0;
+					
+					v.read_attr("ID", vid);
+					std::string tempstr;
+					if (v.read_attr("uv", tempstr))
+						sscanf(tempstr.c_str(), "%f,%f", &txtr_x, &txtr_y);
+					if (v.read_attr("n", tempstr))
+						sscanf(tempstr.c_str(), "%f,%f,%f", &norm_x, &norm_z, &norm_y);
+					v.read_attr("xtxt", txtr_x);
+					v.read_attr("ytxt", txtr_y);
+					
+					GLushort index = static_cast<GLushort>(Model.VertIndices.size());
+					Model.VertIndices.push_back(index);
+					Model.VtxSrcIndices.push_back(vid);
+					Model.TxtrCoords.push_back(txtr_x);
+					Model.TxtrCoords.push_back(txtr_y);
+				}
+			}
+		}
+	}
+	BOOST_FOREACH(InfoTree poses, root.children_named("Poses"))
+	{
+		BOOST_FOREACH(InfoTree pose, poses.children_named("Pose"))
+		{
+			vector<Model3D_Frame> read_frame;
+			size_t num_bones = Model.Bones.size();
+			read_frame.resize(num_bones);
+			objlist_clear(&read_frame[0], num_bones);
+			
+			NameTagWrapper nt;
+			nt.Tag[0] = '\0';
+			std::string tempstr;
+			if (pose.read_attr("name", tempstr))
+				strncpy(nt.Tag, tempstr.c_str(), NameTagSize);
+			
+			BOOST_FOREACH(InfoTree bones, pose.children_named("Bones"))
+			{
+				BOOST_FOREACH(InfoTree bone, bones.children_named("Bone"))
+				{
+					Model3D_Frame data;
+					obj_clear(data);
+					
+					if (bone.read_attr("rot", tempstr))
+					{
+						float in_angle[3];
+						if (sscanf(tempstr.c_str(), "%f,%f,%f", &in_angle[0], &in_angle[1], &in_angle[2]) == 3)
+						{
+							for (int c = 0; c < 3; ++c)
+								data.Angles[c] = GetAngle(-in_angle[c]);
+						}
+					}
+					float tempfloat;
+					if (bone.read_attr("xrot", tempfloat))
+						data.Angles[0] = GetAngle(tempfloat);
+					if (bone.read_attr("yrot", tempfloat))
+						data.Angles[1] = GetAngle(-tempfloat);
+					if (bone.read_attr("zrot", tempfloat))
+						data.Angles[2] = GetAngle(-tempfloat);
+					
+					if (bone.read_attr("move", tempstr))
+						sscanf(tempstr.c_str(), "%f,%f,%f", &data.Offset[0], &data.Offset[1], &data.Offset[2]);
+					bone.read_attr("xmove", data.Offset[0]);
+					bone.read_attr("ymove", data.Offset[1]);
+					bone.read_attr("zmove", data.Offset[2]);
+					
+					std::string bone_tag;
+					bone.read_attr("tag", bone_tag);
+					
+					size_t num_bones = BoneOwnTags.size();
+					size_t ib;
+					for (ib = 0; ib < num_bones; ++ib)
+					{
+						if (bone_tag == BoneOwnTags[ib].Tag0)
+							break;
+					}
+					if (ib < num_bones)
+						obj_copy(read_frame[BoneIndices[ib]], data);
+				}
+			}
+			
+			for (size_t b = 0; b < read_frame.size(); ++b)
+				Model.Frames.push_back(read_frame[b]);
+			FrameTags.push_back(nt);
+		}
+	}
+	BOOST_FOREACH(InfoTree animations, root.children_named("Animations"))
+	{
+		BOOST_FOREACH(InfoTree animation, animations.children_named("Animation"))
+		{
+			BOOST_FOREACH(InfoTree poses, animation.children_named("Poses"))
+			{
+				BOOST_FOREACH(InfoTree pose, poses.children_named("Pose"))
+				{
+					Model3D_SeqFrame data;
+					obj_clear(data);
+					data.Frame = NONE;
+					
+					std::string tempstr;
+					if (pose.read_attr("sway", tempstr))
+					{
+						float in_angle[3];
+						if (sscanf(tempstr.c_str(), "%f,%f,%f", &in_angle[0], &in_angle[1], &in_angle[2]) == 3)
+						{
+							for (int c = 0; c < 3; ++c)
+								data.Angles[c] = GetAngle(-in_angle[c]);
+						}
+					}
+					float tempfloat;
+					if (pose.read_attr("xsway", tempfloat))
+						data.Angles[0] = GetAngle(tempfloat);
+					if (pose.read_attr("ysway", tempfloat))
+						data.Angles[1] = GetAngle(-tempfloat);
+					if (pose.read_attr("zsway", tempfloat))
+						data.Angles[2] = GetAngle(-tempfloat);
+
+					if (pose.read_attr("move", tempstr))
+						sscanf(tempstr.c_str(), "%f,%f,%f", &data.Offset[0], &data.Offset[1], &data.Offset[2]);
+					pose.read_attr("xmove", data.Offset[0]);
+					pose.read_attr("ymove", data.Offset[1]);
+					pose.read_attr("zmove", data.Offset[2]);
+					
+					if (pose.read_attr("name", tempstr))
+					{
+						// Find which frame
+						size_t num_frames = FrameTags.size();
+						size_t ifr;
+						for (ifr = 0; ifr < num_frames; ++ifr)
+						{
+							if (tempstr == FrameTags[ifr].Tag)
+								break;
+						}
+						if (ifr >= num_frames) ifr = static_cast<size_t>(NONE);
+						data.Frame = static_cast<GLshort>(ifr);
+					}
+					
+					Model.SeqFrames.push_back(data);
+				}
+			}
+			
+			if (Model.SeqFrmPointers.empty())
+				Model.SeqFrmPointers.push_back(0);
+			Model.SeqFrmPointers.push_back(static_cast<GLushort>(Model.SeqFrames.size()));
+		}
+	}
+}
 
 bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 {
-	ModelPtr = &Model;
-	
 	if (WhichPass == LoadModelDim3_First)
 	{
 		// Clear everything
@@ -156,42 +365,27 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 		Normals.clear();
 	}
 	
-	if (DBOut)
-	{
-		// Name buffer
-		const int BufferSize = 256;
-		char Buffer[BufferSize];
-		Spec.GetName(Buffer);
-		fprintf(DBOut,"Loading Dim3 model file %s\n",Buffer);
+	bool parse_error = false;
+	try {
+		InfoTree fileroot = InfoTree::load_xml(Spec);
+		BOOST_FOREACH(InfoTree root, fileroot.children_named("Model"))
+		{
+			parse_dim3(root, Model);
+		}
+	} catch (InfoTree::parse_error ex) {
+		logError2("Error parsing Dim3 file (%s): %s", Spec.GetPath(), ex.what());
+		parse_error = true;
+	} catch (InfoTree::path_error ep) {
+		logError2("Path error parsing Dim3 file (%s): %s", Spec.GetPath(), ep.what());
+		parse_error = true;
+	} catch (InfoTree::data_error ed) {
+		logError2("Data error parsing Dim3 file (%s): %s", Spec.GetPath(), ed.what());
+		parse_error = true;
+	} catch (InfoTree::unexpected_error ee) {
+		logError2("Unexpected error parsing Dim3 file (%s): %s", Spec.GetPath(), ee.what());
+		parse_error = true;
 	}
-	
-	OpenedFile OFile;
-	if (!Spec.Open(OFile))
-	{	
-		if (DBOut) fprintf(DBOut,"ERROR opening the file\n");
-		return false;
-	}
-
-	Dim3_SetupParseTree();
-	XML_DataBlockLoader.CurrentElement = &Dim3_RootParser;
-	
-	int32 Len = 0;
-	OFile.GetLength(Len);
-	if (Len <= 0) return false;
-	
-	vector<char> FileContents(Len);
-	if (!OFile.Read(Len,&FileContents[0])) return false;
-	
-	char FileName[256];
-	Spec.GetName(FileName);
-	FileName[31] = 0;	// Use only first 31 characters of filename (MacOS Classic)
-	// fdprintf("Loading from text file %s",FileName);
-	
-	XML_DataBlockLoader.SourceName = FileName;
-	if (!XML_DataBlockLoader.ParseData(&FileContents[0],Len))
-	{
-		if (DBOut) fprintf(DBOut, "There were parsing errors in Dim3 model file %s\n",FileName);
-	}
+	if (parse_error) return false;
 	
 	// Set these up now
 	if (Model.InverseVSIndices.empty()) Model.BuildInverseVSIndices();
@@ -341,805 +535,6 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 	}
 		
 	return (!Model.Positions.empty() && !Model.VertIndices.empty());
-}
-
-
-// Gets some XML data to parse
-bool XML_Dim3DataBlock::GetData()
-{
-	// Check...
-	assert(Buffer);
-	assert(BufLen > 0);
-	 
-	// Only one buffer
-	LastOne = true;
-
-	return true;
-}
-
-
-// Reports a read error
-void XML_Dim3DataBlock::ReportReadError()
-{
-	const char *Name = SourceName ? SourceName : "[]";
-
-	if (DBOut)
-		fprintf(DBOut, "Error in reading data/resources from object %s\n",Name);
-}
-
-
-// Reports an XML parsing error
-void XML_Dim3DataBlock::ReportParseError(const char *ErrorString, int LineNumber)
-{
-	const char *Name = SourceName ? SourceName : "[]";
-
-	if (DBOut)
-		fprintf(DBOut, "XML parsing error: %s at line %d in object %s\n", ErrorString, LineNumber, Name);
-}
-
-
-// Reports an interpretation error
-void XML_Dim3DataBlock::ReportInterpretError(const char *ErrorString)
-{
-	if (DBOut)
-		fprintf(DBOut, "%s\n",ErrorString);
-}
-
-// Requests aborting of parsing (reasonable if there were lots of errors)
-bool XML_Dim3DataBlock::RequestAbort()
-{
-	return false;
-}
-
-
-// Dummy elements:
-static XML_ElementParser
-	CreatorParser("Creator"),
-	CenterParser("Center"),
-	LightParser("Light"),
-	ShadingParser("Shading"),
-	ShadowBoxParser("Shadow_Box"),
-	VerticesParser("Vertexes"),
-	BonesParser("Bones"),
-	EffectsParser("Effects"),
-	EffectParser("Effect"),
-	FillsParser("Fills"),
-	FillParser("Fill"),
-	D3ColorsParser("Colors"),
-	D3ColorParser("Color"),
-	D3ImagesParser("Images"),
-	D3ImageParser("Image"),
-	TrianglesParser("Triangles"),
-	FramesParser("Poses"),
-	FrameBonesParser("Bones"),
-	SequencesParser("Animations"),
-	SeqLoopParser("Loop"),
-	SeqFramesParser("Poses");
-
-
-// "Real" elements:
-
-class XML_BoundingBoxParser: public XML_ElementParser
-{
-	GLfloat x_size, y_size, z_size, x_offset, y_offset, z_offset;
-
-public:
-	bool Start();
-	bool HandleAttribute(const char *Tag, const char *Value);
-	bool AttributesDone();
-	
-	XML_BoundingBoxParser(const char *Name): XML_ElementParser(Name) {}
-};
-
-
-
-bool XML_BoundingBoxParser::Start()
-{
-	x_size = y_size = z_size = x_offset = y_offset = z_offset = 0;
-	
-	return true;
-}
-
-bool XML_BoundingBoxParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"size"))
-	{
-		return (sscanf(Value,"%f,%f,%f",&x_size,&y_size,&z_size) == 3);
-	}
-	else if (StringsEqual(Tag,"offset"))
-	{
-		return (sscanf(Value,"%f,%f,%f",&x_offset,&y_offset,&z_offset) == 3);
-	}
-	else if (StringsEqual(Tag,"x_size"))
-	{
-		return ReadFloatValue(Value,x_size);
-	}
-	else if (StringsEqual(Tag,"y_size"))
-	{
-		return ReadFloatValue(Value,y_size);
-	}
-	else if (StringsEqual(Tag,"z_size"))
-	{
-		return ReadFloatValue(Value,z_size);
-	}
-	else if (StringsEqual(Tag,"x_offset"))
-	{
-		return ReadFloatValue(Value,x_offset);
-	}
-	else if (StringsEqual(Tag,"y_offset"))
-	{
-		return ReadFloatValue(Value,y_offset);
-	}
-	else if (StringsEqual(Tag,"z_offset"))
-	{
-		return ReadFloatValue(Value,z_offset);
-	}
-
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_BoundingBoxParser::AttributesDone()
-{
-	// Inconsistent resizing: weird bug in ggadwa's code
-	
-	ModelPtr->BoundingBox[0][0] = x_offset - x_size/2;
-	ModelPtr->BoundingBox[0][1] = y_offset - y_size;
-	ModelPtr->BoundingBox[0][2] = z_offset - z_size/2;
-	
-	ModelPtr->BoundingBox[1][0] = x_offset + x_size/2;
-	ModelPtr->BoundingBox[1][1] = y_offset;
-	ModelPtr->BoundingBox[1][2] = z_offset + z_size/2;
-	
-	return true;
-}
-
-static XML_BoundingBoxParser BoundingBoxParser("Bound_Box");
-static XML_BoundingBoxParser ViewBoxParser("View_Box");
-
-
-class XML_VertexParser: public XML_ElementParser
-{
-	Model3D_VertexSource Data;
-	GLfloat Norm[3];
-	
-	// For adding to the bone-tag array as each vertex is added
-	BoneTagWrapper BT;
-
-public:
-	bool Start();
-	bool HandleAttribute(const char *Tag, const char *Value);
-	bool AttributesDone();
-	
-	XML_VertexParser(): XML_ElementParser("v") {}
-};
-
-
-bool XML_VertexParser::Start()
-{
-	for (int c=0; c<3; c++)
-		Norm[c] = Data.Position[c] = 0;
-	
-	// Initially: no bones
-	Data.Bone0 = Data.Bone1 = (GLushort)NONE;
-	Data.Blend = 0;
-	
-	// No bone: zero-length strings:
-	BT.Tag0[0] = BT.Tag1[0] = 0;
-	
-	return true;
-}
-
-bool XML_VertexParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"c3"))
-	{
-		GLfloat *Pos = Data.Position;
-		return (sscanf(Value,"%f,%f,%f",&Pos[0],&Pos[1],&Pos[2]) == 3);
-	}
-	else if (StringsEqual(Tag,"n3"))
-	{
-		return (sscanf(Value,"%f,%f,%f",&Norm[0],&Norm[1],&Norm[2]) == 3);
-	}
-	else if (StringsEqual(Tag,"x"))
-	{
-		return ReadFloatValue(Value,Data.Position[0]);
-	}
-	else if (StringsEqual(Tag,"y"))
-	{
-		return ReadFloatValue(Value,Data.Position[1]);
-	}
-	else if (StringsEqual(Tag,"z"))
-	{
-		return ReadFloatValue(Value,Data.Position[2]);
-	}
-	else if (StringsEqual(Tag,"major"))
-	{
-		strncpy(BT.Tag0,Value,BoneTagSize);
-		return true;
-	}
-	else if (StringsEqual(Tag,"minor"))
-	{
-		strncpy(BT.Tag1,Value,BoneTagSize);
-		return true;
-	}
-	else if (StringsEqual(Tag,"factor"))
-	{
-		GLfloat Factor;
-		if (ReadFloatValue(Value,Factor))
-		{
-			// Convert from ggadwa's definition (100 to 0) to mine (0 to 1)
-			// for first to second bone.
-			Data.Blend = 1 - Factor/100;
-			return true;
-		}
-		else return false;
-	}
-	
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_VertexParser::AttributesDone()
-{
-	// Always handle the bone data, even for a blank bone, to maintain coherence.
-	// Also always handle normal data for that reason.
-	ModelPtr->VtxSources.push_back(Data);
-	for (int c=0; c<3; c++)
-		Normals.push_back(Norm[c]);
-	VertexBoneTags.push_back(BT);
-	
-	return true;
-}
-
-static XML_VertexParser VertexParser;
-
-
-class XML_BoneParser: public XML_ElementParser
-{
-	Model3D_Bone Data;
-	
-	// For adding to the bone-tag array as each bone is added
-	BoneTagWrapper BT;
-
-public:
-	bool Start();
-	bool HandleAttribute(const char *Tag, const char *Value);
-	bool AttributesDone();
-	
-	XML_BoneParser(): XML_ElementParser("Bone") {}
-};
-
-
-bool XML_BoneParser::Start()
-{
-	for (int c=0; c<3; c++)
-		Data.Position[c] = 0;
-	
-	// Initially: don't do anything special
-	// (might produce screwy models without further processing)
-	Data.Flags = 0;
-	
-	// No bone: zero-length strings:
-	BT.Tag0[0] = BT.Tag1[0] = 0;
-	
-	return true;
-}
-
-bool XML_BoneParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"c3"))
-	{
-		GLfloat *Pos = Data.Position;
-		return (sscanf(Value,"%f,%f,%f",&Pos[0],&Pos[1],&Pos[2]) == 3);
-	}
-	else if (StringsEqual(Tag,"x"))
-	{
-		return ReadFloatValue(Value,Data.Position[0]);
-	}
-	else if (StringsEqual(Tag,"y"))
-	{
-		return ReadFloatValue(Value,Data.Position[1]);
-	}
-	else if (StringsEqual(Tag,"z"))
-	{
-		return ReadFloatValue(Value,Data.Position[2]);
-	}
-	else if (StringsEqual(Tag,"tag"))
-	{
-		strncpy(BT.Tag0,Value,BoneTagSize);
-		return true;
-	}
-	else if (StringsEqual(Tag,"parent"))
-	{
-		strncpy(BT.Tag1,Value,BoneTagSize);
-		return true;
-	}
-	
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_BoneParser::AttributesDone()
-{
-	// Always handle the bone data, even for a blank bone, to maintain coherence.
-	ModelPtr->Bones.push_back(Data);
-	BoneOwnTags.push_back(BT);
-	
-	return true;
-}
-
-static XML_BoneParser BoneParser;
-
-
-
-class XML_TriVertexParser: public XML_ElementParser
-{
-	uint16 ID;
-	float Txtr_X, Txtr_Y;
-	float Norm_X, Norm_Y, Norm_Z;
-	
-public:
-	bool Start();
-	bool HandleAttribute(const char *Tag, const char *Value);
-	bool AttributesDone();
-	
-	XML_TriVertexParser(): XML_ElementParser("v") {}
-};
-
-
-bool XML_TriVertexParser::Start()
-{
-	// Reasonable defaults:
-	ID = (uint16)NONE;
-	Txtr_X = 0.5, Txtr_Y = 0.5;
-	Norm_X = Norm_Y = Norm_Z = 0;
-	
-	return true;
-}
-
-bool XML_TriVertexParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"ID"))
-	{
-		return ReadUInt16Value(Value,ID);
-	}
-	else if (StringsEqual(Tag,"uv"))
-	{
-		return (sscanf(Value,"%f,%f",&Txtr_X,&Txtr_Y) == 2);
-	}
-	else if (StringsEqual(Tag,"n"))
-	{
-		return (sscanf(Value,"%f,%f,%f",&Norm_X,&Norm_Z,&Norm_Y) == 3);	// Dim3's odd order
-	}
-	else if (StringsEqual(Tag,"xtxt"))
-	{
-		return ReadFloatValue(Value,Txtr_X);
-	}
-	else if (StringsEqual(Tag,"ytxt"))
-	{
-		return ReadFloatValue(Value,Txtr_Y);
-	}
-	
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_TriVertexParser::AttributesDone()
-{
-	// Older dim3-Animator normal support suppressed
-	/*
-	// Normalize the normal, if nonzero
-	float NSQ = Norm_X*Norm_X + Norm_Y*Norm_Y + Norm_Z*Norm_Z;
-	if (NSQ != 0)
-	{
-		float NMult = (float)(1/sqrt(NSQ));
-		Norm_X *= NMult;
-		Norm_Y *= NMult;
-		Norm_Z *= NMult;
-	}
-	*/
-
-	GLushort Index = ((GLushort)ModelPtr->VertIndices.size());
-	ModelPtr->VertIndices.push_back(Index);
-	ModelPtr->VtxSrcIndices.push_back(ID);
-	ModelPtr->TxtrCoords.push_back(Txtr_X);
-	ModelPtr->TxtrCoords.push_back(Txtr_Y);
-	/*
-	ModelPtr->Normals.push_back(Norm_X);
-	ModelPtr->Normals.push_back(Norm_Y);
-	ModelPtr->Normals.push_back(Norm_Z);
-	*/
-	return true;
-}
-
-static XML_TriVertexParser TriVertexParser;
-
-
-
-class XML_FrameParser: public XML_ElementParser
-{
-	// For adding to the frame-name array as frames are added
-	NameTagWrapper NT;
-
-public:
-	bool Start();
-	bool HandleAttribute(const char *Tag, const char *Value);
-	bool End();
-	
-	XML_FrameParser(): XML_ElementParser("Pose") {}
-};
-
-
-bool XML_FrameParser::Start()
-{
-	// Be sure to have the right number of frame members --
-	// and blank them out
-	size_t NumBones = ModelPtr->Bones.size();
-	ReadFrame.resize(NumBones);
-	objlist_clear(&ReadFrame[0],NumBones);
-	
-	// No name: zero-length name
-	NT.Tag[0] = 0;
-	
-	return true;
-}
-
-bool XML_FrameParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"name"))
-	{
-		strncpy(NT.Tag,Value,NameTagSize);
-		return true;
-	}
-	
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_FrameParser::End()
-{
-	// Some of the data was set up by child elements, so all the processing
-	// can be back here.
-	for (size_t b=0; b<ReadFrame.size(); b++)
-		ModelPtr->Frames.push_back(ReadFrame[b]);
-	
-	FrameTags.push_back(NT);
-	
-	return true;
-}
-
-static XML_FrameParser FrameParser;
-
-
-
-class XML_FrameBoneParser: public XML_ElementParser
-{
-	Model3D_Frame Data;
-	
-	// The bone tag to look for
-	char BoneTag[BoneTagSize];
-
-public:
-	bool Start();
-	bool HandleAttribute(const char *Tag, const char *Value);
-	bool AttributesDone();
-	
-	XML_FrameBoneParser(): XML_ElementParser("Bone") {}
-};
-
-
-bool XML_FrameBoneParser::Start()
-{
-	// Clear everything out:
-	obj_clear(Data);
-	
-	// Empty string
-	BoneTag[0] = 0;
-	
-	return true;
-}
-
-
-// Some of angles have their signs reversed to translate BB's sign conventions
-// into more my more geometrically-elegant ones.
-
-bool XML_FrameBoneParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"rot"))
-	{
-		float InAngle[3];
-		if (sscanf(Value,"%f,%f,%f",&InAngle[0],&InAngle[1],&InAngle[2]) == 3)
-		{
-			for (int c=0; c<3; c++)
-				Data.Angles[c] = GetAngle(- InAngle[c]);
-			return true;
-		}
-		else
-			return false;
-	}
-	else if (StringsEqual(Tag,"move"))
-	{
-		GLfloat *Ofst = Data.Offset;
-		return (sscanf(Value,"%f,%f,%f",&Ofst[0],&Ofst[1],&Ofst[2]) == 3);
-	}
-	else if (StringsEqual(Tag,"acceleration"))
-	{
-		// Ignore the acceleration for now
-		return true;
-	}
-	else if (StringsEqual(Tag,"xmove"))
-	{
-		return ReadFloatValue(Value,Data.Offset[0]);
-	}
-	else if (StringsEqual(Tag,"ymove"))
-	{
-		return ReadFloatValue(Value,Data.Offset[1]);
-	}
-	else if (StringsEqual(Tag,"zmove"))
-	{
-		return ReadFloatValue(Value,Data.Offset[2]);
-	}
-	else if (StringsEqual(Tag,"xrot"))
-	{
-		float InAngle;
-		if (ReadFloatValue(Value,InAngle))
-		{
-			Data.Angles[0] = GetAngle(InAngle);
-			return true;
-		}
-		else
-			return false;
-	}
-	else if (StringsEqual(Tag,"yrot"))
-	{
-		float InAngle;
-		if (ReadFloatValue(Value,InAngle))
-		{
-			Data.Angles[1] = GetAngle(-InAngle);
-			return true;
-		}
-		else
-			return false;
-	}
-	else if (StringsEqual(Tag,"zrot"))
-	{
-		float InAngle;
-		if (ReadFloatValue(Value,InAngle))
-		{
-			Data.Angles[2] = GetAngle(-InAngle);
-			return true;
-		}
-		else
-			return false;
-	}
-	else if (StringsEqual(Tag,"tag"))
-	{
-		strncpy(BoneTag,Value,BoneTagSize);
-		return true;
-	}
-	
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_FrameBoneParser::AttributesDone()
-{
-	// Place the bone info into the appropriate temporary-array location
-	size_t NumBones = BoneOwnTags.size();
-	size_t ib;
-	for (ib=0; ib<NumBones; ib++)
-	{
-		// Compare tag to bone's self tag
-		if (strncmp(BoneTag,BoneOwnTags[ib].Tag0,BoneTagSize) == 0)
-			break;
-	}
-	if (ib < NumBones)
-		obj_copy(ReadFrame[BoneIndices[ib]],Data);
-	
-	return true;
-}
-
-static XML_FrameBoneParser FrameBoneParser;
-
-
-class XML_SequenceParser: public XML_ElementParser
-{
-
-public:
-	bool End();
-	
-	XML_SequenceParser(): XML_ElementParser("Animation") {}
-};
-
-bool XML_SequenceParser::End()
-{
-	// Add pointer index to end of sequences list;
-	// create that list if it had been absent.
-	if (ModelPtr->SeqFrmPointers.empty())
-	{
-		ModelPtr->SeqFrmPointers.push_back(0);
-	}
-	ModelPtr->SeqFrmPointers.push_back((GLushort)(ModelPtr->SeqFrames.size()));
-	return true;
-}
-
-static XML_SequenceParser SequenceParser;
-
-
-class XML_SeqFrameParser: public XML_ElementParser
-{
-	Model3D_SeqFrame Data;
-
-public:
-	bool Start();
-	bool HandleAttribute(const char *Tag, const char *Value);
-	bool AttributesDone();
-	
-	XML_SeqFrameParser(): XML_ElementParser("Pose") {}
-};
-
-
-bool XML_SeqFrameParser::Start()
-{
-	// Clear everything out:
-	obj_clear(Data);
-	
-	// No frame
-	Data.Frame = NONE;
-	
-	return true;
-}
-
-// Some of angles have their signs reversed to translate BB's sign conventions
-// into more my more geometrically-elegant ones.
-
-bool XML_SeqFrameParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"sway"))
-	{
-		float InAngle[3];
-		if (sscanf(Value,"%f,%f,%f",&InAngle[0],&InAngle[1],&InAngle[2]) == 3)
-		{
-			for (int c=0; c<3; c++)
-				Data.Angles[c] = GetAngle(- InAngle[c]);
-			return true;
-		}
-		else
-			return false;
-	}
-	else if (StringsEqual(Tag,"move"))
-	{
-		GLfloat *Ofst = Data.Offset;
-		return (sscanf(Value,"%f,%f,%f",&Ofst[0],&Ofst[1],&Ofst[2]) == 3);
-	}
-	else if (StringsEqual(Tag,"xmove"))
-	{
-		return ReadFloatValue(Value,Data.Offset[0]);
-	}
-	else if (StringsEqual(Tag,"ymove"))
-	{
-		return ReadFloatValue(Value,Data.Offset[1]);
-	}
-	else if (StringsEqual(Tag,"zmove"))
-	{
-		return ReadFloatValue(Value,Data.Offset[2]);
-	}
-	else if (StringsEqual(Tag,"xsway"))
-	{
-		float InAngle;
-		if (ReadFloatValue(Value,InAngle))
-		{
-			Data.Angles[0] = GetAngle(InAngle);
-			return true;
-		}
-		else
-			return false;
-	}
-	else if (StringsEqual(Tag,"ysway"))
-	{
-		float InAngle;
-		if (ReadFloatValue(Value,InAngle))
-		{
-			Data.Angles[1] = GetAngle(-InAngle);
-			return true;
-		}
-		else
-			return false;
-	}
-	else if (StringsEqual(Tag,"zsway"))
-	{
-		float InAngle;
-		if (ReadFloatValue(Value,InAngle))
-		{
-			Data.Angles[2] = GetAngle(-InAngle);
-			return true;
-		}
-		else
-			return false;
-	}
-	else if (StringsEqual(Tag,"name"))
-	{
-		// Find which frame
-		size_t ifr;
-		size_t NumFrames = FrameTags.size();
-		for (ifr=0; ifr<NumFrames; ifr++)
-		{
-			if (strncmp(Value,FrameTags[ifr].Tag,BoneTagSize) == 0) break;
-		}
-		if (ifr >= NumFrames) ifr = static_cast<size_t>(NONE);
-		Data.Frame = (GLshort)ifr;
-		return true;
-	}
-	else if (StringsEqual(Tag,"time"))
-	{
-		// Ignore; all timing info will come from the shapes file
-		return true;
-	}
-	
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_SeqFrameParser::AttributesDone()
-{
-	// Add the frame
-	ModelPtr->SeqFrames.push_back(Data);
-	
-	return true;
-}
-
-static XML_SeqFrameParser SeqFrameParser;
-
-
-void Dim3_SetupParseTree()
-{
-	// Lazy init
-	if (Dim3_ParserInited) return;
-
-	// Set up the root object
-	Dim3_RootParser.AddChild(&Dim3_Parser);
-	
-	Dim3_Parser.AddChild(&CreatorParser);
-	Dim3_Parser.AddChild(&CenterParser);
-	Dim3_Parser.AddChild(&LightParser);
-	Dim3_Parser.AddChild(&BoundingBoxParser);	
-	Dim3_Parser.AddChild(&ViewBoxParser);
-	Dim3_Parser.AddChild(&ShadingParser);
-	Dim3_Parser.AddChild(&ShadowBoxParser);
-
-	VerticesParser.AddChild(&VertexParser);
-	Dim3_Parser.AddChild(&VerticesParser);
-	
-	BonesParser.AddChild(&BoneParser);
-	Dim3_Parser.AddChild(&BonesParser);
-	
-	EffectsParser.AddChild(&EffectParser);
-	Dim3_Parser.AddChild(&EffectsParser);
-	
-	D3ColorsParser.AddChild(&D3ColorParser);
-	D3ImagesParser.AddChild(&D3ImageParser);
-	TrianglesParser.AddChild(&TriVertexParser);
-	
-	FillParser.AddChild(&D3ColorsParser);
-	FillParser.AddChild(&D3ImagesParser);
-	FillParser.AddChild(&TrianglesParser);
-	
-	FillsParser.AddChild(&FillParser);
-	Dim3_Parser.AddChild(&FillsParser);
-	
-	FrameBonesParser.AddChild(&FrameBoneParser);
-	FrameParser.AddChild(&FrameBonesParser);
-	FramesParser.AddChild(&FrameParser);
-	Dim3_Parser.AddChild(&FramesParser);
-	
-	SeqFramesParser.AddChild(&SeqFrameParser);
-	SequenceParser.AddChild(&SeqFramesParser);
-	SequenceParser.AddChild(&SeqLoopParser);
-	SequencesParser.AddChild(&SequenceParser);
-	Dim3_Parser.AddChild(&SequencesParser);
-	
-	Dim3_ParserInited = true;
 }
 
 
