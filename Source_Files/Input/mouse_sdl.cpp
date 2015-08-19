@@ -28,6 +28,7 @@
  */
 
 #include "cseries.h"
+#include <math.h>
 
 #include "mouse.h"
 #include "player.h"
@@ -113,40 +114,29 @@ void mouse_idle(short type)
 		SDL_WarpMouse(center_x, center_y);
 
 		// Calculate axis deltas
-		// Bit-shifting is always done with positive numbers,
-		// for consistent rounding regardless of direction
-		int xdiff = x - center_x;		
-		_fixed vx = (ABS(xdiff) << FIXED_FRACTIONAL_BITS) / ticks_elapsed;
-		int ydiff = y - center_y;
-		_fixed vy = -(ABS(ydiff) << FIXED_FRACTIONAL_BITS) / ticks_elapsed;
+		float dx = (x - center_x) / static_cast<float>(ticks_elapsed);
+		float dy = -(y - center_y) / static_cast<float>(ticks_elapsed);
 		
 		// Mouse inversion
 		if (TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse))
-			vy *= -1;
-
-		// LP: modified for doing each axis separately;
-		// ZZZ: scale input by sensitivity
-		if (input_preferences->sens_horizontal != FIXED_ONE)
-			vx = _fixed((float(input_preferences->sens_horizontal)*vx)/float(FIXED_ONE));
-		if (input_preferences->sens_vertical != FIXED_ONE)
-			vy = _fixed((float(input_preferences->sens_vertical)*vy)/float(FIXED_ONE));
+			dy = -dy;
 		
+		// scale input by sensitivity
+		if (input_preferences->sens_horizontal != FIXED_ONE)
+			dx *= input_preferences->sens_horizontal / static_cast<float>(FIXED_ONE);
+		if (input_preferences->sens_vertical != FIXED_ONE)
+			dy *= input_preferences->sens_vertical / static_cast<float>(FIXED_ONE);
+		
+		dx = PIN(dx, -0.5, 0.5) / 2.f;
+		dy = PIN(dy, -0.5, 0.5) / 2.f;
 		if(input_preferences->mouse_acceleration) {
-			/* pin and do nonlinearity */
-			vx= PIN(vx, -FIXED_ONE/2, FIXED_ONE/2), vx>>= 1, vx*= (vx<0) ? -vx : vx, vx>>= 14;
-			vy= PIN(vy, -FIXED_ONE/2, FIXED_ONE/2), vy>>= 1, vy*= (vy<0) ? -vy : vy, vy>>= 14;
+			/* do nonlinearity */
+			dx = (dx * fabs(dx)) * 4.f;
+			dy = (dy * fabs(dy)) * 4.f;
 		}
-		else {
-			/* pin and do NOT do nonlinearity */
-			vx= PIN(vx, -FIXED_ONE/2, FIXED_ONE/2), vx>>= 1;
-			vy= PIN(vy, -FIXED_ONE/2, FIXED_ONE/2), vy>>= 1;
-		}
-
-		// Bit-shifting is complete, restore direction
-		if (xdiff < 0)
-			vx = -vx;
-		if (ydiff < 0)
-			vy = -vy;
+		
+		_fixed vx = dx * static_cast<float>(FIXED_ONE);
+		_fixed vy = dy * static_cast<float>(FIXED_ONE);
 		
 		// X axis = yaw
 		snapshot_delta_yaw = vx;
