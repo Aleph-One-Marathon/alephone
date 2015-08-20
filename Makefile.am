@@ -5,8 +5,8 @@ SUBDIRS = Source_Files tools data
 # Requires automake 1.5
 AUTOMAKE_OPTIONS = 1.5 foreign dist-bzip2 no-dist-gzip
 
-EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows	\
-  Makefile.BeOS docs/MML.html docs/Lua.html docs/Lua_HUD.html		\
+EXTRA_DIST = INSTALL.MacOSX INSTALL.Unix INSTALL.Windows	\
+  docs/MML.html docs/Lua.html docs/Lua_HUD.html		\
   Resources/Windows/alephone.ico				\
   Resources/Windows/alephone.rc						\
   Resources/Windows/marathon.rc Resources/Windows/marathon.ico          \
@@ -22,7 +22,7 @@ EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows	\
   PBProjects/SoundsIcon.icns PBProjects/Info-AlephOne_SDL.plist		\
   PBProjects/precompiled_headers.h PBProjects/SDLMain.h			\
   PBProjects/SDLMain.m PBProjects/AlephOne.icns				\
-  Expat/xmltok/nametab.h PBProjects/config.h PBProjects/confpaths.h	\
+  PBProjects/config.h PBProjects/confpaths.h	\
   data/AlephSansMono-Bold.ttf data/AlephSansMonoLicense.txt		\
   data/ProFontAO.ttf data/ProFontAOLicense.txt		\
   docs/alephone.6 examples/lua/Cheats.lua THANKS			\
@@ -37,8 +37,6 @@ man_MANS = docs/alephone.6
 
 dist-hook: AlephOne.spec
 	cp AlephOne.spec $(distdir)
-	cp "$(srcdir)/Aleph One Classic SDL.mcp" $(distdir)
-	cp "$(srcdir)/Resources/Aleph One Classic SDL.r" $(distdir)/Resources
 	mkdir -p "$(distdir)/PBProjects/AppStore/Marathon 2/English.lproj"
 	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/Info.plist" "$(distdir)/PBProjects/AppStore/Marathon 2/"
 	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/Marathon 2.icns" "$(distdir)/PBProjects/AppStore/Marathon 2/"
@@ -49,19 +47,11 @@ dist-hook: AlephOne.spec
 	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/English.lproj/InfoPlist.strings" "$(distdir)/PBProjects/AppStore/Marathon Infinity/English.lproj/"
 
 
-$(PACKAGE)-$(VERSION)-MacWinLibs-Src.tar.bz2: Libraries
-	tar cjf $(PACKAGE)-$(VERSION)-MacWinLibs-Src.tar.bz2 -C $(srcdir) --exclude '.svn' Libraries 
-
-libsrc: $(PACKAGE)-$(VERSION)-MacWinLibs-Src.tar.bz2
-
-release: dist windist libsrc
+release: dist windist
 
 # Rule to build RPM distribution package
 rpm: $(PACKAGE)-$(VERSION).tar.gz
 	rpmbuild -ta --clean $(PACKAGE)-$(VERSION).tar.gz
-
-ChangeLog:
-	svn2cl --break-before-msg
 
 # Rules to build Windows zipfiles
 WINZIP=$(PACKAGE)-$(VERSION)-Win.zip
