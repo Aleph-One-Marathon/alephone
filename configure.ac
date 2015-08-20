@@ -3,9 +3,9 @@ dnl Written by Christian Bauer and the Aleph One developers.
 
 AC_INIT([Aleph One],
         m4_esyscmd([ grep '^#define A1_DATE_VERSION' Source_Files/Misc/alephversion.h | sed -e 's/\(.*\"\)\(.*\)\(\"\)/\2/g' | tr -d '\n']),
-        [http://sourceforge.net/p/marathon/bugs/],
+        [https://github.com/Aleph-One-Marathon/alephone/issues],
         [AlephOne],
-        [http://marathon.sourceforge.net/])
+        [https://alephone.lhowon.org/])
 AC_CONFIG_SRCDIR([Source_Files/shell.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 AC_PREREQ([2.65])
