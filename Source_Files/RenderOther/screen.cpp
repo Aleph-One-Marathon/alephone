@@ -804,15 +804,46 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
 
 		main_surface = SDL_SetVideoMode(vmode_width, vmode_height, depth, flags);
- 		if (main_surface == NULL) {
- 			fprintf(stderr, "Can't open video display (%s)\n", SDL_GetError());
- 			exit(1);
- 		}
-#else
-	exit(1);
 #endif
 	}
+	if (main_surface == NULL && (flags & SDL_FULLSCREEN)) {
+		fprintf(stderr, "Can't open video display (%s)\n", SDL_GetError());
+		fprintf(stderr, "WARNING: Trying in windowed mode");
+		logWarning("Trying windowed mode");
+		uint32 tempflags = flags & ~SDL_FULLSCREEN;
+		main_surface = SDL_SetVideoMode(vmode_width, vmode_height, depth, tempflags);
+		if (main_surface) {
+			screen_mode.fullscreen = graphics_preferences->screen_mode.fullscreen = false;
+		}
 	}
+	if (main_surface == NULL && (flags & SDL_OPENGL)) {
+		fprintf(stderr, "Can't open video display (%s)\n", SDL_GetError());
+		fprintf(stderr, "WARNING: Trying in software mode");
+		logWarning("Trying software mode");
+		uint32 tempflags = (flags & ~SDL_OPENGL) | SDL_SWSURFACE;
+		main_surface = SDL_SetVideoMode(vmode_width, vmode_height, depth, tempflags);
+		if (main_surface) {
+			screen_mode.acceleration = graphics_preferences->screen_mode.acceleration = _no_acceleration;
+		}
+	}
+	if (main_surface == NULL && (flags & (SDL_FULLSCREEN|SDL_OPENGL))) {
+		fprintf(stderr, "Can't open video display (%s)\n", SDL_GetError());
+		fprintf(stderr, "WARNING: Trying in software windowed mode");
+		logWarning("Trying software windowed mode");
+		uint32 tempflags = (flags & ~(SDL_OPENGL|SDL_FULLSCREEN)) | SDL_SWSURFACE;
+		main_surface = SDL_SetVideoMode(vmode_width, vmode_height, depth, tempflags);
+		if (main_surface) {
+			screen_mode.acceleration = graphics_preferences->screen_mode.acceleration = _no_acceleration;
+			screen_mode.fullscreen = graphics_preferences->screen_mode.fullscreen = false;
+		}
+	}
+	if (main_surface == NULL) {
+		fprintf(stderr, "Can't open video display (%s)\n", SDL_GetError());
+		fprintf(stderr, "ERROR: Unable to find working display mode");
+		logWarning("Unable to find working display mode; exiting");
+		vhalt("Cannot find a working video mode.");
+	}
+	} // end if need_mode_change
 #ifdef MUST_RELOAD_VIEW_CONTEXT
 	if (!nogl && screen_mode.acceleration != _no_acceleration) 
 		ReloadViewContext();
