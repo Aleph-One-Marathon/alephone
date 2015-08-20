@@ -350,6 +350,19 @@ struct update_crosshair_display
 	}
 };
 
+class w_crosshair_slider : public w_slider {
+public:
+	w_crosshair_slider(int num_items, int sel) : w_slider(num_items, sel) {
+		init_formatted_value();
+	}
+	
+	virtual std::string formatted_value(void) {
+		std::ostringstream ss;
+		ss << (selection + 1);
+		return ss.str();
+	}
+};
+
 static void crosshair_dialog(void *arg)
 {
 	CrosshairData OldCrosshairs = player_preferences->Crosshairs;
@@ -386,7 +399,7 @@ static void crosshair_dialog(void *arg)
 	table->add_row(new w_spacer(), true);
 
 	// Thickness
-	w_slider* thickness_w = new w_slider(7, 0);
+	w_slider* thickness_w = new w_crosshair_slider(7, 0);
 	SliderSelectorWidget thicknessWidget(thickness_w);
 	CrosshairPref thicknessPref(player_preferences->Crosshairs.Thickness);
 	crosshair_binders->insert<int> (&thicknessWidget, &thicknessPref);
@@ -402,7 +415,7 @@ static void crosshair_dialog(void *arg)
 	table->dual_add(from_center_w, d);
 
 	// Length
-	w_slider *length_w = new w_slider(15, 0);
+	w_slider *length_w = new w_crosshair_slider(15, 0);
 	SliderSelectorWidget lengthWidget(length_w);
 	CrosshairPref lengthPref(player_preferences->Crosshairs.Length);
 	crosshair_binders->insert<int> (&lengthWidget, &lengthPref);
@@ -413,21 +426,21 @@ static void crosshair_dialog(void *arg)
 	table->dual_add_row(new w_static_text("Color"), d);
 
 	// Color
-	w_slider *red_w = new w_slider(16, 0);
+	w_slider *red_w = new w_percentage_slider(16, 0);
 	SliderSelectorWidget redWidget(red_w);
 	ColorComponentPref redPref(player_preferences->Crosshairs.Color.red);
 	crosshair_binders->insert<int> (&redWidget, &redPref);
 	table->dual_add(red_w->label("Red"), d);
 	table->dual_add(red_w, d);
 
-	w_slider *green_w = new w_slider(16, 0);
+	w_slider *green_w = new w_percentage_slider(16, 0);
 	SliderSelectorWidget greenWidget(green_w);;
 	ColorComponentPref greenPref(player_preferences->Crosshairs.Color.green);
 	crosshair_binders->insert<int> (&greenWidget, &greenPref);
 	table->dual_add(green_w->label("Green"), d);
 	table->dual_add(green_w, d);
 
-	w_slider *blue_w = new w_slider(16, 0);
+	w_slider *blue_w = new w_percentage_slider(16, 0);
 	SliderSelectorWidget blueWidget(blue_w);
 	ColorComponentPref bluePref(player_preferences->Crosshairs.Color.blue);
 	crosshair_binders->insert<int> (&blueWidget, &bluePref);
@@ -437,7 +450,7 @@ static void crosshair_dialog(void *arg)
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("OpenGL Only (no preview)"), d);
 
-	w_slider *opacity_w = new w_slider(16, 0);
+	w_slider *opacity_w = new w_percentage_slider(16, 0);
 	SliderSelectorWidget opacityWidget(opacity_w);
 	OpacityPref opacityPref(player_preferences->Crosshairs.Opacity);
 	crosshair_binders->insert<int> (&opacityWidget, &opacityPref);
@@ -1360,9 +1373,9 @@ public:
 
 static const char *channel_labels[] = {"1", "2", "4", "8", "16", "32", NULL};
 
-class w_volume_slider : public w_slider {
+class w_volume_slider : public w_percentage_slider {
 public:
-	w_volume_slider(int vol) : w_slider(NUMBER_OF_SOUND_VOLUME_LEVELS, vol) {}
+	w_volume_slider(int vol) : w_percentage_slider(NUMBER_OF_SOUND_VOLUME_LEVELS, vol) {}
 	~w_volume_slider() {}
 
 	void item_selected(void)
@@ -1415,7 +1428,7 @@ static void sound_dialog(void *arg)
 	table->dual_add(volume_w->label("Volume"), d);
 	table->dual_add(volume_w, d);
 
-	w_slider *music_volume_w = new w_slider(NUMBER_OF_SOUND_VOLUME_LEVELS, sound_preferences->music);
+	w_slider *music_volume_w = new w_percentage_slider(NUMBER_OF_SOUND_VOLUME_LEVELS, sound_preferences->music);
 	table->dual_add(music_volume_w->label("Music Volume"), d);
 	table->dual_add(music_volume_w, d);
 
@@ -1509,6 +1522,28 @@ static void sound_dialog(void *arg)
  *  Controls dialog
  */
 
+class w_sens_slider : public w_slider {
+public:
+	w_sens_slider(int num_items, int sel) : w_slider(num_items, sel) {
+		init_formatted_value();
+	}
+	
+	virtual std::string formatted_value(void) {
+		std::ostringstream ss;
+		float val = std::exp(selection * 6 / 1000.0f - 3.0f);
+		if (val >= 1.f)
+			ss.precision(4);
+		else if (val >= 0.1f)
+			ss.precision(3);
+		else if (val >= 0.01f)
+			ss.precision(2);
+		else
+			ss.precision(1);
+		ss << std::showpoint << val;
+		return ss.str();
+	}
+};
+
 w_select_popup* joystick_axis_w[NUMBER_OF_JOYSTICK_MAPPINGS];
 
 static void axis_mapped(void* pv)
@@ -1591,7 +1626,7 @@ static void controls_dialog(void *arg)
 	int theVerticalSliderPosition =
 		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
 	
-	w_slider* sens_vertical_w = new w_slider(1000, theVerticalSliderPosition);
+	w_sens_slider* sens_vertical_w = new w_sens_slider(1000, theVerticalSliderPosition);
 	mouse->dual_add(sens_vertical_w->label("Mouse Vertical Sensitivity"), d);
 	mouse->dual_add(sens_vertical_w, d);
 
@@ -1603,7 +1638,7 @@ static void controls_dialog(void *arg)
 	int theHorizontalSliderPosition =
 		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
 
-	w_slider* sens_horizontal_w = new w_slider(1000, theHorizontalSliderPosition);
+	w_sens_slider* sens_horizontal_w = new w_sens_slider(1000, theHorizontalSliderPosition);
 	mouse->dual_add(sens_horizontal_w->label("Mouse Horizontal Sensitivity"), d);
 	mouse->dual_add(sens_horizontal_w, d);
 

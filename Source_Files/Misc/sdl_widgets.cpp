@@ -1060,15 +1060,15 @@ void w_color_picker::click(int, int)
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 	table->col_flags(0, placeable::kAlignRight);
 
-	w_slider *red_w = new w_slider(16, m_color.red >> 12);
+	w_percentage_slider *red_w = new w_percentage_slider(16, m_color.red >> 12);
 	table->dual_add(red_w->label("Red"), d);
 	table->dual_add(red_w, d);
 
-	w_slider *green_w = new w_slider(16, m_color.green >> 12);
+	w_percentage_slider *green_w = new w_percentage_slider(16, m_color.green >> 12);
 	table->dual_add(green_w->label("Green"), d);
 	table->dual_add(green_w, d);
 
-	w_slider *blue_w = new w_slider(16, m_color.blue >> 12);
+	w_percentage_slider *blue_w = new w_percentage_slider(16, m_color.blue >> 12);
 	table->dual_add(blue_w->label("Blue"), d);
 	table->dual_add(blue_w, d);
 
@@ -1531,8 +1531,9 @@ const int SLIDER_WIDTH = 160;
 const int SLIDER_THUMB_HEIGHT = 14;
 const int SLIDER_THUMB_WIDTH = 8;
 const int SLIDER_TROUGH_HEIGHT = 8;
+const int SLIDER_LABEL_SPACE = 5;
 
-w_slider::w_slider(int num, int s) : widget(LABEL_WIDGET), selection(s), num_items(num), thumb_dragging(false)
+w_slider::w_slider(int num, int s) : widget(LABEL_WIDGET), selection(s), num_items(num), thumb_dragging(false), readout(NULL)
 {
 	slider_l = get_theme_image(SLIDER_WIDGET, DEFAULT_STATE, SLIDER_L_IMAGE);
 	slider_r = get_theme_image(SLIDER_WIDGET, DEFAULT_STATE, SLIDER_R_IMAGE);
@@ -1546,6 +1547,9 @@ w_slider::w_slider(int num, int s) : widget(LABEL_WIDGET), selection(s), num_ite
 		saved_min_height = std::max(static_cast<uint16>(slider_c->h), static_cast<uint16>(thumb->h));
 	else
 		saved_min_height = SLIDER_THUMB_HEIGHT + 2;
+	
+	readout_x = saved_min_width + SLIDER_LABEL_SPACE;
+	init_formatted_value();
 }
 
 w_slider::~w_slider()
@@ -1560,6 +1564,13 @@ void w_slider::place(const SDL_Rect& r, placement_flags flags)
 	rect.x = r.x;
 	slider_x = 0;
 	rect.w = r.w;
+	
+	SDL_Rect r2;
+	r2.h = r.h;
+	r2.y = r.y;
+	r2.x = r.x + readout_x;
+	r2.w = readout->min_width();
+	readout->place(r2, placeable::kDefault);
 
 	set_selection(selection);
 }
@@ -1617,6 +1628,7 @@ void w_slider::draw(SDL_Surface *s) const
 		SDL_FillRect(s, &r, pixel);
 		
 	}
+	readout->draw(s);
 }
 
 void w_slider::mouse_move(int x, int /*y*/)
@@ -1668,6 +1680,7 @@ void w_slider::set_selection(int s)
 	thumb_x = int(float(selection * (trough_width - thumb_width())) / (num_items - 1) + 0.5);
 	thumb_x += get_theme_space(SLIDER_WIDGET, SLIDER_L_SPACE) + slider_x;
 	dirty = true;
+	selection_changed();
 }
 
 int w_slider::thumb_width() const
@@ -1676,6 +1689,37 @@ int w_slider::thumb_width() const
 		return thumb->w;
 	else
 		return SLIDER_THUMB_WIDTH;
+}
+
+std::string w_slider::formatted_value()
+{
+	std::ostringstream ss;
+	ss << selection;
+	return ss.str();
+}
+
+void w_slider::selection_changed()
+{
+	readout->set_text(formatted_value().c_str());
+}
+
+void w_slider::init_formatted_value()
+{
+	int temp = selection;
+	selection = num_items;
+	std::string tempstr = formatted_value();
+	selection = temp;
+	delete readout;
+	readout = new w_static_text(tempstr.c_str());
+	saved_min_height = std::max(saved_min_height, readout->min_height());
+	saved_min_width = readout_x + readout->min_width();
+}
+
+std::string w_percentage_slider::formatted_value()
+{
+	std::ostringstream ss;
+	ss << (selection * 100 / (num_items - 1)) << "%";
+	return ss.str();
 }
 
 

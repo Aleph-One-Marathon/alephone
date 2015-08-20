@@ -25,6 +25,8 @@
 #include "OGL_Setup.h"
 #include "screen.h"
 
+#include <sstream>
+
 class TexQualityPref : public Bindable<int>
 {
 public:
@@ -291,6 +293,20 @@ static const char *near_filter_labels[3] = {
 	"None", "Linear", NULL
 };
 
+class w_aniso_slider : public w_slider {
+public:
+	w_aniso_slider(int num_items, int sel) : w_slider(num_items, sel) {
+		init_formatted_value();
+	}
+	
+	virtual std::string formatted_value(void) {
+		std::ostringstream ss;
+		ss << ((selection == 0) ? 0 : 1 << (selection - 1));
+		return ss.str();
+	}
+};
+
+
 class SdlOpenGLDialog : public OpenGLDialog
 {
 public:
@@ -378,7 +394,7 @@ public:
 		fsaa_strings.push_back ("4x");
 		fsaa_w->set_labels (fsaa_strings);
 		
-		w_slider* aniso_w = new w_slider(6, 1);
+		w_aniso_slider* aniso_w = new w_aniso_slider(6, 1);
 		general_table->dual_add(aniso_w->label("Anisotropic Filtering"),m_dialog);
 		general_table->dual_add(aniso_w, m_dialog);
 

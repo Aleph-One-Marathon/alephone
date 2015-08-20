@@ -618,10 +618,16 @@ public:
 	void set_selection(int selection);
 
 	virtual void item_selected(void) {}
+	virtual std::string formatted_value(void);
 
 	void place(const SDL_Rect& r, placement_flags flags);
 
 protected:
+	void init_formatted_value(void);
+	
+	w_static_text *readout; // display current slider value
+	int readout_x;			// relative X offset where readout is drawn
+	
 	int16 slider_x;			// X offset of slider image
 
 	int selection;			// Currently selected item
@@ -636,6 +642,16 @@ protected:
 	SDL_Surface *slider_l, *slider_c, *slider_r, *thumb;
 private:
 	int thumb_width() const;
+	void selection_changed(void);
+};
+
+class w_percentage_slider : public w_slider {
+public:
+	w_percentage_slider(int num_items, int sel) : w_slider(num_items, sel) {
+		init_formatted_value();
+	}
+	
+	virtual std::string formatted_value(void);
 };
 
 class w_color_picker : public widget {
@@ -654,16 +670,16 @@ private:
 	rgb_color m_color;
 
 	struct update_color {
-		update_color(w_slider *red, w_slider *green, w_slider *blue, uint16 *i_red, uint16 *i_green, uint16 *i_blue) : red_w(red), green_w(green), blue_w(blue), red(i_red), blue(i_blue), green(i_green) { }
+		update_color(w_percentage_slider *red, w_percentage_slider *green, w_percentage_slider *blue, uint16 *i_red, uint16 *i_green, uint16 *i_blue) : red_w(red), green_w(green), blue_w(blue), red(i_red), blue(i_blue), green(i_green) { }
 		void operator()(dialog *) {
 			*red = red_w->get_selection() << 12;
 			*green = green_w->get_selection() << 12;
 			*blue = blue_w->get_selection() << 12;
 		}
 
-		w_slider *red_w;
-		w_slider *green_w;
-		w_slider *blue_w;
+		w_percentage_slider *red_w;
+		w_percentage_slider *green_w;
+		w_percentage_slider *blue_w;
 		
 		uint16* red;
 		uint16* blue;
