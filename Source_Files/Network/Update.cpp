@@ -74,11 +74,8 @@ void Update::StartUpdateCheck()
 
 int Update::Thread()
 {
-	std::ostringstream url;
-	url << "http://" << A1_UPDATE_HOST << "/update_check/" << A1_UPDATE_PLATFORM << ".php";
-	
 	HTTPClient fetcher;
-	if (!fetcher.Get(url.str()))
+	if (!fetcher.Get(A1_UPDATE_URL))
 	{
 		m_status = UpdateCheckFailed;
 		return 1;
