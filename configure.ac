@@ -85,14 +85,44 @@ AX_BOOST_FILESYSTEM
 AS_IF([ test "x$BOOST_FILESYSTEM_LIB" != "x" ],
       [ LIBS="$BOOST_FILESYSTEM_LIB $LIBS" ],
       [AC_MSG_ERROR([You need the Boost::Filesystem library to run Aleph One.])])
-AC_LANG_PUSH(C++)
-AC_CHECK_HEADER([boost/bind.hpp],
-                ,
-                [AC_MSG_ERROR([You need boost/bind.hpp from the boost library to run Aleph One.])])
-AC_CHECK_HEADER([boost/function.hpp],
-                ,
-                [AC_MSG_ERROR([You need boost/function.hpp from the boost library to run Aleph One.])])
-AC_LANG_POP(C++)
+      
+AC_DEFUN([AX_CHECK_BOOST_HEADER],
+         [ AC_LANG_PUSH(C++)
+           AC_CHECK_HEADER([$1], , [AC_MSG_ERROR([You need $1 from the Boost library to build Aleph One.])])
+           AC_LANG_POP(C++) ])
+
+dnl Some checks suppressed to speed configuration.
+AX_CHECK_BOOST_HEADER([boost/bind.hpp])
+AX_CHECK_BOOST_HEADER([boost/function.hpp])
+AX_CHECK_BOOST_HEADER([boost/foreach.hpp])
+AX_CHECK_BOOST_HEADER([boost/lexical_cast.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/make_shared.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/scoped_ptr.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/shared_array.hpp])
+AX_CHECK_BOOST_HEADER([boost/shared_ptr.hpp])
+AX_CHECK_BOOST_HEADER([boost/tokenizer.hpp])
+AX_CHECK_BOOST_HEADER([boost/unordered_map.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/utility.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/algorithm/hex.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/algorithm/string/case_conv.hpp])
+AX_CHECK_BOOST_HEADER([boost/algorithm/string/predicate.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/algorithm/string/replace.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/iostreams/categories.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/iostreams/device/array.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/iostreams/positioning.hpp])
+AX_CHECK_BOOST_HEADER([boost/iostreams/stream_buffer.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/iterator/filter_iterator.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/iterator/transform_iterator.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/property_tree/ini_parser.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/property_tree/ptree.hpp])
+AX_CHECK_BOOST_HEADER([boost/property_tree/xml_parser.hpp])
+AX_CHECK_BOOST_HEADER([boost/ptr_container/ptr_map.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/range/any_range.hpp])
+AX_CHECK_BOOST_HEADER([boost/tuple/tuple.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/tuple/tuple_comparison.hpp])
+AX_CHECK_BOOST_HEADER([boost/uuid/uuid.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/uuid/uuid_generators.hpp])
+dnl AX_CHECK_BOOST_HEADER([boost/uuid/uuid_io.hpp])
 
 dnl Check for library functions.
 AC_CHECK_FUNCS([snprintf vsnprintf sysconf sysctlbyname])
