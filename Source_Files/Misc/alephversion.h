@@ -63,8 +63,8 @@ ALEPHVERSION.H
 #define A1_VERSION_STRING A1_DISPLAY_PLATFORM " " A1_DISPLAY_DATE_VERSION " " A1_DISPLAY_VERSION
 #endif
 
-#define A1_HOMEPAGE_URL "http://marathon.sourceforge.net/"
-#define A1_UPDATE_URL "http://marathon.sourceforge.net/update_check/" A1_UPDATE_PLATFORM ".php"
+#define A1_HOMEPAGE_URL "https://alephone.lhowon.org/"
+#define A1_UPDATE_URL "https://updates.lhowon.org/update_check/" A1_UPDATE_PLATFORM ".txt"
 #define A1_METASERVER_HOST "metaserver.lhowon.org"
 #define A1_METASERVER_LOGIN_URL "https://metaserver.lhowon.org/metaclient/login"
 #define A1_METASERVER_SIGNUP_URL "https://metaserver.lhowon.org/metaclient/signup"
