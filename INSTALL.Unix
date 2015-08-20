@@ -1,130 +1,29 @@
-Aleph One/SDL Unix Installation Instructions
-============================================
+# Aleph One Unix Installation Instructions #
 
-As implied by its name, Aleph One/SDL requires the Simple DirectMedia Layer
-(SDL) library, available from the official SDL site:
+For complete up-to-date information, please check the Aleph One wiki:
 
-  http://www.libsdl.org/
+<https://github.com/Aleph-One-Marathon/alephone/wiki/Linux-Install-Instructions>
 
-If you didn't install SDL from source, you have to install the "SDL-devel"
-package to compile Aleph One.
+Aleph One is an autoconf-based system and can be installed with:
 
-You also have to install the "SDL_image" and "SDL_net" libraries which can be
-found here:
+   $ ./configure
+   $ make
+   $ sudo make install
+ 
+If you are building from a Git checkout or snapshot instead of an official
+release, run `./autogen.sh` instead of `./configure`.
 
-  http://www.libsdl.org/projects/SDL_image/
-  http://www.libsdl.org/projects/SDL_net/
+Several prerequisites are required, including Boost and several SDL libraries. The configure script will inform you of missing requirements.
 
-To hear mp3 background music, you will need SDL_Sound:
+## Installing the data files ##
 
-http://www.icculus.org/SDL_sound/
+To play Aleph One, you will also need graphics, sound and map files (known as
+a "scenario"). Scenarios for all three Bungie Marathon games are available for
+free from the Aleph One web site:
 
-Make sure you use SMPEG's mp3 library when configuring SDL_Sound! If you use
-the built-in mp3 library, M1A1 will hang when you start Aleph One.
+<https://alephone.lhowon.org/>
 
-Aleph One now requires the boost library:
+Once you have downloaded a scenario, pass its path to `alephone`:
 
-http://www.boost.org/
+    $ alephone /tmp/downloads/"Marathon Infinity"
 
-Support for Lua scripting, which may be required by some scenarios, requires
-you to have Lua installed. The source is available from the official Lua site:
-
-  http://www.lua.org
-
-Precompiled RPM packages of Lua can be downloaded from:
-
-  http://gwpr03.microlink.com.br/~acosta/lua/
-
-The mutiplayer audio chat feature of Aleph One requires the Speex library
-which can be downloaded from
-
-  http://www.speex.org
-
-
-Installing the program
-----------------------
-
-As with any autoconfiguring GNU software, installation is as easy as this:
-
- $ ./configure
- $ make
- [become root]
- # make install
-
-For a complete list of options that the "configure" script takes, type
-
- $ ./configure --help
-
-The most important option is
-
- --prefix=PREFIX
-
-which you can use to specify a different installation directory (the default
-is /usr/local). The "alephone" executable will be installed in PREFIX/bin,
-and the data files in PREFIX/share/AlephOne.
-
-If you don't have hardware accelerated OpenGL, you may want to specify the
-"--disable-opengl" option to the configure script.
-
-
-Installing the data files
--------------------------
-
-To play Aleph One, you will also need Marathon graphics, sound and map
-files. For your convenience, I've created archives containing the data files
-from the freely available Marathon 1 (M1A1), Marathon 2, and Marathon
-Infinity, converted to the formats needed by the SDL version of Aleph One,
-which can be downloaded from my Aleph One/SDL page:
-
-  http://alephone.cebix.net
-
-The archives contain the files "Images", "Map", "Shapes", "Sounds" and
-"README" and have to be unpacked to
-
-  /usr/local/share/AlephOne  (unless you specified a different PREFIX above)
-
-Alternatively, if you have a Marathon 2, Marathon Infinity or Marathon
-Trilogy Box Set CD, you can copy the needed files from the CD. This is a bit
-complicated, however, due to some ideosyncracies of the Mac HFS file system
-(every Mac file is really two files, one "data fork" and one "resource
-fork"). Aleph One/SDL needs these files:
-
- "Images" (resource fork)
- "Map" (combined data and resource fork of "Map" file in AppleSingle or
-    MacBinary II format; or just the data fork, in which case the resource
-    fork must be in a file "Map.resources")
- "Music" (data fork, optional, not included in Demo)
- "Shapes" (data fork)
- "Sounds" (data fork)
-
-Here's how to copy these files from a Mac Marathon CD under Linux:
-
- 1. Mount the CD with the HFS file system (you will probably have to be
-    root to do this):
-
-     # mount -t hfs /dev/cdrom /mnt/cdrom
-
-    If you mount CDs on a different mount point, such as "/cdrom", use that
-    instead of "/mnt/cdrom".
-
- 2. Change to the right directory on the CD. This can be complicated because
-    of the Mac special characters in the directory names, but with TAB-
-    completion or copying and pasting you will succeed.
-
-     $ cd /mnt/cdrom/....
-
-    You should now be in a directory containing the above mentioned files.
-
- 3. The Linux HFS file system module has the useful property of handling
-    Mac data and resource forks and making them available as separate files
-    (the resource forks are in a hidden ".resource" directory). You can
-    now copy the files:
-
-     $ cp .resource/Images /usr/local/share/AlephOne/Images
-     $ cp Map /usr/local/share/AlephOne/Map
-     $ cp .resource/Map /usr/local/share/AlephOne/Map.resources
-     $ cp Music /usr/local/share/AlephOne/Music
-     $ cp Shapes /usr/local/share/AlephOne/Shapes
-     $ cp Sounds /usr/local/share/AlephOne/Sounds
-
-    That's it.

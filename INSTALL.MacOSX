@@ -1,100 +1,12 @@
-Aleph One/SDL MacOSX Installation Instructions
-==============================================
+# Aleph One OS X Installation Instructions #
 
-The supplied project files are for Apple's Project Builder (I'm using version
-1.0.1, but an earlier version might work). If the development tools weren't
-included in your OSX installation, you can download them from
-http://connect.apple.com. You must be a registered Apple Developer Connection
-(ADC) member, but a free registration is available which gives you access to a
-version of the developer tools.
+Binary releases are available from the Aleph One web site:
 
-This is not the MacOS X Carbon version. For that see INSTALL.MacOSX.Carbon.
+<https://alephone.lhowon.org/>
 
-Required Libraries
-------------------
+For compilation instructions, please check the Aleph One wiki:
 
-Aleph One/SDL for MacOSX requires the Simple DirectMedia Layer (SDL)
-library, available from the official SDL site:
+<https://github.com/Aleph-One-Marathon/alephone/wiki/Developer-Notes>
 
-  http://www.libsdl.org/
-
-Aleph One expects SDL to be installed as a Framework, which is MacOSX's fancy
-version of a shared library. If you build SDL from source use Project Builder
-rather than command line tools, because (as far as I can tell) the command line
-tools do not build framework versions. The developer package available at the
-SDL webpage does install as a framework.
-
-The SDL_net library, available from the "Libraries" section of the SDL site, is
-also required.
-
-The SDL_image library, available from the "Libraries" section of the SDL site,
-is only required if you want to use replacement textures.
-
-Building and Installing the Program
------------------------------------
-
-From the command line, unpack the PBProjects directory:
-
- $ cd aleph
- $ tar xzvf PBProjects.tar.gz
-
-If you use StuffIt Expander to unpack this archive, the project files will be
-placed in a subfolder, and Project Builder won't know where to find any source
-files. Moving the PBProjects folder to the aleph directory should fix this.
-
-Project Builder needs to know where to find SDL.framework and SDL_net.framework
-(typically in $(HOME)/Library/Frameworks). Make sure to add these to the
-"Frameworks" group using the "Add Frameworks..." command from the Project menu.
-
-Now, build the program (click on the hammer icon or choose "Build" from the Build menu).
-
-If all goes well, you'll have an executable called "AlephOne" in
-aleph/PBProjects/build. You can run this from within Project Builder (probably a
-good way to test the program, as Project Builder will give you console output),
-or move this wherever you want it installed.
-
-Build Options:
---------------
-
-If you have the SDL_image framework installed, make sure to change config.h (in
-the file window of Project Builder, look under the "Sources" group) as needed, 
-and add SDL_image to the "Frameworks" group.
-
-Installing the data files
--------------------------
-
-Okay, this is the silly part. At present the MacOSX/SDL version of AlephOne
-can't read Mac Classic-style resource forks, so you need SDL-style data files.
-You'll either need to download some, or you'll need a Marathon 2, Marathon
-Infinity, or Marathon Trilogy Box Set CD and access to a linux system or a PC
-with the ability to read Mac filesystems. For details on how to do this, look at
-the file "INSTALL.Unix".
-
-Note that by default, the OSX version of Aleph One expects the data files to be
-in /Library/Application Support/AlephOne. You can change this by modifying
-confpaths.h in the "Sources" group. It might be more Mac-like to have this point
-to the same directory as the executable eventually.
-
-To enable the default SDL UI theme you need to do the following. Star by cd'ing
-to the aleph/data directory and enter these commands:
-	mkdir -p ~/.alephone/Themes
-	cp -r default_theme ~/.alephone/Themes/Default
-
-Issues, Bugs, and annoyances
-----------------------------
-
-Terminals don't work in OpenGL mode. (This also happens on the Windows/SDL
-version.)
-
-In OpenGL mode, if the OpenGL HUD option is not turned on, gameplay can feel
-extremely jerky and slow; if the display is set to millions of colors,
-framerates can drop to ~3 fps. (This is on a Powerbook G3 Firewire; your mileage
-may vary.)
-
-Aleph One opens a new window every time a new chapter screen or level is
-entered, or when you return to a menu, and these windows don't get closed.
-After simply starting the program, clicking on "New Game", watching the chapter
-screen, and playing the first level, you're left with three windows, none of
-which get closed.
-
-The software renderer seems extremely slow.
+Xcode projects are in the "PBProjects" directory. Release builds use the
+"AlephOne.xcodeproj" project.
