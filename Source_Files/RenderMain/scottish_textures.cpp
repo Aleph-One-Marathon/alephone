@@ -144,8 +144,8 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 
 /* ---------- constants */
 
-// LP change: boosted to cope with big displays
-#define MAXIMUM_SCRATCH_TABLE_ENTRIES 2048
+// boosted to cope with big displays
+#define MAXIMUM_SCRATCH_TABLE_ENTRIES 8192
 #define MAXIMUM_PRECALCULATION_TABLE_ENTRY_SIZE (MAX(sizeof(_vertical_polygon_data), sizeof(_horizontal_polygon_line_data)))
 
 #define SHADE_TO_SHADING_TABLE_INDEX(shade) ((shade)>>(FIXED_FRACTIONAL_BITS-shading_table_fractional_bits))
