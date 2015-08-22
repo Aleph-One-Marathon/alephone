@@ -304,18 +304,29 @@ bool InfoTree::read_shape(shape_descriptor& descriptor, bool allow_empty) const
 
 bool InfoTree::read_damage(damage_definition& def) const
 {
-	return (read_indexed("type", def.type, NUMBER_OF_DAMAGE_TYPES, true) ||
-			read_indexed("flags", def.flags, 2) ||
-			read_attr("base", def.base) ||
-			read_attr("random", def.random) ||
-			read_fixed("scale", def.scale));
+	bool status = false;
+	if (read_indexed("type", def.type, NUMBER_OF_DAMAGE_TYPES, true))
+		status = true;
+	if (read_indexed("flags", def.flags, 2))
+		status = true;
+	if (read_attr("base", def.base))
+		status = true;
+	if (read_attr("random", def.random))
+		status = true;
+	if (read_fixed("scale", def.scale))
+		status = true;
+	return status;
 }
 
 bool InfoTree::read_font(FontSpecifier& font) const
 {
-	bool status = (read_attr("size", font.Size) ||
-				   read_attr("style", font.Style) ||
-				   read_attr("file", font.File));
+	bool status = false;
+	if (read_attr("size", font.Size))
+		status = true;
+	if (read_attr("style", font.Style))
+		status = true;
+	if (read_attr("file", font.File))
+		status = true;
 	if (status)
 		font.Update();
 	return status;
