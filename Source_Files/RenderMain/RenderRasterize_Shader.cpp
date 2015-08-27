@@ -630,48 +630,6 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 		glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
 		glMatrixMode(GL_MODELVIEW);
-
-#ifdef DEBUG_NORMALS
-		float xcen = 0;
-		float ycen = 0;
-		float zcen = surface->height;
-		for(int i = 0; i < vertex_count; ++i) {
-			world_point2d vertex = get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
-			xcen += vertex.x;
-			ycen += vertex.y;
-		}
-		xcen /= (float)vertex_count;
-		ycen /= (float)vertex_count;
-		vec3 B = N.cross(T) * sign;
-
-		glDisable(GL_TEXTURE_2D);
-		glBegin(GL_LINES);
-
-		glColor4f(1.0,0.0,0.0,1.0);
-		glVertex3f(xcen, ycen, zcen);
-		glVertex3f(xcen + 32*N[0],
-				   ycen + 32*N[1],
-				   zcen + 32*N[2]);
-
-		glColor4f(0.4,0.7,1.0,1.0);
-		glVertex3f(xcen + 32*N[0],
-				   ycen + 32*N[1],
-				   zcen + 32*N[2]);
-		glVertex3f(xcen + 32*N[0] + 32*T[0],
-				   ycen + 32*N[1] + 32*T[1],
-				   zcen + 32*N[2] + 32*T[2]);
-
-		glColor4f(0.7,1.0,0.4,1.0);
-		glVertex3f(xcen + 32*N[0],
-				   ycen + 32*N[1],
-				   zcen + 32*N[2]);
-		glVertex3f(xcen + 32*N[0] + 32*B[0],
-				   ycen + 32*N[1] + 32*B[1],
-				   zcen + 32*N[2] + 32*B[2]);
-
-		glEnd();
-		glEnable(GL_TEXTURE_2D);
-#endif
 	}
 }
 
@@ -784,49 +742,6 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			glMatrixMode(GL_TEXTURE);
 			glLoadIdentity();
 			glMatrixMode(GL_MODELVIEW);
-
-#ifdef DEBUG_NORMALS
-			float xcen = 0;
-			float ycen = 0;
-			float zcen = 0;
-			for(int i = 0; i < vertex_count; ++i) {
-				xcen += vertices[i].x;
-				ycen += vertices[i].y;
-				zcen += vertices[i].z;
-			}
-			xcen /= (float)vertex_count;
-			ycen /= (float)vertex_count;
-			zcen /= (float)vertex_count;
-			vec3 B = N.cross(T) * sign;
-
-			glDisable(GL_TEXTURE_2D);
-			glBegin(GL_LINES);
-
-			glColor4f(1.0,0.0,0.0,1.0);
-			glVertex3f(xcen, ycen, zcen);
-			glVertex3f(xcen + 32*N[0],
-					   ycen + 32*N[1],
-					   zcen + 32*N[2]);
-
-			glColor4f(0.4,0.7,1.0,1.0);
-			glVertex3f(xcen + 32*N[0],
-					   ycen + 32*N[1],
-					   zcen + 32*N[2]);
-			glVertex3f(xcen + 32*N[0] + 32*T[0],
-					   ycen + 32*N[1] + 32*T[1],
-					   zcen + 32*N[2] + 32*T[2]);
-
-			glColor4f(0.7,1.0,0.4,1.0);
-			glVertex3f(xcen + 32*N[0],
-					   ycen + 32*N[1],
-					   zcen + 32*N[2]);
-			glVertex3f(xcen + 32*N[0] + 32*B[0],
-					   ycen + 32*N[1] + 32*B[1],
-					   zcen + 32*N[2] + 32*B[2]);
-
-			glEnd();
-			glEnable(GL_TEXTURE_2D);
-#endif
 		}
 	}
 }
@@ -979,59 +894,6 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);
 	Shader::disable();
-
-#ifdef DEBUG_NORMALS
-	/* draw normals and tangents as lines */
-	glDisable(GL_TEXTURE_2D);
-	glBegin(GL_LINES);
-
-	for(GLushort i = 0; i < ModelPtr->Model.VertIndices.size(); i+= 3) {
-		GLushort a = ModelPtr->Model.VertIndices[i];
-		GLushort b = ModelPtr->Model.VertIndices[i+1];
-		GLushort c = ModelPtr->Model.VertIndices[i+2];
-
-		vertex3 v1(ModelPtr->Model.PosBase()+3*a);
-		vertex3 v2(ModelPtr->Model.PosBase()+3*b);
-		vertex3 v3(ModelPtr->Model.PosBase()+3*c);
-
-		float xcen = (v1[0] + v2[0] + v3[0]) / 3.;
-		float ycen = (v1[1] + v2[1] + v3[1]) / 3.;
-		float zcen = (v1[2] + v2[2] + v3[2]) / 3.;
-
-		vec3 N(ModelPtr->Model.Normals[3*a],
-			   ModelPtr->Model.Normals[3*a+1],
-			   ModelPtr->Model.Normals[3*a+2]);
-		vec3 T(ModelPtr->Model.Tangents[a][0],
-			   ModelPtr->Model.Tangents[a][1],
-			   ModelPtr->Model.Tangents[a][2]);
-		float sign = ModelPtr->Model.Tangents[a][3];
-		vec3 B = N.cross(T) * sign;
-
-		glColor4f(1.0,0.0,0.0,1.0);
-		glVertex3f(xcen, ycen, zcen);
-		glVertex3f(xcen + 32*N[0],
-				   ycen + 32*N[1],
-				   zcen + 32*N[2]);
-
-		glColor4f(0.4,0.7,1.0,1.0);
-		glVertex3f(xcen + 32*N[0],
-				   ycen + 32*N[1],
-				   zcen + 32*N[2]);
-		glVertex3f(xcen + 32*N[0] + 32*T[0],
-				   ycen + 32*N[1] + 32*T[1],
-				   zcen + 32*N[2] + 32*T[2]);
-
-		glColor4f(0.7,1.0,0.4,1.0);
-		glVertex3f(xcen + 32*N[0],
-				   ycen + 32*N[1],
-				   zcen + 32*N[2]);
-		glVertex3f(xcen + 32*N[0] + 32*B[0],
-				   ycen + 32*N[1] + 32*B[1],
-				   zcen + 32*N[2] + 32*B[2]);
-	}
-	glEnd();
-	glEnable(GL_TEXTURE_2D);
-#endif
 	return true;
 }
 
