@@ -13,6 +13,7 @@
 #include "cseries.h"
 #include "map.h"
 #include "RenderRasterize.h"
+#include "OGL_FBO.h"
 #include "OGL_Textures.h"
 
 #include <memory>
@@ -21,6 +22,8 @@ class Blur;
 class RenderRasterize_Shader : public RenderRasterizerClass {
 
 	std::auto_ptr<Blur> blur;
+	std::auto_ptr<FBOSwapper> swapper;
+	
 	int objectCount;
 	world_distance objectY;
 	float weaponFlare;

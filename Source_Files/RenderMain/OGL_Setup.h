@@ -111,6 +111,8 @@ extern bool Using_sRGB;
 extern bool Wanting_sRGB;
 /* Whether to use sRGB framebuffer for bloom */
 extern bool Bloom_sRGB;
+/* Whether we can use framebuffer objects */
+extern bool FBO_Allowed;
 
 extern bool npotTextures;
 

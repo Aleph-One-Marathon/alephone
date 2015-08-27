@@ -27,336 +27,57 @@
 
 inline bool FogActive();
 
-class FBO {
-
-	friend class Blur;
-private:
-	GLuint _fbo;
-	GLuint _depthBuffer;
-public:
-	GLuint _w;
-	GLuint _h;
-	GLuint texID;
-
-	FBO(GLuint w, GLuint h) : _h(h), _w(w) {
-		glGenFramebuffersEXT(1, &_fbo);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _fbo);
-
-		glGenRenderbuffersEXT(1, &_depthBuffer);
-		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _depthBuffer);
-		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, _w, _h);
-		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, _depthBuffer);
-
-		glGenTextures(1, &texID);
-		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
-		glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, Bloom_sRGB ? GL_SRGB : GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_RECTANGLE_ARB, texID, 0);
-		assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) == GL_FRAMEBUFFER_COMPLETE_EXT);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-	}
-
-	void activate() {
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _fbo);
-		glPushAttrib(GL_VIEWPORT_BIT);
-		glViewport(0, 0, _w, _h);
-	}
-
-	static void deactivate() {
-		glPopAttrib();
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-	}
-
-	void draw() {
-		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
-		glEnable(GL_TEXTURE_RECTANGLE_ARB);
-
-		GLint coordinates[8] = { 0, 0, 0, _h, _w, _h, _w, 0 };
-		
-		glVertexPointer(2, GL_INT, 0, coordinates);
-		glTexCoordPointer(2, GL_INT, 0, coordinates);
-
-		glDrawArrays(GL_QUADS, 0, 4);
-
-		glDisable(GL_TEXTURE_RECTANGLE_ARB);
-	}
-
-	~FBO() {
-		glDeleteFramebuffersEXT(1, &_fbo);
-		glDeleteRenderbuffersEXT(1, &_depthBuffer);
-	}
-};
-
-// Gamma Corrected Blender: draw to src_a, draw to src_b, blend, swap, repeat
-// when finished, draw from dst
-class GCB {
-public:
-	GLuint w;
-	GLuint h;
-	GLuint textureIDs[3];
-	
-	GCB(GLuint _w, GLuint _h) : w(_w), h(_h), active_(false), src_a_(0), src_b_(1), dst_(2) {
-		glGenFramebuffersEXT(1, &fbo_);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
-		
-		glGenRenderbuffersEXT(1, &depthBuffer_);
-		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthBuffer_);
-		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, w, h);
-		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depthBuffer_);
-		
-		glGenTextures(3, textureIDs);
-		for (int i = 0; i < 3; ++i)
-		{
-			glBindTexture(GL_TEXTURE_RECTANGLE_ARB, textureIDs[i]);
-			glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB8, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-		}
-		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_RECTANGLE_ARB, textureIDs[src_a_], 0);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-	}
-	
-	void activate_src_a() {
-		activate();
-		bind_texture(src_a_);
-	}
-	
-	void activate_src_b() {
-		activate();
-		bind_texture(src_b_);
-	}
-	
-	void activate_dst() {
-		activate();
-		bind_texture(dst_);
-	}
-	
-	void deactivate() {
-		glPopAttrib();
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-		active_ = false;
-	}
-	
-	// blends src_a with src_b into dst
-	// automatically deactivates FBO
-	void blend(FBO* multi) {
-		// use gamma corrected shader here
-		//		activate_dst();
-		
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-		
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glLoadIdentity();
-		
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-		glOrtho(0, w, 0, h, 0.0, 1.0);
-		glColor4f(1.0, 1.0, 1.0, 1.0);
-		
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_BLEND);
-		
-		// set up FBO passed in as texture #1
-		glActiveTextureARB(GL_TEXTURE1_ARB);
-		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, multi->texID);
-		glEnable(GL_TEXTURE_RECTANGLE_ARB);
-		glActiveTextureARB(GL_TEXTURE0_ARB);
-		
-		glClientActiveTextureARB(GL_TEXTURE1_ARB);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		GLint multi_coordinates[8] = { 0, 0, 0, multi->_h, multi->_w, multi->_h, multi->_w, 0 };
-		glTexCoordPointer(2, GL_INT, 0, multi_coordinates);
-		glClientActiveTextureARB(GL_TEXTURE0_ARB);
-		
-		draw_(src_a_);
-		
-		// tear down multitexture stuff
-		glActiveTextureARB(GL_TEXTURE1_ARB);
-		glDisable(GL_TEXTURE_RECTANGLE_ARB);
-		glActiveTextureARB(GL_TEXTURE0_ARB);
-		
-		glClientActiveTextureARB(GL_TEXTURE1_ARB);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-		glClientActiveTextureARB(GL_TEXTURE0_ARB);
-		
-		glEnable(GL_BLEND);
-		glEnable(GL_DEPTH_TEST);
-		
-		glPopMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-		
-		deactivate();
-	}
-	
-	void swap() {
-		std::swap(src_a_, dst_);
-	}
-	
-	void draw() {
-		draw_(dst_);
-	}
-	
-private:
-	void activate() {
-		if (!active_)
-		{
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
-			glPushAttrib(GL_VIEWPORT_BIT);
-			glViewport(0, 0, w, h);
-			active_ = true;
-		}
-	}
-	
-	void draw_(int id) {
-		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, textureIDs[id]);
-		glEnable(GL_TEXTURE_RECTANGLE_ARB);
-		
-		GLint coordinates[8] = { 0, 0, 0, h, w, h, w, 0 };
-		
-		glVertexPointer(2, GL_INT, 0, coordinates);
-		glTexCoordPointer(2, GL_INT, 0, coordinates);
-		
-		glDrawArrays(GL_QUADS, 0, 4);
-		
-		glDisable(GL_TEXTURE_RECTANGLE_ARB);
-	}
-	
-	void bind_texture(int id) {
-		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_RECTANGLE_ARB, textureIDs[id], 0);
-	}
-	
-	bool active_;
-	int src_a_, src_b_, dst_;
-	GLuint fbo_;
-	GLuint depthBuffer_;
-};
-
 class Blur {
 
 private:
-	FBO _horizontal;
-	FBO _vertical;
-	std::auto_ptr<GCB> _blend;
-
+	FBOSwapper _swapper;
 	Shader *_shader_blur;
 	Shader *_shader_bloom;
 
 public:
 
 	Blur(GLuint w, GLuint h, Shader* s_blur, Shader* s_bloom)
-	: _horizontal(w, h), _vertical(w, h), _shader_blur(s_blur), _shader_bloom(s_bloom) {
-		if (!Bloom_sRGB)
-			_blend.reset(new GCB(graphics_preferences->screen_mode.width, graphics_preferences->screen_mode.height));
-		else
-			_blend.reset();
-	}
-
-	void resize(GLuint w, GLuint h) {
-		_horizontal = FBO(w, h);
-		_vertical = FBO(w, h);
-	}
+	: _swapper(w, h, Bloom_sRGB), _shader_blur(s_blur), _shader_bloom(s_bloom) {}
 
 	void begin() {
-		/* draw in first buffer */
-		_horizontal.activate();
+		_swapper.activate();
+		glDisable(GL_FRAMEBUFFER_SRGB_EXT); // don't blend for initial
 	}
 
 	void end() {
-		FBO::deactivate();
+		_swapper.swap();
 	}
 
-	void draw() {
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		glDisable(GL_DEPTH_TEST);
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-
-		glDisable(GL_BLEND);
-		glOrtho(0, _vertical._w, 0, _vertical._h, 0.0, 1.0);
-		glColor4f(1., 1., 1., 1.);
-
-		if (Bloom_sRGB)
-			glEnable(GL_FRAMEBUFFER_SRGB_EXT);
+	void draw(FBOSwapper& dest) {
 		
 		int passes = _shader_bloom->passes();
 		if (passes < 0)
 			passes = 5;
 
-		if (_blend.get())
-			_blend->swap();	// swap src_a into dst
-
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 		for (int i = 0; i < passes; i++) {
-			glDisable(GL_BLEND);
-			_vertical.activate();
 			_shader_blur->enable();
 			_shader_blur->setFloat(Shader::U_OffsetX, 1);
 			_shader_blur->setFloat(Shader::U_OffsetY, 0);
 			_shader_blur->setFloat(Shader::U_Pass, i + 1);
-			_horizontal.draw();
-			Shader::disable();
-			FBO::deactivate();
+			_swapper.filter(false);
 
-			_horizontal.activate();
-			_shader_blur->enable();
 			_shader_blur->setFloat(Shader::U_OffsetX, 0);
 			_shader_blur->setFloat(Shader::U_OffsetY, 1);
 			_shader_blur->setFloat(Shader::U_Pass, i + 1);
-			_vertical.draw();
-			Shader::disable();
-			FBO::deactivate();
+			_swapper.filter(false);
 
-			glEnable(GL_BLEND);
-			if (_blend.get()) {
-				_blend->swap();
-				_blend->activate_dst();
-			}
 			_shader_bloom->enable();
 			_shader_bloom->setFloat(Shader::U_Pass, i + 1);
-			if (_blend.get())
-				_blend->blend(&_horizontal);
-			else
-				_horizontal.draw();
+//			if (Bloom_sRGB)
+//				dest.blend(_swapper.current_contents(), true);
+//			else
+				dest.blend_multisample(_swapper.current_contents());
+			
 			Shader::disable();
 		}
 		
-		if (Bloom_sRGB && !Using_sRGB)
-			glDisable(GL_FRAMEBUFFER_SRGB_EXT);
-		
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		
-		if (_blend.get())
-			draw_blended();
-	}
-	
-	void prepare_render() {
-		if (_blend.get()) {
-			_blend->activate_src_a();
-			glClear(GL_DEPTH_BUFFER_BIT);
-		}
-	}
-	
-	void complete_render() {
-		if (_blend.get())
-			_blend->deactivate();
-	}
-	
-	void draw_blended() {
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-		glDisable(GL_BLEND);
-		glDisable(GL_DEPTH_TEST);
-		glOrtho(0, _blend->w, 0, _blend->h, 0.0, 1.0);
-		glColor4f(1., 1., 1., 1.);
-		_blend->draw();
-		glPopMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
 	}
 };
 
@@ -378,6 +99,10 @@ void RenderRasterize_Shader::setupGL() {
 			blur.reset(new Blur(640., 640. * graphics_preferences->screen_mode.height / graphics_preferences->screen_mode.width, s_blur, s_bloom));
 		}
 	}
+	
+	swapper.reset();
+	swapper.reset(new FBOSwapper(graphics_preferences->screen_mode.width, graphics_preferences->screen_mode.height, false));
+	
 
 //	glDisable(GL_CULL_FACE);
 //	glDisable(GL_LIGHTING);
@@ -443,22 +168,20 @@ void RenderRasterize_Shader::render_tree() {
 	s->setFloat(Shader::U_Pitch, view->pitch * AngleConvert);
 	Shader::disable();
 
-	bool bloom = (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur) && blur.get());
-	if (bloom)
-		blur->prepare_render();
-
+	swapper->activate();
 	RenderRasterizerClass::render_tree(kDiffuse);
+	swapper->deactivate();
 
-	if (bloom) {
-		blur->complete_render();
-		
+	if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur) && blur.get()) {
 		blur->begin();
-		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		RenderRasterizerClass::render_tree(kGlow);
 		blur->end();
-
-		blur->draw();
+		blur->draw(*swapper);
 	}
+	swapper->swap();
+	
+	// TBD - filters
+	swapper->draw();
 
 	glAlphaFunc(GL_GREATER, 0.5);
 }

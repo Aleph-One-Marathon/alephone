@@ -39,6 +39,14 @@
 		270F9FDD177687B7009AAE10 /* swscale.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCF177687B7009AAE10 /* swscale.framework */; };
 		270F9FDE177687B7009AAE10 /* swscale.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCF177687B7009AAE10 /* swscale.framework */; };
 		270F9FDF177687B7009AAE10 /* swscale.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCF177687B7009AAE10 /* swscale.framework */; };
+		2710CC611B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2710CC5F1B8F94FC00CE2EAE /* OGL_FBO.cpp */; };
+		2710CC621B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2710CC5F1B8F94FC00CE2EAE /* OGL_FBO.cpp */; };
+		2710CC631B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2710CC5F1B8F94FC00CE2EAE /* OGL_FBO.cpp */; };
+		2710CC641B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2710CC5F1B8F94FC00CE2EAE /* OGL_FBO.cpp */; };
+		2710CC651B8F94FC00CE2EAE /* OGL_FBO.h in Headers */ = {isa = PBXBuildFile; fileRef = 2710CC601B8F94FC00CE2EAE /* OGL_FBO.h */; };
+		2710CC661B8F94FC00CE2EAE /* OGL_FBO.h in Headers */ = {isa = PBXBuildFile; fileRef = 2710CC601B8F94FC00CE2EAE /* OGL_FBO.h */; };
+		2710CC671B8F94FC00CE2EAE /* OGL_FBO.h in Headers */ = {isa = PBXBuildFile; fileRef = 2710CC601B8F94FC00CE2EAE /* OGL_FBO.h */; };
+		2710CC681B8F94FC00CE2EAE /* OGL_FBO.h in Headers */ = {isa = PBXBuildFile; fileRef = 2710CC601B8F94FC00CE2EAE /* OGL_FBO.h */; };
 		271ADFC618A88B9C0073CB2E /* avcodec.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCC177687B7009AAE10 /* avcodec.framework */; };
 		271ADFC718A88B9C0073CB2E /* avformat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCD177687B7009AAE10 /* avformat.framework */; };
 		271ADFC818A88B9C0073CB2E /* avutil.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCE177687B7009AAE10 /* avutil.framework */; };
@@ -1980,6 +1988,8 @@
 		270F9FCD177687B7009AAE10 /* avformat.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = avformat.framework; sourceTree = "<group>"; };
 		270F9FCE177687B7009AAE10 /* avutil.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = avutil.framework; sourceTree = "<group>"; };
 		270F9FCF177687B7009AAE10 /* swscale.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = swscale.framework; sourceTree = "<group>"; };
+		2710CC5F1B8F94FC00CE2EAE /* OGL_FBO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_FBO.cpp; sourceTree = "<group>"; };
+		2710CC601B8F94FC00CE2EAE /* OGL_FBO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_FBO.h; sourceTree = "<group>"; };
 		2739B490101B862A00CC8098 /* Shape_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Shape_Blitter.cpp; sourceTree = "<group>"; };
 		2739B491101B862A00CC8098 /* Shape_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shape_Blitter.h; sourceTree = "<group>"; };
 		2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_rwops_zzip.c; sourceTree = "<group>"; };
@@ -3351,6 +3361,8 @@
 		F5CC92E30240D56101A80001 /* RenderMain */ = {
 			isa = PBXGroup;
 			children = (
+				2710CC5F1B8F94FC00CE2EAE /* OGL_FBO.cpp */,
+				2710CC601B8F94FC00CE2EAE /* OGL_FBO.h */,
 				277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */,
 				277AB6BD109CE2570003402A /* Rasterizer_Shader.h */,
 				277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */,
@@ -3783,6 +3795,7 @@
 				AE505BA8141D45E600915344 /* HUDRenderer.h in Headers */,
 				AE505BA9141D45E600915344 /* HUDRenderer_OGL.h in Headers */,
 				AE505BAA141D45E600915344 /* HUDRenderer_SW.h in Headers */,
+				2710CC671B8F94FC00CE2EAE /* OGL_FBO.h in Headers */,
 				AE505BAB141D45E600915344 /* images.h in Headers */,
 				AE505BAC141D45E600915344 /* motion_sensor.h in Headers */,
 				276BED241A84701E00AE52F4 /* powered_by_alephone.h in Headers */,
@@ -4003,6 +4016,7 @@
 				AEB4A14814296CAE00537AE7 /* HUDRenderer.h in Headers */,
 				AEB4A14914296CAE00537AE7 /* HUDRenderer_OGL.h in Headers */,
 				AEB4A14A14296CAE00537AE7 /* HUDRenderer_SW.h in Headers */,
+				2710CC681B8F94FC00CE2EAE /* OGL_FBO.h in Headers */,
 				AEB4A14B14296CAE00537AE7 /* images.h in Headers */,
 				AEB4A14C14296CAE00537AE7 /* motion_sensor.h in Headers */,
 				276BED251A84701E00AE52F4 /* powered_by_alephone.h in Headers */,
@@ -4218,6 +4232,7 @@
 				AEC3C77809AD68AC003258E4 /* computer_interface.h in Headers */,
 				AEC3C77A09AD68AC003258E4 /* fades.h in Headers */,
 				AEC3C77B09AD68AC003258E4 /* FontHandler.h in Headers */,
+				2710CC651B8F94FC00CE2EAE /* OGL_FBO.h in Headers */,
 				AEC3C77C09AD68AC003258E4 /* game_window.h in Headers */,
 				276BED101A846FD900AE52F4 /* CourierPrimeBoldItalic.h in Headers */,
 				AEC3C77D09AD68AC003258E4 /* HUDRenderer.h in Headers */,
@@ -4444,6 +4459,7 @@
 				AEFD865613EB84CF00C1E687 /* HUDRenderer.h in Headers */,
 				AEFD865713EB84CF00C1E687 /* HUDRenderer_OGL.h in Headers */,
 				AEFD865813EB84CF00C1E687 /* HUDRenderer_SW.h in Headers */,
+				2710CC661B8F94FC00CE2EAE /* OGL_FBO.h in Headers */,
 				AEFD865913EB84CF00C1E687 /* images.h in Headers */,
 				AEFD865A13EB84CF00C1E687 /* motion_sensor.h in Headers */,
 				276BED231A84701E00AE52F4 /* powered_by_alephone.h in Headers */,
@@ -5159,6 +5175,7 @@
 				AE505CE8141D45E600915344 /* SDL_rwops_zzip.c in Sources */,
 				AE505CE9141D45E600915344 /* IMG_savepng.c in Sources */,
 				AE505CEA141D45E600915344 /* csalerts.mm in Sources */,
+				2710CC631B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */,
 				AE505CEB141D45E600915344 /* lua_saved_objects.cpp in Sources */,
 				AE505CEC141D45E600915344 /* FilmProfile.cpp in Sources */,
 				27ECF29B1698DD7700BE9C35 /* Movie.cpp in Sources */,
@@ -5392,6 +5409,7 @@
 				AEB4A28914296CAE00537AE7 /* SDL_rwops_zzip.c in Sources */,
 				AEB4A28A14296CAE00537AE7 /* IMG_savepng.c in Sources */,
 				AEB4A28B14296CAE00537AE7 /* csalerts.mm in Sources */,
+				2710CC641B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */,
 				AEB4A28C14296CAE00537AE7 /* lua_saved_objects.cpp in Sources */,
 				AEB4A28D14296CAE00537AE7 /* FilmProfile.cpp in Sources */,
 				27ECF29C1698DD7700BE9C35 /* Movie.cpp in Sources */,
@@ -5625,6 +5643,7 @@
 				AEF1AC1610E05835007EE0D5 /* IMG_savepng.c in Sources */,
 				AEA31D2C113C9DF700266621 /* csalerts.mm in Sources */,
 				276589F8119DF1DD0096F75B /* lua_saved_objects.cpp in Sources */,
+				2710CC611B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */,
 				27D1A4F312FDF3630085E79C /* FilmProfile.cpp in Sources */,
 				27ECF2991698DD7700BE9C35 /* Movie.cpp in Sources */,
 				27ECF2A11698DD7700BE9C35 /* SDL_ffmpeg.c in Sources */,
@@ -5858,6 +5877,7 @@
 				AEFD879513EB84CF00C1E687 /* SDL_rwops_zzip.c in Sources */,
 				AEFD879613EB84CF00C1E687 /* IMG_savepng.c in Sources */,
 				AEFD879713EB84CF00C1E687 /* csalerts.mm in Sources */,
+				2710CC621B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */,
 				AEFD879813EB84CF00C1E687 /* lua_saved_objects.cpp in Sources */,
 				AEFD879913EB84CF00C1E687 /* FilmProfile.cpp in Sources */,
 				27ECF29A1698DD7700BE9C35 /* Movie.cpp in Sources */,

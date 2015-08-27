@@ -665,10 +665,27 @@ bool OGL_StartRun()
 	    npotTextures = true;
 	}
 
+	FBO_Allowed = false;
+	if (!OGL_CheckExtension("GL_EXT_framebuffer_object"))
+	{
+		logWarning("Framebuffer Objects not available");
+		if (ShaderRender)
+		{
+			logWarning("Disabling shader renderer");
+			graphics_preferences->screen_mode.acceleration = _opengl_acceleration;
+			ShaderRender = false;
+			Z_Buffering = TEST_FLAG(ConfigureData.Flags,OGL_Flag_ZBuffer);
+		}
+	}
+	else
+	{
+		FBO_Allowed = true;
+	}
+
 	Bloom_sRGB = false;
 	if (ShaderRender && TEST_FLAG(graphics_preferences->OGL_Configure.Flags, OGL_Flag_Blur))
 	{
-	  if (!OGL_CheckExtension("GL_EXT_framebuffer_object"))
+	  if (!FBO_Allowed)
 	  {
 	    SET_FLAG(graphics_preferences->OGL_Configure.Flags, OGL_Flag_Blur, false);
 	    logWarning("Bloom effects are not available");
