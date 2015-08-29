@@ -43,6 +43,7 @@ Jan 12, 2001 (Loren Petrich):
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
 #include "OGL_Blitter.h"
+#include "OGL_Render.h"
 #endif
 
 #include <math.h>
@@ -293,6 +294,9 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, TxtrWidth, TxtrHeight,
 		0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, OGL_Texture);
  	
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	
  	// Allocate and create display lists of rendering commands
  	DispList = glGenLists(256);
  	GLfloat TWidNorm = GLfloat(1)/TxtrWidth;
@@ -316,22 +320,8 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
  			glTranslatef(-Pad,0,0);
  			
  			// Draw the glyph rectangle
- 			// Due to a bug in MacOS X Classic OpenGL, glVertex2s() was changed to glVertex2f()
- 			glBegin(GL_POLYGON);
- 			
- 			glTexCoord2f(Left,Top);
-  			glVertex2d(0,-ascent_p);
-  			
- 			glTexCoord2f(Right,Top);
-  			glVertex2d(Width,-ascent_p);
-  			
- 			glTexCoord2f(Right,Bottom);
- 			glVertex2d(Width,descent_p);
- 			
- 			glTexCoord2f(Left,Bottom);
-			glVertex2d(0,descent_p);
-			
-			glEnd();
+			OGL_RenderTexturedRect(0, -ascent_p, Width, descent_p + ascent_p,
+								   Left, Top, Right, Bottom);
 			
 			// Move to the next glyph's position
 			glTranslated(Width-Pad,0,0);

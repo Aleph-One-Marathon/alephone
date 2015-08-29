@@ -72,6 +72,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
+#include "OGL_Render.h"
 #endif
 
 
@@ -111,12 +112,7 @@ void OverheadMap_OGL_Class::begin_overall()
 	// Do that by painting a black polygon
 	
 	glColor3f(0,0,0);
-	glBegin(GL_POLYGON);
-	glVertex2f(0,0);
-	glVertex2f(0,ViewHeight);
-	glVertex2f(ViewWidth,ViewHeight);
-	glVertex2f(ViewWidth,0);
-	glEnd();
+	OGL_RenderRect(0, 0, ViewWidth, ViewHeight);
 	
 /*
 #ifndef mac

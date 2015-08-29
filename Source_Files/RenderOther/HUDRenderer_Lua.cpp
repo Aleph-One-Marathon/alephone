@@ -33,6 +33,7 @@ HUD_RENDERER_LUA.CPP
 
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
+#include "OGL_Render.h"
 #endif
 
 #include <math.h>
@@ -305,16 +306,7 @@ void HUD_Lua_Class::fill_rect(float x, float y, float w, float h,
 	if (m_opengl)
 	{
 		glColor4f(r, g, b, a);
-		glDisable(GL_TEXTURE_2D);
-		glBegin(GL_QUADS);
-
-		glVertex2f(x,     y);
-		glVertex2f(x + w, y);
-		glVertex2f(x + w, y + h);
-		glVertex2f(x,     y + h);
-
-		glEnd();
-		glEnable(GL_TEXTURE_2D);
+		OGL_RenderRect(x, y, w, h);
 	}
 	else
 #endif
@@ -343,31 +335,7 @@ void HUD_Lua_Class::frame_rect(float x, float y, float w, float h,
 	if (m_opengl)
 	{
 		glColor4f(r, g, b, a);
-		glDisable(GL_TEXTURE_2D);
-		glBegin(GL_QUADS);
-		
-		glVertex2f(x,     y);
-		glVertex2f(x + w, y);
-		glVertex2f(x + w, y + t);
-		glVertex2f(x,     y + t);
-		
-		glVertex2f(x,     y + h - t);
-		glVertex2f(x + w, y + h - t);
-		glVertex2f(x + w, y + h);
-		glVertex2f(x,     y + h);
-		
-		glVertex2f(x,     y + t);
-		glVertex2f(x + t, y + t);
-		glVertex2f(x + t, y + h - t);
-		glVertex2f(x,     y + h - t);
-		
-		glVertex2f(x + w - t, y + t);
-		glVertex2f(x + w,     y + t);
-		glVertex2f(x + w,     y + h - t);
-		glVertex2f(x + w - t, y + h - t);
-		
-		glEnd();
-		glEnable(GL_TEXTURE_2D);
+		OGL_RenderFrame(x, y, w, h, t);
 	}
 	else
 #endif

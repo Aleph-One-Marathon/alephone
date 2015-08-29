@@ -54,6 +54,7 @@
 #include "OGL_Headers.h"
 #include "OGL_Setup.h"
 #include "OGL_Blitter.h"
+#include "OGL_Render.h"
 #endif
 
 #include "InfoTree.h"
@@ -2351,12 +2352,7 @@ int dialog::finish(bool play_sound)
         for (int i = 0; i < 2; i++)  // execute for both buffers
 #endif
         {
-            glBegin(GL_QUADS);
-            glVertex2i(rect.x, rect.y);
-            glVertex2i(rect.x + rect.w, rect.y);
-            glVertex2i(rect.x + rect.w, rect.y + rect.h);
-            glVertex2i(rect.x, rect.y + rect.h);
-            glEnd();
+			OGL_RenderRect(rect);
             SDL_GL_SwapBuffers();
         }
 	} else

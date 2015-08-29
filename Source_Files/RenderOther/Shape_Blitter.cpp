@@ -31,6 +31,7 @@ SHAPE_BLITTER.CPP
 #include "OGL_Setup.h"
 #include "OGL_Textures.h"
 #include "OGL_Blitter.h"
+#include "OGL_Render.h"
 
 #include "OGL_Headers.h"
 #endif
@@ -170,16 +171,10 @@ void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
         if (crop_rect.h < m_scaled_src.h)
             V_Scale *= crop_rect.h / static_cast<double>(m_scaled_src.h);
 
-        glBegin(GL_TRIANGLE_FAN);
-        glTexCoord2d(U_Offset, V_Offset);
-        glVertex2f(dst.x, dst.y);
-        glTexCoord2d(U_Offset + U_Scale, V_Offset);
-        glVertex2f(dst.x + dst.w, dst.y);
-        glTexCoord2d(U_Offset + U_Scale, V_Offset + V_Scale);
-        glVertex2f(dst.x + dst.w, dst.y + dst.h);
-        glTexCoord2d(U_Offset, V_Offset + V_Scale);
-        glVertex2f(dst.x, dst.y + dst.h);
-        glEnd();
+		OGL_RenderTexturedRect(dst.x, dst.y, dst.w, dst.h,
+							   U_Offset, V_Offset,
+							   U_Offset + U_Scale,
+							   V_Offset + V_Scale);
     }
     else if (m_type == Shape_Texture_Landscape)
     {
@@ -194,17 +189,11 @@ void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
             V_Scale *= crop_rect.w / static_cast<double>(m_scaled_src.w);
         if (crop_rect.h < m_scaled_src.h)
             U_Scale *= crop_rect.h / static_cast<double>(m_scaled_src.h);
-        
-        glBegin(GL_TRIANGLE_FAN);
-        glTexCoord2d(V_Offset, U_Offset);
-        glVertex2f(dst.x, dst.y);
-        glTexCoord2d(V_Offset + V_Scale, U_Offset);
-        glVertex2f(dst.x + dst.w, dst.y);
-        glTexCoord2d(V_Offset + V_Scale, U_Offset + U_Scale);
-        glVertex2f(dst.x + dst.w, dst.y + dst.h);
-        glTexCoord2d(V_Offset, U_Offset + U_Scale);
-        glVertex2f(dst.x, dst.y + dst.h);
-        glEnd();
+		
+		OGL_RenderTexturedRect(dst.x, dst.y, dst.w, dst.h,
+							   V_Offset, U_Offset,
+							   V_Offset + V_Scale,
+							   U_Offset + U_Scale);
     }
     else
     {
@@ -229,16 +218,21 @@ void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
         if (crop_rect.h < m_scaled_src.h)
             U_Scale *= crop_rect.h / static_cast<double>(m_scaled_src.h);
 
-        glBegin(GL_TRIANGLE_FAN);
-        glTexCoord2d(U_Offset, V_Offset);
-        glVertex2f(dst.x, dst.y);
-        glTexCoord2d(U_Offset, V_Offset + V_Scale);
-        glVertex2f(dst.x + dst.w, dst.y);
-        glTexCoord2d(U_Offset + U_Scale, V_Offset + V_Scale);
-        glVertex2f(dst.x + dst.w, dst.y + dst.h);
-        glTexCoord2d(U_Offset + U_Scale, V_Offset);
-        glVertex2f(dst.x, dst.y + dst.h);
-        glEnd();
+		GLfloat texcoords[8] = {
+			U_Offset, V_Offset,
+			U_Offset, V_Offset + V_Scale,
+			U_Offset + U_Scale, V_Offset + V_Scale,
+			U_Offset + U_Scale, V_Offset
+		};
+		GLfloat vertices[8] = {
+			dst.x, dst.y,
+			dst.x + dst.w, dst.y,
+			dst.x + dst.w, dst.y + dst.h,
+			dst.x, dst.y + dst.h
+		};
+		glVertexPointer(2, GL_FLOAT, 0, vertices);
+		glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+		glDrawArrays(GL_POLYGON, 0, 4);
 	}
     
     if (rotating)

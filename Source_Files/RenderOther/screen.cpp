@@ -1752,12 +1752,7 @@ void darken_world_window(void)
 		// Draw 50% black rectangle
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glColor4f(0.0, 0.0, 0.0, 0.5);
-		glBegin(GL_QUADS);
-			glVertex2i(r.x, r.y);
-			glVertex2i(r.x + r.w, r.y);
-			glVertex2i(r.x + r.w, r.y + r.h);
-			glVertex2i(r.x, r.y + r.h);
-		glEnd();
+		OGL_RenderRect(r);
 
 		// Restore projection and state
 		glPopMatrix();

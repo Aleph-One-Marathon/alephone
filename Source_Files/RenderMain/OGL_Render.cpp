@@ -1103,15 +1103,6 @@ bool OGL_EndMain()
 	// Render OpenGL faders, if in use
 	OGL_DoFades(0,0,ViewWidth,ViewHeight);
 	
-	// Paint over 1-pixel boundary
-	glColor3f(0,0,0);
-	glBegin(GL_LINE_LOOP);
-	glVertex2f(0.5,0.5);
-	glVertex2f(0.5F,ViewHeight-0.5F);
-	glVertex2f(ViewWidth-0.5F,ViewHeight-0.5F);
-	glVertex2f(ViewWidth-0.5F,0.5F);
-	glEnd();
-		
 	return true;
 }
 
@@ -3236,12 +3227,7 @@ bool OGL_RenderCrosshairs()
 				int LenMax = LenMin + Crosshairs.Length;
 				
 				// at the initial rotation, this is the rectangle at 3:00
-				glBegin(GL_QUADS);
-				glVertex2i(LenMin, HeightMin);
-				glVertex2i(LenMax, HeightMin);
-				glVertex2i(LenMax, HeightMax);
-				glVertex2i(LenMin, HeightMax);
-				glEnd();
+				OGL_RenderRect(LenMin, HeightMin, LenMax - LenMin, HeightMax - HeightMin);
 			}
 			break;
 		case CHShape_Circle:
@@ -3258,26 +3244,19 @@ bool OGL_RenderCrosshairs()
 				int LenMin = std::min(LenMid, static_cast<int>(Crosshairs.FromCenter));
 				
 				// at the initial rotation, this is the bottom right
-				glBegin(GL_QUAD_STRIP);
-				
-				// 3:00 horizontal edge
-				glVertex2i(LenMax + WidthMin, LenMin + HeightMin);
-				glVertex2i(LenMax + WidthMax, LenMin + HeightMin);
-				
-				// upper diagonal
-				glVertex2i(LenMax + WidthMin, LenMid + HeightMin);
-				glVertex2i(LenMax + WidthMax, LenMid + HeightMax);
-
-				// lower diagonal
-				glVertex2i(LenMid + WidthMin, LenMax + HeightMin);
-				glVertex2i(LenMid + WidthMax, LenMax + HeightMax);
-				
-				// 6:00 vertical edge
-				glVertex2i(LenMin + WidthMin, LenMax + HeightMin);
-				glVertex2i(LenMin + WidthMin, LenMax + HeightMax);
-				
-				glEnd();
-			}				
+				GLfloat vertices[16] = {
+					LenMax + WidthMin, LenMin + HeightMin,
+					LenMax + WidthMax, LenMin + HeightMin,
+					LenMax + WidthMin, LenMid + HeightMin,
+					LenMax + WidthMax, LenMid + HeightMax,
+					LenMid + WidthMin, LenMax + HeightMin,
+					LenMid + WidthMax, LenMax + HeightMax,
+					LenMin + WidthMin, LenMax + HeightMin,
+					LenMin + WidthMin, LenMax + HeightMax
+				};
+				glVertexPointer(2, GL_FLOAT, 0, vertices);
+				glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
+			}
 			break;
 		}
 		glRotated(-90.0, 0, 0, 1); // turn clockwise		
@@ -3362,8 +3341,67 @@ bool OGL_RenderText(short BaseX, short BaseY, const char *Text, unsigned char r,
 	return true;
 }
 
+void OGL_RenderRect(float x, float y, float w, float h)
+{
+	glDisable(GL_TEXTURE_2D);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+	GLfloat vertices[8] = { x, y, x, y + h, x + w, y + h, x + w, y };
+	glVertexPointer(2, GL_FLOAT, 0, vertices);
+	glDrawArrays(GL_POLYGON, 0, 4);
 
-// Render the console cursor, with a shadow like RenderText
+	glEnable(GL_TEXTURE_2D);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+}
+
+void OGL_RenderRect(const SDL_Rect& rect)
+{
+	OGL_RenderRect(rect.x, rect.y, rect.w, rect.h);
+}
+
+void OGL_RenderTexturedRect(float x, float y, float w, float h, float tleft, float ttop, float tright, float tbottom)
+{
+//	glEnable(GL_TEXTURE_2D);
+//	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+	GLfloat vertices[8] = { x, y, x, y + h, x + w, y + h, x + w, y };
+	GLfloat texcoords[8] = { tleft, ttop, tleft, tbottom, tright, tbottom, tright, ttop };
+    glVertexPointer(2, GL_FLOAT, 0, vertices);
+	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
+	glDrawArrays(GL_POLYGON, 0, 4);
+}
+
+void OGL_RenderTexturedRect(const SDL_Rect& rect, float tleft, float ttop, float tright, float tbottom)
+{
+	OGL_RenderTexturedRect(rect.x, rect.y, rect.w, rect.h, tleft, ttop, tright, tbottom);
+}
+
+void OGL_RenderFrame(float x, float y, float w, float h, float t)
+{
+	glDisable(GL_TEXTURE_2D);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+	GLfloat vertices[20] = {
+		x,         y,
+		x + t,     y + t,
+		x + w,     y,
+		x + w - t, y + t,
+		x + w,	   y + h,
+		x + w - t, y + h - t,
+		x,         y + h,
+		x + t,     y + h - t,
+		x,		   y,
+		x + t,	   y + t
+	};
+	glVertexPointer(2, GL_FLOAT, 0, vertices);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 10);
+	
+	glEnable(GL_TEXTURE_2D);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+}
+
+
+// Render the console cursor
 bool OGL_RenderTextCursor(const SDL_Rect& rect, unsigned char r, unsigned char g, unsigned char b)
 {
 	if (!OGL_IsActive()) return false;
@@ -3371,30 +3409,8 @@ bool OGL_RenderTextCursor(const SDL_Rect& rect, unsigned char r, unsigned char g
 	// Place the cursor in the foreground of the display
 	SetProjectionType(Projection_Screen);
 	
-	// Using a modelview matrix, of course
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	
-	// Background
-	glColor3f(0, 0, 0);
-	glBegin(GL_QUADS);
-	glVertex2i(rect.x, rect.y);
-	glVertex2i(rect.x + rect.w, rect.y);
-	glVertex2i(rect.x + rect.w, rect.y + rect.h);
-	glVertex2i(rect.x, rect.y + rect.h);
-	glEnd();
-	
-	// Foreground
 	SglColor3f(r/255.0f, g/255.0f, b/255.0f);
-	glBegin(GL_QUADS);
-	glVertex2i(rect.x, rect.y);
-	glVertex2i(rect.x + rect.w, rect.y);
-	glVertex2i(rect.x + rect.w, rect.y + rect.h);
-	glVertex2i(rect.x, rect.y + rect.h);
-	glEnd();
-
-	// Clean up
-	glPopMatrix();
+	OGL_RenderRect(rect);
 	
 	return true;
 }

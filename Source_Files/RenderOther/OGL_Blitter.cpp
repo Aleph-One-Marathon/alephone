@@ -27,6 +27,7 @@
 #include "screen.h"
 
 #ifdef HAVE_OPENGL
+#include "OGL_Render.h"
 
 const int OGL_Blitter::tile_size;
 set<OGL_Blitter*> *OGL_Blitter::m_blitter_registry = NULL;
@@ -322,12 +323,9 @@ void OGL_Blitter::Draw(const Image_Rect& dst, const Image_Rect& raw_src)
 		GLdouble tbottom = ttop + (th * y_scale);
 		
 		glBindTexture(GL_TEXTURE_2D, m_refs[i]);
-		glBegin(GL_QUADS);
-		glTexCoord2f(VMin, UMin); glVertex3f(tleft,  ttop,    0);
-		glTexCoord2f(VMax, UMin); glVertex3f(tright, ttop,    0);
-		glTexCoord2f(VMax, UMax); glVertex3f(tright, tbottom, 0);
-		glTexCoord2f(VMin, UMax); glVertex3f(tleft,  tbottom, 0);
-		glEnd();
+		
+		OGL_RenderTexturedRect(tleft, ttop, tright - tleft, tbottom - ttop,
+							   VMin, UMin, VMax, UMax);
 	}
 	
 	if (rotating)

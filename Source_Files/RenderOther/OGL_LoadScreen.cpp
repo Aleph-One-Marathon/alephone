@@ -25,6 +25,7 @@
 #include "screen.h"
 
 #ifdef HAVE_OPENGL
+#include "OGL_Render.h"
 
 extern bool OGL_SwapBuffers();
 
@@ -122,16 +123,9 @@ void OGL_LoadScreen::Progress(const int progress)
 		glTranslated(x_offset, y_offset, 0.0);
 		glScaled(x_scale, y_scale, 1.0);
 		
-		glDisable(GL_TEXTURE_2D);
-		
 		// draw the progress bar background
 		glColor3us(colors[0].red, colors[0].green, colors[0].blue);
-		glBegin(GL_QUADS);
-		glVertex3f(x, y, 0);
-		glVertex3f(x + w, y, 0);
-		glVertex3f(x + w, y + h, 0);
-		glVertex3f(x, y + h, 0);
-		glEnd();
+		OGL_RenderRect(x, y, w, h);
 		
 		int height = h, width = w;
 		int left = x, top = y;
@@ -147,14 +141,7 @@ void OGL_LoadScreen::Progress(const int progress)
 			
 		// draw the progress bar foreground
 		glColor3us(colors[1].red, colors[1].green, colors[1].blue);
-		glBegin(GL_QUADS);
-		glVertex3f(left, top, 0);
-		glVertex3f(left + width, top, 0);
-		glVertex3f(left + width, top + height, 0);
-		glVertex3f(left, top + height, 0);
-		glEnd();
-		
-		glEnable(GL_TEXTURE_2D);
+		OGL_RenderRect(left, top, width, height);
 		
 		glPopMatrix();
 	}

@@ -26,6 +26,7 @@
 #ifdef HAVE_OPENGL
 
 #include "OGL_Setup.h"
+#include "OGL_Render.h"
 
 FBO *FBO::_current_active = NULL;
 
@@ -77,14 +78,7 @@ void FBO::deactivate() {
 void FBO::draw() {
 	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
 	glEnable(GL_TEXTURE_RECTANGLE_ARB);
-	
-	GLint coordinates[8] = { 0, 0, 0, _h, _w, _h, _w, 0 };
-	
-	glVertexPointer(2, GL_INT, 0, coordinates);
-	glTexCoordPointer(2, GL_INT, 0, coordinates);
-	
-	glDrawArrays(GL_QUADS, 0, 4);
-	
+	OGL_RenderTexturedRect(0, 0, _w, _h, 0, 0, _w, _h);
 	glDisable(GL_TEXTURE_RECTANGLE_ARB);
 }
 

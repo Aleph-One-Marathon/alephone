@@ -44,6 +44,7 @@
 
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
+#include "OGL_Render.h"
 #endif
 
 #include <math.h>
@@ -73,11 +74,6 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 	}
 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-	if (LuaTexturePaletteSize())
-		glDisable(GL_TEXTURE_2D);
-	else
-		glEnable(GL_TEXTURE_2D);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_ALPHA_TEST);
@@ -97,12 +93,7 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 	else
 	{
 		glColor3ub(0, 0, 0);
-		glBegin(GL_QUADS);
-		glVertex2i(dest.left,  dest.top);
-		glVertex2i(dest.right, dest.top);
-		glVertex2i(dest.right, dest.bottom);
-		glVertex2i(dest.left,  dest.bottom);
-		glEnd();
+		OGL_RenderRect(dest.left, dest.top, dest.right - dest.left, dest.bottom - dest.top);
 	}
 	
 	GLdouble x_scale = (dest.right - dest.left) / 640.0;
@@ -169,16 +160,11 @@ void HUD_OGL_Class::DrawShape(shape_descriptor shape, screen_rectangle *dest, sc
 	glDisable(GL_BLEND);
 	TMgr.SetupTextureMatrix();
 	TMgr.RenderNormal();
-	glBegin(GL_TRIANGLE_FAN);
-		glTexCoord2d(U_Offset, V_Offset);
-		glVertex2i(x, y);
-		glTexCoord2d(U_Offset + U_Scale, V_Offset);
-		glVertex2i(x + width, y);
-		glTexCoord2d(U_Offset + U_Scale, V_Offset + V_Scale);
-		glVertex2i(x + width, y + height);
-		glTexCoord2d(U_Offset, V_Offset + V_Scale);
-		glVertex2i(x, y + height);
-	glEnd();
+	
+	OGL_RenderTexturedRect(x, y, width, height,
+						   U_Offset, V_Offset,
+						   U_Offset + U_Scale, V_Offset + V_Scale);
+
 	TMgr.RestoreTextureMatrix();
 }
 
@@ -211,16 +197,12 @@ void HUD_OGL_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y, bool
 		glDisable(GL_BLEND);
 	TMgr.SetupTextureMatrix();
 	TMgr.RenderNormal();
-	glBegin(GL_TRIANGLE_FAN);
-		glTexCoord2d(U_Offset, V_Offset);
-		glVertex2i(x, y);
-		glTexCoord2d(U_Offset + U_Scale, V_Offset);
-		glVertex2i(x + width, y);
-		glTexCoord2d(U_Offset + U_Scale, V_Offset + V_Scale);
-		glVertex2i(x + width, y + height);
-		glTexCoord2d(U_Offset, V_Offset + V_Scale);
-		glVertex2i(x, y + height);
-	glEnd();
+	
+	OGL_RenderTexturedRect(x, y, width, height,
+						   U_Offset, V_Offset,
+						   U_Offset + U_Scale,
+						   V_Offset + V_Scale);
+
 	TMgr.RestoreTextureMatrix();
 }
 
@@ -282,8 +264,7 @@ void HUD_OGL_Class::FillRect(screen_rectangle *r, short color_index)
 	glColor3us(c.red, c.green, c.blue);
 
 	// Draw rectangle
-	glDisable(GL_TEXTURE_2D);
-	glRecti(r->left, r->top, r->right, r->bottom);
+	OGL_RenderRect(r->left, r->top, r->right - r->left, r->bottom - r->top);
 }
 
 
@@ -298,14 +279,7 @@ void HUD_OGL_Class::FrameRect(screen_rectangle *r, short color_index)
 	glColor3us(c.red, c.green, c.blue);
 
 	// Draw rectangle
-	glDisable(GL_TEXTURE_2D);
-	glLineWidth(1);
-	glBegin(GL_LINE_LOOP);
-	glVertex2f(r->left + 0.5, r->top + 0.5);
-	glVertex2f(r->right - 0.5, r->top + 0.5);
-	glVertex2f(r->right - 0.5, r->bottom - 0.5);
-	glVertex2f(r->left + 0.5, r->bottom - 0.5);
-	glEnd();
+	OGL_RenderFrame(r->left - 1, r->top - 1, r->right - r->left + 2, r->bottom - r->top + 2, 1);
 }
 
 

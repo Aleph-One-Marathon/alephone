@@ -35,6 +35,7 @@ July 8, 2000:
 
 
 #include "OGL_Setup.h"
+#include "render.h"
 
 
 // These functions return whether OpenGL is active;
@@ -100,6 +101,15 @@ bool OGL_RenderText(short BaseX, short BaseY, const char *Text, unsigned char r 
 
 // Render cursor for Lua/chat console
 bool OGL_RenderTextCursor(const SDL_Rect& rect, unsigned char r = 0xff, unsigned char g = 0xff, unsigned char b = 0xff);
+
+// Render rectangles (set color beforehand)
+void OGL_RenderRect(float x, float y, float w, float h);
+void OGL_RenderRect(const SDL_Rect& rect);
+
+void OGL_RenderTexturedRect(float x, float y, float w, float h, float tleft, float ttop, float tright, float tbottom);
+void OGL_RenderTexturedRect(const SDL_Rect& rect, float tleft, float ttop, float tright, float tbottom);
+
+void OGL_RenderFrame(float x, float y, float w, float h, float thickness);
 
 // Returns whether or not 2D stuff is to be piped through OpenGL
 bool OGL_Get2D();
