@@ -3360,10 +3360,7 @@ void OGL_RenderRect(const SDL_Rect& rect)
 }
 
 void OGL_RenderTexturedRect(float x, float y, float w, float h, float tleft, float ttop, float tright, float tbottom)
-{
-//	glEnable(GL_TEXTURE_2D);
-//	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	
+{	
 	GLfloat vertices[8] = { x, y, x, y + h, x + w, y + h, x + w, y };
 	GLfloat texcoords[8] = { tleft, ttop, tleft, tbottom, tright, tbottom, tright, ttop };
     glVertexPointer(2, GL_FLOAT, 0, vertices);

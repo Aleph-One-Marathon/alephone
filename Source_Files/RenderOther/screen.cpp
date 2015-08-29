@@ -890,6 +890,11 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		}
 		glScissor(0, 0, width, height);
 		glViewport(0, 0, width, height);
+		
+		OGL_ClearScreen();
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 #ifdef __WIN32__
 		clear_screen();
 #endif
