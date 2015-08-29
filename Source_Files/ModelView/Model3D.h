@@ -188,9 +188,11 @@ struct Model3D
 	// From the position data
 	void FindBoundingBox();
 	
+#if 0
 	// For debugging bounding-box-handling code
 	// NULL means don't render one set of edges
 	void RenderBoundingBox(const GLfloat *EdgeColor, const GLfloat *DiagonalColor);
+#endif
 	
 	// Process the normals in various ways
 	enum

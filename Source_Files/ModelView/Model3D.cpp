@@ -579,6 +579,7 @@ void Model3D::FindBoundingBox()
 }
 
 
+#if 0
 // For debugging
 void Model3D::RenderBoundingBox(const GLfloat *EdgeColor, const GLfloat *DiagonalColor)
 {
@@ -649,6 +650,7 @@ void Model3D::RenderBoundingBox(const GLfloat *EdgeColor, const GLfloat *Diagona
 		glDrawElements(GL_LINES,NumDiagVerts,GL_UNSIGNED_SHORT,DiagVerts);
 	}
 }
+#endif
 
 void Model3D::BuildTrigTables()
 {
