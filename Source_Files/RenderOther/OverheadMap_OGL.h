@@ -95,7 +95,7 @@ class OverheadMap_OGL_Class: public OverheadMapClass
 	rgb_color SavedColor;
 
 	// Cached polygon lines and their width
-	vector<unsigned short> LineCache;
+	vector<world_point2d> LineCache;
 	short SavedPenSize;
 	
 	// Cached lines For drawing monster paths

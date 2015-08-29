@@ -135,15 +135,12 @@ void OverheadMap_OGL_Class::begin_overall()
 		glDisable(GL_BLEND);
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_FOG);
-	glLineWidth(1);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
 void OverheadMap_OGL_Class::end_overall()
 {
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	// Reset line width
-	glLineWidth(1);
 }
 
 
@@ -204,12 +201,9 @@ void OverheadMap_OGL_Class::DrawCachedPolygons()
 
 void OverheadMap_OGL_Class::begin_lines()
 {
-	// Vertices already set
-	
 	// Reset color and pen size to defaults
 	SetColor(SavedColor);
 	SavedPenSize = 1;
-	glLineWidth(SavedPenSize);
 	
 	// Reset cache to zero length
 	LineCache.clear();
@@ -238,12 +232,11 @@ void OverheadMap_OGL_Class::draw_line(
 	if (!AreLinesEquallyWide)
 	{
 		SavedPenSize = pen_size;
-		glLineWidth(SavedPenSize);		
 	}
 	
-	// Add the line's points to the cached line		
-	LineCache.push_back(vertices[0]);
-	LineCache.push_back(vertices[1]);
+	// Add the line's points to the cached line
+	LineCache.push_back(GetVertex(vertices[0]));
+	LineCache.push_back(GetVertex(vertices[1]));
 }
 
 void OverheadMap_OGL_Class::end_lines()
@@ -253,8 +246,7 @@ void OverheadMap_OGL_Class::end_lines()
 
 void OverheadMap_OGL_Class::DrawCachedLines()
 {
-	glDrawElements(GL_LINES,LineCache.size(),
-		GL_UNSIGNED_SHORT,&LineCache.front());
+	OGL_RenderLines(LineCache, SavedPenSize);
 	LineCache.clear();
 }
 
@@ -267,45 +259,46 @@ void OverheadMap_OGL_Class::draw_thing(
 {
 	SetColor(color);
 	
-	// The rectangle is a square
-	const int NumRectangleVertices = 4;
-	const GLfloat RectangleShape[NumRectangleVertices][2] =
-	{
-		{-0.75,-0.75},
-		{-0.75,0.75},
-		{0.75,0.75},
-		{0.75,-0.75}
-	};
-	// The circle is here an octagon for convenience
-	const int NumCircleVertices = 8;
-	const GLfloat CircleShape[NumCircleVertices][2] =
-	{
-		{-0.75F,-0.3F},
-		{-0.75F,0.3F},
-		{-0.3F,0.75F},
-		{0.3F,0.75F},
-		{0.75F,0.3F},
-		{0.75F,-0.3F},
-		{0.3F,-0.75F},
-		{-0.3F,-0.75F}
-	};
-	
 	// Let OpenGL do the transformation work
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glTranslatef(center.x,center.y,0);
-	glScalef(radius,radius,1);
+	glScalef(radius, radius, 1);
 
 	switch(shape)
 	{
 	case _rectangle_thing:
-		glVertexPointer(2,GL_FLOAT,0,RectangleShape[0]);
-		glDrawArrays(GL_POLYGON,0,NumRectangleVertices);
+		{
+			OGL_RenderRect(-0.75f, -0.75f, 1.5f, 1.5f);
+		}
 		break;
 	case _circle_thing:
-		glLineWidth(2);
-		glVertexPointer(2,GL_FLOAT,0,CircleShape[0]);
-		glDrawArrays(GL_LINE_LOOP,0,NumCircleVertices);
+		{
+			GLfloat ft = 0.1f;
+			GLfloat ht = ft * 0.5f;
+			GLfloat vertices[36] = {
+				-0.30f - ht, -0.75f,
+				-0.30f + ht, -0.75f + ft,
+				+0.30f + ht, -0.75f,
+				+0.30f - ht, -0.75f + ft,
+				+0.75f - ft, -0.30f + ht,
+				+0.75f,      -0.30f - ht,
+				+0.75f - ft, +0.30f - ht,
+				+0.75f,      +0.30f + ht,
+				+0.30f - ht, +0.75f - ft,
+				+0.30f + ht, +0.75f,
+				-0.30f + ht, +0.75f - ft,
+				-0.30f - ht, +0.75f,
+				-0.75f + ft, +0.30f - ht,
+				-0.75f,      +0.30f + ht,
+				-0.75f + ft, -0.30f + ht,
+				-0.75f,      -0.30f - ht,
+				-0.30f - ht, -0.75f,
+				-0.30f + ht, -0.75f + ft
+			};
+			glVertexPointer(2, GL_FLOAT, 0, vertices);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 36);
+		}
 		break;
 	default:
 		break;
@@ -344,10 +337,11 @@ void OverheadMap_OGL_Class::draw_player(
 	glRotatef(facing*(360.0F/FULL_CIRCLE),0,0,1);
 	float scale = 1/float(1 << shrink);
 	glScalef(scale,scale,1);
+	glDisable(GL_TEXTURE_2D);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glVertexPointer(2,GL_FLOAT,0,PlayerShape[0]);
 	glDrawArrays(GL_POLYGON,0,3);
-	glLineWidth(1);					// LP: need only 1-pixel thickness of line
-	glDrawArrays(GL_LINE_LOOP,0,3);	// LP addition: perimeter drawing makes small version easier to see
+
 	glPopMatrix();
 }
 
@@ -389,7 +383,6 @@ void OverheadMap_OGL_Class::draw_text(
 void OverheadMap_OGL_Class::set_path_drawing(rgb_color& color)
 {
 	SetColor(color);
-	glLineWidth(1);
 }
 
 void OverheadMap_OGL_Class::draw_path(
@@ -399,13 +392,17 @@ void OverheadMap_OGL_Class::draw_path(
 	// At first step, reset the length
 	if (step <= 0) PathPoints.clear();
 	
+	// Duplicate points to form lines at each step
+	if (PathPoints.size() > 1)
+		PathPoints.push_back(PathPoints.back());
+
 	// Add the point
 	PathPoints.push_back(location);
 }
 
 void OverheadMap_OGL_Class::finish_path()
 {
-	glVertexPointer(2,GL_SHORT,sizeof(world_point2d),&PathPoints.front());
-	glDrawArrays(GL_LINE_STRIP,0,(GLsizei)(PathPoints.size()));
+	OGL_RenderLines(PathPoints, 1);
+	PathPoints.clear();
 }
 #endif // def HAVE_OPENGL

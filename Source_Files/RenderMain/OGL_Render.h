@@ -111,6 +111,9 @@ void OGL_RenderTexturedRect(const SDL_Rect& rect, float tleft, float ttop, float
 
 void OGL_RenderFrame(float x, float y, float w, float h, float thickness);
 
+// Render lines (for overhead map)
+void OGL_RenderLines(const std::vector<world_point2d>& points, float thickness);
+
 // Returns whether or not 2D stuff is to be piped through OpenGL
 bool OGL_Get2D();
 

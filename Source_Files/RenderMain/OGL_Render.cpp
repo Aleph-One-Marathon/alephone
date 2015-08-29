@@ -3400,6 +3400,46 @@ void OGL_RenderFrame(float x, float y, float w, float h, float t)
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
+void OGL_RenderLines(const std::vector<world_point2d>& points, float thickness)
+{
+	if (points.empty())
+		return;
+	
+	glDisable(GL_TEXTURE_2D);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+	std::vector<GLfloat> coords;
+	for (size_t i = 1; i < points.size(); i += 2)
+	{
+		world_point2d prev = points[i - 1];
+		world_point2d cur = points[i];
+		
+		float rise = cur.y - prev.y;
+		float run = cur.x - prev.x;
+		float scale = thickness / sqrtf(rise*rise + run*run);
+		float xd = run * scale * 0.5f;
+		float yd = rise * scale * 0.5f;
+		
+		coords.push_back(prev.x - yd);
+		coords.push_back(prev.y + xd);
+		coords.push_back(prev.x + yd);
+		coords.push_back(prev.y - xd);
+		coords.push_back(cur.x - yd);
+		coords.push_back(cur.y + xd);
+		
+		coords.push_back(prev.x + yd);
+		coords.push_back(prev.y - xd);
+		coords.push_back(cur.x - yd);
+		coords.push_back(cur.y + xd);
+		coords.push_back(cur.x + yd);
+		coords.push_back(cur.y - xd);
+	}
+	glVertexPointer(2, GL_FLOAT, 0, &coords.front());
+	glDrawArrays(GL_TRIANGLES, 0, coords.size() / 2);
+	
+	glEnable(GL_TEXTURE_2D);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+}
 
 // Render the console cursor
 bool OGL_RenderTextCursor(const SDL_Rect& rect, unsigned char r, unsigned char g, unsigned char b)
