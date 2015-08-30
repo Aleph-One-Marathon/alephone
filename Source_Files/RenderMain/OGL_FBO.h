@@ -25,13 +25,14 @@
 #ifdef HAVE_OPENGL
 
 #include "OGL_Headers.h"
+#include <vector>
 
 class FBO {
 	
 private:
 	GLuint _fbo;
 	GLuint _depthBuffer;
-	static FBO *_current_active;
+	static std::vector<FBO *> active_chain;
 	
 public:
 	GLuint _w;
@@ -43,12 +44,14 @@ public:
 	~FBO();
 	
 	void activate(bool clear = false);
-	static void deactivate();
+	void deactivate();
 	
 	void draw();
 	void prepare_drawing_mode(bool blend = false);
 	void reset_drawing_mode();
 	void draw_full(bool blend = false);
+	
+	static FBO *active_fbo();
 };
 
 

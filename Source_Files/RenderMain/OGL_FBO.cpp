@@ -28,7 +28,7 @@
 #include "OGL_Setup.h"
 #include "OGL_Render.h"
 
-FBO *FBO::_current_active = NULL;
+std::vector<FBO *> FBO::active_chain;
 
 FBO::FBO(GLuint w, GLuint h, bool srgb) : _h(h), _w(w), _srgb(srgb) {
 	glGenFramebuffersEXT(1, &_fbo);
@@ -48,9 +48,8 @@ FBO::FBO(GLuint w, GLuint h, bool srgb) : _h(h), _w(w), _srgb(srgb) {
 }
 
 void FBO::activate(bool clear) {
-	if (_current_active != this) {
-		deactivate();
-		_current_active = this;
+	if (!active_chain.size() || active_chain.back() != this) {
+		active_chain.push_back(this);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _fbo);
 		glPushAttrib(GL_VIEWPORT_BIT);
 		glViewport(0, 0, _w, _h);
@@ -64,14 +63,21 @@ void FBO::activate(bool clear) {
 }
 
 void FBO::deactivate() {
-	if (_current_active) {
+	if (active_chain.size() && active_chain.back() == this) {
+		active_chain.pop_back();
 		glPopAttrib();
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-		if (Using_sRGB)
+		
+		GLuint prev_fbo = 0;
+		bool prev_srgb = Using_sRGB;
+		if (active_chain.size()) {
+			prev_fbo = active_chain.back()->_fbo;
+			prev_srgb = active_chain.back()->_srgb;
+		}
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prev_fbo);
+		if (prev_srgb)
 			glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 		else
 			glDisable(GL_FRAMEBUFFER_SRGB_EXT);
-		_current_active = NULL;
 	}
 }
 
@@ -133,7 +139,10 @@ void FBOSwapper::activate() {
 void FBOSwapper::deactivate() {
 	if (!active)
 		return;
-	FBO::deactivate();
+	if (draw_to_first)
+		first.deactivate();
+	else
+		second.deactivate();
 	active = false;
 }
 

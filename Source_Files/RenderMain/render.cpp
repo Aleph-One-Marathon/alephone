@@ -312,8 +312,10 @@ static RenderVisTreeClass explore_tree;
 void OGL_Rasterizer_Init() {
 	
 #ifdef HAVE_OPENGL
-	if (graphics_preferences->screen_mode.acceleration == _shader_acceleration)
-		Render_Shader.setupGL();
+	if (graphics_preferences->screen_mode.acceleration == _shader_acceleration) {
+		Rasterizer_Shader.setupGL();
+		Render_Shader.setupGL(Rasterizer_Shader);
+	}
 #endif
 }
 

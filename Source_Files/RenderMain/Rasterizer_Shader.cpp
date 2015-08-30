@@ -18,6 +18,7 @@
 #include "weapons.h"
 #include "AnimatedTextures.h"
 #include "OGL_Faders.h"
+#include "OGL_FBO.h"
 #include "OGL_Textures.h"
 #include "OGL_Shader.h"
 #include "ChaseCam.h"
@@ -40,6 +41,14 @@ const GLdouble kViewBaseMatrixInverse[16] = {
 
 void Rasterizer_Shader_Class::SetView(view_data& view) {
 	OGL_SetView(view);
+	
+	if (view.screen_width != view_width || view.screen_height != view_height) {
+		view_width = view.screen_width;
+		view_height = view.screen_height;
+		swapper.reset();
+		swapper.reset(new FBOSwapper(view_width, view_height, false));
+	}
+	
 	float aspect = view.screen_width / float(view.screen_height);
 	float deg2rad = 8.0 * atan(1.0) / 360.0;
 	float xtan, ytan;
@@ -104,3 +113,27 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 	glRotated(-yaw, 0.0, 0.0, 1.0);
 	glTranslated(-view.origin.x, -view.origin.y, -view.origin.z);
 }
+
+void Rasterizer_Shader_Class::setupGL()
+{
+	view_width = 0;
+	view_height = 0;
+	swapper.reset();
+}
+
+void Rasterizer_Shader_Class::Begin()
+{
+	Rasterizer_OGL_Class::Begin();
+	swapper->activate();
+}
+
+void Rasterizer_Shader_Class::End()
+{
+	swapper->deactivate();
+	swapper->swap();
+	
+	swapper->draw();
+	
+	Rasterizer_OGL_Class::End();
+}
+

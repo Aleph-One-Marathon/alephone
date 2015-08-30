@@ -86,7 +86,9 @@ public:
  * initialize some stuff
  * happens once after opengl, shaders and textures are setup
  */
-void RenderRasterize_Shader::setupGL() {
+void RenderRasterize_Shader::setupGL(Rasterizer_Shader_Class& Rasterizer) {
+
+	RasPtr = &Rasterizer;
 
 	Shader::loadAll();
 
@@ -100,10 +102,6 @@ void RenderRasterize_Shader::setupGL() {
 		}
 	}
 	
-	swapper.reset();
-	swapper.reset(new FBOSwapper(graphics_preferences->screen_mode.width, graphics_preferences->screen_mode.height, false));
-	
-
 //	glDisable(GL_CULL_FACE);
 //	glDisable(GL_LIGHTING);
 }
@@ -168,20 +166,16 @@ void RenderRasterize_Shader::render_tree() {
 	s->setFloat(Shader::U_Pitch, view->pitch * AngleConvert);
 	Shader::disable();
 
-	swapper->activate();
 	RenderRasterizerClass::render_tree(kDiffuse);
-	swapper->deactivate();
 
 	if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur) && blur.get()) {
 		blur->begin();
 		RenderRasterizerClass::render_tree(kGlow);
 		blur->end();
-		blur->draw(*swapper);
+		RasPtr->swapper->deactivate();
+		blur->draw(*RasPtr->swapper);
+		RasPtr->swapper->activate();
 	}
-	swapper->swap();
-	
-	// TBD - filters
-	swapper->draw();
 
 	glAlphaFunc(GL_GREATER, 0.5);
 }

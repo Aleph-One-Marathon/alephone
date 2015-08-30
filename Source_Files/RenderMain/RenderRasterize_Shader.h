@@ -15,6 +15,7 @@
 #include "RenderRasterize.h"
 #include "OGL_FBO.h"
 #include "OGL_Textures.h"
+#include "Rasterizer_Shader.h"
 
 #include <memory>
 
@@ -22,7 +23,7 @@ class Blur;
 class RenderRasterize_Shader : public RenderRasterizerClass {
 
 	std::auto_ptr<Blur> blur;
-	std::auto_ptr<FBOSwapper> swapper;
+	Rasterizer_Shader_Class *RasPtr;
 	
 	int objectCount;
 	world_distance objectY;
@@ -51,7 +52,7 @@ public:
 
 	RenderRasterize_Shader() : blur(NULL), RenderRasterizerClass() {}
 
-	virtual void setupGL();
+	virtual void setupGL(Rasterizer_Shader_Class& Rasterizer);
 
 	virtual void render_tree(void);
 
