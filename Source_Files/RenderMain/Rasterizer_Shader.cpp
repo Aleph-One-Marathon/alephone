@@ -142,6 +142,11 @@ void Rasterizer_Shader_Class::End()
 	
 	swapper->draw();
 	
+	SetForeground();
+	glColor3f(0, 0, 0);
+	glDisable(GL_CULL_FACE);
+	OGL_RenderFrame(0, 0, view_width, view_height, 1);
+	
 	Rasterizer_OGL_Class::End();
 }
 
