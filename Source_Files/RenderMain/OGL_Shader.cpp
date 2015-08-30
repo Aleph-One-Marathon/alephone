@@ -84,7 +84,8 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
 	"scaley",
 	"yaw",
 	"pitch",
-	"selfLuminosity"
+	"selfLuminosity",
+	"gammaAdjust"
 };
 
 const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] = 
@@ -102,7 +103,8 @@ const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] =
 	"wall",
 	"wall_bloom",
 	"bump",
-	"bump_bloom"
+	"bump_bloom",
+	"gamma"
 };
 
 
@@ -331,6 +333,21 @@ void initDefaultPrograms() {
     if (defaultVertexPrograms.size() > 0)
         return;
     
+	defaultVertexPrograms["gamma"] = ""
+	"varying vec4 vertexColor;\n"
+	"void main(void) {\n"
+	"	gl_TexCoord[0] = gl_MultiTexCoord0;\n"
+	"	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
+	"	vertexColor = gl_Color;\n"
+	"}\n";
+	defaultFragmentPrograms["gamma"] = ""
+	"uniform sampler2DRect texture0;\n"
+	"uniform float gammaAdjust;\n"
+	"void main (void) {\n"
+	"	vec4 color0 = texture2DRect(texture0, gl_TexCoord[0].xy);\n"
+	"	gl_FragColor = vec4(pow(color0.r, gammaAdjust), pow(color0.g, gammaAdjust), pow(color0.b, gammaAdjust), 1.0);\n"
+	"}\n";
+	
     defaultVertexPrograms["blur"] = ""
         "varying vec4 vertexColor;\n"
         "void main(void) {\n"

@@ -59,6 +59,7 @@ public:
 		U_Yaw,
 		U_Pitch,
 		U_SelfLuminosity,
+		U_GammaAdjust,
 		NUMBER_OF_UNIFORM_LOCATIONS
 	};
 
@@ -77,6 +78,7 @@ public:
 		S_WallBloom,
 		S_Bump,
 		S_BumpBloom,
+		S_Gamma,
 		NUMBER_OF_SHADER_TYPES
 	};
 private:

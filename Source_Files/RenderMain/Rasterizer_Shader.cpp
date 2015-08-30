@@ -23,6 +23,10 @@
 #include "OGL_Shader.h"
 #include "ChaseCam.h"
 #include "preferences.h"
+#include "fades.h"
+#include "screen.h"
+
+extern bool force_software_gamma;  // from screen.cpp
 
 #define MAXIMUM_VERTICES_PER_WORLD_POLYGON (MAXIMUM_VERTICES_PER_POLYGON+4)
 
@@ -125,6 +129,11 @@ void Rasterizer_Shader_Class::setupGL()
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
 	if (!TEST_FLAG(ConfigureData.Flags,OGL_Flag_VoidColor))
 		smear_the_void = true;
+
+	if (!force_software_gamma) {
+		restore_gamma();
+		force_software_gamma = true;
+	}
 }
 
 void Rasterizer_Shader_Class::Begin()
@@ -140,7 +149,14 @@ void Rasterizer_Shader_Class::End()
 	swapper->deactivate();
 	swapper->swap();
 	
+	float gamma_adj = get_actual_gamma_adjust(graphics_preferences->screen_mode.gamma_level);
+	if (gamma_adj < 0.99f || gamma_adj > 1.01f) {
+		Shader *s = Shader::get(Shader::S_Gamma);
+		s->enable();
+		s->setFloat(Shader::U_GammaAdjust, gamma_adj);
+	}
 	swapper->draw();
+	Shader::disable();
 	
 	SetForeground();
 	glColor3f(0, 0, 0);

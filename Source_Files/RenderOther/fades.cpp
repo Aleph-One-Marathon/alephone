@@ -465,6 +465,11 @@ void gamma_correct_color_table(
 	}
 }
 
+float get_actual_gamma_adjust(short gamma_level)
+{
+	return actual_gamma_values[gamma_level];
+}
+
 bool fade_blacked_screen(void)
 {
 	return (!FADE_IS_ACTIVE(fade) &&

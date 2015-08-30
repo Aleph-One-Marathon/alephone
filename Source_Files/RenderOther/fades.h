@@ -122,6 +122,7 @@ void set_fade_effect(short type);
 short get_fade_period(short type);
 
 void gamma_correct_color_table(struct color_table *uncorrected_color_table, struct color_table *corrected_color_table, short gamma_level);
+float get_actual_gamma_adjust(short gamma_level);
 
 void explicit_start_fade(short type, struct color_table *original_color_table, struct color_table *animated_color_table);
 void full_fade(short type, struct color_table *original_color_table);
