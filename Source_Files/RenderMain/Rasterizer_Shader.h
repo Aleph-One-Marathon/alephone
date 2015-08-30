@@ -20,6 +20,7 @@ class Rasterizer_Shader_Class : public Rasterizer_OGL_Class {
 	
 protected:
 	std::auto_ptr<FBOSwapper> swapper;
+	bool smear_the_void;
 	short view_width;
 	short view_height;
 

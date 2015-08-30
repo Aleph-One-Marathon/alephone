@@ -22,6 +22,7 @@
 #include "OGL_Textures.h"
 #include "OGL_Shader.h"
 #include "ChaseCam.h"
+#include "preferences.h"
 
 #define MAXIMUM_VERTICES_PER_WORLD_POLYGON (MAXIMUM_VERTICES_PER_POLYGON+4)
 
@@ -119,12 +120,19 @@ void Rasterizer_Shader_Class::setupGL()
 	view_width = 0;
 	view_height = 0;
 	swapper.reset();
+	
+	smear_the_void = false;
+	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
+	if (!TEST_FLAG(ConfigureData.Flags,OGL_Flag_VoidColor))
+		smear_the_void = true;
 }
 
 void Rasterizer_Shader_Class::Begin()
 {
 	Rasterizer_OGL_Class::Begin();
 	swapper->activate();
+	if (smear_the_void)
+		swapper->current_contents().draw_full();
 }
 
 void Rasterizer_Shader_Class::End()
