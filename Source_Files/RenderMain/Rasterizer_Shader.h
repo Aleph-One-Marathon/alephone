@@ -13,6 +13,7 @@
 #include "cseries.h"
 #include "map.h"
 #include "Rasterizer_OGL.h"
+#include <memory>
 
 class FBOSwapper;
 class Rasterizer_Shader_Class : public Rasterizer_OGL_Class {
