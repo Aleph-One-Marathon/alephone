@@ -1,13 +1,17 @@
+.deps/
 .DS_Store
 build/
 xcuserdata/
 project.xcworkspace/
 Makefile
 Makefile.in
+lib*.a
+*.o
 
 /aclocal.m4
 /AlephOne.spec
 /autom4te.cache
+/compile
 /config.guess
 /config.h
 /config.h.in
@@ -19,3 +23,9 @@ Makefile.in
 /install-sh
 /missing
 /stamp-h1
+/Source_Files/confpaths.h
+
+/Source_Files/alephone
+/Source_Files/*.exe
+/*.zip
+/*.tar.bz2
