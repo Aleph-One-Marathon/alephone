@@ -161,6 +161,13 @@ dnl Check for zlib.
 AX_REQUIRE_LIB([zlib], [ZLIB],
                [zlib.h], [z], [zlibVersion])
 
+dnl Check for Expat.
+have_expat_h=no
+have_libexpat=no
+AC_CHECK_HEADER([expat.h], [have_expat_h=yes])
+AC_CHECK_LIB([expat], [XML_ParserCreate], [have_libexpat=yes])
+AM_CONDITIONAL([BUILD_EXPAT], [test "x$have_expat_h" != "xyes" -o "x$have_libexpat" != "xyes"])
+
 dnl Check for OpenGL.
 AS_IF([test "x$enable_opengl" != "xno"],
       [ AC_MSG_CHECKING([for OpenGL support])
@@ -319,6 +326,9 @@ AS_ECHO(["Summary of optional features:"])
 AS_ECHO([""])
 AX_PRINT_SUMMARY([opengl])
 AX_PRINT_SUMMARY([lua])
+AS_IF([test "x$have_expat_h" != "xyes" -o "x$have_libexpat" != "xyes"],
+      AS_ECHO(["    Enabled: internal libexpat"]),
+      AS_ECHO(["    Enabled: system libexpat"]) )
 AX_PRINT_SUMMARY([sdl_image])
 AX_PRINT_SUMMARY([ffmpeg])
 AX_PRINT_SUMMARY([mad])
