@@ -409,6 +409,12 @@ static int Get_Control_Url(UpnpController * c, const char * desc_url,
     return UPNP_BAD_DESCRIPTION;
   }
 
+  /* if we didn't find a control url, then bail */
+  if(NULL == xdescdat.control_url) {
+    XmlDescData_Free(xdescdat);
+    return UPNP_BAD_DESCRIPTION;
+  }
+
   /* if we didn't find a base url in the description, then it is the
      same url as the desc_url */
   if(NULL == xdescdat.url_base) {
