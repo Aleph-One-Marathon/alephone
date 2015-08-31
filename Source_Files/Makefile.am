@@ -1,7 +1,10 @@
 ## Process this file with automake to produce Makefile.in 
 
-SUBDIRS = CSeries Expat Files FFmpeg GameWorld Input LibNAT Lua Misc	\
+SUBDIRS = CSeries Files FFmpeg GameWorld Input LibNAT Lua Misc	\
    ModelView Network RenderMain RenderOther Sound TCPMess XML
+if BUILD_EXPAT
+SUBDIRS += Expat
+endif
 
 if MAKE_WINDOWS
 bin_PROGRAMS = AlephOne Marathon Marathon2 MarathonInfinity
@@ -24,7 +27,12 @@ alephone_LDADD = \
   GameWorld/libgameworld.a Input/libinput.a Lua/liba1lua.a Misc/libmisc.a \
   ModelView/libmodelview.a Network/libnetwork.a Network/Metaserver/libmetaserver.a \
   RenderMain/librendermain.a RenderOther/librenderother.a Sound/libsound.a \
-  TCPMess/libtcpmess.a XML/libxml.a LibNAT/libnat.a Expat/libexpat.a
+  TCPMess/libtcpmess.a XML/libxml.a LibNAT/libnat.a
+if BUILD_EXPAT
+alephone_LDADD += Expat/libexpat.a
+else
+alephone_LDADD += -lexpat
+endif
 
 AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \
@@ -33,8 +41,10 @@ AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/
   -I$(top_srcdir)/Source_Files/Network/Metaserver \
   -I$(top_srcdir)/Source_Files/FFmpeg -I$(top_srcdir)/Source_Files/RenderMain \
   -I$(top_srcdir)/Source_Files/RenderOther -I$(top_srcdir)/Source_Files/Sound \
-  -I$(top_srcdir)/Source_Files/XML -I$(top_srcdir)/Source_Files/Expat \
-  -I$(top_srcdir)/Source_Files/TCPMess
+  -I$(top_srcdir)/Source_Files/XML -I$(top_srcdir)/Source_Files/TCPMess
+if BUILD_EXPAT
+AM_CPPFLAGS += -I$(top_srcdir)/Source_Files/Expat
+endif
 
 AlephOne_LDADD = $(alephone_LDADD) alephone-resources.o
 AlephOne_SOURCES = $(alephone_SOURCES)
