@@ -184,6 +184,10 @@
 		279A462518286FA900F7BFDA /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E878F1173202F80010F485 /* FFmpegDecoder.cpp */; };
 		279A462618286FA900F7BFDA /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E878F1173202F80010F485 /* FFmpegDecoder.cpp */; };
 		279A462718286FAA00F7BFDA /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E878F1173202F80010F485 /* FFmpegDecoder.cpp */; };
+		27A6D4D31B9A42F0003DA766 /* expat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27A6D4D21B9A42F0003DA766 /* expat.framework */; };
+		27A6D4D41B9A42F0003DA766 /* expat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27A6D4D21B9A42F0003DA766 /* expat.framework */; };
+		27A6D4D51B9A42F0003DA766 /* expat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27A6D4D21B9A42F0003DA766 /* expat.framework */; };
+		27A6D4D61B9A42F0003DA766 /* expat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27A6D4D21B9A42F0003DA766 /* expat.framework */; };
 		27CE0843100ECDBC00F59FD1 /* Image_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27CE0841100ECDBC00F59FD1 /* Image_Blitter.cpp */; };
 		27CE0844100ECDBC00F59FD1 /* Image_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 27CE0842100ECDBC00F59FD1 /* Image_Blitter.h */; };
 		27D1A4F312FDF3630085E79C /* FilmProfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D1A4F112FDF3630085E79C /* FilmProfile.cpp */; };
@@ -280,14 +284,6 @@
 		AE505B47141D45E600915344 /* shell.h in Headers */ = {isa = PBXBuildFile; fileRef = F522124C0136A6FD01000001 /* shell.h */; };
 		AE505B48141D45E600915344 /* vbl_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212560136A6FD01000001 /* vbl_definitions.h */; };
 		AE505B49141D45E600915344 /* vbl.h in Headers */ = {isa = PBXBuildFile; fileRef = F522125A0136A6FD01000001 /* vbl.h */; };
-		AE505B4A141D45E600915344 /* xmltok.h in Headers */ = {isa = PBXBuildFile; fileRef = F522115C0136A66601000001 /* xmltok.h */; };
-		AE505B4B141D45E600915344 /* xmltok_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = F522115B0136A66601000001 /* xmltok_impl.h */; };
-		AE505B4C141D45E600915344 /* xmlrole.h in Headers */ = {isa = PBXBuildFile; fileRef = F522115A0136A66601000001 /* xmlrole.h */; };
-		AE505B4D141D45E600915344 /* asciitab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211520136A66601000001 /* asciitab.h */; };
-		AE505B4E141D45E600915344 /* iasciitab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211540136A66601000001 /* iasciitab.h */; };
-		AE505B4F141D45E600915344 /* latin1tab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211550136A66601000001 /* latin1tab.h */; };
-		AE505B50141D45E600915344 /* nametab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211560136A66601000001 /* nametab.h */; };
-		AE505B51141D45E600915344 /* utf8tab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211570136A66601000001 /* utf8tab.h */; };
 		AE505B52141D45E600915344 /* byte_swapping.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111D0136A4DD01000001 /* byte_swapping.h */; };
 		AE505B53141D45E600915344 /* csalerts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111E0136A4DD01000001 /* csalerts.h */; };
 		AE505B54141D45E600915344 /* cscluts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111F0136A4DD01000001 /* cscluts.h */; };
@@ -436,10 +432,6 @@
 		AE505BEB141D45E600915344 /* SoundFile.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E680B878534009CFF2D /* SoundFile.h */; };
 		AE505BEC141D45E600915344 /* SoundManager.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6A0B878534009CFF2D /* SoundManager.h */; };
 		AE505BED141D45E600915344 /* SoundManagerEnums.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6B0B878534009CFF2D /* SoundManagerEnums.h */; };
-		AE505BEE141D45E600915344 /* internal.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C2A0DB03F8300D11DE2 /* internal.h */; };
-		AE505BEF141D45E600915344 /* ascii.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C270DB03F8300D11DE2 /* ascii.h */; };
-		AE505BF0141D45E600915344 /* expat.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C280DB03F8300D11DE2 /* expat.h */; };
-		AE505BF1141D45E600915344 /* expat_external.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C290DB03F8300D11DE2 /* expat_external.h */; };
 		AE505BF2141D45E600915344 /* joystick.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE12FD0FC9AB4900EDA5A6 /* joystick.h */; };
 		AE505BF3141D45E600915344 /* lua_serialize.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE13200FC9C38400EDA5A6 /* lua_serialize.h */; };
 		AE505BF4141D45E600915344 /* BStream.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE132D0FC9C3C800EDA5A6 /* BStream.h */; };
@@ -469,9 +461,6 @@
 		AE505C11141D45E600915344 /* csalerts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211430136A66601000001 /* csalerts_sdl.cpp */; };
 		AE505C12141D45E600915344 /* cscluts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211450136A66601000001 /* cscluts_sdl.cpp */; };
 		AE505C13141D45E600915344 /* csmisc_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114B0136A66601000001 /* csmisc_sdl.cpp */; };
-		AE505C14141D45E600915344 /* xmlparse.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117B0136A6FD01000001 /* xmlparse.c */; settings = {COMPILER_FLAGS = "-DHAVE_MEMMOVE"; }; };
-		AE505C15141D45E600915344 /* xmlrole.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117C0136A6FD01000001 /* xmlrole.c */; };
-		AE505C16141D45E600915344 /* xmltok.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117D0136A6FD01000001 /* xmltok.c */; };
 		AE505C17141D45E600915344 /* game_errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211970136A6FD01000001 /* game_errors.cpp */; };
 		AE505C18141D45E600915344 /* interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211C40136A6FD01000001 /* interface.cpp */; };
 		AE505C19141D45E600915344 /* PlayerName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120B0136A6FD01000001 /* PlayerName.cpp */; };
@@ -764,14 +753,6 @@
 		AEB4A0E714296CAE00537AE7 /* shell.h in Headers */ = {isa = PBXBuildFile; fileRef = F522124C0136A6FD01000001 /* shell.h */; };
 		AEB4A0E814296CAE00537AE7 /* vbl_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212560136A6FD01000001 /* vbl_definitions.h */; };
 		AEB4A0E914296CAE00537AE7 /* vbl.h in Headers */ = {isa = PBXBuildFile; fileRef = F522125A0136A6FD01000001 /* vbl.h */; };
-		AEB4A0EA14296CAE00537AE7 /* xmltok.h in Headers */ = {isa = PBXBuildFile; fileRef = F522115C0136A66601000001 /* xmltok.h */; };
-		AEB4A0EB14296CAE00537AE7 /* xmltok_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = F522115B0136A66601000001 /* xmltok_impl.h */; };
-		AEB4A0EC14296CAE00537AE7 /* xmlrole.h in Headers */ = {isa = PBXBuildFile; fileRef = F522115A0136A66601000001 /* xmlrole.h */; };
-		AEB4A0ED14296CAE00537AE7 /* asciitab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211520136A66601000001 /* asciitab.h */; };
-		AEB4A0EE14296CAE00537AE7 /* iasciitab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211540136A66601000001 /* iasciitab.h */; };
-		AEB4A0EF14296CAE00537AE7 /* latin1tab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211550136A66601000001 /* latin1tab.h */; };
-		AEB4A0F014296CAE00537AE7 /* nametab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211560136A66601000001 /* nametab.h */; };
-		AEB4A0F114296CAE00537AE7 /* utf8tab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211570136A66601000001 /* utf8tab.h */; };
 		AEB4A0F214296CAE00537AE7 /* byte_swapping.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111D0136A4DD01000001 /* byte_swapping.h */; };
 		AEB4A0F314296CAE00537AE7 /* csalerts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111E0136A4DD01000001 /* csalerts.h */; };
 		AEB4A0F414296CAE00537AE7 /* cscluts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111F0136A4DD01000001 /* cscluts.h */; };
@@ -920,10 +901,6 @@
 		AEB4A18B14296CAE00537AE7 /* SoundFile.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E680B878534009CFF2D /* SoundFile.h */; };
 		AEB4A18C14296CAE00537AE7 /* SoundManager.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6A0B878534009CFF2D /* SoundManager.h */; };
 		AEB4A18D14296CAE00537AE7 /* SoundManagerEnums.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6B0B878534009CFF2D /* SoundManagerEnums.h */; };
-		AEB4A18E14296CAE00537AE7 /* internal.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C2A0DB03F8300D11DE2 /* internal.h */; };
-		AEB4A18F14296CAE00537AE7 /* ascii.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C270DB03F8300D11DE2 /* ascii.h */; };
-		AEB4A19014296CAE00537AE7 /* expat.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C280DB03F8300D11DE2 /* expat.h */; };
-		AEB4A19114296CAE00537AE7 /* expat_external.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C290DB03F8300D11DE2 /* expat_external.h */; };
 		AEB4A19214296CAE00537AE7 /* joystick.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE12FD0FC9AB4900EDA5A6 /* joystick.h */; };
 		AEB4A19314296CAE00537AE7 /* lua_serialize.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE13200FC9C38400EDA5A6 /* lua_serialize.h */; };
 		AEB4A19414296CAE00537AE7 /* BStream.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE132D0FC9C3C800EDA5A6 /* BStream.h */; };
@@ -954,9 +931,6 @@
 		AEB4A1B214296CAE00537AE7 /* csalerts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211430136A66601000001 /* csalerts_sdl.cpp */; };
 		AEB4A1B314296CAE00537AE7 /* cscluts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211450136A66601000001 /* cscluts_sdl.cpp */; };
 		AEB4A1B414296CAE00537AE7 /* csmisc_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114B0136A66601000001 /* csmisc_sdl.cpp */; };
-		AEB4A1B514296CAE00537AE7 /* xmlparse.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117B0136A6FD01000001 /* xmlparse.c */; settings = {COMPILER_FLAGS = "-DHAVE_MEMMOVE"; }; };
-		AEB4A1B614296CAE00537AE7 /* xmlrole.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117C0136A6FD01000001 /* xmlrole.c */; };
-		AEB4A1B714296CAE00537AE7 /* xmltok.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117D0136A6FD01000001 /* xmltok.c */; };
 		AEB4A1B814296CAE00537AE7 /* game_errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211970136A6FD01000001 /* game_errors.cpp */; };
 		AEB4A1B914296CAE00537AE7 /* interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211C40136A6FD01000001 /* interface.cpp */; };
 		AEB4A1BA14296CAE00537AE7 /* PlayerName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120B0136A6FD01000001 /* PlayerName.cpp */; };
@@ -1194,14 +1168,6 @@
 		AEC3C70C09AD68AC003258E4 /* shell.h in Headers */ = {isa = PBXBuildFile; fileRef = F522124C0136A6FD01000001 /* shell.h */; };
 		AEC3C70D09AD68AC003258E4 /* vbl_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212560136A6FD01000001 /* vbl_definitions.h */; };
 		AEC3C70E09AD68AC003258E4 /* vbl.h in Headers */ = {isa = PBXBuildFile; fileRef = F522125A0136A6FD01000001 /* vbl.h */; };
-		AEC3C70F09AD68AC003258E4 /* xmltok.h in Headers */ = {isa = PBXBuildFile; fileRef = F522115C0136A66601000001 /* xmltok.h */; };
-		AEC3C71009AD68AC003258E4 /* xmltok_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = F522115B0136A66601000001 /* xmltok_impl.h */; };
-		AEC3C71109AD68AC003258E4 /* xmlrole.h in Headers */ = {isa = PBXBuildFile; fileRef = F522115A0136A66601000001 /* xmlrole.h */; };
-		AEC3C71209AD68AC003258E4 /* asciitab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211520136A66601000001 /* asciitab.h */; };
-		AEC3C71409AD68AC003258E4 /* iasciitab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211540136A66601000001 /* iasciitab.h */; };
-		AEC3C71509AD68AC003258E4 /* latin1tab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211550136A66601000001 /* latin1tab.h */; };
-		AEC3C71609AD68AC003258E4 /* nametab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211560136A66601000001 /* nametab.h */; };
-		AEC3C71709AD68AC003258E4 /* utf8tab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211570136A66601000001 /* utf8tab.h */; };
 		AEC3C71A09AD68AC003258E4 /* byte_swapping.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111D0136A4DD01000001 /* byte_swapping.h */; };
 		AEC3C71B09AD68AC003258E4 /* csalerts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111E0136A4DD01000001 /* csalerts.h */; };
 		AEC3C71C09AD68AC003258E4 /* cscluts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111F0136A4DD01000001 /* cscluts.h */; };
@@ -1359,9 +1325,6 @@
 		AEC3C7D209AD68AC003258E4 /* csalerts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211430136A66601000001 /* csalerts_sdl.cpp */; };
 		AEC3C7D309AD68AC003258E4 /* cscluts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211450136A66601000001 /* cscluts_sdl.cpp */; };
 		AEC3C7D409AD68AC003258E4 /* csmisc_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114B0136A66601000001 /* csmisc_sdl.cpp */; };
-		AEC3C7D609AD68AC003258E4 /* xmlparse.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117B0136A6FD01000001 /* xmlparse.c */; settings = {COMPILER_FLAGS = "-DHAVE_MEMMOVE"; }; };
-		AEC3C7D709AD68AC003258E4 /* xmlrole.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117C0136A6FD01000001 /* xmlrole.c */; };
-		AEC3C7D809AD68AC003258E4 /* xmltok.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117D0136A6FD01000001 /* xmltok.c */; };
 		AEC3C7D909AD68AC003258E4 /* game_errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211970136A6FD01000001 /* game_errors.cpp */; };
 		AEC3C7DB09AD68AC003258E4 /* interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211C40136A6FD01000001 /* interface.cpp */; };
 		AEC3C7DC09AD68AC003258E4 /* PlayerName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120B0136A6FD01000001 /* PlayerName.cpp */; };
@@ -1519,14 +1482,6 @@
 		AEFD85F513EB84CF00C1E687 /* shell.h in Headers */ = {isa = PBXBuildFile; fileRef = F522124C0136A6FD01000001 /* shell.h */; };
 		AEFD85F613EB84CF00C1E687 /* vbl_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212560136A6FD01000001 /* vbl_definitions.h */; };
 		AEFD85F713EB84CF00C1E687 /* vbl.h in Headers */ = {isa = PBXBuildFile; fileRef = F522125A0136A6FD01000001 /* vbl.h */; };
-		AEFD85F813EB84CF00C1E687 /* xmltok.h in Headers */ = {isa = PBXBuildFile; fileRef = F522115C0136A66601000001 /* xmltok.h */; };
-		AEFD85F913EB84CF00C1E687 /* xmltok_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = F522115B0136A66601000001 /* xmltok_impl.h */; };
-		AEFD85FA13EB84CF00C1E687 /* xmlrole.h in Headers */ = {isa = PBXBuildFile; fileRef = F522115A0136A66601000001 /* xmlrole.h */; };
-		AEFD85FB13EB84CF00C1E687 /* asciitab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211520136A66601000001 /* asciitab.h */; };
-		AEFD85FC13EB84CF00C1E687 /* iasciitab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211540136A66601000001 /* iasciitab.h */; };
-		AEFD85FD13EB84CF00C1E687 /* latin1tab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211550136A66601000001 /* latin1tab.h */; };
-		AEFD85FE13EB84CF00C1E687 /* nametab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211560136A66601000001 /* nametab.h */; };
-		AEFD85FF13EB84CF00C1E687 /* utf8tab.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211570136A66601000001 /* utf8tab.h */; };
 		AEFD860013EB84CF00C1E687 /* byte_swapping.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111D0136A4DD01000001 /* byte_swapping.h */; };
 		AEFD860113EB84CF00C1E687 /* csalerts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111E0136A4DD01000001 /* csalerts.h */; };
 		AEFD860213EB84CF00C1E687 /* cscluts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111F0136A4DD01000001 /* cscluts.h */; };
@@ -1675,10 +1630,6 @@
 		AEFD869913EB84CF00C1E687 /* SoundFile.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E680B878534009CFF2D /* SoundFile.h */; };
 		AEFD869A13EB84CF00C1E687 /* SoundManager.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6A0B878534009CFF2D /* SoundManager.h */; };
 		AEFD869B13EB84CF00C1E687 /* SoundManagerEnums.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6B0B878534009CFF2D /* SoundManagerEnums.h */; };
-		AEFD869C13EB84CF00C1E687 /* internal.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C2A0DB03F8300D11DE2 /* internal.h */; };
-		AEFD869D13EB84CF00C1E687 /* ascii.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C270DB03F8300D11DE2 /* ascii.h */; };
-		AEFD869E13EB84CF00C1E687 /* expat.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C280DB03F8300D11DE2 /* expat.h */; };
-		AEFD869F13EB84CF00C1E687 /* expat_external.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C290DB03F8300D11DE2 /* expat_external.h */; };
 		AEFD86A013EB84CF00C1E687 /* joystick.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE12FD0FC9AB4900EDA5A6 /* joystick.h */; };
 		AEFD86A113EB84CF00C1E687 /* lua_serialize.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE13200FC9C38400EDA5A6 /* lua_serialize.h */; };
 		AEFD86A213EB84CF00C1E687 /* BStream.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE132D0FC9C3C800EDA5A6 /* BStream.h */; };
@@ -1707,9 +1658,6 @@
 		AEFD86BE13EB84CF00C1E687 /* csalerts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211430136A66601000001 /* csalerts_sdl.cpp */; };
 		AEFD86BF13EB84CF00C1E687 /* cscluts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211450136A66601000001 /* cscluts_sdl.cpp */; };
 		AEFD86C013EB84CF00C1E687 /* csmisc_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114B0136A66601000001 /* csmisc_sdl.cpp */; };
-		AEFD86C113EB84CF00C1E687 /* xmlparse.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117B0136A6FD01000001 /* xmlparse.c */; settings = {COMPILER_FLAGS = "-DHAVE_MEMMOVE"; }; };
-		AEFD86C213EB84CF00C1E687 /* xmlrole.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117C0136A6FD01000001 /* xmlrole.c */; };
-		AEFD86C313EB84CF00C1E687 /* xmltok.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117D0136A6FD01000001 /* xmltok.c */; };
 		AEFD86C413EB84CF00C1E687 /* game_errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211970136A6FD01000001 /* game_errors.cpp */; };
 		AEFD86C513EB84CF00C1E687 /* interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211C40136A6FD01000001 /* interface.cpp */; };
 		AEFD86C613EB84CF00C1E687 /* PlayerName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120B0136A6FD01000001 /* PlayerName.cpp */; };
@@ -1930,10 +1878,6 @@
 		AEFD87AB13EB84CF00C1E687 /* jpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB1E10D7114D000204DD /* jpeg.framework */; };
 		AEFD87AC13EB84CF00C1E687 /* png.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; };
 		AEFD87AD13EB84CF00C1E687 /* freetype.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB3110D71184000204DD /* freetype.framework */; };
-		AEFE7C2B0DB03FA600D11DE2 /* internal.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C2A0DB03F8300D11DE2 /* internal.h */; };
-		AEFE7C2C0DB03FA700D11DE2 /* ascii.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C270DB03F8300D11DE2 /* ascii.h */; };
-		AEFE7C2D0DB03FA700D11DE2 /* expat.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C280DB03F8300D11DE2 /* expat.h */; };
-		AEFE7C2E0DB03FA800D11DE2 /* expat_external.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C290DB03F8300D11DE2 /* expat_external.h */; };
 		C13C71E71B3FB4C500F1188D /* DefaultStringSets.h in Headers */ = {isa = PBXBuildFile; fileRef = C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */; };
 		C13C71E81B3FB4C500F1188D /* DefaultStringSets.h in Headers */ = {isa = PBXBuildFile; fileRef = C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */; };
 		C13C71E91B3FB4C500F1188D /* DefaultStringSets.h in Headers */ = {isa = PBXBuildFile; fileRef = C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */; };
@@ -2041,6 +1985,7 @@
 		27928610170F92D20005CD56 /* lbitlib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lbitlib.c; sourceTree = "<group>"; };
 		27928611170F92D20005CD56 /* lctype.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lctype.c; sourceTree = "<group>"; };
 		2792861A170F92DD0005CD56 /* lctype.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lctype.h; sourceTree = "<group>"; };
+		27A6D4D21B9A42F0003DA766 /* expat.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = expat.framework; sourceTree = "<group>"; };
 		27CE0841100ECDBC00F59FD1 /* Image_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image_Blitter.cpp; sourceTree = "<group>"; };
 		27CE0842100ECDBC00F59FD1 /* Image_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image_Blitter.h; sourceTree = "<group>"; };
 		27D1A4F112FDF3630085E79C /* FilmProfile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FilmProfile.cpp; path = ../Source_Files/CSeries/FilmProfile.cpp; sourceTree = SOURCE_ROOT; };
@@ -2245,10 +2190,6 @@
 		AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_LoadScreen.cpp; sourceTree = "<group>"; };
 		AEF8C4F210AEFEB500ED84AD /* OGL_Headers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Headers.h; sourceTree = "<group>"; };
 		AEFD87C313EB84CF00C1E687 /* Marathon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Marathon.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		AEFE7C270DB03F8300D11DE2 /* ascii.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ascii.h; path = ../Source_Files/Expat/ascii.h; sourceTree = "<group>"; };
-		AEFE7C280DB03F8300D11DE2 /* expat.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = expat.h; path = ../Source_Files/Expat/expat.h; sourceTree = "<group>"; };
-		AEFE7C290DB03F8300D11DE2 /* expat_external.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = expat_external.h; path = ../Source_Files/Expat/expat_external.h; sourceTree = "<group>"; };
-		AEFE7C2A0DB03F8300D11DE2 /* internal.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = internal.h; path = ../Source_Files/Expat/internal.h; sourceTree = "<group>"; };
 		C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DefaultStringSets.h; path = ../Source_Files/Misc/DefaultStringSets.h; sourceTree = "<group>"; };
 		EF2EF5C804819BD700A8000D /* network_star_hub.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_star_hub.cpp; path = ../Source_Files/Network/network_star_hub.cpp; sourceTree = "<group>"; };
 		EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_star_spoke.cpp; path = ../Source_Files/Network/network_star_spoke.cpp; sourceTree = "<group>"; };
@@ -2293,19 +2234,6 @@
 		F52211450136A66601000001 /* cscluts_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = cscluts_sdl.cpp; path = ../Source_Files/CSeries/cscluts_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		F522114B0136A66601000001 /* csmisc_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = csmisc_sdl.cpp; path = ../Source_Files/CSeries/csmisc_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		F522114C0136A66601000001 /* csstrings.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = csstrings.cpp; path = ../Source_Files/CSeries/csstrings.cpp; sourceTree = SOURCE_ROOT; };
-		F52211520136A66601000001 /* asciitab.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = asciitab.h; path = ../Source_Files/Expat/asciitab.h; sourceTree = SOURCE_ROOT; };
-		F52211540136A66601000001 /* iasciitab.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = iasciitab.h; path = ../Source_Files/Expat/iasciitab.h; sourceTree = SOURCE_ROOT; };
-		F52211550136A66601000001 /* latin1tab.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = latin1tab.h; path = ../Source_Files/Expat/latin1tab.h; sourceTree = SOURCE_ROOT; };
-		F52211560136A66601000001 /* nametab.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = nametab.h; path = ../Source_Files/Expat/nametab.h; sourceTree = SOURCE_ROOT; };
-		F52211570136A66601000001 /* utf8tab.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = utf8tab.h; path = ../Source_Files/Expat/utf8tab.h; sourceTree = SOURCE_ROOT; };
-		F522115A0136A66601000001 /* xmlrole.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = xmlrole.h; path = ../Source_Files/Expat/xmlrole.h; sourceTree = SOURCE_ROOT; };
-		F522115B0136A66601000001 /* xmltok_impl.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = xmltok_impl.h; path = ../Source_Files/Expat/xmltok_impl.h; sourceTree = SOURCE_ROOT; };
-		F522115C0136A66601000001 /* xmltok.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = xmltok.h; path = ../Source_Files/Expat/xmltok.h; sourceTree = SOURCE_ROOT; };
-		F522117B0136A6FD01000001 /* xmlparse.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = xmlparse.c; path = ../Source_Files/Expat/xmlparse.c; sourceTree = SOURCE_ROOT; };
-		F522117C0136A6FD01000001 /* xmlrole.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = xmlrole.c; path = ../Source_Files/Expat/xmlrole.c; sourceTree = SOURCE_ROOT; };
-		F522117D0136A6FD01000001 /* xmltok.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = xmltok.c; path = ../Source_Files/Expat/xmltok.c; sourceTree = SOURCE_ROOT; };
-		F522117E0136A6FD01000001 /* xmltok_impl.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = xmltok_impl.c; path = ../Source_Files/Expat/xmltok_impl.c; sourceTree = SOURCE_ROOT; };
-		F522117F0136A6FD01000001 /* xmltok_ns.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = xmltok_ns.c; path = ../Source_Files/Expat/xmltok_ns.c; sourceTree = SOURCE_ROOT; };
 		F52211970136A6FD01000001 /* game_errors.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = game_errors.cpp; path = ../Source_Files/Misc/game_errors.cpp; sourceTree = SOURCE_ROOT; };
 		F52211AE0136A6FD01000001 /* game_errors.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = game_errors.h; path = ../Source_Files/Misc/game_errors.h; sourceTree = SOURCE_ROOT; };
 		F52211C20136A6FD01000001 /* interface_menus.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = interface_menus.h; path = ../Source_Files/Misc/interface_menus.h; sourceTree = SOURCE_ROOT; };
@@ -2554,6 +2482,7 @@
 				2762A3391AAA51D900B807D4 /* boost_system.framework in Frameworks */,
 				AE505CFC141D45E600915344 /* libz.dylib in Frameworks */,
 				AE505CFD141D45E600915344 /* CoreAudio.framework in Frameworks */,
+				27A6D4D51B9A42F0003DA766 /* expat.framework in Frameworks */,
 				AE505CFE141D45E600915344 /* zziplib.framework in Frameworks */,
 				AE505CFF141D45E600915344 /* jpeg.framework in Frameworks */,
 				AE505D00141D45E600915344 /* png.framework in Frameworks */,
@@ -2583,6 +2512,7 @@
 				2762A33A1AAA51D900B807D4 /* boost_system.framework in Frameworks */,
 				AEB4A29E14296CAE00537AE7 /* libz.dylib in Frameworks */,
 				AEB4A29F14296CAE00537AE7 /* CoreAudio.framework in Frameworks */,
+				27A6D4D61B9A42F0003DA766 /* expat.framework in Frameworks */,
 				AEB4A2A014296CAE00537AE7 /* zziplib.framework in Frameworks */,
 				AEB4A2A114296CAE00537AE7 /* jpeg.framework in Frameworks */,
 				AEB4A2A214296CAE00537AE7 /* png.framework in Frameworks */,
@@ -2612,6 +2542,7 @@
 				2762A3371AAA51D900B807D4 /* boost_system.framework in Frameworks */,
 				3D22CF8D0FD86EBD00B17822 /* libz.dylib in Frameworks */,
 				3D22CFAC0FD8707C00B17822 /* CoreAudio.framework in Frameworks */,
+				27A6D4D31B9A42F0003DA766 /* expat.framework in Frameworks */,
 				2759F33010D5BCC0000204DD /* zziplib.framework in Frameworks */,
 				2759FB1F10D7114D000204DD /* jpeg.framework in Frameworks */,
 				2759FB2110D7114D000204DD /* png.framework in Frameworks */,
@@ -2641,6 +2572,7 @@
 				2762A3381AAA51D900B807D4 /* boost_system.framework in Frameworks */,
 				AEFD87A813EB84CF00C1E687 /* libz.dylib in Frameworks */,
 				AEFD87A913EB84CF00C1E687 /* CoreAudio.framework in Frameworks */,
+				27A6D4D41B9A42F0003DA766 /* expat.framework in Frameworks */,
 				AEFD87AA13EB84CF00C1E687 /* zziplib.framework in Frameworks */,
 				AEFD87AB13EB84CF00C1E687 /* jpeg.framework in Frameworks */,
 				AEFD87AC13EB84CF00C1E687 /* png.framework in Frameworks */,
@@ -2910,6 +2842,7 @@
 		EF2EF5B004819A5C00A8000D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				27A6D4D21B9A42F0003DA766 /* expat.framework */,
 				2762A3311AAA51D900B807D4 /* boost_filesystem.framework */,
 				2762A3321AAA51D900B807D4 /* boost_system.framework */,
 				270F9FCC177687B7009AAE10 /* avcodec.framework */,
@@ -2981,7 +2914,6 @@
 				F5CF58580245987901A80001 /* Main */,
 				F5830B4201E77D5701BA387C /* ModelView */,
 				F522144A0136C0C401000001 /* CSeries */,
-				F522144C0136C0C401000001 /* Expat */,
 				F522144E0136C0C401000001 /* Misc */,
 				F52214510136C0C401000001 /* Network */,
 				F51B0587047AC6DA01C5C930 /* Lua */,
@@ -3035,38 +2967,6 @@
 				F52211290136A4DD01000001 /* cstypes.h */,
 				F52211260136A4DD01000001 /* csmisc.h */,
 				F522112D0136A4DD01000001 /* mytm.h */,
-			);
-			name = Headers;
-			sourceTree = "<group>";
-		};
-		F522144C0136C0C401000001 /* Expat */ = {
-			isa = PBXGroup;
-			children = (
-				F522144D0136C0C401000001 /* Headers */,
-				F522117B0136A6FD01000001 /* xmlparse.c */,
-				F522117C0136A6FD01000001 /* xmlrole.c */,
-				F522117D0136A6FD01000001 /* xmltok.c */,
-				F522117E0136A6FD01000001 /* xmltok_impl.c */,
-				F522117F0136A6FD01000001 /* xmltok_ns.c */,
-			);
-			name = Expat;
-			sourceTree = "<group>";
-		};
-		F522144D0136C0C401000001 /* Headers */ = {
-			isa = PBXGroup;
-			children = (
-				AEFE7C270DB03F8300D11DE2 /* ascii.h */,
-				AEFE7C280DB03F8300D11DE2 /* expat.h */,
-				AEFE7C290DB03F8300D11DE2 /* expat_external.h */,
-				AEFE7C2A0DB03F8300D11DE2 /* internal.h */,
-				F52211520136A66601000001 /* asciitab.h */,
-				F52211540136A66601000001 /* iasciitab.h */,
-				F52211550136A66601000001 /* latin1tab.h */,
-				F52211560136A66601000001 /* nametab.h */,
-				F52211570136A66601000001 /* utf8tab.h */,
-				F522115A0136A66601000001 /* xmlrole.h */,
-				F522115B0136A66601000001 /* xmltok_impl.h */,
-				F522115C0136A66601000001 /* xmltok.h */,
 			);
 			name = Headers;
 			sourceTree = "<group>";
@@ -3686,14 +3586,6 @@
 				AE505B47141D45E600915344 /* shell.h in Headers */,
 				AE505B48141D45E600915344 /* vbl_definitions.h in Headers */,
 				AE505B49141D45E600915344 /* vbl.h in Headers */,
-				AE505B4A141D45E600915344 /* xmltok.h in Headers */,
-				AE505B4B141D45E600915344 /* xmltok_impl.h in Headers */,
-				AE505B4C141D45E600915344 /* xmlrole.h in Headers */,
-				AE505B4D141D45E600915344 /* asciitab.h in Headers */,
-				AE505B4E141D45E600915344 /* iasciitab.h in Headers */,
-				AE505B4F141D45E600915344 /* latin1tab.h in Headers */,
-				AE505B50141D45E600915344 /* nametab.h in Headers */,
-				AE505B51141D45E600915344 /* utf8tab.h in Headers */,
 				AE505B52141D45E600915344 /* byte_swapping.h in Headers */,
 				AE505B53141D45E600915344 /* csalerts.h in Headers */,
 				AE505B54141D45E600915344 /* cscluts.h in Headers */,
@@ -3861,10 +3753,6 @@
 				AE505BEC141D45E600915344 /* SoundManager.h in Headers */,
 				276BED2F1A8470A900AE52F4 /* binders.h in Headers */,
 				AE505BED141D45E600915344 /* SoundManagerEnums.h in Headers */,
-				AE505BEE141D45E600915344 /* internal.h in Headers */,
-				AE505BEF141D45E600915344 /* ascii.h in Headers */,
-				AE505BF0141D45E600915344 /* expat.h in Headers */,
-				AE505BF1141D45E600915344 /* expat_external.h in Headers */,
 				AE505BF2141D45E600915344 /* joystick.h in Headers */,
 				AE505BF3141D45E600915344 /* lua_serialize.h in Headers */,
 				AE505BF4141D45E600915344 /* BStream.h in Headers */,
@@ -3907,14 +3795,6 @@
 				AEB4A0E714296CAE00537AE7 /* shell.h in Headers */,
 				AEB4A0E814296CAE00537AE7 /* vbl_definitions.h in Headers */,
 				AEB4A0E914296CAE00537AE7 /* vbl.h in Headers */,
-				AEB4A0EA14296CAE00537AE7 /* xmltok.h in Headers */,
-				AEB4A0EB14296CAE00537AE7 /* xmltok_impl.h in Headers */,
-				AEB4A0EC14296CAE00537AE7 /* xmlrole.h in Headers */,
-				AEB4A0ED14296CAE00537AE7 /* asciitab.h in Headers */,
-				AEB4A0EE14296CAE00537AE7 /* iasciitab.h in Headers */,
-				AEB4A0EF14296CAE00537AE7 /* latin1tab.h in Headers */,
-				AEB4A0F014296CAE00537AE7 /* nametab.h in Headers */,
-				AEB4A0F114296CAE00537AE7 /* utf8tab.h in Headers */,
 				AEB4A0F214296CAE00537AE7 /* byte_swapping.h in Headers */,
 				AEB4A0F314296CAE00537AE7 /* csalerts.h in Headers */,
 				AEB4A0F414296CAE00537AE7 /* cscluts.h in Headers */,
@@ -4082,10 +3962,6 @@
 				AEB4A18C14296CAE00537AE7 /* SoundManager.h in Headers */,
 				276BED301A8470A900AE52F4 /* binders.h in Headers */,
 				AEB4A18D14296CAE00537AE7 /* SoundManagerEnums.h in Headers */,
-				AEB4A18E14296CAE00537AE7 /* internal.h in Headers */,
-				AEB4A18F14296CAE00537AE7 /* ascii.h in Headers */,
-				AEB4A19014296CAE00537AE7 /* expat.h in Headers */,
-				AEB4A19114296CAE00537AE7 /* expat_external.h in Headers */,
 				AEB4A19214296CAE00537AE7 /* joystick.h in Headers */,
 				AEB4A19314296CAE00537AE7 /* lua_serialize.h in Headers */,
 				AEB4A19414296CAE00537AE7 /* BStream.h in Headers */,
@@ -4129,15 +4005,7 @@
 				AEC3C70D09AD68AC003258E4 /* vbl_definitions.h in Headers */,
 				27FF265A1B6F169200DA0A19 /* InfoTree.h in Headers */,
 				AEC3C70E09AD68AC003258E4 /* vbl.h in Headers */,
-				AEC3C70F09AD68AC003258E4 /* xmltok.h in Headers */,
-				AEC3C71009AD68AC003258E4 /* xmltok_impl.h in Headers */,
-				AEC3C71109AD68AC003258E4 /* xmlrole.h in Headers */,
-				AEC3C71209AD68AC003258E4 /* asciitab.h in Headers */,
-				AEC3C71409AD68AC003258E4 /* iasciitab.h in Headers */,
-				AEC3C71509AD68AC003258E4 /* latin1tab.h in Headers */,
-				AEC3C71609AD68AC003258E4 /* nametab.h in Headers */,
 				276BECF51A846CC800AE52F4 /* SW_Texture_Extras.h in Headers */,
-				AEC3C71709AD68AC003258E4 /* utf8tab.h in Headers */,
 				AEC3C71A09AD68AC003258E4 /* byte_swapping.h in Headers */,
 				AEC3C71B09AD68AC003258E4 /* csalerts.h in Headers */,
 				AEC3C71C09AD68AC003258E4 /* cscluts.h in Headers */,
@@ -4304,10 +4172,6 @@
 				AE626E710B878534009CFF2D /* SoundFile.h in Headers */,
 				AE626E730B878534009CFF2D /* SoundManager.h in Headers */,
 				AE626E740B878534009CFF2D /* SoundManagerEnums.h in Headers */,
-				AEFE7C2B0DB03FA600D11DE2 /* internal.h in Headers */,
-				AEFE7C2C0DB03FA700D11DE2 /* ascii.h in Headers */,
-				AEFE7C2D0DB03FA700D11DE2 /* expat.h in Headers */,
-				AEFE7C2E0DB03FA800D11DE2 /* expat_external.h in Headers */,
 				AEAE12FF0FC9AB4900EDA5A6 /* joystick.h in Headers */,
 				278E0C771AA3CD4500FA93B7 /* WadImageCache.h in Headers */,
 				AEAE13220FC9C38400EDA5A6 /* lua_serialize.h in Headers */,
@@ -4350,14 +4214,6 @@
 				AEFD85F513EB84CF00C1E687 /* shell.h in Headers */,
 				AEFD85F613EB84CF00C1E687 /* vbl_definitions.h in Headers */,
 				AEFD85F713EB84CF00C1E687 /* vbl.h in Headers */,
-				AEFD85F813EB84CF00C1E687 /* xmltok.h in Headers */,
-				AEFD85F913EB84CF00C1E687 /* xmltok_impl.h in Headers */,
-				AEFD85FA13EB84CF00C1E687 /* xmlrole.h in Headers */,
-				AEFD85FB13EB84CF00C1E687 /* asciitab.h in Headers */,
-				AEFD85FC13EB84CF00C1E687 /* iasciitab.h in Headers */,
-				AEFD85FD13EB84CF00C1E687 /* latin1tab.h in Headers */,
-				AEFD85FE13EB84CF00C1E687 /* nametab.h in Headers */,
-				AEFD85FF13EB84CF00C1E687 /* utf8tab.h in Headers */,
 				AEFD860013EB84CF00C1E687 /* byte_swapping.h in Headers */,
 				AEFD860113EB84CF00C1E687 /* csalerts.h in Headers */,
 				AEFD860213EB84CF00C1E687 /* cscluts.h in Headers */,
@@ -4525,10 +4381,6 @@
 				AEFD869A13EB84CF00C1E687 /* SoundManager.h in Headers */,
 				276BED2E1A8470A900AE52F4 /* binders.h in Headers */,
 				AEFD869B13EB84CF00C1E687 /* SoundManagerEnums.h in Headers */,
-				AEFD869C13EB84CF00C1E687 /* internal.h in Headers */,
-				AEFD869D13EB84CF00C1E687 /* ascii.h in Headers */,
-				AEFD869E13EB84CF00C1E687 /* expat.h in Headers */,
-				AEFD869F13EB84CF00C1E687 /* expat_external.h in Headers */,
 				AEFD86A013EB84CF00C1E687 /* joystick.h in Headers */,
 				AEFD86A113EB84CF00C1E687 /* lua_serialize.h in Headers */,
 				AEFD86A213EB84CF00C1E687 /* BStream.h in Headers */,
@@ -4960,9 +4812,6 @@
 				AE505C11141D45E600915344 /* csalerts_sdl.cpp in Sources */,
 				AE505C12141D45E600915344 /* cscluts_sdl.cpp in Sources */,
 				AE505C13141D45E600915344 /* csmisc_sdl.cpp in Sources */,
-				AE505C14141D45E600915344 /* xmlparse.c in Sources */,
-				AE505C15141D45E600915344 /* xmlrole.c in Sources */,
-				AE505C16141D45E600915344 /* xmltok.c in Sources */,
 				AE505C17141D45E600915344 /* game_errors.cpp in Sources */,
 				AE505C18141D45E600915344 /* interface.cpp in Sources */,
 				AE505C19141D45E600915344 /* PlayerName.cpp in Sources */,
@@ -5194,9 +5043,6 @@
 				AEB4A1B214296CAE00537AE7 /* csalerts_sdl.cpp in Sources */,
 				AEB4A1B314296CAE00537AE7 /* cscluts_sdl.cpp in Sources */,
 				AEB4A1B414296CAE00537AE7 /* csmisc_sdl.cpp in Sources */,
-				AEB4A1B514296CAE00537AE7 /* xmlparse.c in Sources */,
-				AEB4A1B614296CAE00537AE7 /* xmlrole.c in Sources */,
-				AEB4A1B714296CAE00537AE7 /* xmltok.c in Sources */,
 				AEB4A1B814296CAE00537AE7 /* game_errors.cpp in Sources */,
 				AEB4A1B914296CAE00537AE7 /* interface.cpp in Sources */,
 				AEB4A1BA14296CAE00537AE7 /* PlayerName.cpp in Sources */,
@@ -5428,9 +5274,6 @@
 				AEC3C7D209AD68AC003258E4 /* csalerts_sdl.cpp in Sources */,
 				AEC3C7D309AD68AC003258E4 /* cscluts_sdl.cpp in Sources */,
 				AEC3C7D409AD68AC003258E4 /* csmisc_sdl.cpp in Sources */,
-				AEC3C7D609AD68AC003258E4 /* xmlparse.c in Sources */,
-				AEC3C7D709AD68AC003258E4 /* xmlrole.c in Sources */,
-				AEC3C7D809AD68AC003258E4 /* xmltok.c in Sources */,
 				AEC3C7D909AD68AC003258E4 /* game_errors.cpp in Sources */,
 				AEC3C7DB09AD68AC003258E4 /* interface.cpp in Sources */,
 				AEC3C7DC09AD68AC003258E4 /* PlayerName.cpp in Sources */,
@@ -5662,9 +5505,6 @@
 				AEFD86BE13EB84CF00C1E687 /* csalerts_sdl.cpp in Sources */,
 				AEFD86BF13EB84CF00C1E687 /* cscluts_sdl.cpp in Sources */,
 				AEFD86C013EB84CF00C1E687 /* csmisc_sdl.cpp in Sources */,
-				AEFD86C113EB84CF00C1E687 /* xmlparse.c in Sources */,
-				AEFD86C213EB84CF00C1E687 /* xmlrole.c in Sources */,
-				AEFD86C313EB84CF00C1E687 /* xmltok.c in Sources */,
 				AEFD86C413EB84CF00C1E687 /* game_errors.cpp in Sources */,
 				AEFD86C513EB84CF00C1E687 /* interface.cpp in Sources */,
 				AEFD86C613EB84CF00C1E687 /* PlayerName.cpp in Sources */,
@@ -5972,6 +5812,7 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -5984,6 +5825,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
@@ -6045,6 +5887,7 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -6057,6 +5900,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
@@ -6150,6 +5994,7 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -6162,6 +6007,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info-MAS.plist";
@@ -6219,6 +6065,7 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -6231,6 +6078,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info-MAS.plist";
@@ -6287,6 +6135,7 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -6299,6 +6148,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info-MAS.plist";
@@ -6349,6 +6199,7 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -6361,6 +6212,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
@@ -6428,6 +6280,7 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -6440,6 +6293,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info-MAS.plist";
@@ -6497,6 +6351,7 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -6509,6 +6364,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info-MAS.plist";
@@ -6565,6 +6421,7 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -6577,6 +6434,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info-MAS.plist";
@@ -6632,6 +6490,7 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -6644,6 +6503,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info-MAS.plist";
@@ -6701,6 +6561,7 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -6713,6 +6574,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info-MAS.plist";
@@ -6769,6 +6631,7 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -6781,6 +6644,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info-MAS.plist";
