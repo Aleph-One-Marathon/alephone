@@ -64,8 +64,12 @@ AS_CASE([$target],
           AC_DEFINE([WIN32_DISABLE_MUSIC], [1], [Win32 music disabled])
           LIBS="$LIBS -ldsound -lwsock32" ],
         [*-*-netbsd*],
-        [CPPFLAGS="$CPPFLAGS -I/usr/pkg/include"])
+        [ CPPFLAGS="$CPPFLAGS -I/usr/pkg/include"
+          install_mime=true ],
+        [*linux*|*bsd*],
+        [ install_mime=true ])
 AM_CONDITIONAL([MAKE_WINDOWS], [test "x$make_windows" = "xtrue"])
+AM_CONDITIONAL([INSTALL_MIME], [test "x$install_mime" = "xtrue"])
 
 dnl Set target system name.
 AC_DEFINE_UNQUOTED([TARGET_PLATFORM], ["$target_os $target_cpu"], [Target platform name])

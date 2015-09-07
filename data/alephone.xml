@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-alephone-fila">
+    <comment>Recording of an Aleph One game session</comment>
+    <glob weight="60" pattern="*.filA"/>
+  </mime-type>
+  <mime-type type="application/x-alephone-fnta">
+    <comment>Aleph One scenario: fonts</comment>
+    <glob weight="60" pattern="*.fntA"/>
+  </mime-type>
+  <mime-type type="application/x-alephone-imga">
+    <comment>Aleph One scenario: extra images</comment>
+    <!-- Override mistaken "MacBinary" identification. -->
+    <glob weight="60" pattern="*.imgA"/>
+  </mime-type>
+  <mime-type type="application/x-alephone-musa">
+    <comment>Aleph One scenario: music</comment>
+    <glob weight="60" pattern="*.musA"/>
+  </mime-type>
+  <mime-type type="application/x-alephone-phya">
+    <comment>Aleph One scenario: physics</comment>
+    <glob weight="60" pattern="*.phys"/>
+    <glob weight="60" pattern="*.phyA"/>
+  </mime-type>
+  <mime-type type="application/x-alephone-scea">
+    <comment>Aleph One scenario: level maps</comment>
+    <glob weight="60" pattern="*.scen"/>
+    <!-- Override mistaken "MacBinary" identification. -->
+    <glob weight="60" pattern="*.sceA"/>
+  </mime-type>
+  <mime-type type="application/x-alephone-sgaa">
+    <comment>Saved Aleph One game</comment>
+    <glob weight="60" pattern="*.sgaA"/>
+  </mime-type>
+  <mime-type type="application/x-alephone-shpa">
+    <comment>Aleph One scenario: sprites and textures</comment>
+    <glob weight="60" pattern="*.shps"/>
+    <glob weight="60" pattern="*.shpA"/>
+    <glob weight="60" pattern="*.ShpA"/>
+  </mime-type>
+  <mime-type type="application/x-alephone-snda">
+    <comment>Aleph One scenario: sounds</comment>
+    <glob weight="60" pattern="*.sndz"/>
+    <glob weight="60" pattern="*.sndA"/>
+  </mime-type>
+  <mime-type type="text/x-alephone-mml">
+    <comment>Marathon Markup Language for Aleph One</comment>
+    <sub-class-of type="text/xml"/>
+    <magic>
+      <match type="string" value="&lt;marathon&gt;" offset="0"/>
+    </magic>
+    <glob weight="60" pattern="*.mml"/>
+  </mime-type>
+</mime-info>
