@@ -242,11 +242,4 @@ void HideDialogItem(DialogPtr dialog, short item_index);
 void ShowDialogItem(DialogPtr dialog, short item_index);
 #endif // !mac
 
-#if defined(TARGET_API_MAC_CARBON)
-#ifndef SDL
-// JTP: Get the list manager handle for a listbox control
-pascal OSStatus GetListBoxListHandle( ControlHandle control, ListHandle* list );
-#endif
-#endif
-
 #endif//_CSERIES_DIALOGS_

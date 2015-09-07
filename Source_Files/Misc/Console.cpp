@@ -163,10 +163,8 @@ void Console::enter() {
 	m_buffer.clear();
 	m_displayBuffer.clear();
 	m_active = false;
-#if defined(SDL)
 	SDL_EnableKeyRepeat(0, 0);
 	SDL_EnableUNICODE(0);
-#endif
 }
 
 void Console::abort() {
@@ -180,10 +178,8 @@ void Console::abort() {
 
 	m_callback.clear();
 	m_active = false;
-#if defined(SDL)
 	SDL_EnableKeyRepeat(0, 0);
 	SDL_EnableUNICODE(0);
-#endif
 }
 
 void Console::backspace() {
@@ -259,10 +255,8 @@ void Console::activate_input(boost::function<void (const std::string&)> callback
 	m_active = true;
 	m_cursor_position = 0;
 
-#if defined(SDL)
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 	SDL_EnableUNICODE(1);
-#endif
 }
 
 void Console::deactivate_input() {
@@ -271,10 +265,8 @@ void Console::deactivate_input() {
 	
 	m_callback.clear();
 	m_active = false;
-#if defined(SDL)
 	SDL_EnableKeyRepeat(0, 0);
 	SDL_EnableUNICODE(0);
-#endif
 }
 
 int Console::cursor_position() {

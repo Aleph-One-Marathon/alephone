@@ -456,12 +456,7 @@ void GatherDialog::JoinedPlayerChanged(const prospective_joiner_info* player)
 void GatherDialog::sendChat ()
 {
 	string message = m_chatEntryWidget->get_text();
-	
-#ifndef SDL
-	// It's just a little semantic difference, really.  :)
-	message = string(message.data (), message.length () - 1); // lose the last character, i.e. '\r'.
-#endif
-	
+		
 	if (m_chatChoiceWidget->get_value () == kMetaserverChat)
 		gMetaserverClient->sendChatMessage(message);		
 	else
@@ -1313,11 +1308,7 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 		//{
 			// Sorry, probably should use a FileSpecifier in the prefs,
 			// but that means prefs reading/writing have to be reworked instead
-#ifdef SDL
 		//	strncpy(network_preferences->netscript_file, theNetscriptFile.GetPath(), sizeof(network_preferences->netscript_file));
-#else
-		//	network_preferences->netscript_file = theNetscriptFile.GetSpec();
-#endif
 		//}
 		
 		return true;
@@ -1450,11 +1441,7 @@ void SetupNetgameDialog::chooseMapHit ()
 	FileSpecifier mapFile = m_mapWidget->get_file ();
 
 	environment_preferences->map_checksum = read_wad_file_checksum (mapFile);
-#ifdef SDL
 	strcpy(environment_preferences->map_file, mapFile.GetPath());
-#else
-	environment_preferences->map_file = mapFile.GetSpec();
-#endif
 	load_environment_from_preferences();
 		
 	m_levelWidget->set_labels (make_entry_vector (get_entry_point_flags_for_game_type (m_old_game_type)));

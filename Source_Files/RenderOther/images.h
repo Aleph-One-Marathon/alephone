@@ -73,14 +73,12 @@ extern bool get_picture_resource_from_scenario(int base_resource, LoadedResource
 extern bool get_sound_resource_from_scenario(int resource_number, LoadedResource& SoundRsrc);
 extern bool get_text_resource_from_scenario(int resource_number, LoadedResource& TextRsrc);
 
-#ifdef SDL
 // Convert MacOS PICT resource to SDL surface
 extern SDL_Surface *picture_to_surface(LoadedResource &rsrc);
 
 // Rescale/tile surface
 extern SDL_Surface *rescale_surface(SDL_Surface *s, int width, int height);
 extern SDL_Surface *tile_surface(SDL_Surface *s, int width, int height);
-#endif
 
 #endif
 

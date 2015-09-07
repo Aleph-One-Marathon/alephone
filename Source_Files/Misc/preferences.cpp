@@ -141,15 +141,6 @@ struct environment_preferences_data *environment_preferences = NULL;
 // LP: fake portable-files stuff
 inline short memory_error() {return 0;}
 
-// Prototypes
-#ifndef SDL
-static void *get_player_pref_data(void);
-static void *get_input_pref_data(void);
-static void *get_sound_pref_data(void);
-static void *get_graphics_pref_data(void);
-static void *get_environment_pref_data(void);
-#endif
-
 static bool ethernet_active(void);
 static std::string get_name_from_system(void);
 
@@ -2796,17 +2787,6 @@ void write_preferences()
 	}
 }
 
-/*
- *  Get prefs data from prefs file (or defaults)
- */
-
-#ifndef SDL
-static void *get_graphics_pref_data() {return graphics_preferences;}
-static void *get_player_pref_data() {return player_preferences;}
-static void *get_sound_pref_data() {return sound_preferences;}
-static void *get_input_pref_data() {return input_preferences;}
-static void *get_environment_pref_data() {return environment_preferences;}
-#endif
 
 /*
  *  Setup default preferences

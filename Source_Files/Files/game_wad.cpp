@@ -495,10 +495,8 @@ void set_saved_game_name_to_default()
 	revert_game_data.SavedGame.SetToApp();
 	revert_game_data.SavedGame.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME),_typecode_savegame);
 #endif
-#if defined(SDL) && !defined(SDL_RFORK_HACK)
 	revert_game_data.SavedGame.SetToSavedGamesDir();
 	revert_game_data.SavedGame += getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME);
-#endif
 }
 
 extern void ResetPassedLua();

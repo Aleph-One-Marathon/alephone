@@ -234,7 +234,6 @@ void set_keyboard_controller_status(
 		exit_mouse(0);
 #endif
 
-#ifdef SDL
 	// We enable/disable mouse control here
 	if (active) {
 		enter_mouse(input_preferences->input_device);
@@ -243,7 +242,6 @@ void set_keyboard_controller_status(
 		exit_mouse(input_preferences->input_device);
                 exit_joystick();
         }
-#endif
 	
 	/******************************************************************************************/
 }
@@ -332,11 +330,7 @@ void set_keys(
 	
 	for (unsigned index= 0; index<NUMBER_OF_STANDARD_KEY_DEFINITIONS; index++)
 	{
-#ifdef SDL
 		current_key_definitions[index].offset= SDLKey(keycodes[index]);
-#else
-		current_key_definitions[index].offset= keycodes[index];
-#endif
 		current_key_definitions[index].action_flag= definitions[index].action_flag;
 #ifdef mac
 		assert(current_key_definitions[index].offset <= 0x7f);
@@ -583,14 +577,6 @@ static short get_recording_queue_size(
 static void precalculate_key_information(
 	void)
 {
-#ifndef SDL
-	/* convert raw key codes to offets and masks */
-	for (size_t i = 0; i < NUMBER_OF_STANDARD_KEY_DEFINITIONS; ++i)
-	{
-		current_key_definitions[i].mask = 1 << (current_key_definitions[i].offset&7);
-		current_key_definitions[i].offset >>= 3;
-	}
-#endif
 }
 
 void set_recording_header_data(

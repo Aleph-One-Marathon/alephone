@@ -104,21 +104,11 @@ bool npotTextures = false; // non-power-of-two
 bool OGL_Initialize()
 {
 #ifdef HAVE_OPENGL
-#if defined(mac)
-	// Cribbed from Apple's DrawSprocket documentation;
-	// look for OpenGL function
-	return (_OGL_IsPresent = ((Ptr)aglChoosePixelFormat != (Ptr)kUnresolvedCFragSymbolAddress));
-	// return (_OGL_IsPresent = ((Ptr)glBegin != (Ptr)kUnresolvedCFragSymbolAddress));
-#elif defined(SDL)
-	// nothing to do
 #if defined(__WIN32__)
 //	glewInit();
 #endif	
 
 	return _OGL_IsPresent = true;
-#else
-#error OGL_Initialize() not implemented for this platform
-#endif
 #else
 	return false;
 #endif

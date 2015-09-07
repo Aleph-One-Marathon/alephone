@@ -1111,13 +1111,7 @@ bool OGL_SwapBuffers()
 {
 	if (!OGL_IsActive()) return false;
 	
-#if defined(mac)
-	aglSwapBuffers(RenderContext);
-#elif defined(SDL)
 	SDL_GL_SwapBuffers();
-#else
-#error OGL_SwapBuffers() not implemented for this platform
-#endif
 	
 	return true;
 }

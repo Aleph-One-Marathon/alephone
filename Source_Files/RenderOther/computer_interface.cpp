@@ -310,12 +310,8 @@ static struct player_terminal_data *player_terminals;
 
 // Get the interface font to use from screen_drawing_<platform>.cpp
 extern TextSpec *_get_font_spec(short font_index);
-#if defined(mac)
-extern void UseInterfaceFont(short font_index);
-#elif defined(SDL)
 extern font_info *GetInterfaceFont(short font_index);
 extern uint16 GetInterfaceStyle(short font_index);
-#endif
 
 /* ------------ private prototypes */
 static player_terminal_data *get_player_terminal_data(
@@ -502,9 +498,7 @@ void initialize_terminal_manager(
 	}
 #endif
 /*
-#ifdef SDL
 	terminal_font = load_font(*_get_font_spec(_computer_interface_font));
-#endif
 */
 }
 
@@ -768,11 +762,7 @@ uint32 build_terminal_action_flags(
 	raw_flags= 0;
 	for(unsigned index= 0; index<NUMBER_OF_TERMINAL_KEYS; ++index)
 	{
-#if defined(mac)
-		if (*(keymap + key->offset) & key->mask) raw_flags |= key->action_flag;
-#elif defined(SDL)
 		if (keymap[key->keycode]) raw_flags |= key->action_flag;
-#endif
 		key++;
 	}
 
@@ -1228,9 +1218,7 @@ static void display_shape(short shape, Rect* frame)
 	}
 }
 
-#ifdef SDL
 extern int get_pict_header_width(LoadedResource &);
-#endif
 
 static void display_picture(
 	short picture_id,
@@ -1257,9 +1245,6 @@ static void display_picture(
 		Rect bounds;
 		Rect screen_bounds;
 
-#if defined(mac)
-		bounds= (*picture)->picFrame;
-#elif defined(SDL)
 		bounds.left = bounds.top = 0;
 		bounds.right = s->w;
 		bounds.bottom = s->h;
@@ -1271,7 +1256,6 @@ static void display_picture(
 			cinemascopeHack = true;
 			bounds.right = pict_header_width;
 		}
-#endif
 		OffsetRect(&bounds, -bounds.left, -bounds.top);
 		calculate_bounds_for_object(flags, &screen_bounds, &bounds);
 
@@ -1305,11 +1289,6 @@ static void display_picture(
 
 //		warn(HGetState((Handle) picture) & 0x40); // assert it is purgable.
 
-#if defined(mac)
-		HLock((Handle) picture);
-		DrawPicture(picture, &bounds);
-		HUnlock((Handle) picture);
-#elif defined(SDL)
 		SDL_Rect r = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
 		if ((s->w == r.w && s->h == r.h) || cinemascopeHack)
 			SDL_BlitSurface(s, NULL, /*world_pixels*/draw_surface, &r);
@@ -1322,7 +1301,6 @@ static void display_picture(
 			}
 		}
 		SDL_FreeSurface(s);
-#endif
 		/* And let the caller know where we drew the picture */
 		*frame= bounds;
 	} else {
@@ -1331,26 +1309,12 @@ static void display_picture(
 
 		calculate_bounds_for_object(flags, &bounds, NULL);
 	
-#if defined(mac)
-		EraseRect(&bounds);
-#elif defined(SDL)
 		SDL_Rect r = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
 		SDL_FillRect(/*world_pixels*/draw_surface, &r, SDL_MapRGB(/*world_pixels*/draw_surface->format, 0, 0, 0));
-#endif
 
 		getcstr(format_string, strERRORS, pictureNotFound);
 		sprintf(temporary, format_string, picture_id);
 
-#if defined(mac)
-		// LP change: setting the font to the OS font
-		TextFont(systemFont);
-		short width= TextWidth(temporary, 0, strlen(temporary));
-
-		/* Center the error message.. */
-		MoveTo(bounds.left+(RECTANGLE_WIDTH(&bounds)-width)/2, 
-			bounds.top+RECTANGLE_HEIGHT(&bounds)/2);
-		DrawText(temporary, 0, strlen(temporary));
-#elif defined(SDL)
 		const font_info *font = GetInterfaceFont(_computer_interface_title_font);
 		int width = text_width(temporary, font, styleNormal);
 		draw_text(/*world_pixels*/draw_surface, temporary,
@@ -1358,7 +1322,6 @@ static void display_picture(
 		          bounds.top + RECTANGLE_HEIGHT(&bounds) / 2,
 		          SDL_MapRGB(/*world_pixels*/draw_surface->format, 0xff, 0xff, 0xff),
 		          font, styleNormal);
-#endif
 	}
 }
 
@@ -1922,24 +1885,12 @@ static void present_checkpoint_text(
 	} else {
 		char format_string[128];
 	
-#if defined(mac)
-		EraseRect(&bounds);
-#elif defined(SDL)
 		SDL_Rect r = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
 		SDL_FillRect(/*world_pixels*/draw_surface, &r, SDL_MapRGB(/*world_pixels*/draw_surface->format, 0, 0, 0));
-#endif
 
 		getcstr(format_string, strERRORS, checkpointNotFound);
 		sprintf(temporary, format_string, current_group->permutation);
 
-#if defined(mac)
-		short width= TextWidth(temporary, 0, strlen(temporary));
-
-		/* Center the error message.. */
-		MoveTo(bounds.left+(RECTANGLE_WIDTH(&bounds)-width)/2, 
-			bounds.top+RECTANGLE_HEIGHT(&bounds)/2);
-		DrawText(temporary, 0, strlen(temporary));
-#elif defined(SDL)
 		const font_info *font = GetInterfaceFont(_computer_interface_title_font);
 		// const sdl_font_info *font = load_font(*_get_font_spec(_computer_interface_title_font));
 		int width = text_width(temporary, font, styleNormal);
@@ -1948,7 +1899,6 @@ static void present_checkpoint_text(
 		          bounds.top + RECTANGLE_HEIGHT(&bounds) / 2,
 		          SDL_MapRGB(/*world_pixels*/draw_surface->format, 0xff, 0xff, 0xff),
 		          font, styleNormal);
-#endif
 	}
 
 	// draw the text

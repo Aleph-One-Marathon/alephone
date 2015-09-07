@@ -2246,9 +2246,7 @@ static void build_shading_tables16(
 	
 	objlist_set(shading_tables, 0, PIXEL8_MAXIMUM_COLORS);
 
-#ifdef SDL
 	SDL_PixelFormat *fmt = &pixel_format_16;
-#endif
 	
 	start= 0, count= 0;
 	while (get_next_color_run(colors, color_count, &start, &count))
@@ -2259,7 +2257,6 @@ static void build_shading_tables16(
 			{
 				struct rgb_color_value *color= colors + (remapping_table ? remapping_table[start+i] : (start+i));
 				short multiplier= (color->flags&SELF_LUMINESCENT_COLOR_FLAG) ? ((number_of_shading_tables>>1)+(level>>1)) : level;
-#ifdef SDL
 				if (!is_opengl)
 					// Find optimal pixel value for video display
 					shading_tables[PIXEL8_MAXIMUM_COLORS*level+start+i]= 
@@ -2268,7 +2265,6 @@ static void build_shading_tables16(
 						           ((color->green * multiplier) / (number_of_shading_tables-1)) >> 8,
 						           ((color->blue * multiplier) / (number_of_shading_tables-1)) >> 8);
 				else
-#endif
 				// Mac xRGB 1555 pixel format
 				shading_tables[PIXEL8_MAXIMUM_COLORS*level+start+i]= 
 					RGBCOLOR_TO_PIXEL16((color->red*multiplier)/(number_of_shading_tables-1),
@@ -2291,9 +2287,7 @@ static void build_shading_tables32(
 	
 	objlist_set(shading_tables, 0, PIXEL8_MAXIMUM_COLORS);
 	
-#ifdef SDL
 	SDL_PixelFormat *fmt = &pixel_format_32;
-#endif
 
 	start= 0, count= 0;
 	while (get_next_color_run(colors, color_count, &start, &count))
@@ -2305,7 +2299,6 @@ static void build_shading_tables32(
 				struct rgb_color_value *color= colors + (remapping_table ? remapping_table[start+i] : (start+i));
 				short multiplier= (color->flags&SELF_LUMINESCENT_COLOR_FLAG) ? ((number_of_shading_tables>>1)+(level>>1)) : level;
 				
-#ifdef SDL
 				if (!is_opengl)
 					// Find optimal pixel value for video display
 					shading_tables[PIXEL8_MAXIMUM_COLORS*level+start+i]= 
@@ -2314,7 +2307,6 @@ static void build_shading_tables32(
 						           ((color->green * multiplier) / (number_of_shading_tables-1)) >> 8,
 						           ((color->blue * multiplier) / (number_of_shading_tables-1)) >> 8);
 				else
-#endif
 				// Mac xRGB 8888 pixel format
 				shading_tables[PIXEL8_MAXIMUM_COLORS*level+start+i]= 
 					RGBCOLOR_TO_PIXEL32((color->red*multiplier)/(number_of_shading_tables-1),
@@ -2333,9 +2325,7 @@ static void build_global_shading_table16(
 		short value, shading_table;
 		pixel16 *write;
 
-#ifdef SDL
 		SDL_PixelFormat *fmt = &pixel_format_16;
-#endif
 		
 		global_shading_table16= (pixel16 *) malloc(sizeof(pixel16)*number_of_shading_tables*NUMBER_OF_COLOR_COMPONENTS*(PIXEL16_MAXIMUM_COMPONENT+1));
 		assert(global_shading_table16);
@@ -2343,7 +2333,6 @@ static void build_global_shading_table16(
 		write= global_shading_table16;
 		for (shading_table= 0; shading_table<number_of_shading_tables; ++shading_table)
 		{
-#ifdef SDL
 			// Under SDL, the components may have different widths and different shifts
 			int shift = fmt->Rshift + (3 - fmt->Rloss);
 			for (value=0;value<=PIXEL16_MAXIMUM_COMPONENT;++value)
@@ -2354,18 +2343,6 @@ static void build_global_shading_table16(
 			shift = fmt->Bshift + (3 - fmt->Bloss);
 			for (value=0;value<=PIXEL16_MAXIMUM_COMPONENT;++value)
 				*write++ = ((value*(shading_table))/(number_of_shading_tables-1))<<shift;
-#else
-			// Under MacOS, every component has the same width
-			for (short component=0;component<NUMBER_OF_COLOR_COMPONENTS;++component)
-			{
-				short shift= 5*(NUMBER_OF_COLOR_COMPONENTS-component-1);
-
-				for (value=0;value<=PIXEL16_MAXIMUM_COMPONENT;++value)
-				{
-					*write++= ((value*(shading_table))/(number_of_shading_tables-1))<<shift;
-				}
-			}
-#endif
 		}
 	}
 }
@@ -2378,9 +2355,7 @@ static void build_global_shading_table32(
 		short value, shading_table;
 		pixel32 *write;
 		
-#ifdef SDL
 		SDL_PixelFormat *fmt = &pixel_format_32;
-#endif
 
 		global_shading_table32= (pixel32 *) malloc(sizeof(pixel32)*number_of_shading_tables*NUMBER_OF_COLOR_COMPONENTS*(PIXEL32_MAXIMUM_COMPONENT+1));
 		assert(global_shading_table32);
@@ -2388,7 +2363,6 @@ static void build_global_shading_table32(
 		write= global_shading_table32;
 		for (shading_table= 0; shading_table<number_of_shading_tables; ++shading_table)
 		{
-#ifdef SDL
 			// Under SDL, the components may have different widths and different shifts
 			int shift = fmt->Rshift - fmt->Rloss;
 			for (value=0;value<=PIXEL32_MAXIMUM_COMPONENT;++value)
@@ -2399,18 +2373,6 @@ static void build_global_shading_table32(
 			shift = fmt->Bshift - fmt->Bloss;
 			for (value=0;value<=PIXEL32_MAXIMUM_COMPONENT;++value)
 				*write++ = ((value*(shading_table))/(number_of_shading_tables-1))<<shift;
-#else
-			// Under MacOS, every component has the same width
-			for (short component= 0; component<NUMBER_OF_COLOR_COMPONENTS; ++component)
-			{
-				short shift= 8*(NUMBER_OF_COLOR_COMPONENTS-component-1);
-
-				for (value= 0; value<=PIXEL32_MAXIMUM_COMPONENT; ++value)
-				{
-					*write++= ((value*(shading_table))/(number_of_shading_tables-1))<<shift;
-				}
-			}
-#endif
 		}
 	}
 }
@@ -2649,25 +2611,17 @@ static void build_tinting_table16(
 {
 	short i;
 
-#ifdef SDL
 	SDL_PixelFormat *fmt = &pixel_format_16;
-#endif
 
 	for (i= 0; i<color_count; ++i, ++colors)
 	{
 		int32 magnitude= ((int32)colors->red + (int32)colors->green + (int32)colors->blue)/(short)3;
 		
-#ifdef SDL
 		// Find optimal pixel value for video display
 		*tint_table++= SDL_MapRGB(fmt,
 		  ((magnitude * tint_color->red) / 0xFFFF) >> 8,
 		  ((magnitude * tint_color->green) / 0xFFFF) >> 8,
 		  ((magnitude * tint_color->blue) / 0xFFFF) >> 8);
-#else
-		// Mac xRGB 1555 pixel format
-		*tint_table++= RGBCOLOR_TO_PIXEL16((magnitude*tint_color->red)/0xFFFF,
-			(magnitude*tint_color->green)/0xFFFF, (magnitude*tint_color->blue)/0xFFFF);
-#endif
 	}
 }
 
@@ -2680,15 +2634,12 @@ static void build_tinting_table32(
 {
 	short i;
 
-#ifdef SDL
 	SDL_PixelFormat *fmt = &pixel_format_32;
-#endif
 
 	for (i= 0; i<color_count; ++i, ++colors)
 	{
 		int32 magnitude= ((int32)colors->red + (int32)colors->green + (int32)colors->blue)/(short)3;
 		
-#ifdef SDL
 		// Find optimal pixel value for video display
 		if (!is_opengl)
 			*tint_table++= SDL_MapRGB(fmt,
@@ -2696,7 +2647,6 @@ static void build_tinting_table32(
 			  ((magnitude * tint_color->green) / 65535) >> 8,
 			  ((magnitude * tint_color->blue) / 65535) >> 8);
 		else
-#endif
 		// Mac xRGB 8888 pixel format
 		*tint_table++= RGBCOLOR_TO_PIXEL32((magnitude*tint_color->red)/65535,
 			(magnitude*tint_color->green)/65535, (magnitude*tint_color->blue)/65535);

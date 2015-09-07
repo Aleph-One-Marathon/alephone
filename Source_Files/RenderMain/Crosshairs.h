@@ -63,16 +63,6 @@ CrosshairData& GetCrosshairData();
 bool Crosshairs_IsActive();
 bool Crosshairs_SetActive(bool NewState);
 
-// Needs QD graphics context;
-// will draw in center of view rectangle in the specified graphics context.
-// If there is no view rectangle specified, then it uses the graphics context's rectangle.
-// If there is no graphics context specified, then it uses the current one.
-#if defined(mac)
-bool Crosshairs_Render(Rect &ViewRect);
-bool Crosshairs_Render(GrafPtr Context);
-bool Crosshairs_Render(GrafPtr Context, Rect &ViewRect);
-#elif defined(SDL)
 bool Crosshairs_Render(SDL_Surface *s);
-#endif
 
 #endif

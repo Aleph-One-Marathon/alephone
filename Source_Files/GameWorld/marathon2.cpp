@@ -642,11 +642,7 @@ bool entering_map(bool restoring_saved)
 	MarkLuaCollections(true);
 	MarkLuaHUDCollections(true);
 
-#ifdef SDL
 	load_collections(true, get_screen_mode()->acceleration != _no_acceleration);
-#else
-	load_collections(true, true);
-#endif
 
 	load_all_monster_sounds();
 	load_all_game_sounds(static_world->environment_code);

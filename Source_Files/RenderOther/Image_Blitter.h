@@ -25,10 +25,6 @@ IMAGE_BLITTER.H
 #include "cseries.h"
 #include "ImageLoader.h"
 
-#ifndef SDL
-#include <SDL/SDL.h>
-#endif
-
 #include <vector>
 #include <set>
 using namespace std;

@@ -7,12 +7,10 @@
  *
  */
 #ifdef __GNUG__
-#ifdef SDL
 #undef mac
 #include <SDL.h>
 #include <SDL_net.h>
 #include <SDL_image.h>
-#endif
 
 #ifdef mac
 #undef TARGET_API_MAC_CARBON

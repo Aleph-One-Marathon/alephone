@@ -31,10 +31,6 @@
 #include "OGL_Headers.h"
 #endif
 
-#ifndef SDL
-#include <SDL/SDL.h>
-#endif
-
 #include <vector>
 #include <set>
 using namespace std;

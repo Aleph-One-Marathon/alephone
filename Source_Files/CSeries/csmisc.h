@@ -21,14 +21,7 @@
 #ifndef _CSERIES_MISC_
 #define _CSERIES_MISC_
 
-#ifdef mac
-#define MACINTOSH_TICKS_PER_SECOND 60
-#define MACHINE_TICKS_PER_SECOND MACINTOSH_TICKS_PER_SECOND
-#elif defined(SDL)
 #define MACHINE_TICKS_PER_SECOND 1000
-#else
-#error MACHINE_TICKS_PER_SECOND not defined for this platform
-#endif
 
 extern uint32 machine_tick_count(void);
 extern bool wait_for_click_or_keypress(

@@ -1056,17 +1056,13 @@ void pause_game(
 		set_fade_effect(NONE);
 	darken_world_window();
 	set_keyboard_controller_status(false);
-#ifdef SDL
 	show_cursor();
-#endif
 }
 
 void resume_game(
 	void)
 {
-#ifdef SDL
 	hide_cursor();
-#endif
 	if (!OGL_IsActive() || !(TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fader)))
 		SetFadeEffectDelay(TICKS_PER_SECOND/2);
 	if (OGL_IsActive())
@@ -1084,13 +1080,7 @@ void draw_menu_button_for_command(
 	
 	/* Draw it initially depressed.. */
 	draw_button(rectangle_index, true);
-#ifdef SDL
 	SDL_Delay(1000 / 12);
-#else
-	uint32 initial_tick= machine_tick_count();
-	while(machine_tick_count()-initial_tick<5) /* 1/12 second */
-		;
-#endif
 	draw_button(rectangle_index, false);
 }
 
@@ -2652,9 +2642,6 @@ static bool point_in_rectangle(
 	return in_rectangle;
 }
 
-#ifndef SDL
-extern bool MoviePlaying; // interface_macintosh.cpp
-#endif
 static void handle_interface_menu_screen_click(
 	short x,
 	short y,
@@ -2664,15 +2651,8 @@ static void handle_interface_menu_screen_click(
 	screen_rectangle *screen_rect;
 	short xoffset = 0, yoffset = 0;
 
-#ifndef SDL
-	if (MoviePlaying)
-		return; // fixes click-through movie bug
-#endif
-
-#ifdef SDL
 	xoffset = (SDL_GetVideoSurface()->w - 640) / 2;
 	yoffset = (SDL_GetVideoSurface()->h - 480) / 2;
-#endif
 
 	/* find it.. */
 	for(index= START_OF_MENU_INTERFACE_RECTS; index<END_OF_MENU_INTERFACE_RECTS; ++index)

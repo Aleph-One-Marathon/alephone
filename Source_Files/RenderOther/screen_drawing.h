@@ -175,7 +175,6 @@ void _frame_rect(screen_rectangle *rectangle, short color_index);
 // LP addition: stuff to use a buffer for the Heads-Up Display
 void _set_port_to_HUD();
 
-#ifdef SDL
 struct world_point2d;
 
 static inline int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, const font_info *font, uint16 style, bool utf8 = false)
@@ -211,7 +210,5 @@ static inline int trunc_text(const char *text, int max_width, const font_info *f
 extern void draw_polygon(SDL_Surface *s, const world_point2d *vertex_array, int vertex_count, uint32 pixel);
 extern void draw_line(SDL_Surface *s, const world_point2d *v1, const world_point2d *v2, uint32 pixel, int pen_size);
 extern void draw_rectangle(SDL_Surface *s, const SDL_Rect *r, uint32 pixel);
-
-#endif
 
 #endif

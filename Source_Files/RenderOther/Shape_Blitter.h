@@ -26,10 +26,6 @@ SHAPE_BLITTER.H
 #include "map.h"
 #include "Image_Blitter.h"
 
-#ifndef SDL
-#include <SDL/SDL.h>
-#endif
-
 #include <vector>
 #include <set>
 using namespace std;

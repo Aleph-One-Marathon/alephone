@@ -31,11 +31,7 @@
 
 #include "cseries.h"
 
-#ifdef SDL
 #include "sdl_widgets.h"
-#else
-#include "carbon_widgets.h"
-#endif
 
 #include "binders.h"
 

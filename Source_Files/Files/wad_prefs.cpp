@@ -78,14 +78,8 @@ bool w_open_preferences_file(
 	try {
 		prefInfo = new preferences_info;
 
-#if defined(mac)
-		prefInfo->PrefsFile.SetParentToPreferences();
-		prefInfo->PrefsFile.SetName(PrefName,Type);
-		/* check for the preferences folder using FindFolder, creating it if necessary */
-#elif defined(SDL)
 		prefInfo->PrefsFile.SetToPreferencesDir();
 		prefInfo->PrefsFile += PrefName;
-#endif
 
 		/* does the preferences file exist? */
 		load_preferences(); /* Uses prefInfo.. */
