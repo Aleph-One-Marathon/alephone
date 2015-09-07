@@ -310,6 +310,7 @@ Source_Files/XML/Makefile
 tools/Makefile
 data/Makefile
 data/default_theme/Makefile
+data/icons/Makefile
 ])
 AC_OUTPUT
 

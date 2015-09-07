@@ -2,7 +2,7 @@
 
 noinst_LIBRARIES = libinput.a
 
-libinput_a_SOURCES = ISp_Support.h mouse.h joystick.h \
+libinput_a_SOURCES = mouse.h joystick.h \
   \
   mouse_sdl.cpp joystick_sdl.cpp
 

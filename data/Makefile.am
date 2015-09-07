@@ -1,10 +1,15 @@
 ## Process this file with automake to produce Makefile.in 
 
-SUBDIRS = default_theme
+SUBDIRS = default_theme icons
 
 mmldir = $(pkgdatadir)/MML
 mml_DATA = Interface_Rects.mml Transparent_Liquids.mml \
   Transparent_Sprites.mml
+
+EXTRA_DIST = $(mml_DATA) alephone.xml
+
+
+if INSTALL_MIME
 
 mime_icons = \
   application-x-alephone-fila.png \
@@ -16,12 +21,6 @@ mime_icons = \
   application-x-alephone-shpa.png \
   application-x-alephone-snda.png \
   text-x-alephone-mml.png
-
-EXTRA_DIST = $(mml_DATA) $(mime_icons) alephone.xml
-
-
-if INSTALL_MIME
-
 icon_sizes = 16 22 24 32 48 64 96 128 256
 mimedir = $(datadir)/mime/packages
 mime_DATA = alephone.xml
