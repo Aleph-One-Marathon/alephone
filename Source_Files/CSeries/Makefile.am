@@ -10,7 +10,7 @@ libcseries_a_SOURCES = byte_swapping.h BStream.h csalerts.h		\
   csdialogs_sdl.cpp csmisc_sdl.cpp csstrings.cpp FilmProfile.cpp	\
   mytm_sdl.cpp snprintf.cpp
 
-EXTRA_libcseries_a_SOURCES = csfiles_beos.cpp csalerts.mm
+EXTRA_libcseries_a_SOURCES = csalerts.mm
 
 AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/Files -I$(top_srcdir)/Source_Files/GameWorld \
   -I$(top_srcdir)/Source_Files/Input -I$(top_srcdir)/Source_Files/Misc \
