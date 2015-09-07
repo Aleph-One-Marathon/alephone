@@ -755,35 +755,6 @@ static void update_guided_projectile(
 
 			projectile_object->facing= NORMALIZE_ANGLE(projectile_object->facing+delta_yaw);
 			projectile->elevation= NORMALIZE_ANGLE(projectile->elevation+delta_pitch);
-
-#if 0
-			angle delta_pitch= HALF_CIRCLE - NORMALIZE_ANGLE(arctangent(guess_distance2d((world_point2d *)&target_location, (world_point2d *)&projectile_object->location), dz) - projectile->elevation);
-			angle delta_yaw= HALF_CIRCLE - NORMALIZE_ANGLE(arctangent(dx, dy) - projectile_object->facing);
-			short obstruction_index;
-			uint16 flags;
-
-			switch (dynamic_world->game_information.difficulty_level)
-			{
-				case _wuss_level:
-					if (dynamic_world->tick_count&7) return;
-					break;
-				case _easy_level:
-					if (dynamic_world->tick_count&3) return;
-					break;
-			}
-
-			switch (dynamic_world->game_information.difficulty_level)
-			{
-				case _major_damage_level:
-				case _total_carnage_level:
-					flags= translate_projectile(projectile->type, &projectile_object->location, projectile_object->polygon,
-								    &target_location, (short *) NULL, projectile->owner_index, &obstruction_index, 0, true, -1);
-					if (!(flags&_projectile_hit_monster)) break; /* if weÕre headed for a wall, donÕt steer */
-				default:
-					projectile_object->facing= NORMALIZE_ANGLE(projectile_object->facing+PIN(delta_yaw, -maximum_delta_yaw, maximum_delta_yaw));
-					projectile->elevation= NORMALIZE_ANGLE(projectile->elevation+PIN(delta_pitch, -maximum_delta_pitch, maximum_delta_pitch));
-			}
-#endif
 		}
 	}
 }

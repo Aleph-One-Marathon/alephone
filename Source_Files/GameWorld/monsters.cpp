@@ -1826,28 +1826,6 @@ short get_monster_melee_impact_effect(
 	return definition->melee_impact_effect;
 }
 
-#if 0
-/* pick a random player; flood out from that player until we find a polygon legal for a monster
-	drop whose center is not player visible. */
-void pick_nearby_random_monster_position(
-	world_point2d *p,
-	short *polygon_index)
-{
-	short player_index= global_random()%dynamic_world->player_count;
-	short flood_polygon_index= get_player_data(player_index)->camera_polygon_index;
-	
-	polygon_index= flood_map(polygon_index, area, monster_activation_flood_proc, _breadth_first, &flood_flags);
-	while (polygon_index!=NONE)
-	{
-		short object_index;
-		struct object_data *object;
-		struct polygon_data *polygon= get_polygon_data(polygon_index);
-		
-		polygon_index= flood_map(NONE, area, monster_activation_flood_proc, _breadth_first, &flood_flags);
-	}
-}
-#endif
-
 /* ---------- private code */
 
 static void cause_shrapnel_damage(

@@ -968,11 +968,6 @@ bool translate_map_object(
 		{
 			line_index= find_line_crossed_leaving_polygon(new_polygon_index, (world_point2d *)&object->location, (world_point2d *)new_location);
 			if (line_index!=NONE) new_polygon_index= find_adjacent_polygon(new_polygon_index, line_index);
-#if 0
-			vassert(new_polygon_index!=NONE, csprintf(temporary, "move #%d(#%d,#%d)==>#%d(#%d,#%d) crossed #%d into wall",
-				object->polygon, object->location.x, object->location.y, new_polygon_index, new_location->x,
-				new_location->y, line_index));
-#endif
 			if (new_polygon_index==NONE)
 			{
 				*(world_point2d *)new_location= get_polygon_data(old_polygon_index)->center;
@@ -2004,21 +1999,6 @@ struct map_annotation *get_next_map_annotation(
 	
 	return annotation;
 }
-
-#if 0
-static struct guard_path_header test_guard_path=
-{
-	7, 0, 0,
-	{{19904,992}, {11520,4320}, {9472,9280}, {12128,11200}, {14688,9344}, {12640,4256},
-	 {19872,5856}},
-};
-struct guard_path_header *get_guard_path_header(
-	short guard_path_index)
-{
-	assert(guard_path_index==0);
-	return &test_guard_path;
-}
-#endif
 
 /* for saving or whatever; finds the highest used index plus one for objects, monsters, projectiles
 	and effects */

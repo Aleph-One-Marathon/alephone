@@ -962,26 +962,6 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 
 /* ---------- private code */
 
-#if 0
-
-#define LANDSCAPE_REPEATS 12
-static void preprocess_landscaped_polygon(
-	struct polygon_definition *polygon,
-	struct view_data *view)
-{
-	polygon->origin.x= (world_distance) ((10000*LANDSCAPE_REPEATS*WORLD_ONE)/(2*31415));
-	polygon->origin.y= -(((LANDSCAPE_REPEATS*WORLD_ONE*view->yaw)>>ANGULAR_BITS)&(WORLD_ONE-1));
-	polygon->origin.z= 0;
-	
-	polygon->vector.i= 0;
-	polygon->vector.j= WORLD_ONE;
-	polygon->vector.k= -WORLD_ONE;
-
-	polygon->ambient_shade= FIXED_ONE;
-}
-
-#endif
-
 /* starting at x0 and for line_count vertical lines between *y0 and *y1, precalculate all the
 	information _texture_vertical_polygon_lines will need to work */
 static void _pretexture_vertical_polygon_lines(

@@ -198,15 +198,6 @@ public:
 	bool Get(uint32 Type, int16 ID, LoadedResource& Rsrc);
 	bool Get(uint8 t1, uint8 t2, uint8 t3, uint8 t4, int16 ID, LoadedResource& Rsrc) {return Get(FOUR_CHARS_TO_INT(t1, t2, t3, t4), ID, Rsrc);}
 
-	// Pushing and popping are unnecessary for the MacOS versions of these functions.
-	// All these functions return a list of what they found as an STL vector
-	// of the appropriate type; if they fail, they set the vector to zero length and return "false".
-#if 0
-	bool GetTypeList(vector<uint32>& TypeList);
-	bool GetIDList(uint32 Type, vector<int16>& IDList);
-	bool GetIDList(uint8 t1, uint8 t2, uint8 t3, uint8 t4, vector<int16>& IDList) {return GetIDList(FOUR_CHARS_TO_INT(t1, t2, t3, t4), IDList);}
-#endif
-
 	bool IsOpen();
 	bool Close();
 	

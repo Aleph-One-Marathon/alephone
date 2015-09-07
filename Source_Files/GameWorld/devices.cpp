@@ -525,30 +525,6 @@ void try_and_toggle_control_panel(
 	}
 }
 
-#if 0
-/* ---------- these functions are all used in Vulcan */
-static bool shape_is_control_panel(
-	shape_descriptor texture)
-{
-	bool is_control_panel= false;
-
-	for(unsigned index= 0; index<NUMBER_OF_CONTROL_PANEL_DEFINITIONS; ++index)
-	{
-		struct control_panel_definition *definition= get_control_panel_definition(index);
-
-		if(texture==BUILD_DESCRIPTOR(definition->collection, definition->active_shape) ||
-			texture==BUILD_DESCRIPTOR(definition->collection, definition->inactive_shape))
-		{
-			is_control_panel= true;
-			break;
-		}
-	}
-	
-	return is_control_panel;
-}
-
-#endif
-
 short get_panel_class(
 	short panel_type)
 {
@@ -556,29 +532,6 @@ short get_panel_class(
 	
 	return definition->_class;
 }
-
-#if 0
-//---------- changed 9.18.95
-static bool control_panel_type_valid_for_texture(
-	shape_descriptor shape,
-	short control_panel_type)
-{
-	struct control_panel_definition *definition= get_control_panel_definition(control_panel_type);
-	bool valid= false;
-	
-	if(GET_DESCRIPTOR_COLLECTION(shape)==definition->collection)
-	{
-		if((GET_DESCRIPTOR_SHAPE(shape)==definition->active_shape) ||
-			(GET_DESCRIPTOR_SHAPE(shape)==definition->inactive_shape))
-		{
-			valid= true;
-		}
-	}
-	
-	return valid;
-}
-//------------------
-#endif
 
 /* ---------- private code */
 

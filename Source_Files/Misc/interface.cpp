@@ -291,21 +291,6 @@ struct screen_data m1_display_screens[]= {
 
 
 
-#if 0
-struct chapter_screen_sound_data {
-	short level;
-	short sound_code;
-};
-
-struct chapter_screen_sound_data chapter_screen_sounds[]=
-{
-	{0, _snd_chapter1},
-	{1, _snd_chapter2},
-	{2, _snd_chapter3}
-};
-#define NUMBER_OF_CHAPTER_SCREEN_SOUNDS (sizeof(chapter_screen_sounds)/sizeof(chapter_screen_sounds[1]))
-#endif
-
 /* -------------- local globals */
 static struct game_state game_state;
 static FileSpecifier DraggedReplayFile;
@@ -1392,13 +1377,6 @@ void do_menu_item_command(
 							// Rhys Hill fix for crash when quitting OpenGL
 							if (!OGL_IsActive())
 								render_screen(0); /* Get rid of hole.. */
-/* If you want to quit on command-q while in the game.. */
-#if 0
-							if(menu_item==iQuitGame)
-							{
-								set_game_state(_quit_game);
-							} else
-#endif
 							set_game_state(_close_game);
 						}
 					}

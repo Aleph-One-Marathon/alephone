@@ -860,7 +860,6 @@ void cause_polygon_damage(
 	}
 
 
-// #if 0
 	if ((polygon_type==_polygon_is_minor_ouch && !(dynamic_world->tick_count&MINOR_OUCH_FREQUENCY) && object->location.z==polygon->floor_height) ||
 		(polygon_type==_polygon_is_major_ouch && !(dynamic_world->tick_count&MAJOR_OUCH_FREQUENCY)))
 	{
@@ -874,7 +873,6 @@ void cause_polygon_damage(
 		
 		damage_monster(monster_index, NONE, NONE, (world_point3d *) NULL, &damage, NONE);
 	}
-// #endif
 }
 
 /* ---------- private code */

@@ -322,18 +322,6 @@ void initialize_weapon_manager(
 	assert(player_weapons_array);
 
 	objlist_clear(player_weapons_array, MAXIMUM_NUMBER_OF_PLAYERS);
-
-#if 0
-{
-	short index;
-	
-	for(index= 0; index<NUMBER_OF_WEAPONS; ++index)
-	{
-		struct weapon_definition *definition= get_weapon_definition(index);
-		definition->ready_ticks *= 10;
-	}
-}
-#endif
 }
 
 void initialize_player_weapons_for_new_game(
@@ -441,13 +429,6 @@ void check_player_weapons_for_environment_change(
 
 	/* while we are at it, setup the definitions for the weapons */
 	calculate_ticks_from_shapes();
-
-#if 0
-{
-	struct weapon_definition *definition= get_weapon_definition(_weapon_shotgun);
-	definition->ready_ticks *= 10;
-}
-#endif
 }
 
 /* Called when a player dies to discharge the weapons that they have charged up. */

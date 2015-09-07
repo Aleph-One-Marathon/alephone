@@ -149,37 +149,6 @@ struct revert_game_info
 };
 static struct revert_game_info revert_game_data;
 
-#if 0
-/* Borrowed from the old lightsource.h, to allow Marathon II to open/use Marathon I maps */
-struct old_light_data {
-	uint16 flags;
-	
-	int16 type;
-	int16 mode; /* on, off, etc. */
-	int16 phase;
-	
-	fixed minimum_intensity, maximum_intensity;
-	int16 period; /* on, in ticks (turning on and off periods are always the same for a given light type,
-		or else are some function of this period) */
-	
-	fixed intensity; /* current intensity */
-	
-	int16 unused[5];	
-};
-
-enum /* old light types */
-{
-	_light_is_normal,
-	_light_is_rheostat,
-	_light_is_flourescent,
-	_light_is_strobe, 
-	_light_flickers,
-	_light_pulsates,
-	_light_is_annoying,
-	_light_is_energy_efficient
-};
-#endif
-
 /* -------- static functions */
 static void scan_and_add_scenery(void);
 static void complete_restoring_level(struct wad_data *wad);
@@ -421,7 +390,6 @@ short get_player_starting_location_and_facing(
 	short index, 
 	struct object_location *location)
 {
-#if 1
 	short ii;
 	struct map_object *saved_object;
 	short count= 0;
@@ -454,14 +422,6 @@ short get_player_starting_location_and_facing(
 	if(location) vassert(done, csprintf(temporary, "Tried to place: %d only %d starting pts.", index, count));
 	
 	return count;
-#else
-	location->x= 0x14e9;
-	location->y= 0x1ba0;
-	*facing= 0x00;
-	*polygon_index= 0x6f;
-
-	return 1;
-#endif
 }
 
 uint32 get_current_map_checksum(

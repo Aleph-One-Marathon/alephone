@@ -265,23 +265,7 @@ void update_one_media(
 	media->texture= BUILD_DESCRIPTOR(definition->collection, definition->shape);
 	media->transfer_mode= definition->transfer_mode;
 
-#if 0
-if (force_update || !(dynamic_world->tick_count&definition->shape_frequency))
-	{
-		shape_descriptor texture;
-		
-		do
-		{
-			texture= BUILD_DESCRIPTOR(definition->collection, definition->shape + global_random()%definition->shape_count);
-		}
-		while (definition->shape_count>1 && texture==media->texture);
-		
-		media->texture= BUILD_DESCRIPTOR(definition->collection, definition->shape);
-		media->transfer_mode= definition->transfer_mode;
-	}
-#else
 	(void)force_update;
-#endif
 }
 
 // LP addition: count number of media types used,

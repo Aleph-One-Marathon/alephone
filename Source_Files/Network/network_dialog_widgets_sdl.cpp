@@ -353,51 +353,6 @@ w_players_in_game2::update_display(bool inFromDynamicWorld /* default=false */) 
 }
 
 
-#if 0
-// this is for testing
-static const char*    sTestingNames[] = {
-        "Doctor Burrito",
-        "Carnage Asada",
-        "Bongo Bob",
-        "The Napalm Man",
-        "The Big Lebowski",
-        "lala",
-        "Prof. Windsurf",
-        "<<<-ZED-<<<"
-};
-
-void
-w_players_in_game2::click(int, int) {
-    player_entry2	thePlayerEntry;
-
-    // make up a name
-/*    int theNameLength = (local_random() % MAXIMUM_PLAYER_NAME_LENGTH) + 1;
-    for(int i = 0; i < theNameLength; i++)
-        thePlayerEntry.player_name[i] = 'a' + (local_random() % ('z' - 'a'));
-    thePlayerEntry.player_name[theNameLength] = '\0';
-//    strcpy(thePlayerEntry.player_name, "The Big Lebowski");
-*/
-    strcpy(thePlayerEntry.player_name, sTestingNames[local_random() % 8]);
-
-    // Set the size of the text
-    thePlayerEntry.name_width	= text_width(thePlayerEntry.player_name, font, style);
-    
-    // Make up a team-color
-    int theTeamColor = local_random() % 8;
-    
-    // Get the pixel-color for the player's team (for drawing the name)
-    thePlayerEntry.name_pixel_color	= get_dialog_player_color(theTeamColor);
-
-    // Set up a player image for the player (funfun)
-    thePlayerEntry.player_image = new PlayerImage;
-    thePlayerEntry.player_image->setRandomFlatteringView();
-    thePlayerEntry.player_image->setTeamColor(theTeamColor);
-
-    player_entries.push_back(thePlayerEntry);
-
-    dirty = true;
-}
-#else // NOT 0
 void
 w_players_in_game2::click(int x, int) {
     if(draw_carnage_graph) {
@@ -432,7 +387,6 @@ w_players_in_game2::click(int x, int) {
     
     } // draw_carnage_graph
 }
-#endif // NOT 0
 
 // enable carnage reporting mode and set the data needed to draw a graph.
 void

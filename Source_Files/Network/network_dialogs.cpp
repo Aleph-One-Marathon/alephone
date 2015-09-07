@@ -1640,24 +1640,6 @@ void reassign_player_colors(
 // Postgame Carnage Report stuff
 struct net_rank rankings[MAXIMUM_NUMBER_OF_PLAYERS];
 
-#if 0
-// These were used for an array-lookup-based find_graph_mode, which worked but was later
-// abandoned in favor of the original (very slightly modified to "add back in" separator indices).
-// Left here for the curious.
-
-// This should not conflict with the other _*_graph identifiers
-enum { _total_team_carnage_or_total_scores_graph = 4242 };
-
-// We lookup into a menu contents array now
-static int	sMenuContents[] =
-{
-    _total_carnage_graph,
-    _total_team_carnage_or_total_scores_graph,
-    _total_team_carnage_graph,
-    _total_team_scores_graph
-};
-#endif // 0
-
 // (ZZZ annotation:) Figure out which graph type the user wants to display based
 // on his selection from the popup/selection control.  (See also draw_new_graph().)
 short
@@ -1680,42 +1662,6 @@ find_graph_mode(
 	} 
 	else 
 	{
-#if 0
-            // alternate method based on array lookup, works but abandoned.
-            // left here for the curious.
-
-                // ZZZ change: lookup graph type from static array
-                int theIndexAfterPlayers = value - dynamic_world->player_count;
-                int theNumberOfMenuItemsAfterPlayers = (sizeof(sMenuContents) / sizeof(sMenuContents[0]));
-                
-                // Make sure the index is sane
-                assert(theIndexAfterPlayers >= 0 && theIndexAfterPlayers < theNumberOfMenuItemsAfterPlayers);
-                
-                // Do the lookup
-                graph_type = sMenuContents[theIndexAfterPlayers];
-                
-                // Make sure graph type is sane
-                assert(graph_type != NONE);
-                
-                bool	isTeamGame = ((GET_GAME_OPTIONS() & _force_unique_teams) ? false : true);
-
-                // Disambiguate
-                if(graph_type == _total_team_carnage_or_total_scores_graph)
-                    graph_type = has_scores ? _total_scores_graph : _total_team_carnage_graph;
-
-                // Sanity check the graph type
-                if(!isTeamGame) {
-                    assert(graph_type != _total_team_carnage_graph);
-                    assert(graph_type != _total_team_scores_graph);
-                }
-                
-                if(!has_scores) {
-                    assert(graph_type != _total_scores_graph);
-                    assert(graph_type != _total_team_scores_graph);
-                }
-                
-#else // !0
-
                 int theValueAfterPlayers = value-dynamic_world->player_count;
                 // ZZZ: Account for (lack of) separators
                 if(theValueAfterPlayers >= 0)	theValueAfterPlayers++;
@@ -1762,7 +1708,6 @@ find_graph_mode(
 				assert(false);
 				break;
 		}
-#endif // !0
 	}
 
 	return graph_type;
@@ -2425,28 +2370,6 @@ void display_net_game_stats(void)
     placer->dual_add(wpig2, d);
     
     placer->add(new w_spacer(), true);
-
-#if 0
-// these conditionals don't do the right thing for network_postgame_chat && !network_two_way_chat - there's no
-// UI for the gatherer to send.  oh well, since that combination seems unlikely at the moment, I'll leave it
-// as it; someone can easily fix it if the underlying functionality is added.
-#ifdef NETWORK_POSTGAME_CHAT
-    w_chat_history* chat_history_w = new w_chat_history(600, 6);
-    chat_history_w->set_identifier(iCHAT_HISTORY);
-    d.add(chat_history_w);
-#ifdef NETWORK_TWO_WAY_CHAT
-    w_text_entry*	chatentry_w = new w_text_entry(240, "");
-    chatentry_w->set_identifier(iCHAT_ENTRY);
-    chatentry_w->set_enter_pressed_callback(send_text_fake);
-    chatentry_w->set_alignment(widget::kAlignLeft);
-    chatentry_w->set_full_width();
-    d.add(chatentry_w);
-   
-    d.add(new w_spacer());
-#endif // NETWORK_TWO_WAY_CHAT
-#endif // NETWORK_POSTGAME_CHAT
-
-#endif
 
     horizontal_placer *carnage_and_ok_placer = new horizontal_placer;
     vertical_placer *carnage_placer = new vertical_placer;

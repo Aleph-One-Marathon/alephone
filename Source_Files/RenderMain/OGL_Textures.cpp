@@ -454,38 +454,6 @@ inline bool IsLandscapeFlatColored()
 }
 
 
-#if 0
-static void MakeAverage(int Length, GLuint *Buffer)
-{
-	float Sum[4];
-	
-	for (int q=0; q<4; q++) Sum[q] = 0;
-	
-	// Extract the bytes; the lowest byte gets done first
-	for (int k=0; k<Length; k++)
-	{
-		GLuint PixVal = Buffer[k];
-		for (int q=0; q<4; q++)
-		{
-			Sum[q] += (PixVal & 0x000000ff);
-			PixVal >>= 8;
-		}
-	}
-	
-	// This processes the bytes from highest to lowest
-	GLuint AvgVal = 0;
-	for (int q=0; q<4; q++)
-	{
-		AvgVal <<= 8;	// Must come before adding in a byte
-		AvgVal |= PIN(int(Sum[3-q]/Length + 0.5),0,255);
-	}
-
-	for (int k=0; k<Length; k++)
-		Buffer[k] = AvgVal;
-}
-#endif
-
-
 // Modify color-table index if necessary;
 // makes it the infravision or silhouette one if necessary
 short ModifyCLUT(short TransferMode, short CLUT)

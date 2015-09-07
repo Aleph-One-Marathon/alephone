@@ -1213,36 +1213,6 @@ void FindShadingColor(GLdouble Depth, _fixed Shading, GLfloat *Color)
 }
 
 
-// For debugging purposes:
-#if 0
-static void MakeFalseColor(int c, float Opacity = 1)
-{
-	int cr = c % 12;
-	if (cr < 0) cr += 12;
-	
-	const float Colors[12][3] =
-	{
-	{1.0, 0.0, 0.0},
-	{1.0, 0.5, 0.0},
-	{1.0, 1.0, 0.0},
-	{0.5, 1.0, 0.0},
-	
-	{0.0, 1.0, 0.0},
-	{0.0, 1.0, 0.5},
-	{0.0, 1.0, 1.0},
-	{0.0, 0.5, 1.0},
-	
-	{0.0, 0.0, 1.0},
-	{0.5, 0.0, 1.0},
-	{1.0, 0.0, 1.0},
-	{1.0, 0.0, 0.5}
-	};
-	
-	SglColor4f(Colors[cr][0],Colors[cr][1],Colors[cr][2],Opacity);
-}
-#endif
-
-
 // Stuff for doing OpenGL rendering of various objects
 
 	
@@ -2870,66 +2840,6 @@ void LightingCallback(void *Data, size_t NumVerts, GLfloat *Normals, GLfloat *Po
 {
 	LightingDataStruct *LPtr = (LightingDataStruct *)Data;
 
-// Keeping CB's code on hand
-#if 0
-    /*
-
-	// Register usage:
-	// mm0/mm1: ExternalLight[0] (4 components)
-	// mm2/mm3: ExternalLight[1] (4 components)
-	// mm4/mm5: ExternalLight[2] (4 components)
-	// mm6:     Normal[0]/Normal[1]
-	// mm7:     Normal[2]/1.0
-
-	GLfloat tmp[2] = {0.0, 1.0};
-	__asm__ __volatile__("
-			femms\n
-			movq	0x00(%3),%%mm0\n
-			movq	0x08(%3),%%mm1\n
-			movq	0x10(%3),%%mm2\n
-			movq	0x18(%3),%%mm3\n
-			movq	0x20(%3),%%mm4\n
-			movq	0x28(%3),%%mm5\n
-			movl	8(%0),%%eax\n
-			movl	%%eax,(%4)\n
-		0:\n
-			prefetch 192(%0)\n
-			movq	(%0),%%mm6\n
-			movq	(%4),%%mm7\n
-			pfmul	%%mm0,%%mm6\n
-			pfmul	%%mm1,%%mm7\n
-			pfacc	%%mm6,%%mm7\n
-			pfacc	%%mm6,%%mm7\n
-			movd	%%mm7,(%1)\n
-			movq	(%0),%%mm6\n
-			movq	(%4),%%mm7\n
-			pfmul	%%mm2,%%mm6\n
-			pfmul	%%mm3,%%mm7\n
-			pfacc	%%mm6,%%mm7\n
-			pfacc	%%mm6,%%mm7\n
-			movd	%%mm7,4(%1)\n
-			movq	(%0),%%mm6\n
-			movq	(%4),%%mm7\n
-			pfmul	%%mm4,%%mm6\n
-			pfmul	%%mm5,%%mm7\n
-			pfacc	%%mm6,%%mm7\n
-			pfacc	%%mm6,%%mm7\n
-			movd	%%mm7,8(%1)\n
-		\n
-			add		$0x0c,%0\n
-			movl	8(%0),%%eax\n
-			movl	%%eax,(%4)\n
-			add		$0x0c,%1\n
-			dec		%2\n
-			jne		0b\n
-			femms\n"
-		:
-		: "g" (Normals), "g" (ColorPtr), "g" (NumVerts), "g" (LPtr->Colors), "g" (&tmp)
-		: "eax", "memory"
-	);
-*/
-#endif
-	
 	// In case of a semitransparent object
 	GLfloat Opacity = LPtr->Opacity;
 	bool Semitransparent = (Opacity < 1);

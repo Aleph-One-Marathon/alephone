@@ -239,10 +239,4 @@ public:
 };
 
 
-#if 0
-// Some old debug code
-inline int DiffIndx(vector<node_data>& Nodes, node_data *Node) {if (Node) return (Node - &Nodes.front()); else return -1;}
-inline void DebugTree(char *Label, int q, vector<node_data>& Nodes,  node_data &Node) {dprintf("%s %4d %4d %4d %4d %4d",Label,q,Node.polygon_index,DiffIndx(Nodes,Node.PS_Less),DiffIndx(Nodes,Node.PS_Greater),DiffIndx(Nodes,Node.PS_Shared));}
-#endif
-
 #endif
