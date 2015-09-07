@@ -108,7 +108,7 @@ BigChunkOfDataMessage::copyBufferFrom(const byte* inBuffer, size_t inLength)
 
 
 
-COVARIANT_RETURN(Message*, BigChunkOfDataMessage*)
+BigChunkOfDataMessage*
 BigChunkOfDataMessage::clone() const
 {
 	return new BigChunkOfDataMessage(type(), buffer(), length());

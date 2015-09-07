@@ -76,10 +76,6 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 
 #ifdef HAVE_OPENGL
 
-#ifdef __MVCPP__
-#include <windows.h>
-#endif
-
 #include "OGL_Headers.h"
 #include "OGL_Shader.h"
 

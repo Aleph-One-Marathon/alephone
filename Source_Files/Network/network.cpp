@@ -1331,7 +1331,6 @@ void NetExit(
 	delete gMetaserverClient;
 	gMetaserverClient = new MetaserverClient();
 	
-	#ifndef __MWERKS__
 	if (controller)
 	{
 		open_progress_dialog(_closing_router_ports);
@@ -1341,7 +1340,6 @@ void NetExit(
 		controller = NULL;
 		close_progress_dialog();
 	}
-	#endif
 
 	Console::instance()->unregister_command("ignore");
   
@@ -1497,7 +1495,6 @@ bool NetGather(
 	NetInitializeTopology(game_data, game_data_size, player_data, player_data_size);
 	NetInitializeSessionIdentifier();
 	
-	#ifndef __MWERKS__
 	if (network_preferences->attempt_upnp)
 	{
 		// open the port!
@@ -1523,7 +1520,6 @@ bool NetGather(
 			alert_user(infoError, strNETWORK_ERRORS, netWarnUPnPConfigureFailed, ret);
 		}
 	}
-	#endif
 	
 	// Start listening for joiners
 	server = new CommunicationsChannelFactory(GAME_PORT);

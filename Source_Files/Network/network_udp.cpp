@@ -31,11 +31,6 @@
 
 #if !defined(DISABLE_NETWORKING)
 
-#ifdef __MWERKS__
-#include <stdlib.h>
-#include <extras.h>
-#endif
-
 #include "cseries.h"
 #include "sdl_network.h"
 #include "network_private.h"

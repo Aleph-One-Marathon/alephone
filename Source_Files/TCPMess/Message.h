@@ -31,12 +31,6 @@
 #include <string.h>	// memcpy
 #include "SDL.h"
 
-#if defined(_MSC_VER) && _MSC_VER < 1300 // pre-MSVC.NET
-# define COVARIANT_RETURN(base,derived) base
-#else
-# define COVARIANT_RETURN(base,derived) derived
-#endif
-
 typedef Uint16 MessageTypeID;
 
 class UninflatedMessage;
@@ -90,7 +84,7 @@ public:
 	bool			inflateFrom(const UninflatedMessage& inUninflated) { *this = inUninflated; return true; }
 	UninflatedMessage*	deflate() const { return new UninflatedMessage(*this); }
 	
-	COVARIANT_RETURN(Message*,UninflatedMessage*) clone() const { return new UninflatedMessage(*this); }
+	UninflatedMessage* clone() const { return new UninflatedMessage(*this); }
 
 	~UninflatedMessage()	{ delete [] mBuffer; }
 
@@ -164,7 +158,7 @@ public:
 	Uint8*			buffer()	{ return mBuffer; }
 	const Uint8*		buffer() const	{ return mBuffer; }
 	
-	COVARIANT_RETURN(Message*, BigChunkOfDataMessage*)	clone() const;
+	BigChunkOfDataMessage*	clone() const;
 
 	~BigChunkOfDataMessage();
 	
@@ -194,7 +188,7 @@ public:
 	{
 	}
 
-	COVARIANT_RETURN(Message*, SimpleMessage<tValueType>*) clone() const
+	SimpleMessage<tValueType>* clone() const
 		{ return new SimpleMessage<tValueType>(*this); }
 
 	MessageTypeID type() const { return mType; }
@@ -236,7 +230,7 @@ public:
 
 	UninflatedMessage* deflate() const { return new UninflatedMessage(kType, 0); }
 	
-	COVARIANT_RETURN(Message*, DatalessMessage<tMessageType>*) clone() const
+	DatalessMessage<tMessageType>* clone() const
 	{ return new DatalessMessage<tMessageType>; }
 };
 

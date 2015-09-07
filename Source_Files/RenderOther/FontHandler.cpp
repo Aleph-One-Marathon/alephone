@@ -36,10 +36,6 @@ Jan 12, 2001 (Loren Petrich):
 
 #include "cseries.h"
 
-#ifdef __MVCPP__
-#include <windows.h>
-#endif
-
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
 #include "OGL_Blitter.h"

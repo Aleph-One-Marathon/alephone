@@ -60,16 +60,6 @@
 #define PATH_SEP '/'
 #endif
 
-#ifdef __MVCPP__
-
-#include <direct.h>			// for mkdir()
-#include <io.h>				// for access()
-#define R_OK  4				// for access(), this checks for read access.  6 should be used for read and write access both.
-#include <sys/types.h>		// for stat()
-#include <sys/stat.h>		// for stat()
-
-#endif
-
 #include "sdl_dialogs.h"
 #include "sdl_widgets.h"
 #include "SoundManager.h" // !
@@ -836,41 +826,6 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 {
 	vec.clear();
 
-#if defined(__MVCPP__)
-
-	WIN32_FIND_DATA findData;
-
-	// We need to add a wildcard to the search name
-	string search_name;
-	search_name = name;
-	search_name += "\\*.*";
-
-	HANDLE hFind = ::FindFirstFile(search_name.c_str(), &findData);
-
-	if (hFind == INVALID_HANDLE_VALUE) {
-		err = ::GetLastError();
-		return false;
-	}
-
-	do {
-		// Exclude current and parent directories
-		if (findData.cFileName[0] != '.' ||
-		    (findData.cFileName[1] && findData.cFileName[1] != '.')) {
-			// Return found files to dir_entry
-			int32 fileSize = (findData.nFileSizeHigh * MAXDWORD) + findData.nFileSizeLow;
-			vec.push_back(dir_entry(findData.cFileName, fileSize,
-			              (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0, false));
-		}
-	} while(::FindNextFile(hFind, &findData));
-
-	if (!::FindClose(hFind))
-		err = ::GetLastError(); // not sure if we should return this or not
-	else
-		err = 0;
-	return true;
-
-#else
-
 	DIR *d = opendir(GetPath());
 
 	if (d == NULL) {
@@ -892,8 +847,6 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 	closedir(d);
 	err = 0;
 	return true;
-
-#endif
 }
 
 // Copy file contents

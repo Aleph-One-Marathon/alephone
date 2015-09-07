@@ -283,7 +283,7 @@ public:
 	TemplatizedDataMessage(const Uint8* inBuffer = NULL, size_t inLength = 0) :
 		T(kType, inBuffer, inLength) { };
 	TemplatizedDataMessage(const TemplatizedDataMessage& other) : T(other) { }
-	COVARIANT_RETURN(Message *, TemplatizedDataMessage *) clone () const {
+	TemplatizedDataMessage* clone () const {
 		return new TemplatizedDataMessage(*this);
 	}
 };

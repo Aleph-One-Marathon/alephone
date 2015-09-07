@@ -705,11 +705,6 @@ void MakeTCPsocketNonBlocking(TCPsocket *socket) {
   u_long val = 1;
   ioctlsocket(fd, FIONBIO, &val);
 #else
-#ifdef __MWERKS__
-/* out of /usr/include/sys/fcntl.h - mwerks doesn't have these defined */
-#define F_SETFL 4
-#define O_NONBLOCK 0x0004
-#endif
 
   fcntl(fd, F_SETFL, O_NONBLOCK);
 

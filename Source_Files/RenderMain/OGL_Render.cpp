@@ -142,10 +142,6 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 
 #ifdef HAVE_OPENGL
 
-#ifdef __MVCPP__
-#include <windows.h>
-#endif
-
 #include "OGL_Headers.h"
 
 #include "interface.h"

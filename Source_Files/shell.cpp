@@ -185,12 +185,6 @@ extern void handle_keyword(int type_of_cheat);
 
 void PlayInterfaceButtonSound(short SoundID);
 
-#ifdef __BEOS__
-// From csfiles_beos.cpp
-extern string get_application_directory(void);
-extern string get_preferences_directory(void);
-#endif
-
 // From preprocess_map_sdl.cpp
 extern bool get_default_music_spec(FileSpecifier &file);
 extern bool get_default_theme_spec(FileSpecifier& file);
@@ -299,8 +293,8 @@ int main(int argc, char **argv)
 	  "\nThis is free software with ABSOLUTELY NO WARRANTY.\n"
 	  "You are welcome to redistribute it under certain conditions.\n"
 	  "For details, see the file COPYING.\n"
-#if defined(__BEOS__) || defined(__WIN32__) 
-	  // BeOS and Windows are statically linked against SDL, so we have to include this:
+#if defined(__WIN32__)
+	  // Windows is statically linked against SDL, so we have to include this:
 	  "\nSimple DirectMedia Layer (SDL) Library included under the terms of the\n"
 	  "GNU Library General Public License.\n"
 	  "For details, see the file COPYING.SDL.\n"
@@ -439,11 +433,6 @@ static void initialize_application(void)
 	log_dir = app_log_directory;
 	preferences_dir = app_preferences_directory;
 	local_data_dir = app_support_directory;
-
-#elif defined(__BEOS__)
-
-	default_data_dir = get_application_directory();
-	local_data_dir = get_preferences_directory();
 
 #elif defined(__WIN32__)
 

@@ -914,11 +914,6 @@ void RequestDrawingTerm()
 	Term_RenderRequest = true;
 }
 
-// ZZZ: I feel bad doing this, but ... not sure what best way to handle it is.
-// #ifdef __MWERKS__
-// using std::vsnprintf;
-// #endif
-
 // LP addition: display message on the screen;
 // this really puts the current message into a buffer
 // Code cribbed from csstrings

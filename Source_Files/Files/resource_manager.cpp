@@ -110,11 +110,6 @@ bool is_macbinary(SDL_RWops *f, int32 &data_length, int32 &rsrc_length)
 }
 
 
-// From csfiles_beos.cpp
-bool has_rfork_attribute(const char *file);
-SDL_RWops *sdl_rw_from_rfork(const char *file, bool writable);
-
-
 // Structure for open resource file
 struct res_file_t {
 	res_file_t() : f(NULL) {}
@@ -340,13 +335,6 @@ SDL_RWops *open_res_file(FileSpecifier &file)
     SDL_RWops* f = NULL;
 
     // Open file, try <name>.rsrc first, then <name>.resources, then <name>/rsrc then <name>
-#ifdef __BEOS__
-    // On BeOS, try MACOS:RFORK attribute first
-    if (has_rfork_attribute(file.GetPath())) {
-            f = sdl_rw_from_rfork(file.GetPath(), false);
-            f = open_res_file_from_rwops(f);
-    }
-#endif
     if (f == NULL)
             f = open_res_file_from_path(rsrc_file_name.c_str());
     if (f == NULL)

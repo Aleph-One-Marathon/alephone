@@ -182,7 +182,7 @@ static void keyboard_dialog(void *arg);
 
 static std::string get_name_from_system()
 {
-#if defined(unix) || defined(__BEOS__) || (defined (__APPLE__) && defined (__MACH__)) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(unix) || (defined (__APPLE__) && defined (__MACH__)) || defined(__NetBSD__) || defined(__OpenBSD__)
 
 	std::string login = getlogin();
 	if (login.length())

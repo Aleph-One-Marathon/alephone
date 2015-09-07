@@ -160,7 +160,7 @@ public:
 
 	MessageTypeID type() const { return kType; }
 
-	COVARIANT_RETURN(Message*, LoginAndPlayerInfoMessage*) clone() const
+	LoginAndPlayerInfoMessage* clone() const
 	{ return new LoginAndPlayerInfoMessage(*this); }
 
 protected:
@@ -187,7 +187,7 @@ public:
 
 	MessageTypeID type() const { return kType; }
 
-	COVARIANT_RETURN(Message*, SetPlayerModeMessage*) clone() const
+	SetPlayerModeMessage* clone() const
 		{ return new SetPlayerModeMessage(*this); }
 
 	SetPlayerModeMessage(uint16 mode, const std::string& session_id) : m_mode(mode), m_session_id(session_id) { }
@@ -219,7 +219,7 @@ public:
 
 	MessageTypeID type() const { return kType; }
 
-	COVARIANT_RETURN(Message*, SaltMessage*) clone() const
+	SaltMessage* clone() const
 	{ return new SaltMessage(*this); }
 
 protected:
@@ -249,7 +249,7 @@ public:
 
 	MessageTypeID type() const { return kType; }
 
-	COVARIANT_RETURN(Message*, LocalizationMessage*) clone() const
+	LocalizationMessage* clone() const
 	{ return new LocalizationMessage(*this); }
 
 protected:
@@ -299,7 +299,7 @@ public:
 
 	MessageTypeID type() const { return kType; }
 
-	COVARIANT_RETURN(Message*, RoomListMessage*) clone() const
+	RoomListMessage* clone() const
 	{ return new RoomListMessage(*this); }
 
 	const std::vector<RoomDescription>& rooms() const { return m_rooms; }
@@ -328,7 +328,7 @@ public:
 
 	MessageTypeID type() const { return kType; }
 
-	COVARIANT_RETURN(Message*, RoomLoginMessage*) clone() const
+	RoomLoginMessage* clone() const
 	{ return new RoomLoginMessage(*this); }
 
 	RoomLoginMessage(const std::string& login, const HandoffToken& token) : m_loginName(login)
@@ -359,7 +359,7 @@ public:
 
 	MessageTypeID type() const { return kType; }
 
-	COVARIANT_RETURN(Message*, NameAndTeamMessage*) clone() const
+	NameAndTeamMessage* clone() const
 	{ return new NameAndTeamMessage(*this); }
 
 	NameAndTeamMessage(const std::string& name, const std::string& team) : m_name(name), m_team(team), m_away(false), m_away_message("") {}
@@ -393,7 +393,7 @@ public:
 
 	MessageTypeID type() const { return kType; }
 
-	COVARIANT_RETURN(Message*, IDAndLimitMessage*) clone() const
+	IDAndLimitMessage* clone() const
 	{ return new IDAndLimitMessage(*this); }
 
 protected:
@@ -422,7 +422,7 @@ public:
 	uint32 code() const { return m_code; }
 	const std::string message() const { return m_message; }
 
-	COVARIANT_RETURN(Message*, DenialMessage*) clone() const
+	DenialMessage* clone() const
 	{ return new DenialMessage(*this); }
 
 protected:
@@ -450,7 +450,7 @@ public:
 
 	const std::string message() const { return m_message; }
 
-	COVARIANT_RETURN(Message*, BroadcastMessage*) clone() const
+	BroadcastMessage* clone() const
 	{ return new BroadcastMessage(*this); }
 
 protected:
@@ -485,7 +485,7 @@ public:
 	const std::string message() const { return m_message; }
 	const bool directed() const { return m_flags & kDirectedBit; }
 	
-	COVARIANT_RETURN(Message*, PrivateMessage*) clone() const
+	PrivateMessage* clone() const
 		{ return new PrivateMessage(*this); }
 
 protected:
@@ -522,7 +522,7 @@ public:
 	const std::string message() const { return m_message; }
 	const bool directed() const { return m_flags & kDirectedBit; }
 
-	COVARIANT_RETURN(Message*, ChatMessage*) clone() const
+	ChatMessage* clone() const
 	{ return new ChatMessage(*this); }
 
 protected:
@@ -607,7 +607,7 @@ public:
 	
 	PlayerListMessage() {}
 	
-	COVARIANT_RETURN(Message*, PlayerListMessage*) clone() const
+	PlayerListMessage* clone() const
 	{ return new PlayerListMessage(*this); }
 	
 	const std::vector<MetaserverPlayerInfo>& players() const { return m_players; }
@@ -642,7 +642,7 @@ public:
 		, m_description(description)
 	{}
 
-	COVARIANT_RETURN(Message*, CreateGameMessage*) clone() const
+	CreateGameMessage* clone() const
 	{ return new CreateGameMessage(*this); }
 
 
@@ -675,7 +675,7 @@ public:
 
 	MessageTypeID type() const { return kType; }
 
-	COVARIANT_RETURN(Message*, LoginSuccessfulMessage*) clone() const
+	LoginSuccessfulMessage* clone() const
 	{ return new LoginSuccessfulMessage(*this); }
 
 	uint32 userID() const { return m_userID; }
@@ -705,7 +705,7 @@ public:
 
 	MessageTypeID type() const { return kType; }
 
-	COVARIANT_RETURN(Message*, SetPlayerDataMessage*) clone() const
+	SetPlayerDataMessage* clone() const
 	{ return new SetPlayerDataMessage(*this); }
 
 
@@ -797,7 +797,7 @@ public:
 
 	MessageTypeID type() const { return kType; }
 
-	COVARIANT_RETURN(Message*, GameListMessage*) clone() const
+	GameListMessage* clone() const
 	{ return new GameListMessage(*this); }
 
 	const std::vector<GameListEntry>& entries() const { return m_entries; }
@@ -832,7 +832,7 @@ public:
 
 	MessageTypeID type() const { return kType; }
 
-	COVARIANT_RETURN(Message*, StartGameMessage*) clone() const
+	StartGameMessage* clone() const
 	{ return new StartGameMessage(*this); }
 
 	StartGameMessage(int32 gameTimeInSeconds) : m_gameTimeInSeconds(gameTimeInSeconds) {}

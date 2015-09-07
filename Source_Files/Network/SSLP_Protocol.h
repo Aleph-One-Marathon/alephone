@@ -43,17 +43,6 @@
 
 #include	<SDL_net.h>
 
-#ifdef OBSOLETE
-#ifdef __GNUC__
-#define PACKED_ATTRIBUTE __attribute__ ((packed))
-#else
-#define PACKED_ATTRIBUTE
-#ifndef _MSC_VER
-#error You must arrange for struct SSLP_Packet to be close-packed.
-#endif
-#endif
-#endif
-
 
 #ifndef SSLP_PORT
 #define	SSLP_PORT		15367		// I made this up, change if it sucks
@@ -123,14 +112,6 @@
 #define	SSLP_MAX_NAME_LENGTH	32
 #endif
 
-#ifdef OBSOLETE
-#ifdef _MSC_VER
-#pragma pack(push,1)
-#endif
-#endif
-
-// ASSUMPTION: if we tell the compiler this should be "packed", it will have the same alignment/padding
-// on all platforms.  Numeric fields must always be in network ("big-endian") order when placed on the wire.
 struct SSLP_Packet {
     Uint32	sslpp_magic;		// should always be SSLPP_MAGIC
     Uint32	sslpp_version;		// set to SSLPP_VERSION, for catching version mismatch
@@ -139,7 +120,7 @@ struct SSLP_Packet {
     Uint16	sslpp_reserved;		// should always be 0
     char	sslpp_service_type[SSLP_MAX_TYPE_LENGTH];	// type desired, for FIND; type provided or no longer provided on HAVE or LOST
     char	sslpp_service_name[SSLP_MAX_NAME_LENGTH];	// name of the service instance.  meaningless in FIND.
-}; // PACKED_ATTRIBUTE ;
+};
 
 // The packed size and packed-packet type
 const int SIZEOF_SSLP_Packet = 3*4 + 2*2 + SSLP_MAX_TYPE_LENGTH + SSLP_MAX_NAME_LENGTH;
@@ -148,12 +129,6 @@ const int SIZEOF_SSLP_Packet = 3*4 + 2*2 + SSLP_MAX_TYPE_LENGTH + SSLP_MAX_NAME_
 // are equal.  also, whenever a name or type is copied, only the bytes up to and including the first '\0' are copied.
 // Note that it's not an error for all SSLP_MAX_*_LENGTH bytes of name or type storage to be filled with data - a terminating
 // NULL is _not_ required if all SSLP_MAX_*_LENGTH bytes are used.
-
-#ifdef OBSOLETE
-#ifdef _MSC_VER
-#pragma pack(pop)
-#endif
-#endif
 
 // sizeof(struct SSLP_Packet) == 80
 

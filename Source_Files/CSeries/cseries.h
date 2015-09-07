@@ -38,21 +38,6 @@
 
 #define DEBUG
 
-#ifndef __MVCPP__
-
-// mwcc doesn't accept "using namespace std;" otherwise
-namespace std {};
-
-#elif __MVCPP__
-
-using namespace std;	// Visual C++ doesn't like that other way of using the namespace.
-#if _MSC_VER < 1300
-#define for if(false) {} else for // solves a bug in MSVC prior to MSVC7 for the "redeclared" initializers used in for loops.
-#endif
-
-//#define		VERSION		"1.0"
-
-#endif
 
 /*
  *  Endianess definitions
