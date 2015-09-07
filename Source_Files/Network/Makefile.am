@@ -29,7 +29,7 @@ libnetwork_a_SOURCES = ConnectPool.h network.h network_audio_shared.h network_ca
   SDL_netx.cpp SSLP_limited.cpp StarGameProtocol.cpp Update.cpp \
   HTTP.cpp
 
-EXTRA_libnetwork_a_SOURCES = network_dummy.cpp network_microphone_sdl_win32.cpp network_microphone_coreaudio.cpp NetworkGameProtocol.cpp network_microphone_sdl_dummy.cpp
+EXTRA_libnetwork_a_SOURCES = network_dummy.cpp network_microphone_sdl_win32.cpp network_microphone_coreaudio.cpp network_microphone_sdl_dummy.cpp
 
 AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \

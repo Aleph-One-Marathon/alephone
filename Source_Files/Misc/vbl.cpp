@@ -90,7 +90,6 @@ Feb 20, 2002 (Woody Zenfell):
 #include "key_definitions.h"
 #include "tags.h"
 #include "vbl.h"
-#include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprocket Support */
 #include "FileHandler.h"
 #include "Packing.h"
 #include "ActionQueues.h"

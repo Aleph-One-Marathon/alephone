@@ -443,7 +443,6 @@
 		27A6D5E01B9BF021003DA766 /* network_speaker_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A0002F023FDB5C01A80001 /* network_speaker_sdl.cpp */; };
 		27A6D5E11B9BF021003DA766 /* crc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920A0240D09B01A80001 /* crc.cpp */; };
 		27A6D5E21B9BF021003DA766 /* FileHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920C0240D09B01A80001 /* FileHandler.cpp */; };
-		27A6D5E31B9BF021003DA766 /* filetypes_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920D0240D09B01A80001 /* filetypes_macintosh.cpp */; };
 		27A6D5E41B9BF021003DA766 /* find_files_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920F0240D09B01A80001 /* find_files_sdl.cpp */; };
 		27A6D5E51B9BF021003DA766 /* game_wad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92100240D09B01A80001 /* game_wad.cpp */; };
 		27A6D5E61B9BF021003DA766 /* import_definitions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92110240D09B01A80001 /* import_definitions.cpp */; };
@@ -904,7 +903,6 @@
 		27A6D7BC1B9BF029003DA766 /* network_speaker_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A0002F023FDB5C01A80001 /* network_speaker_sdl.cpp */; };
 		27A6D7BD1B9BF029003DA766 /* crc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920A0240D09B01A80001 /* crc.cpp */; };
 		27A6D7BE1B9BF029003DA766 /* FileHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920C0240D09B01A80001 /* FileHandler.cpp */; };
-		27A6D7BF1B9BF029003DA766 /* filetypes_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920D0240D09B01A80001 /* filetypes_macintosh.cpp */; };
 		27A6D7C01B9BF029003DA766 /* find_files_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920F0240D09B01A80001 /* find_files_sdl.cpp */; };
 		27A6D7C11B9BF029003DA766 /* game_wad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92100240D09B01A80001 /* game_wad.cpp */; };
 		27A6D7C21B9BF029003DA766 /* import_definitions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92110240D09B01A80001 /* import_definitions.cpp */; };
@@ -1365,7 +1363,6 @@
 		27A6D9981B9BF031003DA766 /* network_speaker_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A0002F023FDB5C01A80001 /* network_speaker_sdl.cpp */; };
 		27A6D9991B9BF031003DA766 /* crc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920A0240D09B01A80001 /* crc.cpp */; };
 		27A6D99A1B9BF031003DA766 /* FileHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920C0240D09B01A80001 /* FileHandler.cpp */; };
-		27A6D99B1B9BF031003DA766 /* filetypes_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920D0240D09B01A80001 /* filetypes_macintosh.cpp */; };
 		27A6D99C1B9BF031003DA766 /* find_files_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920F0240D09B01A80001 /* find_files_sdl.cpp */; };
 		27A6D99D1B9BF031003DA766 /* game_wad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92100240D09B01A80001 /* game_wad.cpp */; };
 		27A6D99E1B9BF031003DA766 /* import_definitions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92110240D09B01A80001 /* import_definitions.cpp */; };
@@ -2039,7 +2036,6 @@
 		AE505C34141D45E600915344 /* network_speaker_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A0002F023FDB5C01A80001 /* network_speaker_sdl.cpp */; };
 		AE505C35141D45E600915344 /* crc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920A0240D09B01A80001 /* crc.cpp */; };
 		AE505C36141D45E600915344 /* FileHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920C0240D09B01A80001 /* FileHandler.cpp */; };
-		AE505C37141D45E600915344 /* filetypes_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920D0240D09B01A80001 /* filetypes_macintosh.cpp */; };
 		AE505C38141D45E600915344 /* find_files_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920F0240D09B01A80001 /* find_files_sdl.cpp */; };
 		AE505C39141D45E600915344 /* game_wad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92100240D09B01A80001 /* game_wad.cpp */; };
 		AE505C3A141D45E600915344 /* import_definitions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92110240D09B01A80001 /* import_definitions.cpp */; };
@@ -2509,7 +2505,6 @@
 		AEB4A1D514296CAE00537AE7 /* network_speaker_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A0002F023FDB5C01A80001 /* network_speaker_sdl.cpp */; };
 		AEB4A1D614296CAE00537AE7 /* crc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920A0240D09B01A80001 /* crc.cpp */; };
 		AEB4A1D714296CAE00537AE7 /* FileHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920C0240D09B01A80001 /* FileHandler.cpp */; };
-		AEB4A1D814296CAE00537AE7 /* filetypes_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920D0240D09B01A80001 /* filetypes_macintosh.cpp */; };
 		AEB4A1D914296CAE00537AE7 /* find_files_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920F0240D09B01A80001 /* find_files_sdl.cpp */; };
 		AEB4A1DA14296CAE00537AE7 /* game_wad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92100240D09B01A80001 /* game_wad.cpp */; };
 		AEB4A1DB14296CAE00537AE7 /* import_definitions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92110240D09B01A80001 /* import_definitions.cpp */; };
@@ -2903,7 +2898,6 @@
 		AEC3C7FD09AD68AC003258E4 /* network_speaker_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A0002F023FDB5C01A80001 /* network_speaker_sdl.cpp */; };
 		AEC3C7FE09AD68AC003258E4 /* crc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920A0240D09B01A80001 /* crc.cpp */; };
 		AEC3C7FF09AD68AC003258E4 /* FileHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920C0240D09B01A80001 /* FileHandler.cpp */; };
-		AEC3C80009AD68AC003258E4 /* filetypes_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920D0240D09B01A80001 /* filetypes_macintosh.cpp */; };
 		AEC3C80209AD68AC003258E4 /* find_files_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920F0240D09B01A80001 /* find_files_sdl.cpp */; };
 		AEC3C80309AD68AC003258E4 /* game_wad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92100240D09B01A80001 /* game_wad.cpp */; };
 		AEC3C80409AD68AC003258E4 /* import_definitions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92110240D09B01A80001 /* import_definitions.cpp */; };
@@ -3236,7 +3230,6 @@
 		AEFD86E113EB84CF00C1E687 /* network_speaker_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A0002F023FDB5C01A80001 /* network_speaker_sdl.cpp */; };
 		AEFD86E213EB84CF00C1E687 /* crc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920A0240D09B01A80001 /* crc.cpp */; };
 		AEFD86E313EB84CF00C1E687 /* FileHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920C0240D09B01A80001 /* FileHandler.cpp */; };
-		AEFD86E413EB84CF00C1E687 /* filetypes_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920D0240D09B01A80001 /* filetypes_macintosh.cpp */; };
 		AEFD86E513EB84CF00C1E687 /* find_files_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920F0240D09B01A80001 /* find_files_sdl.cpp */; };
 		AEFD86E613EB84CF00C1E687 /* game_wad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92100240D09B01A80001 /* game_wad.cpp */; };
 		AEFD86E713EB84CF00C1E687 /* import_definitions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92110240D09B01A80001 /* import_definitions.cpp */; };
@@ -3968,7 +3961,6 @@
 		F5CC92090240D09B01A80001 /* wad_prefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = wad_prefs.h; sourceTree = "<group>"; };
 		F5CC920A0240D09B01A80001 /* crc.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = crc.cpp; sourceTree = "<group>"; };
 		F5CC920C0240D09B01A80001 /* FileHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = FileHandler.cpp; sourceTree = "<group>"; };
-		F5CC920D0240D09B01A80001 /* filetypes_macintosh.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = filetypes_macintosh.cpp; sourceTree = "<group>"; };
 		F5CC920F0240D09B01A80001 /* find_files_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = find_files_sdl.cpp; sourceTree = "<group>"; };
 		F5CC92100240D09B01A80001 /* game_wad.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = game_wad.cpp; sourceTree = "<group>"; };
 		F5CC92110240D09B01A80001 /* import_definitions.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = import_definitions.cpp; sourceTree = "<group>"; };
@@ -4873,7 +4865,6 @@
 				F5CC920C0240D09B01A80001 /* FileHandler.cpp */,
 				EF2EF5E304819EBF00A8000D /* AStream.cpp */,
 				F5CC920A0240D09B01A80001 /* crc.cpp */,
-				F5CC920D0240D09B01A80001 /* filetypes_macintosh.cpp */,
 				F5CC92100240D09B01A80001 /* game_wad.cpp */,
 				F5CC92110240D09B01A80001 /* import_definitions.cpp */,
 				F5837191031EEE0201000105 /* Packing.cpp */,
@@ -7450,7 +7441,6 @@
 				27A6D5E01B9BF021003DA766 /* network_speaker_sdl.cpp in Sources */,
 				27A6D5E11B9BF021003DA766 /* crc.cpp in Sources */,
 				27A6D5E21B9BF021003DA766 /* FileHandler.cpp in Sources */,
-				27A6D5E31B9BF021003DA766 /* filetypes_macintosh.cpp in Sources */,
 				27A6D5E41B9BF021003DA766 /* find_files_sdl.cpp in Sources */,
 				27A6D5E51B9BF021003DA766 /* game_wad.cpp in Sources */,
 				27A6D5E61B9BF021003DA766 /* import_definitions.cpp in Sources */,
@@ -7681,7 +7671,6 @@
 				27A6D7BC1B9BF029003DA766 /* network_speaker_sdl.cpp in Sources */,
 				27A6D7BD1B9BF029003DA766 /* crc.cpp in Sources */,
 				27A6D7BE1B9BF029003DA766 /* FileHandler.cpp in Sources */,
-				27A6D7BF1B9BF029003DA766 /* filetypes_macintosh.cpp in Sources */,
 				27A6D7C01B9BF029003DA766 /* find_files_sdl.cpp in Sources */,
 				27A6D7C11B9BF029003DA766 /* game_wad.cpp in Sources */,
 				27A6D7C21B9BF029003DA766 /* import_definitions.cpp in Sources */,
@@ -7912,7 +7901,6 @@
 				27A6D9981B9BF031003DA766 /* network_speaker_sdl.cpp in Sources */,
 				27A6D9991B9BF031003DA766 /* crc.cpp in Sources */,
 				27A6D99A1B9BF031003DA766 /* FileHandler.cpp in Sources */,
-				27A6D99B1B9BF031003DA766 /* filetypes_macintosh.cpp in Sources */,
 				27A6D99C1B9BF031003DA766 /* find_files_sdl.cpp in Sources */,
 				27A6D99D1B9BF031003DA766 /* game_wad.cpp in Sources */,
 				27A6D99E1B9BF031003DA766 /* import_definitions.cpp in Sources */,
@@ -8143,7 +8131,6 @@
 				AE505C34141D45E600915344 /* network_speaker_sdl.cpp in Sources */,
 				AE505C35141D45E600915344 /* crc.cpp in Sources */,
 				AE505C36141D45E600915344 /* FileHandler.cpp in Sources */,
-				AE505C37141D45E600915344 /* filetypes_macintosh.cpp in Sources */,
 				AE505C38141D45E600915344 /* find_files_sdl.cpp in Sources */,
 				AE505C39141D45E600915344 /* game_wad.cpp in Sources */,
 				AE505C3A141D45E600915344 /* import_definitions.cpp in Sources */,
@@ -8374,7 +8361,6 @@
 				AEB4A1D514296CAE00537AE7 /* network_speaker_sdl.cpp in Sources */,
 				AEB4A1D614296CAE00537AE7 /* crc.cpp in Sources */,
 				AEB4A1D714296CAE00537AE7 /* FileHandler.cpp in Sources */,
-				AEB4A1D814296CAE00537AE7 /* filetypes_macintosh.cpp in Sources */,
 				AEB4A1D914296CAE00537AE7 /* find_files_sdl.cpp in Sources */,
 				AEB4A1DA14296CAE00537AE7 /* game_wad.cpp in Sources */,
 				AEB4A1DB14296CAE00537AE7 /* import_definitions.cpp in Sources */,
@@ -8606,7 +8592,6 @@
 				AEC3C7FD09AD68AC003258E4 /* network_speaker_sdl.cpp in Sources */,
 				AEC3C7FE09AD68AC003258E4 /* crc.cpp in Sources */,
 				AEC3C7FF09AD68AC003258E4 /* FileHandler.cpp in Sources */,
-				AEC3C80009AD68AC003258E4 /* filetypes_macintosh.cpp in Sources */,
 				AEC3C80209AD68AC003258E4 /* find_files_sdl.cpp in Sources */,
 				AEC3C80309AD68AC003258E4 /* game_wad.cpp in Sources */,
 				AEC3C80409AD68AC003258E4 /* import_definitions.cpp in Sources */,
@@ -8836,7 +8821,6 @@
 				AEFD86E113EB84CF00C1E687 /* network_speaker_sdl.cpp in Sources */,
 				AEFD86E213EB84CF00C1E687 /* crc.cpp in Sources */,
 				AEFD86E313EB84CF00C1E687 /* FileHandler.cpp in Sources */,
-				AEFD86E413EB84CF00C1E687 /* filetypes_macintosh.cpp in Sources */,
 				AEFD86E513EB84CF00C1E687 /* find_files_sdl.cpp in Sources */,
 				AEFD86E613EB84CF00C1E687 /* game_wad.cpp in Sources */,
 				AEFD86E713EB84CF00C1E687 /* import_definitions.cpp in Sources */,

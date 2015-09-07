@@ -59,7 +59,6 @@ May 22, 2003 (Woody Zenfell):
 #include "shell.h" /* For the screen_mode structure */
 #include "interface.h"
 #include "SoundManager.h"
-#include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprocket Support */
 
 #include "preferences.h"
 #include "wad.h"

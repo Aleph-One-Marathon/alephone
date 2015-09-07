@@ -35,7 +35,6 @@
 #include "Dim3_Loader.h"
 #include "StudioLoader.h"
 #include "WavefrontLoader.h"
-#include "QD3D_Loader.h"
 #include "InfoTree.h"
 
 

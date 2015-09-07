@@ -2,7 +2,7 @@
 
 noinst_LIBRARIES = libmodelview.a
 
-libmodelview_a_SOURCES = Model3D.h ModelRenderer.h Dim3_Loader.h QD3D_Loader.h \
+libmodelview_a_SOURCES = Model3D.h ModelRenderer.h Dim3_Loader.h \
   StudioLoader.h WavefrontLoader.h \
   \
   Model3D.cpp ModelRenderer.cpp Dim3_Loader.cpp StudioLoader.cpp \
