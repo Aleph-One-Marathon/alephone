@@ -57,7 +57,7 @@
 
 
 // Win32 allows 255.255.255.255 as broadcast, much easier
-#if !defined(WIN32) && !defined(__BEOS__) && !(defined(mac) /*&& !defined(TARGET_API_MAC_CARBON)*/)
+#if !defined(WIN32) && !defined(__BEOS__)
 // FILE-LOCAL (static) CONSTANTS
 static const int	kMaxNumBroadcastAddresses	= 8;
 static const int	kIFConfigBufferSize		= 1024;	// in bytes
@@ -77,7 +77,7 @@ static	int	SDLNetxint_CollectBroadcastAddresses(UDPsocket inSocket);
 // EXTERNALLY-VISIBLE FUNCTIONS
 int
 SDLNetx_EnableBroadcast(UDPsocket inSocket) {
-#if !defined(WIN32) && !defined(__BEOS__) && !defined(mac) && !defined(__MWERKS__)/*&& !defined(TARGET_API_MAC_CARBON))*/
+#if !defined(WIN32) && !defined(__BEOS__) && !defined(__MWERKS__)
     if(!sCollectedBroadcastAddresses)
         SDLNetxint_CollectBroadcastAddresses(inSocket);
 #endif
@@ -141,7 +141,7 @@ SDLNetx_DisableBroadcast(UDPsocket inSocket) {
 
 
 // see simpler function below for Win32
-#if !defined(WIN32) && !defined(__BEOS__) && !(defined(mac) /*&& !defined(TARGET_API_MAC_CARBON)*/)
+#if !defined(WIN32) && !defined(__BEOS__)
 int
 SDLNetx_UDP_Broadcast(UDPsocket inSocket, UDPpacket* inPacket) {
     int	theCountOfSuccessfulSends = 0;
@@ -178,7 +178,7 @@ SDLNetx_UDP_Broadcast(UDPsocket inSocket, UDPpacket* inPacket) {
 
 
 // INTERNAL (static) FUNCTIONS
-#if !defined(WIN32) && !defined(__BEOS__) && !defined(mac) && !defined(__MWERKS__)/*&& !defined(TARGET_API_MAC_CARBON))*/
+#if !defined(WIN32) && !defined(__BEOS__)
 int
 SDLNetxint_CollectBroadcastAddresses(UDPsocket inSocket) {
     // Win or lose, we played the game.

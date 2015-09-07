@@ -47,10 +47,6 @@ using std::list;
 using std::map;
 #endif
 
-#ifdef __MACOS__
-#include "mac_rwops.h"
-#endif
-
 /*
  *  Utility functions
  */
@@ -325,14 +321,6 @@ open_res_file_from_path(const char* inPath)
 	return open_res_file_from_rwops(SDL_RWFromFile(inPath, "rb"));
 }
 
-#ifdef __MACOS__
-static SDL_RWops*
-open_res_fork_from_path(const char* inPath)
-{
-	return open_res_file_from_rwops(open_fork_from_existing_path(inPath, true));
-}
-#endif
-
 SDL_RWops *open_res_file(FileSpecifier &file)
 {
     logContext1("opening resource file %s", file.GetPath());
@@ -367,10 +355,6 @@ SDL_RWops *open_res_file(FileSpecifier &file)
 	   f = open_res_file_from_path(file.GetPath());
     if (f == NULL)
 	   f = open_res_file_from_path(darwin_rsrc_file_name.c_str());
-#ifdef __MACOS__
-    if (f == NULL)
-	    f = open_res_fork_from_path(file.GetPath());
-#endif
 
     return f;
 }
@@ -513,12 +497,8 @@ bool res_file_t::get_resource(uint32 type, int id, LoadedResource &rsrc) const
 			if (p == NULL)
 				return false;
 			SDL_RWread(f, p, 1, size);
-#ifdef mac
-			rsrc.SetData(p, size);
-#else
 			rsrc.p = p;
 			rsrc.size = size;
-#endif
 
 //			fprintf(stderr, "get_resource type %c%c%c%c, id %d -> data %p, size %d\n", type >> 24, type >> 16, type >> 8, type, id, p, size);
 			return true;
@@ -573,12 +553,8 @@ bool res_file_t::get_ind_resource(uint32 type, int index, LoadedResource &rsrc) 
 		if (p == NULL)
 			return false;
 		SDL_RWread(f, p, 1, size);
-#ifdef mac
-		rsrc.SetData(p, size);
-#else
 		rsrc.p = p;
 		rsrc.size = size;
-#endif
 
 //		fprintf(stderr, "get_ind_resource type %c%c%c%c, index %d -> data %p, size %d\n", type >> 24, type >> 16, type >> 8, type, index, p, size);
 		return true;

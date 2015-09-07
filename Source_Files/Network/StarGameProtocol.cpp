@@ -30,10 +30,6 @@
 
 #include "cseries.h"
 
-#ifdef EXPLICIT_CARBON_HEADER
-#include <Carbon/Carbon.h>
-#endif
-
 #include "StarGameProtocol.h"
 
 #include "network_star.h"

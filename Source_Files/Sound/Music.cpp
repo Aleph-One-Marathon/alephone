@@ -34,20 +34,12 @@ Music::Music() :
 	music_fading(false), 
 	music_fade_start(0), 
 	music_fade_duration(0),
-#ifdef __MACOS__
-	macos_file_done(false), 
-	macos_read_more(false), 
-	macos_buffer_length(0),
-#endif
 	decoder(0),
 	marathon_1_song_index(NONE),
 	song_number(0),
 	random_order(false)
 {
 	music_buffer.resize(MUSIC_BUFFER_SIZE);
-#ifdef __MACOS__
-	macos_music_buffer.resize(MUSIC_BUFFER_SIZE);
-#endif
 }
 
 void Music::Open(FileSpecifier *file)
@@ -65,11 +57,6 @@ void Music::Open(FileSpecifier *file)
 
 	if (file)
 	{
-#ifdef __MACOS__
-		macos_read_more = true;
-		macos_file_done = false;
-#endif
-
 		music_initialized = Load(*file);
 		music_file = *file;
 	}
@@ -157,10 +144,6 @@ void Music::Idle()
 			Mixer::instance()->SetMusicChannelVolume(vol);
 		}
 	}
-
-#ifdef __MACOS__
-	FillBuffer();
-#endif
 }
 
 void Music::Pause()
@@ -210,63 +193,31 @@ void Music::Rewind()
 	
 	if (decoder)
 		decoder->Rewind();
-#ifdef __MACOS__
-	macos_file_done = false;
-	InterruptFillBuffer();
-#endif
 }
 
 void Music::Play()
 {
 	if (!music_initialized || !SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return;
 	if (FillBuffer()) {
-#ifdef __MACOS__
-		InterruptFillBuffer();
-#endif
 		// let the mixer handle it
 		Mixer::instance()->StartMusicChannel(sixteen_bit, stereo, signed_8bit, bytes_per_frame, rate, little_endian);
 		CheckVolume();
 	}
 }
 
-#ifdef __MACOS__
-bool Music::InterruptFillBuffer()
-{
-	if (macos_file_done) return false;
-
-	// otherwise, copy out of the buffer (I know), and set the flag to read more when we're not at interrupt time
-	memcpy(&macos_music_buffer.front(), &music_buffer.front(), macos_buffer_length);
-	Mixer::instance()->UpdateMusicChannel(&macos_music_buffer.front(), macos_buffer_length);
-	macos_read_more = true;
-	return true;
-}
-#endif
-
 bool Music::FillBuffer()
 {
-#ifdef __MACOS__
-	if (!macos_read_more) return false;
-#endif
-
 	if (!GetVolumeLevel()) return false;
 
 	if (!decoder) return false;
 	int32 bytes_read = decoder->Decode(&music_buffer.front(), MUSIC_BUFFER_SIZE);
 	if (bytes_read)
 	{
-#ifdef __MACOS__
-		macos_buffer_length = bytes_read;
-		macos_read_more = false;
-#else
 		Mixer::instance()->UpdateMusicChannel(&music_buffer.front(), bytes_read);
-#endif
 		return true;
 	}
 
 	// Failed
-#ifdef __MACOS__
-	macos_file_done = true;
-#endif
 	return false;
 }
 

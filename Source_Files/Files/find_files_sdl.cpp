@@ -25,7 +25,6 @@
  *  Written in 2000 by Christian Bauer
  */
 
-#ifndef SDL_RFORK_HACK
 #include "cseries.h"
 #include "FileHandler.h"
 #include "find_files.h"
@@ -84,5 +83,3 @@ bool FindAllFiles::found(FileSpecifier &file)
 	dest_vector.push_back(file);
 	return false;
 }
-
-#endif

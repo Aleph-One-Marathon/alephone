@@ -123,10 +123,6 @@ Feb 8, 2003 (Woody Zenfell):
 
 #include <limits.h>
 
-#ifdef env68k
-#pragma segment marathon
-#endif
-
 /* ---------- constants */
 
 /* ---------- globals */
@@ -168,7 +164,7 @@ void initialize_marathon(
 	initialize_scenery();
 	// LP additions:
 	initialize_items();
-#if defined(HAVE_OPENGL) && !defined(mac)
+#if defined(HAVE_OPENGL)
 	OGL_Initialize();
 #endif
 	GameQueue = new ModifiableActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER, true);

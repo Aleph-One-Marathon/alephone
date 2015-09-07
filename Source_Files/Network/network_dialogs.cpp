@@ -87,10 +87,6 @@ Apr 10, 2003 (Woody Zenfell):
 #include	"network_private.h" // actually just need "network_dialogs_private.h"
 #include	"SSLP_API.h"
 
-#ifdef USES_NIBS
-	#include "NibsUiHelpers.h"
-#endif
-
 // for game types...
 #include "network_dialogs.h"
 #include "TextStrings.h"
@@ -814,10 +810,6 @@ void JoinDialog::getJoinAddressFromMetaserver ()
 void JoinDialog::sendChat ()
 {
 	string message = m_chatEntryWidget->get_text();
-	
-	// jkvw: Why don't we need NIBs to strip a trailing \r here, like in
-	// GatherDialog::sendChat and MetaserverClientUi::sendChat?
-	// Good question, burrito.
 	
 	if (m_chatChoiceWidget->get_value () == kMetaserverChat)
 		gMetaserverClient->sendChatMessage(message);		
@@ -1658,23 +1650,12 @@ enum { _total_team_carnage_or_total_scores_graph = 4242 };
 
 // We lookup into a menu contents array now
 static int	sMenuContents[] =
-#ifdef mac
-{
-    NONE,	// separator
-    _total_carnage_graph,
-    _total_team_carnage_or_total_scores_graph,
-    NONE,	// separator
-    _total_team_carnage_graph,
-    _total_team_scores_graph
-};
-#else // !mac
 {
     _total_carnage_graph,
     _total_team_carnage_or_total_scores_graph,
     _total_team_carnage_graph,
     _total_team_scores_graph
 };
-#endif // !mac
 #endif // 0
 
 // (ZZZ annotation:) Figure out which graph type the user wants to display based
@@ -1691,11 +1672,7 @@ find_graph_mode(
 	has_scores= current_net_game_has_scores();
 	
 	/* Popups are 1 based */
-#ifdef USES_NIBS
-	value = GetControl32BitValue(outcome.SelectCtrl) - 1;
-#else
 	value = get_selection_control_value(outcome, iGRAPH_POPUP)-1;
-#endif
 	if(value<dynamic_world->player_count)
 	{
 		if(index) *index= value;
@@ -1740,11 +1717,9 @@ find_graph_mode(
 #else // !0
 
                 int theValueAfterPlayers = value-dynamic_world->player_count;
-#ifndef mac
                 // ZZZ: Account for (lack of) separators
                 if(theValueAfterPlayers >= 0)	theValueAfterPlayers++;
                 if(theValueAfterPlayers >= 3)	theValueAfterPlayers++;
-#endif
                 
 		/* Different numbers of items based on game type. */
 		switch(theValueAfterPlayers)
@@ -2097,10 +2072,6 @@ void update_carnage_summary(
 	}
 	else
 		num_suicides = ranks[suicide_index].kills;
-
-#ifdef mac
-	TextFace(0); TextFont(0); TextSize(0);
-#endif
 
 	minutes = ((float)dynamic_world->tick_count / TICKS_PER_SECOND) / 60.0F;
 	if (minutes > 0) kpm = total_kills / minutes;

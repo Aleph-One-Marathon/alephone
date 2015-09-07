@@ -50,11 +50,7 @@ bool OGL_ClearScreen();
 
 
 // Start an OpenGL run (creates a rendering context)
-#ifdef mac
-bool OGL_StartRun(CGrafPtr WindowPtr);
-#else
 bool OGL_StartRun();
-#endif
 
 // Stop an OpenGL run (destroys a rendering context)
 bool OGL_StopRun();
@@ -116,12 +112,5 @@ void OGL_RenderLines(const std::vector<world_point2d>& points, float thickness);
 
 // Returns whether or not 2D stuff is to be piped through OpenGL
 bool OGL_Get2D();
-
-// Copying 2D display: status bar, overhead map, terminal;
-// Needs GWorld to copy from, region to copy, whether to copy into a back buffer,
-// and whether or not this completes a frame.
-#ifdef mac
-bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool UseBackBuffer, bool FrameEnd);
-#endif
 
 #endif

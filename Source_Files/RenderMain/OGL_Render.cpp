@@ -181,11 +181,6 @@ static void PreloadTextures();
 static void PreloadWallTexture(const TextureWithTransferMode& inTexture);
 
 
-#ifdef mac
-// Render context; expose for OGL_Map.c
-AGLContext RenderContext;
-#endif
-
 // Was OpenGL just inited? If so, then some state may need changing
 static bool JustInited = false;
 
@@ -494,15 +489,6 @@ static short BlendType = OGL_BlendType_Crossfade;
 static void SetBlend(short _BlendType);
 
 
-#ifdef mac
-// This is a strip buffer for piping 2D graphics through OpenGL.
-vector<uint32> Buffer2D;
-static int Buffer2D_Width = 0;
-// Making the buffer several lines makes it more efficient
-const int Buffer2D_Height = 16;
-#endif
-
-
 // This function returns whether OpenGL is active;
 // if OpenGL is not present, it will never be active.
 
@@ -515,17 +501,6 @@ bool OGL_ClearScreen()
 {
 	if (OGL_IsActive())
 	{
-#ifdef mac
-		// So as to paint the entire screen buffer
-		if(aglIsEnabled(RenderContext, AGL_SWAP_RECT))
-		{
-			if(!aglDisable(RenderContext,AGL_SWAP_RECT))
-			{
-				// Will ignore this; not sure why it's failing
-				// dprintf("aglDisable failed: AGL Error: %s\n", aglErrorString(aglGetError()));
-			}
-		}
-#endif
 		glClearColor(0,0,0,0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		return true;
@@ -536,11 +511,7 @@ bool OGL_ClearScreen()
 void OGL_Rasterizer_Init();
 
 // Start an OpenGL run (creates a rendering context)
-#ifdef mac
-bool OGL_StartRun(CGrafPtr WindowPtr)
-#else
 bool OGL_StartRun()
-#endif
 {
 	logContext("starting up OpenGL rendering");
 
@@ -549,94 +520,9 @@ bool OGL_StartRun()
 	// Will stop previous run if it had been active
 	if (OGL_IsActive()) OGL_StopRun();
 
-#ifdef mac
-	// If bit depth is too small, then don't start
-	if (bit_depth <= 8)
-	{
-		return false;
-	}
-#endif
-
 	bool ShaderRender = (graphics_preferences->screen_mode.acceleration == _shader_acceleration);
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
 	Z_Buffering = ShaderRender || TEST_FLAG(ConfigureData.Flags,OGL_Flag_ZBuffer);
-
-#ifdef mac
-	// Plain and simple
-	vector<GLint> PixelFormatSetupList;
-	PixelFormatSetupList.push_back(GLint(AGL_RGBA));
-	PixelFormatSetupList.push_back(GLint(AGL_DOUBLEBUFFER));
-	if (graphics_preferences->experimental_rendering && graphics_preferences->screen_mode.fullscreen)
-	{
-		PixelFormatSetupList.push_back(GLint(AGL_FULLSCREEN));
-		PixelFormatSetupList.push_back(GLint(AGL_NO_RECOVERY));
-	}
-	if (Z_Buffering)
-	{
-		PixelFormatSetupList.push_back(GLint(AGL_DEPTH_SIZE));
-		PixelFormatSetupList.push_back(16);
-	}
-	PixelFormatSetupList.push_back(GLint(AGL_STENCIL_SIZE));
-	PixelFormatSetupList.push_back(GLint(1));
-	PixelFormatSetupList.push_back(GLint(AGL_NONE));
-
-	// Request that pixel format
-	AGLPixelFormat PixelFormat = aglChoosePixelFormat(NULL, 0, &PixelFormatSetupList.front());
-	
-	// Was it found?
-	if (!PixelFormat) return false;
-	
-	// Create the rendering context
-	RenderContext = aglCreateContext(PixelFormat, NULL);
-	
-	// Clean up
-	aglDestroyPixelFormat(PixelFormat);
-	
-	// Was it successful?
-	if (!RenderContext) return false;
-
-	// Fixes console spamming in Br'fin's Carbon version
-	Rect portBounds;
-	GetPortBounds(WindowPtr, &portBounds);
-
-	GLint RectBounds[4];
-	RectBounds[0] = 0;
-	RectBounds[1] = 0;
-	RectBounds[2] = portBounds.right - portBounds.left;
-	RectBounds[3] = portBounds.bottom - portBounds.top;
-
-	bool set_fullscreen= false;
-	if (graphics_preferences->screen_mode.fullscreen && graphics_preferences->experimental_rendering)
-	{
-		// ZZZ: try direct fullscreen first
-		logTrace2("aglSetFullScreen(%d, %d)", RectBounds[2], RectBounds[3]);
-		if (aglSetFullScreen(RenderContext, RectBounds[2], RectBounds[3], 60, 0) == GL_FALSE)
-			logNote("aglSetFullScreen() failed, falling back to windowed case");
-		else
-			set_fullscreen= true;
-	}
-
-	if (!set_fullscreen)
-	{
-		// Attach the window; if possible and desired
-		bool AttachWindow = aglSetDrawable(RenderContext, WindowPtr);
-		if (!AttachWindow)
-		{
-			aglDestroyContext(RenderContext);
-			return false;
-		}
-	}
-
-	if (!aglSetCurrentContext(RenderContext))
-	{
-		aglDestroyContext(RenderContext);
-		return false;
-	}
-	
-	aglEnable(RenderContext, AGL_BUFFER_RECT);
-	aglSetInteger(RenderContext, AGL_BUFFER_RECT, RectBounds);
-
-#endif
 
 #ifdef __WIN32__
 	glewInit();
@@ -779,9 +665,6 @@ bool OGL_StopRun()
 	Shader::unloadAll();
 	
 	Wanting_sRGB = false;
-#ifdef mac
-	aglDestroyContext(RenderContext);
-#endif
 	
 	_OGL_IsActive = false;
 	return true;
@@ -959,22 +842,6 @@ bool OGL_SetWindow(Rect &ScreenBounds, Rect &ViewBounds, bool UseBackBuffer)
 	// Adjustment for the screen
 	RectBounds[0] -= ScreenBounds.left;
 	RectBounds[1] += ScreenBounds.top;
-	
-#if defined(mac) && !defined(TARGET_API_MAC_CARBON)
-	if (UseBackBuffer)
-	{
-		// This could not be gotten to work quite right, so a more roundabout way is being done;
-		// the screen's portRect gets offset when it is bigger than 640*480.
-		/*
-		aglEnable(RenderContext,AGL_BUFFER_RECT);
-		aglSetInteger(RenderContext,AGL_BUFFER_RECT,RectBounds);
-		*/
-		
-		// Set aside swap area
-		aglSetInteger(RenderContext,AGL_SWAP_RECT,RectBounds);
-		aglEnable(RenderContext,AGL_SWAP_RECT);
-	}
-#endif
 	
 	// Do OpenGL bounding
 	glViewport(RectBounds[0], RectBounds[1], RectBounds[2], RectBounds[3]);
@@ -3486,157 +3353,6 @@ static void SetBlend(short _BlendType)
 		break;
 	}
 }
-
-
-#ifdef mac
-// Returns whether or not 2D stuff is to be piped through OpenGL
-bool OGL_Get2D()
-{
-	// Can be called when OpenGL is inactive
-	return (OGL_IsActive());
-}
-
-// ZZZ: splitting these out for more informational "Sampler"ing
-void
-FillBuffer2(byte* InPtr, GLuint* OutPtr, short SourceWidth)
-{
-        while (SourceWidth--)
-        {
-                // Big-endian here
-                uint16 Intmd = *(InPtr++);
-                Intmd <<= 8;
-                Intmd |= uint16(*(InPtr++));
-                // Convert from ARGB 5551 to RGBA 8888; make opaque
-                *(OutPtr++) = Convert_16to32(Intmd);
-                // *(OutPtr++) = ConversionTable_16to32[Intmd & 0x7fff];
-        }
-}
-
-void
-FillBuffer4(byte* InPtr, GLuint* OutPtr, short SourceWidth)
-{
-        while (SourceWidth--)
-        {
-                // Convert from ARGB 8888 to RGBA 8888; make opaque
-                // This makes the (reasonable) assumption of correct alignment of buffer data
-                GLuint *InPxl = (GLuint *)InPtr;
-                InPtr += 4;
-                GLuint Pxl = *InPxl;
-                Pxl <<= 8;
-                Pxl |= 0x000000ff;
-                *(OutPtr++) = Pxl;
-        }
-}
-
-void
-glRasterPos2sWrapper(GLshort x, GLshort y)
-{
-        glRasterPos2s(x, y);
-}
-
-void
-glDrawPixelsWrapper(GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels)
-{
-        glDrawPixels(width, height, format, type, pixels);
-}
-
-void
-glDrawPixelsFirstWrapper(GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels)
-{
-        glDrawPixels(width, height, format, type, pixels);
-}
-
-// Copying 2D display: status bar, overhead map, terminal
-bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool UseBackBuffer, bool FrameEnd)
-{
-	// Check to see whether to do the copying (returns false when OpenGL is inactive)
-	if (!OGL_Get2D()) return false;
-	
-	// Paint onto the currently-visible area:
-	if (!UseBackBuffer) glDrawBuffer(GL_FRONT);
-	
-	// Where the image comes from
-	Rect ImgBounds;
-	GetPortBounds(BufferPtr, &ImgBounds);
-	
-	// Set up conversion table
-	// MakeConversion_16to32(bit_depth);
-	
-	// Get pointer to starting buffer	
-	PixMapHandle Pxls = GetGWorldPixMap(BufferPtr);
-	LockPixels(Pxls);
-	
-	// Number of source bytes (destination bytes = 4)
-	short NumSrcBytes = (**Pxls).pixelSize/8;
-	
-	// Row-start address and row length
-	byte *SourceStart = (byte *)GetPixBaseAddr(Pxls);
-	int32 StrideBytes = (**Pxls).rowBytes & 0x3fff;
-	
-	// How many pixels to draw per line
-	short SourceWidth = SourceBounds.right - SourceBounds.left;
-	
-	// Reallocate strip buffer if necessary
-	if (SourceWidth != Buffer2D_Width)
-	{
-		if (SourceWidth > 0)
-		{
-			Buffer2D_Width = SourceWidth;
-			Buffer2D.resize(Buffer2D_Width*Buffer2D_Height);
-		} else {
-			Buffer2D_Width = 0;
-			Buffer2D.clear();
-		}
-	}
-	
-	for (int h=SourceBounds.top, hstrip=0; h<SourceBounds.bottom; h++)
-	{
-		// Set where to read from the input buffer
-		byte *InPtr = SourceStart + (h-ImgBounds.top)*StrideBytes + NumSrcBytes*(SourceBounds.left-ImgBounds.left);
-		
-		// Set the strip buffer's current-pixel pointer;
-		// be careful to reverse the row order, because most 2D graphics
-		// goes top to bottom while OpenGL goes bottom to top.
-		// The buffer will be used in a packed manner; in OpenGL, this is not necessary,
-		// thanks to glPixelStorei().
-		GLuint *OutPtr = &Buffer2D[0] + ((Buffer2D_Height - 1) - hstrip)*SourceWidth;
-		
-		// Fill the buffer
-		if (NumSrcBytes == 2)
-		{
-                        FillBuffer2(InPtr, OutPtr, SourceWidth);
-		}
-		else if (NumSrcBytes == 4)
-		{
-                        FillBuffer4(InPtr, OutPtr, SourceWidth);
-		}
-
-                // ZZZ: the following accomplishes nothing useful except for profiling/debugging stuff
-/*
-                glRasterPos2sWrapper(DestBounds.left, h+(DestBounds.top-SourceBounds.top));
-                unsigned char thePixel[3] = { 255, 255, 255 };
-                glDrawPixelsFirstWrapper(1, 1, GL_RGB, GL_UNSIGNED_BYTE, thePixel);
- */
-                
-		// Draw it if the strip buffer has become full;
-		// then reset for the next go-around
-		if (++hstrip >= Buffer2D_Height || h == (SourceBounds.bottom-1))
-		{
-			glRasterPos2sWrapper(DestBounds.left,h+(DestBounds.top-SourceBounds.top));
-                        glDrawPixelsWrapper(SourceWidth,hstrip,GL_RGBA,GL_UNSIGNED_INT_8_8_8_8, //GL_RGBA,GL_UNSIGNED_BYTE,
-				&Buffer2D[0] + (Buffer2D_Height - hstrip)*SourceWidth);
-			hstrip = 0;
-		}
-	}
-	
-	// All done!
-	if (FrameEnd) aglSwapBuffers(RenderContext);		
-	UnlockPixels(Pxls);
-	if (!UseBackBuffer) glDrawBuffer(GL_BACK);
-	
-	return true;
-}
-#endif // def mac
 
 #else
 

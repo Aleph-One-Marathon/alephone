@@ -49,9 +49,6 @@ public:
 	bool Playing();
 	void Rewind();
 	void Restart();
-#ifdef __MACOS__
-	bool InterruptFillBuffer();
-#endif
 	bool FillBuffer();
 
 	void Idle();
@@ -80,11 +77,7 @@ private:
 
 	int16 GetVolumeLevel() { return SoundManager::instance()->parameters.music; }
 
-#ifdef __MACOS__
-	static const int MUSIC_BUFFER_SIZE = 0x10000;
-#else
 	static const int MUSIC_BUFFER_SIZE = 1024;
-#endif
 
 	std::vector<uint8> music_buffer;
 	StreamDecoder *decoder;
@@ -110,13 +103,6 @@ private:
 	uint32 music_fade_start;
 	uint32 music_fade_duration;
 	bool music_intro;
-
-#ifdef __MACOS__
-	bool macos_file_done;
-	bool macos_read_more;
-	uint32 macos_buffer_length;
-	std::vector<uint8> macos_music_buffer;
-#endif
 
 	// level music
 	short marathon_1_song_index;

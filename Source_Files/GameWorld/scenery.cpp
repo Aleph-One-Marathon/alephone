@@ -65,10 +65,6 @@ Oct 13, 2000 (Loren Petrich):
 #include "scenery.h"
 #include "InfoTree.h"
 
-#ifdef env68k
-#pragma segment objects
-#endif
-
 /* ---------- constants */
 
 enum

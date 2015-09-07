@@ -79,10 +79,6 @@ Jan 31, 2001 (Loren Petrich):
 #include "Music.h"
 #include "Movie.h"
 
-#ifdef env68k
-#pragma segment shell
-#endif
-
 /* ---------- constants */
 
 #define ADJUSTED_TRANSPARENCY_DOWNSHIFT 8

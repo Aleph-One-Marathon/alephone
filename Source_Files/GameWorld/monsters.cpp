@@ -116,10 +116,6 @@ Jan 12, 2003 (Loren Petrich)
 #include "InfoTree.h"
 
 
-#ifdef env68k
-#pragma segment objects
-#endif
-
 /*
 //explosive deaths should cause damage during their key frame
 */
@@ -1710,18 +1706,6 @@ bool bump_monster(
 	short aggressor_index,
 	short monster_index)
 {
-#if 0
-#ifdef DEBUG
-#ifdef env68k
-	if (MONSTER_IS_PLAYER(get_monster_data(aggressor_index)))
-	{
-		dprintf("bumped monster @%p;dm #%d #%d;", get_monster_data(monster_index),
-			get_monster_data(monster_index), sizeof(struct monster_data));
-	}
-#endif
-#endif
-#endif
-
 	return switch_target_check(monster_index, aggressor_index, 0);
 }
 

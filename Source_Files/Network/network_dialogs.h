@@ -51,10 +51,6 @@ Mar 1, 2002 (Woody Zenfell):
 #include <map>
 #include <set>
 
-#ifdef USES_NIBS
-const CFStringRef Window_Network_Distribute = CFSTR("Network_Distribute");
-#endif
-
 // ZZZ: Moved here so constants can be shared by Mac and SDL dialog code.
 /* ------------------ enums */
 enum {	
@@ -87,19 +83,6 @@ enum {
 };
 
 
-#ifdef USES_NIBS
-
-enum {
-	dlogNET_GAME_STATS= 5000,
-	// iGRAPH_POPUP moved from #2 because that is the "Cancel" value
-	iDAMAGE_STATS = 3,
-	iTOTAL_KILLS,
-	iTOTAL_DEATHS,
-	iGRAPH_POPUP
-};
-
-#else
-
 enum {
 	dlogNET_GAME_STATS= 5000,
 	iGRAPH_POPUP= 2,
@@ -107,8 +90,6 @@ enum {
 	iTOTAL_KILLS,
 	iTOTAL_DEATHS
 };
-
-#endif
 
 enum /* All the different graph types */
 {
@@ -165,11 +146,7 @@ enum {
 
 enum {
 	dlogJOIN= 10001,
-#ifndef USES_NIBS
-	iJOIN= 1,
-#else
 	iJOIN= 101,
-#endif
 	// iPLAYER_DISPLAY_AREA = 3,
 	iJOIN_NAME= 4,
 	iJOIN_TEAM,
@@ -234,19 +211,6 @@ enum {
 	duration_kill_limit
 };
 
-#ifdef USES_NIBS
-
-// Because otherwise it would be interpreted as a regular "OK"
-const int iOK_SPECIAL = 101;
-
-// For player-display Data Browser control:
-const OSType PlayerDisplay_Name = 'name';
-
-// Signature of player-select buttons in player dialog:
-const OSType StatsDisplay_Player = 'plyr';
-
-#endif
-
 
 /* ------------------ structures */
 struct net_rank
@@ -263,26 +227,7 @@ struct net_rank
 struct player_info;
 struct game_info;
 
-#ifndef USES_NIBS
 typedef DialogPtr NetgameOutcomeData;
-#endif
-
-#ifdef USES_NIBS
-
-struct NetgameOutcomeData
-{
-	ControlRef SelectCtrl;
-	ControlRef DisplayCtrl;
-	
-	// Invisible, but hittable controls;
-	// their drawing is done by the drawing callback for DisplayCtrl
-	ControlRef PlayerButtonCtrls[MAXIMUM_NUMBER_OF_PLAYERS];
-	
-	ControlRef KillsTextCtrl;
-	ControlRef DeathsTextCtrl;
-};
-
-#endif
 
 /* ---------------------- globals */
 extern struct net_rank rankings[MAXIMUM_NUMBER_OF_PLAYERS];

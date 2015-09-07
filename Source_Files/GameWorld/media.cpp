@@ -54,10 +54,6 @@ Feb 8, 2001 (Loren Petrich):
 
 #include <string.h>
 
-#ifdef env68k
-#pragma segment marathon
-#endif
-
 /* ---------- macros */
 
 #define CALCULATE_MEDIA_HEIGHT(m) ((m)->low + FIXED_INTEGERAL_PART(((m)->high-(m)->low)*get_light_intensity((m)->light_index)))

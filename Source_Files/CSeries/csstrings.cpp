@@ -38,10 +38,6 @@
 #include <stdarg.h>
 #include <string.h>
 
-#if defined(EXPLICIT_CARBON_HEADER)
-# include <Carbon/Carbon.h>
-#endif
-
 #include "csstrings.h"
 #include "TextStrings.h"
 #include "Logging.h"

@@ -71,7 +71,7 @@
 
 #include <algorithm>
 
-#if defined(__WIN32__) || (defined(__MACH__) && defined(__APPLE__)) || defined(__MACOS__)
+#if defined(__WIN32__) || (defined(__MACH__) && defined(__APPLE__))
 #define MUST_RELOAD_VIEW_CONTEXT
 #endif
 

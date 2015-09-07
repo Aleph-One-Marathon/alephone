@@ -129,10 +129,6 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 
 #include "Music.h"
 
-#ifdef env68k
-#pragma segment file_io
-#endif
-
 // unify the save game code into one structure.
 
 /* -------- local globals */
@@ -491,10 +487,6 @@ uint32 get_current_map_checksum(
 // ZZZ: split this out from new_game for sharing
 void set_saved_game_name_to_default()
 {
-#if defined(mac) || defined(SDL_RFORK_HACK)
-	revert_game_data.SavedGame.SetToApp();
-	revert_game_data.SavedGame.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME),_typecode_savegame);
-#endif
 	revert_game_data.SavedGame.SetToSavedGamesDir();
 	revert_game_data.SavedGame += getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME);
 }

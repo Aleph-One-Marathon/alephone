@@ -25,10 +25,6 @@
 #include "cseries.h"
 #include "game_errors.h"
 
-#ifdef env68k
-	#pragma segment file_io
-#endif
-
 static short last_type= systemError;
 static short last_error= 0;
 

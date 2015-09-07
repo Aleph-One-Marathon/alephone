@@ -95,10 +95,6 @@ void initialize_typecodes();
 // Accessors
 uint32 get_typecode(Typecode which);
 void set_typecode(Typecode which, uint32 _type);
-#ifdef mac
-Typecode get_typecode_for_file_type(OSType inType);
-const std::vector<OSType> get_all_file_types_for_typecode (Typecode which);
-#endif
 
 // These are no longer constants, which will cause trouble for switch/case constructions
 // These have been eliminated in favor of using the above enum of abstracted filetypes

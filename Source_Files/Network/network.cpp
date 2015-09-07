@@ -2231,16 +2231,9 @@ NetGetNetTime(void)
         return sCurrentGameProtocol->GetNetTime();
 }
 
-#ifdef __MACOS__
-extern OSErr NetDDPSendUnsentFrames();
-#endif
-
 extern const NetworkStats& hub_stats(int player_index);
 
 void NetProcessMessagesInGame() {
-#ifdef __MACOS__
-	NetDDPSendUnsentFrames();
-#endif
 	if (connection_to_server) {
 		connection_to_server->pump();
 		connection_to_server->dispatchIncomingMessages();

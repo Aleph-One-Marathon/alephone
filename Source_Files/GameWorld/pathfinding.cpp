@@ -45,10 +45,6 @@ Feb 10, 2000 (Loren Petrich):
 #include "flood_map.h"
 #include "dynamic_limits.h"
 
-#ifdef env68k
-#pragma segment marathon
-#endif
-
 #ifdef DEBUG
 //#define VALIDATE_PATH_SPACE
 //#define VERIFY_PATH_SYNC

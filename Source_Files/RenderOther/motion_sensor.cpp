@@ -56,10 +56,6 @@ Sep 2, 2000 (Loren Petrich):
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef env68k
-#pragma segment texture
-#endif
-
 static short MonsterDisplays[NUMBER_OF_MONSTER_TYPES] =
 {
 	// Marine

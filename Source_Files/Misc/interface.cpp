@@ -203,10 +203,6 @@ const short max_handled_recording= RECORDING_VERSION_ALEPH_ONE_1_2;
 
 using alephone::Screen;
 
-#ifdef env68k
-	#pragma segment shell
-#endif
-
 /* ------------- enums */
 
 /* ------------- constants */
@@ -902,11 +898,7 @@ bool load_and_start_game(FileSpecifier& File)
 
 	if (success)
 	{
-#ifdef __MACOS__
-		theResult = 0;
-#else
 		theResult = should_restore_game_networked(File);
-#endif
 	}
 
 	if (theResult == UNONE)
@@ -1293,13 +1285,6 @@ void display_main_menu(
 // Kludge for Carbon/Classic -- when exiting a main-menu dialog box, redisplay 
 static void ForceRepaintMenuDisplay()
 {
-#ifdef mac
-	if (!system_information->has_ten || system_information->machine_is_bluebox)
-	{
-		if (get_game_state() == _display_main_menu)
-			display_screen(MAIN_MENU_BASE);
-	}
-#endif
 }
 
 
@@ -1437,37 +1422,11 @@ void do_menu_item_command(
 					break;
 
 				case iJoinGame:
-#ifdef mac
-					if (system_information->machine_has_network_memory)
-					{
-						handle_network_game(false);
-					}
-					else
-					{
-						alert_user(infoError, strERRORS, notEnoughNetworkMemory, 0);
-					}
-#elif defined(__MACOS__)
-					break;
-#else
 					handle_network_game(false);
-#endif
 					break;
 		
 				case iGatherGame:
-#ifdef mac
-					if (system_information->machine_has_network_memory)
-					{
-						handle_network_game(true);
-					}
-					else
-					{
-						alert_user(infoError, strERRORS, notEnoughNetworkMemory, 0);
-					}
-#elif defined(__MACOS__)
-					break;
-#else
 					handle_network_game(true);
-#endif
 					break;
 					
 				case iLoadGame:
@@ -1899,13 +1858,11 @@ static void transfer_to_new_level(
 		stop_fade();
 		set_fade_effect(NONE);
 		Music::instance()->StopLevelMusic();
-//#ifdef mac
 //		if(OGL_IsActive())
 		{
 			exit_screen();
 			// Enter_screen will be called again in start_game
 		}
-//#endif
 		set_keyboard_controller_status(false);
 		FindLevelMovie(entry.level_number);
 		show_movie(entry.level_number);

@@ -134,14 +134,6 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 #include "SW_Texture_Extras.h"
 
 
-#ifdef env68k
-#pragma segment texture
-#endif
-
-#ifdef env68k
-#define EXTERNAL
-#endif
-
 /* ---------- constants */
 
 // boosted to cope with big displays

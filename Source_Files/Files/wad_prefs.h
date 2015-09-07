@@ -53,35 +53,4 @@ struct preferences_info {
 	struct wad_data *wad;
 };
 
-/* This will need to be rewritten! */
-#if defined(mac)
-/*----------------- code from macintosh_wad_prefs.c */
-#define LOCAL_TO_GLOBAL_DITL(id, first) (id+first)
-#define GLOBAL_TO_LOCAL_DITL(id, first) (id-first)
-
-/* ----- Run the new kick ass dialog box. */
-struct preferences_dialog_data {
-	short resource_group;					/* What STR# resource? */
-	short string_index;						/* What indexed string? */
-	short ditl_id;							/* What ditl do I append? */
-
-	/* This prevents duplication-> you will already have this function */
-	/* (generally just wraps get_data_from_preferences) */
-	void *(*get_data)(void);
-
-	/* Called on setup (initialize your fields) */
-	void (*setup_dialog_func)(DialogPtr dialog, short first_item, void *prefs);
-
-	/* Called when a user item is hit */
-	void (*item_hit_func)(DialogPtr dialog, short first_item, void *prefs, 
-		short item_hit);
-
-	/* Use this to read in the edittext fields, etc. (return false to abort teardown) */
-	bool (*teardown_dialog_func)(DialogPtr dialog, short first_item, void *prefs);
-};
-
-bool set_preferences(struct preferences_dialog_data *funcs, short count,
-	void (*reload_function)(void));
-#endif
-
 #endif

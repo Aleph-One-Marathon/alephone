@@ -47,10 +47,6 @@ on very small maps, choose_random_flood_node() may not terminate
 #include <stdlib.h>
 #include <limits.h>
 
-#ifdef env68k
-#pragma segment map
-#endif
-
 /* ---------- constants */
 
 #define MAXIMUM_FLOOD_NODES 255

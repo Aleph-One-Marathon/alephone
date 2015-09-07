@@ -41,9 +41,6 @@ OGL_LoadScreen *OGL_LoadScreen::instance()
 
 extern bool OGL_ClearScreen();
 
-#if defined(mac)
-extern WindowPtr screen_window;
-#endif
 extern void bound_screen();
 
 bool OGL_LoadScreen::Start()

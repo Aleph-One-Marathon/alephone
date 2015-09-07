@@ -44,10 +44,6 @@ Aug 30, 2000 (Loren Petrich):
 
 #include "Packing.h"
 
-#ifdef env68k
-#pragma segment objects
-#endif
-
 /*
 ryan reports get_object_data() failing on effect->data after a teleport effect terminates
 */

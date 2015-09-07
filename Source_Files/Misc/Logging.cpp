@@ -91,15 +91,10 @@ Logger::logMessage(const char* inDomain, int inLevel, const char* inFile, int in
 
 void
 Logger::logMessageNMT(const char* inDomain, int inLevel, const char* inFile, int inLine, const char* inMessage, ...) {
-	// Currently this method has an empty implementation on Mac OS 9, since it likes to crash there.
-	// The implementation matches the main-thread implementation on other platforms, since they seem
-	// to cope with things just fine.
-#if !(defined(mac) && !defined(__MACH__))
 	va_list theVarArgs;
 	va_start(theVarArgs, inMessage);
 	logMessageV(inDomain, inLevel, inFile, inLine, inMessage, theVarArgs);
 	va_end(theVarArgs);
-#endif
 }
 
 Logger::~Logger() {

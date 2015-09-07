@@ -178,10 +178,6 @@ May 22, 2003 (Woody Zenfell):
 #include <stdlib.h>
 #include <limits.h> 
 
-#ifdef env68k
-#pragma segment player
-#endif
-
 /* ---------- constants */
 
 struct player_powerup_durations_definition {

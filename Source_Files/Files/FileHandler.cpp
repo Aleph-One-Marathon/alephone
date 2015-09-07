@@ -24,7 +24,6 @@
  *
  *  Written in 2000 by Christian Bauer
  */
-#ifndef SDL_RFORK_HACK
 #include "cseries.h"
 #include "FileHandler.h"
 #include "resource_manager.h"
@@ -55,16 +54,10 @@
 #include "SDL_rwops_zzip.h"
 #endif
 
-#ifdef __MACOS__
-#include "mac_rwops.h"
-#endif
-
 #if defined(__WIN32__)
 #define PATH_SEP '\\'
-#elif !defined(__MACOS__)
-#define PATH_SEP '/'
 #else
-#define PATH_SEP ':'
+#define PATH_SEP '/'
 #endif
 
 #ifdef __MVCPP__
@@ -381,11 +374,6 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 	OFile.Close();
 
 	SDL_RWops *f;
-#ifdef __MACOS__
-	if (!Writable)
-		f = OFile.f = open_fork_from_existing_path(GetPath(), false);
-	else
-#endif
 	{
 #ifdef HAVE_ZZIP
 		if (!Writable)
@@ -1548,5 +1536,3 @@ ScopedSearchPath::~ScopedSearchPath()
 {
 	data_search_path.erase(data_search_path.begin());
 }
-
-#endif

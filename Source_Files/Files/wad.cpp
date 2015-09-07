@@ -91,15 +91,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "Packing.h"
 
 // Formerly in portable_files.h
-#ifdef mac
-inline short memory_error() {return MemError();}
-#else
 inline short memory_error() {return 0;}
-#endif
-
-#ifdef env68k
-#pragma segment file_io
-#endif
 
 /* ---------------- private structures */
 // LP: no more union wads
@@ -367,19 +359,7 @@ void fill_default_wad_header(
 	obj_clear(*header);
 	header->version= wadfile_version;
 	header->data_version= data_version;
-/*
-#if defined(mac) && !defined(USE_CARBON_ACCESSORS)
-	// JTP: Why is it forming a pascal string and immediately calling p2cstr on it?
-	// LP: being sure to create a Pascal-format filename
-	char Name[256];
-	File.GetName(Name);
-	header->file_name[0] = strlen(Name);
-	strncpy(header->file_name+1,Name,MAXIMUM_WADFILE_NAME_LENGTH-1);
-	p2cstr((unsigned char *)header->file_name);
-#else
-*/
 	File.GetName(header->file_name);
-//#endif
 	header->wad_count= wad_count;
 	header->application_specific_directory_data_size= application_directory_data_size;					
 

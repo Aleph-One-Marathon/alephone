@@ -242,10 +242,6 @@ extern WindowPtr screen_window;
 #include "preferences.h"
 #include "screen.h"
 
-#ifdef env68k
-#pragma segment render
-#endif
-
 /* use native alignment */
 #if defined (powerc) || defined (__powerc)
 #pragma options align=power

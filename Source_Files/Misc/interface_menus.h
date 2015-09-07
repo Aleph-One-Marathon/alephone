@@ -25,21 +25,6 @@
 
 */
 
-#ifdef USES_NIBS
-
-// In reverse order of insertion; in interface_macintosh.cpp
-// the menus are inserted from right to left
-// (final order: Game, Interface, Fake_Empty)
-const int NumMenus = 3;
-const CFStringRef MenuNames[NumMenus] =
-{
-	CFSTR("Fake_Empty"),
-	CFSTR("Interface"),
-	CFSTR("Game")
-};
-
-#endif
-
 enum { /* Menus available during the game */
 	mGame= 128,
 	iPause= 1,

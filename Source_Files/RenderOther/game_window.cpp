@@ -84,10 +84,6 @@ Mar 08, 2002 (Woody Zenfell):
 
 #include    "network_sound.h"
 
-#ifdef env68k
-	#pragma segment screen
-#endif
-
 extern void draw_panels(void);
 extern void validate_world_window(void);
 static void set_current_inventory_screen(short player_index, short screen);

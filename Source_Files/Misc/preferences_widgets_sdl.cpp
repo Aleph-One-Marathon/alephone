@@ -42,10 +42,6 @@ void w_env_select::select_item_callback(void* arg) {
     obj->select_item(obj->parent);
 }
 
-#ifdef __MACOS__
-extern DirectorySpecifier local_data_dir;
-#endif
-
 void w_env_select::select_item(dialog *parent)
 {
 	// Find available files
@@ -85,21 +81,9 @@ void w_env_select::select_item(dialog *parent)
 
 			// New directory
 			FileSpecifier base_spec = base;
-#ifdef __MACOS__
-			char name[256];
-			base_spec.GetName(name);
-			if (name[0] != '\0') {
-#endif
 				// Subdirectory, insert name as unselectable item, put items on indentation level 1
 				items.push_back(env_item(base_spec, 0, false));
 				indent_level = 1;
-#ifdef __MACOS__
-			} else {
-
-				// Top-level directory, put items on indentation level 0
-				indent_level = 0;
-			}
-#endif
 			last_base = base;
 		}
 		items.push_back(env_item(*i, indent_level, true));

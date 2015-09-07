@@ -490,13 +490,6 @@ void initialize_terminal_manager(
 	assert(player_terminals);
 	objlist_clear(player_terminals, MAXIMUM_NUMBER_OF_PLAYERS);
 
-#ifdef mac
-	for(unsigned int index= 0; index<NUMBER_OF_TERMINAL_KEYS; ++index)
-	{
-		terminal_keys[index].mask= 1 << (terminal_keys[index].keycode&7);
-		terminal_keys[index].offset= terminal_keys[index].keycode>>3;
-	}
-#endif
 /*
 	terminal_font = load_font(*_get_font_spec(_computer_interface_font));
 */
@@ -739,14 +732,6 @@ void _render_computer_interface(void)
 				break;
 		}
 		
-#if defined(mac)
-		// LP change: restore overall clipping
-		// Changed to actually-used buffer
-		Rect portRect;
-		GetPortBounds(GetWindowPort(screen_window), &portRect);
-		ClipRect(&portRect);
-#endif
-		
 		RequestDrawingTerm();
 	}
 }
@@ -840,25 +825,11 @@ static void draw_logon_text(
     }
 
 	/* This is always just a line, so we can do this here.. */
-#ifdef mac
-	{
-		TextSpec old_font;
-
-		GetFont(&old_font);
-		UseInterfaceFont(_computer_interface_font);
-		// SetFont(_get_font_spec(_computer_interface_font));
-	
-		width= TextWidth(base_text, current_group->start_index, current_group->length);
-		picture_bounds.left += (RECTANGLE_WIDTH(&picture_bounds)-width)/2;
-		SetFont(&old_font);
-	}
-#else
 	font_info *terminal_font = GetInterfaceFont(_computer_interface_font);
 	uint16 terminal_style = GetInterfaceStyle(_computer_interface_font);
 	width = text_width(base_text + current_group->start_index, current_group->length, terminal_font, terminal_style);
 	// width = text_width(base_text + current_group->start_index, current_group->length, terminal_font, _get_font_spec(_computer_interface_font)->style);
 	picture_bounds.left += (RECTANGLE_WIDTH(&picture_bounds) - width) / 2;
-#endif
 	
 	_draw_computer_text(base_text, current_group_index, &picture_bounds, terminal_text, 0);
 }
@@ -893,17 +864,9 @@ static void _draw_computer_text(
 	short index, last_index, last_text_index, end_index;
 	unsigned text_index;
 
-#ifdef mac
-	/* Set the font.. */
-	TextSpec old_font;
-	GetFont(&old_font);
-	UseInterfaceFont(_computer_interface_font);
-	// SetFont(_get_font_spec(_computer_interface_font));
-#else
 	uint16 old_style = current_style;
 	current_style = GetInterfaceStyle(_computer_interface_font);
 	// current_style = _get_font_spec(_computer_interface_font)->style;
-#endif
 
 	start_index= current_group->start_index;
 	end_index= current_group->length+current_group->start_index;
@@ -994,11 +957,7 @@ static void _draw_computer_text(
 		}
 	}
 
-#ifdef mac
-	SetFont(&old_font);
-#else
 	current_style = old_style;
-#endif
 }
 
 static short count_total_lines(
@@ -1010,17 +969,9 @@ static short count_total_lines(
 	short total_line_count= 0;
 	short text_end_index= end_index;
 
-#ifdef mac
-	/* Set the font.. */
-	TextSpec old_font;
-	GetFont(&old_font);
-	UseInterfaceFont(_computer_interface_font);
-	// SetFont(_get_font_spec(_computer_interface_font));
-#else
 	uint16 old_style = current_style;
 	current_style = GetInterfaceStyle(_computer_interface_font);
 	// current_style = _get_font_spec(_computer_interface_font)->style;
-#endif
 
 	while(!calculate_line(base_text, width, start_index, text_end_index, &end_index))
 	{
@@ -1028,11 +979,7 @@ static short count_total_lines(
 		start_index= end_index;
 	}
 
-#ifdef mac
-	SetFont(&old_font);
-#else
 	current_style = old_style;
-#endif
 	
 	return total_line_count;
 }
@@ -1071,12 +1018,8 @@ static void draw_line(
 	}
 	
 	current_start= start_index;
-#ifdef mac
-	MoveTo(bounds->left, bounds->top+line_height*(line_number+FUDGE_FACTOR));
-#else
 	font_info *terminal_font = GetInterfaceFont(_computer_interface_font);
 	int xpos = bounds->left;
-#endif
 
 	while(!done)
 	{
@@ -1094,13 +1037,9 @@ static void draw_line(
 			}
 		}
 
-#ifdef mac
-		DrawText(base_text, current_start, current_end-current_start);
-#else
 		xpos += draw_text(/*world_pixels*/ draw_surface, base_text + current_start, current_end - current_start,
 		                  xpos, bounds->top + line_height * (line_number + FUDGE_FACTOR),
 		                  current_pixel, terminal_font, current_style);
-#endif
 		if(current_end!=end_index)
 		{
 			current_start= current_end;
@@ -1226,22 +1165,14 @@ static void display_picture(
 	short flags)
 {
 	LoadedResource PictRsrc;
-#ifdef mac
-	PicHandle picture;
-#else
 	SDL_Surface *s = NULL;
-#endif
 
 	if (get_picture_resource_from_scenario(picture_id, PictRsrc))
 	{
-#ifdef mac
-		picture = PicHandle(PictRsrc.GetHandle());
-#else
 		s = picture_to_surface(PictRsrc);
 	}
 	if (s)
 	{
-#endif
 		Rect bounds;
 		Rect screen_bounds;
 
@@ -1795,31 +1726,13 @@ static void get_date_string(
 {
 	char temp_string[101];
 	int32 game_time_passed;
-#ifdef mac
-	unsigned long seconds;
-#else
 	time_t seconds;
-#endif
 	struct tm game_time;
 
 	/* Treat the date as if it were recent. */
 	game_time_passed= INT32_MAX - dynamic_world->game_information.game_time_remaining;
 	
 	/* convert the game seconds to machine seconds */
-#ifdef mac
-	// XXX Why is this here? Doesn't localtime() work on the Mac? - CB
-	seconds = 2882914937u;
-	seconds += (game_time_passed/TICKS_PER_SECOND)*MACINTOSH_TICKS_PER_SECOND; 
-	DateTimeRec converted_date;
-	SecondsToDate(seconds, &converted_date);
-	
-	game_time.tm_sec= converted_date.second;
-	game_time.tm_min= converted_date.minute;
-	game_time.tm_hour= converted_date.hour;
-	game_time.tm_mday= converted_date.day;
-	game_time.tm_mon= converted_date.month-1;
-	game_time.tm_wday= converted_date.dayOfWeek;
-#else
 	if (flags & _group_is_marathon_1)
 	{
 		seconds = 809304137;
@@ -1831,7 +1744,6 @@ static void get_date_string(
 		seconds += game_time_passed / TICKS_PER_SECOND;
 	}
 	game_time = *localtime(&seconds);
-#endif
 	game_time.tm_year= 437;
 	game_time.tm_yday= 0;
 	game_time.tm_isdst= 0;
@@ -1867,21 +1779,9 @@ static void present_checkpoint_text(
 		overhead_data.width= RECTANGLE_WIDTH(&bounds);
 		overhead_data.height= RECTANGLE_HEIGHT(&bounds);
 		overhead_data.mode= _rendering_checkpoint_map;
-#ifdef mac
-		// LP change: set the clip window to that for the overhead data
-		ClipRect(&bounds);
-#else
         set_drawing_clip_rectangle(bounds.top, bounds.left, bounds.bottom, bounds.right);
-#endif
 		_render_overhead_map(&overhead_data);
-#ifdef mac
-		// Reset it to the overall bounds
-		Rect portRect;
-		GetPortBounds(GetWindowPort(screen_window), &portRect);
-		ClipRect(&portRect);
-#else
         set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
-#endif
 	} else {
 		char format_string[128];
 	

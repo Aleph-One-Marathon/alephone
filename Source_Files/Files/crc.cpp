@@ -35,10 +35,6 @@ Nov 6, 2000 (Loren Petrich);
 #include "FileHandler.h"
 #include "crc.h"
 
-#ifdef env68k
-	#pragma segment file_io
-#endif
-
 /* ---------- constants */
 #define TABLE_SIZE (256)
 #define CRC32_POLYNOMIAL 0xEDB88320L

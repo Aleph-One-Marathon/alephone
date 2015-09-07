@@ -67,10 +67,6 @@ maps of one polygon don’t have their impassability information computed
 //keep_line_segment_out_of_walls() can’t use precalculated height information and should do weird things next to elevators and doors
 */
 
-#ifdef env68k
-#pragma segment map
-#endif
-
 /* ---------- structures */
 
 #define MAXIMUM_INTERSECTING_INDEXES 64

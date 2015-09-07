@@ -49,11 +49,6 @@ bool chat_input_mode = false;
 
 #include <ctype.h>
 
-#if defined(mac)
-// The modifier for typing in cheat codes
-unsigned short CheatCodeModMask = controlKey;
-#endif
-
 
 extern void process_new_item_for_reloading(short player_index, short item_type);
 extern bool try_and_add_player_item(short player_index,	short type);
@@ -316,10 +311,6 @@ void global_idle_proc(void)
 void free_and_unlock_memory(void)
 {
 	SoundManager::instance()->StopAllSounds();
-#ifdef mac
-    PurgeMem(maxSize);
-    CompactMem(maxSize);
-#endif
 }
 
 /*

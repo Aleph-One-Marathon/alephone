@@ -43,10 +43,6 @@ Aug 12, 2000 (Loren Petrich):
 
 #include "wad_prefs.h"
 
-#ifdef env68k
-	#pragma segment file_io
-#endif
-
 /* ------ local defines */
 #define CURRENT_PREF_WADFILE_VERSION 0
 
@@ -57,11 +53,7 @@ struct preferences_info *prefInfo= NULL;
 static void load_preferences(void);
 
 // LP: fake portable-files stuff
-#ifdef mac
-inline short memory_error() {return MemError();}
-#else
 inline short memory_error() {return 0;}
-#endif
 
 /* ------------ Entry point */
 /* Open the file, and allocate whatever internal structures are necessary in the */

@@ -7,18 +7,9 @@
  *
  */
 #ifdef __GNUG__
-#undef mac
 #include <SDL.h>
 #include <SDL_net.h>
 #include <SDL_image.h>
-
-#ifdef mac
-#undef TARGET_API_MAC_CARBON
-#undef TARGET_API_MAC_OS8
-#undef TARGET_API_MAC_OSX
-#define TARGET_API_MAC_CARBON 1
-#import <Carbon/Carbon.h>
-#endif
 
 #if __GNUC__ >= 3
 #import "cstypes.h"

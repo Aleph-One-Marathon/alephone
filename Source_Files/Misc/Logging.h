@@ -150,18 +150,12 @@ public:
 		if(contextSet)
 			leaveContext();
 		
-#if defined(mac) && !defined(__MACH__)
-		if(!nonMainThread)
-#endif
 			GetCurrentLogger()->pushLogContextV(inFile, inLine, inContext, inArgs);
 
 		contextSet = true;
 	}
 
 	void leaveContext() {
-#if defined(mac) && !defined(__MACH__)
-		if(!nonMainThread)
-#endif
 			if(contextSet)
 				GetCurrentLogger()->popLogContext();
 

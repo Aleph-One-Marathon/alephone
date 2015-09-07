@@ -66,10 +66,6 @@ Jul 1, 2000 (Loren Petrich):
 #include <math.h>
 #include <limits.h>
 
-#ifdef env68k
-#pragma segment render
-#endif
-
 
 
 

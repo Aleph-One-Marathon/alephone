@@ -30,10 +30,6 @@ Feb. 4, 2000 (Loren Petrich):
 #include "cseries.h"
 #include "textures.h"
 
-#ifdef env68k
-#pragma segment render
-#endif
-
 #define MARATHON2
 
 /* ---------- code */

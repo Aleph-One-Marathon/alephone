@@ -39,9 +39,6 @@ ALEPHVERSION.H
 #define A1_DISPLAY_PLATFORM "Mac OS X"
 #define A1_UPDATE_PLATFORM "macosx"
 #endif
-#elif defined (__MACOS__)
-#define A1_DISPLAY_PLATFORM "Mac OS"
-#define A1_UPDATE_PLATFORM "macos"
 #elif defined (linux)
 #define A1_DISPLAY_PLATFORM "Linux"
 #define A1_UPDATE_PLATFORM "source"

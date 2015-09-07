@@ -84,10 +84,6 @@ Jun 30, 2002 (tiennou):
 
 #include "editor.h" // MARATHON_ONE_DATA_VERSION
 
-#ifdef env68k
-#pragma segment doors
-#endif
-
 /*
 //opening sounds made by closed platforms are sometimes obscured
 */

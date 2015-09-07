@@ -90,10 +90,6 @@ running backwards shouldn’t mean doom in a fistfight
 
 #include <string.h>
 
-#ifdef env68k
-#pragma segment player
-#endif
-
 /* ---------- constants */
 
 #define COEFFICIENT_OF_ABSORBTION 2

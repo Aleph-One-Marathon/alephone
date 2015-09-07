@@ -37,11 +37,6 @@ typedef struct color_table {
 	rgb_color colors[256];
 } color_table;
 
-#ifdef mac
-extern CTabHandle build_macintosh_color_table(
-	color_table *table);
-#endif
-
 extern void build_color_table(
 	color_table *table,
 	LoadedResource &clut);

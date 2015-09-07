@@ -108,7 +108,7 @@
 #include <SDL_image.h>
 #if defined(__WIN32__)
 #include "alephone32.xpm"
-#elif !(defined(__APPLE__) && defined(__MACH__)) && !defined(__MACOS__)
+#elif !(defined(__APPLE__) && defined(__MACH__))
 #include "alephone.xpm"
 #endif
 #endif
@@ -521,9 +521,7 @@ static void initialize_application(void)
 #if defined(__WIN32__)
 		data_search_path.push_back(legacy_data_dir);
 #endif
-#ifndef __MACOS__
 		data_search_path.push_back(local_data_dir);
-#endif
 	}
 
 	// Subdirectories
@@ -650,7 +648,7 @@ static void initialize_application(void)
 	IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
 #endif
 
-#if defined(HAVE_SDL_IMAGE) && !(defined(__APPLE__) && defined(__MACH__)) && !defined(__MACOS__)
+#if defined(HAVE_SDL_IMAGE) && !(defined(__APPLE__) && defined(__MACH__))
 	SDL_WM_SetIcon(IMG_ReadXPMFromArray(const_cast<char**>(alephone_xpm)), 0);
 #endif
 	atexit(shutdown_application);
@@ -895,19 +893,17 @@ static void main_event_loop(void)
 		execute_timer_tasks(SDL_GetTicks());
 		idle_game_state(SDL_GetTicks());
 
-#ifndef __MACOS__
-		if (game_state == _game_in_progress && !graphics_preferences->hog_the_cpu && (TICKS_PER_SECOND - (SDL_GetTicks() - cur_time)) > 10) 
+		if (game_state == _game_in_progress && !graphics_preferences->hog_the_cpu && (TICKS_PER_SECOND - (SDL_GetTicks() - cur_time)) > 10)
 		{
 			SDL_Delay(1);
 		}
-#endif
 	}
 }
 
 static bool has_cheat_modifiers(void)
 {
 	SDLMod m = SDL_GetModState();
-#if (defined(__APPLE__) && defined(__MACH__)) || defined(__MACOS__)
+#if (defined(__APPLE__) && defined(__MACH__))
 	return ((m & KMOD_SHIFT) && (m & KMOD_CTRL)) || ((m & KMOD_ALT) && (m & KMOD_META));
 #else
 	return (m & KMOD_SHIFT) && (m & KMOD_CTRL) && !(m & KMOD_ALT) && !(m & KMOD_META);

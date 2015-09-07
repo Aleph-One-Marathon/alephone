@@ -716,15 +716,11 @@ spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags)
 			int32 theLatencyMeasurement = sOutgoingFlags.getWriteTick() - sSmallestUnreceivedTick;
 			logDumpNMT1("latency measurement: %d", theLatencyMeasurement);
 
-// We can't use NthElementFinder at interrupt time in Mac OS 9 since its std::set can [de]allocate memory
-// We don't really use it for anything on the spoke-side now anyway, thanks to player motion prediction...
-#if !(defined(mac) && !defined(__MACH__))
 			sNthElementFinder.insert(theLatencyMeasurement);
 			// We capture these values here so we don't have to take a lock in GetNetTime.
 			sTimingMeasurementValid = sNthElementFinder.window_full();
 			if(sTimingMeasurementValid)
 				sTimingMeasurement = sNthElementFinder.nth_largest_element(sSpokePreferences.mTimingNthElement);
-#endif
 
 			// update the latency display
 			sDisplayLatencyTicks -= sDisplayLatencyBuffer[sDisplayLatencyCount % sDisplayLatencyBuffer.size()];

@@ -99,10 +99,6 @@ Feb 20, 2002 (Woody Zenfell):
 #include "Movie.h"
 #include "InfoTree.h"
 
-#ifdef env68k
-#pragma segment input
-#endif
-
 /* ---------- constants */
 
 #define RECORD_CHUNK_SIZE            (MAXIMUM_QUEUE_SIZE/2)
@@ -118,11 +114,7 @@ Feb 20, 2002 (Woody Zenfell):
 #define INCREMENT_QUEUE_COUNTER(c) { (c)++; if ((c)>=MAXIMUM_QUEUE_SIZE) (c) = 0; }
 
 // LP: fake portable-files stuff
-#ifdef mac
-inline short memory_error() {return MemError();}
-#else
 inline short memory_error() {return 0;}
-#endif
 
 /* ---------- structures */
 #include "vbl_definitions.h"
@@ -218,21 +210,6 @@ void set_keyboard_controller_status(
 	bool active)
 {
 	input_task_active= active;
-
-	/******************************************************************************************/
-	/* BT:	Added April 16, 2000 ISp: De-activate Input Sprockets while the keyboard is
-			not active.  This also means that the game is currently not recieving keystrokes */
-#ifdef mac
-	if(active) Start_ISp();
-	else Stop_ISp();
-#endif
-
-#if TARGET_API_MAC_CARBON
-	if (active)
-		enter_mouse(0);
-	else
-		exit_mouse(0);
-#endif
 
 	// We enable/disable mouse control here
 	if (active) {
@@ -332,9 +309,6 @@ void set_keys(
 	{
 		current_key_definitions[index].offset= SDLKey(keycodes[index]);
 		current_key_definitions[index].action_flag= definitions[index].action_flag;
-#ifdef mac
-		assert(current_key_definitions[index].offset <= 0x7f);
-#endif
 	}
 	precalculate_key_information();
 }

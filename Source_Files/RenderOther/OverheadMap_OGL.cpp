@@ -95,11 +95,6 @@ static inline bool ColorsEqual(rgb_color& Color1, rgb_color& Color2)
 				(Color1.blue == Color2.blue));
 }
 
-#ifdef mac
-// Render context for aglUseFont(); defined in OGL_Render.c
-extern AGLContext RenderContext;
-#endif
-
 
 // For marking out the area to be blanked out when starting rendering;
 // these are defined in OGL_Render.cpp
@@ -115,14 +110,10 @@ void OverheadMap_OGL_Class::begin_overall()
 	OGL_RenderRect(0, 0, ViewWidth, ViewHeight);
 	
 /*
-#ifndef mac
 	glEnable(GL_SCISSOR_TEST);	// Don't erase the HUD
-#endif
 	glClearColor(0,0,0,0);
 	glClear(GL_COLOR_BUFFER_BIT);
-#ifndef mac
 	glDisable(GL_SCISSOR_TEST);
-#endif
 */
 	
 	// Here's for the overhead map

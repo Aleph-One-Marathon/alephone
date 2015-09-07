@@ -87,19 +87,6 @@ protected:
 	int16& m_pref;
 };
 
-#ifdef mac
-class FilePref : public Bindable<FileSpecifier>
-{
-public:
-	FilePref (FSSpec& pref) : m_pref (pref) {}
-
-	virtual FileSpecifier bind_export () { FileSpecifier f; f.SetSpec (m_pref); return f; }
-	virtual void bind_import (FileSpecifier value) { m_pref = value.GetSpec (); }
-	
-protected:
-	FSSpec& m_pref;
-};
-#else
 class FilePref : public Bindable<FileSpecifier>
 {
 public:
@@ -112,7 +99,6 @@ public:
 protected:
 	char* m_pref;
 };
-#endif
 
 class ChatHistory
 {

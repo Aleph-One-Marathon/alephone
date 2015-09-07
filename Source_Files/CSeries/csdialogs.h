@@ -36,29 +36,6 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 #define iOK					1
 #define iCANCEL				2
 
-#ifdef SDL_RFORK_HACK
-//AS thinks this is a great hack
-#define dialog CHEESEOFDEATH
-#define DialogPtr mDialogPtr
-#include <Dialogs.h>
-#undef dialog
-#undef DialogPtr
-#endif 
-
-#if defined(mac)
-
-#ifdef USES_NIBS
-typedef WindowRef DialogPTR;
-#define	CONTROL_INACTIVE	0
-#define	CONTROL_ACTIVE		1
-#else
-typedef DialogPtr DialogPTR;
-#define CONTROL_INACTIVE	kControlInactivePart
-#define CONTROL_ACTIVE		kControlNoPart
-#endif
-
-#else //!mac
-
 class dialog;
 
 typedef	dialog*	DialogPtr;
@@ -66,8 +43,6 @@ typedef dialog* DialogPTR;
 
 #define	CONTROL_INACTIVE	0
 #define	CONTROL_ACTIVE		1
-
-#endif //!mac
 
 // (jkvw) Prototypes for all platforms, to (hopefully?) get ourselves a usable common interface.
 
@@ -105,71 +80,6 @@ extern void insert_number_into_text_item(
 extern void copy_cstring_to_static_text(DialogPtr dialog, short item, const char* cstring);
 
 
-
-// (ZZZ:) For Macs only (some more non-Mac stuff later, read on)
-#ifdef mac
-#define SCROLLBAR_WIDTH	16
-
-enum {
-	centerRect
-};
-
-extern void AdjustRect(
-	Rect const *frame,
-	Rect const *in,
-	Rect *out,
-	short how);
-
-extern void get_window_frame(
-	WindowPtr win,
-	Rect *frame);
-
-extern DialogPtr myGetNewDialog(
-	short id,
-	void *storage,
-	WindowPtr before,
-	long refcon);
-
-extern pascal Boolean general_filter_proc(
-	DialogPtr dlg,
-	EventRecord *event,
-	short *hit);
-extern ModalFilterUPP get_general_filter_upp(void);
-
-extern void set_dialog_cursor_tracking(
-	bool tracking);
-
-extern bool hit_dialog_button(
-	DialogPtr dlg,
-	short item);
-
-extern short get_dialog_control_value(
-        DialogPtr dialog,
-        short which_control);
-
-extern void modify_control(
-	DialogPtr dlg,
-	short item,
-	short hilite,
-	short value);
-        
-extern void modify_radio_button_family(
-	DialogPtr dlg,
-	short firstItem,
-	short lastItem,
-	short activeItem);
-
-typedef void (*dialog_header_proc_ptr)(
-	DialogPtr dialog,
-	Rect *frame);
-
-extern void set_dialog_header_proc(
-	dialog_header_proc_ptr proc);
-
-#endif//mac
-
-
-
 // (ZZZ:) Now, some functions I "specialized" for SDL are simply forwarded to the original, more
 // general versions on classic Mac...
 // These more specific names show better what manipulation is desired.  Also, more importantly,
@@ -178,34 +88,6 @@ extern void set_dialog_header_proc(
 // from 1, whereas a boolean control (checkbox) is numbered 0 or 1.  In Christian's code, all
 // selection controls (w_select and subclasses, including the boolean control w_toggle) are
 // indexed from 0).
-// These functions use the Mac OS numbering scheme.
-#ifdef mac
-__inline__ void modify_selection_control(
-	DialogPtr dlg,
-	short item,
-	short hilite,
-	short value) {modify_control(dlg, item, hilite, value); }
-
-__inline__ void modify_control_enabled(
-	DialogPtr dlg,
-	short item,
-	short hilite) {modify_control(dlg, item, hilite, NONE); }
-
-__inline__ void modify_boolean_control(
-	DialogPtr dlg,
-	short item,
-	short hilite,
-	short value) {modify_control(dlg, item, hilite, value); }
-        
-__inline__ short get_selection_control_value(
-        DialogPtr dialog,
-        short which_control) {return get_dialog_control_value(dialog, which_control); }
-        
-__inline__ bool get_boolean_control_value(
-        DialogPtr dialog,
-        short which_control) {return get_dialog_control_value(dialog, which_control); }
-
-#else//!mac
 
 // (ZZZ: Here are the prototypes for the specialized SDL versions.)
 extern void modify_selection_control(
@@ -232,14 +114,11 @@ extern short get_selection_control_value(
 extern bool get_boolean_control_value(
         DialogPtr dialog,
         short which_control);
-#endif//!mac
 
 
 
 // ZZZ: (very) approximate SDL emulation of Mac OS Toolbox routines - see note in implementation
-#ifndef mac
 void HideDialogItem(DialogPtr dialog, short item_index);
 void ShowDialogItem(DialogPtr dialog, short item_index);
-#endif // !mac
 
 #endif//_CSERIES_DIALOGS_

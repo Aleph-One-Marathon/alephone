@@ -85,10 +85,6 @@ Feb 11, 2001 (Loren Petrich):
 //MH: Lua scripting
 #include "lua_script.h"
 
-#ifdef env68k
-#pragma segment marathon
-#endif
-
 /* ---------- structures */
 
 #define strITEM_NAME_LIST 150

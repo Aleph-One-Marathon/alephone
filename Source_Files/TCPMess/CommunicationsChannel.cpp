@@ -39,9 +39,6 @@
 #include "cseries.h"
 #if defined(WIN32)
 #include <winsock2.h> // hacky non-cross-platform setting of nonblocking
-#elif defined(__MACOS__)
-#include <OpenTransport.h> // hacky non-cross-platform setting of nonblocking AND reading
-static int Our_TCP_Recv(TCPsocket, void *, int); // look below if you really want to see this mess; you almost certainly do not
 #else
 #include <fcntl.h> // hacky non-cross-platform setting of nonblocking
 #endif
@@ -116,11 +113,7 @@ CommunicationsChannel::receive_some(TCPsocket inSocket, byte* inBuffer, size_t& 
 
 	if(theBytesLeft > 0)
 	{
-#ifndef __MACOS__
 		int theResult = SDLNet_TCP_Recv(inSocket, inBuffer + ioBufferPosition, theBytesLeft);
-#else
-		int theResult = Our_TCP_Recv(inSocket, inBuffer + ioBufferPosition, theBytesLeft);
-#endif
 
 //				std::cout << "  theResult is " << theResult << std::endl;
 
@@ -711,8 +704,6 @@ void MakeTCPsocketNonBlocking(TCPsocket *socket) {
 #if defined(WIN32)
   u_long val = 1;
   ioctlsocket(fd, FIONBIO, &val);
-#elif defined(__MACOS__)
-  OTSetNonBlocking((TProvider *) fd);
 #else
 #ifdef __MWERKS__
 /* out of /usr/include/sys/fcntl.h - mwerks doesn't have these defined */
@@ -724,140 +715,6 @@ void MakeTCPsocketNonBlocking(TCPsocket *socket) {
 
 #endif
 }
-
-#ifdef __MACOS__
-// XXX Can it possibly get worse!? YES!
-// big chunks stolen from SDL_Net
-
-#define SOCKET EndpointRef
-
-struct _TCPsocket {
-	int ready;
-	SOCKET channel;
-	
-	// These are taken from GUSI interface.
-	// I'm not sure if it's really necessary here yet
-	// ( masahiro minami<elsur@aaa.letter.co.jp> )
-	// ( 01/02/19 )
-	OTEventCode curEvent;
-	OTEventCode newEvent;
-	OTEventCode event;
-	OTEventCode curCompletion;
-	OTEventCode newCompletion;
-	OTEventCode completion;
-	OSStatus	error;
-	TEndpointInfo info;
-	Boolean		readShutdown;
-	Boolean		writeShutdown;
-	Boolean		connected;
-	OTConfigurationRef	config;		// Master configuration. you can clone this.
-	TCPsocket	nextListener;
-	// ( end of new members --- masahiro minami<elsur@aaa.letter.co.jp>
-	
-	IPaddress remoteAddress;
-	IPaddress localAddress;
-	int sflag;
-	
-	// Maybe we don't need this---- it's from original SDL_net
-	// (masahiro minami<elsur@aaa.letter.co.jp>)
-	// ( 01/02/20 )
-	int rcvdPassConn;
-};
-
-static void AsyncTCPPopEvent( _TCPsocket *sock )
-{
-	// Make sure OT calls are not interrupted
-	// Not sure if we really need this.
-	OTEnterNotifier( sock->channel );
-	
-	sock->event |= (sock->curEvent = sock->newEvent );
-	sock->completion |= ( sock->curCompletion = sock->newCompletion );
-	sock->newEvent = sock->newCompletion = 0;
-	
-	OTLeaveNotifier( sock->channel );
-	
-	if( sock->curEvent & T_UDERR)
-	{
-		// We just clear the error.
-		// Should we feed this back to users ?
-		// (TODO )
-		OTRcvUDErr( sock->channel, NULL );
-		
-#ifdef DEBUG_NET
-		printf("AsyncTCPPopEvent  T_UDERR recognized");
-#endif
-	}
-	
-	// Remote is disconnecting...
-	if( sock->curEvent & ( T_DISCONNECT | T_ORDREL ))
-	{
-		sock->readShutdown = true;
-	}
-	
-	if( sock->curEvent &T_CONNECT )
-	{
-		// Ignore the info of remote (second parameter).
-		// Shoule we care ?
-		// (TODO)
-		OTRcvConnect( sock->channel, NULL );
-		sock->connected = 1;
-	}
-		if( sock->curEvent & T_ORDREL )
-	{
-		OTRcvOrderlyDisconnect( sock->channel );
-	}
-	
-	if( sock->curEvent & T_DISCONNECT )
-	{
-		OTRcvDisconnect( sock->channel, NULL );
-	}
-	
-	// Do we need to ?
-	// (masahiro minami<elsur@aaa.letter.co.jp>)
-	//YieldToAnyThread();
-}
-
-static int Our_TCP_Recv(_TCPsocket *sock, void *data, int maxlen)
-{
-	int len = 0;
-	OSStatus res;
-	/* Server sockets are for accepting connections only */
-	if ( sock->sflag ) {
-		SDLNet_SetError("Server sockets cannot receive");
-		return(-1);
-	}
-
-//	do
-	{
-		res = OTRcv(sock->channel, data, maxlen-len, 0);
-		if (res > 0) {
-			len = res;
-		}
-
-#ifdef DEBUG_NET
-		if ( res != kOTNoDataErr )
-			printf("SDLNet_TCP_Recv received ; %d\n", res );
-#endif
-		
-		AsyncTCPPopEvent(sock);
-		if( res == kOTLookErr )
-		{
-			res = OTLook(sock->channel );
-//			continue;
-		}
-	}  //while ( (len == 0) && (res == kOTNoDataErr) );
-
-	sock->ready = 0;
-	if ( len == 0 && res != kOTNoDataErr) { /* Open Transport error */
-#ifdef DEBUG_NET
-		printf("Open Transport error: %d\n", res);
-#endif
-		return(-1);
-	}
-	return(len);
-}
-
-#endif
 
 #endif // !defined(DISABLE_NETWORKING)
 

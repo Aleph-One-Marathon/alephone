@@ -52,10 +52,6 @@ Jul 3, 2002 (Loren Petrich):
 //MH: Lua scripting
 #include "lua_script.h"
 
-#ifdef env68k
-#pragma segment marathon
-#endif
-
 /* ---------- globals */
 
 // Turned the list of lights into a variable array;

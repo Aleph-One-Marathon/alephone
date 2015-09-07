@@ -27,10 +27,6 @@
 
 #include "cseries.h"
 
-#ifdef EXPLICIT_CARBON_HEADER
-#include <Carbon/Carbon.h>
-#endif
-
 #include "RingGameProtocol.h"
 
 #include "ActionQueues.h"

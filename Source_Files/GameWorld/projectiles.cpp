@@ -103,10 +103,6 @@ Oct 13, 2000 (Loren Petrich)
 //translate_projectile() must set _projectile_hit_landscape bit
 */
 
-#ifdef env68k
-#pragma segment objects
-#endif
-
 /* ---------- constants */
 
 enum

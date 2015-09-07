@@ -124,10 +124,6 @@ find_line_crossed leaving polygon could be sped up considerable by reversing the
 
 #include <list>
 
-#ifdef env68k
-#pragma segment map
-#endif
-
 /* ---------- structures */
 
 /*

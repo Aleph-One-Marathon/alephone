@@ -578,9 +578,7 @@ hub_cleanup(bool inGraceful, int32 inSmallestPostGameTick)
 			while(sHubActive)
 			{
 // Here we try to isolate the "Classic" Mac OS (we can only sleep on the others)
-#if !defined(mac) || defined(__MACH__)
 				SDL_Delay(10);
-#endif
 			}
 		}
 		else

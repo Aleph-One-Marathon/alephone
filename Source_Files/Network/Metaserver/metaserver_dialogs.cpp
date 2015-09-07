@@ -132,12 +132,7 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 
 	if (network_preferences->use_netscript)
 	{
-#ifdef mac
-		FileSpecifier netScript;
-		netScript.SetSpec(network_preferences->netscript_file);
-#else
 		FileSpecifier netScript(network_preferences->netscript_file);
-#endif
 		char netScriptName[256];
 		netScript.GetName(netScriptName);
 		netScriptName[32] = '\0';

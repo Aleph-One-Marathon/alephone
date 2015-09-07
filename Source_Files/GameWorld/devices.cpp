@@ -77,10 +77,6 @@ Feb 3, 2003 (Woody Zenfell):
 #include <string.h>
 #include <limits.h>
 
-#ifdef env68k
-#pragma segment marathon
-#endif
-
 /* ---------- constants */
 
 #define OXYGEN_RECHARGE_FREQUENCY 0

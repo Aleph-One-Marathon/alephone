@@ -181,9 +181,6 @@ static rgb_color InterfaceColors[NumInterfaceColors] =
 
 /* ------- Private prototypes */
 static void load_interface_rectangles(void);
-#ifdef mac
-static Rect *_get_interface_rect(short index);
-#endif
 static void	load_screen_interface_colors(void);
 
 /* -------- Code */

@@ -114,10 +114,6 @@ Apr 10, 2003 (Woody Zenfell):
 
 #include "weapon_definitions.h"
 
-#ifdef env68k
-	#pragma segment weapons
-#endif
-
 // To Do:
 // lowering second weapon on ammo empty flubs.
 
