@@ -105,9 +105,11 @@ void OverheadMap_OGL_Class::begin_overall()
 
 	// Blank out the screen
 	// Do that by painting a black polygon
-	
-	glColor3f(0,0,0);
-	OGL_RenderRect(0, 0, ViewWidth, ViewHeight);
+	if (!map_is_translucent())
+	{
+		glColor3f(0,0,0);
+		OGL_RenderRect(0, 0, ViewWidth, ViewHeight);
+	}
 	
 /*
 	glEnable(GL_SCISSOR_TEST);	// Don't erase the HUD
