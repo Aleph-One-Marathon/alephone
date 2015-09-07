@@ -6976,7 +6976,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0640;
 				TargetAttributes = {
 					27A6D4E31B9BF021003DA766 = {
 						SystemCapabilities = {
@@ -9075,6 +9075,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = AppStore/Marathon/Marathon.entitlements;
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9096,6 +9097,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = AppStore/Marathon/Marathon.entitlements;
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9117,6 +9119,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = AppStore/Marathon/Marathon.entitlements;
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9138,6 +9141,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon 2/Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9159,6 +9163,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon 2/Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9180,6 +9185,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon 2/Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9201,6 +9207,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon Infinity/Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9222,6 +9229,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon Infinity/Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9243,6 +9251,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon Infinity/Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9262,6 +9271,7 @@
 		AE2A41530B5EFC1F00C567E6 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
 					HAVE_BUNDLE_NAME,
@@ -9329,6 +9339,7 @@
 		AE2A41760B5EFEA000C567E6 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
 					HAVE_BUNDLE_NAME,
@@ -9418,6 +9429,7 @@
 		AE505D08141D45E600915344 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9435,6 +9447,7 @@
 		AE505D09141D45E600915344 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9452,6 +9465,7 @@
 		AE505D0A141D45E600915344 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9469,6 +9483,7 @@
 		AE78B59D09B00C34002CACF8 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
 					HAVE_BUNDLE_NAME,
@@ -9537,6 +9552,7 @@
 		AEB4A2AA14296CAE00537AE7 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9554,6 +9570,7 @@
 		AEB4A2AB14296CAE00537AE7 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9571,6 +9588,7 @@
 		AEB4A2AC14296CAE00537AE7 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9588,6 +9606,7 @@
 		AEFD87C013EB84CF00C1E687 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(HOME)/Library/Frameworks",
 					/System/Library/Frameworks,
@@ -9640,6 +9659,7 @@
 		AEFD87C113EB84CF00C1E687 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(HOME)/Library/Frameworks",
 					/System/Library/Frameworks,
@@ -9692,6 +9712,7 @@
 		AEFD87C213EB84CF00C1E687 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(HOME)/Library/Frameworks",
 					/System/Library/Frameworks,
