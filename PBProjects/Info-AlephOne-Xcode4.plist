@@ -238,7 +238,7 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>AlephOne</string>
+	<string>Aleph One</string>
 	<key>CFBundleIconFile</key>
 	<string>AlephOne.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -249,22 +249,24 @@
 	<string>Aleph One</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
-	<key>CFBundleSignature</key>
-	<string>26.A</string>
-	<key>NSMainNibFile</key>
-	<string>MainMenu</string>
-	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
 	<key>CFBundleShortVersionString</key>
 	<string>A1_DISPLAY_VERSION</string>
+	<key>CFBundleSignature</key>
+	<string>26.A</string>
 	<key>CFBundleVersion</key>
 	<string>A1_DATE_VERSION</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.action-games</string>
 	<key>LSEnvironment</key>
 	<dict>
 		<key>ALEPHONE_FINDER_LAUNCH</key>
 		<string>1</string>
 	</dict>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.6.0</string>
+	<string>10.7.0</string>
+	<key>NSMainNibFile</key>
+	<string>MainMenu</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
 </dict>
 </plist>

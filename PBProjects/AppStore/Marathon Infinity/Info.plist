@@ -260,16 +260,7 @@
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.action-games</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.4.0</string>
-	<key>LSMinimumSystemVersionByArchitecture</key>
-	<dict>
-		<key>i386</key>
-		<string>10.4.0</string>
-		<key>ppc</key>
-		<string>10.4.0</string>
-		<key>x86_64</key>
-		<string>10.6.0</string>
-	</dict>
+	<string>10.7.0</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
