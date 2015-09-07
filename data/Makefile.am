@@ -9,7 +9,7 @@ mml_DATA = Interface_Rects.mml Transparent_Liquids.mml \
 mime_icons = \
   application-x-alephone-fila.png \
   application-x-alephone-imga.png \
-  application-x-alephone-musa.png
+  application-x-alephone-musa.png \
   application-x-alephone-phya.png \
   application-x-alephone-scea.png \
   application-x-alephone-sgaa.png \
