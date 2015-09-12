@@ -861,7 +861,9 @@ bool OGL_StartMain()
 	if (!OGL_IsActive()) return false;
 	
 	// One-sidedness necessary for correct rendering
-	glEnable(GL_CULL_FACE);	
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CW);
 	
 	// Set the Z-buffering for this go-around
 	if (Z_Buffering)
@@ -3113,7 +3115,7 @@ void OGL_RenderRect(float x, float y, float w, float h)
 	glDisable(GL_TEXTURE_2D);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	
-	GLfloat vertices[8] = { x, y, x, y + h, x + w, y + h, x + w, y };
+	GLfloat vertices[8] = { x, y, x + w, y, x + w, y + h, x, y + h };
 	glVertexPointer(2, GL_FLOAT, 0, vertices);
 	glDrawArrays(GL_POLYGON, 0, 4);
 
@@ -3128,8 +3130,8 @@ void OGL_RenderRect(const SDL_Rect& rect)
 
 void OGL_RenderTexturedRect(float x, float y, float w, float h, float tleft, float ttop, float tright, float tbottom)
 {	
-	GLfloat vertices[8] = { x, y, x, y + h, x + w, y + h, x + w, y };
-	GLfloat texcoords[8] = { tleft, ttop, tleft, tbottom, tright, tbottom, tright, ttop };
+	GLfloat vertices[8] = { x, y, x + w, y, x + w, y + h, x, y + h };
+	GLfloat texcoords[8] = { tleft, ttop, tright, ttop, tright, tbottom, tleft, tbottom };
     glVertexPointer(2, GL_FLOAT, 0, vertices);
 	glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
 	glDrawArrays(GL_POLYGON, 0, 4);
@@ -3148,12 +3150,12 @@ void OGL_RenderFrame(float x, float y, float w, float h, float t)
 	GLfloat vertices[20] = {
 		x,         y,
 		x + t,     y + t,
-		x + w,     y,
-		x + w - t, y + t,
-		x + w,	   y + h,
-		x + w - t, y + h - t,
 		x,         y + h,
 		x + t,     y + h - t,
+		x + w,	   y + h,
+		x + w - t, y + h - t,
+		x + w,     y,
+		x + w - t, y + t,
 		x,		   y,
 		x + t,	   y + t
 	};
@@ -3193,10 +3195,10 @@ void OGL_RenderLines(const std::vector<world_point2d>& points, float thickness)
 		
 		coords.push_back(prev.x + yd);
 		coords.push_back(prev.y - xd);
-		coords.push_back(cur.x - yd);
-		coords.push_back(cur.y + xd);
 		coords.push_back(cur.x + yd);
 		coords.push_back(cur.y - xd);
+		coords.push_back(cur.x - yd);
+		coords.push_back(cur.y + xd);
 	}
 	glVertexPointer(2, GL_FLOAT, 0, &coords.front());
 	glDrawArrays(GL_TRIANGLES, 0, coords.size() / 2);

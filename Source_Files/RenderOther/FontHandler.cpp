@@ -348,7 +348,6 @@ void FontSpecifier::OGL_Render(const char *Text)
 	glPushAttrib(GL_ENABLE_BIT);
 	
 	glEnable(GL_TEXTURE_2D);
-	glDisable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
 	glDisable(GL_ALPHA_TEST);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);

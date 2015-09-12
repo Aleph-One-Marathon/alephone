@@ -1736,7 +1736,6 @@ void darken_world_window(void)
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
 
 		// Disable everything but alpha blending
-		glDisable(GL_CULL_FACE);
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_ALPHA_TEST);
 		glEnable(GL_BLEND);

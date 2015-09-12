@@ -119,7 +119,6 @@ void OverheadMap_OGL_Class::begin_overall()
 */
 	
 	// Here's for the overhead map
-	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_ALPHA_TEST);
 	if (map_is_translucent())
@@ -319,9 +318,9 @@ void OverheadMap_OGL_Class::draw_player(
 	PlayerShape[0][0] = front;
 	PlayerShape[0][1] = 0;
 	PlayerShape[1][0] = rear_x;
-	PlayerShape[1][1] = - rear_y;
+	PlayerShape[1][1] = rear_y;
 	PlayerShape[2][0] = rear_x;
-	PlayerShape[2][1] = rear_y;
+	PlayerShape[2][1] = - rear_y;
 	
 	// Let OpenGL do the transformation work
 	glMatrixMode(GL_MODELVIEW);

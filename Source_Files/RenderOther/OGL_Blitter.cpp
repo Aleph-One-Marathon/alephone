@@ -252,7 +252,6 @@ void OGL_Blitter::Draw(const Image_Rect& dst, const Image_Rect& raw_src)
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	
 	// disable everything but alpha blending and clipping
-	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 //	glDisable(GL_ALPHA_TEST);
 	glEnable(GL_BLEND);

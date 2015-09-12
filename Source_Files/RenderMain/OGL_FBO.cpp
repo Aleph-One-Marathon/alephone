@@ -84,7 +84,7 @@ void FBO::deactivate() {
 void FBO::draw() {
 	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
 	glEnable(GL_TEXTURE_RECTANGLE_ARB);
-	OGL_RenderTexturedRect(0, 0, _w, _h, 0, 0, _w, _h);
+	OGL_RenderTexturedRect(0, 0, _w, _h, 0, _h, _w, 0);
 	glDisable(GL_TEXTURE_RECTANGLE_ARB);
 }
 
@@ -100,7 +100,7 @@ void FBO::prepare_drawing_mode(bool blend) {
 	if (!blend)
 		glDisable(GL_BLEND);
 	
-	glOrtho(0, _w, 0, _h, 0.0, 1.0);
+	glOrtho(0, _w, _h, 0, -1, 1);
 	glColor4f(1.0, 1.0, 1.0, 1.0);
 }
 
@@ -191,7 +191,7 @@ void FBOSwapper::blend_multisample(FBO& other) {
 	
 	glClientActiveTextureARB(GL_TEXTURE1_ARB);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	GLint multi_coordinates[8] = { 0, 0, 0, other._h, other._w, other._h, other._w, 0 };
+	GLint multi_coordinates[8] = { 0, other._h, other._w, other._h, other._w, 0, 0, 0 };
 	glTexCoordPointer(2, GL_INT, 0, multi_coordinates);
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	
