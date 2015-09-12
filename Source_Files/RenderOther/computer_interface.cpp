@@ -1587,7 +1587,7 @@ static void next_terminal_group(
 				break;
 		}
 
-		if (terminal_data->current_group==static_cast<int16>(terminal_text->groupings.size()) && terminal_text->groupings.size())
+		if (terminal_data->current_group==static_cast<int16>(terminal_text->groupings.size()) && terminal_text->groupings.size() && (terminal_text->groupings[0].flags & _group_is_marathon_1))
 		{
 			// Marathon 1 fallback
 			terminal_data->current_group = 0;
