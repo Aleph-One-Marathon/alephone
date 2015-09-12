@@ -206,7 +206,6 @@
 		27A6D4F51B9BF021003DA766 /* cscluts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111F0136A4DD01000001 /* cscluts.h */; };
 		27A6D4F61B9BF021003DA766 /* csdialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211200136A4DD01000001 /* csdialogs.h */; };
 		27A6D4F71B9BF021003DA766 /* cseries.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211210136A4DD01000001 /* cseries.h */; };
-		27A6D4F81B9BF021003DA766 /* csfiles.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211220136A4DD01000001 /* csfiles.h */; };
 		27A6D4F91B9BF021003DA766 /* csfonts.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211230136A4DD01000001 /* csfonts.h */; };
 		27A6D4FA1B9BF021003DA766 /* csmacros.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211250136A4DD01000001 /* csmacros.h */; };
 		27A6D4FB1B9BF021003DA766 /* csmisc.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211260136A4DD01000001 /* csmisc.h */; };
@@ -665,7 +664,6 @@
 		27A6D6D11B9BF029003DA766 /* cscluts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111F0136A4DD01000001 /* cscluts.h */; };
 		27A6D6D21B9BF029003DA766 /* csdialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211200136A4DD01000001 /* csdialogs.h */; };
 		27A6D6D31B9BF029003DA766 /* cseries.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211210136A4DD01000001 /* cseries.h */; };
-		27A6D6D41B9BF029003DA766 /* csfiles.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211220136A4DD01000001 /* csfiles.h */; };
 		27A6D6D51B9BF029003DA766 /* csfonts.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211230136A4DD01000001 /* csfonts.h */; };
 		27A6D6D61B9BF029003DA766 /* csmacros.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211250136A4DD01000001 /* csmacros.h */; };
 		27A6D6D71B9BF029003DA766 /* csmisc.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211260136A4DD01000001 /* csmisc.h */; };
@@ -1124,7 +1122,6 @@
 		27A6D8AD1B9BF031003DA766 /* cscluts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111F0136A4DD01000001 /* cscluts.h */; };
 		27A6D8AE1B9BF031003DA766 /* csdialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211200136A4DD01000001 /* csdialogs.h */; };
 		27A6D8AF1B9BF031003DA766 /* cseries.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211210136A4DD01000001 /* cseries.h */; };
-		27A6D8B01B9BF031003DA766 /* csfiles.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211220136A4DD01000001 /* csfiles.h */; };
 		27A6D8B11B9BF031003DA766 /* csfonts.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211230136A4DD01000001 /* csfonts.h */; };
 		27A6D8B21B9BF031003DA766 /* csmacros.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211250136A4DD01000001 /* csmacros.h */; };
 		27A6D8B31B9BF031003DA766 /* csmisc.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211260136A4DD01000001 /* csmisc.h */; };
@@ -1825,7 +1822,6 @@
 		AE505B54141D45E600915344 /* cscluts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111F0136A4DD01000001 /* cscluts.h */; };
 		AE505B55141D45E600915344 /* csdialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211200136A4DD01000001 /* csdialogs.h */; };
 		AE505B56141D45E600915344 /* cseries.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211210136A4DD01000001 /* cseries.h */; };
-		AE505B57141D45E600915344 /* csfiles.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211220136A4DD01000001 /* csfiles.h */; };
 		AE505B58141D45E600915344 /* csfonts.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211230136A4DD01000001 /* csfonts.h */; };
 		AE505B59141D45E600915344 /* csmacros.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211250136A4DD01000001 /* csmacros.h */; };
 		AE505B5A141D45E600915344 /* csmisc.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211260136A4DD01000001 /* csmisc.h */; };
@@ -2293,7 +2289,6 @@
 		AEB4A0F414296CAE00537AE7 /* cscluts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111F0136A4DD01000001 /* cscluts.h */; };
 		AEB4A0F514296CAE00537AE7 /* csdialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211200136A4DD01000001 /* csdialogs.h */; };
 		AEB4A0F614296CAE00537AE7 /* cseries.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211210136A4DD01000001 /* cseries.h */; };
-		AEB4A0F714296CAE00537AE7 /* csfiles.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211220136A4DD01000001 /* csfiles.h */; };
 		AEB4A0F814296CAE00537AE7 /* csfonts.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211230136A4DD01000001 /* csfonts.h */; };
 		AEB4A0F914296CAE00537AE7 /* csmacros.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211250136A4DD01000001 /* csmacros.h */; };
 		AEB4A0FA14296CAE00537AE7 /* csmisc.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211260136A4DD01000001 /* csmisc.h */; };
@@ -2707,7 +2702,6 @@
 		AEC3C71C09AD68AC003258E4 /* cscluts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111F0136A4DD01000001 /* cscluts.h */; };
 		AEC3C71D09AD68AC003258E4 /* csdialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211200136A4DD01000001 /* csdialogs.h */; };
 		AEC3C71E09AD68AC003258E4 /* cseries.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211210136A4DD01000001 /* cseries.h */; };
-		AEC3C71F09AD68AC003258E4 /* csfiles.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211220136A4DD01000001 /* csfiles.h */; };
 		AEC3C72009AD68AC003258E4 /* csfonts.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211230136A4DD01000001 /* csfonts.h */; };
 		AEC3C72209AD68AC003258E4 /* csmacros.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211250136A4DD01000001 /* csmacros.h */; };
 		AEC3C72309AD68AC003258E4 /* csmisc.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211260136A4DD01000001 /* csmisc.h */; };
@@ -3020,7 +3014,6 @@
 		AEFD860213EB84CF00C1E687 /* cscluts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111F0136A4DD01000001 /* cscluts.h */; };
 		AEFD860313EB84CF00C1E687 /* csdialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211200136A4DD01000001 /* csdialogs.h */; };
 		AEFD860413EB84CF00C1E687 /* cseries.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211210136A4DD01000001 /* cseries.h */; };
-		AEFD860513EB84CF00C1E687 /* csfiles.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211220136A4DD01000001 /* csfiles.h */; };
 		AEFD860613EB84CF00C1E687 /* csfonts.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211230136A4DD01000001 /* csfonts.h */; };
 		AEFD860713EB84CF00C1E687 /* csmacros.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211250136A4DD01000001 /* csmacros.h */; };
 		AEFD860813EB84CF00C1E687 /* csmisc.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211260136A4DD01000001 /* csmisc.h */; };
@@ -3860,7 +3853,6 @@
 		F522111F0136A4DD01000001 /* cscluts.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = cscluts.h; path = ../Source_Files/CSeries/cscluts.h; sourceTree = SOURCE_ROOT; };
 		F52211200136A4DD01000001 /* csdialogs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = csdialogs.h; path = ../Source_Files/CSeries/csdialogs.h; sourceTree = SOURCE_ROOT; };
 		F52211210136A4DD01000001 /* cseries.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = cseries.h; path = ../Source_Files/CSeries/cseries.h; sourceTree = SOURCE_ROOT; };
-		F52211220136A4DD01000001 /* csfiles.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = csfiles.h; path = ../Source_Files/CSeries/csfiles.h; sourceTree = SOURCE_ROOT; };
 		F52211230136A4DD01000001 /* csfonts.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = csfonts.h; path = ../Source_Files/CSeries/csfonts.h; sourceTree = SOURCE_ROOT; };
 		F52211250136A4DD01000001 /* csmacros.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = csmacros.h; path = ../Source_Files/CSeries/csmacros.h; sourceTree = SOURCE_ROOT; };
 		F52211260136A4DD01000001 /* csmisc.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = csmisc.h; path = ../Source_Files/CSeries/csmisc.h; sourceTree = SOURCE_ROOT; };
@@ -4684,7 +4676,6 @@
 				F522111F0136A4DD01000001 /* cscluts.h */,
 				F52211200136A4DD01000001 /* csdialogs.h */,
 				F52211210136A4DD01000001 /* cseries.h */,
-				F52211220136A4DD01000001 /* csfiles.h */,
 				F52211230136A4DD01000001 /* csfonts.h */,
 				F52211250136A4DD01000001 /* csmacros.h */,
 				F52211270136A4DD01000001 /* cspixels.h */,
@@ -5261,7 +5252,6 @@
 				27A6D4F51B9BF021003DA766 /* cscluts.h in Headers */,
 				27A6D4F61B9BF021003DA766 /* csdialogs.h in Headers */,
 				27A6D4F71B9BF021003DA766 /* cseries.h in Headers */,
-				27A6D4F81B9BF021003DA766 /* csfiles.h in Headers */,
 				27A6DAC71B9CE950003DA766 /* Scenario.h in Headers */,
 				27A6D4F91B9BF021003DA766 /* csfonts.h in Headers */,
 				27A6D4FA1B9BF021003DA766 /* csmacros.h in Headers */,
@@ -5485,7 +5475,6 @@
 				27A6D6D11B9BF029003DA766 /* cscluts.h in Headers */,
 				27A6D6D21B9BF029003DA766 /* csdialogs.h in Headers */,
 				27A6D6D31B9BF029003DA766 /* cseries.h in Headers */,
-				27A6D6D41B9BF029003DA766 /* csfiles.h in Headers */,
 				27A6DAC81B9CE950003DA766 /* Scenario.h in Headers */,
 				27A6D6D51B9BF029003DA766 /* csfonts.h in Headers */,
 				27A6D6D61B9BF029003DA766 /* csmacros.h in Headers */,
@@ -5709,7 +5698,6 @@
 				27A6D8AD1B9BF031003DA766 /* cscluts.h in Headers */,
 				27A6D8AE1B9BF031003DA766 /* csdialogs.h in Headers */,
 				27A6D8AF1B9BF031003DA766 /* cseries.h in Headers */,
-				27A6D8B01B9BF031003DA766 /* csfiles.h in Headers */,
 				27A6DAC91B9CE951003DA766 /* Scenario.h in Headers */,
 				27A6D8B11B9BF031003DA766 /* csfonts.h in Headers */,
 				27A6D8B21B9BF031003DA766 /* csmacros.h in Headers */,
@@ -5933,7 +5921,6 @@
 				AE505B54141D45E600915344 /* cscluts.h in Headers */,
 				AE505B55141D45E600915344 /* csdialogs.h in Headers */,
 				AE505B56141D45E600915344 /* cseries.h in Headers */,
-				AE505B57141D45E600915344 /* csfiles.h in Headers */,
 				27A6DAC51B9CE94F003DA766 /* Scenario.h in Headers */,
 				AE505B58141D45E600915344 /* csfonts.h in Headers */,
 				AE505B59141D45E600915344 /* csmacros.h in Headers */,
@@ -6157,7 +6144,6 @@
 				AEB4A0F414296CAE00537AE7 /* cscluts.h in Headers */,
 				AEB4A0F514296CAE00537AE7 /* csdialogs.h in Headers */,
 				AEB4A0F614296CAE00537AE7 /* cseries.h in Headers */,
-				AEB4A0F714296CAE00537AE7 /* csfiles.h in Headers */,
 				27A6DAC61B9CE94F003DA766 /* Scenario.h in Headers */,
 				AEB4A0F814296CAE00537AE7 /* csfonts.h in Headers */,
 				AEB4A0F914296CAE00537AE7 /* csmacros.h in Headers */,
@@ -6385,7 +6371,6 @@
 				276BED081A846FD900AE52F4 /* CourierPrime.h in Headers */,
 				AEC3C71D09AD68AC003258E4 /* csdialogs.h in Headers */,
 				AEC3C71E09AD68AC003258E4 /* cseries.h in Headers */,
-				AEC3C71F09AD68AC003258E4 /* csfiles.h in Headers */,
 				AEC3C72009AD68AC003258E4 /* csfonts.h in Headers */,
 				AEC3C72209AD68AC003258E4 /* csmacros.h in Headers */,
 				AEC3C72309AD68AC003258E4 /* csmisc.h in Headers */,
@@ -6605,7 +6590,6 @@
 				AEFD860213EB84CF00C1E687 /* cscluts.h in Headers */,
 				AEFD860313EB84CF00C1E687 /* csdialogs.h in Headers */,
 				AEFD860413EB84CF00C1E687 /* cseries.h in Headers */,
-				AEFD860513EB84CF00C1E687 /* csfiles.h in Headers */,
 				27A6DAC41B9CE94E003DA766 /* Scenario.h in Headers */,
 				AEFD860613EB84CF00C1E687 /* csfonts.h in Headers */,
 				AEFD860713EB84CF00C1E687 /* csmacros.h in Headers */,

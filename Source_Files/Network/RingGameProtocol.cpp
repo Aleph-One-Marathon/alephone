@@ -44,7 +44,6 @@
 // Optional features, disabled by default on Mac to preserve existing behavior (I hope ;) )
 #undef	NETWORK_ADAPTIVE_LATENCY_2	// use this one instead; it should be good.  no wait...
 #define NETWORK_ADAPTIVE_LATENCY_3	// there, this one ought to get it right, finally.
-#define	NETWORK_IP			// needed if using IPaddress { host, port }; (as in SDL_net) rather than NetAddrBlock for addressing.
 #undef	NETWORK_USE_RECENT_FLAGS	// if the game stalls, use flags at the end of the stall, not the more stale ones at the beginning
 #define	NETWORK_SMARTER_FLAG_DITCHING	// this mechanism won't be quite as hasty to toss flags as Bungie's
 
@@ -542,11 +541,6 @@ struct network_statistics {
 	uint32 action_flags_processed;
 } net_stats;
 
-#ifdef STREAM_NET
-static void open_stream_file(void);
-static void debug_stream_of_flags(int32 action_flag, short player_index);
-static void close_stream_file(void);
-#endif
 #endif
 
 
@@ -574,9 +568,6 @@ RingGameProtocol::Enter(short* inNetStatePtr)
 						status->single_player= false;
 #ifdef DEBUG_NET
 						obj_clear(net_stats);
-#ifdef STREAM_NET
-						open_stream_file();
-#endif
 #endif
 						success= true;
 					}
@@ -603,9 +594,6 @@ RingGameProtocol::Exit2()
 {
 #ifdef DEBUG_NET
 	NetPrintInfo();
-#ifdef STREAM_NET
-	close_stream_file();
-#endif
 #endif
 
 	free(status->buffer);
@@ -856,10 +844,7 @@ RingGameProtocol::DistributeInformation(
 	memcpy(distributionFrame->data + sizeof(NetPacketHeader_NET), &distribution_header_NET, sizeof(NetDistributionPacket_NET));
 	memcpy(distributionFrame->data + sizeof(NetPacketHeader_NET) + sizeof(NetDistributionPacket_NET) /*- 2*sizeof(byte)*/, buffer, buffer_size);
 
-	// LP: kludge to get it to compile
-#ifdef NETWORK_IP
 	NetDDPSendFrame(distributionFrame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
-#endif
 #endif // TEST_MODEM
 }
 
@@ -911,18 +896,9 @@ RingGameProtocol::PacketHandler(DDPPacketBufferPtr packet)
 					NetProcessLossyDistribution(packet->datagramData+sizeof(NetPacketHeader_NET));
 					break;
 				case tagACKNOWLEDGEMENT:
-#ifndef NETWORK_IP
-#ifdef CLASSIC_MAC_NETWORKING
-					if (/*packet->sourceAddress.aNet == status->upringAddress.aNet && */
-                                                sRingPreferences.mAcceptPacketsFromAnyone ||
-						(packet->sourceAddress.aNode == status->upringAddress.aNode &&
-       packet->sourceAddress.aSocket == status->upringAddress.aSocket))
-#endif
-#else
 if (sRingPreferences.mAcceptPacketsFromAnyone ||
     (packet->sourceAddress.host == status->upringAddress.host &&
      packet->sourceAddress.port == status->upringAddress.port))
-#endif
 {
 	if (header->sequence==status->lastValidRingSequence+1)
 	{
@@ -992,15 +968,7 @@ if (sRingPreferences.mAcceptPacketsFromAnyone ||
 break;
 
 case tagCHANGE_RING_PACKET:
-#ifndef NETWORK_IP
-#ifdef CLASSIC_MAC_NETWORKING
-	status->downringAddress.aNet= packet->sourceAddress.aNet;
-	status->downringAddress.aNode= packet->sourceAddress.aNode;
-	status->downringAddress.aSocket= packet->sourceAddress.aSocket;
-#endif
-#else
 	status->downringAddress = packet->sourceAddress;
-#endif
 
 #ifdef DEBUG_NET
 	net_stats.change_ring_packet_count++;
@@ -1012,21 +980,9 @@ case tagCHANGE_RING_PACKET:
 case tagRING_PACKET:
 	if(status->acceptRingPackets)
 	{
-#ifndef NETWORK_IP
-#ifdef CLASSIC_MAC_NETWORKING
-		if (/* packet->sourceAddress.aNet == status->downringAddress.aNet && */
-			sRingPreferences.mAcceptPacketsFromAnyone ||
-			(packet->sourceAddress.aNode == status->downringAddress.aNode &&
-    packet->sourceAddress.aSocket == status->downringAddress.aSocket))
-#else
-if (0)	// LP: kludge to get it to compile
-#endif
-#else
-// LP: kludge to get it to compile
 if (sRingPreferences.mAcceptPacketsFromAnyone ||
     (packet->sourceAddress.host == status->downringAddress.host &&
      packet->sourceAddress.port == status->downringAddress.port))
-#endif
 {
 	if (header->sequence <= status->lastValidRingSequence)
 	{
@@ -1576,9 +1532,7 @@ static void NetSendAcknowledgement(
         netcpy(header_NET, header);
 
 	/* send the acknowledgement */
-#ifdef NETWORK_IP
 	NetDDPSendFrame(frame, &status->downringAddress, kPROTOCOL_TYPE, ddpSocket);
-#endif
 }
 
 /* Only the server can call this... */
@@ -1775,9 +1729,7 @@ static bool NetCheckResendRingPacket(
 #endif
 			/* Resend it.. */
 			// LP: NetAddrBlock is the trouble here
-#ifdef NETWORK_IP
 			NetDDPSendFrame(ringFrame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
-#endif
 		}
 		else
 		{
@@ -2023,16 +1975,8 @@ static short NetAdjustUpringAddressUpwards(
 	for (nextPlayerIndex= 0; nextPlayerIndex<topology->player_count; nextPlayerIndex++)
 	{
 		address = &(topology->players[nextPlayerIndex].ddpAddress);
-#ifndef NETWORK_IP
-#ifdef CLASSIC_MAC_NETWORKING
-		if (address->aNet == status->upringAddress.aNet
-      && address->aNode == status->upringAddress.aNode
-      && address->aSocket == status->upringAddress.aSocket)
-#endif
-#else
 			if (address->host == status->upringAddress.host &&
        address->port == status->upringAddress.port)
-#endif
 			{
 				break;
 			}
@@ -2372,16 +2316,6 @@ static void process_flags(
 		{
 			process_action_flags(player_index, action_flags, player_flag_count);
 #ifdef DEBUG_NET
-#ifdef STREAM_NET
-			{
-				short ii;
-
-				for(ii= 0; ii<player_flag_count; ++ii)
-				{
-					debug_stream_of_flags(action_flags[ii], player_index);
-				}
-			}
-#endif
 			net_stats.action_flags_processed+= player_flag_count;
 #endif
 			/* Regardless of whether you process this player, you need to increment past */
@@ -2402,9 +2336,6 @@ static void process_flags(
 
 				process_action_flags(player_index, &flag, 1);
 #ifdef DEBUG_NET
-#ifdef STREAM_NET
-				debug_stream_of_flags(flag, player_index);
-#endif
 				net_stats.action_flags_processed+= 1;
 #endif
 			}
@@ -2412,110 +2343,6 @@ static void process_flags(
 	}
 }
 
-
-
-#ifdef DEBUG_NET
-#ifdef STREAM_NET
-#define MAXIMUM_STREAM_FLAGS (8192) // 48k
-
-struct recorded_flag {
-	int32 flag;
-	short player_index;
-};
-
-static short stream_refnum= NONE;
-static struct recorded_flag *action_flag_buffer= NULL;
-static int32 action_flag_index= 0;
-
-static void open_stream_file(
-			     void)
-{
-	FSSpec file;
-	char name[]= "\pStream";
-	OSErr error;
-
-	get_my_fsspec(&file);
-	memcpy(file.name, name, name[0]+1);
-
-	FSpDelete(&file);
-	error= FSpCreate(&file, 'ttxt', 'TEXT', smSystemScript);
-	if(error) fdprintf("Err:%d", error);
-	error= FSpOpenDF(&file, fsWrPerm, &stream_refnum);
-	if(error || stream_refnum==NONE) fdprintf("Open Err:%d", error);
-
-	action_flag_buffer= new recorded_flag[MAXIMUM_STREAM_FLAGS];
-	assert(action_flag_buffer);
-	action_flag_index= 0;
-}
-
-static void write_flags(
-			void)
-{
-	int32 index, size;
-	short player_index;
-	OSErr error;
-
-	sprintf(temporary, "%d Total Flags\n", action_flag_index-1);
-	size= strlen(temporary);
-	error= FSWrite(stream_refnum, &size, temporary);
-	if(error) fdprintf("Error: %d", error);
-
-	for(player_index= 0; player_index<topology->player_count; ++player_index)
-	{
-		int32 player_action_flag_count= 0;
-
-		for(index= 0; index<action_flag_index-1; ++index)
-		{
-			if(action_flag_buffer[index].player_index==player_index)
-			{
-				if(!(player_action_flag_count%TICKS_PER_SECOND))
-				{
-					sprintf(temporary, "%d 0x%08x (%d secs)\n", action_flag_buffer[index].player_index,
-	     action_flag_buffer[index].flag, player_action_flag_count/TICKS_PER_SECOND);
-				} else {
-					sprintf(temporary, "%d 0x%08x\n", action_flag_buffer[index].player_index,
-	     action_flag_buffer[index].flag);
-				}
-				size= strlen(temporary);
-				error= FSWrite(stream_refnum, &size, temporary);
-				if(error) fdprintf("Error: %d", error);
-				player_action_flag_count++;
-			}
-		}
-	}
-}
-
-static void debug_stream_of_flags(
-				  int32 action_flag,
-				  short player_index)
-{
-	if(stream_refnum != NONE)
-	{
-		assert(action_flag_buffer);
-		if(action_flag_index<MAXIMUM_STREAM_FLAGS)
-		{
-			action_flag_buffer[action_flag_index].player_index= player_index;
-			action_flag_buffer[action_flag_index++].flag= action_flag;
-		}
-	}
-}
-
-static void close_stream_file(
-			      void)
-{
-	if(stream_refnum != NONE)
-	{
-		assert(action_flag_buffer);
-
-		write_flags();
-		FSClose(stream_refnum);
-
-		delete []action_flag_buffer;
-		action_flag_buffer= NULL;
-	}
-}
-#endif
-#endif
 
 
 #ifdef DEBUG_NET_RECORD_PROFILE

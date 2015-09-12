@@ -58,7 +58,6 @@ using namespace std;
 
 #include <errno.h>
 #include <string>
-#define fnfErr ENOENT
 #ifndef NO_STD_NAMESPACE
 using std::string;
 using std::vector;
