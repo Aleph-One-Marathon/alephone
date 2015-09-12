@@ -10,7 +10,7 @@ endif
 
 libmisc_a_SOURCES = ActionQueues.h alephversion.h binders.h CircularByteBuffer.h \
   CircularQueue.h Console.h DefaultStringSets.h game_errors.h \
-  interface.h interface_menus.h key_definitions.h Logging.h Logging_gruntwork.h \
+  interface.h interface_menus.h key_definitions.h Logging.h \
   PlayerImage_sdl.h \
   PlayerName.h preference_dialogs.h preferences.h \
   preferences_widgets_sdl.h progress.h Random.h Scenario.h sdl_dialogs.h sdl_network.h \

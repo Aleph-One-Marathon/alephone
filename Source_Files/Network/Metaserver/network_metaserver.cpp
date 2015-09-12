@@ -62,12 +62,12 @@ static std::string remove_formatting(const std::string &s);
 void
 MetaserverClient::handleUnexpectedMessage(Message* inMessage, CommunicationsChannel* inChannel)
 {
-	logAnomaly1("Metaserver received message ID %i", inMessage->type());
+	logAnomaly("Metaserver received message ID %i", inMessage->type());
 	if(inMessage->type() == UninflatedMessage::kTypeID)
 	{
 		UninflatedMessage* theMessage = dynamic_cast<UninflatedMessage*>(inMessage);
 		if(theMessage != NULL)
-			logAnomaly2("-- internal ID %i, length %i", theMessage->inflatedType(), theMessage->length());
+			logAnomaly("-- internal ID %i, length %i", theMessage->inflatedType(), theMessage->length());
 	}
 }
 

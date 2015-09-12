@@ -111,12 +111,12 @@ bool LoadModel_Studio(FileSpecifier& Spec, Model3D& Model)
 	Model.Clear();
 	
 	Path = Spec.GetPath();
-	logNote1("Loading 3D Studio Max model file %s",Path);
+	logNote("Loading 3D Studio Max model file %s",Path);
 	
 	OpenedFile OFile;
 	if (!Spec.Open(OFile))
 	{	
-		logError1("ERROR opening %s",Path);
+		logError("ERROR opening %s",Path);
 		return false;
 	}
 	
@@ -124,7 +124,7 @@ bool LoadModel_Studio(FileSpecifier& Spec, Model3D& Model)
 	if (!ReadChunkHeader(OFile,ChunkHeader)) return false;
 	if (ChunkHeader.ID != MASTER)
 	{
-		logError1("ERROR: not a 3DS Max model file: %s",Path);
+		logError("ERROR: not a 3DS Max model file: %s",Path);
 		return false;
 	}
 	
@@ -132,12 +132,12 @@ bool LoadModel_Studio(FileSpecifier& Spec, Model3D& Model)
 	
 	if (Model.Positions.empty())
 	{
-		logError1("ERROR: no vertices found in %s",Path);
+		logError("ERROR: no vertices found in %s",Path);
 		return false;
 	}
 	if (Model.VertIndices.empty())
 	{
-		logError1("ERROR: no faces found in %s",Path);
+		logError("ERROR: no faces found in %s",Path);
 		return false;
 	}
 	return true;
@@ -148,7 +148,7 @@ bool ReadChunkHeader(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 	uint8 Buffer[SIZEOF_ChunkHeaderData];
 	if (!OFile.Read(SIZEOF_ChunkHeaderData,Buffer))
 	{
-		logError1("ERROR reading chunk header in %s",Path);
+		logError("ERROR reading chunk header in %s",Path);
 		return false;
 	}
 	uint8 *S = Buffer;
@@ -159,12 +159,12 @@ bool ReadChunkHeader(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 
 bool LoadChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 {
-	logTrace2("Loading chunk 0x%04hx size %u",ChunkHeader.ID,ChunkHeader.Size);
+	logTrace("Loading chunk 0x%04hx size %u",ChunkHeader.ID,ChunkHeader.Size);
 	int32 DataSize = ChunkHeader.Size - SIZEOF_ChunkHeaderData;
 	SetChunkBufferSize(DataSize);
 	if (!OFile.Read(DataSize,ChunkBufferBase()))
 	{
-		logError1("ERROR reading chunk contents in %s",Path);
+		logError("ERROR reading chunk contents in %s",Path);
 		return false;
 	}
 	
@@ -173,7 +173,7 @@ bool LoadChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 
 bool SkipChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 {
-	logTrace2("Skipping chunk 0x%04hx size %u",ChunkHeader.ID,ChunkHeader.Size);
+	logTrace("Skipping chunk 0x%04hx size %u",ChunkHeader.ID,ChunkHeader.Size);
 	int32 DataSize = ChunkHeader.Size - SIZEOF_ChunkHeaderData;
 	
 	int32 Location = 0;
@@ -186,7 +186,7 @@ bool SkipChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 bool ReadContainer(OpenedFile& OFile, ChunkHeaderData& ChunkHeader,
 	bool (*ContainerCallback)(OpenedFile&,int32))
 {
-	logTrace2("Entering chunk 0x%04hx size %u",ChunkHeader.ID,ChunkHeader.Size);
+	logTrace("Entering chunk 0x%04hx size %u",ChunkHeader.ID,ChunkHeader.Size);
 	
 	int32 ChunkEnd = 0;
 	OFile.GetPosition(ChunkEnd);
@@ -194,7 +194,7 @@ bool ReadContainer(OpenedFile& OFile, ChunkHeaderData& ChunkHeader,
 	
 	if (!ContainerCallback(OFile,ChunkEnd)) return false;
 	
-	logTrace2("Exiting chunk 0x%04hx size %u",ChunkHeader.ID,ChunkHeader.Size);
+	logTrace("Exiting chunk 0x%04hx size %u",ChunkHeader.ID,ChunkHeader.Size);
 	return true;
 }
 
@@ -226,7 +226,7 @@ static bool ReadMaster(OpenedFile& OFile, int32 ParentChunkEnd)
 	
 	if (Location > ParentChunkEnd)
 	{
-		logError3("ERROR: Overran parent chunk: %d > %d in %s",Location,ParentChunkEnd,Path);
+		logError("ERROR: Overran parent chunk: %d > %d in %s",Location,ParentChunkEnd,Path);
 		return false;
 	}
 	return true;
@@ -259,7 +259,7 @@ static bool ReadEditor(OpenedFile& OFile, int32 ParentChunkEnd)
 	
 	if (Location > ParentChunkEnd)
 	{
-		logError3("ERROR: Overran parent chunk: %d > %d in %s",Location,ParentChunkEnd,Path);
+		logError("ERROR: Overran parent chunk: %d > %d in %s",Location,ParentChunkEnd,Path);
 		return false;
 	}
 	return true;
@@ -274,7 +274,7 @@ static bool ReadObject(OpenedFile& OFile, int32 ParentChunkEnd)
 	{
 		if (!OFile.Read(1,&c))
 		{
-			logError1("ERROR when reading name in %s",Path);
+			logError("ERROR when reading name in %s",Path);
 			return false;
 		}
 	}
@@ -304,7 +304,7 @@ static bool ReadObject(OpenedFile& OFile, int32 ParentChunkEnd)
 	
 	if (Location > ParentChunkEnd)
 	{
-		logError3("ERROR: Overran parent chunk: %d > %d in %s",Location,ParentChunkEnd,Path);
+		logError("ERROR: Overran parent chunk: %d > %d in %s",Location,ParentChunkEnd,Path);
 		return false;
 	}
 	return true;
@@ -349,7 +349,7 @@ static bool ReadTrimesh(OpenedFile& OFile, int32 ParentChunkEnd)
 	
 	if (Location > ParentChunkEnd)
 	{
-		logError3("ERROR: Overran parent chunk: %d > %d in %s",Location,ParentChunkEnd,Path);
+		logError("ERROR: Overran parent chunk: %d > %d in %s",Location,ParentChunkEnd,Path);
 		return false;
 	}
 	return true;
@@ -363,7 +363,7 @@ static bool ReadFaceData(OpenedFile& OFile, int32 ParentChunkEnd)
 	uint16 NumFaces;
 	if (!OFile.Read(2,NFBuffer))
 	{
-		logError1("ERROR reading number of faces in %s",Path);
+		logError("ERROR reading number of faces in %s",Path);
 		return false;
 	}
 	uint8 *S = NFBuffer;
@@ -373,7 +373,7 @@ static bool ReadFaceData(OpenedFile& OFile, int32 ParentChunkEnd)
 	SetChunkBufferSize(DataSize);
 	if (!OFile.Read(DataSize,ChunkBufferBase()))
 	{
-		logError1("ERROR reading face-chunk contents in %s",Path);
+		logError("ERROR reading face-chunk contents in %s",Path);
 		return false;
 	}
 	
@@ -412,7 +412,7 @@ static bool ReadFaceData(OpenedFile& OFile, int32 ParentChunkEnd)
 	
 	if (Location > ParentChunkEnd)
 	{
-		logError3("ERROR: Overran parent chunk: %d > %d in %s",Location,ParentChunkEnd,Path);
+		logError("ERROR: Overran parent chunk: %d > %d in %s",Location,ParentChunkEnd,Path);
 		return false;
 	}
 	return true;

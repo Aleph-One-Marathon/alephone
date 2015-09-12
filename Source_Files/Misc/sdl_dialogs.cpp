@@ -592,13 +592,13 @@ static bool parse_theme_file(FileSpecifier& theme_mml)
 		
 		success = true;
 	} catch (InfoTree::parse_error e) {
-		logError2("error parsing %s: %s", theme_mml.GetPath(), e.what());
+		logError("error parsing %s: %s", theme_mml.GetPath(), e.what());
 	} catch (InfoTree::path_error e) {
-		logError2("error parsing %s: %s", theme_mml.GetPath(), e.what());
+		logError("error parsing %s: %s", theme_mml.GetPath(), e.what());
 	} catch (InfoTree::data_error e) {
-		logError2("error parsing %s: %s", theme_mml.GetPath(), e.what());
+		logError("error parsing %s: %s", theme_mml.GetPath(), e.what());
 	} catch (InfoTree::unexpected_error e) {
-		logError2("error parsing %s: %s", theme_mml.GetPath(), e.what());
+		logError("error parsing %s: %s", theme_mml.GetPath(), e.what());
 	}
 	return success;
 }

@@ -108,7 +108,7 @@ bool
 take_mytm_mutex() {
     bool success = (SDL_LockMutex(sTMTaskMutex) != -1);
     if(!success)
-        logAnomaly1("take_mytm_mutex(): SDL_LockMutex() failed: %s", SDL_GetError());
+        logAnomaly("take_mytm_mutex(): SDL_LockMutex() failed: %s", SDL_GetError());
     return success;
 }
 
@@ -118,7 +118,7 @@ bool
 release_mytm_mutex() {
     bool success = (SDL_UnlockMutex(sTMTaskMutex) != -1);
     if(!success)
-        logAnomaly1("release_mytm_mutex(): SDL_UnlockMutex() failed: %s", SDL_GetError());
+        logAnomaly("release_mytm_mutex(): SDL_UnlockMutex() failed: %s", SDL_GetError());
     return success;
 }
 
@@ -322,13 +322,13 @@ myTMReset(myTMTaskPtr task) {
 
 #ifdef DEBUG
 // ZZZ addition (to myTM interface): dump profiling data
-#define DUMPIT_ZU(structure,field_name) logDump1("" #field_name ":\t%u", (structure).field_name)
-#define DUMPIT_ZS(structure,field_name) logDump1("" #field_name ":\t%d", (structure).field_name)
+#define DUMPIT_ZU(structure,field_name) logDump("" #field_name ":\t%u", (structure).field_name)
+#define DUMPIT_ZS(structure,field_name) logDump("" #field_name ":\t%d", (structure).field_name)
 
 void
 myTMDumpProfile(myTMTask* inTask) {
     if(inTask != NULL) {
-        logDump2("PROFILE FOR SDL TMTASK %p (function %p)", inTask, inTask->mFunction);
+        logDump("PROFILE FOR SDL TMTASK %p (function %p)", inTask, inTask->mFunction);
         DUMPIT_ZU((*inTask), mPeriod);
         DUMPIT_ZU(inTask->mProfilingData, mStartTime);
         DUMPIT_ZU(inTask->mProfilingData, mFinishTime);

@@ -2002,7 +2002,7 @@ update_adaptive_latency(int measurement, int tick) {
 
         if(sCurrentAdaptiveLatency != theNewAdaptiveLatency)
         {
-                logDump2("tick %d: setting adaptive latency to %d", tick, theNewAdaptiveLatency);
+                logDump("tick %d: setting adaptive latency to %d", tick, theNewAdaptiveLatency);
                 sCurrentAdaptiveLatency = theNewAdaptiveLatency;
         }
 }

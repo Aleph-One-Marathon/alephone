@@ -117,7 +117,7 @@ ActionQueues::enqueueActionFlags(
 		queue->buffer[queue->write_index]= *action_flags++;
 		queue->write_index= (queue->write_index+1) % mQueueSize;
 		if (queue->write_index==queue->read_index)
-			logError1("blew player %d's queue", player_index);
+			logError("blew player %d's queue", player_index);
 	}
 	
 	return;
@@ -144,7 +144,7 @@ ActionQueues::dequeueActionFlags(
 	{
 		// None to be read
 		action_flags= 0;
-		logError1("dequeueing empty ActionQueue for player %d", player_index);
+		logError("dequeueing empty ActionQueue for player %d", player_index);
 	}
 	else
 	{
@@ -176,7 +176,7 @@ ActionQueues::peekActionFlags(int inPlayerIndex, size_t inElementsFromHead)
 	{
 		// None to be read
 		action_flags= 0;
-		logError3("peeking too far ahead (%d/%d) in ActionQueue for player %d", inElementsFromHead, countActionFlags(inPlayerIndex), inPlayerIndex);
+		logError("peeking too far ahead (%d/%d) in ActionQueue for player %d", inElementsFromHead, countActionFlags(inPlayerIndex), inPlayerIndex);
 	}
 	else
 	{

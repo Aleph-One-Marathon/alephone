@@ -323,7 +323,7 @@ void WadImageCache::initialize_cache()
 	try {
 		pt = InfoTree::load_ini(info);
 	} catch (InfoTree::ini_error e) {
-		logError2("Could not read image cache from %s (%s)", info.GetPath(), e.what());
+		logError("Could not read image cache from %s (%s)", info.GetPath(), e.what());
 	}
 	
 	for (InfoTree::iterator it = pt.begin(); it != pt.end(); ++it)
@@ -384,7 +384,7 @@ void WadImageCache::save_cache()
 		pt.save_ini(info);
 		m_cache_dirty = false;
 	} catch (InfoTree::ini_error e) {
-		logError2("Could not save image cache to %s (%s)", info.GetPath(), e.what());
+		logError("Could not save image cache to %s (%s)", info.GetPath(), e.what());
 		return;
 	}
 }

@@ -147,7 +147,7 @@ template<class T> void PacketCopyOutList(unsigned char* &Ptr, T *List, int Count
 // the ServiceInstance it passed us (but NOT any we return - that one's ours :) )
 static struct SSLP_ServiceInstance*
 SSLPint_FoundAnInstance(struct SSLP_ServiceInstance* inInstance) {
-    logTrace4("Found an instance!  %s, %s, %x:%d", inInstance->sslps_type, inInstance->sslps_name,
+    logTrace("Found an instance!  %s, %s, %x:%d", inInstance->sslps_type, inInstance->sslps_name,
             SDL_SwapBE32(inInstance->sslps_address.host), SDL_SwapBE16(inInstance->sslps_address.port));
     // this should (but doesn't) force string termination to appropriate lengths for type and name.
     
@@ -235,7 +235,7 @@ SSLPint_RemoveTimedOutInstances() {
 // they passed us.
 static struct SSLP_ServiceInstance*
 SSLPint_LostAnInstance(struct SSLP_ServiceInstance* inInstance) {
-    logTrace4("Lost an instance...  %s, %s, %x:%d\n", inInstance->sslps_type, inInstance->sslps_name,
+    logTrace("Lost an instance...  %s, %s, %x:%d\n", inInstance->sslps_type, inInstance->sslps_name,
             SDL_SwapBE32(inInstance->sslps_address.host), SDL_SwapBE16(inInstance->sslps_address.port));
     // this should (but doesn't) force string termination to appropriate lengths for type and name.
 
@@ -300,7 +300,7 @@ SSLPint_ReceivedPacket() {
     }
     
     if(sReceivingPacket->len != SIZEOF_SSLP_Packet) {
-        logNote1("packet has wrong len (%d)", sReceivingPacket->len);
+        logNote("packet has wrong len (%d)", sReceivingPacket->len);
         return;
     }
     
@@ -309,12 +309,12 @@ SSLPint_ReceivedPacket() {
     UnpackPacket(sReceivingPacket->data,theReceivedPacket);
     
     if(theReceivedPacket->sslpp_magic != SDL_SwapBE32(SSLPP_MAGIC)) {
-        logNote1("wrong magic (%x)", SDL_SwapBE32(theReceivedPacket->sslpp_magic));
+        logNote("wrong magic (%x)", SDL_SwapBE32(theReceivedPacket->sslpp_magic));
         return;
     }
     
     if(theReceivedPacket->sslpp_version != SDL_SwapBE32(SSLPP_VERSION)) {
-        logNote1("packet has wrong version (%d)", SDL_SwapBE32(theReceivedPacket->sslpp_version));
+        logNote("packet has wrong version (%d)", SDL_SwapBE32(theReceivedPacket->sslpp_version));
         return;
     }
     
@@ -345,7 +345,7 @@ SSLPint_ReceivedPacket() {
                 }
                 else
                 {
-                    logNote2("type mismatch (%s != %s)", theReceivedPacket->sslpp_service_type, theResponsePacket->sslpp_service_type);
+                    logNote("type mismatch (%s != %s)", theReceivedPacket->sslpp_service_type, theResponsePacket->sslpp_service_type);
                     // note: this printf does not clamp string at 32 chars (i.e. max length in packet)
                 }
             }
@@ -393,7 +393,7 @@ SSLPint_ReceivedPacket() {
                         logTrace("service already known");
                 }
                 else
-                    logNote2("wrong service type (%s != %s)", theReceivedPacket->sslpp_service_type, theFindPacket->sslpp_service_type);
+                    logNote("wrong service type (%s != %s)", theReceivedPacket->sslpp_service_type, theFindPacket->sslpp_service_type);
                     // note we don't stop the string at SSLP_MAX_NAME_LENGTH as we should.
             }
             else
@@ -444,7 +444,7 @@ SSLPint_ReceivedPacket() {
         }
     break;
     default:
-        logNote1("unknown SSLP message type (%x)", SDL_SwapBE32(theReceivedPacket->sslpp_message));
+        logNote("unknown SSLP message type (%x)", SDL_SwapBE32(theReceivedPacket->sslpp_message));
 
         return;
     break;

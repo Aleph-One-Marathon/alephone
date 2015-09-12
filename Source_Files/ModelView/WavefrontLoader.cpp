@@ -122,12 +122,12 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	vector<short> VertIndxSets;
 	
 	Path = Spec.GetPath();
-	logNote1("Loading Alias|Wavefront model file %s",Path);
+	logNote("Loading Alias|Wavefront model file %s",Path);
 	
 	OpenedFile OFile;
 	if (!Spec.Open(OFile))
 	{	
-		logError1("ERROR opening %s",Path);
+		logError("ERROR opening %s",Path);
 		return false;
 	}
 
@@ -389,7 +389,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	
 	if (PolygonSizes.size() <= 0)
 	{
-		logError1("ERROR: the model in %s has no polygons",Path);
+		logError("ERROR: the model in %s has no polygons",Path);
 		return false;
 	}
 		
@@ -399,7 +399,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		short PSize = PolygonSizes[k];
 		if (PSize < 3)
 		{
-			logWarning3("WARNING: polygon ignored; it had bad size %u: %d in %s",k,PSize,Path);
+			logWarning("WARNING: polygon ignored; it had bad size %u: %d in %s",k,PSize,Path);
 		}
 	}
 	
@@ -413,7 +413,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		WhatsPresent &= Presence;
 		if (!(Presence & Present_Position))
 		{
-			logError2("ERROR: Vertex has no position index: %u in %s",k,Path);
+			logError("ERROR: Vertex has no position index: %u in %s",k,Path);
 		}
 	}
 	
@@ -426,7 +426,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		short PosIndx = VertIndxSets[4*k+1];
 		if (PosIndx < 0 || PosIndx >= int(Positions.size()))
 		{
-			logError4("ERROR: Out of range vertex position: %u: %d (0,%lu) in %s",k,PosIndx,(unsigned long)Positions.size()-1,Path);
+			logError("ERROR: Out of range vertex position: %u: %d (0,%lu) in %s",k,PosIndx,(unsigned long)Positions.size()-1,Path);
 			AllInRange = false;
 		}
 		
@@ -435,7 +435,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 			short TCIndx = VertIndxSets[4*k+2];
 			if (TCIndx < 0 || TCIndx >= int(TxtrCoords.size()))
 			{
-				logError4("ERROR: Out of range vertex position: %u: %d (0,%lu) in %s",k,TCIndx,(unsigned long)(TxtrCoords.size()-1),Path);
+				logError("ERROR: Out of range vertex position: %u: %d (0,%lu) in %s",k,TCIndx,(unsigned long)(TxtrCoords.size()-1),Path);
 				AllInRange = false;
 			}
 		}
@@ -447,7 +447,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 			short NormIndx = VertIndxSets[4*k+3];
 			if (NormIndx < 0 || NormIndx >= int(Normals.size()))
 			{
-				logError4("ERROR: Out of range vertex position: %u: %d (0,%lu) in %s",k,NormIndx,(unsigned long)(Normals.size()-1),Path);
+				logError("ERROR: Out of range vertex position: %u: %d (0,%lu) in %s",k,NormIndx,(unsigned long)(Normals.size()-1),Path);
 				AllInRange = false;
 			}
 		}
@@ -545,7 +545,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	
 	if (Model.VertIndices.size() <= 0)
 	{
-		logError1("ERROR: the model in %s has no good polygons",Path);
+		logError("ERROR: the model in %s has no good polygons",Path);
 		return false;
 	}
 	

@@ -107,7 +107,7 @@ bool SoundHeader::UnpackExtendedSystem7Header(BIStreamBE &header)
 
 		if ((loop_end - loop_start >= 4) && ((loop_start % bytes_per_frame) || (loop_end % bytes_per_frame)))
 		{
-			logWarning3("loop_start=%i and loop_end=%i but bytes_per_frame=%i; interpreting as frame offsets", loop_start, loop_end, bytes_per_frame);
+			logWarning("loop_start=%i and loop_end=%i but bytes_per_frame=%i; interpreting as frame offsets", loop_start, loop_end, bytes_per_frame);
 			loop_start *= bytes_per_frame;
 			loop_end *= bytes_per_frame;
 		}

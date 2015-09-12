@@ -186,7 +186,7 @@ bool res_file_t::read_map(void)
             if(file_size == 0)
                 logNote("file has zero length");
             else
-                logAnomaly1("file too small (%d bytes) to be valid", file_size);
+                logAnomaly("file too small (%d bytes) to be valid", file_size);
             return false;
         }
 
@@ -210,7 +210,7 @@ bool res_file_t::read_map(void)
 	uint32 map_offset = SDL_ReadBE32(f) + fork_start;
 	uint32 data_size = SDL_ReadBE32(f);
 	uint32 map_size = SDL_ReadBE32(f);
-        logDump4("resource header: data offset %d, map_offset %d, data_size %d, map_size %d", data_offset, map_offset, data_size, map_size);
+        logDump("resource header: data offset %d, map_offset %d, data_size %d, map_size %d", data_offset, map_offset, data_size, map_size);
 
 	// Verify integrity of resource header
 	if (data_offset >= file_size || map_offset >= file_size ||
@@ -296,7 +296,7 @@ open_res_file_from_rwops(SDL_RWops* f) {
                     
                     // ZZZ: this exists mostly to help the user understand (via logContexts) which of
                     // potentially several copies of a resource fork is actually being used.
-                    logNote1("success, using this resource data (file is %p)", f);
+                    logNote("success, using this resource data (file is %p)", f);
 
             } else {
 
@@ -318,7 +318,7 @@ open_res_file_from_path(const char* inPath)
 
 SDL_RWops *open_res_file(FileSpecifier &file)
 {
-    logContext1("opening resource file %s", file.GetPath());
+    logContext("opening resource file %s", file.GetPath());
 /*
     string theContextString("trying to open resource file ");
     theContextString += file.GetPath();

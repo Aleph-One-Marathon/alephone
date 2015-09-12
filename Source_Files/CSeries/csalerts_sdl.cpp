@@ -204,9 +204,9 @@ void alert_user(short severity, short resid, short item, OSErr error)
   char msg[300];
   sprintf(msg, "%s (error %d)", str, error);
   if (severity == infoError) {
-    logError2("alert (ID=%hd): %s", error, str);
+    logError("alert (ID=%hd): %s", error, str);
   } else if (severity == fatalError) {
-    logFatal2("fatal alert (ID=%hd): %s", error, str);
+    logFatal("fatal alert (ID=%hd): %s", error, str);
   }
   alert_user(msg, severity);
 }
@@ -242,7 +242,7 @@ void pause_debug(void)
 
 void vpause(const char *message)
 {
-        logWarning1("vpause: %s", message);
+        logWarning("vpause: %s", message);
 	fprintf(stderr, "vpause %s\n", message);
 }
 
@@ -269,7 +269,7 @@ extern void shutdown_application();
 void vhalt(const char *message)
 {
 	stop_recording();
-        logFatal1("vhalt: %s", message);
+        logFatal("vhalt: %s", message);
 	GetCurrentLogger()->flush();
 	shutdown_application();
 	system_alert_user(message, fatalError);

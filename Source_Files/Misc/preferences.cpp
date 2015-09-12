@@ -2449,11 +2449,11 @@ void read_preferences ()
 			std::string version = "";
 			root.read_attr("version", version);
 			if (!version.length())
-				logWarning2("Reading older preferences of unknown version. Preferences will be upgraded to version %s when saved. (%s)", A1_DATE_VERSION, FileSpec.GetPath());
+				logWarning("Reading older preferences of unknown version. Preferences will be upgraded to version %s when saved. (%s)", A1_DATE_VERSION, FileSpec.GetPath());
 			else if (version < A1_DATE_VERSION)
-				logWarning3("Reading older preferences of version %s. Preferences will be upgraded to version %s when saved. (%s)", version.c_str(), A1_DATE_VERSION, FileSpec.GetPath());
+				logWarning("Reading older preferences of version %s. Preferences will be upgraded to version %s when saved. (%s)", version.c_str(), A1_DATE_VERSION, FileSpec.GetPath());
 			else if (version > A1_DATE_VERSION)
-				logWarning3("Reading newer preferences of version %s. Preferences will be downgraded to version %s when saved. (%s)", version.c_str(), A1_DATE_VERSION, FileSpec.GetPath());
+				logWarning("Reading newer preferences of version %s. Preferences will be downgraded to version %s when saved. (%s)", version.c_str(), A1_DATE_VERSION, FileSpec.GetPath());
 			
 			BOOST_FOREACH(InfoTree child, root.children_named("graphics"))
 				parse_graphics_preferences(child, version);
@@ -2471,16 +2471,16 @@ void read_preferences ()
 				parse_environment_preferences(child, version);
 			
 		} catch (InfoTree::parse_error ex) {
-			logError2("Error parsing preferences file (%s): %s", FileSpec.GetPath(), ex.what());
+			logError("Error parsing preferences file (%s): %s", FileSpec.GetPath(), ex.what());
 			parse_error = true;
 		} catch (InfoTree::path_error ep) {
-			logError2("Could not find mara_prefs in preferences file (%s): %s", FileSpec.GetPath(), ep.what());
+			logError("Could not find mara_prefs in preferences file (%s): %s", FileSpec.GetPath(), ep.what());
 			parse_error = true;
 		} catch (InfoTree::data_error ed) {
-			logError2("Unexpected data error in preferences file (%s): %s", FileSpec.GetPath(), ed.what());
+			logError("Unexpected data error in preferences file (%s): %s", FileSpec.GetPath(), ed.what());
 			parse_error = true;
 		} catch (InfoTree::unexpected_error ee) {
-			logError2("Unexpected error in preferences file (%s): %s", FileSpec.GetPath(), ee.what());
+			logError("Unexpected error in preferences file (%s): %s", FileSpec.GetPath(), ee.what());
 			parse_error = true;
 		}
 	}
@@ -2781,9 +2781,9 @@ void write_preferences()
 	try {
 		fileroot.save_xml(FileSpec);
 	} catch (InfoTree::parse_error ex) {
-		logError2("Error saving preferences file (%s): %s", FileSpec.GetPath(), ex.what());
+		logError("Error saving preferences file (%s): %s", FileSpec.GetPath(), ex.what());
 	} catch (InfoTree::unexpected_error ex) {
-		logError2("Error saving preferences file (%s): %s", FileSpec.GetPath(), ex.what());
+		logError("Error saving preferences file (%s): %s", FileSpec.GetPath(), ex.what());
 	}
 }
 

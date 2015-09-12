@@ -699,7 +699,7 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
 				else
 				{
 					// Unconnected players should not have entries in sAddressToPlayerIndex
-					logWarningNMT1("received game data packet from disconnected player %i; ignoring", theSenderIndex);
+					logWarningNMT("received game data packet from disconnected player %i; ignoring", theSenderIndex);
 				}
 			}
 			break;
@@ -812,7 +812,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
         // If ack is too soon we throw out the entire packet to be safer
         if(theSmallestUnacknowledgedTick > sSmallestIncompleteTick)
         {
-                logAnomalyNMT3("received ack from player %d for tick %d; have only sent up to %d", inSenderIndex, theSmallestUnacknowledgedTick, sSmallestIncompleteTick);
+                logAnomalyNMT("received ack from player %d for tick %d; have only sent up to %d", inSenderIndex, theSmallestUnacknowledgedTick, sSmallestIncompleteTick);
                 return;
         }                
 
@@ -900,7 +900,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 	{
 		int32 theReferenceTick = theReferencePlayer.mSmallestUnheardTick;
 		int32 theArrivalOffset = thePlayer.mSmallestUnheardTick - theReferenceTick;
-		logDumpNMT2("player %d's arrivalOffset is %d", inSenderIndex, theArrivalOffset);
+		logDumpNMT("player %d's arrivalOffset is %d", inSenderIndex, theArrivalOffset);
 		thePlayer.mNthElementFinder.insert(theArrivalOffset);
 		thePlayer.mSmallestUnheardTick++;
 	}
@@ -916,7 +916,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 		if(thePlayer.mOutstandingTimingAdjustment != 0)
 		{
 			thePlayer.mTimingAdjustmentTick = sSmallestIncompleteTick;
-			logTraceNMT3("tick %d: asking player %d to adjust timing by %d", sSmallestIncompleteTick, inSenderIndex, thePlayer.mOutstandingTimingAdjustment);
+			logTraceNMT("tick %d: asking player %d to adjust timing by %d", sSmallestIncompleteTick, inSenderIndex, thePlayer.mOutstandingTimingAdjustment);
 
 #ifdef DEBUG_TIMING_ADJUSTMENTS
 			if (debug_timing_adjustments && thePlayer.mSmallestUnheardTick >= sSmallestRealGameTick)
@@ -983,7 +983,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 static void
 player_acknowledged_up_to_tick(size_t inPlayerIndex, int32 inSmallestUnacknowledgedTick)
 {
-	logTraceNMT2("player_acknowledged_up_to_tick(%d, %d)", inPlayerIndex, inSmallestUnacknowledgedTick);
+	logTraceNMT("player_acknowledged_up_to_tick(%d, %d)", inPlayerIndex, inSmallestUnacknowledgedTick);
 	
         NetworkPlayer_hub& thePlayer = getNetworkPlayer(inPlayerIndex);
 
@@ -997,7 +997,7 @@ player_acknowledged_up_to_tick(size_t inPlayerIndex, int32 inSmallestUnacknowled
         // Mark us ACKed for each intermediate tick
         for(int theTick = thePlayer.mSmallestUnacknowledgedTick; theTick < inSmallestUnacknowledgedTick; theTick++)
         {
-		logDumpNMT2("tick %d: sPlayerDataDisposition=%d", theTick, sPlayerDataDisposition[theTick]);
+		logDumpNMT("tick %d: sPlayerDataDisposition=%d", theTick, sPlayerDataDisposition[theTick]);
 		
                 assert(sPlayerDataDisposition[theTick] & (((uint32)1) << inPlayerIndex));
                 sPlayerDataDisposition[theTick] &= ~(((uint32)1) << inPlayerIndex);
@@ -1074,7 +1074,7 @@ static bool make_up_flags_for_first_incomplete_tick()
 			return false;
 	}
 
-	logTraceNMT1("making up flags for tick %i", sSmallestIncompleteTick);
+	logTraceNMT("making up flags for tick %i", sSmallestIncompleteTick);
 
 	for (int i = 0; i < sNetworkPlayers.size(); i++)
 	{
@@ -1118,7 +1118,7 @@ static bool make_up_flags_for_first_incomplete_tick()
 static bool
 player_provided_flags_from_tick_to_tick(size_t inPlayerIndex, int32 inFirstNewTick, int32 inSmallestUnreceivedTick)
 {
-	logTraceNMT3("player_provided_flags_from_tick_to_tick(%d, %d, %d)", inPlayerIndex, inFirstNewTick, inSmallestUnreceivedTick);
+	logTraceNMT("player_provided_flags_from_tick_to_tick(%d, %d, %d)", inPlayerIndex, inFirstNewTick, inSmallestUnreceivedTick);
 	
         bool shouldSend = false;
 
@@ -1126,14 +1126,14 @@ player_provided_flags_from_tick_to_tick(size_t inPlayerIndex, int32 inFirstNewTi
 
         for(int i = sPlayerDataDisposition.getWriteTick(); i < inSmallestUnreceivedTick; i++)
         {
-		logDumpNMT2("tick %d: enqueueing sPlayerDataDisposition %d", i, sConnectedPlayersBitmask);
+		logDumpNMT("tick %d: enqueueing sPlayerDataDisposition %d", i, sConnectedPlayersBitmask);
                 sPlayerDataDisposition.enqueue(sConnectedPlayersBitmask);
 		sPlayerReflectedFlags.enqueue(0);
         }
 
         for(int i = inFirstNewTick; i < inSmallestUnreceivedTick; i++)
         {
-		logDumpNMT2("tick %d: sPlayerDataDisposition=%d", i, sPlayerDataDisposition[i]);
+		logDumpNMT("tick %d: sPlayerDataDisposition=%d", i, sPlayerDataDisposition[i]);
 		
                 assert(sPlayerDataDisposition[i] & (((uint32)1) << inPlayerIndex));
                 sPlayerDataDisposition[i] &= ~(((uint32)1) << inPlayerIndex);
@@ -1201,20 +1201,20 @@ process_lossy_byte_stream_message(AIStream& ps, int inSenderIndex, uint16 inLeng
 	theDescriptor.mLength = inLength - (ps.tellg() - theHeaderStreamPosition);
 	theDescriptor.mSender = inSenderIndex;
 
-	logDumpNMT4("got %d bytes of lossy stream type %d from player %d for destinations 0x%x", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
+	logDumpNMT("got %d bytes of lossy stream type %d from player %d for destinations 0x%x", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
 
 	bool canEnqueue = true;
 	
 	if(sOutgoingLossyByteStreamDescriptors.getRemainingSpace() < 1)
 	{
-		logNoteNMT4("no descriptor space remains; discarding (%uh) bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%lx", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
+		logNoteNMT("no descriptor space remains; discarding (%uh) bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%lx", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
 		canEnqueue = false;
 	}
 
 	// We avoid enqueueing a partial chunk to make things easier on code that uses us
 	if(theDescriptor.mLength > sOutgoingLossyByteStreamData.getRemainingSpace())
 	{
-		logNoteNMT4("insufficient buffer space for %uh bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%lx; discarded", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
+		logNoteNMT("insufficient buffer space for %uh bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%lx; discarded", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
 		canEnqueue = false;
 	}
 
@@ -1264,7 +1264,7 @@ process_optional_message(AIStream& ps, int inSenderIndex, uint16 inMessageType)
 static void
 make_player_netdead(int inPlayerIndex)
 {
-	logContextNMT1("making player %d netdead", inPlayerIndex);
+	logContextNMT("making player %d netdead", inPlayerIndex);
 	
         NetworkPlayer_hub& thePlayer = getNetworkPlayer(inPlayerIndex);
 
@@ -1296,7 +1296,7 @@ hub_tick()
 {
         sNetworkTicker++;
 
-	logContextNMT1("performing hub_tick %d", sNetworkTicker);
+	logContextNMT("performing hub_tick %d", sNetworkTicker);
 
         // Check for newly netdead players
         bool shouldSend = false;
@@ -1311,7 +1311,7 @@ hub_tick()
 		// if this guy's last ACK was longer ago than the queues have space to store things, I guess dump him
 		else if (i != sLocalPlayerIndex && sNetworkPlayers[i].mConnected && sNetworkPlayers[i].mSmallestUnacknowledgedTick >= sSmallestRealGameTick && (sNetworkPlayers[sReferencePlayerIndex].mSmallestUnacknowledgedTick - sNetworkPlayers[i].mSmallestUnacknowledgedTick) >= kFlagsQueueSize) {
 			{
-				logWarningNMT3("Disconnecting player %i for late ACKs (last ACK %i, reference ACK %i", i, sNetworkPlayers[i].mSmallestUnacknowledgedTick, sNetworkPlayers[sReferencePlayerIndex].mSmallestUnacknowledgedTick);
+				logWarningNMT("Disconnecting player %i for late ACKs (last ACK %i, reference ACK %i", i, sNetworkPlayers[i].mSmallestUnacknowledgedTick, sNetworkPlayers[sReferencePlayerIndex].mSmallestUnacknowledgedTick);
 				make_player_netdead(i);
 				shouldSend = true;
 			}
@@ -1495,7 +1495,7 @@ send_packets()
 				// Lossy streaming data?
 				if(haveLossyData && ((theDescriptor.mDestinations & (((uint32)1) << i)) != 0))
 				{
-					logDumpNMT4("packet to player %d will contain %d bytes of lossy byte stream type %d from player %d", i, theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender);
+					logDumpNMT("packet to player %d will contain %d bytes of lossy byte stream type %d from player %d", i, theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender);
 					// In AStreams, sizeof(packed scalar) == sizeof(unpacked scalar)
 					uint16 theMessageLength = sizeof(theDescriptor.mType) + sizeof(theDescriptor.mSender) + theDescriptor.mLength;
 					
@@ -1731,7 +1731,7 @@ void HubParsePreferencesTree(InfoTree prefs, std::string version)
 					break;
 			}
 			if (value < min)
-				logWarning4("improper value %d for attribute %s of <hub>; must be at least %d. using default of %d", value, sAttributeStrings[i], min, *(sAttributeDestinations[i]));
+				logWarning("improper value %d for attribute %s of <hub>; must be at least %d. using default of %d", value, sAttributeStrings[i], min, *(sAttributeDestinations[i]));
 			else
 				*(sAttributeDestinations[i]) = value;
 		}
@@ -1743,13 +1743,13 @@ void HubParsePreferencesTree(InfoTree prefs, std::string version)
 	// The checks above are not sufficient to catch all bad cases; if user specified a window size
 	// smaller than default, this is our only chance to deal with it.
 	if(sHubPreferences.mPregameNthElement >= sHubPreferences.mPregameWindowSize) {
-		logWarning5("value for <hub> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kPregameNthElementAttribute], sHubPreferences.mPregameNthElement, sAttributeStrings[kPregameWindowSizeAttribute], sHubPreferences.mPregameWindowSize, sHubPreferences.mPregameWindowSize - 1);
+		logWarning("value for <hub> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kPregameNthElementAttribute], sHubPreferences.mPregameNthElement, sAttributeStrings[kPregameWindowSizeAttribute], sHubPreferences.mPregameWindowSize, sHubPreferences.mPregameWindowSize - 1);
 		
 		sHubPreferences.mPregameNthElement = sHubPreferences.mPregameWindowSize - 1;
 	}
 	
 	if(sHubPreferences.mInGameNthElement >= sHubPreferences.mInGameWindowSize) {
-		logWarning5("value for <hub> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kInGameNthElementAttribute], sHubPreferences.mInGameNthElement, sAttributeStrings[kInGameWindowSizeAttribute], sHubPreferences.mInGameWindowSize, sHubPreferences.mInGameWindowSize - 1);
+		logWarning("value for <hub> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kInGameNthElementAttribute], sHubPreferences.mInGameNthElement, sAttributeStrings[kInGameWindowSizeAttribute], sHubPreferences.mInGameWindowSize, sHubPreferences.mInGameWindowSize - 1);
 		
 		sHubPreferences.mInGameNthElement = sHubPreferences.mInGameWindowSize - 1;
 	}

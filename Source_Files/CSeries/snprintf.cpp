@@ -55,7 +55,7 @@ vsnprintf(char* inBuffer, size_t inBufferSize, const char* inFormat, va_list inA
 
     if(theResult + 1 > inBufferSize && !issuingWarning) {
         issuingWarning = true;
-        logWarning2("vsnprintf emulation wrote too many bytes (%d/%d)", theResult + 1, inBufferSize);
+        logWarning("vsnprintf emulation wrote too many bytes (%d/%d)", theResult + 1, inBufferSize);
         issuingWarning = false;
     }
 

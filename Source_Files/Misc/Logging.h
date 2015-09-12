@@ -83,11 +83,25 @@ extern const char* logDomain;
 
 // (COMMENTS FOR logError() FAMILY)
 // Ease-of-use macros wrap around logMessage.
-// Some preprocessors (including any adhering to C99) support variadic macros (macros with varying numbers
-// of parameters) but I'm willing to bet things like MSVC++6.0, MPW, etc. don't, and I think we still want
-// to be compatible with them.
+#define logFatal(...)    (GetCurrentLogger()->logMessage(logDomain, logFatalLevel, __FILE__, __LINE__, __VA_ARGS__))
+#define logError(...)    (GetCurrentLogger()->logMessage(logDomain, logErrorLevel, __FILE__, __LINE__, __VA_ARGS__))
+#define logWarning(...)  (GetCurrentLogger()->logMessage(logDomain, logWarningLevel, __FILE__, __LINE__, __VA_ARGS__))
+#define logAnomaly(...)  (GetCurrentLogger()->logMessage(logDomain, logAnomalyLevel, __FILE__, __LINE__, __VA_ARGS__))
+#define logNote(...)     (GetCurrentLogger()->logMessage(logDomain, logNoteLevel, __FILE__, __LINE__, __VA_ARGS__))
+#define logSummary(...)  (GetCurrentLogger()->logMessage(logDomain, logSummaryLevel, __FILE__, __LINE__, __VA_ARGS__))
+#define logTrace(...)    (GetCurrentLogger()->logMessage(logDomain, logTraceLevel, __FILE__, __LINE__, __VA_ARGS__))
+#define logDump(...)     (GetCurrentLogger()->logMessage(logDomain, logDumpLevel, __FILE__, __LINE__, __VA_ARGS__))
+
 // NB! use logError() and co. only in the main thread.  Elsewhere, use logErrorNMT() and co.
 // (the NMT versions may have more complex - or missing - implementations to make them safer)
+#define logFatalNMT(...)    (GetCurrentLogger()->logMessageNMT(logDomain, logFatalLevel, __FILE__, __LINE__, __VA_ARGS__))
+#define logErrorNMT(...)    (GetCurrentLogger()->logMessageNMT(logDomain, logErrorLevel, __FILE__, __LINE__, __VA_ARGS__))
+#define logWarningNMT(...)  (GetCurrentLogger()->logMessageNMT(logDomain, logWarningLevel, __FILE__, __LINE__, __VA_ARGS__))
+#define logAnomalyNMT(...)  (GetCurrentLogger()->logMessageNMT(logDomain, logAnomalyLevel, __FILE__, __LINE__, __VA_ARGS__))
+#define logNoteNMT(...)     (GetCurrentLogger()->logMessageNMT(logDomain, logNoteLevel, __FILE__, __LINE__, __VA_ARGS__))
+#define logSummaryNMT(...)  (GetCurrentLogger()->logMessageNMT(logDomain, logSummaryLevel, __FILE__, __LINE__, __VA_ARGS__))
+#define logTraceNMT(...)    (GetCurrentLogger()->logMessageNMT(logDomain, logTraceLevel, __FILE__, __LINE__, __VA_ARGS__))
+#define logDumpNMT(...)     (GetCurrentLogger()->logMessageNMT(logDomain, logDumpLevel, __FILE__, __LINE__, __VA_ARGS__))
 
 // (COMMENTS FOR logContext() FAMILY)
 // Enter a (runtime) logging subcontext; expires at end of block.  Use only within functions!!
@@ -98,26 +112,8 @@ extern const char* logDomain;
 // We need to use makeUniqueIdentifier so that __LINE__ gets expanded before concatenation.
 #define makeUniqueIdentifier(a, b) a ## b
 
-
-// logError, logContext, etc. are found in here now.  Users are STRONGLY encouraged to read
-// Logging_gruntwork.h as most of the Logging facilities they will actually use directly are defined there.
-#include "Logging_gruntwork.h"
-
-
-
-// Ease-of-use macros to test-n-log.  'message' must be a literal string.
-// Only Warn and Anomaly are provided - Note, Trace, and Dump shouldn't really be tested on things probably,
-// and Error and Fatal probably need to take some other action than merely logging when the condition fails.
-// XXX hmm, the definition for these was effectively lifted from GNU's assert.h, but they don't seem to work.
-// Removing for now, sorry.
-/*
-#define logCheckWarn(condition)   ((void) ((condition) ? 0 : (GetCurrentLogger()->logMessage(logDomain, logWarningLevel, __FILE__, __LINE__, "check (" #condition ") failed"))))
-#define logCheckAnomaly(condition)   ((void) ((condition) ? 0 : (GetCurrentLogger()->logMessage(logDomain, logAnomalyLevel, __FILE__, __LINE__, "check (" #condition ") failed"))))
-#define logCheckWarn0(condition, message)   ((void) ((condition) ? 0 : (GetCurrentLogger()->logMessage(logDomain, logWarningLevel, __FILE__, __LINE__, "check (" #condition ") failed; " message))))
-#define logCheckAnomaly0(condition, message)   ((void) ((condition) ? 0 : (GetCurrentLogger()->logMessage(logDomain, logAnomalyLevel, __FILE__, __LINE__, "check (" #condition ") failed; " message))))
-#define logCheckWarn1(condition, message, arg1)   ((void) ((condition) ? 0 : (GetCurrentLogger()->logMessage(logDomain, logWarningLevel, __FILE__, __LINE__, "check (" #condition ") failed; " message, (arg1)))))
-#define logCheckAnomaly1(condition, message, arg1)   ((void) ((condition) ? 0 : (GetCurrentLogger()->logMessage(logDomain, logAnomalyLevel, __FILE__, __LINE__, "check (" #condition ") failed; " message, (arg1)))))
-*/
+#define logContext(...)	LogContext makeUniqueIdentifier(_theLogContext,__LINE__)(false, __FILE__, __LINE__, __VA_ARGS__)
+#define logContextNMT(...)	LogContext makeUniqueIdentifier(_theLogContext,__LINE__)(true, __FILE__, __LINE__, __VA_ARGS__)
 
 
 // Class intended for stack-based use for entering/leaving a logging subcontext

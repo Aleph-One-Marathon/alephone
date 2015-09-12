@@ -155,7 +155,7 @@ bool lua_save(lua_State *L, std::streambuf* sb)
 	}
 	catch (const basic_bstream::failure& e)
 	{
-		logWarning1("failed to save Lua data; %s", e.what());
+		logWarning("failed to save Lua data; %s", e.what());
 		lua_settop(L, 0);
 		return false;
 	}
@@ -294,7 +294,7 @@ bool lua_restore(lua_State *L, std::streambuf* sb)
 	}
 	catch (const basic_bstream::failure& e)
 	{
-		logWarning1("failed to restore Lua data; %s", e.what());
+		logWarning("failed to restore Lua data; %s", e.what());
 		lua_settop(L, 0);
 		return false;
 	}

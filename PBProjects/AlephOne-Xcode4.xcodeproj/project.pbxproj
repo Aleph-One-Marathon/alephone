@@ -129,10 +129,6 @@
 		276BED231A84701E00AE52F4 /* powered_by_alephone.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED211A84701E00AE52F4 /* powered_by_alephone.h */; };
 		276BED241A84701E00AE52F4 /* powered_by_alephone.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED211A84701E00AE52F4 /* powered_by_alephone.h */; };
 		276BED251A84701E00AE52F4 /* powered_by_alephone.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED211A84701E00AE52F4 /* powered_by_alephone.h */; };
-		276BED271A84705300AE52F4 /* Logging_gruntwork.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED261A84705300AE52F4 /* Logging_gruntwork.h */; };
-		276BED281A84705300AE52F4 /* Logging_gruntwork.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED261A84705300AE52F4 /* Logging_gruntwork.h */; };
-		276BED291A84705300AE52F4 /* Logging_gruntwork.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED261A84705300AE52F4 /* Logging_gruntwork.h */; };
-		276BED2A1A84705300AE52F4 /* Logging_gruntwork.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED261A84705300AE52F4 /* Logging_gruntwork.h */; };
 		276BED2D1A8470A900AE52F4 /* binders.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED2B1A8470A900AE52F4 /* binders.h */; };
 		276BED2E1A8470A900AE52F4 /* binders.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED2B1A8470A900AE52F4 /* binders.h */; };
 		276BED2F1A8470A900AE52F4 /* binders.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED2B1A8470A900AE52F4 /* binders.h */; };
@@ -241,7 +237,6 @@
 		27A6D5141B9BF021003DA766 /* game_wad.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92040240D09B01A80001 /* game_wad.h */; };
 		27A6D5151B9BF021003DA766 /* Packing.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92050240D09B01A80001 /* Packing.h */; };
 		27A6D5161B9BF021003DA766 /* resource_manager.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92060240D09B01A80001 /* resource_manager.h */; };
-		27A6D5171B9BF021003DA766 /* Logging_gruntwork.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED261A84705300AE52F4 /* Logging_gruntwork.h */; };
 		27A6D5181B9BF021003DA766 /* tags.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92070240D09B01A80001 /* tags.h */; };
 		27A6D5191B9BF021003DA766 /* wad.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92080240D09B01A80001 /* wad.h */; };
 		27A6D51A1B9BF021003DA766 /* wad_prefs.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92090240D09B01A80001 /* wad_prefs.h */; };
@@ -701,7 +696,6 @@
 		27A6D6F01B9BF029003DA766 /* game_wad.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92040240D09B01A80001 /* game_wad.h */; };
 		27A6D6F11B9BF029003DA766 /* Packing.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92050240D09B01A80001 /* Packing.h */; };
 		27A6D6F21B9BF029003DA766 /* resource_manager.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92060240D09B01A80001 /* resource_manager.h */; };
-		27A6D6F31B9BF029003DA766 /* Logging_gruntwork.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED261A84705300AE52F4 /* Logging_gruntwork.h */; };
 		27A6D6F41B9BF029003DA766 /* tags.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92070240D09B01A80001 /* tags.h */; };
 		27A6D6F51B9BF029003DA766 /* wad.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92080240D09B01A80001 /* wad.h */; };
 		27A6D6F61B9BF029003DA766 /* wad_prefs.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92090240D09B01A80001 /* wad_prefs.h */; };
@@ -1161,7 +1155,6 @@
 		27A6D8CC1B9BF031003DA766 /* game_wad.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92040240D09B01A80001 /* game_wad.h */; };
 		27A6D8CD1B9BF031003DA766 /* Packing.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92050240D09B01A80001 /* Packing.h */; };
 		27A6D8CE1B9BF031003DA766 /* resource_manager.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92060240D09B01A80001 /* resource_manager.h */; };
-		27A6D8CF1B9BF031003DA766 /* Logging_gruntwork.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED261A84705300AE52F4 /* Logging_gruntwork.h */; };
 		27A6D8D01B9BF031003DA766 /* tags.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92070240D09B01A80001 /* tags.h */; };
 		27A6D8D11B9BF031003DA766 /* wad.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92080240D09B01A80001 /* wad.h */; };
 		27A6D8D21B9BF031003DA766 /* wad_prefs.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92090240D09B01A80001 /* wad_prefs.h */; };
@@ -3598,7 +3591,6 @@
 		276BED031A846FD900AE52F4 /* ProFontAO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ProFontAO.h; path = ../Source_Files/Misc/ProFontAO.h; sourceTree = "<group>"; };
 		276BED1C1A846FF600AE52F4 /* VecOps.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VecOps.h; path = ../Source_Files/Misc/VecOps.h; sourceTree = "<group>"; };
 		276BED211A84701E00AE52F4 /* powered_by_alephone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = powered_by_alephone.h; path = ../Source_Files/Misc/powered_by_alephone.h; sourceTree = "<group>"; };
-		276BED261A84705300AE52F4 /* Logging_gruntwork.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Logging_gruntwork.h; path = ../Source_Files/Misc/Logging_gruntwork.h; sourceTree = "<group>"; };
 		276BED2B1A8470A900AE52F4 /* binders.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = binders.h; path = ../Source_Files/Misc/binders.h; sourceTree = "<group>"; };
 		276BED2C1A8470A900AE52F4 /* PlayerImage_sdl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PlayerImage_sdl.h; path = ../Source_Files/Misc/PlayerImage_sdl.h; sourceTree = "<group>"; };
 		276D4E751A2E710F00C16CF5 /* QuickSave.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QuickSave.h; sourceTree = "<group>"; };
@@ -4751,7 +4743,6 @@
 				F5A00029023FDA7601A80001 /* CircularQueue.h */,
 				AEC6C89E0879A6020055EC57 /* Console.h */,
 				3DAC27A703DC9D1C00000104 /* Logging.h */,
-				276BED261A84705300AE52F4 /* Logging_gruntwork.h */,
 				F522120C0136A6FD01000001 /* PlayerName.h */,
 				F52212190136A6FD01000001 /* Random.h */,
 				F52211AE0136A6FD01000001 /* game_errors.h */,
@@ -5305,7 +5296,6 @@
 				27A6D5141B9BF021003DA766 /* game_wad.h in Headers */,
 				27A6D5151B9BF021003DA766 /* Packing.h in Headers */,
 				27A6D5161B9BF021003DA766 /* resource_manager.h in Headers */,
-				27A6D5171B9BF021003DA766 /* Logging_gruntwork.h in Headers */,
 				27A6DAC01B9CE949003DA766 /* preference_dialogs.h in Headers */,
 				27A6D5181B9BF021003DA766 /* tags.h in Headers */,
 				27A6D5191B9BF021003DA766 /* wad.h in Headers */,
@@ -5530,7 +5520,6 @@
 				27A6D6F01B9BF029003DA766 /* game_wad.h in Headers */,
 				27A6D6F11B9BF029003DA766 /* Packing.h in Headers */,
 				27A6D6F21B9BF029003DA766 /* resource_manager.h in Headers */,
-				27A6D6F31B9BF029003DA766 /* Logging_gruntwork.h in Headers */,
 				27A6DAC11B9CE94A003DA766 /* preference_dialogs.h in Headers */,
 				27A6D6F41B9BF029003DA766 /* tags.h in Headers */,
 				27A6D6F51B9BF029003DA766 /* wad.h in Headers */,
@@ -5755,7 +5744,6 @@
 				27A6D8CC1B9BF031003DA766 /* game_wad.h in Headers */,
 				27A6D8CD1B9BF031003DA766 /* Packing.h in Headers */,
 				27A6D8CE1B9BF031003DA766 /* resource_manager.h in Headers */,
-				27A6D8CF1B9BF031003DA766 /* Logging_gruntwork.h in Headers */,
 				27A6DAC21B9CE94A003DA766 /* preference_dialogs.h in Headers */,
 				27A6D8D01B9BF031003DA766 /* tags.h in Headers */,
 				27A6D8D11B9BF031003DA766 /* wad.h in Headers */,
@@ -5980,7 +5968,6 @@
 				AE505B70141D45E600915344 /* game_wad.h in Headers */,
 				AE505B71141D45E600915344 /* Packing.h in Headers */,
 				AE505B72141D45E600915344 /* resource_manager.h in Headers */,
-				276BED291A84705300AE52F4 /* Logging_gruntwork.h in Headers */,
 				27A6DABE1B9CE948003DA766 /* preference_dialogs.h in Headers */,
 				AE505B73141D45E600915344 /* tags.h in Headers */,
 				AE505B74141D45E600915344 /* wad.h in Headers */,
@@ -6205,7 +6192,6 @@
 				AEB4A11014296CAE00537AE7 /* game_wad.h in Headers */,
 				AEB4A11114296CAE00537AE7 /* Packing.h in Headers */,
 				AEB4A11214296CAE00537AE7 /* resource_manager.h in Headers */,
-				276BED2A1A84705300AE52F4 /* Logging_gruntwork.h in Headers */,
 				27A6DABF1B9CE948003DA766 /* preference_dialogs.h in Headers */,
 				AEB4A11314296CAE00537AE7 /* tags.h in Headers */,
 				AEB4A11414296CAE00537AE7 /* wad.h in Headers */,
@@ -6485,7 +6471,6 @@
 				AEC3C77109AD68AC003258E4 /* RenderVisTree.h in Headers */,
 				AEC3C77209AD68AC003258E4 /* scottish_textures.h in Headers */,
 				AEC3C77309AD68AC003258E4 /* shape_definitions.h in Headers */,
-				276BED271A84705300AE52F4 /* Logging_gruntwork.h in Headers */,
 				276BED141A846FD900AE52F4 /* CourierPrimeItalic.h in Headers */,
 				AEC3C77409AD68AC003258E4 /* shape_descriptors.h in Headers */,
 				AEC3C77609AD68AC003258E4 /* textures.h in Headers */,
@@ -6655,7 +6640,6 @@
 				AEFD861E13EB84CF00C1E687 /* game_wad.h in Headers */,
 				AEFD861F13EB84CF00C1E687 /* Packing.h in Headers */,
 				AEFD862013EB84CF00C1E687 /* resource_manager.h in Headers */,
-				276BED281A84705300AE52F4 /* Logging_gruntwork.h in Headers */,
 				27A6DABD1B9CE947003DA766 /* preference_dialogs.h in Headers */,
 				AEFD862113EB84CF00C1E687 /* tags.h in Headers */,
 				AEFD862213EB84CF00C1E687 /* wad.h in Headers */,

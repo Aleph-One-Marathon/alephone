@@ -331,10 +331,10 @@ exit_predictive_mode()
 
 		// Sanity checking
 		if(sSavedTickCount != dynamic_world->tick_count)
-			logWarning2("saved tick count %d != dynamic_world->tick_count %d", sSavedTickCount, dynamic_world->tick_count);
+			logWarning("saved tick count %d != dynamic_world->tick_count %d", sSavedTickCount, dynamic_world->tick_count);
 
 		if(sSavedRandomSeed != get_random_seed())
-			logWarning2("saved random seed %d != get_random_seed() %d", sSavedRandomSeed, get_random_seed());
+			logWarning("saved random seed %d != get_random_seed() %d", sSavedRandomSeed, get_random_seed());
 	}
 }
 

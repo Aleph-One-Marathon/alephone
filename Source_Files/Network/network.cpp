@@ -546,7 +546,7 @@ void Client::handleJoinerInfoMessage(JoinerInfoMessage* joinerInfoMessage, Commu
       state = Client::_disconnect;
     }
   } else {
-    logAnomaly1("unexpected joiner info message received (netState is %i)", netState);
+    logAnomaly("unexpected joiner info message received (netState is %i)", netState);
   }
 }
 
@@ -570,7 +570,7 @@ void Client::handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage,
 			}
 		}
 	} else {
-		logAnomaly1("unexpected capabilities message received (state is %i)", state);
+		logAnomaly("unexpected capabilities message received (state is %i)", state);
 	}
 }
 
@@ -623,7 +623,7 @@ void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
       state = _ungatherable;
     }
   } else {
-    logAnomaly1("unexpected accept join message received (state is %i)", state);
+    logAnomaly("unexpected accept join message received (state is %i)", state);
   }
 }
 
@@ -644,7 +644,7 @@ void Client::handleChangeColorsMessage(ChangeColorsMessage *changeColorsMessage,
 				}
 			}
 		} else {
-			logAnomaly1("change colors message received, but client chat info does not exist for %i", stream_id);
+			logAnomaly("change colors message received, but client chat info does not exist for %i", stream_id);
 		}
 	}
 	if (state == _awaiting_map) {
@@ -678,7 +678,7 @@ void Client::handleChangeColorsMessage(ChangeColorsMessage *changeColorsMessage,
 			logAnomaly("a client in state _awaiting_map requested a color change, but was not found in the topology");
 		}
 	} else if (!can_pregame_chat()) {
-		logAnomaly1("unexpected change colors message received (state is %i)", state);
+		logAnomaly("unexpected change colors message received (state is %i)", state);
 	}
 }
 
@@ -724,7 +724,7 @@ void Client::handleChatMessage(NetworkChatMessage* netChatMessage,
 				if (client_chat_info[stream_id]) {
 					chatCallbacks->ReceivedMessageFromPlayer(client_chat_info[stream_id]->name.c_str(), netChatMessage->chatText());
 				} else {
-					logAnomaly1("chat message from %i, player not found", stream_id);
+					logAnomaly("chat message from %i, player not found", stream_id);
 				}
 			}
 		} else {
@@ -736,7 +736,7 @@ void Client::handleChatMessage(NetworkChatMessage* netChatMessage,
 }
 
 void Client::unexpectedMessageHandler(Message *message, CommunicationsChannel *) {
-	logAnomaly2("unexpected message type %i received (net state)", message->type(), netState); 
+	logAnomaly("unexpected message type %i received (net state)", message->type(), netState);
 }
     
 
@@ -762,7 +762,7 @@ static void handleHelloMessage(HelloMessage* helloMessage, CommunicationsChannel
 			handlerState = netJoinErrorOccurred;
 		}
 	} else {
-		logAnomaly1("unexpected hello message received (netState is %i)", netState);
+		logAnomaly("unexpected hello message received (netState is %i)", netState);
 	}
 }
 
@@ -787,7 +787,7 @@ static void handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage,
 		}
 		
 	} else {
-		logAnomaly1("unexpected capabilities message received (netState is %i)", netState);
+		logAnomaly("unexpected capabilities message received (netState is %i)", netState);
 	}
 }   
 
@@ -796,7 +796,7 @@ static void handleClientInfoMessage(ClientInfoMessage* clientInfoMessage, Commun
 		int16 id = clientInfoMessage->stream_id();
 		if (clientInfoMessage->action() == ClientInfoMessage::kAdd) {
 			if (client_chat_info[id]) {
-				logAnomaly1("add message for client that already exists (%i)", id);
+				logAnomaly("add message for client that already exists (%i)", id);
 				delete client_chat_info[id];
 				client_chat_info.erase(id);
 			}
@@ -808,10 +808,10 @@ static void handleClientInfoMessage(ClientInfoMessage* clientInfoMessage, Commun
 		} else if (clientInfoMessage->action() == ClientInfoMessage::kUpdate) {
 			*client_chat_info[id] = *clientInfoMessage->info();
 		} else {
-			logAnomaly1("unknown client info message action %i", clientInfoMessage->action());
+			logAnomaly("unknown client info message action %i", clientInfoMessage->action());
 		}
 	} else {
-		logAnomaly1("unexpected client info message received (netState is %i)", netState);
+		logAnomaly("unexpected client info message received (netState is %i)", netState);
 	}
 }
 
@@ -837,7 +837,7 @@ static void handleJoinPlayerMessage(JoinPlayerMessage* joinPlayerMessage, Commun
       handlerState = netJoinErrorOccurred;
     }
   } else {
-    logAnomaly1("unexpected join player message received (netState is %i)", netState);
+    logAnomaly("unexpected join player message received (netState is %i)", netState);
   }
 }
 
@@ -856,7 +856,7 @@ static void handleLuaMessage(BigChunkOfDataMessage *luaMessage, CommunicationsCh
       memcpy(handlerLuaBuffer, luaMessage->buffer(), handlerLuaLength);
     }
   } else {
-    logAnomaly1("unexpected lua message received (netState is %i)", netState);
+    logAnomaly("unexpected lua message received (netState is %i)", netState);
   }
 }
 
@@ -875,7 +875,7 @@ static void handleMapMessage(BigChunkOfDataMessage *mapMessage, CommunicationsCh
 			memcpy(handlerMapBuffer, mapMessage->buffer(), handlerMapLength);
 		}
 	} else {
-		logAnomaly1("unexpected map message received (netState is %i)", netState);
+		logAnomaly("unexpected map message received (netState is %i)", netState);
 	}
 }
 
@@ -889,12 +889,12 @@ static void handleNetworkChatMessage(NetworkChatMessage *chatMessage, Communicat
 					return;
 				}
 			}
-			logAnomaly1("chat message from %i, player not found", chatMessage->senderID());
+			logAnomaly("chat message from %i, player not found", chatMessage->senderID());
 		} else if (netState == netJoining || netState == netWaiting) {
 			if (client_chat_info[chatMessage->senderID()]) {
 				chatCallbacks->ReceivedMessageFromPlayer(client_chat_info[chatMessage->senderID()]->name.c_str(), chatMessage->chatText());
 			} else {
-				logAnomaly1("chat message from %i, player not found", chatMessage->senderID());
+				logAnomaly("chat message from %i, player not found", chatMessage->senderID());
 			}
 			return;
 		} else {
@@ -918,7 +918,7 @@ static void handleNetworkStatsMessage(NetworkStatsMessage *statsMessage, Communi
 			std::fill(sNetworkStats.begin(), sNetworkStats.end(), sInvalidStats);
 		}
 	} else {
-		logAnomaly1("unexpected network stats message received (netState is %i", netState);
+		logAnomaly("unexpected network stats message received (netState is %i", netState);
 	}
 }
 
@@ -937,7 +937,7 @@ static void handlePhysicsMessage(BigChunkOfDataMessage *physicsMessage, Communic
 			memcpy(handlerPhysicsBuffer, physicsMessage->buffer(), handlerPhysicsLength);
 		}
 	} else {
-		logAnomaly1("unexpected physics message received (netState is %i)", netState);
+		logAnomaly("unexpected physics message received (netState is %i)", netState);
 	}
 }
 
@@ -1020,11 +1020,11 @@ static void handleTopologyMessage(TopologyMessage* topologyMessage, Communicatio
 	break;
 	
       default:
-	logAnomaly1("topology message received with unknown tag %i; ignoring", topology->tag);
+	logAnomaly("topology message received with unknown tag %i; ignoring", topology->tag);
 	break;
       }
   } else {
-    logWarning1("unexpected topology message received -- gatherer and joiner could disagree on topology! (netState is %i)", netState);
+    logWarning("unexpected topology message received -- gatherer and joiner could disagree on topology! (netState is %i)", netState);
   }
 }
 
@@ -1032,7 +1032,7 @@ static void handleGameSessionMessage(GameSessionMessage* gameSessionMessage, Com
 	if (handlerState == netWaiting) {
 		gameSessionIdentifier.assign(gameSessionMessage->buffer(), gameSessionMessage->buffer() + gameSessionMessage->length());
 	} else {
-		logAnomaly1("unexpected game session message received (netState is %i)", netState);
+		logAnomaly("unexpected game session message received (netState is %i)", netState);
 	}
 }
 
@@ -1043,7 +1043,7 @@ static void handleUnexpectedMessage(Message *inMessage, CommunicationsChannel *)
     alert_user(infoError, strNETWORK_ERRORS, netErrIncompatibleVersion, 0);
     handlerState = netJoinErrorOccurred;
   }
-  logAnomaly1("unexpected message ID %i received", inMessage->type());
+  logAnomaly("unexpected message ID %i received", inMessage->type());
 }
     
 static TypedMessageHandlerFunction<HelloMessage> helloMessageHandler(&handleHelloMessage);
@@ -1293,7 +1293,7 @@ void NetExit(
       
 			netState= netUninitialized;
 		} else {
-			logAnomaly1("NetDDPCloseSocket returned %i", error);
+			logAnomaly("NetDDPCloseSocket returned %i", error);
 		}
 	}
   

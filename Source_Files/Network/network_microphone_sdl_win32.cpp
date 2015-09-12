@@ -139,7 +139,7 @@ open_network_microphone() {
     HRESULT theResult = DirectSoundCaptureCreate(NULL, &sDirectSoundCapture, NULL);
 
     if(FAILED(theResult)) {
-        logAnomaly1("DirectSoundCaptureCreate failed: %d", theResult);
+        logAnomaly("DirectSoundCaptureCreate failed: %d", theResult);
     }
     else {
         // See what capture formats the device supports
@@ -185,11 +185,11 @@ open_network_microphone() {
             theResult = sDirectSoundCapture->CreateCaptureBuffer(&theRecordingBufferDescription, &sCaptureBuffer, NULL);
 
             if(FAILED(theResult)) {
-                logAnomaly1("CreateCaptureBuffer failed: %d", theResult);
+                logAnomaly("CreateCaptureBuffer failed: %d", theResult);
             }
             else {
                 if(!announce_microphone_capture_format(theChosenFormat.mRate, theChosenFormat.mStereo, theChosenFormat.m16Bit)) {
-                    logAnomaly3("network microphone support code rejected audio format: %d samp/sec, %s, %d bits/samp",
+                    logAnomaly("network microphone support code rejected audio format: %d samp/sec, %s, %d bits/samp",
                                 theChosenFormat.mRate, theChosenFormat.mStereo ? "stereo" : "mono", theChosenFormat.m16Bit ? 16 : 8);
                 }
                 else {

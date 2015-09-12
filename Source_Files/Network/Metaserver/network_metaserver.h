@@ -132,7 +132,7 @@ private:
 			case kAdd:
 				if(m_entries.find(id) != m_entries.end())
 				{
-					logAnomaly1("received instruction to add item with same ID (%d) as known item; using the new one only", id);
+					logAnomaly("received instruction to add item with same ID (%d) as known item; using the new one only", id);
 					m_entries.erase(id);
 				}
 				m_entries.insert(typename Map::value_type(id, update));
@@ -141,20 +141,20 @@ private:
 			case kDelete:
 				if(m_entries.erase(id) == 0)
 				{
-					logAnomaly1("received instruction to delete unknown item (ID %d)", id);
+					logAnomaly("received instruction to delete unknown item (ID %d)", id);
 				}
 				break;
 
 			case kRefresh:
 				if(m_entries.erase(id) == 0)
 				{
-					logAnomaly1("received instruction to refresh unknown item (ID %d); treating it as an add", id);
+					logAnomaly("received instruction to refresh unknown item (ID %d); treating it as an add", id);
 				}
 				m_entries.insert(typename Map::value_type(id, update));
 				break;
 
 			default:
-				logAnomaly1("unknown list item verb %d - ignored", verb);
+				logAnomaly("unknown list item verb %d - ignored", verb);
 				break;
 		}
 	}

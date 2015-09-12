@@ -114,7 +114,7 @@ bool BigChunkOfZippedDataMessage::inflateFrom(const UninflatedMessage& inUninfla
 		}
 		else
 		{
-			logWarning1("Error decompressing BigChunkOfZippedDataMessage; result is %i", ret);
+			logWarning("Error decompressing BigChunkOfZippedDataMessage; result is %i", ret);
 			return false;
 		}
 	}
