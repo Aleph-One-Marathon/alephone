@@ -129,7 +129,8 @@ dnl AX_CHECK_BOOST_HEADER([boost/uuid/uuid_generators.hpp])
 dnl AX_CHECK_BOOST_HEADER([boost/uuid/uuid_io.hpp])
 
 dnl Check for library functions.
-AC_CHECK_FUNCS([snprintf vsnprintf sysconf sysctlbyname])
+AC_CHECK_FUNCS([snprintf vsnprintf], , AC_MSG_ERROR([You need snprintf and vsnprintf to run Aleph One.]))     
+AC_CHECK_FUNCS([sysconf sysctlbyname])
 AC_CHECK_FUNC([mkstemp],
               [AC_DEFINE([LUA_USE_MKSTEMP], [1], [mkstemp() available])])
 

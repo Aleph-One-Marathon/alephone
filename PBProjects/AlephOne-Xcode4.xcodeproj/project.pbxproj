@@ -1627,13 +1627,6 @@
 		27A6DAC71B9CE950003DA766 /* Scenario.h in Headers */ = {isa = PBXBuildFile; fileRef = AE2A50CF09C6727C007681A4 /* Scenario.h */; };
 		27A6DAC81B9CE950003DA766 /* Scenario.h in Headers */ = {isa = PBXBuildFile; fileRef = AE2A50CF09C6727C007681A4 /* Scenario.h */; };
 		27A6DAC91B9CE951003DA766 /* Scenario.h in Headers */ = {isa = PBXBuildFile; fileRef = AE2A50CF09C6727C007681A4 /* Scenario.h */; };
-		27A6DACA1B9CE972003DA766 /* snprintf.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27AF03DC9D5600000104 /* snprintf.h */; };
-		27A6DACB1B9CE972003DA766 /* snprintf.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27AF03DC9D5600000104 /* snprintf.h */; };
-		27A6DACC1B9CE973003DA766 /* snprintf.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27AF03DC9D5600000104 /* snprintf.h */; };
-		27A6DACD1B9CE974003DA766 /* snprintf.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27AF03DC9D5600000104 /* snprintf.h */; };
-		27A6DACE1B9CE975003DA766 /* snprintf.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27AF03DC9D5600000104 /* snprintf.h */; };
-		27A6DACF1B9CE975003DA766 /* snprintf.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27AF03DC9D5600000104 /* snprintf.h */; };
-		27A6DAD01B9CE976003DA766 /* snprintf.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27AF03DC9D5600000104 /* snprintf.h */; };
 		27A6DAD11B9CE9A4003DA766 /* mytm.h in Headers */ = {isa = PBXBuildFile; fileRef = F522112D0136A4DD01000001 /* mytm.h */; };
 		27A6DAD21B9CE9A5003DA766 /* mytm.h in Headers */ = {isa = PBXBuildFile; fileRef = F522112D0136A4DD01000001 /* mytm.h */; };
 		27A6DAD31B9CE9A5003DA766 /* mytm.h in Headers */ = {isa = PBXBuildFile; fileRef = F522112D0136A4DD01000001 /* mytm.h */; };
@@ -3652,8 +3645,6 @@
 		3DAC27A503DC9D1C00000104 /* DefaultStringSets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = DefaultStringSets.cpp; path = ../Source_Files/Misc/DefaultStringSets.cpp; sourceTree = SOURCE_ROOT; };
 		3DAC27A603DC9D1C00000104 /* Logging.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Logging.cpp; path = ../Source_Files/Misc/Logging.cpp; sourceTree = SOURCE_ROOT; };
 		3DAC27A703DC9D1C00000104 /* Logging.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Logging.h; path = ../Source_Files/Misc/Logging.h; sourceTree = SOURCE_ROOT; };
-		3DAC27AE03DC9D5600000104 /* snprintf.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = snprintf.cpp; path = ../Source_Files/CSeries/snprintf.cpp; sourceTree = SOURCE_ROOT; };
-		3DAC27AF03DC9D5600000104 /* snprintf.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = snprintf.h; path = ../Source_Files/CSeries/snprintf.h; sourceTree = SOURCE_ROOT; };
 		3DC152400711123100836977 /* CommunicationsChannel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CommunicationsChannel.cpp; sourceTree = "<group>"; };
 		3DC152410711123100836977 /* CommunicationsChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommunicationsChannel.h; sourceTree = "<group>"; };
 		3DC152430711123200836977 /* Message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Message.cpp; sourceTree = "<group>"; };
@@ -4661,7 +4652,6 @@
 				F522114C0136A66601000001 /* csstrings.cpp */,
 				F5574EEE01F4EB1E01FEABBD /* csdialogs_sdl.cpp */,
 				F5574EEF01F4EB1E01FEABBD /* mytm_sdl.cpp */,
-				3DAC27AE03DC9D5600000104 /* snprintf.cpp */,
 			);
 			name = CSeries;
 			sourceTree = "<group>";
@@ -4670,7 +4660,6 @@
 			isa = PBXGroup;
 			children = (
 				AEAE132D0FC9C3C800EDA5A6 /* BStream.h */,
-				3DAC27AF03DC9D5600000104 /* snprintf.h */,
 				F522111D0136A4DD01000001 /* byte_swapping.h */,
 				F522111E0136A4DD01000001 /* csalerts.h */,
 				F522111F0136A4DD01000001 /* cscluts.h */,
@@ -5434,7 +5423,6 @@
 				27A6D59F1B9BF021003DA766 /* Image_Blitter.h in Headers */,
 				27A6D5A01B9BF021003DA766 /* Shape_Blitter.h in Headers */,
 				27A6D5A11B9BF021003DA766 /* OGL_Shader.h in Headers */,
-				27A6DACE1B9CE975003DA766 /* snprintf.h in Headers */,
 				27A6D5A21B9BF021003DA766 /* vec3.h in Headers */,
 				27A6D5A31B9BF021003DA766 /* Plugins.h in Headers */,
 				27A6D5A41B9BF021003DA766 /* Rasterizer_Shader.h in Headers */,
@@ -5657,7 +5645,6 @@
 				27A6D77B1B9BF029003DA766 /* Image_Blitter.h in Headers */,
 				27A6D77C1B9BF029003DA766 /* Shape_Blitter.h in Headers */,
 				27A6D77D1B9BF029003DA766 /* OGL_Shader.h in Headers */,
-				27A6DACF1B9CE975003DA766 /* snprintf.h in Headers */,
 				27A6D77E1B9BF029003DA766 /* vec3.h in Headers */,
 				27A6D77F1B9BF029003DA766 /* Plugins.h in Headers */,
 				27A6D7801B9BF029003DA766 /* Rasterizer_Shader.h in Headers */,
@@ -5880,7 +5867,6 @@
 				27A6D9571B9BF031003DA766 /* Image_Blitter.h in Headers */,
 				27A6D9581B9BF031003DA766 /* Shape_Blitter.h in Headers */,
 				27A6D9591B9BF031003DA766 /* OGL_Shader.h in Headers */,
-				27A6DAD01B9CE976003DA766 /* snprintf.h in Headers */,
 				27A6D95A1B9BF031003DA766 /* vec3.h in Headers */,
 				27A6D95B1B9BF031003DA766 /* Plugins.h in Headers */,
 				27A6D95C1B9BF031003DA766 /* Rasterizer_Shader.h in Headers */,
@@ -6103,7 +6089,6 @@
 				AE505BF7141D45E600915344 /* Image_Blitter.h in Headers */,
 				AE505BF8141D45E600915344 /* Shape_Blitter.h in Headers */,
 				AE505BF9141D45E600915344 /* OGL_Shader.h in Headers */,
-				27A6DACC1B9CE973003DA766 /* snprintf.h in Headers */,
 				AE505BFA141D45E600915344 /* vec3.h in Headers */,
 				AE505BFB141D45E600915344 /* Plugins.h in Headers */,
 				AE505BFC141D45E600915344 /* Rasterizer_Shader.h in Headers */,
@@ -6326,7 +6311,6 @@
 				AEB4A19714296CAE00537AE7 /* Image_Blitter.h in Headers */,
 				AEB4A19814296CAE00537AE7 /* Shape_Blitter.h in Headers */,
 				AEB4A19914296CAE00537AE7 /* OGL_Shader.h in Headers */,
-				27A6DACD1B9CE974003DA766 /* snprintf.h in Headers */,
 				AEB4A19A14296CAE00537AE7 /* vec3.h in Headers */,
 				AEB4A19B14296CAE00537AE7 /* Plugins.h in Headers */,
 				AEB4A19C14296CAE00537AE7 /* Rasterizer_Shader.h in Headers */,
@@ -6561,7 +6545,6 @@
 				27ECF29D1698DD7700BE9C35 /* Movie.h in Headers */,
 				27ECF2A51698DD7700BE9C35 /* SDL_ffmpeg.h in Headers */,
 				2792861B170F92DD0005CD56 /* lctype.h in Headers */,
-				27A6DACA1B9CE972003DA766 /* snprintf.h in Headers */,
 				27E878F4173202F80010F485 /* FFmpegDecoder.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -6772,7 +6755,6 @@
 				AEFD86A513EB84CF00C1E687 /* Image_Blitter.h in Headers */,
 				AEFD86A613EB84CF00C1E687 /* Shape_Blitter.h in Headers */,
 				AEFD86A713EB84CF00C1E687 /* OGL_Shader.h in Headers */,
-				27A6DACB1B9CE972003DA766 /* snprintf.h in Headers */,
 				AEFD86A813EB84CF00C1E687 /* vec3.h in Headers */,
 				AEFD86A913EB84CF00C1E687 /* Plugins.h in Headers */,
 				AEFD86AA13EB84CF00C1E687 /* Rasterizer_Shader.h in Headers */,

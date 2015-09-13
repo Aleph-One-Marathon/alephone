@@ -4,11 +4,10 @@ noinst_LIBRARIES = libcseries.a
 libcseries_a_SOURCES = byte_swapping.h BStream.h csalerts.h		\
   csdialogs.h cscluts.h cseries.h csfonts.h csmacros.h	\
   csmisc.h cspixels.h csstrings.h cstypes.h FilmProfile.h mytm.h	\
-  snprintf.h								\
 									\
   byte_swapping.cpp BStream.cpp csalerts_sdl.cpp cscluts_sdl.cpp	\
   csdialogs_sdl.cpp csmisc_sdl.cpp csstrings.cpp FilmProfile.cpp	\
-  mytm_sdl.cpp snprintf.cpp
+  mytm_sdl.cpp
 
 EXTRA_libcseries_a_SOURCES = csalerts.mm
 

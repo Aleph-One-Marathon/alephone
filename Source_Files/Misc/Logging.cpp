@@ -31,11 +31,6 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#ifndef HAVE_SNPRINTF
-#include "snprintf.h"	// for platforms that don't have it
-// Maybe someone will work some autoconf/manual config.h magic so we can really only
-// include snprintf.h (and snprintf.cpp in the build) when needed.
-#endif
 #include <time.h>	// apparently is in C std library, used here to print time/date log section started.
 #include <stdio.h>
 #include "FileHandler.h"

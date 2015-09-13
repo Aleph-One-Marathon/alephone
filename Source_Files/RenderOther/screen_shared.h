@@ -35,11 +35,6 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 */
 
 #include <stdarg.h>
-#ifndef HAVE_SNPRINTF
-#include "snprintf.h"	// for platforms that don't have it
-// Maybe someone will work some autoconf/manual config.h magic so we can really only
-// include snprintf.h (and snprintf.cpp in the build) when needed.
-#endif
 
 #define DESIRED_SCREEN_WIDTH 640
 #define DESIRED_SCREEN_HEIGHT 480
