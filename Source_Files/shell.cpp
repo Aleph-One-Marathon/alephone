@@ -96,7 +96,7 @@
 #include "OGL_Headers.h"
 #endif
 
-#ifdef HAVE_SDL_NET_H
+#if !defined(DISABLE_NETWORKING)
 #include <SDL_net.h>
 #endif
 
@@ -299,7 +299,7 @@ int main(int argc, char **argv)
 	  "GNU Library General Public License.\n"
 	  "For details, see the file COPYING.SDL.\n"
 #endif
-#ifdef HAVE_SDL_NET
+#if !defined(DISABLE_NETWORKING)
 	  "\nBuilt with network play enabled.\n"
 #endif
 #ifdef HAVE_LUA
@@ -642,7 +642,7 @@ static void initialize_application(void)
 #endif
 	atexit(shutdown_application);
 
-#ifdef HAVE_SDL_NET
+#if !defined(DISABLE_NETWORKING)
 	// Initialize SDL_net
 	if (SDLNet_Init () < 0) {
 		fprintf (stderr, "Couldn't initialize SDL_net (%s)\n", SDLNet_GetError());
@@ -691,7 +691,7 @@ void shutdown_application(void)
 #if defined(HAVE_SDL_IMAGE) && (SDL_IMAGE_PATCHLEVEL >= 8)
 	IMG_Quit();
 #endif
-#ifdef HAVE_SDL_NET
+#if !defined(DISABLE_NETWORKING)
 	SDLNet_Quit();
 #endif
 	TTF_Quit();
@@ -700,7 +700,7 @@ void shutdown_application(void)
 
 bool networking_available(void)
 {
-#ifdef HAVE_SDL_NET
+#if !defined(DISABLE_NETWORKING)
 	return true;
 #else
 	return false;
