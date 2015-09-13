@@ -705,11 +705,9 @@ static void set_theme_defaults(void)
 	dialog_theme[DEFAULT_WIDGET].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[DEFAULT_WIDGET].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x3f, 0x3f, 0x3f);
 
-#ifdef HAVE_SDL_TTF
 	dialog_theme[TITLE_WIDGET].font_spec = dialog_theme[DEFAULT_WIDGET].font_spec;
 	dialog_theme[TITLE_WIDGET].font_spec.size = 24;
 	dialog_theme[TITLE_WIDGET].font_set = true;
-#endif
 
 	dialog_theme[DIALOG_FRAME].spaces[T_SPACE] = 8;
 	dialog_theme[DIALOG_FRAME].spaces[L_SPACE] = 8;
@@ -743,11 +741,9 @@ static void set_theme_defaults(void)
 	dialog_theme[BUTTON_WIDGET].states[PRESSED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[BUTTON_WIDGET].states[PRESSED_STATE].colors[BACKGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
 
-#ifdef HAVE_SDL_TTF
 	dialog_theme[BUTTON_WIDGET].font_spec = dialog_theme[DEFAULT_WIDGET].font_spec;
 	dialog_theme[BUTTON_WIDGET].font_spec.size = 14;
 	dialog_theme[BUTTON_WIDGET].font_set = true;
-#endif
 
 	dialog_theme[SLIDER_WIDGET].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[SLIDER_THUMB].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x0, 0xff, 0x0);
@@ -792,11 +788,9 @@ static void set_theme_defaults(void)
 	dialog_theme[TAB_WIDGET].spaces[BUTTON_HEIGHT] = 24;
 	dialog_theme[TAB_WIDGET].spaces[TAB_LC_SPACE] = 4;
 	dialog_theme[TAB_WIDGET].spaces[TAB_RC_SPACE] = 4;
-#ifdef HAVE_SDL_TTF
 	dialog_theme[TAB_WIDGET].font_spec = dialog_theme[DEFAULT_WIDGET].font_spec;
 	dialog_theme[TAB_WIDGET].font_spec.size = 14;
 	dialog_theme[TAB_WIDGET].font_set = true;
-#endif
 	dialog_theme[TAB_WIDGET].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[TAB_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
 	dialog_theme[TAB_WIDGET].states[PRESSED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);

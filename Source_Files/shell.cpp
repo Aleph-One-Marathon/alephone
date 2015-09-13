@@ -650,12 +650,10 @@ static void initialize_application(void)
 	}
 #endif
 
-#ifdef HAVE_SDL_TTF
 	if (TTF_Init() < 0) {
 		fprintf (stderr, "Couldn't initialize SDL_ttf (%s)\n", TTF_GetError());
 		exit(1);
 	}
-#endif
 	HTTPClient::Init();
 
 	// Initialize everything
@@ -696,9 +694,7 @@ void shutdown_application(void)
 #ifdef HAVE_SDL_NET
 	SDLNet_Quit();
 #endif
-#ifdef HAVE_SDL_TTF
 	TTF_Quit();
-#endif
 	SDL_Quit();
 }
 

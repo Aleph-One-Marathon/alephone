@@ -55,10 +55,8 @@ Dec 17, 2000 (Loren Petrich):
 #include "sdl_fonts.h"
 #include <string.h>
 
-#ifdef HAVE_SDL_TTF
 #include <SDL_ttf.h>
 #include "preferences.h"
-#endif
 
 #define clutSCREEN_COLORS 130
 #define finfFONTS 128
@@ -524,7 +522,6 @@ int sdl_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, i
 	return width;
 }
 
-#ifdef HAVE_SDL_TTF
 int ttf_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const
 {
 	int clip_top, clip_bottom, clip_left, clip_right;
@@ -595,7 +592,6 @@ int ttf_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, i
 	SDL_FreeSurface(text_surface);
 	return width;
 }
-#endif
 
 static void draw_text(const char *text, int x, int y, uint32 pixel, const font_info *font, uint16 style)
 {

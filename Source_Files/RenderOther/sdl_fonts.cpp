@@ -46,7 +46,6 @@ using std::pair;
 using std::map;
 #endif
 
-#ifdef HAVE_SDL_TTF
 #include <boost/tuple/tuple_comparison.hpp>
 #include "preferences.h" // smooth_font
 #include "AlephSansMono-Bold.h"
@@ -56,18 +55,15 @@ using std::map;
 #include "CourierPrimeBold.h"
 #include "CourierPrimeItalic.h"
 #include "CourierPrimeBoldItalic.h"
-#endif
 
 // Global variables
 typedef pair<int, int> id_and_size_t;
 typedef map<id_and_size_t, sdl_font_info *> font_list_t;
 static font_list_t font_list;				// List of all loaded fonts
 
-#ifdef HAVE_SDL_TTF
 typedef pair<TTF_Font *, int> ref_counted_ttf_font_t;
 typedef map<ttf_font_key_t, ref_counted_ttf_font_t> ttf_font_list_t;
 static ttf_font_list_t ttf_font_list;
-#endif
 
 // From shell_sdl.cpp
 extern vector<DirectorySpecifier> data_search_path;
@@ -77,7 +73,6 @@ extern vector<DirectorySpecifier> data_search_path;
  *  Initialize font management
  */
 
-#ifdef HAVE_SDL_TTF
 typedef struct builtin_font
 {
 	std::string name;
@@ -98,8 +93,6 @@ static builtin_font_t builtin_fontspecs[] = {
 
 typedef std::map<std::string, builtin_font_t> builtin_fonts_t;
 builtin_fonts_t builtin_fonts;
-
-#endif
 
 void initialize_fonts(bool last_chance)
 {
@@ -239,7 +232,6 @@ sdl_font_info *load_sdl_font(const TextSpec &spec)
 	return info;
 }
 
-#ifdef HAVE_SDL_TTF
 static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size)
 {
 	// already loaded? increment reference counter and return pointer
@@ -314,12 +306,10 @@ static const char *locate_font(const std::string& path)
 			return "";
 	}
 }
-#endif
 
 font_info *load_font(const TextSpec &spec) {
 //	return static_cast<font_info*>(load_font(spec));
 
-#ifdef HAVE_SDL_TTF
 	if (spec.normal != "")
 	{
 		std::string file;
@@ -416,7 +406,6 @@ font_info *load_font(const TextSpec &spec) {
 			return 0;
 	}
 	else
-#endif
         if (spec.font != -1)
 	{
 		return static_cast<font_info *>(load_sdl_font(spec));
@@ -449,7 +438,6 @@ void sdl_font_info::_unload()
 	}
 }
 
-#ifdef HAVE_SDL_TTF
 void ttf_font_info::_unload()
 {
 	for (int i = 0; i < styleUnderline; ++i)
@@ -470,7 +458,6 @@ void ttf_font_info::_unload()
 
 	delete this;
 }
-#endif
 
 void unload_font(font_info *info)
 {
@@ -524,7 +511,6 @@ int sdl_font_info::_trunc_text(const char *text, int max_width, uint16 style) co
 
 // sdl_font_info::_draw_text is in screen_drawing.cpp
 
-#ifdef HAVE_SDL_TTF
 int8 ttf_font_info::char_width(uint8 c, uint16 style) const
 {
 	int advance;
@@ -608,7 +594,6 @@ uint16 *ttf_font_info::process_macroman(const char *src, int len) const
 	*p = 0x0;
 	return dst;
 }
-#endif
 
 uint16 font_info::text_width(const char *text, uint16 style, bool utf8) const
 {

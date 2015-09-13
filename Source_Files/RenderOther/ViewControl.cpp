@@ -95,11 +95,7 @@ struct FOV_settings_definition FOV_settings = {
 #define FOV_FixHorizontalNotVertical FOV_settings.FixHorizontalNotVertical
 
 
-#ifdef HAVE_SDL_TTF
 static FontSpecifier OnScreenFont = {"Monaco", 12, styleNormal, 0, "mono"};
-#else
-static FontSpecifier OnScreenFont = {"Monaco", 12, styleNormal, 0, "#4"};
-#endif
 static bool ScreenFontInited = false;
 
 // Accessors:

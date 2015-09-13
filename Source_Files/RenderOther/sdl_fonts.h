@@ -29,10 +29,8 @@
 #define SDL_FONTS_H
 
 #include "FileHandler.h"
-#ifdef HAVE_SDL_TTF
 #include <SDL_ttf.h>
 #include <boost/tuple/tuple.hpp>
-#endif
 
 #include <string>
 
@@ -112,7 +110,6 @@ private:
 	LoadedResource rsrc;
 };
 
-#ifdef HAVE_SDL_TTF
 typedef boost::tuple<std::string, uint16, int16> ttf_font_key_t;
 
 class ttf_font_info : public font_info { 
@@ -143,7 +140,6 @@ private:
 	TTF_Font *get_ttf(uint16 style) const { return m_styles[style & (styleBold | styleItalic)]; }
 	virtual void _unload();
 };
-#endif
 
 /*
  *  Functions
