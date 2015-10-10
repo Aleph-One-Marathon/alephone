@@ -27,6 +27,7 @@
 #include "TextStrings.h"
 
 #include <boost/function.hpp>
+#include <boost/version.hpp>
 #include <boost/iterator/filter_iterator.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 
@@ -77,14 +78,24 @@ void InfoTree::save_xml(FileSpecifier filename) const
 	boost::property_tree::write_xml(filename.GetPath(),
 									boost::property_tree::ptree(*this),
 									std::locale(),
-									boost::property_tree::xml_writer_make_settings(' ', 2));
+#if BOOST_VERSION >= 105600
+									boost::property_tree::xml_writer_make_settings<boost::property_tree::ptree::key_type>(' ', 2)
+#else
+									boost::property_tree::xml_writer_make_settings(' ', 2)
+#endif
+									);
 }
 
 void InfoTree::save_xml(std::ostringstream& stream) const
 {
 	boost::property_tree::write_xml(stream,
 									boost::property_tree::ptree(*this),
-									boost::property_tree::xml_writer_make_settings(' ', 2));
+#if BOOST_VERSION >= 105600
+									boost::property_tree::xml_writer_make_settings<boost::property_tree::ptree::key_type>(' ', 2)
+#else
+									boost::property_tree::xml_writer_make_settings(' ', 2)
+#endif
+									);
 }
 
 InfoTree InfoTree::load_ini(FileSpecifier filename)
