@@ -343,6 +343,7 @@ bool FileSpecifier::CreateDirectory()
 	return err == 0;
 }
 
+#ifdef HAVE_ZZIP
 static std::string unix_path_separators(const std::string& input)
 {
 	if (PATH_SEP == '/') return input;
@@ -357,6 +358,7 @@ static std::string unix_path_separators(const std::string& input)
 
 	return output;
 }
+#endif
 
 // Open data file
 bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)

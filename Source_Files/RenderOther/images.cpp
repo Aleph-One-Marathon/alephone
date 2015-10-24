@@ -420,9 +420,11 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 	if (p == NULL)
 		return NULL;
 	SDL_RWseek(p, 6, SEEK_CUR);		// picSize/top/left
+#ifdef HAVE_SDL_IMAGE
 	int pic_height = SDL_ReadBE16(p);
 	int pic_width = SDL_ReadBE16(p);
 	//printf("pic_width %d, pic_height %d\n", pic_width, pic_height);
+#endif
 
 	// Read and parse picture opcodes
 	bool done = false;

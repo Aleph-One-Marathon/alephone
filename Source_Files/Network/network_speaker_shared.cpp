@@ -62,8 +62,10 @@ received_network_audio_proc(void *buffer, short buffer_size, short player_index)
 	network_audio_header    theHeader;
 
 	netcpy(&theHeader, theHeader_NET);
-    
+
+#ifdef SPEEX
 	byte* theSoundData = ((byte*)buffer) + sizeof(network_audio_header_NET);
+#endif
 
 	// 0 if using uncompressed audio, 1 if using speex
 	if(!(theHeader.mFlags & kNetworkAudioForTeammatesOnlyFlag) || (local_player->team == get_player_data(player_index)->team)) 
