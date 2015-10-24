@@ -71,6 +71,14 @@ AS_CASE([$target],
 AM_CONDITIONAL([MAKE_WINDOWS], [test "x$make_windows" = "xtrue"])
 AM_CONDITIONAL([INSTALL_MIME], [test "x$install_mime" = "xtrue"])
 
+dnl Append -fno-strict-aliasing to buildflags if we're using GNU compatible compilers
+AS_CASE([$CC],
+        [gcc|*-gcc|clang|clang-*],
+        [ CFLAGS="${CFLAGS} -fno-strict-aliasing" ])
+AS_CASE([$CXX],
+        [g++|*-g++|clang++|clang++-*],
+        [ CXXFLAGS="${CXXFLAGS} -fno-strict-aliasing" ])
+
 dnl Set target system name.
 AC_DEFINE_UNQUOTED([TARGET_PLATFORM], ["$target_os $target_cpu"], [Target platform name])
 
@@ -346,5 +354,14 @@ AX_PRINT_SUMMARY([alsa])
 AX_PRINT_SUMMARY([curl])
 AX_PRINT_SUMMARY([zzip])
 AX_PRINT_SUMMARY([png])
+AS_ECHO([""])
+AS_ECHO(["         CC: ${CC}"])
+AS_ECHO(["        CXX: ${CXX}"])
+AS_ECHO(["        CPP: ${CPP}"])
+AS_ECHO(["     CFLAGS: ${CFLAGS}"])
+AS_ECHO(["   CXXFLAGS: ${CXXFLAGS}"])
+AS_ECHO(["   CPPFLAGS: ${CPPFLAGS}"])
+AS_ECHO(["    LDFLAGS: ${LDFLAGS}"])
+AS_ECHO(["       LIBS: ${LIBS}"])
 AS_ECHO([""])
 AS_ECHO(["Configuration done. Now type \"make\"."])
