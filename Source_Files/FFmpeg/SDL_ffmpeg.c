@@ -53,6 +53,15 @@ extern "C"
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
 #endif
 
+#ifdef AV_PIX_FMT_NONE
+#define PIX_FMT_YUYV422 AV_PIX_FMT_YUYV422
+#define PIX_FMT_RGB24 AV_PIX_FMT_RGB24
+#define PIX_FMT_RGB32 AV_PIX_FMT_RGB32
+#define FFMPEG_PIXELFORMAT AVPixelFormat
+#else
+#define FFMPEG_PIXELFORMAT PixelFormat
+#endif
+
 #include "SDL_ffmpeg.h"
 
 #ifdef MSVC
@@ -86,7 +95,9 @@ extern int convert_audio(int in_samples, int in_channels, int in_stride,
  *  Provide a fast way to get the correct context.
  *  \returns The context matching the input values.
  */
-struct SwsContext* getContext( SDL_ffmpegConversionContext **context, int inWidth, int inHeight, enum PixelFormat inFormat, int outWidth, int outHeight, enum PixelFormat outFormat )
+struct SwsContext* getContext( SDL_ffmpegConversionContext **context,
+                               int inWidth, int inHeight, enum FFMPEG_PIXELFORMAT inFormat,
+                               int outWidth, int outHeight, enum FFMPEG_PIXELFORMAT outFormat)
 {
     SDL_ffmpegConversionContext *ctx = *context;
 
