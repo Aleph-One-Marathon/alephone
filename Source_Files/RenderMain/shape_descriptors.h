@@ -32,6 +32,8 @@ Feb 3, 2000 (Loren Petrich):
 	Annotated some of the _collection's better
 */
 
+#include "cstypes.h"
+
 /* ---------- types */
 
 typedef uint16 shape_descriptor; /* [clut.3] [collection.5] [shape.8] */

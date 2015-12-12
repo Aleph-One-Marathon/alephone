@@ -24,6 +24,8 @@
 
 // ghs: moved these here because SoundManager's header file is enormous already
 
+#include "cstypes.h"
+
 /* ---------- sound codes */
 
 enum /* ambient sound codes */

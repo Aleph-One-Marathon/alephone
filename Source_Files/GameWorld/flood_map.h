@@ -24,6 +24,8 @@ FLOOD_MAP.H
 Saturday, June 18, 1994 8:07:35 PM
 */
 
+#include "world.h"
+
 /* ---------- constants */
 
 enum /* flood modes */

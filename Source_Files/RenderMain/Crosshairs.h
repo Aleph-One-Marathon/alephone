@@ -33,6 +33,10 @@ Jun 26, 2002 (Loren Petrich):
 #ifndef _CROSSHAIRS
 #define _CROSSHAIRS
 
+#include "cseries.h"  // need RGBColor
+
+struct SDL_Surface;
+
 enum {
 	CHShape_RealCrosshairs,
 	CHShape_Circle

@@ -28,6 +28,9 @@
  *
  */
 
+#include "interface.h"
+#include "player.h"
+
 
 /* Constants */
 enum /* special flag types */

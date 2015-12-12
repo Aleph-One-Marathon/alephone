@@ -25,6 +25,7 @@
 #include "cstypes.h"
 
 class LoadedResource;
+struct RGBColor;
 
 typedef struct rgb_color {
 	uint16 red;

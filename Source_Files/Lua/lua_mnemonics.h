@@ -20,6 +20,8 @@ LUA_MNEMONICS.H
 	Implements the Lua string mnemonics
 */
 
+#include "lua_script.h"
+
 struct lang_def
 {
 	const char *name;

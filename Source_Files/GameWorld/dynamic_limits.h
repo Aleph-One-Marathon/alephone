@@ -31,6 +31,8 @@ May 4, 2000
 #ifndef MARATHON_DYNAMIC_ENTITY_LIMITS
 #define MARATHON_DYNAMIC_ENTITY_LIMITS
 
+#include "cstypes.h"
+
 
 // Limit types:
 enum {

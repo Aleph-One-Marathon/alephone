@@ -28,16 +28,17 @@
 #ifndef SDL_DIALOGS_H
 #define SDL_DIALOGS_H
 
+#include "cstypes.h"
 #include <vector>
 #include <memory>
 #include <boost/function.hpp>
+#include <SDL.h>
 
 #ifndef NO_STD_NAMESPACE
 using std::vector;
 #endif
 
 class widget;
-struct SDL_Surface;
 class font_info;
 class FileSpecifier;
 

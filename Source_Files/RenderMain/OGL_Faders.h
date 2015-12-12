@@ -25,6 +25,8 @@
 	This contains code for doing fader stuff.	
 */
 
+#include "cstypes.h"
+
 
 // Indicates whether OpenGL-rendering faders will be used
 bool OGL_FaderActive();

@@ -23,6 +23,8 @@
 #ifndef _CSERIES_ALERTS_
 #define _CSERIES_ALERTS_
 
+#include "cseries.h"  // need OSErr
+
 #if defined(__GNUC__)
 #define NORETURN __attribute__((noreturn))
 #else

@@ -27,6 +27,8 @@ May 18, 2000 (Loren Petrich):
 	Added XML-parser support
 */
 
+#include "world.h"
+
 /* ---------- prototypes/SCENERY.C */
 
 void initialize_scenery(void);

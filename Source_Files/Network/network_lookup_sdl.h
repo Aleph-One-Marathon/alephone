@@ -28,6 +28,7 @@
 #ifndef NETWORK_LOOKUP_SDL_H
 #define NETWORK_LOOKUP_SDL_H
 
+#include "cseries.h"  // need OSErr
 #include	"SSLP_API.h"
 
 /* ---------- prototypes/NETWORK_NAMES.C */

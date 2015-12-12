@@ -24,6 +24,9 @@ PLATFORM_DEFINITIONS.H
 Monday, June 26, 1995 9:43:22 AM  (Jason)
 */
 
+#include "platforms.h"
+#include "SoundManagerEnums.h"
+
 /* ---------- constants */
 
 enum /* sound codes for play_platform_sound() */

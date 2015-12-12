@@ -28,6 +28,8 @@
 	including that root element, of course.
 */
 
+#include <stddef.h>
+
 extern void ResetAllMMLValues(); // reset everything that's been changed to hard-coded defaults
 
 class FileSpecifier;

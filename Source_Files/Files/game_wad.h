@@ -33,6 +33,9 @@ Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
 */
 
+#include "cstypes.h"
+#include <string>
+
 class FileSpecifier;
 
 bool save_game_file(FileSpecifier& File, const std::string& metadata, const std::string& imagedata);

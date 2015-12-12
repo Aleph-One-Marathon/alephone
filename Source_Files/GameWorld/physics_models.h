@@ -24,6 +24,8 @@ PHYSICS_MODELS.H
 Tuesday, May 31, 1994 5:18:35 PM
 */
 
+#include "world.h"
+
 /* ---------- constants */
 
 enum /* models */

@@ -28,6 +28,7 @@
 #ifndef SDL_FONTS_H
 #define SDL_FONTS_H
 
+#include "csfonts.h"
 #include "FileHandler.h"
 #include <SDL_ttf.h>
 #include <boost/tuple/tuple.hpp>

@@ -25,6 +25,8 @@
 
 */
 
+#include "csmisc.h"
+
 #define RANDOM_COUNT(x) (-(x))
 
 enum {

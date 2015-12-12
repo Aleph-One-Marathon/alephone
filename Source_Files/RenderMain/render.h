@@ -199,6 +199,10 @@ void render_computer_interface(struct view_data *view);
 
 #include "scottish_textures.h"
 
+// Forward declarations in case we get first included by scottish_textures.h:
+struct rectangle_definition;
+struct polygon_definition;
+
 // LP: definitions moved up here because they are referred to
 // outside of render.c, where they are defined.
 

@@ -30,6 +30,7 @@ Aug 29, 2000 (Loren Petrich):
 	Added packing routines for the light data; also moved old light stuff (M1) here
 */
 
+#include "cstypes.h"
 #include <vector>
 
 /* ---------- constants */
@@ -170,7 +171,7 @@ const int SIZEOF_old_light_data = 32;
 // Turned the list of lights into a variable array;
 // took over their maximum number as how many of them
 
-extern vector<light_data> LightList;
+extern std::vector<light_data> LightList;
 #define lights (&LightList[0])
 #define MAXIMUM_LIGHTS_PER_MAP (LightList.size())
 

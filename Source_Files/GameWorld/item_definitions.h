@@ -28,6 +28,9 @@ Feb 4, 2000 (Loren Petrich):
 
 */
 
+#include "items.h"
+#include "map.h"
+
 /* ---------- structures */
 
 struct item_definition

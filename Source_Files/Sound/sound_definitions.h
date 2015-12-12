@@ -39,6 +39,9 @@ Aug 17, 2000 (Loren Petrich):
 	Turned handle for loaded sound into a pointer; added length of that sound object.
 */
 
+#include "SoundManagerEnums.h"
+#include "world.h"
+
 /* ---------- constants */
 
 enum

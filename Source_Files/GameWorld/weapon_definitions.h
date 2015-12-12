@@ -29,6 +29,12 @@
 	Added SMG stuff
 */
 
+#include "items.h"
+#include "map.h"
+#include "projectiles.h"
+#include "SoundManagerEnums.h"
+#include "weapons.h"
+
 /* TEMPORARY!!! */
 enum {
 	_projectile_ball_dropped= 1000

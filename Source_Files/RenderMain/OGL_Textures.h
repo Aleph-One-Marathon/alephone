@@ -34,6 +34,10 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #ifndef _OGL_TEXTURES
 #define _OGL_TEXTURES
 
+#include "OGL_Headers.h"
+#include "OGL_Subst_Texture_Def.h"
+#include "scottish_textures.h"
+
 // Initialize the texture accounting
 void OGL_StartTextures();
 

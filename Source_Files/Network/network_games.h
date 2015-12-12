@@ -25,6 +25,8 @@
 
 */
 
+#include "player.h"
+
 struct player_ranking_data {
 	short player_index;
 	long ranking;

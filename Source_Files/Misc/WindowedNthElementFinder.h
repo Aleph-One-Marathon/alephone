@@ -27,6 +27,7 @@
 #define WINDOWEDNTHELEMENTFINDER_H
 
 #include "CircularQueue.h"
+#include <set>
 
 template <typename tElementType>
 class WindowedNthElementFinder {
