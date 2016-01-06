@@ -315,6 +315,20 @@ data/icons/Makefile
 ])
 AC_OUTPUT
 
+dnl Print summary of key compilation variables.
+
+AS_ECHO([""])
+AS_ECHO(["Compilation settings:"])
+AS_ECHO([""])
+AS_ECHO(["         CC: ${CC}"])
+AS_ECHO(["        CXX: ${CXX}"])
+AS_ECHO(["        CPP: ${CPP}"])
+AS_ECHO(["     CFLAGS: ${CFLAGS}"])
+AS_ECHO(["   CXXFLAGS: ${CXXFLAGS}"])
+AS_ECHO(["   CPPFLAGS: ${CPPFLAGS}"])
+AS_ECHO(["    LDFLAGS: ${LDFLAGS}"])
+AS_ECHO(["       LIBS: ${LIBS}"])
+
 dnl Print summary of enabled/disabled options.
 
 dnl AX_PRINT_SUMMARY(option)
