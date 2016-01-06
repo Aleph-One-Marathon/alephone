@@ -117,7 +117,7 @@ public:
 	void put_cstr(std::string path, std::string cstr);
 	void put_attr_cstr(std::string path, std::string cstr);
 	
-	typedef boost::any_range<InfoTree, boost::forward_traversal_tag, InfoTree, std::ptrdiff_t> const_child_range;
+	typedef boost::any_range<const InfoTree, boost::forward_traversal_tag> const_child_range;
 	const_child_range children_named(std::string key) const;
 };
 
