@@ -22,15 +22,15 @@ mime_icons = \
   application-x-alephone-snda.png \
   text-x-alephone-mml.png
 icon_sizes = 16 22 24 32 48 64 96 128 256
-mimedir = $(datadir)/mime/packages
+mimedir = $(datarootdir)/mime/packages
 mime_DATA = alephone.xml
 
 install-icons:
 	for size in $(icon_sizes); do \
-  $(MKDIR_P) $(DESTDIR)$(datadir)/icons/hicolor/$${size}x$${size}/mimetypes/; \
+  $(MKDIR_P) $(DESTDIR)$(datarootdir)/icons/hicolor/$${size}x$${size}/mimetypes/; \
   for icon in $(mime_icons); do \
     $(INSTALL_DATA) icons/$${size}x$${size}/$$icon \
-      $(DESTDIR)$(datadir)/icons/hicolor/$${size}x$${size}/mimetypes/; \
+      $(DESTDIR)$(datarootdir)/icons/hicolor/$${size}x$${size}/mimetypes/; \
   done; \
 done
 
