@@ -85,6 +85,10 @@ extern "C"
 }
 #endif
 
+#ifdef AV_PIX_FMT_NONE
+#define PIX_FMT_YUV420P AV_PIX_FMT_YUV420P
+#define PIX_FMT_RGB32 AV_PIX_FMT_RGB32
+#endif
 
 // shamelessly stolen from SDL 2.0
 static int get_cpu_count(void)
