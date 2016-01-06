@@ -86,7 +86,7 @@ extern int convert_audio(int in_samples, int in_channels, int in_stride,
  *  Provide a fast way to get the correct context.
  *  \returns The context matching the input values.
  */
-struct SwsContext* getContext( SDL_ffmpegConversionContext **context, int inWidth, int inHeight, enum PixelFormat inFormat, int outWidth, int outHeight, enum PixelFormat outFormat )
+struct SwsContext* getContext( SDL_ffmpegConversionContext **context, int inWidth, int inHeight, enum AVPixelFormat inFormat, int outWidth, int outHeight, enum AVPixelFormat outFormat )
 {
     SDL_ffmpegConversionContext *ctx = *context;
 
@@ -621,7 +621,7 @@ int SDL_ffmpegAddVideoFrame( SDL_ffmpegFile *file, SDL_Surface *frame )
     {
         case 24:
             sws_scale( getContext( &file->videoStream->conversionContext,
-                                   frame->w, frame->h, PIX_FMT_RGB24,
+                                   frame->w, frame->h, AV_PIX_FMT_RGB24,
                                    file->videoStream->_ffmpeg->codec->width,
                                    file->videoStream->_ffmpeg->codec->height,
                                    file->videoStream->_ffmpeg->codec->pix_fmt ),
@@ -634,7 +634,7 @@ int SDL_ffmpegAddVideoFrame( SDL_ffmpegFile *file, SDL_Surface *frame )
             break;
         case 32:
             sws_scale( getContext( &file->videoStream->conversionContext,
-                                   frame->w, frame->h, PIX_FMT_BGR32,
+                                   frame->w, frame->h, AV_PIX_FMT_BGR32,
                                    file->videoStream->_ffmpeg->codec->width,
                                    file->videoStream->_ffmpeg->codec->height,
                                    file->videoStream->_ffmpeg->codec->pix_fmt ),
@@ -1605,7 +1605,7 @@ SDL_ffmpegStream* SDL_ffmpegAddVideoStream( SDL_ffmpegFile *file, SDL_ffmpegCode
     stream->codec->gop_size = 12;
 
     /* set pixel format */
-    stream->codec->pix_fmt = PIX_FMT_YUV420P;
+    stream->codec->pix_fmt = AV_PIX_FMT_YUV420P;
 
     /* set mpeg2 codec parameters */
     if ( stream->codec->codec_id == AV_CODEC_ID_MPEG2VIDEO )
@@ -2223,7 +2223,7 @@ int SDL_ffmpegDecodeVideoFrame( SDL_ffmpegFile* file, AVPacket *pack, SDL_ffmpeg
                                    file->videoStream->_ffmpeg->codec->height,
                                    file->videoStream->_ffmpeg->codec->pix_fmt,
                                    frame->overlay->w, frame->overlay->h,
-                                   PIX_FMT_YUYV422 ),
+                                   AV_PIX_FMT_YUYV422 ),
                        ( const uint8_t* const* )file->videoStream->decodeFrame->data,
                        file->videoStream->decodeFrame->linesize,
                        0,
@@ -2245,7 +2245,7 @@ int SDL_ffmpegDecodeVideoFrame( SDL_ffmpegFile* file, AVPacket *pack, SDL_ffmpeg
                                            file->videoStream->_ffmpeg->codec->height,
                                            file->videoStream->_ffmpeg->codec->pix_fmt,
                                            frame->surface->w, frame->surface->h,
-                                           PIX_FMT_RGB32 ),
+                                           AV_PIX_FMT_RGB32 ),
                                ( const uint8_t* const* )file->videoStream->decodeFrame->data,
                                file->videoStream->decodeFrame->linesize,
                                0,
@@ -2259,7 +2259,7 @@ int SDL_ffmpegDecodeVideoFrame( SDL_ffmpegFile* file, AVPacket *pack, SDL_ffmpeg
                                            file->videoStream->_ffmpeg->codec->height,
                                            file->videoStream->_ffmpeg->codec->pix_fmt,
                                            frame->surface->w, frame->surface->h,
-                                           PIX_FMT_RGB24 ),
+                                           AV_PIX_FMT_RGB24 ),
                                ( const uint8_t* const* )file->videoStream->decodeFrame->data,
                                file->videoStream->decodeFrame->linesize,
                                0,

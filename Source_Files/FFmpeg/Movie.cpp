@@ -420,7 +420,7 @@ bool Movie::Setup()
         video_stream->codec->width = view_rect.w;
         video_stream->codec->height = view_rect.h;
         video_stream->codec->time_base = (AVRational){1, TICKS_PER_SECOND};
-        video_stream->codec->pix_fmt = PIX_FMT_YUV420P;
+        video_stream->codec->pix_fmt = AV_PIX_FMT_YUV420P;
         video_stream->codec->flags |= CODEC_FLAG_CLOSED_GOP;
         video_stream->codec->thread_count = get_cpu_count();
         
@@ -539,7 +539,7 @@ bool Movie::Setup()
     // initialize conversion context
     if (success)
     {
-        av->sws_ctx = sws_getContext(temp_surface->w, temp_surface->h, PIX_FMT_RGB32,
+        av->sws_ctx = sws_getContext(temp_surface->w, temp_surface->h, AV_PIX_FMT_RGB32,
                                      video_stream->codec->width,
                                      video_stream->codec->height,
                                      video_stream->codec->pix_fmt,
