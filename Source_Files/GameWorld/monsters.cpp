@@ -2913,7 +2913,7 @@ static bool attempt_evasive_manouvers(
 {
 	struct monster_data *monster= get_monster_data(monster_index);
 	struct object_data *object= get_object_data(monster->object_index);
-	world_point2d destination= *((world_point2d*)&object->location);
+	world_point2d destination= { object->location.x, object->location.y };
 	angle new_facing= NORMALIZE_ANGLE(object->facing + ((global_random()&1) ? QUARTER_CIRCLE : -QUARTER_CIRCLE));
 	world_distance original_floor_height= get_polygon_data(object->polygon)->floor_height;
 	short polygon_index= object->polygon;
@@ -2991,7 +2991,9 @@ void advance_monster_path(
 		
 		if (object->polygon==target_object->polygon)
 		{
-			path_goal= *(world_point2d *)&get_object_data(get_monster_data(monster->target_index)->object_index)->location;
+			world_point3d location= get_object_data(get_monster_data(monster->target_index)->object_index)->location;
+			path_goal.x= location.x;
+			path_goal.y= location.y;
 			done= false;
 		}
 	}

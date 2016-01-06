@@ -276,7 +276,17 @@ void ServerWarningMessage::reallyDeflateTo(AOStream& outputStream) const {
 }
 
 bool ServerWarningMessage::reallyInflateFrom(AIStream& inputStream) {
-  inputStream >> (uint16&) mReason;
+  uint16 reason_code;
+  inputStream >> reason_code;
+  switch (reason_code) {
+    case kJoinerUngatherable:
+      mReason = kJoinerUngatherable;
+      break;
+    case kNoReason:
+    default:
+      mReason = kNoReason;
+      break;
+  }
   char s[kMaxStringSize];
   read_string(inputStream, s, kMaxStringSize);
   mString = s;

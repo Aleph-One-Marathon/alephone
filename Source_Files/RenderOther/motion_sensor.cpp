@@ -458,7 +458,8 @@ void erase_all_entity_blips(void)
 				}
 				
 				/* calculate the 2d position on the motion sensor */
-				entity->previous_points[0]= *(point2d *)&object->location;
+				entity->previous_points[0].x= object->location.x;
+				entity->previous_points[0].y= object->location.y;
 				transform_point2d((world_point2d *)&entity->previous_points[0], (world_point2d *)&owner_object->location, NORMALIZE_ANGLE(owner_object->facing+QUARTER_CIRCLE));
 				//entity->previous_points[0].x>>= MOTION_SENSOR_SCALE;
 				entity->previous_points[0].x /= MOTION_SENSOR_SCALE;

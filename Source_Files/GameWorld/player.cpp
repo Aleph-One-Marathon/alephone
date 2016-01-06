@@ -1301,7 +1301,8 @@ static void update_player_teleport(
 					world_point3d destination;
 					
 					/* Determine where we are going. */
-					*((world_point2d *)&destination)= destination_polygon->center;
+					destination.x= destination_polygon->center.x;
+					destination.y= destination_polygon->center.y;
 					destination.z= destination_polygon->floor_height;
 
 					damage.type= _damage_teleporter;
