@@ -145,26 +145,24 @@ AC_SEARCH_LIBS([socket], [socket],
 
 dnl Check for libraries.
 
-dnl AX_REQUIRE_LIB(desc, define, header, lib, func)
-AC_DEFUN([AX_REQUIRE_LIB],
-         [ AC_CHECK_HEADERS([$3], [AC_CHECK_LIB([$4], [$5])])
-           AS_IF([test "x${ac_cv_lib_$4_$5}" = "xyes"],
-                 [AC_DEFINE([HAVE_$2], [1], [$1 support enabled])],
-                 [AC_MSG_ERROR([You need $1 to run Aleph One.])]) ])
+dnl AX_REQUIRE_PKG(desc, define, modules)
+AC_DEFUN([AX_REQUIRE_PKG],
+         [ PKG_CHECK_MODULES([$2], [$3],
+                             [ CPPFLAGS="${[$2]_CFLAGS} $CPPFLAGS"
+                               LIBS="${[$2]_LIBS} $LIBS"
+                               have_$1=true
+                               AC_DEFINE([HAVE_$2], [1], [$1 support enabled]) ],
+                             [ AC_MSG_ERROR([You need $1 to run Aleph One.]) ]) ])
 
 dnl Check for required SDL dependencies.
 AM_PATH_SDL(1.2.0, , AC_MSG_ERROR([You need SDL 1.2 to run Aleph One.]))
 CPPFLAGS="$CPPFLAGS $SDL_CFLAGS -DSDL"
 LIBS="$LIBS $SDL_LIBS"
-
-AX_REQUIRE_LIB([SDL_ttf], [SDL_TTF],
-               [SDL_ttf.h], [SDL_ttf], [TTF_Init])
-AX_REQUIRE_LIB([SDL_net], [SDL_NET],
-               [SDL_net.h], [SDL_net], [SDLNet_Init])
+AX_REQUIRE_PKG([SDL_ttf], [SDL_TTF], [SDL_ttf])
+AX_REQUIRE_PKG([SDL_net], [SDL_NET], [SDL_net])
 
 dnl Check for zlib.
-AX_REQUIRE_LIB([zlib], [ZLIB],
-               [zlib.h], [z], [zlibVersion])
+AX_REQUIRE_PKG([zlib], [ZLIB], [zlib])
 
 dnl Check for Expat.
 have_expat_h=no
@@ -244,8 +242,8 @@ AC_DEFUN([AX_CHECK_FEATURE_PKG],
             AM_CONDITIONAL([HAVE_$2], [test "x${have_$1}" = "xtrue"])
           ])
 
-AX_CHECK_FEATURE_LIB([sdl_image], [SDL_IMAGE],
-                     [SDL_image.h], [SDL_image], [IMG_Load])
+AX_CHECK_FEATURE_PKG([sdl_image], [SDL_IMAGE],
+                     [SDL_IMAGE], [SDL_image])
 
 AX_CHECK_FEATURE_PKG([ffmpeg], [FFMPEG],
                      [FFMPEG], [libavcodec >= 54.35.0 libavformat >= 54.20.0 libavutil >= 52.3.0 libswscale >= 2.1.1])
