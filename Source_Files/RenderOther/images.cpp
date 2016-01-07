@@ -116,7 +116,7 @@ static void draw_picture(LoadedResource &PictRsrc);
 
 #include <SDL_endian.h>
 
-#ifdef HAVE_SDL_IMAGE_H
+#ifdef HAVE_SDL_IMAGE
 #include <SDL_image.h>
 #endif
 

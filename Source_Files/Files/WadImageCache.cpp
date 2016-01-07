@@ -28,7 +28,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "InfoTree.h"
 
-#ifdef HAVE_SDL_IMAGE_H
+#ifdef HAVE_SDL_IMAGE
 #include <SDL_image.h>
 #endif
 #ifdef HAVE_PNG
@@ -133,7 +133,7 @@ std::string WadImageCache::image_to_new_name(SDL_Surface *image, int32 *filesize
 	TempFile.SetTempName(File);
 	
 	int ret;
-#if defined(HAVE_PNG) && defined(HAVE_SDL_IMAGE_H)
+#if defined(HAVE_PNG) && defined(HAVE_SDL_IMAGE)
 	ret = IMG_SavePNG(TempFile.GetPath(), image, IMG_COMPRESS_DEFAULT, NULL, 0);
 #else
 	ret = SDL_SaveBMP(image, TempFile.GetPath());

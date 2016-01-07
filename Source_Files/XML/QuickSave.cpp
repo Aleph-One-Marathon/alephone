@@ -28,7 +28,7 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
-#ifdef HAVE_SDL_IMAGE_H
+#ifdef HAVE_SDL_IMAGE
 #include <SDL_image.h>
 #endif
 #ifdef HAVE_PNG
@@ -528,7 +528,7 @@ static bool build_map_preview(std::ostringstream& ostream)
     _restore_port();
 	
     SDL_RWops *rwops = SDL_RWFromOStream(ostream);
-#if defined(HAVE_PNG) && defined(HAVE_SDL_IMAGE_H)
+#if defined(HAVE_PNG) && defined(HAVE_SDL_IMAGE)
     int ret = IMG_SavePNG_RW(rwops, surface, IMG_COMPRESS_DEFAULT, NULL, 0);
 #else
     int ret = SDL_SaveBMP_RW(surface, rwops, false);

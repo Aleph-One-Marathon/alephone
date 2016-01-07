@@ -28,7 +28,7 @@
 #include "ImageLoader.h"
 #include "FileHandler.h"
 
-#ifdef HAVE_SDL_IMAGE_H
+#ifdef HAVE_SDL_IMAGE
 #include <SDL_image.h>
 #endif
 
