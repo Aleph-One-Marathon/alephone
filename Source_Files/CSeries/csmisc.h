@@ -21,6 +21,8 @@
 #ifndef _CSERIES_MISC_
 #define _CSERIES_MISC_
 
+#include "cstypes.h"
+
 #define MACHINE_TICKS_PER_SECOND 1000
 
 extern uint32 machine_tick_count(void);

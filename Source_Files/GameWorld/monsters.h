@@ -50,6 +50,8 @@ Oct 24, 2000 (Mark Levin)
 #include <vector>
 using namespace std;
 
+#include "world.h"
+
 /* ---------- constants */
 
 #define FLAMING_DEAD_SHAPE BUILD_DESCRIPTOR(_collection_rocket, 7)

@@ -28,6 +28,10 @@ Feb 3, 2000 (Loren Petrich):
 	Added VacBob effects
 */
 
+#include "effects.h"
+#include "map.h"
+#include "SoundManagerEnums.h"
+
 /* ---------- constants */
 
 enum /* flags */

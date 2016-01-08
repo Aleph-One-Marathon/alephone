@@ -30,6 +30,8 @@ May 18, 2000 (Loren Petrich):
 	Added XML-parser support
 */
 
+#include "map.h"
+
 /* ---------- constants */
 
 // #define MAXIMUM_PLATFORMS_PER_MAP 64

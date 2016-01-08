@@ -33,6 +33,8 @@ Jul 2, 2000 (Loren Petrich):
 #include	"shape_descriptors.h"
 #include "sdl_fonts.h"
 
+struct rgb_color;
+
 /* Rectangles for the interface, etc.. */
 /* rectangle id's */
 enum {

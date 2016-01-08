@@ -29,6 +29,8 @@ Aug 15, 2000 (Loren Petrich):
 	Using object-oriented file handler
 */
 
+#include "cstypes.h"
+
 class FileSpecifier;
 class OpenedFile;
 

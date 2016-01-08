@@ -28,6 +28,10 @@ Aug 14, 2000 (Loren Petrich):
 	and because these are variable-format objects.
 */
 
+#include "shape_descriptors.h"
+
+struct collection_definition;
+
 /* ---------- structures */
 
 struct collection_header /* 32 bytes on disk */

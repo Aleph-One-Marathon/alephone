@@ -29,6 +29,8 @@ Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler; removing refnum from here
 */
 
+#include "player.h"
+
 #define MAXIMUM_QUEUE_SIZE           512
 
 typedef struct action_queue /* 8 bytes */

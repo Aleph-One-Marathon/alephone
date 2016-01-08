@@ -26,6 +26,8 @@
 May 1, 2000 (Loren Petrich): Added XML parser object for the stuff here.
 */
 
+#include "world.h"
+
 #define OVERHEAD_MAP_MINIMUM_SCALE 1
 #define OVERHEAD_MAP_MAXIMUM_SCALE 4
 #define DEFAULT_OVERHEAD_MAP_SCALE 3

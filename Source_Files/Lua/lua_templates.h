@@ -958,11 +958,11 @@ public:
 	}
 	static boost::function<bool (index_t)> Valid;
 	
-	static map<index_t, object_t> _objects;
+	static std::map<index_t, object_t> _objects;
 };
 
 template<char *name, typename object_t, typename index_t>
-map<index_t, object_t> L_ObjectClass<name, object_t, index_t>::_objects;
+std::map<index_t, object_t> L_ObjectClass<name, object_t, index_t>::_objects;
 
 template<char *name, typename object_t, typename index_t>
 struct object_valid

@@ -28,6 +28,7 @@ Aug 21, 2000 (Loren Petrich):
 */
 
 #include "FileHandler.h"
+#include "wad.h"
 
 /* Open the file, and allocate whatever internal structures are necessary in the */
 /*  preferences pointer.. */

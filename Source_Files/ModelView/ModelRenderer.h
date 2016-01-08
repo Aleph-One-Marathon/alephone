@@ -26,6 +26,7 @@
 	Created by Loren Petrich, July 18, 2001
 */
 
+#include "csmacros.h"  // need obj_clear
 #include "Model3D.h"
 
 struct ModelRenderShader

@@ -61,6 +61,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 #include <utility>
 #include <vector>
+#include <SDL.h>
+
+struct Rect;
 
 struct screen_mode_data;
 namespace alephone

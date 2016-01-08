@@ -76,6 +76,8 @@
 		char text;
 */
 
+#include "cstypes.h"
+
 /* ------------ structures */
 struct static_preprocessed_terminal_data {
 	int16 total_length;

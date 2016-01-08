@@ -30,6 +30,8 @@
 	and an index inside that string set, which starts from 0.
 */
 
+#include <stddef.h>
+
 // Set up a string in the repository; a repeated call will replace an old string
 void TS_PutCString(short ID, short Index, const char *String);
 

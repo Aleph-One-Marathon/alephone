@@ -36,6 +36,8 @@
 #ifndef CIRCULAR_QUEUE_H
 #define CIRCULAR_QUEUE_H
 
+#include "csalerts.h"  // need assert
+
 template<typename T>
 class CircularQueue {
 public:

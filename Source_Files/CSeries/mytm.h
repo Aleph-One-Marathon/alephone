@@ -26,6 +26,8 @@
 #ifndef MYTM_H_
 #define MYTM_H_
 
+#include "cstypes.h"
+
 typedef struct myTMTask myTMTask,*myTMTaskPtr;
 
 extern myTMTaskPtr myTMSetup(

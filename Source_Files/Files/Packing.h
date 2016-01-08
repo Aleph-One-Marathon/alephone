@@ -55,7 +55,7 @@ Aug 27, 2002 (Alexander Strange):
 	Moved functions to Packing.cpp to get around inlining issues.
 */
 
-//#include <string.h>
+#include "cstypes.h"
 
 // Default: packed-data is big-endian.
 // May be overridden by some previous definition,

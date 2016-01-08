@@ -39,7 +39,7 @@ Oct 13, 2000
 
 #include <deque>
 #include <vector>
-#include "world.h"
+#include "map.h"
 #include "render.h"
 
 

@@ -36,6 +36,9 @@ Saturday, July 9, 1994 3:36:05 PM
 	added NUMBER_OF_PRIVATE_COLORS constant.
 */
 
+#include "cstypes.h"
+#include <vector>
+
 /* ---------- collection definition structure */
 
 /* 2 added pixels_to_world to collection_definition structure */

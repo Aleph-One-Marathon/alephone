@@ -27,6 +27,8 @@
 	http://www.gnu.org/licenses/gpl.html
 */
 
+#include "cstypes.h"
+
 
 struct GM_Random
 {
