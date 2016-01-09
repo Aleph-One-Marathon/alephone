@@ -34,6 +34,8 @@
 #ifndef NETWORK_MICROPHONE_SHARED_H
 #define NETWORK_MICROPHONE_SHARED_H
 
+#include "cstypes.h"
+
 // Netmic code should call this once the format is known (and any time the capture format changes).
 // copy_and_send_() uses the values specified by the most recent call to this routine.
 // It is an error to call copy_and_send() without calling this first.

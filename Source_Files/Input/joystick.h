@@ -26,6 +26,8 @@ May 18, 2009 (Eric Peterson):
 #ifndef JOYSTICK_H
 #define JOYSTICK_H
 
+#include "cstypes.h"
+
 // this is where we start stuffing button presses into the big keymap array,
 // since 65 is where uppercase letters start + room for 8 mouse presses
 #define SDLK_BASE_JOYSTICK_BUTTON 73

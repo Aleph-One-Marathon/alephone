@@ -43,6 +43,9 @@ Aug 30, 2000 (Loren Petrich):
 // LP addition:
 #include "dynamic_limits.h"
 
+#include "world.h"
+#include <vector>
+
 /* ---------- effect structure */
 
 enum /* effect types */
@@ -149,7 +152,7 @@ const int SIZEOF_effect_definition = 14;
 
 // Turned the list of active effects into a variable array
 
-extern vector<effect_data> EffectList;
+extern std::vector<effect_data> EffectList;
 #define effects (&EffectList[0])
 
 // extern struct effect_data *effects;

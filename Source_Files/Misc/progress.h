@@ -25,6 +25,8 @@
 
 */
 
+#include <stddef.h>
+
 enum {
 	strPROGRESS_MESSAGES= 143,
 	_distribute_map_single= 0,

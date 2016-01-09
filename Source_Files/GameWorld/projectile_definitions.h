@@ -27,6 +27,12 @@ Feb 4, 2000 (Loren Petrich):
 	Added SMG bullet and its ability to enter/exit liquids
 */
 
+#include "effects.h"
+#include "map.h"
+#include "media.h"
+#include "projectiles.h"
+#include "SoundManagerEnums.h"
+
 /* ---------- constants */
 
 enum /* projectile flags */

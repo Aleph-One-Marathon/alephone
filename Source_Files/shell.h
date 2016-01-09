@@ -39,7 +39,12 @@ Dec 29, 2000 (Loren Petrich):
 	Added function for showing text messages on the screen
 */
 
+#include "cstypes.h"
+
 class FileSpecifier;
+struct RGBColor;
+struct SDL_Color;
+struct SDL_Surface;
 
 /* ---------- constants */
 

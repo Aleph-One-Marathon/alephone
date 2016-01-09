@@ -34,7 +34,15 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Minor tweaks to screen_printf() mechanism (safer; resets when screen_reset called)
 */
 
+#include "computer_interface.h"
+#include "fades.h"
+#include "network.h"
+#include "OGL_Render.h"
+#include "overhead_map.h"
+#include "screen.h"
 #include <stdarg.h>
+
+extern SDL_Surface *world_pixels;
 
 #define DESIRED_SCREEN_WIDTH 640
 #define DESIRED_SCREEN_HEIGHT 480

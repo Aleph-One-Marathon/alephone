@@ -9,6 +9,7 @@
 #ifndef _VEC3__H
 #define _VEC3__H
 
+#include "OGL_Headers.h"
 #include <cfloat>
 #include <cmath>
 

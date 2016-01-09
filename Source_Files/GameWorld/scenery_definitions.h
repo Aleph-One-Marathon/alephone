@@ -29,6 +29,10 @@ Feb 4, 2000 (Loren Petrich):
 	That could be done by making (effect = NONE) in effects.c make the breaking-glass sound
 */
 
+#include "effects.h"
+#include "shape_descriptors.h"
+#include "world.h"
+
 /* ---------- constants */
 
 enum

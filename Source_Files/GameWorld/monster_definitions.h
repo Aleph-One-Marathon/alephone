@@ -33,9 +33,12 @@ Oct 26, 2000 (Mark Levin)
 	Added some includes that this file depends on
 */
 
-//New includes
 #include "effects.h"
+#include "items.h"
+#include "map.h"
+#include "monsters.h"
 #include "projectiles.h"
+#include "SoundManagerEnums.h"
 
 
 /* ---------- macros */

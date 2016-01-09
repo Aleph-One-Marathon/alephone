@@ -27,6 +27,8 @@ Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
 */
 
+#include "cstypes.h"
+
 class FileSpecifier;
 
 #define BUNGIE_PHYSICS_DATA_VERSION 0

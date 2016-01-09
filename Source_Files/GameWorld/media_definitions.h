@@ -30,6 +30,11 @@ May 17, 2000 (Loren Petrich):
 	Jjaro media type has its own fade effect
 */
 
+#include "effects.h"
+#include "fades.h"
+#include "media.h"
+#include "SoundManagerEnums.h"
+
 /* ---------- structures */
 
 struct media_definition
