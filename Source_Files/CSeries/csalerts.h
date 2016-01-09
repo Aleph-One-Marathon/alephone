@@ -40,7 +40,7 @@ extern void alert_user(
 	short severity,
 	short resid,
 	short item,
-	OSErr error);
+	int error);
 
 extern bool alert_choose_scenario(char *chosen_dir);
 

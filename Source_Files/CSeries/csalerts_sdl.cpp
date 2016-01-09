@@ -197,7 +197,7 @@ void alert_user(const char *message, short severity)
   if (severity != infoError) exit(1);
 }
 
-void alert_user(short severity, short resid, short item, OSErr error)
+void alert_user(short severity, short resid, short item, int error)
 {
   char str[256];
   getcstr(str, resid, item);
