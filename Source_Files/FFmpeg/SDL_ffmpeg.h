@@ -131,7 +131,7 @@ typedef struct
     /** Pointer to video buffer, user adjustable. */
     SDL_Surface *surface;
     /** Pointer to overlay buffer, user adjustable. */
-    SDL_Overlay *overlay;
+//    SDL_Overlay *overlay;
     /** Value indicating if this frame holds data, or that it can be overwritten. */
     int ready;
 	/** Value indicating wheter or not this is the last frame before EOF */

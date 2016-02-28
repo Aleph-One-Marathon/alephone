@@ -373,7 +373,7 @@ void SDL_ffmpegFreeVideoFrame( SDL_ffmpegVideoFrame* frame )
 
     if ( frame->surface ) SDL_FreeSurface( frame->surface );
 
-    if ( frame->overlay ) SDL_FreeYUVOverlay( frame->overlay );
+//    if ( frame->overlay ) SDL_FreeYUVOverlay( frame->overlay );
 
     free( frame );
 }
@@ -2209,28 +2209,28 @@ int SDL_ffmpegDecodeVideoFrame( SDL_ffmpegFile* file, AVPacket *pack, SDL_ffmpeg
     if ( got_frame )
     {
         /* convert YUV 420 to YUYV 422 data */
-        if ( frame->overlay && frame->overlay->format == SDL_YUY2_OVERLAY )
-        {
-            int pitch[] =
-            {
-                frame->overlay->pitches[ 0 ],
-                frame->overlay->pitches[ 1 ],
-                frame->overlay->pitches[ 2 ]
-            };
-
-            sws_scale( getContext( &file->videoStream->conversionContext,
-                                   file->videoStream->_ffmpeg->codec->width,
-                                   file->videoStream->_ffmpeg->codec->height,
-                                   file->videoStream->_ffmpeg->codec->pix_fmt,
-                                   frame->overlay->w, frame->overlay->h,
-                                   AV_PIX_FMT_YUYV422 ),
-                       ( const uint8_t* const* )file->videoStream->decodeFrame->data,
-                       file->videoStream->decodeFrame->linesize,
-                       0,
-                       file->videoStream->_ffmpeg->codec->height,
-                       ( uint8_t* const* )frame->overlay->pixels,
-                       pitch );
-        }
+//        if ( frame->overlay && frame->overlay->format == SDL_YUY2_OVERLAY )
+//        {
+//            int pitch[] =
+//            {
+//                frame->overlay->pitches[ 0 ],
+//                frame->overlay->pitches[ 1 ],
+//                frame->overlay->pitches[ 2 ]
+//            };
+//
+//            sws_scale( getContext( &file->videoStream->conversionContext,
+//                                   file->videoStream->_ffmpeg->codec->width,
+//                                   file->videoStream->_ffmpeg->codec->height,
+//                                   file->videoStream->_ffmpeg->codec->pix_fmt,
+//                                   frame->overlay->w, frame->overlay->h,
+//                                   AV_PIX_FMT_YUYV422 ),
+//                       ( const uint8_t* const* )file->videoStream->decodeFrame->data,
+//                       file->videoStream->decodeFrame->linesize,
+//                       0,
+//                       file->videoStream->_ffmpeg->codec->height,
+//                       ( uint8_t* const* )frame->overlay->pixels,
+//                       pitch );
+//        }
 
         /* convert YUV to RGB data */
         if ( frame->surface && frame->surface->format )
