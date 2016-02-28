@@ -469,6 +469,7 @@ public:
  */
 
 class w_text_entry : public widget {
+	friend class w_number_entry;
 public:
 	typedef boost::function<void (w_text_entry*)> Callback;
 
@@ -566,7 +567,7 @@ private:
 
 	int16 key_x;			// X offset of key name
 
-	SDLKey key;
+	SDL_Scancode key;
 	bool binding;		// Flag: next key press will bind key
 };
 

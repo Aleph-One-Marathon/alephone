@@ -1162,8 +1162,12 @@ void w_text_entry::draw(SDL_Surface *s) const
 }
 
 void w_text_entry::set_active(bool new_active) {
-	if (new_active && !active)
+	if (new_active && !active) {
 		cursor_position = num_chars;
+		SDL_StartTextInput();
+	} else if (!new_active && active) {
+		SDL_StopTextInput();
+	}
 	widget::set_active(new_active);
 }
 
@@ -1172,29 +1176,26 @@ void w_text_entry::event(SDL_Event &e)
 	if (e.type == SDL_KEYDOWN) {
 		switch (e.key.keysym.sym) {
 			case SDLK_LEFT:
-				if (cursor_position > 0) {
+left:			if (cursor_position > 0) {
 					cursor_position--;
 					dirty = true;
 				}
-				e.type = SDL_NOEVENT;
+				e.type = SDL_LASTEVENT;
 				break;
 			case SDLK_RIGHT:
-				if (cursor_position < num_chars) {
+right:			if (cursor_position < num_chars) {
 					cursor_position++;
 					dirty = true;
 				}
-				e.type = SDL_NOEVENT;	// Swallow event
+				e.type = SDL_LASTEVENT;
 				break;
-                                
-                        case SDLK_RETURN:
-                        case SDLK_KP_ENTER:
-                                if(enter_pressed_callback)
-                                    enter_pressed_callback(this);
-                        
-                                e.type = SDL_NOEVENT;	// Swallow event (shouldn't typing do this also??)
-                                break;
-
-			case SDLK_BACKSPACE:	// Backspace deletes character at cursor
+			case SDLK_RETURN:
+			case SDLK_KP_ENTER:
+				if (enter_pressed_callback)
+					enter_pressed_callback(this);
+				e.type = SDL_LASTEVENT;
+				break;
+			case SDLK_BACKSPACE:
 backspace:		if (num_chars && cursor_position) {
 					memmove(&buf[cursor_position - 1], &buf[cursor_position], num_chars - cursor_position);
 					buf[--num_chars] = 0;
@@ -1202,50 +1203,133 @@ backspace:		if (num_chars && cursor_position) {
 					modified_text();
 					play_dialog_sound(DIALOG_DELETE_SOUND);
 				}
+				e.type = SDL_LASTEVENT;
 				break;
-		case SDLK_DELETE:
+			case SDLK_DELETE:
 del:			if (cursor_position < num_chars) {
-				memmove(&buf[cursor_position], &buf[cursor_position + 1], num_chars - cursor_position - 1);
-				buf[--num_chars] = 0;
-				modified_text();
-				play_dialog_sound(DIALOG_DELETE_SOUND);
-			}
-			break;
-		case SDLK_UP:
-		case SDLK_DOWN:
-			break;
-
-			default: {				// Printable characters are entered into the buffer
-				uint16 uc = e.key.keysym.unicode;
-				if (uc >= ' ' && (uc < 0x80 || enable_mac_roman) && (num_chars + 1) < max_chars)
-				{
-					char c;
-					if (uc < 0x80)
-					{
-						c = static_cast<char>(uc);
-					}
-					else if (enable_mac_roman)
-					{
-						c = unicode_to_mac_roman(uc);
-					}
-					memmove(&buf[cursor_position + 1], &buf[cursor_position], num_chars - cursor_position);
-					buf[cursor_position++] = c;
-					buf[++num_chars] = 0;
+					memmove(&buf[cursor_position], &buf[cursor_position + 1], num_chars - cursor_position - 1);
+					buf[--num_chars] = 0;
 					modified_text();
-					play_dialog_sound(DIALOG_TYPE_SOUND);
-				} else if (uc == 21) {			// Ctrl-U: erase text
-					buf[0] = 0;
-					num_chars = 0;
+					play_dialog_sound(DIALOG_DELETE_SOUND);
+				}
+				e.type = SDL_LASTEVENT;
+				break;
+			case SDLK_HOME:
+home:			if (cursor_position > 0) {
 					cursor_position = 0;
-					modified_text();
-					play_dialog_sound(DIALOG_ERASE_SOUND);
-				} else if (uc == 4)	// Ctrl-D: delete
+					dirty = true;
+				}
+				e.type = SDL_LASTEVENT;
+				break;
+			case SDLK_END:
+end:			if (cursor_position < num_chars) {
+					cursor_position = num_chars;
+					dirty = true;
+				}
+				e.type = SDL_LASTEVENT;
+				break;
+			case SDLK_UP:
+			case SDLK_DOWN:
+				break;
+			case SDLK_a:
+				if (e.key.keysym.mod & KMOD_CTRL)
+					goto home;
+				break;
+			case SDLK_b:
+				if (e.key.keysym.mod & KMOD_CTRL)
+					goto left;
+				break;
+			case SDLK_d:
+				if (e.key.keysym.mod & KMOD_CTRL)
 					goto del;
-				else if (uc == 8) // Ctrl-H: backspace
+				break;
+			case SDLK_e:
+				if (e.key.keysym.mod & KMOD_CTRL)
+					goto end;
+				break;
+			case SDLK_f:
+				if (e.key.keysym.mod & KMOD_CTRL)
+					goto right;
+				break;
+			case SDLK_h:
+				if (e.key.keysym.mod & KMOD_CTRL)
 					goto backspace;
 				break;
+			case SDLK_k:
+				if (e.key.keysym.mod & KMOD_CTRL) {
+					if (cursor_position < num_chars) {
+						num_chars = cursor_position;
+						buf[num_chars] = 0;
+						modified_text();
+						play_dialog_sound(DIALOG_ERASE_SOUND);
+					}
+				}
+				e.type = SDL_LASTEVENT;
+				break;
+			case SDLK_t:
+				if (e.key.keysym.mod & KMOD_CTRL) {
+					if (cursor_position) {
+						if (cursor_position == num_chars)
+							--cursor_position;
+						char tmp = buf[cursor_position - 1];
+						buf[cursor_position - 1] = buf[cursor_position];
+						buf[cursor_position] = tmp;
+						++cursor_position;
+						modified_text();
+						play_dialog_sound(DIALOG_TYPE_SOUND);
+					}
+				}
+				e.type = SDL_LASTEVENT;
+				break;
+			case SDLK_u:
+				if (e.key.keysym.mod & KMOD_CTRL) {
+					if (num_chars && cursor_position) {
+						memmove(&buf[0], &buf[cursor_position], num_chars - cursor_position);
+						num_chars -= cursor_position;
+						buf[num_chars] = 0;
+						cursor_position = 0;
+						modified_text();
+						play_dialog_sound(DIALOG_ERASE_SOUND);
+					}
+				}
+				e.type = SDL_LASTEVENT;
+				break;
+			case SDLK_w:
+				if (e.key.keysym.mod & KMOD_CTRL) {
+					size_t erase_position = cursor_position;
+					while (erase_position && buf[erase_position - 1] == ' ')
+						--erase_position;
+					while (erase_position && buf[erase_position - 1] != ' ')
+						--erase_position;
+					if (erase_position < cursor_position) {
+						if (cursor_position < num_chars)
+						memmove(&buf[erase_position], &buf[cursor_position], num_chars - cursor_position);
+						num_chars -= cursor_position - erase_position;
+						cursor_position = erase_position;
+						modified_text();
+						play_dialog_sound(DIALOG_ERASE_SOUND);
+					}
+				}
+				e.type = SDL_LASTEVENT;
+				break;
+			default:
+				break;
+		}
+	} else if (e.type == SDL_TEXTINPUT) {
+		std::string input_utf8 = e.text.text;
+		std::string input_roman = utf8_to_mac_roman(input_utf8);
+		for (std::string::iterator it = input_roman.begin(); it != input_roman.end(); ++it)
+		{
+			uint16 uc = *it;
+			if (uc >= ' ' && (uc < 0x80 || enable_mac_roman) && (num_chars + 1) < max_chars) {
+				memmove(&buf[cursor_position + 1], &buf[cursor_position], num_chars - cursor_position);
+				buf[cursor_position++] = static_cast<char>(uc);
+				buf[++num_chars] = 0;
+				modified_text();
+				play_dialog_sound(DIALOG_TYPE_SOUND);
 			}
 		}
+		e.type = SDL_LASTEVENT;
 	}
 }
 
@@ -1309,35 +1393,22 @@ w_number_entry::w_number_entry(int initial_number) : w_text_entry(/*16*/4, NULL)
 
 void w_number_entry::event(SDL_Event &e)
 {
-	if (e.type == SDL_KEYDOWN) {
-            // ZZZ fix: under Mac OS X, Christian's code was filtering out backspace in numeric entry fields
-            // Maybe it would be better to have w_text_entry call a virtual method "typed_printable" or something
-            // which w_number_entry could override to filter out non-numeric characters.
-            // Anyway, here I just ignore the keysym.sym's that show up in w_text_entry::event(), to avoid
-            // filtering them out incorrectly.
-            switch(e.key.keysym.sym) {
-                case SDLK_LEFT:
-                case SDLK_RIGHT:
-                case SDLK_RETURN:
-                case SDLK_KP_ENTER:
-                case SDLK_BACKSPACE:
-                break;
-                
-                default:
-                {
-                    uint16 uc = e.key.keysym.unicode;
-                    if (uc >= ' ' && uc < 0x80) {
-                            if (uc < '0' || uc > '9') {
-                                    // Swallow all non-numbers
-                                    e.type = SDL_NOEVENT;
-                                    return;
-                            }
-                    }
-                } // default
-                break;
-            } // switch
-	} // if key down
-        
+	if (e.type == SDL_TEXTINPUT) {
+		std::string input_utf8 = e.text.text;
+		std::string input_roman = utf8_to_mac_roman(input_utf8);
+		for (std::string::iterator it = input_roman.begin(); it != input_roman.end(); ++it)
+		{
+			uint16 uc = *it;
+			if (uc >= '0' && (uc < 0x80 || enable_mac_roman) && (num_chars + 1) < max_chars) {
+				memmove(&buf[cursor_position + 1], &buf[cursor_position], num_chars - cursor_position);
+				buf[cursor_position++] = static_cast<char>(uc);
+				buf[++num_chars] = 0;
+				modified_text();
+				play_dialog_sound(DIALOG_TYPE_SOUND);
+			}
+		}
+	}
+
 	w_text_entry::event(e);
 }
 
@@ -1367,7 +1438,7 @@ void w_password_entry::draw(SDL_Surface *s) const
 
 static const char *WAITING_TEXT = "waiting for new key";
 
-w_key::w_key(SDLKey key) : widget(LABEL_WIDGET), binding(false)
+w_key::w_key(SDL_Scancode key) : widget(LABEL_WIDGET), binding(false)
 {
 	set_key(key);
 

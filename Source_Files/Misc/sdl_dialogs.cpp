@@ -98,8 +98,6 @@ struct theme_widget
 static FileSpecifier theme_path;
 static std::map<int, theme_widget> dialog_theme;
 
-bool dialog::sKeyRepeatActive = false;
-
 // Prototypes
 static void shutdown_dialogs(void);
 static bool load_theme(FileSpecifier &theme);
@@ -2278,12 +2276,6 @@ void dialog::start(bool play_sound)
 	if (play_sound)
 		play_dialog_sound(DIALOG_INTRO_SOUND);
 
-	// Enable unicode key translation
-	saved_unicode_state = SDL_EnableUNICODE(true);
-	saved_keyrepeat_state = sKeyRepeatActive;
-	sKeyRepeatActive = true;
-	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
-
 	// Prepare for dialog event loop
 	result = 0;
 	done = false;
@@ -2314,13 +2306,7 @@ bool dialog::process_events()
 
 int dialog::finish(bool play_sound)
 {
-	// Disable unicode key translation
-	SDL_EnableUNICODE(saved_unicode_state);
-	sKeyRepeatActive = saved_keyrepeat_state;
-	if (!saved_keyrepeat_state)
-	{
-		SDL_EnableKeyRepeat(0, 0);
-	}
+	SDL_StopTextInput();
 
 	// Farewell sound
 	if (play_sound)
