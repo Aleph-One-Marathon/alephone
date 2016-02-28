@@ -1430,27 +1430,27 @@ static void process_event(const SDL_Event &event)
 	case SDL_QUIT:
 		set_game_state(_quit_game);
 		break;
-		
-	case SDL_ACTIVEEVENT:
-		if (event.active.state & SDL_APPINPUTFOCUS) {
-			if (!event.active.gain && !(SDL_GetAppState() & SDL_APPINPUTFOCUS)) {
+
+	case SDL_WINDOWEVENT:
+		switch (event.window.event) {
+			case SDL_WINDOWEVENT_FOCUS_LOST:
 				if (get_game_state() == _game_in_progress && get_keyboard_controller_status() && !Movie::instance()->IsRecording()) {
 					darken_world_window();
 					set_keyboard_controller_status(false);
 					show_cursor();
 				}
-			}
-		}
-		break;
-	case SDL_VIDEOEXPOSE:
+				break;
+			case SDL_WINDOWEVENT_EXPOSED:
 #if !defined(__APPLE__) && !defined(__MACH__) // double buffering :)
 #ifdef HAVE_OPENGL
-		if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
-			SDL_GL_SwapBuffers();
-		else
+				if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
+					SDL_GL_SwapBuffers();
+				else
 #endif
-			update_game_window();
+					update_game_window();
 #endif
+				break;
+		}
 		break;
 	}
 	
