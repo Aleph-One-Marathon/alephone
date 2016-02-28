@@ -1009,7 +1009,7 @@ static void handle_game_key(const SDL_Event &event)
 	}
 	else
 	{
-		if (key == SDLK_ESCAPE) // (ZZZ) Quit gesture (now safer)
+		if (sc == SDL_SCANCODE_ESCAPE) // (ZZZ) Quit gesture (now safer)
 		{
 			if(!player_controlling_game())
 				do_menu_item_command(mGame, iQuitGame, false);
@@ -1580,6 +1580,9 @@ void dump_screen(void)
 #endif
 		return;
 	}
+	
+	int video_w, video_h;
+	MainScreenSize(video_w, video_h);
 
 #ifdef HAVE_OPENGL
 	// Otherwise, allocate temporary surface...
@@ -1611,7 +1614,7 @@ void dump_screen(void)
 
 	// Save surface
 //#ifdef HAVE_PNG
-//        IMG_SavePNG(file.GetPath(), t, IMG_COMPRESS_DEFAULT, textp, texts.size());
+//        aoIMG_SavePNG(file.GetPath(), t, IMG_COMPRESS_DEFAULT, textp, texts.size());
 #ifdef HAVE_SDL_IMAGE
 	IMG_SavePNG(t, file.GetPath());
 #else
