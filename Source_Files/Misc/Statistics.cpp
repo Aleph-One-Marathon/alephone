@@ -51,7 +51,7 @@ StatsManager::StatsManager() : thread_(0), run_(true)
 	entry_mutex_ = SDL_CreateMutex();
 
 	// do uploads in a separate thread
-	thread_ = SDL_CreateThread(Run, this);
+	thread_ = SDL_CreateThread(Run, "StatsManager_uploadThread", this);
 }
 
 void StatsManager::Process()

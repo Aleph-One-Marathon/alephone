@@ -50,7 +50,7 @@ NonblockingConnect::~NonblockingConnect()
 void NonblockingConnect::connect()
 {
 	m_status = Connecting;
-	m_thread = SDL_CreateThread(connect_thread, this);
+	m_thread = SDL_CreateThread(connect_thread, "NonblockingConnect_thread", this);
 	if (!m_thread)
 	{
 		m_status = ConnectFailed;

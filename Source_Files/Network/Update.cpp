@@ -65,7 +65,7 @@ void Update::StartUpdateCheck()
 	m_new_date_version.clear();
 	m_new_display_version.clear();
 
-	m_thread = SDL_CreateThread(update_thread, this);
+	m_thread = SDL_CreateThread(update_thread, "Update_checkThread", this);
 	if (!m_thread)
 	{
 		m_status = UpdateCheckFailed;

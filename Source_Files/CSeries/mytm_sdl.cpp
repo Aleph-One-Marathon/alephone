@@ -267,7 +267,7 @@ myXTMSetup(int32 time, bool (*func)(void)) {
     obj_clear(theTask->mProfilingData);
 #endif
     
-    theTask->mThread		= SDL_CreateThread(thread_loop, theTask);
+    theTask->mThread		= SDL_CreateThread(thread_loop, "myXTMSetup_taskThread", theTask);
 
     // Set thread priority a little higher
     BoostThreadPriority(theTask->mThread);
@@ -312,7 +312,7 @@ myTMReset(myTMTaskPtr task) {
             task->mProfilingData.mNumCallsThisReset = 0;
 #endif
             
-            task->mThread	= SDL_CreateThread(thread_loop, task);
+            task->mThread	= SDL_CreateThread(thread_loop, "myTMReset_taskThread", task);
 
             // Set thread priority a little higher
             BoostThreadPriority(task->mThread);

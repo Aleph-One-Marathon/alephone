@@ -153,7 +153,7 @@ OSErr NetDDPOpenSocket(short *ioPortNumber, PacketHandlerProcPtr packetHandler)
         // Set up receiver
         sKeepListening		= true;
         sPacketHandler		= packetHandler;
-        sReceivingThread	= SDL_CreateThread(receive_thread_function, NULL);
+        sReceivingThread	= SDL_CreateThread(receive_thread_function, "NetDDPOpenSocket_ReceivingThread", NULL);
 
         // Set receiving thread priority very high
         bool	theResult = BoostThreadPriority(sReceivingThread);

@@ -573,7 +573,7 @@ bool Movie::Setup()
 	}
 	if (success)
 	{
-		encodeThread = SDL_CreateThread(Movie_EncodeThread, this);
+		encodeThread = SDL_CreateThread(Movie_EncodeThread, "MovieSetup_encodeThread", this);
 		success = encodeThread;
 		if (!success) err_msg = "Could not create movie encoding thread";
 	}
