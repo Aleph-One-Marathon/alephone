@@ -1513,14 +1513,14 @@ void initialize_gamma(void)
 {
 	if (!default_gamma_inited) {
 		default_gamma_inited = true;
-		if (force_software_gamma || SDL_GetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b))
-		{
+//		if (force_software_gamma || SDL_GetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b))
+//		{
 			software_gamma = true;
 			software_gamma_tested = true;
 			for (int i = 0; i < 256; ++i) {
 				default_gamma_r[i] = default_gamma_g[i] = default_gamma_b[i] = i << 8;
 			}
-		}
+//		}
 		memcpy(current_gamma_r, default_gamma_r, sizeof(current_gamma_r));
 		memcpy(current_gamma_g, default_gamma_g, sizeof(current_gamma_g));
 		memcpy(current_gamma_b, default_gamma_b, sizeof(current_gamma_b));
@@ -1529,21 +1529,21 @@ void initialize_gamma(void)
 
 void restore_gamma(void)
 {
-    if (!option_nogamma && bit_depth > 8 && default_gamma_inited && !software_gamma && !force_software_gamma)
-        SDL_SetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b);
+//    if (!option_nogamma && bit_depth > 8 && default_gamma_inited && !software_gamma && !force_software_gamma)
+//        SDL_SetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b);
 }
 
 void build_direct_color_table(struct color_table *color_table, short bit_depth)
 {
 	if (!option_nogamma && !software_gamma_tested)
 	{
-		if (force_software_gamma || SDL_SetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b)) {
+//		if (force_software_gamma || SDL_SetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b)) {
 			software_gamma = true;
 			software_gamma_tested = true;
 			for (int i = 0; i < 256; ++i) {
 				default_gamma_r[i] = default_gamma_g[i] = default_gamma_b[i] = i << 8;
 			}
-		}
+//		}
 	}
 	color_table->color_count = 256;
 	rgb_color *color = color_table->colors;
@@ -1577,9 +1577,9 @@ void change_interface_clut(struct color_table *color_table)
 
 void change_screen_clut(struct color_table *color_table)
 {
-	if (bit_depth == 8)
-		memcpy(uncorrected_color_table, color_table, sizeof(struct color_table));
-	else
+//	if (bit_depth == 8)
+//		memcpy(uncorrected_color_table, color_table, sizeof(struct color_table));
+//	else
 		build_direct_color_table(uncorrected_color_table, bit_depth);
 	memcpy(interface_color_table, uncorrected_color_table, sizeof(struct color_table));
 
@@ -1591,22 +1591,22 @@ void change_screen_clut(struct color_table *color_table)
 
 void animate_screen_clut(struct color_table *color_table, bool full_screen)
 {
-	if (bit_depth == 8) {
-		SDL_Color colors[256];
-		build_sdl_color_table(color_table, colors);
-		SDL_SetPalette(main_surface, SDL_PHYSPAL, colors, 0, 256);
-	} else {
+//	if (bit_depth == 8) {
+//		SDL_Color colors[256];
+//		build_sdl_color_table(color_table, colors);
+//		SDL_SetPaletteColors(main_surface->format->palette, colors, 0, 256);
+//	} else {
 		for (int i=0; i<color_table->color_count; i++) {
 			current_gamma_r[i] = color_table->colors[i].red;
 			current_gamma_g[i] = color_table->colors[i].green;
 			current_gamma_b[i] = color_table->colors[i].blue;
 		}
-		bool sw_gamma = software_gamma || force_software_gamma || Movie::instance()->IsRecording();
-		if (!option_nogamma && !sw_gamma)
-			SDL_SetGammaRamp(current_gamma_r, current_gamma_g, current_gamma_b);
-		else if (sw_gamma)
+//		bool sw_gamma = software_gamma || force_software_gamma || Movie::instance()->IsRecording();
+//		if (!option_nogamma && !sw_gamma)
+//			SDL_SetGammaRamp(current_gamma_r, current_gamma_g, current_gamma_b);
+//		else if (sw_gamma)
 			using_default_gamma = !memcmp(color_table, uncorrected_color_table, sizeof(struct color_table));
-	}
+//	}
 }
 
 void assert_world_color_table(struct color_table *interface_color_table, struct color_table *world_color_table)
