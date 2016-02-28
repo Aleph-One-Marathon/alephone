@@ -32,7 +32,7 @@
 #endif
 
 #include <SDL.h>
-#include <SDL_byteorder.h>
+#include <SDL_endian.h>
 #include <time.h>
 #include <string>
 

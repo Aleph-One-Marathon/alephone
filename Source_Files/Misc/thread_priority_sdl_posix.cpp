@@ -21,12 +21,7 @@
 
 #include	"thread_priority_sdl.h"
 
-#if defined(TARGET_API_MAC_CARBON) && __MACH__
-#include <SDL/SDL_Thread.h>
-#else
-#include	<SDL/SDL_thread.h>
-#endif
-
+#include	<SDL_thread.h>
 #include	<pthread.h>
 #include        <sched.h>
 
