@@ -276,7 +276,15 @@ bool handle_open_document(const std::string& filename)
 	return done;
 }
 
+
+#if defined(__APPLE__) && defined(__MACH__)
+extern "C" {
+	int shell_main(int argc, char **argv);
+}
+int shell_main(int argc, char **argv)
+#else
 int main(int argc, char **argv)
+#endif
 {
 	// Print banner (don't bother if this doesn't appear when started from a GUI)
 	char app_name_version[256];
