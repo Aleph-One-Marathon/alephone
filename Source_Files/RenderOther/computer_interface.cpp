@@ -1149,7 +1149,7 @@ static void display_shape(short shape, Rect* frame)
 		OffsetRect(&bounds, screen_bounds.left + (RECTANGLE_WIDTH(&screen_bounds)-RECTANGLE_WIDTH(&bounds))/2, screen_bounds.top + (RECTANGLE_HEIGHT(&screen_bounds)-RECTANGLE_HEIGHT(&bounds))/2);
 
 		SDL_Rect r = { bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top };
-		SDL_SetAlpha(s, 0, 255);
+		SDL_SetSurfaceAlphaMod(s, 255);
 		SDL_BlitSurface(s, NULL, draw_surface, &r);
 
 		SDL_FreeSurface(s);

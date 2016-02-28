@@ -257,7 +257,7 @@ SDL_Surface* SDL_Resize(SDL_Surface *src, int new_w, int new_h, bool free, int f
 	SDL_FreeSurface(dst);
     if (is_alpha)
 	{
-		SDL_SetAlpha(temp, SDL_SRCALPHA, 0);
+		SDL_SetSurfaceBlendMode(temp, SDL_BLENDMODE_BLEND);
 	}
 
 	if (free)

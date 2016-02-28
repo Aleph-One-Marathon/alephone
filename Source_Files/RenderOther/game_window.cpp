@@ -480,13 +480,13 @@ void ensure_HUD_buffer(void) {
 
   // Allocate surface for HUD if not present
   if (HUD_Buffer == NULL) {
-    SDL_Surface *s = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 8, 0xff, 0xff, 0xff, 0xff);
-    if (s == NULL)
-      alert_user(fatalError, strERRORS, outOfMemory, -1);
-    HUD_Buffer = SDL_DisplayFormat(s);
+    HUD_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32,
+									  0x00ff0000,
+									  0x0000ff00,
+									  0x000000ff,
+									  0xff000000);
     if (HUD_Buffer == NULL)
       alert_user(fatalError, strERRORS, outOfMemory, -1);
-    SDL_FreeSurface(s);
   }
 }
 

@@ -424,7 +424,7 @@ SDL_Surface *get_shape_surface(int shape, int inCollection, byte** outPointerToP
                 }
                 
                 // Now we can create a surface from this new storage
-		s = SDL_CreateRGBSurfaceFrom(pixel_storage, image_width, image_height, 8, image_width, 0xff, 0xff, 0xff, 0xff);
+		s = SDL_CreateRGBSurfaceFrom(pixel_storage, image_width, image_height, 8, image_width, 0, 0, 0, 0);
 
                 if(s != NULL) {
                     // If caller is not prepared to take this data, it's a coding error.
@@ -432,21 +432,21 @@ SDL_Surface *get_shape_surface(int shape, int inCollection, byte** outPointerToP
                     *outPointerToPixelData = pixel_storage;
 
                     // Set color table
-                    SDL_SetColors(s, colors, 0, 256);
+                    SDL_SetPaletteColors(s->format->palette, colors, 0, 256);
                     
                     // Set transparent pixel (color #0)
-                    SDL_SetColorKey(s, SDL_SRCCOLORKEY, 0);
+                    SDL_SetColorKey(s, SDL_TRUE, 0);
                 }
                 
 	} else {
 		// Row-order shape, we can directly create a surface from it
 		if (collection->type == _wall_collection)
 		{
-			s = SDL_CreateRGBSurfaceFrom(bitmap->row_addresses[0], bitmap->height, bitmap->width, 8, bitmap->bytes_per_row, 0xff, 0xff, 0xff, 0xff);
+			s = SDL_CreateRGBSurfaceFrom(bitmap->row_addresses[0], bitmap->height, bitmap->width, 8, bitmap->bytes_per_row, 0, 0, 0, 0);
 		}
 		else
 		{
-			s = SDL_CreateRGBSurfaceFrom(bitmap->row_addresses[0], bitmap->width, bitmap->height, 8, bitmap->bytes_per_row, 0xff, 0xff, 0xff, 0xff);
+			s = SDL_CreateRGBSurfaceFrom(bitmap->row_addresses[0], bitmap->width, bitmap->height, 8, bitmap->bytes_per_row, 0, 0, 0, 0);
 		}
                 // ZZZ: caller should not dispose of any additional data - just free the surface.
                 if(outPointerToPixelData != NULL)
@@ -454,7 +454,7 @@ SDL_Surface *get_shape_surface(int shape, int inCollection, byte** outPointerToP
 
                 if(s != NULL) {
                     // Set color table
-                    SDL_SetColors(s, colors, 0, 256);
+                    SDL_SetPaletteColors(s->format->palette, colors, 0, 256);
                 }
 	}
 

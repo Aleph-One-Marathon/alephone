@@ -271,7 +271,7 @@ SDL_Surface *flip_surface(SDL_Surface *s, int width, int height)
     }
     
 	if (s->format->palette)
-		SDL_SetColors(s2, s->format->palette->colors, 0, s->format->palette->ncolors);
+		SDL_SetPaletteColors(s2->format->palette, s->format->palette->colors, 0, s->format->palette->ncolors);
     
 	return s2;
 }	
@@ -297,7 +297,7 @@ void Shape_Blitter::SDL_Draw(SDL_Surface *dst_surface, const Image_Rect& dst)
         
         if (pixelsOut)
         {
-            m_surface = SDL_DisplayFormatAlpha(tmp);
+			m_surface = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_BGRA8888, 0);
             SDL_FreeSurface(tmp);
             free(pixelsOut);
             pixelsOut = NULL;
@@ -305,8 +305,8 @@ void Shape_Blitter::SDL_Draw(SDL_Surface *dst_surface, const Image_Rect& dst)
         else if (m_coll == 0 && m_frame >= 12 && m_frame <= 29)
         {
             // fix transparency on motion sensor blips
-            SDL_SetColorKey(tmp, SDL_SRCCOLORKEY, 0);
-            m_surface = SDL_DisplayFormatAlpha(tmp);
+            SDL_SetColorKey(tmp, SDL_TRUE, 0);
+			m_surface = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_BGRA8888, 0);
             SDL_FreeSurface(tmp);
         }
         else

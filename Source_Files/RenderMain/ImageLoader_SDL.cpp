@@ -108,7 +108,7 @@ bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, 
 		return false;
 	}
 
-	SDL_SetAlpha(s, 0, 0xff); // disable SDL_SRCALPHA
+	SDL_SetSurfaceBlendMode(s, SDL_BLENDMODE_NONE); // disable SDL_SRCALPHA
 	SDL_BlitSurface(s, NULL, rgba, NULL);
 	SDL_FreeSurface(s);
 

@@ -547,7 +547,7 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 					case 2:
 					case 4:
 					case 8:
-						Rmask = Gmask = Bmask = 0xff;
+						Rmask = Gmask = Bmask = 0;
 						surface_depth = 8;	// SDL surfaces must be at least 8 bits depth, so we expand 1/2/4-bit pictures to 8-bit
 						break;
 					case 16:
@@ -590,7 +590,7 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 						colors[value].b = SDL_ReadBE16(p) >> 8;
 						colors[value].a = 0xff;
 					}
-					SDL_SetColors(bm, colors, 0, 256);
+					SDL_SetPaletteColors(bm->format->palette, colors, 0, 256);
 				}
 
 				// 3. source/destination Rect and transfer mode
@@ -764,7 +764,7 @@ SDL_Surface *rescale_surface(SDL_Surface *s, int width, int height)
 	}
 
 	if (s->format->palette)
-		SDL_SetColors(s2, s->format->palette->colors, 0, s->format->palette->ncolors);
+		SDL_SetPaletteColors(s2->format->palette, s->format->palette->colors, 0, s->format->palette->ncolors);
 
 	return s2;
 }
@@ -822,7 +822,7 @@ SDL_Surface *tile_surface(SDL_Surface *s, int width, int height)
 	}
 
 	if (s->format->palette)
-		SDL_SetColors(s2, s->format->palette->colors, 0, s->format->palette->ncolors);
+		SDL_SetPaletteColors(s2->format->palette, s->format->palette->colors, 0, s->format->palette->ncolors);
 
 	return s2;
 }

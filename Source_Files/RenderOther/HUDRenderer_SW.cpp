@@ -104,7 +104,7 @@ SDL_Surface *rotate_surface(SDL_Surface *s, int width, int height)
 	}
 
 	if (s->format->palette)
-		SDL_SetColors(s2, s->format->palette->colors, 0, s->format->palette->ncolors);
+		SDL_SetPaletteColors(s2->format->palette, s->format->palette->colors, 0, s->format->palette->ncolors);
 
 	return s2;
 }	

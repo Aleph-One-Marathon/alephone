@@ -67,7 +67,7 @@ void OGL_Blitter::_LoadTextures()
 	if (!t)
 		return;
 	
-	SDL_SetAlpha(m_surface, 0, 0xff);
+	SDL_SetSurfaceBlendMode(t, SDL_BLENDMODE_NONE);
 	
 	// calculate how many rects we need
 	int v_rects = ((m_src.h + m_tile_height - 1) / m_tile_height);

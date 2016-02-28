@@ -529,7 +529,7 @@ static void reallocate_world_pixels(int width, int height)
 	else if (bit_depth == 8) {
 		SDL_Color colors[256];
 		build_sdl_color_table(world_color_table, colors);
-		SDL_SetColors(world_pixels, colors, 0, 256);
+		SDL_SetPaletteColors(world_pixels->format->palette, colors, 0, 256);
 	} else
 		world_pixels_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, world_pixels->format->BitsPerPixel, world_pixels->format->Rmask, world_pixels->format->Gmask, world_pixels->format->Bmask, 0);
 }
@@ -544,8 +544,8 @@ static void reallocate_map_pixels(int width, int height)
 	if (Map_Buffer == NULL)
 		alert_user(fatalError, strERRORS, outOfMemory, -1);
 	if (map_is_translucent()) {
-		SDL_SetAlpha(Map_Buffer, SDL_SRCALPHA, 128);
-		SDL_SetColorKey(Map_Buffer, SDL_SRCCOLORKEY, SDL_MapRGB(Map_Buffer->format, 0, 0, 0));
+		SDL_SetSurfaceAlphaMod(Map_Buffer, 128);
+		SDL_SetColorKey(Map_Buffer, SDL_TRUE, SDL_MapRGB(Map_Buffer->format, 0, 0, 0));
 	}
 }
 
@@ -843,7 +843,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	if (depth == 8) {
 	        SDL_Color colors[256];
 		build_sdl_color_table(interface_color_table, colors);
-		SDL_SetColors(main_surface, colors, 0, 256);
+		SDL_SetPaletteColors(main_surface->format->palette, colors, 0, 256);
 	}
 	if (HUD_Buffer) {
 		SDL_FreeSurface(HUD_Buffer);
@@ -1270,7 +1270,7 @@ void render_screen(short ticks_elapsed)
 			// Copy 2D rendering to screen
 
 			if (Term_RenderRequest) {
-				SDL_SetAlpha(Term_Buffer, 0, 0xff);
+				SDL_SetSurfaceBlendMode(Term_Buffer, SDL_BLENDMODE_NONE);
 				Term_Blitter.Load(*Term_Buffer);
 				Term_RenderRequest = false;
 			}
@@ -1606,9 +1606,9 @@ void assert_world_color_table(struct color_table *interface_color_table, struct 
 	if (interface_bit_depth == 8) {
 		SDL_Color colors[256];
 		build_sdl_color_table(interface_color_table, colors);
-		SDL_SetPalette(main_surface, SDL_LOGPAL, colors, 0, 256);
+		SDL_SetPaletteColors(main_surface->format->palette, colors, 0, 256);
 		if (HUD_Buffer)
-			SDL_SetColors(HUD_Buffer, colors, 0, 256);
+			SDL_SetPaletteColors(HUD_Buffer->format->palette, colors, 0, 256);
 	}
 	if (world_color_table)
 		animate_screen_clut(world_color_table, false);
@@ -1848,7 +1848,7 @@ void draw_intro_screen(void)
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive()) {
 		if (intro_buffer_changed) {
-			SDL_SetAlpha(Intro_Buffer, 0, 0xff);
+			SDL_SetSurfaceBlendMode(Intro_Buffer, SDL_BLENDMODE_NONE);
 			Intro_Blitter.Load(*Intro_Buffer);
 			intro_buffer_changed = false;
 		}
@@ -1867,7 +1867,7 @@ void draw_intro_screen(void)
 		SDL_Surface *s = Intro_Buffer;
 		if (software_gamma && !using_default_gamma && bit_depth > 8) {
 			apply_gamma(Intro_Buffer, Intro_Buffer_corrected);
-			SDL_SetAlpha(Intro_Buffer_corrected, 0, 0xff);
+			SDL_SetSurfaceBlendMode(Intro_Buffer_corrected, SDL_BLENDMODE_NONE);
 			s = Intro_Buffer_corrected;
 		}
 		DrawSurface(s, dst_rect, src_rect);

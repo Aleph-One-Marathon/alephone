@@ -120,7 +120,7 @@ void initialize_dialogs()
 	assert(default_image);
 	uint32 transp = SDL_MapRGB(default_image->format, 0x00, 0xff, 0xff);
 	SDL_FillRect(default_image, NULL, transp);
-	SDL_SetColorKey(default_image, SDL_SRCCOLORKEY, transp);
+	SDL_SetColorKey(default_image, SDL_TRUE, transp);
 
 	// Load theme from preferences, if it exists
 	load_dialog_theme(true);
@@ -669,7 +669,7 @@ bool load_theme(FileSpecifier &theme)
 				{
 					SDL_Surface *s = SDL_LoadBMP_RW(of.GetRWops(), 0);
 					if (s) 
-						SDL_SetColorKey(s, SDL_SRCCOLORKEY, SDL_MapRGB(s->format, 0x00, 0xff, 0xff));
+						SDL_SetColorKey(s, SDL_TRUE, SDL_MapRGB(s->format, 0x00, 0xff, 0xff));
 					j->second.images[k->first] = s;
 				}
 			}
@@ -975,7 +975,7 @@ SDL_Surface *get_theme_image(int widget_type, int state, int which, int width, i
 	if (req_height < 1)
 		req_height = 1;
 	SDL_Surface *s2 = scale ? rescale_surface(s, req_width, req_height) : tile_surface(s, req_width, req_height);
-	SDL_SetColorKey(s2, SDL_SRCCOLORKEY, SDL_MapRGB(s2->format, 0x00, 0xff, 0xff));
+	SDL_SetColorKey(s2, SDL_TRUE, SDL_MapRGB(s2->format, 0x00, 0xff, 0xff));
 	return s2;
 
 }

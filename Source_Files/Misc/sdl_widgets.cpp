@@ -233,7 +233,7 @@ w_pict::w_pict(int id)
 	if (picture) {
 		rect.w = static_cast<uint16>(picture->w);
 		rect.h = static_cast<uint16>(picture->h);
-		SDL_SetColorKey(picture, SDL_SRCCOLORKEY, SDL_MapRGB(picture->format, 0xff, 0xff, 0xff));
+		SDL_SetColorKey(picture, SDL_TRUE, SDL_MapRGB(picture->format, 0xff, 0xff, 0xff));
 	} else
 		rect.w = rect.h = 0;
 }

@@ -87,19 +87,12 @@ bool Image_Blitter::Load(const SDL_Surface& s, const SDL_Rect& src)
 #endif
 	if (!m_surface)
 		return false;
-	SDL_SetAlpha(m_surface, SDL_SRCALPHA, 0);
 	
 	// when blitting surface, make sure we copy rather than blend the alpha
-	uint8 src_alpha = s.format->alpha;
-	uint32 src_flags = s.flags;
-	if (src_flags & SDL_SRCALPHA)
-		SDL_SetAlpha(const_cast<SDL_Surface *>(&s), src_flags & ~SDL_SRCALPHA, 0);
+	SDL_SetSurfaceBlendMode(m_surface, SDL_BLENDMODE_NONE);
 	
 	SDL_Rect sr = src;
 	int ret = SDL_BlitSurface(const_cast<SDL_Surface *>(&s), &sr, m_surface, NULL);
-	
-	if (src_flags & SDL_SRCALPHA)
-		SDL_SetAlpha(const_cast<SDL_Surface *>(&s), src_flags, src_alpha);
 	
 	return (ret == 0);
 }
@@ -181,7 +174,7 @@ void Image_Blitter::Draw(SDL_Surface *dst_surface, const Image_Rect& dst, const 
 	
     if (!m_disp_surface)
     {
-        m_disp_surface = SDL_DisplayFormatAlpha(m_surface);
+		m_disp_surface = SDL_ConvertSurfaceFormat(m_surface, SDL_PIXELFORMAT_BGRA8888, 0);
         if (!m_disp_surface)
             return;
     }
