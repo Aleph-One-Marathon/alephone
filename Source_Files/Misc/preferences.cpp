@@ -1646,7 +1646,7 @@ static void controls_dialog(void *arg)
 	{
 		for (int i = 0; i < SDL_NumJoysticks(); ++i)
 		{
-			joystick_labels.push_back(SDL_JoystickName(i));
+			joystick_labels.push_back(SDL_JoystickNameForIndex(i));
 		}
 	}
 	else

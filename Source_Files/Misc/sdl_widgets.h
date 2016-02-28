@@ -551,14 +551,14 @@ public:
 
 class w_key : public widget {
 public:
-	w_key(SDLKey key);
+	w_key(SDL_Scancode key);
 
 	void draw(SDL_Surface *s) const;
 	void click(int x, int y);
 	void event(SDL_Event &e);
 
-	virtual void set_key(SDLKey key);
-	SDLKey get_key(void) {return key;}
+	virtual void set_key(SDL_Scancode key);
+	SDL_Scancode get_key(void) {return key;}
 	void place(const SDL_Rect& r, placement_flags flags);
 
 

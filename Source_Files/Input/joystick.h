@@ -30,7 +30,7 @@ May 18, 2009 (Eric Peterson):
 
 // this is where we start stuffing button presses into the big keymap array,
 // since 65 is where uppercase letters start + room for 8 mouse presses
-#define SDLK_BASE_JOYSTICK_BUTTON 73
+#define AO_SCANCODE_BASE_JOYSTICK_BUTTON 415
 // keys resume at key 91, so that's room for 18 joystick buttons
 #define NUM_SDL_JOYSTICK_BUTTONS 18
 

@@ -68,7 +68,7 @@ void joystick_buttons_become_keypresses(Uint8* ioKeyMap) {
 
     // toggle joystick buttons until we run out of slots or buttons
     for (int i = 0; i < std::max(SDL_JoystickNumButtons(joystick), NUM_SDL_JOYSTICK_BUTTONS); i++) {
-        ioKeyMap[SDLK_BASE_JOYSTICK_BUTTON + i] = SDL_JoystickGetButton(joystick, i);
+        ioKeyMap[AO_SCANCODE_BASE_JOYSTICK_BUTTON + i] = SDL_JoystickGetButton(joystick, i);
     }
 
     return;

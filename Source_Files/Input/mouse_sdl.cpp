@@ -34,14 +34,15 @@
 #include "player.h"
 #include "shell.h"
 #include "preferences.h"
+#include "screen.h"
 
 
 // Global variables
 static bool mouse_active = false;
 static uint8 button_mask = 0;		// Mask of enabled buttons
-static int center_x, center_y;		// X/Y center of screen
 static _fixed snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity;
 static _fixed snapshot_delta_scrollwheel;
+static int snapshot_delta_x, snapshot_delta_y;
 
 
 /*
@@ -51,13 +52,11 @@ static _fixed snapshot_delta_scrollwheel;
 void enter_mouse(short type)
 {
 	if (type != _keyboard_or_game_pad) {
-#ifndef DEBUG
-		SDL_WM_GrabInput(SDL_GRAB_ON);
-#endif
-		SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
+		SDL_SetRelativeMouseMode(SDL_TRUE);
 		mouse_active = true;
 		snapshot_delta_yaw = snapshot_delta_pitch = snapshot_delta_velocity = 0;
 		snapshot_delta_scrollwheel = 0;
+		snapshot_delta_x = snapshot_delta_y = 0;
 		button_mask = 0;	// Disable all buttons (so a shot won't be fired if we enter the game with a mouse button down from clicking a GUI widget)
 		recenter_mouse();
 	}
@@ -71,10 +70,7 @@ void enter_mouse(short type)
 void exit_mouse(short type)
 {
 	if (type != _keyboard_or_game_pad) {
-#ifndef DEBUG
-		SDL_WM_GrabInput(SDL_GRAB_OFF);
-#endif
-		SDL_EventState(SDL_MOUSEMOTION, SDL_ENABLE);
+		SDL_SetRelativeMouseMode(SDL_FALSE);
 		mouse_active = false;
 	}
 }
@@ -87,10 +83,7 @@ void exit_mouse(short type)
 void recenter_mouse(void)
 {
 	if (mouse_active) {
-		SDL_Surface *s = SDL_GetVideoSurface();
-		center_x = s->w / 2;
-		center_y = s->h / 2;
-		SDL_WarpMouse(center_x, center_y);
+		MainScreenCenterMouse();
 	}
 }
 
@@ -109,13 +102,11 @@ void mouse_idle(short type)
 		if (ticks_elapsed < 1)
 			return;
 
-		int x, y;
-		SDL_GetMouseState(&x, &y);
-		SDL_WarpMouse(center_x, center_y);
-
 		// Calculate axis deltas
-		float dx = (x - center_x) / static_cast<float>(ticks_elapsed);
-		float dy = -(y - center_y) / static_cast<float>(ticks_elapsed);
+		float dx = snapshot_delta_x / static_cast<float>(ticks_elapsed);
+		float dy = -snapshot_delta_y / static_cast<float>(ticks_elapsed);
+		snapshot_delta_x = 0;
+		snapshot_delta_y = 0;
 		
 		// Mouse inversion
 		if (TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse))
@@ -187,7 +178,7 @@ mouse_buttons_become_keypresses(Uint8* ioKeyMap)
 		buttons &= button_mask;				// Mask out disabled buttons
 
         for(int i = 0; i < NUM_SDL_MOUSE_BUTTONS; i++) {
-            ioKeyMap[SDLK_BASE_MOUSE_BUTTON + i] =
+            ioKeyMap[AO_SCANCODE_BASE_MOUSE_BUTTON + i] =
                 (buttons & SDL_BUTTON(i+1)) ? SDL_PRESSED : SDL_RELEASED;
         }
 
@@ -239,4 +230,10 @@ void mouse_scroll(bool up)
 		snapshot_delta_scrollwheel += 1;
 	else
 		snapshot_delta_scrollwheel -= 1;
+}
+
+void mouse_moved(int delta_x, int delta_y)
+{
+	snapshot_delta_x += delta_x;
+	snapshot_delta_y += delta_y;
 }

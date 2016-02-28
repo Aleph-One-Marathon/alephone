@@ -1379,14 +1379,27 @@ static void process_game_key(const SDL_Event &event)
 static void process_event(const SDL_Event &event)
 {
 	switch (event.type) {
+	case SDL_MOUSEMOTION:
+		if (get_game_state() == _game_in_progress)
+		{
+			mouse_moved(event.motion.xrel, event.motion.yrel);
+		}
+		break;
+	case SDL_MOUSEWHEEL:
+		if (get_game_state() == _game_in_progress)
+		{
+			bool up = (event.wheel.y > 0);
+#if SDL_VERSION_ATLEAST(2,0,4)
+			if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+				up = !up;
+#endif
+			mouse_scroll(up);
+		}
+		break;
 	case SDL_MOUSEBUTTONDOWN:
 		if (get_game_state() == _game_in_progress) 
 		{
-			if (event.button.button == 4 || event.button.button == 5)
-			{
-				mouse_scroll(event.button.button == 4);
-			}
-			else if (!get_keyboard_controller_status())
+			if (!get_keyboard_controller_status())
 			{
 				hide_cursor();
 				validate_world_window();
@@ -1397,7 +1410,8 @@ static void process_event(const SDL_Event &event)
 				SDL_Event e2;
 				memset(&e2, 0, sizeof(SDL_Event));
 				e2.type = SDL_KEYDOWN;
-				e2.key.keysym.sym = (SDLKey)(SDLK_BASE_MOUSE_BUTTON + event.button.button - 1);
+				e2.key.keysym.sym = SDLK_UNKNOWN;
+				e2.key.keysym.scancode = (SDL_Scancode)(AO_SCANCODE_BASE_MOUSE_BUTTON + event.button.button - 1);
 				process_game_key(e2);
 			}
 		}
@@ -1411,7 +1425,8 @@ static void process_event(const SDL_Event &event)
 			SDL_Event e2;
 			memset(&e2, 0, sizeof(SDL_Event));
 			e2.type = SDL_KEYDOWN;
-			e2.key.keysym.sym = (SDLKey)(SDLK_BASE_JOYSTICK_BUTTON + event.button.button);
+			e2.key.keysym.sym = SDLK_UNKNOWN;
+			e2.key.keysym.scancode = (SDL_Scancode)(AO_SCANCODE_BASE_JOYSTICK_BUTTON + event.button.button);
 			process_game_key(e2);
 			
 		}

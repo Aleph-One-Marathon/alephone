@@ -1491,13 +1491,13 @@ static const char* sJoystickButtonKeyName[NUM_SDL_JOYSTICK_BUTTONS] = {
 
 // ZZZ: this injects our phony key names but passes along the rest.
 static const char*
-GetSDLKeyName(SDLKey inKey) {
-    if(inKey >= SDLK_BASE_MOUSE_BUTTON && inKey < SDLK_BASE_MOUSE_BUTTON + NUM_SDL_MOUSE_BUTTONS)
-        return sMouseButtonKeyName[inKey - SDLK_BASE_MOUSE_BUTTON];
-    else if (inKey >= SDLK_BASE_JOYSTICK_BUTTON && inKey < SDLK_BASE_JOYSTICK_BUTTON + NUM_SDL_JOYSTICK_BUTTONS)
-	    return sJoystickButtonKeyName[inKey - SDLK_BASE_JOYSTICK_BUTTON];
+GetSDLKeyName(SDL_Scancode inKey) {
+    if(inKey >= AO_SCANCODE_BASE_MOUSE_BUTTON && inKey < AO_SCANCODE_BASE_MOUSE_BUTTON + NUM_SDL_MOUSE_BUTTONS)
+        return sMouseButtonKeyName[inKey - AO_SCANCODE_BASE_MOUSE_BUTTON];
+    else if (inKey >= AO_SCANCODE_BASE_JOYSTICK_BUTTON && inKey < AO_SCANCODE_BASE_JOYSTICK_BUTTON + NUM_SDL_JOYSTICK_BUTTONS)
+	    return sJoystickButtonKeyName[inKey - AO_SCANCODE_BASE_JOYSTICK_BUTTON];
     else
-        return SDL_GetKeyName(inKey);
+        return SDL_GetScancodeName(inKey);
 }
 
 void w_key::draw(SDL_Surface *s) const
@@ -1533,28 +1533,29 @@ void w_key::event(SDL_Event &e)
         // ZZZ: let mouse buttons assign like (unused) keys
         if(e.type == SDL_MOUSEBUTTONDOWN) {
             e.type = SDL_KEYDOWN;
-            e.key.keysym.sym = (SDLKey)(SDLK_BASE_MOUSE_BUTTON + e.button.button - 1);
+            e.key.keysym.scancode = (SDL_Scancode)(AO_SCANCODE_BASE_MOUSE_BUTTON + e.button.button - 1);
         } else if (e.type == SDL_JOYBUTTONDOWN && e.button.button < NUM_SDL_JOYSTICK_BUTTONS) {
 		e.type = SDL_KEYDOWN;
-		e.key.keysym.sym = (SDLKey) (SDLK_BASE_JOYSTICK_BUTTON + e.button.button);
+		e.key.keysym.scancode = (SDL_Scancode) (AO_SCANCODE_BASE_JOYSTICK_BUTTON + e.button.button);
 	}
 
     	if (e.type == SDL_KEYDOWN) {
-			if (e.key.keysym.sym != SDLK_ESCAPE)
-				set_key(e.key.keysym.sym);
+			if (e.key.keysym.scancode != SDL_SCANCODE_ESCAPE)
+				set_key(e.key.keysym.scancode);
 			dirty = true;
 			binding = false;
 			e.key.keysym.sym = SDLK_DOWN;	// Activate next widget
+			e.key.keysym.scancode = SDL_SCANCODE_DOWN;
 	    }
 
         // ZZZ: suppress mouse motion while assigning
         // (it's annoying otherwise, trust me)
         if(e.type == SDL_MOUSEMOTION)
-            e.type = SDL_NOEVENT;
+            e.type = SDL_LASTEVENT;
     }
 }
 
-void w_key::set_key(SDLKey k)
+void w_key::set_key(SDL_Scancode k)
 {
 	key = k;
 }
@@ -1988,22 +1989,19 @@ void w_list_base::event(SDL_Event &e)
 			thumb_dragging = false;
 			dirty = true;
 		}
-	} else if (e.type == SDL_MOUSEBUTTONDOWN) {
-		switch (e.button.button) {
-		case SDL_BUTTON_WHEELUP:
-			if (top_item > 3)
-				set_top_item(top_item - 3); 
+	} else if (e.type == SDL_MOUSEWHEEL) {
+		if (e.wheel.y < 0) {
+			int amt = e.wheel.y * -3;
+			if (top_item > amt)
+				set_top_item(top_item - amt);
 			else 
 				set_top_item(0); 
-			break;	
-		case SDL_BUTTON_WHEELDOWN:
+		} else if (e.wheel.y > 0) {
+			int amt = e.wheel.y * 3;
 			if (top_item < num_items - shown_items - 3)
-				set_top_item(top_item + 3);
-			else 
+				set_top_item(top_item + amt);
+			else
 				set_top_item(num_items - shown_items);
-			break;
-		default:
-			break;
 		}
 	}
 }
