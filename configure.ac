@@ -32,7 +32,7 @@ AC_DEFUN([AX_ARG_WITH],
 AX_ARG_ENABLE([opengl], [OpenGL rendering])
 AX_ARG_ENABLE([lua], [built-in Lua scripting])
 
-AX_ARG_WITH([sdl_image], [SDL_image support])
+AX_ARG_WITH([sdl_image], [SDL2_image support])
 AX_ARG_WITH([ffmpeg], [FFmpeg playback and film export])
 AX_ARG_WITH([mad], [libmad MP3 playback])
 AX_ARG_WITH([sndfile], [libsndfile audio decoding])
@@ -155,11 +155,12 @@ AC_DEFUN([AX_REQUIRE_PKG],
                              [ AC_MSG_ERROR([You need $1 to run Aleph One.]) ]) ])
 
 dnl Check for required SDL dependencies.
-AM_PATH_SDL(1.2.0, , AC_MSG_ERROR([You need SDL 1.2 to run Aleph One.]))
+AM_PATH_SDL2(2.0.2, , AC_MSG_ERROR([You need SDL 2 to run Aleph One.]))
 CPPFLAGS="$CPPFLAGS $SDL_CFLAGS -DSDL"
 LIBS="$LIBS $SDL_LIBS"
-AX_REQUIRE_PKG([SDL_ttf], [SDL_TTF], [SDL_ttf])
-AX_REQUIRE_PKG([SDL_net], [SDL_NET], [SDL_net])
+
+AX_REQUIRE_PKG([SDL2_ttf], [SDL_TTF], [SDL2_ttf])
+AX_REQUIRE_PKG([SDL2_net], [SDL_NET], [SDL2_net])
 
 dnl Check for zlib.
 AX_REQUIRE_PKG([zlib], [ZLIB], [zlib])
@@ -243,10 +244,13 @@ AC_DEFUN([AX_CHECK_FEATURE_PKG],
           ])
 
 AX_CHECK_FEATURE_PKG([sdl_image], [SDL_IMAGE],
-                     [SDL_IMAGE], [SDL_image])
+                     [SDL_IMAGE], [SDL2_image])
 
 AX_CHECK_FEATURE_PKG([ffmpeg], [FFMPEG],
                      [FFMPEG], [libavcodec >= 54.35.0 libavformat >= 54.20.0 libavutil >= 52.3.0 libswscale >= 2.1.1])
+dnl Remove SDL 1 inclusions from ffmpeg (https://trac.ffmpeg.org/ticket/2009)
+FFMPEG_LIBS=`echo "$FFMPEG_LIBS" | sed 's|-lSDL ||' | sed 's|-lSDLmain ||'`
+LIBS=`echo "$LIBS" | sed 's|-lSDL ||' | sed 's|-lSDLmain ||'`
 
 AX_CHECK_FEATURE_LIB([mad], [MAD],
                      [mad.h], [mad], [mad_stream_init])
