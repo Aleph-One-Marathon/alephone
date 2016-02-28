@@ -914,7 +914,8 @@ static void process_screen_click(const SDL_Event &event)
 
 static void handle_game_key(const SDL_Event &event)
 {
-	SDLKey key = event.key.keysym.sym;
+	SDL_Keycode key = event.key.keysym.sym;
+	SDL_Scancode sc = event.key.keysym.scancode;
 	bool changed_screen_mode = false;
 	bool changed_prefs = false;
 
@@ -1027,34 +1028,34 @@ static void handle_game_key(const SDL_Event &event)
 				}
 			}
 		}
-		else if (key == input_preferences->shell_keycodes[_key_volume_up])
+		else if (sc == input_preferences->shell_keycodes[_key_volume_up])
 		{
 			changed_prefs = SoundManager::instance()->AdjustVolumeUp(Sound_AdjustVolume());
 		}
-		else if (key == input_preferences->shell_keycodes[_key_volume_down])
+		else if (sc == input_preferences->shell_keycodes[_key_volume_down])
 		{
 			changed_prefs = SoundManager::instance()->AdjustVolumeDown(Sound_AdjustVolume());
 		}
-		else if (key == input_preferences->shell_keycodes[_key_switch_view])
+		else if (sc == input_preferences->shell_keycodes[_key_switch_view])
 		{
 			walk_player_list();
 			render_screen(NONE);
 		}
-		else if (key == input_preferences->shell_keycodes[_key_zoom_in])
+		else if (sc == input_preferences->shell_keycodes[_key_zoom_in])
 		{
 			if (zoom_overhead_map_in())
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			else
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
 		}
-		else if (key == input_preferences->shell_keycodes[_key_zoom_out])
+		else if (sc == input_preferences->shell_keycodes[_key_zoom_out])
 		{
 			if (zoom_overhead_map_out())
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			else
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
 		}
-		else if (key == input_preferences->shell_keycodes[_key_inventory_left])
+		else if (sc == input_preferences->shell_keycodes[_key_inventory_left])
 		{
 			if (player_controlling_game()) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
@@ -1062,7 +1063,7 @@ static void handle_game_key(const SDL_Event &event)
 			} else
 				decrement_replay_speed();
 		}
-		else if (key == input_preferences->shell_keycodes[_key_inventory_right])
+		else if (sc == input_preferences->shell_keycodes[_key_inventory_right])
 		{
 			if (player_controlling_game()) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
@@ -1070,13 +1071,13 @@ static void handle_game_key(const SDL_Event &event)
 			} else
 				increment_replay_speed();
 		}
-		else if (key == input_preferences->shell_keycodes[_key_toggle_fps])
+		else if (sc == input_preferences->shell_keycodes[_key_toggle_fps])
 		{
 			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			extern bool displaying_fps;
 			displaying_fps = !displaying_fps;
 		}
-		else if (key == input_preferences->shell_keycodes[_key_activate_console])
+		else if (sc == input_preferences->shell_keycodes[_key_activate_console])
 		{
 			if (game_is_networked) {
 #if !defined(DISABLE_NETWORKING)
@@ -1094,7 +1095,7 @@ static void handle_game_key(const SDL_Event &event)
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
 			}
 		} 
-		else if (key == input_preferences->shell_keycodes[_key_show_scores])
+		else if (sc == input_preferences->shell_keycodes[_key_show_scores])
 		{
 			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			{
@@ -1102,7 +1103,7 @@ static void handle_game_key(const SDL_Event &event)
 				ShowScores = !ShowScores;
 			}
 		}	
-		else if (key == SDLK_F1) // Decrease screen size
+		else if (sc == SDL_SCANCODE_F1) // Decrease screen size
 		{
 			if (!graphics_preferences->screen_mode.hud)
 			{
@@ -1125,7 +1126,7 @@ static void handle_game_key(const SDL_Event &event)
 					PlayInterfaceButtonSound(Sound_ButtonFailure());
 			}
 		}
-		else if (key == SDLK_F2) // Increase screen size
+		else if (sc == SDL_SCANCODE_F2) // Increase screen size
 		{
 			if (graphics_preferences->screen_mode.hud)
 			{
@@ -1150,7 +1151,7 @@ static void handle_game_key(const SDL_Event &event)
 					PlayInterfaceButtonSound(Sound_ButtonFailure());
 			}
 		}
-		else if (key == SDLK_F3) // Resolution toggle
+		else if (sc == SDL_SCANCODE_F3) // Resolution toggle
 		{
 			if (!OGL_IsActive()) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
@@ -1159,7 +1160,7 @@ static void handle_game_key(const SDL_Event &event)
 			} else
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
 		}
-		else if (key == SDLK_F4)		// Reset OpenGL textures
+		else if (sc == SDL_SCANCODE_F4)		// Reset OpenGL textures
 		{
 #ifdef HAVE_OPENGL
 			if (OGL_IsActive()) {
@@ -1170,7 +1171,7 @@ static void handle_game_key(const SDL_Event &event)
 #endif
 				PlayInterfaceButtonSound(Sound_ButtonInoperative());
 		}
-		else if (key == SDLK_F5) // Make the chase cam switch sides
+		else if (sc == SDL_SCANCODE_F5) // Make the chase cam switch sides
 		{
 			if (ChaseCam_IsActive())
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
@@ -1178,28 +1179,28 @@ static void handle_game_key(const SDL_Event &event)
 				PlayInterfaceButtonSound(Sound_ButtonInoperative());
 			ChaseCam_SwitchSides();
 		}
-		else if (key == SDLK_F6) // Toggle the chase cam
+		else if (sc == SDL_SCANCODE_F6) // Toggle the chase cam
 		{
 			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			ChaseCam_SetActive(!ChaseCam_IsActive());
 		}
-		else if (key == SDLK_F7) // Toggle tunnel vision
+		else if (sc == SDL_SCANCODE_F7) // Toggle tunnel vision
 		{
 			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			SetTunnelVision(!GetTunnelVision());
 		}
-		else if (key == SDLK_F8) // Toggle the crosshairs
+		else if (sc == SDL_SCANCODE_F8) // Toggle the crosshairs
 		{
 			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			player_preferences->crosshairs_active = !player_preferences->crosshairs_active;
 			Crosshairs_SetActive(player_preferences->crosshairs_active);
 			changed_prefs = true;
 		}
-		else if (key == SDLK_F9) // Screen dump
+		else if (sc == SDL_SCANCODE_F9) // Screen dump
 		{
 			dump_screen();
 		}
-		else if (key == SDLK_F10) // Toggle the position display
+		else if (sc == SDL_SCANCODE_F10) // Toggle the position display
 		{
 			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			{
@@ -1207,7 +1208,7 @@ static void handle_game_key(const SDL_Event &event)
 				ShowPosition = !ShowPosition;
 			}
 		}
-		else if (key == SDLK_F11) // Decrease gamma level
+		else if (sc == SDL_SCANCODE_F11) // Decrease gamma level
 		{
 			if (graphics_preferences->screen_mode.gamma_level) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
@@ -1217,7 +1218,7 @@ static void handle_game_key(const SDL_Event &event)
 			} else
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
 		}
-		else if (key == SDLK_F12) // Increase gamma level
+		else if (sc == SDL_SCANCODE_F12) // Increase gamma level
 		{
 			if (graphics_preferences->screen_mode.gamma_level < NUMBER_OF_GAMMA_LEVELS - 1) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
