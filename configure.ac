@@ -260,12 +260,11 @@ AX_CHECK_FEATURE_PKG([vorbis], [VORBISFILE],
 AX_CHECK_FEATURE_LIB([smpeg], [SMPEG],
                      [smpeg/smpeg.h], [smpeg], [SMPEG_new])
 
-AX_CHECK_FEATURE_LIB([speex], [SPEEX],
-                     [speex/speex.h], [speex], [speex_decoder_init])
+AX_CHECK_FEATURE_PKG([speex], [SPEEX], [speex], [speex])
 AS_IF([test "x$have_speex" = "xtrue"],
-      [ AC_CHECK_LIB([speexdsp], [speex_preprocess_state_init])
-        AS_IF([test "x$ac_cv_lib_speexdsp_speex_preprocess_state_init" = "xyes"],
-              [ CPPFLAGS="$CPPFLAGS -DSPEEX" ],
+      [ PKG_CHECK_MODULES([speexdsp], [speexdsp],
+              [ CPPFLAGS="-DSPEEX $speexdsp_CFLAGS $CPPFLAGS"
+                LIBS="$speexdsp_LIBS $LIBS" ],
               [ have_speex=false
                 AS_IF([test "x$with_speex" = "xyes"],
                       [AC_MSG_ERROR([$desc_speex requested but not available])])])])
