@@ -22,7 +22,12 @@
 
 #include "SDL_rwops_ostream.h"
 
-static int stream_seek(struct SDL_RWops *context, int offset, int whence)
+static Sint64 stream_size(struct SDL_RWops *context)
+{
+	return -1;
+}
+
+static Sint64 stream_seek(struct SDL_RWops *context, Sint64 offset, int whence)
 {
 	std::ostream *strm = static_cast<std::ostream *>(context->hidden.unknown.data1);
 	switch (whence)
@@ -40,18 +45,18 @@ static int stream_seek(struct SDL_RWops *context, int offset, int whence)
 	return strm->tellp();
 }
 
-static int stream_read(struct SDL_RWops *context, void *ptr, int size, int maxnum)
+static size_t stream_read(struct SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
 {
-	return -1;
+	return 0;
 }
 
-static int stream_write(struct SDL_RWops *context, const void *ptr, int size, int num)
+static size_t stream_write(struct SDL_RWops *context, const void *ptr, size_t size, size_t num)
 {
 	std::ostream *strm = static_cast<std::ostream *>(context->hidden.unknown.data1);
 	strm->write(static_cast<const char *>(ptr), size*num);
 	if (strm->bad())
 	{
-		return -1;
+		return 0;
 	}
 	else
 	{
@@ -72,6 +77,7 @@ SDL_RWops *SDL_RWFromOStream(std::ostream& strm)
 	SDL_RWops *ops = SDL_AllocRW();
 	if (ops)
 	{
+		ops->size = stream_size;
 		ops->seek = stream_seek;
 		ops->read = stream_read;
 		ops->write = stream_write;
