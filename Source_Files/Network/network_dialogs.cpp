@@ -2510,8 +2510,8 @@ class SdlJoinDialog : public JoinDialog
 public:
 	SdlJoinDialog() : m_tabs(0)
 	{
-		SDLMod m = SDL_GetModState();
-		if ((m & KMOD_ALT) || (m & KMOD_META)) skipToMetaserver = !skipToMetaserver;
+		SDL_Keymod m = SDL_GetModState();
+		if ((m & KMOD_ALT) || (m & KMOD_GUI)) skipToMetaserver = !skipToMetaserver;
 
 		vertical_placer *placer = new vertical_placer;
 		placer->dual_add(new w_title("JOIN NETWORK GAME"), m_dialog);

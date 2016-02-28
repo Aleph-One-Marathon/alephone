@@ -1050,7 +1050,7 @@ w_entry_point_selector::event(SDL_Event &e) {
                 play_dialog_sound(DIALOG_CLICK_SOUND);
             }
 
-            e.type = SDL_NOEVENT;	// Swallow event
+            e.type = SDL_LASTEVENT;	// Swallow event
 		}
 	}
 }

@@ -814,7 +814,7 @@ short get_level_number_from_user(void)
 	return level;
 }
 
-const uint32 TICKS_BETWEEN_EVENT_POLL = 167; // 6 Hz
+const uint32 TICKS_BETWEEN_EVENT_POLL = 16; // 60 Hz
 static void main_event_loop(void)
 {
 	uint32 last_event_poll = 0;
@@ -862,21 +862,20 @@ static void main_event_loop(void)
 
 			while (true) {
 				SDL_Event event;
-				event.type = SDL_NOEVENT;
-				SDL_PollEvent(&event);
+				bool found_event = SDL_PollEvent(&event);
 
 				if (yield_time) {
 					// The game is not in a "hot" state, yield time to other
 					// processes by calling SDL_Delay() but only try for a maximum
 					// of 30ms
 					int num_tries = 0;
-					while (event.type == SDL_NOEVENT && num_tries < 3) {
+					while (!found_event && num_tries < 3) {
 						SDL_Delay(10);
-						SDL_PollEvent(&event);
+						found_event = SDL_PollEvent(&event);
 						num_tries++;
 					}
 					yield_time = false;
-				} else if (event.type == SDL_NOEVENT)
+				} else if (!found_event)
 					break;
 
 				process_event(event);
@@ -895,11 +894,11 @@ static void main_event_loop(void)
 
 static bool has_cheat_modifiers(void)
 {
-	SDLMod m = SDL_GetModState();
+	SDL_Keymod m = SDL_GetModState();
 #if (defined(__APPLE__) && defined(__MACH__))
-	return ((m & KMOD_SHIFT) && (m & KMOD_CTRL)) || ((m & KMOD_ALT) && (m & KMOD_META));
+	return ((m & KMOD_SHIFT) && (m & KMOD_CTRL)) || ((m & KMOD_ALT) && (m & KMOD_GUI));
 #else
-	return (m & KMOD_SHIFT) && (m & KMOD_CTRL) && !(m & KMOD_ALT) && !(m & KMOD_META);
+	return (m & KMOD_SHIFT) && (m & KMOD_CTRL) && !(m & KMOD_ALT) && !(m & KMOD_GUI);
 #endif
 }
 
@@ -1212,9 +1211,9 @@ static void process_game_key(const SDL_Event &event)
 	switch (get_game_state()) {
 	case _game_in_progress:
 #if defined(__APPLE__) && defined(__MACH__)
-		if ((event.key.keysym.mod & KMOD_META)) 
+		if ((event.key.keysym.mod & KMOD_GUI))
 #else
-		if ((event.key.keysym.mod & KMOD_ALT) || (event.key.keysym.mod & KMOD_META)) 
+		if ((event.key.keysym.mod & KMOD_ALT) || (event.key.keysym.mod & KMOD_GUI))
 #endif
 		{
 			int item = -1;
@@ -1314,9 +1313,9 @@ static void process_game_key(const SDL_Event &event)
 			break;
 		case SDLK_RETURN:
 #if defined(__APPLE__) && defined(__MACH__)
-			if ((event.key.keysym.mod & KMOD_META))
+			if ((event.key.keysym.mod & KMOD_GUI))
 #else
-			if ((event.key.keysym.mod & KMOD_META) || (event.key.keysym.mod & KMOD_ALT))
+			if ((event.key.keysym.mod & KMOD_GUI) || (event.key.keysym.mod & KMOD_ALT))
 #endif
 			{
 				toggle_fullscreen();

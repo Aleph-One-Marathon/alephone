@@ -609,7 +609,7 @@ void w_tab::event(SDL_Event& e)
 
 			}
 			dirty = true;
-			e.type = SDL_NOEVENT;
+			e.type = SDL_LASTEVENT;
 			break;
 
 		case SDLK_RIGHT:
@@ -624,7 +624,7 @@ void w_tab::event(SDL_Event& e)
 					active_tab++;
 			}
 			dirty = true;
-			e.type = SDL_NOEVENT;
+			e.type = SDL_LASTEVENT;
 			break;
 		
 		default:
@@ -791,14 +791,14 @@ void w_select::event(SDL_Event &e)
 			else
 				selection--;
 			selection_changed();
-			e.type = SDL_NOEVENT;	// Swallow event
+			e.type = SDL_LASTEVENT;	// Swallow event
 		} else if (e.key.keysym.sym == SDLK_RIGHT) {
 			if (selection >= num_labels - 1)
 				selection = 0;
 			else
 				selection++;
 			selection_changed();
-			e.type = SDL_NOEVENT;	// Swallow event
+			e.type = SDL_LASTEVENT;	// Swallow event
 		}
 	}
 }
@@ -1647,11 +1647,11 @@ void w_slider::event(SDL_Event &e)
 		if (e.key.keysym.sym == SDLK_LEFT) {
 			set_selection(selection - 1);
 			item_selected();
-			e.type = SDL_NOEVENT;	// Swallow event
+			e.type = SDL_LASTEVENT;	// Swallow event
 		} else if (e.key.keysym.sym == SDLK_RIGHT) {
 			set_selection(selection + 1);
 			item_selected();
-			e.type = SDL_NOEVENT;	// Swallow event
+			e.type = SDL_LASTEVENT;	// Swallow event
 		}
 	} else if (e.type == SDL_MOUSEBUTTONUP) {
 		if (thumb_dragging) {
@@ -1884,12 +1884,12 @@ void w_list_base::event(SDL_Event &e)
 			case SDLK_UP:
 				if (selection != 0)
 				{	set_selection(selection - 1); }
-				e.type = SDL_NOEVENT;	// Prevent selection of previous widget
+				e.type = SDL_LASTEVENT;	// Prevent selection of previous widget
 				break;
 			case SDLK_DOWN:
 				if (selection < num_items - 1)
 				{	set_selection(selection + 1); }
-				e.type = SDL_NOEVENT;	// Prevent selection of next widget
+				e.type = SDL_LASTEVENT;	// Prevent selection of next widget
 				break;
 			case SDLK_PAGEUP:
 				if (selection > shown_items)

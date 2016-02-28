@@ -2073,19 +2073,17 @@ void dialog::event(SDL_Event &e)
   case SDL_KEYDOWN:
     
     if (e.key.keysym.sym == SDLK_RETURN
-	&& ((e.key.keysym.mod & KMOD_ALT) || (e.key.keysym.mod & KMOD_META))) {
+	&& ((e.key.keysym.mod & KMOD_ALT) || (e.key.keysym.mod & KMOD_GUI))) {
       toggle_fullscreen(!(get_screen_mode()->fullscreen));
       draw();
       handled = true;
     }
     break;
-  case SDL_ACTIVEEVENT:
-    if (e.active.state & SDL_APPACTIVE) {
-      if (e.active.gain) {
-	draw();
-	handled = true;
-      }
-    }
+  case SDL_WINDOWEVENT:
+    if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
+		draw();
+		handled = true;
+	}
     break;
   }
   
@@ -2299,17 +2297,11 @@ void dialog::start(bool play_sound)
 bool dialog::process_events()
 {
 	while (!done) {
-
-		// Get next event
 		SDL_Event e;
-		e.type = SDL_NOEVENT;
-		SDL_PollEvent(&e);
-
-		if (e.type == SDL_NOEVENT)
+		if (SDL_PollEvent(&e))
+			event(e);
+		else
 			break;
-
-		// Handle event
-		event(e);
 	}
 
 	return done;

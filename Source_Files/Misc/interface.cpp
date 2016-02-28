@@ -1966,8 +1966,8 @@ static bool begin_game(
 						
 						bool prompt_to_export = false;
 #ifndef MAC_APP_STORE
-						SDLMod m = SDL_GetModState();
-						if ((m & KMOD_ALT) || (m & KMOD_META)) prompt_to_export = true;
+						SDL_Keymod m = SDL_GetModState();
+						if ((m & KMOD_ALT) || (m & KMOD_GUI)) prompt_to_export = true;
 #endif
 						
 						success= find_replay_to_use(cheat, ReplayFile);

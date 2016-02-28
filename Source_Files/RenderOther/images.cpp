@@ -929,8 +929,7 @@ void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, bo
 	if (scroll_horizontal || scroll_vertical) {
 
 		// Flush events
-		SDL_Event event;
-		while (SDL_PollEvent(&event)) ;
+		SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
 
 		// Prepare source and destination rectangles
 		SDL_Rect src_rect = {0, 0, scroll_horizontal ? screen_width : picture_width, scroll_vertical ? screen_height : picture_height};
@@ -964,13 +963,14 @@ void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, bo
 			SDL_Delay(10);
 
 			// Check for events to abort
-			event.type = SDL_NOEVENT;
-			SDL_PollEvent(&event);
-			switch (event.type) {
-				case SDL_MOUSEBUTTONDOWN:
-				case SDL_KEYDOWN:
-					aborted = true;
-					break;
+			SDL_Event event;
+			if (SDL_PollEvent(&event)) {
+				switch (event.type) {
+					case SDL_MOUSEBUTTONDOWN:
+					case SDL_KEYDOWN:
+						aborted = true;
+						break;
+				}
 			}
 
 		} while (!done && !aborted);
