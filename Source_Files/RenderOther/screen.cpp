@@ -147,19 +147,7 @@ static void DisplayNetMicStatus(SDL_Surface *s);
 static void DrawSurface(SDL_Surface *s, SDL_Rect &dest_rect, SDL_Rect &src_rect);
 static void clear_screen_margin();
 
-SDL_PixelFormat pixel_format_16 = {
-	0, 16, 2, // palette, bits per pixel, bytes per pixel
-	3, 2, 3, 0, // rloss, gloss, bloss, aloss
-	11, 5, 0, 0, // rshift, gshift, bshift, ashift
-	0xf800, 0x07e0, 0x001f // rmask, gmask, bmask
-};
-
-SDL_PixelFormat pixel_format_32 = {
-	0, 24, 4,
-	0, 0, 0, 0,
-	16, 8, 0, 0,
-	0xff0000, 0x00ff00, 0x0000ff, 0xff000000
-};
+SDL_PixelFormat pixel_format_16, pixel_format_32;
 
 // LP addition:
 void start_tunnel_vision_effect(
@@ -180,6 +168,13 @@ void Screen::Initialize(screen_mode_data* mode)
 	interface_bit_depth = bit_depth = mode->bit_depth;
 
 	if (!screen_initialized) {
+
+		SDL_PixelFormat *pf = SDL_AllocFormat(SDL_PIXELFORMAT_RGB565);
+		pixel_format_16 = *pf;
+		SDL_FreeFormat(pf);
+		pf = SDL_AllocFormat(SDL_PIXELFORMAT_ARGB8888);
+		pixel_format_32 = *pf;
+		SDL_FreeFormat(pf);
 
 		uncorrected_color_table = (struct color_table *)malloc(sizeof(struct color_table));
 		world_color_table = (struct color_table *)malloc(sizeof(struct color_table));
@@ -206,35 +201,29 @@ void Screen::Initialize(screen_mode_data* mode)
 		world_view->horizontal_scale = 1;
 		world_view->vertical_scale = 1;
 		world_view->tunnel_vision_active = false;
-#if SDL_VERSION_ATLEAST(1, 2, 10)
-		desktop_height = SDL_GetVideoInfo()->current_h;
-		desktop_width = SDL_GetVideoInfo()->current_w;
-#endif
+		
+		SDL_DisplayMode desktop;
+		SDL_GetCurrentDisplayMode(0, &desktop);
+		desktop_height = desktop.h;
+		desktop_width = desktop.w;
 
 		// build a list of fullscreen modes
 		// list some modes
-		SDL_Rect **modes = SDL_ListModes(NULL, SDL_FULLSCREEN);
-		if (modes)
+		int num_modes = SDL_GetNumDisplayModes(0);
+		for (int i = 0; i < num_modes; ++i)
 		{
-			for (int i = 0; modes[i]; ++i)
+			SDL_GetDisplayMode(0, i, &desktop);
+			if (desktop.w >= 640 && desktop.h >= 480)
 			{
-#if defined(__APPLE__) && defined(__MACH__)
-				if (modes[i]->w > desktop_width || modes[i]->h > desktop_height) {
-					awful_retina_hack = true;
-				} else
-#endif
-				if (modes[i]->w >= 640 && modes[i]->h >= 480)
+				m_modes.push_back(std::pair<int, int>(desktop.w, desktop.h));
+				if (desktop.w == 640 && desktop.h == 480)
 				{
-					m_modes.push_back(std::pair<int, int>(modes[i]->w, modes[i]->h));
-					if (modes[i]->w == 640 && modes[i]->h == 480)
-					{
-						m_modes.push_back(std::pair<int, int>(480, 240));
-						m_modes.push_back(std::pair<int, int>(320, 160));
-					}
+					m_modes.push_back(std::pair<int, int>(480, 240));
+					m_modes.push_back(std::pair<int, int>(320, 160));
 				}
 			}
 		}
-
+		
 		if (m_modes.empty())
 		{
 			m_modes.push_back(std::pair<int, int>(640, 480));
