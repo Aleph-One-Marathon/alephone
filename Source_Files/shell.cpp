@@ -627,7 +627,7 @@ static void initialize_application(void)
 
 	Plugins::instance()->load_mml();
 
-	SDL_putenv(const_cast<char*>("SDL_VIDEO_ALLOW_SCREENSAVER=1"));
+//	SDL_putenv(const_cast<char*>("SDL_VIDEO_ALLOW_SCREENSAVER=1"));
 
 	// Initialize SDL
 	int retval = SDL_Init(SDL_INIT_VIDEO | 
@@ -639,15 +639,15 @@ static void initialize_application(void)
 		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
 		exit(1);
 	}
-	SDL_WM_SetCaption(application_name, application_name);
+//	SDL_WM_SetCaption(application_name, application_name);
 
 #if defined(HAVE_SDL_IMAGE)
 	IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
 #endif
 
-#if defined(HAVE_SDL_IMAGE) && !(defined(__APPLE__) && defined(__MACH__))
-	SDL_WM_SetIcon(IMG_ReadXPMFromArray(const_cast<char**>(alephone_xpm)), 0);
-#endif
+// #if defined(HAVE_SDL_IMAGE) && !(defined(__APPLE__) && defined(__MACH__))
+// 	SDL_WM_SetIcon(IMG_ReadXPMFromArray(const_cast<char**>(alephone_xpm)), 0);
+// #endif
 	atexit(shutdown_application);
 
 #if !defined(DISABLE_NETWORKING)
