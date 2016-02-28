@@ -1848,34 +1848,34 @@ static const char *shell_action_name[NUMBER_OF_SHELL_KEYS] = {
 	"Inventory Left", "Inventory Right", "Switch Player View", "Volume Up", "Volume Down", "Zoom Map In", "Zoom Map Out", "Toggle FPS", "Chat/Console", "Network Stats"
 };
 
-static SDLKey default_keys[NUM_KEYS] = {
-	SDLK_KP8, SDLK_KP5, SDLK_KP4, SDLK_KP6,		// moving/turning
-	SDLK_z, SDLK_x,								// sidestepping
-	SDLK_a, SDLK_s,								// horizontal looking
-	SDLK_d, SDLK_c, SDLK_v,						// vertical looking
-	SDLK_KP7, SDLK_KP9,							// weapon cycling
-	SDLK_SPACE, SDLK_LALT,						// weapon trigger
-	SDLK_LSHIFT, SDLK_LCTRL, SDLK_LMETA,		// modifiers
-	SDLK_TAB,									// action trigger
-	SDLK_m,										// map
-    SDLK_BACKQUOTE                              // microphone (ZZZ)
+static SDL_Scancode default_keys[NUM_KEYS] = {
+	SDL_SCANCODE_KP_8, SDL_SCANCODE_KP_5, SDL_SCANCODE_KP_4, SDL_SCANCODE_KP_6,		// moving/turning
+	SDL_SCANCODE_Z, SDL_SCANCODE_X,								// sidestepping
+	SDL_SCANCODE_A, SDL_SCANCODE_S,								// horizontal looking
+	SDL_SCANCODE_D, SDL_SCANCODE_C, SDL_SCANCODE_V,						// vertical looking
+	SDL_SCANCODE_KP_7, SDL_SCANCODE_KP_9,							// weapon cycling
+	SDL_SCANCODE_SPACE, SDL_SCANCODE_LALT,						// weapon trigger
+	SDL_SCANCODE_LSHIFT, SDL_SCANCODE_LCTRL, SDL_SCANCODE_LGUI,		// modifiers
+	SDL_SCANCODE_TAB,									// action trigger
+	SDL_SCANCODE_M,										// map
+    SDL_SCANCODE_GRAVE                              // microphone (ZZZ)
 };
 
-static SDLKey default_mouse_keys[NUM_KEYS] = {
-	SDLK_w, SDLK_x, SDLK_LEFT, SDLK_RIGHT,		// moving/turning
-	SDLK_a, SDLK_d,								// sidestepping
-	SDLK_q, SDLK_e,								// horizontal looking
-	SDLK_UP, SDLK_DOWN, SDLK_KP0,				// vertical looking
-	SDLK_c, SDLK_z,								// weapon cycling
-	SDLKey(SDLK_BASE_MOUSE_BUTTON), SDLKey(SDLK_BASE_MOUSE_BUTTON+2), // weapon trigger
-	SDLK_RSHIFT, SDLK_LSHIFT, SDLK_LCTRL,		// modifiers
-	SDLK_s,										// action trigger
-	SDLK_TAB,									// map
-    SDLK_BACKQUOTE                              // microphone (ZZZ)
+static SDL_Scancode default_mouse_keys[NUM_KEYS] = {
+	SDL_SCANCODE_W, SDL_SCANCODE_X, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT,		// moving/turning
+	SDL_SCANCODE_A, SDL_SCANCODE_D,								// sidestepping
+	SDL_SCANCODE_Q, SDL_SCANCODE_E,								// horizontal looking
+	SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_KP_0,				// vertical looking
+	SDL_SCANCODE_C, SDL_SCANCODE_Z,								// weapon cycling
+	SDL_SCANCODE_SPACE, SDL_SCANCODE_LALT,						// weapon trigger
+	SDL_SCANCODE_RSHIFT, SDL_SCANCODE_LSHIFT, SDL_SCANCODE_LCTRL,		// modifiers
+	SDL_SCANCODE_S,										// action trigger
+	SDL_SCANCODE_TAB,									// map
+    SDL_SCANCODE_GRAVE                              // microphone (ZZZ)
 };
 
-static SDLKey default_shell_keys[NUMBER_OF_SHELL_KEYS] = {
-	SDLK_LEFTBRACKET, SDLK_RIGHTBRACKET, SDLK_BACKSPACE, SDLK_PERIOD, SDLK_COMMA, SDLK_EQUALS, SDLK_MINUS, SDLK_SLASH, SDLK_BACKSLASH, SDLK_1
+static SDL_Scancode default_shell_keys[NUMBER_OF_SHELL_KEYS] = {
+	SDL_SCANCODE_LEFTBRACKET, SDL_SCANCODE_RIGHTBRACKET, SDL_SCANCODE_BACKSPACE, SDL_SCANCODE_PERIOD, SDL_SCANCODE_COMMA, SDL_SCANCODE_EQUALS, SDL_SCANCODE_MINUS, SDL_SCANCODE_SLASH, SDL_SCANCODE_BACKSLASH, SDL_SCANCODE_1
 };
 
 class w_prefs_key;
@@ -1885,56 +1885,56 @@ static w_prefs_key *shell_key_w[NUMBER_OF_SHELL_KEYS];
 
 class w_prefs_key : public w_key {
 public:
-	w_prefs_key(SDLKey key) : w_key(key) {}
+	w_prefs_key(SDL_Scancode key) : w_key(key) {}
 
-	void set_key(SDLKey new_key)
+	void set_key(SDL_Scancode new_key)
 	{
 		// Key used for in-game function?
 		int error = NONE;
 		switch (new_key) {
-		case SDLK_F1:
-		case SDLK_F2:
-		case SDLK_F3:
-		case SDLK_F4:
-		case SDLK_F5:
-		case SDLK_F6:
-		case SDLK_F7:
-		case SDLK_F8:
-		case SDLK_F9:
-		case SDLK_F10:
-		case SDLK_F11:
-		case SDLK_F12:
-		case SDLK_ESCAPE: // (ZZZ: for quitting)
+		case SDL_SCANCODE_F1:
+		case SDL_SCANCODE_F2:
+		case SDL_SCANCODE_F3:
+		case SDL_SCANCODE_F4:
+		case SDL_SCANCODE_F5:
+		case SDL_SCANCODE_F6:
+		case SDL_SCANCODE_F7:
+		case SDL_SCANCODE_F8:
+		case SDL_SCANCODE_F9:
+		case SDL_SCANCODE_F10:
+		case SDL_SCANCODE_F11:
+		case SDL_SCANCODE_F12:
+		case SDL_SCANCODE_ESCAPE: // (ZZZ: for quitting)
 			error = keyIsUsedAlready;
 			break;
 			
 		default:
 			break;
 		}
-		if (new_key == SDLKey(SDLK_BASE_MOUSE_BUTTON + 3) || new_key == SDLKey(SDLK_BASE_MOUSE_BUTTON + 4))
-		{
-			error = keyScrollWheelDoesntWork;
-		}
-		if (error != NONE) {
-			alert_user(infoError, strERRORS, error, 0);
-			return;
-		}
+//		if (new_key == SDLKey(SDLK_BASE_MOUSE_BUTTON + 3) || new_key == SDLKey(SDLK_BASE_MOUSE_BUTTON + 4))
+//		{
+//			error = keyScrollWheelDoesntWork;
+//		}
+//		if (error != NONE) {
+//			alert_user(infoError, strERRORS, error, 0);
+//			return;
+//		}
 
 		w_key::set_key(new_key);
-		if (new_key == SDLK_UNKNOWN)
+		if (new_key == SDL_SCANCODE_UNKNOWN)
 			return;
 
 		// Remove binding to this key from all other widgets
 		for (int i=0; i<NUM_KEYS; i++) {
 			if (key_w[i] && key_w[i] != this && key_w[i]->get_key() == new_key) {
-				key_w[i]->set_key(SDLK_UNKNOWN);
+				key_w[i]->set_key(SDL_SCANCODE_UNKNOWN);
 				key_w[i]->dirty = true;
 			}
 		}
 
 		for (int i =0; i < NUMBER_OF_SHELL_KEYS; i++) {
 			if (shell_key_w[i] && shell_key_w[i] != this && shell_key_w[i]->get_key() == new_key) {
-				shell_key_w[i]->set_key(SDLK_UNKNOWN);
+				shell_key_w[i]->set_key(SDL_SCANCODE_UNKNOWN);
 				shell_key_w[i]->dirty = true;
 			}
 		}
@@ -1945,7 +1945,7 @@ static void load_default_keys(void *arg)
 {
 	// Load default keys, depending on state of "Mouse control" widget
 	dialog *d = (dialog *)arg;
-	SDLKey *keys = (mouse_w->get_selection() ? default_mouse_keys : default_keys);
+	SDL_Scancode *keys = (mouse_w->get_selection() ? default_mouse_keys : default_keys);
 	for (int i=0; i<NUM_KEYS; i++)
 		key_w[i]->set_key(keys[i]);
 
@@ -1981,19 +1981,19 @@ static void keyboard_dialog(void *arg)
 	for (int i=0; i<19; i++)
 	{
 		
-		key_w[i] = new w_prefs_key(SDLKey(input_preferences->keycodes[i]));
+		key_w[i] = new w_prefs_key(input_preferences->keycodes[i]);
 		left_table->dual_add(key_w[i]->label(action_name[i]), d);
 		left_table->dual_add(key_w[i], d);
 	}
 
 	for (int i=19; i<NUM_KEYS; i++) {
-		key_w[i] = new w_prefs_key(SDLKey(input_preferences->keycodes[i]));
+		key_w[i] = new w_prefs_key(input_preferences->keycodes[i]);
 		right_table->dual_add(key_w[i]->label(action_name[i]), d);
 		right_table->dual_add(key_w[i], d);
 	}
 
 	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; i++) {
-		shell_key_w[i] = new w_prefs_key(SDLKey(input_preferences->shell_keycodes[i]));
+		shell_key_w[i] = new w_prefs_key(input_preferences->shell_keycodes[i]);
 		right_table->dual_add(shell_key_w[i]->label(shell_action_name[i]), d);
 		right_table->dual_add(shell_key_w[i], d);
 	}
@@ -2026,17 +2026,17 @@ static void keyboard_dialog(void *arg)
 		bool changed = false;
 
 		for (int i=0; i<NUM_KEYS; i++) {
-			SDLKey key = key_w[i]->get_key();
+			SDL_Scancode key = key_w[i]->get_key();
 			if (key != input_preferences->keycodes[i]) {
-				input_preferences->keycodes[i] = short(key);
+				input_preferences->keycodes[i] = key;
 				changed = true;
 			}
 		}
 
 		for (int i=0; i<NUMBER_OF_SHELL_KEYS;i++) {
-			SDLKey key = shell_key_w[i]->get_key();
+			SDL_Scancode key = shell_key_w[i]->get_key();
 			if (key != input_preferences->shell_keycodes[i]) {
-				input_preferences->shell_keycodes[i] = short(key);
+				input_preferences->shell_keycodes[i] = key;
 				changed = true;
 			}
 		}
@@ -2652,7 +2652,7 @@ InfoTree input_preferences_tree()
 		
 		InfoTree key;
 		key.put_attr("index", i);
-		key.put_attr("value", code);
+		key.put_attr("value", static_cast<int>(code));
 		root.add_child("sdl_key", key);
 	}
 	
@@ -3459,12 +3459,15 @@ void parse_input_preferences(InfoTree root, std::string version)
 		int16 index;
 		if (key.read_indexed("index", index, NUMBER_OF_KEYS))
 		{
-			key.read_attr("value", input_preferences->keycodes[index]);
+			int code;
+			if (key.read_attr("value", code))
+				input_preferences->keycodes[index] = static_cast<SDL_Scancode>(code);
 		}
 		else if (key.read_indexed("index", index, NUMBER_OF_KEYS + NUMBER_OF_SHELL_KEYS))
 		{
-			key.read_attr("value",
-						input_preferences->shell_keycodes[index - NUMBER_OF_KEYS]);
+			int code;
+			if (key.read_attr("value", code))
+				input_preferences->shell_keycodes[index - NUMBER_OF_KEYS] = static_cast<SDL_Scancode>(code);
 		}
 	}
 }

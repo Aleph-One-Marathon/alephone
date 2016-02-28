@@ -259,32 +259,32 @@ void increment_heartbeat_count(int value)
 }
 
 /* Returns NONE if it is custom.. */
-short find_key_setup(
-	short *keycodes)
-{
-	short key_setup= NONE;
-	
-	for (unsigned index= 0; key_setup==NONE && index<NUMBER_OF_KEY_SETUPS; index++)
-	{
-		struct key_definition *definition = all_key_definitions[index];
-		unsigned jj;
-
-		for (jj= 0; jj<NUMBER_OF_STANDARD_KEY_DEFINITIONS; jj++)
-		{
-			if (definition[jj].offset != keycodes[jj]) break;
-		}
-
-		if (jj==NUMBER_OF_STANDARD_KEY_DEFINITIONS)
-		{
-			key_setup= index;
-		}
-	}
-	
-	return key_setup;
-}
+//short find_key_setup(
+//	short *keycodes)
+//{
+//	short key_setup= NONE;
+//	
+//	for (unsigned index= 0; key_setup==NONE && index<NUMBER_OF_KEY_SETUPS; index++)
+//	{
+//		struct key_definition *definition = all_key_definitions[index];
+//		unsigned jj;
+//
+//		for (jj= 0; jj<NUMBER_OF_STANDARD_KEY_DEFINITIONS; jj++)
+//		{
+//			if (definition[jj].offset != keycodes[jj]) break;
+//		}
+//
+//		if (jj==NUMBER_OF_STANDARD_KEY_DEFINITIONS)
+//		{
+//			key_setup= index;
+//		}
+//	}
+//	
+//	return key_setup;
+//}
 
 void set_default_keys(
-	short *keycodes, 
+	SDL_Scancode *keycodes,
 	short which_default)
 {
 	struct key_definition *definitions;
@@ -298,7 +298,7 @@ void set_default_keys(
 }
 
 void set_keys(
-	short *keycodes)
+	SDL_Scancode *keycodes)
 {
 	struct key_definition *definitions;
 	
@@ -307,7 +307,7 @@ void set_keys(
 	
 	for (unsigned index= 0; index<NUMBER_OF_STANDARD_KEY_DEFINITIONS; index++)
 	{
-		current_key_definitions[index].offset= SDLKey(keycodes[index]);
+		current_key_definitions[index].offset= keycodes[index];
 		current_key_definitions[index].action_flag= definitions[index].action_flag;
 	}
 	precalculate_key_information();
@@ -1024,7 +1024,7 @@ void parse_mml_keyboard(const InfoTree& root)
 		if (!ktree.read_attr("sdl", keycode))
 			continue;
 		
-		all_key_definitions[which_set][index].offset = static_cast<SDLKey>(keycode);
+		all_key_definitions[which_set][index].offset = static_cast<SDL_Scancode>(keycode);
 	}
 }
 

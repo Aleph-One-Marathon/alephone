@@ -55,7 +55,7 @@ struct special_flag_data
 
 struct key_definition
 {
-	SDLKey offset;
+	SDL_Scancode offset;
 	uint32 action_flag;
 };
 
@@ -70,135 +70,135 @@ struct key_definition
 static struct key_definition standard_key_definitions[]=
 {
 	/* keypad */
-	{SDLK_KP8, _moving_forward},
-	{SDLK_KP5, _moving_backward},
-	{SDLK_KP4, _turning_left},
-	{SDLK_KP6, _turning_right},
+	{SDL_SCANCODE_KP_8, _moving_forward},
+	{SDL_SCANCODE_KP_5, _moving_backward},
+	{SDL_SCANCODE_KP_4, _turning_left},
+	{SDL_SCANCODE_KP_6, _turning_right},
 	
 	/* zx translation */
-	{SDLK_z, _sidestepping_left},
-	{SDLK_x, _sidestepping_right},
+	{SDL_SCANCODE_Z, _sidestepping_left},
+	{SDL_SCANCODE_X, _sidestepping_right},
 
 	/* as looking */
-	{SDLK_a, _looking_left},
-	{SDLK_s, _looking_right},
+	{SDL_SCANCODE_A, _looking_left},
+	{SDL_SCANCODE_S, _looking_right},
 
 	/* dcv vertical looking */
-	{SDLK_d, _looking_up},
-	{SDLK_c, _looking_down},
-	{SDLK_v, _looking_center},
+	{SDL_SCANCODE_D, _looking_up},
+	{SDL_SCANCODE_C, _looking_down},
+	{SDL_SCANCODE_V, _looking_center},
 	
 	/* KP7/KP9 for weapon cycling */
-	{SDLK_KP7, _cycle_weapons_backward},
-	{SDLK_KP9, _cycle_weapons_forward},
+	{SDL_SCANCODE_KP_7, _cycle_weapons_backward},
+	{SDL_SCANCODE_KP_9, _cycle_weapons_forward},
 	
 	/* space for primary trigger, option for alternate trigger */
-	{SDLK_SPACE, _left_trigger_state},
-	{SDLK_LALT, _right_trigger_state},
+	{SDL_SCANCODE_SPACE, _left_trigger_state},
+	{SDL_SCANCODE_LALT, _right_trigger_state},
 	
 	/* shift, control and command modifiers */
-	{SDLK_LSHIFT, _sidestep_dont_turn},
-	{SDLK_LCTRL, _run_dont_walk},
-	{SDLK_LMETA, _look_dont_turn},
+	{SDL_SCANCODE_LSHIFT, _sidestep_dont_turn},
+	{SDL_SCANCODE_LCTRL, _run_dont_walk},
+	{SDL_SCANCODE_LGUI, _look_dont_turn},
 	
 	/* tab for action */
-	{SDLK_TAB, _action_trigger_state},
+	{SDL_SCANCODE_TAB, _action_trigger_state},
 
 	/* m for toggle between normal and overhead map view */
-	{SDLK_m, _toggle_map},
+	{SDL_SCANCODE_M, _toggle_map},
 	
 	/* ` for using the microphone */
-	{SDLK_BACKQUOTE, _microphone_button}
+	{SDL_SCANCODE_GRAVE, _microphone_button}
 };
 
 #define NUMBER_OF_LEFT_HANDED_KEY_DEFINITIONS (sizeof(left_handed_key_definitions)/sizeof(struct key_definition))
 static struct key_definition left_handed_key_definitions[]=
 {
 	/* arrows */
-	{SDLK_UP, _moving_forward},
-	{SDLK_DOWN, _moving_backward},
-	{SDLK_LEFT, _turning_left},
-	{SDLK_RIGHT, _turning_right},
+	{SDL_SCANCODE_UP, _moving_forward},
+	{SDL_SCANCODE_DOWN, _moving_backward},
+	{SDL_SCANCODE_LEFT, _turning_left},
+	{SDL_SCANCODE_RIGHT, _turning_right},
 	
 	/* zx translation */
-	{SDLK_z, _sidestepping_left},
-	{SDLK_x, _sidestepping_right},
+	{SDL_SCANCODE_Z, _sidestepping_left},
+	{SDL_SCANCODE_X, _sidestepping_right},
 
 	/* as looking */
-	{SDLK_a, _looking_left},
-	{SDLK_s, _looking_right},
+	{SDL_SCANCODE_A, _looking_left},
+	{SDL_SCANCODE_S, _looking_right},
 
 	/* dcv vertical looking */
-	{SDLK_d, _looking_up},
-	{SDLK_c, _looking_down},
-	{SDLK_v, _looking_center},
+	{SDL_SCANCODE_D, _looking_up},
+	{SDL_SCANCODE_C, _looking_down},
+	{SDL_SCANCODE_V, _looking_center},
 	
 	/* ;' for weapon cycling */
-	{SDLK_SEMICOLON, _cycle_weapons_backward},
-	{SDLK_QUOTE, _cycle_weapons_forward},
+	{SDL_SCANCODE_SEMICOLON, _cycle_weapons_backward},
+	{SDL_SCANCODE_APOSTROPHE, _cycle_weapons_forward},
 	
 	/* space for primary trigger, option for alternate trigger */
-	{SDLK_SPACE, _left_trigger_state},
-	{SDLK_LALT, _right_trigger_state},
+	{SDL_SCANCODE_SPACE, _left_trigger_state},
+	{SDL_SCANCODE_LALT, _right_trigger_state},
 	
 	/* shift, control and command modifiers */
-	{SDLK_LSHIFT, _sidestep_dont_turn},
-	{SDLK_LCTRL, _run_dont_walk},
-	{SDLK_LMETA, _look_dont_turn},
+	{SDL_SCANCODE_LSHIFT, _sidestep_dont_turn},
+	{SDL_SCANCODE_LCTRL, _run_dont_walk},
+	{SDL_SCANCODE_LGUI, _look_dont_turn},
 	
 	/* tab for action */
-	{SDLK_TAB, _action_trigger_state},
+	{SDL_SCANCODE_TAB, _action_trigger_state},
 
 	/* m for toggle between normal and overhead map view */
-	{SDLK_m, _toggle_map},
+	{SDL_SCANCODE_M, _toggle_map},
 	
 	/* ` for using the microphone */
-	{SDLK_BACKQUOTE, _microphone_button}
+	{SDL_SCANCODE_GRAVE, _microphone_button}
 };
 
 #define NUMBER_OF_POWERBOOK_KEY_DEFINITIONS (sizeof(powerbook_key_definitions)/sizeof(struct key_definition))
 static struct key_definition powerbook_key_definitions[]=
 {
 	/* olk; */
-	{SDLK_o, _moving_forward},
-	{SDLK_l, _moving_backward},
-	{SDLK_k, _turning_left},
-	{SDLK_SEMICOLON, _turning_right},
+	{SDL_SCANCODE_O, _moving_forward},
+	{SDL_SCANCODE_L, _moving_backward},
+	{SDL_SCANCODE_K, _turning_left},
+	{SDL_SCANCODE_SEMICOLON, _turning_right},
 	
 	/* zx translation */
-	{SDLK_z, _sidestepping_left},
-	{SDLK_x, _sidestepping_right},
+	{SDL_SCANCODE_Z, _sidestepping_left},
+	{SDL_SCANCODE_X, _sidestepping_right},
 
 	/* as looking */
-	{SDLK_a, _looking_left},
-	{SDLK_s, _looking_right},
+	{SDL_SCANCODE_A, _looking_left},
+	{SDL_SCANCODE_S, _looking_right},
 
 	/* dcv vertical looking */
-	{SDLK_d, _looking_up},
-	{SDLK_c, _looking_down},
-	{SDLK_v, _looking_center},
+	{SDL_SCANCODE_D, _looking_up},
+	{SDL_SCANCODE_C, _looking_down},
+	{SDL_SCANCODE_V, _looking_center},
 	
 	/* ip for weapon cycling */
-	{SDLK_i, _cycle_weapons_backward},
-	{SDLK_p, _cycle_weapons_forward},
+	{SDL_SCANCODE_I, _cycle_weapons_backward},
+	{SDL_SCANCODE_P, _cycle_weapons_forward},
 	
 	/* space for primary trigger, option for alternate trigger */
-	{SDLK_SPACE, _left_trigger_state},
-	{SDLK_LALT, _right_trigger_state},
+	{SDL_SCANCODE_SPACE, _left_trigger_state},
+	{SDL_SCANCODE_LALT, _right_trigger_state},
 	
 	/* shift, control and command modifiers */
-	{SDLK_LSHIFT, _sidestep_dont_turn},
-	{SDLK_LCTRL, _run_dont_walk},
-	{SDLK_LMETA, _look_dont_turn},
+	{SDL_SCANCODE_LSHIFT, _sidestep_dont_turn},
+	{SDL_SCANCODE_LCTRL, _run_dont_walk},
+	{SDL_SCANCODE_LGUI, _look_dont_turn},
 	
 	/* tab for action */
-	{SDLK_TAB, _action_trigger_state},
+	{SDL_SCANCODE_TAB, _action_trigger_state},
 
 	/* m for toggle between normal and overhead map view */
-	{SDLK_m, _toggle_map},
+	{SDL_SCANCODE_M, _toggle_map},
 	
 	/* ` for using the microphone */
-	{SDLK_BACKQUOTE, _microphone_button}
+	{SDL_SCANCODE_GRAVE, _microphone_button}
 };
 
 static struct key_definition *all_key_definitions[NUMBER_OF_KEY_SETUPS]=

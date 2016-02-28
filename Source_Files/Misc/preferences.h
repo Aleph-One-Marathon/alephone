@@ -190,7 +190,7 @@ enum {
 struct input_preferences_data
 {
 	int16 input_device;
-	int16 keycodes[NUMBER_OF_KEYS];
+	SDL_Scancode keycodes[NUMBER_OF_KEYS];
 	// LP addition: input modifiers
 	uint16 modifiers;
 	// Mouse-sensitivity parameters (LP: originally ZZZ)
@@ -200,7 +200,7 @@ struct input_preferences_data
 	bool mouse_acceleration;
 	// mouse button actions
 	int16 mouse_button_actions[MAX_BUTTONS];
-	int16 shell_keycodes[NUMBER_OF_SHELL_KEYS];
+	SDL_Scancode shell_keycodes[NUMBER_OF_SHELL_KEYS];
 	
 	int16 joystick_id;
 	int16 joystick_axis_mappings[NUMBER_OF_JOYSTICK_MAPPINGS];

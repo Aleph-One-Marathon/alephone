@@ -383,15 +383,15 @@ extern SDL_Surface *world_pixels;
 
 // Terminal key definitions
 static struct terminal_key terminal_keys[]= {
-	{SDLK_UP, 0, 0, _terminal_page_up},				// arrow up
-	{SDLK_DOWN, 0, 0, _terminal_page_down},			// arrow down
-	{SDLK_PAGEUP, 0, 0, _terminal_page_up},			// page up
-	{SDLK_PAGEDOWN, 0, 0, _terminal_page_down},		// page down
-	{SDLK_TAB, 0, 0, _terminal_next_state},			// tab
-	{SDLK_KP_ENTER, 0, 0, _terminal_next_state},	// enter
-	{SDLK_RETURN, 0, 0, _terminal_next_state},		// return
-	{SDLK_SPACE, 0, 0, _terminal_next_state},		// space
-	{SDLK_ESCAPE, 0, 0, _any_abort_key_mask}		// escape
+	{SDL_SCANCODE_UP, 0, 0, _terminal_page_up},				// arrow up
+	{SDL_SCANCODE_DOWN, 0, 0, _terminal_page_down},			// arrow down
+	{SDL_SCANCODE_PAGEUP, 0, 0, _terminal_page_up},			// page up
+	{SDL_SCANCODE_PAGEDOWN, 0, 0, _terminal_page_down},		// page down
+	{SDL_SCANCODE_TAB, 0, 0, _terminal_next_state},			// tab
+	{SDL_SCANCODE_KP_ENTER, 0, 0, _terminal_next_state},	// enter
+	{SDL_SCANCODE_RETURN, 0, 0, _terminal_next_state},		// return
+	{SDL_SCANCODE_SPACE, 0, 0, _terminal_next_state},		// space
+	{SDL_SCANCODE_ESCAPE, 0, 0, _any_abort_key_mask}		// escape
 };
 
 
