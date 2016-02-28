@@ -1512,8 +1512,10 @@ void dump_screen(void)
 	// Without OpenGL, dumping the screen is easy
 	SDL_Surface *video = SDL_GetVideoSurface();
 	if (!(video->flags & SDL_OPENGL)) {
-#ifdef HAVE_PNG
-		IMG_SavePNG(file.GetPath(), SDL_GetVideoSurface(), IMG_COMPRESS_DEFAULT, textp, texts.size());
+//#ifdef HAVE_PNG
+//		aoIMG_SavePNG(file.GetPath(), SDL_GetVideoSurface(), IMG_COMPRESS_DEFAULT, textp, texts.size());
+#ifdef HAVE_SDL_IMAGE
+		IMG_SavePNG(SDL_GetVideoSurface(), file.GetPath());
 #else
 		SDL_SaveBMP(SDL_GetVideoSurface(), file.GetPath());
 #endif
@@ -1549,8 +1551,10 @@ void dump_screen(void)
 	free(pixels);
 
 	// Save surface
-#ifdef HAVE_PNG
-        IMG_SavePNG(file.GetPath(), t, IMG_COMPRESS_DEFAULT, textp, texts.size());
+//#ifdef HAVE_PNG
+//        IMG_SavePNG(file.GetPath(), t, IMG_COMPRESS_DEFAULT, textp, texts.size());
+#ifdef HAVE_SDL_IMAGE
+	IMG_SavePNG(t, file.GetPath());
 #else
 	SDL_SaveBMP(t, file.GetPath());
 #endif
