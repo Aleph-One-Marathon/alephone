@@ -25,6 +25,7 @@ SW_TEXTURE_EXTRAS.CPP
 #include "render.h"
 #include "scottish_textures.h"
 #include "InfoTree.h"
+#include "screen.h"
 
 SW_Texture_Extras *SW_Texture_Extras::m_instance;
 
@@ -37,7 +38,7 @@ void SW_Texture::build_opac_table()
 
 	m_opac_table.resize(MAXIMUM_SHADING_TABLE_INDEXES);
 
-	SDL_PixelFormat *fmt = SDL_GetVideoSurface()->format;
+	SDL_PixelFormat *fmt = MainScreenSurface()->format;
 	if (bit_depth == 32)
 	{
 		for (int i = 0; i < MAXIMUM_SHADING_TABLE_INDEXES; i++)

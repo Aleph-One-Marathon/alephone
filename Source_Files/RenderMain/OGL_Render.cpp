@@ -489,7 +489,7 @@ static void SetBlend(short _BlendType);
 // if OpenGL is not present, it will never be active.
 
 // Test for activity;
-bool OGL_IsActive() { return (SDL_GetVideoSurface()->flags & SDL_OPENGL); }
+bool OGL_IsActive() { return MainScreenIsOpenGL(); }
 
 
 // It will be black; whether OpenGL is active will be returned
@@ -975,9 +975,7 @@ bool OGL_EndMain()
 bool OGL_SwapBuffers()
 {
 	if (!OGL_IsActive()) return false;
-	
-	SDL_GL_SwapBuffers();
-	
+	MainScreenSwap();
 	return true;
 }
 

@@ -2586,8 +2586,8 @@ static void handle_interface_menu_screen_click(
 	screen_rectangle *screen_rect;
 	short xoffset = 0, yoffset = 0;
 
-	xoffset = (SDL_GetVideoSurface()->w - 640) / 2;
-	yoffset = (SDL_GetVideoSurface()->h - 480) / 2;
+	xoffset = (MainScreenWidth() - 640) / 2;
+	yoffset = (MainScreenHeight() - 480) / 2;
 
 	/* find it.. */
 	for(index= START_OF_MENU_INTERFACE_RECTS; index<END_OF_MENU_INTERFACE_RECTS; ++index)
@@ -3011,18 +3011,10 @@ void show_movie(short index)
 	if (!File) return;
 
 	change_screen_mode(_screentype_chapter);
-	SDL_Surface *s = SDL_GetVideoSurface();
-	
-#if defined(__APPLE__) && defined(__MACH__)
-	if (!(s->flags & SDL_FULLSCREEN))
-		SDL_putenv(const_cast<char *>("SDL_VIDEO_YUV_HWACCEL=0"));
-	else
-		SDL_putenv(const_cast<char *>("SDL_VIDEO_YUV_HWACCEL="));
 
-#endif
 	{
 		SoundManager::Pause pauseSoundManager;
-		SDL_Rect dst_rect = { (s->w - 640)/2, (s->h - 480)/2, 640, 480 };
+		SDL_Rect dst_rect = { (MainScreenWidth() - 640)/2, (MainScreenHeight() - 480)/2, 640, 480 };
 
 #ifdef HAVE_FFMPEG
 		SDL_ffmpegFile *sffile = SDL_ffmpegOpen(File->GetPath());
@@ -3115,13 +3107,13 @@ void show_movie(short index)
 						show_movie_blitter.Load(*(vframe->surface));
 						show_movie_blitter.Draw(dst_rect);
 						show_movie_blitter.Unload();
-						SDL_GL_SwapBuffers();
+						MainScreenSwap();
 					}
 					else
 #endif
 					{
-						SDL_BlitSurface(vframe->surface, 0, SDL_GetVideoSurface(), &dst_rect);
-						SDL_UpdateRects(SDL_GetVideoSurface(), 1, &dst_rect);
+						SDL_BlitSurface(vframe->surface, 0, MainScreenSurface(), &dst_rect);
+						MainScreenUpdateRects(1, &dst_rect);
 					}
 					vframe->ready = 0;
 					if (vframe->last)
@@ -3179,7 +3171,7 @@ void show_movie(short index)
 		else
 #endif
 		{
-			SMPEG_setdisplay(movie, SDL_GetVideoSurface(), NULL, NULL);
+			SMPEG_setdisplay(movie, MainScreenSurface(), NULL, NULL);
 			SMPEG_scaleXY(movie, dst_rect.w, dst_rect.h);
 			SMPEG_move(movie, dst_rect.x, dst_rect.y);
 		}
@@ -3204,7 +3196,7 @@ void show_movie(short index)
 						show_movie_blitter.Draw(dst_rect);
 						show_movie_blitter.Unload();
 						SDL_UnlockMutex(show_movie_mutex);
-						SDL_GL_SwapBuffers();
+						MainScreenSwap();
 					}
 					break;
 #endif

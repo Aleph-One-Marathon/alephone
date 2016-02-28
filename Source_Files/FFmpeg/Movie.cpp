@@ -362,7 +362,7 @@ bool Movie::Setup()
 	alephone::Screen *scr = alephone::Screen::instance();
 	view_rect = scr->window_rect();
 	
-	if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
+	if (MainScreenIsOpenGL())
 		view_rect.y = scr->height() - (view_rect.y + view_rect.h);
 
 	temp_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, view_rect.w, view_rect.h, 32,
@@ -791,9 +791,9 @@ void Movie::AddFrame(FrameType ftype)
 	
 	SDL_SemWait(fillReady);
   	
-	SDL_Surface *video = SDL_GetVideoSurface();
-	if (!(video->flags & SDL_OPENGL))
+	if (!MainScreenIsOpenGL())
 	{
+		SDL_Surface *video = MainScreenSurface();
 		SDL_BlitSurface(video, &view_rect, temp_surface, NULL);
 	}
 #ifdef HAVE_OPENGL

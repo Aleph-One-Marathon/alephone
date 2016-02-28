@@ -77,6 +77,9 @@
 
 // Global variables
 static SDL_Surface *main_surface;	// Main (display) surface
+static SDL_Window *main_screen;
+static SDL_Renderer *main_render;
+static SDL_Texture *main_texture;
 
 // Rendering buffer for the main view, the overhead map, and the terminals.
 // The HUD has a separate buffer.
@@ -298,12 +301,12 @@ void Screen::Initialize(screen_mode_data* mode)
 
 int Screen::height()
 {
-	return SDL_GetVideoSurface()->h;
+	return MainScreenHeight();
 }
 
 int Screen::width()
 {
-	return SDL_GetVideoSurface()->w;
+	return MainScreenWidth();
 }
 
 int Screen::window_height()
@@ -1309,13 +1312,13 @@ void render_screen(short ticks_elapsed)
 
 		if (update_full_screen || Screen::instance()->lua_hud())
 		{
-			SDL_UpdateRect(main_surface, 0, 0, 0, 0);
+			MainScreenUpdateRect(0, 0, 0, 0);
 			update_full_screen = false;
 		}
 		else if ((!world_view->overhead_map_active || MapIsTranslucent) &&
 				 !world_view->terminal_mode_active)
 		{
-			SDL_UpdateRects(main_surface, 1, &ViewRect);
+			MainScreenUpdateRects(1, &ViewRect);
 		}
 	}
 
@@ -1720,7 +1723,7 @@ void darken_world_window(void)
 	SDL_Rect r = Screen::instance()->window_rect();
 
 #ifdef HAVE_OPENGL
-	if (main_surface->flags & SDL_OPENGL) {
+	if (MainScreenIsOpenGL()) {
 
 		// Save current state
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -1754,7 +1757,7 @@ void darken_world_window(void)
 		glPopMatrix();
 		glPopAttrib();
 
-		SDL_GL_SwapBuffers();
+		MainScreenSwap();
 		return;
 	}
 #endif
@@ -1784,7 +1787,7 @@ void darken_world_window(void)
 	if (SDL_MUSTLOCK(main_surface))
 		SDL_UnlockSurface(main_surface);
 
-	SDL_UpdateRects(main_surface, 1, &r);
+	MainScreenUpdateRects(1, &r);
 }
 
 
@@ -1819,7 +1822,7 @@ void DrawSurface(SDL_Surface *s, SDL_Rect &dest_rect, SDL_Rect &src_rect)
 		}
 		SDL_BlitSurface(surface, &new_src_rect, main_surface, &dest_rect);
 		if (!Screen::instance()->lua_hud())
-			SDL_UpdateRects(main_surface, 1, &dest_rect);
+			MainScreenUpdateRects(1, &dest_rect);
 		
 		if (surface != s)
 			SDL_FreeSurface(surface);
@@ -1879,17 +1882,17 @@ void draw_intro_screen(void)
 void clear_screen(bool update)
 {
 #ifdef HAVE_OPENGL
-	if (SDL_GetVideoSurface()->flags & SDL_OPENGL) {
+	if (MainScreenIsOpenGL()) {
 		OGL_ClearScreen();
 		if (update) {
-			SDL_GL_SwapBuffers();
+			MainScreenSwap();
 			OGL_ClearScreen();
 		}
 	} else 
 #endif
 	{
 		SDL_FillRect(main_surface, NULL, SDL_MapRGB(main_surface->format, 0, 0, 0));
-		if (update) SDL_UpdateRect(main_surface, 0, 0, 0, 0);
+		if (update) MainScreenUpdateRect(0, 0, 0, 0);
 	}
 
 	clear_next_screen = true;
@@ -1898,7 +1901,7 @@ void clear_screen(bool update)
 void clear_screen_margin()
 {
 #ifdef HAVE_OPENGL
-	if (SDL_GetVideoSurface()->flags & SDL_OPENGL) {
+	if (MainScreenIsOpenGL()) {
 		OGL_ClearScreen();
         return;
 	}
@@ -1949,4 +1952,62 @@ void clear_screen_margin()
         r.h = wr.h - (dr.y + dr.h);
         SDL_FillRect(main_surface, &r, SDL_MapRGB(main_surface->format, 0, 0, 0));
     }
+}
+
+bool MainScreenVisible()
+{
+	return (main_screen != NULL);
+}
+int MainScreenWidth()
+{
+	int w = 0;
+	SDL_GetWindowSize(main_screen, &w, NULL);
+	return w;
+}
+int MainScreenHeight()
+{
+	int h = 0;
+	SDL_GetWindowSize(main_screen, NULL, &h);
+	return h;
+}
+void MainScreenSize(int &w, int &h)
+{
+	SDL_GetWindowSize(main_screen, &w, &h);
+}
+bool MainScreenIsOpenGL()
+{
+	return (main_screen && !main_render);
+}
+void MainScreenSwap()
+{
+	SDL_GL_SwapWindow(main_screen);
+}
+void MainScreenCenterMouse()
+{
+	int w, h;
+	SDL_GetWindowSize(main_screen, &w, &h);
+	SDL_WarpMouseInWindow(main_screen, w/2, h/2);
+}
+SDL_Surface *MainScreenSurface()
+{
+	return main_surface;
+}
+void MainScreenUpdateRect(int x, int y, int w, int h)
+{
+	SDL_Rect r;
+	r.x = x;
+	r.y = y;
+	r.w = w;
+	r.h = h;
+	MainScreenUpdateRects(1, &r);
+}
+void MainScreenUpdateRects(size_t count, const SDL_Rect *rects)
+{
+	SDL_UpdateTexture(main_texture, NULL, main_surface->pixels, main_surface->pitch);
+	SDL_RenderClear(main_render);
+	SDL_RenderCopy(main_render, main_texture, NULL, NULL);
+//	for (size_t i = 0; i < count; ++i) {
+//		SDL_RenderCopy(main_render, main_texture, &rects[i], &rects[i]);
+//	}
+	SDL_RenderPresent(main_render);
 }

@@ -1739,10 +1739,9 @@ void dialog::layout()
 	rect.w = get_theme_space(DIALOG_FRAME, L_SPACE) + placer_rect.w + get_theme_space(DIALOG_FRAME, R_SPACE);
 	rect.h = get_theme_space(DIALOG_FRAME, T_SPACE) + placer_rect.h + get_theme_space(DIALOG_FRAME, B_SPACE);
 	
-	// Center dialog on video surfacea
-	SDL_Surface *video = SDL_GetVideoSurface();
-	rect.x = (video->w - rect.w) / 2;
-	rect.y = (video->h - rect.h) / 2;
+	// Center dialog on video surface
+	rect.x = (MainScreenWidth() - rect.w) / 2;
+	rect.y = (MainScreenHeight() - rect.h) / 2;
 	
 	placer_rect.x = get_theme_space(DIALOG_FRAME, L_SPACE);
 	placer_rect.y = get_theme_space(DIALOG_FRAME, T_SPACE);
@@ -1757,14 +1756,6 @@ void dialog::layout()
 
 void dialog::update(SDL_Rect r) const
 {
-	SDL_Surface *video = SDL_GetVideoSurface();
-// ZZZ: this less efficient way (copies more stuff) is an attempt to fix dialog updating
-// in the face of double-buffered page-flipping.
-/*
-	SDL_Rect dst_rect = {r.x + rect.x, r.y + rect.y, r.w, r.h};
-	SDL_BlitSurface(dialog_surface, &r, video, &dst_rect);
-	SDL_UpdateRects(video, 1, &dst_rect);
-*/
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive()) {
 		OGL_Blitter::BoundScreen();
@@ -1774,14 +1765,15 @@ void dialog::update(SDL_Rect r) const
 		blitter.Load(*dialog_surface, src);
 		blitter.Draw(rect);
 
-		SDL_GL_SwapBuffers();
+		MainScreenSwap();
 	} else 
 #endif
 	{
+		SDL_Surface *video = MainScreenSurface();
 		SDL_Rect dst_rect = rect;
 		SDL_Rect src_rect = { 0, 0, rect.w, rect.h };
 		SDL_BlitSurface(dialog_surface, &src_rect, video, &dst_rect);
-		SDL_UpdateRects(video, 1, &dst_rect);
+		MainScreenUpdateRects(1, &dst_rect);
 
 	}
 }
@@ -2327,16 +2319,16 @@ int dialog::finish(bool play_sound)
 #endif
         {
 			OGL_RenderRect(rect);
-            SDL_GL_SwapBuffers();
+            MainScreenSwap();
         }
 	} else
 #endif 
 	{
 
 		// Erase dialog from screen
-		SDL_Surface *video = SDL_GetVideoSurface();
+		SDL_Surface *video = MainScreenSurface();
 		SDL_FillRect(video, &rect, SDL_MapRGB(video->format, 0, 0, 0));
-		SDL_UpdateRects(video, 1, &rect);
+		MainScreenUpdateRects(1, &rect);
 	}
 
 	// Free frame images

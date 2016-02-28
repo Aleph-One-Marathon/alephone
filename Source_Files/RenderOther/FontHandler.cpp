@@ -48,6 +48,7 @@ Jan 12, 2001 (Loren Petrich):
 
 #include "shape_descriptors.h"
 #include "screen_drawing.h"
+#include "screen.h"
 
 #ifdef HAVE_OPENGL
 set<FontSpecifier*> *FontSpecifier::m_font_registry = NULL;
@@ -499,7 +500,7 @@ int FontSpecifier::DrawText(SDL_Surface *s, const char *text, int x, int y, uint
 {
 	if (!s)
 		return 0;
-	if (!(s->flags & SDL_OPENGL))
+	if (s == MainScreenSurface() && MainScreenIsOpenGL())
 		return draw_text(s, text, x, y, pixel, this->Info, this->Style, utf8);
 
 #ifdef HAVE_OPENGL
@@ -515,9 +516,9 @@ int FontSpecifier::DrawText(SDL_Surface *s, const char *text, int x, int y, uint
 		glPushMatrix();
 		glTranslatef(x, y, 0);
 		this->OGL_Render(text);
-		glPopMatrix();	
-		SDL_GL_SwapBuffers();
-	}	
+		glPopMatrix();
+		MainScreenSwap();
+	}
 	return 1;
 #else
 	return 0;

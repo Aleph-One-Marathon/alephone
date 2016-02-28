@@ -249,7 +249,7 @@ void _set_port_to_screen_window(void)
 {
 	assert(old_draw_surface == NULL);
 	old_draw_surface = draw_surface;
-	draw_surface = SDL_GetVideoSurface();
+	draw_surface = MainScreenSurface();
 }
 
 void _set_port_to_gworld(void)
@@ -340,17 +340,17 @@ void _draw_screen_shape(shape_descriptor shape_id, screen_rectangle *destination
 	if (s == NULL)
 		return;
 	
-	if (draw_surface->format->BitsPerPixel == 8) {
-		// SDL doesn't seem to be able to handle direct blits between 8-bit surfaces with different cluts
-		SDL_Surface *s2 = SDL_DisplayFormat(s);
-		SDL_FreeSurface(s);
-		s = s2;
-	}
+//	if (draw_surface->format->BitsPerPixel == 8) {
+//		// SDL doesn't seem to be able to handle direct blits between 8-bit surfaces with different cluts
+//		SDL_Surface *s2 = SDL_DisplayFormat(s);
+//		SDL_FreeSurface(s);
+//		s = s2;
+//	}
 	
 	// Blit the surface
 	SDL_BlitSurface(s, source ? &src_rect : NULL, draw_surface, &dst_rect);
-	if (draw_surface == SDL_GetVideoSurface())
-		SDL_UpdateRects(draw_surface, 1, &dst_rect);
+	if (draw_surface == MainScreenSurface())
+		MainScreenUpdateRects(1, &dst_rect);
 
 	// Free the surface
 	SDL_FreeSurface(s);
@@ -363,20 +363,20 @@ void _draw_screen_shape_at_x_y(shape_descriptor shape_id, short x, short y)
 	if (s == NULL)
 		return;
 	
-	if (draw_surface->format->BitsPerPixel == 8) {
-		// SDL doesn't seem to be able to handle direct blits between 8-bit surfaces with different cluts
-		SDL_Surface *s2 = SDL_DisplayFormat(s);
-		SDL_FreeSurface(s);
-		s = s2;
-	}
+//	if (draw_surface->format->BitsPerPixel == 8) {
+//		// SDL doesn't seem to be able to handle direct blits between 8-bit surfaces with different cluts
+//		SDL_Surface *s2 = SDL_DisplayFormat(s);
+//		SDL_FreeSurface(s);
+//		s = s2;
+//	}
 	
 	// Setup destination rectangle
 	SDL_Rect dst_rect = {x, y, s->w, s->h};
 
 	// Blit the surface
 	SDL_BlitSurface(s, NULL, draw_surface, &dst_rect);
-	if (draw_surface == SDL_GetVideoSurface())
-		SDL_UpdateRects(draw_surface, 1, &dst_rect);
+	if (draw_surface == MainScreenSurface())
+		MainScreenUpdateRects(1, &dst_rect);
 
 	// Free the surface
 	SDL_FreeSurface(s);
@@ -517,8 +517,8 @@ int sdl_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, i
 	if (SDL_MUSTLOCK (s)) {
 	  SDL_UnlockSurface(s);
 	}
-	if (s == SDL_GetVideoSurface())
-		SDL_UpdateRect(s, x, y - ascent, text_width(text, style, false), rect_height);
+	if (s == MainScreenSurface())
+		MainScreenUpdateRect(x, y - ascent, text_width(text, style, false), rect_height);
 	return width;
 }
 
@@ -586,8 +586,8 @@ int ttf_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, i
 	else
 		SDL_BlitSurface(text_surface, NULL, s, &dst_rect);
 
-	if (s == SDL_GetVideoSurface())
-		SDL_UpdateRect(s, x, y - TTF_FontAscent(get_ttf(style)), text_width(text, style, utf8), TTF_FontHeight(get_ttf(style)));
+	if (s == MainScreenSurface())
+		MainScreenUpdateRect(x, y - TTF_FontAscent(get_ttf(style)), text_width(text, style, utf8), TTF_FontHeight(get_ttf(style)));
 
 	int width = text_surface->w;
 	SDL_FreeSurface(text_surface);
@@ -753,11 +753,11 @@ void _fill_rect(screen_rectangle *rectangle, short color_index)
 
 	// Fill rectangle
 	SDL_FillRect(draw_surface, rectangle ? &r : NULL, SDL_MapRGB(draw_surface->format, color.r, color.g, color.b));
-	if (draw_surface == SDL_GetVideoSurface()) {
+	if (draw_surface == MainScreenSurface()) {
 		if (rectangle)
-			SDL_UpdateRects(draw_surface, 1, &r);
+			MainScreenUpdateRects(1, &r);
 		else
-			SDL_UpdateRect(draw_surface, 0, 0, 0, 0);
+			MainScreenUpdateRect(0, 0, 0, 0);
 	}
 }
 
@@ -768,25 +768,25 @@ void _fill_screen_rectangle(screen_rectangle *rectangle, short color_index)
 
 void draw_rectangle(SDL_Surface *s, const SDL_Rect *rectangle, uint32 pixel)
 {
-	bool do_update = (s == SDL_GetVideoSurface());
+	bool do_update = (s == MainScreenSurface());
 	SDL_Rect r = {rectangle->x, rectangle->y, rectangle->w, 1};
 	SDL_FillRect(s, &r, pixel);
 	if (do_update)
-		SDL_UpdateRects(s, 1, &r);
+		MainScreenUpdateRects(1, &r);
 	r.y += rectangle->h - 1;
 	SDL_FillRect(s, &r, pixel);
 	if (do_update)
-		SDL_UpdateRects(s, 1, &r);
+		MainScreenUpdateRects(1, &r);
 	r.y = rectangle->y;
 	r.w = 1;
 	r.h = rectangle->h;
 	SDL_FillRect(s, &r, pixel);
 	if (do_update)
-		SDL_UpdateRects(s, 1, &r);
+		MainScreenUpdateRects(1, &r);
 	r.x += rectangle->w - 1;
 	SDL_FillRect(s, &r, pixel);
 	if (do_update)
-		SDL_UpdateRects(s, 1, &r);
+		MainScreenUpdateRects(1, &r);
 }
 
 void _frame_rect(screen_rectangle *rectangle, short color_index)
@@ -1182,8 +1182,8 @@ void draw_polygon(SDL_Surface *s, const world_point2d *vertex_array, int vertex_
 		SDL_FillRect(s, &r, pixel);
 	}
 
-	if (draw_surface == SDL_GetVideoSurface())
-		SDL_UpdateRect(draw_surface, xmin, ymin, xmax - xmin + 1, ymax - ymin + 1);
+	if (draw_surface == MainScreenSurface())
+		MainScreenUpdateRect(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1);
 }
 
 

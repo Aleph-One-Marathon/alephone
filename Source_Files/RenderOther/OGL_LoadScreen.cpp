@@ -53,8 +53,8 @@ bool OGL_LoadScreen::Start()
 
 	if (!blitter.Load(image)) return use = false;
 
-	int screenWidth = SDL_GetVideoSurface()->w;
-	int screenHeight = SDL_GetVideoSurface()->h;
+	int screenWidth, screenHeight;
+	MainScreenSize(screenWidth, screenHeight);
 	bound_screen();
 	
 	// the true width/height

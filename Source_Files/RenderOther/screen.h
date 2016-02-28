@@ -251,4 +251,15 @@ bool SetScriptHUDIcon(int idx, const char* icon, size_t length);
 /* sets the icon for that HUD to a colored square (same colors as SetScriptHUDColor) */
 void SetScriptHUDSquare(int idx, int color);
 
+bool MainScreenVisible();
+int MainScreenWidth();
+int MainScreenHeight();
+void MainScreenSize(int &w, int &h);
+bool MainScreenIsOpenGL();
+void MainScreenSwap();
+void MainScreenCenterMouse();
+SDL_Surface *MainScreenSurface();
+void MainScreenUpdateRect(int x, int y, int w, int h);
+void MainScreenUpdateRects(size_t count, const SDL_Rect *rects);
+
 #endif

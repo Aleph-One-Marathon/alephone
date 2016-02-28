@@ -132,21 +132,21 @@ void HUD_Lua_Class::start_draw(void)
 #endif
 	{
 		if (m_surface &&
-				(m_surface->w != SDL_GetVideoSurface()->w ||
-				 m_surface->h != SDL_GetVideoSurface()->h))
+				(m_surface->w != MainScreenWidth() ||
+				 m_surface->h != MainScreenHeight()))
 		{
 			SDL_FreeSurface(m_surface);
 			m_surface = NULL;
 		}
 		if (!m_surface)
 		{
-			m_surface = SDL_DisplayFormatAlpha(SDL_GetVideoSurface());
-			SDL_SetAlpha(m_surface, SDL_SRCALPHA, 0);
+			m_surface = SDL_ConvertSurfaceFormat(MainScreenSurface(), SDL_PIXELFORMAT_BGRA8888, 0);
+			SDL_SetSurfaceBlendMode(m_surface, SDL_BLENDMODE_BLEND);
 		}
 		SDL_SetClipRect(m_surface, NULL);
 		SDL_FillRect(m_surface, NULL, SDL_MapRGBA(m_surface->format, 0, 0, 0, 0));
 		
-		SDL_SetAlpha(SDL_GetVideoSurface(), SDL_SRCALPHA, 0xff);
+//		SDL_SetAlpha(MainScreenSurface(), SDL_SRCALPHA, 0xff);
 	}
 	
 	
@@ -169,9 +169,10 @@ void HUD_Lua_Class::end_draw(void)
 #endif
 	if (m_surface)
 	{
-//		SDL_BlitSurface(m_surface, NULL, SDL_GetVideoSurface(), NULL);
-		SDL_SetAlpha(SDL_GetVideoSurface(), 0, 0xff);
-		SDL_SetClipRect(SDL_GetVideoSurface(), 0);
+		SDL_Surface *video = MainScreenSurface();
+		SDL_BlitSurface(m_surface, NULL, video, NULL);
+//		SDL_SetAlpha(video, 0, 0xff);
+		SDL_SetClipRect(video, 0);
 	}
 }
 
@@ -194,7 +195,7 @@ void HUD_Lua_Class::apply_clip(void)
 #endif
 	if (m_surface)
 	{
-		SDL_SetClipRect(SDL_GetVideoSurface(), &r);
+		SDL_SetClipRect(MainScreenSurface(), &r);
 	}
 }
 
@@ -318,7 +319,7 @@ void HUD_Lua_Class::fill_rect(float x, float y, float w, float h,
 		rect.h = static_cast<Uint16>(h);
 		SDL_FillRect(m_surface, &rect,
 								 SDL_MapRGBA(m_surface->format, static_cast<unsigned char>(r * 255), static_cast<unsigned char>(g * 255), static_cast<unsigned char>(b * 255), static_cast<unsigned char>(a * 255)));
-		SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
+		SDL_BlitSurface(m_surface, &rect, MainScreenSurface(), &rect);
 	}
 }	
 
@@ -347,25 +348,25 @@ void HUD_Lua_Class::frame_rect(float x, float y, float w, float h,
 		rect.y = static_cast<Sint16>(y) + m_wr.y;
 		rect.h = static_cast<Uint16>(t);
 		SDL_FillRect(m_surface, &rect, color);
-		SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
+		SDL_BlitSurface(m_surface, &rect, MainScreenSurface(), &rect);
 		rect.x = static_cast<Sint16>(x) + m_wr.x;
 		rect.w = static_cast<Uint16>(w);
 		rect.y = static_cast<Sint16>(y + h - t) + m_wr.y;
 		rect.h = static_cast<Uint16>(t);
 		SDL_FillRect(m_surface, &rect, color);
-		SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
+		SDL_BlitSurface(m_surface, &rect, MainScreenSurface(), &rect);
 		rect.x = static_cast<Sint16>(x) + m_wr.x;
 		rect.w = static_cast<Uint16>(t);
 		rect.y = static_cast<Sint16>(y + t) + m_wr.y;
 		rect.h = static_cast<Uint16>(h - t - t);
 		SDL_FillRect(m_surface, &rect, color);
-		SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
+		SDL_BlitSurface(m_surface, &rect, MainScreenSurface(), &rect);
 		rect.x = static_cast<Sint16>(x + w - t) + m_wr.x;
 		rect.w = static_cast<Uint16>(t);
 		rect.y = static_cast<Sint16>(y + t) + m_wr.y;
 		rect.h = static_cast<Uint16>(h - t - t);
 		SDL_FillRect(m_surface, &rect, color);
-		SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
+		SDL_BlitSurface(m_surface, &rect, MainScreenSurface(), &rect);
 	}
 }	
 
@@ -409,7 +410,6 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
         if (scale < 0.99 || scale > 1.01)
         {
             SDL_Surface *s2 = SDL_CreateRGBSurface(SDL_SWSURFACE, rect.w, rect.h, m_surface->format->BitsPerPixel, m_surface->format->Rmask, m_surface->format->Gmask, m_surface->format->Bmask, m_surface->format->Amask);
-            SDL_SetAlpha(s2, SDL_SRCALPHA, 0);
             
             font->Info->draw_text(s2, text, strlen(text),
                                   0, font->Height,
@@ -430,13 +430,13 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
             
             rect.w = srcrect.w;
             rect.h = srcrect.h;
-            SDL_BlitSurface(s3, &srcrect, SDL_GetVideoSurface(), &rect);
+            SDL_BlitSurface(s3, &srcrect, MainScreenSurface(), &rect);
             SDL_FreeSurface(s3);
         }
         else
 #endif
         {
-            SDL_BlitSurface(SDL_GetVideoSurface(), &rect, m_surface, &rect);
+            SDL_BlitSurface(MainScreenSurface(), &rect, m_surface, &rect);
             font->Info->draw_text(m_surface, text, strlen(text),
                                   rect.x, rect.y + font->Height,
                                   SDL_MapRGBA(m_surface->format,
@@ -445,7 +445,7 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
                                               static_cast<unsigned char>(b * 255),
                                               static_cast<unsigned char>(a * 255)),
                                   font->Style);
-            SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
+            SDL_BlitSurface(m_surface, &rect, MainScreenSurface(), &rect);
         }
 	}
 }
@@ -466,7 +466,7 @@ void HUD_Lua_Class::draw_image(Image_Blitter *image, float x, float y)
         r.x += m_wr.x;
         r.y += m_wr.y;
     }
-	image->Draw(SDL_GetVideoSurface(), r);
+	image->Draw(MainScreenSurface(), r);
 }
 
 void HUD_Lua_Class::draw_shape(Shape_Blitter *shape, float x, float y)
@@ -495,6 +495,6 @@ void HUD_Lua_Class::draw_shape(Shape_Blitter *shape, float x, float y)
     {
         r.x += m_wr.x;
         r.y += m_wr.y;
-        shape->SDL_Draw(SDL_GetVideoSurface(), r);
+        shape->SDL_Draw(MainScreenSurface(), r);
     }
 }

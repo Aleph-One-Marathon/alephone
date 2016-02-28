@@ -170,12 +170,12 @@ OGL_Blitter::~OGL_Blitter()
 
 int OGL_Blitter::ScreenWidth()
 {
-	return SDL_GetVideoSurface()->w;
+	return MainScreenWidth();
 }
 
 int OGL_Blitter::ScreenHeight()
 {
-	return SDL_GetVideoSurface()->h;
+	return MainScreenHeight();
 }
 
 void OGL_Blitter::BoundScreen(bool in_game)

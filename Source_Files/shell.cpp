@@ -1458,8 +1458,8 @@ static void process_event(const SDL_Event &event)
 			case SDL_WINDOWEVENT_EXPOSED:
 #if !defined(__APPLE__) && !defined(__MACH__) // double buffering :)
 #ifdef HAVE_OPENGL
-				if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
-					SDL_GL_SwapBuffers();
+				if (MainScreenIsOpenGL())
+					MainScreenSwap();
 				else
 #endif
 					update_game_window();
@@ -1570,21 +1570,20 @@ void dump_screen(void)
 #endif
 
 	// Without OpenGL, dumping the screen is easy
-	SDL_Surface *video = SDL_GetVideoSurface();
-	if (!(video->flags & SDL_OPENGL)) {
+	if (!MainScreenIsOpenGL()) {
 //#ifdef HAVE_PNG
-//		aoIMG_SavePNG(file.GetPath(), SDL_GetVideoSurface(), IMG_COMPRESS_DEFAULT, textp, texts.size());
+//		aoIMG_SavePNG(file.GetPath(), MainScreenSurface(), IMG_COMPRESS_DEFAULT, textp, texts.size());
 #ifdef HAVE_SDL_IMAGE
-		IMG_SavePNG(SDL_GetVideoSurface(), file.GetPath());
+		IMG_SavePNG(MainScreenSurface(), file.GetPath());
 #else
-		SDL_SaveBMP(SDL_GetVideoSurface(), file.GetPath());
+		SDL_SaveBMP(MainScreenSurface(), file.GetPath());
 #endif
 		return;
 	}
 
 #ifdef HAVE_OPENGL
 	// Otherwise, allocate temporary surface...
-	SDL_Surface *t = SDL_CreateRGBSurface(SDL_SWSURFACE, video->w, video->h, 24,
+	SDL_Surface *t = SDL_CreateRGBSurface(SDL_SWSURFACE, video_w, video_h, 24,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 	  0x000000ff, 0x0000ff00, 0x00ff0000, 0);
 #else
@@ -1594,7 +1593,7 @@ void dump_screen(void)
 		return;
 
 	// ...and pixel buffer
-	void *pixels = malloc(video->w * video->h * 3);
+	void *pixels = malloc(video_w * video_h * 3);
 	if (pixels == NULL) {
 		SDL_FreeSurface(t);
 		return;
@@ -1602,12 +1601,12 @@ void dump_screen(void)
 
 	// Read OpenGL frame buffer
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glReadPixels(0, 0, video->w, video->h, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+	glReadPixels(0, 0, video_w, video_h, GL_RGB, GL_UNSIGNED_BYTE, pixels);
 	glPixelStorei(GL_PACK_ALIGNMENT, 4);  // return to default
 
 	// Copy pixel buffer (which is upside-down) to surface
-	for (int y = 0; y < video->h; y++)
-		memcpy((uint8 *)t->pixels + t->pitch * y, (uint8 *)pixels + video->w * 3 * (video->h - y - 1), video->w * 3);
+	for (int y = 0; y < video_h; y++)
+		memcpy((uint8 *)t->pixels + t->pitch * y, (uint8 *)pixels + video_w * 3 * (video_h - y - 1), video_w * 3);
 	free(pixels);
 
 	// Save surface
