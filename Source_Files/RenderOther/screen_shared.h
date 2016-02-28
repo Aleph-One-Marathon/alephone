@@ -668,6 +668,7 @@ static void DisplayNetMicStatus(SDL_Surface *s)
 			icon = "  x";
 			iconColor.r = 0xff;
 			iconColor.g = iconColor.b = 0x0;
+			iconColor.a = 0xff;
 
 		}
 		else
@@ -720,10 +721,10 @@ static void DisplayNetMicStatus(SDL_Surface *s)
 	DisplayText(Xstatus, Y, status.c_str());
 }
 
-static const SDL_Color Green = { 0x0, 0xff, 0x0};
-static const SDL_Color Yellow = { 0xff, 0xff, 0x0 };
-static const SDL_Color Red = { 0xff, 0x0, 0x0 };
-static const SDL_Color Gray = { 0x7f, 0x7f, 0x7f };
+static const SDL_Color Green = { 0x0, 0xff, 0x0, 0xff };
+static const SDL_Color Yellow = { 0xff, 0xff, 0x0, 0xff };
+static const SDL_Color Red = { 0xff, 0x0, 0x0, 0xff };
+static const SDL_Color Gray = { 0x7f, 0x7f, 0x7f, 0xff };
 
 static void DisplayScores(SDL_Surface *s)
 {

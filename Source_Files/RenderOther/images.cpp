@@ -588,6 +588,7 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 						colors[value].r = SDL_ReadBE16(p) >> 8;
 						colors[value].g = SDL_ReadBE16(p) >> 8;
 						colors[value].b = SDL_ReadBE16(p) >> 8;
+						colors[value].a = 0xff;
 					}
 					SDL_SetColors(bm, colors, 0, 256);
 				}

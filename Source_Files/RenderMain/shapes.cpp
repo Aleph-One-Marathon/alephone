@@ -291,6 +291,7 @@ SDL_Surface *get_shape_surface(int shape, int inCollection, byte** outPointerToP
 		    SDL_PixelFormat *fmt = &pixel_format_16;
 		    for (int i = 0; i < 256; i++) {
 			    SDL_GetRGB(shading_tables[i], fmt, &colors[i].r, &colors[i].g, &colors[i].b);
+			    colors[i].a = 0xff;
                     }
                 }
                 break;
@@ -305,6 +306,7 @@ SDL_Surface *get_shape_surface(int shape, int inCollection, byte** outPointerToP
                         colors[i].r = RED32(shading_tables[i]);
                         colors[i].g = GREEN32(shading_tables[i]);
                         colors[i].b = BLUE32(shading_tables[i]);
+                        colors[i].a = 0xff;
                     }
                 }
                 break;
@@ -327,6 +329,7 @@ SDL_Surface *get_shape_surface(int shape, int inCollection, byte** outPointerToP
                     colors[idx].r = src_colors[i].red >> 8;
                     colors[idx].g = src_colors[i].green >> 8;
                     colors[idx].b = src_colors[i].blue >> 8;
+                    colors[idx].a = 0xff;
             }
         } // inIllumination < 0
         

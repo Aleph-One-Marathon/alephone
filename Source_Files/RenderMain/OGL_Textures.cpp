@@ -1852,6 +1852,7 @@ void FindInfravisionVersionDXTC1(InfravisionData& IVData, int NumBytes, unsigned
 	tint.r = PIN(int(IVData.Red * 256), 0, 255);
 	tint.g = PIN(int(IVData.Green * 256), 0, 255);
 	tint.b = PIN(int(IVData.Blue* 256), 0, 255);
+	tint.a = 0xff;
 	
 	// the first two uint16s in each block are our colors
 	for (int i = 0; i < NumBytes / 4; i++) {
@@ -1894,6 +1895,7 @@ void FindInfavisionVersionDXTC35(InfravisionData &IVData, int NumBytes, unsigned
 	tint.r = PIN(int(IVData.Red * 256), 0, 255);
 	tint.g = PIN(int(IVData.Green * 256), 0, 255);
 	tint.b = PIN(int(IVData.Blue* 256), 0, 255);
+	tint.a = 0xff;
 
 	for (int i = 0; i < NumBytes / 8; i++) {
 		uint16 *c1 = &pixels[i * 8 + 4];

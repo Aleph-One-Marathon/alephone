@@ -1504,6 +1504,7 @@ static void build_sdl_color_table(const color_table *color_table, SDL_Color *col
 		dst->r = src->red >> 8;
 		dst->g = src->green >> 8;
 		dst->b = src->blue >> 8;
+		dst->a = 0xff;
 		src++; dst++;
 	}
 }

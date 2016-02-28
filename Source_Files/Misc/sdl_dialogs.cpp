@@ -182,6 +182,7 @@ static void parse_theme_color(InfoTree root, int type, int state, int max_index)
 	color.r = uint8(PIN(255 * red + 0.5, 0, 255));
 	color.g = uint8(PIN(255 * green + 0.5, 0, 255));
 	color.b = uint8(PIN(255 * blue + 0.5, 0, 255));
+	color.a = 0xff;
 	dialog_theme[type].states[state].colors[index] = color;
 }
 
@@ -691,6 +692,7 @@ static inline SDL_Color make_color(uint8 r, uint8 g, uint8 b)
 	c.r = r;
 	c.g = g;
 	c.b = b;
+	c.a = 0xff;
 	return c;
 }
 

@@ -538,6 +538,7 @@ int ttf_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, i
 
 	SDL_Color c;
 	SDL_GetRGB(pixel, s->format, &c.r, &c.g, &c.b);
+	c.a = 0xff;
 	SDL_Surface *text_surface = 0;
 	if (utf8) 
 	{
@@ -1198,6 +1199,7 @@ void _get_interface_color(size_t color_index, SDL_Color *color)
 	color->r = c.red >> 8;
 	color->g = c.green >> 8;
 	color->b = c.blue >> 8;
+	color->a = 0xff;
 }
 
 #define NUMBER_OF_PLAYER_COLORS 8
@@ -1220,6 +1222,7 @@ void _get_player_color(size_t color_index, SDL_Color *color)
     color->r = static_cast<Uint8>(c.red);
     color->g = static_cast<Uint8>(c.green);
     color->b = static_cast<Uint8>(c.blue);
+    color->a = 0xff;
 }
 
 /*
