@@ -1157,13 +1157,9 @@ static void graphics_dialog(void *arg)
 	table->dual_add(size_w, d);
 
 	w_toggle *fill_screen_w = NULL;
-	const SDL_version *version = SDL_Linked_Version();
-	if (SDL_VERSIONNUM(version->major, version->minor, version->patch) >= SDL_VERSIONNUM(1, 2, 10))
-	{
-		fill_screen_w = new w_toggle(graphics_preferences->screen_mode.fill_the_screen);
-		table->dual_add(fill_screen_w->label("Fill the Screen"), d);
-		table->dual_add(fill_screen_w, d);
-	}
+	fill_screen_w = new w_toggle(graphics_preferences->screen_mode.fill_the_screen);
+	table->dual_add(fill_screen_w->label("Fill the Screen"), d);
+	table->dual_add(fill_screen_w, d);
 
 	w_toggle *fixh_w = new w_toggle(!graphics_preferences->screen_mode.fix_h_not_v);
 	table->dual_add(fixh_w->label("Limit Vertical View"), d);
@@ -2813,12 +2809,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.fullscreen = true;
 	preferences->screen_mode.fix_h_not_v = true;
 	preferences->screen_mode.camera_bob = true;
-	
-	const SDL_version *version = SDL_Linked_Version();
-	if (SDL_VERSIONNUM(version->major, version->minor, version->patch) >= SDL_VERSIONNUM(1, 2, 10))
-		preferences->screen_mode.fill_the_screen = false;
-	else
-		preferences->screen_mode.fill_the_screen = true;
+	preferences->screen_mode.fill_the_screen = false;
 
 	if (preferences->screen_mode.acceleration == _no_acceleration)
 		preferences->screen_mode.bit_depth = 16;
@@ -3292,8 +3283,6 @@ const ViewSizeData LegacyViewSizes[32] =
 
 void parse_graphics_preferences(InfoTree root, std::string version)
 {
-	const SDL_version *sdl_version = SDL_Linked_Version();
-	
 	int scmode = -1;
 	root.read_attr("scmode_size", scmode);
 	if (scmode >= 0 && scmode < 32)
@@ -3314,11 +3303,7 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr("scmode_accel", graphics_preferences->screen_mode.acceleration);
 	root.read_attr("scmode_highres", graphics_preferences->screen_mode.high_resolution);
 	root.read_attr("scmode_fullscreen", graphics_preferences->screen_mode.fullscreen);
-
-	if (SDL_VERSIONNUM(sdl_version->major, sdl_version->minor, sdl_version->patch) >= SDL_VERSIONNUM(1, 2, 10))
-		root.read_attr("scmode_fill_the_screen", graphics_preferences->screen_mode.fill_the_screen);
-	else
-		graphics_preferences->screen_mode.fill_the_screen = true;
+	root.read_attr("scmode_fill_the_screen", graphics_preferences->screen_mode.fill_the_screen);
 	
 	root.read_attr("scmode_fix_h_not_v", graphics_preferences->screen_mode.fix_h_not_v);
 	root.read_attr("scmode_bitdepth", graphics_preferences->screen_mode.bit_depth);
