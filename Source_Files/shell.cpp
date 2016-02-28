@@ -925,46 +925,85 @@ static void handle_game_key(const SDL_Event &event)
 	}
 	if (Console::instance()->input_active()) {
 		switch(key) {
-		case SDLK_RETURN:
-			Console::instance()->enter();
-			break;
-		case SDLK_ESCAPE:
-			Console::instance()->abort();
-			break;
-		case SDLK_BACKSPACE:
-			Console::instance()->backspace();
-			break;
-		case SDLK_DELETE:
-                        Console::instance()->del();
-                        break;
-		case SDLK_UP:
-			Console::instance()->up_arrow();
-			break;
-		case SDLK_DOWN:
-			Console::instance()->down_arrow();
-			break;
-		case SDLK_LEFT:
-			Console::instance()->left_arrow();
-			break;
-		case SDLK_RIGHT:
-			Console::instance()->right_arrow();
-			break;
-		default:
-                        if (event.key.keysym.unicode == 4) // Ctrl-D
-                        {
-                            Console::instance()->del();
-                        }
-                        else if (event.key.keysym.unicode == 8) // Crtl-H
-			{
+			case SDLK_RETURN:
+			case SDLK_KP_ENTER:
+				Console::instance()->enter();
+				break;
+			case SDLK_ESCAPE:
+				Console::instance()->abort();
+				break;
+			case SDLK_BACKSPACE:
 				Console::instance()->backspace();
-			}
-			else if (event.key.keysym.unicode == 21) // Crtl-U
-			{
-				Console::instance()->clear();
-			}
-			else if (event.key.keysym.unicode >= ' ') {
-				Console::instance()->key(unicode_to_mac_roman(event.key.keysym.unicode));
-			}
+				break;
+			case SDLK_DELETE:
+				Console::instance()->del();
+				break;
+			case SDLK_UP:
+				Console::instance()->up_arrow();
+				break;
+			case SDLK_DOWN:
+				Console::instance()->down_arrow();
+				break;
+			case SDLK_LEFT:
+				Console::instance()->left_arrow();
+				break;
+			case SDLK_RIGHT:
+				Console::instance()->right_arrow();
+				break;
+			case SDLK_HOME:
+				Console::instance()->line_home();
+				break;
+			case SDLK_END:
+				Console::instance()->line_end();
+				break;
+			case SDLK_a:
+				if (event.key.keysym.mod & KMOD_CTRL)
+					Console::instance()->line_home();
+				break;
+			case SDLK_b:
+				if (event.key.keysym.mod & KMOD_CTRL)
+					Console::instance()->left_arrow();
+				break;
+			case SDLK_d:
+				if (event.key.keysym.mod & KMOD_CTRL)
+					Console::instance()->del();
+				break;
+			case SDLK_e:
+				if (event.key.keysym.mod & KMOD_CTRL)
+					Console::instance()->line_end();
+				break;
+			case SDLK_f:
+				if (event.key.keysym.mod & KMOD_CTRL)
+					Console::instance()->right_arrow();
+				break;
+			case SDLK_h:
+				if (event.key.keysym.mod & KMOD_CTRL)
+					Console::instance()->backspace();
+				break;
+			case SDLK_k:
+				if (event.key.keysym.mod & KMOD_CTRL)
+					Console::instance()->forward_clear();
+				break;
+			case SDLK_n:
+				if (event.key.keysym.mod & KMOD_CTRL)
+					Console::instance()->down_arrow();
+				break;
+			case SDLK_p:
+				if (event.key.keysym.mod & KMOD_CTRL)
+					Console::instance()->up_arrow();
+				break;
+			case SDLK_t:
+				if (event.key.keysym.mod & KMOD_CTRL)
+					Console::instance()->transpose();
+				break;
+			case SDLK_u:
+				if (event.key.keysym.mod & KMOD_CTRL)
+					Console::instance()->clear();
+				break;
+			case SDLK_w:
+				if (event.key.keysym.mod & KMOD_CTRL)
+					Console::instance()->delete_word();
+				break;
 		}
 	}
 	else
@@ -1379,6 +1418,12 @@ static void process_event(const SDL_Event &event)
 		
 	case SDL_KEYDOWN:
 		process_game_key(event);
+		break;
+
+	case SDL_TEXTINPUT:
+		if (Console::instance()->input_active()) {
+		    Console::instance()->textEvent(event);
+		}
 		break;
 		
 	case SDL_QUIT:

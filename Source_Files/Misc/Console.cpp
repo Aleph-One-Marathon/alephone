@@ -163,8 +163,7 @@ void Console::enter() {
 	m_buffer.clear();
 	m_displayBuffer.clear();
 	m_active = false;
-	SDL_EnableKeyRepeat(0, 0);
-	SDL_EnableUNICODE(0);
+	SDL_StopTextInput();
 }
 
 void Console::abort() {
@@ -178,8 +177,7 @@ void Console::abort() {
 
 	m_callback.clear();
 	m_active = false;
-	SDL_EnableKeyRepeat(0, 0);
-	SDL_EnableUNICODE(0);
+	SDL_StopTextInput();
 }
 
 void Console::backspace() {
@@ -198,15 +196,55 @@ void Console::del() {
 }
 
 void Console::clear() {
-	m_buffer.clear();
-	m_displayBuffer = m_prompt + " ";
-	m_cursor_position = 0;
+	if (m_cursor_position > 0) {
+		m_buffer.erase(0, m_cursor_position);
+		m_displayBuffer.erase(m_prompt.length() + 1, cursor_position());
+		m_cursor_position = 0;
+	}
 }
 
-void Console::key(const char c) {
-	m_buffer.insert(m_cursor_position, 1, c);
-	m_displayBuffer.insert(cursor_position(), 1, c);
-	m_cursor_position++;
+void Console::forward_clear() {
+	if (m_cursor_position < m_buffer.length()) {
+		m_buffer.erase(m_cursor_position);
+		m_displayBuffer.erase(cursor_position());
+	}
+}
+
+void Console::transpose() {
+	if (m_cursor_position > 0) {
+		if (m_cursor_position == m_buffer.length())
+			--m_cursor_position;
+		--m_cursor_position;
+		char tmp = m_buffer[m_cursor_position];
+		m_buffer.erase(m_cursor_position, 1);
+		m_displayBuffer.erase(cursor_position(), 1);
+		++m_cursor_position;
+		m_buffer.insert(m_cursor_position, 1, tmp);
+		m_displayBuffer.insert(cursor_position(), 1, tmp);
+		++m_cursor_position;
+	}
+}
+
+void Console::delete_word() {
+	int erase_position = m_cursor_position;
+	while (erase_position && m_buffer[erase_position - 1] == ' ')
+		--erase_position;
+	while (erase_position && m_buffer[erase_position - 1] != ' ')
+		--erase_position;
+	int erase_length = m_cursor_position - erase_position;
+	if (erase_length > 0) {
+		m_buffer.erase(erase_position, erase_length);
+		m_displayBuffer.erase(cursor_position() - erase_length, erase_length);
+		m_cursor_position = erase_position;
+	}
+}
+
+void Console::textEvent(const SDL_Event &e) {
+	std::string input_utf8 = e.text.text;
+	std::string input_roman = utf8_to_mac_roman(input_utf8);
+	m_buffer.insert(m_cursor_position, input_roman);
+	m_displayBuffer.insert(cursor_position(), input_roman);
+	m_cursor_position += input_roman.length();
 }
 
 // up and down arrows display previously entered commands at current prompt
@@ -244,6 +282,14 @@ void Console::right_arrow() {
 	}
 }
 
+void Console::line_home() {
+	m_cursor_position = 0;
+}
+
+void Console::line_end() {
+	m_cursor_position = m_buffer.length();
+}
+
 void Console::activate_input(boost::function<void (const std::string&)> callback,
 			     const std::string& prompt)
 {
@@ -254,9 +300,8 @@ void Console::activate_input(boost::function<void (const std::string&)> callback
 	m_displayBuffer += " ";
 	m_active = true;
 	m_cursor_position = 0;
-
-	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
-	SDL_EnableUNICODE(1);
+	
+	SDL_StartTextInput();
 }
 
 void Console::deactivate_input() {
@@ -265,8 +310,7 @@ void Console::deactivate_input() {
 	
 	m_callback.clear();
 	m_active = false;
-	SDL_EnableKeyRepeat(0, 0);
-	SDL_EnableUNICODE(0);
+	SDL_StopTextInput();
 }
 
 int Console::cursor_position() {

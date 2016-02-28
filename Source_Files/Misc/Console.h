@@ -54,11 +54,16 @@ public:
 	void del();
 	void backspace();
 	void clear();
-	void key(const char);
+	void forward_clear();
+	void transpose();
+	void delete_word();
+	void textEvent(const SDL_Event &e);
 	void up_arrow();
 	void down_arrow();
 	void left_arrow();
 	void right_arrow();
+	void line_home();
+	void line_end();
 	const std::string &displayBuffer() { return m_displayBuffer; }
 
 	void activate_input(boost::function<void (const std::string&)> callback,

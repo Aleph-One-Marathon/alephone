@@ -1187,13 +1187,11 @@ uint32 parse_keymap(void)
 
   if(get_keyboard_controller_status())
     {
-      Uint8 *key_map;
+		Uint8 key_map[SDL_NUM_SCANCODES];
       if (Console::instance()->input_active()) {
-	static Uint8 chat_input_mode_keymap[SDLK_LAST];
-	memset(&chat_input_mode_keymap, 0, sizeof(chat_input_mode_keymap));
-	key_map = chat_input_mode_keymap;
+	memset(key_map, 0, sizeof(key_map));
       } else {
-	key_map = SDL_GetKeyState(NULL);
+		  memcpy(key_map, SDL_GetKeyboardState(NULL), sizeof(key_map));
       }
       
       // ZZZ: let mouse code simulate keypresses
