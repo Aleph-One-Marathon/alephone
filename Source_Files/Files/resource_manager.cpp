@@ -417,6 +417,8 @@ size_t count_1_resources(uint32 type)
 
 size_t count_resources(uint32 type)
 {
+	if (!res_file_list.size())
+		return 0;
 	size_t count = 0;
 	list<res_file_t *>::const_iterator i = cur_res_file_t, begin = res_file_list.begin();
 	while (true) {
@@ -452,6 +454,8 @@ void get_1_resource_id_list(uint32 type, vector<int> &ids)
 void get_resource_id_list(uint32 type, vector<int> &ids)
 {
 	ids.clear();
+	if (!res_file_list.size())
+		return;
 	list<res_file_t *>::const_iterator i = cur_res_file_t, begin = res_file_list.begin();
 	while (true) {
 		(*i)->get_resource_id_list(type, ids);
@@ -502,6 +506,8 @@ bool get_1_resource(uint32 type, int id, LoadedResource &rsrc)
 
 bool get_resource(uint32 type, int id, LoadedResource &rsrc)
 {
+	if (!res_file_list.size())
+		return false;
 	list<res_file_t *>::const_iterator i = cur_res_file_t, begin = res_file_list.begin();
 	while (true) {
 		bool found = (*i)->get_resource(type, id, rsrc);
@@ -557,6 +563,8 @@ bool get_1_ind_resource(uint32 type, int index, LoadedResource &rsrc)
 
 bool get_ind_resource(uint32 type, int index, LoadedResource &rsrc)
 {
+	if (!res_file_list.size())
+		return false;
 	list<res_file_t *>::const_iterator i = cur_res_file_t, begin = res_file_list.begin();
 	while (true) {
 		bool found = (*i)->get_ind_resource(type, index, rsrc);
@@ -592,6 +600,8 @@ bool has_1_resource(uint32 type, int id)
 
 bool has_resource(uint32 type, int id)
 {
+	if (!res_file_list.size())
+		return false;
 	list<res_file_t *>::const_iterator i = cur_res_file_t, begin = res_file_list.begin();
 	while (true) {
 		if ((*i)->has_resource(type, id))
