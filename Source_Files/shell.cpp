@@ -641,7 +641,7 @@ static void initialize_application(void)
 	}
 	SDL_WM_SetCaption(application_name, application_name);
 
-#if defined(HAVE_SDL_IMAGE) && (SDL_IMAGE_PATCHLEVEL >= 8)
+#if defined(HAVE_SDL_IMAGE)
 	IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
 #endif
 
