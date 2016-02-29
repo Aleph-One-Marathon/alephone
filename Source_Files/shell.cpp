@@ -412,6 +412,22 @@ static void initialize_application(void)
 	if (LoadLibrary("exchndl.dll")) option_debug = true;
 #endif
 
+	//	SDL_putenv(const_cast<char*>("SDL_VIDEO_ALLOW_SCREENSAVER=1"));
+
+	// Initialize SDL
+	int retval = SDL_Init(SDL_INIT_VIDEO |
+						  (option_nosound ? 0 : SDL_INIT_AUDIO) |
+						  (option_nojoystick ? 0 : SDL_INIT_JOYSTICK) |
+						  (option_debug ? SDL_INIT_NOPARACHUTE : 0));
+	if (retval < 0)
+	{
+		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
+		exit(1);
+	}
+#if defined(HAVE_SDL_IMAGE)
+	IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
+#endif
+
 	// Find data directories, construct search path
 	InitDefaultStringSets();
 
@@ -627,23 +643,7 @@ static void initialize_application(void)
 
 	Plugins::instance()->load_mml();
 
-//	SDL_putenv(const_cast<char*>("SDL_VIDEO_ALLOW_SCREENSAVER=1"));
-
-	// Initialize SDL
-	int retval = SDL_Init(SDL_INIT_VIDEO | 
-			      (option_nosound ? 0 : SDL_INIT_AUDIO) |
-                              (option_nojoystick ? 0 : SDL_INIT_JOYSTICK) |
-			      (option_debug ? SDL_INIT_NOPARACHUTE : 0));
-	if (retval < 0)
-	{
-		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
-		exit(1);
-	}
 //	SDL_WM_SetCaption(application_name, application_name);
-
-#if defined(HAVE_SDL_IMAGE)
-	IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
-#endif
 
 // #if defined(HAVE_SDL_IMAGE) && !(defined(__APPLE__) && defined(__MACH__))
 // 	SDL_WM_SetIcon(IMG_ReadXPMFromArray(const_cast<char**>(alephone_xpm)), 0);
