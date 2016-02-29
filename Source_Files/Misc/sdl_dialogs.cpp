@@ -649,9 +649,13 @@ bool load_theme(FileSpecifier &theme)
 	data_search_path.insert(data_search_path.begin(), theme);
 	for (std::map<int, theme_widget>::iterator i = dialog_theme.begin(); i != dialog_theme.end(); ++i)
 	{
-		if (i->second.font_set)
+		if (i->second.font_set) {
 			i->second.font = load_font(i->second.font_spec);
-		else
+			if (!i->second.font) {
+				TextSpec fallback_spec = { -1, i->second.font_spec.style, i->second.font_spec.size, 0, "mono" };
+				i->second.font = load_font(fallback_spec);
+			}
+		} else
 			i->second.font = 0;
 	}
 	data_search_path.erase(data_search_path.begin());
