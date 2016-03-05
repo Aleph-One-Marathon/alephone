@@ -421,7 +421,11 @@ static void initialize_application(void)
 						  (option_debug ? SDL_INIT_NOPARACHUTE : 0));
 	if (retval < 0)
 	{
-		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
+		const char *sdl_err = SDL_GetError();
+		if (sdl_err)
+			fprintf(stderr, "Couldn't initialize SDL (%s)\n", sdl_err);
+		else
+			fprintf(stderr, "Couldn't initialize SDL\n");
 		exit(1);
 	}
 #if defined(HAVE_SDL_IMAGE)
