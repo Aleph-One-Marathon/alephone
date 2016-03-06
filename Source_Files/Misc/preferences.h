@@ -210,13 +210,6 @@ struct input_preferences_data
 	int16 joystick_axis_bounds[NUMBER_OF_JOYSTICK_MAPPINGS];
 };
 
-// mouse button action types
-enum {
-	_mouse_button_does_nothing,
-	_mouse_button_fires_left_trigger,
-	_mouse_button_fires_right_trigger
-};
-
 #define MAXIMUM_PATCHES_PER_ENVIRONMENT (32)
 
 struct environment_preferences_data
