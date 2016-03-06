@@ -3435,7 +3435,11 @@ SDL_Scancode translate_old_key(int code)
 		SDLK_POWER, SDLK_CURRENCYUNIT, SDLK_UNDO
 	};
 
-	if (code < num_key_lookups)
+	if (code >= 65 && code < 73)
+		return static_cast<SDL_Scancode>(AO_SCANCODE_BASE_MOUSE_BUTTON + (code - 65));
+	else if (code >= 73 && code < 91)
+		return static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + (code - 73));
+	else if (code < num_key_lookups)
 		return SDL_GetScancodeFromKey(key_lookups[code]);
 	return SDL_SCANCODE_UNKNOWN;
 }
