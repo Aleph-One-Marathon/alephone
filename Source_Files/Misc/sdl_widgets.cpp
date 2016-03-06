@@ -1466,35 +1466,35 @@ void w_key::place(const SDL_Rect& r, placement_flags flags)
 		
 // ZZZ: we provide phony key names for the phony keys used for mouse buttons.
 static const char* sMouseButtonKeyName[NUM_SDL_MOUSE_BUTTONS] = {
-        "mouse 1",   // things like "Middle Mouse Button" are too long to draw properly
-        "mouse 3",
-        "mouse 2",
-        "mouse 4",
-        "mouse 5",
-        "mouse 6",
-        "mouse 7",
+        "Mouse Left",
+        "Mouse Middle",
+        "Mouse Right",
+        "Mouse X1",
+        "Mouse X2",
+        "Mouse Scroll Up",
+        "Mouse Scroll Down",
         "mouse 8"
 };
 
 static const char* sJoystickButtonKeyName[NUM_SDL_JOYSTICK_BUTTONS] = {
-	"joystick 1",
-	"joystick 2",
-	"joystick 3",
-	"joystick 4",
-	"joystick 5",
-	"joystick 6",
-	"joystick 7",
-	"joystick 8",
-	"joystick 9",
-	"joystick 10",
-	"joystick 11",
-	"joystick 12",
-	"joystick 13",
-	"joystick 14",
-	"joystick 15",
-	"joystick 16",
-	"joystick 17",
-	"joystick 18"
+	"Joystick 1",
+	"Joystick 2",
+	"Joystick 3",
+	"Joystick 4",
+	"Joystick 5",
+	"Joystick 6",
+	"Joystick 7",
+	"Joystick 8",
+	"Joystick 9",
+	"Joystick 10",
+	"Joystick 11",
+	"Joystick 12",
+	"Joystick 13",
+	"Joystick 14",
+	"Joystick 15",
+	"Joystick 16",
+	"Joystick 17",
+	"Joystick 18"
 };
 
 // ZZZ: this injects our phony key names but passes along the rest.
@@ -1538,28 +1538,50 @@ void w_key::click(int /*x*/, int /*y*/)
 void w_key::event(SDL_Event &e)
 {
     if(binding) {
-        // ZZZ: let mouse buttons assign like (unused) keys
-        if(e.type == SDL_MOUSEBUTTONDOWN) {
-            e.type = SDL_KEYDOWN;
-            e.key.keysym.scancode = (SDL_Scancode)(AO_SCANCODE_BASE_MOUSE_BUTTON + e.button.button - 1);
-        } else if (e.type == SDL_JOYBUTTONDOWN && e.button.button < NUM_SDL_JOYSTICK_BUTTONS) {
-		e.type = SDL_KEYDOWN;
-		e.key.keysym.scancode = (SDL_Scancode) (AO_SCANCODE_BASE_JOYSTICK_BUTTON + e.button.button);
-	}
-
-    	if (e.type == SDL_KEYDOWN) {
-			if (e.key.keysym.scancode != SDL_SCANCODE_ESCAPE)
-				set_key(e.key.keysym.scancode);
+		bool handled = false;
+		bool up = false;
+		switch (e.type) {
+			case SDL_MOUSEBUTTONDOWN:
+				if (e.button.button < NUM_SDL_MOUSE_BUTTONS) {
+					set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_MOUSE_BUTTON + e.button.button - 1));
+					handled = true;
+				}
+				break;
+			case SDL_JOYBUTTONDOWN:
+				if (e.button.button < NUM_SDL_JOYSTICK_BUTTONS) {
+					set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + e.button.button));
+					handled = true;
+				}
+				break;
+			case SDL_MOUSEWHEEL:
+				up = (e.wheel.y > 0);
+#if SDL_VERSION_ATLEAST(2,0,4)
+				if (e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+					up = !up;
+#endif
+				set_key(static_cast<SDL_Scancode>(up ? AO_SCANCODE_MOUSESCROLL_UP : AO_SCANCODE_MOUSESCROLL_DOWN));
+				handled = true;
+				break;
+			case SDL_KEYDOWN:
+				if (e.key.keysym.scancode != SDL_SCANCODE_ESCAPE)
+					set_key(e.key.keysym.scancode);
+				handled = true;
+				break;
+			case SDL_MOUSEMOTION:
+				e.type = SDL_LASTEVENT; // suppress motion while assigning
+				break;
+			default:
+				break;
+		}
+		
+		if (handled) {
 			dirty = true;
 			binding = false;
-			e.key.keysym.sym = SDLK_DOWN;	// Activate next widget
+			// activate next widget by faking a key press
+			e.type = SDL_KEYDOWN;
+			e.key.keysym.sym = SDLK_DOWN;
 			e.key.keysym.scancode = SDL_SCANCODE_DOWN;
-	    }
-
-        // ZZZ: suppress mouse motion while assigning
-        // (it's annoying otherwise, trust me)
-        if(e.type == SDL_MOUSEMOTION)
-            e.type = SDL_LASTEVENT;
+		}
     }
 }
 

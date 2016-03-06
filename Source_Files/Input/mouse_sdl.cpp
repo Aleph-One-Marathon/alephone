@@ -158,10 +158,6 @@ void test_mouse(short type, uint32 *flags, _fixed *delta_yaw, _fixed *delta_pitc
 		*delta_velocity = snapshot_delta_velocity;
 
 		snapshot_delta_yaw = snapshot_delta_pitch = snapshot_delta_velocity = 0;
-
-		if (snapshot_delta_scrollwheel > 0) *flags |= _cycle_weapons_forward;
-		else if (snapshot_delta_scrollwheel < 0) *flags |= _cycle_weapons_backward;
-		snapshot_delta_scrollwheel = 0;
 	} else {
 	  delta_yaw = 0;
 	  delta_pitch = 0;
@@ -181,6 +177,9 @@ mouse_buttons_become_keypresses(Uint8* ioKeyMap)
             ioKeyMap[AO_SCANCODE_BASE_MOUSE_BUTTON + i] =
                 (buttons & SDL_BUTTON(i+1)) ? SDL_PRESSED : SDL_RELEASED;
         }
+		ioKeyMap[AO_SCANCODE_MOUSESCROLL_UP] = (snapshot_delta_scrollwheel > 0) ? SDL_PRESSED : SDL_RELEASED;
+		ioKeyMap[AO_SCANCODE_MOUSESCROLL_DOWN] = (snapshot_delta_scrollwheel < 0) ? SDL_PRESSED : SDL_RELEASED;
+		snapshot_delta_scrollwheel = 0;
 
         button_mask |= ~orig_buttons;		// A button must be released at least once to become enabled
 }
