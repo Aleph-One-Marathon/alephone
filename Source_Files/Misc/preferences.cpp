@@ -2597,6 +2597,145 @@ InfoTree player_preferences_tree()
 	return root;
 }
 
+// symbolic names for key and button bindings
+static const char *binding_action_name[NUM_KEYS] = {
+	"forward", "back", "look-left", "look-right", "strafe-left",
+	"strafe-right", "glance-left", "glance-right", "look-up", "look-down",
+	"look-ahead", "prev-weapon", "next-weapon", "trigger-1", "trigger-2",
+	"strafe", "run", "look", "action", "map",
+	"microphone"
+};
+static const char *binding_shell_action_name[NUMBER_OF_SHELL_KEYS] = {
+	"inventory-left", "inventory-right", "switch-player-view", "volume-up", "volume-down",
+	"map-zoom-in", "map-zoom-out", "fps", "chat", "net-stats"
+};
+static const char *binding_mouse_button_name[NUM_SDL_MOUSE_BUTTONS] = {
+	"mouse-left", "mouse-middle", "mouse-right", "mouse-x1", "mouse-x2",
+	"mouse-scroll-up", "mouse-scroll-down", "mouse-8"
+};
+static const char *binding_joystick_button_name[NUM_SDL_JOYSTICK_BUTTONS] = {
+	"joystick-1", "joystick-2", "joystick-3", "joystick-4", "joystick-5",
+	"joystick-6", "joystick-7", "joystick-8", "joystick-9", "joystick-10",
+	"joystick-11", "joystick-12", "joystick-13", "joystick-14", "joystick-15",
+	"joystick-16", "joystick-17", "joystick-18"
+};
+static const int binding_num_scancodes = 285;
+static const char *binding_scancode_name[binding_num_scancodes] = {
+	"unknown", "unknown-1", "unknown-2", "unknown-3", "a",
+	"b", "c", "d", "e", "f",
+	"g", "h", "i", "j", "k",
+	"l", "m", "n", "o", "p",
+	"q", "r", "s", "t", "u",
+	"v", "w", "x", "y", "z",
+	"1", "2", "3", "4", "5",
+	"6", "7", "8", "9", "unknown-39",
+	"return", "escape", "backspace", "tab", "space",
+	"minus", "equals", "leftbracket", "rightbracket", "backslash",
+	"nonushash", "semicolon", "apostrophe", "grave", "comma",
+	"period", "slash", "capslock", "f1", "f2",
+	"f3", "f4", "f5", "f6", "f7",
+	"f8", "f9", "f10", "f11", "f12",
+	"printscreen", "scrolllock", "pause", "insert", "home",
+	"pageup", "delete", "end", "pagedown", "right",
+	"left", "down", "up", "numlockclear", "kp-divide",
+	"kp-multiply", "kp-minus", "kp-plus", "kp-enter", "kp-1",
+	"kp-2", "kp-3", "kp-4", "kp-5", "kp-6",
+	"kp-7", "kp-8", "kp-9", "kp-0", "kp-period",
+	"nonusbackslash", "application", "power", "kp-equals", "f13",
+	"f14", "f15", "f16", "f17", "f18",
+	"f19", "f20", "f21", "f22", "f23",
+	"f24", "execute", "help", "menu", "select",
+	"stop", "again", "undo", "cut", "copy",
+	"paste", "find", "mute", "volumeup", "volumedown",
+	"unknown-130", "unknown-131", "unknown-132", "kp-comma", "kp-equalsas400",
+	"international1", "international2", "international3", "international4", "international5",
+	"international6", "international7", "international8", "international9", "lang1",
+	"lang2", "lang3", "lang4", "lang5", "lang6",
+	"lang7", "lang8", "lang9", "alterase", "sysreq",
+	"cancel", "clear", "prior", "return2", "separator",
+	"out", "oper", "clearagain", "crsel", "exsel",
+	"unknown-165", "unknown-166", "unknown-167", "unknown-168", "unknown-169",
+	"unknown-170", "unknown-171", "unknown-172", "unknown-173", "unknown-174",
+	"unknown-175", "kp-00", "kp-000", "thousandsseparator", "decimalseparator",
+	"currencyunit", "currencysubunit", "kp-leftparen", "kp-rightparen", "kp-leftbrace",
+	"kp-rightbrace", "kp-tab", "kp-backspace", "kp-a", "kp-b",
+	"kp-c", "kp-d", "kp-e", "kp-f", "kp-xor",
+	"kp-power", "kp-percent", "kp-less", "kp-greater", "kp-ampersand",
+	"kp-dblampersand", "kp-verticalbar", "kp-dblverticalbar", "kp-colon", "kp-hash",
+	"kp-space", "kp-at", "kp-exclam", "kp-memstore", "kp-memrecall",
+	"kp-memclear", "kp-memadd", "kp-memsubtract", "kp-memmultiply", "kp-memdivide",
+	"kp-plusminus", "kp-clear", "kp-clearentry", "kp-binary", "kp-octal",
+	"kp-decimal", "kp-hexadecimal", "unknown-222", "unknown-223", "lctrl",
+	"lshift", "lalt", "lgui", "rctrl", "rshift",
+	"ralt", "rgui", "unknown-232", "unknown-233", "unknown-234",
+	"unknown-235", "unknown-236", "unknown-237", "unknown-238", "unknown-239",
+	"unknown-240", "unknown-241", "unknown-242", "unknown-243", "unknown-244",
+	"unknown-245", "unknown-246", "unknown-247", "unknown-248", "unknown-249",
+	"unknown-250", "unknown-251", "unknown-252", "unknown-253", "unknown-254",
+	"unknown-255", "unknown-256", "mode", "audionext", "audioprev",
+	"audiostop", "audioplay", "audiomute", "mediaselect", "www",
+	"mail", "calculator", "computer", "ac-search", "ac-home",
+	"ac-back", "ac-forward", "ac-stop", "ac-refresh", "ac-bookmarks",
+	"brightnessdown", "brightnessup", "displayswitch", "kbdillumtoggle", "kbdillumdown",
+	"kbdillumup", "eject", "sleep", "app1", "app2"
+};
+
+static const char *binding_name_for_code(SDL_Scancode code)
+{
+	int i = static_cast<int>(code);
+	if (i >= 0 &&
+		i < binding_num_scancodes)
+		return binding_scancode_name[i];
+	else if (i >= AO_SCANCODE_BASE_MOUSE_BUTTON &&
+			 i < (AO_SCANCODE_BASE_MOUSE_BUTTON + NUM_SDL_MOUSE_BUTTONS))
+		return binding_mouse_button_name[i - AO_SCANCODE_BASE_MOUSE_BUTTON];
+	else if (i >= AO_SCANCODE_BASE_JOYSTICK_BUTTON &&
+			 i < (AO_SCANCODE_BASE_JOYSTICK_BUTTON + NUM_SDL_JOYSTICK_BUTTONS))
+		return binding_joystick_button_name[i - AO_SCANCODE_BASE_JOYSTICK_BUTTON];
+	return "unknown";
+}
+
+static SDL_Scancode code_for_binding_name(std::string name)
+{
+	for (int i = 0; i < binding_num_scancodes; ++i)
+	{
+		if (name == binding_scancode_name[i])
+			return static_cast<SDL_Scancode>(i);
+	}
+	for (int i = 0; i < NUM_SDL_MOUSE_BUTTONS; ++i)
+	{
+		if (name == binding_mouse_button_name[i])
+			return static_cast<SDL_Scancode>(i + AO_SCANCODE_BASE_MOUSE_BUTTON);
+	}
+	for (int i = 0; i < NUM_SDL_JOYSTICK_BUTTONS; ++i)
+	{
+		if (name == binding_joystick_button_name[i])
+			return static_cast<SDL_Scancode>(i + AO_SCANCODE_BASE_JOYSTICK_BUTTON);
+	}
+	return SDL_SCANCODE_UNKNOWN;
+}
+
+static int index_for_action_name(std::string name, bool& is_shell)
+{
+	for (int i = 0; i < NUM_KEYS; ++i)
+	{
+		if (name == binding_action_name[i])
+		{
+			is_shell = false;
+			return i;
+		}
+	}
+	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; ++i)
+	{
+		if (name == binding_shell_action_name[i])
+		{
+			is_shell = true;
+			return i;
+		}
+	}
+	return -1;
+}
+
 InfoTree input_preferences_tree()
 {
 	InfoTree root;
@@ -2621,15 +2760,19 @@ InfoTree input_preferences_tree()
 	for (int i = 0; i < (NUMBER_OF_KEYS + NUMBER_OF_SHELL_KEYS); ++i)
 	{
 		SDL_Scancode code;
-		if (i < NUMBER_OF_KEYS)
+		const char *name;
+		if (i < NUMBER_OF_KEYS) {
 			code = input_preferences->keycodes[i];
-		else
+			name = binding_action_name[i];
+		} else {
 			code = input_preferences->shell_keycodes[i - NUMBER_OF_KEYS];
+			name = binding_shell_action_name[i - NUMBER_OF_KEYS];
+		}
 		
 		InfoTree key;
-		key.put_attr("index", i);
-		key.put_attr("scancode", static_cast<int>(code));
-		root.add_child("sdl_key", key);
+		key.put_attr("action", name);
+		key.put_attr("pressed", binding_name_for_code(code));
+		root.add_child("binding", key);
 	}
 	
 	return root;
@@ -3476,24 +3619,39 @@ void parse_input_preferences(InfoTree root, std::string version)
 		}
 	}
 	
+	// import old key bindings
 	BOOST_FOREACH(InfoTree key, root.children_named("sdl_key"))
 	{
 		int16 index;
 		if (key.read_indexed("index", index, NUMBER_OF_KEYS))
 		{
 			int code;
-			if (key.read_attr("scancode", code))
-				input_preferences->keycodes[index] = static_cast<SDL_Scancode>(code);
-			else if (key.read_attr("value", code))
+			if (key.read_attr("value", code))
 				input_preferences->keycodes[index] = translate_old_key(code);
 		}
 		else if (key.read_indexed("index", index, NUMBER_OF_KEYS + NUMBER_OF_SHELL_KEYS))
 		{
 			int code;
-			if (key.read_attr("scancode", code))
-				input_preferences->shell_keycodes[index - NUMBER_OF_KEYS] = static_cast<SDL_Scancode>(code);
-			else if (key.read_attr("value", code))
+			if (key.read_attr("value", code))
 				input_preferences->shell_keycodes[index - NUMBER_OF_KEYS] = translate_old_key(code);
+		}
+	}
+	
+	BOOST_FOREACH(InfoTree key, root.children_named("binding"))
+	{
+		std::string action_name, pressed_name;
+		if (key.read_attr("action", action_name) &&
+			key.read_attr("pressed", pressed_name))
+		{
+			bool shell = false;
+			int index = index_for_action_name(action_name, shell);
+			if (index < 0)
+				continue;
+			SDL_Scancode code = code_for_binding_name(pressed_name);
+			if (shell)
+				input_preferences->shell_keycodes[index] = code;
+			else
+				input_preferences->keycodes[index] = code;
 		}
 	}
 }
