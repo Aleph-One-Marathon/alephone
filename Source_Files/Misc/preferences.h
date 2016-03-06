@@ -198,8 +198,6 @@ struct input_preferences_data
 	_fixed sens_vertical;
 	// SB: Option to get rid of the horrible, horrible, horrible mouse acceleration.
 	bool mouse_acceleration;
-	// mouse button actions
-	int16 mouse_button_actions[MAX_BUTTONS];
 	SDL_Scancode shell_keycodes[NUMBER_OF_SHELL_KEYS];
 	
 	int16 joystick_id;

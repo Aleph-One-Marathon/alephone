@@ -2608,19 +2608,6 @@ InfoTree input_preferences_tree()
 	root.put_attr("mouse_acceleration", input_preferences->mouse_acceleration);
 	root.put_attr("joystick_id", input_preferences->joystick_id);
 
-	for (int i = 0; i < MAX_BUTTONS; i++)
-	{
-		InfoTree mbutton;
-		mbutton.put_attr("index", i);
-		if (input_preferences->mouse_button_actions[i] == _mouse_button_fires_left_trigger)
-			mbutton.put_attr("action", "left_trigger");
-		else if (input_preferences->mouse_button_actions[i] == _mouse_button_fires_right_trigger)
-			mbutton.put_attr("action", "right_trigger");
-		else
-			mbutton.put_attr("action", "none");
-		root.add_child("mouse_button", mbutton);
-	}
-	
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
 	{
 		InfoTree joyaxis;
@@ -2914,12 +2901,6 @@ static void default_input_preferences(input_preferences_data *preferences)
 	
 	// SB
 	preferences->mouse_acceleration = true;
-
-	// default mouse settings
-	preferences->mouse_button_actions[0] = _mouse_button_fires_left_trigger;
-	preferences->mouse_button_actions[1] = _mouse_button_fires_right_trigger;
-	for (int i = 2; i < MAX_BUTTONS; i++)
-		preferences->mouse_button_actions[i] = _mouse_button_does_nothing;
 
 	preferences->joystick_id = -1;
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
@@ -3473,23 +3454,6 @@ void parse_input_preferences(InfoTree root, std::string version)
 	root.read_attr("mouse_acceleration", input_preferences->mouse_acceleration);
 	root.read_attr("joystick_id", input_preferences->joystick_id);
 
-	
-	BOOST_FOREACH(InfoTree mb, root.children_named("mouse_button"))
-	{
-		int16 index;
-		if (mb.read_indexed("index", index, MAX_BUTTONS))
-		{
-			std::string action;
-			mb.read_attr("action", action);
-			if (action == "none")
-				input_preferences->mouse_button_actions[index] = _mouse_button_does_nothing;
-			else if (action == "left_trigger")
-				input_preferences->mouse_button_actions[index] = _mouse_button_fires_left_trigger;
-			else if (action == "right_trigger")
-				input_preferences->mouse_button_actions[index] = _mouse_button_fires_right_trigger;
-		}
-	}
-	
 	BOOST_FOREACH(InfoTree mapping, root.children_named("joystick_axis_mapping"))
 	{
 		int16 index;
