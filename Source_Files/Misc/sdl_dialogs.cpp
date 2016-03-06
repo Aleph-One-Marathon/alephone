@@ -1860,19 +1860,12 @@ dialog::draw_dirty_widgets() const
  *  Deactivate currently active widget
  */
 
-void dialog::deactivate_currently_active_widget(bool draw)
+void dialog::deactivate_currently_active_widget()
 {
 	if (active_widget) {
 		active_widget->set_active(false);
 		if (active_widget->associated_label)
 			active_widget->associated_label->set_active(false);
-
-		if (draw && active_widget->visible())
-		{
-			if (active_widget->associated_label)
-				draw_widget(active_widget->associated_label, false);
-			draw_widget(active_widget);
-		}
 
         active_widget = NULL;
         active_widget_num = UNONE;
@@ -1884,19 +1877,19 @@ void dialog::deactivate_currently_active_widget(bool draw)
  *  Activate widget
  */
 
-void dialog::activate_widget(widget *w, bool draw)
+void dialog::activate_widget(widget *w)
 {
 	for (size_t i = 0; i < widgets.size(); i++)
 	{
 		if (widgets[i] == w)
 		{
-			activate_widget(i, draw);
+			activate_widget(i);
 			return;
 		}
 	}
 }
 
-void dialog::activate_widget(size_t num, bool draw)
+void dialog::activate_widget(size_t num)
 {
 	if (num == active_widget_num)
 		return;
@@ -1905,7 +1898,7 @@ void dialog::activate_widget(size_t num, bool draw)
 		return;
 
 	// Deactivate previously active widget
-	deactivate_currently_active_widget(draw);
+	deactivate_currently_active_widget();
 	
 	// Activate new widget
 	w_label *label = dynamic_cast<w_label *>(widgets[num]);
@@ -1936,14 +1929,6 @@ void dialog::activate_widget(size_t num, bool draw)
 	active_widget->set_active(true);
 	if (active_widget->associated_label)
 		active_widget->associated_label->set_active(true);
-	
-	if (draw) {
-		if (active_widget->associated_label)
-			draw_widget(active_widget->associated_label, false);
-		draw_widget(active_widget);
-		
-//		play_dialog_sound(DIALOG_SELECT_SOUND);
-	}
 }
 
 

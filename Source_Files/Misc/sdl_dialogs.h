@@ -239,15 +239,15 @@ public:
 	// takes ownership
 	void set_widget_placer(widget_placer *w) { placer = w; }
 
-	void activate_widget(widget *w, bool draw = false);
+	void activate_widget(widget *w);
 
 private:
 	SDL_Surface *get_surface(void) const;
 	void update(SDL_Rect r) const;
 	void draw_widget(widget *w, bool do_update = true) const;
-	void deactivate_currently_active_widget(bool draw = true);
+	void deactivate_currently_active_widget();
 	void activate_first_widget(void);
-	void activate_widget(size_t num, bool draw = true);
+	void activate_widget(size_t num);
 	void activate_prev_widget(void);
 	int find_widget(int x, int y);
 	void event(SDL_Event &e);

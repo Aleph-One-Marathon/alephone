@@ -123,6 +123,14 @@ void widget::set_enabled(bool inEnabled)
 	}
 }
 
+void widget::set_active(bool new_active)
+{
+	// Assume we need a redraw to reflect new state
+	if (enabled && (active != new_active))
+		dirty = true;
+	active = new_active;
+}
+
 void widget::place(const SDL_Rect &r, placement_flags flags)
 {
 	rect.h = r.h;
@@ -1336,7 +1344,7 @@ end:			if (cursor_position < num_chars) {
 void w_text_entry::click(int x, int y)
 {
 	bool was_active = active;
-	get_owning_dialog()->activate_widget(this, true);
+	get_owning_dialog()->activate_widget(this);
 	
 	// Don't reposition cursor if:
 	// - we were inactive before this click

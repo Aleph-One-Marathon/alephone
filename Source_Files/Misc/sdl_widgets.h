@@ -135,7 +135,7 @@ protected:
 
 	SDL_Rect rect;	// Position relative to dialog surface, and dimensions
 
-	virtual void set_active(bool new_active) { active = new_active; }
+	virtual void set_active(bool new_active);
 	bool active;	// Flag: widget active (ZZZ note: this means it has the focus)
 	bool dirty;		// Flag: widget needs redraw
     bool    enabled; // ZZZ Flag: roughly, should the user be allowed to interact with the widget?
