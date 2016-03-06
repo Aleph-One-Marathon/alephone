@@ -184,7 +184,8 @@ static std::string get_name_from_system()
 {
 #if defined(unix) || (defined (__APPLE__) && defined (__MACH__)) || defined(__NetBSD__) || defined(__OpenBSD__)
 
-	std::string login = getlogin();
+	const char *login_name = getlogin();
+	std::string login = (login_name ? login_name : "");
 	if (login.length())
 		return login;
 
