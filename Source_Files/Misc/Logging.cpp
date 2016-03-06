@@ -166,6 +166,7 @@ TopLevelLogger::logMessageV(const char* inDomain, int inLevel, const char* inFil
             theString += mContextStack[depth];
             
             fprintf(sOutputFile, "%s\n", theString.c_str());
+			fprintf(stderr, "%s\n", theString.c_str());
         }
         
         vsnprintf(stringBuffer, kStringBufferSize, inMessage, inArgs);
@@ -182,6 +183,7 @@ TopLevelLogger::logMessageV(const char* inDomain, int inLevel, const char* inFil
             theString += "\n";
         
         fprintf(sOutputFile, "%s", theString.c_str());
+		fprintf(stderr, "%s", theString.c_str());
         
         if(sFlushOutput)
                 fflush(sOutputFile);
