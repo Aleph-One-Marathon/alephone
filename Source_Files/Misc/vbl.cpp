@@ -129,9 +129,6 @@ static timer_task_proc input_task;
 static FileSpecifier FilmFileSpec;
 static OpenedFile FilmFile;
 
-/* Not static because vbl_macintosh.c uses this.. */
-struct key_definition current_key_definitions[NUMBER_OF_STANDARD_KEY_DEFINITIONS];
-
 struct replay_private_data replay;
 
 #ifdef DEBUG
@@ -188,7 +185,6 @@ void initialize_keyboard_controller(
 	assert(input_task);
 	
 	atexit(remove_input_controller);
-	set_keys_to_match_preferences();
 	
 	/* Allocate the recording queues */	
 	replay.recording_queues = new ActionQueue[MAXIMUM_NUMBER_OF_PLAYERS];
@@ -256,61 +252,6 @@ void decrement_replay_speed(
 void increment_heartbeat_count(int value)
 {
 	heartbeat_count+=value;
-}
-
-/* Returns NONE if it is custom.. */
-//short find_key_setup(
-//	short *keycodes)
-//{
-//	short key_setup= NONE;
-//	
-//	for (unsigned index= 0; key_setup==NONE && index<NUMBER_OF_KEY_SETUPS; index++)
-//	{
-//		struct key_definition *definition = all_key_definitions[index];
-//		unsigned jj;
-//
-//		for (jj= 0; jj<NUMBER_OF_STANDARD_KEY_DEFINITIONS; jj++)
-//		{
-//			if (definition[jj].offset != keycodes[jj]) break;
-//		}
-//
-//		if (jj==NUMBER_OF_STANDARD_KEY_DEFINITIONS)
-//		{
-//			key_setup= index;
-//		}
-//	}
-//	
-//	return key_setup;
-//}
-
-void set_default_keys(
-	SDL_Scancode *keycodes,
-	short which_default)
-{
-	struct key_definition *definitions;
-	
-	assert(which_default >= 0 && which_default < NUMBER_OF_KEY_SETUPS);
-	definitions= all_key_definitions[which_default];
-	for (unsigned i= 0; i < NUMBER_OF_STANDARD_KEY_DEFINITIONS; i++)
-	{
-		keycodes[i] = definitions[i].offset;
-	}
-}
-
-void set_keys(
-	SDL_Scancode *keycodes)
-{
-	struct key_definition *definitions;
-	
-	/* all of them have the same ordering, so which one we pick is moot. */
-	definitions = all_key_definitions[_standard_keyboard_setup]; 
-	
-	for (unsigned index= 0; index<NUMBER_OF_STANDARD_KEY_DEFINITIONS; index++)
-	{
-		current_key_definitions[index].offset= keycodes[index];
-		current_key_definitions[index].action_flag= definitions[index].action_flag;
-	}
-	precalculate_key_information();
 }
 
 bool has_recording_file(void)
@@ -546,11 +487,6 @@ static short get_recording_queue_size(
 	if(size<0) size+= MAXIMUM_QUEUE_SIZE;
 	
 	return size;
-}
-
-static void precalculate_key_information(
-	void)
-{
 }
 
 void set_recording_header_data(
@@ -1199,11 +1135,15 @@ uint32 parse_keymap(void)
       joystick_buttons_become_keypresses(key_map);
       
       // Parse the keymap
-      key_definition *key = current_key_definitions;
-      for (unsigned i=0; i<NUMBER_OF_STANDARD_KEY_DEFINITIONS; i++, key++)
-	if (key_map[key->offset])
-	  flags |= key->action_flag;
-      
+		for (int i = 0; i < NUMBER_OF_STANDARD_KEY_DEFINITIONS; ++i)
+		{
+			BOOST_FOREACH(const SDL_Scancode& code, input_preferences->key_bindings[i])
+			{
+				if (key_map[code])
+					flags |= standard_key_definitions[i].action_flag;
+			}
+		}
+		
       // Post-process the keymap
       struct special_flag_data *special = special_flags;
       for (unsigned i=0; i<NUMBER_OF_SPECIAL_FLAGS; i++, special++) {
@@ -1276,16 +1216,6 @@ bool setup_replay_from_random_resource(uint32 map_checksum)
 {
 	// not supported in SDL version
 	return false;
-}
-
-
-/*
- *  Set keys to match preferences
- */
-
-void set_keys_to_match_preferences(void)
-{
-	set_keys(input_preferences->keycodes);
 }
 
 

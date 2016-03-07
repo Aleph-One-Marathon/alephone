@@ -1944,6 +1944,14 @@ static void load_default_keys(void *arg)
 	d->draw();
 }
 
+static void unset_scancode(SDL_Scancode code)
+{
+	for (int i = 0; i < NUM_KEYS; ++i)
+		input_preferences->key_bindings[i].erase(code);
+	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; ++i)
+		input_preferences->shell_key_bindings[i].erase(code);
+}
+
 enum {
 	KEYBOARD_TABS,
 	TAB_KEYS,
@@ -1970,20 +1978,28 @@ static void keyboard_dialog(void *arg)
 
 	for (int i=0; i<19; i++)
 	{
-		
-		key_w[i] = new w_prefs_key(input_preferences->keycodes[i]);
+		SDL_Scancode code = SDL_SCANCODE_UNKNOWN;
+		if (input_preferences->key_bindings[i].size())
+			code = *(input_preferences->key_bindings[i].begin());
+		key_w[i] = new w_prefs_key(code);
 		left_table->dual_add(key_w[i]->label(action_name[i]), d);
 		left_table->dual_add(key_w[i], d);
 	}
 
 	for (int i=19; i<NUM_KEYS; i++) {
-		key_w[i] = new w_prefs_key(input_preferences->keycodes[i]);
+		SDL_Scancode code = SDL_SCANCODE_UNKNOWN;
+		if (input_preferences->key_bindings[i].size())
+			code = *(input_preferences->key_bindings[i].begin());
+		key_w[i] = new w_prefs_key(code);
 		right_table->dual_add(key_w[i]->label(action_name[i]), d);
 		right_table->dual_add(key_w[i], d);
 	}
 
 	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; i++) {
-		shell_key_w[i] = new w_prefs_key(input_preferences->shell_keycodes[i]);
+		SDL_Scancode code = SDL_SCANCODE_UNKNOWN;
+		if (input_preferences->shell_key_bindings[i].size())
+			code = *(input_preferences->shell_key_bindings[i].begin());
+		shell_key_w[i] = new w_prefs_key(code);
 		right_table->dual_add(shell_key_w[i]->label(shell_action_name[i]), d);
 		right_table->dual_add(shell_key_w[i], d);
 	}
@@ -2017,21 +2033,24 @@ static void keyboard_dialog(void *arg)
 
 		for (int i=0; i<NUM_KEYS; i++) {
 			SDL_Scancode key = key_w[i]->get_key();
-			if (key != input_preferences->keycodes[i]) {
-				input_preferences->keycodes[i] = key;
+			if (!input_preferences->key_bindings[i].count(key)) {
+				unset_scancode(key);
+				input_preferences->key_bindings[i].clear();
+				input_preferences->key_bindings[i].insert(key);
 				changed = true;
 			}
 		}
 
 		for (int i=0; i<NUMBER_OF_SHELL_KEYS;i++) {
 			SDL_Scancode key = shell_key_w[i]->get_key();
-			if (key != input_preferences->shell_keycodes[i]) {
-				input_preferences->shell_keycodes[i] = key;
+			if (!input_preferences->shell_key_bindings[i].count(key)) {
+				unset_scancode(key);
+				input_preferences->shell_key_bindings[i].clear();
+				input_preferences->shell_key_bindings[i].insert(key);
 				changed = true;
 			}
 		}
 
-		set_keys(input_preferences->keycodes);
 		if (changed)
 			write_preferences();
 	}
@@ -2383,6 +2402,11 @@ void initialize_preferences(
 		serial_preferences= new serial_number_data;
 		network_preferences= new network_preferences_data;
 		environment_preferences= new environment_preferences_data;
+		
+		for (int i = 0; i < NUM_KEYS; ++i)
+			input_preferences->key_bindings[i] = std::set<SDL_Scancode>();
+		for (int i = 0; i < NUMBER_OF_SHELL_KEYS; ++i)
+			input_preferences->shell_key_bindings[i] = std::set<SDL_Scancode>();
 
 		PrefsInited = true;
 
@@ -2757,23 +2781,28 @@ InfoTree input_preferences_tree()
 		joyaxis.put_attr("bound", input_preferences->joystick_axis_bounds[i]);
 		root.add_child("joystick_axis_mapping", joyaxis);
 	}
-
+	
 	for (int i = 0; i < (NUMBER_OF_KEYS + NUMBER_OF_SHELL_KEYS); ++i)
 	{
-		SDL_Scancode code;
+		std::set<SDL_Scancode> codeset;
 		const char *name;
 		if (i < NUMBER_OF_KEYS) {
-			code = input_preferences->keycodes[i];
+			codeset = input_preferences->key_bindings[i];
 			name = binding_action_name[i];
 		} else {
-			code = input_preferences->shell_keycodes[i - NUMBER_OF_KEYS];
+			codeset = input_preferences->shell_key_bindings[i - NUMBER_OF_KEYS];
 			name = binding_shell_action_name[i - NUMBER_OF_KEYS];
 		}
 		
-		InfoTree key;
-		key.put_attr("action", name);
-		key.put_attr("pressed", binding_name_for_code(code));
-		root.add_child("binding", key);
+		BOOST_FOREACH(const SDL_Scancode &code, codeset)
+		{
+			if (code == SDL_SCANCODE_UNKNOWN)
+				continue;
+			InfoTree key;
+			key.put_attr("action", name);
+			key.put_attr("pressed", binding_name_for_code(code));
+			root.add_child("binding", key);
+		}
 	}
 	
 	return root;
@@ -3028,10 +3057,13 @@ static void default_player_preferences(player_preferences_data *preferences)
 static void default_input_preferences(input_preferences_data *preferences)
 {
 	preferences->input_device= _keyboard_or_game_pad;
-	set_default_keys(preferences->keycodes, _standard_keyboard_setup);
+	for (int i = 0; i < NUM_KEYS; i++)
+	{
+		preferences->key_bindings[i].insert(default_keys[i]);
+	}
 	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; i++)
 	{
-		preferences->shell_keycodes[i] = default_shell_keys[i];
+		preferences->shell_key_bindings[i].insert(default_shell_keys[i]);
 	}
 	
 	// LP addition: set up defaults for modifiers:
@@ -3620,21 +3652,46 @@ void parse_input_preferences(InfoTree root, std::string version)
 		}
 	}
 	
+	// remove default key bindings the first time we see one from these prefs
+	bool seen_key[NUMBER_OF_KEYS];
+	memset(seen_key, 0, sizeof(seen_key));
+	bool seen_shell_key[NUMBER_OF_SHELL_KEYS];
+	memset(seen_shell_key, 0, sizeof(seen_shell_key));
+	
 	// import old key bindings
 	BOOST_FOREACH(InfoTree key, root.children_named("sdl_key"))
 	{
 		int16 index;
 		if (key.read_indexed("index", index, NUMBER_OF_KEYS))
 		{
+			if (!seen_key[index])
+			{
+				input_preferences->key_bindings[index].clear();
+				seen_key[index] = true;
+			}
 			int code;
 			if (key.read_attr("value", code))
-				input_preferences->keycodes[index] = translate_old_key(code);
+			{
+				SDL_Scancode translated = translate_old_key(code);
+				unset_scancode(translated);
+				input_preferences->key_bindings[index].insert(translated);
+			}
 		}
 		else if (key.read_indexed("index", index, NUMBER_OF_KEYS + NUMBER_OF_SHELL_KEYS))
 		{
+			int shell_index = index - NUMBER_OF_KEYS;
+			if (!seen_shell_key[shell_index])
+			{
+				input_preferences->shell_key_bindings[shell_index].clear();
+				seen_shell_key[shell_index] = true;
+			}
 			int code;
 			if (key.read_attr("value", code))
-				input_preferences->shell_keycodes[index - NUMBER_OF_KEYS] = translate_old_key(code);
+			{
+				SDL_Scancode translated = translate_old_key(code);
+				unset_scancode(translated);
+				input_preferences->shell_key_bindings[shell_index].insert(translated);
+			}
 		}
 	}
 	
@@ -3650,9 +3707,25 @@ void parse_input_preferences(InfoTree root, std::string version)
 				continue;
 			SDL_Scancode code = code_for_binding_name(pressed_name);
 			if (shell)
-				input_preferences->shell_keycodes[index] = code;
+			{
+				if (!seen_shell_key[index])
+				{
+					input_preferences->shell_key_bindings[index].clear();
+					seen_shell_key[index] = true;
+				}
+				unset_scancode(code);
+				input_preferences->shell_key_bindings[index].insert(code);
+			}
 			else
-				input_preferences->keycodes[index] = code;
+			{
+				if (!seen_key[index])
+				{
+					input_preferences->key_bindings[index].clear();
+					seen_key[index] = true;
+				}
+				unset_scancode(code);
+				input_preferences->key_bindings[index].insert(code);
+			}
 		}
 	}
 }

@@ -208,8 +208,5 @@ static struct key_definition *all_key_definitions[NUMBER_OF_KEY_SETUPS]=
 	powerbook_key_definitions
 };
 
-/* Externed because both vbl.c and vbl_macintosh.c use this. */
-extern struct key_definition current_key_definitions[NUMBER_OF_STANDARD_KEY_DEFINITIONS];
-
 #endif
 

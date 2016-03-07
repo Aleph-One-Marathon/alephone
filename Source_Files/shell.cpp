@@ -1032,34 +1032,34 @@ static void handle_game_key(const SDL_Event &event)
 				}
 			}
 		}
-		else if (sc == input_preferences->shell_keycodes[_key_volume_up])
+		else if (input_preferences->shell_key_bindings[_key_volume_up].count(sc))
 		{
 			changed_prefs = SoundManager::instance()->AdjustVolumeUp(Sound_AdjustVolume());
 		}
-		else if (sc == input_preferences->shell_keycodes[_key_volume_down])
+		else if (input_preferences->shell_key_bindings[_key_volume_down].count(sc))
 		{
 			changed_prefs = SoundManager::instance()->AdjustVolumeDown(Sound_AdjustVolume());
 		}
-		else if (sc == input_preferences->shell_keycodes[_key_switch_view])
+		else if (input_preferences->shell_key_bindings[_key_switch_view].count(sc))
 		{
 			walk_player_list();
 			render_screen(NONE);
 		}
-		else if (sc == input_preferences->shell_keycodes[_key_zoom_in])
+		else if (input_preferences->shell_key_bindings[_key_zoom_in].count(sc))
 		{
 			if (zoom_overhead_map_in())
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			else
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
 		}
-		else if (sc == input_preferences->shell_keycodes[_key_zoom_out])
+		else if (input_preferences->shell_key_bindings[_key_zoom_out].count(sc))
 		{
 			if (zoom_overhead_map_out())
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			else
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
 		}
-		else if (sc == input_preferences->shell_keycodes[_key_inventory_left])
+		else if (input_preferences->shell_key_bindings[_key_inventory_left].count(sc))
 		{
 			if (player_controlling_game()) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
@@ -1067,7 +1067,7 @@ static void handle_game_key(const SDL_Event &event)
 			} else
 				decrement_replay_speed();
 		}
-		else if (sc == input_preferences->shell_keycodes[_key_inventory_right])
+		else if (input_preferences->shell_key_bindings[_key_inventory_right].count(sc))
 		{
 			if (player_controlling_game()) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
@@ -1075,13 +1075,13 @@ static void handle_game_key(const SDL_Event &event)
 			} else
 				increment_replay_speed();
 		}
-		else if (sc == input_preferences->shell_keycodes[_key_toggle_fps])
+		else if (input_preferences->shell_key_bindings[_key_toggle_fps].count(sc))
 		{
 			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			extern bool displaying_fps;
 			displaying_fps = !displaying_fps;
 		}
-		else if (sc == input_preferences->shell_keycodes[_key_activate_console])
+		else if (input_preferences->shell_key_bindings[_key_activate_console].count(sc))
 		{
 			if (game_is_networked) {
 #if !defined(DISABLE_NETWORKING)
@@ -1099,7 +1099,7 @@ static void handle_game_key(const SDL_Event &event)
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
 			}
 		} 
-		else if (sc == input_preferences->shell_keycodes[_key_show_scores])
+		else if (input_preferences->shell_key_bindings[_key_show_scores].count(sc))
 		{
 			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			{

@@ -58,6 +58,9 @@ May 22, 2003 (Woody Zenfell):
 #include "shell.h"
 #include "SoundManager.h"
 
+#include <map>
+#include <set>
+
 
 /* New preferences junk */
 const float DEFAULT_MONITOR_REFRESH_FREQUENCY = 60;	// 60 Hz
@@ -186,11 +189,12 @@ enum {
 	NUMBER_OF_JOYSTICK_MAPPINGS
 };
 
-#define MAX_BUTTONS 5
+
+typedef std::map<int, std::set<SDL_Scancode> > key_binding_map;
+
 struct input_preferences_data
 {
 	int16 input_device;
-	SDL_Scancode keycodes[NUMBER_OF_KEYS];
 	// LP addition: input modifiers
 	uint16 modifiers;
 	// Mouse-sensitivity parameters (LP: originally ZZZ)
@@ -198,7 +202,6 @@ struct input_preferences_data
 	_fixed sens_vertical;
 	// SB: Option to get rid of the horrible, horrible, horrible mouse acceleration.
 	bool mouse_acceleration;
-	SDL_Scancode shell_keycodes[NUMBER_OF_SHELL_KEYS];
 	
 	int16 joystick_id;
 	int16 joystick_axis_mappings[NUMBER_OF_JOYSTICK_MAPPINGS];
@@ -208,6 +211,9 @@ struct input_preferences_data
 	// value, then we clip it to 0.  this lets people use
 	// inaccurate zero points.
 	int16 joystick_axis_bounds[NUMBER_OF_JOYSTICK_MAPPINGS];
+	
+	key_binding_map key_bindings;
+	key_binding_map shell_key_bindings;
 };
 
 #define MAXIMUM_PATCHES_PER_ENVIRONMENT (32)

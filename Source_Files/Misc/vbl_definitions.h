@@ -85,6 +85,4 @@ typedef void *timer_task_proc;
 timer_task_proc install_timer_task(short tasks_per_second, bool (*func)(void));
 void remove_timer_task(timer_task_proc proc);
 
-void set_keys_to_match_preferences(void);
-
 #endif
