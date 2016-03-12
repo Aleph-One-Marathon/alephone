@@ -550,6 +550,8 @@ static void parse_metaserver(InfoTree root)
 
 static bool parse_theme_file(FileSpecifier& theme_mml)
 {
+	if (!theme_mml.Exists())
+		return false;
 	bool success = false;
 	try {
 		InfoTree root = InfoTree::load_xml(theme_mml).get_child("marathon.theme");
