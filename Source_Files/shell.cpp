@@ -906,6 +906,16 @@ static bool has_cheat_modifiers(void)
 #endif
 }
 
+static bool event_has_cheat_modifiers(const SDL_Event &event)
+{
+	Uint16 m = event.key.keysym.mod;
+#if (defined(__APPLE__) && defined(__MACH__))
+	return ((m & KMOD_SHIFT) && (m & KMOD_CTRL)) || ((m & KMOD_ALT) && (m & KMOD_GUI));
+#else
+	return (m & KMOD_SHIFT) && (m & KMOD_CTRL) && !(m & KMOD_ALT) && !(m & KMOD_GUI);
+#endif
+}
+
 static void process_screen_click(const SDL_Event &event)
 {
 	int x = event.button.x, y = event.button.y;
@@ -1286,7 +1296,7 @@ static void process_game_key(const SDL_Event &event)
 				break;
 			}
 			if (item > 0)
-				do_menu_item_command(mGame, item, has_cheat_modifiers());
+				do_menu_item_command(mGame, item, event_has_cheat_modifiers(event));
 			else if (item != 0)
 				handle_game_key(event);
 		} else
@@ -1373,7 +1383,7 @@ static void process_game_key(const SDL_Event &event)
 		}
 		if (item > 0) {
 			draw_menu_button_for_command(item);
-			do_menu_item_command(mInterface, item, has_cheat_modifiers());
+			do_menu_item_command(mInterface, item, event_has_cheat_modifiers(event));
 		}
 		break;
 	}
