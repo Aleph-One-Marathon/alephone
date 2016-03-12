@@ -640,15 +640,19 @@ bool load_theme(FileSpecifier &theme)
 	// Parse theme MML script
 	FileSpecifier theme_mml = theme + "theme2.mml";
 	bool success = parse_theme_file(theme_mml);
-	theme_path = theme;
+	if (success)
+	{
+		theme_path = theme;
 
-	// Open resource file
-	FileSpecifier theme_rsrc = theme + "resources";
-	theme_rsrc.Open(theme_resources);
+		// Open resource file
+		FileSpecifier theme_rsrc = theme + "resources";
+		theme_rsrc.Open(theme_resources);
+	}
 	clear_game_error();
 
 	// Load fonts
-	data_search_path.insert(data_search_path.begin(), theme);
+	if (success)
+		data_search_path.insert(data_search_path.begin(), theme);
 	for (std::map<int, theme_widget>::iterator i = dialog_theme.begin(); i != dialog_theme.end(); ++i)
 	{
 		if (i->second.font_set) {
