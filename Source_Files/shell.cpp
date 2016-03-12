@@ -882,7 +882,8 @@ static void main_event_loop(void)
 				} else if (!found_event)
 					break;
 
-				process_event(event);
+				if (found_event)
+					process_event(event); 
 			}
 		}
 
