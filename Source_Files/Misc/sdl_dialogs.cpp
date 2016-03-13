@@ -90,7 +90,7 @@ struct theme_widget
 	font_info *font;
 	TextSpec font_spec;
 	bool font_set;
-	std::map<int, uint16> spaces;
+	std::map<int, int> spaces;
 
 	theme_widget() : font(0), font_set(false) { }
 };
@@ -1023,12 +1023,12 @@ bool use_theme_color(int widget_type, int which)
 	return false;
 }
 
-uint16 get_theme_space(int widget_type, int which)
+int get_theme_space(int widget_type, int which)
 {
 	std::map<int, theme_widget>::iterator i = dialog_theme.find(widget_type);
 	if (i != dialog_theme.end())
 	{
-		std::map<int, uint16>::iterator j = i->second.spaces.find(which);
+		std::map<int, int>::iterator j = i->second.spaces.find(which);
 		if (j != i->second.spaces.end())
 		{
 			return j->second;
