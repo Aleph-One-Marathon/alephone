@@ -46,18 +46,7 @@ void w_env_select::select_item(dialog *parent)
 {
 	// Find available files
 	vector<FileSpecifier> files;
-	if (type == _typecode_theme) {
-
-		// Theme, find by theme script
-		FindThemes finder(files);
-		vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
-		while (i != end) {
-			FileSpecifier dir = *i + "Themes";
-			finder.Find(dir, WILDCARD_TYPE);
-			i++;
-		}
-
-	} else {
+	if (type != _typecode_theme) {
 
 		// Map/phyics/shapes/sounds, find by type
 		FindAllFiles finder(files);

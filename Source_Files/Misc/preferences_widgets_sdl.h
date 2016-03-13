@@ -43,25 +43,6 @@
 // From shell_sdl.cpp
 extern vector<DirectorySpecifier> data_search_path;
 
-// Find available themes in directory and append to vector
-class FindThemes : public FileFinder {
-public:
-	FindThemes(vector<FileSpecifier> &v) : dest_vector(v) {dest_vector.clear();}
-
-private:
-	bool found(FileSpecifier &file)
-	{
-		// Look for "theme.mml" files
-		string base, part;
-		file.SplitPath(base, part);
-		if (part == "theme2.mml")
-			dest_vector.push_back(base);
-		return false;
-	}
-
-	vector<FileSpecifier> &dest_vector;
-};
-
 // Environment item
 class env_item {
 public:
