@@ -104,17 +104,18 @@ struct SwsContext* getContext( SDL_ffmpegConversionContext **context, int inWidt
             {
                 return ctx->context;
             }
-
+			
             ctx = ctx->next;
         }
 
         ctx = *context;
 
         /* find the last context */
-        while ( ctx ) ctx = ctx->next;
+        while ( ctx && ctx->next ) ctx = ctx->next;
 
         /* allocate a new context */
-        ctx = ( struct SDL_ffmpegConversionContext* ) malloc( sizeof( SDL_ffmpegConversionContext ) );
+        ctx->next = ( struct SDL_ffmpegConversionContext* ) malloc( sizeof( SDL_ffmpegConversionContext ) );
+		ctx = ctx->next;
     }
     else
     {
