@@ -450,6 +450,7 @@ static int Get_Control_Url(UpnpController * c, const char * desc_url,
   /* now make sure that the url size is appropriate */
   if(strlen(c->control_url)+NULL_TERM_LEN > MAX_URL_LEN) {
     free(c->control_url);
+    c->control_url = NULL;
     return UPNP_URL_OVER_MAX_LEN;
   }
   return OK;

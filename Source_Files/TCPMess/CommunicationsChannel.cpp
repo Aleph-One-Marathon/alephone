@@ -588,6 +588,7 @@ CommunicationsChannel::receiveSpecificMessage(
 					messageHandler()->handle(theMessage, this);
 				}
 				delete theMessage;
+				theMessage = NULL;
 			}
 		}
 		else
