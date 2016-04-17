@@ -56,6 +56,46 @@
 		271ADFC918A88B9C0073CB2E /* swscale.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCF177687B7009AAE10 /* swscale.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		2739B492101B862A00CC8098 /* Shape_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2739B490101B862A00CC8098 /* Shape_Blitter.cpp */; };
 		2739B493101B862A00CC8098 /* Shape_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 2739B491101B862A00CC8098 /* Shape_Blitter.h */; };
+		2748BDC51CC405030082F0E1 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; };
+		2748BDC61CC405030082F0E1 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; };
+		2748BDC71CC405040082F0E1 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; };
+		2748BDC81CC405050082F0E1 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; };
+		2748BDC91CC405050082F0E1 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; };
+		2748BDCA1CC405060082F0E1 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; };
+		2748BDCB1CC405080082F0E1 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; };
+		2748BDCC1CC405090082F0E1 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; };
+		2748BDCD1CC405090082F0E1 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; };
+		2748BDCE1CC4050A0082F0E1 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; };
+		2748BDCF1CC4050A0082F0E1 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; };
+		2748BDD01CC4050B0082F0E1 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; };
+		2748BDD11CC4050E0082F0E1 /* SDL2_net.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; };
+		2748BDD21CC4050F0082F0E1 /* SDL2_net.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; };
+		2748BDD31CC4050F0082F0E1 /* SDL2_net.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; };
+		2748BDD41CC405100082F0E1 /* SDL2_net.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; };
+		2748BDD51CC405100082F0E1 /* SDL2_net.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; };
+		2748BDD61CC405110082F0E1 /* SDL2_net.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; };
+		2748BDD71CC405130082F0E1 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; };
+		2748BDD81CC405140082F0E1 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; };
+		2748BDD91CC405140082F0E1 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; };
+		2748BDDA1CC405150082F0E1 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; };
+		2748BDDB1CC405150082F0E1 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; };
+		2748BDDC1CC405180082F0E1 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; };
+		2748BDDD1CC4052B0082F0E1 /* SDL2_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDDE1CC4052B0082F0E1 /* SDL2_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDDF1CC4052B0082F0E1 /* SDL2_ttf.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDE01CC4052B0082F0E1 /* SDL2.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDE11CC405330082F0E1 /* SDL2_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDE21CC405330082F0E1 /* SDL2_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDE31CC405330082F0E1 /* SDL2_ttf.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDE41CC405330082F0E1 /* SDL2.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDE51CC405390082F0E1 /* SDL2_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDE61CC405390082F0E1 /* SDL2_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDE71CC405390082F0E1 /* SDL2_ttf.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDE81CC405390082F0E1 /* SDL2.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDE91CC4053F0082F0E1 /* SDL2_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDEA1CC4053F0082F0E1 /* SDL2_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDEB1CC4053F0082F0E1 /* SDL2_ttf.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDEC1CC4053F0082F0E1 /* SDL2.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2759F31B10D5BC9C000204DD /* SDL_rwops_zzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */; };
 		2759F31C10D5BC9C000204DD /* SDL_rwops_zzip.h in Headers */ = {isa = PBXBuildFile; fileRef = 2759F31A10D5BC9C000204DD /* SDL_rwops_zzip.h */; };
 		2759F33010D5BCC0000204DD /* zziplib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; };
@@ -3401,6 +3441,10 @@
 				27A6DA851B9BF5CD003DA766 /* zziplib.framework in CopyFiles */,
 				27A6DA861B9BF5CD003DA766 /* jpeg.framework in CopyFiles */,
 				27A6DA871B9BF5CD003DA766 /* png.framework in CopyFiles */,
+				2748BDE11CC405330082F0E1 /* SDL2_image.framework in CopyFiles */,
+				2748BDE21CC405330082F0E1 /* SDL2_net.framework in CopyFiles */,
+				2748BDE31CC405330082F0E1 /* SDL2_ttf.framework in CopyFiles */,
+				2748BDE41CC405330082F0E1 /* SDL2.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3422,6 +3466,10 @@
 				27A6DA971B9BF5E7003DA766 /* zziplib.framework in CopyFiles */,
 				27A6DA981B9BF5E7003DA766 /* jpeg.framework in CopyFiles */,
 				27A6DA991B9BF5E7003DA766 /* png.framework in CopyFiles */,
+				2748BDE51CC405390082F0E1 /* SDL2_image.framework in CopyFiles */,
+				2748BDE61CC405390082F0E1 /* SDL2_net.framework in CopyFiles */,
+				2748BDE71CC405390082F0E1 /* SDL2_ttf.framework in CopyFiles */,
+				2748BDE81CC405390082F0E1 /* SDL2.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3443,6 +3491,10 @@
 				27A6DAA91B9BF5F3003DA766 /* zziplib.framework in CopyFiles */,
 				27A6DAAA1B9BF5F3003DA766 /* jpeg.framework in CopyFiles */,
 				27A6DAAB1B9BF5F3003DA766 /* png.framework in CopyFiles */,
+				2748BDE91CC4053F0082F0E1 /* SDL2_image.framework in CopyFiles */,
+				2748BDEA1CC4053F0082F0E1 /* SDL2_net.framework in CopyFiles */,
+				2748BDEB1CC4053F0082F0E1 /* SDL2_ttf.framework in CopyFiles */,
+				2748BDEC1CC4053F0082F0E1 /* SDL2.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3464,6 +3516,10 @@
 				2759F33310D5BCD1000204DD /* zziplib.framework in CopyFiles */,
 				AE23F5930BDAC1DF00C11385 /* speex.framework in CopyFiles */,
 				27EFC4B41A7C8E6900A95592 /* speexdsp.framework in CopyFiles */,
+				2748BDDD1CC4052B0082F0E1 /* SDL2_image.framework in CopyFiles */,
+				2748BDDE1CC4052B0082F0E1 /* SDL2_net.framework in CopyFiles */,
+				2748BDDF1CC4052B0082F0E1 /* SDL2_ttf.framework in CopyFiles */,
+				2748BDE01CC4052B0082F0E1 /* SDL2.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4023,9 +4079,11 @@
 				27A6D69F1B9BF021003DA766 /* OpenGL.framework in Frameworks */,
 				27A6D6A01B9BF021003DA766 /* Cocoa.framework in Frameworks */,
 				27A6D6A41B9BF021003DA766 /* speex.framework in Frameworks */,
+				2748BDCE1CC4050A0082F0E1 /* SDL2_ttf.framework in Frameworks */,
 				27A6D6A61B9BF021003DA766 /* AudioUnit.framework in Frameworks */,
 				27A6D6A71B9BF021003DA766 /* boost_system.framework in Frameworks */,
 				27A6D6A81B9BF021003DA766 /* libz.dylib in Frameworks */,
+				2748BDC81CC405050082F0E1 /* SDL2.framework in Frameworks */,
 				27A6D6A91B9BF021003DA766 /* CoreAudio.framework in Frameworks */,
 				27A6D6AA1B9BF021003DA766 /* expat.framework in Frameworks */,
 				27A6D6AB1B9BF021003DA766 /* zziplib.framework in Frameworks */,
@@ -4034,6 +4092,8 @@
 				27A6D6AF1B9BF021003DA766 /* avcodec.framework in Frameworks */,
 				27A6D6B01B9BF021003DA766 /* speexdsp.framework in Frameworks */,
 				27A6D6B11B9BF021003DA766 /* boost_filesystem.framework in Frameworks */,
+				2748BDDA1CC405150082F0E1 /* SDL2_image.framework in Frameworks */,
+				2748BDD41CC405100082F0E1 /* SDL2_net.framework in Frameworks */,
 				27A6D6B21B9BF021003DA766 /* avformat.framework in Frameworks */,
 				27A6D6B31B9BF021003DA766 /* avutil.framework in Frameworks */,
 				27A6D6B41B9BF021003DA766 /* swscale.framework in Frameworks */,
@@ -4048,9 +4108,11 @@
 				27A6D87B1B9BF029003DA766 /* OpenGL.framework in Frameworks */,
 				27A6D87C1B9BF029003DA766 /* Cocoa.framework in Frameworks */,
 				27A6D8801B9BF029003DA766 /* speex.framework in Frameworks */,
+				2748BDCF1CC4050A0082F0E1 /* SDL2_ttf.framework in Frameworks */,
 				27A6D8821B9BF029003DA766 /* AudioUnit.framework in Frameworks */,
 				27A6D8831B9BF029003DA766 /* boost_system.framework in Frameworks */,
 				27A6D8841B9BF029003DA766 /* libz.dylib in Frameworks */,
+				2748BDC91CC405050082F0E1 /* SDL2.framework in Frameworks */,
 				27A6D8851B9BF029003DA766 /* CoreAudio.framework in Frameworks */,
 				27A6D8861B9BF029003DA766 /* expat.framework in Frameworks */,
 				27A6D8871B9BF029003DA766 /* zziplib.framework in Frameworks */,
@@ -4059,6 +4121,8 @@
 				27A6D88B1B9BF029003DA766 /* avcodec.framework in Frameworks */,
 				27A6D88C1B9BF029003DA766 /* speexdsp.framework in Frameworks */,
 				27A6D88D1B9BF029003DA766 /* boost_filesystem.framework in Frameworks */,
+				2748BDDB1CC405150082F0E1 /* SDL2_image.framework in Frameworks */,
+				2748BDD51CC405100082F0E1 /* SDL2_net.framework in Frameworks */,
 				27A6D88E1B9BF029003DA766 /* avformat.framework in Frameworks */,
 				27A6D88F1B9BF029003DA766 /* avutil.framework in Frameworks */,
 				27A6D8901B9BF029003DA766 /* swscale.framework in Frameworks */,
@@ -4073,9 +4137,11 @@
 				27A6DA571B9BF031003DA766 /* OpenGL.framework in Frameworks */,
 				27A6DA581B9BF031003DA766 /* Cocoa.framework in Frameworks */,
 				27A6DA5C1B9BF031003DA766 /* speex.framework in Frameworks */,
+				2748BDD01CC4050B0082F0E1 /* SDL2_ttf.framework in Frameworks */,
 				27A6DA5E1B9BF031003DA766 /* AudioUnit.framework in Frameworks */,
 				27A6DA5F1B9BF031003DA766 /* boost_system.framework in Frameworks */,
 				27A6DA601B9BF031003DA766 /* libz.dylib in Frameworks */,
+				2748BDCA1CC405060082F0E1 /* SDL2.framework in Frameworks */,
 				27A6DA611B9BF031003DA766 /* CoreAudio.framework in Frameworks */,
 				27A6DA621B9BF031003DA766 /* expat.framework in Frameworks */,
 				27A6DA631B9BF031003DA766 /* zziplib.framework in Frameworks */,
@@ -4084,6 +4150,8 @@
 				27A6DA671B9BF031003DA766 /* avcodec.framework in Frameworks */,
 				27A6DA681B9BF031003DA766 /* speexdsp.framework in Frameworks */,
 				27A6DA691B9BF031003DA766 /* boost_filesystem.framework in Frameworks */,
+				2748BDDC1CC405180082F0E1 /* SDL2_image.framework in Frameworks */,
+				2748BDD61CC405110082F0E1 /* SDL2_net.framework in Frameworks */,
 				27A6DA6A1B9BF031003DA766 /* avformat.framework in Frameworks */,
 				27A6DA6B1B9BF031003DA766 /* avutil.framework in Frameworks */,
 				27A6DA6C1B9BF031003DA766 /* swscale.framework in Frameworks */,
@@ -4098,9 +4166,11 @@
 				AE505CEF141D45E600915344 /* OpenGL.framework in Frameworks */,
 				AE505CF0141D45E600915344 /* Cocoa.framework in Frameworks */,
 				AE505CF9141D45E600915344 /* speex.framework in Frameworks */,
+				2748BDCC1CC405090082F0E1 /* SDL2_ttf.framework in Frameworks */,
 				AE505CFB141D45E600915344 /* AudioUnit.framework in Frameworks */,
 				2762A3391AAA51D900B807D4 /* boost_system.framework in Frameworks */,
 				AE505CFC141D45E600915344 /* libz.dylib in Frameworks */,
+				2748BDC61CC405030082F0E1 /* SDL2.framework in Frameworks */,
 				AE505CFD141D45E600915344 /* CoreAudio.framework in Frameworks */,
 				27A6D4D51B9A42F0003DA766 /* expat.framework in Frameworks */,
 				AE505CFE141D45E600915344 /* zziplib.framework in Frameworks */,
@@ -4109,6 +4179,8 @@
 				270F9FD2177687B7009AAE10 /* avcodec.framework in Frameworks */,
 				278BCAF11A51C53C006F9756 /* speexdsp.framework in Frameworks */,
 				2762A3351AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */,
+				2748BDD81CC405140082F0E1 /* SDL2_image.framework in Frameworks */,
+				2748BDD21CC4050F0082F0E1 /* SDL2_net.framework in Frameworks */,
 				270F9FD6177687B7009AAE10 /* avformat.framework in Frameworks */,
 				270F9FDA177687B7009AAE10 /* avutil.framework in Frameworks */,
 				270F9FDE177687B7009AAE10 /* swscale.framework in Frameworks */,
@@ -4123,9 +4195,11 @@
 				AEB4A29114296CAE00537AE7 /* OpenGL.framework in Frameworks */,
 				AEB4A29214296CAE00537AE7 /* Cocoa.framework in Frameworks */,
 				AEB4A29B14296CAE00537AE7 /* speex.framework in Frameworks */,
+				2748BDCD1CC405090082F0E1 /* SDL2_ttf.framework in Frameworks */,
 				AEB4A29D14296CAE00537AE7 /* AudioUnit.framework in Frameworks */,
 				2762A33A1AAA51D900B807D4 /* boost_system.framework in Frameworks */,
 				AEB4A29E14296CAE00537AE7 /* libz.dylib in Frameworks */,
+				2748BDC71CC405040082F0E1 /* SDL2.framework in Frameworks */,
 				AEB4A29F14296CAE00537AE7 /* CoreAudio.framework in Frameworks */,
 				27A6D4D61B9A42F0003DA766 /* expat.framework in Frameworks */,
 				AEB4A2A014296CAE00537AE7 /* zziplib.framework in Frameworks */,
@@ -4134,6 +4208,8 @@
 				270F9FD3177687B7009AAE10 /* avcodec.framework in Frameworks */,
 				278BCAF21A51C53C006F9756 /* speexdsp.framework in Frameworks */,
 				2762A3361AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */,
+				2748BDD91CC405140082F0E1 /* SDL2_image.framework in Frameworks */,
+				2748BDD31CC4050F0082F0E1 /* SDL2_net.framework in Frameworks */,
 				270F9FD7177687B7009AAE10 /* avformat.framework in Frameworks */,
 				270F9FDB177687B7009AAE10 /* avutil.framework in Frameworks */,
 				270F9FDF177687B7009AAE10 /* swscale.framework in Frameworks */,
@@ -4177,9 +4253,11 @@
 				AEFD879B13EB84CF00C1E687 /* OpenGL.framework in Frameworks */,
 				AEFD879C13EB84CF00C1E687 /* Cocoa.framework in Frameworks */,
 				AEFD87A513EB84CF00C1E687 /* speex.framework in Frameworks */,
+				2748BDCB1CC405080082F0E1 /* SDL2_ttf.framework in Frameworks */,
 				AEFD87A713EB84CF00C1E687 /* AudioUnit.framework in Frameworks */,
 				2762A3381AAA51D900B807D4 /* boost_system.framework in Frameworks */,
 				AEFD87A813EB84CF00C1E687 /* libz.dylib in Frameworks */,
+				2748BDC51CC405030082F0E1 /* SDL2.framework in Frameworks */,
 				AEFD87A913EB84CF00C1E687 /* CoreAudio.framework in Frameworks */,
 				27A6D4D41B9A42F0003DA766 /* expat.framework in Frameworks */,
 				AEFD87AA13EB84CF00C1E687 /* zziplib.framework in Frameworks */,
@@ -4188,6 +4266,8 @@
 				270F9FD1177687B7009AAE10 /* avcodec.framework in Frameworks */,
 				278BCAF01A51C53C006F9756 /* speexdsp.framework in Frameworks */,
 				2762A3341AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */,
+				2748BDD71CC405130082F0E1 /* SDL2_image.framework in Frameworks */,
+				2748BDD11CC4050E0082F0E1 /* SDL2_net.framework in Frameworks */,
 				270F9FD5177687B7009AAE10 /* avformat.framework in Frameworks */,
 				270F9FD9177687B7009AAE10 /* avutil.framework in Frameworks */,
 				270F9FDD177687B7009AAE10 /* swscale.framework in Frameworks */,
@@ -6868,7 +6948,7 @@
 					};
 				};
 			};
-			buildConfigurationList = AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne-Xcode4" */;
+			buildConfigurationList = AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -7050,7 +7130,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "function copy_removing_ppc() {\n    ditto --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\ncopy_removing_ppc \"boost_filesystem.framework\"\ncopy_removing_ppc \"boost_system.framework\"\n";
+			shellScript = "function copy_removing_ppc() {\n    ditto --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL2_image.framework\"\ncopy_removing_ppc \"SDL2.framework\"\ncopy_removing_ppc \"SDL2_net.framework\"\ncopy_removing_ppc \"SDL2_ttf.framework\"\ncopy_removing_ppc \"boost_filesystem.framework\"\ncopy_removing_ppc \"boost_system.framework\"\n";
 		};
 		27A6D6B81B9BF021003DA766 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -7088,7 +7168,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "function copy_removing_ppc() {\n    ditto --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\ncopy_removing_ppc \"boost_filesystem.framework\"\ncopy_removing_ppc \"boost_system.framework\"\n";
+			shellScript = "function copy_removing_ppc() {\n    ditto --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL2_image.framework\"\ncopy_removing_ppc \"SDL2.framework\"\ncopy_removing_ppc \"SDL2_net.framework\"\ncopy_removing_ppc \"SDL2_ttf.framework\"\ncopy_removing_ppc \"boost_filesystem.framework\"\ncopy_removing_ppc \"boost_system.framework\"\n";
 		};
 		27A6D8941B9BF029003DA766 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -7126,7 +7206,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "function copy_removing_ppc() {\n    ditto --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\ncopy_removing_ppc \"boost_filesystem.framework\"\ncopy_removing_ppc \"boost_system.framework\"\n";
+			shellScript = "function copy_removing_ppc() {\n    ditto --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL2_image.framework\"\ncopy_removing_ppc \"SDL2.framework\"\ncopy_removing_ppc \"SDL2_net.framework\"\ncopy_removing_ppc \"SDL2_ttf.framework\"\ncopy_removing_ppc \"boost_filesystem.framework\"\ncopy_removing_ppc \"boost_system.framework\"\n";
 		};
 		27A6DA701B9BF031003DA766 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -8922,6 +9002,10 @@
 				CODE_SIGN_ENTITLEMENTS = AppStore/Marathon/Marathon.entitlements;
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -8944,6 +9028,10 @@
 				CODE_SIGN_ENTITLEMENTS = AppStore/Marathon/Marathon.entitlements;
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -8966,6 +9054,10 @@
 				CODE_SIGN_ENTITLEMENTS = AppStore/Marathon/Marathon.entitlements;
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -8988,6 +9080,10 @@
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon 2/Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9010,6 +9106,10 @@
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon 2/Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9032,6 +9132,10 @@
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon 2/Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9054,6 +9158,10 @@
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon Infinity/Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9076,6 +9184,10 @@
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon Infinity/Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9098,6 +9210,10 @@
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon Infinity/Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9181,6 +9297,7 @@
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @executable_path/../Frameworks/SDL2_ttf.framework/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				STRIP_INSTALLED_PRODUCT = NO;
 			};
@@ -9254,6 +9371,7 @@
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @executable_path/../Frameworks/SDL2_ttf.framework/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				STRIP_INSTALLED_PRODUCT = NO;
 			};
@@ -9284,6 +9402,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9302,6 +9424,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9320,6 +9446,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9402,6 +9532,7 @@
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @executable_path/../Frameworks/SDL2_ttf.framework/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				STRIP_INSTALLED_PRODUCT = NO;
 			};
@@ -9411,6 +9542,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9429,6 +9564,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9447,6 +9586,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9653,7 +9796,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = "Deployment (Universal)";
 		};
-		AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne-Xcode4" */ = {
+		AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AE78B59E09B00C34002CACF8 /* Deployment (Universal) */,
