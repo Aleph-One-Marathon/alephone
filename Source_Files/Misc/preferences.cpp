@@ -1905,10 +1905,10 @@ public:
 //		{
 //			error = keyScrollWheelDoesntWork;
 //		}
-//		if (error != NONE) {
-//			alert_user(infoError, strERRORS, error, 0);
-//			return;
-//		}
+		if (error != NONE) {
+			alert_user(infoError, strERRORS, error, 0);
+			return;
+		}
 
 		w_key::set_key(new_key);
 		if (new_key == SDL_SCANCODE_UNKNOWN)
