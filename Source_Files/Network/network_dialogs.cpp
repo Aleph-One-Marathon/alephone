@@ -1501,6 +1501,7 @@ void menu_index_to_level_entry(
 int menu_index_to_level_index (int menu_index, int32 entry_flags)
 {	
 	entry_point entry;
+	entry.level_number = 0;
 
 	menu_index_to_level_entry (menu_index, entry_flags, &entry);
 	

@@ -815,6 +815,12 @@ static void read_recording_queue_chunks(
 					StreamToValue(S,action_flags);
 					assert(status || (HitEOF && sizeof_read == sizeof(action_flags)));
 				}
+				else
+				{
+					logError("film file read error");
+					replay.have_read_last_chunk = true;
+					break;
+				}
 				
 				if ((HitEOF && sizeof_read != sizeof(action_flags)) || num_flags == END_OF_RECORDING_INDICATOR)
 				{

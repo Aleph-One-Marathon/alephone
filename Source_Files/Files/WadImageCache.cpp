@@ -158,7 +158,7 @@ std::string WadImageCache::image_to_new_name(SDL_Surface *image, int32 *filesize
 
 std::string WadImageCache::add_to_cache(cache_key_t key, SDL_Surface *surface)
 {
-	int32 filesize;
+	int32 filesize = 0;
 	std::string name = image_to_new_name(surface, &filesize);
 	if (!name.empty())
 	{

@@ -242,7 +242,6 @@ static int Send_Ssdp_Discover(UpnpController * c, char ** ssdp_response)
                                         strlen(WANPPP_TARGET)+
                                         NULL_TERM_LEN);
   if(NULL == search_target) {
-    free(c);
     return BAD_MALLOC;
   }
 

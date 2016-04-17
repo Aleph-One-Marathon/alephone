@@ -301,6 +301,7 @@ open_res_file_from_rwops(SDL_RWops* f) {
             } else {
 
                     // Error reading resource map
+                    delete r;
                     SDL_RWclose(f);
                     return NULL;
             }
