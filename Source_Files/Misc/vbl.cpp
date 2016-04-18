@@ -144,7 +144,6 @@ ActionQueue *get_player_recording_queue(
 
 /* ---------- private prototypes */
 static void remove_input_controller(void);
-static void precalculate_key_information(void);
 static void save_recording_queue_chunk(short player_index);
 static void read_recording_queue_chunks(void);
 static bool pull_flags_from_recording(short count);
