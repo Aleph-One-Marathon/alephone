@@ -232,6 +232,7 @@ static int uncompress_rle32(const uint8 *src, int row_bytes, uint8 *dst, int dst
 	uint8 *tmp = (uint8 *)malloc(row_bytes);
 	if (tmp == NULL)
 		return -1;
+	memset(tmp, 0, row_bytes);
 
 	const uint8 *start = src;
 

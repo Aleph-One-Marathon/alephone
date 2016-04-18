@@ -54,7 +54,7 @@ AIStream& AIStream::operator>>(uint8 &value)
 AIStream& AIStream::operator>>(int8 &value)
 	throw(AStream::failure)
 {
-	uint8 UValue;
+	uint8 UValue = 0;
 	operator>>(UValue);
 	value = int8(UValue);
 
@@ -64,7 +64,7 @@ AIStream& AIStream::operator>>(int8 &value)
 AIStream& AIStream::operator>>(bool &value)
   throw(AStream::failure)
 {
-  uint8 UValue;
+  uint8 UValue = 0;
   operator>>(UValue);
   value = (UValue != 0);
 
@@ -154,7 +154,7 @@ AIStream& AIStreamBE::operator>>(uint16 &value)
 AIStream& AIStreamBE::operator>>(int16 &value)
 	throw(AStream::failure)
 {
-	uint16 UValue;
+	uint16 UValue = 0;
 	operator>>(UValue);
 	value = int16(UValue);
   
@@ -180,7 +180,7 @@ AIStream& AIStreamBE::operator>>(uint32 &value)
 AIStream& AIStreamBE::operator>>(int32 &value)
 	throw(AStream::failure)
 {
-	uint32 UValue;
+	uint32 UValue = 0;
 	operator>>(UValue);
 	value = int32(UValue);
   
@@ -243,7 +243,7 @@ AIStream& AIStreamLE::operator>>(uint16 &value)
 AIStream& AIStreamLE::operator>>(int16 &value)
 	throw(AStream::failure)
 {
-	uint16 UValue;
+	uint16 UValue = 0;
 	operator>>(UValue);
 	value = int16(UValue);
   
@@ -269,7 +269,7 @@ AIStream& AIStreamLE::operator>>(uint32 &value)
 AIStream& AIStreamLE::operator>>(int32 &value)
 	throw(AStream::failure)
 {
-	uint32 UValue;
+	uint32 UValue = 0;
 	operator>>(UValue);
 	value = int32(UValue);
     

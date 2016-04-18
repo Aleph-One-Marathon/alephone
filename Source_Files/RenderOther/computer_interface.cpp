@@ -1097,6 +1097,7 @@ static void calculate_bounds_for_text_box(
 	if(flags & _center_object)
 	{
 		// dprintf("splitting text not supported!");
+		calculate_bounds_for_object(_draw_object_on_right, bounds, NULL);
 	} 
 	else if(flags & _draw_object_on_right)
 	{
