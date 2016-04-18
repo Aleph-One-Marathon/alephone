@@ -1764,6 +1764,7 @@ static void build_shading_tables8(
 	{
 		for (i= 0; i<count; ++i)
 		{
+			assert(number_of_shading_tables > 1);
 			short adjust= start ? 1 : 0;
 
 			for (level= 0; level<number_of_shading_tables; ++level)
@@ -1851,6 +1852,7 @@ static void build_shading_tables16(
 	{
 		for (i=0;i<count;++i)
 		{
+			assert(number_of_shading_tables > 1);
 			for (level= 0; level<number_of_shading_tables; ++level)
 			{
 				struct rgb_color_value *color= colors + (remapping_table ? remapping_table[start+i] : (start+i));
@@ -1892,6 +1894,7 @@ static void build_shading_tables32(
 	{
 		for (i= 0; i<count; ++i)
 		{
+			assert(number_of_shading_tables > 1);
 			for (level= 0; level<number_of_shading_tables; ++level)
 			{
 				struct rgb_color_value *color= colors + (remapping_table ? remapping_table[start+i] : (start+i));

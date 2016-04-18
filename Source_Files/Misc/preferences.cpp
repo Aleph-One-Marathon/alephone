@@ -1464,7 +1464,7 @@ static void sound_dialog(void *arg)
 			changed = true;
 		}
 
-		int16 channel_count = 1 << channels_w->get_selection();
+		int16 channel_count = 1 << (channels_w->get_selection() == UNONE ? 1 : channels_w->get_selection());
 		if (channel_count != sound_preferences->channel_count) {
 			sound_preferences->channel_count = channel_count;
 			changed = true;
