@@ -43,7 +43,9 @@ static inline int luaL_typerror(lua_State* L, int narg, const char* tname)
 {
 	const char *msg = lua_pushfstring(L, "%s expected, got %s",
 					  tname, luaL_typename(L, narg));
-	return luaL_argerror(L, narg, msg);
+	(void)luaL_argerror(L, narg, msg); // does not actually return
+	assert(false);  // satisfy clang static analyzer
+	return 0;  // satisfy compiler
 }
 
 // helper functions for finding the script's data path

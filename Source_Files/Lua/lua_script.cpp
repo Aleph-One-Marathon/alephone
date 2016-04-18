@@ -1486,6 +1486,7 @@ int L_Player_Control(lua_State *L)
 		if (action_flags) delete []action_flags;
 		action_flags = new uint32[value];
 	}
+	assert(action_flags);
 	prev_value = value;
 
 	bool DoAction = false;

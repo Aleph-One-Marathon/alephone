@@ -790,6 +790,7 @@ static bool DecompressDXTC3(uint32 *out, int width, int height, uint32 *in)
 	DXTAlphaBlockExplicit *alpha;
 	unsigned char *data = (unsigned char *) out;
 
+	assert(in);
 	Temp = (unsigned char *) in;
 	for (y = 0; y < height; y += 4) {
 		for (x = 0; x < width; x += 4) {

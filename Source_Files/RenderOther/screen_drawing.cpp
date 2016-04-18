@@ -1120,7 +1120,7 @@ void draw_polygon(SDL_Surface *s, const world_point2d *vertex_array, int vertex_
 	};
 	static span_t *span = NULL;
 	static int max_spans = 0;
-	if (s->h > max_spans) {
+	if (!span || s->h > max_spans) {
 		delete[] span;
 		span = new span_t[s->h];
 		max_spans = s->h;

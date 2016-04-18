@@ -340,7 +340,7 @@ static int Get_Description_Url(const char * ssdp_response, char ** desc_url)
   free(ssdp_upper_response);
 
   /* now make sure that the url size is appropriate */
-  if(strlen(*desc_url)+NULL_TERM_LEN > MAX_URL_LEN) {
+  if(*desc_url && strlen(*desc_url)+NULL_TERM_LEN > MAX_URL_LEN) {
     free(*desc_url);
     return UPNP_URL_OVER_MAX_LEN;
   }

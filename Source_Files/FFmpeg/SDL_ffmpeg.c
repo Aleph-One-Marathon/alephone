@@ -961,7 +961,8 @@ int SDL_ffmpegSelectAudioStream( SDL_ffmpegFile* file, int audioID )
         for ( int i = 0; i < audioID && file->audioStream; i++ ) file->audioStream = file->audioStream->next;
 
         /* active stream need not be discarded */
-        file->audioStream->_ffmpeg->discard = AVDISCARD_DEFAULT;
+		if (file->audioStream && file->audioStream->_ffmpeg)
+			file->audioStream->_ffmpeg->discard = AVDISCARD_DEFAULT;
     }
 
     SDL_UnlockMutex( file->streamMutex );
@@ -1046,7 +1047,8 @@ int SDL_ffmpegSelectVideoStream( SDL_ffmpegFile* file, int videoID )
         for ( int i = 0; i < videoID && file->videoStream; i++ ) file->videoStream = file->videoStream->next;
 
         /* active stream need not be discarded */
-        file->videoStream->_ffmpeg->discard = AVDISCARD_DEFAULT;
+		if (file->videoStream && file->videoStream->_ffmpeg)
+			file->videoStream->_ffmpeg->discard = AVDISCARD_DEFAULT;
     }
 
     SDL_UnlockMutex( file->streamMutex );
@@ -1432,7 +1434,7 @@ uint64_t SDL_ffmpegAudioDuration( SDL_ffmpegFile *file )
 
     uint64_t duration = 0;
 
-    if ( !file->audioStream )
+    if ( file->audioStream )
     {
         if ( file->type == SDL_ffmpegInputStream )
         {

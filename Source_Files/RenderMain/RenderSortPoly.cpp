@@ -224,7 +224,7 @@ void RenderSortPolyClass::sort_render_tree()
 
 			/* try to handle this nodeÕs siblings next (if there arenÕt any, then a ÔrandomÕ
 				node will be chosen) */
-			leaf= node->siblings;
+			leaf= node ? node->siblings : NULL;
 		}
 	}
 

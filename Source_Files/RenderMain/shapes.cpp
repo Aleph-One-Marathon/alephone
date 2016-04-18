@@ -324,7 +324,7 @@ SDL_Surface *get_shape_surface(int shape, int inCollection, byte** outPointerToP
             // Extract color table
             int num_colors = collection->color_count - NUMBER_OF_PRIVATE_COLORS;
             rgb_color_value *src_colors = get_collection_colors(collection_index, clut_index) + NUMBER_OF_PRIVATE_COLORS;
-            for (int i=0; i<num_colors; i++) {
+            for (int i=0; i<num_colors && src_colors; i++) {
                     int idx = src_colors[i].value;
                     colors[idx].r = src_colors[i].red >> 8;
                     colors[idx].g = src_colors[i].green >> 8;
