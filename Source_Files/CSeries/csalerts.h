@@ -41,6 +41,10 @@ extern void alert_user(
 	short resid,
 	short item,
 	int error);
+static inline void alert_user_fatal(short resid, short item, int error) NORETURN;
+static inline void alert_out_of_memory(int error = -1) NORETURN;
+static inline void alert_bad_extra_file(int error = -1) NORETURN;
+static inline void alert_corrupted_map(int error = -1) NORETURN;
 
 extern bool alert_choose_scenario(char *chosen_dir);
 
@@ -62,6 +66,16 @@ extern void _alephone_warn(
 	const char *file,
 	int32 line,
 	const char *what);
+
+void alert_user_fatal(short resid, short item, int error)
+{
+	alert_user(fatalError, resid, item, error);
+	halt();
+}
+void alert_out_of_memory(int error) { alert_user_fatal(128, 14, error); }
+void alert_bad_extra_file(int error) { alert_user_fatal(128, 5, error); }
+void alert_corrupted_map(int error) { alert_user_fatal(128, 23, error); }
+
 
 
 #undef assert

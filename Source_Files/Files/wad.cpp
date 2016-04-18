@@ -558,7 +558,7 @@ struct wad_data *append_data_to_wad(
 
 		if(!wad->tag_data)
 		{
-			alert_user(fatalError, strERRORS, outOfMemory, memory_error());
+			alert_out_of_memory();
 		}
 
 		assert(wad->tag_data);
@@ -575,7 +575,7 @@ struct wad_data *append_data_to_wad(
 	wad->tag_data[index].data= (uint8 *) malloc(size);
 	if(!wad->tag_data[index].data)
 	{
-		alert_user(fatalError, strERRORS, outOfMemory, memory_error());
+		alert_out_of_memory();
 	}
 	assert(wad->tag_data[index].data);
 		
@@ -614,7 +614,7 @@ void remove_tag_from_wad(
 		
 		if(!wad->tag_data)
 		{
-			alert_user(fatalError, strERRORS, outOfMemory, memory_error());
+			alert_out_of_memory();
 		}
 
 		assert(wad->tag_data);
@@ -1221,7 +1221,7 @@ static struct wad_data *convert_wad_from_raw(
 					unpack_entry_header(raw_wad_entry_header, &wad_entry_header, 1);
 				} 
 			} else {
-				alert_user(fatalError, strERRORS, outOfMemory, memory_error());
+				alert_out_of_memory();
 			}
 		}
 	}
@@ -1275,7 +1275,7 @@ static struct wad_data *convert_wad_from_raw_modifiable(
 					wad->tag_data[index].data = (uint8 *) malloc(wad->tag_data[index].length);
 					if(!wad->tag_data[index].data)
 					{
-						alert_user(fatalError, strERRORS, outOfMemory, memory_error());
+						alert_out_of_memory();
 					}
 					wad->tag_data[index].offset= 0l;
 					

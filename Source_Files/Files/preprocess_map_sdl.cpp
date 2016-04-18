@@ -81,7 +81,7 @@ void get_default_external_resources_spec(FileSpecifier& file)
 void get_default_map_spec(FileSpecifier &file)
 {
 	if (!get_default_spec(file, filenameDEFAULT_MAP))
-		alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
+		alert_bad_extra_file();
 }
 
 void get_default_physics_spec(FileSpecifier &file)
@@ -93,7 +93,7 @@ void get_default_physics_spec(FileSpecifier &file)
 void get_default_shapes_spec(FileSpecifier &file)
 {
 	if (!get_default_spec(file, filenameSHAPES8))
-		alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
+		alert_bad_extra_file();
 }
 
 void get_default_sounds_spec(FileSpecifier &file)

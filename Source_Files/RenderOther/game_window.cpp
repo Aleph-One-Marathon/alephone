@@ -486,7 +486,7 @@ void ensure_HUD_buffer(void) {
 									  0x000000ff,
 									  0xff000000);
     if (HUD_Buffer == NULL)
-      alert_user(fatalError, strERRORS, outOfMemory, -1);
+      alert_out_of_memory();
   }
 }
 

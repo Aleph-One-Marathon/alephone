@@ -1923,29 +1923,29 @@ static void allocate_map_structure_for_map(
 	/* Extract points */
 	extract_type_from_wad(wad, POINT_TAG, &data_length);
 	endpoint_count= data_length/SIZEOF_world_point2d;
-	if(endpoint_count*SIZEOF_world_point2d!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x7074); // 'pt'
+	if(endpoint_count*SIZEOF_world_point2d!=data_length) alert_corrupted_map(0x7074); // 'pt'
 	
 	if(!endpoint_count)
 	{
 		extract_type_from_wad(wad, ENDPOINT_DATA_TAG, &data_length);
 		endpoint_count= data_length/SIZEOF_endpoint_data;
-		if(endpoint_count*SIZEOF_endpoint_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x6570); // 'ep'
+		if(endpoint_count*SIZEOF_endpoint_data!=data_length) alert_corrupted_map(0x6570); // 'ep'
 	}
 
 	/* Extract lines */
 	extract_type_from_wad(wad, LINE_TAG, &data_length);
 	line_count= data_length/SIZEOF_line_data;
-	if(line_count*SIZEOF_line_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x6c69); // 'li'
+	if(line_count*SIZEOF_line_data!=data_length) alert_corrupted_map(0x6c69); // 'li'
 
 	/* Sides.. */
 	extract_type_from_wad(wad, SIDE_TAG, &data_length);
 	side_count= data_length/SIZEOF_side_data;
-	if(side_count*SIZEOF_side_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x7369); // 'si'
+	if(side_count*SIZEOF_side_data!=data_length) alert_corrupted_map(0x7369); // 'si'
 
 	/* Extract polygons */
 	extract_type_from_wad(wad, POLYGON_TAG, &data_length);
 	polygon_count= data_length/SIZEOF_polygon_data;
-	if(polygon_count*SIZEOF_polygon_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x7369); // 'si'
+	if(polygon_count*SIZEOF_polygon_data!=data_length) alert_corrupted_map(0x7369); // 'si'
 
 	allocate_map_for_counts(polygon_count, side_count, endpoint_count, line_count);
 }

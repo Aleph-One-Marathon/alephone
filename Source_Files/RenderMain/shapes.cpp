@@ -1024,7 +1024,7 @@ void initialize_shape_handler()
 	get_default_shapes_spec(File);
 	open_shapes_file(File);
 	if (!ShapesFile.IsOpen() && !M1ShapesFile.IsOpen())
-		alert_user(fatalError, strERRORS, badExtraFileLocations, ShapesFile.GetError());
+		alert_bad_extra_file(ShapesFile.GetError());
 	else
 		atexit(shutdown_shape_handler);
 	
@@ -1428,7 +1428,7 @@ void load_collections(
 				{
 					if (shapes_file_version != M1_SHAPES_VERSION)
 					{
-						alert_user(fatalError, strERRORS, outOfMemory, -1);
+						alert_out_of_memory();
 					}
 				}
 //				OGL_LoadModelsImages(collection_index);

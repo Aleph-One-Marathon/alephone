@@ -1042,7 +1042,7 @@ void set_external_resources_images_file(FileSpecifier &file)
     // fail here, instead of above, if Images is missing
 	if ((!file.Exists() || !ExternalResourcesFile.open_file(file)) &&
         !ImagesFile.is_open())
-        alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
+        alert_bad_extra_file();
         
 }
 

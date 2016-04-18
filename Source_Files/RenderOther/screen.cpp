@@ -525,7 +525,7 @@ static void reallocate_world_pixels(int width, int height)
 	}
 
 	if (world_pixels == NULL)
-		alert_user(fatalError, strERRORS, outOfMemory, -1);
+		alert_out_of_memory();
 	else if (bit_depth == 8) {
 		SDL_Color colors[256];
 		build_sdl_color_table(world_color_table, colors);
@@ -542,7 +542,7 @@ static void reallocate_map_pixels(int width, int height)
 	}
 	Map_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, world_pixels->format->BitsPerPixel, world_pixels->format->Rmask, world_pixels->format->Gmask, world_pixels->format->Bmask, 0);
 	if (Map_Buffer == NULL)
-		alert_user(fatalError, strERRORS, outOfMemory, -1);
+		alert_out_of_memory();
 	if (map_is_translucent()) {
 		SDL_SetSurfaceAlphaMod(Map_Buffer, 128);
 		SDL_SetColorKey(Map_Buffer, SDL_TRUE, SDL_MapRGB(Map_Buffer->format, 0, 0, 0));

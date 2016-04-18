@@ -2415,7 +2415,7 @@ static void next_game_screen(
 		{
 			case _display_main_menu:
 				/* Whoops.  didn't get it. */
-				alert_user(fatalError, strERRORS, outOfMemory, 0);
+				alert_out_of_memory();
 				break;
 				
 			case _display_quit_screens:
