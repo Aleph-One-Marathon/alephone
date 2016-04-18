@@ -253,7 +253,7 @@ shape_descriptor AnimTxtr_Translate(shape_descriptor Texture)
 	
 	// All done:
 	CollCT = BUILD_COLLECTION(Collection,ColorTable);
-	Texture = BUILD_DESCRIPTOR(Collection,Frame);
+	Texture = BUILD_DESCRIPTOR(CollCT,Frame);
 	return Texture;
 }
 
