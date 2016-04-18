@@ -779,11 +779,12 @@ void parse_mml_opengl_model(const InfoTree& root)
 				else
 					actual_clut = SILHOUETTE_BITMAP_CLUTSPECIFIC + clut;
 			}
+			sdef.CLUT = actual_clut;
 			
 			bool found = false;
 			for (vector<OGL_SkinData>::iterator it = def.SkinData.begin(); it != def.SkinData.end(); ++it)
 			{
-				if (it->CLUT == clut)
+				if (it->CLUT == sdef.CLUT)
 				{
 					*it = sdef;
 					found = true;
