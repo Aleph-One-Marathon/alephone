@@ -6902,7 +6902,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0640;
+				LastUpgradeCheck = 0730;
 				TargetAttributes = {
 					27A6D4E31B9BF021003DA766 = {
 						SystemCapabilities = {
@@ -9017,6 +9017,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info-MAS.plist";
 				OTHER_CODE_SIGN_FLAGS = "--deep";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
 				PRODUCT_NAME = Marathon;
 				WRAPPER_EXTENSION = app;
 			};
@@ -9043,6 +9044,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info-MAS.plist";
 				OTHER_CODE_SIGN_FLAGS = "--deep";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
 				PRODUCT_NAME = Marathon;
 				WRAPPER_EXTENSION = app;
 			};
@@ -9069,6 +9071,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info-MAS.plist";
 				OTHER_CODE_SIGN_FLAGS = "--deep";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
 				PRODUCT_NAME = Marathon;
 				WRAPPER_EXTENSION = app;
 			};
@@ -9095,6 +9098,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info-MAS.plist";
 				OTHER_CODE_SIGN_FLAGS = "--deep";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon2;
 				PRODUCT_NAME = "Marathon 2";
 				WRAPPER_EXTENSION = app;
 			};
@@ -9121,6 +9125,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info-MAS.plist";
 				OTHER_CODE_SIGN_FLAGS = "--deep";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon2;
 				PRODUCT_NAME = "Marathon 2";
 				WRAPPER_EXTENSION = app;
 			};
@@ -9147,6 +9152,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info-MAS.plist";
 				OTHER_CODE_SIGN_FLAGS = "--deep";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon2;
 				PRODUCT_NAME = "Marathon 2";
 				WRAPPER_EXTENSION = app;
 			};
@@ -9173,6 +9179,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info-MAS.plist";
 				OTHER_CODE_SIGN_FLAGS = "--deep";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.MarathonInfinity;
 				PRODUCT_NAME = "Marathon Infinity";
 				WRAPPER_EXTENSION = app;
 			};
@@ -9199,6 +9206,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info-MAS.plist";
 				OTHER_CODE_SIGN_FLAGS = "--deep";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.MarathonInfinity;
 				PRODUCT_NAME = "Marathon Infinity";
 				WRAPPER_EXTENSION = app;
 			};
@@ -9225,6 +9233,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info-MAS.plist";
 				OTHER_CODE_SIGN_FLAGS = "--deep";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.MarathonInfinity;
 				PRODUCT_NAME = "Marathon Infinity";
 				WRAPPER_EXTENSION = app;
 			};
@@ -9245,6 +9254,7 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
 				PRODUCT_NAME = "Aleph One";
 				WRAPPER_EXTENSION = app;
 			};
@@ -9255,6 +9265,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Developer ID Application";
 				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(HOME)/Library/Frameworks",
 					/System/Library/Frameworks,
@@ -9299,6 +9310,7 @@
 				INFOPLIST_PREPROCESS = NO;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @executable_path/../Frameworks/SDL2_ttf.framework/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
 				STRIP_INSTALLED_PRODUCT = NO;
 			};
 			name = Development;
@@ -9318,6 +9330,7 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
 				PRODUCT_NAME = "Aleph One";
 				WRAPPER_EXTENSION = app;
 			};
@@ -9380,6 +9393,7 @@
 		AE3B839C0E04C8CA00FD963D /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
 				PRODUCT_NAME = AlephOne.dmg;
 			};
 			name = "Deployment (Universal)";
@@ -9387,6 +9401,7 @@
 		AE3B839D0E04C8CA00FD963D /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
 				PRODUCT_NAME = AlephOne.dmg;
 			};
 			name = "Deployment (Native)";
@@ -9394,6 +9409,7 @@
 		AE3B839E0E04C8CA00FD963D /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
 				PRODUCT_NAME = AlephOne.dmg;
 			};
 			name = Development;
@@ -9415,6 +9431,7 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon2;
 				PRODUCT_NAME = "Marathon 2";
 				WRAPPER_EXTENSION = app;
 			};
@@ -9437,6 +9454,7 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon2;
 				PRODUCT_NAME = "Marathon 2";
 				WRAPPER_EXTENSION = app;
 			};
@@ -9459,6 +9477,7 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon2;
 				PRODUCT_NAME = "Marathon 2";
 				WRAPPER_EXTENSION = app;
 			};
@@ -9479,6 +9498,7 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
 				PRODUCT_NAME = "Aleph One";
 				WRAPPER_EXTENSION = app;
 			};
@@ -9555,6 +9575,7 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.MarathonInfinity;
 				PRODUCT_NAME = "Marathon Infinity";
 				WRAPPER_EXTENSION = app;
 			};
@@ -9577,6 +9598,7 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.MarathonInfinity;
 				PRODUCT_NAME = "Marathon Infinity";
 				WRAPPER_EXTENSION = app;
 			};
@@ -9599,6 +9621,7 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.MarathonInfinity;
 				PRODUCT_NAME = "Marathon Infinity";
 				WRAPPER_EXTENSION = app;
 			};
@@ -9652,6 +9675,7 @@
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
 				PRODUCT_NAME = Marathon;
 				WRAPPER_EXTENSION = app;
 			};
@@ -9705,6 +9729,7 @@
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
 				PRODUCT_NAME = Marathon;
 				WRAPPER_EXTENSION = app;
 			};
@@ -9758,6 +9783,7 @@
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
 				PRODUCT_NAME = Marathon;
 				WRAPPER_EXTENSION = app;
 			};

@@ -242,21 +242,17 @@
 	<key>CFBundleIconFile</key>
 	<string>AlephOne.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.bungie.source.AlephOne</string>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>Aleph One</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
-	<key>CFBundleSignature</key>
-	<string>26.A</string>
-	<key>NSMainNibFile</key>
-	<string>MainMenu</string>
-	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
 	<key>CFBundleShortVersionString</key>
 	<string>A1_DISPLAY_VERSION</string>
+	<key>CFBundleSignature</key>
+	<string>26.A</string>
 	<key>CFBundleVersion</key>
 	<string>A1_DATE_VERSION</string>
 	<key>LSEnvironment</key>
@@ -275,5 +271,9 @@
 		<key>x86_64</key>
 		<string>10.6.0</string>
 	</dict>
+	<key>NSMainNibFile</key>
+	<string>MainMenu</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
 </dict>
 </plist>

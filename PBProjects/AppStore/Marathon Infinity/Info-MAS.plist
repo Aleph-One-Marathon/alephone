@@ -242,7 +242,7 @@
 	<key>CFBundleIconFile</key>
 	<string>Marathon Infinity.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.bungie.source.MarathonInfinity</string>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -259,6 +259,11 @@
 	<string>A1_DATE_VERSION</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.action-games</string>
+	<key>LSEnvironment</key>
+	<dict>
+		<key>ALEPHONE_FINDER_LAUNCH</key>
+		<string>1</string>
+	</dict>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.7.0</string>
 	<key>NSMainNibFile</key>
@@ -271,10 +276,5 @@
 	<array/>
 	<key>UTImportedTypeDeclarations</key>
 	<array/>
-	<key>LSEnvironment</key>
-	<dict>
-		<key>ALEPHONE_FINDER_LAUNCH</key>
-		<string>1</string>
-	</dict>
 </dict>
 </plist>
