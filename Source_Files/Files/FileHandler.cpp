@@ -1263,16 +1263,16 @@ public:
 			switch (type)
 			{
 			case _typecode_savegame:
-				prompt = "SAVE GAME";
+				m_prompt = "SAVE GAME";
 				break;
 			case _typecode_film:
-				prompt = "SAVE FILM";
+				m_prompt = "SAVE FILM";
 				break;
 			case _typecode_movie:
-				prompt = "EXPORT FILM";
+				m_prompt = "EXPORT FILM";
 				break;
 			default:
-				prompt = "SAVE FILE";
+				m_prompt = "SAVE FILE";
 				break;
 			}
 		}
