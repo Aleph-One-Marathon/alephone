@@ -476,7 +476,7 @@ static void update_fps_display(SDL_Surface *s)
 		if (frame_count<FRAME_SAMPLE_SIZE)
 		{
 			frame_count+= 1;
-			strcpy(fps, "--");
+			strncpy(fps, "--", sizeof(fps));
 		}
 		else
 		{
@@ -780,7 +780,7 @@ static void DisplayScores(SDL_Surface *s)
 		SDL_Color color;
 		_get_interface_color(PLAYER_COLOR_BASE_INDEX + player->color, &color);
 
-		strcpy(temporary, player->name);
+		strncpy(temporary, player->name, 256);
 		temporary[kNameWidth + 1] = '\0';
 		DisplayText(XName, Y, temporary, color.r, color.g, color.b);
 
@@ -792,11 +792,11 @@ static void DisplayScores(SDL_Surface *s)
 
 		if (stats.latency == NetworkStats::invalid)
 		{
-			strcpy(temporary, " ");
+			strncpy(temporary, " ", 256);
 		}
 		else if (stats.latency == NetworkStats::disconnected)
 		{
-			strcpy(temporary, "DC");
+			strncpy(temporary, "DC", 256);
 		}
 		else
 		{
@@ -817,11 +817,11 @@ static void DisplayScores(SDL_Surface *s)
 		
 		if (stats.jitter == NetworkStats::invalid)
 		{
-			strcpy(temporary, " ");
+			strncpy(temporary, " ", 256);
 		}
 		else if (stats.jitter == NetworkStats::disconnected)
 		{
-			strcpy(temporary, "DC");
+			strncpy(temporary, "DC", 256);
 		}
 		else
 		{

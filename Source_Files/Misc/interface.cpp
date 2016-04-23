@@ -517,7 +517,7 @@ static void construct_single_player_start(player_start_data* outStartArray, shor
         outStartArray[0].team = player_preferences->color;
         outStartArray[0].color = player_preferences->color;
         outStartArray[0].identifier = 0;
-        strcpy(outStartArray[0].name, player_preferences->name);
+        strncpy(outStartArray[0].name, player_preferences->name, MAXIMUM_PLAYER_START_NAME_LENGTH+1);
 				
         set_player_start_doesnt_auto_recenter_status(&outStartArray[0], dont_auto_recenter());
         set_player_start_doesnt_auto_switch_weapons_status(&outStartArray[0], dont_switch_to_new_weapon());
@@ -539,7 +539,7 @@ static void construct_multiplayer_starts(player_start_data* outStartArray, short
                 outStartArray[player_index].team = player_information->team;
                 outStartArray[player_index].color= player_information->color;
                 outStartArray[player_index].identifier = NetGetPlayerIdentifier(player_index);
-                strcpy(outStartArray[player_index].name, player_information->name);
+                strncpy(outStartArray[player_index].name, player_information->name, MAXIMUM_PLAYER_START_NAME_LENGTH+1);
         }
 }
 #endif // !defined(DISABLE_NETWORKING)
@@ -602,7 +602,7 @@ void match_starts_with_existing_players(player_start_data* ioStartArray, short* 
                         ioStartArray[*ioStartCount].team = thePlayer->team;
                         ioStartArray[*ioStartCount].color = thePlayer->color;
                         ioStartArray[*ioStartCount].identifier = NONE;
-                        strcpy(ioStartArray[*ioStartCount].name, thePlayer->name);
+                        strncpy(ioStartArray[*ioStartCount].name, thePlayer->name, MAXIMUM_PLAYER_START_NAME_LENGTH+1);
                         startAssignedToPlayer[p] = *ioStartCount;
                         startAssigned[*ioStartCount] = true;
                         (*ioStartCount)++;
@@ -654,7 +654,7 @@ static void synchronize_players_with_starts(const player_start_data* inStartArra
                         thePlayer->team = inStartArray[s].team;
                         thePlayer->color = inStartArray[s].color;
                         thePlayer->identifier = player_identifier_value(inStartArray[s].identifier);
-                        strcpy(thePlayer->name, inStartArray[s].name);
+                        strncpy(thePlayer->name, inStartArray[s].name, MAXIMUM_PLAYER_NAME_LENGTH+1);
 
                         SET_PLAYER_DOESNT_AUTO_RECENTER_STATUS(thePlayer,
                             player_identifier_doesnt_auto_recenter(inStartArray[s].identifier));
@@ -672,7 +672,7 @@ static void synchronize_players_with_starts(const player_start_data* inStartArra
                 int theIndex = new_player(inStartArray[s].team, inStartArray[s].color, inStartArray[s].identifier);
                 assert(theIndex == s);
                 player_data* thePlayer = get_player_data(theIndex);
-                strcpy(thePlayer->name, inStartArray[s].name);
+                strncpy(thePlayer->name, inStartArray[s].name, MAXIMUM_PLAYER_NAME_LENGTH+1);
         }
 }
 

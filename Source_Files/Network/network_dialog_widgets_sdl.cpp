@@ -165,7 +165,7 @@ w_found_players::draw_item(vector<prospective_joiner_info>::const_iterator i, SD
 
 	strncpy(theNameBuffer, (*i).name, SSLP_MAX_NAME_LENGTH - 1);
 	if ((*i).gathering) {
-	  strcat(theNameBuffer, " (gathering)");
+	  strncat(theNameBuffer, " (gathering)", 12);
 	}
 	
 	int computed_x = x + (width - text_width(theNameBuffer, font, style)) / 2;
@@ -710,7 +710,7 @@ w_players_in_game2::draw_carnage_totals(SDL_Surface* s) const {
         // Draw carnage score for player/team (list -N for N suicides)
         int	thePlayerCarnageScore = (selected_player == i) ? -net_rankings[i].kills : net_rankings[i].kills - net_rankings[i].deaths;
         if(thePlayerCarnageScore == 0)
-            strcpy(temporary, "0");
+            strncpy(temporary, "0", 256);
         else
             sprintf(temporary, "%+d", thePlayerCarnageScore);
         
@@ -958,7 +958,7 @@ w_entry_point_selector::validateEntryPoint() {
 
     if(mEntryPoints.size() <= 0) {
         mEntryPoint.level_number = NONE;
-        strcpy(mEntryPoint.level_name, "(no valid options)");
+        strncpy(mEntryPoint.level_name, "(no valid options)", 66);
         mCurrentIndex = NONE;
     }
     else {

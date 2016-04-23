@@ -393,7 +393,7 @@ bool Movie::Setup()
     if (success)
     {
         av->fmt_ctx->oformat = fmt;
-        strcpy(av->fmt_ctx->filename, moviefile.c_str());
+        strncpy(av->fmt_ctx->filename, moviefile.c_str(), 1024);
         success = (0 <= avio_open(&av->fmt_ctx->pb, av->fmt_ctx->filename, AVIO_FLAG_WRITE));
         if (!success) err_msg = "Could not open movie file for writing";
     }

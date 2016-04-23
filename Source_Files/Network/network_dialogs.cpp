@@ -220,23 +220,23 @@ bool network_gather(bool inResumingGame)
 						char message[1024];
 						if (e.code() == MetaserverClient::LoginDeniedException::BadUserOrPassword)
 						{
-							strcpy(message, "Login denied: bad username or password. Your game could not be advertised on the Internet.");
+							strncpy(message, "Login denied: bad username or password. Your game could not be advertised on the Internet.", 1024);
 						}
 						else if (e.code() == MetaserverClient::LoginDeniedException::UserAlreadyLoggedIn)
 						{
-							strcpy(message, "Login denied: that user is already logged in. Your game could not be advertised on the Internet.");
+							strncpy(message, "Login denied: that user is already logged in. Your game could not be advertised on the Internet.", 1024);
 						}
 						else if (e.code() == MetaserverClient::LoginDeniedException::AccountAlreadyLoggedIn)
 						{
-							strcpy(message, "Login denied: that account is already logged in. Your game could not be advertised on the Internet.");
+							strncpy(message, "Login denied: that account is already logged in. Your game could not be advertised on the Internet.", 1024);
 						}
 						else if (e.code() == MetaserverClient::LoginDeniedException::RoomFull)
 						{
-							strcpy(message, "Login denied: room full! Your game could not be advertised on the Internet.");
+							strncpy(message, "Login denied: room full! Your game could not be advertised on the Internet.", 1024);
 						}
 						else if (e.code() == MetaserverClient::LoginDeniedException::AccountLocked)
 						{
-							strcpy(message, "Login denied: your account is locked. Your game could not be advertised on the Internet.");
+							strncpy(message, "Login denied: your account is locked. Your game could not be advertised on the Internet.", 1024);
 						}
 						else
 						{
@@ -776,23 +776,23 @@ void JoinDialog::getJoinAddressFromMetaserver ()
 		char message[1024];
 		if (e.code() == MetaserverClient::LoginDeniedException::BadUserOrPassword)
 		{
-			strcpy(message, "Login denied: bad username or password.");
+			strncpy(message, "Login denied: bad username or password.", 1024);
 		}
 		else if (e.code() == MetaserverClient::LoginDeniedException::UserAlreadyLoggedIn)
 		{
-			strcpy(message, "Login denied: that user is already logged in.");
+			strncpy(message, "Login denied: that user is already logged in.", 1024);
 		}
 		else if (e.code() == MetaserverClient::LoginDeniedException::AccountAlreadyLoggedIn)
 		{
-			strcpy(message, "Login denied: that account is already logged in.");
+			strncpy(message, "Login denied: that account is already logged in.", 1024);
 		}
 		else if (e.code() == MetaserverClient::LoginDeniedException::RoomFull)
 		{
-			strcpy(message, "Login denied: room is full!?");
+			strncpy(message, "Login denied: room is full!?", 1024);
 		}
 		else if (e.code() == MetaserverClient::LoginDeniedException::AccountLocked)
 		{
-			strcpy(message, "Login denied: your account is locked.");
+			strncpy(message, "Login denied: your account is locked.", 1024);
 		}
 		else
 		{
@@ -1213,7 +1213,7 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 		// migrate widget settings to preferences structure
 		binders.migrate_all_first_to_second ();
 	
-		strcpy (player_information->name, player_preferences->name);
+		strncpy (player_information->name, player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH+1);
 		player_information->color = player_preferences->color;
 		player_information->team = player_preferences->team;
 
@@ -1242,7 +1242,7 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 		entry_point entry;
 		menu_index_to_level_entry (active_network_preferences->entry_point, NONE, &entry);
 		game_information->level_number = entry.level_number;
-		strcpy (game_information->level_name, entry.level_name);
+		strncpy (game_information->level_name, entry.level_name, MAX_LEVEL_NAME_LENGTH+1);
 		game_information->parent_checksum = read_wad_file_checksum(get_map_file());
 		game_information->difficulty_level = active_network_preferences->difficulty_level;
 		game_information->allow_mic = active_network_preferences->allow_microphone;
@@ -1433,7 +1433,7 @@ void SetupNetgameDialog::chooseMapHit ()
 	FileSpecifier mapFile = m_mapWidget->get_file ();
 
 	environment_preferences->map_checksum = read_wad_file_checksum (mapFile);
-	strcpy(environment_preferences->map_file, mapFile.GetPath());
+	strncpy(environment_preferences->map_file, mapFile.GetPath(), 256);
 	load_environment_from_preferences();
 		
 	m_levelWidget->set_labels (make_entry_vector (get_entry_point_flags_for_game_type (m_old_game_type)));
@@ -2039,7 +2039,7 @@ void update_carnage_summary(
 			getcstr(suicide_string_format, strNET_STATS_STRINGS, strFRIENDLY_FIRE_STRING);
 		else
 			getcstr(suicide_string_format, strNET_STATS_STRINGS, strINCLUDING_SUICIDES_STRING);
-		strcat(death_string_format, suicide_string_format);
+		strncat(death_string_format, suicide_string_format, 65-strlen(death_string_format)-1);
 		csprintf(temporary, death_string_format, total_deaths, dpm, num_suicides);
 	}
 	else

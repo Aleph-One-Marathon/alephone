@@ -131,7 +131,7 @@ w_env_select(const char *path, const char *m, Typecode t, dialog *d)
 		item = p;
 		item.GetName(item_name);
 		std::string filename = item_name;
-		strcpy(item_name, FileSpecifier::HideExtension(filename).c_str());
+		strncpy(item_name, FileSpecifier::HideExtension(filename).c_str(), 256);
 		set_selection(item_name);
 	}
 

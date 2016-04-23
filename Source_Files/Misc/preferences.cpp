@@ -2235,28 +2235,28 @@ static void environment_dialog(void *arg)
 #ifndef MAC_APP_STORE
 		const char *path = map_w->get_path();
 		if (strcmp(path, environment_preferences->map_file)) {
-			strcpy(environment_preferences->map_file, path);
+			strncpy(environment_preferences->map_file, path, 256);
 			environment_preferences->map_checksum = read_wad_file_checksum(map_w->get_file_specifier());
 			changed = true;
 		}
 
 		path = physics_w->get_path();
 		if (strcmp(path, environment_preferences->physics_file)) {
-			strcpy(environment_preferences->physics_file, path);
+			strncpy(environment_preferences->physics_file, path, 256);
 			environment_preferences->physics_checksum = read_wad_file_checksum(physics_w->get_file_specifier());
 			changed = true;
 		}
 
 		path = shapes_w->get_path();
 		if (strcmp(path, environment_preferences->shapes_file)) {
-			strcpy(environment_preferences->shapes_file, path);
+			strncpy(environment_preferences->shapes_file, path, 256);
 			environment_preferences->shapes_mod_date = shapes_w->get_file_specifier().GetDate();
 			changed = true;
 		}
 
 		path = sounds_w->get_path();
 		if (strcmp(path, environment_preferences->sounds_file)) {
-			strcpy(environment_preferences->sounds_file, path);
+			strncpy(environment_preferences->sounds_file, path, 256);
 			environment_preferences->sounds_mod_date = sounds_w->get_file_specifier().GetDate();
 			changed = true;
 		}
@@ -2264,7 +2264,7 @@ static void environment_dialog(void *arg)
 		path = resources_w->get_path();
 		if (strcmp(path, environment_preferences->resources_file) != 0) 
 		{
-			strcpy(environment_preferences->resources_file, path);
+			strncpy(environment_preferences->resources_file, path, 256);
 			changed = true;
 		}
 		
@@ -2277,7 +2277,7 @@ static void environment_dialog(void *arg)
 		
 		path = solo_lua_w->get_file().GetPath();
 		if (strcmp(path, environment_preferences->solo_lua_file)) {
-			strcpy(environment_preferences->solo_lua_file, path);
+			strncpy(environment_preferences->solo_lua_file, path, 256);
 			changed = true;
 		}
 
@@ -2290,7 +2290,7 @@ static void environment_dialog(void *arg)
 		
 		path = replay_net_lua_w->get_file().GetPath();
 		if (strcmp(path, network_preferences->netscript_file)) {
-			strcpy(network_preferences->netscript_file, path);
+			strncpy(network_preferences->netscript_file, path, 256);
 			changed = true;
 		}
 #endif
@@ -3018,8 +3018,8 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->attempt_upnp = false;
 	preferences->check_for_updates = true;
 	preferences->verify_https = false;
-	strcpy(preferences->metaserver_login, "guest");
-	memset(preferences->metaserver_password, 0, 16);
+	strncpy(preferences->metaserver_login, "guest", preferences->kMetaserverLoginLength);
+	memset(preferences->metaserver_password, 0, preferences->kMetaserverLoginLength);
 	preferences->mute_metaserver_guests = false;
 	preferences->use_custom_metaserver_colors = false;
 	preferences->metaserver_colors[0] = get_interface_color(PLAYER_COLOR_BASE_INDEX);
@@ -3033,7 +3033,7 @@ static void default_player_preferences(player_preferences_data *preferences)
 	obj_clear(*preferences);
 
 	preferences->difficulty_level= 2;
-	strcpy(preferences->name, get_name_from_system().c_str());
+	strncpy(preferences->name, get_name_from_system().c_str(), PREFERENCES_NAME_LENGTH+1);
 	
 	// LP additions for new fields:
 	

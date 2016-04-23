@@ -263,10 +263,7 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 			char theKey[kKeyLength];
 			char thePasswordCopy[kKeyLength];
 			memset(thePasswordCopy, 0x23, sizeof(thePasswordCopy));
-			if (userPassword.size() < kKeyLength)
-				strcpy(reinterpret_cast<char*>(thePasswordCopy), userPassword.c_str());
-			else 
-				strncpy(reinterpret_cast<char*>(thePasswordCopy), userPassword.c_str(), kKeyLength);
+			strncpy(reinterpret_cast<char*>(thePasswordCopy), userPassword.c_str(), kKeyLength);
 
 			if (theSaltMessage->encryptionType() == SaltMessage::kPlaintextEncryption) 
 			{

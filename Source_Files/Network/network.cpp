@@ -520,7 +520,7 @@ void Client::handleJoinerInfoMessage(JoinerInfoMessage* joinerInfoMessage, Commu
 {
   if (netState == netGathering) {
     if (joinerInfoMessage->version() == kNetworkSetupProtocolID) {
-      strcpy(name, joinerInfoMessage->info()->name);
+      strncpy(name, joinerInfoMessage->info()->name, MAX_NET_PLAYER_NAME_LENGTH);
 
       int16 stream_id = getStreamIdFromChannel(channel);
       client_chat_info[stream_id] = new ClientChatInfo;
@@ -750,7 +750,7 @@ static void handleHelloMessage(HelloMessage* helloMessage, CommunicationsChannel
 		if (helloMessage->version() == kNetworkSetupProtocolID) {
 			prospective_joiner_info my_info;
       
-			strcpy(my_info.name, player_preferences->name);
+			strncpy(my_info.name, player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH);
 			my_info.color = player_preferences->color;
 			my_info.team = player_preferences->team;
 
@@ -2308,7 +2308,7 @@ bool NetCheckForNewJoiner (prospective_joiner_info &info)
 	while (it != connections_to_clients.end()) {
 		if (it->second->state == Client::_connected_but_not_yet_shown) {
 			info.stream_id = it->first;
-			strcpy(info.name, it->second->name);
+			strncpy(info.name, it->second->name, MAX_NET_PLAYER_NAME_LENGTH);
 			it->second->state = Client::_connected;
 			info.gathering = false;
 			return true;

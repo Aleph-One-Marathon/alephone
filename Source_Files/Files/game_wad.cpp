@@ -504,7 +504,7 @@ bool new_game(
 
 			/* Now copy in the name of the player.. */
 			assert(strlen(player_start_information[i].name)<=MAXIMUM_PLAYER_NAME_LENGTH);
-			strcpy(players[i].name, player_start_information[i].name);
+			strncpy(players[i].name, player_start_information[i].name, MAXIMUM_PLAYER_NAME_LENGTH+1);
 		}
 	
 #if !defined(DISABLE_NETWORKING)
@@ -584,7 +584,7 @@ bool get_indexed_entry_point(
 			{
 				/* This one is valid! */
 				entry_point->level_number= actual_index;
-				strcpy(entry_point->level_name, directory.level_name);
+				strncpy(entry_point->level_name, directory.level_name, 66);
 			
 				*index= actual_index+1;
 				success= true;
@@ -630,7 +630,7 @@ bool get_indexed_entry_point(
 					/* This one is valid! */
 					entry_point->level_number= actual_index;
 					assert(strlen(map_info.level_name)<LEVEL_NAME_LENGTH);
-					strcpy(entry_point->level_name, map_info.level_name);
+					strncpy(entry_point->level_name, map_info.level_name, 66);
 		
 					*index= actual_index+1;
 					success= true;
@@ -680,7 +680,7 @@ bool get_entry_points(vector<entry_point> &vec, int32 type)
 				// This one is valid
 				entry_point point;
 				point.level_number = i;
-				strcpy(point.level_name, directory.level_name);
+				strncpy(point.level_name, directory.level_name, 66);
 				vec.push_back(point);
 				success = true;
 			}
@@ -723,7 +723,7 @@ bool get_entry_points(vector<entry_point> &vec, int32 type)
 				entry_point point;
 				point.level_number = i;
 				assert(strlen(map_info.level_name) < LEVEL_NAME_LENGTH);
-				strcpy(point.level_name, map_info.level_name);
+				strncpy(point.level_name, map_info.level_name, 66);
 				vec.push_back(point);
 				success = true;
 			}
