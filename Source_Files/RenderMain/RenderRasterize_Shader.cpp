@@ -782,6 +782,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 			flare = -1;
 			s = Shader::get(renderStep == kGlow ? Shader::S_InvincibleBloom : Shader::S_Invincible);
 			s->enable();
+			break;
 		case _tinted_transfer:
 			flare = -1;
 			s = Shader::get(renderStep == kGlow ? Shader::S_InvisibleBloom : Shader::S_Invisible);
