@@ -3222,8 +3222,6 @@ static void UpdateIdleAnimation(
 	
 	// Code cribbed from animate_object() in map.cpp
 	
-	short animation_type= _obj_not_animated;
-	
 	/* if this animation has frames, animate it */		
 	if (animation->frames_per_view>=1 && animation->number_of_views!=_unanimated && !(definition->flags & _weapon_is_marathon_1))
 	{
@@ -3249,17 +3247,14 @@ static void UpdateIdleAnimation(
 			// but this time, added detection of cases
 			// keyframe = 0 and keyframe = [frames per view]
 			// Inverted the order yet again (!) to supporess Hunter death bug
-			animation_type|= _obj_animated;
 			if (frame>=animation->frames_per_view)
 			{
 				frame= animation->loop_frame;
-				animation_type|= _obj_last_frame_animated;
 				if (animation->last_frame_sound!=NONE) play_weapon_sound(player_index, animation->last_frame_sound, FIXED_ONE);
 			}
 			short offset_frame = frame + animation->frames_per_view; // LP addition
 			if (frame==animation->key_frame || offset_frame==animation->key_frame)
 			{
-				animation_type|= _obj_keyframe_started;
 				if (animation->key_frame_sound!=NONE) play_weapon_sound(player_index, animation->first_frame_sound, FIXED_ONE);
 			}
 		}

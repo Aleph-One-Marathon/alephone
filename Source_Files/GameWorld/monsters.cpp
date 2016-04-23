@@ -1250,15 +1250,6 @@ void monster_moved(
 			else
 			{
 				struct monster_definition *definition= get_monster_definition(monster->type);
-				short intelligence= definition->intelligence;
-				
-				switch (dynamic_world->game_information.difficulty_level)
-				{
-					case _wuss_level: intelligence= intelligence>>2; break;
-					case _easy_level: intelligence= intelligence>>1; break;
-					case _major_damage_level: intelligence= 2*intelligence; break;
-					case _total_carnage_level: intelligence= 4*intelligence; break;
-				}
 				
 				/* we can’t see our target: if this is first time, change from _monster_locked
 					to _monster_losing_lock, if this isn’t the first time and our target has

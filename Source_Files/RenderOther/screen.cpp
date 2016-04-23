@@ -1379,7 +1379,6 @@ void render_screen(short ticks_elapsed)
 		if (update_full_screen || Screen::instance()->lua_hud())
 		{
 			MainScreenUpdateRect(0, 0, 0, 0);
-			update_full_screen = false;
 		}
 		else if ((!world_view->overhead_map_active || MapIsTranslucent) &&
 				 !world_view->terminal_mode_active)

@@ -2259,8 +2259,6 @@ void turn_object_to_shit( /* garbage that is, garbage */
 			random_garbage_object_index= object_index;
 			garbage_objects_in_polygon+= 1;
 		}
-		
-		object_index= object->next_object;
 	}
 	
 	if (garbage_objects_in_polygon> (graphics_preferences->double_corpse_limit ? MAXIMUM_GARBAGE_OBJECTS_PER_POLYGON * 2 : MAXIMUM_GARBAGE_OBJECTS_PER_POLYGON))
