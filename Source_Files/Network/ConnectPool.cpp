@@ -62,7 +62,7 @@ int NonblockingConnect::connect_thread(void *p)
 {
 	NonblockingConnect *nbc = static_cast<NonblockingConnect *>(p);
 	return nbc->Thread();
-};
+}
 
 int NonblockingConnect::Thread()
 {
@@ -90,7 +90,7 @@ int NonblockingConnect::Thread()
 		m_status = ConnectFailed;
 		return 2;
 	}
-};
+}
 
 ConnectPool::ConnectPool()
 {

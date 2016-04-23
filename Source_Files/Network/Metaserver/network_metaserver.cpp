@@ -179,7 +179,7 @@ MetaserverClient::handleGameListMessage(GameListMessage* inMessage, Communicatio
 	if(m_notificationAdapter) {
 		m_notificationAdapter->gamesInRoomChanged(inMessage->entries());
 	}
-};
+}
 
 
 MetaserverClient::MetaserverClient()

@@ -212,7 +212,7 @@ int Lua_Camera_Path_Angles_New(lua_State *L)
 	lua_cameras[camera_index].path.path_angles[angle_index].pitch = static_cast<short>(pitch/AngleConvert);
 	lua_cameras[camera_index].path.path_angles[angle_index].delta_time = time;
 	return 0;
-};
+}
 
 const luaL_Reg Lua_Camera_Path_Angles_Get[] = {
 	{"new", L_TableFunction<Lua_Camera_Path_Angles_New>},

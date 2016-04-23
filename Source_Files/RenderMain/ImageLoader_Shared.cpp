@@ -43,7 +43,7 @@
 #endif
 
 #include <cmath>
-static inline float log2(int x) { return std::log((float) x) / std::log(2.0); };
+static inline float log2(int x) { return std::log((float) x) / std::log(2.0); }
 
 #include <stdlib.h>
 

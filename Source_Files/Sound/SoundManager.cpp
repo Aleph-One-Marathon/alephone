@@ -714,7 +714,7 @@ bool SoundManager::Parameters::Verify()
 SoundManager::SoundManager() : active(false), initialized(false), sounds(new SoundMemoryManager(10 << 20)) 
 { 
 	channels.resize(MAXIMUM_SOUND_CHANNELS + MAXIMUM_AMBIENT_SOUND_CHANNELS);
-};
+}
 
 void SoundManager::SetStatus(bool active)
 {

@@ -1118,7 +1118,7 @@ InGameChatCallbacks *InGameChatCallbacks::instance() {
     m_instance = new InGameChatCallbacks();
   }
   return m_instance;
-};
+}
 
 std::string InGameChatCallbacks::prompt() {
   return (std::string(player_preferences->name) + ":");

@@ -2616,7 +2616,7 @@ bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool& IsBlende
 	}
 	
 	return IsGlowmappable;
-};
+}
 
 
 void SetupStaticMode(int16 transfer_data)

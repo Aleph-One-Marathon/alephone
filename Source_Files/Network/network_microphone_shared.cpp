@@ -83,7 +83,7 @@ bool announce_microphone_capture_format(uint32 inSamplesPerSecond, bool inStereo
 	sCaptureBytesPerPacket = (uint32) ((rate * kNetworkAudioSamplesPerPacket) >> 16) * sNumberOfBytesPerSample;
 
 	return true;
-};
+}
 
 
 int32
