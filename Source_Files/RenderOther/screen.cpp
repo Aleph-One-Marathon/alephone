@@ -741,6 +741,24 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 //		SDL_SetVideoMode(desktop_width, desktop_height, depth, flags);
 //		awful_retina_hack = false;
 //	}
+		if (nogl || screen_mode.acceleration == _no_acceleration) {
+			switch (graphics_preferences->software_sdl_driver) {
+				case _sw_driver_none:
+					SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
+					break;
+				case _sw_driver_opengl:
+					SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+					break;
+				case _sw_driver_direct3d:
+					SDL_SetHint(SDL_HINT_RENDER_DRIVER, "direct3d");
+					break;
+				case _sw_driver_default:
+				default:
+					SDL_SetHint(SDL_HINT_RENDER_DRIVER, "");
+					break;
+			}
+		}
+		
 		if (main_surface != NULL) {
 			SDL_FreeSurface(main_surface);
 			main_surface = NULL;

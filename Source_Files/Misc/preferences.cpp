@@ -967,6 +967,10 @@ static const char *sw_alpha_blending_labels[4] = {
 	"Off", "Fast", "Nice", NULL
 };
 
+static const char *sw_sdl_driver_labels[5] = {
+	"Default", "None", "Direct3D", "OpenGL", NULL
+};
+
 static const char *gamma_labels[9] = {
 	"Darkest", "Darker", "Dark", "Normal", "Light", "Really Light", "Even Lighter", "Lightest", NULL
 };
@@ -1034,6 +1038,10 @@ static void software_rendering_options_dialog(void* arg)
 	table->dual_add(sw_alpha_blending_w->label("Transparent Liquids"), d);
 	table->dual_add(sw_alpha_blending_w, d);
 
+	w_select *sw_driver_w = new w_select(graphics_preferences->software_sdl_driver, sw_sdl_driver_labels);
+	table->dual_add(sw_driver_w->label("Acceleration"), d);
+	table->dual_add(sw_driver_w, d);
+	
 	placer->add(table, true);
 
 	placer->add(new w_spacer(), true);
@@ -1073,6 +1081,12 @@ static void software_rendering_options_dialog(void* arg)
 			changed = true;
 		}
 
+		if (sw_driver_w->get_selection() != graphics_preferences->software_sdl_driver)
+		{
+			graphics_preferences->software_sdl_driver = sw_driver_w->get_selection();
+			changed = true;
+		}
+		
 		if (changed)
 			write_preferences();
 	}
@@ -2553,6 +2567,7 @@ InfoTree graphics_preferences_tree()
 	root.put_attr("scmode_fix_h_not_v", graphics_preferences->screen_mode.fix_h_not_v);
 	root.put_attr("ogl_flags", graphics_preferences->OGL_Configure.Flags);
 	root.put_attr("software_alpha_blending", graphics_preferences->software_alpha_blending);
+	root.put_attr("software_sdl_driver", graphics_preferences->software_sdl_driver);
 	root.put_attr("anisotropy_level", graphics_preferences->OGL_Configure.AnisotropyLevel);
 	root.put_attr("multisamples", graphics_preferences->OGL_Configure.Multisamples);
 	root.put_attr("geforce_fix", graphics_preferences->OGL_Configure.GeForceFix);
@@ -2977,6 +2992,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->hog_the_cpu = false;
 
 	preferences->software_alpha_blending = _sw_alpha_off;
+	preferences->software_sdl_driver = _sw_driver_default;
 
 	preferences->movie_export_video_quality = 50;
 	preferences->movie_export_audio_quality = 50;
@@ -3460,6 +3476,7 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr("scmode_gamma", graphics_preferences->screen_mode.gamma_level);
 	root.read_attr("ogl_flags", graphics_preferences->OGL_Configure.Flags);
 	root.read_attr("software_alpha_blending", graphics_preferences->software_alpha_blending);
+	root.read_attr("software_sdl_driver", graphics_preferences->software_sdl_driver);
 	root.read_attr("anisotropy_level", graphics_preferences->OGL_Configure.AnisotropyLevel);
 	root.read_attr("multisamples", graphics_preferences->OGL_Configure.Multisamples);
 	root.read_attr("geforce_fix", graphics_preferences->OGL_Configure.GeForceFix);

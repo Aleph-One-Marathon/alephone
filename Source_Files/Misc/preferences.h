@@ -70,6 +70,12 @@ enum {
 	_sw_alpha_fast,
 	_sw_alpha_nice,
 };
+enum {
+	_sw_driver_default,
+	_sw_driver_none,
+	_sw_driver_direct3d,
+	_sw_driver_opengl,
+};
 
 struct graphics_preferences_data
 {
@@ -80,6 +86,7 @@ struct graphics_preferences_data
 	bool double_corpse_limit;
 
 	int16 software_alpha_blending;
+	int16 software_sdl_driver;
 
 	bool hog_the_cpu;
 
