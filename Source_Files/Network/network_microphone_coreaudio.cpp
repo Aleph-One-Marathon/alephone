@@ -20,7 +20,6 @@
 
  */
 
-#include <Carbon/Carbon.h>
 #include <CoreAudio/CoreAudio.h>
 #include <AudioUnit/AudioUnit.h>
 
@@ -74,17 +73,17 @@ OSErr open_network_microphone()
 	OSStatus err = noErr;
 
 	// find an AudioOutputUnit (for input)
-	Component component;
-	ComponentDescription description;
+	AudioComponent component;
+	AudioComponentDescription description;
 	
 	description.componentType = kAudioUnitType_Output;
 	description.componentSubType = kAudioUnitSubType_HALOutput;
 	description.componentManufacturer = kAudioUnitManufacturer_Apple;
 	description.componentFlags = 0;
 	description.componentFlagsMask = 0;
-	if ((component = FindNextComponent(NULL, &description)))
+	if ((component = AudioComponentFindNext(NULL, &description)))
 	{
-		err = OpenAComponent(component, &fAudioUnit);
+		err = AudioComponentInstanceNew(component, &fAudioUnit);
 		if (err != noErr)
 		{
 			fAudioUnit = NULL;
