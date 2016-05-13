@@ -111,7 +111,7 @@
 
 // monsters
 
-{"_monster_palyer", 0x00},
+{"_monster_player", 0x00},
 {"_monster_minor_tick", 0x01},
 {"_monster_major_tick", 0x02},
 {"_monster_kamikaze_tick", 0x03},
