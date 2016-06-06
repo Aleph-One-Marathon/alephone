@@ -24,6 +24,8 @@
 -- qwe()		Jump
 -- shit()		Everything (almost)
 -- yourmom()		Save at this spot
+-- dotheflop()	Kill all (non-player) monsters on the map
+-- everybodydotheflop()	Like dotheflop(), but kill even monsters that haven't been activated yet
 
 function nrg()
    if Players[0].life < 150 then 
@@ -124,6 +126,20 @@ end
 
 function qwe()
    Players[0]:accelerate(0, 0, 0.1)
+end
+
+function dotheflop(everybody)
+    for monster in Monsters() do
+        if not monster.player and (everybody or monster.active) then
+            -- The shotgun damage type makes the monster fall immediately,
+            -- unlike other types which make them fly or float for a long time.
+            monster:damage(10000, "shotgun")
+        end
+    end
+end
+
+function everybodydotheflop()
+    dotheflop(true)
 end
 
 Triggers = {}
