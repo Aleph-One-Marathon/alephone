@@ -598,20 +598,55 @@ static void DisplayMessages(SDL_Surface *s)
 	/* SB */
 	for(int i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; ++i) {
 		if(ScriptHUDElements[i].text[0]) {
-			short x2 = X, sk, ysk = 0;
+			short x2 = X, sk = Font.TextWidth("AAAAAAAAAAAAAA"),
+				icon_skip, icon_drop;
+			switch(get_screen_mode()->hud_scale_level) {
+			case 0:
+				icon_drop = 2;
+				break;
+			case 1:
+				if(MainScreenHeight() >= 960)
+					icon_drop = 4;
+				else
+					icon_drop = 2;
+				break;
+			case 2:
+				if(MainScreenHeight() >= 480)
+					icon_drop = MainScreenHeight() * 2 / 480;
+				else
+					icon_drop = 2;
+				break;
+			}
+			bool had_icon;
 			/* Yes, I KNOW this is the same i as above. I know what I'm doing. */
 			for(i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; ++i) {
 				if(!ScriptHUDElements[i].text[0]) continue;
-				sk = SCRIPT_HUD_ELEMENT_SPACING;
 				if(ScriptHUDElements[i].isicon) {
-					ysk = 2;
+					had_icon = true;
 
 					SDL_Rect rect;
 					rect.x = x2;
-					rect.y = Y - 11;
-					rect.w = rect.h = 16;					
+					rect.y = Y - Font.Ascent + Font.Leading;
+					rect.w = rect.h = 16;
+                                        icon_skip = 20;
+					switch(get_screen_mode()->hud_scale_level) {
+					case 1:
+						if(MainScreenHeight() >= 960) {
+							rect.w *= 2;
+							rect.h *= 2;
+							icon_skip *= 2;
+						}
+						break;
+					case 2:
+						if(MainScreenHeight() > 480) {
+							rect.w = rect.w * MainScreenHeight() / 480;
+							rect.h = rect.h * MainScreenHeight() / 480;
+							icon_skip = icon_skip * MainScreenHeight() / 480;
+						}
+						break;
+					}
 #ifdef HAVE_OPENGL
-					if(OGL_IsActive()) {						
+					if(OGL_IsActive()) {
 						ScriptHUDElements[i].ogl_blitter.Draw(rect);
 					}
 					else 
@@ -619,15 +654,18 @@ static void DisplayMessages(SDL_Surface *s)
 					{
 						ScriptHUDElements[i].sdl_blitter.Draw(s, rect);
 					}
-					x2 += 20;
-					sk -= 20;
+					x2 += icon_skip;
 				}
 				SDL_Color color;
 				_get_interface_color(ScriptHUDElements[i].color+_computer_interface_text_color, &color);
-				DisplayText(x2,Y + (ScriptHUDElements[i].isicon ? 2 : 0),ScriptHUDElements[i].text, color.r, color.g, color.b);
+				DisplayText(x2,Y + (ScriptHUDElements[i].isicon ? icon_drop : 0),ScriptHUDElements[i].text, color.r, color.g, color.b);
 				x2 += sk;
+				if(ScriptHUDElements[i].isicon)
+					x2 -= icon_skip;
 			}
-			Y += LineSpacing + ysk;
+			Y += LineSpacing;
+			if(had_icon)
+				Y += icon_drop;
 			break;
 		}
 	}
