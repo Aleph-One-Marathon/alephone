@@ -416,23 +416,19 @@ typedef PlayerSubtable<Lua_Overlay_Name> Lua_Overlay;
 
 int Lua_Overlay_Clear(lua_State *L)
 {
+        int player = Lua_Overlay::PlayerIndex(L, 1);
 	int index = Lua_Overlay::Index(L, 1);
-	if (Lua_Overlay::PlayerIndex(L, 1) == local_player_index)
-	{
-		SetScriptHUDIcon(index, 0, 0);
-		SetScriptHUDText(index, 0);
-	}
+	SetScriptHUDIcon(player, index, 0, 0);
+	SetScriptHUDText(player, index, 0);
 
 	return 0;
 }
 
 int Lua_Overlay_Fill_Icon(lua_State *L)
 {
-	if (Lua_Overlay::PlayerIndex(L, 1) == local_player_index)
-	{
-		int color = Lua_OverlayColor::ToIndex(L, 2);
-		SetScriptHUDSquare(Lua_Overlay::Index(L, 1), color);
-	}
+        int player = Lua_Overlay::PlayerIndex(L, 1);
+	int color = Lua_OverlayColor::ToIndex(L, 2);
+	SetScriptHUDSquare(player, Lua_Overlay::Index(L, 1), color);
 
 	return 0;
 }
@@ -445,16 +441,14 @@ const luaL_Reg Lua_Overlay_Get[] = {
 
 static int Lua_Overlay_Set_Icon(lua_State *L)
 {
-	if (Lua_Overlay::PlayerIndex(L, 1) == local_player_index)
+        int player = Lua_Overlay::PlayerIndex(L, 1);
+	if (lua_isstring(L, 2))
 	{
-		if (lua_isstring(L, 2))
-		{
-			SetScriptHUDIcon(Lua_Overlay::Index(L, 1), lua_tostring(L, 2), lua_rawlen(L, 2));
-		}
-		else
-		{
-			SetScriptHUDIcon(Lua_Overlay::Index(L, 1), 0, 0);
-		}
+		SetScriptHUDIcon(player, Lua_Overlay::Index(L, 1), lua_tostring(L, 2), lua_rawlen(L, 2));
+	}
+	else
+	{
+		SetScriptHUDIcon(player, Lua_Overlay::Index(L, 1), 0, 0);
 	}
 
 	return 0;
@@ -462,25 +456,21 @@ static int Lua_Overlay_Set_Icon(lua_State *L)
 
 static int Lua_Overlay_Set_Text(lua_State *L)
 {
-	if (Lua_Overlay::PlayerIndex(L, 1) == local_player_index)
-	{
-		const char *text = 0;
-		if (lua_isstring(L, 2)) 
-			text = lua_tostring(L, 2);
-		
-		SetScriptHUDText(Lua_Overlay::Index(L, 1), text);
-	}
+        int player = Lua_Overlay::PlayerIndex(L, 1);
+	const char *text = 0;
+	if (lua_isstring(L, 2)) 
+		text = lua_tostring(L, 2);
+	
+	SetScriptHUDText(player, Lua_Overlay::Index(L, 1), text);
 
 	return 0;
 }
 
 static int Lua_Overlay_Set_Text_Color(lua_State *L)
 {
-	if (Lua_Overlay::PlayerIndex(L, 1) == local_player_index)
-	{
-		int color = Lua_OverlayColor::ToIndex(L, 2);
-		SetScriptHUDColor(Lua_Overlay::Index(L, 1), color);
-	}
+        int player = Lua_Overlay::PlayerIndex(L, 1);
+	int color = Lua_OverlayColor::ToIndex(L, 2);
+	SetScriptHUDColor(player, Lua_Overlay::Index(L, 1), color);
 
 	return 0;
 }

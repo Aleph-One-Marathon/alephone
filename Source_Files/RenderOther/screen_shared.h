@@ -120,7 +120,7 @@ static ScreenMessage Messages[NumScreenMessages];
 static struct ScriptHUDElement {
 	/* I don't like this convention, but I'll follow it. */
 	enum {
-		Len = 256
+		Len = 32
 	};
 	/* this needs optimized (sorry, making fun of my grandmother...) */
 	/* it's char[4] instead of int32 to make the OpenGL support simpler to implement */
@@ -132,7 +132,7 @@ static struct ScriptHUDElement {
 #ifdef HAVE_OPENGL	
 	OGL_Blitter ogl_blitter;
 #endif	
-} ScriptHUDElements[MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS];
+} ScriptHUDElements[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS][MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS];
 /* /SB */
 
 /* ---------- private prototypes */
@@ -224,10 +224,10 @@ namespace icon {
     return true;
   }
 	
-  void seticon(int idx, unsigned char palette[1024], unsigned char graphic[256]) {
+  void seticon(int player, int idx, unsigned char palette[1024], unsigned char graphic[256]) {
     unsigned char* p1, *p2, px;
     int n;
-    p1 = ScriptHUDElements[idx].icon;
+    p1 = ScriptHUDElements[player][idx].icon;
     p2 = graphic;
     for(n = 0; n < 256; ++n) {
       px = *(p2++);
@@ -236,54 +236,58 @@ namespace icon {
       *(p1++) = palette[px * 4 + 1];
       *(p1++) = palette[px * 4 + 2];
     }
-    ScriptHUDElements[idx].isicon = true;
+    ScriptHUDElements[player][idx].isicon = true;
 	SDL_Surface *srf;
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-	srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[idx].icon, 16, 16, 32, 64, 0xFF<<8, 0xFF<<16, 0xFF<<24, 0xFF);
+	srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[player][idx].icon, 16, 16, 32, 64, 0xFF<<8, 0xFF<<16, 0xFF<<24, 0xFF);
 #else
-	srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[idx].icon, 16, 16, 32, 64, 0xFF<<16, 0xFF<<8, 0xFF, 0xFF<<24);
+	srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[player][idx].icon, 16, 16, 32, 64, 0xFF<<16, 0xFF<<8, 0xFF, 0xFF<<24);
 #endif
 #ifdef HAVE_OPENGL	
 	if (OGL_IsActive()) {
-		ScriptHUDElements[idx].ogl_blitter.Load(*srf);
+		ScriptHUDElements[player][idx].ogl_blitter.Load(*srf);
 	} else
 #endif	  
 	{	  
-		ScriptHUDElements[idx].sdl_blitter.Load(*srf);
+		ScriptHUDElements[player][idx].sdl_blitter.Load(*srf);
 	}
 	SDL_FreeSurface(srf);
   }
 	
 }
 
-void SetScriptHUDColor(int idx, int color) {
+void SetScriptHUDColor(int player, int idx, int color) {
+  player %= MAXIMUM_NUMBER_OF_NETWORK_PLAYERS;
   idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; /* o_o */
-  ScriptHUDElements[idx].color = color % 8; /* O_O */
+  ScriptHUDElements[player][idx].color = color % 8; /* O_O */
 }
 
-void SetScriptHUDText(int idx, const char* text) {
+void SetScriptHUDText(int player, int idx, const char* text) {
+  player %= MAXIMUM_NUMBER_OF_NETWORK_PLAYERS;
   idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS;
   if(!text) text = "";
-  strncpy(ScriptHUDElements[idx].text, text, 255);
-  ScriptHUDElements[idx].text[255] = 0;
+  strncpy(ScriptHUDElements[player][idx].text, text, ScriptHUDElement::Len);
+  ScriptHUDElements[player][idx].text[ScriptHUDElement::Len-1] = 0;
 }
 
-bool SetScriptHUDIcon(int idx, const char* text, size_t rem) {
+bool SetScriptHUDIcon(int player, int idx, const char* text, size_t rem) {
   unsigned char palette[1024], graphic[256];
   int numcolors;
+  player %= MAXIMUM_NUMBER_OF_NETWORK_PLAYERS;
   idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS;
   if(text) {
     if(!icon::parseicon(text, rem, palette, numcolors, graphic)) return false;
-    icon::seticon(idx, palette, graphic);
-  } else ScriptHUDElements[idx].isicon = false;
+    icon::seticon(player, idx, palette, graphic);
+  } else ScriptHUDElements[player][idx].isicon = false;
   return true;
 }
 
-void SetScriptHUDSquare(int idx, int _color) {
+void SetScriptHUDSquare(int player, int idx, int _color) {
   unsigned char palette[4]; /* short, I KNOW. */
   unsigned char graphic[256];
+  player %= MAXIMUM_NUMBER_OF_NETWORK_PLAYERS;
   idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS;
-  ScriptHUDElements[idx].color = _color % 8;
+  ScriptHUDElements[player][idx].color = _color % 8;
   memset(graphic, 0, 256);
   SDL_Color color;
   _get_interface_color(_color+_computer_interface_text_color, &color);
@@ -291,7 +295,7 @@ void SetScriptHUDSquare(int idx, int _color) {
   palette[1] = color.g;
   palette[2] = color.b;
   palette[3] = 0xff;
-  icon::seticon(idx, palette, graphic);
+  icon::seticon(player, idx, palette, graphic);
 }
 /* /SB */
 
@@ -301,10 +305,12 @@ void reset_messages()
 	for(int i = 0; i < NumScreenMessages; i++)
 		Messages[i].TimeRemaining = 0;
 	/* SB: reset HUD elements */
-	for(int i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; i++) {
-		ScriptHUDElements[i].color = 1;
-		ScriptHUDElements[i].text[0] = 0;
-		ScriptHUDElements[i].isicon = false;
+	for(int p = 0; p < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; p++) {
+		for(int i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; i++) {
+			ScriptHUDElements[p][i].color = 1;
+			ScriptHUDElements[p][i].text[0] = 0;
+			ScriptHUDElements[p][i].isicon = false;
+		}
 	}
 }
 
@@ -596,8 +602,9 @@ static void DisplayMessages(SDL_Surface *s)
 	short Y = Y0 + LineSpacing;
 	if (ShowPosition) Y += 6*LineSpacing;	// Make room for the position data
 	/* SB */
+	short view = current_player_index;
 	for(int i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; ++i) {
-		if(ScriptHUDElements[i].text[0]) {
+		if(ScriptHUDElements[view][i].text[0]) {
 			short x2 = X, sk = Font.TextWidth("AAAAAAAAAAAAAA"),
 				icon_skip, icon_drop;
 			switch(get_screen_mode()->hud_scale_level) {
@@ -620,8 +627,8 @@ static void DisplayMessages(SDL_Surface *s)
 			bool had_icon;
 			/* Yes, I KNOW this is the same i as above. I know what I'm doing. */
 			for(i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; ++i) {
-				if(!ScriptHUDElements[i].text[0]) continue;
-				if(ScriptHUDElements[i].isicon) {
+				if(!ScriptHUDElements[view][i].text[0]) continue;
+				if(ScriptHUDElements[view][i].isicon) {
 					had_icon = true;
 
 					SDL_Rect rect;
@@ -647,20 +654,20 @@ static void DisplayMessages(SDL_Surface *s)
 					}
 #ifdef HAVE_OPENGL
 					if(OGL_IsActive()) {
-						ScriptHUDElements[i].ogl_blitter.Draw(rect);
+						ScriptHUDElements[view][i].ogl_blitter.Draw(rect);
 					}
 					else 
 #endif 
 					{
-						ScriptHUDElements[i].sdl_blitter.Draw(s, rect);
+						ScriptHUDElements[view][i].sdl_blitter.Draw(s, rect);
 					}
 					x2 += icon_skip;
 				}
 				SDL_Color color;
-				_get_interface_color(ScriptHUDElements[i].color+_computer_interface_text_color, &color);
-				DisplayText(x2,Y + (ScriptHUDElements[i].isicon ? icon_drop : 0),ScriptHUDElements[i].text, color.r, color.g, color.b);
+				_get_interface_color(ScriptHUDElements[view][i].color+_computer_interface_text_color, &color);
+				DisplayText(x2,Y + (ScriptHUDElements[view][i].isicon ? icon_drop : 0),ScriptHUDElements[view][i].text, color.r, color.g, color.b);
 				x2 += sk;
-				if(ScriptHUDElements[i].isicon)
+				if(ScriptHUDElements[view][i].isicon)
 					x2 -= icon_skip;
 			}
 			Y += LineSpacing;
