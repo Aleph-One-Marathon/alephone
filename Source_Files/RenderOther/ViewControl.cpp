@@ -96,7 +96,9 @@ struct FOV_settings_definition FOV_settings = {
 
 
 static FontSpecifier OnScreenFont = {"Monaco", 12, styleNormal, 0, "mono"};
+static FontSpecifier LoadedOnScreenFont = OnScreenFont;
 static bool ScreenFontInited = false;
+static short ScreenFontInitedSize = -1;
 
 // Accessors:
 float View_FOV_Normal() {return FOV_Normal;}
@@ -105,13 +107,28 @@ float View_FOV_TunnelVision() {return FOV_TunnelVision;}
 
 FontSpecifier& GetOnScreenFont()
 {
-	// Init the font the first time through; accessor functions are very convenient :-)
-	if (!ScreenFontInited)
-	{
-		OnScreenFont.Init();
-		ScreenFontInited = true;
+	short NeededSize = OnScreenFont.Size;
+	switch (get_screen_mode()->hud_scale_level) {
+	case 1:
+		if(MainScreenHeight() > 960) NeededSize *= 2;
+		break;
+	case 2:
+		if(MainScreenHeight() > 480)
+			NeededSize = NeededSize * MainScreenHeight() / 480;
+		break;
 	}
-	return OnScreenFont;
+	if (ScreenFontInitedSize != NeededSize) {
+		LoadedOnScreenFont = OnScreenFont;
+		LoadedOnScreenFont.Size = NeededSize;
+		if (ScreenFontInited)
+			LoadedOnScreenFont.Update();
+		else {
+			LoadedOnScreenFont.Init();
+			ScreenFontInited = true;
+                }
+		ScreenFontInitedSize = NeededSize;
+	}
+	return LoadedOnScreenFont;
 }
 
 // Move field-of-view value closer to some target value:
@@ -209,9 +226,7 @@ void reset_mml_view()
 	
 	// reset on-screen font and update if needed
 	OnScreenFont = original_OnScreenFont;
-	if (ScreenFontInited) {
-		OnScreenFont.Update();
-	}
+	ScreenFontInitedSize = -1;
 	
 	if (original_FOV_settings) {
 		FOV_settings = *original_FOV_settings;
@@ -244,6 +259,7 @@ void parse_mml_view(const InfoTree& root)
 	BOOST_FOREACH(InfoTree font, root.children_named("font"))
 	{
 		font.read_font(OnScreenFont);
+		ScreenFontInitedSize = -1;
 	}
 	
 	BOOST_FOREACH(InfoTree fov, root.children_named("fov"))
