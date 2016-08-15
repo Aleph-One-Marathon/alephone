@@ -750,9 +750,9 @@ static void main_event_loop(void)
 		execute_timer_tasks(machine_tick_count());
 		idle_game_state(machine_tick_count());
 
-		if (game_state == _game_in_progress && !graphics_preferences->hog_the_cpu && (TICKS_PER_SECOND - (machine_tick_count() - cur_time)) > 10)
+		if (game_state == _game_in_progress && !graphics_preferences->hog_the_cpu && (graphics_preferences->fps_target != _30fps || ((TICKS_PER_SECOND - (machine_tick_count() - cur_time)) > 10)))
 		{
-			yield();
+			wait_until_next_frame();
 		}
 	}
 }

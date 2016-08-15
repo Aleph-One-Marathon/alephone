@@ -35,6 +35,11 @@
 /* TODO: Every single place machine tick counts are used, switch to uint64 */
 static auto epoch = std::chrono::high_resolution_clock::now();
 
+/* a knob to play the game in "slow motion" to debug timing sensitive features.
+   this is not a preferences option because of the cheating potential, and
+   because of the awesome breakage that will occur at very large values */
+static constexpr int TIME_SKEW = 1;
+
 /*
  *  Return tick counter
  */
@@ -47,7 +52,7 @@ uint32 machine_tick_count(void)
     epoch = now;
   }
   return std::chrono::duration_cast<std::chrono::milliseconds>
-    (now - epoch).count();
+    (now - epoch).count()/TIME_SKEW;
 }
 
 /*
@@ -56,7 +61,7 @@ uint32 machine_tick_count(void)
 
 void sleep_for_machine_ticks(uint32 ticks)
 {
-	std::this_thread::sleep_for(std::chrono::milliseconds(ticks));
+	std::this_thread::sleep_for(std::chrono::milliseconds(ticks*TIME_SKEW));
 }
 
 /*
@@ -65,7 +70,7 @@ void sleep_for_machine_ticks(uint32 ticks)
 
 void sleep_until_machine_tick_count(uint32 ticks)
 {
-	std::this_thread::sleep_until(std::chrono::high_resolution_clock::time_point(std::chrono::milliseconds(ticks)));
+	std::this_thread::sleep_until(std::chrono::high_resolution_clock::time_point(std::chrono::milliseconds(ticks*TIME_SKEW)));
 }
 
 /*
@@ -84,7 +89,7 @@ bool wait_for_click_or_keypress(uint32 ticks)
 {
 	uint32 start = machine_tick_count();
 	SDL_Event event;
-	while (SDL_GetTicks() - start < ticks) {
+	while (machine_tick_count() - start < ticks) {
 		SDL_WaitEventTimeout(&event, ticks);
 		switch (event.type) {
 			case SDL_MOUSEBUTTONDOWN:

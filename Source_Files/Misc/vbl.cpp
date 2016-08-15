@@ -122,8 +122,9 @@ inline short memory_error() {return 0;}
 /* ---------- globals */
 
 static int32 heartbeat_count;
-static bool input_task_active;
+static float heartbeat_fraction;
 static timer_task_proc input_task;
+static bool input_task_active;
 
 // LP: defined this here so it will work properly
 static FileSpecifier FilmFileSpec;
@@ -143,6 +144,7 @@ ActionQueue *get_player_recording_queue(
 #endif
 
 /* ---------- private prototypes */
+static bool maybe_input_controller(void);
 static void remove_input_controller(void);
 static void save_recording_queue_chunk(short player_index);
 static void read_recording_queue_chunks(void);
@@ -177,10 +179,11 @@ void initialize_keyboard_controller(
 	
 	// get globals initialized
 	heartbeat_count= 0;
+        heartbeat_fraction= 1.f;
 	input_task_active= false;
 	obj_clear(replay);
 
-	input_task= install_timer_task(TICKS_PER_SECOND, input_controller);
+	input_task= install_timer_task(TICKS_PER_SECOND, maybe_input_controller);
 	assert(input_task);
 	
 	atexit(remove_input_controller);
@@ -234,6 +237,19 @@ int32 get_heartbeat_count(
 	void)
 {
 	return heartbeat_count;
+}
+
+float get_heartbeat_fraction(
+	void)
+{
+  switch(graphics_preferences->fps_target) {
+  case _30fps:
+    return 1.f;
+  case _60fps:
+    return heartbeat_fraction < 0.5f ? 0.5f : 1.f;
+  default:
+    return heartbeat_fraction;
+  }
 }
 
 void sync_heartbeat_count(
@@ -1271,4 +1287,63 @@ void execute_timer_tasks(uint32 time)
 			tm_func();
 		}
 	}
+}
+
+// calls input_task if we're in 30fps mode (better control at low framerates)
+bool maybe_input_controller() {
+  if(graphics_preferences->fps_target == _30fps)
+    return input_controller();
+  else
+    return true;
+}
+
+static auto tick_base = machine_tick_count();
+static decltype(tick_base) previous_tick_count = 0;
+static decltype(tick_base) next_frame_machine_tick = 0;
+
+void wait_until_next_frame() {
+  switch(graphics_preferences->fps_target) {
+  case _30fps:
+    yield();
+    break;
+  case _60fps:
+    sleep_until_machine_tick_count(next_frame_machine_tick);
+    break;
+  default:
+    yield();
+    break;
+  }
+}
+
+// does what input_task used to do
+void vbl_idle_proc() {
+  if(graphics_preferences->fps_target == _30fps) {
+    // we're using the old input method now; get ready to switch back if the
+    // user changes their mind
+    tick_base = machine_tick_count();
+    previous_tick_count = 0;
+    heartbeat_fraction = 1.f;
+    return;
+  }
+  auto now = machine_tick_count();
+  if(now < tick_base) tick_base = now; // don't freeze if time goes backwards
+  auto new_tick_count = (now - tick_base) * 30 / MACHINE_TICKS_PER_SECOND;
+  heartbeat_fraction = (now - (tick_base + new_tick_count * MACHINE_TICKS_PER_SECOND / 30)) * 30.f / MACHINE_TICKS_PER_SECOND;
+  if(new_tick_count - previous_tick_count > 30) {
+    // process only up to one second at a time
+    previous_tick_count = new_tick_count - 30;
+  }
+  while(previous_tick_count < new_tick_count) {
+    ++previous_tick_count;
+    input_controller();
+  }
+  if(graphics_preferences->fps_target == _60fps) {
+    if(heartbeat_fraction < 0.5f) {
+      next_frame_machine_tick = tick_base + (previous_tick_count * 2 + 1) * MACHINE_TICKS_PER_SECOND / 60;
+    }
+    else {
+      next_frame_machine_tick = tick_base + (previous_tick_count + 1) * MACHINE_TICKS_PER_SECOND / 30;
+    }
+  }
+  else next_frame_machine_tick = 0;
 }

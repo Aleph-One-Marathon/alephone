@@ -185,11 +185,26 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 	// LP: reference to simplify the code
 	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 	
+	auto heartbeat_fraction = get_heartbeat_fraction();
+
 	// LP change: removed upper limit on number (restored it later)
 	if (!OBJECT_IS_INVISIBLE(object) && int(RenderObjects.size())<get_dynamic_limit(_dynamic_limit_rendered))
 	{
 		// LP change: made this more long-distance-friendly
 		long_point3d transformed_origin;
+                world_point3d object_effective_location;
+                // Properly speaking, we shouldn't render objects that did not
+                // exist "last" tick at all during a fractional frame. Doing
+                // so "stretches" new objects' existences by almost (but not
+                // quite) one tick. However, this is preferable to the flicker
+                // that would otherwise appear when a projectile detonates.
+                if(heartbeat_fraction >= 1 || !OBJECT_HAS_PREVIOUS_STATE(object))
+                  object_effective_location = object->location;
+                else {
+                  object_effective_location.x = object->location_last_tick.x + (object->location.x - object->location_last_tick.x) * heartbeat_fraction;
+                  object_effective_location.y = object->location_last_tick.y + (object->location.y - object->location_last_tick.y) * heartbeat_fraction;
+                  object_effective_location.z = object->location_last_tick.z + (object->location.z - object->location_last_tick.z) * heartbeat_fraction;
+                }
 		
 		if (origin)
 		{
@@ -200,9 +215,9 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 		else
 		{
 			world_point2d temp_tfm_origin;
-			temp_tfm_origin.x = object->location.x;
-			temp_tfm_origin.y = object->location.y;
-			transformed_origin.z = object->location.z - view->origin.z;
+			temp_tfm_origin.x = object_effective_location.x;
+			temp_tfm_origin.y = object_effective_location.y;
+			transformed_origin.z = object_effective_location.z - view->origin.z;
 			uint16 tfm_origin_flags;
 			transform_overflow_point2d(&temp_tfm_origin, (world_point2d *)&view->origin, view->yaw, &tfm_origin_flags);
 			long_vector2d *tfm_origin_ptr = (long_vector2d *)(&transformed_origin);
@@ -277,7 +292,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			/* if the caller wants it, give him the left and right extents of this shape */
 			if (base_nodes)
 			{
-				*base_node_count= build_base_node_list(object->polygon, &object->location,
+				*base_node_count= build_base_node_list(object->polygon, &object_effective_location,
 					shape_information->world_left, shape_information->world_right, base_nodes);
 			}
 			
@@ -346,7 +361,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					// And the 3D-model info needs the object-relative liquid height
 					if (media && !OBJECT_IS_MEDIA_EFFECT(object))
 					{
-						render_object->rectangle.LiquidRelHeight = PIN(media->height - object->location.z, SHRT_MIN,SHRT_MAX);
+						render_object->rectangle.LiquidRelHeight = PIN(media->height - object_effective_location.z, SHRT_MIN,SHRT_MAX);
 						int ProjLiquidHeight = view->half_screen_height - (view->world_to_screen_y*(media->height-view->origin.z))/DistanceRef + view->dtanpitch;
 						render_object->ymedia= PIN(ProjLiquidHeight,SHRT_MIN,SHRT_MAX);
 					}
@@ -386,7 +401,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				render_object->rectangle.WorldBottom = shape_information->world_bottom;
 				render_object->rectangle.WorldRight = shape_information->world_right;
 				render_object->rectangle.WorldTop = shape_information->world_top;
-				render_object->rectangle.Position = object->location;
+				render_object->rectangle.Position = object_effective_location;
 				if(rel_origin) {
 					render_object->rectangle.WorldLeft += rel_origin->x;
 					render_object->rectangle.WorldRight += rel_origin->x;

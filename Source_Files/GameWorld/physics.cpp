@@ -146,6 +146,11 @@ void initialize_player_physics_variables(
 //#ifdef DEBUG
 	obj_set(*variables, 0x80);
 //#endif
+
+        // avoid lerping through walls, and other craziness
+        player->last_tick_valid = false;
+        CLEAR_OBJECT_HAS_PREVIOUS_STATE(object);
+        CLEAR_OBJECT_HAS_PREVIOUS_STATE(get_object_data(object->parasitic_object));
 	
 	variables->head_direction= 0;
 	variables->adjusted_yaw= variables->direction= INTEGER_TO_FIXED(object->facing);

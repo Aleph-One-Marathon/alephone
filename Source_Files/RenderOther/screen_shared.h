@@ -484,17 +484,14 @@ static void update_fps_display(SDL_Surface *s)
 		}
 		else
 		{
-			float count = (FRAME_SAMPLE_SIZE * MACHINE_TICKS_PER_SECOND) / float(ticks-frame_ticks[frame_index]);
+			float count = ((FRAME_SAMPLE_SIZE-1) * MACHINE_TICKS_PER_SECOND) / float(ticks-frame_ticks[frame_index]);
 			int latency = NetGetLatency();
 			if (latency > -1)
 				sprintf(ms, "(%i ms)", latency);
 			else
 				ms[0] = '\0';
-							
-			if (count >= TICKS_PER_SECOND)
-				sprintf(fps, "%lu%s %s",(unsigned long)TICKS_PER_SECOND,".00fps", ms);
-			else
-				sprintf(fps, "%3.2ffps %s", count, ms);
+
+			sprintf(fps, "%3.2ffps %s", count, ms);
 		}
 		
 		FontSpecifier& Font = GetOnScreenFont();

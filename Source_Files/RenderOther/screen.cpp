@@ -1237,16 +1237,37 @@ void toggle_fullscreen()
 
 static bool clear_next_screen = false;
 
+static angle interpolate_angles(angle a, angle b, float i) {
+  a = NORMALIZE_ANGLE(a);
+  b = NORMALIZE_ANGLE(b);
+  if(a-b > HALF_CIRCLE)
+    b += FULL_CIRCLE;
+  else if(a-b < -HALF_CIRCLE)
+    a += FULL_CIRCLE;
+  angle ret = a+(b-a)*i;
+  return NORMALIZE_ANGLE(ret);
+}
+
 void render_screen(short ticks_elapsed)
 {
 	// Make whatever changes are necessary to the world_view structure based on whichever player is frontmost
 	world_view->ticks_elapsed = ticks_elapsed;
 	world_view->tick_count = dynamic_world->tick_count;
-	world_view->yaw = current_player->facing;
-	world_view->virtual_yaw = (current_player->facing * FIXED_ONE) + virtual_aim_delta().yaw;
-	world_view->pitch = current_player->elevation;
-	world_view->virtual_pitch = (current_player->elevation * FIXED_ONE) + virtual_aim_delta().pitch;
-	world_view->maximum_depth_intensity = current_player->weapon_intensity;
+	
+	auto heartbeat_fraction = get_heartbeat_fraction();
+	if(heartbeat_fraction > 1 || !current_player->last_tick_valid) {
+		world_view->yaw = current_player->facing;
+		world_view->virtual_yaw = (current_player->facing * FIXED_ONE) + virtual_aim_delta().yaw;
+		world_view->pitch = current_player->elevation;
+		world_view->virtual_pitch = (current_player->elevation * FIXED_ONE) + virtual_aim_delta().pitch;
+		world_view->maximum_depth_intensity = current_player->weapon_intensity;
+	}
+	else
+	{
+		world_view->yaw = interpolate_angles(current_player->facing_last_tick, current_player->facing, heartbeat_fraction);
+		world_view->pitch = interpolate_angles(current_player->elevation_last_tick, current_player->elevation, heartbeat_fraction);
+		world_view->maximum_depth_intensity = current_player->weapon_intensity_last_tick + (current_player->weapon_intensity - current_player->weapon_intensity_last_tick) * heartbeat_fraction;
+	}
 	world_view->shading_mode = current_player->infravision_duration ? _shading_infravision : _shading_normal;
 
 	bool SwitchedModes = false;
@@ -1372,10 +1393,21 @@ void render_screen(short ticks_elapsed)
 		clear_next_screen = false;
 	}
 
-	world_view->origin = current_player->camera_location;
-	if (!graphics_preferences->screen_mode.camera_bob)
-		world_view->origin.z -= current_player->step_height;
-	world_view->origin_polygon_index = current_player->camera_polygon_index;
+	if(heartbeat_fraction > 1 || !current_player->last_tick_valid) {
+		world_view->origin = current_player->camera_location;
+		if (!graphics_preferences->screen_mode.camera_bob)
+            world_view->origin.z -= current_player->step_height;
+		world_view->origin_polygon_index = current_player->camera_polygon_index;
+	}
+	else
+	{
+		world_view->origin.x = current_player->camera_location_last_tick.x + (current_player->camera_location.x - current_player->camera_location_last_tick.x) * heartbeat_fraction;
+		world_view->origin.y = current_player->camera_location_last_tick.y + (current_player->camera_location.y - current_player->camera_location_last_tick.y) * heartbeat_fraction;
+		world_view->origin.z = current_player->camera_location_last_tick.z + (current_player->camera_location.z - current_player->camera_location_last_tick.z) * heartbeat_fraction;
+		if (!graphics_preferences->screen_mode.camera_bob)
+            world_view->origin.z -= current_player->step_height;
+		world_view->origin_polygon_index = current_player->camera_polygon_index;
+	}
 
 	// Script-based camera control
 	if (!UseLuaCameras())

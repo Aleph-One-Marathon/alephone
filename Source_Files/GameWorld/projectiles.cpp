@@ -328,6 +328,7 @@ void move_projectiles(
 		if (SLOT_IS_USED(projectile))
 		{
 			struct object_data *object= get_object_data(projectile->object_index);
+
 			
 //			if (!OBJECT_IS_INVISIBLE(object))
 			{

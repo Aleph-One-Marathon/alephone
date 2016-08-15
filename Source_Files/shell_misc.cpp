@@ -302,6 +302,7 @@ void global_idle_proc(void)
 	network_speaker_idle_proc();
 	network_microphone_idle_proc();
 	SoundManager::instance()->Idle();
+	vbl_idle_proc();
 }
 
 /*

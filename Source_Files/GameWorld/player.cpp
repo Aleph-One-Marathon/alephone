@@ -595,6 +595,13 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 	
 	for (player_index= 0, player= players; player_index<dynamic_world->player_count; ++player_index, ++player)
 	{
+          player->last_tick_valid = true;
+          player->camera_location_last_tick = player->camera_location;
+          player->camera_polygon_index_last_tick = player->camera_polygon_index;
+          player->facing_last_tick = player->facing;
+          player->elevation_last_tick = player->elevation;
+          player->step_height_last_tick = player->step_height;
+          player->weapon_intensity_last_tick = player->weapon_intensity;
 		uint32 action_flags = inActionQueuesToUse->dequeueActionFlags(player_index);
 
 		if (action_flags == 0xffffffff)

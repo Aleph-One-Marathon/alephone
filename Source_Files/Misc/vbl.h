@@ -71,6 +71,7 @@ static void debug_stream_of_flags(uint32 action_flag, short player_index);
 static void close_stream_file(void);
 #endif
 
+void vbl_idle_proc();
 
 class InfoTree;
 void parse_mml_keyboard(const InfoTree& root);

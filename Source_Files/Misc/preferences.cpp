@@ -969,8 +969,13 @@ static const char *sw_sdl_driver_labels[5] = {
 	"Default", "None", "Direct3D", "OpenGL", NULL
 };
 
+
 static const char* ephemera_quality_labels[5] = {
 	"Off", "Low", "Medium", "High", "Ultra"
+};
+
+static const char *fps_target_labels[4] = {
+	"30 (classic)", "60 (smooth)", "Unregulated", NULL
 };
 
 static const char *gamma_labels[9] = {
@@ -1052,7 +1057,6 @@ static void software_rendering_options_dialog(void* arg)
 	table->dual_add(sw_driver_w->label("Acceleration"), d);
 	table->dual_add(sw_driver_w, d);
 
-	
 	placer->add(table, true);
 
 	placer->add(new w_spacer(), true);
@@ -1202,6 +1206,10 @@ static void graphics_dialog(void *arg)
 	table->dual_add(gamma_w->label("Brightness"), d);
 	table->dual_add(gamma_w, d);
 
+	w_select *fps_target_w = new w_select(graphics_preferences->fps_target, fps_target_labels);
+        table->dual_add(fps_target_w->label("Framerate Target"), d);
+        table->dual_add(fps_target_w, d);
+
 	table->add_row(new w_spacer(), true);
 
 	w_toggle *fullscreen_w = new w_toggle(!graphics_preferences->screen_mode.fullscreen);
@@ -1300,6 +1308,12 @@ static void graphics_dialog(void *arg)
 		    changed = true;
 	    }
         
+	if (fps_target_w->get_selection() != graphics_preferences->fps_target)
+	{
+		graphics_preferences->fps_target = fps_target_w->get_selection();
+		changed = true;
+	}
+		
         bool fix_h_not_v = fixh_w->get_selection() == 0;
         if (fix_h_not_v != graphics_preferences->screen_mode.fix_h_not_v) {
             graphics_preferences->screen_mode.fix_h_not_v = fix_h_not_v;
@@ -3151,6 +3165,7 @@ InfoTree graphics_preferences_tree()
 	root.put_attr("ogl_flags", graphics_preferences->OGL_Configure.Flags);
 	root.put_attr("software_alpha_blending", graphics_preferences->software_alpha_blending);
 	root.put_attr("software_sdl_driver", graphics_preferences->software_sdl_driver);
+	root.put_attr("fps_target", graphics_preferences->fps_target);
 	root.put_attr("anisotropy_level", graphics_preferences->OGL_Configure.AnisotropyLevel);
 	root.put_attr("multisamples", graphics_preferences->OGL_Configure.Multisamples);
 	root.put_attr("geforce_fix", graphics_preferences->OGL_Configure.GeForceFix);
@@ -3579,6 +3594,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 
 	preferences->software_alpha_blending = _sw_alpha_off;
 	preferences->software_sdl_driver = _sw_driver_default;
+	preferences->fps_target = _30fps;
 
 	preferences->movie_export_video_quality = 50;
 	preferences->movie_export_audio_quality = 50;
@@ -4042,6 +4058,7 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr("ogl_flags", graphics_preferences->OGL_Configure.Flags);
 	root.read_attr("software_alpha_blending", graphics_preferences->software_alpha_blending);
 	root.read_attr("software_sdl_driver", graphics_preferences->software_sdl_driver);
+	root.read_attr("fps_target", graphics_preferences->fps_target);
 	root.read_attr("anisotropy_level", graphics_preferences->OGL_Configure.AnisotropyLevel);
 	root.read_attr("multisamples", graphics_preferences->OGL_Configure.Multisamples);
 	root.read_attr("geforce_fix", graphics_preferences->OGL_Configure.GeForceFix);

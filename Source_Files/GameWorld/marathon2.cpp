@@ -386,6 +386,19 @@ enum {
         kUpdateChangeLevel
 };
 
+static void note_current_object_locations() {
+  if(graphics_preferences->fps_target != _30fps) {
+    for(int i = 0; i < MAXIMUM_OBJECTS_PER_MAP; ++i) {
+      // don't use get_object_data because it barfs on unused objects
+      object_data* object = GetMemberWithBounds(objects,i,MAXIMUM_OBJECTS_PER_MAP);
+      if(SLOT_IS_USED(object)) {
+        object->location_last_tick = object->location;
+        SET_OBJECT_HAS_PREVIOUS_STATE(object);
+      }
+    }
+  }
+}
+
 // ZZZ: split out from update_world()'s loop.
 static int
 update_world_elements_one_tick(bool& call_postidle)
@@ -397,6 +410,7 @@ update_world_elements_one_tick(bool& call_postidle)
 	} 
 	else
 	{
+		note_current_object_locations();
 		L_Call_Idle();
 		call_postidle = true;
 		

@@ -314,12 +314,14 @@ const int SIZEOF_random_sound_image_data = 32;
 	for monsters, effects and projectiles */
 #define SLOT_IS_USED(o) ((o)->flags&(uint16)0x8000)
 #define SLOT_IS_FREE(o) (!SLOT_IS_USED(o))
-#define MARK_SLOT_AS_FREE(o) ((o)->flags&=(uint16)~0x8000)
-#define MARK_SLOT_AS_USED(o) ((o)->flags|=(uint16)0x8000)
+#define MARK_SLOT_AS_FREE(o) ((o)->flags&=(uint16)~0xC000)
+#define MARK_SLOT_AS_USED(o) ((o)->flags=((o)->flags|(uint16)0x8000)&(uint16)~0x4000)
 
-#define OBJECT_WAS_RENDERED(o) ((o)->flags&(uint16)0x4000)
-#define SET_OBJECT_RENDERED_FLAG(o) ((o)->flags|=(uint16)0x4000)
-#define CLEAR_OBJECT_RENDERED_FLAG(o) ((o)->flags&=(uint16)~0x4000)
+// SB: This flag used to be OBJECT_WAS_RENDERED, but wasn't used, in spite of
+// what the below comment says
+#define OBJECT_HAS_PREVIOUS_STATE(o) ((o)->flags&(uint16)0x4000)
+#define SET_OBJECT_HAS_PREVIOUS_STATE(o) ((o)->flags|=(uint16)0x4000)
+#define CLEAR_OBJECT_HAS_PREVIOUS_STATE(o) ((o)->flags&=(uint16)~0x4000)
 
 /* this field is only valid after transmogrify_object_shape is called; in terms of our pipeline, that
 	means that it’s only valid if OBJECT_WAS_RENDERED returns true *and* was cleared before
@@ -429,7 +431,7 @@ struct object_data /* 32 bytes */
 		and velocity fields */
 	world_point3d location;
 	int16 polygon;
-	
+
 	angle facing;
 	
 	/* this is not really a shape descriptor: (and this is the only place in the game where you
@@ -448,6 +450,8 @@ struct object_data /* 32 bytes */
 
 	/* used when playing sounds */
 	_fixed sound_pitch;
+	/* only valid if OBJECT_HAS_PREVIOUS_STATE */
+	world_point3d location_last_tick;
 };
 const int SIZEOF_object_data = 32;
 

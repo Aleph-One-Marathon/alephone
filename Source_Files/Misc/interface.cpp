@@ -1104,6 +1104,7 @@ void update_interface_display(
 
 bool idle_game_state(uint32 time)
 {
+	static float last_heartbeat_fraction = -1.f;
 	int machine_ticks_elapsed = time - game_state.last_ticks_on_idle;
 
 	if(machine_ticks_elapsed || game_state.phase==0)
@@ -1221,8 +1222,10 @@ bool idle_game_state(uint32 time)
 			// ZZZ: I don't know for sure that render_screen works best with the number of _real_
 			// ticks elapsed rather than the number of (potentially predictive) ticks elapsed.
 			// This is a guess.
-			if (theUpdateResult.first)
+			if (theUpdateResult.first || last_heartbeat_fraction != get_heartbeat_fraction()) {
+				last_heartbeat_fraction = get_heartbeat_fraction();
 				render_screen(ticks_elapsed);
+			}
 		}
 		
 		return theUpdateResult.first;
