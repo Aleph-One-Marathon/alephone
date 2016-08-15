@@ -242,7 +242,7 @@ int32 get_heartbeat_count(
 float get_heartbeat_fraction(
 	void)
 {
-  switch(graphics_preferences->fps_target) {
+  switch(get_effective_fps_target()) {
   case _30fps:
     return 1.f;
   case _60fps:
@@ -1291,7 +1291,7 @@ void execute_timer_tasks(uint32 time)
 
 // calls input_task if we're in 30fps mode (better control at low framerates)
 bool maybe_input_controller() {
-  if(graphics_preferences->fps_target == _30fps)
+  if(get_effective_fps_target() == _30fps)
     return input_controller();
   else
     return true;
@@ -1302,7 +1302,7 @@ static decltype(tick_base) previous_tick_count = 0;
 static decltype(tick_base) next_frame_machine_tick = 0;
 
 void wait_until_next_frame() {
-  switch(graphics_preferences->fps_target) {
+  switch(get_effective_fps_target()) {
   case _30fps:
     yield();
     break;
@@ -1317,7 +1317,7 @@ void wait_until_next_frame() {
 
 // does what input_task used to do
 void vbl_idle_proc() {
-  if(graphics_preferences->fps_target == _30fps) {
+  if(get_effective_fps_target() == _30fps) {
     // we're using the old input method now; get ready to switch back if the
     // user changes their mind
     tick_base = machine_tick_count();
@@ -1337,7 +1337,7 @@ void vbl_idle_proc() {
     ++previous_tick_count;
     input_controller();
   }
-  if(graphics_preferences->fps_target == _60fps) {
+  if(get_effective_fps_target() == _60fps) {
     if(heartbeat_fraction < 0.5f) {
       next_frame_machine_tick = tick_base + (previous_tick_count * 2 + 1) * MACHINE_TICKS_PER_SECOND / 60;
     }

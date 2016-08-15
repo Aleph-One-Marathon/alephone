@@ -387,7 +387,7 @@ enum {
 };
 
 static void note_current_object_locations() {
-  if(graphics_preferences->fps_target != _30fps) {
+  if(get_effective_fps_target() != _30fps) {
     for(int i = 0; i < MAXIMUM_OBJECTS_PER_MAP; ++i) {
       // don't use get_object_data because it barfs on unused objects
       object_data* object = GetMemberWithBounds(objects,i,MAXIMUM_OBJECTS_PER_MAP);

@@ -287,6 +287,10 @@ void initialize_preferences(void);
 void read_preferences();
 void handle_preferences(void);
 void write_preferences(void);
+extern bool game_is_networked;
+static inline int16 get_effective_fps_target() {
+  return game_is_networked ? _30fps : graphics_preferences->fps_target;
+}
 
 void transition_preferences(const DirectorySpecifier& legacy_prefs_dir);
 
