@@ -55,6 +55,7 @@
 // We use the A1 logging facilities
 #include	"Logging.h"
 
+#include	"csmisc.h"
 
 // FILE-LOCAL CONSTANTS
 // flags for sBehaviorsDesired (tracks what should be going on)
@@ -165,7 +166,7 @@ SSLPint_FoundAnInstance(struct SSLP_ServiceInstance* inInstance) {
                 }
                 
                 // found a match - update timestamp and break the loop
-                theCurrentFoundInstance->mTimestamp = SDL_GetTicks();
+                theCurrentFoundInstance->mTimestamp = machine_tick_count();
                 break;
             }
         }
@@ -179,7 +180,7 @@ SSLPint_FoundAnInstance(struct SSLP_ServiceInstance* inInstance) {
         
         theCurrentFoundInstance = (struct SSLPint_FoundInstance*) malloc(sizeof(struct SSLPint_FoundInstance));
         theCurrentFoundInstance->mInstance	= theServiceInstance;
-        theCurrentFoundInstance->mTimestamp	= SDL_GetTicks();
+        theCurrentFoundInstance->mTimestamp	= machine_tick_count();
         theCurrentFoundInstance->mNext		= sFoundInstances;
         sFoundInstances				= theCurrentFoundInstance;
         
@@ -198,7 +199,7 @@ SSLPint_RemoveTimedOutInstances() {
     struct SSLPint_FoundInstance* theCurrentInstance = sFoundInstances;
     struct SSLPint_FoundInstance* thePreviousInstance = NULL;
     
-    Uint32 theCurrentTickCount = SDL_GetTicks();
+    Uint32 theCurrentTickCount = machine_tick_count();
     
     while(theCurrentInstance != NULL) {
         if(theCurrentTickCount - theCurrentInstance->mTimestamp > SSLPINT_INSTANCE_TIMEOUT) {
@@ -757,7 +758,7 @@ SSLP_Pump() {
     
     static Uint32	theTimeLastWorked = 0;
     
-    Uint32		theCurrentTime = SDL_GetTicks();
+    Uint32		theCurrentTime = machine_tick_count();
     
     if(sBehaviorsDesired & (SSLPINT_LOCATING | SSLPINT_HINTING)) {
 

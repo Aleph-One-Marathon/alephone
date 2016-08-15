@@ -471,7 +471,7 @@ static void update_fps_display(SDL_Surface *s)
 {
 	if (displaying_fps && !player_in_terminal_mode(current_player_index))
 	{
-		uint32 ticks = SDL_GetTicks();
+		uint32 ticks = machine_tick_count();
 		char fps[sizeof("120.00fps (10000 ms)")];
 		char ms[sizeof("(10000 ms)")];
 		

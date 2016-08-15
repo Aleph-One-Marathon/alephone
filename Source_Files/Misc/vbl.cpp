@@ -1239,7 +1239,7 @@ timer_task_proc install_timer_task(short tasks_per_second, timer_func func)
 	// We only handle one task, which is enough
 	tm_period = 1000 / tasks_per_second;
 	tm_func = func;
-	tm_last = SDL_GetTicks();
+	tm_last = machine_tick_count();
 	tm_accum = 0;
 	return (timer_task_proc)tm_func;
 }

@@ -1078,7 +1078,7 @@ void draw_menu_button_for_command(
 	
 	/* Draw it initially depressed.. */
 	draw_button(rectangle_index, true);
-	SDL_Delay(1000 / 12);
+	sleep_for_machine_ticks(MACHINE_TICKS_PER_SECOND / 12);
 	draw_button(rectangle_index, false);
 }
 
@@ -3235,7 +3235,7 @@ void show_movie(short index)
 				}
 				else 
 				{
-					SDL_Delay(MIN(30, vframe->pts - movie_sync));
+					sleep_for_machine_ticks(MIN(30, vframe->pts - movie_sync));
 				}
 			}
 		}
@@ -3320,7 +3320,7 @@ void show_movie(short index)
 				}
 			}
 			
-			SDL_Delay(100);
+			sleep_for_machine_ticks(MACHINE_TICKS_PER_SECOND / 10);
 		}
 		SMPEG_delete(movie);
 #ifdef HAVE_OPENGL

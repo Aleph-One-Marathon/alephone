@@ -2365,7 +2365,7 @@ void
 record_profile(int req_action_flags) {
 	if(net_profile_index < 1000) {
 		// capture 1000 profiling entries
-		net_profile[net_profile_index].timestamp	= SDL_GetTicks();
+		net_profile[net_profile_index].timestamp	= machine_tick_count();
 		net_profile[net_profile_index].local_queue_size	= NetSizeofLocalQueue();
 		net_profile[net_profile_index].required_action_flags = req_action_flags;
 		net_profile[net_profile_index].player_queue_size= get_action_queue_size(local_player_index);
