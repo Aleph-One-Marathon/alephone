@@ -123,6 +123,7 @@ inline short memory_error() {return 0;}
 
 static int32 heartbeat_count;
 static float heartbeat_fraction;
+static short phase= 0; /* When this gets to 0, update the world */
 static timer_task_proc input_task;
 static bool input_task_active;
 
@@ -246,7 +247,9 @@ float get_heartbeat_fraction(
   case _30fps:
     return 1.f;
   case _60fps:
-    return heartbeat_fraction < 0.5f ? 0.5f : 1.f;
+    if(!replay.game_is_being_replayed || replay.replay_speed >= 1)
+      return heartbeat_fraction < 0.5f ? 0.5f : 1.f;
+    // else fall through
   default:
     return heartbeat_fraction;
   }
@@ -295,7 +298,6 @@ bool input_controller(
 			}
 			else if (replay.game_is_being_replayed) // input from recorded game file
 			{
-				static short phase= 0; /* When this gets to 0, update the world */
 
 				/* Minimum replay speed is a pause. */
 				if(replay.replay_speed != MINIMUM_REPLAY_SPEED)
@@ -320,7 +322,8 @@ bool input_controller(
 	
 						/* Reset the phase-> doesn't matter if the replay speed is positive */					
 						/* +1 so that replay_speed 0 is different from replay_speed 1 */
-						phase= -(replay.replay_speed) + 1;
+                                                /* SB: +2 so that replay_speed 0 is ACTUALLY different from replay_speed 1... */
+						phase= -(replay.replay_speed) + 2;
 					}
 				}
 			}
@@ -1307,7 +1310,8 @@ void wait_until_next_frame() {
     yield();
     break;
   case _60fps:
-    sleep_until_machine_tick_count(next_frame_machine_tick);
+    if(next_frame_machine_tick != 0)
+      sleep_until_machine_tick_count(next_frame_machine_tick);
     break;
   default:
     yield();
@@ -1315,7 +1319,11 @@ void wait_until_next_frame() {
   }
 }
 
-// does what input_task used to do
+bool must_force_30fps() {
+  return game_is_networked || Movie::instance()->IsRecording();
+}
+
+// does what input_task used to do if non-30fps is selected
 void vbl_idle_proc() {
   if(get_effective_fps_target() == _30fps) {
     // we're using the old input method now; get ready to switch back if the
@@ -1346,4 +1354,13 @@ void vbl_idle_proc() {
     }
   }
   else next_frame_machine_tick = 0;
+  if(replay.game_is_being_replayed) {
+    if(replay.replay_speed == MINIMUM_REPLAY_SPEED) {
+      heartbeat_fraction = 1;
+    }
+    else if(replay.replay_speed < 1) {
+      auto ticks_per_play = -(replay.replay_speed) + 2;
+      heartbeat_fraction = (heartbeat_fraction + ticks_per_play - phase) / ticks_per_play;
+    }
+  }
 }
