@@ -42,9 +42,15 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 	instead of abusing/overflowing shape_descriptors
 */
 
+#include "cseries.h"
+#include "OGL_Headers.h"
+#include "world.h"
 #include "shape_descriptors.h"
 
 /* ---------- constants */
+
+#define MINIMUM_VERTICES_PER_SCREEN_POLYGON ((short)3)
+#define MAXIMUM_VERTICES_PER_SCREEN_POLYGON ((short)16)
 
 enum /* transfer modes */
 {
@@ -89,6 +95,11 @@ struct tint_table32
 };
 
 /* ---------- structures */
+
+struct point2d
+{
+	short x, y;
+};
 
 /* ignore multiple shading tables if set */
 #define _SHADELESS_BIT 0x8000

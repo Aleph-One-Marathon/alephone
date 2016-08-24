@@ -41,6 +41,7 @@ Nov 12, 2000 (Loren Petrich):
 
 #include "world.h"	
 #include "textures.h"
+#include "scottish_textures.h"
 // Stuff to control the view
 #include "ViewControl.h"
 
@@ -48,9 +49,6 @@ Nov 12, 2000 (Loren Petrich):
 
 /* the distance behind which we are not required to draw objects */
 #define MINIMUM_OBJECT_DISTANCE ((short)(WORLD_ONE/20))
-
-#define MINIMUM_VERTICES_PER_SCREEN_POLYGON ((short)3)
-#define MAXIMUM_VERTICES_PER_SCREEN_POLYGON ((short)16)
 
 // LP change: suppressed going/leaving states, because of alternative way of
 // adjusting the FOV.
@@ -79,12 +77,6 @@ enum /* shading tables */
 
 
 /* ---------- structures */
-
-struct point2d
-{
-	short x, y;
-};
-typedef struct point2d point2d;
 
 struct definition_header
 {
@@ -196,8 +188,6 @@ void check_m1_exploration(void);
 /* ----------- prototypes/SCREEN.C */
 void render_overhead_map(struct view_data *view);
 void render_computer_interface(struct view_data *view);
-
-#include "scottish_textures.h"
 
 // LP: definitions moved up here because they are referred to
 // outside of render.c, where they are defined.

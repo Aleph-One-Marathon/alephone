@@ -111,6 +111,7 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 */
 
 #include "cseries.h"
+#include "low_level_textures.h"
 #include "render.h"
 #include "Rasterizer_SW.h"
 
@@ -131,59 +132,6 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 #define DEPTH_TO_SHADE(d) (((_fixed)(d))<<(FIXED_FRACTIONAL_BITS-WORLD_FRACTIONAL_BITS-3))
 
 #define LARGEST_N 24
-
-/* ---------- texture horizontal polygon */
-
-#define HORIZONTAL_WIDTH_SHIFT 7 /* 128 (8 for 256) */
-#define HORIZONTAL_HEIGHT_SHIFT 7 /* 128 */
-#define HORIZONTAL_FREE_BITS (32-TRIG_SHIFT-WORLD_FRACTIONAL_BITS)
-#define HORIZONTAL_WIDTH_DOWNSHIFT (32-HORIZONTAL_WIDTH_SHIFT)
-#define HORIZONTAL_HEIGHT_DOWNSHIFT (32-HORIZONTAL_HEIGHT_SHIFT)
-
-struct _horizontal_polygon_line_header
-{
-	int32 y_downshift;
-};
-
-struct _horizontal_polygon_line_data
-{
-	uint32 source_x, source_y;
-	uint32 source_dx, source_dy;
-	
-	void *shading_table;
-};
-
-/* ---------- texture vertical polygon */
-
-#define VERTICAL_TEXTURE_WIDTH 128
-#define VERTICAL_TEXTURE_WIDTH_BITS 7
-#define VERTICAL_TEXTURE_WIDTH_FRACTIONAL_BITS (FIXED_FRACTIONAL_BITS-VERTICAL_TEXTURE_WIDTH_BITS)
-#define VERTICAL_TEXTURE_ONE (1<<VERTICAL_TEXTURE_WIDTH_FRACTIONAL_BITS)
-#define VERTICAL_TEXTURE_FREE_BITS FIXED_FRACTIONAL_BITS
-#define VERTICAL_TEXTURE_DOWNSHIFT (32-VERTICAL_TEXTURE_WIDTH_BITS)
-
-//AS: Seven! It's Everywhere!
-#define HORIZONTAL_WIDTH_SHIFT 7 /* 128 (8 for 256) */
-#define HORIZONTAL_HEIGHT_SHIFT 7 /* 128 */
-#define HORIZONTAL_FREE_BITS (32-TRIG_SHIFT-WORLD_FRACTIONAL_BITS)
-#define HORIZONTAL_WIDTH_DOWNSHIFT (32-HORIZONTAL_WIDTH_SHIFT)
-#define HORIZONTAL_HEIGHT_DOWNSHIFT (32-HORIZONTAL_HEIGHT_SHIFT)
-
-struct _vertical_polygon_data
-{
-	int16 downshift;
-	int16 x0;
-	int16 width;
-	
-	int16 pad;
-};
-
-struct _vertical_polygon_line_data
-{
-	void *shading_table;
-	pixel8 *texture;
-	int32 texture_y, texture_dy;
-};
 
 /* ---------- macros */
 
@@ -232,8 +180,6 @@ static void calculate_shading_table(void * &result,view_data *view, void *shadin
 static short *scratch_table0 = NULL, *scratch_table1 = NULL;
 static void *precalculation_table = NULL;
 
-static uint16 texture_random_seed= 6906;
-
 /* ---------- private prototypes */
 
 static void _pretexture_horizontal_polygon_lines(struct polygon_definition *polygon,
@@ -252,19 +198,6 @@ static void _prelandscape_horizontal_polygon_lines(struct polygon_definition *po
 	short y0, short *x0_table, short *x1_table, short line_count);
 
 /* ---------- code */
-
-
-// LP addition:
-// Find the next lower power of 2, and return the exponent
-//AS: p isn't needed
-inline int NextLowerExponent(int n)
-{
-	int xp = 0;
-	while(n > 1) {n >>= 1; xp++;}
-	return xp;
-}
-
-#include "low_level_textures.h"
 
 /* set aside memory at launch for two line tables (remember, we precalculate all the y-values
 	for trapezoids and two lines worth of x-values for polygons before mapping them) */
