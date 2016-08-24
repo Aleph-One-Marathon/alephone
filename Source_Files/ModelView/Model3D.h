@@ -25,6 +25,8 @@
 #ifndef MODEL_3D
 #define MODEL_3D
 
+#include "cseries.h"
+
 using namespace std;
 
 #ifdef HAVE_OPENGL

@@ -22,6 +22,8 @@
 	Framebuffer Object utilities
 */
 
+#include "cseries.h"
+
 #ifdef HAVE_OPENGL
 
 #include "OGL_Headers.h"
