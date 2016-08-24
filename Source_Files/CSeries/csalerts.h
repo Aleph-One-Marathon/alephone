@@ -91,4 +91,13 @@ void alert_corrupted_map(int error) { alert_user_fatal(128, 23, error); }
 #define vwarn(what,message) ((void) 0)
 #endif
 
+// "fast code" assert: disabled by default, enabled under DEBUG_FAST_CODE
+#ifdef DEBUG_FAST_CODE
+#define fc_assert(what) assert(what)
+#define fc_vassert(what,message) vassert(what,message)
+#else
+#define fc_assert(what) ((void) 0)
+#define fc_vassert(what,message) ((void) 0)
+#endif
+
 #endif

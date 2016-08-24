@@ -464,7 +464,7 @@ void tint_vertical_polygon_lines(
 
 	extern SDL_Surface *world_pixels;
 	
-	assert(tint_table_index>=0 && tint_table_index<number_of_shading_tables);
+	fc_assert(tint_table_index>=0 && tint_table_index<number_of_shading_tables);
 
 	while ((line_count-= 1)>=0)
 	{

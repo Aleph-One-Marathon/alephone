@@ -52,12 +52,6 @@ Jul 1, 2000 (Loren Petrich):
 	Inlined the angle normalization; doing it automatically for all the functions that work with angles
 */
 
-#ifndef DEBUG_FAST_CODE
-#undef DEBUG
-// #undef assert(x)
-#undef assert
-#define assert(x) 
-#endif
 #include "cseries.h"
 #include "world.h"
 #include "FilmProfile.h"
@@ -101,7 +95,7 @@ world_point2d *translate_point2d(
 {
 	// LP change: idiot-proofed this
 	theta = normalize_angle(theta);
-	assert(cosine_table[0]==TRIG_MAGNITUDE);
+	fc_assert(cosine_table[0]==TRIG_MAGNITUDE);
 	
 	point->x+= (distance*cosine_table[theta])>>TRIG_SHIFT;
 	point->y+= (distance*sine_table[theta])>>TRIG_SHIFT;
@@ -139,7 +133,7 @@ world_point2d *rotate_point2d(
 	long_vector2d temp;
 	
 	theta = normalize_angle(theta);
-	assert(cosine_table[0]==TRIG_MAGNITUDE);
+	fc_assert(cosine_table[0]==TRIG_MAGNITUDE);
 	
 	temp.i= int32(point->x)-int32(origin->x);
 	temp.j= int32(point->y)-int32(origin->y);
@@ -161,7 +155,7 @@ world_point2d *transform_point2d(
 	long_vector2d temp;
 	
 	theta = normalize_angle(theta);
-	assert(cosine_table[0]==TRIG_MAGNITUDE);
+	fc_assert(cosine_table[0]==TRIG_MAGNITUDE);
 	
 	temp.i= int32(point->x)-int32(origin->x);
 	temp.j= int32(point->y)-int32(origin->y);
@@ -217,7 +211,7 @@ void build_trig_tables(
 	sine_table= (int16 *) malloc(sizeof(int16)*NUMBER_OF_ANGLES);
 	cosine_table= (int16 *) malloc(sizeof(int16)*NUMBER_OF_ANGLES);
 	tangent_table= (int32 *) malloc(sizeof(int32)*NUMBER_OF_ANGLES);
-	assert(sine_table&&cosine_table&&tangent_table);
+	fc_assert(sine_table&&cosine_table&&tangent_table);
 	
 	for (i=0;i<NUMBER_OF_ANGLES;++i)
 	{
@@ -689,7 +683,7 @@ world_point2d *transform_overflow_point2d(
 	long_vector2d temp, tempr;
 	
 	theta = normalize_angle(theta);
-	assert(cosine_table[0]==TRIG_MAGNITUDE);
+	fc_assert(cosine_table[0]==TRIG_MAGNITUDE);
 	
 	temp.i= int32(point->x)-int32(origin->x);
 	temp.j= int32(point->y)-int32(origin->y);
