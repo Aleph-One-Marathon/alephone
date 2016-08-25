@@ -1,5 +1,7 @@
 ## Process this file with automake to produce Makefile.in 
 
+EXTRA_DIST = headertest/README
+
 # these are currently broken
 # noinst_PROGRAMS = single2forks forks2single dumprsrcmap dumpwad
 #dumprsrcmap_SOURCES = dumprsrcmap.cpp
