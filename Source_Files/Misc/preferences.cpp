@@ -1618,7 +1618,7 @@ static void controls_dialog(void *arg)
 	if (theSensitivity <= 0.0f) theSensitivity = 1.0f;
 	theSensitivityLog = std::log(theSensitivity);
 	int theVerticalSliderPosition =
-		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
+		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
 	
 	w_sens_slider* sens_vertical_w = new w_sens_slider(1000, theVerticalSliderPosition);
 	mouse->dual_add(sens_vertical_w->label("Mouse Vertical Sensitivity"), d);
@@ -1630,7 +1630,7 @@ static void controls_dialog(void *arg)
 	if (theSensitivity <= 0.0f) theSensitivity = 1.0f;
 	theSensitivityLog = std::log(theSensitivity);
 	int theHorizontalSliderPosition =
-		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
+		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
 
 	w_sens_slider* sens_horizontal_w = new w_sens_slider(1000, theHorizontalSliderPosition);
 	mouse->dual_add(sens_horizontal_w->label("Mouse Horizontal Sensitivity"), d);
