@@ -237,19 +237,16 @@ void ShowMessage(char *Text);
 
 /* SB: Custom Blizzard-style overlays */
 #define MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS 6
-/* This is rather high for people who play at 320x240. Yes, I DO exist!
-However, since text in general doesn't work too well for us... :'( */
-#define SCRIPT_HUD_ELEMENT_SPACING (640/MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS)
 /* color is a terminal color */
-void SetScriptHUDColor(int idx, int color);
+void SetScriptHUDColor(int player, int idx, int color);
 /* text == NULL or "" removes that HUD element
    to turn HUD elements off, set all elements NULL or "" */
-void SetScriptHUDText(int idx, const char* text);
+void SetScriptHUDText(int player, int idx, const char* text);
 /* icon == NULL turns the icon off
    someday I'll document the format */
-bool SetScriptHUDIcon(int idx, const char* icon, size_t length);
+bool SetScriptHUDIcon(int player, int idx, const char* icon, size_t length);
 /* sets the icon for that HUD to a colored square (same colors as SetScriptHUDColor) */
-void SetScriptHUDSquare(int idx, int color);
+void SetScriptHUDSquare(int player, int idx, int color);
 
 bool MainScreenVisible();
 int MainScreenWidth();
