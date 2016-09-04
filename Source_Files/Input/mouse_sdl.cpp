@@ -40,7 +40,7 @@
 // Global variables
 static bool mouse_active = false;
 static uint8 button_mask = 0;		// Mask of enabled buttons
-static _fixed snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity;
+static _fixed snapshot_delta_yaw, snapshot_delta_pitch;
 static _fixed snapshot_delta_scrollwheel;
 static int snapshot_delta_x, snapshot_delta_y;
 
@@ -54,7 +54,7 @@ void enter_mouse(short type)
 	if (type != _keyboard_or_game_pad) {
 		SDL_SetRelativeMouseMode(SDL_TRUE);
 		mouse_active = true;
-		snapshot_delta_yaw = snapshot_delta_pitch = snapshot_delta_velocity = 0;
+		snapshot_delta_yaw = snapshot_delta_pitch = 0;
 		snapshot_delta_scrollwheel = 0;
 		snapshot_delta_x = snapshot_delta_y = 0;
 		button_mask = 0;	// Disable all buttons (so a shot won't be fired if we enter the game with a mouse button down from clicking a GUI widget)
@@ -146,9 +146,9 @@ void test_mouse(short type, uint32 *flags, _fixed *delta_yaw, _fixed *delta_pitc
 	if (mouse_active) {
 		*delta_yaw = snapshot_delta_yaw;
 		*delta_pitch = snapshot_delta_pitch;
-		*delta_velocity = snapshot_delta_velocity;
+		*delta_velocity = 0;  // Mouse-driven player velocity is unimplemented
 
-		snapshot_delta_yaw = snapshot_delta_pitch = snapshot_delta_velocity = 0;
+		snapshot_delta_yaw = snapshot_delta_pitch = 0;
 	} else {
 		*delta_yaw = 0;
 		*delta_pitch = 0;
