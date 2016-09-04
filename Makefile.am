@@ -27,7 +27,6 @@ EXTRA_DIST = INSTALL.MacOSX INSTALL.Unix INSTALL.Windows	\
   data/ProFontAO.ttf data/ProFontAOLicense.txt		\
   docs/alephone.6 examples/lua/Cheats.lua THANKS			\
   data/powered-by-alephone.svg						\
-  PBProjects/AlephOne-Xcode4.xcodeproj/project.pbxproj\
   PBProjects/Info-AlephOne-Xcode4.plist\
 	PBProjects/AppStore/Marathon/Info.plist \
 	PBProjects/AppStore/Marathon/Marathon.icns \
