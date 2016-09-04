@@ -1,0 +1,80 @@
+# Requires GNU Make 3.81+ (preferably 4.0+ for option -O support)
+
+# Default to "keep going" mode, parallel execution, and grouping output by target
+MAKEFLAGS = -k -j -O
+
+# Build-config variables
+CPPFLAGS = @CPPFLAGS@
+CXX = @CXX@
+CXXFLAGS = @CXXFLAGS@
+DEFS = @DEFS@
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+abs_builddir = @abs_builddir@
+top_builddir = @top_builddir@
+abs_top_builddir = @abs_top_builddir@
+
+SFDir := $(top_srcdir)/Source_Files
+DepsDir := cache/.deps
+
+
+# --------------
+# Scope Settings
+# --------------
+
+# Parent directories of all headers in the Source_Files tree we want to cover
+# - currently this is just the entire Source_Files tree except Expat
+HeaderDirs := $(strip $(shell find $(SFDir) -type d ! -path $(SFDir)/Expat -print -o -prune))
+
+# Customized header lists for specific directories (overrides the default '*.h' selection)
+# - format: <dir>-Headers := <non-empty header list>
+$(SFDir)/Lua-Headers := $(wildcard $(SFDir)/Lua/lua_*.h)
+
+Headers := $(foreach dir,$(HeaderDirs),$(or $($(dir)-Headers),$(wildcard $(dir)/*.h)))
+
+# Header targets: paths to headers in the Source_Files tree, relative to Source_Files
+HeaderTargets := $(Headers:$(SFDir)/%=%)
+
+
+# --------------------
+# Compilation Settings
+# --------------------
+
+# [User-specified variable] Extra options to be appended to the compile command; defaults to empty
+# - this variable is intentionally not tracked as a dependency
+z =
+
+# Include dirs normally specified in AM_CPPFLAGS in .am files and implicitly by Automake
+# - skip conditionally including Expat; only LibNAT/upnp.c #includes expat.h
+AMIncludeDirs := $(top_builddir) $(HeaderDirs)
+
+TestOptions := -x c++ -fsyntax-only -fdiagnostics-color
+BasicCxxCmd := $(CXX) $(DEFS) $(AMIncludeDirs:%=-I%) $(CPPFLAGS) $(CXXFLAGS) $(TestOptions) $(z)
+
+
+# -------
+# Targets
+# -------
+
+.PHONY: all $(HeaderTargets) clean
+
+all: $(HeaderTargets) ;
+
+$(HeaderTargets): %: cache/%.test ;
+
+clean:
+	rm -rf cache
+
+# Test completion file for header target %
+cache/%.test: GNUmakefile
+	@mkdir -p $(@D) $(DepsDir)/$(*D) && \
+	$(BasicCxxCmd) -MD -MP -MT $@ -MF $(DepsDir)/$*.d.tmp $(SFDir)/$* && \
+	mv -f $(DepsDir)/$*.d.tmp $(DepsDir)/$*.d && \
+	touch $@
+
+GNUmakefile: $(srcdir)/GNUmakefile.in $(top_builddir)/config.status
+	@cd $(top_builddir) && ./config.status $(abs_builddir:$(abs_top_builddir)/%=%)/GNUmakefile
+
+
+# Include any existing dep files
+-include $(HeaderTargets:%=$(DepsDir)/%.d)

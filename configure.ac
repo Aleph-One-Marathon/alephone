@@ -310,6 +310,7 @@ Source_Files/Sound/Makefile
 Source_Files/TCPMess/Makefile
 Source_Files/XML/Makefile
 tools/Makefile
+tools/headertest/GNUmakefile
 data/Makefile
 data/default_theme/Makefile
 data/icons/Makefile
