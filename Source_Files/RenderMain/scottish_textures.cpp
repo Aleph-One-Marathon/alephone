@@ -111,19 +111,7 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 */
 
 #include "cseries.h"
-#if defined(__GNUC__)
-#ifndef DEBUG_FAST_CODE
-#undef DEBUG
-#undef assert
-#define assert(x)
-#undef vassert
-#define vassert(x...) 
-#undef csprintf
-#define csprintf(x...) 
-#undef vhalt
-#define vhalt(x...)
-#endif
-#endif
+#include "low_level_textures.h"
 #include "render.h"
 #include "Rasterizer_SW.h"
 
@@ -145,60 +133,13 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 
 #define LARGEST_N 24
 
-/* ---------- texture horizontal polygon */
-
-#define HORIZONTAL_WIDTH_SHIFT 7 /* 128 (8 for 256) */
-#define HORIZONTAL_HEIGHT_SHIFT 7 /* 128 */
-#define HORIZONTAL_FREE_BITS (32-TRIG_SHIFT-WORLD_FRACTIONAL_BITS)
-#define HORIZONTAL_WIDTH_DOWNSHIFT (32-HORIZONTAL_WIDTH_SHIFT)
-#define HORIZONTAL_HEIGHT_DOWNSHIFT (32-HORIZONTAL_HEIGHT_SHIFT)
-
-struct _horizontal_polygon_line_header
-{
-	int32 y_downshift;
-};
-
-struct _horizontal_polygon_line_data
-{
-	uint32 source_x, source_y;
-	uint32 source_dx, source_dy;
-	
-	void *shading_table;
-};
-
-/* ---------- texture vertical polygon */
-
-#define VERTICAL_TEXTURE_WIDTH 128
-#define VERTICAL_TEXTURE_WIDTH_BITS 7
-#define VERTICAL_TEXTURE_WIDTH_FRACTIONAL_BITS (FIXED_FRACTIONAL_BITS-VERTICAL_TEXTURE_WIDTH_BITS)
-#define VERTICAL_TEXTURE_ONE (1<<VERTICAL_TEXTURE_WIDTH_FRACTIONAL_BITS)
-#define VERTICAL_TEXTURE_FREE_BITS FIXED_FRACTIONAL_BITS
-#define VERTICAL_TEXTURE_DOWNSHIFT (32-VERTICAL_TEXTURE_WIDTH_BITS)
-
-//AS: Seven! It's Everywhere!
-#define HORIZONTAL_WIDTH_SHIFT 7 /* 128 (8 for 256) */
-#define HORIZONTAL_HEIGHT_SHIFT 7 /* 128 */
-#define HORIZONTAL_FREE_BITS (32-TRIG_SHIFT-WORLD_FRACTIONAL_BITS)
-#define HORIZONTAL_WIDTH_DOWNSHIFT (32-HORIZONTAL_WIDTH_SHIFT)
-#define HORIZONTAL_HEIGHT_DOWNSHIFT (32-HORIZONTAL_HEIGHT_SHIFT)
-
-struct _vertical_polygon_data
-{
-	int16 downshift;
-	int16 x0;
-	int16 width;
-	
-	int16 pad;
-};
-
-struct _vertical_polygon_line_data
-{
-	void *shading_table;
-	pixel8 *texture;
-	int32 texture_y, texture_dy;
-};
-
 /* ---------- macros */
+
+#if defined(DEBUG) && defined(DEBUG_FAST_CODE)
+#define VHALT_DEBUG(message) vhalt(message)
+#else
+#define VHALT_DEBUG(message) ((void)0)
+#endif
 
 // i0 + i1 == MAX(i0, i1) + MIN(i0, i1)/2
 //#define calculate_shading_table(result, view, shading_tables, depth, ambient_shade)
@@ -239,8 +180,6 @@ static void calculate_shading_table(void * &result,view_data *view, void *shadin
 static short *scratch_table0 = NULL, *scratch_table1 = NULL;
 static void *precalculation_table = NULL;
 
-static uint16 texture_random_seed= 6906;
-
 /* ---------- private prototypes */
 
 static void _pretexture_horizontal_polygon_lines(struct polygon_definition *polygon,
@@ -260,19 +199,6 @@ static void _prelandscape_horizontal_polygon_lines(struct polygon_definition *po
 
 /* ---------- code */
 
-
-// LP addition:
-// Find the next lower power of 2, and return the exponent
-//AS: p isn't needed
-inline int NextLowerExponent(int n)
-{
-	int xp = 0;
-	while(n > 1) {n >>= 1; xp++;}
-	return xp;
-}
-
-#include "low_level_textures.h"
-
 /* set aside memory at launch for two line tables (remember, we precalculate all the y-values
 	for trapezoids and two lines worth of x-values for polygons before mapping them) */
 void allocate_texture_tables(
@@ -281,7 +207,7 @@ void allocate_texture_tables(
 	scratch_table0= new short[MAXIMUM_SCRATCH_TABLE_ENTRIES];
 	scratch_table1= new short[MAXIMUM_SCRATCH_TABLE_ENTRIES];
 	precalculation_table= (void*)new char[MAXIMUM_PRECALCULATION_TABLE_ENTRY_SIZE*MAXIMUM_SCRATCH_TABLE_ENTRIES];
-	assert(scratch_table0&&scratch_table1&&precalculation_table);
+	fc_assert(scratch_table0&&scratch_table1&&precalculation_table);
 }
 
 void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& textured_polygon)
@@ -290,7 +216,7 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 	short vertex, highest_vertex, lowest_vertex;
 	point2d *vertices= polygon->vertices;
 
-	assert(polygon->vertex_count>=MINIMUM_VERTICES_PER_SCREEN_POLYGON&&polygon->vertex_count<MAXIMUM_VERTICES_PER_SCREEN_POLYGON);
+	fc_assert(polygon->vertex_count>=MINIMUM_VERTICES_PER_SCREEN_POLYGON&&polygon->vertex_count<MAXIMUM_VERTICES_PER_SCREEN_POLYGON);
 
 	/* if we get static, tinted or landscaped transfer modes punt to the vertical polygon mapper */
 	if (polygon->transfer_mode == _static_transfer) {
@@ -324,7 +250,7 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 		left_vertex= right_vertex= highest_vertex; /* both sides start at the highest vertex */
 		total_line_count= vertices[lowest_vertex].y-vertices[highest_vertex].y; /* calculate vertical line count */
 
-		assert(total_line_count<MAXIMUM_SCRATCH_TABLE_ENTRIES); /* make sure we have enough scratch space */
+		fc_assert(total_line_count<MAXIMUM_SCRATCH_TABLE_ENTRIES); /* make sure we have enough scratch space */
 		
 		/* precalculate high and low y-coordinates for every x-coordinate */			
 		aggregate_total_line_count= total_line_count;
@@ -365,18 +291,18 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
               //AS: moving delta declaration up to where it's needed. Isn't C++ wonderful?
 			/* advance by the minimum of left_line_count and right_line_count */
 			short delta= MIN(left_line_count, right_line_count);
-			assert(delta);
+			fc_assert(delta);
 //			dprintf("tc=%d lc=%d rc=%d delta=%d", total_line_count, left_line_count, right_line_count, delta);
 			total_line_count-= delta;
 			left_line_count-= delta;
 			right_line_count-= delta;
 			
-			assert(delta||!total_line_count); /* if our delta is zero, weÕd better be out of lines */
+			fc_assert(delta||!total_line_count); /* if our delta is zero, weÕd better be out of lines */
 		}
 		
 		/* make sure every coordinate is accounted for in our tables */
-		assert(aggregate_right_line_count==aggregate_total_line_count);
-		assert(aggregate_left_line_count==aggregate_total_line_count);
+		fc_assert(aggregate_right_line_count==aggregate_total_line_count);
+		fc_assert(aggregate_left_line_count==aggregate_total_line_count);
 
 		/* precalculate mode-specific data */
 		switch (polygon->transfer_mode)
@@ -394,7 +320,7 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 				break;
 			
 			default:
-				vhalt(csprintf(temporary, "horizontal_polygons dont support mode #%d", polygon->transfer_mode));
+				VHALT_DEBUG(csprintf(temporary, "horizontal_polygons dont support mode #%d", polygon->transfer_mode));
 		}
 		
 		/* render all lines */
@@ -414,7 +340,7 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 						break;
 						
 					default:
-						assert(false);
+						fc_assert(false);
 						break;
 				}
 				break;
@@ -449,7 +375,7 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 							vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count);
 						break;
 					default:
-						assert(false);
+						fc_assert(false);
 						break;
 				}
 				break;
@@ -489,13 +415,13 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 						break;
 					
 					default:
-						assert(false);
+						fc_assert(false);
 						break;
 				}
 				break;
 
 			default:
-				assert(false);
+				fc_assert(false);
 				break;
 		}
 	}
@@ -507,7 +433,7 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 	short vertex, highest_vertex, lowest_vertex;
 	point2d *vertices= polygon->vertices;
 
-	assert(polygon->vertex_count>=MINIMUM_VERTICES_PER_SCREEN_POLYGON&&polygon->vertex_count<MAXIMUM_VERTICES_PER_SCREEN_POLYGON);
+	fc_assert(polygon->vertex_count>=MINIMUM_VERTICES_PER_SCREEN_POLYGON&&polygon->vertex_count<MAXIMUM_VERTICES_PER_SCREEN_POLYGON);
 
     if (polygon->transfer_mode == _big_landscaped_transfer) {
         texture_horizontal_polygon(textured_polygon);
@@ -544,7 +470,7 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 		left_vertex= right_vertex= highest_vertex; /* both sides start at the highest vertex */
 		total_line_count= vertices[lowest_vertex].x-vertices[highest_vertex].x; /* calculate vertical line count */
 
-		assert(total_line_count<MAXIMUM_SCRATCH_TABLE_ENTRIES); /* make sure we have enough scratch space */
+		fc_assert(total_line_count<MAXIMUM_SCRATCH_TABLE_ENTRIES); /* make sure we have enough scratch space */
 		
 		/* precalculate high and low y-coordinates for every x-coordinate */			
 		aggregate_total_line_count= total_line_count;
@@ -584,17 +510,17 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 			
 			/* advance by the minimum of left_line_count and right_line_count */
 			short delta= MIN(left_line_count, right_line_count);
-			assert(delta);
+			fc_assert(delta);
 			total_line_count-= delta;
 			left_line_count-= delta;
 			right_line_count-= delta;
 			
-			assert(delta||!total_line_count); /* if our delta is zero, weÕd better be out of lines */
+			fc_assert(delta||!total_line_count); /* if our delta is zero, weÕd better be out of lines */
 		}
 		
 		/* make sure every coordinate is accounted for in our tables */
-		assert(aggregate_right_line_count==aggregate_total_line_count);
-		assert(aggregate_left_line_count==aggregate_total_line_count);
+		fc_assert(aggregate_right_line_count==aggregate_total_line_count);
+		fc_assert(aggregate_left_line_count==aggregate_total_line_count);
 
 		/* precalculate mode-specific data */
 
@@ -602,7 +528,7 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
           {
               _pretexture_vertical_polygon_lines(polygon, screen, view, (struct _vertical_polygon_data *)precalculation_table, vertices[highest_vertex].x, left_table, right_table, aggregate_total_line_count);
           }
-          else vhalt(csprintf(temporary, "vertical_polygons dont support mode #%d", polygon->transfer_mode));
+          else VHALT_DEBUG(csprintf(temporary, "vertical_polygons dont support mode #%d", polygon->transfer_mode));
           
 		/* render all lines */
 		switch (bit_depth)
@@ -624,7 +550,7 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 						break;
 						
 				default:
-					assert(false);
+					fc_assert(false);
 					break;
 				}
 				break;
@@ -672,7 +598,7 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 					}
 					break;
 				default:
-					assert(false);
+					fc_assert(false);
 					break;
 				}
 				break;
@@ -718,13 +644,13 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 						break;
 						
 				default:
-					assert(false);
+					fc_assert(false);
 					break;
 				}
 				break;
 				
 		default:
-			assert(false);
+			fc_assert(false);
 			break;
 		}
 	}
@@ -830,7 +756,7 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 						break;
 					
 					default:
-						vhalt(csprintf(temporary, "rectangles dont support mode #%d", rectangle->transfer_mode));
+						VHALT_DEBUG(csprintf(temporary, "rectangles dont support mode #%d", rectangle->transfer_mode));
 				}
 		
 				for (; screen_width; --screen_width)
@@ -847,7 +773,7 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 					if (FIXED_INTEGERAL_PART(texture_y0)<first)
 					{
 						delta= (INTEGER_TO_FIXED(first) - texture_y0)/texture_dy + 1;
-						vassert(delta>=0, csprintf(temporary, "[%x,%x] ¶=%x (#%d,#%d)", texture_y0, texture_y1, texture_dy, first, last));
+						fc_vassert(delta>=0, csprintf(temporary, "[%x,%x] ¶=%x (#%d,#%d)", texture_y0, texture_y1, texture_dy, first, last));
 						
 						y0= MIN(y1, y0+delta);
 						texture_y+= delta*texture_dy;
@@ -856,7 +782,7 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 					if (FIXED_INTEGERAL_PART(texture_y1)>last)
 					{
 						delta= (texture_y1 - INTEGER_TO_FIXED(last))/texture_dy + 1;
-						vassert(delta>=0, csprintf(temporary, "[%x,%x] ¶=%x (#%d,#%d)", texture_y0, texture_y1, texture_dy, first, last));
+						fc_vassert(delta>=0, csprintf(temporary, "[%x,%x] ¶=%x (#%d,#%d)", texture_y0, texture_y1, texture_dy, first, last));
 						
 						y1= MAX(y0, y1-delta);
 					}
@@ -872,10 +798,10 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 					*y0_table++= y0;
 					*y1_table++= y1;
 					
-					assert(y0<=y1);
-					assert(y0>=0 && y1>=0);
-					assert(y0<=screen->height);
-					assert(y1<=screen->height);
+					fc_assert(y0<=y1);
+					fc_assert(y0>=0 && y1>=0);
+					fc_assert(y0<=screen->height);
+					fc_assert(y1<=screen->height);
 				}
 		
 				switch (bit_depth)
@@ -899,7 +825,7 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 								break;
 							
 							default:
-								assert(false);
+								fc_assert(false);
 								break;
 						}
 						break;
@@ -922,7 +848,7 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 								break;
 							
 							default:
-								assert(false);
+								fc_assert(false);
 								break;
 						}
 						break;
@@ -946,13 +872,13 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 								break;
 							
 							default:
-								assert(false);
+								fc_assert(false);
 								break;
 						}
 						break;
 		
 					default:
-						assert(false);
+						fc_assert(false);
 						break;
 				}
 			}
@@ -982,7 +908,7 @@ static void _pretexture_vertical_polygon_lines(
 
 	(void) (screen);
 
-	assert(sizeof(struct _vertical_polygon_line_data)<=MAXIMUM_PRECALCULATION_TABLE_ENTRY_SIZE);
+	fc_assert(sizeof(struct _vertical_polygon_line_data)<=MAXIMUM_PRECALCULATION_TABLE_ENTRY_SIZE);
 
 	data->downshift= VERTICAL_TEXTURE_DOWNSHIFT;
 	data->x0= x0;
@@ -1054,7 +980,7 @@ static void _pretexture_vertical_polygon_lines(
 		if (!adjusted_ty_denominator) adjusted_ty_denominator= 1; /* -1 will still be -1 */
 		ty_delta= - INTEGER_TO_FIXED(adjusted_world_x)/adjusted_ty_denominator;
 		
-		vassert(ty_delta>=0, csprintf(temporary, "ty_delta=W2F(%d)/%d=%d", world_x, unadjusted_ty_denominator, ty_delta));
+		fc_vassert(ty_delta>=0, csprintf(temporary, "ty_delta=W2F(%d)/%d=%d", world_x, unadjusted_ty_denominator, ty_delta));
 
 		/* calculate the shading table for this column */
 		if (polygon->flags&_SHADELESS_BIT)
@@ -1260,7 +1186,7 @@ static short *build_x_table(
 	dx= x1-x0, adx= ABS(dx), dx= SGN(dx);
 	dy= y1-y0, ady= ABS(dy), dy= SGN(dy);
 
-	assert(ady<MAXIMUM_SCRATCH_TABLE_ENTRIES); /* can't overflow table */
+	fc_assert(ady<MAXIMUM_SCRATCH_TABLE_ENTRIES); /* can't overflow table */
 	if (dy>0)
 	{
 		/* setup initial (x,y) location and initialize a pointer to our table */
@@ -1277,7 +1203,7 @@ static short *build_x_table(
 				if (d<0) y+= 1, d+= d_max, *record++= x, ady-= 1;
 				x+= dx, d+= delta_d;
 			}
-			if (ady==1) *record++= x; else assert(!ady);
+			if (ady==1) *record++= x; else fc_assert(!ady);
 		}
 		else
 		{
@@ -1318,7 +1244,7 @@ static short *build_y_table(
 	dx= x1-x0, adx= ABS(dx), dx= SGN(dx);
 	dy= y1-y0, ady= ABS(dy), dy= SGN(dy);
 
-	assert(adx<MAXIMUM_SCRATCH_TABLE_ENTRIES); /* can't overflow table */
+	fc_assert(adx<MAXIMUM_SCRATCH_TABLE_ENTRIES); /* can't overflow table */
 	if (dx>=0) /* vertical lines allowed */
 	{
 		/* setup initial (x,y) location and initialize a pointer to our table */
@@ -1355,7 +1281,7 @@ static short *build_y_table(
 				if (d<0) { x+= dx, d+= d_max, adx-= 1; if (dy>=0) *record++= y; else *--record= y; }
 				y+= 1, d+= delta_d;
 			}
-			if (adx==1) if (dy>=0) *record++= y; else *--record= y; else assert(!adx);
+			if (adx==1) if (dy>=0) *record++= y; else *--record= y; else fc_assert(!adx);
 		}
 	}
 	else

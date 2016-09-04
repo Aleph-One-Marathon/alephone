@@ -30,6 +30,75 @@ Jan 30, 2000 (Loren Petrich):
 	Removed some "static" declarations that conflict with "extern"
 */
 
+#include "cseries.h"
+#include "preferences.h"
+#include "textures.h"
+#include "scottish_textures.h"
+
+/* ---------- global state */
+
+inline uint16 & texture_random_seed()
+{
+	static uint16 seed = 6906;
+	return seed;
+}
+
+/* ---------- texture horizontal polygon */
+
+#define HORIZONTAL_WIDTH_SHIFT 7 /* 128 (8 for 256) */
+#define HORIZONTAL_HEIGHT_SHIFT 7 /* 128 */
+#define HORIZONTAL_FREE_BITS (32-TRIG_SHIFT-WORLD_FRACTIONAL_BITS)
+#define HORIZONTAL_WIDTH_DOWNSHIFT (32-HORIZONTAL_WIDTH_SHIFT)
+#define HORIZONTAL_HEIGHT_DOWNSHIFT (32-HORIZONTAL_HEIGHT_SHIFT)
+
+struct _horizontal_polygon_line_header
+{
+	int32 y_downshift;
+};
+
+struct _horizontal_polygon_line_data
+{
+	uint32 source_x, source_y;
+	uint32 source_dx, source_dy;
+	
+	void *shading_table;
+};
+
+/* ---------- texture vertical polygon */
+
+#define VERTICAL_TEXTURE_WIDTH 128
+#define VERTICAL_TEXTURE_WIDTH_BITS 7
+#define VERTICAL_TEXTURE_WIDTH_FRACTIONAL_BITS (FIXED_FRACTIONAL_BITS-VERTICAL_TEXTURE_WIDTH_BITS)
+#define VERTICAL_TEXTURE_ONE (1<<VERTICAL_TEXTURE_WIDTH_FRACTIONAL_BITS)
+#define VERTICAL_TEXTURE_FREE_BITS FIXED_FRACTIONAL_BITS
+#define VERTICAL_TEXTURE_DOWNSHIFT (32-VERTICAL_TEXTURE_WIDTH_BITS)
+
+struct _vertical_polygon_data
+{
+	int16 downshift;
+	int16 x0;
+	int16 width;
+	
+	int16 pad;
+};
+
+struct _vertical_polygon_line_data
+{
+	void *shading_table;
+	pixel8 *texture;
+	int32 texture_y, texture_dy;
+};
+
+/* ---------- code */
+
+// Find the next lower power of 2, and return the exponent
+inline int NextLowerExponent(int n)
+{
+	int xp = 0;
+	while(n > 1) {n >>= 1; xp++;}
+	return xp;
+}
+
 template <typename T>
 inline T average(T fg, T bg)
 {
@@ -464,7 +533,7 @@ void tint_vertical_polygon_lines(
 
 	extern SDL_Surface *world_pixels;
 	
-	assert(tint_table_index>=0 && tint_table_index<number_of_shading_tables);
+	fc_assert(tint_table_index>=0 && tint_table_index<number_of_shading_tables);
 
 	while ((line_count-= 1)>=0)
 	{
@@ -517,7 +586,7 @@ void randomize_vertical_polygon_lines(
 	register short bytes_per_row= screen->bytes_per_row;
 	int line_count= data->width;
 	int x= data->x0;
-	register uint16 seed= texture_random_seed;
+	register uint16 seed= texture_random_seed();
 	register uint16 drop_less_than= transfer_data;
 
 	(void) (view);
@@ -546,5 +615,5 @@ void randomize_vertical_polygon_lines(
 		x+= 1;
 	}
 	
-	texture_random_seed= seed;
+	texture_random_seed() = seed;
 }

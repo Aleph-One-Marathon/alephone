@@ -228,7 +228,7 @@ static int Initialize_Winsock_Library()
    set during the WSAStartup phase, and detect if we
    are using the winsock 1.1 version of the library or
    newer */
-static Is_Valid_Library(WSADATA * wsaData)
+static int Is_Valid_Library(WSADATA * wsaData)
 {
   float socklib_ver;
   socklib_ver = HIBYTE(wsaData->wVersion)/10.0F;
