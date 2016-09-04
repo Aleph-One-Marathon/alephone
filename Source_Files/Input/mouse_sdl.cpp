@@ -95,16 +95,9 @@ void recenter_mouse(void)
 void mouse_idle(short type)
 {
 	if (mouse_active) {
-		static uint32 last_tick_count = 0;
-		uint32 tick_count = SDL_GetTicks();
-		int32 ticks_elapsed = tick_count - last_tick_count;
-
-		if (ticks_elapsed < 1)
-			return;
-
 		// Calculate axis deltas
-		float dx = snapshot_delta_x / static_cast<float>(ticks_elapsed);
-		float dy = -snapshot_delta_y / static_cast<float>(ticks_elapsed);
+		float dx = snapshot_delta_x;
+		float dy = -snapshot_delta_y;
 		snapshot_delta_x = 0;
 		snapshot_delta_y = 0;
 		
@@ -113,35 +106,33 @@ void mouse_idle(short type)
 			dy = -dy;
 		
 		// scale input by sensitivity
-		if (input_preferences->sens_horizontal != FIXED_ONE)
-			dx *= input_preferences->sens_horizontal / static_cast<float>(FIXED_ONE);
-		if (input_preferences->sens_vertical != FIXED_ONE)
-			dy *= input_preferences->sens_vertical / static_cast<float>(FIXED_ONE);
+		const float sensitivityScale = 1.f / (66.f * FIXED_ONE);
+		dx *= sensitivityScale * input_preferences->sens_horizontal;
+		dy *= sensitivityScale * input_preferences->sens_vertical;
 		
-		dx = PIN(dx, -0.5, 0.5) / 2.f;
-		dy = PIN(dy, -0.5, 0.5) / 2.f;
 		if(input_preferences->mouse_acceleration) {
 			/* do nonlinearity */
 			dx = (dx * fabs(dx)) * 4.f;
 			dy = (dy * fabs(dy)) * 4.f;
 		}
 		
-		_fixed vx = dx * static_cast<float>(FIXED_ONE);
-		_fixed vy = dy * static_cast<float>(FIXED_ONE);
+		// 1 dx unit = 1 * 2^ABSOLUTE_YAW_BITS * (360 deg / 2^ANGULAR_BITS)
+		//           = 90 deg
+		//
+		// 1 dy unit = 1 * 2^ABSOLUTE_PITCH_BITS * (360 deg / 2^ANGULAR_BITS)
+		//           = 22.5 deg
 		
-		// X axis = yaw
-		snapshot_delta_yaw = vx;
-
-		// Y axis = pitch or move, depending on mouse input type
-		if (type == _mouse_yaw_pitch) {
-			snapshot_delta_pitch = vy;
-			snapshot_delta_velocity = 0;
-		} else {
-			snapshot_delta_pitch = 0;
-			snapshot_delta_velocity = vy;
-		}
-
-		last_tick_count = tick_count;
+		// Largest dx for which both -dx and +dx can be represented in 1 action flags bitset
+		const float dxLimit = 0.5f - 1.f / (1<<ABSOLUTE_YAW_BITS);  // 0.4921875 dx units (~44.30 deg)
+		
+		// Largest dy for which both -dy and +dy can be represented in 1 action flags bitset
+		const float dyLimit = 0.5f - 1.f / (1<<ABSOLUTE_PITCH_BITS);  // 0.46875 dy units (~10.55 deg)
+		
+		dx = PIN(dx, -dxLimit, dxLimit);
+		dy = PIN(dy, -dyLimit, dyLimit);
+		
+		snapshot_delta_yaw   = static_cast<_fixed>(dx * FIXED_ONE);
+		snapshot_delta_pitch = static_cast<_fixed>(dy * FIXED_ONE);
 	}
 }
 
