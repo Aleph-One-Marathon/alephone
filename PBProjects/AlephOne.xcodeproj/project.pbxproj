@@ -361,7 +361,6 @@
 		27A6D56C1B9BF021003DA766 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
 		27A6D56D1B9BF021003DA766 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
 		27A6D56E1B9BF021003DA766 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
-		27A6D56F1B9BF021003DA766 /* precompiled_headers.h in Headers */ = {isa = PBXBuildFile; fileRef = F50D2BD502F86DDA01000105 /* precompiled_headers.h */; };
 		27A6D5701B9BF021003DA766 /* alephversion.h in Headers */ = {isa = PBXBuildFile; fileRef = F5D11AE40326A93E01000105 /* alephversion.h */; };
 		27A6D5711B9BF021003DA766 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27A703DC9D1C00000104 /* Logging.h */; };
 		27A6D5721B9BF021003DA766 /* network_microphone_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF2717003EDBBF100000104 /* network_microphone_shared.h */; };
@@ -814,7 +813,6 @@
 		27A6D7481B9BF029003DA766 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
 		27A6D7491B9BF029003DA766 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
 		27A6D74A1B9BF029003DA766 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
-		27A6D74B1B9BF029003DA766 /* precompiled_headers.h in Headers */ = {isa = PBXBuildFile; fileRef = F50D2BD502F86DDA01000105 /* precompiled_headers.h */; };
 		27A6D74C1B9BF029003DA766 /* alephversion.h in Headers */ = {isa = PBXBuildFile; fileRef = F5D11AE40326A93E01000105 /* alephversion.h */; };
 		27A6D74D1B9BF029003DA766 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27A703DC9D1C00000104 /* Logging.h */; };
 		27A6D74E1B9BF029003DA766 /* network_microphone_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF2717003EDBBF100000104 /* network_microphone_shared.h */; };
@@ -1267,7 +1265,6 @@
 		27A6D9241B9BF031003DA766 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
 		27A6D9251B9BF031003DA766 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
 		27A6D9261B9BF031003DA766 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
-		27A6D9271B9BF031003DA766 /* precompiled_headers.h in Headers */ = {isa = PBXBuildFile; fileRef = F50D2BD502F86DDA01000105 /* precompiled_headers.h */; };
 		27A6D9281B9BF031003DA766 /* alephversion.h in Headers */ = {isa = PBXBuildFile; fileRef = F5D11AE40326A93E01000105 /* alephversion.h */; };
 		27A6D9291B9BF031003DA766 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27A703DC9D1C00000104 /* Logging.h */; };
 		27A6D92A1B9BF031003DA766 /* network_microphone_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF2717003EDBBF100000104 /* network_microphone_shared.h */; };
@@ -1927,7 +1924,6 @@
 		AE505BC1141D45E600915344 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
 		AE505BC3141D45E600915344 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
 		AE505BC4141D45E600915344 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
-		AE505BC5141D45E600915344 /* precompiled_headers.h in Headers */ = {isa = PBXBuildFile; fileRef = F50D2BD502F86DDA01000105 /* precompiled_headers.h */; };
 		AE505BC6141D45E600915344 /* alephversion.h in Headers */ = {isa = PBXBuildFile; fileRef = F5D11AE40326A93E01000105 /* alephversion.h */; };
 		AE505BC7141D45E600915344 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27A703DC9D1C00000104 /* Logging.h */; };
 		AE505BC8141D45E600915344 /* network_microphone_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF2717003EDBBF100000104 /* network_microphone_shared.h */; };
@@ -2389,7 +2385,6 @@
 		AEB4A16114296CAE00537AE7 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
 		AEB4A16314296CAE00537AE7 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
 		AEB4A16414296CAE00537AE7 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
-		AEB4A16514296CAE00537AE7 /* precompiled_headers.h in Headers */ = {isa = PBXBuildFile; fileRef = F50D2BD502F86DDA01000105 /* precompiled_headers.h */; };
 		AEB4A16614296CAE00537AE7 /* alephversion.h in Headers */ = {isa = PBXBuildFile; fileRef = F5D11AE40326A93E01000105 /* alephversion.h */; };
 		AEB4A16714296CAE00537AE7 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27A703DC9D1C00000104 /* Logging.h */; };
 		AEB4A16814296CAE00537AE7 /* network_microphone_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF2717003EDBBF100000104 /* network_microphone_shared.h */; };
@@ -2797,7 +2792,6 @@
 		AEC3C79B09AD68AC003258E4 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
 		AEC3C79D09AD68AC003258E4 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
 		AEC3C79E09AD68AC003258E4 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
-		AEC3C79F09AD68AC003258E4 /* precompiled_headers.h in Headers */ = {isa = PBXBuildFile; fileRef = F50D2BD502F86DDA01000105 /* precompiled_headers.h */; };
 		AEC3C7A009AD68AC003258E4 /* alephversion.h in Headers */ = {isa = PBXBuildFile; fileRef = F5D11AE40326A93E01000105 /* alephversion.h */; };
 		AEC3C7A109AD68AC003258E4 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27A703DC9D1C00000104 /* Logging.h */; };
 		AEC3C7A209AD68AC003258E4 /* network_microphone_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF2717003EDBBF100000104 /* network_microphone_shared.h */; };
@@ -3103,7 +3097,6 @@
 		AEFD866F13EB84CF00C1E687 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
 		AEFD867113EB84CF00C1E687 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
 		AEFD867213EB84CF00C1E687 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
-		AEFD867313EB84CF00C1E687 /* precompiled_headers.h in Headers */ = {isa = PBXBuildFile; fileRef = F50D2BD502F86DDA01000105 /* precompiled_headers.h */; };
 		AEFD867413EB84CF00C1E687 /* alephversion.h in Headers */ = {isa = PBXBuildFile; fileRef = F5D11AE40326A93E01000105 /* alephversion.h */; };
 		AEFD867513EB84CF00C1E687 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27A703DC9D1C00000104 /* Logging.h */; };
 		AEFD867613EB84CF00C1E687 /* network_microphone_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF2717003EDBBF100000104 /* network_microphone_shared.h */; };
@@ -3823,7 +3816,6 @@
 		EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = SSLP_Protocol.h; path = ../Source_Files/Network/SSLP_Protocol.h; sourceTree = "<group>"; };
 		EFEF1AC404AF552D00C3A19D /* CircularByteBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CircularByteBuffer.h; path = ../Source_Files/Misc/CircularByteBuffer.h; sourceTree = "<group>"; };
 		EFEF1AC504AF552D00C3A19D /* CircularByteBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CircularByteBuffer.cpp; path = ../Source_Files/Misc/CircularByteBuffer.cpp; sourceTree = "<group>"; };
-		F50D2BD502F86DDA01000105 /* precompiled_headers.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = precompiled_headers.h; sourceTree = SOURCE_ROOT; usesTabs = 1; };
 		F51B058B047AC6DA01C5C930 /* lua_script.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_script.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		F51B058C047AC6DA01C5C930 /* lua_script.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_script.h; sourceTree = "<group>"; };
 		F522111D0136A4DD01000001 /* byte_swapping.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = byte_swapping.h; path = ../Source_Files/CSeries/byte_swapping.h; sourceTree = SOURCE_ROOT; };
@@ -4712,7 +4704,6 @@
 				F52212560136A6FD01000001 /* vbl_definitions.h */,
 				F522125A0136A6FD01000001 /* vbl.h */,
 				EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */,
-				F50D2BD502F86DDA01000105 /* precompiled_headers.h */,
 				F5D11AE40326A93E01000105 /* alephversion.h */,
 			);
 			name = Headers;
@@ -5345,7 +5336,6 @@
 				27A6D56C1B9BF021003DA766 /* XML_LevelScript.h in Headers */,
 				27A6D56D1B9BF021003DA766 /* XML_ParseTreeRoot.h in Headers */,
 				27A6D56E1B9BF021003DA766 /* SDLMain.h in Headers */,
-				27A6D56F1B9BF021003DA766 /* precompiled_headers.h in Headers */,
 				27A6D5701B9BF021003DA766 /* alephversion.h in Headers */,
 				27A6D5711B9BF021003DA766 /* Logging.h in Headers */,
 				27A6D5721B9BF021003DA766 /* network_microphone_shared.h in Headers */,
@@ -5567,7 +5557,6 @@
 				27A6D7481B9BF029003DA766 /* XML_LevelScript.h in Headers */,
 				27A6D7491B9BF029003DA766 /* XML_ParseTreeRoot.h in Headers */,
 				27A6D74A1B9BF029003DA766 /* SDLMain.h in Headers */,
-				27A6D74B1B9BF029003DA766 /* precompiled_headers.h in Headers */,
 				27A6D74C1B9BF029003DA766 /* alephversion.h in Headers */,
 				27A6D74D1B9BF029003DA766 /* Logging.h in Headers */,
 				27A6D74E1B9BF029003DA766 /* network_microphone_shared.h in Headers */,
@@ -5789,7 +5778,6 @@
 				27A6D9241B9BF031003DA766 /* XML_LevelScript.h in Headers */,
 				27A6D9251B9BF031003DA766 /* XML_ParseTreeRoot.h in Headers */,
 				27A6D9261B9BF031003DA766 /* SDLMain.h in Headers */,
-				27A6D9271B9BF031003DA766 /* precompiled_headers.h in Headers */,
 				27A6D9281B9BF031003DA766 /* alephversion.h in Headers */,
 				27A6D9291B9BF031003DA766 /* Logging.h in Headers */,
 				27A6D92A1B9BF031003DA766 /* network_microphone_shared.h in Headers */,
@@ -6011,7 +5999,6 @@
 				AE505BC1141D45E600915344 /* XML_LevelScript.h in Headers */,
 				AE505BC3141D45E600915344 /* XML_ParseTreeRoot.h in Headers */,
 				AE505BC4141D45E600915344 /* SDLMain.h in Headers */,
-				AE505BC5141D45E600915344 /* precompiled_headers.h in Headers */,
 				AE505BC6141D45E600915344 /* alephversion.h in Headers */,
 				AE505BC7141D45E600915344 /* Logging.h in Headers */,
 				AE505BC8141D45E600915344 /* network_microphone_shared.h in Headers */,
@@ -6233,7 +6220,6 @@
 				AEB4A16114296CAE00537AE7 /* XML_LevelScript.h in Headers */,
 				AEB4A16314296CAE00537AE7 /* XML_ParseTreeRoot.h in Headers */,
 				AEB4A16414296CAE00537AE7 /* SDLMain.h in Headers */,
-				AEB4A16514296CAE00537AE7 /* precompiled_headers.h in Headers */,
 				AEB4A16614296CAE00537AE7 /* alephversion.h in Headers */,
 				AEB4A16714296CAE00537AE7 /* Logging.h in Headers */,
 				AEB4A16814296CAE00537AE7 /* network_microphone_shared.h in Headers */,
@@ -6456,7 +6442,6 @@
 				AEC3C79D09AD68AC003258E4 /* XML_ParseTreeRoot.h in Headers */,
 				AEC3C79E09AD68AC003258E4 /* SDLMain.h in Headers */,
 				C13C71E71B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
-				AEC3C79F09AD68AC003258E4 /* precompiled_headers.h in Headers */,
 				AEC3C7A009AD68AC003258E4 /* alephversion.h in Headers */,
 				AEC3C7A109AD68AC003258E4 /* Logging.h in Headers */,
 				AEC3C7A209AD68AC003258E4 /* network_microphone_shared.h in Headers */,
@@ -6677,7 +6662,6 @@
 				AEFD866F13EB84CF00C1E687 /* XML_LevelScript.h in Headers */,
 				AEFD867113EB84CF00C1E687 /* XML_ParseTreeRoot.h in Headers */,
 				AEFD867213EB84CF00C1E687 /* SDLMain.h in Headers */,
-				AEFD867313EB84CF00C1E687 /* precompiled_headers.h in Headers */,
 				AEFD867413EB84CF00C1E687 /* alephversion.h in Headers */,
 				AEFD867513EB84CF00C1E687 /* Logging.h in Headers */,
 				AEFD867613EB84CF00C1E687 /* network_microphone_shared.h in Headers */,
@@ -9306,7 +9290,7 @@
 					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
-				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
+				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
 				INFOPLIST_PREPROCESS = NO;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @executable_path/../Frameworks/SDL2_ttf.framework/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
@@ -9382,7 +9366,7 @@
 					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
-				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
+				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
 				INFOPLIST_PREPROCESS = NO;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @executable_path/../Frameworks/SDL2_ttf.framework/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
@@ -9550,7 +9534,7 @@
 					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
-				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
+				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
 				INFOPLIST_PREPROCESS = NO;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @executable_path/../Frameworks/SDL2_ttf.framework/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;

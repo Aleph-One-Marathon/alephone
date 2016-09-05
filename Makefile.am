@@ -19,8 +19,8 @@ EXTRA_DIST = INSTALL.MacOSX INSTALL.Unix INSTALL.Windows	\
   PBProjects/MMLIcon.icns PBProjects/MusakIcon.icns			\
   PBProjects/PhysIcon.icns			                        \
   PBProjects/SaveIcon.icns PBProjects/ShapesIcon.icns			\
-  PBProjects/SoundsIcon.icns PBProjects/Info-AlephOne_SDL.plist		\
-  PBProjects/precompiled_headers.h PBProjects/SDLMain.h			\
+  PBProjects/SoundsIcon.icns		\
+  PBProjects/SDLMain.h			\
   PBProjects/SDLMain.m PBProjects/AlephOne.icns				\
   PBProjects/config.h PBProjects/confpaths.h	\
   data/AlephSansMono-Bold.ttf data/AlephSansMonoLicense.txt		\
