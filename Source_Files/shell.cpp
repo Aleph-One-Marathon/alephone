@@ -431,6 +431,8 @@ static void initialize_application(void)
 #if defined(HAVE_SDL_IMAGE)
 	IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
 #endif
+	// We only want text input events at specific times
+	SDL_StopTextInput();
 
 	// Find data directories, construct search path
 	InitDefaultStringSets();
