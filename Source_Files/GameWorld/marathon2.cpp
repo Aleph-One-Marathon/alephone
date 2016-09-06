@@ -428,6 +428,7 @@ update_world_elements_one_tick()
 
         if(check_level_change()) 
         {
+                sync_heartbeat_count();
                 return kUpdateChangeLevel;
         }
 
