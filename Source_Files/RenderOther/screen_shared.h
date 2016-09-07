@@ -90,6 +90,7 @@ static bool HUD_RenderRequest = false;
 static bool Term_RenderRequest = false;
 
 static bool screen_initialized= false;
+static bool nonlocal_script_hud= false;
 
 short bit_depth= NONE;
 short interface_bit_depth= NONE;
@@ -118,16 +119,12 @@ static ScreenMessage Messages[NumScreenMessages];
 
 /* SB */
 static struct ScriptHUDElement {
-	/* I don't like this convention, but I'll follow it. */
-	enum {
-		Len = 32
-	};
 	/* this needs optimized (sorry, making fun of my grandmother...) */
 	/* it's char[4] instead of int32 to make the OpenGL support simpler to implement */
 	unsigned char icon[1024];
 	bool isicon;
 	int color;
-	char text[Len];
+	std::string text;
 	Image_Blitter sdl_blitter;
 #ifdef HAVE_OPENGL	
 	OGL_Blitter ogl_blitter;
@@ -256,6 +253,14 @@ namespace icon {
 	
 }
 
+bool IsScriptHUDNonlocal() {
+  return nonlocal_script_hud;
+}
+
+void SetScriptHUDNonlocal(bool nonlocal) {
+  nonlocal_script_hud = nonlocal;
+}
+
 void SetScriptHUDColor(int player, int idx, int color) {
   player %= MAXIMUM_NUMBER_OF_NETWORK_PLAYERS;
   idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; /* o_o */
@@ -265,9 +270,8 @@ void SetScriptHUDColor(int player, int idx, int color) {
 void SetScriptHUDText(int player, int idx, const char* text) {
   player %= MAXIMUM_NUMBER_OF_NETWORK_PLAYERS;
   idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS;
-  if(!text) text = "";
-  strncpy(ScriptHUDElements[player][idx].text, text, ScriptHUDElement::Len);
-  ScriptHUDElements[player][idx].text[ScriptHUDElement::Len-1] = 0;
+  if(!text) ScriptHUDElements[player][idx].text.clear();
+  else ScriptHUDElements[player][idx].text = text;
 }
 
 bool SetScriptHUDIcon(int player, int idx, const char* text, size_t rem) {
@@ -308,10 +312,11 @@ void reset_messages()
 	for(int p = 0; p < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; p++) {
 		for(int i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; i++) {
 			ScriptHUDElements[p][i].color = 1;
-			ScriptHUDElements[p][i].text[0] = 0;
+			ScriptHUDElements[p][i].text.clear();
 			ScriptHUDElements[p][i].isicon = false;
 		}
 	}
+        nonlocal_script_hud = false;
 }
 
 // LP addition: this resets the screen; useful when starting a game
@@ -602,9 +607,9 @@ static void DisplayMessages(SDL_Surface *s)
 	short Y = Y0 + LineSpacing;
 	if (ShowPosition) Y += 6*LineSpacing;	// Make room for the position data
 	/* SB */
-	short view = current_player_index;
+	short view = nonlocal_script_hud ? local_player_index : current_player_index;
 	for(int i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; ++i) {
-		if(ScriptHUDElements[view][i].text[0]) {
+		if(!ScriptHUDElements[view][i].text.empty()) {
 			short x2 = X, sk = Font.TextWidth("AAAAAAAAAAAAAA"),
 				icon_skip, icon_drop;
 			switch(get_screen_mode()->hud_scale_level) {
@@ -627,7 +632,7 @@ static void DisplayMessages(SDL_Surface *s)
 			bool had_icon;
 			/* Yes, I KNOW this is the same i as above. I know what I'm doing. */
 			for(i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; ++i) {
-				if(!ScriptHUDElements[view][i].text[0]) continue;
+				if(ScriptHUDElements[view][i].text.empty()) continue;
 				if(ScriptHUDElements[view][i].isicon) {
 					had_icon = true;
 
@@ -665,7 +670,7 @@ static void DisplayMessages(SDL_Surface *s)
 				}
 				SDL_Color color;
 				_get_interface_color(ScriptHUDElements[view][i].color+_computer_interface_text_color, &color);
-				DisplayText(x2,Y + (ScriptHUDElements[view][i].isicon ? icon_drop : 0),ScriptHUDElements[view][i].text, color.r, color.g, color.b);
+				DisplayText(x2,Y + (ScriptHUDElements[view][i].isicon ? icon_drop : 0),ScriptHUDElements[view][i].text.c_str(), color.r, color.g, color.b);
 				x2 += sk;
 				if(ScriptHUDElements[view][i].isicon)
 					x2 -= icon_skip;

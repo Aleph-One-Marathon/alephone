@@ -470,6 +470,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>When true, the current item counts on the map are updated properly when Lua deletes map items and changes player inventories. This defaults to false to preserve film playback with older scripts. New scripts that manipulate items should always set this to true.</description>
 	<type>boolean</type>
       </variable>
+      <variable name="nonlocal_overlays" version="Git">
+	<description>When false, only the local player's overlays are used, and only prints to the local player will be displayed. When true, the overlays and prints of whatever player is currently being viewed will apply. This defaults to false for compatibility with scripts that depend on the old behavior.</description>
+	<type>boolean</type>
+      </variable>
       <variable name="time_remaining" access="read-only">
 	<description>the number of ticks until the game ends, or nil if there is no time limit</description>
 	<type>number</type>
@@ -518,6 +522,16 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <variable name="version" access="read-only">
 	<description>the date version of the local player's engine</description>
 	<note>for example, "20071103"</note>
+      </variable>
+      <variable name="local_player" version="Git" access="read-only">
+	<description>The local player.</description>
+	<type>Player</type>
+	<note>normally, you shouldn't need this--you'll just make the game go out of sync</note>
+      </variable>
+      <variable name="view_player" version="Git">
+        <description>The player currently being viewed by the local computer.</description>
+        <type>Player</type>
+        <note>Be very careful when using this not to make any decisions that affect the game world (including non-local random numbers), or you will cause a desync</note>
       </variable>
     </table>
     <table name="goal">
@@ -1378,6 +1392,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <function name="view_player" version="20080707">
 	<description>switch to another player's view</description>
 	<argument name="player"><type>player</type></argument>
+        <note>You may also write to Game.view_player, if you are only interested in changing the local player's view</note>
       </function>
       <subtable name="weapons">
 	<variable name="current" access="read-only">

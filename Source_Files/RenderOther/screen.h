@@ -237,6 +237,8 @@ void ShowMessage(char *Text);
 
 /* SB: Custom Blizzard-style overlays */
 #define MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS 6
+bool IsScriptHUDNonlocal();
+void SetScriptHUDNonlocal(bool nonlocal = true);
 /* color is a terminal color */
 void SetScriptHUDColor(int player, int idx, int color);
 /* text == NULL or "" removes that HUD element

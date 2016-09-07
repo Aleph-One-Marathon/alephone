@@ -1553,7 +1553,7 @@ int Lua_Player_Print(lua_State *L)
 		return luaL_error(L, "print: incorrect argument type");
 
 	int player_index = Lua_Player::Index(L, 1);
-	if (local_player_index == player_index)
+	if (player_index == IsScriptHUDNonlocal() ? current_player_index : local_player_index)
 	{
 		lua_getglobal(L, "tostring");
 		lua_insert(L, -2);
@@ -2245,6 +2245,18 @@ typedef L_Enum<Lua_ScoringMode_Name> Lua_ScoringMode;
 char Lua_ScoringModes_Name[] = "ScoringModes";
 typedef L_Container<Lua_ScoringModes_Name, Lua_ScoringMode> Lua_ScoringModes;
 
+static int Lua_Game_Get_View_Player(lua_State *L)
+{
+	Lua_Player::Push(L, current_player_index);
+	return 1;
+}
+
+static int Lua_Game_Get_Local_Player(lua_State *L)
+{
+	Lua_Player::Push(L, local_player_index);
+	return 1;
+}
+
 static int Lua_Game_Get_Dead_Players_Drop_Items(lua_State *L)
 {
 	lua_pushboolean(L, !(GET_GAME_OPTIONS() & _burn_items_on_death));
@@ -2272,6 +2284,12 @@ static int Lua_Game_Get_Monsters_Replenish(lua_State* L)
 static int Lua_Game_Get_Proper_Item_Accounting(lua_State* L)
 {
 	lua_pushboolean(L, L_Get_Proper_Item_Accounting(L));
+	return 1;
+}
+
+static int Lua_Game_Get_Nonlocal_Overlays(lua_State* L)
+{
+	lua_pushboolean(L, L_Get_Nonlocal_Overlays(L));
 	return 1;
 }
 
@@ -2311,11 +2329,45 @@ static int Lua_Game_Get_Version(lua_State *L)
 	return 1;
 }
 
+static int Lua_Game_Set_View_Player(lua_State *L)
+{
+
+	int view_player_index;
+	if (lua_isnumber(L, 2))
+	{
+		view_player_index = static_cast<int>(lua_tonumber(L, 2));
+		if (view_player_index < 0 || view_player_index >= dynamic_world->player_count)
+			return luaL_error(L, "view_player: invalid player index");
+	}
+	else if (Lua_Player::Is(L, 2))
+		view_player_index = Lua_Player::Index(L, 2);
+	else
+		return luaL_error(L, "view_player: incorrect argument type");
+	
+	if (view_player_index != current_player_index)
+	{
+		set_current_player_index(view_player_index);
+		update_interface(NONE);
+		dirty_terminal_view(local_player_index);
+	}
+
+	return 0;
+		
+}
+
 static int Lua_Game_Set_Proper_Item_Accounting(lua_State* L)
 {
 	if (!lua_isboolean(L, 2))
 		luaL_error(L, "proper_item_accounting: incorrect argument type");
 	L_Set_Proper_Item_Accounting(L, lua_toboolean(L, 2));
+	return 0;
+}
+
+static int Lua_Game_Set_Nonlocal_Overlays(lua_State* L)
+{
+	if (!lua_isboolean(L, 2))
+		luaL_error(L, "nonlocal_overlays: incorrect argument type");
+	L_Set_Nonlocal_Overlays(L, lua_toboolean(L, 2));
 	return 0;
 }
 
@@ -2422,6 +2474,8 @@ extern int L_Restore_Passed(lua_State *);
 extern int L_Restore_Saved(lua_State *);
 
 const luaL_Reg Lua_Game_Get[] = {
+	{"view_player", Lua_Game_Get_View_Player},
+	{"local_player", Lua_Game_Get_Local_Player},
 	{"dead_players_drop_items", Lua_Game_Get_Dead_Players_Drop_Items},
 	{"difficulty", Lua_Game_Get_Difficulty},
 	{"global_random", L_TableFunction<Lua_Game_Global_Random>},
@@ -2430,6 +2484,7 @@ const luaL_Reg Lua_Game_Get[] = {
 	{"local_random", L_TableFunction<Lua_Game_Local_Random>},
 	{"monsters_replenish", Lua_Game_Get_Monsters_Replenish},
 	{"proper_item_accounting", Lua_Game_Get_Proper_Item_Accounting},
+	{"nonlocal_overlays", Lua_Game_Get_Nonlocal_Overlays},
 	{"random", L_TableFunction<Lua_Game_Better_Random>},
 	{"restore_passed", L_TableFunction<L_Restore_Passed>},
 	{"restore_saved", L_TableFunction<L_Restore_Saved>},
@@ -2442,9 +2497,11 @@ const luaL_Reg Lua_Game_Get[] = {
 };
 
 const luaL_Reg Lua_Game_Set[] = {
+	{"view_player", Lua_Game_Set_View_Player},
 	{"dead_players_drop_items", Lua_Game_Set_Dead_Players_Drop_Items},
 	{"monsters_replenish", Lua_Game_Set_Monsters_Replenish},
 	{"proper_item_accounting", Lua_Game_Set_Proper_Item_Accounting},
+	{"nonlocal_overlays", Lua_Game_Set_Nonlocal_Overlays},
 	{"scoring_mode", Lua_Game_Set_Scoring_Mode},
 	{"over", Lua_Game_Set_Over},
 	{0, 0}
