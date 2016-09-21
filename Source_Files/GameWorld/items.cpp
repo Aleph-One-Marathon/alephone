@@ -557,7 +557,7 @@ bool try_and_add_player_item(
 
 	switch (definition->item_kind)
 	{
-		case _powerup: /* powerups don’t get added to your inventory */
+		case _powerup: /* powerups don√ït get added to your inventory */
 			if (legal_player_powerup(player_index, type))
 			{
 				process_player_powerup(player_index, type);
@@ -848,7 +848,7 @@ void parse_mml_items(const InfoTree& root)
 		item_definition& def = item_definitions[index];
 		itree.read_attr("singular", def.singular_name_id);
 		itree.read_attr("plural", def.plural_name_id);
-		itree.read_indexed("maximum", def.maximum_count_per_player, SHRT_MAX+1);
+		itree.read_indexed("maximum", def.maximum_count_per_player, SHRT_MAX+1, true);
 		itree.read_attr("invalid", def.invalid_environments);
 		itree.read_indexed("type", def.item_kind, NUMBER_OF_ITEM_TYPES);
 		
