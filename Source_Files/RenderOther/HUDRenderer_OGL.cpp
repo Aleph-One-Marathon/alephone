@@ -97,7 +97,6 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 	
 	GLdouble x_scale = (dest.right - dest.left) / 640.0;
 	GLdouble y_scale = (dest.bottom - dest.top) / 160.0;
-	glScissor(dest.left, dest.bottom, static_cast<long>(640.0 * x_scale), static_cast<long>(160.0 * y_scale));
 	glMatrixMode(GL_MODELVIEW);
 	glTranslated(dest.left, dest.top - (320.0 * y_scale), 0.0);
 	glScaled(x_scale, y_scale, 1.0);

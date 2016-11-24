@@ -65,7 +65,7 @@ struct screen_mode_data
 	short acceleration;
 	
 	bool high_resolution;
-	bool fullscreen, fill_the_screen;
+	bool fullscreen;
 	bool draw_every_other_line;
 	
 	short bit_depth;  // currently 8 or 16
@@ -74,6 +74,7 @@ struct screen_mode_data
 	short width;
 	short height;
 	bool auto_resolution;
+	bool high_dpi;
 	bool hud;
 	short hud_scale_level;
 	short term_scale_level;

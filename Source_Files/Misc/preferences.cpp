@@ -1164,11 +1164,11 @@ static void graphics_dialog(void *arg)
 	table->dual_add(size_w->label("Screen Size"), d);
 	table->dual_add(size_w, d);
 
-	w_toggle *fill_screen_w = NULL;
-	fill_screen_w = new w_toggle(graphics_preferences->screen_mode.fill_the_screen);
-	table->dual_add(fill_screen_w->label("Fill the Screen"), d);
-	table->dual_add(fill_screen_w, d);
-
+	w_toggle *high_dpi_w = NULL;
+	high_dpi_w = new w_toggle(graphics_preferences->screen_mode.high_dpi);
+	table->dual_add(high_dpi_w->label("Use High DPI"), d);
+	table->dual_add(high_dpi_w, d);
+	
 	w_toggle *fixh_w = new w_toggle(!graphics_preferences->screen_mode.fix_h_not_v);
 	table->dual_add(fixh_w->label("Limit Vertical View"), d);
 	table->dual_add(fixh_w, d);
@@ -1269,6 +1269,12 @@ static void graphics_dialog(void *arg)
 		    changed = true;
 	    }
 	    
+		bool high_dpi = high_dpi_w->get_selection() != 0;
+		if (high_dpi != graphics_preferences->screen_mode.high_dpi) {
+			graphics_preferences->screen_mode.high_dpi = high_dpi;
+			changed = true;
+		}
+		
 	    short gamma = static_cast<short>(gamma_w->get_selection());
 	    if (gamma != graphics_preferences->screen_mode.gamma_level) {
 		    graphics_preferences->screen_mode.gamma_level = gamma;
@@ -1314,15 +1320,6 @@ static void graphics_dialog(void *arg)
 			changed = true;
 		}
 		
-	    if (fill_screen_w)
-	    {
-		    bool fill_the_screen = fill_screen_w->get_selection() != 0;
-		    if (fill_the_screen != graphics_preferences->screen_mode.fill_the_screen) {
-			    graphics_preferences->screen_mode.fill_the_screen = fill_the_screen;
-			    changed = true;
-		    }
-	    }
-
 	    if (changed) {
 		    write_preferences();
 		    change_screen_mode(&graphics_preferences->screen_mode, true);
@@ -2553,6 +2550,7 @@ InfoTree graphics_preferences_tree()
 	root.put_attr("scmode_width", graphics_preferences->screen_mode.width);
 	root.put_attr("scmode_height", graphics_preferences->screen_mode.height);
 	root.put_attr("scmode_auto_resolution", graphics_preferences->screen_mode.auto_resolution);
+	root.put_attr("scmode_high_dpi", graphics_preferences->screen_mode.high_dpi);
 	root.put_attr("scmode_hud", graphics_preferences->screen_mode.hud);
 	root.put_attr("scmode_hud_scale", graphics_preferences->screen_mode.hud_scale_level);
 	root.put_attr("scmode_term_scale", graphics_preferences->screen_mode.term_scale_level);
@@ -2561,7 +2559,6 @@ InfoTree graphics_preferences_tree()
 	root.put_attr("scmode_accel", graphics_preferences->screen_mode.acceleration);
 	root.put_attr("scmode_highres", graphics_preferences->screen_mode.high_resolution);
 	root.put_attr("scmode_fullscreen", graphics_preferences->screen_mode.fullscreen);
-	root.put_attr("scmode_fill_the_screen", graphics_preferences->screen_mode.fill_the_screen);
 	root.put_attr("scmode_bitdepth", graphics_preferences->screen_mode.bit_depth);
 	root.put_attr("scmode_gamma", graphics_preferences->screen_mode.gamma_level);
 	root.put_attr("scmode_fix_h_not_v", graphics_preferences->screen_mode.fix_h_not_v);
@@ -2964,6 +2961,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.width = 640;
 	preferences->screen_mode.height = 480;
 	preferences->screen_mode.auto_resolution = true;
+	preferences->screen_mode.high_dpi = true;
 	preferences->screen_mode.hud = true;
 	preferences->screen_mode.hud_scale_level = 0;
 	preferences->screen_mode.term_scale_level = 0;
@@ -2977,7 +2975,6 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.fullscreen = true;
 	preferences->screen_mode.fix_h_not_v = true;
 	preferences->screen_mode.camera_bob = true;
-	preferences->screen_mode.fill_the_screen = false;
 
 	if (preferences->screen_mode.acceleration == _no_acceleration)
 		preferences->screen_mode.bit_depth = 16;
@@ -3461,6 +3458,7 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr("scmode_height", graphics_preferences->screen_mode.height);
 	root.read_attr("scmode_width", graphics_preferences->screen_mode.width);
 	root.read_attr("scmode_auto_resolution", graphics_preferences->screen_mode.auto_resolution);
+	root.read_attr("scmode_high_dpi", graphics_preferences->screen_mode.high_dpi);
 	root.read_attr("scmode_hud", graphics_preferences->screen_mode.hud);
 	root.read_attr("scmode_hud_scale", graphics_preferences->screen_mode.hud_scale_level);
 	root.read_attr("scmode_term_scale", graphics_preferences->screen_mode.term_scale_level);
@@ -3469,7 +3467,6 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr("scmode_accel", graphics_preferences->screen_mode.acceleration);
 	root.read_attr("scmode_highres", graphics_preferences->screen_mode.high_resolution);
 	root.read_attr("scmode_fullscreen", graphics_preferences->screen_mode.fullscreen);
-	root.read_attr("scmode_fill_the_screen", graphics_preferences->screen_mode.fill_the_screen);
 	
 	root.read_attr("scmode_fix_h_not_v", graphics_preferences->screen_mode.fix_h_not_v);
 	root.read_attr("scmode_bitdepth", graphics_preferences->screen_mode.bit_depth);

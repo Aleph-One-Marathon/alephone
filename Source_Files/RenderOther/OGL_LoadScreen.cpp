@@ -41,8 +41,6 @@ OGL_LoadScreen *OGL_LoadScreen::instance()
 
 extern bool OGL_ClearScreen();
 
-extern void bound_screen();
-
 bool OGL_LoadScreen::Start()
 {
 	// load the image
@@ -53,9 +51,9 @@ bool OGL_LoadScreen::Start()
 
 	if (!blitter.Load(image)) return use = false;
 
-	int screenWidth, screenHeight;
-	MainScreenSize(screenWidth, screenHeight);
-	bound_screen();
+	int screenWidth = MainScreenLogicalWidth();
+	int screenHeight = MainScreenLogicalHeight();
+	alephone::Screen::instance()->bound_screen(true);
 	
 	// the true width/height
 	int imageWidth = static_cast<int>(image.GetWidth() * image.GetVScale());
@@ -109,7 +107,7 @@ void OGL_LoadScreen::Stop()
 void OGL_LoadScreen::Progress(const int progress)
 {
 	OGL_ClearScreen();
-	OGL_Blitter::BoundScreen(true);
+	OGL_Blitter::BoundScreen();
 	
 	blitter.Draw(m_dst);
 

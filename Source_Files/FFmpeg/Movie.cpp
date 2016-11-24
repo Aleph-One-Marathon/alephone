@@ -364,6 +364,11 @@ bool Movie::Setup()
 	
 	if (MainScreenIsOpenGL())
 		view_rect.y = scr->height() - (view_rect.y + view_rect.h);
+	
+	view_rect.x *= scr->pixel_scale();
+	view_rect.y *= scr->pixel_scale();
+	view_rect.w *= scr->pixel_scale();
+	view_rect.h *= scr->pixel_scale();
 
 	temp_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, view_rect.w, view_rect.h, 32,
 										0x00ff0000, 0x0000ff00, 0x000000ff,

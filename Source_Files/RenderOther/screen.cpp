@@ -116,10 +116,6 @@ static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable 
 
 static int desktop_width;
 static int desktop_height;
-//static bool awful_retina_hack = false;
-
-static int prev_width;
-static int prev_height;
 
 static int failed_multisamples = 0;		// remember when GL multisample setting didn't succeed
 static bool passed_shader = false;      // remember when we passed Shader tests
@@ -135,8 +131,8 @@ Screen Screen::m_instance;
 
 
 // Prototypes
-static bool need_mode_change(int width, int height, int depth, bool nogl);
-static void change_screen_mode(int width, int height, int depth, bool nogl);
+static bool need_mode_change(int window_width, int window_height, int log_width, int log_height, int depth, bool nogl);
+static void change_screen_mode(int width, int height, int depth, bool nogl, bool force_menu);
 static bool get_auto_resolution_size(short *w, short *h, struct screen_mode_data *mode);
 static void build_sdl_color_table(const color_table *color_table, SDL_Color *colors);
 static void reallocate_world_pixels(int width, int height);
@@ -205,43 +201,35 @@ void Screen::Initialize(screen_mode_data* mode)
 		world_view->vertical_scale = 1;
 		world_view->tunnel_vision_active = false;
 		
+		m_modes.clear();
 		SDL_DisplayMode desktop;
-		SDL_GetCurrentDisplayMode(0, &desktop);
-		desktop_height = desktop.h;
-		desktop_width = desktop.w;
-
-		// build a list of fullscreen modes
-		// list some modes
-		int num_modes = SDL_GetNumDisplayModes(0);
-		for (int i = 0; i < num_modes; ++i)
+		if (SDL_GetDesktopDisplayMode(0, &desktop) == 0)
 		{
-			SDL_GetDisplayMode(0, i, &desktop);
 			if (desktop.w >= 640 && desktop.h >= 480)
 			{
 				m_modes.push_back(std::pair<int, int>(desktop.w, desktop.h));
-				if (desktop.w == 640 && desktop.h == 480)
-				{
-					m_modes.push_back(std::pair<int, int>(480, 240));
-					m_modes.push_back(std::pair<int, int>(320, 160));
-				}
 			}
 		}
-		
 		if (m_modes.empty())
 		{
-			m_modes.push_back(std::pair<int, int>(640, 480));
-			m_modes.push_back(std::pair<int, int>(480, 240));
-			m_modes.push_back(std::pair<int, int>(320, 160));
-		} 
-		else if (m_modes.size() == 1)
+			// assume a decent screen size
+			m_modes.push_back(std::pair<int, int>(1600, 900));
+		}
+		
+		if (1)
 		{
-			// insert some common window sizes
+			// insert some choices for windowed mode
 			std::vector<std::pair<int, int> > common_modes;
-			common_modes.push_back(std::pair<int, int>(1600, 1200));
-			common_modes.push_back(std::pair<int, int>(1280, 1024));
-			common_modes.push_back(std::pair<int, int>(1280, 960));
-			common_modes.push_back(std::pair<int, int>(1024, 768));
+			common_modes.push_back(std::pair<int, int>(1920, 1080));
+			common_modes.push_back(std::pair<int, int>(1600, 900));
+			common_modes.push_back(std::pair<int, int>(1200, 900));
+			common_modes.push_back(std::pair<int, int>(1366, 768));
+			common_modes.push_back(std::pair<int, int>(1280, 720));
+			common_modes.push_back(std::pair<int, int>(960, 720));
 			common_modes.push_back(std::pair<int, int>(800, 600));
+			common_modes.push_back(std::pair<int, int>(640, 480));
+			common_modes.push_back(std::pair<int, int>(480, 240));
+			common_modes.push_back(std::pair<int, int>(320, 160));
 			
 			for (std::vector<std::pair<int, int> >::const_iterator it = common_modes.begin(); it != common_modes.end(); ++it)
 			{
@@ -250,10 +238,6 @@ void Screen::Initialize(screen_mode_data* mode)
 					m_modes.push_back(*it);
 				}
 			}
-
-			m_modes.push_back(std::pair<int, int>(640, 480));
-			m_modes.push_back(std::pair<int, int>(480, 240));
-			m_modes.push_back(std::pair<int, int>(320, 160));
 		}
 
 		// insert custom mode if it's in the prefs
@@ -301,12 +285,17 @@ void Screen::Initialize(screen_mode_data* mode)
 
 int Screen::height()
 {
-	return MainScreenHeight();
+	return MainScreenLogicalHeight();
 }
 
 int Screen::width()
 {
-	return MainScreenWidth();
+	return MainScreenLogicalWidth();
+}
+
+float Screen::pixel_scale()
+{
+	return MainScreenPixelScale();
 }
 
 int Screen::window_height()
@@ -494,6 +483,69 @@ SDL_Rect Screen::hud_rect()
 	return r;
 }
 
+void Screen::bound_screen(bool in_game)
+{
+	SDL_Rect r = { 0, 0, in_game ? window_width() : 640, in_game ? window_height() : 480 };
+	bound_screen_to_rect(r, in_game);
+}
+
+void Screen::bound_screen_to_rect(SDL_Rect &r, bool in_game)
+{
+#ifdef HAVE_OPENGL
+	if (MainScreenIsOpenGL())
+	{
+		int pixw = MainScreenPixelWidth();
+		int pixh = MainScreenPixelHeight();
+		int virw = in_game ? window_width() : 640;
+		int virh = in_game ? window_height() : 480;
+		
+		float vscale = MIN(pixw / static_cast<float>(virw), pixh / static_cast<float>(virh));
+		int vpw = static_cast<int>(r.w * vscale + 0.5f);
+		int vph = static_cast<int>(r.h * vscale + 0.5f);
+		int vpx = static_cast<int>(pixw/2.0f - (virw * vscale)/2.0f + (r.x * vscale) + 0.5f);
+		int vpy = static_cast<int>(pixh/2.0f - (virh * vscale)/2.0f + (r.y * vscale) + 0.5f);
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glViewport(vpx, pixh - vph - vpy, vpw, vph);
+		glOrtho(0, r.w, r.h, 0, -1.0, 1.0);
+	}
+#endif
+}
+
+
+
+void Screen::window_to_screen(int &x, int &y)
+{
+#ifdef HAVE_OPENGL
+	if (MainScreenIsOpenGL())
+	{
+		int winw = MainScreenWindowWidth();
+		int winh = MainScreenWindowHeight();
+		int virw = MainScreenLogicalWidth();
+		int virh = MainScreenLogicalHeight();
+		
+		float wina = winw / static_cast<float>(winh);
+		float vira = virw / static_cast<float>(virh);
+
+		if (wina >= vira)
+		{
+			float scale = winh / static_cast<float>(virh);
+			x -= (winw - (virw * scale))/2;
+			x /= scale;
+			y /= scale;
+		}
+		else
+		{
+			float scale = winw / static_cast<float>(virw);
+			y -= (winh - (virh * scale))/2;
+			x /= scale;
+			y /= scale;
+		}
+	}
+#endif
+}
+
 /*
  *  (Re)allocate off-screen buffer
  */
@@ -644,28 +696,19 @@ void exit_screen(void)
  *  Change screen mode
  */
 
-static bool need_mode_change(int width, int height, int depth, bool nogl)
+static bool need_mode_change(int window_width, int window_height,
+							 int log_width, int log_height,
+							 int depth, bool nogl)
 {
 	// have we set up any window at all yet?
 	if (main_screen == NULL)
 		return true;
 	
-	// are we changing the dimensions?
-	int want_w = (screen_mode.fullscreen && !screen_mode.fill_the_screen) ? desktop_width : width;
-	if (MainScreenWidth() != want_w)
+	// are we switching to/from high-dpi?
+	bool current_high_dpi = (SDL_GetWindowFlags(main_screen) & SDL_WINDOW_ALLOW_HIGHDPI);
+	if (screen_mode.high_dpi != current_high_dpi) {
 		return true;
-	int want_h = (screen_mode.fullscreen && !screen_mode.fill_the_screen) ? desktop_height : height;
-	if (MainScreenHeight() != want_h)
-		return true;
-	
-	// are we changing the depth?
-//	if (s->format->BitsPerPixel != depth)
-//		return true;
-	
-	// are we switching to/from fullscreen?
-	bool current_fullscreen = (SDL_GetWindowFlags(main_screen) & SDL_WINDOW_FULLSCREEN);
-	if (screen_mode.fullscreen != current_fullscreen)
-		return true;
+	}
 	
 	// are we switching to/from OpenGL?
 	bool wantgl = false;
@@ -679,19 +722,57 @@ static bool need_mode_change(int width, int height, int depth, bool nogl)
 		int atval = 0;
 		
 		int want_samples = Get_OGL_ConfigureData().Multisamples;
-		if (SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &atval) == 0 && atval != want_samples &&
-				!(want_samples == failed_multisamples && atval == 0))
-			return true;
-
+		if (SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &atval) == 0) {
+			if (atval != want_samples && !(want_samples == failed_multisamples && atval == 0))
+				SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, want_samples);
+		}
+		
 		int want_vsync = Get_OGL_ConfigureData().WaitForVSync ? 1 : 0;
 		int has_vsync = SDL_GL_GetSwapInterval();
-		if (has_vsync >= 0 && has_vsync != want_vsync)
-			return true;
-		
-		if (screen_mode.acceleration == _shader_acceleration && !passed_shader)
-			return true;
+		if ((has_vsync == 0) != (want_vsync == 0))
+			SDL_GL_SetSwapInterval(want_vsync);
 	}
 #endif
+		
+	// are we switching to/from fullscreen?
+	bool current_fullscreen = (SDL_GetWindowFlags(main_screen) & SDL_WINDOW_FULLSCREEN_DESKTOP);
+	if (screen_mode.fullscreen != current_fullscreen) {
+		SDL_SetWindowFullscreen(main_screen, screen_mode.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+	}
+	
+	// are we switching resolution?
+	if (!screen_mode.fullscreen) {
+		int w, h;
+		SDL_GetWindowSize(main_screen, &w, &h);
+		if (w != window_width || h != window_height) {
+			SDL_SetWindowSize(main_screen, window_width, window_height);
+			SDL_SetWindowPosition(main_screen, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+		}
+	}
+	if (!hasgl) {
+		int w, h;
+		SDL_RenderGetLogicalSize(main_render, &w, &h);
+		if (w != log_width || h != log_height) {
+			SDL_RenderSetLogicalSize(main_render, log_width, log_height);
+		}
+	}
+
+	// force rebuild of main_surface and/or main_texture, if necessary
+	if (main_surface != NULL && (main_surface->w != log_width || main_surface->h != log_height)) {
+		SDL_FreeSurface(main_surface);
+		main_surface = NULL;
+	}
+	if (main_texture != NULL) {
+		int w, h;
+		SDL_QueryTexture(main_texture, NULL, NULL, &w, &h);
+		if (w != log_width || h != log_height) {
+			SDL_DestroyTexture(main_texture);
+			main_texture = NULL;
+		}
+	}
+	
+	// reset title, since SDL forgets sometimes
+	SDL_SetWindowTitle(main_screen, get_application_name());
 	
 	return false;
 }
@@ -707,14 +788,64 @@ static int change_window_filter(void *ctx, SDL_Event *event)
 	return 1;
 }
 
-static void change_screen_mode(int width, int height, int depth, bool nogl)
+static void change_screen_mode(int width, int height, int depth, bool nogl, bool force_menu)
 {
-
-	int vmode_height = (screen_mode.fullscreen && !screen_mode.fill_the_screen) ? desktop_height : height;
-	int vmode_width = (screen_mode.fullscreen && !screen_mode.fill_the_screen) ? desktop_width : width;
-	uint32 flags = (screen_mode.fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
+	int prev_width = 0;
+	int prev_height = 0;
+	if (main_surface)
+	{
+		prev_width = main_surface->w;
+		prev_width = main_surface->h;
+	}
 	
-	if (need_mode_change(width, height, depth, nogl)) {
+	int vmode_height = height;
+	int vmode_width = width;
+	uint32 flags = (screen_mode.fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+	if (screen_mode.high_dpi)
+		flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+	
+	int sdl_width = (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) ? 0 : vmode_width;
+	int sdl_height = (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) ? 0 : vmode_height;
+	if (force_menu)
+	{
+		vmode_width = 640;
+		vmode_height = 480;
+	}
+	
+//#ifdef HAVE_OPENGL
+//	if (!context_created && !nogl && screen_mode.acceleration != _no_acceleration) {
+//		SDL_GL_CreateContext(main_screen);
+//		context_created = true;
+//	}
+//#endif
+//	if (nogl || screen_mode.acceleration == _no_acceleration) {
+//		main_render = SDL_CreateRenderer(main_screen, -1, 0);
+//		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+//		SDL_RenderSetLogicalSize(main_render, vmode_width, vmode_height);
+//		main_texture = SDL_CreateTexture(main_render, pixel_format_32.format, SDL_TEXTUREACCESS_STREAMING, vmode_width, vmode_height);
+//	}
+//	main_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, vmode_width, vmode_height, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, 0);
+
+	
+	if (nogl || screen_mode.acceleration == _no_acceleration) {
+		switch (graphics_preferences->software_sdl_driver) {
+			case _sw_driver_none:
+				SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
+				break;
+			case _sw_driver_opengl:
+				SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+				break;
+			case _sw_driver_direct3d:
+				SDL_SetHint(SDL_HINT_RENDER_DRIVER, "direct3d");
+				break;
+			case _sw_driver_default:
+			default:
+				SDL_SetHint(SDL_HINT_RENDER_DRIVER, "");
+				break;
+		}
+	}
+	
+	if (need_mode_change(sdl_width, sdl_height, vmode_width, vmode_height, depth, nogl)) {
 #ifdef HAVE_OPENGL
 	if (!nogl && screen_mode.acceleration != _no_acceleration) {
 		passed_shader = false;
@@ -736,28 +867,6 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	}
 #endif 
 
-//	if (awful_retina_hack) 
-//	{
-//		SDL_SetVideoMode(desktop_width, desktop_height, depth, flags);
-//		awful_retina_hack = false;
-//	}
-		if (nogl || screen_mode.acceleration == _no_acceleration) {
-			switch (graphics_preferences->software_sdl_driver) {
-				case _sw_driver_none:
-					SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
-					break;
-				case _sw_driver_opengl:
-					SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-					break;
-				case _sw_driver_direct3d:
-					SDL_SetHint(SDL_HINT_RENDER_DRIVER, "direct3d");
-					break;
-				case _sw_driver_default:
-				default:
-					SDL_SetHint(SDL_HINT_RENDER_DRIVER, "");
-					break;
-			}
-		}
 		
 		if (main_surface != NULL) {
 			SDL_FreeSurface(main_surface);
@@ -780,7 +889,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	main_screen = SDL_CreateWindow(get_application_name(),
 								   SDL_WINDOWPOS_CENTERED,
 								   SDL_WINDOWPOS_CENTERED,
-								   vmode_width, vmode_height,
+								   sdl_width, sdl_height,
 								   flags);
 
 #ifdef HAVE_OPENGL
@@ -792,7 +901,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		main_screen = SDL_CreateWindow(get_application_name(),
 									   SDL_WINDOWPOS_CENTERED,
 									   SDL_WINDOWPOS_CENTERED,
-									   vmode_width, vmode_height,
+									   sdl_width, sdl_height,
 									   flags);
 		if (main_screen)
 			failed_multisamples = Get_OGL_ConfigureData().Multisamples;
@@ -806,7 +915,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		main_screen = SDL_CreateWindow(get_application_name(),
 									   SDL_WINDOWPOS_CENTERED,
 									   SDL_WINDOWPOS_CENTERED,
-									   vmode_width, vmode_height,
+									   sdl_width, sdl_height,
 									   flags);
 		if (main_screen)
 			logWarning("Stencil buffer is not available");
@@ -830,7 +939,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 			main_screen = SDL_CreateWindow(get_application_name(),
 										   SDL_WINDOWPOS_CENTERED,
 										   SDL_WINDOWPOS_CENTERED,
-										   vmode_width, vmode_height,
+										   sdl_width, sdl_height,
 										   flags);
 		}
 		else
@@ -854,15 +963,15 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		main_screen = SDL_CreateWindow(get_application_name(),
 									   SDL_WINDOWPOS_CENTERED,
 									   SDL_WINDOWPOS_CENTERED,
-									   vmode_width, vmode_height,
+									   sdl_width, sdl_height,
 									   flags);
 #endif
 	}
-	if (main_screen == NULL && (flags & SDL_WINDOW_FULLSCREEN)) {
+	if (main_screen == NULL && (flags & SDL_WINDOW_FULLSCREEN_DESKTOP)) {
 		fprintf(stderr, "Can't open video display (%s)\n", SDL_GetError());
 		fprintf(stderr, "WARNING: Trying in windowed mode");
 		logWarning("Trying windowed mode");
-		uint32 tempflags = flags & ~SDL_WINDOW_FULLSCREEN;
+		uint32 tempflags = flags & SDL_WINDOW_FULLSCREEN_DESKTOP;
 		main_screen = SDL_CreateWindow(get_application_name(),
 									   SDL_WINDOWPOS_CENTERED,
 									   SDL_WINDOWPOS_CENTERED,
@@ -880,17 +989,17 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		main_screen = SDL_CreateWindow(get_application_name(),
 									   SDL_WINDOWPOS_CENTERED,
 									   SDL_WINDOWPOS_CENTERED,
-									   vmode_width, vmode_height,
+									   sdl_width, sdl_height,
 									   tempflags);
 		if (main_screen) {
 			screen_mode.acceleration = graphics_preferences->screen_mode.acceleration = _no_acceleration;
 		}
 	}
-	if (main_screen == NULL && (flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_OPENGL))) {
+	if (main_screen == NULL && (flags & (SDL_WINDOW_FULLSCREEN_DESKTOP|SDL_WINDOW_OPENGL))) {
 		fprintf(stderr, "Can't open video display (%s)\n", SDL_GetError());
 		fprintf(stderr, "WARNING: Trying in software windowed mode");
 		logWarning("Trying software windowed mode");
-		uint32 tempflags = (flags & ~(SDL_WINDOW_OPENGL|SDL_WINDOW_FULLSCREEN)) | SDL_SWSURFACE;
+		uint32 tempflags = (flags & ~(SDL_WINDOW_OPENGL|SDL_WINDOW_FULLSCREEN_DESKTOP)) | SDL_SWSURFACE;
 		main_screen = SDL_CreateWindow(get_application_name(),
 									   SDL_WINDOWPOS_CENTERED,
 									   SDL_WINDOWPOS_CENTERED,
@@ -906,20 +1015,27 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		fprintf(stderr, "ERROR: Unable to find working display mode");
 		logWarning("Unable to find working display mode; exiting");
 		vhalt("Cannot find a working video mode.");
-	} else {
+	}
 #ifdef HAVE_OPENGL
-		if (!context_created && !nogl && screen_mode.acceleration != _no_acceleration) {
-			SDL_GL_CreateContext(main_screen);
-			context_created = true;
-		}
+	if (!context_created && !nogl && screen_mode.acceleration != _no_acceleration) {
+		SDL_GL_CreateContext(main_screen);
+		context_created = true;
+	}
 #endif
-		if (nogl || screen_mode.acceleration == _no_acceleration) {
+	} // end if need_window
+	if (nogl || screen_mode.acceleration == _no_acceleration) {
+		if (!main_render) {
 			main_render = SDL_CreateRenderer(main_screen, -1, 0);
+			SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+			SDL_RenderSetLogicalSize(main_render, vmode_width, vmode_height);
+			main_texture = SDL_CreateTexture(main_render, pixel_format_32.format, SDL_TEXTUREACCESS_STREAMING, vmode_width, vmode_height);
+		} else if (!main_texture) {
 			main_texture = SDL_CreateTexture(main_render, pixel_format_32.format, SDL_TEXTUREACCESS_STREAMING, vmode_width, vmode_height);
 		}
+	}
+	if (!main_surface) {
 		main_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, vmode_width, vmode_height, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, 0);
 	}
-	} // end if need_mode_change
 #ifdef MUST_RELOAD_VIEW_CONTEXT
 	if (!nogl && screen_mode.acceleration != _no_acceleration) 
 		ReloadViewContext();
@@ -964,8 +1080,10 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 //		printf("GL_EXTENSIONS: %s\n", gl_extensions);
 			gl_info_printed = true;
 		}
-		glScissor(0, 0, width, height);
-		glViewport(0, 0, width, height);
+		int pixw = MainScreenPixelWidth();
+		int pixh = MainScreenPixelHeight();
+		glScissor(0, 0, pixw, pixh);
+		glViewport(0, 0, pixw, pixh);
 		
 		OGL_ClearScreen();
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -979,10 +1097,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	
 	if (in_game && screen_mode.hud)
 	{
-		if (prev_width != width || prev_height != height)
+		if (prev_width != main_surface->w || prev_height != main_surface->h)
 		{
-			prev_width = width;
-			prev_height = height;
 			L_Call_HUDResize();
 	  }
 	}
@@ -1025,18 +1141,14 @@ void change_screen_mode(struct screen_mode_data *mode, bool redraw)
 	if (redraw) {
 		short w = std::max(mode->width, static_cast<short>(640));
 		short h = std::max(mode->height, static_cast<short>(480));
-		// use 640x480 for fullscreen SDL menus in software,
-		// and windowed SDL menus in any renderer
-		if (!in_game && 
-		    (!mode->fullscreen ||
-		     (mode->fill_the_screen && mode->acceleration == _no_acceleration)))
+		if (!in_game)
 		{
 			w = 640;
 			h = 480;
 		}
 		else
 			get_auto_resolution_size(&w, &h, mode);
-		change_screen_mode(w, h, mode->bit_depth, false);
+		change_screen_mode(w, h, mode->bit_depth, false, !in_game);
 		clear_screen();
 		recenter_mouse();
 	}
@@ -1050,34 +1162,16 @@ void change_screen_mode(short screentype)
 	
 	short w = std::max(mode->width, static_cast<short>(640));
 	short h = std::max(mode->height, static_cast<short>(480));
-	if (screentype == _screentype_menu)
+	if (!in_game)
 	{
-		// use 640x480 for fullscreen menus in software,
-		// and windowed menus in any renderer
-		if (!mode->fullscreen ||
-			(mode->fill_the_screen && mode->acceleration == _no_acceleration))
-		{
-			w = 640;
-			h = 480;
-		}
-		else
-			get_auto_resolution_size(&w, &h, mode);
+		w = 640;
+		h = 480;
 	}
-	else if (screentype == _screentype_chapter)
-	{
-		// use 640x480 for fullscreen chapters in software,
-		// and never in windowed mode
-		if (mode->fullscreen &&
-			(mode->fill_the_screen && mode->acceleration == _no_acceleration))
-		{
-			w = 640;
-			h = 480;
-		}
-		else
-			get_auto_resolution_size(&w, &h, mode);
-	}
+	else
+		get_auto_resolution_size(&w, &h, mode);
 	
-	change_screen_mode(w, h, mode->bit_depth, false);
+	bool force_menu_size = (screentype == _screentype_menu || screentype == _screentype_chapter);
+	change_screen_mode(w, h, mode->bit_depth, false, force_menu_size);
 	clear_screen();
 	recenter_mouse();
 	
@@ -1287,6 +1381,7 @@ void render_screen(short ticks_elapsed)
 	// Set OpenGL viewport to world view
 	Rect sr = {0, 0, Screen::instance()->height(), Screen::instance()->width()};
 	Rect vr = {ViewRect.y, ViewRect.x, ViewRect.y + ViewRect.h, ViewRect.x + ViewRect.w};
+	Screen::instance()->bound_screen_to_rect(ViewRect);
 	OGL_SetWindow(sr, vr, true);
 	
 #endif
@@ -1333,6 +1428,7 @@ void render_screen(short ticks_elapsed)
 	
 #ifdef HAVE_OPENGL
 	// Set OpenGL viewport to whole window (so HUD will be in the right position)
+	Screen::instance()->bound_screen();
 	OGL_SetWindow(sr, sr, true);
 #endif
 	
@@ -1631,20 +1727,6 @@ void build_direct_color_table(struct color_table *color_table, short bit_depth)
 	}
 }
 
-void bound_screen()
-{
-	Screen *screen = Screen::instance();
-	SDL_Rect ScreenRect = {0, 0, screen->width(), screen->height()};
-
-	SDL_Rect ViewRect = { (screen->width() - screen->window_width()) / 2, (screen->height() - screen->window_height()) / 2, screen->window_width(), screen->window_height() };
-
-	Rect sr = { ScreenRect.y, ScreenRect.x, ScreenRect.y + ScreenRect.h, ScreenRect.x + ScreenRect.w};
-	Rect vr = { ViewRect.y, ViewRect.x, ViewRect.y + ViewRect.h, ViewRect.x + ViewRect.w};
-#ifdef HAVE_OPENGL
-	OGL_SetWindow(sr, vr, true);
-#endif
-}
-
 void change_interface_clut(struct color_table *color_table)
 {
 	memcpy(interface_color_table, color_table, sizeof(struct color_table));
@@ -1722,6 +1804,7 @@ void render_overhead_map(struct view_data *view)
 		Rect sr = {0, 0, Screen::instance()->height(), Screen::instance()->width()};
 		SDL_Rect MapRect = Screen::instance()->map_rect();
 		Rect mr = {MapRect.y, MapRect.x, MapRect.y + MapRect.h, MapRect.x + MapRect.w};
+		Screen::instance()->bound_screen_to_rect(MapRect);
 		OGL_SetWindow(sr, mr, true);
 	}
 #endif
@@ -1926,7 +2009,7 @@ void draw_intro_screen(void)
 		return;
 	
 	SDL_Rect src_rect = { 0, 0, Intro_Buffer->w, Intro_Buffer->h };
-	SDL_Rect dst_rect = {(main_surface->w - src_rect.w) / 2, (main_surface->h - src_rect.h) / 2, src_rect.w, src_rect.h};
+	SDL_Rect dst_rect = { 0, 0, src_rect.w, src_rect.h};
 	
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive()) {
@@ -2041,21 +2124,51 @@ bool MainScreenVisible()
 {
 	return (main_screen != NULL);
 }
-int MainScreenWidth()
+int MainScreenLogicalWidth()
+{
+	return (main_surface ? main_surface->w : 0);
+}
+int MainScreenLogicalHeight()
+{
+	return (main_surface ? main_surface->h : 0);
+}
+int MainScreenWindowWidth()
 {
 	int w = 0;
 	SDL_GetWindowSize(main_screen, &w, NULL);
 	return w;
 }
-int MainScreenHeight()
+int MainScreenWindowHeight()
 {
 	int h = 0;
 	SDL_GetWindowSize(main_screen, NULL, &h);
 	return h;
 }
-void MainScreenSize(int &w, int &h)
+int MainScreenPixelWidth()
 {
-	SDL_GetWindowSize(main_screen, &w, &h);
+	int w = 0;
+#ifdef HAVE_OPENGL
+	if (MainScreenIsOpenGL())
+		SDL_GL_GetDrawableSize(main_screen, &w, NULL);
+	else
+#endif
+		SDL_GetRendererOutputSize(main_render, &w, NULL);
+	return w;
+}
+int MainScreenPixelHeight()
+{
+	int h = 0;
+#ifdef HAVE_OPENGL
+	if (MainScreenIsOpenGL())
+		SDL_GL_GetDrawableSize(main_screen, NULL, &h);
+	else
+#endif
+		SDL_GetRendererOutputSize(main_render, NULL, &h);
+	return h;
+}
+float MainScreenPixelScale()
+{
+	return MainScreenPixelWidth() / static_cast<float>(MainScreenWindowWidth());
 }
 bool MainScreenIsOpenGL()
 {

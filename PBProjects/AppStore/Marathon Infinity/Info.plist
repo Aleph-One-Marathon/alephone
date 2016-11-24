@@ -276,5 +276,7 @@
 	<array/>
 	<key>UTImportedTypeDeclarations</key>
 	<array/>
+	<key>NSHighResolutionCapable</key>
+	<true/>
 </dict>
 </plist>

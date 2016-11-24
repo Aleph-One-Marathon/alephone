@@ -605,14 +605,14 @@ static void DisplayMessages(SDL_Surface *s)
 				icon_drop = 2;
 				break;
 			case 1:
-				if(MainScreenHeight() >= 960)
+				if(MainScreenLogicalHeight() >= 960)
 					icon_drop = 4;
 				else
 					icon_drop = 2;
 				break;
 			case 2:
-				if(MainScreenHeight() >= 480)
-					icon_drop = MainScreenHeight() * 2 / 480;
+				if(MainScreenLogicalHeight() >= 480)
+					icon_drop = MainScreenLogicalHeight() * 2 / 480;
 				else
 					icon_drop = 2;
 				break;
@@ -631,17 +631,17 @@ static void DisplayMessages(SDL_Surface *s)
                                         icon_skip = 20;
 					switch(get_screen_mode()->hud_scale_level) {
 					case 1:
-						if(MainScreenHeight() >= 960) {
+						if(MainScreenLogicalHeight() >= 960) {
 							rect.w *= 2;
 							rect.h *= 2;
 							icon_skip *= 2;
 						}
 						break;
 					case 2:
-						if(MainScreenHeight() > 480) {
-							rect.w = rect.w * MainScreenHeight() / 480;
-							rect.h = rect.h * MainScreenHeight() / 480;
-							icon_skip = icon_skip * MainScreenHeight() / 480;
+						if(MainScreenLogicalHeight() > 480) {
+							rect.w = rect.w * MainScreenLogicalHeight() / 480;
+							rect.h = rect.h * MainScreenLogicalHeight() / 480;
+							icon_skip = icon_skip * MainScreenLogicalHeight() / 480;
 						}
 						break;
 					}

@@ -110,11 +110,11 @@ FontSpecifier& GetOnScreenFont()
 	short NeededSize = OnScreenFont.Size;
 	switch (get_screen_mode()->hud_scale_level) {
 	case 1:
-		if(MainScreenHeight() > 960) NeededSize *= 2;
+		if(MainScreenLogicalHeight() > 960) NeededSize *= 2;
 		break;
 	case 2:
-		if(MainScreenHeight() > 480)
-			NeededSize = NeededSize * MainScreenHeight() / 480;
+		if(MainScreenLogicalHeight() > 480)
+			NeededSize = NeededSize * MainScreenLogicalHeight() / 480;
 		break;
 	}
 	if (ScreenFontInitedSize != NeededSize) {

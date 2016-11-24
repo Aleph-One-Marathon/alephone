@@ -922,10 +922,7 @@ static bool event_has_cheat_modifiers(const SDL_Event &event)
 static void process_screen_click(const SDL_Event &event)
 {
 	int x = event.button.x, y = event.button.y;
-#ifdef HAVE_OPENGL
-	if (OGL_IsActive())
-		OGL_Blitter::WindowToScreen(x, y);
-#endif
+	alephone::Screen::instance()->window_to_screen(x, y);
 	portable_process_screen_click(x, y, has_cheat_modifiers());
 }
 
@@ -1598,8 +1595,8 @@ void dump_screen(void)
 		return;
 	}
 	
-	int video_w, video_h;
-	MainScreenSize(video_w, video_h);
+	int video_w = MainScreenPixelWidth();
+	int video_h = MainScreenPixelHeight();
 
 #ifdef HAVE_OPENGL
 	// Otherwise, allocate temporary surface...

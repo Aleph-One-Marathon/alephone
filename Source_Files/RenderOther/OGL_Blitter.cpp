@@ -170,69 +170,22 @@ OGL_Blitter::~OGL_Blitter()
 
 int OGL_Blitter::ScreenWidth()
 {
-	return MainScreenWidth();
+	return MainScreenLogicalWidth();
 }
 
 int OGL_Blitter::ScreenHeight()
 {
-	return MainScreenHeight();
+	return MainScreenLogicalHeight();
 }
 
 void OGL_Blitter::BoundScreen(bool in_game)
-{	
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	int w = ScreenWidth();
-	int h = ScreenHeight();
-	glViewport(0, 0, w, h);
-	glOrtho(0, w, h, 0, -1, 1);
-	// zoom to center 640x480, if not in level
-	if (!in_game && get_screen_mode()->fill_the_screen)
-	{
-        if (w/(float)h >= 640/480.0)
-        {
-            float scale = h/480.0;
-            glScalef(scale, scale, 1.0);
-            float margin = (480 - h)/2.0;
-            glTranslatef(margin * w/(float)h, margin, 0.0);
-        }
-        else
-        {
-            float scale = w/640.0;
-            glScalef(scale, scale, 1.0);
-            float margin = (640 - w)/2.0;
-            glTranslatef(margin, margin * h/(float)w, 0.0);
-        }
-	}
-	glMatrixMode(GL_MODELVIEW);
+{
+	alephone::Screen::instance()->bound_screen(in_game);
 }
 
 void OGL_Blitter::WindowToScreen(int& x, int& y, bool in_game)
 {
-	if (!in_game && get_screen_mode()->fill_the_screen)
-	{
-		int w = ScreenWidth();
-		int h = ScreenHeight();
-		
-        if (w/(float)h >= 640/480.0)
-        {
-            float scale = h/480.0;
-            x /= scale;
-            y /= scale;
-            float margin = (480 - h)/2.0;
-            x -= margin * w/(float)h;
-            y -= margin;
-        }
-        else
-        {
-            float scale = w/640.0;
-            x /= scale;
-            y /= scale;
-            float margin = (640 - w)/2.0;
-            x -= margin;
-            y -= margin * h/(float)w;
-        }
-	}
+	alephone::Screen::instance()->window_to_screen(x, y);
 }
 
 void OGL_Blitter::Draw(const SDL_Rect& dst)
@@ -248,7 +201,7 @@ void OGL_Blitter::Draw(const Image_Rect& dst, const Image_Rect& raw_src)
 	_LoadTextures();
 	if (!m_textures_loaded)
 		return;
-	
+
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	
 	// disable everything but alpha blending and clipping

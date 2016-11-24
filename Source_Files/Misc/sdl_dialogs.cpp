@@ -1749,9 +1749,16 @@ void dialog::layout()
 	rect.w = get_theme_space(DIALOG_FRAME, L_SPACE) + placer_rect.w + get_theme_space(DIALOG_FRAME, R_SPACE);
 	rect.h = get_theme_space(DIALOG_FRAME, T_SPACE) + placer_rect.h + get_theme_space(DIALOG_FRAME, B_SPACE);
 	
-	// Center dialog on video surface
-	rect.x = (MainScreenWidth() - rect.w) / 2;
-	rect.y = (MainScreenHeight() - rect.h) / 2;
+	// Center dialog on menu surface
+	int surface_w = MainScreenLogicalWidth();
+	int surface_h = MainScreenLogicalHeight();
+	if (MainScreenIsOpenGL())
+	{
+		surface_w = 640;
+		surface_h = 480;
+	}
+	rect.x = (surface_w - rect.w) / 2;
+	rect.y = (surface_h - rect.h) / 2;
 	
 	placer_rect.x = get_theme_space(DIALOG_FRAME, L_SPACE);
 	placer_rect.y = get_theme_space(DIALOG_FRAME, T_SPACE);
@@ -1768,7 +1775,7 @@ void dialog::update(SDL_Rect r) const
 {
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive()) {
-		OGL_Blitter::BoundScreen();
+		OGL_Blitter::BoundScreen(false);
 		clear_screen(false);
 		OGL_Blitter blitter;
 		SDL_Rect src = { 0, 0, rect.w, rect.h };

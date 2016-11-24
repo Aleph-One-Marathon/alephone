@@ -817,36 +817,13 @@ bool OGL_SetWindow(Rect &ScreenBounds, Rect &ViewBounds, bool UseBackBuffer)
 	SavedScreenBounds = ScreenBounds;
 	SavedViewBounds = ViewBounds;
 	
-	// Note, the screen bounds are adjusted so that the canonical bounds
-	// are in the center of the screen.
-	
-	short Left = ViewBounds.left;
-	short Right = ViewBounds.right;
-	short Top = ViewBounds.top;
-	short Bottom = ViewBounds.bottom;
-	ViewWidth = Right - Left;
-	ViewHeight = Bottom - Top;
-	short TotalHeight = ScreenBounds.bottom - ScreenBounds.top;
-	
-	// Must be in OpenGL coordinates
-	GLint RectBounds[4];
-	RectBounds[0] = Left;
-	RectBounds[1] = TotalHeight - Bottom;
-	RectBounds[2] = ViewWidth;
-	RectBounds[3] = ViewHeight;
-	
-	// Adjustment for the screen
-	RectBounds[0] -= ScreenBounds.left;
-	RectBounds[1] += ScreenBounds.top;
-	
-	// Do OpenGL bounding
-	glViewport(RectBounds[0], RectBounds[1], RectBounds[2], RectBounds[3]);
+	// Viewport setup is now done by the caller.
+	ViewWidth = ViewBounds.right - ViewBounds.left;
+	ViewHeight = ViewBounds.bottom - ViewBounds.top;
 	
 	// Create the screen -> clip (fundamental) matrix; this will be needed
 	// for all the other projections
 	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, ViewWidth, ViewHeight, 0, 1, -1);	// OpenGL-style z
 	glGetDoublev(GL_PROJECTION_MATRIX,Screen_2_Clip);
 	
 	// Set projection type to initially none (force load of first one)

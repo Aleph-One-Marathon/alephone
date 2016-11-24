@@ -93,6 +93,7 @@ namespace alephone
 
 		int height();
 		int width();
+		float pixel_scale();
 		int window_height();
 		int window_width();
 		bool hud();
@@ -105,6 +106,10 @@ namespace alephone
 		SDL_Rect map_rect();
 		SDL_Rect term_rect();
 		SDL_Rect hud_rect();
+		
+		void bound_screen(bool in_game = true);
+		void bound_screen_to_rect(SDL_Rect &r, bool in_game = true);
+		void window_to_screen(int &x, int &y);
 		
 		SDL_Rect lua_clip_rect;
 		SDL_Rect lua_view_rect;
@@ -249,9 +254,13 @@ bool SetScriptHUDIcon(int idx, const char* icon, size_t length);
 void SetScriptHUDSquare(int idx, int color);
 
 bool MainScreenVisible();
-int MainScreenWidth();
-int MainScreenHeight();
-void MainScreenSize(int &w, int &h);
+int MainScreenLogicalWidth();
+int MainScreenLogicalHeight();
+int MainScreenWindowWidth();
+int MainScreenWindowHeight();
+int MainScreenPixelWidth();
+int MainScreenPixelHeight();
+float MainScreenPixelScale();
 bool MainScreenIsOpenGL();
 void MainScreenSwap();
 void MainScreenCenterMouse();

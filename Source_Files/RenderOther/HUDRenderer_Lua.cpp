@@ -105,6 +105,7 @@ blip_info HUD_Lua_Class::entity_blip(size_t index)
 void HUD_Lua_Class::start_draw(void)
 {
 	alephone::Screen *scr = alephone::Screen::instance();
+	scr->bound_screen();
     m_wr = scr->window_rect();
 	m_opengl = (get_screen_mode()->acceleration != _no_acceleration);
 	m_masking_mode = _mask_disabled;
@@ -132,8 +133,8 @@ void HUD_Lua_Class::start_draw(void)
 #endif
 	{
 		if (m_surface &&
-				(m_surface->w != MainScreenWidth() ||
-				 m_surface->h != MainScreenHeight()))
+				(m_surface->w != MainScreenLogicalWidth() ||
+				 m_surface->h != MainScreenLogicalHeight()))
 		{
 			SDL_FreeSurface(m_surface);
 			m_surface = NULL;
@@ -185,14 +186,6 @@ void HUD_Lua_Class::apply_clip(void)
     r.y = m_wr.y + scr->lua_clip_rect.y;
     r.w = MIN(scr->lua_clip_rect.w, m_wr.w - scr->lua_clip_rect.x);
     r.h = MIN(scr->lua_clip_rect.h, m_wr.h - scr->lua_clip_rect.y);
-#ifdef HAVE_OPENGL
-	if (m_opengl)
-	{
-        glEnable(GL_SCISSOR_TEST);
-        glScissor(r.x, scr->height() - r.y - r.h, r.w, r.h);
-	}
-	else
-#endif
 	if (m_surface)
 	{
 		SDL_SetClipRect(MainScreenSurface(), &r);

@@ -2586,9 +2586,6 @@ static void handle_interface_menu_screen_click(
 	screen_rectangle *screen_rect;
 	short xoffset = 0, yoffset = 0;
 
-	xoffset = (MainScreenWidth() - 640) / 2;
-	yoffset = (MainScreenHeight() - 480) / 2;
-
 	/* find it.. */
 	for(index= START_OF_MENU_INTERFACE_RECTS; index<END_OF_MENU_INTERFACE_RECTS; ++index)
 	{
@@ -2616,14 +2613,14 @@ static void handle_interface_menu_screen_click(
 				bool state;
 				
 				get_mouse_position(&x, &y);
-#ifdef HAVE_OPENGL
-				if (OGL_IsActive())
+//#ifdef HAVE_OPENGL
+//				if (OGL_IsActive())
 				{
 					int mx = x, my = y;
-					OGL_Blitter::WindowToScreen(mx, my);
+					alephone::Screen::instance()->window_to_screen(mx, my);
 					x = mx; y = my;
 				}
-#endif
+//#endif
 				state= point_in_rectangle(x - xoffset, y - yoffset, screen_rect);
 				if(state != last_state)
 				{
@@ -3014,7 +3011,7 @@ void show_movie(short index)
 
 	{
 		SoundManager::Pause pauseSoundManager;
-		SDL_Rect dst_rect = { (MainScreenWidth() - 640)/2, (MainScreenHeight() - 480)/2, 640, 480 };
+		SDL_Rect dst_rect = { 0, 0, 640, 480 };
 
 #ifdef HAVE_FFMPEG
 		SDL_ffmpegFile *sffile = SDL_ffmpegOpen(File->GetPath());

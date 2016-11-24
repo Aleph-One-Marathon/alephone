@@ -51,7 +51,7 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 		view_width = view.screen_width;
 		view_height = view.screen_height;
 		swapper.reset();
-		swapper.reset(new FBOSwapper(view_width, view_height, false));
+		swapper.reset(new FBOSwapper(view_width * MainScreenPixelScale(), view_height * MainScreenPixelScale(), false));
 	}
 	
 	float aspect = view.screen_width / float(view.screen_height);
