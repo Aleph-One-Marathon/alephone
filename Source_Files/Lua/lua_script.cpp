@@ -763,6 +763,18 @@ bool L_Get_Proper_Item_Accounting(lua_State* L)
 	return value;
 }
 
+static char L_NONLOCAL_OVERLAYS_KEY[] = "nonlocal_overlays";
+
+void L_Set_Nonlocal_Overlays(lua_State* L, bool value)
+{
+  SetScriptHUDNonlocal(value);
+}
+
+bool L_Get_Nonlocal_Overlays(lua_State* L)
+{
+  return IsScriptHUDNonlocal();
+}
+
 static int L_Enable_Player(lua_State*);
 static int L_Disable_Player(lua_State*);
 static int L_Kill_Script(lua_State*);
