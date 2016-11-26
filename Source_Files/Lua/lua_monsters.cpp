@@ -1008,7 +1008,7 @@ int Lua_Monsters_New(lua_State *L)
 }
 
 const luaL_Reg Lua_Monsters_Methods[] = {
-	{"new", Lua_Monsters_New},
+	{"new", L_TableFunction<Lua_Monsters_New>},
 	{0, 0}
 };
 

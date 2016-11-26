@@ -356,7 +356,7 @@ static int Lua_Projectiles_New_Projectile(lua_State *L)
 }
 
 const luaL_Reg Lua_Projectiles_Methods[] = {
-	{"new", Lua_Projectiles_New_Projectile},
+	{"new", L_TableFunction<Lua_Projectiles_New_Projectile>},
 	{0, 0}
 };
 

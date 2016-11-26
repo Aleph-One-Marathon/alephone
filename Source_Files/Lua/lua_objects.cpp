@@ -334,7 +334,7 @@ static int Lua_Effects_New(lua_State *L)
 }
 
 const luaL_Reg Lua_Effects_Methods[] = {
-	{"new", Lua_Effects_New},
+	{"new", L_TableFunction<Lua_Effects_New>},
 	{0, 0}
 };
 
@@ -418,7 +418,7 @@ int Lua_Items_New(lua_State *L)
 }
 
 const luaL_Reg Lua_Items_Methods[] = {
-	{"new", Lua_Items_New},
+	{"new", L_TableFunction<Lua_Items_New>},
 	{0, 0}
 };
 
@@ -735,7 +735,7 @@ static bool Lua_Scenery_Valid(int32 index)
 }
 
 const luaL_Reg Lua_Sceneries_Methods[] = {
-	{"new", Lua_Sceneries_New},
+	{"new", L_TableFunction<Lua_Sceneries_New>},
 	{0, 0}
 };
 

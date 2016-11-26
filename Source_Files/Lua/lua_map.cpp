@@ -2173,7 +2173,7 @@ static int Lua_Sides_New(lua_State *L)
 }
 
 const luaL_Reg Lua_Sides_Methods[] = {
-	{"new", Lua_Sides_New},
+	{"new", L_TableFunction<Lua_Sides_New>},
 	{0, 0}
 };
 
@@ -2544,7 +2544,7 @@ int Lua_Lights_New(lua_State* L)
 }
 
 const luaL_Reg Lua_Lights_Methods[] = {
-	{"new", Lua_Lights_New},
+	{"new", L_TableFunction<Lua_Lights_New>},
 	{0, 0}
 };
 
@@ -2937,7 +2937,7 @@ static int Lua_Annotations_New(lua_State *L)
 }
 
 const luaL_Reg Lua_Annotations_Methods[] = {
-	{"new", Lua_Annotations_New},
+	{"new", L_TableFunction<Lua_Annotations_New>},
 	{0, 0}
 };
 

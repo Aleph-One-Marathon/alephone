@@ -322,7 +322,7 @@ static int Lua_Cameras_New(lua_State *L)
 }
 
 const luaL_Reg Lua_Cameras_Methods[] = {
-	{"new", Lua_Cameras_New},
+	{"new", L_TableFunction<Lua_Cameras_New>},
 	{0, 0}
 };
 
