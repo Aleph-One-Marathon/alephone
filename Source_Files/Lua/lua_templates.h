@@ -864,6 +864,104 @@ int L_Container<name, T>::_length(lua_State *L)
 	return 1;
 }
 
+template<char *name, class T>
+class L_ContainerClass : public L_Class<name> {
+public:
+	static void Register(lua_State *L, const luaL_Reg get[] = 0, const luaL_Reg set[] = 0, const luaL_Reg metatable[] = 0);
+	static boost::function<typename T::index_type (void)> Length;
+	struct ConstantLength
+	{
+		ConstantLength(int32 length) : m_length(length) {}
+		int32 operator() (void) { return m_length; }
+		int32 m_length;
+	};
+private:
+	static int _get(lua_State *);
+	static int _call(lua_State *);
+	static int _iterator(lua_State *);
+	static int _length(lua_State *);
+};
+
+template<char *name, class T>
+boost::function<typename T::index_type (void)> L_ContainerClass<name, T>::Length = ConstantLength(1);
+
+template<char *name, class T>
+void L_ContainerClass<name, T>::Register(lua_State *L, const luaL_Reg get[], const luaL_Reg set[], const luaL_Reg metatable[])
+{
+	L_Class<name>::Register(L, get, set, metatable);
+	luaL_getmetatable(L, name);
+	
+	lua_pushcfunction(L, _call);
+	lua_setfield(L, -2, "__call");
+	
+	lua_pushcfunction(L, _length);
+	lua_setfield(L, -2, "__len");
+	
+	lua_setmetatable(L, -2);
+	
+	L_Class<name>::Push(L, 0);
+	lua_setglobal(L, name);
+}
+
+template<char *name, class T>
+int L_ContainerClass<name, T>::_get(lua_State *L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		int32 index = static_cast<int32>(lua_tonumber(L, 2));
+		if (!T::Valid(index))
+		{
+			lua_pushnil(L);
+		}
+		else
+		{
+			T::Push(L, index);
+		}
+		return 1;
+	}
+	
+	return L_Class<name>::_get(L);
+}
+
+template<char *name, class T>
+int L_ContainerClass<name, T>::_iterator(lua_State *L)
+{
+	int32 index = static_cast<int32>(lua_tonumber(L, lua_upvalueindex(1)));
+	while (index < Length())
+	{
+		if (T::Valid(index))
+			
+		{
+			T::Push(L, index);
+			lua_pushnumber(L, ++index);
+			lua_replace(L, lua_upvalueindex(1));
+			return 1;
+		}
+		else
+		{
+			++index;
+		}
+	}
+	
+	lua_pushnil(L);
+	return 1;
+}
+
+template<char *name, class T>
+int L_ContainerClass<name, T>::_call(lua_State *L)
+{
+	lua_pushnumber(L, 0);
+	lua_pushcclosure(L, _iterator, 1);
+	return 1;
+}
+
+template<char *name, class T>
+int L_ContainerClass<name, T>::_length(lua_State *L)
+{
+	lua_pushnumber(L, Length());
+	return 1;
+}
+
 // enum containers will be able to look up by strings
 template<char *name, class T>
 class L_EnumContainer : public L_Container<name, T>

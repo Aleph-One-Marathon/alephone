@@ -523,16 +523,6 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>the date version of the local player's engine</description>
 	<note>for example, "20071103"</note>
       </variable>
-      <variable name="local_player" version="Git" access="read-only">
-	<description>The local player.</description>
-	<type>Player</type>
-	<note>normally, you shouldn't need this--you'll just make the game go out of sync</note>
-      </variable>
-      <variable name="view_player" version="Git">
-        <description>The player currently being viewed by the local computer.</description>
-        <type>Player</type>
-        <note>Be very careful when using this not to make any decisions that affect the game world (including non-local random numbers), or you will cause a desync</note>
-      </variable>
     </table>
     <table name="goal">
       <variable name="facing" access="read-only" version="20111201">
@@ -1392,8 +1382,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <function name="view_player" version="20080707">
 	<description>switch to another player's view</description>
 	<argument name="player"><type>player</type></argument>
-        <note>You may also write to Game.view_player, if you are only interested in changing the local player's view</note>
       </function>
+      <variable name="viewed_player" access="local-player read-only" version="Git">
+        <description>the player currently being viewed by the local player</description>
+        <type>player</type>
+      </variable>
       <subtable name="weapons">
 	<variable name="current" access="read-only">
 	  <description>weapon the player is currently wielding</description>
@@ -2007,6 +2000,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>prints message to all players' screens</description>
 	<argument name="message"><type>string</type></argument>
       </function>
+      <variable name="local_player" version="Git" access="read-only">
+	<description>the local player</description>
+	<type>Player</type>
+	<note>normally, you shouldn't need this--you'll just make the game go out of sync</note>
+      </variable>
     </accessor>
     <accessor name="PlayerStarts" contains="player_start">
       <length>

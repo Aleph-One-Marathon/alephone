@@ -595,20 +595,6 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <p class="description">the date version of the local player's engine</p>
 <p class="note">for example, "20071103" </p>
 </dd>
-<dt>
-    .local_player<span class="access"> (read-only)</span> <span class="version">Git</span>
-</dt>
-<dd>
-<p class="description">The local player.</p>
-<p class="note">normally, you shouldn't need this--you'll just make the game go out of sync </p>
-</dd>
-<dt>
-    .view_player <span class="version">Git</span>
-</dt>
-<dd>
-<p class="description">The player currently being viewed by the local computer.</p>
-<p class="note">Be very careful when using this not to make any decisions that affect the game world (including non-local random numbers), or you will cause a desync </p>
-</dd>
 </dl></dd>
 </dl>
 <h3>
@@ -1255,6 +1241,13 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">iterates through all players in the game</p></dd>
 <dt>Players.print(message)</dt>
 <dd><p class="description">prints message to all players' screens</p></dd>
+<dt>
+    .local_player<span class="access"> (read-only)</span> <span class="version">Git</span>
+</dt>
+<dd>
+<p class="description">the local player</p>
+<p class="note">normally, you shouldn't need this--you'll just make the game go out of sync </p>
+</dd>
 <dt>Players[index]</dt>
 <dd><dl>
       <dt>:accelerate(direction, velocity, vertical_velocity)</dt>
@@ -1557,10 +1550,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dd>
       <dt>:view_player(player) <span class="version">20080707</span>
 </dt>
-<dd>
-<p class="description">switch to another player's view</p>
-<p class="note">You may also write to Game.view_player, if you are only interested in changing the local player's view </p>
-</dd>
+<dd><p class="description">switch to another player's view</p></dd>
+      <dt>
+    .viewed_player<span class="access"> (read-only) (local player)</span> <span class="version">Git</span>
+</dt>
+<dd><p class="description">the player whose view is selected by view_player()</p></dd>
       <dt>.weapons</dt>
 <dd><dl>
 <dt>

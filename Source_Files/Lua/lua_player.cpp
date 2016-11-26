@@ -1662,6 +1662,15 @@ int Lua_Player_Teleport_To_Level(lua_State *L)
 
 extern short current_player_index;
 
+int Lua_Player_Get_Viewed_Player(lua_State *L)
+{
+	int player_index = Lua_Player::Index(L, 1);
+	if (player_index != local_player_index)
+		return 0;
+	Lua_Player::Push(L, current_player_index);
+	return 1;
+}
+
 int Lua_Player_View_Player(lua_State *L)
 {
 	int player_index = Lua_Player::Index(L, 1);
@@ -1967,6 +1976,7 @@ const luaL_Reg Lua_Player_Get[] = {
 	{"teleport_to_level", L_TableFunction<Lua_Player_Teleport_To_Level>},
 	{"texture_palette", Lua_Player_Get_Texture_Palette},
 	{"view_player", L_TableFunction<Lua_Player_View_Player>},
+	{"viewed_player", Lua_Player_Get_Viewed_Player},
 	{"weapons", Lua_Player_Get_Weapons},
 	{"x", Lua_Player_Get_X},
 	{"y", Lua_Player_Get_Y},
@@ -2214,9 +2224,15 @@ int Lua_Players_Print(lua_State *L)
 	return 0;
 }
 
+int Lua_Players_Get_Local_Player(lua_State *L)
+{
+	Lua_Player::Push(L, local_player_index);
+	return 1;
+}
 
-const luaL_Reg Lua_Players_Methods[] = {
-	{"print", Lua_Players_Print},
+const luaL_Reg Lua_Players_Get[] = {
+	{"local_player", Lua_Players_Get_Local_Player},
+	{"print", L_TableFunction<Lua_Players_Print>},
 	{0, 0}
 };
 
@@ -2244,18 +2260,6 @@ typedef L_Enum<Lua_ScoringMode_Name> Lua_ScoringMode;
 
 char Lua_ScoringModes_Name[] = "ScoringModes";
 typedef L_Container<Lua_ScoringModes_Name, Lua_ScoringMode> Lua_ScoringModes;
-
-static int Lua_Game_Get_View_Player(lua_State *L)
-{
-	Lua_Player::Push(L, current_player_index);
-	return 1;
-}
-
-static int Lua_Game_Get_Local_Player(lua_State *L)
-{
-	Lua_Player::Push(L, local_player_index);
-	return 1;
-}
 
 static int Lua_Game_Get_Dead_Players_Drop_Items(lua_State *L)
 {
@@ -2474,8 +2478,6 @@ extern int L_Restore_Passed(lua_State *);
 extern int L_Restore_Saved(lua_State *);
 
 const luaL_Reg Lua_Game_Get[] = {
-	{"view_player", Lua_Game_Get_View_Player},
-	{"local_player", Lua_Game_Get_Local_Player},
 	{"dead_players_drop_items", Lua_Game_Get_Dead_Players_Drop_Items},
 	{"difficulty", Lua_Game_Get_Difficulty},
 	{"global_random", L_TableFunction<Lua_Game_Global_Random>},
@@ -2497,7 +2499,6 @@ const luaL_Reg Lua_Game_Get[] = {
 };
 
 const luaL_Reg Lua_Game_Set[] = {
-	{"view_player", Lua_Game_Set_View_Player},
 	{"dead_players_drop_items", Lua_Game_Set_Dead_Players_Drop_Items},
 	{"monsters_replenish", Lua_Game_Set_Monsters_Replenish},
 	{"proper_item_accounting", Lua_Game_Set_Proper_Item_Accounting},
@@ -2655,7 +2656,7 @@ int Lua_Player_register (lua_State *L)
 	Lua_Player::Register(L, Lua_Player_Get, Lua_Player_Set);
 	Lua_Player::Valid = Lua_Player_Valid;
 	
-	Lua_Players::Register(L, Lua_Players_Methods);
+	Lua_Players::Register(L, Lua_Players_Get);
 	Lua_Players::Length = Lua_Players_Length;
 
 	Lua_Game::Register(L, Lua_Game_Get, Lua_Game_Set);

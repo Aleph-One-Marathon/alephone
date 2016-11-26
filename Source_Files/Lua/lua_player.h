@@ -40,7 +40,7 @@ extern char Lua_Player_Name[]; // "player"
 typedef L_Class<Lua_Player_Name> Lua_Player;
 
 extern char Lua_Players_Name[]; // "Players"
-typedef L_Container<Lua_Players_Name, Lua_Player> Lua_Players;
+typedef L_ContainerClass<Lua_Players_Name, Lua_Player> Lua_Players;
 
 extern char Lua_PlayerColor_Name[]; // "player_color"
 typedef L_Enum<Lua_PlayerColor_Name> Lua_PlayerColor;

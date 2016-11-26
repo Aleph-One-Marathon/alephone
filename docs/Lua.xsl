@@ -270,7 +270,7 @@
 <xsl:template match="accessor">
   <h3><a><xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute></a><xsl:value-of select="@name"/></h3>
   <dl>
-    <xsl:apply-templates select="length|call|function"/>
+    <xsl:apply-templates select="length|call|function|variable"/>
     <xsl:choose>
       <xsl:when test="index">
 	<dt><xsl:value-of select="@name"/>[index]</dt>
@@ -368,6 +368,9 @@
   <dt>
     .<xsl:value-of select="@name"/>
     <xsl:choose>
+      <xsl:when test="@access = 'local-player read-only'">
+	<span class="access"> (read-only) (local player)</span>
+      </xsl:when>
       <xsl:when test="@access = 'read-only'">
 	<span class="access"> (read-only)</span>
       </xsl:when>
@@ -382,6 +385,9 @@
       <br/>
       <xsl:if test="substring(., 1, 1) != '['">.</xsl:if><xsl:value-of select="."/>
       <xsl:choose>
+	<xsl:when test="../@access = 'local-player read-only'">
+	  <span class="access"> (read-only) (local player)</span>
+	</xsl:when>
 	<xsl:when test="../@access = 'read-only'">
 	  <span class="access"> (read-only)</span>
 	</xsl:when>
