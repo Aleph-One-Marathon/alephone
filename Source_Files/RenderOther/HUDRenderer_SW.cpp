@@ -44,14 +44,13 @@ extern bool MotionSensorActive;
 
 void HUD_SW_Class::update_motion_sensor(short time_elapsed)
 {
-    if (time_elapsed == NONE) {
-        ForceUpdate = true;
-    }
-    if (motion_sensor_has_changed()) {
-        render_motion_sensor(time_elapsed);
-        ForceUpdate = true;
-        screen_rectangle *r = get_interface_rectangle(_motion_sensor_rect);
-        DrawShapeAtXY(BUILD_DESCRIPTOR(_collection_interface, _motion_sensor_mount), r->left, r->top);
+	if (!(GET_GAME_OPTIONS() & _motion_sensor_does_not_work) && MotionSensorActive) {
+		if (motion_sensor_has_changed() || time_elapsed == NONE) {
+			render_motion_sensor(time_elapsed);
+			ForceUpdate = true;
+			screen_rectangle *r = get_interface_rectangle(_motion_sensor_rect);
+			DrawShapeAtXY(BUILD_DESCRIPTOR(_collection_interface, _motion_sensor_mount), r->left, r->top);
+		}
 	}
 }
 
