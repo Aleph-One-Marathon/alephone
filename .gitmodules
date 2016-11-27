@@ -1,6 +1,3 @@
-[submodule "data/XBLA_HUD"]
-	path = data/XBLA_HUD
-	url = https://github.com/Aleph-One-Marathon/data-xbla-hud.git
 [submodule "data/Scenarios/Marathon"]
 	path = data/Scenarios/Marathon
 	url = https://github.com/Aleph-One-Marathon/data-marathon.git

@@ -7169,7 +7169,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon 2/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\nrsync -aC \"$SRCROOT/../data/XBLA_HUD\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Plugins\"";
+			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon 2/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"";
 		};
 		27A6DA6E1B9BF031003DA766 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -7207,7 +7207,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon Infinity/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\nrsync -aC \"$SRCROOT/../data/XBLA_HUD\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Plugins\"";
+			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon Infinity/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"";
 		};
 		27A6DAB21B9C0FD7003DA766 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -7246,7 +7246,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon 2/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\nrsync -aC \"$SRCROOT/../data/XBLA_HUD\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Plugins\"";
+			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon 2/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"";
 		};
 		AEB4A2A614296CAE00537AE7 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -7271,7 +7271,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon Infinity/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\nrsync -aC \"$SRCROOT/../data/XBLA_HUD\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Plugins\"";
+			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon Infinity/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"";
 		};
 		AEC3C87609AD68AC003258E4 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;

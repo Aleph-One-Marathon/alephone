@@ -144,7 +144,6 @@ $(M2_WINZIP): Source_Files/Marathon2.exe
 	mkdir "$(WINDISTDIR_M2)"
 	$(call windist_common,$(WINDISTDIR_M2))
 	$(call cp_no_svn,$(srcdir)/data/Scenarios/Marathon 2,$(WINDISTDIR_M2))
-	$(call cp_no_svn,$(srcdir)/data/XBLA_HUD,$(WINDISTDIR_M2)/Plugins/XBLA_HUD)
 	cp Source_Files/Marathon2.exe "$(WINDISTDIR_M2)/Marathon 2.exe"
 	rm -f $(M2_WINZIP)
 	zip -r $(M2_WINZIP) "$(WINDISTDIR_M2)"
@@ -165,7 +164,6 @@ $(MINF_WINZIP): Source_Files/Marathon2.exe
 	mkdir "$(WINDISTDIR_MINF)"
 	$(call windist_common,$(WINDISTDIR_MINF))
 	$(call cp_no_svn,$(srcdir)/data/Scenarios/Marathon Infinity,$(WINDISTDIR_MINF))
-	$(call cp_no_svn,$(srcdir)/data/XBLA_HUD,$(WINDISTDIR_MINF)/Plugins/XBLA_HUD)
 	cp Source_Files/MarathonInfinity.exe "$(WINDISTDIR_MINF)/Marathon Infinity.exe"
 	rm -f $(MINF_WINZIP)
 	zip -r $(MINF_WINZIP) "$(WINDISTDIR_MINF)"
@@ -194,7 +192,6 @@ DATADISTDIR_M2=Marathon 2
 $(M2_DATAZIP):
 	mkdir "$(DATADISTDIR_M2)"
 	$(call cp_no_svn,$(srcdir)/data/Scenarios/Marathon 2,$(DATADISTDIR_M2))
-	$(call cp_no_svn,$(srcdir)/data/XBLA_HUD,$(DATADISTDIR_M2)/Plugins/XBLA_HUD)
 	rm -f $(M2_DATAZIP)
 	zip -r $(M2_DATAZIP) "$(DATADISTDIR_M2)"
 	rm -rf "$(DATADISTDIR_M2)"
@@ -203,7 +200,6 @@ DATADISTDIR_MINF=Marathon Infinity
 $(MINF_DATAZIP):
 	mkdir "$(DATADISTDIR_MINF)"
 	$(call cp_no_svn,$(srcdir)/data/Scenarios/Marathon Infinity,$(DATADISTDIR_MINF))
-	$(call cp_no_svn,$(srcdir)/data/XBLA_HUD,$(DATADISTDIR_MINF)/Plugins/XBLA_HUD)
 	rm -f $(MINF_DATAZIP)
 	zip -r $(MINF_DATAZIP) "$(DATADISTDIR_MINF)"
 	rm -rf "$(DATADISTDIR_MINF)"
