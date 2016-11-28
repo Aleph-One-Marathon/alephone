@@ -131,6 +131,7 @@ struct fade_data
 	short fade_effect_type;
 	
 	uint32 last_update_tick;
+	uint32 last_update_game_tick;
 	
 	struct color_table *original_color_table;
 	struct color_table *animated_color_table;
@@ -271,7 +272,7 @@ void initialize_fades(
 }
 
 bool update_fades(
-	void)
+	bool game_in_progress)
 {
   if (FADE_IS_ACTIVE(fade))
 	{
@@ -281,8 +282,16 @@ bool update_fades(
 		
 		_fixed transparency;
 		short phase;
+		if (game_in_progress)
+		{
+			phase = (dynamic_world->tick_count - fade->last_update_game_tick) * MACHINE_TICKS_PER_SECOND/TICKS_PER_SECOND;
+		}
+		else
+		{
+			phase = machine_tick_count() - fade->last_update_tick;
+		}
 		
-		if ((phase= machine_tick_count()-fade->last_update_tick)>=definition->period)
+		if (phase>=definition->period)
 		{
 			transparency= definition->final_transparency;
 			SET_FADE_ACTIVE_STATUS(fade, false);
@@ -344,13 +353,14 @@ void set_fade_effect(
 void start_fade(
 	short type)
 {
-	explicit_start_fade(type, world_color_table, visible_color_table);
+	explicit_start_fade(type, world_color_table, visible_color_table, true);
 }
 
 void explicit_start_fade(
 	short type,
 	struct color_table *original_color_table,
-	struct color_table *animated_color_table)
+	struct color_table *animated_color_table,
+	bool game_in_progress)
 {
 	struct fade_definition *definition= get_fade_definition(type);
 	// LP change: idiot-proofing
@@ -366,7 +376,19 @@ void explicit_start_fade(
 		if (old_definition)
 		{
 			if (old_definition->priority>definition->priority) do_fade= false;
-			if (fade->type==type && machine_ticks-fade->last_update_tick<MINIMUM_FADE_RESTART) do_fade= false;
+			if (fade->type==type)
+			{
+				short phase;
+				if (game_in_progress)
+				{
+					phase = (dynamic_world->tick_count - fade->last_update_game_tick) * MACHINE_TICKS_PER_SECOND/TICKS_PER_SECOND;
+				}
+				else
+				{
+					phase = machine_ticks - fade->last_update_tick;
+				}
+				if (phase<MINIMUM_FADE_RESTART) do_fade= false;
+			}
 		}
 	}
 
@@ -380,6 +402,7 @@ void explicit_start_fade(
 		{
 			fade->type= type;
 			fade->last_update_tick= machine_ticks;
+			fade->last_update_game_tick = game_in_progress ? dynamic_world->tick_count : 0;
 			fade->original_color_table= original_color_table;
 			fade->animated_color_table= animated_color_table;
 			SET_FADE_ACTIVE_STATUS(fade, true);

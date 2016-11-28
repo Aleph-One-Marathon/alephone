@@ -111,7 +111,7 @@ enum
 /* ---------- prototypes/FADES.C */
 
 void initialize_fades(void);
-bool update_fades(void);
+bool update_fades(bool game_in_progress = false);
 
 void start_fade(short type);
 void stop_fade(void);
@@ -124,7 +124,7 @@ short get_fade_period(short type);
 void gamma_correct_color_table(struct color_table *uncorrected_color_table, struct color_table *corrected_color_table, short gamma_level);
 float get_actual_gamma_adjust(short gamma_level);
 
-void explicit_start_fade(short type, struct color_table *original_color_table, struct color_table *animated_color_table);
+void explicit_start_fade(short type, struct color_table *original_color_table, struct color_table *animated_color_table, bool game_in_progress = false);
 void full_fade(short type, struct color_table *original_color_table);
 
 // see if the screen was set to black by the last fade

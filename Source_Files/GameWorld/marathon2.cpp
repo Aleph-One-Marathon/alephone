@@ -525,7 +525,7 @@ update_world()
 	else if (theElapsedTime)
 	{
 		update_interface(theElapsedTime);
-		update_fades();
+		update_fades(true);
 	}
 
 	check_recording_replaying();
