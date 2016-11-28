@@ -2260,6 +2260,7 @@ static void finish_game(
 			vhalt(csprintf(temporary, "What is user %d?", game_state.user));
 			break;
 	}
+	Movie::instance()->StopRecording();
 
 	/* Fade out! (Pray) */ // should be interface_color_table for valkyrie, but doesn't work.
 	Music::instance()->ClearLevelMusic();
@@ -2267,7 +2268,6 @@ static void finish_game(
 	full_fade(_cinematic_fade_out, interface_color_table);
 	paint_window_black();
 	full_fade(_end_cinematic_fade_out, interface_color_table);
-	Movie::instance()->StopRecording();
 
 	show_cursor();
 
