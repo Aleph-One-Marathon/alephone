@@ -719,6 +719,8 @@ protected:
 	void set_top_item(size_t i);
 	virtual uint16 item_height() const { return font->get_line_height(); }
 
+	static const int kListScrollSpeed = 1;
+
 	size_t selection;		// Currently selected item
 
 	size_t num_items;		// Total number of items

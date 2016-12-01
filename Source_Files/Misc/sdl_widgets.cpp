@@ -2020,15 +2020,19 @@ void w_list_base::event(SDL_Event &e)
 			dirty = true;
 		}
 	} else if (e.type == SDL_MOUSEWHEEL) {
-		if (e.wheel.y < 0) {
-			int amt = e.wheel.y * -3;
+		int amt = e.wheel.y * kListScrollSpeed;
+#if SDL_VERSION_ATLEAST(2,0,4)
+		if (e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+			amt = amt * -1;
+#endif
+		if (amt < 0) {
+			amt = amt * -1;
 			if (top_item > amt)
 				set_top_item(top_item - amt);
 			else 
 				set_top_item(0); 
-		} else if (e.wheel.y > 0) {
-			int amt = e.wheel.y * 3;
-			if (top_item < num_items - shown_items - 3)
+		} else if (amt > 0) {
+			if (top_item + amt < num_items - shown_items)
 				set_top_item(top_item + amt);
 			else
 				set_top_item(num_items - shown_items);
