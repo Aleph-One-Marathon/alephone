@@ -300,8 +300,6 @@ void draw_menu_button(short index, bool pressed);
 /* ---------- prototypes/INTERFACE_MACINTOSH.C- couldn't think of a better place... */
 void hide_cursor(void);
 void show_cursor(void);
-bool mouse_still_down(void);
-void get_mouse_position(short *x, short *y);
 void set_drawing_clip_rectangle(short top, short left, short bottom, short right);
 
 /* ---------- prototypes/SHAPES.C */

@@ -2607,25 +2607,47 @@ static void handle_interface_menu_screen_click(
 
 			/* Draw it initially depressed.. */
 			draw_button(index, last_state);
+			fprintf(stderr, "Initial mouse loc: %d, %d\n", x, y);
 		
-			while(mouse_still_down())
+			bool mouse_down = true;
+			while (mouse_down)
 			{
-				bool state;
+				int mx = x, my = y;
+				bool mouse_changed = false;
 				
-				get_mouse_position(&x, &y);
-//#ifdef HAVE_OPENGL
-//				if (OGL_IsActive())
+				SDL_Event e;
+				if (SDL_PollEvent(&e))
 				{
-					int mx = x, my = y;
-					alephone::Screen::instance()->window_to_screen(mx, my);
-					x = mx; y = my;
+					switch (e.type)
+					{
+						case SDL_MOUSEBUTTONUP:
+							mx = e.button.x;
+							my = e.button.y;
+							fprintf(stderr, "Saw button up: %d, %d\n", mx, my);
+							mouse_changed = true;
+							mouse_down = false;
+							break;
+						case SDL_MOUSEMOTION:
+							mx = e.motion.x;
+							my = e.motion.y;
+							fprintf(stderr, "Saw motion: %d, %d\n", mx, my);
+							mouse_changed = true;
+							break;
+					}
 				}
-//#endif
-				state= point_in_rectangle(x - xoffset, y - yoffset, screen_rect);
-				if(state != last_state)
+				else
 				{
-					draw_button(index, state);
-					last_state= state;
+					SDL_Delay(10);
+				}
+				if (mouse_changed)
+				{
+					alephone::Screen::instance()->window_to_screen(mx, my);
+					bool state = point_in_rectangle(mx - xoffset, my - yoffset, screen_rect);
+					if (state != last_state)
+					{
+						draw_button(index, state);
+						last_state = state;
+					}
 				}
 			}
 

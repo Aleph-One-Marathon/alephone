@@ -199,30 +199,6 @@ void show_cursor(void)
 }
 
 
-/*
- *  Get current mouse position
- */
-
-void get_mouse_position(short *x, short *y)
-{
-	int mx, my;
-	SDL_GetMouseState(&mx, &my);
-	*x = mx;
-	*y = my;
-}
-
-
-/*
- *  Mouse button still down?
- */
-
-bool mouse_still_down(void)
-{
-	SDL_PumpEvents();
-	Uint8 buttons = SDL_GetMouseState(NULL, NULL);
-	return buttons & SDL_BUTTON_LMASK;
-}
-
 void mouse_scroll(bool up)
 {
 	if (up)
