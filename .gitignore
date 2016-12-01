@@ -5,6 +5,7 @@ xcuserdata/
 project.xcworkspace/
 Makefile
 Makefile.in
+GNUmakefile
 lib*.a
 *.o
 
