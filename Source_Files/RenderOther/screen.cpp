@@ -522,8 +522,8 @@ void Screen::window_to_screen(int &x, int &y)
 	{
 		int winw = MainScreenWindowWidth();
 		int winh = MainScreenWindowHeight();
-		int virw = MainScreenLogicalWidth();
-		int virh = MainScreenLogicalHeight();
+		int virw = 640;
+		int virh = 480;
 		
 		float wina = winw / static_cast<float>(winh);
 		float vira = virw / static_cast<float>(virh);
