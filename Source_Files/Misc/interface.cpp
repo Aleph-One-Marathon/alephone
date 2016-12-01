@@ -2607,7 +2607,6 @@ static void handle_interface_menu_screen_click(
 
 			/* Draw it initially depressed.. */
 			draw_button(index, last_state);
-			fprintf(stderr, "Initial mouse loc: %d, %d\n", x, y);
 		
 			bool mouse_down = true;
 			while (mouse_down)
@@ -2623,14 +2622,12 @@ static void handle_interface_menu_screen_click(
 						case SDL_MOUSEBUTTONUP:
 							mx = e.button.x;
 							my = e.button.y;
-							fprintf(stderr, "Saw button up: %d, %d\n", mx, my);
 							mouse_changed = true;
 							mouse_down = false;
 							break;
 						case SDL_MOUSEMOTION:
 							mx = e.motion.x;
 							my = e.motion.y;
-							fprintf(stderr, "Saw motion: %d, %d\n", mx, my);
 							mouse_changed = true;
 							break;
 					}
