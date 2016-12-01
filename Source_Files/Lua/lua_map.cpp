@@ -2134,7 +2134,7 @@ char Lua_Sides_Name[] = "Sides";
 static int16 Lua_Sides_Length() { return SideList.size(); }
 
 // Sides.new(polygon, line)
-static int Lua_Sides_New(lua_State *L)
+int Lua_Sides_New(lua_State *L)
 {
 	short polygon_index;
 	if (lua_isnumber(L, 1))
@@ -2896,7 +2896,7 @@ char Lua_Annotations_Name[] = "Annotations";
 typedef L_Container<Lua_Annotations_Name, Lua_Annotation> Lua_Annotations;
 
 // Annotations.new(polygon, text, [x, y])
-static int Lua_Annotations_New(lua_State *L)
+int Lua_Annotations_New(lua_State *L)
 {
 	if (dynamic_world->default_annotation_count == INT16_MAX)
 		return luaL_error(L, "new: annotation limit reached");

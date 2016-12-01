@@ -299,7 +299,7 @@ bool Lua_Effect_Valid(int32 index)
 char Lua_Effects_Name[] = "Effects";
 
 // Effects.new(x, y, height, polygon, type)
-static int Lua_Effects_New(lua_State *L)
+int Lua_Effects_New(lua_State *L)
 {
 	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3))
 		luaL_error(L, "new: incorrect argument type");
@@ -659,7 +659,7 @@ const luaL_Reg Lua_Scenery_Set[] = {
 char Lua_Sceneries_Name[] = "Scenery";
 
 // Scenery.new(x, y, height, polygon, type)
-static int Lua_Sceneries_New(lua_State *L)
+int Lua_Sceneries_New(lua_State *L)
 {
 	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3))
 		luaL_error(L, "new: incorrect argument type");

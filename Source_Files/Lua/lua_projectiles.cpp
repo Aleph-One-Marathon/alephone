@@ -317,7 +317,7 @@ const luaL_Reg Lua_Projectile_Set[] = {
 char Lua_Projectiles_Name[] = "Projectiles";
 
 // Projectiles.new(x, y, z, polygon, type)
-static int Lua_Projectiles_New_Projectile(lua_State *L)
+int Lua_Projectiles_New_Projectile(lua_State *L)
 {
 	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3))
 	{

@@ -298,7 +298,7 @@ static int Lua_Camera_Valid(int16 index)
 char Lua_Cameras_Name[] = "Cameras";
 typedef L_Container<Lua_Cameras_Name, Lua_Camera> Lua_Cameras;
 
-static int Lua_Cameras_New(lua_State *L)
+int Lua_Cameras_New(lua_State *L)
 {
 	if (lua_cameras.size() == INT16_MAX)
 	{
