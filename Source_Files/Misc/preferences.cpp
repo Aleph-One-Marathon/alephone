@@ -2094,6 +2094,7 @@ static void plugins_dialog(void *)
 	placer->add(button_placer, true);
 
 	d.set_widget_placer(placer);
+	d.activate_widget(plugins_w);
 
 	if (d.run() == 0) {
 		bool changed = false;
