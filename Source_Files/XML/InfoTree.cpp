@@ -189,13 +189,15 @@ void InfoTree::put_attr_path(std::string key, std::string filepath)
 	contract_symbolic_paths(tempstr, filepath.c_str(), 255);
 	put_attr(key, tempstr);
 }
-
+#include "converter.h"
 bool InfoTree::read_cstr(std::string key, char *dest, int maxlen) const
 {
 	std::string str;
 	if (read_attr(key, str))
 	{
-		DeUTF8_C(str.c_str(), str.length(), dest, maxlen);
+		//		char* p = sjis2utf8(str.c_str(), str.length());
+		strncpy(dest, str.c_str(), maxlen);
+		//		DeUTF8_C(str.c_str(), str.length(), dest, maxlen);
 		return true;
 	}
 	return false;
@@ -203,12 +205,16 @@ bool InfoTree::read_cstr(std::string key, char *dest, int maxlen) const
 
 void InfoTree::put_cstr(std::string key, std::string cstr)
 {
-	put(key, mac_roman_to_utf8(cstr));
+	//	char* p = utf82sjis(cstr.c_str(), cstr.length());
+	put(key, cstr);
+	//	put(key, mac_roman_to_utf8(cstr));
 }
 
 void InfoTree::put_attr_cstr(std::string key, std::string cstr)
 {
-	put_attr(key, mac_roman_to_utf8(cstr));
+	//	char* p = utf82sjis(cstr.c_str(), cstr.length());
+	put_attr(key, cstr);
+	//	put_attr(key, mac_roman_to_utf8(cstr));
 }
 
 

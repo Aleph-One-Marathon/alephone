@@ -205,31 +205,31 @@ static void usage(const char *prg_name)
 {
 	char msg[] =
 #ifdef __WIN32__
-	  "Command line switches:\n\n"
+		"コマンドラインスイッチ：\n\n"
 #else
-	  "\nUsage: %s [options] [directory] [file]\n"
+		"\n使用方法：%s [オプション] [ディレクトリ] [ファイル]\n"
 #endif
-	  "\t[-h | --help]          Display this help message\n"
-	  "\t[-v | --version]       Display the game version\n"
-	  "\t[-d | --debug]         Allow saving of core files\n"
-	  "\t                       (by disabling SDL parachute)\n"
-	  "\t[-f | --fullscreen]    Run the game fullscreen\n"
-	  "\t[-w | --windowed]      Run the game in a window\n"
+	"\t[-h | --help]		このヘルプメッセージを表\示します。\n"
+	"\t[-v | --version]		ゲームのバージョンを表\示します。\n"
+	"\t[-d | --debug]		コアダンプを出力するようにします。\n"
+	"\t						（SDL parachuteを無効化します）\n"
+	"\t[-f | --fullscreen]	ゲームをフルスクリーンで起動します。\n"
+	"\t[-w | --windowed]	ゲームをウィンドウモードで起動します。\n"
 #ifdef HAVE_OPENGL
-	  "\t[-g | --nogl]          Do not use OpenGL\n"
+	"\t[-g | --nogl]		OpenGLを使用せずに起動します。\n"
 #endif
-	  "\t[-s | --nosound]       Do not access the sound card\n"
-	  "\t[-m | --nogamma]       Disable gamma table effects (menu fades)\n"
-          "\t[-j | --nojoystick]    Do not initialize joysticks\n"
+	"\t[-s | --nosound]		サウンドを無効化します。\n"
+	"\t[-m | --nogamma]		ガンマエフェクトを無効化します。\n"
+	"\t						（メニューのフェードなど）\n"
+	"\t[-j | --nojoystick]	ジョイスティックの初期化を行いません。\n"
 	  // Documenting this might be a bad idea?
 	  // "\t[-i | --insecure_lua]  Allow Lua netscripts to take over your computer\n"
-	  "\tdirectory              Directory containing scenario data files\n"
-          "\tfile                   Saved game to load or film to play\n"
-	  "\nYou can also use the ALEPHONE_DATA environment variable to specify\n"
-	  "the data directory.\n";
-
+	"\tディレクトリ			データーが含まれているディレクトリ\n"
+	"\tファイル				保存されたゲームやフィルムの再生\n"
+	"\nこの他にも、環境変数「ALEPHONE_DATA」の値を変更することで、\n"
+		"データディレクトリを指定することができます。\n"		;
 #ifdef __WIN32__
-	MessageBox(NULL, msg, "Usage", MB_OK | MB_ICONINFORMATION);
+	MessageBox(NULL, msg, "使用方", MB_OK | MB_ICONINFORMATION);
 #else
 	printf(msg, prg_name);
 #endif
@@ -290,28 +290,29 @@ int main(int argc, char **argv)
 	char app_name_version[256];
 	expand_app_variables(app_name_version, "Aleph One $appLongVersion$");
 	printf ("%s\n%s\n\n"
-	  "Original code by Bungie Software <http://www.bungie.com/>\n"
-	  "Additional work by Loren Petrich, Chris Pruett, Rhys Hill et al.\n"
-	  "TCP/IP networking by Woody Zenfell\n"
-	  "Expat XML library by James Clark\n"
-	  "SDL port by Christian Bauer <Christian.Bauer@uni-mainz.de>\n"
+	  "オリジナルのコードは、Bungie Software <http://www.bungie.com/>によるものです。\n"
+	  "この他にLoren Petrich, Chris Pruett, Rhys Hill氏らによって書かれています。\n"
+	  "TCP/IP ネットワーク by Woody Zenfell\n"
+	  "Expat XMLライブラリ by James Clark\n"
+	  "SDLポート by Christian Bauer <Christian.Bauer@uni-mainz.de>\n"
+	  "日本語化 by saiten <http://www.isidesystem.net/>, ookawa_mi, Logue <http://logue.be/>, marathon.\n" 
 #if defined(__MACH__) && defined(__APPLE__)
-	  "Mac OS X/SDL version by Chris Lovell, Alexander Strange, and Woody Zenfell\n"
+	  "Mac OS X/SDLバージョンは、Chris Lovell, Alexander Strange, and Woody Zenfell氏らによって作られました。\n"
 #endif
-	  "\nThis is free software with ABSOLUTELY NO WARRANTY.\n"
-	  "You are welcome to redistribute it under certain conditions.\n"
-	  "For details, see the file COPYING.\n"
-#if defined(__WIN32__)
-	  // Windows is statically linked against SDL, so we have to include this:
-	  "\nSimple DirectMedia Layer (SDL) Library included under the terms of the\n"
-	  "GNU Library General Public License.\n"
-	  "For details, see the file COPYING.SDL.\n"
+	  "\nこのプログラムは有用であることを願って頒布されますが、*全くの無保証 *です。\n"
+	  "商業可能\性の保証や特定目的への適合性は、言外に示されたものも 含め、全く存在しません。\n"
+	  "詳しくはGNU 一般公衆利用許諾書をご覧ください。\n"
+#if defined(__WIN32__) 
+	  // Windows are statically linked against SDL, so we have to include this:
+	  "\nSimple DirectMedia Layer (SDL) ライブラリは、\n"
+	  "GNU 一般公衆利用許諾書によってライセンスされています。\n"
+	  "詳細については、COPYING.SDLを参考にしてください。\n"
 #endif
-#if !defined(DISABLE_NETWORKING)
-	  "\nBuilt with network play enabled.\n"
+#ifdef HAVE_SDL_NET
+	  "\nこのビルドは、ネットワークプレイが有効です。\n"
 #endif
 #ifdef HAVE_LUA
-	  "\nBuilt with Lua scripting enabled.\n"
+	  "\nこのビルドは、Luaスクリプトが有効です。\n"
 #endif
 	  , app_name_version, A1_HOMEPAGE_URL
     );
@@ -355,7 +356,7 @@ int main(int argc, char **argv)
 				arg_files.push_back(*argv);
 			}
 		} else {
-			printf("Unrecognized argument '%s'.\n", *argv);
+			printf("不明なスイッチ指定です：'%s'.\n", *argv);
 			usage(prg_name);
 		}
 		argc--;
@@ -410,8 +411,9 @@ static void initialize_application(void)
 {
 #if defined(__WIN32__) && defined(__MINGW32__)
 	if (LoadLibrary("exchndl.dll")) option_debug = true;
+#else
+	setlocale(LC_ALL, "");
 #endif
-
 	//	SDL_putenv(const_cast<char*>("SDL_VIDEO_ALLOW_SCREENSAVER=1"));
 
 	// Initialize SDL
@@ -423,9 +425,9 @@ static void initialize_application(void)
 	{
 		const char *sdl_err = SDL_GetError();
 		if (sdl_err)
-			fprintf(stderr, "Couldn't initialize SDL (%s)\n", sdl_err);
+			fprintf(stderr, "SDLの初期化に失敗しました。（%s）\n", sdl_err);
 		else
-			fprintf(stderr, "Couldn't initialize SDL\n");
+			fprintf(stderr, "SDLの初期化に失敗しました。\n");
 		exit(1);
 	}
 #if defined(HAVE_SDL_IMAGE)
@@ -659,13 +661,13 @@ static void initialize_application(void)
 #if !defined(DISABLE_NETWORKING)
 	// Initialize SDL_net
 	if (SDLNet_Init () < 0) {
-		fprintf (stderr, "Couldn't initialize SDL_net (%s)\n", SDLNet_GetError());
+		fprintf (stderr, "SDL_netの初期化に失敗しました。（%s）\n", SDLNet_GetError());
 		exit(1);
 	}
 #endif
 
 	if (TTF_Init() < 0) {
-		fprintf (stderr, "Couldn't initialize SDL_ttf (%s)\n", TTF_GetError());
+		fprintf (stderr, "SDL_ttfの初期化に失敗しました。（%s）\n", TTF_GetError());
 		exit(1);
 	}
 	HTTPClient::Init();
@@ -732,14 +734,14 @@ bool quit_without_saving(void)
 {
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add (new w_static_text("Are you sure you wish to"), d);
-	placer->dual_add (new w_static_text("cancel the game in progress?"), d);
+	placer->dual_add (new w_static_text("本当にゲームを中断しても"), d);
+	placer->dual_add (new w_static_text("よろしいですか？"), d);
 	placer->add (new w_spacer(), true);
 	
 	horizontal_placer *button_placer = new horizontal_placer;
-	w_button *default_button = new w_button("YES", dialog_ok, &d);
+	w_button *default_button = new w_button("はい", dialog_ok, &d);
 	button_placer->dual_add (default_button, d);
-	button_placer->dual_add (new w_button("NO", dialog_cancel, &d), d);
+	button_placer->dual_add (new w_button("いいえ", dialog_cancel, &d), d);
 	d.activate_widget(default_button);
 	placer->add(button_placer, true);
 	d.set_widget_placer(placer);
@@ -785,24 +787,24 @@ short get_level_number_from_user(void)
 
 	} else {
 		// no stringset or no strings in stringset - use default message
-		placer->dual_add(new w_static_text("Before proceeding any further, you"), d);
-		placer->dual_add(new w_static_text ("must take the oath of the vidmaster:"), d);
+		placer->dual_add(new w_static_text("ここからは、ヴィドマスターの宣誓を誓わないといけないぜ。"), d);
+
 		placer->add(new w_spacer(), true);
-		placer->dual_add(new w_static_text("\xd2I pledge to punch all switches,"), d);
-		placer->dual_add(new w_static_text("to never shoot where I could use grenades,"), d);
-		placer->dual_add(new w_static_text("to admit the existence of no level"), d);
-		placer->dual_add(new w_static_text("except Total Carnage,"), d);
-		placer->dual_add(new w_static_text("to never use Caps Lock as my \xd4run\xd5 key,"), d);
-		placer->dual_add(new w_static_text("and to never, ever, leave a single Bob alive.\xd3"), d);
+		placer->dual_add(new w_static_text("『宣誓、"), d);
+		placer->dual_add(new w_static_text("全てのスイッチをこぶしで殴ってオンにし、"), d);
+		placer->dual_add(new w_static_text("グレネードを使える場所でも決して発射せず、"), d);
+		placer->dual_add(new w_static_text("最高難易度「虐殺」以外で遊ばず、"), d);
+		placer->dual_add(new w_static_text("Caps Loockを「走る」キーとしては決して使わず、"), d);
+		placer->dual_add(new w_static_text("そして、一人残らずボブ市民を皆殺しにしま～す。』"), d);
 	}
 
 	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_static_text("Start at level:"), d);
+	placer->dual_add(new w_static_text("開始レベル："), d);
 
 	w_levels *level_w = new w_levels(levels, &d);
 	placer->dual_add(level_w, d);
 	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	placer->dual_add(new w_button("キャンセル", dialog_cancel, &d), d);
 
 	d.activate_widget(level_w);
 	d.set_widget_placer(placer);
@@ -1034,9 +1036,9 @@ static void handle_game_key(const SDL_Event &event)
 					}
 					else {
 #if defined(__APPLE__) && defined(__MACH__)
-						screen_printf("If you wish to quit, press Command-Q");
+						screen_printf("終了したい場合は、コマンドキーを押しながらQを押してください。");
 #else
-						screen_printf("If you wish to quit, press Alt+Q.");
+						screen_printf("終了したい場合は、Altキーを押しながらQを押してください。");
 #endif
 					}
 				}

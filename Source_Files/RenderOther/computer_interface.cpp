@@ -433,6 +433,7 @@ static void	set_text_face(struct text_face_data *text_face)
 }
 
 
+#include "converter.h"
 static bool calculate_line(char *base_text, short width, short start_index, short text_end_index, short *end_index)
 {
 	bool done = false;
@@ -442,10 +443,12 @@ static bool calculate_line(char *base_text, short width, short start_index, shor
 		
 		// terminal_font no longer a global, since it may change
 		font_info *terminal_font = GetInterfaceFont(_computer_interface_font);
-
+		TTF_Font* font = ((ttf_font_info*)terminal_font)->m_styles[styleNormal];
 		while (running_width < width && base_text[index] && base_text[index] != MAC_LINE_END) {
-			running_width += char_width(base_text[index], terminal_font, current_style);
-			index++;
+			int advance;
+			uint16 c = sjisChar(base_text + index, &index);
+			TTF_GlyphMetrics(font, c, NULL, NULL, NULL, NULL, &advance );
+			running_width += advance;
 		}
 		
 		// Now go backwards, looking for whitespace to split on
@@ -457,6 +460,11 @@ static bool calculate_line(char *base_text, short width, short start_index, shor
 			while (break_point>start_index) {
 				if (base_text[break_point] == ' ')
 					break; 	// Non printing
+				if( isJChar(base_text[break_point-2]) ) {
+					break_point--;
+					break;
+				}
+
 				break_point--;	// this needs to be in front of the test
 			}
 			

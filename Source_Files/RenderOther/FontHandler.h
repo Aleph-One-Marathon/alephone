@@ -45,6 +45,8 @@ Jan 14, 2001 (Loren Petrich):
 #endif
 
 #include <set>
+#include <string>
+#include <boost/unordered_map.hpp>
 
 struct screen_rectangle;
 
@@ -130,11 +132,13 @@ public:
 #ifdef HAVE_OPENGL
 	// Stuff for OpenGL font rendering: the font texture and a display list for font rendering;
 	// if OGL_Texture is NULL, then there is no OpenGL font texture to render.
-	uint8 *OGL_Texture;
-	short TxtrWidth, TxtrHeight;
-	int GetTxtrSize() {return int(TxtrWidth)*int(TxtrHeight);}
-	GLuint TxtrID;
+        void render_text_(int n, const char* str);
+	uint8 *OGL_Texture[256];
+	short TxtrWidth[256], TxtrHeight[256];
+	int GetTxtrSize(int m) {return int(TxtrWidth[m])*int(TxtrHeight[m]);}
+	GLuint TxtrID[256];
 	uint32 DispList;
+	boost::unordered_map<std::string, int> textMap;
 	static set<FontSpecifier*> *m_font_registry;
 #endif
 };

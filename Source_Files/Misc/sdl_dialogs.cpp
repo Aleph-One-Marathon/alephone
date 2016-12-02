@@ -664,7 +664,7 @@ bool load_theme(FileSpecifier &theme)
 		} else
 			i->second.font = 0;
 	}
-	data_search_path.erase(data_search_path.begin());
+	//	data_search_path.erase(data_search_path.begin());
 
 	// Load images
 	for (std::map<int, theme_widget>::iterator i = dialog_theme.begin(); i != dialog_theme.end(); ++i)

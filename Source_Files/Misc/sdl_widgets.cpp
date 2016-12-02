@@ -917,7 +917,7 @@ uint16 w_select::get_largest_label_width() {
  *  On-off toggle
  */
 
-const char *w_toggle::onoff_labels[] = {"\342\230\220", "\342\230\221", NULL };
+const char *w_toggle::onoff_labels[] = {" ", "x", NULL };
 
 w_toggle::w_toggle(bool selection, const char **labels) : w_select(selection, labels) {
 	if (labels == onoff_labels && use_theme_images(CHECKBOX))

@@ -521,7 +521,7 @@ int sdl_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, i
 		MainScreenUpdateRect(x, y - ascent, text_width(text, style, false), rect_height);
 	return width;
 }
-
+#include "converter.h"
 int ttf_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const
 {
 	int clip_top, clip_bottom, clip_left, clip_right;
@@ -550,7 +550,7 @@ int ttf_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, i
 	}
 	else
 	{
-		uint16 *temp = process_macroman(text, length);
+		uint16 *temp = sjis2utf16(text, length);
 		if (environment_preferences->smooth_text)
 			text_surface = TTF_RenderUNICODE_Blended(get_ttf(style), temp, c);
 		else

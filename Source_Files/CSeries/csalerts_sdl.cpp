@@ -148,54 +148,10 @@ void system_launch_url_in_browser(const char *url)
 //const int MAX_ALERT_WIDTH = 320;
 
 extern void update_game_window(void);
-
+#include "converter.h"
 void alert_user(const char *message, short severity) 
 {
-	SDL_ShowSimpleMessageBox(severity == infoError ? SDL_MESSAGEBOX_WARNING : SDL_MESSAGEBOX_ERROR, severity == infoError ? "Warning" : "Error", message, NULL);
-//	
-//  if (MainScreenSurface() == NULL) {
-//	  system_alert_user(message, severity);
-//  } else {
-//    dialog d;
-//    vertical_placer *placer = new vertical_placer;
-//    placer->dual_add(new w_title(severity == infoError ? "WARNING" : "ERROR"), d);
-//    placer->add(new w_spacer, true);
-//    
-//    // Wrap lines
-//    uint16 style;
-//    font_info *font = get_theme_font(MESSAGE_WIDGET, style);
-//    char *t = strdup(message);
-//    char *p = t;
-//
-//    while (strlen(t)) {
-//      unsigned i = 0, last = 0;
-//      int width = 0;
-//      while (i < strlen(t) && width < MAX_ALERT_WIDTH) {
-//	width = text_width(t, i, font, style);
-//	if (t[i] == ' ')
-//	  last = i;
-//	i++;
-//      }
-//      if (i != strlen(t))
-//	t[last] = 0;
-//      placer->dual_add(new w_static_text(t), d);
-//      if (i != strlen(t))
-//	t += last + 1;
-//      else
-//	t += i;
-//    }
-//    free(p);
-//    placer->add(new w_spacer, true);
-//    w_button *button = new w_button(severity == infoError ? "OK" : "QUIT", dialog_ok, &d);
-//    placer->dual_add (button, d);
-//    d.set_widget_placer(placer);
-//
-//    d.activate_widget(button);
-//
-//    d.run();
-//    if (severity == infoError && top_dialog == NULL)
-//      update_game_window();
-//  }
+	SDL_ShowSimpleMessageBox(severity == infoError ? SDL_MESSAGEBOX_WARNING : SDL_MESSAGEBOX_ERROR, severity == infoError ? "Warning" : "Error", sjis2utf8(message, strlen(message)), NULL);
   if (severity != infoError) exit(1);
 }
 

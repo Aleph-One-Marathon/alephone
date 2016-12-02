@@ -6420,3 +6420,106 @@ getElementType(XML_Parser parser,
   }
   return ret;
 }
+/*
+ * $Id: xmlparse.c,v 1.3 2009/03/28 07:16:32 ookawa_mi Exp $
+ * expatの日本語文字コード対応。
+ * encodingにSHIFT_JISとEUC-JPを指定されたXMLの処理を可能にする。
+ * またUTF-8からSHIFT_JIS・EUC-JPへの変換ルーチンも提供する。
+ */
+
+
+#include <string.h>
+
+#define LIBICONV_PLUG
+
+#include <iconv.h>
+#ifdef __WIN32__
+#define iconv libiconv
+#define iconv_open libiconv_open
+#endif
+
+/**
+* JIS201カナをUNICODEに変換する。
+ * @param ch JIS201カナの文字コード。
+ * @return 対応するUNICODEの文字コード。対応するものがなければ0。
+ */
+static int JIS201KANAtoUTF16(int ch) {
+	if (0xa1 <= ch && ch <= 0xdf)
+		return ch + 0xfec0;
+	return 0;
+}
+
+
+/**
+ * EUC-JPの文字列から1文字取りだしUNICODEに変換する。
+ * @param data ユーザ定義データ(未使用)
+ * @param s    EUC-JPの文字列。
+ * @return 対応するUNICODEの文字コード。対応するものがなければ0。
+ */
+static int convertEUCJPtoUTF16(void *data, const char *s) {
+	iconv_t i = iconv_open("UCS-2-INTERNAL", "EUC-JP");
+	unsigned short v[3];
+	char* vp = (char*)v;
+	size_t inleft = strlen(s), outleft = 6;
+	iconv(i, &s, &inleft, &vp, &outleft);
+	return v[0];
+}
+
+/**
+ * SHIFT_JISの文字列から1文字取りだしUNICODEに変換する。
+ * @param data ユーザ定義データ(未使用)
+ * @param s    SHIFT_JISの文字列。
+ * @return 対応するUNICODEの文字コード。対応するものがなければ0。
+ */
+static int convertSHIFTJIStoUTF16(void *data, const char *s) {
+	iconv_t i = iconv_open("UCS-2-INTERNAL", "SHIFT_JIS");
+	unsigned short v[3];
+	char* vp = (char*)v;
+	size_t inleft = strlen(s), outleft = 6;
+	iconv(i, &s, &inleft, &vp, &outleft);
+	return v[0];
+}
+
+/**
+ * 変換テーブルのASCII部分を設定する。
+ * @param map 変換テーブル
+ */
+static void setAsciiMap(int map[]) {
+	int i;
+	map['\t'] = '\t';
+	map['\r'] = '\r';
+	map['\n'] = '\n';
+	for (i = ' '; i <= '~'; i++)
+		map[i] = i;
+}
+
+/**
+ * 日本語文字コードを処理するためのハンドラ
+ * @param encodingHandlerData このハンドラのためのユーザ定義データ(未使用)
+ * @param name 文字コード名(このハンドラではSHIFT_JISとEUC-JPのみ対応)
+ * @param info 文字コード変換のための情報
+ * @return このハンドラで処理を行うのであれば非0。
+ */
+int XML_JapaneseEncodingHandler(void *encodingHandlerData, const XML_Char *name, XML_Encoding *info) {
+	if (strcasecmp(name, "euc-jp") == 0) {
+		int i;
+		setAsciiMap(info->map);
+		info->map[0x8e] = -2;
+		for (i = 0xa1; i <= 0xfe; i++)
+			info->map[i] = -2;
+		info->convert = convertEUCJPtoUTF16;
+		return 1;
+	}else if(strcasecmp(name, "shift_jis") == 0) {
+		int i;
+		setAsciiMap(info->map);
+		for (i = 0x81; i <= 0x9f; i++)
+			info->map[i] = -2;
+		for (i = 0xa1; i <= 0xdf; i++)
+			info->map[i] = JIS201KANAtoUTF16(i);
+		for (i = 0xe0; i <= 0xfc; i++)
+			info->map[i] = -2;
+		info->convert = convertSHIFTJIStoUTF16;
+		return 1;
+	}
+	return 0;
+}

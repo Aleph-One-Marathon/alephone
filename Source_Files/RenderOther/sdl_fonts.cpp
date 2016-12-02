@@ -231,7 +231,7 @@ sdl_font_info *load_sdl_font(const TextSpec &spec)
 	SDL_RWclose(p);
 	return info;
 }
-
+#define FONT_PATH "./Fonts.ttf"
 static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size)
 {
 	// already loaded? increment reference counter and return pointer
@@ -244,48 +244,74 @@ static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size
 
 		return font;
 	}
-
+	TTF_Init();
 	TTF_Font *font = 0;
-	builtin_fonts_t::iterator j = builtin_fonts.find(path);
-	if (j != builtin_fonts.end())
-	{
-		font = TTF_OpenFontRW(SDL_RWFromConstMem(j->second.data, j->second.size), 0, size);
-	}
-	else
-	{
-		short SavedType, SavedError = get_game_error(&SavedType);
-
-		FileSpecifier fileSpec(path);
-		OpenedFile file;
-		if (fileSpec.Open(file))
-		{
-			font = TTF_OpenFontRW(file.TakeRWops(), 1, size);
-		}
-
-		set_game_error(SavedType, SavedError);
-	}
-
-	if (font)
-	{
-		int ttf_style = TTF_STYLE_NORMAL;
-		if (style & styleBold)
-			ttf_style |= TTF_STYLE_BOLD;
-		if (style & styleItalic)
-			ttf_style |= TTF_STYLE_ITALIC;
-		
-		TTF_SetFontStyle(font, ttf_style);
-#ifdef TTF_HINTING_LIGHT
-		if (environment_preferences->smooth_text)
-			TTF_SetFontHinting(font, TTF_HINTING_LIGHT);
-		else
-			TTF_SetFontHinting(font, TTF_HINTING_MONO);
+	static const string fontPath[] = {
+	  FONT_PATH,
+#if defined(__WIN32__)
+	  // Path to the below Windows directory
+	  // for Windows 7 (Meiryo Bold)
+	  "C:/Windows/winsxs/x86_microsoft-windows-f..truetype-meiryobold_31bf3856ad364e35_6.1.7600.16385_none_cd23f5e0d8f9c6fa/meiryob.ttc",
+	  "C:/Windows/winsxs/amd64_microsoft-windows-f..truetype-meiryobold_31bf3856ad364e35_6.1.7600.16385_none_2942916491573830/meiryob.ttc",
+	  // for Windows Vista
+	  "C:/Windows/Fonts/meiryob.ttc",
+	  // for less than Windows XP (MS Gothic)
+	  "C:/Windows/fonts/msgothic.ttc",
+#elif defined(__MACOS__)
+	  // for MacOS (Hiragino Kaku Gothic Pro W6)
+	  "/System/Library/Fonts/ヒラギノ角ゴ ProN W6.otf",
+	  "/System/Library/Fonts/Hiragino Kaku Gothic Pro W6.otf",
+	  "/System/Library/Fonts/Cache/HiraginoKakuGothicProNW6.otf"	// for iOS
+#else
+	  // for Linux
+	  "/usr/share/fonts/truetype/vlgothic/VL-Gothic-Regular.ttf",
+	  "/usr/X11R6/lib/X11/fonts/TrueType/VL-Gothic-Regular.ttf",
+	  "/usr/X11/lib/X11/fonts/truetype/VL-Gothic-Regular.ttf",
+	  
+	  "/usr/share/fonts/truetype/takao/TakaoExGothic.ttf"
+	  "/usr/share/fonts/ja-ipafonts/ipag.ttc",
+	  
+	  "/usr/share/fonts/TrueType/mika.ttf",
+	  "/usr/X11R6/lib/X11/fonts/TrueType/mika.ttf",
+	  "/usr/X11R6/lib/X11/fonts/truetype/sazanami-gothic.ttf",
+	  "/usr/X11/lib/X11/fonts/truetype/sazanami-gothic.ttf",
+	  "/usr/share/fonts/TrueType/sazanami-gothic.ttf",
+	  "/usr/X11R6/lib/X11/fonts/TrueType/sazanami-gothic.ttf",
+	  "/usr/share/fonts/truetype/sazanami-gothic.ttf",
+	  "/usr/share/fonts/TrueType/FS-Gothic-gs.ttf",
+	  "/usr/X11R6/lib/X11/fonts/TrueType/FS-Gothic.ttf",
+	  "/usr/share/fonts/TrueType/gt200001.ttf",
+	  "/usr/X11R6/lib/X11/fonts/TrueType/gt200001.ttf",
 #endif
-		
-		ttf_font_key_t key(path, style, size);
-		ref_counted_ttf_font_t value(font, 1);
-		
-		ttf_font_list[key] = value;
+	};
+	for ( int i=0; i < sizeof(fontPath)/sizeof(fontPath[0]); i++ ) {
+		const char* file = fontPath[i].c_str();
+		font = TTF_OpenFont(file , size);
+		if ( !font ) { continue; }
+		else { break; }
 	}
+	if( !font ){
+		fprintf(stderr, "cannot open font! died\n");
+		exit(1);
+	}
+
+	int ttf_style = TTF_STYLE_NORMAL;
+	if (style & styleBold)
+		ttf_style |= TTF_STYLE_BOLD;
+	if (style & styleItalic)
+		ttf_style |= TTF_STYLE_ITALIC;
+	if (style & styleUnderline)
+		ttf_style |= TTF_STYLE_UNDERLINE;
+	
+	TTF_SetFontStyle(font, ttf_style);
+#ifdef TTF_HINTING_LIGHT
+	TTF_SetFontHinting(font, TTF_HINTING_LIGHT);
+#endif
+	
+	ttf_font_key_t key(path, style, size);
+	ref_counted_ttf_font_t value(font, 1);
+	
+	ttf_font_list[key] = value;
 	
 	return font;	
 }
@@ -306,112 +332,21 @@ static const char *locate_font(const std::string& path)
 			return "";
 	}
 }
-
+#define FONT_PATH "./Fonts.ttf"
 font_info *load_font(const TextSpec &spec) {
-//	return static_cast<font_info*>(load_font(spec));
-
-	if (spec.normal != "")
-	{
-		std::string file;
-		file = locate_font(spec.normal);
-		TTF_Font *font = load_ttf_font(file, 0, spec.size);
+	std::string file;
+	file = locate_font(spec.normal);
+	ttf_font_info *info = new ttf_font_info;
+	for(int i = 0; i < styleMax; ++i ) {
+		TTF_Font *font = load_ttf_font(file, i, spec.size);
 		if (font) 
-		{
-			ttf_font_info *info = new ttf_font_info;
-			info->m_adjust_height = spec.adjust_height;
-			info->m_styles[styleNormal] = font;
-			info->m_keys[styleNormal] = ttf_font_key_t(file, 0, spec.size);
-
-			// load bold face
-			file = locate_font(spec.bold);
-			font = load_ttf_font(file, styleNormal, spec.size);
-			if (font)
 			{
-				info->m_styles[styleBold] = font;
-				info->m_keys[styleBold] = ttf_font_key_t(file, styleNormal, spec.size);
+				info->m_adjust_height = spec.adjust_height;
+				info->m_styles[i] = font;
+				info->m_keys[i] = ttf_font_key_t(file, i, spec.size);
 			}
-			else
-			{
-				file = locate_font(spec.normal);
-				font = load_ttf_font(file, styleBold, spec.size);
-				assert(font); // I loaded you once, you should load again
-				info->m_styles[styleBold] = font;
-				info->m_keys[styleBold] = ttf_font_key_t(file, styleBold, spec.size);
-			}
-
-			// oblique
-			file = locate_font(spec.oblique);
-			font = load_ttf_font(file, styleNormal, spec.size);
-			if (font)
-			{
-				info->m_styles[styleItalic] = font;
-				info->m_keys[styleItalic] = ttf_font_key_t(file, styleNormal, spec.size);
-			}
-			else
-			{
-				file = locate_font(spec.normal);
-				font = load_ttf_font(file, styleItalic, spec.size);
-				assert(font); // same as above
-				info->m_styles[styleItalic] = font;
-				info->m_keys[styleItalic] = ttf_font_key_t(file, styleItalic, spec.size);
-			}
-
-			// bold oblique
-			file = locate_font(spec.bold_oblique);
-			font = load_ttf_font(file, styleNormal, spec.size);
-			if (font)
-			{
-				info->m_styles[styleBold | styleItalic] = font;
-				info->m_keys[styleBold | styleItalic] = ttf_font_key_t(file, styleNormal, spec.size);
-			}
-			else
-			{
-				// try boldening the oblique
-				file = locate_font(spec.oblique);
-				font = load_ttf_font(file, styleBold, spec.size);
-				if (font)
-				{
-					info->m_styles[styleBold | styleItalic] = font;
-					info->m_keys[styleBold | styleItalic] = ttf_font_key_t(file, styleBold, spec.size);
-				}
-				else
-				{
-					// try obliquing the bold!
-					file = locate_font(spec.bold);
-					font = load_ttf_font(file, styleItalic, spec.size);
-					if (font)
-					{
-						info->m_styles[styleBold | styleItalic] = font;
-						info->m_keys[styleBold | styleItalic] = ttf_font_key_t(file, styleItalic, spec.size);
-					}
-					else
-					{
-						file = locate_font(spec.normal);
-						font = load_ttf_font(file, styleBold | styleItalic, spec.size);
-						assert(font);
-						info->m_styles[styleBold | styleItalic] = font;
-						info->m_keys[styleBold | styleItalic] = ttf_font_key_t(file, styleBold | styleItalic, spec.size);
-					}
-				}
-			}
-			
-				
-			return info;
-		}
-		else if (spec.font != -1)
-		{
-			return static_cast<font_info *>(load_sdl_font(spec));
-		}
-		else
-			return 0;
 	}
-	else
-        if (spec.font != -1)
-	{
-		return static_cast<font_info *>(load_sdl_font(spec));
-	}
-	else
-		return 0;
+	return info;
 }
 
 
@@ -522,7 +457,7 @@ uint16 ttf_font_info::_text_width(const char *text, uint16 style, bool utf8) con
 {
 	return _text_width(text, strlen(text), style, utf8);
 }
-
+#include "converter.h"
 uint16 ttf_font_info::_text_width(const char *text, size_t length, uint16 style, bool utf8) const
 {
 	int width = 0;
@@ -533,7 +468,7 @@ uint16 ttf_font_info::_text_width(const char *text, size_t length, uint16 style,
 	}
 	else
 	{
-		uint16 *temp = process_macroman(text, length);
+		uint16 *temp = sjis2utf16(text, length);
 		TTF_SizeUNICODE(get_ttf(style), temp, &width, 0);
 	}
 	

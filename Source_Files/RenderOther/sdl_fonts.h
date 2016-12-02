@@ -121,14 +121,14 @@ public:
 	uint16 get_descent() const { return -TTF_FontDescent(m_styles[styleNormal]); }
 	int16 get_leading() const { return get_line_height() - get_ascent() - get_descent(); }
 
-	TTF_Font* m_styles[styleUnderline];
-	ttf_font_key_t m_keys[styleUnderline];
+	TTF_Font* m_styles[styleMax];
+	ttf_font_key_t m_keys[styleMax];
 	int m_adjust_height;
 
 	int8 char_width(uint8, uint16) const;
 
 	ttf_font_info() { 
-		for (int i = 0; i < styleUnderline; i++) { m_styles[i] = 0; } 
+		for (int i = 0; i < styleMax; i++) { m_styles[i] = 0; } 
 	}
 protected:
 	virtual int _draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const;
@@ -138,7 +138,7 @@ protected:
 private:
 	char *process_printable(const char *src, int len) const;
 	uint16 *process_macroman(const char *src, int len) const;
-	TTF_Font *get_ttf(uint16 style) const { return m_styles[style & (styleBold | styleItalic)]; }
+	TTF_Font *get_ttf(uint16 style) const { return m_styles[style & (styleBold | styleItalic|styleUnderline)]; }
 	virtual void _unload();
 };
 
