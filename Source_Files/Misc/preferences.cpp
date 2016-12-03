@@ -228,22 +228,22 @@ void handle_preferences(void)
 	// Create top-level dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	w_title *w_header = new w_title("PREFERENCES");
+	w_title *w_header = new w_title("初期設定");
 	d.add(w_header);
-	w_button *w_player = new w_button("PLAYER", player_dialog, &d);
+	w_button *w_player = new w_button("プレーヤー", player_dialog, &d);
 	d.add(w_player);
-	w_button *w_online = new w_button("INTERNET", online_dialog, &d);
+	w_button *w_online = new w_button("インターネット", online_dialog, &d);
 	d.add(w_online);
-	w_button *w_graphics = new w_button("GRAPHICS", graphics_dialog, &d);
+	w_button *w_graphics = new w_button("グラフィック", graphics_dialog, &d);
 	d.add(w_graphics);
-	w_button *w_sound = new w_button("SOUND", sound_dialog, &d);
+	w_button *w_sound = new w_button("サウンド", sound_dialog, &d);
 	d.add(w_sound);
-	w_button *w_controls = new w_button("CONTROLS", controls_dialog, &d);
+	w_button *w_controls = new w_button("操作", controls_dialog, &d);
 	d.add(w_controls);
-	w_button *w_environment = new w_button("ENVIRONMENT", environment_dialog, &d);
+	w_button *w_environment = new w_button("環境", environment_dialog, &d);
 	d.add(w_environment);
 	
-	w_button *w_return = new w_button("RETURN", dialog_cancel, &d);
+	w_button *w_return = new w_button("戻る", dialog_cancel, &d);
 	d.add(w_return);
 
 	placer->add(w_header);
@@ -357,11 +357,11 @@ static void crosshair_dialog(void *arg)
 
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	w_title *w_header = new w_title("CROSSHAIR SETTINGS");
+	w_title *w_header = new w_title("クロスヘアー設定");
 	placer->dual_add(w_header, d);
 	placer->add(new w_spacer, true);
 
-	placer->dual_add(new w_static_text("HUD plugins may override these settings."), d);
+	placer->dual_add(new w_static_text("クロスヘアーを表\示"), d);
 	placer->add(new w_spacer, true);
 
 	w_crosshair_display *crosshair_w = new w_crosshair_display();
@@ -377,7 +377,7 @@ static void crosshair_dialog(void *arg)
 	SelectSelectorWidget shapeWidget(shape_w);
 	Int16Pref shapePref(player_preferences->Crosshairs.Shape);
 	crosshair_binders->insert<int> (&shapeWidget, &shapePref);
-	table->dual_add(shape_w->label("Shape"), d);
+	table->dual_add(shape_w->label("形"), d);
 	table->dual_add(shape_w, d);
 
 	table->add_row(new w_spacer(), true);
@@ -387,7 +387,7 @@ static void crosshair_dialog(void *arg)
 	SliderSelectorWidget thicknessWidget(thickness_w);
 	CrosshairPref thicknessPref(player_preferences->Crosshairs.Thickness);
 	crosshair_binders->insert<int> (&thicknessWidget, &thicknessPref);
-	table->dual_add(thickness_w->label("Width"), d);
+	table->dual_add(thickness_w->label("太さ"), d);
 	table->dual_add(thickness_w, d);
 
 	// From Center
@@ -395,7 +395,7 @@ static void crosshair_dialog(void *arg)
 	SliderSelectorWidget fromCenterWidget(from_center_w);
 	Int16Pref fromCenterPref(player_preferences->Crosshairs.FromCenter);
 	crosshair_binders->insert<int> (&fromCenterWidget, &fromCenterPref);
-	table->dual_add(from_center_w->label("Gap"), d);
+	table->dual_add(from_center_w->label("ギャップ"), d);
 	table->dual_add(from_center_w, d);
 
 	// Length
@@ -403,51 +403,51 @@ static void crosshair_dialog(void *arg)
 	SliderSelectorWidget lengthWidget(length_w);
 	CrosshairPref lengthPref(player_preferences->Crosshairs.Length);
 	crosshair_binders->insert<int> (&lengthWidget, &lengthPref);
-	table->dual_add(length_w->label("Size"), d);
+	table->dual_add(length_w->label("大きさ"), d);
 	table->dual_add(length_w, d);
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("Color"), d);
+	table->dual_add_row(new w_static_text("色"), d);
 
 	// Color
 	w_slider *red_w = new w_percentage_slider(16, 0);
 	SliderSelectorWidget redWidget(red_w);
 	ColorComponentPref redPref(player_preferences->Crosshairs.Color.red);
 	crosshair_binders->insert<int> (&redWidget, &redPref);
-	table->dual_add(red_w->label("Red"), d);
+	table->dual_add(red_w->label("赤"), d);
 	table->dual_add(red_w, d);
 
 	w_slider *green_w = new w_percentage_slider(16, 0);
 	SliderSelectorWidget greenWidget(green_w);;
 	ColorComponentPref greenPref(player_preferences->Crosshairs.Color.green);
 	crosshair_binders->insert<int> (&greenWidget, &greenPref);
-	table->dual_add(green_w->label("Green"), d);
+	table->dual_add(green_w->label("緑"), d);
 	table->dual_add(green_w, d);
 
 	w_slider *blue_w = new w_percentage_slider(16, 0);
 	SliderSelectorWidget blueWidget(blue_w);
 	ColorComponentPref bluePref(player_preferences->Crosshairs.Color.blue);
 	crosshair_binders->insert<int> (&blueWidget, &bluePref);
-	table->dual_add(blue_w->label("Blue"), d);
+	table->dual_add(blue_w->label("青"), d);
 	table->dual_add(blue_w, d);
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("OpenGL Only (no preview)"), d);
+	table->dual_add_row(new w_static_text("OpenGLのみ（プレビューなし）"), d);
 
 	w_slider *opacity_w = new w_percentage_slider(16, 0);
 	SliderSelectorWidget opacityWidget(opacity_w);
 	OpacityPref opacityPref(player_preferences->Crosshairs.Opacity);
 	crosshair_binders->insert<int> (&opacityWidget, &opacityPref);
-	table->dual_add(opacity_w->label("Opacity"), d);
+	table->dual_add(opacity_w->label("透過度"), d);
 	table->dual_add(opacity_w, d);
 
 	placer->add(table, true);
 	placer->add(new w_spacer, true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
-	w_button *w_accept = new w_button("ACCEPT", dialog_ok, &d);
+	w_button *w_accept = new w_button("了承", dialog_ok, &d);
 	button_placer->dual_add(w_accept, d);
-	w_button *w_cancel = new w_button("CANCEL", dialog_cancel, &d);
+	w_button *w_cancel = new w_button("キャンセル", dialog_cancel, &d);
 	button_placer->dual_add(w_cancel, d);
 	placer->add(button_placer, true);
 
@@ -485,7 +485,7 @@ static void player_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("PLAYER SETTINGS"), d);
+	placer->dual_add(new w_title("プレーヤー設定"), d);
 	placer->add(new w_spacer());
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -494,50 +494,50 @@ static void player_dialog(void *arg)
 
 	w_select *level_w = new w_select(player_preferences->difficulty_level, NULL /*level_labels*/);
 	level_w->set_labels_stringset(kDifficultyLevelsStringSetID);
-	table->dual_add(level_w->label("Difficulty"), d);
+	table->dual_add(level_w->label("難易度"), d);
 	table->dual_add(level_w, d);
 
 	table->add_row(new w_spacer(), true);
 
-	table->dual_add_row(new w_static_text("Appearance"), d);
+	table->dual_add_row(new w_static_text("外観"), d);
 
 	w_text_entry *name_w = new w_text_entry(PREFERENCES_NAME_LENGTH, player_preferences->name);
 	name_w->set_identifier(NAME_W);
 	name_w->set_enter_pressed_callback(dialog_try_ok);
 	name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
 	name_w->enable_mac_roman_input();
-	table->dual_add(name_w->label("Name"), d);
+	table->dual_add(name_w->label("名前"), d);
 	table->dual_add(name_w, d);
 
 	w_player_color *pcolor_w = new w_player_color(player_preferences->color);
-	table->dual_add(pcolor_w->label("Color"), d);
+	table->dual_add(pcolor_w->label("色"), d);
 	table->dual_add(pcolor_w, d);
 
 	w_player_color *tcolor_w = new w_player_color(player_preferences->team);
-	table->dual_add(tcolor_w->label("Team"), d);
+	table->dual_add(tcolor_w->label("チーム"), d);
 	table->dual_add(tcolor_w, d);
 
 	table->add_row(new w_spacer(), true);
 
 	w_toggle *crosshairs_active_w = new w_toggle(player_preferences->crosshairs_active);
-	table->dual_add(crosshairs_active_w->label("Show crosshairs"), d);
+	table->dual_add(crosshairs_active_w->label("クロスヘアーを表\示"), d);
 	table->dual_add(crosshairs_active_w, d);
 
 	placer->add(table, true);
 
 	placer->add(new w_spacer(), true);
 
-	w_button *crosshair_button = new w_button("CROSSHAIR SETTINGS", crosshair_dialog, &d);
+	w_button *crosshair_button = new w_button("クロスヘアー設定", crosshair_dialog, &d);
 	placer->dual_add(crosshair_button, d);
 
 	placer->add(new w_spacer(), true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
 	
-	w_button* ok_button = new w_button("ACCEPT", dialog_ok, &d);
+	w_button* ok_button = new w_button("了承", dialog_ok, &d);
 	ok_button->set_identifier(iOK);
 	button_placer->dual_add(ok_button, d);
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("キャンセル", dialog_cancel, &d), d);
 
 	placer->add(button_placer, true);
 
@@ -634,15 +634,15 @@ static void signup_dialog_ok(void *arg)
 	// check that fields are filled out
 	if (strlen(email_w->get_text()) == 0)
 	{
-		alert_user("Please enter your email address.", infoError);
+		alert_user("メールアドレスを入力してください", infoError);
 	}
 	else if (strlen(login_w->get_text()) == 0)
 	{
-		alert_user("Please enter a username.", infoError);
+		alert_user("ユーザ名を入力してください", infoError);
 	}
 	else if (strlen(password_w->get_text()) == 0)
 	{
-		alert_user("Please enter a password.", infoError);
+		alert_user("パスワードを入力してください", infoError);
 	}
 	else
 	{
@@ -670,7 +670,7 @@ static void signup_dialog_ok(void *arg)
 		}
 		else
 		{
-			alert_user("There was a problem contacting the server.", infoError);
+			alert_user("サーバー接続中に問題が発生しました", infoError);
 		}
 	}
 }
@@ -679,7 +679,7 @@ static void signup_dialog(void *arg)
 {
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("ACCOUNT SIGN UP"), d);
+	placer->dual_add(new w_title("アカウント登録"), d);
 	placer->add(new w_spacer());
 	
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -688,17 +688,17 @@ static void signup_dialog(void *arg)
 	
 	w_text_entry *email_w = new w_text_entry(256, "");
 	email_w->set_identifier(iSIGNUP_EMAIL_W);
-	table->dual_add(email_w->label("Email Address"), d);
+	table->dual_add(email_w->label("メールアドレス"), d);
 	table->dual_add(email_w, d);
 	
 	w_text_entry *login_w = new w_text_entry(network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_login);
 	login_w->set_identifier(iSIGNUP_USERNAME_W);
-	table->dual_add(login_w->label("Username"), d);
+	table->dual_add(login_w->label("ユーザ名"), d);
 	table->dual_add(login_w, d);
 	
 	w_password_entry *password_w = new w_password_entry(network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_password);
 	password_w->set_identifier(iSIGNUP_PASSWORD_W);
-	table->dual_add(password_w->label("Password"), d);
+	table->dual_add(password_w->label("パスワード"), d);
 	table->dual_add(password_w, d);
 	
 	table->add_row(new w_spacer(), true);
@@ -706,10 +706,10 @@ static void signup_dialog(void *arg)
 	
 	horizontal_placer *button_placer = new horizontal_placer;
 	
-	w_button* ok_button = new w_button("SIGN UP", signup_dialog_ok, &d);
+	w_button* ok_button = new w_button("登録", signup_dialog_ok, &d);
 	ok_button->set_identifier(iOK);
 	button_placer->dual_add(ok_button, d);
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("キャンセル", dialog_cancel, &d), d);
 	
 	placer->add(button_placer, true);
 	
@@ -733,15 +733,15 @@ static void online_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("INTERNET GAME SETUP"), d);
+	placer->dual_add(new w_title("インターネットゲーム設定"), d);
 	placer->add(new w_spacer());
 	
 	tab_placer* tabs = new tab_placer();
 	
 	std::vector<std::string> labels;
-	labels.push_back("ACCOUNT");
-	labels.push_back("PREGAME LOBBY");
-	labels.push_back("STATS");
+	labels.push_back("アカウント");
+	labels.push_back("ゲーム前ロビー");
+	labels.push_back("統計");
 	w_tab *tab_w = new w_tab(labels, tabs);
 	
 	placer->dual_add(tab_w, d);
@@ -754,21 +754,21 @@ static void online_dialog(void *arg)
 	
 	w_text_entry *login_w = new w_text_entry(network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_login);
 	login_w->set_identifier(iONLINE_USERNAME_W);
-	account_table->dual_add(login_w->label("Username"), d);
+	account_table->dual_add(login_w->label("ユーザ名"), d);
 	account_table->dual_add(login_w, d);
 	
 	w_password_entry *password_w = new w_password_entry(network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_password);
 	password_w->set_identifier(iONLINE_PASSWORD_W);
-	account_table->dual_add(password_w->label("Password"), d);
+	account_table->dual_add(password_w->label("パスワード"), d);
 	account_table->dual_add(password_w, d);
 	
-	w_hyperlink *account_link_w = new w_hyperlink("", "Visit my lhowon.org account page");
+	w_hyperlink *account_link_w = new w_hyperlink("", "私のlhowon.orgアカウントページへ飛ぶ");
 	account_link_w->set_callback(proc_account_link, &d);
 	account_table->dual_add_row(account_link_w, d);
 	
 	account_table->add_row(new w_spacer(), true);
 	
-	w_button *signup_button = new w_button("SIGN UP", signup_dialog, &d);
+	w_button *signup_button = new w_button("登録", signup_dialog, &d);
 	account_table->dual_add_row(signup_button, d);
 	
 	account_table->add_row(new w_spacer(), true);
@@ -785,32 +785,32 @@ static void online_dialog(void *arg)
 	name_w->set_enter_pressed_callback(dialog_try_ok);
 	name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
 	name_w->enable_mac_roman_input();
-	lobby_table->dual_add(name_w->label("Name"), d);
+	lobby_table->dual_add(name_w->label("名前"), d);
 	lobby_table->dual_add(name_w, d);
 	
 	w_enabling_toggle *custom_colors_w = new w_enabling_toggle(network_preferences->use_custom_metaserver_colors);
-	lobby_table->dual_add(custom_colors_w->label("Custom Chat Colors"), d);
+	lobby_table->dual_add(custom_colors_w->label("カスタムチャットカラー"), d);
 	lobby_table->dual_add(custom_colors_w, d);
 	
 	w_color_picker *primary_w = new w_color_picker(network_preferences->metaserver_colors[0]);
-	lobby_table->dual_add(primary_w->label("Primary"), d);
+	lobby_table->dual_add(primary_w->label("プライマリ"), d);
 	lobby_table->dual_add(primary_w, d);
 	
 	w_color_picker *secondary_w = new w_color_picker(network_preferences->metaserver_colors[1]);
-	lobby_table->dual_add(secondary_w->label("Secondary"), d);
+	lobby_table->dual_add(secondary_w->label("セカンダリ"), d);
 	lobby_table->dual_add(secondary_w, d);
 	
 	custom_colors_w->add_dependent_widget(primary_w);
 	custom_colors_w->add_dependent_widget(secondary_w);
 
 	w_toggle *mute_guests_w = new w_toggle(network_preferences->mute_metaserver_guests);
-	lobby_table->dual_add(mute_guests_w->label("Mute All Guest Chat"), d);
+	lobby_table->dual_add(mute_guests_w->label("全てのゲストチャットを表\示ししない"), d);
 	lobby_table->dual_add(mute_guests_w, d);
 
 	lobby_table->add_row(new w_spacer(), true);
 	
 	w_toggle *join_meta_w = new w_toggle(network_preferences->join_metaserver_by_default);
-	lobby_table->dual_add(join_meta_w->label("Join Pregame Lobby by Default"), d);
+	lobby_table->dual_add(join_meta_w->label("ゲーム前ロビーにデフォルトで参加する"), d);
 	lobby_table->dual_add(join_meta_w, d);
 	
 	lobby_table->add_row(new w_spacer(), true);
@@ -818,24 +818,24 @@ static void online_dialog(void *arg)
 	lobby->add(lobby_table, true);
 	
 	vertical_placer *stats = new vertical_placer();
-	stats->dual_add(new w_hyperlink(A1_LEADERBOARD_URL, "Visit the leaderboards"), d);
+	stats->dual_add(new w_hyperlink(A1_LEADERBOARD_URL, "リーダーボードへ飛ぶ"), d);
 	stats->add(new w_spacer(), true);
 	
 	horizontal_placer *stats_box = new horizontal_placer();
 	
 	w_toggle *allow_stats_w = new w_toggle(network_preferences->allow_stats);
 	stats_box->dual_add(allow_stats_w, d);
-	stats_box->dual_add(allow_stats_w->label("Send Stats to Lhowon.org"), d);
+	stats_box->dual_add(allow_stats_w->label("Lhowon.orgへ統計を送信"), d);
 	
 	stats->add(stats_box, true);
 	stats->add(new w_spacer(), true);
 	
-	stats->dual_add(new w_static_text("To compete on the leaderboards,"), d);
-	stats->dual_add(new w_static_text("you need an online account, and a"), d);
-	stats->dual_add(new w_static_text("Stats plugin installed and enabled."), d);
+	stats->dual_add(new w_static_text("リーダーボードで競争するためには"), d);
+	stats->dual_add(new w_static_text("オンラインアカウントが必要で"), d);
+	stats->dual_add(new w_static_text("統計プラグインをインストールして有効にする必要があります"), d);
 	
 	stats->add(new w_spacer(), true);
-	stats->dual_add(new w_button("PLUGINS", plugins_dialog, &d), d);
+	stats->dual_add(new w_button("プラグイン", plugins_dialog, &d), d);
 	
 	stats->add(new w_spacer(), true);
 	
@@ -848,10 +848,10 @@ static void online_dialog(void *arg)
 
 	horizontal_placer *button_placer = new horizontal_placer;
 	
-	w_button* ok_button = new w_button("ACCEPT", dialog_ok, &d);
+	w_button* ok_button = new w_button("了承", dialog_ok, &d);
 	ok_button->set_identifier(iOK);
 	button_placer->dual_add(ok_button, d);
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("キャンセル", dialog_cancel, &d), d);
 	
 	placer->add(button_placer, true);
 	
@@ -948,48 +948,48 @@ static void online_dialog(void *arg)
 /*
  *  Handle graphics dialog
  */
-
 #ifdef TRUE_COLOR_ONLY
 static const char* depth_labels[3] = {
-	"16 Bit", "32 Bit", NULL
+	"16ビット", "32ビット", NULL
 };
 #else
 static const char *depth_labels[4] = {
-	"8 Bit", "16 Bit", "32 Bit", NULL
+	"8ビット", "16ビット", "32ビット", NULL
 };
 #endif
 
 static const char *resolution_labels[3] = {
-	"Low", "High", NULL
+	"低", "高", NULL
 };
 
 static const char *sw_alpha_blending_labels[4] = {
-	"Off", "Fast", "Nice", NULL
+	"なし", "速度優先", "画質優先", NULL
 };
 
 static const char *sw_sdl_driver_labels[5] = {
-	"Default", "None", "Direct3D", "OpenGL", NULL
+	"デフォルト", "なし", "Direct3D", "OpenGL", NULL
 };
 
 static const char *gamma_labels[9] = {
-	"Darkest", "Darker", "Dark", "Normal", "Light", "Really Light", "Even Lighter", "Lightest", NULL
+	"とても暗い", "暗い", "やや暗い", "通常", "やや明るい", "明るい", "より明るい", "とても明るい", NULL
 };
 
 static const char* renderer_labels[] = {
-	"Software", "OpenGL (Classic)", "OpenGL (Shader)", NULL
+	"ソ\フトウェア", "OpenGL（クラシック）", "OpenGL（シェーダー）", NULL
 };
 
 static const char* hud_scale_labels[] = {
-"Normal", "Double", "Largest", NULL
+	"通常", "２倍", "最大", NULL
 };
 
 static const char* term_scale_labels[] = {
-"Normal", "Double", "Largest", NULL
+	"通常", "２倍", "最大", NULL
 };
 
 static const char* max_saves_labels[] = {
-	"20", "100", "500", "Unlimited", NULL
+	"20", "100", "500", "無制限", NULL
 };
+
 static const uint32 max_saves_values[] = {
 	20, 100, 500, 0
 };
@@ -1014,7 +1014,7 @@ static void software_rendering_options_dialog(void* arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("SOFTWARE RENDERING OPTIONS"), d);
+	placer->dual_add(new w_title("ソ\フトウェアレンダリング時のオプション"), d);
 	placer->add(new w_spacer(), true);
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -1025,29 +1025,29 @@ static void software_rendering_options_dialog(void* arg)
 #else
 	w_select *depth_w = new w_select(graphics_preferences->screen_mode.bit_depth == 8 ? 0 : graphics_preferences->screen_mode.bit_depth == 16 ? 1 : 2, depth_labels);
 #endif
-	table->dual_add(depth_w->label("Color Depth"), d);
+	table->dual_add(depth_w->label("色深度"), d);
 	table->dual_add(depth_w, d);
 
 	w_toggle *resolution_w = new w_toggle(graphics_preferences->screen_mode.high_resolution, resolution_labels);
-	table->dual_add(resolution_w->label("Resolution"), d);
+	table->dual_add(resolution_w->label("解像度"), d);
 	table->dual_add(resolution_w, d);
 
 	table->add_row(new w_spacer(), true);
 
 	w_select *sw_alpha_blending_w = new w_select(graphics_preferences->software_alpha_blending, sw_alpha_blending_labels);
-	table->dual_add(sw_alpha_blending_w->label("Transparent Liquids"), d);
+	table->dual_add(sw_alpha_blending_w->label("液体を半透明化"), d);
 	table->dual_add(sw_alpha_blending_w, d);
 
 	w_select *sw_driver_w = new w_select(graphics_preferences->software_sdl_driver, sw_sdl_driver_labels);
-	table->dual_add(sw_driver_w->label("Acceleration"), d);
+	table->dual_add(sw_driver_w->label("アクセラーション"), d);
 	table->dual_add(sw_driver_w, d);
 	
 	placer->add(table, true);
 
 	placer->add(new w_spacer(), true);
 	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("了承", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("キャンセル", dialog_cancel, &d), d);
 	placer->add(button_placer, true);
 
 	d.set_widget_placer(placer);
@@ -1140,7 +1140,7 @@ static void graphics_dialog(void *arg)
 	dialog d;
 
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("GRAPHICS SETUP"), d);
+	placer->dual_add(new w_title("グラフィック設定"), d);
 	placer->add(new w_spacer(), true);
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -1152,7 +1152,7 @@ static void graphics_dialog(void *arg)
 	renderer_w->set_selection(_no_acceleration);
 	renderer_w->set_enabled(false);
 #endif
-	table->dual_add(renderer_w->label("Rendering System"), d);
+	table->dual_add(renderer_w->label("レンダリングシステム"), d);
 	table->dual_add(renderer_w, d);
 
 	w_select_popup *size_w = new w_select_popup();
@@ -1161,72 +1161,72 @@ static void graphics_dialog(void *arg)
 		size_w->set_selection(0);
 	else
 		size_w->set_selection(Screen::instance()->FindMode(graphics_preferences->screen_mode.width, graphics_preferences->screen_mode.height) + 1);
-	table->dual_add(size_w->label("Screen Size"), d);
+	table->dual_add(size_w->label("画面の大きさ"), d);
 	table->dual_add(size_w, d);
 
 	w_toggle *high_dpi_w = NULL;
 	high_dpi_w = new w_toggle(graphics_preferences->screen_mode.high_dpi);
-	table->dual_add(high_dpi_w->label("Use High DPI"), d);
+	table->dual_add(high_dpi_w->label("高DPIを使う"), d);
 	table->dual_add(high_dpi_w, d);
 	
 	w_toggle *fixh_w = new w_toggle(!graphics_preferences->screen_mode.fix_h_not_v);
-	table->dual_add(fixh_w->label("Limit Vertical View"), d);
+	table->dual_add(fixh_w->label("垂直視野を制限"), d);
 	table->dual_add(fixh_w, d);
     
 	w_toggle *bob_w = new w_toggle(graphics_preferences->screen_mode.camera_bob);
-	table->dual_add(bob_w->label("Camera Bobbing"), d);
+	table->dual_add(bob_w->label("カメラ振動"), d);
 	table->dual_add(bob_w, d);
 	
   	w_select_popup *gamma_w = new w_select_popup();
 	gamma_w->set_labels(build_stringvector_from_cstring_array(gamma_labels));
 	gamma_w->set_selection(graphics_preferences->screen_mode.gamma_level);
-	table->dual_add(gamma_w->label("Brightness"), d);
+	table->dual_add(gamma_w->label("明るさ"), d);
 	table->dual_add(gamma_w, d);
 
 	table->add_row(new w_spacer(), true);
 
 	w_toggle *fullscreen_w = new w_toggle(!graphics_preferences->screen_mode.fullscreen);
-	table->dual_add(fullscreen_w->label("Windowed Mode"), d);
+	table->dual_add(fullscreen_w->label("ウィンドウモード"), d);
 	table->dual_add(fullscreen_w, d);
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("Heads-Up Display"), d);
+	table->dual_add_row(new w_static_text("ヘッドアップディスプレイ(HUD)"), d);
 	w_enabling_toggle *hud_w = new w_enabling_toggle(graphics_preferences->screen_mode.hud);
-	table->dual_add(hud_w->label("Show HUD"), d);
+	table->dual_add(hud_w->label("HUDを表\示"), d);
 	table->dual_add(hud_w, d);
 	
 	w_select_popup *hud_scale_w = new w_select_popup();
 	hud_scale_w->set_labels(build_stringvector_from_cstring_array(hud_scale_labels));
 	hud_scale_w->set_selection(graphics_preferences->screen_mode.hud_scale_level);
-	table->dual_add(hud_scale_w->label("HUD Size"), d);
+	table->dual_add(hud_scale_w->label("HUDサイズ"), d);
 	table->dual_add(hud_scale_w, d);
 	hud_w->add_dependent_widget(hud_scale_w);
 	
 	w_select_popup *term_scale_w = new w_select_popup();
 	term_scale_w->set_labels(build_stringvector_from_cstring_array(term_scale_labels));
 	term_scale_w->set_selection(graphics_preferences->screen_mode.term_scale_level);
-	table->dual_add(term_scale_w->label("Terminal Size"), d);
+	table->dual_add(term_scale_w->label("ターミナルサイズ"), d);
 	table->dual_add(term_scale_w, d);
 	
 	w_toggle *map_w = new w_toggle(graphics_preferences->screen_mode.translucent_map);
-	table->dual_add(map_w->label("Overlay Map"), d);
+	table->dual_add(map_w->label("マップを重ねる"), d);
 	table->dual_add(map_w, d);
 
 	placer->add(table, true);
 
 	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_button("RENDERING OPTIONS", rendering_options_dialog_demux, &d), d);
+	placer->dual_add(new w_button("レンダリングオプション", rendering_options_dialog_demux, &d), d);
 	placer->add(new w_spacer(), true);
 
 #ifndef HAVE_OPENGL
-	expand_app_variables(temporary, "This copy of $appName$ was built without OpenGL support.");
+	expand_app_variables(temporary, "この$appName$のコピーは、OpenGLをサポートしていません。");
 	placer->dual_add(new w_static_text(temporary), d);
 #endif
 	placer->add(new w_spacer(), true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("了承", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("キャンセル", dialog_cancel, &d), d);
 
 	placer->add(button_placer, true);
     
@@ -1380,61 +1380,61 @@ static void sound_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("SOUND SETUP"), d);
+	placer->dual_add(new w_title("サウンド設定"), d);
 	placer->add(new w_spacer(), true);
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 
-	static const char *quality_labels[3] = {"8 Bit", "16 Bit", NULL};
+	static const char *quality_labels[3] = {"8ビット", "16ビット", NULL};
 	w_toggle *quality_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _16bit_sound_flag), quality_labels);
-	table->dual_add(quality_w->label("Quality"), d);
+	table->dual_add(quality_w->label("音質"), d);
 	table->dual_add(quality_w, d);
 
 	stereo_w = new w_stereo_toggle(sound_preferences->flags & _stereo_flag);
-	table->dual_add(stereo_w->label("Stereo"), d);
+	table->dual_add(stereo_w->label("ステレオ"), d);
 	table->dual_add(stereo_w, d);
 
 	dynamic_w = new w_dynamic_toggle(TEST_FLAG(sound_preferences->flags, _dynamic_tracking_flag));
-	table->dual_add(dynamic_w->label("Active Panning"), d);
+	table->dual_add(dynamic_w->label("音の定位を変化させる"), d);
 	table->dual_add(dynamic_w, d);
 
 	w_toggle *ambient_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _ambient_sound_flag));
-	table->dual_add(ambient_w->label("Ambient Sounds"), d);
+	table->dual_add(ambient_w->label("周辺サウンド"), d);
 	table->dual_add(ambient_w, d);
 
 	w_toggle *more_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _more_sounds_flag));
-	table->dual_add(more_w->label("More Sounds"), d);
+	table->dual_add(more_w->label("追加のサウンド"), d);
 	table->dual_add(more_w, d);
 
 	w_toggle *button_sounds_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
-	table->dual_add(button_sounds_w->label("Interface Button Sounds"), d);
+	table->dual_add(button_sounds_w->label("インターフェースボタンのサウンド"), d);
 	table->dual_add(button_sounds_w, d);
 
 	w_select *channels_w = new w_select(static_cast<int>(std::floor(std::log(static_cast<float>(sound_preferences->channel_count)) / std::log(2.0) + 0.5)), channel_labels);
-	table->dual_add(channels_w->label("Channels"), d);
+	table->dual_add(channels_w->label("チャンネル数"), d);
 	table->dual_add(channels_w, d);
 
 	w_volume_slider *volume_w = new w_volume_slider(sound_preferences->volume);
-	table->dual_add(volume_w->label("Volume"), d);
+	table->dual_add(volume_w->label("音量"), d);
 	table->dual_add(volume_w, d);
 
 	w_slider *music_volume_w = new w_percentage_slider(NUMBER_OF_SOUND_VOLUME_LEVELS, sound_preferences->music);
-	table->dual_add(music_volume_w->label("Music Volume"), d);
+	table->dual_add(music_volume_w->label("音楽の音量"), d);
 	table->dual_add(music_volume_w, d);
 
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("Network Microphone"), d);
+	table->dual_add_row(new w_static_text("ネットワークマイク"), d);
 
 	w_toggle* mute_while_transmitting_w = new w_toggle(!sound_preferences->mute_while_transmitting);
-	table->dual_add(mute_while_transmitting_w->label("Headset Mic Mode"), d);
+	table->dual_add(mute_while_transmitting_w->label("ヘッドセットマイクモード"), d);
 	table->dual_add(mute_while_transmitting_w, d);
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("Experimental Sound Options"), d);
+	table->dual_add_row(new w_static_text("実験中のサウンドオプション"), d);
 		w_toggle *zrd_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _zero_restart_delay));
-	table->dual_add(zrd_w->label("Zero Restart Delay"), d);
+	table->dual_add(zrd_w->label("リスタートディレイをゼロに"), d);
 	table->dual_add(zrd_w, d);
 
 	placer->add(table, true);
@@ -1442,8 +1442,8 @@ static void sound_dialog(void *arg)
 	placer->add(new w_spacer(), true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("了承", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("キャンセル", dialog_cancel, &d), d);
 	
 	placer->add(button_placer, true);
 
@@ -1565,15 +1565,15 @@ static void controls_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("CONTROLS"), d);
+	placer->dual_add(new w_title("操作"), d);
 	placer->add(new w_spacer(), true);
 
 	tab_placer* tabs = new tab_placer();
 
 	std::vector<std::string> labels;
-	labels.push_back("GENERAL");
-	labels.push_back("MOUSE");
-	labels.push_back("JOYSTICK");
+	labels.push_back("一般");
+	labels.push_back("マウス");
+	labels.push_back("ジョイスティック");
 	w_tab *tab_w = new w_tab(labels, tabs);
 
 	placer->dual_add(tab_w, d);
@@ -1587,19 +1587,19 @@ static void controls_dialog(void *arg)
 
 	mouse_w = new w_enabling_toggle(input_preferences->input_device == 1, true);
 	mouse_w->set_selection_changed_callback(input_selected);
-	mouse->dual_add(mouse_w->label("Use Mouse"), d);
+	mouse->dual_add(mouse_w->label("マウスを使用"), d);
 	mouse->dual_add(mouse_w, d);
 
 	mouse->add_row(new w_spacer(), true);
 
 	w_toggle *mouse_acceleration_w = new w_toggle(input_preferences->mouse_acceleration);
-	mouse->dual_add(mouse_acceleration_w->label("Accelerate Mouse"), d);
+	mouse->dual_add(mouse_acceleration_w->label("マウスの動きを加速させる"), d);
 	mouse->dual_add(mouse_acceleration_w, d);
 
 	mouse_w->add_dependent_widget(mouse_acceleration_w);
 
 	w_toggle *invert_mouse_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse));
-	mouse->dual_add(invert_mouse_w->label("Invert Mouse"), d);
+	mouse->dual_add(invert_mouse_w->label("マウスの動きを反転"), d);
 	mouse->dual_add(invert_mouse_w, d);
 	
 	mouse_w->add_dependent_widget(invert_mouse_w);
@@ -1618,7 +1618,7 @@ static void controls_dialog(void *arg)
 		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
 	
 	w_sens_slider* sens_vertical_w = new w_sens_slider(1000, theVerticalSliderPosition);
-	mouse->dual_add(sens_vertical_w->label("Mouse Vertical Sensitivity"), d);
+	mouse->dual_add(sens_vertical_w->label("マウスの垂直感度"), d);
 	mouse->dual_add(sens_vertical_w, d);
 
 	mouse_w->add_dependent_widget(sens_vertical_w);
@@ -1630,14 +1630,14 @@ static void controls_dialog(void *arg)
 		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
 
 	w_sens_slider* sens_horizontal_w = new w_sens_slider(1000, theHorizontalSliderPosition);
-	mouse->dual_add(sens_horizontal_w->label("Mouse Horizontal Sensitivity"), d);
+	mouse->dual_add(sens_horizontal_w->label("マウスの水平感度"), d);
 	mouse->dual_add(sens_horizontal_w, d);
 
 	mouse_w->add_dependent_widget(sens_horizontal_w);
 
 	joystick_w = new w_enabling_toggle(input_preferences->input_device == 0 && SDL_NumJoysticks() > 0 && input_preferences->joystick_id >= 0, true);
 	joystick_w->set_selection_changed_callback(input_selected);
-	joystick->dual_add(joystick_w->label("Use Joystick / Gamepad"), d);
+	joystick->dual_add(joystick_w->label("ジョイスティック／ゲームパッドを使用"), d);
 	joystick->dual_add(joystick_w, d);
 
 	joystick->add_row(new w_spacer(), true);
@@ -1652,20 +1652,20 @@ static void controls_dialog(void *arg)
 	}
 	else
 	{
-		joystick_labels.push_back("No Joysticks");
+		joystick_labels.push_back("ジョイスティックなし");
 	}
 	w_select_popup* which_joystick_w = new w_select_popup();
 	which_joystick_w->set_labels(joystick_labels);
 	which_joystick_w->set_selection(std::max(0, std::min(SDL_NumJoysticks(), static_cast<int>(input_preferences->joystick_id))));
-	joystick->dual_add(which_joystick_w->label("Joystick / Gamepad"), d);
+	joystick->dual_add(which_joystick_w->label("ジョイスティック／ゲームパッド"), d);
 	joystick->dual_add(which_joystick_w, d);
 	joystick_w->add_dependent_widget(which_joystick_w);
 
 	joystick->add_row(new w_spacer(), true);
-	joystick->dual_add_row(new w_static_text("Axis Mappings"), d);
+	joystick->dual_add_row(new w_static_text("スティックのマッピング"), d);
 
 	std::vector<std::string> axis_labels;
-	axis_labels.push_back("Unassigned");
+	axis_labels.push_back("無し");
 	for (int i = 1; i <= 8; ++i)
 	{
 		stringstream s;
@@ -1680,16 +1680,16 @@ static void controls_dialog(void *arg)
 		joystick_axis_w[i]->set_popup_callback(axis_mapped, joystick_axis_w[i]);
 	}
 
-	joystick->dual_add(joystick_axis_w[_joystick_strafe]->label("Sidestep Left/Right"), d);
+	joystick->dual_add(joystick_axis_w[_joystick_strafe]->label("左右にサイドステップ"), d);
 	joystick->dual_add(joystick_axis_w[_joystick_strafe], d);
 
-	joystick->dual_add(joystick_axis_w[_joystick_velocity]->label("Move Forward/Backward"), d);
+	joystick->dual_add(joystick_axis_w[_joystick_velocity]->label("前後移動"), d);
 	joystick->dual_add(joystick_axis_w[_joystick_velocity], d);
 
-	joystick->dual_add(joystick_axis_w[_joystick_yaw]->label("Turn Left/Right"), d);
+	joystick->dual_add(joystick_axis_w[_joystick_yaw]->label("左右を向く"), d);
 	joystick->dual_add(joystick_axis_w[_joystick_yaw], d);
 
-	joystick->dual_add(joystick_axis_w[_joystick_pitch]->label("Look Up/Down"), d);
+	joystick->dual_add(joystick_axis_w[_joystick_pitch]->label("上下に視野を移動"), d);
 	joystick->dual_add(joystick_axis_w[_joystick_pitch], d);
 
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
@@ -1703,29 +1703,29 @@ static void controls_dialog(void *arg)
 	general_table->col_flags(0, placeable::kAlignRight);
 
 	w_toggle *always_run_w = new w_toggle(input_preferences->modifiers & _inputmod_interchange_run_walk);
-	general_table->dual_add(always_run_w->label("Always Run"), d);
+	general_table->dual_add(always_run_w->label("常時走行"), d);
 	general_table->dual_add(always_run_w, d);
 
 	w_toggle *always_swim_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_swim_sink));
-	general_table->dual_add(always_swim_w->label("Always Swim"), d);
+	general_table->dual_add(always_swim_w->label("常時泳ぐ"), d);
 	general_table->dual_add(always_swim_w, d);
 
 	general_table->add_row(new w_spacer(), true);
 
 	w_toggle *weapon_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_switch_to_new_weapon));
-	general_table->dual_add(weapon_w->label("Auto-Switch Weapons"), d);
+	general_table->dual_add(weapon_w->label("武器の自動切り替え"), d);
 	general_table->dual_add(weapon_w, d);
 
 	w_toggle* auto_recenter_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_auto_recenter));
-	general_table->dual_add(auto_recenter_w->label("Auto-Recenter View"), d);
+	general_table->dual_add(auto_recenter_w->label("視点の自動リセンター"), d);
 	general_table->dual_add(auto_recenter_w, d);
 
 	general->add(general_table, true);
 
 	general->add(new w_spacer(), true);
-	general->dual_add(new w_static_text("Warning: Auto-Switch Weapons and Auto-Recenter View"), d);
-	general->dual_add(new w_static_text("are always ON in network play.  Turning either one OFF"), d);
-	general->dual_add(new w_static_text("will also disable film recording for single-player games."), d);
+	general->dual_add(new w_static_text("注意：武器の自動切換えと、視点の自動リセンターは、ネットワークプレイで"), d);
+	general->dual_add(new w_static_text("自動的にオンになります。シングルプレイヤーモードでどちらかをオフにすると、"), d);
+	general->dual_add(new w_static_text("映画の録画が自動的に無効化されます。"), d);
 		
 	tabs->add(general, true);
 	tabs->add(mouse, true);
@@ -1735,13 +1735,13 @@ static void controls_dialog(void *arg)
 
 	placer->add(new w_spacer(), true);
 	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_button("CONFIGURE KEYS / BUTTONS", keyboard_dialog, &d), d);
+	placer->dual_add(new w_button("キー設定／ボタン", keyboard_dialog, &d), d);
 
 	placer->add(new w_spacer(), true);
 	
 	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("了承", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("キャンセル", dialog_cancel, &d), d);
 	placer->add(button_placer, true);
 
 	d.set_widget_placer(placer);
@@ -1838,15 +1838,15 @@ static void controls_dialog(void *arg)
 const int NUM_KEYS = 21;
 
 static const char *action_name[NUM_KEYS] = {
-	"Move Forward", "Move Backward", "Turn Left", "Turn Right", "Sidestep Left", "Sidestep Right",
-	"Glance Left", "Glance Right", "Look Up", "Look Down", "Look Ahead",
-	"Previous Weapon", "Next Weapon", "Trigger", "2nd Trigger",
-	"Sidestep", "Run/Swim", "Look",
-	"Action", "Auto Map", "Microphone"
+	"前進", "後退", "左に向く", "右に向く", "左にサイドステップ", "右にサイドステップ",
+	"左を見る", "右を見る", "上を見る", "下を見る", "前を見る",
+	"前の武器", "次の武器", "主砲", "副砲",
+	"サイドステップ", "走る／泳ぐ", "見る",
+	"アクション", "地図", "マイク"
 };
 
 static const char *shell_action_name[NUMBER_OF_SHELL_KEYS] = {
-	"Inventory Left", "Inventory Right", "Switch Player View", "Volume Up", "Volume Down", "Zoom Map In", "Zoom Map Out", "Toggle FPS", "Chat/Console", "Network Stats"
+	"前の道具", "次の道具", "主観／客観切り替え", "ボリュームを上げる", "ボリュームを下げる", "マップを拡大", "マップを縮小", "FPSを表\示", "チャット／コンソ\ール", "ネットワーク状況"
 };
 
 static SDL_Scancode default_keys[NUM_KEYS] = {
@@ -1978,7 +1978,7 @@ static void keyboard_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("CONFIGURE KEYS / BUTTONS"), d);
+	placer->dual_add(new w_title("キー設定／ボタン"), d);
 
 	placer->add(new w_spacer(), true);
 	
@@ -2023,12 +2023,12 @@ static void keyboard_dialog(void *arg)
 	placer->add(table, true);
 
 	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_button("DEFAULTS", load_default_keys, &d), d);
+	placer->dual_add(new w_button("デフォルト", load_default_keys, &d), d);
 	placer->add(new w_spacer(), true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("了承", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("キャンセル", dialog_cancel, &d), d);
 	placer->add(button_placer, true);
 
 	d.set_widget_placer(placer);
@@ -2075,7 +2075,7 @@ static void plugins_dialog(void *)
 {
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	w_title *w_header = new w_title("PLUGINS");
+	w_title *w_header = new w_title("プラグイン");
 	placer->dual_add(w_header, d);
 	placer->add(new w_spacer, true);
 
@@ -2086,9 +2086,9 @@ static void plugins_dialog(void *)
 	placer->add(new w_spacer, true);
 
 	horizontal_placer* button_placer = new horizontal_placer;
-	w_button* accept_w = new w_button("ACCEPT", dialog_ok, &d);
+	w_button* accept_w = new w_button("了承", dialog_ok, &d);
 	button_placer->dual_add(accept_w, d);
-	w_button* cancel_w = new w_button("CANCEL", dialog_cancel, &d);
+	w_button* cancel_w = new w_button("キャンセル", dialog_cancel, &d);
 	button_placer->dual_add(cancel_w, d);
 
 	placer->add(button_placer, true);
@@ -2134,7 +2134,7 @@ static void environment_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	w_title *w_header = new w_title("ENVIRONMENT SETTINGS");
+	w_title *w_header = new w_title("環境設定");
 	placer->dual_add(w_header, d);
 	placer->add(new w_spacer, true);
 
@@ -2142,69 +2142,69 @@ static void environment_dialog(void *arg)
 	table->col_flags(0, placeable::kAlignRight);
 	
 #ifndef MAC_APP_STORE
-	w_env_select *map_w = new w_env_select(environment_preferences->map_file, "AVAILABLE MAPS", _typecode_scenario, &d);
-	table->dual_add(map_w->label("Map"), d);
+	w_env_select *map_w = new w_env_select(environment_preferences->map_file, "利用可能\なマップ", _typecode_scenario, &d);
+	table->dual_add(map_w->label("マップ"), d);
 	table->dual_add(map_w, d);
 	
-	w_env_select *physics_w = new w_env_select(environment_preferences->physics_file, "AVAILABLE PHYSICS MODELS", _typecode_physics, &d);
-	table->dual_add(physics_w->label("Physics"), d);
+	w_env_select *physics_w = new w_env_select(environment_preferences->physics_file, "利用可能\な物理モデル", _typecode_physics, &d);
+	table->dual_add(physics_w->label("物理モデル"), d);
 	table->dual_add(physics_w, d);
 
-	w_env_select *shapes_w = new w_env_select(environment_preferences->shapes_file, "AVAILABLE SHAPES", _typecode_shapes, &d);
-	table->dual_add(shapes_w->label("Shapes"), d);
+	w_env_select *shapes_w = new w_env_select(environment_preferences->shapes_file, "利用可能\な形態", _typecode_shapes, &d);
+	table->dual_add(shapes_w->label("形態"), d);
 	table->dual_add(shapes_w, d);
 
-	w_env_select *sounds_w = new w_env_select(environment_preferences->sounds_file, "AVAILABLE SOUNDS", _typecode_sounds, &d);
-	table->dual_add(sounds_w->label("Sounds"), d);
+	w_env_select *sounds_w = new w_env_select(environment_preferences->sounds_file, "利用可能\なサウンド", _typecode_sounds, &d);
+	table->dual_add(sounds_w->label("サウンド"), d);
 	table->dual_add(sounds_w, d);
 
-	w_env_select* resources_w = new w_env_select(environment_preferences->resources_file, "AVAILABLE FILES", _typecode_unknown, &d);
-	table->dual_add(resources_w->label("External Resources"), d);
+	w_env_select* resources_w = new w_env_select(environment_preferences->resources_file, "利用可能\なファイル", _typecode_unknown, &d);
+	table->dual_add(resources_w->label("外部リソ\ース"), d);
 	table->dual_add(resources_w, d);
 #endif
 
 	table->add_row(new w_spacer, true);
-	table->dual_add_row(new w_button("PLUGINS", plugins_dialog, &d), d);
+	table->dual_add_row(new w_button("プラグイン", plugins_dialog, &d), d);
 
 #ifndef MAC_APP_STORE
 	table->add_row(new w_spacer, true);
-	table->dual_add_row(new w_static_text("Solo Script"), d);
+	table->dual_add_row(new w_static_text("ソ\ロスクリプト"), d);
 	w_enabling_toggle* use_solo_lua_w = new w_enabling_toggle(environment_preferences->use_solo_lua);
-	table->dual_add(use_solo_lua_w->label("Use Solo Script"), d);
+	table->dual_add(use_solo_lua_w->label("ソ\ロスクリプトを使用"), d);
 	table->dual_add(use_solo_lua_w, d);
 
-	w_file_chooser *solo_lua_w = new w_file_chooser("Choose Script", _typecode_netscript);
+	w_file_chooser *solo_lua_w = new w_file_chooser("スクリプトを選択", _typecode_netscript);
 	solo_lua_w->set_file(environment_preferences->solo_lua_file);
-	table->dual_add(solo_lua_w->label("Script File"), d);
+	table->dual_add(solo_lua_w->label("スクリプトファイル"), d);
 	table->dual_add(solo_lua_w, d);
 	use_solo_lua_w->add_dependent_widget(solo_lua_w);
 #endif
 
 	table->add_row(new w_spacer, true);
-	table->dual_add_row(new w_static_text("Film Playback"), d);
+	table->dual_add_row(new w_static_text("フィルム再生"), d);
 	
 	w_select* film_profile_w = new w_select(environment_preferences->film_profile, film_profile_labels);
-	table->dual_add(film_profile_w->label("Default Playback Profile"), d);
+	table->dual_add(film_profile_w->label("デフォルト再生プロファイル"), d);
 	table->dual_add(film_profile_w, d);
 	
 #ifndef MAC_APP_STORE
 	w_enabling_toggle* use_replay_net_lua_w = new w_enabling_toggle(environment_preferences->use_replay_net_lua);
-	table->dual_add(use_replay_net_lua_w->label("Use Netscript in Films"), d);
+	table->dual_add(use_replay_net_lua_w->label("フィルムでのネットスクリプト"), d);
 	table->dual_add(use_replay_net_lua_w, d);
 	
-	w_file_chooser *replay_net_lua_w = new w_file_chooser("Choose Script", _typecode_netscript);
+	w_file_chooser *replay_net_lua_w = new w_file_chooser("スクリプトを選択", _typecode_netscript);
 	replay_net_lua_w->set_file(network_preferences->netscript_file);
-	table->dual_add(replay_net_lua_w->label("Netscript File"), d);
+	table->dual_add(replay_net_lua_w->label("ネットスクリプトファイル"), d);
 	table->dual_add(replay_net_lua_w, d);
 	use_replay_net_lua_w->add_dependent_widget(replay_net_lua_w);
 #endif
 	
 	table->add_row(new w_spacer, true);
-	table->dual_add_row(new w_static_text("Options"), d);
+	table->dual_add_row(new w_static_text("オプション"), d);
 
 #ifndef MAC_APP_STORE
 	w_toggle *hide_extensions_w = new w_toggle(environment_preferences->hide_extensions);
-	table->dual_add(hide_extensions_w->label("Hide File Extensions"), d);
+	table->dual_add(hide_extensions_w->label("ファイル拡張子を隠す"), d);
 	table->dual_add(hide_extensions_w, d);
 #endif
 
@@ -2213,7 +2213,7 @@ static void environment_dialog(void *arg)
 		if (max_saves_values[i] == environment_preferences->maximum_quick_saves)
 			max_saves_w->set_selection(i);
 	}
-	table->dual_add(max_saves_w->label("Unnamed Saves to Keep"), d);
+	table->dual_add(max_saves_w->label("保持する名前無しの保存データ"), d);
 	table->dual_add(max_saves_w, d);
 
 	placer->add(table, true);
@@ -2221,9 +2221,9 @@ static void environment_dialog(void *arg)
 	placer->add(new w_spacer, true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
-	w_button *w_accept = new w_button("ACCEPT", dialog_ok, &d);
+	w_button *w_accept = new w_button("受理", dialog_ok, &d);
 	button_placer->dual_add(w_accept, d);
-	w_button *w_cancel = new w_button("CANCEL", dialog_cancel, &d);
+	w_button *w_cancel = new w_button("キャンセル", dialog_cancel, &d);
 	button_placer->dual_add(w_cancel, d);
 	placer->add(button_placer, true);
 

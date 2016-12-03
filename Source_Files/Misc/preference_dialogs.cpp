@@ -286,11 +286,13 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 }
 
 static const char *far_filter_labels[5] = {
-	"None", "Linear", "Bilinear", "Trilinear", NULL
+//	"None", "Linear", "Bilinear", "Trilinear", NULL
+	"なし", "リニア", "バイリニア", "トリニア", NULL
 };
 
 static const char *near_filter_labels[3] = {
-	"None", "Linear", NULL
+//	"None", "Linear", NULL
+	"なし", "リニア", NULL
 };
 
 class w_aniso_slider : public w_slider {
@@ -314,7 +316,8 @@ public:
 	{
 
 		vertical_placer *placer = new vertical_placer;
-		placer->dual_add(new w_title("OPENGL OPTIONS"), m_dialog);
+		//		placer->dual_add(new w_title("OPENGL OPTIONS"), m_dialog);
+		placer->dual_add(new w_title("OpenGLのオプション"), m_dialog);
 		placer->add(new w_spacer(), true);
 		
 		// horizontal_placer *tabs_placer = new horizontal_placer;
@@ -329,8 +332,10 @@ public:
 		m_tabs = new tab_placer();
 
 		std::vector<std::string> labels;
-		labels.push_back("GENERAL");
-		labels.push_back("ADVANCED");
+//		labels.push_back("GENERAL");
+//		labels.push_back("ADVANCED");
+		labels.push_back("一般");
+		labels.push_back("拡張");
 		w_tab *tabs = new w_tab(labels, m_tabs);
 		placer->dual_add(tabs, m_dialog);
 		
@@ -341,101 +346,127 @@ public:
 		
 		w_toggle *zbuffer_w = new w_toggle(false);
 		if (theSelectedRenderer == _opengl_acceleration) {
-			general_table->dual_add(zbuffer_w->label("Z Buffer"), m_dialog);
+//			general_table->dual_add(zbuffer_w->label("Z Buffer"), m_dialog);
+			general_table->dual_add(zbuffer_w->label("Zバッファ"), m_dialog);
 			general_table->dual_add(zbuffer_w, m_dialog);
 		}
 
 		w_toggle *fog_w = new w_toggle(false);
-		general_table->dual_add(fog_w->label("Fog"), m_dialog);
+//		general_table->dual_add(fog_w->label("Fog"), m_dialog);
+		general_table->dual_add(fog_w->label("フォグ"), m_dialog);
 		general_table->dual_add(fog_w, m_dialog);
 
 		w_toggle *static_w = new w_toggle(false);
-		general_table->dual_add(static_w->label("Static Effect"), m_dialog);
+//		general_table->dual_add(static_w->label("Static Effect"), m_dialog);
+		general_table->dual_add(static_w->label("静的エフェクト"), m_dialog);
 		general_table->dual_add(static_w, m_dialog);
 
 		w_toggle *fader_w = new w_toggle(false);
-		general_table->dual_add(fader_w->label("Color Effects"), m_dialog);
+//		general_table->dual_add(fader_w->label("Color Effects"), m_dialog);
+		general_table->dual_add(fader_w->label("カラーエフェクト"), m_dialog);
 		general_table->dual_add(fader_w, m_dialog);
 
 		w_toggle *liq_w = new w_toggle(false);
-		general_table->dual_add(liq_w->label("Transparent Liquids"), m_dialog);
+//		general_table->dual_add(liq_w->label("Transparent Liquids"), m_dialog);
+		general_table->dual_add(liq_w->label("液体を半透明化"), m_dialog);
 		general_table->dual_add(liq_w, m_dialog);
 
 		w_toggle *models_w = new w_toggle(false);
-		general_table->dual_add(models_w->label("3D Models"), m_dialog);
+//		general_table->dual_add(models_w->label("3D Models"), m_dialog);
+		general_table->dual_add(models_w->label("3Dモデル"), m_dialog);
 		general_table->dual_add(models_w, m_dialog);
 
 		general_table->add_row(new w_spacer, true);
 		
 		w_toggle *blur_w = new w_toggle(false);
 		if (theSelectedRenderer == _shader_acceleration) {
-			general_table->dual_add(blur_w->label("Bloom Effects"), m_dialog);
+//			general_table->dual_add(blur_w->label("Bloom Effects"), m_dialog);
+			general_table->dual_add(blur_w->label("ブルームエフェクト"), m_dialog);
 			general_table->dual_add(blur_w, m_dialog);
 		}
 		
 		w_toggle *bump_w = new w_toggle(false);
 		if (theSelectedRenderer == _shader_acceleration) {
-			general_table->dual_add(bump_w->label("Bump Mapping"), m_dialog);
+//			general_table->dual_add(bump_w->label("Bump Mapping"), m_dialog);
+			general_table->dual_add(bump_w->label("バンプマッピング"), m_dialog);
 			general_table->dual_add(bump_w, m_dialog);
 		}
 		
 		general_table->add_row(new w_spacer(), true);
 
 		w_toggle *vsync_w = new w_toggle(false);
-		general_table->dual_add(vsync_w->label("VSync"), m_dialog);
+//		general_table->dual_add(vsync_w->label("VSync"), m_dialog);
+		general_table->dual_add(vsync_w->label("垂直同期"), m_dialog);
 		general_table->dual_add(vsync_w, m_dialog);
 
 		w_select_popup *fsaa_w = new w_select_popup ();
-		general_table->dual_add(fsaa_w->label("Full Scene Antialiasing"), m_dialog);
+//		general_table->dual_add(fsaa_w->label("Full Scene Antialiasing"), m_dialog);
+		general_table->dual_add(fsaa_w->label("フルスクリーンアンチエイリアス"), m_dialog);
 		general_table->dual_add(fsaa_w, m_dialog);
 		vector<string> fsaa_strings;
-		fsaa_strings.push_back ("Off");
-		fsaa_strings.push_back ("2x");
-		fsaa_strings.push_back ("4x");
+//		fsaa_strings.push_back ("Off");
+//		fsaa_strings.push_back ("2x");
+//		fsaa_strings.push_back ("4x");
+		fsaa_strings.push_back ("切り");
+		fsaa_strings.push_back ("２倍");
+		fsaa_strings.push_back ("４倍");
 		fsaa_w->set_labels (fsaa_strings);
 		
 		w_aniso_slider* aniso_w = new w_aniso_slider(6, 1);
-		general_table->dual_add(aniso_w->label("Anisotropic Filtering"),m_dialog);
+//		general_table->dual_add(aniso_w->label("Anisotropic Filtering"),m_dialog);
+		general_table->dual_add(aniso_w->label("異方性フィルタリング"),m_dialog);
 		general_table->dual_add(aniso_w, m_dialog);
 
 		w_toggle *srgb_w = new w_toggle(false);
 //		general_table->dual_add(srgb_w->label("Gamma-corrected Blending"), m_dialog);
+//		general_table->dual_add(srgb_w->label("ガンマ補正ブレンディング"), m_dialog);
 //		general_table->dual_add(srgb_w, m_dialog);
 
 
 		general_table->add_row(new w_spacer(), true);
 
-		general_table->dual_add_row(new w_static_text("Replacement Texture Quality"), m_dialog);
+//		general_table->dual_add_row(new w_static_text("Replacement Texture Quality"), m_dialog);
+		general_table->dual_add_row(new w_static_text("外部テスクチャのクオリティ"), m_dialog);
 	
 		w_select_popup *texture_quality_wa[OGL_NUMBER_OF_TEXTURE_TYPES];
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) texture_quality_wa[i] = NULL;
 		
 		texture_quality_wa[OGL_Txtr_Wall] =  new w_select_popup ();
-		general_table->dual_add(texture_quality_wa[OGL_Txtr_Wall]->label("Walls"), m_dialog);
+//		general_table->dual_add(texture_quality_wa[OGL_Txtr_Wall]->label("Walls"), m_dialog);
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_Wall]->label("壁"), m_dialog);
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_Wall], m_dialog);
 		
 		texture_quality_wa[OGL_Txtr_Landscape] = new w_select_popup ();
-		general_table->dual_add(texture_quality_wa[OGL_Txtr_Landscape]->label("Landscapes"), m_dialog);
+//		general_table->dual_add(texture_quality_wa[OGL_Txtr_Landscape]->label("Landscapes"), m_dialog);
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_Landscape]->label("背景"), m_dialog);
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_Landscape], m_dialog);
 
 		texture_quality_wa[OGL_Txtr_Inhabitant] = new w_select_popup ();
-		general_table->dual_add(texture_quality_wa[OGL_Txtr_Inhabitant]->label("Sprites"), m_dialog);
+//		general_table->dual_add(texture_quality_wa[OGL_Txtr_Inhabitant]->label("Sprites"), m_dialog);
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_Inhabitant]->label("スプライト"), m_dialog);
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_Inhabitant], m_dialog);
 
 		texture_quality_wa[OGL_Txtr_WeaponsInHand] = new w_select_popup ();
-		general_table->dual_add(texture_quality_wa[OGL_Txtr_WeaponsInHand]->label("Weapons in Hand"), m_dialog);
+//		general_table->dual_add(texture_quality_wa[OGL_Txtr_WeaponsInHand]->label("Weapons in Hand"), m_dialog);
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_WeaponsInHand]->label("手中の武器"), m_dialog);
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_WeaponsInHand], m_dialog);
 
 		w_select_popup *model_quality_w = new w_select_popup();
-		general_table->dual_add(model_quality_w->label("3D Model Skins"), m_dialog);
+//		general_table->dual_add(model_quality_w->label("3D Model Skins"), m_dialog);
+		general_table->dual_add(model_quality_w->label("3Dモデルのスキン"), m_dialog);
 		general_table->dual_add(model_quality_w, m_dialog);
 	
 		vector<string> tex_quality_strings;
-		tex_quality_strings.push_back ("Unlimited");
-		tex_quality_strings.push_back ("Normal");
-		tex_quality_strings.push_back ("High");
-		tex_quality_strings.push_back ("Higher");
-		tex_quality_strings.push_back ("Highest");
+//		tex_quality_strings.push_back ("Unlimited");
+//		tex_quality_strings.push_back ("Normal");
+//		tex_quality_strings.push_back ("High");
+//		tex_quality_strings.push_back ("Higher");
+//		tex_quality_strings.push_back ("Highest");
+		tex_quality_strings.push_back ("無制限");
+		tex_quality_strings.push_back ("通常");
+		tex_quality_strings.push_back ("高い");
+		tex_quality_strings.push_back ("高品位");
+		tex_quality_strings.push_back ("最高品位");
 	
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) {
 			if (texture_quality_wa[i]) {
@@ -450,17 +481,22 @@ public:
 		advanced_table->col_flags(0, placeable::kAlignRight);
 	
 		w_toggle *geforce_fix_w = new w_toggle(false);
-		advanced_table->dual_add(geforce_fix_w->label("GeForce 1-4 Texture Fix"), m_dialog);
+//		advanced_table->dual_add(geforce_fix_w->label("GeForce 1-4 Texture Fix"), m_dialog);
+		advanced_table->dual_add(geforce_fix_w->label("GeForce 1～4のテスクチャの問題を解決"), m_dialog);
 		advanced_table->dual_add(geforce_fix_w, m_dialog);
 		
 		w_toggle *use_npot_w = new w_toggle(false);
-		advanced_table->dual_add(use_npot_w->label("Non-Power-of-Two Textures"), m_dialog);
+//		advanced_table->dual_add(use_npot_w->label("Non-Power-of-Two Textures"), m_dialog);
+		advanced_table->dual_add(use_npot_w->label("非２乗テスクチャ"), m_dialog);
 		advanced_table->dual_add(use_npot_w, m_dialog);
-		advanced_table->dual_add_row(new w_static_text("Non-power-of-two textures conserve memory,"), m_dialog);
-		advanced_table->dual_add_row(new w_static_text("but cause problems on some machines."), m_dialog);
+//		advanced_table->dual_add_row(new w_static_text("Non-power-of-two textures conserve memory,"), m_dialog);
+//		advanced_table->dual_add_row(new w_static_text("but cause problems on some machines."), m_dialog);
+		advanced_table->dual_add_row(new w_static_text("非２乗テスクチャは、メモリの使用量を抑制します。"), m_dialog);
+		advanced_table->dual_add_row(new w_static_text("ただし、マシンによっては問題が発生することがあります。"), m_dialog);
 
 		advanced_table->add_row(new w_spacer(), true);
-		advanced_table->dual_add_row(new w_static_text("Texture Filtering"), m_dialog);
+//		advanced_table->dual_add_row(new w_static_text("Texture Filtering"), m_dialog);
+		advanced_table->dual_add_row(new w_static_text("テスクチャのフィルタリング"), m_dialog);
 		advanced_placer->add(advanced_table, true);
 
 		w_select* near_filter_wa[OGL_NUMBER_OF_TEXTURE_TYPES];
@@ -475,10 +511,14 @@ public:
 		}
 		
 		w_label* near_filter_labels[OGL_NUMBER_OF_TEXTURE_TYPES];
-		near_filter_labels[OGL_Txtr_Wall] = new w_label("Walls");
-		near_filter_labels[OGL_Txtr_Inhabitant] = new w_label("Sprites");
-		near_filter_labels[OGL_Txtr_Landscape] = new w_label("Landscapes");
-		near_filter_labels[OGL_Txtr_WeaponsInHand] = new w_label("Weapons in Hand / HUD");
+//		near_filter_labels[OGL_Txtr_Wall] = new w_label("Walls");
+//		near_filter_labels[OGL_Txtr_Inhabitant] = new w_label("Sprites");
+//		near_filter_labels[OGL_Txtr_Landscape] = new w_label("Landscapes");
+//		near_filter_labels[OGL_Txtr_WeaponsInHand] = new w_label("Weapons in Hand / HUD");
+		near_filter_labels[OGL_Txtr_Wall] = new w_label("壁");
+		near_filter_labels[OGL_Txtr_Inhabitant] = new w_label("スプライト");
+		near_filter_labels[OGL_Txtr_Landscape] = new w_label("背景");
+		near_filter_labels[OGL_Txtr_WeaponsInHand] = new w_label("手中の武器／HUD");
 	
 		table_placer *ftable = new table_placer(3, get_theme_space(ITEM_WIDGET));
 		
@@ -487,8 +527,10 @@ public:
 		ftable->col_flags(2, placeable::kAlignLeft);
 		
 		ftable->add(new w_spacer(), true);
-		ftable->dual_add(new w_label("Near"), m_dialog);
-		ftable->dual_add(new w_label("Distant"), m_dialog);
+//		ftable->dual_add(new w_label("Near"), m_dialog);
+//		ftable->dual_add(new w_label("Distant"), m_dialog);
+		ftable->dual_add(new w_label("近距離"), m_dialog);
+		ftable->dual_add(new w_label("遠距離"), m_dialog);
 		
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; ++i)
 		{
@@ -520,23 +562,33 @@ public:
 		}
 
 		w_label *texture_labels[OGL_NUMBER_OF_TEXTURE_TYPES];
-		texture_labels[OGL_Txtr_Wall] = new w_label("Walls");
-		texture_labels[OGL_Txtr_Landscape] = new w_label("Landscapes");
-		texture_labels[OGL_Txtr_Inhabitant] = new w_label("Sprites");
-		texture_labels[OGL_Txtr_WeaponsInHand] = new w_label("Weapons in Hand / HUD");
+//		texture_labels[OGL_Txtr_Wall] = new w_label("Walls");
+//		texture_labels[OGL_Txtr_Landscape] = new w_label("Landscapes");
+//		texture_labels[OGL_Txtr_Inhabitant] = new w_label("Sprites");
+//		texture_labels[OGL_Txtr_WeaponsInHand] = new w_label("Weapons in Hand / HUD");
+		texture_labels[OGL_Txtr_Wall] = new w_label("壁");
+		texture_labels[OGL_Txtr_Landscape] = new w_label("背景");
+		texture_labels[OGL_Txtr_Inhabitant] = new w_label("スプライト");
+		texture_labels[OGL_Txtr_WeaponsInHand] = new w_label("手中の武器／HUD");
 
-		advanced_placer->dual_add(new w_static_text("Built-in Texture Size and Depth"), m_dialog);
-		advanced_placer->dual_add(new w_static_text("(reduce for machines with low VRAM)"), m_dialog);
+//		advanced_placer->dual_add(new w_static_text("Built-in Texture Size and Depth"), m_dialog);
+//		advanced_placer->dual_add(new w_static_text("(reduce for machines with low VRAM)"), m_dialog);
+		advanced_placer->dual_add(new w_static_text("ビルドインのテスクチャのサイズと色深度"), m_dialog);
+		advanced_placer->dual_add(new w_static_text("（VRAMの量が少ないマシンでは、減らすことを推奨します）"), m_dialog);
 
 		vector<string> tex_reso_strings;
-		tex_reso_strings.push_back ("Full");
+//		tex_reso_strings.push_back ("Full");
+		tex_reso_strings.push_back ("フル");
 		tex_reso_strings.push_back ("1/2");
 		tex_reso_strings.push_back ("1/4");
 
 		vector<string> tex_depth_strings;
-		tex_depth_strings.push_back ("32-bit");
-		tex_depth_strings.push_back ("16-bit");
-		tex_depth_strings.push_back ("8-bit");
+//		tex_depth_strings.push_back ("32-bit");
+//		tex_depth_strings.push_back ("16-bit");
+//		tex_depth_strings.push_back ("8-bit");
+		tex_depth_strings.push_back ("32ビット");
+		tex_depth_strings.push_back ("16ビット");
+		tex_depth_strings.push_back ("8ビット");
 
 		table_placer *table = new table_placer(3, get_theme_space(ITEM_WIDGET));
 
@@ -545,8 +597,10 @@ public:
 		table->col_flags(2, placeable::kAlignLeft);
 
 		table->add(new w_spacer(), true);
-		table->dual_add(new w_label("Size"), m_dialog);
-		table->dual_add(new w_label("Depth"), m_dialog);
+//		table->dual_add(new w_label("Size"), m_dialog);
+//		table->dual_add(new w_label("Depth"), m_dialog);
+		table->dual_add(new w_label("サイズ"), m_dialog);
+		table->dual_add(new w_label("色深度"), m_dialog);
 
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++)
 		{
@@ -573,10 +627,12 @@ public:
 		placer->add(new w_spacer(), true);
 
 		horizontal_placer *button_placer = new horizontal_placer;
-		w_button* ok_w = new w_button("ACCEPT");
+//		w_button* ok_w = new w_button("ACCEPT");
+		w_button* ok_w = new w_button("了承");
 		button_placer->dual_add(ok_w, m_dialog);
 		
-		w_button* cancel_w = new w_button("CANCEL");
+//		w_button* cancel_w = new w_button("CANCEL");
+		w_button* cancel_w = new w_button("キャンセル");
 		button_placer->dual_add(cancel_w, m_dialog);
 		placer->add(button_placer, true);
 
