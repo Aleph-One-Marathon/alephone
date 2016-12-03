@@ -220,19 +220,19 @@ bool network_gather(bool inResumingGame)
 						char message[1024];
 						if (e.code() == MetaserverClient::LoginDeniedException::BadUserOrPassword)
 						{
-							strncpy(message, "Login denied: bad username or password. Your game could not be advertised on the Internet.", 1024);
+							strncpy(message, "ログイン拒否：ユーザー名もしくは、パスワードが間違っています。インターネット上にゲームの募集広告を出すことができませんでした。", 1024);
 						}
 						else if (e.code() == MetaserverClient::LoginDeniedException::UserAlreadyLoggedIn)
 						{
-							strncpy(message, "Login denied: that user is already logged in. Your game could not be advertised on the Internet.", 1024);
+							strncpy(message, "ログイン拒否：そのユーザは、すでにログインしています。インターネット上にゲームの募集広告を出すことができませんでした。", 1024);
 						}
 						else if (e.code() == MetaserverClient::LoginDeniedException::AccountAlreadyLoggedIn)
 						{
-							strncpy(message, "Login denied: that account is already logged in. Your game could not be advertised on the Internet.", 1024);
+							strncpy(message, "ログイン拒否：そのアカウントは、すでにログインしています。インターネット上にゲームの募集広告を出すことができませんでした。", 1024);
 						}
 						else if (e.code() == MetaserverClient::LoginDeniedException::RoomFull)
 						{
-							strncpy(message, "Login denied: room full! Your game could not be advertised on the Internet.", 1024);
+							strncpy(message, "ログイン拒否：ルームが満室です！インターネット上にゲームの募集広告を出すことができませんでした。", 1024);
 						}
 						else if (e.code() == MetaserverClient::LoginDeniedException::AccountLocked)
 						{
@@ -240,7 +240,7 @@ bool network_gather(bool inResumingGame)
 						}
 						else
 						{
-							sprintf(message, "There was a problem connecting to the server that tracks Internet games (%s). Please try again later.", e.what());
+							sprintf(message, "ログイン拒否：そのアカウントはロックされています。インターネット上にゲームの募集広告を出すことができませんでした。", e.what());
 						}
 
 						alert_user(message, 0);
@@ -303,8 +303,8 @@ GatherDialog::~GatherDialog()
 bool GatherDialog::GatherNetworkGameByRunning ()
 {
 	vector<string> chat_choice_labels;
-	chat_choice_labels.push_back ("with joiners");
-	chat_choice_labels.push_back ("with Internet players");
+	chat_choice_labels.push_back ("参加者と");
+	chat_choice_labels.push_back ("インターネットのプレイヤーと");
 	m_chatChoiceWidget->set_labels (chat_choice_labels);
 
 	m_cancelWidget->set_callback(boost::bind(&GatherDialog::Stop, this, false));
@@ -561,8 +561,8 @@ const int JoinDialog::JoinNetworkGameByRunning ()
 	join_result = kNetworkJoinFailedUnjoined;
 	
 	vector<string> chat_choice_labels;
-	chat_choice_labels.push_back ("with joiners/gatherer");
-	chat_choice_labels.push_back ("with Internet players");
+	chat_choice_labels.push_back ("参加者／募集者と");
+	chat_choice_labels.push_back ("インターネットのプレイヤーと");
 	m_chatChoiceWidget->set_labels (chat_choice_labels);
 
 	m_colourWidget->set_labels (kTeamColorsStringSetID);
@@ -776,27 +776,27 @@ void JoinDialog::getJoinAddressFromMetaserver ()
 		char message[1024];
 		if (e.code() == MetaserverClient::LoginDeniedException::BadUserOrPassword)
 		{
-			strncpy(message, "Login denied: bad username or password.", 1024);
+			strcpy(message, "ログイン拒否：不正なユーザ名もしくは、パスワードです。");
 		}
 		else if (e.code() == MetaserverClient::LoginDeniedException::UserAlreadyLoggedIn)
 		{
-			strncpy(message, "Login denied: that user is already logged in.", 1024);
+			strcpy(message, "ログイン拒否：そのユーザは、すでにログインしています。");
 		}
 		else if (e.code() == MetaserverClient::LoginDeniedException::AccountAlreadyLoggedIn)
 		{
-			strncpy(message, "Login denied: that account is already logged in.", 1024);
+			strcpy(message, "ログイン拒否：そのアカウントは、すでにログインしています。");
 		}
 		else if (e.code() == MetaserverClient::LoginDeniedException::RoomFull)
 		{
-			strncpy(message, "Login denied: room is full!?", 1024);
+			strcpy(message, "ログイン拒否：ルームが満席！？");
 		}
 		else if (e.code() == MetaserverClient::LoginDeniedException::AccountLocked)
 		{
-			strncpy(message, "Login denied: your account is locked.", 1024);
+			strcpy(message, "ログイン拒否：あなたのアカウントはロックされています。");
 		}
 		else
 		{
-			sprintf(message, "There was a problem connecting to the server that tracks Internet games (%s). Please try again later.", e.what());
+			sprintf(message, "インターネット上のサーバーへの接続時に問題が発生しました：%s　お手数ですが、しばらくたってからもう一度やり直してください。", e.what());
 		}
 
 		alert_user(message, 0);
@@ -2415,7 +2415,7 @@ public:
 	SdlGatherDialog()
 	{
 		vertical_placer *placer = new vertical_placer;
-		placer->dual_add(new w_title("GATHER NETWORK GAME"), m_dialog);
+		placer->dual_add(new w_title("ネットワークゲームの募集"), m_dialog);
 		placer->add(new w_spacer());
 	
 		// m_dialog.add(new w_static_text("Players on Network"));
@@ -2425,7 +2425,7 @@ public:
 	
 		horizontal_placer *autogather_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET), true);
 		w_toggle* autogather_w = new w_toggle(false);
-		autogather_placer->dual_add(autogather_w->label("Auto-Gather"), m_dialog);
+		autogather_placer->dual_add(autogather_w->label("自動募集"), m_dialog);
 		autogather_placer->dual_add(autogather_w, m_dialog);
 
 		placer->add(autogather_placer, true);
@@ -2435,17 +2435,17 @@ public:
 		placer->dual_add(players_w, m_dialog);
 
 		horizontal_placer *button_placer = new horizontal_placer;
-		w_button* play_button_w = new w_button("PLAY");
+		w_button* play_button_w = new w_button("プレイ");
 		button_placer->dual_add(play_button_w, m_dialog);
 
-		w_button* cancel_w = new w_button("CANCEL");
+		w_button* cancel_w = new w_button("キャンセル");
 		button_placer->dual_add(cancel_w, m_dialog);
 
 		placer->add(button_placer, true);
 
 		horizontal_placer *chat_choice_placer = new horizontal_placer;
 		w_select_popup* chat_choice_w = new w_select_popup();
-		chat_choice_placer->dual_add(chat_choice_w->label("chat:"), m_dialog);
+		chat_choice_placer->dual_add(chat_choice_w->label("チャット："), m_dialog);
 		chat_choice_placer->dual_add(chat_choice_w, m_dialog);
 		placer->add(chat_choice_placer, true);
 
@@ -2456,7 +2456,7 @@ public:
 		chatentry_w->enable_mac_roman_input();
 
 		horizontal_placer *say_placer = new horizontal_placer;
-		say_placer->dual_add(chatentry_w->label("Say:"), m_dialog);
+		say_placer->dual_add(chatentry_w->label("発言:"), m_dialog);
 		say_placer->add_flags(placeable::kFill);
 		say_placer->dual_add(chatentry_w, m_dialog);
 
@@ -2515,7 +2515,7 @@ public:
 		if ((m & KMOD_ALT) || (m & KMOD_GUI)) skipToMetaserver = !skipToMetaserver;
 
 		vertical_placer *placer = new vertical_placer;
-		placer->dual_add(new w_title("JOIN NETWORK GAME"), m_dialog);
+		placer->dual_add(new w_title("ネットワークゲームに参加"), m_dialog);
 		placer->add(new w_spacer(), true);
 
 		table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -2523,15 +2523,15 @@ public:
 
 		w_text_entry *name_w = new w_text_entry(PREFERENCES_NAME_LENGTH, "");
 		name_w->enable_mac_roman_input();
-		table->dual_add(name_w->label("Name"), m_dialog);
+		table->dual_add(name_w->label("名前"), m_dialog);
 		table->dual_add(name_w, m_dialog);
 	
 		w_player_color *pcolor_w = new w_player_color(0);
-		table->dual_add(pcolor_w->label("Color"), m_dialog);
+		table->dual_add(pcolor_w->label("色"), m_dialog);
 		table->dual_add(pcolor_w, m_dialog);
 
 		w_player_color *tcolor_w = new w_player_color(0);
-		table->dual_add(tcolor_w->label("Team Color"), m_dialog);
+		table->dual_add(tcolor_w->label("チーム色"), m_dialog);
 		table->dual_add(tcolor_w, m_dialog);
 
 		placer->add(table, true);
@@ -2545,21 +2545,21 @@ public:
 		
 		prejoin_table->add_row(new w_spacer(), true);
 		
-		w_button* join_by_metaserver_w = new w_button("FIND INTERNET GAME");
+		w_button* join_by_metaserver_w = new w_button("インターネットゲームを探す");
 		prejoin_table->dual_add_row(join_by_metaserver_w, m_dialog);
 		prejoin_table->add_row(new w_spacer(), true);
 		
 		w_toggle* hint_w = new w_toggle(false);
-		prejoin_table->dual_add(hint_w->label("Join by address"), m_dialog);
+		prejoin_table->dual_add(hint_w->label("アドレス入力で参加"), m_dialog);
 		prejoin_table->dual_add(hint_w, m_dialog);
 
 		w_text_entry* hint_address_w = new w_text_entry(kJoinHintingAddressLength, "");
-		prejoin_table->dual_add(hint_address_w->label("Join address"), m_dialog);
+		prejoin_table->dual_add(hint_address_w->label("アドレス"), m_dialog);
 		prejoin_table->dual_add(hint_address_w, m_dialog);
 
 		prejoin_table->add_row(new w_spacer(), true);
 
-		w_button* join_w = new w_button("JOIN LOCAL GAME");
+		w_button* join_w = new w_button("ローカルゲームに参加");
 		prejoin_table->dual_add_row(join_w, m_dialog);
 		
 		prejoin_placer->add(prejoin_table, true);
@@ -2581,7 +2581,7 @@ public:
 		horizontal_placer *chat_choice_placer = new horizontal_placer;
 
 		w_select_popup* chat_choice_w = new w_select_popup();
-		chat_choice_placer->dual_add(chat_choice_w->label("chat:"), m_dialog);
+		chat_choice_placer->dual_add(chat_choice_w->label("チャット:"), m_dialog);
 		chat_choice_placer->dual_add(chat_choice_w, m_dialog);
 
 		postjoin_placer->add(chat_choice_placer, true);
@@ -2593,7 +2593,7 @@ public:
 		chatentry_w->enable_mac_roman_input();
 
 		horizontal_placer *say_placer = new horizontal_placer;
-		say_placer->dual_add(chatentry_w->label("Say:"), m_dialog);
+		say_placer->dual_add(chatentry_w->label("発言:"), m_dialog);
 		say_placer->add_flags(placeable::kFill);
 		say_placer->dual_add(chatentry_w, m_dialog);
 
@@ -2608,7 +2608,7 @@ public:
 
 		horizontal_placer *button_placer = new horizontal_placer;
 		
-		w_button* cancel_w = new w_button("CANCEL");
+		w_button* cancel_w = new w_button("キャンセル");
 		button_placer->dual_add(cancel_w, m_dialog);
 
 		placer->add(button_placer, true);
@@ -2683,7 +2683,7 @@ public:
 	{
 		vertical_placer *placer = new vertical_placer;
 
-		placer->dual_add(new w_title("SETUP NETWORK GAME"), m_dialog);
+		placer->dual_add(new w_title("ネットワークゲームのセットアップ"), m_dialog);
 		placer->add(new w_spacer(), true);
 
 		table_placer *table = new table_placer(2, 10);
@@ -2692,40 +2692,40 @@ public:
 		
 		table_placer *player_table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 		player_table->col_flags(0, placeable::kAlignRight);
-		player_table->dual_add_row(new w_static_text("Appearance"), m_dialog);
+		player_table->dual_add_row(new w_static_text("外観"), m_dialog);
 		w_text_entry *name_w = new w_text_entry (PREFERENCES_NAME_LENGTH, "");
 		name_w->enable_mac_roman_input();
 
-		player_table->dual_add(name_w->label("Name"), m_dialog);
+		player_table->dual_add(name_w->label("名前"), m_dialog);
 		player_table->dual_add(name_w, m_dialog);
 
 		w_player_color *pcolor_w = new w_player_color (player_preferences->color);
-		player_table->dual_add(pcolor_w->label("Color"), m_dialog);
+		player_table->dual_add(pcolor_w->label("色"), m_dialog);
 		player_table->dual_add(pcolor_w, m_dialog);
 
 		w_player_color *tcolor_w = new w_player_color (player_preferences->team);
-		player_table->dual_add(tcolor_w->label("Team"), m_dialog);
+		player_table->dual_add(tcolor_w->label("チーム"), m_dialog);
 		player_table->dual_add(tcolor_w, m_dialog);
 
-		right_placer->dual_add(new w_static_text("Network"), m_dialog);
+		right_placer->dual_add(new w_static_text("ネットワーク"), m_dialog);
 		table_placer *network_table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 		network_table->col_flags(1, placeable::kAlignLeft);
 
 		w_toggle *advertise_on_metaserver_w = new w_toggle (sAdvertiseGameOnMetaserver);
 		network_table->dual_add(advertise_on_metaserver_w, m_dialog);
-		network_table->dual_add(advertise_on_metaserver_w->label("Advertise Game on Internet"), m_dialog);
+		network_table->dual_add(advertise_on_metaserver_w->label("インターネットにゲーム募集を表\示"), m_dialog);
 
 		w_toggle *use_upnp_w = new w_toggle (true);
 		network_table->dual_add(use_upnp_w, m_dialog);
-		network_table->dual_add(use_upnp_w->label("Configure UPnP Router"), m_dialog);
+		network_table->dual_add(use_upnp_w->label("UPnPルーターの設定"), m_dialog);
 
 		w_toggle* realtime_audio_w = new w_toggle(network_preferences->allow_microphone);
 		network_table->dual_add(realtime_audio_w, m_dialog);
-		network_table->dual_add(realtime_audio_w->label("Allow Microphone"), m_dialog);
+		network_table->dual_add(realtime_audio_w->label("マイクを有効化"), m_dialog);
 
 		w_select_popup *latency_tolerance_w = new w_select_popup();
 		horizontal_placer *latency_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET));
-		latency_placer->dual_add(latency_tolerance_w->label("Latency Tolerance"), m_dialog);
+		latency_placer->dual_add(latency_tolerance_w->label("許容遅延誤差"), m_dialog);
 		latency_placer->dual_add(latency_tolerance_w, m_dialog);
 		
 		network_table->add(new w_spacer(), true);
@@ -2734,41 +2734,41 @@ public:
 		right_placer->add(network_table, true);
 
 		player_table->add_row(new w_spacer(), true);
-		player_table->dual_add_row(new w_static_text("Game"), m_dialog);
+		player_table->dual_add_row(new w_static_text("ゲーム"), m_dialog);
 
 		// Could eventually store this path in network_preferences somewhere, so to have separate map file
 		// prefs for single- and multi-player.
-		w_file_chooser* map_w = new w_file_chooser ("Choose Map", _typecode_scenario);
+		w_file_chooser* map_w = new w_file_chooser ("マップ選択", _typecode_scenario);
 #ifndef MAC_APP_STORE
-		player_table->dual_add(map_w->label("Map"), m_dialog);
+		player_table->dual_add(map_w->label("マップ"), m_dialog);
 		player_table->dual_add(map_w, m_dialog);
 #endif
 
 		w_select_popup* entry_point_w = new w_select_popup ();
-		player_table->dual_add(entry_point_w->label("Level"), m_dialog);
+		player_table->dual_add(entry_point_w->label("レベル"), m_dialog);
 		player_table->dual_add(entry_point_w, m_dialog);
 
 		w_select_popup* game_type_w = new w_select_popup ();
-		player_table->dual_add(game_type_w->label("Game Type"), m_dialog);
+		player_table->dual_add(game_type_w->label("ゲームの種類"), m_dialog);
 		player_table->dual_add(game_type_w, m_dialog);
 
 		w_select *diff_w = new w_select(network_preferences->difficulty_level, NULL);
-		player_table->dual_add(diff_w->label("Difficulty"), m_dialog);
+		player_table->dual_add(diff_w->label("難易度"), m_dialog);
 		player_table->dual_add(diff_w, m_dialog);
 
 		left_placer->add(player_table, true);
 
 #ifndef MAC_APP_STORE
 		network_table->add_row(new w_spacer(), true);
-		network_table->dual_add_row(new w_static_text("Net Script"), m_dialog);
+		network_table->dual_add_row(new w_static_text("ネットスクリプト"), m_dialog);
 #endif
 		w_enabling_toggle* use_netscript_w = new w_enabling_toggle (network_preferences->use_netscript);
 #ifndef MAC_APP_STORE
 		network_table->dual_add(use_netscript_w, m_dialog);
-		network_table->dual_add(use_netscript_w->label("Use Netscript"), m_dialog);
+		network_table->dual_add(use_netscript_w->label("ネットスクリプトを使用"), m_dialog);
 #endif
 
-		w_file_chooser* choose_script_w = new w_file_chooser ("Choose Script", _typecode_netscript);
+		w_file_chooser* choose_script_w = new w_file_chooser ("スクリプトを使用", _typecode_netscript);
 #ifndef MAC_APP_STORE
 		network_table->add(new w_spacer(), true);
 		network_table->dual_add(choose_script_w, m_dialog);
@@ -2778,82 +2778,82 @@ public:
 		left_placer->add(new w_spacer(), true);
 		table_placer *options_table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 		options_table->col_flags(1, placeable::kAlignLeft);
-		options_table->dual_add_row(new w_static_text("Options"), m_dialog);
+		options_table->dual_add_row(new w_static_text("オプション"), m_dialog);
 
 		w_toggle *aliens_w = new w_toggle((network_preferences->game_options & _monsters_replenish) != 0);
 		options_table->dual_add(aliens_w, m_dialog);
-		options_table->dual_add(aliens_w->label("Aliens"), m_dialog);
+		options_table->dual_add(aliens_w->label("エイリアン"), m_dialog);
 
 		w_toggle *live_w = new w_toggle((network_preferences->game_options & _live_network_stats) != 0);
 		options_table->dual_add(live_w, m_dialog);
-		options_table->dual_add(live_w->label("Live Carnage Reporting"), m_dialog);
+		options_table->dual_add(live_w->label("ライブ虐殺レポート"), m_dialog);
 
 		w_toggle *teams_w = new w_toggle(!(network_preferences->game_options & _force_unique_teams));
 		options_table->dual_add(teams_w, m_dialog);
-		options_table->dual_add(teams_w->label("Teams"), m_dialog);
+		options_table->dual_add(teams_w->label("チーム"), m_dialog);
 
 		w_toggle *drop_w = new w_toggle(!(network_preferences->game_options & _burn_items_on_death));
 		options_table->dual_add(drop_w, m_dialog);
-		options_table->dual_add(drop_w->label("Dead Players Drop Items"), m_dialog);
+		options_table->dual_add(drop_w->label("死んだプレイヤーはアイテムを落とす"), m_dialog);
 
 		w_toggle *sensor_w = new w_toggle((network_preferences->game_options & _motion_sensor_does_not_work) != 0);
 		options_table->dual_add(sensor_w, m_dialog);
-		options_table->dual_add(sensor_w->label("Disable Motion Sensor"), m_dialog);
+		options_table->dual_add(sensor_w->label("モーションセンサーを無効化"), m_dialog);
 
 		w_toggle *pen_die_w = new w_toggle((network_preferences->game_options & _dying_is_penalized) != 0);
 		options_table->dual_add(pen_die_w, m_dialog);
-		options_table->dual_add(pen_die_w->label("Penalize Dying (10 seconds)"), m_dialog);
+		options_table->dual_add(pen_die_w->label("死亡ペナルティ(10秒)"), m_dialog);
 
 		w_toggle *pen_sui_w = new w_toggle((network_preferences->game_options & _suicide_is_penalized) != 0);
 		options_table->dual_add(pen_sui_w, m_dialog);
-		options_table->dual_add(pen_sui_w->label("Penalize Suicide (15 seconds)"), m_dialog);
+		options_table->dual_add(pen_sui_w->label("自殺ペナルティ(15秒)"), m_dialog);
 
 		left_placer->add(options_table, true);
 
 		network_table->add_row(new w_spacer(), true);
-		network_table->dual_add_row(new w_static_text("Cheats / Extras"), m_dialog);
+		network_table->dual_add_row(new w_static_text("チート／その他"), m_dialog);
 		w_toggle *zoom_w = new w_toggle(true);
 		network_table->dual_add(zoom_w, m_dialog);
-		network_table->dual_add(zoom_w->label("Allow Zoom"), m_dialog);
+		network_table->dual_add(zoom_w->label("ズームを許可"), m_dialog);
 	
 		w_toggle *crosshairs_w = new w_toggle(true);
 		network_table->dual_add(crosshairs_w, m_dialog);
-		network_table->dual_add(crosshairs_w->label("Allow Crosshairs"), m_dialog);
+		network_table->dual_add(crosshairs_w->label("クロスヘアーを許可"), m_dialog);
 	
 		w_toggle *overlay_w = new w_toggle(true);
 		network_table->dual_add(overlay_w, m_dialog);
-		network_table->dual_add(overlay_w->label("Allow Overlay Map"), m_dialog);
+		network_table->dual_add(overlay_w->label("オーバーレイマップを許可"), m_dialog);
 		
 		w_toggle *lara_croft_w = new w_toggle(true);
 		network_table->dual_add(lara_croft_w, m_dialog);
-		network_table->dual_add(lara_croft_w->label("Allow Chase Cam"), m_dialog);
+		network_table->dual_add(lara_croft_w->label("追跡カメラを許可"), m_dialog);
 
 		w_toggle *carnage_messages_w = new w_toggle(true);
 		network_table->dual_add(carnage_messages_w, m_dialog);
-		network_table->dual_add(carnage_messages_w->label("Allow Carnage Messages"), m_dialog);
+		network_table->dual_add(carnage_messages_w->label("殺傷メッセージを許可"), m_dialog);
 
 		w_toggle *saving_level_w = new w_toggle(true);
 #ifndef MAC_APP_STORE
 		network_table->dual_add(saving_level_w, m_dialog);
-		network_table->dual_add(saving_level_w->label("Allow .save level"), m_dialog);
+		network_table->dual_add(saving_level_w->label("レベルの保存を許可"), m_dialog);
 #endif
 
 		right_placer->add(new w_spacer(), true);
-		right_placer->dual_add(new w_static_text("Duration"), m_dialog);
+		right_placer->dual_add(new w_static_text("期間"), m_dialog);
 		table_placer *limits_table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 		limits_table->col_flags(0, placeable::kAlignRight);
 		
 		w_select* endcondition_w = new w_select(kTimeLimit, NULL);
-		limits_table->dual_add(endcondition_w->label("Game Ends At"), m_dialog);
+		limits_table->dual_add(endcondition_w->label("ゲームの終了条件"), m_dialog);
 		limits_table->dual_add(endcondition_w, m_dialog);
 
 		w_number_entry*	timelimit_w = new w_number_entry (network_preferences->time_limit);
-		limits_table->dual_add(timelimit_w->label("Time Limit (minutes)"), m_dialog);
+		limits_table->dual_add(timelimit_w->label("時間制限（分）"), m_dialog);
 		limits_table->dual_add(timelimit_w, m_dialog);
 
 		// The name of this widget (score limit) will be replaced by Kill Limit, Flag Capture Limit, etc.
 		w_number_entry*	scorelimit_w = new w_number_entry (network_preferences->kill_limit);
-		limits_table->dual_add(scorelimit_w->label("Kill / Score Limit"), m_dialog);
+		limits_table->dual_add(scorelimit_w->label("殺傷・点数制限"), m_dialog);
 		limits_table->dual_add(scorelimit_w, m_dialog);
 		right_placer->add(limits_table, true);
 		
@@ -2865,9 +2865,9 @@ public:
 		placer->add(new w_spacer(), true);
 
 		horizontal_placer *button_placer = new horizontal_placer;
-		w_button* ok_w = new w_button ("OK");
+		w_button* ok_w = new w_button ("了承");
 		button_placer->dual_add(ok_w, m_dialog);
-		w_button* cancel_w = new w_button ("CANCEL");
+		w_button* cancel_w = new w_button ("キャンセル");
 		button_placer->dual_add(cancel_w, m_dialog);
 		placer->add(button_placer, true);
 
@@ -3119,13 +3119,13 @@ network_gather(bool) {
 
     dialog d;
 
-    d.add(new w_title("TEST MICROPHONE"));
+    d.add(new w_title("マイクのテスト"));
 
-    w_toggle*   onoff_w = new w_toggle("Active", 0);
+    w_toggle*   onoff_w = new w_toggle("アクティブ", 0);
     onoff_w->set_selection_changed_callback(respond_to_microphone_toggle);
     d.add(onoff_w);
 
-    d.add(new w_button("DONE", dialog_ok, &d));
+    d.add(new w_button("完了", dialog_ok, &d));
 
     d.run();
 
