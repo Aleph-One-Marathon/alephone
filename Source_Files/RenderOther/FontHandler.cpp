@@ -106,7 +106,7 @@ void FontSpecifier::Update()
 	TextSpec Spec;
 	Spec.size = Size;
 	Spec.style = Style;
-	Spec.adjust_height = AdjustLineHeight;
+	Spec.adjust_height = -4;
     
 	// Simply implements format "#<value>"; may want to generalize this
 	if (File[0] == '#') 
