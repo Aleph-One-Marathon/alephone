@@ -2980,27 +2980,29 @@ static void show_movie_frame(SDL_Surface* frame, int x, int y, unsigned int w, u
 static SDL_mutex *movie_audio_mutex = NULL;
 static const int AUDIO_BUF_SIZE = 10;
 static SDL_ffmpegAudioFrame *aframes[AUDIO_BUF_SIZE];
-static uint64_t movie_sync = 0;
-void movie_audio_callback(void *data, Uint8 *stream, int length)
-{
-	if (movie_audio_mutex && SDL_LockMutex(movie_audio_mutex) != -1)
-	{
-		if (aframes[0]->size == length)
-		{
-			movie_sync = aframes[0]->pts;
-			memcpy(stream, aframes[0]->buffer, aframes[0]->size);
-			aframes[0]->size = 0;
-			
-			SDL_ffmpegAudioFrame *f = aframes[0];
-			for (int i = 1; i < AUDIO_BUF_SIZE; i++)
-				aframes[i - 1] = aframes[i];
-			aframes[AUDIO_BUF_SIZE - 1] = f;
+static uint32 tick = 0;
+static volatile bool done = false;
+int play_audio(void* sf) {
+	SDL_ffmpegFile *sffile = static_cast<SDL_ffmpegFile *>(sf);
+	SDL_LockMutex(movie_audio_mutex);
+	while( ! done) {
+		for (int i = 0; i < AUDIO_BUF_SIZE; i++)
+			{
+				if (!aframes[i]->size)
+					{
+						SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
+					}
+				}
+		if (!aframes[AUDIO_BUF_SIZE - 1]->size && aframes[AUDIO_BUF_SIZE - 1]->last) {
+			SDL_UnlockMutex(movie_audio_mutex);
+			return 0;
 		}
-		else
-		{
-			memset(stream, 0, length);
+		for(int i = 0; i < AUDIO_BUF_SIZE; i++ ) {
+			uint32 now = SDL_GetTicks();
+			SDL_Delay( std::max( (int64_t)0, aframes[i]->pts - (now - tick)  ) );
+			SDL_QueueAudio(1, aframes[i]->buffer, aframes[i]->size);
+			aframes[i]->size = 0;
 		}
-		SDL_UnlockMutex(movie_audio_mutex);
 	}
 }
 #endif
@@ -3059,7 +3061,7 @@ void show_movie(short index)
 		if (astream)
 		{
 			movie_audio_mutex = SDL_CreateMutex();
-			SDL_AudioSpec specs = SDL_ffmpegGetAudioSpec(sffile, 512, movie_audio_callback);
+			SDL_AudioSpec specs = SDL_ffmpegGetAudioSpec(sffile, 4096, 0);
 			if (SDL_OpenAudio(&specs, 0) >= 0)
 			{
 				int frameSize = specs.channels * specs.samples * 2;
@@ -3078,6 +3080,11 @@ void show_movie(short index)
 		
 		SDL_PauseAudio(false);
 		bool done = false;
+		uint32 tick = SDL_GetTicks();
+		if (astream)
+			{
+				SDL_CreateThread(play_audio, "", sffile);
+			}
 		while (!done)
 		{
 			SDL_Event event;
@@ -3093,20 +3100,6 @@ void show_movie(short index)
 				}
 			}
 			
-			if (astream)
-			{
-				SDL_LockMutex(movie_audio_mutex);
-				for (int i = 0; i < AUDIO_BUF_SIZE; i++)
-				{
-					if (!aframes[i]->size)
-					{
-						SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
-					}
-				}
-				if (!aframes[AUDIO_BUF_SIZE - 1]->size && aframes[AUDIO_BUF_SIZE - 1]->last)
-					done = true;
-				SDL_UnlockMutex(movie_audio_mutex);
-			}
 			
 			if (vframe)
 			{
@@ -3114,31 +3107,27 @@ void show_movie(short index)
 				{
 					SDL_ffmpegGetVideoFrame(sffile, vframe);
 				}
-				else if (vframe->pts <= movie_sync)
-				{
 #ifdef HAVE_OPENGL
-					if (OGL_IsActive())
+				uint32 now = SDL_GetTicks();
+				SDL_Delay( std::max( (int64_t)0, vframe->pts - (now - tick)  ) );
+				if (OGL_IsActive())
 					{
 						OGL_Blitter::BoundScreen();
 						show_movie_blitter.Load(*(vframe->surface));
 						show_movie_blitter.Draw(dst_rect);
 						show_movie_blitter.Unload();
 						MainScreenSwap();
+						
 					}
-					else
+				else
 #endif
 					{
 						SDL_BlitSurface(vframe->surface, 0, MainScreenSurface(), &dst_rect);
 						MainScreenUpdateRects(1, &dst_rect);
 					}
-					vframe->ready = 0;
-					if (vframe->last)
-						done = true;
-				}
-				else 
-				{
-					SDL_Delay(MIN(30, vframe->pts - movie_sync));
-				}
+				vframe->ready = 0;
+				if (vframe->last)
+					done = true;
 			}
 		}
 		
