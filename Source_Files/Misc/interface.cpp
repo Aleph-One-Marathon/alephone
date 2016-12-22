@@ -2988,22 +2988,23 @@ int play_audio(void* sf) {
 	while( ! done) {
 		for (int i = 0; i < AUDIO_BUF_SIZE; i++)
 			{
-				if (!aframes[i]->size)
+				if (! done && !aframes[i]->size)
 					{
 						SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
 					}
 				}
 		if (!aframes[AUDIO_BUF_SIZE - 1]->size && aframes[AUDIO_BUF_SIZE - 1]->last) {
-			SDL_UnlockMutex(movie_audio_mutex);
-			return 0;
+			break;
 		}
-		for(int i = 0; i < AUDIO_BUF_SIZE; i++ ) {
+		for(int i = 0; ! done && i < AUDIO_BUF_SIZE; i++ ) {
 			uint32 now = SDL_GetTicks();
 			SDL_Delay( std::max( (int64_t)0, aframes[i]->pts - (now - tick)  ) );
 			SDL_QueueAudio(1, aframes[i]->buffer, aframes[i]->size);
 			aframes[i]->size = 0;
 		}
 	}
+	SDL_UnlockMutex(movie_audio_mutex);
+	return 0;
 }
 #endif
 
