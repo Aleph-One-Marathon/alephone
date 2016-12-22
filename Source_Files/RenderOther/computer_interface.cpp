@@ -437,13 +437,12 @@ static void	set_text_face(struct text_face_data *text_face)
 static bool calculate_line(char *base_text, short width, short start_index, short text_end_index, short *end_index)
 {
 	bool done = false;
-
 	if (base_text[start_index]) {
 		int index = start_index, running_width = 0;
 		
 		// terminal_font no longer a global, since it may change
 		font_info *terminal_font = GetInterfaceFont(_computer_interface_font);
-		TTF_Font* font = ((ttf_font_info*)terminal_font)->m_styles[styleNormal];
+		TTF_Font* font = ((ttf_font_info*)terminal_font)->m_styles[styleBold|styleItalic];
 		while (running_width < width && base_text[index] && base_text[index] != MAC_LINE_END) {
 			int advance;
 			uint16 c = sjisChar(base_text + index, &index);
