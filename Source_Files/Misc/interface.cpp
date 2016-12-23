@@ -2979,32 +2979,30 @@ static void show_movie_frame(SDL_Surface* frame, int x, int y, unsigned int w, u
 #ifdef HAVE_FFMPEG
 static SDL_mutex *movie_audio_mutex = NULL;
 static const int AUDIO_BUF_SIZE = 10;
-static SDL_ffmpegAudioFrame *aframes[AUDIO_BUF_SIZE];
+static std::deque<SDL_ffmpegAudioFrame *> aframes;
 static uint32 tick = 0;
-static volatile bool done = false;
-int play_audio(void* sf) {
-	SDL_ffmpegFile *sffile = static_cast<SDL_ffmpegFile *>(sf);
-	SDL_LockMutex(movie_audio_mutex);
-	while( ! done) {
-		for (int i = 0; i < AUDIO_BUF_SIZE; i++)
-			{
-				if (! done && !aframes[i]->size)
-					{
-						SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
-					}
-				}
-		if (!aframes[AUDIO_BUF_SIZE - 1]->size && aframes[AUDIO_BUF_SIZE - 1]->last) {
-			break;
+void movie_audio_callback(void*, uint8* stream, int length) {
+	static int32 offset = 0;
+	if (movie_audio_mutex && SDL_LockMutex(movie_audio_mutex) != -1)
+	{
+		memset(stream, 0, length);
+		while( length > 0 ) {
+			SDL_ffmpegAudioFrame *f = aframes.front();
+			int copying = std::min<int>(f->size - offset, length);
+			memcpy(stream, f->buffer + offset, copying);
+			length -= copying;
+			stream += copying;
+			if( (offset += copying) == f->size ) {			
+				offset = 0;
+				f->size = 0;
+				aframes.pop_front();
+				uint32 now = SDL_GetTicks();
+				SDL_Delay( std::max( (int64_t)0, aframes.front()->pts - (now - tick)  ) );
+				aframes.push_back( f );
+			}
 		}
-		for(int i = 0; ! done && i < AUDIO_BUF_SIZE; i++ ) {
-			uint32 now = SDL_GetTicks();
-			SDL_Delay( std::max( (int64_t)0, aframes[i]->pts - (now - tick)  ) );
-			SDL_QueueAudio(1, aframes[i]->buffer, aframes[i]->size);
-			aframes[i]->size = 0;
-		}
+		SDL_UnlockMutex(movie_audio_mutex);
 	}
-	SDL_UnlockMutex(movie_audio_mutex);
-	return 0;
 }
 #endif
 
@@ -3062,13 +3060,13 @@ void show_movie(short index)
 		if (astream)
 		{
 			movie_audio_mutex = SDL_CreateMutex();
-			SDL_AudioSpec specs = SDL_ffmpegGetAudioSpec(sffile, 4096, 0);
+			SDL_AudioSpec specs = SDL_ffmpegGetAudioSpec(sffile, 512, movie_audio_callback);
 			if (SDL_OpenAudio(&specs, 0) >= 0)
 			{
 				int frameSize = specs.channels * specs.samples * 2;
 				for (int i = 0; i < AUDIO_BUF_SIZE; i++)
 				{
-					aframes[i] = SDL_ffmpegCreateAudioFrame(sffile, frameSize);
+					aframes.push_back( SDL_ffmpegCreateAudioFrame(sffile, frameSize) );
 					SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
 				}
 			}
@@ -3082,10 +3080,7 @@ void show_movie(short index)
 		SDL_PauseAudio(false);
 		bool done = false;
 		uint32 tick = SDL_GetTicks();
-		if (astream)
-			{
-				SDL_CreateThread(play_audio, "", sffile);
-			}
+
 		while (!done)
 		{
 			SDL_Event event;
@@ -3100,6 +3095,24 @@ void show_movie(short index)
 					break;
 				}
 			}
+
+			if (astream)
+			{
+				SDL_LockMutex(movie_audio_mutex);
+				for (int i = 0; i < AUDIO_BUF_SIZE; i++)
+				{
+					if ( !aframes[i]->size)
+						{
+							SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
+						}
+					}
+				if (!aframes[AUDIO_BUF_SIZE - 1]->size && aframes[AUDIO_BUF_SIZE - 1]->last) {
+					done = true;
+				}
+				SDL_UnlockMutex(movie_audio_mutex);
+				
+			}
+
 			
 			
 			if (vframe)
@@ -3139,6 +3152,7 @@ void show_movie(short index)
 			{
 				SDL_ffmpegFreeAudioFrame(aframes[i]);
 			}
+			aframes.clear();
 			SDL_DestroyMutex(movie_audio_mutex);
 			movie_audio_mutex = NULL;
 		}
