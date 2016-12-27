@@ -1592,12 +1592,6 @@ static void controls_dialog(void *arg)
 
 	mouse->add_row(new w_spacer(), true);
 
-	w_toggle *mouse_acceleration_w = new w_toggle(input_preferences->mouse_acceleration);
-	mouse->dual_add(mouse_acceleration_w->label("Accelerate Mouse"), d);
-	mouse->dual_add(mouse_acceleration_w, d);
-
-	mouse_w->add_dependent_widget(mouse_acceleration_w);
-
 	w_toggle *invert_mouse_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse));
 	mouse->dual_add(invert_mouse_w->label("Invert Mouse"), d);
 	mouse->dual_add(invert_mouse_w, d);
@@ -1794,12 +1788,6 @@ static void controls_dialog(void *arg)
 
 		if (flags != input_preferences->modifiers) {
 			input_preferences->modifiers = flags;
-			changed = true;
-		}
-
-		if (mouse_acceleration_w->get_selection() != input_preferences->mouse_acceleration)
-		{
-			input_preferences->mouse_acceleration = mouse_acceleration_w->get_selection();
 			changed = true;
 		}
 
@@ -2782,7 +2770,6 @@ InfoTree input_preferences_tree()
 	root.put_attr("modifiers", input_preferences->modifiers);
 	root.put_attr("sens_horizontal", input_preferences->sens_horizontal);
 	root.put_attr("sens_vertical", input_preferences->sens_vertical);
-	root.put_attr("mouse_acceleration", input_preferences->mouse_acceleration);
 	root.put_attr("joystick_id", input_preferences->joystick_id);
 
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
@@ -3088,9 +3075,6 @@ static void default_input_preferences(input_preferences_data *preferences)
 	// ZZZ addition: sensitivity factor starts at 1 (no adjustment)
 	preferences->sens_horizontal = FIXED_ONE;
 	preferences->sens_vertical = FIXED_ONE;
-	
-	// SB
-	preferences->mouse_acceleration = true;
 
 	preferences->joystick_id = -1;
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
@@ -3646,7 +3630,6 @@ void parse_input_preferences(InfoTree root, std::string version)
 	root.read_attr("sens_horizontal", input_preferences->sens_horizontal);
 	root.read_attr("sens_vertical", input_preferences->sens_vertical);
 	
-	root.read_attr("mouse_acceleration", input_preferences->mouse_acceleration);
 	root.read_attr("joystick_id", input_preferences->joystick_id);
 
 	BOOST_FOREACH(InfoTree mapping, root.children_named("joystick_axis_mapping"))

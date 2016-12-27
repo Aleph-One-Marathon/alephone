@@ -207,8 +207,6 @@ struct input_preferences_data
 	// Mouse-sensitivity parameters (LP: originally ZZZ)
 	_fixed sens_horizontal;
 	_fixed sens_vertical;
-	// SB: Option to get rid of the horrible, horrible, horrible mouse acceleration.
-	bool mouse_acceleration;
 	
 	int16 joystick_id;
 	int16 joystick_axis_mappings[NUMBER_OF_JOYSTICK_MAPPINGS];

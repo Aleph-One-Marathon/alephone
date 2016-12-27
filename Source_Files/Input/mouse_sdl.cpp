@@ -110,12 +110,6 @@ void mouse_idle(short type)
 		dx *= sensitivityScale * input_preferences->sens_horizontal;
 		dy *= sensitivityScale * input_preferences->sens_vertical;
 		
-		if(input_preferences->mouse_acceleration) {
-			/* do nonlinearity */
-			dx = (dx * fabs(dx)) * 4.f;
-			dy = (dy * fabs(dy)) * 4.f;
-		}
-		
 		// 1 dx unit = 1 * 2^ABSOLUTE_YAW_BITS * (360 deg / 2^ANGULAR_BITS)
 		//           = 90 deg
 		//
