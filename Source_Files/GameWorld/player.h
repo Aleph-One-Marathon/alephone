@@ -540,10 +540,6 @@ void kill_player_physics_variables(short player_index);
 uint32 mask_in_absolute_positioning_information(uint32 action_flags, _fixed yaw, _fixed pitch, _fixed velocity);
 void get_absolute_pitch_range(_fixed *minimum, _fixed *maximum);
 
-void instantiate_absolute_positioning_information(short player_index, _fixed facing, _fixed elevation);
-void get_binocular_vision_origins(short player_index, world_point3d *left, short *left_polygon_index,
-	angle *left_angle, world_point3d *right, short *right_polygon_index, angle *right_angle);
-
 _fixed get_player_forward_velocity_scale(short player_index);
 
 

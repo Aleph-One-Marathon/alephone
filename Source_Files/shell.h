@@ -91,7 +91,6 @@ enum // input devices
 {
 	_keyboard_or_game_pad,
 	_mouse_yaw_pitch,
-	_cybermaxx_input,  // only put "_input" here because it was defined elsewhere.
 	_input_sprocket_only
 };
 

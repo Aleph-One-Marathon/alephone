@@ -340,56 +340,6 @@ uint32 mask_in_absolute_positioning_information(
 	return action_flags;
 }
 
-/* will be obsolete when cybermaxx changes to new-style */
-void instantiate_absolute_positioning_information(
-	short player_index,
-	_fixed facing,
-	_fixed elevation)
-{
-	struct player_data *player= get_player_data(player_index);
-	struct physics_variables *variables= &player->variables;
-	struct physics_constants *constants= get_physics_constants_for_model(static_world->physics_model, 0);
-
-	assert(elevation>=-INTEGER_TO_FIXED(QUARTER_CIRCLE)&&elevation<=INTEGER_TO_FIXED(QUARTER_CIRCLE));
-	assert(facing>=0&&facing<INTEGER_TO_FIXED(FULL_CIRCLE));
-
-	variables->elevation= PIN(elevation, -constants->maximum_elevation, constants->maximum_elevation);
-	variables->vertical_angular_velocity= 0;
-
-	variables->direction= facing;
-
-	instantiate_physics_variables(constants, variables, player_index, false, true);
-}
-
-void get_binocular_vision_origins(
-	short player_index,
-	world_point3d *left,
-	short *left_polygon_index,
-	angle *left_angle,
-	world_point3d *right,
-	short *right_polygon_index,
-	angle *right_angle)
-{
-	struct player_data *player= get_player_data(player_index);
-	struct physics_variables *variables= &player->variables;
-	struct physics_constants *constants= get_physics_constants_for_model(static_world->physics_model, 0);
-	angle theta;
-
-	theta= NORMALIZE_ANGLE(player->facing+QUARTER_CIRCLE);
-	right->x= FIXED_TO_WORLD(variables->position.x + ((constants->half_camera_separation*cosine_table[theta])>>TRIG_SHIFT));
-	right->y= FIXED_TO_WORLD(variables->position.y + ((constants->half_camera_separation*sine_table[theta])>>TRIG_SHIFT));
-	right->z= player->camera_location.z;
-	*right_polygon_index= find_new_object_polygon((world_point2d *)&player->camera_location, (world_point2d *)right, player->camera_polygon_index);
-	*right_angle= NORMALIZE_ANGLE(player->facing-1);
-	
-	theta= NORMALIZE_ANGLE(player->facing-QUARTER_CIRCLE);
-	left->x= FIXED_TO_WORLD(variables->position.x + ((constants->half_camera_separation*cosine_table[theta])>>TRIG_SHIFT));
-	left->y= FIXED_TO_WORLD(variables->position.y + ((constants->half_camera_separation*sine_table[theta])>>TRIG_SHIFT));
-	left->z= player->camera_location.z;
-	*left_polygon_index= find_new_object_polygon((world_point2d *)&player->camera_location, (world_point2d *)left, player->camera_polygon_index);
-	*left_angle= NORMALIZE_ANGLE(player->facing+1);
-}
-
 void kill_player_physics_variables(
 	short player_index)
 {
