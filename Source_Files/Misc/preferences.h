@@ -207,6 +207,7 @@ struct input_preferences_data
 	// Mouse-sensitivity parameters (LP: originally ZZZ)
 	_fixed sens_horizontal;
 	_fixed sens_vertical;
+	bool raw_mouse_input;
 	
 	int16 joystick_id;
 	int16 joystick_axis_mappings[NUMBER_OF_JOYSTICK_MAPPINGS];

@@ -52,6 +52,7 @@ static int snapshot_delta_x, snapshot_delta_y;
 void enter_mouse(short type)
 {
 	if (type != _keyboard_or_game_pad) {
+		SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, input_preferences->raw_mouse_input ? "0" : "1");
 		SDL_SetRelativeMouseMode(SDL_TRUE);
 		mouse_active = true;
 		snapshot_delta_yaw = snapshot_delta_pitch = 0;

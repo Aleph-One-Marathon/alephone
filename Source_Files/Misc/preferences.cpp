@@ -1592,6 +1592,12 @@ static void controls_dialog(void *arg)
 
 	mouse->add_row(new w_spacer(), true);
 
+	w_toggle *raw_mouse_w = new w_toggle(input_preferences->raw_mouse_input);
+	mouse->dual_add(raw_mouse_w->label("Use Raw Input"), d);
+	mouse->dual_add(raw_mouse_w, d);
+	
+	mouse_w->add_dependent_widget(raw_mouse_w);
+	
 	w_toggle *invert_mouse_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse));
 	mouse->dual_add(invert_mouse_w->label("Invert Mouse"), d);
 	mouse->dual_add(invert_mouse_w, d);
@@ -1770,6 +1776,11 @@ static void controls_dialog(void *arg)
             input_preferences->sens_horizontal = _fixed(std::exp(theNewSensitivityLog) * FIXED_ONE);
             changed = true;
         }
+		
+		if (raw_mouse_w->get_selection() != input_preferences->raw_mouse_input) {
+			input_preferences->raw_mouse_input = raw_mouse_w->get_selection();
+			changed = true;
+		}
 
 /*
         int theNewSliderPosition = sensitivity_w->get_selection();
@@ -3075,6 +3086,7 @@ static void default_input_preferences(input_preferences_data *preferences)
 	// ZZZ addition: sensitivity factor starts at 1 (no adjustment)
 	preferences->sens_horizontal = FIXED_ONE;
 	preferences->sens_vertical = FIXED_ONE;
+	preferences->raw_mouse_input = false;
 
 	preferences->joystick_id = -1;
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
