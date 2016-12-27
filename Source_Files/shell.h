@@ -90,8 +90,7 @@ struct screen_mode_data
 enum // input devices
 {
 	_keyboard_or_game_pad,
-	_mouse_yaw_pitch,
-	_input_sprocket_only
+	_mouse_yaw_pitch
 };
 
 #define PREFERENCES_NAME_LENGTH 32
