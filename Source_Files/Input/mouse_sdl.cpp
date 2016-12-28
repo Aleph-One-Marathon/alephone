@@ -36,6 +36,10 @@
 #include "preferences.h"
 #include "screen.h"
 
+#ifdef __APPLE__
+#include "mouse_cocoa.h"
+#endif
+
 
 // Global variables
 static bool mouse_active = false;
@@ -52,6 +56,10 @@ static int snapshot_delta_x, snapshot_delta_y;
 void enter_mouse(short type)
 {
 	if (type != _keyboard_or_game_pad) {
+#ifdef __APPLE__
+		if (input_preferences->raw_mouse_input)
+			OSX_Mouse_Init();
+#endif
 		SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, input_preferences->raw_mouse_input ? "0" : "1");
 		SDL_SetRelativeMouseMode(SDL_TRUE);
 		mouse_active = true;
@@ -73,6 +81,9 @@ void exit_mouse(short type)
 	if (type != _keyboard_or_game_pad) {
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 		mouse_active = false;
+#ifdef __APPLE__
+		OSX_Mouse_Shutdown();
+#endif
 	}
 }
 
@@ -96,6 +107,12 @@ void recenter_mouse(void)
 void mouse_idle(short type)
 {
 	if (mouse_active) {
+#ifdef __APPLE__
+		// In raw mode, get unaccelerated deltas from HID system
+		if (input_preferences->raw_mouse_input)
+			OSX_Mouse_GetMouseMovement(&snapshot_delta_x, &snapshot_delta_y);
+#endif
+		
 		// Calculate axis deltas
 		float dx = snapshot_delta_x;
 		float dy = -snapshot_delta_y;
