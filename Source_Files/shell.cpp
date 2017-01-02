@@ -1374,10 +1374,43 @@ static void process_game_key(const SDL_Event &event)
 #endif
 			{
 				toggle_fullscreen();
+			} else {
+				process_main_menu_highlight_select(event_has_cheat_modifiers(event));
 			}
 			break;
 		case SDLK_a:
 			item = iAbout;
+			break;
+		case SDLK_UP:
+		case SDLK_LEFT:
+			process_main_menu_highlight_advance(true);
+			break;
+		case SDLK_DOWN:
+		case SDLK_RIGHT:
+			process_main_menu_highlight_advance(false);
+			break;
+		case SDLK_TAB:
+			process_main_menu_highlight_advance(event.key.keysym.mod & KMOD_SHIFT);
+			break;
+		case SDLK_UNKNOWN:
+			switch (static_cast<int>(event.key.keysym.scancode)) {
+				case AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_DPAD_UP:
+				case AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+					process_main_menu_highlight_advance(true);
+					break;
+				case AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+				case AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+					process_main_menu_highlight_advance(false);
+					break;
+				case AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_A:
+					process_main_menu_highlight_select(false);
+					break;
+				case AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_GUIDE:
+					process_main_menu_highlight_select(true);
+					break;
+				default:
+					break;
+			}
 			break;
 		default:
 			break;
