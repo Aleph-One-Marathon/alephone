@@ -640,6 +640,45 @@ void w_tab::event(SDL_Event& e)
 
 		}
 	}
+	else if (e.type == SDL_CONTROLLERBUTTONDOWN)
+	{
+		switch (e.cbutton.button) {
+			case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+				if (active_tab > 0)
+				{
+					if (active_tab - 1== pressed_tab)
+					{
+						if (pressed_tab > 0)
+							active_tab -= 2;
+					}
+					else
+						active_tab--;
+					
+				}
+				dirty = true;
+				e.type = SDL_LASTEVENT;
+				break;
+				
+			case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+				if (active_tab < labels.size() - 1)
+				{
+					if (active_tab + 1 == pressed_tab)
+					{
+						if (pressed_tab < labels.size() - 1)
+							active_tab += 2;
+					}
+					else
+						active_tab++;
+				}
+				dirty = true;
+				e.type = SDL_LASTEVENT;
+				break;
+				
+			default:
+				break;
+				
+		}
+	}
 }
 
 /*
@@ -801,6 +840,24 @@ void w_select::event(SDL_Event &e)
 			selection_changed();
 			e.type = SDL_LASTEVENT;	// Swallow event
 		} else if (e.key.keysym.sym == SDLK_RIGHT) {
+			if (selection >= num_labels - 1)
+				selection = 0;
+			else
+				selection++;
+			selection_changed();
+			e.type = SDL_LASTEVENT;	// Swallow event
+		}
+	} else if (e.type == SDL_CONTROLLERBUTTONDOWN) {
+		if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_LEFT) {
+			if (num_labels == 0)
+				selection = 0;
+			else if (selection == 0)
+				selection = num_labels - 1;
+			else
+				selection--;
+			selection_changed();
+			e.type = SDL_LASTEVENT;	// Swallow event
+		} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
 			if (selection >= num_labels - 1)
 				selection = 0;
 			else
@@ -1749,6 +1806,16 @@ void w_slider::event(SDL_Event &e)
 			item_selected();
 			e.type = SDL_LASTEVENT;	// Swallow event
 		}
+	} else if (e.type == SDL_CONTROLLERBUTTONDOWN) {
+		if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_LEFT) {
+			set_selection(selection - 1);
+			item_selected();
+			e.type = SDL_LASTEVENT;	// Swallow event
+		} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
+			set_selection(selection + 1);
+			item_selected();
+			e.type = SDL_LASTEVENT;	// Swallow event
+		}
 	} else if (e.type == SDL_MOUSEBUTTONUP) {
 		if (thumb_dragging) {
 			thumb_dragging = false;
@@ -2006,6 +2073,19 @@ void w_list_base::event(SDL_Event &e)
 				set_selection(num_items - 1);
 				break;
 			default:
+				break;
+		}
+	} else if (e.type == SDL_CONTROLLERBUTTONDOWN) {
+		switch (e.cbutton.button) {
+			case SDL_CONTROLLER_BUTTON_DPAD_UP:
+				if (selection != 0)
+				{	set_selection(selection - 1); }
+				e.type = SDL_LASTEVENT;	// Prevent selection of previous widget
+				break;
+			case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+				if (selection < num_items - 1)
+				{	set_selection(selection + 1); }
+				e.type = SDL_LASTEVENT;	// Prevent selection of next widget
 				break;
 		}
 	} else if (e.type == SDL_MOUSEBUTTONUP) {

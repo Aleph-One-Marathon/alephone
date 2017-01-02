@@ -2176,6 +2176,27 @@ void dialog::event(SDL_Event &e)
 			  break;
 		  }
 	  }
+	  else if (e.type == SDL_CONTROLLERBUTTONDOWN)
+	  {
+		  switch (e.cbutton.button) {
+			  case SDL_CONTROLLER_BUTTON_B:
+				  quit(-1);
+				  break;
+			  case SDL_CONTROLLER_BUTTON_DPAD_UP:
+			  case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+				  activate_prev_widget();
+				  break;
+			  case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+			  case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+				  activate_next_widget();
+				  break;
+			  case SDL_CONTROLLER_BUTTON_A:
+				  if (active_widget) active_widget->click(0, 0);
+				  break;
+			  default:
+				  break;
+		  }
+	  }
 	  else if (e.type == SDL_QUIT)
 	  {
 		// Quit requested
