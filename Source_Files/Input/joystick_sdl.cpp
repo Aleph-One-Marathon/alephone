@@ -38,9 +38,6 @@ static boost::ptr_map<int, SDL_GameController*> active_instances;
 int axis_values[SDL_CONTROLLER_AXIS_MAX] = {};
 bool button_values[NUM_SDL_JOYSTICK_BUTTONS] = {};
 
-// controls the gradation of the pulse modulated strafing
-int strafe_bounds[3] = {14000, 20000, 28000};
-
 void initialize_joystick(void) {
 	// Look for "gamecontrollerdb.txt" in default search path
 	FileSpecifier fs;
@@ -157,39 +154,21 @@ int process_joystick_axes(int flags, int tick) {
     flags = mask_in_absolute_positioning_information(flags, yaw, pitch, vel);
     // but we don't for strafing!  so we do some PULSE MODULATION instead
     int abs_strafe = strafe > 0 ? strafe : -strafe;
-    if (abs_strafe < input_preferences->joystick_axis_bounds[_joystick_strafe]) {
-        // do nothin, you're not pushing hard enough
-    } else if ((abs_strafe > 0) && (abs_strafe < strafe_bounds[0])) {
-        // jitter slowly
-        if (!(tick % 4)) {
-            if (strafe > 0)
-                flags |= _sidestepping_right;
-            else
-                flags |= _sidestepping_left;
-        }
-    } else if ((abs_strafe >= strafe_bounds[0]) && (abs_strafe < strafe_bounds[1])) {
-        // jitter a little more quickly
-        if (tick % 2) {
-            if (strafe > 0)
-                flags |= _sidestepping_right;
-            else
-                flags |= _sidestepping_left;
-        }
-    } else if ((abs_strafe >= strafe_bounds[1]) && (abs_strafe < strafe_bounds[2])) {
-        // jitter damn quickly
-        if (tick % 4) {
-            if (strafe > 0)
-                flags |= _sidestepping_right;
-            else
-                flags |= _sidestepping_left;
-        }
-    } else if (abs_strafe >= strafe_bounds[2]) {
-        // honest movement
-        if (strafe > 0)
-            flags |= _sidestepping_right;
-        else
-            flags |= _sidestepping_left;
-    }
+#define PULSE_PATTERNS 5
+#define PULSE_PERIOD 4
+	int pulses[PULSE_PATTERNS][PULSE_PERIOD] = {
+						 { 0, 0, 0, 0 },
+					     { 0, 0, 0, 1 },
+					     { 0, 1, 0, 1 },
+					     { 0, 1, 1, 1 },
+					     { 1, 1, 1, 1 } };
+	int which_pulse = MIN(PULSE_PATTERNS - 1, abs_strafe*PULSE_PATTERNS/32768);
+	if (pulses[which_pulse][tick % PULSE_PERIOD]) {
+		if (strafe > 0)
+			flags |= _sidestepping_right;
+		else
+			flags |= _sidestepping_left;
+	}
 
     // finally, return this tick's action flags augmented with movement data
     return flags;
