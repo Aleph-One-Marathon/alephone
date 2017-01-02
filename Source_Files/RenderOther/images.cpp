@@ -969,6 +969,7 @@ void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, bo
 				switch (event.type) {
 					case SDL_MOUSEBUTTONDOWN:
 					case SDL_KEYDOWN:
+					case SDL_CONTROLLERBUTTONDOWN:
 						aborted = true;
 						break;
 				}
