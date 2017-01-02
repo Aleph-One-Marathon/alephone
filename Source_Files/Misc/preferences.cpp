@@ -2633,6 +2633,9 @@ static const char *binding_joystick_axis_name[NUM_SDL_JOYSTICK_AXES] = {
 	"controller-leftx", "controller-lefty",
 	"controller-rightx", "controller-righty"
 };
+static const char *binding_axis_action_name[NUMBER_OF_JOYSTICK_MAPPINGS] = {
+	"strafe", "move", "look-horizontal", "look-vertical"
+};
 static const int binding_num_scancodes = 285;
 static const char *binding_scancode_name[binding_num_scancodes] = {
 	"unknown", "unknown-1", "unknown-2", "unknown-3", "a",
@@ -2768,6 +2771,16 @@ static int index_for_axis_name(std::string name)
 	return -1;
 }
 
+static int index_for_axis_action_name(std::string name)
+{
+	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
+	{
+		if (name == binding_axis_action_name[i])
+			return i;
+	}
+	return -1;
+}
+
 InfoTree input_preferences_tree()
 {
 	InfoTree root;
@@ -2776,16 +2789,16 @@ InfoTree input_preferences_tree()
 	root.put_attr("modifiers", input_preferences->modifiers);
 	root.put_attr("sens_horizontal", input_preferences->sens_horizontal);
 	root.put_attr("sens_vertical", input_preferences->sens_vertical);
-	root.put_attr("use_joystick", input_preferences->use_joystick);
+	root.put_attr("use_controller", input_preferences->use_joystick);
 
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
 	{
 		InfoTree joyaxis;
-		joyaxis.put_attr("index", i);
+		joyaxis.put_attr("action", binding_axis_action_name[i]);
 		joyaxis.put_attr("axis", binding_name_for_axis(input_preferences->joystick_axis_mappings[i]));
-		joyaxis.put_attr("axis_sensitivity", input_preferences->joystick_axis_sensitivities[i]);
-		joyaxis.put_attr("bound", input_preferences->joystick_axis_bounds[i]);
-		root.add_child("joystick_axis_mapping", joyaxis);
+		joyaxis.put_attr("sensitivity", input_preferences->joystick_axis_sensitivities[i]);
+		joyaxis.put_attr("dead_zone", input_preferences->joystick_axis_bounds[i]);
+		root.add_child("binding_axis", joyaxis);
 	}
 	
 	for (int i = 0; i < (NUMBER_OF_KEYS + NUMBER_OF_SHELL_KEYS); ++i)
@@ -3637,23 +3650,20 @@ void parse_input_preferences(InfoTree root, std::string version)
 	root.read_attr("sens_horizontal", input_preferences->sens_horizontal);
 	root.read_attr("sens_vertical", input_preferences->sens_vertical);
 	
-	root.read_attr("use_joystick", input_preferences->use_joystick);
+	root.read_attr("use_controller", input_preferences->use_joystick);
 
-	BOOST_FOREACH(InfoTree mapping, root.children_named("joystick_axis_mapping"))
+	BOOST_FOREACH(InfoTree mapping, root.children_named("binding_axis"))
 	{
-		int16 index;
-		if (mapping.read_indexed("index", index, NUMBER_OF_JOYSTICK_MAPPINGS))
+		std::string action_name, axis_name;
+		if (mapping.read_attr("action", action_name) && mapping.read_attr("axis", axis_name))
 		{
-			std::string axis_name;
-			if (mapping.read_attr("axis", axis_name))
-			{
-				input_preferences->joystick_axis_mappings[index] = index_for_axis_name(axis_name);
-				mapping.read_attr("axis_sensitivity",
-								 input_preferences->joystick_axis_sensitivities[index]);
-				mapping.read_attr_bounded<int16>("bound",
-								 input_preferences->joystick_axis_bounds[index],
-								 0, SHRT_MAX);
-			}
+			int16 index = index_for_axis_action_name(action_name);
+			input_preferences->joystick_axis_mappings[index] = index_for_axis_name(axis_name);
+			mapping.read_attr("sensitivity",
+							 input_preferences->joystick_axis_sensitivities[index]);
+			mapping.read_attr_bounded<int16>("dead_zone",
+							 input_preferences->joystick_axis_bounds[index],
+							 0, SHRT_MAX);
 		}
 	}
 	
