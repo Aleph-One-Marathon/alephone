@@ -3088,14 +3088,14 @@ static void default_input_preferences(input_preferences_data *preferences)
 		preferences->joystick_axis_mappings[i] = i;
 
 	preferences->joystick_axis_sensitivities[_joystick_strafe] = 1.0;
-	preferences->joystick_axis_sensitivities[_joystick_velocity] = -5.0;
-	preferences->joystick_axis_sensitivities[_joystick_yaw] = 0.1;
-	preferences->joystick_axis_sensitivities[_joystick_pitch] = -1.0;
+	preferences->joystick_axis_sensitivities[_joystick_velocity] = 1.0;
+	preferences->joystick_axis_sensitivities[_joystick_yaw] = 1.0;
+	preferences->joystick_axis_sensitivities[_joystick_pitch] = 1.0;
 
-	preferences->joystick_axis_bounds[_joystick_strafe] = 10000;
+	preferences->joystick_axis_bounds[_joystick_strafe] = 3000;
 	preferences->joystick_axis_bounds[_joystick_velocity] = 3000;
 	preferences->joystick_axis_bounds[_joystick_yaw] = 3000;
-	preferences->joystick_axis_bounds[_joystick_pitch] = 4500;
+	preferences->joystick_axis_bounds[_joystick_pitch] = 3000;
 }
 
 static void default_environment_preferences(environment_preferences_data *preferences)

@@ -122,38 +122,61 @@ void joystick_buttons_become_keypresses(Uint8* ioKeyMap) {
 }
 
 int process_joystick_axes(int flags, int tick) {
-    int yaw, pitch, vel, strafe;
-    int* axis_assignments[4] = {&strafe, &vel, &yaw, &pitch};
-
     if (!joystick_active)
         return flags;
 
-    // loop through the axes, getting their information
-    for (int i = 0; i < 4; i++) {
-        int *store_location = axis_assignments[i];
-        if (!store_location)
-            continue;
-
-	int axis = input_preferences->joystick_axis_mappings[i];
-	if (axis < 0)
-	{
-		*store_location = 0;
-		continue;
-	}
-
-        // scale and store the joystick axis to the relevant movement controller
-		*store_location = static_cast<int>(input_preferences->joystick_axis_sensitivities[i] * axis_values[i]);
-        // clip if the value is too low
-        if ((*store_location < input_preferences->joystick_axis_bounds[i]) && (*store_location > -input_preferences->joystick_axis_bounds[i]))
-            *store_location = 0;
+	int axis_data[NUMBER_OF_JOYSTICK_MAPPINGS] = { 0, 0, 0, 0 };
+    for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; i++) {
+		int axis = input_preferences->joystick_axis_mappings[i];
+		if (axis < 0)
+			continue;
+		
+		// apply dead zone
+		if (ABS(axis_values[axis]) < input_preferences->joystick_axis_bounds[i]) {
+			axis_data[i] = 0;
+			continue;
+		}
+		float val = axis_values[axis]/32767.f * input_preferences->joystick_axis_sensitivities[i];
+		
+		// apply axis-specific sensitivity, to match keyboard
+		// velocities with user sensitivity at 1
+		switch (i) {
+			case _joystick_yaw:
+				val *= 6.f/63.f;
+				break;
+			case _joystick_pitch:
+				val *= 6.f/15.f;
+				break;
+		}
+		
+		// pin to largest d for which both -d and +d can be
+		// represented in 1 action flags bitset
+		float limit = 0.5f - 1.f / (1<<FIXED_FRACTIONAL_BITS);
+		switch (i) {
+			case _joystick_yaw:
+				limit = 0.5f - 1.f / (1<<ABSOLUTE_YAW_BITS);
+				break;
+			case _joystick_pitch:
+				limit = 0.5f - 1.f / (1<<ABSOLUTE_PITCH_BITS);
+				break;
+			case _joystick_velocity:
+				// forward and backward limits are independent and capped,
+				// so there's no need to ensure symmetry
+				limit = 0.5f;
+				break;
+			case _joystick_strafe:
+			default:
+				break;
+		}
+		axis_data[i] = PIN(val, -limit, limit) * FIXED_ONE;
     }
-    //printf("tick: %d\tstrafe: %d\tyaw: %d\tpitch: %d\tvel: %d\n", tick, strafe, yaw, pitch, vel);
-
     // we have intelligently set up ways to allow variably throttled movement
     // for these controls
-    flags = mask_in_absolute_positioning_information(flags, yaw, pitch, vel);
+    flags = mask_in_absolute_positioning_information(flags,
+													 axis_data[_joystick_yaw],
+													 axis_data[_joystick_pitch],
+													 axis_data[_joystick_velocity]);
     // but we don't for strafing!  so we do some PULSE MODULATION instead
-    int abs_strafe = strafe > 0 ? strafe : -strafe;
 #define PULSE_PATTERNS 5
 #define PULSE_PERIOD 4
 	int pulses[PULSE_PATTERNS][PULSE_PERIOD] = {
@@ -162,9 +185,9 @@ int process_joystick_axes(int flags, int tick) {
 					     { 0, 1, 0, 1 },
 					     { 0, 1, 1, 1 },
 					     { 1, 1, 1, 1 } };
-	int which_pulse = MIN(PULSE_PATTERNS - 1, abs_strafe*PULSE_PATTERNS/32768);
+	int which_pulse = MIN(PULSE_PATTERNS - 1, ABS(axis_data[_joystick_strafe])*PULSE_PATTERNS/32768);
 	if (pulses[which_pulse][tick % PULSE_PERIOD]) {
-		if (strafe > 0)
+		if (axis_data[_joystick_strafe] > 0)
 			flags |= _sidestepping_right;
 		else
 			flags |= _sidestepping_left;
