@@ -3086,6 +3086,7 @@ void show_movie(short index)
 				switch (event.type) {
 				case SDL_KEYDOWN:
 				case SDL_MOUSEBUTTONDOWN:
+				case SDL_CONTROLLERBUTTONDOWN:
 					done = true;
 					break;
 				default:
@@ -3202,6 +3203,7 @@ void show_movie(short index)
 				switch (event.type) {
 				case SDL_KEYDOWN:
 				case SDL_MOUSEBUTTONDOWN:
+				case SDL_CONTROLLERBUTTONDOWN:
 					done = true;
 					break;
 #ifdef HAVE_OPENGL
