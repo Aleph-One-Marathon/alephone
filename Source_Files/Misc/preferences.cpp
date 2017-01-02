@@ -1577,7 +1577,7 @@ static void controls_dialog(void *arg)
 	std::vector<std::string> labels;
 	labels.push_back("GENERAL");
 	labels.push_back("MOUSE");
-	labels.push_back("JOYSTICK");
+	labels.push_back("CONTROLLER");
 	w_tab *tab_w = new w_tab(labels, tabs);
 
 	placer->dual_add(tab_w, d);
@@ -1585,9 +1585,8 @@ static void controls_dialog(void *arg)
 
 	vertical_placer *general = new vertical_placer();
 	table_placer* mouse = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
-	table_placer* joystick = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	vertical_placer* joystick = new vertical_placer();
 	mouse->col_flags(0, placeable::kAlignRight);
-	joystick->col_flags(0, placeable::kAlignRight);
 
 	mouse_w = new w_enabling_toggle(input_preferences->input_device == 1, true);
 	mouse_w->set_selection_changed_callback(input_selected);
@@ -1639,13 +1638,15 @@ static void controls_dialog(void *arg)
 
 	mouse_w->add_dependent_widget(sens_horizontal_w);
 
+	table_placer *jtoggle = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	joystick_w = new w_enabling_toggle(input_preferences->input_device == 0 && input_preferences->use_joystick, true);
 	joystick_w->set_selection_changed_callback(input_selected);
-	joystick->dual_add(joystick_w->label("Use Controller"), d);
-	joystick->dual_add(joystick_w, d);
+	jtoggle->dual_add(joystick_w->label("Use Controller"), d);
+	jtoggle->dual_add(joystick_w, d);
 
-	joystick->add_row(new w_spacer(), true);
-	joystick->dual_add_row(new w_static_text("Axis Mappings"), d);
+	joystick->add(jtoggle, true);
+	joystick->add(new w_spacer(), true);
+	joystick->dual_add(new w_static_text("Axis Mappings"), d);
 
 	std::vector<std::string> axis_labels;
 	axis_labels.push_back("Unassigned");
@@ -1653,32 +1654,55 @@ static void controls_dialog(void *arg)
 	{
 		axis_labels.push_back(joystick_axis_names[i - 1]);
 	}
+	
+	w_label *joystick_action_labels[NUMBER_OF_JOYSTICK_MAPPINGS];
+	joystick_action_labels[_joystick_strafe] = new w_label("Sidestep Left/Right");
+	joystick_action_labels[_joystick_velocity] = new w_label("Move Forward/Backward");
+	joystick_action_labels[_joystick_yaw] = new w_label("Turn Left/Right");
+	joystick_action_labels[_joystick_pitch] = new w_label("Look Up/Down");
+		
+	w_toggle *joystick_invert_w[NUMBER_OF_JOYSTICK_MAPPINGS];
+	w_sens_slider *joystick_sens_w[NUMBER_OF_JOYSTICK_MAPPINGS];
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
 	{
 		joystick_axis_w[i] = new w_select_popup();
 		joystick_axis_w[i]->set_labels(axis_labels);
 		joystick_axis_w[i]->set_selection(input_preferences->joystick_axis_mappings[i] + 1);
 		joystick_axis_w[i]->set_popup_callback(axis_mapped, joystick_axis_w[i]);
+		
+		joystick_invert_w[i] = new w_toggle(input_preferences->joystick_axis_sensitivities[i] < 0);
+		
+		theSensitivityLog = std::log(ABS(input_preferences->joystick_axis_sensitivities[i]));
+		theVerticalSliderPosition =
+		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
+		joystick_sens_w[i] = new w_sens_slider(1000, theVerticalSliderPosition);
 	}
-
-	joystick->dual_add(joystick_axis_w[_joystick_strafe]->label("Sidestep Left/Right"), d);
-	joystick->dual_add(joystick_axis_w[_joystick_strafe], d);
-
-	joystick->dual_add(joystick_axis_w[_joystick_velocity]->label("Move Forward/Backward"), d);
-	joystick->dual_add(joystick_axis_w[_joystick_velocity], d);
-
-	joystick->dual_add(joystick_axis_w[_joystick_yaw]->label("Turn Left/Right"), d);
-	joystick->dual_add(joystick_axis_w[_joystick_yaw], d);
-
-	joystick->dual_add(joystick_axis_w[_joystick_pitch]->label("Look Up/Down"), d);
-	joystick->dual_add(joystick_axis_w[_joystick_pitch], d);
-
+	
+	table_placer *atable = new table_placer(4, get_theme_space(ITEM_WIDGET), false);
+	atable->col_flags(0, placeable::kAlignRight);
+	
+	atable->add(new w_spacer(), true);
+	atable->dual_add(new w_label("Axis"), d);
+	atable->dual_add(new w_label("Invert"), d);
+	atable->dual_add(new w_label("Sensitivity"), d);
+	
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
 	{
+		atable->dual_add(joystick_action_labels[i], d);
+		atable->dual_add(joystick_axis_w[i], d);
+		atable->dual_add(joystick_invert_w[i], d);
+		atable->dual_add(joystick_sens_w[i], d);
+		
+		joystick_axis_w[i]->associate_label(joystick_action_labels[i]);
+		joystick_invert_w[i]->associate_label(joystick_action_labels[i]);
+		joystick_sens_w[i]->associate_label(joystick_action_labels[i]);
+		
 		joystick_w->add_dependent_widget(joystick_axis_w[i]);
+		joystick_w->add_dependent_widget(joystick_invert_w[i]);
+		joystick_w->add_dependent_widget(joystick_sens_w[i]);
 	}
 
-	joystick->add_row(new w_spacer(), true);
+	joystick->add(atable, true);
 
 	table_placer* general_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	general_table->col_flags(0, placeable::kAlignRight);
@@ -1792,6 +1816,17 @@ static void controls_dialog(void *arg)
 		{
 			if (joystick_axis_w[i]->get_selection() - 1 != input_preferences->joystick_axis_mappings[i]) {
 				input_preferences->joystick_axis_mappings[i] = joystick_axis_w[i]->get_selection() - 1;
+				changed = true;
+			}
+			
+			theNewSliderPosition = joystick_sens_w[i]->get_selection();
+			theNewSensitivityLog = kMinSensitivityLog + ((float) theNewSliderPosition) * (kSensitivityLogRange / 1000.0f);
+			float sens = std::exp(theNewSensitivityLog);
+			if (joystick_invert_w[i]->get_selection()) {
+				sens *= -1;
+			}
+			if (sens != input_preferences->joystick_axis_sensitivities[i]) {
+				input_preferences->joystick_axis_sensitivities[i] = sens;
 				changed = true;
 			}
 		}
