@@ -1560,6 +1560,10 @@ static void input_selected(w_select* w)
 		mouse_w->set_selection(0, true);
 }
 
+static const char *joystick_axis_names[NUM_SDL_JOYSTICK_AXES] = {
+	"Left X", "Left Y", "Right X", "Right Y"
+};
+
 static void controls_dialog(void *arg)
 {
 	// Create dialog
@@ -1635,42 +1639,19 @@ static void controls_dialog(void *arg)
 
 	mouse_w->add_dependent_widget(sens_horizontal_w);
 
-	joystick_w = new w_enabling_toggle(input_preferences->input_device == 0 && SDL_NumJoysticks() > 0 && input_preferences->joystick_id >= 0, true);
+	joystick_w = new w_enabling_toggle(input_preferences->input_device == 0 && input_preferences->use_joystick, true);
 	joystick_w->set_selection_changed_callback(input_selected);
-	joystick->dual_add(joystick_w->label("Use Joystick / Gamepad"), d);
+	joystick->dual_add(joystick_w->label("Use Controller"), d);
 	joystick->dual_add(joystick_w, d);
-
-	joystick->add_row(new w_spacer(), true);
-
-	std::vector<std::string> joystick_labels;
-	if (SDL_NumJoysticks()) 
-	{
-		for (int i = 0; i < SDL_NumJoysticks(); ++i)
-		{
-			joystick_labels.push_back(SDL_JoystickNameForIndex(i));
-		}
-	}
-	else
-	{
-		joystick_labels.push_back("No Joysticks");
-	}
-	w_select_popup* which_joystick_w = new w_select_popup();
-	which_joystick_w->set_labels(joystick_labels);
-	which_joystick_w->set_selection(std::max(0, std::min(SDL_NumJoysticks(), static_cast<int>(input_preferences->joystick_id))));
-	joystick->dual_add(which_joystick_w->label("Joystick / Gamepad"), d);
-	joystick->dual_add(which_joystick_w, d);
-	joystick_w->add_dependent_widget(which_joystick_w);
 
 	joystick->add_row(new w_spacer(), true);
 	joystick->dual_add_row(new w_static_text("Axis Mappings"), d);
 
 	std::vector<std::string> axis_labels;
 	axis_labels.push_back("Unassigned");
-	for (int i = 1; i <= 8; ++i)
+	for (int i = 1; i <= NUM_SDL_JOYSTICK_AXES; ++i)
 	{
-		stringstream s;
-		s << "Axis " << i;
-		axis_labels.push_back(s.str());
+		axis_labels.push_back(joystick_axis_names[i - 1]);
 	}
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
 	{
@@ -1801,18 +1782,9 @@ static void controls_dialog(void *arg)
 			input_preferences->modifiers = flags;
 			changed = true;
 		}
-
-		if (joystick_w->get_selection())
-		{
-			if (which_joystick_w->get_selection() != input_preferences->joystick_id)
-			{
-				input_preferences->joystick_id = which_joystick_w->get_selection();
-				changed = true;
-			}
-		}
-		else if (input_preferences->joystick_id != -1)
-		{
-			input_preferences->joystick_id = -1;
+		
+		if (joystick_w->get_selection() != input_preferences->use_joystick) {
+			input_preferences->use_joystick = joystick_w->get_selection();
 			changed = true;
 		}
 
@@ -2651,10 +2623,15 @@ static const char *binding_mouse_button_name[NUM_SDL_MOUSE_BUTTONS] = {
 	"mouse-scroll-up", "mouse-scroll-down", "mouse-8"
 };
 static const char *binding_joystick_button_name[NUM_SDL_JOYSTICK_BUTTONS] = {
-	"joystick-1", "joystick-2", "joystick-3", "joystick-4", "joystick-5",
-	"joystick-6", "joystick-7", "joystick-8", "joystick-9", "joystick-10",
-	"joystick-11", "joystick-12", "joystick-13", "joystick-14", "joystick-15",
-	"joystick-16", "joystick-17", "joystick-18"
+	"controller-a", "controller-b", "controller-x", "controller-y",
+	"controller-back", "controller-guide", "controller-start",
+	"controller-ls", "controller-rs", "controller-lb", "controller-rb",
+	"controller-up", "controller-down", "controller-left", "controller-right",
+	"controller-lt", "controller-rt", "controller-18"
+};
+static const char *binding_joystick_axis_name[NUM_SDL_JOYSTICK_AXES] = {
+	"controller-leftx", "controller-lefty",
+	"controller-rightx", "controller-righty"
 };
 static const int binding_num_scancodes = 285;
 static const char *binding_scancode_name[binding_num_scancodes] = {
@@ -2732,6 +2709,14 @@ static const char *binding_name_for_code(SDL_Scancode code)
 	return "unknown";
 }
 
+static const char *binding_name_for_axis(int axis)
+{
+	if (axis >= 0 &&
+		axis < NUM_SDL_JOYSTICK_AXES)
+		return binding_joystick_axis_name[axis];
+	return "unknown";
+}
+
 static SDL_Scancode code_for_binding_name(std::string name)
 {
 	for (int i = 0; i < binding_num_scancodes; ++i)
@@ -2773,6 +2758,16 @@ static int index_for_action_name(std::string name, bool& is_shell)
 	return -1;
 }
 
+static int index_for_axis_name(std::string name)
+{
+	for (int i = 0; i < NUM_SDL_JOYSTICK_AXES; ++i)
+	{
+		if (name == binding_joystick_axis_name[i])
+			return i;
+	}
+	return -1;
+}
+
 InfoTree input_preferences_tree()
 {
 	InfoTree root;
@@ -2781,13 +2776,13 @@ InfoTree input_preferences_tree()
 	root.put_attr("modifiers", input_preferences->modifiers);
 	root.put_attr("sens_horizontal", input_preferences->sens_horizontal);
 	root.put_attr("sens_vertical", input_preferences->sens_vertical);
-	root.put_attr("joystick_id", input_preferences->joystick_id);
+	root.put_attr("use_joystick", input_preferences->use_joystick);
 
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
 	{
 		InfoTree joyaxis;
 		joyaxis.put_attr("index", i);
-		joyaxis.put_attr("axis", input_preferences->joystick_axis_mappings[i]);
+		joyaxis.put_attr("axis", binding_name_for_axis(input_preferences->joystick_axis_mappings[i]));
 		joyaxis.put_attr("axis_sensitivity", input_preferences->joystick_axis_sensitivities[i]);
 		joyaxis.put_attr("bound", input_preferences->joystick_axis_bounds[i]);
 		root.add_child("joystick_axis_mapping", joyaxis);
@@ -3088,7 +3083,7 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->sens_vertical = FIXED_ONE;
 	preferences->raw_mouse_input = false;
 
-	preferences->joystick_id = -1;
+	preferences->use_joystick = true;
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
 		preferences->joystick_axis_mappings[i] = i;
 
@@ -3642,17 +3637,17 @@ void parse_input_preferences(InfoTree root, std::string version)
 	root.read_attr("sens_horizontal", input_preferences->sens_horizontal);
 	root.read_attr("sens_vertical", input_preferences->sens_vertical);
 	
-	root.read_attr("joystick_id", input_preferences->joystick_id);
+	root.read_attr("use_joystick", input_preferences->use_joystick);
 
 	BOOST_FOREACH(InfoTree mapping, root.children_named("joystick_axis_mapping"))
 	{
 		int16 index;
 		if (mapping.read_indexed("index", index, NUMBER_OF_JOYSTICK_MAPPINGS))
 		{
-			int16 axis;
-			if (mapping.read_indexed("axis", axis, 8, true))
+			std::string axis_name;
+			if (mapping.read_attr("axis", axis_name))
 			{
-				input_preferences->joystick_axis_mappings[index] = axis;
+				input_preferences->joystick_axis_mappings[index] = index_for_axis_name(axis_name);
 				mapping.read_attr("axis_sensitivity",
 								 input_preferences->joystick_axis_sensitivities[index]);
 				mapping.read_attr_bounded<int16>("bound",

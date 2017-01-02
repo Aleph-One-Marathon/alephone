@@ -1477,24 +1477,9 @@ static const char* sMouseButtonKeyName[NUM_SDL_MOUSE_BUTTONS] = {
 };
 
 static const char* sJoystickButtonKeyName[NUM_SDL_JOYSTICK_BUTTONS] = {
-	"Joystick 1",
-	"Joystick 2",
-	"Joystick 3",
-	"Joystick 4",
-	"Joystick 5",
-	"Joystick 6",
-	"Joystick 7",
-	"Joystick 8",
-	"Joystick 9",
-	"Joystick 10",
-	"Joystick 11",
-	"Joystick 12",
-	"Joystick 13",
-	"Joystick 14",
-	"Joystick 15",
-	"Joystick 16",
-	"Joystick 17",
-	"Joystick 18"
+	"A", "B", "X", "Y", "Back", "Guide", "Start",
+	"LS", "RS", "LB", "RB", "Up", "Down", "Left", "Right",
+	"LT", "RT", "Unknown"
 };
 
 // ZZZ: this injects our phony key names but passes along the rest.
@@ -1547,9 +1532,18 @@ void w_key::event(SDL_Event &e)
 					handled = true;
 				}
 				break;
-			case SDL_JOYBUTTONDOWN:
-				if (e.button.button < NUM_SDL_JOYSTICK_BUTTONS) {
-					set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + e.button.button));
+			case SDL_CONTROLLERBUTTONDOWN:
+				if (e.cbutton.button < NUM_SDL_JOYSTICK_BUTTONS) {
+					set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + e.cbutton.button));
+					handled = true;
+				}
+				break;
+			case SDL_CONTROLLERAXISMOTION:
+				if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT) {
+					set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + AO_CONTROLLER_BUTTON_LEFTTRIGGER));
+					handled = true;
+				} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
+					set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + AO_CONTROLLER_BUTTON_RIGHTTRIGGER));
 					handled = true;
 				}
 				break;

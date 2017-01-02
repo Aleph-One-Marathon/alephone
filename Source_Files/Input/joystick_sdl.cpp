@@ -24,51 +24,101 @@ May 18, 2009 (Eric Peterson):
 */
 
 #include <SDL.h>
+#include <boost/ptr_container/ptr_map.hpp>
+
 #include "player.h" // for mask_in_absolute_positioning_information
 #include "preferences.h"
 #include "joystick.h"
+#include "Logging.h"
+#include "FileHandler.h"
 
 // internal handles
-static SDL_Joystick *joystick = NULL;
 int joystick_active = true;
+static boost::ptr_map<int, SDL_GameController*> active_instances;
+int axis_values[SDL_CONTROLLER_AXIS_MAX] = {};
+bool button_values[NUM_SDL_JOYSTICK_BUTTONS] = {};
 
 // controls the gradation of the pulse modulated strafing
 int strafe_bounds[3] = {14000, 20000, 28000};
 
+void initialize_joystick(void) {
+	// Look for "gamecontrollerdb.txt" in default search path
+	FileSpecifier fs;
+	if (fs.SetNameWithPath("gamecontrollerdb.txt")) {
+		SDL_GameControllerAddMappingsFromFile(fs.GetPath());
+	}
+	
+	SDL_GameControllerEventState(SDL_ENABLE);
+	for (int i = 0; i < SDL_NumJoysticks(); ++i)
+		joystick_added(i);
+}
+
 void enter_joystick(void) {
-    // de-filter joystick events from event polling
-    SDL_JoystickEventState(SDL_ENABLE);
-    // attempt to open the first joystick if we haven't already.  it doesn't
-    // really matter if we fail, since then we just won't be receiving any
-    // joystick events :)
-    joystick = joystick ? joystick : SDL_JoystickOpen(input_preferences->joystick_id);
-
-    //printf("Opened joystick at %p\n", joystick);
-
-    // initialization was easy!
-    return;
+	joystick_active = input_preferences->use_joystick;
 }
 
 void exit_joystick(void) {
-    // throw out the old joystick handle
-    if (joystick)
-        SDL_JoystickClose(joystick);
-    joystick = NULL;
+	joystick_active = false;
+}
 
-    // filter joystick events from event polling
-    SDL_JoystickEventState(SDL_DISABLE);
+void joystick_added(int device_index) {
+	if (!SDL_IsGameController(device_index)) {
+		SDL_Joystick *joystick = SDL_JoystickOpen(device_index);
+		char guidStr[255] = "";
+		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick), guidStr, 255);
+		logWarning("No mapping found for controller \"%s\" (%s)",
+				   SDL_JoystickName(joystick), guidStr);
+		return;
+	}
+	SDL_GameController *controller = SDL_GameControllerOpen(device_index);
+	if (!controller)
+		return;
+	int instance_id = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller));
+	active_instances[instance_id] = controller;
+}
 
-    return;
+void joystick_removed(int instance_id) {
+	SDL_GameController *controller = active_instances[instance_id];
+	if (controller) {
+		SDL_GameControllerClose(controller);
+		active_instances.erase(instance_id);
+	}
+}
+
+void joystick_axis_moved(int instance_id, int axis, int value) {
+	switch (axis) {
+		case SDL_CONTROLLER_AXIS_LEFTX:
+		case SDL_CONTROLLER_AXIS_RIGHTX:
+			axis_values[axis] = value;
+			break;
+		case SDL_CONTROLLER_AXIS_LEFTY:
+		case SDL_CONTROLLER_AXIS_RIGHTY:
+			// flip Y axes to better match default movement
+			axis_values[axis] = value * -1;
+			break;
+		case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
+			button_values[AO_CONTROLLER_BUTTON_LEFTTRIGGER] = (value > 0);
+			break;
+		case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
+			button_values[AO_CONTROLLER_BUTTON_RIGHTTRIGGER] = (value > 0);
+			break;
+		default:
+			break;
+	}
+}
+void joystick_button_pressed(int instance_id, int button, bool down) {
+	if (button >= 0 && button < NUM_SDL_JOYSTICK_BUTTONS)
+		button_values[button] = down;
 }
 
 void joystick_buttons_become_keypresses(Uint8* ioKeyMap) {
     // if we're not using the joystick, avoid this
-    if (!joystick || !joystick_active)
+    if (!joystick_active)
         return;
 
     // toggle joystick buttons until we run out of slots or buttons
-    for (int i = 0; i < std::max(SDL_JoystickNumButtons(joystick), NUM_SDL_JOYSTICK_BUTTONS); i++) {
-        ioKeyMap[AO_SCANCODE_BASE_JOYSTICK_BUTTON + i] = SDL_JoystickGetButton(joystick, i);
+	for (int i = 0; i < NUM_SDL_JOYSTICK_BUTTONS; ++i) {
+		ioKeyMap[AO_SCANCODE_BASE_JOYSTICK_BUTTON + i] = button_values[i];
     }
 
     return;
@@ -78,7 +128,7 @@ int process_joystick_axes(int flags, int tick) {
     int yaw, pitch, vel, strafe;
     int* axis_assignments[4] = {&strafe, &vel, &yaw, &pitch};
 
-    if (!joystick || !joystick_active)
+    if (!joystick_active)
         return flags;
 
     // loop through the axes, getting their information
@@ -95,7 +145,7 @@ int process_joystick_axes(int flags, int tick) {
 	}
 
         // scale and store the joystick axis to the relevant movement controller
-        *store_location = static_cast<int>(input_preferences->joystick_axis_sensitivities[i] * SDL_JoystickGetAxis(joystick, axis));
+		*store_location = static_cast<int>(input_preferences->joystick_axis_sensitivities[i] * axis_values[i]);
         // clip if the value is too low
         if ((*store_location < input_preferences->joystick_axis_bounds[i]) && (*store_location > -input_preferences->joystick_axis_bounds[i]))
             *store_location = 0;

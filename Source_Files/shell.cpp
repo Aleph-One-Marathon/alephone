@@ -417,7 +417,7 @@ static void initialize_application(void)
 	// Initialize SDL
 	int retval = SDL_Init(SDL_INIT_VIDEO |
 						  (option_nosound ? 0 : SDL_INIT_AUDIO) |
-						  (option_nojoystick ? 0 : SDL_INIT_JOYSTICK) |
+						  (option_nojoystick ? 0 : SDL_INIT_JOYSTICK|SDL_INIT_GAMECONTROLLER) |
 						  (option_debug ? SDL_INIT_NOPARACHUTE : 0));
 	if (retval < 0)
 	{
@@ -676,6 +676,7 @@ static void initialize_application(void)
 	SoundManager::instance()->Initialize(*sound_preferences);
 	initialize_marathon_music_handler();
 	initialize_keyboard_controller();
+	initialize_joystick();
 	initialize_gamma();
 	alephone::Screen::instance()->Initialize(&graphics_preferences->screen_mode);
 	initialize_marathon();
@@ -1433,19 +1434,32 @@ static void process_event(const SDL_Event &event)
 			process_screen_click(event);
 		break;
 	
-	case SDL_JOYBUTTONDOWN:
-		if (get_game_state() == _game_in_progress)
-		{
-			SDL_Event e2;
-			memset(&e2, 0, sizeof(SDL_Event));
-			e2.type = SDL_KEYDOWN;
-			e2.key.keysym.sym = SDLK_UNKNOWN;
-			e2.key.keysym.scancode = (SDL_Scancode)(AO_SCANCODE_BASE_JOYSTICK_BUTTON + event.button.button);
-			process_game_key(e2);
-			
-		}
+	case SDL_CONTROLLERBUTTONDOWN:
+		joystick_button_pressed(event.cbutton.which, event.cbutton.button, true);
+		SDL_Event e2;
+		memset(&e2, 0, sizeof(SDL_Event));
+		e2.type = SDL_KEYDOWN;
+		e2.key.keysym.sym = SDLK_UNKNOWN;
+		e2.key.keysym.scancode = (SDL_Scancode)(AO_SCANCODE_BASE_JOYSTICK_BUTTON + event.cbutton.button);
+		process_game_key(e2);
 		break;
 		
+	case SDL_CONTROLLERBUTTONUP:
+		joystick_button_pressed(event.cbutton.which, event.cbutton.button, false);
+		break;
+		
+	case SDL_CONTROLLERAXISMOTION:
+		joystick_axis_moved(event.caxis.which, event.caxis.axis, event.caxis.value);
+		break;
+	
+	case SDL_JOYDEVICEADDED:
+		joystick_added(event.jdevice.which);
+		break;
+			
+	case SDL_JOYDEVICEREMOVED:
+		joystick_removed(event.jdevice.which);
+		break;
+			
 	case SDL_KEYDOWN:
 		process_game_key(event);
 		break;

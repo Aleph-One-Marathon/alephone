@@ -209,7 +209,7 @@ struct input_preferences_data
 	_fixed sens_vertical;
 	bool raw_mouse_input;
 	
-	int16 joystick_id;
+	bool use_joystick;
 	int16 joystick_axis_mappings[NUMBER_OF_JOYSTICK_MAPPINGS];
 	float joystick_axis_sensitivities[NUMBER_OF_JOYSTICK_MAPPINGS];
 
