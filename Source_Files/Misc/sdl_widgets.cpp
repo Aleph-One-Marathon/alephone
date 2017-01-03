@@ -229,6 +229,13 @@ void w_styled_text::draw(SDL_Surface *s) const
 	font->draw_styled_text(s, text_string, text_string.size(), rect.x, rect.y + font->get_ascent(), pixel, style);
 }
 
+void w_slider_text::draw(SDL_Surface *s) const
+{
+	int state = associated_slider->enabled ? (associated_slider->active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
+	uint16 style = 0;
+	draw_text(s, text, rect.x, rect.y + font->get_ascent() + (rect.h - font->get_line_height()) / 2, get_theme_color(LABEL_WIDGET, state, FOREGROUND_COLOR), font, style);
+}
+
 /*
  *  Picture (PICT resource)
  */
@@ -1865,7 +1872,8 @@ void w_slider::init_formatted_value()
 	std::string tempstr = formatted_value();
 	selection = temp;
 	delete readout;
-	readout = new w_static_text(tempstr.c_str());
+	readout = new w_slider_text(tempstr.c_str());
+	readout->associated_slider = this;
 	saved_min_height = std::max(saved_min_height, readout->min_height());
 	saved_min_width = readout_x + readout->min_width();
 }
