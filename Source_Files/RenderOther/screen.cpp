@@ -1162,7 +1162,7 @@ void change_screen_mode(short screentype)
 	
 	short w = std::max(mode->width, static_cast<short>(640));
 	short h = std::max(mode->height, static_cast<short>(480));
-	if (!in_game)
+	if (screentype == _screentype_menu)
 	{
 		w = 640;
 		h = 480;

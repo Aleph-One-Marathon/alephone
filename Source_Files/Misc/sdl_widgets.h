@@ -196,6 +196,7 @@ protected:
 
 class w_label : public w_static_text {
 	friend class dialog;
+	friend class w_slider;
 public:
 	w_label(const char *text) : w_static_text(text, LABEL_WIDGET), associated_widget(0) {}
 
@@ -221,6 +222,16 @@ public:
 private:
 	std::string text_string;
 };
+
+class w_slider_text : public w_static_text {
+	friend class w_slider;
+public:
+	w_slider_text(const char *text) : w_static_text(text) {}
+	void draw(SDL_Surface *s) const;
+protected:
+	class w_slider *associated_slider;
+};
+
 
 /*
  *  Picture (PICT resource)
@@ -606,6 +617,7 @@ protected:
  */
 
 class w_slider : public widget {
+	friend class w_slider_text;
 public:
 	w_slider(int num_items, int sel);
 	~w_slider();
@@ -626,7 +638,7 @@ public:
 protected:
 	void init_formatted_value(void);
 	
-	w_static_text *readout; // display current slider value
+	w_slider_text *readout; // display current slider value
 	int readout_x;			// relative X offset where readout is drawn
 	
 	int16 slider_x;			// X offset of slider image

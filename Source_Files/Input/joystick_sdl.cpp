@@ -24,122 +24,174 @@ May 18, 2009 (Eric Peterson):
 */
 
 #include <SDL.h>
+#include <boost/ptr_container/ptr_map.hpp>
+
 #include "player.h" // for mask_in_absolute_positioning_information
 #include "preferences.h"
 #include "joystick.h"
+#include "Logging.h"
+#include "FileHandler.h"
 
 // internal handles
-static SDL_Joystick *joystick = NULL;
 int joystick_active = true;
+static boost::ptr_map<int, SDL_GameController*> active_instances;
+int axis_values[SDL_CONTROLLER_AXIS_MAX] = {};
+bool button_values[NUM_SDL_JOYSTICK_BUTTONS] = {};
 
-// controls the gradation of the pulse modulated strafing
-int strafe_bounds[3] = {14000, 20000, 28000};
+void initialize_joystick(void) {
+	// Look for "gamecontrollerdb.txt" in default search path
+	FileSpecifier fs;
+	if (fs.SetNameWithPath("gamecontrollerdb.txt")) {
+		SDL_GameControllerAddMappingsFromFile(fs.GetPath());
+	}
+	
+	SDL_GameControllerEventState(SDL_ENABLE);
+	for (int i = 0; i < SDL_NumJoysticks(); ++i)
+		joystick_added(i);
+}
 
 void enter_joystick(void) {
-    // de-filter joystick events from event polling
-    SDL_JoystickEventState(SDL_ENABLE);
-    // attempt to open the first joystick if we haven't already.  it doesn't
-    // really matter if we fail, since then we just won't be receiving any
-    // joystick events :)
-    joystick = joystick ? joystick : SDL_JoystickOpen(input_preferences->joystick_id);
-
-    //printf("Opened joystick at %p\n", joystick);
-
-    // initialization was easy!
-    return;
+	joystick_active = input_preferences->use_joystick;
 }
 
 void exit_joystick(void) {
-    // throw out the old joystick handle
-    if (joystick)
-        SDL_JoystickClose(joystick);
-    joystick = NULL;
+	joystick_active = false;
+}
 
-    // filter joystick events from event polling
-    SDL_JoystickEventState(SDL_DISABLE);
+void joystick_added(int device_index) {
+	if (!SDL_IsGameController(device_index)) {
+		SDL_Joystick *joystick = SDL_JoystickOpen(device_index);
+		char guidStr[255] = "";
+		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick), guidStr, 255);
+		logWarning("No mapping found for controller \"%s\" (%s)",
+				   SDL_JoystickName(joystick), guidStr);
+		return;
+	}
+	SDL_GameController *controller = SDL_GameControllerOpen(device_index);
+	if (!controller)
+		return;
+	int instance_id = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller));
+	active_instances[instance_id] = controller;
+}
 
-    return;
+void joystick_removed(int instance_id) {
+	SDL_GameController *controller = active_instances[instance_id];
+	if (controller) {
+		SDL_GameControllerClose(controller);
+		active_instances.erase(instance_id);
+	}
+}
+
+void joystick_axis_moved(int instance_id, int axis, int value) {
+	switch (axis) {
+		case SDL_CONTROLLER_AXIS_LEFTX:
+		case SDL_CONTROLLER_AXIS_RIGHTX:
+			axis_values[axis] = value;
+			break;
+		case SDL_CONTROLLER_AXIS_LEFTY:
+		case SDL_CONTROLLER_AXIS_RIGHTY:
+			// flip Y axes to better match default movement
+			axis_values[axis] = value * -1;
+			break;
+		case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
+			button_values[AO_CONTROLLER_BUTTON_LEFTTRIGGER] = (value > 0);
+			break;
+		case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
+			button_values[AO_CONTROLLER_BUTTON_RIGHTTRIGGER] = (value > 0);
+			break;
+		default:
+			break;
+	}
+}
+void joystick_button_pressed(int instance_id, int button, bool down) {
+	if (button >= 0 && button < NUM_SDL_JOYSTICK_BUTTONS)
+		button_values[button] = down;
 }
 
 void joystick_buttons_become_keypresses(Uint8* ioKeyMap) {
     // if we're not using the joystick, avoid this
-    if (!joystick || !joystick_active)
+    if (!joystick_active)
         return;
 
     // toggle joystick buttons until we run out of slots or buttons
-    for (int i = 0; i < std::max(SDL_JoystickNumButtons(joystick), NUM_SDL_JOYSTICK_BUTTONS); i++) {
-        ioKeyMap[AO_SCANCODE_BASE_JOYSTICK_BUTTON + i] = SDL_JoystickGetButton(joystick, i);
+	for (int i = 0; i < NUM_SDL_JOYSTICK_BUTTONS; ++i) {
+		ioKeyMap[AO_SCANCODE_BASE_JOYSTICK_BUTTON + i] = button_values[i];
     }
 
     return;
 }
 
 int process_joystick_axes(int flags, int tick) {
-    int yaw, pitch, vel, strafe;
-    int* axis_assignments[4] = {&strafe, &vel, &yaw, &pitch};
-
-    if (!joystick || !joystick_active)
+    if (!joystick_active)
         return flags;
 
-    // loop through the axes, getting their information
-    for (int i = 0; i < 4; i++) {
-        int *store_location = axis_assignments[i];
-        if (!store_location)
-            continue;
-
-	int axis = input_preferences->joystick_axis_mappings[i];
-	if (axis < 0)
-	{
-		*store_location = 0;
-		continue;
-	}
-
-        // scale and store the joystick axis to the relevant movement controller
-        *store_location = static_cast<int>(input_preferences->joystick_axis_sensitivities[i] * SDL_JoystickGetAxis(joystick, axis));
-        // clip if the value is too low
-        if ((*store_location < input_preferences->joystick_axis_bounds[i]) && (*store_location > -input_preferences->joystick_axis_bounds[i]))
-            *store_location = 0;
+	int axis_data[NUMBER_OF_JOYSTICK_MAPPINGS] = { 0, 0, 0, 0 };
+    for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; i++) {
+		int axis = input_preferences->joystick_axis_mappings[i];
+		if (axis < 0)
+			continue;
+		
+		// apply dead zone
+		if (ABS(axis_values[axis]) < input_preferences->joystick_axis_bounds[i]) {
+			axis_data[i] = 0;
+			continue;
+		}
+		float val = axis_values[axis]/32767.f * input_preferences->joystick_axis_sensitivities[i];
+		
+		// apply axis-specific sensitivity, to match keyboard
+		// velocities with user sensitivity at 1
+		switch (i) {
+			case _joystick_yaw:
+				val *= 6.f/63.f;
+				break;
+			case _joystick_pitch:
+				val *= 6.f/15.f;
+				break;
+		}
+		
+		// pin to largest d for which both -d and +d can be
+		// represented in 1 action flags bitset
+		float limit = 0.5f - 1.f / (1<<FIXED_FRACTIONAL_BITS);
+		switch (i) {
+			case _joystick_yaw:
+				limit = 0.5f - 1.f / (1<<ABSOLUTE_YAW_BITS);
+				break;
+			case _joystick_pitch:
+				limit = 0.5f - 1.f / (1<<ABSOLUTE_PITCH_BITS);
+				break;
+			case _joystick_velocity:
+				// forward and backward limits are independent and capped,
+				// so there's no need to ensure symmetry
+				limit = 0.5f;
+				break;
+			case _joystick_strafe:
+			default:
+				break;
+		}
+		axis_data[i] = PIN(val, -limit, limit) * FIXED_ONE;
     }
-    //printf("tick: %d\tstrafe: %d\tyaw: %d\tpitch: %d\tvel: %d\n", tick, strafe, yaw, pitch, vel);
-
     // we have intelligently set up ways to allow variably throttled movement
     // for these controls
-    flags = mask_in_absolute_positioning_information(flags, yaw, pitch, vel);
+    flags = mask_in_absolute_positioning_information(flags,
+													 axis_data[_joystick_yaw],
+													 axis_data[_joystick_pitch],
+													 axis_data[_joystick_velocity]);
     // but we don't for strafing!  so we do some PULSE MODULATION instead
-    int abs_strafe = strafe > 0 ? strafe : -strafe;
-    if (abs_strafe < input_preferences->joystick_axis_bounds[_joystick_strafe]) {
-        // do nothin, you're not pushing hard enough
-    } else if ((abs_strafe > 0) && (abs_strafe < strafe_bounds[0])) {
-        // jitter slowly
-        if (!(tick % 4)) {
-            if (strafe > 0)
-                flags |= _sidestepping_right;
-            else
-                flags |= _sidestepping_left;
-        }
-    } else if ((abs_strafe >= strafe_bounds[0]) && (abs_strafe < strafe_bounds[1])) {
-        // jitter a little more quickly
-        if (tick % 2) {
-            if (strafe > 0)
-                flags |= _sidestepping_right;
-            else
-                flags |= _sidestepping_left;
-        }
-    } else if ((abs_strafe >= strafe_bounds[1]) && (abs_strafe < strafe_bounds[2])) {
-        // jitter damn quickly
-        if (tick % 4) {
-            if (strafe > 0)
-                flags |= _sidestepping_right;
-            else
-                flags |= _sidestepping_left;
-        }
-    } else if (abs_strafe >= strafe_bounds[2]) {
-        // honest movement
-        if (strafe > 0)
-            flags |= _sidestepping_right;
-        else
-            flags |= _sidestepping_left;
-    }
+#define PULSE_PATTERNS 5
+#define PULSE_PERIOD 4
+	int pulses[PULSE_PATTERNS][PULSE_PERIOD] = {
+						 { 0, 0, 0, 0 },
+					     { 0, 0, 0, 1 },
+					     { 0, 1, 0, 1 },
+					     { 0, 1, 1, 1 },
+					     { 1, 1, 1, 1 } };
+	int which_pulse = MIN(PULSE_PATTERNS - 1, ABS(axis_data[_joystick_strafe])*PULSE_PATTERNS/32768);
+	if (pulses[which_pulse][tick % PULSE_PERIOD]) {
+		if (axis_data[_joystick_strafe] > 0)
+			flags |= _sidestepping_right;
+		else
+			flags |= _sidestepping_left;
+	}
 
     // finally, return this tick's action flags augmented with movement data
     return flags;

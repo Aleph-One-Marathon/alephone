@@ -229,6 +229,13 @@ void w_styled_text::draw(SDL_Surface *s) const
 	font->draw_styled_text(s, text_string, text_string.size(), rect.x, rect.y + font->get_ascent(), pixel, style);
 }
 
+void w_slider_text::draw(SDL_Surface *s) const
+{
+	int state = associated_slider->enabled ? (associated_slider->active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
+	uint16 style = 0;
+	draw_text(s, text, rect.x, rect.y + font->get_ascent() + (rect.h - font->get_line_height()) / 2, get_theme_color(LABEL_WIDGET, state, FOREGROUND_COLOR), font, style);
+}
+
 /*
  *  Picture (PICT resource)
  */
@@ -640,6 +647,45 @@ void w_tab::event(SDL_Event& e)
 
 		}
 	}
+	else if (e.type == SDL_CONTROLLERBUTTONDOWN)
+	{
+		switch (e.cbutton.button) {
+			case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+				if (active_tab > 0)
+				{
+					if (active_tab - 1== pressed_tab)
+					{
+						if (pressed_tab > 0)
+							active_tab -= 2;
+					}
+					else
+						active_tab--;
+					
+				}
+				dirty = true;
+				e.type = SDL_LASTEVENT;
+				break;
+				
+			case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+				if (active_tab < labels.size() - 1)
+				{
+					if (active_tab + 1 == pressed_tab)
+					{
+						if (pressed_tab < labels.size() - 1)
+							active_tab += 2;
+					}
+					else
+						active_tab++;
+				}
+				dirty = true;
+				e.type = SDL_LASTEVENT;
+				break;
+				
+			default:
+				break;
+				
+		}
+	}
 }
 
 /*
@@ -801,6 +847,24 @@ void w_select::event(SDL_Event &e)
 			selection_changed();
 			e.type = SDL_LASTEVENT;	// Swallow event
 		} else if (e.key.keysym.sym == SDLK_RIGHT) {
+			if (selection >= num_labels - 1)
+				selection = 0;
+			else
+				selection++;
+			selection_changed();
+			e.type = SDL_LASTEVENT;	// Swallow event
+		}
+	} else if (e.type == SDL_CONTROLLERBUTTONDOWN) {
+		if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_LEFT) {
+			if (num_labels == 0)
+				selection = 0;
+			else if (selection == 0)
+				selection = num_labels - 1;
+			else
+				selection--;
+			selection_changed();
+			e.type = SDL_LASTEVENT;	// Swallow event
+		} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
 			if (selection >= num_labels - 1)
 				selection = 0;
 			else
@@ -1477,24 +1541,9 @@ static const char* sMouseButtonKeyName[NUM_SDL_MOUSE_BUTTONS] = {
 };
 
 static const char* sJoystickButtonKeyName[NUM_SDL_JOYSTICK_BUTTONS] = {
-	"Joystick 1",
-	"Joystick 2",
-	"Joystick 3",
-	"Joystick 4",
-	"Joystick 5",
-	"Joystick 6",
-	"Joystick 7",
-	"Joystick 8",
-	"Joystick 9",
-	"Joystick 10",
-	"Joystick 11",
-	"Joystick 12",
-	"Joystick 13",
-	"Joystick 14",
-	"Joystick 15",
-	"Joystick 16",
-	"Joystick 17",
-	"Joystick 18"
+	"A", "B", "X", "Y", "Back", "Guide", "Start",
+	"LS", "RS", "LB", "RB", "Up", "Down", "Left", "Right",
+	"LT", "RT", "Unknown"
 };
 
 // ZZZ: this injects our phony key names but passes along the rest.
@@ -1547,9 +1596,18 @@ void w_key::event(SDL_Event &e)
 					handled = true;
 				}
 				break;
-			case SDL_JOYBUTTONDOWN:
-				if (e.button.button < NUM_SDL_JOYSTICK_BUTTONS) {
-					set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + e.button.button));
+			case SDL_CONTROLLERBUTTONDOWN:
+				if (e.cbutton.button < NUM_SDL_JOYSTICK_BUTTONS) {
+					set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + e.cbutton.button));
+					handled = true;
+				}
+				break;
+			case SDL_CONTROLLERAXISMOTION:
+				if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT) {
+					set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + AO_CONTROLLER_BUTTON_LEFTTRIGGER));
+					handled = true;
+				} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
+					set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + AO_CONTROLLER_BUTTON_RIGHTTRIGGER));
 					handled = true;
 				}
 				break;
@@ -1755,6 +1813,16 @@ void w_slider::event(SDL_Event &e)
 			item_selected();
 			e.type = SDL_LASTEVENT;	// Swallow event
 		}
+	} else if (e.type == SDL_CONTROLLERBUTTONDOWN) {
+		if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_LEFT) {
+			set_selection(selection - 1);
+			item_selected();
+			e.type = SDL_LASTEVENT;	// Swallow event
+		} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
+			set_selection(selection + 1);
+			item_selected();
+			e.type = SDL_LASTEVENT;	// Swallow event
+		}
 	} else if (e.type == SDL_MOUSEBUTTONUP) {
 		if (thumb_dragging) {
 			thumb_dragging = false;
@@ -1804,7 +1872,8 @@ void w_slider::init_formatted_value()
 	std::string tempstr = formatted_value();
 	selection = temp;
 	delete readout;
-	readout = new w_static_text(tempstr.c_str());
+	readout = new w_slider_text(tempstr.c_str());
+	readout->associated_slider = this;
 	saved_min_height = std::max(saved_min_height, readout->min_height());
 	saved_min_width = readout_x + readout->min_width();
 }
@@ -2012,6 +2081,19 @@ void w_list_base::event(SDL_Event &e)
 				set_selection(num_items - 1);
 				break;
 			default:
+				break;
+		}
+	} else if (e.type == SDL_CONTROLLERBUTTONDOWN) {
+		switch (e.cbutton.button) {
+			case SDL_CONTROLLER_BUTTON_DPAD_UP:
+				if (selection != 0)
+				{	set_selection(selection - 1); }
+				e.type = SDL_LASTEVENT;	// Prevent selection of previous widget
+				break;
+			case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+				if (selection < num_items - 1)
+				{	set_selection(selection + 1); }
+				e.type = SDL_LASTEVENT;	// Prevent selection of next widget
 				break;
 		}
 	} else if (e.type == SDL_MOUSEBUTTONUP) {

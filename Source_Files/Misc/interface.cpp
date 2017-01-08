@@ -258,6 +258,7 @@ struct game_state {
 	bool suppress_background_tasks;
 	bool current_netgame_allows_microphone;
 	short main_menu_display_count; // how many times have we shown the main menu?
+	short highlighted_main_menu_item;
 };
 
 struct screen_data {
@@ -1074,6 +1075,10 @@ void update_interface_display(
 	if (game_state.state == _display_main_menu)
 	{
 		draw_powered_by_aleph_one();
+		if (game_state.highlighted_main_menu_item >= 0)
+		{
+			draw_button(game_state.highlighted_main_menu_item + START_OF_MENU_INTERFACE_RECTS - 1, true);
+		}
 	}
 }
 
@@ -1250,6 +1255,7 @@ void display_main_menu(
 	game_state.last_ticks_on_idle= machine_tick_count();
 	game_state.user= _single_player;
 	game_state.flags= 0;
+	game_state.highlighted_main_menu_item= -1;
 	
 	Plugins::instance()->set_mode(Plugins::kMode_Menu);
 	change_screen_mode(_screentype_menu);
@@ -1496,6 +1502,52 @@ void portable_process_screen_click(
 			assert(false);
 			break;
 	}
+}
+
+void process_main_menu_highlight_advance(bool reverse)
+{
+	if (get_game_state() != _display_main_menu)
+		return;
+	
+	int old_button = game_state.highlighted_main_menu_item;
+	
+	// iterate through M2/Moo order
+	int item_order[] = {
+		iNewGame, iLoadGame, iGatherGame, iJoinGame,
+		iReplaySavedFilm, iReplayLastFilm, iSaveLastFilm,
+		iPreferences, iQuit, iCredits, iAbout };
+	int num_items = sizeof(item_order)/sizeof(int);
+	
+	if (game_state.highlighted_main_menu_item == -1) {
+		game_state.highlighted_main_menu_item = reverse ? item_order[0] : item_order[num_items - 1];
+	}
+	do {
+		int cur_idx = 0;
+		for (int i = 0; i < num_items; ++i) {
+			if (item_order[i] == game_state.highlighted_main_menu_item) {
+				cur_idx = i;
+				break;
+			}
+		}
+		int next_idx = (cur_idx + num_items + (reverse ? -1 : 1)) % num_items;
+		game_state.highlighted_main_menu_item = item_order[next_idx];
+	} while (!enabled_item(game_state.highlighted_main_menu_item));
+	
+	if (old_button != -1)
+		draw_button(old_button + START_OF_MENU_INTERFACE_RECTS - 1, false);
+	draw_button(game_state.highlighted_main_menu_item + START_OF_MENU_INTERFACE_RECTS - 1, true);
+}
+
+void process_main_menu_highlight_select(bool cheatkeys_down)
+{
+	if (get_game_state() != _display_main_menu)
+		return;
+	if (game_state.highlighted_main_menu_item == -1)
+		return;
+	if (!enabled_item(game_state.highlighted_main_menu_item))
+		return;
+	do_menu_item_command(mInterface, game_state.highlighted_main_menu_item, cheatkeys_down);
+	
 }
 
 bool enabled_item(
@@ -3089,6 +3141,7 @@ void show_movie(short index)
 				switch (event.type) {
 				case SDL_KEYDOWN:
 				case SDL_MOUSEBUTTONDOWN:
+				case SDL_CONTROLLERBUTTONDOWN:
 					done = true;
 					break;
 				default:
@@ -3206,6 +3259,7 @@ void show_movie(short index)
 				switch (event.type) {
 				case SDL_KEYDOWN:
 				case SDL_MOUSEBUTTONDOWN:
+				case SDL_CONTROLLERBUTTONDOWN:
 					done = true;
 					break;
 #ifdef HAVE_OPENGL

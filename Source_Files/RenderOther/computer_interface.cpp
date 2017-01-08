@@ -370,6 +370,7 @@ static void encode_text(terminal_text_t *terminal_text);
 static void decode_text(terminal_text_t *terminal_text);
 
 #include "sdl_fonts.h"
+#include "joystick.h" // for AO_SCANCODE_BASE_JOYSTICK_BUTTON
 
 
 // Global variables
@@ -391,7 +392,13 @@ static struct terminal_key terminal_keys[]= {
 	{SDL_SCANCODE_KP_ENTER, 0, 0, _terminal_next_state},	// enter
 	{SDL_SCANCODE_RETURN, 0, 0, _terminal_next_state},		// return
 	{SDL_SCANCODE_SPACE, 0, 0, _terminal_next_state},		// space
-	{SDL_SCANCODE_ESCAPE, 0, 0, _any_abort_key_mask}		// escape
+	{SDL_SCANCODE_ESCAPE, 0, 0, _any_abort_key_mask},		// escape
+	{AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_DPAD_UP, 0, 0, _terminal_page_up},
+	{AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_DPAD_DOWN, 0, 0, _terminal_page_down},
+	{AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_A, 0, 0, _terminal_next_state},
+	{AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_X, 0, 0, _terminal_next_state},
+	{AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_Y, 0, 0, _terminal_next_state},
+	{AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_B, 0, 0, _any_abort_key_mask}
 };
 
 

@@ -33,10 +33,25 @@ May 18, 2009 (Eric Peterson):
 #define AO_SCANCODE_BASE_JOYSTICK_BUTTON 415
 // keys resume at key 91, so that's room for 18 joystick buttons
 #define NUM_SDL_JOYSTICK_BUTTONS 18
+// Buttons 0-14 match SDL's controller enums; we support left/right triggers
+// as additional buttons instead of analog axis controls
+typedef enum
+{
+	AO_CONTROLLER_BUTTON_LEFTTRIGGER = 15,
+	AO_CONTROLLER_BUTTON_RIGHTTRIGGER
+} AO_GameControllerExtraButton;
+// joystick axes match the first four from SDL's controller API;
+// triggers are treated as buttons instead
+#define NUM_SDL_JOYSTICK_AXES 4
 
+void initialize_joystick(void);
 void enter_joystick(void);
 void exit_joystick(void);
 void joystick_buttons_become_keypresses(Uint8* ioKeyMap);
 int process_joystick_axes(int flags, int tick);
+void joystick_axis_moved(int instance_id, int axis, int value);
+void joystick_button_pressed(int instance_id, int button, bool down);
+void joystick_added(int device_index);
+void joystick_removed(int instance_id);
 
 #endif // JOYSTICK_H

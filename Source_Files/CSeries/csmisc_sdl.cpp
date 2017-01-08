@@ -47,8 +47,12 @@ bool wait_for_click_or_keypress(uint32 ticks)
 	SDL_Event event;
 	while (SDL_GetTicks() - start < ticks) {
 		SDL_PollEvent(&event);
-		if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_KEYDOWN)
-			return true;
+		switch (event.type) {
+			case SDL_MOUSEBUTTONDOWN:
+			case SDL_KEYDOWN:
+			case SDL_CONTROLLERBUTTONDOWN:
+				return true;
+		}
 		SDL_Delay(10);
 	}
 	return false;

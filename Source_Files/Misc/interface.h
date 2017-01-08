@@ -264,6 +264,8 @@ bool check_level_change(void);
 void pause_game(void);
 void resume_game(void);
 void portable_process_screen_click(short x, short y, bool cheatkeys_down);
+void process_main_menu_highlight_advance(bool reverse);
+void process_main_menu_highlight_select(bool cheatkeys_down);
 void draw_menu_button_for_command(short index);
 void update_interface_display(void);
 bool idle_game_state(uint32 ticks);

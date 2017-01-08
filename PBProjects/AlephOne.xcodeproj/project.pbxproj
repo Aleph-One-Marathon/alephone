@@ -56,6 +56,27 @@
 		271ADFC918A88B9C0073CB2E /* swscale.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCF177687B7009AAE10 /* swscale.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		2739B492101B862A00CC8098 /* Shape_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2739B490101B862A00CC8098 /* Shape_Blitter.cpp */; };
 		2739B493101B862A00CC8098 /* Shape_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 2739B491101B862A00CC8098 /* Shape_Blitter.h */; };
+		273FBB3A1E12222F0076351E /* mouse_cocoa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 273FBB381E12222F0076351E /* mouse_cocoa.cpp */; };
+		273FBB3B1E12222F0076351E /* mouse_cocoa.h in Headers */ = {isa = PBXBuildFile; fileRef = 273FBB391E12222F0076351E /* mouse_cocoa.h */; };
+		273FBB3C1E1222380076351E /* mouse_cocoa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 273FBB381E12222F0076351E /* mouse_cocoa.cpp */; };
+		273FBB3D1E1222390076351E /* mouse_cocoa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 273FBB381E12222F0076351E /* mouse_cocoa.cpp */; };
+		273FBB3E1E1222390076351E /* mouse_cocoa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 273FBB381E12222F0076351E /* mouse_cocoa.cpp */; };
+		273FBB3F1E12223A0076351E /* mouse_cocoa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 273FBB381E12222F0076351E /* mouse_cocoa.cpp */; };
+		273FBB401E12223B0076351E /* mouse_cocoa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 273FBB381E12222F0076351E /* mouse_cocoa.cpp */; };
+		273FBB411E12223B0076351E /* mouse_cocoa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 273FBB381E12222F0076351E /* mouse_cocoa.cpp */; };
+		273FBB421E1222400076351E /* mouse_cocoa.h in Headers */ = {isa = PBXBuildFile; fileRef = 273FBB391E12222F0076351E /* mouse_cocoa.h */; };
+		273FBB431E1222400076351E /* mouse_cocoa.h in Headers */ = {isa = PBXBuildFile; fileRef = 273FBB391E12222F0076351E /* mouse_cocoa.h */; };
+		273FBB441E1222410076351E /* mouse_cocoa.h in Headers */ = {isa = PBXBuildFile; fileRef = 273FBB391E12222F0076351E /* mouse_cocoa.h */; };
+		273FBB451E1222420076351E /* mouse_cocoa.h in Headers */ = {isa = PBXBuildFile; fileRef = 273FBB391E12222F0076351E /* mouse_cocoa.h */; };
+		273FBB461E1222420076351E /* mouse_cocoa.h in Headers */ = {isa = PBXBuildFile; fileRef = 273FBB391E12222F0076351E /* mouse_cocoa.h */; };
+		273FBB471E1222430076351E /* mouse_cocoa.h in Headers */ = {isa = PBXBuildFile; fileRef = 273FBB391E12222F0076351E /* mouse_cocoa.h */; };
+		273FBB491E122C9F0076351E /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 273FBB481E122C9F0076351E /* IOKit.framework */; };
+		273FBB4A1E122CA20076351E /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 273FBB481E122C9F0076351E /* IOKit.framework */; };
+		273FBB4B1E122CA20076351E /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 273FBB481E122C9F0076351E /* IOKit.framework */; };
+		273FBB4C1E122CA30076351E /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 273FBB481E122C9F0076351E /* IOKit.framework */; };
+		273FBB4D1E122CA30076351E /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 273FBB481E122C9F0076351E /* IOKit.framework */; };
+		273FBB4E1E122CA40076351E /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 273FBB481E122C9F0076351E /* IOKit.framework */; };
+		273FBB4F1E122CA40076351E /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 273FBB481E122C9F0076351E /* IOKit.framework */; };
 		2748BDC51CC405030082F0E1 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; };
 		2748BDC61CC405030082F0E1 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; };
 		2748BDC71CC405040082F0E1 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; };
@@ -3532,6 +3553,9 @@
 		2710CC601B8F94FC00CE2EAE /* OGL_FBO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_FBO.h; sourceTree = "<group>"; };
 		2739B490101B862A00CC8098 /* Shape_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Shape_Blitter.cpp; sourceTree = "<group>"; };
 		2739B491101B862A00CC8098 /* Shape_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shape_Blitter.h; sourceTree = "<group>"; };
+		273FBB381E12222F0076351E /* mouse_cocoa.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mouse_cocoa.cpp; sourceTree = "<group>"; };
+		273FBB391E12222F0076351E /* mouse_cocoa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mouse_cocoa.h; sourceTree = "<group>"; };
+		273FBB481E122C9F0076351E /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = ../../../../../../System/Library/Frameworks/IOKit.framework; sourceTree = "<group>"; };
 		2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_rwops_zzip.c; sourceTree = "<group>"; };
 		2759F31A10D5BC9C000204DD /* SDL_rwops_zzip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_rwops_zzip.h; sourceTree = "<group>"; };
 		2759F32F10D5BCC0000204DD /* zziplib.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = zziplib.framework; sourceTree = "<group>"; };
@@ -4067,6 +4091,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				273FBB4D1E122CA30076351E /* IOKit.framework in Frameworks */,
 				27A6D69E1B9BF021003DA766 /* libcurl.dylib in Frameworks */,
 				27A6D69F1B9BF021003DA766 /* OpenGL.framework in Frameworks */,
 				27A6D6A01B9BF021003DA766 /* Cocoa.framework in Frameworks */,
@@ -4096,6 +4121,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				273FBB4E1E122CA40076351E /* IOKit.framework in Frameworks */,
 				27A6D87A1B9BF029003DA766 /* libcurl.dylib in Frameworks */,
 				27A6D87B1B9BF029003DA766 /* OpenGL.framework in Frameworks */,
 				27A6D87C1B9BF029003DA766 /* Cocoa.framework in Frameworks */,
@@ -4125,6 +4151,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				273FBB4F1E122CA40076351E /* IOKit.framework in Frameworks */,
 				27A6DA561B9BF031003DA766 /* libcurl.dylib in Frameworks */,
 				27A6DA571B9BF031003DA766 /* OpenGL.framework in Frameworks */,
 				27A6DA581B9BF031003DA766 /* Cocoa.framework in Frameworks */,
@@ -4154,6 +4181,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				273FBB4B1E122CA20076351E /* IOKit.framework in Frameworks */,
 				275A7BD51A60DE9B002EE952 /* libcurl.dylib in Frameworks */,
 				AE505CEF141D45E600915344 /* OpenGL.framework in Frameworks */,
 				AE505CF0141D45E600915344 /* Cocoa.framework in Frameworks */,
@@ -4183,6 +4211,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				273FBB4C1E122CA30076351E /* IOKit.framework in Frameworks */,
 				275A7BD61A60DEA3002EE952 /* libcurl.dylib in Frameworks */,
 				AEB4A29114296CAE00537AE7 /* OpenGL.framework in Frameworks */,
 				AEB4A29214296CAE00537AE7 /* Cocoa.framework in Frameworks */,
@@ -4212,6 +4241,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				273FBB491E122C9F0076351E /* IOKit.framework in Frameworks */,
 				275A7BD31A60DE77002EE952 /* libcurl.dylib in Frameworks */,
 				AEC3C87009AD68AC003258E4 /* OpenGL.framework in Frameworks */,
 				27E5DD621BD2DA0C00A95619 /* SDL2.framework in Frameworks */,
@@ -4241,6 +4271,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				273FBB4A1E122CA20076351E /* IOKit.framework in Frameworks */,
 				275A7BD41A60DE8C002EE952 /* libcurl.dylib in Frameworks */,
 				AEFD879B13EB84CF00C1E687 /* OpenGL.framework in Frameworks */,
 				AEFD879C13EB84CF00C1E687 /* Cocoa.framework in Frameworks */,
@@ -4340,6 +4371,7 @@
 		29B97323FDCFA39411CA2CEA /* System Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				273FBB481E122C9F0076351E /* IOKit.framework */,
 				3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */,
 				3D22CF880FD86EAE00B17822 /* AudioUnit.framework */,
 				F5830B4001E776DE01BA387C /* OpenGL.framework */,
@@ -4910,6 +4942,8 @@
 		F5CC92D70240D54401A80001 /* Input */ = {
 			isa = PBXGroup;
 			children = (
+				273FBB381E12222F0076351E /* mouse_cocoa.cpp */,
+				273FBB391E12222F0076351E /* mouse_cocoa.h */,
 				AEAE12FD0FC9AB4900EDA5A6 /* joystick.h */,
 				AEAE12FE0FC9AB4900EDA5A6 /* joystick_sdl.cpp */,
 				F5CC92D90240D54401A80001 /* mouse.h */,
@@ -5210,6 +5244,7 @@
 				27A6D4F71B9BF021003DA766 /* cseries.h in Headers */,
 				27A6DAC71B9CE950003DA766 /* Scenario.h in Headers */,
 				27A6D4F91B9BF021003DA766 /* csfonts.h in Headers */,
+				273FBB451E1222420076351E /* mouse_cocoa.h in Headers */,
 				27A6D4FA1B9BF021003DA766 /* csmacros.h in Headers */,
 				27A6D4FB1B9BF021003DA766 /* csmisc.h in Headers */,
 				27A6D4FC1B9BF021003DA766 /* CourierPrimeBold.h in Headers */,
@@ -5431,6 +5466,7 @@
 				27A6D6D31B9BF029003DA766 /* cseries.h in Headers */,
 				27A6DAC81B9CE950003DA766 /* Scenario.h in Headers */,
 				27A6D6D51B9BF029003DA766 /* csfonts.h in Headers */,
+				273FBB461E1222420076351E /* mouse_cocoa.h in Headers */,
 				27A6D6D61B9BF029003DA766 /* csmacros.h in Headers */,
 				27A6D6D71B9BF029003DA766 /* csmisc.h in Headers */,
 				27A6D6D81B9BF029003DA766 /* CourierPrimeBold.h in Headers */,
@@ -5652,6 +5688,7 @@
 				27A6D8AF1B9BF031003DA766 /* cseries.h in Headers */,
 				27A6DAC91B9CE951003DA766 /* Scenario.h in Headers */,
 				27A6D8B11B9BF031003DA766 /* csfonts.h in Headers */,
+				273FBB471E1222430076351E /* mouse_cocoa.h in Headers */,
 				27A6D8B21B9BF031003DA766 /* csmacros.h in Headers */,
 				27A6D8B31B9BF031003DA766 /* csmisc.h in Headers */,
 				27A6D8B41B9BF031003DA766 /* CourierPrimeBold.h in Headers */,
@@ -5873,6 +5910,7 @@
 				AE505B56141D45E600915344 /* cseries.h in Headers */,
 				27A6DAC51B9CE94F003DA766 /* Scenario.h in Headers */,
 				AE505B58141D45E600915344 /* csfonts.h in Headers */,
+				273FBB431E1222400076351E /* mouse_cocoa.h in Headers */,
 				AE505B59141D45E600915344 /* csmacros.h in Headers */,
 				AE505B5A141D45E600915344 /* csmisc.h in Headers */,
 				276BED0E1A846FD900AE52F4 /* CourierPrimeBold.h in Headers */,
@@ -6094,6 +6132,7 @@
 				AEB4A0F614296CAE00537AE7 /* cseries.h in Headers */,
 				27A6DAC61B9CE94F003DA766 /* Scenario.h in Headers */,
 				AEB4A0F814296CAE00537AE7 /* csfonts.h in Headers */,
+				273FBB441E1222410076351E /* mouse_cocoa.h in Headers */,
 				AEB4A0F914296CAE00537AE7 /* csmacros.h in Headers */,
 				AEB4A0FA14296CAE00537AE7 /* csmisc.h in Headers */,
 				276BED0F1A846FD900AE52F4 /* CourierPrimeBold.h in Headers */,
@@ -6315,6 +6354,7 @@
 				AEC3C71B09AD68AC003258E4 /* csalerts.h in Headers */,
 				AEC3C71C09AD68AC003258E4 /* cscluts.h in Headers */,
 				276BED081A846FD900AE52F4 /* CourierPrime.h in Headers */,
+				273FBB3B1E12222F0076351E /* mouse_cocoa.h in Headers */,
 				AEC3C71D09AD68AC003258E4 /* csdialogs.h in Headers */,
 				AEC3C71E09AD68AC003258E4 /* cseries.h in Headers */,
 				AEC3C72009AD68AC003258E4 /* csfonts.h in Headers */,
@@ -6536,6 +6576,7 @@
 				AEFD860413EB84CF00C1E687 /* cseries.h in Headers */,
 				27A6DAC41B9CE94E003DA766 /* Scenario.h in Headers */,
 				AEFD860613EB84CF00C1E687 /* csfonts.h in Headers */,
+				273FBB421E1222400076351E /* mouse_cocoa.h in Headers */,
 				AEFD860713EB84CF00C1E687 /* csmacros.h in Headers */,
 				AEFD860813EB84CF00C1E687 /* csmisc.h in Headers */,
 				276BED0D1A846FD900AE52F4 /* CourierPrimeBold.h in Headers */,
@@ -7328,6 +7369,7 @@
 				27A6D5C51B9BF021003DA766 /* preferences.cpp in Sources */,
 				27A6D5C61B9BF021003DA766 /* sdl_dialogs.cpp in Sources */,
 				27A6D5C71B9BF021003DA766 /* sdl_widgets.cpp in Sources */,
+				273FBB3F1E12223A0076351E /* mouse_cocoa.cpp in Sources */,
 				27A6D5C81B9BF021003DA766 /* shell_misc.cpp in Sources */,
 				27A6D5C91B9BF021003DA766 /* shell.cpp in Sources */,
 				27A6D5CA1B9BF021003DA766 /* vbl.cpp in Sources */,
@@ -7558,6 +7600,7 @@
 				27A6D7A11B9BF029003DA766 /* preferences.cpp in Sources */,
 				27A6D7A21B9BF029003DA766 /* sdl_dialogs.cpp in Sources */,
 				27A6D7A31B9BF029003DA766 /* sdl_widgets.cpp in Sources */,
+				273FBB411E12223B0076351E /* mouse_cocoa.cpp in Sources */,
 				27A6D7A41B9BF029003DA766 /* shell_misc.cpp in Sources */,
 				27A6D7A51B9BF029003DA766 /* shell.cpp in Sources */,
 				27A6D7A61B9BF029003DA766 /* vbl.cpp in Sources */,
@@ -7788,6 +7831,7 @@
 				27A6D97D1B9BF031003DA766 /* preferences.cpp in Sources */,
 				27A6D97E1B9BF031003DA766 /* sdl_dialogs.cpp in Sources */,
 				27A6D97F1B9BF031003DA766 /* sdl_widgets.cpp in Sources */,
+				273FBB401E12223B0076351E /* mouse_cocoa.cpp in Sources */,
 				27A6D9801B9BF031003DA766 /* shell_misc.cpp in Sources */,
 				27A6D9811B9BF031003DA766 /* shell.cpp in Sources */,
 				27A6D9821B9BF031003DA766 /* vbl.cpp in Sources */,
@@ -8018,6 +8062,7 @@
 				AE505C1A141D45E600915344 /* preferences.cpp in Sources */,
 				AE505C1B141D45E600915344 /* sdl_dialogs.cpp in Sources */,
 				AE505C1C141D45E600915344 /* sdl_widgets.cpp in Sources */,
+				273FBB3D1E1222390076351E /* mouse_cocoa.cpp in Sources */,
 				AE505C1D141D45E600915344 /* shell_misc.cpp in Sources */,
 				AE505C1E141D45E600915344 /* shell.cpp in Sources */,
 				AE505C1F141D45E600915344 /* vbl.cpp in Sources */,
@@ -8248,6 +8293,7 @@
 				AEB4A1BB14296CAE00537AE7 /* preferences.cpp in Sources */,
 				AEB4A1BC14296CAE00537AE7 /* sdl_dialogs.cpp in Sources */,
 				AEB4A1BD14296CAE00537AE7 /* sdl_widgets.cpp in Sources */,
+				273FBB3E1E1222390076351E /* mouse_cocoa.cpp in Sources */,
 				AEB4A1BE14296CAE00537AE7 /* shell_misc.cpp in Sources */,
 				AEB4A1BF14296CAE00537AE7 /* shell.cpp in Sources */,
 				AEB4A1C014296CAE00537AE7 /* vbl.cpp in Sources */,
@@ -8478,6 +8524,7 @@
 				AEC3C7DD09AD68AC003258E4 /* preferences.cpp in Sources */,
 				AEC3C7DE09AD68AC003258E4 /* sdl_dialogs.cpp in Sources */,
 				AEC3C7DF09AD68AC003258E4 /* sdl_widgets.cpp in Sources */,
+				273FBB3A1E12222F0076351E /* mouse_cocoa.cpp in Sources */,
 				AEC3C7E009AD68AC003258E4 /* shell_misc.cpp in Sources */,
 				AEC3C7E109AD68AC003258E4 /* shell.cpp in Sources */,
 				AEC3C7E309AD68AC003258E4 /* vbl.cpp in Sources */,
@@ -8708,6 +8755,7 @@
 				AEFD86C713EB84CF00C1E687 /* preferences.cpp in Sources */,
 				AEFD86C813EB84CF00C1E687 /* sdl_dialogs.cpp in Sources */,
 				AEFD86C913EB84CF00C1E687 /* sdl_widgets.cpp in Sources */,
+				273FBB3C1E1222380076351E /* mouse_cocoa.cpp in Sources */,
 				AEFD86CA13EB84CF00C1E687 /* shell_misc.cpp in Sources */,
 				AEFD86CB13EB84CF00C1E687 /* shell.cpp in Sources */,
 				AEFD86CC13EB84CF00C1E687 /* vbl.cpp in Sources */,
