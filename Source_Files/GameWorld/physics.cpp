@@ -281,16 +281,14 @@ void get_absolute_pitch_range(
 	*maximum= constants->maximum_elevation;
 }
 
-/* deltas of zero are ignored; all deltas must be in [-FIXED_ONE,FIXED_ONE] which will be scaled
-	to the maximum for that value */
 uint32 mask_in_absolute_positioning_information(
 	uint32 action_flags,
-	_fixed delta_yaw,
-	_fixed delta_pitch,
-	_fixed delta_position)
+	_fixed delta_yaw,      // Clamped to +/- FIXED_ONE/4, with units of FIXED_ONE = 90 deg
+	_fixed delta_pitch,    // Clamped to +/- FIXED_ONE/4, with units of FIXED_ONE = 22.5 deg
+	_fixed delta_position) // Clamped to [-FIXED_ONE/2, (0.5 - 2^-7)*FIXED_ONE] (max backward/forward step)
 {
 	struct physics_variables *variables= &local_player->variables;
-	short encoded_delta;
+	int32 encoded_delta;
 
 	if ((delta_yaw||variables->angular_velocity) && !(action_flags&_override_absolute_yaw))
 	{
@@ -302,6 +300,7 @@ uint32 mask_in_absolute_positioning_information(
 			sign_yaw = -1.0;
 			delta_yaw = -delta_yaw;
 		}
+		delta_yaw = MIN(delta_yaw, FIXED_ONE/4);
 		encoded_delta= sign_yaw*(delta_yaw>>(FIXED_FRACTIONAL_BITS-ABSOLUTE_YAW_BITS))+MAXIMUM_ABSOLUTE_YAW/2;
 		encoded_delta= PIN(encoded_delta, 0, MAXIMUM_ABSOLUTE_YAW-1);
 		action_flags= SET_ABSOLUTE_YAW(action_flags, encoded_delta)|_absolute_yaw_mode;
@@ -315,6 +314,7 @@ uint32 mask_in_absolute_positioning_information(
 			sign_pitch = -1.0;
 			delta_pitch = -delta_pitch;
 		}
+		delta_pitch = MIN(delta_pitch, FIXED_ONE/4);
 		encoded_delta= sign_pitch*(delta_pitch>>(FIXED_FRACTIONAL_BITS-ABSOLUTE_PITCH_BITS))+MAXIMUM_ABSOLUTE_PITCH/2;
 		encoded_delta= PIN(encoded_delta, 0, MAXIMUM_ABSOLUTE_PITCH-1);
 		action_flags= SET_ABSOLUTE_PITCH(action_flags, encoded_delta)|_absolute_pitch_mode;

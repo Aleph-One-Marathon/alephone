@@ -134,15 +134,6 @@ void mouse_idle(short type)
 		// 1 dy unit = 1 * 2^ABSOLUTE_PITCH_BITS * (360 deg / 2^ANGULAR_BITS)
 		//           = 22.5 deg
 		
-		// Largest dx for which both -dx and +dx can be represented in 1 action flags bitset
-		const float dxLimit = 0.5f - 1.f / (1<<ABSOLUTE_YAW_BITS);  // 0.4921875 dx units (~44.30 deg)
-		
-		// Largest dy for which both -dy and +dy can be represented in 1 action flags bitset
-		const float dyLimit = 0.5f - 1.f / (1<<ABSOLUTE_PITCH_BITS);  // 0.46875 dy units (~10.55 deg)
-		
-		dx = PIN(dx, -dxLimit, dxLimit);
-		dy = PIN(dy, -dyLimit, dyLimit);
-		
 		snapshot_delta_yaw   = static_cast<_fixed>(dx * FIXED_ONE);
 		snapshot_delta_pitch = static_cast<_fixed>(dy * FIXED_ONE);
 	}
