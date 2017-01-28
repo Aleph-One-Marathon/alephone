@@ -1,6 +1,6 @@
 #!/bin/sh
-PREFIX=/home/local/mxe/usr
 TARGET=i686-w64-mingw32.static
+PREFIX=/usr/lib/mxe/
 PATH="$PREFIX/bin:$PREFIX/$TARGET/bin:$PATH"
 
 if [ -f "$PREFIX/$TARGET/bin/$TARGET-sdl-config" ]; then
