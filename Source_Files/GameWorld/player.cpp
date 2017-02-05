@@ -441,7 +441,6 @@ short new_player(
 	player->extravision_duration= 0;
 	player->identifier= player_identifier_value(identifier);
 
-	SET_PLAYER_DOESNT_AUTO_RECENTER_STATUS(player, player_identifier_doesnt_auto_recenter(identifier));
 	SET_PLAYER_DOESNT_AUTO_SWITCH_WEAPONS_STATUS(player, player_identifier_doesnt_auto_switch_weapons(identifier));
 	
 	/* initialize inventory */	
