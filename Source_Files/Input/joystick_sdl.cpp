@@ -125,7 +125,7 @@ int process_joystick_axes(int flags, int tick) {
     if (!joystick_active)
         return flags;
 
-	int axis_data[NUMBER_OF_JOYSTICK_MAPPINGS] = { 0, 0, 0, 0 };
+	_fixed axis_data[NUMBER_OF_JOYSTICK_MAPPINGS] = { 0, 0, 0, 0 };
     for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; i++) {
 		int axis = input_preferences->joystick_axis_mappings[i];
 		if (axis < 0)
@@ -149,26 +149,7 @@ int process_joystick_axes(int flags, int tick) {
 				break;
 		}
 		
-		// pin to largest d for which both -d and +d can be
-		// represented in 1 action flags bitset
-		float limit = 0.5f - 1.f / (1<<FIXED_FRACTIONAL_BITS);
-		switch (i) {
-			case _joystick_yaw:
-				limit = 0.5f - 1.f / (1<<ABSOLUTE_YAW_BITS);
-				break;
-			case _joystick_pitch:
-				limit = 0.5f - 1.f / (1<<ABSOLUTE_PITCH_BITS);
-				break;
-			case _joystick_velocity:
-				// forward and backward limits are independent and capped,
-				// so there's no need to ensure symmetry
-				limit = 0.5f;
-				break;
-			case _joystick_strafe:
-			default:
-				break;
-		}
-		axis_data[i] = PIN(val, -limit, limit) * FIXED_ONE;
+		axis_data[i] = static_cast<_fixed>(val * FIXED_ONE);
     }
     // we have intelligently set up ways to allow variably throttled movement
     // for these controls
