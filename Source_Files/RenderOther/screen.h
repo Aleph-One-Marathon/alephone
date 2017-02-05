@@ -167,7 +167,6 @@ extern struct color_table *world_color_table, *visible_color_table, *interface_c
 /* ---------- prototypes/SCREEN.C */
 
 void initialize_gamma(void);
-void restore_gamma(void);
 
 void change_screen_clut(struct color_table *color_table);
 void change_interface_clut(struct color_table *color_table);

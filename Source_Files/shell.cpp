@@ -702,7 +702,6 @@ void shutdown_application(void)
 	WadImageCache::instance()->save_cache();
 	close_external_resources();
         
-	restore_gamma();
 #if defined(HAVE_SDL_IMAGE) && (SDL_IMAGE_PATCHLEVEL >= 8)
 	IMG_Quit();
 #endif

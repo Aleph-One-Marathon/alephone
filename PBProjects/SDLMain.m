@@ -451,25 +451,9 @@ int shell_main(int argc, char **argv);
 //#  undef main
 //#endif
 
-
-static int IsTenPointNineOrLater()
-{
-    /* Gestalt() is deprecated in 10.8, but I don't care. Stop using SDL 1.2. */
-    SInt32 major, minor;
-    Gestalt(gestaltSystemVersionMajor, &major);
-    Gestalt(gestaltSystemVersionMinor, &minor);
-    return ( ((major << 16) | minor) >= ((10 << 16) | 9) );
-}
-
-extern bool force_software_gamma;
-
 /* Main entry point to executable - should *not* be SDL_main! */
 int main (int argc, char **argv)
 {
-    /* Disable gamma under 10.9 */
-    if (IsTenPointNineOrLater())
-        force_software_gamma = true;
-    
     /* Copy the arguments into a global variable */
     if (getenv("ALEPHONE_FINDER_LAUNCH")) {
         gArgv = (char **) SDL_malloc(sizeof (char *) * 2);
