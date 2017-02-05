@@ -1282,12 +1282,11 @@ static void process_game_key(const SDL_Event &event)
 			case SDLK_r:
 				item = iRevert;
 				break;
-// ZZZ: Alt+F4 is also a quit gesture in Windows
-#ifdef __WIN32__
-			case SDLK_F4:
-#endif
 			case SDLK_q:
+// On Mac, this key will trigger the application menu so we ignore it here
+#if !defined(__APPLE__) && !defined(__MACH__)
 				item = iQuitGame;
+#endif
 				break;
 			case SDLK_RETURN:
 				item = 0;
@@ -1356,10 +1355,6 @@ static void process_game_key(const SDL_Event &event)
 		case SDLK_c:
 			item = iCredits;
 			break;
-// ZZZ: Alt+F4 is also a quit gesture in Windows
-#ifdef __WIN32__
-                case SDLK_F4:
-#endif
 		case SDLK_q:
 			item = iQuit;
 			break;
