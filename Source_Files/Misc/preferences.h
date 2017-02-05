@@ -208,6 +208,7 @@ struct input_preferences_data
 	_fixed sens_horizontal;
 	_fixed sens_vertical;
 	bool raw_mouse_input;
+	float mouse_max_speed;
 	
 	bool use_joystick;
 	int16 joystick_axis_mappings[NUMBER_OF_JOYSTICK_MAPPINGS];

@@ -1637,6 +1637,12 @@ static void controls_dialog(void *arg)
 	mouse->dual_add(sens_horizontal_w, d);
 
 	mouse_w->add_dependent_widget(sens_horizontal_w);
+	
+	w_percentage_slider* m_speed_w = new w_percentage_slider(100, input_preferences->mouse_max_speed * 200);
+	mouse->dual_add(m_speed_w->label("Max Speed"), d);
+	mouse->dual_add(m_speed_w, d);
+	
+	mouse_w->add_dependent_widget(m_speed_w);
 
 	table_placer *jtoggle = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	joystick_w = new w_enabling_toggle(input_preferences->input_device == 0 && input_preferences->use_joystick, true);
@@ -1781,6 +1787,12 @@ static void controls_dialog(void *arg)
             input_preferences->sens_horizontal = _fixed(std::exp(theNewSensitivityLog) * FIXED_ONE);
             changed = true;
         }
+		
+		theNewSliderPosition = m_speed_w->get_selection();
+		if (theNewSliderPosition != input_preferences->mouse_max_speed * 200) {
+			input_preferences->mouse_max_speed = theNewSliderPosition / 200.f;
+			changed = true;
+		}
 		
 		if (raw_mouse_w->get_selection() != input_preferences->raw_mouse_input) {
 			input_preferences->raw_mouse_input = raw_mouse_w->get_selection();
@@ -2824,6 +2836,7 @@ InfoTree input_preferences_tree()
 	root.put_attr("modifiers", input_preferences->modifiers);
 	root.put_attr("sens_horizontal", input_preferences->sens_horizontal);
 	root.put_attr("sens_vertical", input_preferences->sens_vertical);
+	root.put_attr("mouse_max_speed", input_preferences->mouse_max_speed);
 	root.put_attr("use_controller", input_preferences->use_joystick);
 
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
@@ -3130,6 +3143,7 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->sens_horizontal = FIXED_ONE;
 	preferences->sens_vertical = FIXED_ONE;
 	preferences->raw_mouse_input = false;
+	preferences->mouse_max_speed = 1.f;
 
 	preferences->use_joystick = true;
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
@@ -3684,6 +3698,10 @@ void parse_input_preferences(InfoTree root, std::string version)
 	root.read_attr("sensitivity", input_preferences->sens_vertical);
 	root.read_attr("sens_horizontal", input_preferences->sens_horizontal);
 	root.read_attr("sens_vertical", input_preferences->sens_vertical);
+	
+	if (!version.length() || version < "20170205")
+		input_preferences->mouse_max_speed = .25f;
+	root.read_attr("mouse_max_speed", input_preferences->mouse_max_speed);
 	
 	root.read_attr("use_controller", input_preferences->use_joystick);
 

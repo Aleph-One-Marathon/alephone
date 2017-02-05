@@ -135,10 +135,13 @@ void mouse_idle(short type)
 		//           = 22.5 deg
 		
 		// Largest dx for which both -dx and +dx can be represented in 1 action flags bitset
-		const float dxLimit = 0.5f - 1.f / (1<<ABSOLUTE_YAW_BITS);  // 0.4921875 dx units (~44.30 deg)
+		float dxLimit = 0.5f - 1.f / (1<<ABSOLUTE_YAW_BITS);  // 0.4921875 dx units (~44.30 deg)
 		
 		// Largest dy for which both -dy and +dy can be represented in 1 action flags bitset
-		const float dyLimit = 0.5f - 1.f / (1<<ABSOLUTE_PITCH_BITS);  // 0.46875 dy units (~10.55 deg)
+		float dyLimit = 0.5f - 1.f / (1<<ABSOLUTE_PITCH_BITS);  // 0.46875 dy units (~10.55 deg)
+		
+		dxLimit = MIN(dxLimit, input_preferences->mouse_max_speed);
+		dyLimit = MIN(dyLimit, input_preferences->mouse_max_speed);
 		
 		dx = PIN(dx, -dxLimit, dxLimit);
 		dy = PIN(dy, -dyLimit, dyLimit);
