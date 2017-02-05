@@ -444,11 +444,10 @@ void ResetFieldOfView();
 // LP change: modification of Josh Elsasser's dont-switch-weapons patch
 bool dont_switch_to_new_weapon();
 
-// ZZZ: corresponds with dont_switch_to_new_weapon()
 bool dont_auto_recenter();
 
 // ZZZ: let code disable (standardize)/enable behavior modifiers like
-// dont_switch and dont_auto_recenter
+// dont_switch
 void standardize_player_behavior_modifiers();
 void restore_custom_player_behavior_modifiers();
 
