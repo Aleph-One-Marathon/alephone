@@ -1679,9 +1679,9 @@ static void controls_dialog(void *arg)
 		joystick_invert_w[i] = new w_toggle(input_preferences->joystick_axis_sensitivities[i] < 0);
 		
 		theSensitivityLog = std::log(ABS(input_preferences->joystick_axis_sensitivities[i]));
-		theVerticalSliderPosition =
+		int joystickSliderPosition =
 		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
-		joystick_sens_w[i] = new w_sens_slider(1000, theVerticalSliderPosition);
+		joystick_sens_w[i] = new w_sens_slider(1000, joystickSliderPosition);
 	}
 	
 	table_placer *atable = new table_placer(4, get_theme_space(ITEM_WIDGET), false);
