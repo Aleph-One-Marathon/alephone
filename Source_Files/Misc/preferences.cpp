@@ -987,6 +987,10 @@ static const char* term_scale_labels[] = {
 "Normal", "Double", "Largest", NULL
 };
 
+static const char* mouse_accel_labels[] = {
+	"Off", "Classic", NULL
+};
+
 static const char* max_saves_labels[] = {
 	"20", "100", "500", "Unlimited", NULL
 };
@@ -1644,6 +1648,18 @@ static void controls_dialog(void *arg)
 	
 	mouse_w->add_dependent_widget(m_speed_w);
 
+	w_select* m_accel_type_w = new w_select(input_preferences->mouse_accel_type, mouse_accel_labels);
+	mouse->dual_add(m_accel_type_w->label("Acceleration"), d);
+	mouse->dual_add(m_accel_type_w, d);
+	
+	mouse_w->add_dependent_widget(m_accel_type_w);
+	
+	w_percentage_slider* m_accel_scale_w = new w_percentage_slider(100, input_preferences->mouse_accel_scale * 100.f);
+	mouse->dual_add(m_accel_scale_w->label("Accel. Amount"), d);
+	mouse->dual_add(m_accel_scale_w, d);
+	
+	mouse_w->add_dependent_widget(m_accel_scale_w);
+	
 	table_placer *jtoggle = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	joystick_w = new w_enabling_toggle(input_preferences->input_device == 0 && input_preferences->use_joystick, true);
 	joystick_w->set_selection_changed_callback(input_selected);
@@ -1796,6 +1812,18 @@ static void controls_dialog(void *arg)
 		
 		if (raw_mouse_w->get_selection() != input_preferences->raw_mouse_input) {
 			input_preferences->raw_mouse_input = raw_mouse_w->get_selection();
+			changed = true;
+		}
+		
+		if (m_accel_type_w->get_selection() != input_preferences->mouse_accel_type)
+		{
+			input_preferences->mouse_accel_type = m_accel_type_w->get_selection();
+			changed = true;
+		}
+
+		float newAccel = m_accel_scale_w->get_selection() / 100.f;
+		if (newAccel != input_preferences->mouse_accel_scale) {
+			input_preferences->mouse_accel_scale = newAccel;
 			changed = true;
 		}
 
@@ -2837,6 +2865,8 @@ InfoTree input_preferences_tree()
 	root.put_attr("sens_horizontal", input_preferences->sens_horizontal);
 	root.put_attr("sens_vertical", input_preferences->sens_vertical);
 	root.put_attr("mouse_max_speed", input_preferences->mouse_max_speed);
+	root.put_attr("mouse_accel_type", input_preferences->mouse_accel_type);
+	root.put_attr("mouse_accel_scale", input_preferences->mouse_accel_scale);
 	root.put_attr("use_controller", input_preferences->use_joystick);
 
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
@@ -3142,6 +3172,8 @@ static void default_input_preferences(input_preferences_data *preferences)
 	// ZZZ addition: sensitivity factor starts at 1 (no adjustment)
 	preferences->sens_horizontal = FIXED_ONE;
 	preferences->sens_vertical = FIXED_ONE;
+	preferences->mouse_accel_type = _mouse_accel_none;
+	preferences->mouse_accel_scale = 1.f;
 	preferences->raw_mouse_input = false;
 	preferences->mouse_max_speed = 1.f;
 
@@ -3702,6 +3734,18 @@ void parse_input_preferences(InfoTree root, std::string version)
 	if (!version.length() || version < "20170205")
 		input_preferences->mouse_max_speed = .25f;
 	root.read_attr("mouse_max_speed", input_preferences->mouse_max_speed);
+
+	// old prefs may have boolean acceleration flag
+	bool accel = false;
+	if (root.read_attr("mouse_acceleration", accel))
+	{
+		input_preferences->mouse_accel_type = _mouse_accel_classic;
+		input_preferences->mouse_accel_scale = 1.f;
+	}
+	root.read_attr_bounded<int16>("mouse_accel_type",
+								  input_preferences->mouse_accel_type,
+								  0, NUMBER_OF_MOUSE_ACCEL_TYPES - 1);
+	root.read_attr("mouse_accel_scale", input_preferences->mouse_accel_scale);
 	
 	root.read_attr("use_controller", input_preferences->use_joystick);
 

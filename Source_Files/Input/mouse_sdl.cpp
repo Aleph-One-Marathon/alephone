@@ -99,6 +99,10 @@ void recenter_mouse(void)
 	}
 }
 
+static inline float MIX(float start, float end, float factor)
+{
+	return (start * (1.f - factor)) + (end * factor);
+}
 
 /*
  *  Take a snapshot of the current mouse state
@@ -125,8 +129,20 @@ void mouse_idle(short type)
 		
 		// scale input by sensitivity
 		const float sensitivityScale = 1.f / (66.f * FIXED_ONE);
-		dx *= sensitivityScale * input_preferences->sens_horizontal;
-		dy *= sensitivityScale * input_preferences->sens_vertical;
+		float sx = sensitivityScale * input_preferences->sens_horizontal;
+		float sy = sensitivityScale * input_preferences->sens_vertical;
+		switch (input_preferences->mouse_accel_type)
+		{
+			case _mouse_accel_classic:
+				sx *= MIX(1.f, fabs(dx * sx) * 4.f, input_preferences->mouse_accel_scale);
+				sy *= MIX(1.f, fabs(dy * sy) * 4.f, input_preferences->mouse_accel_scale);
+				break;
+			case _mouse_accel_none:
+			default:
+				break;
+		}
+		dx *= sx;
+		dy *= sy;
 		
 		// 1 dx unit = 1 * 2^ABSOLUTE_YAW_BITS * (360 deg / 2^ANGULAR_BITS)
 		//           = 90 deg
