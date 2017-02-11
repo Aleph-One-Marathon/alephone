@@ -1388,7 +1388,7 @@ void load_collections(
 	{
 //		if (with_progress_bar)
 //			draw_progress_bar(collection_index, 2*MAXIMUM_COLLECTIONS);
-		if (((header->status&markUNLOAD) && !(header->status&markLOAD)) || header->status&markPATCHED)
+		if (true)
 		{
 			if (collection_loaded(header))
 			{
@@ -1396,14 +1396,6 @@ void load_collections(
 			}
 			OGL_UnloadModelsImages(collection_index);
 			SW_Texture_Extras::instance()->Unload(collection_index);
-		}
-		else
-		{
-			/* if this collection is already loaded, unlock it to tenderize the heap */
-			if (collection_loaded(header))
-			{
-				unlock_collection(header);
-			}
 		}
 	}
 	

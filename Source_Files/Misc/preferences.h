@@ -196,6 +196,12 @@ enum {
 	NUMBER_OF_JOYSTICK_MAPPINGS
 };
 
+enum {
+	_mouse_accel_none,
+	_mouse_accel_classic,
+	NUMBER_OF_MOUSE_ACCEL_TYPES
+};
+
 
 typedef std::map<int, std::set<SDL_Scancode> > key_binding_map;
 
@@ -207,7 +213,10 @@ struct input_preferences_data
 	// Mouse-sensitivity parameters (LP: originally ZZZ)
 	_fixed sens_horizontal;
 	_fixed sens_vertical;
+	int16 mouse_accel_type;
+	float mouse_accel_scale;
 	bool raw_mouse_input;
+	float mouse_max_speed;
 	
 	bool use_joystick;
 	int16 joystick_axis_mappings[NUMBER_OF_JOYSTICK_MAPPINGS];

@@ -704,7 +704,6 @@ void shutdown_application(void)
 	WadImageCache::instance()->save_cache();
 	close_external_resources();
         
-	restore_gamma();
 #if defined(HAVE_SDL_IMAGE) && (SDL_IMAGE_PATCHLEVEL >= 8)
 	IMG_Quit();
 #endif
@@ -1284,12 +1283,11 @@ static void process_game_key(const SDL_Event &event)
 			case SDLK_r:
 				item = iRevert;
 				break;
-// ZZZ: Alt+F4 is also a quit gesture in Windows
-#ifdef __WIN32__
-			case SDLK_F4:
-#endif
 			case SDLK_q:
+// On Mac, this key will trigger the application menu so we ignore it here
+#if !defined(__APPLE__) && !defined(__MACH__)
 				item = iQuitGame;
+#endif
 				break;
 			case SDLK_RETURN:
 				item = 0;
@@ -1358,10 +1356,6 @@ static void process_game_key(const SDL_Event &event)
 		case SDLK_c:
 			item = iCredits;
 			break;
-// ZZZ: Alt+F4 is also a quit gesture in Windows
-#ifdef __WIN32__
-                case SDLK_F4:
-#endif
 		case SDLK_q:
 			item = iQuit;
 			break;
@@ -1506,7 +1500,10 @@ static void process_event(const SDL_Event &event)
 		break;
 		
 	case SDL_QUIT:
-		set_game_state(_quit_game);
+		if (get_game_state() == _game_in_progress)
+			do_menu_item_command(mGame, iQuitGame, false);
+		else
+			set_game_state(_quit_game);
 		break;
 
 	case SDL_WINDOWEVENT:

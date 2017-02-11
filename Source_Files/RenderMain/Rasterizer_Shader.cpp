@@ -26,8 +26,6 @@
 #include "fades.h"
 #include "screen.h"
 
-extern bool force_software_gamma;  // from screen.cpp
-
 #define MAXIMUM_VERTICES_PER_WORLD_POLYGON (MAXIMUM_VERTICES_PER_POLYGON+4)
 
 const GLdouble kViewBaseMatrix[16] = {
@@ -129,11 +127,6 @@ void Rasterizer_Shader_Class::setupGL()
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
 	if (!TEST_FLAG(ConfigureData.Flags,OGL_Flag_VoidColor))
 		smear_the_void = true;
-
-	if (!force_software_gamma) {
-		restore_gamma();
-		force_software_gamma = true;
-	}
 }
 
 void Rasterizer_Shader_Class::Begin()

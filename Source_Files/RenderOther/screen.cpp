@@ -103,9 +103,6 @@ bool default_gamma_inited = false;
 uint16 default_gamma_r[256];
 uint16 default_gamma_g[256];
 uint16 default_gamma_b[256];
-bool software_gamma = false;
-bool software_gamma_tested = false;
-bool force_software_gamma = false;
 uint16 current_gamma_r[256];
 uint16 current_gamma_g[256];
 uint16 current_gamma_b[256];
@@ -1603,7 +1600,7 @@ static inline bool pixel_formats_equal(SDL_PixelFormat* a, SDL_PixelFormat* b)
 static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 {
 	SDL_Surface *s = world_pixels;
-	if ((software_gamma || Movie::instance()->IsRecording()) && !using_default_gamma && bit_depth > 8) {
+	if (!using_default_gamma && bit_depth > 8) {
 		apply_gamma(world_pixels, world_pixels_corrected);
 		s = world_pixels_corrected;
 	}
@@ -1684,38 +1681,19 @@ void initialize_gamma(void)
 {
 	if (!default_gamma_inited) {
 		default_gamma_inited = true;
-//		if (force_software_gamma || SDL_GetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b))
-//		{
-			software_gamma = true;
-			software_gamma_tested = true;
-			for (int i = 0; i < 256; ++i) {
-				default_gamma_r[i] = default_gamma_g[i] = default_gamma_b[i] = i << 8;
-			}
-//		}
+		for (int i = 0; i < 256; ++i) {
+			default_gamma_r[i] = default_gamma_g[i] = default_gamma_b[i] = i << 8;
+		}
 		memcpy(current_gamma_r, default_gamma_r, sizeof(current_gamma_r));
 		memcpy(current_gamma_g, default_gamma_g, sizeof(current_gamma_g));
 		memcpy(current_gamma_b, default_gamma_b, sizeof(current_gamma_b));
 	}
 }
 
-void restore_gamma(void)
-{
-//    if (!option_nogamma && bit_depth > 8 && default_gamma_inited && !software_gamma && !force_software_gamma)
-//        SDL_SetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b);
-}
-
 void build_direct_color_table(struct color_table *color_table, short bit_depth)
 {
-	if (!option_nogamma && !software_gamma_tested)
-	{
-//		if (force_software_gamma || SDL_SetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b)) {
-			software_gamma = true;
-			software_gamma_tested = true;
-			for (int i = 0; i < 256; ++i) {
-				default_gamma_r[i] = default_gamma_g[i] = default_gamma_b[i] = i << 8;
-			}
-//		}
-	}
+	if (!option_nogamma && !default_gamma_inited)
+		initialize_gamma();
 	color_table->color_count = 256;
 	rgb_color *color = color_table->colors;
 	bool force_software = Movie::instance()->IsRecording();
@@ -1734,10 +1712,7 @@ void change_interface_clut(struct color_table *color_table)
 
 void change_screen_clut(struct color_table *color_table)
 {
-//	if (bit_depth == 8)
-//		memcpy(uncorrected_color_table, color_table, sizeof(struct color_table));
-//	else
-		build_direct_color_table(uncorrected_color_table, bit_depth);
+	build_direct_color_table(uncorrected_color_table, bit_depth);
 	memcpy(interface_color_table, uncorrected_color_table, sizeof(struct color_table));
 
 	gamma_correct_color_table(uncorrected_color_table, world_color_table, screen_mode.gamma_level);
@@ -1748,22 +1723,12 @@ void change_screen_clut(struct color_table *color_table)
 
 void animate_screen_clut(struct color_table *color_table, bool full_screen)
 {
-//	if (bit_depth == 8) {
-//		SDL_Color colors[256];
-//		build_sdl_color_table(color_table, colors);
-//		SDL_SetPaletteColors(main_surface->format->palette, colors, 0, 256);
-//	} else {
-		for (int i=0; i<color_table->color_count; i++) {
-			current_gamma_r[i] = color_table->colors[i].red;
-			current_gamma_g[i] = color_table->colors[i].green;
-			current_gamma_b[i] = color_table->colors[i].blue;
-		}
-//		bool sw_gamma = software_gamma || force_software_gamma || Movie::instance()->IsRecording();
-//		if (!option_nogamma && !sw_gamma)
-//			SDL_SetGammaRamp(current_gamma_r, current_gamma_g, current_gamma_b);
-//		else if (sw_gamma)
-			using_default_gamma = !memcmp(color_table, uncorrected_color_table, sizeof(struct color_table));
-//	}
+	for (int i=0; i<color_table->color_count; i++) {
+		current_gamma_r[i] = color_table->colors[i].red;
+		current_gamma_g[i] = color_table->colors[i].green;
+		current_gamma_b[i] = color_table->colors[i].blue;
+	}
+	using_default_gamma = !memcmp(color_table, uncorrected_color_table, sizeof(struct color_table));
 }
 
 void assert_world_color_table(struct color_table *interface_color_table, struct color_table *world_color_table)
@@ -1997,15 +1962,7 @@ void DrawSurface(SDL_Surface *s, SDL_Rect &dest_rect, SDL_Rect &src_rect)
 
 void draw_intro_screen(void)
 {
-	bool need_redraw = intro_buffer_changed || fade_finished();
-#ifdef HAVE_OPENGL
-	if (OGL_FaderActive())
-		need_redraw = !fade_blacked_screen();
-	else
-#endif
-	if (software_gamma)
-		need_redraw = !fade_blacked_screen();
-	if (!need_redraw)
+	if (fade_blacked_screen())
 		return;
 	
 	SDL_Rect src_rect = { 0, 0, Intro_Buffer->w, Intro_Buffer->h };
@@ -2031,7 +1988,7 @@ void draw_intro_screen(void)
 #endif
 	{
 		SDL_Surface *s = Intro_Buffer;
-		if (software_gamma && !using_default_gamma && bit_depth > 8) {
+		if (!using_default_gamma && bit_depth > 8) {
 			apply_gamma(Intro_Buffer, Intro_Buffer_corrected);
 			SDL_SetSurfaceBlendMode(Intro_Buffer_corrected, SDL_BLENDMODE_NONE);
 			s = Intro_Buffer_corrected;
