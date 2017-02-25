@@ -146,11 +146,6 @@ char application_name[] = A1_DISPLAY_NAME;
 char application_identifier[] = "org.bungie.source.AlephOne";
 #endif
 
-#if defined(HAVE_BUNDLE_NAME)
-// legacy bundle path
-static const char sBundlePlaceholder[] = "AlephOneSDL.app/Contents/Resources/DataFiles";
-#endif
-
 // Data directories
 vector <DirectorySpecifier> data_search_path; // List of directories in which data files are searched for
 DirectorySpecifier local_data_dir;    // Local (per-user) data file directory
@@ -1746,7 +1741,6 @@ char *expand_symbolic_paths(char *dest, const char *src, int maxlen)
 	bool expanded =
 #if defined(HAVE_BUNDLE_NAME)
 		expand_symbolic_paths_helper(dest, src, maxlen, "$bundle$", bundle_data_dir) ||
-		expand_symbolic_paths_helper(dest, src, maxlen, sBundlePlaceholder, bundle_data_dir) ||
 #endif
 		expand_symbolic_paths_helper(dest, src, maxlen, "$local$", local_data_dir) ||
 		expand_symbolic_paths_helper(dest, src, maxlen, "$default$", default_data_dir);
