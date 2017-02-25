@@ -564,9 +564,6 @@ static void initialize_application(void)
 #endif
 
 
-	DirectorySpecifier local_mml_dir = local_data_dir + "MML";
-	DirectorySpecifier local_themes_dir = local_data_dir + "Themes";
-
 	// Setup resource manager
 	initialize_resources();
 
@@ -628,8 +625,6 @@ static void initialize_application(void)
 	image_cache_dir.CreateDirectory();
 	recordings_dir.CreateDirectory();
 	screenshots_dir.CreateDirectory();
-	local_mml_dir.CreateDirectory();
-	local_themes_dir.CreateDirectory();
 	
 	WadImageCache::instance()->initialize_cache();
 
