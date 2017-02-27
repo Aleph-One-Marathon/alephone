@@ -1717,7 +1717,7 @@ static void display_about_dialog()
 
 	vertical_placer* about_placer = new vertical_placer;
 	
-	if (strcmp(get_application_name(), "Aleph One") != 0)
+	if (strcmp(get_application_name().c_str(), "Aleph One") != 0)
 	{
 		about_placer->dual_add(new w_static_text(expand_app_variables("$appName$ is powered by").c_str()), d);
 	}

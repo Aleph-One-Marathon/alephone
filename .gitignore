@@ -24,7 +24,7 @@ lib*.a
 /install-sh
 /missing
 /stamp-h1
-/Source_Files/confpaths.h
+/Source_Files/CSeries/confpaths.h
 
 /Source_Files/alephone
 /Source_Files/*.exe

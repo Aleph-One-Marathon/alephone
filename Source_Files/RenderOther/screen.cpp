@@ -769,7 +769,7 @@ static bool need_mode_change(int window_width, int window_height,
 	}
 	
 	// reset title, since SDL forgets sometimes
-	SDL_SetWindowTitle(main_screen, get_application_name());
+	SDL_SetWindowTitle(main_screen, get_application_name().c_str());
 	
 	return false;
 }
@@ -883,7 +883,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		main_screen = NULL;
 		SDL_FilterEvents(change_window_filter, &window_id);
 	}
-	main_screen = SDL_CreateWindow(get_application_name(),
+	main_screen = SDL_CreateWindow(get_application_name().c_str(),
 								   SDL_WINDOWPOS_CENTERED,
 								   SDL_WINDOWPOS_CENTERED,
 								   sdl_width, sdl_height,
@@ -895,7 +895,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		// retry with multisampling off
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-		main_screen = SDL_CreateWindow(get_application_name(),
+		main_screen = SDL_CreateWindow(get_application_name().c_str(),
 									   SDL_WINDOWPOS_CENTERED,
 									   SDL_WINDOWPOS_CENTERED,
 									   sdl_width, sdl_height,
@@ -909,7 +909,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		fprintf(stderr, "WARNING: Retrying with 16 bit depth\n");
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
-		main_screen = SDL_CreateWindow(get_application_name(),
+		main_screen = SDL_CreateWindow(get_application_name().c_str(),
 									   SDL_WINDOWPOS_CENTERED,
 									   SDL_WINDOWPOS_CENTERED,
 									   sdl_width, sdl_height,
@@ -933,7 +933,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 			fprintf(stderr, "WARNING: Failed to initialize OpenGL (Shader) renderer\n");
 			fprintf(stderr, "WARNING: Retrying with OpenGL (Classic) renderer\n");
 			screen_mode.acceleration = graphics_preferences->screen_mode.acceleration = _opengl_acceleration;
-			main_screen = SDL_CreateWindow(get_application_name(),
+			main_screen = SDL_CreateWindow(get_application_name().c_str(),
 										   SDL_WINDOWPOS_CENTERED,
 										   SDL_WINDOWPOS_CENTERED,
 										   sdl_width, sdl_height,
@@ -957,7 +957,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
  		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
 
-		main_screen = SDL_CreateWindow(get_application_name(),
+		main_screen = SDL_CreateWindow(get_application_name().c_str(),
 									   SDL_WINDOWPOS_CENTERED,
 									   SDL_WINDOWPOS_CENTERED,
 									   sdl_width, sdl_height,
@@ -969,7 +969,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		fprintf(stderr, "WARNING: Trying in windowed mode");
 		logWarning("Trying windowed mode");
 		uint32 tempflags = flags & SDL_WINDOW_FULLSCREEN_DESKTOP;
-		main_screen = SDL_CreateWindow(get_application_name(),
+		main_screen = SDL_CreateWindow(get_application_name().c_str(),
 									   SDL_WINDOWPOS_CENTERED,
 									   SDL_WINDOWPOS_CENTERED,
 									   vmode_width, vmode_height,
@@ -983,7 +983,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		fprintf(stderr, "WARNING: Trying in software mode");
 		logWarning("Trying software mode");
 		uint32 tempflags = (flags & ~SDL_WINDOW_OPENGL) | SDL_SWSURFACE;
-		main_screen = SDL_CreateWindow(get_application_name(),
+		main_screen = SDL_CreateWindow(get_application_name().c_str(),
 									   SDL_WINDOWPOS_CENTERED,
 									   SDL_WINDOWPOS_CENTERED,
 									   sdl_width, sdl_height,
@@ -997,7 +997,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		fprintf(stderr, "WARNING: Trying in software windowed mode");
 		logWarning("Trying software windowed mode");
 		uint32 tempflags = (flags & ~(SDL_WINDOW_OPENGL|SDL_WINDOW_FULLSCREEN_DESKTOP)) | SDL_SWSURFACE;
-		main_screen = SDL_CreateWindow(get_application_name(),
+		main_screen = SDL_CreateWindow(get_application_name().c_str(),
 									   SDL_WINDOWPOS_CENTERED,
 									   SDL_WINDOWPOS_CENTERED,
 									   vmode_width, vmode_height,

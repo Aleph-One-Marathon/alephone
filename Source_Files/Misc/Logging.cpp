@@ -216,7 +216,7 @@ const char *loggingFileName()
 {
 	if (!strlen(g_loggingFileName))
 	{
-		strncpy(g_loggingFileName, get_application_name(), 256);
+		strncpy(g_loggingFileName, get_application_name().c_str(), 256);
 		strncat(g_loggingFileName, " Log.txt", 256 - strlen(g_loggingFileName));
 	}
 	return g_loggingFileName;

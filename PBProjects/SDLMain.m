@@ -34,20 +34,6 @@ extern OSErr	CPSSetFrontProcess( CPSProcessSerNum *psn);
 
 #endif /* SDL_USE_CPS */
 
-/* The name of our bundle (such as AlephOneSDL.app") which we determine at run-time */
-char *bundle_name = NULL;
-/* The short application name, to present to users (seen in menus, etc.) */
-char *application_name = NULL;
-/* The application bundle identifier, useful for unique directories */
-char *application_identifier = NULL;
-/* The bundle's Resources path, for finding bundled data */
-char *bundle_resource_path = NULL;
-/* OS default directories */
-char *app_log_directory = NULL;
-char *app_preferences_directory = NULL;
-char *app_support_directory = NULL;
-char *app_screenshots_directory = NULL;
-
 static int    gArgc;
 static char  **gArgv;
 static BOOL   gFinderLaunch;
@@ -61,17 +47,6 @@ static NSString *getApplicationName(void)
         appName = [[NSProcessInfo processInfo] processName];
 
     return appName;
-}
-
-/* Helper for directory creation */
-static void createDirectory(NSString *path)
-{
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
-    [fileManager createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil];
-#else
-    [fileManager createDirectoryAtPath:path attributes:nil];
-#endif
 }
 
 @interface SDLApplication : NSApplication
@@ -90,73 +65,6 @@ static void createDirectory(NSString *path)
 
 /* The main class of the application, the application's delegate */
 @implementation SDLMain
-
-/* Find the name of our bundle, as we'll need this later for finding files. */
-/* We also find other application identifiers here. */
-- (void) findBundleName
-{
-	NSBundle *bundle = [NSBundle mainBundle];
-	NSDictionary *bundleInfo = [bundle localizedInfoDictionary];
-
-	NSString *bundleName = [[bundle bundlePath] lastPathComponent];
-	bundle_name = strdup([bundleName UTF8String]);
-	
-	NSString *appName = [bundleInfo objectForKey:(NSString *)kCFBundleNameKey];
-	application_name = strdup([appName UTF8String]);
-	
-	NSString *bundleID = [[bundle infoDictionary] objectForKey:(NSString *)kCFBundleIdentifierKey];
-	application_identifier = strdup([bundleID UTF8String]);
-	
-	NSString *bundleRes = [bundle resourcePath];
-	bundle_resource_path = strdup([bundleRes UTF8String]);
-
-	/* Find other system directories we need. */
-	NSArray *arr = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
-	NSString *libraryPath = [arr objectAtIndex:0];
-	if (libraryPath != nil)
-	{
-		NSString *logPath = [libraryPath stringByAppendingPathComponent:@"Logs"];
-		createDirectory(logPath);
-		app_log_directory = strdup([logPath UTF8String]);
-		
-#ifdef PREFER_APP_NAME_TO_BUNDLE_ID
-		NSString *prefsPath = [[libraryPath stringByAppendingPathComponent:@"Preferences"] stringByAppendingPathComponent:appName];
-#else
-		NSString *prefsPath = [[libraryPath stringByAppendingPathComponent:@"Preferences"] stringByAppendingPathComponent:bundleID];
-#endif
-		createDirectory(prefsPath);
-		app_preferences_directory = strdup([prefsPath UTF8String]);
-	}
-	
-	arr = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
-	NSString *supportPath = [arr objectAtIndex:0];
-	if (supportPath != nil)
-	{
-#ifdef PREFER_APP_NAME_TO_BUNDLE_ID
-		NSString *appSupportPath = [supportPath stringByAppendingPathComponent:appName];
-#else
-		NSString *appSupportPath = [supportPath stringByAppendingPathComponent:@"AlephOne"];
-#endif
-		createDirectory(appSupportPath);
-		app_support_directory = strdup([appSupportPath UTF8String]);
-	}
-    
-#ifdef MAC_APP_STORE
-    arr = NSSearchPathForDirectoriesInDomains(NSPicturesDirectory, NSUserDomainMask, YES);
-    NSString *picturesPath = [arr objectAtIndex:0];
-    if (picturesPath != nil)
-    {
-#ifdef PREFER_APP_NAME_TO_BUNDLE_ID
-		NSString *screenshotsPath = [picturesPath stringByAppendingPathComponent:[appName stringByAppendingString:@" Screenshots"]];
-#else
-		NSString *screenshotsPath = [picturesPath stringByAppendingPathComponent:@"AlephOne Screenshots"];
-#endif
-        createDirectory(screenshotsPath);
-        app_screenshots_directory = strdup([screenshotsPath UTF8String]);
-    }
-#endif
-}		
-		
 
 /* Set the working directory to the .app's parent directory */
 - (void) setupWorkingDirectory:(BOOL)shouldChdir
@@ -339,24 +247,11 @@ int shell_main(int argc, char **argv);
 {
     int status;
 
-/* Find the bundle name from where we were launched and save for later use */
-    [self findBundleName];
-
-    /* Set the working directory to the .app's parent directory */
-    [self setupWorkingDirectory:gFinderLaunch];
-
     /* Hand off to main application code */
     gCalledAppMainline = TRUE;
     status = shell_main(gArgc, gArgv);
 
     /* We're done, thank you for playing */
-    free(bundle_name);
-    free(application_name);
-    free(application_identifier);
-    free(bundle_resource_path);
-    free(app_log_directory);
-    free(app_preferences_directory);
-    free(app_support_directory);
     exit(status);
 }
 @end

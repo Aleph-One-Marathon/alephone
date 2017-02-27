@@ -93,6 +93,7 @@ const int kFontIDCourier = 22;
 #include "cspixels.h"
 #include "csalerts.h"
 #include "csdialogs.h"
+#include "cspaths.h"
 #include "csmisc.h"
 
 
