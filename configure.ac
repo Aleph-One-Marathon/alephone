@@ -85,12 +85,16 @@ AX_BOOST_BASE([1.53.0],
 AX_BOOST_SYSTEM
 AS_IF([ test "x$BOOST_SYSTEM_LIB" != "x" ],
       [ LIBS="$BOOST_SYSTEM_LIB $LIBS" ],
-      [AC_MSG_ERROR([You need the Boost::System library to run Aleph One.])])
+      [ AC_CHECK_LIB([boost_system], [main],
+                     [ LIBS="-lboost_system $LIBS" ],
+                     [ AC_MSG_ERROR([You need the Boost::System library to run Aleph One.]) ])])
 AX_BOOST_FILESYSTEM
 AS_IF([ test "x$BOOST_FILESYSTEM_LIB" != "x" ],
       [ LIBS="$BOOST_FILESYSTEM_LIB $LIBS" ],
-      [AC_MSG_ERROR([You need the Boost::Filesystem library to run Aleph One.])])
-      
+      [ AC_CHECK_LIB([boost_filesystem], [main],
+                     [ LIBS="-lboost_filesystem $LIBS" ],
+                     [ AC_MSG_ERROR([You need the Boost::Filesystem library to run Aleph One.]) ])])
+
 AC_DEFUN([AX_CHECK_BOOST_HEADER],
          [ AC_LANG_PUSH(C++)
            AC_CHECK_HEADER([$1], , [AC_MSG_ERROR([You need $1 from the Boost library to build Aleph One.])])
