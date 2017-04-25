@@ -426,6 +426,9 @@ update_world_elements_one_tick()
 #endif // !defined(DISABLE_NETWORKING)
 	}
 
+        dynamic_world->tick_count+= 1;
+        dynamic_world->game_information.game_time_remaining-= 1;
+
         if(check_level_change()) 
         {
                 sync_heartbeat_count();
@@ -439,9 +442,6 @@ update_world_elements_one_tick()
         }
 #endif // !defined(DISABLE_NETWORKING)
 
-        dynamic_world->tick_count+= 1;
-        dynamic_world->game_information.game_time_remaining-= 1;
-        
         return kUpdateNormalCompletion;
 }
 
