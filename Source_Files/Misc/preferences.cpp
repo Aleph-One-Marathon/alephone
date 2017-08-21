@@ -2867,6 +2867,7 @@ InfoTree input_preferences_tree()
 	root.put_attr("mouse_max_speed", input_preferences->mouse_max_speed);
 	root.put_attr("mouse_accel_type", input_preferences->mouse_accel_type);
 	root.put_attr("mouse_accel_scale", input_preferences->mouse_accel_scale);
+	root.put_attr("raw_mouse_input", input_preferences->raw_mouse_input);
 	root.put_attr("use_controller", input_preferences->use_joystick);
 
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
@@ -3747,6 +3748,7 @@ void parse_input_preferences(InfoTree root, std::string version)
 								  0, NUMBER_OF_MOUSE_ACCEL_TYPES - 1);
 	root.read_attr("mouse_accel_scale", input_preferences->mouse_accel_scale);
 	
+	root.read_attr("raw_mouse_input", input_preferences->raw_mouse_input);
 	root.read_attr("use_controller", input_preferences->use_joystick);
 
 	BOOST_FOREACH(InfoTree mapping, root.children_named("binding_axis"))
