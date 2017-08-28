@@ -424,7 +424,7 @@ bool Movie::Setup()
         video_stream->codec->codec_type = AVMEDIA_TYPE_VIDEO;
         video_stream->codec->width = view_rect.w;
         video_stream->codec->height = view_rect.h;
-        video_stream->codec->time_base = (AVRational){1, TICKS_PER_SECOND};
+        video_stream->codec->time_base = AVRational{1, TICKS_PER_SECOND};
         video_stream->codec->pix_fmt = AV_PIX_FMT_YUV420P;
         video_stream->codec->flags |= CODEC_FLAG_CLOSED_GOP;
         video_stream->codec->thread_count = get_cpu_count();
@@ -495,7 +495,7 @@ bool Movie::Setup()
         audio_stream->codec->codec_id = audio_codec->id;
         audio_stream->codec->codec_type = AVMEDIA_TYPE_AUDIO;
         audio_stream->codec->sample_rate = mx->obtained.freq;
-        audio_stream->codec->time_base = (AVRational){1, mx->obtained.freq};
+        audio_stream->codec->time_base = AVRational{1, mx->obtained.freq};
         audio_stream->codec->channels = 2;
         
         if (av->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
@@ -557,8 +557,8 @@ bool Movie::Setup()
     // Start movie file
     if (success)
     {
-        video_stream->time_base = (AVRational){1, TICKS_PER_SECOND};
-        audio_stream->time_base = (AVRational){1, mx->obtained.freq};
+        video_stream->time_base = AVRational{1, TICKS_PER_SECOND};
+        audio_stream->time_base = AVRational{1, mx->obtained.freq};
         avformat_write_header(av->fmt_ctx, NULL);
     }
     
@@ -693,7 +693,7 @@ void Movie::EncodeAudio(bool last)
 #endif
         av->audio_frame->nb_samples = write_samples;
         av->audio_frame->pts = av_rescale_q(av->audio_counter,
-                                            (AVRational){1, acodec->sample_rate},
+                                            AVRational{1, acodec->sample_rate},
                                             acodec->time_base);
         av->audio_counter += write_samples;
         int asize = avcodec_fill_audio_frame(av->audio_frame, acodec->channels,
