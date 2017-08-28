@@ -188,7 +188,7 @@ public:
 			*this >> *(ValuePtr++);
   
 		return *this;
-	};
+	}
   
 };
 
