@@ -48,17 +48,17 @@ public:
 	std::streampos tellg() const;
 	std::streampos maxg() const;
 
-	BIStream& operator>>(uint8& value) throw(failure);
-	BIStream& operator>>(int8& value) throw(failure);
+	BIStream& operator>>(uint8& value);
+	BIStream& operator>>(int8& value);
 
-	virtual BIStream& operator>>(int16& value) throw(failure) = 0;
-	virtual BIStream& operator>>(uint16& value) throw(failure) = 0;
-	virtual BIStream& operator>>(int32& value) throw(failure) = 0;
-	virtual BIStream& operator>>(uint32& value) throw(failure) = 0;
-	virtual BIStream& operator>>(double& value) throw(failure) = 0;
+	virtual BIStream& operator>>(int16& value) = 0;
+	virtual BIStream& operator>>(uint16& value) = 0;
+	virtual BIStream& operator>>(int32& value) = 0;
+	virtual BIStream& operator>>(uint32& value) = 0;
+	virtual BIStream& operator>>(double& value) = 0;
 
-	BIStream& read(char *s, std::streamsize n) throw(failure);
-	BIStream& ignore(std::streamsize n) throw(failure);
+	BIStream& read(char *s, std::streamsize n);
+	BIStream& ignore(std::streamsize n);
 };
 
 class BIStreamBE : public BIStream
@@ -66,19 +66,19 @@ class BIStreamBE : public BIStream
 public:
 	BIStreamBE(std::streambuf* sb) : BIStream(sb) {}
 	
-	BIStream& operator>>(uint8& value) throw(failure) {
+	BIStream& operator>>(uint8& value) {
 		return BIStream::operator>>(value);
 	}
 
-	BIStream& operator>>(int8& value) throw(failure) {
+	BIStream& operator>>(int8& value) {
 		return BIStream::operator>>(value);
 	}
 
-	BIStream& operator>>(int16& value) throw(failure);
-	BIStream& operator>>(uint16& value) throw(failure);
-	BIStream& operator>>(int32& value) throw(failure);
-	BIStream& operator>>(uint32& value) throw(failure);
-	BIStream& operator>>(double& value) throw(failure);
+	BIStream& operator>>(int16& value);
+	BIStream& operator>>(uint16& value);
+	BIStream& operator>>(int32& value);
+	BIStream& operator>>(uint32& value);
+	BIStream& operator>>(double& value);
 };
 	
 class BOStream : public basic_bstream
@@ -89,16 +89,16 @@ public:
 	std::streampos tellp() const;
 	std::streampos maxp() const;
 	
-	BOStream& operator<<(uint8 value) throw(failure);
-	BOStream& operator<<(int8 value) throw(failure);
+	BOStream& operator<<(uint8 value);
+	BOStream& operator<<(int8 value);
 
-	virtual BOStream& operator<<(int16 value) throw(failure) = 0;
-	virtual BOStream& operator<<(uint16 value) throw(failure) = 0;
-	virtual BOStream& operator<<(int32 value) throw(failure) = 0;
-	virtual BOStream& operator<<(uint32 value) throw(failure) = 0;
-	virtual BOStream& operator<<(double value) throw(failure) = 0;
+	virtual BOStream& operator<<(int16 value) = 0;
+	virtual BOStream& operator<<(uint16 value) = 0;
+	virtual BOStream& operator<<(int32 value) = 0;
+	virtual BOStream& operator<<(uint32 value) = 0;
+	virtual BOStream& operator<<(double value) = 0;
 
-	BOStream& write(const char *s, std::streamsize n) throw(failure);
+	BOStream& write(const char *s, std::streamsize n);
 };
 
 class BOStreamBE : public BOStream
@@ -106,19 +106,19 @@ class BOStreamBE : public BOStream
 public:
 	BOStreamBE(std::streambuf* sb) : BOStream(sb) {}
 	
-	BOStream& operator<<(uint8 value) throw(failure) {
+	BOStream& operator<<(uint8 value) {
 		return BOStream::operator<<(value);
 	}
 
-	BOStream& operator<<(int8 value) throw(failure) {
+	BOStream& operator<<(int8 value) {
 		return BOStream::operator<<(value);
 	}
 
-	BOStream& operator<<(int16 value) throw(failure);
-	BOStream& operator<<(uint16 value) throw(failure);
-	BOStream& operator<<(int32 value) throw(failure);
-	BOStream& operator<<(uint32 value) throw(failure);
-	BOStream& operator<<(double value) throw(failure);
+	BOStream& operator<<(int16 value);
+	BOStream& operator<<(uint16 value);
+	BOStream& operator<<(int32 value);
+	BOStream& operator<<(uint32 value);
+	BOStream& operator<<(double value);
 };
 
 #endif
