@@ -191,7 +191,7 @@ void FBOSwapper::blend_multisample(FBO& other) {
 	
 	glClientActiveTextureARB(GL_TEXTURE1_ARB);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	GLint multi_coordinates[8] = { 0, other._h, other._w, other._h, other._w, 0, 0, 0 };
+	GLint multi_coordinates[8] = { 0, GLint(other._h), GLint(other._w), GLint(other._h), GLint(other._w), 0, 0, 0 };
 	glTexCoordPointer(2, GL_INT, 0, multi_coordinates);
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	

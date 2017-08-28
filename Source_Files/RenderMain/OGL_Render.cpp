@@ -2988,7 +2988,7 @@ bool OGL_RenderCrosshairs()
 				int LenMin = std::min(LenMid, static_cast<int>(Crosshairs.FromCenter));
 				
 				// at the initial rotation, this is the bottom right
-				GLfloat vertices[16] = {
+				GLint vertices[16] = {
 					LenMax + WidthMin, LenMin + HeightMin,
 					LenMax + WidthMax, LenMin + HeightMin,
 					LenMax + WidthMin, LenMid + HeightMin,
@@ -2998,7 +2998,7 @@ bool OGL_RenderCrosshairs()
 					LenMin + WidthMin, LenMax + HeightMin,
 					LenMin + WidthMin, LenMax + HeightMax
 				};
-				glVertexPointer(2, GL_FLOAT, 0, vertices);
+				glVertexPointer(2, GL_INT, 0, vertices);
 				glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
 			}
 			break;

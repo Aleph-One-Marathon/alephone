@@ -183,8 +183,8 @@ void Image_Blitter::Draw(SDL_Surface *dst_surface, const Image_Rect& dst, const 
 	if (!src_surface)
 		return;
   
-    SDL_Rect ssrc = { src.x, src.y, src.w, src.h };
-    SDL_Rect sdst = { dst.x, dst.y, dst.w, dst.h };
+	SDL_Rect ssrc = { int(src.x), int(src.y), int(src.w), int(src.h) };
+	SDL_Rect sdst = { int(dst.x), int(dst.y), int(dst.w), int(dst.h) };
 	SDL_BlitSurface(src_surface, &ssrc, dst_surface, &sdst);
 }
 
