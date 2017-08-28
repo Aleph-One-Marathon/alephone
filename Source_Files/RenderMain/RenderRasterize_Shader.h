@@ -22,7 +22,7 @@
 class Blur;
 class RenderRasterize_Shader : public RenderRasterizerClass {
 
-	std::auto_ptr<Blur> blur;
+	std::unique_ptr<Blur> blur;
 	Rasterizer_Shader_Class *RasPtr;
 	
 	int objectCount;
@@ -50,7 +50,8 @@ protected:
 	
 public:
 
-	RenderRasterize_Shader() : blur(NULL), RenderRasterizerClass() {}
+	RenderRasterize_Shader();
+	~RenderRasterize_Shader();
 
 	virtual void setupGL(Rasterizer_Shader_Class& Rasterizer);
 

@@ -82,6 +82,9 @@ public:
 };
 
 
+RenderRasterize_Shader::RenderRasterize_Shader() = default;
+RenderRasterize_Shader::~RenderRasterize_Shader() = default;
+
 /*
  * initialize some stuff
  * happens once after opengl, shaders and textures are setup

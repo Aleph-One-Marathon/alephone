@@ -29,7 +29,7 @@ class OpenGLDialog
 {
 public:
 	// Abstract factory; concrete type determined at link-time
-	static std::auto_ptr<OpenGLDialog> Create(int theSelectedRenderer);
+	static std::unique_ptr<OpenGLDialog> Create(int theSelectedRenderer);
 
 	void OpenGLPrefsByRunning ();
 

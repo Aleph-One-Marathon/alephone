@@ -197,7 +197,7 @@ bool network_gather(bool inResumingGame)
 		myPlayerInfo.desired_color= myPlayerInfo.color;
 		memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, LONG_SERIAL_NUMBER_LENGTH);
 		
-		auto_ptr<GameAvailableMetaserverAnnouncer> metaserverAnnouncer;
+		std::unique_ptr<GameAvailableMetaserverAnnouncer> metaserverAnnouncer;
 		if(NetEnter())
 		{
 			bool gather_dialog_result;
@@ -2498,10 +2498,10 @@ private:
 	dialog m_dialog;
 };
 
-auto_ptr<GatherDialog>
+std::unique_ptr<GatherDialog>
 GatherDialog::Create()
 {
-	return auto_ptr<GatherDialog>(new SdlGatherDialog);
+	return std::unique_ptr<GatherDialog>(new SdlGatherDialog);
 }
 
 extern struct color_table *build_8bit_system_color_table(void);
@@ -2670,10 +2670,10 @@ private:
 	dialog m_dialog;
 };
 
-auto_ptr<JoinDialog>
+std::unique_ptr<JoinDialog>
 JoinDialog::Create()
 {
-	return auto_ptr<JoinDialog>(new SdlJoinDialog);
+	return std::unique_ptr<JoinDialog>(new SdlJoinDialog);
 }
 
 class SdlSetupNetgameDialog : public SetupNetgameDialog
@@ -2944,10 +2944,10 @@ private:
 	dialog m_dialog;
 };
 
-auto_ptr<SetupNetgameDialog>
+std::unique_ptr<SetupNetgameDialog>
 SetupNetgameDialog::Create ()
 {
-	return auto_ptr<SetupNetgameDialog>(new SdlSetupNetgameDialog);
+	return std::unique_ptr<SetupNetgameDialog>(new SdlSetupNetgameDialog);
 }
 
 // This should really be done better, I guess, but most people will never see it long enough to read it.

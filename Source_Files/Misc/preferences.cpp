@@ -325,7 +325,7 @@ static const char *shape_labels[3] = {
 
 enum { kCrosshairWidget };
 
-static auto_ptr<BinderSet> crosshair_binders;
+static std::unique_ptr<BinderSet> crosshair_binders;
 
 struct update_crosshair_display
 {

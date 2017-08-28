@@ -467,13 +467,13 @@ struct Client {
 	void handleChatMessage(NetworkChatMessage*, CommunicationsChannel*);
 	void handleChangeColorsMessage(ChangeColorsMessage*, CommunicationsChannel*);
 
-	std::auto_ptr<MessageDispatcher> mDispatcher;
-	std::auto_ptr<MessageHandler> mJoinerInfoMessageHandler;
-	std::auto_ptr<MessageHandler> mUnexpectedMessageHandler;
-	std::auto_ptr<MessageHandler> mCapabilitiesMessageHandler;
-	std::auto_ptr<MessageHandler> mAcceptJoinMessageHandler;
-	std::auto_ptr<MessageHandler> mChatMessageHandler;
-	std::auto_ptr<MessageHandler> mChangeColorsMessageHandler;
+	std::unique_ptr<MessageDispatcher> mDispatcher;
+	std::unique_ptr<MessageHandler> mJoinerInfoMessageHandler;
+	std::unique_ptr<MessageHandler> mUnexpectedMessageHandler;
+	std::unique_ptr<MessageHandler> mCapabilitiesMessageHandler;
+	std::unique_ptr<MessageHandler> mAcceptJoinMessageHandler;
+	std::unique_ptr<MessageHandler> mChatMessageHandler;
+	std::unique_ptr<MessageHandler> mChangeColorsMessageHandler;
 };
 
 typedef TemplatizedDataMessage<kGAME_SESSION_MESSAGE, BigChunkOfDataMessage> GameSessionMessage;

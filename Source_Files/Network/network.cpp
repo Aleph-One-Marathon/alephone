@@ -2063,7 +2063,7 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 		if (zipCapableChannels.size())
 		{
 			ZippedPhysicsMessage zippedPhysicsMessage(physics_buffer, physics_length);
-			std::auto_ptr<UninflatedMessage> uninflatedMessage(zippedPhysicsMessage.deflate());
+			std::unique_ptr<UninflatedMessage> uninflatedMessage(zippedPhysicsMessage.deflate());
 			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, *uninflatedMessage));
 		}
 
@@ -2082,7 +2082,7 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 			// zipped messages are compressed when deflated
 			// since we may have to send this to multiple joiners,
 			// deflate it now so that compression only happens once
-			std::auto_ptr<UninflatedMessage> uninflatedMessage(zippedMapMessage.deflate());
+			std::unique_ptr<UninflatedMessage> uninflatedMessage(zippedMapMessage.deflate());
 			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, *uninflatedMessage));
 		}
 
@@ -2098,7 +2098,7 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 		if (zipCapableChannels.size())
 		{
 			ZippedLuaMessage zippedLuaMessage(deferred_script_data, deferred_script_length);
-			std::auto_ptr<UninflatedMessage> uninflatedMessage(zippedLuaMessage.deflate());
+			std::unique_ptr<UninflatedMessage> uninflatedMessage(zippedLuaMessage.deflate());
 			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, *uninflatedMessage));
 		}
 
@@ -2159,7 +2159,7 @@ byte *NetReceiveGameData(bool do_physics)
   
   // handlers will take care of all messages, and when they're done
   // the server will send us this:
-  auto_ptr<EndGameDataMessage> endGameDataMessage(connection_to_server->receiveSpecificMessage<EndGameDataMessage>((Uint32) 60000, (Uint32) 30000));
+  std::unique_ptr<EndGameDataMessage> endGameDataMessage(connection_to_server->receiveSpecificMessage<EndGameDataMessage>((Uint32) 60000, (Uint32) 30000));
   if (endGameDataMessage.get()) {
     // game data was received OK
 	  if (do_physics) {

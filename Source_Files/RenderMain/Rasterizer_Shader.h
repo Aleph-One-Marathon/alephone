@@ -20,14 +20,15 @@ class Rasterizer_Shader_Class : public Rasterizer_OGL_Class {
 	friend class RenderRasterize_Shader;
 	
 protected:
-	std::auto_ptr<FBOSwapper> swapper;
+	std::unique_ptr<FBOSwapper> swapper;
 	bool smear_the_void;
 	short view_width;
 	short view_height;
 
 public:
 
-	Rasterizer_Shader_Class() : Rasterizer_OGL_Class() {}
+	Rasterizer_Shader_Class();
+	~Rasterizer_Shader_Class();
 
 	virtual void SetView(view_data& View);
 	virtual void setupGL();

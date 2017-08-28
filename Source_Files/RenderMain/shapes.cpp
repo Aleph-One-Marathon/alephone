@@ -788,7 +788,7 @@ static bool load_collection(short collection_index, bool strip)
 	}
 
 	// Read collection definition
-	std::auto_ptr<collection_definition> cd(new collection_definition);
+	std::unique_ptr<collection_definition> cd(new collection_definition);
 	SDL_RWseek(p, src_offset, RW_SEEK_SET);
 	load_collection_definition(cd.get(), p);
 	header->status &= ~markPATCHED;
