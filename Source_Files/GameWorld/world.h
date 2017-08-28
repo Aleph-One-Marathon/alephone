@@ -207,7 +207,7 @@ world_distance guess_distance2d(world_point2d *p0, world_point2d *p1);
 world_distance distance3d(world_point3d *p0, world_point3d *p1);
 world_distance distance2d(world_point2d *p0, world_point2d *p1); /* calls isqrt() */
 
-int32 isqrt(register uint32 x);
+int32 isqrt(uint32 x);
 
 // LP additions: kludges for doing long-distance calculation
 // by storing the upper digits in the upper byte of a "flags" value.

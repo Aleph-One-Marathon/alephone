@@ -1525,14 +1525,14 @@ static void precalculate_bit_depth_constants(
 	aren’t any matches, add a new entry and return that index. */
 static short find_or_add_color(
 	struct rgb_color_value *color,
-	register struct rgb_color_value *colors,
+	struct rgb_color_value *colors,
 	short *color_count, 
 	bool update_flags = true)
 {
 	short i;
 	
 	// LP addition: save initial color-table pointer, just in case we overflow
-	register struct rgb_color_value *colors_saved = colors;
+	struct rgb_color_value *colors_saved = colors;
 	
 	// = 1 to skip the transparent color
 	for (i= 1, colors+= 1; i<*color_count; ++i, ++colors)
@@ -1774,7 +1774,7 @@ static void build_shading_tables8(
 #else
 short find_closest_color(
 	struct rgb_color_value *color,
-	register struct rgb_color_value *colors,
+	struct rgb_color_value *colors,
 	short color_count)
 {
 	short i;
