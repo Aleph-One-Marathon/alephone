@@ -152,19 +152,6 @@ int Image_Blitter::UnscaledHeight()
 	return m_src.h;
 }
 
-void Image_Blitter::Draw(SDL_Surface *dst_surface, const SDL_Rect& dst)
-{
-    Image_Rect idst = { dst.x, dst.y, dst.w, dst.h };
-    Draw(dst_surface, idst);
-}
-
-void Image_Blitter::Draw(SDL_Surface *dst_surface, const SDL_Rect& dst, const SDL_Rect& src)
-{
-    Image_Rect idst = { dst.x, dst.y, dst.w, dst.h };
-    Image_Rect isrc = { src.x, src.y, src.w, src.h };
-    Draw(dst_surface, idst, isrc);
-}
-
 void Image_Blitter::Draw(SDL_Surface *dst_surface, const Image_Rect& dst, const Image_Rect& src)
 {
 	if (!Loaded())

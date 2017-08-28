@@ -29,10 +29,18 @@ IMAGE_BLITTER.H
 #include <set>
 using namespace std;
 
-typedef struct Image_Rect {
-    float x, y;
-    float w, h;
-} Image_Rect;
+struct Image_Rect
+{
+	float x = 0, y = 0, w = 0, h = 0;
+	
+	Image_Rect() = default;
+	
+	explicit constexpr Image_Rect(float x, float y, float w, float h)
+		: x(x), y(y), w(w), h(h) {}
+	
+	/*implicit*/ constexpr Image_Rect(SDL_Rect r)
+		: x(r.x), y(r.y), w(r.w), h(r.h) {}
+};
 
 class Image_Blitter
 {
@@ -52,9 +60,6 @@ public:
 	int UnscaledWidth();
 	int UnscaledHeight();
 	
-    void Draw(SDL_Surface *dst_surface, const SDL_Rect& dst);
-    void Draw(SDL_Surface *dst_surface, const SDL_Rect& dst, const SDL_Rect& src);
-    
 	virtual void Draw(SDL_Surface *dst_surface, const Image_Rect& dst) { Draw(dst_surface, dst, crop_rect); }
 	virtual void Draw(SDL_Surface *dst_surface, const Image_Rect& dst, const Image_Rect& src);
 		

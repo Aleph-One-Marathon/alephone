@@ -91,11 +91,6 @@ int Shape_Blitter::UnscaledHeight()
 	return m_src.h;
 }
 
-void Shape_Blitter::OGL_Draw(const SDL_Rect& dst)
-{
-    Image_Rect idst = { dst.x, dst.y, dst.w, dst.h };
-    OGL_Draw(idst);
-}
 void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
 {
 #ifdef HAVE_OPENGL
@@ -275,12 +270,6 @@ SDL_Surface *flip_surface(SDL_Surface *s, int width, int height)
     
 	return s2;
 }	
-
-void Shape_Blitter::SDL_Draw(SDL_Surface *dst_surface, const SDL_Rect& dst)
-{
-    Image_Rect idst = { dst.x, dst.y, dst.w, dst.h };
-    SDL_Draw(dst_surface, idst);
-}
 
 void Shape_Blitter::SDL_Draw(SDL_Surface *dst_surface, const Image_Rect& dst)
 {

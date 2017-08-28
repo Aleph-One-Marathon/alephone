@@ -188,12 +188,6 @@ void OGL_Blitter::WindowToScreen(int& x, int& y, bool in_game)
 	alephone::Screen::instance()->window_to_screen(x, y);
 }
 
-void OGL_Blitter::Draw(const SDL_Rect& dst)
-{
-    Image_Rect idst = { dst.x, dst.y, dst.w, dst.h };
-    Draw(idst);
-}
-
 void OGL_Blitter::Draw(const Image_Rect& dst, const Image_Rect& raw_src)
 {
 	if (!Loaded())

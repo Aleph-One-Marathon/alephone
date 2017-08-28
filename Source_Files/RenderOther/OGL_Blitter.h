@@ -46,7 +46,6 @@ public:
 	void Unload();
 
 	void Draw(SDL_Surface *dst_surface, const Image_Rect& dst, const Image_Rect& src) { Draw(dst, src); }
-    void Draw(const SDL_Rect& dst);
 	void Draw(const Image_Rect& dst) { Draw(dst, crop_rect); }
 	void Draw(const Image_Rect& dst, const Image_Rect& src);
 	
