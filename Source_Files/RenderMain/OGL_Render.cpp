@@ -172,7 +172,7 @@ static bool _OGL_IsActive = false;
 
 // Reads off of the current map;
 // call it to avoid lazy loading of textures
-typedef pair<shape_descriptor,int16> TextureWithTransferMode;
+typedef std::pair<shape_descriptor,int16> TextureWithTransferMode;
 static void PreloadTextures();
 static void PreloadWallTexture(const TextureWithTransferMode& inTexture);
 
@@ -672,7 +672,7 @@ bool OGL_StopRun()
 // ZZZ: changes to try to do less redundant work (using a set of pairs etc.)
 void PreloadTextures()
 {
-	typedef set<TextureWithTransferMode> TextureWithTransferModeSet;
+	typedef std::set<TextureWithTransferMode> TextureWithTransferModeSet;
 
 	TextureWithTransferModeSet theSetOfTexturesUsed;
 

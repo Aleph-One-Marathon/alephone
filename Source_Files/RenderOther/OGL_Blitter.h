@@ -33,7 +33,8 @@
 
 #include <vector>
 #include <set>
-using namespace std;
+
+using std::vector;
 
 #ifdef HAVE_OPENGL
 class OGL_Blitter;
@@ -74,7 +75,7 @@ private:
 	bool m_textures_loaded;
 	
 	static const int tile_size = 256;
-	static set<OGL_Blitter*> *m_blitter_registry;
+	static std::set<OGL_Blitter*> *m_blitter_registry;
 };
 
 #endif

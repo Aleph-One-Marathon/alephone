@@ -73,7 +73,7 @@ TextLayoutHelper::reserveSpaceFor(int inLeft, unsigned int inWidth, int inLowest
     theRightEnd.mStartOfReservation	= false;
     
     // Walk through, finding place for left end.  Keep track of reservations opened and not closed.
-    typedef multiset<Reservation*>	CollectionOfReservationPointers;
+    typedef std::multiset<Reservation*>	CollectionOfReservationPointers;
     CollectionOfReservationPointers	theReservations;
 
     CollectionOfReservationEnds::iterator	i	= mReservationEnds.begin();

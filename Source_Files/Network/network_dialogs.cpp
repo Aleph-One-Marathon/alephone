@@ -358,7 +358,7 @@ void GatherDialog::idle ()
 	}
 	
 	if (m_autogatherWidget->get_value ()) {
-		map<int, prospective_joiner_info>::iterator it;
+		std::map<int, prospective_joiner_info>::iterator it;
 		it = m_ungathered_players.begin ();
 		while (it != m_ungathered_players.end () && NetGetNumberOfPlayers() < MAXIMUM_NUMBER_OF_PLAYERS) {
 			gathered_player ((it++)->second);
@@ -370,7 +370,7 @@ void GatherDialog::update_ungathered_widget ()
 {
 	vector<prospective_joiner_info> temp;
 
-	for (map<int, prospective_joiner_info>::iterator it = m_ungathered_players.begin (); it != m_ungathered_players.end (); ++it)
+	for (std::map<int, prospective_joiner_info>::iterator it = m_ungathered_players.begin (); it != m_ungathered_players.end (); ++it)
 		temp.push_back ((*it).second);
 	
 	m_ungatheredWidget->SetItems (temp);
@@ -403,7 +403,7 @@ bool GatherDialog::gathered_player (const prospective_joiner_info& player)
 
 void GatherDialog::StartGameHit ()
 {
-	for (map<int, prospective_joiner_info>::iterator it = m_ungathered_players.begin (); it != m_ungathered_players.end (); ++it)
+	for (std::map<int, prospective_joiner_info>::iterator it = m_ungathered_players.begin (); it != m_ungathered_players.end (); ++it)
 		NetHandleUngatheredPlayer ((*it).second);
 	
 	Stop (true);
@@ -424,7 +424,7 @@ void GatherDialog::JoinSucceeded(const prospective_joiner_info* player)
 
 void GatherDialog::JoiningPlayerDropped(const prospective_joiner_info* player)
 {
-	map<int, prospective_joiner_info>::iterator it = m_ungathered_players.find (player->stream_id);
+	std::map<int, prospective_joiner_info>::iterator it = m_ungathered_players.find (player->stream_id);
 	if (it != m_ungathered_players.end ())
 		m_ungathered_players.erase (it);
 	

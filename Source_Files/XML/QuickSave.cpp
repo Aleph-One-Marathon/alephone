@@ -207,7 +207,7 @@ void w_saves::click(int x, int y)
             || y < get_theme_space(LIST_WIDGET, T_SPACE) || y >= rect.h - get_theme_space(LIST_WIDGET, B_SPACE))
             return;
         
-        if ((y - get_theme_space(LIST_WIDGET, T_SPACE)) / item_height() + top_item < min(num_items, top_item + shown_items))
+        if ((y - get_theme_space(LIST_WIDGET, T_SPACE)) / item_height() + top_item < std::min(num_items, top_item + shown_items))
         {
             size_t old_sel = selection;
             set_selection((y - get_theme_space(LIST_WIDGET, T_SPACE)) / item_height() + top_item);

@@ -274,7 +274,7 @@ protected:
 	void chatTextEntered (char character);
 	void chatChoiceHit ();
 	
-	map<int, prospective_joiner_info> m_ungathered_players;
+	std::map<int, prospective_joiner_info> m_ungathered_players;
 
 	ButtonWidget*			m_cancelWidget;
 	ButtonWidget*			m_startWidget;

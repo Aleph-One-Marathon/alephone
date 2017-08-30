@@ -1123,7 +1123,7 @@ std::vector<std::string> build_resolution_labels()
 	bool first_mode = true;
 	for (std::vector<std::pair<int, int> >::const_iterator it = Screen::instance()->GetModes().begin(); it != Screen::instance()->GetModes().end(); ++it)
 	{
-		ostringstream os;
+		std::ostringstream os;
 		os << it->first << "x" << it->second;
 		if (first_mode)
 		{

@@ -58,7 +58,8 @@ Nov 19, 2000 (Loren Petrich):
 #include "dynamic_limits.h"
 
 #include <vector>
-using namespace std;
+
+using std::vector;
 
 /* ---------- constants */
 

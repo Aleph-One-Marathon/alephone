@@ -27,7 +27,6 @@ IMAGE_BLITTER.H
 
 #include <vector>
 #include <set>
-using namespace std;
 
 struct Image_Rect
 {

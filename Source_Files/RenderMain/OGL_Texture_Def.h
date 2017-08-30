@@ -30,7 +30,6 @@
 
 
 #include <vector>
-using namespace std;
 
 #include "shape_descriptors.h"
 #include "ImageLoader.h"

@@ -54,7 +54,6 @@ March 18, 2002 (Br'fin (Jeremy Parsons)):
 #include <time.h>	// For time_t
 #include <vector>
 #include <SDL.h>
-using namespace std;
 
 #include <errno.h>
 #include <string>

@@ -233,7 +233,7 @@ struct NetworkPlayer_hub {
 
 	// latency stuff
 	int32 mLatencyTicks; // sum of the latency ticks from the last second
-	deque<int32> mLatencyBuffer;
+	std::deque<int32> mLatencyBuffer;
 
 	NetworkStats mStats;
 };
@@ -943,21 +943,21 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 				dout << "S";
 				for (int i = 0; i < 20; ++i)
 				{
-					dout << setw(3) 
+					dout << std::setw(3) 
 					     << thePlayer.mNthElementFinder.nth_smallest_element(i)
 					     << " ";
 				}
 				dout << "M";
 				for (int i = kDefaultInGameWindowSize / 2 - 10; i < kDefaultInGameWindowSize / 2 + 10; ++i)
 				{
-					dout << setw(3)
+					dout << std::setw(3)
 					     << thePlayer.mNthElementFinder.nth_smallest_element(i)
 					     << " ";
 				}
 				dout << "L";
 				for (int i = 19; i >= 0; --i)
 				{
-					dout << setw(3)
+					dout << std::setw(3)
 					     << thePlayer.mNthElementFinder.nth_largest_element(i)
 					     << " ";
 				}

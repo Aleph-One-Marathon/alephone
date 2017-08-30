@@ -28,7 +28,6 @@ SHAPE_BLITTER.H
 
 #include <vector>
 #include <set>
-using namespace std;
 
 // texture types
 enum {
