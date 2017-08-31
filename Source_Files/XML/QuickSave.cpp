@@ -660,7 +660,7 @@ bool create_quick_save(void)
     time(&(save.save_time));
     char fmt_time[256];
     tm *time_info = localtime(&(save.save_time));
-    strftime(fmt_time, 256, "%x %R", time_info);
+    strftime(fmt_time, 256, "%x %H:%M", time_info);
     save.formatted_time = fmt_time;
 
     save.level_name = mac_roman_to_utf8(static_world->level_name);
