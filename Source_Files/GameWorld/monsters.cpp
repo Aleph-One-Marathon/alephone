@@ -318,7 +318,7 @@ monster_data *get_monster_data(
 	struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
 	
 	vassert(monster, csprintf(temporary, "monster index #%d is out of range", monster_index));
-	vassert(SLOT_IS_USED(monster), csprintf(temporary, "monster index #%d (%p) is unused", monster_index, monster));
+	vassert(SLOT_IS_USED(monster), csprintf(temporary, "monster index #%d (%p) is unused", monster_index, (void*)monster));
 	
 	return monster;
 }

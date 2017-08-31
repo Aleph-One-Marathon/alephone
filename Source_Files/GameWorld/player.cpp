@@ -390,7 +390,7 @@ player_data *get_player_data(
 {
 	player_data *data = GetMemberWithBounds(players,player_index,dynamic_world->player_count);
 	vassert(data,
-		csprintf(temporary, "asked for player #%lu/#%d", player_index, dynamic_world->player_count));
+		csprintf(temporary, "asked for player #%zu/#%d", player_index, dynamic_world->player_count));
 	
 	return data;
 }

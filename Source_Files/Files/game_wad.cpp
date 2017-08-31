@@ -1830,7 +1830,7 @@ bool process_map_wad(
 		count= data_length/SIZEOF_object_data;
 		assert(count*SIZEOF_object_data==data_length);
 		vassert(count <= MAXIMUM_OBJECTS_PER_MAP,
-			csprintf(temporary,"Number of map objects %lu > limit %u",count,MAXIMUM_OBJECTS_PER_MAP));
+			csprintf(temporary,"Number of map objects %zu > limit %u",count,MAXIMUM_OBJECTS_PER_MAP));
 		unpack_object_data(data,objects,count);
 		
 		// Unpacking is E-Z here...
@@ -1843,21 +1843,21 @@ bool process_map_wad(
 		count= data_length/SIZEOF_monster_data;
 		assert(count*SIZEOF_monster_data==data_length);
 		vassert(count <= MAXIMUM_MONSTERS_PER_MAP,
-			csprintf(temporary,"Number of monsters %lu > limit %u",count,MAXIMUM_MONSTERS_PER_MAP));
+			csprintf(temporary,"Number of monsters %zu > limit %u",count,MAXIMUM_MONSTERS_PER_MAP));
 		unpack_monster_data(data,monsters,count);
 
 		data= (uint8 *)extract_type_from_wad(wad, EFFECTS_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_effect_data;
 		assert(count*SIZEOF_effect_data==data_length);
 		vassert(count <= MAXIMUM_EFFECTS_PER_MAP,
-			csprintf(temporary,"Number of effects %lu > limit %u",count,MAXIMUM_EFFECTS_PER_MAP));
+			csprintf(temporary,"Number of effects %zu > limit %u",count,MAXIMUM_EFFECTS_PER_MAP));
 		unpack_effect_data(data,effects,count);
 
 		data= (uint8 *)extract_type_from_wad(wad, PROJECTILES_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_projectile_data;
 		assert(count*SIZEOF_projectile_data==data_length);
 		vassert(count <= MAXIMUM_PROJECTILES_PER_MAP,
-			csprintf(temporary,"Number of projectiles %lu > limit %u",count,MAXIMUM_PROJECTILES_PER_MAP));
+			csprintf(temporary,"Number of projectiles %zu > limit %u",count,MAXIMUM_PROJECTILES_PER_MAP));
 		unpack_projectile_data(data,projectiles,count);
 		
 		data= (uint8 *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);

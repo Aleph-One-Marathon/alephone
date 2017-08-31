@@ -73,7 +73,7 @@ effect_data *get_effect_data(
 	struct effect_data *effect = GetMemberWithBounds(effects,effect_index,MAXIMUM_EFFECTS_PER_MAP);
 	
 	vassert(effect, csprintf(temporary, "effect index #%d is out of range", effect_index));
-	vassert(SLOT_IS_USED(effect), csprintf(temporary, "effect index #%d (%p) is unused", effect_index, effect));
+	vassert(SLOT_IS_USED(effect), csprintf(temporary, "effect index #%d (%p) is unused", effect_index, (void*)effect));
 	
 	return effect;
 }
