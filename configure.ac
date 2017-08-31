@@ -65,6 +65,7 @@ AS_CASE([$target],
           ax_boost_user_filesystem_lib="boost_filesystem-mt"
           AC_CHECK_TOOL([WINDRES], [windres], [:])
           AC_DEFINE([WIN32_DISABLE_MUSIC], [1], [Win32 music disabled])
+          CPPFLAGS="-D__USE_MINGW_ANSI_STDIO $CPPFLAGS"
           LIBS="$LIBS -ldsound -lwsock32"
           LDFLAGS="$LDFLAGS -Wl,-subsystem,windows" ],
         [*-*-netbsd*],
