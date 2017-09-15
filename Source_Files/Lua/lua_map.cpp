@@ -2215,10 +2215,7 @@ Lua_Light_State* Lua_Light_State::Push(lua_State* L, int16 light_index, int16 in
 		return 0;
 	}
 
-	t = static_cast<Lua_Light_State*>(lua_newuserdata(L, sizeof(Lua_Light_State)));
-	luaL_getmetatable(L, Lua_Light_State_Name);
-	lua_setmetatable(L, -2);
-	t->m_index = index;
+	t = NewInstance<Lua_Light_State>(L, index);
 	t->m_light_index = light_index;
 
 	return t;
@@ -2226,7 +2223,7 @@ Lua_Light_State* Lua_Light_State::Push(lua_State* L, int16 light_index, int16 in
 
 int16 Lua_Light_State::LightIndex(lua_State* L, int index)
 {
-	Lua_Light_State* t = static_cast<Lua_Light_State*>(lua_touserdata(L, index));
+	Lua_Light_State* t = static_cast<Lua_Light_State*>(Instance(L, index));
 	if (!t) luaL_typerror(L, index, Lua_Light_State_Name);
 	return t->m_light_index;
 }
