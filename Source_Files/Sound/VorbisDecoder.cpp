@@ -47,7 +47,8 @@ static long sdl_tell_func(void *datasource)
 
 VorbisDecoder::VorbisDecoder() :
 	stereo(false),
-	rate(0)
+	rate(0),
+	ov_file()
 {	
 	callbacks.read_func = sdl_read_func;
 	callbacks.seek_func = sdl_seek_func;
@@ -62,29 +63,29 @@ VorbisDecoder::~VorbisDecoder()
 
 bool VorbisDecoder::Open(FileSpecifier &File)
 {
+	Close();
+	
 	OpenedFile file;
 	if (!File.Open(file))
 		return false;
-
-	if (ov_test_callbacks(file.TakeRWops(), &ov_file, 0, 0, callbacks) == 0)
+	
+	if (ov_open_callbacks(file.GetRWops(), &ov_file, NULL, 0, callbacks) != 0)
+		return false;
+	
+	// Let ov_file own the RWops
+	file.TakeRWops();
+	
+	vorbis_info *vi = ov_info(&ov_file, -1);
+	if (!vi)
 	{
-		if (ov_test_open(&ov_file) == 0)
-		{
-			vorbis_info *vi = ov_info(&ov_file, -1);
-			if (!vi) return false;
-			stereo = vi->channels == 2;
-			rate = vi->rate;
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	else
-	{
+		Close();
 		return false;
 	}
+	
+	stereo = vi->channels == 2;
+	rate = vi->rate;
+	
+	return true;
 }
 
 int32 VorbisDecoder::Decode(uint8* buffer, int32 max_length)
