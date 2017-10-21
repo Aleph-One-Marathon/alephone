@@ -51,7 +51,7 @@ Jan 12, 2001 (Loren Petrich):
 #include "screen.h"
 
 #ifdef HAVE_OPENGL
-set<FontSpecifier*> *FontSpecifier::m_font_registry = NULL;
+std::set<FontSpecifier*> *FontSpecifier::m_font_registry = NULL;
 #endif
 
 // MacOS-specific: stuff that gets reused
@@ -461,7 +461,7 @@ void FontSpecifier::OGL_ResetFonts(bool IsStarting)
     if (!m_font_registry)
         return;
     
-	set<FontSpecifier*>::iterator it;
+	std::set<FontSpecifier*>::iterator it;
 	if (IsStarting)
 	{
 		for (it = m_font_registry->begin();
@@ -481,7 +481,7 @@ void FontSpecifier::OGL_ResetFonts(bool IsStarting)
 void FontSpecifier::OGL_Register(FontSpecifier *F)
 {
 	if (!m_font_registry)
-		m_font_registry = new set<FontSpecifier*>;
+		m_font_registry = new std::set<FontSpecifier*>;
 	m_font_registry->insert(F);
 }
 

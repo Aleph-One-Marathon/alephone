@@ -172,7 +172,7 @@ static bool _OGL_IsActive = false;
 
 // Reads off of the current map;
 // call it to avoid lazy loading of textures
-typedef pair<shape_descriptor,int16> TextureWithTransferMode;
+typedef std::pair<shape_descriptor,int16> TextureWithTransferMode;
 static void PreloadTextures();
 static void PreloadWallTexture(const TextureWithTransferMode& inTexture);
 
@@ -672,7 +672,7 @@ bool OGL_StopRun()
 // ZZZ: changes to try to do less redundant work (using a set of pairs etc.)
 void PreloadTextures()
 {
-	typedef set<TextureWithTransferMode> TextureWithTransferModeSet;
+	typedef std::set<TextureWithTransferMode> TextureWithTransferModeSet;
 
 	TextureWithTransferModeSet theSetOfTexturesUsed;
 
@@ -2988,7 +2988,7 @@ bool OGL_RenderCrosshairs()
 				int LenMin = std::min(LenMid, static_cast<int>(Crosshairs.FromCenter));
 				
 				// at the initial rotation, this is the bottom right
-				GLfloat vertices[16] = {
+				GLint vertices[16] = {
 					LenMax + WidthMin, LenMin + HeightMin,
 					LenMax + WidthMax, LenMin + HeightMin,
 					LenMax + WidthMin, LenMid + HeightMin,
@@ -2998,7 +2998,7 @@ bool OGL_RenderCrosshairs()
 					LenMin + WidthMin, LenMax + HeightMin,
 					LenMin + WidthMin, LenMax + HeightMax
 				};
-				glVertexPointer(2, GL_FLOAT, 0, vertices);
+				glVertexPointer(2, GL_INT, 0, vertices);
 				glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
 			}
 			break;

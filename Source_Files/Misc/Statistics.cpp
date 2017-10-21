@@ -118,7 +118,7 @@ int StatsManager::Run(void *pv)
 
 	while (sm->run_)
 	{
-		std::auto_ptr<Entry> entry;
+		std::unique_ptr<Entry> entry;
 		{
 			ScopedMutex mutex(sm->entry_mutex_);
 			if (sm->entries_.empty())

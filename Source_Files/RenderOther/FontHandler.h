@@ -135,7 +135,7 @@ public:
 	int GetTxtrSize() {return int(TxtrWidth)*int(TxtrHeight);}
 	GLuint TxtrID;
 	uint32 DispList;
-	static set<FontSpecifier*> *m_font_registry;
+	static std::set<FontSpecifier*> *m_font_registry;
 #endif
 };
 

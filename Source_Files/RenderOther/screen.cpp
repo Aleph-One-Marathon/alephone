@@ -1376,8 +1376,8 @@ void render_screen(short ticks_elapsed)
 		OGL_MapActive = false;
 
 	// Set OpenGL viewport to world view
-	Rect sr = {0, 0, Screen::instance()->height(), Screen::instance()->width()};
-	Rect vr = {ViewRect.y, ViewRect.x, ViewRect.y + ViewRect.h, ViewRect.x + ViewRect.w};
+	Rect sr = MakeRect(0, 0, Screen::instance()->height(), Screen::instance()->width());
+	Rect vr = MakeRect(ViewRect);
 	Screen::instance()->bound_screen_to_rect(ViewRect);
 	OGL_SetWindow(sr, vr, true);
 	
@@ -1438,7 +1438,7 @@ void render_screen(short ticks_elapsed)
 			if (Screen::instance()->lua_hud())
 				Lua_DrawHUD(ticks_elapsed);
 			else {
-				Rect dr = {HUD_DestRect.y, HUD_DestRect.x, HUD_DestRect.y + HUD_DestRect.h, HUD_DestRect.x + HUD_DestRect.w};
+				Rect dr = MakeRect(HUD_DestRect);
 				OGL_DrawHUD(dr, ticks_elapsed);
 			}
 		}
@@ -1766,9 +1766,9 @@ void render_overhead_map(struct view_data *view)
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive()) {
 		// Set OpenGL viewport to world view
-		Rect sr = {0, 0, Screen::instance()->height(), Screen::instance()->width()};
+		Rect sr = MakeRect(0, 0, Screen::instance()->height(), Screen::instance()->width());
 		SDL_Rect MapRect = Screen::instance()->map_rect();
-		Rect mr = {MapRect.y, MapRect.x, MapRect.y + MapRect.h, MapRect.x + MapRect.w};
+		Rect mr = MakeRect(MapRect);
 		Screen::instance()->bound_screen_to_rect(MapRect);
 		OGL_SetWindow(sr, mr, true);
 	}

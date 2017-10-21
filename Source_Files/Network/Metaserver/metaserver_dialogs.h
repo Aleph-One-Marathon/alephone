@@ -68,7 +68,7 @@ class MetaserverClientUi : public GlobalMetaserverChatNotificationAdapter
 {
 public:
 	// Abstract factory; concrete type determined at link-time
-	static std::auto_ptr<MetaserverClientUi> Create();
+	static std::unique_ptr<MetaserverClientUi> Create();
 
 	const IPaddress GetJoinAddressByRunning();
 

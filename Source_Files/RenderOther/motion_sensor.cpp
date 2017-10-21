@@ -683,8 +683,8 @@ static void bitmap_window_copy(
 	
 	for (y=y0;y<y1;++y)
 	{
-		register pixel8 *read= source->row_addresses[y]+x0;
-		register pixel8 *write= destination->row_addresses[y]+x0;
+		pixel8 *read= source->row_addresses[y]+x0;
+		pixel8 *write= destination->row_addresses[y]+x0;
 		
 		for (count=x1-x0;count>0;--count) *write++= *read++;
 	}
@@ -713,8 +713,8 @@ static void clipped_transparent_sprite_copy(
 
 	while ((height-= 1)>=0)	
 	{
-		register pixel8 pixel, *read, *write;
-		register short width= source->width;
+		pixel8 pixel, *read, *write;
+		short width= source->width;
 		short clip_left= region[y0+y].x0, clip_right= region[y0+y].x1;
 		short offset= 0;
 		
@@ -753,8 +753,8 @@ static void unclipped_solid_sprite_copy(
 
 	while ((height-= 1)>=0)	
 	{
-		register pixel8 *read, *write;
-		register short width= source->width;
+		pixel8 *read, *write;
+		short width= source->width;
 
 		assert(y>=0&&y<source->height);
 		assert(y0+y>=0&&y0+y<destination->height);

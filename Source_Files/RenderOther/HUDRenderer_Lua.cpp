@@ -448,7 +448,7 @@ void HUD_Lua_Class::draw_image(Image_Blitter *image, float x, float y)
 	if (!m_drawing)
 		return;
 	
-	Image_Rect r = { x, y, image->crop_rect.w, image->crop_rect.h };
+	Image_Rect r{ x, y, image->crop_rect.w, image->crop_rect.h };
 	
 	if (!r.w || !r.h)
 		return;

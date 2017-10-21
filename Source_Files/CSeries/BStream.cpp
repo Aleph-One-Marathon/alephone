@@ -35,7 +35,7 @@ std::streampos BIStream::maxg() const
 	return max;
 }
 
-BIStream& BIStream::read(char *s, std::streamsize n) throw(failure)
+BIStream& BIStream::read(char *s, std::streamsize n)
 {
 	if (rdbuf()->sgetn(s, n) != n)
 	{
@@ -45,7 +45,7 @@ BIStream& BIStream::read(char *s, std::streamsize n) throw(failure)
 	return *this;
 }
 
-BIStream& BIStream::ignore(std::streamsize n) throw(failure)
+BIStream& BIStream::ignore(std::streamsize n)
 {
 	if (rdbuf()->pubseekoff(n, std::ios_base::cur, std::ios_base::in) < 0)
 	{
@@ -55,12 +55,12 @@ BIStream& BIStream::ignore(std::streamsize n) throw(failure)
 	return *this;
 }
 
-BIStream& BIStream::operator>>(uint8& value) throw(failure)
+BIStream& BIStream::operator>>(uint8& value)
 {
 	return read(reinterpret_cast<char*>(&value), 1);
 }
 
-BIStream& BIStream::operator>>(int8& value) throw(failure)
+BIStream& BIStream::operator>>(int8& value)
 {
 	uint8 uvalue;
 	operator>>(uvalue);
@@ -68,14 +68,14 @@ BIStream& BIStream::operator>>(int8& value) throw(failure)
 	return *this;
 }
 
-BIStream& BIStreamBE::operator>>(uint16& value) throw(failure)
+BIStream& BIStreamBE::operator>>(uint16& value)
 {
 	read(reinterpret_cast<char*>(&value), 2);
 	value = SDL_SwapBE16(value);
 	return *this;
 }
 
-BIStream& BIStreamBE::operator>>(int16& value) throw(failure)
+BIStream& BIStreamBE::operator>>(int16& value)
 {
 	uint16 uvalue;
 	operator>>(uvalue);
@@ -83,14 +83,14 @@ BIStream& BIStreamBE::operator>>(int16& value) throw(failure)
 	return *this;
 }
 
-BIStream& BIStreamBE::operator>>(uint32& value) throw(failure)
+BIStream& BIStreamBE::operator>>(uint32& value)
 {
 	read(reinterpret_cast<char*>(&value), 4);
 	value = SDL_SwapBE32(value);
 	return *this;
 }
 
-BIStream& BIStreamBE::operator>>(int32& value) throw(failure)
+BIStream& BIStreamBE::operator>>(int32& value)
 {
 	uint32 uvalue;
 	operator>>(uvalue);
@@ -98,7 +98,7 @@ BIStream& BIStreamBE::operator>>(int32& value) throw(failure)
 	return *this;
 }
 
-BIStream& BIStreamBE::operator>>(double& value) throw(failure)
+BIStream& BIStreamBE::operator>>(double& value)
 {
 	Uint64 ivalue;
 	read(reinterpret_cast<char*>(&ivalue), 8);
@@ -120,7 +120,7 @@ std::streampos BOStream::maxp() const
 	return max;
 }
 
-BOStream& BOStream::write(const char *s, std::streamsize n) throw(failure)
+BOStream& BOStream::write(const char *s, std::streamsize n)
 {
 	if (rdbuf()->sputn(s, n) != n)
 	{
@@ -130,39 +130,39 @@ BOStream& BOStream::write(const char *s, std::streamsize n) throw(failure)
 	return *this;
 }
 
-BOStream& BOStream::operator<<(uint8 value) throw(failure)
+BOStream& BOStream::operator<<(uint8 value)
 {
 	return write(reinterpret_cast<char*>(&value), 1);
 }
 
-BOStream& BOStream::operator<<(int8 value) throw(failure)
+BOStream& BOStream::operator<<(int8 value)
 {
 	return operator<<(static_cast<uint8>(value));
 }
 
-BOStream& BOStreamBE::operator<<(uint16 value) throw(failure)
+BOStream& BOStreamBE::operator<<(uint16 value)
 {
 	value = SDL_SwapBE16(value);
 	return write(reinterpret_cast<char*>(&value), 2);
 }
 
-BOStream& BOStreamBE::operator<<(int16 value) throw(failure)
+BOStream& BOStreamBE::operator<<(int16 value)
 {
 	return operator<<(static_cast<uint16>(value));
 }
 
-BOStream& BOStreamBE::operator<<(uint32 value) throw(failure)
+BOStream& BOStreamBE::operator<<(uint32 value)
 {
 	value = SDL_SwapBE32(value);
 	return write(reinterpret_cast<char*>(&value), 4);
 }
 
-BOStream& BOStreamBE::operator<<(int32 value) throw(failure)
+BOStream& BOStreamBE::operator<<(int32 value)
 {
 	return operator<<(static_cast<uint32>(value));
 }
 
-BOStream& BOStreamBE::operator<<(double value) throw(failure)
+BOStream& BOStreamBE::operator<<(double value)
 {
 	Uint64 ivalue;
 	memcpy(reinterpret_cast<char*>(&ivalue), reinterpret_cast<char*>(&value), 8);

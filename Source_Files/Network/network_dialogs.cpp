@@ -197,7 +197,7 @@ bool network_gather(bool inResumingGame)
 		myPlayerInfo.desired_color= myPlayerInfo.color;
 		memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, LONG_SERIAL_NUMBER_LENGTH);
 		
-		auto_ptr<GameAvailableMetaserverAnnouncer> metaserverAnnouncer;
+		std::unique_ptr<GameAvailableMetaserverAnnouncer> metaserverAnnouncer;
 		if(NetEnter())
 		{
 			bool gather_dialog_result;
@@ -358,7 +358,7 @@ void GatherDialog::idle ()
 	}
 	
 	if (m_autogatherWidget->get_value ()) {
-		map<int, prospective_joiner_info>::iterator it;
+		std::map<int, prospective_joiner_info>::iterator it;
 		it = m_ungathered_players.begin ();
 		while (it != m_ungathered_players.end () && NetGetNumberOfPlayers() < MAXIMUM_NUMBER_OF_PLAYERS) {
 			gathered_player ((it++)->second);
@@ -370,7 +370,7 @@ void GatherDialog::update_ungathered_widget ()
 {
 	vector<prospective_joiner_info> temp;
 
-	for (map<int, prospective_joiner_info>::iterator it = m_ungathered_players.begin (); it != m_ungathered_players.end (); ++it)
+	for (std::map<int, prospective_joiner_info>::iterator it = m_ungathered_players.begin (); it != m_ungathered_players.end (); ++it)
 		temp.push_back ((*it).second);
 	
 	m_ungatheredWidget->SetItems (temp);
@@ -403,7 +403,7 @@ bool GatherDialog::gathered_player (const prospective_joiner_info& player)
 
 void GatherDialog::StartGameHit ()
 {
-	for (map<int, prospective_joiner_info>::iterator it = m_ungathered_players.begin (); it != m_ungathered_players.end (); ++it)
+	for (std::map<int, prospective_joiner_info>::iterator it = m_ungathered_players.begin (); it != m_ungathered_players.end (); ++it)
 		NetHandleUngatheredPlayer ((*it).second);
 	
 	Stop (true);
@@ -424,7 +424,7 @@ void GatherDialog::JoinSucceeded(const prospective_joiner_info* player)
 
 void GatherDialog::JoiningPlayerDropped(const prospective_joiner_info* player)
 {
-	map<int, prospective_joiner_info>::iterator it = m_ungathered_players.find (player->stream_id);
+	std::map<int, prospective_joiner_info>::iterator it = m_ungathered_players.find (player->stream_id);
 	if (it != m_ungathered_players.end ())
 		m_ungathered_players.erase (it);
 	
@@ -2498,10 +2498,10 @@ private:
 	dialog m_dialog;
 };
 
-auto_ptr<GatherDialog>
+std::unique_ptr<GatherDialog>
 GatherDialog::Create()
 {
-	return auto_ptr<GatherDialog>(new SdlGatherDialog);
+	return std::unique_ptr<GatherDialog>(new SdlGatherDialog);
 }
 
 extern struct color_table *build_8bit_system_color_table(void);
@@ -2670,10 +2670,10 @@ private:
 	dialog m_dialog;
 };
 
-auto_ptr<JoinDialog>
+std::unique_ptr<JoinDialog>
 JoinDialog::Create()
 {
-	return auto_ptr<JoinDialog>(new SdlJoinDialog);
+	return std::unique_ptr<JoinDialog>(new SdlJoinDialog);
 }
 
 class SdlSetupNetgameDialog : public SetupNetgameDialog
@@ -2944,10 +2944,10 @@ private:
 	dialog m_dialog;
 };
 
-auto_ptr<SetupNetgameDialog>
+std::unique_ptr<SetupNetgameDialog>
 SetupNetgameDialog::Create ()
 {
-	return auto_ptr<SetupNetgameDialog>(new SdlSetupNetgameDialog);
+	return std::unique_ptr<SetupNetgameDialog>(new SdlSetupNetgameDialog);
 }
 
 // This should really be done better, I guess, but most people will never see it long enough to read it.

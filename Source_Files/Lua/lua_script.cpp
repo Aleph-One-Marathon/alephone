@@ -73,7 +73,6 @@ extern "C"
 #endif
 
 #include <string>
-using namespace std;
 #include <stdlib.h>
 #include <set>
 
@@ -903,7 +902,7 @@ bool LuaState::Run()
 void LuaState::ExecuteCommand(const std::string& line)
 {
 
-	string buffer;
+	std::string buffer;
 	bool print_result = false;
 	if (line[0] == '=') 
 	{
@@ -1056,7 +1055,7 @@ std::string LuaState::SaveAll()
 	}
 	else
 	{
-		return string();
+		return std::string();
 	}
 }
 
@@ -1082,7 +1081,7 @@ std::string LuaState::SavePassed()
 	} 
 	else
 	{
-		return string();
+		return std::string();
 	}
 }
 
@@ -1090,7 +1089,7 @@ typedef boost::ptr_map<int, LuaState> state_map;
 state_map states;
 
 // globals
-vector<lua_camera> lua_cameras;
+std::vector<lua_camera> lua_cameras;
 
 uint32 *action_flags;
 
@@ -2089,7 +2088,7 @@ void ResetLuaMute()
 
 void MarkLuaCollections(bool loading)
 {
-	static set<short> collections;
+	static std::set<short> collections;
 	if (loading)
 	{
 		collections.clear();
@@ -2098,7 +2097,7 @@ void MarkLuaCollections(bool loading)
 	}
 	else
 	{
-		for (set<short>::iterator it = collections.begin(); it != collections.end(); it++)
+		for (std::set<short>::iterator it = collections.begin(); it != collections.end(); it++)
 		{
 			mark_collection_for_unloading(*it);
 		}

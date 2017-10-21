@@ -352,7 +352,7 @@ int main(int argc, char **argv)
 		// Run the main loop
 		main_event_loop();
 
-	} catch (exception &e) {
+	} catch (std::exception &e) {
 		try 
 		{
 			logFatal("Unhandled exception: %s", e.what());

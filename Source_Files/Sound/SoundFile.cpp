@@ -30,6 +30,7 @@ SOUNDFILE.CPP
 
 #include "BStream.h"
 #include <boost/iostreams/stream_buffer.hpp>
+#include <utility>
 
 namespace io = boost::iostreams;
 
@@ -342,7 +343,7 @@ bool M2SoundFile::Open(FileSpecifier& SoundFileSpec)
 {
 	Close();
 
-	std::auto_ptr<OpenedFile> sound_file(new OpenedFile);
+	std::unique_ptr<OpenedFile> sound_file(new OpenedFile);
 
 	if (!SoundFileSpec.Open(*sound_file, false)) return false;
 
@@ -398,7 +399,7 @@ bool M2SoundFile::Open(FileSpecifier& SoundFileSpec)
 	}
 
 	// keep the sound file opened
-	opened_sound_file = sound_file;
+	opened_sound_file = std::move(sound_file);
 	
 	return true;
 }

@@ -239,7 +239,7 @@ class GatherDialog : public GatherCallbacks, public ChatCallbacks, public Global
 {
 public:
 // Abstract factory; concrete type determined at link-time
-	static std::auto_ptr<GatherDialog> Create();
+	static std::unique_ptr<GatherDialog> Create();
 	
 	bool GatherNetworkGameByRunning ();
 	
@@ -274,7 +274,7 @@ protected:
 	void chatTextEntered (char character);
 	void chatChoiceHit ();
 	
-	map<int, prospective_joiner_info> m_ungathered_players;
+	std::map<int, prospective_joiner_info> m_ungathered_players;
 
 	ButtonWidget*			m_cancelWidget;
 	ButtonWidget*			m_startWidget;
@@ -296,7 +296,7 @@ class JoinDialog : public GlobalMetaserverChatNotificationAdapter, public ChatCa
 {
 public:
 	// Abstract factory; concrete type determined at link-time
-	static std::auto_ptr<JoinDialog> Create();
+	static std::unique_ptr<JoinDialog> Create();
 
 	const int JoinNetworkGameByRunning();
 
@@ -345,7 +345,7 @@ protected:
 	
 	enum { kPregameChat = 0, kMetaserverChat };
 	
-	std::auto_ptr<JoinerSeekingGathererAnnouncer> join_announcer;
+	std::unique_ptr<JoinerSeekingGathererAnnouncer> join_announcer;
 	int join_result;
 	bool got_gathered;
 
@@ -359,7 +359,7 @@ class SetupNetgameDialog
 {
 public:
 	// Abstract factory; concrete type determined at link-time
-	static std::auto_ptr<SetupNetgameDialog> Create();
+	static std::unique_ptr<SetupNetgameDialog> Create();
 
 	bool SetupNetworkGameByRunning (
 		player_info *player_information,

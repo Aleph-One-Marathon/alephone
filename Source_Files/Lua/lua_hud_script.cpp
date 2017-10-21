@@ -36,7 +36,6 @@ extern "C"
 #endif
 
 #include <string>
-using namespace std;
 #include <stdlib.h>
 #include <set>
 
@@ -399,7 +398,7 @@ void CloseLuaHUDScript()
 
 void MarkLuaHUDCollections(bool loading)
 {
-	static set<short> collections;
+	static std::set<short> collections;
 	if (loading)
 	{
 		collections.clear();
@@ -408,7 +407,7 @@ void MarkLuaHUDCollections(bool loading)
 	}
 	else
 	{
-		for (set<short>::iterator it = collections.begin(); it != collections.end(); it++)
+		for (std::set<short>::iterator it = collections.begin(); it != collections.end(); it++)
 		{
 			mark_collection_for_unloading(*it);
 		}

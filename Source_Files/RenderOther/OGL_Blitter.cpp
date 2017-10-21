@@ -30,7 +30,7 @@
 #include "OGL_Render.h"
 
 const int OGL_Blitter::tile_size;
-set<OGL_Blitter*> *OGL_Blitter::m_blitter_registry = NULL;
+std::set<OGL_Blitter*> *OGL_Blitter::m_blitter_registry = NULL;
 
 OGL_Blitter::OGL_Blitter() : m_textures_loaded(false)
 {
@@ -156,7 +156,7 @@ void OGL_Blitter::StopTextures()
 	if (!m_blitter_registry)
 		return;
 	
-	set<OGL_Blitter*>::iterator it;
+	std::set<OGL_Blitter*>::iterator it;
 	for (it = m_blitter_registry->begin();
 	     it != m_blitter_registry->end();
 	     it = m_blitter_registry->begin())
@@ -186,12 +186,6 @@ void OGL_Blitter::BoundScreen(bool in_game)
 void OGL_Blitter::WindowToScreen(int& x, int& y, bool in_game)
 {
 	alephone::Screen::instance()->window_to_screen(x, y);
-}
-
-void OGL_Blitter::Draw(const SDL_Rect& dst)
-{
-    Image_Rect idst = { dst.x, dst.y, dst.w, dst.h };
-    Draw(idst);
 }
 
 void OGL_Blitter::Draw(const Image_Rect& dst, const Image_Rect& raw_src)
@@ -288,7 +282,7 @@ void OGL_Blitter::Draw(const Image_Rect& dst, const Image_Rect& raw_src)
 void OGL_Blitter::Register(OGL_Blitter *B)
 {
 	if (!m_blitter_registry)
-		m_blitter_registry = new set<OGL_Blitter*>;
+		m_blitter_registry = new std::set<OGL_Blitter*>;
 	m_blitter_registry->insert(B);
 }
 

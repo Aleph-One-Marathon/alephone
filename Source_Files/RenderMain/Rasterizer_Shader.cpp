@@ -42,6 +42,9 @@ const GLdouble kViewBaseMatrixInverse[16] = {
 	0,	0,	0,	1
 };
 
+Rasterizer_Shader_Class::Rasterizer_Shader_Class() = default;
+Rasterizer_Shader_Class::~Rasterizer_Shader_Class() = default;
+
 void Rasterizer_Shader_Class::SetView(view_data& view) {
 	OGL_SetView(view);
 	

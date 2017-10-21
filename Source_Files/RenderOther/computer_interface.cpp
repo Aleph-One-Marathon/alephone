@@ -2057,7 +2057,7 @@ private:
 	void BuildSuccessGroup();
 	void BuildFailureGroup();
 
-	std::auto_ptr<terminal_text_t> terminal;
+	std::unique_ptr<terminal_text_t> terminal;
 	
 	io::stream_buffer<io::array_source> in_buffer;
 	std::istream in;
