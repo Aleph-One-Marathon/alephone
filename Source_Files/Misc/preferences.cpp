@@ -1737,22 +1737,22 @@ static void controls_dialog(void *arg)
 	general_table->dual_add(always_swim_w->label("Always Swim"), d);
 	general_table->dual_add(always_swim_w, d);
 
+	w_toggle* auto_recenter_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_auto_recenter));
+	general_table->dual_add(auto_recenter_w->label("Auto-Recenter View"), d);
+	general_table->dual_add(auto_recenter_w, d);
+
 	general_table->add_row(new w_spacer(), true);
 
 	w_toggle *weapon_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_switch_to_new_weapon));
 	general_table->dual_add(weapon_w->label("Auto-Switch Weapons"), d);
 	general_table->dual_add(weapon_w, d);
 
-	w_toggle* auto_recenter_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_auto_recenter));
-	general_table->dual_add(auto_recenter_w->label("Auto-Recenter View"), d);
-	general_table->dual_add(auto_recenter_w, d);
-
 	general->add(general_table, true);
 
 	general->add(new w_spacer(), true);
-	general->dual_add(new w_static_text("Warning: Auto-Switch Weapons and Auto-Recenter View"), d);
-	general->dual_add(new w_static_text("are always ON in network play.  Turning either one OFF"), d);
-	general->dual_add(new w_static_text("will also disable film recording for single-player games."), d);
+	general->dual_add(new w_static_text("Warning: Auto-Switch Weapons is always ON in"), d);
+	general->dual_add(new w_static_text("network play.  Turning it OFF will also disable"), d);
+	general->dual_add(new w_static_text("film recording for single-player games."), d);
 		
 	tabs->add(general, true);
 	tabs->add(mouse, true);
@@ -3449,7 +3449,7 @@ restore_custom_player_behavior_modifiers() {
 
 bool
 is_player_behavior_standard() {
-    return (!dont_switch_to_new_weapon() && !dont_auto_recenter());
+	return !dont_switch_to_new_weapon();
 }
 
 
@@ -3464,13 +3464,9 @@ bool dont_switch_to_new_weapon() {
 }
 
 
-// ZZZ addition: like dont_switch_to_new_weapon()
 bool
 dont_auto_recenter() {
-    if(!sStandardizeModifiers)
-        return TEST_FLAG(input_preferences->modifiers, _inputmod_dont_auto_recenter);
-    else
-        return false;
+	return TEST_FLAG(input_preferences->modifiers, _inputmod_dont_auto_recenter);
 }
 
 
