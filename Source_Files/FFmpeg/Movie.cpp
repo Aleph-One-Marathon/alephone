@@ -85,6 +85,12 @@ extern "C"
 }
 #endif
 
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(56, 34, 2)
+#define AV_CODEC_CAP_SMALL_LAST_FRAME CODEC_CAP_SMALL_LAST_FRAME
+#define AV_CODEC_FLAG_QSCALE CODEC_FLAG_QSCALE
+#define AV_CODEC_FLAG_GLOBAL_HEADER CODEC_FLAG_GLOBAL_HEADER
+#define AV_CODEC_FLAG_CLOSED_GOP CODEC_FLAG_CLOSED_GOP
+#endif
 
 // shamelessly stolen from SDL 2.0
 static int get_cpu_count(void)
@@ -426,12 +432,12 @@ bool Movie::Setup()
         video_stream->codec->height = view_rect.h;
         video_stream->codec->time_base = AVRational{1, TICKS_PER_SECOND};
         video_stream->codec->pix_fmt = AV_PIX_FMT_YUV420P;
-        video_stream->codec->flags |= CODEC_FLAG_CLOSED_GOP;
+        video_stream->codec->flags |= AV_CODEC_FLAG_CLOSED_GOP;
         video_stream->codec->thread_count = get_cpu_count();
-        
+
         if (av->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-            video_stream->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
-        
+            video_stream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+
         av->video_stream_idx = video_stream->index;
         
         // tuning options
@@ -499,14 +505,14 @@ bool Movie::Setup()
         audio_stream->codec->channels = 2;
         
         if (av->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-            audio_stream->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
+            audio_stream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
         
         av->audio_stream_idx = audio_stream->index;
         
         // tuning options
         int aq = graphics_preferences->movie_export_audio_quality;
         audio_stream->codec->global_quality = FF_QP2LAMBDA * (aq / 10);
-        audio_stream->codec->flags |= CODEC_FLAG_QSCALE;
+        audio_stream->codec->flags |= AV_CODEC_FLAG_QSCALE;
         
         audio_stream->codec->sample_fmt = AV_SAMPLE_FMT_FLTP;
         success = (0 <= avcodec_open2(audio_stream->codec, audio_codec, NULL));
@@ -675,7 +681,7 @@ void Movie::EncodeAudio(bool last)
         if (read_samples < acodec->frame_size)
         {
             // shrink or pad audio frame
-            if (acodec->codec->capabilities & CODEC_CAP_SMALL_LAST_FRAME)
+            if (acodec->codec->capabilities & AV_CODEC_CAP_SMALL_LAST_FRAME)
                 acodec->frame_size = write_samples;
             else
                 write_samples = acodec->frame_size;
