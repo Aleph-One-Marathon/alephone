@@ -27,15 +27,15 @@ Thursday, January 21, 1993 9:46:24 PM
 Saturday, January 23, 1993 9:46:34 PM
 	fixed arctangent, hopefully for the last time.  normalize_angle() is a little faster.
 Monday, January 25, 1993 3:01:47 PM
-	arctangent works (tested at 0.5¡ increments against SANEÕs tan), the only anomoly was
-	apparently arctan(0)==180¡.
+	arctangent works (tested at 0.5Â¡ increments against SANEÃ•s tan), the only anomoly was
+	apparently arctan(0)==180Â¡.
 Wednesday, January 27, 1993 3:49:04 PM
-	final fix to arctangent, we swear.  recall lim(arctan(x)) as x approaches ¹/2 or 3¹/4 is ±°,
+	final fix to arctangent, we swear.  recall lim(arctan(x)) as x approaches Â¹/2 or 3Â¹/4 is Â±Â°,
 	depending on which side we come from.  because we didn't realize this, arctan failed in the
-	case where x was very close to but slightly below ¹/2.  i think weÕve seen the last monster
-	suddenly ÔpanicÕ and bolt directly into a wall.
+	case where x was very close to but slightly below Â¹/2.  i think weÃ•ve seen the last monster
+	suddenly Ã”panicÃ• and bolt directly into a wall.
 Sunday, July 25, 1993 11:51:42 PM
-	the arctan of 0/0 is now (arbitrairly) ¹/2 because weÕre sick of assert(y) failing.
+	the arctan of 0/0 is now (arbitrairly) Â¹/2 because weÃ•re sick of assert(y) failing.
 Monday, June 20, 1994 4:15:06 PM
 	bug fix in translate_point3d().
 
@@ -86,8 +86,8 @@ angle normalize_angle(
 */
 
 /* remember this is not wholly accurate, both distance or the sine/cosine values could be
-	negative, and the shift canÕt make negative numbers zero; this is probably ok because
-	weÕll have -1/1024th instead of zero, which is basically our margin for error anyway ... */
+	negative, and the shift canÃ•t make negative numbers zero; this is probably ok because
+	weÃ•ll have -1/1024th instead of zero, which is basically our margin for error anyway ... */
 world_point2d *translate_point2d(
 	world_point2d *point,
 	world_distance distance,
@@ -225,7 +225,7 @@ void build_trig_tables(
 		if (i==HALF_CIRCLE) sine_table[i]= 0, cosine_table[i]= -TRIG_MAGNITUDE;
 		if (i==THREE_QUARTER_CIRCLE) sine_table[i]= -TRIG_MAGNITUDE, cosine_table[i]= 0;
 		
-		/* what we care about here is NOT accuracy, rather weÕre concerned with matching the
+		/* what we care about here is NOT accuracy, rather weÃ•re concerned with matching the
 			ratio of the existing sine and cosine tables as exactly as possible */
 		if (cosine_table[i])
 		{
@@ -233,7 +233,7 @@ void build_trig_tables(
 		}
 		else
 		{
-			/* we always take -°, even though the limit is ±°, depending on which side you
+			/* we always take -Â°, even though the limit is Â±Â°, depending on which side you
 				approach it from.  this is because of the direction we traverse the circle
 				looking for matches during arctan. */
 			tangent_table[i]= INT32_MIN;
@@ -291,11 +291,11 @@ static angle m2_arctangent(
 	}
 	else
 	{
-		/* so arctan(0,0)==¹/2 (bill me) */
+		/* so arctan(0,0)==Â¹/2 (bill me) */
 		return y<0 ? THREE_QUARTER_CIRCLE : QUARTER_CIRCLE;
 	}
 }
-/* one day weÕll come back here and actually make this run fast */
+/* one day weÃ•ll come back here and actually make this run fast */
 // LP change: made this long-distance friendly
 //
 static angle a1_arctangent(
@@ -515,121 +515,8 @@ world_distance distance2d(
 	}
 }
 
-/*
- * It requires more space to describe this implementation of the manual
- * square root algorithm than it did to code it.  The basic idea is that
- * the square root is computed one bit at a time from the high end.  Because
- * the original number is 32 bits (unsigned), the root cannot exceed 16 bits
- * in length, so we start with the 0x8000 bit.
- *
- * Let "x" be the value whose root we desire, "t" be the square root
- * that we desire, and "s" be a bitmask.  A simple way to compute
- * the root is to set "s" to 0x8000, and loop doing the following:
- *
- *      t = 0;
- *      s = 0x8000;
- *      do {
- *              if ((t + s) * (t + s) <= x)
- *                      t += s;
- *              s >>= 1;
- *      while (s != 0);
- *
- * The primary disadvantage to this approach is the multiplication.  To
- * eliminate this, we begin simplying.  First, we observe that
- *
- *      (t + s) * (t + s) == (t * t) + (2 * t * s) + (s * s)
- *
- * Therefore, if we redefine "x" to be the original argument minus the
- * current value of (t * t), we can determine if we should add "s" to
- * the root if
- *
- *      (2 * t * s) + (s * s) <= x
- *
- * If we define a new temporary "nr", we can express this as
- *
- *      t = 0;
- *      s = 0x8000;
- *      do {
- *              nr = (2 * t * s) + (s * s);
- *              if (nr <= x) {
- *                      x -= nr;
- *                      t += s;
- *              }
- *              s >>= 1;
- *      while (s != 0);
- *
- * We can improve the performance of this by noting that "s" is always a
- * power of two, so multiplication by "s" is just a shift.  Also, because
- * "s" changes in a predictable manner (shifted right after each iteration)
- * we can precompute (0x8000 * t) and (0x8000 * 0x8000) and then adjust
- * them by shifting after each step.  First, we let "m" hold the value
- * (s * s) and adjust it after each step by shifting right twice.  We
- * also introduce "r" to hold (2 * t * s) and adjust it after each step
- * by shifting right once.  When we update "t" we must also update "r",
- * and we do so by noting that (2 * (old_t + s) * s) is the same as
- * (2 * old_t * s) + (2 * s * s).  Noting that (s * s) is "m" and that
- * (r + 2 * m) == ((r + m) + m) == (nr + m):
- *
- *      t = 0;
- *      s = 0x8000;
- *      m = 0x40000000;
- *      r = 0;
- *      do {
- *              nr = r + m;
- *              if (nr <= x) {
- *                      x -= nr;
- *                      t += s;
- *                      r = nr + m;
- *              }
- *              s >>= 1;
- *              r >>= 1;
- *              m >>= 2;
- *      } while (s != 0);
- *
- * Finally, we note that, if we were using fractional arithmetic, after
- * 16 iterations "s" would be a binary 0.5, so the value of "r" when
- * the loop terminates is (2 * t * 0.5) or "t".  Because the values in
- * "t" and "r" are identical after the loop terminates, and because we
- * do not otherwise use "t"  explicitly within the loop, we can omit it.
- * When we do so, there is no need for "s" except to terminate the loop,
- * but we observe that "m" will become zero at the same time as "s",
- * so we can use it instead.
- *
- * The result we have at this point is the floor of the square root.  If
- * we want to round to the nearest integer, we need to consider whether
- * the remainder in "x" is greater than or equal to the difference
- * between ((r + 0.5) * (r + 0.5)) and (r * r).  Noting that the former
- * quantity is (r * r + r + 0.25), we want to check if the remainder is
- * greater than or equal to (r + 0.25).  Because we are dealing with
- * integers, we can't have equality, so we round up if "x" is strictly
- * greater than "r":
- *
- *      if (x > r)
- *              r++;
- */
-
-int32 isqrt(uint32 x)
-{
-	uint32 r, nr, m;
-
-	r= 0;
-	m= 0x40000000;
-	
-	do
-	{
-		nr= r + m;
-		if (nr<=x)
-		{
-			x-= nr;
-			r= nr + m;
-		}
-		r>>= 1;
-		m>>= 2;
-	}
-	while (m!=0);
-
-	if (x>r) r+= 1;
-	return r;
+int32 isqrt(uint32 x) {
+	return (int32)(sqrt((double)x) + 0.5);
 }
 
 // LP additions: stuff for handling long-distance views
