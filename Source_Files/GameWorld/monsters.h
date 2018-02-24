@@ -371,4 +371,11 @@ public:
 	}
 };
 
+class monster_ref {
+	monster_data* m_dataptr;
+public:
+	monster_ref(monster_data* data) : m_dataptr(data) {}
+	monster_ref() : m_dataptr(nullptr) {}
+};
+
 #endif
