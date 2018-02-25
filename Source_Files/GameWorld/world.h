@@ -43,31 +43,32 @@ Jul 1, 2000 (Loren Petrich):
 #include "cstypes.h"
 
 /* ---------- constants */
-
 #define TRIG_SHIFT 10
 #define TRIG_MAGNITUDE (1<<TRIG_SHIFT)
 
 #define ANGULAR_BITS 9
-#define NUMBER_OF_ANGLES ((short)(1<<ANGULAR_BITS))
-#define FULL_CIRCLE NUMBER_OF_ANGLES
-#define QUARTER_CIRCLE ((short)(NUMBER_OF_ANGLES/4))
-#define HALF_CIRCLE ((short)(NUMBER_OF_ANGLES/2))
-#define THREE_QUARTER_CIRCLE ((short)((NUMBER_OF_ANGLES*3)/4))
-#define EIGHTH_CIRCLE ((short)(NUMBER_OF_ANGLES/8))
-#define SIXTEENTH_CIRCLE ((short)(NUMBER_OF_ANGLES/16))
+
+constexpr short 
+	NUMBER_OF_ANGLES = 1 << ANGULAR_BITS,
+	FULL_CIRCLE = NUMBER_OF_ANGLES,
+	QUARTER_CIRCLE = NUMBER_OF_ANGLES / 4,
+	HALF_CIRCLE = NUMBER_OF_ANGLES / 2,
+	THREE_QUARTER_CIRCLE = (NUMBER_OF_ANGLES*3) / 4,
+	EIGHTH_CIRCLE = NUMBER_OF_ANGLES / 8,
+	SIXTEENTH_CIRCLE = NUMBER_OF_ANGLES / 16;
 
 #define WORLD_FRACTIONAL_BITS 10
-#define WORLD_ONE ((world_distance)(1<<WORLD_FRACTIONAL_BITS))
-#define WORLD_ONE_HALF ((world_distance)(WORLD_ONE/2))
-#define WORLD_ONE_FOURTH ((world_distance)(WORLD_ONE/4))
-#define WORLD_THREE_FOURTHS ((world_distance)((WORLD_ONE*3)/4))
 
-#define DEFAULT_RANDOM_SEED ((uint16)0xfded)
+constexpr world_distance 
+	WORLD_ONE = 1 << WORLD_FRACTIONAL_BITS,
+	WORLD_ONE_HALF = WORLD_ONE / 2,
+	WORLD_ONE_FOURTH = WORLD_ONE / 4,
+	WORLD_THREE_FOURTHS = (WORLD_ONE*3)/4;
 
+constexpr uint16 DEFAULT_RANDOM_SEED = 0xfded;
 /* ---------- types */
-
-typedef int16 angle;
-typedef int16 world_distance;
+using angle = int16;
+using world_distance = int16;
 
 /* ---------- macros */
 
@@ -85,7 +86,7 @@ typedef int16 world_distance;
 /* arguments must be positive (!) or use guess_hypotenuse() */
 #define GUESS_HYPOTENUSE(x, y) ((x)>(y) ? ((x)+((y)>>1)) : ((y)+((x)>>1)))
 
-/* -360ก<t<720ก (!) or use normalize_angle() */
+/* -360ยก<t<720ยก (!) or use normalize_angle() */
 //#define NORMALIZE_ANGLE(t) ((t)<(angle)0?(t)+NUMBER_OF_ANGLES:((t)>=NUMBER_OF_ANGLES?(t)-NUMBER_OF_ANGLES:(t)))
 #define NORMALIZE_ANGLE(t) ((t)&(angle)(NUMBER_OF_ANGLES-1))
 
@@ -193,7 +194,7 @@ world_point3d *translate_point3d(world_point3d *point, world_distance distance, 
 world_point2d *transform_point2d(world_point2d *point, world_point2d *origin, angle theta);
 world_point3d *transform_point3d(world_point3d *point, world_point3d *origin, angle theta, angle phi);
 
-/* angle is in [0,NUMBER_OF_ANGLES), or, [0,2น) */
+/* angle is in [0,NUMBER_OF_ANGLES), or, [0,2ยน) */
 // LP change: made this long-distance friendly
 angle arctangent(int32 x, int32 y);
 

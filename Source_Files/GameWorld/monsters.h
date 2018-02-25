@@ -165,7 +165,7 @@ enum /* monster types */
 #define MONSTER_IS_IDLE(m) ((m)->flags&(uint16)0x0800)
 #define SET_MONSTER_IDLE_STATUS(m,v) ((void)((v)?((m)->flags|=(uint16)0x0800):((m)->flags&=(uint16)~0x0800)))
 
-/* this flag is set if our current target has inflicted damage on us (because if he hasn’t, we’ll
+/* this flag is set if our current target has inflicted damage on us (because if he hasn√ït, we√ïll
 	probably go after somebody else if they hit us first) */
 #define TARGET_HAS_DONE_DAMAGE(m) ((m)->flags&(uint16)0x0200)
 #define CLEAR_TARGET_DAMAGE_FLAG(m) ((m)->flags&=(uint16)~0x0200)
@@ -226,7 +226,7 @@ struct monster_data /* 64 bytes */
 	uint16 flags; /* [slot_used.1] [need_path.1] [recovering_from_hit.1] [active.1] [idle.1] [berserk.1] [target_damage.1] [unused.6] [never_activated.1] [demoted.1] [promoted.1] */
 	
 	short path; /* NONE is no path (the need path bit should be set in this case) */
-	world_distance path_segment_length; /* distance until we’re through with this segment of the path */
+	world_distance path_segment_length; /* distance until we√ïre through with this segment of the path */
 	world_distance desired_height;
 	
 	short mode, action;
@@ -246,7 +246,7 @@ struct monster_data /* 64 bytes */
 	
 	short goal_polygon_index; // used instead of NONE when generating random paths
 
-	// copied from monster’s object every tick but updated with height
+	// copied from monster√ïs object every tick but updated with height
 	world_point3d sound_location;
 	short sound_polygon_index;
 
@@ -254,9 +254,12 @@ struct monster_data /* 64 bytes */
 	
 	short unused[7];
 };
-const int SIZEOF_monster_data = 64;
+constexpr int SIZEOF_monster_data = 64;
 
-const int SIZEOF_monster_definition = 156;
+constexpr int SIZEOF_monster_definition = 156;
+
+
+
 
 /* ---------- globals */
 
@@ -272,7 +275,7 @@ extern vector<monster_data> MonsterList;
 void initialize_monsters(void);
 void initialize_monsters_for_new_level(void); /* when a map is loaded */
 
-void move_monsters(void); /* assumes ∂t==1 tick */
+void move_monsters(void); /* assumes ¬∂t==1 tick */
 
 short new_monster(struct object_location *location, short monster_code);
 void remove_monster(short monster_index);
@@ -348,5 +351,31 @@ void parse_mml_damage_kicks(const InfoTree& root);
 void reset_mml_damage_kicks();
 void parse_mml_monsters(const InfoTree& root);
 void reset_mml_monsters();
+
+class monster_handle {
+	short m_monster_idx;
+public:
+	constexpr monster_handle() : m_monster_idx(NONE) {}
+	constexpr monster_handle(short monster_idx) : m_monster_idx(monster_idx) {}
+	
+	constexpr short get_handle() const {
+		return m_monster_idx;
+	}
+	
+	constexpr bool is_none() const {
+		return get_handle() == NONE;
+	}
+	
+	monster_data* get_data() {
+		return get_monster_data(m_monster_idx);
+	}
+};
+
+class monster_ref {
+	monster_data* m_dataptr;
+public:
+	monster_ref(monster_data* data) : m_dataptr(data) {}
+	monster_ref() : m_dataptr(nullptr) {}
+};
 
 #endif
