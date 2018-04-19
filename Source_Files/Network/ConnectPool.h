@@ -60,7 +60,7 @@ public:
 
 private:
 	void connect();
-	std::auto_ptr<CommunicationsChannel> m_channel;
+	std::unique_ptr<CommunicationsChannel> m_channel;
 	Status m_status;
 
 	std::string m_address;

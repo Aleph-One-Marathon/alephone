@@ -526,8 +526,8 @@ void OGL_ModelData::Load()
 						// Find minimum and maximum for each coordinate
 						for (int ic=0; ic<3; ic++)
 						{
-							NewBoundingBox[0][ic] = min(NewBoundingBox[0][ic],Corner[ic]);
-							NewBoundingBox[1][ic] = max(NewBoundingBox[1][ic],Corner[ic]);
+							NewBoundingBox[0][ic] = std::min(NewBoundingBox[0][ic],Corner[ic]);
+							NewBoundingBox[1][ic] = std::max(NewBoundingBox[1][ic],Corner[ic]);
 						}
 					}
 					else

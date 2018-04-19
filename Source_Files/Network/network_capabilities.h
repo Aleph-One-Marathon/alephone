@@ -28,9 +28,9 @@
 #include <string>
 #include <map>
 
-using namespace std;
+using std::string;
 
-typedef map<string, uint32> capabilities_t;
+typedef std::map<string, uint32> capabilities_t;
 
 class Capabilities : public capabilities_t
 {

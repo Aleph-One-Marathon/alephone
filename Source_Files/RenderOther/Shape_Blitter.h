@@ -28,7 +28,6 @@ SHAPE_BLITTER.H
 
 #include <vector>
 #include <set>
-using namespace std;
 
 // texture types
 enum {
@@ -51,9 +50,7 @@ public:
 	int UnscaledWidth();
 	int UnscaledHeight();
 	
-    void OGL_Draw(const SDL_Rect& dst);
     void OGL_Draw(const Image_Rect& dst);
-    void SDL_Draw(SDL_Surface *dst_surface, const SDL_Rect& dst);
     void SDL_Draw(SDL_Surface *dst_surface, const Image_Rect& dst);
 	
     ~Shape_Blitter();

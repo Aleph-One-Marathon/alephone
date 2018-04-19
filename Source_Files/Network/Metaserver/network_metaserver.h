@@ -30,7 +30,7 @@
 #include <exception>
 #include <vector>
 #include <map>
-#include <memory> // auto_ptr
+#include <memory> // unique_ptr
 #include <set>
 #include <stdexcept>
 
@@ -311,19 +311,19 @@ private:
         void handleGameListMessage(GameListMessage* inMessage, CommunicationsChannel* inChannel);
 	void handleSetPlayerDataMessage(SetPlayerDataMessage*, CommunicationsChannel *) { }
 
-	std::auto_ptr<CommunicationsChannel>	m_channel;
-	std::auto_ptr<MessageInflater>		m_inflater;
-	std::auto_ptr<MessageDispatcher>	m_dispatcher;
-	std::auto_ptr<MessageDispatcher>        m_loginDispatcher;
-	std::auto_ptr<MessageHandler>		m_unexpectedMessageHandler;
-	std::auto_ptr<MessageHandler>		m_chatMessageHandler;
-	std::auto_ptr<MessageHandler>		m_keepAliveMessageHandler;
-	std::auto_ptr<MessageHandler>		m_broadcastMessageHandler;
-        std::auto_ptr<MessageHandler>		m_playerListMessageHandler;
-        std::auto_ptr<MessageHandler>		m_roomListMessageHandler;
-	std::auto_ptr<MessageHandler>		m_gameListMessageHandler;
-	std::auto_ptr<MessageHandler>           m_privateMessageHandler;
-	std::auto_ptr<MessageHandler>           m_setPlayerDataMessageHandler;
+	std::unique_ptr<CommunicationsChannel>    m_channel;
+	std::unique_ptr<MessageInflater>          m_inflater;
+	std::unique_ptr<MessageDispatcher>        m_dispatcher;
+	std::unique_ptr<MessageDispatcher>        m_loginDispatcher;
+	std::unique_ptr<MessageHandler>           m_unexpectedMessageHandler;
+	std::unique_ptr<MessageHandler>           m_chatMessageHandler;
+	std::unique_ptr<MessageHandler>           m_keepAliveMessageHandler;
+	std::unique_ptr<MessageHandler>           m_broadcastMessageHandler;
+	std::unique_ptr<MessageHandler>           m_playerListMessageHandler;
+	std::unique_ptr<MessageHandler>           m_roomListMessageHandler;
+	std::unique_ptr<MessageHandler>           m_gameListMessageHandler;
+	std::unique_ptr<MessageHandler>           m_privateMessageHandler;
+	std::unique_ptr<MessageHandler>           m_setPlayerDataMessageHandler;
 	Rooms					m_rooms;
 	RoomDescription				m_room;
         PlayersInRoom				m_playersInRoom;

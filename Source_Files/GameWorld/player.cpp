@@ -390,7 +390,7 @@ player_data *get_player_data(
 {
 	player_data *data = GetMemberWithBounds(players,player_index,dynamic_world->player_count);
 	vassert(data,
-		csprintf(temporary, "asked for player #%lu/#%d", player_index, dynamic_world->player_count));
+		csprintf(temporary, "asked for player #%zu/#%d", player_index, dynamic_world->player_count));
 	
 	return data;
 }
@@ -441,7 +441,6 @@ short new_player(
 	player->extravision_duration= 0;
 	player->identifier= player_identifier_value(identifier);
 
-	SET_PLAYER_DOESNT_AUTO_RECENTER_STATUS(player, player_identifier_doesnt_auto_recenter(identifier));
 	SET_PLAYER_DOESNT_AUTO_SWITCH_WEAPONS_STATUS(player, player_identifier_doesnt_auto_switch_weapons(identifier));
 	
 	/* initialize inventory */	

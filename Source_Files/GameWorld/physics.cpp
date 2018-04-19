@@ -307,7 +307,15 @@ uint32 mask_in_absolute_positioning_information(
 		action_flags= SET_ABSOLUTE_YAW(action_flags, encoded_delta)|_absolute_yaw_mode;
 	}
 
-	if ((delta_pitch||variables->vertical_angular_velocity) && !(action_flags&_override_absolute_pitch))
+	// Explicit and automatic recentering do not occur under absolute pitch mode; therefore we
+	// 1) try to always use absolute pitch mode if the user doesn't want auto-recentering; and
+	// 2) always avoid absolute pitch mode while an explicit recentering operation is in progress
+	// (pitch control is necessarily locked out until the recentering completes; no way to cancel)
+	
+	const bool explicitlyRecentering = variables->flags & _RECENTERING_BIT;
+	
+	if ((delta_pitch || variables->vertical_angular_velocity || dont_auto_recenter()) &&
+		!(action_flags & _override_absolute_pitch) && !explicitlyRecentering)
 	{
 		int sign_pitch = 1.0;
 		if (delta_pitch < 0)
@@ -611,24 +619,21 @@ static void physics_update(
 		/* handle looking up and down; if weÕre moving at our terminal velocity forward or backward,
 			without any side-to-side motion, recenter our head vertically */
 
-        // ZZZ: only do auto-recentering if the user wants it
-        if(!PLAYER_DOESNT_AUTO_RECENTER(player)) {
-            if (!(action_flags&FLAGS_WHICH_PREVENT_RECENTERING)) /* canÕt recenter if any of these are true */
-		    {
-			    if (((action_flags&_moving_forward) && (variables->velocity==constants->maximum_forward_velocity)) ||
-				    ((action_flags&_moving_backward) && (variables->velocity==-constants->maximum_backward_velocity)))
-			    {
-				    if (variables->elevation<0)
-				    {
-					    variables->elevation= CEILING(variables->elevation+constants->angular_recentering_velocity, 0);
-				    }
-				    else
-				    {
-					    variables->elevation= FLOOR(variables->elevation-constants->angular_recentering_velocity, 0);
-				    }
-			    }
-		    }
-        }
+		if (!(action_flags&FLAGS_WHICH_PREVENT_RECENTERING)) /* canÕt recenter if any of these are true */
+		{
+			if (((action_flags&_moving_forward) && (variables->velocity==constants->maximum_forward_velocity)) ||
+				((action_flags&_moving_backward) && (variables->velocity==-constants->maximum_backward_velocity)))
+			{
+				if (variables->elevation<0)
+				{
+					variables->elevation= CEILING(variables->elevation+constants->angular_recentering_velocity, 0);
+				}
+				else
+				{
+					variables->elevation= FLOOR(variables->elevation-constants->angular_recentering_velocity, 0);
+				}
+			}
+		}
 
 		switch (action_flags&_looking_vertically)
 		{

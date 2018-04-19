@@ -48,9 +48,10 @@ Oct 24, 2000 (Mark Levin)
 // LP additions:
 #include "dynamic_limits.h"
 #include <vector>
-using namespace std;
 
 #include "world.h"
+
+using std::vector;
 
 /* ---------- constants */
 

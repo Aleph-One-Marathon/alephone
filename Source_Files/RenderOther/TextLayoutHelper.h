@@ -37,7 +37,7 @@
 // should eventually use list and some other sort mechanism, probably, for cheaper insertions.
 #include <vector>
 
-using namespace std;
+using std::vector;
 
 class TextLayoutHelper {
 public:

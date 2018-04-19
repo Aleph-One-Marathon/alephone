@@ -58,12 +58,6 @@ Marathon2_SOURCES = $(alephone_SOURCES)
 MarathonInfinity_LDADD = $(alephone_LDADD) marathon-infinity-resources.o
 MarathonInfinity_SOURCES = $(alephone_SOURCES)
 
-# Data directories
-confpaths.h: Makefile
-	echo "#define PKGDATADIR \"$(pkgdatadir)\"" > $@
-
-DISTCLEANFILES = confpaths.h
-
 if MAKE_WINDOWS
 BUILD_YEAR = `echo $(VERSION) | cut -c 1-4`
 BUILD_MONTH = `echo $(VERSION) | cut -c 5-6 | sed -e s/^0//`
@@ -83,5 +77,3 @@ marathon2-resources.o: $(top_srcdir)/Resources/Windows/marathon2.rc Misc/alephve
 
 marathon-infinity-resources.o: $(top_srcdir)/Resources/Windows/marathon-infinity.rc Misc/alephversion.h $(top_srcdir)/Resources/Windows/marathon-infinity.ico
 	sed -e "s/WIN_VERSION_STRING/$(WIN_VERSION_STRING)/g" -e "s/A1_DISPLAY_VERSION/$(A1_DISPLAY_VERSION)/g" $(top_srcdir)/Resources/Windows/marathon-infinity.rc | @WINDRES@ -I$(top_srcdir)/Resources/Windows -o marathon-infinity-resources.o
-
-shell.o: confpaths.h

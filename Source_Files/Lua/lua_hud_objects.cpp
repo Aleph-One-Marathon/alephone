@@ -952,7 +952,7 @@ int Lua_Fonts_New(lua_State *L)
 	lua_pop(L, 1);
 	
 	std::string search_path = L_Get_Search_Path(L);
-	std::auto_ptr<ScopedSearchPath> ssp;
+	std::unique_ptr<ScopedSearchPath> ssp;
 	if (search_path.size())
 	{
 		ssp.reset(new ScopedSearchPath(DirectorySpecifier(search_path)));

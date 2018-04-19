@@ -520,7 +520,6 @@ static void construct_single_player_start(player_start_data* outStartArray, shor
         outStartArray[0].identifier = 0;
         strncpy(outStartArray[0].name, player_preferences->name, MAXIMUM_PLAYER_START_NAME_LENGTH+1);
 				
-        set_player_start_doesnt_auto_recenter_status(&outStartArray[0], dont_auto_recenter());
         set_player_start_doesnt_auto_switch_weapons_status(&outStartArray[0], dont_switch_to_new_weapon());
 }
 
@@ -657,8 +656,6 @@ static void synchronize_players_with_starts(const player_start_data* inStartArra
                         thePlayer->identifier = player_identifier_value(inStartArray[s].identifier);
                         strncpy(thePlayer->name, inStartArray[s].name, MAXIMUM_PLAYER_NAME_LENGTH+1);
 
-                        SET_PLAYER_DOESNT_AUTO_RECENTER_STATUS(thePlayer,
-                            player_identifier_doesnt_auto_recenter(inStartArray[s].identifier));
                         SET_PLAYER_DOESNT_AUTO_SWITCH_WEAPONS_STATUS(thePlayer,
                             player_identifier_doesnt_auto_switch_weapons(inStartArray[s].identifier));
 
@@ -1717,7 +1714,7 @@ static void display_about_dialog()
 
 	vertical_placer* about_placer = new vertical_placer;
 	
-	if (strcmp(get_application_name(), "Aleph One") != 0)
+	if (strcmp(get_application_name().c_str(), "Aleph One") != 0)
 	{
 		about_placer->dual_add(new w_static_text(expand_app_variables("$appName$ is powered by").c_str()), d);
 	}

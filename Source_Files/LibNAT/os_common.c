@@ -86,7 +86,7 @@ int LNat_Common_Socket_Udp_Recv(OsSocket * s, const char * host_addr,
   int recv_sofar = 0;
   struct sockaddr_in server;
   struct hostent* hp;
-  unsigned int sender_addr_sz = sizeof(server);
+  socklen_t sender_addr_sz = sizeof(server);
 
   if((ret = Common_Initialize_Sockaddr_in(&server, &hp, host_addr, port)) != OK) {
     return ret;

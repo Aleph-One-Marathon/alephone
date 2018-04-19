@@ -27,8 +27,6 @@
 
 #include "cseries.h"
 
-using namespace std;
-
 #ifdef HAVE_OPENGL
 
 #ifdef HAVE_OPENGL
@@ -37,6 +35,8 @@ using namespace std;
 
 #include <vector>
 #include "vec3.h"
+
+using std::vector;
 
 
 // For boned models; calculate vertices from these
@@ -179,7 +179,7 @@ struct Model3D
 	GLushort *SFPtrBase() {return &SeqFrmPointers[0];}
 	
 	// True number of sequences:
-	int TrueNumSeqs() {return max(int(SeqFrmPointers.size()-1),0);}
+	int TrueNumSeqs() {return std::max(int(SeqFrmPointers.size()-1),0);}
 	
 	// Add-on transforms for the positions and the normals
 	Model3D_Transform TransformPos, TransformNorm;

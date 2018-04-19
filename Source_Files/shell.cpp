@@ -79,10 +79,6 @@
 #include "DefaultStringSets.h"
 #include "TextStrings.h"
 
-#ifdef HAVE_CONFIG_H
-#include "confpaths.h"
-#endif
-
 #include <ctime>
 #include <exception>
 #include <algorithm>
@@ -131,33 +127,11 @@
 // Defined in shell_misc.cpp
 extern bool CheatsActive;
 
-// Application names
-#if defined(__MACH__) && defined(__APPLE__)
-// These are defined and initialized in SDLMain.m
-extern char *application_name;
-extern char *application_identifier;
-extern char *bundle_resource_path;
-extern char *app_log_directory;
-extern char *app_preferences_directory;
-extern char *app_support_directory;
-extern char *app_screenshots_directory;
-#else
-char application_name[] = A1_DISPLAY_NAME;
-char application_identifier[] = "org.bungie.source.AlephOne";
-#endif
-
-#if defined(HAVE_BUNDLE_NAME)
-// legacy bundle path
-static const char sBundlePlaceholder[] = "AlephOneSDL.app/Contents/Resources/DataFiles";
-#endif
-
 // Data directories
 vector <DirectorySpecifier> data_search_path; // List of directories in which data files are searched for
 DirectorySpecifier local_data_dir;    // Local (per-user) data file directory
 DirectorySpecifier default_data_dir;  // Default scenario directory
-#if defined(HAVE_BUNDLE_NAME)
 DirectorySpecifier bundle_data_dir;	  // Data inside Mac OS X app bundle
-#endif
 DirectorySpecifier preferences_dir;   // Directory for preferences
 DirectorySpecifier saved_games_dir;   // Directory for saved games
 DirectorySpecifier quick_saves_dir;   // Directory for auto-named saved games
@@ -379,7 +353,7 @@ int main(int argc, char **argv)
 		// Run the main loop
 		main_event_loop();
 
-	} catch (exception &e) {
+	} catch (std::exception &e) {
 		try 
 		{
 			logFatal("Unhandled exception: %s", e.what());
@@ -439,74 +413,24 @@ static void initialize_application(void)
 	// Find data directories, construct search path
 	InitDefaultStringSets();
 
-#if defined(unix) || defined(__NetBSD__) || defined(__OpenBSD__) || (defined(__APPLE__) && defined(__MACH__) && !defined(HAVE_BUNDLE_NAME))
-
-	default_data_dir = PKGDATADIR;
-	const char *home = getenv("HOME");
-	if (home)
-		local_data_dir = home;
-	local_data_dir += ".alephone";
-	log_dir = local_data_dir;
-
-#elif defined(__APPLE__) && defined(__MACH__)
-	bundle_data_dir = bundle_resource_path;
-	bundle_data_dir += "DataFiles";
-
-	data_search_path.push_back(bundle_data_dir);
-
 #ifndef SCENARIO_IS_BUNDLED
+	default_data_dir = get_data_path(kPathDefaultData);
+#endif
+	
+	local_data_dir = get_data_path(kPathLocalData);
+	log_dir = get_data_path(kPathLogs);
+	preferences_dir = get_data_path(kPathPreferences);
+	saved_games_dir = get_data_path(kPathSavedGames);
+	quick_saves_dir = get_data_path(kPathQuickSaves);
+	image_cache_dir = get_data_path(kPathImageCache);
+	recordings_dir = get_data_path(kPathRecordings);
+	screenshots_dir = get_data_path(kPathScreenshots);
+	
+	if (!get_data_path(kPathBundleData).empty())
 	{
-		char* buf = getcwd(0, 0);
-		default_data_dir = buf;
-		free(buf);
+		bundle_data_dir = get_data_path(kPathBundleData);
+		data_search_path.push_back(bundle_data_dir);
 	}
-#endif
-	
-	log_dir = app_log_directory;
-	preferences_dir = app_preferences_directory;
-	local_data_dir = app_support_directory;
-
-#elif defined(__WIN32__)
-
-	char file_name[MAX_PATH];
-	GetModuleFileName(NULL, file_name, sizeof(file_name));
-	char *sep = strrchr(file_name, '\\');
-	*sep = '\0';
-
-	default_data_dir = file_name;
-
-	char login[17];
-	DWORD len = 17;
-
-	bool hasName = (GetUserName((LPSTR) login, &len) == TRUE);
-	if (!hasName || strpbrk(login, "\\/:*?\"<>|") != NULL)
-		strcpy(login, "Bob User");
-
-	DirectorySpecifier legacy_data_dir = file_name;
-	legacy_data_dir += "Prefs";
-	legacy_data_dir += login;
-	
-	SHGetFolderPath(NULL,
-			CSIDL_PERSONAL | CSIDL_FLAG_CREATE,
-			NULL,
-			0,
-			file_name);
-	local_data_dir = file_name;
-	local_data_dir += "AlephOne";
-
-	log_dir = local_data_dir;
-
-#else
-	default_data_dir = "";
-	local_data_dir = "";
-//#error Data file paths must be set for this platform.
-#endif
-
-#if defined(__WIN32__)
-#define LIST_SEP ';'
-#else
-#define LIST_SEP ':'
-#endif
 	
 	// in case we need to redo search path later:
 	size_t dsp_insert_pos = data_search_path.size();
@@ -524,6 +448,7 @@ static void initialize_application(void)
 		// Read colon-separated list of directories
 		string path = data_env;
 		string::size_type pos;
+		char LIST_SEP = get_path_list_separator();
 		while ((pos = path.find(LIST_SEP)) != string::npos) {
 			if (pos) {
 				string element = path.substr(0, pos);
@@ -539,40 +464,12 @@ static void initialize_application(void)
 			dsp_delete_pos = data_search_path.size();
 			data_search_path.push_back(default_data_dir);
 		}
-#if defined(__WIN32__)
-		data_search_path.push_back(legacy_data_dir);
-#endif
+		
+		string legacy_data_path = get_data_path(kPathLegacyData);
+		if (!legacy_data_path.empty())
+			data_search_path.push_back(DirectorySpecifier(legacy_data_path));
 		data_search_path.push_back(local_data_dir);
 	}
-
-	// Subdirectories
-#if defined(__MACH__) && defined(__APPLE__)
-	DirectorySpecifier legacy_preferences_dir = local_data_dir;
-#elif defined(__WIN32__)
-	DirectorySpecifier legacy_preferences_dir = legacy_data_dir;
-	SHGetFolderPath(NULL, 
-			CSIDL_LOCAL_APPDATA | CSIDL_FLAG_CREATE, 
-			NULL,
-			0,
-			file_name);
-	preferences_dir = file_name;
-	preferences_dir += "AlephOne";
-#else
-	preferences_dir = local_data_dir;
-#endif	
-	saved_games_dir = local_data_dir + "Saved Games";
-	quick_saves_dir = local_data_dir + "Quick Saves";
-	image_cache_dir = local_data_dir + "Image Cache";
-	recordings_dir = local_data_dir + "Recordings";
-	screenshots_dir = local_data_dir + "Screenshots";
-#if defined(__APPLE__) && defined(__MACH__)
-    if (app_screenshots_directory)
-        screenshots_dir = app_screenshots_directory;
-#endif
-
-
-	DirectorySpecifier local_mml_dir = local_data_dir + "MML";
-	DirectorySpecifier local_themes_dir = local_data_dir + "Themes";
 
 	// Setup resource manager
 	initialize_resources();
@@ -612,10 +509,9 @@ static void initialize_application(void)
 	initialize_fonts(true);
 	Plugins::instance()->enumerate();			
 	
-#if defined(__WIN32__) || (defined(__MACH__) && defined(__APPLE__))
 	preferences_dir.CreateDirectory();
-	transition_preferences(legacy_preferences_dir);
-#endif
+	if (!get_data_path(kPathLegacyPreferences).empty())
+		transition_preferences(DirectorySpecifier(get_data_path(kPathLegacyPreferences)));
 
 	// Load preferences
 	initialize_preferences();
@@ -635,8 +531,6 @@ static void initialize_application(void)
 	image_cache_dir.CreateDirectory();
 	recordings_dir.CreateDirectory();
 	screenshots_dir.CreateDirectory();
-	local_mml_dir.CreateDirectory();
-	local_themes_dir.CreateDirectory();
 	
 	WadImageCache::instance()->initialize_cache();
 
@@ -1725,11 +1619,6 @@ void LoadBaseMMLScripts()
 	}
 }
 			   
-const char *get_application_name(void)
-{
-   return application_name;
-}
-			   
 bool expand_symbolic_paths_helper(char *dest, const char *src, int maxlen, const char *symbol, DirectorySpecifier& dir)
 {
    int symlen = strlen(symbol);
@@ -1748,7 +1637,6 @@ char *expand_symbolic_paths(char *dest, const char *src, int maxlen)
 	bool expanded =
 #if defined(HAVE_BUNDLE_NAME)
 		expand_symbolic_paths_helper(dest, src, maxlen, "$bundle$", bundle_data_dir) ||
-		expand_symbolic_paths_helper(dest, src, maxlen, sBundlePlaceholder, bundle_data_dir) ||
 #endif
 		expand_symbolic_paths_helper(dest, src, maxlen, "$local$", local_data_dir) ||
 		expand_symbolic_paths_helper(dest, src, maxlen, "$default$", default_data_dir);

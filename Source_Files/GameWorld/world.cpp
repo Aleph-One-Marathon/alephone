@@ -250,7 +250,7 @@ static angle m2_arctangent(
 	world_distance y = yy;
 
 	long tangent;
-	register long last_difference, new_difference;
+	long last_difference, new_difference;
 	angle search_arc, theta;
 	
 	if (x)
@@ -608,10 +608,9 @@ world_distance distance2d(
  *              r++;
  */
 
-int32 isqrt(
-	register uint32 x)
+int32 isqrt(uint32 x)
 {
-	register uint32 r, nr, m;
+	uint32 r, nr, m;
 
 	r= 0;
 	m= 0x40000000;

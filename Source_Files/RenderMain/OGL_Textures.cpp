@@ -101,6 +101,9 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "OGL_Textures.h"
 #include "screen.h"
 
+using std::min;
+using std::max;
+
 OGL_TexturesStats gGLTxStats = {0,0,0,500000,0,0, 0};
 
 // Texture mapping
@@ -167,7 +170,7 @@ struct InfravisionData IVDataList[NUMBER_OF_COLLECTIONS] =
 // Is infravision currently active?
 static bool InfravisionActive = false;
 
-static list<TextureState*> sgActiveTextureStates;
+static std::list<TextureState*> sgActiveTextureStates;
 
 
 // Allocate some textures and indicate whether an allocation had happened.
@@ -393,7 +396,7 @@ void OGL_StopTextures()
 
 void OGL_FrameTickTextures()
 {
-	list<TextureState*>::iterator i;
+	std::list<TextureState*>::iterator i;
 	
 	for (i=sgActiveTextureStates.begin() ; i!= sgActiveTextureStates.end() ; i++) {
 		(*i)->FrameTick();

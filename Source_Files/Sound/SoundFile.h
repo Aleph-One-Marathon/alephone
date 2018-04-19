@@ -186,7 +186,7 @@ private:
 	std::vector< std::vector<SoundDefinition> > sound_definitions;
 
 	static int HeaderSize() { return 260; }
-	std::auto_ptr<OpenedFile> opened_sound_file;
+	std::unique_ptr<OpenedFile> opened_sound_file;
 };
 
 #endif

@@ -1007,7 +1007,7 @@ void get_object_shape_and_transfer_mode(
 	struct shape_and_transfer_mode *data)
 {
 	struct object_data *object= get_object_data(object_index);
-	register struct shape_animation_data *animation;
+	struct shape_animation_data *animation;
 	angle theta;
 	short view;
 	
@@ -1130,7 +1130,7 @@ bool randomize_object_sequence(
 	shape_descriptor shape)
 {
 	struct object_data *object= get_object_data(object_index);
-	register struct shape_animation_data *animation;
+	struct shape_animation_data *animation;
 	bool randomized= false;
 	
 	animation= get_shape_animation_data(shape);

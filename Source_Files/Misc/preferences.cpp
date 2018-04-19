@@ -325,7 +325,7 @@ static const char *shape_labels[3] = {
 
 enum { kCrosshairWidget };
 
-static auto_ptr<BinderSet> crosshair_binders;
+static std::unique_ptr<BinderSet> crosshair_binders;
 
 struct update_crosshair_display
 {
@@ -1123,7 +1123,7 @@ std::vector<std::string> build_resolution_labels()
 	bool first_mode = true;
 	for (std::vector<std::pair<int, int> >::const_iterator it = Screen::instance()->GetModes().begin(); it != Screen::instance()->GetModes().end(); ++it)
 	{
-		ostringstream os;
+		std::ostringstream os;
 		os << it->first << "x" << it->second;
 		if (first_mode)
 		{
@@ -1740,15 +1740,15 @@ static void controls_dialog(void *arg)
 	general_table->dual_add(always_swim_w->label("常時泳ぐ"), d);
 	general_table->dual_add(always_swim_w, d);
 
+	w_toggle* auto_recenter_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_auto_recenter));
+	general_table->dual_add(auto_recenter_w->label("視点の自動リセンター"), d);
+	general_table->dual_add(auto_recenter_w, d);
+
 	general_table->add_row(new w_spacer(), true);
 
 	w_toggle *weapon_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_switch_to_new_weapon));
 	general_table->dual_add(weapon_w->label("武器の自動切り替え"), d);
 	general_table->dual_add(weapon_w, d);
-
-	w_toggle* auto_recenter_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_auto_recenter));
-	general_table->dual_add(auto_recenter_w->label("視点の自動リセンター"), d);
-	general_table->dual_add(auto_recenter_w, d);
 
 	general->add(general_table, true);
 
@@ -2870,6 +2870,7 @@ InfoTree input_preferences_tree()
 	root.put_attr("mouse_max_speed", input_preferences->mouse_max_speed);
 	root.put_attr("mouse_accel_type", input_preferences->mouse_accel_type);
 	root.put_attr("mouse_accel_scale", input_preferences->mouse_accel_scale);
+	root.put_attr("raw_mouse_input", input_preferences->raw_mouse_input);
 	root.put_attr("use_controller", input_preferences->use_joystick);
 
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
@@ -3452,7 +3453,7 @@ restore_custom_player_behavior_modifiers() {
 
 bool
 is_player_behavior_standard() {
-    return (!dont_switch_to_new_weapon() && !dont_auto_recenter());
+	return !dont_switch_to_new_weapon();
 }
 
 
@@ -3467,13 +3468,9 @@ bool dont_switch_to_new_weapon() {
 }
 
 
-// ZZZ addition: like dont_switch_to_new_weapon()
 bool
 dont_auto_recenter() {
-    if(!sStandardizeModifiers)
-        return TEST_FLAG(input_preferences->modifiers, _inputmod_dont_auto_recenter);
-    else
-        return false;
+	return TEST_FLAG(input_preferences->modifiers, _inputmod_dont_auto_recenter);
 }
 
 
@@ -3750,6 +3747,7 @@ void parse_input_preferences(InfoTree root, std::string version)
 								  0, NUMBER_OF_MOUSE_ACCEL_TYPES - 1);
 	root.read_attr("mouse_accel_scale", input_preferences->mouse_accel_scale);
 	
+	root.read_attr("raw_mouse_input", input_preferences->raw_mouse_input);
 	root.read_attr("use_controller", input_preferences->use_joystick);
 
 	BOOST_FOREACH(InfoTree mapping, root.children_named("binding_axis"))

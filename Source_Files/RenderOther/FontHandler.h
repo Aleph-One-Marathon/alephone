@@ -138,8 +138,9 @@ public:
 	int GetTxtrSize(int m) {return int(TxtrWidth[m])*int(TxtrHeight[m]);}
 	GLuint TxtrID[256];
 	uint32 DispList;
-	boost::unordered_map<std::string, int> textMap;
-	static set<FontSpecifier*> *m_font_registry;
+
+	std::unordered_map<std::string, int> textMap;
+	static std::set<FontSpecifier*> *m_font_registry;
 #endif
 };
 

@@ -2781,6 +2781,6 @@ static void Lua_Player_load_compatibility(lua_State *L)
 {
 	luaL_loadbuffer(L, compatibility_script, strlen(compatibility_script), "player_compatibility");
 	lua_pcall(L, 0, 0, 0);
-};
+}
 
 #endif

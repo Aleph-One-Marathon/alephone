@@ -207,7 +207,7 @@ void w_saves::click(int x, int y)
             || y < get_theme_space(LIST_WIDGET, T_SPACE) || y >= rect.h - get_theme_space(LIST_WIDGET, B_SPACE))
             return;
         
-        if ((y - get_theme_space(LIST_WIDGET, T_SPACE)) / item_height() + top_item < min(num_items, top_item + shown_items))
+        if ((y - get_theme_space(LIST_WIDGET, T_SPACE)) / item_height() + top_item < std::min(num_items, top_item + shown_items))
         {
             size_t old_sel = selection;
             set_selection((y - get_theme_space(LIST_WIDGET, T_SPACE)) / item_height() + top_item);
@@ -660,7 +660,7 @@ bool create_quick_save(void)
     time(&(save.save_time));
     char fmt_time[256];
     tm *time_info = localtime(&(save.save_time));
-    strftime(fmt_time, 256, "%x %R", time_info);
+    strftime(fmt_time, 256, "%x %H:%M", time_info);
     save.formatted_time = fmt_time;
 
     save.level_name = mac_roman_to_utf8(static_world->level_name);

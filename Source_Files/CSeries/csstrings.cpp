@@ -39,6 +39,7 @@
 #include <string.h>
 
 #include "csstrings.h"
+#include "cspaths.h"
 #include "TextStrings.h"
 #include "Logging.h"
 #include "alephversion.h"
@@ -50,9 +51,6 @@
 using namespace std;
 
 char temporary[256];
-
-// from shell.h
-const char *get_application_name(void);
 
 
 /*

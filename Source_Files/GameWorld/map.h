@@ -58,7 +58,8 @@ Nov 19, 2000 (Loren Petrich):
 #include "dynamic_limits.h"
 
 #include <vector>
-using namespace std;
+
+using std::vector;
 
 /* ---------- constants */
 
@@ -201,24 +202,19 @@ struct entry_point
 struct player_start_data 
 {
 	int16 team;
-	int16 identifier; /* [weapon_switch_flag.1] [recenter_flag.1] [identifier.14] */
+	int16 identifier; /* [weapon_switch_flag.1] [UNUSED.1] [identifier.14] */
 	int16 color;
 	char name[MAXIMUM_PLAYER_START_NAME_LENGTH+1]; /* PLAYER_NAME_LENGTH+1 */
 };
 
 enum {
-	_player_start_doesnt_auto_recenter_flag= 0x4000,
 	_player_start_doesnt_auto_switch_weapons_flag= 0x8000
 };
 
-const uint16 player_start_identifier_mask=
-	(uint16)~(_player_start_doesnt_auto_recenter_flag | _player_start_doesnt_auto_switch_weapons_flag);
+const uint16 player_start_identifier_mask = (1<<14) - 1;
 
 int16 player_identifier_value(int16 identifier);
 int16 player_start_identifier_value(const player_start_data * const p);
-bool player_identifier_doesnt_auto_recenter(int16 identifier);
-bool player_start_doesnt_auto_recenter(const player_start_data * const p);
-void set_player_start_doesnt_auto_recenter_status(player_start_data * const p, bool v);
 bool player_identifier_doesnt_auto_switch_weapons(int16 identifier);
 bool player_start_doesnt_auto_switch_Weapons(const player_start_data * const p);
 void set_player_start_doesnt_auto_switch_weapons_status(player_start_data * const p, bool v);
@@ -229,15 +225,6 @@ inline int16 player_identifier_value(int16 identifier)
 
 inline int16 player_start_identifier_value(const player_start_data * const p)
 { return (p)->identifier & player_start_identifier_mask; }
-
-inline bool player_identifier_doesnt_auto_recenter(int16 identifier)
-{ return TEST_FLAG(identifier, _player_start_doesnt_auto_recenter_flag); }
-
-inline bool player_start_doesnt_auto_recenter(const player_start_data * const p)
-{ return TEST_FLAG(p->identifier, _player_start_doesnt_auto_recenter_flag); }
-
-inline void set_player_start_doesnt_auto_recenter_status(player_start_data * const p, bool v)
-{	SET_FLAG(p->identifier, _player_start_doesnt_auto_recenter_flag, v); }
 
 inline bool player_identifier_doesnt_auto_switch_weapons(int16 identifier)
 { return TEST_FLAG(identifier, _player_start_doesnt_auto_switch_weapons_flag); }

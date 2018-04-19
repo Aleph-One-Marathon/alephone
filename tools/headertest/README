@@ -11,7 +11,8 @@ Usage: run configure to generate the build configuration-specific makefile in
 Targets:
   all      - (default) compiles all headers in scope
   <header> - compiles <header>, relative to Source_Files (e.g. Misc/vbl.h)
-  clean    - deletes cache/
+  list     - lists all headers in scope, relative to Source_Files
+  clean    - deletes cache/, resetting all tests
 
 Headers in scope (recalculated on every invocation):
   - all .h files in the Source_Files tree, outside of Expat and Lua
@@ -25,6 +26,6 @@ single argument to make (quote if necessary). To accommodate rapid
 adjustments to options that control diagnostic formatting, these extra 
 options are not tracked as a dependency (no recompiles if 'z=...' changes).
 
-The makefile uses options '-k -j -O' ("keep going" mode, parallel execution, 
+The makefile uses options '-k -j 8 -O' ("keep going" mode, parallel execution, 
 and grouping output by target) by default; this can be overridden by passing 
 'MAKEFLAGS=' as an argument. -O has an effect only with GNU Make 4.0+.

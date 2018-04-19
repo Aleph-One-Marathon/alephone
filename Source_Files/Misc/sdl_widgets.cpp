@@ -2013,7 +2013,7 @@ void w_list_base::mouse_move(int x, int y)
 		    || y < get_theme_space(LIST_WIDGET, T_SPACE) || y >= rect.h - get_theme_space(LIST_WIDGET, B_SPACE))
 			return;
 
-		if ((y - get_theme_space(LIST_WIDGET, T_SPACE)) / item_height() + top_item < min(num_items, top_item + shown_items))
+		if ((y - get_theme_space(LIST_WIDGET, T_SPACE)) / item_height() + top_item < std::min(num_items, top_item + shown_items))
 		{	set_selection((y - get_theme_space(LIST_WIDGET, T_SPACE)) / item_height() + top_item); }
 //		else
 //		{	set_selection(num_items - 1); }
@@ -2442,7 +2442,7 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 	width -= 2;
 	y += font->get_ascent() + 1;
 
-	ostringstream time_or_ping;
+	std::ostringstream time_or_ping;
 	int right_text_width = 0;
 
 	// first line, game name, ping or time remaining
@@ -2481,7 +2481,7 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 
 	y += font->get_line_height();
 
-	ostringstream game_and_map;
+	std::ostringstream game_and_map;
 
 	if (!item.compatible())
 	{
@@ -2505,7 +2505,7 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 	right_text_width = font->styled_text_width(item.m_hostPlayerName, item.m_hostPlayerName.size(), game_style);
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width - right_text_width);
 
-	ostringstream game_settings;
+	std::ostringstream game_settings;
 	if (item.running())
 	{
 		if (item.m_description.m_numPlayers == 1)

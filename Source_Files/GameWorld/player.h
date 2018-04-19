@@ -298,7 +298,6 @@ struct physics_variables
 };
 
 enum { /* Player flags */
-	_player_doesnt_auto_recenter_flag= 0x0040,
 	_player_doesnt_auto_switch_weapons_flag= 0x0080,
 	_player_is_interlevel_teleporting_flag= 0x0100,
 	_player_has_cheated_flag= 0x0200,
@@ -310,7 +309,7 @@ enum { /* Player flags */
 	_player_is_pfhortran_controlled_flag= 0x8000
 };
 
-#define PLAYER_PERSISTANT_FLAGS (_player_has_cheated_flag | _player_doesnt_auto_recenter_flag | _player_doesnt_auto_switch_weapons_flag)
+#define PLAYER_PERSISTANT_FLAGS (_player_has_cheated_flag | _player_doesnt_auto_switch_weapons_flag)
 
 #define PLAYER_IS_DEAD(p) ((p)->flags&_player_is_dead_flag)
 #define SET_PLAYER_DEAD_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_is_dead_flag):((p)->flags&=(uint16)~_player_is_dead_flag)))
@@ -337,9 +336,6 @@ enum { /* Player flags */
 #define PLAYER_HAS_CHEATED(p) ((p)->flags&_player_has_cheated_flag)
 #define SET_PLAYER_HAS_CHEATED(p) ((p)->flags|=(uint16)_player_has_cheated_flag)
 
-#define PLAYER_DOESNT_AUTO_RECENTER(p) ((p)->flags&_player_doesnt_auto_recenter_flag)
-#define SET_PLAYER_DOESNT_AUTO_RECENTER_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_doesnt_auto_recenter_flag):((p)->flags&=(uint16)~_player_doesnt_auto_recenter_flag)))
-
 #define PLAYER_DOESNT_AUTO_SWITCH_WEAPONS(p) ((p)->flags&_player_doesnt_auto_switch_weapons_flag)
 #define SET_PLAYER_DOESNT_AUTO_SWITCH_WEAPONS_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_doesnt_auto_switch_weapons_flag):((p)->flags&=(uint16)~_player_doesnt_auto_switch_weapons_flag)))
 
@@ -360,7 +356,7 @@ struct damage_record
 struct player_data
 {
 	int16 identifier;
-	int16 flags; /* [unused.1] [dead.1] [zombie.1] [totally_dead.1] [map.1] [teleporting.1] [unused.10] */
+	int16 flags; // Player flags
 
 	int16 color;
 	int16 team;

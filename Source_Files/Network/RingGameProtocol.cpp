@@ -1466,10 +1466,8 @@ static void NetAddFlagsToPacket(
 static size_t NetPacketSize(
 			    NetPacketPtr  packet)
 {
-        // ZZZ: "register"... how quaint... I wonder if the compiler they used was really not smart enough on its own?
-        // Welp, doesn't hurt to give hints anyway, we'll leave it.  :)
-	register size_t   size = 0;
-	register short  i;
+	size_t size = 0;
+	short i;
 
 	/*	ZZZ: should not do this now, data was already converted elsewhere and we've been passed the unpacked version.
 		NetPacket	packet_storage;

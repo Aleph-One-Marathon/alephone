@@ -99,14 +99,14 @@ void OverheadMap_SDL_Class::draw_thing(world_point2d &center, rgb_color &color, 
 			break;
 		case _circle_thing: {
 			world_point2d circle[8] = {
-				{int16(-0.75 * radius) + center.x, int16(-0.3 * radius) + center.y},
-				{int16(-0.75 * radius) + center.x, int16(0.3 * radius) + center.y},
-				{int16(-0.3 * radius) + center.x, int16(0.75 * radius) + center.y},
-				{int16(0.3 * radius) + center.x, int16(0.75 * radius) + center.y},
-				{int16(0.75 * radius) + center.x, int16(0.3 * radius) + center.y},
-				{int16(0.75 * radius) + center.x, int16(-0.3 * radius) + center.y},
-				{int16(0.3 * radius) + center.x, int16(-0.75 * radius) + center.y},
-				{int16(-0.3 * radius) + center.x, int16(-0.75 * radius) + center.y}
+				{int16(-0.75 * radius + center.x), int16(-0.30 * radius + center.y)},
+				{int16(-0.75 * radius + center.x), int16(+0.30 * radius + center.y)},
+				{int16(-0.30 * radius + center.x), int16(+0.75 * radius + center.y)},
+				{int16(+0.30 * radius + center.x), int16(+0.75 * radius + center.y)},
+				{int16(+0.75 * radius + center.x), int16(+0.30 * radius + center.y)},
+				{int16(+0.75 * radius + center.x), int16(-0.30 * radius + center.y)},
+				{int16(+0.30 * radius + center.x), int16(-0.75 * radius + center.y)},
+				{int16(-0.30 * radius + center.x), int16(-0.75 * radius + center.y)}
 			};
 			for (int i=0; i<7; i++)
 				::draw_line(draw_surface, circle + i, circle + i + 1, pixel, 2);

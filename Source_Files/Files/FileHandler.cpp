@@ -926,7 +926,7 @@ public:
 
 			if (time_info) 
 			{
-				strftime(date, 256, "%x %R", time_info);
+				strftime(date, 256, "%x %H:%M", time_info);
 				int date_width = text_width(date, font, style);
 				draw_text(s, date, x + width - date_width, y, selected ? get_theme_color(ITEM_WIDGET, ACTIVE_STATE) : get_theme_color(ITEM_WIDGET, DEFAULT_STATE), font, style);
 				set_drawing_clip_rectangle(0, x, s->h, x + width - date_width - 4);

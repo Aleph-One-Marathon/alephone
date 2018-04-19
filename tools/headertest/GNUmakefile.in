@@ -1,7 +1,7 @@
 # Requires GNU Make 3.81+ (preferably 4.0+ for option -O support)
 
 # Default to "keep going" mode, parallel execution, and grouping output by target
-MAKEFLAGS = -k -j -O
+MAKEFLAGS = -k -j 8 -O
 
 # Build-config variables
 CPPFLAGS = @CPPFLAGS@
@@ -24,13 +24,13 @@ DepsDir := cache/.deps
 
 # Parent directories of all headers in the Source_Files tree we want to cover
 # - currently this is just the entire Source_Files tree except Expat
-HeaderDirs := $(strip $(shell find $(SFDir) -type d ! -path $(SFDir)/Expat -print -o -prune))
+HeaderDirs := $(sort $(shell find $(SFDir) -type d ! -path $(SFDir)/Expat -print -o -prune))
 
 # Customized header lists for specific directories (overrides the default '*.h' selection)
 # - format: <dir>-Headers := <non-empty header list>
 $(SFDir)/Lua-Headers := $(wildcard $(SFDir)/Lua/lua_*.h)
 
-Headers := $(foreach dir,$(HeaderDirs),$(or $($(dir)-Headers),$(wildcard $(dir)/*.h)))
+Headers := $(sort $(foreach dir,$(HeaderDirs),$(or $($(dir)-Headers),$(wildcard $(dir)/*.h))))
 
 # Header targets: paths to headers in the Source_Files tree, relative to Source_Files
 HeaderTargets := $(Headers:$(SFDir)/%=%)
@@ -56,21 +56,27 @@ BasicCxxCmd := $(CXX) $(DEFS) $(AMIncludeDirs:%=-I%) $(CPPFLAGS) $(CXXFLAGS) $(T
 # Targets
 # -------
 
-.PHONY: all $(HeaderTargets) clean
+.PHONY: all $(HeaderTargets) list clean
 
-all: $(HeaderTargets) ;
+all: $(HeaderTargets)
+	@echo "All $(words $(HeaderTargets)) testable headers pass."
 
 $(HeaderTargets): %: cache/%.test ;
 
+list:
+	@for h in $(HeaderTargets); do echo "$${h}"; done
+
 clean:
 	rm -rf cache
+	@echo "All tests reset."
 
 # Test completion file for header target %
 cache/%.test: GNUmakefile
 	@mkdir -p $(@D) $(DepsDir)/$(*D) && \
 	$(BasicCxxCmd) -MD -MP -MT $@ -MF $(DepsDir)/$*.d.tmp $(SFDir)/$* && \
 	mv -f $(DepsDir)/$*.d.tmp $(DepsDir)/$*.d && \
-	touch $@
+	touch $@ && \
+	echo "Successfully tested '$*'."
 
 GNUmakefile: $(srcdir)/GNUmakefile.in $(top_builddir)/config.status
 	@cd $(top_builddir) && ./config.status $(abs_builddir:$(abs_top_builddir)/%=%)/GNUmakefile

@@ -183,14 +183,14 @@ void texture_horizontal_polygon_lines
 	{
 		short x0= *x0_table++, x1= *x1_table++;
 		
-		register T *shading_table= (T *)data->shading_table;
-		register T *write= (T *) screen->row_addresses[y0] + x0;
-		register pixel8 *base_address= texture->row_addresses[0];
-		register uint32 source_x= data->source_x;
-		register uint32 source_y= data->source_y;
-		register uint32 source_dx= data->source_dx;
-		register uint32 source_dy= data->source_dy;
-		register short count= x1-x0;
+		T *shading_table= (T *)data->shading_table;
+		T *write= (T *) screen->row_addresses[y0] + x0;
+		pixel8 *base_address= texture->row_addresses[0];
+		uint32 source_x= data->source_x;
+		uint32 source_y= data->source_y;
+		uint32 source_dx= data->source_dx;
+		uint32 source_dy= data->source_dy;
+		short count= x1-x0;
 		
 		while ((count-= 1)>=0)
 		{
@@ -217,7 +217,7 @@ void landscape_horizontal_polygon_lines(
 	short *x1_table,
 	short line_count)
 {
-	register short landscape_texture_width_downshift= 32 - NextLowerExponent(texture->height);
+	short landscape_texture_width_downshift= 32 - NextLowerExponent(texture->height);
 
 	(void) (view);
 
@@ -225,12 +225,12 @@ void landscape_horizontal_polygon_lines(
 	{
 		short x0= *x0_table++, x1= *x1_table++;
 		
-		register T *shading_table= (T *)data->shading_table;
-		register T *write= (T *)screen->row_addresses[y0] + x0;
-		register pixel8 *read= texture->row_addresses[data->source_y];
-		register uint32 source_x= data->source_x;
-		register uint32 source_dx= data->source_dx;
-		register short count= x1-x0;
+		T *shading_table= (T *)data->shading_table;
+		T *write= (T *)screen->row_addresses[y0] + x0;
+		pixel8 *read= texture->row_addresses[data->source_y];
+		uint32 source_x= data->source_x;
+		uint32 source_dx= data->source_dx;
+		short count= x1-x0;
 		
 		while ((count-= 1)>=0)
 		{
@@ -523,7 +523,7 @@ void tint_vertical_polygon_lines(
 {
 	short tint_table_index= transfer_data&0xff;
 	struct _vertical_polygon_line_data *line= (struct _vertical_polygon_line_data *) (data+1);
-	register short bytes_per_row= screen->bytes_per_row;
+	short bytes_per_row= screen->bytes_per_row;
 	int line_count= data->width;
 	int x= data->x0;
 
@@ -538,10 +538,10 @@ void tint_vertical_polygon_lines(
 	while ((line_count-= 1)>=0)
 	{
 		short y0= *y0_table++, y1= *y1_table++;
-		register T *write= (T *) screen->row_addresses[y0] + x;
-		register pixel8 *read= line->texture;
-		register _fixed texture_y= line->texture_y, texture_dy= line->texture_dy;
-		register short count= y1-y0;
+		T *write= (T *) screen->row_addresses[y0] + x;
+		pixel8 *read= line->texture;
+		_fixed texture_y= line->texture_y, texture_dy= line->texture_dy;
+		short count= y1-y0;
 
 		while ((count-=1)>=0)
 		{
@@ -583,21 +583,21 @@ void randomize_vertical_polygon_lines(
 	uint16 transfer_data)
 {
 	struct _vertical_polygon_line_data *line= (struct _vertical_polygon_line_data *) (data+1);
-	register short bytes_per_row= screen->bytes_per_row;
+	short bytes_per_row= screen->bytes_per_row;
 	int line_count= data->width;
 	int x= data->x0;
-	register uint16 seed= texture_random_seed();
-	register uint16 drop_less_than= transfer_data;
+	uint16 seed= texture_random_seed();
+	uint16 drop_less_than= transfer_data;
 
 	(void) (view);
 
 	while ((line_count-= 1)>=0)
 	{
 		short y0= *y0_table++, y1= *y1_table++;
-		register T *write= (T *) screen->row_addresses[y0] + x;
-		register pixel8 *read= line->texture;
-		register _fixed texture_y= line->texture_y, texture_dy= line->texture_dy;
-		register short count= y1-y0;
+		T *write= (T *) screen->row_addresses[y0] + x;
+		pixel8 *read= line->texture;
+		_fixed texture_y= line->texture_y, texture_dy= line->texture_dy;
+		short count= y1-y0;
 
 		while ((count-=1)>=0)
 		{

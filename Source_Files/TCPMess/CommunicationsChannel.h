@@ -119,7 +119,7 @@ public:
 				  Uint32 inOverallTimeout = kSSRSpecificMessageTimeout,
 				  Uint32 inInactivityTimeout = kSSRAnyDataTimeout)
 	{
-		std::auto_ptr<Message> receivedMessage(receiveSpecificMessage(inType, inOverallTimeout, inInactivityTimeout));
+		std::unique_ptr<Message> receivedMessage(receiveSpecificMessage(inType, inOverallTimeout, inInactivityTimeout));
 		tMessage* result = dynamic_cast<tMessage*>(receivedMessage.get());
 		if(result != NULL)
 			receivedMessage.release();

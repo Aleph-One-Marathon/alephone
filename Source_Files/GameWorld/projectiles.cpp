@@ -161,7 +161,7 @@ projectile_data *get_projectile_data(
 	struct projectile_data *projectile =  GetMemberWithBounds(projectiles,projectile_index,MAXIMUM_PROJECTILES_PER_MAP);
 	
 	vassert(projectile, csprintf(temporary, "projectile index #%d is out of range", projectile_index));
-	vassert(SLOT_IS_USED(projectile), csprintf(temporary, "projectile index #%d (%p) is unused", projectile_index, projectile));
+	vassert(SLOT_IS_USED(projectile), csprintf(temporary, "projectile index #%d (%p) is unused", projectile_index, (void*)projectile));
 	
 	return projectile;
 }
