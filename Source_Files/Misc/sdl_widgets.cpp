@@ -1509,6 +1509,7 @@ void w_password_entry::draw(SDL_Surface *s) const
  */
 
 static const char *WAITING_TEXT = "waiting for new key";
+static const char *UNBOUND_TEXT = "none";
 
 w_key::w_key(SDL_Scancode key) : widget(LABEL_WIDGET), binding(false)
 {
@@ -1565,11 +1566,11 @@ void w_key::draw(SDL_Surface *s) const
 	int16 x = rect.x + key_x;
 	if (binding) {
 		draw_text(s, WAITING_TEXT, x, y, get_theme_color(ITEM_WIDGET, ACTIVE_STATE), font, style);
+	} else if (key == SDL_SCANCODE_UNKNOWN) {
+		draw_text(s, UNBOUND_TEXT, x, y, get_theme_color(ITEM_WIDGET, DISABLED_STATE), font, style);
 	} else {
         int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
-
-        // ZZZ: potential to use the phony (i.e. mouse-button) key names
-	draw_text(s, GetSDLKeyName(key), x, y, get_theme_color(ITEM_WIDGET, state), font, style);
+		draw_text(s, GetSDLKeyName(key), x, y, get_theme_color(ITEM_WIDGET, state), font, style);
 	}
 }
 
