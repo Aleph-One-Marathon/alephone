@@ -84,24 +84,17 @@ void joystick_removed(int instance_id) {
 
 void joystick_axis_moved(int instance_id, int axis, int value) {
 	switch (axis) {
-		case SDL_CONTROLLER_AXIS_LEFTX:
-		case SDL_CONTROLLER_AXIS_RIGHTX:
-			axis_values[axis] = value;
-			break;
 		case SDL_CONTROLLER_AXIS_LEFTY:
 		case SDL_CONTROLLER_AXIS_RIGHTY:
 			// flip Y axes to better match default movement
 			axis_values[axis] = value * -1;
 			break;
-		case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
-			button_values[AO_CONTROLLER_BUTTON_LEFTTRIGGER] = (value > 0);
-			break;
-		case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
-			button_values[AO_CONTROLLER_BUTTON_RIGHTTRIGGER] = (value > 0);
-			break;
 		default:
+			axis_values[axis] = value;
 			break;
 	}
+	button_values[AO_SCANCODE_BASE_JOYSTICK_AXIS_POSITIVE - AO_SCANCODE_BASE_JOYSTICK_BUTTON + axis] = (value >= 16384);
+	button_values[AO_SCANCODE_BASE_JOYSTICK_AXIS_NEGATIVE - AO_SCANCODE_BASE_JOYSTICK_BUTTON + axis] = (value <= -16384);
 }
 void joystick_button_pressed(int instance_id, int button, bool down) {
 	if (button >= 0 && button < NUM_SDL_JOYSTICK_BUTTONS)

@@ -1565,7 +1565,7 @@ static void input_selected(w_select* w)
 }
 
 static const char *joystick_axis_names[NUM_SDL_JOYSTICK_AXES] = {
-	"Left X", "Left Y", "Right X", "Right Y"
+	"Left X", "Left Y", "Right X", "Right Y", "LT", "RT"
 };
 
 static void controls_dialog(void *arg)
@@ -2702,11 +2702,15 @@ static const char *binding_joystick_button_name[NUM_SDL_JOYSTICK_BUTTONS] = {
 	"controller-back", "controller-guide", "controller-start",
 	"controller-ls", "controller-rs", "controller-lb", "controller-rb",
 	"controller-up", "controller-down", "controller-left", "controller-right",
-	"controller-lt", "controller-rt", "controller-18"
+	"controller-ls-right", "controller-ls-down", "controller-rs-right",
+	"controller-rs-down", "controller-lt", "controller-rt",
+	"controller-ls-left", "controller-ls-up", "controller-rs-left",
+	"controller-rs-up", "controller-lt-neg", "controller-rt-neg"
 };
 static const char *binding_joystick_axis_name[NUM_SDL_JOYSTICK_AXES] = {
 	"controller-leftx", "controller-lefty",
-	"controller-rightx", "controller-righty"
+	"controller-rightx", "controller-righty",
+	"controller-lt-axis", "controller-rt-axis"
 };
 static const char *binding_axis_action_name[NUMBER_OF_JOYSTICK_MAPPINGS] = {
 	"strafe", "move", "look-horizontal", "look-vertical"

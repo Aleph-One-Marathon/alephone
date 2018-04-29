@@ -29,20 +29,13 @@ May 18, 2009 (Eric Peterson):
 #include "cstypes.h"
 
 // this is where we start stuffing button presses into the big keymap array,
-// since 65 is where uppercase letters start + room for 8 mouse presses
-#define AO_SCANCODE_BASE_JOYSTICK_BUTTON 415
-// keys resume at key 91, so that's room for 18 joystick buttons
-#define NUM_SDL_JOYSTICK_BUTTONS 18
-// Buttons 0-14 match SDL's controller enums; we support left/right triggers
-// as additional buttons instead of analog axis controls
-typedef enum
-{
-	AO_CONTROLLER_BUTTON_LEFTTRIGGER = 15,
-	AO_CONTROLLER_BUTTON_RIGHTTRIGGER
-} AO_GameControllerExtraButton;
-// joystick axes match the first four from SDL's controller API;
-// triggers are treated as buttons instead
-#define NUM_SDL_JOYSTICK_AXES 4
+// comfortably past SDL2's defined scancodes
+const int AO_SCANCODE_BASE_JOYSTICK_BUTTON = 415;
+const int AO_SCANCODE_BASE_JOYSTICK_AXIS_POSITIVE = AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_MAX;
+const int AO_SCANCODE_BASE_JOYSTICK_AXIS_NEGATIVE = AO_SCANCODE_BASE_JOYSTICK_AXIS_POSITIVE + SDL_CONTROLLER_AXIS_MAX;
+const int NUM_SDL_JOYSTICK_BUTTONS = SDL_CONTROLLER_BUTTON_MAX + 2*SDL_CONTROLLER_AXIS_MAX;
+// joystick axes match SDL's controller API
+const int NUM_SDL_JOYSTICK_AXES = SDL_CONTROLLER_AXIS_MAX;
 
 void initialize_joystick(void);
 void enter_joystick(void);
