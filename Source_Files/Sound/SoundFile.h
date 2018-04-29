@@ -31,7 +31,6 @@ SOUND_DEFINITIONS.H
 #include <map>
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/utility.hpp>
 
 typedef std::vector<uint8> SoundData;
 
