@@ -1508,14 +1508,14 @@ void w_password_entry::draw(SDL_Surface *s) const
  *  Key name widget
  */
 
-static const char *WAITING_TEXT = "waiting for new key";
-static const char *UNBOUND_TEXT = "none";
+static const std::vector<std::string> WAITING_TEXT = { "waiting for key", "waiting for button", "waiting for button" };
+static const std::vector<std::string> UNBOUND_TEXT = { "none", "none", "none" };
 
-w_key::w_key(SDL_Scancode key) : widget(LABEL_WIDGET), binding(false)
+w_key::w_key(SDL_Scancode key, w_key::Type event_type) : widget(LABEL_WIDGET), binding(false), event_type(event_type)
 {
 	set_key(key);
 
-	saved_min_width = text_width(WAITING_TEXT, font, style);
+	saved_min_width = text_width(WAITING_TEXT[event_type].c_str(), font, style);
 	saved_min_height = font->get_line_height();
 }
 
@@ -1537,8 +1537,7 @@ static const char* sMouseButtonKeyName[NUM_SDL_MOUSE_BUTTONS] = {
         "Mouse X1",
         "Mouse X2",
         "Mouse Scroll Up",
-        "Mouse Scroll Down",
-        "mouse 8"
+        "Mouse Scroll Down"
 };
 
 static const char* sJoystickButtonKeyName[NUM_SDL_JOYSTICK_BUTTONS] = {
@@ -1551,9 +1550,9 @@ static const char* sJoystickButtonKeyName[NUM_SDL_JOYSTICK_BUTTONS] = {
 // ZZZ: this injects our phony key names but passes along the rest.
 static const char*
 GetSDLKeyName(SDL_Scancode inKey) {
-    if(inKey >= AO_SCANCODE_BASE_MOUSE_BUTTON && inKey < AO_SCANCODE_BASE_MOUSE_BUTTON + NUM_SDL_MOUSE_BUTTONS)
+	if (w_key::event_type_for_key(inKey) == w_key::MouseButton)
         return sMouseButtonKeyName[inKey - AO_SCANCODE_BASE_MOUSE_BUTTON];
-    else if (inKey >= AO_SCANCODE_BASE_JOYSTICK_BUTTON && inKey < AO_SCANCODE_BASE_JOYSTICK_BUTTON + NUM_SDL_JOYSTICK_BUTTONS)
+	else if (w_key::event_type_for_key(inKey) == w_key::JoystickButton)
 	    return sJoystickButtonKeyName[inKey - AO_SCANCODE_BASE_JOYSTICK_BUTTON];
     else
         return SDL_GetScancodeName(inKey);
@@ -1566,9 +1565,10 @@ void w_key::draw(SDL_Surface *s) const
 	// Key
 	int16 x = rect.x + key_x;
 	if (binding) {
-		draw_text(s, WAITING_TEXT, x, y, get_theme_color(ITEM_WIDGET, ACTIVE_STATE), font, style);
+		draw_text(s, WAITING_TEXT[event_type].c_str(), x, y, get_theme_color(ITEM_WIDGET, ACTIVE_STATE), font, style);
 	} else if (key == SDL_SCANCODE_UNKNOWN) {
-		draw_text(s, UNBOUND_TEXT, x, y, get_theme_color(ITEM_WIDGET, DISABLED_STATE), font, style);
+		int state = enabled ? (active ? ACTIVE_STATE : DISABLED_STATE) : DISABLED_STATE;
+		draw_text(s, UNBOUND_TEXT[event_type].c_str(), x, y, get_theme_color(ITEM_WIDGET, state), font, style);
 	} else {
         int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
 		draw_text(s, GetSDLKeyName(key), x, y, get_theme_color(ITEM_WIDGET, state), font, style);
@@ -1586,6 +1586,22 @@ void w_key::click(int /*x*/, int /*y*/)
     }
 }
 
+void w_key::set_active(bool new_active) {
+	if (!new_active && binding) {
+		binding = false;
+		dirty = true;
+	}
+	widget::set_active(new_active);
+}
+
+w_key::Type w_key::event_type_for_key(SDL_Scancode key) {
+	if (key >= AO_SCANCODE_BASE_MOUSE_BUTTON && key < (AO_SCANCODE_BASE_MOUSE_BUTTON + NUM_SDL_MOUSE_BUTTONS))
+		return MouseButton;
+	else if (key >= AO_SCANCODE_BASE_JOYSTICK_BUTTON && key < (AO_SCANCODE_BASE_JOYSTICK_BUTTON + NUM_SDL_JOYSTICK_BUTTONS))
+		return JoystickButton;
+	return KeyboardKey;
+}
+
 void w_key::event(SDL_Event &e)
 {
     if(binding) {
@@ -1593,39 +1609,54 @@ void w_key::event(SDL_Event &e)
 		bool up = false;
 		switch (e.type) {
 			case SDL_MOUSEBUTTONDOWN:
-				if (e.button.button < NUM_SDL_MOUSE_BUTTONS) {
-					set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_MOUSE_BUTTON + e.button.button - 1));
-					handled = true;
+				if (event_type == MouseButton) {
+					if (e.button.button < NUM_SDL_REAL_MOUSE_BUTTONS) {
+						set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_MOUSE_BUTTON + e.button.button - 1));
+						handled = true;
+					}
 				}
 				break;
 			case SDL_CONTROLLERBUTTONDOWN:
-				if (e.cbutton.button < NUM_SDL_JOYSTICK_BUTTONS) {
-					set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + e.cbutton.button));
+				if ((e.cbutton.button + AO_SCANCODE_BASE_JOYSTICK_BUTTON) == AO_SCANCODE_JOYSTICK_ESCAPE) {
+					set_key(SDL_SCANCODE_UNKNOWN);
 					handled = true;
+				} else if (event_type == JoystickButton) {
+					if (e.cbutton.button < SDL_CONTROLLER_BUTTON_MAX) {
+						set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + e.cbutton.button));
+						handled = true;
+					}
 				}
 				break;
 			case SDL_CONTROLLERAXISMOTION:
-				if (e.caxis.value >= 16384) {
-					set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_AXIS_POSITIVE + e.caxis.axis));
-					handled = true;
-				} else if (e.caxis.value <= -16384) {
-					set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_AXIS_NEGATIVE + e.caxis.axis));
-					handled = true;
+				if (event_type == JoystickButton) {
+					if (e.caxis.value >= 16384) {
+						set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_AXIS_POSITIVE + e.caxis.axis));
+						handled = true;
+					} else if (e.caxis.value <= -16384) {
+						set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_AXIS_NEGATIVE + e.caxis.axis));
+						handled = true;
+					}
 				}
 				break;
 			case SDL_MOUSEWHEEL:
-				up = (e.wheel.y > 0);
+				if (event_type == MouseButton) {
+					up = (e.wheel.y > 0);
 #if SDL_VERSION_ATLEAST(2,0,4)
-				if (e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
-					up = !up;
+					if (e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+						up = !up;
 #endif
-				set_key(static_cast<SDL_Scancode>(up ? AO_SCANCODE_MOUSESCROLL_UP : AO_SCANCODE_MOUSESCROLL_DOWN));
-				handled = true;
+					set_key(static_cast<SDL_Scancode>(up ? AO_SCANCODE_MOUSESCROLL_UP : AO_SCANCODE_MOUSESCROLL_DOWN));
+					handled = true;
+				}
 				break;
 			case SDL_KEYDOWN:
-				if (e.key.keysym.scancode != SDL_SCANCODE_ESCAPE)
+				if (e.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+					set_key(SDL_SCANCODE_UNKNOWN);
+					handled = true;
+				} else if (event_type == KeyboardKey) {
 					set_key(e.key.keysym.scancode);
-				handled = true;
+					handled = true;
+				}
 				break;
 			case SDL_MOUSEMOTION:
 				e.type = SDL_LASTEVENT; // suppress motion while assigning
@@ -1644,6 +1675,7 @@ void w_key::event(SDL_Event &e)
 		}
     }
 }
+
 
 void w_key::set_key(SDL_Scancode k)
 {

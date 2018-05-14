@@ -195,7 +195,7 @@ mouse_buttons_become_keypresses(Uint8* ioKeyMap)
 		uint8 orig_buttons = buttons;
 		buttons &= button_mask;				// Mask out disabled buttons
 
-        for(int i = 0; i < NUM_SDL_MOUSE_BUTTONS; i++) {
+        for(int i = 0; i < NUM_SDL_REAL_MOUSE_BUTTONS; i++) {
             ioKeyMap[AO_SCANCODE_BASE_MOUSE_BUTTON + i] =
                 (buttons & SDL_BUTTON(i+1)) ? SDL_PRESSED : SDL_RELEASED;
         }

@@ -51,7 +51,7 @@ void initialize_joystick(void) {
 }
 
 void enter_joystick(void) {
-	joystick_active = input_preferences->use_joystick;
+	joystick_active = true;
 }
 
 void exit_joystick(void) {
@@ -101,91 +101,121 @@ void joystick_button_pressed(int instance_id, int button, bool down) {
 		button_values[button] = down;
 }
 
+enum {
+	_flags_yaw,
+	_flags_pitch,
+	NUMBER_OF_ABSOLUTE_POSITION_VALUES
+};
+
+typedef struct AxisInfo {
+	int key_binding_index;
+	int abs_pos_index;
+	bool negative;
+	
+} AxisInfo;
+
+static const std::vector<AxisInfo> axis_mappings = {
+	{ 2, _flags_yaw, true },
+	{ 3, _flags_yaw, false },
+	{ 8, _flags_pitch, true },
+	{ 9, _flags_pitch, false }
+};
+
+static const float axis_limits[NUMBER_OF_ABSOLUTE_POSITION_VALUES] = {
+	0.5f - 1.f / (1<<ABSOLUTE_YAW_BITS),
+	0.5f - 1.f / (1<<ABSOLUTE_PITCH_BITS)
+};
+
+static int axis_mapped_to_action(int action, bool* negative) {
+	auto codeset = input_preferences->key_bindings[action];
+	for (auto it = codeset.begin(); it != codeset.end(); ++it) {
+		const SDL_Scancode code = *it;
+		
+		if (code < AO_SCANCODE_BASE_JOYSTICK_AXIS_POSITIVE)
+			continue;
+		if (code > (AO_SCANCODE_BASE_JOYSTICK_BUTTON + NUM_SDL_JOYSTICK_BUTTONS))
+			continue;
+		
+		*negative = false;
+		int axis = code - AO_SCANCODE_BASE_JOYSTICK_AXIS_POSITIVE;
+		if (code >= AO_SCANCODE_BASE_JOYSTICK_AXIS_NEGATIVE) {
+			*negative = true;
+			axis = code - AO_SCANCODE_BASE_JOYSTICK_AXIS_NEGATIVE;
+		}
+		return axis;
+	}
+	return -1;
+}
+
 void joystick_buttons_become_keypresses(Uint8* ioKeyMap) {
     // if we're not using the joystick, avoid this
     if (!joystick_active)
         return;
+	if (active_instances.empty())
+		return;
 
-    // toggle joystick buttons until we run out of slots or buttons
+	std::set<int> buttons_to_avoid;
+	if (input_preferences->controller_analog) {
+		// avoid setting buttons mapped to analog aiming
+		for (auto it = axis_mappings.begin(); it != axis_mappings.end(); ++it) {
+			const AxisInfo info = *it;
+			bool negative = false;
+			int axis = axis_mapped_to_action(info.key_binding_index, &negative);
+			if (axis >= 0) {
+				buttons_to_avoid.insert(axis + (negative ? AO_SCANCODE_BASE_JOYSTICK_AXIS_NEGATIVE : AO_SCANCODE_BASE_JOYSTICK_AXIS_POSITIVE));
+			}
+		}
+	}
+
 	for (int i = 0; i < NUM_SDL_JOYSTICK_BUTTONS; ++i) {
-		ioKeyMap[AO_SCANCODE_BASE_JOYSTICK_BUTTON + i] = button_values[i];
+		int code = AO_SCANCODE_BASE_JOYSTICK_BUTTON + i;
+		if (buttons_to_avoid.count(code) == 0)
+			ioKeyMap[code] = button_values[i];
     }
-
+	
     return;
 }
 
 int process_joystick_axes(int flags, int tick) {
     if (!joystick_active)
         return flags;
-
-	int axis_data[NUMBER_OF_JOYSTICK_MAPPINGS] = { 0, 0, 0, 0 };
-    for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; i++) {
-		int axis = input_preferences->joystick_axis_mappings[i];
+	if (active_instances.empty())
+		return flags;
+	if (!input_preferences->controller_analog)
+		return flags;
+	
+	float flag_values[NUMBER_OF_ABSOLUTE_POSITION_VALUES] = { 0, 0 };
+	for (auto it = axis_mappings.begin(); it != axis_mappings.end(); ++it) {
+		const AxisInfo info = *it;
+		bool negative = false;
+		int axis = axis_mapped_to_action(info.key_binding_index, &negative);
 		if (axis < 0)
 			continue;
 		
-		// apply dead zone
-		if (ABS(axis_values[axis]) < input_preferences->joystick_axis_bounds[i]) {
-			axis_data[i] = 0;
-			continue;
+		int val = axis_values[axis] * (negative ? -1 : 1);
+		if (val > input_preferences->controller_deadzone) {
+			float norm = val/32767.f * (static_cast<float>(input_preferences->controller_sensitivity) / FIXED_ONE);
+			
+			// apply axis-specific sensitivity, to match keyboard
+			// velocities with user sensitivity at 1
+			switch (info.abs_pos_index) {
+				case _flags_yaw:
+					norm *= 6.f/63.f;
+					break;
+				case _flags_pitch:
+					norm *= 6.f/15.f;
+					break;
+			}
+			flag_values[info.abs_pos_index] += norm * (info.negative ? -1.0 : 1.0);
 		}
-		float val = axis_values[axis]/32767.f * input_preferences->joystick_axis_sensitivities[i];
-		
-		// apply axis-specific sensitivity, to match keyboard
-		// velocities with user sensitivity at 1
-		switch (i) {
-			case _joystick_yaw:
-				val *= 6.f/63.f;
-				break;
-			case _joystick_pitch:
-				val *= 6.f/15.f;
-				break;
-		}
-		
-		// pin to largest d for which both -d and +d can be
-		// represented in 1 action flags bitset
-		float limit = 0.5f - 1.f / (1<<FIXED_FRACTIONAL_BITS);
-		switch (i) {
-			case _joystick_yaw:
-				limit = 0.5f - 1.f / (1<<ABSOLUTE_YAW_BITS);
-				break;
-			case _joystick_pitch:
-				limit = 0.5f - 1.f / (1<<ABSOLUTE_PITCH_BITS);
-				break;
-			case _joystick_velocity:
-				// forward and backward limits are independent and capped,
-				// so there's no need to ensure symmetry
-				limit = 0.5f;
-				break;
-			case _joystick_strafe:
-			default:
-				break;
-		}
-		axis_data[i] = PIN(val, -limit, limit) * FIXED_ONE;
-    }
-    // we have intelligently set up ways to allow variably throttled movement
-    // for these controls
-    flags = mask_in_absolute_positioning_information(flags,
-													 axis_data[_joystick_yaw],
-													 axis_data[_joystick_pitch],
-													 axis_data[_joystick_velocity]);
-    // but we don't for strafing!  so we do some PULSE MODULATION instead
-#define PULSE_PATTERNS 5
-#define PULSE_PERIOD 4
-	int pulses[PULSE_PATTERNS][PULSE_PERIOD] = {
-						 { 0, 0, 0, 0 },
-					     { 0, 0, 0, 1 },
-					     { 0, 1, 0, 1 },
-					     { 0, 1, 1, 1 },
-					     { 1, 1, 1, 1 } };
-	int which_pulse = MIN(PULSE_PATTERNS - 1, ABS(axis_data[_joystick_strafe])*PULSE_PATTERNS/32768);
-	if (pulses[which_pulse][tick % PULSE_PERIOD]) {
-		if (axis_data[_joystick_strafe] > 0)
-			flags |= _sidestepping_right;
-		else
-			flags |= _sidestepping_left;
 	}
-
-    // finally, return this tick's action flags augmented with movement data
-    return flags;
+	
+	// return this tick's action flags augmented with movement data
+	float yawLimit = MIN(axis_limits[_flags_yaw], input_preferences->mouse_max_speed);
+	float pitchLimit = MIN(axis_limits[_flags_yaw], input_preferences->mouse_max_speed);
+	_fixed yaw = PIN(flag_values[_flags_yaw], -yawLimit, yawLimit) * FIXED_ONE;
+	_fixed pitch = PIN(flag_values[_flags_pitch], -pitchLimit, pitchLimit) * FIXED_ONE;
+	if (yaw != 0 || pitch != 0)
+		flags = mask_in_absolute_positioning_information(flags, yaw, pitch, 0);
+	return flags;
 }

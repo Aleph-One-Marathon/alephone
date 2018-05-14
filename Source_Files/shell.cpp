@@ -917,7 +917,7 @@ static void handle_game_key(const SDL_Event &event)
 	}
 	else
 	{
-		if (sc == SDL_SCANCODE_ESCAPE) // (ZZZ) Quit gesture (now safer)
+		if (sc == SDL_SCANCODE_ESCAPE || sc == AO_SCANCODE_JOYSTICK_ESCAPE) // (ZZZ) Quit gesture (now safer)
 		{
 			if(!player_controlling_game())
 				do_menu_item_command(mGame, iQuitGame, false);
