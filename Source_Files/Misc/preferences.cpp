@@ -3164,22 +3164,14 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.high_dpi = true;
 	preferences->screen_mode.hud = true;
 	preferences->screen_mode.hud_scale_level = 0;
-	preferences->screen_mode.term_scale_level = 0;
-	preferences->screen_mode.translucent_map = false;
-#if (defined(__APPLE__) && defined(__MACH__)) || defined(__WIN32__)
-	preferences->screen_mode.acceleration = _opengl_acceleration;
-#else
-	preferences->screen_mode.acceleration = _no_acceleration;
-#endif
+	preferences->screen_mode.term_scale_level = 2;
+	preferences->screen_mode.translucent_map = true;
+	preferences->screen_mode.acceleration = _shader_acceleration;
 	preferences->screen_mode.high_resolution = true;
 	preferences->screen_mode.fullscreen = true;
 	preferences->screen_mode.fix_h_not_v = true;
 	preferences->screen_mode.camera_bob = true;
-
-	if (preferences->screen_mode.acceleration == _no_acceleration)
-		preferences->screen_mode.bit_depth = 16;
-	else
-		preferences->screen_mode.bit_depth = 32;
+	preferences->screen_mode.bit_depth = 32;
 	
 	preferences->screen_mode.draw_every_other_line= false;
 	
@@ -3208,7 +3200,7 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->game_is_untimed = false;
 	preferences->difficulty_level = 2;
 	preferences->game_options =	_multiplayer_game | _ammo_replenishes | _weapons_replenish
-		| _specials_replenish |	_monsters_replenish | _burn_items_on_death | _suicide_is_penalized 
+		| _specials_replenish | _burn_items_on_death
 		| _force_unique_teams | _live_network_stats;
 	preferences->time_limit = 10 * TICKS_PER_SECOND * 60;
 	preferences->kill_limit = 10;
@@ -3258,9 +3250,9 @@ static void default_player_preferences(player_preferences_data *preferences)
 	preferences->ChaseCam.Spring = 0;
 	preferences->ChaseCam.Opacity = 1;
 	
-	preferences->Crosshairs.Thickness = 2;
-	preferences->Crosshairs.FromCenter = 8;
-	preferences->Crosshairs.Length = 16;
+	preferences->Crosshairs.Thickness = 3;
+	preferences->Crosshairs.FromCenter = 2;
+	preferences->Crosshairs.Length = 1;
 	preferences->Crosshairs.Shape = CHShape_RealCrosshairs;
 	preferences->Crosshairs.Color = rgb_white;
 	preferences->Crosshairs.Opacity = 0.5;
@@ -3283,8 +3275,8 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->sens_vertical = FIXED_ONE;
 	preferences->mouse_accel_type = _mouse_accel_none;
 	preferences->mouse_accel_scale = 1.f;
-	preferences->raw_mouse_input = false;
-	preferences->mouse_max_speed = 1.f;
+	preferences->raw_mouse_input = true;
+	preferences->mouse_max_speed = .25f;
 
 	preferences->controller_analog = true;
 	preferences->controller_sensitivity = FIXED_ONE;

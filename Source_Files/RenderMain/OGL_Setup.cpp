@@ -237,8 +237,8 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 	Data.ModelConfig.ColorFormat = 0;
 	Data.ModelConfig.MaxSize = 0;
 	
-	// Reasonable default flags ("static" effect causes massive slowdown, so we turn it off)
-	Data.Flags = OGL_Flag_FlatStatic | OGL_Flag_Fader | OGL_Flag_Map |
+	// Reasonable default flags
+	Data.Flags = OGL_Flag_Fader | OGL_Flag_Map |
 		OGL_Flag_HUD | OGL_Flag_LiqSeeThru | OGL_Flag_3D_Models | OGL_Flag_ZBuffer |
 		OGL_Flag_Fog;
 
