@@ -94,14 +94,6 @@ struct graphics_preferences_data
     int16 movie_export_audio_quality;
 };
 
-struct serial_number_data
-{
-	bool network_only;
-	byte long_serial_number[10];
-	unsigned char user_name[256];
-	unsigned char tokenized_serial_number[256];
-};
-
 enum {
 	_network_game_protocol_ring,
 	_network_game_protocol_star,
@@ -261,7 +253,6 @@ struct environment_preferences_data
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */
 extern struct graphics_preferences_data *graphics_preferences;
-extern struct serial_number_data *serial_preferences;
 extern struct network_preferences_data *network_preferences;
 extern struct player_preferences_data *player_preferences;
 extern struct input_preferences_data *input_preferences;

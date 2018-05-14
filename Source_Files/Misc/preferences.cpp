@@ -131,7 +131,6 @@ static bool PrefsInited = false;
 
 // Global preferences data
 struct graphics_preferences_data *graphics_preferences = NULL;
-struct serial_number_data *serial_preferences = NULL;
 struct network_preferences_data *network_preferences = NULL;
 struct player_preferences_data *player_preferences = NULL;
 struct input_preferences_data *input_preferences = NULL;
@@ -147,8 +146,6 @@ static std::string get_name_from_system(void);
 // LP: getting rid of the (void *) mechanism as inelegant and non-type-safe
 static void default_graphics_preferences(graphics_preferences_data *preferences);
 static bool validate_graphics_preferences(graphics_preferences_data *preferences);
-static void default_serial_number_preferences(serial_number_data *preferences);
-static bool validate_serial_number_preferences(serial_number_data *preferences);
 static void default_network_preferences(network_preferences_data *preferences);
 static bool validate_network_preferences(network_preferences_data *preferences);
 static void default_player_preferences(player_preferences_data *preferences);
@@ -2610,7 +2607,6 @@ void initialize_preferences(
 		player_preferences= new player_preferences_data;
 		input_preferences= new input_preferences_data;
 		sound_preferences = new SoundManager::Parameters;
-		serial_preferences= new serial_number_data;
 		network_preferences= new network_preferences_data;
 		environment_preferences= new environment_preferences_data;
 		
@@ -2639,7 +2635,6 @@ void read_preferences ()
 {
 	// Set to defaults; will be overridden by reading in the XML stuff
 	default_graphics_preferences(graphics_preferences);
-	default_serial_number_preferences(serial_preferences);
 	default_network_preferences(network_preferences);
 	default_player_preferences(player_preferences);
 	default_input_preferences(input_preferences);
@@ -2720,7 +2715,6 @@ void read_preferences ()
 
 	// Check on the read-in prefs
 	validate_graphics_preferences(graphics_preferences);
-	validate_serial_number_preferences(serial_preferences);
 	validate_network_preferences(network_preferences);
 	validate_player_preferences(player_preferences);
 	validate_input_preferences(input_preferences);
@@ -3187,11 +3181,6 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->movie_export_audio_quality = 50;
 }
 
-static void default_serial_number_preferences(serial_number_data *preferences)
-{
-	memset(preferences, 0, sizeof(struct serial_number_data));
-}
-
 static void default_network_preferences(network_preferences_data *preferences)
 {
 	preferences->type= _ethernet;
@@ -3367,12 +3356,6 @@ static bool validate_graphics_preferences(graphics_preferences_data *preferences
 #endif
 
 	return changed;
-}
-
-static bool validate_serial_number_preferences(serial_number_data *preferences)
-{
-	(void) (preferences);
-	return false;
 }
 
 static bool validate_network_preferences(network_preferences_data *preferences)
