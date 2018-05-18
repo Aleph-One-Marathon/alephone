@@ -50,7 +50,7 @@ static const char* sStringSetNumber128[] = {
     "Sorry, $appName$ requires System Software 7.0 or higher.",
     "Sorry, $appName$ requires at least 3000k of free RAM.",
     "Sorry, $appName$ requires a 13\" monitor (640x480) or larger which can be set to at least 256 colors or grays.",
-    "Please be sure the files 'Map', 'Shapes', 'Images' and 'Sounds' are correctly installed and try again.",
+    "Please be sure the 'Map' file, 'Shapes' file, 'Images' or 'Marathon.appl' files, 'Sounds' file, and a theme plugin are correctly installed and try again.  If this message persists, check your Aleph One preferences, scenario preferences, and scenario MML for misnamed files.",
     "$appName$ couldn't initialize the sound.",
     "$appName$ has encountered a file system error.  Check to make sure you have enough disk space and that you are not trying to save to a locked volume.",
     "This copy of $appName$ has been modified, perhaps by a virus.  Please re-install it from the original disks.",
