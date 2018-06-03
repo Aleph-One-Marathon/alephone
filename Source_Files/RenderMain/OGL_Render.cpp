@@ -161,6 +161,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "Logging.h"
 #include "screen.h"
 #include "OGL_Shader.h"
+#include "media.h"
 
 #include <cmath>
 
@@ -368,6 +369,9 @@ static double LandscapeRescale;
 
 // Self-luminosity (the "miner's light" effect and weapons flare)
 static _fixed SelfLuminosity;
+
+//Where media intersects with znear in device y coordinates.
+static float liquidCutoff;
 
 // Pointer to current fog data:
 OGL_FogData *CurrFog = NULL;
@@ -943,7 +947,7 @@ bool OGL_EndMain()
 	glDisable(GL_DEPTH_TEST);
 	
 	// Render OpenGL faders, if in use
-	OGL_DoFades(0,0,ViewWidth,ViewHeight);
+	OGL_DoFades(0,0,ViewWidth,ViewHeight,liquidCutoff);
 	
 	return true;
 }
@@ -1109,7 +1113,45 @@ bool OGL_SetView(view_data &View)
 		
 	// Is infravision active?
 	IsInfravisionActive() = (View.shading_mode == _shading_infravision);
-		
+    
+    //Calculate where media surface (if any) might intersect zNear plane in normalized device coordinates.
+    liquidCutoff = 0;
+    if (graphics_preferences->screen_mode.acceleration == _shader_acceleration) {
+        polygon_data *cameraPolygon= get_polygon_data(View.origin_polygon_index);
+        media_data *media = NULL;
+        if (cameraPolygon->media_index != NONE) {
+            media = get_media_data(cameraPolygon->media_index);
+            
+            if(media){
+                //Cribbed from Rasterizer_Shader_Class::SetView. Used to establish eye-space size of near clip rect.
+                float aspect = View.screen_width / float(View.screen_height);
+                float deg2rad = 8.0 * atan(1.0) / 360.0;
+                float ytan;
+                if (View_FOV_FixHorizontalNotVertical()) {
+                    ytan = tan(View.field_of_view * deg2rad / 2.0) / aspect;
+                } else {
+                    ytan = tan(View.field_of_view * deg2rad / 2.0) / 2.0;
+                }
+                ytan *= View.real_world_to_screen_y / double(View.world_to_screen_y);
+                float nearVal = 64.0;
+                float y = ytan * nearVal;
+                
+                GLfloat eyeHeightAboveMedia = View.origin.z - media->height;
+                double pitch = View.pitch * 360.0 / float(NUMBER_OF_ANGLES);
+                pitch = (pitch > 180.0 ? pitch -360.0 : pitch);
+                
+                double pitchComplement=90+pitch;
+                double zNearCenterHeight = sin(pitch * (3.14159265 / 180.0) ) * 64;
+                double zNearCenterHeightAboveMedia = eyeHeightAboveMedia + zNearCenterHeight;
+                liquidCutoff = zNearCenterHeightAboveMedia/sin( pitchComplement * (3.14159265 / 180.0));
+                liquidCutoff /= y;
+                liquidCutoff = (liquidCutoff+1.0)/2;
+                liquidCutoff *= (float)View.screen_height;// * MainScreenPixelScale();
+                liquidCutoff = liquidCutoff < 0.0 ? 0.0:liquidCutoff;
+            }
+        }
+    }
+    
 	// Finally...
 	SelfLuminosity = View.maximum_depth_intensity;
 	
