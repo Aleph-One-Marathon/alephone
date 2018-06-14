@@ -1553,7 +1553,7 @@ int Lua_Player_Print(lua_State *L)
 		return luaL_error(L, "print: incorrect argument type");
 
 	int player_index = Lua_Player::Index(L, 1);
-	if (player_index == IsScriptHUDNonlocal() ? current_player_index : local_player_index)
+	if (player_index == (IsScriptHUDNonlocal() ? current_player_index : local_player_index))
 	{
 		lua_getglobal(L, "tostring");
 		lua_insert(L, -2);
