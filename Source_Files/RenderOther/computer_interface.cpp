@@ -2278,6 +2278,10 @@ void MarathonTerminalCompiler::CompileLine(const std::string& line)
 				out.push_back(*it);
 			}
 		}
+		else if (*it == 0x1B)
+		{
+			out.push_back(' ');
+		}
 		else
 		{
 			out.push_back(*it);
