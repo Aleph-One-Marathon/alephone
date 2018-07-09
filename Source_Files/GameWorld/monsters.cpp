@@ -454,6 +454,12 @@ short new_monster(
 	{
 		dynamic_world->current_civilian_count+= 1;
 	}
+	if ((static_world->mission_flags & _mission_rescue) &&
+	    monster_index!=NONE && 
+	    (definition->_class&_class_human_civilian)) 
+	{
+		dynamic_world->current_civilian_count+= 1;
+	}
 
 	return monster_index;
 }
@@ -1614,6 +1620,11 @@ void damage_monster(
 					}
 
 					if ((static_world->mission_flags & _mission_rescue_m1) && (definition->_class & _class_human_civilian_m1))
+					{
+						dynamic_world->current_civilian_causalties += 1;
+					}
+
+					if ((static_world->mission_flags & _mission_rescue) && (definition->_class & _class_human_civilian))
 					{
 						dynamic_world->current_civilian_causalties += 1;
 					}
