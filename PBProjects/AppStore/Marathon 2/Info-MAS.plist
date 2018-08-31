@@ -18,7 +18,7 @@
 			<string>Aleph One Shapes File</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>shp°</string>
+				<string>shp∞</string>
 				<string>shp2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -42,7 +42,7 @@
 			<string>Aleph One Sound Data</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>snd°</string>
+				<string>snd∞</string>
 				<string>snd2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -65,7 +65,7 @@
 			<string>Aleph One Interface Images</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>img°</string>
+				<string>img∞</string>
 				<string>img2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -88,7 +88,7 @@
 			<string>Aleph One Replay</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>fil°</string>
+				<string>fil∞</string>
 				<string>fil2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -135,10 +135,6 @@
 			<string>MMLIcon.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>Aleph One XML Configuration</string>
-			<key>CFBundleTypeOSTypes</key>
-			<array>
-				<string>****</string>
-			</array>
 			<key>CFBundleTypeRole</key>
 			<string>None</string>
 			<key>LSItemContentTypes</key>
@@ -157,10 +153,6 @@
 			<string>PFIcon.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>Aleph One Pfhortran Script</string>
-			<key>CFBundleTypeOSTypes</key>
-			<array>
-				<string>****</string>
-			</array>
 			<key>CFBundleTypeRole</key>
 			<string>None</string>
 			<key>LSItemContentTypes</key>
@@ -247,10 +239,6 @@
 			<string>package.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>Aleph One Bundle</string>
-			<key>CFBundleTypeOSTypes</key>
-			<array>
-				<string>****</string>
-			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSItemContentTypes</key>
@@ -331,7 +319,7 @@
 			<dict>
 				<key>com.apple.ostype</key>
 				<array>
-					<string>shp°</string>
+					<string>shp∞</string>
 					<string>shp2</string>
 				</array>
 				<key>public.filename-extension</key>
@@ -356,7 +344,7 @@
 			<dict>
 				<key>com.apple.ostype</key>
 				<array>
-					<string>snd°</string>
+					<string>snd∞</string>
 					<string>snd2</string>
 				</array>
 				<key>public.filename-extension</key>
@@ -381,7 +369,7 @@
 			<dict>
 				<key>com.apple.ostype</key>
 				<array>
-					<string>img°</string>
+					<string>img∞</string>
 					<string>img2</string>
 				</array>
 				<key>public.filename-extension</key>
@@ -405,7 +393,7 @@
 			<dict>
 				<key>com.apple.ostype</key>
 				<array>
-					<string>fil°</string>
+					<string>fil∞</string>
 					<string>fil2</string>
 				</array>
 				<key>public.filename-extension</key>

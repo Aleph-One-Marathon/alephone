@@ -18,7 +18,7 @@
 			<string>Aleph One Shapes File</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>shp°</string>
+				<string>shp∞</string>
 				<string>shp2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -42,7 +42,7 @@
 			<string>Aleph One Sound Data</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>snd°</string>
+				<string>snd∞</string>
 				<string>snd2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -65,7 +65,7 @@
 			<string>Aleph One Interface Images</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>img°</string>
+				<string>img∞</string>
 				<string>img2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -88,7 +88,7 @@
 			<string>Aleph One Replay</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>fil°</string>
+				<string>fil∞</string>
 				<string>fil2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -319,37 +319,13 @@
 			<dict>
 				<key>com.apple.ostype</key>
 				<array>
-					<string>shp°</string>
+					<string>shp∞</string>
 					<string>shp2</string>
 				</array>
 				<key>public.filename-extension</key>
 				<array>
 					<string>shpA</string>
 					<string>shps</string>
-				</array>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>Aleph One Interface Images</string>
-			<key>UTTypeIconFile</key>
-			<string>ImagesIcon</string>
-			<key>UTTypeIdentifier</key>
-			<string>org.bungie.source.images</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>com.apple.ostype</key>
-				<array>
-					<string>img°</string>
-					<string>img2</string>
-				</array>
-				<key>public.filename-extension</key>
-				<array>
-					<string>imgA</string>
 				</array>
 			</dict>
 		</dict>
@@ -368,13 +344,37 @@
 			<dict>
 				<key>com.apple.ostype</key>
 				<array>
-					<string>snd°</string>
+					<string>snd∞</string>
 					<string>snd2</string>
 				</array>
 				<key>public.filename-extension</key>
 				<array>
 					<string>sndA</string>
 					<string>snds</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Aleph One Interface Images</string>
+			<key>UTTypeIconFile</key>
+			<string>ImagesIcon</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.bungie.source.images</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>com.apple.ostype</key>
+				<array>
+					<string>img∞</string>
+					<string>img2</string>
+				</array>
+				<key>public.filename-extension</key>
+				<array>
+					<string>imgA</string>
 				</array>
 			</dict>
 		</dict>
@@ -393,7 +393,7 @@
 			<dict>
 				<key>com.apple.ostype</key>
 				<array>
-					<string>fil°</string>
+					<string>fil∞</string>
 					<string>fil2</string>
 				</array>
 				<key>public.filename-extension</key>
@@ -425,7 +425,6 @@
 					<string>sceA</string>
 					<string>scen</string>
 					<string>sce</string>
-					<string>*</string>
 				</array>
 			</dict>
 		</dict>
@@ -489,7 +488,6 @@
 				<array>
 					<string>phyA</string>
 					<string>phys</string>
-					<string>*</string>
 				</array>
 			</dict>
 		</dict>
