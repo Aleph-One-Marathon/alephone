@@ -1869,7 +1869,7 @@ static void controls_dialog(void *arg)
 	
 	tab_placer* tabs = new tab_placer();
 	
-	std::vector<std::string> labels = { "AIM", "MOVE", "ACTIONS", "INTERFACE" };
+	std::vector<std::string> labels = { "AIM", "MOVE", "ACTIONS", "INTERFACE", "OTHER" };
 	w_tab *tab_w = new w_tab(labels, tabs);
 	
 	placer->dual_add(tab_w, d);
@@ -2144,10 +2144,68 @@ static void controls_dialog(void *arg)
 	}
 	interface->add(interface_table, true);
 
+	vertical_placer *other = new vertical_placer();
+	other->dual_add(new w_static_text("These keyboard shortcuts cannot be changed."), d);
+	other->add(new w_spacer());
+
+	table_placer *other_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	other_table->dual_add(new w_label("Main Menu"), d);
+	other_table->dual_add(new w_label("In Game"), d);
+
+	table_placer *other_menu = new table_placer(2, get_theme_space(ITEM_WIDGET), false);
+	other_menu->col_flags(0, placeable::kAlignRight);
+	other_menu->col_flags(1, placeable::kAlignLeft);
+	std::vector<std::string> menu_shortcuts = {
+		"N", "Begin new game",
+		"O", "Continue saved game",
+		"G", "Gather network game",
+		"J", "Join network game",
+		"R", "Replay saved film",
+		"P", "Preferences",
+		"Q", "Quit",
+		"C", "Scenario credits",
+		"A", "About Aleph One",
+#if (defined(__APPLE__) && defined(__MACH__))
+		"Cmd-Return", "Toggle fullscreen",
+#else
+		"Alt+Enter", "Toggle fullscreen",
+#endif
+	};
+	for (auto it = menu_shortcuts.begin(); it != menu_shortcuts.end(); ++it) {
+		other_menu->dual_add(new w_label(it->c_str()), d);
+	}
+	other_table->add(other_menu, true);
+
+	table_placer *other_game = new table_placer(2, get_theme_space(ITEM_WIDGET), false);
+	other_game->col_flags(0, placeable::kAlignRight);
+	other_game->col_flags(1, placeable::kAlignLeft);
+	std::vector<std::string> game_shortcuts = {
+		"F1", "Decrease resolution",
+		"F2", "Increase resolution",
+		"F8", "Crosshairs",
+		"F9", "Screenshot",
+		"F10", "Debug info",
+		"F11", "Decrease brightness",
+		"F12", "Increase brightness",
+#if (defined(__APPLE__) && defined(__MACH__))
+		"Cmd-Return", "Toggle fullscreen",
+#else
+		"Alt+Enter", "Toggle fullscreen",
+#endif
+		"Escape", "Exit game"
+	};
+	for (auto it = game_shortcuts.begin(); it != game_shortcuts.end(); ++it) {
+		other_game->dual_add(new w_label(it->c_str()), d);
+	}
+	other_table->add(other_game, true);
+
+	other->add(other_table, true);
+
 	tabs->add(look, true);
 	tabs->add(move, true);
 	tabs->add(actions, true);
 	tabs->add(interface, true);
+	tabs->add(other, true);
 	placer->add(tabs, true);
 	
 	placer->add(new w_spacer(), true);
