@@ -161,7 +161,7 @@ void RenderRasterize_Shader::render_tree() {
 	s->enable();
 	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
 	s->setFloat(Shader::U_Yaw, view->yaw * AngleConvert);
-	s->setFloat(Shader::U_Pitch, view->pitch * AngleConvert);
+	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 : view->pitch * AngleConvert);
 	s = Shader::get(Shader::S_LandscapeBloom);
 	s->enable();
 	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);

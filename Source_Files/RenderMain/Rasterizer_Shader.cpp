@@ -69,6 +69,10 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 	// Adjust for view distortion during teleport effect
 	ytan *= view.real_world_to_screen_y / double(view.world_to_screen_y);
 	xtan *= view.real_world_to_screen_x / double(view.world_to_screen_x);
+
+	double yaw = view.yaw * 360.0 / float(NUMBER_OF_ANGLES);
+	double pitch = view.pitch * 360.0 / float(NUMBER_OF_ANGLES);
+	pitch = (pitch > 180.0 ? pitch -360.0 : pitch);
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -76,12 +80,12 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 	float farVal = 128.0 * 1024.0;
 	float x = xtan * nearVal;
 	float y = ytan * nearVal;
-	glFrustum(-x, x, -y, y, nearVal, farVal);
+	float yoff = 0.0;
+	if (view.mimic_sw_perspective)
+		yoff = y * tan(pitch * M_PI/360.0) * 4.8;
+	glFrustum(-x, x, -y + yoff, y + yoff, nearVal, farVal);
 
 	glMatrixMode(GL_MODELVIEW);
-	double yaw = view.yaw * 360.0 / float(NUMBER_OF_ANGLES);
-	double pitch = view.pitch * 360.0 / float(NUMBER_OF_ANGLES);
-	pitch = (pitch > 180.0 ? pitch -360.0 : pitch);
 
 	// setup a rotation matrix for the landscape texture shader
 	// this aligns the landscapes to the center of the screen for standard
@@ -111,7 +115,8 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 	// setup the normal view matrix
 
 	glLoadMatrixd(kViewBaseMatrix);
-	glRotated(pitch, 0.0, 1.0, 0.0);
+	if (!view.mimic_sw_perspective)
+		glRotated(pitch, 0.0, 1.0, 0.0);
 //	apperently 'roll' is not what i think it is
 //	rubicon sets it to some strange value
 //	double roll = view.roll * 360.0 / float(NUMBER_OF_ANGLES);

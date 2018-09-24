@@ -202,6 +202,8 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	binders.insert<bool> (m_blurWidget, &blurPref);
 	BitPref bumpPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_BumpMap);
 	binders.insert<bool> (m_bumpWidget, &bumpPref);
+	BitPref perspectivePref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_MimicSW, true);
+	binders.insert<bool> (m_perspectiveWidget, &perspectivePref);
 	
 	BitPref colourTheVoidPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_VoidColor);
 	binders.insert<bool> (m_colourTheVoidWidget, &colourTheVoidPref);
@@ -356,7 +358,9 @@ public:
 		general_table->dual_add(models_w->label("3D Models"), m_dialog);
 		general_table->dual_add(models_w, m_dialog);
 
-		general_table->add_row(new w_spacer, true);
+		w_toggle *perspective_w = new w_toggle(false);
+		general_table->dual_add(perspective_w->label("3D Perspective"), m_dialog);
+		general_table->dual_add(perspective_w, m_dialog);
 		
 		w_toggle *blur_w = new w_toggle(false);
 		general_table->dual_add(blur_w->label("Bloom Effects"), m_dialog);
@@ -579,6 +583,7 @@ public:
 		m_3DmodelsWidget = new ToggleWidget (models_w);
 		m_blurWidget = new ToggleWidget (blur_w);
 		m_bumpWidget = new ToggleWidget (bump_w);
+		m_perspectiveWidget = new ToggleWidget (perspective_w);
 
 		m_colourTheVoidWidget = 0;
 		m_voidColourWidget = 0;

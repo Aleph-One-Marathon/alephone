@@ -134,6 +134,9 @@ struct view_data
 	// LP addition: value of yaw used by landscapes; this is so that the center
 	// can stay stationary
 	angle landscape_yaw;
+	
+	// whether to mimic software renderer when looking up/down
+	bool mimic_sw_perspective;
 };
 
 /* ---------- render flags */

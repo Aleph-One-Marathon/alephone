@@ -411,6 +411,10 @@ void initialize_view_data(
 	view->untransformed_right_edge.i= - view->world_to_screen_x;
 	view->untransformed_right_edge.j= - view->half_screen_width;
 
+	/* view needs to know if OpenGL renderer should mimic software's pitch */
+	if (!ignore_preferences && graphics_preferences->screen_mode.acceleration == _opengl_acceleration)
+		view->mimic_sw_perspective = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_MimicSW);
+
 	/* reset any active effects */
 	// LP: this is now called in render_screen(), so we need to disable the initializing
 }

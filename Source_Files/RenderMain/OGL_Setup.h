@@ -223,6 +223,7 @@ enum
 	OGL_Flag_HUD		= 0x0800,	// Whether to do the HUD with OpenGL
 	OGL_Flag_Blur		= 0x1000,   // Whether to blur landscapes and glowing textures
 	OGL_Flag_BumpMap	= 0x2000,   // Whether to use bump mapping
+	OGL_Flag_MimicSW    = 0x4000,   // Whether to mimic software perspective
 };
 
 struct OGL_ConfigureData
