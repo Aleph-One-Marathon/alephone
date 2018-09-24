@@ -154,7 +154,6 @@ OpenGLDialog::~OpenGLDialog()
 {
 	delete m_cancelWidget;
 	delete m_okWidget;
-	delete m_zBufferWidget;
 	delete m_fogWidget;
 	delete m_staticEffectWidget;
 	delete m_colourEffectsWidget;
@@ -189,8 +188,6 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	
 	BinderSet binders;
 	
-	BitPref zBufferPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_ZBuffer);
-	binders.insert<bool> (m_zBufferWidget, &zBufferPref);
 	BitPref fogPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_Fog);
 	binders.insert<bool> (m_fogWidget, &fogPref);
 	BitPref staticEffectsPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_FlatStatic, true);
@@ -339,12 +336,6 @@ public:
 		table_placer *general_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 		general_table->col_flags(0, placeable::kAlignRight);
 		
-		w_toggle *zbuffer_w = new w_toggle(false);
-		if (theSelectedRenderer == _opengl_acceleration) {
-			general_table->dual_add(zbuffer_w->label("Z Buffer"), m_dialog);
-			general_table->dual_add(zbuffer_w, m_dialog);
-		}
-
 		w_toggle *fog_w = new w_toggle(false);
 		general_table->dual_add(fog_w->label("Fog"), m_dialog);
 		general_table->dual_add(fog_w, m_dialog);
@@ -368,16 +359,12 @@ public:
 		general_table->add_row(new w_spacer, true);
 		
 		w_toggle *blur_w = new w_toggle(false);
-		if (theSelectedRenderer == _shader_acceleration) {
-			general_table->dual_add(blur_w->label("Bloom Effects"), m_dialog);
-			general_table->dual_add(blur_w, m_dialog);
-		}
+		general_table->dual_add(blur_w->label("Bloom Effects"), m_dialog);
+		general_table->dual_add(blur_w, m_dialog);
 		
 		w_toggle *bump_w = new w_toggle(false);
-		if (theSelectedRenderer == _shader_acceleration) {
-			general_table->dual_add(bump_w->label("Bump Mapping"), m_dialog);
-			general_table->dual_add(bump_w, m_dialog);
-		}
+		general_table->dual_add(bump_w->label("Bump Mapping"), m_dialog);
+		general_table->dual_add(bump_w, m_dialog);
 		
 		general_table->add_row(new w_spacer(), true);
 
@@ -585,7 +572,6 @@ public:
 		m_cancelWidget = new ButtonWidget (cancel_w);
 		m_okWidget = new ButtonWidget (ok_w);
 		
-		m_zBufferWidget = new ToggleWidget (zbuffer_w);
 		m_fogWidget = new ToggleWidget (fog_w);
 		m_staticEffectWidget = new ToggleWidget (static_w);
 		m_colourEffectsWidget = new ToggleWidget (fader_w);

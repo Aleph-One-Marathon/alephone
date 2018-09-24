@@ -308,7 +308,7 @@ static RenderVisTreeClass explore_tree;
 void OGL_Rasterizer_Init() {
 	
 #ifdef HAVE_OPENGL
-	if (graphics_preferences->screen_mode.acceleration == _shader_acceleration) {
+	if (graphics_preferences->screen_mode.acceleration == _opengl_acceleration) {
 		Rasterizer_Shader.setupGL();
 		Render_Shader.setupGL(Rasterizer_Shader);
 	}
@@ -374,7 +374,7 @@ void initialize_view_data(
 	double half_cone= view->field_of_view*(two_pi/360.0)/2;
  	/* half_cone needs to be extended for non oblique perspective projection (gluPerspective).
 	 this is required because the viewing angle is different for about the same field of view */
-	if (!ignore_preferences && graphics_preferences->screen_mode.acceleration == _shader_acceleration)
+	if (!ignore_preferences && graphics_preferences->screen_mode.acceleration == _opengl_acceleration)
 		half_cone= (view->field_of_view * 1.3)*(two_pi/360.0)/2;
 
 	double adjusted_half_cone= (ignore_preferences || View_FOV_FixHorizontalNotVertical()) ?
@@ -466,7 +466,7 @@ void render_view(
 			RasterizerClass *RasPtr;
 #ifdef HAVE_OPENGL
 			if (OGL_IsActive())
-				RasPtr = (graphics_preferences->screen_mode.acceleration == _shader_acceleration) ? &Rasterizer_Shader : &Rasterizer_OGL;
+				RasPtr = &Rasterizer_Shader;
 			else
 			{
 #endif
@@ -485,7 +485,7 @@ void render_view(
 			
 			// LP: now from the clipping/rasterizer class
 #ifdef HAVE_OPENGL			
-			RenderRasterizerClass *RenPtr = (graphics_preferences->screen_mode.acceleration == _shader_acceleration) ? &Render_Shader : &Render_Classic;
+			RenderRasterizerClass *RenPtr = (graphics_preferences->screen_mode.acceleration == _opengl_acceleration) ? &Render_Shader : &Render_Classic;
 #else
 			RenderRasterizerClass *RenPtr = &Render_Classic;
 #endif

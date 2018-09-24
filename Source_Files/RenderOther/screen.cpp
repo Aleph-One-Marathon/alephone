@@ -917,7 +917,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		if (main_screen)
 			logWarning("Stencil buffer is not available");
 	}
-	if (main_screen != NULL && !nogl && screen_mode.acceleration == _shader_acceleration)
+	if (main_screen != NULL && !nogl && screen_mode.acceleration == _opengl_acceleration)
 	{
 		// see if we can actually run shaders
 		if (!context_created) {
@@ -930,9 +930,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		if (!OGL_CheckExtension("GL_ARB_vertex_shader") || !OGL_CheckExtension("GL_ARB_fragment_shader") || !OGL_CheckExtension("GL_ARB_shader_objects") || !OGL_CheckExtension("GL_ARB_shading_language_100"))
 		{
 			logWarning("OpenGL (Shader) renderer is not available");
-			fprintf(stderr, "WARNING: Failed to initialize OpenGL (Shader) renderer\n");
-			fprintf(stderr, "WARNING: Retrying with OpenGL (Classic) renderer\n");
-			screen_mode.acceleration = graphics_preferences->screen_mode.acceleration = _opengl_acceleration;
+			fprintf(stderr, "WARNING: Failed to initialize OpenGL renderer\n");
+			fprintf(stderr, "WARNING: Retrying with Software renderer\n");
+			screen_mode.acceleration = graphics_preferences->screen_mode.acceleration = _no_acceleration;
 			main_screen = SDL_CreateWindow(get_application_name().c_str(),
 										   SDL_WINDOWPOS_CENTERED,
 										   SDL_WINDOWPOS_CENTERED,
@@ -1338,7 +1338,6 @@ void render_screen(short ticks_elapsed)
 
 	switch (screen_mode.acceleration) {
 		case _opengl_acceleration:
-		case _shader_acceleration:
 			// If we're using the overhead map, fall through to no acceleration
 			if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
 				break;
