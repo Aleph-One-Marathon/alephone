@@ -561,7 +561,7 @@ void check_m1_exploration(void)
 
 		// We only need to initialize once, since nothing
 		// that we use changes.
-		initialize_view_data(&explore_view);
+		initialize_view_data(&explore_view, true);
 
 		explore_tree.view = &explore_view;
 		explore_tree.add_to_automap = false;
