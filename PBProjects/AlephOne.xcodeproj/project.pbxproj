@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -3698,7 +3698,7 @@
 		AE005FD30EE2D6DE007FE7C6 /* screen.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = screen.cpp; sourceTree = "<group>"; };
 		AE0E4EC1141D148F00AAA02F /* Marathon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Marathon.icns; path = AppStore/Marathon/Marathon.icns; sourceTree = "<group>"; };
 		AE179EF109C3D77800512061 /* error.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = error.h; path = ../Source_Files/LibNAT/error.h; sourceTree = "<group>"; };
-		AE179EF209C3D77800512061 /* http.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = http.h; path = ../Source_Files/LibNAT/http.h; sourceTree = "<group>"; };
+		AE179EF209C3D77800512061 /* http_libnat.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = http_libnat.h; path = ../Source_Files/LibNAT/http_libnat.h; sourceTree = "<group>"; };
 		AE179EF309C3D77800512061 /* libnat.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = libnat.h; path = ../Source_Files/LibNAT/libnat.h; sourceTree = "<group>"; };
 		AE179EF409C3D77800512061 /* os_common.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = os_common.h; path = ../Source_Files/LibNAT/os_common.h; sourceTree = "<group>"; };
 		AE179EF509C3D77800512061 /* os.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = os.h; path = ../Source_Files/LibNAT/os.h; sourceTree = "<group>"; };
@@ -4479,7 +4479,7 @@
 			isa = PBXGroup;
 			children = (
 				AE179EF109C3D77800512061 /* error.h */,
-				AE179EF209C3D77800512061 /* http.h */,
+				AE179EF209C3D77800512061 /* http_libnat.h */,
 				AE179EF309C3D77800512061 /* libnat.h */,
 				AE179EF409C3D77800512061 /* os_common.h */,
 				AE179EF509C3D77800512061 /* os.h */,
@@ -6961,7 +6961,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 1000;
 				TargetAttributes = {
 					27A6D4E31B9BF021003DA766 = {
 						SystemCapabilities = {
@@ -6998,10 +6998,6 @@
 							};
 						};
 					};
-					AEC3C6FE09AD68AC003258E4 = {
-						DevelopmentTeam = JU5QS9S2LV;
-						ProvisioningStyle = Automatic;
-					};
 					AEFD85E813EB84CF00C1E687 = {
 						SystemCapabilities = {
 							com.apple.Sandbox = {
@@ -7012,7 +7008,7 @@
 				};
 			};
 			buildConfigurationList = AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 10.0";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
@@ -7321,7 +7317,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon 2/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"";
+			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon 2/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\n";
 		};
 		AEB4A2A614296CAE00537AE7 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -9083,6 +9079,7 @@
 		27A6D6BA1B9BF021003DA766 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = AppStore/Marathon/Marathon.entitlements;
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -9110,6 +9107,7 @@
 		27A6D6BB1B9BF021003DA766 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = AppStore/Marathon/Marathon.entitlements;
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -9137,6 +9135,7 @@
 		27A6D6BC1B9BF021003DA766 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = AppStore/Marathon/Marathon.entitlements;
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -9164,6 +9163,7 @@
 		27A6D8961B9BF029003DA766 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon 2/Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -9191,6 +9191,7 @@
 		27A6D8971B9BF029003DA766 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon 2/Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -9218,6 +9219,7 @@
 		27A6D8981B9BF029003DA766 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon 2/Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -9245,6 +9247,7 @@
 		27A6DA721B9BF031003DA766 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon Infinity/Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -9272,6 +9275,7 @@
 		27A6DA731B9BF031003DA766 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon Infinity/Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -9299,6 +9303,7 @@
 		27A6DA741B9BF031003DA766 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon Infinity/Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -9326,7 +9331,9 @@
 		AE2A41530B5EFC1F00C567E6 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JU5QS9S2LV;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -9342,6 +9349,7 @@
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
 				PRODUCT_NAME = "Aleph One";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Development;
@@ -9349,8 +9357,29 @@
 		AE2A41540B5EFC1F00C567E6 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "Developer ID Application";
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = NO;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(HOME)/Library/Frameworks",
@@ -9358,9 +9387,14 @@
 					/Library/Frameworks,
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_DYNAMIC_NO_PIC = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -9394,17 +9428,44 @@
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
 				INFOPLIST_PREPROCESS = NO;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @executable_path/../Frameworks/SDL2_ttf.framework/Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/../Frameworks",
+					"@executable_path/../Frameworks/SDL2_ttf.framework/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				ONLY_ACTIVE_ARCH = YES;
 				STRIP_INSTALLED_PRODUCT = NO;
+				USER_HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)",
+					"$(SRCROOT)/../Source_Files",
+					"$(SRCROOT)/../Source_Files/CSeries",
+					"$(SRCROOT)/../Source_Files/Files",
+					"$(SRCROOT)/../Source_Files/FFmpeg",
+					"$(SRCROOT)/../Source_Files/GameWorld",
+					"$(SRCROOT)/../Source_Files/Input",
+					"$(SRCROOT)/../Source_Files/LibNAT",
+					"$(SRCROOT)/../Source_Files/Lua",
+					"$(SRCROOT)/../Source_Files/Misc",
+					"$(SRCROOT)/../Source_Files/ModelView",
+					"$(SRCROOT)/../Source_Files/Network",
+					"$(SRCROOT)/../Source_Files/Network/Metaserver",
+					"$(SRCROOT)/../Source_Files/RenderMain",
+					"$(SRCROOT)/../Source_Files/RenderOther",
+					"$(SRCROOT)/../Source_Files/Sound",
+					"$(SRCROOT)/../Source_Files/TCPMess",
+					"$(SRCROOT)/../Source_Files/XML",
+				);
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "-Wno-tautological-compare";
 			};
 			name = Development;
 		};
 		AE2A41760B5EFEA000C567E6 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JU5QS9S2LV;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -9420,6 +9481,7 @@
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
 				PRODUCT_NAME = "Aleph One";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = "Deployment (Native)";
@@ -9427,18 +9489,44 @@
 		AE2A41770B5EFEA000C567E6 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "Developer ID Application";
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = NO;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(HOME)/Library/Frameworks",
 					/System/Library/Frameworks,
 					/Library/Frameworks,
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_DYNAMIC_NO_PIC = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -9472,15 +9560,41 @@
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
 				INFOPLIST_PREPROCESS = NO;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @executable_path/../Frameworks/SDL2_ttf.framework/Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/../Frameworks",
+					"@executable_path/../Frameworks/SDL2_ttf.framework/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				STRIP_INSTALLED_PRODUCT = NO;
+				USER_HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)",
+					"$(SRCROOT)/../Source_Files",
+					"$(SRCROOT)/../Source_Files/CSeries",
+					"$(SRCROOT)/../Source_Files/Files",
+					"$(SRCROOT)/../Source_Files/FFmpeg",
+					"$(SRCROOT)/../Source_Files/GameWorld",
+					"$(SRCROOT)/../Source_Files/Input",
+					"$(SRCROOT)/../Source_Files/LibNAT",
+					"$(SRCROOT)/../Source_Files/Lua",
+					"$(SRCROOT)/../Source_Files/Misc",
+					"$(SRCROOT)/../Source_Files/ModelView",
+					"$(SRCROOT)/../Source_Files/Network",
+					"$(SRCROOT)/../Source_Files/Network/Metaserver",
+					"$(SRCROOT)/../Source_Files/RenderMain",
+					"$(SRCROOT)/../Source_Files/RenderOther",
+					"$(SRCROOT)/../Source_Files/Sound",
+					"$(SRCROOT)/../Source_Files/TCPMess",
+					"$(SRCROOT)/../Source_Files/XML",
+				);
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "-Wno-tautological-compare";
 			};
 			name = "Deployment (Native)";
 		};
 		AE3B839C0E04C8CA00FD963D /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
 				PRODUCT_NAME = AlephOne.dmg;
 			};
@@ -9489,6 +9603,7 @@
 		AE3B839D0E04C8CA00FD963D /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
 				PRODUCT_NAME = AlephOne.dmg;
 			};
@@ -9497,6 +9612,7 @@
 		AE3B839E0E04C8CA00FD963D /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
 				PRODUCT_NAME = AlephOne.dmg;
 			};
@@ -9505,7 +9621,11 @@
 		AE505D08141D45E600915344 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = JU5QS9S2LV;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
@@ -9521,6 +9641,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon2;
 				PRODUCT_NAME = "Marathon 2";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = "Deployment (Universal)";
@@ -9528,7 +9649,11 @@
 		AE505D09141D45E600915344 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = JU5QS9S2LV;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
@@ -9544,6 +9669,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon2;
 				PRODUCT_NAME = "Marathon 2";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = "Deployment (Native)";
@@ -9551,7 +9677,11 @@
 		AE505D0A141D45E600915344 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = JU5QS9S2LV;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
@@ -9567,6 +9697,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon2;
 				PRODUCT_NAME = "Marathon 2";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Development;
@@ -9574,7 +9705,9 @@
 		AE78B59D09B00C34002CACF8 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JU5QS9S2LV;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -9590,6 +9723,7 @@
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
 				PRODUCT_NAME = "Aleph One";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = "Deployment (Universal)";
@@ -9597,18 +9731,44 @@
 		AE78B59E09B00C34002CACF8 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "Developer ID Application";
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = NO;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(HOME)/Library/Frameworks",
 					/System/Library/Frameworks,
 					/Library/Frameworks,
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
+				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_DYNAMIC_NO_PIC = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -9642,16 +9802,45 @@
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
 				INFOPLIST_PREPROCESS = NO;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @executable_path/../Frameworks/SDL2_ttf.framework/Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/../Frameworks",
+					"@executable_path/../Frameworks/SDL2_ttf.framework/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				STRIP_INSTALLED_PRODUCT = NO;
+				USER_HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)",
+					"$(SRCROOT)/../Source_Files",
+					"$(SRCROOT)/../Source_Files/CSeries",
+					"$(SRCROOT)/../Source_Files/Files",
+					"$(SRCROOT)/../Source_Files/FFmpeg",
+					"$(SRCROOT)/../Source_Files/GameWorld",
+					"$(SRCROOT)/../Source_Files/Input",
+					"$(SRCROOT)/../Source_Files/LibNAT",
+					"$(SRCROOT)/../Source_Files/Lua",
+					"$(SRCROOT)/../Source_Files/Misc",
+					"$(SRCROOT)/../Source_Files/ModelView",
+					"$(SRCROOT)/../Source_Files/Network",
+					"$(SRCROOT)/../Source_Files/Network/Metaserver",
+					"$(SRCROOT)/../Source_Files/RenderMain",
+					"$(SRCROOT)/../Source_Files/RenderOther",
+					"$(SRCROOT)/../Source_Files/Sound",
+					"$(SRCROOT)/../Source_Files/TCPMess",
+					"$(SRCROOT)/../Source_Files/XML",
+				);
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "-Wno-tautological-compare";
 			};
 			name = "Deployment (Universal)";
 		};
 		AEB4A2AA14296CAE00537AE7 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = JU5QS9S2LV;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
@@ -9667,6 +9856,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.MarathonInfinity;
 				PRODUCT_NAME = "Marathon Infinity";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = "Deployment (Universal)";
@@ -9674,7 +9864,11 @@
 		AEB4A2AB14296CAE00537AE7 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = JU5QS9S2LV;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
@@ -9690,6 +9884,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.MarathonInfinity;
 				PRODUCT_NAME = "Marathon Infinity";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = "Deployment (Native)";
@@ -9697,7 +9892,11 @@
 		AEB4A2AC14296CAE00537AE7 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = JU5QS9S2LV;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
@@ -9713,6 +9912,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.MarathonInfinity;
 				PRODUCT_NAME = "Marathon Infinity";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Development;
@@ -9720,7 +9920,11 @@
 		AEFD87C013EB84CF00C1E687 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = JU5QS9S2LV;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(HOME)/Library/Frameworks",
 					/System/Library/Frameworks,
@@ -9767,6 +9971,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
 				PRODUCT_NAME = Marathon;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = "Deployment (Universal)";
@@ -9774,7 +9979,11 @@
 		AEFD87C113EB84CF00C1E687 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = JU5QS9S2LV;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(HOME)/Library/Frameworks",
 					/System/Library/Frameworks,
@@ -9821,6 +10030,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
 				PRODUCT_NAME = Marathon;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = "Deployment (Native)";
@@ -9828,7 +10038,11 @@
 		AEFD87C213EB84CF00C1E687 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = JU5QS9S2LV;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(HOME)/Library/Frameworks",
 					/System/Library/Frameworks,
@@ -9875,6 +10089,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
 				PRODUCT_NAME = Marathon;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Development;
