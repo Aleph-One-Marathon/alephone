@@ -379,14 +379,18 @@ class PlayerSubtable : public L_Class<name>
 {
 public:
 	int16 m_player_index;
-	static PlayerSubtable *Push(lua_State *L, int16 player_index, int16 index);
+
+	template<typename instance_t = PlayerSubtable /*or a derived class*/>
+	static instance_t *Push(lua_State *L, int16 player_index, int16 index);
+
 	static int16 PlayerIndex(lua_State *L, int index);
 };
 
 template<char *name>
-PlayerSubtable<name> *PlayerSubtable<name>::Push(lua_State *L, int16 player_index, int16 index)
+template<typename instance_t>
+instance_t *PlayerSubtable<name>::Push(lua_State *L, int16 player_index, int16 index)
 {
-	PlayerSubtable<name> *t = 0;
+	instance_t *t = 0;
 
 	if (!L_Class<name, int16>::Valid(index) || !Lua_Player::Valid(player_index))
 	{
@@ -394,10 +398,7 @@ PlayerSubtable<name> *PlayerSubtable<name>::Push(lua_State *L, int16 player_inde
 		return 0;
 	}
 
-	t = static_cast<PlayerSubtable<name>*>(lua_newuserdata(L, sizeof(PlayerSubtable<name>)));
-	luaL_getmetatable(L, name);
-	lua_setmetatable(L, -2);
-	t->m_index = index;
+	t = L_Class<name>::template NewInstance<instance_t>(L, index);
 	t->m_player_index = player_index;
 
 	return t;
@@ -406,7 +407,7 @@ PlayerSubtable<name> *PlayerSubtable<name>::Push(lua_State *L, int16 player_inde
 template<char *name>
 int16 PlayerSubtable<name>::PlayerIndex(lua_State *L, int index)
 {
-	PlayerSubtable<name> *t = static_cast<PlayerSubtable<name> *>(lua_touserdata(L, index));
+	PlayerSubtable<name> *t = static_cast<PlayerSubtable<name> *>(L_Class<name>::Instance(L, index));
 	if (!t) luaL_typerror(L, index, name);
 	return t->m_player_index;
 }
@@ -1150,7 +1151,7 @@ public:
 
 Lua_Player_Weapon_Trigger *Lua_Player_Weapon_Trigger::Push(lua_State *L, int16 player_index, int16 weapon_index, int16 index)
 {
-	Lua_Player_Weapon_Trigger *t = static_cast<Lua_Player_Weapon_Trigger *>(PlayerSubtable<Lua_Player_Weapon_Trigger_Name>::Push(L, player_index, index));
+	Lua_Player_Weapon_Trigger *t = PlayerSubtable::Push<Lua_Player_Weapon_Trigger>(L, player_index, index);
 	if (t)
 	{
 		t->m_weapon_index = weapon_index;
@@ -1161,7 +1162,7 @@ Lua_Player_Weapon_Trigger *Lua_Player_Weapon_Trigger::Push(lua_State *L, int16 p
 
 int16 Lua_Player_Weapon_Trigger::WeaponIndex(lua_State *L, int index)
 {
-	Lua_Player_Weapon_Trigger *t = static_cast<Lua_Player_Weapon_Trigger*>(lua_touserdata(L, index));
+	Lua_Player_Weapon_Trigger *t = static_cast<Lua_Player_Weapon_Trigger*>(Instance(L, index));
 	if (!t) luaL_typerror(L, index, Lua_Player_Weapon_Trigger_Name);
 	return t->m_weapon_index;
 }
