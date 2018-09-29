@@ -1423,6 +1423,20 @@ static void process_event(const SDL_Event &event)
 					show_cursor();
 				}
 				break;
+#if (defined(__APPLE__) && defined(__MACH__))
+			// work around Mojave issue
+			case SDL_WINDOWEVENT_FOCUS_GAINED:
+				static bool gFirstWindow = true;
+				if (gFirstWindow) {
+					gFirstWindow = false;
+					SDL_Window *win = SDL_GetWindowFromID(event.window.windowID);
+					SDL_Window *w2 = SDL_CreateWindow("Loading", 0, 0, 100, 100, 0);
+					SDL_RaiseWindow(w2);
+					SDL_RaiseWindow(win);
+					SDL_DestroyWindow(w2);
+				}
+				break;
+#endif
 			case SDL_WINDOWEVENT_EXPOSED:
 #if !defined(__APPLE__) && !defined(__MACH__) // double buffering :)
 #ifdef HAVE_OPENGL
