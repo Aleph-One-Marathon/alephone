@@ -263,10 +263,6 @@
 		279A462518286FA900F7BFDA /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E878F1173202F80010F485 /* FFmpegDecoder.cpp */; };
 		279A462618286FA900F7BFDA /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E878F1173202F80010F485 /* FFmpegDecoder.cpp */; };
 		279A462718286FAA00F7BFDA /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E878F1173202F80010F485 /* FFmpegDecoder.cpp */; };
-		27A6D4D31B9A42F0003DA766 /* expat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27A6D4D21B9A42F0003DA766 /* expat.framework */; };
-		27A6D4D41B9A42F0003DA766 /* expat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27A6D4D21B9A42F0003DA766 /* expat.framework */; };
-		27A6D4D51B9A42F0003DA766 /* expat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27A6D4D21B9A42F0003DA766 /* expat.framework */; };
-		27A6D4D61B9A42F0003DA766 /* expat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27A6D4D21B9A42F0003DA766 /* expat.framework */; };
 		27A6D4E51B9BF021003DA766 /* PlayerName.h in Headers */ = {isa = PBXBuildFile; fileRef = F522120C0136A6FD01000001 /* PlayerName.h */; };
 		27A6D4E61B9BF021003DA766 /* Random.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212190136A6FD01000001 /* Random.h */; };
 		27A6D4E71B9BF021003DA766 /* game_errors.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211AE0136A6FD01000001 /* game_errors.h */; };
@@ -709,7 +705,6 @@
 		27A6D6A71B9BF021003DA766 /* boost_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2762A3321AAA51D900B807D4 /* boost_system.framework */; };
 		27A6D6A81B9BF021003DA766 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF8C0FD86EBD00B17822 /* libz.dylib */; };
 		27A6D6A91B9BF021003DA766 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */; };
-		27A6D6AA1B9BF021003DA766 /* expat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27A6D4D21B9A42F0003DA766 /* expat.framework */; };
 		27A6D6AB1B9BF021003DA766 /* zziplib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; };
 		27A6D6AC1B9BF021003DA766 /* jpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB1E10D7114D000204DD /* jpeg.framework */; };
 		27A6D6AD1B9BF021003DA766 /* png.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; };
@@ -1161,7 +1156,6 @@
 		27A6D8831B9BF029003DA766 /* boost_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2762A3321AAA51D900B807D4 /* boost_system.framework */; };
 		27A6D8841B9BF029003DA766 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF8C0FD86EBD00B17822 /* libz.dylib */; };
 		27A6D8851B9BF029003DA766 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */; };
-		27A6D8861B9BF029003DA766 /* expat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27A6D4D21B9A42F0003DA766 /* expat.framework */; };
 		27A6D8871B9BF029003DA766 /* zziplib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; };
 		27A6D8881B9BF029003DA766 /* jpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB1E10D7114D000204DD /* jpeg.framework */; };
 		27A6D8891B9BF029003DA766 /* png.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; };
@@ -1613,7 +1607,6 @@
 		27A6DA5F1B9BF031003DA766 /* boost_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2762A3321AAA51D900B807D4 /* boost_system.framework */; };
 		27A6DA601B9BF031003DA766 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF8C0FD86EBD00B17822 /* libz.dylib */; };
 		27A6DA611B9BF031003DA766 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */; };
-		27A6DA621B9BF031003DA766 /* expat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27A6D4D21B9A42F0003DA766 /* expat.framework */; };
 		27A6DA631B9BF031003DA766 /* zziplib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; };
 		27A6DA641B9BF031003DA766 /* jpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB1E10D7114D000204DD /* jpeg.framework */; };
 		27A6DA651B9BF031003DA766 /* png.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; };
@@ -1623,7 +1616,6 @@
 		27A6DA6A1B9BF031003DA766 /* avformat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCD177687B7009AAE10 /* avformat.framework */; };
 		27A6DA6B1B9BF031003DA766 /* avutil.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCE177687B7009AAE10 /* avutil.framework */; };
 		27A6DA6C1B9BF031003DA766 /* swscale.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCF177687B7009AAE10 /* swscale.framework */; };
-		27A6DA781B9BF5CC003DA766 /* expat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27A6D4D21B9A42F0003DA766 /* expat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27A6DA791B9BF5CC003DA766 /* boost_filesystem.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2762A3311AAA51D900B807D4 /* boost_filesystem.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27A6DA7A1B9BF5CC003DA766 /* boost_system.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2762A3321AAA51D900B807D4 /* boost_system.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27A6DA7B1B9BF5CC003DA766 /* avcodec.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCC177687B7009AAE10 /* avcodec.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -1635,7 +1627,6 @@
 		27A6DA851B9BF5CD003DA766 /* zziplib.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27A6DA861B9BF5CD003DA766 /* jpeg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759FB1E10D7114D000204DD /* jpeg.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27A6DA871B9BF5CD003DA766 /* png.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		27A6DA8A1B9BF5E7003DA766 /* expat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27A6D4D21B9A42F0003DA766 /* expat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27A6DA8B1B9BF5E7003DA766 /* boost_filesystem.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2762A3311AAA51D900B807D4 /* boost_filesystem.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27A6DA8C1B9BF5E7003DA766 /* boost_system.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2762A3321AAA51D900B807D4 /* boost_system.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27A6DA8D1B9BF5E7003DA766 /* avcodec.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCC177687B7009AAE10 /* avcodec.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -1647,7 +1638,6 @@
 		27A6DA971B9BF5E7003DA766 /* zziplib.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27A6DA981B9BF5E7003DA766 /* jpeg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759FB1E10D7114D000204DD /* jpeg.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27A6DA991B9BF5E7003DA766 /* png.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		27A6DA9C1B9BF5F3003DA766 /* expat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27A6D4D21B9A42F0003DA766 /* expat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27A6DA9D1B9BF5F3003DA766 /* boost_filesystem.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2762A3311AAA51D900B807D4 /* boost_filesystem.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27A6DA9E1B9BF5F3003DA766 /* boost_system.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2762A3321AAA51D900B807D4 /* boost_system.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27A6DA9F1B9BF5F3003DA766 /* avcodec.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCC177687B7009AAE10 /* avcodec.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -1659,7 +1649,6 @@
 		27A6DAA91B9BF5F3003DA766 /* zziplib.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27A6DAAA1B9BF5F3003DA766 /* jpeg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759FB1E10D7114D000204DD /* jpeg.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27A6DAAB1B9BF5F3003DA766 /* png.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		27A6DAAD1B9BF60F003DA766 /* expat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27A6D4D21B9A42F0003DA766 /* expat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27A6DABC1B9CE947003DA766 /* preference_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = AE2FDED109E9352B00A18ABC /* preference_dialogs.h */; };
 		27A6DABD1B9CE947003DA766 /* preference_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = AE2FDED109E9352B00A18ABC /* preference_dialogs.h */; };
 		27A6DABE1B9CE948003DA766 /* preference_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = AE2FDED109E9352B00A18ABC /* preference_dialogs.h */; };
@@ -1824,6 +1813,13 @@
 		3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
 		3D22CF8D0FD86EBD00B17822 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF8C0FD86EBD00B17822 /* libz.dylib */; };
 		3D22CFAC0FD8707C00B17822 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */; };
+		553AB9F6213A034300EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
+		553AB9F7213A035000EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
+		553AB9F8213A035000EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
+		553AB9F9213A035000EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
+		553AB9FA213A035000EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
+		553AB9FB213A035000EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
+		553AB9FC213A035000EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
 		AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
 		AE005FD40EE2D6DE007FE7C6 /* screen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE005FD30EE2D6DE007FE7C6 /* screen.cpp */; };
 		AE0E4EC2141D148F00AAA02F /* Marathon.icns in Resources */ = {isa = PBXBuildFile; fileRef = AE0E4EC1141D148F00AAA02F /* Marathon.icns */; };
@@ -3464,7 +3460,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				27A6DA781B9BF5CC003DA766 /* expat.framework in CopyFiles */,
 				27A6DA791B9BF5CC003DA766 /* boost_filesystem.framework in CopyFiles */,
 				27A6DA7A1B9BF5CC003DA766 /* boost_system.framework in CopyFiles */,
 				27A6DA7B1B9BF5CC003DA766 /* avcodec.framework in CopyFiles */,
@@ -3489,7 +3484,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				27A6DA8A1B9BF5E7003DA766 /* expat.framework in CopyFiles */,
 				27A6DA8B1B9BF5E7003DA766 /* boost_filesystem.framework in CopyFiles */,
 				27A6DA8C1B9BF5E7003DA766 /* boost_system.framework in CopyFiles */,
 				27A6DA8D1B9BF5E7003DA766 /* avcodec.framework in CopyFiles */,
@@ -3514,7 +3508,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				27A6DA9C1B9BF5F3003DA766 /* expat.framework in CopyFiles */,
 				27A6DA9D1B9BF5F3003DA766 /* boost_filesystem.framework in CopyFiles */,
 				27A6DA9E1B9BF5F3003DA766 /* boost_system.framework in CopyFiles */,
 				27A6DA9F1B9BF5F3003DA766 /* avcodec.framework in CopyFiles */,
@@ -3539,7 +3532,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				27A6DAAD1B9BF60F003DA766 /* expat.framework in CopyFiles */,
 				2762A33B1AAA523600B807D4 /* boost_filesystem.framework in CopyFiles */,
 				2762A33C1AAA523600B807D4 /* boost_system.framework in CopyFiles */,
 				271ADFC618A88B9C0073CB2E /* avcodec.framework in CopyFiles */,
@@ -3627,7 +3619,6 @@
 		27928610170F92D20005CD56 /* lbitlib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lbitlib.c; sourceTree = "<group>"; };
 		27928611170F92D20005CD56 /* lctype.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lctype.c; sourceTree = "<group>"; };
 		2792861A170F92DD0005CD56 /* lctype.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lctype.h; sourceTree = "<group>"; };
-		27A6D4D21B9A42F0003DA766 /* expat.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = expat.framework; sourceTree = "<group>"; };
 		27A6D6BD1B9BF021003DA766 /* Marathon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Marathon.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		27A6D8991B9BF029003DA766 /* Marathon 2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Marathon 2.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		27A6DA751B9BF031003DA766 /* Marathon Infinity.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Marathon Infinity.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3694,6 +3685,7 @@
 		3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_Texture_Def.h; sourceTree = "<group>"; };
 		3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Model_Def.cpp; sourceTree = "<group>"; };
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
+		553AB9F5213A034300EE3861 /* libexpat.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libexpat.tbd; path = usr/lib/libexpat.tbd; sourceTree = SDKROOT; };
 		AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Blitter.cpp; sourceTree = "<group>"; };
 		AE005FD30EE2D6DE007FE7C6 /* screen.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = screen.cpp; sourceTree = "<group>"; };
 		AE0E4EC1141D148F00AAA02F /* Marathon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Marathon.icns; path = AppStore/Marathon/Marathon.icns; sourceTree = "<group>"; };
@@ -4126,8 +4118,8 @@
 				27A6D6A81B9BF021003DA766 /* libz.dylib in Frameworks */,
 				2748BDC81CC405050082F0E1 /* SDL2.framework in Frameworks */,
 				27A6D6A91B9BF021003DA766 /* CoreAudio.framework in Frameworks */,
-				27A6D6AA1B9BF021003DA766 /* expat.framework in Frameworks */,
 				27A6D6AB1B9BF021003DA766 /* zziplib.framework in Frameworks */,
+				553AB9FC213A035000EE3861 /* libexpat.tbd in Frameworks */,
 				27A6D6AC1B9BF021003DA766 /* jpeg.framework in Frameworks */,
 				27A6D6AD1B9BF021003DA766 /* png.framework in Frameworks */,
 				27A6D6AF1B9BF021003DA766 /* avcodec.framework in Frameworks */,
@@ -4156,8 +4148,8 @@
 				27A6D8841B9BF029003DA766 /* libz.dylib in Frameworks */,
 				2748BDC91CC405050082F0E1 /* SDL2.framework in Frameworks */,
 				27A6D8851B9BF029003DA766 /* CoreAudio.framework in Frameworks */,
-				27A6D8861B9BF029003DA766 /* expat.framework in Frameworks */,
 				27A6D8871B9BF029003DA766 /* zziplib.framework in Frameworks */,
+				553AB9F8213A035000EE3861 /* libexpat.tbd in Frameworks */,
 				27A6D8881B9BF029003DA766 /* jpeg.framework in Frameworks */,
 				27A6D8891B9BF029003DA766 /* png.framework in Frameworks */,
 				27A6D88B1B9BF029003DA766 /* avcodec.framework in Frameworks */,
@@ -4186,8 +4178,8 @@
 				27A6DA601B9BF031003DA766 /* libz.dylib in Frameworks */,
 				2748BDCA1CC405060082F0E1 /* SDL2.framework in Frameworks */,
 				27A6DA611B9BF031003DA766 /* CoreAudio.framework in Frameworks */,
-				27A6DA621B9BF031003DA766 /* expat.framework in Frameworks */,
 				27A6DA631B9BF031003DA766 /* zziplib.framework in Frameworks */,
+				553AB9FA213A035000EE3861 /* libexpat.tbd in Frameworks */,
 				27A6DA641B9BF031003DA766 /* jpeg.framework in Frameworks */,
 				27A6DA651B9BF031003DA766 /* png.framework in Frameworks */,
 				27A6DA671B9BF031003DA766 /* avcodec.framework in Frameworks */,
@@ -4216,8 +4208,8 @@
 				AE505CFC141D45E600915344 /* libz.dylib in Frameworks */,
 				2748BDC61CC405030082F0E1 /* SDL2.framework in Frameworks */,
 				AE505CFD141D45E600915344 /* CoreAudio.framework in Frameworks */,
-				27A6D4D51B9A42F0003DA766 /* expat.framework in Frameworks */,
 				AE505CFE141D45E600915344 /* zziplib.framework in Frameworks */,
+				553AB9F9213A035000EE3861 /* libexpat.tbd in Frameworks */,
 				AE505CFF141D45E600915344 /* jpeg.framework in Frameworks */,
 				AE505D00141D45E600915344 /* png.framework in Frameworks */,
 				270F9FD2177687B7009AAE10 /* avcodec.framework in Frameworks */,
@@ -4246,8 +4238,8 @@
 				AEB4A29E14296CAE00537AE7 /* libz.dylib in Frameworks */,
 				2748BDC71CC405040082F0E1 /* SDL2.framework in Frameworks */,
 				AEB4A29F14296CAE00537AE7 /* CoreAudio.framework in Frameworks */,
-				27A6D4D61B9A42F0003DA766 /* expat.framework in Frameworks */,
 				AEB4A2A014296CAE00537AE7 /* zziplib.framework in Frameworks */,
+				553AB9F7213A035000EE3861 /* libexpat.tbd in Frameworks */,
 				AEB4A2A114296CAE00537AE7 /* jpeg.framework in Frameworks */,
 				AEB4A2A214296CAE00537AE7 /* png.framework in Frameworks */,
 				270F9FD3177687B7009AAE10 /* avcodec.framework in Frameworks */,
@@ -4265,6 +4257,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				553AB9F6213A034300EE3861 /* libexpat.tbd in Frameworks */,
 				273FBB491E122C9F0076351E /* IOKit.framework in Frameworks */,
 				275A7BD31A60DE77002EE952 /* libcurl.dylib in Frameworks */,
 				AEC3C87009AD68AC003258E4 /* OpenGL.framework in Frameworks */,
@@ -4275,7 +4268,6 @@
 				2762A3371AAA51D900B807D4 /* boost_system.framework in Frameworks */,
 				3D22CF8D0FD86EBD00B17822 /* libz.dylib in Frameworks */,
 				3D22CFAC0FD8707C00B17822 /* CoreAudio.framework in Frameworks */,
-				27A6D4D31B9A42F0003DA766 /* expat.framework in Frameworks */,
 				2759F33010D5BCC0000204DD /* zziplib.framework in Frameworks */,
 				2759FB1F10D7114D000204DD /* jpeg.framework in Frameworks */,
 				2759FB2110D7114D000204DD /* png.framework in Frameworks */,
@@ -4306,8 +4298,8 @@
 				AEFD87A813EB84CF00C1E687 /* libz.dylib in Frameworks */,
 				2748BDC51CC405030082F0E1 /* SDL2.framework in Frameworks */,
 				AEFD87A913EB84CF00C1E687 /* CoreAudio.framework in Frameworks */,
-				27A6D4D41B9A42F0003DA766 /* expat.framework in Frameworks */,
 				AEFD87AA13EB84CF00C1E687 /* zziplib.framework in Frameworks */,
+				553AB9FB213A035000EE3861 /* libexpat.tbd in Frameworks */,
 				AEFD87AB13EB84CF00C1E687 /* jpeg.framework in Frameworks */,
 				AEFD87AC13EB84CF00C1E687 /* png.framework in Frameworks */,
 				270F9FD1177687B7009AAE10 /* avcodec.framework in Frameworks */,
@@ -4401,6 +4393,7 @@
 				F5830B4001E776DE01BA387C /* OpenGL.framework */,
 				F59FB19D01E780DF01BBE912 /* Cocoa.framework */,
 				275A7BD21A60DE77002EE952 /* libcurl.dylib */,
+				553AB9F5213A034300EE3861 /* libexpat.tbd */,
 				3D22CF8C0FD86EBD00B17822 /* libz.dylib */,
 			);
 			name = "System Frameworks";
@@ -4588,7 +4581,6 @@
 				27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */,
 				27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */,
 				27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */,
-				27A6D4D21B9A42F0003DA766 /* expat.framework */,
 				2762A3311AAA51D900B807D4 /* boost_filesystem.framework */,
 				2762A3321AAA51D900B807D4 /* boost_system.framework */,
 				270F9FCC177687B7009AAE10 /* avcodec.framework */,
@@ -9410,7 +9402,6 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
-					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL2.framework/Headers,
 					/Library/Frameworks/SDL2_image.framework/Headers,
@@ -9423,7 +9414,6 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
@@ -9542,7 +9532,6 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
-					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL2.framework/Headers,
 					/Library/Frameworks/SDL2_image.framework/Headers,
@@ -9555,7 +9544,6 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
@@ -9784,7 +9772,6 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
-					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL2.framework/Headers,
 					/Library/Frameworks/SDL2_image.framework/Headers,
@@ -9797,7 +9784,6 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
@@ -9952,7 +9938,6 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
-					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -9965,7 +9950,6 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
@@ -10011,7 +9995,6 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
-					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -10024,7 +10007,6 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
@@ -10070,7 +10052,6 @@
 					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
 					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
-					"$(HOME)/Library/Frameworks/expat.framework/Headers",
 					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
@@ -10083,7 +10064,6 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/Library/Frameworks/expat.framework/Headers,
 					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
