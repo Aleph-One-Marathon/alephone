@@ -9075,10 +9075,6 @@
 				CODE_SIGN_ENTITLEMENTS = AppStore/Marathon/Marathon.entitlements;
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9103,10 +9099,6 @@
 				CODE_SIGN_ENTITLEMENTS = AppStore/Marathon/Marathon.entitlements;
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9131,10 +9123,6 @@
 				CODE_SIGN_ENTITLEMENTS = AppStore/Marathon/Marathon.entitlements;
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9159,10 +9147,6 @@
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon 2/Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9187,10 +9171,6 @@
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon 2/Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9215,10 +9195,6 @@
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon 2/Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9243,10 +9219,6 @@
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon Infinity/Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9271,10 +9243,6 @@
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon Infinity/Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9299,10 +9267,6 @@
 				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon Infinity/Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -9328,10 +9292,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JU5QS9S2LV;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
 					HAVE_BUNDLE_NAME,
@@ -9458,10 +9418,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JU5QS9S2LV;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
 					HAVE_BUNDLE_NAME,
@@ -9614,10 +9570,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JU5QS9S2LV;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9642,10 +9594,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JU5QS9S2LV;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9670,10 +9618,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JU5QS9S2LV;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9698,10 +9642,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JU5QS9S2LV;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
 					HAVE_BUNDLE_NAME,
@@ -9827,10 +9767,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JU5QS9S2LV;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9855,10 +9791,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JU5QS9S2LV;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9883,10 +9815,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JU5QS9S2LV;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9911,12 +9839,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JU5QS9S2LV;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(HOME)/Library/Frameworks",
-					/System/Library/Frameworks,
-					/Library/Frameworks,
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9924,33 +9846,6 @@
 					HAVE_BUNDLE_NAME,
 					HAVE_CONFIG_H,
 					SPEEX,
-				);
-				HEADER_SEARCH_PATHS = (
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
-					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
-					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/png.framework/Headers",
-					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
-					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
-					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
-					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
-					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
-					"$(HOME)/Library/Frameworks/boost.framework/Headers",
-					/Library/Frameworks/SDL_image.framework/Headers,
-					/Library/Frameworks/SDL.framework/Headers,
-					/Library/Frameworks/SDL_net.framework/Headers,
-					/Library/Frameworks/SDL_ttf.framework/Headers,
-					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/png.framework/Headers,
-					/Library/Frameworks/zziplib.framework/Headers,
-					/Library/Frameworks/avcodec.framework/Headers,
-					/Library/Frameworks/avformat.framework/Headers,
-					/Library/Frameworks/avutil.framework/Headers,
-					/Library/Frameworks/swscale.framework/Headers,
-					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
@@ -9968,12 +9863,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JU5QS9S2LV;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(HOME)/Library/Frameworks",
-					/System/Library/Frameworks,
-					/Library/Frameworks,
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -9981,33 +9870,6 @@
 					HAVE_BUNDLE_NAME,
 					HAVE_CONFIG_H,
 					SPEEX,
-				);
-				HEADER_SEARCH_PATHS = (
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
-					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
-					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/png.framework/Headers",
-					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
-					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
-					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
-					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
-					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
-					"$(HOME)/Library/Frameworks/boost.framework/Headers",
-					/Library/Frameworks/SDL_image.framework/Headers,
-					/Library/Frameworks/SDL.framework/Headers,
-					/Library/Frameworks/SDL_net.framework/Headers,
-					/Library/Frameworks/SDL_ttf.framework/Headers,
-					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/png.framework/Headers,
-					/Library/Frameworks/zziplib.framework/Headers,
-					/Library/Frameworks/avcodec.framework/Headers,
-					/Library/Frameworks/avformat.framework/Headers,
-					/Library/Frameworks/avutil.framework/Headers,
-					/Library/Frameworks/swscale.framework/Headers,
-					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
@@ -10025,12 +9887,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JU5QS9S2LV;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(HOME)/Library/Frameworks",
-					/System/Library/Frameworks,
-					/Library/Frameworks,
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
@@ -10038,33 +9894,6 @@
 					HAVE_BUNDLE_NAME,
 					HAVE_CONFIG_H,
 					SPEEX,
-				);
-				HEADER_SEARCH_PATHS = (
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
-					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
-					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/png.framework/Headers",
-					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
-					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
-					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
-					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
-					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
-					"$(HOME)/Library/Frameworks/boost.framework/Headers",
-					/Library/Frameworks/SDL_image.framework/Headers,
-					/Library/Frameworks/SDL.framework/Headers,
-					/Library/Frameworks/SDL_net.framework/Headers,
-					/Library/Frameworks/SDL_ttf.framework/Headers,
-					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/png.framework/Headers,
-					/Library/Frameworks/zziplib.framework/Headers,
-					/Library/Frameworks/avcodec.framework/Headers,
-					/Library/Frameworks/avformat.framework/Headers,
-					/Library/Frameworks/avutil.framework/Headers,
-					/Library/Frameworks/swscale.framework/Headers,
-					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
