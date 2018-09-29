@@ -398,7 +398,6 @@
 		27A6D56B1B9BF021003DA766 /* DefaultStringSets.h in Headers */ = {isa = PBXBuildFile; fileRef = C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */; };
 		27A6D56C1B9BF021003DA766 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
 		27A6D56D1B9BF021003DA766 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
-		27A6D56E1B9BF021003DA766 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
 		27A6D5701B9BF021003DA766 /* alephversion.h in Headers */ = {isa = PBXBuildFile; fileRef = F5D11AE40326A93E01000105 /* alephversion.h */; };
 		27A6D5711B9BF021003DA766 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27A703DC9D1C00000104 /* Logging.h */; };
 		27A6D5721B9BF021003DA766 /* network_microphone_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF2717003EDBBF100000104 /* network_microphone_shared.h */; };
@@ -474,7 +473,6 @@
 		27A6D5B91B9BF021003DA766 /* Marathon.entitlements in Resources */ = {isa = PBXBuildFile; fileRef = 27EFC4C81A7D9A2F00A95592 /* Marathon.entitlements */; };
 		27A6D5BA1B9BF021003DA766 /* Marathon.icns in Resources */ = {isa = PBXBuildFile; fileRef = AE0E4EC1141D148F00AAA02F /* Marathon.icns */; };
 		27A6D5BB1B9BF021003DA766 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AE7A143A141D16D000834C2D /* InfoPlist.strings */; };
-		27A6D5BD1B9BF021003DA766 /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 00F9DA5100AC730E7F000001 /* SDLMain.m */; };
 		27A6D5BE1B9BF021003DA766 /* byte_swapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211410136A66601000001 /* byte_swapping.cpp */; };
 		27A6D5BF1B9BF021003DA766 /* csalerts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211430136A66601000001 /* csalerts_sdl.cpp */; };
 		27A6D5C01B9BF021003DA766 /* cscluts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211450136A66601000001 /* cscluts_sdl.cpp */; };
@@ -849,7 +847,6 @@
 		27A6D7471B9BF029003DA766 /* DefaultStringSets.h in Headers */ = {isa = PBXBuildFile; fileRef = C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */; };
 		27A6D7481B9BF029003DA766 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
 		27A6D7491B9BF029003DA766 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
-		27A6D74A1B9BF029003DA766 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
 		27A6D74C1B9BF029003DA766 /* alephversion.h in Headers */ = {isa = PBXBuildFile; fileRef = F5D11AE40326A93E01000105 /* alephversion.h */; };
 		27A6D74D1B9BF029003DA766 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27A703DC9D1C00000104 /* Logging.h */; };
 		27A6D74E1B9BF029003DA766 /* network_microphone_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF2717003EDBBF100000104 /* network_microphone_shared.h */; };
@@ -925,7 +922,6 @@
 		27A6D7951B9BF029003DA766 /* SaveIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD430200FA6B01D80110 /* SaveIcon.icns */; };
 		27A6D7961B9BF029003DA766 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AE505D14141D46B100915344 /* InfoPlist.strings */; };
 		27A6D7971B9BF029003DA766 /* Marathon 2.icns in Resources */ = {isa = PBXBuildFile; fileRef = AE505D20141D47BF00915344 /* Marathon 2.icns */; };
-		27A6D7991B9BF029003DA766 /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 00F9DA5100AC730E7F000001 /* SDLMain.m */; };
 		27A6D79A1B9BF029003DA766 /* byte_swapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211410136A66601000001 /* byte_swapping.cpp */; };
 		27A6D79B1B9BF029003DA766 /* csalerts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211430136A66601000001 /* csalerts_sdl.cpp */; };
 		27A6D79C1B9BF029003DA766 /* cscluts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211450136A66601000001 /* cscluts_sdl.cpp */; };
@@ -1300,7 +1296,6 @@
 		27A6D9231B9BF031003DA766 /* DefaultStringSets.h in Headers */ = {isa = PBXBuildFile; fileRef = C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */; };
 		27A6D9241B9BF031003DA766 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
 		27A6D9251B9BF031003DA766 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
-		27A6D9261B9BF031003DA766 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
 		27A6D9281B9BF031003DA766 /* alephversion.h in Headers */ = {isa = PBXBuildFile; fileRef = F5D11AE40326A93E01000105 /* alephversion.h */; };
 		27A6D9291B9BF031003DA766 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27A703DC9D1C00000104 /* Logging.h */; };
 		27A6D92A1B9BF031003DA766 /* network_microphone_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF2717003EDBBF100000104 /* network_microphone_shared.h */; };
@@ -1376,7 +1371,6 @@
 		27A6D9711B9BF031003DA766 /* SaveIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD430200FA6B01D80110 /* SaveIcon.icns */; };
 		27A6D9721B9BF031003DA766 /* Marathon Infinity.icns in Resources */ = {isa = PBXBuildFile; fileRef = AEB4A2B214296DC000537AE7 /* Marathon Infinity.icns */; };
 		27A6D9731B9BF031003DA766 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AEB4A2B414296DC700537AE7 /* InfoPlist.strings */; };
-		27A6D9751B9BF031003DA766 /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 00F9DA5100AC730E7F000001 /* SDLMain.m */; };
 		27A6D9761B9BF031003DA766 /* byte_swapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211410136A66601000001 /* byte_swapping.cpp */; };
 		27A6D9771B9BF031003DA766 /* csalerts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211430136A66601000001 /* csalerts_sdl.cpp */; };
 		27A6D9781B9BF031003DA766 /* cscluts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211450136A66601000001 /* cscluts_sdl.cpp */; };
@@ -1961,7 +1955,6 @@
 		AE505BBA141D45E600915344 /* sound_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94150240DA4301A80001 /* sound_definitions.h */; };
 		AE505BC1141D45E600915344 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
 		AE505BC3141D45E600915344 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
-		AE505BC4141D45E600915344 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
 		AE505BC6141D45E600915344 /* alephversion.h in Headers */ = {isa = PBXBuildFile; fileRef = F5D11AE40326A93E01000105 /* alephversion.h */; };
 		AE505BC7141D45E600915344 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27A703DC9D1C00000104 /* Logging.h */; };
 		AE505BC8141D45E600915344 /* network_microphone_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF2717003EDBBF100000104 /* network_microphone_shared.h */; };
@@ -2025,7 +2018,6 @@
 		AE505C08141D45E600915344 /* MusakIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD400200FA6B01D80110 /* MusakIcon.icns */; };
 		AE505C0A141D45E600915344 /* PhysIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD420200FA6B01D80110 /* PhysIcon.icns */; };
 		AE505C0B141D45E600915344 /* SaveIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD430200FA6B01D80110 /* SaveIcon.icns */; };
-		AE505C0F141D45E600915344 /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 00F9DA5100AC730E7F000001 /* SDLMain.m */; };
 		AE505C10141D45E600915344 /* byte_swapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211410136A66601000001 /* byte_swapping.cpp */; };
 		AE505C11141D45E600915344 /* csalerts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211430136A66601000001 /* csalerts_sdl.cpp */; };
 		AE505C12141D45E600915344 /* cscluts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211450136A66601000001 /* cscluts_sdl.cpp */; };
@@ -2422,7 +2414,6 @@
 		AEB4A15A14296CAE00537AE7 /* sound_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94150240DA4301A80001 /* sound_definitions.h */; };
 		AEB4A16114296CAE00537AE7 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
 		AEB4A16314296CAE00537AE7 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
-		AEB4A16414296CAE00537AE7 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
 		AEB4A16614296CAE00537AE7 /* alephversion.h in Headers */ = {isa = PBXBuildFile; fileRef = F5D11AE40326A93E01000105 /* alephversion.h */; };
 		AEB4A16714296CAE00537AE7 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27A703DC9D1C00000104 /* Logging.h */; };
 		AEB4A16814296CAE00537AE7 /* network_microphone_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF2717003EDBBF100000104 /* network_microphone_shared.h */; };
@@ -2487,7 +2478,6 @@
 		AEB4A1A914296CAE00537AE7 /* MusakIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD400200FA6B01D80110 /* MusakIcon.icns */; };
 		AEB4A1AB14296CAE00537AE7 /* PhysIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD420200FA6B01D80110 /* PhysIcon.icns */; };
 		AEB4A1AC14296CAE00537AE7 /* SaveIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD430200FA6B01D80110 /* SaveIcon.icns */; };
-		AEB4A1B014296CAE00537AE7 /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 00F9DA5100AC730E7F000001 /* SDLMain.m */; };
 		AEB4A1B114296CAE00537AE7 /* byte_swapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211410136A66601000001 /* byte_swapping.cpp */; };
 		AEB4A1B214296CAE00537AE7 /* csalerts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211430136A66601000001 /* csalerts_sdl.cpp */; };
 		AEB4A1B314296CAE00537AE7 /* cscluts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211450136A66601000001 /* cscluts_sdl.cpp */; };
@@ -2829,7 +2819,6 @@
 		AEC3C79309AD68AC003258E4 /* sound_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94150240DA4301A80001 /* sound_definitions.h */; };
 		AEC3C79B09AD68AC003258E4 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
 		AEC3C79D09AD68AC003258E4 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
-		AEC3C79E09AD68AC003258E4 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
 		AEC3C7A009AD68AC003258E4 /* alephversion.h in Headers */ = {isa = PBXBuildFile; fileRef = F5D11AE40326A93E01000105 /* alephversion.h */; };
 		AEC3C7A109AD68AC003258E4 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27A703DC9D1C00000104 /* Logging.h */; };
 		AEC3C7A209AD68AC003258E4 /* network_microphone_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF2717003EDBBF100000104 /* network_microphone_shared.h */; };
@@ -2873,7 +2862,6 @@
 		AEC3C7CB09AD68AC003258E4 /* MusakIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD400200FA6B01D80110 /* MusakIcon.icns */; };
 		AEC3C7CD09AD68AC003258E4 /* PhysIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD420200FA6B01D80110 /* PhysIcon.icns */; };
 		AEC3C7CE09AD68AC003258E4 /* SaveIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD430200FA6B01D80110 /* SaveIcon.icns */; };
-		AEC3C7D009AD68AC003258E4 /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 00F9DA5100AC730E7F000001 /* SDLMain.m */; };
 		AEC3C7D109AD68AC003258E4 /* byte_swapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211410136A66601000001 /* byte_swapping.cpp */; };
 		AEC3C7D209AD68AC003258E4 /* csalerts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211430136A66601000001 /* csalerts_sdl.cpp */; };
 		AEC3C7D309AD68AC003258E4 /* cscluts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211450136A66601000001 /* cscluts_sdl.cpp */; };
@@ -3134,7 +3122,6 @@
 		AEFD866813EB84CF00C1E687 /* sound_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94150240DA4301A80001 /* sound_definitions.h */; };
 		AEFD866F13EB84CF00C1E687 /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
 		AEFD867113EB84CF00C1E687 /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
-		AEFD867213EB84CF00C1E687 /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F9DA4F00AC72F57F000001 /* SDLMain.h */; };
 		AEFD867413EB84CF00C1E687 /* alephversion.h in Headers */ = {isa = PBXBuildFile; fileRef = F5D11AE40326A93E01000105 /* alephversion.h */; };
 		AEFD867513EB84CF00C1E687 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27A703DC9D1C00000104 /* Logging.h */; };
 		AEFD867613EB84CF00C1E687 /* network_microphone_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF2717003EDBBF100000104 /* network_microphone_shared.h */; };
@@ -3197,7 +3184,6 @@
 		AEFD86B713EB84CF00C1E687 /* MusakIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD400200FA6B01D80110 /* MusakIcon.icns */; };
 		AEFD86B913EB84CF00C1E687 /* PhysIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD420200FA6B01D80110 /* PhysIcon.icns */; };
 		AEFD86BA13EB84CF00C1E687 /* SaveIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD430200FA6B01D80110 /* SaveIcon.icns */; };
-		AEFD86BC13EB84CF00C1E687 /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 00F9DA5100AC730E7F000001 /* SDLMain.m */; };
 		AEFD86BD13EB84CF00C1E687 /* byte_swapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211410136A66601000001 /* byte_swapping.cpp */; };
 		AEFD86BE13EB84CF00C1E687 /* csalerts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211430136A66601000001 /* csalerts_sdl.cpp */; };
 		AEFD86BF13EB84CF00C1E687 /* cscluts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211450136A66601000001 /* cscluts_sdl.cpp */; };
@@ -3553,8 +3539,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		00F9DA4F00AC72F57F000001 /* SDLMain.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SDLMain.h; sourceTree = SOURCE_ROOT; };
-		00F9DA5100AC730E7F000001 /* SDLMain.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = SDLMain.m; sourceTree = SOURCE_ROOT; };
 		088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = SdlMetaserverClientUi.cpp; path = ../Source_Files/Network/Metaserver/SdlMetaserverClientUi.cpp; sourceTree = SOURCE_ROOT; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		270D534B0FCB417500482ED4 /* OGL_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Blitter.h; sourceTree = "<group>"; };
@@ -5209,21 +5193,11 @@
 			children = (
 				27A6DB4F1B9CED1E003DA766 /* confpaths.h */,
 				27A6DB471B9CED02003DA766 /* config.h */,
-				F5CF585A024599B601A80001 /* SDL */,
 				F522124C0136A6FD01000001 /* shell.h */,
 				F522124B0136A6FD01000001 /* shell.cpp */,
 				F52212490136A6FD01000001 /* shell_misc.cpp */,
 			);
 			name = Main;
-			sourceTree = "<group>";
-		};
-		F5CF585A024599B601A80001 /* SDL */ = {
-			isa = PBXGroup;
-			children = (
-				00F9DA4F00AC72F57F000001 /* SDLMain.h */,
-				00F9DA5100AC730E7F000001 /* SDLMain.m */,
-			);
-			name = SDL;
 			sourceTree = "<group>";
 		};
 		F5F50D6C0215DACD01144D54 /* DataFiles */ = {
@@ -5389,7 +5363,6 @@
 				27A6D56B1B9BF021003DA766 /* DefaultStringSets.h in Headers */,
 				27A6D56C1B9BF021003DA766 /* XML_LevelScript.h in Headers */,
 				27A6D56D1B9BF021003DA766 /* XML_ParseTreeRoot.h in Headers */,
-				27A6D56E1B9BF021003DA766 /* SDLMain.h in Headers */,
 				27A6D5701B9BF021003DA766 /* alephversion.h in Headers */,
 				27A6D5711B9BF021003DA766 /* Logging.h in Headers */,
 				27A6D5721B9BF021003DA766 /* network_microphone_shared.h in Headers */,
@@ -5612,7 +5585,6 @@
 				27A6D7471B9BF029003DA766 /* DefaultStringSets.h in Headers */,
 				27A6D7481B9BF029003DA766 /* XML_LevelScript.h in Headers */,
 				27A6D7491B9BF029003DA766 /* XML_ParseTreeRoot.h in Headers */,
-				27A6D74A1B9BF029003DA766 /* SDLMain.h in Headers */,
 				27A6D74C1B9BF029003DA766 /* alephversion.h in Headers */,
 				27A6D74D1B9BF029003DA766 /* Logging.h in Headers */,
 				27A6D74E1B9BF029003DA766 /* network_microphone_shared.h in Headers */,
@@ -5835,7 +5807,6 @@
 				27A6D9231B9BF031003DA766 /* DefaultStringSets.h in Headers */,
 				27A6D9241B9BF031003DA766 /* XML_LevelScript.h in Headers */,
 				27A6D9251B9BF031003DA766 /* XML_ParseTreeRoot.h in Headers */,
-				27A6D9261B9BF031003DA766 /* SDLMain.h in Headers */,
 				27A6D9281B9BF031003DA766 /* alephversion.h in Headers */,
 				27A6D9291B9BF031003DA766 /* Logging.h in Headers */,
 				27A6D92A1B9BF031003DA766 /* network_microphone_shared.h in Headers */,
@@ -6058,7 +6029,6 @@
 				C13C71E91B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
 				AE505BC1141D45E600915344 /* XML_LevelScript.h in Headers */,
 				AE505BC3141D45E600915344 /* XML_ParseTreeRoot.h in Headers */,
-				AE505BC4141D45E600915344 /* SDLMain.h in Headers */,
 				AE505BC6141D45E600915344 /* alephversion.h in Headers */,
 				AE505BC7141D45E600915344 /* Logging.h in Headers */,
 				AE505BC8141D45E600915344 /* network_microphone_shared.h in Headers */,
@@ -6281,7 +6251,6 @@
 				C13C71EA1B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
 				AEB4A16114296CAE00537AE7 /* XML_LevelScript.h in Headers */,
 				AEB4A16314296CAE00537AE7 /* XML_ParseTreeRoot.h in Headers */,
-				AEB4A16414296CAE00537AE7 /* SDLMain.h in Headers */,
 				AEB4A16614296CAE00537AE7 /* alephversion.h in Headers */,
 				AEB4A16714296CAE00537AE7 /* Logging.h in Headers */,
 				AEB4A16814296CAE00537AE7 /* network_microphone_shared.h in Headers */,
@@ -6504,7 +6473,6 @@
 				AEC3C79309AD68AC003258E4 /* sound_definitions.h in Headers */,
 				AEC3C79B09AD68AC003258E4 /* XML_LevelScript.h in Headers */,
 				AEC3C79D09AD68AC003258E4 /* XML_ParseTreeRoot.h in Headers */,
-				AEC3C79E09AD68AC003258E4 /* SDLMain.h in Headers */,
 				C13C71E71B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
 				AEC3C7A009AD68AC003258E4 /* alephversion.h in Headers */,
 				AEC3C7A109AD68AC003258E4 /* Logging.h in Headers */,
@@ -6727,7 +6695,6 @@
 				C13C71E81B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
 				AEFD866F13EB84CF00C1E687 /* XML_LevelScript.h in Headers */,
 				AEFD867113EB84CF00C1E687 /* XML_ParseTreeRoot.h in Headers */,
-				AEFD867213EB84CF00C1E687 /* SDLMain.h in Headers */,
 				AEFD867413EB84CF00C1E687 /* alephversion.h in Headers */,
 				AEFD867513EB84CF00C1E687 /* Logging.h in Headers */,
 				AEFD867613EB84CF00C1E687 /* network_microphone_shared.h in Headers */,
@@ -7380,7 +7347,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				27A6D5BD1B9BF021003DA766 /* SDLMain.m in Sources */,
 				27A6D5BE1B9BF021003DA766 /* byte_swapping.cpp in Sources */,
 				27A6D5BF1B9BF021003DA766 /* csalerts_sdl.cpp in Sources */,
 				27A6D5C01B9BF021003DA766 /* cscluts_sdl.cpp in Sources */,
@@ -7613,7 +7579,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				27A6D7991B9BF029003DA766 /* SDLMain.m in Sources */,
 				27A6D79A1B9BF029003DA766 /* byte_swapping.cpp in Sources */,
 				27A6D79B1B9BF029003DA766 /* csalerts_sdl.cpp in Sources */,
 				27A6D79C1B9BF029003DA766 /* cscluts_sdl.cpp in Sources */,
@@ -7846,7 +7811,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				27A6D9751B9BF031003DA766 /* SDLMain.m in Sources */,
 				27A6D9761B9BF031003DA766 /* byte_swapping.cpp in Sources */,
 				27A6D9771B9BF031003DA766 /* csalerts_sdl.cpp in Sources */,
 				27A6D9781B9BF031003DA766 /* cscluts_sdl.cpp in Sources */,
@@ -8079,7 +8043,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AE505C0F141D45E600915344 /* SDLMain.m in Sources */,
 				AE505C10141D45E600915344 /* byte_swapping.cpp in Sources */,
 				AE505C11141D45E600915344 /* csalerts_sdl.cpp in Sources */,
 				AE505C12141D45E600915344 /* cscluts_sdl.cpp in Sources */,
@@ -8312,7 +8275,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AEB4A1B014296CAE00537AE7 /* SDLMain.m in Sources */,
 				AEB4A1B114296CAE00537AE7 /* byte_swapping.cpp in Sources */,
 				AEB4A1B214296CAE00537AE7 /* csalerts_sdl.cpp in Sources */,
 				AEB4A1B314296CAE00537AE7 /* cscluts_sdl.cpp in Sources */,
@@ -8545,7 +8507,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AEC3C7D009AD68AC003258E4 /* SDLMain.m in Sources */,
 				AEC3C7D109AD68AC003258E4 /* byte_swapping.cpp in Sources */,
 				AEC3C7D209AD68AC003258E4 /* csalerts_sdl.cpp in Sources */,
 				AEC3C7D309AD68AC003258E4 /* cscluts_sdl.cpp in Sources */,
@@ -8778,7 +8739,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AEFD86BC13EB84CF00C1E687 /* SDLMain.m in Sources */,
 				AEFD86BD13EB84CF00C1E687 /* byte_swapping.cpp in Sources */,
 				AEFD86BE13EB84CF00C1E687 /* csalerts_sdl.cpp in Sources */,
 				AEFD86BF13EB84CF00C1E687 /* cscluts_sdl.cpp in Sources */,

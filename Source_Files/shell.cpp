@@ -251,14 +251,7 @@ bool handle_open_document(const std::string& filename)
 }
 
 
-#if defined(__APPLE__) && defined(__MACH__)
-extern "C" {
-	int shell_main(int argc, char **argv);
-}
-int shell_main(int argc, char **argv)
-#else
 int main(int argc, char **argv)
-#endif
 {
 	// Print banner (don't bother if this doesn't appear when started from a GUI)
 	char app_name_version[256];
@@ -407,6 +400,29 @@ static void initialize_application(void)
 #endif
 	// We only want text input events at specific times
 	SDL_StopTextInput();
+	
+	// See if we had a scenario folder dropped on us
+	if (arg_directory == "") {
+		SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+		SDL_Event event;
+		while (SDL_PollEvent(&event)) {
+			switch (event.type) {
+				case SDL_DROPFILE:
+					FileSpecifier f(event.drop.file);
+					if (f.IsDir())
+					{
+						arg_directory = event.drop.file;
+					}
+					else
+					{
+						arg_files.push_back(event.drop.file);
+					}
+					SDL_free(event.drop.file);
+					break;
+			}
+		}
+		SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
+	}
 
 	// Find data directories, construct search path
 	InitDefaultStringSets();
