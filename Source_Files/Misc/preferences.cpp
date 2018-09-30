@@ -1166,8 +1166,11 @@ static void graphics_dialog(void *arg)
 
 	w_toggle *high_dpi_w = NULL;
 	high_dpi_w = new w_toggle(graphics_preferences->screen_mode.high_dpi);
+#if (defined(__APPLE__) && defined(__MACH__))
+	// SDL's DPI support only enabled on macOS
 	table->dual_add(high_dpi_w->label("Use High DPI"), d);
 	table->dual_add(high_dpi_w, d);
+#endif
 	
 	w_toggle *fixh_w = new w_toggle(!graphics_preferences->screen_mode.fix_h_not_v);
 	table->dual_add(fixh_w->label("Limit Vertical View"), d);
