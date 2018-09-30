@@ -2101,7 +2101,7 @@ static void controls_dialog(void *arg)
 	actions->dual_add(new w_static_text("film recording for single-player games."), d);
 
 
-	vertical_placer *interface = new vertical_placer();
+	vertical_placer *iface = new vertical_placer();
 	table_placer *interface_table = new table_placer(4, get_theme_space(ITEM_WIDGET), true);
 	interface_table->col_flags(0, placeable::kAlignRight);
 	interface_table->col_flags(1, placeable::kAlignLeft);
@@ -2141,7 +2141,7 @@ static void controls_dialog(void *arg)
 			}
 		}
 	}
-	interface->add(interface_table, true);
+	iface->add(interface_table, true);
 
 	vertical_placer *other = new vertical_placer();
 	other->dual_add(new w_static_text("These keyboard shortcuts cannot be changed."), d);
@@ -2203,7 +2203,7 @@ static void controls_dialog(void *arg)
 	tabs->add(look, true);
 	tabs->add(move, true);
 	tabs->add(actions, true);
-	tabs->add(interface, true);
+	tabs->add(iface, true);
 	tabs->add(other, true);
 	placer->add(tabs, true);
 	
