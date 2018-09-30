@@ -287,6 +287,9 @@ AX_CHECK_FEATURE_PKG([curl], [CURL],
 AX_CHECK_FEATURE_PKG([zzip], [ZZIP],
                      [ZZIP], [zziplib >= 0.10.75])
 AM_CONDITIONAL([BUILD_ZZIP_RWOPS], [test "x$have_zzip" = "xtrue"])
+dnl Remove hardened flags on Fedora (disrupts static linking)
+ZZIP_LIBS=`echo "$ZZIP_LIBS" | sed -E 's|-specs=@<:@^ @:>@+||'`
+LIBS=`echo "$LIBS" | sed -E 's|-specs=@<:@^ @:>@+||'`
 
 AX_CHECK_FEATURE_PKG([png], [PNG],
                      [PNG], [libpng])
