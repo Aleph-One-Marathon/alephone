@@ -386,15 +386,17 @@ enum {
 
 // ZZZ: split out from update_world()'s loop.
 static int
-update_world_elements_one_tick()
+update_world_elements_one_tick(bool& call_postidle)
 {
 	if (m1_solo_player_in_terminal()) 
 	{
 		update_m1_solo_player_in_terminal(GameQueue);
+		call_postidle = false;
 	} 
 	else
 	{
 		L_Call_Idle();
+		call_postidle = true;
 		
 		update_lights();
 		update_medias();
@@ -498,12 +500,13 @@ update_world()
 		for(short i = 0; i < dynamic_world->player_count; i++)
 			sMostRecentFlagsForPlayer[i] = GameQueue->peekActionFlags(i, 0);
 
-		theUpdateResult = update_world_elements_one_tick();
+		bool call_postidle = true;
+		theUpdateResult = update_world_elements_one_tick(call_postidle);
 
                 theElapsedTime++;
 
-                
-                L_Call_PostIdle();
+                if (call_postidle)
+                        L_Call_PostIdle();
                 if(theUpdateResult != kUpdateNormalCompletion || Movie::instance()->IsRecording())
                 {
                         canUpdate = false;
