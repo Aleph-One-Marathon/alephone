@@ -2159,6 +2159,11 @@ static void controls_dialog(void *arg)
 	other_menu->col_flags(1, placeable::kAlignLeft);
 	std::vector<std::string> menu_shortcuts = {
 		"N", "Begin new game",
+#if (defined(__APPLE__) && defined(__MACH__))
+		"Cmd-Option-N", "Level select",
+#else
+		"Ctrl+Shift+N", "Level select",
+#endif
 		"O", "Continue saved game",
 		"G", "Gather network game",
 		"J", "Join network game",
