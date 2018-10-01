@@ -3549,7 +3549,7 @@
 		2710CC5F1B8F94FC00CE2EAE /* OGL_FBO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_FBO.cpp; sourceTree = "<group>"; };
 		2710CC601B8F94FC00CE2EAE /* OGL_FBO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_FBO.h; sourceTree = "<group>"; };
 		272BA59E1E622438008C5335 /* cspaths.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cspaths.h; path = ../Source_Files/CSeries/cspaths.h; sourceTree = "<group>"; };
-		272BA5A01E6242F8008C5335 /* cspaths.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = cspaths.mm; sourceTree = "<group>"; };
+		272BA5A01E6242F8008C5335 /* cspaths.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = cspaths.mm; path = ../Source_Files/CSeries/cspaths.mm; sourceTree = "<group>"; };
 		272BA5A21E628212008C5335 /* cspaths_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cspaths_sdl.cpp; path = ../Source_Files/CSeries/cspaths_sdl.cpp; sourceTree = "<group>"; };
 		2739B490101B862A00CC8098 /* Shape_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Shape_Blitter.cpp; sourceTree = "<group>"; };
 		2739B491101B862A00CC8098 /* Shape_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shape_Blitter.h; sourceTree = "<group>"; };
