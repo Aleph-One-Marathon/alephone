@@ -51,8 +51,8 @@ bool OGL_LoadScreen::Start()
 
 	if (!blitter.Load(image)) return use = false;
 
-	int screenWidth = MainScreenLogicalWidth();
-	int screenHeight = MainScreenLogicalHeight();
+	int screenWidth = 640;
+	int screenHeight = 480;
 	alephone::Screen::instance()->bound_screen(true);
 	
 	// the true width/height
