@@ -2136,11 +2136,7 @@ void w_list_base::event(SDL_Event &e)
 			dirty = true;
 		}
 	} else if (e.type == SDL_MOUSEWHEEL) {
-		int amt = e.wheel.y * kListScrollSpeed;
-#if SDL_VERSION_ATLEAST(2,0,4)
-		if (e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
-			amt = amt * -1;
-#endif
+		int amt = e.wheel.y * -1 * kListScrollSpeed;
 		if (amt < 0) {
 			amt = amt * -1;
 			if (top_item > amt)
