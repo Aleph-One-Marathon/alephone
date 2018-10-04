@@ -552,6 +552,15 @@ void parse_mml_default_levels(const InfoTree& root)
 		if (!child.read_attr("file", cmd.FileSpec))
 			continue;
 		
+		// expand relative file spec now (we may be in scoped search path)
+		FileSpecifier f;
+		if (f.SetNameWithPath(cmd.FileSpec.c_str()))
+		{
+			std::string base, part;
+			f.SplitPath(base, part);
+			cmd.FileSpec = base + '/' + part;
+		}
+		
 		child.read_attr("stretch", cmd.Stretch);
 		child.read_attr("scale", cmd.Scale);
 		child.read_attr("progress_top", cmd.T);
