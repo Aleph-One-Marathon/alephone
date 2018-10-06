@@ -379,7 +379,9 @@ static void initialize_application(void)
 	if (LoadLibrary("exchndl.dll")) option_debug = true;
 #endif
 
-	//	SDL_putenv(const_cast<char*>("SDL_VIDEO_ALLOW_SCREENSAVER=1"));
+#if defined(__WIN32__)
+	SDL_setenv("SDL_AUDIODRIVER", "directsound", 0);
+#endif
 
 	// Initialize SDL
 	int retval = SDL_Init(SDL_INIT_VIDEO |
