@@ -6,24 +6,6 @@
 	objectVersion = 51;
 	objects = {
 
-/* Begin PBXAggregateTarget section */
-		AE3B83970E04C87E00FD963D /* Disk Images */ = {
-			isa = PBXAggregateTarget;
-			buildConfigurationList = AE3B839B0E04C8CA00FD963D /* Build configuration list for PBXAggregateTarget "Disk Images" */;
-			buildPhases = (
-				27A6DAB21B9C0FD7003DA766 /* ShellScript */,
-			);
-			dependencies = (
-				27A6DAB61B9C1174003DA766 /* PBXTargetDependency */,
-				27A6DAB81B9C1174003DA766 /* PBXTargetDependency */,
-				27A6DABA1B9C1174003DA766 /* PBXTargetDependency */,
-				AE3B839A0E04C89000FD963D /* PBXTargetDependency */,
-			);
-			name = "Disk Images";
-			productName = AlephOne.dmg;
-		};
-/* End PBXAggregateTarget section */
-
 /* Begin PBXBuildFile section */
 		270D534C0FCB417500482ED4 /* OGL_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 270D534B0FCB417500482ED4 /* OGL_Blitter.h */; };
 		270F9FD0177687B7009AAE10 /* avcodec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCC177687B7009AAE10 /* avcodec.framework */; };
@@ -3437,37 +3419,6 @@
 		C13C71E91B3FB4C500F1188D /* DefaultStringSets.h in Headers */ = {isa = PBXBuildFile; fileRef = C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */; };
 		C13C71EA1B3FB4C500F1188D /* DefaultStringSets.h in Headers */ = {isa = PBXBuildFile; fileRef = C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		27A6DAB51B9C1174003DA766 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = AEFD85E813EB84CF00C1E687;
-			remoteInfo = Marathon;
-		};
-		27A6DAB71B9C1174003DA766 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = AE505B3A141D45E600915344;
-			remoteInfo = "Marathon 2";
-		};
-		27A6DAB91B9C1174003DA766 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = AEB4A0DA14296CAE00537AE7;
-			remoteInfo = "Marathon Infinity";
-		};
-		AE3B83990E04C89000FD963D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = AEC3C6FE09AD68AC003258E4;
-			remoteInfo = AlephOne;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		27A6DA771B9BF5BF003DA766 /* CopyFiles */ = {
@@ -7055,7 +7006,6 @@
 				27A6D4E31B9BF021003DA766 /* Marathon (MAS) */,
 				27A6D6BF1B9BF029003DA766 /* Marathon 2 (MAS) */,
 				27A6D89B1B9BF031003DA766 /* Marathon Infinity (MAS) */,
-				AE3B83970E04C87E00FD963D /* Disk Images */,
 			);
 		};
 /* End PBXProject section */
@@ -7374,20 +7324,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon Infinity/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"";
-		};
-		27A6DAB21B9C0FD7003DA766 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = "create_webloc()\n{\n    cat > \"$2.webloc\" <<END\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n    <key>URL</key>\n    <string>$1</string>\n</dict>\n</plist>\nEND\n}\n\nmake_dmg()\n{\n    appname=\"$1\"\n   \n    diskdir=`mktemp -d -t Aleph`\n    rsync -a \"$TARGET_BUILD_DIR/$appname.app\" \"$diskdir\"\n    ln -s /Applications \"$diskdir\"\n    create_webloc \"https://alephone.lhowon.org/\" \"$diskdir/Aleph One home page\"\n    cp \"$SRCROOT/../COPYING\" \"$diskdir/COPYING.txt\"\n\n    docdir=\"$diskdir/Documentation\"\n    mkdir \"$docdir\"\n    cp \"$SRCROOT/../docs/Lua.html\" \"$docdir\"\n    cp \"$SRCROOT/../docs/Lua_HUD.html\" \"$docdir\"\n    cp \"$SRCROOT/../docs/MML.html\" \"$docdir\"\n\n    licdir=\"$docdir/Library Licenses\"\n    mkdir \"$licdir\"\n    cp \"$SRCROOT/../Resources/Library Licenses/\"*.* \"$licdir\"\n    \n    if [ \"$2\" != \"\" ]; then\n        extdir=\"$diskdir/Extras\"\n        mkdir \"$extdir\"\n        cp \"$SRCROOT/../data/Transparent_Liquids.mml\" \"$extdir\"\n        cp \"$SRCROOT/../data/Transparent_Sprites.mml\" \"$extdir\"\n        cp \"$SRCROOT/../data/Software_Transparent_Liquids.mml\" \"$extdir\"\n        cp \"$SRCROOT/../data/Carnage_Messages.mml\" \"$extdir\"\n        cp \"$SRCROOT/../examples/lua/Cheats.lua\" \"$extdir\"\n    fi\n    \n    version=`grep '^#define A1_DATE_VERSION' \"$SRCROOT/../Source_Files/Misc/alephversion.h\" | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g'`\n    imgname=\"${appname// }\"\n    imgfile=\"$TARGET_BUILD_DIR/$imgname-$version.dmg\"\n    hdiutil create -ov -fs HFS+ -format UDBZ -layout GPTSPUD -srcfolder \"$diskdir\" -volname \"$appname\" \"$imgfile\"\n    \n    rm -rf \"$diskdir\"\n}\n\nmake_dmg \"Aleph One\" \"extras\"\nmake_dmg \"Marathon\"\nmake_dmg \"Marathon 2\"\nmake_dmg \"Marathon Infinity\"\n";
-			showEnvVarsInLog = 0;
 		};
 		AE505D04141D45E600915344 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -9105,29 +9041,6 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		27A6DAB61B9C1174003DA766 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = AEFD85E813EB84CF00C1E687 /* Marathon */;
-			targetProxy = 27A6DAB51B9C1174003DA766 /* PBXContainerItemProxy */;
-		};
-		27A6DAB81B9C1174003DA766 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = AE505B3A141D45E600915344 /* Marathon 2 */;
-			targetProxy = 27A6DAB71B9C1174003DA766 /* PBXContainerItemProxy */;
-		};
-		27A6DABA1B9C1174003DA766 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = AEB4A0DA14296CAE00537AE7 /* Marathon Infinity */;
-			targetProxy = 27A6DAB91B9C1174003DA766 /* PBXContainerItemProxy */;
-		};
-		AE3B839A0E04C89000FD963D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = AEC3C6FE09AD68AC003258E4 /* Aleph One */;
-			targetProxy = AE3B83990E04C89000FD963D /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin PBXVariantGroup section */
 		089C165CFE840E0CC02AAC07 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
@@ -9696,33 +9609,6 @@
 			};
 			name = "Deployment (Native)";
 		};
-		AE3B839C0E04C8CA00FD963D /* Deployment (Universal) */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
-				PRODUCT_NAME = AlephOne.dmg;
-			};
-			name = "Deployment (Universal)";
-		};
-		AE3B839D0E04C8CA00FD963D /* Deployment (Native) */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
-				PRODUCT_NAME = AlephOne.dmg;
-			};
-			name = "Deployment (Native)";
-		};
-		AE3B839E0E04C8CA00FD963D /* Development */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
-				PRODUCT_NAME = AlephOne.dmg;
-			};
-			name = Development;
-		};
 		AE505D08141D45E600915344 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -10194,16 +10080,6 @@
 				AE78B59E09B00C34002CACF8 /* Deployment (Universal) */,
 				AE2A41770B5EFEA000C567E6 /* Deployment (Native) */,
 				AE2A41540B5EFC1F00C567E6 /* Development */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = "Deployment (Universal)";
-		};
-		AE3B839B0E04C8CA00FD963D /* Build configuration list for PBXAggregateTarget "Disk Images" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				AE3B839C0E04C8CA00FD963D /* Deployment (Universal) */,
-				AE3B839D0E04C8CA00FD963D /* Deployment (Native) */,
-				AE3B839E0E04C8CA00FD963D /* Development */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = "Deployment (Universal)";
