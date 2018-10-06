@@ -260,8 +260,8 @@ LIBS=`echo "$LIBS" | sed 's|-lSDL ||' | sed 's|-lSDLmain ||'`
 AX_CHECK_FEATURE_LIB([mad], [MAD],
                      [mad.h], [mad], [mad_stream_init])
 
-AX_CHECK_FEATURE_LIB([sndfile], [SNDFILE],
-                     [sndfile.h], [sndfile], [sf_open])
+AX_CHECK_FEATURE_PKG([sndfile], [SNDFILE],
+                     [SNDFILE], [sndfile])
 
 AX_CHECK_FEATURE_PKG([vorbis], [VORBISFILE],
                      [VORBISFILE], [vorbisfile])
