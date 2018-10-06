@@ -80,7 +80,7 @@ public:
 	template<typename instance_t = L_Class /*or a derived class*/>
 	static instance_t *Push(lua_State *L, index_t index);
 
-	static L_Class *Instance(lua_State *L, index_t index);
+	static L_Class *Instance(lua_State *L, int index);
 	static index_t Index(lua_State *L, int index);
 	static bool Is(lua_State *L, int index);
 	static void Invalidate(lua_State *L, index_t index);
@@ -225,7 +225,7 @@ instance_t *L_Class<name, index_t>::NewInstance(lua_State *L, index_t index)
 }
 
 template<char *name, typename index_t>
-L_Class<name, index_t> *L_Class<name, index_t>::Instance(lua_State *L, index_t index)
+L_Class<name, index_t> *L_Class<name, index_t>::Instance(lua_State *L, int index)
 {
 	// The userdata block is assumed to start with an L_Class ptr; see L_Class::NewInstance()
 	void * blockPtr = lua_touserdata(L, index);
