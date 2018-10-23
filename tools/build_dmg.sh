@@ -26,6 +26,7 @@ END
 make_dmg()
 {
     appname="$1"
+    codesign --timestamp --deep --force -o runtime --sign "$SIGNATURE" "$TARGET_BUILD_DIR/$appname.app"
     spctl -a -t execute -v "$TARGET_BUILD_DIR/$appname.app"
    
     diskdir=`mktemp -d -t Aleph`
