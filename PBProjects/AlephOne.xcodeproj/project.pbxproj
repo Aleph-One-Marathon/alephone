@@ -32,10 +32,10 @@
 		2710CC661B8F94FC00CE2EAE /* OGL_FBO.h in Headers */ = {isa = PBXBuildFile; fileRef = 2710CC601B8F94FC00CE2EAE /* OGL_FBO.h */; };
 		2710CC671B8F94FC00CE2EAE /* OGL_FBO.h in Headers */ = {isa = PBXBuildFile; fileRef = 2710CC601B8F94FC00CE2EAE /* OGL_FBO.h */; };
 		2710CC681B8F94FC00CE2EAE /* OGL_FBO.h in Headers */ = {isa = PBXBuildFile; fileRef = 2710CC601B8F94FC00CE2EAE /* OGL_FBO.h */; };
-		271ADFC618A88B9C0073CB2E /* avcodec.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCC177687B7009AAE10 /* avcodec.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		271ADFC718A88B9C0073CB2E /* avformat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCD177687B7009AAE10 /* avformat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		271ADFC818A88B9C0073CB2E /* avutil.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCE177687B7009AAE10 /* avutil.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		271ADFC918A88B9C0073CB2E /* swscale.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCF177687B7009AAE10 /* swscale.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		271ADFC618A88B9C0073CB2E /* avcodec.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCC177687B7009AAE10 /* avcodec.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		271ADFC718A88B9C0073CB2E /* avformat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCD177687B7009AAE10 /* avformat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		271ADFC818A88B9C0073CB2E /* avutil.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCE177687B7009AAE10 /* avutil.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		271ADFC918A88B9C0073CB2E /* swscale.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCF177687B7009AAE10 /* swscale.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		272BA59F1E622438008C5335 /* cspaths.h in Headers */ = {isa = PBXBuildFile; fileRef = 272BA59E1E622438008C5335 /* cspaths.h */; };
 		272BA5A11E6242F8008C5335 /* cspaths.mm in Sources */ = {isa = PBXBuildFile; fileRef = 272BA5A01E6242F8008C5335 /* cspaths.mm */; };
 		272BA5A31E628212008C5335 /* cspaths_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 272BA5A21E628212008C5335 /* cspaths_sdl.cpp */; };
@@ -153,11 +153,11 @@
 		2759F31B10D5BC9C000204DD /* SDL_rwops_zzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */; };
 		2759F31C10D5BC9C000204DD /* SDL_rwops_zzip.h in Headers */ = {isa = PBXBuildFile; fileRef = 2759F31A10D5BC9C000204DD /* SDL_rwops_zzip.h */; };
 		2759F33010D5BCC0000204DD /* zziplib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; };
-		2759F33310D5BCD1000204DD /* zziplib.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		2759F33310D5BCD1000204DD /* zziplib.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2759FB1F10D7114D000204DD /* jpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB1E10D7114D000204DD /* jpeg.framework */; };
 		2759FB2110D7114D000204DD /* png.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; };
-		2759FB2610D71158000204DD /* png.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		2759FB2A10D71160000204DD /* jpeg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759FB1E10D7114D000204DD /* jpeg.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		2759FB2610D71158000204DD /* png.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2759FB2A10D71160000204DD /* jpeg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759FB1E10D7114D000204DD /* jpeg.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		275A7BD31A60DE77002EE952 /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 275A7BD21A60DE77002EE952 /* libcurl.tbd */; };
 		275A7BD41A60DE8C002EE952 /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 275A7BD21A60DE77002EE952 /* libcurl.tbd */; };
 		275A7BD51A60DE9B002EE952 /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 275A7BD21A60DE77002EE952 /* libcurl.tbd */; };
@@ -174,8 +174,8 @@
 		2762A3381AAA51D900B807D4 /* boost_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2762A3321AAA51D900B807D4 /* boost_system.framework */; };
 		2762A3391AAA51D900B807D4 /* boost_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2762A3321AAA51D900B807D4 /* boost_system.framework */; };
 		2762A33A1AAA51D900B807D4 /* boost_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2762A3321AAA51D900B807D4 /* boost_system.framework */; };
-		2762A33B1AAA523600B807D4 /* boost_filesystem.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2762A3311AAA51D900B807D4 /* boost_filesystem.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		2762A33C1AAA523600B807D4 /* boost_system.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2762A3321AAA51D900B807D4 /* boost_system.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		2762A33B1AAA523600B807D4 /* boost_filesystem.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2762A3311AAA51D900B807D4 /* boost_filesystem.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2762A33C1AAA523600B807D4 /* boost_system.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2762A3321AAA51D900B807D4 /* boost_system.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		276589F8119DF1DD0096F75B /* lua_saved_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */; };
 		276BECF01A846BC500AE52F4 /* ReplacementSounds.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BECEF1A846BC500AE52F4 /* ReplacementSounds.h */; };
 		276BECF11A846BC500AE52F4 /* ReplacementSounds.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BECEF1A846BC500AE52F4 /* ReplacementSounds.h */; };
@@ -1788,7 +1788,7 @@
 		27ECF2A61698DD7700BE9C35 /* SDL_ffmpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 27ECF2941698DD7700BE9C35 /* SDL_ffmpeg.h */; };
 		27ECF2A71698DD7700BE9C35 /* SDL_ffmpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 27ECF2941698DD7700BE9C35 /* SDL_ffmpeg.h */; };
 		27ECF2A81698DD7700BE9C35 /* SDL_ffmpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 27ECF2941698DD7700BE9C35 /* SDL_ffmpeg.h */; };
-		27EFC4B41A7C8E6900A95592 /* speexdsp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 278BCAEE1A51C53C006F9756 /* speexdsp.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		27EFC4B41A7C8E6900A95592 /* speexdsp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 278BCAEE1A51C53C006F9756 /* speexdsp.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27EFC4B51A7C933C00A95592 /* QuickSave.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276D4E761A2E734E00C16CF5 /* QuickSave.cpp */; };
 		27EFC4B61A7C933C00A95592 /* QuickSave.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276D4E761A2E734E00C16CF5 /* QuickSave.cpp */; };
 		27EFC4B71A7C933D00A95592 /* QuickSave.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276D4E761A2E734E00C16CF5 /* QuickSave.cpp */; };
@@ -1838,7 +1838,7 @@
 		AE179F1C09C3D79500512061 /* upnp.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0C09C3D79500512061 /* upnp.c */; };
 		AE179F1D09C3D79500512061 /* utility.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0D09C3D79500512061 /* utility.c */; };
 		AE23F5640BDAC0E700C11385 /* speex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; };
-		AE23F5930BDAC1DF00C11385 /* speex.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		AE23F5930BDAC1DF00C11385 /* speex.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AE23F59A0BDAC23E00C11385 /* ReplacementSounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */; };
 		AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
 		AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
