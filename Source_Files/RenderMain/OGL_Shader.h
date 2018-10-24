@@ -47,7 +47,6 @@ public:
 		U_OffsetX,
 		U_OffsetY,
 		U_Pass,
-		U_UseStatic,
 		U_UseFog,
 		U_Visibility,
 		U_Depth,

@@ -50,7 +50,6 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
 	"offsetx",
 	"offsety",
 	"pass",
-	"usestatic",
 	"usefog",
 	"visibility",
 	"depth",
@@ -529,14 +528,13 @@ void initDefaultPrograms() {
     defaultFragmentPrograms["invincible"] = ""
         "uniform sampler2D texture0;\n"
         "uniform float time;\n"
-        "uniform float usestatic;\n"
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
         "varying float FDxLOG2E;\n"
         "void main(void) {\n"
-        "	float a = fract(sin(usestatic*(gl_TexCoord[0].x * 133.0 + gl_TexCoord[0].y * 471.0) + time * 7.0) * 43757.0); \n"
-        "	float b = fract(sin(usestatic*(gl_TexCoord[0].x * 2331.0 + gl_TexCoord[0].y * 63.0) + time * 3.0) * 32451.0); \n"
-        "	float c = fract(sin(usestatic*(gl_TexCoord[0].x * 41.0 + gl_TexCoord[0].y * 12911.0) + time * 31.0) * 34563.0);\n"
+        "	float a = fract(sin(gl_TexCoord[0].x * 133.0 + gl_TexCoord[0].y * 471.0 + time * 7.0) * 43757.0); \n"
+        "	float b = fract(sin(gl_TexCoord[0].x * 2331.0 + gl_TexCoord[0].y * 63.0 + time * 3.0) * 32451.0); \n"
+        "	float c = fract(sin(gl_TexCoord[0].x * 41.0 + gl_TexCoord[0].y * 12911.0 + time * 31.0) * 34563.0);\n"
         "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
         "	vec3 intensity = vec3(a, b, c);\n"
         "#ifdef GAMMA_CORRECTED_BLENDING\n"
@@ -549,7 +547,6 @@ void initDefaultPrograms() {
     defaultFragmentPrograms["invincible_bloom"] = ""
         "uniform sampler2D texture0;\n"
         "uniform float time;\n"
-        "uniform float usestatic;\n"
         "uniform float bloomScale;\n"
         "uniform float bloomShift;\n"
         "varying vec3 viewDir;\n"

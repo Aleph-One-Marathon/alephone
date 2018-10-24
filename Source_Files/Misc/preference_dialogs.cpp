@@ -155,7 +155,6 @@ OpenGLDialog::~OpenGLDialog()
 	delete m_cancelWidget;
 	delete m_okWidget;
 	delete m_fogWidget;
-	delete m_staticEffectWidget;
 	delete m_colourEffectsWidget;
 	delete m_transparentLiquidsWidget;
 	delete m_3DmodelsWidget;
@@ -190,8 +189,6 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	
 	BitPref fogPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_Fog);
 	binders.insert<bool> (m_fogWidget, &fogPref);
-	BitPref staticEffectsPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_FlatStatic, true);
-	binders.insert<bool> (m_staticEffectWidget, &staticEffectsPref);
 	BitPref colourEffectsPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_Fader);
 	binders.insert<bool> (m_colourEffectsWidget, &colourEffectsPref);
 	BitPref transparentLiquidsPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_LiqSeeThru);
@@ -341,10 +338,6 @@ public:
 		w_toggle *fog_w = new w_toggle(false);
 		general_table->dual_add(fog_w->label("Fog"), m_dialog);
 		general_table->dual_add(fog_w, m_dialog);
-
-		w_toggle *static_w = new w_toggle(false);
-		general_table->dual_add(static_w->label("Static Effect"), m_dialog);
-		general_table->dual_add(static_w, m_dialog);
 
 		w_toggle *fader_w = new w_toggle(false);
 		general_table->dual_add(fader_w->label("Color Effects"), m_dialog);
@@ -577,7 +570,6 @@ public:
 		m_okWidget = new ButtonWidget (ok_w);
 		
 		m_fogWidget = new ToggleWidget (fog_w);
-		m_staticEffectWidget = new ToggleWidget (static_w);
 		m_colourEffectsWidget = new ToggleWidget (fader_w);
 		m_transparentLiquidsWidget = new ToggleWidget (liq_w);
 		m_3DmodelsWidget = new ToggleWidget (models_w);
