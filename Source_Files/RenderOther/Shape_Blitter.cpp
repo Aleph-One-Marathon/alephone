@@ -312,7 +312,10 @@ void Shape_Blitter::SDL_Draw(SDL_Surface *dst_surface, const Image_Rect& dst)
             SDL_FreeSurface(tmp);
         }
         else
-            m_surface = tmp;
+		{
+			m_surface = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_BGRA8888, 0);
+			SDL_FreeSurface(tmp);
+		}
     }
     if (!m_surface)
         return;
