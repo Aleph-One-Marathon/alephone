@@ -1951,7 +1951,7 @@ void DrawSurface(SDL_Surface *s, SDL_Rect &dest_rect, SDL_Rect &src_rect)
 			new_src_rect.h = static_cast<Uint16>(new_src_rect.h * y_scale);
 		}
 		SDL_BlitSurface(surface, &new_src_rect, main_surface, &dest_rect);
-		if (!Screen::instance()->lua_hud())
+		if (!Screen::instance()->lua_hud() || (get_game_state() != _game_in_progress))
 			MainScreenUpdateRects(1, &dest_rect);
 		
 		if (surface != s)
