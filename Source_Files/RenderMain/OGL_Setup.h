@@ -224,6 +224,7 @@ enum
 	OGL_Flag_Blur		= 0x1000,   // Whether to blur landscapes and glowing textures
 	OGL_Flag_BumpMap	= 0x2000,   // Whether to use bump mapping
 	OGL_Flag_MimicSW    = 0x4000,   // Whether to mimic software perspective
+    OGL_Flag_SmoothLook = 0x8000,   // Whether to show artificial mouselook precision
 };
 
 struct OGL_ConfigureData

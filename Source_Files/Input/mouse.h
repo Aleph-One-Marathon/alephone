@@ -34,6 +34,11 @@ void test_mouse(short type, uint32 *action_flags, _fixed *delta_yaw, _fixed *del
 void exit_mouse(short type);
 void mouse_idle(short type);
 void recenter_mouse(void);
+float lostMousePrecisionX();
+float lostMousePrecisionY();
+double cosine_table_calculated(double i);
+double sine_table_calculated(double i);
+bool shouldSmoothMouselook();
 
 // ZZZ: stuff of various hackiness levels to pretend mouse buttons are keys
 void mouse_buttons_become_keypresses(Uint8* ioKeyMap);
