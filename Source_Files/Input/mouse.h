@@ -36,8 +36,6 @@ void mouse_idle(short type);
 void recenter_mouse(void);
 float lostMousePrecisionX();
 float lostMousePrecisionY();
-double cosine_table_calculated(double i);
-double sine_table_calculated(double i);
 bool shouldSmoothMouselook();
 
 // ZZZ: stuff of various hackiness levels to pretend mouse buttons are keys

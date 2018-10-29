@@ -195,18 +195,6 @@ void mouse_idle(short type)
 float lostMousePrecisionX() { return shouldSmoothMouselook()?(lost_x_at_last_sample*(float)FIXED_ONE)/512.0:0.0; }
 float lostMousePrecisionY() { return shouldSmoothMouselook()?(lost_y_at_last_sample*(float)FIXED_ONE)/2048.0:0.0; }
 
-double cosine_table_calculated(double i) {
-    double two_pi= 8.0*atan(1.0);
-    double theta= two_pi*(double)i/(double)NUMBER_OF_ANGLES;
-    
-    return ((double)TRIG_MAGNITUDE*cos(theta)+0.5);
-}
-double sine_table_calculated(double i) {
-    double two_pi= 8.0*atan(1.0);
-    double theta= two_pi*(double)i/(double)NUMBER_OF_ANGLES;
-    
-    return ((double)TRIG_MAGNITUDE*sin(theta)+0.5);
-}
 bool shouldSmoothMouselook(){
     return smooth_mouselook;
 }
