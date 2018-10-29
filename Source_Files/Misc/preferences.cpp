@@ -3885,6 +3885,8 @@ void parse_input_preferences(InfoTree root, std::string version)
 								  0, NUMBER_OF_MOUSE_ACCEL_TYPES - 1);
 	root.read_attr("mouse_accel_scale", input_preferences->mouse_accel_scale);
 	
+	if (!version.length() || version < "20170821")
+		input_preferences->raw_mouse_input = false;
 	root.read_attr("raw_mouse_input", input_preferences->raw_mouse_input);
 	root.read_attr("controller_analog", input_preferences->controller_analog);
 	root.read_attr("controller_sensitivity", input_preferences->controller_sensitivity);
