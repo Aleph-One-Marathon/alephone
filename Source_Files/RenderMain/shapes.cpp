@@ -1033,11 +1033,18 @@ void initialize_shape_handler()
 
 void open_shapes_file(FileSpecifier& File)
 {
+	bool m1_loaded = false;
 	if (File.Open(M1ShapesFile) && M1ShapesFile.Check('.','2','5','6',128))
 	{
 		shapes_file_version = M1_SHAPES_VERSION;
+		m1_loaded = true;
 	}
-	else if (File.Open(ShapesFile))
+	else
+	{
+		M1ShapesFile.Close();
+	}
+	
+	if (!m1_loaded && File.Open(ShapesFile))
 	{
 		shapes_file_version = M2_SHAPES_VERSION;
 		// Load the collection headers;
