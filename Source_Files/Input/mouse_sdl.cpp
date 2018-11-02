@@ -50,7 +50,7 @@ static int snapshot_delta_x, snapshot_delta_y;
 
 static float lost_x, lost_y; //Stores the unrealized mouselook precision.
 static float lost_x_at_last_sample, lost_y_at_last_sample; //Stores the unrealized mouse presion values as of sample time, which can be used by the renderer. Capturing this value eliminates jitter in multiplayer.
-static bool smooth_mouselook;
+static bool should_smooth_mouselook;
 
 
 /*
@@ -187,16 +187,18 @@ void mouse_idle(short type)
         lost_x /= (float)FIXED_ONE;
         lost_y /= (float)FIXED_ONE;
         
-        smooth_mouselook = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_SmoothLook) && player_controlling_game() && !PLAYER_IS_DEAD(local_player);
+        //Discard lost_y if it would put the view beyond the pitch limits.
+        _fixed minimumAbsolutePitch, maximumAbsolutePitch;
+        get_absolute_pitch_range(&minimumAbsolutePitch, &maximumAbsolutePitch);
+        if((local_player->variables.elevation == minimumAbsolutePitch && dy < 0.0) || (local_player->variables.elevation == maximumAbsolutePitch && dy > 0.0)) { lost_y=0.0; }
+        
+        should_smooth_mouselook = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_SmoothLook) && player_controlling_game() && !PLAYER_IS_DEAD(local_player);
 	}
 }
 
 //Returns the currently not-represented mouse precision as a fraction of a yaw and pitch frogblasts.
-float lostMousePrecisionX() { return shouldSmoothMouselook()?(lost_x_at_last_sample*(float)FIXED_ONE)/512.0:0.0; }
-float lostMousePrecisionY() { return shouldSmoothMouselook()?(lost_y_at_last_sample*(float)FIXED_ONE)/2048.0:0.0; }
-
-bool shouldSmoothMouselook(){
-    return smooth_mouselook;
+float lostMousePrecisionX() { return should_smooth_mouselook?(lost_x_at_last_sample*(float)FIXED_ONE)/512.0:0.0; }
+float lostMousePrecisionY() { return should_smooth_mouselook?(lost_y_at_last_sample*(float)FIXED_ONE)/2048.0:0.0;
 }
 
 /*

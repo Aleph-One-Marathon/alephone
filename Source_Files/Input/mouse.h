@@ -36,7 +36,6 @@ void mouse_idle(short type);
 void recenter_mouse(void);
 float lostMousePrecisionX();
 float lostMousePrecisionY();
-bool shouldSmoothMouselook();
 
 // ZZZ: stuff of various hackiness levels to pretend mouse buttons are keys
 void mouse_buttons_become_keypresses(Uint8* ioKeyMap);
