@@ -141,6 +141,7 @@ void mouse_idle(short type)
 			default:
 				break;
 		}
+		sy *= 4; // Compensate for dy units being 1/4th as large as dx units
 		dx *= sx;
 		dy *= sy;
 		
