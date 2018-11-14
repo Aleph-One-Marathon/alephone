@@ -3867,7 +3867,13 @@ void parse_input_preferences(InfoTree root, std::string version)
 	root.read_attr("sensitivity", input_preferences->sens_horizontal);
 	root.read_attr("sensitivity", input_preferences->sens_vertical);
 	root.read_attr("sens_horizontal", input_preferences->sens_horizontal);
-	root.read_attr("sens_vertical", input_preferences->sens_vertical);
+	
+	if (root.read_attr("sens_vertical", input_preferences->sens_vertical))
+	{
+		// Preserve the perceived effect of older values
+		if (!version.length() || version < "20181113")
+			input_preferences->sens_vertical /= 4;
+	}
 	
 	if (!version.length() || version < "20170205")
 		input_preferences->mouse_max_speed = .25f;
