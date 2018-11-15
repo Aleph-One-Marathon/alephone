@@ -161,7 +161,6 @@ OpenGLDialog::~OpenGLDialog()
 	delete m_3DmodelsWidget;
 	delete m_blurWidget;
 	delete m_bumpWidget;
-    delete m_smoothWidget;
 	delete m_colourTheVoidWidget;
 	delete m_voidColourWidget;
 	delete m_fsaaWidget;
@@ -203,8 +202,6 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	binders.insert<bool> (m_blurWidget, &blurPref);
 	BitPref bumpPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_BumpMap);
 	binders.insert<bool> (m_bumpWidget, &bumpPref);
-    BitPref smoothPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_SmoothLook);
-    binders.insert<bool> (m_smoothWidget, &smoothPref);
 	BitPref perspectivePref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_MimicSW, true);
 	binders.insert<bool> (m_perspectiveWidget, &perspectivePref);
 	
@@ -372,10 +369,6 @@ public:
 		w_toggle *bump_w = new w_toggle(false);
 		general_table->dual_add(bump_w->label("Bump Mapping"), m_dialog);
 		general_table->dual_add(bump_w, m_dialog);
-        
-        w_toggle *smooth_w = new w_toggle(false);
-        general_table->dual_add(smooth_w->label("Fake Mouselook Precision"), m_dialog);
-        general_table->dual_add(smooth_w, m_dialog);
 		
 		general_table->add_row(new w_spacer(), true);
 
@@ -590,7 +583,6 @@ public:
 		m_3DmodelsWidget = new ToggleWidget (models_w);
 		m_blurWidget = new ToggleWidget (blur_w);
 		m_bumpWidget = new ToggleWidget (bump_w);
-        m_smoothWidget = new ToggleWidget (smooth_w);
 		m_perspectiveWidget = new ToggleWidget (perspective_w);
 
 		m_colourTheVoidWidget = 0;

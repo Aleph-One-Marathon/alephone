@@ -180,13 +180,13 @@ void mouse_idle(short type)
         snapshot_delta_yaw <<= (FIXED_FRACTIONAL_BITS-ABSOLUTE_YAW_BITS);
         snapshot_delta_pitch >>= (FIXED_FRACTIONAL_BITS-ABSOLUTE_PITCH_BITS);
         snapshot_delta_pitch <<= (FIXED_FRACTIONAL_BITS-ABSOLUTE_PITCH_BITS);
-        
+
         //Track how much precision is ignored, so we can stuff it back into the input next time this function is called.
         lost_x = (dx * (float)FIXED_ONE) - (float)snapshot_delta_yaw;
         lost_y = (dy * (float)FIXED_ONE) - (float)snapshot_delta_pitch;
         lost_x /= (float)FIXED_ONE;
         lost_y /= (float)FIXED_ONE;
-        
+
         //Discard lost_y if it would put the view beyond the pitch limits.
         _fixed minimumAbsolutePitch, maximumAbsolutePitch;
         get_absolute_pitch_range(&minimumAbsolutePitch, &maximumAbsolutePitch);
@@ -197,9 +197,9 @@ void mouse_idle(short type)
 }
 
 //Returns the currently not-represented mouse precision as a fraction of a yaw and pitch frogblasts.
-float lostMousePrecisionX() { return should_smooth_mouselook?(lost_x_at_last_sample*(float)FIXED_ONE)/512.0:0.0; }
-float lostMousePrecisionY() { return should_smooth_mouselook?(lost_y_at_last_sample*(float)FIXED_ONE)/2048.0:0.0;
-}
+//Subtract .5 to minimize chance for view deviation by more than .5fb from the current angle.
+float lostMousePrecisionX() { return should_smooth_mouselook?(lost_x_at_last_sample*(float)FIXED_ONE)/512.0 - 0.5:0.0;}
+float lostMousePrecisionY() { return should_smooth_mouselook?(lost_y_at_last_sample*(float)FIXED_ONE)/2048.0 - 0.5:0.0;}
 
 /*
  *  Return mouse state

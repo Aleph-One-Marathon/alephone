@@ -51,7 +51,6 @@ protected:
 	ToggleWidget*		m_3DmodelsWidget;
 	ToggleWidget*		m_blurWidget;
 	ToggleWidget*		m_bumpWidget;
-    ToggleWidget*       m_smoothWidget;
 	ToggleWidget*		m_perspectiveWidget;
 	
 	ToggleWidget*		m_colourTheVoidWidget;
