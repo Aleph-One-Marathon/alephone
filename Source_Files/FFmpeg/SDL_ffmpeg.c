@@ -2057,12 +2057,14 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
     {
         /* Decode the packet */
         AVCodecContext *avctx = file->audioStream->_ffmpeg->codec;
-        AVFrame dframe;
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
-        avcodec_get_frame_defaults(&dframe);
+		AVFrame *dframe = avcodec_alloc_frame();
+        avcodec_get_frame_defaults(dframe);
+#else
+		AVFrame *dframe = av_frame_alloc();
 #endif
         int got_frame = 0;
-        int len = avcodec_decode_audio4( avctx, &dframe, &got_frame, pack );
+        int len = avcodec_decode_audio4( avctx, dframe, &got_frame, pack );
         
         if (len < 0 || !got_frame)
         {
@@ -2072,13 +2074,13 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
         
         int planar = av_sample_fmt_is_planar( avctx->sample_fmt );
         int plane_size;
-        int data_size = av_samples_get_buffer_size( &plane_size, avctx->channels, dframe.nb_samples, avctx->sample_fmt, 1 );
+        int data_size = av_samples_get_buffer_size( &plane_size, avctx->channels, dframe->nb_samples, avctx->sample_fmt, 1 );
         if ( data_size > 10000 )
         {
             SDL_ffmpegSetError( "too much data in decoded audio frame" );
             break;
         }
-        memcpy( file->audioStream->sampleBuffer, dframe.extended_data[0], plane_size );
+        memcpy( file->audioStream->sampleBuffer, dframe->extended_data[0], plane_size );
         audioSize = plane_size;
         if ( planar && avctx->channels > 1 )
         {
@@ -2086,7 +2088,7 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
             int ch;
             for ( ch = 1; ch < avctx->channels; ch++ )
             {
-                memcpy( out, dframe.extended_data[ch], plane_size );
+                memcpy( out, dframe->extended_data[ch], plane_size );
                 out += plane_size;
                 audioSize += plane_size;
             }
