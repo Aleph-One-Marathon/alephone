@@ -794,40 +794,48 @@ static bool load_collection(short collection_index, bool strip)
 	header->status &= ~markPATCHED;
 
 	// Convert CLUTS
-	SDL_RWseek(p, src_offset + cd->color_table_offset, RW_SEEK_SET);
-	load_clut(&cd->color_tables[0], cd->clut_count * cd->color_count, p);
+	if (cd->clut_count && cd->color_count) {
+		SDL_RWseek(p, src_offset + cd->color_table_offset, RW_SEEK_SET);
+		load_clut(&cd->color_tables[0], cd->clut_count * cd->color_count, p);
+	}
 
 	// Convert high-level shape definitions
-	SDL_RWseek(p, src_offset + cd->high_level_shape_offset_table_offset, RW_SEEK_SET);
+	if (cd->high_level_shape_count) {
+		SDL_RWseek(p, src_offset + cd->high_level_shape_offset_table_offset, RW_SEEK_SET);
+		std::vector<uint32> t(cd->high_level_shape_count);
+		SDL_RWread(p, &t[0], sizeof(uint32), cd->high_level_shape_count);
+		byte_swap_memory(&t[0], _4byte, cd->high_level_shape_count);
 
-	std::vector<uint32> t(cd->high_level_shape_count);
-	SDL_RWread(p, &t[0], sizeof(uint32), cd->high_level_shape_count);
-	byte_swap_memory(&t[0], _4byte, cd->high_level_shape_count);
-	for (int i = 0; i < cd->high_level_shape_count; i++) {
-		SDL_RWseek(p, src_offset + t[i], RW_SEEK_SET);
-		load_high_level_shape(cd->high_level_shapes[i], p);
+		for (int i = 0; i < cd->high_level_shape_count; i++) {
+			SDL_RWseek(p, src_offset + t[i], RW_SEEK_SET);
+			load_high_level_shape(cd->high_level_shapes[i], p);
+		}
 	}
 
 	// Convert low-level shape definitions
-	SDL_RWseek(p, src_offset + cd->low_level_shape_offset_table_offset, RW_SEEK_SET);
-	t.resize(cd->low_level_shape_count);
-	SDL_RWread(p, &t[0], sizeof(uint32), cd->low_level_shape_count);
-	byte_swap_memory(&t[0], _4byte, cd->low_level_shape_count);
+	if (cd->low_level_shape_count) {
+		SDL_RWseek(p, src_offset + cd->low_level_shape_offset_table_offset, RW_SEEK_SET);
+		std::vector<uint32> t(cd->low_level_shape_count);
+		SDL_RWread(p, &t[0], sizeof(uint32), cd->low_level_shape_count);
+		byte_swap_memory(&t[0], _4byte, cd->low_level_shape_count);
 
-	for (int i = 0; i < cd->low_level_shape_count; i++) {
-		SDL_RWseek(p, src_offset + t[i], RW_SEEK_SET);
-		load_low_level_shape(&cd->low_level_shapes[i], p);
+		for (int i = 0; i < cd->low_level_shape_count; i++) {
+			SDL_RWseek(p, src_offset + t[i], RW_SEEK_SET);
+			load_low_level_shape(&cd->low_level_shapes[i], p);
+		}
 	}
 
 	// Convert bitmap definitions
-	SDL_RWseek(p, src_offset + cd->bitmap_offset_table_offset, RW_SEEK_SET);
-	t.resize(cd->bitmap_count);
-	SDL_RWread(p, &t[0], sizeof(uint32), cd->bitmap_count);
-	byte_swap_memory(&t[0], _4byte, cd->bitmap_count);
+	if (cd->bitmap_count) {
+		SDL_RWseek(p, src_offset + cd->bitmap_offset_table_offset, RW_SEEK_SET);
+		std::vector<uint32> t(cd->bitmap_count);
+		SDL_RWread(p, &t[0], sizeof(uint32), cd->bitmap_count);
+		byte_swap_memory(&t[0], _4byte, cd->bitmap_count);
 
-	for (int i = 0; i < cd->bitmap_count; i++) {
-		SDL_RWseek(p, src_offset + t[i], RW_SEEK_SET);
-		load_bitmap(cd->bitmaps[i], p, shapes_file_version);
+		for (int i = 0; i < cd->bitmap_count; i++) {
+			SDL_RWseek(p, src_offset + t[i], RW_SEEK_SET);
+			load_bitmap(cd->bitmaps[i], p, shapes_file_version);
+		}
 	}
 
 	header->collection = cd.release();
