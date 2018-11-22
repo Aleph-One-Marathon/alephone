@@ -48,6 +48,10 @@ static _fixed snapshot_delta_yaw, snapshot_delta_pitch;
 static _fixed snapshot_delta_scrollwheel;
 static int snapshot_delta_x, snapshot_delta_y;
 
+static float lost_x, lost_y; //Stores the unrealized mouselook precision.
+static float lost_x_at_last_sample, lost_y_at_last_sample; //Stores the unrealized mouse presion values as of sample time, which can be used by the renderer. Capturing this value eliminates jitter in multiplayer.
+static bool should_smooth_mouselook;
+
 
 /*
  *  Initialize in-game mouse handling
@@ -66,6 +70,7 @@ void enter_mouse(short type)
 		snapshot_delta_yaw = snapshot_delta_pitch = 0;
 		snapshot_delta_scrollwheel = 0;
 		snapshot_delta_x = snapshot_delta_y = 0;
+        lost_x = lost_y = 0;
 		button_mask = 0;	// Disable all buttons (so a shot won't be fired if we enter the game with a mouse button down from clicking a GUI widget)
 		recenter_mouse();
 	}
@@ -144,6 +149,11 @@ void mouse_idle(short type)
 		sy *= 4; // Compensate for dy units being 1/4th as large as dx units
 		dx *= sx;
 		dy *= sy;
+        
+        //Add post-sensitivity lost precision, in case we can use it this time around.
+        dx += lost_x;
+        dy += lost_y;
+
 		
 		// 1 dx unit = 1 * 2^ABSOLUTE_YAW_BITS * (360 deg / 2^ANGULAR_BITS)
 		//           = 90 deg
@@ -165,9 +175,32 @@ void mouse_idle(short type)
 		
 		snapshot_delta_yaw   = static_cast<_fixed>(dx * FIXED_ONE);
 		snapshot_delta_pitch = static_cast<_fixed>(dy * FIXED_ONE);
+        
+        //Shift off the bits which cannot yet be visualized, so we can add in that lost precision on the next call.
+        snapshot_delta_yaw >>= (FIXED_FRACTIONAL_BITS-ABSOLUTE_YAW_BITS);
+        snapshot_delta_yaw <<= (FIXED_FRACTIONAL_BITS-ABSOLUTE_YAW_BITS);
+        snapshot_delta_pitch >>= (FIXED_FRACTIONAL_BITS-ABSOLUTE_PITCH_BITS);
+        snapshot_delta_pitch <<= (FIXED_FRACTIONAL_BITS-ABSOLUTE_PITCH_BITS);
+
+        //Track how much precision is ignored, so we can stuff it back into the input next time this function is called.
+        lost_x = (dx * (float)FIXED_ONE) - (float)snapshot_delta_yaw;
+        lost_y = (dy * (float)FIXED_ONE) - (float)snapshot_delta_pitch;
+        lost_x /= (float)FIXED_ONE;
+        lost_y /= (float)FIXED_ONE;
+
+        //Discard lost_y if it would put the view beyond the pitch limits.
+        _fixed minimumAbsolutePitch, maximumAbsolutePitch;
+        get_absolute_pitch_range(&minimumAbsolutePitch, &maximumAbsolutePitch);
+        if((local_player->variables.elevation == minimumAbsolutePitch && dy < 0.0) || (local_player->variables.elevation == maximumAbsolutePitch && dy > 0.0)) { lost_y=0.0; }
+        
+        should_smooth_mouselook = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_SmoothLook) && player_controlling_game() && !PLAYER_IS_DEAD(local_player);
 	}
 }
 
+//Returns the currently not-represented mouse precision as a fraction of a yaw and pitch frogblasts.
+//Subtract .5 to minimize chance for view deviation by more than .5fb from the current angle.
+float lostMousePrecisionX() { return should_smooth_mouselook?(lost_x_at_last_sample*(float)FIXED_ONE)/512.0 - 0.5:0.0;}
+float lostMousePrecisionY() { return should_smooth_mouselook?(lost_y_at_last_sample*(float)FIXED_ONE)/2048.0 - 0.5:0.0;}
 
 /*
  *  Return mouse state
@@ -180,6 +213,8 @@ void test_mouse(short type, uint32 *flags, _fixed *delta_yaw, _fixed *delta_pitc
 		*delta_pitch = snapshot_delta_pitch;
 		*delta_velocity = 0;  // Mouse-driven player velocity is unimplemented
 
+        lost_x_at_last_sample = lost_x;
+        lost_y_at_last_sample = lost_y;
 		snapshot_delta_yaw = snapshot_delta_pitch = 0;
 	} else {
 		*delta_yaw = 0;

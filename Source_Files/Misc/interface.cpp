@@ -389,9 +389,7 @@ bool player_controlling_game(
 {
 	bool player_in_control= false;
 
-	assert(game_state.state==_game_in_progress || game_state.state==_switch_demo);
-	
-	if(game_state.user==_single_player || game_state.user==_network_player)
+	if( (game_state.user==_single_player || game_state.user==_network_player) && (game_state.state==_game_in_progress || game_state.state==_switch_demo) )
 	{
 		player_in_control= true;
 	}

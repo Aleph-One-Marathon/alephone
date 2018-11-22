@@ -2033,6 +2033,10 @@ static void controls_dialog(void *arg)
 	w_toggle* accel_mouse_w = new w_toggle(input_preferences->mouse_accel_type == _mouse_accel_classic);
 	look_options->dual_add(accel_mouse_w->label("Mouse Acceleration"), d);
 	look_options->dual_add(accel_mouse_w, d);
+    
+    w_toggle *smooth_w = new w_toggle(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_SmoothLook));
+    look_options->dual_add(smooth_w->label("Fake Mouselook Precision"), d);
+    look_options->dual_add(smooth_w, d);
 	
 	look_options->add_row(new w_spacer(), true);
 	
@@ -2296,6 +2300,15 @@ static void controls_dialog(void *arg)
 			input_preferences->mouse_accel_type = atype;
 			changed = true;
 		}
+        
+        if( smooth_w->get_selection() != TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_SmoothLook) ){
+            if(smooth_w->get_selection()) {
+                graphics_preferences->OGL_Configure.Flags |= OGL_Flag_SmoothLook;
+            } else {
+                graphics_preferences->OGL_Configure.Flags &= ~OGL_Flag_SmoothLook;
+            }
+            changed = true;
+        }
 
 		int sliderPos = sens_horizontal_w->get_selection();
 		float sliderLog = kMinSensitivityLog + ((float) sliderPos) * (kSensitivityLogRange / 1000.0f);

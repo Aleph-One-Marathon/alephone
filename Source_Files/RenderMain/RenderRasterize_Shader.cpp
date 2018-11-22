@@ -22,6 +22,7 @@
 #include "OGL_Shader.h"
 #include "ChaseCam.h"
 #include "preferences.h"
+#include "mouse.h"
 
 #define MAXIMUM_VERTICES_PER_WORLD_POLYGON (MAXIMUM_VERTICES_PER_POLYGON+4)
 
@@ -158,13 +159,13 @@ void RenderRasterize_Shader::render_tree() {
 	s = Shader::get(Shader::S_Landscape);
 	s->enable();
 	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
-	s->setFloat(Shader::U_Yaw, view->yaw * AngleConvert);
-	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 : view->pitch * AngleConvert);
+	s->setFloat(Shader::U_Yaw, (view->yaw + lostMousePrecisionX()) * AngleConvert);
+	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 : (view->pitch + lostMousePrecisionY()) * AngleConvert);
 	s = Shader::get(Shader::S_LandscapeBloom);
 	s->enable();
 	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
-	s->setFloat(Shader::U_Yaw, view->yaw * AngleConvert);
-	s->setFloat(Shader::U_Pitch, view->pitch * AngleConvert);
+	s->setFloat(Shader::U_Yaw, (view->yaw + lostMousePrecisionX()) * AngleConvert);
+	s->setFloat(Shader::U_Pitch, (view->pitch + lostMousePrecisionY()) * AngleConvert);
 	Shader::disable();
 
 	RenderRasterizerClass::render_tree(kDiffuse);
@@ -952,7 +953,7 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 	glPushMatrix();
 	glTranslated(pos.x, pos.y, pos.z);
 
-	double yaw = view->yaw * 360.0 / float(NUMBER_OF_ANGLES);
+	double yaw = (view->yaw + lostMousePrecisionX()) * 360.0 / float(NUMBER_OF_ANGLES);
 	glRotated(yaw, 0.0, 0.0, 1.0);
 
 	float offset = 0;
