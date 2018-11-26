@@ -78,6 +78,7 @@ running backwards shouldn’t mean doom in a fistfight
 #include "player.h"
 #include "interface.h"
 #include "monsters.h"
+#include "preferences.h"
 
 #define DONT_REPEAT_DEFINITIONS
 #include "monster_definitions.h"
@@ -89,6 +90,8 @@ running backwards shouldn’t mean doom in a fistfight
 #include "Packing.h"
 
 #include <string.h>
+#include <cstdlib>
+#include <algorithm>
 
 /* ---------- constants */
 
@@ -125,6 +128,7 @@ static bool saved_divergence_warning;
 #endif
 
 static struct physics_constants physics_models[NUMBER_OF_PHYSICS_MODELS];
+static fixed_yaw_pitch vir_aim_delta = {0, 0};
 
 /* every other field in the player structure should be valid when this call is made */
 void initialize_player_physics_variables(
@@ -281,73 +285,6 @@ void get_absolute_pitch_range(
 	*maximum= constants->maximum_elevation;
 }
 
-/* deltas of zero are ignored; all deltas must be in [-FIXED_ONE,FIXED_ONE] which will be scaled
-	to the maximum for that value */
-uint32 mask_in_absolute_positioning_information(
-	uint32 action_flags,
-	_fixed delta_yaw,
-	_fixed delta_pitch,
-	_fixed delta_position)
-{
-	struct physics_variables *variables= &local_player->variables;
-	short encoded_delta;
-
-	if ((delta_yaw||variables->angular_velocity) && !(action_flags&_override_absolute_yaw))
-	{
-		// Bit-shifting is always done with positive_numbers,
-		// for consistent rounding regardless of direction
-		int sign_yaw = 1.0;
-		if (delta_yaw < 0)
-		{
-			sign_yaw = -1.0;
-			delta_yaw = -delta_yaw;
-		}
-//		if (delta_yaw<0 && delta_yaw>((-1)<<(FIXED_FRACTIONAL_BITS-ABSOLUTE_YAW_BITS))) delta_yaw= 0;
-		if (delta_yaw>0 && delta_yaw<((1)<<(FIXED_FRACTIONAL_BITS-ABSOLUTE_YAW_BITS))) delta_yaw= (1)<<(FIXED_FRACTIONAL_BITS-ABSOLUTE_YAW_BITS);
-		encoded_delta= sign_yaw*(delta_yaw>>(FIXED_FRACTIONAL_BITS-ABSOLUTE_YAW_BITS))+MAXIMUM_ABSOLUTE_YAW/2;
-		encoded_delta= PIN(encoded_delta, 0, MAXIMUM_ABSOLUTE_YAW-1);
-		action_flags= SET_ABSOLUTE_YAW(action_flags, encoded_delta)|_absolute_yaw_mode;
-	}
-
-	// Explicit and automatic recentering do not occur under absolute pitch mode; therefore we
-	// 1) try to always use absolute pitch mode if the user doesn't want auto-recentering; and
-	// 2) always avoid absolute pitch mode while an explicit recentering operation is in progress
-	// (pitch control is necessarily locked out until the recentering completes; no way to cancel)
-	
-	const bool explicitlyRecentering = variables->flags & _RECENTERING_BIT;
-	
-	if ((delta_pitch || variables->vertical_angular_velocity || dont_auto_recenter()) &&
-		!(action_flags & _override_absolute_pitch) && !explicitlyRecentering)
-	{
-//		if (delta_pitch<0 && delta_pitch>((-1)<<(FIXED_FRACTIONAL_BITS-ABSOLUTE_PITCH_BITS))) delta_pitch= 0;
-		int sign_pitch = 1.0;
-		if (delta_pitch < 0)
-		{
-			sign_pitch = -1.0;
-			delta_pitch = -delta_pitch;
-		}
-		if (delta_pitch>0 && delta_pitch<((1)<<(FIXED_FRACTIONAL_BITS-ABSOLUTE_PITCH_BITS))) delta_pitch= (1)<<(FIXED_FRACTIONAL_BITS-ABSOLUTE_PITCH_BITS);
-		encoded_delta= sign_pitch*(delta_pitch>>(FIXED_FRACTIONAL_BITS-ABSOLUTE_PITCH_BITS))+MAXIMUM_ABSOLUTE_PITCH/2;
-		encoded_delta= PIN(encoded_delta, 0, MAXIMUM_ABSOLUTE_PITCH-1);
-		action_flags= SET_ABSOLUTE_PITCH(action_flags, encoded_delta)|_absolute_pitch_mode;
-	}
-
-	if (delta_position && !(action_flags&_override_absolute_position))
-	{
-		int sign_position = 1.0;
-		if (delta_position < 0)
-		{
-			sign_position = -1.0;
-			delta_position = -delta_position;
-		}
-		encoded_delta= sign_position*(delta_position>>(FIXED_FRACTIONAL_BITS-ABSOLUTE_POSITION_BITS))+MAXIMUM_ABSOLUTE_POSITION/2;
-		encoded_delta= PIN(encoded_delta, 0, MAXIMUM_ABSOLUTE_POSITION-1);
-		action_flags= SET_ABSOLUTE_POSITION(action_flags, encoded_delta)|_absolute_position_mode;
-	}
-
-	return action_flags;
-}
-
 void kill_player_physics_variables(
 	short player_index)
 {
@@ -367,6 +304,89 @@ _fixed get_player_forward_velocity_scale(
 		dy*sine_table[FIXED_INTEGERAL_PART(variables->direction)])>>TRIG_SHIFT))/constants->maximum_forward_velocity;
 }
 
+fixed_yaw_pitch virtual_aim_delta()
+{
+	return vir_aim_delta;
+}
+
+void resync_virtual_aim()
+{
+	vir_aim_delta = {0, 0};
+}
+
+uint32 process_aim_input(uint32 action_flags, fixed_yaw_pitch delta)
+{
+	// Classic behavior modes
+	const bool classic_precision = !(Get_OGL_ConfigureData().Flags & OGL_Flag_SmoothLook);
+	const bool classic_limits = input_preferences->classic_aim_speed_limits;
+	
+	// Classic precision behavior:
+	// - round magnitudes within (0, FIXED_ONE) to FIXED_ONE
+	// - round toward zero instead of nearest
+	// - lock virtual aim to physical aim
+	
+	auto clamp = [classic_limits](fixed_angle theta, int encoding_bits) -> fixed_angle
+	{
+		const angle encoding_bias = (1<<encoding_bits)/2;
+		const angle encoding_limit = encoding_bias - 1; // encoding supports [-bias, bias-1] but we want +/- symmetry
+		const angle limit = classic_limits ? encoding_bias/2 : encoding_limit;
+		return A1_PIN(theta, -limit*FIXED_ONE, limit*FIXED_ONE);
+	};
+	
+	auto round = [classic_precision](fixed_angle theta) -> angle
+	{
+		return classic_precision ?
+			SGN(theta) * std::max<angle>(1, std::abs(theta/FIXED_ONE)) :
+			(theta + SGN(theta)*FIXED_ONE/2) / FIXED_ONE;
+	};
+	
+	auto encode = [](angle theta, int encoding_bits) -> uint32
+	{
+		return (theta + (1<<encoding_bits)/2) & ((1<<encoding_bits) - 1);
+	};
+	
+	const physics_variables& local_phys = local_player->variables;
+	
+	// The delta from the current physical aim to the requested virtual aim
+	const fixed_yaw_pitch full_delta = {delta.yaw + vir_aim_delta.yaw, delta.pitch + vir_aim_delta.pitch};
+	
+	// Process yaw input
+	if (!(action_flags & _override_absolute_yaw))
+	{
+		const fixed_angle target = clamp(full_delta.yaw, ABSOLUTE_YAW_BITS); // the high-precision target delta
+		const angle payload = round(target); // the low-precision delta to be encoded
+		
+		if (payload || local_phys.angular_velocity)
+			action_flags = SET_ABSOLUTE_YAW(action_flags, encode(payload, ABSOLUTE_YAW_BITS)) | _absolute_yaw_mode;
+		
+		// Update virtual yaw
+		vir_aim_delta.yaw = classic_precision ? 0 : target - payload*FIXED_ONE;
+		assert(std::abs(vir_aim_delta.yaw) <= FIXED_ONE/2);
+	}
+	
+	// Explicit and automatic recentering do not occur under absolute pitch mode; therefore we
+	// 1) try to always use absolute pitch mode if the user doesn't want auto-recentering; and
+	// 2) always avoid absolute pitch mode while an explicit recentering operation is in progress
+	// (pitch control is necessarily locked out until the recentering completes; no way to cancel)
+	
+	const bool explicitly_recentering = local_phys.flags & _RECENTERING_BIT;
+	
+	// Process pitch input
+	if (!(action_flags & _override_absolute_pitch) && !explicitly_recentering)
+	{
+		const fixed_angle target = clamp(full_delta.pitch, ABSOLUTE_PITCH_BITS); // the high-precision target delta
+		const angle payload = round(target); // the low-precision delta to be encoded
+		
+		if (payload || local_phys.vertical_angular_velocity || dont_auto_recenter())
+			action_flags = SET_ABSOLUTE_PITCH(action_flags, encode(payload, ABSOLUTE_PITCH_BITS)) | _absolute_pitch_mode;
+		
+		// Update virtual pitch
+		vir_aim_delta.pitch = classic_precision ? 0 : target - payload*FIXED_ONE;
+		assert(std::abs(vir_aim_delta.pitch) <= FIXED_ONE/2);
+	}
+	
+	return action_flags;
+}
 
 
 /* ---------- private code */
@@ -520,6 +540,8 @@ static void physics_update(
 	short sine, cosine;
 	_fixed delta_z;
 	_fixed delta; /* used as a scratch ‘change’ variable */
+	
+	const bool player_is_local = (player - &players[0] == local_player_index);
 
 	if (PLAYER_IS_DEAD(player)) /* dead players immediately loose all bodily control */
 	{
@@ -541,6 +563,10 @@ static void physics_update(
 		}
 		
 		variables->floor_height-= DROP_DEAD_HEIGHT;
+		
+		// Prohibit twitching while dead (!)
+		if (player_is_local)
+			resync_virtual_aim();
 	}
 	delta_z= variables->position.z-variables->floor_height;
 
@@ -603,6 +629,10 @@ static void physics_update(
 					FLOOR(variables->head_direction-constants->fast_angular_velocity, 0) :
 					CEILING(variables->head_direction+constants->fast_angular_velocity, 0);
 		}
+		
+		// Let yaw controls resync virtual yaw
+		if (player_is_local && (action_flags & (_turning|_looking)) != 0)
+			vir_aim_delta.yaw = 0;
 	}
 
 	if (action_flags&_absolute_pitch_mode)
@@ -636,6 +666,10 @@ static void physics_update(
 				{
 					variables->elevation= FLOOR(variables->elevation-constants->angular_recentering_velocity, 0);
 				}
+				
+				// Let auto-recentering resync virtual pitch
+				if (player_is_local)
+					vir_aim_delta.pitch = 0;
 			}
 		}
 
@@ -656,6 +690,10 @@ static void physics_update(
 					CEILING(variables->vertical_angular_velocity+constants->angular_deceleration, 0);
 				break;
 		}
+		
+		// Let pitch controls resync virtual pitch
+		if (player_is_local && (action_flags & _looking_vertically) != 0)
+			vir_aim_delta.pitch = 0;
 	}
 
 	/* if we’re on the ground (or rising up from it), allow movement; if we’re flying through
@@ -758,6 +796,15 @@ static void physics_update(
 			variables->elevation= variables->vertical_angular_velocity= 0;
 			variables->flags&= (uint16)~_RECENTERING_BIT;
 		}
+	}
+	
+	// Also clamp virtual pitch to +/- constants->maximum_elevation
+	if (player_is_local)
+	{
+		const fixed_angle old_v_pitch = variables->elevation + vir_aim_delta.pitch;
+		const fixed_angle new_v_pitch = A1_PIN(old_v_pitch, -constants->maximum_elevation, constants->maximum_elevation);
+		vir_aim_delta.pitch = new_v_pitch - variables->elevation;
+		assert(std::abs(vir_aim_delta.pitch) <= FIXED_ONE/2);
 	}
 
 	/* change the player’s heading based on his angular velocities */

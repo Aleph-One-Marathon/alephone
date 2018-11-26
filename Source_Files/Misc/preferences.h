@@ -200,7 +200,9 @@ struct input_preferences_data
 	int16 mouse_accel_type;
 	float mouse_accel_scale;
 	bool raw_mouse_input;
-	float mouse_max_speed;
+	
+	// Limit absolute-mode {yaw, pitch} deltas per tick to +/- {32, 8} instead of {63, 15}
+	bool classic_aim_speed_limits;
 	
 	bool controller_analog;
 	_fixed controller_sensitivity;
