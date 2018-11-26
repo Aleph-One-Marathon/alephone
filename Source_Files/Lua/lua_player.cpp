@@ -2024,7 +2024,11 @@ static int Lua_Player_Set_Direction(lua_State *L)
 	player_data *player = get_player_data(player_index);
 	player->variables.direction = INTEGER_TO_FIXED((int)(facing/AngleConvert));
 	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0), &player->variables, player_index, false, false);
-	resync_virtual_aim();
+	
+	// Lua control locks virtual aim to physical aim
+	if (player_index == local_player_index)
+		resync_virtual_aim();
+	
 	return 0;
 }
 
@@ -2039,7 +2043,11 @@ static int Lua_Player_Set_Elevation(lua_State *L)
 	player_data *player = get_player_data(player_index);
 	player->variables.elevation = INTEGER_TO_FIXED((int)(elevation/AngleConvert));
 	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0), &player->variables, player_index, false, false);
-	resync_virtual_aim();
+	
+	// Lua control locks virtual aim to physical aim
+	if (player_index == local_player_index)
+		resync_virtual_aim();
+	
 	return 0;
 }
 
