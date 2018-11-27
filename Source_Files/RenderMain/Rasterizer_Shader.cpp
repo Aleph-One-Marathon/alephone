@@ -25,7 +25,6 @@
 #include "preferences.h"
 #include "fades.h"
 #include "screen.h"
-#include "mouse.h"
 
 #define MAXIMUM_VERTICES_PER_WORLD_POLYGON (MAXIMUM_VERTICES_PER_POLYGON+4)
 
@@ -71,8 +70,8 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 	ytan *= view.real_world_to_screen_y / double(view.world_to_screen_y);
 	xtan *= view.real_world_to_screen_x / double(view.world_to_screen_x);
 
-	double yaw = (view.yaw + lostMousePrecisionX()) * 360.0 / float(NUMBER_OF_ANGLES);
-	double pitch = (view.pitch + lostMousePrecisionY()) * 360.0 / float(NUMBER_OF_ANGLES);
+	double yaw = (view.yaw + virtual_aim_delta().yaw / float{FIXED_ONE}) * (360.0 / FULL_CIRCLE);
+	double pitch = (view.pitch + virtual_aim_delta().pitch / float{FIXED_ONE}) * (360.0 / FULL_CIRCLE);
 	pitch = (pitch > 180.0 ? pitch -360.0 : pitch);
 	
 	glMatrixMode(GL_PROJECTION);

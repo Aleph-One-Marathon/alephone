@@ -44,13 +44,9 @@
 // Global variables
 static bool mouse_active = false;
 static uint8 button_mask = 0;		// Mask of enabled buttons
-static _fixed snapshot_delta_yaw, snapshot_delta_pitch;
+static fixed_yaw_pitch mouselook_delta = {0, 0};
 static _fixed snapshot_delta_scrollwheel;
 static int snapshot_delta_x, snapshot_delta_y;
-
-static float lost_x, lost_y; //Stores the unrealized mouselook precision.
-static float lost_x_at_last_sample, lost_y_at_last_sample; //Stores the unrealized mouse presion values as of sample time, which can be used by the renderer. Capturing this value eliminates jitter in multiplayer.
-static bool should_smooth_mouselook;
 
 
 /*
@@ -67,10 +63,9 @@ void enter_mouse(short type)
 		SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, input_preferences->raw_mouse_input ? "0" : "1");
 		SDL_SetRelativeMouseMode(SDL_TRUE);
 		mouse_active = true;
-		snapshot_delta_yaw = snapshot_delta_pitch = 0;
+		mouselook_delta = {0, 0};
 		snapshot_delta_scrollwheel = 0;
 		snapshot_delta_x = snapshot_delta_y = 0;
-        lost_x = lost_y = 0;
 		button_mask = 0;	// Disable all buttons (so a shot won't be fired if we enter the game with a mouse button down from clicking a GUI widget)
 		recenter_mouse();
 	}
@@ -132,95 +127,35 @@ void mouse_idle(short type)
 		if (TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse))
 			dy = -dy;
 		
-		// scale input by sensitivity
-		const float sensitivityScale = 1.f / (66.f * FIXED_ONE);
-		float sx = sensitivityScale * input_preferences->sens_horizontal;
-		float sy = sensitivityScale * input_preferences->sens_vertical;
+		// Delta sensitivities
+		const float angle_per_scaled_delta = 128/66.f; // assuming _mouse_accel_none
+		float sx = angle_per_scaled_delta * (input_preferences->sens_horizontal / float{FIXED_ONE});
+		float sy = angle_per_scaled_delta * (input_preferences->sens_vertical / float{FIXED_ONE});
 		switch (input_preferences->mouse_accel_type)
 		{
 			case _mouse_accel_classic:
-				sx *= MIX(1.f, fabs(dx * sx) * 4.f, input_preferences->mouse_accel_scale);
-				sy *= MIX(1.f, fabs(dy * sy) * 4.f, input_preferences->mouse_accel_scale);
+				sx *= MIX(1.f, (1/32.f) * fabs(dx * sx), input_preferences->mouse_accel_scale);
+				sy *= MIX(1.f, (1/32.f) * fabs(dy * sy), input_preferences->mouse_accel_scale);
 				break;
 			case _mouse_accel_none:
 			default:
 				break;
 		}
-		sy *= 4; // Compensate for dy units being 1/4th as large as dx units
-		dx *= sx;
-		dy *= sy;
-        
-        //Add post-sensitivity lost precision, in case we can use it this time around.
-        dx += lost_x;
-        dy += lost_y;
-
 		
-		// 1 dx unit = 1 * 2^ABSOLUTE_YAW_BITS * (360 deg / 2^ANGULAR_BITS)
-		//           = 90 deg
-		//
-		// 1 dy unit = 1 * 2^ABSOLUTE_PITCH_BITS * (360 deg / 2^ANGULAR_BITS)
-		//           = 22.5 deg
+		// Angular deltas
+		const fixed_angle dyaw = static_cast<fixed_angle>(sx * dx * FIXED_ONE);
+		const fixed_angle dpitch = static_cast<fixed_angle>(sy * dy * FIXED_ONE);
 		
-		// Largest dx for which both -dx and +dx can be represented in 1 action flags bitset
-		float dxLimit = 0.5f - 1.f / (1<<ABSOLUTE_YAW_BITS);  // 0.4921875 dx units (~44.30 deg)
-		
-		// Largest dy for which both -dy and +dy can be represented in 1 action flags bitset
-		float dyLimit = 0.5f - 1.f / (1<<ABSOLUTE_PITCH_BITS);  // 0.46875 dy units (~10.55 deg)
-		
-		dxLimit = MIN(dxLimit, input_preferences->mouse_max_speed);
-		dyLimit = MIN(dyLimit, input_preferences->mouse_max_speed);
-		
-		dx = PIN(dx, -dxLimit, dxLimit);
-		dy = PIN(dy, -dyLimit, dyLimit);
-		
-		snapshot_delta_yaw   = static_cast<_fixed>(dx * FIXED_ONE);
-		snapshot_delta_pitch = static_cast<_fixed>(dy * FIXED_ONE);
-        
-        //Shift off the bits which cannot yet be visualized, so we can add in that lost precision on the next call.
-        snapshot_delta_yaw >>= (FIXED_FRACTIONAL_BITS-ABSOLUTE_YAW_BITS);
-        snapshot_delta_yaw <<= (FIXED_FRACTIONAL_BITS-ABSOLUTE_YAW_BITS);
-        snapshot_delta_pitch >>= (FIXED_FRACTIONAL_BITS-ABSOLUTE_PITCH_BITS);
-        snapshot_delta_pitch <<= (FIXED_FRACTIONAL_BITS-ABSOLUTE_PITCH_BITS);
-
-        //Track how much precision is ignored, so we can stuff it back into the input next time this function is called.
-        lost_x = (dx * (float)FIXED_ONE) - (float)snapshot_delta_yaw;
-        lost_y = (dy * (float)FIXED_ONE) - (float)snapshot_delta_pitch;
-        lost_x /= (float)FIXED_ONE;
-        lost_y /= (float)FIXED_ONE;
-
-        //Discard lost_y if it would put the view beyond the pitch limits.
-        _fixed minimumAbsolutePitch, maximumAbsolutePitch;
-        get_absolute_pitch_range(&minimumAbsolutePitch, &maximumAbsolutePitch);
-        if((local_player->variables.elevation == minimumAbsolutePitch && dy < 0.0) || (local_player->variables.elevation == maximumAbsolutePitch && dy > 0.0)) { lost_y=0.0; }
-        
-        should_smooth_mouselook = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_SmoothLook) && player_controlling_game() && !PLAYER_IS_DEAD(local_player);
+		// Push mouselook delta
+		mouselook_delta = {dyaw, dpitch};
 	}
 }
 
-//Returns the currently not-represented mouse precision as a fraction of a yaw and pitch frogblasts.
-//Subtract .5 to minimize chance for view deviation by more than .5fb from the current angle.
-float lostMousePrecisionX() { return should_smooth_mouselook?(lost_x_at_last_sample*(float)FIXED_ONE)/512.0 - 0.5:0.0;}
-float lostMousePrecisionY() { return should_smooth_mouselook?(lost_y_at_last_sample*(float)FIXED_ONE)/2048.0 - 0.5:0.0;}
-
-/*
- *  Return mouse state
- */
-
-void test_mouse(short type, uint32 *flags, _fixed *delta_yaw, _fixed *delta_pitch, _fixed *delta_velocity)
+fixed_yaw_pitch pull_mouselook_delta()
 {
-	if (mouse_active) {
-		*delta_yaw = snapshot_delta_yaw;
-		*delta_pitch = snapshot_delta_pitch;
-		*delta_velocity = 0;  // Mouse-driven player velocity is unimplemented
-
-        lost_x_at_last_sample = lost_x;
-        lost_y_at_last_sample = lost_y;
-		snapshot_delta_yaw = snapshot_delta_pitch = 0;
-	} else {
-		*delta_yaw = 0;
-		*delta_pitch = 0;
-		*delta_velocity = 0;
-	}
+	auto delta = mouselook_delta;
+	mouselook_delta = {0, 0};
+	return delta;
 }
 
 

@@ -67,6 +67,7 @@ Jul 1, 2000 (Loren Petrich):
 /* ---------- types */
 
 typedef int16 angle;
+typedef _fixed fixed_angle; // angle with _fixed precision
 typedef int16 world_distance;
 
 /* ---------- macros */
@@ -154,6 +155,11 @@ struct long_vector3d
 	int32 i, j, k;
 };
 typedef struct long_vector3d long_vector3d;
+
+/* ---------- angle structures */
+
+// A relative or (possibly non-normalized) absolute direction
+struct fixed_yaw_pitch { fixed_angle yaw, pitch; };
 
 /* ---------- locations */
 

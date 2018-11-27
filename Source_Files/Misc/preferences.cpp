@@ -3057,7 +3057,7 @@ InfoTree input_preferences_tree()
 	root.put_attr("modifiers", input_preferences->modifiers);
 	root.put_attr("sens_horizontal", input_preferences->sens_horizontal);
 	root.put_attr("sens_vertical", input_preferences->sens_vertical);
-	root.put_attr("mouse_max_speed", input_preferences->mouse_max_speed);
+	root.put_attr("classic_aim_speed_limits", input_preferences->classic_aim_speed_limits);
 	root.put_attr("mouse_accel_type", input_preferences->mouse_accel_type);
 	root.put_attr("mouse_accel_scale", input_preferences->mouse_accel_scale);
 	root.put_attr("raw_mouse_input", input_preferences->raw_mouse_input);
@@ -3343,7 +3343,7 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->mouse_accel_type = _mouse_accel_none;
 	preferences->mouse_accel_scale = 1.f;
 	preferences->raw_mouse_input = true;
-	preferences->mouse_max_speed = .25f;
+	preferences->classic_aim_speed_limits = true;
 
 	preferences->controller_analog = true;
 	preferences->controller_sensitivity = FIXED_ONE;
@@ -3888,9 +3888,13 @@ void parse_input_preferences(InfoTree root, std::string version)
 			input_preferences->sens_vertical /= 4;
 	}
 	
-	if (!version.length() || version < "20170205")
-		input_preferences->mouse_max_speed = .25f;
-	root.read_attr("mouse_max_speed", input_preferences->mouse_max_speed);
+	if (!root.read_attr("classic_aim_speed_limits", input_preferences->classic_aim_speed_limits))
+	{
+		// Assume users with older prefs with "mouse_max_speed" above its default value don't want classic limits
+		float mouse_max_speed;
+		if (root.read_attr("mouse_max_speed", mouse_max_speed) && mouse_max_speed > 0.25)
+			input_preferences->classic_aim_speed_limits = false;
+	}
 
 	// old prefs may have boolean acceleration flag
 	bool accel = false;

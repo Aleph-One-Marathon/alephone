@@ -156,16 +156,18 @@ void RenderRasterize_Shader::render_tree() {
 			usefog = true;
 		}
 	}
+	const float virtual_yaw = (view->yaw + virtual_aim_delta().yaw / float{FIXED_ONE}) * AngleConvert;
+	const float virtual_pitch = (view->pitch + virtual_aim_delta().pitch / float{FIXED_ONE}) * AngleConvert;
 	s = Shader::get(Shader::S_Landscape);
 	s->enable();
 	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
-	s->setFloat(Shader::U_Yaw, (view->yaw + lostMousePrecisionX()) * AngleConvert);
-	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 : (view->pitch + lostMousePrecisionY()) * AngleConvert);
+	s->setFloat(Shader::U_Yaw, virtual_yaw);
+	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 : virtual_pitch);
 	s = Shader::get(Shader::S_LandscapeBloom);
 	s->enable();
 	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
-	s->setFloat(Shader::U_Yaw, (view->yaw + lostMousePrecisionX()) * AngleConvert);
-	s->setFloat(Shader::U_Pitch, (view->pitch + lostMousePrecisionY()) * AngleConvert);
+	s->setFloat(Shader::U_Yaw, virtual_yaw);
+	s->setFloat(Shader::U_Pitch, virtual_pitch);
 	Shader::disable();
 
 	RenderRasterizerClass::render_tree(kDiffuse);
@@ -953,7 +955,7 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 	glPushMatrix();
 	glTranslated(pos.x, pos.y, pos.z);
 
-	double yaw = (view->yaw + lostMousePrecisionX()) * 360.0 / float(NUMBER_OF_ANGLES);
+	double yaw = (view->yaw + virtual_aim_delta().yaw / float{FIXED_ONE}) * (360.0 / FULL_CIRCLE);
 	glRotated(yaw, 0.0, 0.0, 1.0);
 
 	float offset = 0;
