@@ -541,7 +541,7 @@ static void physics_update(
 	_fixed delta_z;
 	_fixed delta; /* used as a scratch ‘change’ variable */
 	
-	const bool player_is_local = (player - &players[0] == local_player_index);
+	const bool player_is_local = (player == local_player);
 
 	if (PLAYER_IS_DEAD(player)) /* dead players immediately loose all bodily control */
 	{
