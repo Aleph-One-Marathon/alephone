@@ -134,6 +134,9 @@ static fixed_yaw_pitch vir_aim_delta = {0, 0};
 void initialize_player_physics_variables(
 	short player_index)
 {
+	if (player_index == local_player_index)
+		resync_virtual_aim();
+	
 	struct player_data *player= get_player_data(player_index);
 	struct monster_data *monster= get_monster_data(player->monster_index);
 	struct object_data *object= get_object_data(monster->object_index);
@@ -541,7 +544,7 @@ static void physics_update(
 	_fixed delta_z;
 	_fixed delta; /* used as a scratch ÔchangeÕ variable */
 	
-	const bool player_is_local = (player - &players[0] == local_player_index);
+	const bool player_is_local = (player == local_player);
 
 	if (PLAYER_IS_DEAD(player)) /* dead players immediately loose all bodily control */
 	{
@@ -785,10 +788,29 @@ static void physics_update(
 		variables->external_velocity.k+= constants->climbing_acceleration;
 	}
 
-	/* change the playerÕs elevation based on his vertical angular velocity; if weÕre recentering and
-		have recentered clear the recentering bit */
+	// Apply vertical angular velocity
 	variables->elevation+= variables->vertical_angular_velocity;
+	
+	// Clamp virtual pitch to the effective limits of the low-precision physical pitch
+	// (this won't enlarge the virtual pitch delta)
+	if (player_is_local)
+	{
+		const fixed_angle min_pitch = FIXED_INTEGERAL_PART(-constants->maximum_elevation) * FIXED_ONE;
+		const fixed_angle max_pitch = FIXED_INTEGERAL_PART(constants->maximum_elevation) * FIXED_ONE;
+		const fixed_angle unclamped_physical_pitch = FIXED_INTEGERAL_PART(variables->elevation) * FIXED_ONE;
+		const fixed_angle unclamped_virtual_pitch = unclamped_physical_pitch + vir_aim_delta.pitch;
+		const fixed_angle clamped_physical_pitch = A1_PIN(unclamped_physical_pitch, min_pitch, max_pitch);
+		const fixed_angle clamped_virtual_pitch = A1_PIN(unclamped_virtual_pitch, min_pitch, max_pitch);
+		const fixed_angle new_delta = clamped_virtual_pitch - clamped_physical_pitch;
+		assert(std::abs(new_delta) <= std::abs(vir_aim_delta.pitch));
+		vir_aim_delta.pitch = new_delta;
+	}
+	
+	// Clamp high-precision physical pitch to physics model limits
+	// (note that the low-precision pitch can slightly violate a non-integral lower bound due to rounding toward -inf)
 	variables->elevation= PIN(variables->elevation, -constants->maximum_elevation, constants->maximum_elevation);
+	
+	// If we're explicitly recentering and have reached or passed 0 pitch, stop at 0
 	if ((variables->flags&_RECENTERING_BIT) && !(action_flags&_absolute_pitch_mode))
 	{
 		if ((variables->elevation<=0&&(action_flags&_looking_down))||(variables->elevation>=0&&(action_flags&_looking_up)))
@@ -796,15 +818,6 @@ static void physics_update(
 			variables->elevation= variables->vertical_angular_velocity= 0;
 			variables->flags&= (uint16)~_RECENTERING_BIT;
 		}
-	}
-	
-	// Also clamp virtual pitch to +/- constants->maximum_elevation
-	if (player_is_local)
-	{
-		const fixed_angle old_v_pitch = variables->elevation + vir_aim_delta.pitch;
-		const fixed_angle new_v_pitch = A1_PIN(old_v_pitch, -constants->maximum_elevation, constants->maximum_elevation);
-		vir_aim_delta.pitch = new_v_pitch - variables->elevation;
-		assert(std::abs(vir_aim_delta.pitch) <= FIXED_ONE/2);
 	}
 
 	/* change the playerÕs heading based on his angular velocities */
