@@ -480,7 +480,14 @@ void allocate_player_memory(void);
 void set_local_player_index(short player_index);
 void set_current_player_index(short player_index);
 
-short new_player(short team, short color, short player_identifier);
+// Flags for new_player()
+using new_player_flags = uint32;
+constexpr new_player_flags
+	new_player_make_local = 1u << 0,
+	new_player_make_current = 1u << 1,
+	new_player_make_local_and_current = new_player_make_local | new_player_make_current;
+
+short new_player(short team, short color, short player_identifier, new_player_flags flags);
 void delete_player(short player_number);
 
 void recreate_players_for_new_level(void);
