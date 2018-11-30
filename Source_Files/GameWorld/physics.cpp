@@ -134,6 +134,9 @@ static fixed_yaw_pitch vir_aim_delta = {0, 0};
 void initialize_player_physics_variables(
 	short player_index)
 {
+	if (player_index == local_player_index)
+		resync_virtual_aim();
+	
 	struct player_data *player= get_player_data(player_index);
 	struct monster_data *monster= get_monster_data(player->monster_index);
 	struct object_data *object= get_object_data(monster->object_index);
