@@ -28,6 +28,8 @@
 
 #define MAXIMUM_VERTICES_PER_WORLD_POLYGON (MAXIMUM_VERTICES_PER_POLYGON+4)
 
+const float FixedAngleToDegrees = 360.0/(float(FIXED_ONE)*float(FULL_CIRCLE));
+
 const GLdouble kViewBaseMatrix[16] = {
 	0,	0,	-1,	0,
 	1,	0,	0,	0,
@@ -70,9 +72,9 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 	ytan *= view.real_world_to_screen_y / double(view.world_to_screen_y);
 	xtan *= view.real_world_to_screen_x / double(view.world_to_screen_x);
 
-	double yaw = (view.yaw + virtual_aim_delta().yaw / float{FIXED_ONE}) * (360.0 / FULL_CIRCLE);
-	double pitch = (view.pitch + virtual_aim_delta().pitch / float{FIXED_ONE}) * (360.0 / FULL_CIRCLE);
-	pitch = (pitch > 180.0 ? pitch -360.0 : pitch);
+	double yaw = view.virtual_yaw * FixedAngleToDegrees;
+	double pitch = view.virtual_pitch * FixedAngleToDegrees;
+	pitch = (pitch > 180.0 ? pitch - 360.0 : pitch);
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
