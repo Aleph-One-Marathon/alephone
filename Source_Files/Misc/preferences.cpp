@@ -2034,7 +2034,7 @@ static void controls_dialog(void *arg)
 	look_options->dual_add(accel_mouse_w->label("Mouse Acceleration"), d);
 	look_options->dual_add(accel_mouse_w, d);
     
-    w_toggle *smooth_w = new w_toggle(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_SmoothLook));
+    w_toggle *smooth_w = new w_toggle(input_preferences->extra_mouse_precision);
     look_options->dual_add(smooth_w->label("Fake Mouselook Precision"), d);
     look_options->dual_add(smooth_w, d);
 	
@@ -2300,13 +2300,9 @@ static void controls_dialog(void *arg)
 			input_preferences->mouse_accel_type = atype;
 			changed = true;
 		}
-        
-        if( smooth_w->get_selection() != TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_SmoothLook) ){
-            if(smooth_w->get_selection()) {
-                graphics_preferences->OGL_Configure.Flags |= OGL_Flag_SmoothLook;
-            } else {
-                graphics_preferences->OGL_Configure.Flags &= ~OGL_Flag_SmoothLook;
-            }
+		
+        if (smooth_w->get_selection() != input_preferences->extra_mouse_precision) {
+			input_preferences->extra_mouse_precision = smooth_w->get_selection();
             changed = true;
         }
 
@@ -3061,6 +3057,7 @@ InfoTree input_preferences_tree()
 	root.put_attr("mouse_accel_type", input_preferences->mouse_accel_type);
 	root.put_attr("mouse_accel_scale", input_preferences->mouse_accel_scale);
 	root.put_attr("raw_mouse_input", input_preferences->raw_mouse_input);
+	root.put_attr("extra_mouse_precision", input_preferences->extra_mouse_precision);
 	
 	root.put_attr("controller_analog", input_preferences->controller_analog);
 	root.put_attr("controller_sensitivity", input_preferences->controller_sensitivity);
@@ -3343,6 +3340,7 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->mouse_accel_type = _mouse_accel_none;
 	preferences->mouse_accel_scale = 1.f;
 	preferences->raw_mouse_input = true;
+	preferences->extra_mouse_precision = true;
 	preferences->classic_aim_speed_limits = true;
 
 	preferences->controller_analog = true;
@@ -3911,6 +3909,9 @@ void parse_input_preferences(InfoTree root, std::string version)
 	if (!version.length() || version < "20170821")
 		input_preferences->raw_mouse_input = false;
 	root.read_attr("raw_mouse_input", input_preferences->raw_mouse_input);
+	if (!version.length() || version < "20181208")
+		input_preferences->extra_mouse_precision = false;
+	root.read_attr("extra_mouse_precision", input_preferences->extra_mouse_precision);
 	root.read_attr("controller_analog", input_preferences->controller_analog);
 	root.read_attr("controller_sensitivity", input_preferences->controller_sensitivity);
 	root.read_attr("controller_deadzone", input_preferences->controller_deadzone);
