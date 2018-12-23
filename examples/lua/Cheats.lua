@@ -24,6 +24,9 @@
 -- qwe()		Jump
 -- shit()		Everything (almost)
 -- yourmom()		Save at this spot
+-- sesame()		Activate what's currently pointed at
+-- wtf()		Show the level completion state
+-- kyt()		Trigger-based invincibility
 
 function nrg()
    if Players[0].life < 150 then 
@@ -124,6 +127,24 @@ end
 
 function qwe()
    Players[0]:accelerate(0, 0, 0.1)
+end
+
+function sesame()
+   Players[0]:find_action_key_target().active = true
+end
+
+function wtf()
+   Players[0]:print(Level.calculate_completion_state())
+end
+
+kyt_enabled = false
+function kyt()
+   kyt_enabled = not kyt_enabled
+   if kyt_enabled then
+      Players.print("Invincibility enabled")
+   else
+      Players.print("Invincibility disabled")
+   end
 end
 
 Triggers = {}
