@@ -129,7 +129,6 @@ end
 Triggers = {}
 
 function Triggers.idle()
-
    if Game.ticks == 0 then
       Players.print("Cheats enabled")
    end
@@ -137,14 +136,21 @@ function Triggers.idle()
    -- handle jumping
    for p in Players() do
       if p.action_flags.microphone_button then
-	 if not p._latched then
-	    p._latched = true
-	    p:accelerate(0, 0, 0.1)
-	 end
-	 p.action_flags.microphone_button = false
+         if not p._latched then
+            p._latched = true
+            p:accelerate(0, 0, 0.1)
+         end
+         p.action_flags.microphone_button = false
       else
-	 p._latched = false
+         p._latched = false
       end
    end
+end
 
+function Triggers.player_damaged(victim, aggressor_player, aggressor_monster, damage_type, damage_amount, projectile)
+   if victim.index == 0 and kyt_enabled then
+      if Players[0].life < 0 then
+         Players[0].life = 1
+      end
+   end
 end
