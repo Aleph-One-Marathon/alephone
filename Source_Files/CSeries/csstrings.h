@@ -26,7 +26,9 @@
 #ifndef _CSERIES_STRINGS_
 #define _CSERIES_STRINGS_
 
-#if defined(__GNUC__)
+#if defined(__clang__)
+#define PRINTF_STYLE_ARGS(n,m) __attribute__((__format__(__printf__,n,m)))
+#elif defined(__GNUC__)
 #define PRINTF_STYLE_ARGS(n,m) __attribute__((format(gnu_printf,n,m)))
 #else
 #define PRINTF_STYLE_ARGS(n,m)

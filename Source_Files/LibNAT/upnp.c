@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "libnat.h"
-#include "http.h"
+#include "http_libnat.h"
 #include "ssdp.h"
 #include "os.h"       /* for getting the local ip */
 #include "utility.h"

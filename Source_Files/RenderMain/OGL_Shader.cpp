@@ -28,29 +28,6 @@
 #include "InfoTree.h"
 
 
-// gl_ClipVertex workaround
-// In Mac OS X 10.4 and Mesa, setting gl_ClipVertex causes a black screen.
-// Unfortunately, it's required for proper 5-D space on other
-// systems. This workaround comments out its use under 10.4 or Mesa.
-#if (defined(__APPLE__) && defined(__MACH__))
-#include <sys/utsname.h>
-
-// On Tiger, uname -r starts with "8."
-inline bool DisableClipVertex() {
-	struct utsname uinfo;
-	uname(&uinfo);
-	if (uinfo.release[0] == '8' && uinfo.release[1] == '.')
-		return true;
-	return false;
-}
-#else
-inline bool DisableClipVertex() { 
-	const GLubyte* renderer = glGetString(GL_RENDERER);
-	return (renderer && strncmp(reinterpret_cast<const char*>(renderer), "Mesa", 4) == 0);
-}
-#endif
-
-
 static std::map<std::string, std::string> defaultVertexPrograms;
 static std::map<std::string, std::string> defaultFragmentPrograms;
 void initDefaultPrograms();
@@ -73,7 +50,6 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
 	"offsetx",
 	"offsety",
 	"pass",
-	"usestatic",
 	"usefog",
 	"visibility",
 	"depth",
@@ -182,10 +158,6 @@ GLhandleARB parseShader(const GLcharARB* str, GLenum shaderType) {
 
 	std::vector<const GLcharARB*> source;
 
-	if (DisableClipVertex())
-	{
-		source.push_back("#define DISABLE_CLIP_VERTEX\n");
-	}
 	if (Wanting_sRGB)
 	{
 		source.push_back("#define GAMMA_CORRECTED_BLENDING\n");
@@ -422,9 +394,7 @@ void initDefaultPrograms() {
         "varying vec4 vertexColor;\n"
         "void main(void) {\n"
         "	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-        "#ifndef DISABLE_CLIP_VERTEX\n"
         "	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
-        "#endif\n"
         "	relDir = (gl_ModelViewMatrix * gl_Vertex).xyz;\n"
         "	vertexColor = gl_Color;\n"
         "}\n";
@@ -497,9 +467,7 @@ void initDefaultPrograms() {
         "void main(void) {\n"
         "	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
         "	classicDepth = gl_Position.z / 8192.0;\n"
-        "#ifndef DISABLE_CLIP_VERTEX\n"
         "	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
-        "#endif\n"
         "	vec4 v = gl_ModelViewMatrixInverse * vec4(0.0, 0.0, 0.0, 1.0);\n"
         "	viewDir = (gl_Vertex - v).xyz;\n"
         "	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;\n"
@@ -560,14 +528,13 @@ void initDefaultPrograms() {
     defaultFragmentPrograms["invincible"] = ""
         "uniform sampler2D texture0;\n"
         "uniform float time;\n"
-        "uniform float usestatic;\n"
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
         "varying float FDxLOG2E;\n"
         "void main(void) {\n"
-        "	float a = fract(sin(usestatic*(gl_TexCoord[0].x * 133.0 + gl_TexCoord[0].y * 471.0) + time * 7.0) * 43757.0); \n"
-        "	float b = fract(sin(usestatic*(gl_TexCoord[0].x * 2331.0 + gl_TexCoord[0].y * 63.0) + time * 3.0) * 32451.0); \n"
-        "	float c = fract(sin(usestatic*(gl_TexCoord[0].x * 41.0 + gl_TexCoord[0].y * 12911.0) + time * 31.0) * 34563.0);\n"
+        "	float a = fract(sin(gl_TexCoord[0].x * 133.0 + gl_TexCoord[0].y * 471.0 + time * 7.0) * 43757.0); \n"
+        "	float b = fract(sin(gl_TexCoord[0].x * 2331.0 + gl_TexCoord[0].y * 63.0 + time * 3.0) * 32451.0); \n"
+        "	float c = fract(sin(gl_TexCoord[0].x * 41.0 + gl_TexCoord[0].y * 12911.0 + time * 31.0) * 34563.0);\n"
         "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
         "	vec3 intensity = vec3(a, b, c);\n"
         "#ifdef GAMMA_CORRECTED_BLENDING\n"
@@ -580,7 +547,6 @@ void initDefaultPrograms() {
     defaultFragmentPrograms["invincible_bloom"] = ""
         "uniform sampler2D texture0;\n"
         "uniform float time;\n"
-        "uniform float usestatic;\n"
         "uniform float bloomScale;\n"
         "uniform float bloomShift;\n"
         "varying vec3 viewDir;\n"
@@ -631,9 +597,7 @@ void initDefaultPrograms() {
         "	gl_Position  = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
         "	gl_Position.z = gl_Position.z + depth*gl_Position.z/65536.0;\n"
         "	classicDepth = gl_Position.z / 8192.0;\n"
-        "#ifndef DISABLE_CLIP_VERTEX\n"
         "	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
-        "#endif\n"
         "	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;\n"
         "	/* SETUP TBN MATRIX in normal matrix coords, gl_MultiTexCoord1 = tangent vector */\n"
         "	vec3 n = normalize(gl_NormalMatrix * gl_Normal);\n"

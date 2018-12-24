@@ -154,9 +154,7 @@ OpenGLDialog::~OpenGLDialog()
 {
 	delete m_cancelWidget;
 	delete m_okWidget;
-	delete m_zBufferWidget;
 	delete m_fogWidget;
-	delete m_staticEffectWidget;
 	delete m_colourEffectsWidget;
 	delete m_transparentLiquidsWidget;
 	delete m_3DmodelsWidget;
@@ -189,12 +187,8 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	
 	BinderSet binders;
 	
-	BitPref zBufferPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_ZBuffer);
-	binders.insert<bool> (m_zBufferWidget, &zBufferPref);
 	BitPref fogPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_Fog);
 	binders.insert<bool> (m_fogWidget, &fogPref);
-	BitPref staticEffectsPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_FlatStatic, true);
-	binders.insert<bool> (m_staticEffectWidget, &staticEffectsPref);
 	BitPref colourEffectsPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_Fader);
 	binders.insert<bool> (m_colourEffectsWidget, &colourEffectsPref);
 	BitPref transparentLiquidsPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_LiqSeeThru);
@@ -205,6 +199,8 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	binders.insert<bool> (m_blurWidget, &blurPref);
 	BitPref bumpPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_BumpMap);
 	binders.insert<bool> (m_bumpWidget, &bumpPref);
+	BitPref perspectivePref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_MimicSW, true);
+	binders.insert<bool> (m_perspectiveWidget, &perspectivePref);
 	
 	BitPref colourTheVoidPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_VoidColor);
 	binders.insert<bool> (m_colourTheVoidWidget, &colourTheVoidPref);
@@ -344,22 +340,10 @@ public:
 		table_placer *general_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 		general_table->col_flags(0, placeable::kAlignRight);
 		
-		w_toggle *zbuffer_w = new w_toggle(false);
-		if (theSelectedRenderer == _opengl_acceleration) {
-//			general_table->dual_add(zbuffer_w->label("Z Buffer"), m_dialog);
-			general_table->dual_add(zbuffer_w->label("Zバッファ"), m_dialog);
-			general_table->dual_add(zbuffer_w, m_dialog);
-		}
-
 		w_toggle *fog_w = new w_toggle(false);
 //		general_table->dual_add(fog_w->label("Fog"), m_dialog);
 		general_table->dual_add(fog_w->label("フォグ"), m_dialog);
 		general_table->dual_add(fog_w, m_dialog);
-
-		w_toggle *static_w = new w_toggle(false);
-//		general_table->dual_add(static_w->label("Static Effect"), m_dialog);
-		general_table->dual_add(static_w->label("静的エフェクト"), m_dialog);
-		general_table->dual_add(static_w, m_dialog);
 
 		w_toggle *fader_w = new w_toggle(false);
 //		general_table->dual_add(fader_w->label("Color Effects"), m_dialog);
@@ -376,21 +360,20 @@ public:
 		general_table->dual_add(models_w->label("3Dモデル"), m_dialog);
 		general_table->dual_add(models_w, m_dialog);
 
-		general_table->add_row(new w_spacer, true);
+		w_toggle *perspective_w = new w_toggle(false);
+		//		general_table->dual_add(perspective_w->label("3D Perspective"), m_dialog);
+		general_table->dual_add(perspective_w->label("3D 遠近法"), m_dialog);
+		general_table->dual_add(perspective_w, m_dialog);
 		
 		w_toggle *blur_w = new w_toggle(false);
-		if (theSelectedRenderer == _shader_acceleration) {
-//			general_table->dual_add(blur_w->label("Bloom Effects"), m_dialog);
-			general_table->dual_add(blur_w->label("ブルームエフェクト"), m_dialog);
-			general_table->dual_add(blur_w, m_dialog);
-		}
+		//general_table->dual_add(blur_w->label("Bloom Effects"), m_dialog);
+		general_table->dual_add(blur_w->label("ブルームエフェクト"), m_dialog);
+		general_table->dual_add(blur_w, m_dialog);
 		
 		w_toggle *bump_w = new w_toggle(false);
-		if (theSelectedRenderer == _shader_acceleration) {
-//			general_table->dual_add(bump_w->label("Bump Mapping"), m_dialog);
-			general_table->dual_add(bump_w->label("バンプマッピング"), m_dialog);
-			general_table->dual_add(bump_w, m_dialog);
-		}
+		//general_table->dual_add(bump_w->label("Bump Mapping"), m_dialog);
+		general_table->dual_add(bump_w->label("バンプマッピング"), m_dialog);
+		general_table->dual_add(bump_w, m_dialog);
 		
 		general_table->add_row(new w_spacer(), true);
 
@@ -641,14 +624,13 @@ public:
 		m_cancelWidget = new ButtonWidget (cancel_w);
 		m_okWidget = new ButtonWidget (ok_w);
 		
-		m_zBufferWidget = new ToggleWidget (zbuffer_w);
 		m_fogWidget = new ToggleWidget (fog_w);
-		m_staticEffectWidget = new ToggleWidget (static_w);
 		m_colourEffectsWidget = new ToggleWidget (fader_w);
 		m_transparentLiquidsWidget = new ToggleWidget (liq_w);
 		m_3DmodelsWidget = new ToggleWidget (models_w);
 		m_blurWidget = new ToggleWidget (blur_w);
 		m_bumpWidget = new ToggleWidget (bump_w);
+		m_perspectiveWidget = new ToggleWidget (perspective_w);
 
 		m_colourTheVoidWidget = 0;
 		m_voidColourWidget = 0;

@@ -31,7 +31,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "http.h"
+#include "http_libnat.h"
 #include "os.h"
 #include "utility.h"
 #include "error.h"

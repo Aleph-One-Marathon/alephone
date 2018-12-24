@@ -2057,12 +2057,11 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
     {
         /* Decode the packet */
         AVCodecContext *avctx = file->audioStream->_ffmpeg->codec;
-        AVFrame *dframe = av_frame_alloc();
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
-        avcodec_get_frame_defaults(&dframe);
+	AVFrame *dframe = avcodec_alloc_frame();
+        avcodec_get_frame_defaults(dframe);
 #else
-		av_frame_get_buffer(dframe, 0);
-		av_frame_unref(dframe);
+	AVFrame *dframe = av_frame_alloc();
 #endif
         int got_frame = 0;
         int len = avcodec_decode_audio4( avctx, dframe, &got_frame, pack );

@@ -1,4 +1,4 @@
-## Process this file with automake to produce Makefile.in 
+## Process this file with automake to produce Makefile.in
 
 SUBDIRS = Source_Files tools data
 
@@ -20,8 +20,7 @@ EXTRA_DIST = INSTALL.MacOSX INSTALL.Unix INSTALL.Windows	\
   PBProjects/PhysIcon.icns			                        \
   PBProjects/SaveIcon.icns PBProjects/ShapesIcon.icns			\
   PBProjects/SoundsIcon.icns		\
-  PBProjects/SDLMain.h			\
-  PBProjects/SDLMain.m PBProjects/AlephOne.icns				\
+  PBProjects/AlephOne.icns				\
   PBProjects/config.h PBProjects/confpaths.h	\
   data/AlephSansMono-Bold.ttf data/AlephSansMonoLicense.txt		\
   data/ProFontAO.ttf data/ProFontAOLicense.txt		\
@@ -78,7 +77,7 @@ windist: winzip m1-winzip m2-winzip inf-winzip m1-winup m2-winup inf-winup
 
 define cp_no_svn
 mkdir -p "$(2)"
-tar -c --exclude='.svn' --exclude='Makefile' --exclude='Makefile.*' -C "$(1)" . | tar -x -C "$(2)"
+tar -c --exclude='.svn' --exclude='.git' --exclude='Makefile' --exclude='Makefile.*' -C "$(1)" . | tar -x -C "$(2)"
 endef
 
 define windist_common

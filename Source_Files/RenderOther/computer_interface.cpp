@@ -393,6 +393,7 @@ static struct terminal_key terminal_keys[]= {
 	{SDL_SCANCODE_RETURN, 0, 0, _terminal_next_state},		// return
 	{SDL_SCANCODE_SPACE, 0, 0, _terminal_next_state},		// space
 	{SDL_SCANCODE_ESCAPE, 0, 0, _any_abort_key_mask},		// escape
+	{AO_SCANCODE_JOYSTICK_ESCAPE, 0, 0, _any_abort_key_mask},
 	{AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_DPAD_UP, 0, 0, _terminal_page_up},
 	{AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_DPAD_DOWN, 0, 0, _terminal_page_down},
 	{AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_A, 0, 0, _terminal_next_state},

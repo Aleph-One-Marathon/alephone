@@ -36,6 +36,19 @@ SHAPE_BLITTER.CPP
 #include "OGL_Headers.h"
 #endif
 
+extern bool shapes_file_is_m1();
+static bool shape_is_motion_blip(short collection, short frame_index)
+{
+	if (shapes_file_is_m1())
+	{
+		return (collection == 0 &&
+				((frame_index >= 23 && frame_index <= 34) ||
+				 (frame_index >= 46 && frame_index <= 51)));
+	}
+	return (collection == 0 &&
+			(frame_index >= 12 && frame_index <= 29));
+}
+
 
 Shape_Blitter::Shape_Blitter(short collection, short frame_index, short texture_type, short clut_index) : m_coll(BUILD_COLLECTION(collection, clut_index)), m_frame(frame_index), m_type(texture_type), m_surface(NULL), m_scaled_surface(NULL), tint_color_r(1.0), tint_color_g(1.0), tint_color_b(1.0), tint_color_a(1.0), rotation(0.0)
 {
@@ -291,7 +304,7 @@ void Shape_Blitter::SDL_Draw(SDL_Surface *dst_surface, const Image_Rect& dst)
             free(pixelsOut);
             pixelsOut = NULL;
         }
-        else if (m_coll == 0 && m_frame >= 12 && m_frame <= 29)
+        else if (shape_is_motion_blip(m_coll, m_frame))
         {
             // fix transparency on motion sensor blips
             SDL_SetColorKey(tmp, SDL_TRUE, 0);
@@ -299,7 +312,10 @@ void Shape_Blitter::SDL_Draw(SDL_Surface *dst_surface, const Image_Rect& dst)
             SDL_FreeSurface(tmp);
         }
         else
-            m_surface = tmp;
+		{
+			m_surface = SDL_ConvertSurfaceFormat(tmp, SDL_PIXELFORMAT_BGRA8888, 0);
+			SDL_FreeSurface(tmp);
+		}
     }
     if (!m_surface)
         return;

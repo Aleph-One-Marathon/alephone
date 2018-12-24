@@ -493,6 +493,8 @@ public:
 
 	void set_text(const char *text);
 	const char *get_text(void) {return buf;}
+	
+	void set_min_width(int w) { saved_min_width = w; }
 
         // ZZZ: set callback for "enter" or "return" keypress
         void	set_enter_pressed_callback(Callback func) { enter_pressed_callback = func; }
@@ -562,7 +564,15 @@ public:
 
 class w_key : public widget {
 public:
-	w_key(SDL_Scancode key);
+	enum Type {
+		KeyboardKey,
+		MouseButton,
+		JoystickButton
+	} event_type;
+	
+	static Type event_type_for_key(SDL_Scancode key);
+	
+	w_key(SDL_Scancode key, w_key::Type event_type);
 
 	void draw(SDL_Surface *s) const;
 	void click(int x, int y);
@@ -572,6 +582,8 @@ public:
 	SDL_Scancode get_key(void) {return key;}
 	void place(const SDL_Rect& r, placement_flags flags);
 
+protected:
+	virtual void set_active(bool new_active);
 
 private:
 	const char *name;

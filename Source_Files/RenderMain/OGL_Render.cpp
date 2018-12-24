@@ -289,9 +289,6 @@ const GLdouble Z_Far = 1.5*64*WORLD_ONE;
 const GLdouble Z_Proj0 = (Z_Far + Z_Near)/(Z_Far - Z_Near);
 const GLdouble Z_Proj1 = 2*Z_Far*Z_Near/(Z_Far - Z_Near);
 
-// Whether Z-buffering is being used
-bool Z_Buffering = false;
-
 // Screen <-> world conversion factors and functions
 GLdouble XScale, YScale, XScaleRecip, YScaleRecip, XOffset, YOffset;
 
@@ -516,10 +513,6 @@ bool OGL_StartRun()
 	// Will stop previous run if it had been active
 	if (OGL_IsActive()) OGL_StopRun();
 
-	bool ShaderRender = (graphics_preferences->screen_mode.acceleration == _shader_acceleration);
-	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
-	Z_Buffering = ShaderRender || TEST_FLAG(ConfigureData.Flags,OGL_Flag_ZBuffer);
-
 #ifdef __WIN32__
 	glewInit();
 #endif
@@ -551,13 +544,7 @@ bool OGL_StartRun()
 	if (!OGL_CheckExtension("GL_EXT_framebuffer_object"))
 	{
 		logWarning("Framebuffer Objects not available");
-		if (ShaderRender)
-		{
-			logWarning("Disabling shader renderer");
-			graphics_preferences->screen_mode.acceleration = _opengl_acceleration;
-			ShaderRender = false;
-			Z_Buffering = TEST_FLAG(ConfigureData.Flags,OGL_Flag_ZBuffer);
-		}
+		return false;
 	}
 	else
 	{
@@ -565,7 +552,7 @@ bool OGL_StartRun()
 	}
 
 	Bloom_sRGB = false;
-	if (ShaderRender && TEST_FLAG(graphics_preferences->OGL_Configure.Flags, OGL_Flag_Blur))
+	if (TEST_FLAG(graphics_preferences->OGL_Configure.Flags, OGL_Flag_Blur))
 	{
 	  if (!FBO_Allowed)
 	  {
@@ -586,19 +573,9 @@ bool OGL_StartRun()
 	// Set up some OpenGL stuff: these will be the defaults for this rendering context
 	
 	// Set up for Z-buffering
-	if (Z_Buffering)
-	{
-		glEnable(GL_DEPTH_TEST);
-		// This Z-buffering setup does seem to work correctly;
-		// one may want to make the world geometry write-only (glDepthFunc(GL_ALWAYS))
-		// if coincident textures are not rendered very well.
-		// [DEFAULT] -- anything marked out as this ought to be reverted to if changed
-		glDepthFunc(GL_LEQUAL);
-		if (ShaderRender)
-			glDepthRange(0,1);
-		else
-			glDepthRange(1,0);
-	}
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glDepthRange(0,1);
 	
 	// Prevent wrong-side polygons from being rendered;
 	// this works because the engine's visibility routines make all world-geometry
@@ -777,8 +754,7 @@ void PreloadWallTexture(const TextureWithTransferMode& inTexture)
 	if (TMgr.Setup()) {
 		TMgr.RenderNormal();
 		if (TMgr.IsGlowMapped()) TMgr.RenderGlowing();
-		if (graphics_preferences->screen_mode.acceleration == _shader_acceleration &&
-			TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap))
+		if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap))
 			TMgr.RenderBump();
 	}
 }
@@ -810,7 +786,7 @@ bool OGL_SetWindow(Rect &ScreenBounds, Rect &ViewBounds, bool UseBackBuffer)
 	if (JustInited) {JustInited = false; DoUpdate = true;}
 	else if (!RectsEqual(ScreenBounds,SavedScreenBounds)) DoUpdate = true;
 	else if (!RectsEqual(ViewBounds,SavedViewBounds)) DoUpdate = true;
-	else if (graphics_preferences->screen_mode.acceleration == _shader_acceleration) DoUpdate = true;
+	else DoUpdate = true;
 	
 	if (!DoUpdate) return true;
 	
@@ -843,10 +819,7 @@ bool OGL_StartMain()
 	glFrontFace(GL_CW);
 	
 	// Set the Z-buffering for this go-around
-	if (Z_Buffering)
-		glEnable(GL_DEPTH_TEST);
-	else
-		glDisable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 	
 	// Moved this test down here for convenience; the overhead map won't have fog,
 	// so be sure to turn it on when leaving the overhead map
@@ -1598,7 +1571,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		{
 			glEnable(GL_BLEND);
 			glDisable(GL_ALPHA_TEST);
-			if (Z_Buffering) glDisable(GL_DEPTH_TEST);
+			glDisable(GL_DEPTH_TEST);
 		} else {
 			glDisable(GL_BLEND);
 			glEnable(GL_ALPHA_TEST);
@@ -1785,7 +1758,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		// on a glowmap texture that is atop a texture that is opaque to the void.
 		glEnable(GL_BLEND);
 		glDisable(GL_ALPHA_TEST);
-		if (Z_Buffering) glDisable(GL_DEPTH_TEST);
+		glDisable(GL_DEPTH_TEST);
 		
 		TMgr.RenderGlowing();
 		SetBlend(TMgr.GlowBlend());
@@ -1807,7 +1780,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	
 	// Revert to default blend
 	SetBlend(OGL_BlendType_Crossfade);
-	if (Z_Buffering) glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 	TMgr.RestoreTextureMatrix();
 
 	return true;
@@ -2172,7 +2145,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	DoLightingAndBlending(RenderRectangle, IsBlended,
 		Color, ExternallyLit);
 
-	if (Z_Buffering && IsBlended)
+	if (IsBlended)
 		// alpha test will be disabled, so don't hose z buffer
 		glDisable(GL_DEPTH_TEST);
 
@@ -2192,7 +2165,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 		SetupStaticMode(RenderRectangle.transfer_data);
 		if (UseFlatStatic)
 		{
-			if (Z_Buffering) glDisable(GL_DEPTH_TEST);
+			glDisable(GL_DEPTH_TEST);
 			glDrawArrays(GL_POLYGON,0,4);
 		} else {
 			// Do multitextured stippling to create the static effect
@@ -2221,7 +2194,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 			glColor4f(std::max(GlowColor,Color[0]),std::max(GlowColor,Color[1]),std::max(GlowColor,Color[2]),Color[3]);
 			glEnable(GL_BLEND);
 			glDisable(GL_ALPHA_TEST);
-			if (Z_Buffering) glDisable(GL_DEPTH_TEST);
+			glDisable(GL_DEPTH_TEST);
 			
 			TMgr.RenderGlowing();
 			SetBlend(TMgr.GlowBlend());
@@ -2233,8 +2206,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	SetBlend(OGL_BlendType_Crossfade);
 	TMgr.RestoreTextureMatrix();
 
-	if (Z_Buffering)
-		glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 		
 	return true;
 }
@@ -2440,11 +2412,11 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 			// Do explicit depth sort because these textures are semitransparent
 			StandardShaders[0].Flags = ModelRenderer::Textured;
 			ModelRenderObject.Render(ModelPtr->Model, StandardShaders,
-				1, 0, Z_Buffering);
+				1, 0, true);
 		} else {
 			// Do multitextured stippling to create the static effect
 			ModelRenderObject.Render(ModelPtr->Model, StaticModeShaders,
-				StaticEffectPasses, SeparableStaticEffectPasses, Z_Buffering);
+				StaticEffectPasses, SeparableStaticEffectPasses, true);
 		}
 		TeardownStaticMode();
 	}
@@ -2511,7 +2483,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		}
 		
 		ModelRenderObject.Render(ModelPtr->Model, StandardShaders, NumShaders,
-			NumSeparableShaders, Z_Buffering);
+			NumSeparableShaders, true);
 		
 		// Revert to default blend
 		SetBlend(OGL_BlendType_Crossfade);

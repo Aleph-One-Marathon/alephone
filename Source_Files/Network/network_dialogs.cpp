@@ -195,7 +195,7 @@ bool network_gather(bool inResumingGame)
 	if (network_game_setup(&myPlayerInfo, &myGameInfo, inResumingGame, advertiseOnMetaserver))
 	{
 		myPlayerInfo.desired_color= myPlayerInfo.color;
-		memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, LONG_SERIAL_NUMBER_LENGTH);
+		memset(myPlayerInfo.long_serial_number, 0, LONG_SERIAL_NUMBER_LENGTH);
 		
 		std::unique_ptr<GameAvailableMetaserverAnnouncer> metaserverAnnouncer;
 		if(NetEnter())

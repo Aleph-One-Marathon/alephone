@@ -94,14 +94,6 @@ struct graphics_preferences_data
     int16 movie_export_audio_quality;
 };
 
-struct serial_number_data
-{
-	bool network_only;
-	byte long_serial_number[10];
-	unsigned char user_name[256];
-	unsigned char tokenized_serial_number[256];
-};
-
 enum {
 	_network_game_protocol_ring,
 	_network_game_protocol_star,
@@ -189,14 +181,6 @@ enum {
 };
 
 enum {
-	_joystick_strafe,
-	_joystick_velocity,
-	_joystick_yaw,
-	_joystick_pitch,
-	NUMBER_OF_JOYSTICK_MAPPINGS
-};
-
-enum {
 	_mouse_accel_none,
 	_mouse_accel_classic,
 	NUMBER_OF_MOUSE_ACCEL_TYPES
@@ -218,14 +202,13 @@ struct input_preferences_data
 	bool raw_mouse_input;
 	float mouse_max_speed;
 	
-	bool use_joystick;
-	int16 joystick_axis_mappings[NUMBER_OF_JOYSTICK_MAPPINGS];
-	float joystick_axis_sensitivities[NUMBER_OF_JOYSTICK_MAPPINGS];
+	bool controller_analog;
+	_fixed controller_sensitivity;
 
 	// if an axis reading is taken below this number in absolute
 	// value, then we clip it to 0.  this lets people use
 	// inaccurate zero points.
-	int16 joystick_axis_bounds[NUMBER_OF_JOYSTICK_MAPPINGS];
+	int16 controller_deadzone;
 	
 	key_binding_map key_bindings;
 	key_binding_map shell_key_bindings;
@@ -270,7 +253,6 @@ struct environment_preferences_data
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */
 extern struct graphics_preferences_data *graphics_preferences;
-extern struct serial_number_data *serial_preferences;
 extern struct network_preferences_data *network_preferences;
 extern struct player_preferences_data *player_preferences;
 extern struct input_preferences_data *input_preferences;

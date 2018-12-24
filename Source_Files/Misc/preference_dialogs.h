@@ -45,12 +45,12 @@ protected:
 	
 	ToggleWidget*		m_zBufferWidget;
 	ToggleWidget*		m_fogWidget;
-	ToggleWidget*		m_staticEffectWidget;
 	ToggleWidget*		m_colourEffectsWidget;
 	ToggleWidget*		m_transparentLiquidsWidget;
 	ToggleWidget*		m_3DmodelsWidget;
 	ToggleWidget*		m_blurWidget;
 	ToggleWidget*		m_bumpWidget;
+	ToggleWidget*		m_perspectiveWidget;
 	
 	ToggleWidget*		m_colourTheVoidWidget;
 	ColourPickerWidget*	m_voidColourWidget;

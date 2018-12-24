@@ -251,14 +251,7 @@ bool handle_open_document(const std::string& filename)
 }
 
 
-#if defined(__APPLE__) && defined(__MACH__)
-extern "C" {
-	int shell_main(int argc, char **argv);
-}
-int shell_main(int argc, char **argv)
-#else
 int main(int argc, char **argv)
-#endif
 {
 	// Print banner (don't bother if this doesn't appear when started from a GUI)
 	char app_name_version[256];
@@ -388,7 +381,10 @@ static void initialize_application(void)
 #else
 	setlocale(LC_ALL, "");
 #endif
-	//	SDL_putenv(const_cast<char*>("SDL_VIDEO_ALLOW_SCREENSAVER=1"));
+
+#if defined(__WIN32__)
+	SDL_setenv("SDL_AUDIODRIVER", "directsound", 0);
+#endif
 
 	// Initialize SDL
 	int retval = SDL_Init(SDL_INIT_VIDEO |
@@ -409,6 +405,29 @@ static void initialize_application(void)
 #endif
 	// We only want text input events at specific times
 	SDL_StopTextInput();
+	
+	// See if we had a scenario folder dropped on us
+	if (arg_directory == "") {
+		SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+		SDL_Event event;
+		while (SDL_PollEvent(&event)) {
+			switch (event.type) {
+				case SDL_DROPFILE:
+					FileSpecifier f(event.drop.file);
+					if (f.IsDir())
+					{
+						arg_directory = event.drop.file;
+					}
+					else
+					{
+						arg_files.push_back(event.drop.file);
+					}
+					SDL_free(event.drop.file);
+					break;
+			}
+		}
+		SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
+	}
 
 	// Find data directories, construct search path
 	InitDefaultStringSets();
@@ -919,7 +938,7 @@ static void handle_game_key(const SDL_Event &event)
 	}
 	else
 	{
-		if (sc == SDL_SCANCODE_ESCAPE) // (ZZZ) Quit gesture (now safer)
+		if (sc == SDL_SCANCODE_ESCAPE || sc == AO_SCANCODE_JOYSTICK_ESCAPE) // (ZZZ) Quit gesture (now safer)
 		{
 			if(!player_controlling_game())
 				do_menu_item_command(mGame, iQuitGame, false);
@@ -1409,6 +1428,25 @@ static void process_event(const SDL_Event &event)
 					show_cursor();
 				}
 				break;
+#if (defined(__APPLE__) && defined(__MACH__))
+			// work around Mojave issue
+			case SDL_WINDOWEVENT_FOCUS_GAINED:
+				static bool gFirstWindow = true;
+				if (gFirstWindow) {
+					gFirstWindow = false;
+					SDL_Window *win = SDL_GetWindowFromID(event.window.windowID);
+					if (!MainScreenIsOpenGL() && (SDL_GetWindowFlags(win) & SDL_WINDOW_FULLSCREEN_DESKTOP)) {
+						SDL_SetWindowFullscreen(win, 0);
+						SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN_DESKTOP);
+					} else {
+						SDL_Window *w2 = SDL_CreateWindow("Loading", 0, 0, 100, 100, 0);
+						SDL_RaiseWindow(w2);
+						SDL_RaiseWindow(win);
+						SDL_DestroyWindow(w2);
+					}
+				}
+				break;
+#endif
 			case SDL_WINDOWEVENT_EXPOSED:
 #if !defined(__APPLE__) && !defined(__MACH__) // double buffering :)
 #ifdef HAVE_OPENGL

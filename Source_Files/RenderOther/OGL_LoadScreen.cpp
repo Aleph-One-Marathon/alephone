@@ -44,15 +44,15 @@ extern bool OGL_ClearScreen();
 bool OGL_LoadScreen::Start()
 {
 	// load the image
-	FileSpecifier File;
+	FileSpecifier File(path);
 	if (path.size() == 0) return use = false;
-	if (!File.SetNameWithPath(path.c_str())) return use = false;
+	if (!File.Exists() && !File.SetNameWithPath(path.c_str())) return use = false;
 	if (!image.LoadFromFile(File, ImageLoader_Colors, 0)) return use = false;
 
 	if (!blitter.Load(image)) return use = false;
 
-	int screenWidth = MainScreenLogicalWidth();
-	int screenHeight = MainScreenLogicalHeight();
+	int screenWidth = 640;
+	int screenHeight = 480;
 	alephone::Screen::instance()->bound_screen(true);
 	
 	// the true width/height

@@ -131,7 +131,6 @@ static bool PrefsInited = false;
 
 // Global preferences data
 struct graphics_preferences_data *graphics_preferences = NULL;
-struct serial_number_data *serial_preferences = NULL;
 struct network_preferences_data *network_preferences = NULL;
 struct player_preferences_data *player_preferences = NULL;
 struct input_preferences_data *input_preferences = NULL;
@@ -147,8 +146,6 @@ static std::string get_name_from_system(void);
 // LP: getting rid of the (void *) mechanism as inelegant and non-type-safe
 static void default_graphics_preferences(graphics_preferences_data *preferences);
 static bool validate_graphics_preferences(graphics_preferences_data *preferences);
-static void default_serial_number_preferences(serial_number_data *preferences);
-static bool validate_serial_number_preferences(serial_number_data *preferences);
 static void default_network_preferences(network_preferences_data *preferences);
 static bool validate_network_preferences(network_preferences_data *preferences);
 static void default_player_preferences(player_preferences_data *preferences);
@@ -975,7 +972,7 @@ static const char *gamma_labels[9] = {
 };
 
 static const char* renderer_labels[] = {
-	"ソ\フトウェア", "OpenGL（クラシック）", "OpenGL（シェーダー）", NULL
+	"ソ\フトウェア", "OpenGL", NULL
 };
 
 static const char* hud_scale_labels[] = {
@@ -1107,7 +1104,6 @@ static void rendering_options_dialog_demux(void* arg)
 			break;
 
 		case _opengl_acceleration:
-		case _shader_acceleration:
 			OpenGLDialog::Create (theSelectedRenderer)->OpenGLPrefsByRunning ();
 			break;
 
@@ -1170,8 +1166,11 @@ static void graphics_dialog(void *arg)
 
 	w_toggle *high_dpi_w = NULL;
 	high_dpi_w = new w_toggle(graphics_preferences->screen_mode.high_dpi);
+#if (defined(__APPLE__) && defined(__MACH__))
+	// SDL's DPI support only enabled on macOS
 	table->dual_add(high_dpi_w->label("高DPIを使う"), d);
 	table->dual_add(high_dpi_w, d);
+#endif
 	
 	w_toggle *fixh_w = new w_toggle(!graphics_preferences->screen_mode.fix_h_not_v);
 	table->dual_add(fixh_w->label("垂直視野を制限"), d);
@@ -1539,351 +1538,6 @@ public:
 	}
 };
 
-w_select_popup* joystick_axis_w[NUMBER_OF_JOYSTICK_MAPPINGS];
-
-static void axis_mapped(void* pv)
-{
-	w_select_popup* w = reinterpret_cast<w_select_popup*>(pv);
-	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
-	{
-		if (w != joystick_axis_w[i] && w->get_selection() == joystick_axis_w[i]->get_selection()) 
-		{
-			joystick_axis_w[i]->set_selection(0);
-		}
-	}
-}
-
-static w_enabling_toggle *mouse_w;
-static w_enabling_toggle *joystick_w;
-
-static void input_selected(w_select* w)
-{
-	if (w == mouse_w && w->get_selection())
-		joystick_w->set_selection(0, true);
-	else if (w == joystick_w && w->get_selection())
-		mouse_w->set_selection(0, true);
-}
-
-static const char *joystick_axis_names[NUM_SDL_JOYSTICK_AXES] = {
-	"Left X", "Left Y", "Right X", "Right Y"
-};
-
-static void controls_dialog(void *arg)
-{
-	// Create dialog
-	dialog d;
-	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("操作"), d);
-	placer->add(new w_spacer(), true);
-
-	tab_placer* tabs = new tab_placer();
-
-	std::vector<std::string> labels;
-
-	labels.push_back("一般");
-	labels.push_back("マウス");
-	labels.push_back("ジョイスティック");
-
-	w_tab *tab_w = new w_tab(labels, tabs);
-
-	placer->dual_add(tab_w, d);
-	placer->add(new w_spacer(), true);
-
-	vertical_placer *general = new vertical_placer();
-	table_placer* mouse = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
-	vertical_placer* joystick = new vertical_placer();
-	mouse->col_flags(0, placeable::kAlignRight);
-
-	mouse_w = new w_enabling_toggle(input_preferences->input_device == 1, true);
-	mouse_w->set_selection_changed_callback(input_selected);
-	mouse->dual_add(mouse_w->label("マウスを使用"), d);
-	mouse->dual_add(mouse_w, d);
-
-	mouse->add_row(new w_spacer(), true);
-
-	w_toggle *raw_mouse_w = new w_toggle(input_preferences->raw_mouse_input);
-	mouse->dual_add(raw_mouse_w->label("生の入力を使う"), d);
-	mouse->dual_add(raw_mouse_w, d);
-	
-	mouse_w->add_dependent_widget(raw_mouse_w);
-	
-	w_toggle *invert_mouse_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse));
-	mouse->dual_add(invert_mouse_w->label("マウスの動きを反転"), d);
-	mouse->dual_add(invert_mouse_w, d);
-	
-	mouse_w->add_dependent_widget(invert_mouse_w);
-
-	const float kMinSensitivityLog = -3.0f;
-	const float kMaxSensitivityLog = 3.0f;
-	const float kSensitivityLogRange = kMaxSensitivityLog - kMinSensitivityLog;
-	
-	// LP: split this into horizontal and vertical sensitivities
-	float theSensitivity, theSensitivityLog;
-	
-	theSensitivity = ((float) input_preferences->sens_vertical) / FIXED_ONE;
-	if (theSensitivity <= 0.0f) theSensitivity = 1.0f;
-	theSensitivityLog = std::log(theSensitivity);
-	int theVerticalSliderPosition =
-		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
-	
-	w_sens_slider* sens_vertical_w = new w_sens_slider(1000, theVerticalSliderPosition);
-	mouse->dual_add(sens_vertical_w->label("マウスの垂直感度"), d);
-	mouse->dual_add(sens_vertical_w, d);
-
-	mouse_w->add_dependent_widget(sens_vertical_w);
-	
-	theSensitivity = ((float) input_preferences->sens_horizontal) / FIXED_ONE;
-	if (theSensitivity <= 0.0f) theSensitivity = 1.0f;
-	theSensitivityLog = std::log(theSensitivity);
-	int theHorizontalSliderPosition =
-		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
-
-	w_sens_slider* sens_horizontal_w = new w_sens_slider(1000, theHorizontalSliderPosition);
-	mouse->dual_add(sens_horizontal_w->label("マウスの水平感度"), d);
-	mouse->dual_add(sens_horizontal_w, d);
-
-	mouse_w->add_dependent_widget(sens_horizontal_w);
-	
-	w_percentage_slider* m_speed_w = new w_percentage_slider(100, input_preferences->mouse_max_speed * 200);
-	mouse->dual_add(m_speed_w->label("Max Speed"), d);
-	mouse->dual_add(m_speed_w, d);
-	
-	mouse_w->add_dependent_widget(m_speed_w);
-
-	w_select* m_accel_type_w = new w_select(input_preferences->mouse_accel_type, mouse_accel_labels);
-	mouse->dual_add(m_accel_type_w->label("Acceleration"), d);
-	mouse->dual_add(m_accel_type_w, d);
-	
-	mouse_w->add_dependent_widget(m_accel_type_w);
-	
-	w_percentage_slider* m_accel_scale_w = new w_percentage_slider(100, input_preferences->mouse_accel_scale * 100.f);
-	mouse->dual_add(m_accel_scale_w->label("Accel. Amount"), d);
-	mouse->dual_add(m_accel_scale_w, d);
-	
-	mouse_w->add_dependent_widget(m_accel_scale_w);
-	
-	table_placer *jtoggle = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
-	joystick_w = new w_enabling_toggle(input_preferences->input_device == 0 && input_preferences->use_joystick, true);
-	joystick_w->set_selection_changed_callback(input_selected);
-
-	jtoggle->dual_add(joystick_w->label("コントローラーを使用"), d);
-	jtoggle->dual_add(joystick_w, d);
-
-	joystick->add(jtoggle, true);
-	joystick->add(new w_spacer(), true);
-	joystick->dual_add(new w_static_text("軸の割り当て"), d);
-
-	std::vector<std::string> axis_labels;
-	axis_labels.push_back("未割り当て");
-	for (int i = 1; i <= NUM_SDL_JOYSTICK_AXES; ++i)
-	{
-		axis_labels.push_back(joystick_axis_names[i - 1]);
-	}
-	
-	w_label *joystick_action_labels[NUMBER_OF_JOYSTICK_MAPPINGS];
-	joystick_action_labels[_joystick_strafe] = new w_label("水平移動　左・右");
-	joystick_action_labels[_joystick_velocity] = new w_label("前方・後方に移動");
-	joystick_action_labels[_joystick_yaw] = new w_label("左・右に旋回");
-	joystick_action_labels[_joystick_pitch] = new w_label("上下を見る");
-		
-	w_toggle *joystick_invert_w[NUMBER_OF_JOYSTICK_MAPPINGS];
-	w_sens_slider *joystick_sens_w[NUMBER_OF_JOYSTICK_MAPPINGS];
-	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
-	{
-		joystick_axis_w[i] = new w_select_popup();
-		joystick_axis_w[i]->set_labels(axis_labels);
-		joystick_axis_w[i]->set_selection(input_preferences->joystick_axis_mappings[i] + 1);
-		joystick_axis_w[i]->set_popup_callback(axis_mapped, joystick_axis_w[i]);
-		
-		joystick_invert_w[i] = new w_toggle(input_preferences->joystick_axis_sensitivities[i] < 0);
-		
-		theSensitivityLog = std::log(ABS(input_preferences->joystick_axis_sensitivities[i]));
-		int joystickSliderPosition =
-		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
-		joystick_sens_w[i] = new w_sens_slider(1000, joystickSliderPosition);
-	}
-	
-	table_placer *atable = new table_placer(4, get_theme_space(ITEM_WIDGET), false);
-	atable->col_flags(0, placeable::kAlignRight);
-	
-	atable->add(new w_spacer(), true);
-	atable->dual_add(new w_label("軸"), d);
-	atable->dual_add(new w_label("反転"), d);
-	atable->dual_add(new w_label("感度"), d);
-	
-	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
-	{
-		atable->dual_add(joystick_action_labels[i], d);
-		atable->dual_add(joystick_axis_w[i], d);
-		atable->dual_add(joystick_invert_w[i], d);
-		atable->dual_add(joystick_sens_w[i], d);
-		
-		joystick_axis_w[i]->associate_label(joystick_action_labels[i]);
-		joystick_invert_w[i]->associate_label(joystick_action_labels[i]);
-		joystick_sens_w[i]->associate_label(joystick_action_labels[i]);
-		
-		joystick_w->add_dependent_widget(joystick_axis_w[i]);
-		joystick_w->add_dependent_widget(joystick_invert_w[i]);
-		joystick_w->add_dependent_widget(joystick_sens_w[i]);
-	}
-
-	joystick->add(atable, true);
-
-	table_placer* general_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
-	general_table->col_flags(0, placeable::kAlignRight);
-
-	w_toggle *always_run_w = new w_toggle(input_preferences->modifiers & _inputmod_interchange_run_walk);
-	general_table->dual_add(always_run_w->label("常時走行"), d);
-	general_table->dual_add(always_run_w, d);
-
-	w_toggle *always_swim_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_swim_sink));
-	general_table->dual_add(always_swim_w->label("常時泳ぐ"), d);
-	general_table->dual_add(always_swim_w, d);
-
-	w_toggle* auto_recenter_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_auto_recenter));
-	general_table->dual_add(auto_recenter_w->label("視点の自動リセンター"), d);
-	general_table->dual_add(auto_recenter_w, d);
-
-	general_table->add_row(new w_spacer(), true);
-
-	w_toggle *weapon_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_switch_to_new_weapon));
-	general_table->dual_add(weapon_w->label("武器の自動切り替え"), d);
-	general_table->dual_add(weapon_w, d);
-
-	general->add(general_table, true);
-
-	general->add(new w_spacer(), true);
-	general->dual_add(new w_static_text("注意：武器の自動切換えと、視点の自動リセンターは、ネットワークプレイで"), d);
-	general->dual_add(new w_static_text("自動的にオンになります。シングルプレイヤーモードでどちらかをオフにすると、"), d);
-	general->dual_add(new w_static_text("映画の録画が自動的に無効化されます。"), d);
-		
-	tabs->add(general, true);
-	tabs->add(mouse, true);
-	tabs->add(joystick, true);
-
-	placer->add(tabs, true);
-
-	placer->add(new w_spacer(), true);
-	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_button("キー設定／ボタン", keyboard_dialog, &d), d);
-
-	placer->add(new w_spacer(), true);
-	
-	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("了承", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("キャンセル", dialog_cancel, &d), d);
-	placer->add(button_placer, true);
-
-	d.set_widget_placer(placer);
-
-	// Clear screen
-	clear_screen();
-
-	// Run dialog
-	if (d.run() == 0) {	// Accepted
-		bool changed = false;
-
-		int16 device = static_cast<int16>(mouse_w->get_selection());
-		if (device != input_preferences->input_device) {
-			input_preferences->input_device = device;
-			changed = true;
-		}
-
-		// LP: split the sensitivity into vertical and horizontal sensitivities
-		float theNewSensitivityLog;
-		int theNewSliderPosition;
-		
-		theNewSliderPosition = sens_vertical_w->get_selection();
-        if(theNewSliderPosition != theVerticalSliderPosition) {
-            theNewSensitivityLog = kMinSensitivityLog + ((float) theNewSliderPosition) * (kSensitivityLogRange / 1000.0f);
-            input_preferences->sens_vertical = _fixed(std::exp(theNewSensitivityLog) * FIXED_ONE);
-            changed = true;
-        }
-		
-		theNewSliderPosition = sens_horizontal_w->get_selection();
-        if(theNewSliderPosition != theHorizontalSliderPosition) {
-            theNewSensitivityLog = kMinSensitivityLog + ((float) theNewSliderPosition) * (kSensitivityLogRange / 1000.0f);
-            input_preferences->sens_horizontal = _fixed(std::exp(theNewSensitivityLog) * FIXED_ONE);
-            changed = true;
-        }
-		
-		theNewSliderPosition = m_speed_w->get_selection();
-		if (theNewSliderPosition != input_preferences->mouse_max_speed * 200) {
-			input_preferences->mouse_max_speed = theNewSliderPosition / 200.f;
-			changed = true;
-		}
-		
-		if (raw_mouse_w->get_selection() != input_preferences->raw_mouse_input) {
-			input_preferences->raw_mouse_input = raw_mouse_w->get_selection();
-			changed = true;
-		}
-		
-		if (m_accel_type_w->get_selection() != input_preferences->mouse_accel_type)
-		{
-			input_preferences->mouse_accel_type = m_accel_type_w->get_selection();
-			changed = true;
-		}
-
-		float newAccel = m_accel_scale_w->get_selection() / 100.f;
-		if (newAccel != input_preferences->mouse_accel_scale) {
-			input_preferences->mouse_accel_scale = newAccel;
-			changed = true;
-		}
-
-/*
-        int theNewSliderPosition = sensitivity_w->get_selection();
-        if(theNewSliderPosition != theSliderPosition) {
-            float theNewSensitivityLog = kMinSensitivityLog + ((float) theNewSliderPosition) * (kSensitivityLogRange / 1000.0f);
-            input_preferences->sensitivity = _fixed(std::exp(theNewSensitivityLog) * FIXED_ONE);
-            changed = true;
-        }
-*/
-		uint16 flags = input_preferences->modifiers & _inputmod_use_button_sounds;
-		if (always_run_w->get_selection()) flags |= _inputmod_interchange_run_walk;
-		if (always_swim_w->get_selection()) flags |= _inputmod_interchange_swim_sink;
-		if (!(weapon_w->get_selection())) flags |= _inputmod_dont_switch_to_new_weapon;
-		if (!(auto_recenter_w->get_selection())) flags |= _inputmod_dont_auto_recenter;
-		if (invert_mouse_w->get_selection()) flags |= _inputmod_invert_mouse;
-
-		if (flags != input_preferences->modifiers) {
-			input_preferences->modifiers = flags;
-			changed = true;
-		}
-		
-		if (joystick_w->get_selection() != input_preferences->use_joystick) {
-			input_preferences->use_joystick = joystick_w->get_selection();
-			changed = true;
-		}
-
-		for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
-		{
-			if (joystick_axis_w[i]->get_selection() - 1 != input_preferences->joystick_axis_mappings[i]) {
-				input_preferences->joystick_axis_mappings[i] = joystick_axis_w[i]->get_selection() - 1;
-				changed = true;
-			}
-			
-			theNewSliderPosition = joystick_sens_w[i]->get_selection();
-			theNewSensitivityLog = kMinSensitivityLog + ((float) theNewSliderPosition) * (kSensitivityLogRange / 1000.0f);
-			float sens = std::exp(theNewSensitivityLog);
-			if (joystick_invert_w[i]->get_selection()) {
-				sens *= -1;
-			}
-			if (sens != input_preferences->joystick_axis_sensitivities[i]) {
-				input_preferences->joystick_axis_sensitivities[i] = sens;
-				changed = true;
-			}
-		}
-
-		if (changed)
-			write_preferences();
-	}
-}
-
-
-/*
- *  Keyboard dialog
- */
-
 const int NUM_KEYS = 21;
 
 static const char *action_name[NUM_KEYS] = {
@@ -1894,48 +1548,115 @@ static const char *action_name[NUM_KEYS] = {
 	"アクション", "地図", "マイク"
 };
 
+
+static key_binding_map default_key_bindings = {
+	{ 0, { SDL_SCANCODE_W,
+		   static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_AXIS_NEGATIVE + SDL_CONTROLLER_AXIS_LEFTY)
+	} },
+	{ 1, { SDL_SCANCODE_S,
+			static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_AXIS_POSITIVE + SDL_CONTROLLER_AXIS_LEFTY)
+	} },
+	{ 2, { SDL_SCANCODE_LEFT,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_AXIS_NEGATIVE + SDL_CONTROLLER_AXIS_RIGHTX)
+	} },
+	{ 3, { SDL_SCANCODE_RIGHT,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_AXIS_POSITIVE + SDL_CONTROLLER_AXIS_RIGHTX)
+	} },
+	{ 4, { SDL_SCANCODE_A,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_AXIS_NEGATIVE + SDL_CONTROLLER_AXIS_LEFTX)
+	} },
+	{ 5, { SDL_SCANCODE_D,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_AXIS_POSITIVE + SDL_CONTROLLER_AXIS_LEFTX)
+	} },
+	{ 6, { SDL_SCANCODE_Q,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_DPAD_LEFT)
+	} },
+	{ 7, { SDL_SCANCODE_E,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_DPAD_RIGHT)
+	} },
+	{ 8, { SDL_SCANCODE_UP,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_AXIS_NEGATIVE + SDL_CONTROLLER_AXIS_RIGHTY)
+	} },
+	{ 9, { SDL_SCANCODE_DOWN,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_AXIS_POSITIVE + SDL_CONTROLLER_AXIS_RIGHTY)
+	} },
+	{ 10, { SDL_SCANCODE_V,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_RIGHTSTICK)
+	} },
+	{ 11, { SDL_SCANCODE_F,
+		static_cast<SDL_Scancode>(AO_SCANCODE_MOUSESCROLL_UP),
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_LEFTSHOULDER)
+	} },
+	{ 12, { SDL_SCANCODE_R,
+		static_cast<SDL_Scancode>(AO_SCANCODE_MOUSESCROLL_DOWN),
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)
+	} },
+	{ 13, { SDL_SCANCODE_SPACE,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_MOUSE_BUTTON + SDL_BUTTON_LEFT - 1),
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_AXIS_POSITIVE + SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
+	} },
+	{ 14, { SDL_SCANCODE_LSHIFT,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_MOUSE_BUTTON + SDL_BUTTON_RIGHT - 1),
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_AXIS_POSITIVE + SDL_CONTROLLER_AXIS_TRIGGERLEFT)
+	} },
+	{ 15, { SDL_SCANCODE_LALT
+	} },
+	{ 16, { SDL_SCANCODE_LCTRL,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_LEFTSTICK)
+	} },
+	{ 17, { SDL_SCANCODE_LGUI
+	} },
+	{ 18, { SDL_SCANCODE_TAB,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_A)
+	} },
+	{ 19, { SDL_SCANCODE_M,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_X)
+	} },
+	{ 20, { SDL_SCANCODE_GRAVE,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_Y)
+	} },
+};
+	
 static const char *shell_action_name[NUMBER_OF_SHELL_KEYS] = {
 	"前の道具", "次の道具", "主観／客観切り替え", "ボリュームを上げる", "ボリュームを下げる", "マップを拡大", "マップを縮小", "FPSを表\示", "チャット／コンソ\ール", "ネットワーク状況"
 };
 
-static SDL_Scancode default_keys[NUM_KEYS] = {
-	SDL_SCANCODE_KP_8, SDL_SCANCODE_KP_5, SDL_SCANCODE_KP_4, SDL_SCANCODE_KP_6,		// moving/turning
-	SDL_SCANCODE_Z, SDL_SCANCODE_X,								// sidestepping
-	SDL_SCANCODE_A, SDL_SCANCODE_S,								// horizontal looking
-	SDL_SCANCODE_D, SDL_SCANCODE_C, SDL_SCANCODE_V,						// vertical looking
-	SDL_SCANCODE_KP_7, SDL_SCANCODE_KP_9,							// weapon cycling
-	SDL_SCANCODE_SPACE, SDL_SCANCODE_LALT,						// weapon trigger
-	SDL_SCANCODE_LSHIFT, SDL_SCANCODE_LCTRL, SDL_SCANCODE_LGUI,		// modifiers
-	SDL_SCANCODE_TAB,									// action trigger
-	SDL_SCANCODE_M,										// map
-    SDL_SCANCODE_GRAVE                              // microphone (ZZZ)
-};
 
-static SDL_Scancode default_mouse_keys[NUM_KEYS] = {
-	SDL_SCANCODE_W, SDL_SCANCODE_X, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT,		// moving/turning
-	SDL_SCANCODE_A, SDL_SCANCODE_D,								// sidestepping
-	SDL_SCANCODE_Q, SDL_SCANCODE_E,								// horizontal looking
-	SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_KP_0,				// vertical looking
-	SDL_SCANCODE_C, SDL_SCANCODE_Z,								// weapon cycling
-	SDL_SCANCODE_SPACE, SDL_SCANCODE_LALT,						// weapon trigger
-	SDL_SCANCODE_RSHIFT, SDL_SCANCODE_LSHIFT, SDL_SCANCODE_LCTRL,		// modifiers
-	SDL_SCANCODE_S,										// action trigger
-	SDL_SCANCODE_TAB,									// map
-    SDL_SCANCODE_GRAVE                              // microphone (ZZZ)
-};
-
-static SDL_Scancode default_shell_keys[NUMBER_OF_SHELL_KEYS] = {
-	SDL_SCANCODE_LEFTBRACKET, SDL_SCANCODE_RIGHTBRACKET, SDL_SCANCODE_BACKSPACE, SDL_SCANCODE_PERIOD, SDL_SCANCODE_COMMA, SDL_SCANCODE_EQUALS, SDL_SCANCODE_MINUS, SDL_SCANCODE_SLASH, SDL_SCANCODE_BACKSLASH, SDL_SCANCODE_1
+static key_binding_map default_shell_key_bindings = {
+	{ 0, { SDL_SCANCODE_LEFTBRACKET
+	} },
+	{ 1, { SDL_SCANCODE_RIGHTBRACKET
+	} },
+	{ 2, { SDL_SCANCODE_BACKSPACE
+	} },
+	{ 3, { SDL_SCANCODE_PERIOD
+	} },
+	{ 4, { SDL_SCANCODE_COMMA
+	} },
+	{ 5, { SDL_SCANCODE_EQUALS,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_DPAD_UP)
+	} },
+	{ 6, { SDL_SCANCODE_MINUS,
+		static_cast<SDL_Scancode>(AO_SCANCODE_BASE_JOYSTICK_BUTTON + SDL_CONTROLLER_BUTTON_DPAD_DOWN)
+	} },
+	{ 7, { SDL_SCANCODE_SLASH
+	} },
+	{ 8, { SDL_SCANCODE_BACKSLASH
+	} },
+	{ 9, { SDL_SCANCODE_1
+	} },
 };
 
 class w_prefs_key;
 
-static w_prefs_key *key_w[NUM_KEYS];
-static w_prefs_key *shell_key_w[NUMBER_OF_SHELL_KEYS];
+typedef std::multimap<int, w_prefs_key*> prefsKeyMap;
+typedef std::pair<int, w_prefs_key*> prefsKeyMapPair;
+static prefsKeyMap key_w;
+static prefsKeyMap shell_key_w;
 
 class w_prefs_key : public w_key {
 public:
-	w_prefs_key(SDL_Scancode key) : w_key(key) {}
+	w_prefs_key(SDL_Scancode key, w_key::Type event_type) : w_key(key, event_type) {}
 
 	void set_key(SDL_Scancode new_key)
 	{
@@ -1955,37 +1676,34 @@ public:
 		case SDL_SCANCODE_F11:
 		case SDL_SCANCODE_F12:
 		case SDL_SCANCODE_ESCAPE: // (ZZZ: for quitting)
+		case AO_SCANCODE_JOYSTICK_ESCAPE:
 			error = keyIsUsedAlready;
 			break;
 			
 		default:
 			break;
 		}
-//		if (new_key == SDLKey(SDLK_BASE_MOUSE_BUTTON + 3) || new_key == SDLKey(SDLK_BASE_MOUSE_BUTTON + 4))
-//		{
-//			error = keyScrollWheelDoesntWork;
-//		}
 		if (error != NONE) {
 			alert_user(infoError, strERRORS, error, 0);
 			return;
 		}
 
 		w_key::set_key(new_key);
+		dirty = true;
 		if (new_key == SDL_SCANCODE_UNKNOWN)
 			return;
 
 		// Remove binding to this key from all other widgets
-		for (int i=0; i<NUM_KEYS; i++) {
-			if (key_w[i] && key_w[i] != this && key_w[i]->get_key() == new_key) {
-				key_w[i]->set_key(SDL_SCANCODE_UNKNOWN);
-				key_w[i]->dirty = true;
+		for (auto it = key_w.begin(); it != key_w.end(); ++it) {
+			if (it->second != this && it->second->get_key() == new_key) {
+				it->second->set_key(SDL_SCANCODE_UNKNOWN);
+				it->second->dirty = true;
 			}
 		}
-
-		for (int i =0; i < NUMBER_OF_SHELL_KEYS; i++) {
-			if (shell_key_w[i] && shell_key_w[i] != this && shell_key_w[i]->get_key() == new_key) {
-				shell_key_w[i]->set_key(SDL_SCANCODE_UNKNOWN);
-				shell_key_w[i]->dirty = true;
+		for (auto it = shell_key_w.begin(); it != shell_key_w.end(); ++it) {
+			if (it->second != this && it->second->get_key() == new_key) {
+				it->second->set_key(SDL_SCANCODE_UNKNOWN);
+				it->second->dirty = true;
 			}
 		}
 	}
@@ -1993,14 +1711,85 @@ public:
 
 static void load_default_keys(void *arg)
 {
-	// Load default keys, depending on state of "Mouse control" widget
-	dialog *d = (dialog *)arg;
-	SDL_Scancode *keys = (mouse_w->get_selection() ? default_mouse_keys : default_keys);
-	for (int i=0; i<NUM_KEYS; i++)
-		key_w[i]->set_key(keys[i]);
+	for (int i = 0; i < NUM_KEYS; i++) {
+		SDL_Scancode kcode = SDL_SCANCODE_UNKNOWN;
+		SDL_Scancode mcode = SDL_SCANCODE_UNKNOWN;
+		SDL_Scancode jcode = SDL_SCANCODE_UNKNOWN;
+		for (auto it = default_key_bindings[i].begin(); it != default_key_bindings[i].end(); ++it) {
+			SDL_Scancode code = *it;
+			if (code == SDL_SCANCODE_UNKNOWN)
+				continue;
+			switch (w_key::event_type_for_key(code)) {
+				case w_key::MouseButton:
+					mcode = code;
+					break;
+				case w_key::JoystickButton:
+					jcode = code;
+					break;
+				case w_key::KeyboardKey:
+				default:
+					kcode = code;
+					break;
+			}
+		}
+		auto range = key_w.equal_range(i);
+		for (auto ik = range.first; ik != range.second; ++ik) {
+			w_prefs_key *pk = ik->second;
+			switch (pk->event_type) {
+				case w_key::MouseButton:
+					pk->set_key(mcode);
+					break;
+				case w_key::JoystickButton:
+					pk->set_key(jcode);
+					break;
+				case w_key::KeyboardKey:
+				default:
+					pk->set_key(kcode);
+					break;
+			}
+		}
+	}
 
-	for (int i=0; i<NUMBER_OF_SHELL_KEYS;i++)
-		shell_key_w[i]->set_key(default_shell_keys[i]);
+	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; i++) {
+		SDL_Scancode kcode = SDL_SCANCODE_UNKNOWN;
+		SDL_Scancode mcode = SDL_SCANCODE_UNKNOWN;
+		SDL_Scancode jcode = SDL_SCANCODE_UNKNOWN;
+		for (auto it = default_shell_key_bindings[i].begin(); it != default_shell_key_bindings[i].end(); ++it) {
+			SDL_Scancode code = *it;
+			if (code == SDL_SCANCODE_UNKNOWN)
+				continue;
+			switch (w_key::event_type_for_key(code)) {
+				case w_key::MouseButton:
+					mcode = code;
+					break;
+				case w_key::JoystickButton:
+					jcode = code;
+					break;
+				case w_key::KeyboardKey:
+				default:
+					kcode = code;
+					break;
+			}
+		}
+		auto range = shell_key_w.equal_range(i);
+		for (auto ik = range.first; ik != range.second; ++ik) {
+			w_prefs_key *pk = ik->second;
+			switch (pk->event_type) {
+				case w_key::MouseButton:
+					pk->set_key(mcode);
+					break;
+				case w_key::JoystickButton:
+					pk->set_key(jcode);
+					break;
+				case w_key::KeyboardKey:
+				default:
+					pk->set_key(kcode);
+					break;
+			}
+		}
+	}
+
+	dialog *d = (dialog *)arg;
 	d->draw();
 }
 
@@ -2018,61 +1807,418 @@ enum {
 	TAB_MORE_KEYS
 };
 
-static void keyboard_dialog(void *arg)
+static w_text_entry *mouse_up_w;
+static w_text_entry *mouse_down_w;
+
+static void invert_selected(w_select* w)
+{
+	if (w->get_selection()) {
+		mouse_up_w->set_text("上を向く");
+		mouse_down_w->set_text("下を向く");
+	} else {
+		mouse_up_w->set_text("上を向く");
+		mouse_down_w->set_text("下を向く");
+	}
+}
+
+static void controls_dialog(void *arg)
 {
 	// Clear array of key widgets (because w_prefs_key::set_key() scans it)
-	for (int i=0; i<NUM_KEYS; i++)
-		key_w[i] = NULL;
+	key_w.clear();
+	shell_key_w.clear();
 
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("キー設定／ボタン"), d);
-
+	placer->dual_add(new w_title("コントロール"), d);
+	placer->add(new w_spacer());
+	
+	// create all key widgets
+	for (int i = 0; i < NUM_KEYS; i++) {
+		SDL_Scancode kcode = SDL_SCANCODE_UNKNOWN;
+		SDL_Scancode mcode = SDL_SCANCODE_UNKNOWN;
+		SDL_Scancode jcode = SDL_SCANCODE_UNKNOWN;
+		for (std::set<SDL_Scancode>::const_iterator bit = input_preferences->key_bindings[i].begin(); bit != input_preferences->key_bindings[i].end(); ++bit) {
+			SDL_Scancode code = *bit;
+			if (code >= AO_SCANCODE_BASE_JOYSTICK_BUTTON && code < (AO_SCANCODE_BASE_JOYSTICK_BUTTON + NUM_SDL_JOYSTICK_BUTTONS)) {
+				jcode = code;
+			} else if (code >= AO_SCANCODE_BASE_MOUSE_BUTTON && code < (AO_SCANCODE_BASE_MOUSE_BUTTON + NUM_SDL_MOUSE_BUTTONS)) {
+				mcode = code;
+			} else {
+				kcode = code;
+			}
+		}
+		key_w.insert(prefsKeyMapPair(i, new w_prefs_key(kcode, w_key::KeyboardKey)));
+		key_w.insert(prefsKeyMapPair(i, new w_prefs_key(mcode, w_key::MouseButton)));
+		key_w.insert(prefsKeyMapPair(i, new w_prefs_key(jcode, w_key::JoystickButton)));
+	}
+	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; i++) {
+		SDL_Scancode kcode = SDL_SCANCODE_UNKNOWN;
+		SDL_Scancode mcode = SDL_SCANCODE_UNKNOWN;
+		SDL_Scancode jcode = SDL_SCANCODE_UNKNOWN;
+		for (std::set<SDL_Scancode>::const_iterator bit = input_preferences->shell_key_bindings[i].begin(); bit != input_preferences->shell_key_bindings[i].end(); ++bit) {
+			SDL_Scancode code = *bit;
+			if (code >= AO_SCANCODE_BASE_JOYSTICK_BUTTON && code < (AO_SCANCODE_BASE_JOYSTICK_BUTTON + NUM_SDL_JOYSTICK_BUTTONS)) {
+				jcode = code;
+			} else if (code >= AO_SCANCODE_BASE_MOUSE_BUTTON && code < (AO_SCANCODE_BASE_MOUSE_BUTTON + NUM_SDL_MOUSE_BUTTONS)) {
+				mcode = code;
+			} else {
+				kcode = code;
+			}
+		}
+		shell_key_w.insert(prefsKeyMapPair(i, new w_prefs_key(kcode, w_key::KeyboardKey)));
+		shell_key_w.insert(prefsKeyMapPair(i, new w_prefs_key(mcode, w_key::MouseButton)));
+		shell_key_w.insert(prefsKeyMapPair(i, new w_prefs_key(jcode, w_key::JoystickButton)));
+	}
+	
+	tab_placer* tabs = new tab_placer();
+	
+	std::vector<std::string> labels = { "照準", "移動", "行動", "インターフェース", "その他" };
+	w_tab *tab_w = new w_tab(labels, tabs);
+	
+	placer->dual_add(tab_w, d);
 	placer->add(new w_spacer(), true);
 	
-	table_placer *left_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
-	left_table->col_flags(0, placeable::kAlignRight);
-	table_placer *right_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
-	right_table->col_flags(0, placeable::kAlignRight);
-
-	for (int i=0; i<19; i++)
-	{
-		SDL_Scancode code = SDL_SCANCODE_UNKNOWN;
-		if (input_preferences->key_bindings[i].size())
-			code = *(input_preferences->key_bindings[i].begin());
-		key_w[i] = new w_prefs_key(code);
-		left_table->dual_add(key_w[i]->label(action_name[i]), d);
-		left_table->dual_add(key_w[i], d);
+	vertical_placer *move = new vertical_placer();
+	table_placer *move_table = new table_placer(4, get_theme_space(ITEM_WIDGET), true);
+	move_table->col_flags(0, placeable::kAlignRight);
+	move_table->col_flags(1, placeable::kAlignLeft);
+	move_table->col_flags(2, placeable::kAlignLeft);
+	move_table->col_flags(3, placeable::kAlignLeft);
+	move_table->add(new w_spacer(), true);
+	move_table->dual_add(new w_label("キーボード"), d);
+	move_table->dual_add(new w_label("マウス"), d);
+	move_table->dual_add(new w_label("コントローラー"), d);
+	
+	std::vector<int> move_keys = { 0, 1, 4, 5, -1, 16, 15, 17 };
+	for (auto it = move_keys.begin(); it != move_keys.end(); ++it) {
+		if (*it < 0) {
+			move_table->add_row(new w_spacer(), true);
+		} else if (*it >= 100) {
+			int i = *it - 100;
+			move_table->dual_add(new w_label(shell_action_name[i]), d);
+			auto range = shell_key_w.equal_range(i);
+			for (auto ik = range.first; ik != range.second; ++ik) {
+				move_table->dual_add(ik->second, d);
+			}
+		} else {
+			int i = *it;
+			move_table->dual_add(new w_label(action_name[i]), d);
+			auto range = key_w.equal_range(i);
+			for (auto ik = range.first; ik != range.second; ++ik) {
+				if ((ik->second->event_type == w_key::MouseButton) &&
+					(i == 0 || i == 1 || i == 4 || i == 5))
+					move_table->dual_add(new w_label(""), d);
+				else
+					move_table->dual_add(ik->second, d);
+			}
+		}
 	}
+	move->add(move_table, true);
+	move->add(new w_spacer(), true);
+	
+	table_placer *move_options = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	move_options->col_flags(0, placeable::kAlignRight);
 
-	for (int i=19; i<NUM_KEYS; i++) {
-		SDL_Scancode code = SDL_SCANCODE_UNKNOWN;
-		if (input_preferences->key_bindings[i].size())
-			code = *(input_preferences->key_bindings[i].begin());
-		key_w[i] = new w_prefs_key(code);
-		right_table->dual_add(key_w[i]->label(action_name[i]), d);
-		right_table->dual_add(key_w[i], d);
+	w_toggle *always_run_w = new w_toggle(input_preferences->modifiers & _inputmod_interchange_run_walk);
+	move_options->dual_add(always_run_w->label("常時走行"), d);
+	move_options->dual_add(always_run_w, d);
+	
+	w_toggle *always_swim_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_swim_sink));
+	move_options->dual_add(always_swim_w->label("常時泳ぐ"), d);
+	move_options->dual_add(always_swim_w, d);
+	
+	move->add(move_options, true);
+
+	vertical_placer *look = new vertical_placer();
+	table_placer *look_table = new table_placer(4, get_theme_space(ITEM_WIDGET), true);
+	look_table->col_flags(0, placeable::kAlignRight);
+	look_table->col_flags(1, placeable::kAlignLeft);
+	look_table->col_flags(2, placeable::kAlignLeft);
+	look_table->col_flags(3, placeable::kAlignLeft);
+	look_table->add(new w_spacer(), true);
+	look_table->dual_add(new w_label("キーボード"), d);
+	look_table->dual_add(new w_label("マウス"), d);
+	look_table->dual_add(new w_label("コントローラー"), d);
+	
+	std::vector<int> look_keys = { 8, 9, 2, 3, -1, 6, 7, 10 };
+	for (auto it = look_keys.begin(); it != look_keys.end(); ++it) {
+		if (*it < 0) {
+			look_table->add_row(new w_spacer(), true);
+		} else if (*it >= 100) {
+			int i = *it - 100;
+			look_table->dual_add(new w_label(shell_action_name[i]), d);
+			auto range = shell_key_w.equal_range(i);
+			for (auto ik = range.first; ik != range.second; ++ik) {
+				look_table->dual_add(ik->second, d);
+			}
+		} else {
+			int i = *it;
+			look_table->dual_add(new w_label(action_name[i]), d);
+			auto range = key_w.equal_range(i);
+			for (auto ik = range.first; ik != range.second; ++ik) {
+				if (ik->second->event_type == w_key::MouseButton) {
+					w_text_entry* txt = NULL;
+					switch (i) {
+						case 8:
+							txt = new w_text_entry(12, "move up");
+							mouse_up_w = txt;
+							break;
+						case 9:
+							txt = new w_text_entry(12, "move down");
+							mouse_down_w = txt;
+							break;
+						case 2:
+							txt = new w_text_entry(12, "move left");
+							break;
+						case 3:
+							txt = new w_text_entry(12, "move right");
+							break;
+						default:
+							break;
+					}
+					if (txt) {
+						txt->set_enabled(false);
+						txt->set_min_width(50);
+						look_table->dual_add(txt, d);
+						continue;
+					}
+				}
+				look_table->dual_add(ik->second, d);
+			}
+		}
 	}
+	look->add(look_table, true);
+	look->add(new w_spacer(), true);
+	
+	table_placer *look_options = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	look_options->col_flags(0, placeable::kAlignRight);
+	
+	w_toggle* auto_recenter_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_auto_recenter));
+	look_options->dual_add(auto_recenter_w->label("視点の自動リセンター"), d);
+	look_options->dual_add(auto_recenter_w, d);
+	
+	look_options->add_row(new w_spacer(), true);
+	
+	std::vector<std::string> mouse_aiming_labels = { "オフ", "生の入力", "OSの入力" };
+	w_select_popup *mouse_aiming_w = new w_select_popup();
+	mouse_aiming_w->set_labels(mouse_aiming_labels);
+	if (input_preferences->input_device == _keyboard_or_game_pad)
+		mouse_aiming_w->set_selection(0);
+	else if (input_preferences->raw_mouse_input)
+		mouse_aiming_w->set_selection(1);
+	else
+		mouse_aiming_w->set_selection(2);
+	look_options->dual_add(mouse_aiming_w->label("マウスの照準"), d);
+	look_options->dual_add(mouse_aiming_w, d);
+	
+	const float kMinSensitivityLog = -3.0f;
+	const float kMaxSensitivityLog = 3.0f;
+	const float kSensitivityLogRange = kMaxSensitivityLog - kMinSensitivityLog;
+	
+	float mouseSensitivity = ((float) input_preferences->sens_horizontal) / FIXED_ONE;
+	if (mouseSensitivity <= 0.0f) mouseSensitivity = 1.0f;
+	float mouseSensitivityLog = std::log(mouseSensitivity);
+	int mouseSliderPosition =
+	(int) ((mouseSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
+	
+	w_sens_slider* sens_horizontal_w = new w_sens_slider(1000, mouseSliderPosition);
+	look_options->dual_add(sens_horizontal_w->label("マウスの感度"), d);
+	look_options->dual_add(sens_horizontal_w, d);
 
-	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; i++) {
-		SDL_Scancode code = SDL_SCANCODE_UNKNOWN;
-		if (input_preferences->shell_key_bindings[i].size())
-			code = *(input_preferences->shell_key_bindings[i].begin());
-		shell_key_w[i] = new w_prefs_key(code);
-		right_table->dual_add(shell_key_w[i]->label(shell_action_name[i]), d);
-		right_table->dual_add(shell_key_w[i], d);
+	w_toggle* invert_mouse_w = new w_toggle(input_preferences->modifiers & _inputmod_invert_mouse);
+	invert_mouse_w->set_selection_changed_callback(invert_selected);
+	invert_selected(invert_mouse_w);
+	look_options->dual_add(invert_mouse_w->label("マウスの動きを反転"), d);
+	look_options->dual_add(invert_mouse_w, d);
+	
+	w_toggle* accel_mouse_w = new w_toggle(input_preferences->mouse_accel_type == _mouse_accel_classic);
+	look_options->dual_add(accel_mouse_w->label("マウスの加速"), d);
+	look_options->dual_add(accel_mouse_w, d);
+	
+	look_options->add_row(new w_spacer(), true);
+	
+	std::vector<std::string> joystick_aiming_labels = { "ボタンとして使う", "アナログスティックとして使う" };
+	w_select_popup *joystick_aiming_w = new w_select_popup();
+	joystick_aiming_w->set_labels(joystick_aiming_labels);
+	joystick_aiming_w->set_selection(input_preferences->controller_analog ? 1 : 0);
+	look_options->dual_add(joystick_aiming_w->label("コントローラーの照準"), d);
+	look_options->dual_add(joystick_aiming_w, d);
+
+	float joySensitivity = ((float) input_preferences->controller_sensitivity) / FIXED_ONE;
+	if (joySensitivity <= 0.0f) joySensitivity = 1.0f;
+	float joySensitivityLog = std::log(joySensitivity);
+	int joySliderPosition =
+	(int) ((joySensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
+	
+	w_sens_slider* sens_joy_w = new w_sens_slider(1000, joySliderPosition);
+	look_options->dual_add(sens_joy_w->label("コントローラーの感度"), d);
+	look_options->dual_add(sens_joy_w, d);
+
+	look->add(look_options, true);
+	
+	vertical_placer *actions = new vertical_placer();
+	table_placer *actions_table = new table_placer(4, get_theme_space(ITEM_WIDGET), true);
+	actions_table->col_flags(0, placeable::kAlignRight);
+	actions_table->col_flags(1, placeable::kAlignLeft);
+	actions_table->col_flags(2, placeable::kAlignLeft);
+	actions_table->col_flags(3, placeable::kAlignLeft);
+	actions_table->add(new w_spacer(), true);
+	actions_table->dual_add(new w_label("キーボード"), d);
+	actions_table->dual_add(new w_label("マウス"), d);
+	actions_table->dual_add(new w_label("コントローラー"), d);
+	
+	std::vector<int> actions_keys = { 13, 14, 11, 12, -1, 18, -1, 20, 108 };
+	for (auto it = actions_keys.begin(); it != actions_keys.end(); ++it) {
+		if (*it < 0) {
+			actions_table->add_row(new w_spacer(), true);
+		} else if (*it >= 100) {
+			int i = *it - 100;
+			actions_table->dual_add(new w_label(shell_action_name[i]), d);
+			auto range = shell_key_w.equal_range(i);
+			for (auto ik = range.first; ik != range.second; ++ik) {
+				actions_table->dual_add(ik->second, d);
+			}
+		} else {
+			int i = *it;
+			actions_table->dual_add(new w_label(action_name[i]), d);
+			auto range = key_w.equal_range(i);
+			for (auto ik = range.first; ik != range.second; ++ik) {
+				actions_table->dual_add(ik->second, d);
+			}
+		}
 	}
+	actions->add(actions_table, true);
+	actions->add(new w_spacer(), true);
+	
+	table_placer *actions_options = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	actions_options->col_flags(0, placeable::kAlignRight);
 
-	horizontal_placer *table = new horizontal_placer(get_theme_space(ITEM_WIDGET), true);
+	w_toggle *weapon_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_switch_to_new_weapon));
+	actions_options->dual_add(weapon_w->label("武器の自動切り替え"), d);
+	actions_options->dual_add(weapon_w, d);
+	
+	actions->add(actions_options, true);
+	
+	actions->add(new w_spacer(), true);
+	actions->dual_add(new w_static_text("注意：武器の自動切換えと、視点の自動リセンターは、ネットワークプレイで"), d);
+	actions->dual_add(new w_static_text("自動的にオンになります。シングルプレイヤーモードでどちらかをオフにすると、"), d);
+	actions->dual_add(new w_static_text("映画の録画が自動的に無効化されます。"), d);
 
-	table->add(left_table, true);
-	table->add(right_table, true);
 
-	placer->add(table, true);
+	vertical_placer *iface = new vertical_placer();
+	table_placer *interface_table = new table_placer(4, get_theme_space(ITEM_WIDGET), true);
+	interface_table->col_flags(0, placeable::kAlignRight);
+	interface_table->col_flags(1, placeable::kAlignLeft);
+	interface_table->col_flags(2, placeable::kAlignLeft);
+	interface_table->col_flags(3, placeable::kAlignLeft);
+	interface_table->add(new w_spacer(), true);
+	interface_table->dual_add(new w_label("キーボード"), d);
+	interface_table->dual_add(new w_label("マウス"), d);
+	interface_table->dual_add(new w_label("コントローラー"), d);
+	
+	std::vector<int> interface_keys = { 19, 105, 106, -1, 103, 104, -1, 100, 101, -1, 102, 107, 109, -1, -2 };
+	for (auto it = interface_keys.begin(); it != interface_keys.end(); ++it) {
+		if (*it == -2) {
+			interface_table->dual_add(new w_label("ゲームを終了"), d);
+			w_prefs_key *kb = new w_prefs_key(SDL_SCANCODE_ESCAPE, w_key::KeyboardKey);
+			kb->set_enabled(false);
+			interface_table->dual_add(kb, d);
+			interface_table->dual_add(new w_label(""), d);
+			w_prefs_key *cn = new w_prefs_key(AO_SCANCODE_JOYSTICK_ESCAPE, w_key::JoystickButton);
+			cn->set_enabled(false);
+			interface_table->dual_add(cn, d);
+		} else if (*it < 0) {
+			interface_table->add_row(new w_spacer(), true);
+		} else if (*it >= 100) {
+			int i = *it - 100;
+			interface_table->dual_add(new w_label(shell_action_name[i]), d);
+			auto range = shell_key_w.equal_range(i);
+			for (auto ik = range.first; ik != range.second; ++ik) {
+				interface_table->dual_add(ik->second, d);
+			}
+		} else {
+			int i = *it;
+			interface_table->dual_add(new w_label(action_name[i]), d);
+			auto range = key_w.equal_range(i);
+			for (auto ik = range.first; ik != range.second; ++ik) {
+				interface_table->dual_add(ik->second, d);
+			}
+		}
+	}
+	iface->add(interface_table, true);
 
+	vertical_placer *other = new vertical_placer();
+	other->dual_add(new w_static_text("これらのキーボードショートカットは変更できません。"), d);
+	other->add(new w_spacer());
+
+	table_placer *other_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	other_table->dual_add(new w_label("メインメニュー"), d);
+	other_table->dual_add(new w_label("ゲーム中"), d);
+
+	table_placer *other_menu = new table_placer(2, get_theme_space(ITEM_WIDGET), false);
+	other_menu->col_flags(0, placeable::kAlignRight);
+	other_menu->col_flags(1, placeable::kAlignLeft);
+	std::vector<std::string> menu_shortcuts = {
+		"N", "新規ゲーム開始",
+#if (defined(__APPLE__) && defined(__MACH__))
+		"Cmd-Option-N", "レベル選択",
+#else
+		"Ctrl+Shift+N", "レベル選択",
+#endif
+		"O", "保存したゲームを再開",
+		"G", "ネットワークゲーム集合",
+		"J", "ネットワークゲーム参加",
+		"R", "保存した映画の再生",
+		"P", "環境設定",
+		"Q", "終了",
+		"C", "シナリオクレジット",
+		"A", "Aleph Oneについて",
+#if (defined(__APPLE__) && defined(__MACH__))
+		"Cmd-Return", "フルスクリーン切り替え",
+#else
+		"Alt+Enter", "フルスクリーン切り替え",
+#endif
+	};
+	for (auto it = menu_shortcuts.begin(); it != menu_shortcuts.end(); ++it) {
+		other_menu->dual_add(new w_label(it->c_str()), d);
+	}
+	other_table->add(other_menu, true);
+
+	table_placer *other_game = new table_placer(2, get_theme_space(ITEM_WIDGET), false);
+	other_game->col_flags(0, placeable::kAlignRight);
+	other_game->col_flags(1, placeable::kAlignLeft);
+	std::vector<std::string> game_shortcuts = {
+		"F1", "解像度を下げる",
+		"F2", "解像度を上げる",
+		"F8", "クロスヘアー",
+		"F9", "スクリーンショット",
+		"F10", "デバッグ情報",
+		"F11", "明るさを下げる",
+		"F12", "明るさを上げる",
+#if (defined(__APPLE__) && defined(__MACH__))
+		"Cmd-Return", "フルスクリーン切り替え",
+#else
+		"Alt+Enter", "フルスクリーン切り替え",
+#endif
+		"Escape", "ゲーム終了"
+	};
+	for (auto it = game_shortcuts.begin(); it != game_shortcuts.end(); ++it) {
+		other_game->dual_add(new w_label(it->c_str()), d);
+	}
+	other_table->add(other_game, true);
+
+	other->add(other_table, true);
+
+	tabs->add(look, true);
+	tabs->add(move, true);
+	tabs->add(actions, true);
+	tabs->add(iface, true);
+	tabs->add(other, true);
+	placer->add(tabs, true);
+	
 	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_button("デフォルト", load_default_keys, &d), d);
+	placer->dual_add(new w_button("デフォルトにリセットする", load_default_keys, &d), d);
 	placer->add(new w_spacer(), true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
@@ -2090,27 +2236,95 @@ static void keyboard_dialog(void *arg)
 	// Run dialog
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
+		
+		uint16 flags = input_preferences->modifiers & _inputmod_use_button_sounds;
+		if (always_run_w->get_selection()) flags |= _inputmod_interchange_run_walk;
+		if (always_swim_w->get_selection()) flags |= _inputmod_interchange_swim_sink;
+		if (!(weapon_w->get_selection())) flags |= _inputmod_dont_switch_to_new_weapon;
+		if (!(auto_recenter_w->get_selection())) flags |= _inputmod_dont_auto_recenter;
+		if (invert_mouse_w->get_selection()) flags |= _inputmod_invert_mouse;
+		
+		if (flags != input_preferences->modifiers) {
+			input_preferences->modifiers = flags;
+			changed = true;
+		}
 
-		for (int i=0; i<NUM_KEYS; i++) {
-			SDL_Scancode key = key_w[i]->get_key();
-			if (!input_preferences->key_bindings[i].count(key)) {
+		for (int i = 0; i < NUM_KEYS; i++) {
+			input_preferences->key_bindings[i].clear();
+		}
+		for (int i = 0; i < NUMBER_OF_SHELL_KEYS; i++) {
+			input_preferences->shell_key_bindings[i].clear();
+		}
+
+		for (auto it = key_w.begin(); it != key_w.end(); ++it) {
+			int i = it->first;
+			SDL_Scancode key = it->second->get_key();
+			if (key != SDL_SCANCODE_UNKNOWN) {
 				unset_scancode(key);
-				input_preferences->key_bindings[i].clear();
 				input_preferences->key_bindings[i].insert(key);
 				changed = true;
 			}
 		}
 
-		for (int i=0; i<NUMBER_OF_SHELL_KEYS;i++) {
-			SDL_Scancode key = shell_key_w[i]->get_key();
-			if (!input_preferences->shell_key_bindings[i].count(key)) {
+		for (auto it = shell_key_w.begin(); it != shell_key_w.end(); ++it) {
+			int i = it->first;
+			SDL_Scancode key = it->second->get_key();
+			if (key != SDL_SCANCODE_UNKNOWN) {
 				unset_scancode(key);
-				input_preferences->shell_key_bindings[i].clear();
 				input_preferences->shell_key_bindings[i].insert(key);
 				changed = true;
 			}
 		}
 
+		if (mouse_aiming_w->get_selection() == 0) {
+			if (input_preferences->input_device != _keyboard_or_game_pad) {
+				input_preferences->input_device = _keyboard_or_game_pad;
+				changed = true;
+			}
+		} else {
+			if (input_preferences->input_device != _mouse_yaw_pitch) {
+				input_preferences->input_device = _mouse_yaw_pitch;
+				changed = true;
+			}
+			bool rawmouse = (mouse_aiming_w->get_selection() == 1);
+			if (input_preferences->raw_mouse_input != rawmouse) {
+				input_preferences->raw_mouse_input = rawmouse;
+				changed = true;
+			}
+		}
+		
+		int atype = accel_mouse_w->get_selection() ? _mouse_accel_classic : _mouse_accel_none;
+		if (input_preferences->mouse_accel_type != atype) {
+			input_preferences->mouse_accel_type = atype;
+			changed = true;
+		}
+
+		int sliderPos = sens_horizontal_w->get_selection();
+		float sliderLog = kMinSensitivityLog + ((float) sliderPos) * (kSensitivityLogRange / 1000.0f);
+		_fixed sliderNorm = _fixed(std::exp(sliderLog) * FIXED_ONE);
+		if (sliderNorm != input_preferences->sens_vertical) {
+            input_preferences->sens_vertical = sliderNorm;
+            changed = true;
+        }
+		if (sliderNorm != input_preferences->sens_horizontal) {
+			input_preferences->sens_horizontal = sliderNorm;
+			changed = true;
+		}
+		
+		bool jaim = (joystick_aiming_w->get_selection() == 1);
+		if (input_preferences->controller_analog != jaim) {
+			input_preferences->controller_analog = jaim;
+			changed = true;
+		}
+		
+		sliderPos = sens_joy_w->get_selection();
+		sliderLog = kMinSensitivityLog + ((float) sliderPos) * (kSensitivityLogRange / 1000.0f);
+		sliderNorm = _fixed(std::exp(sliderLog) * FIXED_ONE);
+		if (sliderNorm != input_preferences->controller_sensitivity) {
+			input_preferences->controller_sensitivity = sliderNorm;
+			changed = true;
+		}
+	
 		if (changed)
 			write_preferences();
 	}
@@ -2460,7 +2674,6 @@ void initialize_preferences(
 		player_preferences= new player_preferences_data;
 		input_preferences= new input_preferences_data;
 		sound_preferences = new SoundManager::Parameters;
-		serial_preferences= new serial_number_data;
 		network_preferences= new network_preferences_data;
 		environment_preferences= new environment_preferences_data;
 		
@@ -2489,7 +2702,6 @@ void read_preferences ()
 {
 	// Set to defaults; will be overridden by reading in the XML stuff
 	default_graphics_preferences(graphics_preferences);
-	default_serial_number_preferences(serial_preferences);
 	default_network_preferences(network_preferences);
 	default_player_preferences(player_preferences);
 	default_input_preferences(input_preferences);
@@ -2570,7 +2782,6 @@ void read_preferences ()
 
 	// Check on the read-in prefs
 	validate_graphics_preferences(graphics_preferences);
-	validate_serial_number_preferences(serial_preferences);
 	validate_network_preferences(network_preferences);
 	validate_player_preferences(player_preferences);
 	validate_input_preferences(input_preferences);
@@ -2698,21 +2909,17 @@ static const char *binding_shell_action_name[NUMBER_OF_SHELL_KEYS] = {
 };
 static const char *binding_mouse_button_name[NUM_SDL_MOUSE_BUTTONS] = {
 	"mouse-left", "mouse-middle", "mouse-right", "mouse-x1", "mouse-x2",
-	"mouse-scroll-up", "mouse-scroll-down", "mouse-8"
+	"mouse-scroll-up", "mouse-scroll-down"
 };
 static const char *binding_joystick_button_name[NUM_SDL_JOYSTICK_BUTTONS] = {
 	"controller-a", "controller-b", "controller-x", "controller-y",
 	"controller-back", "controller-guide", "controller-start",
 	"controller-ls", "controller-rs", "controller-lb", "controller-rb",
 	"controller-up", "controller-down", "controller-left", "controller-right",
-	"controller-lt", "controller-rt", "controller-18"
-};
-static const char *binding_joystick_axis_name[NUM_SDL_JOYSTICK_AXES] = {
-	"controller-leftx", "controller-lefty",
-	"controller-rightx", "controller-righty"
-};
-static const char *binding_axis_action_name[NUMBER_OF_JOYSTICK_MAPPINGS] = {
-	"strafe", "move", "look-horizontal", "look-vertical"
+	"controller-ls-right", "controller-ls-down", "controller-rs-right",
+	"controller-rs-down", "controller-lt", "controller-rt",
+	"controller-ls-left", "controller-ls-up", "controller-rs-left",
+	"controller-rs-up", "controller-lt-neg", "controller-rt-neg"
 };
 static const int binding_num_scancodes = 285;
 static const char *binding_scancode_name[binding_num_scancodes] = {
@@ -2790,14 +2997,6 @@ static const char *binding_name_for_code(SDL_Scancode code)
 	return "unknown";
 }
 
-static const char *binding_name_for_axis(int axis)
-{
-	if (axis >= 0 &&
-		axis < NUM_SDL_JOYSTICK_AXES)
-		return binding_joystick_axis_name[axis];
-	return "unknown";
-}
-
 static SDL_Scancode code_for_binding_name(std::string name)
 {
 	for (int i = 0; i < binding_num_scancodes; ++i)
@@ -2839,26 +3038,6 @@ static int index_for_action_name(std::string name, bool& is_shell)
 	return -1;
 }
 
-static int index_for_axis_name(std::string name)
-{
-	for (int i = 0; i < NUM_SDL_JOYSTICK_AXES; ++i)
-	{
-		if (name == binding_joystick_axis_name[i])
-			return i;
-	}
-	return -1;
-}
-
-static int index_for_axis_action_name(std::string name)
-{
-	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
-	{
-		if (name == binding_axis_action_name[i])
-			return i;
-	}
-	return -1;
-}
-
 InfoTree input_preferences_tree()
 {
 	InfoTree root;
@@ -2871,17 +3050,10 @@ InfoTree input_preferences_tree()
 	root.put_attr("mouse_accel_type", input_preferences->mouse_accel_type);
 	root.put_attr("mouse_accel_scale", input_preferences->mouse_accel_scale);
 	root.put_attr("raw_mouse_input", input_preferences->raw_mouse_input);
-	root.put_attr("use_controller", input_preferences->use_joystick);
-
-	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
-	{
-		InfoTree joyaxis;
-		joyaxis.put_attr("action", binding_axis_action_name[i]);
-		joyaxis.put_attr("axis", binding_name_for_axis(input_preferences->joystick_axis_mappings[i]));
-		joyaxis.put_attr("sensitivity", input_preferences->joystick_axis_sensitivities[i]);
-		joyaxis.put_attr("dead_zone", input_preferences->joystick_axis_bounds[i]);
-		root.add_child("binding_axis", joyaxis);
-	}
+	
+	root.put_attr("controller_analog", input_preferences->controller_analog);
+	root.put_attr("controller_sensitivity", input_preferences->controller_sensitivity);
+	root.put_attr("controller_deadzone", input_preferences->controller_deadzone);
 	
 	for (int i = 0; i < (NUMBER_OF_KEYS + NUMBER_OF_SHELL_KEYS); ++i)
 	{
@@ -3053,22 +3225,14 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.high_dpi = true;
 	preferences->screen_mode.hud = true;
 	preferences->screen_mode.hud_scale_level = 0;
-	preferences->screen_mode.term_scale_level = 0;
-	preferences->screen_mode.translucent_map = false;
-#if (defined(__APPLE__) && defined(__MACH__)) || defined(__WIN32__)
+	preferences->screen_mode.term_scale_level = 2;
+	preferences->screen_mode.translucent_map = true;
 	preferences->screen_mode.acceleration = _opengl_acceleration;
-#else
-	preferences->screen_mode.acceleration = _no_acceleration;
-#endif
 	preferences->screen_mode.high_resolution = true;
 	preferences->screen_mode.fullscreen = true;
 	preferences->screen_mode.fix_h_not_v = true;
 	preferences->screen_mode.camera_bob = true;
-
-	if (preferences->screen_mode.acceleration == _no_acceleration)
-		preferences->screen_mode.bit_depth = 16;
-	else
-		preferences->screen_mode.bit_depth = 32;
+	preferences->screen_mode.bit_depth = 32;
 	
 	preferences->screen_mode.draw_every_other_line= false;
 	
@@ -3084,11 +3248,6 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->movie_export_audio_quality = 50;
 }
 
-static void default_serial_number_preferences(serial_number_data *preferences)
-{
-	memset(preferences, 0, sizeof(struct serial_number_data));
-}
-
 static void default_network_preferences(network_preferences_data *preferences)
 {
 	preferences->type= _ethernet;
@@ -3097,7 +3256,7 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->game_is_untimed = false;
 	preferences->difficulty_level = 2;
 	preferences->game_options =	_multiplayer_game | _ammo_replenishes | _weapons_replenish
-		| _specials_replenish |	_monsters_replenish | _burn_items_on_death | _suicide_is_penalized 
+		| _specials_replenish | _burn_items_on_death
 		| _force_unique_teams | _live_network_stats;
 	preferences->time_limit = 10 * TICKS_PER_SECOND * 60;
 	preferences->kill_limit = 10;
@@ -3147,9 +3306,9 @@ static void default_player_preferences(player_preferences_data *preferences)
 	preferences->ChaseCam.Spring = 0;
 	preferences->ChaseCam.Opacity = 1;
 	
-	preferences->Crosshairs.Thickness = 2;
-	preferences->Crosshairs.FromCenter = 8;
-	preferences->Crosshairs.Length = 16;
+	preferences->Crosshairs.Thickness = 3;
+	preferences->Crosshairs.FromCenter = 2;
+	preferences->Crosshairs.Length = 1;
 	preferences->Crosshairs.Shape = CHShape_RealCrosshairs;
 	preferences->Crosshairs.Color = rgb_white;
 	preferences->Crosshairs.Opacity = 0.5;
@@ -3158,15 +3317,9 @@ static void default_player_preferences(player_preferences_data *preferences)
 
 static void default_input_preferences(input_preferences_data *preferences)
 {
-	preferences->input_device= _keyboard_or_game_pad;
-	for (int i = 0; i < NUM_KEYS; i++)
-	{
-		preferences->key_bindings[i].insert(default_keys[i]);
-	}
-	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; i++)
-	{
-		preferences->shell_key_bindings[i].insert(default_shell_keys[i]);
-	}
+	preferences->input_device= _mouse_yaw_pitch;
+	preferences->key_bindings = default_key_bindings;
+	preferences->shell_key_bindings = default_shell_key_bindings;
 	
 	// LP addition: set up defaults for modifiers:
 	// interchange run and walk, but don't interchange swim and sink.
@@ -3178,22 +3331,12 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->sens_vertical = FIXED_ONE;
 	preferences->mouse_accel_type = _mouse_accel_none;
 	preferences->mouse_accel_scale = 1.f;
-	preferences->raw_mouse_input = false;
-	preferences->mouse_max_speed = 1.f;
+	preferences->raw_mouse_input = true;
+	preferences->mouse_max_speed = .25f;
 
-	preferences->use_joystick = true;
-	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
-		preferences->joystick_axis_mappings[i] = i;
-
-	preferences->joystick_axis_sensitivities[_joystick_strafe] = 1.0;
-	preferences->joystick_axis_sensitivities[_joystick_velocity] = 1.0;
-	preferences->joystick_axis_sensitivities[_joystick_yaw] = 1.0;
-	preferences->joystick_axis_sensitivities[_joystick_pitch] = 1.0;
-
-	preferences->joystick_axis_bounds[_joystick_strafe] = 3000;
-	preferences->joystick_axis_bounds[_joystick_velocity] = 3000;
-	preferences->joystick_axis_bounds[_joystick_yaw] = 3000;
-	preferences->joystick_axis_bounds[_joystick_pitch] = 3000;
+	preferences->controller_analog = true;
+	preferences->controller_sensitivity = FIXED_ONE;
+	preferences->controller_deadzone = 3000;
 }
 
 static void default_environment_preferences(environment_preferences_data *preferences)
@@ -3264,6 +3407,9 @@ static bool validate_graphics_preferences(graphics_preferences_data *preferences
 		changed= true;
 	}
 
+	if (preferences->screen_mode.acceleration != _no_acceleration && preferences->screen_mode.acceleration != _opengl_acceleration)
+		preferences->screen_mode.acceleration = _opengl_acceleration;
+
 	// OpenGL requires at least 16 bit color depth
 	if (preferences->screen_mode.acceleration != _no_acceleration && preferences->screen_mode.bit_depth == 8)
 	{
@@ -3280,12 +3426,6 @@ static bool validate_graphics_preferences(graphics_preferences_data *preferences
 #endif
 
 	return changed;
-}
-
-static bool validate_serial_number_preferences(serial_number_data *preferences)
-{
-	(void) (preferences);
-	return false;
 }
 
 static bool validate_network_preferences(network_preferences_data *preferences)
@@ -3747,23 +3887,12 @@ void parse_input_preferences(InfoTree root, std::string version)
 								  0, NUMBER_OF_MOUSE_ACCEL_TYPES - 1);
 	root.read_attr("mouse_accel_scale", input_preferences->mouse_accel_scale);
 	
+	if (!version.length() || version < "20170821")
+		input_preferences->raw_mouse_input = false;
 	root.read_attr("raw_mouse_input", input_preferences->raw_mouse_input);
-	root.read_attr("use_controller", input_preferences->use_joystick);
-
-	BOOST_FOREACH(InfoTree mapping, root.children_named("binding_axis"))
-	{
-		std::string action_name, axis_name;
-		if (mapping.read_attr("action", action_name) && mapping.read_attr("axis", axis_name))
-		{
-			int16 index = index_for_axis_action_name(action_name);
-			input_preferences->joystick_axis_mappings[index] = index_for_axis_name(axis_name);
-			mapping.read_attr("sensitivity",
-							 input_preferences->joystick_axis_sensitivities[index]);
-			mapping.read_attr_bounded<int16>("dead_zone",
-							 input_preferences->joystick_axis_bounds[index],
-							 0, SHRT_MAX);
-		}
-	}
+	root.read_attr("controller_analog", input_preferences->controller_analog);
+	root.read_attr("controller_sensitivity", input_preferences->controller_sensitivity);
+	root.read_attr("controller_deadzone", input_preferences->controller_deadzone);
 	
 	// remove default key bindings the first time we see one from these prefs
 	bool seen_key[NUMBER_OF_KEYS];

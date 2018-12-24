@@ -125,11 +125,9 @@ void RenderRasterize_Shader::render_tree() {
 	Shader* s = Shader::get(Shader::S_Invincible);
 	s->enable();
 	s->setFloat(Shader::U_Time, view->tick_count);
-	s->setFloat(Shader::U_UseStatic, TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic) ? 0.0 : 1.0);
 	s = Shader::get(Shader::S_InvincibleBloom);
 	s->enable();
 	s->setFloat(Shader::U_Time, view->tick_count);
-	s->setFloat(Shader::U_UseStatic, TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic) ? 0.0 : 1.0);
 
 	short leftmost = INT16_MAX;
 	short rightmost = INT16_MIN;
@@ -161,7 +159,7 @@ void RenderRasterize_Shader::render_tree() {
 	s->enable();
 	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
 	s->setFloat(Shader::U_Yaw, view->yaw * AngleConvert);
-	s->setFloat(Shader::U_Pitch, view->pitch * AngleConvert);
+	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 : view->pitch * AngleConvert);
 	s = Shader::get(Shader::S_LandscapeBloom);
 	s->enable();
 	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);

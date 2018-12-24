@@ -789,7 +789,7 @@ public:
 
 Lua_Font *Lua_Font::Push(lua_State *L, FontSpecifier *fs)
 {
-	Lua_Font *t = static_cast<Lua_Font *>(L_ObjectClass<Lua_Font_Name, FontSpecifier *>::Push(L, fs));
+	Lua_Font *t = L_ObjectClass::Push<Lua_Font>(L, fs);
 	if (t)
 	{
 		t->m_font_scale = 1.0;
@@ -800,14 +800,14 @@ Lua_Font *Lua_Font::Push(lua_State *L, FontSpecifier *fs)
 
 float Lua_Font::Scale(lua_State *L, int index)
 {
-	Lua_Font *t = static_cast<Lua_Font *>(lua_touserdata(L, index));
+	Lua_Font *t = static_cast<Lua_Font *>(Instance(L, index));
 	if (!t) luaL_typerror(L, index, Lua_Font_Name);
 	return t->m_font_scale;
 }
 
 void Lua_Font::SetScale(lua_State *L, int index, float new_scale)
 {
-	Lua_Font *t = static_cast<Lua_Font *>(lua_touserdata(L, index));
+	Lua_Font *t = static_cast<Lua_Font *>(Instance(L, index));
 	if (!t) luaL_typerror(L, index, Lua_Font_Name);
 	t->m_font_scale = new_scale;
 }
@@ -1081,7 +1081,7 @@ public:
 
 Lua_HUDPlayer_Weapon_Trigger_Bullet *Lua_HUDPlayer_Weapon_Trigger_Bullet::Push(lua_State *L, int16 weapon_index, int16 index)
 {
-	Lua_HUDPlayer_Weapon_Trigger_Bullet *t = static_cast<Lua_HUDPlayer_Weapon_Trigger_Bullet *>(L_Class<Lua_HUDPlayer_Weapon_Trigger_Bullet_Name>::Push(L, index));
+	Lua_HUDPlayer_Weapon_Trigger_Bullet *t = L_Class::Push<Lua_HUDPlayer_Weapon_Trigger_Bullet>(L, index);
 	if (t)
 	{
 		t->m_weapon_index = weapon_index;
@@ -1092,7 +1092,7 @@ Lua_HUDPlayer_Weapon_Trigger_Bullet *Lua_HUDPlayer_Weapon_Trigger_Bullet::Push(l
 
 int16 Lua_HUDPlayer_Weapon_Trigger_Bullet::WeaponIndex(lua_State *L, int index)
 {
-	Lua_HUDPlayer_Weapon_Trigger_Bullet *t = static_cast<Lua_HUDPlayer_Weapon_Trigger_Bullet*>(lua_touserdata(L, index));
+	Lua_HUDPlayer_Weapon_Trigger_Bullet *t = static_cast<Lua_HUDPlayer_Weapon_Trigger_Bullet*>(Instance(L, index));
 	if (!t) luaL_typerror(L, index, Lua_HUDPlayer_Weapon_Trigger_Bullet_Name);
 	return t->m_weapon_index;
 }
@@ -1199,7 +1199,7 @@ public:
 
 Lua_HUDPlayer_Weapon_Trigger_Energy *Lua_HUDPlayer_Weapon_Trigger_Energy::Push(lua_State *L, int16 weapon_index, int16 index)
 {
-	Lua_HUDPlayer_Weapon_Trigger_Energy *t = static_cast<Lua_HUDPlayer_Weapon_Trigger_Energy *>(L_Class<Lua_HUDPlayer_Weapon_Trigger_Energy_Name>::Push(L, index));
+	Lua_HUDPlayer_Weapon_Trigger_Energy *t = L_Class::Push<Lua_HUDPlayer_Weapon_Trigger_Energy>(L, index);
 	if (t)
 	{
 		t->m_weapon_index = weapon_index;
@@ -1210,7 +1210,7 @@ Lua_HUDPlayer_Weapon_Trigger_Energy *Lua_HUDPlayer_Weapon_Trigger_Energy::Push(l
 
 int16 Lua_HUDPlayer_Weapon_Trigger_Energy::WeaponIndex(lua_State *L, int index)
 {
-	Lua_HUDPlayer_Weapon_Trigger_Energy *t = static_cast<Lua_HUDPlayer_Weapon_Trigger_Energy*>(lua_touserdata(L, index));
+	Lua_HUDPlayer_Weapon_Trigger_Energy *t = static_cast<Lua_HUDPlayer_Weapon_Trigger_Energy*>(Instance(L, index));
 	if (!t) luaL_typerror(L, index, Lua_HUDPlayer_Weapon_Trigger_Energy_Name);
 	return t->m_weapon_index;
 }
@@ -1296,7 +1296,7 @@ public:
 
 Lua_HUDPlayer_Weapon_Trigger *Lua_HUDPlayer_Weapon_Trigger::Push(lua_State *L, int16 weapon_index, int16 index)
 {
-	Lua_HUDPlayer_Weapon_Trigger *t = static_cast<Lua_HUDPlayer_Weapon_Trigger *>(L_Class<Lua_HUDPlayer_Weapon_Trigger_Name>::Push(L, index));
+	Lua_HUDPlayer_Weapon_Trigger *t = L_Class::Push<Lua_HUDPlayer_Weapon_Trigger>(L, index);
 	if (t)
 	{
 		t->m_weapon_index = weapon_index;
@@ -1307,7 +1307,7 @@ Lua_HUDPlayer_Weapon_Trigger *Lua_HUDPlayer_Weapon_Trigger::Push(lua_State *L, i
 
 int16 Lua_HUDPlayer_Weapon_Trigger::WeaponIndex(lua_State *L, int index)
 {
-	Lua_HUDPlayer_Weapon_Trigger *t = static_cast<Lua_HUDPlayer_Weapon_Trigger*>(lua_touserdata(L, index));
+	Lua_HUDPlayer_Weapon_Trigger *t = static_cast<Lua_HUDPlayer_Weapon_Trigger*>(Instance(L, index));
 	if (!t) luaL_typerror(L, index, Lua_HUDPlayer_Weapon_Trigger_Name);
 	return t->m_weapon_index;
 }
@@ -2440,7 +2440,7 @@ typedef L_Class<Lua_Screen_FOV_Name> Lua_Screen_FOV;
 static int Lua_Screen_FOV_Get_Horizontal(lua_State *L)
 {
 	float factor = 1.0f;
-	if (get_screen_mode()->acceleration == _shader_acceleration)
+	if (get_screen_mode()->acceleration == _opengl_acceleration)
 		factor = 1.3f;
     lua_pushnumber(L, world_view->half_cone * 2.0f / factor);
     return 1;
@@ -2449,7 +2449,7 @@ static int Lua_Screen_FOV_Get_Horizontal(lua_State *L)
 static int Lua_Screen_FOV_Get_Vertical(lua_State *L)
 {
 	float factor = 1.0f;
-	if (get_screen_mode()->acceleration == _shader_acceleration)
+	if (get_screen_mode()->acceleration == _opengl_acceleration)
 		factor = 1.3f;
     lua_pushnumber(L, world_view->half_vertical_cone * 2.0f / factor);
     return 1;

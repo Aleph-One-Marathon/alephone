@@ -5,7 +5,7 @@
  *      (this example uses errno which might not be multithreaded everywhere)
  */
 
-#include <SDL_rwops_zzip.h>
+#include "SDL_rwops_zzip.h"
 #include <zzip/zzip.h>
 #include <string.h> /* strchr */
 

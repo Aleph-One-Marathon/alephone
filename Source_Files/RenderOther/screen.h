@@ -142,8 +142,7 @@ enum /* screen sizes */
 enum /* hardware acceleration codes */
 {
 	_no_acceleration,
-	_opengl_acceleration,
-	_shader_acceleration
+	_opengl_acceleration
 };
 
 enum /* screen selection based on game state */
