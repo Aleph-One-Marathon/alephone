@@ -47,6 +47,9 @@ protected:
 	
 	virtual void clip_to_window(clipping_window_data *win);
 	virtual void _render_node_object_helper(render_object_data *object, RenderStep renderStep);
+
+    void render_viewer_sprite_layer(RenderStep renderStep);
+    void render_viewer_sprite(rectangle_definition& RenderRectangle, RenderStep renderStep);
 	
 public:
 
@@ -56,6 +59,7 @@ public:
 	virtual void setupGL(Rasterizer_Shader_Class& Rasterizer);
 
 	virtual void render_tree(void);
+        bool renders_viewer_sprites_in_tree() { return true; }
 
 	TextureManager setupWallTexture(const shape_descriptor& Texture, short transferMode, float pulsate, float wobble, float intensity, float offset, RenderStep renderStep);
 	TextureManager setupSpriteTexture(const rectangle_definition& rect, short type, float offset, RenderStep renderStep);

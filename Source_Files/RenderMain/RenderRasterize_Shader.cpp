@@ -168,10 +168,12 @@ void RenderRasterize_Shader::render_tree() {
 	Shader::disable();
 
 	RenderRasterizerClass::render_tree(kDiffuse);
+        render_viewer_sprite_layer(kDiffuse);
 
 	if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur) && blur.get()) {
 		blur->begin();
 		RenderRasterizerClass::render_tree(kGlow);
+                render_viewer_sprite_layer(kGlow);
 		blur->end();
 		RasPtr->swapper->deactivate();
 		blur->draw(*RasPtr->swapper);
@@ -1036,9 +1038,205 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 	if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, offset, renderStep)) {
 		glDrawArrays(GL_QUADS, 0, 4);
 	}
-
+        
 	glEnable(GL_DEPTH_TEST);
 	glPopMatrix();
 	Shader::disable();
 	TMgr.RestoreTextureMatrix();
+}
+
+extern void position_sprite_axis(short *x0, short *x1, short scale_width, short screen_width, short positioning_mode, _fixed position, bool flip, world_distance world_left, world_distance world_right);
+
+extern GLdouble Screen_2_Clip[16];
+
+void RenderRasterize_Shader::render_viewer_sprite_layer(RenderStep renderStep)
+{
+        if (!view->show_weapons_in_hand) return;
+
+        glMatrixMode(GL_PROJECTION);
+        glPushMatrix();
+        glLoadMatrixd(Screen_2_Clip);
+
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glLoadIdentity();
+
+        rectangle_definition rect;
+	weapon_display_information display_data;
+	shape_information_data *shape_information;
+	short count;
+
+        rect.ModelPtr = nullptr;
+        rect.Opacity = 1;
+
+        /* get_weapon_display_information() returns true if there is a weapon to be drawn.  it
+           should initially be passed a count of zero.  it returns the weaponÕs texture and
+           enough information to draw it correctly. */
+	count= 0;
+	while (get_weapon_display_information(&count, &display_data))
+	{
+		/* fetch relevant shape data */
+                shape_information= extended_get_shape_information(display_data.collection, display_data.low_level_shape_index);
+
+                // Nonexistent frame: skip
+		if (!shape_information) continue;
+		
+		// LP change: for the convenience of the OpenGL renderer
+		rect.ShapeDesc = BUILD_DESCRIPTOR(display_data.collection,0);
+		rect.LowLevelShape = display_data.low_level_shape_index;
+
+		if (shape_information->flags&_X_MIRRORED_BIT) display_data.flip_horizontal= !display_data.flip_horizontal;
+		if (shape_information->flags&_Y_MIRRORED_BIT) display_data.flip_vertical= !display_data.flip_vertical;
+
+		/* calculate shape rectangle */
+		position_sprite_axis(&rect.x0, &rect.x1, view->screen_height, view->screen_width, display_data.horizontal_positioning_mode,
+			display_data.horizontal_position, display_data.flip_horizontal, shape_information->world_left, shape_information->world_right);
+		position_sprite_axis(&rect.y0, &rect.y1, view->screen_height, view->screen_height, display_data.vertical_positioning_mode,
+			display_data.vertical_position, display_data.flip_vertical, -shape_information->world_top, -shape_information->world_bottom);
+		
+		/* set rectangle bitmap and shading table */
+		extended_get_shape_bitmap_and_shading_table(display_data.collection, display_data.low_level_shape_index, &rect.texture, &rect.shading_tables, view->shading_mode);
+		if (!rect.texture) continue;
+		
+		rect.flags= 0;
+
+		/* initialize clipping window to full screen */
+		rect.clip_left= 0;
+		rect.clip_right= view->screen_width;
+		rect.clip_top= 0;
+		rect.clip_bottom= view->screen_height;
+
+		/* copy mirror flags */
+		rect.flip_horizontal= display_data.flip_horizontal;
+		rect.flip_vertical= display_data.flip_vertical;
+		
+		/* lighting: depth of zero in the cameraÕs polygon index */
+		rect.depth= 0;
+		rect.ambient_shade= get_light_intensity(get_polygon_data(view->origin_polygon_index)->floor_lightsource_index);
+		rect.ambient_shade= MAX(shape_information->minimum_light_intensity, rect.ambient_shade);
+		if (view->shading_mode==_shading_infravision) rect.flags|= _SHADELESS_BIT;
+
+		// Calculate the object's horizontal position
+		// for the convenience of doing teleport-in/teleport-out
+		rect.xc = (rect.x0 + rect.x1) >> 1;
+
+                /* make the weapon reflect the ownerÕs transfer mode */
+		instantiate_rectangle_transfer_mode(view, &rect, display_data.transfer_mode, display_data.transfer_phase);
+
+                render_viewer_sprite(rect, renderStep);
+        }
+
+        glPopMatrix();
+
+        glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        
+        glMatrixMode(GL_MODELVIEW);
+}
+
+struct ExtendedVertexData
+{
+	GLdouble Vertex[4];
+	GLdouble TexCoord[2];
+	GLfloat Color[3];
+	GLfloat GlowColor[3];
+};
+
+void RenderRasterize_Shader::render_viewer_sprite(rectangle_definition& RenderRectangle, RenderStep renderStep)
+{
+        auto TMgr = setupSpriteTexture(RenderRectangle, OGL_Txtr_WeaponsInHand, 0, renderStep);
+	
+	// Find texture coordinates
+	ExtendedVertexData ExtendedVertexList[4];
+	
+	point2d TopLeft, BottomRight;
+	// Clipped corners:
+	TopLeft.x = MAX(RenderRectangle.x0,RenderRectangle.clip_left);
+	TopLeft.y = MAX(RenderRectangle.y0,RenderRectangle.clip_top);
+	BottomRight.x = MIN(RenderRectangle.x1,RenderRectangle.clip_right);
+	BottomRight.y = MIN(RenderRectangle.y1,RenderRectangle.clip_bottom);
+	
+        // Screen coordinates; weapons-in-hand are in the foreground
+        ExtendedVertexList[0].Vertex[0] = TopLeft.x;
+        ExtendedVertexList[0].Vertex[1] = TopLeft.y;
+        ExtendedVertexList[0].Vertex[2] = 1;
+        ExtendedVertexList[2].Vertex[0] = BottomRight.x;
+        ExtendedVertexList[2].Vertex[1] = BottomRight.y;		
+        ExtendedVertexList[2].Vertex[2] = 1;
+	
+	// Completely clipped away?
+	if (BottomRight.x <= TopLeft.x) return;
+	if (BottomRight.y <= TopLeft.y) return;
+	
+	// Use that texture
+	if (!TMgr.Setup()) return;
+	
+	// Calculate the texture coordinates;
+	// the scanline direction is downward, (texture coordinate 0)
+	// while the line-to-line direction is rightward (texture coordinate 1)
+	GLdouble U_Scale = TMgr.U_Scale/(RenderRectangle.y1 - RenderRectangle.y0);
+	GLdouble V_Scale = TMgr.V_Scale/(RenderRectangle.x1 - RenderRectangle.x0);
+	GLdouble U_Offset = TMgr.U_Offset;
+	GLdouble V_Offset = TMgr.V_Offset;
+	
+	if (RenderRectangle.flip_vertical)
+	{
+		ExtendedVertexList[0].TexCoord[0] = U_Offset + U_Scale*(RenderRectangle.y1 - TopLeft.y);
+		ExtendedVertexList[2].TexCoord[0] = U_Offset + U_Scale*(RenderRectangle.y1 - BottomRight.y);
+	} else {
+		ExtendedVertexList[0].TexCoord[0] = U_Offset + U_Scale*(TopLeft.y - RenderRectangle.y0);
+		ExtendedVertexList[2].TexCoord[0] = U_Offset + U_Scale*(BottomRight.y - RenderRectangle.y0);
+	}
+	if (RenderRectangle.flip_horizontal)
+	{
+		ExtendedVertexList[0].TexCoord[1] = V_Offset + V_Scale*(RenderRectangle.x1 - TopLeft.x);
+		ExtendedVertexList[2].TexCoord[1] = V_Offset + V_Scale*(RenderRectangle.x1 - BottomRight.x);
+	} else {
+		ExtendedVertexList[0].TexCoord[1] = V_Offset + V_Scale*(TopLeft.x - RenderRectangle.x0);
+		ExtendedVertexList[2].TexCoord[1] = V_Offset + V_Scale*(BottomRight.x - RenderRectangle.x0);
+	}
+	
+	// Fill in remaining points
+	// Be sure that the order gives a sidedness the same as
+	// that of the world-geometry polygons
+	ExtendedVertexList[1].Vertex[0] = ExtendedVertexList[2].Vertex[0];
+	ExtendedVertexList[1].Vertex[1] = ExtendedVertexList[0].Vertex[1];
+	ExtendedVertexList[1].Vertex[2] = ExtendedVertexList[0].Vertex[2];
+	ExtendedVertexList[1].TexCoord[0] = ExtendedVertexList[0].TexCoord[0];
+	ExtendedVertexList[1].TexCoord[1] = ExtendedVertexList[2].TexCoord[1];
+	ExtendedVertexList[3].Vertex[0] = ExtendedVertexList[0].Vertex[0];
+	ExtendedVertexList[3].Vertex[1] = ExtendedVertexList[2].Vertex[1];
+	ExtendedVertexList[3].Vertex[2] = ExtendedVertexList[2].Vertex[2];
+	ExtendedVertexList[3].TexCoord[0] = ExtendedVertexList[2].TexCoord[0];
+	ExtendedVertexList[3].TexCoord[1] = ExtendedVertexList[0].TexCoord[1];
+
+        if(TMgr.IsBlended() || TMgr.TransferMode == _tinted_transfer) {
+		glEnable(GL_BLEND);
+		setupBlendFunc(TMgr.NormalBlend());
+		glEnable(GL_ALPHA_TEST);
+		glAlphaFunc(GL_GREATER, 0.001);
+	} else {
+		glDisable(GL_BLEND);
+		glEnable(GL_ALPHA_TEST);
+		glAlphaFunc(GL_GREATER, 0.5);
+	}
+
+        glDisable(GL_DEPTH_TEST);
+
+	// Location of data:
+	glVertexPointer(3,GL_DOUBLE,sizeof(ExtendedVertexData),ExtendedVertexList[0].Vertex);
+	glTexCoordPointer(2,GL_DOUBLE,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
+	glEnable(GL_TEXTURE_2D);
+		
+	// Go!
+        glDrawArrays(GL_POLYGON,0,4);
+
+        if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, 0, renderStep)) {
+            glDrawArrays(GL_QUADS, 0, 4);
+	}
+	
+	glEnable(GL_DEPTH_TEST);
+        Shader::disable();
+	TMgr.RestoreTextureMatrix();
+
 }
