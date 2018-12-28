@@ -2029,8 +2029,9 @@ static void controls_dialog(void *arg)
 	invert_selected(invert_mouse_w);
 	look_options->dual_add(invert_mouse_w->label("Invert Mouse"), d);
 	look_options->dual_add(invert_mouse_w, d);
-	
-	w_toggle* accel_mouse_w = new w_toggle(input_preferences->mouse_accel_type == _mouse_accel_classic);
+
+        static const char* accel_labels[] = { "Modern", "Classic", nullptr };
+	w_toggle* accel_mouse_w = new w_toggle(input_preferences->mouse_accel_type == _mouse_accel_classic, accel_labels);
 	look_options->dual_add(accel_mouse_w->label("Mouse Acceleration"), d);
 	look_options->dual_add(accel_mouse_w, d);
 	
