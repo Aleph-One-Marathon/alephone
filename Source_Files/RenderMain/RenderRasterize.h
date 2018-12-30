@@ -136,6 +136,8 @@ public:
 	RasterizerClass *RasPtr;
 	
 	virtual void render_tree();
+
+        virtual bool renders_viewer_sprites_in_tree() { return false; }
 	
   	// Inits everything
  	RenderRasterizerClass();

@@ -322,7 +322,7 @@ static void update_render_effect(struct view_data *view);
 static void shake_view_origin(struct view_data *view, world_distance delta);
 
 static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr);
-static void position_sprite_axis(short *x0, short *x1, short scale_width, short screen_width,
+void position_sprite_axis(short *x0, short *x1, short scale_width, short screen_width,
 	short positioning_mode, _fixed position, bool flip, world_distance world_left, world_distance world_right);
 
 
@@ -500,8 +500,10 @@ void render_view(
 			RenPtr->render_tree();
 			
 			// LP: won't put this into a separate class
-			/* render the playerÕs weapons, etc. */		
-			render_viewer_sprite_layer(view, RasPtr);
+			/* render the playerÕs weapons, etc. */
+                        if (!RenPtr->renders_viewer_sprites_in_tree()) {
+                            render_viewer_sprite_layer(view, RasPtr);
+                        }
 			
 			// Finish rendering main view
 			RasPtr->End();
@@ -1037,7 +1039,7 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 	}
 }
 
-static void position_sprite_axis(
+void position_sprite_axis(
 	short *x0,
 	short *x1,
 	short scale_width,

@@ -2898,7 +2898,7 @@ static void environment_dialog(void *arg)
 		}
 		
 		path = resources_w->get_path();
-		if (strcmp(path, environment_preferences->resources_file) != 0) 
+		if (strcmp(path, environment_preferences->resources_file) != 0)
 		{
 			strncpy(environment_preferences->resources_file, path, 256);
 			changed = true;
@@ -3997,7 +3997,7 @@ struct ViewSizeData
 	bool HUD;
 };
 
-const ViewSizeData LegacyViewSizes[32] = 
+const ViewSizeData LegacyViewSizes[32] =
 {
 	{ 320, 160, true},
 	{ 480, 240, true},
@@ -4467,4 +4467,3 @@ void parse_environment_preferences(InfoTree root, std::string version)
 		}
 	}
 }
-
