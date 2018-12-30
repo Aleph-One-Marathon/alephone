@@ -44,7 +44,7 @@
 // Global variables
 static bool mouse_active = false;
 static uint8 button_mask = 0;		// Mask of enabled buttons
-static _fixed snapshot_delta_yaw, snapshot_delta_pitch;
+static fixed_yaw_pitch mouselook_delta = {0, 0};
 static _fixed snapshot_delta_scrollwheel;
 static int snapshot_delta_x, snapshot_delta_y;
 
@@ -63,7 +63,7 @@ void enter_mouse(short type)
 		SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, input_preferences->raw_mouse_input ? "0" : "1");
 		SDL_SetRelativeMouseMode(SDL_TRUE);
 		mouse_active = true;
-		snapshot_delta_yaw = snapshot_delta_pitch = 0;
+		mouselook_delta = {0, 0};
 		snapshot_delta_scrollwheel = 0;
 		snapshot_delta_x = snapshot_delta_y = 0;
 		button_mask = 0;	// Disable all buttons (so a shot won't be fired if we enter the game with a mouse button down from clicking a GUI widget)
@@ -127,64 +127,39 @@ void mouse_idle(short type)
 		if (TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse))
 			dy = -dy;
 		
-		// scale input by sensitivity
-		const float sensitivityScale = 1.f / (66.f * FIXED_ONE);
-		float sx = sensitivityScale * input_preferences->sens_horizontal;
-		float sy = sensitivityScale * input_preferences->sens_vertical;
+		// Delta sensitivities
+		const float angle_per_scaled_delta = 128/66.f; // assuming _mouse_accel_none
+		float sx = angle_per_scaled_delta * (input_preferences->sens_horizontal / float{FIXED_ONE});
+		float sy = angle_per_scaled_delta * (input_preferences->sens_vertical / float{FIXED_ONE});
 		switch (input_preferences->mouse_accel_type)
 		{
 			case _mouse_accel_classic:
-				sx *= MIX(1.f, fabs(dx * sx) * 4.f, input_preferences->mouse_accel_scale);
-				sy *= MIX(1.f, fabs(dy * sy) * 4.f, input_preferences->mouse_accel_scale);
+				sx *= MIX(1.f, (1/32.f) * fabs(dx * sx), input_preferences->mouse_accel_scale);
+				sy *= MIX(1.f, (1/8.f) * fabs(dy * sy), input_preferences->mouse_accel_scale);
+				break;
+			case _mouse_accel_symmetric:
+				sx *= MIX(1.f, (1/32.f) * fabs(dx * sx), input_preferences->mouse_accel_scale);
+				sy *= MIX(1.f, (1/32.f) * fabs(dy * sy), input_preferences->mouse_accel_scale);
 				break;
 			case _mouse_accel_none:
 			default:
 				break;
 		}
-		dx *= sx;
-		dy *= sy;
 		
-		// 1 dx unit = 1 * 2^ABSOLUTE_YAW_BITS * (360 deg / 2^ANGULAR_BITS)
-		//           = 90 deg
-		//
-		// 1 dy unit = 1 * 2^ABSOLUTE_PITCH_BITS * (360 deg / 2^ANGULAR_BITS)
-		//           = 22.5 deg
+		// Angular deltas
+		const fixed_angle dyaw = static_cast<fixed_angle>(sx * dx * FIXED_ONE);
+		const fixed_angle dpitch = static_cast<fixed_angle>(sy * dy * FIXED_ONE);
 		
-		// Largest dx for which both -dx and +dx can be represented in 1 action flags bitset
-		float dxLimit = 0.5f - 1.f / (1<<ABSOLUTE_YAW_BITS);  // 0.4921875 dx units (~44.30 deg)
-		
-		// Largest dy for which both -dy and +dy can be represented in 1 action flags bitset
-		float dyLimit = 0.5f - 1.f / (1<<ABSOLUTE_PITCH_BITS);  // 0.46875 dy units (~10.55 deg)
-		
-		dxLimit = MIN(dxLimit, input_preferences->mouse_max_speed);
-		dyLimit = MIN(dyLimit, input_preferences->mouse_max_speed);
-		
-		dx = PIN(dx, -dxLimit, dxLimit);
-		dy = PIN(dy, -dyLimit, dyLimit);
-		
-		snapshot_delta_yaw   = static_cast<_fixed>(dx * FIXED_ONE);
-		snapshot_delta_pitch = static_cast<_fixed>(dy * FIXED_ONE);
+		// Push mouselook delta
+		mouselook_delta = {dyaw, dpitch};
 	}
 }
 
-
-/*
- *  Return mouse state
- */
-
-void test_mouse(short type, uint32 *flags, _fixed *delta_yaw, _fixed *delta_pitch, _fixed *delta_velocity)
+fixed_yaw_pitch pull_mouselook_delta()
 {
-	if (mouse_active) {
-		*delta_yaw = snapshot_delta_yaw;
-		*delta_pitch = snapshot_delta_pitch;
-		*delta_velocity = 0;  // Mouse-driven player velocity is unimplemented
-
-		snapshot_delta_yaw = snapshot_delta_pitch = 0;
-	} else {
-		*delta_yaw = 0;
-		*delta_pitch = 0;
-		*delta_velocity = 0;
-	}
+	auto delta = mouselook_delta;
+	mouselook_delta = {0, 0};
+	return delta;
 }
 
 

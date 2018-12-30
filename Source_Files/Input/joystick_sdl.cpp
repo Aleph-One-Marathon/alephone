@@ -184,7 +184,7 @@ int process_joystick_axes(int flags, int tick) {
 	if (!input_preferences->controller_analog)
 		return flags;
 	
-	float flag_values[NUMBER_OF_ABSOLUTE_POSITION_VALUES] = { 0, 0 };
+	float angular_deltas[NUMBER_OF_ABSOLUTE_POSITION_VALUES] = { 0, 0 };
 	for (auto it = axis_mappings.begin(); it != axis_mappings.end(); ++it) {
 		const AxisInfo info = *it;
 		bool negative = false;
@@ -195,27 +195,15 @@ int process_joystick_axes(int flags, int tick) {
 		int val = axis_values[axis] * (negative ? -1 : 1);
 		if (val > input_preferences->controller_deadzone) {
 			float norm = val/32767.f * (static_cast<float>(input_preferences->controller_sensitivity) / FIXED_ONE);
-			
-			// apply axis-specific sensitivity, to match keyboard
-			// velocities with user sensitivity at 1
-			switch (info.abs_pos_index) {
-				case _flags_yaw:
-					norm *= 6.f/63.f;
-					break;
-				case _flags_pitch:
-					norm *= 6.f/15.f;
-					break;
-			}
-			flag_values[info.abs_pos_index] += norm * (info.negative ? -1.0 : 1.0);
+			const float angle_per_norm = 768/63.f;
+			angular_deltas[info.abs_pos_index] += norm * (info.negative ? -1.0 : 1.0) * angle_per_norm;
 		}
 	}
 	
 	// return this tick's action flags augmented with movement data
-	float yawLimit = MIN(axis_limits[_flags_yaw], input_preferences->mouse_max_speed);
-	float pitchLimit = MIN(axis_limits[_flags_yaw], input_preferences->mouse_max_speed);
-	_fixed yaw = PIN(flag_values[_flags_yaw], -yawLimit, yawLimit) * FIXED_ONE;
-	_fixed pitch = PIN(flag_values[_flags_pitch], -pitchLimit, pitchLimit) * FIXED_ONE;
-	if (yaw != 0 || pitch != 0)
-		flags = mask_in_absolute_positioning_information(flags, yaw, pitch, 0);
+	const fixed_angle dyaw = static_cast<fixed_angle>(angular_deltas[_flags_yaw] * FIXED_ONE);
+	const fixed_angle dpitch = static_cast<fixed_angle>(angular_deltas[_flags_pitch] * FIXED_ONE);
+	if (dyaw != 0 || dpitch != 0)
+		flags = process_aim_input(flags, {dyaw, dpitch});
 	return flags;
 }

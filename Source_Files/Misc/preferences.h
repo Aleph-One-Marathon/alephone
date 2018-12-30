@@ -183,6 +183,7 @@ enum {
 enum {
 	_mouse_accel_none,
 	_mouse_accel_classic,
+	_mouse_accel_symmetric,
 	NUMBER_OF_MOUSE_ACCEL_TYPES
 };
 
@@ -200,7 +201,10 @@ struct input_preferences_data
 	int16 mouse_accel_type;
 	float mouse_accel_scale;
 	bool raw_mouse_input;
-	float mouse_max_speed;
+	bool extra_mouse_precision;
+	
+	// Limit absolute-mode {yaw, pitch} deltas per tick to +/- {32, 8} instead of {63, 15}
+	bool classic_aim_speed_limits;
 	
 	bool controller_analog;
 	_fixed controller_sensitivity;

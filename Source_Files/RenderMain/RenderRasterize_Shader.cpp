@@ -115,7 +115,8 @@ void RenderRasterize_Shader::setupGL(Rasterizer_Shader_Class& Rasterizer) {
  * with multiple rendering passes for glow effect
  */
 const double TWO_PI = 8*atan(1.0);
-const float AngleConvert = TWO_PI/float(FULL_CIRCLE);
+const float FixedAngleToRadians = TWO_PI/(float(FIXED_ONE)*float(FULL_CIRCLE));
+const float FixedAngleToDegrees = 360.0/(float(FIXED_ONE)*float(FULL_CIRCLE));
 
 void RenderRasterize_Shader::render_tree() {
 
@@ -155,16 +156,18 @@ void RenderRasterize_Shader::render_tree() {
 			usefog = true;
 		}
 	}
+	const float virtual_yaw = view->virtual_yaw * FixedAngleToRadians;
+	const float virtual_pitch = view->virtual_pitch * FixedAngleToRadians;
 	s = Shader::get(Shader::S_Landscape);
 	s->enable();
 	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
-	s->setFloat(Shader::U_Yaw, view->yaw * AngleConvert);
-	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 : view->pitch * AngleConvert);
+	s->setFloat(Shader::U_Yaw, virtual_yaw);
+	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 : virtual_pitch);
 	s = Shader::get(Shader::S_LandscapeBloom);
 	s->enable();
 	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
-	s->setFloat(Shader::U_Yaw, view->yaw * AngleConvert);
-	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 : view->pitch * AngleConvert);
+	s->setFloat(Shader::U_Yaw, virtual_yaw);
+	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 : virtual_pitch);
 	Shader::disable();
 
 	RenderRasterizerClass::render_tree(kDiffuse);
@@ -954,7 +957,7 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 	glPushMatrix();
 	glTranslated(pos.x, pos.y, pos.z);
 
-	double yaw = view->yaw * 360.0 / float(NUMBER_OF_ANGLES);
+	double yaw = view->virtual_yaw * FixedAngleToDegrees;
 	glRotated(yaw, 0.0, 0.0, 1.0);
 
 	float offset = 0;
@@ -1161,7 +1164,7 @@ void RenderRasterize_Shader::render_viewer_sprite(rectangle_definition& RenderRe
         ExtendedVertexList[0].Vertex[1] = TopLeft.y;
         ExtendedVertexList[0].Vertex[2] = 1;
         ExtendedVertexList[2].Vertex[0] = BottomRight.x;
-        ExtendedVertexList[2].Vertex[1] = BottomRight.y;		
+        ExtendedVertexList[2].Vertex[1] = BottomRight.y;
         ExtendedVertexList[2].Vertex[2] = 1;
 	
 	// Completely clipped away?

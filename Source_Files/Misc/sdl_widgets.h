@@ -628,6 +628,9 @@ protected:
  *  Slider
  */
 
+class w_slider;
+typedef boost::function<void (w_slider*)> slider_changed_callback_t;
+
 class w_slider : public widget {
 	friend class w_slider_text;
 public:
@@ -646,6 +649,9 @@ public:
 	virtual std::string formatted_value(void);
 
 	void place(const SDL_Rect& r, placement_flags flags);
+	
+	void set_slider_changed_callback(slider_changed_callback_t proc) { slider_changed_callback = proc; }
+
 
 protected:
 	void init_formatted_value(void);
@@ -665,6 +671,9 @@ protected:
 	int thumb_drag_x;		// X start position when dragging
 
 	SDL_Surface *slider_l, *slider_c, *slider_r, *thumb;
+	
+	slider_changed_callback_t slider_changed_callback;
+	
 private:
 	int thumb_width() const;
 	void selection_changed(void);

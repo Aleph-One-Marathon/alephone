@@ -460,6 +460,10 @@ bool new_game(
 	struct player_start_data *player_start_information,
 	struct entry_point *entry_point)
 {
+	assert(!network || number_of_players == NetGetNumberOfPlayers());
+	
+	const short intended_local_player_index = network ? NetGetLocalPlayerIndex() : 0;
+	
 	short player_index, i;
 	bool success= true;
 
@@ -498,29 +502,14 @@ bool new_game(
 		/* non-network game, for playback.. */
 		for (i=0;i<number_of_players;++i)
 		{
+			new_player_flags flags = (i == intended_local_player_index ? new_player_make_local_and_current : 0);
 			player_index= new_player(player_start_information[i].team,
-				player_start_information[i].color, player_start_information[i].identifier);
+				player_start_information[i].color, player_start_information[i].identifier, flags);
 			assert(player_index==i);
 
 			/* Now copy in the name of the player.. */
 			assert(strlen(player_start_information[i].name)<=MAXIMUM_PLAYER_NAME_LENGTH);
 			strncpy(players[i].name, player_start_information[i].name, MAXIMUM_PLAYER_NAME_LENGTH+1);
-		}
-	
-#if !defined(DISABLE_NETWORKING)
-		if(game_is_networked)
-		{
-			/* Make sure we can count. */
-			assert(number_of_players==NetGetNumberOfPlayers());
-			
-			set_local_player_index(NetGetLocalPlayerIndex());
-			set_current_player_index(NetGetLocalPlayerIndex());
-		}
-		else
-#endif // !defined(DISABLE_NETWORKING)
-		{
-			set_local_player_index(0);
-			set_current_player_index(0);
 		}
 
 		/* we need to alert the function that reverts the game of the game setup so that
@@ -1820,6 +1809,8 @@ bool process_map_wad(
 		count= data_length/SIZEOF_player_data;
 		assert(count*SIZEOF_player_data==data_length);
 		unpack_player_data(data,players,count);
+		set_local_player_index(NONE);
+		set_current_player_index(NONE);
 		team_damage_from_player_data();
 		
 		data= (uint8 *)extract_type_from_wad(wad, DYNAMIC_STRUCTURE_TAG, &data_length);
