@@ -2130,7 +2130,7 @@ static void mouse_custom_dialog(void *arg)
 		float hLog = kMinSensitivityLog + ((float) hPos) * (kSensitivityLogRange / 1000.0f);
 		_fixed hNorm = _fixed(std::exp(hLog) * FIXED_ONE);
 		if (hNorm != input_preferences->sens_horizontal) {
-			input_preferences->sens_vertical = hNorm;
+			input_preferences->sens_horizontal = hNorm;
 			changed = true;
 		}
 		
