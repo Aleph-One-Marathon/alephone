@@ -135,6 +135,10 @@ void mouse_idle(short type)
 		{
 			case _mouse_accel_classic:
 				sx *= MIX(1.f, (1/32.f) * fabs(dx * sx), input_preferences->mouse_accel_scale);
+				sy *= MIX(1.f, (1/8.f) * fabs(dy * sy), input_preferences->mouse_accel_scale);
+				break;
+			case _mouse_accel_symmetric:
+				sx *= MIX(1.f, (1/32.f) * fabs(dx * sx), input_preferences->mouse_accel_scale);
 				sy *= MIX(1.f, (1/32.f) * fabs(dy * sy), input_preferences->mouse_accel_scale);
 				break;
 			case _mouse_accel_none:

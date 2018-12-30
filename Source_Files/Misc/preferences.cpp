@@ -2098,7 +2098,7 @@ static void mouse_custom_dialog(void *arg)
 	table->dual_add(mouse_raw_w->label("Raw Input Mode"), d);
 	table->dual_add(mouse_raw_w, d);
 	
-	std::vector<std::string> accel_labels = { "Off", "Classic" };
+	std::vector<std::string> accel_labels = { "Off", "Classic", "Classic (Symmetric)" };
 	mouse_accel_w = new w_select_popup();
 	mouse_accel_w->set_labels(accel_labels);
 	mouse_accel_w->set_selection(input_preferences->mouse_accel_type);

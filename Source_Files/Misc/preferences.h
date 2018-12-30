@@ -183,6 +183,7 @@ enum {
 enum {
 	_mouse_accel_none,
 	_mouse_accel_classic,
+	_mouse_accel_symmetric,
 	NUMBER_OF_MOUSE_ACCEL_TYPES
 };
 
