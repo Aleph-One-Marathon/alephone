@@ -2364,6 +2364,9 @@ static void finish_game(
 		display_net_game_stats();
 	}
 	
+	set_local_player_index(NONE);
+	set_current_player_index(NONE);
+	
 	load_environment_from_preferences();
 	if (game_state.user == _replay || game_state.user == _demo)
 	{
@@ -2380,6 +2383,9 @@ static void clean_up_after_failed_game(bool inNetgame, bool inRecording, bool in
         {
                 stop_recording();
         }
+        
+        set_local_player_index(NONE);
+        set_current_player_index(NONE);
 
         /* Show the cursor here on failure. */
         show_cursor();

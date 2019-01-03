@@ -247,8 +247,10 @@ struct damage_record team_monster_damage_taken[NUMBER_OF_TEAM_COLORS];
 struct damage_record team_monster_damage_given[NUMBER_OF_TEAM_COLORS];
 struct damage_record team_friendly_fire[NUMBER_OF_TEAM_COLORS];
 
-struct player_data *local_player, *current_player;
-short local_player_index, current_player_index;
+player_data* local_player = nullptr;
+player_data* current_player = nullptr;
+short local_player_index = NONE;
+short current_player_index = NONE;
 
 // ZZZ: Let folks ask for a pointer to the main set of ActionQueues.
 static ActionQueues*   sRealActionQueues = NULL;
