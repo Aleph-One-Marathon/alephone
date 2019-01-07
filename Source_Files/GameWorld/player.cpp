@@ -2425,7 +2425,7 @@ void parse_mml_player(const InfoTree& root)
 	BOOST_FOREACH(InfoTree shp, root.children_named("shape"))
 	{
 		int16 type;
-		if (!shp.read_indexed("type", type, 4))
+		if (!shp.read_indexed("type", type, 5))
 			continue;
 		
 		if (type == 0)
