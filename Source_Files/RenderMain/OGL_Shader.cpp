@@ -543,7 +543,7 @@ void initDefaultPrograms() {
         "   return sign(n)*floor(abs(n)+0.5); \n"
         "} \n"
         "void main(void) {\n"
-        "   vec2 entropy = vec2 (time*round(gl_FragCoord.x / 6.0),time*round(gl_FragCoord.y / 6.0)); \n"
+        "   vec2 entropy = vec2 (time*round(gl_FragCoord.x / 4.0),time*round(gl_FragCoord.y / 4.0)); \n"
         "   float sr = rand(entropy); \n"
         "   float sg = rand(entropy*sr); \n"
         "   float sb = rand(entropy*sg); \n"
@@ -574,7 +574,7 @@ void initDefaultPrograms() {
         "   return sign(n)*floor(abs(n)+0.5); \n"
         "} \n"
         "void main(void) {\n"
-        "   vec2 entropy = vec2 (time*round(gl_FragCoord.x / 6.0),time*round(gl_FragCoord.y / 6.0)); \n"
+        "   vec2 entropy = vec2 (time*round(gl_FragCoord.x / 4.0),time*round(gl_FragCoord.y / 4.0)); \n"
         "   float sr = rand(entropy); \n"
         "   float sg = rand(entropy*sr); \n"
         "   float sb = rand(entropy*sg); \n"
@@ -584,7 +584,7 @@ void initDefaultPrograms() {
         "   intensity = intensity * intensity;  // approximation of pow(intensity, 2.2)\n"
         "#endif\n"
         "   float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
-        "   gl_FragColor = vec4(mix(gl_Fog.color.rgb, intensity, fogFactor), vertexColor.a * color.a * 0.5);\n"
+        "   gl_FragColor = vec4(mix(gl_Fog.color.rgb, intensity, fogFactor), vertexColor.a * color.a * 0.65);\n"
         "}\n";
 
     defaultVertexPrograms["invisible"] = defaultVertexPrograms["sprite"];
