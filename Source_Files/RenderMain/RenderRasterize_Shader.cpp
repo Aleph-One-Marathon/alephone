@@ -1055,7 +1055,10 @@ extern GLdouble Screen_2_Clip[16];
 void RenderRasterize_Shader::render_viewer_sprite_layer(RenderStep renderStep)
 {
         if (!view->show_weapons_in_hand) return;
-
+    
+        glMatrixMode(GL_TEXTURE);
+        glPushMatrix();
+    
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
         glLoadMatrixd(Screen_2_Clip);
@@ -1132,6 +1135,9 @@ void RenderRasterize_Shader::render_viewer_sprite_layer(RenderStep renderStep)
         glPopMatrix();
 
         glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+
+        glMatrixMode(GL_TEXTURE);
         glPopMatrix();
         
         glMatrixMode(GL_MODELVIEW);
