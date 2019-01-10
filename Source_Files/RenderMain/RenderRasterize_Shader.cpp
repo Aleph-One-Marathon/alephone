@@ -1132,6 +1132,8 @@ void RenderRasterize_Shader::render_viewer_sprite_layer(RenderStep renderStep)
                 render_viewer_sprite(rect, renderStep);
         }
 
+        Shader::disable();
+    
         glPopMatrix();
 
         glMatrixMode(GL_PROJECTION);
@@ -1139,7 +1141,7 @@ void RenderRasterize_Shader::render_viewer_sprite_layer(RenderStep renderStep)
 
         glMatrixMode(GL_TEXTURE);
         glPopMatrix();
-        
+    
         glMatrixMode(GL_MODELVIEW);
 }
 
