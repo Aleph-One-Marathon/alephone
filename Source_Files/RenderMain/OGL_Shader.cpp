@@ -583,7 +583,7 @@ void initDefaultPrograms() {
         "   float sb = rand(entropy*sg); \n"
         "   vec3 intensity = vec3(0.0,0.0,0.0);\n"
         "   if (rand(entropy*sr*sg*sb) > darkBlockProbability) {\n"
-        "      intensity = vec3(sr*sr, sg*sg, sb*sb); }\n"
+        "      intensity = vec3(sr*sr, sg*sg, sb); }\n"
         "   vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
         "#ifdef GAMMA_CORRECTED_BLENDING\n"
         "   intensity = intensity * intensity;  // approximation of pow(intensity, 2.2)\n"
