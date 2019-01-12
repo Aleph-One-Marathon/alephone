@@ -389,9 +389,7 @@ bool player_controlling_game(
 {
 	bool player_in_control= false;
 
-	assert(game_state.state==_game_in_progress || game_state.state==_switch_demo);
-	
-	if(game_state.user==_single_player || game_state.user==_network_player)
+	if( (game_state.user==_single_player || game_state.user==_network_player) && (game_state.state==_game_in_progress || game_state.state==_switch_demo) )
 	{
 		player_in_control= true;
 	}
@@ -633,8 +631,10 @@ void match_starts_with_existing_players(player_start_data* ioStartArray, short* 
 }
 
 // This should be safe to use whether starting or resuming, and whether single- or multiplayer.
-static void synchronize_players_with_starts(const player_start_data* inStartArray, short inStartCount)
+static void synchronize_players_with_starts(const player_start_data* inStartArray, short inStartCount, short inLocalPlayerIndex)
 {
+        assert(inLocalPlayerIndex >= 0 && inLocalPlayerIndex < inStartCount);
+        
         // s will walk through all the starts
         int s = 0;
         
@@ -664,10 +664,18 @@ static void synchronize_players_with_starts(const player_start_data* inStartArra
                 }
         }
         
+        // Designate the local player if they already exist
+        if (inLocalPlayerIndex < s)
+        {
+            set_local_player_index(inLocalPlayerIndex);
+            set_current_player_index(inLocalPlayerIndex);
+        }
+        
         // If there are any starts left, we need new players for them
         for( ; s < inStartCount; s++)
         {
-                int theIndex = new_player(inStartArray[s].team, inStartArray[s].color, inStartArray[s].identifier);
+                new_player_flags flags = (s == inLocalPlayerIndex ? new_player_make_local_and_current : 0);
+                int theIndex = new_player(inStartArray[s].team, inStartArray[s].color, inStartArray[s].identifier, flags);
                 assert(theIndex == s);
                 player_data* thePlayer = get_player_data(theIndex);
                 strncpy(thePlayer->name, inStartArray[s].name, MAXIMUM_PLAYER_NAME_LENGTH+1);
@@ -700,8 +708,6 @@ static bool make_restored_game_relevant(bool inNetgame, const player_start_data*
         // Note we always take the random seed directly from the dynamic_world, no need to screw around
         // with copying it from game_information or the like.
         set_random_seed(dynamic_world->random_seed);
-        
-        synchronize_players_with_starts(inStartArray, inStartCount);
         
         short theLocalPlayerIndex;
         
@@ -742,9 +748,9 @@ static bool make_restored_game_relevant(bool inNetgame, const player_start_data*
         }
         
         assert(theLocalPlayerIndex != NONE);
-        set_local_player_index(theLocalPlayerIndex);
-        set_current_player_index(theLocalPlayerIndex);
 
+        synchronize_players_with_starts(inStartArray, inStartCount, theLocalPlayerIndex);
+        
         bool success = entering_map(true /*restoring game*/);
 
         reset_motion_sensor(theLocalPlayerIndex);
@@ -2358,6 +2364,9 @@ static void finish_game(
 		display_net_game_stats();
 	}
 	
+	set_local_player_index(NONE);
+	set_current_player_index(NONE);
+	
 	load_environment_from_preferences();
 	if (game_state.user == _replay || game_state.user == _demo)
 	{
@@ -2374,6 +2383,9 @@ static void clean_up_after_failed_game(bool inNetgame, bool inRecording, bool in
         {
                 stop_recording();
         }
+        
+        set_local_player_index(NONE);
+        set_current_player_index(NONE);
 
         /* Show the cursor here on failure. */
         show_cursor();

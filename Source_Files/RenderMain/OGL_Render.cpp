@@ -245,7 +245,7 @@ static GLdouble World_2_OGLEye[16];
 static GLdouble CenteredWorld_2_OGLEye[16];
 
 // Screen -> clip (good starter matrix; assumes distance is already projected)
-static GLdouble Screen_2_Clip[16];
+GLdouble Screen_2_Clip[16];
 // OpenGL eye -> clip (good projection matrix for 3D models)
 static GLdouble OGLEye_2_Clip[16];
 // OpenGL eye -> screen

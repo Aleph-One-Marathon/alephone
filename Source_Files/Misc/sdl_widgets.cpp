@@ -1719,7 +1719,7 @@ const int SLIDER_THUMB_WIDTH = 8;
 const int SLIDER_TROUGH_HEIGHT = 8;
 const int SLIDER_LABEL_SPACE = 5;
 
-w_slider::w_slider(int num, int s) : widget(LABEL_WIDGET), selection(s), num_items(num), thumb_dragging(false), readout(NULL)
+w_slider::w_slider(int num, int s) : widget(LABEL_WIDGET), selection(s), num_items(num), thumb_dragging(false), readout(NULL), slider_changed_callback(NULL)
 {
 	slider_l = get_theme_image(SLIDER_WIDGET, DEFAULT_STATE, SLIDER_L_IMAGE);
 	slider_r = get_theme_image(SLIDER_WIDGET, DEFAULT_STATE, SLIDER_R_IMAGE);
@@ -1897,6 +1897,9 @@ std::string w_slider::formatted_value()
 void w_slider::selection_changed()
 {
 	readout->set_text(formatted_value().c_str());
+	
+	if (slider_changed_callback != NULL)
+		slider_changed_callback(this);
 }
 
 void w_slider::init_formatted_value()

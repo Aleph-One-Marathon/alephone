@@ -108,6 +108,7 @@ struct view_data
 	uint32 tick_count; /* for effects and transfer modes */
 	short origin_polygon_index;
 	angle yaw, pitch, roll;
+	fixed_angle virtual_yaw, virtual_pitch;
 	world_point3d origin;
 	_fixed maximum_depth_intensity; /* in fixed units */
 

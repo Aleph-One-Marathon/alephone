@@ -480,7 +480,14 @@ void allocate_player_memory(void);
 void set_local_player_index(short player_index);
 void set_current_player_index(short player_index);
 
-short new_player(short team, short color, short player_identifier);
+// Flags for new_player()
+using new_player_flags = uint32;
+constexpr new_player_flags
+	new_player_make_local = 1u << 0,
+	new_player_make_current = 1u << 1,
+	new_player_make_local_and_current = new_player_make_local | new_player_make_current;
+
+short new_player(short team, short color, short player_identifier, new_player_flags flags);
 void delete_player(short player_number);
 
 void recreate_players_for_new_level(void);
@@ -533,10 +540,19 @@ void accelerate_player(short monster_index, world_distance vertical_velocity, an
 
 void kill_player_physics_variables(short player_index);
 
-uint32 mask_in_absolute_positioning_information(uint32 action_flags, _fixed yaw, _fixed pitch, _fixed velocity);
 void get_absolute_pitch_range(_fixed *minimum, _fixed *maximum);
 
 _fixed get_player_forward_velocity_scale(short player_index);
+
+// Delta from the low-precision physical aim to the virtual "true" aim implied by high-precision aiming input;
+// |<yaw or pitch delta>| <= FIXED_ONE/2
+fixed_yaw_pitch virtual_aim_delta();
+
+// Resync the virtual aim to the current physical aim
+void resync_virtual_aim();
+
+// Update the virtual aim and return action flags updated with yaw/pitch deltas (if appropriate)
+uint32 process_aim_input(uint32 action_flags, fixed_yaw_pitch delta);
 
 
 // LP: to pack and unpack this data;

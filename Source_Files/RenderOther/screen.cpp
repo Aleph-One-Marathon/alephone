@@ -1209,7 +1209,9 @@ void render_screen(short ticks_elapsed)
 	world_view->ticks_elapsed = ticks_elapsed;
 	world_view->tick_count = dynamic_world->tick_count;
 	world_view->yaw = current_player->facing;
+	world_view->virtual_yaw = (current_player->facing * FIXED_ONE) + virtual_aim_delta().yaw;
 	world_view->pitch = current_player->elevation;
+	world_view->virtual_pitch = (current_player->elevation * FIXED_ONE) + virtual_aim_delta().pitch;
 	world_view->maximum_depth_intensity = current_player->weapon_intensity;
 	world_view->shading_mode = current_player->infravision_duration ? _shading_infravision : _shading_normal;
 

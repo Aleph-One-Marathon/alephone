@@ -247,8 +247,10 @@ struct damage_record team_monster_damage_taken[NUMBER_OF_TEAM_COLORS];
 struct damage_record team_monster_damage_given[NUMBER_OF_TEAM_COLORS];
 struct damage_record team_friendly_fire[NUMBER_OF_TEAM_COLORS];
 
-struct player_data *local_player, *current_player;
-short local_player_index, current_player_index;
+player_data* local_player = nullptr;
+player_data* current_player = nullptr;
+short local_player_index = NONE;
+short current_player_index = NONE;
 
 // ZZZ: Let folks ask for a pointer to the main set of ActionQueues.
 static ActionQueues*   sRealActionQueues = NULL;
@@ -413,7 +415,8 @@ void allocate_player_memory(
 short new_player(
 	short team,
 	short color,
-	short identifier)
+	short identifier,
+	new_player_flags flags)
 {
 	short player_index, loop;
 	struct player_data *player;
@@ -425,6 +428,10 @@ short new_player(
 	player= get_player_data(player_index);
 
 	/* and initialize it */
+	if (flags & new_player_make_local)
+		set_local_player_index(player_index);
+	if (flags & new_player_make_current)
+		set_current_player_index(player_index);
 	obj_clear(*player);
 	player->teleporting_destination= NO_TELEPORTATION_DESTINATION;
 	player->interface_flags= 0; // Doesn't matter-> give_player_initial_items will take care of it.
@@ -500,6 +507,8 @@ void initialize_players(
 	
 	/* no players */
 	dynamic_world->player_count= 0;
+	set_local_player_index(NONE);
+	set_current_player_index(NONE);
 	
 	/* reset the action flag queues and zero the player slots */
 	for (i=0;i<MAXIMUM_NUMBER_OF_PLAYERS;++i)
@@ -961,14 +970,14 @@ void set_local_player_index(
 	short player_index)
 {
 	local_player_index= player_index;
-	local_player= get_player_data(player_index);
+	local_player = player_index == NONE ? nullptr : get_player_data(player_index);
 }
 
 void set_current_player_index(
 	short player_index)
 {
 	current_player_index= player_index;
-	current_player= get_player_data(player_index);
+	current_player = player_index == NONE ? nullptr : get_player_data(player_index);
 }
 
 /* We just teleported in as it were-> recreate all the players..  */
@@ -2416,7 +2425,7 @@ void parse_mml_player(const InfoTree& root)
 	BOOST_FOREACH(InfoTree shp, root.children_named("shape"))
 	{
 		int16 type;
-		if (!shp.read_indexed("type", type, 4))
+		if (!shp.read_indexed("type", type, 5))
 			continue;
 		
 		if (type == 0)
