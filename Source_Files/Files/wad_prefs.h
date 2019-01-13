@@ -34,8 +34,8 @@ Aug 21, 2000 (Loren Petrich):
 /*  preferences pointer.. */
 bool w_open_preferences_file(char *PrefName, Typecode Type);
 
-typedef void (*prefs_initializer)(void *prefs);
-typedef bool (*prefs_validater)(void *prefs);
+using prefs_initializer = void (*)(void *prefs);
+using prefs_validater = bool (*)(void *prefs);
 
 void *w_get_data_from_preferences(
 	WadDataType tag,					/* Tag to read */
@@ -43,15 +43,15 @@ void *w_get_data_from_preferences(
 	prefs_initializer initialize,	/* Call if I have to allocate it.. */
 	prefs_validater validate);	/* Verify function-> fixes if bad and returns true */
 	
-void w_write_preferences_file(void);
+void w_write_preferences_file();
 
 /* ------ local structures */
 /* This is the structure used internally */
 struct preferences_info {
-	preferences_info() : wad(NULL) {}
+	preferences_info() : wad(nullptr) {}
 
 	FileSpecifier PrefsFile;
-	struct wad_data *wad;
+	wad_data *wad;
 };
 
 #endif
