@@ -39,18 +39,17 @@
 #include "sdl_resize.h"
 #include "Logging.h"
 
-WadImageCache* WadImageCache::m_instance = 0;
 WadImageCache* WadImageCache::instance() {
+	static WadImageCache* m_instance = nullptr;
 	if (!m_instance) {
 		m_instance = new WadImageCache;
 	}
-	
 	return m_instance;
 }
 
 SDL_Surface *WadImageCache::image_from_desc(WadImageDescriptor& desc)
 {
-	SDL_Surface *surface = NULL;
+	SDL_Surface *surface = nullptr;
 	OpenedFile wad_file;
 	if (open_wad_file_for_reading(desc.file, wad_file))
 	{
@@ -90,7 +89,7 @@ SDL_Surface *WadImageCache::image_from_name(std::string& name) const
 	
 	OpenedFile of;
 	if (!file.Open(of))
-		return NULL;
+		return nullptr;
 	
 #ifdef HAVE_SDL_IMAGE
 	SDL_Surface *img = IMG_Load_RW(of.GetRWops(), 0);
@@ -115,7 +114,7 @@ SDL_Surface *WadImageCache::resize_image(SDL_Surface *original, int width, int h
 			return SDL_Resize(original, width, height, false, 1);
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 std::string WadImageCache::image_to_new_name(SDL_Surface *image, int32 *filesize) const
@@ -134,7 +133,7 @@ std::string WadImageCache::image_to_new_name(SDL_Surface *image, int32 *filesize
 	
 	int ret;
 //#if defined(HAVE_PNG) && defined(HAVE_SDL_IMAGE)
-//	ret = aoIMG_SavePNG(TempFile.GetPath(), image, IMG_COMPRESS_DEFAULT, NULL, 0);
+//	ret = aoIMG_SavePNG(TempFile.GetPath(), image, IMG_COMPRESS_DEFAULT, nullptr, 0);
 #ifdef HAVE_SDL_IMAGE
 	ret = IMG_SavePNG(image, TempFile.GetPath());
 #else
@@ -221,7 +220,7 @@ void WadImageCache::cache_image(WadImageDescriptor& desc, int width, int height,
 		return;
 	}
 	
-	SDL_Surface *resized_image = NULL;
+	SDL_Surface *resized_image = nullptr;
 	if (image)
 	{
 		resized_image = resize_image(image, width, height);
@@ -281,7 +280,7 @@ SDL_Surface *WadImageCache::retrieve_image(WadImageDescriptor& desc, int width, 
 {
 	std::string name = retrieve_name(desc, width, height, true);
 	if (name.empty())
-		return NULL;
+		return nullptr;
 	
 	return image_from_name(name);
 }

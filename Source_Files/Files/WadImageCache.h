@@ -60,10 +60,10 @@ struct WadImageDescriptor {
 
 class WadImageCache {
 public:
-	typedef boost::tuple<WadImageDescriptor, int, int> cache_key_t;
-	typedef std::pair<std::string, size_t> cache_value_t;
-	typedef std::pair<cache_key_t, cache_value_t> cache_pair_t;
-	typedef std::list<cache_pair_t>::iterator cache_iter_t;
+	using cache_key_t = boost::tuple<WadImageDescriptor, int, int>;
+	using cache_value_t = std::pair<std::string, size_t>;
+	using cache_pair_t = std::pair<cache_key_t, cache_value_t>;
+	using cache_iter_t = std::list<cache_pair_t>::iterator;
 
 	static WadImageCache* instance();
 	
@@ -81,7 +81,7 @@ public:
 	// a different size). Updates LRU info if already cached.
 	// If "surface" is provided, uses that for caching instead of
 	// reading wadfile directly.
-	void cache_image(WadImageDescriptor& desc, int width, int height, SDL_Surface *surface = NULL);
+	void cache_image(WadImageDescriptor& desc, int width, int height, SDL_Surface *surface = nullptr);
 	
 	// Deletes cache data for this image. If width and height are zero,
 	// removes any cached sizes for image.
@@ -95,7 +95,7 @@ public:
 	// If return value is not NULL, surface must be freed by caller.
 	// If "surface" is provided, uses that for caching instead of
 	// reading wad file directly.
-	SDL_Surface *get_image(WadImageDescriptor& desc, int width, int height, SDL_Surface *surface = NULL);
+	SDL_Surface *get_image(WadImageDescriptor& desc, int width, int height, SDL_Surface *surface = nullptr);
 
 	void save_cache();
 	void set_cache_autosave(bool enabled) { m_autosave = enabled; }
@@ -111,13 +111,12 @@ private:
 	SDL_Surface *image_from_name(std::string& name) const;
 	void delete_storage_for_name(std::string& name) const;
 	SDL_Surface *resize_image(SDL_Surface *original, int width, int height) const;
-	std::string image_to_new_name(SDL_Surface *image, int32 *filesize = NULL) const;
+	std::string image_to_new_name(SDL_Surface *image, int32 *filesize = nullptr) const;
 	std::string add_to_cache(cache_key_t key, SDL_Surface *surface);
 	bool apply_cache_limit();
 	std::string retrieve_name(WadImageDescriptor& desc, int width, int height, bool mark_accessed = true);
 	void autosave_cache() { if (m_autosave) save_cache(); }
 	
-	static WadImageCache* m_instance;
 	std::list<cache_pair_t> m_used;
 	std::map<cache_key_t, cache_iter_t> m_cacheinfo;
 	size_t m_cachesize;
