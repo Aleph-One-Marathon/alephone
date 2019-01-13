@@ -33,8 +33,8 @@
 class HUD_OGL_Class : public HUD_Class
 {
 public:
-	HUD_OGL_Class() {}
-	~HUD_OGL_Class() {}
+	HUD_OGL_Class() = default;
+	~HUD_OGL_Class() = default;
 
 protected:
 	void update_motion_sensor(short time_elapsed);

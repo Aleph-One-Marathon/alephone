@@ -37,8 +37,8 @@
 class HUD_SW_Class : public HUD_Class
 {
 public:
-	HUD_SW_Class() {}
-	~HUD_SW_Class() {}
+	HUD_SW_Class() = default;
+	~HUD_SW_Class() = default;
 
 protected:
 	void update_motion_sensor(short time_elapsed);
