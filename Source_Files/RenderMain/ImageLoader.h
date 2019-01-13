@@ -187,7 +187,7 @@ private:
 	T* _copy;
 };
 
-using ImageDescriptionManager = copy_on_edit<ImageDescriptor>;
+using ImageDescriptorManager = copy_on_edit<ImageDescriptor>;
 		
 
 // What to load: image colors (must be loaded first)
