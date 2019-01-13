@@ -83,25 +83,26 @@ extern const char* logDomain;
 
 // (COMMENTS FOR logError() FAMILY)
 // Ease-of-use macros wrap around logMessage.
-#define logFatal(...)    (GetCurrentLogger()->logMessage(logDomain, logFatalLevel, __FILE__, __LINE__, __VA_ARGS__))
-#define logError(...)    (GetCurrentLogger()->logMessage(logDomain, logErrorLevel, __FILE__, __LINE__, __VA_ARGS__))
-#define logWarning(...)  (GetCurrentLogger()->logMessage(logDomain, logWarningLevel, __FILE__, __LINE__, __VA_ARGS__))
-#define logAnomaly(...)  (GetCurrentLogger()->logMessage(logDomain, logAnomalyLevel, __FILE__, __LINE__, __VA_ARGS__))
-#define logNote(...)     (GetCurrentLogger()->logMessage(logDomain, logNoteLevel, __FILE__, __LINE__, __VA_ARGS__))
-#define logSummary(...)  (GetCurrentLogger()->logMessage(logDomain, logSummaryLevel, __FILE__, __LINE__, __VA_ARGS__))
-#define logTrace(...)    (GetCurrentLogger()->logMessage(logDomain, logTraceLevel, __FILE__, __LINE__, __VA_ARGS__))
-#define logDump(...)     (GetCurrentLogger()->logMessage(logDomain, logDumpLevel, __FILE__, __LINE__, __VA_ARGS__))
+#define __FILE_HERE__ __FILE__, __LINE__
+#define logFatal(...)    (GetCurrentLogger()->logMessage(logDomain, logFatalLevel, __FILE_HERE__, __VA_ARGS__))
+#define logError(...)    (GetCurrentLogger()->logMessage(logDomain, logErrorLevel, __FILE_HERE__, __VA_ARGS__))
+#define logWarning(...)  (GetCurrentLogger()->logMessage(logDomain, logWarningLevel, __FILE_HERE__, __VA_ARGS__))
+#define logAnomaly(...)  (GetCurrentLogger()->logMessage(logDomain, logAnomalyLevel, __FILE_HERE__, __VA_ARGS__))
+#define logNote(...)     (GetCurrentLogger()->logMessage(logDomain, logNoteLevel, __FILE_HERE__, __VA_ARGS__))
+#define logSummary(...)  (GetCurrentLogger()->logMessage(logDomain, logSummaryLevel, __FILE_HERE__, __VA_ARGS__))
+#define logTrace(...)    (GetCurrentLogger()->logMessage(logDomain, logTraceLevel, __FILE_HERE__, __VA_ARGS__))
+#define logDump(...)     (GetCurrentLogger()->logMessage(logDomain, logDumpLevel, __FILE_HERE__, __VA_ARGS__))
 
 // NB! use logError() and co. only in the main thread.  Elsewhere, use logErrorNMT() and co.
 // (the NMT versions may have more complex - or missing - implementations to make them safer)
-#define logFatalNMT(...)    (GetCurrentLogger()->logMessageNMT(logDomain, logFatalLevel, __FILE__, __LINE__, __VA_ARGS__))
-#define logErrorNMT(...)    (GetCurrentLogger()->logMessageNMT(logDomain, logErrorLevel, __FILE__, __LINE__, __VA_ARGS__))
-#define logWarningNMT(...)  (GetCurrentLogger()->logMessageNMT(logDomain, logWarningLevel, __FILE__, __LINE__, __VA_ARGS__))
-#define logAnomalyNMT(...)  (GetCurrentLogger()->logMessageNMT(logDomain, logAnomalyLevel, __FILE__, __LINE__, __VA_ARGS__))
-#define logNoteNMT(...)     (GetCurrentLogger()->logMessageNMT(logDomain, logNoteLevel, __FILE__, __LINE__, __VA_ARGS__))
-#define logSummaryNMT(...)  (GetCurrentLogger()->logMessageNMT(logDomain, logSummaryLevel, __FILE__, __LINE__, __VA_ARGS__))
-#define logTraceNMT(...)    (GetCurrentLogger()->logMessageNMT(logDomain, logTraceLevel, __FILE__, __LINE__, __VA_ARGS__))
-#define logDumpNMT(...)     (GetCurrentLogger()->logMessageNMT(logDomain, logDumpLevel, __FILE__, __LINE__, __VA_ARGS__))
+#define logFatalNMT(...)    (GetCurrentLogger()->logMessageNMT(logDomain, logFatalLevel, __FILE_HERE__, __VA_ARGS__))
+#define logErrorNMT(...)    (GetCurrentLogger()->logMessageNMT(logDomain, logErrorLevel, __FILE_HERE__, __VA_ARGS__))
+#define logWarningNMT(...)  (GetCurrentLogger()->logMessageNMT(logDomain, logWarningLevel, __FILE_HERE__, __VA_ARGS__))
+#define logAnomalyNMT(...)  (GetCurrentLogger()->logMessageNMT(logDomain, logAnomalyLevel, __FILE_HERE__, __VA_ARGS__))
+#define logNoteNMT(...)     (GetCurrentLogger()->logMessageNMT(logDomain, logNoteLevel, __FILE_HERE__, __VA_ARGS__))
+#define logSummaryNMT(...)  (GetCurrentLogger()->logMessageNMT(logDomain, logSummaryLevel, __FILE_HERE__, __VA_ARGS__))
+#define logTraceNMT(...)    (GetCurrentLogger()->logMessageNMT(logDomain, logTraceLevel, __FILE_HERE__, __VA_ARGS__))
+#define logDumpNMT(...)     (GetCurrentLogger()->logMessageNMT(logDomain, logDumpLevel, __FILE_HERE__, __VA_ARGS__))
 
 // (COMMENTS FOR logContext() FAMILY)
 // Enter a (runtime) logging subcontext; expires at end of block.  Use only within functions!!
@@ -112,8 +113,8 @@ extern const char* logDomain;
 // We need to use makeUniqueIdentifier so that __LINE__ gets expanded before concatenation.
 #define makeUniqueIdentifier(a, b) a ## b
 
-#define logContext(...)	LogContext makeUniqueIdentifier(_theLogContext,__LINE__)(false, __FILE__, __LINE__, __VA_ARGS__)
-#define logContextNMT(...)	LogContext makeUniqueIdentifier(_theLogContext,__LINE__)(true, __FILE__, __LINE__, __VA_ARGS__)
+#define logContext(...)	LogContext makeUniqueIdentifier(_theLogContext,__LINE__)(false, __FILE_HERE__, __VA_ARGS__)
+#define logContextNMT(...)	LogContext makeUniqueIdentifier(_theLogContext,__LINE__)(true, __FILE_HERE__, __VA_ARGS__)
 
 
 // Class intended for stack-based use for entering/leaving a logging subcontext

@@ -109,13 +109,13 @@ private:
 // Environment selection button
 // ZZZ: added callback stuff - callback is made if user clicks on an entry in the selection dialog.
 class w_env_select;
-typedef void (*selection_made_callback_t)(w_env_select* inWidget);
+using selection_made_callback_t = void(*)(w_env_select* inWidget);
 
 class w_env_select : public w_select_button {
 public:
 w_env_select(const char *path, const char *m, Typecode t, dialog *d)
-	: w_select_button(item_name, select_item_callback, NULL, true),
-		parent(d), menu_title(m), type(t), mCallback(NULL)
+	: w_select_button(item_name, select_item_callback, nullptr, true),
+		parent(d), menu_title(m), type(t), mCallback(nullptr)
 	{
 		set_arg(this);
 		set_path(path);
@@ -169,7 +169,7 @@ public:
 	~w_crosshair_display();
 
 	void draw(SDL_Surface *s) const;
-	bool is_selectable(void) const { return false; }
+	bool is_selectable() const { return false; }
 
 	bool placeable_implemented() { return true; }
 

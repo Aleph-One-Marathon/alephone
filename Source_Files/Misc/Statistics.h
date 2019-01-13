@@ -36,7 +36,10 @@
 class StatsManager {
 public:
 	static StatsManager* instance() { 
-		if (!instance_) instance_  = new StatsManager();
+		static StatsManager* instance_ = nullptr;
+		if (!instance_) {
+			instance_  = new StatsManager();
+		}
 		return instance_;
 	}
 
@@ -55,7 +58,6 @@ private:
 	};
 
 	StatsManager();
-	static StatsManager* instance_;
 
 	void CheckForDone(dialog* d);
 

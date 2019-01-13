@@ -28,11 +28,12 @@
 #include "Scenario.h"
 #include "InfoTree.h"
 
-Scenario *Scenario::m_instance;
-
 Scenario *Scenario::instance()
 {
-	if (!m_instance) m_instance = new Scenario();
+	static Scenario *m_instance = nullptr;
+	if (!m_instance) {
+		m_instance = new Scenario();
+	}
 	return m_instance;
 }
 

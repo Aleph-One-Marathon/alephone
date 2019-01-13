@@ -57,8 +57,6 @@ private:
 	string m_id;
 	
 	vector<string> m_compatibleVersions;
-	
-	static Scenario *m_instance;
 };
 
 class InfoTree;

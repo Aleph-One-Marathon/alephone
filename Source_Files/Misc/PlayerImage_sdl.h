@@ -50,10 +50,10 @@ public:
         mLegsValid(false),
         mTorsoValid(false),
         
-        mLegsSurface(NULL),
-        mTorsoSurface(NULL),
-        mLegsData(NULL),
-        mTorsoData(NULL)
+        mLegsSurface(nullptr),
+        mTorsoSurface(nullptr),
+        mLegsData(nullptr),
+        mTorsoData(nullptr)
         
         { objectCreated(); }
     

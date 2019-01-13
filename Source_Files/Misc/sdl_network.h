@@ -43,8 +43,9 @@
 // Note that the SDL network microphone code is the one sending "big" packets these days.
 #define ddpMaxData 1500
 
-typedef char NetEntityName[32];
-typedef IPaddress NetAddrBlock;
+
+using NetEntityName = char[32];
+using NetAddrBlock = IPaddress;
 
 /* ---------- DDPFrame and PacketBuffer (DDP) */
 
