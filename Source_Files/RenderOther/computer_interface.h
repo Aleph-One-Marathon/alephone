@@ -86,7 +86,7 @@ struct static_preprocessed_terminal_data {
 	int16 grouping_count;
 	int16 font_changes_count;
 };
-const int SIZEOF_static_preprocessed_terminal_data = 10;
+constexpr int SIZEOF_static_preprocessed_terminal_data = 10;
 
 struct view_terminal_data {
 	short top, left, bottom, right;
@@ -94,7 +94,7 @@ struct view_terminal_data {
 };
 
 // External-data size of current terminal state
-const int SIZEOF_player_terminal_data = 20;
+constexpr int SIZEOF_player_terminal_data = 20;
 
 /* ------------ prototypes */
 void initialize_terminal_manager(void);
