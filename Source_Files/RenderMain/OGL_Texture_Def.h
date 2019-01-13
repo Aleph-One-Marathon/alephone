@@ -64,13 +64,13 @@ enum {
 
 
 // Check for infravision or silhouette special CLUTs
-static inline bool IsInfravisionTable(short CLUT)
+inline bool IsInfravisionTable(short CLUT)
 {
     return (CLUT == INFRAVISION_BITMAP_SET ||
             (CLUT >= INFRAVISION_BITMAP_CLUTSPECIFIC &&
              CLUT <  INFRAVISION_BITMAP_CLUTSPECIFIC + MAXIMUM_CLUTS_PER_COLLECTION));
 }
-static inline bool IsSilhouetteTable(short CLUT)
+inline bool IsSilhouetteTable(short CLUT)
 {
     return (CLUT == SILHOUETTE_BITMAP_SET ||
             (CLUT >= SILHOUETTE_BITMAP_CLUTSPECIFIC &&

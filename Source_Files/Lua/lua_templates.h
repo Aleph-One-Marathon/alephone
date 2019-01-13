@@ -40,7 +40,7 @@ extern "C"
 #include <map>
 #include <new>
 
-static inline int luaL_typerror(lua_State* L, int narg, const char* tname)
+inline int luaL_typerror(lua_State* L, int narg, const char* tname)
 {
 	const char *msg = lua_pushfstring(L, "%s expected, got %s",
 					  tname, luaL_typename(L, narg));
