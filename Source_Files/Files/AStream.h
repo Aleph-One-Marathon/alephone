@@ -44,13 +44,13 @@
 namespace AStream
 {
 	enum _Aiostate { _M_aiostate_end = 1L << 16 };
-	static const short _S_badbit = 0x01;
-	static const short _S_failbit = 0x02;
+	constexpr short _S_badbit = 0x01;
+	constexpr short _S_failbit = 0x02;
 
-	typedef _Aiostate iostate;
-	static const iostate badbit = iostate(_S_badbit);
-	static const iostate failbit = iostate(_S_failbit);
-	static const iostate goodbit = iostate(0);
+	using iostate = _Aiostate;
+	const iostate badbit = iostate(_S_badbit);
+	const iostate failbit = iostate(_S_failbit);
+	const iostate goodbit = iostate(0);
 
 	class failure : public std::exception
 	{
