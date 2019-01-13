@@ -46,10 +46,10 @@ struct collection_header /* 32 bytes on disk */
 	collection_definition *collection;
 	byte *shading_tables;
 };
-const int SIZEOF_collection_header = 32;
+constexpr int SIZEOF_collection_header = 32;
 
 /* ---------- globals */
 
-static struct collection_header collection_headers[MAXIMUM_COLLECTIONS];
+struct collection_header collection_headers[MAXIMUM_COLLECTIONS];
 
 #endif

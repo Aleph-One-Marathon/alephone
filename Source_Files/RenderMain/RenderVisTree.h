@@ -44,12 +44,12 @@ Oct 13, 2000
 
 
 // Made pointers more general
-typedef byte *POINTER_DATA;
+using POINTER_DATA = byte*;
 #define POINTER_CAST(x) ((POINTER_DATA)(x))
 
 
 // LP addition: typecast for cross-products, since these can be large
-typedef double CROSSPROD_TYPE;
+using CROSSPROD_TYPE = double;
 
 
 // Macros
