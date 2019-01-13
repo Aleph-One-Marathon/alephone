@@ -35,6 +35,7 @@ public:
 	virtual void Rewind() = 0;
 	virtual void Close() = 0;
 
+	// TODO figure out if these abstract methods can be safely const noexcept
 	virtual bool IsSixteenBit() = 0;
 	virtual bool IsStereo() = 0;
 	virtual bool IsSigned() = 0;
