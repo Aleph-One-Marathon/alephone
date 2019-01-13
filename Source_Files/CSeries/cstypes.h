@@ -37,12 +37,12 @@ enum {
 // Integer types with specific bit size
 #include <SDL_types.h>
 #include <time.h>	// for time_t
-using Uint8 = uint8;
-using Sint8 = int8;
-using Uint16 = uint16;
-using Sint16 = int16;
-using Uint32 = uint32;
-using Sint32 = int32;
+using uint8 = Uint8;
+using int8 = Sint8;
+using uint16 = Uint16;
+using int16 = Sint16;
+using uint32 = Uint32;
+using int32 = Sint32;
 using TimeType = time_t;
 
 // Minimum and maximum values for these types
