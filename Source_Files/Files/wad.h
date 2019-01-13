@@ -56,7 +56,7 @@ class FileSpecifier;
 class OpenedFile;
 
 /* ------------- typedefs */
-typedef uint32 WadDataType;
+using WadDataType = uint32;
 
 /* ------------- file structures */
 struct wad_header { /* 128 bytes */
@@ -72,20 +72,24 @@ struct wad_header { /* 128 bytes */
 	uint32 parent_checksum;	/* If non-zero, this is the checksum of our parent, and we are simply modifications! */
 	int16 unused[20];
 };
-const int SIZEOF_wad_header = 128;	// don't trust sizeof()
+constexpr int SIZEOF_wad_header = 128;	// don't trust sizeof()
+//static_assert(sizeof(wad_header) == SIZEOF_wad_header, "wad_header is not of the correct size!"); 
 
 struct old_directory_entry { /* 8 bytes */
 	int32 offset_to_start; /* From start of file */
 	int32 length; /* Of total level */
 };
-const int SIZEOF_old_directory_entry = 8;
+constexpr int SIZEOF_old_directory_entry = 8;
+//static_assert(sizeof(old_directory_entry) == SIZEOF_old_directory_entry, "old_directory_entry is not of the correct size!");
 
 struct directory_entry { /* >=10 bytes */
 	int32 offset_to_start; /* From start of file */
 	int32 length; /* Of total level */
 	int16 index; /* For inplace modification of the wadfile! */
 };
-const int SIZEOF_directory_entry = 10;
+constexpr int SIZEOF_directory_entry = 10;
+// disabled because optimization does alignment but we are ignoring it
+//static_assert(sizeof(directory_entry) == SIZEOF_directory_entry, "directory_entry is not of the correct size!");
 
 struct old_entry_header { /* 12 bytes */
 	WadDataType tag;
@@ -96,7 +100,8 @@ struct old_entry_header { /* 12 bytes */
 	
 	/* Data follows */
 };
-const int SIZEOF_old_entry_header = 12;
+constexpr int SIZEOF_old_entry_header = 12;
+//static_assert(sizeof(old_entry_header) == SIZEOF_old_entry_header, "old_entry_header is not of the correct size!");
 
 struct entry_header { /* 16 bytes */
 	WadDataType tag;
@@ -108,7 +113,9 @@ struct entry_header { /* 16 bytes */
 	
 	/* Data follows */
 };
-const int SIZEOF_entry_header = 16;
+constexpr int SIZEOF_entry_header = 16;
+//static_assert(sizeof(entry_header) == SIZEOF_entry_header, "entry_header is not of the correct size!");
+
 
 /* ---------- Memory Data structures ------------ */
 struct tag_data {
