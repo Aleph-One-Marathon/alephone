@@ -112,7 +112,7 @@ struct sound_file_header
 	
 	// immediately followed by source_count*sound_count sound_definition structures
 };
-const int SIZEOF_sound_file_header = 260;
+constexpr int SIZEOF_sound_file_header = 260;
 
 struct sound_definition
 {
