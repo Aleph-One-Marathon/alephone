@@ -49,32 +49,32 @@ class ImageDescriptor
 	
 public:
 	
-	bool IsPresent() const {return (Pixels != NULL); }
-	bool IsPremultiplied() const { return (IsPresent() ? PremultipliedAlpha : false); }
+	bool IsPresent() const noexcept {return (Pixels != nullptr); }
+	bool IsPremultiplied() const noexcept { return (IsPresent() ? PremultipliedAlpha : false); }
 
 	bool LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int actual_width = 0, int actual_height = 0, int maxSize = 0);
 
 	// Size of level 0 image
-	int GetWidth() const {return Width;}
-	int GetHeight() const {return Height;}
-	int GetNumPixels() const {return Width*Height;}
+	int GetWidth() const noexcept {return Width;}
+	int GetHeight() const noexcept {return Height;}
+	int GetNumPixels() const noexcept {return Width*Height;}
 
-	int GetMipMapCount() const { return MipMapCount; }
-	int GetTotalBytes() const { return Size; }
-	int GetBufferSize() const { return Size; }
-	int GetFormat() const { return Format; }
+	int GetMipMapCount() const noexcept { return MipMapCount; }
+	int GetTotalBytes() const noexcept { return Size; }
+	int GetBufferSize() const noexcept { return Size; }
+	int GetFormat() const noexcept { return Format; }
 
-	double GetVScale() const { return VScale; }
-	double GetUScale() const { return UScale; }
+	double GetVScale() const noexcept { return VScale; }
+	double GetUScale() const noexcept { return UScale; }
 
 	// Pixel accessors
 	uint32& GetPixel(int Horiz, int Vert) {return Pixels[Width*(Vert%Height) + (Horiz%Width)];}
-	uint32 *GetPixelBasePtr() {return Pixels;}
-	const uint32 *GetBuffer() const { return Pixels; }
-	uint32 *GetBuffer() { return Pixels; }
+	uint32 *GetPixelBasePtr() noexcept {return Pixels;}
+	const uint32 *GetBuffer() const noexcept { return Pixels; }
+	uint32 *GetBuffer() noexcept { return Pixels; }
 
 	uint32 *GetMipMapPtr(int Level);
-	const uint32 *GetMipMapPtr(int Level) const;
+	const uint32 *GetMipMapPtr(int Level) const ;
 	int GetMipMapSize(int level) const;
 	
 	// Reallocation
@@ -93,11 +93,11 @@ public:
 
 	// Clearing
 	void Clear()
-		{Width = Height = Size = 0; delete []Pixels; Pixels = NULL;}
+		{Width = Height = Size = 0; delete []Pixels; Pixels = nullptr;}
 
 	ImageDescriptor(const ImageDescriptor &CopyFrom);
 	
-ImageDescriptor(): Width(0), Height(0), VScale(1.0), UScale(1.0), Pixels(NULL), Size(0), PremultipliedAlpha(false) {}
+	ImageDescriptor(): Width(0), Height(0), VScale(1.0), UScale(1.0), Pixels(nullptr), Size(0), PremultipliedAlpha(false) {}
 
 	// asumes RGBA8
 	ImageDescriptor(int width, int height, uint32 *pixels);
@@ -113,7 +113,7 @@ ImageDescriptor(): Width(0), Height(0), VScale(1.0), UScale(1.0), Pixels(NULL), 
 	~ImageDescriptor()
 	{
 		delete []Pixels;
-		Pixels = NULL;
+		Pixels = nullptr;
 	}
 			
 private:
@@ -128,12 +128,12 @@ template <typename T>
 class copy_on_edit
 {
 public:
-	copy_on_edit() : _original(NULL), _copy(NULL) { };
+	copy_on_edit() : _original(nullptr), _copy(nullptr) { };
 
 	void set(const T* original) {
 		if (_copy) {
 			delete _copy;
-			_copy = NULL;
+			_copy = nullptr;
 		}
 		_original = original;
 	}
@@ -141,7 +141,7 @@ public:
 	void set(T* original) {
 		if (_copy) {
 			delete _copy;
-			_copy= NULL;
+			_copy= nullptr;
 		}
 		_original = original;
 	}
@@ -170,7 +170,7 @@ public:
 		if (_copy) {
 			delete _copy;
 		}
-		_original = NULL;
+		_original = nullptr;
 		_copy = copy;
         return _copy;
 	}
@@ -178,7 +178,7 @@ public:
 	~copy_on_edit() {
 		if (_copy) {
 			delete _copy;
-			_copy = NULL;
+			_copy = nullptr;
 		}
 	}
 
@@ -187,7 +187,7 @@ private:
 	T* _copy;
 };
 
-typedef copy_on_edit<ImageDescriptor> ImageDescriptorManager;
+using ImageDescriptionManager = copy_on_edit<ImageDescriptor>;
 		
 
 // What to load: image colors (must be loaded first)

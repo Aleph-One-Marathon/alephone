@@ -92,7 +92,7 @@ struct collection_definition
 	std::vector<low_level_shape_definition> low_level_shapes;
 	std::vector<std::vector<uint8> > bitmaps;
 };
-const int SIZEOF_collection_definition = 544;
+constexpr int SIZEOF_collection_definition = 544;
 
 /* ---------- high level shape definition */
 
@@ -125,7 +125,7 @@ struct high_level_shape_definition // Starting with number_of_views, this is a s
 	   low-level indices follow (it's not simply number_of_view * frames_per_view) */
 	int16 low_level_shape_indexes[1];
 };
-const int SIZEOF_high_level_shape_definition = 90;
+constexpr int SIZEOF_high_level_shape_definition = 90;
 
 /* --------- low-level shape definition */
 
@@ -152,7 +152,7 @@ struct low_level_shape_definition
 	
 	int16 unused[4];
 };
-const int SIZEOF_low_level_shape_definition = 36;
+constexpr int SIZEOF_low_level_shape_definition = 36;
 
 /* ---------- colors */
 
@@ -168,6 +168,6 @@ struct rgb_color_value
 	
 	uint16 red, green, blue;
 };
-const int SIZEOF_rgb_color_value = 8;
+constexpr int SIZEOF_rgb_color_value = 8;
 
 #endif

@@ -79,7 +79,7 @@ inline bool IsSilhouetteTable(short CLUT)
 
 
 // If the color-table value has this value, it means all color tables:
-const int ALL_CLUTS = -1;
+constexpr int ALL_CLUTS = -1;
 
 
 // Here are the texture-opacity types.
