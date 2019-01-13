@@ -37,13 +37,13 @@ enum {
 // Integer types with specific bit size
 #include <SDL_types.h>
 #include <time.h>	// for time_t
-typedef Uint8 uint8;
-typedef Sint8 int8;
-typedef Uint16 uint16;
-typedef Sint16 int16;
-typedef Uint32 uint32;
-typedef Sint32 int32;
-typedef time_t TimeType;
+using Uint8 = uint8;
+using Sint8 = int8;
+using Uint16 = uint16;
+using Sint16 = int16;
+using Uint32 = uint32;
+using Sint32 = int32;
+using TimeType = time_t;
 
 // Minimum and maximum values for these types
 #ifndef INT16_MAX
@@ -64,7 +64,7 @@ typedef time_t TimeType;
 
 // Fixed point (16.16) type
 // LP: changed to _fixed to get around MSVC namespace conflict
-typedef int32 _fixed;
+using _fixed = int32;
 
 #define FIXED_FRACTIONAL_BITS 16
 #define INTEGER_TO_FIXED(i) ((_fixed)(i)<<FIXED_FRACTIONAL_BITS)
@@ -74,8 +74,8 @@ typedef int32 _fixed;
 #define FIXED_ONE_HALF	(1L<<(FIXED_FRACTIONAL_BITS-1))
 
 // Binary powers
-const int MEG = 0x100000;
-const int KILO = 0x400L;
+constexpr int MEG = 0x100000;
+constexpr int KILO = 0x400L;
 
 // Construct four-character-code
 #define FOUR_CHARS_TO_INT(a,b,c,d) (((uint32)(a) << 24) | ((uint32)(b) << 16) | ((uint32)(c) << 8) | (uint32)(d))
