@@ -44,8 +44,8 @@ struct wad_data *build_meta_game_wad(const std::string& metadata, const std::str
 bool export_level(FileSpecifier& File);
 
 /* -------------- New functions */
-void pause_game(void);
-void resume_game(void);
+void pause_game();
+void resume_game();
 void get_current_saved_game_name(FileSpecifier& File);
 // ZZZ: split this out from new_game; it sets a default filespec in the revert-game info
 void set_saved_game_name_to_default();
@@ -58,7 +58,7 @@ bool match_checksum_with_map(short vRefNum, long dirID, uint32 checksum,
 void set_map_file(FileSpecifier& File);
 
 //CP Addition: get_map_file returns the FileDesc pointer to the current map
-FileSpecifier& get_map_file(void);
+FileSpecifier& get_map_file();
 
 void level_has_embedded_physics_lua(int Level, bool& HasPhysics, bool& HasLua);
 
@@ -68,6 +68,6 @@ void get_savegame_filedesc(FileSpecifier& File);
 
 void add_finishing_touches_to_save_file(FileSpecifier& File);
 
-const int SAVE_GAME_METADATA_INDEX = 1000;
+constexpr int SAVE_GAME_METADATA_INDEX = 1000;
 
 #endif
