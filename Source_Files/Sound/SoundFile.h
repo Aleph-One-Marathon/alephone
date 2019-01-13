@@ -32,7 +32,7 @@ SOUND_DEFINITIONS.H
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
 
-typedef std::vector<uint8> SoundData;
+using SoundData = std::vector<uint8>;
 
 class SoundInfo 
 {
@@ -62,7 +62,7 @@ class SoundHeader : public SoundInfo
 {
 public:
 	SoundHeader();
-	virtual ~SoundHeader() { };
+	virtual ~SoundHeader() = default;
 
 	bool Load(BIStreamBE& stream);
 	boost::shared_ptr<SoundData> LoadData(BIStreamBE& stream);
@@ -73,16 +73,16 @@ public:
 	bool Load(LoadedResource& rsrc); // finds system 7 header in rsrc
 	boost::shared_ptr<SoundData> LoadData(LoadedResource& rsrc);
 
-	int32 Length() const
+	int32 Length() const noexcept
 		{ return length; };
 	
-	void Clear() { length = 0; }
+	void Clear() noexcept { length = 0; }
 
 private:
-	static const uint8 stdSH = 0x00; // standard sound header
-	static const uint8 extSH = 0xFF; // extended sound header
-	static const uint8 cmpSH = 0xFE; // compressed sound header
-	static const uint16 bufferCmd = 0x8051;
+	static constexpr uint8 stdSH = 0x00; // standard sound header
+	static constexpr uint8 extSH = 0xFF; // extended sound header
+	static constexpr uint8 cmpSH = 0xFE; // compressed sound header
+	static constexpr uint16 bufferCmd = 0x8051;
 
 	bool UnpackStandardSystem7Header(BIStreamBE &header);
 	bool UnpackExtendedSystem7Header(BIStreamBE &header);
@@ -99,10 +99,11 @@ public:
 	boost::shared_ptr<SoundData> LoadData(OpenedFile& SoundFile, short permutation);
 	void Unload() { sounds.clear(); }
 
-	static const int MAXIMUM_PERMUTATIONS_PER_SOUND = 5;
+	static constexpr int MAXIMUM_PERMUTATIONS_PER_SOUND = 5;
 
 private:
-	static int HeaderSize() { return 64; }
+	// TODO see if this can be marked as constexpr
+	static int HeaderSize() noexcept { return 64; }
 	
 public: // for now
 	int16 sound_code;
@@ -180,7 +181,7 @@ private:
 	int16 source_count;
 	int16 sound_count;
 
-	static const int v1Unused = 124;
+	static constexpr int v1Unused = 124;
 
 	std::vector< std::vector<SoundDefinition> > sound_definitions;
 
