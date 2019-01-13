@@ -45,7 +45,7 @@ public:
 	int32 Frames() { return length / bytes_per_frame; }
 
 	BasicIFFDecoder();
-	~BasicIFFDecoder() { }
+	~BasicIFFDecoder() = default;
 
 private:
 	bool sixteen_bit;
