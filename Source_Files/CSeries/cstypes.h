@@ -92,7 +92,7 @@ constexpr int KILO = 0x400L;
 #define FOUR_CHARS_TO_INT(a,b,c,d) (((uint32)(a) << 24) | ((uint32)(b) << 16) | ((uint32)(c) << 8) | (uint32)(d))
 
 // Hmmm, this should be removed one day...
-typedef uint8 byte;
+using byte = uint8;
 
 // Make it compile on systems without OpenGL
 #ifndef HAVE_OPENGL

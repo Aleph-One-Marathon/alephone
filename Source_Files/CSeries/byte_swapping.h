@@ -21,7 +21,7 @@
 #ifndef _BYTE_SWAPPING_
 #define _BYTE_SWAPPING_
 
-typedef short _bs_field;
+using _bs_field = short;
 
 enum {
 	_2byte	= -2,

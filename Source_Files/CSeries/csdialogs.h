@@ -37,7 +37,7 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 
 class dialog;
 
-typedef	dialog*	DialogPtr;
+using DialogPtr = dialog*;
 
 #define	CONTROL_INACTIVE	0
 #define	CONTROL_ACTIVE		1

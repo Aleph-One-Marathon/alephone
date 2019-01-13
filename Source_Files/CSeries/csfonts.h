@@ -27,12 +27,12 @@
 #include "cstypes.h"
 #include <string>
 
-const int styleNormal = 0;
-const int styleBold = 1;
-const int styleItalic = 2;
-const int styleUnderline = 4;
+constexpr int styleNormal = 0;
+constexpr int styleBold = 1;
+constexpr int styleItalic = 2;
+constexpr int styleUnderline = 4;
 // const int styleOutline = 8; -- can't be used with TTF
-const int styleShadow = 16;
+constexpr int styleShadow = 16;
 
 struct TextSpec {
 	int16 font;
