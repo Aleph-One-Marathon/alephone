@@ -116,7 +116,7 @@ short ModifyCLUT(short TransferMode, short CLUT);
 
 
 // Intended to be the no-texture default argument
-const int BadTextureType = 32767;
+constexpr int BadTextureType = 32767;
 
 /*
 	Texture-manager object: contains all the handling of textures;
@@ -263,7 +263,9 @@ public:
 
 // Five-to-eight translation:
 // takes a 5-bit color value and expands it to 8 bytes
-inline byte FiveToEight(byte x) {return (x << 3) | ((x >> 2) & 0x07);}
+constexpr byte FiveToEight(byte x) noexcept {
+	return (x << 3) | ((x >> 2) & 0x07);
+}
 
 // 16-bit-to-32-bit with opacity = 1;
 // ARGB 1555 to RGBA 8888
