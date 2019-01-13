@@ -25,9 +25,9 @@
 // Need this here
 #include "cstypes.h"
 
-typedef uint8 pixel8;
-typedef uint16 pixel16;
-typedef uint32 pixel32;
+using pixel8 = uint8;
+using pixel16 = uint16;
+using pixel32 = uint32;
 
 #define PIXEL8_MAXIMUM_COLORS 256
 #define PIXEL16_MAXIMUM_COMPONENT 31
@@ -41,11 +41,26 @@ typedef uint32 pixel32;
 		0x00 through 0x1F (in the 16-bit case)
 		0x00 through 0xFF (in the 32-bit case)
  */
-
-#define RGBCOLOR_TO_PIXEL16(r,g,b) (((r)>>1&0x7C00) | ((g)>>6&0x03E0) | ((b)>>11&0x001F))
-#define RED16(p) ((p)>>10&0x1F)
-#define GREEN16(p) ((p)>>5&0x1F)
-#define BLUE16(p) ((p)&0x1F)
+template<pixel16 shiftAmount>
+constexpr pixel16 ExtractColorComponent(pixel16 p) noexcept {
+	return ((p >> shiftAmount) & 0x1f);
+}
+constexpr pixel16 Red16(pixel16 p) noexcept {
+	return ExtractColorComponent<10>(p);
+}
+constexpr pixel16 Green16(pixel16 p) noexcept {
+	return ExtractColorComponent<5>(p);
+}
+constexpr pixel16 Blue16(pixel16 p) noexcept {
+	return ExtractColorComponent<0>(p);
+}
+constexpr pixel16 ToPixel16(uint16 r, uint16 g, uint16 b) noexcept {
+	return (((r)>>1&0x7C00) | ((g)>>6&0x03E0) | ((b)>>11&0x001F));
+}
+#define RGBCOLOR_TO_PIXEL16(r,g,b) (ToPixel16(r,g,b))
+#define RED16(p) (Red16(p))
+#define GREEN16(p) (Green16(p))
+#define BLUE16(p) (Blue16(p))
 
 #define RGBCOLOR_TO_PIXEL32(r,g,b) (((r)<<8&0x00FF0000) | ((g)&0x00000FF00) | ((b)>>8&0x000000FF))
 #define RED32(p) ((p)>>16&0xFF)
