@@ -57,7 +57,7 @@ public:
 
 	void handle(Message* inMessage, CommunicationsChannel* inChannel)
 	{
-		if(mFunction != NULL)
+		if(mFunction != nullptr)
 			mFunction(dynamic_cast<tMessage*>(inMessage), dynamic_cast<tChannel*>(inChannel));
 	}
 
@@ -84,7 +84,7 @@ public:
 
 	void handle(Message* inMessage, CommunicationsChannel* inChannel)
 	{
-		if(mObject != NULL && mMethod != NULL)
+		if(mObject != nullptr && mMethod != nullptr)
 			(mObject->*(mMethod))(dynamic_cast<tMessage*>(inMessage), dynamic_cast<tChannel*>(inChannel));
 	}
 

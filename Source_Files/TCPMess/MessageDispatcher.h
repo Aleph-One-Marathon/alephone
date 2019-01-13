@@ -38,11 +38,11 @@
 class MessageDispatcher : public MessageHandler
 {
 public:
-	MessageDispatcher() : mDefaultHandler(NULL) {}
+	MessageDispatcher() : mDefaultHandler(nullptr) {}
 	
 	void setHandlerForType(MessageHandler* inHandler, MessageTypeID inType)
 	{
-		if(inHandler == NULL)
+		if(inHandler == nullptr)
 			clearHandlerForType(inType);
 		else
 			mMap[inType] = inHandler;
@@ -62,7 +62,7 @@ public:
 	MessageHandler* handlerForTypeNoDefault(MessageTypeID inType)
 	{
 		MessageDispatcherMap::iterator i = mMap.find(inType);
-		return (i != mMap.end()) ? i->second : NULL;
+		return (i != mMap.end()) ? i->second : nullptr;
 	}
 
 	void clearHandlerForType(MessageTypeID inType)
@@ -84,13 +84,13 @@ public:
 	{
 		MessageHandler* theHandler = handlerForType(inMessage->type());
 
-		if(theHandler != NULL)
+		if(theHandler != nullptr)
 			theHandler->handle(inMessage, inChannel);
 	}
 
 private:
-	typedef std::map<MessageTypeID, MessageHandler*> MessageDispatcherMap;
-	
+	using MessageDispatcherMap = std::map<MessageTypeID, MessageHandler*>;
+
 	MessageDispatcherMap	mMap;
 	MessageHandler*		mDefaultHandler;
 };

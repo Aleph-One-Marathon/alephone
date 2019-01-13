@@ -98,7 +98,7 @@ public:
 
 	bool		isMessageAvailable();
 
-	// Call does not return unless (1) times out (NULL); (2) disconnected (NULL); or
+	// Call does not return unless (1) times out (nullptr); (2) disconnected (nullptr); or
 	// (3) some message received (pointer to inflated message object).
 	// Caller is responsible for deleting the returned object!
 	// Timeouts are in milliseconds.  'Overall' timeouts limit the amount of time
@@ -121,7 +121,7 @@ public:
 	{
 		std::unique_ptr<Message> receivedMessage(receiveSpecificMessage(inType, inOverallTimeout, inInactivityTimeout));
 		tMessage* result = dynamic_cast<tMessage*>(receivedMessage.get());
-		if(result != NULL)
+		if(result != nullptr)
 			receivedMessage.release();
 		return result;
 	}
@@ -146,7 +146,7 @@ public:
 				Uint32 inInactivityTimeout = kSSRAnyDataTimeout)
 	{
 		tMessage* result = receiveSpecificMessage<tMessage>(inOverallTimeout, inInactivityTimeout);
-		if (result == NULL)
+		if (result == nullptr)
 			throw FailedToReceiveSpecificMessageException();
 		return result;
 	}
@@ -250,7 +250,7 @@ class CommunicationsChannelFactory
 {
 public:
 	CommunicationsChannelFactory(Uint16 inPort);
-	bool	isFunctional() const { return mSocket != NULL; }
+	bool	isFunctional() const { return mSocket != nullptr; }
 	CommunicationsChannel* newIncomingConnection();
 	~CommunicationsChannelFactory();
 	

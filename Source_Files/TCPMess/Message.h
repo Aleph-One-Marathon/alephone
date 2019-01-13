@@ -31,7 +31,7 @@
 #include <string.h>	// memcpy
 #include "SDL.h"
 
-typedef Uint16 MessageTypeID;
+using MessageTypeID = Uint16;
 
 class UninflatedMessage;
 
@@ -63,10 +63,10 @@ public:
 	// If bytes are provided, this object takes ownership of them (does not copy).
 	// If no bytes are provided, this object creates a buffer of size inLength.
 	//    Clients should write into the pointer returned by buffer().
-	UninflatedMessage(MessageTypeID inType, size_t inLength, Uint8* inBytes = NULL)
+	UninflatedMessage(MessageTypeID inType, size_t inLength, Uint8* inBytes = nullptr)
 		: mType(inType), mLength(inLength), mBuffer(inBytes)
 	{
-		if(mBuffer == NULL)
+		if(mBuffer == nullptr)
 			mBuffer = new Uint8[mLength];
 	}
 
@@ -130,8 +130,8 @@ private:
 class BigChunkOfDataMessage : public Message
 {
 public:
-	BigChunkOfDataMessage(MessageTypeID inType, const Uint8* inBuffer = NULL, size_t inLength = 0);
-	BigChunkOfDataMessage(const BigChunkOfDataMessage& other) : mLength(0), mBuffer(NULL)
+	BigChunkOfDataMessage(MessageTypeID inType, const Uint8* inBuffer = nullptr, size_t inLength = 0);
+	BigChunkOfDataMessage(const BigChunkOfDataMessage& other) : mLength(0), mBuffer(nullptr)
 	{
 		mType = other.type();
 		copyBufferFrom(other.buffer(), other.length());

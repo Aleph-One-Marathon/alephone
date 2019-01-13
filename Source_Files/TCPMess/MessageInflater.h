@@ -44,7 +44,7 @@ public:
 	~MessageInflater();
 
 private:
-	typedef std::map<MessageTypeID, Message*> MessageInflaterMap;
+	using MessageInflaterMap = std::map<MessageTypeID, Message*>;
 	MessageInflaterMap	mMap;
 };
 
