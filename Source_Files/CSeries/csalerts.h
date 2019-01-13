@@ -43,10 +43,10 @@ extern void alert_user(
 	short resid,
 	short item,
 	int error);
-static inline void alert_user_fatal(short resid, short item, int error) NORETURN;
-static inline void alert_out_of_memory(int error = -1) NORETURN;
-static inline void alert_bad_extra_file(int error = -1) NORETURN;
-static inline void alert_corrupted_map(int error = -1) NORETURN;
+inline void alert_user_fatal(short resid, short item, int error) NORETURN;
+inline void alert_out_of_memory(int error = -1) NORETURN;
+inline void alert_bad_extra_file(int error = -1) NORETURN;
+inline void alert_corrupted_map(int error = -1) NORETURN;
 
 extern bool alert_choose_scenario(char *chosen_dir);
 
