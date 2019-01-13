@@ -18,7 +18,7 @@ const GLfloat kThreshhold = FLT_MIN * 10.0;
 struct vec4 {
 	GLfloat _d[4];
 
-	vec4() {}
+	vec4() = default;
 	vec4(const GLfloat& x, const GLfloat& y, const GLfloat& z, const GLfloat& w) {
 		_d[0] = x; _d[1] = y; _d[2] = z; _d[3] = w;		
 	}
@@ -31,7 +31,7 @@ struct vec4 {
 
 struct vec3 : public vec4 {
 	
-	vec3() {}
+	vec3() = default;
 	vec3(const GLfloat& x, const GLfloat& y, const GLfloat& z) : vec4(x, y, z, 0.0) {}
 	vec3(const GLfloat* f) : vec4(f[0], f[1], f[2], 0.0) {}
 	
@@ -76,7 +76,7 @@ struct vec3 : public vec4 {
 
 struct vertex3 : public vec4 {
 
-	vertex3() {}
+	vertex3() = default;
 	vertex3(const GLfloat& x, const GLfloat& y, const GLfloat& z) : vec4(x, y, z, 1.0) {}
 	vertex3(const GLfloat* f) : vec4(f[0], f[1], f[2], 1.0) {}
 
@@ -87,7 +87,7 @@ struct vertex3 : public vec4 {
 
 struct vertex2 : public vec4 {
 	
-	vertex2() {}
+	vertex2() = default;
 	vertex2(const vec4& v) : vec4(v) {}
 	vertex2(const GLfloat& x, const GLfloat& y) : vec4(x, y, 0.0, 1.0) {}
 	vertex2(const GLfloat* f) : vec4(f[0], f[1], 0.0, 1.0) {}
