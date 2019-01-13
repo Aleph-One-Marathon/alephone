@@ -34,7 +34,7 @@
 
 #include "CircularQueue.h"
 
-typedef CircularQueue<char> CircularByteBufferBase;
+using CircularByteBufferBase = CircularQueue<char>;
 
 class CircularByteBuffer : public CircularByteBufferBase
 {
