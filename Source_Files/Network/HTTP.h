@@ -31,7 +31,7 @@ public:
 	typedef std::map<std::string, std::string> parameter_map;
 	static void Init();
 
-	HTTPClient() { }
+	HTTPClient() = default;
 	
 	bool Get(const std::string& url);
 	bool Post(const std::string& url, const parameter_map& parameters);

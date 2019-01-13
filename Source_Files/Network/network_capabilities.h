@@ -37,16 +37,16 @@ class Capabilities : public capabilities_t
  public:
   enum { kMaxKeySize = 1024 };
 
-  static const int kGameworldVersion = 3;
-  static const int kGameworldM1Version = 2;
-  static const int kStarVersion = 6;
-  static const int kRingVersion = 2;
-  static const int kLuaVersion = 2;
-  static const int kSpeexVersion = 1;
-  static const int kGatherableVersion = 1;
-  static const int kZippedDataVersion = 1; // map, lua, physics
-  static const int kNetworkStatsVersion = 1; // latency, jitter, errors
-  static const int kRugbyVersion = 1; // sane score limit
+  static constexpr int kGameworldVersion = 3;
+  static constexpr int kGameworldM1Version = 2;
+  static constexpr int kStarVersion = 6;
+  static constexpr int kRingVersion = 2;
+  static constexpr int kLuaVersion = 2;
+  static constexpr int kSpeexVersion = 1;
+  static constexpr int kGatherableVersion = 1;
+  static constexpr int kZippedDataVersion = 1; // map, lua, physics
+  static constexpr int kNetworkStatsVersion = 1; // latency, jitter, errors
+  static constexpr int kRugbyVersion = 1; // sane score limit
 
   static const string kGameworld;    // the PRNG, physics, etc.
   static const string kGameworldM1;  // like gameworld, but for Marathon 1 compatibility
