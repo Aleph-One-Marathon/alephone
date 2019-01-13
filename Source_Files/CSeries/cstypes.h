@@ -66,9 +66,19 @@ using TimeType = time_t;
 // LP: changed to _fixed to get around MSVC namespace conflict
 using _fixed = int32;
 
-#define FIXED_FRACTIONAL_BITS 16
-#define INTEGER_TO_FIXED(i) ((_fixed)(i)<<FIXED_FRACTIONAL_BITS)
-#define FIXED_INTEGERAL_PART(f) ((f)>>FIXED_FRACTIONAL_BITS)
+constexpr _fixed FixedFractionalBits = 16;
+template<typename T>
+constexpr _fixed ToFixed(T i) noexcept {
+	static_assert(std::is_integral<T>::value, "Must provide an integer for conversion to a integer");
+	return static_cast<_fixed>(i) << FixedFractionalBits;
+}
+constexpr _fixed FixedIntegralPart(_fixed f) noexcept {
+	return f >> FixedFractionalBits;
+}
+
+#define FIXED_FRACTIONAL_BITS FixedFractionalBits
+#define INTEGER_TO_FIXED(i) (ToFixed<decltype(i)>(i))
+#define FIXED_INTEGERAL_PART(f) (FixedIntegralPart(f))
 
 #define FIXED_ONE		(1L<<FIXED_FRACTIONAL_BITS)
 #define FIXED_ONE_HALF	(1L<<(FIXED_FRACTIONAL_BITS-1))
