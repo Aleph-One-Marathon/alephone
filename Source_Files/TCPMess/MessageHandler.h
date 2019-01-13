@@ -97,7 +97,7 @@ private:
 
 
 template<typename tTargetClass, typename tMessage, typename tChannel>
-static inline MessageHandlerMethod<tTargetClass, tMessage, tChannel>*
+inline MessageHandlerMethod<tTargetClass, tMessage, tChannel>*
 newMessageHandlerMethod(
 			tTargetClass* targetObject,
 			void (tTargetClass::*targetMethod)(tMessage* inMessage, tChannel* inChannel)

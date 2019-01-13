@@ -179,32 +179,32 @@ void _set_port_to_HUD();
 
 struct world_point2d;
 
-static inline int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, const font_info *font, uint16 style, bool utf8 = false)
+inline int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, const font_info *font, uint16 style, bool utf8 = false)
 {
 	return font ? font->draw_text(s, text, length, x, y, pixel, style, utf8) : 0;
 }
 
-static inline int draw_text(SDL_Surface *s, const char *text, int x, int y, uint32 pixel, const font_info *font, uint16 style, bool utf8 = false)
+inline int draw_text(SDL_Surface *s, const char *text, int x, int y, uint32 pixel, const font_info *font, uint16 style, bool utf8 = false)
 {
 	return font ? font->draw_text(s, text, strlen(text), x, y, pixel, style, utf8) : 0;
 }
 
-static inline int8 char_width(uint8 c, const font_info *font, uint16 style)
+inline int8 char_width(uint8 c, const font_info *font, uint16 style)
 {
 	return font ? font->char_width(c, style) : 0;
 }
 
-static inline uint16 text_width(const char *text, const font_info *font, uint16 style, bool utf8 = false)
+inline uint16 text_width(const char *text, const font_info *font, uint16 style, bool utf8 = false)
 {
 	return font ? font->text_width(text, style, utf8) : 0;
 }
 
-static inline uint16 text_width(const char *text, size_t length, const font_info *font, uint16 style, bool utf8 = false)
+inline uint16 text_width(const char *text, size_t length, const font_info *font, uint16 style, bool utf8 = false)
 {
 	return font ? font->text_width(text, length, style, utf8) : 0;
 }
 
-static inline int trunc_text(const char *text, int max_width, const font_info *font, uint16 style)
+inline int trunc_text(const char *text, int max_width, const font_info *font, uint16 style)
 {
 	return font ? font->trunc_text(text, max_width, style) : 0;
 }
