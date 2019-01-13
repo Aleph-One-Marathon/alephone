@@ -185,7 +185,7 @@ void build_trig_tables(void);
 
 // LP change: inlined this for speed, and used the NORMALIZE_ANGLE macro;
 // looks as if the code had been worked on by more than one programmer.
-static inline angle normalize_angle(angle theta)
+inline angle normalize_angle(angle theta)
 {
 	return NORMALIZE_ANGLE(theta);
 }
@@ -226,12 +226,12 @@ void overflow_short_to_long_2d(world_point2d& WVec, uint16& flags, long_vector2d
 world_point2d *transform_overflow_point2d(world_point2d *point, world_point2d *origin, angle theta, uint16 *flags);
 
 // Simple copy-overs
-static inline void long_to_short_2d(long_vector2d& LVec, world_vector2d&WVec)
+inline void long_to_short_2d(long_vector2d& LVec, world_vector2d&WVec)
 {
 	WVec.i = static_cast<short>(LVec.i);
 	WVec.j = static_cast<short>(LVec.j);
 }
-static inline void short_to_long_2d(world_vector2d&WVec, long_vector2d& LVec)
+inline void short_to_long_2d(world_vector2d&WVec, long_vector2d& LVec)
 {
 	LVec.i = WVec.i;
 	LVec.j = WVec.j;
