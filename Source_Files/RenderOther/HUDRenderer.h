@@ -49,8 +49,10 @@
 #define DELAY_TICKS_BETWEEN_OXYGEN_REDRAW (2*TICKS_PER_SECOND)
 #define RECORDING_LIGHT_FLASHING_DELAY (TICKS_PER_SECOND)
 
-#define MICROPHONE_STOP_CLICK_SOUND ((short) 1250)
-#define MICROPHONE_START_CLICK_SOUND ((short) 1280)
+constexpr short MicrophoneStopClickSound = 1250;
+constexpr short MicrophoneStartClickSound = 1280;
+#define MICROPHONE_STOP_CLICK_SOUND (MicrophoneStopClickSound)
+#define MICROPHONE_START_CLICK_SOUND (MicrophoneStartClickSound)
 
 #define TOP_OF_BAR_HEIGHT 4
 
