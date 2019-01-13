@@ -62,7 +62,10 @@ public:
     void		setZombiesControllable(bool inZombiesControllable);
     
     ~ActionQueues();
-    
+	// Delete these until we have a valid implementation
+	ActionQueues(const ActionQueues&) = delete;
+	ActionQueues& operator=(const ActionQueues&) = delete;
+   	 
 protected:
     struct action_queue {
 	    unsigned int read_index, write_index;
@@ -75,11 +78,6 @@ protected:
     action_queue*	mQueueHeaders;
     uint32*		mFlagsBuffer;
     bool		mZombiesControllable;
-
-// Hide these until they have valid implementation
-private:
-    ActionQueues(ActionQueues&);
-    ActionQueues& operator =(ActionQueues&);
 };
 
 class ModifiableActionQueues : public ActionQueues {
