@@ -62,9 +62,25 @@ constexpr pixel16 ToPixel16(uint16 r, uint16 g, uint16 b) noexcept {
 #define GREEN16(p) (Green16(p))
 #define BLUE16(p) (Blue16(p))
 
-#define RGBCOLOR_TO_PIXEL32(r,g,b) (((r)<<8&0x00FF0000) | ((g)&0x00000FF00) | ((b)>>8&0x000000FF))
-#define RED32(p) ((p)>>16&0xFF)
-#define GREEN32(p) ((p)>>8&0xFF)
-#define BLUE32(p) ((p)&0xFF)
+template<pixel32 shiftAmount>
+constexpr pixel32 ExtractColorComponent(pixel32 p) noexcept {
+	return ((p >> shiftAmount) & 0xFF);
+}
+constexpr pixel16 Red32(pixel32 p) noexcept {
+	return ExtractColorComponent<16>(p);
+}
+constexpr pixel16 Green32(pixel32 p) noexcept {
+	return ExtractColorComponent<8>(p);
+}
+constexpr pixel16 Blue32(pixel32 p) noexcept {
+	return ExtractColorComponent<0>(p);
+}
+constexpr pixe32 ToPixel32(uint32 r, uint32 g, uint32 b) noexcept {
+	return (((r)<<8&0x00FF0000) | ((g)&0x00000FF00) | ((b)>>8&0x000000FF))
+}
+#define RGBCOLOR_TO_PIXEL32(r,g,b) (ToPixel32(r,g,b))
+#define RED32(p) (Red32(p))
+#define GREEN32(p) (Green32(p))
+#define BLUE32(p) (Blue32(p))
 
 #endif
