@@ -39,7 +39,7 @@ public:
 
 	virtual void parse_and_execute(const std::string& command_string);
 private:
-	typedef std::map<std::string, boost::function<void(const std::string&)> > command_map;
+	using command_map = std::map<std::string, boost::function<void(const std::string&)> >;
 	command_map m_commands;
 };
 
@@ -90,7 +90,6 @@ public:
 
 private:
 	Console();
-	static Console* m_instance;
 
 	boost::function<void (std::string)> m_callback;
 	std::string m_buffer;

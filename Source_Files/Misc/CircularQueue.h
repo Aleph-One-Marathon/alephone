@@ -41,12 +41,12 @@
 template<typename T>
 class CircularQueue {
 public:
-        CircularQueue() : mData(NULL) { reset(0); }
+        CircularQueue() : mData(nullptr) { reset(0); }
 
-        explicit CircularQueue(unsigned int inSize) : mData(NULL) { reset(inSize); }
+        explicit CircularQueue(unsigned int inSize) : mData(nullptr) { reset(inSize); }
 
 	// The queue being copied had best not change while we're copying...
-        CircularQueue(const CircularQueue<T>& o) : mData(NULL) {
+        CircularQueue(const CircularQueue<T>& o) : mData(nullptr) {
 		*this = o;
 	}
 		
@@ -71,9 +71,9 @@ public:
 
                 mReadIndex = mWriteIndex = 0;
 
-                if(theStorageCount != mQueueSize || mData == NULL) {
+                if(theStorageCount != mQueueSize || mData == nullptr) {
                         mQueueSize = theStorageCount;
-                        if(mData != NULL)
+                        if(mData != nullptr)
                                 delete [] mData;
                         mData = new T[mQueueSize];
                 }
@@ -93,7 +93,7 @@ public:
 
         void            enqueue(const T& inData) { mData[getWriteIndex()] = inData;  advanceWriteIndex(); }
 
-        virtual ~CircularQueue() { if(mData != NULL) delete [] mData; }
+        virtual ~CircularQueue() { if(mData != nullptr) delete [] mData; }
 
 protected:
         unsigned int	getReadIndex(unsigned int inOffset = 0) const

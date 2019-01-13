@@ -46,8 +46,6 @@ using namespace std;
 
 extern bool game_is_networked;
 
-Console *Console::m_instance = NULL;
-
 Console::Console() : m_active(false), m_carnage_messages_exist(false), m_use_lua_console(true)
 {
 	m_command_iter = m_prev_commands.end();
@@ -56,6 +54,7 @@ Console::Console() : m_active(false), m_carnage_messages_exist(false), m_use_lua
 }
 
 Console *Console::instance() {
+	static Console* m_instance = nullptr;
 	if (!m_instance) {
 		m_instance = new Console;
 	}
