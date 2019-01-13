@@ -49,7 +49,7 @@ struct recording_header
 	struct player_start_data starts[MAXIMUM_NUMBER_OF_PLAYERS];
 	struct game_data game_information;
 };
-const int SIZEOF_recording_header = 352;
+constexpr int SIZEOF_recording_header = 352;
 
 struct replay_private_data {
 	bool valid;
@@ -80,7 +80,7 @@ extern struct replay_private_data replay;
 ActionQueue *get_player_recording_queue(short player_index);
 #endif
 
-typedef void *timer_task_proc;
+using timer_task_proc = void*;
 
 timer_task_proc install_timer_task(short tasks_per_second, bool (*func)(void));
 void remove_timer_task(timer_task_proc proc);
