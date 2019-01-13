@@ -69,7 +69,8 @@ using _fixed = int32;
 constexpr _fixed FixedFractionalBits = 16;
 template<typename T>
 constexpr _fixed ToFixed(T i) noexcept {
-	static_assert(std::is_integral<T>::value, "Must provide an integer for conversion to a integer");
+	// For sanity checking if desired
+	//static_assert(std::is_integral<T>::value, "Must provide an integer for conversion to a integer");
 	return static_cast<_fixed>(i) << FixedFractionalBits;
 }
 constexpr _fixed FixedIntegralPart(_fixed f) noexcept {
