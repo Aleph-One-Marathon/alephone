@@ -30,7 +30,7 @@
 
 using std::string;
 
-typedef std::map<string, uint32> capabilities_t;
+using capabilities_t = std::map<string, uint32>;
 
 class Capabilities : public capabilities_t
 {
