@@ -72,7 +72,6 @@ OGL_LoadScreen() : x(0), y(0), w(0), h(0), use(false), useProgress(false), perce
 
 	short percent;
 
-	static OGL_LoadScreen *instance_;
 
 	GLuint texture_ref;
 };

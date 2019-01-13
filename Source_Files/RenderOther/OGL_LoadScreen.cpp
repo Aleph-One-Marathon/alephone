@@ -29,10 +29,10 @@
 
 extern bool OGL_SwapBuffers();
 
-OGL_LoadScreen *OGL_LoadScreen::instance_;
 
 OGL_LoadScreen *OGL_LoadScreen::instance()
 {
+	static OGL_LoadScreen *instance_ = nullptr;
 	if (!instance_) 
 		instance_ = new OGL_LoadScreen();
 	
