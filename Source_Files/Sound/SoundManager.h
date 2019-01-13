@@ -41,6 +41,7 @@ class SoundManager
 {
 public:
 	static inline SoundManager* instance() { 
+		static SoundManager *m_instance = nullptr;
 		if (!m_instance) m_instance = new SoundManager; 
 		return m_instance; 
 	}
@@ -164,7 +165,6 @@ private:
 	void TrackStereoSounds();
 	void UpdateAmbientSoundSources();
 
-	static SoundManager *m_instance;
 
 	bool initialized;
 	bool active;
@@ -179,35 +179,35 @@ private:
 	SoundMemoryManager* sounds;
 
 	// buffer sizes
-	static const int MINIMUM_SOUND_BUFFER_SIZE = 300*KILO;
-	static const int MORE_SOUND_BUFFER_SIZE = 600*KILO;
-	static const int AMBIENT_SOUND_BUFFER_SIZE = 1*MEG;
-	static const int MAXIMUM_SOUND_BUFFER_SIZE = 1*MEG;
+	static constexpr int MINIMUM_SOUND_BUFFER_SIZE = 300*KILO;
+	static constexpr int MORE_SOUND_BUFFER_SIZE = 600*KILO;
+	static constexpr int AMBIENT_SOUND_BUFFER_SIZE = 1*MEG;
+	static constexpr int MAXIMUM_SOUND_BUFFER_SIZE = 1*MEG;
 
 	// channels
-	static const int MAXIMUM_SOUND_CHANNELS = 32;
-	static const int MAXIMUM_AMBIENT_SOUND_CHANNELS = 4;
-	static const int MAXIMUM_PROCESSED_AMBIENT_SOUNDS = 5;
+	static constexpr int MAXIMUM_SOUND_CHANNELS = 32;
+	static constexpr int MAXIMUM_AMBIENT_SOUND_CHANNELS = 4;
+	static constexpr int MAXIMUM_PROCESSED_AMBIENT_SOUNDS = 5;
 
 	// volumes
 	// MAXIMUM_SOUND_VOLUME is 256, NUMBER_OF_SOUND_VOLUME_LEVELS is 8
-	static const int MAXIMUM_OUTPUT_SOUND_VOLUME = 2 * MAXIMUM_SOUND_VOLUME;
-	static const int SOUND_VOLUME_DELTA = MAXIMUM_OUTPUT_SOUND_VOLUME / NUMBER_OF_SOUND_VOLUME_LEVELS;
-	static const int MAXIMUM_AMBIENT_SOUND_VOLUME = 3 * MAXIMUM_SOUND_VOLUME / 2;
-	static const int DEFAULT_SOUND_LEVEL= NUMBER_OF_SOUND_VOLUME_LEVELS/3;
-	static const int DEFAULT_MUSIC_LEVEL = NUMBER_OF_SOUND_VOLUME_LEVELS/2;
-	static const int DEFAULT_VOLUME_WHILE_SPEAKING = MAXIMUM_SOUND_VOLUME / 8;
+	static constexpr int MAXIMUM_OUTPUT_SOUND_VOLUME = 2 * MAXIMUM_SOUND_VOLUME;
+	static constexpr int SOUND_VOLUME_DELTA = MAXIMUM_OUTPUT_SOUND_VOLUME / NUMBER_OF_SOUND_VOLUME_LEVELS;
+	static constexpr int MAXIMUM_AMBIENT_SOUND_VOLUME = 3 * MAXIMUM_SOUND_VOLUME / 2;
+	static constexpr int DEFAULT_SOUND_LEVEL= NUMBER_OF_SOUND_VOLUME_LEVELS/3;
+	static constexpr int DEFAULT_MUSIC_LEVEL = NUMBER_OF_SOUND_VOLUME_LEVELS/2;
+	static constexpr int DEFAULT_VOLUME_WHILE_SPEAKING = MAXIMUM_SOUND_VOLUME / 8;
 
 	// pitch
-	static const int MINIMUM_SOUND_PITCH= 1;
-	static const int MAXIMUM_SOUND_PITCH= 256*FIXED_ONE;
+	static constexpr int MINIMUM_SOUND_PITCH= 1;
+	static constexpr int MAXIMUM_SOUND_PITCH= 256*FIXED_ONE;
 
 	// best channel
-	static const int ABORT_AMPLITUDE_THRESHHOLD= (MAXIMUM_SOUND_VOLUME/6);
-	static const int MINIMUM_RESTART_TICKS= MACHINE_TICKS_PER_SECOND/12;
+	static constexpr int ABORT_AMPLITUDE_THRESHHOLD= (MAXIMUM_SOUND_VOLUME/6);
+	static constexpr int MINIMUM_RESTART_TICKS= MACHINE_TICKS_PER_SECOND/12;
 
 	// channel flags
-	static const int _sound_is_local = 0x0001;
+	static constexpr int _sound_is_local = 0x0001;
 };
 
 /* ---------- types */
