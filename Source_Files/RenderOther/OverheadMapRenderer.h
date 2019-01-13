@@ -110,7 +110,7 @@ struct entity_definition
 	short front, rear, rear_theta;
 };
 
-const int NUMBER_OF_ANNOTATION_SIZES = OVERHEAD_MAP_MAXIMUM_SCALE-OVERHEAD_MAP_MINIMUM_SCALE+1;
+constexpr int NUMBER_OF_ANNOTATION_SIZES = OVERHEAD_MAP_MAXIMUM_SCALE-OVERHEAD_MAP_MINIMUM_SCALE+1;
 struct annotation_definition
 {
 	rgb_color color;
@@ -118,7 +118,7 @@ struct annotation_definition
 };
 
 // For some reason, only one annotation color was ever implemented
-const int NUMBER_OF_ANNOTATION_DEFINITIONS = 1;
+constexpr int NUMBER_OF_ANNOTATION_DEFINITIONS = 1;
 
 // Collection of the data used to do the map name
 struct map_name_definition
@@ -321,7 +321,7 @@ public:
 	void Render(overhead_map_data& Control);
 	
 	// Constructor (idiot-proofer)
-	OverheadMapClass(): ConfigPtr(NULL) {}
+	OverheadMapClass(): ConfigPtr(nullptr) {}
 
 	// Destructor
 	virtual ~OverheadMapClass() {}
