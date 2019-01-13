@@ -142,34 +142,34 @@ static void set_terminal_status(bool status);
 /* SB */
 namespace icon {
 	
-  static inline char nextc(const char*& p, size_t& rem) {
+  inline char nextc(const char*& p, size_t& rem) {
     if(rem == 0) throw "end of string";
     --rem;
     return *(p++);
   }
 	
   // we can't use ctype for this because of locales and hexadecimal
-  static inline bool isadigit(char p) {
+  inline bool isadigit(char p) {
     if(p >= '0' && p <= '9') return true;
     else if(p >= 'A' && p <= 'F') return true;
     else if(p >= 'a' && p <= 'f') return true;
     else return false;
   }
 	
-  static inline unsigned char digit(char p) {
+  inline unsigned char digit(char p) {
     if(p >= '0' && p <= '9') return p - '0';
     else if(p >= 'A' && p <= 'F') return p - 'A' + 0xA;
     else if(p >= 'a' && p <= 'f') return p - 'a' + 0xA;
     else throw "invalid digit";
   }
 	
-  static inline unsigned char readuc(const char*& p, size_t& rem) {
+  inline unsigned char readuc(const char*& p, size_t& rem) {
     char a = nextc(p, rem), b;
     b = nextc(p, rem);
     return (digit(a) << 4) | digit(b);
   }
 	
-  static bool parseicon(const char* p, size_t rem,
+  bool parseicon(const char* p, size_t rem,
 			unsigned char palette[1024], int& numcolors,
 			unsigned char graphic[256]) {
     char chars[256];
