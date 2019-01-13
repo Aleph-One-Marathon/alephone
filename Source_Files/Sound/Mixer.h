@@ -36,7 +36,12 @@ extern bool game_is_networked;
 class Mixer
 {
 public:
-	static Mixer *instance() { if (!m_instance) m_instance = new Mixer(); return m_instance; }
+	static Mixer *instance() { 
+		static Mixer *m_instance = nullptr;
+		if (!m_instance) 
+			m_instance = new Mixer(); 
+		return m_instance; 
+	}
 	void Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, int volume, uint16 samples);
 	void Stop();
 
@@ -73,7 +78,6 @@ public:
 private:
         Mixer() : sNetworkAudioBufferDesc(0) { };
 	
-	static Mixer *m_instance;
 	
 	struct Channel {
 		SoundInfo info;
