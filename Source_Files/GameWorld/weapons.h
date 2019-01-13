@@ -142,9 +142,9 @@ struct player_weapon_data {
 };
 
 // For external access:
-const int SIZEOF_weapon_definition = 134;
+constexpr int SIZEOF_weapon_definition = 134;
 
-const int SIZEOF_player_weapon_data = 472;
+constexpr int SIZEOF_player_weapon_data = 472;
 
 /* ----------------- prototypes */
 /* called once at startup */
