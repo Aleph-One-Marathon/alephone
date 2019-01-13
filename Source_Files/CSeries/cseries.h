@@ -49,6 +49,14 @@
 #undef ALEPHONE_LITTLE_ENDIAN
 #endif
 
+constexpr bool PlatformIsLittleEndian() noexcept {
+#ifdef ALEPHONE_LITTLE_ENDIAN
+	return true;
+#else
+	return false;
+#endif
+}
+
 
 /*
  *  Data types with specific bit width
