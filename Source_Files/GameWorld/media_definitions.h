@@ -54,7 +54,7 @@ struct media_definition
 /* ---------- globals */
 
 // LP addition: added JjaroGoo support (copy of sewage)
-static struct media_definition media_definitions[NUMBER_OF_MEDIA_TYPES]=
+struct media_definition media_definitions[NUMBER_OF_MEDIA_TYPES]=
 {
 	/* _media_water */
 	{
