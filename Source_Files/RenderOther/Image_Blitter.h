@@ -34,10 +34,10 @@ struct Image_Rect
 	
 	Image_Rect() = default;
 	
-	explicit constexpr Image_Rect(float x, float y, float w, float h)
+	explicit constexpr Image_Rect(float x, float y, float w, float h) noexcept 
 		: x(x), y(y), w(w), h(h) {}
 	
-	/*implicit*/ constexpr Image_Rect(SDL_Rect r)
+	/*implicit*/ constexpr Image_Rect(SDL_Rect r) noexcept 
 		: x(r.x), y(r.y), w(r.w), h(r.h) {}
 };
 
