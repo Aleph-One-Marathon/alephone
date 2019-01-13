@@ -36,15 +36,17 @@ Feb 3, 2000 (Loren Petrich):
 
 /* ---------- types */
 
-typedef uint16 shape_descriptor; /* [clut.3] [collection.5] [shape.8] */
+using shape_descriptor = uint16; /* [clut.3] [collection.5] [shape.8] */
 
 #define DESCRIPTOR_SHAPE_BITS 8
 #define DESCRIPTOR_COLLECTION_BITS 5
 #define DESCRIPTOR_CLUT_BITS 3
-
-#define MAXIMUM_COLLECTIONS (1<<DESCRIPTOR_COLLECTION_BITS)
-#define MAXIMUM_SHAPES_PER_COLLECTION (1<<DESCRIPTOR_SHAPE_BITS)
-#define MAXIMUM_CLUTS_PER_COLLECTION (1<<DESCRIPTOR_CLUT_BITS)
+constexpr shape_descriptor MaximumCollections = 1 << DESCRIPTOR_SHAPE_BITS;
+constexpr shape_descriptor MaximumShapesPerCollection = 1 << DESCRIPTOR_COLLECTION_BITS;
+constexpr shape_descriptor MaximumClutsPerCollection = 1 << DESCRIPTOR_CLUT_BITS;
+#define MAXIMUM_COLLECTIONS (MaximumCollections)
+#define MAXIMUM_SHAPES_PER_COLLECTION (MaximumShapesPerCollection)
+#define MAXIMUM_CLUTS_PER_COLLECTION (MaximumClutsPerCollection)
 
 /* ---------- collections */
 
@@ -87,13 +89,30 @@ enum /* collection numbers */
 };
 
 /* ---------- macros */
-
-#define GET_DESCRIPTOR_SHAPE(d) ((d)&(uint16)(MAXIMUM_SHAPES_PER_COLLECTION-1))
-#define GET_DESCRIPTOR_COLLECTION(d) (((d)>>DESCRIPTOR_SHAPE_BITS)&(uint16)((1<<(DESCRIPTOR_COLLECTION_BITS+DESCRIPTOR_CLUT_BITS))-1))
-#define BUILD_DESCRIPTOR(collection,shape) (((collection)<<DESCRIPTOR_SHAPE_BITS)|(shape))
+constexpr uint16 ShapeDescriptor_GetDescriptorShape(uint16 d) noexcept {
+	return d & (MaximumShapesPerCollection - 1);
+}
+constexpr uint16 ShapeDescriptor_GetDescriptorCollection(uint16 d) noexcept {
+	return ((d) >> DESCRIPTOR_SHAPE_BITS) & uint16(((1<< (DESCRIPTOR_COLLECTION_BITS + DESCRIPTOR_CLUT_BITS)) - 1));
+}
+constexpr uint16 ShapeDescriptor_BuildDescriptor(uint16 collection, uint16 shape) noexcept {
+	return (collection << DESCRIPTOR_SHAPE_BITS) | shape;
+}
+constexpr uint16 ShapeDescriptor_GetCollectionClut(uint16 collection) noexcept {
+	return ((collection) >> DESCRIPTOR_COLLECTION_BITS) & uint16(MAXIMUM_CLUTS_PER_COLLECTION - 1);
+}
+constexpr uint16 ShapeDescriptor_GetCollection(uint16 collection) noexcept {
+	return ((collection) & (MaximumCollections - 1));
+}
+constexpr uint16 ShapeDescriptor_BuildCollection(uint16 collection, uint16 clut) noexcept {
+	return collection | uint16(clut << DESCRIPTOR_COLLECTION_BITS);
+}
+#define GET_DESCRIPTOR_SHAPE(d) (ShapeDescriptor_GetDescriptorShape((d)))
+#define GET_DESCRIPTOR_COLLECTION(d) (ShapeDescriptor_GetDescriptorCollection((d)))
+#define BUILD_DESCRIPTOR(collection,shape) (ShapeDescriptor_BuildCollection((collection), (shape)))
 
 #define BUILD_COLLECTION(collection,clut) ((collection)|(uint16)((clut)<<DESCRIPTOR_COLLECTION_BITS))
-#define GET_COLLECTION_CLUT(collection) (((collection)>>DESCRIPTOR_COLLECTION_BITS)&(uint16)(MAXIMUM_CLUTS_PER_COLLECTION-1))
-#define GET_COLLECTION(collection) ((collection)&(MAXIMUM_COLLECTIONS-1))
+#define GET_COLLECTION_CLUT(collection) (ShapeDescriptor_GetCollectionClut((collection)))
+#define GET_COLLECTION(collection) (ShapeDescriptor_GetCollection((collection)))
 
 #endif
