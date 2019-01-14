@@ -86,8 +86,8 @@ bool Plugin::valid() const {
 	return !overridden;
 }
 
-Plugins* Plugins::m_instance = 0;
 Plugins* Plugins::instance() {
+	static Plugins *m_instance = nullptr;
 	if (!m_instance) {
 		m_instance = new Plugins;
 	}
