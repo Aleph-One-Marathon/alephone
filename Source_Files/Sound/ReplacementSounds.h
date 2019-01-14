@@ -47,6 +47,7 @@ class SoundReplacements
 {
 public:
 	static inline SoundReplacements* instance() { 
+		static SoundReplacements *m_instance = nullptr;
 		if (!m_instance) m_instance = new SoundReplacements;
 		return m_instance;
 	}
@@ -57,7 +58,6 @@ public:
 
 private:
 	SoundReplacements() { }
-	static SoundReplacements *m_instance;
 
 	typedef std::pair<short, short> key;
 

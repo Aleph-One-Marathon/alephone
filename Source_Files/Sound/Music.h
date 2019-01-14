@@ -35,7 +35,10 @@ class Music
 {
 public:
 	static Music *instance() { 
-		if (!m_instance) m_instance = new Music(); return m_instance; 
+		static Music *m_instance = nullptr;
+		if (!m_instance) 
+			m_instance = new Music(); 
+		return m_instance; 
 	}
 
 	bool SetupIntroMusic(FileSpecifier &File);
@@ -70,7 +73,6 @@ public:
 private:
 	Music();
 	bool Load(FileSpecifier &file);
-	static Music *m_instance;
 
 	FileSpecifier* GetLevelMusic();
 	void LoadLevelMusic();

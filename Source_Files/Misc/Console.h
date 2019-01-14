@@ -90,7 +90,6 @@ public:
 
 private:
 	Console();
-	static Console* m_instance;
 
 	boost::function<void (std::string)> m_callback;
 	std::string m_buffer;

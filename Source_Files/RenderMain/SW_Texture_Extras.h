@@ -62,7 +62,12 @@ private:
 class SW_Texture_Extras
 {
 public:
-	static SW_Texture_Extras *instance() { if (!m_instance) m_instance = new SW_Texture_Extras(); return m_instance; }
+	static SW_Texture_Extras *instance() { 
+		static SW_Texture_Extras *m_instance = nullptr;
+		if (!m_instance) 
+			m_instance = new SW_Texture_Extras(); 
+		return m_instance; 
+	}
 
 	SW_Texture *GetTexture(shape_descriptor ShapeDesc);
 	SW_Texture *AddTexture(shape_descriptor ShapeDesc);
@@ -72,7 +77,6 @@ public:
 
 private:
 	SW_Texture_Extras() { }
-	static SW_Texture_Extras *m_instance;
 
 	std::vector<SW_Texture> texture_list[NUMBER_OF_COLLECTIONS];
 };

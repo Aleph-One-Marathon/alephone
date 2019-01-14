@@ -117,7 +117,6 @@ private:
 	std::string retrieve_name(WadImageDescriptor& desc, int width, int height, bool mark_accessed = true);
 	void autosave_cache() { if (m_autosave) save_cache(); }
 	
-	static WadImageCache* m_instance;
 	std::list<cache_pair_t> m_used;
 	std::map<cache_key_t, cache_iter_t> m_cacheinfo;
 	size_t m_cachesize;
