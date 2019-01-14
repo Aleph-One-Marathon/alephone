@@ -433,17 +433,20 @@ static void FindOGLColorTable(int NumSrcBytes, byte *OrigColorTable, uint32 *Col
 			
 			// Convert from ARGB 8888 to RGBA 8888; make opaque
 			uint8 *ColorPtr = (uint8 *)(&Color);
-#ifdef ALEPHONE_LITTLE_ENDIAN
-			ColorPtr[0] = OrigPtr[2];
-			ColorPtr[1] = OrigPtr[1];
-			ColorPtr[2] = OrigPtr[0];
-			ColorPtr[3] = 0xff;
-#else
-			ColorPtr[0] = OrigPtr[1];
-			ColorPtr[1] = OrigPtr[2];
-			ColorPtr[2] = OrigPtr[3];
-			ColorPtr[3] = 0xff;
-#endif
+			if (PlatformIsLittleEndian()) {
+				// the compiler will do the right thing and only emit
+				// code for the correct path. In C++17 we can do constexpr if
+				// to make that requirement explicit.
+				ColorPtr[0] = OrigPtr[2];
+				ColorPtr[1] = OrigPtr[1];
+				ColorPtr[2] = OrigPtr[0];
+				ColorPtr[3] = 0xff;
+			} else {
+				ColorPtr[0] = OrigPtr[1];
+				ColorPtr[1] = OrigPtr[2];
+				ColorPtr[2] = OrigPtr[3];
+				ColorPtr[3] = 0xff;
+			}
 		}
 		break;
 	}

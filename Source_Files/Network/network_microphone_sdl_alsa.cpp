@@ -65,11 +65,21 @@ open_network_microphone() {
 	}
 
 	snd_pcm_format_t format;
-#ifdef ALEPHONE_LITTLE_ENDIAN
-	format = SND_PCM_FORMAT_S16_LE;
-#else
-	format = SND_PCM_FORMAT_S16_BE;
-#endif
+	// In C++17, we could use if constexpr to do the same thing as the original
+	// ifdef preprocessor statement like so:
+	// if constexpr(PlatformIsLittleEndian()) {
+	// 	format = SND_PCM_FORMAT_S16_LE; 
+	// } else {
+	// 	format = SND_PCM_FORMAT_S16_BE;
+	// }
+	//
+	// Until that point, the following will be equivalent but we are depending
+	// on the optimizer to do the right thing.
+	if (PlatformIsLittleEndian()) {
+		format = SND_PCM_FORMAT_S16_LE ;
+	} else {
+		format = SND_PCM_FORMAT_S16_BE;
+	}
 
 	if ((err = snd_pcm_hw_params_set_format(capture_handle, hw_params, format)) < 0) {
 		fprintf(stderr, "snd_pcm_hw_params_set_format\n");

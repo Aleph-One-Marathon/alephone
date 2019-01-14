@@ -98,11 +98,15 @@ bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, 
 	}
 
 	// Convert to 32-bit OpenGL-friendly RGBA surface
-#ifdef ALEPHONE_LITTLE_ENDIAN
-	SDL_Surface *rgba = SDL_CreateRGBSurface(SDL_SWSURFACE, Width, Height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-#else
-	SDL_Surface *rgba = SDL_CreateRGBSurface(SDL_SWSURFACE, Width, Height, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-#endif
+	SDL_Surface *rgba = nullptr;
+	if (PlatformIsLittleEndian()) {
+		// this can be improved greatly in C++17 with constexpr but we are
+		// currently relying on the compiler to do the right thing and choose
+		// the correct path
+		rgba = SDL_CreateRGBSurface(SDL_SWSURFACE, Width, Height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+	} else {
+		rgba = SDL_CreateRGBSurface(SDL_SWSURFACE, Width, Height, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+	}
 	if (rgba == NULL) {
 		SDL_FreeSurface(s);
 		return false;
