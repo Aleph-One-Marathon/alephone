@@ -40,13 +40,13 @@
 class InfoTree : public boost::property_tree::ptree
 {
 public:
-	typedef boost::property_tree::xml_parser_error parse_error;
-	typedef boost::property_tree::ini_parser_error ini_error;
-	typedef boost::property_tree::ptree_bad_path path_error;
-	typedef boost::property_tree::ptree_bad_data data_error;
-	typedef boost::property_tree::ptree_error unexpected_error;
+	using parse_error = boost::property_tree::xml_parser_error;
+	using ini_error = boost::property_tree::ini_parser_error;
+	using path_error = boost::property_tree::ptree_bad_path;
+	using data_error = boost::property_tree::ptree_bad_data;
+	using unexpected_error = boost::property_tree::ptree_error;
 	
-	InfoTree() {}
+	InfoTree() = default;
 	explicit InfoTree(const data_type &data) : boost::property_tree::ptree(data) {}
 	InfoTree(const boost::property_tree::ptree &rhs) : boost::property_tree::ptree(rhs) {}
 	
@@ -117,7 +117,7 @@ public:
 	void put_cstr(std::string path, std::string cstr);
 	void put_attr_cstr(std::string path, std::string cstr);
 	
-	typedef boost::any_range<const InfoTree, boost::forward_traversal_tag, const InfoTree, std::ptrdiff_t> const_child_range;
+	using const_child_range = boost::any_range<const InfoTree, boost::forward_traversal_tag, const InfoTree, std::ptrdiff_t>;
 	const_child_range children_named(std::string key) const;
 };
 
