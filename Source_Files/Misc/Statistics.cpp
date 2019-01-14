@@ -30,8 +30,6 @@
 #include <sstream>
 #include <boost/bind.hpp>
 
-StatsManager* StatsManager::instance_ = 0;
-
 class ScopedMutex
 {
 public:
