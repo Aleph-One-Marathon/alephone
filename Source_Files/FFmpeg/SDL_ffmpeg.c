@@ -761,10 +761,13 @@ int SDL_ffmpegAddAudioFrame( SDL_ffmpegFile *file, SDL_ffmpegAudioFrame *frame )
 */
 SDL_ffmpegAudioFrame* SDL_ffmpegCreateAudioFrame( SDL_ffmpegFile *file, uint32_t bytes )
 {
+	if (!file) {
+		return 0;
+	}
     /* when accesing audio/video stream, streamMutex should be locked */
     SDL_LockMutex( file->streamMutex );
 
-    if ( !file || !file->audioStream || ( !bytes && file->type == SDL_ffmpegInputStream ) )
+    if (!file->audioStream || ( !bytes && file->type == SDL_ffmpegInputStream ) )
     {
         SDL_UnlockMutex( file->streamMutex );
         return 0;
