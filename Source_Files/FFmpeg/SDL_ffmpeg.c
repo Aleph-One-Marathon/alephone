@@ -823,6 +823,9 @@ SDL_ffmpegVideoFrame* SDL_ffmpegCreateVideoFrame()
 */
 int SDL_ffmpegGetVideoFrame( SDL_ffmpegFile* file, SDL_ffmpegVideoFrame *frame )
 {
+	if (!file) {
+		return 0;
+	}
     /* when accesing audio/video stream, streamMutex should be locked */
     SDL_LockMutex( file->streamMutex );
 
