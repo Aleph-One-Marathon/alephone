@@ -120,6 +120,7 @@ struct SwsContext* getContext( SDL_ffmpegConversionContext **context, int inWidt
     else
     {
         ctx = *context = ( struct SDL_ffmpegConversionContext* ) malloc( sizeof( SDL_ffmpegConversionContext ) );
+        // TODO handle the case where ctx is still null due to malloc failure
     }
 
     /* fill context with correct information */
@@ -806,7 +807,7 @@ SDL_ffmpegAudioFrame* SDL_ffmpegCreateAudioFrame( SDL_ffmpegFile *file, uint32_t
 SDL_ffmpegVideoFrame* SDL_ffmpegCreateVideoFrame()
 {
     SDL_ffmpegVideoFrame *frame = ( SDL_ffmpegVideoFrame* )malloc( sizeof( SDL_ffmpegVideoFrame ) );
-
+    // TODO return failure if frame could not be allocated, unsure how that should look
     memset( frame, 0, sizeof( SDL_ffmpegVideoFrame ) );
 
     return frame;
