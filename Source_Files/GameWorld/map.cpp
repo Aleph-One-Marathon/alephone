@@ -1669,6 +1669,8 @@ void find_center_of_polygon(
 		x+= p->x, y+= p->y;
 	}
 	
+    // polygon->vertex_count could possibly be zero, unsure of what to do here
+    // making a note.
 	center->x= x/polygon->vertex_count;
 	center->y= y/polygon->vertex_count;
 }
