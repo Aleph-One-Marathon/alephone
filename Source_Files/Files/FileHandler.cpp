@@ -372,9 +372,13 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 		{
 			f = OFile.f = SDL_RWFromZZIP(unix_path_separators(GetPath()).c_str(), "rb");
 		} 
-		else
-#endif
+		else {
+			f = OFile.f = SDL_RWFromFile(GetPath(), "wb+");
+		}
+#else
 		f = OFile.f = SDL_RWFromFile(GetPath(), Writable ? "wb+" : "rb");
+#endif
+
 	}
 
 	err = f ? 0 : errno;
