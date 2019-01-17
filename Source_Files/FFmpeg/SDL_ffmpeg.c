@@ -1908,6 +1908,7 @@ int SDL_ffmpegGetPacket( SDL_ffmpegFile *file )
         {
             /* prepare packet */
             SDL_ffmpegPacket *temp = ( SDL_ffmpegPacket* )malloc( sizeof( SDL_ffmpegPacket ) );
+            // TODO check and handle the case where temp failed to malloc
             temp->data = pack;
             temp->next = 0;
 
