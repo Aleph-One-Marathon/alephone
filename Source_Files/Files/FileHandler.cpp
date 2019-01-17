@@ -1056,6 +1056,7 @@ class FileDialog {
 public:
 	FileDialog() {
 	}
+	virtual ~FileDialog() = default;
 
 	bool Run() {
 		Layout();
@@ -1171,7 +1172,7 @@ public:
 
 		m_list_w->file_selected = boost::bind(&ReadFileDialog::on_file_selected, this);
 	}
-
+	virtual ~ReadFileDialog() = default;
 	void Layout() {
 		vertical_placer* placer = new vertical_placer;
 		placer->dual_add(new w_title(m_prompt), m_dialog);
@@ -1321,7 +1322,7 @@ public:
 
 		m_list_w->file_selected = boost::bind(&WriteFileDialog::on_file_selected, this, _1);
 	}
-
+	virtual ~WriteFileDialog() = default;
 	void Layout() {
 		vertical_placer* placer = new vertical_placer;
 		placer->dual_add(new w_title(m_prompt), m_dialog);
