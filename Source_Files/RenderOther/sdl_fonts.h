@@ -59,7 +59,7 @@ public:
 	int styled_text_width(const std::string& text, size_t length, uint16 initial_style, bool utf8 = false) const;
 	int trunc_styled_text(const std::string& text, int max_width, uint16 style) const;
 	std::string style_at(const std::string& text, std::string::const_iterator pos, uint16 style) const;
-
+	virtual ~font_info() = default;
 protected:
 	virtual int _draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const = 0;
 	virtual uint16 _text_width(const char *text, size_t length, uint16 style, bool utf8) const = 0;
@@ -78,7 +78,7 @@ class sdl_font_info : public font_info {
 public:
 	sdl_font_info() : first_character(0), last_character(0),
 		ascent(0), descent(0), leading(0), pixmap(NULL), ref_count(0) {}
-	~sdl_font_info() {if (pixmap) free(pixmap);}
+	virtual ~sdl_font_info() {if (pixmap) free(pixmap);}
 
 	uint16 get_ascent(void) const {return ascent;}
 	uint16 get_height(void) const {return ascent + descent;}
@@ -130,6 +130,7 @@ public:
 	ttf_font_info() { 
 		for (int i = 0; i < styleUnderline; i++) { m_styles[i] = 0; } 
 	}
+	virtual ~ttf_font_info() = default;
 protected:
 	virtual int _draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const;
 	virtual uint16 _text_width(const char *text, size_t length, uint16 style, bool utf8) const;
