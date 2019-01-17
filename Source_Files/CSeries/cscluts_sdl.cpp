@@ -53,6 +53,9 @@ void build_color_table(color_table *table, LoadedResource &clut)
 	// Check number of colors
 	SDL_RWseek(p, 6, SEEK_CUR);
 	int n = SDL_ReadBE16(p) + 1;
+	// SDL_ReadBE16 returns a Uint16 and thus can never be negative. At least,
+	// that is what it seems.
+	// TODO Eliminate the n < 0 check as it will always evaluate to false
 	if (n < 0)
 		n = 0;
 	else if (n > 256)
