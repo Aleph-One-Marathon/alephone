@@ -28,7 +28,6 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include "alephversion.h"
 
-Update *Update::m_instance = 0;
 
 Update::Update() : m_status(NoUpdateAvailable), m_thread(0)
 {

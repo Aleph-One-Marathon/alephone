@@ -1111,9 +1111,9 @@ void ChatCallbacks::SendChatMessage(const std::string& message)
 	}
 }
 
-InGameChatCallbacks *InGameChatCallbacks::m_instance = NULL;
 
 InGameChatCallbacks *InGameChatCallbacks::instance() {
+	static InGameChatCallbacks *m_instance = nullptr;
   if (!m_instance) {
     m_instance = new InGameChatCallbacks();
   }

@@ -24,7 +24,6 @@
 #include "ConnectPool.h"
 #include <utility>
 
-ConnectPool* ConnectPool::m_instance = 0;
 
 NonblockingConnect::NonblockingConnect(const std::string& address, uint16 port)
 	: m_address(address), m_port(port), m_thread(0), m_ipSpecified(false)

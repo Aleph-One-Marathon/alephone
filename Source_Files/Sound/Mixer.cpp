@@ -22,8 +22,6 @@
 #include "Mixer.h"
 #include "interface.h" // for strERRORS
 
-Mixer* Mixer::m_instance = 0;
-
 extern bool option_nosound;
 
 void Mixer::Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, int volume, uint16 samples)

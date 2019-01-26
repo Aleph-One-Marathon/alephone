@@ -27,8 +27,6 @@ SW_TEXTURE_EXTRAS.CPP
 #include "InfoTree.h"
 #include "screen.h"
 
-SW_Texture_Extras *SW_Texture_Extras::m_instance;
-
 extern short bit_depth;
 void SW_Texture::build_opac_table()
 {
