@@ -215,11 +215,11 @@ static int uncompress_rle16(const uint8 *src, int row_bytes, uint8 *dst, int dst
 
 static void copy_component_into_surface(const uint8 *src, uint8 *dst, int count, int component)
 {
-#ifdef ALEPHONE_LITTLE_ENDIAN
-	dst += 2 - component;
-#else
-	dst += component + 1;
-#endif
+	if (PlatformIsLittleEndian()) {
+		dst += 2 - component;
+	} else {
+		dst += component + 1;
+	}
 	while (count--) {
 		*dst = *src++;
 		dst += 4;
@@ -1273,12 +1273,12 @@ static void create_m1_menu_surfaces(void)
     if (m1_menu_unpressed || m1_menu_pressed)
         return;
     
-    SDL_Surface *s;
-#ifdef ALEPHONE_LITTLE_ENDIAN
-    s = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0);
-#else
-    s = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0);
-#endif
+    SDL_Surface *s = nullptr;
+	if (PlatformIsLittleEndian()) {
+    	s = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0);
+	} else {
+    	s = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0);
+	}
     if (!s)
         return;
 

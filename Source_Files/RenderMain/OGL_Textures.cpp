@@ -433,17 +433,20 @@ static void FindOGLColorTable(int NumSrcBytes, byte *OrigColorTable, uint32 *Col
 			
 			// Convert from ARGB 8888 to RGBA 8888; make opaque
 			uint8 *ColorPtr = (uint8 *)(&Color);
-#ifdef ALEPHONE_LITTLE_ENDIAN
-			ColorPtr[0] = OrigPtr[2];
-			ColorPtr[1] = OrigPtr[1];
-			ColorPtr[2] = OrigPtr[0];
-			ColorPtr[3] = 0xff;
-#else
-			ColorPtr[0] = OrigPtr[1];
-			ColorPtr[1] = OrigPtr[2];
-			ColorPtr[2] = OrigPtr[3];
-			ColorPtr[3] = 0xff;
-#endif
+			if (PlatformIsLittleEndian()) {
+				// the compiler will do the right thing and only emit
+				// code for the correct path. In C++17 we can do constexpr if
+				// to make that requirement explicit.
+				ColorPtr[0] = OrigPtr[2];
+				ColorPtr[1] = OrigPtr[1];
+				ColorPtr[2] = OrigPtr[0];
+				ColorPtr[3] = 0xff;
+			} else {
+				ColorPtr[0] = OrigPtr[1];
+				ColorPtr[1] = OrigPtr[2];
+				ColorPtr[2] = OrigPtr[3];
+				ColorPtr[3] = 0xff;
+			}
 		}
 		break;
 	}
@@ -964,11 +967,7 @@ void TextureManager::FindColorTables()
 
 void TextureManager::PremultiplyColorTables()
 {
-#ifdef ALEPHONE_LITTLE_ENDIAN
-	uint32 alphaMask = 0xff000000;
-#else
-	uint32 alphaMask = 0x000000ff;
-#endif
+	uint32 alphaMask = PlatformIsLittleEndian() ? 0xff000000 : 0x000000ff;
 
 	uint32 *tables[2];
 	tables[0] = NormalColorTable;
@@ -1056,12 +1055,7 @@ uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 		OGLWidthFinish = 0;
 	}
 
-	uint32 rgb_mask;
-#ifdef ALEPHONE_LITTLE_ENDIAN
-	rgb_mask = 0x00ffffff;
-#else
-	rgb_mask = 0xffffff00;
-#endif
+	uint32 rgb_mask = PlatformIsLittleEndian() ? 0x00ffffff : 0xffffff00;
 	
 	for (short h = OGLHeightOffset; h < OGLHeightFinish; h++)
 	{
@@ -1938,11 +1932,7 @@ void FindSilhouetteVersionDXTC1(int NumBytes, unsigned char *buffer)
 	{
 		if (SDL_SwapLE16(pixels[i * 4]) > SDL_SwapLE16(pixels[i * 4 + 1]))
 		{
-#ifdef ALEPHONE_LITTLE_ENDIAN
-			pixels[i * 4 + 1] = 0xffdf;
-#else
-			pixels[i * 4 + 1] = 0xdfff;
-#endif
+			pixels[i * 4 + 1] = PlatformIsLittleEndian() ? 0xffdf : 0xdfff;
 		} 
 		else
 		{
@@ -1959,11 +1949,7 @@ void FindSilhouetteVersionDXTC35(int NumBytes, unsigned char *buffer)
 	for (int i = 0; i < NumBytes / 8; i++)
 	{
 		pixels[i * 8 + 4] = 0xffff;
-#ifdef ALEPHONE_LITTLE_ENDIAN
-		pixels[i * 8 + 5] = 0xffdf;
-#else
-		pixels[i * 8 + 5] = 0xdfff;
-#endif
+		pixels[i * 8 + 5] = PlatformIsLittleEndian() ? 0xffdf : 0xdfff;
 	}
 }
 
@@ -1971,11 +1957,7 @@ void FindSilhouetteVersionRGBA(int NumPixels, uint32 *Pixels)
 {
 	for (int i = 0; i < NumPixels; i++) 
 	{
-#ifdef ALEPHONE_LITTLE_ENDIAN
-		Pixels[i] |= 0x00ffffff;
-#else
-		Pixels[i] |= 0xffffff00;
-#endif
+		Pixels[i] |= PlatformIsLittleEndian() ? 0x00ffffff : 0xffffff00;
 	}
 }
 

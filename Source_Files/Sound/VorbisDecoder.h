@@ -42,11 +42,7 @@ public:
 	bool IsSigned() { return true; }
 	int BytesPerFrame() { return 2 * (IsStereo() ? 2 : 1); }
 	float Rate() { return rate; }
-#ifdef ALEPHONE_LITTLE_ENDIAN
-	bool IsLittleEndian() { return true; }
-#else
-	bool IsLittleEndian() { return false; }
-#endif
+	bool IsLittleEndian() { return PlatformIsLittleEndian(); }
 
 	VorbisDecoder();
 	~VorbisDecoder();

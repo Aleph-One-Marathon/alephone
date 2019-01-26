@@ -3236,11 +3236,11 @@ void show_movie(short index)
 		SDL_Surface *gl_surface = NULL;
 		if (OGL_IsActive())
 		{
-#ifdef ALEPHONE_LITTLE_ENDIAN
-			gl_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, dst_rect.w, dst_rect.h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0x00000000);
-#else
-			gl_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, dst_rect.w, dst_rect.h, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x00000000);
-#endif
+			if (PlatformIsLittleEndian()) {
+				gl_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, dst_rect.w, dst_rect.h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0x00000000);
+			} else {
+				gl_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, dst_rect.w, dst_rect.h, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x00000000);
+			}
 			SMPEG_setdisplay(movie, gl_surface, NULL, show_movie_frame);
 			SMPEG_scaleXY(movie, dst_rect.w, dst_rect.h);
 			show_movie_mutex = SDL_CreateMutex();
