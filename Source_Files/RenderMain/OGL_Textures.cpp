@@ -610,6 +610,11 @@ bool TextureManager::Setup()
 		
 		// Get glow state
 		IsGlowing = CTState.IsGlowing;
+
+		// Populate NormalImage, GlowImage, OffsetImage
+		NormalImage.set(&TxtrOptsPtr->NormalImg);
+		GlowImage.set(&TxtrOptsPtr->GlowImg);
+		OffsetImage.set(&TxtrOptsPtr->OffsetImg);
 	}
 		
 	// Done!!!
