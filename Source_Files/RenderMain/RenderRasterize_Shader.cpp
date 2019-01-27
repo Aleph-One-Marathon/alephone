@@ -1155,8 +1155,6 @@ struct ExtendedVertexData
 
 void RenderRasterize_Shader::render_viewer_sprite(rectangle_definition& RenderRectangle, RenderStep renderStep)
 {
-        auto TMgr = setupSpriteTexture(RenderRectangle, OGL_Txtr_WeaponsInHand, 0, renderStep);
-	
 	// Find texture coordinates
 	ExtendedVertexData ExtendedVertexList[4];
 	
@@ -1180,7 +1178,7 @@ void RenderRasterize_Shader::render_viewer_sprite(rectangle_definition& RenderRe
 	if (BottomRight.y <= TopLeft.y) return;
 	
 	// Use that texture
-	if (!TMgr.Setup()) return;
+	auto TMgr = setupSpriteTexture(RenderRectangle, OGL_Txtr_WeaponsInHand, 0, renderStep);
 	
 	// Calculate the texture coordinates;
 	// the scanline direction is downward, (texture coordinate 0)
