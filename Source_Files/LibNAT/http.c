@@ -755,6 +755,9 @@ static int Create_Request_Header_String(PostMessage * pm,
   }
   if(0 == request_header_fields_size) {
     *request_header = (char *)malloc(1);
+    if (NULL == *request_header) {
+    	return BAD_MALLOC;
+    }
     (*request_header)[0] = NULL_TERM;
     return OK;
   }
@@ -789,6 +792,9 @@ static int Create_Entity_Header_String(PostMessage * pm,
   }
   if(0 == entity_header_fields_size) {
     *entity_header = (char *)malloc(1);
+    if (NULL == *entity_header) {
+    	return BAD_MALLOC;
+    }
     (*entity_header)[0] = NULL_TERM;
     return OK;
   }

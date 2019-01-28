@@ -32,7 +32,7 @@ class CommandParser
 {
 public:
 	CommandParser() { }
-	~CommandParser() { }
+	virtual ~CommandParser() = default;
 	void register_command(std::string command, boost::function<void(const std::string&)> f);
 	void register_command(std::string command, const CommandParser& command_parser);
 	void unregister_command(std::string command);

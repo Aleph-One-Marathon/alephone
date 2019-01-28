@@ -120,6 +120,7 @@ struct SwsContext* getContext( SDL_ffmpegConversionContext **context, int inWidt
     else
     {
         ctx = *context = ( struct SDL_ffmpegConversionContext* ) malloc( sizeof( SDL_ffmpegConversionContext ) );
+        // TODO handle the case where ctx is still null due to malloc failure
     }
 
     /* fill context with correct information */
@@ -761,10 +762,13 @@ int SDL_ffmpegAddAudioFrame( SDL_ffmpegFile *file, SDL_ffmpegAudioFrame *frame )
 */
 SDL_ffmpegAudioFrame* SDL_ffmpegCreateAudioFrame( SDL_ffmpegFile *file, uint32_t bytes )
 {
+	if (!file) {
+		return 0;
+	}
     /* when accesing audio/video stream, streamMutex should be locked */
     SDL_LockMutex( file->streamMutex );
 
-    if ( !file || !file->audioStream || ( !bytes && file->type == SDL_ffmpegInputStream ) )
+    if (!file->audioStream || ( !bytes && file->type == SDL_ffmpegInputStream ) )
     {
         SDL_UnlockMutex( file->streamMutex );
         return 0;
@@ -803,7 +807,7 @@ SDL_ffmpegAudioFrame* SDL_ffmpegCreateAudioFrame( SDL_ffmpegFile *file, uint32_t
 SDL_ffmpegVideoFrame* SDL_ffmpegCreateVideoFrame()
 {
     SDL_ffmpegVideoFrame *frame = ( SDL_ffmpegVideoFrame* )malloc( sizeof( SDL_ffmpegVideoFrame ) );
-
+    // TODO return failure if frame could not be allocated, unsure how that should look
     memset( frame, 0, sizeof( SDL_ffmpegVideoFrame ) );
 
     return frame;
@@ -820,6 +824,9 @@ SDL_ffmpegVideoFrame* SDL_ffmpegCreateVideoFrame()
 */
 int SDL_ffmpegGetVideoFrame( SDL_ffmpegFile* file, SDL_ffmpegVideoFrame *frame )
 {
+	if (!file) {
+		return 0;
+	}
     /* when accesing audio/video stream, streamMutex should be locked */
     SDL_LockMutex( file->streamMutex );
 
@@ -1901,6 +1908,7 @@ int SDL_ffmpegGetPacket( SDL_ffmpegFile *file )
         {
             /* prepare packet */
             SDL_ffmpegPacket *temp = ( SDL_ffmpegPacket* )malloc( sizeof( SDL_ffmpegPacket ) );
+            // TODO check and handle the case where temp failed to malloc
             temp->data = pack;
             temp->next = 0;
 

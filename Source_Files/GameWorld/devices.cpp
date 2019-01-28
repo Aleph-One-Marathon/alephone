@@ -930,6 +930,7 @@ void parse_mml_control_panels(const InfoTree& root)
 	// back up old values first
 	if (!original_control_panel_settings) {
 		original_control_panel_settings = (struct control_panel_settings_definition *) malloc(sizeof(struct control_panel_settings_definition));
+        assert(original_control_panel_settings);
 		*original_control_panel_settings = control_panel_settings;
 	}
 

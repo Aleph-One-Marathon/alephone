@@ -55,7 +55,7 @@ namespace AStream
 	class failure : public std::exception
 	{
 		public:
-			failure(const std::string& __str) noexcept;
+			explicit failure(const std::string& __str) noexcept;
 			failure(const failure &f);
 			~failure() noexcept;
 			const char*
