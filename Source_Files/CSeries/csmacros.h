@@ -31,6 +31,7 @@ Aug 27, 2000 (Loren Petrich):
 #define _CSERIES_MACROS_
 
 #include <string.h>
+#include <vector>
 #include "FilmProfile.h" // TERRIBLE
 
 #undef MAX
@@ -125,5 +126,23 @@ template<class T> void obj_clear(T& object)
 
 template<class T> void objlist_clear(T* object_list, size_t num_objects)
 	{objlist_set(object_list, 0, num_objects);}
+
+// If a vector's size is zero, referencing the first element
+// is undefined and will cause failures if assertions are
+// enabled. A common pattern in Aleph One takes this reference
+// but does not use it. This wrapper prevents assertion
+// failures by returning a deterministic null pointer.
+#ifdef _GLIBCXX_ASSERTIONS
+//#define vector_front(vec) (vec.size() ? &vec[0] : nullptr)
+template<class T> T* vector_front(std::vector<T>& vec)
+{
+	if (vec.size() == 0)
+		return nullptr;
+	return &vec[0];
+}
+#else
+#define vector_front(vec) (&vec[0])
+#endif
+
 #endif
 #endif

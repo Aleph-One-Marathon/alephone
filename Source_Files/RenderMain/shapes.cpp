@@ -581,7 +581,7 @@ static void convert_m1_rle(std::vector<uint8>& bitmap, int scanlines, int scanli
 //	std::vector<uint8> bitmap;
 	for (int scanline = 0; scanline < scanlines; ++scanline)
 	{
-		std::vector<uint8> scanline_data(scanline_length);
+		std::vector<uint8> scanline_data(scanline_length + 1);
 		uint8* dst = &scanline_data[0];
 		uint8* sentry = &scanline_data[scanline_length];
 

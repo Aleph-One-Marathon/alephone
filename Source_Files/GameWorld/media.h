@@ -135,7 +135,7 @@ const int SIZEOF_media_data = 32;
 // took over their maximum number as how many of them
 
 extern vector<media_data> MediaList;
-#define medias (&MediaList[0])
+#define medias (vector_front(MediaList))
 #define MAXIMUM_MEDIAS_PER_MAP (MediaList.size())
 
 // extern struct media_data *medias;

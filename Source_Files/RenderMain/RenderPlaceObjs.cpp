@@ -273,13 +273,13 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			{
 				// LP Change:
 				size_t Length = RenderObjects.size();
-				POINTER_DATA OldROPointer = POINTER_CAST(&RenderObjects.front());
+				POINTER_DATA OldROPointer = POINTER_CAST(vector_front(RenderObjects));
 				
 				// Add a dummy object and check if the pointer got changed
 				render_object_data Dummy;
 				Dummy.node = NULL;				// Fake initialization to shut up CW
 				RenderObjects.push_back(Dummy);
-				POINTER_DATA NewROPointer = POINTER_CAST(&RenderObjects.front());
+				POINTER_DATA NewROPointer = POINTER_CAST(vector_front(RenderObjects));
 				
 				if (NewROPointer != OldROPointer)
 				{
@@ -799,13 +799,13 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 				{
 					/* allocate it */
 					size_t Length = ClippingWindows.size();
-					POINTER_DATA OldCWPointer = POINTER_CAST(&ClippingWindows.front());
+					POINTER_DATA OldCWPointer = POINTER_CAST(vector_front(ClippingWindows));
 					
 					// Add a dummy object and check if the pointer got changed
 					clipping_window_data Dummy;
 					Dummy.next_window = NULL;			// Fake initialization to shut up CW
 					ClippingWindows.push_back(Dummy);
-					POINTER_DATA NewCWPointer = POINTER_CAST(&ClippingWindows.front());
+					POINTER_DATA NewCWPointer = POINTER_CAST(vector_front(ClippingWindows));
 				
 					if (NewCWPointer != OldCWPointer)
 					{

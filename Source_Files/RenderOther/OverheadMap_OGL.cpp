@@ -187,7 +187,7 @@ void OverheadMap_OGL_Class::end_polygons()
 void OverheadMap_OGL_Class::DrawCachedPolygons()
 {
 	glDrawElements(GL_TRIANGLES, PolygonCache.size(),
-		GL_UNSIGNED_SHORT, &PolygonCache.front());
+		GL_UNSIGNED_SHORT, vector_front(PolygonCache));
 	PolygonCache.clear();
 }
 
