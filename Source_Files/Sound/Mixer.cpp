@@ -617,7 +617,7 @@ void Mixer::Mix(uint8* p, int len, bool stereo, bool is_sixteen_bit, bool is_sig
 			{
 				if (is_sixteen_bit)
 				{
-					Output(reinterpret_cast<int16*>(p), output_left, output_right, samples, is_signed);
+					Output(reinterpret_cast<int16*>(p), output_left, samples, is_signed);
 					p += samples * 2;
 				}
 				else
