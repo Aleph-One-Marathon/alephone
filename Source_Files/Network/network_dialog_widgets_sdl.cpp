@@ -161,26 +161,11 @@ w_found_players::callback_on_all_items() {
 
 void
 w_found_players::draw_item(vector<prospective_joiner_info>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const {
-	char	theNameBuffer[SSLP_MAX_NAME_LENGTH + 12];
-
-	strncpy(theNameBuffer, (*i).name, SSLP_MAX_NAME_LENGTH - 1);
-	if ((*i).gathering) {
-	  strncat(theNameBuffer, " (gathering)", 12);
-	}
-	
-	int computed_x = x + (width - text_width(theNameBuffer, font, style)) / 2;
+	auto text = std::string(i->name) + (i->gathering ? " (gathering)" : "");
+	int computed_x = x + (width - text_width(text.c_str(), font, style)) / 2;
 	int computed_y = y + font->get_ascent();
-	
-	//unsigned char text_length = (*i)->sslps_name[0];
-	
-	//if(text_length > SSLP_MAX_NAME_LENGTH - 1)
-	//    text_length = SSLP_MAX_NAME_LENGTH - 1;
-	if ((*i).gathering) {
-		draw_text(s, theNameBuffer, computed_x, computed_y, get_theme_color(ITEM_WIDGET, DISABLED_STATE), font, style);
-	} else {
-	  draw_text(s, /*&((*i)->sslps_name[1]), text_length,*/ theNameBuffer, computed_x, computed_y,
-		    selected ? get_theme_color(ITEM_WIDGET, ACTIVE_STATE) : get_theme_color(ITEM_WIDGET, DEFAULT_STATE), font, style);
-	}
+	int text_state = i->gathering ? DISABLED_STATE : selected ? ACTIVE_STATE : DEFAULT_STATE;
+	draw_text(s, text.c_str(), computed_x, computed_y, get_theme_color(ITEM_WIDGET, text_state), font, style);
 }
 
 ////// w_players_in_game2 //////
