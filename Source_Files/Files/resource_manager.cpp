@@ -369,7 +369,7 @@ void close_res_file(SDL_RWops *file)
 		res_file_list.erase(i);
 		delete r;
 
-		cur_res_file_t = --res_file_list.end();
+		cur_res_file_t = res_file_list.empty() ? decltype(cur_res_file_t){} : --res_file_list.end();
 	}
 }
 
