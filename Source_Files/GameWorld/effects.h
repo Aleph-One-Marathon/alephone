@@ -153,7 +153,7 @@ const int SIZEOF_effect_definition = 14;
 // Turned the list of active effects into a variable array
 
 extern std::vector<effect_data> EffectList;
-#define effects (vector_front(EffectList))
+#define effects (EffectList.data())
 
 // extern struct effect_data *effects;
 

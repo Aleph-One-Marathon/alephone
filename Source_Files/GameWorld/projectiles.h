@@ -155,7 +155,7 @@ enum /* translate_projectile() flags */
 // Turned the list of active projectiles into a variable array
 
 extern std::vector<projectile_data> ProjectileList;
-#define projectiles (vector_front(ProjectileList))
+#define projectiles (ProjectileList.data())
 
 // extern struct projectile_data *projectiles;
 

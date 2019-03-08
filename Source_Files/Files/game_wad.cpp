@@ -1486,7 +1486,7 @@ static void scan_and_add_platforms(
 	objlist_clear(platforms,count);
 
 	static_platforms.resize(count);
-	unpack_static_platform_data(platform_static_data, &static_platforms[0], count);
+	unpack_static_platform_data(platform_static_data, static_platforms.data(), count);
 
 	polygon= map_polygons;
 	for(loop=0; loop<dynamic_world->polygon_count; ++loop)

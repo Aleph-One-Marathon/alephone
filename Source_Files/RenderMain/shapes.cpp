@@ -2323,6 +2323,9 @@ static struct high_level_shape_definition *get_high_level_shape_definition(
 
 	if (!(high_level_shape_index >= 0 && high_level_shape_index<definition->high_level_shapes.size()))
 		return NULL;
+	
+	if (definition->high_level_shapes[high_level_shape_index].empty())
+		return NULL;
 
 	return (high_level_shape_definition *) &definition->high_level_shapes[high_level_shape_index][0];
 }
@@ -2348,6 +2351,9 @@ static struct bitmap_definition *get_bitmap_definition(
 	collection_definition *definition = get_collection_definition(collection_index);
 	if (!definition) return NULL;
 	if (!(bitmap_index >= 0 && bitmap_index < definition->bitmaps.size()))
+		return NULL;
+	
+	if (definition->bitmaps[bitmap_index].empty())
 		return NULL;
 
 	return (bitmap_definition *) &definition->bitmaps[bitmap_index][0];

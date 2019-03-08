@@ -178,13 +178,13 @@ void RenderSortPolyClass::sort_render_tree()
 //			dprintf("removed polygon #%d (#%d aliases)", leaf->polygon_index, alias_count);
 			
 			size_t Length = SortedNodes.size();
-			POINTER_DATA OldSNPointer = POINTER_CAST(vector_front(SortedNodes));
+			POINTER_DATA OldSNPointer = POINTER_CAST(SortedNodes.data());
 				
 			// Add a dummy object and check if the pointer got changed
 			sorted_node_data Dummy;
 			Dummy.polygon_index = NONE;			// Fake initialization to shut up CW
 			SortedNodes.push_back(Dummy);
-			POINTER_DATA NewSNPointer = POINTER_CAST(vector_front(SortedNodes));
+			POINTER_DATA NewSNPointer = POINTER_CAST(SortedNodes.data());
 				
 			if (NewSNPointer != OldSNPointer)
 			{
@@ -393,13 +393,13 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 				{
 					// LP change: clipping windows are in growable list
 					size_t Length = ClippingWindows.size();
-					POINTER_DATA OldCWPointer = POINTER_CAST(vector_front(ClippingWindows));
+					POINTER_DATA OldCWPointer = POINTER_CAST(ClippingWindows.data());
 					
 					// Add a dummy object and check if the pointer got changed
 					clipping_window_data Dummy;
 					Dummy.next_window = NULL;			// Fake initialization to shut up CW
 					ClippingWindows.push_back(Dummy);
-					POINTER_DATA NewCWPointer = POINTER_CAST(vector_front(ClippingWindows));
+					POINTER_DATA NewCWPointer = POINTER_CAST(ClippingWindows.data());
 				
 					if (NewCWPointer != OldCWPointer)
 					{

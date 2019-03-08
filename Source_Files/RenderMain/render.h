@@ -173,7 +173,7 @@ enum /* render flags */
 /* ---------- globals */
 
 extern vector<uint16> RenderFlagList;
-#define render_flags (vector_front(RenderFlagList))
+#define render_flags (RenderFlagList.data())
 
 // extern uint16 *render_flags;
 
