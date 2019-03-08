@@ -1894,12 +1894,14 @@ static void NetInitializeTopology(
 
 	NetLocalAddrBlock(&local_player->dspAddress, GAME_PORT);
 	NetLocalAddrBlock(&local_player->ddpAddress, ddpSocket);
-	memcpy(&local_player->player_data, player_data, player_data_size);
+	if (player_data_size > 0)
+		memcpy(&local_player->player_data, player_data, player_data_size);
 	
 	/* initialize the network topology (assume weÕre the only player) */
 	topology->player_count= 1;
 	topology->nextIdentifier= 1;
-	memcpy(&topology->game_data, game_data, game_data_size);
+	if (game_data_size > 0)
+		memcpy(&topology->game_data, game_data, game_data_size);
 	gameSessionIdentifier.clear();
 }
 
