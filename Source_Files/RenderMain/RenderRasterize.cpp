@@ -839,8 +839,8 @@ void RenderRasterizerClass::xy_clip_flagged_world_points(
 	flagged_world_point2d *local_p1= swap ? p0 : p1;
 	world_distance dx= local_p1->x - local_p0->x;
 	world_distance dy= local_p1->y - local_p0->y;
-	int32 numerator= line->j*local_p0->x - line->i*local_p0->y;
-	int32 denominator= line->i*dy - line->j*dx;
+	int32 numerator = int32(1LL*line->j*local_p0->x - 1LL*line->i*local_p0->y);
+	int32 denominator = int32(1LL*line->i*dy - 1LL*line->j*dx);
 	short shift_count= FIXED_FRACTIONAL_BITS;
 	_fixed t;
 
@@ -853,8 +853,8 @@ void RenderRasterizerClass::xy_clip_flagged_world_points(
 		t /= denominator;
 
 	/* calculate the clipped point */
-	clipped->x= local_p0->x + FIXED_INTEGERAL_PART(t*dx);
-	clipped->y= local_p0->y + FIXED_INTEGERAL_PART(t*dy);
+	clipped->x = local_p0->x + FIXED_INTEGERAL_PART(int32(1LL*t*dx));
+	clipped->y = local_p0->y + FIXED_INTEGERAL_PART(int32(1LL*t*dy));
 	clipped->flags= local_p0->flags&local_p1->flags;
 }
 
@@ -1060,8 +1060,8 @@ void RenderRasterizerClass::z_clip_flagged_world_points(
 	flagged_world_point2d *local_p1= swap ? p0 : p1;
 	world_distance dx= local_p1->x - local_p0->x;
 	world_distance dy= local_p1->y - local_p0->y;
-	int32 numerator= line->j*local_p0->x - line->i*height;
-	int32 denominator= - line->j*dx;
+	int32 numerator = int32(1LL*line->j*local_p0->x - 1LL*line->i*height);
+	int32 denominator = int32(-1LL*line->j*dx);
 	short shift_count= FIXED_FRACTIONAL_BITS;
 	_fixed t;
 
@@ -1074,8 +1074,8 @@ void RenderRasterizerClass::z_clip_flagged_world_points(
 		t /= denominator;
 
 	/* calculate the clipped point */
-	clipped->x= local_p0->x + FIXED_INTEGERAL_PART(t*dx);
-	clipped->y= local_p0->y + FIXED_INTEGERAL_PART(t*dy);
+	clipped->x = local_p0->x + FIXED_INTEGERAL_PART(int32(1LL*t*dx));
+	clipped->y = local_p0->y + FIXED_INTEGERAL_PART(int32(1LL*t*dy));
 	clipped->flags= local_p0->flags&local_p1->flags;
 }
 
@@ -1328,8 +1328,8 @@ void RenderRasterizerClass::xz_clip_flagged_world_points(
 	world_distance dx= local_p1->x - local_p0->x;
 	world_distance dy= local_p1->y - local_p0->y;
 	world_distance dz= local_p1->z - local_p0->z;
-	int32 numerator= line->j*local_p0->x - line->i*local_p0->z;
-	int32 denominator= line->i*dz - line->j*dx;
+	int32 numerator = int32(1LL*line->j*local_p0->x - 1LL*line->i*local_p0->z);
+	int32 denominator = int32(1LL*line->i*dz - 1LL*line->j*dx);
 	short shift_count= FIXED_FRACTIONAL_BITS;
 	_fixed t;
 
@@ -1342,8 +1342,8 @@ void RenderRasterizerClass::xz_clip_flagged_world_points(
 		t /= denominator;
 
 	/* calculate the clipped point */
-	clipped->x= local_p0->x + FIXED_INTEGERAL_PART(t*dx);
-	clipped->y= local_p0->y + FIXED_INTEGERAL_PART(t*dy);
-	clipped->z= local_p0->z + FIXED_INTEGERAL_PART(t*dz);
+	clipped->x = local_p0->x + FIXED_INTEGERAL_PART(int32(1LL*t*dx));
+	clipped->y = local_p0->y + FIXED_INTEGERAL_PART(int32(1LL*t*dy));
+	clipped->z = local_p0->z + FIXED_INTEGERAL_PART(int32(1LL*t*dz));
 	clipped->flags= local_p0->flags&local_p1->flags;
 }

@@ -953,7 +953,7 @@ static void _pretexture_vertical_polygon_lines(
 			tx= INTEGER_TO_FIXED(adjusted_tx_numerator)/adjusted_tx_denominator;
 		}
 		
-		world_x= polygon->origin.x + ((tx*polygon->vector.i)>>FIXED_FRACTIONAL_BITS);
+		world_x = polygon->origin.x + (int32(1LL*tx*polygon->vector.i) >> FIXED_FRACTIONAL_BITS);
 		if (world_x<0) world_x= -world_x; /* it is mostly unclear what weÕre supposed to do with negative x values */
 
 		/* calculate and rescale ty_numerator, ty_denominator and calculate ty */

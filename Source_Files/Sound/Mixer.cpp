@@ -329,7 +329,7 @@ static inline int16 Convert(uint8 i)
 
 static inline int32 lerp(int32 x0, int32 x1, _fixed rate)
 {
-	int32 v = x0 + ((x1 - x0) * (rate & 0xffff)) / 65536;
+	int32 v = x0 + ((1LL*x1 - x0) * (rate & 0xffff)) / 65536;
 	return v;
 }
 

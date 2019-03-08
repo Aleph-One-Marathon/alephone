@@ -469,6 +469,7 @@ world_distance guess_distance2d(
 	return distance>INT16_MAX ? INT16_MAX : distance;
 }
 
+// Return min(round(distance), INT16_MAX)
 world_distance distance3d(
 	world_point3d *p0,
 	world_point3d *p1)
@@ -476,28 +477,33 @@ world_distance distance3d(
 	int32 dx= (int32)p0->x - p1->x;
 	int32 dy= (int32)p0->y - p1->y;
 	int32 dz= (int32)p0->z - p1->z;
-	int32 distance= isqrt(dx*dx + dy*dy + dz*dz);
-	
-	return distance>INT16_MAX ? INT16_MAX : distance;
+	const Sint64 dist_squared = 1LL*dx*dx + 1LL*dy*dy + 1LL*dz*dz; // [0, ~2^33.6]
+	return dist_squared < 1L*INT16_MAX*INT16_MAX ? isqrt(dist_squared) : INT16_MAX;
+}
+
+// Return round(distance) if distance < 65536, else nonsense value round(sqrt(distance^2 - 2^32)); output in [0, 65536]
+static int32 m2_distance2d_int32(
+	const world_point2d* p0,
+	const world_point2d* p1)
+{
+	const int32 dx = 1L*p1->x - p0->x; // [-65535, 65535]
+	const int32 dy = 1L*p1->y - p0->y; // [-65535, 65535]
+	const Sint64 dist_squared = 1LL*dx*dx + 1LL*dy*dy; // [0, ~2^33]
+	return isqrt(uint32(dist_squared));
 }
 
 static world_distance m2_distance2d(
         world_point2d *p0,
         world_point2d *p1)
 {
-        return isqrt((p0->x-p1->x)*(p0->x-p1->x)+(p0->y-p1->y)*(p0->y-p1->y));
+	return int16(m2_distance2d_int32(p0, p1));
 }
 
 static world_distance a1_distance2d(
 	world_point2d *p0,
 	world_point2d *p1)
 {
-	// LP change: lengthening the values for more precise calculations;
-	// code cribbed from the previous function
-	int32 dx= (int32)p0->x - p1->x;
-	int32 dy= (int32)p0->y - p1->y;
-	int32 distance= isqrt(dx*dx + dy*dy);
-	
+	const int32 distance = m2_distance2d_int32(p0, p1);
 	return distance>INT16_MAX ? INT16_MAX : distance;
 }
 
