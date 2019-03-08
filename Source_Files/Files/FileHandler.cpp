@@ -1006,8 +1006,8 @@ private:
 	dialog*			parent_dialog;
 	FileSpecifier 		current_directory;
 	action_proc		directory_changed_proc;
-	void*			directory_changed_proc_arg;
-	SortOrder sort_order;
+	void* directory_changed_proc_arg = nullptr;
+	SortOrder sort_order = sort_by_name;
 	
 	struct most_recent
 	{

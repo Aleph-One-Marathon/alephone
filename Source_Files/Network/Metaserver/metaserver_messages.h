@@ -493,11 +493,11 @@ protected:
 	bool reallyInflateFrom(AIStream& inStream);
 
 private:
-	uint16 m_color[3];
-	uint32 m_senderID;
-	uint32 m_selectedID;
-	uint16 m_internalType;
-	uint16 m_flags;
+	uint16 m_color[3] = {};
+	uint32 m_senderID = 0;
+	uint32 m_selectedID = 0;
+	uint16 m_internalType = 0;
+	uint16 m_flags = 0;
 	std::string m_senderName;
 	std::string m_message;
 };
@@ -530,10 +530,10 @@ protected:
 	bool reallyInflateFrom(AIStream& inStream);
 
 private:
-	uint16		m_color[3];
-	uint32		m_senderID;
-	uint16          m_internalType;
-	uint16          m_flags;
+	uint16 m_color[3] = {};
+	uint32 m_senderID = 0;
+	uint16 m_internalType = 0;
+	uint16 m_flags = 0;
 	std::string	m_senderName;
 	std::string	m_message;
 };

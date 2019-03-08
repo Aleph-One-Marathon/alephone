@@ -94,8 +94,8 @@ private:
 	void validate();
 
 	std::vector<Plugin> m_plugins;
-	bool m_validated;
-	GameMode m_mode;
+	bool m_validated = false;
+	GameMode m_mode = kMode_Menu;
 };
 
 
