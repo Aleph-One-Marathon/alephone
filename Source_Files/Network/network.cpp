@@ -748,9 +748,9 @@ static void handleHelloMessage(HelloMessage* helloMessage, CommunicationsChannel
 	if (handlerState == netAwaitingHello) {
 		// if the network versions match, reply with my join info
 		if (helloMessage->version() == kNetworkSetupProtocolID) {
-			prospective_joiner_info my_info;
+			prospective_joiner_info my_info = {};
       
-			strncpy(my_info.name, player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH);
+			strncpy(my_info.name, player_preferences->name, sizeof(my_info.name) - 1);
 			my_info.color = player_preferences->color;
 			my_info.team = player_preferences->team;
 
