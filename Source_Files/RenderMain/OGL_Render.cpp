@@ -3129,7 +3129,13 @@ void OGL_RenderLines(const std::vector<world_point2d>& points, float thickness)
 		
 		float rise = cur.y - prev.y;
 		float run = cur.x - prev.x;
-		float scale = thickness / sqrtf(rise*rise + run*run);
+		float length = sqrtf(rise*rise + run*run);
+		
+		// Skip degenerate lines
+		if (length == 0)
+			continue;
+		
+		float scale = thickness / length;
 		float xd = run * scale * 0.5f;
 		float yd = rise * scale * 0.5f;
 		
