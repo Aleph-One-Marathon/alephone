@@ -1823,20 +1823,6 @@ enum {
 	TAB_MORE_KEYS
 };
 
-static w_text_entry *mouse_up_w;
-static w_text_entry *mouse_down_w;
-
-static void invert_selected(w_select* w)
-{
-	if (w->get_selection()) {
-		mouse_up_w->set_text("move down");
-		mouse_down_w->set_text("move up");
-	} else {
-		mouse_up_w->set_text("move up");
-		mouse_down_w->set_text("move down");
-	}
-}
-
 const std::vector<std::string> mouse_feel_labels = { "Default", "Marathon 2", "Marathon Infinity", "(custom)" };
 static w_select_popup *mouse_feel_w;
 static w_select_popup *mouse_feel_details_w;
@@ -2379,11 +2365,9 @@ static void controls_dialog(void *arg)
 					switch (i) {
 						case 8:
 							txt = new w_text_entry(12, "move up");
-							mouse_up_w = txt;
 							break;
 						case 9:
 							txt = new w_text_entry(12, "move down");
-							mouse_down_w = txt;
 							break;
 						case 2:
 							txt = new w_text_entry(12, "move left");
