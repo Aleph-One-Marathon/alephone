@@ -1826,9 +1826,6 @@ enum {
 const std::vector<std::string> mouse_feel_labels = { "Default", "Marathon 2", "Marathon Infinity", "(custom)" };
 static w_select_popup *mouse_feel_w;
 static w_select_popup *mouse_feel_details_w;
-static w_sens_slider *mouse_h_sens_w;
-static w_sens_slider *mouse_v_sens_w;
-static w_toggle *mouse_v_invert_w;
 static w_toggle *mouse_raw_w;
 static w_select_popup *mouse_accel_w;
 static w_toggle *mouse_precision_w;
@@ -1842,25 +1839,16 @@ static void mouse_feel_details_changed(void *arg)
 	switch (mouse_feel_details_w->get_selection())
 	{
 		case 0:
-			mouse_h_sens_w->set_selection(500);
-			mouse_v_sens_w->set_selection(500);
-			mouse_v_invert_w->set_selection(0);
 			mouse_raw_w->set_selection(1);
 			mouse_accel_w->set_selection(0);
 			mouse_precision_w->set_selection(0);
 			break;
 		case 1:
-			mouse_h_sens_w->set_selection(500);
-			mouse_v_sens_w->set_selection(269);
-			mouse_v_invert_w->set_selection(0);
 			mouse_raw_w->set_selection(0);
 			mouse_accel_w->set_selection(0);
 			mouse_precision_w->set_selection(1);
 			break;
 		case 2:
-			mouse_h_sens_w->set_selection(500);
-			mouse_v_sens_w->set_selection(269);
-			mouse_v_invert_w->set_selection(0);
 			mouse_raw_w->set_selection(1);
 			mouse_accel_w->set_selection(1);
 			mouse_precision_w->set_selection(1);
@@ -1876,28 +1864,19 @@ static void update_mouse_feel_details(void *arg)
 	if (inside_callback)
 		return;
 	inside_callback = true;
-	if (mouse_h_sens_w->get_selection() == 500 &&
-		mouse_v_sens_w->get_selection() == 500 &&
-		mouse_v_invert_w->get_selection() == 0 &&
-		mouse_raw_w->get_selection() == 1 &&
+	if (mouse_raw_w->get_selection() == 1 &&
 		mouse_accel_w->get_selection() == 0 &&
 		mouse_precision_w->get_selection() == 0)
 	{
 		mouse_feel_details_w->set_selection(0);
 	}
-	else if (mouse_h_sens_w->get_selection() == 500 &&
-			 mouse_v_sens_w->get_selection() == 269 &&
-			 mouse_v_invert_w->get_selection() == 0 &&
-			 mouse_raw_w->get_selection() == 0 &&
+	else if (mouse_raw_w->get_selection() == 0 &&
 			 mouse_accel_w->get_selection() == 0 &&
 			 mouse_precision_w->get_selection() == 1)
 	{
 		mouse_feel_details_w->set_selection(1);
 	}
-	else if (mouse_h_sens_w->get_selection() == 500 &&
-			 mouse_v_sens_w->get_selection() == 269 &&
-			 mouse_v_invert_w->get_selection() == 0 &&
-			 mouse_raw_w->get_selection() == 1 &&
+	else if (mouse_raw_w->get_selection() == 1 &&
 			 mouse_accel_w->get_selection() == 1 &&
 			 mouse_precision_w->get_selection() == 1)
 	{
@@ -1912,28 +1891,19 @@ static void update_mouse_feel_details(void *arg)
 
 static void update_mouse_feel(void *arg)
 {
-	if (input_preferences->sens_horizontal == 65536 &&
-		input_preferences->sens_vertical == 65536 &&
-		!(input_preferences->modifiers & _inputmod_invert_mouse) &&
-		input_preferences->raw_mouse_input == true &&
+	if (input_preferences->raw_mouse_input == true &&
 		input_preferences->mouse_accel_type == _mouse_accel_none &&
 		input_preferences->extra_mouse_precision == true)
 	{
 		mouse_feel_w->set_selection(0);
 	}
-	else if (input_preferences->sens_horizontal == 65536 &&
-			 input_preferences->sens_vertical == 16384 &&
-			 !(input_preferences->modifiers & _inputmod_invert_mouse) &&
-			 input_preferences->raw_mouse_input == true &&
+	else if (input_preferences->raw_mouse_input == true &&
 			 input_preferences->mouse_accel_type == _mouse_accel_none &&
 			 input_preferences->extra_mouse_precision == false)
 	{
 		mouse_feel_w->set_selection(1);
 	}
-	else if (input_preferences->sens_horizontal == 65536 &&
-			 input_preferences->sens_vertical == 16384 &&
-			 !(input_preferences->modifiers & _inputmod_invert_mouse) &&
-			 input_preferences->raw_mouse_input == true &&
+	else if (input_preferences->raw_mouse_input == true &&
 			 input_preferences->mouse_accel_type == _mouse_accel_none &&
 			 input_preferences->extra_mouse_precision == false)
 	{
@@ -1951,18 +1921,6 @@ static bool apply_mouse_feel(int selection)
 	switch (selection)
 	{
 		case 0:
-			if (65536 != input_preferences->sens_horizontal) {
-				input_preferences->sens_horizontal = 65536;
-				changed = true;
-			}
-			if (65536 != input_preferences->sens_vertical) {
-				input_preferences->sens_vertical = 65536;
-				changed = true;
-			}
-			if (input_preferences->modifiers & _inputmod_invert_mouse) {
-				input_preferences->modifiers &= ~_inputmod_invert_mouse;
-				changed = true;
-			}
 			if (true != input_preferences->raw_mouse_input) {
 				input_preferences->raw_mouse_input = true;
 				changed = true;
@@ -1977,18 +1935,6 @@ static bool apply_mouse_feel(int selection)
 			}
 			break;
 		case 1:
-			if (65536 != input_preferences->sens_horizontal) {
-				input_preferences->sens_horizontal = 65536;
-				changed = true;
-			}
-			if (16384 != input_preferences->sens_vertical) {
-				input_preferences->sens_vertical = 16384;
-				changed = true;
-			}
-			if (input_preferences->modifiers & _inputmod_invert_mouse) {
-				input_preferences->modifiers &= ~_inputmod_invert_mouse;
-				changed = true;
-			}
 			if (false != input_preferences->raw_mouse_input) {
 				input_preferences->raw_mouse_input = false;
 				changed = true;
@@ -2003,18 +1949,6 @@ static bool apply_mouse_feel(int selection)
 			}
 			break;
 		case 2:
-			if (65536 != input_preferences->sens_horizontal) {
-				input_preferences->sens_horizontal = 65536;
-				changed = true;
-			}
-			if (16384 != input_preferences->sens_vertical) {
-				input_preferences->sens_vertical = 16384;
-				changed = true;
-			}
-			if (input_preferences->modifiers & _inputmod_invert_mouse) {
-				input_preferences->modifiers &= ~_inputmod_invert_mouse;
-				changed = true;
-			}
 			if (true != input_preferences->raw_mouse_input) {
 				input_preferences->raw_mouse_input = true;
 				changed = true;
@@ -2044,21 +1978,12 @@ static void mouse_custom_dialog(void *arg)
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 	
-	mouse_feel_details_w = new w_select_popup();
-	mouse_feel_details_w->set_labels(mouse_feel_labels);
-	mouse_feel_details_w->set_selection(mouse_feel_w->get_selection());
-	mouse_feel_details_w->set_popup_callback(mouse_feel_details_changed, NULL);
-	table->dual_add(mouse_feel_details_w->label("Mouse Feel"), d);
-	table->dual_add(mouse_feel_details_w, d);
-	table->add_row(new w_spacer(), true);
-	
 	float hSensitivity = ((float) input_preferences->sens_horizontal) / FIXED_ONE;
 	if (hSensitivity <= 0.0f) hSensitivity = 1.0f;
 	float hSensitivityLog = std::log(hSensitivity);
 	int hSliderPosition =
 		(int) ((hSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
-	mouse_h_sens_w = new w_sens_slider(1000, hSliderPosition);
-	mouse_h_sens_w->set_slider_changed_callback(update_mouse_feel_details);
+	w_sens_slider *mouse_h_sens_w = new w_sens_slider(1000, hSliderPosition);
 	table->dual_add(mouse_h_sens_w->label("Horizontal Sensitivity"), d);
 	table->dual_add(mouse_h_sens_w, d);
 
@@ -2067,16 +1992,21 @@ static void mouse_custom_dialog(void *arg)
 	float vSensitivityLog = std::log(vSensitivity);
 	int vSliderPosition =
 		(int) ((vSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
-	mouse_v_sens_w = new w_sens_slider(1000, vSliderPosition);
-	mouse_v_sens_w->set_slider_changed_callback(update_mouse_feel_details);
+	w_sens_slider *mouse_v_sens_w = new w_sens_slider(1000, vSliderPosition);
 	table->dual_add(mouse_v_sens_w->label("Vertical Sensitivity"), d);
 	table->dual_add(mouse_v_sens_w, d);
 
-	mouse_v_invert_w = new w_toggle(input_preferences->modifiers & _inputmod_invert_mouse);
+	w_toggle *mouse_v_invert_w = new w_toggle(input_preferences->modifiers & _inputmod_invert_mouse);
 	mouse_v_invert_w->set_selection_changed_callback(update_mouse_feel_details);
 	table->dual_add(mouse_v_invert_w->label("Invert Vertical Aim"), d);
 	table->dual_add(mouse_v_invert_w, d);
 	
+	mouse_feel_details_w = new w_select_popup();
+	mouse_feel_details_w->set_labels(mouse_feel_labels);
+	mouse_feel_details_w->set_selection(mouse_feel_w->get_selection());
+	mouse_feel_details_w->set_popup_callback(mouse_feel_details_changed, NULL);
+	table->dual_add(mouse_feel_details_w->label("Mouse Feel"), d);
+	table->dual_add(mouse_feel_details_w, d);
 	table->add_row(new w_spacer(), true);
 	
 	mouse_raw_w = new w_toggle(input_preferences->raw_mouse_input);
