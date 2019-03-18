@@ -1828,7 +1828,7 @@ static w_select_popup *mouse_feel_w;
 static w_select_popup *mouse_feel_details_w;
 static w_toggle *mouse_raw_w;
 static w_toggle *mouse_vertical_w;
-static w_select_popup *mouse_accel_w;
+static w_toggle *mouse_accel_w;
 static w_toggle *mouse_precision_w;
 static bool inside_callback = false;  // prevent circular changes
 
@@ -2015,11 +2015,8 @@ static void mouse_custom_dialog(void *arg)
 	table->dual_add(mouse_raw_w->label("Raw Input Mode"), d);
 	table->dual_add(mouse_raw_w, d);
 	
-	std::vector<std::string> accel_labels = { "Off", "Classic", "Classic (Symmetric)" };
-	mouse_accel_w = new w_select_popup();
-	mouse_accel_w->set_labels(accel_labels);
-	mouse_accel_w->set_selection(input_preferences->mouse_accel_type);
-	mouse_accel_w->set_popup_callback(update_mouse_feel_details, NULL);
+	mouse_accel_w = new w_toggle(input_preferences->mouse_accel_type == _mouse_accel_classic);
+	mouse_accel_w->set_selection_changed_callback(update_mouse_feel_details);
 	table->dual_add(mouse_accel_w->label("Acceleration"), d);
 	table->dual_add(mouse_accel_w, d);
 	
