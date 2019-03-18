@@ -2328,7 +2328,7 @@ static void controls_dialog(void *arg)
 	mouse_options->col_flags(0, placeable::kAlignRight);
 	mouse_options->col_flags(1, placeable::kAlignLeft);
 
-	w_toggle *enable_mouse_w = new w_toggle(true);
+	w_toggle *enable_mouse_w = new w_toggle(input_preferences->input_device == _mouse_yaw_pitch);
 	mouse_options->dual_add(enable_mouse_w->label("Mouse Aiming"), d);
 	mouse_options->dual_add(enable_mouse_w, d);
 	
@@ -2578,6 +2578,12 @@ static void controls_dialog(void *arg)
 				input_preferences->shell_key_bindings[i].insert(key);
 				changed = true;
 			}
+		}
+		
+		int16 device = enable_mouse_w->get_selection() ? _mouse_yaw_pitch : _keyboard_or_game_pad;
+		if (input_preferences->input_device != device) {
+			input_preferences->input_device = device;
+			changed = true;
 		}
 		
 		bool jaim = (joystick_aiming_w->get_selection() == 1);
