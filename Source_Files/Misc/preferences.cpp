@@ -1827,6 +1827,7 @@ const std::vector<std::string> mouse_feel_labels = { "Default", "Marathon 2", "M
 static w_select_popup *mouse_feel_w;
 static w_select_popup *mouse_feel_details_w;
 static w_toggle *mouse_raw_w;
+static w_toggle *mouse_vertical_w;
 static w_select_popup *mouse_accel_w;
 static w_toggle *mouse_precision_w;
 static bool inside_callback = false;  // prevent circular changes
@@ -2022,6 +2023,11 @@ static void mouse_custom_dialog(void *arg)
 	table->dual_add(mouse_accel_w->label("Acceleration"), d);
 	table->dual_add(mouse_accel_w, d);
 	
+	mouse_vertical_w = new w_toggle(input_preferences->classic_vertical_aim);
+	mouse_vertical_w->set_selection_changed_callback(update_mouse_feel_details);
+	table->dual_add(mouse_vertical_w->label("Adjust Vertical Speed"), d);
+	table->dual_add(mouse_vertical_w, d);
+	
 	mouse_precision_w = new w_toggle(!input_preferences->extra_mouse_precision);
 	mouse_precision_w->set_selection_changed_callback(update_mouse_feel_details);
 	table->dual_add(mouse_precision_w->label("Snap View to Weapon Aim"), d);
@@ -2076,6 +2082,12 @@ static void mouse_custom_dialog(void *arg)
 		
 		if (mouse_accel_w->get_selection() != input_preferences->mouse_accel_type) {
 			input_preferences->mouse_accel_type = mouse_accel_w->get_selection();
+			changed = true;
+		}
+		
+		bool vert = mouse_vertical_w->get_selection();
+		if (vert != input_preferences->classic_vertical_aim) {
+			input_preferences->classic_vertical_aim = vert;
 			changed = true;
 		}
 		
@@ -3321,6 +3333,7 @@ InfoTree input_preferences_tree()
 	root.put_attr("modifiers", input_preferences->modifiers);
 	root.put_attr("sens_horizontal", input_preferences->sens_horizontal);
 	root.put_attr("sens_vertical", input_preferences->sens_vertical);
+	root.put_attr("classic_vertical_aim", input_preferences->classic_vertical_aim);
 	root.put_attr("classic_aim_speed_limits", input_preferences->classic_aim_speed_limits);
 	root.put_attr("mouse_accel_type", input_preferences->mouse_accel_type);
 	root.put_attr("mouse_accel_scale", input_preferences->mouse_accel_scale);
@@ -3609,6 +3622,7 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->mouse_accel_scale = 1.f;
 	preferences->raw_mouse_input = true;
 	preferences->extra_mouse_precision = true;
+	preferences->classic_vertical_aim = false;
 	preferences->classic_aim_speed_limits = true;
 
 	preferences->controller_analog = true;
@@ -4146,13 +4160,13 @@ void parse_input_preferences(InfoTree root, std::string version)
 	root.read_attr("sensitivity", input_preferences->sens_horizontal);
 	root.read_attr("sensitivity", input_preferences->sens_vertical);
 	root.read_attr("sens_horizontal", input_preferences->sens_horizontal);
+	root.read_attr("sens_vertical", input_preferences->sens_vertical);
 	
-	if (root.read_attr("sens_vertical", input_preferences->sens_vertical))
-	{
-		// Preserve the perceived effect of older values
-		if (!version.length() || version < "20181113")
-			input_preferences->sens_vertical /= 4;
-	}
+	if (!version.length() || version < "20181113")
+		input_preferences->classic_vertical_aim = true;
+	else if (version < "20190317")
+		input_preferences->classic_vertical_aim = false;
+	root.read_attr("classic_vertical_aim", input_preferences->classic_vertical_aim);
 	
 	if (!root.read_attr("classic_aim_speed_limits", input_preferences->classic_aim_speed_limits))
 	{
@@ -4174,6 +4188,21 @@ void parse_input_preferences(InfoTree root, std::string version)
 								  0, NUMBER_OF_MOUSE_ACCEL_TYPES - 1);
 	root.read_attr("mouse_accel_scale", input_preferences->mouse_accel_scale);
 	
+	// old prefs mixed "classic vertical aim" with acceleration type
+	if (version >= "20181113" && version < "20190317")
+	{
+		if (input_preferences->mouse_accel_type == _mouse_accel_symmetric)
+		{
+			input_preferences->classic_vertical_aim = false;
+			input_preferences->mouse_accel_type = _mouse_accel_classic;
+		}
+		else if (input_preferences->mouse_accel_type == _mouse_accel_classic)
+		{
+			input_preferences->classic_vertical_aim = true;
+			input_preferences->sens_vertical *= 4.f;
+		}
+	}
+
 	if (!version.length() || version < "20170821")
 		input_preferences->raw_mouse_input = false;
 	root.read_attr("raw_mouse_input", input_preferences->raw_mouse_input);
