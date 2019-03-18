@@ -2542,14 +2542,11 @@ static void controls_dialog(void *arg)
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
 		
-		uint16 flags = input_preferences->modifiers & _inputmod_use_button_sounds;
+		uint16 flags = input_preferences->modifiers & (_inputmod_use_button_sounds|_inputmod_invert_mouse);
 		if (always_run_w->get_selection()) flags |= _inputmod_interchange_run_walk;
 		if (always_swim_w->get_selection()) flags |= _inputmod_interchange_swim_sink;
 		if (!(weapon_w->get_selection())) flags |= _inputmod_dont_switch_to_new_weapon;
 		if (!(auto_recenter_w->get_selection())) flags |= _inputmod_dont_auto_recenter;
-		if (mouse_feel_w->get_selection() == 3) {
-			flags |= (input_preferences->modifiers & _inputmod_invert_mouse);
-		}
 		
 		if (flags != input_preferences->modifiers) {
 			input_preferences->modifiers = flags;
