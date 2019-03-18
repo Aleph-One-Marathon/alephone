@@ -1823,7 +1823,7 @@ enum {
 	TAB_MORE_KEYS
 };
 
-const std::vector<std::string> mouse_feel_labels = { "Default", "Marathon 2", "Marathon Infinity", "(custom)" };
+const std::vector<std::string> mouse_feel_labels = { "Classic", "Modern", "(custom)" };
 static w_select_popup *mouse_feel_w;
 static w_select_popup *mouse_feel_details_w;
 static w_toggle *mouse_raw_w;
@@ -1840,19 +1840,16 @@ static void mouse_feel_details_changed(void *arg)
 	switch (mouse_feel_details_w->get_selection())
 	{
 		case 0:
-			mouse_raw_w->set_selection(1);
-			mouse_accel_w->set_selection(0);
-			mouse_precision_w->set_selection(0);
+			mouse_raw_w->set_selection(0);
+			mouse_accel_w->set_selection(1);
+			mouse_vertical_w->set_selection(1);
+			mouse_precision_w->set_selection(1);
 			break;
 		case 1:
-			mouse_raw_w->set_selection(0);
-			mouse_accel_w->set_selection(0);
-			mouse_precision_w->set_selection(1);
-			break;
-		case 2:
 			mouse_raw_w->set_selection(1);
-			mouse_accel_w->set_selection(1);
-			mouse_precision_w->set_selection(1);
+			mouse_accel_w->set_selection(0);
+			mouse_vertical_w->set_selection(0);
+			mouse_precision_w->set_selection(0);
 			break;
 		default:
 			break;
@@ -1865,54 +1862,46 @@ static void update_mouse_feel_details(void *arg)
 	if (inside_callback)
 		return;
 	inside_callback = true;
-	if (mouse_raw_w->get_selection() == 1 &&
-		mouse_accel_w->get_selection() == 0 &&
-		mouse_precision_w->get_selection() == 0)
+	if (mouse_raw_w->get_selection() == 0 &&
+		mouse_accel_w->get_selection() == 1 &&
+		mouse_vertical_w->get_selection() == 1 &&
+		mouse_precision_w->get_selection() == 1)
 	{
 		mouse_feel_details_w->set_selection(0);
 	}
-	else if (mouse_raw_w->get_selection() == 0 &&
+	else if (mouse_raw_w->get_selection() == 1 &&
 			 mouse_accel_w->get_selection() == 0 &&
-			 mouse_precision_w->get_selection() == 1)
+			 mouse_vertical_w->get_selection() == 0 &&
+			 mouse_precision_w->get_selection() == 0)
 	{
 		mouse_feel_details_w->set_selection(1);
 	}
-	else if (mouse_raw_w->get_selection() == 1 &&
-			 mouse_accel_w->get_selection() == 1 &&
-			 mouse_precision_w->get_selection() == 1)
-	{
-		mouse_feel_details_w->set_selection(2);
-	}
 	else
 	{
-		mouse_feel_details_w->set_selection(3);
+		mouse_feel_details_w->set_selection(2);
 	}
 	inside_callback = false;
 }
 
 static void update_mouse_feel(void *arg)
 {
-	if (input_preferences->raw_mouse_input == true &&
-		input_preferences->mouse_accel_type == _mouse_accel_none &&
-		input_preferences->extra_mouse_precision == true)
+	if (input_preferences->raw_mouse_input == false &&
+		input_preferences->mouse_accel_type == _mouse_accel_classic &&
+		input_preferences->classic_vertical_aim == true &&
+		input_preferences->extra_mouse_precision == false)
 	{
 		mouse_feel_w->set_selection(0);
 	}
 	else if (input_preferences->raw_mouse_input == true &&
 			 input_preferences->mouse_accel_type == _mouse_accel_none &&
-			 input_preferences->extra_mouse_precision == false)
+			 input_preferences->classic_vertical_aim == false &&
+			 input_preferences->extra_mouse_precision == true)
 	{
 		mouse_feel_w->set_selection(1);
 	}
-	else if (input_preferences->raw_mouse_input == true &&
-			 input_preferences->mouse_accel_type == _mouse_accel_none &&
-			 input_preferences->extra_mouse_precision == false)
-	{
-		mouse_feel_w->set_selection(2);
-	}
 	else
 	{
-		mouse_feel_w->set_selection(3);
+		mouse_feel_w->set_selection(2);
 	}
 }
 
@@ -1922,44 +1911,38 @@ static bool apply_mouse_feel(int selection)
 	switch (selection)
 	{
 		case 0:
-			if (true != input_preferences->raw_mouse_input) {
-				input_preferences->raw_mouse_input = true;
-				changed = true;
-			}
-			if (_mouse_accel_none != input_preferences->mouse_accel_type) {
-				input_preferences->mouse_accel_type = _mouse_accel_none;
-				changed = true;
-			}
-			if (true != input_preferences->extra_mouse_precision) {
-				input_preferences->extra_mouse_precision = true;
-				changed = true;
-			}
-			break;
-		case 1:
 			if (false != input_preferences->raw_mouse_input) {
 				input_preferences->raw_mouse_input = false;
-				changed = true;
-			}
-			if (_mouse_accel_none != input_preferences->mouse_accel_type) {
-				input_preferences->mouse_accel_type = _mouse_accel_none;
-				changed = true;
-			}
-			if (false != input_preferences->extra_mouse_precision) {
-				input_preferences->extra_mouse_precision = false;
-				changed = true;
-			}
-			break;
-		case 2:
-			if (true != input_preferences->raw_mouse_input) {
-				input_preferences->raw_mouse_input = true;
 				changed = true;
 			}
 			if (_mouse_accel_classic != input_preferences->mouse_accel_type) {
 				input_preferences->mouse_accel_type = _mouse_accel_classic;
 				changed = true;
 			}
+			if (true != input_preferences->classic_vertical_aim) {
+				input_preferences->classic_vertical_aim = true;
+				changed = true;
+			}
 			if (false != input_preferences->extra_mouse_precision) {
 				input_preferences->extra_mouse_precision = false;
+				changed = true;
+			}
+			break;
+		case 1:
+			if (true != input_preferences->raw_mouse_input) {
+				input_preferences->raw_mouse_input = true;
+				changed = true;
+			}
+			if (_mouse_accel_none != input_preferences->mouse_accel_type) {
+				input_preferences->mouse_accel_type = _mouse_accel_none;
+				changed = true;
+			}
+			if (false != input_preferences->classic_vertical_aim) {
+				input_preferences->classic_vertical_aim = false;
+				changed = true;
+			}
+			if (true != input_preferences->extra_mouse_precision) {
+				input_preferences->extra_mouse_precision = true;
 				changed = true;
 			}
 			break;
