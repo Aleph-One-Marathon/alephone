@@ -2001,14 +2001,15 @@ static void mouse_custom_dialog(void *arg)
 	mouse_v_invert_w->set_selection_changed_callback(update_mouse_feel_details);
 	table->dual_add(mouse_v_invert_w->label("Invert Vertical Aim"), d);
 	table->dual_add(mouse_v_invert_w, d);
-	
+
+	table->add_row(new w_spacer(), true);
+
 	mouse_feel_details_w = new w_select_popup();
 	mouse_feel_details_w->set_labels(mouse_feel_labels);
 	mouse_feel_details_w->set_selection(mouse_feel_w->get_selection());
 	mouse_feel_details_w->set_popup_callback(mouse_feel_details_changed, NULL);
 	table->dual_add(mouse_feel_details_w->label("Mouse Feel"), d);
 	table->dual_add(mouse_feel_details_w, d);
-	table->add_row(new w_spacer(), true);
 	
 	mouse_raw_w = new w_toggle(input_preferences->raw_mouse_input);
 	mouse_raw_w->set_selection_changed_callback(update_mouse_feel_details);
