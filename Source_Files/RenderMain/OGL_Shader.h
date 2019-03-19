@@ -59,6 +59,10 @@ public:
 		U_Pitch,
 		U_SelfLuminosity,
 		U_GammaAdjust,
+		U_LogicalWidth,
+		U_LogicalHeight,
+		U_PixelWidth,
+		U_PixelHeight,
 		NUMBER_OF_UNIFORM_LOCATIONS
 	};
 

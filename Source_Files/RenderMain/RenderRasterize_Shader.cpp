@@ -22,6 +22,7 @@
 #include "OGL_Shader.h"
 #include "ChaseCam.h"
 #include "preferences.h"
+#include "screen.h"
 
 #define MAXIMUM_VERTICES_PER_WORLD_POLYGON (MAXIMUM_VERTICES_PER_POLYGON+4)
 
@@ -33,12 +34,17 @@ private:
 	FBOSwapper _swapper;
 	Shader *_shader_blur;
 	Shader *_shader_bloom;
+	GLuint _width;
+	GLuint _height;
 
 public:
 
 	Blur(GLuint w, GLuint h, Shader* s_blur, Shader* s_bloom)
-	: _swapper(w, h, Bloom_sRGB), _shader_blur(s_blur), _shader_bloom(s_bloom) {}
+	: _swapper(w, h, Bloom_sRGB), _shader_blur(s_blur), _shader_bloom(s_bloom), _width(w), _height(h) {}
 
+	GLuint width() { return _width; }
+	GLuint height() { return _height; }
+	
 	void begin() {
 		_swapper.activate();
 		glDisable(GL_FRAMEBUFFER_SRGB_EXT); // don't blend for initial
@@ -126,9 +132,19 @@ void RenderRasterize_Shader::render_tree() {
 	Shader* s = Shader::get(Shader::S_Invincible);
 	s->enable();
 	s->setFloat(Shader::U_Time, view->tick_count);
-	s = Shader::get(Shader::S_InvincibleBloom);
-	s->enable();
-	s->setFloat(Shader::U_Time, view->tick_count);
+	s->setFloat(Shader::U_LogicalWidth, view->screen_width);
+	s->setFloat(Shader::U_LogicalHeight, view->screen_height);
+	s->setFloat(Shader::U_PixelWidth, view->screen_width * MainScreenPixelScale());
+	s->setFloat(Shader::U_PixelHeight, view->screen_height * MainScreenPixelScale());
+	if (blur.get()) {
+		s = Shader::get(Shader::S_InvincibleBloom);
+		s->enable();
+		s->setFloat(Shader::U_Time, view->tick_count);
+		s->setFloat(Shader::U_LogicalWidth, view->screen_width);
+		s->setFloat(Shader::U_LogicalHeight, view->screen_height);
+		s->setFloat(Shader::U_PixelWidth, blur->width());
+		s->setFloat(Shader::U_PixelHeight, blur->height());
+	}
 
 	short leftmost = INT16_MAX;
 	short rightmost = INT16_MIN;

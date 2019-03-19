@@ -61,7 +61,11 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
 	"yaw",
 	"pitch",
 	"selfLuminosity",
-	"gammaAdjust"
+	"gammaAdjust",
+	"logicalWidth",
+	"logicalHeight",
+	"pixelWidth",
+	"pixelHeight"
 };
 
 const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] = 
