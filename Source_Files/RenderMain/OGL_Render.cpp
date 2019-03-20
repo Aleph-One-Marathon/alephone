@@ -3153,8 +3153,12 @@ void OGL_RenderLines(const std::vector<world_point2d>& points, float thickness)
 		coords.push_back(cur.x - yd);
 		coords.push_back(cur.y + xd);
 	}
-	glVertexPointer(2, GL_FLOAT, 0, &coords.front());
-	glDrawArrays(GL_TRIANGLES, 0, coords.size() / 2);
+	
+	if (!coords.empty())
+	{
+		glVertexPointer(2, GL_FLOAT, 0, &coords.front());
+		glDrawArrays(GL_TRIANGLES, 0, coords.size() / 2);
+	}
 	
 	glEnable(GL_TEXTURE_2D);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
