@@ -701,6 +701,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>whether level has retrieval flag set</description>
 	<type>boolean</type>
       </variable>
+      <variable name="stash[key]" version="git">
+        <description>reads/writes values to a stash shared between all running Lua scripts</description>
+        <note>keys/values must be strings</note>
+        <type>string</type>
+      </variable>
       <variable name="vacuum" access="read-only">
 	<description>whether level is vacuum</description>
 	<type>boolean</type>

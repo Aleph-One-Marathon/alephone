@@ -802,6 +802,13 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">whether level has retrieval flag set</p></dd>
 <dt>
+    .stash[key] <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">reads/writes values to a stash shared between all running Lua scripts</p>
+<p class="note">keys/values must be strings </p>
+</dd>
+<dt>
     .vacuum<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether level is vacuum</p></dd>
@@ -1554,7 +1561,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>
     .viewed_player<span class="access"> (read-only) (local player)</span> <span class="version">Git</span>
 </dt>
-<dd><p class="description">the player whose view is selected by view_player()</p></dd>
+<dd><p class="description">the player currently being viewed by the local player</p></dd>
       <dt>.weapons</dt>
 <dd><dl>
 <dt>

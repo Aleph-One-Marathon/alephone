@@ -75,7 +75,7 @@ extern "C"
 #include <string>
 #include <stdlib.h>
 #include <set>
-
+#include <unordered_map>
 
 #include "alephversion.h"
 #include "screen.h"
@@ -1090,6 +1090,7 @@ state_map states;
 
 // globals
 std::vector<lua_camera> lua_cameras;
+std::unordered_map<std::string, std::string> lua_stash;
 
 uint32 *action_flags;
 
@@ -2056,6 +2057,7 @@ void CloseLuaScript()
 	RestorePreLuaSettings();
 
 	lua_cameras.resize(0);
+        lua_stash.clear();
 
 	LuaTexturePaletteClear();
 

@@ -557,7 +557,12 @@ end
       <variable name="map_checksum" version="20150619">
         <description>checksum of map file</description>
         <type>number</type>
-      </variable>      
+      </variable>
+      <variable name="stash[key]" version="git">
+        <description>reads values from a stash shared between all running Lua scripts</description>
+        <note>keys/values must be strings</note>
+        <type>string</type>
+      </variable>
     </table>
     <accessor name="Level" contains="level"/>
 

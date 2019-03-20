@@ -20,6 +20,8 @@ LUA_MAP.CPP
 	Implements Lua map classes
 */
 
+#include <unordered_map>
+
 #include "interface.h" // get_game_state
 #include "network.h"   // game_info
 #include "lua_map.h"
@@ -3078,6 +3080,54 @@ const luaL_Reg Lua_Fog_Set[] = {
 	{0, 0}
 };
 
+
+char Lua_Level_Stash_Name[] = "LevelStash";
+typedef L_Class<Lua_Level_Stash_Name> Lua_Level_Stash;
+
+extern std::unordered_map<std::string, std::string> lua_stash;
+
+static int Lua_Level_Stash_Get(lua_State* L)
+{
+        if (!lua_isstring(L, 2))
+                return luaL_error(L, "stash: incorrect argument type");
+        
+        auto it = lua_stash.find(lua_tostring(L, 2));
+        if (it != lua_stash.end())
+        {
+                lua_pushstring(L, it->second.c_str());
+        }
+        else
+        {
+                lua_pushnil(L);
+        }
+
+        return 1;
+}
+
+static int Lua_Level_Stash_Set(lua_State* L)
+{
+        if (!lua_isstring(L, 3) && !lua_isnil(L, 3))
+                return luaL_error(L, "stash: incorrect argument type");
+
+        auto key = lua_tostring(L, 2);
+        if (lua_isstring(L, 3))
+        {
+                lua_stash[key] = lua_tostring(L, 3);
+        }
+        else
+        {
+                lua_stash.erase(key);
+        }
+
+        return 0;
+}
+
+const luaL_Reg Lua_Level_Stash_Metatable[] = {
+        {"__index", Lua_Level_Stash_Get},
+        {"__newindex", Lua_Level_Stash_Set},
+        {0, 0}
+};
+
 char Lua_Level_Name[] = "Level";
 typedef L_Class<Lua_Level_Name> Lua_Level;
 
@@ -3142,6 +3192,12 @@ static int Lua_Level_Get_Map_Checksum(lua_State *L)
 	return 1;
 }
 
+static int Lua_Level_Get_Stash(lua_State* L)
+{
+        Lua_Level_Stash::Push(L, 0);
+        return 1;
+}
+
 static int Lua_Level_Get_Underwater_Fog(lua_State *L)
 {
 	Lua_Fog::Push(L, OGL_Fog_BelowLiquid);
@@ -3163,6 +3219,7 @@ const luaL_Reg Lua_Level_Get[] = {
 	{"retrieval", Lua_Level_Get_Mission_Flag<_mission_retrieval>},
 	{"repair", Lua_Level_Get_Mission_Flag<_mission_repair>},
 	{"rescue", Lua_Level_Get_Mission_Flag<_mission_rescue>},
+        {"stash", Lua_Level_Get_Stash},
 	{"underwater_fog", Lua_Level_Get_Underwater_Fog},
 	{"vacuum", Lua_Level_Get_Environment_Flag<_environment_vacuum>},
 	{0, 0}
@@ -3337,6 +3394,8 @@ int Lua_Map_register(lua_State *L)
 
 	Lua_Medias::Register(L);
 	Lua_Medias::Length = Lua_Medias_Length;
+
+        Lua_Level_Stash::Register(L, 0, 0, Lua_Level_Stash_Metatable);
 
 	Lua_Level::Register(L, Lua_Level_Get);
 
