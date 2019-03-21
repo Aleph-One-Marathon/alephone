@@ -2848,7 +2848,7 @@ static int Lua_HUDLevel_Stash_Get(lua_State* L)
         auto it = lua_stash.find(lua_tostring(L, 2));
         if (it != lua_stash.end())
         {
-                lua_pushstring(L, it->second.c_str());
+                lua_pushlstring(L, it->second.data(), it->second.size());
         }
         else
         {

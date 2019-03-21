@@ -3094,7 +3094,7 @@ static int Lua_Level_Stash_Get(lua_State* L)
         auto it = lua_stash.find(lua_tostring(L, 2));
         if (it != lua_stash.end())
         {
-                lua_pushstring(L, it->second.c_str());
+                lua_pushlstring(L, it->second.data(), it->second.size());
         }
         else
         {
@@ -3112,7 +3112,9 @@ static int Lua_Level_Stash_Set(lua_State* L)
         auto key = lua_tostring(L, 2);
         if (lua_isstring(L, 3))
         {
-                lua_stash[key] = lua_tostring(L, 3);
+                size_t len;
+                auto s = lua_tolstring(L, 3, &len);
+                lua_stash[key] = std::string{s, len};
         }
         else
         {
