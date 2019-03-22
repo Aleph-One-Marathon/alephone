@@ -486,6 +486,12 @@ end
 
     <table name="game" singleton="true">
       <note>all items in Game are read-only</note>
+      <function name="deserialize" version="git">
+        <description>deserializes s and returns the original Lua value</description>
+        <argument name="s"><type>string</type></argument>
+        <return><type>value</type></return>
+        <note>see Game.serialize (from the non-HUD scripter's guide)</note>
+      </function>
       <variable name="difficulty">
         <description>the difficulty level</description>
         <type>difficulty_type</type>

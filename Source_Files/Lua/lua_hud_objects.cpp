@@ -2823,7 +2823,10 @@ static int Lua_HUDGame_Get_Version(lua_State *L)
 	return 1;
 }
 
+extern int Lua_Game_Deserialize(lua_State* L);
+
 const luaL_Reg Lua_HUDGame_Get[] = {
+{"deserialize", L_TableFunction<Lua_Game_Deserialize>},
 {"difficulty", Lua_HUDGame_Get_Difficulty},
 {"kill_limit", Lua_HUDGame_Get_Kill_Limit},
 {"time_remaining", Lua_HUDGame_Get_Time_Remaining},

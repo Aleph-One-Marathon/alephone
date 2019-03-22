@@ -33,6 +33,7 @@ LUA_PLAYER.CPP
 #include "lua_hud_objects.h"
 #include "lua_player.h"
 #include "lua_script.h"
+#include "lua_serialize.h"
 #include "lua_templates.h"
 #include "map.h"
 #include "monsters.h"
@@ -46,6 +47,10 @@ LUA_PLAYER.CPP
 #include "shell.h"
 #include "SoundManager.h"
 #include "ViewControl.h"
+
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+namespace io = boost::iostreams;
 
 #define DONT_REPEAT_DEFINITIONS
 #include "item_definitions.h"
@@ -2451,6 +2456,29 @@ int Lua_Game_Better_Random(lua_State *L)
 	return 1;
 }
 
+int Lua_Game_Deserialize(lua_State* L)
+{
+        if (!lua_isstring(L, 1))
+        {
+                lua_pushstring(L, "Game.deserialize: incorrect argument type");
+                lua_error(L);
+        }
+    
+        size_t len;
+        auto s = lua_tolstring(L, 1, &len);
+
+        io::stream_buffer<io::array_source> sb(s, len);
+
+        if (lua_restore(L, &sb))
+        {
+                return 1;
+        }
+        else
+        {
+                return 0;
+        }
+}
+
 int Lua_Game_Global_Random(lua_State *L)
 {
 	if (lua_isnumber(L, 1))
@@ -2485,11 +2513,26 @@ int Lua_Game_Save(lua_State *L)
 	return 0;
 }
 
+int Lua_Game_Serialize(lua_State* L)
+{
+        std::stringbuf sb;
+        if (lua_save(L, &sb))
+        {
+                lua_pushlstring(L, sb.str().data(), sb.str().size());
+                return 1;
+        }
+        else
+        {
+                return 0;
+        }
+}
+
 extern int L_Restore_Passed(lua_State *);
 extern int L_Restore_Saved(lua_State *);
 
 const luaL_Reg Lua_Game_Get[] = {
 	{"dead_players_drop_items", Lua_Game_Get_Dead_Players_Drop_Items},
+        {"deserialize", L_TableFunction<Lua_Game_Deserialize>},
 	{"difficulty", Lua_Game_Get_Difficulty},
 	{"global_random", L_TableFunction<Lua_Game_Global_Random>},
 	{"kill_limit", Lua_Game_Get_Kill_Limit},
@@ -2504,6 +2547,7 @@ const luaL_Reg Lua_Game_Get[] = {
 	{"ticks", Lua_Game_Get_Ticks},
 	{"type", Lua_Game_Get_Type},
 	{"save", L_TableFunction<Lua_Game_Save>},
+        {"serialize", L_TableFunction<Lua_Game_Serialize>},
 	{"scoring_mode", Lua_Game_Get_Scoring_Mode},
 	{"version", Lua_Game_Get_Version},
 	{0, 0}

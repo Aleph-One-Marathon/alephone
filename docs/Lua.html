@@ -520,6 +520,12 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .dead_players_drop_items <span class="version">20150619</span>
 </dt>
 <dd><p class="description">whether dead players drop items</p></dd>
+<dt>.deserialize(s) <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">deserializes s and returns the original Lua value</p>
+<p class="note">see Game.serialize </p>
+</dd>
 <dt>
     .difficulty<span class="access"> (read-only)</span>
 </dt>
@@ -579,6 +585,12 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd>
 <p class="description">saves the game (as if the user had activated a pattern buffer)</p>
 <p class="note">solo only </p>
+</dd>
+<dt>.serialize(v) <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">serializes v into a binary string</p>
+<p class="note">only numbers, strings, booleans, and tables (including Aleph One's built-in userdata tables) can be serialized </p>
 </dd>
 <dt>
     .ticks<span class="access"> (read-only)</span>
