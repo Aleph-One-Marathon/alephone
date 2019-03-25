@@ -553,7 +553,7 @@ void initDefaultPrograms() {
         "   return nSign * floor(abs(n)+0.5); \n"
         "} \n"
         "void main(void) {\n"
-        "   float blockSize=(logicalHeight/480.0) * (pixelHeight/logicalHeight);"
+        "   float blockSize=round((logicalHeight/480.0) * (pixelHeight/logicalHeight));"
         "   float eX=time*round(gl_FragCoord.x / blockSize);\n"
         "   float eY=time*round(gl_FragCoord.y / blockSize);\n"
         "   vec2 entropy = vec2 (eX,eY); \n"
