@@ -43,7 +43,7 @@ while (my $line = <$file>)
     {
       $line = <$file>;
       last OUTER unless $line;
-      if ($line =~ /^\s*"(.*)\\n"/)
+      if ($line =~ /^\s*"(.*?)(?:\\n)?"/)
       {
         $prog .= "$1\n";
       }
