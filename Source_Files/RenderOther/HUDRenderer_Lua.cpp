@@ -190,7 +190,7 @@ void HUD_Lua_Class::apply_clip(void)
 	if (m_opengl)
 	{
 		glEnable(GL_SCISSOR_TEST);
-		glScissor(r.x * scr->pixel_scale(), (scr->height() - r.y - r.h) * scr->pixel_scale(), r.w * scr->pixel_scale(), r.h * scr->pixel_scale());
+		scr->scissor_screen_to_rect(r);
 	}
 	else
 #endif
