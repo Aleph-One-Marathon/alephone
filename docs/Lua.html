@@ -1375,7 +1375,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">deaths not caused by players</p></dd>
       <dt>
     .direction<br>.yaw</dt>
-<dd><p class="description">direction player is facing</p></dd>
+<dd>
+<p class="description">direction player is facing</p>
+<p class="note">this is the direction in which this player will run; for their aim, use .head_direction </p>
+</dd>
       <dt>
     .disconnected</dt>
 <dd><p class="description">whether player dropped out of the game</p></dd>
@@ -1420,6 +1423,13 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .head_below_media<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether player is completely below liquid</p></dd>
+      <dt>
+    .head_direction <span class="version">Git</span>
+</dt>
+<dd>
+<p class="description">direction in which player is looking</p>
+<p class="note">while glancing, this differs from .direction </p>
+</dd>
       <dt>
     .infravision_duration</dt>
 <dd><p class="description">infravision time remaining</p></dd>
