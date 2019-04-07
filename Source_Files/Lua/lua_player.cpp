@@ -1766,6 +1766,16 @@ static int Lua_Player_Get_Direction(lua_State *L)
 	return 1;
 }
 
+static int Lua_Player_Get_Head_Direction(lua_State *L)
+{
+	player_data *pdata = get_player_data(Lua_Player::Index(L, 1));
+	double angle = FIXED_INTEGERAL_PART(pdata->variables.direction + pdata->variables.head_direction) * AngleConvert;
+	if (angle >= 360.0) { angle -= 360.0; }
+	if (angle <    0.0) { angle += 360.0; }
+	lua_pushnumber(L, angle);
+	return 1;
+}
+
 static int Lua_Player_Get_External_Velocity(lua_State *L)
 {
 	Lua_ExternalVelocity::Push(L, Lua_Player::Index(L, 1));
@@ -1947,6 +1957,7 @@ const luaL_Reg Lua_Player_Get[] = {
 	{"dead", Lua_Player_Get_Dead},
 	{"deaths", Lua_Player_Get_Deaths},
 	{"direction", Lua_Player_Get_Direction},
+	{"head_direction", Lua_Player_Get_Head_Direction},
 	{"disconnected", Lua_Player_Get_Netdead},
 	{"energy", Lua_Player_Get_Energy},
 	{"elevation", Lua_Player_Get_Elevation},
@@ -2033,6 +2044,26 @@ static int Lua_Player_Set_Direction(lua_State *L)
 	// Lua control locks virtual aim to physical aim
 	if (player_index == local_player_index)
 		resync_virtual_aim();
+	
+	return 0;
+}
+
+static int Lua_Player_Set_Head_Direction(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "head_direction: incorrect argument type");
+	
+	double facing = static_cast<double>(lua_tonumber(L, 2));
+	int player_index = Lua_Player::Index(L, 1);
+	player_data *player = get_player_data(player_index);
+	player->variables.head_direction = INTEGER_TO_FIXED((int)(facing/AngleConvert)) - player->variables.direction;
+	while (player->variables.head_direction >= INTEGER_TO_FIXED(HALF_CIRCLE)) {
+		player->variables.head_direction -= INTEGER_TO_FIXED(FULL_CIRCLE);
+	}
+	while (player->variables.head_direction < -1*INTEGER_TO_FIXED(HALF_CIRCLE)) {
+		player->variables.head_direction += INTEGER_TO_FIXED(FULL_CIRCLE);
+	}
+	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0), &player->variables, player_index, false, false);
 	
 	return 0;
 }
@@ -2196,6 +2227,7 @@ const luaL_Reg Lua_Player_Set[] = {
 	{"color", Lua_Player_Set_Color},
 	{"deaths", Lua_Player_Set_Deaths},
 	{"direction", Lua_Player_Set_Direction},
+	{"head_direction", Lua_Player_Set_Head_Direction},
 	{"elevation", Lua_Player_Set_Elevation},
 	{"energy", Lua_Player_Set_Energy},
 	{"extravision_duration", Lua_Player_Set_Extravision_Duration},

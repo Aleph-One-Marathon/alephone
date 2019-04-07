@@ -1190,6 +1190,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <variable name="direction">
 	<alias>yaw</alias>
 	<description>direction player is facing</description>
+  <note>this is the direction in which this player will run; for their aim, use .head_direction</note>
 	<type>angle</type>
       </variable>
       <variable name="disconnected">
@@ -1249,6 +1250,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <variable name="head_below_media" access="read-only">
 	<description>whether player is completely below liquid</description>
 	<type>boolean</type>
+      </variable>
+      <variable name="head_direction" version="Git">
+        <description>direction in which player is looking</description>
+        <note>while glancing, this differs from .direction</note>
       </variable>
       <variable name="infravision_duration">
 	<description>infravision time remaining</description>
