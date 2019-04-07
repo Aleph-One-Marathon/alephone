@@ -397,7 +397,7 @@ short get_random_player_starting_location_and_facing(
 		
 		if (monster_distance != 0 && player_distance != 0)
 		{
-			uint32 combined_distance = player_distance + (monster_distance>>1); // weight player distance more heavily.
+			uint32 combined_distance = 1LL*player_distance + (monster_distance>>1); // [0, ~2^31.6]; weight player distance more heavily.
 
 			if (combined_distance > best_distance)
 			{

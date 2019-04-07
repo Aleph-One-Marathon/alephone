@@ -93,10 +93,9 @@ private:
 	void add(Plugin plugin) { m_plugins.push_back(plugin); }
 	void validate();
 
-	static Plugins* m_instance;
 	std::vector<Plugin> m_plugins;
-	bool m_validated;
-	GameMode m_mode;
+	bool m_validated = false;
+	GameMode m_mode = kMode_Menu;
 };
 
 

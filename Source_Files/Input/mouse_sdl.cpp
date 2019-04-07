@@ -130,16 +130,12 @@ void mouse_idle(short type)
 		// Delta sensitivities
 		const float angle_per_scaled_delta = 128/66.f; // assuming _mouse_accel_none
 		float sx = angle_per_scaled_delta * (input_preferences->sens_horizontal / float{FIXED_ONE});
-		float sy = angle_per_scaled_delta * (input_preferences->sens_vertical / float{FIXED_ONE});
+		float sy = angle_per_scaled_delta * (input_preferences->sens_vertical / float{FIXED_ONE}) * (input_preferences->classic_vertical_aim ? 0.25f : 1.f);
 		switch (input_preferences->mouse_accel_type)
 		{
 			case _mouse_accel_classic:
 				sx *= MIX(1.f, (1/32.f) * fabs(dx * sx), input_preferences->mouse_accel_scale);
-				sy *= MIX(1.f, (1/8.f) * fabs(dy * sy), input_preferences->mouse_accel_scale);
-				break;
-			case _mouse_accel_symmetric:
-				sx *= MIX(1.f, (1/32.f) * fabs(dx * sx), input_preferences->mouse_accel_scale);
-				sy *= MIX(1.f, (1/32.f) * fabs(dy * sy), input_preferences->mouse_accel_scale);
+				sy *= MIX(1.f, (1/(input_preferences->classic_vertical_aim ? 8.f : 32.f)) * fabs(dy * sy), input_preferences->mouse_accel_scale);
 				break;
 			case _mouse_accel_none:
 			default:

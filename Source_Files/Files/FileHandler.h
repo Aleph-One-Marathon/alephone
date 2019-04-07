@@ -215,7 +215,7 @@ private:
 
 // Directory entry, returned by FileSpecifier::ReadDirectory()
 struct dir_entry {
-	dir_entry() {}
+	dir_entry() : size(0), is_directory(false), is_volume(false) {}
 	dir_entry(const string &n, int32 s, bool is_dir, bool is_vol = false, TimeType d = 0)
 		: name(n), size(s), is_directory(is_dir), is_volume(is_vol), date(d) {}
 	~dir_entry() {}

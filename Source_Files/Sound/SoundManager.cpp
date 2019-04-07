@@ -129,7 +129,6 @@ void SoundMemoryManager::Update(short index)
 	m_entries[index].last_played = machine_tick_count();
 }
 
-SoundManager *SoundManager::m_instance = 0;
 
 static void Shutdown()
 {

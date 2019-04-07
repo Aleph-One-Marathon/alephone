@@ -2334,6 +2334,7 @@ void parse_mml_player(const InfoTree& root)
 	// back up old values first
 	if (!original_player_settings) {
 		original_player_settings = (struct player_settings_definition *) malloc(sizeof(struct player_settings_definition));
+        assert(original_player_settings);
 		*original_player_settings = player_settings;
 	}
 	if (!original_player_initial_items) {
@@ -2360,6 +2361,7 @@ void parse_mml_player(const InfoTree& root)
 	}
 	if (!original_player_shapes) {
 		original_player_shapes = (struct player_shape_definitions *) malloc(sizeof(struct player_shape_definitions));
+        assert(original_player_powerups);
 		*original_player_shapes = player_shapes;
 	}
 	

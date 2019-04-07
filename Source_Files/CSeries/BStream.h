@@ -28,7 +28,7 @@
 class basic_bstream
 {
 public:
-	basic_bstream(std::streambuf* sb) : sb_(sb) { }
+	explicit basic_bstream(std::streambuf* sb) : sb_(sb) { }
 	virtual ~basic_bstream() {};
 
 	typedef std::ios_base::failure failure;
@@ -43,7 +43,7 @@ private:
 class BIStream : public basic_bstream
 {
 public:
-	BIStream(std::streambuf* sb) : basic_bstream(sb) { }
+	explicit BIStream(std::streambuf* sb) : basic_bstream(sb) { }
 
 	std::streampos tellg() const;
 	std::streampos maxg() const;
@@ -64,7 +64,7 @@ public:
 class BIStreamBE : public BIStream
 {
 public:
-	BIStreamBE(std::streambuf* sb) : BIStream(sb) {}
+	explicit BIStreamBE(std::streambuf* sb) : BIStream(sb) {}
 	
 	BIStream& operator>>(uint8& value) {
 		return BIStream::operator>>(value);
@@ -84,7 +84,7 @@ public:
 class BOStream : public basic_bstream
 {
 public:
-	BOStream(std::streambuf* sb) : basic_bstream(sb) { }
+	explicit BOStream(std::streambuf* sb) : basic_bstream(sb) { }
 	
 	std::streampos tellp() const;
 	std::streampos maxp() const;
@@ -104,7 +104,7 @@ public:
 class BOStreamBE : public BOStream
 {
 public:
-	BOStreamBE(std::streambuf* sb) : BOStream(sb) {}
+	explicit BOStreamBE(std::streambuf* sb) : BOStream(sb) {}
 	
 	BOStream& operator<<(uint8 value) {
 		return BOStream::operator<<(value);

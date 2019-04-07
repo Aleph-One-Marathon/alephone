@@ -50,6 +50,13 @@
 #endif
 
 
+constexpr bool PlatformIsLittleEndian() noexcept {
+#ifdef ALEPHONE_LITTLE_ENDIAN
+	return true;
+#else
+	return false;
+#endif // end ALEPHONE_LITTLE_ENDIAN
+}
 /*
  *  Data types with specific bit width
  */

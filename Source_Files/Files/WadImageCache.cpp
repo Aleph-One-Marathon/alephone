@@ -39,8 +39,8 @@
 #include "sdl_resize.h"
 #include "Logging.h"
 
-WadImageCache* WadImageCache::m_instance = 0;
 WadImageCache* WadImageCache::instance() {
+	static WadImageCache *m_instance = nullptr;
 	if (!m_instance) {
 		m_instance = new WadImageCache;
 	}

@@ -280,6 +280,9 @@ bool lua_restore(lua_State *L, std::streambuf* sb)
 	// create a reference table
 	lua_newtable(L);
 
+        // put it at the bottom of the stack
+        lua_insert(L, 1);
+
 	BIStreamBE s(sb);
 	try {
 		int16 version;
@@ -300,6 +303,6 @@ bool lua_restore(lua_State *L, std::streambuf* sb)
 	}
 	
 	// remove the reference table
-	lua_remove(L, -2);
+	lua_remove(L, 1);
 	return true;
 }

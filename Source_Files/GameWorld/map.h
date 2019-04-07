@@ -992,24 +992,24 @@ extern struct static_data *static_world;
 extern struct dynamic_data *dynamic_world;
 
 extern vector<object_data> ObjectList;
-#define objects (&ObjectList[0])
+#define objects (ObjectList.data())
 
 // extern struct object_data *objects;
 
 extern vector<endpoint_data> EndpointList;
-#define map_endpoints (&EndpointList[0])
+#define map_endpoints (EndpointList.data())
 #define MAXIMUM_ENDPOINTS_PER_MAP (EndpointList.size())
 
 extern vector<line_data> LineList;
-#define map_lines (&LineList[0])
+#define map_lines (LineList.data())
 #define MAXIMUM_LINES_PER_MAP (LineList.size())
 
 extern vector<side_data> SideList;
-#define map_sides (&SideList[0])
+#define map_sides (SideList.data())
 #define MAXIMUM_SIDES_PER_MAP (SideList.size())
 
 extern vector<polygon_data> PolygonList;
-#define map_polygons (&PolygonList[0])
+#define map_polygons (PolygonList.data())
 #define MAXIMUM_POLYGONS_PER_MAP (PolygonList.size())
 
 // extern struct polygon_data *map_polygons;
@@ -1019,36 +1019,36 @@ extern vector<polygon_data> PolygonList;
 
 extern vector<ambient_sound_image_data> AmbientSoundImageList;
 #define MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP (AmbientSoundImageList.size())
-#define ambient_sound_images (&AmbientSoundImageList[0])
+#define ambient_sound_images (AmbientSoundImageList.data())
 
 extern vector<random_sound_image_data> RandomSoundImageList;
 #define MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP (RandomSoundImageList.size())
-#define random_sound_images (&RandomSoundImageList[0])
+#define random_sound_images (RandomSoundImageList.data())
 
 // extern struct ambient_sound_image_data *ambient_sound_images;
 // extern struct random_sound_image_data *random_sound_images;
 
 extern vector<int16> MapIndexList;
-#define map_indexes (&MapIndexList[0])
+#define map_indexes (MapIndexList.data())
 
 // extern int16 *map_indexes;
 
 extern vector<uint8> AutomapLineList;
-#define automap_lines (&AutomapLineList[0])
+#define automap_lines (AutomapLineList.data())
 
 extern vector<uint8> AutomapPolygonList;
-#define automap_polygons (&AutomapPolygonList[0]) 
+#define automap_polygons (AutomapPolygonList.data())
 
 // extern byte *automap_lines;
 // extern byte *automap_polygons;
 
 extern vector<map_annotation> MapAnnotationList;
 #define MAXIMUM_ANNOTATIONS_PER_MAP (MapAnnotationList.size())
-#define map_annotations (&MapAnnotationList[0])
+#define map_annotations (MapAnnotationList.data())
 
 extern vector<map_object> SavedObjectList;
 #define MAXIMUM_SAVED_OBJECTS (SavedObjectList.size())
-#define saved_objects (&SavedObjectList[0])
+#define saved_objects (SavedObjectList.data())
 
 // extern struct map_annotation *map_annotations;
 // extern struct map_object *saved_objects;

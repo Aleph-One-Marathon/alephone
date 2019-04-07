@@ -581,7 +581,7 @@ static void convert_m1_rle(std::vector<uint8>& bitmap, int scanlines, int scanli
 //	std::vector<uint8> bitmap;
 	for (int scanline = 0; scanline < scanlines; ++scanline)
 	{
-		std::vector<uint8> scanline_data(scanline_length);
+		std::vector<uint8> scanline_data(scanline_length + 1);
 		uint8* dst = &scanline_data[0];
 		uint8* sentry = &scanline_data[scanline_length];
 
@@ -2211,6 +2211,14 @@ static void build_tinting_table8(
 	}
 }
 
+// Return intensity(base)*tint, with M2-style rounding behavior
+static rgb_color m2_apply_tint(rgb_color_value base, rgb_color tint)
+{
+	const uint16 base_mag = (int32{base.red} + base.green + base.blue) / 3;
+	auto scale = [base_mag](uint16 comp) { return uint16(int32(1LL*base_mag*comp) / 65535); };
+	return {scale(tint.red), scale(tint.green), scale(tint.blue)};
+}
+
 static void build_tinting_table16(
 	struct rgb_color_value *colors,
 	short color_count,
@@ -2223,13 +2231,10 @@ static void build_tinting_table16(
 
 	for (i= 0; i<color_count; ++i, ++colors)
 	{
-		int32 magnitude= ((int32)colors->red + (int32)colors->green + (int32)colors->blue)/(short)3;
+		const rgb_color tinted_color = m2_apply_tint(*colors, *tint_color);
 		
 		// Find optimal pixel value for video display
-		*tint_table++= SDL_MapRGB(fmt,
-		  ((magnitude * tint_color->red) / 0xFFFF) >> 8,
-		  ((magnitude * tint_color->green) / 0xFFFF) >> 8,
-		  ((magnitude * tint_color->blue) / 0xFFFF) >> 8);
+		*tint_table++ = SDL_MapRGB(fmt, tinted_color.red >> 8, tinted_color.green >> 8, tinted_color.blue >> 8);
 	}
 }
 
@@ -2246,18 +2251,14 @@ static void build_tinting_table32(
 
 	for (i= 0; i<color_count; ++i, ++colors)
 	{
-		int32 magnitude= ((int32)colors->red + (int32)colors->green + (int32)colors->blue)/(short)3;
+		const rgb_color tinted_color = m2_apply_tint(*colors, *tint_color);
 		
 		// Find optimal pixel value for video display
 		if (!is_opengl)
-			*tint_table++= SDL_MapRGB(fmt,
-			  ((magnitude * tint_color->red) / 65535) >> 8,
-			  ((magnitude * tint_color->green) / 65535) >> 8,
-			  ((magnitude * tint_color->blue) / 65535) >> 8);
+			*tint_table++ = SDL_MapRGB(fmt, tinted_color.red >> 8, tinted_color.green >> 8, tinted_color.blue >> 8);
 		else
 		// Mac xRGB 8888 pixel format
-		*tint_table++= RGBCOLOR_TO_PIXEL32((magnitude*tint_color->red)/65535,
-			(magnitude*tint_color->green)/65535, (magnitude*tint_color->blue)/65535);
+			*tint_table++ = RGBCOLOR_TO_PIXEL32(tinted_color.red, tinted_color.green, tinted_color.blue);
 	}
 }
 
@@ -2322,6 +2323,9 @@ static struct high_level_shape_definition *get_high_level_shape_definition(
 
 	if (!(high_level_shape_index >= 0 && high_level_shape_index<definition->high_level_shapes.size()))
 		return NULL;
+	
+	if (definition->high_level_shapes[high_level_shape_index].empty())
+		return NULL;
 
 	return (high_level_shape_definition *) &definition->high_level_shapes[high_level_shape_index][0];
 }
@@ -2347,6 +2351,9 @@ static struct bitmap_definition *get_bitmap_definition(
 	collection_definition *definition = get_collection_definition(collection_index);
 	if (!definition) return NULL;
 	if (!(bitmap_index >= 0 && bitmap_index < definition->bitmaps.size()))
+		return NULL;
+	
+	if (definition->bitmaps[bitmap_index].empty())
 		return NULL;
 
 	return (bitmap_definition *) &definition->bitmaps[bitmap_index][0];

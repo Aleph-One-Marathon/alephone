@@ -206,6 +206,12 @@ void set_keyboard_controller_status(
 {
 	input_task_active= active;
 
+	// flush events when changing game state
+	SDL_PumpEvents();
+	SDL_FlushEvents(SDL_KEYDOWN, SDL_KEYUP);
+	SDL_FlushEvents(SDL_MOUSEMOTION, SDL_MOUSEWHEEL);
+	SDL_FlushEvents(SDL_CONTROLLERAXISMOTION, SDL_CONTROLLERBUTTONUP);
+
 	// We enable/disable mouse control here
 	if (active) {
 		enter_mouse(input_preferences->input_device);

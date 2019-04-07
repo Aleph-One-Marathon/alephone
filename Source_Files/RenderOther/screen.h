@@ -109,6 +109,7 @@ namespace alephone
 		
 		void bound_screen(bool in_game = true);
 		void bound_screen_to_rect(SDL_Rect &r, bool in_game = true);
+		void scissor_screen_to_rect(SDL_Rect &r);
 		void window_to_screen(int &x, int &y);
 		
 		SDL_Rect lua_clip_rect;
@@ -120,6 +121,8 @@ namespace alephone
 		Screen() : m_initialized(false) { }
 		static Screen m_instance;
 		bool m_initialized;
+		SDL_Rect m_viewport_rect;
+		SDL_Rect m_ortho_rect;
 
 		std::vector<std::pair<int, int> > m_modes;
 	};

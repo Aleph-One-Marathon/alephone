@@ -32,11 +32,12 @@ Image_Blitter::Image_Blitter() : m_surface(NULL), m_disp_surface(NULL), m_scaled
 
 bool Image_Blitter::Load(const ImageDescriptor& image)
 {
-#ifdef ALEPHONE_LITTLE_ENDIAN
-	SDL_Surface *s = SDL_CreateRGBSurfaceFrom(const_cast<uint32 *>(image.GetBuffer()), image.GetWidth(), image.GetHeight(), 32, image.GetWidth() * 4, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-#else
-	SDL_Surface *s = SDL_CreateRGBSurfaceFrom(const_cast<uint32 *>(image.GetBuffer()), image.GetWidth(), image.GetHeight(), 32, image.GetWidth() * 4, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-#endif
+	SDL_Surface *s = nullptr;
+	if (PlatformIsLittleEndian()) {
+		s = SDL_CreateRGBSurfaceFrom(const_cast<uint32 *>(image.GetBuffer()), image.GetWidth(), image.GetHeight(), 32, image.GetWidth() * 4, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+	} else {
+		s = SDL_CreateRGBSurfaceFrom(const_cast<uint32 *>(image.GetBuffer()), image.GetWidth(), image.GetHeight(), 32, image.GetWidth() * 4, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+	}
 	if (!s)
 		return false;
 	bool ret = Load(*s);
@@ -80,11 +81,11 @@ bool Image_Blitter::Load(const SDL_Surface& s, const SDL_Rect& src)
 	crop_rect.w = m_src.w;
 	crop_rect.h = m_src.h;
 	
-#ifdef ALEPHONE_LITTLE_ENDIAN
-	m_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, m_src.w, m_src.h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-#else
-	m_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, m_src.w, m_src.h, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-#endif
+	if (PlatformIsLittleEndian()) {
+		m_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, m_src.w, m_src.h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+	} else {
+		m_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, m_src.w, m_src.h, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+	}
 	if (!m_surface)
 		return false;
 	

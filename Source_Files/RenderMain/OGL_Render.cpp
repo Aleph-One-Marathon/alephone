@@ -3129,7 +3129,13 @@ void OGL_RenderLines(const std::vector<world_point2d>& points, float thickness)
 		
 		float rise = cur.y - prev.y;
 		float run = cur.x - prev.x;
-		float scale = thickness / sqrtf(rise*rise + run*run);
+		float length = sqrtf(rise*rise + run*run);
+		
+		// Skip degenerate lines
+		if (length == 0)
+			continue;
+		
+		float scale = thickness / length;
 		float xd = run * scale * 0.5f;
 		float yd = rise * scale * 0.5f;
 		
@@ -3147,8 +3153,12 @@ void OGL_RenderLines(const std::vector<world_point2d>& points, float thickness)
 		coords.push_back(cur.x - yd);
 		coords.push_back(cur.y + xd);
 	}
-	glVertexPointer(2, GL_FLOAT, 0, &coords.front());
-	glDrawArrays(GL_TRIANGLES, 0, coords.size() / 2);
+	
+	if (!coords.empty())
+	{
+		glVertexPointer(2, GL_FLOAT, 0, &coords.front());
+		glDrawArrays(GL_TRIANGLES, 0, coords.size() / 2);
+	}
 	
 	glEnable(GL_TEXTURE_2D);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);

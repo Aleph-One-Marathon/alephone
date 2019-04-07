@@ -655,6 +655,7 @@ static void Data_Ip_Handler(void * userData, const char * s, int len)
   XmlGetPublicIpData * dat  = userData;
   if(dat->found_ext_ip == 1) {
     dat->ext_ip = (char *)malloc(len+NULL_TERM_LEN);
+    // TODO insert a check if the malloc fails
     strncpy(dat->ext_ip, s, len);
     dat->ext_ip[len] = NULL_TERM;
   }

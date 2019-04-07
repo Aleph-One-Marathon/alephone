@@ -48,8 +48,6 @@
 #include "Mixer.h"
 #include "preferences.h"
 
-Movie* Movie::m_instance = NULL;
-
 #ifndef HAVE_FFMPEG
 
 struct libav_vars {

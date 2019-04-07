@@ -781,8 +781,8 @@ void instantiate_rectangle_transfer_mode(
 			{
 				// Corrected the teleport shrinkage so that the sprite/object
 				// shrinks to its object position and not to its sprite center
-				short delta0= FIXED_INTEGERAL_PART(((rectangle->xc-rectangle->x0)-1)*transfer_phase);
-				short delta1= FIXED_INTEGERAL_PART(((rectangle->x1-rectangle->xc)-1)*transfer_phase);
+				short delta0 = FIXED_INTEGERAL_PART(int32(((1LL*rectangle->xc - rectangle->x0) - 1) * transfer_phase));
+				short delta1 = FIXED_INTEGERAL_PART(int32(((1LL*rectangle->x1 - rectangle->xc) - 1) * transfer_phase));
 				// short delta= FIXED_INTEGERAL_PART((((rectangle->x1-rectangle->x0)>>1)-1)*transfer_phase);
 					
 				rectangle->transfer_mode= _static_transfer;

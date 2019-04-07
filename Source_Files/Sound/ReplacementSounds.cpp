@@ -25,8 +25,6 @@
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 
-SoundReplacements *SoundReplacements::m_instance = 0;
-
 boost::shared_ptr<SoundData> ExternalSoundHeader::LoadExternal(FileSpecifier& File)
 {
 	boost::shared_ptr<SoundData> p;

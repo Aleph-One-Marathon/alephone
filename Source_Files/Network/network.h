@@ -151,7 +151,6 @@ class InGameChatCallbacks : public ChatCallbacks
 
  private:
   InGameChatCallbacks() { }
-  static InGameChatCallbacks *m_instance;
 };
 
 

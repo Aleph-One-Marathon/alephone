@@ -1825,28 +1825,12 @@ enum {
 	TAB_MORE_KEYS
 };
 
-static w_text_entry *mouse_up_w;
-static w_text_entry *mouse_down_w;
-
-static void invert_selected(w_select* w)
-{
-	if (w->get_selection()) {
-		mouse_up_w->set_text("上を向く");
-		mouse_down_w->set_text("下を向く");
-	} else {
-		mouse_up_w->set_text("上を向く");
-		mouse_down_w->set_text("下を向く");
-	}
-}
-
-const std::vector<std::string> mouse_feel_labels = { "Default", "Marathon 2", "Marathon Infinity", "(custom)" };
+const std::vector<std::string> mouse_feel_labels = { "旧式", "現代風", "(カスタム)" };
 static w_select_popup *mouse_feel_w;
 static w_select_popup *mouse_feel_details_w;
-static w_sens_slider *mouse_h_sens_w;
-static w_sens_slider *mouse_v_sens_w;
-static w_toggle *mouse_v_invert_w;
 static w_toggle *mouse_raw_w;
-static w_select_popup *mouse_accel_w;
+static w_toggle *mouse_vertical_w;
+static w_toggle *mouse_accel_w;
 static w_toggle *mouse_precision_w;
 static bool inside_callback = false;  // prevent circular changes
 
@@ -1858,28 +1842,16 @@ static void mouse_feel_details_changed(void *arg)
 	switch (mouse_feel_details_w->get_selection())
 	{
 		case 0:
-			mouse_h_sens_w->set_selection(500);
-			mouse_v_sens_w->set_selection(500);
-			mouse_v_invert_w->set_selection(0);
-			mouse_raw_w->set_selection(1);
-			mouse_accel_w->set_selection(0);
-			mouse_precision_w->set_selection(0);
+			mouse_raw_w->set_selection(0);
+			mouse_accel_w->set_selection(1);
+			mouse_vertical_w->set_selection(1);
+			mouse_precision_w->set_selection(1);
 			break;
 		case 1:
-			mouse_h_sens_w->set_selection(500);
-			mouse_v_sens_w->set_selection(269);
-			mouse_v_invert_w->set_selection(0);
-			mouse_raw_w->set_selection(0);
-			mouse_accel_w->set_selection(0);
-			mouse_precision_w->set_selection(1);
-			break;
-		case 2:
-			mouse_h_sens_w->set_selection(500);
-			mouse_v_sens_w->set_selection(269);
-			mouse_v_invert_w->set_selection(0);
 			mouse_raw_w->set_selection(1);
-			mouse_accel_w->set_selection(1);
-			mouse_precision_w->set_selection(1);
+			mouse_accel_w->set_selection(0);
+			mouse_vertical_w->set_selection(0);
+			mouse_precision_w->set_selection(0);
 			break;
 		default:
 			break;
@@ -1892,72 +1864,46 @@ static void update_mouse_feel_details(void *arg)
 	if (inside_callback)
 		return;
 	inside_callback = true;
-	if (mouse_h_sens_w->get_selection() == 500 &&
-		mouse_v_sens_w->get_selection() == 500 &&
-		mouse_v_invert_w->get_selection() == 0 &&
-		mouse_raw_w->get_selection() == 1 &&
-		mouse_accel_w->get_selection() == 0 &&
-		mouse_precision_w->get_selection() == 0)
+	if (mouse_raw_w->get_selection() == 0 &&
+		mouse_accel_w->get_selection() == 1 &&
+		mouse_vertical_w->get_selection() == 1 &&
+		mouse_precision_w->get_selection() == 1)
 	{
 		mouse_feel_details_w->set_selection(0);
 	}
-	else if (mouse_h_sens_w->get_selection() == 500 &&
-			 mouse_v_sens_w->get_selection() == 269 &&
-			 mouse_v_invert_w->get_selection() == 0 &&
-			 mouse_raw_w->get_selection() == 0 &&
+	else if (mouse_raw_w->get_selection() == 1 &&
 			 mouse_accel_w->get_selection() == 0 &&
-			 mouse_precision_w->get_selection() == 1)
+			 mouse_vertical_w->get_selection() == 0 &&
+			 mouse_precision_w->get_selection() == 0)
 	{
 		mouse_feel_details_w->set_selection(1);
 	}
-	else if (mouse_h_sens_w->get_selection() == 500 &&
-			 mouse_v_sens_w->get_selection() == 269 &&
-			 mouse_v_invert_w->get_selection() == 0 &&
-			 mouse_raw_w->get_selection() == 1 &&
-			 mouse_accel_w->get_selection() == 1 &&
-			 mouse_precision_w->get_selection() == 1)
-	{
-		mouse_feel_details_w->set_selection(2);
-	}
 	else
 	{
-		mouse_feel_details_w->set_selection(3);
+		mouse_feel_details_w->set_selection(2);
 	}
 	inside_callback = false;
 }
 
 static void update_mouse_feel(void *arg)
 {
-	if (input_preferences->sens_horizontal == 65536 &&
-		input_preferences->sens_vertical == 65536 &&
-		!(input_preferences->modifiers & _inputmod_invert_mouse) &&
-		input_preferences->raw_mouse_input == true &&
-		input_preferences->mouse_accel_type == _mouse_accel_none &&
-		input_preferences->extra_mouse_precision == true)
+	if (input_preferences->raw_mouse_input == false &&
+		input_preferences->mouse_accel_type == _mouse_accel_classic &&
+		input_preferences->classic_vertical_aim == true &&
+		input_preferences->extra_mouse_precision == false)
 	{
 		mouse_feel_w->set_selection(0);
 	}
-	else if (input_preferences->sens_horizontal == 65536 &&
-			 input_preferences->sens_vertical == 16384 &&
-			 !(input_preferences->modifiers & _inputmod_invert_mouse) &&
-			 input_preferences->raw_mouse_input == true &&
+	else if (input_preferences->raw_mouse_input == true &&
 			 input_preferences->mouse_accel_type == _mouse_accel_none &&
-			 input_preferences->extra_mouse_precision == false)
+			 input_preferences->classic_vertical_aim == false &&
+			 input_preferences->extra_mouse_precision == true)
 	{
 		mouse_feel_w->set_selection(1);
 	}
-	else if (input_preferences->sens_horizontal == 65536 &&
-			 input_preferences->sens_vertical == 16384 &&
-			 !(input_preferences->modifiers & _inputmod_invert_mouse) &&
-			 input_preferences->raw_mouse_input == true &&
-			 input_preferences->mouse_accel_type == _mouse_accel_none &&
-			 input_preferences->extra_mouse_precision == false)
-	{
-		mouse_feel_w->set_selection(2);
-	}
 	else
 	{
-		mouse_feel_w->set_selection(3);
+		mouse_feel_w->set_selection(2);
 	}
 }
 
@@ -1967,80 +1913,38 @@ static bool apply_mouse_feel(int selection)
 	switch (selection)
 	{
 		case 0:
-			if (65536 != input_preferences->sens_horizontal) {
-				input_preferences->sens_horizontal = 65536;
-				changed = true;
-			}
-			if (65536 != input_preferences->sens_vertical) {
-				input_preferences->sens_vertical = 65536;
-				changed = true;
-			}
-			if (input_preferences->modifiers & _inputmod_invert_mouse) {
-				input_preferences->modifiers &= ~_inputmod_invert_mouse;
-				changed = true;
-			}
-			if (true != input_preferences->raw_mouse_input) {
-				input_preferences->raw_mouse_input = true;
-				changed = true;
-			}
-			if (_mouse_accel_none != input_preferences->mouse_accel_type) {
-				input_preferences->mouse_accel_type = _mouse_accel_none;
-				changed = true;
-			}
-			if (true != input_preferences->extra_mouse_precision) {
-				input_preferences->extra_mouse_precision = true;
-				changed = true;
-			}
-			break;
-		case 1:
-			if (65536 != input_preferences->sens_horizontal) {
-				input_preferences->sens_horizontal = 65536;
-				changed = true;
-			}
-			if (16384 != input_preferences->sens_vertical) {
-				input_preferences->sens_vertical = 16384;
-				changed = true;
-			}
-			if (input_preferences->modifiers & _inputmod_invert_mouse) {
-				input_preferences->modifiers &= ~_inputmod_invert_mouse;
-				changed = true;
-			}
 			if (false != input_preferences->raw_mouse_input) {
 				input_preferences->raw_mouse_input = false;
-				changed = true;
-			}
-			if (_mouse_accel_none != input_preferences->mouse_accel_type) {
-				input_preferences->mouse_accel_type = _mouse_accel_none;
-				changed = true;
-			}
-			if (false != input_preferences->extra_mouse_precision) {
-				input_preferences->extra_mouse_precision = false;
-				changed = true;
-			}
-			break;
-		case 2:
-			if (65536 != input_preferences->sens_horizontal) {
-				input_preferences->sens_horizontal = 65536;
-				changed = true;
-			}
-			if (16384 != input_preferences->sens_vertical) {
-				input_preferences->sens_vertical = 16384;
-				changed = true;
-			}
-			if (input_preferences->modifiers & _inputmod_invert_mouse) {
-				input_preferences->modifiers &= ~_inputmod_invert_mouse;
-				changed = true;
-			}
-			if (true != input_preferences->raw_mouse_input) {
-				input_preferences->raw_mouse_input = true;
 				changed = true;
 			}
 			if (_mouse_accel_classic != input_preferences->mouse_accel_type) {
 				input_preferences->mouse_accel_type = _mouse_accel_classic;
 				changed = true;
 			}
+			if (true != input_preferences->classic_vertical_aim) {
+				input_preferences->classic_vertical_aim = true;
+				changed = true;
+			}
 			if (false != input_preferences->extra_mouse_precision) {
 				input_preferences->extra_mouse_precision = false;
+				changed = true;
+			}
+			break;
+		case 1:
+			if (true != input_preferences->raw_mouse_input) {
+				input_preferences->raw_mouse_input = true;
+				changed = true;
+			}
+			if (_mouse_accel_none != input_preferences->mouse_accel_type) {
+				input_preferences->mouse_accel_type = _mouse_accel_none;
+				changed = true;
+			}
+			if (false != input_preferences->classic_vertical_aim) {
+				input_preferences->classic_vertical_aim = false;
+				changed = true;
+			}
+			if (true != input_preferences->extra_mouse_precision) {
+				input_preferences->extra_mouse_precision = true;
 				changed = true;
 			}
 			break;
@@ -2060,21 +1964,12 @@ static void mouse_custom_dialog(void *arg)
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 	
-	mouse_feel_details_w = new w_select_popup();
-	mouse_feel_details_w->set_labels(mouse_feel_labels);
-	mouse_feel_details_w->set_selection(mouse_feel_w->get_selection());
-	mouse_feel_details_w->set_popup_callback(mouse_feel_details_changed, NULL);
-	table->dual_add(mouse_feel_details_w->label("Mouse Feel"), d);
-	table->dual_add(mouse_feel_details_w, d);
-	table->add_row(new w_spacer(), true);
-	
 	float hSensitivity = ((float) input_preferences->sens_horizontal) / FIXED_ONE;
 	if (hSensitivity <= 0.0f) hSensitivity = 1.0f;
 	float hSensitivityLog = std::log(hSensitivity);
 	int hSliderPosition =
 		(int) ((hSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
-	mouse_h_sens_w = new w_sens_slider(1000, hSliderPosition);
-	mouse_h_sens_w->set_slider_changed_callback(update_mouse_feel_details);
+	w_sens_slider *mouse_h_sens_w = new w_sens_slider(1000, hSliderPosition);
 	table->dual_add(mouse_h_sens_w->label("Horizontal Sensitivity"), d);
 	table->dual_add(mouse_h_sens_w, d);
 
@@ -2083,30 +1978,38 @@ static void mouse_custom_dialog(void *arg)
 	float vSensitivityLog = std::log(vSensitivity);
 	int vSliderPosition =
 		(int) ((vSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
-	mouse_v_sens_w = new w_sens_slider(1000, vSliderPosition);
-	mouse_v_sens_w->set_slider_changed_callback(update_mouse_feel_details);
+	w_sens_slider *mouse_v_sens_w = new w_sens_slider(1000, vSliderPosition);
 	table->dual_add(mouse_v_sens_w->label("Vertical Sensitivity"), d);
 	table->dual_add(mouse_v_sens_w, d);
 
-	mouse_v_invert_w = new w_toggle(input_preferences->modifiers & _inputmod_invert_mouse);
+	w_toggle *mouse_v_invert_w = new w_toggle(input_preferences->modifiers & _inputmod_invert_mouse);
 	mouse_v_invert_w->set_selection_changed_callback(update_mouse_feel_details);
 	table->dual_add(mouse_v_invert_w->label("Invert Vertical Aim"), d);
 	table->dual_add(mouse_v_invert_w, d);
-	
+
 	table->add_row(new w_spacer(), true);
+
+	mouse_feel_details_w = new w_select_popup();
+	mouse_feel_details_w->set_labels(mouse_feel_labels);
+	mouse_feel_details_w->set_selection(mouse_feel_w->get_selection());
+	mouse_feel_details_w->set_popup_callback(mouse_feel_details_changed, NULL);
+	table->dual_add(mouse_feel_details_w->label("Mouse Feel"), d);
+	table->dual_add(mouse_feel_details_w, d);
 	
 	mouse_raw_w = new w_toggle(input_preferences->raw_mouse_input);
 	mouse_raw_w->set_selection_changed_callback(update_mouse_feel_details);
 	table->dual_add(mouse_raw_w->label("Raw Input Mode"), d);
 	table->dual_add(mouse_raw_w, d);
 	
-	std::vector<std::string> accel_labels = { "Off", "Classic", "Classic (Symmetric)" };
-	mouse_accel_w = new w_select_popup();
-	mouse_accel_w->set_labels(accel_labels);
-	mouse_accel_w->set_selection(input_preferences->mouse_accel_type);
-	mouse_accel_w->set_popup_callback(update_mouse_feel_details, NULL);
+	mouse_accel_w = new w_toggle(input_preferences->mouse_accel_type == _mouse_accel_classic);
+	mouse_accel_w->set_selection_changed_callback(update_mouse_feel_details);
 	table->dual_add(mouse_accel_w->label("Acceleration"), d);
 	table->dual_add(mouse_accel_w, d);
+	
+	mouse_vertical_w = new w_toggle(input_preferences->classic_vertical_aim);
+	mouse_vertical_w->set_selection_changed_callback(update_mouse_feel_details);
+	table->dual_add(mouse_vertical_w->label("Adjust Vertical Speed"), d);
+	table->dual_add(mouse_vertical_w, d);
 	
 	mouse_precision_w = new w_toggle(!input_preferences->extra_mouse_precision);
 	mouse_precision_w->set_selection_changed_callback(update_mouse_feel_details);
@@ -2162,6 +2065,12 @@ static void mouse_custom_dialog(void *arg)
 		
 		if (mouse_accel_w->get_selection() != input_preferences->mouse_accel_type) {
 			input_preferences->mouse_accel_type = mouse_accel_w->get_selection();
+			changed = true;
+		}
+		
+		bool vert = mouse_vertical_w->get_selection();
+		if (vert != input_preferences->classic_vertical_aim) {
+			input_preferences->classic_vertical_aim = vert;
 			changed = true;
 		}
 		
@@ -2381,11 +2290,9 @@ static void controls_dialog(void *arg)
 					switch (i) {
 						case 8:
 							txt = new w_text_entry(12, "上");
-							mouse_up_w = txt;
 							break;
 						case 9:
-							txt = new w_text_entry(12, "下");
-							mouse_down_w = txt;
+ 							txt = new w_text_entry(12, "下");
 							break;
 						case 2:
 							txt = new w_text_entry(12, "左");
@@ -2423,7 +2330,7 @@ static void controls_dialog(void *arg)
 	mouse_options->col_flags(0, placeable::kAlignRight);
 	mouse_options->col_flags(1, placeable::kAlignLeft);
 
-	w_toggle *enable_mouse_w = new w_toggle(true);
+	w_toggle *enable_mouse_w = new w_toggle(input_preferences->input_device == _mouse_yaw_pitch);
 	mouse_options->dual_add(enable_mouse_w->label("マウスの上下"), d);
 	mouse_options->dual_add(enable_mouse_w, d);
 	
@@ -2443,7 +2350,7 @@ static void controls_dialog(void *arg)
 	controller_options->col_flags(1, placeable::kAlignLeft);
 	
 	controller_options->dual_add_row(new w_label(""), d);
-	std::vector<std::string> joystick_aiming_labels = { "アナログスティックとして扱う", "十字キーとして扱う" };
+	std::vector<std::string> joystick_aiming_labels = { "アナログスティックとして扱う", "十\字キーとして扱う" };
 	w_select_popup *joystick_aiming_w = new w_select_popup();
 	joystick_aiming_w->set_labels(joystick_aiming_labels);
 	joystick_aiming_w->set_selection(input_preferences->controller_analog ? 0 : 1);
@@ -2637,14 +2544,11 @@ static void controls_dialog(void *arg)
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
 		
-		uint16 flags = input_preferences->modifiers & _inputmod_use_button_sounds;
+		uint16 flags = input_preferences->modifiers & (_inputmod_use_button_sounds|_inputmod_invert_mouse);
 		if (always_run_w->get_selection()) flags |= _inputmod_interchange_run_walk;
 		if (always_swim_w->get_selection()) flags |= _inputmod_interchange_swim_sink;
 		if (!(weapon_w->get_selection())) flags |= _inputmod_dont_switch_to_new_weapon;
 		if (!(auto_recenter_w->get_selection())) flags |= _inputmod_dont_auto_recenter;
-		if (mouse_feel_w->get_selection() == 3) {
-			flags |= (input_preferences->modifiers & _inputmod_invert_mouse);
-		}
 		
 		if (flags != input_preferences->modifiers) {
 			input_preferences->modifiers = flags;
@@ -2676,6 +2580,12 @@ static void controls_dialog(void *arg)
 				input_preferences->shell_key_bindings[i].insert(key);
 				changed = true;
 			}
+		}
+		
+		int16 device = enable_mouse_w->get_selection() ? _mouse_yaw_pitch : _keyboard_or_game_pad;
+		if (input_preferences->input_device != device) {
+			input_preferences->input_device = device;
+			changed = true;
 		}
 		
 		bool jaim = (joystick_aiming_w->get_selection() == 1);
@@ -3409,6 +3319,7 @@ InfoTree input_preferences_tree()
 	root.put_attr("modifiers", input_preferences->modifiers);
 	root.put_attr("sens_horizontal", input_preferences->sens_horizontal);
 	root.put_attr("sens_vertical", input_preferences->sens_vertical);
+	root.put_attr("classic_vertical_aim", input_preferences->classic_vertical_aim);
 	root.put_attr("classic_aim_speed_limits", input_preferences->classic_aim_speed_limits);
 	root.put_attr("mouse_accel_type", input_preferences->mouse_accel_type);
 	root.put_attr("mouse_accel_scale", input_preferences->mouse_accel_scale);
@@ -3697,6 +3608,7 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->mouse_accel_scale = 1.f;
 	preferences->raw_mouse_input = true;
 	preferences->extra_mouse_precision = true;
+	preferences->classic_vertical_aim = false;
 	preferences->classic_aim_speed_limits = true;
 
 	preferences->controller_analog = true;
@@ -4234,13 +4146,13 @@ void parse_input_preferences(InfoTree root, std::string version)
 	root.read_attr("sensitivity", input_preferences->sens_horizontal);
 	root.read_attr("sensitivity", input_preferences->sens_vertical);
 	root.read_attr("sens_horizontal", input_preferences->sens_horizontal);
+	root.read_attr("sens_vertical", input_preferences->sens_vertical);
 	
-	if (root.read_attr("sens_vertical", input_preferences->sens_vertical))
-	{
-		// Preserve the perceived effect of older values
-		if (!version.length() || version < "20181113")
-			input_preferences->sens_vertical /= 4;
-	}
+	if (!version.length() || version < "20181113")
+		input_preferences->classic_vertical_aim = true;
+	else if (version < "20190317")
+		input_preferences->classic_vertical_aim = false;
+	root.read_attr("classic_vertical_aim", input_preferences->classic_vertical_aim);
 	
 	if (!root.read_attr("classic_aim_speed_limits", input_preferences->classic_aim_speed_limits))
 	{
@@ -4262,6 +4174,21 @@ void parse_input_preferences(InfoTree root, std::string version)
 								  0, NUMBER_OF_MOUSE_ACCEL_TYPES - 1);
 	root.read_attr("mouse_accel_scale", input_preferences->mouse_accel_scale);
 	
+	// old prefs mixed "classic vertical aim" with acceleration type
+	if (version >= "20181113" && version < "20190317")
+	{
+		if (input_preferences->mouse_accel_type == _mouse_accel_symmetric)
+		{
+			input_preferences->classic_vertical_aim = false;
+			input_preferences->mouse_accel_type = _mouse_accel_classic;
+		}
+		else if (input_preferences->mouse_accel_type == _mouse_accel_classic)
+		{
+			input_preferences->classic_vertical_aim = true;
+			input_preferences->sens_vertical *= 4.f;
+		}
+	}
+
 	if (!version.length() || version < "20170821")
 		input_preferences->raw_mouse_input = false;
 	root.read_attr("raw_mouse_input", input_preferences->raw_mouse_input);

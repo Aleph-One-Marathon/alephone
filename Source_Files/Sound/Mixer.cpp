@@ -22,8 +22,6 @@
 #include "Mixer.h"
 #include "interface.h" // for strERRORS
 
-Mixer* Mixer::m_instance = 0;
-
 extern bool option_nosound;
 
 void Mixer::Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, int volume, uint16 samples)
@@ -149,11 +147,7 @@ void Mixer::EnsureNetworkAudioPlaying()
 			c->length = sNetworkAudioBufferDesc->mLength;
 			c->loop_length = 0;
 			c->rate = (kNetworkAudioSampleRate << 16) / obtained.freq;
-#ifdef ALEPHONE_LITTLE_ENDIAN
-			c->info.little_endian = true;
-#else
-			c->info.little_endian = false;
-#endif
+			c->info.little_endian = PlatformIsLittleEndian();
 			c->left_volume = 0x100;
 			c->right_volume = 0x100;
 			c->counter = 0;
@@ -335,7 +329,7 @@ static inline int16 Convert(uint8 i)
 
 static inline int32 lerp(int32 x0, int32 x1, _fixed rate)
 {
-	int32 v = x0 + ((x1 - x0) * (rate & 0xffff)) / 65536;
+	int32 v = x0 + ((1LL*x1 - x0) * (rate & 0xffff)) / 65536;
 	return v;
 }
 
@@ -623,7 +617,7 @@ void Mixer::Mix(uint8* p, int len, bool stereo, bool is_sixteen_bit, bool is_sig
 			{
 				if (is_sixteen_bit)
 				{
-					Output(reinterpret_cast<int16*>(p), output_left, output_right, samples, is_signed);
+					Output(reinterpret_cast<int16*>(p), output_left, samples, is_signed);
 					p += samples * 2;
 				}
 				else

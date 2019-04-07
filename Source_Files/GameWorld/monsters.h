@@ -263,7 +263,7 @@ const int SIZEOF_monster_definition = 156;
 // Turned the list of active monsters into a variable array
 
 extern vector<monster_data> MonsterList;
-#define monsters (&MonsterList[0])
+#define monsters (MonsterList.data())
 
 // extern struct monster_data *monsters;
 

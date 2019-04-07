@@ -520,6 +520,12 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .dead_players_drop_items <span class="version">20150619</span>
 </dt>
 <dd><p class="description">whether dead players drop items</p></dd>
+<dt>.deserialize(s) <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">deserializes s and returns the original Lua value</p>
+<p class="note">see Game.serialize </p>
+</dd>
 <dt>
     .difficulty<span class="access"> (read-only)</span>
 </dt>
@@ -579,6 +585,12 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd>
 <p class="description">saves the game (as if the user had activated a pattern buffer)</p>
 <p class="note">solo only </p>
+</dd>
+<dt>.serialize(v) <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">serializes v into a binary string</p>
+<p class="note">only numbers, strings, booleans, and tables (including Aleph One's built-in userdata tables) can be serialized </p>
 </dd>
 <dt>
     .ticks<span class="access"> (read-only)</span>
@@ -801,6 +813,13 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .retrieval<span class="access"> (read-only)</span> <span class="version">20081213</span>
 </dt>
 <dd><p class="description">whether level has retrieval flag set</p></dd>
+<dt>
+    .stash[key] <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">reads/writes values to a stash shared between all running Lua scripts</p>
+<p class="note">keys/values must be strings </p>
+</dd>
 <dt>
     .vacuum<span class="access"> (read-only)</span>
 </dt>
@@ -1554,7 +1573,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>
     .viewed_player<span class="access"> (read-only) (local player)</span> <span class="version">Git</span>
 </dt>
-<dd><p class="description">the player whose view is selected by view_player()</p></dd>
+<dd><p class="description">the player currently being viewed by the local player</p></dd>
       <dt>.weapons</dt>
 <dd><dl>
 <dt>

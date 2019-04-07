@@ -172,7 +172,7 @@ const int SIZEOF_old_light_data = 32;
 // took over their maximum number as how many of them
 
 extern std::vector<light_data> LightList;
-#define lights (&LightList[0])
+#define lights (LightList.data())
 #define MAXIMUM_LIGHTS_PER_MAP (LightList.size())
 
 // extern struct light_data *lights;

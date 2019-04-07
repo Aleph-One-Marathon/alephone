@@ -41,6 +41,7 @@ class SoundManager
 {
 public:
 	static inline SoundManager* instance() { 
+		static SoundManager *m_instance = 0;
 		if (!m_instance) m_instance = new SoundManager; 
 		return m_instance; 
 	}
@@ -163,8 +164,6 @@ private:
 
 	void TrackStereoSounds();
 	void UpdateAmbientSoundSources();
-
-	static SoundManager *m_instance;
 
 	bool initialized;
 	bool active;

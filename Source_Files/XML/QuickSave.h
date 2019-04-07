@@ -60,7 +60,6 @@ private:
     QuickSaves() { }
     void add(QuickSave save) { m_saves.push_back(save); }
     
-    static QuickSaves* m_instance;
     std::vector<QuickSave> m_saves;
 };
 

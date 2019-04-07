@@ -112,13 +112,13 @@ template<class T> void obj_copy(T& destination, const T& source)
 	{memcpy(&destination, &source, sizeof(T));}
 
 template<class T> void objlist_copy(T* destination, const T* source, size_t num_objects)
-	{memcpy(destination, source, num_objects*sizeof(T));}
+	{if (num_objects > 0) memcpy(destination, source, num_objects*sizeof(T));}
 
 template<class T> void obj_set(T& object, int value)
 	{memset(&object, value, sizeof(T));}
 
 template<class T> void objlist_set(T* object_list, int value, size_t num_objects)
-	{memset(object_list, value, num_objects*sizeof(T));}
+	{if (num_objects > 0) memset(object_list, value, num_objects*sizeof(T));}
 
 template<class T> void obj_clear(T& object)
 	{obj_set(object, 0);}

@@ -631,18 +631,16 @@ void precalculate_map_indexes(
 			//	&polygon_count);
 			
 			size_t line_count = LineIndices.size();
-			short *line_indexes = &LineIndices[0];
 			size_t endpoint_count = EndpointIndices.size();
-			short *endpoint_indexes = &EndpointIndices[0];
 			
 			for (size_t i=0;i<line_count;++i)	
 			{
-				add_map_index(line_indexes[i], &polygon->line_exclusion_zone_count);
+				add_map_index(LineIndices[i], &polygon->line_exclusion_zone_count);
 			}
 			
 			for (size_t i=0;i<endpoint_count;++i)
 			{
-				add_map_index(endpoint_indexes[i], &polygon->point_exclusion_zone_count);
+				add_map_index(EndpointIndices[i], &polygon->point_exclusion_zone_count);
 			}
 			
 			polygon->first_neighbor_index= dynamic_world->map_index_count;
@@ -653,12 +651,11 @@ void precalculate_map_indexes(
 			
 //			if (polygon_index==155) dprintf("polygon index #%d has %d neighbors:;dm %x %x;", polygon_index, polygon_count, polygon_indexes, sizeof(short)*polygon_count);
 			
-			short *polygon_indexes = &PolygonIndices[0];
 			size_t polygon_count = PolygonIndices.size();
 
 			for (size_t i=0;i<polygon_count;++i)
 			{
-				add_map_index(polygon_indexes[i], &polygon->neighbor_count);
+				add_map_index(PolygonIndices[i], &polygon->neighbor_count);
 			}
 		}
 	}

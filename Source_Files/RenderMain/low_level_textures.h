@@ -123,9 +123,9 @@ template <typename T>
 inline T alpha_blend(T fg, T bg, pixel8 alpha, pixel32 rmask, pixel32 bmask, pixel32 gmask)
 {
 	return (
-		(rmask & ((bg & rmask) + ((int)(((int)(fg & rmask) - (int)(bg & rmask)) * alpha) >> 8))) |
-		(gmask & ((bg & gmask) + ((int)(((int)(fg & gmask) - (int)(bg & gmask)) * alpha) >> 8))) |
-		(bmask & ((bg & bmask) + ((int)(((int)(fg & bmask) - (int)(bg & bmask)) * alpha) >> 8)))
+		(rmask & ((bg & rmask) + ((int)(1LL*((int)(fg & rmask) - (int)(bg & rmask)) * alpha) >> 8))) |
+		(gmask & ((bg & gmask) + ((int)(1LL*((int)(fg & gmask) - (int)(bg & gmask)) * alpha) >> 8))) |
+		(bmask & ((bg & bmask) + ((int)(1LL*((int)(fg & bmask) - (int)(bg & bmask)) * alpha) >> 8)))
 		);
 }
 

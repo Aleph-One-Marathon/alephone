@@ -349,15 +349,12 @@ myTMDumpProfile(myTMTask* inTask) {
 // a small handful of (small) elements anyway.
 void
 myTMCleanup(bool inWaitForFinishers) {
-    vector<myTMTaskPtr>::iterator	i;
-
-    for(i = sOutstandingTasks.begin(); i != sOutstandingTasks.end(); ++i) {
+    auto i = sOutstandingTasks.begin();
+    while (i != sOutstandingTasks.end()) {
         if((*i)->mKeepRunning == false && (inWaitForFinishers || (*i)->mIsRunning == false)) {
             myTMTaskPtr	theDeadTask = *i;
-            
-            // This does the right thing: i is sent to erase(), but before erase is called, i is decremented so
-            // the iterator remains valid.
-            sOutstandingTasks.erase(i--);
+            auto next_i = sOutstandingTasks.erase(i);
+            i = next_i;
             
 #ifdef DEBUG
             myTMDumpProfile(theDeadTask);
@@ -366,5 +363,7 @@ myTMCleanup(bool inWaitForFinishers) {
             SDL_WaitThread(theDeadTask->mThread, NULL);
             delete theDeadTask;
         }
+        else
+            ++i; // skip task
     }
 }

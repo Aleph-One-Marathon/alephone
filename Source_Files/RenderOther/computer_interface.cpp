@@ -266,36 +266,12 @@ struct font_dimensions {
 
 /* Terminal data loaded from map (maintained by computer_interface.cpp) */
 struct terminal_text_t {	// Object describing one terminal
-	terminal_text_t() : text_length(0), text(NULL) {}
-	terminal_text_t(const terminal_text_t &other) {copy(other);}
-	~terminal_text_t() {delete[] text;}
-
-	const terminal_text_t &operator=(const terminal_text_t &other)
-	{
-		if (this != &other)
-			copy(other);
-		return *this;
-	}
-
-	void copy(const terminal_text_t &other)
-	{
-		flags = other.flags;
-		lines_per_page = other.lines_per_page;
-		groupings = other.groupings;
-		font_changes = other.font_changes;
-		text_length = other.text_length;
-		text = new uint8[text_length];
-		memcpy(text, other.text, text_length);
-	}
-
-	uint16 flags;
-	int16 lines_per_page;
-
+	terminal_text_t() {}
+	uint16 flags = 0;
+	int16 lines_per_page = 0;
 	vector<terminal_groupings> groupings;
 	vector<text_face_data> font_changes;
-
-	int text_length;
-	uint8 *text;
+	vector<uint8> text;
 };
 
 static vector<terminal_text_t> map_terminal_text;
@@ -1380,8 +1356,8 @@ static void decode_text(
 static void encode_text(
 	terminal_text_t *terminal_text)
 {
-	int length = terminal_text->text_length;
-	uint8 *p = terminal_text->text;
+	int length = terminal_text->text.size();
+	uint8 *p = terminal_text->text.data();
 
 	for (int i=0; i<length/4; i++) {
 		p += 2;
@@ -2148,12 +2124,10 @@ terminal_text_t* MarathonTerminalCompiler::Compile()
 	BuildSuccessGroup();
 	BuildFailureGroup();
 
-	terminal->text = new uint8_t[out.size()];
-	std::copy(out.begin(), out.end(), terminal->text);
-	terminal->text_length = out.size();
+	terminal->text = out;
 
 	terminal->lines_per_page = calculate_lines_per_page();
-	calculate_maximum_lines_for_groups(&terminal->groupings[0], terminal->groupings.size(), reinterpret_cast<char*>(terminal->text));
+	calculate_maximum_lines_for_groups(&terminal->groupings[0], terminal->groupings.size(), reinterpret_cast<char*>(terminal->text.data()));
 
 	return terminal.release();
 }
@@ -2517,7 +2491,7 @@ static struct text_face_data *get_indexed_font_changes(
 static char *get_text_base(
 	terminal_text_t *data)
 {
-	return (char *)data->text;
+	return (char *)data->text.data();
 }
 
 static short calculate_lines_per_page(
@@ -2564,7 +2538,7 @@ static size_t packed_terminal_length(const terminal_text_t &t)
 	return SIZEOF_static_preprocessed_terminal_data
 	     + t.groupings.size() * SIZEOF_terminal_groupings
 	     + t.font_changes.size() * SIZEOF_text_face_data
-	     + t.text_length;
+	     + t.text.size();
 }
 
 size_t calculate_packed_terminal_data_length(void)
@@ -2639,10 +2613,10 @@ void unpack_map_terminal_data(uint8 *p, size_t count)
 		assert((p - p_start) == static_cast<ptrdiff_t>(SIZEOF_text_face_data) * font_changes_count);
 
 		// Read text (no conversion)
-		data.text_length = total_length - static_cast<int>(p - p_header);
-		assert(data.text_length >= 0);
-		data.text = new uint8[data.text_length];
-		StreamToBytes(p, data.text, data.text_length);
+		const int text_length = total_length - static_cast<int>(p - p_header);
+		assert(text_length >= 0);
+		data.text.resize(text_length);
+		StreamToBytes(p, data.text.data(), data.text.size());
 
 		// Continue with next terminal
 		count -= total_length;
@@ -2698,7 +2672,7 @@ void pack_map_terminal_data(uint8 *p, size_t count)
 		assert((p - p_start) == static_cast<ptrdiff_t>(SIZEOF_text_face_data) * font_changes_count);
 
 		// Write text (no conversion)
-		BytesToStream(p, t->text, t->text_length);
+		BytesToStream(p, t->text.data(), t->text.size());
 
 		// Continue with next terminal
 		t++;

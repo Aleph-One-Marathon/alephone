@@ -505,11 +505,31 @@ void Screen::bound_screen_to_rect(SDL_Rect &r, bool in_game)
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glViewport(vpx, pixh - vph - vpy, vpw, vph);
+		m_viewport_rect.x = vpx;
+		m_viewport_rect.y = pixh - vph - vpy;
+		m_viewport_rect.w = vpw;
+		m_viewport_rect.h = vph;
 		glOrtho(0, r.w, r.h, 0, -1.0, 1.0);
+		m_ortho_rect.x = m_ortho_rect.y = 0;
+		m_ortho_rect.w = r.w;
+		m_ortho_rect.h = r.h;
 	}
 #endif
 }
 
+void Screen::scissor_screen_to_rect(SDL_Rect &r)
+{
+#ifdef HAVE_OPENGL
+	if (MainScreenIsOpenGL())
+	{
+		glEnable(GL_SCISSOR_TEST);
+		glScissor(m_viewport_rect.x + (r.x * m_viewport_rect.w/m_ortho_rect.w),
+				  m_viewport_rect.y + ((m_ortho_rect.h - r.y - r.h) * m_viewport_rect.h/m_ortho_rect.h),
+				  r.w * m_viewport_rect.w/m_ortho_rect.w,
+				  r.h * m_viewport_rect.h/m_ortho_rect.h);
+	}
+#endif
+}
 
 
 void Screen::window_to_screen(int &x, int &y)

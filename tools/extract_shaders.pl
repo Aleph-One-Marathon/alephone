@@ -43,7 +43,7 @@ while (my $line = <$file>)
     {
       $line = <$file>;
       last OUTER unless $line;
-      if ($line =~ /^\s*"(.*)\\n"/)
+      if ($line =~ /^\s*"(.*?)(?:\\n)?"/)
       {
         $prog .= "$1\n";
       }
@@ -66,7 +66,7 @@ close($file);
 
 ## Create plugin directory and xml/mml files
 
-my $version = `grep '^#define A1_DATE_VERSION' $FindBin::Bin/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\"\\)\\(.*\\)\\(\\"\\)/\\2/g' | tr -d '\\n'`;
+my $version = `grep '^#define A1_DATE_VERSION' "$FindBin::Bin/../Source_Files/Misc/alephversion.h" | sed -e 's/\\(.*\\"\\)\\(.*\\)\\(\\"\\)/\\2/g' | tr -d '\\n'`;
 
 my $plugin = "Default Shaders";
 unless (-d $plugin)

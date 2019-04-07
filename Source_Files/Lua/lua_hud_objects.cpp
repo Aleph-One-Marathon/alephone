@@ -49,6 +49,7 @@ LUA_HUD_OBJECTS.CPP
 #include <boost/shared_ptr.hpp>
 #include <algorithm>
 #include <cmath>
+#include <unordered_map>
 
 #ifdef HAVE_LUA
 
@@ -2822,7 +2823,10 @@ static int Lua_HUDGame_Get_Version(lua_State *L)
 	return 1;
 }
 
+extern int Lua_Game_Deserialize(lua_State* L);
+
 const luaL_Reg Lua_HUDGame_Get[] = {
+{"deserialize", L_TableFunction<Lua_Game_Deserialize>},
 {"difficulty", Lua_HUDGame_Get_Difficulty},
 {"kill_limit", Lua_HUDGame_Get_Kill_Limit},
 {"time_remaining", Lua_HUDGame_Get_Time_Remaining},
@@ -2833,6 +2837,35 @@ const luaL_Reg Lua_HUDGame_Get[] = {
 {"players", Lua_HUDGame_Get_Players},
 {0, 0}
 };
+
+char Lua_HUDLevel_Stash_Name[] = "LevelStash";
+typedef L_Class<Lua_HUDLevel_Stash_Name> Lua_HUDLevel_Stash;
+
+extern std::unordered_map<std::string, std::string> lua_stash;
+
+static int Lua_HUDLevel_Stash_Get(lua_State* L)
+{
+        if (!lua_isstring(L, 2))
+                return luaL_error(L, "stash: incorrect argument type");
+        
+        auto it = lua_stash.find(lua_tostring(L, 2));
+        if (it != lua_stash.end())
+        {
+                lua_pushlstring(L, it->second.data(), it->second.size());
+        }
+        else
+        {
+                lua_pushnil(L);
+        }
+
+        return 1;
+}
+
+const luaL_Reg Lua_HUDLevel_Stash_Metatable[] = {
+        {"__index", Lua_HUDLevel_Stash_Get},
+        {0, 0}
+};
+
 
 
 char Lua_HUDLevel_Name[] = "Level";
@@ -2861,10 +2894,17 @@ static int Lua_HUDLevel_Get_Map_Checksum(lua_State *L)
     return 1;
 }
 
+static int Lua_HUDLevel_Get_Stash(lua_State* L)
+{
+    Lua_HUDLevel_Stash::Push(L, 0);
+    return 1;
+}
+
 const luaL_Reg Lua_HUDLevel_Get[] = {
     {"name", Lua_HUDLevel_Get_Name},
     {"index", Lua_HUDLevel_Get_Index},
     {"map_checksum", Lua_HUDLevel_Get_Map_Checksum},
+    {"stash", Lua_HUDLevel_Get_Stash},
     {0, 0}
 };
 
@@ -3238,6 +3278,8 @@ int Lua_HUDObjects_register(lua_State *L)
 	Lua_HUDGame::Register(L, Lua_HUDGame_Get);
 	Lua_HUDGame::Push(L, 0);
 	lua_setglobal(L, Lua_HUDGame_Name);
+
+        Lua_HUDLevel_Stash::Register(L, 0, 0, Lua_HUDLevel_Stash_Metatable);
 
 	Lua_HUDLevel::Register(L, Lua_HUDLevel_Get);
 	Lua_HUDLevel::Push(L, 0);

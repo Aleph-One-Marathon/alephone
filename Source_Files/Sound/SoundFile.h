@@ -136,13 +136,14 @@ public:
 	virtual boost::shared_ptr<SoundData> GetSoundData(SoundDefinition* definition, int permutation) = 0;
 
 	virtual int SourceCount() { return 1; };
+	virtual ~SoundFile() = default;
 };
 
 class M1SoundFile : public SoundFile
 {
 public:
 	M1SoundFile() : cached_sound_code(-1) { }
-
+	virtual ~M1SoundFile() = default;
 	bool Open(FileSpecifier& SoundFile);
 	void Close();
 	SoundDefinition* GetSoundDefinition(int source, int sound_index);
@@ -163,6 +164,7 @@ private:
 class M2SoundFile : public SoundFile
 {
 public:
+	virtual ~M2SoundFile() = default;
 	bool Open(FileSpecifier &SoundFile);
 	void Close();
 	SoundDefinition* GetSoundDefinition(int source, int sound_index);

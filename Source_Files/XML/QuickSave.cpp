@@ -89,15 +89,14 @@ public:
 
 private:
     QuickSaveImageCache() {};
-    static QuickSaveImageCache* m_instance;
     static const int k_max_items = 100;
     
     std::list<cache_pair_t> m_used;
     std::map<std::string, cache_iter_t> m_images;
 };
 
-QuickSaveImageCache* QuickSaveImageCache::m_instance = 0;
 QuickSaveImageCache* QuickSaveImageCache::instance() {
+    static QuickSaveImageCache* m_instance = nullptr;
     if (!m_instance) {
         m_instance = new QuickSaveImageCache;
     }
@@ -773,8 +772,8 @@ bool QuickSaveLoader::ParseDirectory(FileSpecifier& dir)
 }
 
 
-QuickSaves* QuickSaves::m_instance = 0;
 QuickSaves* QuickSaves::instance() {
+	static QuickSaves* m_instance = nullptr;
     if (!m_instance) {
         m_instance = new QuickSaves;
     }

@@ -101,8 +101,8 @@ class AcceptJoinMessage : public SmallMessageHelper
   
  private:
   
-  bool mAccepted;
-  NetPlayer mPlayer;
+  bool mAccepted = false;
+  NetPlayer mPlayer = {};
 };
 
 class CapabilitiesMessage : public SmallMessageHelper
@@ -159,8 +159,8 @@ class ChangeColorsMessage : public SmallMessageHelper
 
  private:
   
-  int16 mColor;
-  int16 mTeam;
+  int16 mColor = 0;
+  int16 mTeam = 0;
 };
 
 class ClientInfoMessage : public SmallMessageHelper
@@ -188,9 +188,9 @@ protected:
 	bool reallyInflateFrom(AIStream& inputStream);
 
 private:
-	ClientChatInfo mClientChatInfo;
-	int16 mAction;
-	int16 mStreamID;
+	ClientChatInfo mClientChatInfo = {};
+	int16 mAction = kAdd;
+	int16 mStreamID = 0;
 };
   
 
@@ -258,7 +258,7 @@ protected:
 	bool reallyInflateFrom(AIStream& inputStream);
 	
 private:
-	prospective_joiner_info mInfo;
+	prospective_joiner_info mInfo = {};
 	std::string mVersion;
 };
 
@@ -394,7 +394,7 @@ protected:
 
 private:
   std::string mString;
-  Reason mReason;
+  Reason mReason = kNoReason;
 };
 
 
@@ -423,7 +423,7 @@ class TopologyMessage : public SmallMessageHelper
   bool reallyInflateFrom(AIStream& inputStream);
   
  private:
-  NetTopology mTopology;
+  NetTopology mTopology = {};
 };
 
 struct Client {

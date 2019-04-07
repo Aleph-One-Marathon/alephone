@@ -156,7 +156,7 @@ void randomize_scenery_shapes(
 	
 	for (object_index= 0, object= objects; object_index<MAXIMUM_OBJECTS_PER_MAP; ++object_index, ++object)
 	{
-		if (GET_OBJECT_OWNER(object)==_object_is_scenery)
+		if (SLOT_IS_USED(object) && GET_OBJECT_OWNER(object)==_object_is_scenery)
 		{
 			struct scenery_definition *definition= get_scenery_definition(object->permutation);
 			if (!definition) continue;

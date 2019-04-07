@@ -186,6 +186,14 @@ void HUD_Lua_Class::apply_clip(void)
     r.y = m_wr.y + scr->lua_clip_rect.y;
     r.w = MIN(scr->lua_clip_rect.w, m_wr.w - scr->lua_clip_rect.x);
     r.h = MIN(scr->lua_clip_rect.h, m_wr.h - scr->lua_clip_rect.y);
+#ifdef HAVE_OPENGL
+	if (m_opengl)
+	{
+		glEnable(GL_SCISSOR_TEST);
+		scr->scissor_screen_to_rect(r);
+	}
+	else
+#endif
 	if (m_surface)
 	{
 		SDL_SetClipRect(MainScreenSurface(), &r);

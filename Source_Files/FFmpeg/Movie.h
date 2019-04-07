@@ -32,7 +32,12 @@
 class Movie
 {
 public:
-	static Movie *instance() { if (!m_instance) m_instance = new Movie(); return m_instance; }
+	static Movie *instance() { 
+		static Movie *m_instance = nullptr;
+		if (!m_instance
+				) m_instance = new Movie(); 
+		return m_instance; 
+	}
 	
 	void PromptForRecording();
 	void StartRecording(std::string path);
@@ -47,7 +52,6 @@ public:
 	void AddFrame(FrameType ftype = FRAME_NORMAL);
 
 private:
-  static class Movie *m_instance;
   
   std::string moviefile;
   SDL_Rect view_rect;

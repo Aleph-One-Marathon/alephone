@@ -58,12 +58,12 @@ void OGL_Blitter::_LoadTextures()
 		m_tile_height = std::max(m_tile_height, 128);
 	}
 
-	SDL_Surface *t;
-#ifdef ALEPHONE_LITTLE_ENDIAN
-	t = SDL_CreateRGBSurface(SDL_SWSURFACE, m_tile_width, m_tile_height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-#else
-	t = SDL_CreateRGBSurface(SDL_SWSURFACE, m_tile_width, m_tile_height, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-#endif
+	SDL_Surface *t = nullptr;
+	if (PlatformIsLittleEndian()) {
+		t = SDL_CreateRGBSurface(SDL_SWSURFACE, m_tile_width, m_tile_height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+	} else {
+		t = SDL_CreateRGBSurface(SDL_SWSURFACE, m_tile_width, m_tile_height, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+	}
 	if (!t)
 		return;
 	

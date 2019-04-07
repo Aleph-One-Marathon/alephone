@@ -748,9 +748,9 @@ static void handleHelloMessage(HelloMessage* helloMessage, CommunicationsChannel
 	if (handlerState == netAwaitingHello) {
 		// if the network versions match, reply with my join info
 		if (helloMessage->version() == kNetworkSetupProtocolID) {
-			prospective_joiner_info my_info;
+			prospective_joiner_info my_info = {};
       
-			strncpy(my_info.name, player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH);
+			strncpy(my_info.name, player_preferences->name, sizeof(my_info.name) - 1);
 			my_info.color = player_preferences->color;
 			my_info.team = player_preferences->team;
 
@@ -1111,9 +1111,9 @@ void ChatCallbacks::SendChatMessage(const std::string& message)
 	}
 }
 
-InGameChatCallbacks *InGameChatCallbacks::m_instance = NULL;
 
 InGameChatCallbacks *InGameChatCallbacks::instance() {
+	static InGameChatCallbacks *m_instance = nullptr;
   if (!m_instance) {
     m_instance = new InGameChatCallbacks();
   }
@@ -1894,12 +1894,14 @@ static void NetInitializeTopology(
 
 	NetLocalAddrBlock(&local_player->dspAddress, GAME_PORT);
 	NetLocalAddrBlock(&local_player->ddpAddress, ddpSocket);
-	memcpy(&local_player->player_data, player_data, player_data_size);
+	if (player_data_size > 0)
+		memcpy(&local_player->player_data, player_data, player_data_size);
 	
 	/* initialize the network topology (assume weÕre the only player) */
 	topology->player_count= 1;
 	topology->nextIdentifier= 1;
-	memcpy(&topology->game_data, game_data, game_data_size);
+	if (game_data_size > 0)
+		memcpy(&topology->game_data, game_data, game_data_size);
 	gameSessionIdentifier.clear();
 }
 

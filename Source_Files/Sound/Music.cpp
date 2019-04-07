@@ -23,8 +23,6 @@
 #include "Mixer.h"
 #include "XML_LevelScript.h"
 
-Music* Music::m_instance = 0;
-
 Music::Music() : 
 	music_initialized(false), 
 	music_intro(false), 

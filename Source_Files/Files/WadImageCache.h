@@ -106,7 +106,7 @@ public:
 	
 
 private:
-	WadImageCache() : m_cachesize(0), m_sizelimit(300000000), m_autosave(true) { }
+	WadImageCache() { }
 	
 	SDL_Surface *image_from_name(std::string& name) const;
 	void delete_storage_for_name(std::string& name) const;
@@ -117,13 +117,12 @@ private:
 	std::string retrieve_name(WadImageDescriptor& desc, int width, int height, bool mark_accessed = true);
 	void autosave_cache() { if (m_autosave) save_cache(); }
 	
-	static WadImageCache* m_instance;
 	std::list<cache_pair_t> m_used;
 	std::map<cache_key_t, cache_iter_t> m_cacheinfo;
-	size_t m_cachesize;
-	size_t m_sizelimit;
-	bool m_autosave;
-	bool m_cache_dirty;
+	size_t m_cachesize = 0;
+	size_t m_sizelimit = 300000000;
+	bool m_autosave = true;
+	bool m_cache_dirty = false;
 };
 
 

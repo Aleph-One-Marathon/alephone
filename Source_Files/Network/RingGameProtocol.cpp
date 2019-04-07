@@ -550,9 +550,9 @@ RingGameProtocol::Enter(short* inNetStatePtr)
 	bool success= false;
 	sNetStatePtr= inNetStatePtr;
 	status = (NetStatusPtr)malloc(sizeof(NetStatus));
-	memset(status, 0, sizeof(NetStatus));
 	if(status)
 	{
+		memset(status, 0, sizeof(NetStatus));
 		status->buffer = (byte *)malloc(ddpMaxData);
 		if (status->buffer)
 		{

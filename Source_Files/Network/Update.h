@@ -31,7 +31,12 @@
 class Update
 {
 public:
-	static Update *instance() { if (!m_instance) m_instance = new Update(); return m_instance; }
+	static Update *instance() { 
+		static Update *m_instance = nullptr;
+		if (!m_instance) 
+			m_instance = new Update(); 
+		return m_instance; 
+	}
 
 	enum Status
 	{
@@ -45,7 +50,6 @@ public:
 	std::string NewDisplayVersion() { assert(m_status == UpdateAvailable); return m_new_display_version; }
 
 private:
-	static Update *m_instance;
 	Update();
 	~Update();
 
