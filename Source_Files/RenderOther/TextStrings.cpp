@@ -123,7 +123,6 @@ void parse_mml_stringset(const InfoTree& root)
 			continue;
 		
 		std::string val = child.get_value<std::string>("");
-		//		StringSetRoot[index][cindex] = sjis2utf8(val.c_str(), val.length());
 		StringSetRoot[index][cindex] = val;
 	}
 }

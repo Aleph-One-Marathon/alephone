@@ -461,17 +461,7 @@ uint16 ttf_font_info::_text_width(const char *text, uint16 style, bool utf8) con
 uint16 ttf_font_info::_text_width(const char *text, size_t length, uint16 style, bool utf8) const
 {
 	int width = 0;
-	if (utf8)
-	{
-		char *temp = process_printable(text, length);
-		TTF_SizeUTF8(get_ttf(style), temp, &width, 0);
-	}
-	else
-	{
-		uint16 *temp = sjis2utf16(text, length);
-		TTF_SizeUNICODE(get_ttf(style), temp, &width, 0);
-	}
-	
+	TTF_SizeUTF8(get_ttf(style), text, &width, 0);
 	return width;
 }
 

@@ -283,12 +283,12 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 
 static const char *far_filter_labels[5] = {
 //	"None", "Linear", "Bilinear", "Trilinear", NULL
-	"‚È‚µ", "ƒŠƒjƒA", "ƒoƒCƒŠƒjƒA", "ƒgƒŠƒjƒA", NULL
+	"ãªã—", "ãƒªãƒ‹ã‚¢", "ãƒã‚¤ãƒªãƒ‹ã‚¢", "ãƒˆãƒªãƒ‹ã‚¢", NULL
 };
 
 static const char *near_filter_labels[3] = {
 //	"None", "Linear", NULL
-	"‚È‚µ", "ƒŠƒjƒA", NULL
+	"ãªã—", "ãƒªãƒ‹ã‚¢", NULL
 };
 
 class w_aniso_slider : public w_slider {
@@ -313,7 +313,7 @@ public:
 
 		vertical_placer *placer = new vertical_placer;
 		//		placer->dual_add(new w_title("OPENGL OPTIONS"), m_dialog);
-		placer->dual_add(new w_title("OpenGL‚ÌƒIƒvƒVƒ‡ƒ“"), m_dialog);
+		placer->dual_add(new w_title("OpenGLã®ã‚ªãƒ—ã‚·ãƒ§ãƒ³"), m_dialog);
 		placer->add(new w_spacer(), true);
 		
 		// horizontal_placer *tabs_placer = new horizontal_placer;
@@ -330,8 +330,8 @@ public:
 		std::vector<std::string> labels;
 //		labels.push_back("GENERAL");
 //		labels.push_back("ADVANCED");
-		labels.push_back("ˆê”Ê");
-		labels.push_back("Šg’£");
+		labels.push_back("ä¸€èˆ¬");
+		labels.push_back("æ‹¡å¼µ");
 		w_tab *tabs = new w_tab(labels, m_tabs);
 		placer->dual_add(tabs, m_dialog);
 		
@@ -342,101 +342,101 @@ public:
 		
 		w_toggle *fog_w = new w_toggle(false);
 //		general_table->dual_add(fog_w->label("Fog"), m_dialog);
-		general_table->dual_add(fog_w->label("ƒtƒHƒO"), m_dialog);
+		general_table->dual_add(fog_w->label("ãƒ•ã‚©ã‚°"), m_dialog);
 		general_table->dual_add(fog_w, m_dialog);
 
 		w_toggle *fader_w = new w_toggle(false);
 //		general_table->dual_add(fader_w->label("Color Effects"), m_dialog);
-		general_table->dual_add(fader_w->label("ƒJƒ‰[ƒGƒtƒFƒNƒg"), m_dialog);
+		general_table->dual_add(fader_w->label("ã‚«ãƒ©ãƒ¼ã‚¨ãƒ•ã‚§ã‚¯ãƒˆ"), m_dialog);
 		general_table->dual_add(fader_w, m_dialog);
 
 		w_toggle *liq_w = new w_toggle(false);
 //		general_table->dual_add(liq_w->label("Transparent Liquids"), m_dialog);
-		general_table->dual_add(liq_w->label("‰t‘Ì‚ğ”¼“§–¾‰»"), m_dialog);
+		general_table->dual_add(liq_w->label("æ¶²ä½“ã‚’åŠé€æ˜åŒ–"), m_dialog);
 		general_table->dual_add(liq_w, m_dialog);
 
 		w_toggle *models_w = new w_toggle(false);
 //		general_table->dual_add(models_w->label("3D Models"), m_dialog);
-		general_table->dual_add(models_w->label("3Dƒ‚ƒfƒ‹"), m_dialog);
+		general_table->dual_add(models_w->label("3Dãƒ¢ãƒ‡ãƒ«"), m_dialog);
 		general_table->dual_add(models_w, m_dialog);
 
 		w_toggle *perspective_w = new w_toggle(false);
 		//		general_table->dual_add(perspective_w->label("3D Perspective"), m_dialog);
-		general_table->dual_add(perspective_w->label("3D ‰“‹ß–@"), m_dialog);
+		general_table->dual_add(perspective_w->label("3D é è¿‘æ³•"), m_dialog);
 		general_table->dual_add(perspective_w, m_dialog);
 		
 		w_toggle *blur_w = new w_toggle(false);
 		//general_table->dual_add(blur_w->label("Bloom Effects"), m_dialog);
-		general_table->dual_add(blur_w->label("ƒuƒ‹[ƒ€ƒGƒtƒFƒNƒg"), m_dialog);
+		general_table->dual_add(blur_w->label("ãƒ–ãƒ«ãƒ¼ãƒ ã‚¨ãƒ•ã‚§ã‚¯ãƒˆ"), m_dialog);
 		general_table->dual_add(blur_w, m_dialog);
 		
 		w_toggle *bump_w = new w_toggle(false);
 		//general_table->dual_add(bump_w->label("Bump Mapping"), m_dialog);
-		general_table->dual_add(bump_w->label("ƒoƒ“ƒvƒ}ƒbƒsƒ“ƒO"), m_dialog);
+		general_table->dual_add(bump_w->label("ãƒãƒ³ãƒ—ãƒãƒƒãƒ”ãƒ³ã‚°"), m_dialog);
 		general_table->dual_add(bump_w, m_dialog);
 		
 		general_table->add_row(new w_spacer(), true);
 
 		w_toggle *vsync_w = new w_toggle(false);
 //		general_table->dual_add(vsync_w->label("VSync"), m_dialog);
-		general_table->dual_add(vsync_w->label("‚’¼“¯Šú"), m_dialog);
+		general_table->dual_add(vsync_w->label("å‚ç›´åŒæœŸ"), m_dialog);
 		general_table->dual_add(vsync_w, m_dialog);
 
 		w_select_popup *fsaa_w = new w_select_popup ();
 //		general_table->dual_add(fsaa_w->label("Full Scene Antialiasing"), m_dialog);
-		general_table->dual_add(fsaa_w->label("ƒtƒ‹ƒXƒNƒŠ[ƒ“ƒAƒ“ƒ`ƒGƒCƒŠƒAƒX"), m_dialog);
+		general_table->dual_add(fsaa_w->label("ãƒ•ãƒ«ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚¢ãƒ³ãƒã‚¨ã‚¤ãƒªã‚¢ã‚¹"), m_dialog);
 		general_table->dual_add(fsaa_w, m_dialog);
 		vector<string> fsaa_strings;
 //		fsaa_strings.push_back ("Off");
 //		fsaa_strings.push_back ("2x");
 //		fsaa_strings.push_back ("4x");
-		fsaa_strings.push_back ("Ø‚è");
-		fsaa_strings.push_back ("‚Q”{");
-		fsaa_strings.push_back ("‚S”{");
+		fsaa_strings.push_back ("åˆ‡ã‚Š");
+		fsaa_strings.push_back ("ï¼’å€");
+		fsaa_strings.push_back ("ï¼”å€");
 		fsaa_w->set_labels (fsaa_strings);
 		
 		w_aniso_slider* aniso_w = new w_aniso_slider(6, 1);
 //		general_table->dual_add(aniso_w->label("Anisotropic Filtering"),m_dialog);
-		general_table->dual_add(aniso_w->label("ˆÙ•û«ƒtƒBƒ‹ƒ^ƒŠƒ“ƒO"),m_dialog);
+		general_table->dual_add(aniso_w->label("ç•°æ–¹æ€§ãƒ•ã‚£ãƒ«ã‚¿ãƒªãƒ³ã‚°"),m_dialog);
 		general_table->dual_add(aniso_w, m_dialog);
 
 		w_toggle *srgb_w = new w_toggle(false);
 //		general_table->dual_add(srgb_w->label("Gamma-corrected Blending"), m_dialog);
-//		general_table->dual_add(srgb_w->label("ƒKƒ“ƒ}•â³ƒuƒŒƒ“ƒfƒBƒ“ƒO"), m_dialog);
+//		general_table->dual_add(srgb_w->label("ã‚¬ãƒ³ãƒè£œæ­£ãƒ–ãƒ¬ãƒ³ãƒ‡ã‚£ãƒ³ã‚°"), m_dialog);
 //		general_table->dual_add(srgb_w, m_dialog);
 
 
 		general_table->add_row(new w_spacer(), true);
 
 //		general_table->dual_add_row(new w_static_text("Replacement Texture Quality"), m_dialog);
-		general_table->dual_add_row(new w_static_text("ŠO•”ƒeƒXƒNƒ`ƒƒ‚ÌƒNƒIƒŠƒeƒB"), m_dialog);
+		general_table->dual_add_row(new w_static_text("å¤–éƒ¨ãƒ†ã‚¹ã‚¯ãƒãƒ£ã®ã‚¯ã‚ªãƒªãƒ†ã‚£"), m_dialog);
 	
 		w_select_popup *texture_quality_wa[OGL_NUMBER_OF_TEXTURE_TYPES];
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) texture_quality_wa[i] = NULL;
 		
 		texture_quality_wa[OGL_Txtr_Wall] =  new w_select_popup ();
 //		general_table->dual_add(texture_quality_wa[OGL_Txtr_Wall]->label("Walls"), m_dialog);
-		general_table->dual_add(texture_quality_wa[OGL_Txtr_Wall]->label("•Ç"), m_dialog);
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_Wall]->label("å£"), m_dialog);
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_Wall], m_dialog);
 		
 		texture_quality_wa[OGL_Txtr_Landscape] = new w_select_popup ();
 //		general_table->dual_add(texture_quality_wa[OGL_Txtr_Landscape]->label("Landscapes"), m_dialog);
-		general_table->dual_add(texture_quality_wa[OGL_Txtr_Landscape]->label("”wŒi"), m_dialog);
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_Landscape]->label("èƒŒæ™¯"), m_dialog);
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_Landscape], m_dialog);
 
 		texture_quality_wa[OGL_Txtr_Inhabitant] = new w_select_popup ();
 //		general_table->dual_add(texture_quality_wa[OGL_Txtr_Inhabitant]->label("Sprites"), m_dialog);
-		general_table->dual_add(texture_quality_wa[OGL_Txtr_Inhabitant]->label("ƒXƒvƒ‰ƒCƒg"), m_dialog);
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_Inhabitant]->label("ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆ"), m_dialog);
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_Inhabitant], m_dialog);
 
 		texture_quality_wa[OGL_Txtr_WeaponsInHand] = new w_select_popup ();
 //		general_table->dual_add(texture_quality_wa[OGL_Txtr_WeaponsInHand]->label("Weapons in Hand"), m_dialog);
-		general_table->dual_add(texture_quality_wa[OGL_Txtr_WeaponsInHand]->label("è’†‚Ì•Ší"), m_dialog);
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_WeaponsInHand]->label("æ‰‹ä¸­ã®æ­¦å™¨"), m_dialog);
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_WeaponsInHand], m_dialog);
 
 		w_select_popup *model_quality_w = new w_select_popup();
 //		general_table->dual_add(model_quality_w->label("3D Model Skins"), m_dialog);
-		general_table->dual_add(model_quality_w->label("3Dƒ‚ƒfƒ‹‚ÌƒXƒLƒ“"), m_dialog);
+		general_table->dual_add(model_quality_w->label("3Dãƒ¢ãƒ‡ãƒ«ã®ã‚¹ã‚­ãƒ³"), m_dialog);
 		general_table->dual_add(model_quality_w, m_dialog);
 	
 		vector<string> tex_quality_strings;
@@ -445,11 +445,11 @@ public:
 //		tex_quality_strings.push_back ("High");
 //		tex_quality_strings.push_back ("Higher");
 //		tex_quality_strings.push_back ("Highest");
-		tex_quality_strings.push_back ("–³§ŒÀ");
-		tex_quality_strings.push_back ("’Êí");
-		tex_quality_strings.push_back ("‚‚¢");
-		tex_quality_strings.push_back ("‚•iˆÊ");
-		tex_quality_strings.push_back ("Å‚•iˆÊ");
+		tex_quality_strings.push_back ("ç„¡åˆ¶é™");
+		tex_quality_strings.push_back ("é€šå¸¸");
+		tex_quality_strings.push_back ("é«˜ã„");
+		tex_quality_strings.push_back ("é«˜å“ä½");
+		tex_quality_strings.push_back ("æœ€é«˜å“ä½");
 	
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) {
 			if (texture_quality_wa[i]) {
@@ -465,21 +465,21 @@ public:
 	
 		w_toggle *geforce_fix_w = new w_toggle(false);
 //		advanced_table->dual_add(geforce_fix_w->label("GeForce 1-4 Texture Fix"), m_dialog);
-		advanced_table->dual_add(geforce_fix_w->label("GeForce 1`4‚ÌƒeƒXƒNƒ`ƒƒ‚Ì–â‘è‚ğ‰ğŒˆ"), m_dialog);
+		advanced_table->dual_add(geforce_fix_w->label("GeForce 1ã€œ4ã®ãƒ†ã‚¹ã‚¯ãƒãƒ£ã®å•é¡Œã‚’è§£æ±º"), m_dialog);
 		advanced_table->dual_add(geforce_fix_w, m_dialog);
 		
 		w_toggle *use_npot_w = new w_toggle(false);
 //		advanced_table->dual_add(use_npot_w->label("Non-Power-of-Two Textures"), m_dialog);
-		advanced_table->dual_add(use_npot_w->label("”ñ‚QæƒeƒXƒNƒ`ƒƒ"), m_dialog);
+		advanced_table->dual_add(use_npot_w->label("éï¼’ä¹—ãƒ†ã‚¹ã‚¯ãƒãƒ£"), m_dialog);
 		advanced_table->dual_add(use_npot_w, m_dialog);
 //		advanced_table->dual_add_row(new w_static_text("Non-power-of-two textures conserve memory,"), m_dialog);
 //		advanced_table->dual_add_row(new w_static_text("but cause problems on some machines."), m_dialog);
-		advanced_table->dual_add_row(new w_static_text("”ñ‚QæƒeƒXƒNƒ`ƒƒ‚ÍAƒƒ‚ƒŠ‚Ìg—p—Ê‚ğ—}§‚µ‚Ü‚·B"), m_dialog);
-		advanced_table->dual_add_row(new w_static_text("‚½‚¾‚µAƒ}ƒVƒ“‚É‚æ‚Á‚Ä‚Í–â‘è‚ª”­¶‚·‚é‚±‚Æ‚ª‚ ‚è‚Ü‚·B"), m_dialog);
+		advanced_table->dual_add_row(new w_static_text("éï¼’ä¹—ãƒ†ã‚¹ã‚¯ãƒãƒ£ã¯ã€ãƒ¡ãƒ¢ãƒªã®ä½¿ç”¨é‡ã‚’æŠ‘åˆ¶ã—ã¾ã™ã€‚"), m_dialog);
+		advanced_table->dual_add_row(new w_static_text("ãŸã ã—ã€ãƒã‚·ãƒ³ã«ã‚ˆã£ã¦ã¯å•é¡ŒãŒç™ºç”Ÿã™ã‚‹ã“ã¨ãŒã‚ã‚Šã¾ã™ã€‚"), m_dialog);
 
 		advanced_table->add_row(new w_spacer(), true);
 //		advanced_table->dual_add_row(new w_static_text("Texture Filtering"), m_dialog);
-		advanced_table->dual_add_row(new w_static_text("ƒeƒXƒNƒ`ƒƒ‚ÌƒtƒBƒ‹ƒ^ƒŠƒ“ƒO"), m_dialog);
+		advanced_table->dual_add_row(new w_static_text("ãƒ†ã‚¹ã‚¯ãƒãƒ£ã®ãƒ•ã‚£ãƒ«ã‚¿ãƒªãƒ³ã‚°"), m_dialog);
 		advanced_placer->add(advanced_table, true);
 
 		w_select* near_filter_wa[OGL_NUMBER_OF_TEXTURE_TYPES];
@@ -498,10 +498,10 @@ public:
 //		near_filter_labels[OGL_Txtr_Inhabitant] = new w_label("Sprites");
 //		near_filter_labels[OGL_Txtr_Landscape] = new w_label("Landscapes");
 //		near_filter_labels[OGL_Txtr_WeaponsInHand] = new w_label("Weapons in Hand / HUD");
-		near_filter_labels[OGL_Txtr_Wall] = new w_label("•Ç");
-		near_filter_labels[OGL_Txtr_Inhabitant] = new w_label("ƒXƒvƒ‰ƒCƒg");
-		near_filter_labels[OGL_Txtr_Landscape] = new w_label("”wŒi");
-		near_filter_labels[OGL_Txtr_WeaponsInHand] = new w_label("è’†‚Ì•Ší^HUD");
+		near_filter_labels[OGL_Txtr_Wall] = new w_label("å£");
+		near_filter_labels[OGL_Txtr_Inhabitant] = new w_label("ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆ");
+		near_filter_labels[OGL_Txtr_Landscape] = new w_label("èƒŒæ™¯");
+		near_filter_labels[OGL_Txtr_WeaponsInHand] = new w_label("æ‰‹ä¸­ã®æ­¦å™¨ï¼HUD");
 	
 		table_placer *ftable = new table_placer(3, get_theme_space(ITEM_WIDGET));
 		
@@ -512,8 +512,8 @@ public:
 		ftable->add(new w_spacer(), true);
 //		ftable->dual_add(new w_label("Near"), m_dialog);
 //		ftable->dual_add(new w_label("Distant"), m_dialog);
-		ftable->dual_add(new w_label("‹ß‹——£"), m_dialog);
-		ftable->dual_add(new w_label("‰“‹——£"), m_dialog);
+		ftable->dual_add(new w_label("è¿‘è·é›¢"), m_dialog);
+		ftable->dual_add(new w_label("é è·é›¢"), m_dialog);
 		
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; ++i)
 		{
@@ -549,19 +549,19 @@ public:
 //		texture_labels[OGL_Txtr_Landscape] = new w_label("Landscapes");
 //		texture_labels[OGL_Txtr_Inhabitant] = new w_label("Sprites");
 //		texture_labels[OGL_Txtr_WeaponsInHand] = new w_label("Weapons in Hand / HUD");
-		texture_labels[OGL_Txtr_Wall] = new w_label("•Ç");
-		texture_labels[OGL_Txtr_Landscape] = new w_label("”wŒi");
-		texture_labels[OGL_Txtr_Inhabitant] = new w_label("ƒXƒvƒ‰ƒCƒg");
-		texture_labels[OGL_Txtr_WeaponsInHand] = new w_label("è’†‚Ì•Ší^HUD");
+		texture_labels[OGL_Txtr_Wall] = new w_label("å£");
+		texture_labels[OGL_Txtr_Landscape] = new w_label("èƒŒæ™¯");
+		texture_labels[OGL_Txtr_Inhabitant] = new w_label("ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆ");
+		texture_labels[OGL_Txtr_WeaponsInHand] = new w_label("æ‰‹ä¸­ã®æ­¦å™¨ï¼HUD");
 
 //		advanced_placer->dual_add(new w_static_text("Built-in Texture Size and Depth"), m_dialog);
 //		advanced_placer->dual_add(new w_static_text("(reduce for machines with low VRAM)"), m_dialog);
-		advanced_placer->dual_add(new w_static_text("ƒrƒ‹ƒhƒCƒ“‚ÌƒeƒXƒNƒ`ƒƒ‚ÌƒTƒCƒY‚ÆF[“x"), m_dialog);
-		advanced_placer->dual_add(new w_static_text("iVRAM‚Ì—Ê‚ª­‚È‚¢ƒ}ƒVƒ“‚Å‚ÍAŒ¸‚ç‚·‚±‚Æ‚ğ„§‚µ‚Ü‚·j"), m_dialog);
+		advanced_placer->dual_add(new w_static_text("ãƒ“ãƒ«ãƒ‰ã‚¤ãƒ³ã®ãƒ†ã‚¹ã‚¯ãƒãƒ£ã®ã‚µã‚¤ã‚ºã¨è‰²æ·±åº¦"), m_dialog);
+		advanced_placer->dual_add(new w_static_text("ï¼ˆVRAMã®é‡ãŒå°‘ãªã„ãƒã‚·ãƒ³ã§ã¯ã€æ¸›ã‚‰ã™ã“ã¨ã‚’æ¨å¥¨ã—ã¾ã™ï¼‰"), m_dialog);
 
 		vector<string> tex_reso_strings;
 //		tex_reso_strings.push_back ("Full");
-		tex_reso_strings.push_back ("ƒtƒ‹");
+		tex_reso_strings.push_back ("ãƒ•ãƒ«");
 		tex_reso_strings.push_back ("1/2");
 		tex_reso_strings.push_back ("1/4");
 
@@ -569,9 +569,9 @@ public:
 //		tex_depth_strings.push_back ("32-bit");
 //		tex_depth_strings.push_back ("16-bit");
 //		tex_depth_strings.push_back ("8-bit");
-		tex_depth_strings.push_back ("32ƒrƒbƒg");
-		tex_depth_strings.push_back ("16ƒrƒbƒg");
-		tex_depth_strings.push_back ("8ƒrƒbƒg");
+		tex_depth_strings.push_back ("32ãƒ“ãƒƒãƒˆ");
+		tex_depth_strings.push_back ("16ãƒ“ãƒƒãƒˆ");
+		tex_depth_strings.push_back ("8ãƒ“ãƒƒãƒˆ");
 
 		table_placer *table = new table_placer(3, get_theme_space(ITEM_WIDGET));
 
@@ -582,8 +582,8 @@ public:
 		table->add(new w_spacer(), true);
 //		table->dual_add(new w_label("Size"), m_dialog);
 //		table->dual_add(new w_label("Depth"), m_dialog);
-		table->dual_add(new w_label("ƒTƒCƒY"), m_dialog);
-		table->dual_add(new w_label("F[“x"), m_dialog);
+		table->dual_add(new w_label("ã‚µã‚¤ã‚º"), m_dialog);
+		table->dual_add(new w_label("è‰²æ·±åº¦"), m_dialog);
 
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++)
 		{
@@ -611,11 +611,11 @@ public:
 
 		horizontal_placer *button_placer = new horizontal_placer;
 //		w_button* ok_w = new w_button("ACCEPT");
-		w_button* ok_w = new w_button("—¹³");
+		w_button* ok_w = new w_button("äº†æ‰¿");
 		button_placer->dual_add(ok_w, m_dialog);
 		
 //		w_button* cancel_w = new w_button("CANCEL");
-		w_button* cancel_w = new w_button("ƒLƒƒƒ“ƒZƒ‹");
+		w_button* cancel_w = new w_button("ã‚­ãƒ£ãƒ³ã‚»ãƒ«");
 		button_placer->dual_add(cancel_w, m_dialog);
 		placer->add(button_placer, true);
 

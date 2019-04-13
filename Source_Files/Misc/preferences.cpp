@@ -225,22 +225,22 @@ void handle_preferences(void)
 	// Create top-level dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	w_title *w_header = new w_title("‰Šúİ’è");
+	w_title *w_header = new w_title("åˆæœŸè¨­å®š");
 	d.add(w_header);
-	w_button *w_player = new w_button("ƒvƒŒ[ƒ„[", player_dialog, &d);
+	w_button *w_player = new w_button("ãƒ—ãƒ¬ãƒ¼ãƒ¤ãƒ¼", player_dialog, &d);
 	d.add(w_player);
-	w_button *w_online = new w_button("ƒCƒ“ƒ^[ƒlƒbƒg", online_dialog, &d);
+	w_button *w_online = new w_button("ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒƒãƒˆ", online_dialog, &d);
 	d.add(w_online);
-	w_button *w_graphics = new w_button("ƒOƒ‰ƒtƒBƒbƒN", graphics_dialog, &d);
+	w_button *w_graphics = new w_button("ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯", graphics_dialog, &d);
 	d.add(w_graphics);
-	w_button *w_sound = new w_button("ƒTƒEƒ“ƒh", sound_dialog, &d);
+	w_button *w_sound = new w_button("ã‚µã‚¦ãƒ³ãƒ‰", sound_dialog, &d);
 	d.add(w_sound);
-	w_button *w_controls = new w_button("‘€ì", controls_dialog, &d);
+	w_button *w_controls = new w_button("æ“ä½œ", controls_dialog, &d);
 	d.add(w_controls);
-	w_button *w_environment = new w_button("ŠÂ‹«", environment_dialog, &d);
+	w_button *w_environment = new w_button("ç’°å¢ƒ", environment_dialog, &d);
 	d.add(w_environment);
 	
-	w_button *w_return = new w_button("–ß‚é", dialog_cancel, &d);
+	w_button *w_return = new w_button("æˆ»ã‚‹", dialog_cancel, &d);
 	d.add(w_return);
 
 	placer->add(w_header);
@@ -354,11 +354,11 @@ static void crosshair_dialog(void *arg)
 
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	w_title *w_header = new w_title("ƒNƒƒXƒwƒA[İ’è");
+	w_title *w_header = new w_title("ã‚¯ãƒ­ã‚¹ãƒ˜ã‚¢ãƒ¼è¨­å®š");
 	placer->dual_add(w_header, d);
 	placer->add(new w_spacer, true);
 
-	placer->dual_add(new w_static_text("ƒNƒƒXƒwƒA[‚ğ•\\¦"), d);
+	placer->dual_add(new w_static_text("ã‚¯ãƒ­ã‚¹ãƒ˜ã‚¢ãƒ¼ã‚’è¡¨ç¤º"), d);
 	placer->add(new w_spacer, true);
 
 	w_crosshair_display *crosshair_w = new w_crosshair_display();
@@ -374,7 +374,7 @@ static void crosshair_dialog(void *arg)
 	SelectSelectorWidget shapeWidget(shape_w);
 	Int16Pref shapePref(player_preferences->Crosshairs.Shape);
 	crosshair_binders->insert<int> (&shapeWidget, &shapePref);
-	table->dual_add(shape_w->label("Œ`"), d);
+	table->dual_add(shape_w->label("å½¢"), d);
 	table->dual_add(shape_w, d);
 
 	table->add_row(new w_spacer(), true);
@@ -384,7 +384,7 @@ static void crosshair_dialog(void *arg)
 	SliderSelectorWidget thicknessWidget(thickness_w);
 	CrosshairPref thicknessPref(player_preferences->Crosshairs.Thickness);
 	crosshair_binders->insert<int> (&thicknessWidget, &thicknessPref);
-	table->dual_add(thickness_w->label("‘¾‚³"), d);
+	table->dual_add(thickness_w->label("å¤ªã•"), d);
 	table->dual_add(thickness_w, d);
 
 	// From Center
@@ -392,7 +392,7 @@ static void crosshair_dialog(void *arg)
 	SliderSelectorWidget fromCenterWidget(from_center_w);
 	Int16Pref fromCenterPref(player_preferences->Crosshairs.FromCenter);
 	crosshair_binders->insert<int> (&fromCenterWidget, &fromCenterPref);
-	table->dual_add(from_center_w->label("ƒMƒƒƒbƒv"), d);
+	table->dual_add(from_center_w->label("ã‚®ãƒ£ãƒƒãƒ—"), d);
 	table->dual_add(from_center_w, d);
 
 	// Length
@@ -400,51 +400,51 @@ static void crosshair_dialog(void *arg)
 	SliderSelectorWidget lengthWidget(length_w);
 	CrosshairPref lengthPref(player_preferences->Crosshairs.Length);
 	crosshair_binders->insert<int> (&lengthWidget, &lengthPref);
-	table->dual_add(length_w->label("‘å‚«‚³"), d);
+	table->dual_add(length_w->label("å¤§ãã•"), d);
 	table->dual_add(length_w, d);
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("F"), d);
+	table->dual_add_row(new w_static_text("è‰²"), d);
 
 	// Color
 	w_slider *red_w = new w_percentage_slider(16, 0);
 	SliderSelectorWidget redWidget(red_w);
 	ColorComponentPref redPref(player_preferences->Crosshairs.Color.red);
 	crosshair_binders->insert<int> (&redWidget, &redPref);
-	table->dual_add(red_w->label("Ô"), d);
+	table->dual_add(red_w->label("èµ¤"), d);
 	table->dual_add(red_w, d);
 
 	w_slider *green_w = new w_percentage_slider(16, 0);
 	SliderSelectorWidget greenWidget(green_w);;
 	ColorComponentPref greenPref(player_preferences->Crosshairs.Color.green);
 	crosshair_binders->insert<int> (&greenWidget, &greenPref);
-	table->dual_add(green_w->label("—Î"), d);
+	table->dual_add(green_w->label("ç·‘"), d);
 	table->dual_add(green_w, d);
 
 	w_slider *blue_w = new w_percentage_slider(16, 0);
 	SliderSelectorWidget blueWidget(blue_w);
 	ColorComponentPref bluePref(player_preferences->Crosshairs.Color.blue);
 	crosshair_binders->insert<int> (&blueWidget, &bluePref);
-	table->dual_add(blue_w->label("Â"), d);
+	table->dual_add(blue_w->label("é’"), d);
 	table->dual_add(blue_w, d);
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("OpenGL‚Ì‚İiƒvƒŒƒrƒ…[‚È‚µj"), d);
+	table->dual_add_row(new w_static_text("OpenGLã®ã¿ï¼ˆãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼ãªã—ï¼‰"), d);
 
 	w_slider *opacity_w = new w_percentage_slider(16, 0);
 	SliderSelectorWidget opacityWidget(opacity_w);
 	OpacityPref opacityPref(player_preferences->Crosshairs.Opacity);
 	crosshair_binders->insert<int> (&opacityWidget, &opacityPref);
-	table->dual_add(opacity_w->label("“§‰ß“x"), d);
+	table->dual_add(opacity_w->label("é€éåº¦"), d);
 	table->dual_add(opacity_w, d);
 
 	placer->add(table, true);
 	placer->add(new w_spacer, true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
-	w_button *w_accept = new w_button("—¹³", dialog_ok, &d);
+	w_button *w_accept = new w_button("äº†æ‰¿", dialog_ok, &d);
 	button_placer->dual_add(w_accept, d);
-	w_button *w_cancel = new w_button("ƒLƒƒƒ“ƒZƒ‹", dialog_cancel, &d);
+	w_button *w_cancel = new w_button("ã‚­ãƒ£ãƒ³ã‚»ãƒ«", dialog_cancel, &d);
 	button_placer->dual_add(w_cancel, d);
 	placer->add(button_placer, true);
 
@@ -482,7 +482,7 @@ static void player_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("ƒvƒŒ[ƒ„[İ’è"), d);
+	placer->dual_add(new w_title("ãƒ—ãƒ¬ãƒ¼ãƒ¤ãƒ¼è¨­å®š"), d);
 	placer->add(new w_spacer());
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -491,50 +491,50 @@ static void player_dialog(void *arg)
 
 	w_select *level_w = new w_select(player_preferences->difficulty_level, NULL /*level_labels*/);
 	level_w->set_labels_stringset(kDifficultyLevelsStringSetID);
-	table->dual_add(level_w->label("“ïˆÕ“x"), d);
+	table->dual_add(level_w->label("é›£æ˜“åº¦"), d);
 	table->dual_add(level_w, d);
 
 	table->add_row(new w_spacer(), true);
 
-	table->dual_add_row(new w_static_text("ŠOŠÏ"), d);
+	table->dual_add_row(new w_static_text("å¤–è¦³"), d);
 
 	w_text_entry *name_w = new w_text_entry(PREFERENCES_NAME_LENGTH, player_preferences->name);
 	name_w->set_identifier(NAME_W);
 	name_w->set_enter_pressed_callback(dialog_try_ok);
 	name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
 	name_w->enable_mac_roman_input();
-	table->dual_add(name_w->label("–¼‘O"), d);
+	table->dual_add(name_w->label("åå‰"), d);
 	table->dual_add(name_w, d);
 
 	w_player_color *pcolor_w = new w_player_color(player_preferences->color);
-	table->dual_add(pcolor_w->label("F"), d);
+	table->dual_add(pcolor_w->label("è‰²"), d);
 	table->dual_add(pcolor_w, d);
 
 	w_player_color *tcolor_w = new w_player_color(player_preferences->team);
-	table->dual_add(tcolor_w->label("ƒ`[ƒ€"), d);
+	table->dual_add(tcolor_w->label("ãƒãƒ¼ãƒ "), d);
 	table->dual_add(tcolor_w, d);
 
 	table->add_row(new w_spacer(), true);
 
 	w_toggle *crosshairs_active_w = new w_toggle(player_preferences->crosshairs_active);
-	table->dual_add(crosshairs_active_w->label("ƒNƒƒXƒwƒA[‚ğ•\\¦"), d);
+	table->dual_add(crosshairs_active_w->label("ã‚¯ãƒ­ã‚¹ãƒ˜ã‚¢ãƒ¼ã‚’è¡¨ç¤º"), d);
 	table->dual_add(crosshairs_active_w, d);
 
 	placer->add(table, true);
 
 	placer->add(new w_spacer(), true);
 
-	w_button *crosshair_button = new w_button("ƒNƒƒXƒwƒA[İ’è", crosshair_dialog, &d);
+	w_button *crosshair_button = new w_button("ã‚¯ãƒ­ã‚¹ãƒ˜ã‚¢ãƒ¼è¨­å®š", crosshair_dialog, &d);
 	placer->dual_add(crosshair_button, d);
 
 	placer->add(new w_spacer(), true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
 	
-	w_button* ok_button = new w_button("—¹³", dialog_ok, &d);
+	w_button* ok_button = new w_button("äº†æ‰¿", dialog_ok, &d);
 	ok_button->set_identifier(iOK);
 	button_placer->dual_add(ok_button, d);
-	button_placer->dual_add(new w_button("ƒLƒƒƒ“ƒZƒ‹", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("ã‚­ãƒ£ãƒ³ã‚»ãƒ«", dialog_cancel, &d), d);
 
 	placer->add(button_placer, true);
 
@@ -631,15 +631,15 @@ static void signup_dialog_ok(void *arg)
 	// check that fields are filled out
 	if (strlen(email_w->get_text()) == 0)
 	{
-		alert_user("ƒ[ƒ‹ƒAƒhƒŒƒX‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢", infoError);
+		alert_user("ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„", infoError);
 	}
 	else if (strlen(login_w->get_text()) == 0)
 	{
-		alert_user("ƒ†[ƒU–¼‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢", infoError);
+		alert_user("ãƒ¦ãƒ¼ã‚¶åã‚’å…¥åŠ›ã—ã¦ãã ã•ã„", infoError);
 	}
 	else if (strlen(password_w->get_text()) == 0)
 	{
-		alert_user("ƒpƒXƒ[ƒh‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢", infoError);
+		alert_user("ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„", infoError);
 	}
 	else
 	{
@@ -667,7 +667,7 @@ static void signup_dialog_ok(void *arg)
 		}
 		else
 		{
-			alert_user("ƒT[ƒo[Ú‘±’†‚É–â‘è‚ª”­¶‚µ‚Ü‚µ‚½", infoError);
+			alert_user("ã‚µãƒ¼ãƒãƒ¼æ¥ç¶šä¸­ã«å•é¡ŒãŒç™ºç”Ÿã—ã¾ã—ãŸ", infoError);
 		}
 	}
 }
@@ -676,7 +676,7 @@ static void signup_dialog(void *arg)
 {
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("ƒAƒJƒEƒ“ƒg“o˜^"), d);
+	placer->dual_add(new w_title("ã‚¢ã‚«ã‚¦ãƒ³ãƒˆç™»éŒ²"), d);
 	placer->add(new w_spacer());
 	
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -685,17 +685,17 @@ static void signup_dialog(void *arg)
 	
 	w_text_entry *email_w = new w_text_entry(256, "");
 	email_w->set_identifier(iSIGNUP_EMAIL_W);
-	table->dual_add(email_w->label("ƒ[ƒ‹ƒAƒhƒŒƒX"), d);
+	table->dual_add(email_w->label("ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹"), d);
 	table->dual_add(email_w, d);
 	
 	w_text_entry *login_w = new w_text_entry(network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_login);
 	login_w->set_identifier(iSIGNUP_USERNAME_W);
-	table->dual_add(login_w->label("ƒ†[ƒU–¼"), d);
+	table->dual_add(login_w->label("ãƒ¦ãƒ¼ã‚¶å"), d);
 	table->dual_add(login_w, d);
 	
 	w_password_entry *password_w = new w_password_entry(network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_password);
 	password_w->set_identifier(iSIGNUP_PASSWORD_W);
-	table->dual_add(password_w->label("ƒpƒXƒ[ƒh"), d);
+	table->dual_add(password_w->label("ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰"), d);
 	table->dual_add(password_w, d);
 	
 	table->add_row(new w_spacer(), true);
@@ -703,10 +703,10 @@ static void signup_dialog(void *arg)
 	
 	horizontal_placer *button_placer = new horizontal_placer;
 	
-	w_button* ok_button = new w_button("“o˜^", signup_dialog_ok, &d);
+	w_button* ok_button = new w_button("ç™»éŒ²", signup_dialog_ok, &d);
 	ok_button->set_identifier(iOK);
 	button_placer->dual_add(ok_button, d);
-	button_placer->dual_add(new w_button("ƒLƒƒƒ“ƒZƒ‹", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("ã‚­ãƒ£ãƒ³ã‚»ãƒ«", dialog_cancel, &d), d);
 	
 	placer->add(button_placer, true);
 	
@@ -730,15 +730,15 @@ static void online_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("ƒCƒ“ƒ^[ƒlƒbƒgƒQ[ƒ€İ’è"), d);
+	placer->dual_add(new w_title("ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒƒãƒˆã‚²ãƒ¼ãƒ è¨­å®š"), d);
 	placer->add(new w_spacer());
 	
 	tab_placer* tabs = new tab_placer();
 	
 	std::vector<std::string> labels;
-	labels.push_back("ƒAƒJƒEƒ“ƒg");
-	labels.push_back("ƒQ[ƒ€‘Oƒƒr[");
-	labels.push_back("“Œv");
+	labels.push_back("ã‚¢ã‚«ã‚¦ãƒ³ãƒˆ");
+	labels.push_back("ã‚²ãƒ¼ãƒ å‰ãƒ­ãƒ“ãƒ¼");
+	labels.push_back("çµ±è¨ˆ");
 	w_tab *tab_w = new w_tab(labels, tabs);
 	
 	placer->dual_add(tab_w, d);
@@ -751,21 +751,21 @@ static void online_dialog(void *arg)
 	
 	w_text_entry *login_w = new w_text_entry(network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_login);
 	login_w->set_identifier(iONLINE_USERNAME_W);
-	account_table->dual_add(login_w->label("ƒ†[ƒU–¼"), d);
+	account_table->dual_add(login_w->label("ãƒ¦ãƒ¼ã‚¶å"), d);
 	account_table->dual_add(login_w, d);
 	
 	w_password_entry *password_w = new w_password_entry(network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_password);
 	password_w->set_identifier(iONLINE_PASSWORD_W);
-	account_table->dual_add(password_w->label("ƒpƒXƒ[ƒh"), d);
+	account_table->dual_add(password_w->label("ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰"), d);
 	account_table->dual_add(password_w, d);
 	
-	w_hyperlink *account_link_w = new w_hyperlink("", "„‚Ìlhowon.orgƒAƒJƒEƒ“ƒgƒy[ƒW‚Ö”ò‚Ô");
+	w_hyperlink *account_link_w = new w_hyperlink("", "ç§ã®lhowon.orgã‚¢ã‚«ã‚¦ãƒ³ãƒˆãƒšãƒ¼ã‚¸ã¸é£›ã¶");
 	account_link_w->set_callback(proc_account_link, &d);
 	account_table->dual_add_row(account_link_w, d);
 	
 	account_table->add_row(new w_spacer(), true);
 	
-	w_button *signup_button = new w_button("“o˜^", signup_dialog, &d);
+	w_button *signup_button = new w_button("ç™»éŒ²", signup_dialog, &d);
 	account_table->dual_add_row(signup_button, d);
 	
 	account_table->add_row(new w_spacer(), true);
@@ -782,32 +782,32 @@ static void online_dialog(void *arg)
 	name_w->set_enter_pressed_callback(dialog_try_ok);
 	name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
 	name_w->enable_mac_roman_input();
-	lobby_table->dual_add(name_w->label("–¼‘O"), d);
+	lobby_table->dual_add(name_w->label("åå‰"), d);
 	lobby_table->dual_add(name_w, d);
 	
 	w_enabling_toggle *custom_colors_w = new w_enabling_toggle(network_preferences->use_custom_metaserver_colors);
-	lobby_table->dual_add(custom_colors_w->label("ƒJƒXƒ^ƒ€ƒ`ƒƒƒbƒgƒJƒ‰["), d);
+	lobby_table->dual_add(custom_colors_w->label("ã‚«ã‚¹ã‚¿ãƒ ãƒãƒ£ãƒƒãƒˆã‚«ãƒ©ãƒ¼"), d);
 	lobby_table->dual_add(custom_colors_w, d);
 	
 	w_color_picker *primary_w = new w_color_picker(network_preferences->metaserver_colors[0]);
-	lobby_table->dual_add(primary_w->label("ƒvƒ‰ƒCƒ}ƒŠ"), d);
+	lobby_table->dual_add(primary_w->label("ãƒ—ãƒ©ã‚¤ãƒãƒª"), d);
 	lobby_table->dual_add(primary_w, d);
 	
 	w_color_picker *secondary_w = new w_color_picker(network_preferences->metaserver_colors[1]);
-	lobby_table->dual_add(secondary_w->label("ƒZƒJƒ“ƒ_ƒŠ"), d);
+	lobby_table->dual_add(secondary_w->label("ã‚»ã‚«ãƒ³ãƒ€ãƒª"), d);
 	lobby_table->dual_add(secondary_w, d);
 	
 	custom_colors_w->add_dependent_widget(primary_w);
 	custom_colors_w->add_dependent_widget(secondary_w);
 
 	w_toggle *mute_guests_w = new w_toggle(network_preferences->mute_metaserver_guests);
-	lobby_table->dual_add(mute_guests_w->label("‘S‚Ä‚ÌƒQƒXƒgƒ`ƒƒƒbƒg‚ğ•\\¦‚µ‚µ‚È‚¢"), d);
+	lobby_table->dual_add(mute_guests_w->label("å…¨ã¦ã®ã‚²ã‚¹ãƒˆãƒãƒ£ãƒƒãƒˆã‚’è¡¨ç¤ºã—ã—ãªã„"), d);
 	lobby_table->dual_add(mute_guests_w, d);
 
 	lobby_table->add_row(new w_spacer(), true);
 	
 	w_toggle *join_meta_w = new w_toggle(network_preferences->join_metaserver_by_default);
-	lobby_table->dual_add(join_meta_w->label("ƒQ[ƒ€‘Oƒƒr[‚ÉƒfƒtƒHƒ‹ƒg‚ÅQ‰Á‚·‚é"), d);
+	lobby_table->dual_add(join_meta_w->label("ã‚²ãƒ¼ãƒ å‰ãƒ­ãƒ“ãƒ¼ã«ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã§å‚åŠ ã™ã‚‹"), d);
 	lobby_table->dual_add(join_meta_w, d);
 	
 	lobby_table->add_row(new w_spacer(), true);
@@ -815,24 +815,24 @@ static void online_dialog(void *arg)
 	lobby->add(lobby_table, true);
 	
 	vertical_placer *stats = new vertical_placer();
-	stats->dual_add(new w_hyperlink(A1_LEADERBOARD_URL, "ƒŠ[ƒ_[ƒ{[ƒh‚Ö”ò‚Ô"), d);
+	stats->dual_add(new w_hyperlink(A1_LEADERBOARD_URL, "ãƒªãƒ¼ãƒ€ãƒ¼ãƒœãƒ¼ãƒ‰ã¸é£›ã¶"), d);
 	stats->add(new w_spacer(), true);
 	
 	horizontal_placer *stats_box = new horizontal_placer();
 	
 	w_toggle *allow_stats_w = new w_toggle(network_preferences->allow_stats);
 	stats_box->dual_add(allow_stats_w, d);
-	stats_box->dual_add(allow_stats_w->label("Lhowon.org‚Ö“Œv‚ğ‘—M"), d);
+	stats_box->dual_add(allow_stats_w->label("Lhowon.orgã¸çµ±è¨ˆã‚’é€ä¿¡"), d);
 	
 	stats->add(stats_box, true);
 	stats->add(new w_spacer(), true);
 	
-	stats->dual_add(new w_static_text("ƒŠ[ƒ_[ƒ{[ƒh‚Å‹£‘ˆ‚·‚é‚½‚ß‚É‚Í"), d);
-	stats->dual_add(new w_static_text("ƒIƒ“ƒ‰ƒCƒ“ƒAƒJƒEƒ“ƒg‚ª•K—v‚Å"), d);
-	stats->dual_add(new w_static_text("“Œvƒvƒ‰ƒOƒCƒ“‚ğƒCƒ“ƒXƒg[ƒ‹‚µ‚Ä—LŒø‚É‚·‚é•K—v‚ª‚ ‚è‚Ü‚·"), d);
+	stats->dual_add(new w_static_text("ãƒªãƒ¼ãƒ€ãƒ¼ãƒœãƒ¼ãƒ‰ã§ç«¶äº‰ã™ã‚‹ãŸã‚ã«ã¯"), d);
+	stats->dual_add(new w_static_text("ã‚ªãƒ³ãƒ©ã‚¤ãƒ³ã‚¢ã‚«ã‚¦ãƒ³ãƒˆãŒå¿…è¦ã§"), d);
+	stats->dual_add(new w_static_text("çµ±è¨ˆãƒ—ãƒ©ã‚°ã‚¤ãƒ³ã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã¦æœ‰åŠ¹ã«ã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™"), d);
 	
 	stats->add(new w_spacer(), true);
-	stats->dual_add(new w_button("ƒvƒ‰ƒOƒCƒ“", plugins_dialog, &d), d);
+	stats->dual_add(new w_button("ãƒ—ãƒ©ã‚°ã‚¤ãƒ³", plugins_dialog, &d), d);
 	
 	stats->add(new w_spacer(), true);
 	
@@ -845,10 +845,10 @@ static void online_dialog(void *arg)
 
 	horizontal_placer *button_placer = new horizontal_placer;
 	
-	w_button* ok_button = new w_button("—¹³", dialog_ok, &d);
+	w_button* ok_button = new w_button("äº†æ‰¿", dialog_ok, &d);
 	ok_button->set_identifier(iOK);
 	button_placer->dual_add(ok_button, d);
-	button_placer->dual_add(new w_button("ƒLƒƒƒ“ƒZƒ‹", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("ã‚­ãƒ£ãƒ³ã‚»ãƒ«", dialog_cancel, &d), d);
 	
 	placer->add(button_placer, true);
 	
@@ -947,40 +947,40 @@ static void online_dialog(void *arg)
  */
 #ifdef TRUE_COLOR_ONLY
 static const char* depth_labels[3] = {
-	"16ƒrƒbƒg", "32ƒrƒbƒg", NULL
+	"16ãƒ“ãƒƒãƒˆ", "32ãƒ“ãƒƒãƒˆ", NULL
 };
 #else
 static const char *depth_labels[4] = {
-	"8ƒrƒbƒg", "16ƒrƒbƒg", "32ƒrƒbƒg", NULL
+	"8ãƒ“ãƒƒãƒˆ", "16ãƒ“ãƒƒãƒˆ", "32ãƒ“ãƒƒãƒˆ", NULL
 };
 #endif
 
 static const char *resolution_labels[3] = {
-	"’á", "‚", NULL
+	"ä½", "é«˜", NULL
 };
 
 static const char *sw_alpha_blending_labels[4] = {
-	"‚È‚µ", "‘¬“x—Dæ", "‰æ¿—Dæ", NULL
+	"ãªã—", "é€Ÿåº¦å„ªå…ˆ", "ç”»è³ªå„ªå…ˆ", NULL
 };
 
 static const char *sw_sdl_driver_labels[5] = {
-	"ƒfƒtƒHƒ‹ƒg", "‚È‚µ", "Direct3D", "OpenGL", NULL
+	"ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ", "ãªã—", "Direct3D", "OpenGL", NULL
 };
 
 static const char *gamma_labels[9] = {
-	"‚Æ‚Ä‚àˆÃ‚¢", "ˆÃ‚¢", "‚â‚âˆÃ‚¢", "’Êí", "‚â‚â–¾‚é‚¢", "–¾‚é‚¢", "‚æ‚è–¾‚é‚¢", "‚Æ‚Ä‚à–¾‚é‚¢", NULL
+	"ã¨ã¦ã‚‚æš—ã„", "æš—ã„", "ã‚„ã‚„æš—ã„", "é€šå¸¸", "ã‚„ã‚„æ˜ã‚‹ã„", "æ˜ã‚‹ã„", "ã‚ˆã‚Šæ˜ã‚‹ã„", "ã¨ã¦ã‚‚æ˜ã‚‹ã„", NULL
 };
 
 static const char* renderer_labels[] = {
-	"ƒ\\ƒtƒgƒEƒFƒA", "OpenGL", NULL
+	"ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢", "OpenGL", NULL
 };
 
 static const char* hud_scale_labels[] = {
-	"’Êí", "‚Q”{", "Å‘å", NULL
+	"é€šå¸¸", "ï¼’å€", "æœ€å¤§", NULL
 };
 
 static const char* term_scale_labels[] = {
-	"’Êí", "‚Q”{", "Å‘å", NULL
+	"é€šå¸¸", "ï¼’å€", "æœ€å¤§", NULL
 };
 
 static const char* mouse_accel_labels[] = {
@@ -988,7 +988,7 @@ static const char* mouse_accel_labels[] = {
 };
 
 static const char* max_saves_labels[] = {
-	"20", "100", "500", "–³§ŒÀ", NULL
+	"20", "100", "500", "ç„¡åˆ¶é™", NULL
 };
 
 static const uint32 max_saves_values[] = {
@@ -1015,7 +1015,7 @@ static void software_rendering_options_dialog(void* arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("ƒ\\ƒtƒgƒEƒFƒAƒŒƒ“ƒ_ƒŠƒ“ƒO‚ÌƒIƒvƒVƒ‡ƒ“"), d);
+	placer->dual_add(new w_title("ã‚½ãƒ•ãƒˆã‚¦ã‚§ã‚¢ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°æ™‚ã®ã‚ªãƒ—ã‚·ãƒ§ãƒ³"), d);
 	placer->add(new w_spacer(), true);
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -1026,29 +1026,29 @@ static void software_rendering_options_dialog(void* arg)
 #else
 	w_select *depth_w = new w_select(graphics_preferences->screen_mode.bit_depth == 8 ? 0 : graphics_preferences->screen_mode.bit_depth == 16 ? 1 : 2, depth_labels);
 #endif
-	table->dual_add(depth_w->label("F[“x"), d);
+	table->dual_add(depth_w->label("è‰²æ·±åº¦"), d);
 	table->dual_add(depth_w, d);
 
 	w_toggle *resolution_w = new w_toggle(graphics_preferences->screen_mode.high_resolution, resolution_labels);
-	table->dual_add(resolution_w->label("‰ğ‘œ“x"), d);
+	table->dual_add(resolution_w->label("è§£åƒåº¦"), d);
 	table->dual_add(resolution_w, d);
 
 	table->add_row(new w_spacer(), true);
 
 	w_select *sw_alpha_blending_w = new w_select(graphics_preferences->software_alpha_blending, sw_alpha_blending_labels);
-	table->dual_add(sw_alpha_blending_w->label("‰t‘Ì‚ğ”¼“§–¾‰»"), d);
+	table->dual_add(sw_alpha_blending_w->label("æ¶²ä½“ã‚’åŠé€æ˜åŒ–"), d);
 	table->dual_add(sw_alpha_blending_w, d);
 
 	w_select *sw_driver_w = new w_select(graphics_preferences->software_sdl_driver, sw_sdl_driver_labels);
-	table->dual_add(sw_driver_w->label("ƒAƒNƒZƒ‰[ƒVƒ‡ƒ“"), d);
+	table->dual_add(sw_driver_w->label("ã‚¢ã‚¯ã‚»ãƒ©ãƒ¼ã‚·ãƒ§ãƒ³"), d);
 	table->dual_add(sw_driver_w, d);
 	
 	placer->add(table, true);
 
 	placer->add(new w_spacer(), true);
 	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("—¹³", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("ƒLƒƒƒ“ƒZƒ‹", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("äº†æ‰¿", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("ã‚­ãƒ£ãƒ³ã‚»ãƒ«", dialog_cancel, &d), d);
 	placer->add(button_placer, true);
 
 	d.set_widget_placer(placer);
@@ -1140,7 +1140,7 @@ static void graphics_dialog(void *arg)
 	dialog d;
 
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("ƒOƒ‰ƒtƒBƒbƒNİ’è"), d);
+	placer->dual_add(new w_title("ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯è¨­å®š"), d);
 	placer->add(new w_spacer(), true);
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -1152,7 +1152,7 @@ static void graphics_dialog(void *arg)
 	renderer_w->set_selection(_no_acceleration);
 	renderer_w->set_enabled(false);
 #endif
-	table->dual_add(renderer_w->label("ƒŒƒ“ƒ_ƒŠƒ“ƒOƒVƒXƒeƒ€"), d);
+	table->dual_add(renderer_w->label("ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°ã‚·ã‚¹ãƒ†ãƒ "), d);
 	table->dual_add(renderer_w, d);
 
 	w_select_popup *size_w = new w_select_popup();
@@ -1161,75 +1161,75 @@ static void graphics_dialog(void *arg)
 		size_w->set_selection(0);
 	else
 		size_w->set_selection(Screen::instance()->FindMode(graphics_preferences->screen_mode.width, graphics_preferences->screen_mode.height) + 1);
-	table->dual_add(size_w->label("‰æ–Ê‚Ì‘å‚«‚³"), d);
+	table->dual_add(size_w->label("ç”»é¢ã®å¤§ãã•"), d);
 	table->dual_add(size_w, d);
 
 	w_toggle *high_dpi_w = NULL;
 	high_dpi_w = new w_toggle(graphics_preferences->screen_mode.high_dpi);
 #if (defined(__APPLE__) && defined(__MACH__))
 	// SDL's DPI support only enabled on macOS
-	table->dual_add(high_dpi_w->label("‚DPI‚ğg‚¤"), d);
+	table->dual_add(high_dpi_w->label("é«˜DPIã‚’ä½¿ã†"), d);
 	table->dual_add(high_dpi_w, d);
 #endif
 	
 	w_toggle *fixh_w = new w_toggle(!graphics_preferences->screen_mode.fix_h_not_v);
-	table->dual_add(fixh_w->label("‚’¼‹–ì‚ğ§ŒÀ"), d);
+	table->dual_add(fixh_w->label("å‚ç›´è¦–é‡ã‚’åˆ¶é™"), d);
 	table->dual_add(fixh_w, d);
     
 	w_toggle *bob_w = new w_toggle(graphics_preferences->screen_mode.camera_bob);
-	table->dual_add(bob_w->label("ƒJƒƒ‰U“®"), d);
+	table->dual_add(bob_w->label("ã‚«ãƒ¡ãƒ©æŒ¯å‹•"), d);
 	table->dual_add(bob_w, d);
 	
   	w_select_popup *gamma_w = new w_select_popup();
 	gamma_w->set_labels(build_stringvector_from_cstring_array(gamma_labels));
 	gamma_w->set_selection(graphics_preferences->screen_mode.gamma_level);
-	table->dual_add(gamma_w->label("–¾‚é‚³"), d);
+	table->dual_add(gamma_w->label("æ˜ã‚‹ã•"), d);
 	table->dual_add(gamma_w, d);
 
 	table->add_row(new w_spacer(), true);
 
 	w_toggle *fullscreen_w = new w_toggle(!graphics_preferences->screen_mode.fullscreen);
-	table->dual_add(fullscreen_w->label("ƒEƒBƒ“ƒhƒEƒ‚[ƒh"), d);
+	table->dual_add(fullscreen_w->label("ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ¢ãƒ¼ãƒ‰"), d);
 	table->dual_add(fullscreen_w, d);
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("ƒwƒbƒhƒAƒbƒvƒfƒBƒXƒvƒŒƒC(HUD)"), d);
+	table->dual_add_row(new w_static_text("ãƒ˜ãƒƒãƒ‰ã‚¢ãƒƒãƒ—ãƒ‡ã‚£ã‚¹ãƒ—ãƒ¬ã‚¤(HUD)"), d);
 	w_enabling_toggle *hud_w = new w_enabling_toggle(graphics_preferences->screen_mode.hud);
-	table->dual_add(hud_w->label("HUD‚ğ•\\¦"), d);
+	table->dual_add(hud_w->label("HUDã‚’è¡¨ç¤º"), d);
 	table->dual_add(hud_w, d);
 	
 	w_select_popup *hud_scale_w = new w_select_popup();
 	hud_scale_w->set_labels(build_stringvector_from_cstring_array(hud_scale_labels));
 	hud_scale_w->set_selection(graphics_preferences->screen_mode.hud_scale_level);
-	table->dual_add(hud_scale_w->label("HUDƒTƒCƒY"), d);
+	table->dual_add(hud_scale_w->label("HUDã‚µã‚¤ã‚º"), d);
 	table->dual_add(hud_scale_w, d);
 	hud_w->add_dependent_widget(hud_scale_w);
 	
 	w_select_popup *term_scale_w = new w_select_popup();
 	term_scale_w->set_labels(build_stringvector_from_cstring_array(term_scale_labels));
 	term_scale_w->set_selection(graphics_preferences->screen_mode.term_scale_level);
-	table->dual_add(term_scale_w->label("ƒ^[ƒ~ƒiƒ‹ƒTƒCƒY"), d);
+	table->dual_add(term_scale_w->label("ã‚¿ãƒ¼ãƒŸãƒŠãƒ«ã‚µã‚¤ã‚º"), d);
 	table->dual_add(term_scale_w, d);
 	
 	w_toggle *map_w = new w_toggle(graphics_preferences->screen_mode.translucent_map);
-	table->dual_add(map_w->label("ƒ}ƒbƒv‚ğd‚Ë‚é"), d);
+	table->dual_add(map_w->label("ãƒãƒƒãƒ—ã‚’é‡ã­ã‚‹"), d);
 	table->dual_add(map_w, d);
 
 	placer->add(table, true);
 
 	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_button("ƒŒƒ“ƒ_ƒŠƒ“ƒOƒIƒvƒVƒ‡ƒ“", rendering_options_dialog_demux, &d), d);
+	placer->dual_add(new w_button("ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°ã‚ªãƒ—ã‚·ãƒ§ãƒ³", rendering_options_dialog_demux, &d), d);
 	placer->add(new w_spacer(), true);
 
 #ifndef HAVE_OPENGL
-	expand_app_variables(temporary, "‚±‚Ì$appName$‚ÌƒRƒs[‚ÍAOpenGL‚ğƒTƒ|[ƒg‚µ‚Ä‚¢‚Ü‚¹‚ñB");
+	expand_app_variables(temporary, "ã“ã®$appName$ã®ã‚³ãƒ”ãƒ¼ã¯ã€OpenGLã‚’ã‚µãƒãƒ¼ãƒˆã—ã¦ã„ã¾ã›ã‚“ã€‚");
 	placer->dual_add(new w_static_text(temporary), d);
 #endif
 	placer->add(new w_spacer(), true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("—¹³", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("ƒLƒƒƒ“ƒZƒ‹", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("äº†æ‰¿", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("ã‚­ãƒ£ãƒ³ã‚»ãƒ«", dialog_cancel, &d), d);
 
 	placer->add(button_placer, true);
     
@@ -1383,61 +1383,61 @@ static void sound_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("ƒTƒEƒ“ƒhİ’è"), d);
+	placer->dual_add(new w_title("ã‚µã‚¦ãƒ³ãƒ‰è¨­å®š"), d);
 	placer->add(new w_spacer(), true);
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 
-	static const char *quality_labels[3] = {"8ƒrƒbƒg", "16ƒrƒbƒg", NULL};
+	static const char *quality_labels[3] = {"8ãƒ“ãƒƒãƒˆ", "16ãƒ“ãƒƒãƒˆ", NULL};
 	w_toggle *quality_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _16bit_sound_flag), quality_labels);
-	table->dual_add(quality_w->label("‰¹¿"), d);
+	table->dual_add(quality_w->label("éŸ³è³ª"), d);
 	table->dual_add(quality_w, d);
 
 	stereo_w = new w_stereo_toggle(sound_preferences->flags & _stereo_flag);
-	table->dual_add(stereo_w->label("ƒXƒeƒŒƒI"), d);
+	table->dual_add(stereo_w->label("ã‚¹ãƒ†ãƒ¬ã‚ª"), d);
 	table->dual_add(stereo_w, d);
 
 	dynamic_w = new w_dynamic_toggle(TEST_FLAG(sound_preferences->flags, _dynamic_tracking_flag));
-	table->dual_add(dynamic_w->label("‰¹‚Ì’èˆÊ‚ğ•Ï‰»‚³‚¹‚é"), d);
+	table->dual_add(dynamic_w->label("éŸ³ã®å®šä½ã‚’å¤‰åŒ–ã•ã›ã‚‹"), d);
 	table->dual_add(dynamic_w, d);
 
 	w_toggle *ambient_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _ambient_sound_flag));
-	table->dual_add(ambient_w->label("ü•ÓƒTƒEƒ“ƒh"), d);
+	table->dual_add(ambient_w->label("å‘¨è¾ºã‚µã‚¦ãƒ³ãƒ‰"), d);
 	table->dual_add(ambient_w, d);
 
 	w_toggle *more_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _more_sounds_flag));
-	table->dual_add(more_w->label("’Ç‰Á‚ÌƒTƒEƒ“ƒh"), d);
+	table->dual_add(more_w->label("è¿½åŠ ã®ã‚µã‚¦ãƒ³ãƒ‰"), d);
 	table->dual_add(more_w, d);
 
 	w_toggle *button_sounds_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
-	table->dual_add(button_sounds_w->label("ƒCƒ“ƒ^[ƒtƒF[ƒXƒ{ƒ^ƒ“‚ÌƒTƒEƒ“ƒh"), d);
+	table->dual_add(button_sounds_w->label("ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹ãƒœã‚¿ãƒ³ã®ã‚µã‚¦ãƒ³ãƒ‰"), d);
 	table->dual_add(button_sounds_w, d);
 
 	w_select *channels_w = new w_select(static_cast<int>(std::floor(std::log(static_cast<float>(sound_preferences->channel_count)) / std::log(2.0) + 0.5)), channel_labels);
-	table->dual_add(channels_w->label("ƒ`ƒƒƒ“ƒlƒ‹”"), d);
+	table->dual_add(channels_w->label("ãƒãƒ£ãƒ³ãƒãƒ«æ•°"), d);
 	table->dual_add(channels_w, d);
 
 	w_volume_slider *volume_w = new w_volume_slider(sound_preferences->volume);
-	table->dual_add(volume_w->label("‰¹—Ê"), d);
+	table->dual_add(volume_w->label("éŸ³é‡"), d);
 	table->dual_add(volume_w, d);
 
 	w_slider *music_volume_w = new w_percentage_slider(NUMBER_OF_SOUND_VOLUME_LEVELS, sound_preferences->music);
-	table->dual_add(music_volume_w->label("‰¹Šy‚Ì‰¹—Ê"), d);
+	table->dual_add(music_volume_w->label("éŸ³æ¥½ã®éŸ³é‡"), d);
 	table->dual_add(music_volume_w, d);
 
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("ƒlƒbƒgƒ[ƒNƒ}ƒCƒN"), d);
+	table->dual_add_row(new w_static_text("ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯ãƒã‚¤ã‚¯"), d);
 
 	w_toggle* mute_while_transmitting_w = new w_toggle(!sound_preferences->mute_while_transmitting);
-	table->dual_add(mute_while_transmitting_w->label("ƒwƒbƒhƒZƒbƒgƒ}ƒCƒNƒ‚[ƒh"), d);
+	table->dual_add(mute_while_transmitting_w->label("ãƒ˜ãƒƒãƒ‰ã‚»ãƒƒãƒˆãƒã‚¤ã‚¯ãƒ¢ãƒ¼ãƒ‰"), d);
 	table->dual_add(mute_while_transmitting_w, d);
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("ÀŒ±’†‚ÌƒTƒEƒ“ƒhƒIƒvƒVƒ‡ƒ“"), d);
+	table->dual_add_row(new w_static_text("å®Ÿé¨“ä¸­ã®ã‚µã‚¦ãƒ³ãƒ‰ã‚ªãƒ—ã‚·ãƒ§ãƒ³"), d);
 		w_toggle *zrd_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _zero_restart_delay));
-	table->dual_add(zrd_w->label("ƒŠƒXƒ^[ƒgƒfƒBƒŒƒC‚ğƒ[ƒ‚É"), d);
+	table->dual_add(zrd_w->label("ãƒªã‚¹ã‚¿ãƒ¼ãƒˆãƒ‡ã‚£ãƒ¬ã‚¤ã‚’ã‚¼ãƒ­ã«"), d);
 	table->dual_add(zrd_w, d);
 
 	placer->add(table, true);
@@ -1445,8 +1445,8 @@ static void sound_dialog(void *arg)
 	placer->add(new w_spacer(), true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("—¹³", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("ƒLƒƒƒ“ƒZƒ‹", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("äº†æ‰¿", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("ã‚­ãƒ£ãƒ³ã‚»ãƒ«", dialog_cancel, &d), d);
 	
 	placer->add(button_placer, true);
 
@@ -1559,11 +1559,11 @@ public:
 const int NUM_KEYS = 21;
 
 static const char *action_name[NUM_KEYS] = {
-	"‘Oi", "Œã‘Ş", "¶‚ÉŒü‚­", "‰E‚ÉŒü‚­", "¶‚ÉƒTƒCƒhƒXƒeƒbƒv", "‰E‚ÉƒTƒCƒhƒXƒeƒbƒv",
-	"¶‚ğŒ©‚é", "‰E‚ğŒ©‚é", "ã‚ğŒ©‚é", "‰º‚ğŒ©‚é", "‘O‚ğŒ©‚é",
-	"‘O‚Ì•Ší", "Ÿ‚Ì•Ší", "å–C", "•›–C",
-	"ƒTƒCƒhƒXƒeƒbƒv", "‘–‚é^‰j‚®", "Œ©‚é",
-	"ƒAƒNƒVƒ‡ƒ“", "’n}", "ƒ}ƒCƒN"
+	"å‰é€²", "å¾Œé€€", "å·¦ã«å‘ã", "å³ã«å‘ã", "å·¦ã«ã‚µã‚¤ãƒ‰ã‚¹ãƒ†ãƒƒãƒ—", "å³ã«ã‚µã‚¤ãƒ‰ã‚¹ãƒ†ãƒƒãƒ—",
+	"å·¦ã‚’è¦‹ã‚‹", "å³ã‚’è¦‹ã‚‹", "ä¸Šã‚’è¦‹ã‚‹", "ä¸‹ã‚’è¦‹ã‚‹", "å‰ã‚’è¦‹ã‚‹",
+	"å‰ã®æ­¦å™¨", "æ¬¡ã®æ­¦å™¨", "ä¸»ç ²", "å‰¯ç ²",
+	"ã‚µã‚¤ãƒ‰ã‚¹ãƒ†ãƒƒãƒ—", "èµ°ã‚‹ï¼æ³³ã", "è¦‹ã‚‹",
+	"ã‚¢ã‚¯ã‚·ãƒ§ãƒ³", "åœ°å›³", "ãƒã‚¤ã‚¯"
 };
 
 
@@ -1636,7 +1636,7 @@ static key_binding_map default_key_bindings = {
 };
 	
 static const char *shell_action_name[NUMBER_OF_SHELL_KEYS] = {
-	"‘O‚Ì“¹‹ï", "Ÿ‚Ì“¹‹ï", "åŠÏ^‹qŠÏØ‚è‘Ö‚¦", "ƒ{ƒŠƒ…[ƒ€‚ğã‚°‚é", "ƒ{ƒŠƒ…[ƒ€‚ğ‰º‚°‚é", "ƒ}ƒbƒv‚ğŠg‘å", "ƒ}ƒbƒv‚ğk¬", "FPS‚ğ•\\¦", "ƒ`ƒƒƒbƒg^ƒRƒ“ƒ\\[ƒ‹", "ƒlƒbƒgƒ[ƒNó‹µ"
+	"å‰ã®é“å…·", "æ¬¡ã®é“å…·", "ä¸»è¦³ï¼å®¢è¦³åˆ‡ã‚Šæ›¿ãˆ", "ãƒœãƒªãƒ¥ãƒ¼ãƒ ã‚’ä¸Šã’ã‚‹", "ãƒœãƒªãƒ¥ãƒ¼ãƒ ã‚’ä¸‹ã’ã‚‹", "ãƒãƒƒãƒ—ã‚’æ‹¡å¤§", "ãƒãƒƒãƒ—ã‚’ç¸®å°", "FPSã‚’è¡¨ç¤º", "ãƒãƒ£ãƒƒãƒˆï¼ã‚³ãƒ³ã‚½ãƒ¼ãƒ«", "ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯çŠ¶æ³"
 };
 
 
@@ -1825,7 +1825,7 @@ enum {
 	TAB_MORE_KEYS
 };
 
-const std::vector<std::string> mouse_feel_labels = { "‹Œ®", "Œ»‘ã•—", "(ƒJƒXƒ^ƒ€)" };
+const std::vector<std::string> mouse_feel_labels = { "æ—§å¼", "ç¾ä»£é¢¨", "(ã‚«ã‚¹ã‚¿ãƒ )" };
 static w_select_popup *mouse_feel_w;
 static w_select_popup *mouse_feel_details_w;
 static w_toggle *mouse_raw_w;
@@ -2158,7 +2158,7 @@ static void controls_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("ƒRƒ“ƒgƒ[ƒ‹"), d);
+	placer->dual_add(new w_title("ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«"), d);
 	placer->add(new w_spacer());
 	
 	// create all key widgets
@@ -2201,7 +2201,7 @@ static void controls_dialog(void *arg)
 	
 	tab_placer* tabs = new tab_placer();
 	
-	std::vector<std::string> labels = { "Æ€", "ˆÚ“®", "s“®", "ƒCƒ“ƒ^[ƒtƒF[ƒX", "‚»‚Ì‘¼" };
+	std::vector<std::string> labels = { "ç…§æº–", "ç§»å‹•", "è¡Œå‹•", "ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹", "ãã®ä»–" };
 	w_tab *tab_w = new w_tab(labels, tabs);
 	
 	placer->dual_add(tab_w, d);
@@ -2214,9 +2214,9 @@ static void controls_dialog(void *arg)
 	move_table->col_flags(2, placeable::kAlignLeft);
 	move_table->col_flags(3, placeable::kAlignLeft);
 	move_table->add(new w_spacer(), true);
-	move_table->dual_add(new w_label("ƒL[ƒ{[ƒh"), d);
-	move_table->dual_add(new w_label("ƒ}ƒEƒX"), d);
-	move_table->dual_add(new w_label("ƒRƒ“ƒgƒ[ƒ‰["), d);
+	move_table->dual_add(new w_label("ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰"), d);
+	move_table->dual_add(new w_label("ãƒã‚¦ã‚¹"), d);
+	move_table->dual_add(new w_label("ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼"), d);
 	
 	std::vector<int> move_keys = { 0, 1, 4, 5, -1, 16, 15, 17 };
 	for (auto it = move_keys.begin(); it != move_keys.end(); ++it) {
@@ -2249,11 +2249,11 @@ static void controls_dialog(void *arg)
 	move_options->col_flags(0, placeable::kAlignRight);
 
 	w_toggle *always_run_w = new w_toggle(input_preferences->modifiers & _inputmod_interchange_run_walk);
-	move_options->dual_add(always_run_w->label("í‘–s"), d);
+	move_options->dual_add(always_run_w->label("å¸¸æ™‚èµ°è¡Œ"), d);
 	move_options->dual_add(always_run_w, d);
 	
 	w_toggle *always_swim_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_swim_sink));
-	move_options->dual_add(always_swim_w->label("í‰j‚®"), d);
+	move_options->dual_add(always_swim_w->label("å¸¸æ™‚æ³³ã"), d);
 	move_options->dual_add(always_swim_w, d);
 	
 	move->add(move_options, true);
@@ -2265,9 +2265,9 @@ static void controls_dialog(void *arg)
 	look_table->col_flags(2, placeable::kAlignLeft);
 	look_table->col_flags(3, placeable::kAlignLeft);
 	look_table->add(new w_spacer(), true);
-	look_table->dual_add(new w_label("ƒL[ƒ{[ƒh"), d);
-	look_table->dual_add(new w_label("ƒ}ƒEƒX"), d);
-	look_table->dual_add(new w_label("ƒRƒ“ƒgƒ[ƒ‰["), d);
+	look_table->dual_add(new w_label("ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰"), d);
+	look_table->dual_add(new w_label("ãƒã‚¦ã‚¹"), d);
+	look_table->dual_add(new w_label("ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼"), d);
 	
 	std::vector<int> look_keys = { 8, 9, 2, 3, -1, 6, 7, 10 };
 	for (auto it = look_keys.begin(); it != look_keys.end(); ++it) {
@@ -2289,16 +2289,16 @@ static void controls_dialog(void *arg)
 					w_text_entry* txt = NULL;
 					switch (i) {
 						case 8:
-							txt = new w_text_entry(12, "ã");
+							txt = new w_text_entry(12, "ä¸Š");
 							break;
 						case 9:
- 							txt = new w_text_entry(12, "‰º");
+ 							txt = new w_text_entry(12, "ä¸‹");
 							break;
 						case 2:
-							txt = new w_text_entry(12, "¶");
+							txt = new w_text_entry(12, "å·¦");
 							break;
 						case 3:
-							txt = new w_text_entry(12, "‰E");
+							txt = new w_text_entry(12, "å³");
 							break;
 						default:
 							break;
@@ -2321,7 +2321,7 @@ static void controls_dialog(void *arg)
 	look_options->col_flags(0, placeable::kAlignRight);
 	
 	w_toggle* auto_recenter_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_auto_recenter));
-	look_options->dual_add(auto_recenter_w->label("‹“_‚Ì©“®ƒŠƒZƒ“ƒ^["), d);
+	look_options->dual_add(auto_recenter_w->label("è¦–ç‚¹ã®è‡ªå‹•ãƒªã‚»ãƒ³ã‚¿ãƒ¼"), d);
 	look_options->dual_add(auto_recenter_w, d);
 	
 	look_options->add_row(new w_spacer(), true);
@@ -2331,17 +2331,17 @@ static void controls_dialog(void *arg)
 	mouse_options->col_flags(1, placeable::kAlignLeft);
 
 	w_toggle *enable_mouse_w = new w_toggle(input_preferences->input_device == _mouse_yaw_pitch);
-	mouse_options->dual_add(enable_mouse_w->label("ƒ}ƒEƒX‚Ìã‰º"), d);
+	mouse_options->dual_add(enable_mouse_w->label("ãƒã‚¦ã‚¹ã®ä¸Šä¸‹"), d);
 	mouse_options->dual_add(enable_mouse_w, d);
 	
 	mouse_feel_w = new w_select_popup();
 	mouse_feel_w->set_labels(mouse_feel_labels);
 	update_mouse_feel(NULL);
-	mouse_options->dual_add(mouse_feel_w->label("ƒ}ƒEƒX‚Ì¶‰E"), d);
+	mouse_options->dual_add(mouse_feel_w->label("ãƒã‚¦ã‚¹ã®å·¦å³"), d);
 	mouse_options->dual_add(mouse_feel_w, d);
 	
 	mouse_options->add_row(new w_spacer(), true);
-	mouse_options->dual_add_row(new w_button("ƒ}ƒEƒXŠg’£", mouse_custom_dialog, &d), d);
+	mouse_options->dual_add_row(new w_button("ãƒã‚¦ã‚¹æ‹¡å¼µ", mouse_custom_dialog, &d), d);
 	
 	look_options->add(mouse_options, true);
 	
@@ -2350,15 +2350,15 @@ static void controls_dialog(void *arg)
 	controller_options->col_flags(1, placeable::kAlignLeft);
 	
 	controller_options->dual_add_row(new w_label(""), d);
-	std::vector<std::string> joystick_aiming_labels = { "ƒAƒiƒƒOƒXƒeƒBƒbƒN‚Æ‚µ‚Äˆµ‚¤", "\\šƒL[‚Æ‚µ‚Äˆµ‚¤" };
+	std::vector<std::string> joystick_aiming_labels = { "ã‚¢ãƒŠãƒ­ã‚°ã‚¹ãƒ†ã‚£ãƒƒã‚¯ã¨ã—ã¦æ‰±ã†", "åå­—ã‚­ãƒ¼ã¨ã—ã¦æ‰±ã†" };
 	w_select_popup *joystick_aiming_w = new w_select_popup();
 	joystick_aiming_w->set_labels(joystick_aiming_labels);
 	joystick_aiming_w->set_selection(input_preferences->controller_analog ? 0 : 1);
-	controller_options->dual_add(joystick_aiming_w->label("ƒRƒ“ƒgƒ[ƒ‰‚Å‚ÌU‚èŒü‚«"), d);
+	controller_options->dual_add(joystick_aiming_w->label("ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ã§ã®æŒ¯ã‚Šå‘ã"), d);
 	controller_options->dual_add(joystick_aiming_w, d);
 	
 	controller_options->add_row(new w_spacer(), true);
-	controller_options->dual_add_row(new w_button("ƒRƒ“ƒgƒ[ƒ‰[Šg’£", controller_details_dialog, &d), d);
+	controller_options->dual_add_row(new w_button("ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼æ‹¡å¼µ", controller_details_dialog, &d), d);
 	
 	look_options->add(controller_options, true);
 
@@ -2371,9 +2371,9 @@ static void controls_dialog(void *arg)
 	actions_table->col_flags(2, placeable::kAlignLeft);
 	actions_table->col_flags(3, placeable::kAlignLeft);
 	actions_table->add(new w_spacer(), true);
-	actions_table->dual_add(new w_label("ƒL[ƒ{[ƒh"), d);
-	actions_table->dual_add(new w_label("ƒ}ƒEƒX"), d);
-	actions_table->dual_add(new w_label("ƒRƒ“ƒgƒ[ƒ‰["), d);
+	actions_table->dual_add(new w_label("ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰"), d);
+	actions_table->dual_add(new w_label("ãƒã‚¦ã‚¹"), d);
+	actions_table->dual_add(new w_label("ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼"), d);
 	
 	std::vector<int> actions_keys = { 13, 14, 11, 12, -1, 18, -1, 20, 108 };
 	for (auto it = actions_keys.begin(); it != actions_keys.end(); ++it) {
@@ -2402,15 +2402,15 @@ static void controls_dialog(void *arg)
 	actions_options->col_flags(0, placeable::kAlignRight);
 
 	w_toggle *weapon_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_switch_to_new_weapon));
-	actions_options->dual_add(weapon_w->label("•Ší‚Ì©“®Ø‚è‘Ö‚¦"), d);
+	actions_options->dual_add(weapon_w->label("æ­¦å™¨ã®è‡ªå‹•åˆ‡ã‚Šæ›¿ãˆ"), d);
 	actions_options->dual_add(weapon_w, d);
 	
 	actions->add(actions_options, true);
 	
 	actions->add(new w_spacer(), true);
-	actions->dual_add(new w_static_text("’ˆÓF•Ší‚Ì©“®ØŠ·‚¦‚ÆA‹“_‚Ì©“®ƒŠƒZƒ“ƒ^[‚ÍAƒlƒbƒgƒ[ƒNƒvƒŒƒC‚Å"), d);
-	actions->dual_add(new w_static_text("©“®“I‚ÉƒIƒ“‚É‚È‚è‚Ü‚·BƒVƒ“ƒOƒ‹ƒvƒŒƒCƒ„[ƒ‚[ƒh‚Å‚Ç‚¿‚ç‚©‚ğƒIƒt‚É‚·‚é‚ÆA"), d);
-	actions->dual_add(new w_static_text("‰f‰æ‚Ì˜^‰æ‚ª©“®“I‚É–³Œø‰»‚³‚ê‚Ü‚·B"), d);
+	actions->dual_add(new w_static_text("æ³¨æ„ï¼šæ­¦å™¨ã®è‡ªå‹•åˆ‡æ›ãˆã¨ã€è¦–ç‚¹ã®è‡ªå‹•ãƒªã‚»ãƒ³ã‚¿ãƒ¼ã¯ã€ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯ãƒ—ãƒ¬ã‚¤ã§"), d);
+	actions->dual_add(new w_static_text("è‡ªå‹•çš„ã«ã‚ªãƒ³ã«ãªã‚Šã¾ã™ã€‚ã‚·ãƒ³ã‚°ãƒ«ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ¢ãƒ¼ãƒ‰ã§ã©ã¡ã‚‰ã‹ã‚’ã‚ªãƒ•ã«ã™ã‚‹ã¨ã€"), d);
+	actions->dual_add(new w_static_text("æ˜ ç”»ã®éŒ²ç”»ãŒè‡ªå‹•çš„ã«ç„¡åŠ¹åŒ–ã•ã‚Œã¾ã™ã€‚"), d);
 
 
 	vertical_placer *iface = new vertical_placer();
@@ -2420,14 +2420,14 @@ static void controls_dialog(void *arg)
 	interface_table->col_flags(2, placeable::kAlignLeft);
 	interface_table->col_flags(3, placeable::kAlignLeft);
 	interface_table->add(new w_spacer(), true);
-	interface_table->dual_add(new w_label("ƒL[ƒ{[ƒh"), d);
-	interface_table->dual_add(new w_label("ƒ}ƒEƒX"), d);
-	interface_table->dual_add(new w_label("ƒRƒ“ƒgƒ[ƒ‰["), d);
+	interface_table->dual_add(new w_label("ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰"), d);
+	interface_table->dual_add(new w_label("ãƒã‚¦ã‚¹"), d);
+	interface_table->dual_add(new w_label("ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼"), d);
 	
 	std::vector<int> interface_keys = { 19, 105, 106, -1, 103, 104, -1, 100, 101, -1, 102, 107, 109, -1, -2 };
 	for (auto it = interface_keys.begin(); it != interface_keys.end(); ++it) {
 		if (*it == -2) {
-			interface_table->dual_add(new w_label("ƒQ[ƒ€‚ğI—¹"), d);
+			interface_table->dual_add(new w_label("ã‚²ãƒ¼ãƒ ã‚’çµ‚äº†"), d);
 			w_prefs_key *kb = new w_prefs_key(SDL_SCANCODE_ESCAPE, w_key::KeyboardKey);
 			kb->set_enabled(false);
 			interface_table->dual_add(kb, d);
@@ -2456,35 +2456,35 @@ static void controls_dialog(void *arg)
 	iface->add(interface_table, true);
 
 	vertical_placer *other = new vertical_placer();
-	other->dual_add(new w_static_text("‚±‚ê‚ç‚ÌƒL[ƒ{[ƒhƒVƒ‡[ƒgƒJƒbƒg‚Í•ÏX‚Å‚«‚Ü‚¹‚ñB"), d);
+	other->dual_add(new w_static_text("ã“ã‚Œã‚‰ã®ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã‚·ãƒ§ãƒ¼ãƒˆã‚«ãƒƒãƒˆã¯å¤‰æ›´ã§ãã¾ã›ã‚“ã€‚"), d);
 	other->add(new w_spacer());
 
 	table_placer *other_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
-	other_table->dual_add(new w_label("ƒƒCƒ“ƒƒjƒ…["), d);
-	other_table->dual_add(new w_label("ƒQ[ƒ€’†"), d);
+	other_table->dual_add(new w_label("ãƒ¡ã‚¤ãƒ³ãƒ¡ãƒ‹ãƒ¥ãƒ¼"), d);
+	other_table->dual_add(new w_label("ã‚²ãƒ¼ãƒ ä¸­"), d);
 
 	table_placer *other_menu = new table_placer(2, get_theme_space(ITEM_WIDGET), false);
 	other_menu->col_flags(0, placeable::kAlignRight);
 	other_menu->col_flags(1, placeable::kAlignLeft);
 	std::vector<std::string> menu_shortcuts = {
-		"N", "V‹KƒQ[ƒ€ŠJn",
+		"N", "æ–°è¦ã‚²ãƒ¼ãƒ é–‹å§‹",
 #if (defined(__APPLE__) && defined(__MACH__))
-		"Cmd-Option-N", "ƒŒƒxƒ‹‘I‘ğ",
+		"Cmd-Option-N", "ãƒ¬ãƒ™ãƒ«é¸æŠ",
 #else
-		"Ctrl+Shift+N", "ƒŒƒxƒ‹‘I‘ğ",
+		"Ctrl+Shift+N", "ãƒ¬ãƒ™ãƒ«é¸æŠ",
 #endif
-		"O", "•Û‘¶‚µ‚½ƒQ[ƒ€‚ğÄŠJ",
-		"G", "ƒlƒbƒgƒ[ƒNƒQ[ƒ€W‡",
-		"J", "ƒlƒbƒgƒ[ƒNƒQ[ƒ€Q‰Á",
-		"R", "•Û‘¶‚µ‚½‰f‰æ‚ÌÄ¶",
-		"P", "ŠÂ‹«İ’è",
-		"Q", "I—¹",
-		"C", "ƒVƒiƒŠƒIƒNƒŒƒWƒbƒg",
-		"A", "Aleph One‚É‚Â‚¢‚Ä",
+		"O", "ä¿å­˜ã—ãŸã‚²ãƒ¼ãƒ ã‚’å†é–‹",
+		"G", "ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯ã‚²ãƒ¼ãƒ é›†åˆ",
+		"J", "ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯ã‚²ãƒ¼ãƒ å‚åŠ ",
+		"R", "ä¿å­˜ã—ãŸæ˜ ç”»ã®å†ç”Ÿ",
+		"P", "ç’°å¢ƒè¨­å®š",
+		"Q", "çµ‚äº†",
+		"C", "ã‚·ãƒŠãƒªã‚ªã‚¯ãƒ¬ã‚¸ãƒƒãƒˆ",
+		"A", "Aleph Oneã«ã¤ã„ã¦",
 #if (defined(__APPLE__) && defined(__MACH__))
-		"Cmd-Return", "ƒtƒ‹ƒXƒNƒŠ[ƒ“Ø‚è‘Ö‚¦",
+		"Cmd-Return", "ãƒ•ãƒ«ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åˆ‡ã‚Šæ›¿ãˆ",
 #else
-		"Alt+Enter", "ƒtƒ‹ƒXƒNƒŠ[ƒ“Ø‚è‘Ö‚¦",
+		"Alt+Enter", "ãƒ•ãƒ«ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åˆ‡ã‚Šæ›¿ãˆ",
 #endif
 	};
 	for (auto it = menu_shortcuts.begin(); it != menu_shortcuts.end(); ++it) {
@@ -2496,19 +2496,19 @@ static void controls_dialog(void *arg)
 	other_game->col_flags(0, placeable::kAlignRight);
 	other_game->col_flags(1, placeable::kAlignLeft);
 	std::vector<std::string> game_shortcuts = {
-		"F1", "‰ğ‘œ“x‚ğ‰º‚°‚é",
-		"F2", "‰ğ‘œ“x‚ğã‚°‚é",
-		"F8", "ƒNƒƒXƒwƒA[",
-		"F9", "ƒXƒNƒŠ[ƒ“ƒVƒ‡ƒbƒg",
-		"F10", "ƒfƒoƒbƒOî•ñ",
-		"F11", "–¾‚é‚³‚ğ‰º‚°‚é",
-		"F12", "–¾‚é‚³‚ğã‚°‚é",
+		"F1", "è§£åƒåº¦ã‚’ä¸‹ã’ã‚‹",
+		"F2", "è§£åƒåº¦ã‚’ä¸Šã’ã‚‹",
+		"F8", "ã‚¯ãƒ­ã‚¹ãƒ˜ã‚¢ãƒ¼",
+		"F9", "ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚·ãƒ§ãƒƒãƒˆ",
+		"F10", "ãƒ‡ãƒãƒƒã‚°æƒ…å ±",
+		"F11", "æ˜ã‚‹ã•ã‚’ä¸‹ã’ã‚‹",
+		"F12", "æ˜ã‚‹ã•ã‚’ä¸Šã’ã‚‹",
 #if (defined(__APPLE__) && defined(__MACH__))
-		"Cmd-Return", "ƒtƒ‹ƒXƒNƒŠ[ƒ“Ø‚è‘Ö‚¦",
+		"Cmd-Return", "ãƒ•ãƒ«ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åˆ‡ã‚Šæ›¿ãˆ",
 #else
-		"Alt+Enter", "ƒtƒ‹ƒXƒNƒŠ[ƒ“Ø‚è‘Ö‚¦",
+		"Alt+Enter", "ãƒ•ãƒ«ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åˆ‡ã‚Šæ›¿ãˆ",
 #endif
-		"Escape", "ƒQ[ƒ€I—¹"
+		"Escape", "ã‚²ãƒ¼ãƒ çµ‚äº†"
 	};
 	for (auto it = game_shortcuts.begin(); it != game_shortcuts.end(); ++it) {
 		other_game->dual_add(new w_label(it->c_str()), d);
@@ -2525,12 +2525,12 @@ static void controls_dialog(void *arg)
 	placer->add(tabs, true);
 	
 	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_button("ƒfƒtƒHƒ‹ƒg‚ÉƒŠƒZƒbƒg‚·‚é", load_default_keys, &d), d);
+	placer->dual_add(new w_button("ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã«ãƒªã‚»ãƒƒãƒˆã™ã‚‹", load_default_keys, &d), d);
 	placer->add(new w_spacer(), true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("—¹³", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("ƒLƒƒƒ“ƒZƒ‹", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("äº†æ‰¿", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("ã‚­ãƒ£ãƒ³ã‚»ãƒ«", dialog_cancel, &d), d);
 	placer->add(button_placer, true);
 
 	d.set_widget_placer(placer);
@@ -2611,7 +2611,7 @@ static void plugins_dialog(void *)
 {
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	w_title *w_header = new w_title("ƒvƒ‰ƒOƒCƒ“");
+	w_title *w_header = new w_title("ãƒ—ãƒ©ã‚°ã‚¤ãƒ³");
 	placer->dual_add(w_header, d);
 	placer->add(new w_spacer, true);
 
@@ -2622,9 +2622,9 @@ static void plugins_dialog(void *)
 	placer->add(new w_spacer, true);
 
 	horizontal_placer* button_placer = new horizontal_placer;
-	w_button* accept_w = new w_button("—¹³", dialog_ok, &d);
+	w_button* accept_w = new w_button("äº†æ‰¿", dialog_ok, &d);
 	button_placer->dual_add(accept_w, d);
-	w_button* cancel_w = new w_button("ƒLƒƒƒ“ƒZƒ‹", dialog_cancel, &d);
+	w_button* cancel_w = new w_button("ã‚­ãƒ£ãƒ³ã‚»ãƒ«", dialog_cancel, &d);
 	button_placer->dual_add(cancel_w, d);
 
 	placer->add(button_placer, true);
@@ -2670,7 +2670,7 @@ static void environment_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	w_title *w_header = new w_title("ŠÂ‹«İ’è");
+	w_title *w_header = new w_title("ç’°å¢ƒè¨­å®š");
 	placer->dual_add(w_header, d);
 	placer->add(new w_spacer, true);
 
@@ -2678,69 +2678,69 @@ static void environment_dialog(void *arg)
 	table->col_flags(0, placeable::kAlignRight);
 	
 #ifndef MAC_APP_STORE
-	w_env_select *map_w = new w_env_select(environment_preferences->map_file, "—˜—p‰Â”\\‚Èƒ}ƒbƒv", _typecode_scenario, &d);
-	table->dual_add(map_w->label("ƒ}ƒbƒv"), d);
+	w_env_select *map_w = new w_env_select(environment_preferences->map_file, "åˆ©ç”¨å¯èƒ½ãªãƒãƒƒãƒ—", _typecode_scenario, &d);
+	table->dual_add(map_w->label("ãƒãƒƒãƒ—"), d);
 	table->dual_add(map_w, d);
 	
-	w_env_select *physics_w = new w_env_select(environment_preferences->physics_file, "—˜—p‰Â”\\‚È•¨—ƒ‚ƒfƒ‹", _typecode_physics, &d);
-	table->dual_add(physics_w->label("•¨—ƒ‚ƒfƒ‹"), d);
+	w_env_select *physics_w = new w_env_select(environment_preferences->physics_file, "åˆ©ç”¨å¯èƒ½ãªç‰©ç†ãƒ¢ãƒ‡ãƒ«", _typecode_physics, &d);
+	table->dual_add(physics_w->label("ç‰©ç†ãƒ¢ãƒ‡ãƒ«"), d);
 	table->dual_add(physics_w, d);
 
-	w_env_select *shapes_w = new w_env_select(environment_preferences->shapes_file, "—˜—p‰Â”\\‚ÈŒ`‘Ô", _typecode_shapes, &d);
-	table->dual_add(shapes_w->label("Œ`‘Ô"), d);
+	w_env_select *shapes_w = new w_env_select(environment_preferences->shapes_file, "åˆ©ç”¨å¯èƒ½ãªå½¢æ…‹", _typecode_shapes, &d);
+	table->dual_add(shapes_w->label("å½¢æ…‹"), d);
 	table->dual_add(shapes_w, d);
 
-	w_env_select *sounds_w = new w_env_select(environment_preferences->sounds_file, "—˜—p‰Â”\\‚ÈƒTƒEƒ“ƒh", _typecode_sounds, &d);
-	table->dual_add(sounds_w->label("ƒTƒEƒ“ƒh"), d);
+	w_env_select *sounds_w = new w_env_select(environment_preferences->sounds_file, "åˆ©ç”¨å¯èƒ½ãªã‚µã‚¦ãƒ³ãƒ‰", _typecode_sounds, &d);
+	table->dual_add(sounds_w->label("ã‚µã‚¦ãƒ³ãƒ‰"), d);
 	table->dual_add(sounds_w, d);
 
-	w_env_select* resources_w = new w_env_select(environment_preferences->resources_file, "—˜—p‰Â”\\‚Èƒtƒ@ƒCƒ‹", _typecode_unknown, &d);
-	table->dual_add(resources_w->label("ŠO•”ƒŠƒ\\[ƒX"), d);
+	w_env_select* resources_w = new w_env_select(environment_preferences->resources_file, "åˆ©ç”¨å¯èƒ½ãªãƒ•ã‚¡ã‚¤ãƒ«", _typecode_unknown, &d);
+	table->dual_add(resources_w->label("å¤–éƒ¨ãƒªã‚½ãƒ¼ã‚¹"), d);
 	table->dual_add(resources_w, d);
 #endif
 
 	table->add_row(new w_spacer, true);
-	table->dual_add_row(new w_button("ƒvƒ‰ƒOƒCƒ“", plugins_dialog, &d), d);
+	table->dual_add_row(new w_button("ãƒ—ãƒ©ã‚°ã‚¤ãƒ³", plugins_dialog, &d), d);
 
 #ifndef MAC_APP_STORE
 	table->add_row(new w_spacer, true);
-	table->dual_add_row(new w_static_text("ƒ\\ƒƒXƒNƒŠƒvƒg"), d);
+	table->dual_add_row(new w_static_text("ã‚½ãƒ­ã‚¹ã‚¯ãƒªãƒ—ãƒˆ"), d);
 	w_enabling_toggle* use_solo_lua_w = new w_enabling_toggle(environment_preferences->use_solo_lua);
-	table->dual_add(use_solo_lua_w->label("ƒ\\ƒƒXƒNƒŠƒvƒg‚ğg—p"), d);
+	table->dual_add(use_solo_lua_w->label("ã‚½ãƒ­ã‚¹ã‚¯ãƒªãƒ—ãƒˆã‚’ä½¿ç”¨"), d);
 	table->dual_add(use_solo_lua_w, d);
 
-	w_file_chooser *solo_lua_w = new w_file_chooser("ƒXƒNƒŠƒvƒg‚ğ‘I‘ğ", _typecode_netscript);
+	w_file_chooser *solo_lua_w = new w_file_chooser("ã‚¹ã‚¯ãƒªãƒ—ãƒˆã‚’é¸æŠ", _typecode_netscript);
 	solo_lua_w->set_file(environment_preferences->solo_lua_file);
-	table->dual_add(solo_lua_w->label("ƒXƒNƒŠƒvƒgƒtƒ@ƒCƒ‹"), d);
+	table->dual_add(solo_lua_w->label("ã‚¹ã‚¯ãƒªãƒ—ãƒˆãƒ•ã‚¡ã‚¤ãƒ«"), d);
 	table->dual_add(solo_lua_w, d);
 	use_solo_lua_w->add_dependent_widget(solo_lua_w);
 #endif
 
 	table->add_row(new w_spacer, true);
-	table->dual_add_row(new w_static_text("ƒtƒBƒ‹ƒ€Ä¶"), d);
+	table->dual_add_row(new w_static_text("ãƒ•ã‚£ãƒ«ãƒ å†ç”Ÿ"), d);
 	
 	w_select* film_profile_w = new w_select(environment_preferences->film_profile, film_profile_labels);
-	table->dual_add(film_profile_w->label("ƒfƒtƒHƒ‹ƒgÄ¶ƒvƒƒtƒ@ƒCƒ‹"), d);
+	table->dual_add(film_profile_w->label("ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆå†ç”Ÿãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«"), d);
 	table->dual_add(film_profile_w, d);
 	
 #ifndef MAC_APP_STORE
 	w_enabling_toggle* use_replay_net_lua_w = new w_enabling_toggle(environment_preferences->use_replay_net_lua);
-	table->dual_add(use_replay_net_lua_w->label("ƒtƒBƒ‹ƒ€‚Å‚ÌƒlƒbƒgƒXƒNƒŠƒvƒg"), d);
+	table->dual_add(use_replay_net_lua_w->label("ãƒ•ã‚£ãƒ«ãƒ ã§ã®ãƒãƒƒãƒˆã‚¹ã‚¯ãƒªãƒ—ãƒˆ"), d);
 	table->dual_add(use_replay_net_lua_w, d);
 	
-	w_file_chooser *replay_net_lua_w = new w_file_chooser("ƒXƒNƒŠƒvƒg‚ğ‘I‘ğ", _typecode_netscript);
+	w_file_chooser *replay_net_lua_w = new w_file_chooser("ã‚¹ã‚¯ãƒªãƒ—ãƒˆã‚’é¸æŠ", _typecode_netscript);
 	replay_net_lua_w->set_file(network_preferences->netscript_file);
-	table->dual_add(replay_net_lua_w->label("ƒlƒbƒgƒXƒNƒŠƒvƒgƒtƒ@ƒCƒ‹"), d);
+	table->dual_add(replay_net_lua_w->label("ãƒãƒƒãƒˆã‚¹ã‚¯ãƒªãƒ—ãƒˆãƒ•ã‚¡ã‚¤ãƒ«"), d);
 	table->dual_add(replay_net_lua_w, d);
 	use_replay_net_lua_w->add_dependent_widget(replay_net_lua_w);
 #endif
 	
 	table->add_row(new w_spacer, true);
-	table->dual_add_row(new w_static_text("ƒIƒvƒVƒ‡ƒ“"), d);
+	table->dual_add_row(new w_static_text("ã‚ªãƒ—ã‚·ãƒ§ãƒ³"), d);
 
 #ifndef MAC_APP_STORE
 	w_toggle *hide_extensions_w = new w_toggle(environment_preferences->hide_extensions);
-	table->dual_add(hide_extensions_w->label("ƒtƒ@ƒCƒ‹Šg’£q‚ğ‰B‚·"), d);
+	table->dual_add(hide_extensions_w->label("ãƒ•ã‚¡ã‚¤ãƒ«æ‹¡å¼µå­ã‚’éš ã™"), d);
 	table->dual_add(hide_extensions_w, d);
 #endif
 
@@ -2749,7 +2749,7 @@ static void environment_dialog(void *arg)
 		if (max_saves_values[i] == environment_preferences->maximum_quick_saves)
 			max_saves_w->set_selection(i);
 	}
-	table->dual_add(max_saves_w->label("•Û‚·‚é–¼‘O–³‚µ‚Ì•Û‘¶ƒf[ƒ^"), d);
+	table->dual_add(max_saves_w->label("ä¿æŒã™ã‚‹åå‰ç„¡ã—ã®ä¿å­˜ãƒ‡ãƒ¼ã‚¿"), d);
 	table->dual_add(max_saves_w, d);
 
 	placer->add(table, true);
@@ -2757,9 +2757,9 @@ static void environment_dialog(void *arg)
 	placer->add(new w_spacer, true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
-	w_button *w_accept = new w_button("ó—", dialog_ok, &d);
+	w_button *w_accept = new w_button("å—ç†", dialog_ok, &d);
 	button_placer->dual_add(w_accept, d);
-	w_button *w_cancel = new w_button("ƒLƒƒƒ“ƒZƒ‹", dialog_cancel, &d);
+	w_button *w_cancel = new w_button("ã‚­ãƒ£ãƒ³ã‚»ãƒ«", dialog_cancel, &d);
 	button_placer->dual_add(w_cancel, d);
 	placer->add(button_placer, true);
 

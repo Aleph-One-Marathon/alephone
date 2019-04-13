@@ -153,7 +153,7 @@ extern bool MainScreenVisible(void);
 void alert_user(const char *message, short severity) 
 {
   if (!MainScreenVisible()) {
-    SDL_ShowSimpleMessageBox(severity == infoError ? SDL_MESSAGEBOX_WARNING : SDL_MESSAGEBOX_ERROR, severity == infoError ? "Warning" : "Error", sjis2utf8(message, strlen(message)), NULL);
+    SDL_ShowSimpleMessageBox(severity == infoError ? SDL_MESSAGEBOX_WARNING : SDL_MESSAGEBOX_ERROR, severity == infoError ? "Warning" : "Error", message, NULL);
   } else {
     dialog d;
     vertical_placer *placer = new vertical_placer;
@@ -162,31 +162,12 @@ void alert_user(const char *message, short severity)
     
     // Wrap lines
     uint16 style;
-    font_info *font = get_theme_font(MESSAGE_WIDGET, style);
-    char *t = strdup(message);
-    char *p = t;
+    ttf_font_info *font = dynamic_cast<ttf_font_info*>(get_theme_font(MESSAGE_WIDGET, style));
+	std::vector<std::string> lines = line_wrap(font->m_styles[0], message, MAX_ALERT_WIDTH);
 
-    while (strlen(t)) {
-      unsigned i = 0, last = 0;
-      int width = 0;
-      while (i < strlen(t) && width < MAX_ALERT_WIDTH) {
-	width = text_width(t, i, font, style);
-	if (t[i] == ' ')
-	  last = i;
-	else if( isJChar( t[i] ) && is2ndJChar( t[i+1] ) ) {
-	  last = i-1;
+	for( const auto& line : lines ) {
+		placer->dual_add(new w_static_text(line.c_str()), d);
 	}
-	i++;
-      }
-      if (i != strlen(t))
-	t[last] = 0;
-      placer->dual_add(new w_static_text(t), d);
-      if (i != strlen(t))
-	t += last + 1;
-      else
-	t += i;
-    }
-    free(p);
     placer->add(new w_spacer, true);
     w_button *button = new w_button(severity == infoError ? "OK" : "QUIT", dialog_ok, &d);
     placer->dual_add (button, d);

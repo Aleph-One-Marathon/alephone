@@ -1,27 +1,37 @@
 /*
  *  converter.h
- *  AlephOne-OSX10.4
- *
- *  Created by みちあき on 08/06/24.
- *  Copyright 2008 __MyCompanyName__. All rights reserved.
  *
  *  Modified by Logue on 12/05/23
  */
 #include <stdlib.h>
 #include <string.h>
 #include <iconv.h>
+#include <string>
+#include <vector>
+#include "SDL_ttf.h"
+
+std::string sjis2utf8(const char* str, size_t len);
 
 
-char* sjis2utf8(const char* str, size_t len);
-char* utf82sjis(const char* str, size_t len);
+void sjisChar(const char* in, int* step, char* dst);
+std::vector<std::string> line_wrap(TTF_Font* t, const std::string& str, int size);
+const char* line_wrap_term(TTF_Font* t, const char* begin, const char* end,
+						   int size);
+// Detect 2-byte char. (for Shift_JIS)
+inline bool isJChar(unsigned char text) {
+	return (((text >= 0x81) && (text <= 0x9f)) ||
+			((text >= 0xe0) && (text <= 0xfc))) ? true : false;
+}
 
-unsigned short* sjis2utf16(const char* str, size_t len);
-unsigned short* utf82utf16(const char* str, size_t len);
-char* utf162utf8(const unsigned short* str, size_t len);
-
-typedef unsigned short uint16;
-uint16 sjisChar(char* in, int* step);
-int unicodeChar( const char* input, uint16* ret);
-
+inline int utf8_len(const char* t) {
+	unsigned char c = *t;
+	if( c <= 0xc2 )
+		return 1;
+	if( c <= 0xdf )
+		return 2;
+	if( c <= 0xef )
+		return 3;
+	return 4;
+}
 bool isJChar(unsigned char text);
 bool is2ndJChar(unsigned char text);

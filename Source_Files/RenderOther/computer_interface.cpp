@@ -427,11 +427,14 @@ static bool calculate_line(char *base_text, short width, short start_index, shor
 		// terminal_font no longer a global, since it may change
 		font_info *terminal_font = GetInterfaceFont(_computer_interface_font);
 		TTF_Font* font = ((ttf_font_info*)terminal_font)->m_styles[current_style];
+		std::string tmp;
+		tmp.reserve(text_end_index - index);
 		while (running_width < width && base_text[index] && base_text[index] != MAC_LINE_END) {
 			int advance;
-			uint16 c = sjisChar(base_text + index, &index);
-			TTF_GlyphMetrics(font, c, NULL, NULL, NULL, NULL, &advance );
-			running_width += advance;
+			char next[4] = {0};
+			sjisChar(base_text + index, &index, next);
+			tmp += next;
+			TTF_SizeUTF8(font, tmp.c_str(), &running_width, NULL);
 		}
 		
 		// Now go backwards, looking for whitespace to split on
@@ -458,7 +461,6 @@ static bool calculate_line(char *base_text, short width, short start_index, shor
 		*end_index= index;
 	} else
 		done = true;
-	
 	return done;
 }
 
@@ -1027,8 +1029,9 @@ static void draw_line(
 				(*text_face_start_index)= text_index;
 			}
 		}
-
-		xpos += draw_text(/*world_pixels*/ draw_surface, base_text + current_start, current_end - current_start,
+		std::string p = sjis2utf8(base_text + current_start, current_end - current_start);
+		
+		xpos += draw_text(/*world_pixels*/ draw_surface, p.c_str(), p.size(),
 		                  xpos, bounds->top + line_height * (line_number + FUDGE_FACTOR),
 		                  current_pixel, terminal_font, current_style);
 		if(current_end!=end_index)
@@ -1340,6 +1343,7 @@ static terminal_text_t *get_indexed_terminal_data(
 
 	// Note that this will only decode the text once
 	decode_text(t);
+
 	return t;
 }
 

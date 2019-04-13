@@ -540,22 +540,10 @@ int ttf_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, i
 	SDL_GetRGB(pixel, s->format, &c.r, &c.g, &c.b);
 	c.a = 0xff;
 	SDL_Surface *text_surface = 0;
-	if (utf8) 
-	{
-		char *temp = process_printable(text, length);
-		if (environment_preferences->smooth_text)
-			text_surface = TTF_RenderUTF8_Blended(get_ttf(style), temp, c);	
-		else
-			text_surface = TTF_RenderUTF8_Solid(get_ttf(style), temp, c);
-	}
+	if (environment_preferences->smooth_text)
+		text_surface = TTF_RenderUTF8_Blended(get_ttf(style), text, c);	
 	else
-	{
-		uint16 *temp = sjis2utf16(text, length);
-		if (environment_preferences->smooth_text)
-			text_surface = TTF_RenderUNICODE_Blended(get_ttf(style), temp, c);
-		else
-			text_surface = TTF_RenderUNICODE_Solid(get_ttf(style), temp, c);
-	}
+		text_surface = TTF_RenderUTF8_Solid(get_ttf(style), text, c);
 	if (!text_surface) return 0;
 	
 	SDL_Rect dst_rect;

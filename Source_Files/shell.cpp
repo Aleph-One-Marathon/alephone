@@ -179,31 +179,31 @@ static void usage(const char *prg_name)
 {
 	char msg[] =
 #ifdef __WIN32__
-		"ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ƒXƒCƒbƒ`F\n\n"
+		"ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³ã‚¹ã‚¤ãƒƒãƒï¼š\n\n"
 #else
-		"\ng—p•û–@F%s [ƒIƒvƒVƒ‡ƒ“] [ƒfƒBƒŒƒNƒgƒŠ] [ƒtƒ@ƒCƒ‹]\n"
+		"\nä½¿ç”¨æ–¹æ³•ï¼š%s [ã‚ªãƒ—ã‚·ãƒ§ãƒ³] [ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª] [ãƒ•ã‚¡ã‚¤ãƒ«]\n"
 #endif
-	"\t[-h | --help]		‚±‚Ìƒwƒ‹ƒvƒƒbƒZ[ƒW‚ğ•\\¦‚µ‚Ü‚·B\n"
-	"\t[-v | --version]		ƒQ[ƒ€‚Ìƒo[ƒWƒ‡ƒ“‚ğ•\\¦‚µ‚Ü‚·B\n"
-	"\t[-d | --debug]		ƒRƒAƒ_ƒ“ƒv‚ğo—Í‚·‚é‚æ‚¤‚É‚µ‚Ü‚·B\n"
-	"\t						iSDL parachute‚ğ–³Œø‰»‚µ‚Ü‚·j\n"
-	"\t[-f | --fullscreen]	ƒQ[ƒ€‚ğƒtƒ‹ƒXƒNƒŠ[ƒ“‚Å‹N“®‚µ‚Ü‚·B\n"
-	"\t[-w | --windowed]	ƒQ[ƒ€‚ğƒEƒBƒ“ƒhƒEƒ‚[ƒh‚Å‹N“®‚µ‚Ü‚·B\n"
+	"\t[-h | --help]		ã“ã®ãƒ˜ãƒ«ãƒ—ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è¡¨\ç¤ºã—ã¾ã™ã€‚\n"
+	"\t[-v | --version]		ã‚²ãƒ¼ãƒ ã®ãƒãƒ¼ã‚¸ãƒ§ãƒ³ã‚’è¡¨\ç¤ºã—ã¾ã™ã€‚\n"
+	"\t[-d | --debug]		ã‚³ã‚¢ãƒ€ãƒ³ãƒ—ã‚’å‡ºåŠ›ã™ã‚‹ã‚ˆã†ã«ã—ã¾ã™ã€‚\n"
+	"\t						ï¼ˆSDL parachuteã‚’ç„¡åŠ¹åŒ–ã—ã¾ã™ï¼‰\n"
+	"\t[-f | --fullscreen]	ã‚²ãƒ¼ãƒ ã‚’ãƒ•ãƒ«ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã§èµ·å‹•ã—ã¾ã™ã€‚\n"
+	"\t[-w | --windowed]	ã‚²ãƒ¼ãƒ ã‚’ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ¢ãƒ¼ãƒ‰ã§èµ·å‹•ã—ã¾ã™ã€‚\n"
 #ifdef HAVE_OPENGL
-	"\t[-g | --nogl]		OpenGL‚ğg—p‚¹‚¸‚É‹N“®‚µ‚Ü‚·B\n"
+	"\t[-g | --nogl]		OpenGLã‚’ä½¿ç”¨ã›ãšã«èµ·å‹•ã—ã¾ã™ã€‚\n"
 #endif
-	"\t[-s | --nosound]		ƒTƒEƒ“ƒh‚ğ–³Œø‰»‚µ‚Ü‚·B\n"
-	"\t[-m | --nogamma]		ƒKƒ“ƒ}ƒGƒtƒFƒNƒg‚ğ–³Œø‰»‚µ‚Ü‚·B\n"
-	"\t						iƒƒjƒ…[‚ÌƒtƒF[ƒh‚È‚Çj\n"
-	"\t[-j | --nojoystick]	ƒWƒ‡ƒCƒXƒeƒBƒbƒN‚Ì‰Šú‰»‚ğs‚¢‚Ü‚¹‚ñB\n"
+	"\t[-s | --nosound]		ã‚µã‚¦ãƒ³ãƒ‰ã‚’ç„¡åŠ¹åŒ–ã—ã¾ã™ã€‚\n"
+	"\t[-m | --nogamma]		ã‚¬ãƒ³ãƒã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’ç„¡åŠ¹åŒ–ã—ã¾ã™ã€‚\n"
+	"\t						ï¼ˆãƒ¡ãƒ‹ãƒ¥ãƒ¼ã®ãƒ•ã‚§ãƒ¼ãƒ‰ãªã©ï¼‰\n"
+	"\t[-j | --nojoystick]	ã‚¸ãƒ§ã‚¤ã‚¹ãƒ†ã‚£ãƒƒã‚¯ã®åˆæœŸåŒ–ã‚’è¡Œã„ã¾ã›ã‚“ã€‚\n"
 	  // Documenting this might be a bad idea?
 	  // "\t[-i | --insecure_lua]  Allow Lua netscripts to take over your computer\n"
-	"\tƒfƒBƒŒƒNƒgƒŠ			ƒf[ƒ^[‚ªŠÜ‚Ü‚ê‚Ä‚¢‚éƒfƒBƒŒƒNƒgƒŠ\n"
-	"\tƒtƒ@ƒCƒ‹				•Û‘¶‚³‚ê‚½ƒQ[ƒ€‚âƒtƒBƒ‹ƒ€‚ÌÄ¶\n"
-	"\n‚±‚Ì‘¼‚É‚àAŠÂ‹«•Ï”uALEPHONE_DATAv‚Ì’l‚ğ•ÏX‚·‚é‚±‚Æ‚ÅA\n"
-		"ƒf[ƒ^ƒfƒBƒŒƒNƒgƒŠ‚ğw’è‚·‚é‚±‚Æ‚ª‚Å‚«‚Ü‚·B\n"		;
+	"\tãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª			ãƒ‡ãƒ¼ã‚¿ãƒ¼ãŒå«ã¾ã‚Œã¦ã„ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª\n"
+	"\tãƒ•ã‚¡ã‚¤ãƒ«				ä¿å­˜ã•ã‚ŒãŸã‚²ãƒ¼ãƒ ã‚„ãƒ•ã‚£ãƒ«ãƒ ã®å†ç”Ÿ\n"
+	"\nã“ã®ä»–ã«ã‚‚ã€ç’°å¢ƒå¤‰æ•°ã€ŒALEPHONE_DATAã€ã®å€¤ã‚’å¤‰æ›´ã™ã‚‹ã“ã¨ã§ã€\n"
+		"ãƒ‡ãƒ¼ã‚¿ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’æŒ‡å®šã™ã‚‹ã“ã¨ãŒã§ãã¾ã™ã€‚\n"		;
 #ifdef __WIN32__
-	MessageBox(NULL, msg, "g—p•û", MB_OK | MB_ICONINFORMATION);
+	MessageBox(NULL, msg, "ä½¿ç”¨æ–¹", MB_OK | MB_ICONINFORMATION);
 #else
 	printf(msg, prg_name);
 #endif
@@ -257,29 +257,29 @@ int main(int argc, char **argv)
 	char app_name_version[256];
 	expand_app_variables(app_name_version, "Aleph One $appLongVersion$");
 	printf ("%s\n%s\n\n"
-	  "ƒIƒŠƒWƒiƒ‹‚ÌƒR[ƒh‚ÍABungie Software <http://www.bungie.com/>‚É‚æ‚é‚à‚Ì‚Å‚·B\n"
-	  "‚±‚Ì‘¼‚ÉLoren Petrich, Chris Pruett, Rhys Hill‚ç‚É‚æ‚Á‚Ä‘‚©‚ê‚Ä‚¢‚Ü‚·B\n"
-	  "TCP/IP ƒlƒbƒgƒ[ƒN by Woody Zenfell\n"
-	  "Expat XMLƒ‰ƒCƒuƒ‰ƒŠ by James Clark\n"
-	  "SDLƒ|[ƒg by Christian Bauer <Christian.Bauer@uni-mainz.de>\n"
-	  "“ú–{Œê‰» by saiten <http://www.isidesystem.net/>, ookawa_mi, Logue <http://logue.be/>, marathon.\n" 
+	  "ã‚ªãƒªã‚¸ãƒŠãƒ«ã®ã‚³ãƒ¼ãƒ‰ã¯ã€Bungie Software <http://www.bungie.com/>ã«ã‚ˆã‚‹ã‚‚ã®ã§ã™ã€‚\n"
+	  "ã“ã®ä»–ã«Loren Petrich, Chris Pruett, Rhys Hillæ°ã‚‰ã«ã‚ˆã£ã¦æ›¸ã‹ã‚Œã¦ã„ã¾ã™ã€‚\n"
+	  "TCP/IP ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯ by Woody Zenfell\n"
+	  "Expat XMLãƒ©ã‚¤ãƒ–ãƒ©ãƒª by James Clark\n"
+	  "SDLãƒãƒ¼ãƒˆ by Christian Bauer <Christian.Bauer@uni-mainz.de>\n"
+	  "æ—¥æœ¬èªåŒ– by saiten <http://www.isidesystem.net/>, ookawa_mi, Logue <http://logue.be/>, marathon.\n" 
 #if defined(__MACH__) && defined(__APPLE__)
-	  "Mac OS X/SDLƒo[ƒWƒ‡ƒ“‚ÍAChris Lovell, Alexander Strange, and Woody Zenfell‚ç‚É‚æ‚Á‚Äì‚ç‚ê‚Ü‚µ‚½B\n"
+	  "Mac OS X/SDLãƒãƒ¼ã‚¸ãƒ§ãƒ³ã¯ã€Chris Lovell, Alexander Strange, and Woody Zenfellæ°ã‚‰ã«ã‚ˆã£ã¦ä½œã‚‰ã‚Œã¾ã—ãŸã€‚\n"
 #endif
-	  "\n‚±‚ÌƒvƒƒOƒ‰ƒ€‚Í—L—p‚Å‚ ‚é‚±‚Æ‚ğŠè‚Á‚Ä”Ğ•z‚³‚ê‚Ü‚·‚ªA*‘S‚­‚Ì–³•ÛØ *‚Å‚·B\n"
-	  "¤‹Æ‰Â”\\«‚Ì•ÛØ‚â“Á’è–Ú“I‚Ö‚Ì“K‡«‚ÍAŒ¾ŠO‚É¦‚³‚ê‚½‚à‚Ì‚à ŠÜ‚ßA‘S‚­‘¶İ‚µ‚Ü‚¹‚ñB\n"
-	  "Ú‚µ‚­‚ÍGNU ˆê”ÊŒöO—˜—p‹–‘ø‘‚ğ‚²——‚­‚¾‚³‚¢B\n"
+	  "\nã“ã®ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã¯æœ‰ç”¨ã§ã‚ã‚‹ã“ã¨ã‚’é¡˜ã£ã¦é ’å¸ƒã•ã‚Œã¾ã™ãŒã€*å…¨ãã®ç„¡ä¿è¨¼ *ã§ã™ã€‚\n"
+	  "å•†æ¥­å¯èƒ½\æ€§ã®ä¿è¨¼ã‚„ç‰¹å®šç›®çš„ã¸ã®é©åˆæ€§ã¯ã€è¨€å¤–ã«ç¤ºã•ã‚ŒãŸã‚‚ã®ã‚‚ å«ã‚ã€å…¨ãå­˜åœ¨ã—ã¾ã›ã‚“ã€‚\n"
+	  "è©³ã—ãã¯GNU ä¸€èˆ¬å…¬è¡†åˆ©ç”¨è¨±è«¾æ›¸ã‚’ã”è¦§ãã ã•ã„ã€‚\n"
 #if defined(__WIN32__) 
-	  // Windows are statically linked against SDL, so we have to include this:
-	  "\nSimple DirectMedia Layer (SDL) ƒ‰ƒCƒuƒ‰ƒŠ‚ÍA\n"
-	  "GNU ˆê”ÊŒöO—˜—p‹–‘ø‘‚É‚æ‚Á‚Äƒ‰ƒCƒZƒ“ƒX‚³‚ê‚Ä‚¢‚Ü‚·B\n"
-	  "Ú×‚É‚Â‚¢‚Ä‚ÍACOPYING.SDL‚ğQl‚É‚µ‚Ä‚­‚¾‚³‚¢B\n"
+			// Windows are statically linked against SDL, so we have to include this:
+			"\nSimple DirectMedia Layer (SDL) ãƒ©ã‚¤ãƒ–ãƒ©ãƒªã¯ã€\n"
+			"GNU ä¸€èˆ¬å…¬è¡†åˆ©ç”¨è¨±è«¾æ›¸ã«ã‚ˆã£ã¦ãƒ©ã‚¤ã‚»ãƒ³ã‚¹ã•ã‚Œã¦ã„ã¾ã™ã€‚\n"
+			"è©³ç´°ã«ã¤ã„ã¦ã¯ã€COPYING.SDLã‚’å‚è€ƒã«ã—ã¦ãã ã•ã„ã€‚\n"
 #endif
 #ifdef HAVE_SDL_NET
-	  "\n‚±‚Ìƒrƒ‹ƒh‚ÍAƒlƒbƒgƒ[ƒNƒvƒŒƒC‚ª—LŒø‚Å‚·B\n"
+			"\nã“ã®ãƒ“ãƒ«ãƒ‰ã¯ã€ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯ãƒ—ãƒ¬ã‚¤ãŒæœ‰åŠ¹ã§ã™ã€‚\n"
 #endif
 #ifdef HAVE_LUA
-	  "\n‚±‚Ìƒrƒ‹ƒh‚ÍALuaƒXƒNƒŠƒvƒg‚ª—LŒø‚Å‚·B\n"
+			"\nã“ã®ãƒ“ãƒ«ãƒ‰ã¯ã€Luaã‚¹ã‚¯ãƒªãƒ—ãƒˆãŒæœ‰åŠ¹ã§ã™ã€‚\n"
 #endif
 	  , app_name_version, A1_HOMEPAGE_URL
     );
@@ -323,7 +323,7 @@ int main(int argc, char **argv)
 				arg_files.push_back(*argv);
 			}
 		} else {
-			printf("•s–¾‚ÈƒXƒCƒbƒ`w’è‚Å‚·F'%s'.\n", *argv);
+			printf("ä¸æ˜ãªã‚¹ã‚¤ãƒƒãƒæŒ‡å®šã§ã™ï¼š'%s'.\n", *argv);
 			usage(prg_name);
 		}
 		argc--;
@@ -395,9 +395,9 @@ static void initialize_application(void)
 	{
 		const char *sdl_err = SDL_GetError();
 		if (sdl_err)
-			fprintf(stderr, "SDL‚Ì‰Šú‰»‚É¸”s‚µ‚Ü‚µ‚½Bi%sj\n", sdl_err);
+			fprintf(stderr, "SDLã®åˆæœŸåŒ–ã«å¤±æ•—ã—ã¾ã—ãŸã€‚ï¼ˆ%sï¼‰\n", sdl_err);
 		else
-			fprintf(stderr, "SDL‚Ì‰Šú‰»‚É¸”s‚µ‚Ü‚µ‚½B\n");
+			fprintf(stderr, "SDLã®åˆæœŸåŒ–ã«å¤±æ•—ã—ã¾ã—ãŸã€‚\n");
 		exit(1);
 	}
 #if defined(HAVE_SDL_IMAGE)
@@ -574,13 +574,13 @@ static void initialize_application(void)
 #if !defined(DISABLE_NETWORKING)
 	// Initialize SDL_net
 	if (SDLNet_Init () < 0) {
-		fprintf (stderr, "SDL_net‚Ì‰Šú‰»‚É¸”s‚µ‚Ü‚µ‚½Bi%sj\n", SDLNet_GetError());
+		fprintf (stderr, "SDL_netã®åˆæœŸåŒ–ã«å¤±æ•—ã—ã¾ã—ãŸã€‚ï¼ˆ%sï¼‰\n", SDLNet_GetError());
 		exit(1);
 	}
 #endif
 
 	if (TTF_Init() < 0) {
-		fprintf (stderr, "SDL_ttf‚Ì‰Šú‰»‚É¸”s‚µ‚Ü‚µ‚½Bi%sj\n", TTF_GetError());
+		fprintf (stderr, "SDL_ttfã®åˆæœŸåŒ–ã«å¤±æ•—ã—ã¾ã—ãŸã€‚ï¼ˆ%sï¼‰\n", TTF_GetError());
 		exit(1);
 	}
 	HTTPClient::Init();
@@ -647,14 +647,14 @@ bool quit_without_saving(void)
 {
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add (new w_static_text("–{“–‚ÉƒQ[ƒ€‚ğ’†’f‚µ‚Ä‚à"), d);
-	placer->dual_add (new w_static_text("‚æ‚ë‚µ‚¢‚Å‚·‚©H"), d);
+	placer->dual_add (new w_static_text("æœ¬å½“ã«ã‚²ãƒ¼ãƒ ã‚’ä¸­æ–­ã—ã¦ã‚‚"), d);
+	placer->dual_add (new w_static_text("ã‚ˆã‚ã—ã„ã§ã™ã‹ï¼Ÿ"), d);
 	placer->add (new w_spacer(), true);
 	
 	horizontal_placer *button_placer = new horizontal_placer;
-	w_button *default_button = new w_button("‚Í‚¢", dialog_ok, &d);
+	w_button *default_button = new w_button("ã¯ã„", dialog_ok, &d);
 	button_placer->dual_add (default_button, d);
-	button_placer->dual_add (new w_button("‚¢‚¢‚¦", dialog_cancel, &d), d);
+	button_placer->dual_add (new w_button("ã„ã„ãˆ", dialog_cancel, &d), d);
 	d.activate_widget(default_button);
 	placer->add(button_placer, true);
 	d.set_widget_placer(placer);
@@ -700,24 +700,24 @@ short get_level_number_from_user(void)
 
 	} else {
 		// no stringset or no strings in stringset - use default message
-		placer->dual_add(new w_static_text("‚±‚±‚©‚ç‚ÍAƒ”ƒBƒhƒ}ƒXƒ^[‚Ìé¾‚ğ¾‚í‚È‚¢‚Æ‚¢‚¯‚È‚¢‚ºB"), d);
+		placer->dual_add(new w_static_text("ã“ã“ã‹ã‚‰ã¯ã€ãƒ´ã‚£ãƒ‰ãƒã‚¹ã‚¿ãƒ¼ã®å®£èª“ã‚’èª“ã‚ãªã„ã¨ã„ã‘ãªã„ãœã€‚"), d);
 
 		placer->add(new w_spacer(), true);
-		placer->dual_add(new w_static_text("wé¾A"), d);
-		placer->dual_add(new w_static_text("‘S‚Ä‚ÌƒXƒCƒbƒ`‚ğ‚±‚Ô‚µ‚Å‰£‚Á‚ÄƒIƒ“‚É‚µA"), d);
-		placer->dual_add(new w_static_text("ƒOƒŒƒl[ƒh‚ğg‚¦‚éêŠ‚Å‚àŒˆ‚µ‚Ä”­Ë‚¹‚¸A"), d);
-		placer->dual_add(new w_static_text("Å‚“ïˆÕ“xu‹sEvˆÈŠO‚Å—V‚Î‚¸A"), d);
-		placer->dual_add(new w_static_text("Caps Loock‚ğu‘–‚évƒL[‚Æ‚µ‚Ä‚ÍŒˆ‚µ‚Äg‚í‚¸A"), d);
-		placer->dual_add(new w_static_text("‚»‚µ‚ÄAˆêlc‚ç‚¸ƒ{ƒus–¯‚ğŠFE‚µ‚É‚µ‚Ü`‚·Bx"), d);
+		placer->dual_add(new w_static_text("ã€å®£èª“ã€"), d);
+		placer->dual_add(new w_static_text("å…¨ã¦ã®ã‚¹ã‚¤ãƒƒãƒã‚’ã“ã¶ã—ã§æ®´ã£ã¦ã‚ªãƒ³ã«ã—ã€"), d);
+		placer->dual_add(new w_static_text("ã‚°ãƒ¬ãƒãƒ¼ãƒ‰ã‚’ä½¿ãˆã‚‹å ´æ‰€ã§ã‚‚æ±ºã—ã¦ç™ºå°„ã›ãšã€"), d);
+		placer->dual_add(new w_static_text("æœ€é«˜é›£æ˜“åº¦ã€Œè™æ®ºã€ä»¥å¤–ã§éŠã°ãšã€"), d);
+		placer->dual_add(new w_static_text("Caps Loockã‚’ã€Œèµ°ã‚‹ã€ã‚­ãƒ¼ã¨ã—ã¦ã¯æ±ºã—ã¦ä½¿ã‚ãšã€"), d);
+		placer->dual_add(new w_static_text("ãã—ã¦ã€ä¸€äººæ®‹ã‚‰ãšãƒœãƒ–å¸‚æ°‘ã‚’çš†æ®ºã—ã«ã—ã¾ã€œã™ã€‚ã€"), d);
 	}
 
 	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_static_text("ŠJnƒŒƒxƒ‹F"), d);
+	placer->dual_add(new w_static_text("é–‹å§‹ãƒ¬ãƒ™ãƒ«ï¼š"), d);
 
 	w_levels *level_w = new w_levels(levels, &d);
 	placer->dual_add(level_w, d);
 	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_button("ƒLƒƒƒ“ƒZƒ‹", dialog_cancel, &d), d);
+	placer->dual_add(new w_button("ã‚­ãƒ£ãƒ³ã‚»ãƒ«", dialog_cancel, &d), d);
 
 	d.activate_widget(level_w);
 	d.set_widget_placer(placer);
@@ -949,9 +949,9 @@ static void handle_game_key(const SDL_Event &event)
 					}
 					else {
 #if defined(__APPLE__) && defined(__MACH__)
-						screen_printf("I—¹‚µ‚½‚¢ê‡‚ÍAƒRƒ}ƒ“ƒhƒL[‚ğ‰Ÿ‚µ‚È‚ª‚çQ‚ğ‰Ÿ‚µ‚Ä‚­‚¾‚³‚¢B");
+						screen_printf("çµ‚äº†ã—ãŸã„å ´åˆã¯ã€ã‚³ãƒãƒ³ãƒ‰ã‚­ãƒ¼ã‚’æŠ¼ã—ãªãŒã‚‰Qã‚’æŠ¼ã—ã¦ãã ã•ã„ã€‚");
 #else
-						screen_printf("I—¹‚µ‚½‚¢ê‡‚ÍAAltƒL[‚ğ‰Ÿ‚µ‚È‚ª‚çQ‚ğ‰Ÿ‚µ‚Ä‚­‚¾‚³‚¢B");
+						screen_printf("çµ‚äº†ã—ãŸã„å ´åˆã¯ã€Altã‚­ãƒ¼ã‚’æŠ¼ã—ãªãŒã‚‰Qã‚’æŠ¼ã—ã¦ãã ã•ã„ã€‚");
 #endif
 					}
 				}
