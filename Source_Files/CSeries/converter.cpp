@@ -136,7 +136,7 @@ std::vector<std::string> line_wrap(TTF_Font* t, const std::string& str, int size
       std::string tmp;
       for(; ! it.end();++it ) {
 	char32_t c = it.code();
-	if( isspace(c) ||
+	if( isspace(c) || 
 	    (c >= 0x3040 && c <= 0x9fef) ||
 	    (c >= 0x20000 && c <= 0x2ebe0) ) {
 	  --it;
