@@ -112,48 +112,51 @@ public:
 };
 // str is UTF-8
 std::vector<std::string> line_wrap(TTF_Font* t, const std::string& str, int size) {
-	std::vector<std::string> ret;
-	std::string now;
-	utf8_iter it(str);
-	int w;
-	while( ! it.end() ) {
-		char32_t c = it.code();
-		if( c >= 0x3040 && c <= 0x9fef ||
-			c >= 0x20000 && c <= 0x2ebe0 ) {
-			// fetch next letter
-			std::string tmp = now + it.utf8();
-			TTF_SizeUTF8(t, tmp.c_str(), &w, 0);		
-			if( w > size ) {
-				ret.push_back(now);
-				now = it.utf8();
-				continue;
-			}
-			now = tmp;
-		} else if( isspace(c) ) {
-			// don't care if overflow
-			now += it.utf8();			
-		} else {
-			// fetch next word
-			std::string tmp;
-			while( ! it.end() ) {
-				char32_t c = it.code();
-				if( isspace(c) ||
-					c >= 0x3040 && c <= 0x9fef ||
-					c >= 0x20000 && c <= 0x2ebe0 ) {
-					break;
-				} else {
-					tmp += it.utf8();
-				}
-			}
-			std::string test = now + tmp;
-			TTF_SizeUTF8(t, test.c_str(), &w, 0);		
-			if( w > size ) {
-				ret.push_back(now);
-				now = tmp;
-			} else {
-				now = test;
-			}
-		}
+  std::vector<std::string> ret;
+  std::string now;
+  int w;
+  for(utf8_iter it(str); ! it.end(); ++it ) {
+    char32_t c = it.code();
+    if( c >= 0x3040 && c <= 0x9fef ||
+	c >= 0x20000 && c <= 0x2ebe0 ) {
+      // fetch next letter
+      std::string tmp = now + it.utf8();
+      TTF_SizeUTF8(t, tmp.c_str(), &w, 0);		
+      if( w > size ) {
+	ret.push_back(now);
+	now = it.utf8();
+	continue;
+      }
+      now = tmp;
+    } else if( isspace(c) ) {
+      // don't care if overflow
+      now += it.utf8();			
+    } else {
+      // fetch next word
+      std::string tmp;
+      for(; ! it.end();++it ) {
+	char32_t c = it.code();
+	if( isspace(c) ||
+	    (c >= 0x3040 && c <= 0x9fef) ||
+	    (c >= 0x20000 && c <= 0x2ebe0) ) {
+	  --it;
+	  break;
+	} else {
+	  tmp += it.utf8();
 	}
-	return ret;	
+      }
+      std::string test = now + tmp;
+      TTF_SizeUTF8(t, test.c_str(), &w, 0);		
+      if( w > size ) {
+	ret.push_back(now);
+	now = tmp;
+      } else {
+	now = test;
+      }
+    }
+  }
+  if( ! now.empty() ) {
+    ret.push_back(now);
+  }
+  return ret;	
 }
