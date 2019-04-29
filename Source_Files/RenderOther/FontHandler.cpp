@@ -254,13 +254,14 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 // One can surround it with glPushMatrix() and glPopMatrix() to remember the original.
 void FontSpecifier::OGL_Render(const char *Text)
 {
-	std::string cv = Text;
-	for(auto it = cv.begin(); it != cv.end(); ++it ) {
-		if( *it == 13 ) {
-			*it = ' ';
+	std::string cv = "";
+	for(auto it = utf8_iter(Text); ! it.end(); ++it ) {
+		if( it.code() == 13 ) {
+			cv += ' ';
+		} else {
+			cv += it.utf8();
 		}
 	}
-	const char* tp = Text;
 
 	glPushAttrib(GL_ENABLE_BIT);
 			
@@ -280,11 +281,9 @@ void FontSpecifier::OGL_Render(const char *Text)
 void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, short flags)
 {
 		// Copy the text to draw
-	char text_to_draw[256];
-	strncpy(text_to_draw, text, 256);
-	text_to_draw[255] = 0;
+	std::string text_to_draw(text);
 
-	int t_width = TextWidth(text_to_draw);
+	int t_width = TextWidth(text_to_draw.c_str());
 
 	// Horizontal positioning
 	int x, y;
@@ -316,7 +315,7 @@ void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, sh
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glTranslated(x, y, 0);
-	OGL_Render(text_to_draw);
+	OGL_Render(text_to_draw.c_str());
 	glPopMatrix();
 }
 
@@ -358,17 +357,16 @@ void FontSpecifier::OGL_Deregister(FontSpecifier *F)
 
 #endif // def HAVE_OPENGL
 
-
+#include <stdio.h>
 // Draw text without worrying about OpenGL vs. SDL mode.
-int FontSpecifier::DrawText(SDL_Surface *s, const char *text, int x, int y, uint32 pixel, bool utf8)
+int FontSpecifier::DrawText(SDL_Surface *s, const char *text, int x, int y, uint32 pixel, bool)
 {
 	if (!s)
 		return 0;
 	if (s == MainScreenSurface() && MainScreenIsOpenGL())
-		return draw_text(s, text, x, y, pixel, this->Info, this->Style, utf8);
+		return draw_text(s, text, x, y, pixel, this->Info, this->Style, true);
 
 #ifdef HAVE_OPENGL
-		
 	uint8 r, g, b;
 	SDL_GetRGB(pixel, s->format, &r, &g, &b);
 	glColor4ub(r, g, b, 255);

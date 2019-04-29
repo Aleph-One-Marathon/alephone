@@ -18,7 +18,8 @@ std::string sjis2utf8(const char* str, size_t len) {
 	if( len == 0 ) {
 		return "";
 	}
-	std::vector<char> text(len*2, '\0');
+	size_t firstsize = len*2;
+	std::string text(firstsize, '\0');
 	char* strp = (char*)str;
 	char* retp = &text[0];
 	size_t sz = len*2;
@@ -33,12 +34,12 @@ std::string sjis2utf8(const char* str, size_t len) {
 		}
 		strp = (char*)str;
 		retp = &text[0];
-		sz = 1024;
+		sz = firstsize;
 		iconv(j,  &strp, &len, &retp, &sz);
 	}
-	std::string ret = &text[0];
-	if( ret.back() == MAC_LINE_END) { ret.pop_back(); }
-	return ret;
+	text.resize(firstsize-sz);
+	if( text.back() == MAC_LINE_END) { text.resize(text.size()-1); }
+	return text;
 }
 
 // Convert from Shift_JIS to Unicode
@@ -70,67 +71,33 @@ void sjisChar(const char* in, int* step, char* dst) {
 	iconv_close(i);
 }
 
-class utf8_iter {
-	std::string s;
-	size_t i;
-public:
-	utf8_iter(const std::string& s) :s(s) ,i(0) {}
-	std::string utf8() {
-		return s.substr(i, utf8_len(&s[i]));
-	}
-	char32_t code() {
-		switch( utf8_len(&s[i])) {
-		case 2 :
-			return ((s[i] & 0x1f)<<6) | s[i+1] & 0x3f;
-		case 3 :
-			return ((s[i] & 0xf)<< 12) |
-				((s[i+1] & 0x3f) << 6) |
-				((s[i+2] & 0x3f));
-		case 4 :
-			return ((s[i] & 0x7)<< 18) |
-				((s[i+1] & 0x3f) << 12) |
-				((s[i+2] & 0x3f) << 6) |
-				((s[i+3] & 0x3f));
-		default :
-			return s[i];
-		}
-	}
-	bool begin() { return i == 0; }
-	bool end() { return i >= s.size(); }
-	utf8_iter& operator++() {
-		const char* c = &s[i];
-		i += utf8_len(c);
-		return *this;
-	}
-	utf8_iter& operator--() {
-		while( i > 0 &&
-			   (unsigned char)s[i-1] >= 0x80 &&
-			   (unsigned char)s[i-1] <0xc0 ) { --i; }
-		--i;
-		return *this;
-	}
-};
+
 // str is UTF-8
-std::vector<std::string> line_wrap(TTF_Font* t, const std::string& str, int size) {
+std::vector<std::string> line_wrap(TTF_Font* t, const std::string& str,
+								   int size) {
 	std::vector<std::string> ret;
 	std::string now;
 	utf8_iter it(str);
-	int w;
+	int w = 0;
 	while( ! it.end() ) {
 		char32_t c = it.code();
+		int w2;
+		std::string tmp = it.utf8();
+		TTF_SizeUTF8(t, tmp.c_str(), &w2, nullptr);		
 		if( c >= 0x3040 && c <= 0x9fef ||
 			c >= 0x20000 && c <= 0x2ebe0 ) {
 			// fetch next letter
-			std::string tmp = now + it.utf8();
-			TTF_SizeUTF8(t, tmp.c_str(), &w, 0);		
-			if( w > size ) {
+			int w2;
+			if( w + w2 < size ) {
+				now += tmp;
+				w += w2;
+			} else {
 				ret.push_back(now);
-				now = it.utf8();
-				continue;
+				now = tmp;
+				w = 0;
 			}
-			now = tmp;
 		} else if( isspace(c) ) {
-			// don't care if overflow
+			// don't care overflow
 			now += it.utf8();			
 		} else {
 			// fetch next word
@@ -145,13 +112,12 @@ std::vector<std::string> line_wrap(TTF_Font* t, const std::string& str, int size
 					tmp += it.utf8();
 				}
 			}
-			std::string test = now + tmp;
-			TTF_SizeUTF8(t, test.c_str(), &w, 0);		
+			TTF_SizeUTF8(t, tmp.c_str(), &w2, 0);		
 			if( w > size ) {
 				ret.push_back(now);
 				now = tmp;
 			} else {
-				now = test;
+				now += tmp;
 			}
 		}
 	}

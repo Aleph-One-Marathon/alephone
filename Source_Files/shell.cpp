@@ -183,8 +183,8 @@ static void usage(const char *prg_name)
 #else
 		"\n使用方法：%s [オプション] [ディレクトリ] [ファイル]\n"
 #endif
-	"\t[-h | --help]		このヘルプメッセージを表\示します。\n"
-	"\t[-v | --version]		ゲームのバージョンを表\示します。\n"
+	"\t[-h | --help]		このヘルプメッセージを表示します。\n"
+	"\t[-v | --version]		ゲームのバージョンを表示します。\n"
 	"\t[-d | --debug]		コアダンプを出力するようにします。\n"
 	"\t						（SDL parachuteを無効化します）\n"
 	"\t[-f | --fullscreen]	ゲームをフルスクリーンで起動します。\n"
@@ -201,7 +201,7 @@ static void usage(const char *prg_name)
 	"\tディレクトリ			データーが含まれているディレクトリ\n"
 	"\tファイル				保存されたゲームやフィルムの再生\n"
 	"\nこの他にも、環境変数「ALEPHONE_DATA」の値を変更することで、\n"
-		"データディレクトリを指定することができます。\n"		;
+	"データディレクトリを指定することができます。\n";
 #ifdef __WIN32__
 	MessageBox(NULL, msg, "使用方", MB_OK | MB_ICONINFORMATION);
 #else
@@ -267,7 +267,7 @@ int main(int argc, char **argv)
 	  "Mac OS X/SDLバージョンは、Chris Lovell, Alexander Strange, and Woody Zenfell氏らによって作られました。\n"
 #endif
 	  "\nこのプログラムは有用であることを願って頒布されますが、*全くの無保証 *です。\n"
-	  "商業可能\性の保証や特定目的への適合性は、言外に示されたものも 含め、全く存在しません。\n"
+	  "商業可能性の保証や特定目的への適合性は、言外に示されたものも 含め、全く存在しません。\n"
 	  "詳しくはGNU 一般公衆利用許諾書をご覧ください。\n"
 #if defined(__WIN32__) 
 			// Windows are statically linked against SDL, so we have to include this:
@@ -279,7 +279,7 @@ int main(int argc, char **argv)
 			"\nこのビルドは、ネットワークプレイが有効です。\n"
 #endif
 #ifdef HAVE_LUA
-			"\nこのビルドは、Luaスクリプトが有効です。\n"
+            "\nこのビルドは、Luaスクリプトが有効です。\n"
 #endif
 	  , app_name_version, A1_HOMEPAGE_URL
     );

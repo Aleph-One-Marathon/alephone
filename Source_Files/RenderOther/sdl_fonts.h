@@ -124,7 +124,8 @@ public:
 	TTF_Font* m_styles[styleMax];
 	ttf_font_key_t m_keys[styleMax];
 	int m_adjust_height;
-
+	int ascii_width[styleMax][128];
+	
 	int8 char_width(uint8, uint16) const;
 
 	ttf_font_info() { 
@@ -137,8 +138,6 @@ protected:
 	virtual uint16 _text_width(const char *text, uint16 style, bool utf8) const;	
 	virtual int _trunc_text(const char *text, int max_width, uint16 style) const;
 private:
-	char *process_printable(const char *src, int len) const;
-	uint16 *process_macroman(const char *src, int len) const;
 	TTF_Font *get_ttf(uint16 style) const { return m_styles[style & (styleBold | styleItalic|styleUnderline)]; }
 	virtual void _unload();
 };

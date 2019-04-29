@@ -344,6 +344,9 @@ font_info *load_font(const TextSpec &spec) {
 				info->m_adjust_height = spec.adjust_height;
 				info->m_styles[i] = font;
 				info->m_keys[i] = ttf_font_key_t(file, i, spec.size);
+				for(int c = 32; c < 128; ++c ) {
+					TTF_GlyphMetrics(font, c, nullptr, nullptr, nullptr, nullptr,&info->ascii_width[i][c]);
+				}
 			}
 	}
 	return info;
@@ -449,7 +452,7 @@ int sdl_font_info::_trunc_text(const char *text, int max_width, uint16 style) co
 int8 ttf_font_info::char_width(uint8 c, uint16 style) const
 {
 	int advance;
-	TTF_GlyphMetrics(get_ttf(style), mac_roman_to_unicode(static_cast<char>(c)), 0, 0, 0, 0, &advance);
+	TTF_GlyphMetrics(get_ttf(style), static_cast<char>(c), 0, 0, 0, 0, &advance);
 
 	return advance;
 }
@@ -487,38 +490,7 @@ int ttf_font_info::_trunc_text(const char *text, int max_width, uint16 style) co
 
 // ttf_font_info::_draw_text is in screen_drawing.cpp
 
-char *ttf_font_info::process_printable(const char *src, int len) const 
-{
-	static char dst[1024];
-	if (len > 1023) len = 1023;
-	char *p = dst;
-	while (*src && len-- > 0)
-	{
-		if ((unsigned char) *src >= ' ') *p++ = *src;
-		src++;
-	}
 
-	*p = '\0';
-	return dst;
-}
-
-uint16 *ttf_font_info::process_macroman(const char *src, int len) const 
-{
-	static uint16 dst[1024];
-	if (len > 1023) len = 1023;
-	uint16 *p = dst;
-	while (*src && len-- > 0)
-	{
-		if ((unsigned char) *src >= ' ') *p++ = mac_roman_to_unicode(*src);
-		else if ((unsigned char) *src == '\t')
-			*p++ = ' ';
-		
-		src++;
-	}
-
-	*p = 0x0;
-	return dst;
-}
 
 uint16 font_info::text_width(const char *text, uint16 style, bool utf8) const
 {
