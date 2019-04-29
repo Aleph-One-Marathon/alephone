@@ -121,5 +121,8 @@ std::vector<std::string> line_wrap(TTF_Font* t, const std::string& str,
 			}
 		}
 	}
+	if( ! now.empty() ) {
+		ret.push_back(now);
+	}
 	return ret;	
 }
