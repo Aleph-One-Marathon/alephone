@@ -90,6 +90,7 @@ May 22, 2003 (Woody Zenfell):
 #include "preference_dialogs.h"
 #include "preferences_widgets_sdl.h"
 #include "mouse.h"
+#include "joystick.h"
 
 #include "Music.h"
 #include "HTTP.h"
@@ -104,10 +105,9 @@ May 22, 2003 (Woody Zenfell):
 #endif
 
 #ifdef __WIN32__
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h> // for GetUserName()
 #endif
-
-#include "joystick.h"
 
 // 8-bit support is still here if you undefine this, but you'll need to fix it
 #define TRUE_COLOR_ONLY 1

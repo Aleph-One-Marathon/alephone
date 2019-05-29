@@ -62,16 +62,6 @@ using std::string;
 using std::vector;
 #endif
 
-#ifdef __WIN32__
-#include <windows.h>
-#ifdef GetFreeSpace
-#undef GetFreeSpace
-#endif
-#ifdef CreateDirectory
-#undef CreateDirectory
-#endif
-#endif
-
 #include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/positioning.hpp>
 

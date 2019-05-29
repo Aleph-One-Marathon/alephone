@@ -38,6 +38,7 @@
 #include <cerrno>
 #include "cseries.h"
 #if defined(WIN32)
+#define WIN32_LEAN_AND_MEAN
 #include <winsock2.h> // hacky non-cross-platform setting of nonblocking
 #else
 #include <fcntl.h> // hacky non-cross-platform setting of nonblocking

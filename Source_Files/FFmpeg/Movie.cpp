@@ -48,6 +48,11 @@
 #include "Mixer.h"
 #include "preferences.h"
 
+#ifdef __WIN32__
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 #ifndef HAVE_FFMPEG
 
 struct libav_vars {

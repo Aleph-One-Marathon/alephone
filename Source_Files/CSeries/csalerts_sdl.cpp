@@ -37,8 +37,10 @@ April 22, 2003 (Woody Zenfell):
 #include "sdl_widgets.h"
 
 #if defined(__WIN32__)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <tchar.h>
+#include <shellapi.h>
 #include <shlobj.h>
 #else
 #include <sys/wait.h>

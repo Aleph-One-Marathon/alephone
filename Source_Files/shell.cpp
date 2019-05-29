@@ -109,11 +109,6 @@
 #endif
 #endif
 
-#ifdef __WIN32__
-#include <windows.h>
-#include <shlobj.h>
-#endif
-
 #include "alephversion.h"
 
 #include "Logging.h"
@@ -122,6 +117,12 @@
 #include "Movie.h"
 #include "HTTP.h"
 #include "WadImageCache.h"
+
+#ifdef __WIN32__
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef CreateDirectory
+#endif
 
 // LP addition: whether or not the cheats are active
 // Defined in shell_misc.cpp

@@ -31,10 +31,6 @@
 #include "shell.h" // get_shape_surface!?
 #include "Shape_Blitter.h"
 
-#if defined(__WIN32__) || defined(__MINGW32__)
-#undef DrawText
-#endif
-
 extern bool MotionSensorActive;
 
 

@@ -26,6 +26,11 @@
 #include "preferences.h"
 
 #ifdef HAVE_CURL
+
+#ifdef __WIN32__
+#define WIN32_LEAN_AND_MEAN // curl.h includes <windows.h>
+#endif
+
 #include "curl/curl.h"
 #include "curl/easy.h"
 
