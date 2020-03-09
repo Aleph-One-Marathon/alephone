@@ -44,7 +44,6 @@
 #ifdef HAVE_UNISTD_H
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <dirent.h>
 #include <unistd.h>
 #endif
 
@@ -54,6 +53,7 @@
 #endif
 
 #if defined(__WIN32__)
+#include <wchar.h>
 #define PATH_SEP '\\'
 #else
 #define PATH_SEP '/'
@@ -71,6 +71,8 @@
 #include <boost/filesystem.hpp>
 
 namespace io = boost::iostreams;
+namespace sys = boost::system;
+namespace fs = boost::filesystem;
 
 // From shell_sdl.cpp
 extern vector<DirectorySpecifier> data_search_path;
@@ -78,6 +80,46 @@ extern DirectorySpecifier local_data_dir, preferences_dir, saved_games_dir, quic
 
 extern bool is_applesingle(SDL_RWops *f, bool rsrc_fork, int32 &offset, int32 &length);
 extern bool is_macbinary(SDL_RWops *f, int32 &data_length, int32 &rsrc_length);
+
+#ifdef O_BINARY // Microsoft extension
+constexpr int o_binary = O_BINARY;
+#else
+constexpr int o_binary = 0;
+#endif
+
+static int to_posix_code_or_unknown(sys::error_code ec)
+{
+	const auto cond = ec.default_error_condition();
+	return cond.category() == sys::generic_category() ? cond.value() : unknown_filesystem_error;
+}
+
+#ifdef __WIN32__
+static fs::path utf8_to_path(const std::string& utf8) { return utf8_to_wide(utf8); }
+static std::string path_to_utf8(const fs::path& path) { return wide_to_utf8(path.native()); }
+#else
+static fs::path utf8_to_path(const std::string& utf8) { return utf8; }
+static std::string path_to_utf8(const fs::path& path) { return path.native(); }
+#endif
+
+// utf8_zzip_io(): a zzip I/O handler set with a UTF-8-compatible 'open' handler
+#ifdef HAVE_ZZIP
+#ifdef __WIN32__
+static int win_zzip_open(const char* f, int o, ...) { return _wopen(utf8_to_wide(f).c_str(), o); }
+
+static const zzip_plugin_io_handlers& utf8_zzip_io()
+{
+	static const zzip_plugin_io_handlers io = []
+	{
+		zzip_plugin_io_handlers io = {zzip_get_default_io()->fd};
+		io.fd.open = &win_zzip_open;
+		return io;
+	}();
+	return io;
+}
+#else
+static const zzip_plugin_io_handlers& utf8_zzip_io() { return *zzip_get_default_io(); }
+#endif
+#endif // HAVE_ZZIP
 
 /*
  *  Opened file
@@ -332,13 +374,9 @@ bool FileSpecifier::Create(Typecode Type)
 // Create directory
 bool FileSpecifier::CreateDirectory()
 {
-	err = 0;
-#if defined(__WIN32__)
-	if (mkdir(GetPath()) < 0)
-#else
-	if (mkdir(GetPath(), 0777) < 0)
-#endif
-		err = errno;
+	sys::error_code ec;
+	const bool created_dir = fs::create_directory(utf8_to_path(name), ec);
+	err = ec.value() == 0 ? (created_dir ? 0 : EEXIST) : to_posix_code_or_unknown(ec);
 	return err == 0;
 }
 
@@ -369,7 +407,7 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 #ifdef HAVE_ZZIP
 		if (!Writable)
 		{
-			f = OFile.f = SDL_RWFromZZIP(unix_path_separators(GetPath()).c_str(), "rb");
+			f = OFile.f = SDL_RWFromZZIP(unix_path_separators(GetPath()).c_str(), &utf8_zzip_io());
 			err = f ? 0 : errno;
 		} 
 		else {
@@ -408,6 +446,14 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 	return true;
 }
 
+bool FileSpecifier::OpenForWritingText(OpenedFile& OFile)
+{
+	OFile.Close();
+	OFile.f = SDL_RWFromFile(GetPath(), "w");
+	err = OFile.f ? 0 : unknown_filesystem_error;
+	return err == 0;
+}
+
 // Open resource file
 bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 {
@@ -426,14 +472,20 @@ bool FileSpecifier::Exists()
 {
 	// Check whether the file is readable
 	err = 0;
-	if (access(GetPath(), R_OK) < 0)
+#ifdef __WIN32__
+	const bool access_ok = _waccess(utf8_to_wide(name).c_str(), R_OK) == 0;
+#else
+	const bool access_ok = access(GetPath(), R_OK) == 0;
+#endif
+	if (!access_ok)
 		err = errno;
 	
 #ifdef HAVE_ZZIP
 	if (err)
 	{
 		// Check whether zzip can open the file (slow!)
-		ZZIP_FILE* file = zzip_open(unix_path_separators(GetPath()).c_str(), R_OK);
+		const auto n = unix_path_separators(name);
+		ZZIP_FILE* file = zzip_open_ext_io(n.c_str(), O_RDONLY|o_binary, ZZIP_ONLYZIP, nullptr, &utf8_zzip_io());
 		if (file)
 		{
 			zzip_close(file);
@@ -450,23 +502,19 @@ bool FileSpecifier::Exists()
 
 bool FileSpecifier::IsDir()
 {
-	struct stat st;
-	err = 0;
-	if (stat(GetPath(), &st) < 0)
-		return false;
-	return (S_ISDIR(st.st_mode));
+	sys::error_code ec;
+	const bool is_dir = fs::is_directory(utf8_to_path(name), ec);
+	err = to_posix_code_or_unknown(ec);
+	return err == 0 && is_dir;
 }
 
 // Get modification date
 TimeType FileSpecifier::GetDate()
 {
-	struct stat st;
-	err = 0;
-	if (stat(GetPath(), &st) < 0) {
-		err = errno;
-		return 0;
-	}
-	return st.st_mtime;
+	sys::error_code ec;
+	const auto mtime = fs::last_write_time(utf8_to_path(name), ec);
+	err = to_posix_code_or_unknown(ec);
+	return err == 0 ? mtime : 0;
 }
 
 static const char * alephone_extensions[] = {
@@ -637,22 +685,18 @@ bool FileSpecifier::GetFreeSpace(uint32 &FreeSpace)
 // Delete file
 bool FileSpecifier::Delete()
 {
-	err = 0;
-	if (remove(GetPath()) < 0)
-		err = errno;
+	sys::error_code ec;
+	const bool removed = fs::remove(utf8_to_path(name), ec);
+	err = ec.value() == 0 ? (removed ? 0 : ENOENT) : to_posix_code_or_unknown(ec);
 	return err == 0;
 }
 
 bool FileSpecifier::Rename(const FileSpecifier& Destination)
 {
-#ifdef WIN32
-	// Work around Windows' non-POSIX behavior on rename().
-	// If we fail, go ahead and try to rename anyway.
-	FileSpecifier d2 = Destination;
-	if (d2.Exists() && !d2.IsDir())
-		d2.Delete();
-#endif
-	return rename(GetPath(), Destination.GetPath()) == 0;
+	sys::error_code ec;
+	fs::rename(utf8_to_path(name), utf8_to_path(Destination.name), ec);
+	err = to_posix_code_or_unknown(ec);
+	return err == 0;
 }
 
 // Set to local (per-user) data directory
@@ -752,7 +796,7 @@ bool FileSpecifier::SetNameWithPath(const char* NameWithPath, const DirectorySpe
 
 void FileSpecifier::SetTempName(const FileSpecifier& other)
 {
-	name = boost::filesystem::unique_path(other.name + "%%%%%%").string();
+	name = other.name + fs::unique_path("%%%%%%").string();
 }
 
 // Get last element of path
@@ -830,28 +874,28 @@ void FileSpecifier::canonicalize_path(void)
 bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 {
 	vec.clear();
-
-	DIR *d = opendir(GetPath());
-
-	if (d == NULL) {
-		err = errno;
-		return false;
-	}
-	struct dirent *de = readdir(d);
-	while (de) {
-		FileSpecifier full_path = name;
-		full_path += de->d_name;
-		struct stat st;
-		if (stat(full_path.GetPath(), &st) == 0) {
-			// Ignore files starting with '.' and the directories '.' and '..'
-			if (de->d_name[0] != '.' || (S_ISDIR(st.st_mode) && !(de->d_name[1] == '\0' || de->d_name[1] == '.')))
-				vec.push_back(dir_entry(de->d_name, S_ISDIR(st.st_mode), st.st_mtime));
-		}
-		de = readdir(d);
-	}
-	closedir(d);
-	err = 0;
-	return true;
+	
+	sys::error_code ec;
+	for (fs::directory_iterator it(utf8_to_path(name), ec), end; it != end; it.increment(ec))
+	{
+		const auto& entry = *it;
+		sys::error_code ignored_ec;
+		const auto type = entry.status(ignored_ec).type();
+		const bool is_dir = type == fs::directory_file;
+		
+		if (!(is_dir || type == fs::regular_file))
+			continue; // skip special or failed-to-stat files
+		
+		const auto basename = entry.path().filename();
+		
+		if (!is_dir && basename.native()[0] == '.')
+			continue; // skip dot-prefixed regular files
+		
+		vec.emplace_back(path_to_utf8(basename), is_dir, fs::last_write_time(entry.path(), ignored_ec));
+	} 
+	
+	err = to_posix_code_or_unknown(ec);
+	return err == 0;
 }
 
 // Copy file contents
@@ -883,6 +927,31 @@ bool FileSpecifier::CopyContents(FileSpecifier &source_name)
 	if (err)
 		Delete();
 	return err == 0;
+}
+
+// Read ZIP file contents
+bool FileSpecifier::ReadZIP(vector<string> &vec)
+{
+	err = 0;
+	vec.clear();
+	
+#ifdef HAVE_ZZIP
+	const auto zip = zzip_dir_open_ext_io(unix_path_separators(name).c_str(), nullptr, nullptr, &utf8_zzip_io());
+	if (!zip)
+	{
+		err = errno;
+		return false;
+	}
+	
+	for (ZZIP_DIRENT entry; zzip_dir_read(zip, &entry); )
+		vec.emplace_back(entry.d_name);
+	
+	zzip_dir_close(zip);
+	return true;
+#else
+	err = ENOTSUP;
+	return false;
+#endif
 }
 
 // ZZZ: Filesystem browsing list that lets user actually navigate directories...

@@ -266,6 +266,7 @@ public:
 	
 	// Opens a file:
 	bool Open(OpenedFile& OFile, bool Writable=false);
+	bool OpenForWritingText(OpenedFile& OFile); // converts LF to CRLF on Windows
 	
 	// Opens either a MacOS resource fork or some imitation of it:
 	bool Open(OpenedResourceFile& OFile, bool Writable=false);
@@ -337,7 +338,14 @@ public:
 	void SplitPath(DirectorySpecifier &base, string &part) const {string b; SplitPath(b, part); base = b;}
 
 	bool CreateDirectory();
+	
+	// Return directory contents (following symlinks), excluding dot-prefixed files
 	bool ReadDirectory(vector<dir_entry> &vec);
+	vector<dir_entry> ReadDirectory() {vector<dir_entry> vec; ReadDirectory(vec); return vec;}
+	
+	// Return the names of all entries in a ZIP archive
+	bool ReadZIP(vector<string> &vec);
+	vector<string> ReadZIP() {vector<string> vec; ReadZIP(vec); return vec;}
 
 	int GetError() const {return err;}
 

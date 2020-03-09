@@ -21,6 +21,7 @@
 
 #include "cstypes.h"
 #include "cspaths.h"
+#include "csstrings.h"
 #include "alephversion.h"
 #ifdef HAVE_CONFIG_H
 #include "confpaths.h"
@@ -40,6 +41,7 @@ char get_path_list_separator()
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <shlobj.h>
+#include <wchar.h>
 
 char get_path_list_separator()
 {
@@ -51,13 +53,13 @@ static std::string _get_local_data_path()
 	static std::string local_dir = "";
 	if (local_dir.empty())
 	{
-		char file_name[MAX_PATH];
-		SHGetFolderPath(NULL,
+		wchar_t file_name[MAX_PATH];
+		SHGetFolderPathW(NULL,
 						CSIDL_PERSONAL | CSIDL_FLAG_CREATE,
 						NULL,
 						0,
 						file_name);
-		local_dir = std::string(file_name) + "\\AlephOne";
+		local_dir = wide_to_utf8(file_name) + "\\AlephOne";
 	}
 	return local_dir;
 }
@@ -67,11 +69,12 @@ static std::string _get_default_data_path()
 	static std::string default_dir = "";
 	if (default_dir.empty())
 	{
-		char file_name[MAX_PATH];
-		GetModuleFileName(NULL, file_name, sizeof(file_name));
-		char *sep = strrchr(file_name, '\\');
-		*sep = '\0';
-		default_dir = file_name;
+		wchar_t file_name[MAX_PATH];
+		const DWORD r = GetModuleFileNameW(NULL, file_name, MAX_PATH); // can truncate
+		if (r == 0 || r == MAX_PATH)
+			return "";
+		*wcsrchr(file_name, L'\\') = L'\0'; // cut off basename, leaving parent dir
+		default_dir = wide_to_utf8(file_name);
 	}
 	return default_dir;
 }
@@ -81,18 +84,18 @@ static std::string _get_prefs_path()
 	static std::string prefs_dir = "";
 	if (prefs_dir.empty())
 	{
-		char file_name[MAX_PATH];
-		SHGetFolderPath(NULL,
+		wchar_t file_name[MAX_PATH];
+		SHGetFolderPathW(NULL,
 						CSIDL_LOCAL_APPDATA | CSIDL_FLAG_CREATE,
 						NULL,
 						0,
 						file_name);
-		prefs_dir = std::string(file_name) + "\\AlephOne";
+		prefs_dir = wide_to_utf8(file_name) + "\\AlephOne";
 	}
 	return prefs_dir;
 }
 
-static std::string _get_login_name()
+static std::string _get_legacy_login_name()
 {
 	static std::string login_name = "";
 	if (login_name.empty())
@@ -100,7 +103,7 @@ static std::string _get_login_name()
 		char login[17];
 		DWORD len = 17;
 		
-		bool hasName = (GetUserName((LPSTR) login, &len) == TRUE);
+		bool hasName = (GetUserNameA(login, &len) == TRUE);
 		if (!hasName || strpbrk(login, "\\/:*?\"<>|") != NULL)
 			strcpy(login, "Bob User");
 		login_name = login;
@@ -128,7 +131,7 @@ std::string get_data_path(CSPathType type)
 			break;
 		case kPathLegacyData:
 		case kPathLegacyPreferences:
-			path = _get_default_data_path() + "\\Prefs\\" + _get_login_name();
+			path = _get_default_data_path() + "\\Prefs\\" + _get_legacy_login_name();
 			break;
 		case kPathScreenshots:
 			path = _get_local_data_path() + "\\Screenshots";

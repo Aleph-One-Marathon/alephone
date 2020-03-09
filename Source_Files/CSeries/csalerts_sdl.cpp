@@ -63,7 +63,7 @@ void system_alert_user(const char* message, short severity)
 	} else {
 		type = MB_ICONERROR|MB_OK;
 	}
-	MessageBox(NULL, message, severity == infoError ? "Warning" : "Error", type);
+	MessageBoxW(NULL, utf8_to_wide(message).c_str(), severity == infoError ? L"Warning" : L"Error", type);
 #else
 	fprintf(stderr, "%s: %s\n", severity == infoError ? "INFO" : "FATAL", message);
 #endif	
@@ -73,20 +73,14 @@ void system_alert_user(const char* message, short severity)
 // callback to set starting location for Win32 "choose scenario" dialog
 static int CALLBACK browse_callback_proc(HWND hwnd, UINT msg, LPARAM lparam, LPARAM lpdata)
 {
-	TCHAR cwd[MAX_PATH];
 	WCHAR wcwd[MAX_PATH];
 	switch (msg)
 	{
 		case BFFM_INITIALIZED:
-			if (GetCurrentDirectory(MAX_PATH, cwd))
+			if (GetCurrentDirectoryW(MAX_PATH, wcwd))
 			{
-#ifdef UNICODE
-				memcpy(wcwd, cwd, sizeof(TCHAR) * MAX_PATH);
-#else
-				MultiByteToWideChar(CP_ACP, 0, cwd, -1, wcwd, MAX_PATH);
-#endif
-				SendMessage(hwnd, BFFM_SETEXPANDED, TRUE, (LPARAM)wcwd);
-				SendMessage(hwnd, BFFM_SETSELECTION, TRUE, (LPARAM)wcwd);
+				SendMessageW(hwnd, BFFM_SETEXPANDED, TRUE, (LPARAM)wcwd);
+				SendMessageW(hwnd, BFFM_SETSELECTIONW, TRUE, (LPARAM)wcwd);
 			}
 	}
 	return 0;
@@ -96,26 +90,22 @@ static int CALLBACK browse_callback_proc(HWND hwnd, UINT msg, LPARAM lparam, LPA
 bool system_alert_choose_scenario(char *chosen_dir)
 {
 #if defined(__WIN32__)
-	BROWSEINFO bi = { 0 };
-	TCHAR path[MAX_PATH];
-	bi.lpszTitle = _T("Select a scenario to play:");
+	BROWSEINFOW bi = { 0 };
+	wchar_t path[MAX_PATH];
+	bi.lpszTitle = L"Select a scenario to play:";
 	bi.pszDisplayName = path;
 	bi.lpfn = browse_callback_proc;
 	bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE | 0x00000200; // no "New Folder" button
-	LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
+	LPITEMIDLIST pidl = SHBrowseForFolderW(&bi);
 	if (pidl)
 	{
-		SHGetPathFromIDList(pidl, path);
-#ifdef UNICODE
-		WideCharToMultiByte(CP_UTF8, 0, path, -1, chosen_dir, 256, NULL, NULL);
-#else
-		strncpy(chosen_dir, path, 255);
-#endif
+		SHGetPathFromIDListW(pidl, path);
+		const int chars_written = WideCharToMultiByte(CP_UTF8, 0, path, -1, chosen_dir, 256, NULL, NULL);
 		LPMALLOC pMalloc = NULL;
 		SHGetMalloc(&pMalloc);
 		pMalloc->Free(pidl);
 		pMalloc->Release();
-		return true;
+		return chars_written > 0;
 	}
 #endif
 	return false;
@@ -128,7 +118,7 @@ extern void system_launch_url_in_browser(const char *url);
 void system_launch_url_in_browser(const char *url)
 {
 #if defined(__WIN32__)
-	ShellExecute(NULL, "open", url, NULL, NULL, SW_SHOWNORMAL);
+	ShellExecuteW(NULL, L"open", utf8_to_wide(url).c_str(), NULL, NULL, SW_SHOWNORMAL);
 #else
 	pid_t pid = fork();
 	if (pid == 0)

@@ -107,6 +107,7 @@ May 22, 2003 (Woody Zenfell):
 #ifdef __WIN32__
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h> // for GetUserName()
+#include <lmcons.h>
 #endif
 
 // 8-bit support is still here if you undefine this, but you'll need to fix it
@@ -188,12 +189,10 @@ static std::string get_name_from_system()
 
 #elif defined(__WIN32__)
 
-	char login[17];
-	DWORD len = 17;
-
-	bool hasName = (GetUserName((LPSTR)login, &len) == TRUE);
-	if (hasName && strpbrk(login, "\\/:*?\"<>|") == NULL) // Ignore illegal names
-		return login;
+	wchar_t wname[UNLEN + 1];
+	DWORD wname_n = UNLEN + 1;
+	if (GetUserNameW(wname, &wname_n))
+		return wide_to_utf8(wname);
 
 #else
 //#error get_name_from_system() not implemented for this platform
@@ -3567,7 +3566,8 @@ static void default_player_preferences(player_preferences_data *preferences)
 	obj_clear(*preferences);
 
 	preferences->difficulty_level= 2;
-	strncpy(preferences->name, get_name_from_system().c_str(), PREFERENCES_NAME_LENGTH+1);
+	strncpy(preferences->name, get_name_from_system().c_str(), PREFERENCES_NAME_LENGTH);
+	preferences->name[PREFERENCES_NAME_LENGTH] = '\0';
 	
 	// LP additions for new fields:
 	
