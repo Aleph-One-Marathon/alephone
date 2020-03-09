@@ -22,7 +22,6 @@
 
 #include "InfoTree.h"
 #include "cseries.h"
-#include "game_errors.h"
 #include "shell.h"
 #include "TextStrings.h"
 
@@ -49,14 +48,10 @@ InfoTree InfoTree::load_xml(FileSpecifier filename)
 	}
 	else
 	{
-		short err, errtype;
-		err = get_game_error(&errtype);
-		clear_game_error();
-		
 		std::string errstr = "could not open XML file ";
 		errstr += filename.GetPath();
 		errstr += ": system error ";
-		errstr += errtype;
+		errstr += filename.GetError();
 		throw InfoTree::unexpected_error(errstr);
 	}
 	

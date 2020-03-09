@@ -42,7 +42,6 @@ extern "C"
 
 #include "Logging.h"
 #include "preferences.h"
-#include "game_errors.h"
 #include "Plugins.h"
 
 #include "lua_hud_script.h"
@@ -361,9 +360,6 @@ void LoadHUDLua()
 
 	if (file.size())
 	{
-		// protect Lua errors from harming error checking
-		short SavedType, SavedError = get_game_error(&SavedType);
-
 		FileSpecifier fs (file.c_str());
 		if (directory.size())
 		{
@@ -386,7 +382,6 @@ void LoadHUDLua()
 				}
 			}
 		}
-		set_game_error(SavedType, SavedError);
 	}
 }
 

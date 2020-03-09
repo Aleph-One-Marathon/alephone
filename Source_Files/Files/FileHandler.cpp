@@ -30,7 +30,6 @@
 
 #include "shell.h"
 #include "interface.h"
-#include "game_errors.h"
 #include "tags.h"
 
 #include <stdio.h>
@@ -383,7 +382,6 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 
 	err = f ? 0 : errno;
 	if (f == NULL) {
-		set_game_error(systemError, err);
 		return false;
 	}
 	if (Writable)
@@ -416,7 +414,6 @@ bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 	OFile.f = open_res_file(*this);
 	err = OFile.f ? 0 : errno;
 	if (OFile.f == NULL) {
-		set_game_error(systemError, err);
 		return false;
 	} else
 		return true;
