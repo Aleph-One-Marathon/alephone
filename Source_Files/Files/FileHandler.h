@@ -208,10 +208,8 @@ private:
 
 // Directory entry, returned by FileSpecifier::ReadDirectory()
 struct dir_entry {
-	dir_entry() : size(0), is_directory(false), is_volume(false) {}
-	dir_entry(const string &n, int32 s, bool is_dir, bool is_vol = false, TimeType d = 0)
-		: name(n), size(s), is_directory(is_dir), is_volume(is_vol), date(d) {}
-	~dir_entry() {}
+	dir_entry() : is_directory(false), date(0) {}
+	dir_entry(const string& n, bool is_dir, TimeType d = 0) : name(n), is_directory(is_dir), date(d) {}
 
 	bool operator<(const dir_entry &other) const
 	{
@@ -226,9 +224,7 @@ struct dir_entry {
 	}
 
 	string name;		// Entry name
-	int32 size;			// File size (only valid if !is_directory)
 	bool is_directory;	// Entry is a directory (plain file otherwise)
-	bool is_volume;		// Entry is a volume (for platforms that have volumes, is_directory must also be set)
 	TimeType date;          // modification date
 };
 

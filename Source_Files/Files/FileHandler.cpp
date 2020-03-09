@@ -845,7 +845,7 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 		if (stat(full_path.GetPath(), &st) == 0) {
 			// Ignore files starting with '.' and the directories '.' and '..'
 			if (de->d_name[0] != '.' || (S_ISDIR(st.st_mode) && !(de->d_name[1] == '\0' || de->d_name[1] == '.')))
-				vec.push_back(dir_entry(de->d_name, st.st_size, S_ISDIR(st.st_mode), false, st.st_mtime));
+				vec.push_back(dir_entry(de->d_name, S_ISDIR(st.st_mode), st.st_mtime));
 		}
 		de = readdir(d);
 	}
@@ -1035,7 +1035,7 @@ private:
 
 	void select_entry(const string& inName, bool inIsDirectory)
 	{
-		dir_entry theEntryToFind(inName, NONE /* length - ignored for our purpose */, inIsDirectory);
+		dir_entry theEntryToFind(inName, inIsDirectory);
 		vector<dir_entry>::iterator theEntry = find(entries.begin(), entries.end(), theEntryToFind);
 		if(theEntry != entries.end())
 			set_selection(theEntry - entries.begin());
