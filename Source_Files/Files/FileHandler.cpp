@@ -120,7 +120,7 @@ bool OpenedFile::SetPosition(int32 Position)
 
 	err = 0;
 	if (SDL_RWseek(f, Position + fork_offset, SEEK_SET) < 0)
-		err = errno;
+		err = unknown_filesystem_error;
 	return err == 0;
 }
 
@@ -276,7 +276,7 @@ bool OpenedResourceFile::Check(uint32 Type, int16 ID)
 {
 	Push();
 	bool result = has_1_resource(Type, ID);
-	err = result ? 0 : errno;
+	err = result ? 0 : ENOENT;
 	Pop();
 	return result;
 }
@@ -285,7 +285,7 @@ bool OpenedResourceFile::Get(uint32 Type, int16 ID, LoadedResource &Rsrc)
 {
 	Push();
 	bool success = get_1_resource(Type, ID, Rsrc);
-	err = success ? 0 : errno;
+	err = success ? 0 : ENOENT;
 	Pop();
 	return success;
 }
@@ -370,17 +370,19 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 		if (!Writable)
 		{
 			f = OFile.f = SDL_RWFromZZIP(unix_path_separators(GetPath()).c_str(), "rb");
+			err = f ? 0 : errno;
 		} 
 		else {
 			f = OFile.f = SDL_RWFromFile(GetPath(), "wb+");
+			err = f ? 0 : unknown_filesystem_error;
 		}
 #else
 		f = OFile.f = SDL_RWFromFile(GetPath(), Writable ? "wb+" : "rb");
+		err = f ? 0 : unknown_filesystem_error;
 #endif
 
 	}
 
-	err = f ? 0 : errno;
 	if (f == NULL) {
 		return false;
 	}
@@ -412,7 +414,7 @@ bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 	OFile.Close();
 
 	OFile.f = open_res_file(*this);
-	err = OFile.f ? 0 : errno;
+	err = OFile.f ? 0 : unknown_filesystem_error;
 	if (OFile.f == NULL) {
 		return false;
 	} else

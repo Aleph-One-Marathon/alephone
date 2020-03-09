@@ -65,6 +65,9 @@ using std::vector;
 #include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/positioning.hpp>
 
+// Returned by .GetError() for unknown errors
+constexpr int unknown_filesystem_error = -1;
+
 /*
 	Abstraction for opened files; it does reading, writing, and closing of such files,
 	without doing anything to the files' specifications
