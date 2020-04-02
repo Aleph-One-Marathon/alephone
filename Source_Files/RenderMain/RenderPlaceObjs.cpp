@@ -738,7 +738,7 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 				win_depth = MIN(win_depth, ABS(window->right.i)+1);
 			}
 		}
-		int32 depth= MAX(render_object->rectangle.depth, win_depth);
+		int32 depth= MAX(render_object->rectangle.depth + view->screen_width, win_depth);
 		
 		/* find the upper and lower bounds of the windows; we could do a better job than this by
 			doing the same thing we do when the windows are originally built (i.e., calculating a
