@@ -280,6 +280,14 @@ public:
 				lua_pop(State(), 1);
 			}
 		}
+                else
+                {
+                    lua_pushnil(State());
+                    lua_setglobal(State(), "dofile");
+
+                    lua_pushnil(State());
+                    lua_setglobal(State(), "loadfile");
+                }
 
 		// set up a persistence table in the registry
 		lua_pushlightuserdata(State(), (void *) L_Persistent_Table_Key());
@@ -1744,6 +1752,8 @@ static int L_Prompt(lua_State *L)
 	return 0;
 }
 */
+
+
 
 static LuaState* LuaStateFactory(ScriptType script_type)
 {
