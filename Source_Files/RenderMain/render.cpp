@@ -422,7 +422,7 @@ void initialize_view_data(
 /* origin,origin_polygon_index,yaw,pitch,roll,etc. have probably changed since last call */
 void render_view(
 	struct view_data *view,
-	struct bitmap_definition *destination)
+	struct bitmap_definition *software_render_dest)
 {
 	update_view_data(view);
 
@@ -474,8 +474,8 @@ void render_view(
 			else
 			{
 #endif
-				// The software renderer needs this but the OpenGL one doesn't...
-				Rasterizer_SW.screen = destination;
+				assert(software_render_dest);
+				Rasterizer_SW.screen = software_render_dest;
 				RasPtr = &Rasterizer_SW;
 #ifdef HAVE_OPENGL
 			}
