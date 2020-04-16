@@ -47,10 +47,6 @@ extern SDL_Surface *world_pixels;
 #define DESIRED_SCREEN_WIDTH 640
 #define DESIRED_SCREEN_HEIGHT 480
 
-// Biggest possible of those defined
-#define MAXIMUM_WORLD_WIDTH 1900
-#define MAXIMUM_WORLD_HEIGHT 1200
-
 #define DEFAULT_WORLD_WIDTH 640
 #define DEFAULT_WORLD_HEIGHT 320
 
@@ -69,9 +65,6 @@ struct color_table *interface_color_table; /* always 8bit, for mixed-mode (i.e.,
 struct color_table *visible_color_table; /* the color environment the player sees (can be 16bit) */
 
 struct view_data *world_view; /* should be static */
-
-// Convenient package for the drawing target (contains dimensions and pixel-row pointers)
-struct bitmap_definition *world_pixels_structure;
 
 static struct screen_mode_data screen_mode;
 
