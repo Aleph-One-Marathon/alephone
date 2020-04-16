@@ -26,6 +26,8 @@ Saturday, August 20, 1994 12:08:34 PM
 
 #include    "cseries.h"
 
+#include <vector>
+
 /* ---------- structures */
 
 enum /* bitmap flags */
@@ -48,6 +50,27 @@ struct bitmap_definition
 	pixel8 *row_addresses[1];
 };
 const int SIZEOF_bitmap_definition = 30;
+
+// A [bitmap_definition][row pointer array] buffer (can be empty)
+class bitmap_definition_buffer
+{
+private:
+	std::vector<byte> buf;
+	
+public:
+	bitmap_definition_buffer() {}
+	
+	explicit bitmap_definition_buffer(int row_count /*>= 1*/)
+		: buf(sizeof(bitmap_definition) + (assert(row_count >= 1), row_count - 1) * sizeof(pixel8*)) {}
+	
+	bool empty() const { return buf.empty(); }
+	int row_count() const { return empty() ? 0 : 1 + (buf.size() - sizeof(bitmap_definition)) / sizeof(pixel8*); }
+	
+	bitmap_definition* get() { return empty() ? nullptr : reinterpret_cast<bitmap_definition*>(buf.data()); }
+	bitmap_definition const* get() const { return empty() ? nullptr : reinterpret_cast<const bitmap_definition*>(buf.data()); }
+	
+	void clear() { buf.clear(); }
+};
 
 /* ---------- prototypes/TEXTURES.C */
 
