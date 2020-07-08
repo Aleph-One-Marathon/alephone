@@ -63,7 +63,6 @@ enum /* next_polygon_along_line() states */
 	_looking_for_first_nonzero_vertex,
 	_looking_clockwise_for_right_vertex,
 	_looking_counterclockwise_for_left_vertex,
-	_looking_for_next_nonzero_vertex
 };
 
 
@@ -152,6 +151,8 @@ struct node_data
 
 class RenderVisTreeClass
 {
+	enum ray_bias : short;
+	
 	// Auxiliary data and routines:
 	
 	// Polygon queue now a growable list; its working size is maintained separately
@@ -171,14 +172,14 @@ class RenderVisTreeClass
 	void initialize_clip_data();
 	
 	uint16 next_polygon_along_line(short *polygon_index, world_point2d *origin, long_vector2d *_vector,
-		short *clipping_endpoint_index, short *clipping_line_index, short bias);
+		short *clipping_endpoint_index, short *clipping_line_index, ray_bias bias_at_opaque_endpoint);
 	
 	// LP: referring to parent node by index instead of by pointer, to avoid stale-pointer bug
 	void cast_render_ray(long_vector2d *_vector, short endpoint_index,
-		node_data* parent, short bias);
+		node_data* parent, ray_bias bias_at_opaque_endpoints);
 	
 	uint16 decide_where_vertex_leads(short *polygon_index, short *line_index, short *side_index, short endpoint_index_in_polygon_list,
-		world_point2d *origin, long_vector2d *_vector, uint16 clip_flags, short bias);
+		world_point2d *origin, long_vector2d *_vector, uint16 clip_flags, ray_bias bias);
 
 	void calculate_line_clipping_information(short line_index, uint16 clip_flags);
 	

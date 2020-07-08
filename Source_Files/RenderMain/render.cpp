@@ -637,32 +637,8 @@ static void update_view_data(
 	view->bottom_edge.i= view->world_to_screen_y;
 	view->bottom_edge.j= - view->half_screen_height + view->dtanpitch; /* ==k */
 
-	/* if weÕre sitting on one of the endpoints in our origin polygon, move us back slightly (±1) into
-		that polygon.  when we split rays weÕre assuming that weÕll never pass through a given
-		vertex in different directions (because if we do the tree becomes a graph) but when
-		we start on a vertex this can happen.  this is a destructive modification of the origin. */
 	{
-		short i;
 		struct polygon_data *polygon= get_polygon_data(view->origin_polygon_index);
-		
-		for (i= 0;i<polygon->vertex_count;++i)
-		{
-			struct world_point2d *vertex= &get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
-			
-			if (vertex->x==view->origin.x && vertex->y==view->origin.y)
-			{
-				world_point2d *ccw_vertex= &get_endpoint_data(polygon->endpoint_indexes[WRAP_LOW(i, polygon->vertex_count-1)])->vertex;
-				world_point2d *cw_vertex= &get_endpoint_data(polygon->endpoint_indexes[WRAP_HIGH(i, polygon->vertex_count-1)])->vertex;
-				world_vector2d inset_vector;
-				
-				inset_vector.i= (ccw_vertex->x-vertex->x) + (cw_vertex->x-vertex->x);
-				inset_vector.j= (ccw_vertex->y-vertex->y) + (cw_vertex->y-vertex->y);
-				view->origin.x+= SGN(inset_vector.i);
-				view->origin.y+= SGN(inset_vector.j);
-				
-				break;
-			}
-		}
 		
 		/* determine whether we are under or over the media boundary of our polygon; we will see all
 			other media boundaries from this orientation (above or below) or fail to draw them. */
