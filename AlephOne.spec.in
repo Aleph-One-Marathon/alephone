@@ -1,5 +1,5 @@
-%define name @PACKAGE@
-%define version @VERSION@
+%define name AlephOne
+%define version 20190331
 %define release 1
 
 Summary: 3D first-person shooter game
@@ -15,7 +15,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 # of the data files in this package
 
 Requires: SDL >= 1.2.0 SDL_image >= 1.2.0 SDL_net 
-BuildRequires: SDL-devel SDL_image-devel SDL_net-devel boost-devel 
+BuildRequires: make autoconf automake boost-devel curl-devel expat-devel  gcc-c++ libpng-devel SDL2-devel SDL2_ttf-devel SDL2_image-devel SDL2_net-devel SDL2_mixer-devel speex-devel speexdsp-devel zziplib-devel libsndfile-devel libvorbis-devel
 
 %description
 Aleph One is an Open Source 3D first-person shooter game, based on the game
@@ -35,6 +35,7 @@ alephone "~/Marathon Infinity"
 %setup -q
 
 %build
+./autogen.sh
 %configure
 make
 
@@ -49,10 +50,12 @@ rm -rf ${RPM_BUILD_ROOT}
 %defattr(-,root,root)
 %doc AUTHORS COPYING INSTALL.Unix README docs/MML.html docs/Lua.html
 %{_bindir}/alephone
-%{_datadir}/AlephOne/Fonts
 %{_datadir}/AlephOne/MML
-%{_datadir}/AlephOne/Themes/Default
 %{_mandir}/man6/alephone.6.gz
+%{_datadir}/mime/packages/alephone.xml
+%{_datadir}/AlephOne/Plugins/Default_Theme/
+%{_datadir}/icons/hicolor/*/mimetypes/*alephone*
+
 
 %changelog
 * Sat Jun 21 2008 Gregory Smith <wolfy@treellama.org>
