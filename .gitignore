@@ -10,7 +10,6 @@ lib*.a
 *.o
 
 /aclocal.m4
-/AlephOne.spec
 /autom4te.cache
 /compile
 /config.guess
