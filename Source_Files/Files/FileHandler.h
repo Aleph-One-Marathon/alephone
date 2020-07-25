@@ -65,6 +65,9 @@ using std::vector;
 #include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/positioning.hpp>
 
+// Returned by .GetError() for unknown errors
+constexpr int unknown_filesystem_error = -1;
+
 /*
 	Abstraction for opened files; it does reading, writing, and closing of such files,
 	without doing anything to the files' specifications
@@ -205,10 +208,8 @@ private:
 
 // Directory entry, returned by FileSpecifier::ReadDirectory()
 struct dir_entry {
-	dir_entry() : size(0), is_directory(false), is_volume(false) {}
-	dir_entry(const string &n, int32 s, bool is_dir, bool is_vol = false, TimeType d = 0)
-		: name(n), size(s), is_directory(is_dir), is_volume(is_vol), date(d) {}
-	~dir_entry() {}
+	dir_entry() : is_directory(false), date(0) {}
+	dir_entry(const string& n, bool is_dir, TimeType d = 0) : name(n), is_directory(is_dir), date(d) {}
 
 	bool operator<(const dir_entry &other) const
 	{
@@ -223,9 +224,7 @@ struct dir_entry {
 	}
 
 	string name;		// Entry name
-	int32 size;			// File size (only valid if !is_directory)
 	bool is_directory;	// Entry is a directory (plain file otherwise)
-	bool is_volume;		// Entry is a volume (for platforms that have volumes, is_directory must also be set)
 	TimeType date;          // modification date
 };
 
@@ -267,6 +266,7 @@ public:
 	
 	// Opens a file:
 	bool Open(OpenedFile& OFile, bool Writable=false);
+	bool OpenForWritingText(OpenedFile& OFile); // converts LF to CRLF on Windows
 	
 	// Opens either a MacOS resource fork or some imitation of it:
 	bool Open(OpenedResourceFile& OFile, bool Writable=false);
@@ -338,7 +338,14 @@ public:
 	void SplitPath(DirectorySpecifier &base, string &part) const {string b; SplitPath(b, part); base = b;}
 
 	bool CreateDirectory();
+	
+	// Return directory contents (following symlinks), excluding dot-prefixed files
 	bool ReadDirectory(vector<dir_entry> &vec);
+	vector<dir_entry> ReadDirectory() {vector<dir_entry> vec; ReadDirectory(vec); return vec;}
+	
+	// Return the names of all entries in a ZIP archive
+	bool ReadZIP(vector<string> &vec);
+	vector<string> ReadZIP() {vector<string> vec; ReadZIP(vec); return vec;}
 
 	int GetError() const {return err;}
 

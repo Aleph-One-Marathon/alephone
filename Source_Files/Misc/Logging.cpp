@@ -228,7 +228,11 @@ InitializeLogging() {
     FileSpecifier fs = log_dir;
     fs += loggingFileName();
 
+#ifdef __WIN32__
+    sOutputFile = _wfopen(utf8_to_wide(fs.GetPath()).c_str(), L"a");
+#else
     sOutputFile = fopen(fs.GetPath(), "a");
+#endif
 
     sCurrentLogger = new TopLevelLogger;
     if(sOutputFile != NULL)

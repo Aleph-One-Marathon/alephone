@@ -586,6 +586,10 @@ void create_updated_save(QuickSave& save)
 		err = currentFile.GetError();
 		close_wad_file(currentFile);
 	}
+	else
+	{
+		err = save.save_file.GetError();
+	}
 	
 	// create updated save file
 	int32 offset, meta_wad_length;

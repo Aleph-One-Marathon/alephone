@@ -15,6 +15,7 @@
 #define _SDL_RWops_ZZIP_h
 
 #include <SDL_rwops.h>
+#include <zzip/plugin.h>
 
 #ifndef ZZIP_NO_DECLSPEC
 #define ZZIP_DECLSPEC
@@ -27,7 +28,7 @@ extern "C" {
 #endif
 
 extern ZZIP_DECLSPEC
-SDL_RWops *SDL_RWFromZZIP(const char* file, const char* mode);
+SDL_RWops *SDL_RWFromZZIP(const char* file, const zzip_plugin_io_handlers* custom_zzip_io); /* open mode: "rb" */
 
 #ifdef __cplusplus
 } /* extern C */

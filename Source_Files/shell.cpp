@@ -176,6 +176,17 @@ static void process_event(const SDL_Event &event);
 // cross-platform static variables
 short vidmasterStringSetID = -1; // can be set with MML
 
+static std::string a1_getenv(const char* name)
+{
+#ifdef __WIN32__
+	wchar_t* wstr = _wgetenv(utf8_to_wide(name).c_str());
+	return wstr ? wide_to_utf8(wstr) : std::string{};
+#else
+	char* str = getenv(name);
+	return str ? str : std::string{};
+#endif
+}
+
 static void usage(const char *prg_name)
 {
 	char msg[] =
@@ -204,7 +215,7 @@ static void usage(const char *prg_name)
 	  "the data directory.\n";
 
 #ifdef __WIN32__
-	MessageBox(NULL, msg, "Usage", MB_OK | MB_ICONINFORMATION);
+	MessageBoxW(NULL, utf8_to_wide(msg).c_str(), L"Usage", MB_OK | MB_ICONINFORMATION);
 #else
 	printf(msg, prg_name);
 #endif
@@ -377,7 +388,7 @@ static int char_is_not_filesafe(int c)
 static void initialize_application(void)
 {
 #if defined(__WIN32__) && defined(__MINGW32__)
-	if (LoadLibrary("exchndl.dll")) option_debug = true;
+	if (LoadLibraryW(L"exchndl.dll")) option_debug = true;
 #endif
 
 #if defined(__WIN32__)
@@ -460,8 +471,8 @@ static void initialize_application(void)
 		data_search_path.push_back(arg_directory);
 	}
 
-	const char *data_env = getenv("ALEPHONE_DATA");
-	if (data_env) {
+	const string data_env = a1_getenv("ALEPHONE_DATA");
+	if (!data_env.empty()) {
 		// Read colon-separated list of directories
 		string path = data_env;
 		string::size_type pos;

@@ -23,7 +23,6 @@
 
 #include "Decoder.h"
 #include "BasicIFFDecoder.h"
-#include "game_errors.h"
 #include "MADDecoder.h"
 #include "SndfileDecoder.h"
 #include "VorbisDecoder.h"
@@ -34,8 +33,6 @@ using std::unique_ptr;
 
 StreamDecoder *StreamDecoder::Get(FileSpecifier& File)
 {
-	ScopedGameError gameErrorRestorer;
-
 #ifdef HAVE_FFMPEG
 	{
 		unique_ptr<FFmpegDecoder> ffmpegDecoder(new FFmpegDecoder);
@@ -79,8 +76,6 @@ StreamDecoder *StreamDecoder::Get(FileSpecifier& File)
 
 Decoder *Decoder::Get(FileSpecifier &File)
 {
-	ScopedGameError gameErrorRestorer;
-
 #ifdef HAVE_FFMPEG
 	{
 		unique_ptr<FFmpegDecoder> ffmpegDecoder(new FFmpegDecoder);
