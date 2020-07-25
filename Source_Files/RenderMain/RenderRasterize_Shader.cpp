@@ -578,10 +578,10 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 		glAlphaFunc(GL_GREATER, 0.5);
 	}
 
-//	if (void_present) {
-//		glDisable(GL_BLEND);
-//		glDisable(GL_ALPHA_TEST);
-//	}
+	if (void_present && TMgr.IsBlended()) {
+		glDisable(GL_BLEND);
+		glDisable(GL_ALPHA_TEST);
+	}
 
 	short vertex_count = polygon->vertex_count;
 
@@ -678,10 +678,10 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 		glAlphaFunc(GL_GREATER, 0.5);
 	}
 
-//	if (void_present) {
-//		glDisable(GL_BLEND);
-//		glDisable(GL_ALPHA_TEST);
-//	}
+	if (void_present && TMgr.IsBlended()) {
+		glDisable(GL_BLEND);
+		glDisable(GL_ALPHA_TEST);
+	}
 
 	world_distance h= MIN(surface->h1, surface->hmax);
 
