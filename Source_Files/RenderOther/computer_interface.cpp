@@ -1061,7 +1061,13 @@ static void teleport_to_level(
 	
 	// LP change: moved down by 1 so that level 0 will be valid
 	player->teleporting_destination= -level_number - 1;
+	if (flags & _group_is_marathon_1)
+	{
+		player->delay_before_teleport = 0;
+	}
+	else
 	player->delay_before_teleport= TICKS_PER_SECOND/2; // delay before we teleport.
+
 }
 			
 static void teleport_to_polygon(
