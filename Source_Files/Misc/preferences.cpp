@@ -1910,8 +1910,8 @@ static bool apply_mouse_feel(int selection)
 	switch (selection)
 	{
 		case 0:
-			if (false != input_preferences->raw_mouse_input) {
-				input_preferences->raw_mouse_input = false;
+			if (true != input_preferences->raw_mouse_input) {
+				input_preferences->raw_mouse_input = true;
 				changed = true;
 			}
 			if (_mouse_accel_classic != input_preferences->mouse_accel_type) {
