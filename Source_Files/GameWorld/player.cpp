@@ -178,6 +178,8 @@ May 22, 2003 (Woody Zenfell):
 #include <stdlib.h>
 #include <limits.h> 
 
+extern bool shapes_file_is_m1();
+
 /* ---------- constants */
 
 struct player_powerup_durations_definition {
@@ -1370,7 +1372,13 @@ static void update_player_teleport(
 				player->teleporting_phase= 0;
 				player->delay_before_teleport= 0; /* The only function that changes this are */
 													/* computer terminals. */
+				//Fix the delay in teleportation specifically in Marathon 1 Terminals! - CS
 
+				if (shapes_file_is_m1())
+				{
+					player->delay_before_teleport = 0;
+				}
+				else
 				/* They are in an automatic exit. */
 				if (player->teleporting_destination==NO_TELEPORTATION_DESTINATION)
 				{
