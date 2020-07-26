@@ -863,6 +863,10 @@ static bool switch_can_be_toggled(
 	{
 		valid_toggle= get_light_intensity(side->primary_lightsource_index)>(3*FIXED_ONE/4) ? true : false;
 	}
+    else if (side->flags & _side_is_m1_lighted_switch)
+    {
+        valid_toggle = get_light_intensity(side->primary_lightsource_index)>(FIXED_ONE/2) ? true : false;
+    }
 
 	if (definition->item!=NONE && !player_hit) valid_toggle= false;
 	if (player_hit && (side->flags&_side_switch_can_only_be_hit_by_projectiles)) valid_toggle= false;

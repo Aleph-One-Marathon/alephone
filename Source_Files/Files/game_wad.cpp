@@ -377,7 +377,7 @@ void complete_loading_level(
 			{
 				side_data *side= get_side_data(loop);
 				if (side->flags&_side_is_control_panel)
-					side->flags |= _side_is_lighted_switch;
+					side->flags |= _side_is_m1_lighted_switch;
 			}
 		}
 	}
