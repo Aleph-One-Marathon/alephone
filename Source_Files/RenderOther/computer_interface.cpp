@@ -1054,14 +1054,14 @@ static short find_group_type(
 }
 
 static void teleport_to_level(
-	short level_number)
+	short level_number, short flags)
 {
 	/* It doesn't matter which player we get. */
 	struct player_data *player= get_player_data(0);
 	
 	// LP change: moved down by 1 so that level 0 will be valid
 	player->teleporting_destination= -level_number - 1;
-	if (_group_is_marathon_1)
+	if (flags & _group_is_marathon_1)
 	{
 		player->delay_before_teleport = 0;
 	}
