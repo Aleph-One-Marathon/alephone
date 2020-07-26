@@ -1839,7 +1839,7 @@ static void mouse_feel_details_changed(void *arg)
 	switch (mouse_feel_details_w->get_selection())
 	{
 		case 0:
-			mouse_raw_w->set_selection(0);
+			mouse_raw_w->set_selection(1);
 			mouse_accel_w->set_selection(1);
 			mouse_vertical_w->set_selection(1);
 			mouse_precision_w->set_selection(1);
@@ -1861,7 +1861,7 @@ static void update_mouse_feel_details(void *arg)
 	if (inside_callback)
 		return;
 	inside_callback = true;
-	if (mouse_raw_w->get_selection() == 0 &&
+	if (mouse_raw_w->get_selection() == 1 &&
 		mouse_accel_w->get_selection() == 1 &&
 		mouse_vertical_w->get_selection() == 1 &&
 		mouse_precision_w->get_selection() == 1)
@@ -1884,7 +1884,7 @@ static void update_mouse_feel_details(void *arg)
 
 static void update_mouse_feel(void *arg)
 {
-	if (input_preferences->raw_mouse_input == false &&
+	if (input_preferences->raw_mouse_input == true &&
 		input_preferences->mouse_accel_type == _mouse_accel_classic &&
 		input_preferences->classic_vertical_aim == true &&
 		input_preferences->extra_mouse_precision == false)
