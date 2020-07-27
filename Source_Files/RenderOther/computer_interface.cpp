@@ -301,7 +301,7 @@ static void _draw_computer_text(char *base_text, short start_index, Rect *bounds
 	terminal_text_t *terminal_text, short current_line);
 static short find_group_type(terminal_text_t *data, 
 	short group_type);
-static void teleport_to_level(short level_number);
+static void teleport_to_level(short level_number, short flags);
 static void teleport_to_polygon(short player_index, short polygon_index);
 static struct terminal_groupings *get_indexed_grouping(
 	terminal_text_t *data, short index);
@@ -550,7 +550,7 @@ void enter_computer_interface(
 	next_terminal_group(player_index, terminal_text);
 }
 
-/*  Assumes ¶t==1 tick */
+/*  Assumes ï¿½t==1 tick */
 void update_player_for_terminal_mode(
 	short player_index)
 {
@@ -1054,14 +1054,25 @@ static short find_group_type(
 }
 
 static void teleport_to_level(
-	short level_number)
+	short level_number,
+	short flags)
 {
 	/* It doesn't matter which player we get. */
 	struct player_data *player= get_player_data(0);
 	
 	// LP change: moved down by 1 so that level 0 will be valid
 	player->teleporting_destination= -level_number - 1;
-	player->delay_before_teleport= TICKS_PER_SECOND/2; // delay before we teleport.
+
+	//Trilogy Scenario Check
+	if(flags & _group_is_marathon_1)
+	{
+		player->delay_before_teleport= 0; //Emulate Mac Marathon terminal teleport.
+	}
+	else
+	{
+		player->delay_before_teleport= TICKS_PER_SECOND/2; // delay before we teleport.
+	}
+	
 }
 			
 static void teleport_to_polygon(
@@ -1911,7 +1922,7 @@ static void handle_reading_terminal_keys(
 			break;
 		
 		case _interlevel_teleport_group: // permutation is level to go to
-			teleport_to_level(current_group->permutation);
+			teleport_to_level(current_group->permutation, current_group->flags);
 			initialize_player_terminal_info(player_index);
 			aborted= true;
 			break;
