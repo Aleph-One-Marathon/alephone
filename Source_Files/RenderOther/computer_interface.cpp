@@ -1076,7 +1076,7 @@ static void teleport_to_polygon(
 	assert(!player->delay_before_teleport);
 }
 
-static void calculate_bounds_for_text_box(
+static void calculate_bounds_for_text_box(short player_index,
 	short flags,
 	Rect *bounds)
 {
