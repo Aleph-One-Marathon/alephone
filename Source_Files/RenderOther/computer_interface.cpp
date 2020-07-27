@@ -1080,6 +1080,8 @@ static void calculate_bounds_for_text_box(
 	short flags,
 	Rect *bounds)
 {
+	struct player_data* player = get_player_data(player_index);
+
 	if(flags & _center_object)
 	{
 		// dprintf("splitting text not supported!");
