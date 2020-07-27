@@ -1054,18 +1054,14 @@ static short find_group_type(
 }
 
 static void teleport_to_level(
-	short level_number, *flags)
+	short level_number)
 {
 	/* It doesn't matter which player we get. */
 	struct player_data *player= get_player_data(0);
 	
 	// LP change: moved down by 1 so that level 0 will be valid
 	player->teleporting_destination= -level_number - 1;
-	if (flags & _group_is_marathon_1)
-	{
-		player->delay_before_teleport = 0;
-	}
-	else
+	
 	player->delay_before_teleport= TICKS_PER_SECOND/2; // delay before we teleport.
 
 }
@@ -1097,8 +1093,9 @@ static void calculate_bounds_for_text_box(
 	{
 		calculate_bounds_for_object(_draw_object_on_right, bounds, NULL);
 	}
-	if (flags & _group_is_marathon_1)
-		bounds->top += _get_font_line_height(_computer_interface_font);
+	if (flags & _group_is_marathon_1);
+	bounds->top += _get_font_line_height(_computer_interface_font);
+	player->delay_before_teleport = 0;
 }
 
 static void display_picture_with_text(
