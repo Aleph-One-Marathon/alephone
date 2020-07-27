@@ -1100,7 +1100,7 @@ static void calculate_bounds_for_text_box(short player_index,
 		bounds->top += _get_font_line_height(_computer_interface_font);
 		player->delay_before_teleport = 0;
 	}
-	else
+	
 
 }
 
