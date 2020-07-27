@@ -1077,10 +1077,10 @@ static void teleport_to_polygon(
 }
 
 static void calculate_bounds_for_text_box(short player_index,
-	short flags,
+	
 	Rect *bounds)
 {
-	struct player_data* player = get_player_data(player_index);
+	
 
 	if(flags & _center_object)
 	{
@@ -1096,6 +1096,7 @@ static void calculate_bounds_for_text_box(short player_index,
 		calculate_bounds_for_object(_draw_object_on_right, bounds, NULL);
 	}
 	if (flags & _group_is_marathon_1);
+	struct player_data* player = get_player_data(0);
 	bounds->top += _get_font_line_height(_computer_interface_font);
 	player->delay_before_teleport = 0;
 }
