@@ -1286,9 +1286,13 @@ static void create_m1_menu_surfaces(void)
     
     SDL_Rect src, dst;
     src.x = src.y = 0;
+
+    // in comments you can see how the hard-coded numbers were arrived at for
+    // Marathon--but for third party scenarios, the math doesn't work, so
+    // hard-code the offsets instead
     
-    int top = 0;
-    int bottom = s->h;
+//    int top = 0;
+//    int bottom = s->h;
     
     SDL_Surface *logo = get_shape_surface(0, 10);
     if (!logo)
@@ -1302,10 +1306,12 @@ static void create_m1_menu_surfaces(void)
     {
         src.w = dst.w = logo->w;
         src.h = dst.h = logo->h;
-        dst.x = (s->w - logo->w)/2;
+//        dst.x = (s->w - logo->w)/2;
+//        dst.y = 0;
+        dst.x = 75;
         dst.y = 0;
         SDL_BlitSurface(logo, &src, s, &dst);
-        top += logo->h;
+//        top += logo->h;
         SDL_FreeSurface(logo);
     }
     
@@ -1314,10 +1320,12 @@ static void create_m1_menu_surfaces(void)
     {
         src.w = dst.w = credits->w;
         src.h = dst.h = credits->h;
-        dst.x = (s->w - credits->w)/2;
-        dst.y = s->h - credits->h;
+//        dst.x = (s->w - credits->w)/2;
+//        dst.y = s->h - credits->h;
+        dst.x = 191;
+        dst.y = 466;
         SDL_BlitSurface(credits, &src, s, &dst);
-        bottom -= credits->h;
+//        bottom -= credits->h;
         SDL_FreeSurface(credits);
     }
     
@@ -1326,8 +1334,10 @@ static void create_m1_menu_surfaces(void)
     {
         src.w = dst.w = widget->w;
         src.h = dst.h = widget->h;
-        dst.x = (s->w - widget->w)/2;
-        dst.y = top + (bottom - top - widget->h)/2;
+//        dst.x = (s->w - widget->w)/2;
+//        dst.y = top + (bottom - top - widget->h)/2;
+        dst.x = 102;
+        dst.y = 117;
         SDL_BlitSurface(widget, &src, s, &dst);
         SDL_FreeSurface(widget);
     }
