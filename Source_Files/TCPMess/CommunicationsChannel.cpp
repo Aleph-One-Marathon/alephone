@@ -701,8 +701,12 @@ void MakeTCPsocketNonBlocking(TCPsocket *socket) {
   // SET NONBLOCKING MODE
   // XXX: this depends on intimate carnal knowledge of the SDL_net struct _UDPsocket
   // if it changes that structure, we are hosed.
-  
+
+#ifdef WIN64
+  int fd = ((int *) (*socket))[2];
+#else
   int fd = ((int *) (*socket))[1];
+#endif
 #if defined(WIN32)
   u_long val = 1;
   ioctlsocket(fd, FIONBIO, &val);
