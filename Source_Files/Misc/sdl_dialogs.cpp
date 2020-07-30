@@ -2073,7 +2073,7 @@ void dialog::event(SDL_Event &e)
     }
     break;
   case SDL_WINDOWEVENT:
-    if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
+    if (e.window.event == SDL_WINDOWEVENT_EXPOSED) {
 		draw();
 		handled = true;
 	}
