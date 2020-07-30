@@ -50,6 +50,7 @@ const bool DoIncorrectCountVWarn = true;
 
 
 #include "cseries.h"
+#include "editor.h"
 #include "map.h"
 #include "flood_map.h"
 #include "platforms.h"
@@ -1565,7 +1566,7 @@ uint8 *pack_map_annotation(uint8 *Stream, map_annotation* Objects, size_t Count)
 }
 
 
-uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, size_t Count)
+uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, size_t Count, int version)
 {
 	uint8* S = Stream;
 	map_object* ObjPtr = Objects;
@@ -1578,9 +1579,17 @@ uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, size_t Count)
 		StreamToValue(S,ObjPtr->polygon_index);
 		StreamToValue(S,ObjPtr->location.x);
 		StreamToValue(S,ObjPtr->location.y);
-		StreamToValue(S,ObjPtr->location.z);
-		
-		StreamToValue(S,ObjPtr->flags);
+		if (version == MARATHON_ONE_DATA_VERSION)
+		{
+		    ObjPtr->location.z = 0;
+		    ObjPtr->flags = 0;
+		    S += 2*2; // short unused[2]
+		}
+		else
+		{
+		    StreamToValue(S,ObjPtr->location.z);
+		    StreamToValue(S,ObjPtr->flags);
+		}
 	}
 	
 	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_map_object));

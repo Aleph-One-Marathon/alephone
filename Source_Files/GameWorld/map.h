@@ -1291,7 +1291,7 @@ uint8 *pack_polygon_data(uint8 *Stream, polygon_data* Objects, size_t Count);
 
 uint8 *unpack_map_annotation(uint8 *Stream, map_annotation* Objects, size_t Count);
 uint8 *pack_map_annotation(uint8 *Stream, map_annotation* Objects, size_t Count);
-uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, size_t Count);
+uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, size_t Count, int version);
 uint8 *pack_map_object(uint8 *Stream, map_object* Objects, size_t Count);
 uint8 *unpack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, size_t Count);
 uint8 *pack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, size_t Count);
