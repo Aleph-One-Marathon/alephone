@@ -266,7 +266,15 @@ void initialize_control_panels_for_level(
 					break;
 				
 				case _panel_is_platform_switch:
-					if (platform_is_on(get_polygon_data(side->control_panel_permutation)->permutation)) status= true;
+					if (side->control_panel_permutation >= 0)
+					{
+						if (platform_is_on(get_polygon_data(side->control_panel_permutation)->permutation)) status= true;
+					}
+					else
+					{
+						SET_SIDE_CONTROL_PANEL(side, false);
+						continue;
+					}
 					break;
 			}
 			
