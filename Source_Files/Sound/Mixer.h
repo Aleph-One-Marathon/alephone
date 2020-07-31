@@ -52,7 +52,12 @@ public:
 	// returns the number of normal/ambient channels
 	int SoundChannelCount() { return sound_channel_count; }
 
-	void QuietChannel(int channel) { channels[channel].Quiet(); }
+	void QuietChannel(int channel) {
+		SDL_LockAudio();
+		channels[channel].Quiet();
+		SDL_UnlockAudio();
+	}
+	
 	void SetChannelVolumes(int channel, int16 left, int16 right) { 
 		channels[channel].left_volume = left; 
 		channels[channel].right_volume = right; 
