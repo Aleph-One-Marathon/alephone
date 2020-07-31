@@ -573,6 +573,7 @@ void Mixer::Mix(uint8* p, int len, bool stereo, bool is_sixteen_bit, bool is_sig
 
 		if (game_is_networked &&
 		    SoundManager::instance()->parameters.mute_while_transmitting &&
+			dynamic_world->speaking_player_index != -1 && 
 		    dynamic_world->speaking_player_index == local_player_index)
 		{
 			// mute sound!
