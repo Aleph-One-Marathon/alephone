@@ -2252,6 +2252,8 @@ void dialog::start(bool play_sound)
 	// Make sure nobody tries re-entrancy with us
 	assert(!done);
 
+	initial_text_input = SDL_IsTextInputActive();
+
 	// Set new active dialog
 	parent_dialog = top_dialog;
 	top_dialog = this;
@@ -2322,7 +2324,14 @@ bool dialog::process_events()
 
 int dialog::finish(bool play_sound)
 {
-	SDL_StopTextInput();
+	if (initial_text_input)
+	{
+		SDL_StartTextInput();
+	}
+	else
+	{
+		SDL_StopTextInput();
+	}
 
 	// Farewell sound
 	if (play_sound)
