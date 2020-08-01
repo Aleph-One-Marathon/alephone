@@ -153,14 +153,15 @@ void *get_network_physics_buffer(
 		if (PhysicsFileSpec.Open(PhysicsFile) &&
 		    PhysicsFile.GetLength(*physics_length))
 		{
-			data = (uint8 *)malloc(*physics_length + 4);
-            SDL_RWops *ops = SDL_RWFromMem(data, *physics_length + 4);
+			*physics_length += 8;
+			data = (uint8 *)malloc(*physics_length);
+            SDL_RWops *ops = SDL_RWFromMem(data, *physics_length);
             success = SDL_WriteBE32(ops, uint32(M1_PHYSICS_MAGIC_COOKIE));
             if (success)
-                success = SDL_WriteBE32(ops, uint32(*physics_length));
+                success = SDL_WriteBE32(ops, uint32(*physics_length - 8));
             SDL_RWclose(ops);
             if (success)
-                success = PhysicsFile.Read(*physics_length, &data[8]);
+                success = PhysicsFile.Read(*physics_length - 8, &data[8]);
 			if (!success)
 				free(data);
 		}
