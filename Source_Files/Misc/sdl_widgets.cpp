@@ -1610,7 +1610,7 @@ void w_key::event(SDL_Event &e)
 		switch (e.type) {
 			case SDL_MOUSEBUTTONDOWN:
 				if (event_type == MouseButton) {
-					if (e.button.button < NUM_SDL_REAL_MOUSE_BUTTONS) {
+					if (e.button.button < NUM_SDL_REAL_MOUSE_BUTTONS + 1) {
 						set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_MOUSE_BUTTON + e.button.button - 1));
 						handled = true;
 					}
