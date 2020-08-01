@@ -1579,7 +1579,8 @@ uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, size_t Count, int v
 		StreamToValue(S,ObjPtr->polygon_index);
 		StreamToValue(S,ObjPtr->location.x);
 		StreamToValue(S,ObjPtr->location.y);
-		if (version == MARATHON_ONE_DATA_VERSION)
+		if (version == MARATHON_ONE_DATA_VERSION &&
+			film_profile.m1_object_unused)
 		{
 		    ObjPtr->location.z = 0;
 		    ObjPtr->flags = 0;

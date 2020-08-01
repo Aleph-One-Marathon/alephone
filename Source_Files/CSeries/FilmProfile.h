@@ -97,6 +97,7 @@ struct FilmProfile
 	bool find_action_key_target_has_side_effects;
 
 	// Aleph One 1.3 fixes
+	bool m1_object_unused; // location.z and flags are unused in Marathon
 	bool m1_platform_flood; // checks more than just adjacent polygons
 	bool m1_teleport_without_delay; // Marathon terminals teleport immediately
 };
