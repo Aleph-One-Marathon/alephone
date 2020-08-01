@@ -95,6 +95,9 @@ struct FilmProfile
 	bool m1_low_gravity_projectiles;
 	bool m1_buggy_repair_goal;
 	bool find_action_key_target_has_side_effects;
+
+	// Aleph One 1.3 fixes
+	bool m1_platform_flood; // checks more than just adjacent polygons
 };
 
 extern FilmProfile film_profile;
@@ -104,6 +107,7 @@ enum FilmProfileType {
 	FILM_PROFILE_MARATHON_2,
 	FILM_PROFILE_MARATHON_INFINITY,
 	FILM_PROFILE_ALEPH_ONE_1_1,
+	FILM_PROFILE_ALEPH_ONE_1_2,
 	FILM_PROFILE_DEFAULT,
 };
 

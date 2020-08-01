@@ -117,6 +117,7 @@ find_line_crossed leaving polygon could be sped up considerable by reversing the
 #include "SoundManager.h"
 #include "Console.h"
 #include "InfoTree.h"
+#include "flood_map.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -1394,23 +1395,76 @@ short find_adjacent_polygon(
 short find_flooding_polygon(
 	short polygon_index)
 {
-	int i;
-	struct polygon_data *polygon = get_polygon_data(polygon_index);
-	
-	for (i= 0; i<polygon->vertex_count; ++i)
+	if (film_profile.m1_platform_flood)
 	{
-		if (polygon->adjacent_polygon_indexes[i]!=NONE)
+		auto cost_proc =
+			[](short source_polygon_index,
+			   short line_index,
+			   short destination_polygon_index,
+			   void*)
+				{
+					auto* polygon = get_polygon_data(source_polygon_index);
+					if (polygon->type == _polygon_is_major_ouch ||
+						polygon->type == _polygon_is_minor_ouch)
+					{
+						return 1;
+					}
+					else if (polygon->type == _polygon_is_platform)
+					{
+						auto* platform = get_platform_data(polygon->permutation);
+						if (platform && PLATFORM_IS_FLOODED(platform))
+						{
+							return 2;
+						}
+						else
+						{
+							return 0;
+						}
+					}
+					else
+					{
+						return 0;
+					}
+				};
+
+		polygon_index = flood_map(polygon_index, INT32_MAX, cost_proc, _best_first, nullptr);
+		while (polygon_index != NONE)
 		{
-			struct polygon_data *adjacent_polygon= get_polygon_data(polygon->adjacent_polygon_indexes[i]);
-			
-			if (adjacent_polygon->type == _polygon_is_major_ouch ||
-				adjacent_polygon->type == _polygon_is_minor_ouch)
+			auto* polygon = get_polygon_data(polygon_index);
+			if (polygon->type == _polygon_is_major_ouch ||
+				polygon->type == _polygon_is_minor_ouch)
 			{
-				return polygon->adjacent_polygon_indexes[i];
+				return polygon_index;
+			}
+			else
+			{
+				// nothing else uses _best_first, but it appears to work
+				polygon_index = flood_map(NONE, INT32_MAX, cost_proc, _best_first, nullptr);
 			}
 		}
+
+		return NONE;
 	}
-	return NONE;
+	else
+	{
+		int i;
+		struct polygon_data *polygon = get_polygon_data(polygon_index);
+		
+		for (i= 0; i<polygon->vertex_count; ++i)
+		{
+			if (polygon->adjacent_polygon_indexes[i]!=NONE)
+			{
+				struct polygon_data *adjacent_polygon= get_polygon_data(polygon->adjacent_polygon_indexes[i]);
+				
+				if (adjacent_polygon->type == _polygon_is_major_ouch ||
+					adjacent_polygon->type == _polygon_is_minor_ouch)
+				{
+					return polygon->adjacent_polygon_indexes[i];
+				}
+			}
+		}
+		return NONE;
+	}
 }
 
 short find_adjacent_side(
