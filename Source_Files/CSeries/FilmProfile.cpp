@@ -33,6 +33,7 @@ static FilmProfile alephone1_3 = {
 	true, // m1_buggy_repair_goal
 	false, // find_action_key_target_has_side_effects
 	true, // m1_platform_flood
+	true, // m1_teleport_without_delay
 };
 
 static FilmProfile alephone1_2 = {
@@ -66,6 +67,7 @@ static FilmProfile alephone1_2 = {
 	true, // m1_buggy_repair_goal
 	false, // find_action_key_target_has_side_effects
 	false, // m1_platform_flood
+	false, // m1_teleport_without_delay
 };
 
 static FilmProfile alephone1_1 = {
@@ -99,6 +101,7 @@ static FilmProfile alephone1_1 = {
 	false, // m1_buggy_repair_goal
 	true, // find_action_key_target_has_side_effects
 	false, // m1_platform_flood
+	false, // m1_teleport_without_delay
 };
 
 static FilmProfile alephone1_0 = {
@@ -132,6 +135,7 @@ static FilmProfile alephone1_0 = {
 	false, // m1_buggy_repair_goal
 	true, // find_action_key_target_has_side_effects
 	false, // m1_platform_flood
+	false, // m1_teleport_without_delay
 };
 
 static FilmProfile marathon2 = {
@@ -165,6 +169,7 @@ static FilmProfile marathon2 = {
 	false, // m1_buggy_repair_goal
 	false, // find_action_key_target_has_side_effects
 	false, // m1_platform_flood
+	false  // m1_teleport_without_delay
 };
 
 static FilmProfile marathon_infinity = {
@@ -198,6 +203,7 @@ static FilmProfile marathon_infinity = {
 	false, // m1_buggy_repair_goal
 	false, // find_action_key_target_has_side_effects
 	false, // m1_platform_flood
+	false, // m1_teleport_without_delay
 };
 
 FilmProfile film_profile = alephone1_3;

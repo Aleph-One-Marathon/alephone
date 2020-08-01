@@ -98,6 +98,7 @@ struct FilmProfile
 
 	// Aleph One 1.3 fixes
 	bool m1_platform_flood; // checks more than just adjacent polygons
+	bool m1_teleport_without_delay; // Marathon terminals teleport immediately
 };
 
 extern FilmProfile film_profile;
