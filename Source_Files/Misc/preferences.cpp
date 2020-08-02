@@ -2991,6 +2991,13 @@ void read_preferences ()
 
 	if (!opened) {
 		defaults = true;
+		FileSpec.SetNameWithPath("Scripts/Default Preferences.xml");
+		opened = FileSpec.Open(OFile);
+	}
+
+	// legacy defalt prefs
+	if (!opened) {
+		defaults = true;
 		FileSpec.SetNameWithPath(getcstr(temporary, strFILENAMES, filenamePREFERENCES));
 		opened = FileSpec.Open(OFile);
 	}
