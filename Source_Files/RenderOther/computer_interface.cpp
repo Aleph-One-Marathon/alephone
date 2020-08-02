@@ -1302,6 +1302,8 @@ void clear_compiled_terminal_cache()
 	resource_terminal_id = NONE;
 }
 
+extern OpenedResourceFile M1ShapesFile;
+
 static terminal_text_t* compile_marathon_terminal(char*, short);
 
 static terminal_text_t *get_indexed_terminal_data(
@@ -1314,10 +1316,20 @@ static terminal_text_t *get_indexed_terminal_data(
 		{
 			return resource_terminal.get();
 		}
-		else if (ExternalResources.IsOpen())
+		else
 		{
 			LoadedResource rsrc;
-			if (ExternalResources.Get('t', 'e', 'r', 'm', id, rsrc))
+			if (ExternalResources.IsOpen())
+			{
+				ExternalResources.Get('t', 'e', 'r', 'm', id, rsrc);
+			}
+
+			if (!rsrc.IsLoaded() && M1ShapesFile.IsOpen())
+			{
+				M1ShapesFile.Get('t', 'e', 'r', 'm', id, rsrc);
+			}
+
+			if (rsrc.IsLoaded())
 			{
 				resource_terminal.reset(compile_marathon_terminal(reinterpret_cast<char*>(rsrc.GetPointer()), rsrc.GetLength()));
 				

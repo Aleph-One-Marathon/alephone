@@ -171,7 +171,7 @@ short number_of_shading_tables, shading_table_fractional_bits, shading_table_siz
 
 // LP addition: opened-shapes-file object
 static OpenedFile ShapesFile;
-static OpenedResourceFile M1ShapesFile;
+OpenedResourceFile M1ShapesFile;
 
 static enum {
 	M1_SHAPES_VERSION = 1,
