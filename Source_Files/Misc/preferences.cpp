@@ -3048,13 +3048,17 @@ void read_preferences ()
 			parse_error = true;
 		}
 	}
-	
-	if (!opened || parse_error)
+
+	if (defaults)
 	{
-		if (defaults)
+		if (parse_error)
+		{
 			alert_user(expand_app_variables("There were default preferences-file parsing errors (see $appLogFile$ for details)").c_str(), infoError);
-		else
-			alert_user(expand_app_variables("There were preferences-file parsing errors (see $appLogFile$ for details)").c_str(), infoError);
+		}
+	}
+	else if (!opened || parse_error)
+	{
+		alert_user(expand_app_variables("There were preferences-file parsing errors (see $appLogFile$ for details)").c_str(), infoError);
 	}
 
 	// Check on the read-in prefs
