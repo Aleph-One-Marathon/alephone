@@ -622,7 +622,7 @@ static void DisplayMessages(SDL_Surface *s)
 					icon_drop = 2;
 				break;
 			}
-			bool had_icon;
+			bool had_icon = false;
 			/* Yes, I KNOW this is the same i as above. I know what I'm doing. */
 			for(i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; ++i) {
 				if(ScriptHUDElements[view][i].text.empty()) continue;
