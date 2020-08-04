@@ -1368,12 +1368,25 @@ static const char *channel_labels[] = {"1", "2", "4", "8", "16", "32", NULL};
 
 class w_volume_slider : public w_percentage_slider {
 public:
-	w_volume_slider(int vol) : w_percentage_slider(NUMBER_OF_SOUND_VOLUME_LEVELS, vol) {}
+	w_volume_slider(int vol) : w_percentage_slider(21, vol) {}
 	~w_volume_slider() {}
 
 	void item_selected(void)
 	{
-		SoundManager::instance()->TestVolume(selection, _snd_adjust_volume);
+		SoundManager::instance()->TestVolume((selection - 20) * 2, _snd_adjust_volume);
+	}
+};
+
+class w_music_slider : public w_slider {
+public:
+	w_music_slider(int sel) : w_slider(41, sel) {
+		init_formatted_value();
+	}
+
+	virtual std::string formatted_value() {
+		std::ostringstream ss;
+		ss << (selection * 200 / (num_items - 1)) << "%";
+		return ss.str();
 	}
 };
 
@@ -1417,11 +1430,11 @@ static void sound_dialog(void *arg)
 	table->dual_add(channels_w->label("Channels"), d);
 	table->dual_add(channels_w, d);
 
-	w_volume_slider *volume_w = new w_volume_slider(sound_preferences->volume);
-	table->dual_add(volume_w->label("Volume"), d);
+	w_volume_slider *volume_w = new w_volume_slider(static_cast<int>(sound_preferences->volume_db / 2 + 20));
+	table->dual_add(volume_w->label("Master Volume"), d);
 	table->dual_add(volume_w, d);
 
-	w_slider *music_volume_w = new w_percentage_slider(NUMBER_OF_SOUND_VOLUME_LEVELS, sound_preferences->music);
+	w_slider *music_volume_w = new w_music_slider(sound_preferences->music_db + 20);
 	table->dual_add(music_volume_w->label("Music Volume"), d);
 	table->dual_add(music_volume_w, d);
 
@@ -1483,15 +1496,15 @@ static void sound_dialog(void *arg)
 			changed = true;
 		}
 
-		int volume = volume_w->get_selection();
-		if (volume != sound_preferences->volume) {
-			sound_preferences->volume = volume;
+		float volume_db = (volume_w->get_selection() - 20) * 2;
+		if (volume_db != sound_preferences->volume_db) {
+			sound_preferences->volume_db = volume_db;
 			changed = true;
 		}
 
-		int music_volume = music_volume_w->get_selection();
-		if (music_volume != sound_preferences->music) {
-			sound_preferences->music = music_volume;
+		float music_db = music_volume_w->get_selection() - 20;
+		if (music_db != sound_preferences->music_db) {
+			sound_preferences->music_db = music_db;
 			changed = true;
 		}
 
@@ -3369,8 +3382,8 @@ InfoTree sound_preferences_tree()
 	InfoTree root;
 	
 	root.put_attr("channels", sound_preferences->channel_count);
-	root.put_attr("volume", sound_preferences->volume);
-	root.put_attr("music_volume", sound_preferences->music);
+	root.put_attr("volume_db", sound_preferences->volume_db);
+	root.put_attr("music_db", sound_preferences->music_db);
 	root.put_attr("flags", sound_preferences->flags);
 	root.put_attr("rate", sound_preferences->rate);
 	root.put_attr("samples", sound_preferences->samples);
@@ -4289,8 +4302,43 @@ void parse_input_preferences(InfoTree root, std::string version)
 void parse_sound_preferences(InfoTree root, std::string version)
 {
 	root.read_attr("channels", sound_preferences->channel_count);
-	root.read_attr("volume", sound_preferences->volume);
-	root.read_attr("music_volume", sound_preferences->music);
+
+	if (!version.length() || version < "20200803")
+	{
+		int old_volume;
+		root.read_attr("volume", old_volume);
+		if (old_volume > 0)
+		{
+			sound_preferences->volume_db = 10.f * std::log10(static_cast<float>(old_volume) / NUMBER_OF_SOUND_VOLUME_LEVELS);
+		}
+		else
+		{
+			sound_preferences->volume_db = SoundManager::MINIMUM_VOLUME_DB;
+		}
+	}
+	else
+	{
+		root.read_attr("volume_db", sound_preferences->volume_db);
+	}
+
+	if (!version.length() || version < "20200803")
+	{
+		int old_music_volume;
+		root.read_attr("music_volume", old_music_volume);
+		if (old_music_volume > 0)
+		{
+			sound_preferences->music_db = 10.f * std::log10(static_cast<float>(old_music_volume) / NUMBER_OF_SOUND_VOLUME_LEVELS);
+		}
+		else
+		{
+			sound_preferences->music_db = SoundManager::MINIMUM_VOLUME_DB / 2;
+		}
+	}
+	else
+	{
+		root.read_attr("music_db", sound_preferences->music_db);
+	}
+
 	root.read_attr("flags", sound_preferences->flags);
 	root.read_attr("rate", sound_preferences->rate);
 	root.read_attr("samples", sound_preferences->samples);

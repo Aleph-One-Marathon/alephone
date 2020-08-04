@@ -40,6 +40,12 @@ class SoundMemoryManager;
 class SoundManager
 {
 public:
+	// master and music volumes are now in dB
+	static constexpr float DEFAULT_SOUND_LEVEL_DB = -8.f;
+	static constexpr float MAXIMUM_VOLUME_DB = 0.f;
+	static constexpr float MINIMUM_VOLUME_DB = -40.f;
+	static constexpr float DEFAULT_MUSIC_LEVEL_DB = -12.f;
+	
 	static inline SoundManager* instance() { 
 		static SoundManager *m_instance = 0;
 		if (!m_instance) m_instance = new SoundManager; 
@@ -56,7 +62,7 @@ public:
 
 	bool AdjustVolumeUp(short sound_index = NONE);
 	bool AdjustVolumeDown(short sound_index = NONE);
-	void TestVolume(short volume, short sound_index);
+	void TestVolume(float db, short sound_index);
 
 	bool LoadSound(short sound);
 	void LoadSounds(short *sounds, short count);
@@ -98,13 +104,13 @@ public:
 		static const int DEFAULT_RATE = 44100;
 		static const int DEFAULT_SAMPLES = 1024;
 		int16 channel_count; // >= 0
-		int16 volume; // [0, NUMBER_OF_SOUND_VOLUME_LEVELS)
+		float volume_db; // db
 		uint16 flags; // stereo, dynamic_tracking, etc. 
 		
 		uint16 rate; // in Hz
 		uint16 samples; // size of buffer
 
-		int16 music; // Music volume: [0, NUMBER_OF_SOUND_VOLUME_LEVELS)
+		float music_db; // music volume in dB
 
 		int16 volume_while_speaking; // [0, NUMBER_OF_SOUND_VOLUME_LEVELS)
 		bool mute_while_transmitting;
@@ -193,8 +199,6 @@ private:
 	static const int MAXIMUM_OUTPUT_SOUND_VOLUME = 2 * MAXIMUM_SOUND_VOLUME;
 	static const int SOUND_VOLUME_DELTA = MAXIMUM_OUTPUT_SOUND_VOLUME / NUMBER_OF_SOUND_VOLUME_LEVELS;
 	static const int MAXIMUM_AMBIENT_SOUND_VOLUME = 3 * MAXIMUM_SOUND_VOLUME / 2;
-	static const int DEFAULT_SOUND_LEVEL= NUMBER_OF_SOUND_VOLUME_LEVELS/3;
-	static const int DEFAULT_MUSIC_LEVEL = NUMBER_OF_SOUND_VOLUME_LEVELS/2;
 	static const int DEFAULT_VOLUME_WHILE_SPEAKING = MAXIMUM_SOUND_VOLUME / 8;
 
 	// pitch

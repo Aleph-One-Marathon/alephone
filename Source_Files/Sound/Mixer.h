@@ -42,10 +42,19 @@ public:
 			m_instance = new Mixer(); 
 		return m_instance; 
 	}
-	void Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, int volume, uint16 samples);
+
+	static float from_db(float db) {
+		if (db <= SoundManager::MINIMUM_VOLUME_DB) {
+			return 0.f;
+		} else {
+			return std::pow(10, db / 20.0);
+		}
+	}
+	
+	void Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, float db, uint16 samples);
 	void Stop();
 
-	void SetVolume(short volume) { main_volume = volume; }
+	void SetVolume(float db) { main_volume = from_db(db); }
 
 	void BufferSound(int channel, const SoundInfo& header, boost::shared_ptr<SoundData> data, _fixed pitch);
 
@@ -138,7 +147,7 @@ private:
 		EXTRA_CHANNELS
 	};
 
-	int16 main_volume;
+	float main_volume;
 	int sound_channel_count;
 
 	void Resample(Channel* c, int16* left, int16* right, int samples);
