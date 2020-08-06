@@ -22,6 +22,8 @@
 
 */
 
+#include <cmath>
+
 #include <SDL_endian.h>
 #include "cseries.h"
 #include "network_speaker_sdl.h"
@@ -47,7 +49,7 @@ public:
 		if (db <= SoundManager::MINIMUM_VOLUME_DB) {
 			return 0.f;
 		} else {
-			return std::pow(10, db / 20.0);
+			return std::pow(10.f, db / 20.f);
 		}
 	}
 	
