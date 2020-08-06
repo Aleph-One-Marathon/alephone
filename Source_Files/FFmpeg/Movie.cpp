@@ -447,7 +447,20 @@ bool Movie::Setup()
         
         // tuning options
         int vq = graphics_preferences->movie_export_video_quality;
-        video_stream->codec->bit_rate = ScaleQuality(vq, 100*1024, 1024*1024, 10*1024*1024);
+		int bitrate = graphics_preferences->movie_export_video_bitrate;
+
+		if (bitrate <= 0) // auto, based on YouTube's SDR standard frame rate
+						  // recommendations
+		{
+			if      (view_rect.h >= 2160) bitrate = 40 * 1024 * 1024;
+			else if (view_rect.h >= 1440) bitrate = 16 * 1024 * 1024;
+			else if (view_rect.h >= 1080) bitrate =  8 * 1024 * 1024;
+			else if (view_rect.h >=  720) bitrate =  5 * 1024 * 1024;
+			else if (view_rect.h >=  480) bitrate =  5 * 1024 * 1024 / 2;
+			else                          bitrate =      1024 * 1024;
+		}
+		
+        video_stream->codec->bit_rate = bitrate;
         video_stream->codec->qmin = ScaleQuality(vq, 10, 4, 0);
         video_stream->codec->qmax = ScaleQuality(vq, 63, 63, 50);
         std::string crf = boost::lexical_cast<std::string>(ScaleQuality(vq, 63, 10, 4));
