@@ -45,6 +45,7 @@ public:
 	static constexpr float MAXIMUM_VOLUME_DB = 0.f;
 	static constexpr float MINIMUM_VOLUME_DB = -40.f;
 	static constexpr float DEFAULT_MUSIC_LEVEL_DB = -12.f;
+	static constexpr float DEFAULT_VIDEO_EXPORT_VOLUME_DB = -8.f;
 	
 	static inline SoundManager* instance() { 
 		static SoundManager *m_instance = 0;
@@ -114,6 +115,8 @@ public:
 
 		int16 volume_while_speaking; // [0, NUMBER_OF_SOUND_VOLUME_LEVELS)
 		bool mute_while_transmitting;
+
+		float video_export_volume_db;
 
 		Parameters();
 		bool Verify();

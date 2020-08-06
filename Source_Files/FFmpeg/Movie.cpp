@@ -839,8 +839,8 @@ void Movie::AddFrame(FrameType ftype)
 	
 	int audio_bytes_per_frame = audiobuf.size();
 	Mixer *mx = Mixer::instance();
-	int old_vol = mx->main_volume;
-	mx->main_volume = 0x100;
+	float old_vol = mx->main_volume;
+	mx->SetVolume(sound_preferences->video_export_volume_db);
 	mx->Mix(&audiobuf.front(), audio_bytes_per_frame / 4, true, true, true);
 	mx->main_volume = old_vol;
 	

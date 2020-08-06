@@ -706,7 +706,8 @@ SoundManager::Parameters::Parameters() :
 	samples(DEFAULT_SAMPLES),
 	music_db(DEFAULT_MUSIC_LEVEL_DB),
 	volume_while_speaking(DEFAULT_VOLUME_WHILE_SPEAKING),
-	mute_while_transmitting(true)
+	mute_while_transmitting(true),
+	video_export_volume_db(DEFAULT_VIDEO_EXPORT_VOLUME_DB)
 {
 }
 
