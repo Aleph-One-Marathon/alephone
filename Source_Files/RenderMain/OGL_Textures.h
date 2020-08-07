@@ -254,6 +254,9 @@ public:
 	void SetupTextureMatrix();
 	void RestoreTextureMatrix();
 	
+	TextureManager(const TextureManager&) = delete;
+	TextureManager& operator= (const TextureManager&) = delete;
+	
 	TextureManager();
 	~TextureManager();
 };

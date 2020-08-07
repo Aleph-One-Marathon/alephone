@@ -61,8 +61,8 @@ public:
 	virtual void render_tree(void);
         bool renders_viewer_sprites_in_tree() { return true; }
 
-	TextureManager setupWallTexture(const shape_descriptor& Texture, short transferMode, float pulsate, float wobble, float intensity, float offset, RenderStep renderStep);
-	TextureManager setupSpriteTexture(const rectangle_definition& rect, short type, float offset, RenderStep renderStep);
+	std::unique_ptr<TextureManager> setupWallTexture(const shape_descriptor& Texture, short transferMode, float pulsate, float wobble, float intensity, float offset, RenderStep renderStep);
+	std::unique_ptr<TextureManager> setupSpriteTexture(const rectangle_definition& rect, short type, float offset, RenderStep renderStep);
 };
 
 #endif
