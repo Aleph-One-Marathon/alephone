@@ -24,7 +24,7 @@
 #define _SDL_rwops_ostream_h
 
 #include <sstream>
-#include <SDL2/SDL_rwops.h>
+#include <SDL_rwops.h>
 
 SDL_RWops *SDL_RWFromOStream(std::ostream& strm);
 

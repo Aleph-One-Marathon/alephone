@@ -39,7 +39,7 @@
 #include <string>
 #include <vector>
 
-#include <SDL2/SDL_endian.h>
+#include <SDL_endian.h>
 
 #ifdef HAVE_UNISTD_H
 #include <sys/stat.h>

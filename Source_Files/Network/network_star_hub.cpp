@@ -55,7 +55,7 @@
 #include "WindowedNthElementFinder.h"
 #include "CircularByteBuffer.h"
 #include "InfoTree.h"
-#include "SDL2/SDL_timer.h" // SDL_Delay()
+#include "SDL_timer.h" // SDL_Delay()
 
 #include <vector>
 #include <map>
