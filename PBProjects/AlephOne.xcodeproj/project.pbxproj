@@ -4915,7 +4915,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon 2/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\n";
+			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon 2/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\nsed -i '' 's/\\$default\\$/$bundle$/' \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Scripts/Default Preferences.xml\"\n";
 		};
 		AEB4A2A614296CAE00537AE7 /* Insert Version */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4941,7 +4941,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon Infinity/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\n";
+			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon Infinity/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\nsed -i '' 's/\\$default\\$/$bundle$/' \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Scripts/Default Preferences.xml\"\n";
 		};
 		AEC3C87609AD68AC003258E4 /* Copy Default Theme */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4980,7 +4980,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\n";
+			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\nsed -i '' 's/\\$default\\$/$bundle$/' \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Scripts/Default Preferences.xml\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
