@@ -6,8 +6,6 @@ libinput_a_SOURCES = mouse.h joystick.h \
   \
   mouse_sdl.cpp joystick_sdl.cpp
   
-EXTRA_libinput_a_SOURCES = mouse_cocoa.cpp mouse_cocoa.h
-
 
 AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Misc \
