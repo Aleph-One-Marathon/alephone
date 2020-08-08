@@ -32,8 +32,8 @@
 #include "cstypes.h"
 #include "DDS.h"
 #include "ImageLoader.h"
-#include "SDL.h"
-#include "SDL_endian.h"
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_endian.h"
 #include "Logging.h"
 
 

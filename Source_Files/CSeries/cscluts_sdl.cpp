@@ -26,7 +26,7 @@
 
 #include "cseries.h"
 #include "FileHandler.h"
-#include "SDL_endian.h"
+#include "SDL2/SDL_endian.h"
 
 
 // Global variables

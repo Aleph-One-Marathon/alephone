@@ -29,7 +29,7 @@
 #define MESSAGE_H
 
 #include <string.h>	// memcpy
-#include "SDL.h"
+#include "SDL2/SDL.h"
 
 typedef Uint16 MessageTypeID;
 

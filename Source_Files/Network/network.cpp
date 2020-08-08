@@ -125,7 +125,7 @@ clearly this is all broken until we have packet types
 
 #include "sdl_network.h"
 #include "network_lookup_sdl.h"
-#include "SDL_thread.h"
+#include "SDL2/SDL_thread.h"
 
 #include "game_errors.h"
 #include "CommunicationsChannel.h"
