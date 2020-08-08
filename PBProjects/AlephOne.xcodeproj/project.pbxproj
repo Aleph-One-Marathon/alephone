@@ -66,19 +66,19 @@
 		2748BDD71CC405130082F0E1 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; };
 		2748BDD81CC405140082F0E1 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; };
 		2748BDD91CC405140082F0E1 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; };
-		2748BDDD1CC4052B0082F0E1 /* SDL2_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2748BDDD1CC4052B0082F0E1 /* SDL2_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2748BDDE1CC4052B0082F0E1 /* SDL2_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2748BDDF1CC4052B0082F0E1 /* SDL2_ttf.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2748BDE01CC4052B0082F0E1 /* SDL2.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		2748BDE11CC405330082F0E1 /* SDL2_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2748BDE11CC405330082F0E1 /* SDL2_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2748BDE21CC405330082F0E1 /* SDL2_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2748BDE31CC405330082F0E1 /* SDL2_ttf.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2748BDE41CC405330082F0E1 /* SDL2.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		2748BDE51CC405390082F0E1 /* SDL2_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2748BDE51CC405390082F0E1 /* SDL2_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2748BDE61CC405390082F0E1 /* SDL2_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2748BDE71CC405390082F0E1 /* SDL2_ttf.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2748BDE81CC405390082F0E1 /* SDL2.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		2748BDE91CC4053F0082F0E1 /* SDL2_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2748BDE91CC4053F0082F0E1 /* SDL2_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2748BDEA1CC4053F0082F0E1 /* SDL2_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2748BDEB1CC4053F0082F0E1 /* SDL2_ttf.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2748BDEC1CC4053F0082F0E1 /* SDL2.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -849,6 +849,14 @@
 		AEA31D2C113C9DF700266621 /* csalerts.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEA31D2B113C9DF700266621 /* csalerts.mm */; };
 		AEA74E6E09B01BD900DC3B74 /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
 		AEA74E7109B01BE300DC3B74 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
+		AEA85F4B24DF251300BB7827 /* webp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEA85F4A24DF251300BB7827 /* webp.framework */; };
+		AEA85F4C24DF252F00BB7827 /* webp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEA85F4A24DF251300BB7827 /* webp.framework */; };
+		AEA85F4D24DF252F00BB7827 /* webp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEA85F4A24DF251300BB7827 /* webp.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AEA85F4E24DF253700BB7827 /* webp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEA85F4A24DF251300BB7827 /* webp.framework */; };
+		AEA85F4F24DF253700BB7827 /* webp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEA85F4A24DF251300BB7827 /* webp.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AEA85F5024DF253B00BB7827 /* webp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEA85F4A24DF251300BB7827 /* webp.framework */; };
+		AEA85F5124DF253B00BB7827 /* webp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEA85F4A24DF251300BB7827 /* webp.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AEA85F5224DF254D00BB7827 /* webp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEA85F4A24DF251300BB7827 /* webp.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AEAE12FF0FC9AB4900EDA5A6 /* joystick.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE12FD0FC9AB4900EDA5A6 /* joystick.h */; };
 		AEAE13000FC9AB4900EDA5A6 /* joystick_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEAE12FE0FC9AB4900EDA5A6 /* joystick_sdl.cpp */; };
 		AEAE13210FC9C38400EDA5A6 /* lua_serialize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEAE131F0FC9C38400EDA5A6 /* lua_serialize.cpp */; };
@@ -1992,6 +2000,7 @@
 				2748BDE21CC405330082F0E1 /* SDL2_net.framework in CopyFiles */,
 				2748BDE31CC405330082F0E1 /* SDL2_ttf.framework in CopyFiles */,
 				2748BDE41CC405330082F0E1 /* SDL2.framework in CopyFiles */,
+				AEA85F4D24DF252F00BB7827 /* webp.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2017,6 +2026,7 @@
 				2748BDE61CC405390082F0E1 /* SDL2_net.framework in CopyFiles */,
 				2748BDE71CC405390082F0E1 /* SDL2_ttf.framework in CopyFiles */,
 				2748BDE81CC405390082F0E1 /* SDL2.framework in CopyFiles */,
+				AEA85F4F24DF253700BB7827 /* webp.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2042,6 +2052,7 @@
 				2748BDEA1CC4053F0082F0E1 /* SDL2_net.framework in CopyFiles */,
 				2748BDEB1CC4053F0082F0E1 /* SDL2_ttf.framework in CopyFiles */,
 				2748BDEC1CC4053F0082F0E1 /* SDL2.framework in CopyFiles */,
+				AEA85F5124DF253B00BB7827 /* webp.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2051,6 +2062,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				AEA85F5224DF254D00BB7827 /* webp.framework in CopyFiles */,
 				2762A33B1AAA523600B807D4 /* boost_filesystem.framework in CopyFiles */,
 				2762A33C1AAA523600B807D4 /* boost_system.framework in CopyFiles */,
 				274D10AD2166BCC500C8F77A /* FreeType.framework in CopyFiles */,
@@ -2322,6 +2334,7 @@
 		AE9A39F40CCADF78004717E3 /* ConnectPool.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ConnectPool.h; path = ../Source_Files/Network/ConnectPool.h; sourceTree = "<group>"; };
 		AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ConnectPool.cpp; path = ../Source_Files/Network/ConnectPool.cpp; sourceTree = "<group>"; };
 		AEA31D2B113C9DF700266621 /* csalerts.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = csalerts.mm; path = ../Source_Files/CSeries/csalerts.mm; sourceTree = SOURCE_ROOT; };
+		AEA85F4A24DF251300BB7827 /* webp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = webp.framework; sourceTree = "<group>"; };
 		AEAE12FD0FC9AB4900EDA5A6 /* joystick.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = joystick.h; sourceTree = "<group>"; };
 		AEAE12FE0FC9AB4900EDA5A6 /* joystick_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = joystick_sdl.cpp; sourceTree = "<group>"; };
 		AEAE131F0FC9C38400EDA5A6 /* lua_serialize.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_serialize.cpp; sourceTree = "<group>"; };
@@ -2627,6 +2640,7 @@
 				AE505CEF141D45E600915344 /* OpenGL.framework in Frameworks */,
 				AE505CF0141D45E600915344 /* Cocoa.framework in Frameworks */,
 				AE505CF9141D45E600915344 /* speex.framework in Frameworks */,
+				AEA85F4E24DF253700BB7827 /* webp.framework in Frameworks */,
 				2748BDCC1CC405090082F0E1 /* SDL2_ttf.framework in Frameworks */,
 				AE505CFB141D45E600915344 /* AudioUnit.framework in Frameworks */,
 				2762A3391AAA51D900B807D4 /* boost_system.framework in Frameworks */,
@@ -2659,6 +2673,7 @@
 				AEB4A29114296CAE00537AE7 /* OpenGL.framework in Frameworks */,
 				AEB4A29214296CAE00537AE7 /* Cocoa.framework in Frameworks */,
 				AEB4A29B14296CAE00537AE7 /* speex.framework in Frameworks */,
+				AEA85F5024DF253B00BB7827 /* webp.framework in Frameworks */,
 				2748BDCD1CC405090082F0E1 /* SDL2_ttf.framework in Frameworks */,
 				AEB4A29D14296CAE00537AE7 /* AudioUnit.framework in Frameworks */,
 				2762A33A1AAA51D900B807D4 /* boost_system.framework in Frameworks */,
@@ -2691,6 +2706,7 @@
 				275A7BD31A60DE77002EE952 /* libcurl.tbd in Frameworks */,
 				AEC3C87009AD68AC003258E4 /* OpenGL.framework in Frameworks */,
 				27E5DD621BD2DA0C00A95619 /* SDL2.framework in Frameworks */,
+				AEA85F4B24DF251300BB7827 /* webp.framework in Frameworks */,
 				AEC3C87109AD68AC003258E4 /* Cocoa.framework in Frameworks */,
 				AE23F5640BDAC0E700C11385 /* speex.framework in Frameworks */,
 				3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */,
@@ -2723,6 +2739,7 @@
 				AEFD879B13EB84CF00C1E687 /* OpenGL.framework in Frameworks */,
 				AEFD879C13EB84CF00C1E687 /* Cocoa.framework in Frameworks */,
 				AEFD87A513EB84CF00C1E687 /* speex.framework in Frameworks */,
+				AEA85F4C24DF252F00BB7827 /* webp.framework in Frameworks */,
 				2748BDCB1CC405080082F0E1 /* SDL2_ttf.framework in Frameworks */,
 				AEFD87A713EB84CF00C1E687 /* AudioUnit.framework in Frameworks */,
 				2762A3381AAA51D900B807D4 /* boost_system.framework in Frameworks */,
@@ -3006,6 +3023,7 @@
 		EF2EF5B004819A5C00A8000D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				AEA85F4A24DF251300BB7827 /* webp.framework */,
 				274D10A42166BBCD00C8F77A /* FreeType.framework */,
 				27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */,
 				27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */,
@@ -4775,7 +4793,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "for fwk in \"SDL2_image\" \"SDL2_ttf\"; do\n  rm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/Current/Frameworks\"\n  rm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Frameworks\"\n  codesign --force --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
+			shellScript = "for fwk in \"SDL2_ttf\"; do\n  rm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/Current/Frameworks\"\n  rm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Frameworks\"\n  codesign --force --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
 		};
 		274D10B12166C2B100C8F77A /* Clean Nested Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4793,7 +4811,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "for fwk in \"SDL2_image\" \"SDL2_ttf\"; do\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/Current/Frameworks\"\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Frameworks\"\ncodesign --force --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
+			shellScript = "for fwk in \"SDL2_ttf\"; do\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/Current/Frameworks\"\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Frameworks\"\ncodesign --force --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
 		};
 		274D10B22166C2BB00C8F77A /* Clean Nested Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4811,7 +4829,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "for fwk in \"SDL2_image\" \"SDL2_ttf\"; do\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/Current/Frameworks\"\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Frameworks\"\ncodesign --force --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
+			shellScript = "for fwk in \"SDL2_ttf\"; do\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/Current/Frameworks\"\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Frameworks\"\ncodesign --force --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
 		};
 		274D10B32166C2C600C8F77A /* Clean Nested Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4829,7 +4847,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "for fwk in \"SDL2_image\" \"SDL2_ttf\"; do\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/Current/Frameworks\"\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Frameworks\"\ncodesign --force --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
+			shellScript = "for fwk in \"SDL2_ttf\"; do\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/Current/Frameworks\"\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Frameworks\"\ncodesign --force --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
 		};
 		275F9A49217F7CBA00337B05 /* Insert Version */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -6168,6 +6186,10 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon2;
 				PRODUCT_NAME = "Marathon 2";
 				WRAPPER_EXTENSION = app;
@@ -6186,6 +6208,10 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon2;
 				PRODUCT_NAME = "Marathon 2";
 				WRAPPER_EXTENSION = app;
@@ -6204,6 +6230,10 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon2;
 				PRODUCT_NAME = "Marathon 2";
 				WRAPPER_EXTENSION = app;
@@ -6347,6 +6377,10 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.MarathonInfinity;
 				PRODUCT_NAME = "Marathon Infinity";
 				WRAPPER_EXTENSION = app;
@@ -6365,6 +6399,10 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.MarathonInfinity;
 				PRODUCT_NAME = "Marathon Infinity";
 				WRAPPER_EXTENSION = app;
@@ -6383,6 +6421,10 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.MarathonInfinity;
 				PRODUCT_NAME = "Marathon Infinity";
 				WRAPPER_EXTENSION = app;
@@ -6401,6 +6443,10 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
 				PRODUCT_NAME = Marathon;
 				WRAPPER_EXTENSION = app;
@@ -6419,6 +6465,10 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
 				PRODUCT_NAME = Marathon;
 				WRAPPER_EXTENSION = app;
@@ -6437,6 +6487,10 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
 				PRODUCT_NAME = Marathon;
 				WRAPPER_EXTENSION = app;
