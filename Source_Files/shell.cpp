@@ -215,7 +215,7 @@ static void usage(const char *prg_name)
 	"\nこの他にも、環境変数「ALEPHONE_DATA」の値を変更することで、\n"
 	"データディレクトリを指定することができます。\n";
 #ifdef __WIN32__
-	MessageBox(NULL,  utf8_to_wide(msg).c_str(), L"使用方", MB_OK | MB_ICONINFORMATION);
+	MessageBoxW(NULL, utf8_to_wide(msg).c_str(), L"使用方", MB_OK | MB_ICONINFORMATION);
 #else
 	printf(msg, prg_name);
 #endif

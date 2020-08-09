@@ -145,7 +145,7 @@ extern bool MainScreenVisible(void);
 void alert_user(const char *message, short severity) 
 {
   if (!MainScreenVisible()) {
-    SDL_ShowSimpleMessageBox(severity == infoError ? SDL_MESSAGEBOX_WARNING : SDL_MESSAGEBOX_ERROR, severity == infoError ? "Warning" : "Error", message, NULL);
+	  SDL_ShowSimpleMessageBox(severity == infoError ? SDL_MESSAGEBOX_WARNING : SDL_MESSAGEBOX_ERROR, severity == infoError ? "Warning" : "Error", message, NULL);
   } else {
     dialog d;
     vertical_placer *placer = new vertical_placer;

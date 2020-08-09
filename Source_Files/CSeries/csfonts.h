@@ -31,7 +31,6 @@ const int styleNormal = 0;
 const int styleBold = 1;
 const int styleItalic = 2;
 const int styleUnderline = 4;
-const int styleMax = 8;
 // const int styleOutline = 8; -- can't be used with TTF
 const int styleShadow = 16;
 

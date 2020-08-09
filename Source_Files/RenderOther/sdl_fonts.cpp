@@ -344,7 +344,7 @@ font_info *load_font(const TextSpec &spec) {
 	std::string file;
 	file = locate_font(spec.normal);
 	ttf_font_info *info = new ttf_font_info;
-	for(int i = 0; i < styleMax; ++i ) {
+	for(int i = 0; i < styleUnderline; ++i ) {
 		TTF_Font *font = load_ttf_font(file, i, spec.size);
 		if (font) 
 			{
