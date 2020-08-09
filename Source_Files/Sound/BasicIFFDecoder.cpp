@@ -21,6 +21,11 @@
 
 */
 
+#if defined(_MSC_VER)
+#define NOMINMAX
+#include <algorithm>
+#endif
+
 #include "BasicIFFDecoder.h"
 #include "AStream.h"
 #include <vector>

@@ -6,6 +6,10 @@
  *  http://www.gnu.org/licenses/gpl.html
  */
 
+#if defined (_MSC_VER) && !defined (M_PI)
+#define _USE_MATH_DEFINES
+#endif 
+
 #include "OGL_Headers.h"
 
 #include <iostream>

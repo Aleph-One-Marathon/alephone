@@ -8,6 +8,11 @@
  * into the public domain.
  */
 
+#if defined(_MSC_VER)
+#define NOMINMAX
+#include <algorithm>
+#endif
+
 #include <cmath>
 #include <vector>
 
