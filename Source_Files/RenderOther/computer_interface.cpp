@@ -435,6 +435,9 @@ static struct text_face_data *get_font_changes_for_index(
 	terminal_text_t *data,
 	short index)
 {
+	if( data->font_changes.empty() ) {
+		return NULL;
+	}
 	struct text_face_data* face_data = &data->font_changes.back();
 	for( unsigned int i = 0; i < data->font_changes.size(); ++i ) {
 		if( data->font_changes[i].index < index ) {
