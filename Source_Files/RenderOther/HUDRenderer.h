@@ -189,10 +189,6 @@ extern weapon_interface_data weapon_interface_definitions[10];
 
 struct point2d;
 
-#if defined(__WIN32__) || defined(__MINGW32__)
-#undef DrawText
-#endif
-
 // Base class for HUD renderer
 class HUD_Class
 {

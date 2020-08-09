@@ -28,7 +28,6 @@
 #include "cseries.h"
 #include "sdl_fonts.h"
 #include "byte_swapping.h"
-#include "game_errors.h"
 #include "resource_manager.h"
 #include "FileHandler.h"
 #include "Logging.h"
@@ -291,8 +290,16 @@ static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size
 		else { break; }
 	}
 	if( !font ){
-		fprintf(stderr, "cannot open font! died\n");
-		exit(1);
+		FileSpecifier fileSpec(path);
+		OpenedFile file;
+		if (fileSpec.Open(file))
+		{
+			font = TTF_OpenFontRW(file.TakeRWops(), 1, size);
+		}
+		if( ! font ) {
+			fprintf(stderr, "cannot open font! died\n");
+			exit(1);
+		}
 	}
 
 	int ttf_style = TTF_STYLE_NORMAL;

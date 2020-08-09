@@ -77,7 +77,7 @@ private:
 	FileSpecifier* GetLevelMusic();
 	void LoadLevelMusic();
 
-	int16 GetVolumeLevel() { return SoundManager::instance()->parameters.music; }
+	float GetVolumeLevel() { return SoundManager::instance()->parameters.music_db; }
 
 	static const int MUSIC_BUFFER_SIZE = 1024;
 

@@ -277,6 +277,7 @@ private:
 	bool layout_for_fullscreen; // is the current layout for fullscreen?
 
 	Uint32 last_redraw;
+	bool initial_text_input;
 };
 
 // Pointer to top-level dialog, NULL = no dialog active

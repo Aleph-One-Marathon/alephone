@@ -23,6 +23,18 @@
 #include "Mixer.h"
 #include "XML_LevelScript.h"
 
+static int16_t db_to_channel_volume(float db)
+{
+	if (db <= SoundManager::MINIMUM_VOLUME_DB / 2)
+	{
+		return 0;
+	}
+	else
+	{
+		return static_cast<int16_t>(Mixer::from_db(db) * MAXIMUM_SOUND_VOLUME);
+	}
+}
+
 Music::Music() : 
 	music_initialized(false), 
 	music_intro(false), 
@@ -129,7 +141,7 @@ void Music::Idle()
 	if (music_fading)
 	{
 		uint32 elapsed = SDL_GetTicks() - music_fade_start;
-		int max_vol = GetVolumeLevel() * MAXIMUM_SOUND_VOLUME / NUMBER_OF_SOUND_VOLUME_LEVELS;
+		int max_vol = db_to_channel_volume(GetVolumeLevel());
 		int vol = max_vol - (elapsed * max_vol) / music_fade_duration;
 		if (vol <= 0)
 			Pause();
@@ -205,7 +217,7 @@ void Music::Play()
 
 bool Music::FillBuffer()
 {
-	if (!GetVolumeLevel()) return false;
+	if (GetVolumeLevel() <= SoundManager::MINIMUM_VOLUME_DB) return false;
 
 	if (!decoder) return false;
 	int32 bytes_read = decoder->Decode(&music_buffer.front(), MUSIC_BUFFER_SIZE);
@@ -295,5 +307,5 @@ FileSpecifier* Music::GetLevelMusic()
 void Music::CheckVolume()
 {
 	if (!music_fading)
-		Mixer::instance()->SetMusicChannelVolume(GetVolumeLevel() * MAXIMUM_SOUND_VOLUME / NUMBER_OF_SOUND_VOLUME_LEVELS);
+		Mixer::instance()->SetMusicChannelVolume(db_to_channel_volume(GetVolumeLevel()));
 }

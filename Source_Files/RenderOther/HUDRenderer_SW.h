@@ -30,10 +30,6 @@
 
 #include "HUDRenderer.h"
 
-#if defined(__WIN32__) || defined(__MINGW32__)
-#undef DrawText
-#endif
-
 class HUD_SW_Class : public HUD_Class
 {
 public:

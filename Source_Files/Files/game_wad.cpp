@@ -165,7 +165,7 @@ static void load_sides(uint8 *sides, size_t count, short version);
 static void load_polygons(uint8 *polys, size_t count, short version);
 static void load_lights(uint8 *_lights, size_t count, short version);
 static void load_annotations(uint8 *annotations, size_t count);
-static void load_objects(uint8 *map_objects, size_t count);
+static void load_objects(uint8 *map_objects, size_t count, short version);
 static void load_media(uint8 *_medias, size_t count);
 static void load_map_info(uint8 *map_info);
 static void load_ambient_sound_images(uint8 *data, size_t count);
@@ -377,7 +377,7 @@ void complete_loading_level(
 			{
 				side_data *side= get_side_data(loop);
 				if (side->flags&_side_is_control_panel)
-					side->flags |= _side_is_lighted_switch;
+					side->flags |= _side_is_m1_lighted_switch;
 			}
 		}
 	}
@@ -1085,11 +1085,11 @@ void load_annotations(
 	dynamic_world->default_annotation_count= static_cast<int16>(count);
 }
 
-void load_objects(uint8 *map_objects, size_t count)
+void load_objects(uint8 *map_objects, size_t count, short version)
 {
 	// assert(count>=0 && count<=MAXIMUM_SAVED_OBJECTS);
 	SavedObjectList.resize(count);
-	unpack_map_object(map_objects,saved_objects,count);
+        unpack_map_object(map_objects,saved_objects,count, version);
 	assert(count == static_cast<size_t>(static_cast<int16>(count)));
 	assert(0 <= static_cast<int16>(count));
 	dynamic_world->initial_objects_count= static_cast<int16>(count);
@@ -1627,7 +1627,7 @@ bool process_map_wad(
 	data= (uint8 *)extract_type_from_wad(wad, OBJECT_TAG, &data_length);
 	count = data_length/SIZEOF_map_object;
 	assert(data_length == count*static_cast<size_t>(SIZEOF_map_object));
-	load_objects(data, count);
+	load_objects(data, count, version);
 
 	/* Extract the map info data */
 	data= (uint8 *)extract_type_from_wad(wad, MAP_INFO_TAG, &data_length);

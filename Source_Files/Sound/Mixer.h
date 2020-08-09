@@ -22,6 +22,8 @@
 
 */
 
+#include <cmath>
+
 #include <SDL_endian.h>
 #include "cseries.h"
 #include "network_speaker_sdl.h"
@@ -42,17 +44,31 @@ public:
 			m_instance = new Mixer(); 
 		return m_instance; 
 	}
-	void Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, int volume, uint16 samples);
+
+	static float from_db(float db) {
+		if (db <= SoundManager::MINIMUM_VOLUME_DB) {
+			return 0.f;
+		} else {
+			return std::pow(10.f, db / 20.f);
+		}
+	}
+	
+	void Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, float db, uint16 samples);
 	void Stop();
 
-	void SetVolume(short volume) { main_volume = volume; }
+	void SetVolume(float db) { main_volume = from_db(db); }
 
 	void BufferSound(int channel, const SoundInfo& header, boost::shared_ptr<SoundData> data, _fixed pitch);
 
 	// returns the number of normal/ambient channels
 	int SoundChannelCount() { return sound_channel_count; }
 
-	void QuietChannel(int channel) { channels[channel].Quiet(); }
+	void QuietChannel(int channel) {
+		SDL_LockAudio();
+		channels[channel].Quiet();
+		SDL_UnlockAudio();
+	}
+	
 	void SetChannelVolumes(int channel, int16 left, int16 right) { 
 		channels[channel].left_volume = left; 
 		channels[channel].right_volume = right; 
@@ -133,7 +149,7 @@ private:
 		EXTRA_CHANNELS
 	};
 
-	int16 main_volume;
+	float main_volume;
 	int sound_channel_count;
 
 	void Resample(Channel* c, int16* left, int16* right, int samples);

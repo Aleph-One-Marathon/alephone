@@ -34,10 +34,6 @@
 #include "XML_ParseTreeRoot.h"
 #include "Scenario.h"
 
-#ifdef HAVE_ZZIP
-#include <zzip/lib.h>
-#endif
-
 #include <boost/algorithm/string/predicate.hpp>
 
 namespace algo = boost::algorithm;
@@ -360,27 +356,19 @@ bool PluginLoader::ParseDirectory(FileSpecifier& dir)
 		{
 			ParseDirectory(file);
 		}
-#ifdef HAVE_ZZIP
 		else if (algo::ends_with(it->name, ".zip") || algo::ends_with(it->name, ".ZIP"))
 		{
 			// search it for a Plugin.xml file
-			ZZIP_DIR* zzipdir = zzip_dir_open(file.GetPath(), 0);
-			if (zzipdir)
+			for (const auto& zip_entry : file.ReadZIP())
 			{
-				ZZIP_DIRENT dirent;
-				while (zzip_dir_read(zzipdir, &dirent))
+				if (zip_entry == "Plugin.xml" || algo::ends_with(zip_entry, "/Plugin.xml"))
 				{
-					if (strcmp(dirent.d_name, "Plugin.xml") == 0 || algo::ends_with(dirent.d_name, "/Plugin.xml"))
-					{
-						std::string archive = file.GetPath();
-						FileSpecifier file_name = FileSpecifier(archive.substr(0, archive.find_last_of('.'))) + dirent.d_name;
-						ParsePlugin(file_name);
-					}
+					std::string archive = file.GetPath();
+					FileSpecifier file_name = FileSpecifier(archive.substr(0, archive.find_last_of('.'))) + zip_entry;
+					ParsePlugin(file_name);
 				}
-				zzip_dir_close(zzipdir);
 			}
 		}
-#endif
 	}
 
 	return true;

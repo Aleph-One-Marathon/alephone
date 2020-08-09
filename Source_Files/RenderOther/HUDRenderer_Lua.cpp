@@ -38,10 +38,6 @@ HUD_RENDERER_LUA.CPP
 
 #include <math.h>
 
-#if defined(__WIN32__) || defined(__MINGW32__)
-#undef DrawText
-#endif
-
 extern bool MotionSensorActive;
 
 

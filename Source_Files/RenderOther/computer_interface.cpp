@@ -301,7 +301,7 @@ static void _draw_computer_text(char *base_text, short start_index, Rect *bounds
 	terminal_text_t *terminal_text, short current_line);
 static short find_group_type(terminal_text_t *data, 
 	short group_type);
-static void teleport_to_level(short level_number);
+static void teleport_to_level(short level_number, int16 delay_before_teleport);
 static void teleport_to_polygon(short player_index, short polygon_index);
 static struct terminal_groupings *get_indexed_grouping(
 	terminal_text_t *data, short index);
@@ -1102,14 +1102,14 @@ static short find_group_type(
 }
 
 static void teleport_to_level(
-	short level_number)
+	short level_number, int16_t delay_before_teleport)
 {
 	/* It doesn't matter which player we get. */
 	struct player_data *player= get_player_data(0);
 	
 	// LP change: moved down by 1 so that level 0 will be valid
 	player->teleporting_destination= -level_number - 1;
-	player->delay_before_teleport= TICKS_PER_SECOND/2; // delay before we teleport.
+	player->delay_before_teleport = delay_before_teleport;
 }
 			
 static void teleport_to_polygon(
@@ -1350,6 +1350,8 @@ void clear_compiled_terminal_cache()
 	resource_terminal_id = NONE;
 }
 
+extern OpenedResourceFile M1ShapesFile;
+
 static terminal_text_t* compile_marathon_terminal(char*, short);
 
 static terminal_text_t *get_indexed_terminal_data(
@@ -1362,10 +1364,20 @@ static terminal_text_t *get_indexed_terminal_data(
 		{
 			return resource_terminal.get();
 		}
-		else if (ExternalResources.IsOpen())
+		else
 		{
 			LoadedResource rsrc;
-			if (ExternalResources.Get('t', 'e', 'r', 'm', id, rsrc))
+			if (ExternalResources.IsOpen())
+			{
+				ExternalResources.Get('t', 'e', 'r', 'm', id, rsrc);
+			}
+
+			if (!rsrc.IsLoaded() && M1ShapesFile.IsOpen())
+			{
+				M1ShapesFile.Get('t', 'e', 'r', 'm', id, rsrc);
+			}
+
+			if (rsrc.IsLoaded())
 			{
 				resource_terminal.reset(compile_marathon_terminal(reinterpret_cast<char*>(rsrc.GetPointer()), rsrc.GetLength()));
 				
@@ -1960,7 +1972,14 @@ static void handle_reading_terminal_keys(
 			break;
 		
 		case _interlevel_teleport_group: // permutation is level to go to
-			teleport_to_level(current_group->permutation);
+			if (film_profile.m1_teleport_without_delay && (current_group->flags & _group_is_marathon_1))
+			{
+				teleport_to_level(current_group->permutation, 0);
+			}
+			else
+			{
+				teleport_to_level(current_group->permutation, TICKS_PER_SECOND / 2);
+			}
 			initialize_player_terminal_info(player_index);
 			aborted= true;
 			break;

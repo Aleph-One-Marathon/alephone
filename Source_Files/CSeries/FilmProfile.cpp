@@ -2,6 +2,41 @@
 
 #include "Plugins.h"
 
+static FilmProfile alephone1_3 = {
+	true, // keyframe_fix
+	false, // damage_aggressor_last_in_tag
+	true, // swipe_nearby_items_fix
+	true, // initial_monster_fix
+	true, // long_distance_physics
+	true, // animate_items
+	true, // inexplicable_pin_change
+	false, // increased_dynamic_limits_1_0
+	true, // increased_dynamic_limits_1_1
+	true, // line_is_obstructed_fix
+	false, // a1_smg
+	true, // infinity_smg
+	true, // use_vertical_kick_threshold
+	true, // infinity_tag_fix
+	true, // adjacent_polygons_always_intersect
+	true, // early_object_initialization
+	true, // fix_sliding_on_platforms
+	true, // prevent_dead_projectile_owners
+	true, // validate_random_ranged_attack
+	true, // allow_short_kamikaze
+	true, // ketchup_fix
+	false, // lua_increments_rng
+	true, // destroy_players_ball_fix
+	true, // calculate_terminal_lines_correctly
+	true, // key_frame_zero_shrapnel_fix
+	true, // count_dead_dropped_items_correctly
+	true, // m1_low_gravity_projectiles
+	true, // m1_buggy_repair_goal
+	false, // find_action_key_target_has_side_effects
+	true,  // m1_object_unused
+	true, // m1_platform_flood
+	true, // m1_teleport_without_delay
+};
+
 static FilmProfile alephone1_2 = {
 	true, // keyframe_fix
 	false, // damage_aggressor_last_in_tag
@@ -32,6 +67,9 @@ static FilmProfile alephone1_2 = {
 	true, // m1_low_gravity_projectiles
 	true, // m1_buggy_repair_goal
 	false, // find_action_key_target_has_side_effects
+	false, // m1_object_unused
+	false, // m1_platform_flood
+	false, // m1_teleport_without_delay
 };
 
 static FilmProfile alephone1_1 = {
@@ -64,6 +102,9 @@ static FilmProfile alephone1_1 = {
 	false, // m1_low_gravity_projectiles
 	false, // m1_buggy_repair_goal
 	true, // find_action_key_target_has_side_effects
+	false, // m1_object_unused
+	false, // m1_platform_flood
+	false, // m1_teleport_without_delay
 };
 
 static FilmProfile alephone1_0 = {
@@ -96,6 +137,9 @@ static FilmProfile alephone1_0 = {
 	false, // m1_low_gravity_projectiles
 	false, // m1_buggy_repair_goal
 	true, // find_action_key_target_has_side_effects
+	false, // m1_object_unused
+	false, // m1_platform_flood
+	false, // m1_teleport_without_delay
 };
 
 static FilmProfile marathon2 = {
@@ -128,6 +172,9 @@ static FilmProfile marathon2 = {
 	false, // m1_low_gravity_projectiles
 	false, // m1_buggy_repair_goal
 	false, // find_action_key_target_has_side_effects
+	false, // m1_object_unused
+	false, // m1_platform_flood
+	false  // m1_teleport_without_delay
 };
 
 static FilmProfile marathon_infinity = {
@@ -160,9 +207,12 @@ static FilmProfile marathon_infinity = {
 	false, // m1_low_gravity_projectiles
 	false, // m1_buggy_repair_goal
 	false, // find_action_key_target_has_side_effects
+	false, // m1_object_unused
+	false, // m1_platform_flood
+	false, // m1_teleport_without_delay
 };
 
-FilmProfile film_profile = alephone1_2;
+FilmProfile film_profile = alephone1_3;
 
 extern void LoadBaseMMLScripts();
 extern void ResetAllMMLValues();
@@ -172,7 +222,7 @@ void load_film_profile(FilmProfileType type, bool reload_mml)
 	switch (type)
 	{
 	case FILM_PROFILE_DEFAULT:
-		film_profile = alephone1_2;
+		film_profile = alephone1_3;
 		break;
 	case FILM_PROFILE_MARATHON_2:
 		film_profile = marathon2;
@@ -185,6 +235,9 @@ void load_film_profile(FilmProfileType type, bool reload_mml)
 		break;
 	case FILM_PROFILE_ALEPH_ONE_1_1:
 		film_profile = alephone1_1;
+		break;
+	case FILM_PROFILE_ALEPH_ONE_1_2:
+		film_profile = alephone1_2;
 		break;
 	}
 

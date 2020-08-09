@@ -49,10 +49,6 @@
 
 #include <math.h>
 
-#if defined(__WIN32__) || defined(__MINGW32__)
-#undef DrawText
-#endif
-
 extern bool MotionSensorActive;
 
 
@@ -231,11 +227,6 @@ void HUD_OGL_Class::DrawTexture(shape_descriptor shape, short texture_type, shor
 /*
  *  Draw text
  */
-
-// WZ: Work around some Win32 oddness
-#ifdef DrawText
-#undef DrawText
-#endif
 
 void HUD_OGL_Class::DrawText(const char *text, screen_rectangle *dest, short flags, short font_id, short text_color)
 {

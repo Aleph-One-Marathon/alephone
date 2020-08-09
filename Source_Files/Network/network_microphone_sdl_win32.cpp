@@ -44,12 +44,16 @@
 #include    "network_speaker_sdl.h"
 #include    "network_microphone_shared.h"
 #include    "Logging.h"
-#include    <dsound.h>
 
 #ifdef SPEEX
 #include "preferences.h"
 #include "network_speex.h"
 #endif
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <mmsystem.h>
+#include <dsound.h>
 
 
 

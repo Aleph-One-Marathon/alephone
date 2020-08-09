@@ -48,6 +48,11 @@
 #include "Mixer.h"
 #include "preferences.h"
 
+#ifdef __WIN32__
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 #ifndef HAVE_FFMPEG
 
 struct libav_vars {
@@ -151,6 +156,8 @@ int convert_audio(int in_samples, int in_channels, int in_stride,
                   enum AVSampleFormat out_fmt,
                   uint8_t *out_buf)
 {
+    auto clamp_to_int16 = [](float x){ return int16(x < -32768 ? -32768 : x > 32767 ? 32767 : x); };
+    
     if (in_channels != out_channels)
         return 0;   // unsupported conversion
     if (out_samples < in_samples)
@@ -241,7 +248,7 @@ int convert_audio(int in_samples, int in_channels, int in_stride,
         {
             int16 *ob = reinterpret_cast<int16 *>(out_buf);
             for (int i = 0; i < in_samples * in_channels; i++)
-                ob[i] = ib[i] * 32768.0f;
+                ob[i] = clamp_to_int16(ib[i] * 32768.0f);
         }
         else
             return 0;   // unsupported conversion
@@ -254,7 +261,7 @@ int convert_audio(int in_samples, int in_channels, int in_stride,
             int16 *ob = reinterpret_cast<int16 *>(out_buf);
             for (int s = 0; s < in_samples; s++)
                 for (int c = 0; c < in_channels; c++)
-                    ob[(s * in_channels) + c] = ib[(c * in_stride) + s] * 32768.0f;
+                    ob[(s * in_channels) + c] = clamp_to_int16(ib[(c * in_stride) + s] * 32768.0f);
         }
         else
             return 0;   // unsupported conversion
@@ -440,7 +447,20 @@ bool Movie::Setup()
         
         // tuning options
         int vq = graphics_preferences->movie_export_video_quality;
-        video_stream->codec->bit_rate = ScaleQuality(vq, 100*1024, 1024*1024, 10*1024*1024);
+		int bitrate = graphics_preferences->movie_export_video_bitrate;
+
+		if (bitrate <= 0) // auto, based on YouTube's SDR standard frame rate
+						  // recommendations
+		{
+			if      (view_rect.h >= 2160) bitrate = 40 * 1024 * 1024;
+			else if (view_rect.h >= 1440) bitrate = 16 * 1024 * 1024;
+			else if (view_rect.h >= 1080) bitrate =  8 * 1024 * 1024;
+			else if (view_rect.h >=  720) bitrate =  5 * 1024 * 1024;
+			else if (view_rect.h >=  480) bitrate =  5 * 1024 * 1024 / 2;
+			else                          bitrate =      1024 * 1024;
+		}
+		
+        video_stream->codec->bit_rate = bitrate;
         video_stream->codec->qmin = ScaleQuality(vq, 10, 4, 0);
         video_stream->codec->qmax = ScaleQuality(vq, 63, 63, 50);
         std::string crf = boost::lexical_cast<std::string>(ScaleQuality(vq, 63, 10, 4));
@@ -819,8 +839,8 @@ void Movie::AddFrame(FrameType ftype)
 	
 	int audio_bytes_per_frame = audiobuf.size();
 	Mixer *mx = Mixer::instance();
-	int old_vol = mx->main_volume;
-	mx->main_volume = 0x100;
+	float old_vol = mx->main_volume;
+	mx->SetVolume(sound_preferences->video_export_volume_db);
 	mx->Mix(&audiobuf.front(), audio_bytes_per_frame / 4, true, true, true);
 	mx->main_volume = old_vol;
 	
