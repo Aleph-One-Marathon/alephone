@@ -727,7 +727,7 @@ bool get_entry_points(vector<entry_point> &vec, int32 type)
 extern void LoadSoloLua();
 extern void LoadReplayNetLua();
 extern void LoadStatsLua();
-extern void RunLuaScript();
+extern bool RunLuaScript();
 
 /* This is called when the game level is changed somehow */
 /* The only thing that has to be valid in the entry point is the level_index */
