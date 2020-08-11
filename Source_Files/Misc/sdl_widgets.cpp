@@ -236,35 +236,6 @@ void w_slider_text::draw(SDL_Surface *s) const
 	draw_text(s, text, rect.x, rect.y + font->get_ascent() + (rect.h - font->get_line_height()) / 2, get_theme_color(LABEL_WIDGET, state, FOREGROUND_COLOR), font, style);
 }
 
-/*
- *  Picture (PICT resource)
- */
-
-w_pict::w_pict(int id)
-{
-	LoadedResource rsrc;
-	get_resource(FOUR_CHARS_TO_INT('P', 'I', 'C', 'T'), id, rsrc);
-	picture = picture_to_surface(rsrc);
-	if (picture) {
-		rect.w = static_cast<uint16>(picture->w);
-		rect.h = static_cast<uint16>(picture->h);
-		SDL_SetColorKey(picture, SDL_TRUE, SDL_MapRGB(picture->format, 0xff, 0xff, 0xff));
-	} else
-		rect.w = rect.h = 0;
-}
-
-w_pict::~w_pict()
-{
-	if (picture)
-		SDL_FreeSurface(picture);
-}
-
-void w_pict::draw(SDL_Surface *s) const
-{
-	if (picture)
-		SDL_BlitSurface(picture, NULL, s, const_cast<SDL_Rect *>(&rect));
-}
-
 
 /*
  *  Button
