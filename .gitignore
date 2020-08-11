@@ -31,3 +31,10 @@ lib*.a
 /Source_Files/*.exe
 /*.zip
 /*.tar.bz2
+
+# VisualStudio specific
+Debug/
+Release/
+.vs/
+*.vcxproj.user
+*.aps
