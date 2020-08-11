@@ -409,17 +409,17 @@ int get_pict_header_width(LoadedResource &rsrc)
  *  Convert picture resource to SDL surface
  */
 
-SDL_Surface *picture_to_surface(LoadedResource &rsrc)
+std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)> picture_to_surface(LoadedResource &rsrc)
 {
-	if (!rsrc.IsLoaded())
-		return NULL;
+	auto s = std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)>(nullptr, SDL_FreeSurface);
 
-	SDL_Surface *s = NULL;
+	if (!rsrc.IsLoaded())
+		return s;
 
 	// Open stream to picture resource
 	SDL_RWops *p = SDL_RWFromMem(rsrc.GetPointer(), (int)rsrc.GetLength());
 	if (p == NULL)
-		return NULL;
+		return s;
 	SDL_RWseek(p, 6, SEEK_CUR);		// picSize/top/left
 	int pic_height = SDL_ReadBE16(p);
 	int pic_width = SDL_ReadBE16(p);
@@ -613,14 +613,7 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 					data_size++;
 				SDL_RWseek(p, data_size, SEEK_CUR);
 
-				// If there's already a surface, throw away the decoded image
-				// (actually, we could have skipped this entire opcode, but the
-				// only way to do this is to decode the image data).
-				// So we only draw the first image we encounter.
-				if (s)
-					SDL_FreeSurface(bm);
-				else
-					s = bm;
+				s.reset(bm);
 				break;
 			}
 
@@ -666,15 +659,15 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 				SDL_RWseek(p, id_start + id_size, SEEK_SET);
 
 				// Allocate surface for complete (but possibly banded) picture
-				if (s == NULL) {
-					s = SDL_CreateRGBSurface(SDL_SWSURFACE, pic_width, pic_height, 32,
+				if (!s) {
+					s.reset(SDL_CreateRGBSurface(SDL_SWSURFACE, pic_width, pic_height, 32,
 #ifdef ALEPHONE_LITTLE_ENDIAN
 								 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000
 #else
 								 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff
 #endif
-							);
-					if (s == NULL) {
+							));
+					if (!s) {
 						done = true;
 						break;
 					}
@@ -691,7 +684,7 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 				// Copy image (band) into surface
 				if (bm) {
 					SDL_Rect dst_rect = {offset_x, offset_y, bm->w, bm->h};
-					SDL_BlitSurface(bm, NULL, s, &dst_rect);
+					SDL_BlitSurface(bm, NULL, s.get(), &dst_rect);
 					SDL_FreeSurface(bm);
 				}
 
@@ -836,9 +829,9 @@ SDL_Surface *tile_surface(SDL_Surface *s, int width, int height)
 extern SDL_Surface *draw_surface;	// from screen_drawing.cpp
 //void draw_intro_screen(void);		// from screen.cpp
 
-static void draw_picture_surface(SDL_Surface *s)
+static void draw_picture_surface(std::shared_ptr<SDL_Surface> s)
 {
-	if (s == NULL)
+	if (!s)
 		return;
 	_set_port_to_intro();
 	SDL_Surface *video = draw_surface;
@@ -866,7 +859,7 @@ static void draw_picture_surface(SDL_Surface *s)
 			SDL_FillRect(video, NULL, SDL_MapRGB(video->format, 0, 0, 0));
 	}
 	
-	SDL_BlitSurface(s, &src_rect, video, &dst_rect);
+	SDL_BlitSurface(s.get(), &src_rect, video, &dst_rect);
 	_restore_port();
 	draw_intro_screen();
 }
@@ -915,8 +908,8 @@ void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, bo
 	// Convert picture resource to surface, free resource
 	LoadedResource rsrc;
 	get_picture_resource_from_scenario(pict_resource_number, rsrc);
-	SDL_Surface *s = picture_to_surface(rsrc);
-	if (s == NULL)
+	auto s = picture_to_surface(rsrc);
+	if (!s)
 		return;
 
 	// Find out in which direction to scroll
@@ -955,7 +948,7 @@ void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, bo
 			src_rect.x = scroll_horizontal ? delta : 0;
 			src_rect.y = scroll_vertical ? delta : 0;
 			_set_port_to_intro();
-			SDL_BlitSurface(s, &src_rect, draw_surface, &dst_rect);
+			SDL_BlitSurface(s.get(), &src_rect, draw_surface, &dst_rect);
 			_restore_port();
 			draw_intro_screen();
 
@@ -977,9 +970,6 @@ void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, bo
 
 		} while (!done && !aborted);
 	}
-
-	// Free surface
-	SDL_FreeSurface(s);
 }
 
 
@@ -1265,24 +1255,24 @@ bool images_picture_exists(int base_resource)
 // this special case by creating the composite images in code,
 // and returning these surfaces when the picture is requested.
 
-static SDL_Surface *m1_menu_unpressed = NULL;
-static SDL_Surface *m1_menu_pressed = NULL;
+static auto m1_menu_unpressed = std::shared_ptr<SDL_Surface>(nullptr, SDL_FreeSurface);
+static auto m1_menu_pressed = std::shared_ptr<SDL_Surface>(nullptr, SDL_FreeSurface);
 
 static void create_m1_menu_surfaces(void)
 {
     if (m1_menu_unpressed || m1_menu_pressed)
         return;
     
-    SDL_Surface *s = nullptr;
+    auto s = std::unique_ptr<SDL_Surface>(nullptr);
 	if (PlatformIsLittleEndian()) {
-    	s = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0);
+    	s.reset(SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0));
 	} else {
-    	s = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0);
+    	s.reset(SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0));
 	}
     if (!s)
         return;
 
-    SDL_FillRect(s, NULL, SDL_MapRGB(s->format, 0, 0, 0));
+    SDL_FillRect(s.get(), NULL, SDL_MapRGB(s->format, 0, 0, 0));
     
     SDL_Rect src, dst;
     src.x = src.y = 0;
@@ -1310,7 +1300,7 @@ static void create_m1_menu_surfaces(void)
 //        dst.y = 0;
         dst.x = 75;
         dst.y = 0;
-        SDL_BlitSurface(logo, &src, s, &dst);
+        SDL_BlitSurface(logo, &src, s.get(), &dst);
 //        top += logo->h;
         SDL_FreeSurface(logo);
     }
@@ -1324,7 +1314,7 @@ static void create_m1_menu_surfaces(void)
 //        dst.y = s->h - credits->h;
         dst.x = 191;
         dst.y = 466;
-        SDL_BlitSurface(credits, &src, s, &dst);
+        SDL_BlitSurface(credits, &src, s.get(), &dst);
 //        bottom -= credits->h;
         SDL_FreeSurface(credits);
     }
@@ -1338,14 +1328,13 @@ static void create_m1_menu_surfaces(void)
 //        dst.y = top + (bottom - top - widget->h)/2;
         dst.x = 102;
         dst.y = 117;
-        SDL_BlitSurface(widget, &src, s, &dst);
+        SDL_BlitSurface(widget, &src, s.get(), &dst);
         SDL_FreeSurface(widget);
     }
-    
-    m1_menu_unpressed = s;
+    m1_menu_unpressed = std::move(s);
     
     // now, add pressed buttons to copy of this surface
-    s = SDL_ConvertSurface(s, s->format, SDL_SWSURFACE);
+    s.reset(SDL_ConvertSurface(m1_menu_unpressed.get(), m1_menu_unpressed.get()->format, SDL_SWSURFACE));
     
     std::vector<std::pair<int, int> > button_shapes;
     button_shapes.push_back(std::pair<int, int>(_new_game_button_rect, 11));
@@ -1369,12 +1358,12 @@ static void create_m1_menu_surfaces(void)
             src.h = dst.h = btn->h;
             dst.x = r->left;
             dst.y = r->top;
-            SDL_BlitSurface(btn, &src, s, &dst);
+            SDL_BlitSurface(btn, &src, s.get(), &dst);
             SDL_FreeSurface(btn);
         }
     }
     
-    m1_menu_pressed = s;
+    m1_menu_pressed = std::move(s);
 }
 
 static bool m1_draw_full_screen_pict_resource_from_images(int pict_resource_number)
