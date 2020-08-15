@@ -1551,10 +1551,23 @@ static inline void quadruple_surface(
 	dst += dst_rect.y * dst_pitch / sizeof(T) + dst_rect.x;
 	T *dst2 = dst + dst_pitch / sizeof(T);
 
+	uint32 black_pixel = SDL_MapRGB(main_surface->format, 0, 0, 0);
+	bool overlay_active = world_view->overhead_map_active
+		&& map_is_translucent();
+	
 	while (height-- > 0) {
 		if (every_other_line) {
-			for (int x=0; x<width; x++) {
-				dst[x * 2] = dst[x * 2 + 1] = src[x];
+			if (overlay_active) {
+				// overlay map needs us to clear all the scanline, so we have to
+				// put black in the "skipped" lines
+				for (int x=0; x<width; x++) {
+					dst[x * 2] = dst[x * 2 + 1] = src[x];
+					dst2[x * 2] = dst2[x * 2 + 1] = black_pixel;
+				}
+			} else {
+				for (int x=0; x<width; x++) {
+					dst[x * 2] = dst[x * 2 + 1] = src[x];
+				}
 			}
 		} else {
 			for (int x=0; x<width; x++) {
