@@ -1558,8 +1558,8 @@ static inline void quadruple_surface(
 	while (height-- > 0) {
 		if (every_other_line) {
 			if (overlay_active) {
-				// overlay map needs us to clear all the scanline, so we have to
-				// put black in the "skipped" lines
+				// overlay map needs us to clear all the scanlines, so we have
+				// to put black in the "skipped" lines
 				for (int x=0; x<width; x++) {
 					dst[x * 2] = dst[x * 2 + 1] = src[x];
 					dst2[x * 2] = dst2[x * 2 + 1] = black_pixel;
