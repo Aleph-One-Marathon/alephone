@@ -826,7 +826,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	if (main_surface)
 	{
 		prev_width = main_surface->w;
-		prev_width = main_surface->h;
+		prev_height = main_surface->h;
 	}
 	
 	int vmode_height = height;
