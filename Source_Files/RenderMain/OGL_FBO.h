@@ -34,6 +34,7 @@ class FBO {
 private:
 	GLuint _fbo;
 	GLuint _depthBuffer;
+	GLuint _fboTarget;
 	static std::vector<FBO *> active_chain;
 	
 public:
@@ -45,7 +46,7 @@ public:
 	FBO(GLuint w, GLuint h, bool srgb = false);
 	~FBO();
 	
-	void activate(bool clear = false);
+	void activate(bool clear = false, GLuint fboTarget = GL_FRAMEBUFFER_EXT);
 	void deactivate();
 	
 	void draw();

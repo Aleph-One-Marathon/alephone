@@ -304,11 +304,6 @@ int Screen::width()
 	return MainScreenLogicalWidth();
 }
 
-float Screen::pixel_scale()
-{
-	return MainScreenPixelScale();
-}
-
 int Screen::window_height()
 {
 	return std::max(static_cast<short>(480), screen_mode.height);
@@ -352,6 +347,11 @@ SDL_Rect Screen::window_rect()
 	r.x = (width() - r.w) / 2;
 	r.y = (height() - r.h) / 2;
 	return r;
+}
+
+SDL_Rect Screen::OpenGLViewPort()
+{
+	return m_viewport_rect;
 }
 
 SDL_Rect Screen::view_rect()
