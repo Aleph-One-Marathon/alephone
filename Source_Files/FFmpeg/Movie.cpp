@@ -610,21 +610,9 @@ bool Movie::Setup()
 		alert_user(full_msg.c_str());
 	}
 
-    if (success)
+    if (success && MainScreenIsOpenGL())
     {
-        if (MainScreenIsOpenGL())
-        {
-            if (FBO_Allowed)
-                frameBufferObject = std::unique_ptr<FBO>(new FBO(view_rect.w, view_rect.h));
-            else
-            {
-                if (get_screen_mode()->fullscreen && (view_rect.w < MainScreenWindowWidth() || view_rect.h < MainScreenWindowHeight()))
-                {
-                    alert_user("AlephOne must switch to windowed mode to export the video.");
-                    toggle_fullscreen(false);
-                }
-            }
-        }
+        frameBufferObject = std::unique_ptr<FBO>(new FBO(view_rect.w, view_rect.h));
     }
 
     av->inited = success;
@@ -839,25 +827,18 @@ void Movie::AddFrame(FrameType ftype)
 #ifdef HAVE_OPENGL
 	else
 	{
-        if (FBO_Allowed) 
-        {
-            SDL_Rect viewportDimensions = alephone::Screen::instance()->OpenGLViewPort();
-            GLint fbx = viewportDimensions.x, fby = viewportDimensions.y, fbWidth = viewportDimensions.w, fbHeight = viewportDimensions.h;
+        SDL_Rect viewportDimensions = alephone::Screen::instance()->OpenGLViewPort();
+        GLint fbx = viewportDimensions.x, fby = viewportDimensions.y, fbWidth = viewportDimensions.w, fbHeight = viewportDimensions.h;
 
-            // Copy default frame buffer to another one with correct viewport resized/pixels rescaled
-            frameBufferObject->activate(true, GL_DRAW_FRAMEBUFFER_EXT);
-            glBlitFramebufferEXT(fbx, fby, fbWidth + fbx, fbHeight + fby, view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-            frameBufferObject->deactivate();
+        // Copy default frame buffer to another one with correct viewport resized/pixels rescaled
+        frameBufferObject->activate(true, GL_DRAW_FRAMEBUFFER_EXT);
+        glBlitFramebufferEXT(fbx, fby, fbWidth + fbx, fbHeight + fby, view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        frameBufferObject->deactivate();
 
-            // Read our new frame buffer with rescaled pixels
-            frameBufferObject->activate(true, GL_READ_FRAMEBUFFER_EXT);
-            glReadPixels(view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, &videobuf.front());
-            frameBufferObject->deactivate();
-        } 
-        else //You better not be on fullscreen here
-        {
-            glReadPixels(view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, &videobuf.front());
-        }
+        // Read our new frame buffer with rescaled pixels
+        frameBufferObject->activate(true, GL_READ_FRAMEBUFFER_EXT);
+        glReadPixels(view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, &videobuf.front());
+        frameBufferObject->deactivate();
 
 		// Copy pixel buffer (which is upside-down) to surface
 		for (int y = 0; y < view_rect.h; y++)
