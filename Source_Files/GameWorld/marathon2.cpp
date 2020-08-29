@@ -640,6 +640,7 @@ bool entering_map(bool restoring_saved)
 	mark_map_collections(true);
 
 	MarkLuaCollections(true);
+	RunLuaScript();
 	MarkLuaHUDCollections(true);
 
 	load_collections(true, get_screen_mode()->acceleration != _no_acceleration);

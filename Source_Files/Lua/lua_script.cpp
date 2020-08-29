@@ -830,6 +830,20 @@ static const char *compatibility_triggers = ""
 	"Triggers.player_damaged = function(player, aggressor_player, aggressor_monster, type, amount, projectile) if player_damaged then if aggressor_player then aggressor_player_index = aggressor_player.index else aggressor_player_index = -1 end if aggressor_monster then aggressor_monster_index = aggressor_monster.index else aggressor_monster_index = -1 end if projectile then projectile_index = projectile.index else projectile_index = -1 end player_damaged(player.index, aggressor_player_index, aggressor_monster_index, type.index, amount, projectile_index) end end\n"
 	"Triggers.projectile_detonated = function(type, owner, polygon, x, y, z) if projectile_detonated then if owner then owner_index = owner.index else owner_index = -1 end projectile_detonated(type.index, owner_index, polygon.index, x, y, z) end end\n"
 	"Triggers.item_created = function(item) if item_created then item_created(item.index) end end\n"
+	"math.mod = math.fmod\n"
+	"table.getn = function(t) return #t end\n"
+	;
+
+static const char* emr_fix =
+	"function remove_items(...)\n"
+	"for p = 0 , number_of_players()  -1, 1 do\n"
+	"for i, item in ipairs({...}) do\n"
+	"for c = 1, count_item(p,  item), 1 do\n"
+	"remove_item(p, item)\n"
+	"end\n"
+	"end\n"
+	"end\n"
+	"end\n"
 	;
 
 void LuaState::LoadCompatibility()
@@ -878,6 +892,7 @@ bool LuaState::Load(const char *buffer, size_t len, const char *desc)
 		logWarning("Lua loading failed: unknown error.");
 
 	num_scripts_ += ((status == 0) ? 1 : 0);
+
 	return (status == 0);
 }
 
@@ -902,6 +917,9 @@ bool LuaState::Run()
 			break;
 		}
 	}
+
+	luaL_loadbuffer(State(), emr_fix, strlen(emr_fix), "emr_fix");
+	lua_pcall(State(), 0, 0, 0);
 	
 	if (result == 0) running_ = true;
 	return (result == 0);

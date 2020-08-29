@@ -806,7 +806,7 @@ bool goto_level(
 		// ghs: this runs very early now
 		// we want to be before place_initial_objects, and
 		// before MarkLuaCollections
-		RunLuaScript();
+//		RunLuaScript();
 
 		if (film_profile.early_object_initialization)
 		{
