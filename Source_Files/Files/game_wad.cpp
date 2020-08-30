@@ -1251,7 +1251,7 @@ bool revert_game(
 		if (successful) 
 		{
 			Music::instance()->PreloadLevelMusic();
-			RunLuaScript();
+//			RunLuaScript();
 			
 			// LP: added for loading the textures if one had died on another level;
 			// this gets around WZ's moving of this line into make_restored_game_relevant()

@@ -841,7 +841,7 @@ bool join_networked_resume_game()
                         short theStartCount;
                         construct_multiplayer_starts(theStarts, &theStartCount);
                         
-			RunLuaScript();
+//			RunLuaScript();
                         success = make_restored_game_relevant(true /* multiplayer */, theStarts, theStartCount);
                 }
         }
@@ -980,7 +980,7 @@ bool load_and_start_game(FileSpecifier& File)
                         
 			if (success)
 			{
-				RunLuaScript();
+//				RunLuaScript();
 				success = make_restored_game_relevant(userWantsMultiplayer, theStarts, theNumberOfStarts);
 				if (success)
 				{
