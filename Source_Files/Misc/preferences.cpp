@@ -3524,7 +3524,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.hud = true;
 	preferences->screen_mode.hud_scale_level = 0;
 	preferences->screen_mode.term_scale_level = 2;
-	preferences->screen_mode.translucent_map = true;
+	preferences->screen_mode.translucent_map = false;
 	preferences->screen_mode.acceleration = _opengl_acceleration;
 	preferences->screen_mode.high_resolution = true;
 	preferences->screen_mode.fullscreen = true;
