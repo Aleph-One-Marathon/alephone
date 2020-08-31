@@ -54,9 +54,9 @@ enum /* cast_render_ray() flags */
 };
 
 
-enum RenderVisTreeClass::ray_bias : short
+enum /* cast_render_ray(), next_polygon_along_line() biases */
 {
-	_no_bias, /* will split at the given endpoint */
+	_no_bias, /* will split at the given endpoint or travel clockwise otherwise */
 	_clockwise_bias, /* cross the line clockwise from this endpoint */
 	_counterclockwise_bias /* cross the line counterclockwise from this endpoint */
 };
@@ -162,7 +162,8 @@ void RenderVisTreeClass::build_render_tree()
 				endpoint->transformed= endpoint->vertex;
 				transform_overflow_point2d(&endpoint->transformed, (world_point2d *) &view->origin, view->yaw, &endpoint->flags);
 
-				/* calculate an outbound vector to this endpoint (can be {0, 0}) */
+				/* calculate an outbound vector to this endpoint */
+				// LP: changed to do long distance correctly.	
 				_vector.i= int32(endpoint->vertex.x)-int32(view->origin.x);
 				_vector.j= int32(endpoint->vertex.y)-int32(view->origin.y);
 				
@@ -197,10 +198,10 @@ void RenderVisTreeClass::build_render_tree()
 // LP change: make it better able to do long-distance views
 // Using parent index instead of pointer to avoid stale-pointer bug
 void RenderVisTreeClass::cast_render_ray(
-	long_vector2d *_vector, // {0, 0} hits only the parent poly
+	long_vector2d *_vector, // world_vector2d *vector,
 	short endpoint_index,
 	node_data* parent,
-	ray_bias bias_at_opaque_endpoints) // bias at transparent endpoints is always clockwise
+	short bias) /* _clockwise or _counterclockwise for walking endpoints */
 {
 	short polygon_index= parent->polygon_index;
 
@@ -210,7 +211,7 @@ void RenderVisTreeClass::cast_render_ray(
 	{
 		short clipping_endpoint_index= endpoint_index;
 		short clipping_line_index;
-		uint16 clip_flags= next_polygon_along_line(&polygon_index, (world_point2d *) &view->origin, _vector, &clipping_endpoint_index, &clipping_line_index, bias_at_opaque_endpoints);
+		uint16 clip_flags= next_polygon_along_line(&polygon_index, (world_point2d *) &view->origin, _vector, &clipping_endpoint_index, &clipping_line_index, bias);
 		
 		if (polygon_index==NONE)
 		{
@@ -344,14 +345,14 @@ void RenderVisTreeClass::initialize_polygon_queue()
 uint16 RenderVisTreeClass::next_polygon_along_line(
 	short *polygon_index,
 	world_point2d *origin, /* not necessairly in polygon_index */
-	long_vector2d *_vector, // {0, 0} hits the initial poly but returns nothing
+	long_vector2d *_vector, // world_vector2d *vector,
 	short *clipping_endpoint_index, /* if non-NONE on entry this is the solid endpoint weÕre shooting for */
 	short *clipping_line_index, /* NONE on exit if this polygon transition wasnÕt accross an elevation line */
-	ray_bias bias_at_opaque_endpoint) // bias at a transparent endpoint is always clockwise
+	short bias)
 {
 	polygon_data *polygon= get_polygon_data(*polygon_index);
 	short next_polygon_index, crossed_line_index, crossed_side_index;
-	bool opaque_clipping_endpoint_hit = false;
+	bool passed_through_solid_vertex= false;
 	short vertex_index, vertex_delta;
 	uint16 clip_flags= 0;
 	short state;
@@ -382,8 +383,7 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 		}
 			
 		short endpoint_index= polygon->endpoint_indexes[vertex_index];
-		endpoint_data *endpoint = get_endpoint_data(endpoint_index);
-		world_point2d *vertex = &endpoint->vertex;
+		world_point2d *vertex= &get_endpoint_data(endpoint_index)->vertex;
 		// LP change to make it more long-distance-friendly
 		CROSSPROD_TYPE cross_product= CROSSPROD_TYPE(int32(vertex->x)-int32(origin->x))*_vector->j - CROSSPROD_TYPE(int32(vertex->y)-int32(origin->y))*_vector->i;
 		
@@ -407,9 +407,10 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 			    next_polygon_index= polygon->adjacent_polygon_indexes[i];
 			    crossed_line_index= polygon->line_indexes[i];
 			    crossed_side_index= polygon->side_indexes[i];
+			}
+			case _looking_for_next_nonzero_vertex: /* next_polygon_index already set */
 			    state= NONE;
 			    break;
-			}
 		    }
 		} else if (cross_product > 0)
 		{
@@ -427,6 +428,7 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 			    next_polygon_index= polygon->adjacent_polygon_indexes[vertex_index];
 			    crossed_line_index= polygon->line_indexes[vertex_index];
 			    crossed_side_index= polygon->side_indexes[vertex_index];
+			case _looking_for_next_nonzero_vertex: /* next_polygon_index already set */
 			    state= NONE;
 			    break;
 		    }
@@ -434,24 +436,26 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 		{
 		    if (state!=_looking_for_first_nonzero_vertex)
 		    {
-				if (ENDPOINT_IS_TRANSPARENT(endpoint))
-				{
-					// Just pass clockwise for consistency
-					next_polygon_index = polygon->adjacent_polygon_indexes[vertex_index];
-					crossed_line_index = polygon->line_indexes[vertex_index];
-					crossed_side_index = polygon->side_indexes[vertex_index];
-				}
-				else
-				{
-					if (endpoint_index == *clipping_endpoint_index)
-						opaque_clipping_endpoint_hit = true;
-					
-					next_polygon_index = *polygon_index;
-					clip_flags |= decide_where_vertex_leads(&next_polygon_index, &crossed_line_index, &crossed_side_index,
-						vertex_index, origin, _vector, clip_flags, bias_at_opaque_endpoint);
-				}
-				
-				break; 
+			if (endpoint_index==*clipping_endpoint_index) passed_through_solid_vertex= true;
+
+			/* if we think we know whatÕs on the other side of this zero (these zeros)
+			change the state: if we donÕt find what weÕre looking for then the polygon
+			is entirely on one side of the line or the other (except for this vertex),
+			in any case we need to call decide_where_vertex_leads() to find out whatÕs
+			on the other side of this vertex */
+			switch (state)
+			{
+			    case _looking_clockwise_for_right_vertex:
+			    case _looking_counterclockwise_for_left_vertex:
+				next_polygon_index= *polygon_index;
+				clip_flags|= decide_where_vertex_leads(&next_polygon_index, &crossed_line_index, &crossed_side_index,
+					   vertex_index, origin, _vector, clip_flags, bias);
+				state= _looking_for_next_nonzero_vertex;
+				// LP change: resetting loop test
+				initial_vertex_index = vertex_index;
+				changed_state = true;
+				break;
+			}
 		    }
 		}
 		/* adjust vertex_index (clockwise or counterclockwise, depending on vertex_delta) */
@@ -460,9 +464,12 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 	}
 	while (state!=NONE);
 
-	if (!opaque_clipping_endpoint_hit)
-		*clipping_endpoint_index = NONE; // signal that we didn't hit our target (or that it's transparent)
-	
+//	dprintf("exiting, cli=#%d, npi=#%d", crossed_line_index, next_polygon_index);
+
+	/* if we didnÕt pass through the solid vertex we were aiming for, set clipping_endpoint_index to NONE,
+		we assume the line we passed through doesnÕt clip, and set clipping_line_index to NONE
+		(this will be corrected in a few moments if we chose poorly) */
+	if (!passed_through_solid_vertex) *clipping_endpoint_index= NONE;
 	*clipping_line_index= NONE;
 	
 	if (crossed_line_index!=NONE)
@@ -509,7 +516,7 @@ uint16 RenderVisTreeClass::decide_where_vertex_leads(
 	world_point2d *origin,
 	long_vector2d *_vector, // world_vector2d *vector,
 	uint16 clip_flags,
-	ray_bias bias)
+	short bias)
 {
 	polygon_data *polygon= get_polygon_data(*polygon_index);
 	short endpoint_index= polygon->endpoint_indexes[endpoint_index_in_polygon_list];

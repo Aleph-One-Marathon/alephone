@@ -162,15 +162,7 @@ void HUD_Lua_Class::end_draw(void)
         glPopMatrix();
 		glPopAttrib();
 	}
-	else
 #endif
-	if (m_surface)
-	{
-		SDL_Surface *video = MainScreenSurface();
-		SDL_BlitSurface(m_surface, NULL, video, NULL);
-//		SDL_SetAlpha(video, 0, 0xff);
-		SDL_SetClipRect(video, 0);
-	}
 }
 
 void HUD_Lua_Class::apply_clip(void)

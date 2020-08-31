@@ -189,6 +189,7 @@ void SoundManager::Shutdown()
 bool SoundManager::OpenSoundFile(FileSpecifier& File)
 {
 	StopAllSounds();
+	UnloadAllSounds();
 	sound_file.reset(new M2SoundFile);
 	if (!sound_file->Open(File))
 	{

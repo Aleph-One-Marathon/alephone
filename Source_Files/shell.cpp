@@ -467,11 +467,18 @@ static void initialize_application(void)
 	size_t dsp_insert_pos = data_search_path.size();
 	size_t dsp_delete_pos = (size_t)-1;
 	
+	const string default_data_env = a1_getenv("ALEPHONE_DEFAULT_DATA");
 	if (arg_directory != "")
 	{
 		default_data_dir = arg_directory;
 		dsp_delete_pos = data_search_path.size();
 		data_search_path.push_back(arg_directory);
+	}
+	else if (!default_data_env.empty())
+	{
+		default_data_dir = default_data_env;
+		dsp_delete_pos = data_search_path.size();
+		data_search_path.push_back(default_data_env);
 	}
 
 	const string data_env = a1_getenv("ALEPHONE_DATA");
@@ -490,7 +497,7 @@ static void initialize_application(void)
 		if (!path.empty())
 			data_search_path.push_back(path);
 	} else {
-		if (arg_directory == "")
+		if (arg_directory == "" && default_data_env == "")
 		{
 			dsp_delete_pos = data_search_path.size();
 			data_search_path.push_back(default_data_dir);
