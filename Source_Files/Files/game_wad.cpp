@@ -750,6 +750,17 @@ bool goto_level(
 		SoundManager::instance()->UnloadAllSounds();
 	}
 
+	// LP: doing this here because level-specific MML may specify which level-specific
+	// textures to load.
+	if (!game_is_networked || use_map_file(((game_info*)NetGetGameData())->parent_checksum))
+	{
+		RunLevelScript(entry->level_number);
+	}
+	else
+	{
+		ResetLevelScript();
+	}
+
 #if !defined(DISABLE_NETWORKING)
 	/* If the game is networked, then I must call the network code to do the right */
 	/* thing with the map.. */
@@ -770,18 +781,8 @@ bool goto_level(
 	
 	if (success)
 	{
-		// LP: doing this here because level-specific MML may specify which level-specific
-		// textures to load.
 		// Being careful to carry over errors so that Pfhortran errors can be ignored
 		short SavedType, SavedError = get_game_error(&SavedType);
-		if (!game_is_networked || use_map_file(((game_info *) NetGetGameData())->parent_checksum))
-		{
-			RunLevelScript(entry->level_number);
-		}
-		else
-		{
-			ResetLevelScript();
-		}
 		RunScriptChunks();
 		if (!game_is_networked && number_of_players == 1)
 		{
