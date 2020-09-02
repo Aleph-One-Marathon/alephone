@@ -121,15 +121,15 @@ public:
 	uint16 get_descent() const { return -TTF_FontDescent(m_styles[styleNormal]); }
 	int16 get_leading() const { return get_line_height() - get_ascent() - get_descent(); }
 
-	TTF_Font* m_styles[styleUnderline];
-	ttf_font_key_t m_keys[styleUnderline];
+	TTF_Font* m_styles[styleMax];
+	ttf_font_key_t m_keys[styleMax];
 	int m_adjust_height;
-	int ascii_width[styleUnderline][128];
+	int ascii_width[styleMax][128];
 	
 	int8 char_width(uint8, uint16) const;
 
 	ttf_font_info() { 
-		for (int i = 0; i < styleUnderline; i++) { m_styles[i] = 0; } 
+		for (int i = 0; i < styleMax; i++) { m_styles[i] = 0; } 
 	}
 	virtual ~ttf_font_info() = default;
 protected:

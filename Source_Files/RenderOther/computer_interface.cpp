@@ -469,7 +469,7 @@ static bool calculate_line(terminal_text_t *terminal_text,
 			sjisChar(base_text + index, &index, next);
 			struct text_face_data *face_data = get_font_changes_for_index(terminal_text, index);
 			if( face_data ) {
-				style = get_face(face_data)  &  (styleBold | styleItalic);
+				style = get_face(face_data);
 			}
 			TTF_Font* font = ((ttf_font_info*)terminal_font)->m_styles[style];
 			TTF_SizeUTF8(font, next, &advance, NULL);
@@ -599,7 +599,7 @@ void enter_computer_interface(
 	next_terminal_group(player_index, terminal_text);
 }
 
-/*  Assumes ¶t==1 tick */
+/*  Assumes ï¿½t==1 tick */
 void update_player_for_terminal_mode(
 	short player_index)
 {
