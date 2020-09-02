@@ -469,7 +469,7 @@ static bool calculate_line(terminal_text_t *terminal_text,
 			sjisChar(base_text + index, &index, next);
 			struct text_face_data *face_data = get_font_changes_for_index(terminal_text, index);
 			if( face_data ) {
-				style = get_face(face_data);
+				style = get_face(face_data)  &  (styleBold | styleItalic);
 			}
 			TTF_Font* font = ((ttf_font_info*)terminal_font)->m_styles[style];
 			TTF_SizeUTF8(font, next, &advance, NULL);

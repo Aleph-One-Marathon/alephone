@@ -138,7 +138,7 @@ protected:
 	virtual uint16 _text_width(const char *text, uint16 style, bool utf8) const;	
 	virtual int _trunc_text(const char *text, int max_width, uint16 style) const;
 private:
-	TTF_Font *get_ttf(uint16 style) const { return m_styles[style & (styleBold | styleItalic|styleUnderline)]; }
+	TTF_Font *get_ttf(uint16 style) const { return m_styles[style & (styleBold | styleItalic)]; }
 	virtual void _unload();
 };
 
