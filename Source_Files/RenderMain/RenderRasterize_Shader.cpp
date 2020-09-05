@@ -638,8 +638,8 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 
 		glDrawArrays(GL_POLYGON, 0, vertex_count);
 
-                // see note 2 above
-		if (setupGlow(view, TMgr, wobble * 4.0, intensity, weaponFlare, selfLuminosity, offset, renderStep)) {
+		// see note 2 above; pulsate uniform should stay set from setupWall call
+		if (setupGlow(view, TMgr, 0, intensity, weaponFlare, selfLuminosity, offset, renderStep)) {
 			glDrawArrays(GL_POLYGON, 0, vertex_count);
 		}
 
