@@ -23,7 +23,7 @@
 
 	Friday, July 8, 1994 2:32:44 PM (alain)
 		All old code in here is obsolete. This now has interface for the top-level
-		interface (Begin Game, etcÉ)
+		interface (Begin Game, etcï¿½)
 	Saturday, September 10, 1994 12:45:48 AM  (alain)
 		the interface gutted again. just the stuff that handles the menu though, the rest stayed
 		the same.
@@ -819,7 +819,7 @@ bool join_networked_resume_game()
                         }
                         else
                         {
-                                /* Tell the user theyÕre screwed when they try to leave this level. */
+                                /* Tell the user theyï¿½re screwed when they try to leave this level. */
                                 // ZZZ: should really issue a different warning since the ramifications are different
                                 alert_user(infoError, strERRORS, cantFindMap, 0);
         
@@ -1190,7 +1190,7 @@ bool idle_game_state(uint32 time)
 		game_state.last_ticks_on_idle= machine_tick_count();
 	}
 
-	/* if weÕre not paused and thereÕs something to draw (i.e., anything different from
+	/* if weï¿½re not paused and thereï¿½s something to draw (i.e., anything different from
 		last time), render a frame */
 	if(game_state.state==_game_in_progress)
 	{
