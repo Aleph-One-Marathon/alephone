@@ -149,7 +149,7 @@ extern int8 char_width(uint8 c, const sdl_font_info *font, uint16 style);
 
 int FontSpecifier::TextWidth(const char *text)
 {
-	return Info->text_width(text, 0, false);
+	return Info->text_width(text, Style, false);
 }
 void FontSpecifier::render_text_(const char* str) {
 	// Put some padding around each glyph so as to avoid clipping i
@@ -159,10 +159,10 @@ void FontSpecifier::render_text_(const char* str) {
 
 	int TotalWidth = TextWidth(str)+Pad*2;
 	int Width = TotalWidth;
-	int TxtrWidth = MAX(64, NextPowerOfTwo(TotalWidth));
+	int TxtrWidth = NextPowerOfTwo(TotalWidth);
 		
 	// Find the character starting points and counts
-	int TxtrHeight = MAX(64, NextPowerOfTwo(GlyphHeight));
+	int TxtrHeight = NextPowerOfTwo(GlyphHeight);
 		
 		
 	// Render the font glyphs into the SDL surface
