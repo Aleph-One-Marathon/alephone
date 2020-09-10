@@ -649,28 +649,7 @@ static void update_view_data(
 		{
 			struct world_point2d *vertex= &get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
 			
-			const bool on_vertex = [&]
-			{
-				const short adj_poly_index = polygon->adjacent_polygon_indexes[i];
-				
-				// Check our own vertex if there is no adjacent poly
-				if (adj_poly_index == NONE)
-					return vertex->x == view->origin.x && vertex->y == view->origin.y;
-				
-				// Otherwise check the adjacent poly's vertices (which include our own vertex) in case it's degenerate
-				// and has a vertex hiding underneath us, on (but not connected to) the side of our origin polygon
-				const polygon_data& adj_poly = *get_polygon_data(adj_poly_index);
-				for (int j = 0, n = adj_poly.vertex_count; j < n; ++j)
-				{
-					const world_point2d& v = get_endpoint_data(adj_poly.endpoint_indexes[j])->vertex;
-					if (view->origin.x == v.x && view->origin.y == v.y)
-						return true;
-				}
-				
-				return false;
-			}();
-			
-			if (on_vertex)
+			if (vertex->x == view->origin.x && vertex->y == view->origin.y)
 			{
 				world_point2d *ccw_vertex= &get_endpoint_data(polygon->endpoint_indexes[WRAP_LOW(i, polygon->vertex_count-1)])->vertex;
 				world_point2d *cw_vertex= &get_endpoint_data(polygon->endpoint_indexes[WRAP_HIGH(i, polygon->vertex_count-1)])->vertex;
@@ -691,6 +670,40 @@ static void update_view_data(
 				view->origin.y+= SGN(inset_vector.j);
 				
 				break;
+			}
+		}
+		
+		// Also check adjacent polygons' vertices in case a degenerate polygon has a vertex under us (on a side)
+		{
+			// Local index of the first side that connects to such a polygon, or else NONE
+			// (if non-NONE, we're on this side or one collinear with it)
+			const int side_to_poly_with_vertex_on_origin = [&]() -> int
+			{
+				for (int i = 0; i < polygon->vertex_count; ++i)
+				{
+					const int16 adj_poly_index = polygon->adjacent_polygon_indexes[i];
+					if (adj_poly_index != NONE)
+					{
+						const auto& adj_poly = *get_polygon_data(adj_poly_index);
+						for (int k = 0; k < adj_poly.vertex_count; ++k)
+						{
+							const auto v = get_endpoint_data(adj_poly.endpoint_indexes[k])->vertex;
+							if (v.x == view->origin.x && v.y == view->origin.y)
+								return i;
+						}
+					}
+				}
+				return NONE;
+			}();
+			
+			if (side_to_poly_with_vertex_on_origin != NONE)
+			{
+				// Scoot inward or along the side we're on (we're not on a corner because we handled that case already)
+				const int vertex0_index = side_to_poly_with_vertex_on_origin;
+				const int vertex1_index = WRAP_HIGH(side_to_poly_with_vertex_on_origin, polygon->vertex_count - 1);
+				const world_distance vertex0_x = get_endpoint_data(polygon->endpoint_indexes[vertex0_index])->vertex.x;
+				const world_distance vertex1_x = get_endpoint_data(polygon->endpoint_indexes[vertex1_index])->vertex.x;
+				view->origin.y += (vertex1_x - vertex0_x >= 0) ? 1 : -1;
 			}
 		}
 		
