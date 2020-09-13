@@ -24,6 +24,12 @@
  *
  *  Written in 2000 by Christian Bauer
  */
+
+#if defined _MSC_VER 
+ //not #if defined(_WIN32) || defined(_WIN64) because we have strcasecmp in mingw
+#define strcasecmp _stricmp
+#endif
+
 #include "cseries.h"
 #include "FileHandler.h"
 #include "resource_manager.h"
@@ -53,6 +59,9 @@
 #endif
 
 #if defined(__WIN32__)
+#if defined _MSC_VER
+#define R_OK 4
+#endif
 #include <wchar.h>
 #define PATH_SEP '\\'
 #else

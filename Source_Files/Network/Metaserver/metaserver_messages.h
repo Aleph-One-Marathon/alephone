@@ -200,7 +200,10 @@ protected:
 		}
 
 	bool reallyInflateFrom(AIStream& inStream)
-		{ assert(false); }
+	{ 
+		assert(false);
+		return false;
+	}
 
 private:
 	uint16 m_mode;
