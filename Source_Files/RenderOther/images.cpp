@@ -47,6 +47,7 @@ Jul 31, 2002 (Loren Petrich)
 #include "FileHandler.h"
 
 #include <stdlib.h>
+#include <memory>
 
 #include "interface.h"
 #include "shell.h"
