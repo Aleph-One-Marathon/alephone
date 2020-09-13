@@ -500,9 +500,9 @@ void draw_panels(void)
 	ensure_HUD_buffer();
 
 	// Draw static HUD picture
-	static SDL_Surface *static_hud_pict = NULL;
+	static std::shared_ptr<SDL_Surface> static_hud_pict = std::shared_ptr<SDL_Surface>(nullptr, SDL_FreeSurface);
 	static bool hud_pict_not_found = false;
-	if (static_hud_pict == NULL && !hud_pict_not_found) {
+	if (!static_hud_pict && !hud_pict_not_found) {
 		LoadedResource rsrc;
 		if (get_picture_resource_from_images(INTERFACE_PANEL_BASE, rsrc))
 			static_hud_pict = picture_to_surface(rsrc);
@@ -513,7 +513,7 @@ void draw_panels(void)
 	if (!hud_pict_not_found) {
 		SDL_Rect dst_rect = {0, 320, 640, 160};
 		if (!LuaTexturePaletteSize())
-			SDL_BlitSurface(static_hud_pict, NULL, HUD_Buffer, &dst_rect);
+			SDL_BlitSurface(static_hud_pict.get(), NULL, HUD_Buffer, &dst_rect);
 		else
 			SDL_FillRect(HUD_Buffer, &dst_rect, 0);
 	}

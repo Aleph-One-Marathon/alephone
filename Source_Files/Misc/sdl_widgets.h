@@ -234,23 +234,6 @@ protected:
 
 
 /*
- *  Picture (PICT resource)
- */
-
-class w_pict : public widget {
-public:
-	w_pict(int id);
-	~w_pict();
-
-	void draw(SDL_Surface *s) const;
-	bool is_selectable(void) const {return false;}
-
-private:
-	SDL_Surface *picture;
-};
-
-
-/*
  *  Button
  */
 
