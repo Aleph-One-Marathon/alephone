@@ -18,13 +18,17 @@
 
 #include "ephemera.h"
 
+#include "dynamic_limits.h"
 #include "map.h"
 
 class ObjectDataPool {
 public:
-	ObjectDataPool() : first_unused_{NONE} { }
+	ObjectDataPool() :
+		pool_{get_dynamic_limit(_dynamic_limit_ephemera)},
+		first_unused_{NONE} { }
 	
-	void init(int16_t size);
+	void init();
+	void resize(int size) { pool_.resize(size); }
 
 	object_data& get(int16_t object_index) {
 		// TODO: settle on bounds checking
@@ -44,19 +48,26 @@ private:
 std::vector<int16_t> polygon_ephemera;
 ObjectDataPool ephemera_pool;
 
-void ObjectDataPool::init(int16_t size)
+void ObjectDataPool::init()
 {
-	pool_.resize(size);
-	for (auto i = 0; i < size - 1; ++i)
+	int size = static_cast<int>(pool_.size());
+	if (size)
 	{
-		MARK_SLOT_AS_FREE(&pool_[i]);
-		pool_[i].next_object = i + 1;
+		for (auto i = 0; i < size - 1; ++i)
+		{
+			MARK_SLOT_AS_FREE(&pool_[i]);
+			pool_[i].next_object = i + 1;
+		}
+		
+		MARK_SLOT_AS_FREE(&pool_[size - 1]);
+		pool_[size - 1].next_object = NONE;
+		
+		first_unused_ = 0;
 	}
-
-	MARK_SLOT_AS_FREE(&pool_[size - 1]);
-	pool_[size - 1].next_object = NONE;
-
-	first_unused_ = 0;
+	else
+	{
+		first_unused_ = NONE;
+	}
 }
 
 int16_t ObjectDataPool::get_unused()
@@ -79,12 +90,17 @@ void ObjectDataPool::release(int16_t index)
 	first_unused_ = index;
 }
 
-void init_ephemera(int16_t max_ephemera, int16_t polygon_count)
+void allocate_ephemera_storage(int max_ephemera)
+{
+	ephemera_pool.resize(max_ephemera);
+}
+
+void init_ephemera(int16_t polygon_count)
 {
 	polygon_ephemera.clear();
 	polygon_ephemera.resize(polygon_count, NONE);
-	
-	ephemera_pool.init(max_ephemera);
+
+	ephemera_pool.init();
 }
 
 int16_t new_ephemera(const world_point3d& location, int16_t polygon_index, shape_descriptor shape, angle facing)

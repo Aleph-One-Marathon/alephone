@@ -25,7 +25,8 @@
 #include "shape_descriptors.h"
 #include "world.h"
 
-void init_ephemera(int16_t max_ephemera, int16_t polygon_count);
+void allocate_ephemera_storage(int max_ephemera);
+void init_ephemera(int16_t polygon_count);
 int16_t new_ephemera(const world_point3d& origin, int16_t polygon_index, shape_descriptor shape, angle facing);
 void remove_ephemera(int16_t ephemera_index);
 

@@ -382,8 +382,6 @@ void complete_loading_level(
 			}
 		}
 	}
-
-	init_ephemera(1024, dynamic_world->polygon_count);
 }
 
 /* Call with location of NULL to get the number of start locations for a */
@@ -1584,6 +1582,8 @@ bool process_map_wad(
 	count = data_length/SIZEOF_polygon_data;
 	assert(data_length == count*SIZEOF_polygon_data);
 	load_polygons(data, count, version);
+	
+	init_ephemera(dynamic_world->polygon_count);
 
 	/* Extract the lightsources */
 	if(restoring_game)
