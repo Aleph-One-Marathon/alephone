@@ -1598,8 +1598,6 @@ bool process_map_wad(
 	assert(data_length == count*SIZEOF_polygon_data);
 	load_polygons(data, count, version);
 	
-	init_ephemera(dynamic_world->polygon_count);
-
 	/* Extract the lightsources */
 	if(restoring_game)
 	{
@@ -1814,6 +1812,8 @@ bool process_map_wad(
 	PhysicsModelLoadedEarlier = PhysicsModelLoaded;
 	
 	RunScriptChunks();
+
+	init_ephemera(dynamic_world->polygon_count);
 
 	/* If we are restoring the game, then we need to add the dynamic data */
 	if(restoring_game)
