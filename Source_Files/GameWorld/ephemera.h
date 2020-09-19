@@ -1,0 +1,37 @@
+#ifndef EPHEMERA_H
+#define EPHEMERA_H
+
+/*
+	Copyright (C) 2020 and beyond by Gregory Smith
+ 
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 3 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	This license is contained in the file "COPYING",
+	which is included with this source code; it is available online at
+	http://www.gnu.org/licenses/gpl.html
+*/
+
+#include <cstdint>
+
+#include "map.h"
+#include "shape_descriptors.h"
+#include "world.h"
+
+void init_ephemera(int16_t max_ephemera, int16_t polygon_count);
+int16_t new_ephemera(const world_point3d& origin, int16_t polygon_index, shape_descriptor shape, angle facing);
+void remove_ephemera(int16_t ephemera_index);
+
+object_data* get_ephemera_data(int16_t ephemera_index);
+int16_t get_polygon_ephemera(int16_t polygon_index);
+int get_max_ephemera();
+
+
+#endif

@@ -115,6 +115,7 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 #include "preferences.h"
 #include "SoundManager.h"
 #include "Plugins.h"
+#include "ephemera.h"
 
 // LP change: added chase-cam init and render allocation
 #include "ChaseCam.h"
@@ -381,6 +382,8 @@ void complete_loading_level(
 			}
 		}
 	}
+
+	init_ephemera(1024, dynamic_world->polygon_count);
 }
 
 /* Call with location of NULL to get the number of start locations for a */

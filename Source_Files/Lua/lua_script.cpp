@@ -111,6 +111,7 @@ extern "C"
 #include "Plugins.h"
 
 #include "lua_script.h"
+#include "lua_ephemera.h"
 #include "lua_map.h"
 #include "lua_monsters.h"
 #include "lua_objects.h"
@@ -799,6 +800,7 @@ void LuaState::RegisterFunctions()
 	lua_register(State(), "player_control", L_Player_Control);
 //	lua_register(state, "prompt", L_Prompt);
 
+	Lua_Ephemera_register(State());
 	Lua_Map_register(State());
 	Lua_Monsters_register(State());
 	Lua_Objects_register(State());

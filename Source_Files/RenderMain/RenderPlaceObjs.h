@@ -63,7 +63,7 @@ class RenderPlaceObjsClass
 	render_object_data *build_render_object(long_point3d *origin,
 		_fixed floor_intensity, _fixed ceiling_intensity,
 		sorted_node_data **base_nodes, short *base_node_count,
-		short object_index, float Opacity, long_point3d *rel_origin);
+		object_data* object, float Opacity, long_point3d *rel_origin);
 	
 	void sort_render_object_into_tree(render_object_data *new_render_object,
 		sorted_node_data **base_nodes, short base_node_count);

@@ -57,6 +57,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "OGL_Setup.h"
 #include "ChaseCam.h"
 #include "player.h"
+#include "ephemera.h"
 
 #include <string.h>
 #include <limits.h>
@@ -98,7 +99,6 @@ void RenderPlaceObjsClass::initialize_render_object_list()
 	RenderObjects.clear();
 }
 
-
 /* walk our sorted polygon lists, adding every object in every polygon to the render_object list,
 	in depth order */
 void RenderPlaceObjsClass::build_render_object_list()
@@ -128,8 +128,11 @@ void RenderPlaceObjsClass::build_render_object_list()
 			sorted_node_data *base_nodes[MAXIMUM_OBJECT_BASE_NODES];
 			
 			float Opacity = (object_index == self_index) ? GetChaseCamData().Opacity : 1;
-			render_object_data *render_object= build_render_object(NULL, floor_intensity, ceiling_intensity,
-				base_nodes, &base_node_count, object_index, Opacity, NULL);
+			render_object_data *render_object=
+				build_render_object(NULL, floor_intensity, ceiling_intensity,
+									base_nodes, &base_node_count,
+									get_object_data(object_index),
+									Opacity, NULL);
 			
 			if (render_object)
 			{
@@ -138,6 +141,24 @@ void RenderPlaceObjsClass::build_render_object_list()
 			}
 			
 			object_index= get_object_data(object_index)->next_object;
+		}
+
+		short ephemera_index = get_polygon_ephemera(sorted_node->polygon_index);
+		while (ephemera_index != NONE)
+		{
+			short base_node_count;
+			sorted_node_data* base_nodes[MAXIMUM_OBJECT_BASE_NODES];
+
+			render_object_data* render_object =
+				build_render_object(nullptr, floor_intensity, ceiling_intensity, base_nodes, &base_node_count, get_ephemera_data(ephemera_index), 1, nullptr);
+
+			if (render_object)
+			{
+				build_aggregate_render_object_clipping_window(render_object, base_nodes, base_node_count);
+				sort_render_object_into_tree(render_object, base_nodes, base_node_count);
+			}
+
+			ephemera_index = get_ephemera_data(ephemera_index)->next_object;
 		}
 	}
 }
@@ -150,11 +171,10 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 	_fixed ceiling_intensity,
 	sorted_node_data **base_nodes,
 	short *base_node_count,
-	short object_index, float Opacity,
+	object_data* object, float Opacity,
 	long_point3d *rel_origin)
 {
 	render_object_data *render_object= NULL;
-	object_data *object= get_object_data(object_index);
 	// LP: reference to simplify the code
 	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 	
@@ -205,8 +225,8 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			// For the convenience of the 3D-model renderer
 			int LightDepth = transformed_origin.x;
 			GLfloat LightDirection[3];
-			
-			get_object_shape_and_transfer_mode(&view->origin, object_index, &data);
+
+			get_object_shape_and_transfer_mode(&view->origin, object, &data);
 			// Nonexistent shape: skip
 			if (data.collection_code == NONE) return NULL;
 			
@@ -400,8 +420,10 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					parasitic_rel_origin.x = shape_information->world_x0;
 					parasitic_origin.z+= shape_information->world_y0;
 					parasitic_origin.y+= shape_information->world_x0;
-					parasitic_render_object= build_render_object(&parasitic_origin, floor_intensity, ceiling_intensity,
-						NULL, NULL, object->parasitic_object, Opacity, &parasitic_rel_origin);
+					parasitic_render_object= build_render_object
+						(&parasitic_origin, floor_intensity, ceiling_intensity,
+						 NULL, NULL, get_object_data(object->parasitic_object),
+						 Opacity, &parasitic_rel_origin);
 					
 					if (parasitic_render_object)
 					{

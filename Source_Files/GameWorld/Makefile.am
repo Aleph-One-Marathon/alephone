@@ -8,11 +8,13 @@ libgameworld_a_SOURCES = dynamic_limits.h editor.h effect_definitions.h \
   physics_models.h platform_definitions.h platforms.h player.h \
   projectile_definitions.h projectiles.h scenery_definitions.h scenery.h \
   TickBasedCircularQueue.h weapon_definitions.h weapons.h world.h \
+  ephemera.h \
   \
   devices.cpp dynamic_limits.cpp effects.cpp flood_map.cpp items.cpp \
   lightsource.cpp map_constructors.cpp map.cpp marathon2.cpp media.cpp \
   monsters.cpp pathfinding.cpp physics.cpp placement.cpp platforms.cpp \
-  player.cpp projectiles.cpp scenery.cpp weapons.cpp world.cpp
+  player.cpp projectiles.cpp scenery.cpp weapons.cpp world.cpp \
+  ephemera.cpp
 
 AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/Input -I$(top_srcdir)/Source_Files/Lua \
