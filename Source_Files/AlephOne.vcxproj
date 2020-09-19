@@ -141,6 +141,7 @@
     <ClCompile Include="GameWorld\devices.cpp" />
     <ClCompile Include="GameWorld\dynamic_limits.cpp" />
     <ClCompile Include="GameWorld\effects.cpp" />
+    <ClCompile Include="GameWorld\ephemera.cpp" />
     <ClCompile Include="GameWorld\flood_map.cpp" />
     <ClCompile Include="GameWorld\items.cpp" />
     <ClCompile Include="GameWorld\lightsource.cpp" />
@@ -160,6 +161,7 @@
     <ClCompile Include="GameWorld\world.cpp" />
     <ClCompile Include="Input\joystick_sdl.cpp" />
     <ClCompile Include="Input\mouse_sdl.cpp" />
+    <ClCompile Include="Lua\lua_ephemera.cpp" />
     <ClCompile Include="Lua\lua_hud_objects.cpp" />
     <ClCompile Include="Lua\lua_hud_script.cpp" />
     <ClCompile Include="Lua\lua_map.cpp" />
@@ -359,6 +361,7 @@
     <ClInclude Include="GameWorld\editor.h" />
     <ClInclude Include="GameWorld\effects.h" />
     <ClInclude Include="GameWorld\effect_definitions.h" />
+    <ClInclude Include="GameWorld\ephemera.h" />
     <ClInclude Include="GameWorld\flood_map.h" />
     <ClInclude Include="GameWorld\items.h" />
     <ClInclude Include="GameWorld\item_definitions.h" />
@@ -383,6 +386,7 @@
     <ClInclude Include="Input\joystick.h" />
     <ClInclude Include="Input\mouse.h" />
     <ClInclude Include="Lua\language_definition.h" />
+    <ClInclude Include="Lua\lua_ephemera.h" />
     <ClInclude Include="Lua\lua_hud_objects.h" />
     <ClInclude Include="Lua\lua_hud_script.h" />
     <ClInclude Include="Lua\lua_map.h" />
