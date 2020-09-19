@@ -225,7 +225,7 @@ void *get_map_for_net_transfer(
 /* ---------------------- End Net Functions ----------- */
 
 /* This takes a cstring */
-void set_map_file(FileSpecifier& File)
+void set_map_file(FileSpecifier& File, bool loadScripts)
 {
 	// Do whatever parameter restoration is specified before changing the file
 	if (file_is_set) RunRestorationScript();
@@ -233,7 +233,7 @@ void set_map_file(FileSpecifier& File)
 	MapFileSpec = File;
 	set_scenario_images_file(File);
 	// Only need to do this here
-	LoadLevelScripts(File);
+	if(loadScripts) LoadLevelScripts(File);
 
 	// Don't care whether there was an error when checking on the file's scenario images
 	clear_game_error();
@@ -266,6 +266,30 @@ bool use_map_file(
 	}
 
 	return success;
+}
+
+dynamic_data get_dynamic_data_from_save(FileSpecifier& File)
+{
+	OpenedFile MapFile;
+	dynamic_data dynamic_data_return;
+
+	if (open_wad_file_for_reading(File, MapFile))
+	{
+		wad_header header;
+		if (read_wad_header(MapFile, &header))
+		{
+			auto wad = read_indexed_wad_from_file(MapFile, &header, 0, true);
+			if (wad)
+			{
+				get_dynamic_data_from_wad(wad, &dynamic_data_return);
+				free_wad(wad);
+			}
+		}
+
+		close_wad_file(MapFile);
+	}
+
+	return dynamic_data_return;
 }
 
 bool load_level_from_map(
@@ -752,13 +776,10 @@ bool goto_level(
 
 	// LP: doing this here because level-specific MML may specify which level-specific
 	// textures to load.
+	ResetLevelScript();
 	if (!game_is_networked || use_map_file(((game_info*)NetGetGameData())->parent_checksum))
 	{
 		RunLevelScript(entry->level_number);
-	}
-	else
-	{
-		ResetLevelScript();
 	}
 
 #if !defined(DISABLE_NETWORKING)
@@ -783,7 +804,6 @@ bool goto_level(
 	{
 		// Being careful to carry over errors so that Pfhortran errors can be ignored
 		short SavedType, SavedError = get_game_error(&SavedType);
-		RunScriptChunks();
 		if (!game_is_networked && number_of_players == 1)
 		{
 			LoadSoloLua();
@@ -1160,33 +1180,36 @@ void recalculate_redundant_map(
 	for(loop=0;loop<dynamic_world->endpoint_count;++loop) recalculate_redundant_endpoint_data(loop);
 }
 
-bool load_game_from_file(FileSpecifier& File, bool run_scripts, bool *was_map_found)
+bool load_game_from_file(FileSpecifier& File, bool run_scripts)
 {
 	bool success= false;
 
 	ResetPassedLua();
-	
+	ResetLevelScript();
+
 	/* Setup for a revert.. */
 	revert_game_data.game_is_from_disk = true;
 	revert_game_data.SavedGame = File;
 
+	uint32 parent_checksum = read_wad_file_parent_checksum(File);
+	bool found_map = use_map_file(parent_checksum); /* Find the original scenario this saved game was a part of.. */
+
+	FileSpecifier map_parent;
+	if (found_map) {
+		map_parent = get_map_file();
+		auto dynamic_data = get_dynamic_data_from_save(File);
+		RunLevelScript(dynamic_data.current_level_number);
+	}
+
 	/* Use the save game file.. */
-	set_map_file(File);
-	
+	set_map_file(File, false);
 	/* Load the level from the map */
 	success= load_level_from_map(NONE); /* Save games are ALWAYS index NONE */
 	if (success)
-	{
-		uint32 parent_checksum;
-	
-		/* Find the original scenario this saved game was a part of.. */
-		parent_checksum= read_wad_file_parent_checksum(File);
-		bool found_map = use_map_file(parent_checksum);
-		if (was_map_found)
-		{
-			*was_map_found = found_map;
-		}
-		if (!found_map)
+	{	
+		if(found_map)
+			set_map_file(map_parent, false);
+		else
 		{
 			/* Tell the user theyÕre screwed when they try to leave this level. */
 			alert_user(infoError, strERRORS, cantFindMap, 0);
@@ -1203,15 +1226,6 @@ bool load_game_from_file(FileSpecifier& File, bool run_scripts, bool *was_map_fo
 			// LP: getting the level scripting off of the map file
 			// Being careful to carry over errors so that Pfhortran errors can be ignored
 			short SavedType, SavedError = get_game_error(&SavedType);
-			if (found_map)
-			{
-				RunLevelScript(dynamic_world->current_level_number);
-			}
-			else
-			{
-				ResetLevelScript();
-			}
-			RunScriptChunks();
 			if (!game_is_networked)
 			{
 				LoadSoloLua();
@@ -1249,7 +1263,7 @@ bool revert_game(
 	if (revert_game_data.game_is_from_disk)
 	{
 		/* Reload their last saved game.. */
-		successful= load_game_from_file(revert_game_data.SavedGame, true, NULL);
+		successful= load_game_from_file(revert_game_data.SavedGame, true);
 		if (successful) 
 		{
 			Music::instance()->PreloadLevelMusic();
@@ -1799,6 +1813,8 @@ bool process_map_wad(
 		import_definition_structures();
 	PhysicsModelLoadedEarlier = PhysicsModelLoaded;
 	
+	RunScriptChunks();
+
 	/* If we are restoring the game, then we need to add the dynamic data */
 	if(restoring_game)
 	{
@@ -1815,9 +1831,7 @@ bool process_map_wad(
 		unpack_player_data(data,players,count);
 		team_damage_from_player_data();
 		
-		data= (uint8 *)extract_type_from_wad(wad, DYNAMIC_STRUCTURE_TAG, &data_length);
-		assert(data_length == SIZEOF_dynamic_data);
-		unpack_dynamic_data(data,dynamic_world,1);
+		get_dynamic_data_from_wad(wad, dynamic_world);
 		
 		data= (uint8 *)extract_type_from_wad(wad, OBJECT_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_object_data;
@@ -1905,6 +1919,14 @@ bool process_map_wad(
 	
 	/* ... and bail */
 	return true;
+}
+
+void get_dynamic_data_from_wad(wad_data* wad, dynamic_data* dest)
+{
+	size_t data_length;
+	uint8* data = (uint8*)extract_type_from_wad(wad, DYNAMIC_STRUCTURE_TAG, &data_length);
+	assert(data_length == SIZEOF_dynamic_data);
+	unpack_dynamic_data(data, dest, 1);
 }
 
 static void allocate_map_structure_for_map(

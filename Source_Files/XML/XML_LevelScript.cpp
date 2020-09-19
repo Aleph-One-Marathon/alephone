@@ -248,8 +248,6 @@ void RunLevelScript(int LevelIndex)
 	LuaFound = false;
 #endif /* HAVE_LUA */
 	
-	ResetLevelScript();
-
 	GeneralRunScript(LevelScriptHeader::Default);
 	GeneralRunScript(LevelIndex);
 	
