@@ -19,6 +19,7 @@
 #include "ephemera.h"
 
 #include "dynamic_limits.h"
+#include "interface.h"
 #include "map.h"
 
 class ObjectDataPool {
@@ -116,14 +117,14 @@ int16_t new_ephemera(const world_point3d& location, int16_t polygon_index, shape
 			object.polygon = polygon_index;
 			object.location = location;
 			object.facing = facing;
-			object.shape = shape;
-			object.sequence = 0;
 			object.flags = 0x8000; // SLOT_IS_USED
 			object.next_object = NONE;
 			// the renderer does not know how to look up parasitic objects for
 			// ephemera
 			object.parasitic_object = NONE; 
 			object.sound_pitch = FIXED_ONE;
+
+			set_ephemera_shape(ephemera_index, shape);
 
 			add_ephemera_to_polygon(ephemera_index, polygon_index);
 		}
@@ -175,4 +176,24 @@ void add_ephemera_to_polygon(int16_t ephemera_index, int16_t polygon_index)
 	polygon_ephemera[polygon_index] = ephemera_index;
 	
 	ephemera->polygon = polygon_index;
+}
+
+extern bool shapes_file_is_m1();
+
+void set_ephemera_shape(int16_t ephemera_index, shape_descriptor shape)
+{
+	auto ephemera = get_ephemera_data(ephemera_index);
+	ephemera->shape = shape;
+
+	auto animation = get_shape_animation_data(shape);
+	if (!animation) return;
+
+	if (shapes_file_is_m1() || animation->number_of_views == _unanimated)
+	{
+		ephemera->sequence = BUILD_SEQUENCE(local_random() % animation->frames_per_view, 0);
+	}
+	else
+	{
+		// start animation
+	}
 }

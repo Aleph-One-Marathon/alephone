@@ -130,10 +130,11 @@ const luaL_Reg Lua_Ephemera_Get[] = {
 
 static int Lua_Ephemera_Set_Collection(lua_State* L)
 {
-	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+	auto ephemera_index = Lua_Ephemera::Index(L, 1);
+	auto object = get_ephemera_data(ephemera_index);
 	int16_t collection = Lua_Collection::ToIndex(L, 2);
 
-	object->shape = BUILD_DESCRIPTOR(collection, GET_DESCRIPTOR_SHAPE(object->shape));
+	set_ephemera_shape(ephemera_index, BUILD_DESCRIPTOR(collection, GET_DESCRIPTOR_SHAPE(object->shape)));
 
 	return 0;
 }
@@ -142,11 +143,12 @@ static int Lua_Ephemera_Set_Shape_Index(lua_State* L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "shape_index: incorrect argument type");
-	
+
+	auto ephemera_index = Lua_Ephemera::Index(L, 1);
 	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
 	int16_t shape_index = lua_tonumber(L, 2);
 
-	object->shape = BUILD_DESCRIPTOR(GET_DESCRIPTOR_COLLECTION(object->shape), shape_index);
+	set_ephemera_shape(ephemera_index, BUILD_DESCRIPTOR(GET_DESCRIPTOR_COLLECTION(object->shape), shape_index));
 
 	return 0;
 }

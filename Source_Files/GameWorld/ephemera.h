@@ -37,4 +37,6 @@ int get_max_ephemera();
 void remove_ephemera_from_polygon(int16_t ephemera_index);
 void add_ephemera_to_polygon(int16_t ephemera_index, int16_t polygon_index);
 
+void set_ephemera_shape(int16_t ephemera_index, shape_descriptor shape);
+
 #endif
