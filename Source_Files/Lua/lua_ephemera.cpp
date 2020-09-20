@@ -56,6 +56,14 @@ static int Lua_Ephemera_Get_Polygon(lua_State* L)
 	return 1;
 }
 
+static int Lua_Ephemera_Get_Rendered(lua_State* L)
+{
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+	auto data = get_polygon_ephemera(object->polygon);
+	lua_pushboolean(L, data->rendered);
+	return 1;
+}
+
 static int Lua_Ephemera_Get_Shape_Index(lua_State* L)
 {
 	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
@@ -124,6 +132,7 @@ const luaL_Reg Lua_Ephemera_Get[] = {
 	{"facing", Lua_Ephemera_Get_Facing},
 	{"position", L_TableFunction<Lua_Ephemera_Position>},
 	{"polygon", Lua_Ephemera_Get_Polygon},
+	{"rendered", Lua_Ephemera_Get_Rendered},
 	{"shape_index", Lua_Ephemera_Get_Shape_Index},
 	{"x", Lua_Ephemera_Get_X},
 	{"y", Lua_Ephemera_Get_Y},

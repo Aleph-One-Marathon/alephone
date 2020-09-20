@@ -146,7 +146,8 @@ void RenderPlaceObjsClass::build_render_object_list()
 
 		if (graphics_preferences->ephemera_quality != _ephemera_off)
 		{
-			short ephemera_index = get_polygon_ephemera(sorted_node->polygon_index);
+			auto polygon_ephemera = get_polygon_ephemera(sorted_node->polygon_index);
+			auto ephemera_index = polygon_ephemera->first_object;
 			while (ephemera_index != NONE)
 			{
 				short base_node_count;
@@ -163,6 +164,8 @@ void RenderPlaceObjsClass::build_render_object_list()
 				
 				ephemera_index = get_ephemera_data(ephemera_index)->next_object;
 			}
+
+			polygon_ephemera->rendered = true;
 		}
 	}
 }
