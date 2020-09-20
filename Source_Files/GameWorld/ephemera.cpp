@@ -118,7 +118,7 @@ int16_t new_ephemera(const world_point3d& location, int16_t polygon_index, shape
 			object.facing = facing;
 			object.shape = shape;
 			object.sequence = 0;
-			object.flags = 0;
+			object.flags = 0x8000; // SLOT_IS_USED
 			object.next_object = NONE;
 			// the renderer does not know how to look up parasitic objects for
 			// ephemera

@@ -24,7 +24,14 @@ LUA_EPHEMERA.CPP
 #include "lua_ephemera.h"
 #include "lua_map.h"
 
+int Lua_Ephemera_Delete(lua_State* L)
+{
+	remove_ephemera(Lua_Ephemera::Index(L, 1));
+	return 0;
+}
+
 const luaL_Reg Lua_Ephemera_Get[] = {
+	{"delete", L_TableFunction<Lua_Ephemera_Delete>},
 	{0, 0}
 };
 
