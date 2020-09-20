@@ -123,6 +123,8 @@ Feb 8, 2003 (Woody Zenfell):
 
 #include <limits.h>
 
+#include "ephemera.h"
+
 /* ---------- constants */
 
 /* ---------- globals */
@@ -411,6 +413,8 @@ update_world_elements_one_tick(bool& call_postidle)
 		
 		handle_random_sound_image();
 		animate_scenery();
+
+		update_ephemera();
 		
 		// LP additions:
 		if (film_profile.animate_items)

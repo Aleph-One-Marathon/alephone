@@ -194,6 +194,22 @@ void set_ephemera_shape(int16_t ephemera_index, shape_descriptor shape)
 	}
 	else
 	{
-		// start animation
+		ephemera->sequence = BUILD_SEQUENCE(0, 1);
+		ephemera->transfer_mode = _xfer_normal;
+		ephemera->transfer_phase = 0;
+	}
+}
+
+void update_ephemera()
+{
+	for (auto i : polygon_ephemera)
+	{
+		auto index = i;
+		while (index != NONE)
+		{
+			auto object = get_ephemera_data(index);
+			animate_object(object, NONE);
+			index = object->next_object;
+		}
 	}
 }
