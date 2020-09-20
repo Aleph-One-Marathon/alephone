@@ -520,7 +520,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .dead_players_drop_items <span class="version">20150619</span>
 </dt>
 <dd><p class="description">whether dead players drop items</p></dd>
-<dt>.deserialize(s) <span class="version">git</span>
+<dt>.deserialize(s) <span class="version">20200830</span>
 </dt>
 <dd>
 <p class="description">deserializes s and returns the original Lua value</p>
@@ -548,7 +548,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">When true, the current item counts on the map are updated properly when Lua deletes map items and changes player inventories. This defaults to false to preserve film playback with older scripts. New scripts that manipulate items should always set this to true.</p></dd>
 <dt>
-    .nonlocal_overlays <span class="version">Git</span>
+    .nonlocal_overlays <span class="version">20200830</span>
 </dt>
 <dd><p class="description">When false, only the local player's overlays are used, and only prints to the local player will be displayed. When true, the overlays and prints of whatever player is currently being viewed will apply. This defaults to false for compatibility with scripts that depend on the old behavior.</p></dd>
 <dt>
@@ -586,7 +586,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <p class="description">saves the game (as if the user had activated a pattern buffer)</p>
 <p class="note">solo only </p>
 </dd>
-<dt>.serialize(v) <span class="version">git</span>
+<dt>.serialize(v) <span class="version">20200830</span>
 </dt>
 <dd>
 <p class="description">serializes v into a binary string</p>
@@ -814,7 +814,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">whether level has retrieval flag set</p></dd>
 <dt>
-    .stash[key] <span class="version">git</span>
+    .stash[key] <span class="version">20200830</span>
 </dt>
 <dd>
 <p class="description">reads/writes values to a stash shared between all running Lua scripts</p>
@@ -1261,7 +1261,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Players.print(message)</dt>
 <dd><p class="description">prints message to all players' screens</p></dd>
 <dt>
-    .local_player<span class="access"> (read-only)</span> <span class="version">Git</span>
+    .local_player<span class="access"> (read-only)</span> <span class="version">20200830</span>
 </dt>
 <dd>
 <p class="description">the local player</p>
@@ -1424,7 +1424,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">whether player is completely below liquid</p></dd>
       <dt>
-    .head_direction <span class="version">Git</span>
+    .head_direction <span class="version">20200830</span>
 </dt>
 <dd>
 <p class="description">direction in which player is looking</p>
@@ -1581,7 +1581,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">switch to another player's view</p></dd>
       <dt>
-    .viewed_player<span class="access"> (read-only) (local player)</span> <span class="version">Git</span>
+    .viewed_player<span class="access"> (read-only) (local player)</span> <span class="version">20200830</span>
 </dt>
 <dd><p class="description">the player currently being viewed by the local player</p></dd>
       <dt>.weapons</dt>

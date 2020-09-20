@@ -448,7 +448,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
         <description>whether dead players drop items</description>
         <type>boolean</type>
       </variable>
-      <function name="deserialize" version="git">
+      <function name="deserialize" version="20200830">
         <description>deserializes s and returns the original Lua value</description>
         <argument name="s"><type>string</type></argument>
         <return><type>value</type></return>
@@ -476,7 +476,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>When true, the current item counts on the map are updated properly when Lua deletes map items and changes player inventories. This defaults to false to preserve film playback with older scripts. New scripts that manipulate items should always set this to true.</description>
 	<type>boolean</type>
       </variable>
-      <variable name="nonlocal_overlays" version="Git">
+      <variable name="nonlocal_overlays" version="20200830">
 	<description>When false, only the local player's overlays are used, and only prints to the local player will be displayed. When true, the overlays and prints of whatever player is currently being viewed will apply. This defaults to false for compatibility with scripts that depend on the old behavior.</description>
 	<type>boolean</type>
       </variable>
@@ -517,7 +517,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>saves the game (as if the user had activated a pattern buffer)</description>
 	<note>solo only</note>
       </function>
-      <function name="serialize" version="git">
+      <function name="serialize" version="20200830">
         <description>serializes v into a binary string</description>
         <argument name="v"><type>value</type></argument>
         <return><type>string</type></return>
@@ -713,7 +713,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>whether level has retrieval flag set</description>
 	<type>boolean</type>
       </variable>
-      <variable name="stash[key]" version="git">
+      <variable name="stash[key]" version="20200830">
         <description>reads/writes values to a stash shared between all running Lua scripts</description>
         <note>keys/values must be strings</note>
         <type>string</type>
@@ -1251,7 +1251,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>whether player is completely below liquid</description>
 	<type>boolean</type>
       </variable>
-      <variable name="head_direction" version="Git">
+      <variable name="head_direction" version="20200830">
         <description>direction in which player is looking</description>
         <note>while glancing, this differs from .direction</note>
       </variable>
@@ -1405,7 +1405,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>switch to another player's view</description>
 	<argument name="player"><type>player</type></argument>
       </function>
-      <variable name="viewed_player" access="local-player read-only" version="Git">
+      <variable name="viewed_player" access="local-player read-only" version="20200830">
         <description>the player currently being viewed by the local player</description>
         <type>player</type>
       </variable>
@@ -2022,7 +2022,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>prints message to all players' screens</description>
 	<argument name="message"><type>string</type></argument>
       </function>
-      <variable name="local_player" version="Git" access="read-only">
+      <variable name="local_player" version="20200830" access="read-only">
 	<description>the local player</description>
 	<type>Player</type>
 	<note>normally, you shouldn't need this--you'll just make the game go out of sync</note>
