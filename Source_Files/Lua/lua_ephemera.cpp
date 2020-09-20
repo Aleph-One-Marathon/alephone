@@ -53,6 +53,13 @@ static int Lua_Ephemera_Get_Polygon(lua_State* L)
 	return 1;
 }
 
+static int Lua_Ephemera_Get_Shape_Index(lua_State* L)
+{
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+	lua_pushnumber(L, GET_DESCRIPTOR_SHAPE(object->shape));
+	return 1;
+}
+
 static int Lua_Ephemera_Get_X(lua_State* L)
 {
 	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
@@ -114,13 +121,39 @@ const luaL_Reg Lua_Ephemera_Get[] = {
 	{"facing", Lua_Ephemera_Get_Facing},
 	{"position", L_TableFunction<Lua_Ephemera_Position>},
 	{"polygon", Lua_Ephemera_Get_Polygon},
+	{"shape_index", Lua_Ephemera_Get_Shape_Index},
 	{"x", Lua_Ephemera_Get_X},
 	{"y", Lua_Ephemera_Get_Y},
 	{"z", Lua_Ephemera_Get_Z},
 	{0, 0}
 };
 
+static int Lua_Ephemera_Set_Collection(lua_State* L)
+{
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+	int16_t collection = Lua_Collection::ToIndex(L, 2);
+
+	object->shape = BUILD_DESCRIPTOR(collection, GET_DESCRIPTOR_SHAPE(object->shape));
+
+	return 0;
+}
+
+static int Lua_Ephemera_Set_Shape_Index(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "shape_index: incorrect argument type");
+	
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+	int16_t shape_index = lua_tonumber(L, 2);
+
+	object->shape = BUILD_DESCRIPTOR(GET_DESCRIPTOR_COLLECTION(object->shape), shape_index);
+
+	return 0;
+}
+
 const luaL_Reg Lua_Ephemera_Set[] = {
+	{"collection", Lua_Ephemera_Set_Collection},
+	{"shape_index", Lua_Ephemera_Set_Shape_Index},
 	{0, 0}
 };
 
@@ -148,20 +181,7 @@ static int Lua_Ephemeras_New(lua_State* L)
 	else
 		return luaL_error(L, "new: incorrect argument type");
 
-	uint16_t collection = 0;
-	if (lua_isnumber(L, 5))
-	{
-		collection = static_cast<uint16_t>(lua_tonumber(L, 5));
-		if (!Lua_Collection::Valid(collection))
-			return luaL_error(L, "new: invalid collection index");
-	}
-	else if (Lua_Collection::Is(L, 5))
-	{
-		collection = Lua_Collection::Index(L, 5);
-	}
-	else
-		return luaL_error(L, "new: incorrect argument type");
-
+	uint16_t collection = Lua_Collection::ToIndex(L, 5);
 	uint16_t shape = static_cast<uint16_t>(lua_tonumber(L, 6));
 
 	world_point3d origin;
