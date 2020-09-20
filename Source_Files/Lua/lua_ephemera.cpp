@@ -32,6 +32,13 @@ static int Lua_Ephemera_Delete(lua_State* L)
 	return 0;
 }
 
+static int Lua_Ephemera_Get_Collection(lua_State* L)
+{
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+	Lua_Collection::Push(L, GET_DESCRIPTOR_COLLECTION(object->shape));
+	return 1;
+}
+
 static int Lua_Ephemera_Get_Facing(lua_State* L)
 {
 	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
@@ -102,6 +109,7 @@ static int Lua_Ephemera_Position(lua_State* L)
 }
 
 const luaL_Reg Lua_Ephemera_Get[] = {
+	{"collection", Lua_Ephemera_Get_Collection},
 	{"delete", L_TableFunction<Lua_Ephemera_Delete>},
 	{"facing", Lua_Ephemera_Get_Facing},
 	{"position", L_TableFunction<Lua_Ephemera_Position>},
@@ -123,7 +131,7 @@ char Lua_Ephemeras_Name[] = "Ephemeras";
 static int Lua_Ephemeras_New(lua_State* L)
 {
 	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) ||
-		!lua_isnumber(L, 5) || !lua_isnumber(L, 6) || !lua_isnumber(L, 7))
+		!lua_isnumber(L, 6) || !lua_isnumber(L, 7))
 		luaL_error(L, "new: incorrect argument type");
 
 	int polygon_index = 0;
@@ -140,7 +148,20 @@ static int Lua_Ephemeras_New(lua_State* L)
 	else
 		return luaL_error(L, "new: incorrect argument type");
 
-	uint16_t collection = static_cast<uint16_t>(lua_tonumber(L, 5));
+	uint16_t collection = 0;
+	if (lua_isnumber(L, 5))
+	{
+		collection = static_cast<uint16_t>(lua_tonumber(L, 5));
+		if (!Lua_Collection::Valid(collection))
+			return luaL_error(L, "new: invalid collection index");
+	}
+	else if (Lua_Collection::Is(L, 5))
+	{
+		collection = Lua_Collection::Index(L, 5);
+	}
+	else
+		return luaL_error(L, "new: incorrect argument type");
+
 	uint16_t shape = static_cast<uint16_t>(lua_tonumber(L, 6));
 
 	world_point3d origin;
