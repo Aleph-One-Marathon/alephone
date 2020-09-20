@@ -724,6 +724,12 @@
     <ClCompile Include="shell_misc.cpp">
       <Filter>Main\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GameWorld\ephemera.cpp">
+      <Filter>GameWorld\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lua\lua_ephemera.cpp">
+      <Filter>Lua\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CSeries\BStream.h">
@@ -1406,6 +1412,12 @@
     </ClInclude>
     <ClInclude Include="shell.h">
       <Filter>Main\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameWorld\ephemera.h">
+      <Filter>GameWorld\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lua\lua_ephemera.h">
+      <Filter>Lua\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

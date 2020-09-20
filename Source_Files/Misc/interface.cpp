@@ -309,7 +309,7 @@ extern bool insecure_lua;
 extern bool shapes_file_is_m1();
 
 /* ----------- prototypes/PREPROCESS_MAP_MAC.C */
-extern bool load_game_from_file(FileSpecifier& File, bool run_scripts, bool *was_map_found);
+extern bool load_game_from_file(FileSpecifier& File, bool run_scripts);
 extern bool choose_saved_game_to_load(FileSpecifier& File);
 
 /* ---------------------- prototypes */
@@ -789,12 +789,23 @@ bool join_networked_resume_game()
                         free(theSavedGameFlatData);
                 }
                 
+				bool found_map = false;
                 if(success)
                 {
-                        success = process_map_wad(theWad, true /* resuming */, theWadHeader.data_version);
-                        free_wad(theWad); /* Note that the flat data points into the wad. */
-                        // ZZZ: maybe this is what the Bungie comment meant, but apparently
-                        // free_wad() somehow (voodoo) frees theSavedGameFlatData as well.
+					ResetLevelScript();
+					uint32 theParentChecksum = theWadHeader.parent_checksum;
+					found_map = use_map_file(theParentChecksum);
+
+					if (found_map) {
+						dynamic_data dynamic_data_wad;
+						get_dynamic_data_from_wad(theWad, &dynamic_data_wad);
+						RunLevelScript(dynamic_data_wad.current_level_number);
+					}
+
+                    success = process_map_wad(theWad, true /* resuming */, theWadHeader.data_version);
+                    free_wad(theWad); /* Note that the flat data points into the wad. */
+                    // ZZZ: maybe this is what the Bungie comment meant, but apparently
+                    // free_wad() somehow (voodoo) frees theSavedGameFlatData as well.
                 }
                 
                 if(success)
@@ -807,15 +818,13 @@ bool join_networked_resume_game()
                         // try to locate the Map file for the saved-game, so that (1) we have a crack
                         // at continuing the game if the original gatherer disappears, and (2) we can
                         // save the game on our own machine and continue it properly (as part of a bigger scenario) later.
-                        uint32 theParentChecksum = theWadHeader.parent_checksum;
-                        if(use_map_file(theParentChecksum))
+                        
+                        if(found_map)
                         {
                                 // LP: getting the level scripting off of the map file
                                 // Being careful to carry over errors so that Pfhortran errors can be ignored
                                 short SavedType, SavedError = get_game_error(&SavedType);
-                                RunLevelScript(dynamic_world->current_level_number);
-				RunScriptChunks();
-				LoadStatsLua();
+								LoadStatsLua();
                                 set_game_error(SavedType,SavedError);
                         }
                         else
@@ -830,8 +839,6 @@ bool join_networked_resume_game()
                                 /* Set to the default map. */
                                 set_to_default_map();
 				
-				ResetLevelScript();
-				RunScriptChunks();
 				LoadStatsLua();
                         }
                         
@@ -871,9 +878,7 @@ bool load_and_start_game(FileSpecifier& File)
 		interface_fade_out(MAIN_MENU_BASE, true);
 	}
 
-	// run scripts after we decide single vs. multiplayer
-	bool found_map;
-	success= load_game_from_file(File, false, &found_map);
+	success= load_game_from_file(File, false);
 
 	if (!success)
 	{
@@ -920,16 +925,7 @@ bool load_and_start_game(FileSpecifier& File)
 			
 			// load the scripts we put off before
 			short SavedType, SavedError = get_game_error(&SavedType);
-			if (found_map)
-			{
-				RunLevelScript(dynamic_world->current_level_number);
-			}
-			else
-			{
-				ResetLevelScript();
-			}
-			RunScriptChunks();
-			if (!userWantsMultiplayer)
+			if(!userWantsMultiplayer)
 			{
 				LoadSoloLua();
 			}
