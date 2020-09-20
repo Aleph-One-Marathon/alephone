@@ -34,5 +34,7 @@ object_data* get_ephemera_data(int16_t ephemera_index);
 int16_t get_polygon_ephemera(int16_t polygon_index);
 int get_max_ephemera();
 
+void remove_ephemera_from_polygon(int16_t ephemera_index);
+void add_ephemera_to_polygon(int16_t ephemera_index, int16_t polygon_index);
 
 #endif

@@ -125,9 +125,7 @@ int16_t new_ephemera(const world_point3d& location, int16_t polygon_index, shape
 			object.parasitic_object = NONE; 
 			object.sound_pitch = FIXED_ONE;
 
-			// insert at head of linked list
-			object.next_object = polygon_ephemera.at(polygon_index);
-			polygon_ephemera.at(polygon_index) = ephemera_index;
+			add_ephemera_to_polygon(ephemera_index, polygon_index);
 		}
 	}
 
@@ -136,17 +134,7 @@ int16_t new_ephemera(const world_point3d& location, int16_t polygon_index, shape
 
 void remove_ephemera(int16_t ephemera_index)
 {
-	// remove from the polygon linked list
-	auto& object = ephemera_pool.get(ephemera_index);
-
-	int16_t* p = &polygon_ephemera.at(object.polygon);
-	while (*p != ephemera_index) {
-		p = &ephemera_pool.get(*p).next_object;
-	}
-
-	*p = object.next_object;
-	object.polygon = NONE;
-
+	remove_ephemera_from_polygon(ephemera_index);
 	ephemera_pool.release(ephemera_index);
 }
 
@@ -164,4 +152,27 @@ int16_t get_polygon_ephemera(int16_t polygon_index)
 {
 	// TODO: settle on bounds checking
 	return polygon_ephemera.at(polygon_index);
+}
+
+void remove_ephemera_from_polygon(int16_t ephemera_index)
+{
+	auto& object = ephemera_pool.get(ephemera_index);
+
+	int16_t* p = &polygon_ephemera.at(object.polygon);
+	while (*p != ephemera_index) {
+		p = &ephemera_pool.get(*p).next_object;
+	}
+
+	*p = object.next_object;
+	object.polygon = NONE;
+}
+
+void add_ephemera_to_polygon(int16_t ephemera_index, int16_t polygon_index)
+{
+	auto ephemera = get_ephemera_data(ephemera_index);
+
+	ephemera->next_object = polygon_ephemera[polygon_index];
+	polygon_ephemera[polygon_index] = ephemera_index;
+	
+	ephemera->polygon = polygon_index;
 }

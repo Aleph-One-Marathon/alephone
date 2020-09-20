@@ -24,14 +24,91 @@ LUA_EPHEMERA.CPP
 #include "lua_ephemera.h"
 #include "lua_map.h"
 
-int Lua_Ephemera_Delete(lua_State* L)
+const float AngleConvert = 360/float(FULL_CIRCLE);
+
+static int Lua_Ephemera_Delete(lua_State* L)
 {
 	remove_ephemera(Lua_Ephemera::Index(L, 1));
 	return 0;
 }
 
+static int Lua_Ephemera_Get_Facing(lua_State* L)
+{
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+	lua_pushnumber(L, (double) object->facing * AngleConvert);
+	return 1;
+}
+
+static int Lua_Ephemera_Get_Polygon(lua_State* L)
+{
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+	Lua_Polygon::Push(L, object->polygon);
+	return 1;
+}
+
+static int Lua_Ephemera_Get_X(lua_State* L)
+{
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+	lua_pushnumber(L, static_cast<double>(object->location.x) / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Ephemera_Get_Y(lua_State* L)
+{
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+	lua_pushnumber(L, static_cast<double>(object->location.y) / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Ephemera_Get_Z(lua_State* L)
+{
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+	lua_pushnumber(L, static_cast<double>(object->location.z) / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Ephemera_Position(lua_State* L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4))
+		return luaL_error(L, "position: incorrect argument type");
+
+	short polygon_index = 0;
+	if (lua_isnumber(L, 5))
+	{
+		polygon_index = static_cast<int>(lua_tonumber(L, 5));
+		if (!Lua_Polygon::Valid(polygon_index))
+			return luaL_error(L, "position: invalid polygon index");
+	}
+	else if (Lua_Polygon::Is(L, 5))
+	{
+		polygon_index = Lua_Polygon::Index(L, 5);
+	}
+	else
+		return luaL_error(L, "position: incorrect argument type");
+
+	auto object_index = Lua_Ephemera::Index(L, 1);
+	auto object = get_ephemera_data(object_index);
+	object->location.x = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
+	object->location.y = static_cast<int>(lua_tonumber(L, 3) * WORLD_ONE);
+	object->location.z = static_cast<int>(lua_tonumber(L, 4) * WORLD_ONE);
+
+	if (polygon_index != object->polygon)
+	{
+		remove_ephemera_from_polygon(object_index);
+		add_ephemera_to_polygon(object_index, polygon_index);
+	}
+
+	return 0;
+}
+
 const luaL_Reg Lua_Ephemera_Get[] = {
 	{"delete", L_TableFunction<Lua_Ephemera_Delete>},
+	{"facing", Lua_Ephemera_Get_Facing},
+	{"position", L_TableFunction<Lua_Ephemera_Position>},
+	{"polygon", Lua_Ephemera_Get_Polygon},
+	{"x", Lua_Ephemera_Get_X},
+	{"y", Lua_Ephemera_Get_Y},
+	{"z", Lua_Ephemera_Get_Z},
 	{0, 0}
 };
 
@@ -41,8 +118,6 @@ const luaL_Reg Lua_Ephemera_Set[] = {
 
 char Lua_Ephemera_Name[] = "Ephemera";
 char Lua_Ephemeras_Name[] = "Ephemeras";
-
-const float AngleConvert = 360/float(FULL_CIRCLE);
 
 // x, y, z, polygon, collection, sequence, facing
 static int Lua_Ephemeras_New(lua_State* L)
