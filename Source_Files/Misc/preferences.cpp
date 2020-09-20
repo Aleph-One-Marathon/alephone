@@ -967,6 +967,10 @@ static const char *sw_sdl_driver_labels[5] = {
 	"Default", "None", "Direct3D", "OpenGL", NULL
 };
 
+static const char* ephemera_quality_labels[5] = {
+	"Off", "Low", "Medium", "High", "Ultra"
+};
+
 static const char *gamma_labels[9] = {
 	"Darkest", "Darker", "Dark", "Normal", "Light", "Really Light", "Even Lighter", "Lightest", NULL
 };
@@ -1038,9 +1042,14 @@ static void software_rendering_options_dialog(void* arg)
 	table->dual_add(sw_alpha_blending_w->label("Transparent Liquids"), d);
 	table->dual_add(sw_alpha_blending_w, d);
 
+	w_select* ephemera_quality_w = new w_select(graphics_preferences->ephemera_quality, ephemera_quality_labels);
+	table->dual_add(ephemera_quality_w->label("Scripted Effects Quality"), d);
+	table->dual_add(ephemera_quality_w, d);
+
 	w_select *sw_driver_w = new w_select(graphics_preferences->software_sdl_driver, sw_sdl_driver_labels);
 	table->dual_add(sw_driver_w->label("Acceleration"), d);
 	table->dual_add(sw_driver_w, d);
+
 	
 	placer->add(table, true);
 
@@ -1084,6 +1093,12 @@ static void software_rendering_options_dialog(void* arg)
 		if (sw_driver_w->get_selection() != graphics_preferences->software_sdl_driver)
 		{
 			graphics_preferences->software_sdl_driver = sw_driver_w->get_selection();
+			changed = true;
+		}
+
+		if (ephemera_quality_w->get_selection() != graphics_preferences->ephemera_quality)
+		{
+			graphics_preferences->ephemera_quality = ephemera_quality_w->get_selection();
 			changed = true;
 		}
 		
@@ -3131,6 +3146,7 @@ InfoTree graphics_preferences_tree()
 	root.put_attr("movie_export_video_quality", graphics_preferences->movie_export_video_quality);
 	root.put_attr("movie_export_video_bitrate", graphics_preferences->movie_export_video_bitrate);
 	root.put_attr("movie_export_audio_quality", graphics_preferences->movie_export_audio_quality);
+	root.put_attr("scripted_effects_quality", graphics_preferences->ephemera_quality);
 	
 	root.add_color("void.color", graphics_preferences->OGL_Configure.VoidColor);
 
@@ -3545,6 +3561,8 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->movie_export_video_quality = 50;
 	preferences->movie_export_audio_quality = 50;
 	preferences->movie_export_video_bitrate = 0; // auto
+
+	preferences->ephemera_quality = _ephemera_medium;
 }
 
 static void default_network_preferences(network_preferences_data *preferences)
@@ -4013,6 +4031,8 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr_bounded<int16>("movie_export_video_quality", graphics_preferences->movie_export_video_quality, 0, 100);
 	root.read_attr_bounded<int16>("movie_export_audio_quality", graphics_preferences->movie_export_audio_quality, 0, 100);
 	root.read_attr("movie_export_video_bitrate", graphics_preferences->movie_export_video_bitrate);
+
+	root.read_attr("scripted_effects_quality", graphics_preferences->ephemera_quality);
 	
 	BOOST_FOREACH(InfoTree vtree, root.children_named("void"))
 	{

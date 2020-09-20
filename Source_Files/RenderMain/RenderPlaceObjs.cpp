@@ -58,6 +58,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "ChaseCam.h"
 #include "player.h"
 #include "ephemera.h"
+#include "preferences.h"
 
 #include <string.h>
 #include <limits.h>
@@ -143,22 +144,25 @@ void RenderPlaceObjsClass::build_render_object_list()
 			object_index= get_object_data(object_index)->next_object;
 		}
 
-		short ephemera_index = get_polygon_ephemera(sorted_node->polygon_index);
-		while (ephemera_index != NONE)
+		if (graphics_preferences->ephemera_quality != _ephemera_off)
 		{
-			short base_node_count;
-			sorted_node_data* base_nodes[MAXIMUM_OBJECT_BASE_NODES];
-
-			render_object_data* render_object =
-				build_render_object(nullptr, floor_intensity, ceiling_intensity, base_nodes, &base_node_count, get_ephemera_data(ephemera_index), 1, nullptr);
-
-			if (render_object)
+			short ephemera_index = get_polygon_ephemera(sorted_node->polygon_index);
+			while (ephemera_index != NONE)
 			{
-				build_aggregate_render_object_clipping_window(render_object, base_nodes, base_node_count);
-				sort_render_object_into_tree(render_object, base_nodes, base_node_count);
+				short base_node_count;
+				sorted_node_data* base_nodes[MAXIMUM_OBJECT_BASE_NODES];
+				
+				render_object_data* render_object =
+					build_render_object(nullptr, floor_intensity, ceiling_intensity, base_nodes, &base_node_count, get_ephemera_data(ephemera_index), 1, nullptr);
+				
+				if (render_object)
+				{
+					build_aggregate_render_object_clipping_window(render_object, base_nodes, base_node_count);
+					sort_render_object_into_tree(render_object, base_nodes, base_node_count);
+				}
+				
+				ephemera_index = get_ephemera_data(ephemera_index)->next_object;
 			}
-
-			ephemera_index = get_ephemera_data(ephemera_index)->next_object;
 		}
 	}
 }

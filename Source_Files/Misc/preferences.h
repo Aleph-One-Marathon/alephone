@@ -77,6 +77,14 @@ enum {
 	_sw_driver_opengl,
 };
 
+enum {
+	_ephemera_off,
+	_ephemera_low,
+	_ephemera_medium,
+	_ephemera_high,
+	_ephemera_ultra
+};
+
 struct graphics_preferences_data
 {
 	struct screen_mode_data screen_mode;
@@ -93,6 +101,8 @@ struct graphics_preferences_data
 	int16 movie_export_video_quality;
 	int32 movie_export_video_bitrate; // 0 is automatic
     int16 movie_export_audio_quality;
+
+	int16 ephemera_quality;
 };
 
 enum {

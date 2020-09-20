@@ -139,11 +139,6 @@ void remove_ephemera(int16_t ephemera_index)
 	ephemera_pool.release(ephemera_index);
 }
 
-int get_max_ephemera()
-{
-	return ephemera_pool.size();
-}
-
 object_data* get_ephemera_data(int16_t ephemera_index)
 {
 	return &ephemera_pool.get(ephemera_index);

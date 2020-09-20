@@ -20,9 +20,12 @@ LUA_EPHEMERA.CPP
 	Implements Lua ephemera classes
 */
 
+#include <functional>
+
 #include "ephemera.h"
 #include "lua_ephemera.h"
 #include "lua_map.h"
+#include "preferences.h"
 
 const float AngleConvert = 360/float(FULL_CIRCLE);
 
@@ -162,6 +165,15 @@ const luaL_Reg Lua_Ephemera_Set[] = {
 char Lua_Ephemera_Name[] = "Ephemera";
 char Lua_Ephemeras_Name[] = "Ephemeras";
 
+char Lua_EphemeraQuality_Name[] = "ephemera_quality";
+typedef L_Enum<Lua_EphemeraQuality_Name> Lua_EphemeraQuality;
+
+static int Lua_Ephemeras_Get_Quality(lua_State* L)
+{
+	Lua_EphemeraQuality::Push(L, graphics_preferences->ephemera_quality);
+	return 1;
+}
+
 // x, y, z, polygon, collection, sequence, facing
 static int Lua_Ephemeras_New(lua_State* L)
 {
@@ -206,12 +218,13 @@ static int Lua_Ephemeras_New(lua_State* L)
 
 const luaL_Reg Lua_Ephemeras_Methods[] = {
 	{"new", L_TableFunction<Lua_Ephemeras_New>},
+	{"quality", Lua_Ephemeras_Get_Quality},
 	{0, 0}
 };
 
 static bool Lua_Ephemera_Valid(int32 index)
 {
-	if (index < 0 || index >= get_max_ephemera())
+	if (index < 0 || index >= get_dynamic_limit(_dynamic_limit_ephemera))
 	{
 		return false;
 	}
@@ -223,10 +236,14 @@ static bool Lua_Ephemera_Valid(int32 index)
 
 int Lua_Ephemera_register(lua_State* L)
 {
+	Lua_EphemeraQuality::Register(L, 0, 0, 0, Lua_EphemeraQuality_Mnemonics);
+	Lua_EphemeraQuality::Valid = Lua_EphemeraQuality::ValidRange(static_cast<int>(_ephemera_ultra) + 1);
+	
 	Lua_Ephemera::Register(L, Lua_Ephemera_Get, Lua_Ephemera_Set);
 	Lua_Ephemera::Valid = Lua_Ephemera_Valid;
 
 	Lua_Ephemeras::Register(L, Lua_Ephemeras_Methods);
+	Lua_Ephemeras::Length = std::bind(get_dynamic_limit, (int) _dynamic_limit_ephemera);
 
 	return 0;
 }
