@@ -1106,6 +1106,7 @@ uint32 *action_flags;
 
 // For better_random
 GM_Random lua_random_generator;
+GM_Random lua_render_random_generator;
 
 double FindLinearValue(double startValue, double endValue, double timeRange, double timeTaken)
 {
@@ -1842,6 +1843,11 @@ bool RunLuaScript()
 {
 	InitializeLuaVariables();
 	PreservePreLuaSettings();
+
+	lua_render_random_generator.z = (static_cast<uint32>(local_random()) << 16) + static_cast<uint32>(local_random());
+	lua_render_random_generator.w = (static_cast<uint32>(local_random()) << 16) + static_cast<uint32>(local_random());
+	lua_render_random_generator.jsr = (static_cast<uint32>(local_random()) << 16) + static_cast<uint32>(local_random());
+	lua_render_random_generator.jcong = (static_cast<uint32>(local_random()) << 16) + static_cast<uint32>(local_random());
 
 	bool running = false;
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
