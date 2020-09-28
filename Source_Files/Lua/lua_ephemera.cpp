@@ -27,12 +27,41 @@ LUA_EPHEMERA.CPP
 #include "lua_map.h"
 #include "preferences.h"
 
+static uint16_t set_shape(uint16_t descriptor, uint16_t shape)
+{
+	descriptor &= ~(MAXIMUM_SHAPES_PER_COLLECTION - 1);
+	descriptor |= shape;
+
+	return descriptor;
+}
+
+static uint16_t set_clut(uint16_t descriptor, uint16_t clut)
+{
+	descriptor &= ~((MAXIMUM_CLUTS_PER_COLLECTION - 1) << (DESCRIPTOR_SHAPE_BITS + DESCRIPTOR_COLLECTION_BITS));
+	descriptor |= clut << (DESCRIPTOR_SHAPE_BITS + DESCRIPTOR_COLLECTION_BITS);
+	return descriptor;
+}
+
+static uint16_t set_collection(uint16_t descriptor, uint16_t collection)
+{
+	descriptor &= ~((MAXIMUM_COLLECTIONS - 1) << DESCRIPTOR_SHAPE_BITS);
+	descriptor |= collection << DESCRIPTOR_SHAPE_BITS;
+	return descriptor;
+}
+
 const float AngleConvert = 360/float(FULL_CIRCLE);
 
 static int Lua_Ephemera_Delete(lua_State* L)
 {
 	remove_ephemera(Lua_Ephemera::Index(L, 1));
 	return 0;
+}
+
+static int Lua_Ephemera_Get_Clut_Index(lua_State* L)
+{
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+	lua_pushnumber(L, object->shape >> (DESCRIPTOR_SHAPE_BITS + DESCRIPTOR_COLLECTION_BITS));
+	return 1;
 }
 
 static int Lua_Ephemera_Get_Collection(lua_State* L)
@@ -127,6 +156,7 @@ static int Lua_Ephemera_Position(lua_State* L)
 }
 
 const luaL_Reg Lua_Ephemera_Get[] = {
+	{"clut_index", Lua_Ephemera_Get_Clut_Index},
 	{"collection", Lua_Ephemera_Get_Collection},
 	{"delete", L_TableFunction<Lua_Ephemera_Delete>},
 	{"facing", Lua_Ephemera_Get_Facing},
@@ -140,13 +170,27 @@ const luaL_Reg Lua_Ephemera_Get[] = {
 	{0, 0}
 };
 
+static int Lua_Ephemera_Set_Clut_Index(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "clut_index: incorrect argument type");
+	
+	auto ephemera_index = Lua_Ephemera::Index(L, 1);
+	auto object = get_ephemera_data(ephemera_index);
+	uint16_t clut_index = lua_tonumber(L, 2);
+
+	set_ephemera_shape(ephemera_index, set_clut(object->shape, clut_index));
+
+	return 0;
+}
+
 static int Lua_Ephemera_Set_Collection(lua_State* L)
 {
 	auto ephemera_index = Lua_Ephemera::Index(L, 1);
 	auto object = get_ephemera_data(ephemera_index);
 	int16_t collection = Lua_Collection::ToIndex(L, 2);
 
-	set_ephemera_shape(ephemera_index, BUILD_DESCRIPTOR(collection, GET_DESCRIPTOR_SHAPE(object->shape)));
+	set_ephemera_shape(ephemera_index, set_collection(object->shape, collection));
 
 	return 0;
 }
@@ -160,12 +204,13 @@ static int Lua_Ephemera_Set_Shape_Index(lua_State* L)
 	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
 	int16_t shape_index = lua_tonumber(L, 2);
 
-	set_ephemera_shape(ephemera_index, BUILD_DESCRIPTOR(GET_DESCRIPTOR_COLLECTION(object->shape), shape_index));
+	set_ephemera_shape(ephemera_index, set_shape(object->shape, shape_index));
 
 	return 0;
 }
 
 const luaL_Reg Lua_Ephemera_Set[] = {
+	{"clut_index", Lua_Ephemera_Set_Clut_Index},
 	{"collection", Lua_Ephemera_Set_Collection},
 	{"shape_index", Lua_Ephemera_Set_Shape_Index},
 	{0, 0}
