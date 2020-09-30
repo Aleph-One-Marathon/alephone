@@ -38,6 +38,8 @@ Jul 31, 2002 (Loren Petrich)
 // LP: CodeWarrior complains unless I give the full definition of these classes
 #include "FileHandler.h"
 
+#include <memory>
+
 extern void initialize_images_manager(void);
 
 extern bool images_picture_exists(int base_resource);

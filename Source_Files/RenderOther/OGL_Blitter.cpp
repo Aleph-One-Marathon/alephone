@@ -22,6 +22,9 @@
 */
 
 #include "OGL_Blitter.h"
+
+#include <memory>
+
 #include "OGL_Setup.h"
 #include "shell.h"
 #include "screen.h"
