@@ -51,7 +51,7 @@ static uint16 m2_dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
 		// doesn't affect film playback)
 	16,	// Local collision buffer (target visibility, NPC-NPC collisions, etc.)
 	64,	// Global collision buffer (projectiles with other objects)
-	1024, // Ephemeral objects (render effects)
+	4096 // Ephemeral objects (render effects)
 };
 
 // expanded defaults up to 1.0
@@ -65,7 +65,7 @@ static uint16 a1_1_0_dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
 	1024,	// Number of objects to render
 	64,	// Local collision buffer (target visibility, NPC-NPC collisions, etc.)
 	256,	// Global collision buffer (projectiles with other objects)
-	1024 // Ephemeral objects (render effects)
+	4096 // Ephemeral objects (render effects)
 };
 
 // 1.1 reverts paths for classic scenario compatibility
@@ -79,7 +79,7 @@ static uint16 a1_1_1_dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
 	1024,	// Number of objects to render
 	64,	// Local collision buffer (target visibility, NPC-NPC collisions, etc.)
 	256,	// Global collision buffer (projectiles with other objects)
-	1024 // Ephemeral objects (render effects)
+	4096 // Ephemeral objects (render effects)
 };
 
 static std::vector<uint16> dynamic_limits(NUMBER_OF_DYNAMIC_LIMITS);
