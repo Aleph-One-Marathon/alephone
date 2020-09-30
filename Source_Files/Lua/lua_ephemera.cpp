@@ -71,6 +71,13 @@ static int Lua_Ephemera_Get_Collection(lua_State* L)
 	return 1;
 }
 
+static int Lua_Ephemera_Get_Enlarged(lua_State* L)
+{
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+	lua_pushboolean(L, GET_OBJECT_SCALE_FLAGS(object) & _object_is_enlarged);
+	return 1;
+}
+
 static int Lua_Ephemera_Get_Facing(lua_State* L)
 {
 	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
@@ -97,6 +104,13 @@ static int Lua_Ephemera_Get_Shape_Index(lua_State* L)
 {
 	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
 	lua_pushnumber(L, GET_DESCRIPTOR_SHAPE(object->shape));
+	return 1;
+}
+
+static int Lua_Ephemera_Get_Tiny(lua_State* L)
+{
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+	lua_pushboolean(L, GET_OBJECT_SCALE_FLAGS(object) & _object_is_tiny);
 	return 1;
 }
 
@@ -159,11 +173,13 @@ const luaL_Reg Lua_Ephemera_Get[] = {
 	{"clut_index", Lua_Ephemera_Get_Clut_Index},
 	{"collection", Lua_Ephemera_Get_Collection},
 	{"delete", L_TableFunction<Lua_Ephemera_Delete>},
+	{"enlarged", Lua_Ephemera_Get_Enlarged},
 	{"facing", Lua_Ephemera_Get_Facing},
 	{"position", L_TableFunction<Lua_Ephemera_Position>},
 	{"polygon", Lua_Ephemera_Get_Polygon},
 	{"rendered", Lua_Ephemera_Get_Rendered},
 	{"shape_index", Lua_Ephemera_Get_Shape_Index},
+	{"tiny", Lua_Ephemera_Get_Tiny},
 	{"x", Lua_Ephemera_Get_X},
 	{"y", Lua_Ephemera_Get_Y},
 	{"z", Lua_Ephemera_Get_Z},
@@ -195,6 +211,23 @@ static int Lua_Ephemera_Set_Collection(lua_State* L)
 	return 0;
 }
 
+
+static int Lua_Ephemera_Set_Enlarged(lua_State* L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "enlarged: incorrect argument type");
+
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+
+	if (lua_toboolean(L, 2)) {
+		object->flags |= _object_is_enlarged;
+	} else {
+		object->flags &= ~_object_is_enlarged;
+	}
+
+	return 0;
+}
+
 static int Lua_Ephemera_Set_Shape_Index(lua_State* L)
 {
 	if (!lua_isnumber(L, 2))
@@ -209,10 +242,28 @@ static int Lua_Ephemera_Set_Shape_Index(lua_State* L)
 	return 0;
 }
 
+static int Lua_Ephemera_Set_Tiny(lua_State* L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "tiny: incorrect argument type");
+
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+
+	if (lua_toboolean(L, 2)) {
+		object->flags |= _object_is_tiny;
+	} else {
+		object->flags &= ~_object_is_tiny;
+	}
+
+	return 0;
+}
+
 const luaL_Reg Lua_Ephemera_Set[] = {
 	{"clut_index", Lua_Ephemera_Set_Clut_Index},
 	{"collection", Lua_Ephemera_Set_Collection},
+	{"enlarged", Lua_Ephemera_Set_Enlarged},
 	{"shape_index", Lua_Ephemera_Set_Shape_Index},
+	{"tiny", Lua_Ephemera_Set_Tiny},
 	{0, 0}
 };
 
