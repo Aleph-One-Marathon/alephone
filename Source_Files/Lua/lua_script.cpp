@@ -179,6 +179,7 @@ void L_Invalidate_Effect(short) { }
 void L_Invalidate_Monster(short) { }
 void L_Invalidate_Projectile(short) { }
 void L_Invalidate_Object(short) { }
+void L_Invalidate_Ephemera(short) { }
 
 bool LoadLuaScript(const char *buffer, size_t len, const char *desc) { /* Should never get here! */ return false; }
 bool RunLuaScript() {
@@ -344,6 +345,7 @@ public:
 	void InvalidateMonster(short monster_index);
 	void InvalidateProjectile(short projectile_index);
 	void InvalidateObject(short object_index);
+	void InvalidateEphemera(short ephemera_index);
 
 	int RestorePassed(const std::string& s);
 	int RestoreAll(const std::string& s);
@@ -719,6 +721,13 @@ void LuaState::InvalidateObject(short object_index)
 	{
 		Lua_Scenery::Invalidate(State(), object_index);
 	}
+}
+
+void LuaState::InvalidateEphemera(short ephemera_index)
+{
+	if (!running_) return;
+
+	Lua_Ephemera::Invalidate(State(), ephemera_index);
 }
 
 static char L_SEARCH_PATH_KEY[] = "search_path";
@@ -1336,6 +1345,11 @@ void L_Invalidate_Projectile(short projectile_index)
 void L_Invalidate_Object(short object_index)
 {
 	L_Dispatch(boost::bind(&LuaState::InvalidateObject, _1, object_index));
+}
+
+void L_Invalidate_Ephemera(short ephemera_index)
+{
+	L_Dispatch(boost::bind(&LuaState::InvalidateEphemera, _1, ephemera_index));
 }
 
 int L_Enable_Player(lua_State *L)

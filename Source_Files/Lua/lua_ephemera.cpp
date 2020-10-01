@@ -71,6 +71,13 @@ static int Lua_Ephemera_Get_Collection(lua_State* L)
 	return 1;
 }
 
+static int Lua_Ephemera_Get_End_When_Animation_Loops(lua_State* L)
+{
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+	lua_pushboolean(L, object->flags & _ephemera_end_when_animation_loops);
+	return 1;
+}
+
 static int Lua_Ephemera_Get_Enlarged(lua_State* L)
 {
 	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
@@ -111,6 +118,12 @@ static int Lua_Ephemera_Get_Tiny(lua_State* L)
 {
 	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
 	lua_pushboolean(L, GET_OBJECT_SCALE_FLAGS(object) & _object_is_tiny);
+	return 1;
+}
+
+static int Lua_Ephemera_Get_Valid(lua_State* L)
+{
+	lua_pushboolean(L, Lua_Ephemera::Valid(Lua_Ephemera::Index(L, 1)));
 	return 1;
 }
 
@@ -173,6 +186,7 @@ const luaL_Reg Lua_Ephemera_Get[] = {
 	{"clut_index", Lua_Ephemera_Get_Clut_Index},
 	{"collection", Lua_Ephemera_Get_Collection},
 	{"delete", L_TableFunction<Lua_Ephemera_Delete>},
+	{"end_when_animation_loops", Lua_Ephemera_Get_End_When_Animation_Loops},
 	{"enlarged", Lua_Ephemera_Get_Enlarged},
 	{"facing", Lua_Ephemera_Get_Facing},
 	{"position", L_TableFunction<Lua_Ephemera_Position>},
@@ -180,6 +194,7 @@ const luaL_Reg Lua_Ephemera_Get[] = {
 	{"rendered", Lua_Ephemera_Get_Rendered},
 	{"shape_index", Lua_Ephemera_Get_Shape_Index},
 	{"tiny", Lua_Ephemera_Get_Tiny},
+	{"valid", Lua_Ephemera_Get_Valid},
 	{"x", Lua_Ephemera_Get_X},
 	{"y", Lua_Ephemera_Get_Y},
 	{"z", Lua_Ephemera_Get_Z},
@@ -211,6 +226,21 @@ static int Lua_Ephemera_Set_Collection(lua_State* L)
 	return 0;
 }
 
+static int Lua_Ephemera_Set_End_When_Animation_Loops(lua_State* L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "end_when_animation_loops: incorrect argument type");
+
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+
+	if (lua_toboolean(L, 2)) {
+		object->flags |= _ephemera_end_when_animation_loops;
+	} else {
+		object->flags &= ~_ephemera_end_when_animation_loops;
+	}
+
+	return 0;
+}
 
 static int Lua_Ephemera_Set_Enlarged(lua_State* L)
 {
@@ -261,6 +291,7 @@ static int Lua_Ephemera_Set_Tiny(lua_State* L)
 const luaL_Reg Lua_Ephemera_Set[] = {
 	{"clut_index", Lua_Ephemera_Set_Clut_Index},
 	{"collection", Lua_Ephemera_Set_Collection},
+	{"end_when_animation_loops", Lua_Ephemera_Set_End_When_Animation_Loops},
 	{"enlarged", Lua_Ephemera_Set_Enlarged},
 	{"shape_index", Lua_Ephemera_Set_Shape_Index},
 	{"tiny", Lua_Ephemera_Set_Tiny},

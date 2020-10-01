@@ -20,6 +20,7 @@
 
 #include "dynamic_limits.h"
 #include "interface.h"
+#include "lua_script.h"
 #include "map.h"
 
 class ObjectDataPool {
@@ -138,6 +139,7 @@ int16_t new_ephemera(const world_point3d& location, int16_t polygon_index, shape
 void remove_ephemera(int16_t ephemera_index)
 {
 	remove_ephemera_from_polygon(ephemera_index);
+	L_Invalidate_Ephemera(ephemera_index);
 	ephemera_pool.release(ephemera_index);
 }
 
@@ -211,7 +213,19 @@ void update_ephemera()
 		{
 			auto object = get_ephemera_data(index);
 			animate_object(object, NONE);
-			index = object->next_object;
+
+			const uint16 flags = _obj_last_frame_animated | _ephemera_end_when_animation_loops;
+			if ((object->flags & flags) == flags)
+			{
+				// remove the item
+				int16_t next_index = object->next_object;
+				remove_ephemera(index);
+				index = next_index;
+			}
+			else
+			{
+				index = object->next_object;
+			}
 		}
 
 		data.rendered = false;

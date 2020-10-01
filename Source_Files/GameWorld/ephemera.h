@@ -25,6 +25,11 @@
 #include "shape_descriptors.h"
 #include "world.h"
 
+// object owner flags are unused, so we can re-use them to specify behavior
+enum {
+	_ephemera_end_when_animation_loops = 0x0004
+};
+
 void allocate_ephemera_storage(int max_ephemera);
 void init_ephemera(int16_t polygon_count);
 int16_t new_ephemera(const world_point3d& origin, int16_t polygon_index, shape_descriptor shape, angle facing);
