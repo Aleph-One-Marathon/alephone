@@ -35,7 +35,7 @@ extern "C"
 
 #include "lua_templates.h"
 
-extern char Lua_Ephemera_Name[]; // "Ephemera"
+extern char Lua_Ephemera_Name[]; // "ephemera"
 typedef L_Class<Lua_Ephemera_Name> Lua_Ephemera;
 
 extern char Lua_Ephemeras_Name[]; // "Ephemeras"

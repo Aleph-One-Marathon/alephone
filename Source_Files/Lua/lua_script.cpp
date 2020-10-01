@@ -1064,18 +1064,35 @@ int LuaState::RestorePassed(const std::string& s)
 
 std::string LuaState::SaveAll()
 {
+	std::string retval;
+	static const char key = 'k';
+
 	lua_pushlightuserdata(State(), L_Persistent_Table_Key());
 	lua_gettable(State(), LUA_REGISTRYINDEX);
+
+	// keep the ephemera fields in a temp location
+	lua_pushlightuserdata(State(), const_cast<char*>(&key));
+	lua_getfield(State(), -2, Lua_Ephemera_Name);
+	lua_settable(State(), LUA_REGISTRYINDEX);
+
+	// remove it from the table while we save
+	lua_pushnil(State());
+	lua_setfield(State(), -2, Lua_Ephemera_Name);
 
 	std::stringbuf sb;
 	if (lua_save(State(), &sb))
 	{
-		return sb.str();
+		retval = sb.str();
 	}
-	else
-	{
-		return std::string();
-	}
+
+	// restore the ephemera fields
+	lua_pushlightuserdata(State(), const_cast<char*>(&key));
+	lua_gettable(State(), LUA_REGISTRYINDEX);
+	lua_setfield(State(), -2, Lua_Ephemera_Name);
+
+	lua_pop(State(), 1);
+
+	return retval;
 }
 
 std::string LuaState::SavePassed()

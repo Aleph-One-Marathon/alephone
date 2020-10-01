@@ -298,7 +298,7 @@ const luaL_Reg Lua_Ephemera_Set[] = {
 	{0, 0}
 };
 
-char Lua_Ephemera_Name[] = "Ephemera";
+char Lua_Ephemera_Name[] = "ephemera";
 char Lua_Ephemeras_Name[] = "Ephemeras";
 
 char Lua_EphemeraQuality_Name[] = "ephemera_quality";
