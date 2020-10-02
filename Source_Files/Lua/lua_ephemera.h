@@ -38,7 +38,7 @@ extern "C"
 extern char Lua_Ephemera_Name[]; // "ephemera"
 typedef L_Class<Lua_Ephemera_Name> Lua_Ephemera;
 
-extern char Lua_Ephemeras_Name[]; // "Ephemeras"
+extern char Lua_Ephemeras_Name[]; // "Ephemera"
 typedef L_Container<Lua_Ephemeras_Name, Lua_Ephemera> Lua_Ephemeras;
 
 int Lua_Ephemera_register(lua_State* L);

@@ -299,7 +299,7 @@ const luaL_Reg Lua_Ephemera_Set[] = {
 };
 
 char Lua_Ephemera_Name[] = "ephemera";
-char Lua_Ephemeras_Name[] = "Ephemeras";
+char Lua_Ephemeras_Name[] = "Ephemera";
 
 char Lua_EphemeraQuality_Name[] = "ephemera_quality";
 typedef L_Enum<Lua_EphemeraQuality_Name> Lua_EphemeraQuality;

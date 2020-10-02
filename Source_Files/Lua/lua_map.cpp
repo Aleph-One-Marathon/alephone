@@ -24,7 +24,6 @@ LUA_MAP.CPP
 
 #include "interface.h" // get_game_state
 #include "network.h"   // game_info
-#include "lua_ephemera.h"
 #include "lua_map.h"
 #include "lua_monsters.h"
 #include "lua_objects.h"
@@ -3186,12 +3185,6 @@ static int Lua_Level_Get_Stash(lua_State* L)
         return 1;
 }
 
-static int Lua_Level_Get_Ephemera(lua_State* L)
-{
-	Lua_Ephemeras::Push(L, 0);
-	return 1;
-}
-
 static int Lua_Level_Get_Underwater_Fog(lua_State *L)
 {
 	Lua_Fog::Push(L, OGL_Fog_BelowLiquid);
@@ -3201,7 +3194,6 @@ static int Lua_Level_Get_Underwater_Fog(lua_State *L)
 const luaL_Reg Lua_Level_Get[] = {
 	{"calculate_completion_state", L_TableFunction<Lua_Level_Calculate_Completion_State>},
 	{"completed", Lua_Level_Get_Completed},
-	{"ephemera", Lua_Level_Get_Ephemera},
 	{"extermination", Lua_Level_Get_Mission_Flag<_mission_extermination>},
 	{"exploration", Lua_Level_Get_Mission_Flag<_mission_exploration>},
 	{"fog", Lua_Level_Get_Fog},
