@@ -106,12 +106,17 @@
 		</ul>
       </description>
     </section>
-    <section name="Local Player" id="local_player">
-      <description>
-		<p>A few variables are marked "local player." These variables will always do the right thing when written to, but when reading, will only return a useful result if the player they belong to is "local." In net games, there is a separate copy of each Lua script running on each player’s computer, and the player is "local" only to his copy of the script.</p>
-		<p>So, the only local player variables the script running on player 4’s machine will be able to read from are the ones in Players[4]. For his script, the value of Players[1].zoom_active, for example, will return nil. If this confuses you, it might be better to avoid reading from any variable marked "local player."</p>
-      </description>
-    </section>
+	<section name="Net Games and Films" id="sync">
+	  <description>
+		<p>Aleph One net games distribute a set of player inputs, which are applied to each distributed game world or to the game world in the film being played back. There is a separate copy of the Lua script running on each player’s machine. This means that in order to prevent net games from going out of sync, or films from playing back incorrectly, each of the separately running Lua scripts needs to manipulate the world the exact same way.</p>
+		<p>For example, if one player’s Lua script creates a monster, that monsters actions in the game are controlled by the random seed established at the beginning of the game. So, the other players’ scripts must create the same monster the same way, or the net game will go out of sync.</p>
+		<p>Usually this is not a problem, as long as scripters avoid functions marked with the "local player" tag, and the two local random functions, which will return different results on different machines. The <code>global_random</code> and <code>random</code> functions will return the same number on different machines, as long as they are called the same number of times, so they are safe to use for net games.</p>
+		<p>These rules apply to film playback as well; films will only play back if scripts behave exactly the same way as when the film was recorded</p>
+		<p>A few accessors, such as Ephemera and Fog were designed to be used on a "local player" basis without breaking films or net. For instance, it would be safe to programmatically disable fog when a player zooms in by checking <code>Players.local_player.zoom_active</code>--because the mere presence of fog will not cause a net game or film to go out of sync. Likewise, Ephemera can be created based on the Ephemera.quality setting, which will vary from machine to machine. A script that only uses Ephemera can be turned on and off and film playback will be unaffected.</p>
+		<p>When using local-safe accessors like Ephemera and Fog, it is important to use the matching <code>random_local</code> function, because it will not affect the progression of the ordinary random functions.</p>
+		<p>If this is confusing to you, it would be safest simply to avoid using anything marked with the "local player" tag, as well as the two local random functions and Ephemera.</p>
+	  </description>
+	</section>
     <section name="Loading Collections" id="loading_collections">
       <description>
 		<p>A Lua script can ask for the engine to load collections it might otherwise not load; for instance, in order to be able to spawn defenders and compilers on a map that might not have them otherwise, add the indices for those collections to the global table CollectionsUsed:
@@ -496,13 +501,19 @@
 		<description>returns a random number between 0 and n-1 from Aleph One’s original random number generator</description>
 		<argument name="n"><type>number</type></argument>
 		<return><type>number</type></return>
-		<note>this is a good way to put net games out of sync</note>
+		<note>use only for local player effects (see Net Games and Films)</note>
       </function>
       <function name="random">
 		<description>returns a random number between 0 and n-1 using a good random number generator</description>
 		<argument name="n"><type>number</type></argument>
 		<return><type>number</type></return>
       </function>
+	  <function name="random_local" version="git">
+		<description>returns a random number between 0 and n-1 using a good random number generator</description>
+		<argument name="n"><type>number</type></argument>
+		<return><type>number</type></return>
+		<note>use only for local player effects (see Net Games and Films)</note>
+	  </function>
       <function name="restore_passed" version="20090909">
 		<description>tries to restore any Player or Game custom fields from before the last level jump; returns true if custom fields were successfully restored</description>
 		<note>if successful, overwrites all existing Player or Game custom fields</note>
@@ -723,6 +734,69 @@
 		<type>boolean</type>
       </variable>
     </table>
+	<table name="ephemera">
+	  <variable name="clut_index">
+		<type>number</type>
+		<description>color table of this ephemera</description>
+	  </variable>
+	  <variable name="collection">
+		<type>collection</type>
+		<description>shape collection of this ephemera</description>
+	  </variable>
+	  <variable name="end_when_animation_loops">
+		<type>boolean</type>
+		<description>if set, ephemera is removed once animation finishes</description>
+	  </variable>
+	  <function name="delete">
+		<description>removes ephemera from the level</description>
+	  </function>
+	  <variable name="enlarged">
+		<type>boolean</type>
+		<description>ephemera is rendered 25% bigger</description>
+	  </variable>
+	  <variable name="facing">
+		<type>angle</type>
+		<description>direction the ephemera is facing</description>
+	  </variable>
+	  <function name="position">
+		<argument name="x"><type>WU</type></argument>
+		<argument name="y"><type>WU</type></argument>
+		<argument name="z"><type>WU</type></argument>
+		<argument name="polygon"><type>polygon</type></argument>
+		<description>sets position of ephemera</description>
+	  </function>
+	  <variable name="polygon" access="read-only">
+		<type>polygon</type>
+		<description>polygon this ephemera is in</description>
+	  </variable>
+	  <variable name="rendered" access="read-only">
+		<type>boolean</type>
+		<description>whether this ephemera was recently rendered</description>
+		<note>you can use this to skip updating ephemera that aren’t currently visible</note>
+	  </variable>
+	  <variable name="shape_index">
+		<type>number</type>
+		<description>shape index of ephemera</description>
+		<note>Anvil calls this sequence</note>
+	  </variable>
+	  <variable name="tiny">
+		<type>boolean</type>
+		<description>ephemera is rendered 50% size</description>
+	  </variable>
+	  <variable name="valid" access="read-only">
+		<type>boolean</type>
+		<description>whether ephemera is still valid</description>
+	  </variable>
+	  <variable name="x" access="read-only">
+		<type>WU</type>
+	  </variable>
+	  <variable name="y" access="read-only">
+		<type>WU</type>
+	  </variable>
+	  <variable name="z" access="read-only">
+		<type>WU</type>
+	  </variable>
+	</table>
     <table name="light">
       <variable name="active">
 		<description>whether light is active</description>
@@ -1903,6 +1977,36 @@
 		<description>iterates through all endpoints in the level</description>
       </call>
     </accessor>
+	<accessor name="Ephemera" contains="ephemera" version="git">
+	  <description>
+		<p>Ephemera are a render-only version of Effects. They were designed to be a lightweight way to add effects such as precipitation or decals. They do not use any global random functionality, and they don’t interact at all with other objects in the world, so they are safe to turn on and off without affecting net game sync and film playback (see <a href="#sync">"Net Games and Films"</a>).</p>
+		<p>Ephemera are not saved or restored in saved games, so it is up to the Lua script to serialize them and persist them if desired; and to recreate them upon resume. Likewise, ephemera custom fields are not saved/restored using <code>Level.restored_saved()</code></p>
+		<p><em>All</em> ephemera functions are "local player"</p>
+	  </description>
+	  <length>
+		<description>maximum number of ephemera</description>
+	  </length>
+	  <call>
+		<description>iterates through all valid ephemera</description>
+	  </call>
+	  <function name="new">
+		<description>returns a new ephemera</description>
+		<argument name="x"><type>WU</type></argument>
+		<argument name="y"><type>WU</type></argument>
+		<argument name="height"><type>WU</type></argument>
+		<argument name="polygon"><type>polygon</type></argument>
+		<argument name="collection"><type>collection</type></argument>
+		<argument name="sequence"><type>shape</type></argument>
+		<argument name="facing"><type>angle</type></argument>
+		<return><type>ephemera</type></return>
+	  </function>
+	  <variable name="quality" access="read-only">
+		<type>ephemera_quality</type>
+		<description>user’s ephemera quality setting</description>
+		<note>it is up to the script’s discretion how many ephemera to create / maintain, based on this quality setting; if set to off, ephemera are not rendered regardless of how many the script creates</note>
+	  </variable>
+	  <index/>
+	</accessor>
     <accessor name="Game" contains="game"/>
     <accessor name="Goals" contains="goal">
       <length>
@@ -2350,6 +2454,15 @@
 		<mnemonic name="assimilated civilian fusion blood splash"/>
       </mnemonics>
     </enum>
+	<enum name="ephemera_quality">
+	  <mnemonics>
+		<mnemonic name="off"/>
+		<mnemonic name="low"/>
+		<mnemonic name="medium"/>
+		<mnemonic name="high"/>
+		<mnemonic name="ultra"/>
+	  </mnemonics>
+	</enum>
     <enum name="fade_type">
       <mnemonics>
 		<mnemonic name="start cinematic fade in"/>
@@ -3137,6 +3250,7 @@
     <enum-accessor name="DamageTypes" contains="damage_type" nice-name="Damage"/>
     <enum-accessor name="DifficultyTypes" contains="difficulty_type" nice-name="Difficulty"/>
     <enum-accessor name="EffectTypes" contains="effect_type" nice-name="Effects"/>
+	<enum-accessor name="EphemeraQualities" contains="ephemera_quality" nice-name="Ephemera Quality"/>
     <enum-accessor name="FadeTypes" contains="fade_type" nice-name="Faders"/>
     <enum-accessor name="GameTypes" contains="game_type" nice-name="Game Types"/>
     <enum-accessor name="ItemTypes" contains="item_type" nice-name="Items"/>
