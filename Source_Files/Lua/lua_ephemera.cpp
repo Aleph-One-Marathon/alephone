@@ -304,6 +304,9 @@ char Lua_Ephemeras_Name[] = "Ephemeras";
 char Lua_EphemeraQuality_Name[] = "ephemera_quality";
 typedef L_Enum<Lua_EphemeraQuality_Name> Lua_EphemeraQuality;
 
+char Lua_EphemeraQualities_Name[] = "EphemeraQualities";
+typedef L_EnumContainer<Lua_EphemeraQualities_Name, Lua_EphemeraQuality> Lua_EphemeraQualities;
+
 static int Lua_Ephemeras_Get_Quality(lua_State* L)
 {
 	Lua_EphemeraQuality::Push(L, graphics_preferences->ephemera_quality);
@@ -374,6 +377,9 @@ int Lua_Ephemera_register(lua_State* L)
 {
 	Lua_EphemeraQuality::Register(L, 0, 0, 0, Lua_EphemeraQuality_Mnemonics);
 	Lua_EphemeraQuality::Valid = Lua_EphemeraQuality::ValidRange(static_cast<int>(_ephemera_ultra) + 1);
+
+	Lua_EphemeraQualities::Register(L);
+	Lua_EphemeraQualities::Length = Lua_EphemeraQualities::ConstantLength(5);
 	
 	Lua_Ephemera::Register(L, Lua_Ephemera_Get, Lua_Ephemera_Set);
 	Lua_Ephemera::Valid = Lua_Ephemera_Valid;
