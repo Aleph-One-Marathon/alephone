@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>Aleph One Lua Scripters' Guide</title>
+<title>Aleph One Lua Scripters’ Guide</title>
 <style type="text/css">
       <!-- 
       body {
@@ -194,58 +194,58 @@
 <a name="general"></a>General</h1>
 <h2>
 <a name="what_is_this"></a>What is This?</h2>
-	<p>This is a reference for writing Lua scripts to work in Aleph One. It lists every trigger and table available to Lua scripts. It is expected that Lua functionality will grow in Aleph One, and as it does, so will this document. Not everything here is completely documented, and any help fixing that would be appreciated.</p>
-	<p>This is not a reference for Lua itself - see lua.org for that.</p>
+		<p>This is a reference for writing Lua scripts to work in Aleph One. It lists every trigger and table available to Lua scripts. It is expected that Lua functionality will grow in Aleph One, and as it does, so will this document. Not everything here is completely documented, and any help fixing that would be appreciated.</p>
+		<p>This is not a reference for Lua itself - see lua.org for that.</p>
       <h2>
 <a name="running_a_script"></a>Running a Script</h2>
-	<p>There are three ways to get a script to run - by embedding it in a level, by selecting a solo script in the Environment Preferences, or by selecting a script at the gather network game dialog.</p>
-	<p>To embed a script in a level, use a tool such as Atque. Use embedded Lua scripts only for map specific features, not for modifying game types. For instance, it may be tempting to embed the latest version of the Lua CTF script in a map designed only for playing CTF; however, this would prevent the user from using a later version of CTF if it were to come out, or from using another net script that works on CTF maps. Some older scenarios use Lua scripts in TEXT resources, but this is no longer recommended since they are not transmitted in net games.</p>
-	<p>To use a solo script, check the "Use Solo Script" box in Environment Preferences, and choose the script file to use.</p>
-	<p>To use a script via the network game dialog, put then script in a text file with the extension .lua. Then, at the gather network game dialog, select "use script", then select your script file.</p>
+		<p>There are three ways to get a script to run - by embedding it in a level, by selecting a solo script in the Environment Preferences, or by selecting a script at the gather network game dialog.</p>
+		<p>To embed a script in a level, use a tool such as Atque. Use embedded Lua scripts only for map specific features, not for modifying game types. For instance, it may be tempting to embed the latest version of the Lua CTF script in a map designed only for playing CTF; however, this would prevent the user from using a later version of CTF if it were to come out, or from using another net script that works on CTF maps. Some older scenarios use Lua scripts in TEXT resources, but this is no longer recommended since they are not transmitted in net games.</p>
+		<p>To use a solo script, check the "Use Solo Script" box in Environment Preferences, and choose the script file to use.</p>
+		<p>To use a script via the network game dialog, put then script in a text file with the extension .lua. Then, at the gather network game dialog, select "use script", then select your script file.</p>
       <h2>
 <a name="units"></a>Units</h2>
-	<p>The unit for distance we use is World Units (WU) These are the same values you'd see in Forge or with F10 location display, and 1/1024 of what A1 uses internally and what you'd see in Pfhorte.</p>
-	<p>Units for speed are . . . well let's say they're messy. :) Lua speeds are expressed in World Units per tick (a tick is 1/30 of a second). Forge claims to use WU per sec, but it actually uses 0.87890625 WU per sec (which equals 30 internal units per tick). The following example illustrates the various conversions:</p>
-	<ul>
-	<li>
+		<p>The unit for distance we use is World Units (WU) These are the same values you’d see in Forge or with F10 location display, and 1/1024 of what A1 uses internally and what you’d see in Pfhorte.</p>
+		<p>Units for speed are . . . well let’s say they’re messy. :) Lua speeds are expressed in World Units per tick (a tick is 1/30 of a second). Forge claims to use WU per sec, but it actually uses 0.87890625 WU per sec (which equals 30 internal units per tick). The following example illustrates the various conversions:</p>
+		<ul>
+		  <li>
 <b style="display: inline-block; width: 10em; text-align: right">Actual:</b> 7.5 World Units per second</li>
-	<li>
+		  <li>
 <b style="display: inline-block; width: 10em; text-align: right">A1 internal:</b> 256 units per tick (7.5 * 1024 / 30)</li>
-	<li>
+		  <li>
 <b style="display: inline-block; width: 10em; text-align: right">Lua:</b> 0.25 WU per tick (7.5 / 30)</li>
-	<li>
+		  <li>
 <b style="display: inline-block; width: 10em; text-align: right">Forge:</b> 8.53 "WU per second" ((7.5 * 1024 / 30) / 30)</li>
-	</ul>
+		</ul>
       <h2>
 <a name="local_player"></a>Local Player</h2>
-	<p>A few variables are marked "local player." These variables will always do the right thing when written to, but when reading, will only return a useful result if the player they belong to is "local." In net games, there is a separate copy of each Lua script running on each player's computer, and the player is "local" only to his copy of the script.</p>
-	<p>So, the only local player variables the script running on player 4's machine will be able to read from are the ones in Players[4]. For his script, the value of Players[1].zoom_active, for example, will return nil. If this confuses you, it might be better to avoid reading from any variable marked "local player."</p>
+		<p>A few variables are marked "local player." These variables will always do the right thing when written to, but when reading, will only return a useful result if the player they belong to is "local." In net games, there is a separate copy of each Lua script running on each player’s computer, and the player is "local" only to his copy of the script.</p>
+		<p>So, the only local player variables the script running on player 4’s machine will be able to read from are the ones in Players[4]. For his script, the value of Players[1].zoom_active, for example, will return nil. If this confuses you, it might be better to avoid reading from any variable marked "local player."</p>
       <h2>
 <a name="loading_collections"></a>Loading Collections</h2>
-	<p>A Lua script can ask for the engine to load collections it might otherwise not load; for instance, in order to be able to spawn defenders and compilers on a map that might not have them otherwise, add the indices for those collections to the global table CollectionsUsed:
-</p>
+		<p>A Lua script can ask for the engine to load collections it might otherwise not load; for instance, in order to be able to spawn defenders and compilers on a map that might not have them otherwise, add the indices for those collections to the global table CollectionsUsed:
+		</p>
 <pre>CollectionsUsed = { 10, 16 }</pre>
       <h2>
 <a name="persistence"></a>Persistence</h2>
-	<p>Lua scripts are only active during a single level. If the user jumps to a new level, or restores from a saved game, the script is restarted in a clean state.</p>
-	<p>It is now possible to pass data across level jumps, by using the Game.restore_passed() function. This function will restore any custom fields (see the "Custom Fields" section of "Using Tables" below) in the Players or Game tables that were set immediately prior to the last level jump. Note that in order for data to survive multiple level jumps, Game.restore_passed() must be called after each level jump. Game.restore_passed() will not restore data from saved games.</p>
-	<p>It is also possible to restore data from saved games. The Game.restore_saved() function will restore all custom fields in use at the time the game was saved.</p>
-	<p>Only numbers, strings, booleans, and tables (including Aleph One's built-in userdata tables) can be restored.</p>
+		<p>Lua scripts are only active during a single level. If the user jumps to a new level, or restores from a saved game, the script is restarted in a clean state.</p>
+		<p>It is now possible to pass data across level jumps, by using the Game.restore_passed() function. This function will restore any custom fields (see the "Custom Fields" section of "Using Tables" below) in the Players or Game tables that were set immediately prior to the last level jump. Note that in order for data to survive multiple level jumps, Game.restore_passed() must be called after each level jump. Game.restore_passed() will not restore data from saved games.</p>
+		<p>It is also possible to restore data from saved games. The Game.restore_saved() function will restore all custom fields in use at the time the game was saved.</p>
+		<p>Only numbers, strings, booleans, and tables (including Aleph One’s built-in userdata tables) can be restored.</p>
       <h1>
 <a name="triggers"></a>Triggers</h1>
 <div class="triggers">
 <p>These are functions scripts can define which Aleph One will call at specific times or events. For example, to regenerate health:
-<span class="pre">Triggers = {}
-function Triggers.idle()
-  for p in Players() do 
+	<span class="pre">Triggers = {}
+	function Triggers.idle()
+	for p in Players() do 
     if p.life &lt; 150 and not p.dead then 
-      p.life = p.life + 1
+    p.life = p.life + 1
     end
-  end
-end
-</span>
-Calling Triggers = {} at the beginning of the script removes the compatibility triggers installed for old Lua scripts, speeding up execution of new scripts.
-</p>
+	end
+	end
+	</span>
+	Calling Triggers = {} at the beginning of the script removes the compatibility triggers installed for old Lua scripts, speeding up execution of new scripts.
+	</p>
 <dl>
 <dt>Triggers</dt>
 <dd><dl>
@@ -323,24 +323,24 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dd>
 <dt>.player_damaged(victim, aggressor_player, aggressor_monster, damage_type, damage_amount, projectile)</dt>
 <dd>
-<p class="description">whenever a player has taken damage, but before he dies if applicable. The player's suit energy or oxygen may be negative when this trigger is called; if it still is when the trigger returns, it will be set to 0. The player's suit energy is tested again after this trigger returns, so a script may prevent a player's death
+<p class="description">whenever a player has taken damage, but before he dies if applicable. The player’s suit energy or oxygen may be negative when this trigger is called; if it still is when the trigger returns, it will be set to 0. The player’s suit energy is tested again after this trigger returns, so a script may prevent a player’s death
       </p>
 <ul class="args">
 <li>aggressor_player: player who got the kill (can be nil)</li>
 <li>aggressor_monster: monster that got the kill (can be nil)</li>
 <li>damage_type: e.g. "fists"</li>
-<li>damage_amount: the amount recently subtracted from the player. If "oxygen drain", damage_amount was assessed against player's oxygen; otherwise against player's suit energy</li>
+<li>damage_amount: the amount recently subtracted from the player. If "oxygen drain", damage_amount was assessed against player’s oxygen; otherwise against player’s suit energy</li>
 <li>projectile: the projectile that delivered the damage (can be nil)</li>
 </ul>
 </dd>
 <dt>.monster_damaged(monster, aggressor_monster, damage_type, damage_amount, projectile) <span class="version">20100118</span>
 </dt>
 <dd>
-<p class="description">whenever a monster is damaged, but before it dies if applicable. The monster's vitality may be negative when this trigger is called. Ther monster's vitality will be tested again after this trigger returns, so a script may prevent a monster's death</p>
+<p class="description">whenever a monster is damaged, but before it dies if applicable. The monster’s vitality may be negative when this trigger is called. Ther monster’s vitality will be tested again after this trigger returns, so a script may prevent a monster’s death</p>
 <ul class="args">
 <li>aggressor_monster: the monster that caused the damage (can be nil)</li>
 <li>damage_type: e.g. "fists"</li>
-<li>damage_amount: the amount recently subtracted from the monster's vitality</li>
+<li>damage_amount: the amount recently subtracted from the monster’s vitality</li>
 <li>projectile: the projectile that delivered the damage (can be nil)</li>
 </ul>
 </dd>
@@ -351,7 +351,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <li>aggressor_player: player who killed it (can be nil)</li>
 <li>projectile: projectile that delivered the final blow (can be nil)</li>
 </ul>
-<p class="note">called after a monster has taken lethal damage, but before it's removed from the monster list </p>
+<p class="note">called after a monster has taken lethal damage, but before it’s removed from the monster list </p>
 <p class="note">you can use this to find out when a monster created with new_monster dies, but a monster discovered by Polygons.monsters() may have already taken lethal damage, so you may need to check for that case when using Polygons.monsters() </p>
 </dd>
 <dt>.item_created(item)</dt>
@@ -373,11 +373,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     <p>Unless otherwise specified, these tables are only valid inside the trigger calls listed above. Attempting to use them in the main body of a script may cause an error in this version or a future version of Aleph One.</p>
 <h2>
 <a name="custom"></a>Custom Fields</h2>
-<p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.</p>
+<p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One’s userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.</p>
 <pre>Players[0]._favorite_flavor = "chocolate"</pre>
 <h2>
 <a name="table_indices"></a>Index</h2>
-<p>Each table has a read-only .index variable, that corresponds to the engine's internal index.</p>
+<p>Each table has a read-only .index variable, that corresponds to the engine’s internal index.</p>
 <pre>=Players[0].index<br>0</pre>
 <h2>
 <a name="table_is"></a>is_ Functions</h2>
@@ -531,7 +531,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">the difficulty level</p></dd>
 <dt>.global_random(n)</dt>
-<dd><p class="description">returns a random number between 0 and n-1 from Aleph One's original random number generator</p></dd>
+<dd><p class="description">returns a random number between 0 and n-1 from Aleph One’s original random number generator</p></dd>
 <dt>
     .kill_limit<span class="access"> (read-only)</span>
 </dt>
@@ -550,7 +550,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>
     .nonlocal_overlays <span class="version">20200830</span>
 </dt>
-<dd><p class="description">When false, only the local player's overlays are used, and only prints to the local player will be displayed. When true, the overlays and prints of whatever player is currently being viewed will apply. This defaults to false for compatibility with scripts that depend on the old behavior.</p></dd>
+<dd><p class="description">When false, only the local player’s overlays are used, and only prints to the local player will be displayed. When true, the overlays and prints of whatever player is currently being viewed will apply. This defaults to false for compatibility with scripts that depend on the old behavior.</p></dd>
 <dt>
     .time_remaining<span class="access"> (read-only)</span>
 </dt>
@@ -561,10 +561,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>
     .over<span class="access"> (write-only)</span>
 </dt>
-<dd><p class="description">Use this variable to override the game's default scoring behavior. If set to false, the game will not end due to a score limit. If set to true, the game ends immediately. If left unset or if set to nil, the game will end if a score limit is reached. (Note that you cannot prevent the game from ending due to a time limit.)</p></dd>
+<dd><p class="description">Use this variable to override the game’s default scoring behavior. If set to false, the game will not end due to a score limit. If set to true, the game ends immediately. If left unset or if set to nil, the game will end if a score limit is reached. (Note that you cannot prevent the game from ending due to a time limit.)</p></dd>
 <dt>.local_random(n)</dt>
 <dd>
-<p class="description">returns a random number between 0 and n-1 from Aleph One's original random number generator</p>
+<p class="description">returns a random number between 0 and n-1 from Aleph One’s original random number generator</p>
 <p class="note">this is a good way to put net games out of sync </p>
 </dd>
 <dt>.random(n)</dt>
@@ -590,7 +590,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd>
 <p class="description">serializes v into a binary string</p>
-<p class="note">only numbers, strings, booleans, and tables (including Aleph One's built-in userdata tables) can be serialized </p>
+<p class="note">only numbers, strings, booleans, and tables (including Aleph One’s built-in userdata tables) can be serialized </p>
 </dd>
 <dt>
     .ticks<span class="access"> (read-only)</span>
@@ -604,7 +604,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .version<span class="access"> (read-only)</span>
 </dt>
 <dd>
-<p class="description">the date version of the local player's engine</p>
+<p class="description">the date version of the local player’s engine</p>
 <p class="note">for example, "20071103" </p>
 </dd>
 </dl></dd>
@@ -915,7 +915,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>
     .has_transparent_side<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
-<dd><p class="description">whether one of the line's sides has a transparent texture</p></dd>
+<dd><p class="description">whether one of the line’s sides has a transparent texture</p></dd>
       <dt>
     .highest_adjacent_floor<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
@@ -925,7 +925,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd>
 <p class="description">the length of this line</p>
-<p class="note">this might not be accurate, if someone used Chisel's stretch plugin </p>
+<p class="note">this might not be accurate, if someone used Chisel’s stretch plugin </p>
 </dd>
       <dt>
     .lowest_adjacent_ceiling<span class="access"> (read-only)</span> <span class="version">20080707</span>
@@ -938,7 +938,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>
     .visible_on_automap <span class="version">20150619</span>
 </dt>
-<dd><p class="description">whether line is revealed on local player's automap</p></dd>
+<dd><p class="description">whether line is revealed on local player’s automap</p></dd>
     </dl></dd>
 </dl>
 <h3>
@@ -965,7 +965,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>
     .light <span class="version">20100118</span>
 </dt>
-<dd><p class="description">light that controls this media's tide</p></dd>
+<dd><p class="description">light that controls this media’s tide</p></dd>
       <dt>
     .low <span class="version">20100118</span>
 </dt>
@@ -1066,15 +1066,15 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>
     .external_velocity <span class="version">20090909</span>
 </dt>
-<dd><p class="description">monster's current external velocity (always in the opposite direction of facing)</p></dd>
+<dd><p class="description">monster’s current external velocity (always in the opposite direction of facing)</p></dd>
       <dt>
     .facing<br>.yaw</dt>
 <dd><p class="description">direction the monster is facing</p></dd>
       <dt>
     .life<br>.vitality</dt>
 <dd>
-<p class="description">the monster's vitality</p>
-<p class="note">monsters that haven't spawned or teleported in yet don't have vitality </p>
+<p class="description">the monster’s vitality</p>
+<p class="note">monsters that haven’t spawned or teleported in yet don’t have vitality </p>
 </dd>
       <dt>
     .mode<span class="access"> (read-only)</span>
@@ -1084,7 +1084,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd>
 <p class="description">instructs monster to move to polygon</p>
 <p class="note">monsters get distracted easily en route </p>
-<p class="note">once it gets there, it probably won't choose to stay </p>
+<p class="note">once it gets there, it probably won’t choose to stay </p>
 </dd>
       <dt>
     .player<span class="access"> (read-only)</span>
@@ -1109,12 +1109,12 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>
     .vertical_velocity <span class="version">20090909</span>
 </dt>
-<dd><p class="description">monster's current vertical external velocity</p></dd>
+<dd><p class="description">monster’s current vertical external velocity</p></dd>
       <dt>
     .visible</dt>
 <dd>
 <p class="description">whether monster is visible (e.g. has teleported in)</p>
-<p class="note">this has nothing to do with whether monsters are cloaked (like invisible S'pht) or not </p>
+<p class="note">this has nothing to do with whether monsters are cloaked (like invisible S’pht) or not </p>
 <p class="note">only writable before the monster is activated </p>
 </dd>
       <dt>
@@ -1181,7 +1181,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd>
 <p class="description">platform is locked</p>
-<p class="note">this flag doesn't actually do anything </p>
+<p class="note">this flag doesn’t actually do anything </p>
 </dd>
       <dt>
     .monster_controllable</dt>
@@ -1198,7 +1198,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd>
 <p class="description">platform is secret</p>
-<p class="note">secret platforms aren't shown on the overhead map </p>
+<p class="note">secret platforms aren’t shown on the overhead map </p>
 </dd>
       <dt>
     .speed</dt>
@@ -1208,7 +1208,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd>
 <p class="description">type of this platform</p>
-<p class="note">the only thing the engine uses type for is the platform's sound </p>
+<p class="note">the only thing the engine uses type for is the platform’s sound </p>
 </dd>
     </dl></dd>
 </dl>
@@ -1259,13 +1259,13 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Players()</dt>
 <dd><p class="description">iterates through all players in the game</p></dd>
 <dt>Players.print(message)</dt>
-<dd><p class="description">prints message to all players' screens</p></dd>
+<dd><p class="description">prints message to all players’ screens</p></dd>
 <dt>
     .local_player<span class="access"> (read-only)</span> <span class="version">20200830</span>
 </dt>
 <dd>
 <p class="description">the local player</p>
-<p class="note">normally, you shouldn't need this--you'll just make the game go out of sync </p>
+<p class="note">normally, you shouldn’t need this--you’ll just make the game go out of sync </p>
 </dd>
 <dt>Players[index]</dt>
 <dd><dl>
@@ -1408,7 +1408,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">whether player is standing in liquid</p></dd>
       <dt>:fade_screen(type)</dt>
-<dd><p class="description">fades player's screen</p></dd>
+<dd><p class="description">fades player’s screen</p></dd>
       <dt>:find_action_key_target()</dt>
 <dd>
 <p class="description">if player is in range of a platform or control panel, returns a platform or side; otherwise returns nil</p>
@@ -1438,11 +1438,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>
     .forward<span class="access"> (read-only)</span>
 </dt>
-<dd><p class="description">player's forward velocity</p></dd>
+<dd><p class="description">player’s forward velocity</p></dd>
 <dt>
     .perpendicular<span class="access"> (read-only)</span>
 </dt>
-<dd><p class="description">player's perpendicular (sidestep) velocity</p></dd>
+<dd><p class="description">player’s perpendicular (sidestep) velocity</p></dd>
 </dl></dd>
       <dt>
     .invincibility_duration</dt>
@@ -1462,7 +1462,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd>
 <p class="description">true if this player is the local player</p>
-<p class="note">normally, you shouldn't need this--you'll just make the game go out of sync </p>
+<p class="note">normally, you shouldn’t need this--you’ll just make the game go out of sync </p>
 </dd>
       <dt>
     .kills[slain_player]
@@ -1482,7 +1482,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>
     .name<span class="access"> (read-only)</span>
 </dt>
-<dd><p class="description">player's name</p></dd>
+<dd><p class="description">player’s name</p></dd>
       <dt>
     .oxygen</dt>
 <dd><p class="description">amount of oxygen player has (max is 10800)</p></dd>
@@ -1528,10 +1528,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>:position(x, y, z, polygon)</dt>
 <dd><p class="description">set player position</p></dd>
       <dt>:print(message)</dt>
-<dd><p class="description">prints message to player's screen</p></dd>
+<dd><p class="description">prints message to player’s screen</p></dd>
       <dt>
     .team</dt>
-<dd><p class="description">player's team (pants color)</p></dd>
+<dd><p class="description">player’s team (pants color)</p></dd>
       <dt>:teleport(polygon)</dt>
 <dd><p class="description">teleports player to polygon</p></dd>
       <dt>:teleport_to_level(level)</dt>
@@ -1554,7 +1554,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <p class="description">how many slots the palette has</p>
 <p class="note">there is a maximum of 256 slots </p>
 <p class="note">the texture palette is visible whenever the size is greater than 0 </p>
-<p class="note">rows/columns may change in the future based on the user's screen layout prefs </p>
+<p class="note">rows/columns may change in the future based on the user’s screen layout prefs </p>
 </dd>
 <dt>
     .slots[n]
@@ -1579,7 +1579,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dd>
       <dt>:view_player(player) <span class="version">20080707</span>
 </dt>
-<dd><p class="description">switch to another player's view</p></dd>
+<dd><p class="description">switch to another player’s view</p></dd>
       <dt>
     .viewed_player<span class="access"> (read-only) (local player)</span> <span class="version">20200830</span>
 </dt>
@@ -1589,7 +1589,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>
     .active <span class="version">20080707</span>
 </dt>
-<dd><p class="description">when a player's weapons are not active, he does not see weapons in hand, and can not fire</p></dd>
+<dd><p class="description">when a player’s weapons are not active, he does not see weapons in hand, and can not fire</p></dd>
 <dt>
     .current<span class="access"> (read-only)</span>
 </dt>
@@ -1641,7 +1641,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>
     .zoom_active<span class="access"> (local player)</span>
 </dt>
-<dd><p class="description">whether player's sniper zoom is active</p></dd>
+<dd><p class="description">whether player’s sniper zoom is active</p></dd>
     </dl></dd>
 </dl>
 <h3>
@@ -1694,19 +1694,19 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   </dt>
 <dd><p class="description">returns endpoint n</p></dd>
       <dt>:endpoints()</dt>
-<dd><p class="description">iterates through all of this polygon's endpoints</p></dd>
+<dd><p class="description">iterates through all of this polygon’s endpoints</p></dd>
       <dt>:find_line_crossed_leaving(x1, y1, x2, y2) <span class="version">20080707</span>
 </dt>
 <dd>
 <p class="description">returns the polygon line crossed by line segment (x1, y1) (x2, y2)</p>
-<p class="note">can be nil if the line segment doesn't intersect a polygon line </p>
+<p class="note">can be nil if the line segment doesn’t intersect a polygon line </p>
 </dd>
       <dt>
     .lines[n]
   </dt>
 <dd><p class="description">returns polygon line n</p></dd>
       <dt>:lines()</dt>
-<dd><p class="description">iterates through all of this polygon's lines</p></dd>
+<dd><p class="description">iterates through all of this polygon’s lines</p></dd>
       <dt>
     .media</dt>
 <dd><p class="description">polygon media (liquid)</p></dd>
@@ -1720,21 +1720,21 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>:play_sound(x, y, z, sound [, pitch])</dt>
 <dd>
 <p class="description">plays sound at location</p>
-<p class="note">if you want to play a sound at an object location, use that object's play_sound function instead </p>
+<p class="note">if you want to play a sound at an object location, use that object’s play_sound function instead </p>
 </dd>
       <dt>
     .sides[n]
   </dt>
 <dd><p class="description">returns polygon side n if it exists</p></dd>
       <dt>:sides()</dt>
-<dd><p class="description">iterates through all of this polygon's sides</p></dd>
+<dd><p class="description">iterates through all of this polygon’s sides</p></dd>
       <dt>
     .type</dt>
 <dd><p class="description">polygon type</p></dd>
       <dt>
     .visible_on_automap <span class="version">20150619</span>
 </dt>
-<dd><p class="description">whether polygon is revealed on local player's automap</p></dd>
+<dd><p class="description">whether polygon is revealed on local player’s automap</p></dd>
       <dt>
     .x<span class="access"> (read-only)</span>
 </dt>
@@ -1759,7 +1759,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Projectiles.new(x, y, z, polygon, type)</dt>
 <dd>
 <p class="description">returns a new projectile</p>
-<p class="note">remember to set the projectile's elevation, facing and owner immediately after you've created it </p>
+<p class="note">remember to set the projectile’s elevation, facing and owner immediately after you’ve created it </p>
 </dd>
 <dt>Projectiles[index]</dt>
 <dd><dl>
@@ -1768,7 +1768,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">removes projectile from the map</p></dd>
       <dt>
     .damage_scale</dt>
-<dd><p class="description">amount to scale projectile's normal damage by upon detonating</p></dd>
+<dd><p class="description">amount to scale projectile’s normal damage by upon detonating</p></dd>
       <dt>
     .dz</dt>
 <dd><p class="description">instantaneous downward velocity</p></dd>
@@ -1980,7 +1980,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd>
 <p class="description">if sound object uses a light for volume, the light it uses</p>
-<p class="note">can be nil if sound object doesn't use light for volume </p>
+<p class="note">can be nil if sound object doesn’t use light for volume </p>
 </dd>
       <dt>
     .on_platform<span class="access"> (read-only)</span> <span class="version">20111201</span>
@@ -2039,7 +2039,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <h1>
 <a name="types"></a>Types and Mnemonics</h1>
 <div class="tables">
-<p>The string mnemonics listed below can be used for assignment and as arguments to functions. Additionally, Aleph One's Lua interpreter has been modified so that equality comparisons between userdata types and strings are possible.</p>
+<p>The string mnemonics listed below can be used for assignment and as arguments to functions. Additionally, Aleph One’s Lua interpreter has been modified so that equality comparisons between userdata types and strings are possible.</p>
 <p>For example, this script would move all players on the blue team to the red team:
 <span class="pre">for p in Players() do
   if p.team == "blue" then
@@ -2052,7 +2052,7 @@ And this one would damage all major compilers with 10 points of fusion damage:
     m:damage(10, "fusion")
   end
 end</span>
-Each type has a read-only .index field, which represents the game's internal index:
+Each type has a read-only .index field, which represents the game’s internal index:
 <span class="pre">&gt; =ItemTypes["pistol"].index
 1
 </span>
@@ -2122,38 +2122,38 @@ If you do this, you should customize them all at the beginning of the script. Ch
     .bitmap_count</dt>
 <dd><p class="description">number of bitmaps in collection</p></dd>
       
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
       
     </dl></dd>
 </dl>
@@ -2502,42 +2502,42 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <p class="note">setting this to anything but -1 will only be effective if changed immediately when the script runs, before item placement is done </p>
 </dd>
       
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
       
     </dl></dd>
 </dl>
@@ -2803,53 +2803,53 @@ If you do this, you should customize them all at the beginning of the script. Ch
 </dt>
 <dd><p class="description">monster will sit and fire if he has a clear shot</p></dd>
       
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
       
     </dl></dd>
 </dl>
@@ -3455,10 +3455,10 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <a name="example_icon"></a>Example Icon</h1>
       <pre>
 --[[
-This is  an example  of an  icon  in  the format  used by  Aleph One's  overlay
+This is  an example  of an  icon  in  the format  used by  Aleph One’s  overlay
 functions.
 The first characters  are a digit string  describing the number of  colors. (in
-this example, it's 7.
+this example, it’s 7.
 The first character that  is not a digit is ignored,  as are all the characters
 following it  that are the same  character. (i.e. I  could use a q instead of a
 newline here.
