@@ -258,6 +258,16 @@ static int Lua_Ephemera_Set_Enlarged(lua_State* L)
 	return 0;
 }
 
+static int Lua_Ephemera_Set_Facing(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "facing: incorrect argument type");
+
+	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
+	object->facing = static_cast<int>(lua_tonumber(L, 2) / AngleConvert);
+	return 0;
+}
+
 static int Lua_Ephemera_Set_Shape_Index(lua_State* L)
 {
 	if (!lua_isnumber(L, 2))
