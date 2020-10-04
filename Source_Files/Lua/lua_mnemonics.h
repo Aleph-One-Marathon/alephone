@@ -333,7 +333,8 @@ const lang_def Lua_EphemeraQuality_Mnemonics[] = {
 	{"low", 1},
 	{"medium", 2},
 	{"high", 3},
-	{"ultra", 4}
+	{"ultra", 4},
+        {0, 0}
 };
 
 const lang_def Lua_LightFunction_Mnenonics[] = {
