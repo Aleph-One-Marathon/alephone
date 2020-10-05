@@ -303,6 +303,7 @@ const luaL_Reg Lua_Ephemera_Set[] = {
 	{"collection", Lua_Ephemera_Set_Collection},
 	{"end_when_animation_loops", Lua_Ephemera_Set_End_When_Animation_Loops},
 	{"enlarged", Lua_Ephemera_Set_Enlarged},
+	{"facing", Lua_Ephemera_Set_Facing},
 	{"shape_index", Lua_Ephemera_Set_Shape_Index},
 	{"tiny", Lua_Ephemera_Set_Tiny},
 	{0, 0}
