@@ -815,6 +815,14 @@
 		AE626E730B878534009CFF2D /* SoundManager.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6A0B878534009CFF2D /* SoundManager.h */; };
 		AE626E740B878534009CFF2D /* SoundManagerEnums.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6B0B878534009CFF2D /* SoundManagerEnums.h */; };
 		AE69B5DD0D404F0400C42C11 /* lua_player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE69B5DB0D404F0400C42C11 /* lua_player.cpp */; };
+		AE780E102533A4C7002184B5 /* lua_ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */; };
+		AE780E112533A4C7002184B5 /* lua_ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */; };
+		AE780E122533A4C7002184B5 /* lua_ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */; };
+		AE780E132533A4C7002184B5 /* lua_ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */; };
+		AE780E152533A4D8002184B5 /* ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E142533A4D8002184B5 /* ephemera.cpp */; };
+		AE780E162533A4D8002184B5 /* ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E142533A4D8002184B5 /* ephemera.cpp */; };
+		AE780E172533A4D8002184B5 /* ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E142533A4D8002184B5 /* ephemera.cpp */; };
+		AE780E182533A4D8002184B5 /* ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E142533A4D8002184B5 /* ephemera.cpp */; };
 		AE7A143C141D16D000834C2D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AE7A143A141D16D000834C2D /* InfoPlist.strings */; };
 		AE7C219C0BFF67B700CE63EC /* lapi.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21800BFF67B700CE63EC /* lapi.c */; };
 		AE7C219D0BFF67B700CE63EC /* lauxlib.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21810BFF67B700CE63EC /* lauxlib.c */; };
@@ -2272,6 +2280,10 @@
 		AE626E6B0B878534009CFF2D /* SoundManagerEnums.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SoundManagerEnums.h; sourceTree = "<group>"; };
 		AE69B5DB0D404F0400C42C11 /* lua_player.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_player.cpp; sourceTree = "<group>"; };
 		AE69B5DC0D404F0400C42C11 /* lua_player.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_player.h; sourceTree = "<group>"; };
+		AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_ephemera.cpp; sourceTree = "<group>"; };
+		AE780E142533A4D8002184B5 /* ephemera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ephemera.cpp; sourceTree = "<group>"; };
+		AE780E192533A4E9002184B5 /* ephemera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ephemera.h; sourceTree = "<group>"; };
+		AE780E1A2533A4FF002184B5 /* lua_ephemera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = lua_ephemera.h; sourceTree = "<group>"; };
 		AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ImageLoader_Shared.cpp; path = ../Source_Files/RenderMain/ImageLoader_Shared.cpp; sourceTree = SOURCE_ROOT; };
 		AE791CF60968E49100350190 /* DDS.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = DDS.h; path = ../Source_Files/RenderMain/DDS.h; sourceTree = SOURCE_ROOT; };
 		AE7A1438141D15D600834C2D /* Info-MAS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Info-MAS.plist"; path = "AppStore/Marathon/Info-MAS.plist"; sourceTree = "<group>"; };
@@ -3056,6 +3068,8 @@
 		F51B0587047AC6DA01C5C930 /* Lua */ = {
 			isa = PBXGroup;
 			children = (
+				AE780E1A2533A4FF002184B5 /* lua_ephemera.h */,
+				AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */,
 				276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */,
 				276589F7119DF1DD0096F75B /* lua_saved_objects.h */,
 				2784979B0FF5C308008DECC8 /* lua_hud_objects.cpp */,
@@ -3329,6 +3343,7 @@
 				F5CC924F0240D28201A80001 /* devices.cpp */,
 				F5CC92500240D28201A80001 /* dynamic_limits.cpp */,
 				F5CC92540240D28201A80001 /* effects.cpp */,
+				AE780E142533A4D8002184B5 /* ephemera.cpp */,
 				F5CC92560240D28201A80001 /* flood_map.cpp */,
 				F5CC925B0240D28201A80001 /* lightsource.cpp */,
 				F5CC92590240D28201A80001 /* items.cpp */,
@@ -3369,6 +3384,7 @@
 				F5CC92520240D28201A80001 /* editor.h */,
 				F5CC92530240D28201A80001 /* effect_definitions.h */,
 				F5CC92550240D28201A80001 /* effects.h */,
+				AE780E192533A4E9002184B5 /* ephemera.h */,
 				F5CC92570240D28201A80001 /* flood_map.h */,
 				F5CC92580240D28201A80001 /* item_definitions.h */,
 				F5CC925A0240D28201A80001 /* items.h */,
@@ -5034,6 +5050,7 @@
 				279A462618286FA900F7BFDA /* FFmpegDecoder.cpp in Sources */,
 				AE505C4C141D45E600915344 /* physics.cpp in Sources */,
 				AE505C4D141D45E600915344 /* placement.cpp in Sources */,
+				AE780E122533A4C7002184B5 /* lua_ephemera.cpp in Sources */,
 				AE505C4E141D45E600915344 /* platforms.cpp in Sources */,
 				AE505C4F141D45E600915344 /* player.cpp in Sources */,
 				AE505C50141D45E600915344 /* projectiles.cpp in Sources */,
@@ -5116,6 +5133,7 @@
 				AE505CA1141D45E600915344 /* error.c in Sources */,
 				AE505CA2141D45E600915344 /* http.c in Sources */,
 				AE505CA3141D45E600915344 /* libnat.c in Sources */,
+				AE780E172533A4D8002184B5 /* ephemera.cpp in Sources */,
 				AE505CA4141D45E600915344 /* os_common.c in Sources */,
 				AE505CA5141D45E600915344 /* os_unix.c in Sources */,
 				AE505CA6141D45E600915344 /* ssdp.c in Sources */,
@@ -5265,6 +5283,7 @@
 				279A462718286FAA00F7BFDA /* FFmpegDecoder.cpp in Sources */,
 				AEB4A1ED14296CAE00537AE7 /* physics.cpp in Sources */,
 				AEB4A1EE14296CAE00537AE7 /* placement.cpp in Sources */,
+				AE780E132533A4C7002184B5 /* lua_ephemera.cpp in Sources */,
 				AEB4A1EF14296CAE00537AE7 /* platforms.cpp in Sources */,
 				AEB4A1F014296CAE00537AE7 /* player.cpp in Sources */,
 				AEB4A1F114296CAE00537AE7 /* projectiles.cpp in Sources */,
@@ -5347,6 +5366,7 @@
 				AEB4A24214296CAE00537AE7 /* error.c in Sources */,
 				AEB4A24314296CAE00537AE7 /* http.c in Sources */,
 				AEB4A24414296CAE00537AE7 /* libnat.c in Sources */,
+				AE780E182533A4D8002184B5 /* ephemera.cpp in Sources */,
 				AEB4A24514296CAE00537AE7 /* os_common.c in Sources */,
 				AEB4A24614296CAE00537AE7 /* os_unix.c in Sources */,
 				AEB4A24714296CAE00537AE7 /* ssdp.c in Sources */,
@@ -5496,6 +5516,7 @@
 				AEC3C81509AD68AC003258E4 /* pathfinding.cpp in Sources */,
 				AEC3C81609AD68AC003258E4 /* physics.cpp in Sources */,
 				AEC3C81709AD68AC003258E4 /* placement.cpp in Sources */,
+				AE780E102533A4C7002184B5 /* lua_ephemera.cpp in Sources */,
 				AEC3C81809AD68AC003258E4 /* platforms.cpp in Sources */,
 				AEC3C81909AD68AC003258E4 /* player.cpp in Sources */,
 				AEC3C81A09AD68AC003258E4 /* projectiles.cpp in Sources */,
@@ -5578,6 +5599,7 @@
 				AE179F1609C3D79500512061 /* error.c in Sources */,
 				AE179F1709C3D79500512061 /* http.c in Sources */,
 				AE179F1809C3D79500512061 /* libnat.c in Sources */,
+				AE780E152533A4D8002184B5 /* ephemera.cpp in Sources */,
 				AE179F1909C3D79500512061 /* os_common.c in Sources */,
 				AE179F1A09C3D79500512061 /* os_unix.c in Sources */,
 				AE179F1B09C3D79500512061 /* ssdp.c in Sources */,
@@ -5727,6 +5749,7 @@
 				279A462518286FA900F7BFDA /* FFmpegDecoder.cpp in Sources */,
 				AEFD86F913EB84CF00C1E687 /* physics.cpp in Sources */,
 				AEFD86FA13EB84CF00C1E687 /* placement.cpp in Sources */,
+				AE780E112533A4C7002184B5 /* lua_ephemera.cpp in Sources */,
 				AEFD86FB13EB84CF00C1E687 /* platforms.cpp in Sources */,
 				AEFD86FC13EB84CF00C1E687 /* player.cpp in Sources */,
 				AEFD86FD13EB84CF00C1E687 /* projectiles.cpp in Sources */,
@@ -5809,6 +5832,7 @@
 				AEFD874E13EB84CF00C1E687 /* error.c in Sources */,
 				AEFD874F13EB84CF00C1E687 /* http.c in Sources */,
 				AEFD875013EB84CF00C1E687 /* libnat.c in Sources */,
+				AE780E162533A4D8002184B5 /* ephemera.cpp in Sources */,
 				AEFD875113EB84CF00C1E687 /* os_common.c in Sources */,
 				AEFD875213EB84CF00C1E687 /* os_unix.c in Sources */,
 				AEFD875313EB84CF00C1E687 /* ssdp.c in Sources */,
