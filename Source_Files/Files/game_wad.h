@@ -34,7 +34,7 @@ Aug 12, 2000 (Loren Petrich):
 */
 
 #include "cstypes.h"
-#include <map.h>
+#include "map.h"
 #include <string>
 
 class FileSpecifier;
