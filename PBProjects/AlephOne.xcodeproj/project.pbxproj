@@ -81,19 +81,7 @@
 		2748BDE91CC4053F0082F0E1 /* SDL2_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2748BDEA1CC4053F0082F0E1 /* SDL2_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2748BDEB1CC4053F0082F0E1 /* SDL2_ttf.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		2748BDEC1CC4053F0082F0E1 /* SDL2.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		274D10A52166BBD300C8F77A /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; };
-		274D10A62166BBD400C8F77A /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; };
-		274D10A72166BBD400C8F77A /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; };
-		274D10A82166BBD600C8F77A /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; };
-		274D10AC2166BCC500C8F77A /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; };
-		274D10AD2166BCC500C8F77A /* FreeType.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		274D10B42166C2F900C8F77A /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; };
-		274D10B52166C2F900C8F77A /* FreeType.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		274D10B82166C30500C8F77A /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; };
-		274D10B92166C30600C8F77A /* FreeType.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		274D10BC2166C30C00C8F77A /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; };
-		274D10BD2166C30C00C8F77A /* FreeType.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDEC1CC4053F0082F0E1 /* SDL2.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2759F31B10D5BC9C000204DD /* SDL_rwops_zzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */; };
 		2759F31C10D5BC9C000204DD /* SDL_rwops_zzip.h in Headers */ = {isa = PBXBuildFile; fileRef = 2759F31A10D5BC9C000204DD /* SDL_rwops_zzip.h */; };
 		2759F33010D5BCC0000204DD /* zziplib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; };
@@ -1994,7 +1982,6 @@
 			files = (
 				27A6DA791B9BF5CC003DA766 /* boost_filesystem.framework in CopyFiles */,
 				27A6DA7A1B9BF5CC003DA766 /* boost_system.framework in CopyFiles */,
-				274D10B52166C2F900C8F77A /* FreeType.framework in CopyFiles */,
 				27A6DA7B1B9BF5CC003DA766 /* avcodec.framework in CopyFiles */,
 				27A6DA7C1B9BF5CC003DA766 /* avformat.framework in CopyFiles */,
 				27A6DA7D1B9BF5CC003DA766 /* avutil.framework in CopyFiles */,
@@ -2020,7 +2007,6 @@
 			files = (
 				27A6DA8B1B9BF5E7003DA766 /* boost_filesystem.framework in CopyFiles */,
 				27A6DA8C1B9BF5E7003DA766 /* boost_system.framework in CopyFiles */,
-				274D10B92166C30600C8F77A /* FreeType.framework in CopyFiles */,
 				27A6DA8D1B9BF5E7003DA766 /* avcodec.framework in CopyFiles */,
 				27A6DA8E1B9BF5E7003DA766 /* avformat.framework in CopyFiles */,
 				27A6DA8F1B9BF5E7003DA766 /* avutil.framework in CopyFiles */,
@@ -2046,7 +2032,6 @@
 			files = (
 				27A6DA9D1B9BF5F3003DA766 /* boost_filesystem.framework in CopyFiles */,
 				27A6DA9E1B9BF5F3003DA766 /* boost_system.framework in CopyFiles */,
-				274D10BD2166C30C00C8F77A /* FreeType.framework in CopyFiles */,
 				27A6DA9F1B9BF5F3003DA766 /* avcodec.framework in CopyFiles */,
 				27A6DAA01B9BF5F3003DA766 /* avformat.framework in CopyFiles */,
 				27A6DAA11B9BF5F3003DA766 /* avutil.framework in CopyFiles */,
@@ -2073,7 +2058,6 @@
 				AEA85F5224DF254D00BB7827 /* webp.framework in CopyFiles */,
 				2762A33B1AAA523600B807D4 /* boost_filesystem.framework in CopyFiles */,
 				2762A33C1AAA523600B807D4 /* boost_system.framework in CopyFiles */,
-				274D10AD2166BCC500C8F77A /* FreeType.framework in CopyFiles */,
 				271ADFC618A88B9C0073CB2E /* avcodec.framework in CopyFiles */,
 				271ADFC718A88B9C0073CB2E /* avformat.framework in CopyFiles */,
 				271ADFC818A88B9C0073CB2E /* avutil.framework in CopyFiles */,
@@ -2108,7 +2092,6 @@
 		2739B490101B862A00CC8098 /* Shape_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Shape_Blitter.cpp; sourceTree = "<group>"; };
 		2739B491101B862A00CC8098 /* Shape_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shape_Blitter.h; sourceTree = "<group>"; };
 		273FBB481E122C9F0076351E /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = ../../../../../../System/Library/Frameworks/IOKit.framework; sourceTree = "<group>"; };
-		274D10A42166BBCD00C8F77A /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = SDL2_ttf.framework/Frameworks/FreeType.framework; sourceTree = "<group>"; };
 		2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_rwops_zzip.c; sourceTree = "<group>"; };
 		2759F31A10D5BC9C000204DD /* SDL_rwops_zzip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_rwops_zzip.h; sourceTree = "<group>"; };
 		2759F32F10D5BCC0000204DD /* zziplib.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = zziplib.framework; sourceTree = "<group>"; };
@@ -2650,7 +2633,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				274D10B82166C30500C8F77A /* FreeType.framework in Frameworks */,
 				273FBB4B1E122CA20076351E /* IOKit.framework in Frameworks */,
 				275A7BD51A60DE9B002EE952 /* libcurl.tbd in Frameworks */,
 				AE505CEF141D45E600915344 /* OpenGL.framework in Frameworks */,
@@ -2668,7 +2650,6 @@
 				AE505CFF141D45E600915344 /* jpeg.framework in Frameworks */,
 				AE505D00141D45E600915344 /* png.framework in Frameworks */,
 				270F9FD2177687B7009AAE10 /* avcodec.framework in Frameworks */,
-				274D10A72166BBD400C8F77A /* FreeType.framework in Frameworks */,
 				278BCAF11A51C53C006F9756 /* speexdsp.framework in Frameworks */,
 				2762A3351AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */,
 				2748BDD81CC405140082F0E1 /* SDL2_image.framework in Frameworks */,
@@ -2683,7 +2664,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				274D10BC2166C30C00C8F77A /* FreeType.framework in Frameworks */,
 				273FBB4C1E122CA30076351E /* IOKit.framework in Frameworks */,
 				275A7BD61A60DEA3002EE952 /* libcurl.tbd in Frameworks */,
 				AEB4A29114296CAE00537AE7 /* OpenGL.framework in Frameworks */,
@@ -2701,7 +2681,6 @@
 				AEB4A2A114296CAE00537AE7 /* jpeg.framework in Frameworks */,
 				AEB4A2A214296CAE00537AE7 /* png.framework in Frameworks */,
 				270F9FD3177687B7009AAE10 /* avcodec.framework in Frameworks */,
-				274D10A82166BBD600C8F77A /* FreeType.framework in Frameworks */,
 				278BCAF21A51C53C006F9756 /* speexdsp.framework in Frameworks */,
 				2762A3361AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */,
 				2748BDD91CC405140082F0E1 /* SDL2_image.framework in Frameworks */,
@@ -2716,7 +2695,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				274D10AC2166BCC500C8F77A /* FreeType.framework in Frameworks */,
 				553AB9F6213A034300EE3861 /* libexpat.tbd in Frameworks */,
 				273FBB491E122C9F0076351E /* IOKit.framework in Frameworks */,
 				275A7BD31A60DE77002EE952 /* libcurl.tbd in Frameworks */,
@@ -2735,7 +2713,6 @@
 				270F9FD0177687B7009AAE10 /* avcodec.framework in Frameworks */,
 				278BCAEF1A51C53C006F9756 /* speexdsp.framework in Frameworks */,
 				2762A3331AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */,
-				274D10A52166BBD300C8F77A /* FreeType.framework in Frameworks */,
 				270F9FD4177687B7009AAE10 /* avformat.framework in Frameworks */,
 				27E5DD601BD2DA0C00A95619 /* SDL2_net.framework in Frameworks */,
 				270F9FD8177687B7009AAE10 /* avutil.framework in Frameworks */,
@@ -2749,7 +2726,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				274D10B42166C2F900C8F77A /* FreeType.framework in Frameworks */,
 				273FBB4A1E122CA20076351E /* IOKit.framework in Frameworks */,
 				275A7BD41A60DE8C002EE952 /* libcurl.tbd in Frameworks */,
 				AEFD879B13EB84CF00C1E687 /* OpenGL.framework in Frameworks */,
@@ -2767,7 +2743,6 @@
 				AEFD87AB13EB84CF00C1E687 /* jpeg.framework in Frameworks */,
 				AEFD87AC13EB84CF00C1E687 /* png.framework in Frameworks */,
 				270F9FD1177687B7009AAE10 /* avcodec.framework in Frameworks */,
-				274D10A62166BBD400C8F77A /* FreeType.framework in Frameworks */,
 				278BCAF01A51C53C006F9756 /* speexdsp.framework in Frameworks */,
 				2762A3341AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */,
 				2748BDD71CC405130082F0E1 /* SDL2_image.framework in Frameworks */,
@@ -3044,7 +3019,6 @@
 			isa = PBXGroup;
 			children = (
 				AEA85F4A24DF251300BB7827 /* webp.framework */,
-				274D10A42166BBCD00C8F77A /* FreeType.framework */,
 				27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */,
 				27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */,
 				27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */,
@@ -4593,7 +4567,7 @@
 				AE505C0E141D45E600915344 /* Sources */,
 				AE505CEE141D45E600915344 /* Frameworks */,
 				27A6DA891B9BF5E4003DA766 /* CopyFiles */,
-				274D10B22166C2BB00C8F77A /* Clean Nested Frameworks */,
+				274D10B22166C2BB00C8F77A /* Sign Nested Frameworks */,
 				AE505D06141D45E600915344 /* Copy Scenario */,
 				AE505D04141D45E600915344 /* Insert Version */,
 			);
@@ -4615,7 +4589,7 @@
 				AEB4A1AF14296CAE00537AE7 /* Sources */,
 				AEB4A29014296CAE00537AE7 /* Frameworks */,
 				27A6DA9B1B9BF5EF003DA766 /* CopyFiles */,
-				274D10B32166C2C600C8F77A /* Clean Nested Frameworks */,
+				274D10B32166C2C600C8F77A /* Sign Nested Frameworks */,
 				AEB4A2A814296CAE00537AE7 /* Copy Scenario */,
 				AEB4A2A614296CAE00537AE7 /* Insert Version */,
 			);
@@ -4637,7 +4611,7 @@
 				AEC3C7CF09AD68AC003258E4 /* Sources */,
 				AEC3C86F09AD68AC003258E4 /* Frameworks */,
 				AEC3C87709AD68AC003258E4 /* CopyFiles */,
-				274D10B02166BE4E00C8F77A /* Clean Nested Frameworks */,
+				274D10B02166BE4E00C8F77A /* Sign Nested Frameworks */,
 				AEC3C87609AD68AC003258E4 /* Copy Default Theme */,
 				275F9A49217F7CBA00337B05 /* Insert Version */,
 			);
@@ -4659,7 +4633,7 @@
 				AEFD86BB13EB84CF00C1E687 /* Sources */,
 				AEFD879A13EB84CF00C1E687 /* Frameworks */,
 				27A6DA771B9BF5BF003DA766 /* CopyFiles */,
-				274D10B12166C2B100C8F77A /* Clean Nested Frameworks */,
+				274D10B12166C2B100C8F77A /* Sign Nested Frameworks */,
 				AEFD87D713EB944800C1E687 /* Copy Scenario */,
 				AEFD87AF13EB84CF00C1E687 /* Insert Version */,
 			);
@@ -4801,7 +4775,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		274D10B02166BE4E00C8F77A /* Clean Nested Frameworks */ = {
+		274D10B02166BE4E00C8F77A /* Sign Nested Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -4810,16 +4784,16 @@
 			);
 			inputPaths = (
 			);
-			name = "Clean Nested Frameworks";
+			name = "Sign Nested Frameworks";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "for fwk in \"SDL2_ttf\"; do\n  rm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/Current/Frameworks\"\n  rm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Frameworks\"\n  codesign --force --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
+			shellScript = "for fwk in \"SDL2\" \"SDL2_ttf\"; do\n  codesign --force --deep --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
 		};
-		274D10B12166C2B100C8F77A /* Clean Nested Frameworks */ = {
+		274D10B12166C2B100C8F77A /* Sign Nested Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -4828,16 +4802,16 @@
 			);
 			inputPaths = (
 			);
-			name = "Clean Nested Frameworks";
+			name = "Sign Nested Frameworks";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "for fwk in \"SDL2_ttf\"; do\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/Current/Frameworks\"\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Frameworks\"\ncodesign --force --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
+			shellScript = "for fwk in \"SDL2\" \"SDL2_ttf\"; do\ncodesign --force --deep --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
 		};
-		274D10B22166C2BB00C8F77A /* Clean Nested Frameworks */ = {
+		274D10B22166C2BB00C8F77A /* Sign Nested Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -4846,16 +4820,16 @@
 			);
 			inputPaths = (
 			);
-			name = "Clean Nested Frameworks";
+			name = "Sign Nested Frameworks";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "for fwk in \"SDL2_ttf\"; do\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/Current/Frameworks\"\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Frameworks\"\ncodesign --force --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
+			shellScript = "for fwk in \"SDL2\" \"SDL2_ttf\"; do\ncodesign --force --deep --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
 		};
-		274D10B32166C2C600C8F77A /* Clean Nested Frameworks */ = {
+		274D10B32166C2C600C8F77A /* Sign Nested Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -4864,14 +4838,14 @@
 			);
 			inputPaths = (
 			);
-			name = "Clean Nested Frameworks";
+			name = "Sign Nested Frameworks";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "for fwk in \"SDL2_ttf\"; do\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/Current/Frameworks\"\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Frameworks\"\ncodesign --force --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
+			shellScript = "for fwk in \"SDL2\" \"SDL2_ttf\"; do\ncodesign --force --deep --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n\n";
 		};
 		275F9A49217F7CBA00337B05 /* Insert Version */ = {
 			isa = PBXShellScriptBuildPhase;
