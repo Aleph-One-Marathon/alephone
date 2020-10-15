@@ -2671,6 +2671,14 @@
 		<description>class of monster type</description>
 		<type>monster_class</type>
       </variable>
+	  <variable name="collection" access="read-only" version="git">
+		<description>collection of monster type</description>
+		<type>collection</type>
+	  </variable>
+	  <variable name="clut_index" access="read-only" version="git">
+		<description>color table of monster type</description>
+		<type>number</type>
+	  </variable>
       <function-variable name="enemies" classname="monster_type_enemies">
 		<description>whether monster class is an enemy</description>
 		<argument name="monster_class"><type>monster_class</type></argument>

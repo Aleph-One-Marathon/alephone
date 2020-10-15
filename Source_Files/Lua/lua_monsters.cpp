@@ -256,6 +256,20 @@ static int Lua_MonsterType_Get_Class(lua_State *L) {
 	return 1;
 }
 
+static int Lua_MonsterType_Get_Collection(lua_State* L)
+{
+	auto definition = get_monster_definition_external(Lua_MonsterType::Index(L, 1));
+	Lua_Collection::Push(L, GET_COLLECTION(definition->collection));
+	return 1;
+}
+
+static int Lua_MonsterType_Get_Clut_Index(lua_State* L)
+{
+	auto definition = get_monster_definition_external(Lua_MonsterType::Index(L, 1));
+	lua_pushnumber(L, GET_COLLECTION_CLUT(definition->collection));
+	return 1;
+}
+
 static int Lua_MonsterType_Get_Enemies(lua_State *L) {
 	Lua_MonsterType_Enemies::Push(L, Lua_MonsterType::Index(L, 1));
 	return 1;
@@ -485,6 +499,8 @@ const luaL_Reg Lua_MonsterType_Get[] = {
 	{"attacks_immediately", Lua_MonsterType_Get_Flag<_monster_attacks_immediately>},
 	{"cannot_be_dropped", Lua_MonsterType_Get_Flag<_monster_cannot_be_dropped>},
 	{"class", Lua_MonsterType_Get_Class},
+	{"collection", Lua_MonsterType_Get_Collection},
+	{"clut_index", Lua_MonsterType_Get_Clut_Index},
 	{"enemies", Lua_MonsterType_Get_Enemies},
 	{"friends", Lua_MonsterType_Get_Friends},
 	{"height", Lua_MonsterType_Get_Height},
