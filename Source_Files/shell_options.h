@@ -19,6 +19,8 @@ struct ShellOptions {
 	bool force_fullscreen;
 	bool force_windowed;
 
+	bool skip_intro;
+
 	std::string directory;
 	std::vector<std::string> files;
 };

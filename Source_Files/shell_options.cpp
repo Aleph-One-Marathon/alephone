@@ -17,12 +17,12 @@ struct ShellOptionsOption {
 		if (s[0] == '-') {
 			if (s[1] == '-') {
 				return long_name == s + 2;
-			} else {
+			} else if (short_name.size()) {
 				return short_name == s + 1;
 			}
-		} else {
-			return false;
 		}
+
+		return false;
 	}
 	
 	std::string short_name;
@@ -44,10 +44,17 @@ static std::string spaces(int num_spaces)
 static std::ostream& operator<<(std::ostream& s, const ShellOptionsOption& o) {
 	if (o.help.size())
 	{
-		s << "\t[-" << o.short_name
-		  << " | --" << o.long_name << "]"
-		  << spaces(help_tab_stop - 16 - o.short_name.size() - o.long_name.size())
-		  << o.help << "\n";
+		auto num_spaces = help_tab_stop - 12 - o.long_name.size();
+		
+		s << "\t[";
+		if (o.short_name.size())
+		{
+			num_spaces -= 4;
+			num_spaces -= o.short_name.size();
+			s << "-" << o.short_name << " | ";
+		}
+		
+		s << "--" << o.long_name << "]" << spaces(num_spaces) << o.help << "\n";
 	}
 
 	return s;
@@ -89,6 +96,7 @@ static const std::vector<ShellOptionsFlag> shell_options_flags {
 	{"m", "nogamma", "Disable gamma table effects (menu fades)", shell_options.nogamma},
 	{"j", "nojoystick", "Do not initialize joysticks", shell_options.nojoystick},
 	{"i", "insecure_lua", "", shell_options.insecure_lua},
+	{"Q", "skip-intro", "Skip intro screens", shell_options.skip_intro}
 };
 
 bool ShellOptions::parse(int argc, char** argv)

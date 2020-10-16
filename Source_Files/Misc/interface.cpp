@@ -363,7 +363,7 @@ screen_data *get_screen_data(
 void initialize_game_state(
 	void)
 {
-	game_state.state= _display_intro_screens;
+	game_state.state= shell_options.skip_intro ? _display_main_menu : _display_intro_screens;
 	game_state.user= _single_player;
 	game_state.flags= 0;
 	game_state.current_screen= 0;
@@ -376,7 +376,11 @@ void initialize_game_state(
 	  alert_user(expand_app_variables("Insecure Lua has been manually enabled. Malicious Lua scripts can use Insecure Lua to take over your computer. Unless you specifically trust every single Lua script that will be running, you should quit $appName$ IMMEDIATELY.").c_str());
 	}
 
-	display_introduction();
+	if (shell_options.skip_intro) {
+		display_main_menu();
+	} else {
+		display_introduction();
+	}
 }
 
 void force_game_state_change(
