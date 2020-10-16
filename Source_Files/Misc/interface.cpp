@@ -1375,7 +1375,7 @@ void do_menu_item_command(
 						{
 							case _single_player:
 								if(PLAYER_IS_DEAD(local_player) || 
-									dynamic_world->tick_count-local_player->ticks_at_last_successful_save<CLOSE_WITHOUT_WARNING_DELAY)
+								   dynamic_world->tick_count-local_player->ticks_at_last_successful_save<CLOSE_WITHOUT_WARNING_DELAY || shell_options.output.size())
 								{
 									really_wants_to_quit= true;
 								} else {
@@ -2336,6 +2336,19 @@ static void finish_game(
 			break;
 	}
 	Movie::instance()->StopRecording();
+
+	if (shell_options.editor && shell_options.output.size())
+	{
+		FileSpecifier file(shell_options.output);
+		if (export_level(file))
+		{
+			exit(0);
+		}
+		else
+		{
+			exit(-1);
+		}
+	}
 
 	/* Fade out! (Pray) */ // should be interface_color_table for valkyrie, but doesn't work.
 	Music::instance()->ClearLevelMusic();

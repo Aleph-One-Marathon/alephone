@@ -82,6 +82,17 @@ struct ShellOptionsFlag : public ShellOptionsOption {
 	bool& flag;
 };
 
+struct ShellOptionsString : public ShellOptionsOption {
+	// once we switch to C++17 this can go away and we can use aggregate
+	// initializers
+	ShellOptionsString(std::string short_name, std::string long_name, std::string help, std::string& string_) :
+		ShellOptionsOption{short_name, long_name, help},
+		string{string_}
+		{ }
+
+	std::string& string;
+};
+
 static const std::vector<ShellOptionsCommand> shell_options_commands {
 	{"h", "help", "Display this help message", print_usage},
 	{"v", "version", "Display the game version", print_version}
@@ -98,6 +109,10 @@ static const std::vector<ShellOptionsFlag> shell_options_flags {
 	{"i", "insecure_lua", "", shell_options.insecure_lua},
 	{"Q", "skip-intro", "Skip intro screens", shell_options.skip_intro},
 	{"e", "editor", "Use editor prefs; jump directly to map", shell_options.editor}
+};
+
+static const std::vector<ShellOptionsString> shell_options_strings {
+	{"o", "output", "With -e, output to [file] and exit on quit", shell_options.output}
 };
 
 bool ShellOptions::parse(int argc, char** argv)
@@ -126,6 +141,26 @@ bool ShellOptions::parse(int argc, char** argv)
 				found = true;
 				flag.flag = true;
 				break;
+			}
+		}
+
+		for (auto option : shell_options_strings)
+		{
+			if (option.match(*argv))
+			{
+				if (argc > 1 && *(argv + 1)[0] != '-')
+				{
+					found = true;
+					option.string = *(argv + 1);
+					--argc;
+					++argv;
+				}
+				else
+				{
+					printf("%s requires an additional argument\n", *argv);
+					print_usage();
+					exit(0);
+				}
 			}
 		}
 
@@ -184,6 +219,11 @@ void print_usage()
 	for (auto flag : shell_options_flags)
 	{
 		oss << flag;
+	}
+
+	for (auto option : shell_options_strings)
+	{
+		oss << option;
 	}
 
 	oss << "\tdirectory" << spaces(help_tab_stop - strlen("directory") - 8)

@@ -24,6 +24,8 @@ struct ShellOptions {
 
 	std::string directory;
 	std::vector<std::string> files;
+
+	std::string output;
 };
 
 extern ShellOptions shell_options;
