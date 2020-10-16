@@ -68,6 +68,7 @@
 #include "lua_hud_script.h"
 #include "HUDRenderer_Lua.h"
 #include "Movie.h"
+#include "shell_options.h"
 
 #include <algorithm>
 
@@ -119,9 +120,6 @@ static int desktop_height;
 
 static int failed_multisamples = 0;		// remember when GL multisample setting didn't succeed
 static bool passed_shader = false;      // remember when we passed Shader tests
-
-// From shell_sdl.cpp
-extern bool option_nogamma;
 
 #include "screen_shared.h"
 
@@ -1711,7 +1709,7 @@ void initialize_gamma(void)
 
 void build_direct_color_table(struct color_table *color_table, short bit_depth)
 {
-	if (!option_nogamma && !default_gamma_inited)
+	if (!shell_options.nogamma && !default_gamma_inited)
 		initialize_gamma();
 	color_table->color_count = 256;
 	rgb_color *color = color_table->colors;

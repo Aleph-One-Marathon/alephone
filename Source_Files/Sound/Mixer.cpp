@@ -21,8 +21,7 @@
 
 #include "Mixer.h"
 #include "interface.h" // for strERRORS
-
-extern bool option_nosound;
+#include "shell_options.h"
 
 void Mixer::Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, float db, uint16 samples)
 {
@@ -39,9 +38,9 @@ void Mixer::Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, 
 	desired.callback = MixerCallback;
 	desired.userdata = reinterpret_cast<void *>(this);
 
-	if (option_nosound || SDL_OpenAudio(&desired, &obtained) < 0) 
+	if (shell_options.nosound || SDL_OpenAudio(&desired, &obtained) < 0) 
 	{
-		if (!option_nosound)
+		if (!shell_options.nosound)
 			// opening audio failed
 			alert_user(infoError, strERRORS, badSoundChannels, -1);
 		sound_channel_count = 0;
