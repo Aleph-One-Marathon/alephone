@@ -191,6 +191,7 @@ static std::string a1_getenv(const char* name)
 
 extern bool handle_open_replay(FileSpecifier& File);
 extern bool load_and_start_game(FileSpecifier& file);
+extern bool handle_edit_map();
 
 bool handle_open_document(const std::string& filename)
 {
@@ -200,6 +201,10 @@ bool handle_open_document(const std::string& filename)
 	{
 	case _typecode_scenario:
 		set_map_file(file);
+		if (shell_options.editor && handle_edit_map())
+		{
+			done = true;
+		}
 		break;
 	case _typecode_savegame:
 		if (load_and_start_game(file))

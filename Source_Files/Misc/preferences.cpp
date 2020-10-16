@@ -100,6 +100,8 @@ May 22, 2003 (Woody Zenfell):
 #include <sstream>
 #include <boost/algorithm/hex.hpp>
 
+#include "shell_options.h"
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -3011,11 +3013,25 @@ void read_preferences ()
 	FileSpecifier FileSpec;
 
 	FileSpec.SetToPreferencesDir();
-	FileSpec += getcstr(temporary, strFILENAMES, filenamePREFERENCES);
+	std::string name = getcstr(temporary, strFILENAMES, filenamePREFERENCES);
+	if (shell_options.editor)
+	{
+		// check for editor prefs
+		name += " Editor";
+	}
+	FileSpec += name;
 
 	OpenedFile OFile;
 	bool defaults = false;
 	bool opened = FileSpec.Open(OFile);
+
+	if (!opened && shell_options.editor)
+	{
+		// copy non-editor prefs
+		FileSpec.SetToPreferencesDir();
+		FileSpec += getcstr(temporary,strFILENAMES, filenamePREFERENCES);
+		opened = FileSpec.Open(OFile);
+	}
 
 	if (!opened) {
 		defaults = true;
@@ -3512,7 +3528,13 @@ void write_preferences()
 	
 	FileSpecifier FileSpec;
 	FileSpec.SetToPreferencesDir();
-	FileSpec += getcstr(temporary, strFILENAMES, filenamePREFERENCES);
+
+	std::string name = getcstr(temporary, strFILENAMES, filenamePREFERENCES);
+	if (shell_options.editor)
+	{
+		name += " Editor";
+	}
+	FileSpec += name;
 	
 	try {
 		fileroot.save_xml(FileSpec);

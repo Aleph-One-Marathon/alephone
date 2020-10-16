@@ -20,6 +20,7 @@ struct ShellOptions {
 	bool force_windowed;
 
 	bool skip_intro;
+	bool editor;
 
 	std::string directory;
 	std::vector<std::string> files;

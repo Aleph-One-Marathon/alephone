@@ -96,7 +96,8 @@ static const std::vector<ShellOptionsFlag> shell_options_flags {
 	{"m", "nogamma", "Disable gamma table effects (menu fades)", shell_options.nogamma},
 	{"j", "nojoystick", "Do not initialize joysticks", shell_options.nojoystick},
 	{"i", "insecure_lua", "", shell_options.insecure_lua},
-	{"Q", "skip-intro", "Skip intro screens", shell_options.skip_intro}
+	{"Q", "skip-intro", "Skip intro screens", shell_options.skip_intro},
+	{"e", "editor", "Use editor prefs; jump directly to map", shell_options.editor}
 };
 
 bool ShellOptions::parse(int argc, char** argv)

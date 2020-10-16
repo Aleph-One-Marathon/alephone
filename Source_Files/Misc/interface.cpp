@@ -363,7 +363,7 @@ screen_data *get_screen_data(
 void initialize_game_state(
 	void)
 {
-	game_state.state= shell_options.skip_intro ? _display_main_menu : _display_intro_screens;
+	game_state.state= _display_intro_screens;
 	game_state.user= _single_player;
 	game_state.flags= 0;
 	game_state.current_screen= 0;
@@ -376,10 +376,16 @@ void initialize_game_state(
 	  alert_user(expand_app_variables("Insecure Lua has been manually enabled. Malicious Lua scripts can use Insecure Lua to take over your computer. Unless you specifically trust every single Lua script that will be running, you should quit $appName$ IMMEDIATELY.").c_str());
 	}
 
-	if (shell_options.skip_intro) {
-		display_main_menu();
-	} else {
-		display_introduction();
+	if (!shell_options.editor)
+	{
+		if (shell_options.skip_intro)
+		{
+			display_main_menu();
+		}
+		else
+		{
+			display_introduction();
+		}
 	}
 }
 
@@ -1012,6 +1018,16 @@ bool handle_open_replay(FileSpecifier& File)
 	force_system_colors();
 	success= begin_game(_replay_from_file, false);
 	if(!success) display_main_menu();
+	return success;
+}
+
+bool handle_edit_map()
+{
+	bool success;
+
+	force_system_colors();
+	success = begin_game(_single_player, false);
+	if (!success) display_main_menu();
 	return success;
 }
 
