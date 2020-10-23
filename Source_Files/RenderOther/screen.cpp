@@ -190,6 +190,8 @@ void Screen::Initialize(screen_mode_data* mode)
 		pixel_format_32 = *pf;
 		SDL_FreeFormat(pf);
 
+		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+
 		uncorrected_color_table = (struct color_table *)malloc(sizeof(struct color_table));
 		world_color_table = (struct color_table *)malloc(sizeof(struct color_table));
 		visible_color_table = (struct color_table *)malloc(sizeof(struct color_table));
