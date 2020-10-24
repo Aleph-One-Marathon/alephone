@@ -148,6 +148,7 @@ extern TP2PerfGlobals perf_globals;
 #include "QuickSave.h"
 #include "Plugins.h"
 #include "Statistics.h"
+#include "shell_options.h"
 
 #ifdef HAVE_SMPEG
 #include <smpeg/smpeg.h>
@@ -305,7 +306,6 @@ static struct color_table *current_picture_clut= NULL;
 /* -------------- externs */
 extern short interface_bit_depth;
 extern short bit_depth;
-extern bool insecure_lua;
 extern bool shapes_file_is_m1();
 
 /* ----------- prototypes/PREPROCESS_MAP_MAC.C */
@@ -372,11 +372,21 @@ void initialize_game_state(
 
 	toggle_menus(false);
 
-	if(insecure_lua) {
+	if(shell_options.insecure_lua) {
 	  alert_user(expand_app_variables("Insecure Lua has been manually enabled. Malicious Lua scripts can use Insecure Lua to take over your computer. Unless you specifically trust every single Lua script that will be running, you should quit $appName$ IMMEDIATELY.").c_str());
 	}
 
-	display_introduction();
+	if (!shell_options.editor)
+	{
+		if (shell_options.skip_intro)
+		{
+			display_main_menu();
+		}
+		else
+		{
+			display_introduction();
+		}
+	}
 }
 
 void force_game_state_change(
@@ -1011,6 +1021,16 @@ bool handle_open_replay(FileSpecifier& File)
 	return success;
 }
 
+bool handle_edit_map()
+{
+	bool success;
+
+	force_system_colors();
+	success = begin_game(_single_player, false);
+	if (!success) display_main_menu();
+	return success;
+}
+
 // Called from within update_world..
 bool check_level_change(
 	void)
@@ -1355,7 +1375,7 @@ void do_menu_item_command(
 						{
 							case _single_player:
 								if(PLAYER_IS_DEAD(local_player) || 
-									dynamic_world->tick_count-local_player->ticks_at_last_successful_save<CLOSE_WITHOUT_WARNING_DELAY)
+								   dynamic_world->tick_count-local_player->ticks_at_last_successful_save<CLOSE_WITHOUT_WARNING_DELAY || shell_options.output.size())
 								{
 									really_wants_to_quit= true;
 								} else {
@@ -2316,6 +2336,19 @@ static void finish_game(
 			break;
 	}
 	Movie::instance()->StopRecording();
+
+	if (shell_options.editor && shell_options.output.size())
+	{
+		FileSpecifier file(shell_options.output);
+		if (export_level(file))
+		{
+			exit(0);
+		}
+		else
+		{
+			exit(-1);
+		}
+	}
 
 	/* Fade out! (Pray) */ // should be interface_color_table for valkyrie, but doesn't work.
 	Music::instance()->ClearLevelMusic();

@@ -109,6 +109,7 @@ extern "C"
 #include "preferences.h"
 #include "BStream.h"
 #include "Plugins.h"
+#include "shell_options.h"
 
 #include "lua_script.h"
 #include "lua_ephemera.h"
@@ -209,7 +210,6 @@ extern struct physics_constants *get_physics_constants_for_model(short physics_m
 extern void draw_panels();
 
 extern bool MotionSensorActive;
-extern bool insecure_lua;
 
 extern void instantiate_physics_variables(struct physics_constants *constants, struct physics_variables *variables, short player_index, bool first_time, bool take_action);
 
@@ -273,7 +273,7 @@ public:
 			lua_pop(State(), 1);
 		}
 
-		if (insecure_lua) 
+		if (shell_options.insecure_lua) 
 		{
 			const luaL_Reg *lib = insecurelibs;
 			for (; lib->func; lib++)
