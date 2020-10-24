@@ -138,7 +138,7 @@ public:
 	// Stuff for OpenGL font rendering: the font texture and a display list for font rendering;
 	// if OGL_Texture is NULL, then there is no OpenGL font texture to render.
 	std::unordered_map<std::string, OGL_CACHE> caches;
-	void render_text_(const char* str);
+	void render_text_(const char* str, bool draw);
 
 	static std::set<FontSpecifier*> *m_font_registry;
 #endif

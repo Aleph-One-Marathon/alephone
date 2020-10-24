@@ -151,7 +151,7 @@ int FontSpecifier::TextWidth(const char *text)
 {
 	return Info->text_width(text, Style, false);
 }
-void FontSpecifier::render_text_(const char* str) {
+void FontSpecifier::render_text_(const char* str, bool draw) {
 	// Put some padding around each glyph so as to avoid clipping i
 	const int Pad = 1;
 	int ascent_p = Ascent + Pad, descent_p = Descent + Pad;		
@@ -216,23 +216,25 @@ void FontSpecifier::render_text_(const char* str) {
 		cache = caches[ str ];
 		glBindTexture(GL_TEXTURE_2D, cache.texId);
 	}
+	if( draw ) {
 
-	
-	GLfloat TWidNorm = GLfloat(1)/cache.TxtrWidth;
-	GLfloat THtNorm = GLfloat(1)/cache.TxtrHeight;
-	GLfloat Bottom = (THtNorm*GlyphHeight);
-	GLfloat Right = TWidNorm*cache.Width;
+		GLfloat TWidNorm = GLfloat(1)/cache.TxtrWidth;
+		GLfloat THtNorm = GLfloat(1)/cache.TxtrHeight;
+		GLfloat Bottom = (THtNorm*GlyphHeight);
+		GLfloat Right = TWidNorm*cache.Width;
 		
-	// Move to the current glyph's (padded) position
-	glTranslatef(-Pad,0,0);
- 			
-	// Draw the glyph rectangle
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	OGL_RenderTexturedRect(0, -ascent_p, cache.Width, descent_p + ascent_p,
-								   0, 0, Right, Bottom);
-	// Move to the next glyph's position
-	glTranslated(cache.Width-Pad,0,0);
+		// Move to the current glyph's (padded) position
+		glTranslatef(-Pad,0,0);
+		
+		// Draw the glyph rectangle
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		OGL_RenderTexturedRect(0, -ascent_p, cache.Width, descent_p + ascent_p,
+							   0, 0, Right, Bottom);
+		// Move to the next glyph's position
+		glTranslated(cache.Width-Pad,0,0);
+	}
+	
 		
 
 }
@@ -250,6 +252,11 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 		caches.clear();
 		return;		
 	}
+	for( char c = 0x21; c < 0x7f; ++c ) {
+		char tx[] = { c, '\0' };
+		render_text_(tx, false);
+		
+	}
 	
 }
 
@@ -260,15 +267,6 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 // One can surround it with glPushMatrix() and glPopMatrix() to remember the original.
 void FontSpecifier::OGL_Render(const char *Text)
 {
-	std::string cv = "";
-	for(auto it = utf8_iter(Text); ! it.end(); ++it ) {
-		if( it.code() == 13 ) {
-			cv += ' ';
-		} else {
-			cv += it.utf8();
-		}
-	}
-
 	glPushAttrib(GL_ENABLE_BIT);
 			
 	glEnable(GL_TEXTURE_2D);
@@ -276,9 +274,28 @@ void FontSpecifier::OGL_Render(const char *Text)
 	glEnable(GL_BLEND);
 	glDisable(GL_ALPHA_TEST);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-	render_text_(cv.c_str());
+
+	for(auto it = utf8_iter(Text); ! it.end(); ++it ) {
+		std::string cv = "";
+		if( it.code() < 0x80 ) {
+			if( it.code() == 13 ) {
+				cv += ' ';
+			} else {
+				cv += it.code();
+			}
+		} else {
+			for(; ! it.end() && it.code() >= 0x80 ; ++it ) {
+				cv += it.utf8();
+			}
+		}
+		render_text_(cv.c_str(), true);
+		
+
+	}
 
 	glPopAttrib();
+
+
 }
 
 
