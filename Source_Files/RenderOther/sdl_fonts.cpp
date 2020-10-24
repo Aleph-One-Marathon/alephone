@@ -80,12 +80,6 @@ typedef struct builtin_font
 } builtin_font_t;
 
 static builtin_font_t builtin_fontspecs[] = {
-	{ "mono", aleph_sans_mono_bold, sizeof(aleph_sans_mono_bold) },
-	{ "Monaco", pro_font_ao, sizeof(pro_font_ao) },
-	{ "Courier Prime", courier_prime, sizeof(courier_prime) },
-	{ "Courier Prime Bold", courier_prime_bold, sizeof(courier_prime_bold) },
-	{ "Courier Prime Italic", courier_prime_italic, sizeof(courier_prime_italic) },
-	{" Courier Prime Bold Italic", courier_prime_bold_italic, sizeof(courier_prime_bold_italic) }
 };
 
 #define NUMBER_OF_BUILTIN_FONTS sizeof(builtin_fontspecs) / sizeof(builtin_font)
@@ -95,29 +89,8 @@ builtin_fonts_t builtin_fonts;
 
 void initialize_fonts(bool last_chance)
 {
-        logContext("initializing fonts");
+	logContext("initializing fonts");
     
-	// Initialize builtin TTF fonts
-	for (int j = 0; j < NUMBER_OF_BUILTIN_FONTS; ++j)
-		builtin_fonts[builtin_fontspecs[j].name] = builtin_fontspecs[j];
-    
-	// Open font resource files
-	bool found = false;
-	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
-	while (i != end) {
-		FileSpecifier fonts = *i + "Fonts";
-
-		if (open_res_file(fonts))
-			found = true;
-
-		if (!found)
-		{
-			fonts = *i + "Fonts.fntA";
-			if (open_res_file(fonts))
-				found = true;
-		}
-		i++;
-	}
 }
 
 
@@ -127,6 +100,7 @@ void initialize_fonts(bool last_chance)
 
 sdl_font_info *load_sdl_font(const TextSpec &spec)
 {
+#if 0
 	sdl_font_info *info = NULL;
 
 	// Look for ID/size in list of loaded fonts
@@ -229,6 +203,9 @@ sdl_font_info *load_sdl_font(const TextSpec &spec)
 	// Free resources
 	SDL_RWclose(p);
 	return info;
+#else
+	return nullptr;
+#endif
 }
 #define FONT_PATH "./Fonts.ttf"
 static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size)
@@ -285,21 +262,15 @@ static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size
 	};
 	for ( int i=0; i < sizeof(fontPath)/sizeof(fontPath[0]); i++ ) {
 		const char* file = fontPath[i].c_str();
-		font = TTF_OpenFont(file , size);
+		font = TTF_OpenFont(file, size);
 		if ( !font ) { continue; }
 		else { break; }
 	}
-	if( !font ){
-		FileSpecifier fileSpec(path);
-		OpenedFile file;
-		if (fileSpec.Open(file))
-		{
-			font = TTF_OpenFontRW(file.TakeRWops(), 1, size);
-		}
-		if( ! font ) {
-			fprintf(stderr, "cannot open font! died\n");
-			exit(1);
-		}
+	if( ! font ) {
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+								 "cannot open ttf",
+								 "TTF is missing.", nullptr);
+		exit(1);
 	}
 
 	int ttf_style = TTF_STYLE_NORMAL;
@@ -339,7 +310,6 @@ static const char *locate_font(const std::string& path)
 			return "";
 	}
 }
-#define FONT_PATH "./Fonts.ttf"
 font_info *load_font(const TextSpec &spec) {
 	std::string file;
 	file = locate_font(spec.normal);

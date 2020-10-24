@@ -51,7 +51,15 @@ Jan 14, 2001 (Loren Petrich):
 struct screen_rectangle;
 
 class FontSpecifier;
-
+#ifdef HAVE_OPENGL	
+struct OGL_CACHE {
+	uint8* Texture;
+	GLint TxtrWidth;
+	GLint TxtrHeight;
+	short Width;
+	GLuint texId;
+};
+#endif
 class FontSpecifier
 {
 public:
@@ -129,6 +137,7 @@ public:
 #ifdef HAVE_OPENGL
 	// Stuff for OpenGL font rendering: the font texture and a display list for font rendering;
 	// if OGL_Texture is NULL, then there is no OpenGL font texture to render.
+	std::unordered_map<std::string, OGL_CACHE> caches;
 	void render_text_(const char* str);
 
 	static std::set<FontSpecifier*> *m_font_registry;
