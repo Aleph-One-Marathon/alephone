@@ -164,10 +164,10 @@ bool ShellOptions::parse(int argc, char** argv)
 		{
 			if (option.match(*it))
 			{
-                if (it != args.end() && (*it)[0] != '-')
+                if (it != args.end() && (*(++it))[0] != '-')
                 {
 					found = true;
-                    option.string = *++it;
+                    option.string = *it;
                 }
                 else
                 {
