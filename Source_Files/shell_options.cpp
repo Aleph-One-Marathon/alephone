@@ -13,12 +13,12 @@ static void print_version();
 ShellOptions shell_options;
 
 struct ShellOptionsOption {
-	bool match(const char* s) {
+	bool match(const std::string& s) {
 		if (s[0] == '-') {
 			if (s[1] == '-') {
-				return long_name == s + 2;
+				return long_name == s.substr(2);
 			} else if (short_name.size()) {
-				return short_name == s + 1;
+				return short_name == s.substr(1);
 			}
 		}
 
@@ -121,13 +121,29 @@ bool ShellOptions::parse(int argc, char** argv)
 	--argc;
 	++argv;
 
-	while (argc > 0)
-	{
+    std::vector<std::string> args;
+    while (argc > 0)
+    {
+        if (strncmp(*argv, "-C", 2) == 0)
+        {
+            args.push_back(*argv + 2);
+        }
+        else
+        {
+            args.push_back(*argv);
+        }
+
+        --argc;
+        ++argv;
+    }
+
+    for (auto it = args.begin(); it != args.end(); ++it)
+    {
 		bool found = false;
-		
+
 		for (auto command : shell_options_commands)
 		{
-			if (command.match(*argv))
+			if (command.match(*it))
 			{
 				command.command();
 				exit(0);
@@ -136,7 +152,7 @@ bool ShellOptions::parse(int argc, char** argv)
 
 		for (auto flag : shell_options_flags)
 		{
-			if (flag.match(*argv))
+			if (flag.match(*it))
 			{
 				found = true;
 				flag.flag = true;
@@ -146,49 +162,44 @@ bool ShellOptions::parse(int argc, char** argv)
 
 		for (auto option : shell_options_strings)
 		{
-			if (option.match(*argv))
+			if (option.match(*it))
 			{
-				if (argc > 1 && *(argv + 1)[0] != '-')
-				{
+                if (it != args.end() && (*it)[0] != '-')
+                {
 					found = true;
-					option.string = *(argv + 1);
-					--argc;
-					++argv;
-				}
-				else
-				{
-					printf("%s requires an additional argument\n", *argv);
-					print_usage();
-					exit(0);
-				}
+                    option.string = *++it;
+                }
+                else
+                {
+                    printf("%s requires an additional argument\n", it->c_str());
+                    print_usage();
+                    exit(0);
+                }
 			}
 		}
 
 		if (!found)
 		{
-			if (*argv[0] != '-')
+			if ((*it)[0] != '-')
 			{
-				FileSpecifier f(*argv);
+				FileSpecifier f(*it);
 				if (f.IsDir())
 				{
-					shell_options.directory = *argv;
+					shell_options.directory = *it;
 				}
 				else
 				{
-					shell_options.files.push_back(*argv);
+					shell_options.files.push_back(*it);
 				}
 			}
 			else
 			{
 				
-				printf("Unrecognized argument '%s'.\n", *argv);
+				printf("Unrecognized argument '%s'.\n", it->c_str());
 				print_usage();
 				exit(0);
 			}
 		}
-			
-		--argc;
-		++argv;
 	}
 
 	return true;
