@@ -614,7 +614,17 @@ std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)> picture_to_surface(Load
 					data_size++;
 				SDL_RWseek(p, data_size, SEEK_CUR);
 
-				s.reset(bm);
+				// If there's already a surface, throw away the decoded image
+				// (actually, we could have skipped this entire opcode, but the
+				// only way to do this is to decode the image data).
+				// So we only draw the first image we encounter.
+				if (s) {
+					SDL_FreeSurface(bm);
+				}
+				else {
+					s.reset(bm);
+				}
+
 				break;
 			}
 
