@@ -7,6 +7,12 @@
 #include "FileHandler.h"
 #include "csstrings.h"
 
+#ifdef __WIN32__
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef CreateDirectory
+#endif
+
 static void print_usage();
 static void print_version();
 
@@ -247,7 +253,7 @@ void print_usage()
 		<< "the data directory.\n";
 
 #ifdef __WIN32__
-	MessageBoxW(NULL, utf8_to_wide(msg).str().c_str(), L"Usage", MB_OK | MB_ICONINFORMATION);
+	MessageBoxW(NULL, utf8_to_wide(oss.str()).c_str(), L"Usage", MB_OK | MB_ICONINFORMATION);
 #else
 	std::cout << oss.str();
 #endif

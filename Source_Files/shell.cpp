@@ -316,7 +316,7 @@ static int char_is_not_filesafe(int c)
 static void initialize_application(void)
 {
 #if defined(__WIN32__) && defined(__MINGW32__)
-	if (LoadLibraryW(L"exchndl.dll")) option_debug = true;
+	if (LoadLibraryW(L"exchndl.dll")) shell_options.debug = true;
 #endif
 
 #if defined(__WIN32__)
