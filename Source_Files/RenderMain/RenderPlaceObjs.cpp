@@ -788,9 +788,9 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 			if (window->y0<y0) y0= window->y0;
 			if (window->y1>y1) y1= window->y1;
  			
-			/* sort in the left side of this window */
-			if (ABS(window->left.i)<depth)
+			if (ABS(window->left.i)<depth || ABS(window->right.i)<depth)
 			{
+				/* sort in the left side of this window */
 				for (j= 0; j<left_count && window->x0>=x0[j]; ++j)
 					;
 				for (k = left_count - 1; k >= j; --k)
@@ -801,11 +801,8 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 				x0[j]= window->x0;
 				lvec[j]= window->left;
 				left_count+= 1;
-			}
-			
-			/* sort in the right side of this window */
-			if (ABS(window->right.i)<depth)
-			{
+
+				/* sort in the right side of this window */
 				for (j= 0; j<right_count && window->x1>=x1[j]; ++j)
 					;
 				for (k = right_count - 1; k >= j; --k)
