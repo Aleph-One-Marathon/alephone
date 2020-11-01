@@ -793,7 +793,7 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 			{
 				for (j= 0; j<left_count && window->x0>=x0[j]; ++j)
 					;
-				for (k= j; k<left_count; ++k)
+				for (k = left_count - 1; k >= j; --k)
 				{
 					x0[k+1]= x0[k];
 					lvec[k+1]= lvec[k];
@@ -808,7 +808,7 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 			{
 				for (j= 0; j<right_count && window->x1>=x1[j]; ++j)
 					;
-				for (k= j; k<right_count; ++k)
+				for (k = right_count - 1; k >= j; --k)
 				{
 					x1[k+1]= x1[k];
 					rvec[k+1]= rvec[k];
