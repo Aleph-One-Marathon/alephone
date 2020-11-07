@@ -328,6 +328,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				}
 				render_object= &RenderObjects[Length];
 				
+				render_object->clipping_windows = nullptr;
 				render_object->rectangle.flags= 0;
 				
 				// Clamp to short values
@@ -427,10 +428,16 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					parasitic_rel_origin.x = shape_information->world_x0;
 					parasitic_origin.z+= shape_information->world_y0;
 					parasitic_origin.y+= shape_information->world_x0;
+					
+					const auto render_object_index = render_object - RenderObjects.data();
+					
 					parasitic_render_object= build_render_object
 						(&parasitic_origin, floor_intensity, ceiling_intensity,
 						 NULL, NULL, get_object_data(object->parasitic_object),
 						 Opacity, &parasitic_rel_origin);
+					
+					// Recover our pointer after build_render_object() potentially invalidated it
+					render_object = &RenderObjects[render_object_index];
 					
 					if (parasitic_render_object)
 					{

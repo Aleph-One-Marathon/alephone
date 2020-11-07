@@ -199,6 +199,11 @@ void RenderSortPolyClass::sort_render_tree()
 			sorted_node->polygon_index= leaf->polygon_index;
 			sorted_node->interior_objects= NULL;
 			sorted_node->exterior_objects= NULL;
+			
+			// Put SortedNodes in a valid state before we call build_clipping_windows()
+			// (build_clipping_windows() updates SortedNodes if the clipping windows are reallocated)
+			sorted_node->clipping_windows = nullptr;
+			
 			// LP change: using polygon-sorted node chain
 			sorted_node->clipping_windows= build_clipping_windows(FoundNode);
 			
@@ -240,8 +245,6 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	// LP change: growable lists
 	AccumulatedLineClips.clear();
 	AccumulatedEndpointClips.clear();
-	clipping_window_data *first_clipping_window = NULL;
-	clipping_window_data *last_clipping_window = NULL;
 	endpoint_clip_data *endpoint;
 	line_clip_data *line;
 	short x0, x1; /* ignoring what clipping parameters weÕve gotten, this is the left and right borders of this node on the screen */
@@ -346,6 +349,8 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	EndpointClipPtr = &EndpointClips[indexRIGHT_SIDE_OF_SCREEN];
 	AccumulatedEndpointClips.push_back(EndpointClipPtr);
 
+	const auto initial_cw_count = ClippingWindows.size();
+	
 	/* build the clipping windows */
 	{
 		short state= _looking_for_left_clip;
@@ -420,15 +425,8 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 					clipping_window_data *window= &ClippingWindows[Length];
 					
 					/* handle maintaining the linked list of clipping windows */
-					if (!first_clipping_window)
-					{
-						first_clipping_window= last_clipping_window= window;
-					}
-					else
-					{
-						last_clipping_window->next_window= window;
-						last_clipping_window= window;
-					}
+					if (Length > initial_cw_count)
+						ClippingWindows[Length-1].next_window = window;
 					
 					window->x0= left_clip->x, window->x1= right_clip->x;
 					window->left= left_clip->vector;
@@ -443,7 +441,8 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 		}
 	}
 
-	return first_clipping_window;
+	// Return the front of the linked list we made (if any)
+	return ClippingWindows.size() > initial_cw_count ? &ClippingWindows[initial_cw_count] : nullptr;
 }
 
 /* does not care if the given line_clips are sorted or not */
