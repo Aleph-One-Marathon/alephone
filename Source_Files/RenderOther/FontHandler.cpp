@@ -252,7 +252,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 		caches.clear();
 		return;		
 	}
-	for( char c = 0x32; c < 0x7f; ++c ) {
+	for( char c = '0'; c <= '9'; ++c ) {
 		char tx[] = { c, '\0' };
 		render_text_(tx, false);
 		
@@ -279,7 +279,7 @@ void FontSpecifier::OGL_Render(const char *Text)
 	cv.reserve(256);
 	while( *Text) {
 		auto p = next_utf8(Text);
-		if( p.second < 0x7f ) {
+		if( isdigit(p.second) ) {
 			if( ! cv.empty() ) {
 				render_text_(cv.c_str(), true);
 				cv.clear();
