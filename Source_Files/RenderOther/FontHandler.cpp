@@ -252,7 +252,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 		caches.clear();
 		return;		
 	}
-	for( char c = 0x21; c < 0x7f; ++c ) {
+	for( char c = 0x32; c < 0x7f; ++c ) {
 		char tx[] = { c, '\0' };
 		render_text_(tx, false);
 		
@@ -275,24 +275,27 @@ void FontSpecifier::OGL_Render(const char *Text)
 	glDisable(GL_ALPHA_TEST);
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
-	for(auto it = utf8_iter(Text); ! it.end(); ++it ) {
-		std::string cv = "";
-		if( it.code() < 0x80 ) {
-			if( it.code() == 13 ) {
-				cv += ' ';
-			} else {
-				cv += it.code();
+	std::string cv;
+	cv.reserve(256);
+	while( *Text) {
+		auto p = next_utf8(Text);
+		if( p.second < 0x7f ) {
+			if( ! cv.empty() ) {
+				render_text_(cv.c_str(), true);
+				cv.clear();
 			}
+			char cc[] = { (char)p.second, 0};
+			render_text_(cc, true);
 		} else {
-			for(; ! it.end() && it.code() >= 0x80 ; ++it ) {
-				cv += it.utf8();
+			for(int i = 0; i < p.first; ++i) {
+				cv += Text[i];
 			}
 		}
-		render_text_(cv.c_str(), true);
-		
-
+		Text += p.first;
 	}
-
+	if( ! cv.empty() ) {
+		render_text_(cv.c_str(), true);
+	}
 	glPopAttrib();
 
 
