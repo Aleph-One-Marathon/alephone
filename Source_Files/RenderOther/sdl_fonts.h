@@ -53,7 +53,7 @@ public:
 	uint16 text_width(const char *text, size_t length, uint16 style, bool utf8 = false) const;
 	uint16 text_width(const char *text, uint16 style, bool utf8 = false) const;
 	int trunc_text(const char *text, int max_width, uint16 style) const;
-	virtual int8 char_width(uint8 c, uint16 style) const = 0;
+	virtual int8 char_width(uint16 c, uint16 style) const = 0;
 
 	int draw_styled_text(SDL_Surface *s, const std::string& text, size_t length, int x, int y, uint32 pixel, uint16 initial_style, bool utf = false) const;
 	int styled_text_width(const std::string& text, size_t length, uint16 initial_style, bool utf8 = false) const;
@@ -98,7 +98,7 @@ public:
 	uint16 *location_table;	// Table of byte-offsets into pixmap (points into resource)
 	int8 *width_table;		// Table of kerning/width info (points into resource)
 
-	int8 char_width(uint8 c, uint16 style) const;
+	int8 char_width(uint16 c, uint16 style) const;
 
 protected:
 	virtual int _draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const;
@@ -126,7 +126,7 @@ public:
 	int m_adjust_height;
 	int ascii_width[styleMax][128];
 	
-	int8 char_width(uint8, uint16) const;
+	int8 char_width(uint16, uint16) const;
 
 	ttf_font_info() { 
 		for (int i = 0; i < styleMax; i++) { m_styles[i] = 0; } 

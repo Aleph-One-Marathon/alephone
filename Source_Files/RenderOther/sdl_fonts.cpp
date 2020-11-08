@@ -379,7 +379,7 @@ void unload_font(font_info *info)
 	info->_unload();
 }
 
-int8 sdl_font_info::char_width(uint8 c, uint16 style) const
+int8 sdl_font_info::char_width(uint16 c, uint16 style) const
 {
 	if (c < first_character || c > last_character)
 		return 0;
@@ -426,10 +426,10 @@ int sdl_font_info::_trunc_text(const char *text, int max_width, uint16 style) co
 
 // sdl_font_info::_draw_text is in screen_drawing.cpp
 
-int8 ttf_font_info::char_width(uint8 c, uint16 style) const
+int8 ttf_font_info::char_width(uint16 c, uint16 style) const
 {
 	int advance;
-	TTF_GlyphMetrics(get_ttf(style), static_cast<char>(c), 0, 0, 0, 0, &advance);
+	TTF_GlyphMetrics(get_ttf(style), c, 0, 0, 0, 0, &advance);
 
 	return advance;
 }

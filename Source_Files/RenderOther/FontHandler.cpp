@@ -298,15 +298,81 @@ void FontSpecifier::OGL_Render(const char *Text)
 
 }
 
-
 // Renders text a la _draw_screen_text() (see screen_drawing.h), with
 // alignment and wrapping. Modelview matrix is unaffected.
 void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, short flags)
 {
-		// Copy the text to draw
-	std::string text_to_draw(text);
+	// Copy the text to draw
+	char text_to_draw[256];
+	strncpy(text_to_draw, text, 256);
+	text_to_draw[255] = 0;
 
-	int t_width = TextWidth(text_to_draw.c_str());
+	// Check for wrapping, and if it occurs, be recursive
+	int t_width = TextWidth(text_to_draw);
+	if (t_width > RECTANGLE_WIDTH(&r) && (flags & _wrap_text)) {
+		int last_breaking_pos = 0, text_width = 0;
+		unsigned count = 0;
+		bool wide = false, begin = true;
+		while (count < strlen(text_to_draw) && text_width < RECTANGLE_WIDTH(&r)) {
+			int now_count = count;
+			auto ret = next_utf8(&text_to_draw[count]);
+			count += ret.first;
+			uint16_t c = ret.second;
+			text_width += Info->char_width(c, Style);	
+			if( c >= 0x3040 && c <= 0x9fef ) {
+				if( begin ) {
+					wide = true;
+				} else if( ! wide ) {
+					last_breaking_pos = now_count;
+					wide = true;
+				}
+			} else {
+				if (c == ' ' || wide )
+					last_breaking_pos = now_count;
+				wide = false;
+			}
+			begin = false;
+		}
+		
+		if( count != strlen(text_to_draw)) {
+			char remaining_text_to_draw[256];
+			
+			// If we ever have to wrap text, we can't also center vertically. Sorry.
+			flags &= ~_center_vertical;
+			flags |= _top_justified;
+			
+			// Pass the rest of it back in, recursively, on the next line
+			memcpy(remaining_text_to_draw, text_to_draw + last_breaking_pos, strlen(text_to_draw + last_breaking_pos) + 1);
+	
+			screen_rectangle new_destination = r;
+			new_destination.top += LineSpacing;
+			new_destination.bottom += LineSpacing;
+			OGL_DrawText(remaining_text_to_draw, new_destination, flags);
+	
+			// Now truncate our text to draw
+			text_to_draw[last_breaking_pos] = 0;
+		}
+	}
+
+	// Truncate text if necessary
+	if (t_width > RECTANGLE_WIDTH(&r)) {
+		int width = 0;
+		int num = 0;
+		char *p = text_to_draw;
+		while ( *p != 0) {
+			auto ret = next_utf8(p);
+			p += ret.first;
+			uint16_t c = ret.second;
+			width += Info->char_width(c, Style);
+			if (width > RECTANGLE_WIDTH(&r)) {
+				break;
+			}
+			num += ret.first;
+		}
+		text_to_draw[num] = 0;
+		t_width = TextWidth(text_to_draw);
+	}
+
 
 	// Horizontal positioning
 	int x, y;
@@ -338,7 +404,7 @@ void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, sh
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glTranslated(x, y, 0);
-	OGL_Render(text);
+	OGL_Render(text_to_draw);
 	glPopMatrix();
 }
 
