@@ -157,8 +157,9 @@ void FontSpecifier::render_text_(const char* str, bool draw) {
 	int ascent_p = Ascent + Pad, descent_p = Descent + Pad;		
 	int GlyphHeight = ascent_p + descent_p;
 
-	OGL_CACHE cache = { nullptr, 0, 0, 0, 0 };
-	if( ! caches.count( str ) ) {
+	auto found = caches.find( str);
+	if( found == caches.end() ) {
+		OGL_CACHE cache;
 		
 		int TotalWidth = TextWidth(str)+Pad*2;
 		cache.Width = TotalWidth;
@@ -210,18 +211,17 @@ void FontSpecifier::render_text_(const char* str, bool draw) {
 					 cache.TxtrWidth, cache.TxtrHeight,
 					 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, cache.Texture);
 	
-		caches[ str ] = cache;
- 			
+		auto ret = caches.insert( std::make_pair( str, cache ) );
+		found = ret.first;
 	} else {
-		cache = caches[ str ];
-		glBindTexture(GL_TEXTURE_2D, cache.texId);
+		glBindTexture(GL_TEXTURE_2D, found->second.texId);
 	}
 	if( draw ) {
 
-		GLfloat TWidNorm = GLfloat(1)/cache.TxtrWidth;
-		GLfloat THtNorm = GLfloat(1)/cache.TxtrHeight;
+		GLfloat TWidNorm = GLfloat(1)/found->second.TxtrWidth;
+		GLfloat THtNorm = GLfloat(1)/found->second.TxtrHeight;
 		GLfloat Bottom = (THtNorm*GlyphHeight);
-		GLfloat Right = TWidNorm*cache.Width;
+		GLfloat Right = TWidNorm*found->second.Width;
 		
 		// Move to the current glyph's (padded) position
 		glTranslatef(-Pad,0,0);
@@ -229,10 +229,10 @@ void FontSpecifier::render_text_(const char* str, bool draw) {
 		// Draw the glyph rectangle
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		OGL_RenderTexturedRect(0, -ascent_p, cache.Width, descent_p + ascent_p,
+		OGL_RenderTexturedRect(0, -ascent_p, found->second.Width, descent_p + ascent_p,
 							   0, 0, Right, Bottom);
 		// Move to the next glyph's position
-		glTranslated(cache.Width-Pad,0,0);
+		glTranslated(found->second.Width-Pad,0,0);
 	}
 	
 		
@@ -251,13 +251,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 		}
 		caches.clear();
 		return;		
-	}
-	for( char c = '0'; c <= '9'; ++c ) {
-		char tx[] = { c, '\0' };
-		render_text_(tx, false);
-		
-	}
-	
+	}	
 }
 
 #include "converter.h"
@@ -309,14 +303,14 @@ void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, sh
 	char text_to_draw[256];
 	strncpy(text_to_draw, text, 256);
 	text_to_draw[255] = 0;
-
+	int rect_width = RECTANGLE_WIDTH(&r);
 	// Check for wrapping, and if it occurs, be recursive
 	int t_width = TextWidth(text_to_draw);
-	if (t_width > RECTANGLE_WIDTH(&r) && (flags & _wrap_text)) {
+	if (t_width > rect_width && (flags & _wrap_text)) {
 		int last_breaking_pos = 0, text_width = 0;
 		unsigned count = 0;
 		bool wide = false, begin = true;
-		while (count < strlen(text_to_draw) && text_width < RECTANGLE_WIDTH(&r)) {
+		while (count < strlen(text_to_draw) && text_width < rect_width) {
 			int now_count = count;
 			auto ret = next_utf8(&text_to_draw[count]);
 			count += ret.first;
@@ -358,7 +352,7 @@ void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, sh
 	}
 
 	// Truncate text if necessary
-	if (t_width > RECTANGLE_WIDTH(&r)) {
+	if (t_width > rect_width) {
 		int width = 0;
 		int num = 0;
 		char *p = text_to_draw;
@@ -367,7 +361,7 @@ void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, sh
 			p += ret.first;
 			uint16_t c = ret.second;
 			width += Info->char_width(c, Style);
-			if (width > RECTANGLE_WIDTH(&r)) {
+			if (width > rect_width) {
 				break;
 			}
 			num += ret.first;
@@ -380,7 +374,7 @@ void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, sh
 	// Horizontal positioning
 	int x, y;
 	if (flags & _center_horizontal)
-		x = r.left + ((RECTANGLE_WIDTH(&r) - t_width) / 2);
+		x = r.left + ((rect_width - t_width) / 2);
 	else if (flags & _right_justified)
 		x = r.right - t_width;
 	else
