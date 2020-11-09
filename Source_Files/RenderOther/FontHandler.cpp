@@ -273,7 +273,7 @@ void FontSpecifier::OGL_Render(const char *Text)
 	cv.reserve(256);
 	while( *Text) {
 		auto p = next_utf8(Text);
-		if( isdigit(p.second) ) {
+		if( p.second < 0x80 ) {
 			if( ! cv.empty() ) {
 				render_text_(cv.c_str(), true);
 				cv.clear();

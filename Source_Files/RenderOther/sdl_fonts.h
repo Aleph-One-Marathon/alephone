@@ -124,7 +124,8 @@ public:
 	TTF_Font* m_styles[styleMax];
 	ttf_font_key_t m_keys[styleMax];
 	int m_adjust_height;
-	int ascii_width[styleMax][128];
+	int ascii_width[styleMax][256];
+	int wide_width[styleMax];
 	
 	int8 char_width(uint16, uint16) const;
 

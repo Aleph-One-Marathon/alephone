@@ -321,9 +321,10 @@ font_info *load_font(const TextSpec &spec) {
 				info->m_adjust_height = spec.adjust_height;
 				info->m_styles[i] = font;
 				info->m_keys[i] = ttf_font_key_t(file, i, spec.size);
-				for(int c = 32; c < 128; ++c ) {
+				for(int c = 32; c < 256; ++c ) {
 					TTF_GlyphMetrics(font, c, nullptr, nullptr, nullptr, nullptr,&info->ascii_width[i][c]);
 				}
+				TTF_GlyphMetrics(font, u'あ', nullptr, nullptr, nullptr, nullptr,&info->wide_width[i]);
 			}
 	}
 	return info;
@@ -428,10 +429,15 @@ int sdl_font_info::_trunc_text(const char *text, int max_width, uint16 style) co
 
 int8 ttf_font_info::char_width(uint16 c, uint16 style) const
 {
-	int advance;
-	TTF_GlyphMetrics(get_ttf(style), c, 0, 0, 0, 0, &advance);
-
-	return advance;
+	if( c < 0x100) {
+		return ascii_width[style][c];
+	} else if( c >= 0x3040 && c <= 0x9fef) { 
+		return wide_width[style];
+	} else {
+		int advance;
+		TTF_GlyphMetrics(get_ttf(style), c, 0, 0, 0, 0, &advance);
+		return advance;
+	}
 }
 uint16 ttf_font_info::_text_width(const char *text, uint16 style, bool utf8) const
 {
@@ -441,7 +447,11 @@ uint16 ttf_font_info::_text_width(const char *text, uint16 style, bool utf8) con
 uint16 ttf_font_info::_text_width(const char *text, size_t length, uint16 style, bool utf8) const
 {
 	int width = 0;
-	TTF_SizeUTF8(get_ttf(style), text, &width, 0);
+	for(const char* c = text; *c; ) {
+		auto ret = next_utf8(c);
+		width += char_width(ret.second, style);
+		c += ret.first;
+	}
 	return width;
 }
 
