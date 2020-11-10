@@ -100,6 +100,8 @@ May 22, 2003 (Woody Zenfell):
 #include <sstream>
 #include <boost/algorithm/hex.hpp>
 
+#include "shell_options.h"
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -966,6 +968,10 @@ static const char *sw_sdl_driver_labels[5] = {
 	"デフォルト", "なし", "Direct3D", "OpenGL", NULL
 };
 
+static const char* ephemera_quality_labels[5] = {
+	"Off", "Low", "Medium", "High", "Ultra"
+};
+
 static const char *gamma_labels[9] = {
 	"とても暗い", "暗い", "やや暗い", "通常", "やや明るい", "明るい", "より明るい", "とても明るい", NULL
 };
@@ -1038,9 +1044,14 @@ static void software_rendering_options_dialog(void* arg)
 	table->dual_add(sw_alpha_blending_w->label("液体を半透明化"), d);
 	table->dual_add(sw_alpha_blending_w, d);
 
+	w_select* ephemera_quality_w = new w_select(graphics_preferences->ephemera_quality, ephemera_quality_labels);
+	table->dual_add(ephemera_quality_w->label("Scripted Effects Quality"), d);
+	table->dual_add(ephemera_quality_w, d);
+
 	w_select *sw_driver_w = new w_select(graphics_preferences->software_sdl_driver, sw_sdl_driver_labels);
 	table->dual_add(sw_driver_w->label("アクセラーション"), d);
 	table->dual_add(sw_driver_w, d);
+
 	
 	placer->add(table, true);
 
@@ -1084,6 +1095,12 @@ static void software_rendering_options_dialog(void* arg)
 		if (sw_driver_w->get_selection() != graphics_preferences->software_sdl_driver)
 		{
 			graphics_preferences->software_sdl_driver = sw_driver_w->get_selection();
+			changed = true;
+		}
+
+		if (ephemera_quality_w->get_selection() != graphics_preferences->ephemera_quality)
+		{
+			graphics_preferences->ephemera_quality = ephemera_quality_w->get_selection();
 			changed = true;
 		}
 		
@@ -2998,11 +3015,25 @@ void read_preferences ()
 	FileSpecifier FileSpec;
 
 	FileSpec.SetToPreferencesDir();
-	FileSpec += getcstr(temporary, strFILENAMES, filenamePREFERENCES);
+	std::string name = getcstr(temporary, strFILENAMES, filenamePREFERENCES);
+	if (shell_options.editor)
+	{
+		// check for editor prefs
+		name += " Editor";
+	}
+	FileSpec += name;
 
 	OpenedFile OFile;
 	bool defaults = false;
 	bool opened = FileSpec.Open(OFile);
+
+	if (!opened && shell_options.editor)
+	{
+		// copy non-editor prefs
+		FileSpec.SetToPreferencesDir();
+		FileSpec += getcstr(temporary,strFILENAMES, filenamePREFERENCES);
+		opened = FileSpec.Open(OFile);
+	}
 
 	if (!opened) {
 		defaults = true;
@@ -3133,6 +3164,7 @@ InfoTree graphics_preferences_tree()
 	root.put_attr("movie_export_video_quality", graphics_preferences->movie_export_video_quality);
 	root.put_attr("movie_export_video_bitrate", graphics_preferences->movie_export_video_bitrate);
 	root.put_attr("movie_export_audio_quality", graphics_preferences->movie_export_audio_quality);
+	root.put_attr("scripted_effects_quality", graphics_preferences->ephemera_quality);
 	
 	root.add_color("void.color", graphics_preferences->OGL_Configure.VoidColor);
 
@@ -3498,7 +3530,13 @@ void write_preferences()
 	
 	FileSpecifier FileSpec;
 	FileSpec.SetToPreferencesDir();
-	FileSpec += getcstr(temporary, strFILENAMES, filenamePREFERENCES);
+
+	std::string name = getcstr(temporary, strFILENAMES, filenamePREFERENCES);
+	if (shell_options.editor)
+	{
+		name += " Editor";
+	}
+	FileSpec += name;
 	
 	try {
 		fileroot.save_xml(FileSpec);
@@ -3547,6 +3585,8 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->movie_export_video_quality = 50;
 	preferences->movie_export_audio_quality = 50;
 	preferences->movie_export_video_bitrate = 0; // auto
+
+	preferences->ephemera_quality = _ephemera_medium;
 }
 
 static void default_network_preferences(network_preferences_data *preferences)
@@ -4015,6 +4055,8 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr_bounded<int16>("movie_export_video_quality", graphics_preferences->movie_export_video_quality, 0, 100);
 	root.read_attr_bounded<int16>("movie_export_audio_quality", graphics_preferences->movie_export_audio_quality, 0, 100);
 	root.read_attr("movie_export_video_bitrate", graphics_preferences->movie_export_video_bitrate);
+
+	root.read_attr("scripted_effects_quality", graphics_preferences->ephemera_quality);
 	
 	BOOST_FOREACH(InfoTree vtree, root.children_named("void"))
 	{

@@ -2474,6 +2474,7 @@ static int Lua_Game_Set_Over(lua_State *L)
 }
 
 extern GM_Random lua_random_generator;
+extern GM_Random lua_random_local_generator;
 
 int Lua_Game_Better_Random(lua_State *L)
 {
@@ -2537,11 +2538,24 @@ int Lua_Game_Local_Random(lua_State *L)
 	return 1;
 }
 
+int Lua_Game_Random_Local(lua_State *L)
+{
+	if (lua_isnumber(L, 1))
+	{
+		lua_pushnumber(L, lua_random_local_generator.KISS() % static_cast<uint32>(lua_tonumber(L, 1)));
+	}
+	else
+	{
+		lua_pushnumber(L, lua_random_local_generator.KISS());
+	}
+	return 1;
+}
+
 int Lua_Game_Save(lua_State *L)
 {
 	if (!game_is_networked)
 		save_game();
-
+	
 	return 0;
 }
 
@@ -2564,7 +2578,7 @@ extern int L_Restore_Saved(lua_State *);
 
 const luaL_Reg Lua_Game_Get[] = {
 	{"dead_players_drop_items", Lua_Game_Get_Dead_Players_Drop_Items},
-        {"deserialize", L_TableFunction<Lua_Game_Deserialize>},
+	{"deserialize", L_TableFunction<Lua_Game_Deserialize>},
 	{"difficulty", Lua_Game_Get_Difficulty},
 	{"global_random", L_TableFunction<Lua_Game_Global_Random>},
 	{"kill_limit", Lua_Game_Get_Kill_Limit},
@@ -2574,12 +2588,13 @@ const luaL_Reg Lua_Game_Get[] = {
 	{"proper_item_accounting", Lua_Game_Get_Proper_Item_Accounting},
 	{"nonlocal_overlays", Lua_Game_Get_Nonlocal_Overlays},
 	{"random", L_TableFunction<Lua_Game_Better_Random>},
+	{"random_local", L_TableFunction<Lua_Game_Random_Local>},
 	{"restore_passed", L_TableFunction<L_Restore_Passed>},
 	{"restore_saved", L_TableFunction<L_Restore_Saved>},
 	{"ticks", Lua_Game_Get_Ticks},
 	{"type", Lua_Game_Get_Type},
 	{"save", L_TableFunction<Lua_Game_Save>},
-        {"serialize", L_TableFunction<Lua_Game_Serialize>},
+	{"serialize", L_TableFunction<Lua_Game_Serialize>},
 	{"scoring_mode", Lua_Game_Get_Scoring_Mode},
 	{"version", Lua_Game_Get_Version},
 	{0, 0}

@@ -21,6 +21,11 @@
  
  */
 
+#if defined _MSC_VER
+#define NOMINMAX
+#include <algorithm>
+#endif
+
 // make FFmpeg happy
 #define __STDC_CONSTANT_MACROS
 

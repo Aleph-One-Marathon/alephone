@@ -224,6 +224,9 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	
 	BoolPref vsyncPref (graphics_preferences->OGL_Configure.WaitForVSync);
 	binders.insert<bool> (m_vsyncWidget, &vsyncPref);
+
+	Int16Pref ephemeraQualityPref(graphics_preferences->ephemera_quality);
+	binders.insert<int>(m_ephemeraQualityWidget, &ephemeraQualityPref);
 	
 	FarFilterPref wallsFarFilterPref (graphics_preferences->OGL_Configure.TxtrConfigList [OGL_Txtr_Wall].FarFilter);
 	binders.insert<int> (m_wallsFilterWidget, &wallsFarFilterPref);
@@ -289,6 +292,14 @@ static const char *far_filter_labels[5] = {
 static const char *near_filter_labels[3] = {
 //	"None", "Linear", NULL
 	"なし", "リニア", NULL
+};
+
+static std::vector<std::string> ephemera_quality_labels {
+	"Off",
+	"Low",
+	"Medium",
+	"High",
+	"Ultra"
 };
 
 class w_aniso_slider : public w_slider {
@@ -374,6 +385,11 @@ public:
 		//general_table->dual_add(bump_w->label("Bump Mapping"), m_dialog);
 		general_table->dual_add(bump_w->label("バンプマッピング"), m_dialog);
 		general_table->dual_add(bump_w, m_dialog);
+
+		w_select_popup* ephemera_w = new w_select_popup();
+		ephemera_w->set_labels(ephemera_quality_labels);
+		general_table->dual_add(ephemera_w->label("Scripted Effects Quality"), m_dialog);
+		general_table->dual_add(ephemera_w, m_dialog);
 		
 		general_table->add_row(new w_spacer(), true);
 
@@ -634,6 +650,8 @@ public:
 
 		m_colourTheVoidWidget = 0;
 		m_voidColourWidget = 0;
+
+		m_ephemeraQualityWidget = new PopupSelectorWidget(ephemera_w);
 
 		m_fsaaWidget = new PopupSelectorWidget (fsaa_w);
 

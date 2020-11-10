@@ -109,8 +109,10 @@ extern "C"
 #include "preferences.h"
 #include "BStream.h"
 #include "Plugins.h"
+#include "shell_options.h"
 
 #include "lua_script.h"
+#include "lua_ephemera.h"
 #include "lua_map.h"
 #include "lua_monsters.h"
 #include "lua_objects.h"
@@ -178,6 +180,7 @@ void L_Invalidate_Effect(short) { }
 void L_Invalidate_Monster(short) { }
 void L_Invalidate_Projectile(short) { }
 void L_Invalidate_Object(short) { }
+void L_Invalidate_Ephemera(short) { }
 
 bool LoadLuaScript(const char *buffer, size_t len, const char *desc) { /* Should never get here! */ return false; }
 bool RunLuaScript() {
@@ -207,7 +210,6 @@ extern struct physics_constants *get_physics_constants_for_model(short physics_m
 extern void draw_panels();
 
 extern bool MotionSensorActive;
-extern bool insecure_lua;
 
 extern void instantiate_physics_variables(struct physics_constants *constants, struct physics_variables *variables, short player_index, bool first_time, bool take_action);
 
@@ -271,7 +273,7 @@ public:
 			lua_pop(State(), 1);
 		}
 
-		if (insecure_lua) 
+		if (shell_options.insecure_lua) 
 		{
 			const luaL_Reg *lib = insecurelibs;
 			for (; lib->func; lib++)
@@ -343,6 +345,7 @@ public:
 	void InvalidateMonster(short monster_index);
 	void InvalidateProjectile(short projectile_index);
 	void InvalidateObject(short object_index);
+	void InvalidateEphemera(short ephemera_index);
 
 	int RestorePassed(const std::string& s);
 	int RestoreAll(const std::string& s);
@@ -720,6 +723,13 @@ void LuaState::InvalidateObject(short object_index)
 	}
 }
 
+void LuaState::InvalidateEphemera(short ephemera_index)
+{
+	if (!running_) return;
+
+	Lua_Ephemera::Invalidate(State(), ephemera_index);
+}
+
 static char L_SEARCH_PATH_KEY[] = "search_path";
 
 void L_Set_Search_Path(lua_State* L, const std::string& path)
@@ -799,6 +809,7 @@ void LuaState::RegisterFunctions()
 	lua_register(State(), "player_control", L_Player_Control);
 //	lua_register(state, "prompt", L_Prompt);
 
+	Lua_Ephemera_register(State());
 	Lua_Map_register(State());
 	Lua_Monsters_register(State());
 	Lua_Objects_register(State());
@@ -1053,18 +1064,35 @@ int LuaState::RestorePassed(const std::string& s)
 
 std::string LuaState::SaveAll()
 {
+	std::string retval;
+	static const char key = 'k';
+
 	lua_pushlightuserdata(State(), L_Persistent_Table_Key());
 	lua_gettable(State(), LUA_REGISTRYINDEX);
+
+	// keep the ephemera fields in a temp location
+	lua_pushlightuserdata(State(), const_cast<char*>(&key));
+	lua_getfield(State(), -2, Lua_Ephemera_Name);
+	lua_settable(State(), LUA_REGISTRYINDEX);
+
+	// remove it from the table while we save
+	lua_pushnil(State());
+	lua_setfield(State(), -2, Lua_Ephemera_Name);
 
 	std::stringbuf sb;
 	if (lua_save(State(), &sb))
 	{
-		return sb.str();
+		retval = sb.str();
 	}
-	else
-	{
-		return std::string();
-	}
+
+	// restore the ephemera fields
+	lua_pushlightuserdata(State(), const_cast<char*>(&key));
+	lua_gettable(State(), LUA_REGISTRYINDEX);
+	lua_setfield(State(), -2, Lua_Ephemera_Name);
+
+	lua_pop(State(), 1);
+
+	return retval;
 }
 
 std::string LuaState::SavePassed()
@@ -1104,6 +1132,7 @@ uint32 *action_flags;
 
 // For better_random
 GM_Random lua_random_generator;
+GM_Random lua_random_local_generator;
 
 double FindLinearValue(double startValue, double endValue, double timeRange, double timeTaken)
 {
@@ -1333,6 +1362,11 @@ void L_Invalidate_Projectile(short projectile_index)
 void L_Invalidate_Object(short object_index)
 {
 	L_Dispatch(boost::bind(&LuaState::InvalidateObject, _1, object_index));
+}
+
+void L_Invalidate_Ephemera(short ephemera_index)
+{
+	L_Dispatch(boost::bind(&LuaState::InvalidateEphemera, _1, ephemera_index));
 }
 
 int L_Enable_Player(lua_State *L)
@@ -1840,6 +1874,11 @@ bool RunLuaScript()
 {
 	InitializeLuaVariables();
 	PreservePreLuaSettings();
+
+	lua_random_local_generator.z = (static_cast<uint32>(local_random()) << 16) + static_cast<uint32>(local_random());
+	lua_random_local_generator.w = (static_cast<uint32>(local_random()) << 16) + static_cast<uint32>(local_random());
+	lua_random_local_generator.jsr = (static_cast<uint32>(local_random()) << 16) + static_cast<uint32>(local_random());
+	lua_random_local_generator.jcong = (static_cast<uint32>(local_random()) << 16) + static_cast<uint32>(local_random());
 
 	bool running = false;
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)

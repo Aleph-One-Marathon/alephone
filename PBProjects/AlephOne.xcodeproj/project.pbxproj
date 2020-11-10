@@ -81,19 +81,7 @@
 		2748BDE91CC4053F0082F0E1 /* SDL2_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2748BDEA1CC4053F0082F0E1 /* SDL2_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2748BDEB1CC4053F0082F0E1 /* SDL2_ttf.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		2748BDEC1CC4053F0082F0E1 /* SDL2.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		274D10A52166BBD300C8F77A /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; };
-		274D10A62166BBD400C8F77A /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; };
-		274D10A72166BBD400C8F77A /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; };
-		274D10A82166BBD600C8F77A /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; };
-		274D10AC2166BCC500C8F77A /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; };
-		274D10AD2166BCC500C8F77A /* FreeType.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		274D10B42166C2F900C8F77A /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; };
-		274D10B52166C2F900C8F77A /* FreeType.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		274D10B82166C30500C8F77A /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; };
-		274D10B92166C30600C8F77A /* FreeType.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		274D10BC2166C30C00C8F77A /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; };
-		274D10BD2166C30C00C8F77A /* FreeType.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 274D10A42166BBCD00C8F77A /* FreeType.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2748BDEC1CC4053F0082F0E1 /* SDL2.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2759F31B10D5BC9C000204DD /* SDL_rwops_zzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */; };
 		2759F31C10D5BC9C000204DD /* SDL_rwops_zzip.h in Headers */ = {isa = PBXBuildFile; fileRef = 2759F31A10D5BC9C000204DD /* SDL_rwops_zzip.h */; };
 		2759F33010D5BCC0000204DD /* zziplib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; };
@@ -815,6 +803,14 @@
 		AE626E730B878534009CFF2D /* SoundManager.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6A0B878534009CFF2D /* SoundManager.h */; };
 		AE626E740B878534009CFF2D /* SoundManagerEnums.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6B0B878534009CFF2D /* SoundManagerEnums.h */; };
 		AE69B5DD0D404F0400C42C11 /* lua_player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE69B5DB0D404F0400C42C11 /* lua_player.cpp */; };
+		AE780E102533A4C7002184B5 /* lua_ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */; };
+		AE780E112533A4C7002184B5 /* lua_ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */; };
+		AE780E122533A4C7002184B5 /* lua_ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */; };
+		AE780E132533A4C7002184B5 /* lua_ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */; };
+		AE780E152533A4D8002184B5 /* ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E142533A4D8002184B5 /* ephemera.cpp */; };
+		AE780E162533A4D8002184B5 /* ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E142533A4D8002184B5 /* ephemera.cpp */; };
+		AE780E172533A4D8002184B5 /* ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E142533A4D8002184B5 /* ephemera.cpp */; };
+		AE780E182533A4D8002184B5 /* ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E142533A4D8002184B5 /* ephemera.cpp */; };
 		AE7A143C141D16D000834C2D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AE7A143A141D16D000834C2D /* InfoPlist.strings */; };
 		AE7C219C0BFF67B700CE63EC /* lapi.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21800BFF67B700CE63EC /* lapi.c */; };
 		AE7C219D0BFF67B700CE63EC /* lauxlib.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21810BFF67B700CE63EC /* lauxlib.c */; };
@@ -1570,6 +1566,10 @@
 		AEDCB5DC0D4AEC4D004CB40E /* lua_projectiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDCB5DA0D4AEC4D004CB40E /* lua_projectiles.cpp */; };
 		AEDF1A151416FE2200183689 /* HTTP.h in Headers */ = {isa = PBXBuildFile; fileRef = AEDF1A121416FE2200183689 /* HTTP.h */; };
 		AEDF1A161416FE2200183689 /* HTTP.h in Headers */ = {isa = PBXBuildFile; fileRef = AEDF1A121416FE2200183689 /* HTTP.h */; };
+		AEEA4E7F2544B50B0031363A /* shell_options.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEEA4E7E2544B50B0031363A /* shell_options.cpp */; };
+		AEEA4E802544B50B0031363A /* shell_options.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEEA4E7E2544B50B0031363A /* shell_options.cpp */; };
+		AEEA4E812544B50B0031363A /* shell_options.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEEA4E7E2544B50B0031363A /* shell_options.cpp */; };
+		AEEA4E822544B50B0031363A /* shell_options.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEEA4E7E2544B50B0031363A /* shell_options.cpp */; };
 		AEF1AC1610E05835007EE0D5 /* IMG_savepng.c in Sources */ = {isa = PBXBuildFile; fileRef = AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */; };
 		AEFD85EA13EB84CF00C1E687 /* PlayerName.h in Headers */ = {isa = PBXBuildFile; fileRef = F522120C0136A6FD01000001 /* PlayerName.h */; };
 		AEFD85EB13EB84CF00C1E687 /* Random.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212190136A6FD01000001 /* Random.h */; };
@@ -1986,7 +1986,6 @@
 			files = (
 				27A6DA791B9BF5CC003DA766 /* boost_filesystem.framework in CopyFiles */,
 				27A6DA7A1B9BF5CC003DA766 /* boost_system.framework in CopyFiles */,
-				274D10B52166C2F900C8F77A /* FreeType.framework in CopyFiles */,
 				27A6DA7B1B9BF5CC003DA766 /* avcodec.framework in CopyFiles */,
 				27A6DA7C1B9BF5CC003DA766 /* avformat.framework in CopyFiles */,
 				27A6DA7D1B9BF5CC003DA766 /* avutil.framework in CopyFiles */,
@@ -2012,7 +2011,6 @@
 			files = (
 				27A6DA8B1B9BF5E7003DA766 /* boost_filesystem.framework in CopyFiles */,
 				27A6DA8C1B9BF5E7003DA766 /* boost_system.framework in CopyFiles */,
-				274D10B92166C30600C8F77A /* FreeType.framework in CopyFiles */,
 				27A6DA8D1B9BF5E7003DA766 /* avcodec.framework in CopyFiles */,
 				27A6DA8E1B9BF5E7003DA766 /* avformat.framework in CopyFiles */,
 				27A6DA8F1B9BF5E7003DA766 /* avutil.framework in CopyFiles */,
@@ -2038,7 +2036,6 @@
 			files = (
 				27A6DA9D1B9BF5F3003DA766 /* boost_filesystem.framework in CopyFiles */,
 				27A6DA9E1B9BF5F3003DA766 /* boost_system.framework in CopyFiles */,
-				274D10BD2166C30C00C8F77A /* FreeType.framework in CopyFiles */,
 				27A6DA9F1B9BF5F3003DA766 /* avcodec.framework in CopyFiles */,
 				27A6DAA01B9BF5F3003DA766 /* avformat.framework in CopyFiles */,
 				27A6DAA11B9BF5F3003DA766 /* avutil.framework in CopyFiles */,
@@ -2065,7 +2062,6 @@
 				AEA85F5224DF254D00BB7827 /* webp.framework in CopyFiles */,
 				2762A33B1AAA523600B807D4 /* boost_filesystem.framework in CopyFiles */,
 				2762A33C1AAA523600B807D4 /* boost_system.framework in CopyFiles */,
-				274D10AD2166BCC500C8F77A /* FreeType.framework in CopyFiles */,
 				271ADFC618A88B9C0073CB2E /* avcodec.framework in CopyFiles */,
 				271ADFC718A88B9C0073CB2E /* avformat.framework in CopyFiles */,
 				271ADFC818A88B9C0073CB2E /* avutil.framework in CopyFiles */,
@@ -2100,7 +2096,6 @@
 		2739B490101B862A00CC8098 /* Shape_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Shape_Blitter.cpp; sourceTree = "<group>"; };
 		2739B491101B862A00CC8098 /* Shape_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shape_Blitter.h; sourceTree = "<group>"; };
 		273FBB481E122C9F0076351E /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = ../../../../../../System/Library/Frameworks/IOKit.framework; sourceTree = "<group>"; };
-		274D10A42166BBCD00C8F77A /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = SDL2_ttf.framework/Frameworks/FreeType.framework; sourceTree = "<group>"; };
 		2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_rwops_zzip.c; sourceTree = "<group>"; };
 		2759F31A10D5BC9C000204DD /* SDL_rwops_zzip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_rwops_zzip.h; sourceTree = "<group>"; };
 		2759F32F10D5BCC0000204DD /* zziplib.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = zziplib.framework; sourceTree = "<group>"; };
@@ -2272,6 +2267,10 @@
 		AE626E6B0B878534009CFF2D /* SoundManagerEnums.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SoundManagerEnums.h; sourceTree = "<group>"; };
 		AE69B5DB0D404F0400C42C11 /* lua_player.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_player.cpp; sourceTree = "<group>"; };
 		AE69B5DC0D404F0400C42C11 /* lua_player.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_player.h; sourceTree = "<group>"; };
+		AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_ephemera.cpp; sourceTree = "<group>"; };
+		AE780E142533A4D8002184B5 /* ephemera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ephemera.cpp; sourceTree = "<group>"; };
+		AE780E192533A4E9002184B5 /* ephemera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ephemera.h; sourceTree = "<group>"; };
+		AE780E1A2533A4FF002184B5 /* lua_ephemera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = lua_ephemera.h; sourceTree = "<group>"; };
 		AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ImageLoader_Shared.cpp; path = ../Source_Files/RenderMain/ImageLoader_Shared.cpp; sourceTree = SOURCE_ROOT; };
 		AE791CF60968E49100350190 /* DDS.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = DDS.h; path = ../Source_Files/RenderMain/DDS.h; sourceTree = SOURCE_ROOT; };
 		AE7A1438141D15D600834C2D /* Info-MAS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Info-MAS.plist"; path = "AppStore/Marathon/Info-MAS.plist"; sourceTree = "<group>"; };
@@ -2358,6 +2357,8 @@
 		AEDCB5DA0D4AEC4D004CB40E /* lua_projectiles.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_projectiles.cpp; sourceTree = "<group>"; };
 		AEDCB5DB0D4AEC4D004CB40E /* lua_projectiles.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_projectiles.h; sourceTree = "<group>"; };
 		AEDF1A121416FE2200183689 /* HTTP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HTTP.h; path = ../Source_Files/Network/HTTP.h; sourceTree = "<group>"; };
+		AEEA4E7E2544B50B0031363A /* shell_options.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = shell_options.cpp; path = ../Source_Files/shell_options.cpp; sourceTree = "<group>"; };
+		AEEA4E832544B51D0031363A /* shell_options.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = shell_options.h; path = ../Source_Files/shell_options.h; sourceTree = "<group>"; };
 		AEF1AC1410E05826007EE0D5 /* IMG_savepng.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IMG_savepng.h; sourceTree = "<group>"; };
 		AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = IMG_savepng.c; sourceTree = "<group>"; };
 		AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_LoadScreen.h; sourceTree = "<group>"; };
@@ -2638,7 +2639,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				274D10B82166C30500C8F77A /* FreeType.framework in Frameworks */,
 				273FBB4B1E122CA20076351E /* IOKit.framework in Frameworks */,
 				275A7BD51A60DE9B002EE952 /* libcurl.tbd in Frameworks */,
 				AE505CEF141D45E600915344 /* OpenGL.framework in Frameworks */,
@@ -2656,7 +2656,6 @@
 				AE505CFF141D45E600915344 /* jpeg.framework in Frameworks */,
 				AE505D00141D45E600915344 /* png.framework in Frameworks */,
 				270F9FD2177687B7009AAE10 /* avcodec.framework in Frameworks */,
-				274D10A72166BBD400C8F77A /* FreeType.framework in Frameworks */,
 				278BCAF11A51C53C006F9756 /* speexdsp.framework in Frameworks */,
 				2762A3351AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */,
 				2748BDD81CC405140082F0E1 /* SDL2_image.framework in Frameworks */,
@@ -2671,7 +2670,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				274D10BC2166C30C00C8F77A /* FreeType.framework in Frameworks */,
 				273FBB4C1E122CA30076351E /* IOKit.framework in Frameworks */,
 				275A7BD61A60DEA3002EE952 /* libcurl.tbd in Frameworks */,
 				AEB4A29114296CAE00537AE7 /* OpenGL.framework in Frameworks */,
@@ -2689,7 +2687,6 @@
 				AEB4A2A114296CAE00537AE7 /* jpeg.framework in Frameworks */,
 				AEB4A2A214296CAE00537AE7 /* png.framework in Frameworks */,
 				270F9FD3177687B7009AAE10 /* avcodec.framework in Frameworks */,
-				274D10A82166BBD600C8F77A /* FreeType.framework in Frameworks */,
 				278BCAF21A51C53C006F9756 /* speexdsp.framework in Frameworks */,
 				2762A3361AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */,
 				2748BDD91CC405140082F0E1 /* SDL2_image.framework in Frameworks */,
@@ -2704,7 +2701,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				274D10AC2166BCC500C8F77A /* FreeType.framework in Frameworks */,
 				553AB9F6213A034300EE3861 /* libexpat.tbd in Frameworks */,
 				273FBB491E122C9F0076351E /* IOKit.framework in Frameworks */,
 				275A7BD31A60DE77002EE952 /* libcurl.tbd in Frameworks */,
@@ -2723,7 +2719,6 @@
 				270F9FD0177687B7009AAE10 /* avcodec.framework in Frameworks */,
 				278BCAEF1A51C53C006F9756 /* speexdsp.framework in Frameworks */,
 				2762A3331AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */,
-				274D10A52166BBD300C8F77A /* FreeType.framework in Frameworks */,
 				270F9FD4177687B7009AAE10 /* avformat.framework in Frameworks */,
 				27E5DD601BD2DA0C00A95619 /* SDL2_net.framework in Frameworks */,
 				270F9FD8177687B7009AAE10 /* avutil.framework in Frameworks */,
@@ -2737,7 +2732,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				274D10B42166C2F900C8F77A /* FreeType.framework in Frameworks */,
 				273FBB4A1E122CA20076351E /* IOKit.framework in Frameworks */,
 				275A7BD41A60DE8C002EE952 /* libcurl.tbd in Frameworks */,
 				AEFD879B13EB84CF00C1E687 /* OpenGL.framework in Frameworks */,
@@ -2755,7 +2749,6 @@
 				AEFD87AB13EB84CF00C1E687 /* jpeg.framework in Frameworks */,
 				AEFD87AC13EB84CF00C1E687 /* png.framework in Frameworks */,
 				270F9FD1177687B7009AAE10 /* avcodec.framework in Frameworks */,
-				274D10A62166BBD400C8F77A /* FreeType.framework in Frameworks */,
 				278BCAF01A51C53C006F9756 /* speexdsp.framework in Frameworks */,
 				2762A3341AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */,
 				2748BDD71CC405130082F0E1 /* SDL2_image.framework in Frameworks */,
@@ -3032,7 +3025,6 @@
 			isa = PBXGroup;
 			children = (
 				AEA85F4A24DF251300BB7827 /* webp.framework */,
-				274D10A42166BBCD00C8F77A /* FreeType.framework */,
 				27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */,
 				27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */,
 				27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */,
@@ -3056,6 +3048,8 @@
 		F51B0587047AC6DA01C5C930 /* Lua */ = {
 			isa = PBXGroup;
 			children = (
+				AE780E1A2533A4FF002184B5 /* lua_ephemera.h */,
+				AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */,
 				276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */,
 				276589F7119DF1DD0096F75B /* lua_saved_objects.h */,
 				2784979B0FF5C308008DECC8 /* lua_hud_objects.cpp */,
@@ -3329,6 +3323,7 @@
 				F5CC924F0240D28201A80001 /* devices.cpp */,
 				F5CC92500240D28201A80001 /* dynamic_limits.cpp */,
 				F5CC92540240D28201A80001 /* effects.cpp */,
+				AE780E142533A4D8002184B5 /* ephemera.cpp */,
 				F5CC92560240D28201A80001 /* flood_map.cpp */,
 				F5CC925B0240D28201A80001 /* lightsource.cpp */,
 				F5CC92590240D28201A80001 /* items.cpp */,
@@ -3369,6 +3364,7 @@
 				F5CC92520240D28201A80001 /* editor.h */,
 				F5CC92530240D28201A80001 /* effect_definitions.h */,
 				F5CC92550240D28201A80001 /* effects.h */,
+				AE780E192533A4E9002184B5 /* ephemera.h */,
 				F5CC92570240D28201A80001 /* flood_map.h */,
 				F5CC92580240D28201A80001 /* item_definitions.h */,
 				F5CC925A0240D28201A80001 /* items.h */,
@@ -3661,6 +3657,8 @@
 		F5CF58580245987901A80001 /* Main */ = {
 			isa = PBXGroup;
 			children = (
+				AEEA4E832544B51D0031363A /* shell_options.h */,
+				AEEA4E7E2544B50B0031363A /* shell_options.cpp */,
 				27A6DB4F1B9CED1E003DA766 /* confpaths.h */,
 				27A6DB471B9CED02003DA766 /* config.h */,
 				F522124C0136A6FD01000001 /* shell.h */,
@@ -4577,7 +4575,7 @@
 				AE505C0E141D45E600915344 /* Sources */,
 				AE505CEE141D45E600915344 /* Frameworks */,
 				27A6DA891B9BF5E4003DA766 /* CopyFiles */,
-				274D10B22166C2BB00C8F77A /* Clean Nested Frameworks */,
+				274D10B22166C2BB00C8F77A /* Sign Nested Frameworks */,
 				AE505D06141D45E600915344 /* Copy Scenario */,
 				AE505D04141D45E600915344 /* Insert Version */,
 			);
@@ -4599,7 +4597,7 @@
 				AEB4A1AF14296CAE00537AE7 /* Sources */,
 				AEB4A29014296CAE00537AE7 /* Frameworks */,
 				27A6DA9B1B9BF5EF003DA766 /* CopyFiles */,
-				274D10B32166C2C600C8F77A /* Clean Nested Frameworks */,
+				274D10B32166C2C600C8F77A /* Sign Nested Frameworks */,
 				AEB4A2A814296CAE00537AE7 /* Copy Scenario */,
 				AEB4A2A614296CAE00537AE7 /* Insert Version */,
 			);
@@ -4621,7 +4619,7 @@
 				AEC3C7CF09AD68AC003258E4 /* Sources */,
 				AEC3C86F09AD68AC003258E4 /* Frameworks */,
 				AEC3C87709AD68AC003258E4 /* CopyFiles */,
-				274D10B02166BE4E00C8F77A /* Clean Nested Frameworks */,
+				274D10B02166BE4E00C8F77A /* Sign Nested Frameworks */,
 				AEC3C87609AD68AC003258E4 /* Copy Default Theme */,
 				275F9A49217F7CBA00337B05 /* Insert Version */,
 			);
@@ -4643,7 +4641,7 @@
 				AEFD86BB13EB84CF00C1E687 /* Sources */,
 				AEFD879A13EB84CF00C1E687 /* Frameworks */,
 				27A6DA771B9BF5BF003DA766 /* CopyFiles */,
-				274D10B12166C2B100C8F77A /* Clean Nested Frameworks */,
+				274D10B12166C2B100C8F77A /* Sign Nested Frameworks */,
 				AEFD87D713EB944800C1E687 /* Copy Scenario */,
 				AEFD87AF13EB84CF00C1E687 /* Insert Version */,
 			);
@@ -4785,7 +4783,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		274D10B02166BE4E00C8F77A /* Clean Nested Frameworks */ = {
+		274D10B02166BE4E00C8F77A /* Sign Nested Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -4794,16 +4792,16 @@
 			);
 			inputPaths = (
 			);
-			name = "Clean Nested Frameworks";
+			name = "Sign Nested Frameworks";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "for fwk in \"SDL2_ttf\"; do\n  rm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/Current/Frameworks\"\n  rm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Frameworks\"\n  codesign --force --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
+			shellScript = "for fwk in \"SDL2\" \"SDL2_ttf\"; do\n  codesign --force --deep --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
 		};
-		274D10B12166C2B100C8F77A /* Clean Nested Frameworks */ = {
+		274D10B12166C2B100C8F77A /* Sign Nested Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -4812,16 +4810,16 @@
 			);
 			inputPaths = (
 			);
-			name = "Clean Nested Frameworks";
+			name = "Sign Nested Frameworks";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "for fwk in \"SDL2_ttf\"; do\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/Current/Frameworks\"\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Frameworks\"\ncodesign --force --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
+			shellScript = "for fwk in \"SDL2\" \"SDL2_ttf\"; do\ncodesign --force --deep --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
 		};
-		274D10B22166C2BB00C8F77A /* Clean Nested Frameworks */ = {
+		274D10B22166C2BB00C8F77A /* Sign Nested Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -4830,16 +4828,16 @@
 			);
 			inputPaths = (
 			);
-			name = "Clean Nested Frameworks";
+			name = "Sign Nested Frameworks";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "for fwk in \"SDL2_ttf\"; do\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/Current/Frameworks\"\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Frameworks\"\ncodesign --force --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
+			shellScript = "for fwk in \"SDL2\" \"SDL2_ttf\"; do\ncodesign --force --deep --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
 		};
-		274D10B32166C2C600C8F77A /* Clean Nested Frameworks */ = {
+		274D10B32166C2C600C8F77A /* Sign Nested Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -4848,14 +4846,14 @@
 			);
 			inputPaths = (
 			);
-			name = "Clean Nested Frameworks";
+			name = "Sign Nested Frameworks";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "for fwk in \"SDL2_ttf\"; do\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/Current/Frameworks\"\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Frameworks\"\ncodesign --force --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n";
+			shellScript = "for fwk in \"SDL2\" \"SDL2_ttf\"; do\ncodesign --force --deep --sign \"$CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements,flags --timestamp=none \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Frameworks/$fwk.framework/Versions/A\"\ndone\n\n";
 		};
 		275F9A49217F7CBA00337B05 /* Insert Version */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -5034,6 +5032,7 @@
 				279A462618286FA900F7BFDA /* FFmpegDecoder.cpp in Sources */,
 				AE505C4C141D45E600915344 /* physics.cpp in Sources */,
 				AE505C4D141D45E600915344 /* placement.cpp in Sources */,
+				AE780E122533A4C7002184B5 /* lua_ephemera.cpp in Sources */,
 				AE505C4E141D45E600915344 /* platforms.cpp in Sources */,
 				AE505C4F141D45E600915344 /* player.cpp in Sources */,
 				AE505C50141D45E600915344 /* projectiles.cpp in Sources */,
@@ -5116,6 +5115,7 @@
 				AE505CA1141D45E600915344 /* error.c in Sources */,
 				AE505CA2141D45E600915344 /* http.c in Sources */,
 				AE505CA3141D45E600915344 /* libnat.c in Sources */,
+				AE780E172533A4D8002184B5 /* ephemera.cpp in Sources */,
 				AE505CA4141D45E600915344 /* os_common.c in Sources */,
 				AE505CA5141D45E600915344 /* os_unix.c in Sources */,
 				AE505CA6141D45E600915344 /* ssdp.c in Sources */,
@@ -5127,6 +5127,7 @@
 				AE505CAC141D45E600915344 /* SW_Texture_Extras.cpp in Sources */,
 				AE505CAD141D45E600915344 /* Mixer.cpp in Sources */,
 				AE505CAE141D45E600915344 /* Music.cpp in Sources */,
+				AEEA4E812544B50B0031363A /* shell_options.cpp in Sources */,
 				AE505CAF141D45E600915344 /* SoundFile.cpp in Sources */,
 				AE505CB0141D45E600915344 /* SoundManager.cpp in Sources */,
 				AE505CB1141D45E600915344 /* BasicIFFDecoder.cpp in Sources */,
@@ -5265,6 +5266,7 @@
 				279A462718286FAA00F7BFDA /* FFmpegDecoder.cpp in Sources */,
 				AEB4A1ED14296CAE00537AE7 /* physics.cpp in Sources */,
 				AEB4A1EE14296CAE00537AE7 /* placement.cpp in Sources */,
+				AE780E132533A4C7002184B5 /* lua_ephemera.cpp in Sources */,
 				AEB4A1EF14296CAE00537AE7 /* platforms.cpp in Sources */,
 				AEB4A1F014296CAE00537AE7 /* player.cpp in Sources */,
 				AEB4A1F114296CAE00537AE7 /* projectiles.cpp in Sources */,
@@ -5347,6 +5349,7 @@
 				AEB4A24214296CAE00537AE7 /* error.c in Sources */,
 				AEB4A24314296CAE00537AE7 /* http.c in Sources */,
 				AEB4A24414296CAE00537AE7 /* libnat.c in Sources */,
+				AE780E182533A4D8002184B5 /* ephemera.cpp in Sources */,
 				AEB4A24514296CAE00537AE7 /* os_common.c in Sources */,
 				AEB4A24614296CAE00537AE7 /* os_unix.c in Sources */,
 				AEB4A24714296CAE00537AE7 /* ssdp.c in Sources */,
@@ -5358,6 +5361,7 @@
 				AEB4A24D14296CAE00537AE7 /* SW_Texture_Extras.cpp in Sources */,
 				AEB4A24E14296CAE00537AE7 /* Mixer.cpp in Sources */,
 				AEB4A24F14296CAE00537AE7 /* Music.cpp in Sources */,
+				AEEA4E822544B50B0031363A /* shell_options.cpp in Sources */,
 				AEB4A25014296CAE00537AE7 /* SoundFile.cpp in Sources */,
 				AEB4A25114296CAE00537AE7 /* SoundManager.cpp in Sources */,
 				AEB4A25214296CAE00537AE7 /* BasicIFFDecoder.cpp in Sources */,
@@ -5496,6 +5500,7 @@
 				AEC3C81509AD68AC003258E4 /* pathfinding.cpp in Sources */,
 				AEC3C81609AD68AC003258E4 /* physics.cpp in Sources */,
 				AEC3C81709AD68AC003258E4 /* placement.cpp in Sources */,
+				AE780E102533A4C7002184B5 /* lua_ephemera.cpp in Sources */,
 				AEC3C81809AD68AC003258E4 /* platforms.cpp in Sources */,
 				AEC3C81909AD68AC003258E4 /* player.cpp in Sources */,
 				AEC3C81A09AD68AC003258E4 /* projectiles.cpp in Sources */,
@@ -5578,6 +5583,7 @@
 				AE179F1609C3D79500512061 /* error.c in Sources */,
 				AE179F1709C3D79500512061 /* http.c in Sources */,
 				AE179F1809C3D79500512061 /* libnat.c in Sources */,
+				AE780E152533A4D8002184B5 /* ephemera.cpp in Sources */,
 				AE179F1909C3D79500512061 /* os_common.c in Sources */,
 				AE179F1A09C3D79500512061 /* os_unix.c in Sources */,
 				AE179F1B09C3D79500512061 /* ssdp.c in Sources */,
@@ -5589,6 +5595,7 @@
 				AEC02F910B6D8B310095E8C9 /* SW_Texture_Extras.cpp in Sources */,
 				AE626E6C0B878534009CFF2D /* Mixer.cpp in Sources */,
 				AE626E6E0B878534009CFF2D /* Music.cpp in Sources */,
+				AEEA4E7F2544B50B0031363A /* shell_options.cpp in Sources */,
 				AE626E700B878534009CFF2D /* SoundFile.cpp in Sources */,
 				AE626E720B878534009CFF2D /* SoundManager.cpp in Sources */,
 				AE601F0A0B927C25009F881C /* BasicIFFDecoder.cpp in Sources */,
@@ -5727,6 +5734,7 @@
 				279A462518286FA900F7BFDA /* FFmpegDecoder.cpp in Sources */,
 				AEFD86F913EB84CF00C1E687 /* physics.cpp in Sources */,
 				AEFD86FA13EB84CF00C1E687 /* placement.cpp in Sources */,
+				AE780E112533A4C7002184B5 /* lua_ephemera.cpp in Sources */,
 				AEFD86FB13EB84CF00C1E687 /* platforms.cpp in Sources */,
 				AEFD86FC13EB84CF00C1E687 /* player.cpp in Sources */,
 				AEFD86FD13EB84CF00C1E687 /* projectiles.cpp in Sources */,
@@ -5809,6 +5817,7 @@
 				AEFD874E13EB84CF00C1E687 /* error.c in Sources */,
 				AEFD874F13EB84CF00C1E687 /* http.c in Sources */,
 				AEFD875013EB84CF00C1E687 /* libnat.c in Sources */,
+				AE780E162533A4D8002184B5 /* ephemera.cpp in Sources */,
 				AEFD875113EB84CF00C1E687 /* os_common.c in Sources */,
 				AEFD875213EB84CF00C1E687 /* os_unix.c in Sources */,
 				AEFD875313EB84CF00C1E687 /* ssdp.c in Sources */,
@@ -5820,6 +5829,7 @@
 				AEFD875913EB84CF00C1E687 /* SW_Texture_Extras.cpp in Sources */,
 				AEFD875A13EB84CF00C1E687 /* Mixer.cpp in Sources */,
 				AEFD875B13EB84CF00C1E687 /* Music.cpp in Sources */,
+				AEEA4E802544B50B0031363A /* shell_options.cpp in Sources */,
 				AEFD875C13EB84CF00C1E687 /* SoundFile.cpp in Sources */,
 				AEFD875D13EB84CF00C1E687 /* SoundManager.cpp in Sources */,
 				AEFD875E13EB84CF00C1E687 /* BasicIFFDecoder.cpp in Sources */,

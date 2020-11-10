@@ -1152,8 +1152,10 @@ struct shape_and_transfer_mode
 };
 
 void get_object_shape_and_transfer_mode(world_point3d *camera_location, short object_index, struct shape_and_transfer_mode *data);
+void get_object_shape_and_transfer_mode(world_point3d *camera_location, object_data* object, shape_and_transfer_mode *data);
 void set_object_shape_and_transfer_mode(short object_index, shape_descriptor shape, short transfer_mode);
 void animate_object(short object_index); /* assumes ¶t==1 tick */
+void animate_object(object_data* data, int16_t object_index);
 bool randomize_object_sequence(short object_index, shape_descriptor shape);
 
 void play_object_sound(short object_index, short sound_code);

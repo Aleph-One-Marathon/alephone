@@ -22,6 +22,9 @@
 */
 
 #include "OGL_Blitter.h"
+
+#include <memory>
+
 #include "OGL_Setup.h"
 #include "shell.h"
 #include "screen.h"
@@ -58,16 +61,16 @@ void OGL_Blitter::_LoadTextures()
 		m_tile_height = std::max(m_tile_height, 128);
 	}
 
-	SDL_Surface *t = nullptr;
+	std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)> t(nullptr, SDL_FreeSurface);
 	if (PlatformIsLittleEndian()) {
-		t = SDL_CreateRGBSurface(SDL_SWSURFACE, m_tile_width, m_tile_height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+		t.reset(SDL_CreateRGBSurface(SDL_SWSURFACE, m_tile_width, m_tile_height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000));
 	} else {
-		t = SDL_CreateRGBSurface(SDL_SWSURFACE, m_tile_width, m_tile_height, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+		t.reset(SDL_CreateRGBSurface(SDL_SWSURFACE, m_tile_width, m_tile_height, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff));
 	}
 	if (!t)
 		return;
 	
-	SDL_SetSurfaceBlendMode(t, SDL_BLENDMODE_NONE);
+	SDL_SetSurfaceBlendMode(t.get(), SDL_BLENDMODE_NONE);
 	
 	// calculate how many rects we need
 	int v_rects = ((m_src.h + m_tile_height - 1) / m_tile_height);
@@ -92,7 +95,7 @@ void OGL_Blitter::_LoadTextures()
 			m_rects[i].h = std::min(m_tile_height, static_cast<int>(m_src.h - y * m_tile_height));
 
 			SDL_Rect sr = { m_rects[i].x, m_rects[i].y, m_rects[i].w, m_rects[i].h }; 
-			SDL_BlitSurface(m_surface, &sr, t, NULL);
+			SDL_BlitSurface(m_surface, &sr, t.get(), NULL);
 
 			// to avoid edge artifacts, smear edge pixels out to texture boundary
 			for (int row = 0; row < m_rects[i].h; ++row)
@@ -128,7 +131,6 @@ void OGL_Blitter::_LoadTextures()
 		}
 	}
 	
-	SDL_FreeSurface(t);
 	m_textures_loaded = true;
 	return;
 }

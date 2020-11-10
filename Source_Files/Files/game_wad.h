@@ -34,6 +34,7 @@ Aug 12, 2000 (Loren Petrich):
 */
 
 #include "cstypes.h"
+#include "map.h"
 #include <string>
 
 class FileSpecifier;
@@ -55,8 +56,9 @@ bool process_map_wad(struct wad_data *wad, bool restoring_game, short version);
 
 bool match_checksum_with_map(short vRefNum, long dirID, uint32 checksum, 
 	FileSpecifier& File);
-void set_map_file(FileSpecifier& File);
-
+void set_map_file(FileSpecifier& File, bool runScript = true);
+dynamic_data get_dynamic_data_from_save(FileSpecifier& File);
+void get_dynamic_data_from_wad(wad_data* wad, dynamic_data* dest);
 //CP Addition: get_map_file returns the FileDesc pointer to the current map
 FileSpecifier& get_map_file(void);
 

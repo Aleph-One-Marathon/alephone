@@ -1,0 +1,602 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{D1A548FF-F15F-43CA-8891-F4B367122282}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(VcpkgCurrentInstalledDir)include\SDL2;$(ProjectDir)XML;$(ProjectDir)TCPMess;$(ProjectDir)Sound;$(ProjectDir)RenderOther;$(ProjectDir)RenderMain;$(ProjectDir)Network\Metaserver;$(ProjectDir)Network;$(ProjectDir)ModelView;$(ProjectDir)Misc;$(ProjectDir)Lua;$(ProjectDir)LibNAT;$(ProjectDir)Input;$(ProjectDir)GameWorld;$(ProjectDir)Files;$(ProjectDir)FFmpeg;$(ProjectDir)CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;wldap32.lib;crypt32.lib;Secur32.lib;dsound.lib;opengl32.lib;glu32.lib;$(VcpkgCurrentInstalledDir)lib\manual-link\SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>libcmt.lib</IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(VcpkgCurrentInstalledDir)include\SDL2;$(ProjectDir)XML;$(ProjectDir)TCPMess;$(ProjectDir)Sound;$(ProjectDir)RenderOther;$(ProjectDir)RenderMain;$(ProjectDir)Network\Metaserver;$(ProjectDir)Network;$(ProjectDir)ModelView;$(ProjectDir)Misc;$(ProjectDir)Lua;$(ProjectDir)LibNAT;$(ProjectDir)Input;$(ProjectDir)GameWorld;$(ProjectDir)Files;$(ProjectDir)FFmpeg;$(ProjectDir)CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;wldap32.lib;crypt32.lib;Secur32.lib;dsound.lib;opengl32.lib;glu32.lib;$(VcpkgCurrentInstalledDir)lib\manual-link\SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>libcmtd.lib</IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="CSeries\BStream.cpp" />
+    <ClCompile Include="CSeries\byte_swapping.cpp" />
+    <ClCompile Include="CSeries\csalerts_sdl.cpp" />
+    <ClCompile Include="CSeries\cscluts_sdl.cpp" />
+    <ClCompile Include="CSeries\csdialogs_sdl.cpp" />
+    <ClCompile Include="CSeries\csmisc_sdl.cpp" />
+    <ClCompile Include="CSeries\cspaths_sdl.cpp" />
+    <ClCompile Include="CSeries\csstrings.cpp" />
+    <ClCompile Include="CSeries\FilmProfile.cpp" />
+    <ClCompile Include="CSeries\mytm_sdl.cpp" />
+    <ClCompile Include="FFmpeg\Movie.cpp" />
+    <ClCompile Include="FFmpeg\SDL_ffmpeg.c" />
+    <ClCompile Include="Files\AStream.cpp" />
+    <ClCompile Include="Files\crc.cpp" />
+    <ClCompile Include="Files\FileHandler.cpp" />
+    <ClCompile Include="Files\find_files_sdl.cpp" />
+    <ClCompile Include="Files\game_wad.cpp" />
+    <ClCompile Include="Files\import_definitions.cpp" />
+    <ClCompile Include="Files\Packing.cpp" />
+    <ClCompile Include="Files\preprocess_map_sdl.cpp" />
+    <ClCompile Include="Files\preprocess_map_shared.cpp" />
+    <ClCompile Include="Files\resource_manager.cpp" />
+    <ClCompile Include="Files\SDL_rwops_ostream.cpp" />
+    <ClCompile Include="Files\SDL_rwops_zzip.c" />
+    <ClCompile Include="Files\wad.cpp" />
+    <ClCompile Include="Files\WadImageCache.cpp" />
+    <ClCompile Include="Files\wad_prefs.cpp" />
+    <ClCompile Include="Files\wad_sdl.cpp" />
+    <ClCompile Include="GameWorld\devices.cpp" />
+    <ClCompile Include="GameWorld\dynamic_limits.cpp" />
+    <ClCompile Include="GameWorld\effects.cpp" />
+    <ClCompile Include="GameWorld\ephemera.cpp" />
+    <ClCompile Include="GameWorld\flood_map.cpp" />
+    <ClCompile Include="GameWorld\items.cpp" />
+    <ClCompile Include="GameWorld\lightsource.cpp" />
+    <ClCompile Include="GameWorld\map.cpp" />
+    <ClCompile Include="GameWorld\map_constructors.cpp" />
+    <ClCompile Include="GameWorld\marathon2.cpp" />
+    <ClCompile Include="GameWorld\media.cpp" />
+    <ClCompile Include="GameWorld\monsters.cpp" />
+    <ClCompile Include="GameWorld\pathfinding.cpp" />
+    <ClCompile Include="GameWorld\physics.cpp" />
+    <ClCompile Include="GameWorld\placement.cpp" />
+    <ClCompile Include="GameWorld\platforms.cpp" />
+    <ClCompile Include="GameWorld\player.cpp" />
+    <ClCompile Include="GameWorld\projectiles.cpp" />
+    <ClCompile Include="GameWorld\scenery.cpp" />
+    <ClCompile Include="GameWorld\weapons.cpp" />
+    <ClCompile Include="GameWorld\world.cpp" />
+    <ClCompile Include="Input\joystick_sdl.cpp" />
+    <ClCompile Include="Input\mouse_sdl.cpp" />
+    <ClCompile Include="Lua\lua_ephemera.cpp" />
+    <ClCompile Include="Lua\lua_hud_objects.cpp" />
+    <ClCompile Include="Lua\lua_hud_script.cpp" />
+    <ClCompile Include="Lua\lua_map.cpp" />
+    <ClCompile Include="Lua\lua_monsters.cpp" />
+    <ClCompile Include="Lua\lua_objects.cpp" />
+    <ClCompile Include="Lua\lua_player.cpp" />
+    <ClCompile Include="Lua\lua_projectiles.cpp" />
+    <ClCompile Include="Lua\lua_saved_objects.cpp" />
+    <ClCompile Include="Lua\lua_script.cpp" />
+    <ClCompile Include="Lua\lua_serialize.cpp" />
+    <ClCompile Include="Misc\ActionQueues.cpp" />
+    <ClCompile Include="Misc\CircularByteBuffer.cpp" />
+    <ClCompile Include="Misc\Console.cpp" />
+    <ClCompile Include="Misc\DefaultStringSets.cpp" />
+    <ClCompile Include="Misc\game_errors.cpp" />
+    <ClCompile Include="Misc\interface.cpp" />
+    <ClCompile Include="Misc\Logging.cpp" />
+    <ClCompile Include="Misc\PlayerImage_sdl.cpp" />
+    <ClCompile Include="Misc\PlayerName.cpp" />
+    <ClCompile Include="Misc\preferences.cpp" />
+    <ClCompile Include="Misc\preferences_widgets_sdl.cpp" />
+    <ClCompile Include="Misc\preference_dialogs.cpp" />
+    <ClCompile Include="Misc\Scenario.cpp" />
+    <ClCompile Include="Misc\sdl_dialogs.cpp" />
+    <ClCompile Include="Misc\sdl_widgets.cpp" />
+    <ClCompile Include="Misc\shared_widgets.cpp" />
+    <ClCompile Include="Misc\Statistics.cpp" />
+    <ClCompile Include="Misc\thread_priority_sdl_dummy.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Misc\thread_priority_sdl_macosx.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Misc\thread_priority_sdl_posix.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Misc\thread_priority_sdl_win32.cpp" />
+    <ClCompile Include="Misc\vbl.cpp" />
+    <ClCompile Include="ModelView\Dim3_Loader.cpp" />
+    <ClCompile Include="ModelView\Model3D.cpp" />
+    <ClCompile Include="ModelView\ModelRenderer.cpp" />
+    <ClCompile Include="ModelView\StudioLoader.cpp" />
+    <ClCompile Include="ModelView\WavefrontLoader.cpp" />
+    <ClCompile Include="Network\ConnectPool.cpp" />
+    <ClCompile Include="Network\HTTP.cpp" />
+    <ClCompile Include="Network\Metaserver\metaserver_dialogs.cpp" />
+    <ClCompile Include="Network\Metaserver\metaserver_messages.cpp" />
+    <ClCompile Include="Network\Metaserver\network_metaserver.cpp" />
+    <ClCompile Include="Network\Metaserver\SdlMetaserverClientUi.cpp" />
+    <ClCompile Include="Network\network.cpp" />
+    <ClCompile Include="Network\network_capabilities.cpp" />
+    <ClCompile Include="Network\network_data_formats.cpp" />
+    <ClCompile Include="Network\network_dialogs.cpp" />
+    <ClCompile Include="Network\network_dialog_widgets_sdl.cpp" />
+    <ClCompile Include="Network\network_dummy.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Network\network_games.cpp" />
+    <ClCompile Include="Network\network_lookup_sdl.cpp" />
+    <ClCompile Include="Network\network_messages.cpp" />
+    <ClCompile Include="Network\network_microphone_coreaudio.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Network\network_microphone_sdl_alsa.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Network\network_microphone_sdl_dummy.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Network\network_microphone_sdl_win32.cpp" />
+    <ClCompile Include="Network\network_microphone_shared.cpp" />
+    <ClCompile Include="Network\network_speaker_sdl.cpp" />
+    <ClCompile Include="Network\network_speaker_shared.cpp" />
+    <ClCompile Include="Network\network_speex.cpp" />
+    <ClCompile Include="Network\network_star_hub.cpp" />
+    <ClCompile Include="Network\network_star_spoke.cpp" />
+    <ClCompile Include="Network\network_udp.cpp" />
+    <ClCompile Include="Network\RingGameProtocol.cpp" />
+    <ClCompile Include="Network\SDL_netx.cpp" />
+    <ClCompile Include="Network\SSLP_limited.cpp" />
+    <ClCompile Include="Network\StarGameProtocol.cpp" />
+    <ClCompile Include="Network\Update.cpp" />
+    <ClCompile Include="RenderMain\AnimatedTextures.cpp" />
+    <ClCompile Include="RenderMain\Crosshairs_SDL.cpp" />
+    <ClCompile Include="RenderMain\ImageLoader_SDL.cpp" />
+    <ClCompile Include="RenderMain\ImageLoader_Shared.cpp" />
+    <ClCompile Include="RenderMain\OGL_Faders.cpp" />
+    <ClCompile Include="RenderMain\OGL_FBO.cpp" />
+    <ClCompile Include="RenderMain\OGL_Model_Def.cpp" />
+    <ClCompile Include="RenderMain\OGL_Render.cpp" />
+    <ClCompile Include="RenderMain\OGL_Setup.cpp" />
+    <ClCompile Include="RenderMain\OGL_Shader.cpp" />
+    <ClCompile Include="RenderMain\OGL_Subst_Texture_Def.cpp" />
+    <ClCompile Include="RenderMain\OGL_Textures.cpp" />
+    <ClCompile Include="RenderMain\Rasterizer_Shader.cpp" />
+    <ClCompile Include="RenderMain\render.cpp" />
+    <ClCompile Include="RenderMain\RenderPlaceObjs.cpp" />
+    <ClCompile Include="RenderMain\RenderRasterize.cpp" />
+    <ClCompile Include="RenderMain\RenderRasterize_Shader.cpp" />
+    <ClCompile Include="RenderMain\RenderSortPoly.cpp" />
+    <ClCompile Include="RenderMain\RenderVisTree.cpp" />
+    <ClCompile Include="RenderMain\scottish_textures.cpp" />
+    <ClCompile Include="RenderMain\shapes.cpp" />
+    <ClCompile Include="RenderMain\SW_Texture_Extras.cpp" />
+    <ClCompile Include="RenderMain\textures.cpp" />
+    <ClCompile Include="RenderOther\ChaseCam.cpp" />
+    <ClCompile Include="RenderOther\computer_interface.cpp" />
+    <ClCompile Include="RenderOther\fades.cpp" />
+    <ClCompile Include="RenderOther\FontHandler.cpp" />
+    <ClCompile Include="RenderOther\game_window.cpp" />
+    <ClCompile Include="RenderOther\HUDRenderer.cpp" />
+    <ClCompile Include="RenderOther\HUDRenderer_Lua.cpp" />
+    <ClCompile Include="RenderOther\HUDRenderer_OGL.cpp" />
+    <ClCompile Include="RenderOther\HUDRenderer_SW.cpp" />
+    <ClCompile Include="RenderOther\images.cpp" />
+    <ClCompile Include="RenderOther\Image_Blitter.cpp" />
+    <ClCompile Include="RenderOther\IMG_savepng.c" />
+    <ClCompile Include="RenderOther\motion_sensor.cpp" />
+    <ClCompile Include="RenderOther\OGL_Blitter.cpp" />
+    <ClCompile Include="RenderOther\OGL_LoadScreen.cpp" />
+    <ClCompile Include="RenderOther\OverheadMapRenderer.cpp" />
+    <ClCompile Include="RenderOther\OverheadMap_OGL.cpp" />
+    <ClCompile Include="RenderOther\OverheadMap_SDL.cpp" />
+    <ClCompile Include="RenderOther\overhead_map.cpp" />
+    <ClCompile Include="RenderOther\screen.cpp" />
+    <ClCompile Include="RenderOther\screen_drawing.cpp" />
+    <ClCompile Include="RenderOther\sdl_fonts.cpp" />
+    <ClCompile Include="RenderOther\sdl_resize.cpp" />
+    <ClCompile Include="RenderOther\Shape_Blitter.cpp" />
+    <ClCompile Include="RenderOther\TextLayoutHelper.cpp" />
+    <ClCompile Include="RenderOther\TextStrings.cpp" />
+    <ClCompile Include="RenderOther\ViewControl.cpp" />
+    <ClCompile Include="shell.cpp" />
+    <ClCompile Include="shell_misc.cpp" />
+    <ClCompile Include="Sound\BasicIFFDecoder.cpp" />
+    <ClCompile Include="Sound\Decoder.cpp" />
+    <ClCompile Include="Sound\FFmpegDecoder.cpp" />
+    <ClCompile Include="Sound\MADDecoder.cpp" />
+    <ClCompile Include="Sound\Mixer.cpp" />
+    <ClCompile Include="Sound\Music.cpp" />
+    <ClCompile Include="Sound\ReplacementSounds.cpp" />
+    <ClCompile Include="Sound\SndfileDecoder.cpp" />
+    <ClCompile Include="Sound\SoundFile.cpp" />
+    <ClCompile Include="Sound\SoundManager.cpp" />
+    <ClCompile Include="Sound\VorbisDecoder.cpp" />
+    <ClCompile Include="TCPMess\CommunicationsChannel.cpp" />
+    <ClCompile Include="TCPMess\Message.cpp" />
+    <ClCompile Include="TCPMess\MessageDispatcher.cpp" />
+    <ClCompile Include="TCPMess\MessageHandler.cpp" />
+    <ClCompile Include="TCPMess\MessageInflater.cpp" />
+    <ClCompile Include="XML\InfoTree.cpp" />
+    <ClCompile Include="XML\Plugins.cpp" />
+    <ClCompile Include="XML\QuickSave.cpp" />
+    <ClCompile Include="XML\XML_LevelScript.cpp" />
+    <ClCompile Include="XML\XML_MakeRoot.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CSeries\BStream.h" />
+    <ClInclude Include="CSeries\byte_swapping.h" />
+    <ClInclude Include="CSeries\csalerts.h" />
+    <ClInclude Include="CSeries\cscluts.h" />
+    <ClInclude Include="CSeries\csdialogs.h" />
+    <ClInclude Include="CSeries\cseries.h" />
+    <ClInclude Include="CSeries\csfonts.h" />
+    <ClInclude Include="CSeries\csmacros.h" />
+    <ClInclude Include="CSeries\csmisc.h" />
+    <ClInclude Include="CSeries\cspaths.h" />
+    <ClInclude Include="CSeries\cspixels.h" />
+    <ClInclude Include="CSeries\csstrings.h" />
+    <ClInclude Include="CSeries\cstypes.h" />
+    <ClInclude Include="CSeries\FilmProfile.h" />
+    <ClInclude Include="CSeries\mytm.h" />
+    <ClInclude Include="FFmpeg\Movie.h" />
+    <ClInclude Include="FFmpeg\SDL_ffmpeg.h" />
+    <ClInclude Include="Files\AStream.h" />
+    <ClInclude Include="Files\crc.h" />
+    <ClInclude Include="Files\extensions.h" />
+    <ClInclude Include="Files\FileHandler.h" />
+    <ClInclude Include="Files\find_files.h" />
+    <ClInclude Include="Files\game_wad.h" />
+    <ClInclude Include="Files\Packing.h" />
+    <ClInclude Include="Files\resource_manager.h" />
+    <ClInclude Include="Files\SDL_rwops_ostream.h" />
+    <ClInclude Include="Files\SDL_rwops_zzip.h" />
+    <ClInclude Include="Files\tags.h" />
+    <ClInclude Include="Files\wad.h" />
+    <ClInclude Include="Files\WadImageCache.h" />
+    <ClInclude Include="Files\wad_prefs.h" />
+    <ClInclude Include="GameWorld\dynamic_limits.h" />
+    <ClInclude Include="GameWorld\editor.h" />
+    <ClInclude Include="GameWorld\effects.h" />
+    <ClInclude Include="GameWorld\effect_definitions.h" />
+    <ClInclude Include="GameWorld\ephemera.h" />
+    <ClInclude Include="GameWorld\flood_map.h" />
+    <ClInclude Include="GameWorld\items.h" />
+    <ClInclude Include="GameWorld\item_definitions.h" />
+    <ClInclude Include="GameWorld\lightsource.h" />
+    <ClInclude Include="GameWorld\map.h" />
+    <ClInclude Include="GameWorld\media.h" />
+    <ClInclude Include="GameWorld\media_definitions.h" />
+    <ClInclude Include="GameWorld\monsters.h" />
+    <ClInclude Include="GameWorld\monster_definitions.h" />
+    <ClInclude Include="GameWorld\physics_models.h" />
+    <ClInclude Include="GameWorld\platforms.h" />
+    <ClInclude Include="GameWorld\platform_definitions.h" />
+    <ClInclude Include="GameWorld\player.h" />
+    <ClInclude Include="GameWorld\projectiles.h" />
+    <ClInclude Include="GameWorld\projectile_definitions.h" />
+    <ClInclude Include="GameWorld\scenery.h" />
+    <ClInclude Include="GameWorld\scenery_definitions.h" />
+    <ClInclude Include="GameWorld\TickBasedCircularQueue.h" />
+    <ClInclude Include="GameWorld\weapons.h" />
+    <ClInclude Include="GameWorld\weapon_definitions.h" />
+    <ClInclude Include="GameWorld\world.h" />
+    <ClInclude Include="Input\joystick.h" />
+    <ClInclude Include="Input\mouse.h" />
+    <ClInclude Include="Lua\language_definition.h" />
+    <ClInclude Include="Lua\lua_ephemera.h" />
+    <ClInclude Include="Lua\lua_hud_objects.h" />
+    <ClInclude Include="Lua\lua_hud_script.h" />
+    <ClInclude Include="Lua\lua_map.h" />
+    <ClInclude Include="Lua\lua_mnemonics.h" />
+    <ClInclude Include="Lua\lua_monsters.h" />
+    <ClInclude Include="Lua\lua_objects.h" />
+    <ClInclude Include="Lua\lua_player.h" />
+    <ClInclude Include="Lua\lua_projectiles.h" />
+    <ClInclude Include="Lua\lua_saved_objects.h" />
+    <ClInclude Include="Lua\lua_script.h" />
+    <ClInclude Include="Lua\lua_serialize.h" />
+    <ClInclude Include="Lua\lua_templates.h" />
+    <ClInclude Include="Misc\ActionQueues.h" />
+    <ClInclude Include="Misc\AlephSansMono-Bold.h" />
+    <ClInclude Include="Misc\alephversion.h" />
+    <ClInclude Include="Misc\binders.h" />
+    <ClInclude Include="Misc\CircularByteBuffer.h" />
+    <ClInclude Include="Misc\CircularQueue.h" />
+    <ClInclude Include="Misc\Console.h" />
+    <ClInclude Include="Misc\CourierPrime.h" />
+    <ClInclude Include="Misc\CourierPrimeBold.h" />
+    <ClInclude Include="Misc\CourierPrimeBoldItalic.h" />
+    <ClInclude Include="Misc\CourierPrimeItalic.h" />
+    <ClInclude Include="Misc\DefaultStringSets.h" />
+    <ClInclude Include="Misc\game_errors.h" />
+    <ClInclude Include="Misc\interface.h" />
+    <ClInclude Include="Misc\interface_menus.h" />
+    <ClInclude Include="Misc\key_definitions.h" />
+    <ClInclude Include="Misc\Logging.h" />
+    <ClInclude Include="Misc\PlayerImage_sdl.h" />
+    <ClInclude Include="Misc\PlayerName.h" />
+    <ClInclude Include="Misc\powered_by_alephone.h" />
+    <ClInclude Include="Misc\preferences.h" />
+    <ClInclude Include="Misc\preferences_widgets_sdl.h" />
+    <ClInclude Include="Misc\preference_dialogs.h" />
+    <ClInclude Include="Misc\ProFontAO.h" />
+    <ClInclude Include="Misc\progress.h" />
+    <ClInclude Include="Misc\Random.h" />
+    <ClInclude Include="Misc\Scenario.h" />
+    <ClInclude Include="Misc\sdl_dialogs.h" />
+    <ClInclude Include="Misc\sdl_network.h" />
+    <ClInclude Include="Misc\sdl_widgets.h" />
+    <ClInclude Include="Misc\shared_widgets.h" />
+    <ClInclude Include="Misc\Statistics.h" />
+    <ClInclude Include="Misc\thread_priority_sdl.h" />
+    <ClInclude Include="Misc\vbl.h" />
+    <ClInclude Include="Misc\vbl_definitions.h" />
+    <ClInclude Include="Misc\VecOps.h" />
+    <ClInclude Include="Misc\WindowedNthElementFinder.h" />
+    <ClInclude Include="ModelView\Dim3_Loader.h" />
+    <ClInclude Include="ModelView\Model3D.h" />
+    <ClInclude Include="ModelView\ModelRenderer.h" />
+    <ClInclude Include="ModelView\StudioLoader.h" />
+    <ClInclude Include="ModelView\WavefrontLoader.h" />
+    <ClInclude Include="Network\ConnectPool.h" />
+    <ClInclude Include="Network\HTTP.h" />
+    <ClInclude Include="Network\Metaserver\metaserver_dialogs.h" />
+    <ClInclude Include="Network\Metaserver\metaserver_messages.h" />
+    <ClInclude Include="Network\Metaserver\network_metaserver.h" />
+    <ClInclude Include="Network\network.h" />
+    <ClInclude Include="Network\NetworkGameProtocol.h" />
+    <ClInclude Include="Network\network_audio_shared.h" />
+    <ClInclude Include="Network\network_capabilities.h" />
+    <ClInclude Include="Network\network_data_formats.h" />
+    <ClInclude Include="Network\network_dialogs.h" />
+    <ClInclude Include="Network\network_dialog_widgets_sdl.h" />
+    <ClInclude Include="Network\network_distribution_types.h" />
+    <ClInclude Include="Network\network_games.h" />
+    <ClInclude Include="Network\network_lookup_sdl.h" />
+    <ClInclude Include="Network\network_messages.h" />
+    <ClInclude Include="Network\network_microphone_shared.h" />
+    <ClInclude Include="Network\network_private.h" />
+    <ClInclude Include="Network\network_sound.h" />
+    <ClInclude Include="Network\network_speaker_sdl.h" />
+    <ClInclude Include="Network\network_speex.h" />
+    <ClInclude Include="Network\network_star.h" />
+    <ClInclude Include="Network\RingGameProtocol.h" />
+    <ClInclude Include="Network\SDL_netx.h" />
+    <ClInclude Include="Network\SSLP_API.h" />
+    <ClInclude Include="Network\SSLP_Protocol.h" />
+    <ClInclude Include="Network\StarGameProtocol.h" />
+    <ClInclude Include="Network\Update.h" />
+    <ClInclude Include="RenderMain\AnimatedTextures.h" />
+    <ClInclude Include="RenderMain\collection_definition.h" />
+    <ClInclude Include="RenderMain\Crosshairs.h" />
+    <ClInclude Include="RenderMain\DDS.h" />
+    <ClInclude Include="RenderMain\ImageLoader.h" />
+    <ClInclude Include="RenderMain\low_level_textures.h" />
+    <ClInclude Include="RenderMain\OGL_Faders.h" />
+    <ClInclude Include="RenderMain\OGL_FBO.h" />
+    <ClInclude Include="RenderMain\OGL_Headers.h" />
+    <ClInclude Include="RenderMain\OGL_Model_Def.h" />
+    <ClInclude Include="RenderMain\OGL_Render.h" />
+    <ClInclude Include="RenderMain\OGL_Setup.h" />
+    <ClInclude Include="RenderMain\OGL_Shader.h" />
+    <ClInclude Include="RenderMain\OGL_Subst_Texture_Def.h" />
+    <ClInclude Include="RenderMain\OGL_Textures.h" />
+    <ClInclude Include="RenderMain\OGL_Texture_Def.h" />
+    <ClInclude Include="RenderMain\Rasterizer.h" />
+    <ClInclude Include="RenderMain\Rasterizer_OGL.h" />
+    <ClInclude Include="RenderMain\Rasterizer_Shader.h" />
+    <ClInclude Include="RenderMain\Rasterizer_SW.h" />
+    <ClInclude Include="RenderMain\render.h" />
+    <ClInclude Include="RenderMain\RenderPlaceObjs.h" />
+    <ClInclude Include="RenderMain\RenderRasterize.h" />
+    <ClInclude Include="RenderMain\RenderRasterize_Shader.h" />
+    <ClInclude Include="RenderMain\RenderSortPoly.h" />
+    <ClInclude Include="RenderMain\RenderVisTree.h" />
+    <ClInclude Include="RenderMain\scottish_textures.h" />
+    <ClInclude Include="RenderMain\shape_definitions.h" />
+    <ClInclude Include="RenderMain\shape_descriptors.h" />
+    <ClInclude Include="RenderMain\SW_Texture_Extras.h" />
+    <ClInclude Include="RenderMain\textures.h" />
+    <ClInclude Include="RenderMain\vec3.h" />
+    <ClInclude Include="RenderOther\ChaseCam.h" />
+    <ClInclude Include="RenderOther\computer_interface.h" />
+    <ClInclude Include="RenderOther\fades.h" />
+    <ClInclude Include="RenderOther\FontHandler.h" />
+    <ClInclude Include="RenderOther\game_window.h" />
+    <ClInclude Include="RenderOther\HUDRenderer.h" />
+    <ClInclude Include="RenderOther\HUDRenderer_Lua.h" />
+    <ClInclude Include="RenderOther\HUDRenderer_OGL.h" />
+    <ClInclude Include="RenderOther\HUDRenderer_SW.h" />
+    <ClInclude Include="RenderOther\images.h" />
+    <ClInclude Include="RenderOther\Image_Blitter.h" />
+    <ClInclude Include="RenderOther\IMG_savepng.h" />
+    <ClInclude Include="RenderOther\motion_sensor.h" />
+    <ClInclude Include="RenderOther\OGL_Blitter.h" />
+    <ClInclude Include="RenderOther\OGL_LoadScreen.h" />
+    <ClInclude Include="RenderOther\OverheadMapRenderer.h" />
+    <ClInclude Include="RenderOther\OverheadMap_OGL.h" />
+    <ClInclude Include="RenderOther\OverheadMap_SDL.h" />
+    <ClInclude Include="RenderOther\overhead_map.h" />
+    <ClInclude Include="RenderOther\screen.h" />
+    <ClInclude Include="RenderOther\screen_definitions.h" />
+    <ClInclude Include="RenderOther\screen_drawing.h" />
+    <ClInclude Include="RenderOther\screen_shared.h" />
+    <ClInclude Include="RenderOther\sdl_fonts.h" />
+    <ClInclude Include="RenderOther\sdl_resize.h" />
+    <ClInclude Include="RenderOther\Shape_Blitter.h" />
+    <ClInclude Include="RenderOther\TextLayoutHelper.h" />
+    <ClInclude Include="RenderOther\TextStrings.h" />
+    <ClInclude Include="RenderOther\ViewControl.h" />
+    <ClInclude Include="shell.h" />
+    <ClInclude Include="Sound\BasicIFFDecoder.h" />
+    <ClInclude Include="Sound\Decoder.h" />
+    <ClInclude Include="Sound\FFmpegDecoder.h" />
+    <ClInclude Include="Sound\MADDecoder.h" />
+    <ClInclude Include="Sound\Mixer.h" />
+    <ClInclude Include="Sound\Music.h" />
+    <ClInclude Include="Sound\ReplacementSounds.h" />
+    <ClInclude Include="Sound\SndfileDecoder.h" />
+    <ClInclude Include="Sound\song_definitions.h" />
+    <ClInclude Include="Sound\SoundFile.h" />
+    <ClInclude Include="Sound\SoundManager.h" />
+    <ClInclude Include="Sound\SoundManagerEnums.h" />
+    <ClInclude Include="Sound\sound_definitions.h" />
+    <ClInclude Include="Sound\VorbisDecoder.h" />
+    <ClInclude Include="TCPMess\CommunicationsChannel.h" />
+    <ClInclude Include="TCPMess\Message.h" />
+    <ClInclude Include="TCPMess\MessageDispatcher.h" />
+    <ClInclude Include="TCPMess\MessageHandler.h" />
+    <ClInclude Include="TCPMess\MessageInflater.h" />
+    <ClInclude Include="XML\InfoTree.h" />
+    <ClInclude Include="XML\Plugins.h" />
+    <ClInclude Include="XML\QuickSave.h" />
+    <ClInclude Include="XML\XML_LevelScript.h" />
+    <ClInclude Include="XML\XML_ParseTreeRoot.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="LibNat\LibNat.vcxproj">
+      <Project>{23b53c43-591a-4e6a-acf5-f5f33c6697fc}</Project>
+    </ProjectReference>
+    <ProjectReference Include="Lua\Lua.vcxproj">
+      <Project>{272161cb-f5df-4f91-9c2f-d08e23ff1fdc}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\Resources\Windows\alephone.rc">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN_VERSION_STRING</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN_VERSION_STRING</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </UndefinePreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </UndefinePreprocessorDefinitions>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)Misc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)Misc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ResourceCompile>
+    <ResourceCompile Include="..\Resources\Windows\marathon-infinity.rc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN_VERSION_STRING</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN_VERSION_STRING</PreprocessorDefinitions>
+    </ResourceCompile>
+    <ResourceCompile Include="..\Resources\Windows\marathon.rc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN_VERSION_STRING</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN_VERSION_STRING</PreprocessorDefinitions>
+    </ResourceCompile>
+    <ResourceCompile Include="..\Resources\Windows\marathon2.rc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN_VERSION_STRING</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN_VERSION_STRING</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

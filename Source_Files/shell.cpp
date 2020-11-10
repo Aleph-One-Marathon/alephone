@@ -124,6 +124,8 @@
 #undef CreateDirectory
 #endif
 
+#include "shell_options.h"
+
 // LP addition: whether or not the cheats are active
 // Defined in shell_misc.cpp
 extern bool CheatsActive;
@@ -140,9 +142,8 @@ DirectorySpecifier image_cache_dir;   // Directory for image cache
 DirectorySpecifier recordings_dir;    // Directory for recordings (except film buffer, which is stored in local_data_dir)
 DirectorySpecifier screenshots_dir;   // Directory for screenshots
 DirectorySpecifier log_dir;           // Directory for Aleph One Log.txt
-std::string arg_directory;
-std::vector<std::string> arg_files;
 
+/*
 // Command-line options
 bool option_nogl = false;             // Disable OpenGL
 bool option_nosound = false;          // Disable sound output
@@ -152,6 +153,7 @@ bool option_nojoystick = false;
 bool insecure_lua = false;
 static bool force_fullscreen = false; // Force fullscreen mode
 static bool force_windowed = false;   // Force windowed mode
+*/
 
 // Prototypes
 static void main_event_loop(void);
@@ -187,43 +189,9 @@ static std::string a1_getenv(const char* name)
 #endif
 }
 
-static void usage(const char *prg_name)
-{
-	char msg[] =
-#ifdef __WIN32__
-		"コマンドラインスイッチ：\n\n"
-#else
-		"\n使用方法：%s [オプション] [ディレクトリ] [ファイル]\n"
-#endif
-	"\t[-h | --help]		このヘルプメッセージを表示します。\n"
-	"\t[-v | --version]		ゲームのバージョンを表示します。\n"
-	"\t[-d | --debug]		コアダンプを出力するようにします。\n"
-	"\t						（SDL parachuteを無効化します）\n"
-	"\t[-f | --fullscreen]	ゲームをフルスクリーンで起動します。\n"
-	"\t[-w | --windowed]	ゲームをウィンドウモードで起動します。\n"
-#ifdef HAVE_OPENGL
-	"\t[-g | --nogl]		OpenGLを使用せずに起動します。\n"
-#endif
-	"\t[-s | --nosound]		サウンドを無効化します。\n"
-	"\t[-m | --nogamma]		ガンマエフェクトを無効化します。\n"
-	"\t						（メニューのフェードなど）\n"
-	"\t[-j | --nojoystick]	ジョイスティックの初期化を行いません。\n"
-	  // Documenting this might be a bad idea?
-	  // "\t[-i | --insecure_lua]  Allow Lua netscripts to take over your computer\n"
-	"\tディレクトリ			データーが含まれているディレクトリ\n"
-	"\tファイル				保存されたゲームやフィルムの再生\n"
-	"\nこの他にも、環境変数「ALEPHONE_DATA」の値を変更することで、\n"
-	"データディレクトリを指定することができます。\n";
-#ifdef __WIN32__
-	MessageBoxW(NULL, utf8_to_wide(msg).c_str(), L"使用方", MB_OK | MB_ICONINFORMATION);
-#else
-	printf(msg, prg_name);
-#endif
-	exit(0);
-}
-
 extern bool handle_open_replay(FileSpecifier& File);
 extern bool load_and_start_game(FileSpecifier& file);
+extern bool handle_edit_map();
 
 bool handle_open_document(const std::string& filename)
 {
@@ -233,6 +201,10 @@ bool handle_open_document(const std::string& filename)
 	{
 	case _typecode_scenario:
 		set_map_file(file);
+		if (shell_options.editor && handle_edit_map())
+		{
+			done = true;
+		}
 		break;
 	case _typecode_savegame:
 		if (load_and_start_game(file))
@@ -296,58 +268,14 @@ int main(int argc, char **argv)
 	  , app_name_version, A1_HOMEPAGE_URL
     );
 
-	// Parse arguments
-	char *prg_name = argv[0];
-	argc--;
-	argv++;
-	while (argc > 0) {
-		if (strcmp(*argv, "-h") == 0 || strcmp(*argv, "--help") == 0) {
-			usage(prg_name);
-		} else if (strcmp(*argv, "-v") == 0 || strcmp(*argv, "--version") == 0) {
-			printf("%s\n", app_name_version);
-			exit(0);
-		} else if (strcmp(*argv, "-f") == 0 || strcmp(*argv, "--fullscreen") == 0) {
-			force_fullscreen = true;
-		} else if (strcmp(*argv, "-w") == 0 || strcmp(*argv, "--windowed") == 0) {
-			force_windowed = true;
-		} else if (strcmp(*argv, "-g") == 0 || strcmp(*argv, "--nogl") == 0) {
-			option_nogl = true;
-		} else if (strcmp(*argv, "-s") == 0 || strcmp(*argv, "--nosound") == 0) {
-			option_nosound = true;
-                } else if (strcmp(*argv, "-j") == 0 || strcmp(*argv, "--nojoystick") == 0) {
-                        option_nojoystick = true;
-		} else if (strcmp(*argv, "-m") == 0 || strcmp(*argv, "--nogamma") == 0) {
-			option_nogamma = true;
-		} else if (strcmp(*argv, "-i") == 0 || strcmp(*argv, "--insecure_lua") == 0) {
-			insecure_lua = true;
-		} else if (strcmp(*argv, "-d") == 0 || strcmp(*argv, "--debug") == 0) {
-		  option_debug = true;
-		} else if (*argv[0] != '-') {
-			// if it's a directory, make it the default data dir
-			// otherwise push it and handle it later
-			FileSpecifier f(*argv);
-			if (f.IsDir())
-			{
-				arg_directory = *argv;
-			}
-			else
-			{
-				arg_files.push_back(*argv);
-			}
-		} else {
-			printf("不明なスイッチ指定です：'%s'.\n", *argv);
-			usage(prg_name);
-		}
-		argc--;
-		argv++;
-	}
+	shell_options.parse(argc, argv);
 
 	try {
 		
 		// Initialize everything
 		initialize_application();
 
-		for (std::vector<std::string>::iterator it = arg_files.begin(); it != arg_files.end(); ++it)
+		for (std::vector<std::string>::iterator it = shell_options.files.begin(); it != shell_options.files.end(); ++it)
 		{
 			if (handle_open_document(*it))
 			{
@@ -389,7 +317,7 @@ static int char_is_not_filesafe(int c)
 static void initialize_application(void)
 {
 #if defined(__WIN32__) && defined(__MINGW32__)
-	if (LoadLibraryW(L"exchndl.dll")) option_debug = true;
+	if (LoadLibraryW(L"exchndl.dll")) shell_options.debug = true;
 #else
 	setlocale(LC_ALL, "");
 #endif
@@ -400,9 +328,9 @@ static void initialize_application(void)
 
 	// Initialize SDL
 	int retval = SDL_Init(SDL_INIT_VIDEO |
-						  (option_nosound ? 0 : SDL_INIT_AUDIO) |
-						  (option_nojoystick ? 0 : SDL_INIT_JOYSTICK|SDL_INIT_GAMECONTROLLER) |
-						  (option_debug ? SDL_INIT_NOPARACHUTE : 0));
+						  (shell_options.nosound ? 0 : SDL_INIT_AUDIO) |
+						  (shell_options.nojoystick ? 0 : SDL_INIT_JOYSTICK|SDL_INIT_GAMECONTROLLER) |
+						  (shell_options.debug ? SDL_INIT_NOPARACHUTE : 0));
 	if (retval < 0)
 	{
 		const char *sdl_err = SDL_GetError();
@@ -419,7 +347,7 @@ static void initialize_application(void)
 	SDL_StopTextInput();
 	
 	// See if we had a scenario folder dropped on us
-	if (arg_directory == "") {
+	if (shell_options.directory == "") {
 		SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
@@ -428,11 +356,11 @@ static void initialize_application(void)
 					FileSpecifier f(event.drop.file);
 					if (f.IsDir())
 					{
-						arg_directory = event.drop.file;
+						shell_options.directory = event.drop.file;
 					}
 					else
 					{
-						arg_files.push_back(event.drop.file);
+						shell_options.files.push_back(event.drop.file);
 					}
 					SDL_free(event.drop.file);
 					break;
@@ -468,11 +396,11 @@ static void initialize_application(void)
 	size_t dsp_delete_pos = (size_t)-1;
 	
 	const string default_data_env = a1_getenv("ALEPHONE_DEFAULT_DATA");
-	if (arg_directory != "")
+	if (shell_options.directory != "")
 	{
-		default_data_dir = arg_directory;
+		default_data_dir = shell_options.directory;
 		dsp_delete_pos = data_search_path.size();
-		data_search_path.push_back(arg_directory);
+		data_search_path.push_back(shell_options.directory);
 	}
 	else if (!default_data_env.empty())
 	{
@@ -497,7 +425,7 @@ static void initialize_application(void)
 		if (!path.empty())
 			data_search_path.push_back(path);
 	} else {
-		if (arg_directory == "" && default_data_env == "")
+		if (shell_options.directory == "" && default_data_env == "")
 		{
 			dsp_delete_pos = data_search_path.size();
 			data_search_path.push_back(default_data_dir);
@@ -575,9 +503,9 @@ static void initialize_application(void)
 #ifndef HAVE_OPENGL
 	graphics_preferences->screen_mode.acceleration = _no_acceleration;
 #endif
-	if (force_fullscreen)
+	if (shell_options.force_fullscreen)
 		graphics_preferences->screen_mode.fullscreen = true;
-	if (force_windowed)		// takes precedence over fullscreen because windowed is safer
+	if (shell_options.force_windowed)		// takes precedence over fullscreen because windowed is safer
 		graphics_preferences->screen_mode.fullscreen = false;
 	write_preferences();
 

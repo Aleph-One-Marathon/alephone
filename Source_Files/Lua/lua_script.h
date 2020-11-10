@@ -62,6 +62,7 @@ void L_Invalidate_Effect(short effect_index);
 void L_Invalidate_Monster(short monster_index);
 void L_Invalidate_Projectile(short projectile_index);
 void L_Invalidate_Object(short object_index);
+void L_Invalidate_Ephemera(short ephemera_index);
 
 enum ScriptType {
 	_embedded_lua_script,

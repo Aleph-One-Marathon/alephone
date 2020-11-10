@@ -55,6 +55,10 @@
 	  margin: 4px;
       }
 
+	  div.tables > p {
+	  margin-left: 0;
+	  }
+
       p.note {
 	  color: #666666;
 	  font-style: italic;
@@ -268,7 +272,13 @@
 </xsl:template>
 
 <xsl:template match="accessor">
-  <h3><a><xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute></a><xsl:value-of select="@name"/></h3>
+  <h3><a><xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute></a><xsl:value-of select="@name"/><xsl:choose>
+      <xsl:when test="@version">
+	<xsl:text> </xsl:text>
+	<span class="version"><xsl:value-of select="@version"/></span>
+      </xsl:when>
+    </xsl:choose></h3>
+  <xsl:copy-of select="description/node()"/>
   <dl>
     <xsl:apply-templates select="length|call|function|variable"/>
     <xsl:choose>
@@ -366,7 +376,11 @@
 
 <xsl:template match="variable">
   <dt>
-    .<xsl:value-of select="@name"/>
+	<xsl:choose>
+	  <xsl:when test="parent::accessor"><xsl:value-of select="../@name"/>.</xsl:when>
+	  <xsl:otherwise>.</xsl:otherwise>
+	</xsl:choose>
+    <xsl:value-of select="@name"/>
     <xsl:choose>
       <xsl:when test="@access = 'local-player read-only'">
 	<span class="access"> (read-only) (local player)</span>

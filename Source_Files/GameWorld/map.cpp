@@ -1000,14 +1000,19 @@ bool translate_map_object(
 	return changed_polygons;
 }
 
-
+void get_object_shape_and_transfer_mode(
+	world_point3d* camera_location,
+	short object_index,
+	struct shape_and_transfer_mode* data)
+{
+	get_object_shape_and_transfer_mode(camera_location, get_object_data(object_index), data);
+}
 
 void get_object_shape_and_transfer_mode(
 	world_point3d *camera_location,
-	short object_index,
-	struct shape_and_transfer_mode *data)
+	object_data* object,
+	shape_and_transfer_mode *data)
 {
-	struct object_data *object= get_object_data(object_index);
 	struct shape_animation_data *animation;
 	angle theta;
 	short view;
@@ -1181,12 +1186,17 @@ void set_object_shape_and_transfer_mode(
 	}
 }
 
+void animate_object(short object_index)
+{
+	animate_object(get_object_data(object_index), object_index);
+}
+
 /* no longer called by RENDER.C; must be called by monster, projectile or effect controller;
 	now assumes ¶t==1 tick */
 void animate_object(
-	short object_index)
+	object_data* object,
+	int16_t sound_id)
 {
-	struct object_data *object= get_object_data(object_index);
 	struct shape_animation_data *animation;
 	short animation_type= _obj_not_animated;
 
@@ -1207,7 +1217,7 @@ void animate_object(
 			frame= GET_SEQUENCE_FRAME(object->sequence);
 			phase= GET_SEQUENCE_PHASE(object->sequence);
 
-			if (!frame && (!phase || phase>=animation->ticks_per_frame)) play_object_sound(object_index, animation->first_frame_sound);
+			if (sound_id != NONE && !frame && (!phase || phase>=animation->ticks_per_frame)) play_object_sound(sound_id, animation->first_frame_sound);
 	
 			/* phase is left unadjusted if it goes over ticks_per_frame until the next call */
 			if (phase>=animation->ticks_per_frame) phase-= animation->ticks_per_frame;
@@ -1220,13 +1230,13 @@ void animate_object(
 					if (frame==animation->key_frame)
 					{
 						animation_type|= _obj_keyframe_started;
-						if (animation->key_frame_sound!=NONE) play_object_sound(object_index, animation->key_frame_sound);
+						if (animation->key_frame_sound!=NONE && sound_id != NONE) play_object_sound(sound_id, animation->key_frame_sound);
 					}
 					if (frame>=animation->frames_per_view)
 					{
 						frame= animation->loop_frame;
 						animation_type|= _obj_last_frame_animated;
-						if (animation->last_frame_sound!=NONE) play_object_sound(object_index, animation->last_frame_sound);
+						if (animation->last_frame_sound!=NONE && sound_id != NONE) play_object_sound(sound_id, animation->last_frame_sound);
 					}
 				}
 				else
@@ -1243,13 +1253,13 @@ void animate_object(
 					{
 						frame= animation->loop_frame;
 						animation_type|= _obj_last_frame_animated;
-						if (animation->last_frame_sound!=NONE) play_object_sound(object_index, animation->last_frame_sound);
+						if (animation->last_frame_sound!=NONE && sound_id != NONE) play_object_sound(sound_id, animation->last_frame_sound);
 					}
 					short offset_frame = frame + animation->frames_per_view; // LP addition
 					if (frame==animation->key_frame || offset_frame==animation->key_frame)
 					{
 						animation_type|= _obj_keyframe_started;
-						if (animation->key_frame_sound!=NONE) play_object_sound(object_index, animation->key_frame_sound);
+						if (animation->key_frame_sound!=NONE && sound_id != NONE) play_object_sound(sound_id, animation->key_frame_sound);
 					}
 				}
 			}

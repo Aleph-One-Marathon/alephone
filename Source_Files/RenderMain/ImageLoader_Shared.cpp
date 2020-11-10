@@ -28,6 +28,11 @@
  *          adapted from DevIL (openil.sourceforge.net)
  */
 
+#if defined(_MSC_VER)
+#define NOMINMAX
+#include <algorithm>
+#endif
+
 #include "AStream.h"
 #include "cstypes.h"
 #include "DDS.h"

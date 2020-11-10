@@ -148,6 +148,7 @@ extern TP2PerfGlobals perf_globals;
 #include "QuickSave.h"
 #include "Plugins.h"
 #include "Statistics.h"
+#include "shell_options.h"
 
 #ifdef HAVE_SMPEG
 #include <smpeg/smpeg.h>
@@ -305,11 +306,10 @@ static struct color_table *current_picture_clut= NULL;
 /* -------------- externs */
 extern short interface_bit_depth;
 extern short bit_depth;
-extern bool insecure_lua;
 extern bool shapes_file_is_m1();
 
 /* ----------- prototypes/PREPROCESS_MAP_MAC.C */
-extern bool load_game_from_file(FileSpecifier& File, bool run_scripts, bool *was_map_found);
+extern bool load_game_from_file(FileSpecifier& File, bool run_scripts);
 extern bool choose_saved_game_to_load(FileSpecifier& File);
 
 /* ---------------------- prototypes */
@@ -372,11 +372,21 @@ void initialize_game_state(
 
 	toggle_menus(false);
 
-	if(insecure_lua) {
+	if(shell_options.insecure_lua) {
 	  alert_user(expand_app_variables("Insecure Lua has been manually enabled. Malicious Lua scripts can use Insecure Lua to take over your computer. Unless you specifically trust every single Lua script that will be running, you should quit $appName$ IMMEDIATELY.").c_str());
 	}
 
-	display_introduction();
+	if (!shell_options.editor)
+	{
+		if (shell_options.skip_intro)
+		{
+			display_main_menu();
+		}
+		else
+		{
+			display_introduction();
+		}
+	}
 }
 
 void force_game_state_change(
@@ -789,12 +799,23 @@ bool join_networked_resume_game()
                         free(theSavedGameFlatData);
                 }
                 
+				bool found_map = false;
                 if(success)
                 {
-                        success = process_map_wad(theWad, true /* resuming */, theWadHeader.data_version);
-                        free_wad(theWad); /* Note that the flat data points into the wad. */
-                        // ZZZ: maybe this is what the Bungie comment meant, but apparently
-                        // free_wad() somehow (voodoo) frees theSavedGameFlatData as well.
+					ResetLevelScript();
+					uint32 theParentChecksum = theWadHeader.parent_checksum;
+					found_map = use_map_file(theParentChecksum);
+
+					if (found_map) {
+						dynamic_data dynamic_data_wad;
+						get_dynamic_data_from_wad(theWad, &dynamic_data_wad);
+						RunLevelScript(dynamic_data_wad.current_level_number);
+					}
+
+                    success = process_map_wad(theWad, true /* resuming */, theWadHeader.data_version);
+                    free_wad(theWad); /* Note that the flat data points into the wad. */
+                    // ZZZ: maybe this is what the Bungie comment meant, but apparently
+                    // free_wad() somehow (voodoo) frees theSavedGameFlatData as well.
                 }
                 
                 if(success)
@@ -807,15 +828,13 @@ bool join_networked_resume_game()
                         // try to locate the Map file for the saved-game, so that (1) we have a crack
                         // at continuing the game if the original gatherer disappears, and (2) we can
                         // save the game on our own machine and continue it properly (as part of a bigger scenario) later.
-                        uint32 theParentChecksum = theWadHeader.parent_checksum;
-                        if(use_map_file(theParentChecksum))
+                        
+                        if(found_map)
                         {
                                 // LP: getting the level scripting off of the map file
                                 // Being careful to carry over errors so that Pfhortran errors can be ignored
                                 short SavedType, SavedError = get_game_error(&SavedType);
-                                RunLevelScript(dynamic_world->current_level_number);
-				RunScriptChunks();
-				LoadStatsLua();
+								LoadStatsLua();
                                 set_game_error(SavedType,SavedError);
                         }
                         else
@@ -830,8 +849,6 @@ bool join_networked_resume_game()
                                 /* Set to the default map. */
                                 set_to_default_map();
 				
-				ResetLevelScript();
-				RunScriptChunks();
 				LoadStatsLua();
                         }
                         
@@ -871,9 +888,7 @@ bool load_and_start_game(FileSpecifier& File)
 		interface_fade_out(MAIN_MENU_BASE, true);
 	}
 
-	// run scripts after we decide single vs. multiplayer
-	bool found_map;
-	success= load_game_from_file(File, false, &found_map);
+	success= load_game_from_file(File, false);
 
 	if (!success)
 	{
@@ -920,16 +935,7 @@ bool load_and_start_game(FileSpecifier& File)
 			
 			// load the scripts we put off before
 			short SavedType, SavedError = get_game_error(&SavedType);
-			if (found_map)
-			{
-				RunLevelScript(dynamic_world->current_level_number);
-			}
-			else
-			{
-				ResetLevelScript();
-			}
-			RunScriptChunks();
-			if (!userWantsMultiplayer)
+			if(!userWantsMultiplayer)
 			{
 				LoadSoloLua();
 			}
@@ -1012,6 +1018,16 @@ bool handle_open_replay(FileSpecifier& File)
 	force_system_colors();
 	success= begin_game(_replay_from_file, false);
 	if(!success) display_main_menu();
+	return success;
+}
+
+bool handle_edit_map()
+{
+	bool success;
+
+	force_system_colors();
+	success = begin_game(_single_player, false);
+	if (!success) display_main_menu();
 	return success;
 }
 
@@ -1359,7 +1375,7 @@ void do_menu_item_command(
 						{
 							case _single_player:
 								if(PLAYER_IS_DEAD(local_player) || 
-									dynamic_world->tick_count-local_player->ticks_at_last_successful_save<CLOSE_WITHOUT_WARNING_DELAY)
+								   dynamic_world->tick_count-local_player->ticks_at_last_successful_save<CLOSE_WITHOUT_WARNING_DELAY || shell_options.output.size())
 								{
 									really_wants_to_quit= true;
 								} else {
@@ -2320,6 +2336,19 @@ static void finish_game(
 			break;
 	}
 	Movie::instance()->StopRecording();
+
+	if (shell_options.editor && shell_options.output.size())
+	{
+		FileSpecifier file(shell_options.output);
+		if (export_level(file))
+		{
+			exit(0);
+		}
+		else
+		{
+			exit(-1);
+		}
+	}
 
 	/* Fade out! (Pray) */ // should be interface_color_table for valkyrie, but doesn't work.
 	Music::instance()->ClearLevelMusic();

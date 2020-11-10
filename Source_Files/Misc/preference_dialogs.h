@@ -54,6 +54,8 @@ protected:
 	
 	ToggleWidget*		m_colourTheVoidWidget;
 	ColourPickerWidget*	m_voidColourWidget;
+
+	SelectorWidget* m_ephemeraQualityWidget;
 	
 	SelectorWidget*		m_fsaaWidget;
 	

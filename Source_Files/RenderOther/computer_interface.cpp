@@ -1201,12 +1201,11 @@ static void display_picture(
 	short flags)
 {
 	LoadedResource PictRsrc;
-	SDL_Surface *s = NULL;
 
-	if (get_picture_resource_from_scenario(picture_id, PictRsrc))
-	{
-		s = picture_to_surface(PictRsrc);
-	}
+	auto s = get_picture_resource_from_scenario(picture_id, PictRsrc) ? 
+			 picture_to_surface(PictRsrc) :
+			 std::shared_ptr<SDL_Surface>(nullptr, SDL_FreeSurface);
+
 	if (s)
 	{
 		Rect bounds;
@@ -1258,16 +1257,15 @@ static void display_picture(
 
 		SDL_Rect r = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
 		if ((s->w == r.w && s->h == r.h) || cinemascopeHack)
-			SDL_BlitSurface(s, NULL, /*world_pixels*/draw_surface, &r);
+			SDL_BlitSurface(s.get(), NULL, /*world_pixels*/draw_surface, &r);
 		else {
 			// Rescale picture
-			SDL_Surface *s2 = rescale_surface(s, r.w, r.h);
+			SDL_Surface *s2 = rescale_surface(s.get(), r.w, r.h);
 			if (s2) {
 				SDL_BlitSurface(s2, NULL, /*world_pixels*/draw_surface, &r);
 				SDL_FreeSurface(s2);
 			}
 		}
-		SDL_FreeSurface(s);
 		/* And let the caller know where we drew the picture */
 		*frame= bounds;
 	} else {

@@ -20,6 +20,11 @@ LUA_HUD_OBJECTS.CPP
     Implements Lua HUD objects and globals
 */
 
+
+#if defined (_MSC_VER) && !defined (M_PI)
+#define _USE_MATH_DEFINES
+#endif 
+
 #include "lua_hud_objects.h"
 #include "lua_objects.h"
 #include "lua_map.h"
