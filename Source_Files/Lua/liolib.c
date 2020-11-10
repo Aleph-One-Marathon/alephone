@@ -55,12 +55,12 @@
 
 #if defined(LUA_USE_POPEN)	/* { */
 
-#define lua_popen(L,c,m)	((void)L, fflush(NULL), popen(c,m))
+#define lua_popen(L,c,m)	((void)L, fflush(NULL), luai_popen(c,m))
 #define lua_pclose(L,file)	((void)L, pclose(file))
 
 #elif defined(LUA_WIN)		/* }{ */
 
-#define lua_popen(L,c,m)		((void)L, _popen(c,m))
+#define lua_popen(L,c,m)		((void)L, luai_popen(c,m))
 #define lua_pclose(L,file)		((void)L, _pclose(file))
 
 
@@ -216,7 +216,7 @@ static LStream *newfile (lua_State *L) {
 
 static void opencheck (lua_State *L, const char *fname, const char *mode) {
   LStream *p = newfile(L);
-  p->f = fopen(fname, mode);
+  p->f = luai_fopen(fname, mode);
   if (p->f == NULL)
     luaL_error(L, "cannot open file " LUA_QS " (%s)", fname, strerror(errno));
 }
@@ -228,7 +228,7 @@ static int io_open (lua_State *L) {
   LStream *p = newfile(L);
   const char *md = mode;  /* to traverse/check mode */
   luaL_argcheck(L, lua_checkmode(md), 2, "invalid mode");
-  p->f = fopen(filename, mode);
+  p->f = luai_fopen(filename, mode);
   return (p->f == NULL) ? luaL_fileresult(L, 0, filename) : 1;
 }
 

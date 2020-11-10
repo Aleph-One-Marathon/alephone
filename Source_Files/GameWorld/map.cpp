@@ -117,6 +117,7 @@ find_line_crossed leaving polygon could be sped up considerable by reversing the
 #include "SoundManager.h"
 #include "Console.h"
 #include "InfoTree.h"
+#include "flood_map.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -1390,27 +1391,56 @@ short find_adjacent_polygon(
 	return new_polygon_index;
 }
 
+static short find_flooding_polygon_helper(short parent, short polygon_index)
+{
+	auto* polygon = get_polygon_data(polygon_index);
+
+	for (auto i = 0; i < polygon->vertex_count; ++i)
+	{
+		auto adjacent_index = polygon->adjacent_polygon_indexes[i];
+		if (adjacent_index != NONE && adjacent_index != parent)
+		{
+			auto *adjacent = get_polygon_data(adjacent_index);
+			if (adjacent->type == _polygon_is_major_ouch ||
+				adjacent->type == _polygon_is_minor_ouch)
+			{
+				return adjacent_index;
+			}
+		}
+	}
+
+	if (film_profile.m1_platform_flood)
+	{
+		for (auto i = 0; i < polygon->vertex_count; ++i)
+		{
+			auto adjacent_index = polygon->adjacent_polygon_indexes[i];
+			if (adjacent_index != NONE && adjacent_index != parent)
+			{
+				auto* adjacent = get_polygon_data(adjacent_index);
+				if (adjacent->type == _polygon_is_platform)
+				{
+					auto* platform = get_platform_data(adjacent->permutation);
+					if (platform && PLATFORM_IS_FLOODED(platform))
+					{
+						auto index = find_flooding_polygon_helper(polygon_index, adjacent_index);
+						if (index != NONE)
+						{
+							return index;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return NONE;
+}
+
 /* Find the polygon whose attributes we'll mimic on a flooded platform */
 short find_flooding_polygon(
 	short polygon_index)
 {
-	int i;
-	struct polygon_data *polygon = get_polygon_data(polygon_index);
-	
-	for (i= 0; i<polygon->vertex_count; ++i)
-	{
-		if (polygon->adjacent_polygon_indexes[i]!=NONE)
-		{
-			struct polygon_data *adjacent_polygon= get_polygon_data(polygon->adjacent_polygon_indexes[i]);
-			
-			if (adjacent_polygon->type == _polygon_is_major_ouch ||
-				adjacent_polygon->type == _polygon_is_minor_ouch)
-			{
-				return polygon->adjacent_polygon_indexes[i];
-			}
-		}
-	}
-	return NONE;
+	return find_flooding_polygon_helper(NONE, polygon_index);
 }
 
 short find_adjacent_side(

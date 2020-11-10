@@ -28,7 +28,6 @@
 #include "cseries.h"
 #include "sdl_fonts.h"
 #include "byte_swapping.h"
-#include "game_errors.h"
 #include "resource_manager.h"
 #include "FileHandler.h"
 #include "Logging.h"
@@ -81,12 +80,6 @@ typedef struct builtin_font
 } builtin_font_t;
 
 static builtin_font_t builtin_fontspecs[] = {
-	{ "mono", aleph_sans_mono_bold, sizeof(aleph_sans_mono_bold) },
-	{ "Monaco", pro_font_ao, sizeof(pro_font_ao) },
-	{ "Courier Prime", courier_prime, sizeof(courier_prime) },
-	{ "Courier Prime Bold", courier_prime_bold, sizeof(courier_prime_bold) },
-	{ "Courier Prime Italic", courier_prime_italic, sizeof(courier_prime_italic) },
-	{" Courier Prime Bold Italic", courier_prime_bold_italic, sizeof(courier_prime_bold_italic) }
 };
 
 #define NUMBER_OF_BUILTIN_FONTS sizeof(builtin_fontspecs) / sizeof(builtin_font)
@@ -96,29 +89,8 @@ builtin_fonts_t builtin_fonts;
 
 void initialize_fonts(bool last_chance)
 {
-        logContext("initializing fonts");
+	logContext("initializing fonts");
     
-	// Initialize builtin TTF fonts
-	for (int j = 0; j < NUMBER_OF_BUILTIN_FONTS; ++j)
-		builtin_fonts[builtin_fontspecs[j].name] = builtin_fontspecs[j];
-    
-	// Open font resource files
-	bool found = false;
-	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
-	while (i != end) {
-		FileSpecifier fonts = *i + "Fonts";
-
-		if (open_res_file(fonts))
-			found = true;
-
-		if (!found)
-		{
-			fonts = *i + "Fonts.fntA";
-			if (open_res_file(fonts))
-				found = true;
-		}
-		i++;
-	}
 }
 
 
@@ -128,6 +100,7 @@ void initialize_fonts(bool last_chance)
 
 sdl_font_info *load_sdl_font(const TextSpec &spec)
 {
+#if 0
 	sdl_font_info *info = NULL;
 
 	// Look for ID/size in list of loaded fonts
@@ -230,6 +203,9 @@ sdl_font_info *load_sdl_font(const TextSpec &spec)
 	// Free resources
 	SDL_RWclose(p);
 	return info;
+#else
+	return nullptr;
+#endif
 }
 #define FONT_PATH "./Fonts.ttf"
 static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size)
@@ -286,12 +262,14 @@ static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size
 	};
 	for ( int i=0; i < sizeof(fontPath)/sizeof(fontPath[0]); i++ ) {
 		const char* file = fontPath[i].c_str();
-		font = TTF_OpenFont(file , size);
+		font = TTF_OpenFont(file, size);
 		if ( !font ) { continue; }
 		else { break; }
 	}
-	if( !font ){
-		fprintf(stderr, "cannot open font! died\n");
+	if( ! font ) {
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+								 "cannot open ttf",
+								 "TTF is missing.", nullptr);
 		exit(1);
 	}
 
@@ -332,7 +310,6 @@ static const char *locate_font(const std::string& path)
 			return "";
 	}
 }
-#define FONT_PATH "./Fonts.ttf"
 font_info *load_font(const TextSpec &spec) {
 	std::string file;
 	file = locate_font(spec.normal);
@@ -344,9 +321,10 @@ font_info *load_font(const TextSpec &spec) {
 				info->m_adjust_height = spec.adjust_height;
 				info->m_styles[i] = font;
 				info->m_keys[i] = ttf_font_key_t(file, i, spec.size);
-				for(int c = 32; c < 128; ++c ) {
+				for(int c = 32; c < 256; ++c ) {
 					TTF_GlyphMetrics(font, c, nullptr, nullptr, nullptr, nullptr,&info->ascii_width[i][c]);
 				}
+				TTF_GlyphMetrics(font, u'あ', nullptr, nullptr, nullptr, nullptr,&info->wide_width[i]);
 			}
 	}
 	return info;
@@ -378,7 +356,7 @@ void sdl_font_info::_unload()
 
 void ttf_font_info::_unload()
 {
-	for (int i = 0; i < styleUnderline; ++i)
+	for (int i = 0; i < styleMax; ++i)
 	{
 		ttf_font_list_t::iterator it = ttf_font_list.find(m_keys[i]);
 		if (it != ttf_font_list.end())
@@ -402,7 +380,7 @@ void unload_font(font_info *info)
 	info->_unload();
 }
 
-int8 sdl_font_info::char_width(uint8 c, uint16 style) const
+int8 sdl_font_info::char_width(uint16 c, uint16 style) const
 {
 	if (c < first_character || c > last_character)
 		return 0;
@@ -449,12 +427,17 @@ int sdl_font_info::_trunc_text(const char *text, int max_width, uint16 style) co
 
 // sdl_font_info::_draw_text is in screen_drawing.cpp
 
-int8 ttf_font_info::char_width(uint8 c, uint16 style) const
+int8 ttf_font_info::char_width(uint16 c, uint16 style) const
 {
-	int advance;
-	TTF_GlyphMetrics(get_ttf(style), static_cast<char>(c), 0, 0, 0, 0, &advance);
-
-	return advance;
+	if( c < 0x100) {
+		return ascii_width[style][c];
+	} else if( c >= 0x3040 && c <= 0x9fef) { 
+		return wide_width[style];
+	} else {
+		int advance;
+		TTF_GlyphMetrics(get_ttf(style), c, 0, 0, 0, 0, &advance);
+		return advance;
+	}
 }
 uint16 ttf_font_info::_text_width(const char *text, uint16 style, bool utf8) const
 {
@@ -464,7 +447,11 @@ uint16 ttf_font_info::_text_width(const char *text, uint16 style, bool utf8) con
 uint16 ttf_font_info::_text_width(const char *text, size_t length, uint16 style, bool utf8) const
 {
 	int width = 0;
-	TTF_SizeUTF8(get_ttf(style), text, &width, 0);
+	for(const char* c = text; *c; ) {
+		auto ret = next_utf8(c);
+		width += char_width(ret.second, style);
+		c += ret.first;
+	}
 	return width;
 }
 

@@ -21,8 +21,7 @@ alephone_LDADD = \
   GameWorld/libgameworld.a Input/libinput.a Lua/liba1lua.a Misc/libmisc.a \
   ModelView/libmodelview.a Network/libnetwork.a Network/Metaserver/libmetaserver.a \
   RenderMain/librendermain.a RenderOther/librenderother.a Sound/libsound.a \
-  XML/libxml.a \
-  \
+  TCPMess/libtcpmess.a XML/libxml.a LibNAT/libnat.a \
   CSeries/libcseries.a Files/libfiles.a FFmpeg/libffmpeg.a \
   GameWorld/libgameworld.a Input/libinput.a Lua/liba1lua.a Misc/libmisc.a \
   ModelView/libmodelview.a Network/libnetwork.a Network/Metaserver/libmetaserver.a \

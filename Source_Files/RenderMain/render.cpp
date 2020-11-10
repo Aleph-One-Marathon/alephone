@@ -422,7 +422,7 @@ void initialize_view_data(
 /* origin,origin_polygon_index,yaw,pitch,roll,etc. have probably changed since last call */
 void render_view(
 	struct view_data *view,
-	struct bitmap_definition *destination)
+	struct bitmap_definition *software_render_dest)
 {
 	update_view_data(view);
 
@@ -474,8 +474,8 @@ void render_view(
 			else
 			{
 #endif
-				// The software renderer needs this but the OpenGL one doesn't...
-				Rasterizer_SW.screen = destination;
+				assert(software_render_dest);
+				Rasterizer_SW.screen = software_render_dest;
 				RasPtr = &Rasterizer_SW;
 #ifdef HAVE_OPENGL
 			}
@@ -649,7 +649,28 @@ static void update_view_data(
 		{
 			struct world_point2d *vertex= &get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
 			
-			if (vertex->x==view->origin.x && vertex->y==view->origin.y)
+			const bool on_vertex = [&]
+			{
+				const short adj_poly_index = polygon->adjacent_polygon_indexes[i];
+				
+				// Check our own vertex if there is no adjacent poly
+				if (adj_poly_index == NONE)
+					return vertex->x == view->origin.x && vertex->y == view->origin.y;
+				
+				// Otherwise check the adjacent poly's vertices (which include our own vertex) in case it's degenerate
+				// and has a vertex hiding underneath us, on (but not connected to) the side of our origin polygon
+				const polygon_data& adj_poly = *get_polygon_data(adj_poly_index);
+				for (int j = 0, n = adj_poly.vertex_count; j < n; ++j)
+				{
+					const world_point2d& v = get_endpoint_data(adj_poly.endpoint_indexes[j])->vertex;
+					if (view->origin.x == v.x && view->origin.y == v.y)
+						return true;
+				}
+				
+				return false;
+			}();
+			
+			if (on_vertex)
 			{
 				world_point2d *ccw_vertex= &get_endpoint_data(polygon->endpoint_indexes[WRAP_LOW(i, polygon->vertex_count-1)])->vertex;
 				world_point2d *cw_vertex= &get_endpoint_data(polygon->endpoint_indexes[WRAP_HIGH(i, polygon->vertex_count-1)])->vertex;
@@ -657,6 +678,15 @@ static void update_view_data(
 				
 				inset_vector.i= (ccw_vertex->x-vertex->x) + (cw_vertex->x-vertex->x);
 				inset_vector.j= (ccw_vertex->y-vertex->y) + (cw_vertex->y-vertex->y);
+				
+				if (inset_vector.i == 0 && inset_vector.j == 0)
+				{
+					// This happens when the CW and CCW vertices are equidistant from and collinear with the origin;
+					// we switch tactics and just move directly toward one of them
+					inset_vector.i = cw_vertex->x - vertex->x;
+					inset_vector.j = cw_vertex->y - vertex->y;
+				}
+				
 				view->origin.x+= SGN(inset_vector.i);
 				view->origin.y+= SGN(inset_vector.j);
 				

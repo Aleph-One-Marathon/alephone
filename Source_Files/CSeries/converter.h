@@ -19,12 +19,24 @@ inline int utf8_len(const char* t) {
 		return 3;
 	return 4;
 }
-
+inline std::pair<int, uint16_t> next_utf8(const char* c) {
+	const unsigned char*p = reinterpret_cast<const unsigned char*>(c); 
+	if( p[0] < 0x80) {
+		return std::pair<int, uint16_t>( 1, p[0]);
+	} else if( p[0] < 0xe0) {
+		return std::pair<int, uint16_t>( 2, ( p[0] & 0x1f)<<6 | (p[1] & 0x3f));
+	} else {
+		return std::pair<int, uint16_t>( 3, (p[0] & 0xf)<< 12 |
+		(p[1] & 0x3f) << 6 |
+		(p[2] & 0x3f));
+	}
+}
 class utf8_iter {
 	std::string s;
 	size_t i;
 public:
 	utf8_iter(const std::string& s) :s(s) ,i(0) {}
+	int offset() const { return i; }
 	std::string utf8() {
 		return s.substr(i, utf8_len(&s[i]));
 	}
@@ -66,8 +78,7 @@ std::string sjis2utf8(const char* str, size_t len);
 
 void sjisChar(const char* in, int* step, char* dst);
 std::vector<std::string> line_wrap(TTF_Font* t, const std::string& str, int size);
-const char* line_wrap_term(TTF_Font* t, const char* begin, const char* end,
-						   int size);
+
 // Detect 2-byte char. (for Shift_JIS)
 inline bool isJChar(unsigned char text) {
 	return (((text >= 0x81) && (text <= 0x9f)) ||

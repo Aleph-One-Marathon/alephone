@@ -66,7 +66,7 @@ AS_CASE([$target],
           AC_CHECK_TOOL([WINDRES], [windres], [:])
           AC_DEFINE([WIN32_DISABLE_MUSIC], [1], [Win32 music disabled])
           CPPFLAGS="-D__USE_MINGW_ANSI_STDIO $CPPFLAGS"
-          LIBS="$LIBS -ldsound -lwsock32"
+          LIBS="$LIBS -ldsound -lwsock32 -liphlpapi"
           LDFLAGS="$LDFLAGS -Wl,-subsystem,windows" ],
         [*-*-netbsd*],
         [ CPPFLAGS="$CPPFLAGS -I/usr/pkg/include"

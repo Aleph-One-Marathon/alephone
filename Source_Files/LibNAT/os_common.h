@@ -28,6 +28,8 @@
 
 #include "os.h"
 
+#include <stdlib.h>
+
 /* declaration of the operating system specific socket structures. This
    needs to be included in this file because many of the functions in
    here will need to operate on these structures 
@@ -47,7 +49,6 @@
   #include <netinet/in.h>
   #include <arpa/inet.h>
   #include <netdb.h>
-  #include <stdlib.h>
   #include <unistd.h>
   
   #include <sys/time.h>
@@ -60,6 +61,7 @@
 #endif
 #if OS_WIN
   /* defines for win32 */
+  #define WIN32_LEAN_AND_MEAN
   #include <windows.h>
   #include <winsock.h>
   typedef int socklen_t;

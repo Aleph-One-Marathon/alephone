@@ -109,11 +109,6 @@
 #endif
 #endif
 
-#ifdef __WIN32__
-#include <windows.h>
-#include <shlobj.h>
-#endif
-
 #include "alephversion.h"
 
 #include "Logging.h"
@@ -122,6 +117,12 @@
 #include "Movie.h"
 #include "HTTP.h"
 #include "WadImageCache.h"
+
+#ifdef __WIN32__
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef CreateDirectory
+#endif
 
 // LP addition: whether or not the cheats are active
 // Defined in shell_misc.cpp
@@ -175,6 +176,17 @@ static void process_event(const SDL_Event &event);
 // cross-platform static variables
 short vidmasterStringSetID = -1; // can be set with MML
 
+static std::string a1_getenv(const char* name)
+{
+#ifdef __WIN32__
+	wchar_t* wstr = _wgetenv(utf8_to_wide(name).c_str());
+	return wstr ? wide_to_utf8(wstr) : std::string{};
+#else
+	char* str = getenv(name);
+	return str ? str : std::string{};
+#endif
+}
+
 static void usage(const char *prg_name)
 {
 	char msg[] =
@@ -203,7 +215,7 @@ static void usage(const char *prg_name)
 	"\nこの他にも、環境変数「ALEPHONE_DATA」の値を変更することで、\n"
 	"データディレクトリを指定することができます。\n";
 #ifdef __WIN32__
-	MessageBox(NULL, msg, "使用方", MB_OK | MB_ICONINFORMATION);
+	MessageBoxW(NULL, utf8_to_wide(msg).c_str(), L"使用方", MB_OK | MB_ICONINFORMATION);
 #else
 	printf(msg, prg_name);
 #endif
@@ -377,7 +389,7 @@ static int char_is_not_filesafe(int c)
 static void initialize_application(void)
 {
 #if defined(__WIN32__) && defined(__MINGW32__)
-	if (LoadLibrary("exchndl.dll")) option_debug = true;
+	if (LoadLibraryW(L"exchndl.dll")) option_debug = true;
 #else
 	setlocale(LC_ALL, "");
 #endif
@@ -455,15 +467,22 @@ static void initialize_application(void)
 	size_t dsp_insert_pos = data_search_path.size();
 	size_t dsp_delete_pos = (size_t)-1;
 	
+	const string default_data_env = a1_getenv("ALEPHONE_DEFAULT_DATA");
 	if (arg_directory != "")
 	{
 		default_data_dir = arg_directory;
 		dsp_delete_pos = data_search_path.size();
 		data_search_path.push_back(arg_directory);
 	}
+	else if (!default_data_env.empty())
+	{
+		default_data_dir = default_data_env;
+		dsp_delete_pos = data_search_path.size();
+		data_search_path.push_back(default_data_env);
+	}
 
-	const char *data_env = getenv("ALEPHONE_DATA");
-	if (data_env) {
+	const string data_env = a1_getenv("ALEPHONE_DATA");
+	if (!data_env.empty()) {
 		// Read colon-separated list of directories
 		string path = data_env;
 		string::size_type pos;
@@ -478,7 +497,7 @@ static void initialize_application(void)
 		if (!path.empty())
 			data_search_path.push_back(path);
 	} else {
-		if (arg_directory == "")
+		if (arg_directory == "" && default_data_env == "")
 		{
 			dsp_delete_pos = data_search_path.size();
 			data_search_path.push_back(default_data_dir);

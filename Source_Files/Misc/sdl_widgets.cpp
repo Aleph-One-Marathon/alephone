@@ -1471,7 +1471,7 @@ void w_number_entry::event(SDL_Event &e)
 		for (std::string::iterator it = input_roman.begin(); it != input_roman.end(); ++it)
 		{
 			uint16 uc = *it;
-			if (uc >= '0' && (uc < 0x80 || enable_mac_roman) && (num_chars + 1) < max_chars) {
+			if (uc >= '0' && uc <= '9' && (num_chars + 1) < max_chars) {
 				memmove(&buf[cursor_position + 1], &buf[cursor_position], num_chars - cursor_position);
 				buf[cursor_position++] = static_cast<char>(uc);
 				buf[++num_chars] = 0;
@@ -1480,8 +1480,10 @@ void w_number_entry::event(SDL_Event &e)
 			}
 		}
 	}
-
-	w_text_entry::event(e);
+	else
+	{
+		w_text_entry::event(e);
+	}
 }
 
 void w_number_entry::set_number(int number)
@@ -1610,7 +1612,7 @@ void w_key::event(SDL_Event &e)
 		switch (e.type) {
 			case SDL_MOUSEBUTTONDOWN:
 				if (event_type == MouseButton) {
-					if (e.button.button < NUM_SDL_REAL_MOUSE_BUTTONS) {
+					if (e.button.button < NUM_SDL_REAL_MOUSE_BUTTONS + 1) {
 						set_key(static_cast<SDL_Scancode>(AO_SCANCODE_BASE_MOUSE_BUTTON + e.button.button - 1));
 						handled = true;
 					}

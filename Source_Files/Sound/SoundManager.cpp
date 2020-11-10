@@ -174,8 +174,8 @@ void SoundManager::SetParameters(const Parameters& parameters)
 		this->parameters.Verify();
 
 		// If it was initially on, turn the sound manager back on
-		if (initial_state && parameters.volume)
-			SetStatus(true);		
+		if (initial_state && parameters.volume_db > MINIMUM_VOLUME_DB)
+			SetStatus(true);
 	}
 
 }
@@ -189,6 +189,7 @@ void SoundManager::Shutdown()
 bool SoundManager::OpenSoundFile(FileSpecifier& File)
 {
 	StopAllSounds();
+	UnloadAllSounds();
 	sound_file.reset(new M2SoundFile);
 	if (!sound_file->Open(File))
 	{
@@ -216,10 +217,14 @@ void SoundManager::CloseSoundFile()
 
 bool SoundManager::AdjustVolumeUp(short sound_index)
 {
-	if (active && parameters.volume < NUMBER_OF_SOUND_VOLUME_LEVELS)
+	if (active && parameters.volume_db < MAXIMUM_VOLUME_DB)
 	{
-		parameters.volume++;
-		Mixer::instance()->SetVolume(parameters.volume * SOUND_VOLUME_DELTA);
+		parameters.volume_db += 2.f;
+		if (parameters.volume_db > MAXIMUM_VOLUME_DB)
+		{
+			parameters.volume_db = MAXIMUM_VOLUME_DB;
+		}
+		Mixer::instance()->SetVolume(parameters.volume_db);
 		PlaySound(sound_index, 0, NONE);
 		return true;
 	}
@@ -228,29 +233,33 @@ bool SoundManager::AdjustVolumeUp(short sound_index)
 
 bool SoundManager::AdjustVolumeDown(short sound_index)
 {
-	if (active && parameters.volume > 0)
+	if (active && parameters.volume_db > MINIMUM_VOLUME_DB)
 	{
-		parameters.volume--;
-		Mixer::instance()->SetVolume(parameters.volume * SOUND_VOLUME_DELTA);
+		parameters.volume_db -= 2.f;
+		if (parameters.volume_db <= MINIMUM_VOLUME_DB)
+		{
+			parameters.volume_db = MINIMUM_VOLUME_DB;
+		}
+		Mixer::instance()->SetVolume(parameters.volume_db);
 		PlaySound(sound_index, 0, NONE);
 		return true;
 	}
 	return false;
 }
 
-void SoundManager::TestVolume(short volume, short sound_index)
+void SoundManager::TestVolume(float db, short sound_index)
 {
 	if (active)
 	{
-		if ((volume = PIN(volume, 0, NUMBER_OF_SOUND_VOLUME_LEVELS)) != 0)
+		if (db > MINIMUM_VOLUME_DB)
 		{
 			PlaySound(sound_index, 0, NONE);
-			Mixer::instance()->SetVolume(volume * SOUND_VOLUME_DELTA);
+			Mixer::instance()->SetVolume(db);
 			while (SoundIsPlaying(sound_index))
 				SDL_Delay(10);
-			Mixer::instance()->SetVolume(parameters.volume * SOUND_VOLUME_DELTA);
+			Mixer::instance()->SetVolume(parameters.volume_db);
 		}
-	}
+	}	
 }
 
 bool SoundManager::LoadSound(short sound_index)
@@ -347,7 +356,7 @@ void SoundManager::PlaySound(short sound_index,
 {
 	/* donÕt do anything if weÕre not initialized or active, or our sound_code is NONE,
 		or our volume is zero, our we have no sound channels */
-	if (sound_index!=NONE && active && parameters.volume > 0 && total_channel_count > 0)
+	if (sound_index!=NONE && active && parameters.volume_db > MINIMUM_VOLUME_DB && total_channel_count > 0)
 	{
 		Channel::Variables variables;
 
@@ -394,7 +403,7 @@ void SoundManager::DirectPlaySound(short sound_index, angle direction, short vol
 	/* donÕt do anything if weÕre not initialized or active, or our sound_code is NONE,
 	   or our volume is zero, our we have no sound channels */
 
-	if (sound_index != NONE && active && parameters.volume > 0 && total_channel_count > 0)
+	if (sound_index != NONE && active && parameters.volume_db > MINIMUM_VOLUME_DB && total_channel_count > 0)
 	{
 		if (LoadSound(sound_index))
 		{
@@ -495,7 +504,7 @@ void SoundManager::Idle()
 
 void SoundManager::CauseAmbientSoundSourceUpdate()
 {
-	if (active && parameters.volume > 0 && total_channel_count > 0)
+	if (active && parameters.volume_db > MINIMUM_VOLUME_DB && total_channel_count > 0)
 	{
 		if (parameters.flags & _ambient_sound_flag)
 		{
@@ -692,20 +701,29 @@ short SoundManager::RandomSoundIndexToSoundIndex(short random_sound_index)
 
 SoundManager::Parameters::Parameters() :
 	channel_count(MAXIMUM_SOUND_CHANNELS),
-	volume(DEFAULT_SOUND_LEVEL),
+	volume_db(DEFAULT_SOUND_LEVEL_DB),
 	flags(_more_sounds_flag | _stereo_flag | _dynamic_tracking_flag | _ambient_sound_flag | _16bit_sound_flag),
 	rate(DEFAULT_RATE),
 	samples(DEFAULT_SAMPLES),
-	music(DEFAULT_MUSIC_LEVEL),
+	music_db(DEFAULT_MUSIC_LEVEL_DB),
 	volume_while_speaking(DEFAULT_VOLUME_WHILE_SPEAKING),
-	mute_while_transmitting(true)
+	mute_while_transmitting(true),
+	video_export_volume_db(DEFAULT_VIDEO_EXPORT_VOLUME_DB)
 {
 }
 
 bool SoundManager::Parameters::Verify()
 {
 	channel_count = PIN(channel_count, 0, MAXIMUM_SOUND_CHANNELS);
-	volume = PIN(volume, 0, NUMBER_OF_SOUND_VOLUME_LEVELS);
+
+	if (volume_db < MINIMUM_VOLUME_DB)
+	{
+		volume_db = MINIMUM_VOLUME_DB;
+	}
+	else if (volume_db > MAXIMUM_VOLUME_DB)
+	{
+		volume_db = MAXIMUM_VOLUME_DB;
+	}
 	
 	return true;
 }
@@ -759,7 +777,7 @@ void SoundManager::SetStatus(bool active)
 
 				samples = samples * parameters.rate / Parameters::DEFAULT_RATE;
 
-				Mixer::instance()->Start(parameters.rate, parameters.flags & _16bit_sound_flag, parameters.flags & _stereo_flag, MAXIMUM_SOUND_CHANNELS + MAXIMUM_AMBIENT_SOUND_CHANNELS, parameters.volume * SOUND_VOLUME_DELTA, samples);
+				Mixer::instance()->Start(parameters.rate, parameters.flags & _16bit_sound_flag, parameters.flags & _stereo_flag, MAXIMUM_SOUND_CHANNELS + MAXIMUM_AMBIENT_SOUND_CHANNELS, parameters.volume_db, samples);
 
 				if (Mixer::instance()->SoundChannelCount() == 0)
 				{

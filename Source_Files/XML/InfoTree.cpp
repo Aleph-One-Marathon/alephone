@@ -22,105 +22,94 @@
 
 #include "InfoTree.h"
 #include "cseries.h"
-#include "game_errors.h"
 #include "shell.h"
 #include "TextStrings.h"
+
+#include <type_traits>
 
 #include <boost/function.hpp>
 #include <boost/version.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <boost/iostreams/stream.hpp>
+
+namespace pt = boost::property_tree;
+namespace io = boost::iostreams;
+
+class InfoTreeFileStream : public io::stream<opened_file_device>
+{ 
+private:
+	OpenedFile f;
+public:
+	~InfoTreeFileStream() { close(); }
+	explicit InfoTreeFileStream(FileSpecifier path, bool write = false)
+	{ 
+		if (!(write ? path.OpenForWritingText(f) : path.Open(f)))
+		{ 
+			const auto code = std::to_string(path.GetError());
+			const auto mode = write ? "writing" : "reading";
+			const auto msg = std::string("couldn't open '") + path.GetPath() + "' for " + mode + " (error " + code + ")";
+			throw InfoTree::unexpected_error(msg);
+		} 
+		open(f);
+	}
+};
 
 InfoTree InfoTree::load_xml(FileSpecifier filename)
 {
-	// use rwops, in case file is inside a zip archive
-	OpenedFile file;
-	if (filename.Open(file))
-	{
-		int32 data_size;
-		file.GetLength(data_size);
-		std::vector<char> file_data;
-		file_data.resize(data_size);
-		
-		if (file.Read(data_size, &file_data[0]))
-		{
-			std::istringstream strm(std::string(file_data.begin(), file_data.end()));
-			return load_xml(strm);
-		}
-	}
-	else
-	{
-		short err, errtype;
-		err = get_game_error(&errtype);
-		clear_game_error();
-		
-		std::string errstr = "could not open XML file ";
-		errstr += filename.GetPath();
-		errstr += ": system error ";
-		errstr += errtype;
-		throw InfoTree::unexpected_error(errstr);
-	}
-	
-	boost::property_tree::ptree xtree;
-	boost::property_tree::read_xml(filename.GetPath(), xtree);
-	return InfoTree(xtree);
+	InfoTreeFileStream stream(filename);
+	InfoTree xtree;
+	pt::read_xml<pt::ptree>(stream, xtree);
+	return xtree;
 }
 
 InfoTree InfoTree::load_xml(std::istringstream& stream)
 {
-	boost::property_tree::ptree xtree;
-	boost::property_tree::read_xml(stream, xtree);
-	return InfoTree(xtree);
+	InfoTree xtree;
+	pt::read_xml<pt::ptree>(stream, xtree);
+	return xtree;
 }
+
+static void write_indented_xml(std::ostream& dest, const pt::ptree& src)
+{
+	using settings_t = pt::xml_writer_settings< std::conditional<BOOST_VERSION >= 105600, std::string, char>::type >;
+	pt::write_xml<pt::ptree>(dest, src, settings_t(' ', 2));
+} 
 
 void InfoTree::save_xml(FileSpecifier filename) const
 {
-	boost::property_tree::write_xml(filename.GetPath(),
-									boost::property_tree::ptree(*this),
-									std::locale(),
-#if BOOST_VERSION >= 105600
-									boost::property_tree::xml_writer_make_settings<boost::property_tree::ptree::key_type>(' ', 2)
-#else
-									boost::property_tree::xml_writer_make_settings(' ', 2)
-#endif
-									);
+	InfoTreeFileStream stream(filename, /*write:*/ true);
+	write_indented_xml(stream, *this);
 }
 
 void InfoTree::save_xml(std::ostringstream& stream) const
 {
-	boost::property_tree::write_xml(stream,
-									boost::property_tree::ptree(*this),
-#if BOOST_VERSION >= 105600
-									boost::property_tree::xml_writer_make_settings<boost::property_tree::ptree::key_type>(' ', 2)
-#else
-									boost::property_tree::xml_writer_make_settings(' ', 2)
-#endif
-									);
+	write_indented_xml(stream, *this);
 }
 
 InfoTree InfoTree::load_ini(FileSpecifier filename)
 {
-	boost::property_tree::ptree itree;
-	boost::property_tree::read_ini(filename.GetPath(), itree);
-	return InfoTree(itree);
+	InfoTreeFileStream stream(filename);
+	InfoTree itree;
+	pt::read_ini<pt::ptree>(stream, itree);
+	return itree;
 }
 
 InfoTree InfoTree::load_ini(std::istringstream& stream)
 {
-	boost::property_tree::ptree itree;
-	boost::property_tree::read_ini(stream, itree);
-	return InfoTree(itree);
+	InfoTree itree;
+	pt::read_ini<pt::ptree>(stream, itree);
+	return itree;
 }
 
 void InfoTree::save_ini(FileSpecifier filename) const
 {
-	boost::property_tree::write_ini(filename.GetPath(),
-									boost::property_tree::ptree(*this));
+	InfoTreeFileStream stream(filename, /*write:*/ true);
+	pt::write_ini<pt::ptree>(stream, *this);
 }
 
 void InfoTree::save_ini(std::ostringstream& stream) const
 {
-	boost::property_tree::write_ini(stream,
-									boost::property_tree::ptree(*this));
+	pt::write_ini<pt::ptree>(stream, *this);
 }
 
 bool InfoTree::read_fixed(std::string path, _fixed& value, float min, float max) const

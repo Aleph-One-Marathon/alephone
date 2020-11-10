@@ -90,6 +90,7 @@ May 22, 2003 (Woody Zenfell):
 #include "preference_dialogs.h"
 #include "preferences_widgets_sdl.h"
 #include "mouse.h"
+#include "joystick.h"
 
 #include "Music.h"
 #include "HTTP.h"
@@ -104,10 +105,10 @@ May 22, 2003 (Woody Zenfell):
 #endif
 
 #ifdef __WIN32__
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h> // for GetUserName()
+#include <lmcons.h>
 #endif
-
-#include "joystick.h"
 
 // 8-bit support is still here if you undefine this, but you'll need to fix it
 #define TRUE_COLOR_ONLY 1
@@ -188,12 +189,10 @@ static std::string get_name_from_system()
 
 #elif defined(__WIN32__)
 
-	char login[17];
-	DWORD len = 17;
-
-	bool hasName = (GetUserName((LPSTR)login, &len) == TRUE);
-	if (hasName && strpbrk(login, "\\/:*?\"<>|") == NULL) // Ignore illegal names
-		return login;
+	wchar_t wname[UNLEN + 1];
+	DWORD wname_n = UNLEN + 1;
+	if (GetUserNameW(wname, &wname_n))
+		return wide_to_utf8(wname);
 
 #else
 //#error get_name_from_system() not implemented for this platform
@@ -1369,12 +1368,25 @@ static const char *channel_labels[] = {"1", "2", "4", "8", "16", "32", NULL};
 
 class w_volume_slider : public w_percentage_slider {
 public:
-	w_volume_slider(int vol) : w_percentage_slider(NUMBER_OF_SOUND_VOLUME_LEVELS, vol) {}
+	w_volume_slider(int vol) : w_percentage_slider(21, vol) {}
 	~w_volume_slider() {}
 
 	void item_selected(void)
 	{
-		SoundManager::instance()->TestVolume(selection, _snd_adjust_volume);
+		SoundManager::instance()->TestVolume((selection - 20) * 2, _snd_adjust_volume);
+	}
+};
+
+class w_music_slider : public w_slider {
+public:
+	w_music_slider(int sel) : w_slider(41, sel) {
+		init_formatted_value();
+	}
+
+	virtual std::string formatted_value() {
+		std::ostringstream ss;
+		ss << (selection * 200 / (num_items - 1)) << "%";
+		return ss.str();
 	}
 };
 
@@ -1418,11 +1430,11 @@ static void sound_dialog(void *arg)
 	table->dual_add(channels_w->label("チャンネル数"), d);
 	table->dual_add(channels_w, d);
 
-	w_volume_slider *volume_w = new w_volume_slider(sound_preferences->volume);
+	w_volume_slider *volume_w = new w_volume_slider(static_cast<int>(sound_preferences->volume_db / 2 + 20));
 	table->dual_add(volume_w->label("音量"), d);
 	table->dual_add(volume_w, d);
 
-	w_slider *music_volume_w = new w_percentage_slider(NUMBER_OF_SOUND_VOLUME_LEVELS, sound_preferences->music);
+	w_slider *music_volume_w = new w_music_slider(sound_preferences->music_db + 20);
 	table->dual_add(music_volume_w->label("音楽の音量"), d);
 	table->dual_add(music_volume_w, d);
 
@@ -1484,15 +1496,15 @@ static void sound_dialog(void *arg)
 			changed = true;
 		}
 
-		int volume = volume_w->get_selection();
-		if (volume != sound_preferences->volume) {
-			sound_preferences->volume = volume;
+		float volume_db = (volume_w->get_selection() - 20) * 2;
+		if (volume_db != sound_preferences->volume_db) {
+			sound_preferences->volume_db = volume_db;
 			changed = true;
 		}
 
-		int music_volume = music_volume_w->get_selection();
-		if (music_volume != sound_preferences->music) {
-			sound_preferences->music = music_volume;
+		float music_db = music_volume_w->get_selection() - 20;
+		if (music_db != sound_preferences->music_db) {
+			sound_preferences->music_db = music_db;
 			changed = true;
 		}
 
@@ -1842,7 +1854,7 @@ static void mouse_feel_details_changed(void *arg)
 	switch (mouse_feel_details_w->get_selection())
 	{
 		case 0:
-			mouse_raw_w->set_selection(0);
+			mouse_raw_w->set_selection(1);
 			mouse_accel_w->set_selection(1);
 			mouse_vertical_w->set_selection(1);
 			mouse_precision_w->set_selection(1);
@@ -1864,7 +1876,7 @@ static void update_mouse_feel_details(void *arg)
 	if (inside_callback)
 		return;
 	inside_callback = true;
-	if (mouse_raw_w->get_selection() == 0 &&
+	if (mouse_raw_w->get_selection() == 1 &&
 		mouse_accel_w->get_selection() == 1 &&
 		mouse_vertical_w->get_selection() == 1 &&
 		mouse_precision_w->get_selection() == 1)
@@ -1887,7 +1899,7 @@ static void update_mouse_feel_details(void *arg)
 
 static void update_mouse_feel(void *arg)
 {
-	if (input_preferences->raw_mouse_input == false &&
+	if (input_preferences->raw_mouse_input == true &&
 		input_preferences->mouse_accel_type == _mouse_accel_classic &&
 		input_preferences->classic_vertical_aim == true &&
 		input_preferences->extra_mouse_precision == false)
@@ -1913,8 +1925,8 @@ static bool apply_mouse_feel(int selection)
 	switch (selection)
 	{
 		case 0:
-			if (false != input_preferences->raw_mouse_input) {
-				input_preferences->raw_mouse_input = false;
+			if (true != input_preferences->raw_mouse_input) {
+				input_preferences->raw_mouse_input = true;
 				changed = true;
 			}
 			if (_mouse_accel_classic != input_preferences->mouse_accel_type) {
@@ -2994,6 +3006,13 @@ void read_preferences ()
 
 	if (!opened) {
 		defaults = true;
+		FileSpec.SetNameWithPath("Scripts/Default Preferences.xml");
+		opened = FileSpec.Open(OFile);
+	}
+
+	// legacy defalt prefs
+	if (!opened) {
+		defaults = true;
 		FileSpec.SetNameWithPath(getcstr(temporary, strFILENAMES, filenamePREFERENCES));
 		opened = FileSpec.Open(OFile);
 	}
@@ -3044,13 +3063,17 @@ void read_preferences ()
 			parse_error = true;
 		}
 	}
-	
-	if (!opened || parse_error)
+
+	if (defaults)
 	{
-		if (defaults)
+		if (parse_error)
+		{
 			alert_user(expand_app_variables("There were default preferences-file parsing errors (see $appLogFile$ for details)").c_str(), infoError);
-		else
-			alert_user(expand_app_variables("There were preferences-file parsing errors (see $appLogFile$ for details)").c_str(), infoError);
+		}
+	}
+	else if (!opened || parse_error)
+	{
+		alert_user(expand_app_variables("There were preferences-file parsing errors (see $appLogFile$ for details)").c_str(), infoError);
 	}
 
 	// Check on the read-in prefs
@@ -3108,6 +3131,7 @@ InfoTree graphics_preferences_tree()
 	root.put_attr("double_corpse_limit", graphics_preferences->double_corpse_limit);
 	root.put_attr("hog_the_cpu", graphics_preferences->hog_the_cpu);
 	root.put_attr("movie_export_video_quality", graphics_preferences->movie_export_video_quality);
+	root.put_attr("movie_export_video_bitrate", graphics_preferences->movie_export_video_bitrate);
 	root.put_attr("movie_export_audio_quality", graphics_preferences->movie_export_audio_quality);
 	
 	root.add_color("void.color", graphics_preferences->OGL_Configure.VoidColor);
@@ -3361,13 +3385,14 @@ InfoTree sound_preferences_tree()
 	InfoTree root;
 	
 	root.put_attr("channels", sound_preferences->channel_count);
-	root.put_attr("volume", sound_preferences->volume);
-	root.put_attr("music_volume", sound_preferences->music);
+	root.put_attr("volume_db", sound_preferences->volume_db);
+	root.put_attr("music_db", sound_preferences->music_db);
 	root.put_attr("flags", sound_preferences->flags);
 	root.put_attr("rate", sound_preferences->rate);
 	root.put_attr("samples", sound_preferences->samples);
 	root.put_attr("volume_while_speaking", sound_preferences->volume_while_speaking);
 	root.put_attr("mute_while_transmitting", sound_preferences->mute_while_transmitting);
+	root.put_attr("video_export_volume_db", sound_preferences->video_export_volume_db);
 	
 	return root;
 }
@@ -3501,7 +3526,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.hud = true;
 	preferences->screen_mode.hud_scale_level = 0;
 	preferences->screen_mode.term_scale_level = 2;
-	preferences->screen_mode.translucent_map = true;
+	preferences->screen_mode.translucent_map = false;
 	preferences->screen_mode.acceleration = _opengl_acceleration;
 	preferences->screen_mode.high_resolution = true;
 	preferences->screen_mode.fullscreen = true;
@@ -3521,6 +3546,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 
 	preferences->movie_export_video_quality = 50;
 	preferences->movie_export_audio_quality = 50;
+	preferences->movie_export_video_bitrate = 0; // auto
 }
 
 static void default_network_preferences(network_preferences_data *preferences)
@@ -3569,7 +3595,8 @@ static void default_player_preferences(player_preferences_data *preferences)
 	obj_clear(*preferences);
 
 	preferences->difficulty_level= 2;
-	strncpy(preferences->name, get_name_from_system().c_str(), PREFERENCES_NAME_LENGTH+1);
+	strncpy(preferences->name, get_name_from_system().c_str(), PREFERENCES_NAME_LENGTH);
+	preferences->name[PREFERENCES_NAME_LENGTH] = '\0';
 	
 	// LP additions for new fields:
 	
@@ -3987,7 +4014,7 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr("hog_the_cpu", graphics_preferences->hog_the_cpu);
 	root.read_attr_bounded<int16>("movie_export_video_quality", graphics_preferences->movie_export_video_quality, 0, 100);
 	root.read_attr_bounded<int16>("movie_export_audio_quality", graphics_preferences->movie_export_audio_quality, 0, 100);
-	
+	root.read_attr("movie_export_video_bitrate", graphics_preferences->movie_export_video_bitrate);
 	
 	BOOST_FOREACH(InfoTree vtree, root.children_named("void"))
 	{
@@ -4280,13 +4307,49 @@ void parse_input_preferences(InfoTree root, std::string version)
 void parse_sound_preferences(InfoTree root, std::string version)
 {
 	root.read_attr("channels", sound_preferences->channel_count);
-	root.read_attr("volume", sound_preferences->volume);
-	root.read_attr("music_volume", sound_preferences->music);
+
+	if (!version.length() || version < "20200803")
+	{
+		int old_volume;
+		root.read_attr("volume", old_volume);
+		if (old_volume > 0)
+		{
+			sound_preferences->volume_db = 10.f * std::log10(static_cast<float>(old_volume) / NUMBER_OF_SOUND_VOLUME_LEVELS);
+		}
+		else
+		{
+			sound_preferences->volume_db = SoundManager::MINIMUM_VOLUME_DB;
+		}
+	}
+	else
+	{
+		root.read_attr("volume_db", sound_preferences->volume_db);
+	}
+
+	if (!version.length() || version < "20200803")
+	{
+		int old_music_volume;
+		root.read_attr("music_volume", old_music_volume);
+		if (old_music_volume > 0)
+		{
+			sound_preferences->music_db = 10.f * std::log10(static_cast<float>(old_music_volume) / NUMBER_OF_SOUND_VOLUME_LEVELS);
+		}
+		else
+		{
+			sound_preferences->music_db = SoundManager::MINIMUM_VOLUME_DB / 2;
+		}
+	}
+	else
+	{
+		root.read_attr("music_db", sound_preferences->music_db);
+	}
+
 	root.read_attr("flags", sound_preferences->flags);
 	root.read_attr("rate", sound_preferences->rate);
 	root.read_attr("samples", sound_preferences->samples);
 	root.read_attr("volume_while_speaking", sound_preferences->volume_while_speaking);
 	root.read_attr("mute_while_transmitting", sound_preferences->mute_while_transmitting);
+	root.read_attr("video_export_volume_db", sound_preferences->video_export_volume_db);
 }
 
 

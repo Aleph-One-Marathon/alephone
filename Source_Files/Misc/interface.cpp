@@ -23,7 +23,7 @@
 
 	Friday, July 8, 1994 2:32:44 PM (alain)
 		All old code in here is obsolete. This now has interface for the top-level
-		interface (Begin Game, etcÉ)
+		interface (Begin Game, etcï¿½)
 	Saturday, September 10, 1994 12:45:48 AM  (alain)
 		the interface gutted again. just the stuff that handles the menu though, the rest stayed
 		the same.
@@ -171,10 +171,11 @@ enum recording_version {
 	RECORDING_VERSION_ALEPH_ONE_PRE_PIN = 6,
 	RECORDING_VERSION_ALEPH_ONE_1_0 = 7,
 	RECORDING_VERSION_ALEPH_ONE_1_1 = 8,
-	RECORDING_VERSION_ALEPH_ONE_1_2 = 9
+	RECORDING_VERSION_ALEPH_ONE_1_2 = 9,
+	RECORDING_VERSION_ALEPH_ONE_1_3 = 10,
 };
-const short default_recording_version = RECORDING_VERSION_ALEPH_ONE_1_2;
-const short max_handled_recording= RECORDING_VERSION_ALEPH_ONE_1_2;
+const short default_recording_version = RECORDING_VERSION_ALEPH_ONE_1_3;
+const short max_handled_recording= RECORDING_VERSION_ALEPH_ONE_1_3;
 
 #include "screen_definitions.h"
 #include "interface_menus.h"
@@ -819,7 +820,7 @@ bool join_networked_resume_game()
                         }
                         else
                         {
-                                /* Tell the user theyÕre screwed when they try to leave this level. */
+                                /* Tell the user theyï¿½re screwed when they try to leave this level. */
                                 // ZZZ: should really issue a different warning since the ramifications are different
                                 alert_user(infoError, strERRORS, cantFindMap, 0);
         
@@ -1190,7 +1191,7 @@ bool idle_game_state(uint32 time)
 		game_state.last_ticks_on_idle= machine_tick_count();
 	}
 
-	/* if weÕre not paused and thereÕs something to draw (i.e., anything different from
+	/* if weï¿½re not paused and thereï¿½s something to draw (i.e., anything different from
 		last time), render a frame */
 	if(game_state.state==_game_in_progress)
 	{
@@ -2093,6 +2094,9 @@ static bool begin_game(
 						load_film_profile(FILM_PROFILE_ALEPH_ONE_1_1);
 						break;
 					case RECORDING_VERSION_ALEPH_ONE_1_2:
+						load_film_profile(FILM_PROFILE_ALEPH_ONE_1_2);
+						break;
+					case RECORDING_VERSION_ALEPH_ONE_1_3:
 						load_film_profile(FILM_PROFILE_DEFAULT);
 						break;
 					default:
@@ -3040,27 +3044,26 @@ static void show_movie_frame(SDL_Surface* frame, int x, int y, unsigned int w, u
 #ifdef HAVE_FFMPEG
 static SDL_mutex *movie_audio_mutex = NULL;
 static const int AUDIO_BUF_SIZE = 10;
-static std::deque<SDL_ffmpegAudioFrame *> aframes;
-static uint32 tick = 0;
-void movie_audio_callback(void*, uint8* stream, int length) {
-	static int32 offset = 0;
+static SDL_ffmpegAudioFrame *aframes[AUDIO_BUF_SIZE];
+static uint64_t movie_sync = 0;
+void movie_audio_callback(void*, Uint8* stream, int length)
+{
 	if (movie_audio_mutex && SDL_LockMutex(movie_audio_mutex) != -1)
 	{
-		memset(stream, 0, length);
-		while( length > 0 ) {
-			SDL_ffmpegAudioFrame *f = aframes.front();
-			int copying = std::min<int>(f->size - offset, length);
-			memcpy(stream, f->buffer + offset, copying);
-			length -= copying;
-			stream += copying;
-			if( (offset += copying) == f->size ) {			
-				offset = 0;
-				f->size = 0;
-				aframes.pop_front();
-				uint32 now = SDL_GetTicks();
-				SDL_Delay( std::max( (int64_t)0, aframes.front()->pts - (now - tick)  ) );
-				aframes.push_back( f );
-			}
+				if (aframes[0]->size == length)
+		{
+			movie_sync = aframes[0]->pts;
+			memcpy(stream, aframes[0]->buffer, aframes[0]->size);
+			aframes[0]->size = 0;
+
+			SDL_ffmpegAudioFrame *f = aframes[0];
+			for (int i = 1; i < AUDIO_BUF_SIZE; i++)
+				aframes[i - 1] = aframes[i];
+			aframes[AUDIO_BUF_SIZE - 1] = f;
+		}
+		else
+		{
+			memset(stream, 0, length);
 		}
 		SDL_UnlockMutex(movie_audio_mutex);
 	}
@@ -3127,7 +3130,7 @@ void show_movie(short index)
 				int frameSize = specs.channels * specs.samples * 2;
 				for (int i = 0; i < AUDIO_BUF_SIZE; i++)
 				{
-					aframes.push_back( SDL_ffmpegCreateAudioFrame(sffile, frameSize) );
+					aframes[i] = SDL_ffmpegCreateAudioFrame(sffile, frameSize);
 					SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
 				}
 			}
@@ -3140,8 +3143,6 @@ void show_movie(short index)
 		
 		SDL_PauseAudio(false);
 		bool done = false;
-		uint32 tick = SDL_GetTicks();
-
 		while (!done)
 		{
 			SDL_Event event;
@@ -3163,30 +3164,28 @@ void show_movie(short index)
 				SDL_LockMutex(movie_audio_mutex);
 				for (int i = 0; i < AUDIO_BUF_SIZE; i++)
 				{
-					if ( !aframes[i]->size)
-						{
-							SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
-						}
+					if (!aframes[i]->size)
+					{
+						SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
+						
 					}
-				if (!aframes[AUDIO_BUF_SIZE - 1]->size && aframes[AUDIO_BUF_SIZE - 1]->last) {
-					done = true;
 				}
+				if (!aframes[AUDIO_BUF_SIZE - 1]->size && aframes[AUDIO_BUF_SIZE - 1]->last) 
+					done = true;
 				SDL_UnlockMutex(movie_audio_mutex);
 				
 			}
 
-			
-			
 			if (vframe)
 			{
 				if (!vframe->ready)
 				{
 					SDL_ffmpegGetVideoFrame(sffile, vframe);
 				}
+				else if (vframe->pts <= movie_sync)
+				{
 #ifdef HAVE_OPENGL
-				uint32 now = SDL_GetTicks();
-				SDL_Delay( std::max( (int64_t)0, vframe->pts - (now - tick)  ) );
-				if (OGL_IsActive())
+					if (OGL_IsActive())
 					{
 						OGL_Blitter::BoundScreen();
 						show_movie_blitter.Load(*(vframe->surface));
@@ -3195,15 +3194,20 @@ void show_movie(short index)
 						MainScreenSwap();
 						
 					}
-				else
+					else
 #endif
 					{
 						SDL_BlitSurface(vframe->surface, 0, MainScreenSurface(), &dst_rect);
 						MainScreenUpdateRects(1, &dst_rect);
 					}
-				vframe->ready = 0;
-				if (vframe->last)
-					done = true;
+					vframe->ready = 0;
+					if (vframe->last)
+						done = true;
+				}
+				else 
+				{
+					SDL_Delay(MIN(30, vframe->pts - movie_sync));
+				}
 			}
 		}
 		
@@ -3214,7 +3218,6 @@ void show_movie(short index)
 			{
 				SDL_ffmpegFreeAudioFrame(aframes[i]);
 			}
-			aframes.clear();
 			SDL_DestroyMutex(movie_audio_mutex);
 			movie_audio_mutex = NULL;
 		}

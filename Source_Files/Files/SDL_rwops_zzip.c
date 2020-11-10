@@ -45,15 +45,18 @@ static int _zzip_close(SDL_RWops *context)
     return 0;
 }
 
-SDL_RWops *SDL_RWFromZZIP(const char* file, const char* mode)
+SDL_RWops *SDL_RWFromZZIP(const char* file, const zzip_plugin_io_handlers* custom_zzip_io)
 {
     register SDL_RWops* rwops;
     register ZZIP_FILE* zzip_file;
 
-    if (! strchr (mode, 'r'))
-	return SDL_RWFromFile(file, mode);
+#ifdef O_BINARY /*Microsoft extension*/
+    const int o_binary = O_BINARY;
+#else
+    const int o_binary = 0;
+#endif
 
-    zzip_file = zzip_fopen (file, mode);
+    zzip_file = zzip_open_ext_io (file, O_RDONLY|o_binary, 0, NULL, custom_zzip_io);
     if (! zzip_file) return 0;
 
     rwops = SDL_AllocRW ();

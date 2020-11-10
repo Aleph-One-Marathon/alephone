@@ -60,10 +60,6 @@ Mar 08, 2002 (Woody Zenfell):
 
 #include "cseries.h"
 
-#ifdef __WIN32__
-#include <windows.h>
-#endif
-
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
 #endif
