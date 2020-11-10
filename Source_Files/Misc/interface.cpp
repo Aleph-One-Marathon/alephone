@@ -23,7 +23,7 @@
 
 	Friday, July 8, 1994 2:32:44 PM (alain)
 		All old code in here is obsolete. This now has interface for the top-level
-		interface (Begin Game, etcï¿½)
+		interface (Begin Game, etcÉ)
 	Saturday, September 10, 1994 12:45:48 AM  (alain)
 		the interface gutted again. just the stuff that handles the menu though, the rest stayed
 		the same.
@@ -839,7 +839,7 @@ bool join_networked_resume_game()
                         }
                         else
                         {
-                                /* Tell the user theyï¿½re screwed when they try to leave this level. */
+                                /* Tell the user theyÕre screwed when they try to leave this level. */
                                 // ZZZ: should really issue a different warning since the ramifications are different
                                 alert_user(infoError, strERRORS, cantFindMap, 0);
         
@@ -1207,7 +1207,7 @@ bool idle_game_state(uint32 time)
 		game_state.last_ticks_on_idle= machine_tick_count();
 	}
 
-	/* if weï¿½re not paused and thereï¿½s something to draw (i.e., anything different from
+	/* if weÕre not paused and thereÕs something to draw (i.e., anything different from
 		last time), render a frame */
 	if(game_state.state==_game_in_progress)
 	{
@@ -3075,16 +3075,16 @@ static SDL_mutex *movie_audio_mutex = NULL;
 static const int AUDIO_BUF_SIZE = 10;
 static SDL_ffmpegAudioFrame *aframes[AUDIO_BUF_SIZE];
 static uint64_t movie_sync = 0;
-void movie_audio_callback(void*, Uint8* stream, int length)
+void movie_audio_callback(void *data, Uint8 *stream, int length)
 {
 	if (movie_audio_mutex && SDL_LockMutex(movie_audio_mutex) != -1)
 	{
-				if (aframes[0]->size == length)
+		if (aframes[0]->size == length)
 		{
 			movie_sync = aframes[0]->pts;
 			memcpy(stream, aframes[0]->buffer, aframes[0]->size);
 			aframes[0]->size = 0;
-
+			
 			SDL_ffmpegAudioFrame *f = aframes[0];
 			for (int i = 1; i < AUDIO_BUF_SIZE; i++)
 				aframes[i - 1] = aframes[i];
@@ -3187,7 +3187,7 @@ void show_movie(short index)
 					break;
 				}
 			}
-
+			
 			if (astream)
 			{
 				SDL_LockMutex(movie_audio_mutex);
@@ -3196,15 +3196,13 @@ void show_movie(short index)
 					if (!aframes[i]->size)
 					{
 						SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
-						
 					}
 				}
-				if (!aframes[AUDIO_BUF_SIZE - 1]->size && aframes[AUDIO_BUF_SIZE - 1]->last) 
+				if (!aframes[AUDIO_BUF_SIZE - 1]->size && aframes[AUDIO_BUF_SIZE - 1]->last)
 					done = true;
 				SDL_UnlockMutex(movie_audio_mutex);
-				
 			}
-
+			
 			if (vframe)
 			{
 				if (!vframe->ready)
@@ -3221,7 +3219,6 @@ void show_movie(short index)
 						show_movie_blitter.Draw(dst_rect);
 						show_movie_blitter.Unload();
 						MainScreenSwap();
-						
 					}
 					else
 #endif

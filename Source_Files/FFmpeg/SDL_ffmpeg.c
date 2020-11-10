@@ -2001,6 +2001,7 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
     int in_bps = av_get_bytes_per_sample(in_fmt);
     enum AVSampleFormat out_fmt = AV_SAMPLE_FMT_S16;
     int out_bps = av_get_bytes_per_sample(out_fmt);
+
     /* check if there is still data in the buffer */
     if ( file->audioStream->sampleBufferSize )
     {
@@ -2066,7 +2067,7 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
         AVCodecContext *avctx = file->audioStream->_ffmpeg->codec;
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
 		AVFrame *dframe = avcodec_alloc_frame();
-		avcodec_get_frame_defaults(dframe);
+        avcodec_get_frame_defaults(dframe);
 #else
 		AVFrame *dframe = av_frame_alloc();
 #endif
