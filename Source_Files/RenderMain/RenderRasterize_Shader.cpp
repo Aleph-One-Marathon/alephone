@@ -184,12 +184,20 @@ void RenderRasterize_Shader::render_tree() {
 	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
 	s->setFloat(Shader::U_Yaw, virtual_yaw);
 	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 : virtual_pitch);
+	s = Shader::get(Shader::S_LandscapeInfravision);
+	s->enable();
+	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
+	s->setFloat(Shader::U_Yaw, virtual_yaw);
+	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 :virtual_pitch);
 	Shader::disable();
 
 	RenderRasterizerClass::render_tree(kDiffuse);
         render_viewer_sprite_layer(kDiffuse);
 
-	if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur) && blur.get()) {
+	if (current_player->infravision_duration == 0 &&
+		TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur) &&
+		blur.get())
+	{
 		blur->begin();
 		RenderRasterizerClass::render_tree(kGlow);
                 render_viewer_sprite_layer(kGlow);
@@ -255,7 +263,6 @@ void RenderRasterize_Shader::store_endpoint(
 	p.j = endpoint->vertex.y;
 }
 
-
 std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const rectangle_definition& rect, short type, float offset, RenderStep renderStep) {
 
 	Shader *s = NULL;
@@ -274,43 +281,67 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 	TMgr->IsShadeless = (rect.flags&_SHADELESS_BIT) != 0;
 	TMgr->TextureType = type;
 
+	if (current_player->infravision_duration) {
+		struct bitmap_definition* dummy;
+		// grab the normal shading tables, since the shader does the tinting
+		extended_get_shape_bitmap_and_shading_table(GET_DESCRIPTOR_COLLECTION(TMgr->ShapeDesc), TMgr->LowLevelShape, &dummy, &TMgr->ShadingTables, _shading_normal);
+	}
+
 	float flare = weaponFlare;
 
 	glEnable(GL_TEXTURE_2D);
-	glColor4f(color[0], color[1], color[2], 1);
 
-	switch(TMgr->TransferMode) {
-		case _static_transfer:
-			TMgr->IsShadeless = 1;
-			flare = -1;
-			s = Shader::get(renderStep == kGlow ? Shader::S_InvincibleBloom : Shader::S_Invincible);
-			s->enable();
-			break;
-		case _tinted_transfer:
-			flare = -1;
-			s = Shader::get(renderStep == kGlow ? Shader::S_InvisibleBloom : Shader::S_Invisible);
-			s->enable();
-			s->setFloat(Shader::U_Visibility, 1.0 - rect.transfer_data/32.0f);
-			break;
-		case _solid_transfer:
-			glColor4f(0,1,0,1);
-			break;
-		case _textured_transfer:
-			if(TMgr->IsShadeless) {
-				if (renderStep == kDiffuse) {
-					glColor4f(1,1,1,1);
-				} else {
-					glColor4f(0,0,0,1);
-				}
-				flare = -1;
+	// priorities: static, infravision, tinted/solid, shadeless
+	if (TMgr->TransferMode == _static_transfer) {
+		TMgr->IsShadeless = 1;
+		flare = -1;
+		if (renderStep == kDiffuse) {
+			s = Shader::get(Shader::S_Invincible);
+		} else {
+			s = Shader::get(Shader::S_InvincibleBloom);
+		}
+		s->enable();
+	} else if (current_player->infravision_duration) {
+		color[0] = color[1] = color[2] = 1;
+		FindInfravisionVersionRGBA(GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(rect.ShapeDesc)), color);
+		s = Shader::get(Shader::S_SpriteInfravision);
+		s->enable();
+	} else if (TMgr->TransferMode == _tinted_transfer) {
+		flare = -1;
+		if (renderStep == kDiffuse) {
+			s = Shader::get(Shader::S_Invisible);
+		} else {
+			s = Shader::get(Shader::S_InvisibleBloom);
+		}
+		s->enable();
+		s->setFloat(Shader::U_Visibility, 1.0 - rect.transfer_data/32.0f);
+	} else if (TMgr->TransferMode == _solid_transfer) {
+		// is this ever used?
+		color[0] = 0;
+		color[1] = 1;
+		color[2] = 0;
+	} else if (TMgr->TransferMode == _textured_transfer) {
+		if (TMgr->IsShadeless) {
+			if (renderStep == kDiffuse) {
+				color[0] = color[1] = color[2] = 1;
+			} else {
+				color[0] = color[1] = color[2] = 0;
 			}
-			break;
-		default:
-			glColor4f(0,0,1,1);
+			flare = -1;
+		}
+	} else {
+		// I've never seen this happen
+		color[0] = 0;
+		color[1] = 0;
+		color[2] = 1;
 	}
 
 	if(s == NULL) {
-		s = Shader::get(renderStep == kGlow ? Shader::S_SpriteBloom : Shader::S_Sprite);
+		if (renderStep == kDiffuse) {
+			s = Shader::get(Shader::S_Sprite);
+		} else {
+			s = Shader::get(Shader::S_SpriteBloom);
+		}
 		s->enable();
 	}
 
@@ -334,6 +365,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 	s->setFloat(Shader::U_Depth, offset);
 	s->setFloat(Shader::U_StrictDepthMode, OGL_ForceSpriteDepth() ? 1 : 0);
 	s->setFloat(Shader::U_Glow, 0);
+	glColor4f(color[0], color[1], color[2], 1);
 	return TMgr;
 }
 
@@ -349,8 +381,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 	LandscapeOptions *opts = NULL;
 	TMgr->ShapeDesc = Texture;
 	if (TMgr->ShapeDesc == UNONE) { return TMgr; }
-	get_shape_bitmap_and_shading_table(Texture, &TMgr->Texture, &TMgr->ShadingTables,
-		current_player->infravision_duration ? _shading_infravision : _shading_normal);
+	get_shape_bitmap_and_shading_table(Texture, &TMgr->Texture, &TMgr->ShadingTables, _shading_normal);
 
 	TMgr->TransferMode = _textured_transfer;
 	TMgr->IsShadeless = current_player->infravision_duration ? 1 : 0;
@@ -372,15 +403,24 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 			break;
 		case _xfer_landscape:
 		case _xfer_big_landscape:
-		{
 			TMgr->TextureType = OGL_Txtr_Landscape;
 			TMgr->TransferMode = _big_landscaped_transfer;
 			opts = View_GetLandscapeOptions(Texture);
 			TMgr->LandscapeVertRepeat = opts->VertRepeat;
 			TMgr->Landscape_AspRatExp = opts->OGL_AspRatExp;
-			s = Shader::get(renderStep == kGlow ? Shader::S_LandscapeBloom : Shader::S_Landscape);
+			if (current_player->infravision_duration) {
+				GLfloat color[3] {1, 1, 1};
+				FindInfravisionVersionRGBA(GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(Texture)), color);
+				glColor4f(color[0], color[1], color[2], 1);
+				s = Shader::get(Shader::S_LandscapeInfravision);
+			} else {
+				if (renderStep == kDiffuse) {
+					s = Shader::get(Shader::S_Landscape);
+				} else {
+					s = Shader::get(Shader::S_LandscapeBloom);
+				}
+			}
 			s->enable();
-		}
 			break;
 		default:
 			TMgr->TextureType = OGL_Txtr_Wall;
@@ -395,7 +435,12 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 	}
 
 	if(s == NULL) {
-		if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
+		if (current_player->infravision_duration) {
+			GLfloat color[3] {1, 1, 1};
+			FindInfravisionVersionRGBA(GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(Texture)), color);
+			glColor4f(color[0], color[1], color[2], 1);
+			s = Shader::get(Shader::S_WallInfravision);
+		} else if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
 			s = Shader::get(renderStep == kGlow ? Shader::S_BumpBloom : Shader::S_Bump);
 		} else {
 			s = Shader::get(renderStep == kGlow ? Shader::S_WallBloom : Shader::S_Wall);
@@ -796,39 +841,48 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	GLfloat color[3];
 	GLdouble shade = PIN(static_cast<GLfloat>(RenderRectangle.ambient_shade)/static_cast<GLfloat>(FIXED_ONE),0,1);
 	color[0] = color[1] = color[2] = shade;
-	glColor4f(color[0], color[1], color[2], 1.0);
 
 	Shader *s = NULL;
 	bool canGlow = false;
-	switch(RenderRectangle.transfer_mode) {
-		case _static_transfer:
+	if (RenderRectangle.transfer_mode == _static_transfer) {
+		flare = -1;
+		if (renderStep == kDiffuse) {
+			s = Shader::get(Shader::S_Invincible);
+		} else {
+			s = Shader::get(Shader::S_InvincibleBloom);
+		}
+	} else if (current_player->infravision_duration) {
+		color[0] = color[1] = color[2] = 1;
+		FindInfravisionVersionRGBA(GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(RenderRectangle.ShapeDesc)), color);
+		s = Shader::get(Shader::S_WallInfravision);
+	} else if (RenderRectangle.transfer_mode == _tinted_transfer) {
 			flare = -1;
-			s = Shader::get(renderStep == kGlow ? Shader::S_InvincibleBloom : Shader::S_Invincible);
-			s->enable();
-			break;
-		case _tinted_transfer:
-			flare = -1;
-			s = Shader::get(renderStep == kGlow ? Shader::S_InvisibleBloom : Shader::S_Invisible);
+			if (renderStep == kDiffuse) {
+				s = Shader::get(Shader::S_Invisible);
+			} else {
+				s = Shader::get(Shader::S_InvisibleBloom);
+			}
 			s->enable();
 			s->setFloat(Shader::U_Visibility, 1.0 - RenderRectangle.transfer_data/32.0f);
-			break;
-		case _solid_transfer:
-			glColor4f(0,1,0,1);
-			break;
-		case _textured_transfer:
-			if((RenderRectangle.flags&_SHADELESS_BIT) != 0) {
-				if (renderStep == kDiffuse) {
-					glColor4f(1,1,1,1);
-				} else {
-					glColor4f(0,0,0,1);
-				}
-				flare = -1;
+	} else if (RenderRectangle.transfer_mode == _solid_transfer) {
+		color[0] = 0;
+		color[1] = 1;
+		color[2] = 0;
+	} else if (RenderRectangle.transfer_mode == _textured_transfer) {
+		if (RenderRectangle.flags & _SHADELESS_BIT) {
+			if (renderStep == kDiffuse) {
+				color[0] = color[1] = color[2] = 1;
 			} else {
-				canGlow = true;
+				color[0] = color[1] = color[2] = 0;
 			}
-			break;
-		default:
-			glColor4f(0,0,1,1);
+			flare = -1;
+		} else {
+			canGlow = true;
+		}
+	} else {
+		color[0] = 0;
+		color[1] = 0;
+		color[2] = 1;
 	}
 
 	if(s == NULL) {
@@ -849,6 +903,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	s->setFloat(Shader::U_Wobble, 0);
 	s->setFloat(Shader::U_Depth, 0);
 	s->setFloat(Shader::U_Glow, 0);
+	glColor4f(color[0], color[1], color[2], 1);
 
 	glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);

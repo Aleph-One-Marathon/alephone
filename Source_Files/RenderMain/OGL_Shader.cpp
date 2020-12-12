@@ -88,14 +88,17 @@ const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] =
 	"bloom",
 	"landscape",
 	"landscape_bloom",
+	"landscape_infravision",
 	"sprite",
 	"sprite_bloom",
+	"sprite_infravision",
 	"invincible",
 	"invincible_bloom",
 	"invisible",
 	"invisible_bloom",
 	"wall",
 	"wall_bloom",
+	"wall_infravision",
 	"bump",
 	"bump_bloom",
 	"gamma"
@@ -479,6 +482,10 @@ void initDefaultPrograms() {
         "#endif\n"
         "	gl_FragColor = vec4(color.rgb * intensity, 1.0);\n"
         "}\n";
+	defaultVertexPrograms["landscape_infravision"] = defaultVertexPrograms["landscape"];
+	defaultFragmentPrograms["landscape_infravision"] =
+#include "Shaders/landscape_infravision.frag"
+		;
 	
     defaultVertexPrograms["sprite"] = ""
         "uniform float depth;\n"
@@ -549,7 +556,12 @@ void initDefaultPrograms() {
         "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
-    
+
+	defaultVertexPrograms["sprite_infravision"] = defaultVertexPrograms["sprite"];
+	defaultFragmentPrograms["sprite_infravision"] =
+#include "Shaders/sprite_infravision.frag"
+		;
+	
     defaultVertexPrograms["invincible"] = defaultVertexPrograms["sprite"];
     defaultFragmentPrograms["invincible"] = ""
         "uniform sampler2D texture0;\n"
@@ -750,6 +762,10 @@ void initDefaultPrograms() {
         "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
+	defaultVertexPrograms["wall_infravision"] = defaultVertexPrograms["wall"];
+	defaultFragmentPrograms["wall_infravision"] =
+#include "Shaders/wall_infravision.frag"
+		;
     
     defaultVertexPrograms["bump"] = defaultVertexPrograms["wall"];
     defaultFragmentPrograms["bump"] = ""
@@ -841,5 +857,6 @@ void initDefaultPrograms() {
         "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
+//		defaultFragmentPrograms["sprite"];
 }
-    
+
