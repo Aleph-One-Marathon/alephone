@@ -2076,6 +2076,9 @@
       <call>
 		<description>iterates through all media on the level</description>
       </call>
+	  <function name="new" version="git">
+		<description>returns a new liquid</description>
+	  </function>
     </accessor>
     <accessor name="Monsters" contains="monster">
       <length>
