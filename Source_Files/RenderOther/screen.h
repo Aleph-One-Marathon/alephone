@@ -93,7 +93,6 @@ namespace alephone
 
 		int height();
 		int width();
-		float pixel_scale();
 		int window_height();
 		int window_width();
 		bool hud();
@@ -106,7 +105,8 @@ namespace alephone
 		SDL_Rect map_rect();
 		SDL_Rect term_rect();
 		SDL_Rect hud_rect();
-		
+		SDL_Rect OpenGLViewPort();
+
 		void bound_screen(bool in_game = true);
 		void bound_screen_to_rect(SDL_Rect &r, bool in_game = true);
 		void scissor_screen_to_rect(SDL_Rect &r);
