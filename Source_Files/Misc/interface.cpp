@@ -1783,6 +1783,8 @@ static void display_about_dialog()
 	authors.push_back("Will Dyson");
 	authors.push_back("Carl Gherardi");
 	authors.push_back("Thomas Herzog");
+	authors.push_back("Chris Hallock (LidMop)");
+	authors.push_back("Beno”t Hauquier (Kolfering)");
 	authors.push_back("Peter Hessler");
 	authors.push_back("Matthew Hielscher");
 	authors.push_back("Rhys Hill");
@@ -1815,6 +1817,7 @@ static void display_about_dialog()
 	authors.push_back("Alexander Strange (mrvacbob)");
 	authors.push_back("Alexei Svitkine");
 	authors.push_back("Ben Thompson");
+	authors.push_back("TrajansRow");
 	authors.push_back("Clemens Unterkofler (hogdotmac)");
 	authors.push_back("James Willson");
 	authors.push_back("Woody Zenfell III");
