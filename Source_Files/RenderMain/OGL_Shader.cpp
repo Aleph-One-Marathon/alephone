@@ -26,6 +26,7 @@
 #include "FileHandler.h"
 #include "OGL_Setup.h"
 #include "InfoTree.h"
+#include "Logging.h"
 
 // gl_clipvertex puts Radeons into software mode on Mac
 #if (defined(__APPLE__) && defined(__MACH__))
@@ -84,7 +85,8 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
 
 const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] = 
 {
-	"blur",
+	"error",
+    "blur",
 	"bloom",
 	"landscape",
 	"landscape_bloom",
@@ -200,6 +202,17 @@ GLhandleARB parseShader(const GLcharARB* str, GLenum shaderType) {
 	if(status) {
 		return shader;
 	} else {
+        GLint infoLen = 0;
+        glGetShaderiv((GLuint)(size_t)shader, GL_INFO_LOG_LENGTH, &infoLen);
+        
+        if(infoLen > 1)
+        {
+            char* infoLog = (char*) malloc(sizeof(char) * infoLen);
+            glGetShaderInfoLog((GLuint)(size_t)shader, infoLen, NULL, infoLog);
+            logError("Error compiling shader:\n%s\n", infoLog);
+            free(infoLog);
+        }
+        
 		glDeleteObjectARB(shader);
 		return 0;
 	}
@@ -261,17 +274,41 @@ void Shader::init() {
 
 	assert(!_vert.empty());
 	GLhandleARB vertexShader = parseShader(_vert.c_str(), GL_VERTEX_SHADER_ARB);
-	assert(vertexShader);
+    if(!vertexShader) {
+        _vert = defaultVertexPrograms["error"];
+        vertexShader = parseShader(_vert.c_str(), GL_VERTEX_SHADER_ARB);
+    }
+	
 	glAttachObjectARB(_programObj, vertexShader);
 	glDeleteObjectARB(vertexShader);
 
 	assert(!_frag.empty());
 	GLhandleARB fragmentShader = parseShader(_frag.c_str(), GL_FRAGMENT_SHADER_ARB);
-	assert(fragmentShader);
+	if(!fragmentShader) {
+        _frag = defaultFragmentPrograms["error"];
+        fragmentShader = parseShader(_frag.c_str(), GL_FRAGMENT_SHADER_ARB);
+    }
+    
 	glAttachObjectARB(_programObj, fragmentShader);
 	glDeleteObjectARB(fragmentShader);
 	
 	glLinkProgramARB(_programObj);
+    
+    GLint linked;
+    glGetProgramiv((GLuint)(size_t)_programObj, GL_LINK_STATUS, &linked);
+    if(!linked)
+    {
+      GLint infoLen = 0;
+      glGetProgramiv((GLuint)(size_t)_programObj, GL_INFO_LOG_LENGTH, &infoLen);
+      if(infoLen > 1)
+      {
+        char* infoLog = (char*) malloc(sizeof(char) * infoLen);
+        glGetProgramInfoLog((GLuint)(size_t)_programObj, infoLen, NULL, infoLog);
+        logError("Error linking program:\n%s\n", infoLog);
+        free(infoLog);
+      }
+      glDeleteProgram((GLuint)(size_t)_programObj);
+    }
 
 	assert(_programObj);
 
@@ -328,6 +365,31 @@ int16 Shader::passes() {
 void initDefaultPrograms() {
     if (defaultVertexPrograms.size() > 0)
         return;
+    
+    
+    defaultVertexPrograms["error"] = ""
+    "varying vec4 vertexColor;\n"
+    "void main(void) {\n"
+    "    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
+    "    vertexColor = vec4(1.0, 1.0, 0.0, 1.0);\n"
+    "}\n";
+    defaultFragmentPrograms["error"] = ""
+    "float round(float n){ \n"
+    "   float nSign = 1.0; \n"
+    "   if ( n < 0.0 ) { nSign = -1.0; }; \n"
+    "   return nSign * floor(abs(n)+0.5); \n"
+    "} \n"
+    "void main (void) {\n"
+    "    gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);\n"
+    "    float checkerSize = 8.0;\n"
+    "    float phase = 0.0;\n"
+    "    if( mod(round(gl_FragCoord.y / checkerSize), 2.0) == 0.0) {\n"
+    "       phase = checkerSize;\n"
+    "    }\n"
+    "    if (mod(round((gl_FragCoord.x + phase) / checkerSize), 2.0)==0.0) {\n"
+    "       gl_FragColor.a = 0.5;\n"
+    "    }\n"
+    "}\n";
     
 	defaultVertexPrograms["gamma"] = ""
 	"varying vec4 vertexColor;\n"

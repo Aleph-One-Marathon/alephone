@@ -67,7 +67,8 @@ public:
 	};
 
 	enum ShaderType {
-		S_Blur,
+		S_Error,
+        S_Blur,
 		S_Bloom,
 		S_Landscape,
 		S_LandscapeBloom,
