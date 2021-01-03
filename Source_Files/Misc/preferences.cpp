@@ -1688,8 +1688,32 @@ static key_binding_map default_shell_key_bindings = {
 	} },
 	{ 8, { SDL_SCANCODE_BACKSLASH
 	} },
-	{ 9, { SDL_SCANCODE_1
+	{ 9, { SDL_SCANCODE_N
 	} },
+};
+
+static const char* hotkey_action_name[NUMBER_OF_HOTKEYS] = {
+	"Hotkey 1",
+	"Hotkey 2",
+	"Hotkey 3",
+	"Hotkey 4",
+	"Hotkey 5",
+	"Hotkey 6",
+	"Hotkey 7",
+	"Hotkey 8",
+	"Hotkey 9"
+};
+
+static key_binding_map default_hotkey_bindings = {
+	{ 0, { SDL_SCANCODE_1 }},
+	{ 1, { SDL_SCANCODE_2 }},
+	{ 2, { SDL_SCANCODE_3 }},
+	{ 3, { SDL_SCANCODE_4 }},
+	{ 4, { SDL_SCANCODE_5 }},
+	{ 5, { SDL_SCANCODE_6 }},
+	{ 6, { SDL_SCANCODE_7 }},
+	{ 7, { SDL_SCANCODE_8 }},
+	{ 8, { SDL_SCANCODE_9 }}
 };
 
 class w_prefs_key;
@@ -1698,6 +1722,7 @@ typedef std::multimap<int, w_prefs_key*> prefsKeyMap;
 typedef std::pair<int, w_prefs_key*> prefsKeyMapPair;
 static prefsKeyMap key_w;
 static prefsKeyMap shell_key_w;
+static prefsKeyMap hotkey_w;
 
 class w_prefs_key : public w_key {
 public:
@@ -1747,6 +1772,15 @@ public:
 		}
 		for (auto it = shell_key_w.begin(); it != shell_key_w.end(); ++it) {
 			if (it->second != this && it->second->get_key() == new_key) {
+				it->second->set_key(SDL_SCANCODE_UNKNOWN);
+				it->second->dirty = true;
+			}
+		}
+		
+		for (auto it = hotkey_w.begin(); it != hotkey_w.end(); ++it)
+		{
+			if (it->second != this && it->second->get_key() == new_key)
+			{
 				it->second->set_key(SDL_SCANCODE_UNKNOWN);
 				it->second->dirty = true;
 			}
@@ -1834,6 +1868,46 @@ static void load_default_keys(void *arg)
 		}
 	}
 
+	for (int i = 0; i < NUMBER_OF_HOTKEYS; ++i)
+	{
+		SDL_Scancode kcode = SDL_SCANCODE_UNKNOWN;
+		SDL_Scancode mcode = SDL_SCANCODE_UNKNOWN;
+		SDL_Scancode jcode = SDL_SCANCODE_UNKNOWN;
+		for (auto it = default_hotkey_bindings[i].begin(); it != default_hotkey_bindings[i].end(); ++it) {
+			SDL_Scancode code = *it;
+			if (code == SDL_SCANCODE_UNKNOWN)
+				continue;
+			switch (w_key::event_type_for_key(code)) {
+				case w_key::MouseButton:
+					mcode = code;
+					break;
+				case w_key::JoystickButton:
+					jcode = code;
+					break;
+				case w_key::KeyboardKey:
+				default:
+					kcode = code;
+					break;
+			}
+		}
+		auto range = hotkey_w.equal_range(i);
+		for (auto ik = range.first; ik != range.second; ++ik) {
+			w_prefs_key *pk = ik->second;
+			switch (pk->event_type) {
+				case w_key::MouseButton:
+					pk->set_key(mcode);
+					break;
+				case w_key::JoystickButton:
+					pk->set_key(jcode);
+					break;
+				case w_key::KeyboardKey:
+				default:
+					pk->set_key(kcode);
+					break;
+			}
+		}
+	}
+
 	dialog *d = (dialog *)arg;
 	d->draw();
 }
@@ -1844,6 +1918,10 @@ static void unset_scancode(SDL_Scancode code)
 		input_preferences->key_bindings[i].erase(code);
 	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; ++i)
 		input_preferences->shell_key_bindings[i].erase(code);
+	for (int i = 0; i < NUMBER_OF_HOTKEYS; ++i)
+	{
+		input_preferences->hotkey_bindings[i].erase(code);
+	}
 }
 
 enum {
@@ -2181,6 +2259,7 @@ static void controls_dialog(void *arg)
 	// Clear array of key widgets (because w_prefs_key::set_key() scans it)
 	key_w.clear();
 	shell_key_w.clear();
+	hotkey_w.clear();
 
 	// Create dialog
 	dialog d;
@@ -2226,9 +2305,29 @@ static void controls_dialog(void *arg)
 		shell_key_w.insert(prefsKeyMapPair(i, new w_prefs_key(jcode, w_key::JoystickButton)));
 	}
 	
+	for (int i = 0; i < NUMBER_OF_HOTKEYS; ++i)
+	{
+		SDL_Scancode kcode = SDL_SCANCODE_UNKNOWN;
+		SDL_Scancode mcode = SDL_SCANCODE_UNKNOWN;
+		SDL_Scancode jcode = SDL_SCANCODE_UNKNOWN;
+		for (std::set<SDL_Scancode>::const_iterator bit = input_preferences->hotkey_bindings[i].begin(); bit != input_preferences->hotkey_bindings[i].end(); ++bit) {
+			SDL_Scancode code = *bit;
+			if (code >= AO_SCANCODE_BASE_JOYSTICK_BUTTON && code < (AO_SCANCODE_BASE_JOYSTICK_BUTTON + NUM_SDL_JOYSTICK_BUTTONS)) {
+				jcode = code;
+			} else if (code >= AO_SCANCODE_BASE_MOUSE_BUTTON && code < (AO_SCANCODE_BASE_MOUSE_BUTTON + NUM_SDL_MOUSE_BUTTONS)) {
+				mcode = code;
+			} else {
+				kcode = code;
+			}
+		}
+		hotkey_w.insert(prefsKeyMapPair(i, new w_prefs_key(kcode, w_key::KeyboardKey)));
+		hotkey_w.insert(prefsKeyMapPair(i, new w_prefs_key(mcode, w_key::MouseButton)));
+		hotkey_w.insert(prefsKeyMapPair(i, new w_prefs_key(jcode, w_key::JoystickButton)));
+	}
+	
 	tab_placer* tabs = new tab_placer();
 	
-	std::vector<std::string> labels = { "AIM", "MOVE", "ACTIONS", "INTERFACE", "OTHER" };
+	std::vector<std::string> labels = { "AIM", "MOVE", "ACTIONS", "HOTKEYS", "INTERFACE", "OTHER" };
 	w_tab *tab_w = new w_tab(labels, tabs);
 	
 	placer->dual_add(tab_w, d);
@@ -2439,6 +2538,32 @@ static void controls_dialog(void *arg)
 	actions->dual_add(new w_static_text("network play.  Turning it OFF will also disable"), d);
 	actions->dual_add(new w_static_text("film recording for single-player games."), d);
 
+	vertical_placer* hotkeys = new vertical_placer();
+	table_placer* hotkey_table = new table_placer(4, get_theme_space(ITEM_WIDGET), true);
+	hotkey_table->col_flags(0, placeable::kAlignRight);
+	hotkey_table->col_flags(1, placeable::kAlignLeft);
+	hotkey_table->col_flags(2, placeable::kAlignLeft);
+	hotkey_table->col_flags(3, placeable::kAlignLeft);
+	hotkey_table->add(new w_spacer(), true);
+	hotkey_table->dual_add(new w_label("Keyboard"), d);
+	hotkey_table->dual_add(new w_label("Mouse"), d);
+	hotkey_table->dual_add(new w_label("Controller"), d);
+
+	for (auto i = 0; i < NUMBER_OF_HOTKEYS; ++i)
+	{
+		if (i > 0 && (i % 3 == 0))
+		{
+			hotkey_table->add_row(new w_spacer(), true);			
+		}
+		
+		hotkey_table->dual_add(new w_label(hotkey_action_name[i]), d);
+		auto range = hotkey_w.equal_range(i);
+		for (auto ik = range.first; ik != range.second; ++ik)
+		{
+			hotkey_table->dual_add(ik->second, d);
+		}
+	}
+	hotkeys->add(hotkey_table, true);
 
 	vertical_placer *iface = new vertical_placer();
 	table_placer *interface_table = new table_placer(4, get_theme_space(ITEM_WIDGET), true);
@@ -2547,6 +2672,7 @@ static void controls_dialog(void *arg)
 	tabs->add(look, true);
 	tabs->add(move, true);
 	tabs->add(actions, true);
+	tabs->add(hotkeys, true);
 	tabs->add(iface, true);
 	tabs->add(other, true);
 	placer->add(tabs, true);
@@ -2589,6 +2715,11 @@ static void controls_dialog(void *arg)
 			input_preferences->shell_key_bindings[i].clear();
 		}
 
+		for (int i = 0; i < NUMBER_OF_HOTKEYS; ++i)
+		{
+			input_preferences->hotkey_bindings[i].clear();
+		}
+
 		for (auto it = key_w.begin(); it != key_w.end(); ++it) {
 			int i = it->first;
 			SDL_Scancode key = it->second->get_key();
@@ -2605,6 +2736,18 @@ static void controls_dialog(void *arg)
 			if (key != SDL_SCANCODE_UNKNOWN) {
 				unset_scancode(key);
 				input_preferences->shell_key_bindings[i].insert(key);
+				changed = true;
+			}
+		}
+
+		for (auto it = hotkey_w.begin(); it != hotkey_w.end(); ++it)
+		{
+			int i = it->first;
+			auto key = it->second->get_key();
+			if (key != SDL_SCANCODE_UNKNOWN)
+			{
+				unset_scancode(key);
+				input_preferences->hotkey_bindings[i].insert(key);
 				changed = true;
 			}
 		}
@@ -3234,6 +3377,9 @@ static const char *binding_shell_action_name[NUMBER_OF_SHELL_KEYS] = {
 	"inventory-left", "inventory-right", "switch-player-view", "volume-up", "volume-down",
 	"map-zoom-in", "map-zoom-out", "fps", "chat", "net-stats"
 };
+static const char *binding_hotkey_action_name[NUMBER_OF_HOTKEYS] = {
+	"hotkey-1", "hotkey-2", "hotkey-3", "hotkey-4", "hotkey-5", "hotkey-6", "hotkey-7", "hotkey-8", "hotkey-9"
+};
 static const char *binding_mouse_button_name[NUM_SDL_MOUSE_BUTTONS] = {
 	"mouse-left", "mouse-middle", "mouse-right", "mouse-x1", "mouse-x2",
 	"mouse-scroll-up", "mouse-scroll-down"
@@ -3344,13 +3490,19 @@ static SDL_Scancode code_for_binding_name(std::string name)
 	return SDL_SCANCODE_UNKNOWN;
 }
 
-static int index_for_action_name(std::string name, bool& is_shell)
+enum class BindingType {
+	in_game,
+	shell,
+	hotkey
+};
+
+static int index_for_action_name(std::string name, BindingType& binding_type)
 {
 	for (int i = 0; i < NUM_KEYS; ++i)
 	{
 		if (name == binding_action_name[i])
 		{
-			is_shell = false;
+			binding_type = BindingType::in_game;
 			return i;
 		}
 	}
@@ -3358,7 +3510,15 @@ static int index_for_action_name(std::string name, bool& is_shell)
 	{
 		if (name == binding_shell_action_name[i])
 		{
-			is_shell = true;
+			binding_type = BindingType::shell;
+			return i;
+		}
+	}
+	for (int i = 0; i < NUMBER_OF_HOTKEYS; ++i)
+	{
+		if (name == binding_hotkey_action_name[i])
+		{
+			binding_type = BindingType::hotkey;
 			return i;
 		}
 	}
@@ -3402,6 +3562,22 @@ InfoTree input_preferences_tree()
 				continue;
 			InfoTree key;
 			key.put_attr("action", name);
+			key.put_attr("pressed", binding_name_for_code(code));
+			root.add_child("binding", key);
+		}
+	}
+
+	for (auto i = 0;i < NUMBER_OF_HOTKEYS; ++i)
+	{
+		for (auto code : input_preferences->hotkey_bindings[i])
+		{
+			if (code == SDL_SCANCODE_UNKNOWN)
+			{
+				continue;
+			}
+
+			InfoTree key;
+			key.put_attr("action", binding_hotkey_action_name[i]);
 			key.put_attr("pressed", binding_name_for_code(code));
 			root.add_child("binding", key);
 		}
@@ -3660,6 +3836,7 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->input_device= _mouse_yaw_pitch;
 	preferences->key_bindings = default_key_bindings;
 	preferences->shell_key_bindings = default_shell_key_bindings;
+	preferences->hotkey_bindings = default_hotkey_bindings;
 	
 	// LP addition: set up defaults for modifiers:
 	// interchange run and walk, but don't interchange swim and sink.
@@ -4265,12 +4442,9 @@ void parse_input_preferences(InfoTree root, std::string version)
 	root.read_attr("controller_analog", input_preferences->controller_analog);
 	root.read_attr("controller_sensitivity", input_preferences->controller_sensitivity);
 	root.read_attr("controller_deadzone", input_preferences->controller_deadzone);
-	
+
 	// remove default key bindings the first time we see one from these prefs
-	bool seen_key[NUMBER_OF_KEYS];
-	memset(seen_key, 0, sizeof(seen_key));
-	bool seen_shell_key[NUMBER_OF_SHELL_KEYS];
-	memset(seen_shell_key, 0, sizeof(seen_shell_key));
+	std::set<std::pair<BindingType, int>> seen_key;
 	
 	// import old key bindings
 	BOOST_FOREACH(InfoTree key, root.children_named("sdl_key"))
@@ -4278,10 +4452,11 @@ void parse_input_preferences(InfoTree root, std::string version)
 		int16 index;
 		if (key.read_indexed("index", index, NUMBER_OF_KEYS))
 		{
-			if (!seen_key[index])
+			auto k = std::make_pair(BindingType::in_game, index);
+			if (seen_key.count(k) == 0)
 			{
 				input_preferences->key_bindings[index].clear();
-				seen_key[index] = true;
+				seen_key.insert(k);
 			}
 			int code;
 			if (key.read_attr("value", code))
@@ -4294,10 +4469,11 @@ void parse_input_preferences(InfoTree root, std::string version)
 		else if (key.read_indexed("index", index, NUMBER_OF_KEYS + NUMBER_OF_SHELL_KEYS))
 		{
 			int shell_index = index - NUMBER_OF_KEYS;
-			if (!seen_shell_key[shell_index])
+			auto k = std::make_pair(BindingType::shell, shell_index);
+			if (seen_key.count(k) == 0)
 			{
 				input_preferences->shell_key_bindings[shell_index].clear();
-				seen_shell_key[shell_index] = true;
+				seen_key.insert(k);
 			}
 			int code;
 			if (key.read_attr("value", code))
@@ -4315,31 +4491,36 @@ void parse_input_preferences(InfoTree root, std::string version)
 		if (key.read_attr("action", action_name) &&
 			key.read_attr("pressed", pressed_name))
 		{
+			BindingType binding_type;
 			bool shell = false;
-			int index = index_for_action_name(action_name, shell);
+			int index = index_for_action_name(action_name, binding_type);
 			if (index < 0)
 				continue;
 			SDL_Scancode code = code_for_binding_name(pressed_name);
-			if (shell)
+			key_binding_map* map;
+			
+			switch (binding_type)
 			{
-				if (!seen_shell_key[index])
-				{
-					input_preferences->shell_key_bindings[index].clear();
-					seen_shell_key[index] = true;
-				}
-				unset_scancode(code);
-				input_preferences->shell_key_bindings[index].insert(code);
+			case BindingType::in_game:
+				map = &input_preferences->key_bindings;
+				break;
+			case BindingType::shell:
+				map = &input_preferences->shell_key_bindings;
+				break;
+			case BindingType::hotkey:
+				map = &input_preferences->hotkey_bindings;
+				break;
 			}
-			else
+
+			auto k = std::make_pair(binding_type, index);
+			if (seen_key.count(k) == 0)
 			{
-				if (!seen_key[index])
-				{
-					input_preferences->key_bindings[index].clear();
-					seen_key[index] = true;
-				}
-				unset_scancode(code);
-				input_preferences->key_bindings[index].insert(code);
+				(*map)[index].clear();
+				seen_key.insert(k);
 			}
+
+			unset_scancode(code);
+			(*map)[index].insert(code);
 		}
 	}
 }

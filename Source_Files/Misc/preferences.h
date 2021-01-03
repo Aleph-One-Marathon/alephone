@@ -198,6 +198,7 @@ enum {
 	NUMBER_OF_MOUSE_ACCEL_TYPES
 };
 
+static constexpr int NUMBER_OF_HOTKEYS = 9;
 
 typedef std::map<int, std::set<SDL_Scancode> > key_binding_map;
 
@@ -228,6 +229,7 @@ struct input_preferences_data
 	
 	key_binding_map key_bindings;
 	key_binding_map shell_key_bindings;
+	key_binding_map hotkey_bindings;
 };
 
 #define MAXIMUM_PATCHES_PER_ENVIRONMENT (32)
