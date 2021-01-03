@@ -198,7 +198,7 @@ enum {
 	NUMBER_OF_MOUSE_ACCEL_TYPES
 };
 
-static constexpr int NUMBER_OF_HOTKEYS = 9;
+static constexpr int NUMBER_OF_HOTKEYS = 12;
 
 typedef std::map<int, std::set<SDL_Scancode> > key_binding_map;
 

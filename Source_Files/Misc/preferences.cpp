@@ -1701,7 +1701,10 @@ static const char* hotkey_action_name[NUMBER_OF_HOTKEYS] = {
 	"Hotkey 6",
 	"Hotkey 7",
 	"Hotkey 8",
-	"Hotkey 9"
+	"Hotkey 9",
+	"Hotkey 10",
+	"Hotkey 11",
+	"Hotkey 12",
 };
 
 static key_binding_map default_hotkey_bindings = {
@@ -1713,7 +1716,10 @@ static key_binding_map default_hotkey_bindings = {
 	{ 5, { SDL_SCANCODE_6 }},
 	{ 6, { SDL_SCANCODE_7 }},
 	{ 7, { SDL_SCANCODE_8 }},
-	{ 8, { SDL_SCANCODE_9 }}
+	{ 8, { SDL_SCANCODE_9 }},
+	{ 9, { SDL_SCANCODE_T }},
+	{ 10, { SDL_SCANCODE_G }},
+	{ 11, { SDL_SCANCODE_B }}
 };
 
 class w_prefs_key;
@@ -2551,7 +2557,7 @@ static void controls_dialog(void *arg)
 
 	for (auto i = 0; i < NUMBER_OF_HOTKEYS; ++i)
 	{
-		if (i > 0 && (i % 3 == 0))
+		if (i == 9)
 		{
 			hotkey_table->add_row(new w_spacer(), true);			
 		}
@@ -2564,6 +2570,10 @@ static void controls_dialog(void *arg)
 		}
 	}
 	hotkeys->add(hotkey_table, true);
+
+	hotkeys->add(new w_spacer(), true);
+	hotkeys->dual_add(new w_static_text("Hotkeys 1-9 are used to switch weapons, but can be overriden by Lua scripts"), d);
+	hotkeys->dual_add(new w_static_text("Hotkeys 10-12 are reserved for Lua scripts"), d);
 
 	vertical_placer *iface = new vertical_placer();
 	table_placer *interface_table = new table_placer(4, get_theme_space(ITEM_WIDGET), true);
@@ -3378,7 +3388,7 @@ static const char *binding_shell_action_name[NUMBER_OF_SHELL_KEYS] = {
 	"map-zoom-in", "map-zoom-out", "fps", "chat", "net-stats"
 };
 static const char *binding_hotkey_action_name[NUMBER_OF_HOTKEYS] = {
-	"hotkey-1", "hotkey-2", "hotkey-3", "hotkey-4", "hotkey-5", "hotkey-6", "hotkey-7", "hotkey-8", "hotkey-9"
+	"hotkey-1", "hotkey-2", "hotkey-3", "hotkey-4", "hotkey-5", "hotkey-6", "hotkey-7", "hotkey-8", "hotkey-9", "hotkey-10", "hotkey-11", "hotkey-12"
 };
 static const char *binding_mouse_button_name[NUM_SDL_MOUSE_BUTTONS] = {
 	"mouse-left", "mouse-middle", "mouse-right", "mouse-x1", "mouse-x2",

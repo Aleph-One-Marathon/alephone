@@ -617,10 +617,10 @@ void update_player_weapons(
 	uint32 action_flags)
 {
 	update_shell_casings(player_index);
-	
+
+	auto player = get_player_data(player_index);
 	if(player_has_valid_weapon(player_index))
 	{
-		struct player_data *player= get_player_data(player_index);
 		struct weapon_data *weapon= get_player_current_weapon(player_index);
 		struct weapon_definition *definition= get_current_weapon_definition(player_index);
 		short which_trigger, trigger_count, first_trigger;
@@ -907,18 +907,68 @@ void update_player_weapons(
 			}
 		}
 	}
+
+	// a hotkey sequence consists of three consecutive combinations of cycle
+	// forard/cycle backward action flags:
 	
-	/* If they didn't just finish switching weapons.. */
-	if(action_flags & _cycle_weapons_forward)
+	// 1: both cycle flags set. This will not immediately cause any action
+	// since they cancel out
+	
+	// 2: at least one cycle flag set: This is not possible to generate without
+	// hotkeys, since cycle forward and backward ordinarily latch. So if any of
+	// these flags are set immediately after the hotkey start sequence, it must
+	// be ahotkey. One of the two flags must be set, which limits our encoding
+	// to 0-2; we use this for the upper 2 bits of the hotkey index
+	
+	// 3: any combination of cycle flags set. This is the lower 2 bits of the
+	// hotkey index, and all four values are available because we have already
+	// established this must be a hotkey
+	
+	const auto hotkey_mask = _cycle_weapons_forward | _cycle_weapons_backward;
+	if (player->hotkey)
 	{
-		select_next_weapon(player_index, true);
-	} 
-		
-	/* Cycle the weapon backward */
-	if(action_flags & _cycle_weapons_backward)
-	{
-		select_next_weapon(player_index, false);
+		if (((player->hotkey & 0x0c) == 0x0c) || (action_flags & hotkey_mask))
+		{
+			player->hotkey <<= 2;
+			player->hotkey |= (action_flags >> _cycle_weapons_forward_bit) & 0x3;
+			
+			if ((player->hotkey & 0x30) == 0x30)
+			{
+				int hotkey = (player->hotkey & 0x03) + 4 * (((player->hotkey >> 2) & 0x03) - 1);
+				if (hotkey < MAXIMUM_NUMBER_OF_WEAPONS - 1) // no hotkey for ball
+				{
+					ready_weapon(player_index, weapon_ordering_array[hotkey]);
+				}
+				printf("hotkey %d\n", hotkey);
+				player->hotkey = 0;
+			}
+		}
+		else
+		{
+			player->hotkey = 0;
+		}
 	}
+	else
+	{
+		/* If they didn't just finish switching weapons.. */
+		if(action_flags & _cycle_weapons_forward)
+		{
+			select_next_weapon(player_index, true);
+		} 
+		
+		/* Cycle the weapon backward */
+		if(action_flags & _cycle_weapons_backward)
+		{
+			select_next_weapon(player_index, false);
+		}
+
+		auto hotkey_mask = _cycle_weapons_forward | _cycle_weapons_backward;
+		if ((action_flags & hotkey_mask) == hotkey_mask)
+		{
+			player->hotkey = 3;
+		}
+	}
+
 
 	/* And switch the weapon.. */
 	idle_weapon(player_index);

@@ -416,6 +416,7 @@ struct player_data
 	bool	netdead;	// ZZZ: added this; it should not be serialized/deserialized
 
 	world_distance step_height; // not serialized, used to correct chase cam bob
+	uint8_t hotkey; // not serialized, used to decode hotkey
 
 	// ZZZ: since we don't put this structure directly into files or network communications,
 	// there ought? to be no reason for the padding
