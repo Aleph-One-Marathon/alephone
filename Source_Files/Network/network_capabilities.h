@@ -37,8 +37,8 @@ class Capabilities : public capabilities_t
  public:
   enum { kMaxKeySize = 1024 };
 
-  static const int kGameworldVersion = 3;
-  static const int kGameworldM1Version = 3;
+  static const int kGameworldVersion = 4;
+  static const int kGameworldM1Version = 4;
   static const int kStarVersion = 6;
   static const int kRingVersion = 2;
   static const int kLuaVersion = 2;
