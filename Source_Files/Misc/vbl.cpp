@@ -1129,11 +1129,6 @@ void encode_hotkey_sequence(int hotkey)
 	hotkey_sequence[0] = 3 << _cycle_weapons_forward_bit;
 	hotkey_sequence[1] = (hotkey / 4 + 1) << _cycle_weapons_forward_bit;
 	hotkey_sequence[2] = (hotkey % 4) << _cycle_weapons_forward_bit;
-
-	printf("encode: %x %x %x\n",
-		   hotkey_sequence[0] >> _cycle_weapons_forward_bit,
-		   hotkey_sequence[1] >> _cycle_weapons_forward_bit,
-		   hotkey_sequence[2] >> _cycle_weapons_forward_bit);
 }
 
 /*

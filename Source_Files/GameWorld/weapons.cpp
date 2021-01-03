@@ -939,7 +939,6 @@ void update_player_weapons(
 				{
 					ready_weapon(player_index, weapon_ordering_array[hotkey]);
 				}
-				printf("hotkey %d\n", hotkey);
 				player->hotkey = 0;
 			}
 		}
