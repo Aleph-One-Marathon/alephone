@@ -948,7 +948,7 @@
 <dd><p class="description">iterates through all media on the level</p></dd>
 <dt>Media.new() <span class="version">git</span>
 </dt>
-<dd><p class="description">returns a new media</p></dd>
+<dd><p class="description">returns a new liquid</p></dd>
 <dt>Media[index]</dt>
 <dd><dl>
       <dt>.direction <span class="version">20100118</span>
@@ -1346,6 +1346,15 @@
 <dd>
 <p class="description">direction in which player is looking</p>
 <p class="note">while glancing, this differs from .direction </p>
+</dd>
+	  <dt>.hotkey <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">pressed hotkey, from 1-12, or 0 for no hotkey</p>
+<p class="note">only valid when read/written in idle() </p>
+<p class="note">hotkeys aren’t latched, and can only be transmitted every 3 ticks </p>
+<p class="note">to check for a continously pressed hotkey, or to implement your own latch, count down from 2 before checking it again </p>
+<p class="note">hotkeys override cycle weapon backward/forward; these flags will be false for 3 ticks after a hotkey is pressed </p>
 </dd>
       <dt>.infravision_duration</dt>
 <dd><p class="description">infravision time remaining</p></dd>

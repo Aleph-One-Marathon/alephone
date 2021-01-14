@@ -1796,6 +1796,22 @@ static int Lua_Player_Get_Flag(lua_State *L)
 	return 1;
 }
 
+static int Lua_Player_Get_Hotkey(lua_State* L)
+{
+	int player_index = Lua_Player::Index(L, 1);
+	if (GetGameQueue()->countActionFlags(player_index))
+	{
+		auto player = get_player_data(player_index);
+		lua_pushnumber(L, player->hotkey);
+	}
+	else
+	{
+		return luaL_error(L, "hotkey is only accessible in idle()");
+	}
+
+	return 1;
+}
+
 static int Lua_Player_Get_Infravision_Duration(lua_State *L)
 {
 	lua_pushnumber(L, get_player_data(Lua_Player::Index(L, 1))->infravision_duration);
@@ -1958,6 +1974,7 @@ const luaL_Reg Lua_Player_Get[] = {
 	{"deaths", Lua_Player_Get_Deaths},
 	{"direction", Lua_Player_Get_Direction},
 	{"head_direction", Lua_Player_Get_Head_Direction},
+	{"hotkey", Lua_Player_Get_Hotkey},
 	{"disconnected", Lua_Player_Get_Netdead},
 	{"energy", Lua_Player_Get_Energy},
 	{"elevation", Lua_Player_Get_Elevation},
@@ -2065,6 +2082,26 @@ static int Lua_Player_Set_Head_Direction(lua_State *L)
 	}
 	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0), &player->variables, player_index, false, false);
 	
+	return 0;
+}
+
+static int Lua_Player_Set_Hotkey(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "hotkey: incorrect argument type");
+
+	int hotkey = static_cast<int>(lua_tonumber(L, 2));
+	int player_index = Lua_Player::Index(L, 1);
+	if (GetGameQueue()->countActionFlags(player_index))
+	{
+		auto player = get_player_data(player_index);
+		player->hotkey = hotkey;
+	}
+	else
+	{
+		return luaL_error(L, "hotkey is only accessible in idle()");
+	}
+
 	return 0;
 }
 
@@ -2228,6 +2265,7 @@ const luaL_Reg Lua_Player_Set[] = {
 	{"deaths", Lua_Player_Set_Deaths},
 	{"direction", Lua_Player_Set_Direction},
 	{"head_direction", Lua_Player_Set_Head_Direction},
+	{"hotkey", Lua_Player_Set_Hotkey},
 	{"elevation", Lua_Player_Set_Elevation},
 	{"energy", Lua_Player_Set_Energy},
 	{"extravision_duration", Lua_Player_Set_Extravision_Duration},
