@@ -25,6 +25,7 @@
  */
 
 #include "cseries.h"
+#include "OGL_FBO.h"
 #include <string.h>
 #include <vector>
 #include <SDL_thread.h>
@@ -66,6 +67,7 @@ private:
   SDL_sem *encodeReady;
   SDL_sem *fillReady;
   bool stillEncoding;
+  std::unique_ptr<FBO> frameBufferObject;
   
   Movie();  
   bool Setup();

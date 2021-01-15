@@ -2783,6 +2783,23 @@ static bool Lua_Media_Valid(int16 index)
 char Lua_Medias_Name[] = "Media";
 static int16 Lua_Medias_Length() { return MediaList.size(); }
 
+int Lua_Medias_New(lua_State* L)
+{
+	if (MediaList.size() == INT16_MAX)
+		return 0;
+
+	struct media_data data{0};
+	MediaList.resize(MediaList.size() + 1);
+	short index = new_media(&data);
+	Lua_Media::Push(L, index);
+	return 1;
+}
+
+const luaL_Reg Lua_Medias_Methods[] = {
+	{"new", L_TableFunction<Lua_Medias_New>},
+	{0, 0}
+};
+
 char Lua_Annotation_Name[] = "annotation";
 typedef L_Class<Lua_Annotation_Name> Lua_Annotation;
 
@@ -3379,7 +3396,7 @@ int Lua_Map_register(lua_State *L)
 	Lua_Media::Register(L, Lua_Media_Get, Lua_Media_Set);
 	Lua_Media::Valid = Lua_Media_Valid;
 
-	Lua_Medias::Register(L);
+	Lua_Medias::Register(L, Lua_Medias_Methods);
 	Lua_Medias::Length = Lua_Medias_Length;
 
         Lua_Level_Stash::Register(L, 0, 0, Lua_Level_Stash_Metatable);
