@@ -249,9 +249,13 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 			delete[] cache.second.Texture;
 			glDeleteTextures(1, &cache.second.texId);
 		}
+	} else {
 		caches.clear();
-		return;		
-	}	
+		for(int ch = 0x20; ch < 0x80; ++ch ) {
+			char f[] = { (char)ch, 0 };
+			render_text_(f, false);
+		}
+	}
 }
 
 #include "converter.h"
