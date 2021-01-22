@@ -45,6 +45,7 @@
 #include "render.h"
 #include "shell.h"
 #include "interface.h"
+#include "interpolated_world.h"
 #include "player.h"
 #include "overhead_map.h"
 #include "fades.h"
@@ -1286,6 +1287,7 @@ void render_screen(short ticks_elapsed)
 	world_view->tick_count = dynamic_world->tick_count;
 	
 	auto heartbeat_fraction = get_heartbeat_fraction();
+	update_interpolated_world(heartbeat_fraction);
 	if(heartbeat_fraction > 1 || !current_player->last_tick_valid) {
 		world_view->yaw = current_player->facing;
 		world_view->virtual_yaw = (current_player->facing * FIXED_ONE) + virtual_aim_delta().yaw;

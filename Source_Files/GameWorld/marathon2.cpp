@@ -124,6 +124,7 @@ Feb 8, 2003 (Woody Zenfell):
 #include <limits.h>
 
 #include "ephemera.h"
+#include "interpolated_world.h"
 
 /* ---------- constants */
 
@@ -386,19 +387,6 @@ enum {
         kUpdateChangeLevel
 };
 
-static void note_current_object_locations() {
-  if(get_effective_fps_target() != _30fps) {
-    for(int i = 0; i < MAXIMUM_OBJECTS_PER_MAP; ++i) {
-      // don't use get_object_data because it barfs on unused objects
-      object_data* object = GetMemberWithBounds(objects,i,MAXIMUM_OBJECTS_PER_MAP);
-      if(SLOT_IS_USED(object)) {
-        object->location_last_tick = object->location;
-        SET_OBJECT_HAS_PREVIOUS_STATE(object);
-      }
-    }
-  }
-}
-
 // ZZZ: split out from update_world()'s loop.
 static int
 update_world_elements_one_tick(bool& call_postidle)
@@ -410,7 +398,6 @@ update_world_elements_one_tick(bool& call_postidle)
 	} 
 	else
 	{
-		note_current_object_locations();
 		L_Call_Idle();
 		call_postidle = true;
 		
@@ -461,7 +448,7 @@ update_world_elements_one_tick(bool& call_postidle)
 
         dynamic_world->tick_count+= 1;
         dynamic_world->game_information.game_time_remaining-= 1;
-        
+
         return kUpdateNormalCompletion;
 }
 
@@ -498,21 +485,23 @@ update_world()
 #else
 			int theMostRecentAllowedTick = get_heartbeat_count();
 #endif
-
+			
 			if(dynamic_world->tick_count >= theMostRecentAllowedTick)
 			{
 				canUpdate = false;
 			}
 		}
-                
-                // If we can't update, we can't update.  We're done for now.
-                if(!canUpdate)
-                {
-                        break;
-                }
-
+		
+		// If we can't update, we can't update.  We're done for now.
+		if(!canUpdate)
+		{
+			break;
+		}
+		
 		// Transition from predictive -> real update mode, if necessary.
 		exit_predictive_mode();
+		
+		exit_interpolated_world();
 
 		// Capture the flags for each player for use in prediction
 		for(short i = 0; i < dynamic_world->player_count; i++)
@@ -521,15 +510,19 @@ update_world()
 		bool call_postidle = true;
 		theUpdateResult = update_world_elements_one_tick(call_postidle);
 
-                theElapsedTime++;
+		theElapsedTime++;
+		
+		if (call_postidle)
+			L_Call_PostIdle();
+		if(theUpdateResult != kUpdateNormalCompletion || Movie::instance()->IsRecording())
+		{
+			canUpdate = false;
+		}
+		
+		enter_interpolated_world();
+		
+		}
 
-                if (call_postidle)
-                        L_Call_PostIdle();
-                if(theUpdateResult != kUpdateNormalCompletion || Movie::instance()->IsRecording())
-                {
-                        canUpdate = false;
-                }
-	}
 
         // This and the following voodoo comes, effectively, from Bungie's code.
         if(theUpdateResult == kUpdateChangeLevel)
@@ -683,6 +676,8 @@ bool entering_map(bool restoring_saved)
 //	set_keyboard_controller_status(true);
 
 	L_Call_Init(restoring_saved);
+
+	init_interpolated_world();
 
 #if !defined(DISABLE_NETWORKING)
 	NetSetChatCallbacks(InGameChatCallbacks::instance());
