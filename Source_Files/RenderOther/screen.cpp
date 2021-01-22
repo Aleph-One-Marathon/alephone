@@ -1248,6 +1248,37 @@ static angle interpolate_angles(angle a, angle b, float i) {
   return NORMALIZE_ANGLE(ret);
 }
 
+static fixed_angle interpolate_fixed_angles(fixed_angle a, fixed_angle b, float t)
+{
+	if (a > FULL_CIRCLE * FIXED_ONE)
+	{
+		a -= FULL_CIRCLE * FIXED_ONE;
+	}
+
+	if (b > FULL_CIRCLE * FIXED_ONE)
+	{
+		b -= FULL_CIRCLE * FIXED_ONE;
+	}
+
+	if (a - b > HALF_CIRCLE * FIXED_ONE)
+	{
+		b += FULL_CIRCLE * FIXED_ONE;
+	}
+	else if (a - b < -HALF_CIRCLE * FIXED_ONE)
+	{
+		a += FULL_CIRCLE * FIXED_ONE;
+	}
+	
+	auto angle = a + (b - a) * t;
+
+	if (angle >= FULL_CIRCLE * FIXED_ONE)
+	{
+		angle -= FULL_CIRCLE * FIXED_ONE;
+	}
+
+	return static_cast<fixed_angle>(std::round(angle));
+}
+
 void render_screen(short ticks_elapsed)
 {
 	// Make whatever changes are necessary to the world_view structure based on whichever player is frontmost
@@ -1267,6 +1298,12 @@ void render_screen(short ticks_elapsed)
 		world_view->yaw = interpolate_angles(current_player->facing_last_tick, current_player->facing, heartbeat_fraction);
 		world_view->pitch = interpolate_angles(current_player->elevation_last_tick, current_player->elevation, heartbeat_fraction);
 		world_view->maximum_depth_intensity = current_player->weapon_intensity_last_tick + (current_player->weapon_intensity - current_player->weapon_intensity_last_tick) * heartbeat_fraction;
+
+		world_view->virtual_yaw = interpolate_fixed_angles(current_player->facing_last_tick * FIXED_ONE + prev_virtual_aim_delta().yaw,
+		current_player->facing * FIXED_ONE + virtual_aim_delta().yaw, heartbeat_fraction);
+
+		world_view->virtual_pitch = interpolate_fixed_angles(current_player->elevation_last_tick * FIXED_ONE + prev_virtual_aim_delta().pitch,
+										 current_player->elevation * FIXED_ONE + virtual_aim_delta().pitch, heartbeat_fraction);
 	}
 	world_view->shading_mode = current_player->infravision_duration ? _shading_infravision : _shading_normal;
 

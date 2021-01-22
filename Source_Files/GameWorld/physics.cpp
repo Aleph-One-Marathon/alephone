@@ -129,6 +129,7 @@ static bool saved_divergence_warning;
 
 static struct physics_constants physics_models[NUMBER_OF_PHYSICS_MODELS];
 static fixed_yaw_pitch vir_aim_delta = {0, 0};
+static fixed_yaw_pitch prev_vir_aim_delta = {0, 0};
 
 /* every other field in the player structure should be valid when this call is made */
 void initialize_player_physics_variables(
@@ -322,8 +323,15 @@ void resync_virtual_aim()
 	vir_aim_delta = {0, 0};
 }
 
+fixed_yaw_pitch prev_virtual_aim_delta()
+{
+	return prev_vir_aim_delta;
+}
+
 uint32 process_aim_input(uint32 action_flags, fixed_yaw_pitch delta)
 {
+	prev_vir_aim_delta = vir_aim_delta;
+	
 	// Classic behavior modes
 	const bool classic_precision = !input_preferences->extra_mouse_precision;
 	const bool classic_limits = input_preferences->classic_aim_speed_limits;
