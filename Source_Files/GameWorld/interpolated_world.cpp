@@ -27,6 +27,10 @@ INTERPOLATED_WORLD.CPP
 #include <vector>
 
 #include "map.h"
+#include "player.h"
+#include "render.h"
+
+extern struct view_data* world_view;
 
 // ticks positions line up with 30 fps ticks
 struct TickObjectData {
@@ -36,6 +40,17 @@ struct TickObjectData {
 
 static std::vector<TickObjectData> previous_tick_objects;
 static std::vector<TickObjectData> current_tick_objects;
+
+struct TickPlayerData {
+	int index;
+	angle facing;
+	angle elevation;
+	_fixed weapon_intensity;
+};
+
+// since we only interpolate the view (rather than the actual current player
+// data), we only need to store the one from the previous tick
+static TickPlayerData previous_tick_player;
 
 void init_interpolated_world()
 {
@@ -59,6 +74,7 @@ void init_interpolated_world()
 	
 	previous_tick_objects.assign(current_tick_objects.begin(),
 								 current_tick_objects.end());
+
 }
 
 void enter_interpolated_world()
@@ -94,13 +110,62 @@ void exit_interpolated_world()
 			object.location = tick_object.location;
 		}
 	}
+
+	previous_tick_player.index = current_player_index;
+	previous_tick_player.facing = current_player->facing;
+	previous_tick_player.elevation = current_player->elevation;
+	previous_tick_player.weapon_intensity = current_player->weapon_intensity;
 }
 
-static world_distance world_lerp(world_distance a,
-								 world_distance b,
-								 float t)
+static int16_t lerp(int16_t a, int16_t b, float t)
 {
-	return static_cast<world_distance>(std::round(a + (b - a) * t));
+	return static_cast<int16_t>(std::round(a + (b - a) * t));
+}
+
+static angle lerp_angle(angle a, angle b, float t)
+{
+	a = NORMALIZE_ANGLE(a);
+	b = NORMALIZE_ANGLE(b);
+	
+	if (a - b > HALF_CIRCLE)
+	{
+		b += FULL_CIRCLE;
+	}
+	else if (a - b < -HALF_CIRCLE)
+	{
+		a += FULL_CIRCLE;
+	}
+	
+	angle ret = std::round(a+(b-a)*t);
+	return NORMALIZE_ANGLE(ret);
+}
+
+static fixed_angle normalize_fixed_angle(fixed_angle theta)
+{
+	if (theta >= FULL_CIRCLE * FIXED_ONE)
+	{
+		theta -= FULL_CIRCLE * FIXED_ONE;
+	}
+
+	return theta;
+}
+
+static fixed_angle lerp_fixed_angle(fixed_angle a, fixed_angle b, float t)
+{
+	a = normalize_fixed_angle(a);
+	b = normalize_fixed_angle(b);
+
+	if (a - b > HALF_CIRCLE * FIXED_ONE)
+	{
+		b += FULL_CIRCLE * FIXED_ONE;
+	}
+	else if (a - b < -HALF_CIRCLE * FIXED_ONE)
+	{
+		a += FULL_CIRCLE * FIXED_ONE;
+	}
+	
+	auto angle = a + (b - a) * t;
+	return static_cast<fixed_angle>(std::round(normalize_fixed_angle(angle)));
 }
 
 void update_interpolated_world(float heartbeat_fraction)
@@ -115,22 +180,51 @@ void update_interpolated_world(float heartbeat_fraction)
 		if (current_tick_objects[i].used && previous_tick_objects[i].used)
 		{
 			auto& object = objects[i];
-			object.location.x =
-					world_lerp(previous_tick_objects[i].location.x,
-							   current_tick_objects[i].location.x,
-							   heartbeat_fraction);
+			object.location.x = lerp(previous_tick_objects[i].location.x,
+									  current_tick_objects[i].location.x,
+									  heartbeat_fraction);
 			
-			object.location.y =
-				world_lerp(previous_tick_objects[i].location.y,
-						   current_tick_objects[i].location.y,
-						   heartbeat_fraction);
+			object.location.y = lerp(previous_tick_objects[i].location.y,
+									  current_tick_objects[i].location.y,
+									  heartbeat_fraction);
 			
-			object.location.z =
-				world_lerp(previous_tick_objects[i].location.z,
-						   current_tick_objects[i].location.z,
-						   heartbeat_fraction);
-
+			object.location.z = lerp(previous_tick_objects[i].location.z,
+									  current_tick_objects[i].location.z,
+									  heartbeat_fraction);
+			
 			// TODO: handle objects that change polygons
 		}
+	}
+}
+
+void interpolate_world_view(float heartbeat_fraction)
+{
+	if (current_player_index == previous_tick_player.index &&
+		!(PLAYER_IS_TELEPORTING(current_player) && current_player->teleporting_phase - 1 == PLAYER_TELEPORTING_MIDPOINT))
+	{
+		auto view = world_view;
+		auto prev = &previous_tick_player;
+		auto next = current_player;
+		
+		view->yaw = lerp_angle(prev->facing,
+							   next->facing,
+							   heartbeat_fraction);
+		view->pitch = lerp_angle(prev->elevation,
+								 next->elevation,
+								 heartbeat_fraction);
+
+		view->virtual_yaw = lerp_fixed_angle(
+			prev->facing * FIXED_ONE + prev_virtual_aim_delta().yaw,
+			next->facing * FIXED_ONE + virtual_aim_delta().yaw,
+			heartbeat_fraction);
+
+		view->virtual_pitch = lerp_fixed_angle(
+			prev->elevation * FIXED_ONE + prev_virtual_aim_delta().pitch,
+			next->elevation * FIXED_ONE + virtual_aim_delta().pitch,
+			heartbeat_fraction);
+
+		view->maximum_depth_intensity = lerp(prev->weapon_intensity,
+											 next->weapon_intensity,
+											 heartbeat_fraction);
 	}
 }

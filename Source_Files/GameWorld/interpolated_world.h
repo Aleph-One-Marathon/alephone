@@ -28,5 +28,6 @@ void enter_interpolated_world();
 void exit_interpolated_world();
 
 void update_interpolated_world(float heartbeat_fraction);
+void interpolate_world_view(float heartbeat_fraction);
 
 #endif

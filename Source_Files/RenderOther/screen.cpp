@@ -1238,76 +1238,23 @@ void toggle_fullscreen()
 
 static bool clear_next_screen = false;
 
-static angle interpolate_angles(angle a, angle b, float i) {
-  a = NORMALIZE_ANGLE(a);
-  b = NORMALIZE_ANGLE(b);
-  if(a-b > HALF_CIRCLE)
-    b += FULL_CIRCLE;
-  else if(a-b < -HALF_CIRCLE)
-    a += FULL_CIRCLE;
-  angle ret = a+(b-a)*i;
-  return NORMALIZE_ANGLE(ret);
-}
-
-static fixed_angle interpolate_fixed_angles(fixed_angle a, fixed_angle b, float t)
-{
-	if (a > FULL_CIRCLE * FIXED_ONE)
-	{
-		a -= FULL_CIRCLE * FIXED_ONE;
-	}
-
-	if (b > FULL_CIRCLE * FIXED_ONE)
-	{
-		b -= FULL_CIRCLE * FIXED_ONE;
-	}
-
-	if (a - b > HALF_CIRCLE * FIXED_ONE)
-	{
-		b += FULL_CIRCLE * FIXED_ONE;
-	}
-	else if (a - b < -HALF_CIRCLE * FIXED_ONE)
-	{
-		a += FULL_CIRCLE * FIXED_ONE;
-	}
-	
-	auto angle = a + (b - a) * t;
-
-	if (angle >= FULL_CIRCLE * FIXED_ONE)
-	{
-		angle -= FULL_CIRCLE * FIXED_ONE;
-	}
-
-	return static_cast<fixed_angle>(std::round(angle));
-}
-
 void render_screen(short ticks_elapsed)
 {
 	// Make whatever changes are necessary to the world_view structure based on whichever player is frontmost
 	world_view->ticks_elapsed = ticks_elapsed;
 	world_view->tick_count = dynamic_world->tick_count;
-	
-	auto heartbeat_fraction = get_heartbeat_fraction();
-	update_interpolated_world(heartbeat_fraction);
-	if(heartbeat_fraction > 1 || !current_player->last_tick_valid) {
-		world_view->yaw = current_player->facing;
-		world_view->virtual_yaw = (current_player->facing * FIXED_ONE) + virtual_aim_delta().yaw;
-		world_view->pitch = current_player->elevation;
-		world_view->virtual_pitch = (current_player->elevation * FIXED_ONE) + virtual_aim_delta().pitch;
-		world_view->maximum_depth_intensity = current_player->weapon_intensity;
-	}
-	else
-	{
-		world_view->yaw = interpolate_angles(current_player->facing_last_tick, current_player->facing, heartbeat_fraction);
-		world_view->pitch = interpolate_angles(current_player->elevation_last_tick, current_player->elevation, heartbeat_fraction);
-		world_view->maximum_depth_intensity = current_player->weapon_intensity_last_tick + (current_player->weapon_intensity - current_player->weapon_intensity_last_tick) * heartbeat_fraction;
-
-		world_view->virtual_yaw = interpolate_fixed_angles(current_player->facing_last_tick * FIXED_ONE + prev_virtual_aim_delta().yaw,
-		current_player->facing * FIXED_ONE + virtual_aim_delta().yaw, heartbeat_fraction);
-
-		world_view->virtual_pitch = interpolate_fixed_angles(current_player->elevation_last_tick * FIXED_ONE + prev_virtual_aim_delta().pitch,
-										 current_player->elevation * FIXED_ONE + virtual_aim_delta().pitch, heartbeat_fraction);
-	}
+	world_view->yaw = current_player->facing;
+	world_view->virtual_yaw = (current_player->facing * FIXED_ONE) + virtual_aim_delta().yaw;
+	world_view->pitch = current_player->elevation;
+	world_view->virtual_pitch = (current_player->elevation * FIXED_ONE) + virtual_aim_delta().pitch;
+	world_view->maximum_depth_intensity = current_player->weapon_intensity;
 	world_view->shading_mode = current_player->infravision_duration ? _shading_infravision : _shading_normal;
+
+	auto heartbeat_fraction = get_heartbeat_fraction();
+	if(heartbeat_fraction < 1) {
+		update_interpolated_world(heartbeat_fraction);
+		interpolate_world_view(heartbeat_fraction);
+	}
 
 	bool SwitchedModes = false;
 	
