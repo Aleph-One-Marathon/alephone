@@ -128,6 +128,11 @@ static int16_t lerp(int16_t a, int16_t b, float t)
 	return static_cast<int16_t>(std::round(a + (b - a) * t));
 }
 
+static _fixed lerp(_fixed a, _fixed b, float t)
+{
+	return static_cast<_fixed>(std::round(a + (b - a) * t));
+}
+
 static angle lerp_angle(angle a, angle b, float t)
 {
 	a = NORMALIZE_ANGLE(a);
@@ -238,7 +243,7 @@ void interpolate_world_view(float heartbeat_fraction)
 	view->virtual_pitch = lerp_fixed_angle(prev->virtual_pitch,
 										   next->virtual_pitch,
 										   heartbeat_fraction);
-	
+
 	view->maximum_depth_intensity = lerp(prev->maximum_depth_intensity,
 										 next->maximum_depth_intensity,
 										 heartbeat_fraction);
