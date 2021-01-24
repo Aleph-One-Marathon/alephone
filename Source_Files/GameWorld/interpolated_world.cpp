@@ -39,10 +39,19 @@ extern struct view_data* world_view;
 struct TickObjectData {
 	bool used;
 	world_point3d location;
+	int16_t polygon;
+
+	int16_t next_object;
 };
 
 static std::vector<TickObjectData> previous_tick_objects;
 static std::vector<TickObjectData> current_tick_objects;
+
+struct TickPolygonData {
+	int16_t first_object;
+};
+
+static std::vector<TickPolygonData> current_tick_polygons;
 
 struct TickPlayerData {
 	int index;
@@ -67,6 +76,8 @@ void init_interpolated_world()
 {
 	previous_tick_objects.resize(MAXIMUM_OBJECTS_PER_MAP);
 	current_tick_objects.resize(MAXIMUM_OBJECTS_PER_MAP);
+
+	current_tick_polygons.resize(dynamic_world->polygon_count);
 	
 	for (auto i = 0; i < MAXIMUM_OBJECTS_PER_MAP; ++i)
 	{
@@ -76,6 +87,8 @@ void init_interpolated_world()
 		{
 			tick_object.used = true;
 			tick_object.location = object->location;
+			tick_object.next_object = object->next_object;
+			tick_object.polygon = object->polygon;
 		}
 		else
 		{
@@ -85,6 +98,11 @@ void init_interpolated_world()
 	
 	previous_tick_objects.assign(current_tick_objects.begin(),
 								 current_tick_objects.end());
+
+	for (auto i = 0; i < dynamic_world->polygon_count; ++i)
+	{
+		current_tick_polygons[i].first_object = map_polygons[i].first_object;
+	}
 
 	capture_world_view = true;
 }
@@ -102,11 +120,18 @@ void enter_interpolated_world()
 		{
 			tick_object.used = true;
 			tick_object.location = object->location;
+			tick_object.next_object = object->next_object;
+			tick_object.polygon = object->polygon;
 		}
 		else
 		{
 			tick_object.used = false;
 		}
+	}
+
+	for (auto i = 0; i < dynamic_world->polygon_count; ++i)
+	{
+		current_tick_polygons[i].first_object = map_polygons[i].first_object;
 	}
 }
 
@@ -120,7 +145,14 @@ void exit_interpolated_world()
 		if (tick_object.used)
 		{
 			object.location = tick_object.location;
+			object.next_object = tick_object.next_object;
+			object.polygon = tick_object.polygon;
 		}
+	}
+
+	for (auto i = 0; i < dynamic_world->polygon_count; ++i)
+	{
+		map_polygons[i].first_object = current_tick_polygons[i].first_object;
 	}
 
 	capture_world_view = true;
@@ -182,35 +214,14 @@ static fixed_angle lerp_fixed_angle(fixed_angle a, fixed_angle b, float t)
 	return static_cast<fixed_angle>(std::round(normalize_fixed_angle(angle)));
 }
 
-void update_interpolated_world(float heartbeat_fraction)
+
+static bool should_interpolate(world_point3d& prev, world_point3d& next)
 {
-	for (auto i = 0; i < MAXIMUM_OBJECTS_PER_MAP; ++i)
-	{
-		// Properly speaking, we shouldn't render objects that did not
-		// exist "last" tick at all during a fractional frame. Doing
-		// so "stretches" new objects' existences by almost (but not
-		// quite) one tick. However, this is preferable to the flicker
-		// that would otherwise appear when a projectile detonates.
-		if (current_tick_objects[i].used && previous_tick_objects[i].used)
-		{
-			auto& object = objects[i];
-			object.location.x = lerp(previous_tick_objects[i].location.x,
-									  current_tick_objects[i].location.x,
-									  heartbeat_fraction);
-			
-			object.location.y = lerp(previous_tick_objects[i].location.y,
-									  current_tick_objects[i].location.y,
-									  heartbeat_fraction);
-			
-			object.location.z = lerp(previous_tick_objects[i].location.z,
-									  current_tick_objects[i].location.z,
-									  heartbeat_fraction);
-			
-			// TODO: handle objects that change polygons
-			// TODO: impose a maximum speed, in case lua moves stuff?
-		}
-	}
+	return guess_distance2d(reinterpret_cast<world_point2d*>(&prev),
+							reinterpret_cast<world_point2d*>(&next))
+		<= speed_limit;
 }
+
 
 static int16_t find_new_polygon(int16_t polygon_index,
 								world_point3d& src,
@@ -228,6 +239,60 @@ static int16_t find_new_polygon(int16_t polygon_index,
 	while (line_index != NONE && polygon_index != NONE);
 
 	return polygon_index;
+}
+
+extern void add_object_to_polygon_object_list(short, short);
+
+void update_interpolated_world(float heartbeat_fraction)
+{
+	for (auto i = 0; i < MAXIMUM_OBJECTS_PER_MAP; ++i)
+	{
+		auto prev = &previous_tick_objects[i];
+		auto next = &current_tick_objects[i];
+		
+		// Properly speaking, we shouldn't render objects that did not
+		// exist "last" tick at all during a fractional frame. Doing
+		// so "stretches" new objects' existences by almost (but not
+		// quite) one tick. However, this is preferable to the flicker
+		// that would otherwise appear when a projectile detonates.
+		if (next->used && prev->used)
+		{
+			if (!should_interpolate(prev->location, next->location))
+			{
+				continue;
+			}
+			
+			auto object = &objects[i];
+			object->location.x = lerp(prev->location.x,
+									  next->location.x,
+									  heartbeat_fraction);
+			
+			object->location.y = lerp(prev->location.y,
+									  next->location.y,
+									  heartbeat_fraction);
+			
+			object->location.z = lerp(prev->location.z,
+									  next->location.z,
+									  heartbeat_fraction);
+			
+			if (object->polygon != next->polygon)
+			{
+				auto polygon_index = find_new_polygon(object->polygon,
+													  object->location,
+													  next->location);
+
+				if (polygon_index == NONE)
+				{
+					object->location = next->location;
+				}
+				else
+				{
+					remove_object_from_polygon_object_list(i);
+					add_object_to_polygon_object_list(i, polygon_index);
+				}
+			}
+		}
+	}
 }
 
 void interpolate_world_view(float heartbeat_fraction)
@@ -250,15 +315,12 @@ void interpolate_world_view(float heartbeat_fraction)
 		next->maximum_depth_intensity = view->maximum_depth_intensity;
 	}
 
-	if (guess_distance2d(reinterpret_cast<world_point2d*>(&prev->origin),
-						 reinterpret_cast<world_point2d*>(&next->origin))
-		> speed_limit)
+	if (!should_interpolate(prev->origin, next->origin))
 	{
 		// might be teleporting or switching cameras
 		return;
 	}
 
-	
 	view->yaw = lerp_angle(prev->yaw,
 						   next->yaw,
 						   heartbeat_fraction);
