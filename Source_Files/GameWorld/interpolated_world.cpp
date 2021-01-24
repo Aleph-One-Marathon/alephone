@@ -48,9 +48,17 @@ struct TickPlayerData {
 	_fixed weapon_intensity;
 };
 
-// since we only interpolate the view (rather than the actual current player
-// data), we only need to store the one from the previous tick
-static TickPlayerData previous_tick_player;
+struct TickWorldView {
+	int16_t origin_polygon_index;
+	angle yaw, pitch;
+	fixed_angle virtual_yaw, virtual_pitch;
+	world_point3d origin;
+	_fixed maximum_depth_intensity;
+};
+
+static TickWorldView previous_tick_world_view;
+static TickWorldView current_tick_world_view;
+static bool capture_world_view = true;
 
 void init_interpolated_world()
 {
@@ -75,6 +83,7 @@ void init_interpolated_world()
 	previous_tick_objects.assign(current_tick_objects.begin(),
 								 current_tick_objects.end());
 
+	capture_world_view = true;
 }
 
 void enter_interpolated_world()
@@ -111,10 +120,7 @@ void exit_interpolated_world()
 		}
 	}
 
-	previous_tick_player.index = current_player_index;
-	previous_tick_player.facing = current_player->facing;
-	previous_tick_player.elevation = current_player->elevation;
-	previous_tick_player.weapon_intensity = current_player->weapon_intensity;
+	capture_world_view = true;
 }
 
 static int16_t lerp(int16_t a, int16_t b, float t)
@@ -193,38 +199,62 @@ void update_interpolated_world(float heartbeat_fraction)
 									  heartbeat_fraction);
 			
 			// TODO: handle objects that change polygons
+			// TODO: impose a maximum speed, in case lua moves stuff?
 		}
 	}
 }
 
 void interpolate_world_view(float heartbeat_fraction)
 {
-	if (current_player_index == previous_tick_player.index &&
-		!(PLAYER_IS_TELEPORTING(current_player) && current_player->teleporting_phase - 1 == PLAYER_TELEPORTING_MIDPOINT))
+	auto prev = &previous_tick_world_view;
+	auto next = &current_tick_world_view;
+	auto view = world_view;
+	
+	if (capture_world_view)
 	{
-		auto view = world_view;
-		auto prev = &previous_tick_player;
-		auto next = current_player;
+		capture_world_view = false;
+		*prev = *next;
 		
-		view->yaw = lerp_angle(prev->facing,
-							   next->facing,
-							   heartbeat_fraction);
-		view->pitch = lerp_angle(prev->elevation,
-								 next->elevation,
-								 heartbeat_fraction);
-
-		view->virtual_yaw = lerp_fixed_angle(
-			prev->facing * FIXED_ONE + prev_virtual_aim_delta().yaw,
-			next->facing * FIXED_ONE + virtual_aim_delta().yaw,
-			heartbeat_fraction);
-
-		view->virtual_pitch = lerp_fixed_angle(
-			prev->elevation * FIXED_ONE + prev_virtual_aim_delta().pitch,
-			next->elevation * FIXED_ONE + virtual_aim_delta().pitch,
-			heartbeat_fraction);
-
-		view->maximum_depth_intensity = lerp(prev->weapon_intensity,
-											 next->weapon_intensity,
-											 heartbeat_fraction);
+		next->origin_polygon_index = view->origin_polygon_index;
+		next->yaw = view->yaw;
+		next->pitch = view->pitch;
+		next->virtual_yaw = view->virtual_yaw;
+		next->virtual_pitch = view->virtual_pitch;
+		next->origin = view->origin;
+		next->maximum_depth_intensity = view->maximum_depth_intensity;
 	}
+	
+	view->yaw = lerp_angle(prev->yaw,
+						   next->yaw,
+						   heartbeat_fraction);
+	view->pitch = lerp_angle(prev->pitch,
+							 next->pitch,
+							 heartbeat_fraction);
+	
+	view->virtual_yaw = lerp_fixed_angle(prev->virtual_yaw,
+										 next->virtual_yaw,
+										 heartbeat_fraction);
+	
+	view->virtual_pitch = lerp_fixed_angle(prev->virtual_pitch,
+										   next->virtual_pitch,
+										   heartbeat_fraction);
+	
+	view->maximum_depth_intensity = lerp(prev->maximum_depth_intensity,
+										 next->maximum_depth_intensity,
+										 heartbeat_fraction);
+
+	view->origin.x = lerp(prev->origin.x,
+						  next->origin.x,
+						  heartbeat_fraction);
+
+	view->origin.y = lerp(prev->origin.y,
+						  next->origin.y,
+						  heartbeat_fraction);
+
+	view->origin.z = lerp(prev->origin.z,
+						  next->origin.z,
+						  heartbeat_fraction);
+
+	// TODO: handle view crossing polygons
+	// TODO: don't always interpolate (could be switching players, or under camera control)
 }

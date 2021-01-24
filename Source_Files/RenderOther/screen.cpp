@@ -1251,10 +1251,7 @@ void render_screen(short ticks_elapsed)
 	world_view->shading_mode = current_player->infravision_duration ? _shading_infravision : _shading_normal;
 
 	auto heartbeat_fraction = get_heartbeat_fraction();
-	if(heartbeat_fraction < 1) {
-		update_interpolated_world(heartbeat_fraction);
-		interpolate_world_view(heartbeat_fraction);
-	}
+	update_interpolated_world(heartbeat_fraction);
 
 	bool SwitchedModes = false;
 	
@@ -1379,25 +1376,16 @@ void render_screen(short ticks_elapsed)
 		clear_next_screen = false;
 	}
 
-	if(heartbeat_fraction > 1 || !current_player->last_tick_valid) {
-		world_view->origin = current_player->camera_location;
-		if (!graphics_preferences->screen_mode.camera_bob)
-            world_view->origin.z -= current_player->step_height;
-		world_view->origin_polygon_index = current_player->camera_polygon_index;
-	}
-	else
-	{
-		world_view->origin.x = current_player->camera_location_last_tick.x + (current_player->camera_location.x - current_player->camera_location_last_tick.x) * heartbeat_fraction;
-		world_view->origin.y = current_player->camera_location_last_tick.y + (current_player->camera_location.y - current_player->camera_location_last_tick.y) * heartbeat_fraction;
-		world_view->origin.z = current_player->camera_location_last_tick.z + (current_player->camera_location.z - current_player->camera_location_last_tick.z) * heartbeat_fraction;
-		if (!graphics_preferences->screen_mode.camera_bob)
-            world_view->origin.z -= current_player->step_height;
-		world_view->origin_polygon_index = current_player->camera_polygon_index;
-	}
+	world_view->origin = current_player->camera_location;
+	if (!graphics_preferences->screen_mode.camera_bob)
+		world_view->origin.z -= current_player->step_height;
+	world_view->origin_polygon_index = current_player->camera_polygon_index;
 
 	// Script-based camera control
 	if (!UseLuaCameras())
 		world_view->show_weapons_in_hand = !ChaseCam_GetPosition(world_view->origin, world_view->origin_polygon_index, world_view->yaw, world_view->pitch);
+
+	interpolate_world_view(heartbeat_fraction);
 
 #ifdef HAVE_OPENGL
 	// Is map to be drawn with OpenGL?

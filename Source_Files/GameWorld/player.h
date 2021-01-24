@@ -414,14 +414,6 @@ struct player_data
 	int32 netgame_parameters[2];
 
 	bool	netdead;	// ZZZ: added this; it should not be serialized/deserialized
-  // SB; none of this is serialized
-  bool last_tick_valid; // set to false after teleporting, true every frame
-  world_point3d camera_location_last_tick;
-  int16 camera_polygon_index_last_tick;
-  angle facing_last_tick, elevation_last_tick;
-  world_distance step_height_last_tick;
-  _fixed weapon_intensity_last_tick;
-  // /SB
 
 	world_distance step_height; // not serialized, used to correct chase cam bob
 
