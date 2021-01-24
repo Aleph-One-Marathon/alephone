@@ -101,10 +101,10 @@ struct ScreenMessage
 		Len = 256
 	};
 
-	int TimeRemaining;	// How many more engine ticks until the message expires?
+	uint32_t ExpirationTime; // machine ticks the screen message expires at
 	char Text[Len];		// Text to display
 	
-	ScreenMessage(): TimeRemaining(0) {Text[0] = 0;}
+	ScreenMessage(): ExpirationTime(machine_tick_count()) {Text[0] = 0;}
 };
 
 static int MostRecentMessage = NumScreenMessages-1;
@@ -300,7 +300,7 @@ void reset_messages()
 {
 	// ZZZ: reset screen_printf's
 	for(int i = 0; i < NumScreenMessages; i++)
-		Messages[i].TimeRemaining = 0;
+		Messages[i].ExpirationTime = machine_tick_count();
 	/* SB: reset HUD elements */
 	for(int p = 0; p < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; p++) {
 		for(int i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; i++) {
@@ -679,8 +679,10 @@ static void DisplayMessages(SDL_Surface *s)
 		while (Which < 0)
 			Which += NumScreenMessages;
 		ScreenMessage& Message = Messages[Which];
-		if (Message.TimeRemaining <= 0) continue;
-		Message.TimeRemaining--;
+		if (static_cast<int32_t>(Message.ExpirationTime - machine_tick_count()) < 0)
+		{
+			continue;
+		}
 		
 		DisplayText(X,Y,Message.Text);
 		Y += LineSpacing;
@@ -967,8 +969,8 @@ void screen_printf(const char *format, ...)
 	while (MostRecentMessage < 0)
 		MostRecentMessage += NumScreenMessages;
 	ScreenMessage& Message = Messages[MostRecentMessage];
-	
-	Message.TimeRemaining = 7*TICKS_PER_SECOND;
+
+	Message.ExpirationTime = machine_tick_count() + 7 * MACHINE_TICKS_PER_SECOND;
 
 	va_list list;
 
