@@ -30,6 +30,9 @@ INTERPOLATED_WORLD.CPP
 #include "player.h"
 #include "render.h"
 
+// above this speed, don't interpolate
+static const world_distance speed_limit = WORLD_ONE_HALF;
+
 extern struct view_data* world_view;
 
 // ticks positions line up with 30 fps ticks
@@ -209,6 +212,24 @@ void update_interpolated_world(float heartbeat_fraction)
 	}
 }
 
+static int16_t find_new_polygon(int16_t polygon_index,
+								world_point3d& src,
+								world_point3d& dst)
+{
+	int16_t line_index;
+	do
+	{
+		line_index = find_line_crossed_leaving_polygon(polygon_index, reinterpret_cast<world_point2d*>(&src), reinterpret_cast<world_point2d*>(&dst));
+		if (line_index != NONE)
+		{
+			polygon_index = find_adjacent_polygon(polygon_index, line_index);
+		}
+	}
+	while (line_index != NONE && polygon_index != NONE);
+
+	return polygon_index;
+}
+
 void interpolate_world_view(float heartbeat_fraction)
 {
 	auto prev = &previous_tick_world_view;
@@ -228,6 +249,15 @@ void interpolate_world_view(float heartbeat_fraction)
 		next->origin = view->origin;
 		next->maximum_depth_intensity = view->maximum_depth_intensity;
 	}
+
+	if (guess_distance2d(reinterpret_cast<world_point2d*>(&prev->origin),
+						 reinterpret_cast<world_point2d*>(&next->origin))
+		> speed_limit)
+	{
+		// might be teleporting or switching cameras
+		return;
+	}
+
 	
 	view->yaw = lerp_angle(prev->yaw,
 						   next->yaw,
@@ -235,31 +265,43 @@ void interpolate_world_view(float heartbeat_fraction)
 	view->pitch = lerp_angle(prev->pitch,
 							 next->pitch,
 							 heartbeat_fraction);
-	
+		
 	view->virtual_yaw = lerp_fixed_angle(prev->virtual_yaw,
 										 next->virtual_yaw,
 										 heartbeat_fraction);
-	
+		
 	view->virtual_pitch = lerp_fixed_angle(prev->virtual_pitch,
 										   next->virtual_pitch,
 										   heartbeat_fraction);
-
+		
 	view->maximum_depth_intensity = lerp(prev->maximum_depth_intensity,
 										 next->maximum_depth_intensity,
 										 heartbeat_fraction);
-
+		
 	view->origin.x = lerp(prev->origin.x,
 						  next->origin.x,
 						  heartbeat_fraction);
-
+		
 	view->origin.y = lerp(prev->origin.y,
 						  next->origin.y,
 						  heartbeat_fraction);
-
+		
 	view->origin.z = lerp(prev->origin.z,
 						  next->origin.z,
 						  heartbeat_fraction);
-
-	// TODO: handle view crossing polygons
-	// TODO: don't always interpolate (could be switching players, or under camera control)
+		
+	if (prev->origin_polygon_index != next->origin_polygon_index)
+	{
+		auto polygon_index = find_new_polygon(prev->origin_polygon_index,
+											  prev->origin,
+											  view->origin);
+		if (polygon_index == NONE)
+		{
+			view->origin = next->origin;
+		}
+		else
+		{
+			view->origin_polygon_index = polygon_index;
+		}
+	}
 }
