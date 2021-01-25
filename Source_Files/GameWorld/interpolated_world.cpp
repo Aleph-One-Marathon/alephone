@@ -249,47 +249,55 @@ void update_interpolated_world(float heartbeat_fraction)
 	{
 		auto prev = &previous_tick_objects[i];
 		auto next = &current_tick_objects[i];
-		
+
 		// Properly speaking, we shouldn't render objects that did not
 		// exist "last" tick at all during a fractional frame. Doing
 		// so "stretches" new objects' existences by almost (but not
 		// quite) one tick. However, this is preferable to the flicker
 		// that would otherwise appear when a projectile detonates.
-		if (next->used && prev->used)
+		if (!next->used || !prev->used)
 		{
-			if (!should_interpolate(prev->location, next->location))
-			{
-				continue;
-			}
-			
-			auto object = &objects[i];
-			object->location.x = lerp(prev->location.x,
-									  next->location.x,
-									  heartbeat_fraction);
-			
-			object->location.y = lerp(prev->location.y,
-									  next->location.y,
-									  heartbeat_fraction);
-			
-			object->location.z = lerp(prev->location.z,
-									  next->location.z,
-									  heartbeat_fraction);
-			
-			if (object->polygon != next->polygon)
-			{
-				auto polygon_index = find_new_polygon(object->polygon,
-													  object->location,
-													  next->location);
+			continue;
+		}
 
-				if (polygon_index == NONE)
-				{
-					object->location = next->location;
-				}
-				else
-				{
-					remove_object_from_polygon_object_list(i);
-					add_object_to_polygon_object_list(i, polygon_index);
-				}
+		if (!TEST_RENDER_FLAG(prev->polygon, _polygon_is_visible) &&
+			!TEST_RENDER_FLAG(next->polygon, _polygon_is_visible))
+		{
+			continue;
+		}
+
+		if (!should_interpolate(prev->location, next->location))
+		{
+			continue;
+		}
+		
+		auto object = &objects[i];
+		object->location.x = lerp(prev->location.x,
+								  next->location.x,
+								  heartbeat_fraction);
+		
+		object->location.y = lerp(prev->location.y,
+								  next->location.y,
+								  heartbeat_fraction);
+		
+		object->location.z = lerp(prev->location.z,
+								  next->location.z,
+								  heartbeat_fraction);
+		
+		if (object->polygon != next->polygon)
+		{
+			auto polygon_index = find_new_polygon(object->polygon,
+												  object->location,
+													  next->location);
+			
+			if (polygon_index == NONE)
+			{
+				object->location = next->location;
+			}
+			else
+			{
+				remove_object_from_polygon_object_list(i);
+				add_object_to_polygon_object_list(i, polygon_index);
 			}
 		}
 	}
