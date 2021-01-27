@@ -1185,7 +1185,7 @@ void change_screen_mode(struct screen_mode_data *mode, bool redraw)
 		recenter_mouse();
 	}
 
-	frame_count = frame_index = 0;
+	fps_counter.reset();
 }
 
 void change_screen_mode(short screentype)
@@ -1206,8 +1206,8 @@ void change_screen_mode(short screentype)
 	change_screen_mode(w, h, mode->bit_depth, false, force_menu_size);
 	clear_screen();
 	recenter_mouse();
-	
-	frame_count = frame_index = 0;
+
+	fps_counter.reset();
 }
 
 void toggle_fullscreen(bool fs)
