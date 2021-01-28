@@ -387,6 +387,8 @@ enum {
         kUpdateChangeLevel
 };
 
+extern void update_world_view_camera();
+
 // ZZZ: split out from update_world()'s loop.
 static int
 update_world_elements_one_tick(bool& call_postidle)

@@ -70,7 +70,6 @@ struct TickWorldView {
 
 static TickWorldView previous_tick_world_view;
 static TickWorldView current_tick_world_view;
-static bool capture_world_view = true;
 
 void init_interpolated_world()
 {
@@ -104,8 +103,10 @@ void init_interpolated_world()
 		current_tick_polygons[i].first_object = map_polygons[i].first_object;
 	}
 
-	capture_world_view = true;
+	previous_tick_world_view.origin_polygon_index = NONE;
 }
+
+extern void update_world_view_camera();
 
 void enter_interpolated_world()
 {
@@ -133,6 +134,22 @@ void enter_interpolated_world()
 	{
 		current_tick_polygons[i].first_object = map_polygons[i].first_object;
 	}
+
+	update_world_view_camera();
+
+	auto prev = &previous_tick_world_view;
+	auto next = &current_tick_world_view;
+	auto view = world_view;
+	
+	*prev = *next;
+	
+	next->origin_polygon_index = view->origin_polygon_index;
+	next->yaw = view->yaw;
+	next->pitch = view->pitch;
+	next->virtual_yaw = view->virtual_yaw;
+	next->virtual_pitch = view->virtual_pitch;
+	next->origin = view->origin;
+	next->maximum_depth_intensity = view->maximum_depth_intensity;
 }
 
 void exit_interpolated_world()
@@ -154,8 +171,6 @@ void exit_interpolated_world()
 	{
 		map_polygons[i].first_object = current_tick_polygons[i].first_object;
 	}
-
-	capture_world_view = true;
 }
 
 static int16_t lerp(int16_t a, int16_t b, float t)
@@ -314,21 +329,8 @@ void interpolate_world_view(float heartbeat_fraction)
 	auto next = &current_tick_world_view;
 	auto view = world_view;
 	
-	if (capture_world_view)
-	{
-		capture_world_view = false;
-		*prev = *next;
-		
-		next->origin_polygon_index = view->origin_polygon_index;
-		next->yaw = view->yaw;
-		next->pitch = view->pitch;
-		next->virtual_yaw = view->virtual_yaw;
-		next->virtual_pitch = view->virtual_pitch;
-		next->origin = view->origin;
-		next->maximum_depth_intensity = view->maximum_depth_intensity;
-	}
-
 	if (heartbeat_fraction > 1.f ||
+		prev->origin_polygon_index == NONE ||
 		!should_interpolate(prev->origin, next->origin))
 	{
 		return;
