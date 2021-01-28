@@ -245,6 +245,11 @@ extern void add_object_to_polygon_object_list(short, short);
 
 void update_interpolated_world(float heartbeat_fraction)
 {
+	if (heartbeat_fraction > 1.f)
+	{
+		return;
+	}
+	
 	for (auto i = 0; i < MAXIMUM_OBJECTS_PER_MAP; ++i)
 	{
 		auto prev = &previous_tick_objects[i];
@@ -323,9 +328,9 @@ void interpolate_world_view(float heartbeat_fraction)
 		next->maximum_depth_intensity = view->maximum_depth_intensity;
 	}
 
-	if (!should_interpolate(prev->origin, next->origin))
+	if (heartbeat_fraction > 1.f ||
+		!should_interpolate(prev->origin, next->origin))
 	{
-		// might be teleporting or switching cameras
 		return;
 	}
 
@@ -347,7 +352,7 @@ void interpolate_world_view(float heartbeat_fraction)
 	view->maximum_depth_intensity = lerp(prev->maximum_depth_intensity,
 										 next->maximum_depth_intensity,
 										 heartbeat_fraction);
-		
+	
 	view->origin.x = lerp(prev->origin.x,
 						  next->origin.x,
 						  heartbeat_fraction);
