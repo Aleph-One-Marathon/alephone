@@ -500,11 +500,11 @@ update_world()
 			break;
 		}
 		
+		exit_interpolated_world();
+
 		// Transition from predictive -> real update mode, if necessary.
 		exit_predictive_mode();
 		
-		exit_interpolated_world();
-
 		// Capture the flags for each player for use in prediction
 		for(short i = 0; i < dynamic_world->player_count; i++)
 			sMostRecentFlagsForPlayer[i] = GameQueue->peekActionFlags(i, 0);
@@ -562,6 +562,8 @@ update_world()
 		// controlling the local player.  We could be smarter about it if that eventually becomes an issue.
 		for ( ; sPredictedTicks < NetGetUnconfirmedActionFlagsCount(); sPredictedTicks++)
 		{
+			exit_interpolated_world();
+			
 			// Real -> predictive transition, if necessary
 			enter_predictive_mode();
 
@@ -576,7 +578,8 @@ update_world()
 			update_players(&thePredictiveQueues, true);
 
 			didPredict = true;
-			
+
+			enter_interpolated_world();
 		} // loop while local player has flags we haven't used for prediction
 
 	} // if we should predict
