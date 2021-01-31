@@ -308,7 +308,7 @@ void update_interpolated_world(float heartbeat_fraction)
 		{
 			continue;
 		}
-		
+
 		auto object = &objects[i];
 		object->location.x = lerp(prev->location.x,
 								  next->location.x,
@@ -410,7 +410,7 @@ float get_heartbeat_fraction()
 	case _30fps:
 		return 1.f;
 	case _60fps:
-		return std::ceil(fraction * 2.f) / 2.f;
+		return std::min(std::ceil(fraction * 2.f) / 2.f, 1.f);
 	case _unlimited_fps:
 		return fraction;
 	}
