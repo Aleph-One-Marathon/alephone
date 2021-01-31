@@ -28,10 +28,14 @@ INTERPOLATED_WORLD.CPP
 
 #include "map.h"
 #include "player.h"
+#include "preferences.h"
 #include "render.h"
 
 // above this speed, don't interpolate
 static const world_distance speed_limit = WORLD_ONE_HALF;
+
+static bool world_is_interpolated;
+static uint32_t start_machine_tick;
 
 extern struct view_data* world_view;
 
@@ -104,12 +108,16 @@ void init_interpolated_world()
 	}
 
 	previous_tick_world_view.origin_polygon_index = NONE;
+
+	world_is_interpolated = false;
 }
 
 extern void update_world_view_camera();
 
 void enter_interpolated_world()
 {
+	start_machine_tick = machine_tick_count();
+	
 	previous_tick_objects.assign(current_tick_objects.begin(),
 								 current_tick_objects.end());
 
@@ -150,10 +158,17 @@ void enter_interpolated_world()
 	next->virtual_pitch = view->virtual_pitch;
 	next->origin = view->origin;
 	next->maximum_depth_intensity = view->maximum_depth_intensity;
+
+	world_is_interpolated = true;
 }
 
 void exit_interpolated_world()
 {
+	if (!world_is_interpolated)
+	{
+		return;
+	}
+	
 	for (auto i = 0; i < MAXIMUM_OBJECTS_PER_MAP; ++i)
 	{
 		auto& tick_object = current_tick_objects[i];
@@ -171,6 +186,8 @@ void exit_interpolated_world()
 	{
 		map_polygons[i].first_object = current_tick_polygons[i].first_object;
 	}
+
+	world_is_interpolated = false;
 }
 
 static int16_t lerp(int16_t a, int16_t b, float t)
@@ -232,8 +249,9 @@ static fixed_angle lerp_fixed_angle(fixed_angle a, fixed_angle b, float t)
 
 static bool should_interpolate(world_point3d& prev, world_point3d& next)
 {
-	return guess_distance2d(reinterpret_cast<world_point2d*>(&prev),
-							reinterpret_cast<world_point2d*>(&next))
+	return world_is_interpolated &&
+		guess_distance2d(reinterpret_cast<world_point2d*>(&prev),
+						 reinterpret_cast<world_point2d*>(&next))
 		<= speed_limit;
 }
 
@@ -380,5 +398,20 @@ void interpolate_world_view(float heartbeat_fraction)
 		{
 			view->origin_polygon_index = polygon_index;
 		}
+	}
+}
+
+float get_heartbeat_fraction()
+{
+	auto fraction = static_cast<float>((machine_tick_count() - start_machine_tick) * TICKS_PER_SECOND + 1) / MACHINE_TICKS_PER_SECOND;
+	
+	switch (get_effective_fps_target())
+	{
+	case _30fps:
+		return 1.f;
+	case _60fps:
+		return std::ceil(fraction * 2.f) / 2.f;
+	case _unlimited_fps:
+		return fraction;
 	}
 }

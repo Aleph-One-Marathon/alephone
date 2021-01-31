@@ -499,7 +499,7 @@ update_world()
 		{
 			break;
 		}
-		
+
 		exit_interpolated_world();
 
 		// Transition from predictive -> real update mode, if necessary.
@@ -520,9 +520,7 @@ update_world()
 		{
 			canUpdate = false;
 		}
-		
-		enter_interpolated_world();
-		
+
 		}
 
 
@@ -579,13 +577,25 @@ update_world()
 
 			didPredict = true;
 
-			enter_interpolated_world();
 		} // loop while local player has flags we haven't used for prediction
 
-	} // if we should predict
+		if (didPredict)
+		{
+			enter_interpolated_world();
+		}
 
-	// we return separately 1. "whether to redraw" and 2. "how many game-ticks elapsed"
-        return std::pair<bool, int16>(didPredict || theElapsedTime != 0, theElapsedTime);
+		return std::pair<bool, int16>(didPredict, theElapsedTime);
+
+	} // if we should predict
+	else
+	{
+		if (theElapsedTime)
+		{
+			enter_interpolated_world();
+		}
+		// we return separately 1. "whether to redraw" and 2. "how many game-ticks elapsed"
+		return std::pair<bool, int16>(theElapsedTime != 0, theElapsedTime);
+	}
 }
 
 /* call this function before leaving the old level, but DO NOT call it when saving the player.
