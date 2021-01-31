@@ -1222,8 +1222,9 @@ bool idle_game_state(uint32 time)
 			// ZZZ: I don't know for sure that render_screen works best with the number of _real_
 			// ticks elapsed rather than the number of (potentially predictive) ticks elapsed.
 			// This is a guess.
-			if (theUpdateResult.first || last_heartbeat_fraction != get_heartbeat_fraction()) {
-				last_heartbeat_fraction = get_heartbeat_fraction();
+			auto heartbeat_fraction = get_heartbeat_fraction();
+			if (theUpdateResult.first || (last_heartbeat_fraction != -1 && last_heartbeat_fraction != heartbeat_fraction)) {
+				last_heartbeat_fraction = heartbeat_fraction;
 				render_screen(ticks_elapsed);
 			}
 		}

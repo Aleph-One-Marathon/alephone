@@ -1276,7 +1276,7 @@ void execute_timer_tasks(uint32 time)
 }
 
 bool must_force_30fps() {
-	return game_is_networked || replay.game_is_being_replayed || Movie::instance()->IsRecording();
+	return replay.game_is_being_replayed || Movie::instance()->IsRecording();
 }
 
 void wait_until_next_frame()

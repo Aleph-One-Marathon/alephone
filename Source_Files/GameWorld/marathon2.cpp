@@ -190,10 +190,12 @@ reset_intermediate_action_queues() {
 
 // ZZZ: For prediction...
 static bool sPredictionWanted= false;
+static uint32_t last_net_time = 0;
 
 void
 set_prediction_wanted(bool inPrediction)
 {
+	last_net_time = 0;
 	sPredictionWanted= inPrediction;
 }
 
@@ -467,9 +469,23 @@ update_world()
 
 #ifndef DISABLE_NETWORKING
 	if (game_is_networked)
+	{
 		NetProcessMessagesInGame();
+
+		auto net_time = NetGetNetTime();
+		// batch world updates
+		if (static_cast<int32_t>(last_net_time - net_time) < 0)
+		{
+			printf("nt: %i\n", net_time);
+			last_net_time = net_time;
+		}
+		else
+		{
+			return std::pair<bool, int16_t>(false, 0);
+		}
+	}
 #endif
-        
+
         while(canUpdate)
         {
                 // If we have flags in the GameQueue, or can put a tick's-worth there, we're ok.
@@ -578,24 +594,16 @@ update_world()
 			didPredict = true;
 
 		} // loop while local player has flags we haven't used for prediction
-
-		if (didPredict)
-		{
-			enter_interpolated_world();
-		}
-
-		return std::pair<bool, int16>(didPredict, theElapsedTime);
-
 	} // if we should predict
-	else
+
+	
+	if (didPredict || theElapsedTime)
 	{
-		if (theElapsedTime)
-		{
-			enter_interpolated_world();
-		}
-		// we return separately 1. "whether to redraw" and 2. "how many game-ticks elapsed"
-		return std::pair<bool, int16>(theElapsedTime != 0, theElapsedTime);
+		enter_interpolated_world();
 	}
+	
+	// we return separately 1. "whether to redraw" and 2. "how many game-ticks elapsed"
+	return std::pair<bool, int16>(didPredict || theElapsedTime != 0, theElapsedTime);
 }
 
 /* call this function before leaving the old level, but DO NOT call it when saving the player.
