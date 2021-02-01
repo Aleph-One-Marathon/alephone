@@ -122,6 +122,7 @@ Feb 8, 2003 (Woody Zenfell):
 #include "motion_sensor.h"
 
 #include <limits.h>
+#include <thread>
 
 #include "ephemera.h"
 #include "interpolated_world.h"
@@ -190,12 +191,10 @@ reset_intermediate_action_queues() {
 
 // ZZZ: For prediction...
 static bool sPredictionWanted= false;
-static uint32_t last_net_time = 0;
 
 void
 set_prediction_wanted(bool inPrediction)
 {
-	last_net_time = 0;
 	sPredictionWanted= inPrediction;
 }
 
@@ -472,14 +471,7 @@ update_world()
 	{
 		NetProcessMessagesInGame();
 
-		auto net_time = NetGetNetTime();
-		// batch world updates
-		if (static_cast<int32_t>(last_net_time - net_time) < 0)
-		{
-			printf("nt: %i\n", net_time);
-			last_net_time = net_time;
-		}
-		else
+		if (!NetCheckWorldUpdate())
 		{
 			return std::pair<bool, int16_t>(false, 0);
 		}

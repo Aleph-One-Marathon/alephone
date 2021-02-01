@@ -79,6 +79,7 @@ struct NetStatus
 	uint8 *buffer;
 
 	int32 localNetTime;
+	bool worldUpdate;
 };
 typedef struct NetStatus NetStatus, *NetStatusPtr;
 
@@ -651,6 +652,7 @@ RingGameProtocol::Sync(NetTopology* inTopology, int32 inSmallestGameTick, size_t
 	status->ringPacketCount= 0;
 	status->server_player_index= inServerPlayerIndex;
 	status->last_extra_flags= 0;
+	status->worldUpdate = false;
 	status->acceptPackets= true; /* let the PacketHandler see incoming packets */
 	status->acceptRingPackets= true;
 	local_queue.read_index= local_queue.write_index= 0;
@@ -1826,6 +1828,8 @@ static bool NetServerTask(
 			} // we have accumulated enough data to let the ring go on
 	} // reinstall (netState != netDown)
 
+	status->worldUpdate = true;
+
 		return reinstall;
 } // NetServerTask
 
@@ -1855,6 +1859,8 @@ static bool NetQueueingTask(
 			status->localNetTime++;
 		} // room to store an action_flag
 	} // reinstall (netState != netDown)
+
+	status->worldUpdate = true;
 
 	return reinstall;
 } // NetQueueingTask
@@ -2126,6 +2132,20 @@ RingGameProtocol::GetNetTime(void)
 #else
 	return status->localNetTime - 2*status->action_flags_per_packet - status->update_latency;
 #endif
+}
+
+bool
+RingGameProtocol::CheckWorldUpdate()
+{
+	if (status->worldUpdate)
+	{
+		status->worldUpdate = false;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 int32 RingGameProtocol::GetUnconfirmedActionFlagsCount()

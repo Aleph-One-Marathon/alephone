@@ -305,5 +305,6 @@ struct NetworkStats
 int32 NetGetLatency();
 
 const NetworkStats& NetGetStats(int player_index);
+bool NetCheckWorldUpdate();
 
 #endif
