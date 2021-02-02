@@ -750,9 +750,25 @@ static void main_event_loop(void)
 		execute_timer_tasks(machine_tick_count());
 		idle_game_state(machine_tick_count());
 
-		if (game_state == _game_in_progress && get_effective_fps_target() != _unlimited_fps && (get_effective_fps_target() != _30fps || ((TICKS_PER_SECOND - (machine_tick_count() - cur_time)) > 10)))
+		if (game_state == _game_in_progress &&
+			get_effective_fps_target() != _unlimited_fps)
 		{
-			wait_until_next_frame();
+			int elapsed_machine_ticks = machine_tick_count() - cur_time;
+			int desired_elapsed_machine_ticks;
+			switch (get_effective_fps_target())
+			{
+			case _30fps:
+				desired_elapsed_machine_ticks = MACHINE_TICKS_PER_SECOND / 30;
+				break;
+			case _60fps:
+				desired_elapsed_machine_ticks = MACHINE_TICKS_PER_SECOND / 60;
+				break;
+			}
+
+			if (desired_elapsed_machine_ticks - elapsed_machine_ticks > desired_elapsed_machine_ticks / 3)
+			{
+				sleep_for_machine_ticks(1);
+			}
 		}
 	}
 }

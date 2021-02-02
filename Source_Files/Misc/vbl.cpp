@@ -1279,8 +1279,3 @@ bool must_force_30fps() {
 	return replay.game_is_being_replayed || Movie::instance()->IsRecording();
 }
 
-void wait_until_next_frame()
-{
-	// TODO
-	yield();
-}
