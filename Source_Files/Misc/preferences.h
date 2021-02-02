@@ -102,8 +102,6 @@ struct graphics_preferences_data
 	int16 software_sdl_driver;
 	int16 fps_target;
 
-	bool hog_the_cpu;
-
 	int16 movie_export_video_quality;
 	int32 movie_export_video_bitrate; // 0 is automatic
     int16 movie_export_audio_quality;
