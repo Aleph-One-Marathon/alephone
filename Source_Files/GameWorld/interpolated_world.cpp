@@ -168,7 +168,7 @@ void exit_interpolated_world()
 	{
 		return;
 	}
-	
+
 	for (auto i = 0; i < MAXIMUM_OBJECTS_PER_MAP; ++i)
 	{
 		auto& tick_object = current_tick_objects[i];
@@ -401,16 +401,27 @@ void interpolate_world_view(float heartbeat_fraction)
 	}
 }
 
+extern bool game_is_being_replayed();
+extern int get_replay_speed();
+
 float get_heartbeat_fraction()
 {
 	auto fraction = static_cast<float>((machine_tick_count() - start_machine_tick) * TICKS_PER_SECOND + 1) / MACHINE_TICKS_PER_SECOND;
-	
+
 	switch (get_effective_fps_target())
 	{
 	case _30fps:
 		return 1.f;
 	case _60fps:
-		return std::min(std::ceil(fraction * 2.f) / 2.f, 1.f);
+		if (game_is_being_replayed() && get_replay_speed() < 0)
+		{
+			auto ratio = -get_replay_speed() + 1;
+			return std::min(std::ceil(fraction * 2.f) / (2.f * ratio), 1.f);
+		}
+		else
+		{
+			return std::min(std::ceil(fraction * 2.f) / 2.f, 1.f);
+		}
 	case _unlimited_fps:
 		return fraction;
 	}

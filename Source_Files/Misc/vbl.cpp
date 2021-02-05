@@ -254,6 +254,16 @@ void decrement_replay_speed(
 	if (replay.replay_speed > MINIMUM_REPLAY_SPEED) replay.replay_speed--;
 }
 
+int get_replay_speed()
+{
+	return replay.replay_speed;
+}
+
+bool game_is_being_replayed()
+{
+	return replay.game_is_being_replayed;
+}
+
 void increment_heartbeat_count(int value)
 {
 	heartbeat_count+=value;
@@ -1276,6 +1286,6 @@ void execute_timer_tasks(uint32 time)
 }
 
 bool must_force_30fps() {
-	return replay.game_is_being_replayed || Movie::instance()->IsRecording();
+	return Movie::instance()->IsRecording();
 }
 
