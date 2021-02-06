@@ -423,6 +423,14 @@ float get_heartbeat_fraction()
 			return std::min(std::ceil(fraction * 2.f) / 2.f, 1.f);
 		}
 	case _unlimited_fps:
-		return fraction;
+		if (game_is_being_replayed() && get_replay_speed() < 0)
+		{
+			auto ratio = -get_replay_speed() + 1;
+			return fraction / ratio;
+		}
+		else
+		{
+			return fraction;
+		}
 	}
 }
