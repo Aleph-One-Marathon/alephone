@@ -26,6 +26,7 @@
 
 #include "cseries.h"
 #include "OGL_FBO.h"
+#include <memory>
 #include <string.h>
 #include <vector>
 #include <SDL_thread.h>

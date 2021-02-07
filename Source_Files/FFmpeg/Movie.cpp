@@ -384,6 +384,8 @@ bool Movie::Setup()
     
     av_register_all();
     avcodec_register_all();
+
+	const auto fps = (get_fps_target() == _60fps) ? TICKS_PER_SECOND * 2 : TICKS_PER_SECOND;
     
     // Open output file
     AVOutputFormat *fmt;
@@ -428,7 +430,7 @@ bool Movie::Setup()
         video_stream->codec->codec_type = AVMEDIA_TYPE_VIDEO;
         video_stream->codec->width = view_rect.w;
         video_stream->codec->height = view_rect.h;
-        video_stream->codec->time_base = AVRational{1, TICKS_PER_SECOND};
+        video_stream->codec->time_base = AVRational{1, fps};
         video_stream->codec->pix_fmt = AV_PIX_FMT_YUV420P;
         video_stream->codec->flags |= AV_CODEC_FLAG_CLOSED_GOP;
         video_stream->codec->thread_count = get_cpu_count();
@@ -445,12 +447,24 @@ bool Movie::Setup()
 		if (bitrate <= 0) // auto, based on YouTube's SDR standard frame rate
 						  // recommendations
 		{
-			if      (view_rect.h >= 2160) bitrate = 40 * 1024 * 1024;
-			else if (view_rect.h >= 1440) bitrate = 16 * 1024 * 1024;
-			else if (view_rect.h >= 1080) bitrate =  8 * 1024 * 1024;
-			else if (view_rect.h >=  720) bitrate =  5 * 1024 * 1024;
-			else if (view_rect.h >=  480) bitrate =  5 * 1024 * 1024 / 2;
-			else                          bitrate =      1024 * 1024;
+			if (fps == 60)
+			{
+				if      (view_rect.h >= 2160) bitrate = 60 * 1024 * 1024;
+				else if (view_rect.h >= 1440) bitrate = 24 * 1024 * 1024;
+				else if (view_rect.h >= 1080) bitrate = 12 * 1024 * 1024;
+				else if (view_rect.h >=  720) bitrate = 15 * 1024 * 1024 / 2;
+				else if (view_rect.h >=  480) bitrate =  4 * 1024 * 1024;
+				else                          bitrate =  3 * 1024 * 1024 / 2;
+			}
+			else
+			{
+				if      (view_rect.h >= 2160) bitrate = 40 * 1024 * 1024;
+				else if (view_rect.h >= 1440) bitrate = 16 * 1024 * 1024;
+				else if (view_rect.h >= 1080) bitrate =  8 * 1024 * 1024;
+				else if (view_rect.h >=  720) bitrate =  5 * 1024 * 1024;
+				else if (view_rect.h >=  480) bitrate =  5 * 1024 * 1024 / 2;
+				else                          bitrate =      1024 * 1024;
+			}
 		}
 		
         video_stream->codec->bit_rate = bitrate;
@@ -574,7 +588,7 @@ bool Movie::Setup()
     // Start movie file
     if (success)
     {
-        video_stream->time_base = AVRational{1, TICKS_PER_SECOND};
+        video_stream->time_base = AVRational{1, fps};
         audio_stream->time_base = AVRational{1, mx->obtained.freq};
         avformat_write_header(av->fmt_ctx, NULL);
     }
@@ -583,7 +597,7 @@ bool Movie::Setup()
     if (success)
     {
         videobuf.resize(av->video_bufsize);
-        audiobuf.resize(2 * 2 * mx->obtained.freq / 30);
+        audiobuf.resize(2 * 2 * mx->obtained.freq / fps);
 	}
 	if (success)
 	{

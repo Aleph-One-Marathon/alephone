@@ -693,7 +693,7 @@ static void main_event_loop(void)
 		switch (game_state) {
 			case _game_in_progress:
 			case _change_level:
-				if (get_effective_fps_target() == _unlimited_fps || Console::instance()->input_active() || cur_time - last_event_poll >= TICKS_BETWEEN_EVENT_POLL) {
+				if (get_fps_target() == _unlimited_fps || Console::instance()->input_active() || cur_time - last_event_poll >= TICKS_BETWEEN_EVENT_POLL) {
 					poll_event = true;
 					last_event_poll = cur_time;
 			  } else {				  
@@ -751,11 +751,11 @@ static void main_event_loop(void)
 		idle_game_state(machine_tick_count());
 
 		if (game_state == _game_in_progress &&
-			get_effective_fps_target() != _unlimited_fps)
+			get_fps_target() != _unlimited_fps)
 		{
 			int elapsed_machine_ticks = machine_tick_count() - cur_time;
 			int desired_elapsed_machine_ticks;
-			switch (get_effective_fps_target())
+			switch (get_fps_target())
 			{
 			case _30fps:
 				desired_elapsed_machine_ticks = MACHINE_TICKS_PER_SECOND / 30;

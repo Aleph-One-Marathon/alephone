@@ -541,6 +541,8 @@ void get_recording_header_data(
 	obj_copy(*game_information, replay.header.game_information);
 }
 
+extern int movie_export_phase;
+
 bool setup_for_replay_from_file(
 	FileSpecifier& File,
 	uint32 map_checksum,
@@ -560,6 +562,7 @@ bool setup_for_replay_from_file(
 		replay.resource_data= NULL;
 		replay.resource_data_size= 0l;
 		replay.film_resource_offset= NONE;
+		movie_export_phase = 0;
 		
 		byte Header[SIZEOF_recording_header];
 		FilmFile.Read(SIZEOF_recording_header,Header);
@@ -1265,9 +1268,14 @@ void execute_timer_tasks(uint32 time)
 {
 	if (tm_func) {
 		if (Movie::instance()->IsRecording()) {
-			tm_func();
+			if (get_fps_target() != _60fps ||
+				movie_export_phase++ % 2 == 0)
+			{
+				tm_func();
+			}
 			return;
 		}
+		
 		uint32 now = time;
 		tm_accum += now - tm_last;
 		tm_last = now;
@@ -1285,7 +1293,4 @@ void execute_timer_tasks(uint32 time)
 	}
 }
 
-bool must_force_30fps() {
-	return Movie::instance()->IsRecording();
-}
 

@@ -285,9 +285,9 @@ void initialize_preferences(void);
 void read_preferences();
 void handle_preferences(void);
 void write_preferences(void);
-extern bool must_force_30fps();
-static inline int16 get_effective_fps_target() {
-  return must_force_30fps() ? _30fps : graphics_preferences->fps_target;
+
+static inline int16 get_fps_target() {
+	return graphics_preferences->fps_target;
 }
 
 void transition_preferences(const DirectorySpecifier& legacy_prefs_dir);

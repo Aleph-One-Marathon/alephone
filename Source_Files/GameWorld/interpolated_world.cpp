@@ -27,6 +27,7 @@ INTERPOLATED_WORLD.CPP
 #include <vector>
 
 #include "map.h"
+#include "Movie.h"
 #include "player.h"
 #include "preferences.h"
 #include "render.h"
@@ -404,11 +405,25 @@ void interpolate_world_view(float heartbeat_fraction)
 extern bool game_is_being_replayed();
 extern int get_replay_speed();
 
+int movie_export_phase;
+
 float get_heartbeat_fraction()
 {
+	if (Movie::instance()->IsRecording())
+	{
+		if (get_fps_target() == _60fps)
+		{
+			return movie_export_phase % 2 ? 0.5f : 1.f;
+		}
+		else
+		{
+			return 1.f;
+		}
+	}
+	
 	auto fraction = static_cast<float>((machine_tick_count() - start_machine_tick) * TICKS_PER_SECOND + 1) / MACHINE_TICKS_PER_SECOND;
 
-	switch (get_effective_fps_target())
+	switch (get_fps_target())
 	{
 	case _30fps:
 		return 1.f;
