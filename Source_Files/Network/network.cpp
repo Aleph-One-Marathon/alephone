@@ -1607,7 +1607,7 @@ NetCancelJoin
 
 	<--- error
 
-canÕt be called after the player has been gathered
+canâ€™t be called after the player has been gathered
 */
 
 bool NetGameJoin(
@@ -1885,7 +1885,7 @@ static void NetInitializeTopology(
 	assert(player_data_size>=0&&player_data_size<MAXIMUM_PLAYER_DATA_SIZE);
 	assert(game_data_size>=0&&game_data_size<MAXIMUM_GAME_DATA_SIZE);
 
-	/* initialize the local player (assume weÕre index zero, identifier zero) */
+	/* initialize the local player (assume weâ€™re index zero, identifier zero) */
 	localPlayerIndex= localPlayerIdentifier= 0;
 	local_player= topology->players + localPlayerIndex;
 	local_player->identifier= localPlayerIdentifier;
@@ -1897,7 +1897,7 @@ static void NetInitializeTopology(
 	if (player_data_size > 0)
 		memcpy(&local_player->player_data, player_data, player_data_size);
 	
-	/* initialize the network topology (assume weÕre the only player) */
+	/* initialize the network topology (assume weâ€™re the only player) */
 	topology->player_count= 1;
 	topology->nextIdentifier= 1;
 	if (game_data_size > 0)
@@ -1941,7 +1941,7 @@ static bool NetSetSelfSend(
 
 
 /* ------ this needs to let the gatherer keep going if there was an error.. */
-/* ¥¥¥ÊMarathon Specific Code ¥¥¥ */
+/* â€¢â€¢â€¢Â Marathon Specific Code â€¢â€¢â€¢ */
 /* Returns error code.. */
 // ZZZ annotation: this function doesn't seem to belong here - maybe more like interface.cpp?
 bool NetChangeMap(
@@ -2443,7 +2443,7 @@ short NetUpdateJoinState(
       break;
     }
   
-  /* return netPlayerAdded to tell the caller to refresh his topology, but donÕt change netState to that */
+  /* return netPlayerAdded to tell the caller to refresh his topology, but donâ€™t change netState to that */
   // ZZZ: similar behavior for netChatMessageReceived and netStartingResumeGame
   if (newState!=netPlayerAdded && newState!=netPlayerDropped && newState!=netPlayerChanged && newState != netChatMessageReceived && newState != netStartingResumeGame && newState != NONE)
     netState= newState;
@@ -2492,7 +2492,7 @@ NetDistributeTopology
 
 	<--- error
 
-connect to everyoneÕs dspAddress and give them the latest copy of the network topology.  this
+connect to everyoneâ€™s dspAddress and give them the latest copy of the network topology.  this
 used to be NetStart() and it used to connect all upring and downring ADSP connections.
 */
 static void NetDistributeTopology(

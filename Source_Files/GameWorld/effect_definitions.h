@@ -38,7 +38,7 @@ enum /* flags */
 {
 	_end_when_animation_loops= 0x0001,
 	_end_when_transfer_animation_loops= 0x0002,
-	_sound_only= 0x0004, /* play the animationÕs initial sound and nothing else */
+	_sound_only= 0x0004, /* play the animationâ€™s initial sound and nothing else */
 	_make_twin_visible= 0x0008,
 	_media_effect= 0x0010
 };

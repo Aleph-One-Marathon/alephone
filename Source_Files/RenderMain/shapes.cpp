@@ -23,7 +23,7 @@ Saturday, September 4, 1993 9:26:41 AM
 Thursday, May 19, 1994 9:06:28 AM
 	unification of wall and object shapes complete, new shading table builder.
 Wednesday, June 22, 1994 11:55:07 PM
-	we now read data from alainÕs shape extractor.
+	we now read data from alainâ€™s shape extractor.
 Saturday, July 9, 1994 3:22:11 PM
 	lightening_table removed; we now build darkening tables on a collection-by-collection basis
 	(one 8k darkening table per clut permutation of the given collection)
@@ -142,7 +142,7 @@ enum /* collection status */
 	markNONE,
 	markLOAD= 1,
 	markUNLOAD= 2,
-	markSTRIP= 4 /* we donÕt want bitmaps, just high/low-level shape data */,
+	markSTRIP= 4 /* we donâ€™t want bitmaps, just high/low-level shape data */,
 	markPATCHED = 8 /* force re-load */
 };
 
@@ -1192,7 +1192,7 @@ void strip_collection(
 	}
 }
 
-/* returns count, doesnÕt fill NULL buffer */
+/* returns count, doesnâ€™t fill NULL buffer */
 short get_shape_descriptors(
 	short shape_type,
 	shape_descriptor *buffer)
@@ -1419,7 +1419,7 @@ void load_collections(
 	{
 //		if (with_progress_bar)
 //			draw_progress_bar(MAXIMUM_COLLECTIONS+collection_index, 2*MAXIMUM_COLLECTIONS);
-		/* donÕt reload collections which are already in memory, but do lock them */
+		/* donâ€™t reload collections which are already in memory, but do lock them */
 		if (collection_loaded(header))
 		{
 			// In case the substitute images had been changed by some level-specific MML...
@@ -1537,7 +1537,7 @@ static void precalculate_bit_depth_constants(
 }
 
 /* given a list of RGBColors, find out which one, if any, match the given color.  if there
-	arenÕt any matches, add a new entry and return that index. */
+	arenâ€™t any matches, add a new entry and return that index. */
 static short find_or_add_color(
 	struct rgb_color_value *color,
 	struct rgb_color_value *colors,
@@ -1612,8 +1612,8 @@ static void update_color_environment(
 	colors[0].flags= colors[0].value= 0;
 	color_count= 1;
 
-	/* loop through all collections, only paying attention to the loaded ones.  weÕre
-		depending on finding the gray run (white to black) first; so itÕs the responsibility
+	/* loop through all collections, only paying attention to the loaded ones.  weâ€™re
+		depending on finding the gray run (white to black) first; so itâ€™s the responsibility
 		of the lowest numbered loaded collection to give us this */
 	for (collection_index=0;collection_index<MAXIMUM_COLLECTIONS;++collection_index)
 	{
@@ -1630,7 +1630,7 @@ static void update_color_environment(
 //			if (collection_index==15) dprintf("primary clut %p", primary_colors);
 //			dprintf("primary clut %d entries;dm #%d #%d", collection->color_count, primary_colors, collection->color_count*sizeof(ColorSpec));
 
-			/* add the colors from this collectionÕs primary color table to the aggregate color
+			/* add the colors from this collectionâ€™s primary color table to the aggregate color
 				table and build the remapping table */
 			for (color_index=0;color_index<collection->color_count-NUMBER_OF_PRIVATE_COLORS;++color_index)
 			{
@@ -1720,7 +1720,7 @@ static void update_color_environment(
 			/* 8-bit interface, non-8-bit main window; remember interface CLUT separately */
 			if (collection_index==_collection_interface && interface_bit_depth==8 && bit_depth!=interface_bit_depth) _change_clut(change_interface_clut, colors, color_count);
 			
-			/* if weÕre not in 8-bit, we donÕt have to carry our colors over into the next collection */
+			/* if weâ€™re not in 8-bit, we donâ€™t have to carry our colors over into the next collection */
 			if (bit_depth!=8) color_count= 1;
 		}
 	}

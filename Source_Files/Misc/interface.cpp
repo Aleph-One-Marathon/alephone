@@ -23,7 +23,7 @@
 
 	Friday, July 8, 1994 2:32:44 PM (alain)
 		All old code in here is obsolete. This now has interface for the top-level
-		interface (Begin Game, etc…)
+		interface (Begin Game, etc‚Ä¶)
 	Saturday, September 10, 1994 12:45:48 AM  (alain)
 		the interface gutted again. just the stuff that handles the menu though, the rest stayed
 		the same.
@@ -840,7 +840,7 @@ bool join_networked_resume_game()
                         }
                         else
                         {
-                                /* Tell the user they’re screwed when they try to leave this level. */
+                                /* Tell the user they‚Äôre screwed when they try to leave this level. */
                                 // ZZZ: should really issue a different warning since the ramifications are different
                                 alert_user(infoError, strERRORS, cantFindMap, 0);
         
@@ -1209,7 +1209,7 @@ bool idle_game_state(uint32 time)
 		game_state.last_ticks_on_idle= machine_tick_count();
 	}
 
-	/* if we’re not paused and there’s something to draw (i.e., anything different from
+	/* if we‚Äôre not paused and there‚Äôs something to draw (i.e., anything different from
 		last time), render a frame */
 	if(game_state.state==_game_in_progress)
 	{
@@ -1789,7 +1789,7 @@ static void display_about_dialog()
 	authors.push_back("Carl Gherardi");
 	authors.push_back("Thomas Herzog");
 	authors.push_back("Chris Hallock (LidMop)");
-	authors.push_back("Benoît Hauquier (Kolfering)");
+	authors.push_back("Beno√Æt Hauquier (Kolfering)");
 	authors.push_back("Peter Hessler");
 	authors.push_back("Matthew Hielscher");
 	authors.push_back("Rhys Hill");

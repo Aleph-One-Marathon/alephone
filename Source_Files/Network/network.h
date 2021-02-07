@@ -114,7 +114,7 @@ struct prospective_joiner_info {
 
 
 /* ---------------- functions from network.c */
-enum /* message types passed to the userÕs names lookup update procedure */
+enum /* message types passed to the userâ€™s names lookup update procedure */
 {
 	removeEntity,
 	insertEntity

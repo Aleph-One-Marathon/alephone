@@ -26,7 +26,7 @@ Monday, March 6, 1995 9:41:50 PM  (Jason')
 Thursday, April 27, 1995 11:00:36 AM  (Jason')
 	functions with zero periods are skipped.
 Tuesday, June 13, 1995 6:13:29 PM  (Jason)
-	support for phases greater than a lightÕs initial period
+	support for phases greater than a lightâ€™s initial period
 Monday, July 10, 1995 5:20:26 PM  (Jason)
 	stateless (six phase) lights.
 
@@ -217,7 +217,7 @@ void update_lights(
 	{
 		if (SLOT_IS_USED(light))
 		{
-			/* update light phase; if weÕve overflowed our period change to the next state */
+			/* update light phase; if weâ€™ve overflowed our period change to the next state */
 			light->phase+= 1;
 			rephase_light(light_index);
 			

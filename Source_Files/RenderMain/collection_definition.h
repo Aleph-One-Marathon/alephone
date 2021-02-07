@@ -31,7 +31,7 @@ Wednesday, June 22, 1994 3:53:22 PM
 	scaling modifications.
 Wednesday, June 22, 1994 10:07:38 PM
 	added _scenery_collection type, .size field to collection_definition structure, changed
-	Ôshape_indexesÕ to Ôlow_level_shape_indexesÕ in high_level_shape_definition structure
+	â€˜shape_indexesâ€™ to â€˜low_level_shape_indexesâ€™ in high_level_shape_definition structure
 Saturday, July 9, 1994 3:36:05 PM
 	added NUMBER_OF_PRIVATE_COLORS constant.
 */
