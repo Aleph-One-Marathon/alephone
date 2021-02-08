@@ -23,11 +23,15 @@ INTERPOLATED_WORLD.H
 	Storage for interpolated (> 30 fps) world
 */
 
+#include <cstdint>
+
 void init_interpolated_world();
 void enter_interpolated_world();
 void exit_interpolated_world();
 
 void update_interpolated_world(float heartbeat_fraction);
 void interpolate_world_view(float heartbeat_fraction);
+
+void track_contrail_interpolation(int16_t projectile_index, int16_t effect_index);
 
 #endif

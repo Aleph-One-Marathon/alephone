@@ -42,10 +42,9 @@ extern struct view_data* world_view;
 
 // ticks positions line up with 30 fps ticks
 struct TickObjectData {
-	bool used;
 	world_point3d location;
 	int16_t polygon;
-
+	uint16_t flags;
 	int16_t next_object;
 };
 
@@ -76,10 +75,18 @@ struct TickWorldView {
 static TickWorldView previous_tick_world_view;
 static TickWorldView current_tick_world_view;
 
+// If the index points to a projectile, then the value is the newest
+// contrail. If the index points to an effect, then the value is either the
+// projectile, or the next newest contrail
+static std::vector<int16_t> contrail_tracking;
+
 void init_interpolated_world()
 {
 	previous_tick_objects.resize(MAXIMUM_OBJECTS_PER_MAP);
 	current_tick_objects.resize(MAXIMUM_OBJECTS_PER_MAP);
+
+	contrail_tracking.resize(MAXIMUM_OBJECTS_PER_MAP);
+	std::fill_n(contrail_tracking.data(), NONE, MAXIMUM_OBJECTS_PER_MAP);
 
 	current_tick_polygons.resize(dynamic_world->polygon_count);
 	
@@ -87,17 +94,11 @@ void init_interpolated_world()
 	{
 		auto& tick_object = current_tick_objects[i];
 		auto object = &objects[i];
-		if (SLOT_IS_USED(object))
-		{
-			tick_object.used = true;
-			tick_object.location = object->location;
-			tick_object.next_object = object->next_object;
-			tick_object.polygon = object->polygon;
-		}
-		else
-		{
-			tick_object.used = false;
-		}
+
+		tick_object.location = object->location;
+		tick_object.polygon = object->polygon;
+		tick_object.flags = object->flags;
+		tick_object.next_object = object->next_object;
 	}
 	
 	previous_tick_objects.assign(current_tick_objects.begin(),
@@ -121,21 +122,20 @@ void enter_interpolated_world()
 	
 	previous_tick_objects.assign(current_tick_objects.begin(),
 								 current_tick_objects.end());
-
+	
 	for (auto i = 0; i < MAXIMUM_OBJECTS_PER_MAP; ++i)
 	{
 		auto& tick_object = current_tick_objects[i];
 		auto object = &objects[i];
-		if (SLOT_IS_USED(object))
+		
+		tick_object.location = object->location;
+		tick_object.polygon = object->polygon;
+		tick_object.flags = object->flags;
+		tick_object.next_object = object->next_object;
+
+		if (!SLOT_IS_USED(object))
 		{
-			tick_object.used = true;
-			tick_object.location = object->location;
-			tick_object.next_object = object->next_object;
-			tick_object.polygon = object->polygon;
-		}
-		else
-		{
-			tick_object.used = false;
+			contrail_tracking[i] = NONE;
 		}
 	}
 
@@ -175,12 +175,10 @@ void exit_interpolated_world()
 		auto& tick_object = current_tick_objects[i];
 		auto& object = objects[i];
 
-		if (tick_object.used)
-		{
-			object.location = tick_object.location;
-			object.next_object = tick_object.next_object;
-			object.polygon = tick_object.polygon;
-		}
+		object.location = tick_object.location;
+		object.polygon = tick_object.polygon;
+		object.flags = tick_object.flags;
+		object.next_object = tick_object.next_object;
 	}
 
 	for (auto i = 0; i < dynamic_world->polygon_count; ++i)
@@ -289,12 +287,38 @@ void update_interpolated_world(float heartbeat_fraction)
 		auto prev = &previous_tick_objects[i];
 		auto next = &current_tick_objects[i];
 
+		if (contrail_tracking[i] &&
+			GET_OBJECT_OWNER(next) == _object_is_effect)
+		{
+			auto target = &current_tick_objects[contrail_tracking[i]];
+			if (SLOT_IS_USED(target))
+			{
+				next = target;
+				if (GET_OBJECT_OWNER(target) == _object_is_projectile &&
+					(!SLOT_IS_USED(prev)
+					 // contrails never move; if it's in a new location, it's a
+					 // new contrail
+					 || prev->location.x != next->location.x
+					 || prev->location.y != next->location.y))
+				{
+					// a newly created contrail interpolates from the
+					// projectile's last position
+					prev = &previous_tick_objects[contrail_tracking[i]];
+					if (prev->polygon != next->polygon)
+					{
+						remove_object_from_polygon_object_list(i);
+						add_object_to_polygon_object_list(i, prev->polygon);
+					}
+				}
+			}
+		}
+
 		// Properly speaking, we shouldn't render objects that did not
 		// exist "last" tick at all during a fractional frame. Doing
 		// so "stretches" new objects' existences by almost (but not
 		// quite) one tick. However, this is preferable to the flicker
 		// that would otherwise appear when a projectile detonates.
-		if (!next->used || !prev->used)
+		if (!SLOT_IS_USED(next) || !SLOT_IS_USED(prev))
 		{
 			continue;
 		}
@@ -305,10 +329,12 @@ void update_interpolated_world(float heartbeat_fraction)
 			continue;
 		}
 
+
 		if (!should_interpolate(prev->location, next->location))
 		{
 			continue;
 		}
+
 
 		auto object = &objects[i];
 		object->location.x = lerp(prev->location.x,
@@ -327,7 +353,7 @@ void update_interpolated_world(float heartbeat_fraction)
 		{
 			auto polygon_index = find_new_polygon(object->polygon,
 												  object->location,
-													  next->location);
+												  next->location);
 			
 			if (polygon_index == NONE)
 			{
@@ -448,4 +474,15 @@ float get_heartbeat_fraction()
 			return fraction;
 		}
 	}
+}
+
+void track_contrail_interpolation(int16_t projectile_index, int16_t effect_index)
+{
+	auto prev_effect_index = contrail_tracking[projectile_index];
+	if (prev_effect_index != NONE)
+	{
+		contrail_tracking[prev_effect_index] = effect_index;
+	}
+	contrail_tracking[effect_index] = projectile_index;
+	contrail_tracking[projectile_index] = effect_index;
 }

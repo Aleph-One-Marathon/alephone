@@ -316,6 +316,8 @@ short new_projectile(
 	return projectile_index;
 }
 
+extern void track_contrail_interpolation(int16_t, int16_t);
+
 /* assumes ¶t==1 tick */
 void move_projectiles(
 	void)
@@ -552,7 +554,14 @@ void move_projectiles(
 							{
 								projectile->contrail_count+= 1;
 								projectile->ticks_since_last_contrail= 0;
-								if (definition->contrail_effect!=NONE) new_effect(&old_location, old_polygon_index, definition->contrail_effect, object->facing);
+								if (definition->contrail_effect!=NONE)
+								{
+									auto effect_index = new_effect(&old_location, old_polygon_index, definition->contrail_effect, object->facing);
+									if (effect_index != NONE)
+									{
+										track_contrail_interpolation(projectile->object_index, get_effect_data(effect_index)->object_index);
+									}
+								}
 							}
 						}
 		
