@@ -26,6 +26,8 @@ INTERPOLATED_WORLD.CPP
 #include <cstdint>
 #include <vector>
 
+#include "dynamic_limits.h"
+#include "ephemera.h"
 #include "map.h"
 #include "Movie.h"
 #include "player.h"
@@ -73,6 +75,11 @@ struct TickPlayerData {
 	angle elevation;
 	_fixed weapon_intensity;
 };
+
+static std::vector<TickObjectData> previous_tick_ephemera;
+static std::vector<TickObjectData> current_tick_ephemera;
+
+static std::vector<int16_t> current_tick_polygon_ephemera;
 
 struct TickWorldView {
 	int16_t origin_polygon_index;
@@ -127,6 +134,26 @@ void init_interpolated_world()
 	previous_tick_sides.assign(current_tick_sides.begin(),
 							   current_tick_sides.end());
 
+	current_tick_ephemera.resize(get_dynamic_limit(_dynamic_limit_ephemera));
+	for (auto i = 0; i < get_dynamic_limit(_dynamic_limit_ephemera); ++i)
+	{
+		auto& tick_ephemera = current_tick_ephemera[i];
+		auto ephemera = get_ephemera_data(i);
+
+		tick_ephemera.location = ephemera->location;
+		tick_ephemera.polygon = ephemera->polygon;
+		tick_ephemera.flags = ephemera->flags;
+		tick_ephemera.next_object = ephemera->next_object;
+	}
+	previous_tick_ephemera.assign(current_tick_ephemera.begin(),
+								  current_tick_ephemera.end());
+
+	current_tick_polygon_ephemera.resize(dynamic_world->polygon_count);
+	for (auto i = 0; i < dynamic_world->polygon_count; ++i)
+	{
+		current_tick_polygon_ephemera[i] = get_polygon_ephemera(i)->first_object;
+	}
+
 	previous_tick_world_view.origin_polygon_index = NONE;
 
 	contrail_tracking.resize(MAXIMUM_OBJECTS_PER_MAP);
@@ -171,6 +198,8 @@ void enter_interpolated_world()
 		tick_polygon.floor_height = polygon.floor_height;
 		tick_polygon.ceiling_height = polygon.ceiling_height;
 		tick_polygon.first_object = polygon.first_object;
+
+		current_tick_polygon_ephemera[i] = get_polygon_ephemera(i)->first_object;
 	}
 
 	previous_tick_sides.assign(current_tick_sides.begin(),
@@ -178,6 +207,19 @@ void enter_interpolated_world()
 	for (auto i = 0; i < MAXIMUM_SIDES_PER_MAP; ++i)
 	{
 		current_tick_sides[i].y0 = map_sides[i].primary_texture.y0;
+	}
+
+	previous_tick_ephemera.assign(current_tick_ephemera.begin(),
+								  current_tick_ephemera.end());
+	for (auto i = 0; i < get_dynamic_limit(_dynamic_limit_ephemera); ++i)
+	{
+		auto& tick_ephemera = current_tick_ephemera[i];
+		auto ephemera = get_ephemera_data(i);
+
+		tick_ephemera.location = ephemera->location;
+		tick_ephemera.polygon = ephemera->polygon;
+		tick_ephemera.flags = ephemera->flags;
+		tick_ephemera.next_object = ephemera->next_object;
 	}
 
 	update_world_view_camera();
@@ -225,11 +267,24 @@ void exit_interpolated_world()
 		polygon.floor_height = tick_polygon.floor_height;
 		polygon.ceiling_height = tick_polygon.ceiling_height;
 		polygon.first_object = tick_polygon.first_object;
+
+		get_polygon_ephemera(i)->first_object = current_tick_polygon_ephemera[i];
 	}
 
 	for (auto i = 0; i < MAXIMUM_SIDES_PER_MAP; ++i)
 	{
 		map_sides[i].primary_texture.y0 = current_tick_sides[i].y0;
+	}
+
+	for (auto i = 0; i < get_dynamic_limit(_dynamic_limit_ephemera); ++i)
+	{
+		auto& tick_ephemera = current_tick_ephemera[i];
+		auto ephemera = get_ephemera_data(i);
+
+		ephemera->location = tick_ephemera.location;
+		ephemera->polygon = tick_ephemera.polygon;
+		ephemera->flags = tick_ephemera.flags;
+		ephemera->next_object = tick_ephemera.next_object;
 	}
 
 	world_is_interpolated = false;
@@ -448,6 +503,64 @@ void update_interpolated_world(float heartbeat_fraction)
 			{
 				remove_object_from_polygon_object_list(i);
 				add_object_to_polygon_object_list(i, polygon_index);
+			}
+		}
+	}
+
+	// TODO: this is not very DRY, see above
+	for (auto i = 0; i < get_dynamic_limit(_dynamic_limit_ephemera); ++i)
+	{
+		auto prev = &previous_tick_ephemera[i];
+		auto next = &current_tick_ephemera[i];
+
+		// Properly speaking, we shouldn't render objects that did not
+		// exist "last" tick at all during a fractional frame. Doing
+		// so "stretches" new objects' existences by almost (but not
+		// quite) one tick. However, this is preferable to the flicker
+		// that would otherwise appear when a projectile detonates.
+		if (!SLOT_IS_USED(next) || !SLOT_IS_USED(prev))
+		{
+			continue;
+		}
+
+		if (!TEST_RENDER_FLAG(prev->polygon, _polygon_is_visible) &&
+			!TEST_RENDER_FLAG(next->polygon, _polygon_is_visible))
+		{
+			continue;
+		}
+
+		if (!should_interpolate(prev->location, next->location))
+		{
+			continue;
+		}
+
+		auto ephemera = get_ephemera_data(i);
+		ephemera->location.x = lerp(prev->location.x,
+									next->location.x,
+									heartbeat_fraction);
+
+		ephemera->location.y = lerp(prev->location.y,
+									next->location.y,
+									heartbeat_fraction);
+
+		ephemera->location.z = lerp(prev->location.z,
+									next->location.z,
+									heartbeat_fraction);
+
+		if (ephemera->polygon != next->polygon)
+		{
+			auto polygon_index = find_new_polygon(ephemera->polygon,
+												  ephemera->location,
+												  next->location);
+
+			if (polygon_index != NONE)
+			{
+				ephemera->location = next->location;
+			}
+			else
+			{
+				remove_ephemera_from_polygon(i);
+				add_ephemera_to_polygon(i, polygon_index);
 			}
 		}
 	}
