@@ -52,10 +52,20 @@ static std::vector<TickObjectData> previous_tick_objects;
 static std::vector<TickObjectData> current_tick_objects;
 
 struct TickPolygonData {
+	world_distance floor_height;
+	world_distance ceiling_height;
 	int16_t first_object;
 };
 
+static std::vector<TickPolygonData> previous_tick_polygons;
 static std::vector<TickPolygonData> current_tick_polygons;
+
+struct TickSideData {
+	world_distance y0;
+};
+
+static std::vector<TickSideData> previous_tick_sides;
+static std::vector<TickSideData> current_tick_sides;
 
 struct TickPlayerData {
 	int index;
@@ -82,14 +92,7 @@ static std::vector<int16_t> contrail_tracking;
 
 void init_interpolated_world()
 {
-	previous_tick_objects.resize(MAXIMUM_OBJECTS_PER_MAP);
 	current_tick_objects.resize(MAXIMUM_OBJECTS_PER_MAP);
-
-	contrail_tracking.resize(MAXIMUM_OBJECTS_PER_MAP);
-	std::fill_n(contrail_tracking.data(), NONE, MAXIMUM_OBJECTS_PER_MAP);
-
-	current_tick_polygons.resize(dynamic_world->polygon_count);
-	
 	for (auto i = 0; i < MAXIMUM_OBJECTS_PER_MAP; ++i)
 	{
 		auto& tick_object = current_tick_objects[i];
@@ -100,16 +103,34 @@ void init_interpolated_world()
 		tick_object.flags = object->flags;
 		tick_object.next_object = object->next_object;
 	}
-	
 	previous_tick_objects.assign(current_tick_objects.begin(),
 								 current_tick_objects.end());
 
+	current_tick_polygons.resize(dynamic_world->polygon_count);
 	for (auto i = 0; i < dynamic_world->polygon_count; ++i)
 	{
-		current_tick_polygons[i].first_object = map_polygons[i].first_object;
+		auto& tick_polygon = current_tick_polygons[i];
+		auto polygon = &map_polygons[i];
+
+		tick_polygon.floor_height = polygon->floor_height;
+		tick_polygon.ceiling_height = polygon->ceiling_height;
+		tick_polygon.first_object = polygon->first_object;
 	}
+	previous_tick_polygons.assign(current_tick_polygons.begin(),
+								  current_tick_polygons.end());
+	
+	current_tick_sides.resize(MAXIMUM_SIDES_PER_MAP);
+	for (auto i = 0; i < MAXIMUM_SIDES_PER_MAP; ++i)
+	{
+		current_tick_sides[i].y0 = map_sides[i].primary_texture.y0;
+	}
+	previous_tick_sides.assign(current_tick_sides.begin(),
+							   current_tick_sides.end());
 
 	previous_tick_world_view.origin_polygon_index = NONE;
+
+	contrail_tracking.resize(MAXIMUM_OBJECTS_PER_MAP);
+	std::fill_n(contrail_tracking.data(), NONE, MAXIMUM_OBJECTS_PER_MAP);
 
 	world_is_interpolated = false;
 }
@@ -139,9 +160,24 @@ void enter_interpolated_world()
 		}
 	}
 
+	previous_tick_polygons.assign(current_tick_polygons.begin(),
+								  current_tick_polygons.end());
+
 	for (auto i = 0; i < dynamic_world->polygon_count; ++i)
 	{
-		current_tick_polygons[i].first_object = map_polygons[i].first_object;
+		auto& tick_polygon = current_tick_polygons[i];
+		auto& polygon = map_polygons[i];
+
+		tick_polygon.floor_height = polygon.floor_height;
+		tick_polygon.ceiling_height = polygon.ceiling_height;
+		tick_polygon.first_object = polygon.first_object;
+	}
+
+	previous_tick_sides.assign(current_tick_sides.begin(),
+							   current_tick_sides.end());
+	for (auto i = 0; i < MAXIMUM_SIDES_PER_MAP; ++i)
+	{
+		current_tick_sides[i].y0 = map_sides[i].primary_texture.y0;
 	}
 
 	update_world_view_camera();
@@ -183,7 +219,17 @@ void exit_interpolated_world()
 
 	for (auto i = 0; i < dynamic_world->polygon_count; ++i)
 	{
-		map_polygons[i].first_object = current_tick_polygons[i].first_object;
+		auto& tick_polygon = current_tick_polygons[i];
+		auto& polygon = map_polygons[i];
+
+		polygon.floor_height = tick_polygon.floor_height;
+		polygon.ceiling_height = tick_polygon.ceiling_height;
+		polygon.first_object = tick_polygon.first_object;
+	}
+
+	for (auto i = 0; i < MAXIMUM_SIDES_PER_MAP; ++i)
+	{
+		map_sides[i].primary_texture.y0 = current_tick_sides[i].y0;
 	}
 
 	world_is_interpolated = false;
@@ -280,6 +326,45 @@ void update_interpolated_world(float heartbeat_fraction)
 	if (heartbeat_fraction > 1.f)
 	{
 		return;
+	}
+
+	for (auto i = 0; i < dynamic_world->polygon_count; ++i)
+	{
+		if (!TEST_RENDER_FLAG(i, _polygon_is_visible))
+		{
+			continue;
+		}
+
+		auto& prev = previous_tick_polygons[i];
+		auto& next = current_tick_polygons[i];
+		auto& polygon = map_polygons[i];
+
+		if (prev.floor_height != next.floor_height)
+		{
+			polygon.floor_height = lerp(prev.floor_height,
+										next.floor_height,
+										heartbeat_fraction);
+		}
+
+		if (prev.ceiling_height != next.ceiling_height)
+		{
+			polygon.ceiling_height = lerp(prev.ceiling_height,
+										  next.ceiling_height,
+										  heartbeat_fraction);
+		}
+
+		for (auto j = 0; j < polygon.vertex_count; ++j)
+		{
+			auto side_index = polygon.side_indexes[j];
+			if (current_tick_sides[side_index].y0 !=
+				previous_tick_sides[side_index].y0)
+			{
+				map_sides[side_index].primary_texture.y0 = lerp(
+					previous_tick_sides[side_index].y0,
+					current_tick_sides[side_index].y0,
+					heartbeat_fraction);
+			}
+		}
 	}
 	
 	for (auto i = 0; i < MAXIMUM_OBJECTS_PER_MAP; ++i)
