@@ -69,6 +69,14 @@ struct TickSideData {
 static std::vector<TickSideData> previous_tick_sides;
 static std::vector<TickSideData> current_tick_sides;
 
+struct TickLineData {
+	world_distance highest_adjacent_floor;
+	world_distance lowest_adjacent_ceiling;
+};
+
+static std::vector<TickLineData> previous_tick_lines;
+static std::vector<TickLineData> current_tick_lines;
+
 struct TickPlayerData {
 	int index;
 	angle facing;
@@ -133,6 +141,18 @@ void init_interpolated_world()
 	}
 	previous_tick_sides.assign(current_tick_sides.begin(),
 							   current_tick_sides.end());
+
+	current_tick_lines.resize(MAXIMUM_LINES_PER_MAP);
+	for (auto i = 0; i < MAXIMUM_LINES_PER_MAP; ++i)
+	{
+		auto& tick_line = current_tick_lines[i];
+		auto line = get_line_data(i);
+
+		tick_line.highest_adjacent_floor = line->highest_adjacent_floor;
+		tick_line.lowest_adjacent_ceiling = line->lowest_adjacent_ceiling;
+	}
+	previous_tick_lines.assign(current_tick_lines.begin(),
+							   current_tick_lines.end());
 
 	current_tick_ephemera.resize(get_dynamic_limit(_dynamic_limit_ephemera));
 	for (auto i = 0; i < get_dynamic_limit(_dynamic_limit_ephemera); ++i)
@@ -209,6 +229,17 @@ void enter_interpolated_world()
 		current_tick_sides[i].y0 = map_sides[i].primary_texture.y0;
 	}
 
+	previous_tick_lines.assign(current_tick_lines.begin(),
+							   current_tick_lines.end());
+	for (auto i = 0; i < MAXIMUM_LINES_PER_MAP; ++i)
+	{
+		auto& tick_line = current_tick_lines[i];
+		auto line = get_line_data(i);
+
+		tick_line.highest_adjacent_floor = line->highest_adjacent_floor;
+		tick_line.lowest_adjacent_ceiling = line->lowest_adjacent_ceiling;
+	}
+
 	previous_tick_ephemera.assign(current_tick_ephemera.begin(),
 								  current_tick_ephemera.end());
 	for (auto i = 0; i < get_dynamic_limit(_dynamic_limit_ephemera); ++i)
@@ -274,6 +305,15 @@ void exit_interpolated_world()
 	for (auto i = 0; i < MAXIMUM_SIDES_PER_MAP; ++i)
 	{
 		map_sides[i].primary_texture.y0 = current_tick_sides[i].y0;
+	}
+
+	for (auto i = 0; i < MAXIMUM_LINES_PER_MAP; ++i)
+	{
+		auto& tick_line = current_tick_lines[i];
+		auto line = get_line_data(i);
+
+		line->highest_adjacent_floor = tick_line.highest_adjacent_floor;
+		line->lowest_adjacent_ceiling = tick_line.lowest_adjacent_ceiling;
 	}
 
 	for (auto i = 0; i < get_dynamic_limit(_dynamic_limit_ephemera); ++i)
@@ -419,6 +459,38 @@ void update_interpolated_world(float heartbeat_fraction)
 					current_tick_sides[side_index].y0,
 					heartbeat_fraction);
 			}
+		}
+	}
+
+	for (auto i = 0; i < MAXIMUM_LINES_PER_MAP; ++i)
+	{
+		auto line = get_line_data(i);
+		if ((line->clockwise_polygon_owner == NONE ||
+			!TEST_RENDER_FLAG(line->clockwise_polygon_owner,
+							  _polygon_is_visible))
+			&&
+			(line->counterclockwise_polygon_owner == NONE ||
+			!TEST_RENDER_FLAG(line->counterclockwise_polygon_owner,
+							  _polygon_is_visible)))
+		{
+			continue;
+		}
+		
+		auto& prev = previous_tick_lines[i];
+		auto& next = current_tick_lines[i];
+
+		if (prev.highest_adjacent_floor != next.highest_adjacent_floor)
+		{
+			line->highest_adjacent_floor = lerp(prev.highest_adjacent_floor,
+												next.highest_adjacent_floor,
+												heartbeat_fraction);
+		}
+
+		if (prev.lowest_adjacent_ceiling != next.lowest_adjacent_ceiling)
+		{
+			line->lowest_adjacent_ceiling = lerp(prev.lowest_adjacent_ceiling,
+												 next.lowest_adjacent_ceiling,
+												 heartbeat_fraction);
 		}
 	}
 	
