@@ -1268,8 +1268,8 @@ void execute_timer_tasks(uint32 time)
 {
 	if (tm_func) {
 		if (Movie::instance()->IsRecording()) {
-			if (get_fps_target() != _60fps ||
-				movie_export_phase++ % 2 == 0)
+			if (get_fps_target() == 0 ||
+				movie_export_phase++ % (get_fps_target() / 30) == 0)
 			{
 				tm_func();
 			}

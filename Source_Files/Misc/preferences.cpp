@@ -974,8 +974,11 @@ static const char* ephemera_quality_labels[5] = {
 	"Off", "Low", "Medium", "High", "Ultra"
 };
 
-static const char *fps_target_labels[4] = {
-	"30 (classic)", "60 (smooth)", "Unregulated", NULL
+static const char *fps_target_labels[] = {
+	"30", "60 (interpolated)", "120 (interpolated)", "Unlimited (interpolated)", NULL
+};
+static const int16_t fps_target_values[] = {
+	30, 60, 120, 0
 };
 
 static const char *gamma_labels[9] = {
@@ -1206,9 +1209,16 @@ static void graphics_dialog(void *arg)
 	table->dual_add(gamma_w->label("Brightness"), d);
 	table->dual_add(gamma_w, d);
 
-	w_select *fps_target_w = new w_select(graphics_preferences->fps_target, fps_target_labels);
-        table->dual_add(fps_target_w->label("Framerate Target"), d);
-        table->dual_add(fps_target_w, d);
+	w_select *fps_target_w = new w_select(0, fps_target_labels);
+	for (auto i = 0; fps_target_labels[i] != NULL; ++i)
+	{
+		if (fps_target_values[i] == graphics_preferences->fps_target)
+		{
+			fps_target_w->set_selection(i);
+		}
+	}
+	table->dual_add(fps_target_w->label("Framerate Target"), d);
+	table->dual_add(fps_target_w, d);
 
 	table->add_row(new w_spacer(), true);
 
@@ -1307,12 +1317,13 @@ static void graphics_dialog(void *arg)
 		    graphics_preferences->screen_mode.gamma_level = gamma;
 		    changed = true;
 	    }
-        
-	if (fps_target_w->get_selection() != graphics_preferences->fps_target)
-	{
-		graphics_preferences->fps_target = fps_target_w->get_selection();
-		changed = true;
-	}
+
+		auto fps_target = fps_target_values[fps_target_w->get_selection()];
+		if (fps_target != graphics_preferences->fps_target)
+		{
+			graphics_preferences->fps_target = fps_target;
+			changed = true;
+		}
 		
         bool fix_h_not_v = fixh_w->get_selection() == 0;
         if (fix_h_not_v != graphics_preferences->screen_mode.fix_h_not_v) {
@@ -3592,7 +3603,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 
 	preferences->software_alpha_blending = _sw_alpha_off;
 	preferences->software_sdl_driver = _sw_driver_default;
-	preferences->fps_target = _30fps;
+	preferences->fps_target = 30;
 
 	preferences->movie_export_video_quality = 50;
 	preferences->movie_export_audio_quality = 50;

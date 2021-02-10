@@ -707,9 +707,17 @@ float get_heartbeat_fraction()
 {
 	if (Movie::instance()->IsRecording())
 	{
-		if (get_fps_target() == _60fps)
+		if (get_fps_target())
 		{
-			return movie_export_phase % 2 ? 0.5f : 1.f;
+			auto skip = get_fps_target() / 30;
+			if (movie_export_phase % skip)
+			{
+				return static_cast<float>(movie_export_phase % skip) / skip;
+			}
+			else
+			{
+				return 1.f;
+			}
 		}
 		else
 		{
@@ -719,29 +727,26 @@ float get_heartbeat_fraction()
 	
 	auto fraction = static_cast<float>((machine_tick_count() - start_machine_tick) * TICKS_PER_SECOND + 1) / MACHINE_TICKS_PER_SECOND;
 
-	switch (get_fps_target())
+	if (get_fps_target() == 30)
 	{
-	case _30fps:
 		return 1.f;
-	case _60fps:
+	}
+	else
+	{
+		auto speed = 1.f;
 		if (game_is_being_replayed() && get_replay_speed() < 0)
 		{
-			auto ratio = -get_replay_speed() + 1;
-			return std::min(std::ceil(fraction * 2.f) / (2.f * ratio), 1.f);
+			speed = -get_replay_speed() + 1;
+		}
+
+		if (get_fps_target() > 0)
+		{
+			float q = get_fps_target() / TICKS_PER_SECOND;
+			return std::min(std::ceil(fraction * q) / (q * speed), 1.f);
 		}
 		else
 		{
-			return std::min(std::ceil(fraction * 2.f) / 2.f, 1.f);
-		}
-	case _unlimited_fps:
-		if (game_is_being_replayed() && get_replay_speed() < 0)
-		{
-			auto ratio = -get_replay_speed() + 1;
-			return fraction / ratio;
-		}
-		else
-		{
-			return fraction;
+			return fraction / speed;
 		}
 	}
 }

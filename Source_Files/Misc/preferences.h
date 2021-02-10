@@ -76,11 +76,6 @@ enum {
 	_sw_driver_direct3d,
 	_sw_driver_opengl,
 };
-enum {
-	_30fps,
-	_60fps,
-	_unlimited_fps,
-};
 
 enum {
 	_ephemera_off,
@@ -100,7 +95,7 @@ struct graphics_preferences_data
 
 	int16 software_alpha_blending;
 	int16 software_sdl_driver;
-	int16 fps_target;
+	int16 fps_target; // should be a multiple of 30; 0 = unlimited
 
 	int16 movie_export_video_quality;
 	int32 movie_export_video_bitrate; // 0 is automatic

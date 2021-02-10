@@ -27,6 +27,7 @@
 #include "csalerts.h"
 #include "Logging.h"
 
+#include <algorithm>
 #include <boost/lexical_cast.hpp>
 
 // for CPU count
@@ -385,7 +386,7 @@ bool Movie::Setup()
     av_register_all();
     avcodec_register_all();
 
-	const auto fps = (get_fps_target() == _60fps) ? TICKS_PER_SECOND * 2 : TICKS_PER_SECOND;
+	const auto fps = std::max(get_fps_target(), static_cast<int16_t>(30));
     
     // Open output file
     AVOutputFormat *fmt;
@@ -447,24 +448,16 @@ bool Movie::Setup()
 		if (bitrate <= 0) // auto, based on YouTube's SDR standard frame rate
 						  // recommendations
 		{
-			if (fps == 60)
-			{
-				if      (view_rect.h >= 2160) bitrate = 60 * 1024 * 1024;
-				else if (view_rect.h >= 1440) bitrate = 24 * 1024 * 1024;
-				else if (view_rect.h >= 1080) bitrate = 12 * 1024 * 1024;
-				else if (view_rect.h >=  720) bitrate = 15 * 1024 * 1024 / 2;
-				else if (view_rect.h >=  480) bitrate =  4 * 1024 * 1024;
-				else                          bitrate =  3 * 1024 * 1024 / 2;
-			}
-			else
-			{
-				if      (view_rect.h >= 2160) bitrate = 40 * 1024 * 1024;
-				else if (view_rect.h >= 1440) bitrate = 16 * 1024 * 1024;
-				else if (view_rect.h >= 1080) bitrate =  8 * 1024 * 1024;
-				else if (view_rect.h >=  720) bitrate =  5 * 1024 * 1024;
-				else if (view_rect.h >=  480) bitrate =  5 * 1024 * 1024 / 2;
-				else                          bitrate =      1024 * 1024;
-			}
+			if      (view_rect.h >= 2160) bitrate = 40 * 1024 * 1024;
+			else if (view_rect.h >= 1440) bitrate = 16 * 1024 * 1024;
+			else if (view_rect.h >= 1080) bitrate =  8 * 1024 * 1024;
+			else if (view_rect.h >=  720) bitrate =  5 * 1024 * 1024;
+			else if (view_rect.h >=  480) bitrate =  5 * 1024 * 1024 / 2;
+			else                          bitrate =      1024 * 1024;
+
+			// YouTube recommends 50% more bitrate for 60 fps, so extrapolate
+			// from there
+			bitrate += std::log2(fps / 30) * bitrate / 2;
 		}
 		
         video_stream->codec->bit_rate = bitrate;
@@ -598,6 +591,13 @@ bool Movie::Setup()
     {
         videobuf.resize(av->video_bufsize);
         audiobuf.resize(2 * 2 * mx->obtained.freq / fps);
+
+		if (mx->obtained.freq % fps != 0)
+		{
+			// TODO: fixme!
+			success = false;
+			err_msg = "Audio buffer size is non-integer; try lowering FPS target";
+		}
 	}
 	if (success)
 	{
