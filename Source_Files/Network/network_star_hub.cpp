@@ -55,7 +55,6 @@
 #include "WindowedNthElementFinder.h"
 #include "CircularByteBuffer.h"
 #include "InfoTree.h"
-#include "SDL_timer.h" // SDL_Delay()
 
 #include <vector>
 #include <map>
@@ -583,7 +582,8 @@ hub_cleanup(bool inGraceful, int32 inSmallestPostGameTick)
 			while(sHubActive)
 			{
 // Here we try to isolate the "Classic" Mac OS (we can only sleep on the others)
-				SDL_Delay(10);
+				// TODO: replace with a cond?
+				yield();
 			}
 		}
 		else

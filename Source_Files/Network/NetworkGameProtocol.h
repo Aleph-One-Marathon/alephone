@@ -46,7 +46,8 @@ public:
 	virtual int32   GetUnconfirmedActionFlagsCount() = 0;
 	virtual uint32  PeekUnconfirmedActionFlag(int32 offset) = 0;
 	virtual void    UpdateUnconfirmedActionFlags() = 0;
-	
+
+	virtual bool CheckWorldUpdate() = 0;
 };
 
 #endif // NETWORKGAMEPROTOCOL_H

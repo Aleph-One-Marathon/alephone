@@ -371,7 +371,7 @@ void w_button_base::click(int /*x*/, int /*y*/)
 {
 	// simulate a mouse press
 	mouse_down(0, 0);
-	SDL_Delay(1000 / 12);
+	sleep_for_machine_ticks(MACHINE_TICKS_PER_SECOND / 12);
 	mouse_up(0, 0);
 }
 

@@ -146,7 +146,7 @@ void initialize_player_physics_variables(
 //#ifdef DEBUG
 	obj_set(*variables, 0x80);
 //#endif
-	
+
 	variables->head_direction= 0;
 	variables->adjusted_yaw= variables->direction= INTEGER_TO_FIXED(object->facing);
 	variables->adjusted_pitch= variables->elevation= 0;

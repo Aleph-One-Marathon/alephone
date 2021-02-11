@@ -1,7 +1,10 @@
-/*
+#ifndef INTERPOLATED_WORLD_H
+#define INTERPOLATED_WORLD_H
 
-	Copyright (C) 1991-2001 and beyond by Bo Lindbergh
-	and the "Aleph One" developers.
+/*
+INTERPOLATED_WORLD.H
+
+	Copyright (C) 2021 Gregory Smith and the "Aleph One" developers.
  
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -17,25 +20,18 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
+	Storage for interpolated (> 30 fps) world
 */
-#ifndef _CSERIES_MISC_
-#define _CSERIES_MISC_
 
-#include "cstypes.h"
+#include <cstdint>
 
-#define MACHINE_TICKS_PER_SECOND 1000
+void init_interpolated_world();
+void enter_interpolated_world();
+void exit_interpolated_world();
 
-extern uint32 machine_tick_count(void);
-extern void sleep_for_machine_ticks(uint32 ticks);
-extern void sleep_until_machine_tick_count(uint32 ticks);
-extern void yield(void);
-extern bool wait_for_click_or_keypress(
-	uint32 ticks);
+void update_interpolated_world(float heartbeat_fraction);
+void interpolate_world_view(float heartbeat_fraction);
 
-extern void kill_screen_saver(void);
-
-#ifdef DEBUG
-extern void initialize_debugger(bool on);
-#endif
+void track_contrail_interpolation(int16_t projectile_index, int16_t effect_index);
 
 #endif

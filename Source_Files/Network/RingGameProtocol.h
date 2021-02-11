@@ -49,6 +49,8 @@ public:
 	void    UpdateUnconfirmedActionFlags();
 
 	static void ParsePreferencesTree(InfoTree prefs, std::string version);
+
+	bool CheckWorldUpdate() override;
 };
 
 extern void DefaultRingPreferences();

@@ -95,8 +95,7 @@ struct graphics_preferences_data
 
 	int16 software_alpha_blending;
 	int16 software_sdl_driver;
-
-	bool hog_the_cpu;
+	int16 fps_target; // should be a multiple of 30; 0 = unlimited
 
 	int16 movie_export_video_quality;
 	int32 movie_export_video_bitrate; // 0 is automatic
@@ -281,6 +280,10 @@ void initialize_preferences(void);
 void read_preferences();
 void handle_preferences(void);
 void write_preferences(void);
+
+static inline int16 get_fps_target() {
+	return graphics_preferences->fps_target;
+}
 
 void transition_preferences(const DirectorySpecifier& legacy_prefs_dir);
 

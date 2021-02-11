@@ -1078,7 +1078,7 @@ void draw_menu_button_for_command(
 	
 	/* Draw it initially depressed.. */
 	draw_button(rectangle_index, true);
-	SDL_Delay(1000 / 12);
+	sleep_for_machine_ticks(MACHINE_TICKS_PER_SECOND / 12);
 	draw_button(rectangle_index, false);
 }
 
@@ -1104,6 +1104,7 @@ void update_interface_display(
 
 bool idle_game_state(uint32 time)
 {
+	static float last_heartbeat_fraction = -1.f;
 	int machine_ticks_elapsed = time - game_state.last_ticks_on_idle;
 
 	if(machine_ticks_elapsed || game_state.phase==0)
@@ -1221,8 +1222,11 @@ bool idle_game_state(uint32 time)
 			// ZZZ: I don't know for sure that render_screen works best with the number of _real_
 			// ticks elapsed rather than the number of (potentially predictive) ticks elapsed.
 			// This is a guess.
-			if (theUpdateResult.first)
+			auto heartbeat_fraction = get_heartbeat_fraction();
+			if (theUpdateResult.first || (last_heartbeat_fraction != -1 && last_heartbeat_fraction != heartbeat_fraction)) {
+				last_heartbeat_fraction = heartbeat_fraction;
 				render_screen(ticks_elapsed);
+			}
 		}
 		
 		return theUpdateResult.first;
@@ -3235,7 +3239,7 @@ void show_movie(short index)
 				}
 				else 
 				{
-					SDL_Delay(MIN(30, vframe->pts - movie_sync));
+					sleep_for_machine_ticks(MIN(30, vframe->pts - movie_sync));
 				}
 			}
 		}
@@ -3320,7 +3324,7 @@ void show_movie(short index)
 				}
 			}
 			
-			SDL_Delay(100);
+			sleep_for_machine_ticks(MACHINE_TICKS_PER_SECOND / 10);
 		}
 		SMPEG_delete(movie);
 #ifdef HAVE_OPENGL

@@ -49,6 +49,8 @@ public:
 	int32   GetUnconfirmedActionFlagsCount();
 	uint32  PeekUnconfirmedActionFlag(int32 offset);
 	void    UpdateUnconfirmedActionFlags();
+
+	bool CheckWorldUpdate() override;
 };
 
 extern void DefaultStarPreferences();

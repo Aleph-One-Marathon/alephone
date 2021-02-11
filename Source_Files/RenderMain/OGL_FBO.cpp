@@ -108,9 +108,9 @@ void FBO::prepare_drawing_mode(bool blend) {
 void FBO::reset_drawing_mode() {
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 }
 

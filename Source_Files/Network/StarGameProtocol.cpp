@@ -205,6 +205,12 @@ StarGameProtocol::UpdateUnconfirmedActionFlags()
 	}
 }
 
+bool
+StarGameProtocol::CheckWorldUpdate()
+{
+	return spoke_check_world_update();
+}
+
 /* ZZZ addition:
 ---------------------------
 	make_player_really_net_dead

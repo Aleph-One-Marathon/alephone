@@ -26,6 +26,19 @@
 
 #include "cseries.h"
 
+#include <chrono>
+#include <thread>
+#include "Logging.h"
+
+/* by using static variable initialization time as the epoch, we ensure that
+   Aleph One can run for ~49 days without timing issues cropping up */
+/* TODO: Every single place machine tick counts are used, switch to uint64 */
+static auto epoch = std::chrono::high_resolution_clock::now();
+
+/* a knob to play the game in "slow motion" to debug timing sensitive features.
+   this is not a preferences option because of the cheating potential, and
+   because of the awesome breakage that will occur at very large values */
+static constexpr int TIME_SKEW = 1;
 
 /*
  *  Return tick counter
@@ -33,9 +46,40 @@
 
 uint32 machine_tick_count(void)
 {
-	return SDL_GetTicks();
+  auto now = std::chrono::high_resolution_clock::now();
+  if(now < epoch) {
+    logWarning("Time went backwards!");
+    epoch = now;
+  }
+  return std::chrono::duration_cast<std::chrono::milliseconds>
+    (now - epoch).count()/TIME_SKEW;
 }
 
+/*
+ *  Delay a certain number of ticks
+ */
+
+void sleep_for_machine_ticks(uint32 ticks)
+{
+	std::this_thread::sleep_for(std::chrono::milliseconds(ticks*TIME_SKEW));
+}
+
+/*
+ *  Delay until a certain tick count
+ */
+
+void sleep_until_machine_tick_count(uint32 ticks)
+{
+	std::this_thread::sleep_until(std::chrono::high_resolution_clock::time_point(std::chrono::milliseconds(ticks*TIME_SKEW)));
+}
+
+/*
+ *  Give up a small amount of processor time
+ */
+void yield(void)
+{
+	std::this_thread::yield();
+}
 
 /*
  *  Wait for mouse click or keypress
@@ -43,17 +87,16 @@ uint32 machine_tick_count(void)
 
 bool wait_for_click_or_keypress(uint32 ticks)
 {
-	uint32 start = SDL_GetTicks();
+	uint32 start = machine_tick_count();
 	SDL_Event event;
-	while (SDL_GetTicks() - start < ticks) {
-		SDL_PollEvent(&event);
+	while (machine_tick_count() - start < ticks) {
+		SDL_WaitEventTimeout(&event, ticks);
 		switch (event.type) {
 			case SDL_MOUSEBUTTONDOWN:
 			case SDL_KEYDOWN:
 			case SDL_CONTROLLERBUTTONDOWN:
 				return true;
 		}
-		SDL_Delay(10);
 	}
 	return false;
 }

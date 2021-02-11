@@ -2223,10 +2223,10 @@ int dialog::run(bool intro_exit_sounds)
 		if (done)
 			break;
 
-		if (SDL_GetTicks() > last_redraw + TICKS_PER_SECOND / 30)
+		if (machine_tick_count() > last_redraw + TICKS_PER_SECOND / 30)
 		{
 			draw_dirty_widgets();
-			last_redraw = SDL_GetTicks();
+			last_redraw = machine_tick_count();
 		}
         
 		// Run custom processing function
@@ -2235,7 +2235,7 @@ int dialog::run(bool intro_exit_sounds)
 
 		// Give time to system
 		global_idle_proc();
-		SDL_Delay(10);
+		yield();
 	}
 
 	// Remove dialog from screen
