@@ -499,6 +499,11 @@ void update_interpolated_world(float heartbeat_fraction)
 		auto prev = &previous_tick_objects[i];
 		auto next = &current_tick_objects[i];
 
+		if (!SLOT_IS_USED(next))
+		{
+			continue;
+		}
+
 		if (contrail_tracking[i] &&
 			GET_OBJECT_OWNER(next) == _object_is_effect)
 		{
@@ -530,7 +535,7 @@ void update_interpolated_world(float heartbeat_fraction)
 		// so "stretches" new objects' existences by almost (but not
 		// quite) one tick. However, this is preferable to the flicker
 		// that would otherwise appear when a projectile detonates.
-		if (!SLOT_IS_USED(next) || !SLOT_IS_USED(prev))
+		if (!SLOT_IS_USED(prev))
 		{
 			continue;
 		}
