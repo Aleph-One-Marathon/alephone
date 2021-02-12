@@ -107,6 +107,11 @@ static std::vector<int16_t> contrail_tracking;
 
 void init_interpolated_world()
 {
+	if (get_fps_target() == 30)
+	{
+		return;
+	}
+
 	current_tick_objects.resize(MAXIMUM_OBJECTS_PER_MAP);
 	for (auto i = 0; i < MAXIMUM_OBJECTS_PER_MAP; ++i)
 	{
@@ -186,6 +191,11 @@ extern void update_world_view_camera();
 
 void enter_interpolated_world()
 {
+	if (get_fps_target() == 30)
+	{
+		return;
+	}
+	
 	start_machine_tick = machine_tick_count();
 	
 	previous_tick_objects.assign(current_tick_objects.begin(),
@@ -418,7 +428,7 @@ extern void add_object_to_polygon_object_list(short, short);
 
 void update_interpolated_world(float heartbeat_fraction)
 {
-	if (heartbeat_fraction > 1.f)
+	if (get_fps_target() == 30 || heartbeat_fraction > 1.f)
 	{
 		return;
 	}
@@ -499,6 +509,11 @@ void update_interpolated_world(float heartbeat_fraction)
 		auto prev = &previous_tick_objects[i];
 		auto next = &current_tick_objects[i];
 
+		if (!SLOT_IS_USED(next))
+		{
+			continue;
+		}
+
 		if (contrail_tracking[i] &&
 			GET_OBJECT_OWNER(next) == _object_is_effect)
 		{
@@ -530,7 +545,7 @@ void update_interpolated_world(float heartbeat_fraction)
 		// so "stretches" new objects' existences by almost (but not
 		// quite) one tick. However, this is preferable to the flicker
 		// that would otherwise appear when a projectile detonates.
-		if (!SLOT_IS_USED(next) || !SLOT_IS_USED(prev))
+		if (!SLOT_IS_USED(prev))
 		{
 			continue;
 		}
@@ -644,7 +659,8 @@ void interpolate_world_view(float heartbeat_fraction)
 	auto next = &current_tick_world_view;
 	auto view = world_view;
 	
-	if (heartbeat_fraction > 1.f ||
+	if (get_fps_target() == 30 ||
+		heartbeat_fraction > 1.f ||
 		prev->origin_polygon_index == NONE ||
 		!should_interpolate(prev->origin, next->origin))
 	{
@@ -724,8 +740,6 @@ float get_heartbeat_fraction()
 			return 1.f;
 		}
 	}
-	
-	auto fraction = static_cast<float>((machine_tick_count() - start_machine_tick) * TICKS_PER_SECOND + 1) / MACHINE_TICKS_PER_SECOND;
 
 	if (get_fps_target() == 30)
 	{
@@ -733,6 +747,8 @@ float get_heartbeat_fraction()
 	}
 	else
 	{
+		auto fraction = static_cast<float>((machine_tick_count() - start_machine_tick) * TICKS_PER_SECOND + 1) / MACHINE_TICKS_PER_SECOND;
+		
 		auto speed = 1.f;
 		if (game_is_being_replayed() && get_replay_speed() < 0)
 		{
