@@ -769,6 +769,11 @@ float get_heartbeat_fraction()
 
 void track_contrail_interpolation(int16_t projectile_index, int16_t effect_index)
 {
+	if (contrail_tracking.size() == 0)
+	{
+		return;
+	}
+	
 	auto prev_effect_index = contrail_tracking[projectile_index];
 	if (prev_effect_index != NONE)
 	{
