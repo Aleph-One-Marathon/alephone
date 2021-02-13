@@ -1141,6 +1141,9 @@ int32 calculate_weapon_array_length(
 	return dynamic_world->player_count*sizeof(struct player_weapon_data);
 }
 
+extern bool get_interpolated_weapon_display_information(short*, weapon_display_information* data);
+extern bool world_is_interpolated;
+
 /* -------------------------- functions related to rendering */
 /* Functions related to rendering! */
 /* while this returns true, keep calling.. */
@@ -1148,6 +1151,11 @@ bool get_weapon_display_information(
 	short *count, 
 	struct weapon_display_information *data)
 {
+	if (world_is_interpolated)
+	{
+		return get_interpolated_weapon_display_information(count, data);
+	}
+	
 	bool valid= false;
 	short player_index= current_player_index;
 
@@ -1157,7 +1165,7 @@ bool get_weapon_display_information(
 		struct weapon_data *weapon= get_player_current_weapon(player_index);
 		struct weapon_definition *definition= get_weapon_definition(weapon->weapon_type);
 		_fixed width, height;
-		short frame, which_trigger, shape_index, type, flags;
+		short frame, which_trigger, shape_index, flags;
 		struct shape_animation_data *high_level_data;
 	
 		/* Get the default width and height */
@@ -1166,14 +1174,14 @@ bool get_weapon_display_information(
 		modify_position_for_two_weapons(player_index, *count, &width, &height);
 	
 		/* What type of item is this? */
-		if(get_weapon_data_type_for_count(player_index, *count, &type, &which_trigger, &flags))
+		if(get_weapon_data_type_for_count(player_index, *count, &data->type, &which_trigger, &flags))
 		{
 			struct shape_and_transfer_mode owner_transfer_data;
 	
 			/* Assume the best.. */
 			valid= true;
 	
-			if(type==_weapon_type || type==_weapon_ammo_type)
+			if(data->type==_weapon_type || data->type==_weapon_ammo_type)
 			{
 				short phase;
 
@@ -1393,7 +1401,7 @@ bool get_weapon_display_information(
 				}
 
 				/* Determine our frame. */
-				if (type==_weapon_ammo_type)
+				if (data->type==_weapon_ammo_type)
 				{
 					// hardcoded for Marathon 1 rocket launcher
 					shape_index = M1_MISSILE_AMMO_SEQUENCE;
@@ -1402,7 +1410,7 @@ bool get_weapon_display_information(
 				else
 					frame= GET_SEQUENCE_FRAME(weapon->triggers[which_trigger].sequence);
 
-				if (type==_weapon_type)
+				if (data->type==_weapon_type)
 				{
 					/* Go to the next frame for automatics.. */
 					update_automatic_sequence(current_player_index, which_trigger);
@@ -1441,7 +1449,7 @@ bool get_weapon_display_information(
 					data->flip_horizontal= false;
 				}
 				
-				if (type==_weapon_ammo_type)
+				if (data->type==_weapon_ammo_type)
 				{
 					// hardcoded for Marathon 1 rocket launcher
 					data->vertical_position += M1_MISSILE_AMMO_YOFFSET;
@@ -1469,7 +1477,7 @@ bool get_weapon_display_information(
 					data->Ticks = owner_transfer_data.Ticks;
 				}
 			} 
-			else if(type==_shell_casing_type)
+			else if(data->type==_shell_casing_type)
 			{
 				get_shell_casing_display_data(data, which_trigger);
 			} else {

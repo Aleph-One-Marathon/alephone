@@ -98,6 +98,9 @@ struct weapon_display_information
 	
 	// Needed for animated models: which tick in a frame, and total ticks per frame
 	short Phase, Ticks;
+
+	// for interpolation
+	short type;
 };
 
 // SB: This needs to be accessed in lua_script.cpp
