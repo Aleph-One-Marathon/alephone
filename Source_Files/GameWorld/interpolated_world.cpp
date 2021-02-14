@@ -825,9 +825,26 @@ static void interpolate_weapon_display_information(
 	
 	static constexpr int _shell_casing_type = 1; // from weapons.cpp
 
-	if (data->type == _shell_casing_type)
+	weapon_display_information* next;
+	weapon_display_information* prev;
+
+	if (data->interpolation_data & 0x3 == _shell_casing_type)
 	{
-		// TODO
+		next = &current_tick_weapon_display[index];
+		prev = &previous_tick_weapon_display[index];
+
+		// these shift around because it's a circular buffer, so find the match
+		if (prev->interpolation_data != next->interpolation_data)
+		{
+			for (auto i = 0; i < previous_tick_weapon_display.size(); ++i)
+			{
+				if (previous_tick_weapon_display[i].interpolation_data == next->interpolation_data)
+				{
+					prev = &previous_tick_weapon_display[i];
+					break;
+				}
+			}
+		}
 	}
 	else
 	{
@@ -836,35 +853,27 @@ static void interpolate_weapon_display_information(
 			return;
 		}
 
-		auto& next = current_tick_weapon_display[index];
-		auto& prev = previous_tick_weapon_display[index];
-
-		if (prev.type != next.type ||
-			prev.horizontal_positioning_mode != next.horizontal_positioning_mode ||
-			prev.vertical_positioning_mode != next.vertical_positioning_mode)
-		{
-			return;
-		}
-
-		auto dx = next.horizontal_position - prev.horizontal_position;
-		auto dy = next.vertical_position - prev.vertical_position;
-
-		static constexpr _fixed max_delta = FIXED_ONE / 8;
-
-		if (dx > max_delta || dx < -max_delta ||
-			dy > max_delta || dy < -max_delta)
-		{
-			return;
-		}
-		
-		data->vertical_position = lerp(prev.vertical_position,
-									   next.vertical_position,
-									   heartbeat_fraction);
-		
-		data->horizontal_position = lerp(prev.horizontal_position,
-										 next.horizontal_position,
-										 heartbeat_fraction);
+		next = &current_tick_weapon_display[index];
+		prev = &previous_tick_weapon_display[index];
 	}
+
+	if (prev->interpolation_data != next->interpolation_data ||
+		prev->horizontal_positioning_mode != next->horizontal_positioning_mode ||
+		prev->vertical_positioning_mode != next->vertical_positioning_mode)
+	{
+		return;
+	}
+	
+	auto dx = next->horizontal_position - prev->horizontal_position;
+	auto dy = next->vertical_position - prev->vertical_position;
+
+	data->vertical_position = lerp(prev->vertical_position,
+								   next->vertical_position,
+								   heartbeat_fraction);
+	
+	data->horizontal_position = lerp(prev->horizontal_position,
+									 next->horizontal_position,
+									 heartbeat_fraction);
 }
 
 bool get_interpolated_weapon_display_information(short* count,

@@ -186,9 +186,13 @@ enum { /* For the flags */ /* [11.unused 1.horizontal 1.vertical 3.unused] */
 
 enum // shell casing flags
 {
-	_shell_casing_is_reversed= 0x0001
+	_shell_casing_is_reversed= 0x0001,
+	_shell_casing_id_mask = 0x00f0,
 };
 #define SHELL_CASING_IS_REVERSED(s) ((s)->flags&_shell_casing_is_reversed)
+
+// keep a sequence number to track shell casings for interpolation
+static short shell_casing_id = 0;
 
 /* ----------- structures */
 /* ...were all moved to weapons.h */
@@ -1165,7 +1169,7 @@ bool get_weapon_display_information(
 		struct weapon_data *weapon= get_player_current_weapon(player_index);
 		struct weapon_definition *definition= get_weapon_definition(weapon->weapon_type);
 		_fixed width, height;
-		short frame, which_trigger, shape_index, flags;
+		short frame, which_trigger, shape_index, type, flags;
 		struct shape_animation_data *high_level_data;
 	
 		/* Get the default width and height */
@@ -1174,15 +1178,17 @@ bool get_weapon_display_information(
 		modify_position_for_two_weapons(player_index, *count, &width, &height);
 	
 		/* What type of item is this? */
-		if(get_weapon_data_type_for_count(player_index, *count, &data->type, &which_trigger, &flags))
+		if(get_weapon_data_type_for_count(player_index, *count, &type, &which_trigger, &flags))
 		{
+			data->interpolation_data = type;
 			struct shape_and_transfer_mode owner_transfer_data;
 	
 			/* Assume the best.. */
 			valid= true;
 	
-			if(data->type==_weapon_type || data->type==_weapon_ammo_type)
+			if(type==_weapon_type || type==_weapon_ammo_type)
 			{
+				data->interpolation_data |= (weapon->weapon_type << 4);
 				short phase;
 
 				/* Tell the weapon a frame passed, in case it cares. */
@@ -1401,7 +1407,7 @@ bool get_weapon_display_information(
 				}
 
 				/* Determine our frame. */
-				if (data->type==_weapon_ammo_type)
+				if (type==_weapon_ammo_type)
 				{
 					// hardcoded for Marathon 1 rocket launcher
 					shape_index = M1_MISSILE_AMMO_SEQUENCE;
@@ -1410,7 +1416,7 @@ bool get_weapon_display_information(
 				else
 					frame= GET_SEQUENCE_FRAME(weapon->triggers[which_trigger].sequence);
 
-				if (data->type==_weapon_type)
+				if (type==_weapon_type)
 				{
 					/* Go to the next frame for automatics.. */
 					update_automatic_sequence(current_player_index, which_trigger);
@@ -1449,7 +1455,7 @@ bool get_weapon_display_information(
 					data->flip_horizontal= false;
 				}
 				
-				if (data->type==_weapon_ammo_type)
+				if (type==_weapon_ammo_type)
 				{
 					// hardcoded for Marathon 1 rocket launcher
 					data->vertical_position += M1_MISSILE_AMMO_YOFFSET;
@@ -1477,7 +1483,7 @@ bool get_weapon_display_information(
 					data->Ticks = owner_transfer_data.Ticks;
 				}
 			} 
-			else if(data->type==_shell_casing_type)
+			else if(type==_shell_casing_type)
 			{
 				get_shell_casing_display_data(data, which_trigger);
 			} else {
@@ -3997,6 +4003,9 @@ static short new_shell_casing(
 		shell_casing->y+= ((local_random()&0xff)*shell_casing->vy)>>9;
 
 		MARK_SLOT_AS_USED(shell_casing);
+
+		shell_casing->flags |= (shell_casing_id << 4);
+		shell_casing_id = (shell_casing_id + 1) % 0xf;
 	}
 
 	return shell_casing_index;
@@ -4070,6 +4079,7 @@ static bool get_shell_casing_display_data(
 					display->Phase = 0;
 					display->Ticks = 1;
 
+					display->interpolation_data |= shell_casing->flags & _shell_casing_id_mask;
 				}
 				
 				valid= true;
