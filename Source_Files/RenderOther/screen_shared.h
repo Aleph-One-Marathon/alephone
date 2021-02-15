@@ -42,6 +42,8 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "screen.h"
 #include <stdarg.h>
 
+#include <chrono>
+
 extern SDL_Surface *world_pixels;
 
 #define DESIRED_SCREEN_WIDTH 640
@@ -68,10 +70,67 @@ struct view_data *world_view; /* should be static */
 
 static struct screen_mode_data screen_mode;
 
-#define FRAME_SAMPLE_SIZE 20
+class FpsCounter {
+public:
+	using clock = std::chrono::high_resolution_clock;
+	static constexpr auto update_time{std::chrono::milliseconds(250)};
+	
+	FpsCounter() :
+		next_update_{clock::now() + update_time},
+		sum_{0},
+		count_{0},
+		fps_{0}
+		{
+			
+		}
+	
+	void update() {
+		auto now = clock::now();
+		sum_ += 1.0 / std::chrono::duration_cast<std::chrono::duration<float>>(now - prev_).count();
+		++count_;
+		prev_ = now;
+		
+		if (now >= next_update_)
+		{
+			next_update_ = now + update_time;
+			if (count_) {
+				fps_ = sum_ / count_;
+			} else {
+				fps_ = 0.f;
+			}
+			
+			sum_ = 0;
+			count_ = 0;
+		}
+	}
+	
+	float get() const { return fps_; }
+	bool ready() const { return fps_ != 0; }
+
+	void reset() {
+		sum_ = 0;
+		count_ = 0;
+		prev_ = clock::now();
+
+		fps_ = 0.f;
+	}
+
+private:
+	clock::time_point prev_;
+	clock::time_point next_update_;
+	
+	float sum_;
+	int count_;
+
+	bool ready_;
+	float fps_;
+};
+
+constexpr std::chrono::milliseconds FpsCounter::update_time;
+
+static FpsCounter fps_counter;
+
 bool displaying_fps= false;
-short frame_count, frame_index;
-int32 frame_ticks[64];
 
 // LP addition:
 // whether to show one's position
@@ -101,10 +160,10 @@ struct ScreenMessage
 		Len = 256
 	};
 
-	int TimeRemaining;	// How many more engine ticks until the message expires?
+	uint32_t ExpirationTime; // machine ticks the screen message expires at
 	char Text[Len];		// Text to display
 	
-	ScreenMessage(): TimeRemaining(0) {Text[0] = 0;}
+	ScreenMessage(): ExpirationTime(machine_tick_count()) {Text[0] = 0;}
 };
 
 static int MostRecentMessage = NumScreenMessages-1;
@@ -300,7 +359,7 @@ void reset_messages()
 {
 	// ZZZ: reset screen_printf's
 	for(int i = 0; i < NumScreenMessages; i++)
-		Messages[i].TimeRemaining = 0;
+		Messages[i].ExpirationTime = machine_tick_count();
 	/* SB: reset HUD elements */
 	for(int p = 0; p < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; p++) {
 		for(int i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; i++) {
@@ -471,30 +530,26 @@ static void update_fps_display(SDL_Surface *s)
 {
 	if (displaying_fps && !player_in_terminal_mode(current_player_index))
 	{
-		uint32 ticks = SDL_GetTicks();
-		char fps[sizeof("120.00fps (10000 ms)")];
+		uint32 ticks = machine_tick_count();
+		char fps[sizeof("1000 fps (10000 ms)")];
 		char ms[sizeof("(10000 ms)")];
-		
-		frame_ticks[frame_index]= ticks;
-		frame_index= (frame_index+1)%FRAME_SAMPLE_SIZE;
-		if (frame_count<FRAME_SAMPLE_SIZE)
+
+		fps_counter.update();
+
+		if (!fps_counter.ready())
 		{
-			frame_count+= 1;
-			strncpy(fps, "--", sizeof(fps));
+			strcpy(fps, "--");
 		}
 		else
 		{
-			float count = (FRAME_SAMPLE_SIZE * MACHINE_TICKS_PER_SECOND) / float(ticks-frame_ticks[frame_index]);
+			
 			int latency = NetGetLatency();
 			if (latency > -1)
 				sprintf(ms, "(%i ms)", latency);
 			else
 				ms[0] = '\0';
-							
-			if (count >= TICKS_PER_SECOND)
-				sprintf(fps, "%lu%s %s",(unsigned long)TICKS_PER_SECOND,".00fps", ms);
-			else
-				sprintf(fps, "%3.2ffps %s", count, ms);
+			
+			sprintf(fps, "%0.f fps %s", fps_counter.get(), ms);
 		}
 		
 		FontSpecifier& Font = GetOnScreenFont();
@@ -518,7 +573,7 @@ static void update_fps_display(SDL_Surface *s)
 	}
 	else
 	{
-		frame_count= frame_index= 0;
+		fps_counter.reset();
 	}
 }
 
@@ -682,8 +737,10 @@ static void DisplayMessages(SDL_Surface *s)
 		while (Which < 0)
 			Which += NumScreenMessages;
 		ScreenMessage& Message = Messages[Which];
-		if (Message.TimeRemaining <= 0) continue;
-		Message.TimeRemaining--;
+		if (static_cast<int32_t>(Message.ExpirationTime - machine_tick_count()) < 0)
+		{
+			continue;
+		}
 		
 		DisplayText(X,Y,Message.Text);
 		Y += LineSpacing;
@@ -970,8 +1027,8 @@ void screen_printf(const char *format, ...)
 	while (MostRecentMessage < 0)
 		MostRecentMessage += NumScreenMessages;
 	ScreenMessage& Message = Messages[MostRecentMessage];
-	
-	Message.TimeRemaining = 7*TICKS_PER_SECOND;
+
+	Message.ExpirationTime = machine_tick_count() + 7 * MACHINE_TICKS_PER_SECOND;
 
 	va_list list;
 

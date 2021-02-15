@@ -344,7 +344,7 @@ private:
 	pump(dialog* d)
 	{
 		static uint32 last_update = 0;
-		uint32 ticks = SDL_GetTicks();
+		uint32 ticks = machine_tick_count();
 		if (ticks > last_update + 5000)
 		{
 			last_update = ticks;

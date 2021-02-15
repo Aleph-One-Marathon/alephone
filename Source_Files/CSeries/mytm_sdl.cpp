@@ -130,7 +130,7 @@ static int
 thread_loop(void* inData) {
     myTMTask*	theTMTask	= (myTMTask*) inData;
     
-    uint32	theLastRunTime	= SDL_GetTicks();
+    uint32	theLastRunTime	= machine_tick_count();
     uint32	theCurrentRunTime;
     int32	theDrift	= 0;
 
@@ -144,7 +144,7 @@ thread_loop(void* inData) {
         // made for some VERY long waits if we were running late...
         int32	theDelay 	= theTMTask->mPeriod - theDrift;
         if(theDelay > 0)
-            SDL_Delay(theDelay);
+            sleep_for_machine_ticks(theDelay);
         else {
             // We missed a deadline!
 #ifdef DEBUG
@@ -166,7 +166,7 @@ thread_loop(void* inData) {
             theTMTask->mProfilingData.mNumCallsThisReset	= 0;
 #endif
 
-            theCurrentRunTime	= SDL_GetTicks();
+            theCurrentRunTime	= machine_tick_count();
             theDrift		+= theCurrentRunTime - theLastRunTime - theTMTask->mPeriod;
             theLastRunTime	= theCurrentRunTime;
 
@@ -181,7 +181,7 @@ thread_loop(void* inData) {
             theDelay = theTMTask->mPeriod - theDrift;
             
             if(theDelay > 0)
-                SDL_Delay(theDelay);
+                sleep_for_machine_ticks(theDelay);
             else {
                 // We did miss a deadline!
 #ifdef DEBUG
@@ -190,7 +190,7 @@ thread_loop(void* inData) {
             }
         }
     
-	theCurrentRunTime	= SDL_GetTicks();
+	theCurrentRunTime	= machine_tick_count();
 	theDrift		+= theCurrentRunTime - theLastRunTime - theTMTask->mPeriod;
         theLastRunTime		= theCurrentRunTime;
 
@@ -235,7 +235,7 @@ thread_loop(void* inData) {
     theTMTask->mIsRunning = false;
     
 #ifdef DEBUG
-    theTMTask->mProfilingData.mFinishTime	= SDL_GetTicks();
+    theTMTask->mProfilingData.mFinishTime	= machine_tick_count();
 #endif
     
     return 0;
@@ -296,7 +296,7 @@ myTMReset(myTMTaskPtr task) {
         // mIsRunning to false.  I'm going to take the easy lazy evil way out and just hope that
         // doesn't happen.
         if(task->mIsRunning)
-            task->mResetTime	= SDL_GetTicks();
+            task->mResetTime	= machine_tick_count();
         
         // Otherwise, we need to start a new thread for the task.
         else {

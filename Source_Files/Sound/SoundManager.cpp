@@ -256,7 +256,7 @@ void SoundManager::TestVolume(float db, short sound_index)
 			PlaySound(sound_index, 0, NONE);
 			Mixer::instance()->SetVolume(db);
 			while (SoundIsPlaying(sound_index))
-				SDL_Delay(10);
+			yield();
 			Mixer::instance()->SetVolume(parameters.volume_db);
 		}
 	}	

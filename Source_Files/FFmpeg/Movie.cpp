@@ -27,6 +27,7 @@
 #include "csalerts.h"
 #include "Logging.h"
 
+#include <algorithm>
 #include <boost/lexical_cast.hpp>
 
 // for CPU count
@@ -384,6 +385,8 @@ bool Movie::Setup()
     
     av_register_all();
     avcodec_register_all();
+
+	const auto fps = std::max(get_fps_target(), static_cast<int16_t>(30));
     
     // Open output file
     AVOutputFormat *fmt;
@@ -428,7 +431,7 @@ bool Movie::Setup()
         video_stream->codec->codec_type = AVMEDIA_TYPE_VIDEO;
         video_stream->codec->width = view_rect.w;
         video_stream->codec->height = view_rect.h;
-        video_stream->codec->time_base = AVRational{1, TICKS_PER_SECOND};
+        video_stream->codec->time_base = AVRational{1, fps};
         video_stream->codec->pix_fmt = AV_PIX_FMT_YUV420P;
         video_stream->codec->flags |= AV_CODEC_FLAG_CLOSED_GOP;
         video_stream->codec->thread_count = get_cpu_count();
@@ -451,6 +454,10 @@ bool Movie::Setup()
 			else if (view_rect.h >=  720) bitrate =  5 * 1024 * 1024;
 			else if (view_rect.h >=  480) bitrate =  5 * 1024 * 1024 / 2;
 			else                          bitrate =      1024 * 1024;
+
+			// YouTube recommends 50% more bitrate for 60 fps, so extrapolate
+			// from there
+			bitrate += std::log2(fps / 30) * bitrate / 2;
 		}
 		
         video_stream->codec->bit_rate = bitrate;
@@ -574,7 +581,7 @@ bool Movie::Setup()
     // Start movie file
     if (success)
     {
-        video_stream->time_base = AVRational{1, TICKS_PER_SECOND};
+        video_stream->time_base = AVRational{1, fps};
         audio_stream->time_base = AVRational{1, mx->obtained.freq};
         avformat_write_header(av->fmt_ctx, NULL);
     }
@@ -583,7 +590,14 @@ bool Movie::Setup()
     if (success)
     {
         videobuf.resize(av->video_bufsize);
-        audiobuf.resize(2 * 2 * mx->obtained.freq / 30);
+        audiobuf.resize(2 * 2 * mx->obtained.freq / fps);
+
+		if (mx->obtained.freq % fps != 0)
+		{
+			// TODO: fixme!
+			success = false;
+			err_msg = "Audio buffer size is non-integer; try lowering FPS target";
+		}
 	}
 	if (success)
 	{

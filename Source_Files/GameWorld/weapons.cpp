@@ -186,9 +186,13 @@ enum { /* For the flags */ /* [11.unused 1.horizontal 1.vertical 3.unused] */
 
 enum // shell casing flags
 {
-	_shell_casing_is_reversed= 0x0001
+	_shell_casing_is_reversed= 0x0001,
+	_shell_casing_id_mask = 0x00f0,
 };
 #define SHELL_CASING_IS_REVERSED(s) ((s)->flags&_shell_casing_is_reversed)
+
+// keep a sequence number to track shell casings for interpolation
+static short shell_casing_id = 0;
 
 /* ----------- structures */
 /* ...were all moved to weapons.h */
@@ -1146,6 +1150,9 @@ int32 calculate_weapon_array_length(
 	return dynamic_world->player_count*sizeof(struct player_weapon_data);
 }
 
+extern bool get_interpolated_weapon_display_information(short*, weapon_display_information* data);
+extern bool world_is_interpolated;
+
 /* -------------------------- functions related to rendering */
 /* Functions related to rendering! */
 /* while this returns true, keep calling.. */
@@ -1153,6 +1160,11 @@ bool get_weapon_display_information(
 	short *count, 
 	struct weapon_display_information *data)
 {
+	if (world_is_interpolated)
+	{
+		return get_interpolated_weapon_display_information(count, data);
+	}
+	
 	bool valid= false;
 	short player_index= current_player_index;
 
@@ -1173,6 +1185,7 @@ bool get_weapon_display_information(
 		/* What type of item is this? */
 		if(get_weapon_data_type_for_count(player_index, *count, &type, &which_trigger, &flags))
 		{
+			data->interpolation_data = type;
 			struct shape_and_transfer_mode owner_transfer_data;
 	
 			/* Assume the best.. */
@@ -1180,6 +1193,7 @@ bool get_weapon_display_information(
 	
 			if(type==_weapon_type || type==_weapon_ammo_type)
 			{
+				data->interpolation_data |= (weapon->weapon_type << 4);
 				short phase;
 
 				/* Tell the weapon a frame passed, in case it cares. */
@@ -3994,6 +4008,9 @@ static short new_shell_casing(
 		shell_casing->y+= ((local_random()&0xff)*shell_casing->vy)>>9;
 
 		MARK_SLOT_AS_USED(shell_casing);
+
+		shell_casing->flags |= (shell_casing_id << 4);
+		shell_casing_id = (shell_casing_id + 1) % 0xf;
 	}
 
 	return shell_casing_index;
@@ -4067,6 +4084,7 @@ static bool get_shell_casing_display_data(
 					display->Phase = 0;
 					display->Ticks = 1;
 
+					display->interpolation_data |= shell_casing->flags & _shell_casing_id_mask;
 				}
 				
 				valid= true;

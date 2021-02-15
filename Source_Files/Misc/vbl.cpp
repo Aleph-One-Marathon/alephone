@@ -254,6 +254,16 @@ void decrement_replay_speed(
 	if (replay.replay_speed > MINIMUM_REPLAY_SPEED) replay.replay_speed--;
 }
 
+int get_replay_speed()
+{
+	return replay.replay_speed;
+}
+
+bool game_is_being_replayed()
+{
+	return replay.game_is_being_replayed;
+}
+
 void increment_heartbeat_count(int value)
 {
 	heartbeat_count+=value;
@@ -531,6 +541,8 @@ void get_recording_header_data(
 	obj_copy(*game_information, replay.header.game_information);
 }
 
+extern int movie_export_phase;
+
 bool setup_for_replay_from_file(
 	FileSpecifier& File,
 	uint32 map_checksum,
@@ -550,6 +562,7 @@ bool setup_for_replay_from_file(
 		replay.resource_data= NULL;
 		replay.resource_data_size= 0l;
 		replay.film_resource_offset= NONE;
+		movie_export_phase = 0;
 		
 		byte Header[SIZEOF_recording_header];
 		FilmFile.Read(SIZEOF_recording_header,Header);
@@ -1135,6 +1148,8 @@ void encode_hotkey_sequence(int hotkey)
  *  Poll keyboard and return action flags
  */
 
+uint32_t last_input_update;
+
 uint32 parse_keymap(void)
 {
   uint32 flags = 0;
@@ -1269,7 +1284,7 @@ timer_task_proc install_timer_task(short tasks_per_second, timer_func func)
 	// We only handle one task, which is enough
 	tm_period = 1000 / tasks_per_second;
 	tm_func = func;
-	tm_last = SDL_GetTicks();
+	tm_last = machine_tick_count();
 	tm_accum = 0;
 	return (timer_task_proc)tm_func;
 }
@@ -1283,9 +1298,14 @@ void execute_timer_tasks(uint32 time)
 {
 	if (tm_func) {
 		if (Movie::instance()->IsRecording()) {
-			tm_func();
+			if (get_fps_target() == 0 ||
+				movie_export_phase++ % (get_fps_target() / 30) == 0)
+			{
+				tm_func();
+			}
 			return;
 		}
+		
 		uint32 now = time;
 		tm_accum += now - tm_last;
 		tm_last = now;
@@ -1302,3 +1322,5 @@ void execute_timer_tasks(uint32 time)
 		}
 	}
 }
+
+

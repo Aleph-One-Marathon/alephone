@@ -588,9 +588,14 @@ void check_m1_exploration(void)
 		explore_view.origin_polygon_index = explore_player->camera_polygon_index;
 
 		update_view_data(&explore_view);
+		
+		std::vector<uint16_t> saved_render_flags{RenderFlagList};
 		objlist_clear(render_flags, RENDER_FLAGS_BUFFER_SIZE);
+		
         // build_render_tree() actually marks the polygons
 		explore_tree.build_render_tree();
+
+		RenderFlagList = std::move(saved_render_flags);
 	}
 }
 

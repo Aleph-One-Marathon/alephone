@@ -369,6 +369,8 @@ void set_keyboard_controller_status(bool active);
 bool get_keyboard_controller_status(void);
 void pause_keyboard_controller(bool active);
 int32 get_heartbeat_count(void);
+float get_heartbeat_fraction(void);
+void wait_until_next_frame(void);
 void sync_heartbeat_count(void);
 void process_action_flags(short player_identifier, const uint32 *action_flags, short count);
 void rewind_recording(void);

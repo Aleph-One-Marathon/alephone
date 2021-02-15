@@ -2229,6 +2229,12 @@ NetGetNetTime(void)
         return sCurrentGameProtocol->GetNetTime();
 }
 
+bool
+NetCheckWorldUpdate()
+{
+	return sCurrentGameProtocol->CheckWorldUpdate();
+}
+
 extern const NetworkStats& hub_stats(int player_index);
 
 void NetProcessMessagesInGame() {

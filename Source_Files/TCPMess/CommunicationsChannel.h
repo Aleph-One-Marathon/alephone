@@ -41,7 +41,7 @@
 #include "SDL_net.h"
 
 #include "Message.h"
-
+#include "csmisc.h"
 
 // Client code may subclass this and have the CommunicationsChannel remember
 // an instance of a subclass for later retrieval (with safe downcasting via
@@ -180,14 +180,14 @@ public:
 
 	IPaddress	peerAddress() const;
 
-	// Callers can use these (compared with SDL_GetTicks()) to gauge activity on the Channel:
-	// each time pump() receives/sends new data, value is set to SDL_GetTicks() at that time.
+	// Callers can use these (compared with machine_tick_count()) to gauge activity on the Channel:
+	// each time pump() receives/sends new data, value is set to machine_tick_count() at that time.
 	Uint32		ticksAtLastReceive() const { return mTicksAtLastReceive; }
 	Uint32		ticksAtLastSend() const { return mTicksAtLastSend; }
 
 	// Or callers can just use these.
-	Uint32		millisecondsSinceLastReceive() const { return SDL_GetTicks() - mTicksAtLastReceive; }
-	Uint32		millisecondsSinceLastSend() const { return SDL_GetTicks() - mTicksAtLastSend; }
+	Uint32		millisecondsSinceLastReceive() const { return machine_tick_count() - mTicksAtLastReceive; }
+	Uint32		millisecondsSinceLastSend() const { return machine_tick_count() - mTicksAtLastSend; }
 
 private:
 	enum CommunicationResult

@@ -155,7 +155,7 @@ void OGL_StartProgress(int total_progress)
 		open_progress_dialog(_loading, true);
 	}
 	show_ogl_progress = true;
-	last_update_tick = SDL_GetTicks();
+	last_update_tick = machine_tick_count();
 }
 
 void OGL_ProgressCallback(int delta_progress)
@@ -163,7 +163,7 @@ void OGL_ProgressCallback(int delta_progress)
 	if (!show_ogl_progress) return;
 	ogl_progress += delta_progress;
 	{
-		int32 current_ticks = SDL_GetTicks();
+		int32 current_ticks = machine_tick_count();
 		if (current_ticks > last_update_tick + 33)
 		{
 			if (OGL_LoadScreen::instance()->Use())

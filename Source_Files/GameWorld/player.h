@@ -552,6 +552,8 @@ _fixed get_player_forward_velocity_scale(short player_index);
 // |<yaw or pitch delta>| <= FIXED_ONE/2
 fixed_yaw_pitch virtual_aim_delta();
 
+fixed_yaw_pitch prev_virtual_aim_delta(); // for interpolation
+
 // Resync the virtual aim to the current physical aim
 void resync_virtual_aim();
 

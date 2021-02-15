@@ -45,6 +45,7 @@
 #include "render.h"
 #include "shell.h"
 #include "interface.h"
+#include "interpolated_world.h"
 #include "player.h"
 #include "overhead_map.h"
 #include "fades.h"
@@ -1184,7 +1185,7 @@ void change_screen_mode(struct screen_mode_data *mode, bool redraw)
 		recenter_mouse();
 	}
 
-	frame_count = frame_index = 0;
+	fps_counter.reset();
 }
 
 void change_screen_mode(short screentype)
@@ -1205,8 +1206,8 @@ void change_screen_mode(short screentype)
 	change_screen_mode(w, h, mode->bit_depth, false, force_menu_size);
 	clear_screen();
 	recenter_mouse();
-	
-	frame_count = frame_index = 0;
+
+	fps_counter.reset();
 }
 
 void toggle_fullscreen(bool fs)
@@ -1237,17 +1238,35 @@ void toggle_fullscreen()
 
 static bool clear_next_screen = false;
 
-void render_screen(short ticks_elapsed)
+void update_world_view_camera()
 {
-	// Make whatever changes are necessary to the world_view structure based on whichever player is frontmost
-	world_view->ticks_elapsed = ticks_elapsed;
-	world_view->tick_count = dynamic_world->tick_count;
 	world_view->yaw = current_player->facing;
 	world_view->virtual_yaw = (current_player->facing * FIXED_ONE) + virtual_aim_delta().yaw;
 	world_view->pitch = current_player->elevation;
 	world_view->virtual_pitch = (current_player->elevation * FIXED_ONE) + virtual_aim_delta().pitch;
 	world_view->maximum_depth_intensity = current_player->weapon_intensity;
+
+	world_view->origin = current_player->camera_location;
+	if (!graphics_preferences->screen_mode.camera_bob)
+		world_view->origin.z -= current_player->step_height;
+	world_view->origin_polygon_index = current_player->camera_polygon_index;
+
+	// Script-based camera control
+	if (!UseLuaCameras())
+		world_view->show_weapons_in_hand = !ChaseCam_GetPosition(world_view->origin, world_view->origin_polygon_index, world_view->yaw, world_view->pitch);	
+}
+
+void render_screen(short ticks_elapsed)
+{
+	// Make whatever changes are necessary to the world_view structure based on whichever player is frontmost
+	world_view->ticks_elapsed = ticks_elapsed;
+	world_view->tick_count = dynamic_world->tick_count;
 	world_view->shading_mode = current_player->infravision_duration ? _shading_infravision : _shading_normal;
+
+	update_world_view_camera();
+
+	auto heartbeat_fraction = get_heartbeat_fraction();
+	update_interpolated_world(heartbeat_fraction);
 
 	bool SwitchedModes = false;
 	
@@ -1372,14 +1391,7 @@ void render_screen(short ticks_elapsed)
 		clear_next_screen = false;
 	}
 
-	world_view->origin = current_player->camera_location;
-	if (!graphics_preferences->screen_mode.camera_bob)
-		world_view->origin.z -= current_player->step_height;
-	world_view->origin_polygon_index = current_player->camera_polygon_index;
-
-	// Script-based camera control
-	if (!UseLuaCameras())
-		world_view->show_weapons_in_hand = !ChaseCam_GetPosition(world_view->origin, world_view->origin_polygon_index, world_view->yaw, world_view->pitch);
+	interpolate_world_view(heartbeat_fraction);
 
 #ifdef HAVE_OPENGL
 	// Is map to be drawn with OpenGL?

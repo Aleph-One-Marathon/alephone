@@ -314,8 +314,8 @@ const int SIZEOF_random_sound_image_data = 32;
 	for monsters, effects and projectiles */
 #define SLOT_IS_USED(o) ((o)->flags&(uint16)0x8000)
 #define SLOT_IS_FREE(o) (!SLOT_IS_USED(o))
-#define MARK_SLOT_AS_FREE(o) ((o)->flags&=(uint16)~0x8000)
-#define MARK_SLOT_AS_USED(o) ((o)->flags|=(uint16)0x8000)
+#define MARK_SLOT_AS_FREE(o) ((o)->flags&=(uint16)~0xC000)
+#define MARK_SLOT_AS_USED(o) ((o)->flags=((o)->flags|(uint16)0x8000)&(uint16)~0x4000)
 
 #define OBJECT_WAS_RENDERED(o) ((o)->flags&(uint16)0x4000)
 #define SET_OBJECT_RENDERED_FLAG(o) ((o)->flags|=(uint16)0x4000)
@@ -429,7 +429,7 @@ struct object_data /* 32 bytes */
 		and velocity fields */
 	world_point3d location;
 	int16 polygon;
-	
+
 	angle facing;
 	
 	/* this is not really a shape descriptor: (and this is the only place in the game where you
