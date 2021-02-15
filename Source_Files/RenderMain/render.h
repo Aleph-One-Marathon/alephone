@@ -106,6 +106,7 @@ struct view_data
 
 	short ticks_elapsed;
 	uint32 tick_count; /* for effects and transfer modes */
+	float heartbeat_fraction;
 	short origin_polygon_index;
 	angle yaw, pitch, roll;
 	fixed_angle virtual_yaw, virtual_pitch;
