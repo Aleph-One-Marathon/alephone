@@ -1266,6 +1266,7 @@ void render_screen(short ticks_elapsed)
 	update_world_view_camera();
 
 	auto heartbeat_fraction = get_heartbeat_fraction();
+	world_view->heartbeat_fraction = heartbeat_fraction;
 	update_interpolated_world(heartbeat_fraction);
 
 	bool SwitchedModes = false;
