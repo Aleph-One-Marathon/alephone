@@ -33,11 +33,12 @@ INTERPOLATED_WORLD.CPP
 #include "player.h"
 #include "preferences.h"
 #include "render.h"
+#include "weapons.h"
 
 // above this speed, don't interpolate
 static const world_distance speed_limit = WORLD_ONE_HALF;
 
-static bool world_is_interpolated;
+bool world_is_interpolated;
 static uint32_t start_machine_tick;
 
 extern struct view_data* world_view;
@@ -100,10 +101,23 @@ struct TickWorldView {
 static TickWorldView previous_tick_world_view;
 static TickWorldView current_tick_world_view;
 
-// If the index points to a projectile, then the value is the newest
-// contrail. If the index points to an effect, then the value is either the
-// projectile, or the next newest contrail
-static std::vector<int16_t> contrail_tracking;
+static std::vector<weapon_display_information> previous_tick_weapon_display;
+static std::vector<weapon_display_information> current_tick_weapon_display;
+
+struct TickWeaponDisplayInfo {
+	_fixed vertical_positionin;
+	_fixed horizontal_positionin;
+};
+
+struct ContrailInfo {
+	int16_t projectile_index;
+	int16_t polygon;
+	world_point3d location;
+};
+
+// contrails don't move; store the location of the projectile from the previous
+// tick and use that for interpolation
+static std::vector<ContrailInfo> contrail_tracking;
 
 void init_interpolated_world()
 {
@@ -181,8 +195,20 @@ void init_interpolated_world()
 
 	previous_tick_world_view.origin_polygon_index = NONE;
 
+	weapon_display_information data;
+	short count = 0;
+	while (get_weapon_display_information(&count, &data))
+	{	
+		current_tick_weapon_display.push_back(data);
+	}
+	previous_tick_weapon_display.assign(current_tick_weapon_display.begin(),
+										current_tick_weapon_display.end());
+
 	contrail_tracking.resize(MAXIMUM_OBJECTS_PER_MAP);
-	std::fill_n(contrail_tracking.data(), NONE, MAXIMUM_OBJECTS_PER_MAP);
+	for (auto i = 0; i < contrail_tracking.size(); ++i)
+	{
+		contrail_tracking[i].projectile_index = NONE;
+	}
 
 	world_is_interpolated = false;
 }
@@ -213,7 +239,7 @@ void enter_interpolated_world()
 
 		if (!SLOT_IS_USED(object))
 		{
-			contrail_tracking[i] = NONE;
+			contrail_tracking[i].projectile_index = NONE;
 		}
 	}
 
@@ -278,6 +304,27 @@ void enter_interpolated_world()
 	next->virtual_pitch = view->virtual_pitch;
 	next->origin = view->origin;
 	next->maximum_depth_intensity = view->maximum_depth_intensity;
+
+	previous_tick_weapon_display.assign(current_tick_weapon_display.begin(),
+										current_tick_weapon_display.end());
+
+	current_tick_weapon_display.clear();
+	short count = 0;
+	weapon_display_information data;
+	while (get_weapon_display_information(&count, &data))
+	{
+		current_tick_weapon_display.push_back(data);
+	}
+
+	for (auto i = 0; i < contrail_tracking.size(); ++i)
+	{
+		if (contrail_tracking[i].projectile_index != NONE)
+		{
+			MARK_SLOT_AS_USED(&previous_tick_objects[i]);
+			previous_tick_objects[i].polygon = contrail_tracking[i].polygon;
+			previous_tick_objects[i].location = contrail_tracking[i].location;
+		}
+	}
 
 	world_is_interpolated = true;
 }
@@ -514,32 +561,6 @@ void update_interpolated_world(float heartbeat_fraction)
 			continue;
 		}
 
-		if (contrail_tracking[i] &&
-			GET_OBJECT_OWNER(next) == _object_is_effect)
-		{
-			auto target = &current_tick_objects[contrail_tracking[i]];
-			if (SLOT_IS_USED(target))
-			{
-				next = target;
-				if (GET_OBJECT_OWNER(target) == _object_is_projectile &&
-					(!SLOT_IS_USED(prev)
-					 // contrails never move; if it's in a new location, it's a
-					 // new contrail
-					 || prev->location.x != next->location.x
-					 || prev->location.y != next->location.y))
-				{
-					// a newly created contrail interpolates from the
-					// projectile's last position
-					prev = &previous_tick_objects[contrail_tracking[i]];
-					if (prev->polygon != next->polygon)
-					{
-						remove_object_from_polygon_object_list(i);
-						add_object_to_polygon_object_list(i, prev->polygon);
-					}
-				}
-			}
-		}
-
 		// Properly speaking, we shouldn't render objects that did not
 		// exist "last" tick at all during a fractional frame. Doing
 		// so "stretches" new objects' existences by almost (but not
@@ -769,11 +790,99 @@ float get_heartbeat_fraction()
 
 void track_contrail_interpolation(int16_t projectile_index, int16_t effect_index)
 {
-	auto prev_effect_index = contrail_tracking[projectile_index];
-	if (prev_effect_index != NONE)
+	if (contrail_tracking.size() == 0)
 	{
-		contrail_tracking[prev_effect_index] = effect_index;
+		return;
 	}
-	contrail_tracking[effect_index] = projectile_index;
-	contrail_tracking[projectile_index] = effect_index;
+
+	auto projectile = &previous_tick_objects[projectile_index];
+	if (SLOT_IS_USED(projectile))
+	{
+		auto& contrail = contrail_tracking[effect_index];
+
+		contrail.projectile_index = projectile_index;
+		contrail.polygon = projectile->polygon;
+		contrail.location = projectile->location;
+	}
+}
+
+static void interpolate_weapon_display_information(
+	short index,
+	weapon_display_information* data)
+{
+	auto heartbeat_fraction = get_heartbeat_fraction();
+
+	if (heartbeat_fraction >= 1.f)
+	{
+		return;
+	}
+	
+	static constexpr int _shell_casing_type = 1; // from weapons.cpp
+
+	weapon_display_information* next;
+	weapon_display_information* prev;
+
+	if (data->interpolation_data & 0x3 == _shell_casing_type)
+	{
+		next = &current_tick_weapon_display[index];
+		prev = &previous_tick_weapon_display[index];
+
+		// these shift around because it's a circular buffer, so find the match
+		if (prev->interpolation_data != next->interpolation_data)
+		{
+			for (auto i = 0; i < previous_tick_weapon_display.size(); ++i)
+			{
+				if (previous_tick_weapon_display[i].interpolation_data == next->interpolation_data)
+				{
+					prev = &previous_tick_weapon_display[i];
+					break;
+				}
+			}
+		}
+	}
+	else
+	{
+		if (index >= previous_tick_weapon_display.size())
+		{
+			return;
+		}
+
+		next = &current_tick_weapon_display[index];
+		prev = &previous_tick_weapon_display[index];
+	}
+
+	if (prev->interpolation_data != next->interpolation_data ||
+		prev->horizontal_positioning_mode != next->horizontal_positioning_mode ||
+		prev->vertical_positioning_mode != next->vertical_positioning_mode)
+	{
+		return;
+	}
+	
+	auto dx = next->horizontal_position - prev->horizontal_position;
+	auto dy = next->vertical_position - prev->vertical_position;
+
+	data->vertical_position = lerp(prev->vertical_position,
+								   next->vertical_position,
+								   heartbeat_fraction);
+	
+	data->horizontal_position = lerp(prev->horizontal_position,
+									 next->horizontal_position,
+									 heartbeat_fraction);
+}
+
+bool get_interpolated_weapon_display_information(short* count,
+												 weapon_display_information* data)
+{
+	auto heartbeat_fraction = get_heartbeat_fraction();
+	if (*count < current_tick_weapon_display.size())
+	{
+		*data = current_tick_weapon_display[*count];
+		interpolate_weapon_display_information(*count, data);
+		++(*count);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
