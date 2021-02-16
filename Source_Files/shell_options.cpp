@@ -181,7 +181,7 @@ bool ShellOptions::parse(int argc, char** argv)
 					logFatal("%s requires an additional argument", it->c_str());
                     printf("%s requires an additional argument\n", it->c_str());
                     print_usage();
-                    exit(0);
+                    exit(1);
                 }
 			}
 		}
@@ -205,7 +205,7 @@ bool ShellOptions::parse(int argc, char** argv)
 				logFatal("Unrecognized argument '%s'.", it->c_str());
 				printf("Unrecognized argument '%s'.\n", it->c_str());
 				print_usage();
-				exit(0);
+				exit(1);
 			}
 		}
 	}
