@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "FileHandler.h"
+#include "Logging.h"
 #include "csstrings.h"
 
 #ifdef __WIN32__
@@ -177,9 +178,10 @@ bool ShellOptions::parse(int argc, char** argv)
                 }
                 else
                 {
+					logFatal("%s requires an additional argument", it->c_str());
                     printf("%s requires an additional argument\n", it->c_str());
                     print_usage();
-                    exit(0);
+                    exit(1);
                 }
 			}
 		}
@@ -200,10 +202,10 @@ bool ShellOptions::parse(int argc, char** argv)
 			}
 			else
 			{
-				
+				logFatal("Unrecognized argument '%s'.", it->c_str());
 				printf("Unrecognized argument '%s'.\n", it->c_str());
 				print_usage();
-				exit(0);
+				exit(1);
 			}
 		}
 	}
