@@ -1127,6 +1127,32 @@ const luaL_Reg Lua_Polygon_Sides_Metatable[] = {
 	{0, 0}
 };
 
+int Lua_Polygon_Change_Height(lua_State* L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3))
+		return luaL_error(L, ("change_height: incorrect argument type"));
+
+	short polygon_index = Lua_Polygon::Index(L, 1);
+
+	auto floor_height = lua_tonumber(L, 2) * WORLD_ONE;
+	auto ceiling_height = lua_tonumber(L, 3) * WORLD_ONE;
+
+	auto success = change_polygon_height(polygon_index, floor_height, ceiling_height, nullptr);
+
+	if (success)
+	{
+		auto polygon = get_polygon_data(polygon_index);
+		for (auto i = 0; i < polygon->vertex_count; ++i)
+		{
+			recalculate_redundant_line_data(polygon->line_indexes[i]);
+			recalculate_redundant_endpoint_data(polygon->endpoint_indexes[i]);
+		}
+	}
+
+	lua_pushboolean(L, success);
+	return 1;
+}
+
 // contains(x, y, z)
 int Lua_Polygon_Contains(lua_State *L)
 {
@@ -1427,6 +1453,7 @@ const luaL_Reg Lua_Polygon_Get[] = {
 	{"adjacent_polygons", Lua_Polygon_Get_Adjacent},
 	{"area", Lua_Polygon_Get_Area},
 	{"ceiling", Lua_Polygon_Get_Ceiling},
+	{"change_height", L_TableFunction<Lua_Polygon_Change_Height>},
 	{"contains", L_TableFunction<Lua_Polygon_Contains>},
 	{"endpoints", Lua_Polygon_Get_Endpoints},
 	{"find_line_crossed_leaving", L_TableFunction<Lua_Polygon_Find_Line_Crossed_Leaving>},

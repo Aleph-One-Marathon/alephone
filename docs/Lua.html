@@ -948,7 +948,7 @@
 <dd><p class="description">iterates through all media on the level</p></dd>
 <dt>Media.new() <span class="version">git</span>
 </dt>
-<dd><p class="description">returns a new media</p></dd>
+<dd><p class="description">returns a new liquid</p></dd>
 <dt>Media[index]</dt>
 <dd><dl>
       <dt>.direction <span class="version">20100118</span>
@@ -1565,6 +1565,14 @@
 <dt>.transfer_mode</dt>
 <dd><p class="description">texture transfer mode</p></dd>
 </dl></dd>
+	  <dt>:change_height(floor, ceiling) <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">changes polygon floor and ceiling heights, if possible</p>
+<p class="note">won’t squish monsters; returns false instead </p>
+<p class="note">this is much less optimized than moving a platform </p>
+<p class="note">you may need to create sides if you are raising/lowering what used to be a flat floor/ceiling </p>
+</dd>
       <dt>:contains(x, y [, z])</dt>
 <dd><p class="description">whether the point is in this polygon</p></dd>
       <dt>

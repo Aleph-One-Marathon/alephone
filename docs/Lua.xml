@@ -1600,6 +1600,15 @@
 		  <type>transfer_mode</type>
 		</variable>
       </subtable>
+	  <function name="change_height" version="git">
+		<description>changes polygon floor and ceiling heights, if possible</description>
+		<argument name="floor"><type>WU</type></argument>
+		<argument name="ceiling"><type>WU</type></argument>
+		<return><type>boolean</type></return>
+		<note>won’t squish monsters; returns false instead</note>
+		<note>this is much less optimized than moving a platform</note>
+		<note>you may need to create sides if you are raising/lowering what used to be a flat floor/ceiling</note>
+	  </function>
       <function name="contains">
 		<description>whether the point is in this polygon</description>
 		<argument name="x"><type>WU</type></argument>
