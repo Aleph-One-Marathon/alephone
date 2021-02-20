@@ -1432,6 +1432,10 @@
 		<description>prints message to player’s screen</description>
 		<argument name="message"><type>string</type></argument>
       </function>
+	  <function name="revive" version="git">
+		<description>revives player</description>
+		<note>player must be totally dead</note>
+	  </function>
       <variable name="team">
 		<description>player’s team (pants color)</description>
 		<type>number</type>
@@ -1475,6 +1479,9 @@
 		  </function>
 		</subtable-accessor>
       </subtable>
+	  <variable name="totally_dead" version="git" access="read-only">
+		<description>the player is dead and the death animation has finished</description>
+	  </variable>
       <function name="view_player" version="20080707">
 		<description>switch to another player’s view</description>
 		<argument name="player"><type>player</type></argument>

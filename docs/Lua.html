@@ -1431,6 +1431,12 @@
 <dd><p class="description">set player position</p></dd>
       <dt>:print(message)</dt>
 <dd><p class="description">prints message to player’s screen</p></dd>
+	  <dt>:revive() <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">revives player</p>
+<p class="note">player must be totally dead </p>
+</dd>
       <dt>.team</dt>
 <dd><p class="description">player’s team (pants color)</p></dd>
       <dt>:teleport(polygon)</dt>
@@ -1473,6 +1479,9 @@
 </dl></dd>
 </dl>
 </dd>
+	  <dt>.totally_dead<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">the player is dead and the death animation has finished</p></dd>
       <dt>:view_player(player) <span class="version">20080707</span>
 </dt>
 <dd><p class="description">switch to another player’s view</p></dd>
