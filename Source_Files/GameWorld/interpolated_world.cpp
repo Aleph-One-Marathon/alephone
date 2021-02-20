@@ -452,25 +452,6 @@ static bool should_interpolate(world_point3d& prev, world_point3d& next)
 		<= speed_limit;
 }
 
-
-static int16_t find_new_polygon(int16_t polygon_index,
-								world_point3d& src,
-								world_point3d& dst)
-{
-	int16_t line_index;
-	do
-	{
-		line_index = find_line_crossed_leaving_polygon(polygon_index, reinterpret_cast<world_point2d*>(&src), reinterpret_cast<world_point2d*>(&dst));
-		if (line_index != NONE)
-		{
-			polygon_index = find_adjacent_polygon(polygon_index, line_index);
-		}
-	}
-	while (line_index != NONE && polygon_index != NONE);
-
-	return polygon_index;
-}
-
 extern void add_object_to_polygon_object_list(short, short);
 
 void update_interpolated_world(float heartbeat_fraction)
@@ -599,9 +580,10 @@ void update_interpolated_world(float heartbeat_fraction)
 		
 		if (object->polygon != next->polygon)
 		{
-			auto polygon_index = find_new_polygon(object->polygon,
-												  object->location,
-												  next->location);
+			auto polygon_index = find_new_object_polygon(
+				reinterpret_cast<world_point2d*>(&object->location),
+				reinterpret_cast<world_point2d*>(&next->location),
+				object->polygon);
 			
 			if (polygon_index == NONE)
 			{
@@ -657,10 +639,11 @@ void update_interpolated_world(float heartbeat_fraction)
 
 		if (ephemera->polygon != next->polygon)
 		{
-			auto polygon_index = find_new_polygon(ephemera->polygon,
-												  ephemera->location,
-												  next->location);
-
+			auto polygon_index = find_new_object_polygon(
+				reinterpret_cast<world_point2d*>(&ephemera->location),
+				reinterpret_cast<world_point2d*>(&next->location),
+				ephemera->polygon);
+			
 			if (polygon_index != NONE)
 			{
 				ephemera->location = next->location;
@@ -721,9 +704,11 @@ void interpolate_world_view(float heartbeat_fraction)
 		
 	if (prev->origin_polygon_index != next->origin_polygon_index)
 	{
-		auto polygon_index = find_new_polygon(prev->origin_polygon_index,
-											  prev->origin,
-											  view->origin);
+		auto polygon_index = find_new_object_polygon(
+			reinterpret_cast<world_point2d*>(&prev->origin),
+			reinterpret_cast<world_point2d*>(&view->origin),
+			prev->origin_polygon_index);
+		
 		if (polygon_index == NONE)
 		{
 			view->origin = next->origin;
