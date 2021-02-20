@@ -644,7 +644,7 @@ void update_interpolated_world(float heartbeat_fraction)
 				reinterpret_cast<world_point2d*>(&next->location),
 				ephemera->polygon);
 			
-			if (polygon_index != NONE)
+			if (polygon_index == NONE)
 			{
 				ephemera->location = next->location;
 			}
