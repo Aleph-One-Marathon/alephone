@@ -35,6 +35,8 @@ INTERPOLATED_WORLD.CPP
 #include "render.h"
 #include "weapons.h"
 
+extern std::vector<int16_t> polygon_ephemera;
+
 // above this speed, don't interpolate
 static const world_distance speed_limit = WORLD_ONE_HALF;
 
@@ -190,7 +192,7 @@ void init_interpolated_world()
 	current_tick_polygon_ephemera.resize(dynamic_world->polygon_count);
 	for (auto i = 0; i < dynamic_world->polygon_count; ++i)
 	{
-		current_tick_polygon_ephemera[i] = get_polygon_ephemera(i)->first_object;
+		current_tick_polygon_ephemera[i] = polygon_ephemera[i];
 	}
 
 	previous_tick_world_view.origin_polygon_index = NONE;
@@ -255,7 +257,7 @@ void enter_interpolated_world()
 		tick_polygon.ceiling_height = polygon.ceiling_height;
 		tick_polygon.first_object = polygon.first_object;
 
-		current_tick_polygon_ephemera[i] = get_polygon_ephemera(i)->first_object;
+		current_tick_polygon_ephemera[i] = polygon_ephemera[i];
 	}
 
 	previous_tick_sides.assign(current_tick_sides.begin(),
@@ -356,7 +358,7 @@ void exit_interpolated_world()
 		polygon.ceiling_height = tick_polygon.ceiling_height;
 		polygon.first_object = tick_polygon.first_object;
 
-		get_polygon_ephemera(i)->first_object = current_tick_polygon_ephemera[i];
+		polygon_ephemera[i] = current_tick_polygon_ephemera[i];
 	}
 
 	for (auto i = 0; i < MAXIMUM_SIDES_PER_MAP; ++i)

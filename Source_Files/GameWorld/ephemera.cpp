@@ -47,7 +47,7 @@ private:
 	int16_t first_unused_;
 };
 
-static std::vector<polygon_ephemera_data> polygon_ephemera;
+std::vector<int16_t> polygon_ephemera;
 static ObjectDataPool ephemera_pool;
 
 void ObjectDataPool::init()
@@ -100,9 +100,7 @@ void allocate_ephemera_storage(int max_ephemera)
 void init_ephemera(int16_t polygon_count)
 {
 	polygon_ephemera.clear();
-	polygon_ephemera.resize(polygon_count, polygon_ephemera_data {
-			NONE, false
-		});
+	polygon_ephemera.resize(polygon_count, NONE);
 
 	ephemera_pool.init();
 }
@@ -148,17 +146,17 @@ object_data* get_ephemera_data(int16_t ephemera_index)
 	return &ephemera_pool.get(ephemera_index);
 }
 
-polygon_ephemera_data* get_polygon_ephemera(int16_t polygon_index)
+int16_t get_polygon_ephemera(int16_t polygon_index)
 {
 	// TODO: settle on bounds checking
-	return &polygon_ephemera.at(polygon_index);
+	return polygon_ephemera.at(polygon_index);
 }
 
 void remove_ephemera_from_polygon(int16_t ephemera_index)
 {
 	auto& object = ephemera_pool.get(ephemera_index);
 
-	int16_t* p = &polygon_ephemera.at(object.polygon).first_object;
+	int16_t* p = &polygon_ephemera.at(object.polygon);
 	while (*p != ephemera_index) {
 		p = &ephemera_pool.get(*p).next_object;
 	}
@@ -171,8 +169,8 @@ void add_ephemera_to_polygon(int16_t ephemera_index, int16_t polygon_index)
 {
 	auto ephemera = get_ephemera_data(ephemera_index);
 
-	ephemera->next_object = polygon_ephemera.at(polygon_index).first_object;
-	polygon_ephemera.at(polygon_index).first_object = ephemera_index;
+	ephemera->next_object = polygon_ephemera.at(polygon_index);
+	polygon_ephemera.at(polygon_index) = ephemera_index;
 	
 	ephemera->polygon = polygon_index;
 }
@@ -199,16 +197,11 @@ void set_ephemera_shape(int16_t ephemera_index, shape_descriptor shape)
 	}
 }
 
-void note_ephemera_polygon_rendered(int16_t polygon_index)
-{
-	polygon_ephemera[polygon_index].rendered = true;
-}
-
 void update_ephemera()
 {
-	for (auto& data : polygon_ephemera)
+	for (auto first_object : polygon_ephemera)
 	{
-		auto index = data.first_object;
+		auto index = first_object;
 		while (index != NONE)
 		{
 			auto object = get_ephemera_data(index);
@@ -227,7 +220,5 @@ void update_ephemera()
 				index = object->next_object;
 			}
 		}
-
-		data.rendered = false;
 	}
 }
