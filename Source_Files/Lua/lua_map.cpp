@@ -1483,7 +1483,7 @@ const luaL_Reg Lua_Polygon_Get[] = {
 	{"change_height", L_TableFunction<Lua_Polygon_Change_Height>},
 	{"contains", L_TableFunction<Lua_Polygon_Contains>},
 	{"endpoints", Lua_Polygon_Get_Endpoints},
-	{"find_polygon", L_TableFunction<Lua_Polygon_Find_New>},
+	{"find_polygon", L_TableFunction<Lua_Polygon_Find_Polygon>},
 	{"find_line_crossed_leaving", L_TableFunction<Lua_Polygon_Find_Line_Crossed_Leaving>},
 	{"floor", Lua_Polygon_Get_Floor},
 	{"lines", Lua_Polygon_Get_Lines},
