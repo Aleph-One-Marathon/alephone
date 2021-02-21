@@ -1811,6 +1811,9 @@
       </variable>
     </table>
     <table name="side">
+	  <variable name="ambient_delta" version="git">
+		<description>constant offset from calculated light intensity</description>
+	  </variable>
       <subtable name="control_panel" classname="side_control_panel">
 		<variable name="can_be_destroyed" version="20080707">
 		  <description>whether projectiles destroy this switch</description>

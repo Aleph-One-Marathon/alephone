@@ -2076,6 +2076,13 @@ int Lua_Side_Recalculate_Type(lua_State *L)
 	return 0;
 }
 
+static int Lua_Side_Get_Ambient_Delta(lua_State* L)
+{
+	auto side = get_side_data(Lua_Side::Index(L, 1));
+	lua_pushnumber(L, static_cast<double>(side->ambient_delta) / FIXED_ONE);
+	return 1;
+}
+
 static int Lua_Side_Get_Control_Panel(lua_State *L)
 {
 	int16 side_index = Lua_Side::Index(L, 1);
@@ -2129,6 +2136,7 @@ static int Lua_Side_Get_Type(lua_State *L)
 }
 
 const luaL_Reg Lua_Side_Get[] = {
+	{"ambient_delta", Lua_Side_Get_Ambient_Delta},
 	{"control_panel", Lua_Side_Get_Control_Panel},
 	{"line", Lua_Side_Get_Line},
 	{"play_sound", L_TableFunction<Lua_Side_Play_Sound>},
@@ -2140,6 +2148,16 @@ const luaL_Reg Lua_Side_Get[] = {
 	{"type", Lua_Side_Get_Type},
 	{0, 0}
 };
+
+static int Lua_Side_Set_Ambient_Delta(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "ambient_delta: incorrect argument type");
+
+	auto side = get_side_data(Lua_Side::Index(L, 1));
+	side->ambient_delta = static_cast<int32_t>(lua_tonumber(L, 2) * FIXED_ONE);
+	return 1;
+}
 
 static int Lua_Side_Set_Control_Panel(lua_State *L)
 {
@@ -2162,6 +2180,7 @@ static int Lua_Side_Set_Control_Panel(lua_State *L)
 }
 
 const luaL_Reg Lua_Side_Set[] = {
+	{"ambient_delta", Lua_Side_Set_Ambient_Delta},
 	{"control_panel", Lua_Side_Set_Control_Panel},
 	{0, 0}
 };
