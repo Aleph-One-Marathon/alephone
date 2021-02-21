@@ -537,9 +537,12 @@ enum /* side flags */
 	_side_switch_can_be_destroyed= 0x0020, // projectile hits toggle and destroy this switch
 	_side_switch_can_only_be_hit_by_projectiles= 0x0040,
 	_side_item_is_optional= 0x0080, // in Marathon, switches still work without items
-        _side_is_m1_lighted_switch = 0x0100, // in Marathon, lighted switches must be above 50% (unlike M2, 75%)
+	_side_is_m1_lighted_switch = 0x0100, // in Marathon, lighted switches must be above 50% (unlike M2, 75%)
 
-	_editor_dirty_bit= 0x4000 // used by the editor...
+	_editor_dirty_bit= 0x4000, // used by the editor...
+	_reserved_side_flag = 0x8000 // some maps written by an old map editor
+								 // (Pfhorte?) set lots of side flags; use this
+								 // to detect and correct
 };
 
 enum /* control panel side types */
