@@ -1628,6 +1628,15 @@
       <function name="endpoints">
 		<description>iterates through all of this polygon’s endpoints</description>
       </function>
+	  <function name="find_polygon" version="git">
+		<description>traverses map from (x1, y1) and returns polygon containing (x2, y2)</description>
+		<argument name="x1"><type>WU</type></argument>
+		<argument name="y1"><type>WU</type></argument>
+		<argument name="x2"><type>WU</type></argument>
+		<argument name="y2"><type>WU</type></argument>
+		<note>can be nil if there is no direct route between the two points, or the destination point is not in any polygon</note>
+		<note>ignores floor/ceiling height</note>
+	  </function>
       <function name="find_line_crossed_leaving" version="20080707">
 		<description>returns the polygon line crossed by line segment (x1, y1) (x2, y2)</description>
 		<argument name="x1"><type>WU</type></argument>

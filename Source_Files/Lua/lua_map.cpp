@@ -1183,6 +1183,33 @@ int Lua_Polygon_Contains(lua_State *L)
 	return 1;
 }
 
+static int Lua_Polygon_Find_Polygon(lua_State* L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) ||
+		!lua_isnumber(L, 4) || !lua_isnumber(L, 5))
+		return luaL_error(L, "find_polygon: incorrect argument type");
+
+	world_point2d origin;
+	origin.x = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	origin.y = static_cast<world_distance>(lua_tonumber(L, 3) * WORLD_ONE);
+
+	world_point2d destination;
+	destination.x = static_cast<world_distance>(lua_tonumber(L, 4) * WORLD_ONE);
+	destination.y = static_cast<world_distance>(lua_tonumber(L, 5) * WORLD_ONE);
+
+	auto polygon_index = find_new_object_polygon(&origin, &destination, Lua_Polygon::Index(L, 1));
+	if (polygon_index != NONE)
+	{
+		Lua_Polygon::Push(L, polygon_index);
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
 // line_crossed_leaving(x1, y1, x2, y2)
 int Lua_Polygon_Find_Line_Crossed_Leaving(lua_State *L)
 {
@@ -1456,6 +1483,7 @@ const luaL_Reg Lua_Polygon_Get[] = {
 	{"change_height", L_TableFunction<Lua_Polygon_Change_Height>},
 	{"contains", L_TableFunction<Lua_Polygon_Contains>},
 	{"endpoints", Lua_Polygon_Get_Endpoints},
+	{"find_polygon", L_TableFunction<Lua_Polygon_Find_New>},
 	{"find_line_crossed_leaving", L_TableFunction<Lua_Polygon_Find_Line_Crossed_Leaving>},
 	{"floor", Lua_Polygon_Get_Floor},
 	{"lines", Lua_Polygon_Get_Lines},
