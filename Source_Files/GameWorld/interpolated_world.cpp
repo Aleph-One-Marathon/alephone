@@ -125,6 +125,7 @@ void init_interpolated_world()
 {
 	if (get_fps_target() == 30)
 	{
+		world_is_interpolated = false;
 		return;
 	}
 
@@ -458,7 +459,7 @@ extern void add_object_to_polygon_object_list(short, short);
 
 void update_interpolated_world(float heartbeat_fraction)
 {
-	if (get_fps_target() == 30 || heartbeat_fraction > 1.f)
+	if (!world_is_interpolated || heartbeat_fraction > 1.f)
 	{
 		return;
 	}
@@ -665,7 +666,7 @@ void interpolate_world_view(float heartbeat_fraction)
 	auto next = &current_tick_world_view;
 	auto view = world_view;
 	
-	if (get_fps_target() == 30 ||
+	if (!world_is_interpolated ||
 		heartbeat_fraction > 1.f ||
 		prev->origin_polygon_index == NONE ||
 		!should_interpolate(prev->origin, next->origin))
