@@ -28,7 +28,7 @@
 
 #ifdef HAVE_FFMPEG
 
-class FFmpegDecoder : public Decoder
+class FFmpegDecoder : public StreamDecoder
 {
 public:
 	bool Open(FileSpecifier& File);
@@ -42,8 +42,6 @@ public:
 	int BytesPerFrame() { return 2 * (IsStereo() ? 2 : 1); }
 	float Rate() { return rate; }
 	bool IsLittleEndian() { return PlatformIsLittleEndian(); }
-
-	int32 Frames();
 
 	FFmpegDecoder();
 	~FFmpegDecoder();

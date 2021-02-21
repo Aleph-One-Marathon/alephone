@@ -76,14 +76,6 @@ StreamDecoder *StreamDecoder::Get(FileSpecifier& File)
 
 Decoder *Decoder::Get(FileSpecifier &File)
 {
-#ifdef HAVE_FFMPEG
-	{
-		unique_ptr<FFmpegDecoder> ffmpegDecoder(new FFmpegDecoder);
-		if (ffmpegDecoder->Open(File))
-			return ffmpegDecoder.release();
-	}
-#endif
-
 #ifdef HAVE_SNDFILE
 	{
 		unique_ptr<SndfileDecoder> sndfileDecoder(new SndfileDecoder);
