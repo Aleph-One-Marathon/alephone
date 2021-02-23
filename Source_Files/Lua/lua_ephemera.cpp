@@ -26,6 +26,7 @@ LUA_EPHEMERA.CPP
 #include "lua_ephemera.h"
 #include "lua_map.h"
 #include "preferences.h"
+#include "render.h"
 
 static uint16_t set_shape(uint16_t descriptor, uint16_t shape)
 {
@@ -102,8 +103,7 @@ static int Lua_Ephemera_Get_Polygon(lua_State* L)
 static int Lua_Ephemera_Get_Rendered(lua_State* L)
 {
 	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
-	auto data = get_polygon_ephemera(object->polygon);
-	lua_pushboolean(L, data->rendered);
+	lua_pushboolean(L, TEST_RENDER_FLAG(object->polygon, _polygon_is_visible));
 	return 1;
 }
 

@@ -35,6 +35,8 @@ INTERPOLATED_WORLD.CPP
 #include "render.h"
 #include "weapons.h"
 
+extern std::vector<int16_t> polygon_ephemera;
+
 // above this speed, don't interpolate
 static const world_distance speed_limit = WORLD_ONE_HALF;
 
@@ -123,6 +125,7 @@ void init_interpolated_world()
 {
 	if (get_fps_target() == 30)
 	{
+		world_is_interpolated = false;
 		return;
 	}
 
@@ -190,7 +193,7 @@ void init_interpolated_world()
 	current_tick_polygon_ephemera.resize(dynamic_world->polygon_count);
 	for (auto i = 0; i < dynamic_world->polygon_count; ++i)
 	{
-		current_tick_polygon_ephemera[i] = get_polygon_ephemera(i)->first_object;
+		current_tick_polygon_ephemera[i] = polygon_ephemera[i];
 	}
 
 	previous_tick_world_view.origin_polygon_index = NONE;
@@ -255,7 +258,7 @@ void enter_interpolated_world()
 		tick_polygon.ceiling_height = polygon.ceiling_height;
 		tick_polygon.first_object = polygon.first_object;
 
-		current_tick_polygon_ephemera[i] = get_polygon_ephemera(i)->first_object;
+		current_tick_polygon_ephemera[i] = polygon_ephemera[i];
 	}
 
 	previous_tick_sides.assign(current_tick_sides.begin(),
@@ -356,7 +359,7 @@ void exit_interpolated_world()
 		polygon.ceiling_height = tick_polygon.ceiling_height;
 		polygon.first_object = tick_polygon.first_object;
 
-		get_polygon_ephemera(i)->first_object = current_tick_polygon_ephemera[i];
+		polygon_ephemera[i] = current_tick_polygon_ephemera[i];
 	}
 
 	for (auto i = 0; i < MAXIMUM_SIDES_PER_MAP; ++i)
@@ -452,30 +455,11 @@ static bool should_interpolate(world_point3d& prev, world_point3d& next)
 		<= speed_limit;
 }
 
-
-static int16_t find_new_polygon(int16_t polygon_index,
-								world_point3d& src,
-								world_point3d& dst)
-{
-	int16_t line_index;
-	do
-	{
-		line_index = find_line_crossed_leaving_polygon(polygon_index, reinterpret_cast<world_point2d*>(&src), reinterpret_cast<world_point2d*>(&dst));
-		if (line_index != NONE)
-		{
-			polygon_index = find_adjacent_polygon(polygon_index, line_index);
-		}
-	}
-	while (line_index != NONE && polygon_index != NONE);
-
-	return polygon_index;
-}
-
 extern void add_object_to_polygon_object_list(short, short);
 
 void update_interpolated_world(float heartbeat_fraction)
 {
-	if (get_fps_target() == 30 || heartbeat_fraction > 1.f)
+	if (!world_is_interpolated || heartbeat_fraction > 1.f)
 	{
 		return;
 	}
@@ -599,9 +583,10 @@ void update_interpolated_world(float heartbeat_fraction)
 		
 		if (object->polygon != next->polygon)
 		{
-			auto polygon_index = find_new_polygon(object->polygon,
-												  object->location,
-												  next->location);
+			auto polygon_index = find_new_object_polygon(
+				reinterpret_cast<world_point2d*>(&object->location),
+				reinterpret_cast<world_point2d*>(&next->location),
+				object->polygon);
 			
 			if (polygon_index == NONE)
 			{
@@ -657,11 +642,12 @@ void update_interpolated_world(float heartbeat_fraction)
 
 		if (ephemera->polygon != next->polygon)
 		{
-			auto polygon_index = find_new_polygon(ephemera->polygon,
-												  ephemera->location,
-												  next->location);
-
-			if (polygon_index != NONE)
+			auto polygon_index = find_new_object_polygon(
+				reinterpret_cast<world_point2d*>(&ephemera->location),
+				reinterpret_cast<world_point2d*>(&next->location),
+				ephemera->polygon);
+			
+			if (polygon_index == NONE)
 			{
 				ephemera->location = next->location;
 			}
@@ -680,7 +666,7 @@ void interpolate_world_view(float heartbeat_fraction)
 	auto next = &current_tick_world_view;
 	auto view = world_view;
 	
-	if (get_fps_target() == 30 ||
+	if (!world_is_interpolated ||
 		heartbeat_fraction > 1.f ||
 		prev->origin_polygon_index == NONE ||
 		!should_interpolate(prev->origin, next->origin))
@@ -721,9 +707,11 @@ void interpolate_world_view(float heartbeat_fraction)
 		
 	if (prev->origin_polygon_index != next->origin_polygon_index)
 	{
-		auto polygon_index = find_new_polygon(prev->origin_polygon_index,
-											  prev->origin,
-											  view->origin);
+		auto polygon_index = find_new_object_polygon(
+			reinterpret_cast<world_point2d*>(&prev->origin),
+			reinterpret_cast<world_point2d*>(&view->origin),
+			prev->origin_polygon_index);
+		
 		if (polygon_index == NONE)
 		{
 			view->origin = next->origin;

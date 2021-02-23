@@ -1908,6 +1908,13 @@ static int Lua_Player_Get_Texture_Palette(lua_State *L)
 	return 1;
 }
 
+static int Lua_Player_Get_Totally_Dead(lua_State* L)
+{
+	auto player = get_player_data(Lua_Player::Index(L, 1));
+	lua_pushboolean(L, PLAYER_IS_TOTALLY_DEAD(player));
+	return 1;
+}
+
 static int Lua_Player_Get_Weapons(lua_State *L)
 {
 	Lua_Player_Weapons::Push(L, Lua_Player::Index(L, 1));
@@ -1944,6 +1951,21 @@ static int Lua_Player_Get_Zoom(lua_State *L)
 	{
 		return 0;
 	}
+}
+
+extern void revive_player(int16_t);
+
+static int Lua_Player_Revive(lua_State* L)
+{
+	short player_index = Lua_Player::Index(L, 1);
+	auto player = get_player_data(player_index);
+	if (!PLAYER_IS_TOTALLY_DEAD(player))
+	{
+		return luaL_error(L, "revive: you can only revive totally dead players");
+	}
+
+	revive_player(player_index);
+	return 0;
 }
 
 const luaL_Reg Lua_Player_Get[] = {
@@ -1988,10 +2010,12 @@ const luaL_Reg Lua_Player_Get[] = {
 	{"points", Lua_Player_Get_Points},
 	{"polygon", Lua_Player_Get_Polygon},
 	{"position", L_TableFunction<Lua_Player_Position>},
+	{"revive", L_TableFunction<Lua_Player_Revive>},
 	{"team", Lua_Player_Get_Team},
 	{"teleport", L_TableFunction<Lua_Player_Teleport>},
 	{"teleport_to_level", L_TableFunction<Lua_Player_Teleport_To_Level>},
 	{"texture_palette", Lua_Player_Get_Texture_Palette},
+	{"totally_dead", Lua_Player_Get_Totally_Dead},
 	{"view_player", L_TableFunction<Lua_Player_View_Player>},
 	{"viewed_player", Lua_Player_Get_Viewed_Player},
 	{"weapons", Lua_Player_Get_Weapons},

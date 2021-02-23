@@ -177,11 +177,6 @@ void FFmpegDecoder::Close()
         av->started = false;
 }
 
-int32 FFmpegDecoder::Frames()
-{
-    return av->stream->nb_frames;
-}
-
 bool FFmpegDecoder::GetAudio()
 {
     AVPacket pkt;

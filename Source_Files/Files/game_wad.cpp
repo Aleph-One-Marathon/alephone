@@ -958,6 +958,8 @@ void load_sides(
 	short version)
 {
 	size_t loop;
+
+	bool reserved_side_flag = false;
 	
 	// assert(count>=0 && count<=MAXIMUM_SIDES_PER_MAP);
 
@@ -965,6 +967,13 @@ void load_sides(
 
 	for(loop=0; loop<count; ++loop)
 	{
+		// whatever editor created Siege of Nor'Khor left all kinds of unused
+		// side flags set; try to detect them and clear them out
+		if (map_sides[loop].flags & _reserved_side_flag)
+		{
+			reserved_side_flag = true;
+		}
+		
 		if(version==MARATHON_ONE_DATA_VERSION)
 		{
 			map_sides[loop].transparent_texture.texture= UNONE;
@@ -972,6 +981,15 @@ void load_sides(
 			map_sides[loop].flags |= _side_item_is_optional;
 		}
 		++sides;
+	}
+
+	if (reserved_side_flag)
+	{
+		for (loop = 0; loop < count; ++loop)
+		{
+			static constexpr int m2_side_flags_mask = 0x007f;
+			map_sides[loop].flags &= m2_side_flags_mask;
+		}
 	}
 
 	assert(count == static_cast<size_t>(static_cast<int16>(count)));

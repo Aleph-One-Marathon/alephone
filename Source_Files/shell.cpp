@@ -1401,6 +1401,13 @@ static void process_event(const SDL_Event &event)
 				break;
 #endif
 			case SDL_WINDOWEVENT_EXPOSED:
+				if (Movie::instance()->IsRecording())
+				{
+					// movie recording reads back from the frame buffer so
+					// leave it alone
+					break;
+				}
+				
 #if !defined(__APPLE__) && !defined(__MACH__) // double buffering :)
 #ifdef HAVE_OPENGL
 				if (MainScreenIsOpenGL())

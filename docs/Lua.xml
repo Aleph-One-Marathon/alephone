@@ -1432,6 +1432,10 @@
 		<description>prints message to player’s screen</description>
 		<argument name="message"><type>string</type></argument>
       </function>
+	  <function name="revive" version="git">
+		<description>revives player</description>
+		<note>player must be totally dead</note>
+	  </function>
       <variable name="team">
 		<description>player’s team (pants color)</description>
 		<type>number</type>
@@ -1475,6 +1479,9 @@
 		  </function>
 		</subtable-accessor>
       </subtable>
+	  <variable name="totally_dead" version="git" access="read-only">
+		<description>the player is dead and the death animation has finished</description>
+	  </variable>
       <function name="view_player" version="20080707">
 		<description>switch to another player’s view</description>
 		<argument name="player"><type>player</type></argument>
@@ -1600,6 +1607,15 @@
 		  <type>transfer_mode</type>
 		</variable>
       </subtable>
+	  <function name="change_height" version="git">
+		<description>changes polygon floor and ceiling heights, if possible</description>
+		<argument name="floor"><type>WU</type></argument>
+		<argument name="ceiling"><type>WU</type></argument>
+		<return><type>boolean</type></return>
+		<note>won’t squish monsters; returns false instead</note>
+		<note>this is much less optimized than moving a platform</note>
+		<note>you may need to create sides if you are raising/lowering what used to be a flat floor/ceiling</note>
+	  </function>
       <function name="contains">
 		<description>whether the point is in this polygon</description>
 		<argument name="x"><type>WU</type></argument>
@@ -1612,6 +1628,15 @@
       <function name="endpoints">
 		<description>iterates through all of this polygon’s endpoints</description>
       </function>
+	  <function name="find_polygon" version="git">
+		<description>traverses map from (x1, y1) and returns polygon containing (x2, y2)</description>
+		<argument name="x1"><type>WU</type></argument>
+		<argument name="y1"><type>WU</type></argument>
+		<argument name="x2"><type>WU</type></argument>
+		<argument name="y2"><type>WU</type></argument>
+		<note>can be nil if there is no direct route between the two points, or the destination point is not in any polygon</note>
+		<note>ignores floor/ceiling height</note>
+	  </function>
       <function name="find_line_crossed_leaving" version="20080707">
 		<description>returns the polygon line crossed by line segment (x1, y1) (x2, y2)</description>
 		<argument name="x1"><type>WU</type></argument>
@@ -1786,6 +1811,9 @@
       </variable>
     </table>
     <table name="side">
+	  <variable name="ambient_delta" version="git">
+		<description>constant offset from calculated light intensity</description>
+	  </variable>
       <subtable name="control_panel" classname="side_control_panel">
 		<variable name="can_be_destroyed" version="20080707">
 		  <description>whether projectiles destroy this switch</description>

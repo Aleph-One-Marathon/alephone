@@ -557,7 +557,7 @@ void move_projectiles(
 								if (definition->contrail_effect!=NONE)
 								{
 									auto effect_index = new_effect(&old_location, old_polygon_index, definition->contrail_effect, object->facing);
-									if (effect_index != NONE)
+									if (effect_index != NONE && definition->ticks_between_contrails <= 1)
 									{
 										track_contrail_interpolation(projectile->object_index, get_effect_data(effect_index)->object_index);
 									}
