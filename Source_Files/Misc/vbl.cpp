@@ -1137,11 +1137,21 @@ void move_replay(void)
 }
 
 static uint32_t hotkey_sequence[3] {0};
+static constexpr uint32_t hotkey_used = 0x80000000;
+
 void encode_hotkey_sequence(int hotkey)
 {
-	hotkey_sequence[0] = 3 << _cycle_weapons_forward_bit;
-	hotkey_sequence[1] = (hotkey / 4 + 1) << _cycle_weapons_forward_bit;
-	hotkey_sequence[2] = (hotkey % 4) << _cycle_weapons_forward_bit;
+	hotkey_sequence[0] =
+		(3 << _cycle_weapons_forward_bit) |
+		hotkey_used;
+	
+	hotkey_sequence[1] =
+		((hotkey / 4 + 1) << _cycle_weapons_forward_bit) |
+		hotkey_used;
+	
+	hotkey_sequence[2] =
+		((hotkey % 4) << _cycle_weapons_forward_bit) |
+		hotkey_used;
 }
 
 /*
@@ -1207,15 +1217,7 @@ uint32 parse_keymap(void)
 	  special->persistence = FLOOR(special->persistence-1, 0);
       }
 
-	  if (hotkey_sequence[0])
-	  {
-		  flags &= ~(_cycle_weapons_forward | _cycle_weapons_backward);
-		  flags |= hotkey_sequence[0];
-		  hotkey_sequence[0] = hotkey_sequence[1];
-		  hotkey_sequence[1] = hotkey_sequence[2];
-		  hotkey_sequence[2] = 0;
-	  }
-	  else
+	  if (!hotkey_sequence[0])
 	  {
 		  for (auto i = 0; i < NUMBER_OF_HOTKEYS; ++i)
 		  {
@@ -1229,6 +1231,15 @@ uint32 parse_keymap(void)
 				  }
 			  }
 		  }
+	  }
+
+	  if (hotkey_sequence[0])
+	  {
+		  flags &= ~(_cycle_weapons_forward | _cycle_weapons_backward);
+		  flags |= (hotkey_sequence[0] & ~hotkey_used);
+		  hotkey_sequence[0] = hotkey_sequence[1];
+		  hotkey_sequence[1] = hotkey_sequence[2];
+		  hotkey_sequence[2] = 0;
 	  }
 
       bool do_interchange =
