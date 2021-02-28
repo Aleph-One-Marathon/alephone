@@ -363,7 +363,7 @@ struct player_powerup_definition player_powerups = {
 /* ---------- private prototypes */
 
 static void set_player_shapes(short player_index, bool animate);
-static void revive_player(short player_index);
+void revive_player(short player_index);
 static void recreate_player(short player_index);
 static void kill_player(short player_index, short aggressor_player_index, short action);
 static void give_player_initial_items(short player_index);
@@ -1634,7 +1634,7 @@ static void set_player_shapes(
 }
 
 /* We can rebuild him!! */
-static void revive_player(
+void revive_player(
 	short player_index)
 {
 	struct player_data *player= get_player_data(player_index);

@@ -1127,6 +1127,32 @@ const luaL_Reg Lua_Polygon_Sides_Metatable[] = {
 	{0, 0}
 };
 
+int Lua_Polygon_Change_Height(lua_State* L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3))
+		return luaL_error(L, ("change_height: incorrect argument type"));
+
+	short polygon_index = Lua_Polygon::Index(L, 1);
+
+	auto floor_height = lua_tonumber(L, 2) * WORLD_ONE;
+	auto ceiling_height = lua_tonumber(L, 3) * WORLD_ONE;
+
+	auto success = change_polygon_height(polygon_index, floor_height, ceiling_height, nullptr);
+
+	if (success)
+	{
+		auto polygon = get_polygon_data(polygon_index);
+		for (auto i = 0; i < polygon->vertex_count; ++i)
+		{
+			recalculate_redundant_line_data(polygon->line_indexes[i]);
+			recalculate_redundant_endpoint_data(polygon->endpoint_indexes[i]);
+		}
+	}
+
+	lua_pushboolean(L, success);
+	return 1;
+}
+
 // contains(x, y, z)
 int Lua_Polygon_Contains(lua_State *L)
 {
@@ -1154,6 +1180,33 @@ int Lua_Polygon_Contains(lua_State *L)
 	}
 
 	lua_pushboolean(L, point_in_polygon(polygon_index, &p) && z >= polygon->floor_height && z <= polygon->ceiling_height);
+	return 1;
+}
+
+static int Lua_Polygon_Find_Polygon(lua_State* L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) ||
+		!lua_isnumber(L, 4) || !lua_isnumber(L, 5))
+		return luaL_error(L, "find_polygon: incorrect argument type");
+
+	world_point2d origin;
+	origin.x = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	origin.y = static_cast<world_distance>(lua_tonumber(L, 3) * WORLD_ONE);
+
+	world_point2d destination;
+	destination.x = static_cast<world_distance>(lua_tonumber(L, 4) * WORLD_ONE);
+	destination.y = static_cast<world_distance>(lua_tonumber(L, 5) * WORLD_ONE);
+
+	auto polygon_index = find_new_object_polygon(&origin, &destination, Lua_Polygon::Index(L, 1));
+	if (polygon_index != NONE)
+	{
+		Lua_Polygon::Push(L, polygon_index);
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
 	return 1;
 }
 
@@ -1427,8 +1480,10 @@ const luaL_Reg Lua_Polygon_Get[] = {
 	{"adjacent_polygons", Lua_Polygon_Get_Adjacent},
 	{"area", Lua_Polygon_Get_Area},
 	{"ceiling", Lua_Polygon_Get_Ceiling},
+	{"change_height", L_TableFunction<Lua_Polygon_Change_Height>},
 	{"contains", L_TableFunction<Lua_Polygon_Contains>},
 	{"endpoints", Lua_Polygon_Get_Endpoints},
+	{"find_polygon", L_TableFunction<Lua_Polygon_Find_Polygon>},
 	{"find_line_crossed_leaving", L_TableFunction<Lua_Polygon_Find_Line_Crossed_Leaving>},
 	{"floor", Lua_Polygon_Get_Floor},
 	{"lines", Lua_Polygon_Get_Lines},
@@ -2021,6 +2076,13 @@ int Lua_Side_Recalculate_Type(lua_State *L)
 	return 0;
 }
 
+static int Lua_Side_Get_Ambient_Delta(lua_State* L)
+{
+	auto side = get_side_data(Lua_Side::Index(L, 1));
+	lua_pushnumber(L, static_cast<double>(side->ambient_delta) / FIXED_ONE);
+	return 1;
+}
+
 static int Lua_Side_Get_Control_Panel(lua_State *L)
 {
 	int16 side_index = Lua_Side::Index(L, 1);
@@ -2074,6 +2136,7 @@ static int Lua_Side_Get_Type(lua_State *L)
 }
 
 const luaL_Reg Lua_Side_Get[] = {
+	{"ambient_delta", Lua_Side_Get_Ambient_Delta},
 	{"control_panel", Lua_Side_Get_Control_Panel},
 	{"line", Lua_Side_Get_Line},
 	{"play_sound", L_TableFunction<Lua_Side_Play_Sound>},
@@ -2085,6 +2148,16 @@ const luaL_Reg Lua_Side_Get[] = {
 	{"type", Lua_Side_Get_Type},
 	{0, 0}
 };
+
+static int Lua_Side_Set_Ambient_Delta(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "ambient_delta: incorrect argument type");
+
+	auto side = get_side_data(Lua_Side::Index(L, 1));
+	side->ambient_delta = static_cast<int32_t>(lua_tonumber(L, 2) * FIXED_ONE);
+	return 1;
+}
 
 static int Lua_Side_Set_Control_Panel(lua_State *L)
 {
@@ -2107,6 +2180,7 @@ static int Lua_Side_Set_Control_Panel(lua_State *L)
 }
 
 const luaL_Reg Lua_Side_Set[] = {
+	{"ambient_delta", Lua_Side_Set_Ambient_Delta},
 	{"control_panel", Lua_Side_Set_Control_Panel},
 	{0, 0}
 };

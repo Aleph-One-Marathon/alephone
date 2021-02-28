@@ -35,13 +35,8 @@ void init_ephemera(int16_t polygon_count);
 int16_t new_ephemera(const world_point3d& origin, int16_t polygon_index, shape_descriptor shape, angle facing);
 void remove_ephemera(int16_t ephemera_index);
 
-struct polygon_ephemera_data {
-	int16_t first_object;
-	bool rendered;
-};
-
 object_data* get_ephemera_data(int16_t ephemera_index);
-polygon_ephemera_data* get_polygon_ephemera(int16_t polygon_index);
+int16_t get_polygon_ephemera(int16_t polygon_index);
 
 void remove_ephemera_from_polygon(int16_t ephemera_index);
 void add_ephemera_to_polygon(int16_t ephemera_index, int16_t polygon_index);
