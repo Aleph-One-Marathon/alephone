@@ -4715,3 +4715,24 @@ void parse_environment_preferences(InfoTree root, std::string version)
 		}
 	}
 }
+
+extern const char* GetSDLKeyName(SDL_Scancode);
+
+const char* get_hotkey_binding(int hotkey, int type)
+{
+	
+	auto bindings = input_preferences->hotkey_bindings[hotkey - 1];
+	for (auto it = bindings.begin(); it != bindings.end(); ++it)
+	{
+		if (w_key::event_type_for_key(*it) == type)
+		{
+			return GetSDLKeyName(*it);
+		}
+		else
+		{
+			continue;
+		}
+	}
+
+	return "";
+}
