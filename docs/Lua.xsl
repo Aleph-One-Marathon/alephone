@@ -435,8 +435,16 @@
 
 <xsl:template match="subtable-accessor">
   <dt>
-    .<xsl:value-of select="@name"/>[<xsl:value-of select="@index"/>]
-  </dt>
+    .<xsl:value-of select="@name"/>[<xsl:value-of select="@index"/>]<xsl:choose>
+	<xsl:when test="@version">
+	  <xsl:text> </xsl:text>
+	  <span class="version"><xsl:value-of select="@version"/></span>
+	</xsl:when>
+  </xsl:choose><xsl:choose>
+      <xsl:when test="@access = 'local-player'">
+      <span class="access"> (local player)</span>
+      </xsl:when>
+    </xsl:choose></dt>
   <dd>
     <xsl:choose>
       <xsl:when test="description">
