@@ -1191,9 +1191,11 @@ uint32 *TextureManager::Shrink(uint32 *Buffer)
 {
 	int NumPixels = int(LoadedWidth)*int(LoadedHeight);
 	GLuint *NewBuffer = new GLuint[NumPixels];
-	gluScaleImage(GL_RGBA, TxtrWidth, TxtrHeight, GL_UNSIGNED_BYTE, Buffer,
-		LoadedWidth, LoadedHeight, GL_UNSIGNED_BYTE, NewBuffer);
-	
+    
+    //gluScaleImage is deprecated. I hope nothing needs this...
+    /*gluScaleImage(GL_RGBA, TxtrWidth, TxtrHeight, GL_UNSIGNED_BYTE, Buffer,
+        LoadedWidth, LoadedHeight, GL_UNSIGNED_BYTE, NewBuffer);*/
+    
 	return (uint32 *)NewBuffer;
 }
 
@@ -1295,8 +1297,18 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 			} else 
 #endif
 			{
-				gluBuild2DMipmaps(GL_TEXTURE_2D, internalFormat, Image->GetWidth(), Image->GetHeight(), GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
-			}
+                //gluBuild2DMipmaps(GL_TEXTURE_2D, internalFormat, Image->GetWidth(), Image->GetHeight(), GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
+                
+                glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+                // OpenGL GL_RGBA is 6407 and GL_RGB is 6408
+                assert ( internalFormat == GL_RGBA );
+                glTexImage2D(GL_TEXTURE_2D, 0, internalFormat,
+                             Image->GetWidth(),
+                             Image->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                             Image->GetBuffer());
+
+                glGenerateMipmap(GL_TEXTURE_2D);
+            }
 			mipmapsLoaded = true;
 			}
 			break;
@@ -1319,7 +1331,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 		{
 		case GL_NEAREST:
 		case GL_LINEAR:
-			glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetMipMapSize(0), Image->GetBuffer());
+			glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetMipMapSize(0), Image->GetBuffer());
 			break;
 		case GL_NEAREST_MIPMAP_NEAREST:
 		case GL_LINEAR_MIPMAP_NEAREST:
@@ -1333,7 +1345,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 #endif
 				int i = 0;
 				for (i = 0; i < Image->GetMipMapCount(); i++) {
-					glCompressedTexImage2DARB(GL_TEXTURE_2D, i, internalFormat, max(1, Image->GetWidth() >> i), max(1, Image->GetHeight() >> i), 0, Image->GetMipMapSize(i), Image->GetMipMapPtr(i));
+					glCompressedTexImage2D(GL_TEXTURE_2D, i, internalFormat, max(1, Image->GetWidth() >> i), max(1, Image->GetHeight() >> i), 0, Image->GetMipMapSize(i), Image->GetMipMapPtr(i));
 				}
 				mipmapsLoaded = true;
 			} else {
@@ -1343,7 +1355,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 					mipmapsLoaded = true;
 				}  
 #endif
-				glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetMipMapSize(0), Image->GetBuffer());
+				glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetMipMapSize(0), Image->GetBuffer());
 			}
 			break;
 			
@@ -1378,7 +1390,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
                     float anisoLevel = Get_OGL_ConfigureData().AnisotropyLevel;
                     if (anisoLevel > 0.0) {
                         GLfloat max_aniso;
-                        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
+                        MSI()->getFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
                         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0F + ((anisoLevel-1.0F)/15.0F)*(max_aniso-1.0F));
                     }
                 }
@@ -1485,29 +1497,29 @@ void TextureManager::SetupTextureMatrix()
 	case OGL_Txtr_Wall:
 	case OGL_Txtr_WeaponsInHand:
 	case OGL_Txtr_Inhabitant:
-		glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
+		MSI()->matrixMode(MS_TEXTURE);
+		MSI()->loadIdentity();
 		if (TxtrOptsPtr->Substitution) {
 			// these come in right side up, but the renderer
 			// expects them to be upside down and sideways
-			glRotatef(90.0, 0.0, 0.0, 1.0);
-			glScalef(1.0, -1.0, 1.0);
+			MSI()->rotatef(90.0, 0.0, 0.0, 1.0);
+			MSI()->scalef(1.0, -1.0, 1.0);
 		}
-		glMatrixMode(GL_MODELVIEW);
+		MSI()->matrixMode(MS_MODELVIEW);
 		break;
 	case OGL_Txtr_Landscape:
-		glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
+		MSI()->matrixMode(MS_TEXTURE);
+		MSI()->loadIdentity();
 		if (TxtrOptsPtr->Substitution) {
 			// these come in right side up, and un-centered
 			// the renderer expects them upside down, and centered
-			glScalef(1.0, -U_Scale, 1.0);
-			glTranslatef(0.0, U_Offset, 0.0);
+			MSI()->scalef(1.0, -U_Scale, 1.0);
+			MSI()->translatef(0.0, U_Offset, 0.0);
 		} else {
-			glScalef(1.0, U_Scale, 1.0);
-			glTranslatef(0.0, U_Offset, 0.0);
+			MSI()->scalef(1.0, U_Scale, 1.0);
+			MSI()->translatef(0.0, U_Offset, 0.0);
 		}
-		glMatrixMode(GL_MODELVIEW);
+		MSI()->matrixMode(MS_MODELVIEW);
 		break;
 	}
 }
@@ -1520,9 +1532,9 @@ void TextureManager::RestoreTextureMatrix()
 	case OGL_Txtr_WeaponsInHand:
 	case OGL_Txtr_Inhabitant:
 	case OGL_Txtr_Landscape:
-		glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
-		glMatrixMode(GL_MODELVIEW);
+		MSI()->matrixMode(MS_TEXTURE);
+		MSI()->loadIdentity();
+		MSI()->matrixMode(MS_MODELVIEW);
 	}
 }
 
@@ -1673,8 +1685,18 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 				else
 #endif
 				{
-					gluBuild2DMipmaps(GL_TEXTURE_2D, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
-							  GL_RGBA, GL_UNSIGNED_BYTE, Image.get()->GetBuffer());
+					/*gluBuild2DMipmaps(GL_TEXTURE_2D, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
+                              GL_RGBA, GL_UNSIGNED_BYTE, Image.get()->GetBuffer());*/
+                    
+                    glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+                    // OpenGL GL_RGBA is 6407 and GL_RGB is 6408
+                    assert ( internalFormat == GL_RGBA );
+                    glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat,
+                                 LoadedWidth,
+                                 LoadedHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                                 Image.get()->GetBuffer());
+
+                    glGenerateMipmap(GL_TEXTURE_2D);
 				}
 				mipmapsLoaded = true;
 			}
@@ -1701,7 +1723,7 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 		{
 		case GL_NEAREST:
 		case GL_LINEAR:
-			glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, Image.get()->GetWidth(), Image.get()->GetHeight(), 0, Image.get()->GetMipMapSize(0), Image.get()->GetBuffer());
+			glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image.get()->GetWidth(), Image.get()->GetHeight(), 0, Image.get()->GetMipMapSize(0), Image.get()->GetBuffer());
 			break;
 		case GL_NEAREST_MIPMAP_NEAREST:
 		case GL_LINEAR_MIPMAP_NEAREST:
@@ -1718,7 +1740,7 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 				int i = 0;
 				for (i = 0; i < Image.get()->GetMipMapCount(); i++)
 				{
-					glCompressedTexImage2DARB(GL_TEXTURE_2D, i, internalFormat, max(1, Image.get()->GetWidth() >> i), max(1, Image.get()->GetHeight() >> i), 0, Image.get()->GetMipMapSize(i), Image.get()->GetMipMapPtr(i));
+					glCompressedTexImage2D(GL_TEXTURE_2D, i, internalFormat, max(1, Image.get()->GetWidth() >> i), max(1, Image.get()->GetHeight() >> i), 0, Image.get()->GetMipMapSize(i), Image.get()->GetMipMapPtr(i));
 				}
 				mipmapsLoaded = true;
 			}
@@ -1731,7 +1753,7 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 					mipmapsLoaded = true;
 				}
 #endif
-				glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, Image.get()->GetWidth(), Image.get()->GetHeight(), 0, Image.get()->GetMipMapSize(0), Image.get()->GetBuffer());
+				glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image.get()->GetWidth(), Image.get()->GetHeight(), 0, Image.get()->GetMipMapSize(0), Image.get()->GetBuffer());
 			}
 			break;
 

@@ -44,6 +44,7 @@ static uint16 FlatStaticColor[4];
 
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
+#include "MatrixStack.hpp"
 #endif
 
 // Fader stuff
@@ -121,8 +122,8 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 		
 		case _tint_fader_type:
 			// The simplest kind: fade to the fader color.
-			glColor4fv(Fader.Color);
-			glDrawArrays(GL_POLYGON,0,4);
+			SglColor4fv(Fader.Color);
+			glDrawArrays(GL_TRIANGLE_FAN,0,4);
 			break;
 		
 		case _randomize_fader_type:
@@ -134,8 +135,8 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 				FlatStaticColor[3] = PIN(int(65535*Fader.Color[3]+0.5),0,65535);
 				glDisable(GL_ALPHA_TEST);
 				glEnable(GL_BLEND);
-				glColor4usv(FlatStaticColor);
-				glDrawArrays(GL_POLYGON,0,4);
+				SglColor4usv(FlatStaticColor);
+				glDrawArrays(GL_TRIANGLE_FAN,0,4);
 			}
 			else
 			{
@@ -143,10 +144,10 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 				// the stronger the opacity (alpha), the more bits to flip.
 				glDisable(GL_BLEND);
 				MultAlpha(Fader.Color,BlendColor);
-				glColor3fv(BlendColor);
+				MSI()->color3f(BlendColor[0], BlendColor[1], BlendColor[2]);
 				glEnable(GL_COLOR_LOGIC_OP);
 				glLogicOp(GL_XOR);
-				glDrawArrays(GL_POLYGON,0,4);
+				glDrawArrays(GL_TRIANGLE_FAN,0,4);
 				// Revert to defaults
 				glDisable(GL_COLOR_LOGIC_OP);
 				glEnable(GL_BLEND);
@@ -158,9 +159,9 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 			// Neither glBlendColorEXT nor glBlendEquationEXT is currently supported
 			// in ATI Rage 128 AppleGL, which makes my life more difficult :-P
 			MultAlpha(Fader.Color,BlendColor);
-			glColor4fv(BlendColor);
+			SglColor4fv(BlendColor);
 			glBlendFunc(GL_ONE_MINUS_DST_COLOR,GL_ONE_MINUS_SRC_ALPHA);
-			glDrawArrays(GL_POLYGON,0,4);
+			glDrawArrays(GL_TRIANGLE_FAN,0,4);
 			// Revert to defaults
 			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 			break;
@@ -168,11 +169,11 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 		case _dodge_fader_type:
 			ComplementColor(Fader.Color,BlendColor);
 			MultAlpha(BlendColor,BlendColor);
-			glColor4fv(BlendColor);
+			SglColor4fv(BlendColor);
 			glBlendFunc(GL_DST_COLOR,GL_ONE_MINUS_SRC_ALPHA);
-			glDrawArrays(GL_POLYGON,0,4);
+			glDrawArrays(GL_TRIANGLE_FAN,0,4);
 			glBlendFunc(GL_DST_COLOR,GL_ONE);
-			glDrawArrays(GL_POLYGON,0,4);
+			glDrawArrays(GL_TRIANGLE_FAN,0,4);
 			// Revert to defaults
 			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 			break;
@@ -182,14 +183,14 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 			// with it being only near maximum intensity
 			// (MultAlpha + GL_SRC_ALPHA means opacity^2).
 			MultAlpha(Fader.Color,BlendColor);
-			glColor4fv(BlendColor);
+			SglColor4fv(BlendColor);
 			glBlendFunc(GL_DST_COLOR,GL_ONE);
-			glDrawArrays(GL_POLYGON,0,4);
+			glDrawArrays(GL_TRIANGLE_FAN,0,4);
 			ComplementColor(Fader.Color,BlendColor);
 			MultAlpha(BlendColor,BlendColor);
-			glColor4fv(BlendColor);
+			SglColor4fv(BlendColor);
 			glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-			glDrawArrays(GL_POLYGON,0,4);
+			glDrawArrays(GL_TRIANGLE_FAN,0,4);
 			// Revert to defaults
 			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 			break;
@@ -198,9 +199,9 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 			// Fade to the color multiplied by the fader color,
 			// as if the scene was illuminated by light with that fader color.
 			MultAlpha(Fader.Color,BlendColor);
-			glColor4fv(BlendColor);
+			SglColor4fv(BlendColor);
 			glBlendFunc(GL_DST_COLOR,GL_ONE_MINUS_SRC_ALPHA);
-			glDrawArrays(GL_POLYGON,0,4);
+			glDrawArrays(GL_TRIANGLE_FAN,0,4);
 			// Revert to defaults
 			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 			break;

@@ -67,10 +67,10 @@ struct TextureState
 	int unusedFrames;					// How many frames have passed since we were last used.
 	short TextureType;
     
-    GLdouble U_Scale;
-    GLdouble V_Scale;
-    GLdouble U_Offset;
-    GLdouble V_Offset;
+    GLfloat U_Scale;
+    GLfloat V_Scale;
+    GLfloat U_Offset;
+    GLfloat V_Offset;
 	
 	TextureState() {IsUsed = false; Reset(); TextureType = NONE; U_Scale = V_Scale = 1; U_Offset = V_Offset = 0;}
 	~TextureState() {Reset();}
@@ -95,7 +95,7 @@ struct TextureState
 	This is the collected texture states per collection bitmap;
 	it contains both texture-mapping info and the state for each color-table value.
 
-	The GLdouble stuff is for setting up offsets of the texture coordinates, using:
+	The GLfloat stuff is for setting up offsets of the texture coordinates, using:
 	Texture Coordinate = (offset) + (scale) * (clip position)
 	where (scale) = (sprite size) / (texture size)
 	and (clip position) = ((clip screen position) - (left screen position)) /
@@ -241,7 +241,7 @@ public:
 	
 	// Scaling and offset of the current texture;
 	// important for sprites, which will be padded to make them OpenGL-friendly.
-	GLdouble U_Scale, V_Scale, U_Offset, V_Offset;
+	GLfloat U_Scale, V_Scale, U_Offset, V_Offset;
 	
 	// What to render:
 	

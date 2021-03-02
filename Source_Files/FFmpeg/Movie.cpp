@@ -846,7 +846,7 @@ void Movie::AddFrame(FrameType ftype)
 
         // Copy default frame buffer to another one with correct viewport resized/pixels rescaled
         frameBufferObject->activate(true, GL_DRAW_FRAMEBUFFER_EXT);
-        glBlitFramebufferEXT(fbx, fby, fbWidth + fbx, fbHeight + fby, view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        glBlitFramebuffer(fbx, fby, fbWidth + fbx, fbHeight + fby, view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
         frameBufferObject->deactivate();
 
         // Read our new frame buffer with rescaled pixels

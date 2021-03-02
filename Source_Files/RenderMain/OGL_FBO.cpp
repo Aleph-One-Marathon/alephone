@@ -31,33 +31,70 @@
 std::vector<FBO *> FBO::active_chain;
 
 FBO::FBO(GLuint w, GLuint h, bool srgb) : _h(h), _w(w), _srgb(srgb) {
-	glGenFramebuffersEXT(1, &_fbo);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _fbo);
+    setup(w, h, srgb);
+
+    /*
+	glGenFramebuffers(1, &_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 	
-	glGenRenderbuffersEXT(1, &_depthBuffer);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _depthBuffer);
-	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, _w, _h);
-	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, _depthBuffer);
+	glGenRenderbuffers(1, &_depthBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, _depthBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _w, _h);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthBuffer);
 	
 	glGenTextures(1, &texID);
-	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
-	glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, srgb ? GL_SRGB : GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_RECTANGLE_ARB, texID, 0);
-	assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) == GL_FRAMEBUFFER_COMPLETE_EXT);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glBindTexture(GL_TEXTURE_RECTANGLE, texID);
+	glTexImage2D(GL_TEXTURE_RECTANGLE, 0, srgb ? GL_SRGB : GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, texID, 0);
+	assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
+}
+
+void FBO::setup(GLuint w, GLuint h, bool srgb) {
+  
+  _h = h; _w = w; _srgb = srgb;
+  
+  //Do nothing if not valid size. Call again later to initialize.
+  if( w == 0 && h == 0) {
+    return;
+  }
+  
+  glGenFramebuffers(1, &_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+  
+  //Create texture and attach it to framebuffer's color attachment point
+  glGenTextures(1, &texID);
+  glBindTexture(GL_TEXTURE_2D, texID); //DCW was GL_TEXTURE_RECTANGE
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  //DCW
+  glTexImage2D(GL_TEXTURE_2D, 0, srgb ? GL_SRGB : GL_RGBA, _w, _h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);//DCW was GL_TEXTURE_RECTANGLE, changed GL_RGB to GL_RGBA
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texID, 0); //DCW was GL_TEXTURE_RECTANGLE
+  
+  //Generate depth buffer
+  glGenRenderbuffers(1, &_depthBuffer);
+  glBindRenderbuffer(GL_RENDERBUFFER, _depthBuffer);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, _w, _h);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthBuffer);
+  
+  glBindFramebuffer(GL_FRAMEBUFFER, 1);
+  glBindRenderbuffer(GL_RENDERBUFFER, 1);
+  
+  glPopGroupMarkerEXT();
 }
 
 void FBO::activate(bool clear, GLuint fboTarget) {
 	if (!active_chain.size() || active_chain.back() != this) {
 		active_chain.push_back(this);
-		_fboTarget = fboTarget;
-		glBindFramebufferEXT(fboTarget, _fbo);
-		glPushAttrib(GL_VIEWPORT_BIT);
+        _fboTarget = fboTarget;
+        glBindFramebuffer(fboTarget, _fbo);
+		
+        //glPushAttrib(GL_VIEWPORT_BIT);
+        glGetIntegerv(GL_VIEWPORT, viewportCache);
+        
 		glViewport(0, 0, _w, _h);
 		if (_srgb)
-			glEnable(GL_FRAMEBUFFER_SRGB_EXT);
+			glEnable(GL_FRAMEBUFFER_SRGB);
 		else
-			glDisable(GL_FRAMEBUFFER_SRGB_EXT);
+			glDisable(GL_FRAMEBUFFER_SRGB);
 		if (clear)
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
@@ -66,19 +103,21 @@ void FBO::activate(bool clear, GLuint fboTarget) {
 void FBO::deactivate() {
 	if (active_chain.size() && active_chain.back() == this) {
 		active_chain.pop_back();
-		glPopAttrib();
 		
+        //glPopAttrib();
+		glViewport(viewportCache[0], viewportCache[1], viewportCache[2], viewportCache[3]);
+        
 		GLuint prev_fbo = 0;
 		bool prev_srgb = Using_sRGB;
 		if (active_chain.size()) {
 			prev_fbo = active_chain.back()->_fbo;
 			prev_srgb = active_chain.back()->_srgb;
 		}
-		glBindFramebufferEXT(_fboTarget, prev_fbo);
+		glBindFramebuffer(_fboTarget, prev_fbo);
 		if (prev_srgb)
-			glEnable(GL_FRAMEBUFFER_SRGB_EXT);
+			glEnable(GL_FRAMEBUFFER_SRGB);
 		else
-			glDisable(GL_FRAMEBUFFER_SRGB_EXT);
+			glDisable(GL_FRAMEBUFFER_SRGB);
 	}
 }
 
@@ -90,28 +129,28 @@ void FBO::draw() {
 }
 
 void FBO::prepare_drawing_mode(bool blend) {
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
+	MSI()->matrixMode(MS_PROJECTION);
+	MSI()->pushMatrix();
+	MSI()->loadIdentity();
+	MSI()->matrixMode(MS_MODELVIEW);
+	MSI()->pushMatrix();
+	MSI()->loadIdentity();
 	
 	glDisable(GL_DEPTH_TEST);
 	if (!blend)
 		glDisable(GL_BLEND);
 	
-	glOrtho(0, _w, _h, 0, -1, 1);
-	glColor4f(1.0, 1.0, 1.0, 1.0);
+	MSI()->orthof(0, _w, _h, 0, -1, 1);
+	MSI()->color4f(1.0, 1.0, 1.0, 1.0);
 }
 
 void FBO::reset_drawing_mode() {
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
+    MSI()->matrixMode(MS_PROJECTION);
+    MSI()->popMatrix();
+	MSI()->matrixMode(MS_MODELVIEW);
+	MSI()->popMatrix();
 }
 
 void FBO::draw_full(bool blend) {
@@ -121,8 +160,8 @@ void FBO::draw_full(bool blend) {
 }
 
 FBO::~FBO() {
-	glDeleteFramebuffersEXT(1, &_fbo);
-	glDeleteRenderbuffersEXT(1, &_depthBuffer);
+	glDeleteFramebuffers(1, &_fbo);
+	glDeleteRenderbuffers(1, &_depthBuffer);
 }
 
 
@@ -185,27 +224,27 @@ void FBOSwapper::blend_multisample(FBO& other) {
 	activate();
 	
 	// set up FBO passed in as texture #1
-	glActiveTextureARB(GL_TEXTURE1_ARB);
+	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, other.texID);
 	glEnable(GL_TEXTURE_RECTANGLE_ARB);
-	glActiveTextureARB(GL_TEXTURE0_ARB);
+	glActiveTexture(GL_TEXTURE0);
 	
-	glClientActiveTextureARB(GL_TEXTURE1_ARB);
+	glClientActiveTexture(GL_TEXTURE1);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	GLint multi_coordinates[8] = { 0, GLint(other._h), GLint(other._w), GLint(other._h), GLint(other._w), 0, 0, 0 };
 	glTexCoordPointer(2, GL_INT, 0, multi_coordinates);
-	glClientActiveTextureARB(GL_TEXTURE0_ARB);
+	glClientActiveTexture(GL_TEXTURE0);
 	
 	draw(true);
 	
 	// tear down multitexture stuff
-	glActiveTextureARB(GL_TEXTURE1_ARB);
+	glActiveTexture(GL_TEXTURE1);
 	glDisable(GL_TEXTURE_RECTANGLE_ARB);
-	glActiveTextureARB(GL_TEXTURE0_ARB);
+	glActiveTexture(GL_TEXTURE0);
 	
-	glClientActiveTextureARB(GL_TEXTURE1_ARB);
+	glClientActiveTexture(GL_TEXTURE1);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glClientActiveTextureARB(GL_TEXTURE0_ARB);
+	glClientActiveTexture(GL_TEXTURE0);
 	
 	deactivate();
 }

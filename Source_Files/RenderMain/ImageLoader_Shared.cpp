@@ -150,9 +150,19 @@ bool ImageDescriptor::Minify()
 #ifdef HAVE_OPENGL
 		if (OGL_IsActive())
 		{
-			
 			uint32 *newPixels = new uint32[newWidth * newHeight];
-			gluScaleImage(GL_RGBA, Width, Height, GL_UNSIGNED_BYTE, Pixels, newWidth, newHeight, GL_UNSIGNED_BYTE, newPixels);
+            
+            // DJB OpenGL not using gluScaleImage
+            //printf ( "********************* gluScaleImage not present *****************************\n" );
+            // Every other pixel, Could average...
+            for ( int y = 0; y < newHeight; y ++ ) {
+              int offset = y * newWidth;
+              for ( int x = 0; x < newWidth; x++ ) {
+                newPixels[offset+x] = Pixels[x*2 + y*2*Width];
+              }
+            }
+            
+			//gluScaleImage(GL_RGBA, Width, Height, GL_UNSIGNED_BYTE, Pixels, newWidth, newHeight, GL_UNSIGNED_BYTE, newPixels);
 			delete []Pixels;
 			Pixels = newPixels;
 			Width = newWidth;

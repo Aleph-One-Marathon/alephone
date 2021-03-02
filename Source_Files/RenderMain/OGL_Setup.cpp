@@ -78,6 +78,7 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 
 #include "OGL_Headers.h"
 #include "OGL_Shader.h"
+#include "MatrixStack.hpp"
 
 #endif
 
@@ -537,41 +538,41 @@ void parse_mml_opengl(const InfoTree& root)
 /* These don't belong here */
 void SglColor3f(GLfloat r, GLfloat g, GLfloat b) {
   GLfloat ov[3] = {sRGB_frob(r), sRGB_frob(g), sRGB_frob(b)};
-  glColor3fv(ov);
+  MSI()->color3f(ov[0], ov[1], ov[2]);
 }
 
 void SglColor3fv(const GLfloat* iv) {
   GLfloat ov[3] = {sRGB_frob(iv[0]), sRGB_frob(iv[1]), sRGB_frob(iv[2])};
-  glColor3fv(ov);
+  MSI()->color3f(ov[0], ov[1], ov[2]);
 }
 
 void SglColor3ub(GLubyte r, GLubyte g, GLubyte b) {
   GLfloat ov[3] = {sRGB_frob(r*(1.f/255.f)), sRGB_frob(g*(1.f/255.f)), sRGB_frob(b*(1.f/255.f))};
-  glColor3fv(ov);
+  MSI()->color3f(ov[0], ov[1], ov[2]);
 }
 
 void SglColor3us(GLushort r, GLushort g, GLushort b) {
   GLfloat ov[3] = {sRGB_frob(r*(1.f/65535.f)), sRGB_frob(g*(1.f/65535.f)), sRGB_frob(b*(1.f/65535.f))};
-  glColor3fv(ov);
+  MSI()->color3f(ov[0], ov[1], ov[2]);
 }
 
 void SglColor3usv(const GLushort* iv) {
   GLfloat ov[3] = {sRGB_frob(iv[0]*(1.f/65535.f)), sRGB_frob(iv[1]*(1.f/65535.f)), sRGB_frob(iv[2]*(1.f/65535.f))};
-  glColor3fv(ov);
+  MSI()->color3f(ov[0], ov[1], ov[2]);
 }
 
 void SglColor4f(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
   GLfloat ov[4] = {sRGB_frob(r), sRGB_frob(g), sRGB_frob(b), a};
-  glColor4fv(ov);
+  MSI()->color4f(ov[0], ov[1], ov[2], ov[3]);
 }
 
 void SglColor4fv(const GLfloat* iv) {
   GLfloat ov[4] = {sRGB_frob(iv[0]), sRGB_frob(iv[1]), sRGB_frob(iv[2]), iv[3]};
-  glColor4fv(ov);
+  MSI()->color4f(ov[0], ov[1], ov[2], ov[3]);
 }
 
 void SglColor4usv(const GLushort* iv) {
   GLfloat ov[4] = {sRGB_frob(iv[0]*(1.f/65535.f)), sRGB_frob(iv[1]*(1.f/65535.f)), sRGB_frob(iv[2]*(1.f/65535.f)), iv[3]*(1.f/65535.f)};
-  glColor4fv(ov);
+  MSI()->color4f(ov[0], ov[1], ov[2], ov[3]);
 }
 #endif

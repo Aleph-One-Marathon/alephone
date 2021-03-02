@@ -140,10 +140,10 @@ void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
 		return;
     
 	// Get dimensions
-	GLdouble U_Scale = TMgr.U_Scale;
-	GLdouble V_Scale = TMgr.V_Scale;
-	GLdouble U_Offset = TMgr.U_Offset;
-	GLdouble V_Offset = TMgr.V_Offset;
+	GLfloat U_Scale = TMgr.U_Scale;
+	GLfloat V_Scale = TMgr.V_Scale;
+	GLfloat U_Offset = TMgr.U_Offset;
+	GLfloat V_Offset = TMgr.V_Offset;
     
 	// Draw shape
 	if (Wanting_sRGB && TMgr.TextureType != OGL_Txtr_WeaponsInHand)
@@ -161,11 +161,11 @@ void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
     bool rotating = (rotation > 0.1 || rotation < -0.1);
 	if (rotating)
 	{
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glTranslatef((dst.x + dst.w/2.0), (dst.y + dst.h/2.0), 0.0);
+		MSI()->matrixMode(MS_MODELVIEW);
+		MSI()->pushMatrix();
+		MSI()->translatef((dst.x + dst.w/2.0), (dst.y + dst.h/2.0), 0.0);
 		glRotatef(rotation, 0.0, 0.0, 1.0);
-		glTranslatef(-(dst.x + dst.w/2.0), -(dst.y + dst.h/2.0), 0.0);
+		MSI()->translatef(-(dst.x + dst.w/2.0), -(dst.y + dst.h/2.0), 0.0);
 	}
 
     if (m_type == Shape_Texture_Interface)
@@ -226,7 +226,26 @@ void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
         if (crop_rect.h < m_scaled_src.h)
             U_Scale *= crop_rect.h / static_cast<double>(m_scaled_src.h);
 
-		GLfloat texcoords[8] = {
+        // DJB OpenGL  Change from triangle fan
+        GLfloat t[8] = {
+          U_Offset, V_Offset,
+          U_Offset + U_Scale, V_Offset,
+          U_Offset + U_Scale, V_Offset + V_Scale,
+          U_Offset, V_Offset + V_Scale
+        };
+        GLshort v[8] = {
+          static_cast<GLshort>(dst.x), static_cast<GLshort>(dst.y),
+          static_cast<GLshort>(dst.x + dst.w), static_cast<GLshort>(dst.y),
+          static_cast<GLshort>(dst.x + dst.w), static_cast<GLshort>(dst.y + dst.h),
+          static_cast<GLshort>(dst.x), static_cast<GLshort>(dst.y + dst.h)
+        };
+        glVertexPointer(2, GL_SHORT, 0, v);
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glTexCoordPointer(2, GL_FLOAT, 0, t);
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        
+		/*GLfloat texcoords[8] = {
 			GLfloat(U_Offset),           GLfloat(V_Offset),
 			GLfloat(U_Offset),           GLfloat(V_Offset + V_Scale),
 			GLfloat(U_Offset + U_Scale), GLfloat(V_Offset + V_Scale),
@@ -240,11 +259,11 @@ void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
 		};
 		glVertexPointer(2, GL_FLOAT, 0, vertices);
 		glTexCoordPointer(2, GL_FLOAT, 0, texcoords);
-		glDrawArrays(GL_POLYGON, 0, 4);
+		glDrawArrays(GL_POLYGON, 0, 4);*/
 	}
     
     if (rotating)
-        glPopMatrix();
+        MSI()->popMatrix();
     
 	if (TMgr.IsGlowMapped()) TMgr.RenderGlowing();
 	TMgr.RestoreTextureMatrix();

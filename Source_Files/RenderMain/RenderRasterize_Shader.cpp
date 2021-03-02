@@ -23,6 +23,7 @@
 #include "ChaseCam.h"
 #include "preferences.h"
 #include "screen.h"
+#include "MatrixStack.hpp"
 
 #define MAXIMUM_VERTICES_PER_WORLD_POLYGON (MAXIMUM_VERTICES_PER_POLYGON+4)
 
@@ -219,40 +220,41 @@ void RenderRasterize_Shader::render_node(sorted_node_data *node, bool SeeThruLiq
     RenderRasterizerClass::render_node(node, SeeThruLiquids, renderStep);
 
 	// turn off clipping planes
-	glDisable(GL_CLIP_PLANE0);
-	glDisable(GL_CLIP_PLANE1);
+    MSI()->disablePlane(0);
+    MSI()->disablePlane(1);
 }
 
 void RenderRasterize_Shader::clip_to_window(clipping_window_data *win)
 {
-    GLdouble clip[] = { 0., 0., 0., 0. };
+    GLfloat clip[] = { 0., 0., 0., 0. };
         
     // recenter to player's orientation temporarily
-    glPushMatrix();
-    glTranslatef(view->origin.x, view->origin.y, 0.);
+    MSI()->pushMatrix();
+    MSI()->translatef(view->origin.x, view->origin.y, 0.);
     glRotatef(view->yaw * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
     
     glRotatef(-0.1, 0., 0., 1.); // leave some excess to avoid artifacts at edges
 	if (win->left.i != leftmost_clip.i || win->left.j != leftmost_clip.j) {
 		clip[0] = win->left.i;
 		clip[1] = win->left.j;
-		glEnable(GL_CLIP_PLANE0);
-		glClipPlane(GL_CLIP_PLANE0, clip);
+        MSI()->enablePlane(0);
+		MSI()->clipPlanef(0, clip);
 	} else {
-		glDisable(GL_CLIP_PLANE0);
+        MSI()->disablePlane(0);
 	}
 	
     glRotatef(0.2, 0., 0., 1.); // breathing room for right-hand clip
 	if (win->right.i != rightmost_clip.i || win->right.j != rightmost_clip.j) {
 		clip[0] = win->right.i;
 		clip[1] = win->right.j;
-		glEnable(GL_CLIP_PLANE1);
-		glClipPlane(GL_CLIP_PLANE1, clip);
+		
+        MSI()->enablePlane(1);
+		MSI()->clipPlanef(1, clip);
 	} else {
-		glDisable(GL_CLIP_PLANE1);
+        MSI()->disablePlane(1);
 	}
     
-    glPopMatrix();
+    MSI()->popMatrix();
 }
 
 void RenderRasterize_Shader::store_endpoint(
@@ -267,7 +269,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 
 	Shader *s = NULL;
 	GLfloat color[3];
-	GLdouble shade = PIN(static_cast<GLfloat>(rect.ambient_shade)/static_cast<GLfloat>(FIXED_ONE),0,1);
+	GLfloat shade = PIN(static_cast<GLfloat>(rect.ambient_shade)/static_cast<GLfloat>(FIXED_ONE),0,1);
 	color[0] = color[1] = color[2] = shade;
 
 	auto TMgr = std::unique_ptr<TextureManager>(new TextureManager());
@@ -451,9 +453,9 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 	if(TMgr->Setup()) {
 		TMgr->RenderNormal(); // must allocate first
 		if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
-			glActiveTextureARB(GL_TEXTURE1_ARB);
+			glActiveTexture(GL_TEXTURE1);
 			TMgr->RenderBump();
-			glActiveTextureARB(GL_TEXTURE0_ARB);
+			glActiveTexture(GL_TEXTURE0);
 		}
 	} else {
 		TMgr->ShapeDesc = UNONE;
@@ -649,7 +651,10 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 			sign = -1;
 		}
 		glNormal3f(N[0], N[1], N[2]);
-		glMultiTexCoord4fARB(GL_TEXTURE1_ARB, T[0], T[1], T[2], sign);
+        
+        GLfloat tex4[4] = {T[0], T[1], T[2], sign};
+        
+		glMultiTexCoord4f(GL_TEXTURE1, T[0], T[1], T[2], sign);
 
 		GLfloat vertex_array[MAXIMUM_VERTICES_PER_POLYGON * 3];
 		GLfloat texcoord_array[MAXIMUM_VERTICES_PER_POLYGON * 2];
@@ -681,17 +686,35 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 		glVertexPointer(3, GL_FLOAT, 0, vertex_array);
 		glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
 
-		glDrawArrays(GL_POLYGON, 0, vertex_count);
+        Shader* lastShader = lastEnabledShader();
+        if (lastShader) {
+          GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
+          MSI()->getFloatv(MS_MODELVIEW, modelMatrix);
+          MatrixStack::Instance()->getFloatv(MS_PROJECTION, projectionMatrix);
+          MatrixStack::Instance()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
+          MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);
+          MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
+
+          lastShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
+          lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+          lastShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
+          lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+          lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+          lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
+          lastShader->setVec4(Shader::U_TexCoords4, tex4);
+        }
+        
+		glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);
 
 		// see note 2 above; pulsate uniform should stay set from setupWall call
 		if (setupGlow(view, TMgr, 0, intensity, weaponFlare, selfLuminosity, offset, renderStep)) {
-			glDrawArrays(GL_POLYGON, 0, vertex_count);
+			glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);
 		}
 
 		Shader::disable();
-		glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
-		glMatrixMode(GL_MODELVIEW);
+		MSI()->matrixMode(MS_TEXTURE);
+		MSI()->loadIdentity();
+		MSI()->matrixMode(MS_MODELVIEW);
 	}
 }
 
@@ -767,7 +790,8 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			vec3 T(dx, dy, 0);
 			float sign = 1;
 			glNormal3f(N[0], N[1], N[2]);
-			glMultiTexCoord4fARB(GL_TEXTURE1_ARB, T[0], T[1], T[2], sign);
+            GLfloat tex4[4] = {T[0], T[1], T[2], sign};
+			glMultiTexCoord4f(GL_TEXTURE1, tex4[0], tex4[1], tex4[2], tex4[3]);
 
 			world_distance x = 0.0, y = 0.0;
 			instantiate_transfer_mode(view, surface->transfer_mode, x, y);
@@ -794,16 +818,37 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			glVertexPointer(3, GL_FLOAT, 0, vertex_array);
 			glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
 			
-			glDrawArrays(GL_QUADS, 0, vertex_count);
+            Shader* lastShader = lastEnabledShader();
+            if (lastShader) {
+              GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
+              MatrixStack::Instance()->getFloatv(MS_MODELVIEW, modelMatrix);
+              MatrixStack::Instance()->getFloatv(MS_PROJECTION, projectionMatrix);
+              MatrixStack::Instance()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
+              MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
+              MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);
+              
+              lastShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
+              lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+              lastShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
+              lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+              lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+              lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
+              lastShader->setVec4(Shader::U_TexCoords4, tex4);
+            }
+            
+            //These originally drew GL_QUADS with a vertex_count. If that's ever not 4, the triangle fan substitution will be bad.
+            assert(vertex_count < 5); //If we ever hit this, I will need to rewrite the below for GL_QUADS (or ignore the visial glitch?);
+            
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 			if (setupGlow(view, TMgr, wobble, intensity, weaponFlare, selfLuminosity, offset, renderStep)) {
-				glDrawArrays(GL_QUADS, 0, vertex_count);
+				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 			}
 
 			Shader::disable();
-			glMatrixMode(GL_TEXTURE);
-			glLoadIdentity();
-			glMatrixMode(GL_MODELVIEW);
+			MSI()->matrixMode(MS_TEXTURE);
+			MSI()->loadIdentity();
+			MSI()->matrixMode(MS_MODELVIEW);
 		}
 	}
 }
@@ -839,7 +884,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	}
 
 	GLfloat color[3];
-	GLdouble shade = PIN(static_cast<GLfloat>(RenderRectangle.ambient_shade)/static_cast<GLfloat>(FIXED_ONE),0,1);
+	GLfloat shade = PIN(static_cast<GLfloat>(RenderRectangle.ambient_shade)/static_cast<GLfloat>(FIXED_ONE),0,1);
 	color[0] = color[1] = color[2] = shade;
 
 	Shader *s = NULL;
@@ -906,7 +951,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	glColor4f(color[0], color[1], color[2], 1);
 
 	glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
-	glClientActiveTextureARB(GL_TEXTURE0_ARB);
+	glClientActiveTexture(GL_TEXTURE0);
 	if (ModelPtr->Model.TxtrCoords.empty()) {
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	} else {
@@ -916,7 +961,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	glEnableClientState(GL_NORMAL_ARRAY);
 	glNormalPointer(GL_FLOAT,0,ModelPtr->Model.NormBase());
 
-	glClientActiveTextureARB(GL_TEXTURE1_ARB);
+	glClientActiveTexture(GL_TEXTURE1);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glTexCoordPointer(4,GL_FLOAT,sizeof(vec4),ModelPtr->Model.TangentBase());
 
@@ -925,14 +970,14 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	}
 
 	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
-		glActiveTextureARB(GL_TEXTURE1_ARB);
+		glActiveTexture(GL_TEXTURE1);
 		if(ModelPtr->Use(CLUT,OGL_SkinManager::Bump)) {
 			LoadModelSkin(SkinPtr->OffsetImg, Collection, CLUT);
 		}
 		if (!SkinPtr->OffsetImg.IsPresent()) {
 			FlatBumpTexture();
 		}
-		glActiveTextureARB(GL_TEXTURE0_ARB);
+		glActiveTexture(GL_TEXTURE0);
 	}
 
 	glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
@@ -958,7 +1003,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glClientActiveTextureARB(GL_TEXTURE0_ARB);
+	glClientActiveTexture(GL_TEXTURE0);
 	if (ModelPtr->Model.TxtrCoords.empty()) {
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
@@ -984,13 +1029,13 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 	media_data *media = (media_index != NONE) ? get_media_data(media_index) : NULL;
 	if (media) {
 		float h = media->height;
-		GLdouble plane[] = { 0.0, 0.0, 1.0, -h };
+		GLfloat plane[] = { 0.0, 0.0, 1.0, -h };
 		if (view->under_media_boundary ^ other_side_of_media) {
 			plane[2] = -1.0;
 			plane[3] = h;
 		}
-		glClipPlane(GL_CLIP_PLANE5, plane);
-		glEnable(GL_CLIP_PLANE5);
+		MSI()->clipPlanef(5, plane);
+        MSI()->enablePlane(5);
 	} else if (other_side_of_media) {
 		// When there's no media present, we can skip the second pass.
 		return;
@@ -1002,7 +1047,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
         _render_node_object_helper(object, renderStep);
     }
     
-    glDisable(GL_CLIP_PLANE5);
+    MSI()->disablePlane(5);
 }
 
 void RenderRasterize_Shader::_render_node_object_helper(render_object_data *object, RenderStep renderStep) {
@@ -1011,26 +1056,26 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 	const world_point3d& pos = rect.Position;
     
 	if(rect.ModelPtr) {
-		glPushMatrix();
-		glTranslated(pos.x, pos.y, pos.z);
-		glRotated((360.0/FULL_CIRCLE)*rect.Azimuth,0,0,1);
+		MSI()->pushMatrix();
+		MSI()->translatef(pos.x, pos.y, pos.z);
+		MSI()->rotatef((360.0/FULL_CIRCLE)*rect.Azimuth,0,0,1);
 		GLfloat HorizScale = rect.Scale*rect.HorizScale;
-		glScalef(HorizScale,HorizScale,rect.Scale);
+		MSI()->scalef(HorizScale,HorizScale,rect.Scale);
 
 		short descriptor = GET_DESCRIPTOR_COLLECTION(rect.ShapeDesc);
 		short collection = GET_COLLECTION(descriptor);
 		short clut = ModifyCLUT(rect.transfer_mode,GET_COLLECTION_CLUT(descriptor));
 
 		RenderModel(rect, collection, clut, weaponFlare, selfLuminosity, renderStep);
-		glPopMatrix();
+		MSI()->popMatrix();
 		return;
 	}
 
-	glPushMatrix();
-	glTranslated(pos.x, pos.y, pos.z);
+	MSI()->pushMatrix();
+	MSI()->translatef(pos.x, pos.y, pos.z);
 
 	double yaw = view->virtual_yaw * FixedAngleToDegrees;
-	glRotated(yaw, 0.0, 0.0, 1.0);
+	MSI()->rotatef(yaw, 0.0, 0.0, 1.0);
 
 	float offset = 0;
 	if (OGL_ForceSpriteDepth()) {
@@ -1048,7 +1093,7 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 	}
 
 	auto TMgr = setupSpriteTexture(rect, OGL_Txtr_Inhabitant, offset, renderStep);
-	if (TMgr->ShapeDesc == UNONE) { glPopMatrix(); return; }
+	if (TMgr->ShapeDesc == UNONE) { MSI()->popMatrix(); return; }
 
 	float texCoords[2][2];
 
@@ -1115,29 +1160,29 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 	}
         
 	glEnable(GL_DEPTH_TEST);
-	glPopMatrix();
+	MSI()->popMatrix();
 	Shader::disable();
 	TMgr->RestoreTextureMatrix();
 }
 
 extern void position_sprite_axis(short *x0, short *x1, short scale_width, short screen_width, short positioning_mode, _fixed position, bool flip, world_distance world_left, world_distance world_right);
 
-extern GLdouble Screen_2_Clip[16];
+extern GLfloat Screen_2_Clip[16];
 
 void RenderRasterize_Shader::render_viewer_sprite_layer(RenderStep renderStep)
 {
         if (!view->show_weapons_in_hand) return;
     
-        glMatrixMode(GL_TEXTURE);
-        glPushMatrix();
+        MSI()->matrixMode(MS_TEXTURE);
+        MSI()->pushMatrix();
     
-        glMatrixMode(GL_PROJECTION);
-        glPushMatrix();
-        glLoadMatrixd(Screen_2_Clip);
+        MSI()->matrixMode(MS_PROJECTION);
+        MSI()->pushMatrix();
+        MSI()->loadMatrixf(Screen_2_Clip);
 
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        glLoadIdentity();
+        MSI()->matrixMode(MS_MODELVIEW);
+        MSI()->pushMatrix();
+        MSI()->loadIdentity();
 
         rectangle_definition rect;
 	weapon_display_information display_data;
@@ -1206,21 +1251,21 @@ void RenderRasterize_Shader::render_viewer_sprite_layer(RenderStep renderStep)
 
         Shader::disable();
     
-        glPopMatrix();
+        MSI()->popMatrix();
 
-        glMatrixMode(GL_PROJECTION);
-        glPopMatrix();
+        MSI()->matrixMode(MS_PROJECTION);
+        MSI()->popMatrix();
 
-        glMatrixMode(GL_TEXTURE);
-        glPopMatrix();
+        MSI()->matrixMode(MS_TEXTURE);
+        MSI()->popMatrix();
     
-        glMatrixMode(GL_MODELVIEW);
+        MSI()->matrixMode(MS_MODELVIEW);
 }
 
 struct ExtendedVertexData
 {
-	GLdouble Vertex[4];
-	GLdouble TexCoord[2];
+	GLfloat Vertex[4];
+	GLfloat TexCoord[2];
 	GLfloat Color[3];
 	GLfloat GlowColor[3];
 };
@@ -1255,10 +1300,10 @@ void RenderRasterize_Shader::render_viewer_sprite(rectangle_definition& RenderRe
 	// Calculate the texture coordinates;
 	// the scanline direction is downward, (texture coordinate 0)
 	// while the line-to-line direction is rightward (texture coordinate 1)
-	GLdouble U_Scale = TMgr->U_Scale/(RenderRectangle.y1 - RenderRectangle.y0);
-	GLdouble V_Scale = TMgr->V_Scale/(RenderRectangle.x1 - RenderRectangle.x0);
-	GLdouble U_Offset = TMgr->U_Offset;
-	GLdouble V_Offset = TMgr->V_Offset;
+	GLfloat U_Scale = TMgr->U_Scale/(RenderRectangle.y1 - RenderRectangle.y0);
+	GLfloat V_Scale = TMgr->V_Scale/(RenderRectangle.x1 - RenderRectangle.x0);
+	GLfloat U_Offset = TMgr->U_Offset;
+	GLfloat V_Offset = TMgr->V_Offset;
 	
 	if (RenderRectangle.flip_vertical)
 	{
@@ -1302,18 +1347,44 @@ void RenderRasterize_Shader::render_viewer_sprite(rectangle_definition& RenderRe
 		glAlphaFunc(GL_GREATER, 0.5);
 	}
 
-        glDisable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
 
 	// Location of data:
-	glVertexPointer(3,GL_DOUBLE,sizeof(ExtendedVertexData),ExtendedVertexList[0].Vertex);
-	glTexCoordPointer(2,GL_DOUBLE,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
+	GLfloat modelProjectionMatrix[16], textureMatrix[16];
+    Shader *theShader = lastEnabledShader();
+    
+    glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, sizeof(ExtendedVertexData), ExtendedVertexList[0].TexCoord);
+    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
+    
+    glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, sizeof(ExtendedVertexData), ExtendedVertexList[0].Vertex);
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    
+    MatrixStack::Instance()->getFloatvModelviewProjection(modelProjectionMatrix);
+    MatrixStack::Instance()->getFloatv(MS_TEXTURE_MATRIX, textureMatrix);
+    
+    theShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjectionMatrix);
+    theShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+    theShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+    
+    GLfloat plane0[4], plane1[4], plane5[4];
+    MatrixStack::Instance()->getPlanev(0, plane0);
+    MatrixStack::Instance()->getPlanev(1, plane1);
+    MatrixStack::Instance()->getPlanev(5, plane5);
+    theShader->setVec4(Shader::U_ClipPlane0, plane0);
+    theShader->setVec4(Shader::U_ClipPlane1, plane1);
+    theShader->setVec4(Shader::U_ClipPlane5, plane5);
+    
+    //If invincibility in M1 is not blending, try uncommenting this out:
+    //glEnable(GL_BLEND);
+    
 	glEnable(GL_TEXTURE_2D);
 		
 	// Go!
-        glDrawArrays(GL_POLYGON,0,4);
+        glDrawArrays(GL_TRIANGLE_FAN,0,4);
 
         if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, 0, renderStep)) {
-            glDrawArrays(GL_QUADS, 0, 4);
+            //DCW I don't know about changing this to a triangle fan...  was originally glDrawArrays(GL_QUADS, 0, 4);
+            glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	}
 	
 	glEnable(GL_DEPTH_TEST);

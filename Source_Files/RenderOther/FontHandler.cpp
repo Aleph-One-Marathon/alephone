@@ -40,6 +40,8 @@ Jan 12, 2001 (Loren Petrich):
 #include "OGL_Headers.h"
 #include "OGL_Blitter.h"
 #include "OGL_Render.h"
+#include "MatrixStack.hpp"
+#include "OGL_Shader.h"
 #endif
 
 #include <math.h>
@@ -164,174 +166,195 @@ int FontSpecifier::TextWidth(const char *text)
 }
 
 #ifdef HAVE_OPENGL
+
+// DJB OpenGL Pad is always 1.0!
+const GLfloat PadCache = 1.0;
+
 // Reset the OpenGL fonts; its arg indicates whether this is for starting an OpenGL session
 // (this is to avoid texture and display-list memory leaks and other such things)
 void FontSpecifier::OGL_Reset(bool IsStarting)
 {
-	// Don't delete these if there is no valid texture;
-	// that indicates that there are no valid texture and display-list ID's.
-	if (!IsStarting && OGL_Texture)
-	{
-		glDeleteTextures(1,&TxtrID);
-		glDeleteLists(DispList,256);
-		OGL_Deregister(this);
-	}
+    // Don't delete these if there is no valid texture;
+    // that indicates that there are no valid texture and display-list ID's.
+    if (!IsStarting && OGL_Texture)
+    {
+        glDeleteTextures(1,&TxtrID);
+        OGL_Deregister(this);
+    }
 
-	// Invalidates whatever texture had been present
-	if (OGL_Texture)
-	{
-		delete[]OGL_Texture;
-		OGL_Texture = NULL;
-	}
+    // Invalidates whatever texture had been present
+    if (OGL_Texture)
+    {
+        delete[]OGL_Texture;
+        OGL_Texture = NULL;
+    }
     
     if (!IsStarting)
         return;
-	
-	// Put some padding around each glyph so as to avoid clipping it
-	const int Pad = 1;
-	int ascent_p = Ascent + Pad, descent_p = Descent + Pad;
-	int widths_p[256];
-	for (int i=0; i<256; i++) {
-	  widths_p[i] = Widths[i] + 2*Pad;
-	}
-	// Now for the totals and dimensions
-	int TotalWidth = 0;
-	for (int k=0; k<256; k++)
-		TotalWidth += widths_p[k];
-	
-	// For an empty font, clear out
-	if (TotalWidth <= 0) return;
-	
-	int GlyphHeight = ascent_p + descent_p;
-	
-	int EstDim = int(sqrt(static_cast<float>(TotalWidth*GlyphHeight)) + 0.5);
-	TxtrWidth = MAX(128, NextPowerOfTwo(EstDim));
-	
-	// Find the character starting points and counts
-	unsigned char CharStarts[256], CharCounts[256];
-	int LastLine = 0;
-	CharStarts[LastLine] = 0;
-	CharCounts[LastLine] = 0;
-	short Pos = 0;
-	for (int k=0; k<256; k++)
-	{
-		// Over the edge? If so, then start a new line
-		short NewPos = Pos + widths_p[k];
-		if (NewPos > TxtrWidth)
-		{
-			LastLine++;
-			CharStarts[LastLine] = k;
-			Pos = widths_p[k];
-			CharCounts[LastLine] = 1;
-		} else {
-			Pos = NewPos;
-			CharCounts[LastLine]++;
-		}
-	}
-	TxtrHeight = MAX(128, NextPowerOfTwo(GlyphHeight*(LastLine+1)));
-	
-	// Render the font glyphs into the SDL surface
-	SDL_Surface *FontSurface = SDL_CreateRGBSurface(SDL_SWSURFACE, TxtrWidth, TxtrHeight, 32, 0xff0000, 0x00ff00, 0x0000ff, 0);
-	if (FontSurface == NULL)
-		return;
+    
+    // Put some padding around each glyph so as to avoid clipping it
+    const int Pad = 1;
+    int ascent_p = Ascent + Pad, descent_p = Descent + Pad;
+    int widths_p[256];
+    for (int i=0; i<256; i++) {
+      widths_p[i] = Widths[i] + 2*Pad;
+    }
+    // Now for the totals and dimensions
+    int TotalWidth = 0;
+    for (int k=0; k<256; k++)
+        TotalWidth += widths_p[k];
+    
+    // For an empty font, clear out
+    if (TotalWidth <= 0) return;
+    
+    int GlyphHeight = ascent_p + descent_p;
+    
+    int EstDim = int(sqrt(static_cast<float>(TotalWidth*GlyphHeight)) + 0.5);
+    TxtrWidth = MAX(128, NextPowerOfTwo(EstDim));
+    
+    // Find the character starting points and counts
+    unsigned char CharStarts[256], CharCounts[256];
+    int LastLine = 0;
+    CharStarts[LastLine] = 0;
+    CharCounts[LastLine] = 0;
+    short Pos = 0;
+    for (int k=0; k<256; k++)
+    {
+        // Over the edge? If so, then start a new line
+        short NewPos = Pos + widths_p[k];
+        if (NewPos > TxtrWidth)
+        {
+            LastLine++;
+            CharStarts[LastLine] = k;
+            Pos = widths_p[k];
+            CharCounts[LastLine] = 1;
+        } else {
+            Pos = NewPos;
+            CharCounts[LastLine]++;
+        }
+    }
+    TxtrHeight = MAX(128, NextPowerOfTwo(GlyphHeight*(LastLine+1)));
+    
+    // Render the font glyphs into the SDL surface
+    SDL_Surface *FontSurface = SDL_CreateRGBSurface(SDL_SWSURFACE, TxtrWidth, TxtrHeight, 32, 0xff0000, 0x00ff00, 0x0000ff, 0);
+    if (FontSurface == NULL)
+        return;
 
-	// Set background to black
-	SDL_FillRect(FontSurface, NULL, SDL_MapRGB(FontSurface->format, 0, 0, 0));
-	Uint32 White = SDL_MapRGB(FontSurface->format, 0xFF, 0xFF, 0xFF);
-	
-	// Copy to surface
-	for (int k = 0; k <= LastLine; k++)
-	{
-		char Which = CharStarts[k];
-		int VPos = (k * GlyphHeight) + ascent_p;
-		int HPos = Pad;
-		for (int m = 0; m < CharCounts[k]; m++)
-		{
-		  
-		  ::draw_text(FontSurface, &Which, 1, HPos, VPos, White, Info, Style);
-		  HPos += widths_p[(unsigned char) (Which++)];
-		}
-	}
- 	
- 	// Non-MacOS-specific: allocate the texture buffer
- 	// Its format is LA 88, where L is the luminosity and A is the alpha channel
- 	// The font value will go into A.
- 	OGL_Texture = new uint8[2*GetTxtrSize()];
-	
-	// Copy the SDL surface into the OpenGL texture
-	uint8 *PixBase = (uint8 *)FontSurface->pixels;
-	int Stride = FontSurface->pitch;
- 	
- 	for (int k=0; k<TxtrHeight; k++)
- 	{
- 		uint8 *SrcPxl = PixBase + k*Stride + 1;	// Use one of the middle channels (red or green or blue)
- 		uint8 *DstPxl = OGL_Texture + 2*k*TxtrWidth;
- 		for (int m=0; m<TxtrWidth; m++)
- 		{
- 			*(DstPxl++) = 0xff;	// Base color: white (will be modified with glColorxxx())
- 			*(DstPxl++) = *SrcPxl;
- 			SrcPxl += 4;
-  		}
- 	}
-	
-	// Clean up
-	SDL_FreeSurface(FontSurface);
-	
-	// OpenGL stuff starts here 	
- 	// Load texture
- 	glGenTextures(1,&TxtrID);
- 	glBindTexture(GL_TEXTURE_2D,TxtrID);
-	OGL_Register(this);
- 	
- 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, TxtrWidth, TxtrHeight,
-		0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, OGL_Texture);
- 	
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	
- 	// Allocate and create display lists of rendering commands
- 	DispList = glGenLists(256);
- 	GLfloat TWidNorm = GLfloat(1)/TxtrWidth;
- 	GLfloat THtNorm = GLfloat(1)/TxtrHeight;
- 	for (int k=0; k<=LastLine; k++)
- 	{
- 		unsigned char Which = CharStarts[k];
- 		GLfloat Top = k*(THtNorm*GlyphHeight);
- 		GLfloat Bottom = (k+1)*(THtNorm*GlyphHeight);
- 		int Pos = 0;
- 		for (int m=0; m<CharCounts[k]; m++)
- 		{
- 			short Width = widths_p[Which];
- 			int NewPos = Pos + Width;
- 			GLfloat Left = TWidNorm*Pos;
- 			GLfloat Right = TWidNorm*NewPos;
- 			
- 			glNewList(DispList + Which, GL_COMPILE);
- 			
- 			// Move to the current glyph's (padded) position
- 			glTranslatef(-Pad,0,0);
- 			
- 			// Draw the glyph rectangle
-			OGL_RenderTexturedRect(0, -ascent_p, Width, descent_p + ascent_p,
-								   Left, Top, Right, Bottom);
-			
-			// Move to the next glyph's position
-			glTranslated(Width-Pad,0,0);
-			
- 			glEndList();
- 			
- 			// For next one
- 			Pos = NewPos;
- 			Which++;
- 		}
- 	}
+    // Set background to black
+    SDL_FillRect(FontSurface, NULL, SDL_MapRGB(FontSurface->format, 0, 0, 0));
+    Uint32 White = SDL_MapRGB(FontSurface->format, 0xFF, 0xFF, 0xFF);
+    
+    // Copy to surface
+    for (int k = 0; k <= LastLine; k++)
+    {
+        char Which = CharStarts[k];
+        int VPos = (k * GlyphHeight) + ascent_p;
+        int HPos = Pad;
+        for (int m = 0; m < CharCounts[k]; m++)
+        {
+          
+          ::draw_text(FontSurface, &Which, 1, HPos, VPos, White, Info, Style);
+          HPos += widths_p[(unsigned char) (Which++)];
+        }
+    }
+     
+     // Non-MacOS-specific: allocate the texture buffer
+     // Its format is LA 88, where L is the luminosity and A is the alpha channel
+     // The font value will go into A.
+     OGL_Texture = new uint8[2*GetTxtrSize()];
+    
+    // Copy the SDL surface into the OpenGL texture
+    uint8 *PixBase = (uint8 *)FontSurface->pixels;
+    int Stride = FontSurface->pitch;
+     
+     for (int k=0; k<TxtrHeight; k++)
+     {
+         uint8 *SrcPxl = PixBase + k*Stride + 1;    // Use one of the middle channels (red or green or blue)
+         uint8 *DstPxl = OGL_Texture + 2*k*TxtrWidth;
+         for (int m=0; m<TxtrWidth; m++)
+         {
+             *(DstPxl++) = 0xff;    // Base color: white (will be modified with glColorxxx())
+             *(DstPxl++) = *SrcPxl;
+             SrcPxl += 4;
+          }
+     }
+    
+    // Clean up
+    SDL_FreeSurface(FontSurface);
+    
+    // OpenGL stuff starts here
+     // Load texture
+     glGenTextures(1,&TxtrID);
+     glBindTexture(GL_TEXTURE_2D,TxtrID);
+    OGL_Register(this);
+     
+     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, TxtrWidth, TxtrHeight,
+        0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, OGL_Texture);
+     
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    
+     // Allocate and create display lists of rendering commands
+     GLfloat TWidNorm = GLfloat(1)/TxtrWidth;
+     GLfloat THtNorm = GLfloat(1)/TxtrHeight;
+     for (int k=0; k<=LastLine; k++)
+     {
+         unsigned char Which = CharStarts[k];
+         GLfloat Top = k*(THtNorm*GlyphHeight);
+         GLfloat Bottom = (k+1)*(THtNorm*GlyphHeight);
+         int Pos = 0;
+         for (int m=0; m<CharCounts[k]; m++)
+         {
+             short Width = widths_p[Which];
+             int NewPos = Pos + Width;
+             GLfloat Left = TWidNorm*Pos;
+             GLfloat Right = TWidNorm*NewPos;
+             
+             //glNewList(DispList + Which, GL_COMPILE);
+             
+             // Move to the current glyph's (padded) position
+             //glTranslatef(-Pad,0,0);
+             
+            //Cache the glyph rectangle
+            VertexCache[Which*8 + 0] = 0;
+            VertexCache[Which*8 + 1] = -ascent_p;
+            VertexCache[Which*8 + 2] = Width;
+            VertexCache[Which*8 + 3] = -ascent_p;
+            VertexCache[Which*8 + 4] = Width;
+            VertexCache[Which*8 + 5] = descent_p;
+            VertexCache[Which*8 + 6] = 0;
+            VertexCache[Which*8 + 7] = descent_p;
+            // Setup the texture coordinates
+            TextureCache[Which*8 + 0] = Left;
+            TextureCache[Which*8 + 1] = Top;
+            TextureCache[Which*8 + 2] = Right;
+            TextureCache[Which*8 + 3] = Top;
+            TextureCache[Which*8 + 4] = Right;
+            TextureCache[Which*8 + 5] = Bottom;
+            TextureCache[Which*8 + 6] = Left;
+            TextureCache[Which*8 + 7] = Bottom;
+            WidthCache[Which] = Width;
+
+             // Draw the glyph rectangle
+            //OGL_RenderTexturedRect(0, -ascent_p, Width, descent_p + ascent_p,
+            //                       Left, Top, Right, Bottom);
+            
+            // Move to the next glyph's position
+            //glTranslated(Width-Pad,0,0);
+            
+             //glEndList();
+             
+             // For next one
+             Pos = NewPos;
+             Which++;
+         }
+     }
 }
-
 
 // Renders a C-style string in OpenGL.
 // assumes screen coordinates and that the left baseline point is at (0,0).
@@ -339,30 +362,73 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 // One can surround it with glPushMatrix() and glPopMatrix() to remember the original.
 void FontSpecifier::OGL_Render(const char *Text)
 {
-	// Bug out if no texture to render
-	if (!OGL_Texture)
-	{
+    Shader *previousShader = NULL;
+    Shader *textShader = NULL;
+    
+    previousShader = lastEnabledShader();
+    textShader = Shader::get(Shader::S_Rect);
+    textShader->enable();
+    
+    // Bug out if no texture to render
+    if (!OGL_Texture)
+    {
         OGL_Reset(true);
         if (!OGL_Texture) return;
-	}
-	
-	glPushAttrib(GL_ENABLE_BIT);
-	
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glDisable(GL_ALPHA_TEST);
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    }
+    
+    //glPushAttrib(GL_ENABLE_BIT);
+    
+        //Save and restore state without push/pop attributes.
+    bool isEnabled_GT2 = glIsEnabled ( GL_TEXTURE_2D );
+    bool isEnabled_GB = glIsEnabled ( GL_BLEND );
+    bool isEnabled_GAT = glIsEnabled ( GL_ALPHA_TEST );
+    
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glDisable(GL_ALPHA_TEST);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
-	glBindTexture(GL_TEXTURE_2D,TxtrID);
-	
-	size_t Len = MIN(strlen(Text),255);
-	for (size_t k=0; k<Len; k++)
-	{
-		unsigned char c = Text[k];
-		glCallList(DispList+c);
-	}
-	
-	glPopAttrib();
+    glBindTexture(GL_TEXTURE_2D,TxtrID);
+    
+    glVertexAttribPointer(Shader::ATTRIB_VERTEX, 2, GL_SHORT, GL_FALSE, 0, VertexCache);
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, TextureCache);
+    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
+
+    size_t Len = MIN(strlen(Text),255);
+    for (size_t k=0; k<Len; k++)
+    {
+        unsigned char c = Text[k];
+        
+        // DJB OpenGL Rather than call the list, just render here glCallList(DispList+c);
+        MatrixStack::Instance()->translatef(-PadCache,0,0);
+        
+        //Set shader uniforms, etc.
+        Shader* lastShader = lastEnabledShader();
+        if (lastShader) {
+            GLfloat modelProjection[16], textureMatrix[16];
+            MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);
+            MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
+            
+            lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+            lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+            lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+          }
+        
+        glDrawArrays(GL_TRIANGLE_FAN, c*4, 4);
+        
+        MatrixStack::Instance()->translatef(WidthCache[c]-PadCache,0,0);
+        
+        //glCallList(DispList+c);
+    }
+    
+    //glPopAttrib();
+    if ( isEnabled_GT2 ) { glEnable ( GL_TEXTURE_2D ); } else { glDisable ( GL_TEXTURE_2D ); }
+    if ( isEnabled_GB ) { glEnable ( GL_BLEND ); } else { glDisable ( GL_BLEND ); }
+    if ( isEnabled_GAT ) { glEnable ( GL_ALPHA_TEST ); } else { glDisable ( GL_ALPHA_TEST ); }
+    
+    //Restore original shader
+    if(previousShader) { previousShader->enable(); }
 }
 
 
@@ -449,11 +515,11 @@ void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, sh
 		y = r.bottom;
 
 	// Draw text
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glTranslated(x, y, 0);
+	MSI()->matrixMode(MS_MODELVIEW);
+	MSI()->pushMatrix();
+	MSI()->translatef(x, y, 0);
 	OGL_Render(text_to_draw);
-	glPopMatrix();
+	MSI()->popMatrix();
 }
 
 void FontSpecifier::OGL_ResetFonts(bool IsStarting)
@@ -512,11 +578,11 @@ int FontSpecifier::DrawText(SDL_Surface *s, const char *text, int x, int y, uint
 	// draw into both buffers
 	for (int i = 0; i < 2; i++)
 	{
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glTranslatef(x, y, 0);
+		MSI()->matrixMode(MS_MODELVIEW);
+		MSI()->pushMatrix();
+		MSI()->translatef(x, y, 0);
 		this->OGL_Render(text);
-		glPopMatrix();
+		MSI()->popMatrix();
 		MainScreenSwap();
 	}
 	return 1;

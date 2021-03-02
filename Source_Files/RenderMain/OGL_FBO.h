@@ -36,6 +36,7 @@ private:
 	GLuint _depthBuffer;
 	GLuint _fboTarget;
 	static std::vector<FBO *> active_chain;
+    GLint viewportCache[4];
 	
 public:
 	GLuint _w;
@@ -46,7 +47,8 @@ public:
 	FBO(GLuint w, GLuint h, bool srgb = false);
 	~FBO();
 	
-	void activate(bool clear = false, GLuint fboTarget = GL_FRAMEBUFFER_EXT);
+    void setup(GLuint w, GLuint h, bool srgb); //Only call this once if created with zero demensions.
+	void activate(bool clear = false, GLuint fboTarget = GL_FRAMEBUFFER);
 	void deactivate();
 	
 	void draw();

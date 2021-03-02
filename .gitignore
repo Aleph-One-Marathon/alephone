@@ -38,3 +38,5 @@ Release/
 .vs/
 *.vcxproj.user
 *.aps
+
+/data/Scenarios/*/*

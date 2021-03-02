@@ -359,6 +359,42 @@
 		3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
 		3D22CF8D0FD86EBD00B17822 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF8C0FD86EBD00B17822 /* libz.tbd */; };
 		3D22CFAC0FD8707C00B17822 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */; };
+		516E52D825EB4CF10073E92A /* interpolated_world.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 516E52D725EB4CF10073E92A /* interpolated_world.cpp */; };
+		516E52D925EB4CF10073E92A /* interpolated_world.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 516E52D725EB4CF10073E92A /* interpolated_world.cpp */; };
+		516E52DA25EB4CF10073E92A /* interpolated_world.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 516E52D725EB4CF10073E92A /* interpolated_world.cpp */; };
+		516E52DB25EB4CF10073E92A /* interpolated_world.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 516E52D725EB4CF10073E92A /* interpolated_world.cpp */; };
+		516E52DD25EB4D100073E92A /* interpolated_world.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52DC25EB4D100073E92A /* interpolated_world.h */; };
+		516E52DE25EB4D100073E92A /* interpolated_world.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52DC25EB4D100073E92A /* interpolated_world.h */; };
+		516E52DF25EB4D100073E92A /* interpolated_world.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52DC25EB4D100073E92A /* interpolated_world.h */; };
+		516E52E025EB4D100073E92A /* interpolated_world.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52DC25EB4D100073E92A /* interpolated_world.h */; };
+		516E52E225EB52ED0073E92A /* MetalHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 516E52E125EB52ED0073E92A /* MetalHelper.mm */; };
+		516E52E325EB52ED0073E92A /* MetalHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 516E52E125EB52ED0073E92A /* MetalHelper.mm */; };
+		516E52E425EB52ED0073E92A /* MetalHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 516E52E125EB52ED0073E92A /* MetalHelper.mm */; };
+		516E52E525EB52ED0073E92A /* MetalHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 516E52E125EB52ED0073E92A /* MetalHelper.mm */; };
+		516E52E725EB52FA0073E92A /* MetalHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52E625EB52FA0073E92A /* MetalHelper.h */; };
+		516E52E825EB52FA0073E92A /* MetalHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52E625EB52FA0073E92A /* MetalHelper.h */; };
+		516E52E925EB52FA0073E92A /* MetalHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52E625EB52FA0073E92A /* MetalHelper.h */; };
+		516E52EA25EB52FA0073E92A /* MetalHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52E625EB52FA0073E92A /* MetalHelper.h */; };
+		516E52EC25EB53250073E92A /* MatrixStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 516E52EB25EB53250073E92A /* MatrixStack.cpp */; };
+		516E52ED25EB53250073E92A /* MatrixStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 516E52EB25EB53250073E92A /* MatrixStack.cpp */; };
+		516E52EE25EB53250073E92A /* MatrixStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 516E52EB25EB53250073E92A /* MatrixStack.cpp */; };
+		516E52EF25EB53250073E92A /* MatrixStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 516E52EB25EB53250073E92A /* MatrixStack.cpp */; };
+		516E52F125EB53330073E92A /* MatrixStack.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 516E52F025EB53330073E92A /* MatrixStack.hpp */; };
+		516E52F225EB53330073E92A /* MatrixStack.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 516E52F025EB53330073E92A /* MatrixStack.hpp */; };
+		516E52F325EB53330073E92A /* MatrixStack.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 516E52F025EB53330073E92A /* MatrixStack.hpp */; };
+		516E52F425EB53330073E92A /* MatrixStack.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 516E52F025EB53330073E92A /* MatrixStack.hpp */; };
+		516E52F625EB53810073E92A /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52F525EB53810073E92A /* MetalANGLE.framework */; };
+		516E52F725EB53810073E92A /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52F525EB53810073E92A /* MetalANGLE.framework */; };
+		516E52F825EB53810073E92A /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52F525EB53810073E92A /* MetalANGLE.framework */; };
+		516E52F925EB53810073E92A /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52F525EB53810073E92A /* MetalANGLE.framework */; };
+		516E52FC25EB57920073E92A /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52FA25EB57910073E92A /* MetalKit.framework */; };
+		516E52FD25EB57920073E92A /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52FA25EB57910073E92A /* MetalKit.framework */; };
+		516E52FE25EB57920073E92A /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52FA25EB57910073E92A /* MetalKit.framework */; };
+		516E52FF25EB57920073E92A /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52FA25EB57910073E92A /* MetalKit.framework */; };
+		516E530025EB57920073E92A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52FB25EB57910073E92A /* QuartzCore.framework */; };
+		516E530125EB57920073E92A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52FB25EB57910073E92A /* QuartzCore.framework */; };
+		516E530225EB57920073E92A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52FB25EB57910073E92A /* QuartzCore.framework */; };
+		516E530325EB57920073E92A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52FB25EB57910073E92A /* QuartzCore.framework */; };
 		553AB9F6213A034300EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
 		553AB9F7213A035000EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
 		553AB9F9213A035000EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
@@ -776,7 +812,6 @@
 		AE505CEA141D45E600915344 /* csalerts.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEA31D2B113C9DF700266621 /* csalerts.mm */; };
 		AE505CEB141D45E600915344 /* lua_saved_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */; };
 		AE505CEC141D45E600915344 /* FilmProfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D1A4F112FDF3630085E79C /* FilmProfile.cpp */; };
-		AE505CEF141D45E600915344 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5830B4001E776DE01BA387C /* OpenGL.framework */; };
 		AE505CF0141D45E600915344 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F59FB19D01E780DF01BBE912 /* Cocoa.framework */; };
 		AE505CF9141D45E600915344 /* speex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; };
 		AE505CFB141D45E600915344 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
@@ -1252,7 +1287,6 @@
 		AEB4A28B14296CAE00537AE7 /* csalerts.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEA31D2B113C9DF700266621 /* csalerts.mm */; };
 		AEB4A28C14296CAE00537AE7 /* lua_saved_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */; };
 		AEB4A28D14296CAE00537AE7 /* FilmProfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D1A4F112FDF3630085E79C /* FilmProfile.cpp */; };
-		AEB4A29114296CAE00537AE7 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5830B4001E776DE01BA387C /* OpenGL.framework */; };
 		AEB4A29214296CAE00537AE7 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F59FB19D01E780DF01BBE912 /* Cocoa.framework */; };
 		AEB4A29B14296CAE00537AE7 /* speex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; };
 		AEB4A29D14296CAE00537AE7 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
@@ -1560,7 +1594,6 @@
 		AEC3C86C09AD68AC003258E4 /* Console.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEC6C89B0879A5DE0055EC57 /* Console.cpp */; };
 		AEC3C86D09AD68AC003258E4 /* ImageLoader_Shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */; };
 		AEC3C86E09AD68AC003258E4 /* OGL_LoadScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */; };
-		AEC3C87009AD68AC003258E4 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5830B4001E776DE01BA387C /* OpenGL.framework */; };
 		AEC3C87109AD68AC003258E4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F59FB19D01E780DF01BBE912 /* Cocoa.framework */; };
 		AEDCB5CD0D4ADB86004CB40E /* lua_monsters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDCB5CB0D4ADB86004CB40E /* lua_monsters.cpp */; };
 		AEDCB5DC0D4AEC4D004CB40E /* lua_projectiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDCB5DA0D4AEC4D004CB40E /* lua_projectiles.cpp */; };
@@ -1962,7 +1995,6 @@
 		AEFD879713EB84CF00C1E687 /* csalerts.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEA31D2B113C9DF700266621 /* csalerts.mm */; };
 		AEFD879813EB84CF00C1E687 /* lua_saved_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */; };
 		AEFD879913EB84CF00C1E687 /* FilmProfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D1A4F112FDF3630085E79C /* FilmProfile.cpp */; };
-		AEFD879B13EB84CF00C1E687 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5830B4001E776DE01BA387C /* OpenGL.framework */; };
 		AEFD879C13EB84CF00C1E687 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F59FB19D01E780DF01BBE912 /* Cocoa.framework */; };
 		AEFD87A513EB84CF00C1E687 /* speex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; };
 		AEFD87A713EB84CF00C1E687 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
@@ -2206,6 +2238,16 @@
 		3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_Texture_Def.h; sourceTree = "<group>"; };
 		3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Model_Def.cpp; sourceTree = "<group>"; };
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
+		516E52D725EB4CF10073E92A /* interpolated_world.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = interpolated_world.cpp; sourceTree = "<group>"; };
+		516E52DC25EB4D100073E92A /* interpolated_world.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = interpolated_world.h; sourceTree = "<group>"; };
+		516E52E125EB52ED0073E92A /* MetalHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MetalHelper.mm; sourceTree = "<group>"; };
+		516E52E625EB52FA0073E92A /* MetalHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalHelper.h; sourceTree = "<group>"; };
+		516E52EB25EB53250073E92A /* MatrixStack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MatrixStack.cpp; sourceTree = "<group>"; };
+		516E52F025EB53330073E92A /* MatrixStack.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = MatrixStack.hpp; sourceTree = "<group>"; };
+		516E52F525EB53810073E92A /* MetalANGLE.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MetalANGLE.framework; sourceTree = "<group>"; };
+		516E52FA25EB57910073E92A /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = ../../../../../System/Library/Frameworks/MetalKit.framework; sourceTree = "<group>"; };
+		516E52FB25EB57910073E92A /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = ../../../../../System/Library/Frameworks/QuartzCore.framework; sourceTree = "<group>"; };
+		516E530425EDE9970073E92A /* Shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Shaders; path = ../Source_Files/RenderMain/Shaders; sourceTree = "<group>"; };
 		553AB9F5213A034300EE3861 /* libexpat.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libexpat.tbd; path = usr/lib/libexpat.tbd; sourceTree = SDKROOT; };
 		AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Blitter.cpp; sourceTree = "<group>"; };
 		AE005FD30EE2D6DE007FE7C6 /* screen.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = screen.cpp; sourceTree = "<group>"; };
@@ -2453,7 +2495,6 @@
 		F56AEB6B01F8AA1201780311 /* ImagesIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = ImagesIcon.icns; sourceTree = "<group>"; };
 		F56AEB6C01F8AA1201780311 /* ShapesIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = ShapesIcon.icns; sourceTree = "<group>"; };
 		F56AEB6D01F8AA1201780311 /* SoundsIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = SoundsIcon.icns; sourceTree = "<group>"; };
-		F5830B4001E776DE01BA387C /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		F5830B4301E77D5701BA387C /* Model3D.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Model3D.cpp; sourceTree = "<group>"; };
 		F5830B4401E77D5701BA387C /* Model3D.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Model3D.h; sourceTree = "<group>"; };
 		F5830B4501E77D5701BA387C /* ModelRenderer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ModelRenderer.cpp; sourceTree = "<group>"; };
@@ -2641,14 +2682,16 @@
 			files = (
 				273FBB4B1E122CA20076351E /* IOKit.framework in Frameworks */,
 				275A7BD51A60DE9B002EE952 /* libcurl.tbd in Frameworks */,
-				AE505CEF141D45E600915344 /* OpenGL.framework in Frameworks */,
 				AE505CF0141D45E600915344 /* Cocoa.framework in Frameworks */,
 				AE505CF9141D45E600915344 /* speex.framework in Frameworks */,
 				AEA85F4E24DF253700BB7827 /* webp.framework in Frameworks */,
 				2748BDCC1CC405090082F0E1 /* SDL2_ttf.framework in Frameworks */,
 				AE505CFB141D45E600915344 /* AudioUnit.framework in Frameworks */,
+				516E530225EB57920073E92A /* QuartzCore.framework in Frameworks */,
 				2762A3391AAA51D900B807D4 /* boost_system.framework in Frameworks */,
+				516E52FE25EB57920073E92A /* MetalKit.framework in Frameworks */,
 				AE505CFC141D45E600915344 /* libz.tbd in Frameworks */,
+				516E52F825EB53810073E92A /* MetalANGLE.framework in Frameworks */,
 				2748BDC61CC405030082F0E1 /* SDL2.framework in Frameworks */,
 				AE505CFD141D45E600915344 /* CoreAudio.framework in Frameworks */,
 				AE505CFE141D45E600915344 /* zziplib.framework in Frameworks */,
@@ -2672,12 +2715,14 @@
 			files = (
 				273FBB4C1E122CA30076351E /* IOKit.framework in Frameworks */,
 				275A7BD61A60DEA3002EE952 /* libcurl.tbd in Frameworks */,
-				AEB4A29114296CAE00537AE7 /* OpenGL.framework in Frameworks */,
 				AEB4A29214296CAE00537AE7 /* Cocoa.framework in Frameworks */,
 				AEB4A29B14296CAE00537AE7 /* speex.framework in Frameworks */,
 				AEA85F5024DF253B00BB7827 /* webp.framework in Frameworks */,
 				2748BDCD1CC405090082F0E1 /* SDL2_ttf.framework in Frameworks */,
+				516E52F925EB53810073E92A /* MetalANGLE.framework in Frameworks */,
+				516E530325EB57920073E92A /* QuartzCore.framework in Frameworks */,
 				AEB4A29D14296CAE00537AE7 /* AudioUnit.framework in Frameworks */,
+				516E52FF25EB57920073E92A /* MetalKit.framework in Frameworks */,
 				2762A33A1AAA51D900B807D4 /* boost_system.framework in Frameworks */,
 				AEB4A29E14296CAE00537AE7 /* libz.tbd in Frameworks */,
 				2748BDC71CC405040082F0E1 /* SDL2.framework in Frameworks */,
@@ -2704,11 +2749,13 @@
 				553AB9F6213A034300EE3861 /* libexpat.tbd in Frameworks */,
 				273FBB491E122C9F0076351E /* IOKit.framework in Frameworks */,
 				275A7BD31A60DE77002EE952 /* libcurl.tbd in Frameworks */,
-				AEC3C87009AD68AC003258E4 /* OpenGL.framework in Frameworks */,
 				27E5DD621BD2DA0C00A95619 /* SDL2.framework in Frameworks */,
 				AEA85F4B24DF251300BB7827 /* webp.framework in Frameworks */,
 				AEC3C87109AD68AC003258E4 /* Cocoa.framework in Frameworks */,
+				516E52F625EB53810073E92A /* MetalANGLE.framework in Frameworks */,
+				516E530025EB57920073E92A /* QuartzCore.framework in Frameworks */,
 				AE23F5640BDAC0E700C11385 /* speex.framework in Frameworks */,
+				516E52FC25EB57920073E92A /* MetalKit.framework in Frameworks */,
 				3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */,
 				2762A3371AAA51D900B807D4 /* boost_system.framework in Frameworks */,
 				3D22CF8D0FD86EBD00B17822 /* libz.tbd in Frameworks */,
@@ -2734,12 +2781,14 @@
 			files = (
 				273FBB4A1E122CA20076351E /* IOKit.framework in Frameworks */,
 				275A7BD41A60DE8C002EE952 /* libcurl.tbd in Frameworks */,
-				AEFD879B13EB84CF00C1E687 /* OpenGL.framework in Frameworks */,
 				AEFD879C13EB84CF00C1E687 /* Cocoa.framework in Frameworks */,
 				AEFD87A513EB84CF00C1E687 /* speex.framework in Frameworks */,
 				AEA85F4C24DF252F00BB7827 /* webp.framework in Frameworks */,
 				2748BDCB1CC405080082F0E1 /* SDL2_ttf.framework in Frameworks */,
+				516E52F725EB53810073E92A /* MetalANGLE.framework in Frameworks */,
+				516E530125EB57920073E92A /* QuartzCore.framework in Frameworks */,
 				AEFD87A713EB84CF00C1E687 /* AudioUnit.framework in Frameworks */,
+				516E52FD25EB57920073E92A /* MetalKit.framework in Frameworks */,
 				2762A3381AAA51D900B807D4 /* boost_system.framework in Frameworks */,
 				AEFD87A813EB84CF00C1E687 /* libz.tbd in Frameworks */,
 				2748BDC51CC405030082F0E1 /* SDL2.framework in Frameworks */,
@@ -2799,6 +2848,7 @@
 				AEA85F5524DF276600BB7827 /* Marathon 2.entitlements */,
 				AEA85F5424DF275300BB7827 /* Marathon.entitlements */,
 				AEA85F5324DF26F800BB7827 /* Aleph One.entitlements */,
+				516E530425EDE9970073E92A /* Shaders */,
 				F52214490136C0C401000001 /* Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				EF2EF5B004819A5C00A8000D /* Frameworks */,
@@ -2834,10 +2884,11 @@
 		29B97323FDCFA39411CA2CEA /* System Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				516E52FA25EB57910073E92A /* MetalKit.framework */,
+				516E52FB25EB57910073E92A /* QuartzCore.framework */,
 				273FBB481E122C9F0076351E /* IOKit.framework */,
 				3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */,
 				3D22CF880FD86EAE00B17822 /* AudioUnit.framework */,
-				F5830B4001E776DE01BA387C /* OpenGL.framework */,
 				F59FB19D01E780DF01BBE912 /* Cocoa.framework */,
 				275A7BD21A60DE77002EE952 /* libcurl.tbd */,
 				553AB9F5213A034300EE3861 /* libexpat.tbd */,
@@ -3024,6 +3075,7 @@
 		EF2EF5B004819A5C00A8000D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				516E52F525EB53810073E92A /* MetalANGLE.framework */,
 				AEA85F4A24DF251300BB7827 /* webp.framework */,
 				27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */,
 				27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */,
@@ -3325,6 +3377,7 @@
 				F5CC92540240D28201A80001 /* effects.cpp */,
 				AE780E142533A4D8002184B5 /* ephemera.cpp */,
 				F5CC92560240D28201A80001 /* flood_map.cpp */,
+				516E52D725EB4CF10073E92A /* interpolated_world.cpp */,
 				F5CC925B0240D28201A80001 /* lightsource.cpp */,
 				F5CC92590240D28201A80001 /* items.cpp */,
 				F5CC925D0240D28201A80001 /* map.cpp */,
@@ -3366,6 +3419,7 @@
 				F5CC92550240D28201A80001 /* effects.h */,
 				AE780E192533A4E9002184B5 /* ephemera.h */,
 				F5CC92570240D28201A80001 /* flood_map.h */,
+				516E52DC25EB4D100073E92A /* interpolated_world.h */,
 				F5CC92580240D28201A80001 /* item_definitions.h */,
 				F5CC925A0240D28201A80001 /* items.h */,
 				F5CC925C0240D28201A80001 /* lightsource.h */,
@@ -3438,6 +3492,7 @@
 				F5CC936B0240D5E001A80001 /* Headers */,
 				F5CC936D0240D75B01A80001 /* SDL */,
 				F5CC92E40240D56101A80001 /* AnimatedTextures.cpp */,
+				516E52EB25EB53250073E92A /* MatrixStack.cpp */,
 				F5CC92EE0240D56101A80001 /* OGL_Faders.cpp */,
 				3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */,
 				F5CC92F00240D56101A80001 /* OGL_Render.cpp */,
@@ -3468,6 +3523,7 @@
 				F5CC92E80240D56101A80001 /* Crosshairs.h */,
 				F5CC92EA0240D56101A80001 /* ImageLoader.h */,
 				F5CC92ED0240D56101A80001 /* low_level_textures.h */,
+				516E52F025EB53330073E92A /* MatrixStack.hpp */,
 				F5CC92EF0240D56101A80001 /* OGL_Faders.h */,
 				3DF290E6046F5BA900000104 /* OGL_Model_Def.h */,
 				3DF290E8046F5BED00000104 /* OGL_Subst_Texture_Def.h */,
@@ -3522,6 +3578,7 @@
 				F5CC93920240D85D01A80001 /* HUDRenderer_OGL.cpp */,
 				F5CC93930240D85D01A80001 /* HUDRenderer_SW.cpp */,
 				F5CC93940240D85D01A80001 /* images.cpp */,
+				516E52E125EB52ED0073E92A /* MetalHelper.mm */,
 				F5CC93950240D85D01A80001 /* motion_sensor.cpp */,
 				AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */,
 				AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */,
@@ -3553,6 +3610,7 @@
 				F5CC93760240D85D01A80001 /* HUDRenderer_OGL.h */,
 				F5CC93770240D85D01A80001 /* HUDRenderer_SW.h */,
 				F5CC93780240D85D01A80001 /* images.h */,
+				516E52E625EB52FA0073E92A /* MetalHelper.h */,
 				F5CC93790240D85D01A80001 /* motion_sensor.h */,
 				F5CC937A0240D85D01A80001 /* overhead_map.h */,
 				F5CC937B0240D85D01A80001 /* OverheadMap_OGL.h */,
@@ -3761,7 +3819,9 @@
 				AE505B84141D45E600915344 /* platform_definitions.h in Headers */,
 				27A6DAD31B9CE9A5003DA766 /* mytm.h in Headers */,
 				276BED0A1A846FD900AE52F4 /* CourierPrime.h in Headers */,
+				516E52F325EB53330073E92A /* MatrixStack.hpp in Headers */,
 				27FF265C1B6F169200DA0A19 /* InfoTree.h in Headers */,
+				516E52DF25EB4D100073E92A /* interpolated_world.h in Headers */,
 				AE505B85141D45E600915344 /* platforms.h in Headers */,
 				AE505B86141D45E600915344 /* player.h in Headers */,
 				AE505B87141D45E600915344 /* projectile_definitions.h in Headers */,
@@ -3848,6 +3908,7 @@
 				AE505BD5141D45E600915344 /* network_audio_shared.h in Headers */,
 				AE505BD6141D45E600915344 /* network_data_formats.h in Headers */,
 				27EFC4BA1A7C935500A95592 /* QuickSave.h in Headers */,
+				516E52E925EB52FA0073E92A /* MetalHelper.h in Headers */,
 				AE505BD7141D45E600915344 /* network_speex.h in Headers */,
 				AE505BD8141D45E600915344 /* SDL_netx.h in Headers */,
 				AE505BD9141D45E600915344 /* SSLP_API.h in Headers */,
@@ -3982,7 +4043,9 @@
 				AEB4A12414296CAE00537AE7 /* platform_definitions.h in Headers */,
 				27A6DAD41B9CE9A6003DA766 /* mytm.h in Headers */,
 				276BED0B1A846FD900AE52F4 /* CourierPrime.h in Headers */,
+				516E52F425EB53330073E92A /* MatrixStack.hpp in Headers */,
 				27FF265D1B6F169200DA0A19 /* InfoTree.h in Headers */,
+				516E52E025EB4D100073E92A /* interpolated_world.h in Headers */,
 				AEB4A12514296CAE00537AE7 /* platforms.h in Headers */,
 				AEB4A12614296CAE00537AE7 /* player.h in Headers */,
 				AEB4A12714296CAE00537AE7 /* projectile_definitions.h in Headers */,
@@ -4069,6 +4132,7 @@
 				AEB4A17514296CAE00537AE7 /* network_audio_shared.h in Headers */,
 				AEB4A17614296CAE00537AE7 /* network_data_formats.h in Headers */,
 				27EFC4BB1A7C935600A95592 /* QuickSave.h in Headers */,
+				516E52EA25EB52FA0073E92A /* MetalHelper.h in Headers */,
 				AEB4A17714296CAE00537AE7 /* network_speex.h in Headers */,
 				AEB4A17814296CAE00537AE7 /* SDL_netx.h in Headers */,
 				AEB4A17914296CAE00537AE7 /* SSLP_API.h in Headers */,
@@ -4203,7 +4267,9 @@
 				AEC3C75509AD68AC003258E4 /* physics_models.h in Headers */,
 				27A6DAD11B9CE9A4003DA766 /* mytm.h in Headers */,
 				AEC3C75609AD68AC003258E4 /* platform_definitions.h in Headers */,
+				516E52F125EB53330073E92A /* MatrixStack.hpp in Headers */,
 				AEC3C75709AD68AC003258E4 /* platforms.h in Headers */,
+				516E52DD25EB4D100073E92A /* interpolated_world.h in Headers */,
 				AEC3C75809AD68AC003258E4 /* player.h in Headers */,
 				AEC3C75909AD68AC003258E4 /* projectile_definitions.h in Headers */,
 				27A6DB481B9CED02003DA766 /* config.h in Headers */,
@@ -4290,6 +4356,7 @@
 				AEC3C7AE09AD68AC003258E4 /* thread_priority_sdl.h in Headers */,
 				AEC3C7AF09AD68AC003258E4 /* network_audio_shared.h in Headers */,
 				AEC3C7B009AD68AC003258E4 /* network_data_formats.h in Headers */,
+				516E52E725EB52FA0073E92A /* MetalHelper.h in Headers */,
 				AEC3C7B109AD68AC003258E4 /* network_speex.h in Headers */,
 				276BED311A8470A900AE52F4 /* PlayerImage_sdl.h in Headers */,
 				276BECF01A846BC500AE52F4 /* ReplacementSounds.h in Headers */,
@@ -4424,7 +4491,9 @@
 				AEFD863213EB84CF00C1E687 /* platform_definitions.h in Headers */,
 				27A6DAD21B9CE9A5003DA766 /* mytm.h in Headers */,
 				276BED091A846FD900AE52F4 /* CourierPrime.h in Headers */,
+				516E52F225EB53330073E92A /* MatrixStack.hpp in Headers */,
 				27FF265B1B6F169200DA0A19 /* InfoTree.h in Headers */,
+				516E52DE25EB4D100073E92A /* interpolated_world.h in Headers */,
 				AEFD863313EB84CF00C1E687 /* platforms.h in Headers */,
 				AEFD863413EB84CF00C1E687 /* player.h in Headers */,
 				AEFD863513EB84CF00C1E687 /* projectile_definitions.h in Headers */,
@@ -4511,6 +4580,7 @@
 				AEFD868313EB84CF00C1E687 /* network_audio_shared.h in Headers */,
 				AEFD868413EB84CF00C1E687 /* network_data_formats.h in Headers */,
 				27EFC4B91A7C935500A95592 /* QuickSave.h in Headers */,
+				516E52E825EB52FA0073E92A /* MetalHelper.h in Headers */,
 				AEFD868513EB84CF00C1E687 /* network_speex.h in Headers */,
 				AEFD868613EB84CF00C1E687 /* SDL_netx.h in Headers */,
 				AEFD868713EB84CF00C1E687 /* SSLP_API.h in Headers */,
@@ -5004,6 +5074,7 @@
 				AE505C2F141D45E600915344 /* SSLP_limited.cpp in Sources */,
 				AE505C30141D45E600915344 /* network_dialogs.cpp in Sources */,
 				AE505C31141D45E600915344 /* Dim3_Loader.cpp in Sources */,
+				516E52E425EB52ED0073E92A /* MetalHelper.mm in Sources */,
 				AE505C32141D45E600915344 /* preferences_widgets_sdl.cpp in Sources */,
 				AE505C33141D45E600915344 /* ActionQueues.cpp in Sources */,
 				AE505C34141D45E600915344 /* network_speaker_sdl.cpp in Sources */,
@@ -5040,6 +5111,7 @@
 				AE505C52141D45E600915344 /* weapons.cpp in Sources */,
 				AE505C53141D45E600915344 /* world.cpp in Sources */,
 				AE505C54141D45E600915344 /* mouse_sdl.cpp in Sources */,
+				516E52DA25EB4CF10073E92A /* interpolated_world.cpp in Sources */,
 				AE505C55141D45E600915344 /* AnimatedTextures.cpp in Sources */,
 				AE505C56141D45E600915344 /* Crosshairs_SDL.cpp in Sources */,
 				AE505C57141D45E600915344 /* ImageLoader_SDL.cpp in Sources */,
@@ -5188,6 +5260,7 @@
 				AE505CE6141D45E600915344 /* Rasterizer_Shader.cpp in Sources */,
 				AE505CE7141D45E600915344 /* RenderRasterize_Shader.cpp in Sources */,
 				AE505CE8141D45E600915344 /* SDL_rwops_zzip.c in Sources */,
+				516E52EE25EB53250073E92A /* MatrixStack.cpp in Sources */,
 				AE505CE9141D45E600915344 /* IMG_savepng.c in Sources */,
 				AE505CEA141D45E600915344 /* csalerts.mm in Sources */,
 				2710CC631B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */,
@@ -5238,6 +5311,7 @@
 				AEB4A1D014296CAE00537AE7 /* SSLP_limited.cpp in Sources */,
 				AEB4A1D114296CAE00537AE7 /* network_dialogs.cpp in Sources */,
 				AEB4A1D214296CAE00537AE7 /* Dim3_Loader.cpp in Sources */,
+				516E52E525EB52ED0073E92A /* MetalHelper.mm in Sources */,
 				AEB4A1D314296CAE00537AE7 /* preferences_widgets_sdl.cpp in Sources */,
 				AEB4A1D414296CAE00537AE7 /* ActionQueues.cpp in Sources */,
 				AEB4A1D514296CAE00537AE7 /* network_speaker_sdl.cpp in Sources */,
@@ -5274,6 +5348,7 @@
 				AEB4A1F314296CAE00537AE7 /* weapons.cpp in Sources */,
 				AEB4A1F414296CAE00537AE7 /* world.cpp in Sources */,
 				AEB4A1F514296CAE00537AE7 /* mouse_sdl.cpp in Sources */,
+				516E52DB25EB4CF10073E92A /* interpolated_world.cpp in Sources */,
 				AEB4A1F614296CAE00537AE7 /* AnimatedTextures.cpp in Sources */,
 				AEB4A1F714296CAE00537AE7 /* Crosshairs_SDL.cpp in Sources */,
 				AEB4A1F814296CAE00537AE7 /* ImageLoader_SDL.cpp in Sources */,
@@ -5422,6 +5497,7 @@
 				AEB4A28714296CAE00537AE7 /* Rasterizer_Shader.cpp in Sources */,
 				AEB4A28814296CAE00537AE7 /* RenderRasterize_Shader.cpp in Sources */,
 				AEB4A28914296CAE00537AE7 /* SDL_rwops_zzip.c in Sources */,
+				516E52EF25EB53250073E92A /* MatrixStack.cpp in Sources */,
 				AEB4A28A14296CAE00537AE7 /* IMG_savepng.c in Sources */,
 				AEB4A28B14296CAE00537AE7 /* csalerts.mm in Sources */,
 				2710CC641B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */,
@@ -5472,6 +5548,7 @@
 				AEC3C7F509AD68AC003258E4 /* SDL_netx.cpp in Sources */,
 				AEC3C7F609AD68AC003258E4 /* SSLP_limited.cpp in Sources */,
 				AEC3C7F709AD68AC003258E4 /* network_dialogs.cpp in Sources */,
+				516E52E225EB52ED0073E92A /* MetalHelper.mm in Sources */,
 				AEC3C7F809AD68AC003258E4 /* Dim3_Loader.cpp in Sources */,
 				AEC3C7FB09AD68AC003258E4 /* preferences_widgets_sdl.cpp in Sources */,
 				AEC3C7FC09AD68AC003258E4 /* ActionQueues.cpp in Sources */,
@@ -5508,6 +5585,7 @@
 				AEC3C81C09AD68AC003258E4 /* weapons.cpp in Sources */,
 				AEC3C81D09AD68AC003258E4 /* world.cpp in Sources */,
 				AEC3C81E09AD68AC003258E4 /* mouse_sdl.cpp in Sources */,
+				516E52D825EB4CF10073E92A /* interpolated_world.cpp in Sources */,
 				AEC3C81F09AD68AC003258E4 /* AnimatedTextures.cpp in Sources */,
 				AEC3C82009AD68AC003258E4 /* Crosshairs_SDL.cpp in Sources */,
 				AEC3C82109AD68AC003258E4 /* ImageLoader_SDL.cpp in Sources */,
@@ -5656,6 +5734,7 @@
 				277AB6C2109CE2570003402A /* RenderRasterize_Shader.cpp in Sources */,
 				2759F31B10D5BC9C000204DD /* SDL_rwops_zzip.c in Sources */,
 				AEF1AC1610E05835007EE0D5 /* IMG_savepng.c in Sources */,
+				516E52EC25EB53250073E92A /* MatrixStack.cpp in Sources */,
 				AEA31D2C113C9DF700266621 /* csalerts.mm in Sources */,
 				276589F8119DF1DD0096F75B /* lua_saved_objects.cpp in Sources */,
 				2710CC611B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */,
@@ -5706,6 +5785,7 @@
 				AEFD86DC13EB84CF00C1E687 /* SSLP_limited.cpp in Sources */,
 				AEFD86DD13EB84CF00C1E687 /* network_dialogs.cpp in Sources */,
 				AEFD86DE13EB84CF00C1E687 /* Dim3_Loader.cpp in Sources */,
+				516E52E325EB52ED0073E92A /* MetalHelper.mm in Sources */,
 				AEFD86DF13EB84CF00C1E687 /* preferences_widgets_sdl.cpp in Sources */,
 				AEFD86E013EB84CF00C1E687 /* ActionQueues.cpp in Sources */,
 				AEFD86E113EB84CF00C1E687 /* network_speaker_sdl.cpp in Sources */,
@@ -5742,6 +5822,7 @@
 				AEFD86FF13EB84CF00C1E687 /* weapons.cpp in Sources */,
 				AEFD870013EB84CF00C1E687 /* world.cpp in Sources */,
 				AEFD870113EB84CF00C1E687 /* mouse_sdl.cpp in Sources */,
+				516E52D925EB4CF10073E92A /* interpolated_world.cpp in Sources */,
 				AEFD870213EB84CF00C1E687 /* AnimatedTextures.cpp in Sources */,
 				AEFD870313EB84CF00C1E687 /* Crosshairs_SDL.cpp in Sources */,
 				AEFD870413EB84CF00C1E687 /* ImageLoader_SDL.cpp in Sources */,
@@ -5890,6 +5971,7 @@
 				AEFD879313EB84CF00C1E687 /* Rasterizer_Shader.cpp in Sources */,
 				AEFD879413EB84CF00C1E687 /* RenderRasterize_Shader.cpp in Sources */,
 				AEFD879513EB84CF00C1E687 /* SDL_rwops_zzip.c in Sources */,
+				516E52ED25EB53250073E92A /* MatrixStack.cpp in Sources */,
 				AEFD879613EB84CF00C1E687 /* IMG_savepng.c in Sources */,
 				AEFD879713EB84CF00C1E687 /* csalerts.mm in Sources */,
 				2710CC621B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */,
@@ -5947,7 +6029,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Aleph One.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = E8K89CXZE7;
+				DEVELOPMENT_TEAM = TZ45ZW2588;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
@@ -6079,7 +6161,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Aleph One.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = E8K89CXZE7;
+				DEVELOPMENT_TEAM = TZ45ZW2588;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
@@ -6210,7 +6292,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = E8K89CXZE7;
+				DEVELOPMENT_TEAM = TZ45ZW2588;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -6219,6 +6301,37 @@
 					HAVE_BUNDLE_NAME,
 					HAVE_CONFIG_H,
 					SPEEX,
+				);
+				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/SDL2.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_net.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_image.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_ttf.framework/Headers",
+					"$(HOME)/Library/Frameworks/speex.framework/Headers",
+					"$(HOME)/Library/Frameworks/speexdsp.framework/Headers",
+					"$(HOME)/Library/Frameworks/png.framework/Headers",
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
+					/Library/Frameworks/SDL2.framework/Headers,
+					/Library/Frameworks/SDL2_image.framework/Headers,
+					/Library/Frameworks/SDL2_net.framework/Headers,
+					/Library/Frameworks/SDL2_ttf.framework/Headers,
+					/Library/Frameworks/speex.framework/Headers,
+					/Library/Frameworks/speexdsp.framework/Headers,
+					/Library/Frameworks/png.framework/Headers,
+					/Library/Frameworks/zziplib.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/boost.framework/Headers,
+					"\"$(SRCROOT)/../Source_Files/GLM\"",
+					/Library/Frameworks/MetalANGLE.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -6238,7 +6351,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = E8K89CXZE7;
+				DEVELOPMENT_TEAM = TZ45ZW2588;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -6247,6 +6360,37 @@
 					HAVE_BUNDLE_NAME,
 					HAVE_CONFIG_H,
 					SPEEX,
+				);
+				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/SDL2.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_net.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_image.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_ttf.framework/Headers",
+					"$(HOME)/Library/Frameworks/speex.framework/Headers",
+					"$(HOME)/Library/Frameworks/speexdsp.framework/Headers",
+					"$(HOME)/Library/Frameworks/png.framework/Headers",
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
+					/Library/Frameworks/SDL2.framework/Headers,
+					/Library/Frameworks/SDL2_image.framework/Headers,
+					/Library/Frameworks/SDL2_net.framework/Headers,
+					/Library/Frameworks/SDL2_ttf.framework/Headers,
+					/Library/Frameworks/speex.framework/Headers,
+					/Library/Frameworks/speexdsp.framework/Headers,
+					/Library/Frameworks/png.framework/Headers,
+					/Library/Frameworks/zziplib.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/boost.framework/Headers,
+					"\"$(SRCROOT)/../Source_Files/GLM\"",
+					/Library/Frameworks/MetalANGLE.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -6266,7 +6410,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = E8K89CXZE7;
+				DEVELOPMENT_TEAM = TZ45ZW2588;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -6275,6 +6419,37 @@
 					HAVE_BUNDLE_NAME,
 					HAVE_CONFIG_H,
 					SPEEX,
+				);
+				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/SDL2.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_net.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_image.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_ttf.framework/Headers",
+					"$(HOME)/Library/Frameworks/speex.framework/Headers",
+					"$(HOME)/Library/Frameworks/speexdsp.framework/Headers",
+					"$(HOME)/Library/Frameworks/png.framework/Headers",
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
+					/Library/Frameworks/SDL2.framework/Headers,
+					/Library/Frameworks/SDL2_image.framework/Headers,
+					/Library/Frameworks/SDL2_net.framework/Headers,
+					/Library/Frameworks/SDL2_ttf.framework/Headers,
+					/Library/Frameworks/speex.framework/Headers,
+					/Library/Frameworks/speexdsp.framework/Headers,
+					/Library/Frameworks/png.framework/Headers,
+					/Library/Frameworks/zziplib.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/boost.framework/Headers,
+					"\"$(SRCROOT)/../Source_Files/GLM\"",
+					/Library/Frameworks/MetalANGLE.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -6294,7 +6469,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Aleph One.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = E8K89CXZE7;
+				DEVELOPMENT_TEAM = TZ45ZW2588;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,

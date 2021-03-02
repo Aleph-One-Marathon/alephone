@@ -383,10 +383,15 @@ bool FileSpecifier::Create(Typecode Type)
 // Create directory
 bool FileSpecifier::CreateDirectory()
 {
-	sys::error_code ec;
-	const bool created_dir = fs::create_directory(utf8_to_path(name), ec);
-	err = ec.value() == 0 ? (created_dir ? 0 : EEXIST) : to_posix_code_or_unknown(ec);
-	return err == 0;
+    //DCW please don't commit this function! I was having problems with boost, and needed to temporarily revert to e358e3dad3bcb52cec223482f83e1c16aafdeb74
+    err = 0;
+#if defined(__WIN32__)
+    if (mkdir(GetPath()) < 0)
+#else
+    if (mkdir(GetPath(), 0777) < 0)
+#endif
+        err = errno;
+    return err == 0;
 }
 
 #ifdef HAVE_ZZIP
