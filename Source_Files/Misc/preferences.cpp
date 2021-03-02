@@ -3322,6 +3322,7 @@ InfoTree graphics_preferences_tree()
 	root.put_attr("scmode_camera_bob", graphics_preferences->screen_mode.camera_bob);
 	root.put_attr("scmode_accel", graphics_preferences->screen_mode.acceleration);
 	root.put_attr("scmode_highres", graphics_preferences->screen_mode.high_resolution);
+	root.put_attr("scmode_draw_every_other_line", graphics_preferences->screen_mode.draw_every_other_line);
 	root.put_attr("scmode_fullscreen", graphics_preferences->screen_mode.fullscreen);
 	root.put_attr("scmode_bitdepth", graphics_preferences->screen_mode.bit_depth);
 	root.put_attr("scmode_gamma", graphics_preferences->screen_mode.gamma_level);
@@ -4246,6 +4247,7 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr("scmode_camera_bob", graphics_preferences->screen_mode.camera_bob);
 	root.read_attr("scmode_accel", graphics_preferences->screen_mode.acceleration);
 	root.read_attr("scmode_highres", graphics_preferences->screen_mode.high_resolution);
+	root.read_attr("scmode_draw_every_other_line", graphics_preferences->screen_mode.draw_every_other_line);
 	root.read_attr("scmode_fullscreen", graphics_preferences->screen_mode.fullscreen);
 	
 	root.read_attr("scmode_fix_h_not_v", graphics_preferences->screen_mode.fix_h_not_v);
