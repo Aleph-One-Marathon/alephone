@@ -137,7 +137,7 @@ static void build_sdl_color_table(const color_table *color_table, SDL_Color *col
 static void reallocate_world_pixels(int width, int height);
 static void reallocate_map_pixels(int width, int height);
 static void apply_gamma(SDL_Surface *src, SDL_Surface *dst);
-static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez);
+static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez, bool every_other_line);
 static void update_fps_display(SDL_Surface *s);
 static void DisplayPosition(SDL_Surface *s);
 static void DisplayMessages(SDL_Surface *s);
@@ -1354,6 +1354,13 @@ void render_screen(short ticks_elapsed)
 		PrevDepth = mode->bit_depth;
 	}
 
+	static bool PrevDrawEveryOtherLine = false;
+	bool DrawEveryOtherLine = mode->draw_every_other_line;
+	if (PrevDrawEveryOtherLine != DrawEveryOtherLine) {
+		ViewChangedSize = true;
+		PrevDrawEveryOtherLine = DrawEveryOtherLine;
+	}
+
 	SDL_Rect BufferRect = {0, 0, ViewRect.w, ViewRect.h};
 	// Now the buffer rectangle; be sure to shrink it as appropriate
 	if (!HighResolution && screen_mode.acceleration == _no_acceleration) {
@@ -1370,6 +1377,7 @@ void render_screen(short ticks_elapsed)
 	bool update_full_screen = false;
 	if (ViewChangedSize || MapChangedSize || SwitchedModes) {
 		clear_screen_margin();
+		clear_screen();
 		update_full_screen = true;
 		if (Screen::instance()->hud() && !Screen::instance()->lua_hud())
 			draw_interface();
@@ -1491,7 +1499,7 @@ void render_screen(short ticks_elapsed)
 		// Update world window
 		if (!world_view->terminal_mode_active &&
 			(!world_view->overhead_map_active || MapIsTranslucent))
-			update_screen(BufferRect, ViewRect, HighResolution);
+			update_screen(BufferRect, ViewRect, HighResolution, DrawEveryOtherLine);
 		
 		// Update map
 		if (world_view->overhead_map_active) {
@@ -1544,19 +1552,44 @@ void render_screen(short ticks_elapsed)
  */
 
 template <class T>
-static inline void quadruple_surface(const T *src, int src_pitch, T *dst, int dst_pitch, const SDL_Rect &dst_rect)
+static inline void quadruple_surface(
+	const T *src,
+	int src_pitch,
+	T *dst, int dst_pitch,
+	const SDL_Rect &dst_rect,
+	bool every_other_line)
 {
 	int width = dst_rect.w / 2;
 	int height = dst_rect.h / 2;
 	dst += dst_rect.y * dst_pitch / sizeof(T) + dst_rect.x;
 	T *dst2 = dst + dst_pitch / sizeof(T);
 
+	uint32 black_pixel = SDL_MapRGB(main_surface->format, 0, 0, 0);
+	bool overlay_active = world_view->overhead_map_active
+		&& map_is_translucent();
+	
 	while (height-- > 0) {
-		for (int x=0; x<width; x++) {
-			T p = src[x];
-			dst[x * 2] = dst[x * 2 + 1] = p;
-			dst2[x * 2] = dst2[x * 2 + 1] = p;
+		if (every_other_line) {
+			if (overlay_active) {
+				// overlay map needs us to clear all the scanlines, so we have
+				// to put black in the "skipped" lines
+				for (int x=0; x<width; x++) {
+					dst[x * 2] = dst[x * 2 + 1] = src[x];
+					dst2[x * 2] = dst2[x * 2 + 1] = black_pixel;
+				}
+			} else {
+				for (int x=0; x<width; x++) {
+					dst[x * 2] = dst[x * 2 + 1] = src[x];
+				}
+			}
+		} else {
+			for (int x=0; x<width; x++) {
+				T p = src[x];
+				dst[x * 2] = dst[x * 2 + 1] = p;
+				dst2[x * 2] = dst2[x * 2 + 1] = p;
+			}
 		}
+
 		src += src_pitch / sizeof(T);
 		dst += dst_pitch * 2 / sizeof(T);
 		dst2 += dst_pitch * 2 / sizeof(T);
@@ -1629,7 +1662,7 @@ static inline bool pixel_formats_equal(SDL_PixelFormat* a, SDL_PixelFormat* b)
 		a->Bmask == b->Bmask);
 }
 
-static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
+static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez, bool every_other_line)
 {
 	SDL_Surface *s = world_pixels;
 	if (!using_default_gamma && bit_depth > 8) {
@@ -1658,13 +1691,13 @@ static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 		switch (s->format->BytesPerPixel) 
 		{
 		case 1:
-			quadruple_surface((pixel8 *)s->pixels, s->pitch, (pixel8 *)main_surface->pixels, main_surface->pitch, destination);
+			quadruple_surface((pixel8 *)s->pixels, s->pitch, (pixel8 *)main_surface->pixels, main_surface->pitch, destination, every_other_line);
 			break;
 		case 2:
-			quadruple_surface((pixel16 *)s->pixels, s->pitch, (pixel16 *)main_surface->pixels, main_surface->pitch, destination);
+			quadruple_surface((pixel16 *)s->pixels, s->pitch, (pixel16 *)main_surface->pixels, main_surface->pitch, destination, every_other_line);
 			break;
 		case 4:
-			quadruple_surface((pixel32 *)s->pixels, s->pitch, (pixel32 *)main_surface->pixels, main_surface->pitch, destination);
+			quadruple_surface((pixel32 *)s->pixels, s->pitch, (pixel32 *)main_surface->pixels, main_surface->pitch, destination, every_other_line);
 			break;
 		}
 		
