@@ -402,7 +402,7 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
         MSI()->scalef(scale, scale, 1.0);
 		MSI()->color4f(r, g, b, a);
 		font->OGL_Render(text);
-		glColor4f(1, 1, 1, 1);
+		MSI()->color4f(1, 1, 1, 1);
 		MSI()->popMatrix();
 	}
 	else

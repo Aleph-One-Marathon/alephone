@@ -39,7 +39,7 @@
 #include "OGL_Blitter.h"
 #include "OGL_Faders.h"
 #include "MatrixStack.hpp"
-#include "MetalHelper.h"
+#include "AnglePlatform.h"
 #endif
 
 #include "world.h"
@@ -748,7 +748,8 @@ static bool need_mode_change(int window_width, int window_height,
 	bool wantgl = false;
 	bool hasgl = MainScreenIsOpenGL();
 #ifdef HAVE_OPENGL
-	wantgl = !nogl && (screen_mode.acceleration != _no_acceleration);
+        //Just for testing ANGLE
+/*	wantgl = !nogl && (screen_mode.acceleration != _no_acceleration);
 	if (wantgl != hasgl)
 		return true;
 	if (wantgl) {
@@ -765,7 +766,7 @@ static bool need_mode_change(int window_width, int window_height,
 		int has_vsync = SDL_GL_GetSwapInterval();
 		if ((has_vsync == 0) != (want_vsync == 0))
 			SDL_GL_SetSwapInterval(want_vsync);
-	}
+	}*/
 #endif
 		
 	// are we switching to/from fullscreen?
@@ -881,7 +882,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	
 	if (need_mode_change(sdl_width, sdl_height, vmode_width, vmode_height, depth, nogl)) {
 #ifdef HAVE_OPENGL
-	if (!nogl && screen_mode.acceleration != _no_acceleration) {
+           //Just for testing ANGLE
+/*	if (!nogl && screen_mode.acceleration != _no_acceleration) {
 		passed_shader = false;
 		flags |= SDL_WINDOW_OPENGL;
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -898,7 +900,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 		}
 		SDL_GL_SetSwapInterval(Get_OGL_ConfigureData().WaitForVSync ? 1 : 0);
-	}
+	}*/
 #endif 
 
 		
@@ -928,6 +930,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 
 #ifdef HAVE_OPENGL
 	bool context_created = false;
+    
+    //Not applicable for ANGLE
+    /*
 	if (main_screen == NULL && !nogl && screen_mode.acceleration != _no_acceleration && Get_OGL_ConfigureData().Multisamples > 0) {
 		// retry with multisampling off
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
@@ -939,7 +944,16 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 									   flags);
 		if (main_screen)
 			failed_multisamples = Get_OGL_ConfigureData().Multisamples;
-	}
+	}*/
+        
+        void* layer = injectAngle(main_screen);
+        
+        if(layer) {
+            context_created = TRUE;
+        } else {
+            fprintf(stderr, "WARNING: Failed to inject ANGLE layer\n");
+        }
+        
 #endif
 	if (main_screen == NULL && !nogl && screen_mode.acceleration != _no_acceleration) {
 		fprintf(stderr, "WARNING: Failed to initialize OpenGL with 24 bit depth\n");
@@ -964,7 +978,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 #ifdef __WIN32__
 		glewInit();
 #endif
-		if (!OGL_CheckExtension("GL_ARB_vertex_shader") || !OGL_CheckExtension("GL_ARB_fragment_shader") || !OGL_CheckExtension("GL_ARB_shader_objects") || !OGL_CheckExtension("GL_ARB_shading_language_100"))
+        //Just for testing ANGLE
+		/*if (!OGL_CheckExtension("GL_ARB_vertex_shader") || !OGL_CheckExtension("GL_ARB_fragment_shader") || !OGL_CheckExtension("GL_ARB_shader_objects") || !OGL_CheckExtension("GL_ARB_shading_language_100"))
 		{
 			logWarning("OpenGL (Shader) renderer is not available");
 			fprintf(stderr, "WARNING: Failed to initialize OpenGL renderer\n");
@@ -977,9 +992,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 										   flags);
 		}
 		else
-		{
+		{*/
 			passed_shader = true;
-		}
+		//}
 	}
 //#endif
 
@@ -1920,7 +1935,7 @@ void darken_world_window(void)
 
 		// Draw 50% black rectangle
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glColor4f(0.0, 0.0, 0.0, 0.5);
+		MSI()->color4f(0.0, 0.0, 0.0, 0.5);
 		OGL_RenderRect(r);
 
 		// Restore projection and state
@@ -2182,7 +2197,8 @@ bool MainScreenIsOpenGL()
 }
 void MainScreenSwap()
 {
-	SDL_GL_SwapWindow(main_screen);
+    swapWindowAngle(main_screen);
+	//SDL_GL_SwapWindow(main_screen);
 }
 void MainScreenCenterMouse()
 {

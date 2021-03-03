@@ -27,6 +27,7 @@
 
 #include "OGL_Setup.h"
 #include "OGL_Render.h"
+#include "OGL_Shader.h"
 
 std::vector<FBO *> FBO::active_chain;
 
@@ -122,10 +123,27 @@ void FBO::deactivate() {
 }
 
 void FBO::draw() {
-	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
+	/*glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
 	glEnable(GL_TEXTURE_RECTANGLE_ARB);
 	OGL_RenderTexturedRect(0, 0, _w, _h, 0, _h, _w, 0);
-	glDisable(GL_TEXTURE_RECTANGLE_ARB);
+	glDisable(GL_TEXTURE_RECTANGLE_ARB);*/
+    
+    
+    glBindTexture(GL_TEXTURE_2D, texID);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+      //DCW if there is a shader already active, draw the quad using that. Otherwise, draw with the default shader.
+    if (lastEnabledShader()) {
+      //DCW ack! This might never get called! Maybe for bloom?
+      //DrawQuadWithActiveShader(0, 0, _w, _h, 0, _h, _w, 0);
+       assert(1); //If we hit this, we need to implement DrawQuadWithActiveShader
+    } else {
+      OGL_RenderTexturedRect(0, 0, _w, _h, 0, 1.0, 1.0, 0); //DCW; uses normalized texture coordinates
+    }
 }
 
 void FBO::prepare_drawing_mode(bool blend) {

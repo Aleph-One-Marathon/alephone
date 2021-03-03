@@ -367,14 +367,14 @@
 		516E52DE25EB4D100073E92A /* interpolated_world.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52DC25EB4D100073E92A /* interpolated_world.h */; };
 		516E52DF25EB4D100073E92A /* interpolated_world.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52DC25EB4D100073E92A /* interpolated_world.h */; };
 		516E52E025EB4D100073E92A /* interpolated_world.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52DC25EB4D100073E92A /* interpolated_world.h */; };
-		516E52E225EB52ED0073E92A /* MetalHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 516E52E125EB52ED0073E92A /* MetalHelper.mm */; };
-		516E52E325EB52ED0073E92A /* MetalHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 516E52E125EB52ED0073E92A /* MetalHelper.mm */; };
-		516E52E425EB52ED0073E92A /* MetalHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 516E52E125EB52ED0073E92A /* MetalHelper.mm */; };
-		516E52E525EB52ED0073E92A /* MetalHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 516E52E125EB52ED0073E92A /* MetalHelper.mm */; };
-		516E52E725EB52FA0073E92A /* MetalHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52E625EB52FA0073E92A /* MetalHelper.h */; };
-		516E52E825EB52FA0073E92A /* MetalHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52E625EB52FA0073E92A /* MetalHelper.h */; };
-		516E52E925EB52FA0073E92A /* MetalHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52E625EB52FA0073E92A /* MetalHelper.h */; };
-		516E52EA25EB52FA0073E92A /* MetalHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52E625EB52FA0073E92A /* MetalHelper.h */; };
+		516E52E225EB52ED0073E92A /* MacOSHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 516E52E125EB52ED0073E92A /* MacOSHelper.mm */; };
+		516E52E325EB52ED0073E92A /* MacOSHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 516E52E125EB52ED0073E92A /* MacOSHelper.mm */; };
+		516E52E425EB52ED0073E92A /* MacOSHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 516E52E125EB52ED0073E92A /* MacOSHelper.mm */; };
+		516E52E525EB52ED0073E92A /* MacOSHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 516E52E125EB52ED0073E92A /* MacOSHelper.mm */; };
+		516E52E725EB52FA0073E92A /* MacOSHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52E625EB52FA0073E92A /* MacOSHelper.h */; };
+		516E52E825EB52FA0073E92A /* MacOSHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52E625EB52FA0073E92A /* MacOSHelper.h */; };
+		516E52E925EB52FA0073E92A /* MacOSHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52E625EB52FA0073E92A /* MacOSHelper.h */; };
+		516E52EA25EB52FA0073E92A /* MacOSHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E52E625EB52FA0073E92A /* MacOSHelper.h */; };
 		516E52EC25EB53250073E92A /* MatrixStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 516E52EB25EB53250073E92A /* MatrixStack.cpp */; };
 		516E52ED25EB53250073E92A /* MatrixStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 516E52EB25EB53250073E92A /* MatrixStack.cpp */; };
 		516E52EE25EB53250073E92A /* MatrixStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 516E52EB25EB53250073E92A /* MatrixStack.cpp */; };
@@ -395,6 +395,14 @@
 		516E530125EB57920073E92A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52FB25EB57910073E92A /* QuartzCore.framework */; };
 		516E530225EB57920073E92A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52FB25EB57910073E92A /* QuartzCore.framework */; };
 		516E530325EB57920073E92A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52FB25EB57910073E92A /* QuartzCore.framework */; };
+		516E530725EF2C670073E92A /* AnglePlatform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 516E530525EF2C670073E92A /* AnglePlatform.cpp */; };
+		516E530825EF2C670073E92A /* AnglePlatform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 516E530525EF2C670073E92A /* AnglePlatform.cpp */; };
+		516E530925EF2C670073E92A /* AnglePlatform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 516E530525EF2C670073E92A /* AnglePlatform.cpp */; };
+		516E530A25EF2C670073E92A /* AnglePlatform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 516E530525EF2C670073E92A /* AnglePlatform.cpp */; };
+		516E530B25EF2C670073E92A /* AnglePlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E530625EF2C670073E92A /* AnglePlatform.h */; };
+		516E530C25EF2C670073E92A /* AnglePlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E530625EF2C670073E92A /* AnglePlatform.h */; };
+		516E530D25EF2C670073E92A /* AnglePlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E530625EF2C670073E92A /* AnglePlatform.h */; };
+		516E530E25EF2C670073E92A /* AnglePlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E530625EF2C670073E92A /* AnglePlatform.h */; };
 		553AB9F6213A034300EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
 		553AB9F7213A035000EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
 		553AB9F9213A035000EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
@@ -2240,14 +2248,16 @@
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		516E52D725EB4CF10073E92A /* interpolated_world.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = interpolated_world.cpp; sourceTree = "<group>"; };
 		516E52DC25EB4D100073E92A /* interpolated_world.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = interpolated_world.h; sourceTree = "<group>"; };
-		516E52E125EB52ED0073E92A /* MetalHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MetalHelper.mm; sourceTree = "<group>"; };
-		516E52E625EB52FA0073E92A /* MetalHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MetalHelper.h; sourceTree = "<group>"; };
+		516E52E125EB52ED0073E92A /* MacOSHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MacOSHelper.mm; sourceTree = "<group>"; };
+		516E52E625EB52FA0073E92A /* MacOSHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MacOSHelper.h; sourceTree = "<group>"; };
 		516E52EB25EB53250073E92A /* MatrixStack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MatrixStack.cpp; sourceTree = "<group>"; };
 		516E52F025EB53330073E92A /* MatrixStack.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = MatrixStack.hpp; sourceTree = "<group>"; };
 		516E52F525EB53810073E92A /* MetalANGLE.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MetalANGLE.framework; sourceTree = "<group>"; };
 		516E52FA25EB57910073E92A /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = ../../../../../System/Library/Frameworks/MetalKit.framework; sourceTree = "<group>"; };
 		516E52FB25EB57910073E92A /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = ../../../../../System/Library/Frameworks/QuartzCore.framework; sourceTree = "<group>"; };
 		516E530425EDE9970073E92A /* Shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Shaders; path = ../Source_Files/RenderMain/Shaders; sourceTree = "<group>"; };
+		516E530525EF2C670073E92A /* AnglePlatform.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AnglePlatform.cpp; sourceTree = "<group>"; };
+		516E530625EF2C670073E92A /* AnglePlatform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AnglePlatform.h; sourceTree = "<group>"; };
 		553AB9F5213A034300EE3861 /* libexpat.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libexpat.tbd; path = usr/lib/libexpat.tbd; sourceTree = SDKROOT; };
 		AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Blitter.cpp; sourceTree = "<group>"; };
 		AE005FD30EE2D6DE007FE7C6 /* screen.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = screen.cpp; sourceTree = "<group>"; };
@@ -3578,7 +3588,8 @@
 				F5CC93920240D85D01A80001 /* HUDRenderer_OGL.cpp */,
 				F5CC93930240D85D01A80001 /* HUDRenderer_SW.cpp */,
 				F5CC93940240D85D01A80001 /* images.cpp */,
-				516E52E125EB52ED0073E92A /* MetalHelper.mm */,
+				516E530525EF2C670073E92A /* AnglePlatform.cpp */,
+				516E52E125EB52ED0073E92A /* MacOSHelper.mm */,
 				F5CC93950240D85D01A80001 /* motion_sensor.cpp */,
 				AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */,
 				AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */,
@@ -3610,7 +3621,8 @@
 				F5CC93760240D85D01A80001 /* HUDRenderer_OGL.h */,
 				F5CC93770240D85D01A80001 /* HUDRenderer_SW.h */,
 				F5CC93780240D85D01A80001 /* images.h */,
-				516E52E625EB52FA0073E92A /* MetalHelper.h */,
+				516E530625EF2C670073E92A /* AnglePlatform.h */,
+				516E52E625EB52FA0073E92A /* MacOSHelper.h */,
 				F5CC93790240D85D01A80001 /* motion_sensor.h */,
 				F5CC937A0240D85D01A80001 /* overhead_map.h */,
 				F5CC937B0240D85D01A80001 /* OverheadMap_OGL.h */,
@@ -3746,6 +3758,7 @@
 				AE505B3E141D45E600915344 /* game_errors.h in Headers */,
 				AE505B3F141D45E600915344 /* interface.h in Headers */,
 				AE505B40141D45E600915344 /* interface_menus.h in Headers */,
+				516E530D25EF2C670073E92A /* AnglePlatform.h in Headers */,
 				27A6DB181B9CEA67003DA766 /* Decoder.h in Headers */,
 				AE505B41141D45E600915344 /* key_definitions.h in Headers */,
 				AE505B42141D45E600915344 /* preferences.h in Headers */,
@@ -3908,7 +3921,7 @@
 				AE505BD5141D45E600915344 /* network_audio_shared.h in Headers */,
 				AE505BD6141D45E600915344 /* network_data_formats.h in Headers */,
 				27EFC4BA1A7C935500A95592 /* QuickSave.h in Headers */,
-				516E52E925EB52FA0073E92A /* MetalHelper.h in Headers */,
+				516E52E925EB52FA0073E92A /* MacOSHelper.h in Headers */,
 				AE505BD7141D45E600915344 /* network_speex.h in Headers */,
 				AE505BD8141D45E600915344 /* SDL_netx.h in Headers */,
 				AE505BD9141D45E600915344 /* SSLP_API.h in Headers */,
@@ -3970,6 +3983,7 @@
 				AEB4A0DE14296CAE00537AE7 /* game_errors.h in Headers */,
 				AEB4A0DF14296CAE00537AE7 /* interface.h in Headers */,
 				AEB4A0E014296CAE00537AE7 /* interface_menus.h in Headers */,
+				516E530E25EF2C670073E92A /* AnglePlatform.h in Headers */,
 				27A6DB191B9CEA68003DA766 /* Decoder.h in Headers */,
 				AEB4A0E114296CAE00537AE7 /* key_definitions.h in Headers */,
 				AEB4A0E214296CAE00537AE7 /* preferences.h in Headers */,
@@ -4132,7 +4146,7 @@
 				AEB4A17514296CAE00537AE7 /* network_audio_shared.h in Headers */,
 				AEB4A17614296CAE00537AE7 /* network_data_formats.h in Headers */,
 				27EFC4BB1A7C935600A95592 /* QuickSave.h in Headers */,
-				516E52EA25EB52FA0073E92A /* MetalHelper.h in Headers */,
+				516E52EA25EB52FA0073E92A /* MacOSHelper.h in Headers */,
 				AEB4A17714296CAE00537AE7 /* network_speex.h in Headers */,
 				AEB4A17814296CAE00537AE7 /* SDL_netx.h in Headers */,
 				AEB4A17914296CAE00537AE7 /* SSLP_API.h in Headers */,
@@ -4194,6 +4208,7 @@
 				AEC3C70209AD68AC003258E4 /* Random.h in Headers */,
 				AEC3C70309AD68AC003258E4 /* game_errors.h in Headers */,
 				AEC3C70409AD68AC003258E4 /* interface.h in Headers */,
+				516E530B25EF2C670073E92A /* AnglePlatform.h in Headers */,
 				27A6DB161B9CEA66003DA766 /* Decoder.h in Headers */,
 				AEC3C70509AD68AC003258E4 /* interface_menus.h in Headers */,
 				AEC3C70609AD68AC003258E4 /* key_definitions.h in Headers */,
@@ -4356,7 +4371,7 @@
 				AEC3C7AE09AD68AC003258E4 /* thread_priority_sdl.h in Headers */,
 				AEC3C7AF09AD68AC003258E4 /* network_audio_shared.h in Headers */,
 				AEC3C7B009AD68AC003258E4 /* network_data_formats.h in Headers */,
-				516E52E725EB52FA0073E92A /* MetalHelper.h in Headers */,
+				516E52E725EB52FA0073E92A /* MacOSHelper.h in Headers */,
 				AEC3C7B109AD68AC003258E4 /* network_speex.h in Headers */,
 				276BED311A8470A900AE52F4 /* PlayerImage_sdl.h in Headers */,
 				276BECF01A846BC500AE52F4 /* ReplacementSounds.h in Headers */,
@@ -4418,6 +4433,7 @@
 				AEFD85EC13EB84CF00C1E687 /* game_errors.h in Headers */,
 				AEFD85ED13EB84CF00C1E687 /* interface.h in Headers */,
 				AEFD85EE13EB84CF00C1E687 /* interface_menus.h in Headers */,
+				516E530C25EF2C670073E92A /* AnglePlatform.h in Headers */,
 				27A6DB171B9CEA67003DA766 /* Decoder.h in Headers */,
 				AEFD85EF13EB84CF00C1E687 /* key_definitions.h in Headers */,
 				AEFD85F013EB84CF00C1E687 /* preferences.h in Headers */,
@@ -4580,7 +4596,7 @@
 				AEFD868313EB84CF00C1E687 /* network_audio_shared.h in Headers */,
 				AEFD868413EB84CF00C1E687 /* network_data_formats.h in Headers */,
 				27EFC4B91A7C935500A95592 /* QuickSave.h in Headers */,
-				516E52E825EB52FA0073E92A /* MetalHelper.h in Headers */,
+				516E52E825EB52FA0073E92A /* MacOSHelper.h in Headers */,
 				AEFD868513EB84CF00C1E687 /* network_speex.h in Headers */,
 				AEFD868613EB84CF00C1E687 /* SDL_netx.h in Headers */,
 				AEFD868713EB84CF00C1E687 /* SSLP_API.h in Headers */,
@@ -5074,7 +5090,7 @@
 				AE505C2F141D45E600915344 /* SSLP_limited.cpp in Sources */,
 				AE505C30141D45E600915344 /* network_dialogs.cpp in Sources */,
 				AE505C31141D45E600915344 /* Dim3_Loader.cpp in Sources */,
-				516E52E425EB52ED0073E92A /* MetalHelper.mm in Sources */,
+				516E52E425EB52ED0073E92A /* MacOSHelper.mm in Sources */,
 				AE505C32141D45E600915344 /* preferences_widgets_sdl.cpp in Sources */,
 				AE505C33141D45E600915344 /* ActionQueues.cpp in Sources */,
 				AE505C34141D45E600915344 /* network_speaker_sdl.cpp in Sources */,
@@ -5241,6 +5257,7 @@
 				AE505CD4141D45E600915344 /* Update.cpp in Sources */,
 				AE505CD5141D45E600915344 /* ConnectPool.cpp in Sources */,
 				AE505CD6141D45E600915344 /* lua_player.cpp in Sources */,
+				516E530925EF2C670073E92A /* AnglePlatform.cpp in Sources */,
 				275A7BDA1A60E9C2002EE952 /* HTTP.cpp in Sources */,
 				AE505CD7141D45E600915344 /* lua_map.cpp in Sources */,
 				AE505CD8141D45E600915344 /* lua_monsters.cpp in Sources */,
@@ -5311,7 +5328,7 @@
 				AEB4A1D014296CAE00537AE7 /* SSLP_limited.cpp in Sources */,
 				AEB4A1D114296CAE00537AE7 /* network_dialogs.cpp in Sources */,
 				AEB4A1D214296CAE00537AE7 /* Dim3_Loader.cpp in Sources */,
-				516E52E525EB52ED0073E92A /* MetalHelper.mm in Sources */,
+				516E52E525EB52ED0073E92A /* MacOSHelper.mm in Sources */,
 				AEB4A1D314296CAE00537AE7 /* preferences_widgets_sdl.cpp in Sources */,
 				AEB4A1D414296CAE00537AE7 /* ActionQueues.cpp in Sources */,
 				AEB4A1D514296CAE00537AE7 /* network_speaker_sdl.cpp in Sources */,
@@ -5478,6 +5495,7 @@
 				AEB4A27514296CAE00537AE7 /* Update.cpp in Sources */,
 				AEB4A27614296CAE00537AE7 /* ConnectPool.cpp in Sources */,
 				AEB4A27714296CAE00537AE7 /* lua_player.cpp in Sources */,
+				516E530A25EF2C670073E92A /* AnglePlatform.cpp in Sources */,
 				275A7BDB1A60E9C2002EE952 /* HTTP.cpp in Sources */,
 				AEB4A27814296CAE00537AE7 /* lua_map.cpp in Sources */,
 				AEB4A27914296CAE00537AE7 /* lua_monsters.cpp in Sources */,
@@ -5548,7 +5566,7 @@
 				AEC3C7F509AD68AC003258E4 /* SDL_netx.cpp in Sources */,
 				AEC3C7F609AD68AC003258E4 /* SSLP_limited.cpp in Sources */,
 				AEC3C7F709AD68AC003258E4 /* network_dialogs.cpp in Sources */,
-				516E52E225EB52ED0073E92A /* MetalHelper.mm in Sources */,
+				516E52E225EB52ED0073E92A /* MacOSHelper.mm in Sources */,
 				AEC3C7F809AD68AC003258E4 /* Dim3_Loader.cpp in Sources */,
 				AEC3C7FB09AD68AC003258E4 /* preferences_widgets_sdl.cpp in Sources */,
 				AEC3C7FC09AD68AC003258E4 /* ActionQueues.cpp in Sources */,
@@ -5715,6 +5733,7 @@
 				AE7C21D60BFF688000CE63EC /* Update.cpp in Sources */,
 				AE9A39F70CCADFA7004717E3 /* ConnectPool.cpp in Sources */,
 				AE69B5DD0D404F0400C42C11 /* lua_player.cpp in Sources */,
+				516E530725EF2C670073E92A /* AnglePlatform.cpp in Sources */,
 				AE5154600D46E84A00506B58 /* lua_map.cpp in Sources */,
 				AEDCB5CD0D4ADB86004CB40E /* lua_monsters.cpp in Sources */,
 				AEDCB5DC0D4AEC4D004CB40E /* lua_projectiles.cpp in Sources */,
@@ -5785,7 +5804,7 @@
 				AEFD86DC13EB84CF00C1E687 /* SSLP_limited.cpp in Sources */,
 				AEFD86DD13EB84CF00C1E687 /* network_dialogs.cpp in Sources */,
 				AEFD86DE13EB84CF00C1E687 /* Dim3_Loader.cpp in Sources */,
-				516E52E325EB52ED0073E92A /* MetalHelper.mm in Sources */,
+				516E52E325EB52ED0073E92A /* MacOSHelper.mm in Sources */,
 				AEFD86DF13EB84CF00C1E687 /* preferences_widgets_sdl.cpp in Sources */,
 				AEFD86E013EB84CF00C1E687 /* ActionQueues.cpp in Sources */,
 				AEFD86E113EB84CF00C1E687 /* network_speaker_sdl.cpp in Sources */,
@@ -5952,6 +5971,7 @@
 				AEFD878113EB84CF00C1E687 /* Update.cpp in Sources */,
 				AEFD878213EB84CF00C1E687 /* ConnectPool.cpp in Sources */,
 				AEFD878313EB84CF00C1E687 /* lua_player.cpp in Sources */,
+				516E530825EF2C670073E92A /* AnglePlatform.cpp in Sources */,
 				275A7BD91A60E9C1002EE952 /* HTTP.cpp in Sources */,
 				AEFD878413EB84CF00C1E687 /* lua_map.cpp in Sources */,
 				AEFD878513EB84CF00C1E687 /* lua_monsters.cpp in Sources */,

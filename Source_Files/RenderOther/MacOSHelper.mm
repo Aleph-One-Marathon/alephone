@@ -1,5 +1,5 @@
 //
-//  MetalHelper.mm
+//  MacOSHelper.mm
 //  AlephOne
 //
 //  Created by Dustin Wenz on 2/19/21.
@@ -19,7 +19,7 @@
 
 MGLContext *context;
 
-void* getLayerFromSDLWindow(SDL_Window *main_screen)
+void* injectMacOS(SDL_Window *main_screen)
 {
   SDL_SysWMinfo wmi;
   SDL_VERSION(&wmi.version);
@@ -130,7 +130,7 @@ void* getLayerFromSDLWindow(SDL_Window *main_screen)
   return theView.layer;
 }
 
-void swapWindow(SDL_Window *main_screen){
+void swapWindowMacOS(SDL_Window *main_screen){
     
     SDL_SysWMinfo wmi;
     SDL_VERSION(&wmi.version);

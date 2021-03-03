@@ -11,8 +11,8 @@
 #define MetalHelper_h
 
 
-extern void* getLayerFromSDLWindow(SDL_Window *main_screen);
-extern void swapWindow(SDL_Window *main_screen);
+extern void* injectMacOS(SDL_Window *main_screen);
+extern void swapWindowMacOS(SDL_Window *main_screen);
 
 #endif /* MetalHelper_h */
 

@@ -253,7 +253,7 @@ void OGL_Blitter::Draw(const Image_Rect& dst, const Image_Rect& raw_src)
 		MSI()->translatef(-(dst.x + dst.w/2.0), -(dst.y + dst.h/2.0), 0.0);
 	}
 	
-	glColor4f(tint_color_r, tint_color_g, tint_color_b, tint_color_a);
+	MSI()->color4f(tint_color_r, tint_color_g, tint_color_b, tint_color_a);
 	
 	for (int i = 0; i < m_rects.size(); i++)
 	{

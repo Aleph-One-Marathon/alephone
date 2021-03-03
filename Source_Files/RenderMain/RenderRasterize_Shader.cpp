@@ -367,7 +367,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 	s->setFloat(Shader::U_Depth, offset);
 	s->setFloat(Shader::U_StrictDepthMode, OGL_ForceSpriteDepth() ? 1 : 0);
 	s->setFloat(Shader::U_Glow, 0);
-	glColor4f(color[0], color[1], color[2], 1);
+	MSI()->color4f(color[0], color[1], color[2], 1);
 	return TMgr;
 }
 
@@ -392,7 +392,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 	float flare = weaponFlare;
 
 	glEnable(GL_TEXTURE_2D);
-	glColor4f(intensity, intensity, intensity, 1.0);
+	MSI()->color4f(intensity, intensity, intensity, 1.0);
 
 	switch(transferMode) {
 		case _xfer_static:
@@ -413,7 +413,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 			if (current_player->infravision_duration) {
 				GLfloat color[3] {1, 1, 1};
 				FindInfravisionVersionRGBA(GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(Texture)), color);
-				glColor4f(color[0], color[1], color[2], 1);
+				MSI()->color4f(color[0], color[1], color[2], 1);
 				s = Shader::get(Shader::S_LandscapeInfravision);
 			} else {
 				if (renderStep == kDiffuse) {
@@ -428,9 +428,9 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 			TMgr->TextureType = OGL_Txtr_Wall;
 			if(TMgr->IsShadeless) {
 				if (renderStep == kDiffuse) {
-					glColor4f(1,1,1,1);
+					MSI()->color4f(1,1,1,1);
 				} else {
-					glColor4f(0,0,0,1);
+					MSI()->color4f(0,0,0,1);
 				}
 				flare = -1;
 			}
@@ -440,7 +440,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 		if (current_player->infravision_duration) {
 			GLfloat color[3] {1, 1, 1};
 			FindInfravisionVersionRGBA(GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(Texture)), color);
-			glColor4f(color[0], color[1], color[2], 1);
+			MSI()->color4f(color[0], color[1], color[2], 1);
 			s = Shader::get(Shader::S_WallInfravision);
 		} else if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
 			s = Shader::get(renderStep == kGlow ? Shader::S_BumpBloom : Shader::S_Bump);
@@ -948,7 +948,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	s->setFloat(Shader::U_Wobble, 0);
 	s->setFloat(Shader::U_Depth, 0);
 	s->setFloat(Shader::U_Glow, 0);
-	glColor4f(color[0], color[1], color[2], 1);
+	MSI()->color4f(color[0], color[1], color[2], 1);
 
 	glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
 	glClientActiveTexture(GL_TEXTURE0);

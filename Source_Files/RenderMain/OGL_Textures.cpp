@@ -1301,7 +1301,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
                 
                 glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
                 // OpenGL GL_RGBA is 6407 and GL_RGB is 6408
-                assert ( internalFormat == GL_RGBA );
+                assert ( internalFormat == GL_RGBA || internalFormat == GL_RGBA8 ); //DCW I hope GL_RGBA and GL_RGBA8 are equivalent
                 glTexImage2D(GL_TEXTURE_2D, 0, internalFormat,
                              Image->GetWidth(),
                              Image->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
