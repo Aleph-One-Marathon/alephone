@@ -1329,6 +1329,29 @@
         <description>direction in which player is looking</description>
         <note>while glancing, this differs from .direction</note>
       </variable>
+	  <variable name="hotkey" version="git">
+		<note>only valid when read/written in idle()</note>
+		<note>hotkeys aren’t latched, and can only be transmitted every 3 ticks</note>
+		<note>to check for a continously pressed hotkey, or to implement your own latch, count down from 2 before checking it again</note>
+		<note>hotkeys override cycle weapon backward/forward; these flags will be false for 3 ticks after a hotkey is pressed</note>
+		<description>pressed hotkey, from 1-12, or 0 for no hotkey</description>
+		<type>number</type>
+	  </variable>
+	  <subtable-accessor name="hotkey_bindings" classname="hotkey_bindings" index="n" version="git" access="local-player">
+		<description>keys or buttons the player has bound to hotkeys 1-12</description>
+		<variable name="joystick" access="read-only">
+		  <description>joystick button binding</description>
+		  <type>string</type>
+		</variable>
+		<variable name="key" access="read-only">
+		  <description>key binding</description>
+		  <type>string</type>
+		</variable>
+		<variable name="mouse" access="read-only">
+		  <description>mouse button binding</description>
+		  <type>string</type>
+		</variable>
+	  </subtable-accessor>
       <variable name="infravision_duration">
 		<description>infravision time remaining</description>
 		<type>time</type>

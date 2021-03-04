@@ -1521,7 +1521,7 @@ static const char* sJoystickButtonKeyName[NUM_SDL_JOYSTICK_BUTTONS] = {
 };
 
 // ZZZ: this injects our phony key names but passes along the rest.
-static const char*
+const char*
 GetSDLKeyName(SDL_Scancode inKey) {
 	if (w_key::event_type_for_key(inKey) == w_key::MouseButton)
         return sMouseButtonKeyName[inKey - AO_SCANCODE_BASE_MOUSE_BUTTON];

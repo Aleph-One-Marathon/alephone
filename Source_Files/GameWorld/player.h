@@ -416,6 +416,8 @@ struct player_data
 	bool	netdead;	// ZZZ: added this; it should not be serialized/deserialized
 
 	world_distance step_height; // not serialized, used to correct chase cam bob
+	uint8_t hotkey_sequence;    // not serialized, used to decode hotkey
+	int16_t hotkey; 			// not serialized, used to store hotkey
 
 	// ZZZ: since we don't put this structure directly into files or network communications,
 	// there ought? to be no reason for the padding
@@ -469,6 +471,7 @@ extern struct player_data *local_player, *current_player;
 // will be operations on the returned value.  Returned from a function to avoid
 // accidental assignment to the pointer.
 class ActionQueues;
+class ModifiableActionQueues;
 extern ActionQueues*    GetRealActionQueues();
 
 /* ---------- prototypes/PLAYER.C */
@@ -498,6 +501,7 @@ void team_damage_from_player_data(void);
 // the update routine's input.  Also, now callers can request a 'predictive update',
 // which changes less state, in an effort to make partial state saving/restoration successful.
 void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive); /* assumes ¶t==1 tick */
+void decode_hotkeys(ModifiableActionQueues& action_queues);
 
 // handle pausing Marathon 1 terminals
 bool m1_solo_player_in_terminal();

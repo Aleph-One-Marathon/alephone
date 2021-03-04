@@ -870,8 +870,7 @@
 </dt>
 <dd><p class="description">current intensity for this light (range: 0-1)</p></dd>
       <dt>
-    .states[light_type]
-  </dt>
+    .states[light_type]</dt>
 <dd><dl>
 <dt>.delta_intensity <span class="version">20100118</span>
 </dt>
@@ -913,8 +912,7 @@
 </dt>
 <dd><p class="description">counterclockwise side of line</p></dd>
       <dt>
-    .endpoints[n]
-  </dt>
+    .endpoints[n]</dt>
 <dd><p class="description">returns line endpoint n</p></dd>
       <dt>.has_transparent_side<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
@@ -1347,6 +1345,32 @@
 <p class="description">direction in which player is looking</p>
 <p class="note">while glancing, this differs from .direction </p>
 </dd>
+	  <dt>.hotkey <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">pressed hotkey, from 1-12, or 0 for no hotkey</p>
+<p class="note">only valid when read/written in idle() </p>
+<p class="note">hotkeys aren’t latched, and can only be transmitted every 3 ticks </p>
+<p class="note">to check for a continously pressed hotkey, or to implement your own latch, count down from 2 before checking it again </p>
+<p class="note">hotkeys override cycle weapon backward/forward; these flags will be false for 3 ticks after a hotkey is pressed </p>
+</dd>
+	  <dt>
+    .hotkey_bindings[n] <span class="version">git</span><span class="access"> (local player)</span>
+</dt>
+<dd>
+<p class="description">keys or buttons the player has bound to hotkeys 1-12</p>
+<dl>
+<dt>.joystick<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">joystick button binding</p></dd>
+<dt>.key<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">key binding</p></dd>
+<dt>.mouse<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">mouse button binding</p></dd>
+</dl>
+</dd>
       <dt>.infravision_duration</dt>
 <dd><p class="description">infravision time remaining</p></dd>
       <dt>.internal_velocity</dt>
@@ -1394,8 +1418,7 @@
       <dt>.oxygen</dt>
 <dd><p class="description">amount of oxygen player has (max is 10800)</p></dd>
       <dt>
-    .overlays[n]
-  </dt>
+    .overlays[n]</dt>
 <dd>
 <p class="description">there are 6 overlays, numbered 0 through 5</p>
 <dl>
@@ -1462,8 +1485,7 @@
 <p class="note">rows/columns may change in the future based on the user’s screen layout prefs </p>
 </dd>
 <dt>
-    .slots[n]
-  </dt>
+    .slots[n]</dt>
 <dd><dl>
 <dt>:clear()</dt>
 <dd><p class="description">makes this slot empty</p></dd>
@@ -1507,8 +1529,7 @@
 </dd>
 </dl></dd>
       <dt>
-    .weapons[weapon_type]
-  </dt>
+    .weapons[weapon_type]</dt>
 <dd><dl>
 <dt>.primary<br>.secondary</dt>
 <dd><dl>
@@ -1549,8 +1570,7 @@
 <dt>Polygons[index]</dt>
 <dd><dl>
       <dt>
-    .adjacent_polygons[n]
-  </dt>
+    .adjacent_polygons[n]</dt>
 <dd><p class="description">returns adjacent polygon n (across from line n), if one exists, or nil</p></dd>
       <dt>:adjacent_polygons()</dt>
 <dd><p class="description">iterates through all polygons directly adjacent to this polygon</p></dd>
@@ -1585,8 +1605,7 @@
       <dt>:contains(x, y [, z])</dt>
 <dd><p class="description">whether the point is in this polygon</p></dd>
       <dt>
-    .endpoints[n]
-  </dt>
+    .endpoints[n]</dt>
 <dd><p class="description">returns endpoint n</p></dd>
       <dt>:endpoints()</dt>
 <dd><p class="description">iterates through all of this polygon’s endpoints</p></dd>
@@ -1604,8 +1623,7 @@
 <p class="note">can be nil if the line segment doesn’t intersect a polygon line </p>
 </dd>
       <dt>
-    .lines[n]
-  </dt>
+    .lines[n]</dt>
 <dd><p class="description">returns polygon line n</p></dd>
       <dt>:lines()</dt>
 <dd><p class="description">iterates through all of this polygon’s lines</p></dd>
@@ -1623,8 +1641,7 @@
 <p class="note">if you want to play a sound at an object location, use that object’s play_sound function instead </p>
 </dd>
       <dt>
-    .sides[n]
-  </dt>
+    .sides[n]</dt>
 <dd><p class="description">returns polygon side n if it exists</p></dd>
       <dt>:sides()</dt>
 <dd><p class="description">iterates through all of this polygon’s sides</p></dd>

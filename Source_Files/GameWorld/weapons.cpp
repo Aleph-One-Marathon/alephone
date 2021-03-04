@@ -622,9 +622,9 @@ void update_player_weapons(
 {
 	update_shell_casings(player_index);
 	
+	auto player= get_player_data(player_index);
 	if(player_has_valid_weapon(player_index))
 	{
-		struct player_data *player= get_player_data(player_index);
 		struct weapon_data *weapon= get_player_current_weapon(player_index);
 		struct weapon_definition *definition= get_current_weapon_definition(player_index);
 		short which_trigger, trigger_count, first_trigger;
@@ -922,6 +922,11 @@ void update_player_weapons(
 	if(action_flags & _cycle_weapons_backward)
 	{
 		select_next_weapon(player_index, false);
+	}
+
+	if (player->hotkey && player->hotkey < NUMBER_OF_WEAPONS)
+	{
+		ready_weapon(player_index, weapon_ordering_array[player->hotkey - 1]);
 	}
 
 	/* And switch the weapon.. */

@@ -1136,6 +1136,23 @@ void move_replay(void)
 		alert_user(infoError, strERRORS, fileError, error);
 }
 
+static uint32_t hotkey_sequence[3] {0};
+static constexpr uint32_t hotkey_used = 0x80000000;
+
+void encode_hotkey_sequence(int hotkey)
+{
+	hotkey_sequence[0] =
+		(3 << _cycle_weapons_forward_bit) |
+		hotkey_used;
+	
+	hotkey_sequence[1] =
+		((hotkey / 4 + 1) << _cycle_weapons_forward_bit) |
+		hotkey_used;
+	
+	hotkey_sequence[2] =
+		((hotkey % 4) << _cycle_weapons_forward_bit) |
+		hotkey_used;
+}
 
 /*
  *  Poll keyboard and return action flags
@@ -1171,7 +1188,7 @@ uint32 parse_keymap(void)
 		}
 		
       // Post-process the keymap
-      struct special_flag_data *special = special_flags;
+		struct special_flag_data *special = special_flags;
       for (unsigned i=0; i<NUMBER_OF_SPECIAL_FLAGS; i++, special++) {
 	if (flags & special->flag) {
 	  switch (special->type) {
@@ -1199,7 +1216,31 @@ uint32 parse_keymap(void)
 	} else
 	  special->persistence = FLOOR(special->persistence-1, 0);
       }
-      
+
+	  if (!hotkey_sequence[0])
+	  {
+		  for (auto i = 0; i < NUMBER_OF_HOTKEYS; ++i)
+		  {
+			  auto& hotkey = input_preferences->hotkey_bindings[i];
+			  for (auto it : hotkey)
+			  {
+				  if (key_map[it])
+				  {
+					  encode_hotkey_sequence(i);
+					  break;
+				  }
+			  }
+		  }
+	  }
+
+	  if (hotkey_sequence[0])
+	  {
+		  flags &= ~(_cycle_weapons_forward | _cycle_weapons_backward);
+		  flags |= (hotkey_sequence[0] & ~hotkey_used);
+		  hotkey_sequence[0] = hotkey_sequence[1];
+		  hotkey_sequence[1] = hotkey_sequence[2];
+		  hotkey_sequence[2] = 0;
+	  }
 
       bool do_interchange =
 	      (local_player->variables.flags & _HEAD_BELOW_MEDIA_BIT) ?

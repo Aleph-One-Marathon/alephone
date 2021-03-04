@@ -401,6 +401,7 @@ update_world_elements_one_tick(bool& call_postidle)
 	} 
 	else
 	{
+		decode_hotkeys(*GameQueue);
 		L_Call_Idle();
 		call_postidle = true;
 		
@@ -561,7 +562,7 @@ update_world()
 
 		// We use "2" to make sure there's always room for our one set of elements.
 		// (thePredictiveQueues should always hold only 0 or 1 element for each player.)
-		ActionQueues	thePredictiveQueues(dynamic_world->player_count, 2, true);
+		ModifiableActionQueues	thePredictiveQueues(dynamic_world->player_count, 2, true);
 
 		// Observe, since we don't use a speed-limiter in predictive mode, that there cannot be flags
 		// stranded in the GameQueue.  Unfortunately this approach will mispredict if a script is
@@ -581,6 +582,7 @@ update_world()
 			}
 			
 			// update_players() will dequeue the elements we just put in there
+			decode_hotkeys(thePredictiveQueues);
 			update_players(&thePredictiveQueues, true);
 
 			didPredict = true;
