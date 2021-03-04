@@ -138,12 +138,49 @@ void FBO::draw() {
     
       //DCW if there is a shader already active, draw the quad using that. Otherwise, draw with the default shader.
     if (lastEnabledShader()) {
-      //DCW ack! This might never get called! Maybe for bloom?
-      //DrawQuadWithActiveShader(0, 0, _w, _h, 0, _h, _w, 0);
-       assert(1); //If we hit this, we need to implement DrawQuadWithActiveShader
+      drawQuadWithActiveShader(0, 0, _w, _h, 0, _h, _w, 0);
     } else {
       OGL_RenderTexturedRect(0, 0, _w, _h, 0, 1.0, 1.0, 0); //DCW; uses normalized texture coordinates
     }
+}
+
+void FBO::drawQuadWithActiveShader(float x, float y, float w, float h, float tleft, float ttop, float tright, float tbottom)
+{
+  GLfloat modelMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
+  
+  Shader *theShader = lastEnabledShader();
+  
+  MSI()->getFloatv(MS_MODELVIEW, modelMatrix);
+  MSI()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
+  MSI()->getFloatv(MS_TEXTURE, textureMatrix);
+  MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
+  
+  theShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
+  theShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+  theShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
+  theShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+  theShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+  
+  GLfloat vVertices[12] = { x, y, 0,
+    x + w, y, 0,
+    x + w, y + h, 0,
+    x, y + h, 0};
+  
+  GLfloat texCoords[8] = { tleft, ttop, tright, ttop, tright, tbottom, tleft, tbottom };
+  
+  GLubyte indices[] =   {0,1,2,
+    0,2,3};
+    
+  
+  glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texCoords);
+  glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
+  
+  glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, vVertices);
+  glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+  
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
+    
+  glDisableVertexAttribArray(0);
 }
 
 void FBO::prepare_drawing_mode(bool blend) {

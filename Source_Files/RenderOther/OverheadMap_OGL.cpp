@@ -327,7 +327,7 @@ void OverheadMap_OGL_Class::draw_player(
 	MSI()->matrixMode(MS_MODELVIEW);
 	MSI()->pushMatrix();
 	MSI()->translatef(center.x,center.y,0);
-	glRotatef(facing*(360.0F/FULL_CIRCLE),0,0,1);
+	MSI()->rotatef(facing*(360.0F/FULL_CIRCLE),0,0,1);
 	float scale = 1/float(1 << shrink);
 	MSI()->scalef(scale,scale,1);
 	glDisable(GL_TEXTURE_2D);

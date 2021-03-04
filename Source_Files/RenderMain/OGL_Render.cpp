@@ -3017,7 +3017,7 @@ bool OGL_RenderText(short BaseX, short BaseY, const char *Text, unsigned char r,
     GLfloat Depth = 0;
     
     // Using a modelview matrix, of course
-    MSI()->matrixMode(GL_MODELVIEW);
+    MSI()->matrixMode(MS_MODELVIEW);
     MSI()->pushMatrix();
     
     // Background

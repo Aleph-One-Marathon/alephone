@@ -144,7 +144,7 @@ void swapWindowMacOS(SDL_Window *main_screen){
     // Clear the buffer. The following glBindFramebuffer() call is optionally. Only needed if you
     // have custom framebuffers aside from the default one.
     glBindFramebuffer(GL_FRAMEBUFFER, mglLayer.defaultOpenGLFrameBufferID);
-    //glClearColor(0.0, 0.0, 0.0, 0.0);
+    //glClearColor(1.0, 0.0, 0.0, 0.5);
     //glClear(GL_COLOR_BUFFER_BIT);
 
     // Display the buffer

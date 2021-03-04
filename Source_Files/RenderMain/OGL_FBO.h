@@ -52,6 +52,7 @@ public:
 	void deactivate();
 	
 	void draw();
+    void drawQuadWithActiveShader(float x, float y, float w, float h, float tleft, float ttop, float tright, float tbottom);
 	void prepare_drawing_mode(bool blend = false);
 	void reset_drawing_mode();
 	void draw_full(bool blend = false);

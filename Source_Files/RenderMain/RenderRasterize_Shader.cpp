@@ -231,9 +231,9 @@ void RenderRasterize_Shader::clip_to_window(clipping_window_data *win)
     // recenter to player's orientation temporarily
     MSI()->pushMatrix();
     MSI()->translatef(view->origin.x, view->origin.y, 0.);
-    glRotatef(view->yaw * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
+    MSI()->rotatef(view->yaw * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
     
-    glRotatef(-0.1, 0., 0., 1.); // leave some excess to avoid artifacts at edges
+    MSI()->rotatef(-0.1, 0., 0., 1.); // leave some excess to avoid artifacts at edges
 	if (win->left.i != leftmost_clip.i || win->left.j != leftmost_clip.j) {
 		clip[0] = win->left.i;
 		clip[1] = win->left.j;
@@ -243,7 +243,7 @@ void RenderRasterize_Shader::clip_to_window(clipping_window_data *win)
         MSI()->disablePlane(0);
 	}
 	
-    glRotatef(0.2, 0., 0., 1.); // breathing room for right-hand clip
+    MSI()->rotatef(0.2, 0., 0., 1.); // breathing room for right-hand clip
 	if (win->right.i != rightmost_clip.i || win->right.j != rightmost_clip.j) {
 		clip[0] = win->right.i;
 		clip[1] = win->right.j;

@@ -249,7 +249,7 @@ void OGL_Blitter::Draw(const Image_Rect& dst, const Image_Rect& raw_src)
 		MSI()->matrixMode(MS_MODELVIEW);
 		MSI()->pushMatrix();
 		MSI()->translatef((dst.x + dst.w/2.0), (dst.y + dst.h/2.0), 0.0);
-		glRotatef(rotation, 0.0, 0.0, 1.0);
+		MSI()->rotatef(rotation, 0.0, 0.0, 1.0);
 		MSI()->translatef(-(dst.x + dst.w/2.0), -(dst.y + dst.h/2.0), 0.0);
 	}
 	

@@ -63,6 +63,7 @@ void Lua_DrawHUD(short time_elapsed)
     bool isEnabled_GST = glIsEnabled (GL_STENCIL_TEST);
     bool isEnabled_GB = glIsEnabled (GL_BLEND);
     bool isEnabled_GF = glIsEnabled (GL_FOG);
+    int previousMode = MSI()->currentActiveMode();
     #endif
     
 	HUD_Lua.start_draw();
@@ -70,6 +71,7 @@ void Lua_DrawHUD(short time_elapsed)
 	HUD_Lua.end_draw();
     
     #ifdef HAVE_OPENGL
+    MSI()->matrixMode(previousMode);
     if ( isEnabled_GT2 ) { glEnable ( GL_TEXTURE_2D ) ; } else { glDisable ( GL_TEXTURE_2D ); }
     if ( isEnabled_GCF ) { glEnable ( GL_CULL_FACE ) ; } else { glDisable ( GL_CULL_FACE ); }
     if ( isEnabled_GDT ) { glEnable ( GL_DEPTH_TEST ) ; } else { glDisable ( GL_DEPTH_TEST ); }
@@ -140,10 +142,14 @@ void HUD_Lua_Class::start_draw(void)
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_FOG);
         
+        
         MSI()->matrixMode(MS_MODELVIEW);
         MSI()->pushMatrix();
         MSI()->loadIdentity();
         MSI()->translatef(m_wr.x, m_wr.y, 0.0);
+        
+        //DCW oh jeez... I cannot explain why I need to set MS_PROJECTION here, when we didn't need it for Classic OpenGL.
+        MSI()->matrixMode(MS_PROJECTION);
 
 		m_surface = NULL;
 	}

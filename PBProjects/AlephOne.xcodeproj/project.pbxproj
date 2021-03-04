@@ -403,6 +403,10 @@
 		516E530C25EF2C670073E92A /* AnglePlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E530625EF2C670073E92A /* AnglePlatform.h */; };
 		516E530D25EF2C670073E92A /* AnglePlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E530625EF2C670073E92A /* AnglePlatform.h */; };
 		516E530E25EF2C670073E92A /* AnglePlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E530625EF2C670073E92A /* AnglePlatform.h */; };
+		5198F50D25F087030019EB83 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5198F50C25F087030019EB83 /* Metal.framework */; };
+		5198F50E25F087030019EB83 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5198F50C25F087030019EB83 /* Metal.framework */; };
+		5198F50F25F087030019EB83 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5198F50C25F087030019EB83 /* Metal.framework */; };
+		5198F51025F087030019EB83 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5198F50C25F087030019EB83 /* Metal.framework */; };
 		553AB9F6213A034300EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
 		553AB9F7213A035000EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
 		553AB9F9213A035000EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
@@ -2258,6 +2262,7 @@
 		516E530425EDE9970073E92A /* Shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Shaders; path = ../Source_Files/RenderMain/Shaders; sourceTree = "<group>"; };
 		516E530525EF2C670073E92A /* AnglePlatform.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AnglePlatform.cpp; sourceTree = "<group>"; };
 		516E530625EF2C670073E92A /* AnglePlatform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AnglePlatform.h; sourceTree = "<group>"; };
+		5198F50C25F087030019EB83 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = ../../../../../System/Library/Frameworks/Metal.framework; sourceTree = "<group>"; };
 		553AB9F5213A034300EE3861 /* libexpat.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libexpat.tbd; path = usr/lib/libexpat.tbd; sourceTree = SDKROOT; };
 		AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Blitter.cpp; sourceTree = "<group>"; };
 		AE005FD30EE2D6DE007FE7C6 /* screen.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = screen.cpp; sourceTree = "<group>"; };
@@ -2691,6 +2696,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				273FBB4B1E122CA20076351E /* IOKit.framework in Frameworks */,
+				5198F50F25F087030019EB83 /* Metal.framework in Frameworks */,
 				275A7BD51A60DE9B002EE952 /* libcurl.tbd in Frameworks */,
 				AE505CF0141D45E600915344 /* Cocoa.framework in Frameworks */,
 				AE505CF9141D45E600915344 /* speex.framework in Frameworks */,
@@ -2724,6 +2730,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				273FBB4C1E122CA30076351E /* IOKit.framework in Frameworks */,
+				5198F51025F087030019EB83 /* Metal.framework in Frameworks */,
 				275A7BD61A60DEA3002EE952 /* libcurl.tbd in Frameworks */,
 				AEB4A29214296CAE00537AE7 /* Cocoa.framework in Frameworks */,
 				AEB4A29B14296CAE00537AE7 /* speex.framework in Frameworks */,
@@ -2757,6 +2764,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				553AB9F6213A034300EE3861 /* libexpat.tbd in Frameworks */,
+				5198F50D25F087030019EB83 /* Metal.framework in Frameworks */,
 				273FBB491E122C9F0076351E /* IOKit.framework in Frameworks */,
 				275A7BD31A60DE77002EE952 /* libcurl.tbd in Frameworks */,
 				27E5DD621BD2DA0C00A95619 /* SDL2.framework in Frameworks */,
@@ -2790,6 +2798,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				273FBB4A1E122CA20076351E /* IOKit.framework in Frameworks */,
+				5198F50E25F087030019EB83 /* Metal.framework in Frameworks */,
 				275A7BD41A60DE8C002EE952 /* libcurl.tbd in Frameworks */,
 				AEFD879C13EB84CF00C1E687 /* Cocoa.framework in Frameworks */,
 				AEFD87A513EB84CF00C1E687 /* speex.framework in Frameworks */,
@@ -2894,6 +2903,7 @@
 		29B97323FDCFA39411CA2CEA /* System Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5198F50C25F087030019EB83 /* Metal.framework */,
 				516E52FA25EB57910073E92A /* MetalKit.framework */,
 				516E52FB25EB57910073E92A /* QuartzCore.framework */,
 				273FBB481E122C9F0076351E /* IOKit.framework */,
