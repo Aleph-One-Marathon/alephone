@@ -2410,7 +2410,7 @@ static void controls_dialog(void *arg)
 
 	tab_placer *tabs = new tab_placer();
 
-	std::vector<std::string> labels = {"照準", "移動", "行動", "ホットキー"、"インターフェース", "その他"};
+	std::vector<std::string> labels = {"照準", "移動", "行動", "ホットキー", "インターフェース", "その他"};
 	w_tab *tab_w = new w_tab(labels, tabs);
 
 	placer->dual_add(tab_w, d);
