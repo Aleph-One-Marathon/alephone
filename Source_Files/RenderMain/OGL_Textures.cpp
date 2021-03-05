@@ -1209,7 +1209,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 
 	TxtrTypeInfoData& TxtrTypeInfo = TxtrTypeInfoList[TextureType];
 
-	GLenum internalFormat = TxtrTypeInfo.ColorFormat;
+    GLenum internalFormat = TxtrTypeInfo.ColorFormat;
 	// some optimizations here:
 	if (TextureType == 1) // landscape
 	{
@@ -1301,8 +1301,9 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
                 
                 glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
                 // OpenGL GL_RGBA is 6407 and GL_RGB is 6408
-                assert ( internalFormat == GL_RGBA || internalFormat == GL_RGBA8 ); //DCW I hope GL_RGBA and GL_RGBA8 are equivalent
-                glTexImage2D(GL_TEXTURE_2D, 0, internalFormat,
+                if (internalFormat == GL_RGBA8 ) {internalFormat = GL_RGBA;} //DCW I hope GL_RGBA and GL_RGBA8 are equivalent
+                assert ( internalFormat == GL_RGBA );
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA /*internalFormat*/,
                              Image->GetWidth(),
                              Image->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
                              Image->GetBuffer());
@@ -1353,7 +1354,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 				if (useSGISMipmaps) {
 					glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
 					mipmapsLoaded = true;
-				}  
+				}
 #endif
 				glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetMipMapSize(0), Image->GetBuffer());
 			}
@@ -1695,8 +1696,9 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
                                  LoadedWidth,
                                  LoadedHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                                  Image.get()->GetBuffer());
-
+                     
                     glGenerateMipmap(GL_TEXTURE_2D);
+                    
 				}
 				mipmapsLoaded = true;
 			}

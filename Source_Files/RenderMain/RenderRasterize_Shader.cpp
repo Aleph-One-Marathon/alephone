@@ -60,10 +60,14 @@ public:
 		int passes = _shader_bloom->passes();
 		if (passes < 0)
 			passes = 5;
+        
+        GLfloat modelProjection[16];
+        MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
 
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 		for (int i = 0; i < passes; i++) {
 			_shader_blur->enable();
+            _shader_blur->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
 			_shader_blur->setFloat(Shader::U_OffsetX, 1);
 			_shader_blur->setFloat(Shader::U_OffsetY, 0);
 			_shader_blur->setFloat(Shader::U_Pass, i + 1);
@@ -75,6 +79,7 @@ public:
 			_swapper.filter(false);
 
 			_shader_bloom->enable();
+            _shader_bloom->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
 			_shader_bloom->setFloat(Shader::U_Pass, i + 1);
 //			if (Bloom_sRGB)
 //				dest.blend(_swapper.current_contents(), true);
@@ -368,6 +373,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 	s->setFloat(Shader::U_StrictDepthMode, OGL_ForceSpriteDepth() ? 1 : 0);
 	s->setFloat(Shader::U_Glow, 0);
 	MSI()->color4f(color[0], color[1], color[2], 1);
+    s->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
 	return TMgr;
 }
 
@@ -650,7 +656,7 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 			T = vec3(0,1,0);
 			sign = -1;
 		}
-		glNormal3f(N[0], N[1], N[2]);
+		MSI()->normal3f(N[0], N[1], N[2]);
         
         GLfloat tex4[4] = {T[0], T[1], T[2], sign};
         
@@ -683,17 +689,28 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 				*tp++ = (vertex.y + surface->origin.y + y) / float(WORLD_ONE);
 			}
 		}
-		glVertexPointer(3, GL_FLOAT, 0, vertex_array);
-		glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
+        
+		//glVertexPointer(3, GL_FLOAT, 0, vertex_array);
+		//glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
+        
+        glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
+        glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
+        
+        glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, vertex_array);
+        glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+        
+        glVertexAttribPointer(Shader::ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, MSI()->normals());
+        glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
+
 
         Shader* lastShader = lastEnabledShader();
         if (lastShader) {
           GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
           MSI()->getFloatv(MS_MODELVIEW, modelMatrix);
-          MatrixStack::Instance()->getFloatv(MS_PROJECTION, projectionMatrix);
-          MatrixStack::Instance()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
-          MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);
-          MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
+          MSI()->getFloatv(MS_PROJECTION, projectionMatrix);
+          MSI()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
+          MSI()->getFloatv(MS_TEXTURE, textureMatrix);
+          MSI()->getFloatvModelviewProjection(modelProjection);
 
           lastShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
           lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
@@ -772,8 +789,8 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			vertex_count= 4;
 			vertices[0].z= vertices[1].z= h + view->origin.z;
 			vertices[2].z= vertices[3].z= surface->h0 + view->origin.z;
-			vertices[0].x= vertices[3].x= vertex[0].x, vertices[0].y= vertices[3].y= vertex[0].y;
-			vertices[1].x= vertices[2].x= vertex[1].x, vertices[1].y= vertices[2].y= vertex[1].y;
+            vertices[0].x= vertices[3].x= vertex[0].x; vertices[0].y= vertices[3].y= vertex[0].y; //DCW changed , to ;
+            vertices[1].x= vertices[2].x= vertex[1].x; vertices[1].y= vertices[2].y= vertex[1].y;//DCW changed , to ;
 			vertices[0].flags = vertices[3].flags = 0;
 			vertices[1].flags = vertices[2].flags = 0;
 
@@ -789,7 +806,7 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			vec3 N(-dy, dx, 0);
 			vec3 T(dx, dy, 0);
 			float sign = 1;
-			glNormal3f(N[0], N[1], N[2]);
+			MSI()->normal3f(N[0], N[1], N[2]);
             GLfloat tex4[4] = {T[0], T[1], T[2], sign};
 			glMultiTexCoord4f(GL_TEXTURE1, tex4[0], tex4[1], tex4[2], tex4[3]);
 
@@ -815,9 +832,18 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 				*tp++ = (tOffset - vertices[i].z) / div;
 				*tp++ = (x0+p2) / div;
 			}
-			glVertexPointer(3, GL_FLOAT, 0, vertex_array);
-			glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
-			
+			//glVertexPointer(3, GL_FLOAT, 0, vertex_array);
+			//glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
+            glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
+            glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
+            
+            glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, vertex_array);
+            glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+            
+            glVertexAttribPointer(Shader::ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, MatrixStack::Instance()->normals());
+            glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
+
+            
             Shader* lastShader = lastEnabledShader();
             if (lastShader) {
               GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
@@ -958,8 +984,10 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		glTexCoordPointer(2,GL_FLOAT,0,ModelPtr->Model.TCBase());
 	}
 
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glNormalPointer(GL_FLOAT,0,ModelPtr->Model.NormBase());
+	//glEnableClientState(GL_NORMAL_ARRAY);
+	//glNormalPointer(GL_FLOAT,0,ModelPtr->Model.NormBase());
+    glVertexAttribPointer(Shader::ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.NormBase());
+    glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
 
 	glClientActiveTexture(GL_TEXTURE1);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -980,6 +1008,24 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		glActiveTexture(GL_TEXTURE0);
 	}
 
+    Shader* lastShader = lastEnabledShader();
+    if (lastShader) {
+      GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
+
+      MatrixStack::Instance()->getFloatv(MS_MODELVIEW, modelMatrix);
+      MatrixStack::Instance()->getFloatv(MS_PROJECTION, projectionMatrix);
+      MatrixStack::Instance()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
+      MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
+      MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);
+      
+      lastShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
+      lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+      lastShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
+      lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+      lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+      lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
+    }
+    
 	glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
 
 	if (canGlow && SkinPtr->GlowImg.IsPresent()) {
@@ -998,6 +1044,25 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		if(ModelPtr->Use(CLUT,OGL_SkinManager::Glowing)) {
 			LoadModelSkin(SkinPtr->GlowImg, Collection, CLUT);
 		}
+        
+        Shader* lastShader = lastEnabledShader();
+        if (lastShader) {
+          GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
+
+          MatrixStack::Instance()->getFloatv(MS_MODELVIEW, modelMatrix);
+          MatrixStack::Instance()->getFloatv(MS_PROJECTION, projectionMatrix);
+          MatrixStack::Instance()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
+          MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
+          MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);
+          
+          lastShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
+          lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+          lastShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
+          lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+          lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+          lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
+        }
+        
 		glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
 	}
 
@@ -1150,13 +1215,82 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 		texCoords[1][0]
 	};
 
-	glVertexPointer(3, GL_FLOAT, 0, vertex_array);
-	glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
+	//glVertexPointer(3, GL_FLOAT, 0, vertex_array);
+	//glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
+    
+    glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
+    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
+    
+    glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, vertex_array);
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    
+    glVertexAttribPointer(Shader::ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, MatrixStack::Instance()->normals());
+    glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
 
-	glDrawArrays(GL_QUADS, 0, 4);
+    Shader* lastShader = lastEnabledShader();
+    if (lastShader) {
+      GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
+      MatrixStack::Instance()->getFloatv(MS_MODELVIEW, modelMatrix);
+      MatrixStack::Instance()->getFloatv(MS_PROJECTION, projectionMatrix);
+      MatrixStack::Instance()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
+      MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
+      MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);
+      
+      lastShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
+      lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+      lastShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
+      lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+      lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+      lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
+      
+      GLfloat plane0[4], plane1[4], plane5[4], media6[4];
+      MatrixStack::Instance()->getPlanev(0, plane0);
+      MatrixStack::Instance()->getPlanev(1, plane1);
+      MatrixStack::Instance()->getPlanev(5, plane5);
+      MatrixStack::Instance()->getPlanev(6, media6);
+      lastShader->setVec4(Shader::U_ClipPlane0, plane0);
+      lastShader->setVec4(Shader::U_ClipPlane1, plane1);
+      lastShader->setVec4(Shader::U_ClipPlane5, plane5);
+    }
+
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, offset, renderStep)) {
-		glDrawArrays(GL_QUADS, 0, 4);
+        glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
+        glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
+        
+        glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, vertex_array);
+        glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+        
+        glVertexAttribPointer(Shader::ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, MatrixStack::Instance()->normals());
+        glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
+        
+        lastShader = lastEnabledShader();
+        if (lastShader) {
+          GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
+          MatrixStack::Instance()->getFloatv(MS_MODELVIEW, modelMatrix);
+          MatrixStack::Instance()->getFloatv(MS_PROJECTION, projectionMatrix);
+          MatrixStack::Instance()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
+          MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
+          MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);
+          
+          lastShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
+          lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+          lastShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
+          lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+          lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+          lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
+          
+          GLfloat plane0[4], plane1[4], plane5[4], media6[4];
+          MatrixStack::Instance()->getPlanev(0, plane0);
+          MatrixStack::Instance()->getPlanev(1, plane1);
+          MatrixStack::Instance()->getPlanev(5, plane5);
+          MatrixStack::Instance()->getPlanev(6, media6);
+          lastShader->setVec4(Shader::U_ClipPlane0, plane0);
+          lastShader->setVec4(Shader::U_ClipPlane1, plane1);
+          lastShader->setVec4(Shader::U_ClipPlane5, plane5);
+        }
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	}
         
 	glEnable(GL_DEPTH_TEST);

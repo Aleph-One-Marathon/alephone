@@ -492,7 +492,8 @@ void update_interpolated_world(float heartbeat_fraction)
 		for (auto j = 0; j < polygon.vertex_count; ++j)
 		{
 			auto side_index = polygon.side_indexes[j];
-			if (current_tick_sides[side_index].y0 !=
+            if (side_index != NONE &&
+                current_tick_sides[side_index].y0 !=
 				previous_tick_sides[side_index].y0)
 			{
 				map_sides[side_index].primary_texture.y0 = lerp(

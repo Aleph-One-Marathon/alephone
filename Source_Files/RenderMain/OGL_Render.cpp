@@ -569,6 +569,8 @@ bool OGL_StartRun()
 	    Bloom_sRGB = true;
 	}
 
+    Shader::loadAll();
+
 	_OGL_IsActive = true;
 	OGL_StartProgress(count_replacement_collections() + 2);
 

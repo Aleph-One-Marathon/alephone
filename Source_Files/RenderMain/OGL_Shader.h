@@ -119,7 +119,7 @@ private:
 	std::string _frag;
 	int16 _passes;
 	bool _loaded;
-    int nameIndex;
+    std::string shaderName;
 
 	static const char* _shader_names[NUMBER_OF_SHADER_TYPES];
 	static std::vector<Shader> _shaders;
@@ -155,10 +155,6 @@ public:
     void setVec4(UniformName name, float *f);
 
 	int16 passes();
-
-    int getNameIndex() {
-        return nameIndex;
-    }
 
 	static void disable();
 };

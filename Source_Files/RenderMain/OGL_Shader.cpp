@@ -262,17 +262,10 @@ void Shader::unloadAll() {
 }
 
 Shader::Shader(const std::string& name) : _programObj(0), _passes(-1), _loaded(false) {
-    nameIndex = -1;
+    shaderName = name;
 
     initDefaultPrograms();
-    
-    //Track name index.
-    for (int i = 0; i < Shader::NUMBER_OF_SHADER_TYPES; ++i) {
-      if (name == Shader::_shader_names[i]) {
-        nameIndex = i;
-      }
-    }
-    
+        
     if (defaultVertexPrograms.count(name) > 0) {
         _vert = defaultVertexPrograms[name];
     }
@@ -282,7 +275,7 @@ Shader::Shader(const std::string& name) : _programObj(0), _passes(-1), _loaded(f
 }
 
 Shader::Shader(const std::string& name, FileSpecifier& vert, FileSpecifier& frag, int16& passes) : _programObj(0), _passes(passes), _loaded(false) {
-    nameIndex = -1;
+    shaderName = name;
     
     initDefaultPrograms();
     
@@ -309,6 +302,9 @@ void Shader::init() {
     _programObj = glCreateProgram();
 
     assert(!_vert.empty());
+    
+    logError("Parsing vertex shader: %s\n", shaderName.c_str());
+    
     GLuint vertexShader = parseShader(_vert.c_str(), GL_VERTEX_SHADER_ARB);
     
     if(!vertexShader) {
@@ -319,6 +315,8 @@ void Shader::init() {
     glAttachShader((GLuint)(size_t)_programObj, (GLuint)(size_t)vertexShader);
     glDeleteShader((GLuint)(size_t)vertexShader);
 
+    logError("Parsing fragment shader: %s\n", shaderName.c_str());
+    
     assert(!_frag.empty());
     GLuint fragmentShader = parseShader(_frag.c_str(), GL_FRAGMENT_SHADER_ARB);
     glPushGroupMarkerEXT(0, "Draw ES Quad");
@@ -390,14 +388,9 @@ Shader::~Shader() {
 
 void Shader::enable() {
     if(!_loaded) { init(); }
-    if(nameIndex >=0){
-      glPushGroupMarkerEXT(0, _shader_names[nameIndex]);
-    } else {
-       glPushGroupMarkerEXT(0, "non-default shader");
-    }
+    
     glUseProgram(_programObj);
     setLastEnabledShader(this);
-    glPopGroupMarkerEXT();
 }
 
 void Shader::disable() {
@@ -427,12 +420,15 @@ void initDefaultPrograms() {
     
     
     defaultVertexPrograms["error"] = ""
+    "uniform mat4 MS_ModelViewProjectionMatrix;"
+    "attribute vec4 vPosition;\n"
     "varying vec4 vertexColor;\n"
     "void main(void) {\n"
-    "    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
+    "    gl_Position = MS_ModelViewProjectionMatrix * vPosition;\n"
     "    vertexColor = vec4(1.0, 1.0, 0.0, 1.0);\n"
     "}\n";
     defaultFragmentPrograms["error"] = ""
+    "precision highp float;\n"
     "float round(float n){ \n"
     "   float nSign = 1.0; \n"
     "   if ( n < 0.0 ) { nSign = -1.0; }; \n"
@@ -446,7 +442,7 @@ void initDefaultPrograms() {
     "       phase = checkerSize;\n"
     "    }\n"
     "    if (mod(round((gl_FragCoord.x + phase) / checkerSize), 2.0)==0.0) {\n"
-    "       gl_FragColor.a = 0.5;\n"
+    "       gl_FragColor.a = 0.05;\n"
     "    }\n"
     "}\n";
     
@@ -917,46 +913,82 @@ void initDefaultPrograms() {
         "}\n";
 	
     defaultVertexPrograms["wall"] = ""
+        "uniform mat4 MS_ModelViewProjectionMatrix;\n"
+        "uniform mat4 MS_ModelViewMatrix;\n"
+        "uniform mat4 MS_ModelViewMatrixInverse;\n"
+        "uniform mat4 MS_TextureMatrix;\n"
+        "uniform vec4 vColor;\n"
+        "uniform vec4 vFogColor;\n"
+        "uniform vec4 vTexCoord4;   \n"
         "uniform float depth;\n"
+        "attribute vec2 vTexCoord;   \n"
+        "attribute vec3 vNormal;   \n"
+        "attribute vec4 vPosition;\n"
+        "varying vec2 textureUV2;   \n"
+        "varying vec2 textureUV;   \n"
+        "varying vec4 fogColor;\n"
+        "varying vec3 normal;\n"
         "varying vec3 viewXY;\n"
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
         "varying float FDxLOG2E;\n"
         "varying float classicDepth;\n"
         "varying vec4 vPosition_eyespace;\n"
+        "highp mat4 transpose(in highp mat4 inMatrix) {\n"  //I have not tested this.
+        "    highp vec4 i0 = inMatrix[0];\n"
+         "   highp vec4 i1 = inMatrix[1];\n"
+        "    highp vec4 i2 = inMatrix[2];\n"
+        "    highp vec4 i3 = inMatrix[3];\n"
+
+        "    highp mat4 outMatrix = mat4(\n"
+        "                 vec4(i0.x, i1.x, i2.x, i3.x),\n"
+        "                 vec4(i0.y, i1.y, i2.y, i3.y),\n"
+        "                 vec4(i0.z, i1.z, i2.z, i3.z),\n"
+        "                 vec4(i0.w, i1.w, i2.w, i3.w)\n"
+        "                 );\n"
+
+        "    return outMatrix;\n"
+        "}\n"
         "void main(void) {\n"
-        "   vPosition_eyespace = gl_ModelViewMatrix * gl_Vertex;\n"
-        "    gl_Position  = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
+        "    vPosition_eyespace = MS_ModelViewMatrix * vPosition;\n"
+        "    gl_Position  = MS_ModelViewProjectionMatrix * vPosition;\n"
         "    gl_Position.z = gl_Position.z + depth*gl_Position.z/65536.0;\n"
         "    classicDepth = gl_Position.z / 8192.0;\n"
         "#ifndef DISABLE_CLIP_VERTEX\n"
-        "    gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
+//        "    gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
         "#endif\n"
-        "    gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;\n"
+        "    vec4 UV4 = vec4(vTexCoord.x, vTexCoord.y, 0.0, 1.0);\n"           //DCW shitty attempt to stuff texUV into a vec4
+        "    mat3 normalMatrix = mat3(transpose(MS_ModelViewMatrixInverse));\n"           //DCW shitty replacement for gl_NormalMatrix
+        "    textureUV = (MS_TextureMatrix * UV4).xy;\n"
         "    /* SETUP TBN MATRIX in normal matrix coords, gl_MultiTexCoord1 = tangent vector */\n"
-        "    vec3 n = normalize(gl_NormalMatrix * gl_Normal);\n"
-        "    vec3 t = normalize(gl_NormalMatrix * gl_MultiTexCoord1.xyz);\n"
-        "    vec3 b = normalize(cross(n, t) * gl_MultiTexCoord1.w);\n"
+        "    vec3 n = normalize(normalMatrix * vNormal);\n"
+        "    vec3 t = normalize(normalMatrix * vTexCoord4.xyz);\n"
+        "    vec3 b = normalize(cross(n, t) * vTexCoord4.w);\n"
         "    /* (column wise) */\n"
         "    mat3 tbnMatrix = mat3(t.x, b.x, n.x, t.y, b.y, n.y, t.z, b.z, n.z);\n"
         "    \n"
         "    /* SETUP VIEW DIRECTION in unprojected local coords */\n"
-        "    viewDir = tbnMatrix * (gl_ModelViewMatrix * gl_Vertex).xyz;\n"
-        "    viewXY = -(gl_TextureMatrix[0] * vec4(viewDir.xyz, 1.0)).xyz;\n"
+        "    viewDir = tbnMatrix * (MS_ModelViewMatrix * vPosition).xyz;\n"
+        "    viewXY = -(MS_TextureMatrix * vec4(viewDir.xyz, 1.0)).xyz;\n"
         "    viewDir = -viewDir;\n"
-        "    vertexColor = gl_Color;\n"
-        "    FDxLOG2E = -gl_Fog.density * 1.442695;\n"
+        "    vertexColor = vColor;\n"
+        "    FDxLOG2E = -(1.0-vFogColor.a) * 1.442695;\n" //dcw that 1- may be wrong.
+        "    fogColor = vFogColor;"
         "}\n";
     defaultFragmentPrograms["wall"] = ""
+        "precision highp float;\n"
+        "uniform vec4 clipPlane0;\n"
+        "uniform vec4 clipPlane1;\n"
+        "uniform vec4 clipPlane5;\n"
+        "varying vec4 fogColor; \n"
+        "varying vec2 textureUV; \n"
         "uniform sampler2D texture0;\n"
         "uniform float pulsate;\n"
         "uniform float wobble;\n"
         "uniform float glow;\n"
         "uniform float flare;\n"
         "uniform float selfLuminosity;\n"
-        "uniform vec4 clipPlane0;\n"
-        "uniform vec4 clipPlane1;\n"
-        "uniform vec4 clipPlane5;\n"
+        "uniform vec4 mediaPlane;"
         "varying vec3 viewXY;\n"
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
@@ -968,7 +1000,7 @@ void initDefaultPrograms() {
         "   if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {unwantedFragment = true;}\n"
         "   if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {unwantedFragment = true;}\n"
         "   if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {unwantedFragment = true;}\n"
-        "    vec3 texCoords = vec3(gl_TexCoord[0].xy, 0.0);\n"
+        "    vec3 texCoords = vec3(textureUV.xy, 0.0);\n"
         "    vec3 normXY = normalize(viewXY);\n"
         "    texCoords += vec3(normXY.y * -pulsate, normXY.x * pulsate, 0.0);\n"
         "    texCoords += vec3(normXY.y * -wobble * texCoords.y, wobble * texCoords.y, 0.0);\n"
@@ -985,7 +1017,8 @@ void initDefaultPrograms() {
         "#endif\n"
         "    vec4 color = texture2D(texture0, texCoords.xy);\n"
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
-        "    gl_FragColor = vec4(mix(gl_Fog.color.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
+        "    fogFactor=clamp( length(viewDir), 0.0, 1.0);\n"
+        "    gl_FragColor = vec4(mix(fogColor.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "   if( unwantedFragment ) {gl_FragColor.a = 0.0;}\n"
         "}\n";
     defaultVertexPrograms["wall_bloom"] = defaultVertexPrograms["wall"];
