@@ -2263,6 +2263,8 @@ uint8 *unpack_player_data(uint8 *Stream, player_data *Objects, size_t Count)
 		StreamToList(S,ObjPtr->netgame_parameters,2);
 		
 		S += 256*2;
+
+		ObjPtr->hotkey_sequence = 0;
 	}
 	
 	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_player_data));
