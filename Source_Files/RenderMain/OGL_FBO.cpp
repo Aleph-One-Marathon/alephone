@@ -94,8 +94,9 @@ void FBO::activate(bool clear, GLuint fboTarget) {
 		glViewport(0, 0, _w, _h);
 		if (_srgb)
 			glEnable(GL_FRAMEBUFFER_SRGB);
-		else
-			glDisable(GL_FRAMEBUFFER_SRGB);
+        else {
+			//glDisable(GL_FRAMEBUFFER_SRGB); //NOT SUPPORTED ANGLE ENUM
+        }
 		if (clear)
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
@@ -115,10 +116,12 @@ void FBO::deactivate() {
 			prev_srgb = active_chain.back()->_srgb;
 		}
 		glBindFramebuffer(_fboTarget, prev_fbo);
+        
 		if (prev_srgb)
 			glEnable(GL_FRAMEBUFFER_SRGB);
-		else
-			glDisable(GL_FRAMEBUFFER_SRGB);
+        else {
+			//glDisable(GL_FRAMEBUFFER_SRGB); //NOT SUPPORTED ANGLE ENUM
+        }
 	}
 }
 
@@ -285,7 +288,7 @@ void FBOSwapper::blend_multisample(FBO& other) {
 	glActiveTexture(GL_TEXTURE0);
 	
 	glClientActiveTexture(GL_TEXTURE1);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	GLint multi_coordinates[8] = { 0, GLint(other._h), GLint(other._w), GLint(other._h), GLint(other._w), 0, 0, 0 };
 	glTexCoordPointer(2, GL_INT, 0, multi_coordinates);
 	glClientActiveTexture(GL_TEXTURE0);
@@ -298,7 +301,7 @@ void FBOSwapper::blend_multisample(FBO& other) {
 	glActiveTexture(GL_TEXTURE0);
 	
 	glClientActiveTexture(GL_TEXTURE1);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	glClientActiveTexture(GL_TEXTURE0);
 	
 	deactivate();

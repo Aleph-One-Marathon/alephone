@@ -296,8 +296,8 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, TxtrWidth, TxtrHeight,
         0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, OGL_Texture);
      
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    //glEnableClientState(GL_VERTEX_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
+    //glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
     
      // Allocate and create display lists of rendering commands
      GLfloat TWidNorm = GLfloat(1)/TxtrWidth;
@@ -379,13 +379,13 @@ void FontSpecifier::OGL_Render(const char *Text)
     //glPushAttrib(GL_ENABLE_BIT);
     
         //Save and restore state without push/pop attributes.
-    bool isEnabled_GT2 = glIsEnabled ( GL_TEXTURE_2D );
+    //bool isEnabled_GT2 = glIsEnabled ( GL_TEXTURE_2D ); //NOT SUPPORTED ANGLE ENUM
     bool isEnabled_GB = glIsEnabled ( GL_BLEND );
-    bool isEnabled_GAT = glIsEnabled ( GL_ALPHA_TEST );
+    //bool isEnabled_GAT = glIsEnabled ( GL_ALPHA_TEST ); //NOT SUPPORTED ANGLE ENUM
     
-    glEnable(GL_TEXTURE_2D);
+    //glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
     glEnable(GL_BLEND);
-    glDisable(GL_ALPHA_TEST);
+    //glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
     glBindTexture(GL_TEXTURE_2D,TxtrID);
@@ -423,9 +423,9 @@ void FontSpecifier::OGL_Render(const char *Text)
     }
     
     //glPopAttrib();
-    if ( isEnabled_GT2 ) { glEnable ( GL_TEXTURE_2D ); } else { glDisable ( GL_TEXTURE_2D ); }
+    //if ( isEnabled_GT2 ) { glEnable ( GL_TEXTURE_2D ); } else { glDisable ( GL_TEXTURE_2D ); } //NOT SUPPORTED ANGLE ENUM
     if ( isEnabled_GB ) { glEnable ( GL_BLEND ); } else { glDisable ( GL_BLEND ); }
-    if ( isEnabled_GAT ) { glEnable ( GL_ALPHA_TEST ); } else { glDisable ( GL_ALPHA_TEST ); }
+    //if ( isEnabled_GAT ) { glEnable ( GL_ALPHA_TEST ); } else { glDisable ( GL_ALPHA_TEST ); } //NOT SUPPORTED ANGLE ENUM
     
     //Restore original shader
     if(previousShader) { previousShader->enable(); }

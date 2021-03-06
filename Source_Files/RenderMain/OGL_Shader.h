@@ -34,9 +34,13 @@ friend class Shader_MML_Parser;
 public:
 	enum UniformName {
 		U_Texture0,
+        U_Texture0_Size,
 		U_Texture1,
+        U_Texture1_Size,
 		U_Texture2,
+        U_Texture2_Size,
 		U_Texture3,
+        U_Texture3_Size,
 		U_Time,
 		U_Pulsate,
 		U_Wobble,
@@ -102,6 +106,7 @@ public:
 		S_Gamma,
         S_Rect,
         S_PlainRect,
+        S_SolidColor,
 		NUMBER_OF_SHADER_TYPES
 	};
     
@@ -153,6 +158,7 @@ public:
 	void setFloat(UniformName name, float); // shader must be enabled
 	void setMatrix4(UniformName name, float *f);
     void setVec4(UniformName name, float *f);
+    void setVec2(UniformName name, float *f);
 
 	int16 passes();
 

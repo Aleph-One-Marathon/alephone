@@ -594,15 +594,15 @@ bool OGL_StartRun()
 	
 	// [DEFAULT]
 	// Set standard alpha-test function; cut off at halfway point (for sharp edges)
-	glAlphaFunc(GL_GREATER,0.5);
+	//glAlphaFunc(GL_GREATER,0.5); //NOT SUPPORTED ANGLE FUNCTION
 	
 	// [DEFAULT]
 	// Set standard crossfade blending function (for smooth transitions)
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	
 	// Switch on use of vertex and texture-coordinate arrays
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glEnableClientState(GL_VERTEX_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 
 	OGL_Rasterizer_Init();
 	
@@ -834,7 +834,7 @@ bool OGL_StartMain()
 	CurrFog = OGL_GetFogData(FogType);
 	if (FogActive())
 	{
-		glEnable(GL_FOG);
+		//glEnable(GL_FOG); //NOT SUPPORTED ANGLE ENUM
 		Using_sRGB = Wanting_sRGB;
 		CurrFogColor[0] = sRGB_frob(CurrFog->Color.red/65535.0F);
 		CurrFogColor[1] = sRGB_frob(CurrFog->Color.green/65535.0F);
@@ -848,13 +848,13 @@ bool OGL_StartMain()
 			else
 				FindInfravisionVersionRGBA(LoadedWallTexture,CurrFogColor);
 		}
-		glFogfv(GL_FOG_COLOR,CurrFogColor);
-		glFogf(GL_FOG_DENSITY,1.0F/MAX(1,WORLD_ONE*CurrFog->Depth));
+        MSI()->fogColor3f(CurrFogColor[0], CurrFogColor[1], CurrFogColor[2]); //I hope we don't need the alpha channel?
+		MSI()->fogDensity(1.0F/MAX(1,WORLD_ONE*CurrFog->Depth));
 	}
 	else
 	{
-		glFogf(GL_FOG_DENSITY,0.0F);
-		glDisable(GL_FOG);
+		MSI()->fogDensity(0.0F);
+		//glDisable(GL_FOG); //NOT SUPPORTED ANGLE ENUM
 	}
 	
 	// Set the color of the void
@@ -914,7 +914,7 @@ bool OGL_EndMain()
 	MSI()->loadIdentity();
 	
 	// No texture mapping now
-	glDisable(GL_TEXTURE_2D);
+	//glDisable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 	
 	// And no Z buffer
 	glDisable(GL_DEPTH_TEST);
@@ -1547,7 +1547,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 			}
 			
 			// Set up for vertex lighting
-			glEnableClientState(GL_COLOR_ARRAY);
+			//glEnableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 			glColorPointer(3,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].Color);
 			
 			// Calculate the lighting
@@ -1574,17 +1574,17 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		if (IsBlended)
 		{
 			glEnable(GL_BLEND);
-			glDisable(GL_ALPHA_TEST);
+			//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 			glDisable(GL_DEPTH_TEST);
 		} else {
 			glDisable(GL_BLEND);
-			glEnable(GL_ALPHA_TEST);
+			//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		}
 	} else {
 		// Completely opaque if can't see through void
 		IsBlended = false;
 		glDisable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 	}
 	
 	// Proper projection
@@ -1595,7 +1595,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	glTexCoordPointer(2,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
 	
 	// Painting a texture...
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 
 	TMgr.SetupTextureMatrix();
 	TMgr.RenderNormal();	
@@ -1744,7 +1744,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		glDrawElements(GL_TRIANGLES,3*(NumVertices-2),GL_UNSIGNED_INT,VertIndices);
 		
 		// Switch off
-		glDisableClientState(GL_COLOR_ARRAY);
+		//glDisableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	}
 	else
 		// Go!
@@ -1761,7 +1761,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		// Added "IsBlended" test, so that alpha-channel selection would work properly
 		// on a glowmap texture that is atop a texture that is opaque to the void.
 		glEnable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		glDisable(GL_DEPTH_TEST);
 		
 		TMgr.RenderGlowing();
@@ -1769,10 +1769,10 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		
 		if (PolygonVariableShade)
 		{
-			glEnableClientState(GL_COLOR_ARRAY);
+			//glEnableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 			glColorPointer(3,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].GlowColor);
 			glDrawElements(GL_TRIANGLES,3*(NumVertices-2),GL_UNSIGNED_INT,VertIndices);
-			glDisableClientState(GL_COLOR_ARRAY);
+			//glDisableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 		}
 		else
 		{
@@ -1802,14 +1802,14 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	if (AffectsLandscapes)
 	{
 		// Render as fog at infinity
-		glDisable(GL_FOG);
-		glDisable(GL_TEXTURE_2D);
+		//glDisable(GL_FOG); //NOT SUPPORTED ANGLE ENUM
+		//glDisable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 		
 		// Set up the color
 		MSI()->color3f(CurrFogColor[0], CurrFogColor[1], CurrFogColor[2]);
 		
 		// Set up blending mode: opaque
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		glDisable(GL_BLEND);
 		
 		// Proper projection
@@ -1833,21 +1833,23 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 			AltEV.Vertex[2] = -1;			// At positive oo
 		}
 		// Fog is flat-colored
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);		
+		//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 		glVertexPointer(3,GL_SHORT,sizeof(AltExtendedVertexData),AltEVList[0].Vertex);
 		
 		// Go!
 		glDrawArrays(GL_TRIANGLE_FAN,0,NumVertices);
 		
 		// Restore
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glEnable(GL_FOG);
+		//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
+		//glEnable(GL_FOG); //NOT SUPPORTED ANGLE ENUM
 		
 		return true;
 	}
 	
 	// Otherwise, the landscape would get fogged as a function of its world-geometry location
-	if (IsActive) glDisable(GL_FOG);
+    if (IsActive){
+        //glDisable(GL_FOG); //NOT SUPPORTED ANGLE ENUM
+    }
 
 	// Get the landscape-texturing options
 	LandscapeOptions *LandOpts = View_GetLandscapeOptions(RenderPolygon.ShapeDesc);
@@ -1886,7 +1888,9 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	// Use that texture
 	if (!TMgr.Setup())
 	{
-		if (IsActive) glEnable(GL_FOG);
+        if (IsActive) {
+            //glEnable(GL_FOG); //NOT SUPPORTED ANGLE ENUM
+        }
 		return false;
 	}
 	
@@ -1934,15 +1938,15 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 		if (IsBlended)
 		{
 			glEnable(GL_BLEND);
-			glDisable(GL_ALPHA_TEST);
+			//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		} else {
 			glDisable(GL_BLEND);
-			glEnable(GL_ALPHA_TEST);
+			//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		}
 	} else {
 		// Completely opaque if can't see through void
 		glDisable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 	}
 	
 	// Proper projection
@@ -1953,7 +1957,7 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	glTexCoordPointer(2,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
 	
 	// Painting a texture...
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 	TMgr.SetupTextureMatrix();
 	TMgr.RenderNormal();
 	
@@ -1972,7 +1976,7 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 		// on a glowmap texture that is atop a texture that is opaque to the void.
 		MSI()->color3f(1,1,1);
 		glEnable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		
 		TMgr.RenderGlowing();
 		SetBlend(TMgr.GlowBlend());
@@ -1983,7 +1987,9 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	SetBlend(OGL_BlendType_Crossfade);
 	TMgr.RestoreTextureMatrix();
 	
-	if (IsActive) glEnable(GL_FOG);
+    if (IsActive) {
+        //glEnable(GL_FOG); //NOT SUPPORTED ANGLE ENUM
+    }
 	return true;
 }
 
@@ -2159,7 +2165,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	// Location of data:
 	glVertexPointer(3,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].Vertex);
 	glTexCoordPointer(2,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 		
 	// Go!
 	TMgr.SetupTextureMatrix();
@@ -2197,7 +2203,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 			GLfloat GlowColor = TMgr.MinGlowIntensity();
 			MSI()->color4f(std::max(GlowColor,Color[0]),std::max(GlowColor,Color[1]),std::max(GlowColor,Color[2]),Color[3]);
 			glEnable(GL_BLEND);
-			glDisable(GL_ALPHA_TEST);
+			//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 			glDisable(GL_DEPTH_TEST);
 			
 			TMgr.RenderGlowing();
@@ -2493,7 +2499,9 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		SetBlend(OGL_BlendType_Crossfade);
 		
 		// Restore default
-		if (ExternallyLit) glDisableClientState(GL_COLOR_ARRAY);
+        if (ExternallyLit) {
+            //glDisableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
+        }
 	}
 	
 	// Restore the default render sidedness
@@ -2520,7 +2528,7 @@ bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool& IsBlende
 		// Crisp, no glowmap
 		IsBlended = false;
 		IsGlowmappable = false;
-		glEnable(GL_ALPHA_TEST);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		glDisable(GL_BLEND);
 		return IsGlowmappable;
 	}
@@ -2560,11 +2568,11 @@ bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool& IsBlende
 	// or are otherwise semitransparent
 	if (IsInvisible || IsBlended || (RenderRectangle.Opacity < 1))
 	{
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		glEnable(GL_BLEND);
 		IsBlended = true;
 	} else { 
-		glEnable(GL_ALPHA_TEST);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		glDisable(GL_BLEND);
 	}
 	
@@ -2582,7 +2590,7 @@ void SetupStaticMode(int16 transfer_data)
 		FlatStaticColor[3] = 65535 - transfer_data;
 		
 		// Do flat-color version of static effect
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		glEnable(GL_BLEND);
 		SglColor4usv(FlatStaticColor);
 	} else {
@@ -2670,7 +2678,7 @@ void GlowingShader(void *Data)
 	GLfloat GlowColor = ShaderData.SkinPtr->MinGlowIntensity;
 	SglColor4f(std::max(ShaderData.Color[0],GlowColor),std::max(ShaderData.Color[1],GlowColor),std::max(ShaderData.Color[2],GlowColor),ShaderData.Color[3]*(Using_sRGB ? ShaderData.Color[3] : 1.0));
 	glEnable(GL_BLEND);
-	glDisable(GL_ALPHA_TEST);
+	//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 	
 	if (ShaderData.ModelPtr->Use(ShaderData.CLUT,OGL_SkinManager::Glowing))
 	{
@@ -2717,14 +2725,14 @@ void StaticModeIndivSetup(int SeqNo)
 		glStencilOp(GL_KEEP, GL_ZERO, GL_ZERO);
 		glStencilMask(1);
 		glDisable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
 		break;
 		
 	case 1:
 		// The stencil buffer will become 1 everywhere a pixel is to be rendered
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-		glEnable(GL_ALPHA_TEST);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		break;
 		
 	case 2:
@@ -2732,7 +2740,7 @@ void StaticModeIndivSetup(int SeqNo)
 		glStencilFunc(GL_EQUAL,1,1);
 		glStencilMask(0);
 		glEnable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		if(Using_sRGB) glDisable(GL_FRAMEBUFFER_sRGB);
 		glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
 		MSI()->color4f(1,1,1,Using_sRGB ? StencilTxtrOpacity*StencilTxtrOpacity : StencilTxtrOpacity);	// Static is fully bright and partially transparent
@@ -2896,8 +2904,8 @@ bool OGL_RenderCrosshairs()
 	SetProjectionType(Projection_Screen);
 
 	// No textures painted here, but will blend
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_ALPHA_TEST);
+	//glDisable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
+	//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 	glEnable(GL_BLEND);
 	
 	// What color; make 50% transparent (Alexander Strange's idea)
@@ -3082,15 +3090,15 @@ bool OGL_RenderText(short BaseX, short BaseY, const char *Text, unsigned char r,
 
 void OGL_RenderRect(float x, float y, float w, float h)
 {
-	glDisable(GL_TEXTURE_2D);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glDisable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	
 	GLfloat vertices[8] = { x, y, x + w, y, x + w, y + h, x, y + h };
 	glVertexPointer(2, GL_FLOAT, 0, vertices);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-	glEnable(GL_TEXTURE_2D);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 }
 
 void OGL_RenderRect(const SDL_Rect& rect)
@@ -3150,8 +3158,8 @@ void OGL_RenderTexturedRect(const SDL_Rect& rect, float tleft, float ttop, float
 
 void OGL_RenderFrame(float x, float y, float w, float h, float t)
 {
-	glDisable(GL_TEXTURE_2D);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glDisable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	
 	GLfloat vertices[20] = {
 		x,         y,
@@ -3165,11 +3173,16 @@ void OGL_RenderFrame(float x, float y, float w, float h, float t)
 		x,		   y,
 		x + t,	   y + t
 	};
-	glVertexPointer(2, GL_FLOAT, 0, vertices);
+	//glVertexPointer(2, GL_FLOAT, 0, vertices);
+    
+    //DCW honestly I don't know what this function is even for.
+    glVertexAttribPointer(Shader::ATTRIB_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 10);
 	
-	glEnable(GL_TEXTURE_2D);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 }
 
 void OGL_RenderLines(const std::vector<world_point2d>& points, float thickness)
@@ -3177,8 +3190,8 @@ void OGL_RenderLines(const std::vector<world_point2d>& points, float thickness)
 	if (points.empty())
 		return;
 	
-	glDisable(GL_TEXTURE_2D);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glDisable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	
 	std::vector<GLfloat> coords;
 	for (size_t i = 1; i < points.size(); i += 2)
@@ -3219,8 +3232,8 @@ void OGL_RenderLines(const std::vector<world_point2d>& points, float thickness)
 		glDrawArrays(GL_TRIANGLES, 0, coords.size() / 2);
 	}
 	
-	glEnable(GL_TEXTURE_2D);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 }
 
 // Render the console cursor

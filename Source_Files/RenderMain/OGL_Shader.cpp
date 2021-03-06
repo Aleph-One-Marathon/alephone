@@ -60,9 +60,13 @@ std::vector<Shader> Shader::_shaders;
 const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] = 
 {
 	"texture0",
+    "texture0_size",
 	"texture1",
+    "texture1_size",
 	"texture2",
+    "texture2_size",
 	"texture3",
+    "texture3_size",
 	"time",
 	"pulsate",
 	"wobble",
@@ -127,7 +131,8 @@ const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] =
 	"bump_bloom",
 	"gamma",
     "rect",
-    "plain_rect"
+    "plain_rect",
+    "solid_color"
 };
 
 
@@ -381,6 +386,9 @@ void Shader::setVec4(UniformName name, float *f) {
   glUniform4f(getUniformLocation(name), f[0], f[1], f[2], f[3]);
 }
 
+void Shader::setVec2(UniformName name, float *f) {
+  glUniform2f(getUniformLocation(name), f[0], f[1]);
+}
 
 Shader::~Shader() {
 	unload();
@@ -447,20 +455,32 @@ void initDefaultPrograms() {
     "}\n";
     
 	defaultVertexPrograms["gamma"] = ""
-	"varying vec4 vertexColor;\n"
-	"void main(void) {\n"
-	"	gl_TexCoord[0] = gl_MultiTexCoord0;\n"
-	"	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-	"	vertexColor = gl_Color;\n"
-	"}\n";
-	defaultFragmentPrograms["gamma"] = ""
-	"uniform sampler2DRect texture0;\n"
-	"uniform float gammaAdjust;\n"
-	"void main (void) {\n"
-	"	vec4 color0 = texture2DRect(texture0, gl_TexCoord[0].xy);\n"
-	"	gl_FragColor = vec4(pow(color0.r, gammaAdjust), pow(color0.g, gammaAdjust), pow(color0.b, gammaAdjust), 1.0);\n"
-	"}\n";
-	
+      "uniform mat4 MS_ModelViewProjectionMatrix;\n"
+      "uniform mat4 MS_ModelViewMatrix;\n"
+      "attribute vec4 vPosition;\n"
+      "uniform vec4 vColor;\n"
+      "uniform vec4 vFogColor;\n"
+      "attribute vec2 vTexCoord;   \n"
+      "varying vec2 textureUV;   \n"
+      "varying vec4 fogColor;\n"
+        "varying vec4 vertexColor;\n"
+        "void main(void) {\n"
+        "    textureUV = vTexCoord;\n"
+        "    gl_Position = MS_ModelViewProjectionMatrix * vPosition;\n"
+        "    vertexColor = vColor;\n"
+        "}\n";
+        defaultFragmentPrograms["gamma"] = ""
+      "precision highp float;\n"
+      "varying highp vec2 textureUV; \n"
+        "uniform sampler2D texture0;\n"
+        "uniform float gammaAdjust;\n"
+        "uniform vec2 texture0_size;\n"
+           "void main (void) {\n"
+        "    vec2 normalizedUV = vec2(textureUV.x/texture0_size.x , textureUV.y/texture0_size.y);\n"
+        "    vec4 color0 = texture2D(texture0, normalizedUV);\n"
+        "    gl_FragColor = vec4(pow(color0.r, gammaAdjust), pow(color0.g, gammaAdjust), pow(color0.b, gammaAdjust), 1.0);\n"
+        "}\n";
+
     defaultVertexPrograms["plain_rect"] = ""
       "attribute vec4 vPosition;   \n"
       "attribute vec2 vTexCoord;   \n"
@@ -505,6 +525,25 @@ void initDefaultPrograms() {
       "void main()                                \n"
       "{                                          \n"
       "gl_FragColor = texture(texture0, textureUV.xy) * vertexColor;\n"
+      "} \n";
+
+    defaultVertexPrograms["solid_color"] = ""
+      "uniform mat4 MS_ModelViewProjectionMatrix;\n"
+      "uniform vec4 vColor;\n"
+      "attribute vec4 vPosition;   \n"
+      "varying vec4 vertexColor;\n"
+      "void main()                 \n"
+      "{                           \n"
+      "  vertexColor = vColor;\n"
+      "  gl_Position = MS_ModelViewProjectionMatrix * vPosition;  \n"
+      "} \n";
+    
+      defaultFragmentPrograms["solid_color"] = ""
+      "precision highp float;\n"
+      "varying vec4 vertexColor;\n"
+      "void main()                                \n"
+      "{                                          \n"
+      "     gl_FragColor = vertexColor;\n"
       "} \n";
     
     defaultVertexPrograms["blur"] = ""
@@ -672,27 +711,37 @@ void initDefaultPrograms() {
 		;
 	
     defaultVertexPrograms["sprite"] = ""
+        "uniform mat4 MS_ModelViewProjectionMatrix;\n"
+        "uniform mat4 MS_ModelViewMatrix;\n"
+        "uniform mat4 MS_ModelViewMatrixInverse;\n"
+        "uniform mat4 MS_TextureMatrix;\n"
+        "uniform vec4 vColor;\n"
+        "uniform vec4 vFogColor;\n"
         "uniform float depth;\n"
         "uniform float strictDepthMode;\n"
+        "attribute vec4 vPosition;\n"
+        "attribute vec2 vTexCoord;   \n"
+        "varying vec2 textureUV;   \n"
+        "varying vec4 fogColor;\n"
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
         "varying float FDxLOG2E;\n"
         "varying float classicDepth;\n"
         "varying vec4 vPosition_eyespace;\n"
         "void main(void) {\n"
-        "   vPosition_eyespace = gl_ModelViewMatrix * gl_Vertex;\n"
-        "    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
+        "    vPosition_eyespace = MS_ModelViewMatrix * vPosition;\n"
+        "    gl_Position = MS_ModelViewProjectionMatrix * vPosition;\n"
         "    classicDepth = gl_Position.z / 8192.0;\n"
-        "#ifndef DISABLE_CLIP_VERTEX\n"
-        "    gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
-        "#endif\n"
-        "    vec4 v = gl_ModelViewMatrixInverse * vec4(0.0, 0.0, 0.0, 1.0);\n"
-        "    viewDir = (gl_Vertex - v).xyz;\n"
-        "    gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;\n"
-        "    vertexColor = gl_Color;\n"
-        "    FDxLOG2E = -gl_Fog.density * 1.442695;\n"
+        "    vec4 v = MS_ModelViewMatrixInverse * vec4(0.0, 0.0, 0.0, 1.0);\n"
+        "    viewDir = (vPosition - v).xyz;\n"
+        "    vec4 UV4 = vec4(vTexCoord.x, vTexCoord.y, 0.0, 1.0);\n"           //DCW shitty attempt to stuff texUV into a vec4
+        "    textureUV = (MS_TextureMatrix * UV4).xy;\n"
+        "    vertexColor = vColor;\n"
+        "    FDxLOG2E = -vFogColor.a * 1.442695;\n"
+        "    fogColor = vFogColor;\n"
         "}\n";
     defaultFragmentPrograms["sprite"] = ""
+        "precision highp float;\n"
         "uniform sampler2D texture0;\n"
         "uniform float glow;\n"
         "uniform float flare;\n"
@@ -700,11 +749,19 @@ void initDefaultPrograms() {
         "uniform vec4 clipPlane0;\n"
         "uniform vec4 clipPlane1;\n"
         "uniform vec4 clipPlane5;\n"
+        "uniform vec4 mediaPlane;\n"
+        "uniform float logicalWidth;\n"
+        "uniform float logicalHeight;\n"
+        "uniform float pixelWidth;\n"
+        "uniform float pixelHeight;\n"
+        "varying highp vec4 fogColor; \n"
+        "varying highp vec2 textureUV; \n"
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
         "varying float FDxLOG2E;\n"
         "varying float classicDepth;\n"
         "varying vec4 vPosition_eyespace;\n"
+
         "void main (void) {\n"
         "  bool unwantedFragment = false;\n"
         "  if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {unwantedFragment = true;}\n"
@@ -721,10 +778,11 @@ void initDefaultPrograms() {
         "#ifdef GAMMA_CORRECTED_BLENDING\n"
         "    intensity = intensity * intensity; // approximation of pow(intensity, 2.2)\n"
         "#endif\n"
-        "    vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
+        "    vec4 color = texture2D(texture0, textureUV.xy);\n"
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
-        "    gl_FragColor = vec4(mix(gl_Fog.color.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
-        "   if( unwantedFragment ) {gl_FragColor.a = 0.0;}\n"
+        "    gl_FragColor = vec4(mix(fogColor.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
+        "    if( unwantedFragment ) {gl_FragColor.a = 0.0;}\n"
+        "    if ( gl_FragColor.a == 0.0 ) {discard;} //discard transparent fragments so they don't write on the depth buffer \n "
         "}\n";
     defaultVertexPrograms["sprite_bloom"] = defaultVertexPrograms["sprite"];
     defaultFragmentPrograms["sprite_bloom"] = ""

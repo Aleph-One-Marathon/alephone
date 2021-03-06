@@ -45,6 +45,7 @@ static uint16 FlatStaticColor[4];
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
 #include "MatrixStack.hpp"
+#include "OGL_Shader.h"
 #endif
 
 // Fader stuff
@@ -100,13 +101,24 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 	Vertices[2][1] = Bottom;
 	Vertices[3][0] = Left;
 	Vertices[3][1] = Bottom;
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glVertexPointer(2,GL_FLOAT,0,Vertices[0]);
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
+	//glVertexPointer(2,GL_FLOAT,0,Vertices[0]);
 	
+    GLfloat modelProjection[16];
+    MSI()->getFloatvModelviewProjection(modelProjection);
+      
+    Shader *s = Shader::get(Shader::S_SolidColor);
+    s->enable();
+    s->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+      
+    glVertexAttribPointer(Shader::ATTRIB_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, Vertices[0]);
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+
+    
 	// Do real blending
-	glDisable(GL_ALPHA_TEST);
+	//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 	glEnable(GL_BLEND);
-	glDisable(GL_TEXTURE_2D);
+	//glDisable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 	
 	// Modified color:
 	GLfloat BlendColor[4];	
@@ -123,6 +135,7 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 		case _tint_fader_type:
 			// The simplest kind: fade to the fader color.
 			SglColor4fv(Fader.Color);
+            s->setVec4(Shader::U_Color, MSI()->color());
 			glDrawArrays(GL_TRIANGLE_FAN,0,4);
 			break;
 		
@@ -131,11 +144,12 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 			if (UseFlatStatic)
 			{
 				for (int c=0; c<3; c++)
-					FlatStaticColor[c] = FlatStaticRandom.KISS() + FlatStaticRandom.LFIB4();
+                FlatStaticColor[c] = FlatStaticRandom.KISS() + FlatStaticRandom.LFIB4();
 				FlatStaticColor[3] = PIN(int(65535*Fader.Color[3]+0.5),0,65535);
-				glDisable(GL_ALPHA_TEST);
+				//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 				glEnable(GL_BLEND);
 				SglColor4usv(FlatStaticColor);
+                s->setVec4(Shader::U_Color, MSI()->color());
 				glDrawArrays(GL_TRIANGLE_FAN,0,4);
 			}
 			else
@@ -145,6 +159,7 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 				glDisable(GL_BLEND);
 				MultAlpha(Fader.Color,BlendColor);
 				MSI()->color3f(BlendColor[0], BlendColor[1], BlendColor[2]);
+                s->setVec4(Shader::U_Color, MSI()->color());
 				glEnable(GL_COLOR_LOGIC_OP);
 				glLogicOp(GL_XOR);
 				glDrawArrays(GL_TRIANGLE_FAN,0,4);
@@ -161,6 +176,7 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 			MultAlpha(Fader.Color,BlendColor);
 			SglColor4fv(BlendColor);
 			glBlendFunc(GL_ONE_MINUS_DST_COLOR,GL_ONE_MINUS_SRC_ALPHA);
+            s->setVec4(Shader::U_Color, MSI()->color());
 			glDrawArrays(GL_TRIANGLE_FAN,0,4);
 			// Revert to defaults
 			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -171,6 +187,7 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 			MultAlpha(BlendColor,BlendColor);
 			SglColor4fv(BlendColor);
 			glBlendFunc(GL_DST_COLOR,GL_ONE_MINUS_SRC_ALPHA);
+            s->setVec4(Shader::U_Color, MSI()->color());
 			glDrawArrays(GL_TRIANGLE_FAN,0,4);
 			glBlendFunc(GL_DST_COLOR,GL_ONE);
 			glDrawArrays(GL_TRIANGLE_FAN,0,4);
@@ -190,6 +207,7 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 			MultAlpha(BlendColor,BlendColor);
 			SglColor4fv(BlendColor);
 			glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+            s->setVec4(Shader::U_Color, MSI()->color());
 			glDrawArrays(GL_TRIANGLE_FAN,0,4);
 			// Revert to defaults
 			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -201,13 +219,14 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 			MultAlpha(Fader.Color,BlendColor);
 			SglColor4fv(BlendColor);
 			glBlendFunc(GL_DST_COLOR,GL_ONE_MINUS_SRC_ALPHA);
+            s->setVec4(Shader::U_Color, MSI()->color());
 			glDrawArrays(GL_TRIANGLE_FAN,0,4);
 			// Revert to defaults
 			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 			break;
 		}		
 	}
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	
 	return true;
 }

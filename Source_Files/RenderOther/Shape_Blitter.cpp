@@ -152,7 +152,7 @@ void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
 		Using_sRGB = true;
 	}
 	SglColor4f(tint_color_r, tint_color_g, tint_color_b, tint_color_a);
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	TMgr.SetupTextureMatrix();
@@ -240,9 +240,9 @@ void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
           static_cast<GLshort>(dst.x), static_cast<GLshort>(dst.y + dst.h)
         };
         glVertexPointer(2, GL_SHORT, 0, v);
-        glEnableClientState(GL_VERTEX_ARRAY);
+        //glEnableClientState(GL_VERTEX_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
         glTexCoordPointer(2, GL_FLOAT, 0, t);
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        //glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         
 		/*GLfloat texcoords[8] = {

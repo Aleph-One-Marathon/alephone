@@ -121,19 +121,19 @@ void OverheadMap_OGL_Class::begin_overall()
 	
 	// Here's for the overhead map
 	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_ALPHA_TEST);
+	//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 	if (map_is_translucent())
 		glEnable(GL_BLEND);
 	else
 		glDisable(GL_BLEND);
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_FOG);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glDisable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
+	//glDisable(GL_FOG); //NOT SUPPORTED ANGLE ENUM
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 }
 
 void OverheadMap_OGL_Class::end_overall()
 {
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 }
 
 
@@ -331,7 +331,7 @@ void OverheadMap_OGL_Class::draw_player(
 	float scale = 1/float(1 << shrink);
 	MSI()->scalef(scale,scale,1);
 	glDisable(GL_TEXTURE_2D);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	glVertexPointer(2,GL_FLOAT,0,PlayerShape[0]);
 	glDrawArrays(GL_TRIANGLE_FAN,0,3);
 

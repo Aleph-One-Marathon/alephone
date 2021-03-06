@@ -742,7 +742,7 @@ static void main_event_loop(void)
 					while (!found_event && num_tries < 3) {
 						sleep_for_machine_ticks(MACHINE_TICKS_PER_SECOND / 100);
 						found_event = SDL_PollEvent(&event);
-						num_tries++;
+						num_tries++;    
 					}
 					yield_time = false;
 				} else if (!found_event)

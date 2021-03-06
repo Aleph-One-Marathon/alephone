@@ -592,9 +592,9 @@ void Model3D::RenderBoundingBox(const GLfloat *EdgeColor, const GLfloat *Diagona
 				BBoxVertices[Indx][2] = BoundingBox[i3][2];
 			}
 	
-	glDisable(GL_TEXTURE_2D);
-	glDisableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_VERTEX_ARRAY);
+	//glDisable(GL_TEXTURE_2D);  //NOT SUPPORTED ANGLE ENUM
+	//glDisableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
+	//glEnableClientState(GL_VERTEX_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	glVertexPointer(3,GL_FLOAT,0,BBoxVertices[0]);
 	
 	if (EdgeColor)

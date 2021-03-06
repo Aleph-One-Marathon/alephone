@@ -1214,7 +1214,8 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 	if (TextureType == 1) // landscape
 	{
 		if (internalFormat == GL_RGBA8)
-			internalFormat = GL_RGB8;
+			//internalFormat = GL_RGB8;
+            internalFormat = GL_RGBA; //DCW I hope this is ok
 		else if (internalFormat == GL_RGBA4)
 			internalFormat = GL_RGB5;
 	} 
@@ -1299,7 +1300,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 			{
                 //gluBuild2DMipmaps(GL_TEXTURE_2D, internalFormat, Image->GetWidth(), Image->GetHeight(), GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
                 
-                glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+                //glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); //NOT SUPPORTED ANGLE FUNCTION
                 // OpenGL GL_RGBA is 6407 and GL_RGB is 6408
                 if (internalFormat == GL_RGBA8 ) {internalFormat = GL_RGBA;} //DCW I hope GL_RGBA and GL_RGBA8 are equivalent
                 assert ( internalFormat == GL_RGBA );
@@ -1370,7 +1371,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 	}
 	
 	// Set texture-mapping features
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); //NOT SUPPORTED ANGLE FUNCTION
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, TxtrTypeInfo.NearFilter);
 	if ((TxtrTypeInfo.FarFilter == GL_NEAREST_MIPMAP_NEAREST || TxtrTypeInfo.FarFilter == GL_LINEAR_MIPMAP_NEAREST || TxtrTypeInfo.FarFilter == GL_NEAREST_MIPMAP_LINEAR || TxtrTypeInfo.FarFilter == GL_LINEAR_MIPMAP_LINEAR) && !mipmapsLoaded)
 	{
@@ -1423,6 +1424,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 		// Sprites have both horizontal and vertical limits
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+            
 		break;
 	}
 }

@@ -213,7 +213,7 @@ void RenderRasterize_Shader::render_tree() {
 		RasPtr->swapper->activate();
 	}
 
-	glAlphaFunc(GL_GREATER, 0.5);
+	//glAlphaFunc(GL_GREATER, 0.5); //NOT SUPPORTED ANGLE FUNCTION
 }
 
 void RenderRasterize_Shader::render_node(sorted_node_data *node, bool SeeThruLiquids, RenderStep renderStep)
@@ -296,7 +296,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 
 	float flare = weaponFlare;
 
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 
 	// priorities: static, infravision, tinted/solid, shadeless
 	if (TMgr->TransferMode == _static_transfer) {
@@ -397,7 +397,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 
 	float flare = weaponFlare;
 
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 	MSI()->color4f(intensity, intensity, intensity, 1.0);
 
 	switch(transferMode) {
@@ -587,10 +587,10 @@ bool setupGlow(struct view_data *view, std::unique_ptr<TextureManager>& TMgr, fl
 
 		TMgr->RenderGlowing();
 		setupBlendFunc(TMgr->GlowBlend());
-		glEnable(GL_TEXTURE_2D);
+		//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 		glEnable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.001);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.001); //NOT SUPPORTED ANGLE FUNCTION
 
 		s->enable();
 		if (renderStep == kGlow) {
@@ -607,8 +607,7 @@ bool setupGlow(struct view_data *view, std::unique_ptr<TextureManager>& TMgr, fl
 	return false;
 }
 
-void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *window,
-	polygon_data *polygon, horizontal_surface_data *surface, bool void_present, bool ceil, RenderStep renderStep) {
+void    RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *window, polygon_data *polygon, horizontal_surface_data *surface, bool void_present, bool ceil, RenderStep renderStep) {
 
 	float offset = 0;
 
@@ -623,17 +622,17 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 	if (TMgr->IsBlended()) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(TMgr->NormalBlend());
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.001);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.001); //NOT SUPPORTED ANGLE FUNCTION
 	} else {
 		glDisable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.5);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.5); //NOT SUPPORTED ANGLE FUNCTION
 	}
 
 	if (void_present && TMgr->IsBlended()) {
 		glDisable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 	}
 
 	short vertex_count = polygon->vertex_count;
@@ -660,7 +659,7 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
         
         GLfloat tex4[4] = {T[0], T[1], T[2], sign};
         
-		glMultiTexCoord4f(GL_TEXTURE1, T[0], T[1], T[2], sign);
+		//glMultiTexCoord4f(GL_TEXTURE1, T[0], T[1], T[2], sign); //NOT SUPPORTED ANGLE FUNCTION
 
 		GLfloat vertex_array[MAXIMUM_VERTICES_PER_POLYGON * 3];
 		GLfloat texcoord_array[MAXIMUM_VERTICES_PER_POLYGON * 2];
@@ -756,17 +755,17 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 	if (TMgr->IsBlended()) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(TMgr->NormalBlend());
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.001);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.001); //NOT SUPPORTED ANGLE FUNCTION
 	} else {
 		glDisable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.5);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.5); //NOT SUPPORTED ANGLE FUNCTION
 	}
 
 	if (void_present && TMgr->IsBlended()) {
 		glDisable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 	}
 
 	world_distance h= MIN(surface->h1, surface->hmax);
@@ -808,7 +807,7 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			float sign = 1;
 			MSI()->normal3f(N[0], N[1], N[2]);
             GLfloat tex4[4] = {T[0], T[1], T[2], sign};
-			glMultiTexCoord4f(GL_TEXTURE1, tex4[0], tex4[1], tex4[2], tex4[3]);
+			//glMultiTexCoord4f(GL_TEXTURE1, tex4[0], tex4[1], tex4[2], tex4[3]); //NOT SUPPORTED ANGLE FUNCTION
 
 			world_distance x = 0.0, y = 0.0;
 			instantiate_transfer_mode(view, surface->transfer_mode, x, y);
@@ -897,16 +896,16 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		glDisable(GL_CULL_FACE);
 	}
 
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 	if (SkinPtr->OpacityType != OGL_OpacType_Crisp || RenderRectangle.transfer_mode == _tinted_transfer) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(SkinPtr->NormalBlend);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.001);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.001); //NOT SUPPORTED ANGLE FUNCTION
 	} else {
 		glDisable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.5);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.5); //NOT SUPPORTED ANGLE FUNCTION
 	}
 
 	GLfloat color[3];
@@ -976,10 +975,13 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	s->setFloat(Shader::U_Glow, 0);
 	MSI()->color4f(color[0], color[1], color[2], 1);
 
-	glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
+	//glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
+    glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.PosBase());
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    
 	glClientActiveTexture(GL_TEXTURE0);
 	if (ModelPtr->Model.TxtrCoords.empty()) {
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	} else {
 		glTexCoordPointer(2,GL_FLOAT,0,ModelPtr->Model.TCBase());
 	}
@@ -990,7 +992,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
     glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
 
 	glClientActiveTexture(GL_TEXTURE1);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	glTexCoordPointer(4,GL_FLOAT,sizeof(vec4),ModelPtr->Model.TangentBase());
 
 	if(ModelPtr->Use(CLUT,OGL_SkinManager::Normal)) {
@@ -1031,8 +1033,8 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	if (canGlow && SkinPtr->GlowImg.IsPresent()) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(SkinPtr->GlowBlend);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.001);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.001); //NOT SUPPORTED ANGLE FUNCTION
 
 		s->enable();
 		s->setFloat(Shader::U_Glow, SkinPtr->MinGlowIntensity);
@@ -1066,11 +1068,11 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
 	}
 
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glDisableClientState(GL_NORMAL_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	glClientActiveTexture(GL_TEXTURE0);
 	if (ModelPtr->Model.TxtrCoords.empty()) {
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	}
 
 	// Restore the default render sidedness
@@ -1181,12 +1183,12 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 	if(TMgr->IsBlended() || TMgr->TransferMode == _tinted_transfer) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(TMgr->NormalBlend());
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.001);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.001); //NOT SUPPORTED ANGLE FUNCTION
 	} else {
 		glDisable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.5);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.5); //NOT SUPPORTED ANGLE FUNCTION
 	}
 
 	GLfloat vertex_array[12] = {
@@ -1473,12 +1475,12 @@ void RenderRasterize_Shader::render_viewer_sprite(rectangle_definition& RenderRe
         if(TMgr->IsBlended() || TMgr->TransferMode == _tinted_transfer) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(TMgr->NormalBlend());
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.001);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.001); //NOT SUPPORTED ANGLE FUNCTION
 	} else {
 		glDisable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.5);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.5); //NOT SUPPORTED ANGLE FUNCTION
 	}
 
     glDisable(GL_DEPTH_TEST);
@@ -1511,7 +1513,7 @@ void RenderRasterize_Shader::render_viewer_sprite(rectangle_definition& RenderRe
     //If invincibility in M1 is not blending, try uncommenting this out:
     //glEnable(GL_BLEND);
     
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 		
 	// Go!
         glDrawArrays(GL_TRIANGLE_FAN,0,4);

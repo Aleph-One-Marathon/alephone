@@ -159,9 +159,13 @@ void Rasterizer_Shader_Class::End()
 	
 	float gamma_adj = get_actual_gamma_adjust(graphics_preferences->screen_mode.gamma_level);
 	if (gamma_adj < 0.99f || gamma_adj > 1.01f) {
+        GLfloat texture_size[2];
+        texture_size[0]=view_width * MainScreenPixelScale();
+        texture_size[1]=view_height * MainScreenPixelScale();
 		Shader *s = Shader::get(Shader::S_Gamma);
 		s->enable();
 		s->setFloat(Shader::U_GammaAdjust, gamma_adj);
+        s->setVec2(Shader::U_Texture0_Size, texture_size);
 	}
 	swapper->draw();
 	Shader::disable();

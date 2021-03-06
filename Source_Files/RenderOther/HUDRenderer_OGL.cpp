@@ -71,18 +71,18 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 	}
 
 	//glPushAttrib(GL_ALL_ATTRIB_BITS);
-    bool isEnabled_GT2 = glIsEnabled (GL_TEXTURE_2D);
+    //bool isEnabled_GT2 = glIsEnabled (GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
     bool isEnabled_GCF = glIsEnabled (GL_CULL_FACE);
     bool isEnabled_GDT = glIsEnabled (GL_DEPTH_TEST);
-    bool isEnabled_GAT = glIsEnabled (GL_ALPHA_TEST);
+    //bool isEnabled_GAT = glIsEnabled (GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
     bool isEnabled_GST = glIsEnabled (GL_STENCIL_TEST);
     bool isEnabled_GB = glIsEnabled (GL_BLEND);
-    bool isEnabled_GF = glIsEnabled (GL_FOG);
+    //bool isEnabled_GF = glIsEnabled (GL_FOG); //NOT SUPPORTED ANGLE ENUM
     
 	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_ALPHA_TEST);
+	//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 	glDisable(GL_BLEND);
-	glDisable(GL_FOG);
+	//glDisable(GL_FOG); //NOT SUPPORTED ANGLE ENUM
 
 	MSI()->matrixMode(MS_MODELVIEW);
 	MSI()->pushMatrix();
@@ -117,13 +117,13 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 	MSI()->popMatrix();
 
 	//glPopAttrib();
-    if ( isEnabled_GT2 ) { glEnable ( GL_TEXTURE_2D ) ; } else { glDisable ( GL_TEXTURE_2D ); }
+    //if ( isEnabled_GT2 ) { glEnable ( GL_TEXTURE_2D ) ; } else { glDisable ( GL_TEXTURE_2D ); } //NOT SUPPORTED ANGLE ENUM
     if ( isEnabled_GCF ) { glEnable ( GL_CULL_FACE ) ; } else { glDisable ( GL_CULL_FACE ); }
     if ( isEnabled_GDT ) { glEnable ( GL_DEPTH_TEST ) ; } else { glDisable ( GL_DEPTH_TEST ); }
-    if ( isEnabled_GAT ) { glEnable ( GL_ALPHA_TEST ) ; } else { glDisable ( GL_ALPHA_TEST ); }
+    //if ( isEnabled_GAT ) { glEnable ( GL_ALPHA_TEST ) ; } else { glDisable ( GL_ALPHA_TEST ); } //NOT SUPPORTED ANGLE ENUM
     if ( isEnabled_GST ) { glEnable ( GL_STENCIL_TEST ) ; } else { glDisable ( GL_STENCIL_TEST ); }
     if ( isEnabled_GB )  { glEnable ( GL_BLEND ) ; } else { glDisable ( GL_BLEND ); }
-    if ( isEnabled_GF )  { glEnable ( GL_FOG ) ; } else { glDisable ( GL_FOG ); }
+    //if ( isEnabled_GF )  { glEnable ( GL_FOG ) ; } else { glDisable ( GL_FOG ); } //NOT SUPPORTED ANGLE ENUM
 }
 
 
@@ -166,7 +166,7 @@ void HUD_OGL_Class::DrawShape(shape_descriptor shape, screen_rectangle *dest, sc
 
 	// Draw shape
 	MSI()->color3f(1.0, 1.0, 1.0);
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 	glDisable(GL_BLEND);
 	TMgr.SetupTextureMatrix();
 	TMgr.RenderNormal();
@@ -199,7 +199,7 @@ void HUD_OGL_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y, bool
 
 	// Draw shape
 	MSI()->color3f(1.0, 1.0, 1.0);
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 	if (transparency) {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
