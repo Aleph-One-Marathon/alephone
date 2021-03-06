@@ -110,6 +110,7 @@ extern "C"
 #include "BStream.h"
 #include "Plugins.h"
 #include "shell_options.h"
+#include "interpolated_world.h"
 
 #include "lua_script.h"
 #include "lua_ephemera.h"
@@ -1898,7 +1899,9 @@ void ExecuteLuaString(const std::string& line)
 		states[_solo_lua_script].Initialize();
 	}
 
+	exit_interpolated_world();
 	states[_solo_lua_script].ExecuteCommand(line);
+	enter_interpolated_world();
 }
 
 void LoadSoloLua()
