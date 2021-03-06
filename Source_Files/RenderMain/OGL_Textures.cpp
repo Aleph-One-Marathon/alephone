@@ -1268,12 +1268,13 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 	  }
 	}
 
+    if (internalFormat == GL_RGBA8 ) {internalFormat = GL_RGBA;} //DCW I hope GL_RGBA and GL_RGBA8 are equivalent
+    
 	if (Image->GetFormat() == ImageDescriptor::RGBA8) {
 		switch (TxtrTypeInfo.FarFilter)
 		{
 		case GL_NEAREST:
 		case GL_LINEAR:
-            if (internalFormat == GL_RGBA8 ) {internalFormat = GL_RGBA;} //DCW I hope GL_RGBA and GL_RGBA8 are equivalent
 			glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
 			break;
 		case GL_NEAREST_MIPMAP_NEAREST:

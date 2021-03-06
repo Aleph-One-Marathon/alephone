@@ -625,16 +625,14 @@ void    RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_dat
 		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		//glAlphaFunc(GL_GREATER, 0.001); //NOT SUPPORTED ANGLE FUNCTION
 	} else {
-		//glDisable(GL_BLEND);
-        glEnable(GL_BLEND); //DCW seriously, why would we ever want to not blend?
+		glDisable(GL_BLEND);
         
 		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		//glAlphaFunc(GL_GREATER, 0.5); //NOT SUPPORTED ANGLE FUNCTION
 	}
 
 	if (void_present && TMgr->IsBlended()) {
-		//glDisable(GL_BLEND);
-        glEnable(GL_BLEND); //DCW seriously, why would we ever want to not blend?
+		glDisable(GL_BLEND);
         
 		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 	}

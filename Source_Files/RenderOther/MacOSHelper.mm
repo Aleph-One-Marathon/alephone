@@ -16,6 +16,7 @@
 #include "OGL_Headers.h"
 
 #include "SDL_syswm.h"
+#include "screen.h"
 
 MGLContext *context;
 
@@ -70,7 +71,7 @@ void* injectMacOS(SDL_Window *main_screen)
     mglLayer.drawableColorFormat = MGLDrawableColorFormatRGBA8888;
 
     // Set the layer's scale factor as you wish
-    mglLayer.contentsScale = 2.0;// [[NSScreen mainScreen] scale];
+    mglLayer.contentsScale = MainScreenPixelScale();// [[NSScreen mainScreen] scale];
 
     // Initialize OpenGL context
     context = [[MGLContext alloc] initWithAPI:kMGLRenderingAPIOpenGLES2];
@@ -93,8 +94,6 @@ void* injectMacOS(SDL_Window *main_screen)
     GLuint backingWidth, backingHeight;
     backingWidth = mglLayer.drawableSize.width;
     backingHeight = mglLayer.drawableSize.height;
-    
-
     
   NSLog(@"SDL NSView type: %@", NSStringFromClass([theView class]));
   NSLog(@"SDL NSView Layer type: %@", NSStringFromClass([theView.layer class]));

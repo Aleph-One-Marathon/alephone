@@ -172,7 +172,9 @@ void Rasterizer_Shader_Class::End()
 	
 	SetForeground();
 	MSI()->color3f(0, 0, 0);
-	OGL_RenderFrame(0, 0, view_width, view_height, 1);
+    
+    //DCW commenting this out, because I don't know what it's for. There isn't even a shader active at this point.
+	//OGL_RenderFrame(0, 0, view_width, view_height, 1);
 	
 	Rasterizer_OGL_Class::End();
 }
