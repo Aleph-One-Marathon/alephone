@@ -249,6 +249,13 @@ end
         <variable name="width"><type>number</type></variable>
         <variable name="height"><type>number</type></variable>
       </subtable>
+	  <subtable name="text_margins" classname="lua_text_margins" version="git">
+		<description>specifies margins from the edges of the world_rect for drawing text such as Lua overlays, messages, and the input console</description>
+		<variable name="bottom"><type>number</type></variable>
+		<variable name="left"><type>number</type></variable>
+		<variable name="right"><type>number</type></variable>
+		<variable name="top"><type>number</type></variable>
+	  </subtable>
       <function name="clear_mask">
         <description>reset the image-based mask</description>
       </function>

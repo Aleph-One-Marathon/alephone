@@ -700,6 +700,11 @@ void enter_screen(void)
 	scr->lua_view_rect.y = scr->lua_map_rect.y = (h - wh) / 2;
 	scr->lua_view_rect.w = scr->lua_map_rect.w = ww;
 	scr->lua_view_rect.h = scr->lua_map_rect.h = wh;
+
+	scr->lua_text_margins.top = 0;
+	scr->lua_text_margins.left = 0;
+	scr->lua_text_margins.bottom = 0;
+	scr->lua_text_margins.right = 0;
 	
     screen_rectangle *term_rect = get_interface_rectangle(_terminal_screen_rect);
 	scr->lua_term_rect.x = (w - RECTANGLE_WIDTH(term_rect)) / 2;

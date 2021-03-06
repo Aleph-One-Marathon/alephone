@@ -551,14 +551,16 @@ static void update_fps_display(SDL_Surface *s)
 			
 			sprintf(fps, "%0.f fps %s", fps_counter.get(), ms);
 		}
-		
+
 		FontSpecifier& Font = GetOnScreenFont();
 		
 		DisplayTextDest = s;
 		DisplayTextFont = Font.Info;
 		DisplayTextStyle = Font.Style;
-		short X0 = 0;
-		short Y0 = s->h;
+
+		auto text_margins = alephone::Screen::instance()->lua_text_margins;
+		short X0 = text_margins.left;
+		short Y0 = s->h - text_margins.bottom;
 
 		// The line spacing is a generalization of "5" for larger fonts
 		short Offset = Font.LineSpacing / 3;
@@ -587,8 +589,10 @@ static void DisplayPosition(SDL_Surface *s)
 	DisplayTextDest = s;
 	DisplayTextFont = Font.Info;
 	DisplayTextStyle = Font.Style;
-	short X0 = 0;
-	short Y0 = 0;
+
+	auto text_margins = alephone::Screen::instance()->lua_text_margins;
+	short X0 = text_margins.left;
+	short Y0 = text_margins.top;
 	
 	short LineSpacing = Font.LineSpacing;
 	short X = X0 + LineSpacing/3;
@@ -628,8 +632,10 @@ static void DisplayInputLine(SDL_Surface *s)
   DisplayTextDest = s;
   DisplayTextFont = Font.Info;
   DisplayTextStyle = Font.Style;
-  short X0 = 0;
-  short Y0 = s->h;
+  
+  auto text_margins = alephone::Screen::instance()->lua_text_margins;
+  short X0 = text_margins.left;
+  short Y0 = s->h - text_margins.bottom;
 
   short Offset = Font.LineSpacing / 3;
   short X = X0 + Offset;
@@ -647,8 +653,10 @@ static void DisplayMessages(SDL_Surface *s)
 	DisplayTextDest = s;
 	DisplayTextFont = Font.Info;
 	DisplayTextStyle = Font.Style;
-	short X0 = 0;
-	short Y0 = 0;
+
+	auto text_margins = alephone::Screen::instance()->lua_text_margins;
+	short X0 = text_margins.top;
+	short Y0 = text_margins.left;
 	
 	short LineSpacing = Font.LineSpacing;
 	short X = X0 + LineSpacing/3;
@@ -809,12 +817,13 @@ static void DisplayNetMicStatus(SDL_Surface *s)
 	DisplayTextFont = Font.Info;
 	DisplayTextStyle = Font.Style;
 
-	short Y = s->h - Font.LineSpacing / 3;
+	auto text_margins = alephone::Screen::instance()->lua_text_margins;
+	short Y = s->h - text_margins.bottom - Font.LineSpacing / 3;
 	if (Console::instance()->input_active())
 	{
 		Y -= Font.LineSpacing;
 	}
-	short Xicon = s->w - DisplayTextWidth(icon.c_str()) - Font.LineSpacing / 3;
+	short Xicon = s->w - text_margins.right - DisplayTextWidth(icon.c_str()) - Font.LineSpacing / 3;
 	short Xstatus = Xicon - DisplayTextWidth(" ") - DisplayTextWidth(status.c_str());
 
 	DisplayText(Xicon, Y, icon.c_str(), iconColor.r, iconColor.g, iconColor.b);
@@ -853,8 +862,10 @@ static void DisplayScores(SDL_Surface *s)
 
 	int H = Font.LineSpacing * (dynamic_world->player_count + 1);
 	int W = WName + WScore + WPing + WJitter + WErrors + WId;
-	int X = (s->w - W) / 2;
-	int Y = std::max((s->h - H) / 2, Font.LineSpacing * NumScreenMessages) + Font.LineSpacing;
+
+	auto text_margins = alephone::Screen::instance()->lua_text_margins;
+	int X = text_margins.left + (s->w - text_margins.right - W) / 2;
+	int Y = std::max(text_margins.top + (s->h - text_margins.bottom - H) / 2, Font.LineSpacing * NumScreenMessages) + Font.LineSpacing;
 
 	int XName = X;
 	int XScore = XName + WName + CWidth;

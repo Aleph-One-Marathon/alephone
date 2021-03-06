@@ -52,6 +52,10 @@
 	  margin: 4px;
       }
 
+	  div.tables > p {
+	  margin-left: 0;
+	  }
+
       p.note {
 	  color: #666666;
 	  font-style: italic;
@@ -215,17 +219,13 @@ end
 <dd>
 <p class="description">Colors are standard Lua tables; you don't need to call a new() method to create them. Colors have four fields, accessed by name or number. If a field is missing, it is assumed to be 1, which allows you to write opaque colors as {r, g, b}.</p>
 <dl>
-<dt>
-    .r<br>.red<br>[1]</dt>
+<dt>.r<br>.red<br>[1]</dt>
 <dd><p class="description">red component, from 0 to 1</p></dd>
-<dt>
-    .g<br>.green<br>[2]</dt>
+<dt>.g<br>.green<br>[2]</dt>
 <dd><p class="description">green component, from 0 to 1</p></dd>
-<dt>
-    .b<br>.blue<br>[3]</dt>
+<dt>.b<br>.blue<br>[3]</dt>
 <dd><p class="description">blue component, from 0 to 1</p></dd>
-<dt>
-    .a<br>.alpha<br>[4]</dt>
+<dt>.a<br>.alpha<br>[4]</dt>
 <dd><p class="description">alpha component (opacity), from 0 to 1</p></dd>
 </dl>
 </dd>
@@ -259,34 +259,28 @@ end
 </dd>
 <dt>Fonts[index]</dt>
 <dd><dl>
-      <dt>
-    .id<span class="access"> (read-only)</span>
+      <dt>.id<span class="access"> (read-only)</span>
 </dt>
 <dd>
 <p class="description"></p>
 <p class="note">can be nil </p>
 </dd>
-      <dt>
-    .file<span class="access"> (read-only)</span>
+      <dt>.file<span class="access"> (read-only)</span>
 </dt>
 <dd>
 <p class="description"></p>
 <p class="note">can be nil </p>
 </dd>
-      <dt>
-    .size<span class="access"> (read-only)</span>
+      <dt>.size<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .style<span class="access"> (read-only)</span>
+      <dt>.style<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .line_height<span class="access"> (read-only)</span>
+      <dt>.line_height<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .scale <span class="version">20140104</span>
+      <dt>.scale <span class="version">20140104</span>
 </dt>
 <dd>
 <p class="description">scale factor, for resizing specific bitmap font sizes</p>
@@ -314,53 +308,39 @@ end
 <p class="description">deserializes s and returns the original Lua value</p>
 <p class="note">see Game.serialize (from the non-HUD scripter's guide) </p>
 </dd>
-<dt>
-    .difficulty</dt>
+<dt>.difficulty</dt>
 <dd><p class="description">the difficulty level</p></dd>
-<dt>
-    .kill_limit</dt>
+<dt>.kill_limit</dt>
 <dd><p class="description">the game kill limit, or nil if there is none</p></dd>
-<dt>
-    .time_remaining</dt>
+<dt>.time_remaining</dt>
 <dd><p class="description">the number of ticks until the game ends, or nil if there is no time limit</p></dd>
-<dt>
-    .scoring_mode</dt>
+<dt>.scoring_mode</dt>
 <dd><p class="description">the current scoring mode (if the gametype is "custom")</p></dd>
-<dt>
-    .ticks</dt>
+<dt>.ticks</dt>
 <dd><p class="description">ticks since game started</p></dd>
-<dt>
-    .type</dt>
+<dt>.type</dt>
 <dd><p class="description">whether the game is EMFH, KOTH, etc.</p></dd>
-<dt>
-    .version</dt>
+<dt>.version</dt>
 <dd>
 <p class="description">the date version of the local player's engine</p>
 <p class="note">for example, "20071103" </p>
 </dd>
 <dt>.players[index]</dt>
 <dd><dl>
-<dt>
-    .active <span class="version">20111201</span>
+<dt>.active <span class="version">20111201</span>
 </dt>
 <dd><p class="description">true if this player's viewpoint is currently displayed</p></dd>
-<dt>
-    .color</dt>
+<dt>.color</dt>
 <dd><p class="description">color of player (shirt color, if teams are enabled)</p></dd>
-<dt>
-    .kills</dt>
+<dt>.kills</dt>
 <dd><p class="description">player kills, not including suicides</p></dd>
-<dt>
-    .local_</dt>
+<dt>.local_</dt>
 <dd><p class="description">true if this player is the local player</p></dd>
-<dt>
-    .name</dt>
+<dt>.name</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .ranking</dt>
+<dt>.ranking</dt>
 <dd><p class="description">points or ticks, depending on game type</p></dd>
-<dt>
-    .team</dt>
+<dt>.team</dt>
 <dd><p class="description">player's team (pants color)</p></dd>
 </dl></dd>
 </dl>
@@ -384,49 +364,39 @@ end
 </dd>
 <dt>Images[index]</dt>
 <dd><dl>
-      <dt>
-    .width<span class="access"> (read-only)</span>
+      <dt>.width<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">width of the image in pixels</p></dd>
-      <dt>
-    .height<span class="access"> (read-only)</span>
+      <dt>.height<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">height of the image in pixels</p></dd>
-      <dt>
-    .unscaled_width<span class="access"> (read-only)</span>
+      <dt>.unscaled_width<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">width of the image before any calls to :rescale()</p></dd>
-      <dt>
-    .unscaled_height<span class="access"> (read-only)</span>
+      <dt>.unscaled_height<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">height of the image before any calls to :rescale()</p></dd>
       <dt>.crop_rect</dt>
 <dd>
 <p class="description">specifies a portion of the image to be drawn</p>
 <dl>
-<dt>
-    .height</dt>
+<dt>.height</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .width</dt>
+<dt>.width</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .x</dt>
+<dt>.x</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .y</dt>
+<dt>.y</dt>
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
-      <dt>
-    .tint_color</dt>
+      <dt>.tint_color</dt>
 <dd>
 <p class="description">scale the color and opacity by this value when drawing</p>
 <p class="note">default is (r=1, g=1, b=1, a=1) </p>
 <p class="note">only available in OpenGL renderer </p>
 </dd>
-      <dt>
-    .rotation</dt>
+      <dt>.rotation</dt>
 <dd>
 <p class="description">degrees to rotate the image when drawn</p>
 <p class="note">axis of rotation is about the center of the drawn area </p>
@@ -445,20 +415,16 @@ end
 <dd>
 <p class="note">all items in Level are read-only </p>
 <dl>
-<dt>
-    .name <span class="version">20150619</span>
+<dt>.name <span class="version">20150619</span>
 </dt>
 <dd><p class="description">level name</p></dd>
-<dt>
-    .index <span class="version">20150619</span>
+<dt>.index <span class="version">20150619</span>
 </dt>
 <dd><p class="description">level index in the map file (starting from 0)</p></dd>
-<dt>
-    .map_checksum <span class="version">20150619</span>
+<dt>.map_checksum <span class="version">20150619</span>
 </dt>
 <dd><p class="description">checksum of map file</p></dd>
-<dt>
-    .stash[key] <span class="version">git</span>
+<dt>.stash[key] <span class="version">git</span>
 </dt>
 <dd>
 <p class="description">reads values from a stash shared between all running Lua scripts</p>
@@ -474,24 +440,19 @@ end
 <dd>
 <p class="note">All items in Lighting are read-only </p>
 <dl>
-<dt>
-    .ambient_light</dt>
+<dt>.ambient_light</dt>
 <dd><p class="description">light level in current location, from 0 to 1</p></dd>
-<dt>
-    .weapon_flash</dt>
+<dt>.weapon_flash</dt>
 <dd><p class="description">current brightness of weapons fire, from 0 to 1</p></dd>
 <dt>.liquid_fader<br>.damage_fader</dt>
 <dd>
 <p class="note">faders only available in OpenGL, when "Color Effects" are enabled </p>
 <dl>
-<dt>
-    .active</dt>
+<dt>.active</dt>
 <dd><p class="description">true if fade effect is being drawn</p></dd>
-<dt>
-    .color</dt>
+<dt>.color</dt>
 <dd><p class="description">color used for this fade effect</p></dd>
-<dt>
-    .type</dt>
+<dt>.type</dt>
 <dd><p class="description">which fade effect type is used</p></dd>
 </dl>
 </dd>
@@ -505,210 +466,168 @@ end
 <dd>
 <p class="note">All items in Player are read-only </p>
 <dl>
-<dt>
-    .color</dt>
+<dt>.color</dt>
 <dd><p class="description">color of player (shirt color, if teams are enabled)</p></dd>
-<dt>
-    .dead</dt>
+<dt>.dead</dt>
 <dd><p class="description">whether player is dead</p></dd>
-<dt>
-    .direction<br>.yaw</dt>
+<dt>.direction<br>.yaw</dt>
 <dd>
 <p class="description">direction player is facing, in degrees</p>
 <p class="note">0 is east, 90 is south </p>
 </dd>
-<dt>
-    .elevation<br>.pitch</dt>
+<dt>.elevation<br>.pitch</dt>
 <dd><p class="description">angle player is looking up or down</p></dd>
 <dt>.velocity</dt>
 <dd><dl>
-<dt>
-    .forward <span class="version">20111201</span>
+<dt>.forward <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">player's forward/backward velocity, from internal and external forces</p>
 <p class="note">in WU per tick; positive values mean forward movement </p>
 </dd>
-<dt>
-    .perpendicular <span class="version">20111201</span>
+<dt>.perpendicular <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">player's left/right velocity</p>
 <p class="note">in WU per tick; positive values mean rightward movement </p>
 </dd>
-<dt>
-    .vertical <span class="version">20111201</span>
+<dt>.vertical <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">player's up/down velocity</p>
 <p class="note">in WU per tick; positive values mean upward movement </p>
 </dd>
 </dl></dd>
-<dt>
-    .energy<br>.life</dt>
+<dt>.energy<br>.life</dt>
 <dd><p class="description">amount of suit energy player has (150 is normal red health)</p></dd>
-<dt>
-    .microphone_active</dt>
+<dt>.microphone_active</dt>
 <dd><p class="description">true if netmic is on</p></dd>
 <dt>.inventory_sections</dt>
 <dd><dl>
-<dt>
-    .current</dt>
+<dt>.current</dt>
 <dd>
 <p class="description">which section of the inventory to display</p>
 <p class="note">HUD themes can choose to display multiple sections simultaneously </p>
 </dd>
 </dl></dd>
 <dt>
-    .inventory_sections[section_type]
-  </dt>
+    .inventory_sections[section_type]</dt>
 <dd><dl>
-<dt>
-    .name</dt>
+<dt>.name</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .type</dt>
+<dt>.type</dt>
 <dd><p class="description"></p></dd>
 </dl></dd>
 <dt>
-    .items[item_type]
-  </dt>
+    .items[item_type]</dt>
 <dd><dl>
-<dt>
-    .count</dt>
+<dt>.count</dt>
 <dd><p class="description">how many of item the player is carrying</p></dd>
-<dt>
-    .inventory_section</dt>
+<dt>.inventory_section</dt>
 <dd><p class="description">which section of the inventory should display this item</p></dd>
-<dt>
-    .plural</dt>
+<dt>.plural</dt>
 <dd>
 <p class="description">label to use for more than 1 of the item</p>
 <p class="note">from stringset 150 </p>
 </dd>
-<dt>
-    .singular</dt>
+<dt>.singular</dt>
 <dd>
 <p class="description">label to use for 1 of the item</p>
 <p class="note">from stringset 150 </p>
 </dd>
-<dt>
-    .type</dt>
+<dt>.type</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .valid <span class="version">20140104</span>
+<dt>.valid <span class="version">20140104</span>
 </dt>
 <dd><p class="description">whether item is valid in the current environment (i.e. vacuum)</p></dd>
 </dl></dd>
 <dt>.compass</dt>
 <dd><dl>
-<dt>
-    .ne<br>.northeast</dt>
+<dt>.ne<br>.northeast</dt>
 <dd><p class="description">whether north east compass quadrant is active</p></dd>
-<dt>
-    .nw<br>.northwest</dt>
+<dt>.nw<br>.northwest</dt>
 <dd><p class="description">whether north west compass quadrant is active</p></dd>
-<dt>
-    .se<br>.southeast</dt>
+<dt>.se<br>.southeast</dt>
 <dd><p class="description">whether south east compass quadrant is active</p></dd>
-<dt>
-    .sw<br>.southwest</dt>
+<dt>.sw<br>.southwest</dt>
 <dd><p class="description">whether south west compass quadrant is active</p></dd>
 </dl></dd>
 <dt>.motion_sensor</dt>
 <dd><dl>
-<dt>
-    .active</dt>
+<dt>.active</dt>
 <dd>
 <p class="description">whether player can view his motion sensor</p>
 <p class="note">currently, this also indicates compass visibility </p>
 </dd>
 <dt>.blips[index]</dt>
 <dd><dl>
-<dt>
-    .direction<br>.yaw</dt>
+<dt>.direction<br>.yaw</dt>
 <dd>
 <p class="description">direction relative to player, in degrees</p>
 <p class="note">0 is to player's right, 90 is directly behind player </p>
 </dd>
-<dt>
-    .distance</dt>
+<dt>.distance</dt>
 <dd><p class="description">distance from player, in WU (maximum is 8)</p></dd>
-<dt>
-    .intensity</dt>
+<dt>.intensity</dt>
 <dd><p class="description">from 0 (strongest) to 5 (weakest)</p></dd>
-<dt>
-    .type</dt>
+<dt>.type</dt>
 <dd>
 <p class="description"></p>
 <p class="note">see "Sensor Blip Types" for mnemonics </p>
 </dd>
 </dl></dd>
 </dl></dd>
-<dt>
-    .name</dt>
+<dt>.name</dt>
 <dd><p class="description">player's name</p></dd>
-<dt>
-    .oxygen</dt>
+<dt>.oxygen</dt>
 <dd><p class="description">amount of oxygen player has (max is 10800)</p></dd>
-<dt>
-    .respawn_duration <span class="version">20140104</span>
+<dt>.respawn_duration <span class="version">20140104</span>
 </dt>
 <dd>
 <p class="description">ticks remaining before dead player can revive</p>
 <p class="note">nil until player is completely dead </p>
 </dd>
-<dt>
-    .team</dt>
+<dt>.team</dt>
 <dd><p class="description">player's team (pants color)</p></dd>
 <dt>.texture_palette</dt>
 <dd><dl>
-<dt>
-    .highlight</dt>
+<dt>.highlight</dt>
 <dd>
 <p class="description">number of slot to highlight</p>
 <p class="note">can be nil </p>
 </dd>
-<dt>
-    .size</dt>
+<dt>.size</dt>
 <dd>
 <p class="description">how many slots the palette is using</p>
 <p class="note">the texture palette is normally visible whenever the size is greater than 0 </p>
 </dd>
 <dt>.slots[n]</dt>
 <dd><dl>
-<dt>
-    .collection</dt>
+<dt>.collection</dt>
 <dd><p class="description">collection of this slot</p></dd>
-<dt>
-    .texture_index</dt>
+<dt>.texture_index</dt>
 <dd><p class="description">texture index of this slot</p></dd>
-<dt>
-    .type</dt>
+<dt>.type</dt>
 <dd><p class="description">texture type of this slot such as wall or sprite; see "Texture Types"</p></dd>
 </dl></dd>
 </dl></dd>
 <dt>.weapons</dt>
 <dd><dl>
-<dt>
-    .current</dt>
+<dt>.current</dt>
 <dd>
 <p class="description">weapon the player is currently wielding</p>
 <p class="note">can be nil </p>
 </dd>
-<dt>
-    .desired</dt>
+<dt>.desired</dt>
 <dd>
 <p class="description">weapon the player wants to switch to</p>
 <p class="note">can be nil </p>
 </dd>
 </dl></dd>
 <dt>
-    .weapons[weapon_type]
-  </dt>
+    .weapons[weapon_type]</dt>
 <dd><dl>
-<dt>
-    .name <span class="version">20111201</span>
+<dt>.name <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">label shown in classic HUD</p>
@@ -719,56 +638,42 @@ end
 <dd>
 <p class="description">position of label in classic HUD</p>
 <dl>
-<dt>
-    .height</dt>
+<dt>.height</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .width</dt>
+<dt>.width</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .x</dt>
+<dt>.x</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .y</dt>
+<dt>.y</dt>
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
 <dt>.primary<br>.secondary</dt>
 <dd><dl>
-<dt>
-    .ammo_type</dt>
+<dt>.ammo_type</dt>
 <dd><p class="description"></p></dd>
 <dt>.bullet_display <span class="version">20140104</span>
 </dt>
 <dd>
 <p class="note">can be nil </p>
 <dl>
-<dt>
-    .across</dt>
+<dt>.across</dt>
 <dd><p class="description">number of bullets in a single row</p></dd>
-<dt>
-    .down</dt>
+<dt>.down</dt>
 <dd><p class="description">number of bullet rows</p></dd>
-<dt>
-    .empty_texture_index</dt>
+<dt>.empty_texture_index</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .height</dt>
+<dt>.height</dt>
 <dd><p class="description">height of a single bullet in classic HUD</p></dd>
-<dt>
-    .right_to_left</dt>
+<dt>.right_to_left</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .texture_index</dt>
+<dt>.texture_index</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .width</dt>
+<dt>.width</dt>
 <dd><p class="description">width of a single bullet in classic HUD</p></dd>
-<dt>
-    .x</dt>
+<dt>.x</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .y</dt>
+<dt>.y</dt>
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
@@ -777,63 +682,48 @@ end
 <dd>
 <p class="note">can be nil </p>
 <dl>
-<dt>
-    .color</dt>
+<dt>.color</dt>
 <dd><p class="description">the interface color for drawing the full region and border</p></dd>
-<dt>
-    .empty_color</dt>
+<dt>.empty_color</dt>
 <dd><p class="description">the interface color for drawing the empty region</p></dd>
-<dt>
-    .height</dt>
+<dt>.height</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .maximum</dt>
+<dt>.maximum</dt>
 <dd>
 <p class="description"></p>
 <p class="note">should usually match total_rounds </p>
 </dd>
-<dt>
-    .width</dt>
+<dt>.width</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .x</dt>
+<dt>.x</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .y</dt>
+<dt>.y</dt>
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
-<dt>
-    .rounds</dt>
+<dt>.rounds</dt>
 <dd><p class="description">how many rounds are currently loaded into the weapon</p></dd>
-<dt>
-    .total_rounds</dt>
+<dt>.total_rounds</dt>
 <dd><p class="description">how many rounds can be loaded into the weapon</p></dd>
-<dt>
-    .weapon_drawn</dt>
+<dt>.weapon_drawn</dt>
 <dd><p class="description"></p></dd>
 </dl></dd>
 <dt>.shape <span class="version">20140104</span><br>.multiple_shape<br>.multiple_unused_shape</dt>
 <dd>
 <p class="note">can be nil </p>
 <dl>
-<dt>
-    .texture_index</dt>
+<dt>.texture_index</dt>
 <dd><p class="description">frame in Interface collection</p></dd>
-<dt>
-    .x</dt>
+<dt>.x</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .y</dt>
+<dt>.y</dt>
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
-<dt>
-    .type</dt>
+<dt>.type</dt>
 <dd><p class="description"></p></dd>
 </dl></dd>
-<dt>
-    .zoom_active</dt>
+<dt>.zoom_active</dt>
 <dd><p class="description">whether player's sniper zoom is active</p></dd>
 </dl>
 </dd>
@@ -843,63 +733,49 @@ end
 <dl>
 <dt>Screen</dt>
 <dd><dl>
-<dt>
-    .width<span class="access"> (read-only)</span>
+<dt>.width<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">width of the available screen area</p></dd>
-<dt>
-    .height<span class="access"> (read-only)</span>
+<dt>.height<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">height of the available screen area</p></dd>
 <dt>.field_of_view</dt>
 <dd><dl>
-<dt>
-    .fix_h_not_v</dt>
+<dt>.fix_h_not_v</dt>
 <dd><p class="description">whether horizontal or vertical FOV is adjusted as aspect ratio changes</p></dd>
-<dt>
-    .horizontal</dt>
+<dt>.horizontal</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .vertical</dt>
+<dt>.vertical</dt>
 <dd><p class="description"></p></dd>
 </dl></dd>
 <dt>.crosshairs</dt>
 <dd><dl>
-<dt>
-    .active<span class="access"> (read-only)</span> <span class="version">20111201</span>
+<dt>.active<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether crosshairs are visible</p></dd>
-<dt>
-    .lua_hud <span class="version">20111201</span>
+<dt>.lua_hud <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether the Lua HUD script draws the crosshairs</p></dd>
 </dl></dd>
-<dt>
-    .renderer<span class="access"> (read-only)</span>
+<dt>.renderer<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">which renderer is in use</p></dd>
-<dt>
-    .map_active<span class="access"> (read-only)</span>
+<dt>.map_active<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether the overhead map is currently displayed</p></dd>
-<dt>
-    .map_overlay_active<span class="access"> (read-only)</span> <span class="version">20111201</span>
+<dt>.map_overlay_active<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether the "Overlay Map" preference is enabled</p></dd>
-<dt>
-    .term_active<span class="access"> (read-only)</span>
+<dt>.term_active<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether a terminal is currently displayed</p></dd>
-<dt>
-    .hud_size_preference<span class="access"> (read-only)</span>
+<dt>.hud_size_preference<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">current preference setting for HUD size (normal, double, largest)</p></dd>
-<dt>
-    .term_size_preference<span class="access"> (read-only)</span>
+<dt>.term_size_preference<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">current preference setting for terminal size (normal, double, largest)</p></dd>
-<dt>
-    .masking_mode</dt>
+<dt>.masking_mode</dt>
 <dd>
 <p class="description">image-based masking; set to drawing mode to create visible areas and enabled to use the mask</p>
 <p class="note">masking only available in OpenGL renderer </p>
@@ -908,17 +784,13 @@ end
 <dd>
 <p class="description">constrain drawing to the specified area of the screen</p>
 <dl>
-<dt>
-    .height</dt>
+<dt>.height</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .width</dt>
+<dt>.width</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .x</dt>
+<dt>.x</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .y</dt>
+<dt>.y</dt>
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
@@ -926,17 +798,13 @@ end
 <dd>
 <p class="description">specifies the area of the screen for the 3D game view</p>
 <dl>
-<dt>
-    .height</dt>
+<dt>.height</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .width</dt>
+<dt>.width</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .x</dt>
+<dt>.x</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .y</dt>
+<dt>.y</dt>
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
@@ -944,17 +812,13 @@ end
 <dd>
 <p class="description">specifies the area of the screen for the overhead map</p>
 <dl>
-<dt>
-    .height</dt>
+<dt>.height</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .width</dt>
+<dt>.width</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .x</dt>
+<dt>.x</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .y</dt>
+<dt>.y</dt>
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
@@ -962,17 +826,28 @@ end
 <dd>
 <p class="description">specifies the area of the screen for displaying terminals</p>
 <dl>
-<dt>
-    .height</dt>
+<dt>.height</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .width</dt>
+<dt>.width</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .x</dt>
+<dt>.x</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .y</dt>
+<dt>.y</dt>
+<dd><p class="description"></p></dd>
+</dl>
+</dd>
+<dt>.text_margins <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">specifies margins from the edges of the world_rect for drawing text such as Lua overlays, messages, and the input console</p>
+<dl>
+<dt>.bottom</dt>
+<dd><p class="description"></p></dd>
+<dt>.left</dt>
+<dd><p class="description"></p></dd>
+<dt>.right</dt>
+<dd><p class="description"></p></dd>
+<dt>.top</dt>
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
@@ -1003,49 +878,39 @@ end
 </dd>
 <dt>Shapes[index]</dt>
 <dd><dl>
-      <dt>
-    .width<span class="access"> (read-only)</span>
+      <dt>.width<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">width of the shape in pixels</p></dd>
-      <dt>
-    .height<span class="access"> (read-only)</span>
+      <dt>.height<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">height of the shape in pixels</p></dd>
-      <dt>
-    .unscaled_width<span class="access"> (read-only)</span>
+      <dt>.unscaled_width<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">width of the shape before any calls to :rescale()</p></dd>
-      <dt>
-    .unscaled_height<span class="access"> (read-only)</span>
+      <dt>.unscaled_height<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">height of the shape before any calls to :rescale()</p></dd>
       <dt>.crop_rect</dt>
 <dd>
 <p class="description">specifies a portion of the shape to be drawn</p>
 <dl>
-<dt>
-    .height</dt>
+<dt>.height</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .width</dt>
+<dt>.width</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .x</dt>
+<dt>.x</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .y</dt>
+<dt>.y</dt>
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
-      <dt>
-    .tint_color</dt>
+      <dt>.tint_color</dt>
 <dd>
 <p class="description">scale the color and opacity by this value when drawing</p>
 <p class="note">default is (r=1, g=1, b=1, a=1) </p>
 <p class="note">only available in OpenGL renderer </p>
 </dd>
-      <dt>
-    .rotation</dt>
+      <dt>.rotation</dt>
 <dd>
 <p class="description">degrees to rotate the shape when drawn</p>
 <p class="note">axis of rotation is about the center of the drawn area </p>
@@ -1068,8 +933,7 @@ end
 <dt>Collections()</dt>
 <dt>Collections[collection]</dt>
 <dd><dl>
-      <dt>
-    .bitmap_count</dt>
+      <dt>.bitmap_count</dt>
 <dd><p class="description">number of bitmaps in collection</p></dd>
       
         
@@ -1207,20 +1071,16 @@ end
 <dt>InterfaceColors()</dt>
 <dt>InterfaceColors[interface_color]</dt>
 <dd><dl>
-      <dt>
-    .r<span class="access"> (read-only)</span><br>.red<span class="access"> (read-only)</span>
+      <dt>.r<span class="access"> (read-only)</span><br>.red<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .g<span class="access"> (read-only)</span><br>.green<span class="access"> (read-only)</span>
+      <dt>.g<span class="access"> (read-only)</span><br>.green<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .b<span class="access"> (read-only)</span><br>.blue<span class="access"> (read-only)</span>
+      <dt>.b<span class="access"> (read-only)</span><br>.blue<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .a<span class="access"> (read-only)</span><br>.alpha<span class="access"> (read-only)</span>
+      <dt>.a<span class="access"> (read-only)</span><br>.alpha<span class="access"> (read-only)</span>
 </dt>
 <dd>
 <p class="description"></p>
@@ -1315,20 +1175,16 @@ end
 <dt>InterfaceRects()</dt>
 <dt>InterfaceRects[interface_rect]</dt>
 <dd><dl>
-      <dt>
-    .x<span class="access"> (read-only)</span>
+      <dt>.x<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .y<span class="access"> (read-only)</span>
+      <dt>.y<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .width<span class="access"> (read-only)</span>
+      <dt>.width<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .height<span class="access"> (read-only)</span>
+      <dt>.height<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
       
