@@ -622,6 +622,30 @@ int Lua_Monster_Damage(lua_State *L)
 	return 0;
 }
 
+int Lua_Monster_Delete(lua_State* L)
+{
+	auto monster_index = Lua_Monster::Index(L, 1);
+	auto monster = get_monster_data(monster_index);
+	if (MONSTER_IS_PLAYER(monster))
+		return luaL_error(L, "delete: monster is player");
+
+	monster->action = _monster_is_dying_soft; // to prevent aggressors from
+											  // relocking, per monsters.cpp
+	monster_died(monster_index);
+	auto object = get_object_data(monster->object_index);
+	remove_map_object(monster->object_index);
+
+	/* recover original type and notify the object stuff a monster died */
+	if (monster->flags&_monster_was_promoted) monster->type-= 1;
+	if (monster->flags&_monster_was_demoted) monster->type+= 1;
+	object_was_just_destroyed(_object_is_monster, monster->type);
+	
+	L_Invalidate_Monster(monster_index);
+	MARK_SLOT_AS_FREE(monster);
+
+	return 0;
+}
+
 int Lua_Monster_Valid(int16 index)
 {
 	if (index < 0 || index >= MAXIMUM_MONSTERS_PER_MAP)
@@ -948,6 +972,7 @@ const luaL_Reg Lua_Monster_Get[] = {
 	{"active", Lua_Monster_Get_Active},
 	{"attack", L_TableFunction<Lua_Monster_Attack>},
 	{"damage", L_TableFunction<Lua_Monster_Damage>},
+	{"delete", L_TableFunction<Lua_Monster_Delete>},
 	{"external_velocity", Lua_Monster_Get_External_Velocity},
 	{"facing", Lua_Monster_Get_Facing},
 	{"life", Lua_Monster_Get_Vitality},

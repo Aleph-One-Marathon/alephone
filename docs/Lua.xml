@@ -949,6 +949,9 @@
 		<argument name="type" required="false"><type>damage_type</type></argument>
 		<note>if no type is specified, fist damage is dealt</note>
       </function>
+	  <function name="delete" version="git">
+		<description>deletes monster</description>
+	  </function>
       <variable name="external_velocity" version="20090909">
 		<description>monster’s current external velocity (always in the opposite direction of facing)</description>
 		<type>speed</type>
