@@ -862,6 +862,10 @@
 		<description>counterclockwise side of line</description>
 		<type>side</type>
       </variable>
+	  <variable name="decorative" version="git">
+		<description>projectiles always pass the transparent sides of decorative lines</description>
+		<type>bool</type>
+	  </variable>
       <subtable-accessor name="endpoints" classname="line_endpoints" index="n">
 		<description>returns line endpoint n</description>
       </subtable-accessor>

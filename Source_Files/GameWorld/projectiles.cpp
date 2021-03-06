@@ -849,7 +849,7 @@ uint16 translate_projectile(
 					{
 						if (intersection.z>adjacent_polygon->floor_height&&intersection.z<adjacent_polygon->ceiling_height)
 						{
-							if (!LINE_HAS_TRANSPARENT_SIDE(line) || (preflight && (definition->flags&(_usually_pass_transparent_side|_sometimes_pass_transparent_side))) ||
+							if (!LINE_HAS_TRANSPARENT_SIDE(line) || line->is_decorative() || (preflight && (definition->flags&(_usually_pass_transparent_side|_sometimes_pass_transparent_side))) ||
 								((definition->flags&_usually_pass_transparent_side) && (global_random()&3)) ||
 								((definition->flags&_sometimes_pass_transparent_side) && !(global_random()&3)))
 							{

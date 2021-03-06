@@ -229,6 +229,12 @@ static int Lua_Line_Get_Counterclockwise_Side(lua_State *L)
 	return 1;
 }
 
+static int Lua_Line_Get_Decorative(lua_State* L)
+{
+	lua_pushboolean(L, get_line_data(Lua_Line::Index(L, 1))->is_decorative());
+	return 1;
+}
+
 static int Lua_Line_Get_Endpoints(lua_State *L)
 {
 	Lua_Line_Endpoints::Push(L, Lua_Line::Index(L, 1));
@@ -272,6 +278,15 @@ static int Lua_Line_Get_Visible_On_Automap(lua_State *L)
 	return 1;
 }
 
+static int Lua_Line_Set_Decorative(lua_State* L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, ("decorative: incorrect argument type"));
+
+	get_line_data(Lua_Line::Index(L, 1))->set_decorative(lua_toboolean(L, 2));
+	return 0;
+}
+
 static int Lua_Line_Set_Visible_On_Automap(lua_State *L)
 {
 	if (!lua_isboolean(L, 2))
@@ -294,6 +309,7 @@ const luaL_Reg Lua_Line_Get[] = {
 	{"clockwise_side", Lua_Line_Get_Clockwise_Side},
 	{"counterclockwise_polygon", Lua_Line_Get_Counterclockwise_Polygon},
 	{"counterclockwise_side", Lua_Line_Get_Counterclockwise_Side},
+	{"decorative", Lua_Line_Get_Decorative},
 	{"endpoints", Lua_Line_Get_Endpoints},
 	{"has_transparent_side", Lua_Line_Get_Has_Transparent_Side},
 	{"highest_adjacent_floor", Lua_Line_Get_Highest_Adjacent_Floor},
@@ -305,6 +321,7 @@ const luaL_Reg Lua_Line_Get[] = {
 };
 
 const luaL_Reg Lua_Line_Set[] = {
+	{"decorative", Lua_Line_Set_Decorative},
 	{"visible_on_automap", Lua_Line_Set_Visible_On_Automap},
 	{0, 0}
 };

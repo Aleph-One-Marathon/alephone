@@ -1233,7 +1233,7 @@ uint8 *unpack_line_data(uint8 *Stream, line_data *Objects, size_t Count)
 	{
 		StreamToList(S,ObjPtr->endpoint_indexes,2);
 		StreamToValue(S,ObjPtr->flags);
-		
+
 		StreamToValue(S,ObjPtr->length);
 		StreamToValue(S,ObjPtr->highest_adjacent_floor);
 		StreamToValue(S,ObjPtr->lowest_adjacent_ceiling);
