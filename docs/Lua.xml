@@ -947,12 +947,22 @@
 		<description>instructs monster to attack target</description>
 		<argument name="target"><type>monster</type></argument>
       </function>
+	  <variable name="blind" version="git">
+		<description>monster is blind</description>
+		<note>only valid before monster activates</note>
+		<type>boolean</type>
+	  </variable>
       <function name="damage">
 		<description>damages monster</description>
 		<argument name="amount"><type>number</type></argument>
 		<argument name="type" required="false"><type>damage_type</type></argument>
 		<note>if no type is specified, fist damage is dealt</note>
       </function>
+	  <variable name="deaf" version="git">
+		<description>monster is deaf</description>
+		<note>only valid before monster activates</note>
+		<type>boolean</type>
+	  </variable>
 	  <function name="delete" version="git">
 		<description>deletes monster</description>
 	  </function>
@@ -1001,6 +1011,10 @@
 		<argument name="z"><type>WU</type></argument>
 		<argument name="polygon"><type>polygon</type></argument>
       </function>
+	  <variable name="teleports_out" version="git">
+		<description>monster teleports out when deactivated</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="type" access="read-only">
 		<description>type of monster</description>
 		<type>monster_type</type>

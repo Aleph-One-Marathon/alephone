@@ -1040,10 +1040,22 @@
 <dd><p class="description">whether monster has been activated</p></dd>
       <dt>:attack(target)</dt>
 <dd><p class="description">instructs monster to attack target</p></dd>
+	  <dt>.blind <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">monster is blind</p>
+<p class="note">only valid before monster activates </p>
+</dd>
       <dt>:damage(amount [, type])</dt>
 <dd>
 <p class="description">damages monster</p>
 <p class="note">if no type is specified, fist damage is dealt </p>
+</dd>
+	  <dt>.deaf <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">monster is deaf</p>
+<p class="note">only valid before monster activates </p>
 </dd>
 	  <dt>:delete() <span class="version">git</span>
 </dt>
@@ -1077,6 +1089,9 @@
 <dd><p class="description">polygon this monster is in</p></dd>
       <dt>:position(x, y, z, polygon)</dt>
 <dd><p class="description">sets position of monster</p></dd>
+	  <dt>.teleports_out <span class="version">git</span>
+</dt>
+<dd><p class="description">monster teleports out when deactivated</p></dd>
       <dt>.type<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">type of monster</p></dd>

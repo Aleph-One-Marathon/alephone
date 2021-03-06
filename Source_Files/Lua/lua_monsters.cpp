@@ -793,6 +793,14 @@ static int Lua_Monster_Get_Facing(lua_State *L)
 	return 1;
 }
 
+template<uint32 flag>
+static int Lua_Monster_Get_Flag(lua_State* L)
+{
+	auto monster = get_monster_data(Lua_Monster::Index(L, 1));
+	lua_pushboolean(L, monster->flags & flag);
+	return 1;
+}
+
 static int Lua_Monster_Get_Mode(lua_State *L)
 {
 	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
@@ -923,6 +931,28 @@ static int Lua_Monster_Set_Facing(lua_State *L)
 	return 0;
 }
 
+template<uint32 flag, bool before_activation>
+static int Lua_Monster_Set_Flag(lua_State* L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "monster flag: incorrect argument type");
+
+	auto monster = get_monster_data(Lua_Monster::Index(L, 1));
+	if (before_activation && MONSTER_IS_ACTIVE(monster))
+		return luaL_error(L, "monster flag: monster already active");
+
+	if (lua_toboolean(L, 2))
+	{
+		monster->flags |= flag;
+	}
+	else
+	{
+		monster->flags &= ~flag;
+	}
+
+	return 0;
+}
+
 static int Lua_Monster_Set_Vertical_Velocity(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
@@ -939,20 +969,11 @@ static int Lua_Monster_Set_Visible(lua_State *L) {
 	object_data *object = get_object_data(monster->object_index);
 	int invisible = !lua_toboolean(L, 2);
 	if(monster->action == _monster_is_teleporting_out) return 0;
-	if(MONSTER_IS_ACTIVE(monster) || monster->vitality >= 0) {
-		// Cool stuff happens if you just set an active
-		// monster to invisible.  What we should do instead of
-		// the below is expose teleports_out_when_deactivated
-		/*if(invisible) {
-		  monster->flags |= (uint16)_monster_teleports_out_when_deactivated;
-		  deactivate_monster(monster_index);
-		  }*/
+	if(MONSTER_IS_ACTIVE(monster) || monster->vitality >= 0)
 		return luaL_error(L, "visible: monster already activated");
-	}
-	else {
-		// No real possibility of messing stuff up here.
-		SET_OBJECT_INVISIBILITY(object, invisible);
-	}
+
+	// No real possibility of messing stuff up here.
+	SET_OBJECT_INVISIBILITY(object, invisible);
 	return 0;
 }
 
@@ -971,7 +992,9 @@ const luaL_Reg Lua_Monster_Get[] = {
 	{"action", Lua_Monster_Get_Action},
 	{"active", Lua_Monster_Get_Active},
 	{"attack", L_TableFunction<Lua_Monster_Attack>},
+	{"blind", Lua_Monster_Get_Flag<_monster_is_blind>},
 	{"damage", L_TableFunction<Lua_Monster_Damage>},
+	{"deaf", Lua_Monster_Get_Flag<_monster_is_deaf>},
 	{"delete", L_TableFunction<Lua_Monster_Delete>},
 	{"external_velocity", Lua_Monster_Get_External_Velocity},
 	{"facing", Lua_Monster_Get_Facing},
@@ -982,6 +1005,7 @@ const luaL_Reg Lua_Monster_Get[] = {
 	{"play_sound", L_TableFunction<Lua_Monster_Play_Sound>},
 	{"polygon", Lua_Monster_Get_Polygon},
 	{"position", L_TableFunction<Lua_Monster_Position>},
+	{"teleports_out", Lua_Monster_Get_Flag<_monster_teleports_out_when_deactivated>},
 	{"type", Lua_Monster_Get_Type},
 	{"valid", Lua_Monster_Get_Valid},
 	{"vertical_velocity", Lua_Monster_Get_Vertical_Velocity},
@@ -996,9 +1020,12 @@ const luaL_Reg Lua_Monster_Get[] = {
 
 const luaL_Reg Lua_Monster_Set[] = {
 	{"active", Lua_Monster_Set_Active},
+	{"blind", Lua_Monster_Set_Flag<_monster_is_blind, true>},
+	{"deaf", Lua_Monster_Set_Flag<_monster_is_deaf, true>},
 	{"external_velocity", Lua_Monster_Set_External_Velocity},
 	{"facing", Lua_Monster_Set_Facing},
 	{"life", Lua_Monster_Set_Vitality},
+	{"teleports_out", Lua_Monster_Set_Flag<_monster_teleports_out_when_deactivated, false>},
 	{"vertical_velocity", Lua_Monster_Set_Vertical_Velocity},
 	{"visible", Lua_Monster_Set_Visible},
 	{"vitality", Lua_Monster_Set_Vitality},
