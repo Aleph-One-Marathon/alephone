@@ -72,7 +72,7 @@ void* injectMacOS(SDL_Window *main_screen)
 
     // Set the layer's scale factor as you wish
     mglLayer.contentsScale = MainScreenPixelScale();// [[NSScreen mainScreen] scale];
-
+        
     // Initialize OpenGL context
     context = [[MGLContext alloc] initWithAPI:kMGLRenderingAPIOpenGLES2];
 

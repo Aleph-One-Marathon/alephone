@@ -524,7 +524,7 @@ void initDefaultPrograms() {
       "uniform highp sampler2D texture0;\n"
       "void main()                                \n"
       "{                                          \n"
-      "gl_FragColor = texture(texture0, textureUV.xy) * vertexColor;\n"
+      "gl_FragColor = texture2D(texture0, textureUV.xy) * vertexColor;\n"
       "} \n";
 
     defaultVertexPrograms["solid_color"] = ""
