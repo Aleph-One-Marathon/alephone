@@ -122,13 +122,14 @@ class ttf_font_info : public font_info {
 public:
 	uint16 get_ascent() const { return TTF_FontAscent(m_styles[styleNormal]); };
 	uint16 get_height() const { return TTF_FontHeight(m_styles[styleNormal]); };
-	uint16 get_line_height() const { return std::max(TTF_FontLineSkip(m_styles[styleNormal]), TTF_FontHeight(m_styles[styleNormal])) + m_adjust_height; }
+	uint16 get_line_height() const { return m_line_height + m_adjust_height; }
 	uint16 get_descent() const { return -TTF_FontDescent(m_styles[styleNormal]); }
 	int16 get_leading() const { return get_line_height() - get_ascent() - get_descent(); }
 
 	TTF_Font* m_styles[styleUnderline];
 	ttf_font_key_t m_keys[styleUnderline];
 	int m_adjust_height;
+	int m_line_height;
 
 	int8 char_width(uint8, uint16) const;
 

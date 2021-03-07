@@ -317,6 +317,16 @@ font_info *load_font(const TextSpec &spec) {
 			info->m_styles[styleNormal] = font;
 			info->m_keys[styleNormal] = ttf_font_key_t(file, 0, spec.size);
 
+			// SDL_TTF doesn't do a great job determining the height of fonts...
+			int height;
+			TTF_SizeText(font, "Ag", nullptr, &height);
+			
+			info->m_line_height = std::max({
+					TTF_FontLineSkip(font),
+					TTF_FontHeight(font),
+					height
+				});							
+
 			// load bold face
 			file = locate_font(spec.bold);
 			font = load_ttf_font(file, styleNormal, spec.size);
