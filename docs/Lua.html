@@ -171,7 +171,8 @@
 <li><a href="#EphemeraQualities">Ephemera Quality</a></li>
 <li><a href="#FadeTypes">Faders</a></li>
 <li><a href="#GameTypes">Game Types</a></li>
-<li><a href="#ItemTypes">Items</a></li>
+<li><a href="#ItemKinds">Item Kinds</a></li>
+<li><a href="#ItemTypes">Item Types</a></li>
 <li><a href="#LightFunctions">Light Functions</a></li>
 <li><a href="#LightPresets">Light Presets</a></li>
 <li><a href="#LightStates">Light States</a></li>
@@ -2365,7 +2366,22 @@ If you do this, you should customize them all at the beginning of the script. Ch
 </ul></div>
 <div class="end-mnemonics"></div>
 <h3>
-<a name="ItemTypes"></a>Items</h3>
+<a name="ItemKinds"></a>Item Kinds</h3>
+<dl>
+<dt># ItemKinds</dt>
+<dt>ItemKinds()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"weapon"</li>
+<li>"ammunition"</li>
+<li>"powerup"</li>
+<li>"item"</li>
+<li>"weapon powerup"</li>
+<li>"ball"</li>
+</ul>
+<h3>
+<a name="ItemTypes"></a>Item Types</h3>
 <dl>
 <dt># ItemTypes</dt>
 <dt>ItemTypes()</dt>
@@ -2374,6 +2390,9 @@ If you do this, you should customize them all at the beginning of the script. Ch
       <dt>.initial_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">how many items of this type are placed in the level during initial placement</p></dd>
+	  <dt>.kind<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">kind of item this is</p></dd>
       <dt>.maximum_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">maximum number of this type of item in the level and in player inventories</p></dd>

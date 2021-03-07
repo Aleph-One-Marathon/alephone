@@ -2588,11 +2588,25 @@
 		<mnemonic name="netscript"/>
       </mnemonics>
     </enum>
+	<enum name="item_kind" version="git">
+	  <mnemonics>
+		<mnemonic name="weapon"/>
+		<mnemonic name="ammunition"/>
+		<mnemonic name="powerup"/>
+		<mnemonic name="item"/>
+		<mnemonic name="weapon powerup"/>
+		<mnemonic name="ball"/>
+	  </mnemonics>
+	</enum>
     <enum name="item_type">
       <variable name="initial_count" version="20111201">
 		<description>how many items of this type are placed in the level during initial placement</description>
 		<type>number</type>
       </variable>
+	  <variable name="kind" access="read-only" version="git">
+		<description>kind of item this is</description>
+		<type>item_kind</type>
+	  </variable>
       <variable name="maximum_count" version="20111201">
 		<description>maximum number of this type of item in the level and in player inventories</description>
 		<type>number</type>
@@ -3340,7 +3354,8 @@
 	<enum-accessor name="EphemeraQualities" contains="ephemera_quality" nice-name="Ephemera Quality"/>
     <enum-accessor name="FadeTypes" contains="fade_type" nice-name="Faders"/>
     <enum-accessor name="GameTypes" contains="game_type" nice-name="Game Types"/>
-    <enum-accessor name="ItemTypes" contains="item_type" nice-name="Items"/>
+    <enum-accessor name="ItemKinds" contains="item_kind" nice-name="Item Kinds"/>
+    <enum-accessor name="ItemTypes" contains="item_type" nice-name="Item Types"/>
     <enum-accessor name="MediaTypes" contains="media_type" nice-name="Media"/>
     <enum-accessor name="LightFunctions" contains="light_function" nice-name="Light Functions"/>
     <enum-accessor name="LightPresets" contains="light_preset" nice-name="Light Presets"/>

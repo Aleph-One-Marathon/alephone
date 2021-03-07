@@ -433,9 +433,26 @@ bool Lua_Item_Valid(int32 index)
 	return (SLOT_IS_USED(object) && GET_OBJECT_OWNER(object) == _object_is_item);
 }
 
+char Lua_ItemKind_Name[] = "item_kind";
+typedef L_Enum<Lua_ItemKind_Name> Lua_ItemKind;
+
+static bool Lua_ItemKind_Valid(int32 index)
+{
+	return index >= 0 && index <= NUMBER_OF_ITEM_TYPES;
+}
+
+char Lua_ItemKinds_Name[] = "ItemKinds";
+typedef L_EnumContainer<Lua_ItemKinds_Name, Lua_ItemKind> Lua_ItemKinds;
+
 static int Lua_ItemType_Get_Ball(lua_State *L)
 {
 	lua_pushboolean(L, (get_item_kind(Lua_ItemType::Index(L, 1)) == _ball));
+	return 1;
+}
+
+static int Lua_ItemType_Get_Kind(lua_State* L)
+{
+	Lua_ItemKind::Push(L, get_item_kind(Lua_ItemType::Index(L, 1)));
 	return 1;
 }
 
@@ -593,6 +610,7 @@ static bool Lua_ItemType_Valid(int32 index) {
 char Lua_ItemType_Name[] = "item_type";
 const luaL_Reg Lua_ItemType_Get[] = {
 	{"ball", Lua_ItemType_Get_Ball},
+	{"kind", Lua_ItemType_Get_Kind},
 	{"initial_count", Lua_ItemType_Get_Initial_Count},
 	{"maximum_count", Lua_ItemType_Get_Maximum_Count},
 	{"maximum_inventory", Lua_ItemType_Get_Maximum_Inventory},
@@ -807,6 +825,12 @@ int Lua_Objects_register(lua_State *L)
 
 	Lua_EffectTypes::Register(L);
 	Lua_EffectTypes::Length = Lua_EffectTypes::ConstantLength(NUMBER_OF_EFFECT_TYPES);
+
+	Lua_ItemKind::Register(L, 0, 0, 0, Lua_ItemKind_Mnemonics);
+	Lua_ItemKind::Valid = Lua_ItemKind_Valid;
+
+	Lua_ItemKinds::Register(L);
+	Lua_ItemKinds::Length = Lua_ItemKinds::ConstantLength(NUMBER_OF_ITEM_TYPES);
 
 	Lua_ItemType::Register(L, Lua_ItemType_Get, Lua_ItemType_Set, 0, Lua_ItemType_Mnemonics);
 	Lua_ItemType::Valid = Lua_ItemType_Valid;
