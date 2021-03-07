@@ -655,8 +655,8 @@ static void DisplayMessages(SDL_Surface *s)
 	DisplayTextStyle = Font.Style;
 
 	auto text_margins = alephone::Screen::instance()->lua_text_margins;
-	short X0 = text_margins.top;
-	short Y0 = text_margins.left;
+	short X0 = text_margins.left;
+	short Y0 = text_margins.top;
 	
 	short LineSpacing = Font.LineSpacing;
 	short X = X0 + LineSpacing/3;
