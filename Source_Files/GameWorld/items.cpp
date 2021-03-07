@@ -879,7 +879,6 @@ void parse_mml_items(const InfoTree& root)
 
 			if (max.read_indexed("maximum", def.extended_maximum_count[difficulty], SHRT_MAX+1))
 			{
-				printf("maximum: %i\n", def.extended_maximum_count[difficulty]);
 				def.has_extended_maximum_count[difficulty] = true;
 			}
 		}
