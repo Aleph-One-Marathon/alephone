@@ -2597,6 +2597,10 @@
 		<description>maximum number of this type of item in the level and in player inventories</description>
 		<type>number</type>
       </variable>
+	  <variable name="maximum_inventory" version="git">
+		<description>maximum number of this type of item players can carry</description>
+		<type>number</type>
+	  </variable>
       <variable name="minimum_count" version="20111201">
 		<description>minimum number of this type of item in the level and in player inventories</description>
 		<type>number</type>

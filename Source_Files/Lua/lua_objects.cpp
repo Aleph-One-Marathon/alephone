@@ -30,6 +30,7 @@ LUA_OBJECTS.CPP
 #include "scenery.h"
 #include "player.h"
 #define DONT_REPEAT_DEFINITIONS
+#include "item_definitions.h"
 #include "scenery_definitions.h"
 
 #include "SoundManager.h"
@@ -450,6 +451,14 @@ static int Lua_ItemType_Get_Maximum_Count(lua_State* L)
 	return 1;
 }
 
+static int Lua_ItemType_Get_Maximum_Inventory(lua_State* L)
+{
+	auto is_m1 = static_world->environment_flags & _environment_m1_weapons;
+	auto difficulty_level = dynamic_world->game_information.difficulty_level;
+	lua_pushnumber(L, get_item_definition_external(Lua_ItemType::Index(L, 1))->get_maximum_count_per_player(is_m1, difficulty_level));
+	return 1;
+}
+
 static int Lua_ItemType_Get_Minimum_Count(lua_State* L)
 {
 	lua_pushnumber(L, get_placement_info()[Lua_ItemType::Index(L, 1)].minimum_count);
@@ -497,6 +506,23 @@ static int Lua_ItemType_Set_Maximum_Count(lua_State* L)
 	{
 		return luaL_error(L, "maximum_count: incorrect argument type");
 	}
+	return 0;
+}
+
+static int Lua_ItemType_Set_Maximum_Inventory(lua_State* L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		auto definition = get_item_definition_external(Lua_ItemType::Index(L, 1));
+		const auto difficulty_level = dynamic_world->game_information.difficulty_level;
+		definition->extended_maximum_count[difficulty_level] = static_cast<int16_t>(lua_tonumber(L, 2));
+		definition->has_extended_maximum_count[difficulty_level] = true;
+	}
+	else
+	{
+		return luaL_error(L, "maximum_inventory: incorrect argument type");
+	}
+
 	return 0;
 }
  
@@ -569,6 +595,7 @@ const luaL_Reg Lua_ItemType_Get[] = {
 	{"ball", Lua_ItemType_Get_Ball},
 	{"initial_count", Lua_ItemType_Get_Initial_Count},
 	{"maximum_count", Lua_ItemType_Get_Maximum_Count},
+	{"maximum_inventory", Lua_ItemType_Get_Maximum_Inventory},
 	{"minimum_count", Lua_ItemType_Get_Minimum_Count},
 	{"random_chance", Lua_ItemType_Get_Random_Chance},
 	{"random_location", Lua_ItemType_Get_Random_Location},
@@ -579,6 +606,7 @@ const luaL_Reg Lua_ItemType_Get[] = {
 const luaL_Reg Lua_ItemType_Set[] = {
 	{"initial_count", Lua_ItemType_Set_Initial_Count},
 	{"maximum_count", Lua_ItemType_Set_Maximum_Count},
+	{"maximum_inventory", Lua_ItemType_Set_Maximum_Inventory},
 	{"minimum_count", Lua_ItemType_Set_Minimum_Count},
 	{"random_chance", Lua_ItemType_Set_Random_Chance},
 	{"random_location", Lua_ItemType_Set_Random_Location},
