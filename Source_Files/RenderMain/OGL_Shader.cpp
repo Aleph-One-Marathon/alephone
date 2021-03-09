@@ -900,11 +900,14 @@ void initDefaultPrograms() {
         "}\n";
     defaultVertexPrograms["invincible_bloom"] = defaultVertexPrograms["invincible"];
     defaultFragmentPrograms["invincible_bloom"] = ""
+        "precision highp float;\n"
         "uniform sampler2D texture0;\n"
         "uniform float time;\n"
         "uniform vec4 clipPlane0;\n"
         "uniform vec4 clipPlane1;\n"
         "uniform vec4 clipPlane5;\n"
+        "varying highp vec4 fogColor; \n"
+        "varying highp vec2 textureUV; \n"
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
         "varying float FDxLOG2E;\n"
@@ -940,12 +943,12 @@ void initDefaultPrograms() {
         "   vec3 intensity = vec3(0.0,0.0,0.0);\n"
         "   if (rand(entropy*sr*sg*sb) > darkBlockProbability) {\n"
         "      intensity = vec3(sr*sr, sg*sg, sb); }\n"
-        "   vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
+        "   vec4 color = texture2D(texture0, textureUV.xy);\n"
         "#ifdef GAMMA_CORRECTED_BLENDING\n"
         "   intensity = intensity * intensity;  // approximation of pow(intensity, 2.2)\n"
         "#endif\n"
         "   float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
-        "   gl_FragColor = vec4(mix(gl_Fog.color.rgb, intensity, fogFactor), vertexColor.a * color.a);\n"
+        "   gl_FragColor = vec4(mix(fogColor.rgb, intensity, fogFactor), vertexColor.a * color.a);\n"
         "   if( unwantedFragment ) {gl_FragColor.a = 0.0;}\n"
         "}\n";
 
