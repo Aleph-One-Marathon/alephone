@@ -64,22 +64,35 @@ public:
         GLfloat modelProjection[16];
         MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
 
+        GLfloat mainColorBufferSize[2], blurBufferSize[2];
+        mainColorBufferSize[0]=dest.current_contents()._w ;
+        mainColorBufferSize[1]=dest.current_contents()._h;
+        
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 		for (int i = 0; i < passes; i++) {
+            
+            blurBufferSize[0]=_swapper.current_contents()._w;
+            blurBufferSize[1]=_swapper.current_contents()._h;
+
 			_shader_blur->enable();
             _shader_blur->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+            _shader_blur->setVec2(Shader::U_Texture0_Size, blurBufferSize);
 			_shader_blur->setFloat(Shader::U_OffsetX, 1);
 			_shader_blur->setFloat(Shader::U_OffsetY, 0);
 			_shader_blur->setFloat(Shader::U_Pass, i + 1);
 			_swapper.filter(false);
 
+            _shader_blur->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+            _shader_blur->setVec2(Shader::U_Texture0_Size, blurBufferSize);
 			_shader_blur->setFloat(Shader::U_OffsetX, 0);
 			_shader_blur->setFloat(Shader::U_OffsetY, 1);
 			_shader_blur->setFloat(Shader::U_Pass, i + 1);
 			_swapper.filter(false);
-
-			_shader_bloom->enable();
+            
+            _shader_bloom->enable();
             _shader_bloom->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+            _shader_bloom->setVec2(Shader::U_Texture0_Size, mainColorBufferSize);
+            _shader_bloom->setVec2(Shader::U_Texture1_Size, blurBufferSize);
 			_shader_bloom->setFloat(Shader::U_Pass, i + 1);
 //			if (Bloom_sRGB)
 //				dest.blend(_swapper.current_contents(), true);

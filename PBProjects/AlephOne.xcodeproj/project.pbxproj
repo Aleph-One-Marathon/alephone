@@ -385,7 +385,6 @@
 		516E52F425EB53330073E92A /* MatrixStack.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 516E52F025EB53330073E92A /* MatrixStack.hpp */; };
 		516E52F625EB53810073E92A /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52F525EB53810073E92A /* MetalANGLE.framework */; };
 		516E52F725EB53810073E92A /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52F525EB53810073E92A /* MetalANGLE.framework */; };
-		516E52F825EB53810073E92A /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52F525EB53810073E92A /* MetalANGLE.framework */; };
 		516E52F925EB53810073E92A /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52F525EB53810073E92A /* MetalANGLE.framework */; };
 		516E52FC25EB57920073E92A /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52FA25EB57910073E92A /* MetalKit.framework */; };
 		516E52FD25EB57920073E92A /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52FA25EB57910073E92A /* MetalKit.framework */; };
@@ -407,6 +406,8 @@
 		5198F50E25F087030019EB83 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5198F50C25F087030019EB83 /* Metal.framework */; };
 		5198F50F25F087030019EB83 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5198F50C25F087030019EB83 /* Metal.framework */; };
 		5198F51025F087030019EB83 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5198F50C25F087030019EB83 /* Metal.framework */; };
+		51D74CF225F5E6B200A1FEC7 /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 516E52F525EB53810073E92A /* MetalANGLE.framework */; };
+		51D74CF325F5E6B200A1FEC7 /* MetalANGLE.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 516E52F525EB53810073E92A /* MetalANGLE.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		553AB9F6213A034300EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
 		553AB9F7213A035000EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
 		553AB9F9213A035000EE3861 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 553AB9F5213A034300EE3861 /* libexpat.tbd */; };
@@ -2069,6 +2070,7 @@
 				2748BDE71CC405390082F0E1 /* SDL2_ttf.framework in CopyFiles */,
 				2748BDE81CC405390082F0E1 /* SDL2.framework in CopyFiles */,
 				AEA85F4F24DF253700BB7827 /* webp.framework in CopyFiles */,
+				51D74CF325F5E6B200A1FEC7 /* MetalANGLE.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2696,6 +2698,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				273FBB4B1E122CA20076351E /* IOKit.framework in Frameworks */,
+				51D74CF225F5E6B200A1FEC7 /* MetalANGLE.framework in Frameworks */,
 				5198F50F25F087030019EB83 /* Metal.framework in Frameworks */,
 				275A7BD51A60DE9B002EE952 /* libcurl.tbd in Frameworks */,
 				AE505CF0141D45E600915344 /* Cocoa.framework in Frameworks */,
@@ -2707,7 +2710,6 @@
 				2762A3391AAA51D900B807D4 /* boost_system.framework in Frameworks */,
 				516E52FE25EB57920073E92A /* MetalKit.framework in Frameworks */,
 				AE505CFC141D45E600915344 /* libz.tbd in Frameworks */,
-				516E52F825EB53810073E92A /* MetalANGLE.framework in Frameworks */,
 				2748BDC61CC405030082F0E1 /* SDL2.framework in Frameworks */,
 				AE505CFD141D45E600915344 /* CoreAudio.framework in Frameworks */,
 				AE505CFE141D45E600915344 /* zziplib.framework in Frameworks */,

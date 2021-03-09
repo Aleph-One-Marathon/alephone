@@ -283,14 +283,20 @@ void FBOSwapper::blend_multisample(FBO& other) {
 	
 	// set up FBO passed in as texture #1
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, other.texID);
+	glBindTexture(GL_TEXTURE_2D, other.texID);
+    /*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);*/
+    
+    
 	glEnable(GL_TEXTURE_RECTANGLE_ARB);
 	glActiveTexture(GL_TEXTURE0);
 	
 	glClientActiveTexture(GL_TEXTURE1);
 	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
-	GLint multi_coordinates[8] = { 0, GLint(other._h), GLint(other._w), GLint(other._h), GLint(other._w), 0, 0, 0 };
-	glTexCoordPointer(2, GL_INT, 0, multi_coordinates);
+	//GLint multi_coordinates[8] = { 0, GLint(other._h), GLint(other._w), GLint(other._h), GLint(other._w), 0, 0, 0 };
+	//glTexCoordPointer(2, GL_INT, 0, multi_coordinates); //NOT SUPPORTED ANGLE FUNCTION
 	glClientActiveTexture(GL_TEXTURE0);
 	
 	draw(true);

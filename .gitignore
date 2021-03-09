@@ -40,3 +40,4 @@ Release/
 *.aps
 
 /data/Scenarios/*/*
+/data/Scenarios/data-marathon-2
