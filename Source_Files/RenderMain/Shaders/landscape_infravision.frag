@@ -1,5 +1,6 @@
 R"(
 
+precision highp float;
 uniform sampler2D texture0;
 uniform float usefog;
 uniform float scalex;
