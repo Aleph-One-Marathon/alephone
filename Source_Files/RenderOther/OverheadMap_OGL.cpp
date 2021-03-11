@@ -74,6 +74,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "OGL_Headers.h"
 #include "OGL_Render.h"
 #include "MatrixStack.hpp"
+#include "OGL_Shader.h"
 #endif
 
 
@@ -103,6 +104,12 @@ extern short ViewWidth, ViewHeight;
 
 void OverheadMap_OGL_Class::begin_overall()
 {
+    GLfloat modelProjection[16];
+    MSI()->getFloatvModelviewProjection(modelProjection);
+    
+    Shader *s = Shader::get(Shader::S_SolidColor);
+    s->enable();
+    s->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
 
 	// Blank out the screen
 	// Do that by painting a black polygon
@@ -142,7 +149,9 @@ void OverheadMap_OGL_Class::begin_polygons()
 	// Polygons are rendered before lines, and use the endpoint array,
 	// so both of them will have it set here. Using the compiled-vertex extension,
 	// however, makes everything the same color :-P
-	glVertexPointer(2,GL_SHORT,GetVertexStride(),GetFirstVertex());
+    glVertexAttribPointer(Shader::ATTRIB_VERTEX, 2, GL_SHORT, GL_FALSE, GetVertexStride(), GetFirstVertex());
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+	//glVertexPointer(2,GL_SHORT,GetVertexStride(),GetFirstVertex());
 
 	// Reset color defaults
 	SavedColor.red = SavedColor.green = SavedColor.blue = 0;
@@ -187,6 +196,9 @@ void OverheadMap_OGL_Class::end_polygons()
 
 void OverheadMap_OGL_Class::DrawCachedPolygons()
 {
+    Shader* lastShader = lastEnabledShader();
+    lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+    
 	glDrawElements(GL_TRIANGLES, PolygonCache.size(),
 		GL_UNSIGNED_SHORT, PolygonCache.data());
 	PolygonCache.clear();
@@ -250,6 +262,10 @@ void OverheadMap_OGL_Class::draw_thing(
 	short shape,
 	short radius)
 {
+    
+    Shader* previousShader = NULL;
+    Shader* rectShader = NULL;
+
 	SetColor(color);
 	
 	// Let OpenGL do the transformation work
@@ -262,7 +278,18 @@ void OverheadMap_OGL_Class::draw_thing(
 	{
 	case _rectangle_thing:
 		{
+            previousShader = lastEnabledShader();
+            rectShader = Shader::get(Shader::S_SolidColor);
+            rectShader->enable();
+            
+            GLfloat modelProjection[16];
+            MSI()->getFloatvModelviewProjection(modelProjection);
+            rectShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+
 			OGL_RenderRect(-0.75f, -0.75f, 1.5f, 1.5f);
+            if(previousShader) {
+                previousShader->enable();
+            }
 		}
 		break;
 	case _circle_thing:
@@ -289,7 +316,19 @@ void OverheadMap_OGL_Class::draw_thing(
 				-0.30f - ht, -0.75f,
 				-0.30f + ht, -0.75f + ft
 			};
-			glVertexPointer(2, GL_FLOAT, 0, vertices);
+            
+            //DCW I haven't tested this at all for shader!
+            
+            Shader *lastShader = lastEnabledShader();
+            GLfloat modelProjection[16];
+            MSI()->getFloatvModelviewProjection(modelProjection);
+            
+            lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+            lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+            glVertexAttribPointer(Shader::ATTRIB_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+            glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+			//glVertexPointer(2, GL_FLOAT, 0, vertices);
+            
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 36);
 		}
 		break;
@@ -331,8 +370,18 @@ void OverheadMap_OGL_Class::draw_player(
 	float scale = 1/float(1 << shrink);
 	MSI()->scalef(scale,scale,1);
 	glDisable(GL_TEXTURE_2D);
+    
+    GLfloat modelProjection[16];
+    MSI()->getFloatvModelviewProjection(modelProjection);
+    
+    Shader *lastShader = lastEnabledShader();
+    glVertexAttribPointer(Shader::ATTRIB_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, PlayerShape[0]);
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+    lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+    
 	//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
-	glVertexPointer(2,GL_FLOAT,0,PlayerShape[0]);
+	//glVertexPointer(2,GL_FLOAT,0,PlayerShape[0]);
 	glDrawArrays(GL_TRIANGLE_FAN,0,3);
 
 	MSI()->popMatrix();

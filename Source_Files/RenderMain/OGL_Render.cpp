@@ -3094,7 +3094,16 @@ void OGL_RenderRect(float x, float y, float w, float h)
 	//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	
 	GLfloat vertices[8] = { x, y, x + w, y, x + w, y + h, x, y + h };
-	glVertexPointer(2, GL_FLOAT, 0, vertices);
+    
+	//glVertexPointer(2, GL_FLOAT, 0, vertices);
+    Shader *lastShader = lastEnabledShader();
+    if(lastShader) {
+      lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+
+      glVertexAttribPointer(Shader::ATTRIB_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+      glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    }
+    
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
@@ -3228,7 +3237,13 @@ void OGL_RenderLines(const std::vector<world_point2d>& points, float thickness)
 	
 	if (!coords.empty())
 	{
-		glVertexPointer(2, GL_FLOAT, 0, &coords.front());
+        Shader* lastShader = lastEnabledShader();
+        if (lastShader) {
+          lastShader->setVec4(Shader::U_Color, MSI()->color());
+          glVertexAttribPointer(Shader::ATTRIB_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, &coords.front());
+          glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+        }
+		//glVertexPointer(2, GL_FLOAT, 0, &coords.front());
 		glDrawArrays(GL_TRIANGLES, 0, coords.size() / 2);
 	}
 	
