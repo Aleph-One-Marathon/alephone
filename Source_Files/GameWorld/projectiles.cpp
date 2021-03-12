@@ -812,8 +812,11 @@ uint16 translate_projectile(
 		}
 		
 		/* add this polygonÕs monsters to our non-redundant list of possible intersections */
-		possible_intersecting_monsters(&IntersectedObjects, GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE, old_polygon_index, true);
-		intersected_object_count = IntersectedObjects.size();
+		if (!(definition->flags & _passes_through_objects))
+		{
+			possible_intersecting_monsters(&IntersectedObjects, GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE, old_polygon_index, true);
+			intersected_object_count = IntersectedObjects.size();
+		}
 		
  		line_index= find_line_crossed_leaving_polygon(old_polygon_index, (world_point2d *)old_location, (world_point2d *)new_location);
 		if (line_index!=NONE)
@@ -959,6 +962,7 @@ uint16 translate_projectile(
 	/* check our object list and find the best intersection ... if we find an intersection at all,
 		then we hit this before we hit the wall, because the object list is checked against the
 		clipped new_location. */
+	if (!(definition->flags & _passes_through_objects))
 	{
 		world_distance best_intersection_distance = 0;
 		world_distance distance_traveled;

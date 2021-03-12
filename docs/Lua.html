@@ -1624,6 +1624,14 @@
 <p class="note">this is much less optimized than moving a platform </p>
 <p class="note">you may need to create sides if you are raising/lowering what used to be a flat floor/ceiling </p>
 </dd>
+	  <dt>:check_collision(x0, y0, z0, owner, x1, y1, z1 [, include_objects] [, include_media]) <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">returns t, x, y, z, polygon, where t is nil (if there was no collision), or the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the collision is with the surface of a liquid) where the line segment collided with the map (or object or media); and x, y, z, polygon is the location of the collision, or the end point if there was no collision</p>
+<p class="note">the owner is a monster or player to ignore, or nil </p>
+<p class="note">you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon() </p>
+<p class="note">in order of descending speed: find_polygon(), check_collision() without objects, check_collision() including objects </p>
+</dd>
       <dt>:contains(x, y [, z])</dt>
 <dd><p class="description">whether the point is in this polygon</p></dd>
       <dt>

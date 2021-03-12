@@ -1660,6 +1660,26 @@
 		<note>this is much less optimized than moving a platform</note>
 		<note>you may need to create sides if you are raising/lowering what used to be a flat floor/ceiling</note>
 	  </function>
+	  <function name="check_collision" version="git">
+		<argument name="x0"><type>WU</type></argument>
+		<argument name="y0"><type>WU</type></argument>
+		<argument name="z0"><type>WU</type></argument>
+		<argument name="owner"><type>monster</type></argument>
+		<argument name="x1"><type>WU</type></argument>
+		<argument name="y1"><type>WU</type></argument>
+		<argument name="z1"><type>WU</type></argument>
+		<argument name="include_objects" required="false"><type>boolean</type></argument>
+		<argument name="include_media" required="false"><type>boolean</type></argument>
+		<description>returns t, x, y, z, polygon, where t is nil (if there was no collision), or the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the collision is with the surface of a liquid) where the line segment collided with the map (or object or media); and x, y, z, polygon is the location of the collision, or the end point if there was no collision</description>
+		<return><type>variant</type></return>
+		<return><type>WU</type></return>
+		<return><type>WU</type></return>
+		<return><type>WU</type></return>
+		<return><type>polygon</type></return>
+		<note>the owner is a monster or player to ignore, or nil</note>
+		<note>you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon()</note>
+		<note>in order of descending speed: find_polygon(), check_collision() without objects, check_collision() including objects</note>
+	  </function>
       <function name="contains">
 		<description>whether the point is in this polygon</description>
 		<argument name="x"><type>WU</type></argument>

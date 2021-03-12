@@ -27,15 +27,20 @@ LUA_MAP.CPP
 #include "lua_map.h"
 #include "lua_monsters.h"
 #include "lua_objects.h"
+#include "lua_player.h"
 #include "lua_templates.h"
 #include "lightsource.h"
 #include "map.h"
 #include "media.h"
 #include "platforms.h"
+#include "player.h"
+#include "projectile_definitions.h"
+#include "projectiles.h"
 #include "OGL_Setup.h"
 #include "SoundManager.h"
 
 #include "collection_definition.h"
+
 
 #include <boost/bind.hpp>
 
@@ -1170,6 +1175,134 @@ int Lua_Polygon_Change_Height(lua_State* L)
 	return 1;
 }
 
+extern projectile_definition* get_projectile_definition(short);
+
+// p, x1, y1, z1, owner, x2, y2, z2, [stop_at_objects], [stop_at_media]
+int Lua_Polygon_Check_Collision(lua_State* L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) ||
+		!lua_isnumber(L, 4) || !lua_isnumber(L, 6) ||
+		!lua_isnumber(L, 7) || !lua_isnumber(L, 8) ||
+		(lua_gettop(L) >= 9 && !(lua_isnil(L, 9) || lua_isboolean(L, 9))) ||
+		(lua_gettop(L) >= 10 && !(lua_isnil(L, 10) || lua_isboolean(L, 10))))
+	{
+		return luaL_error(L, ("check_collision: incorrect argument type"));
+	}
+
+	short owner = NONE;
+	if (Lua_Monster::Is(L, 5))
+	{
+		owner = Lua_Monster::Index(L, 5);
+	}
+	else if (Lua_Player::Is(L, 5))
+	{
+		auto player = get_player_data(Lua_Player::Index(L, 5));
+		owner = player->monster_index;
+	}
+	else if (!lua_isnil(L, 5))
+		return luaL_error(L, ("check_collision: incorrect argument type"));
+
+	world_point3d origin = {
+		static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE),
+		static_cast<world_distance>(lua_tonumber(L, 3) * WORLD_ONE),
+		static_cast<world_distance>(lua_tonumber(L, 4) * WORLD_ONE)
+	};
+	
+	world_point3d destination = {
+		static_cast<world_distance>(lua_tonumber(L, 6) * WORLD_ONE),
+		static_cast<world_distance>(lua_tonumber(L, 7) * WORLD_ONE),
+		static_cast<world_distance>(lua_tonumber(L, 8) * WORLD_ONE)
+	};
+
+	auto stop_at_objects = lua_toboolean(L, 9);
+	auto stop_at_media = lua_toboolean(L, 10);
+
+	short polygon_index = Lua_Polygon::Index(L, 1);
+
+	// preflight a projectile 1 WU at a time (because of the speed bug)
+	world_distance distance = distance2d(
+		reinterpret_cast<world_point2d*>(&origin),
+		reinterpret_cast<world_point2d*>(&destination));
+
+	int32_t chunks = (distance + WORLD_ONE - 1) / WORLD_ONE;
+
+	int32_t dx = destination.x - origin.x;
+	int32_t dy = destination.y - origin.y;
+	int32_t dz = destination.z - origin.z;
+
+	world_point3d p0 = origin;
+	world_point3d p1;
+	short old_polygon = polygon_index;
+	short new_polygon;
+	short obstruction_index;
+	short line_index;
+	uint16_t flags = 0;
+
+	auto projectile_definition = get_projectile_definition(0);
+	auto projectile_flags = projectile_definition->flags;
+
+	projectile_definition->flags =
+		_usually_pass_transparent_side |
+		_sometimes_pass_transparent_side |
+		(!stop_at_objects ? _passes_through_objects : 0) |
+		(!stop_at_media ? _penetrates_media : 0);
+
+	for (auto i = 0; i < chunks && !(flags & _projectile_hit); ++i)
+	{
+		p1 = {
+			static_cast<world_distance>(origin.x + dx * (i + 1) / chunks),
+			static_cast<world_distance>(origin.y + dy * (i + 1) / chunks),
+			static_cast<world_distance>(origin.z + dz * (i + 1) / chunks)
+		};
+
+		flags = translate_projectile(0, &p0, old_polygon,
+									 &p1, &new_polygon, owner,
+									 &obstruction_index, &line_index, true, NONE);
+		old_polygon = new_polygon;
+		p0 = p1;
+	}
+
+	projectile_definition->flags = projectile_flags;
+
+	if (flags & _projectile_hit_monster)
+	{
+		auto object = get_object_data(obstruction_index);
+		Lua_Monster::Push(L, object->permutation);
+	}
+	else if (flags & _projectile_hit_floor)
+	{
+		Lua_Polygon_Floor::Push(L, new_polygon);
+	}
+	else if (flags & _projectile_hit_media)
+	{
+		Lua_Polygon::Push(L, new_polygon);
+	}
+	else if (flags & _projectile_hit_scenery)
+	{
+		Lua_Scenery::Push(L, obstruction_index);
+	}
+	else if (obstruction_index != NONE)
+	{
+		Lua_Polygon_Ceiling::Push(L, new_polygon);
+	}
+	else if (flags & _projectile_hit)
+	{
+		auto side_index = find_adjacent_side(new_polygon, line_index);
+		Lua_Side::Push(L, side_index);
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	lua_pushnumber(L, static_cast<double>(p1.x / WORLD_ONE));
+	lua_pushnumber(L, static_cast<double>(p1.y / WORLD_ONE));
+	lua_pushnumber(L, static_cast<double>(p1.z / WORLD_ONE));
+	Lua_Polygon::Push(L, new_polygon);
+
+	return 5;
+}
+
 // contains(x, y, z)
 int Lua_Polygon_Contains(lua_State *L)
 {
@@ -1498,6 +1631,7 @@ const luaL_Reg Lua_Polygon_Get[] = {
 	{"area", Lua_Polygon_Get_Area},
 	{"ceiling", Lua_Polygon_Get_Ceiling},
 	{"change_height", L_TableFunction<Lua_Polygon_Change_Height>},
+	{"check_collision", L_TableFunction<Lua_Polygon_Check_Collision>},
 	{"contains", L_TableFunction<Lua_Polygon_Contains>},
 	{"endpoints", Lua_Polygon_Get_Endpoints},
 	{"find_polygon", L_TableFunction<Lua_Polygon_Find_Polygon>},
