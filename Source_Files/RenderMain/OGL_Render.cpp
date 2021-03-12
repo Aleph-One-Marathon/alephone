@@ -3099,9 +3099,15 @@ void OGL_RenderRect(float x, float y, float w, float h)
     Shader *lastShader = lastEnabledShader();
     if(lastShader) {
       lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+        
+     GLfloat modelProjection[16];
+     MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
+     lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
 
       glVertexAttribPointer(Shader::ATTRIB_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, vertices);
       glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    } else {
+        printf ("No Shader in OGL_RenderRect! \n");
     }
     
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -3134,11 +3140,19 @@ void OGL_RenderTexturedRect(float x, float y, float w, float h, float tleft, flo
     s_plain_rect = Shader::get(Shader::S_PlainRect);
     s_plain_rect->enable();
     
+    //Textured rects really like being fed the whole ModelView*Projection matrix.
+    MSI()->pushMatrix();
+    GLfloat modelProjection[16];
+    MSI()->getFloatvModelviewProjection(modelProjection);
+    MSI()->loadMatrixf(modelProjection);
+    
     MatrixStack::Instance()->transformVertex(vertices[0], vertices[1], vertices[2]);
     MatrixStack::Instance()->transformVertex(vertices[3], vertices[4], vertices[5]);
     MatrixStack::Instance()->transformVertex(vertices[6], vertices[7], vertices[8]);
     MatrixStack::Instance()->transformVertex(vertices[9], vertices[10], vertices[11]);
-        
+    
+    MSI()->popMatrix();
+    
     s_plain_rect->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
 
     glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, vertices);

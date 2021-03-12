@@ -83,11 +83,11 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 	//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 	glDisable(GL_BLEND);
 	//glDisable(GL_FOG); //NOT SUPPORTED ANGLE ENUM
-
+    
 	MSI()->matrixMode(MS_MODELVIEW);
 	MSI()->pushMatrix();
 	MSI()->loadIdentity();
-	
+    
 	// Draw static HUD picture
 	if (HUD_Blitter.Loaded() && !LuaTexturePaletteSize())
 	{
@@ -113,6 +113,7 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 	mark_oxygen_display_as_dirty();
 	mark_player_inventory_as_dirty(current_player_index, NONE);
 	HUD_OGL.update_everything(time_elapsed);
+    
 	MSI()->matrixMode(MS_MODELVIEW);
 	MSI()->popMatrix();
 
@@ -207,12 +208,12 @@ void HUD_OGL_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y, bool
 		glDisable(GL_BLEND);
 	TMgr.SetupTextureMatrix();
 	TMgr.RenderNormal();
-	
+    
 	OGL_RenderTexturedRect(x, y, width, height,
 						   U_Offset, V_Offset,
 						   U_Offset + U_Scale,
 						   V_Offset + V_Scale);
-
+    
 	TMgr.RestoreTextureMatrix();
 }
 
@@ -267,7 +268,7 @@ void HUD_OGL_Class::FillRect(screen_rectangle *r, short color_index)
 	// Get color
 	const rgb_color &c = get_interface_color(color_index);
 	SglColor3us(c.red, c.green, c.blue);
-
+    
 	// Draw rectangle
 	OGL_RenderRect(r->left, r->top, r->right - r->left, r->bottom - r->top);
 }

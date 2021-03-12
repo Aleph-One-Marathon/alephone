@@ -808,8 +808,9 @@ static bool need_mode_change(int window_width, int window_height,
 	
 	// reset title, since SDL forgets sometimes
 	SDL_SetWindowTitle(main_screen, get_application_name().c_str());
-	
-	return false;
+    SDL_SetWindowResizable(main_screen, SDL_TRUE); //dcw shit test
+
+    return false;
 }
 
 static int change_window_filter(void *ctx, SDL_Event *event)
@@ -1151,6 +1152,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 			L_Call_HUDResize();
 	  }
 	}
+    
+    refreshAngle(main_screen);
 }
 
 bool get_auto_resolution_size(short *w, short *h, struct screen_mode_data *mode)

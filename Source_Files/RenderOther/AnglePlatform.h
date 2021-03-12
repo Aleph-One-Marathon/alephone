@@ -11,6 +11,7 @@
 #define AnglePlatform_h
 
 extern void* injectAngle(SDL_Window *main_screen);
+extern void refreshAngle(SDL_Window *main_screen);
 extern void swapWindowAngle(SDL_Window *main_screen);
 
 #endif /* AnglePlatform_hpp */

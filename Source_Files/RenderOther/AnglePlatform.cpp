@@ -24,6 +24,14 @@ void* injectAngle(SDL_Window *main_screen)
     return NULL;
 }
 
+void refreshAngle(SDL_Window *main_screen)
+{
+    #ifdef __MACOSX__
+        refreshMacOS(main_screen);
+    #endif
+
+}
+
 void swapWindowAngle(SDL_Window *main_screen)
 {
     #ifdef __MACOSX__

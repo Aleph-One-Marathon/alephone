@@ -214,7 +214,7 @@ void OGL_Blitter::Draw(const Image_Rect& dst, const Image_Rect& raw_src)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 //	glDisable(GL_FOG);  //NOT SUPPORTED ANGLE ENUM
-//	glDisable(GL_SCISSOR_TEST);
+	//  glDisable(GL_SCISSOR_TEST);
 //	glDisable(GL_STENCIL_TEST);
 	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 

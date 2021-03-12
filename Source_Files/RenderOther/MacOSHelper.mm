@@ -129,6 +129,11 @@ void* injectMacOS(SDL_Window *main_screen)
   return theView.layer;
 }
 
+void* refreshMacOS(SDL_Window *main_screen)
+{
+    
+}
+
 void swapWindowMacOS(SDL_Window *main_screen){
     
     SDL_SysWMinfo wmi;
