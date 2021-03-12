@@ -90,8 +90,8 @@ void FBO::activate(bool clear, GLuint fboTarget) {
 		
         //glPushAttrib(GL_VIEWPORT_BIT);
         glGetIntegerv(GL_VIEWPORT, viewportCache);
-        
-		glViewport(0, 0, _w, _h);
+        glDisable(GL_SCISSOR_TEST); //DCW Disable scissor, otherwise it cuts into full screen sometimes.
+        glViewport(0, 0, _w, _h);
 		if (_srgb)
 			glEnable(GL_FRAMEBUFFER_SRGB);
         else {
@@ -108,7 +108,6 @@ void FBO::deactivate() {
 		
         //glPopAttrib();
 		glViewport(viewportCache[0], viewportCache[1], viewportCache[2], viewportCache[3]);
-        
 		GLuint prev_fbo = 0;
 		bool prev_srgb = Using_sRGB;
 		if (active_chain.size()) {
@@ -197,7 +196,7 @@ void FBO::prepare_drawing_mode(bool blend) {
 	glDisable(GL_DEPTH_TEST);
 	if (!blend)
 		glDisable(GL_BLEND);
-	
+    
 	MSI()->orthof(0, _w, _h, 0, -1, 1);
 	MSI()->color4f(1.0, 1.0, 1.0, 1.0);
 }
