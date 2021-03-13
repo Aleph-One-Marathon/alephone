@@ -1199,6 +1199,10 @@
 		<description>otherwise inactive</description>
 		<type>boolean</type>
 	  </variable>
+	  <variable name="has_been_activated" version="git">
+		<description>in case platform can only be activated once</description>
+		<type>boolean</type>
+	  </variable>
 	  <variable name="initially_extended" version="git" access="read-only">
 		<description>high for floor platforms, low for ceiling platforms, closed for two-way platforms</description>
 		<type>boolean</type>

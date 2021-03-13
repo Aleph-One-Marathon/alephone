@@ -349,6 +349,31 @@ bool Lua_Platform_Valid(int16 index)
 }
 
 template<int flag_bit> int 
+Lua_Platform_Get_Dynamic_Flag(lua_State* L)
+{
+	platform_data* platform = get_platform_data(Lua_Platform::Index(L, 1));
+	lua_pushboolean(L, platform->dynamic_flags & (1 << flag_bit));
+	return 1;
+}
+
+template<int flag_bit> int
+Lua_Platform_Set_Dynamic_Flag(lua_State* L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "platform: incorrect argument type");
+
+	platform_data* platform = get_platform_data(Lua_Platform::Index(L, 1));
+	bool flag = lua_toboolean(L, 2);
+	if (flag)
+		platform->dynamic_flags |= (1 << flag_bit);
+	else
+		platform->dynamic_flags &= ~(1 << flag_bit);
+
+	return 0;
+}
+
+
+template<int flag_bit> int 
 Lua_Platform_Get_Static_Flag(lua_State* L)
 {
 	platform_data* platform = get_platform_data(Lua_Platform::Index(L, 1));
@@ -540,6 +565,7 @@ const luaL_Reg Lua_Platform_Get[] = {
 	{"extending", Lua_Platform_Get_Extending},
 	{"extends_floor_to_ceiling", Lua_Platform_Get_Static_Flag<_platform_extends_floor_to_ceiling>},
 	{"floor_height", Lua_Platform_Get_Floor_Height},
+	{"has_been_activated", Lua_Platform_Get_Dynamic_Flag<_platform_has_been_activated>},
 	{"initially_active", Lua_Platform_Get_Static_Flag<_platform_is_initially_active>},
 	{"initially_extended", Lua_Platform_Get_Static_Flag<_platform_is_initially_extended>},
 	{"locked", Lua_Platform_Get_Static_Flag<_platform_is_locked>},
@@ -576,6 +602,7 @@ const luaL_Reg Lua_Platform_Set[] = {
 	{"door", Lua_Platform_Set_Static_Flag<_platform_is_door>},
 	{"extending", Lua_Platform_Set_Extending},
 	{"floor_height", Lua_Platform_Set_Floor_Height},
+	{"has_been_activated", Lua_Platform_Get_Dynamic_Flag<_platform_has_been_activated>},
 	{"locked", Lua_Platform_Set_Static_Flag<_platform_is_locked>},
 	{"monster_controllable", Lua_Platform_Set_Static_Flag<_platform_is_monster_controllable>},
 	{"player_controllable", Lua_Platform_Set_Static_Flag<_platform_is_player_controllable>},
