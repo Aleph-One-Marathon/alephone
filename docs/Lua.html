@@ -1145,19 +1145,73 @@
 <dd><p class="description">iterates through all platforms in the level</p></dd>
 <dt>Platforms[index]</dt>
 <dd><dl>
+	  <dt>.activates_adjacent_platforms_at_each_level <span class="version">git</span>
+</dt>
+<dd><p class="description">platform will activate adjacent platforms at each elevation it comes to (ie.,at floor level and ceiling level)</p></dd>
+	  <dt>.activates_adjacent_platforms_when_activating <span class="version">git</span>
+</dt>
+<dd><p class="description">when activating, this platform activates adjacent platforms</p></dd>
+	   <dt>.activates_adjacent_platforms_when_deactivating <span class="version">git</span>
+</dt>
+<dd><p class="description">when deactivating, this platform activates adjacent platforms</p></dd>
+	  <dt>.activates_light <span class="version">git</span>
+</dt>
+<dd><p class="description">activates floor and ceiling lightsources while activating</p></dd>
+	  <dt>.activates_only_once <span class="version">git</span>
+</dt>
+<dd><p class="description">cannot be activated a second time</p></dd>
       <dt>.active</dt>
 <dd><p class="description">whether platform is currently active</p></dd>
+	  <dt>.cannot_be_externally_deactivated <span class="version">git</span>
+</dt>
+<dd><p class="description">when active, can only be deactivated by itself</p></dd>
       <dt>.ceiling_height</dt>
 <dd><p class="description">current ceiling height of platform</p></dd>
+	  <dt>.comes_from_ceiling<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">platform lowers from ceiling</p></dd>
+	  <dt>.comes_from_floor<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">platform rises from floor</p></dd>
       <dt>.contracting</dt>
 <dd><p class="description">direction platform is moving or will move when active</p></dd>
+	  <dt>.contracts_slower <span class="version">git</span>
+</dt>
+<dd><p class="description">will move slower when contracting than when extending</p></dd>
+	  <dt>.deactivates_adjacent_platforms_when_activating <span class="version">git</span>
+</dt>
+<dd><p class="description">when activating, this platform deactivates adjacent platforms</p></dd>
+	  <dt>.deactivates_adjacent_platforms_when_deactivating <span class="version">git</span>
+</dt>
+<dd><p class="description">when deactivating, this platform deactivates adjacent platforms</p></dd>
+	  <dt>.deactivates_at_each_level <span class="version">git</span>
+</dt>
+<dd><p class="description">this platform will deactivate each time it reaches a discrete level</p></dd>
+	  <dt>.deactivates_light <span class="version">git</span>
+</dt>
+<dd><p class="description">deactivates floor and ceiling lightsources while deactivating</p></dd>
+	  <dt>.delays_before_activation <span class="version">git</span>
+</dt>
+<dd><p class="description">whether or not the platform begins with the maximum delay before moving</p></dd>
+	  <dt>.does_not_activate_parent <span class="version">git</span>
+</dt>
+<dd><p class="description">does not reactive its parent (the platform which activated it)</p></dd>
       <dt>.door <span class="version">20100118</span>
 </dt>
 <dd><p class="description">platform is a door</p></dd>
       <dt>.extending</dt>
 <dd><p class="description">direction platform is moving or will move when active</p></dd>
+	  <dt>.extends_floor_to_ceiling<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">there is no empty space when the platform is fully extended</p></dd>
       <dt>.floor_height</dt>
 <dd><p class="description">current floor height of platform</p></dd>
+	  <dt>.initially_active<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">otherwise inactive</p></dd>
+	  <dt>.initially_extended<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">high for floor platforms, low for ceiling platforms, closed for two-way platforms</p></dd>
       <dt>.locked <span class="version">20100118</span>
 </dt>
 <dd>
@@ -1171,6 +1225,9 @@
       <dt>.polygon<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">polygon of this platform</p></dd>
+	  <dt>.reverses_direction_when_obstructed <span class="version">git</span>
+</dt>
+<dd><p class="description">platform reverses direction when obstructed</p></dd>
       <dt>.secret <span class="version">20100118</span>
 </dt>
 <dd>
@@ -1185,6 +1242,9 @@
 <p class="description">type of this platform</p>
 <p class="note">the only thing the engine uses type for is the platform’s sound </p>
 </dd>
+	  <dt>.uses_native_polygon_heights<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">uses native polygon heights during automatic min,max calculation</p></dd>
     </dl></dd>
 </dl>
 <h3>

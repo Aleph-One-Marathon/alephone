@@ -1107,18 +1107,78 @@
       </function>
     </table>
     <table name="platform">
+	  <variable name="activates_adjacent_platforms_at_each_level" version="git">
+		<description>platform will activate adjacent platforms at each elevation it comes to (ie.,at floor level and ceiling level)</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="activates_adjacent_platforms_when_activating" version="git">
+		<description>when activating, this platform activates adjacent platforms</description>
+		<type>boolean</type>
+	  </variable>
+	   <variable name="activates_adjacent_platforms_when_deactivating" version="git">
+		<description>when deactivating, this platform activates adjacent platforms</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="activates_light" version="git">
+		<description>activates floor and ceiling lightsources while activating</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="activates_only_once" version="git">
+		<description>cannot be activated a second time</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="active">
 		<description>whether platform is currently active</description>
 		<type>boolean</type>
       </variable>
+	  <variable name="cannot_be_externally_deactivated" version="git">
+		<description>when active, can only be deactivated by itself</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="ceiling_height">
 		<description>current ceiling height of platform</description>
 		<type>WU</type>
       </variable>
+	  <variable name="comes_from_ceiling" version="git" access="read-only">
+		<description>platform lowers from ceiling</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="comes_from_floor" version="git" access="read-only">
+		<description>platform rises from floor</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="contracting">
 		<description>direction platform is moving or will move when active</description>
 		<type>boolean</type>
       </variable>
+	  <variable name="contracts_slower" version="git">
+		<description>will move slower when contracting than when extending</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="deactivates_adjacent_platforms_when_activating" version="git">
+		<description>when activating, this platform deactivates adjacent platforms</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="deactivates_adjacent_platforms_when_deactivating" version="git">
+		<description>when deactivating, this platform deactivates adjacent platforms</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="deactivates_at_each_level" version="git">
+		<description>this platform will deactivate each time it reaches a discrete level</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="deactivates_light" version="git">
+		<description>deactivates floor and ceiling lightsources while deactivating</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="delays_before_activation" version="git">
+		<description>whether or not the platform begins with the maximum delay before moving</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="does_not_activate_parent" version="git">
+		<description>does not reactive its parent (the platform which activated it)</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="door" version="20100118">
 		<description>platform is a door</description>
 		<type>boolean</type>
@@ -1127,10 +1187,22 @@
 		<description>direction platform is moving or will move when active</description>
 		<type>boolean</type>
       </variable>
+	  <variable name="extends_floor_to_ceiling" version="git" access="read-only">
+		<description>there is no empty space when the platform is fully extended</description>
+		<type>boolean</type>
+      </variable>
       <variable name="floor_height">
 		<description>current floor height of platform</description>
 		<type>WU</type>
       </variable>
+	  <variable name="initially_active" version="git" access="read-only">
+		<description>otherwise inactive</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="initially_extended" version="git" access="read-only">
+		<description>high for floor platforms, low for ceiling platforms, closed for two-way platforms</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="locked" version="20100118">
 		<description>platform is locked</description>
 		<type>boolean</type>
@@ -1148,6 +1220,10 @@
 		<description>polygon of this platform</description>
 		<type>polygon</type>
       </variable>
+	  <variable name="reverses_direction_when_obstructed" version="git">
+		<description>platform reverses direction when obstructed</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="secret" version="20100118">
 		<description>platform is secret</description>
 		<type>boolean</type>
@@ -1162,6 +1238,10 @@
 		<type>platform_type</type>
 		<note>the only thing the engine uses type for is the platform’s sound</note>
       </variable>
+	  <variable name="uses_native_polygon_heights" version="git" access="read-only">
+		<description>uses native polygon heights during automatic min,max calculation</description>
+		<type>boolean</type>
+	  </variable>
     </table>
     <table name="player">
       <function name="accelerate">
