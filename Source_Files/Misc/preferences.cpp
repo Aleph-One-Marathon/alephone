@@ -3420,16 +3420,42 @@ static const char *binding_mouse_button_name[NUM_SDL_MOUSE_BUTTONS] = {
 	"mouse-left", "mouse-middle", "mouse-right", "mouse-x1", "mouse-x2",
 	"mouse-scroll-up", "mouse-scroll-down"
 };
-static const char *binding_joystick_button_name[NUM_SDL_JOYSTICK_BUTTONS] = {
-	"controller-a", "controller-b", "controller-x", "controller-y",
-	"controller-back", "controller-guide", "controller-start",
-	"controller-ls", "controller-rs", "controller-lb", "controller-rb",
-	"controller-up", "controller-down", "controller-left", "controller-right",
-	"controller-ls-right", "controller-ls-down", "controller-rs-right",
-	"controller-rs-down", "controller-lt", "controller-rt",
-	"controller-ls-left", "controller-ls-up", "controller-rs-left",
-	"controller-rs-up", "controller-lt-neg", "controller-rt-neg"
-};
+
+static const char* get_binding_joystick_button_name(int offset)
+{
+	static_assert(SDL_CONTROLLER_BUTTON_MAX <= 21 &&
+				  SDL_CONTROLLER_AXIS_MAX <= 12,
+				  "SDL changed the number of buttons/axes again!");
+
+	static const char* buttons[] = {
+		"controller-a", "controller-b", "controller-x", "controller-y",
+		"controller-back", "controller-guide", "controller-start",
+		"controller-ls", "controller-rs", "controller-lb", "controller-rb",
+		"controller-up", "controller-down", "controller-left",
+		"controller-right",
+		// new in SDL 2.0.14
+		"controller-misc1", "controller-paddle1", "controller-paddle2",
+		"controller-paddle3", "controller-paddle4",
+		"controller-touchpad-button",
+	};
+
+	static const char* axes[] = {
+		"controller-ls-right", "controller-ls-down", "controller-rs-right",
+		"controller-rs-down", "controller-lt", "controller-rt",
+		"controller-ls-left", "controller-ls-up", "controller-rs-left",
+		"controller-rs-up", "controller-lt-neg", "controller-rt-neg"
+	};
+
+	if (offset < SDL_CONTROLLER_BUTTON_MAX)
+	{
+		return buttons[offset];
+	}
+	else
+	{
+		return axes[offset - SDL_CONTROLLER_BUTTON_MAX];
+	}
+}
+
 static const int binding_num_scancodes = 285;
 static const char *binding_scancode_name[binding_num_scancodes] = {
 	"unknown", "unknown-1", "unknown-2", "unknown-3", "a",
@@ -3494,21 +3520,17 @@ static const char *binding_scancode_name[binding_num_scancodes] = {
 static const char *binding_name_for_code(SDL_Scancode code)
 {
 	int i = static_cast<int>(code);
-	const char *name = nullptr;
 	if (i >= 0 &&
 		i < binding_num_scancodes)
-		name = binding_scancode_name[i];
+		return binding_scancode_name[i];
 	else if (i >= AO_SCANCODE_BASE_MOUSE_BUTTON &&
 			 i < (AO_SCANCODE_BASE_MOUSE_BUTTON + NUM_SDL_MOUSE_BUTTONS))
-		name = binding_mouse_button_name[i - AO_SCANCODE_BASE_MOUSE_BUTTON];
+		return binding_mouse_button_name[i - AO_SCANCODE_BASE_MOUSE_BUTTON];
 	else if (i >= AO_SCANCODE_BASE_JOYSTICK_BUTTON &&
 			 i < (AO_SCANCODE_BASE_JOYSTICK_BUTTON + NUM_SDL_JOYSTICK_BUTTONS))
-		name = binding_joystick_button_name[i - AO_SCANCODE_BASE_JOYSTICK_BUTTON];
+		return get_binding_joystick_button_name(i - AO_SCANCODE_BASE_JOYSTICK_BUTTON);
 
-	if (name)
-		return name;
-	else
-		return "unknown";
+	return "unknown";
 }
 
 static SDL_Scancode code_for_binding_name(std::string name)
@@ -3525,7 +3547,7 @@ static SDL_Scancode code_for_binding_name(std::string name)
 	}
 	for (int i = 0; i < NUM_SDL_JOYSTICK_BUTTONS; ++i)
 	{
-		if (name == binding_joystick_button_name[i])
+		if (name == get_binding_joystick_button_name(i))
 			return static_cast<SDL_Scancode>(i + AO_SCANCODE_BASE_JOYSTICK_BUTTON);
 	}
 	return SDL_SCANCODE_UNKNOWN;
