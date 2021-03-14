@@ -3494,16 +3494,21 @@ static const char *binding_scancode_name[binding_num_scancodes] = {
 static const char *binding_name_for_code(SDL_Scancode code)
 {
 	int i = static_cast<int>(code);
+	const char *name = nullptr;
 	if (i >= 0 &&
 		i < binding_num_scancodes)
-		return binding_scancode_name[i];
+		name = binding_scancode_name[i];
 	else if (i >= AO_SCANCODE_BASE_MOUSE_BUTTON &&
 			 i < (AO_SCANCODE_BASE_MOUSE_BUTTON + NUM_SDL_MOUSE_BUTTONS))
-		return binding_mouse_button_name[i - AO_SCANCODE_BASE_MOUSE_BUTTON];
+		name = binding_mouse_button_name[i - AO_SCANCODE_BASE_MOUSE_BUTTON];
 	else if (i >= AO_SCANCODE_BASE_JOYSTICK_BUTTON &&
 			 i < (AO_SCANCODE_BASE_JOYSTICK_BUTTON + NUM_SDL_JOYSTICK_BUTTONS))
-		return binding_joystick_button_name[i - AO_SCANCODE_BASE_JOYSTICK_BUTTON];
-	return "unknown";
+		name = binding_joystick_button_name[i - AO_SCANCODE_BASE_JOYSTICK_BUTTON];
+
+	if (name)
+		return name;
+	else
+		return "unknown";
 }
 
 static SDL_Scancode code_for_binding_name(std::string name)
