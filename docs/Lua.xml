@@ -338,6 +338,8 @@
       <argument name="x"><type>WU</type></argument>
       <argument name="y"><type>WU</type></argument>
       <argument name="z"><type>WU</type></argument>
+	  <argument name="t" version="git"><type>variant</type></argument>
+	  <note>t can be a side, polygon_floor, polygon_ceiling, monster, scenery, polygon; see Polygon:check_collision for info on how to decode. It can also be nil, in the rare case a projectile detonates without hitting something</note>
     </function>
   </triggers>
   <section id="using_tables" name="Using Tables">

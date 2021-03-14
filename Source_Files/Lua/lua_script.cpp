@@ -172,7 +172,7 @@ void L_Call_Player_Killed(short player_index, short aggressor_player_index, shor
 void L_Call_Monster_Killed(short monster_index, short aggressor_player_index, short projectile_index) {}
 void L_Call_Monster_Damaged(short monster_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index) { }
 void L_Call_Player_Damaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index) {}
-void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location) {}
+void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location, uint16_t flags, int16_t obstruction_index, int16_t line_index) {}
 void L_Call_Projectile_Switch(short, short) {}
 void L_Call_Projectile_Created(short projectile_index) {}
 void L_Call_Item_Created(short item_index) {}
@@ -338,7 +338,7 @@ public:
 	void MonsterKilled(short monster_index, short aggressor_player_index, short projectile_index);
 	void MonsterDamaged(short monster_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index);
 	void PlayerDamaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index);
-	void ProjectileDetonated(short type, short owner_index, short polygon, world_point3d location);
+	void ProjectileDetonated(short type, short owner_index, short polygon, world_point3d location, uint16_t flags, int16_t obstruction_index, int16_t line_index);
 	void ProjectileCreated(short projectile_index);
 	void ItemCreated(short item_index);
 
@@ -652,7 +652,7 @@ void LuaState::PlayerDamaged (short player_index, short aggressor_player_index, 
 	}
 }
 
-void LuaState::ProjectileDetonated(short type, short owner_index, short polygon, world_point3d location) 
+void LuaState::ProjectileDetonated(short type, short owner_index, short polygon, world_point3d location, uint16_t flags, int16_t obstruction_index, int16_t line_index) 
 {
 	if (GetTrigger("projectile_detonated"))
 	{
@@ -666,7 +666,38 @@ void LuaState::ProjectileDetonated(short type, short owner_index, short polygon,
 		lua_pushnumber(State(), location.y / (double)WORLD_ONE);
 		lua_pushnumber(State(), location.z / (double)WORLD_ONE);
 
-		CallTrigger(6);
+		if (flags & _projectile_hit_monster)
+		{
+			auto object = get_object_data(obstruction_index);
+			Lua_Monster::Push(State(), object->permutation);
+		}
+		else if (flags & _projectile_hit_floor)
+		{
+			Lua_Polygon_Floor::Push(State(), polygon);
+		}
+		else if (flags & _projectile_hit_media)
+		{
+			Lua_Polygon::Push(State(), polygon);
+		}
+		else if (flags & _projectile_hit_scenery)
+		{
+			Lua_Scenery::Push(State(), obstruction_index);
+		}
+		else if (obstruction_index != NONE)
+		{
+			Lua_Polygon_Ceiling::Push(State(), polygon);
+		}
+		else if (flags & _projectile_hit)
+		{
+			auto side_index = find_adjacent_side(polygon, line_index);
+			Lua_Side::Push(State(), side_index);
+		}
+		else
+		{
+			lua_pushnil(State());
+		}
+
+		CallTrigger(7);
 	}
 }
 
@@ -1330,9 +1361,9 @@ void L_Call_Player_Damaged (short player_index, short aggressor_player_index, sh
 	L_Dispatch(boost::bind(&LuaState::PlayerDamaged, _1, player_index, aggressor_player_index, aggressor_monster_index, damage_type, damage_amount, projectile_index));
 }
 
-void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location) 
+void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location, uint16_t flags, int16_t obstruction_index, int16_t line_index) 
 {
-	L_Dispatch(boost::bind(&LuaState::ProjectileDetonated, _1, type, owner_index, polygon, location));
+	L_Dispatch(boost::bind(&LuaState::ProjectileDetonated, _1, type, owner_index, polygon, location, flags, obstruction_index, line_index));
 }
 
 void L_Call_Projectile_Created (short projectile_index)

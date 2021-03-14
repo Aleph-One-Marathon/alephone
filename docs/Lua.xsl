@@ -352,6 +352,11 @@
 	<xsl:when test="position() != 1">, </xsl:when>
       </xsl:choose>
       <xsl:value-of select="@name"/><xsl:if test="../@named_parameters='true'">=</xsl:if><xsl:choose><xsl:when test="@required = 'false'">]</xsl:when></xsl:choose>
+	  <xsl:choose>
+		<xsl:when test="@version">
+		  <xsl:text> </xsl:text><span class="version"><xsl:value-of select="@version"/></span>
+		</xsl:when>
+	  </xsl:choose>
     </xsl:for-each>
     <xsl:choose>
       <xsl:when test="@named_parameters = 'true'">}</xsl:when>

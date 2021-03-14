@@ -374,8 +374,11 @@
 <dt>.projectile_created(projectile) <span class="version">20150619</span>
 </dt>
 <dd><p class="description">whenever a projectile is created</p></dd>
-<dt>.projectile_detonated(type, owner, polygon, x, y, z)</dt>
-<dd><p class="description">whenever a projectile detonates, after it has done any area of effect damage</p></dd>
+<dt>.projectile_detonated(type, owner, polygon, x, y, z, t <span class="version">git</span>)</dt>
+<dd>
+<p class="description">whenever a projectile detonates, after it has done any area of effect damage</p>
+<p class="note">t can be a side, polygon_floor, polygon_ceiling, monster, scenery, polygon; see Polygon:check_collision for info on how to decode. It can also be nil, in the rare case a projectile detonates without hitting something </p>
+</dd>
 </dl></dd>
 </dl>
 </div>
@@ -1211,7 +1214,7 @@
 <dd><p class="description">otherwise inactive</p></dd>
 	  <dt>.has_been_activated <span class="version">git</span>
 </dt>
-<dd><p class="description">used with activates_once to prevent platform from being re-activated</p></dd>
+<dd><p class="description">in case platform can only be activated once</p></dd>
 	  <dt>.initially_extended<span class="access"> (read-only)</span> <span class="version">git</span>
 </dt>
 <dd><p class="description">high for floor platforms, low for ceiling platforms, closed for two-way platforms</p></dd>

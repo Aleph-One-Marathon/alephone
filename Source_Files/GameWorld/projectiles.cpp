@@ -240,7 +240,7 @@ void detonate_projectile(
 	damage_monsters_in_radius(NONE, owner_index, owner_type, origin, polygon_index,
 		definition->area_of_effect, damage, NONE);
 	if (definition->detonation_effect!=NONE) new_effect(origin, polygon_index, definition->detonation_effect, 0);
-	L_Call_Projectile_Detonated(type, owner_index, polygon_index, *origin);
+	L_Call_Projectile_Detonated(type, owner_index, polygon_index, *origin, 0, NONE, NONE);
 }
 
 short new_projectile(
@@ -338,6 +338,7 @@ void move_projectiles(
 				short old_polygon_index= object->polygon;
 				world_point3d new_location, old_location;
 				short obstruction_index, new_polygon_index;
+				short line_index;
 				
 				new_location= old_location= object->location;
 	
@@ -389,7 +390,7 @@ void move_projectiles(
 					{
 						definition->flags ^= adjusted_definition_flags;
 					}
-					flags= translate_projectile(projectile->type, &old_location, object->polygon, &new_location, &new_polygon_index, projectile->owner_index, &obstruction_index, 0, false, projectile_index);
+					flags= translate_projectile(projectile->type, &old_location, object->polygon, &new_location, &new_polygon_index, projectile->owner_index, &obstruction_index, &line_index, false, projectile_index);
 					if (film_profile.infinity_smg)
 					{
 						definition->flags ^= adjusted_definition_flags;
@@ -512,7 +513,7 @@ void move_projectiles(
 								}
 								
 								if (detonation_effect!=NONE) new_effect(&new_location, new_polygon_index, detonation_effect, object->facing);
-								L_Call_Projectile_Detonated(projectile->type, projectile->owner_index, new_polygon_index, new_location);
+								L_Call_Projectile_Detonated(projectile->type, projectile->owner_index, new_polygon_index, new_location, flags, obstruction_index, line_index);
 								
 								if (!film_profile.infinity_smg || (!(definition->flags&_penetrates_media_boundary) || !(flags&_projectile_hit_media)))
 								{
