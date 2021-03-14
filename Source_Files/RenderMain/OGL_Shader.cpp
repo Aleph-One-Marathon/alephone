@@ -173,6 +173,7 @@ void Shader_MML_Parser::parse(const InfoTree& root)
 void reset_mml_opengl_shader()
 {
 	Shader_MML_Parser::reset();
+    Shader::loadAll(); //We need to reload these immediately, since the shaders are needed to draw the UI
 }
 
 void parse_mml_opengl_shader(const InfoTree& root)
@@ -367,6 +368,20 @@ void Shader::init() {
     glUseProgram(0);
 
 //    assert(glGetError() == GL_NO_ERROR);
+}
+
+void Shader::enableAndSetStandardUniforms() {
+    
+    GLfloat modelMatrix[16], modelProjection[16], modelMatrixInverse[16];
+    MSI()->getFloatv(MS_MODELVIEW, modelMatrix);
+    MSI()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
+    MSI()->getFloatvModelviewProjection(modelProjection);
+    
+    this->enable();
+    this->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
+    this->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+    this->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
+    this->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
 }
 
 void Shader::setFloat(UniformName name, float f) {

@@ -402,6 +402,7 @@
 		516E530C25EF2C670073E92A /* AnglePlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E530625EF2C670073E92A /* AnglePlatform.h */; };
 		516E530D25EF2C670073E92A /* AnglePlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E530625EF2C670073E92A /* AnglePlatform.h */; };
 		516E530E25EF2C670073E92A /* AnglePlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E530625EF2C670073E92A /* AnglePlatform.h */; };
+		5174D6F625FC29AC00C5BAB0 /* MetalANGLE.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 516E52F525EB53810073E92A /* MetalANGLE.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		5198F50D25F087030019EB83 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5198F50C25F087030019EB83 /* Metal.framework */; };
 		5198F50E25F087030019EB83 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5198F50C25F087030019EB83 /* Metal.framework */; };
 		5198F50F25F087030019EB83 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5198F50C25F087030019EB83 /* Metal.framework */; };
@@ -2080,6 +2081,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				5174D6F625FC29AC00C5BAB0 /* MetalANGLE.framework in CopyFiles */,
 				27A6DA9D1B9BF5F3003DA766 /* boost_filesystem.framework in CopyFiles */,
 				27A6DA9E1B9BF5F3003DA766 /* boost_system.framework in CopyFiles */,
 				27A6DA9F1B9BF5F3003DA766 /* avcodec.framework in CopyFiles */,
@@ -6632,7 +6634,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = E8K89CXZE7;
+				DEVELOPMENT_TEAM = TZ45ZW2588;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -6641,6 +6643,37 @@
 					HAVE_BUNDLE_NAME,
 					HAVE_CONFIG_H,
 					SPEEX,
+				);
+				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/SDL2.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_net.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_image.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_ttf.framework/Headers",
+					"$(HOME)/Library/Frameworks/speex.framework/Headers",
+					"$(HOME)/Library/Frameworks/speexdsp.framework/Headers",
+					"$(HOME)/Library/Frameworks/png.framework/Headers",
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
+					/Library/Frameworks/SDL2.framework/Headers,
+					/Library/Frameworks/SDL2_image.framework/Headers,
+					/Library/Frameworks/SDL2_net.framework/Headers,
+					/Library/Frameworks/SDL2_ttf.framework/Headers,
+					/Library/Frameworks/speex.framework/Headers,
+					/Library/Frameworks/speexdsp.framework/Headers,
+					/Library/Frameworks/png.framework/Headers,
+					/Library/Frameworks/zziplib.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/boost.framework/Headers,
+					"\"$(SRCROOT)/../Source_Files/GLM\"",
+					/Library/Frameworks/MetalANGLE.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -6660,7 +6693,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = E8K89CXZE7;
+				DEVELOPMENT_TEAM = TZ45ZW2588;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -6669,6 +6702,37 @@
 					HAVE_BUNDLE_NAME,
 					HAVE_CONFIG_H,
 					SPEEX,
+				);
+				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/SDL2.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_net.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_image.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_ttf.framework/Headers",
+					"$(HOME)/Library/Frameworks/speex.framework/Headers",
+					"$(HOME)/Library/Frameworks/speexdsp.framework/Headers",
+					"$(HOME)/Library/Frameworks/png.framework/Headers",
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
+					/Library/Frameworks/SDL2.framework/Headers,
+					/Library/Frameworks/SDL2_image.framework/Headers,
+					/Library/Frameworks/SDL2_net.framework/Headers,
+					/Library/Frameworks/SDL2_ttf.framework/Headers,
+					/Library/Frameworks/speex.framework/Headers,
+					/Library/Frameworks/speexdsp.framework/Headers,
+					/Library/Frameworks/png.framework/Headers,
+					/Library/Frameworks/zziplib.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/boost.framework/Headers,
+					"\"$(SRCROOT)/../Source_Files/GLM\"",
+					/Library/Frameworks/MetalANGLE.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -6688,7 +6752,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = E8K89CXZE7;
+				DEVELOPMENT_TEAM = TZ45ZW2588;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					PREFER_APP_NAME_TO_BUNDLE_ID,
@@ -6697,6 +6761,37 @@
 					HAVE_BUNDLE_NAME,
 					HAVE_CONFIG_H,
 					SPEEX,
+				);
+				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/SDL2.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_net.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_image.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL2_ttf.framework/Headers",
+					"$(HOME)/Library/Frameworks/speex.framework/Headers",
+					"$(HOME)/Library/Frameworks/speexdsp.framework/Headers",
+					"$(HOME)/Library/Frameworks/png.framework/Headers",
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
+					/Library/Frameworks/SDL2.framework/Headers,
+					/Library/Frameworks/SDL2_image.framework/Headers,
+					/Library/Frameworks/SDL2_net.framework/Headers,
+					/Library/Frameworks/SDL2_ttf.framework/Headers,
+					/Library/Frameworks/speex.framework/Headers,
+					/Library/Frameworks/speexdsp.framework/Headers,
+					/Library/Frameworks/png.framework/Headers,
+					/Library/Frameworks/zziplib.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/boost.framework/Headers,
+					"\"$(SRCROOT)/../Source_Files/GLM\"",
+					/Library/Frameworks/MetalANGLE.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (

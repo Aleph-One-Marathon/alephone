@@ -86,6 +86,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #ifdef HAVE_OPENGL
 
 #include "OGL_Headers.h"
+#include "OGL_Shader.h"
 
 #include "preferences.h"
 
@@ -1527,6 +1528,13 @@ void TextureManager::SetupTextureMatrix()
 		MSI()->matrixMode(MS_MODELVIEW);
 		break;
 	}
+    
+    Shader* lastShader = lastEnabledShader();
+    if (lastShader) {
+        GLfloat textureMatrix[16];
+        MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);
+        lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+    }
 }
 
 void TextureManager::RestoreTextureMatrix()

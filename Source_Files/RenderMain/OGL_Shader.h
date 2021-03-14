@@ -155,6 +155,7 @@ public:
 	void init();
 	void enable();
 	void unload();
+    void enableAndSetStandardUniforms();
 	void setFloat(UniformName name, float); // shader must be enabled
 	void setMatrix4(UniformName name, float *f);
     void setVec4(UniformName name, float *f);

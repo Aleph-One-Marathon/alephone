@@ -210,6 +210,15 @@ void RenderRasterize_Shader::render_tree() {
 	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 :virtual_pitch);
 	Shader::disable();
 
+    //Set standard uniforms for all applicable shaders.
+    Shader::get(Shader::S_Wall)->enableAndSetStandardUniforms();
+    Shader::get(Shader::S_Landscape)->enableAndSetStandardUniforms();
+    Shader::get(Shader::S_WallBloom)->enableAndSetStandardUniforms();
+    Shader::get(Shader::S_WallInfravision)->enableAndSetStandardUniforms();
+    Shader::get(Shader::S_Bump)->enableAndSetStandardUniforms();
+    Shader::get(Shader::S_BumpBloom)->enableAndSetStandardUniforms();
+    Shader::disable();
+
 	RenderRasterizerClass::render_tree(kDiffuse);
         render_viewer_sprite_layer(kDiffuse);
 
@@ -719,20 +728,20 @@ void    RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_dat
 
         Shader* lastShader = lastEnabledShader();
         if (lastShader) {
-          GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
+            /* GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
           MSI()->getFloatv(MS_MODELVIEW, modelMatrix);
           MSI()->getFloatv(MS_PROJECTION, projectionMatrix);
           MSI()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
           MSI()->getFloatv(MS_TEXTURE, textureMatrix);
           MSI()->getFloatvModelviewProjection(modelProjection);
-
+            
           lastShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
           lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
           lastShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
-          lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+          lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);*/
           lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
-          lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
-          lastShader->setVec4(Shader::U_TexCoords4, tex4);
+          //lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
+          //lastShader->setVec4(Shader::U_TexCoords4, tex4);
         }
         
 		glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);
@@ -865,19 +874,19 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
             
             Shader* lastShader = lastEnabledShader();
             if (lastShader) {
-              GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
+              /*GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
               MatrixStack::Instance()->getFloatv(MS_MODELVIEW, modelMatrix);
               MatrixStack::Instance()->getFloatv(MS_PROJECTION, projectionMatrix);
               MatrixStack::Instance()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
               MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
-              MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);
+              MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);*/
               
-              lastShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
-              lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
-              lastShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
-              lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+              //lastShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
+              //lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+              //lastShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
+              //lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
               lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
-              lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
+              //lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
               lastShader->setVec4(Shader::U_TexCoords4, tex4);
             }
             

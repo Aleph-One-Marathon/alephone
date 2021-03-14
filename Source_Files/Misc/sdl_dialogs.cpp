@@ -2374,8 +2374,8 @@ int dialog::finish(bool play_sound)
 	top_dialog = parent_dialog;
 	parent_dialog = NULL;
 	if (top_dialog) {
-		clear_screen();
-		top_dialog->draw();
+        clear_screen();
+        top_dialog->draw();
 	}
         
 	// Allow dialog to be run again later
