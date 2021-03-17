@@ -808,7 +808,6 @@ static bool need_mode_change(int window_width, int window_height,
 	
 	// reset title, since SDL forgets sometimes
 	SDL_SetWindowTitle(main_screen, get_application_name().c_str());
-    SDL_SetWindowResizable(main_screen, SDL_TRUE); //dcw shit test
 
     return false;
 }

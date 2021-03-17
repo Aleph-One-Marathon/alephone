@@ -24,6 +24,7 @@
 #include "preferences.h"
 #include "screen.h"
 #include "MatrixStack.hpp"
+#include "DrawCache.hpp"
 
 #define MAXIMUM_VERTICES_PER_WORLD_POLYGON (MAXIMUM_VERTICES_PER_POLYGON+4)
 
@@ -496,29 +497,42 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 		double TexScale = ABS(TMgr->U_Scale);
 		double HorizScale = double(1 << opts->HorizExp);
 		s->setFloat(Shader::U_ScaleX, HorizScale * (npotTextures ? 1.0 : TexScale) * Radian2Circle);
+        DC()->cacheScaleX(HorizScale * (npotTextures ? 1.0 : TexScale) * Radian2Circle);
 		s->setFloat(Shader::U_OffsetX, HorizScale * (0.25 + opts->Azimuth * FullCircleReciprocal));
-		
+        DC()->cacheOffsetX(HorizScale * (0.25 + opts->Azimuth * FullCircleReciprocal));
+        
 		short AdjustedVertExp = opts->VertExp + opts->OGL_AspRatExp;
 		double VertScale = (AdjustedVertExp >= 0) ? double(1 << AdjustedVertExp)
 		                                          : 1/double(1 << (-AdjustedVertExp));
 		s->setFloat(Shader::U_ScaleY, VertScale * TexScale * Radian2Circle);
+        DC()->cacheScaleY(VertScale * TexScale * Radian2Circle);
 		s->setFloat(Shader::U_OffsetY, (0.5 + TMgr->U_Offset) * TexScale);
+        DC()->cacheOffsetY((0.5 + TMgr->U_Offset) * TexScale);
 	}
 
 	if (renderStep == kGlow) {
 		if (TMgr->TextureType == OGL_Txtr_Landscape) {
 			s->setFloat(Shader::U_BloomScale, TMgr->LandscapeBloom());
+            DC()->cacheBloomScale(TMgr->LandscapeBloom());
 		} else {
 			s->setFloat(Shader::U_BloomScale, TMgr->BloomScale());
+            DC()->cacheBloomScale(TMgr->BloomScale());
 			s->setFloat(Shader::U_BloomShift, TMgr->BloomShift());
+            DC()->cacheBloomShift(TMgr->BloomShift());
 		}
 	}
 	s->setFloat(Shader::U_Flare, flare);
+    DC()->cacheFlare(flare);
 	s->setFloat(Shader::U_SelfLuminosity, selfLuminosity);
+    DC()->cacheSelfLuminosity(selfLuminosity);
 	s->setFloat(Shader::U_Pulsate, pulsate);
+    DC()->cachePulsate(pulsate);
 	s->setFloat(Shader::U_Wobble, wobble);
+    DC()->cacheWobble(wobble);
 	s->setFloat(Shader::U_Depth, offset);
+    DC()->cacheDepth(offset);
 	s->setFloat(Shader::U_Glow, 0);
+    DC()->cacheGlow(0);
 	return TMgr;
 }
 
@@ -617,13 +631,20 @@ bool setupGlow(struct view_data *view, std::unique_ptr<TextureManager>& TMgr, fl
 		s->enable();
 		if (renderStep == kGlow) {
 			s->setFloat(Shader::U_BloomScale, TMgr->GlowBloomScale());
+            DC()->cacheBloomScale(TMgr->GlowBloomScale());
 			s->setFloat(Shader::U_BloomShift, TMgr->GlowBloomShift());
+            DC()->cacheBloomShift(TMgr->GlowBloomShift());
 		}
 		s->setFloat(Shader::U_Flare, flare);
+        DC()->cacheFlare(flare);
 		s->setFloat(Shader::U_SelfLuminosity, selfLuminosity);
+        DC()->cacheSelfLuminosity(selfLuminosity);
 		s->setFloat(Shader::U_Wobble, wobble);
+        DC()->cacheWobble(wobble);
 		s->setFloat(Shader::U_Depth, offset - 1.0);
+        DC()->cacheDepth(offset - 1.0);
 		s->setFloat(Shader::U_Glow, TMgr->MinGlowIntensity());
+        DC()->cacheGlow(TMgr->MinGlowIntensity());
 		return true;
 	}
 	return false;
@@ -716,7 +737,7 @@ void    RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_dat
 		//glVertexPointer(3, GL_FLOAT, 0, vertex_array);
 		//glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
         
-        glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
+        /*glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
         glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
         
         glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, vertex_array);
@@ -728,27 +749,18 @@ void    RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_dat
 
         Shader* lastShader = lastEnabledShader();
         if (lastShader) {
-            /* GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
-          MSI()->getFloatv(MS_MODELVIEW, modelMatrix);
-          MSI()->getFloatv(MS_PROJECTION, projectionMatrix);
-          MSI()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
-          MSI()->getFloatv(MS_TEXTURE, textureMatrix);
-          MSI()->getFloatvModelviewProjection(modelProjection);
-            
-          lastShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
-          lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
-          lastShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
-          lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);*/
           lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
-          //lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
-          //lastShader->setVec4(Shader::U_TexCoords4, tex4);
+          lastShader->setVec4(Shader::U_TexCoords4, tex4);
         }
         
-		glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);*/
 
+        DC()->drawSurfaceImmediate(vertex_count, vertex_array, texcoord_array, tex4);
+        
 		// see note 2 above; pulsate uniform should stay set from setupWall call
 		if (setupGlow(view, TMgr, 0, intensity, weaponFlare, selfLuminosity, offset, renderStep)) {
-			glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);
+			//glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);
+            DC()->drawSurfaceImmediate(vertex_count, vertex_array, texcoord_array, tex4);
 		}
 
 		Shader::disable();
@@ -862,7 +874,7 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			}
 			//glVertexPointer(3, GL_FLOAT, 0, vertex_array);
 			//glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
-            glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
+            /*glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
             glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
             
             glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, vertex_array);
@@ -874,29 +886,19 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
             
             Shader* lastShader = lastEnabledShader();
             if (lastShader) {
-              /*GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
-              MatrixStack::Instance()->getFloatv(MS_MODELVIEW, modelMatrix);
-              MatrixStack::Instance()->getFloatv(MS_PROJECTION, projectionMatrix);
-              MatrixStack::Instance()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
-              MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
-              MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);*/
-              
-              //lastShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
-              //lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
-              //lastShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
-              //lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
               lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
-              //lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
               lastShader->setVec4(Shader::U_TexCoords4, tex4);
-            }
+            }*/
             
             //These originally drew GL_QUADS with a vertex_count. If that's ever not 4, the triangle fan substitution will be bad.
             assert(vertex_count < 5); //If we ever hit this, I will need to rewrite the below for GL_QUADS (or ignore the visial glitch?);
             
-			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+			//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+            DC()->drawSurfaceImmediate(vertex_count, vertex_array, texcoord_array, tex4);
 
 			if (setupGlow(view, TMgr, wobble, intensity, weaponFlare, selfLuminosity, offset, renderStep)) {
-				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+				//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+                DC()->drawSurfaceImmediate(vertex_count, vertex_array, texcoord_array, tex4);
 			}
 
 			Shader::disable();

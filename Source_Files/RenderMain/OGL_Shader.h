@@ -111,10 +111,18 @@ public:
 	};
     
     enum {
-      ATTRIB_VERTEX,
-      ATTRIB_TEXCOORDS,
-      ATTRIB_NORMAL,
-      NUM_ATTRIBUTES
+        ATTRIB_VERTEX,
+        ATTRIB_TEXCOORDS,
+        ATTRIB_NORMAL,
+        ATTRIB_COLOR,
+        ATTRIB_TEXCOORDS4,
+        ATTRIB_CLIPPLANE0,
+        ATTRIB_CLIPPLANE1,
+        ATTRIB_CLIPPLANE5,
+        ATTRIB_SxOxSyOy, //Pack in scaleX, offsetX, scaleY, offsetY
+        ATTRIB_BsBtFlSl, //Pack in bloomScale, bloomShift, flare, selfLuminosity
+        ATTRIB_PuWoDeGl, //Pack in pulsate, wobble, depth, glow
+        NUM_ATTRIBUTES
     };
     
 private:

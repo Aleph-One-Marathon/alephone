@@ -87,6 +87,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 
 #include "OGL_Headers.h"
 #include "OGL_Shader.h"
+#include "DrawCache.hpp"
 
 #include "preferences.h"
 
@@ -194,6 +195,7 @@ bool TextureState::Allocate(short txType)
 bool TextureState::Use(int Which)
 {
 	glBindTexture(GL_TEXTURE_2D,IDs[Which]);
+    DC()->cacheActiveTextureID(IDs[Which]);
 	bool result = !TexGened[Which];
 	TexGened[Which] = true;
 	IDUsage[Which]++;

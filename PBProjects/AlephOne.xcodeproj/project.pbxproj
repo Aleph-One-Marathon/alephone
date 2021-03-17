@@ -403,6 +403,14 @@
 		516E530D25EF2C670073E92A /* AnglePlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E530625EF2C670073E92A /* AnglePlatform.h */; };
 		516E530E25EF2C670073E92A /* AnglePlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 516E530625EF2C670073E92A /* AnglePlatform.h */; };
 		5174D6F625FC29AC00C5BAB0 /* MetalANGLE.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 516E52F525EB53810073E92A /* MetalANGLE.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		5174D6F925FE8EF700C5BAB0 /* DrawCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5174D6F725FE8EF700C5BAB0 /* DrawCache.cpp */; };
+		5174D6FA25FE8EF700C5BAB0 /* DrawCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5174D6F725FE8EF700C5BAB0 /* DrawCache.cpp */; };
+		5174D6FB25FE8EF700C5BAB0 /* DrawCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5174D6F725FE8EF700C5BAB0 /* DrawCache.cpp */; };
+		5174D6FC25FE8EF700C5BAB0 /* DrawCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5174D6F725FE8EF700C5BAB0 /* DrawCache.cpp */; };
+		5174D6FD25FE8EF700C5BAB0 /* DrawCache.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5174D6F825FE8EF700C5BAB0 /* DrawCache.hpp */; };
+		5174D6FE25FE8EF700C5BAB0 /* DrawCache.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5174D6F825FE8EF700C5BAB0 /* DrawCache.hpp */; };
+		5174D6FF25FE8EF700C5BAB0 /* DrawCache.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5174D6F825FE8EF700C5BAB0 /* DrawCache.hpp */; };
+		5174D70025FE8EF700C5BAB0 /* DrawCache.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 5174D6F825FE8EF700C5BAB0 /* DrawCache.hpp */; };
 		5198F50D25F087030019EB83 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5198F50C25F087030019EB83 /* Metal.framework */; };
 		5198F50E25F087030019EB83 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5198F50C25F087030019EB83 /* Metal.framework */; };
 		5198F50F25F087030019EB83 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5198F50C25F087030019EB83 /* Metal.framework */; };
@@ -2266,6 +2274,8 @@
 		516E530425EDE9970073E92A /* Shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Shaders; path = ../Source_Files/RenderMain/Shaders; sourceTree = "<group>"; };
 		516E530525EF2C670073E92A /* AnglePlatform.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AnglePlatform.cpp; sourceTree = "<group>"; };
 		516E530625EF2C670073E92A /* AnglePlatform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AnglePlatform.h; sourceTree = "<group>"; };
+		5174D6F725FE8EF700C5BAB0 /* DrawCache.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DrawCache.cpp; sourceTree = "<group>"; };
+		5174D6F825FE8EF700C5BAB0 /* DrawCache.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = DrawCache.hpp; sourceTree = "<group>"; };
 		5198F50C25F087030019EB83 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = ../../../../../System/Library/Frameworks/Metal.framework; sourceTree = "<group>"; };
 		553AB9F5213A034300EE3861 /* libexpat.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libexpat.tbd; path = usr/lib/libexpat.tbd; sourceTree = SDKROOT; };
 		AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Blitter.cpp; sourceTree = "<group>"; };
@@ -3516,6 +3526,8 @@
 				F5CC936B0240D5E001A80001 /* Headers */,
 				F5CC936D0240D75B01A80001 /* SDL */,
 				F5CC92E40240D56101A80001 /* AnimatedTextures.cpp */,
+				5174D6F825FE8EF700C5BAB0 /* DrawCache.hpp */,
+				5174D6F725FE8EF700C5BAB0 /* DrawCache.cpp */,
 				516E52EB25EB53250073E92A /* MatrixStack.cpp */,
 				F5CC92EE0240D56101A80001 /* OGL_Faders.cpp */,
 				3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */,
@@ -3868,6 +3880,7 @@
 				AE505B94141D45E600915344 /* OGL_Render.h in Headers */,
 				AE505B95141D45E600915344 /* OGL_Setup.h in Headers */,
 				AE505B96141D45E600915344 /* OGL_Textures.h in Headers */,
+				5174D6FF25FE8EF700C5BAB0 /* DrawCache.hpp in Headers */,
 				AE505B97141D45E600915344 /* Rasterizer.h in Headers */,
 				AE505B98141D45E600915344 /* Rasterizer_OGL.h in Headers */,
 				AE505B99141D45E600915344 /* Rasterizer_SW.h in Headers */,
@@ -4093,6 +4106,7 @@
 				AEB4A13414296CAE00537AE7 /* OGL_Render.h in Headers */,
 				AEB4A13514296CAE00537AE7 /* OGL_Setup.h in Headers */,
 				AEB4A13614296CAE00537AE7 /* OGL_Textures.h in Headers */,
+				5174D70025FE8EF700C5BAB0 /* DrawCache.hpp in Headers */,
 				AEB4A13714296CAE00537AE7 /* Rasterizer.h in Headers */,
 				AEB4A13814296CAE00537AE7 /* Rasterizer_OGL.h in Headers */,
 				AEB4A13914296CAE00537AE7 /* Rasterizer_SW.h in Headers */,
@@ -4318,6 +4332,7 @@
 				AEC3C76709AD68AC003258E4 /* OGL_Render.h in Headers */,
 				AEC3C76809AD68AC003258E4 /* OGL_Setup.h in Headers */,
 				AEC3C76909AD68AC003258E4 /* OGL_Textures.h in Headers */,
+				5174D6FD25FE8EF700C5BAB0 /* DrawCache.hpp in Headers */,
 				AEC3C76A09AD68AC003258E4 /* Rasterizer.h in Headers */,
 				AEC3C76B09AD68AC003258E4 /* Rasterizer_OGL.h in Headers */,
 				27EFC4B81A7C935400A95592 /* QuickSave.h in Headers */,
@@ -4543,6 +4558,7 @@
 				AEFD864213EB84CF00C1E687 /* OGL_Render.h in Headers */,
 				AEFD864313EB84CF00C1E687 /* OGL_Setup.h in Headers */,
 				AEFD864413EB84CF00C1E687 /* OGL_Textures.h in Headers */,
+				5174D6FE25FE8EF700C5BAB0 /* DrawCache.hpp in Headers */,
 				AEFD864513EB84CF00C1E687 /* Rasterizer.h in Headers */,
 				AEFD864613EB84CF00C1E687 /* Rasterizer_OGL.h in Headers */,
 				AEFD864713EB84CF00C1E687 /* Rasterizer_SW.h in Headers */,
@@ -5175,6 +5191,7 @@
 				AE505C72141D45E600915344 /* screen_drawing.cpp in Sources */,
 				AE505C73141D45E600915344 /* sdl_fonts.cpp in Sources */,
 				AE505C74141D45E600915344 /* TextLayoutHelper.cpp in Sources */,
+				5174D6FB25FE8EF700C5BAB0 /* DrawCache.cpp in Sources */,
 				AE505C75141D45E600915344 /* TextStrings.cpp in Sources */,
 				AE505C76141D45E600915344 /* ViewControl.cpp in Sources */,
 				AE505C7D141D45E600915344 /* XML_LevelScript.cpp in Sources */,
@@ -5413,6 +5430,7 @@
 				AEB4A21314296CAE00537AE7 /* screen_drawing.cpp in Sources */,
 				AEB4A21414296CAE00537AE7 /* sdl_fonts.cpp in Sources */,
 				AEB4A21514296CAE00537AE7 /* TextLayoutHelper.cpp in Sources */,
+				5174D6FC25FE8EF700C5BAB0 /* DrawCache.cpp in Sources */,
 				AEB4A21614296CAE00537AE7 /* TextStrings.cpp in Sources */,
 				AEB4A21714296CAE00537AE7 /* ViewControl.cpp in Sources */,
 				AEB4A21E14296CAE00537AE7 /* XML_LevelScript.cpp in Sources */,
@@ -5651,6 +5669,7 @@
 				AEC3C83C09AD68AC003258E4 /* OverheadMapRenderer.cpp in Sources */,
 				AEC3C83D09AD68AC003258E4 /* screen_drawing.cpp in Sources */,
 				AEC3C83F09AD68AC003258E4 /* sdl_fonts.cpp in Sources */,
+				5174D6F925FE8EF700C5BAB0 /* DrawCache.cpp in Sources */,
 				AEC3C84009AD68AC003258E4 /* TextLayoutHelper.cpp in Sources */,
 				AEC3C84109AD68AC003258E4 /* TextStrings.cpp in Sources */,
 				AEC3C84209AD68AC003258E4 /* ViewControl.cpp in Sources */,
@@ -5889,6 +5908,7 @@
 				AEFD871F13EB84CF00C1E687 /* screen_drawing.cpp in Sources */,
 				AEFD872013EB84CF00C1E687 /* sdl_fonts.cpp in Sources */,
 				AEFD872113EB84CF00C1E687 /* TextLayoutHelper.cpp in Sources */,
+				5174D6FA25FE8EF700C5BAB0 /* DrawCache.cpp in Sources */,
 				AEFD872213EB84CF00C1E687 /* TextStrings.cpp in Sources */,
 				AEFD872313EB84CF00C1E687 /* ViewControl.cpp in Sources */,
 				AEFD872A13EB84CF00C1E687 /* XML_LevelScript.cpp in Sources */,
