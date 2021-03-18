@@ -42,7 +42,7 @@ static bool DisableClipVertex()
 }
 #endif
 
-//Global pointer to the last shader object enabled. May be NULL. extern is redundant, but included for clarity.
+//Global pointer to the last shader object enabled. May be NULL.
 Shader* lastEnabledShaderRef;
 Shader* lastEnabledShader() {
   return lastEnabledShaderRef;
@@ -671,37 +671,86 @@ void initDefaultPrograms() {
     "}\n";
 
     defaultVertexPrograms["landscape"] = ""
-                "uniform mat4 MS_ModelViewProjectionMatrix;\n"
-                "uniform mat4 MS_ModelViewMatrix;\n"
-                "attribute vec4 vPosition;\n"
-                "uniform vec4 uColor;\n"
-                "uniform vec4 uFogColor;\n"
-                "varying vec4 fogColor;\n"
-                "uniform mat4 landscapeInverseMatrix;\n"
-                "varying vec3 relDir;\n"
-                "varying vec4 vertexColor;\n"
-                "void main(void) {\n"
-                "    gl_Position = MS_ModelViewProjectionMatrix * vPosition;\n"
-                "    relDir = (MS_ModelViewMatrix * vPosition).xyz;\n"
-                "    vertexColor = uColor;\n"
-                "    fogColor = uFogColor;\n"
-                "}\n";
+        "uniform mat4 MS_ModelViewProjectionMatrix;\n"
+        "uniform mat4 MS_ModelViewMatrix;\n"
+        "uniform mat4 landscapeInverseMatrix;\n" //What is this for?
+        "uniform vec4 uFogColor;\n"
+        //"uniform vec4 uColor;\n"
+    
+        "attribute vec4 vPosition;\n"
+
+        "attribute vec4 vColor;\n"
+        "attribute vec4 vClipPlane0;   \n"
+        "attribute vec4 vClipPlane1;   \n"
+        "attribute vec4 vClipPlane5;   \n"
+        "attribute vec4 vSxOxSyOy; \n"
+        "attribute vec4 vBsBtFlSl; \n"
+        "attribute vec4 vPuWoDeGl; \n"
+    
+        "varying vec4 fSxOxSyOy; \n"
+        "varying vec4 fBsBtFlSl; \n"
+        "varying vec4 fPuWoDeGl; \n"
+        "varying vec4 fClipPlane0;   \n"
+        "varying vec4 fClipPlane1;   \n"
+        "varying vec4 fClipPlane5;   \n"
+    
+        "varying vec4 fogColor;\n"
+        "varying vec3 relDir;\n"
+        "varying vec4 vertexColor;\n"
+        "varying vec4 vPosition_eyespace;\n"
+
+        "void main(void) {\n"
+        "    gl_Position = MS_ModelViewProjectionMatrix * vPosition;\n"
+        "    relDir = (MS_ModelViewMatrix * vPosition).xyz;\n"
+        "    vertexColor = vColor;\n"
+        "    fogColor = uFogColor;\n"
+    
+        "    fSxOxSyOy = vSxOxSyOy;\n"
+        "    fBsBtFlSl = vBsBtFlSl;\n"
+        "    fPuWoDeGl = vPuWoDeGl;\n"
+        "    fClipPlane0 = vClipPlane0;\n"
+        "    fClipPlane1 = vClipPlane1;\n"
+        "    fClipPlane5 = vClipPlane5;\n"
+
+        "}\n";
     defaultFragmentPrograms["landscape"] = ""
               "precision highp float;\n"
               "varying highp vec4 fogColor; \n"
               "uniform sampler2D texture0;\n"
               "uniform float usefog;\n"
-              "uniform float scalex;\n"
-              "uniform float scaley;\n"
-              "uniform float offsetx;\n"
-              "uniform float offsety;\n"
+    
+              //"uniform float scalex;\n"
+              //"uniform float scaley;\n"
+              //"uniform float offsetx;\n"
+              //"uniform float offsety;\n"
+            
+            "varying vec4 fSxOxSyOy; \n"
+            "varying vec4 fBsBtFlSl; \n"
+            "varying vec4 fPuWoDeGl; \n"
+            "varying vec4 fClipPlane0;   \n"
+            "varying vec4 fClipPlane1;   \n"
+            "varying vec4 fClipPlane5;   \n"
+
+    
               "uniform float yaw;\n"
               "uniform float pitch;\n"
               "varying vec3 relDir;\n"
               "varying vec4 vertexColor;\n"
               "const float zoom = 1.2;\n"
               "const float pitch_adjust = 0.96;\n"
+              "varying vec4 vPosition_eyespace;\n"
+
               "void main(void) {\n"
+                "   bool unwantedFragment = false;\n"
+                "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {unwantedFragment = true;}\n"
+                "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {unwantedFragment = true;}\n"
+                "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {unwantedFragment = true;}\n"
+    
+              "float scalex = fSxOxSyOy.x;\n"
+              "float scaley = fSxOxSyOy.z;\n"
+              "float offsetx = fSxOxSyOy.y;\n"
+              "float offsety = fSxOxSyOy.w;\n"
+            
               "    vec3 facev = vec3(cos(yaw), sin(yaw), sin(pitch));\n"
               "    vec3 relv  = (relDir);\n"
               "    float x = relv.x / (relv.z * zoom) + atan(facev.x, facev.y);\n"

@@ -39,6 +39,7 @@ DrawCache* DC() {
 }
 
 void DrawCache::drawAll() {
+    //printf ("Drawing all buffers\n");
     for(int i = 0; i < NUM_DRAW_BUFFERS; ++i) {
         drawAndResetBuffer(i);
     }
@@ -46,9 +47,9 @@ void DrawCache::drawAll() {
 
 int DrawCache::getBufferFor(Shader* shader, GLuint texID, int vertex_count) {
 
-    int firstEmptyShader = -1;
+    int firstEmptyBuffer = -1;
     for(int i = 0; i < NUM_DRAW_BUFFERS; ++i) {
-        if(drawBuffers[i].verticesFilled == 0 && firstEmptyShader < 0 ) {firstEmptyShader=i;}
+        if(drawBuffers[i].verticesFilled == 0 && firstEmptyBuffer < 0 ) {firstEmptyBuffer=i;}
         
         if(drawBuffers[i].shader == shader && drawBuffers[i].textureID == texID) {
             
@@ -58,18 +59,22 @@ int DrawCache::getBufferFor(Shader* shader, GLuint texID, int vertex_count) {
                 //If this buffer is full, draw and reset it, then return the index.
             if (drawBuffers[i].verticesFilled + neededVertices >= DRAW_BUFFER_MAX) {
                 drawAndResetBuffer(i);
+                printf ("Reset full buffer\n");
             }
             return i;
+            
         }
         
     }
     
         //If there are no matching buffers, return the last empty one found.
-    if( firstEmptyShader >= 0 ) {
-        return firstEmptyShader;
+    if( firstEmptyBuffer >= 0 ) {
+        return firstEmptyBuffer;
     }
     
         //If we get here, all buffers are used and we need to flush and return any index.
+    //sprintf ("All buffers full.\n");
+
     drawAll();
     return 0;
 }
@@ -77,7 +82,6 @@ int DrawCache::getBufferFor(Shader* shader, GLuint texID, int vertex_count) {
 //Requires 3 GLFloats in vertex_array per vertex, and 2 GLfloats per texcoord
 //tex4 is a 4-dimensional array, which is surface normal vector + sign.
 //Normalized is assumed to be GL_FALSE and Stride must be 0.
-//void DrawCache::drawSurfaceImmediate(GLuint textureID, Shader *shader, int vertex_count, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *tex4) {
 void DrawCache::drawSurfaceImmediate(int vertex_count, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *tex4) {
 
         //The incoming data is a triangle fan: 0,1,2,3,4,5
@@ -176,6 +180,11 @@ void DrawCache::drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLf
     MSI()->getPlanev(5, clipPlane5);
     lastActiveTexture = -1; //We don't need this anymore.
     
+    //Transparent surfaces always require a flush
+    if(color[3] < 1) {
+        //drawAll();
+    }
+    
         //The incoming data is a triangle fan: 0,1,2,3,4,5
         //We need to create indices that convert into triangles: 0,1,2, 0,2,3, 0,3,4, 0,3,5
     int numTriangles = vertex_count - 2; //The first 3 vertices make a triangle, and each subsequent vertex adds another.
@@ -187,17 +196,20 @@ void DrawCache::drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLf
     }
     
     //Fill 2-element components.
+    int n = 0;
     for(int i = drawBuffers[b].verticesFilled*2; i < (drawBuffers[b].verticesFilled*2 + (vertex_count * 2)); i += 2) {
-    
-    todo
+        drawBuffers[b].texcoordArray[i] = texcoord_array[n]; drawBuffers[b].texcoordArray[i+1] = texcoord_array[n+1];
+        n+=2;
     }
     
     //Fill the 3-element components.
+    n = 0;
+    GLfloat *normal_array = MSI()->normals();
     for(int i = drawBuffers[b].verticesFilled*3; i < (drawBuffers[b].verticesFilled*3 + (vertex_count * 3)); i += 3) {
-    todo
-    
+        drawBuffers[b].vertexArray[i] = vertex_array[n]; drawBuffers[b].vertexArray[i+1] = vertex_array[n+1]; drawBuffers[b].vertexArray[i+2] = vertex_array[n+2];
+        drawBuffers[b].normalArray[i] = normal_array[n]; drawBuffers[b].normalArray[i+1] = normal_array[n+1]; drawBuffers[b].normalArray[i+2] = normal_array[n+2];
+        n+=3;
     }
-    
     
     //Fill the 4-element components
     for(int i = drawBuffers[b].verticesFilled*4; i < (drawBuffers[b].verticesFilled*4 + (vertex_count * 4)); i += 4) {
@@ -212,15 +224,24 @@ void DrawCache::drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLf
         drawBuffers[b].vBsBtFlSl[i] = bloomScale; drawBuffers[b].vBsBtFlSl[i+1] = bloomShift; drawBuffers[b].vBsBtFlSl[i+2] = flare; drawBuffers[b].vBsBtFlSl[i+3] = selfLuminosity;
         drawBuffers[b].vPuWoDeGl[i] = pulsate; drawBuffers[b].vPuWoDeGl[i+1] = wobble; drawBuffers[b].vPuWoDeGl[i+2] = depth; drawBuffers[b].vPuWoDeGl[i+3] = glow;
     }
-        
+    //printf("Added vertices %i to %i with texture %i\n", vertex_count, drawBuffers[b].verticesFilled, drawBuffers[b].textureID);
     clearTextureAttributeCaches();
     drawBuffers[b].verticesFilled += vertex_count;
     
+    //There is currently a problem where the wrong shaders are getting activated in bufferred drawing.
+    //To work around that for this commit, I'm drawing immediately here.
+    //This is a blocker on this feature!!!
+    drawAndResetBuffer(b); //THIS NEEDS TO BE GONE! IT GIVES A TERRIBLE FRAME RATE
 }
 
 
 void DrawCache::drawAndResetBuffer(int index) {
 
+    if (drawBuffers[index].shader == NULL || drawBuffers[index].verticesFilled == 0 || drawBuffers[index].numIndices == 0) {
+        return;
+    }
+    //printf("Drawing buffer of size %i\n", drawBuffers[index].verticesFilled );
+    
     drawBuffers[index].shader->enable();
     drawBuffers[index].shader->setMatrix4(Shader::U_TextureMatrix, drawBuffers[index].textureMatrix);
     glBindTexture(GL_TEXTURE_2D, drawBuffers[index].textureID);
@@ -256,7 +277,7 @@ void DrawCache::drawAndResetBuffer(int index) {
     glVertexAttribPointer(Shader::ATTRIB_PuWoDeGl, 4, GL_FLOAT, GL_FALSE, 0, drawBuffers[index].vPuWoDeGl);
     glEnableVertexAttribArray(Shader::ATTRIB_PuWoDeGl);
     
-    glDrawElements(GL_TRIANGLES, immediateBuffer.numIndices, GL_UNSIGNED_INT, immediateBuffer.indices);
+    glDrawElements(GL_TRIANGLES, drawBuffers[index].numIndices, GL_UNSIGNED_INT, drawBuffers[index].indices);
     
         //Reset what we care about.
     drawBuffers[index].verticesFilled = 0;

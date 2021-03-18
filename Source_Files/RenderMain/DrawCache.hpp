@@ -13,12 +13,12 @@
 #include "OGL_Shader.h"
 
     //Set max number of vertices that fit into the buffers.
-#define DRAW_BUFFER_MAX 10000
+#define DRAW_BUFFER_MAX 1000
 
     //Set number of allowable draw buffers.
-    //2 is probably the best memory/performance tradoff.
     //Each buffer has a unique textureID * shader.
-#define NUM_DRAW_BUFFERS 10
+    //Lots of buffers are nice, but at increasing cost.
+#define NUM_DRAW_BUFFERS 2
 
 
 struct DrawBuffer

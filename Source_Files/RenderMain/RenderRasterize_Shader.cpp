@@ -221,7 +221,9 @@ void RenderRasterize_Shader::render_tree() {
     Shader::disable();
 
 	RenderRasterizerClass::render_tree(kDiffuse);
-        render_viewer_sprite_layer(kDiffuse);
+    DC()->drawAll(); //Flush any buffers
+    
+    render_viewer_sprite_layer(kDiffuse);
 
 	if (current_player->infravision_duration == 0 &&
 		TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur) &&
@@ -755,12 +757,12 @@ void    RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_dat
         
 		glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);*/
 
-        DC()->drawSurfaceImmediate(vertex_count, vertex_array, texcoord_array, tex4);
+        DC()->drawSurfaceBuffered(vertex_count, vertex_array, texcoord_array, tex4);
         
 		// see note 2 above; pulsate uniform should stay set from setupWall call
 		if (setupGlow(view, TMgr, 0, intensity, weaponFlare, selfLuminosity, offset, renderStep)) {
 			//glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);
-            DC()->drawSurfaceImmediate(vertex_count, vertex_array, texcoord_array, tex4);
+            DC()->drawSurfaceBuffered(vertex_count, vertex_array, texcoord_array, tex4);
 		}
 
 		Shader::disable();
@@ -894,11 +896,11 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
             assert(vertex_count < 5); //If we ever hit this, I will need to rewrite the below for GL_QUADS (or ignore the visial glitch?);
             
 			//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-            DC()->drawSurfaceImmediate(vertex_count, vertex_array, texcoord_array, tex4);
+            DC()->drawSurfaceBuffered(vertex_count, vertex_array, texcoord_array, tex4);
 
 			if (setupGlow(view, TMgr, wobble, intensity, weaponFlare, selfLuminosity, offset, renderStep)) {
 				//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-                DC()->drawSurfaceImmediate(vertex_count, vertex_array, texcoord_array, tex4);
+                DC()->drawSurfaceBuffered(vertex_count, vertex_array, texcoord_array, tex4);
 			}
 
 			Shader::disable();
@@ -1114,11 +1116,10 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 }
 
 void RenderRasterize_Shader::render_node_object(render_object_data *object, bool other_side_of_media, RenderStep renderStep) {
-
     if (!object->clipping_windows)
         return;
-
-	clipping_window_data *win;
+    
+    clipping_window_data *win;
 
 	// To properly handle sprites in media, we render above and below
 	// the media boundary in separate passes, just like the original
@@ -1150,6 +1151,9 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 
 void RenderRasterize_Shader::_render_node_object_helper(render_object_data *object, RenderStep renderStep) {
 
+    //Rendering a node object requires a flush of the draw buffers for walls and ceilings. Someday maybe sprites won't have to flush.
+    DC()->drawAll();
+    
 	rectangle_definition& rect = object->rectangle;
 	const world_point3d& pos = rect.Position;
     
