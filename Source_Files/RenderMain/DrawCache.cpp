@@ -227,11 +227,6 @@ void DrawCache::drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLf
     //printf("Added vertices %i to %i with texture %i\n", vertex_count, drawBuffers[b].verticesFilled, drawBuffers[b].textureID);
     clearTextureAttributeCaches();
     drawBuffers[b].verticesFilled += vertex_count;
-    
-    //There is currently a problem where the wrong shaders are getting activated in bufferred drawing.
-    //To work around that for this commit, I'm drawing immediately here.
-    //This is a blocker on this feature!!!
-    drawAndResetBuffer(b); //THIS NEEDS TO BE GONE! IT GIVES A TERRIBLE FRAME RATE
 }
 
 
@@ -241,6 +236,7 @@ void DrawCache::drawAndResetBuffer(int index) {
         return;
     }
     //printf("Drawing buffer of size %i\n", drawBuffers[index].verticesFilled );
+    Shader *originalShader = lastEnabledShader();
     
     drawBuffers[index].shader->enable();
     drawBuffers[index].shader->setMatrix4(Shader::U_TextureMatrix, drawBuffers[index].textureMatrix);
@@ -284,6 +280,10 @@ void DrawCache::drawAndResetBuffer(int index) {
     drawBuffers[index].numIndices = 0;
     drawBuffers[index].shader = NULL;
     drawBuffers[index].textureID = 0;
+    
+    if(originalShader) {
+        originalShader->enable(); //We need to restore whatever shader was active, so we don't pollute outside state.
+    }
 }
 
 void DrawCache::cacheActiveTextureID(GLuint texID) {lastActiveTexture = texID;}

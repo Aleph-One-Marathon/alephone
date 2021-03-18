@@ -18,7 +18,7 @@
     //Set number of allowable draw buffers.
     //Each buffer has a unique textureID * shader.
     //Lots of buffers are nice, but at increasing cost.
-#define NUM_DRAW_BUFFERS 2
+#define NUM_DRAW_BUFFERS 20
 
 
 struct DrawBuffer
