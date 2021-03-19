@@ -23,6 +23,7 @@ DrawBuffer drawBuffers[NUM_DRAW_BUFFERS];
 DrawBuffer immediateBuffer; //Used to briefly hold attributes for a single geometry and draw call.
 
 GLuint lastActiveTexture;
+bool lastTextureIsLandscape;
 
 DrawCache* DrawCache::m_pInstance = NULL;
 
@@ -174,6 +175,7 @@ void DrawCache::drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLf
     GLfloat clipPlane0[4], clipPlane1[4], clipPlane5[4];
     drawBuffers[b].shader = lastEnabledShader();
     drawBuffers[b].textureID = lastActiveTexture;
+    drawBuffers[b].landscapeTexture = lastTextureIsLandscape;
     MSI()->getFloatv(MS_TEXTURE, drawBuffers[b].textureMatrix);
     MSI()->getPlanev(0, clipPlane0);
     MSI()->getPlanev(1, clipPlane1);
@@ -182,7 +184,7 @@ void DrawCache::drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLf
     
     //Transparent surfaces always require a flush
     if(color[3] < 1) {
-        //drawAll();
+        drawAll();
     }
     
         //The incoming data is a triangle fan: 0,1,2,3,4,5
@@ -227,6 +229,10 @@ void DrawCache::drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLf
     //printf("Added vertices %i to %i with texture %i\n", vertex_count, drawBuffers[b].verticesFilled, drawBuffers[b].textureID);
     clearTextureAttributeCaches();
     drawBuffers[b].verticesFilled += vertex_count;
+    
+    //For debugging, it helps to draw right away. Much slower, though.
+    //Normnally this should be commented out.
+    //drawAndResetBuffer(b);
 }
 
 
@@ -241,7 +247,16 @@ void DrawCache::drawAndResetBuffer(int index) {
     drawBuffers[index].shader->enable();
     drawBuffers[index].shader->setMatrix4(Shader::U_TextureMatrix, drawBuffers[index].textureMatrix);
     glBindTexture(GL_TEXTURE_2D, drawBuffers[index].textureID);
-        
+    
+    if(drawBuffers[index].landscapeTexture) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //DCW added for landscape. Repeat horizontally
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT); //DCW added for landscape. Mirror vertically.
+
+    } else {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //DCW this is probably better for non-landscapes
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); //DCW this is probably better for non-landscapes
+    }
+
     glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, drawBuffers[index].texcoordArray);
     glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
     
@@ -273,6 +288,8 @@ void DrawCache::drawAndResetBuffer(int index) {
     glVertexAttribPointer(Shader::ATTRIB_PuWoDeGl, 4, GL_FLOAT, GL_FALSE, 0, drawBuffers[index].vPuWoDeGl);
     glEnableVertexAttribArray(Shader::ATTRIB_PuWoDeGl);
     
+    glEnable(GL_BLEND); //We might always want to blend.
+    
     glDrawElements(GL_TRIANGLES, drawBuffers[index].numIndices, GL_UNSIGNED_INT, drawBuffers[index].indices);
     
         //Reset what we care about.
@@ -287,6 +304,7 @@ void DrawCache::drawAndResetBuffer(int index) {
 }
 
 void DrawCache::cacheActiveTextureID(GLuint texID) {lastActiveTexture = texID;}
+void DrawCache::cacheLandscapeTextureStatus(bool isLand) {lastTextureIsLandscape = isLand;}
 
 void DrawCache::cacheScaleX(GLfloat v) {scaleX = v;}
 void DrawCache::cacheOffsetX(GLfloat v) {offsetX = v;}

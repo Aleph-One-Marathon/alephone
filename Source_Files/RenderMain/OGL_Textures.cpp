@@ -196,6 +196,7 @@ bool TextureState::Use(int Which)
 {
 	glBindTexture(GL_TEXTURE_2D,IDs[Which]);
     DC()->cacheActiveTextureID(IDs[Which]);
+    DC()->cacheLandscapeTextureStatus(TextureType == OGL_Txtr_Landscape);
 	bool result = !TexGened[Which];
 	TexGened[Which] = true;
 	IDUsage[Which]++;

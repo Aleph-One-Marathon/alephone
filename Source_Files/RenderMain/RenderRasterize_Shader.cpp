@@ -224,14 +224,17 @@ void RenderRasterize_Shader::render_tree() {
     DC()->drawAll(); //Flush any buffers
     
     render_viewer_sprite_layer(kDiffuse);
-
+    DC()->drawAll(); //Flush any buffers
+    
 	if (current_player->infravision_duration == 0 &&
 		TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur) &&
 		blur.get())
 	{
 		blur->begin();
-		RenderRasterizerClass::render_tree(kGlow);
-                render_viewer_sprite_layer(kGlow);
+            RenderRasterizerClass::render_tree(kGlow);
+            DC()->drawAll(); //Flush any buffers
+            render_viewer_sprite_layer(kGlow);
+            DC()->drawAll(); //Flush any buffers
 		blur->end();
 		RasPtr->swapper->deactivate();
 		blur->draw(*RasPtr->swapper);
@@ -510,7 +513,13 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
         DC()->cacheScaleY(VertScale * TexScale * Radian2Circle);
 		s->setFloat(Shader::U_OffsetY, (0.5 + TMgr->U_Offset) * TexScale);
         DC()->cacheOffsetY((0.5 + TMgr->U_Offset) * TexScale);
-	}
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //DCW added for landscape. Repeat horizontally
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT); //DCW added for landscape. Mirror vertically.
+
+      } else {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //DCW this is probably better for non-landscapes
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); //DCW this is probably better for non-landscapes
+      }
 
 	if (renderStep == kGlow) {
 		if (TMgr->TextureType == OGL_Txtr_Landscape) {

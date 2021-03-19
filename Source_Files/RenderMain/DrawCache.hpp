@@ -17,7 +17,7 @@
 
     //Set number of allowable draw buffers.
     //Each buffer has a unique textureID * shader.
-    //Lots of buffers are nice, but at increasing cost.
+    //Lots of buffers are nice, but at increasing cost. 20 seems like a good number.
 #define NUM_DRAW_BUFFERS 20
 
 
@@ -30,6 +30,8 @@ struct DrawBuffer
         //Enough indices to convert triangle fans into triangles by index, in the worst possible case.
     GLuint indices[DRAW_BUFFER_MAX*3];
     GLuint numIndices; //The number of indices we have. Should be a multiple of three, since we are drawing triangles.
+    
+    bool landscapeTexture; //Is this a landscape texture?
     
         //This is assumed to be the same for all geometry with the tectureID above.
     GLfloat textureMatrix[16];
@@ -66,8 +68,12 @@ public:
     
     void drawAll(); //Draws what's in every buffer, and resets them. Call this before drawing anything that doesn't write to the depth buffer, or when finished drawing the whole scene.
     
-        //If anyone calls glBindTexture() for a texture that might be used in a buffered draw call, call this too.
+        //If anyone calls glBindTexture() for a texture that might be used in a buffered draw call, call this too, so we have a texid to bind to later.
     void cacheActiveTextureID(GLuint texID);
+    
+        //Call this with true/false whenever you bind a landscape texture.
+        //Landscapes have different wrap modes, and we need to set those when drawing later.
+    void cacheLandscapeTextureStatus(bool isLand);
     
         //Cache texture surface attributes for the next draw operation.
     void cacheScaleX(GLfloat v);

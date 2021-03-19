@@ -42,7 +42,7 @@ static bool DisableClipVertex()
 }
 #endif
 
-//Global pointer to the last shader object enabled. May be NULL.
+//Global pointer to the last shader object enabled. May be NULL.    
 Shader* lastEnabledShaderRef;
 Shader* lastEnabledShader() {
   return lastEnabledShaderRef;
@@ -746,10 +746,10 @@ void initDefaultPrograms() {
                 "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {unwantedFragment = true;}\n"
                 "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {unwantedFragment = true;}\n"
     
-              "float scalex = fSxOxSyOy.x;\n"
-              "float scaley = fSxOxSyOy.z;\n"
-              "float offsetx = fSxOxSyOy.y;\n"
-              "float offsety = fSxOxSyOy.w;\n"
+              "   float scalex = fSxOxSyOy.x;\n"
+              "   float scaley = fSxOxSyOy.z;\n"
+              "   float offsetx = fSxOxSyOy.y;\n"
+              "   float offsety = fSxOxSyOy.w;\n"
             
               "    vec3 facev = vec3(cos(yaw), sin(yaw), sin(pitch));\n"
               "    vec3 relv  = (relDir);\n"
@@ -769,10 +769,18 @@ void initDefaultPrograms() {
         "uniform mat4 MS_ModelViewMatrix;\n"
         "uniform sampler2D texture0;\n"
         "uniform float usefog;\n"
-        "uniform float scalex;\n"
-        "uniform float scaley;\n"
-        "uniform float offsetx;\n"
-        "uniform float offsety;\n"
+        //"uniform float scalex;\n"
+        //"uniform float scaley;\n"
+        //"uniform float offsetx;\n"
+        //"uniform float offsety;\n"
+    
+        "varying vec4 fSxOxSyOy; \n"
+        "varying vec4 fBsBtFlSl; \n"
+        "varying vec4 fPuWoDeGl; \n"
+        "varying vec4 fClipPlane0;   \n"
+        "varying vec4 fClipPlane1;   \n"
+        "varying vec4 fClipPlane5;   \n"
+
         "uniform float yaw;\n"
         "uniform float pitch;\n"
         "uniform float bloomScale;\n"
@@ -782,6 +790,16 @@ void initDefaultPrograms() {
         "const float zoom = 1.205;\n"
         "const float pitch_adjust = 0.955;\n"
         "void main(void) {\n"
+        "   bool unwantedFragment = false;\n"
+        "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {unwantedFragment = true;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {unwantedFragment = true;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {unwantedFragment = true;}\n"
+
+      "   float scalex = fSxOxSyOy.x;\n"
+      "   float scaley = fSxOxSyOy.z;\n"
+      "   float offsetx = fSxOxSyOy.y;\n"
+      "   float offsety = fSxOxSyOy.w;\n"
+        
         "    vec3 facev = vec3(cos(yaw), sin(yaw), sin(pitch));\n"
         "    vec3 relv  = normalize(relDir);\n"
         "    float x = relv.x / (relv.z * zoom) + atan(facev.x, facev.y);\n"
@@ -1149,7 +1167,7 @@ void initDefaultPrograms() {
         "    viewXY = -(MS_TextureMatrix * vec4(viewDir.xyz, 1.0)).xyz;\n"
         "    viewDir = -viewDir;\n"
         "    vertexColor = vColor;\n"
-        "    FDxLOG2E = -(1.0-uFogColor.a) * 1.442695;\n" //dcw that 1- may be wrong.
+        "    FDxLOG2E = -uFogColor.a * 1.442695;\n"
         "    fogColor = uFogColor;"
         "    fSxOxSyOy = vSxOxSyOy;\n"
         "    fBsBtFlSl = vBsBtFlSl;\n"
