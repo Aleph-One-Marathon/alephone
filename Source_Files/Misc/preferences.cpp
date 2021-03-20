@@ -113,7 +113,7 @@ May 22, 2003 (Woody Zenfell):
 #endif
 
 // 8-bit support is still here if you undefine this, but you'll need to fix it
-#define TRUE_COLOR_ONLY 1
+// #define TRUE_COLOR_ONLY 1
 
 using namespace alephone;
 
