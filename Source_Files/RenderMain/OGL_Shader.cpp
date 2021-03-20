@@ -701,6 +701,7 @@ void initDefaultPrograms() {
 
         "void main(void) {\n"
         "    gl_Position = MS_ModelViewProjectionMatrix * vPosition;\n"
+        "    vPosition_eyespace = MS_ModelViewMatrix * vPosition;\n"
         "    relDir = (MS_ModelViewMatrix * vPosition).xyz;\n"
         "    vertexColor = vColor;\n"
         "    fogColor = uFogColor;\n"
@@ -741,10 +742,9 @@ void initDefaultPrograms() {
               "varying vec4 vPosition_eyespace;\n"
 
               "void main(void) {\n"
-                "   bool unwantedFragment = false;\n"
-                "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {unwantedFragment = true;}\n"
-                "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {unwantedFragment = true;}\n"
-                "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {unwantedFragment = true;}\n"
+                "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {discard;}\n"
+                "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}\n"
+                "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {discard;}\n"
     
               "   float scalex = fSxOxSyOy.x;\n"
               "   float scaley = fSxOxSyOy.z;\n"
@@ -791,10 +791,9 @@ void initDefaultPrograms() {
         "const float pitch_adjust = 0.955;\n"
         "varying vec4 vPosition_eyespace;\n"
         "void main(void) {\n"
-        "   bool unwantedFragment = false;\n"
-        "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {unwantedFragment = true;}\n"
-        "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {unwantedFragment = true;}\n"
-        "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {unwantedFragment = true;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {discard;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {discard;}\n"
 
       "   float scalex = fSxOxSyOy.x;\n"
       "   float scaley = fSxOxSyOy.z;\n"
@@ -876,10 +875,9 @@ void initDefaultPrograms() {
         "varying vec4 vPosition_eyespace;\n"
 
         "void main (void) {\n"
-        "  bool unwantedFragment = false;\n"
-        "  if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {unwantedFragment = true;}\n"
-        "  if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {unwantedFragment = true;}\n"
-        "  if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {unwantedFragment = true;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {discard;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {discard;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {discard;}\n"
         "    float mlFactor = clamp(selfLuminosity + flare - classicDepth, 0.0, 1.0);\n"
         "    // more realistic: replace classicDepth with (length(viewDir)/8192.0)\n"
         "    vec3 intensity;\n"
@@ -894,7 +892,6 @@ void initDefaultPrograms() {
         "    vec4 color = texture2D(texture0, textureUV.xy);\n"
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "    gl_FragColor = vec4(mix(fogColor.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
-        "    if( unwantedFragment ) {gl_FragColor.a = 0.0;}\n"
 //        "    if ( gl_FragColor.a == 0.0 ) {discard;} //discard transparent fragments so they don't write on the depth buffer \n "
         "}\n";
     defaultVertexPrograms["sprite_bloom"] = defaultVertexPrograms["sprite"];
@@ -915,10 +912,9 @@ void initDefaultPrograms() {
         "varying float classicDepth;\n"
         "varying vec4 vPosition_eyespace;\n"
         "void main (void) {\n"
-        "  bool unwantedFragment = false;\n"
-        "  if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {unwantedFragment = true;}\n"
-        "  if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {unwantedFragment = true;}\n"
-        "  if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {unwantedFragment = true;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {discard;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {discard;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {discard;}\n"
         "    vec4 color = texture2D(texture0, textureUV.xy);\n"
         "    vec3 intensity = clamp(vertexColor.rgb, glow, 1.0);\n"
         "    //intensity = intensity * clamp(2.0 - length(viewDir)/8192.0, 0.0, 1.0);\n"
@@ -931,7 +927,6 @@ void initDefaultPrograms() {
         "#endif\n"
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "    gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
-        "   if( unwantedFragment ) {gl_FragColor.a = 0.0;}\n"
         "}\n";
 
 	defaultVertexPrograms["sprite_infravision"] = defaultVertexPrograms["sprite"];
@@ -971,10 +966,9 @@ void initDefaultPrograms() {
         "   return nSign * floor(abs(n)+0.5); \n"
         "} \n"
         "void main (void) {\n"
-        "  bool unwantedFragment = false;\n"
-        "  if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {unwantedFragment = true;}\n"
-        "  if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {unwantedFragment = true;}\n"
-        "  if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {unwantedFragment = true;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {discard;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {discard;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {discard;}\n"
         "   float blockSize = round((logicalHeight/320.0) * (pixelHeight/logicalHeight));\n"
         "   blockSize = max(blockSize, 1.0);\n"
         "   float moment=fract(time/10000.0);\n"
@@ -991,7 +985,6 @@ void initDefaultPrograms() {
         "#endif\n"
         "   float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "   gl_FragColor = vec4(mix(fogColor.rgb, intensity, fogFactor), vertexColor.a * color.a);\n"
-        "   if( unwantedFragment ) {gl_FragColor.a = 0.0;}\n"
 //        "    if ( gl_FragColor.a == 0.0 ) {discard;} //discard transparent fragments so they don't write on the depth buffer \n "
         "}\n";
     defaultVertexPrograms["invincible_bloom"] = defaultVertexPrograms["invincible"];
@@ -1022,10 +1015,9 @@ void initDefaultPrograms() {
         "} \n"
         "varying vec4 vPosition_eyespace;\n"
         "void main (void) {\n"
-        "  bool unwantedFragment = false;\n"
-        "  if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {unwantedFragment = true;}\n"
-        "  if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {unwantedFragment = true;}\n"
-        "  if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {unwantedFragment = true;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {discard;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {discard;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {discard;}\n"
         "   float blockHeight=2.0;\n"
         "   float blockWidth=2.0;\n"
         "   float darkBlockProbability=0.8;\n"
@@ -1045,7 +1037,6 @@ void initDefaultPrograms() {
         "#endif\n"
         "   float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "   gl_FragColor = vec4(mix(fogColor.rgb, intensity, fogFactor), vertexColor.a * color.a);\n"
-        "   if( unwantedFragment ) {gl_FragColor.a = 0.0;}\n"
         "}\n";
 
     defaultVertexPrograms["invisible"] = defaultVertexPrograms["sprite"];
@@ -1060,15 +1051,13 @@ void initDefaultPrograms() {
         "varying float FDxLOG2E;\n"
         "varying vec4 vPosition_eyespace;\n"
         "void main (void) {\n"
-        "  bool unwantedFragment = false;\n"
-        "  if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {unwantedFragment = true;}\n"
-        "  if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {unwantedFragment = true;}\n"
-        "  if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {unwantedFragment = true;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {discard;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {discard;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {discard;}\n"
         "    vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
         "   vec3 intensity = vec3(0.0, 0.0, 0.0);\n"
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "    gl_FragColor = vec4(mix(gl_Fog.color.rgb, intensity, fogFactor), vertexColor.a * color.a * visibility);\n"
-        "   if( unwantedFragment ) {gl_FragColor.a = 0.0;}\n"
         "}\n";
     defaultVertexPrograms["invisible_bloom"] = defaultVertexPrograms["invisible"];
     defaultFragmentPrograms["invisible_bloom"] = ""
@@ -1082,15 +1071,13 @@ void initDefaultPrograms() {
         "varying float FDxLOG2E;\n"
         "varying vec4 vPosition_eyespace;\n"
         "void main (void) {\n"
-        "  bool unwantedFragment = false;\n"
-        "  if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {unwantedFragment = true;}\n"
-        "  if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {unwantedFragment = true;}\n"
-        "  if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {unwantedFragment = true;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {discard;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {discard;}\n"
+        "  if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {discard;}\n"
         "    vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
         "   vec3 intensity = vec3(0.0, 0.0, 0.0);\n"
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "    gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), intensity, fogFactor), vertexColor.a * color.a * visibility);\n"
-        "   if( unwantedFragment ) {gl_FragColor.a = 0.0;}\n"
         "}\n";
 	
     defaultVertexPrograms["wall"] = ""
@@ -1180,9 +1167,9 @@ void initDefaultPrograms() {
         "}\n";
     defaultFragmentPrograms["wall"] = ""
         "precision highp float;\n"
-        "uniform vec4 clipPlane0;\n"
-        "uniform vec4 clipPlane1;\n"
-        "uniform vec4 clipPlane5;\n"
+        //"uniform vec4 clipPlane0;\n"
+        //"uniform vec4 clipPlane1;\n"
+        //"uniform vec4 clipPlane5;\n"
         "varying vec4 fogColor; \n"
         "varying vec2 textureUV; \n"
         "uniform sampler2D texture0;\n"
@@ -1206,10 +1193,9 @@ void initDefaultPrograms() {
         "varying float classicDepth;\n"
         "varying vec4 vPosition_eyespace;\n"
         "void main (void) {\n"
-        "   bool unwantedFragment = false;\n"
-        "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {unwantedFragment = true;}\n"
-        "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {unwantedFragment = true;}\n"
-        "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {unwantedFragment = true;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {discard;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {discard;}\n"
         "    float pulsate = fPuWoDeGl.x;\n"
         "    float wobble = fPuWoDeGl.y;\n"
         "    float glow = fPuWoDeGl.w;\n"
@@ -1234,7 +1220,6 @@ void initDefaultPrograms() {
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "    fogFactor=clamp( length(viewDir), 0.0, 1.0);\n"
         "    gl_FragColor = vec4(mix(fogColor.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
-        "   if( unwantedFragment ) {gl_FragColor.a = 0.0;}\n"
         "}\n";
     defaultVertexPrograms["wall_bloom"] = defaultVertexPrograms["wall"];
     defaultFragmentPrograms["wall_bloom"] = ""
@@ -1246,9 +1231,9 @@ void initDefaultPrograms() {
         "uniform float flare;\n"
         "uniform float bloomScale;\n"
         "uniform float bloomShift;\n"*/
-        "uniform vec4 clipPlane0;\n"
-        "uniform vec4 clipPlane1;\n"
-        "uniform vec4 clipPlane5;\n"
+        //"uniform vec4 clipPlane0;\n"
+        //"uniform vec4 clipPlane1;\n"
+        //"uniform vec4 clipPlane5;\n"
 
         "varying vec4 fSxOxSyOy; \n"
         "varying vec4 fBsBtFlSl; \n"
@@ -1264,10 +1249,9 @@ void initDefaultPrograms() {
         "varying float FDxLOG2E;\n"
         "varying vec4 vPosition_eyespace;\n"
         "void main (void) {\n"
-        "   bool unwantedFragment = false;\n"
-        "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {unwantedFragment = true;}\n"
-        "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {unwantedFragment = true;}\n"
-        "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {unwantedFragment = true;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {discard;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {discard;}\n"
         "    float pulsate = fPuWoDeGl.x;\n"
         "    float wobble = fPuWoDeGl.y;\n"
         "    float glow = fPuWoDeGl.w;\n"
@@ -1288,7 +1272,6 @@ void initDefaultPrograms() {
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "    fogFactor = 1.0;" //dcw this is not working yet. Just make is 1.0 for now.
         "    gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
-        "   if( unwantedFragment ) {gl_FragColor.a = 0.0;}\n"
         "}\n";
 	defaultVertexPrograms["wall_infravision"] = defaultVertexPrograms["wall"];
 	defaultFragmentPrograms["wall_infravision"] =
@@ -1320,10 +1303,9 @@ void initDefaultPrograms() {
         "varying float FDxLOG2E;\n"
         "varying vec4 vPosition_eyespace;\n"
         "void main (void) {\n"
-        "   bool unwantedFragment = false;\n"
-        "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {unwantedFragment = true;}\n"
-        "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {unwantedFragment = true;}\n"
-        "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {unwantedFragment = true;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {discard;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {discard;}\n"
         "   vec3 texCoords = vec3(textureUV.xy, 0.0);\n"
         "	vec3 normXY = normalize(viewXY);\n"
         "	texCoords += vec3(normXY.y * -pulsate, normXY.x * pulsate, 0.0);\n"
@@ -1360,7 +1342,6 @@ void initDefaultPrograms() {
         "	gl_FragColor = vec4(mix(fogColor.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
     //"    gl_FragColor.rgb = color.rgb;\n"
 
-        "   if( unwantedFragment ) {gl_FragColor.a = 0.0;}\n"
         "}\n";
     defaultVertexPrograms["bump_bloom"] = defaultVertexPrograms["bump"];
     defaultFragmentPrograms["bump_bloom"] = ""
@@ -1386,10 +1367,9 @@ void initDefaultPrograms() {
         "varying float FDxLOG2E;\n"
         "varying vec4 vPosition_eyespace;\n"
         "void main (void) {\n"
-        "   bool unwantedFragment = false;\n"
-        "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {unwantedFragment = true;}\n"
-        "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {unwantedFragment = true;}\n"
-        "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {unwantedFragment = true;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {discard;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}\n"
+        "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {discard;}\n"
         "   vec3 texCoords = vec3(textureUV.xy, 0.0);\n"
         "	vec3 normXY = normalize(viewXY);\n"
         "	texCoords += vec3(normXY.y * -pulsate, normXY.x * pulsate, 0.0);\n"
@@ -1418,7 +1398,6 @@ void initDefaultPrograms() {
         "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "   fogFactor=clamp( length(viewDir), 0.0, 1.0);\n"
         "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
-        "   if( unwantedFragment ) {gl_FragColor.a = 0.0;}\n"
         "}\n";
 //		defaultFragmentPrograms["sprite"];
 }
