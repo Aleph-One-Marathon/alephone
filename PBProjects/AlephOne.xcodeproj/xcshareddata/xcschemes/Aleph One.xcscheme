@@ -14,18 +14,18 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "AEB4A0DA14296CAE00537AE7"
-               BuildableName = "Marathon Infinity.app"
-               BlueprintName = "Marathon Infinity"
+               BlueprintIdentifier = "AEC3C6FE09AD68AC003258E4"
+               BuildableName = "Aleph One.app"
+               BlueprintName = "Aleph One"
                ReferencedContainer = "container:AlephOne.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Deployment (Native)"
-      selectedDebuggerIdentifier = ""
-      selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn"
+      buildConfiguration = "Development"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
@@ -37,33 +37,33 @@
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
-      debugDocumentVersioning = "NO"
+      debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AEB4A0DA14296CAE00537AE7"
-            BuildableName = "Marathon Infinity.app"
-            BlueprintName = "Marathon Infinity"
+            BlueprintIdentifier = "AEC3C6FE09AD68AC003258E4"
+            BuildableName = "Aleph One.app"
+            BlueprintName = "Aleph One"
             ReferencedContainer = "container:AlephOne.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
-      buildConfiguration = "Deployment (Native)"
+      buildConfiguration = "Deployment (Universal)"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
-      debugDocumentVersioning = "NO">
+      debugDocumentVersioning = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AEB4A0DA14296CAE00537AE7"
-            BuildableName = "Marathon Infinity.app"
-            BlueprintName = "Marathon Infinity"
+            BlueprintIdentifier = "AEC3C6FE09AD68AC003258E4"
+            BuildableName = "Aleph One.app"
+            BlueprintName = "Aleph One"
             ReferencedContainer = "container:AlephOne.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

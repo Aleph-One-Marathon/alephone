@@ -244,7 +244,8 @@ void DrawCache::drawAndResetBuffer(int index) {
     //printf("Drawing buffer of size %i\n", drawBuffers[index].verticesFilled );
     Shader *originalShader = lastEnabledShader();
     
-    drawBuffers[index].shader->enable();
+    //drawBuffers[index].shader->enable();
+    drawBuffers[index].shader->enableAndSetStandardUniforms();
     drawBuffers[index].shader->setMatrix4(Shader::U_TextureMatrix, drawBuffers[index].textureMatrix);
     glBindTexture(GL_TEXTURE_2D, drawBuffers[index].textureID);
     

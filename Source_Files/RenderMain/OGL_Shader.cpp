@@ -789,6 +789,7 @@ void initDefaultPrograms() {
         "varying vec4 vertexColor;\n"
         "const float zoom = 1.205;\n"
         "const float pitch_adjust = 0.955;\n"
+        "varying vec4 vPosition_eyespace;\n"
         "void main(void) {\n"
         "   bool unwantedFragment = false;\n"
         "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {unwantedFragment = true;}\n"

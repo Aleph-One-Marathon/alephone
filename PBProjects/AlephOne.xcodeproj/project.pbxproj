@@ -6759,6 +6759,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.MarathonInfinity;
 				PRODUCT_NAME = "Marathon Infinity";
 				PROVISIONING_PROFILE_SPECIFIER = "";
