@@ -2034,7 +2034,8 @@ static void calculate_maximum_lines_for_groups(struct terminal_groupings *groups
 class MarathonTerminalCompiler
 {
 public:
-	MarathonTerminalCompiler(char* text, short length) : terminal(new terminal_text_t), in_buffer(text, length), in(&in_buffer) { 
+	MarathonTerminalCompiler(char* text, short length) : terminal(new terminal_text_t), in_buffer(text, length), in(&in_buffer) {
+		information_group.type = 0;
 		briefing_group.type = 0;
 		success_group.type = 0;
 		failure_group.type = 0;
@@ -2062,11 +2063,16 @@ private:
 	terminal_groupings group;
 
 	terminal_groupings logon_group;
+	terminal_groupings information_group;
 	terminal_groupings briefing_group;
 	terminal_groupings unfinished_group;
 	terminal_groupings failure_group;
 	terminal_groupings success_group;
-	std::vector<terminal_groupings> other_groups;
+
+	std::vector<terminal_groupings> information_checkpoints;
+	std::vector<terminal_groupings> unfinished_checkpoints;
+	// does Marathon allow #checkpoints inside success/failure/briefing?
+	std::vector<terminal_groupings>* checkpoints;
 };
 
 terminal_text_t* MarathonTerminalCompiler::Compile()
@@ -2157,23 +2163,36 @@ void MarathonTerminalCompiler::FinishGroup()
 	switch (group.type)
 	{
 	case _logon_group:
+		checkpoints = nullptr;
 		logon_group = group;
 		break;
 	case _information_group:
+		information_group = group;
+		information_checkpoints.clear();
+		checkpoints = &information_checkpoints;
+		break;
 	case _checkpoint_group:
-		other_groups.push_back(group);
+		if (checkpoints)
+		{
+			checkpoints->push_back(group);
+		}
 		break;
 	case _interlevel_teleport_group:
+		checkpoints = nullptr;
 		briefing_group = group;
 		break;
 	case _success_group:
+		checkpoints = nullptr;
 		success_group = group;
 		break;
 	case _failure_group:
+		checkpoints = nullptr;
 		failure_group = group;
 		break;
 	case _unfinished_group:
 		unfinished_group = group;
+		unfinished_checkpoints.clear();
+		checkpoints = &unfinished_checkpoints;
 		break;
 	}
 }
@@ -2290,26 +2309,28 @@ void MarathonTerminalCompiler::BuildUnfinishedGroup()
 
 	terminal->groupings.push_back(logon_group);
 
-	// if there's an unfinished group, push it as unfinished
-	// otherwise, this must not be an end-of-level term, use all the other groups
+	if (information_group.type)
+	{
+		terminal->groupings.push_back(information_group);
+		terminal->groupings.insert(terminal->groupings.end(),
+								   information_checkpoints.begin(),
+								   information_checkpoints.end());
+	}
+
 	if (unfinished_group.type)
 	{
 		group = unfinished_group;
 		group.type = _information_group;
 		terminal->groupings.push_back(group);
 
-		group = logon_group;
-		group.type = _logoff_group;
-		terminal->groupings.push_back(group);
+		terminal->groupings.insert(terminal->groupings.end(),
+								   unfinished_checkpoints.begin(),
+								   unfinished_checkpoints.end());
 	}
-	else
-	{
-		terminal->groupings.insert(terminal->groupings.end(), other_groups.begin(), other_groups.end());
 
-		group = logon_group;
-		group.type = _logoff_group;
-		terminal->groupings.push_back(group);
-	}
+	group = logon_group;
+	group.type = _logoff_group;
+	terminal->groupings.push_back(group);
 
 	group.type = _end_group;
 	group.flags = 0;
