@@ -10,6 +10,7 @@
 #include "OGL_Headers.h"
 #include "OGL_Shader.h"
 #include "MatrixStack.hpp"
+#include "screen.h"
 
 
 
@@ -22,7 +23,6 @@ GLfloat scaleX, offsetX, scaleY, offsetY, bloomScale, bloomShift, flare, selfLum
 DrawBuffer drawBuffers[NUM_DRAW_BUFFERS];
 DrawBuffer immediateBuffer; //Used to briefly hold attributes for a single geometry and draw call.
 
-GLuint lastActiveTexture;
 bool lastTextureIsLandscape;
 
 DrawCache* DrawCache::m_pInstance = NULL;
@@ -46,13 +46,63 @@ void DrawCache::drawAll() {
     }
 }
 
-int DrawCache::getBufferFor(Shader* shader, GLuint texID, int vertex_count) {
+bool DrawCache::isPolygonOnScreen(int vertex_count, GLfloat *vertex_array) {
+    if(vertex_count < 1) {return 0;}
+    
+    
+    
+    GLfloat vertexOnScreen[3] = {vertex_array[0], vertex_array[1], vertex_array[2]};
+    MatrixStack::Instance()->transformVertex(vertexOnScreen[0], vertexOnScreen[1], vertexOnScreen[2]);
+    
+    float xOnScreen = vertexOnScreen[0];
+    float yOnScreen = vertexOnScreen[1];
+
+    float left_x = xOnScreen;
+    float right_x = xOnScreen;
+    float top_y = yOnScreen;
+    float bottom_y = yOnScreen;
+    
+        //Build out a bounding box in screen coordinates that contains all of the vertices.
+    for (int i = 1; i < vertex_count; ++i) {
+        vertexOnScreen[0] = vertex_array[i*3 + 0];
+        vertexOnScreen[1] = vertex_array[i*3 + 1];
+        vertexOnScreen[2] = vertex_array[i*3 + 2];
+        MatrixStack::Instance()->transformVertex(vertexOnScreen[0], vertexOnScreen[1], vertexOnScreen[2]);
+        
+        xOnScreen = vertexOnScreen[0];
+        yOnScreen = vertexOnScreen[1];
+        
+        if( xOnScreen < left_x) { left_x = xOnScreen; }
+        if( xOnScreen > right_x) { right_x = xOnScreen; }
+        if( yOnScreen < bottom_y) { bottom_y = yOnScreen; }
+        if( yOnScreen > top_y) { top_y = yOnScreen; }
+    }
+    
+    //Convert to normalized device coordinates
+    right_x /= MainScreenPixelWidth()/2;
+    left_x /= MainScreenPixelWidth()/2;
+    top_y /= MainScreenPixelHeight()/2;
+    bottom_y /= MainScreenPixelHeight()/2;
+    
+    //TODO: This function won't work until we figure out what NDC looks like for non-3d perspective.
+    
+    
+        //Is this centered on screen?
+    /*if(left_x < 0 && right_x > 0 && bottom_y < 0 && top_y > 0) {
+        printf("Centered l %f, r %f, t %f, b %f\n", left_x, right_x, top_y, bottom_y);
+    }*/
+    
+
+    
+}
+
+int DrawCache::getBufferFor(Shader* shader, GLuint texID, GLuint texID1, int vertex_count) {
 
     int firstEmptyBuffer = -1;
     for(int i = 0; i < NUM_DRAW_BUFFERS; ++i) {
         if(drawBuffers[i].verticesFilled == 0 && firstEmptyBuffer < 0 ) {firstEmptyBuffer=i;}
         
-        if(drawBuffers[i].shader == shader && drawBuffers[i].textureID == texID) {
+        if(drawBuffers[i].shader == shader && drawBuffers[i].textureID == texID && (texID1 == 0 || texID1 == drawBuffers[i].textureID1)) {
             
                 //If we convert the fan into triangles, about how many vertices will we need?
             int neededVertices = vertex_count * 3;
@@ -60,7 +110,7 @@ int DrawCache::getBufferFor(Shader* shader, GLuint texID, int vertex_count) {
                 //If this buffer is full, draw and reset it, then return the index.
             if (drawBuffers[i].verticesFilled + neededVertices >= DRAW_BUFFER_MAX) {
                 drawAndResetBuffer(i);
-                printf ("Reset full buffer\n");
+                //printf ("Reset full buffer\n");
             }
             return i;
             
@@ -168,19 +218,36 @@ void DrawCache::drawSurfaceImmediate(int vertex_count, GLfloat *vertex_array, GL
 
 void DrawCache::drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *tex4) {
     
-    int b = getBufferFor(lastEnabledShader(), lastActiveTexture, vertex_count);
+    GLint whichUnit, whichTextureID, whichTextureID1;
+    glGetIntegerv(GL_ACTIVE_TEXTURE, &whichUnit); //Store active texture so we can reset it later.
+    glActiveTexture(GL_TEXTURE0);
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &whichTextureID);
+    glActiveTexture(GL_TEXTURE1);
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &whichTextureID1);
+    glActiveTexture(whichUnit);
+    
+    
+    //int b = getBufferFor(lastEnabledShader(), lastActiveTexture, vertex_count);
+    int b = getBufferFor(lastEnabledShader(), whichTextureID, whichTextureID1, vertex_count);
     
         //Capture volatile state data.
     GLfloat *color = MSI()->color();
     GLfloat clipPlane0[4], clipPlane1[4], clipPlane5[4];
     drawBuffers[b].shader = lastEnabledShader();
-    drawBuffers[b].textureID = lastActiveTexture;
+    //drawBuffers[b].textureID = lastActiveTexture;
+    
+    
+    drawBuffers[b].textureID = whichTextureID; //There should always be a texture0
+    drawBuffers[b].textureID1 = whichTextureID1;
+    if(whichTextureID1) {
+        drawBuffers[b].hasTexture1 = 1;
+    }
+    
     drawBuffers[b].landscapeTexture = lastTextureIsLandscape;
     MSI()->getFloatv(MS_TEXTURE, drawBuffers[b].textureMatrix);
     MSI()->getPlanev(0, clipPlane0);
     MSI()->getPlanev(1, clipPlane1);
     MSI()->getPlanev(5, clipPlane5);
-    lastActiveTexture = -1; //We don't need this anymore.
     
     //Transparent surfaces always require a flush
     if(color[3] < 1) {
@@ -247,7 +314,23 @@ void DrawCache::drawAndResetBuffer(int index) {
     //drawBuffers[index].shader->enable();
     drawBuffers[index].shader->enableAndSetStandardUniforms();
     drawBuffers[index].shader->setMatrix4(Shader::U_TextureMatrix, drawBuffers[index].textureMatrix);
+
+    
+    GLint whichUnit;
+    glGetIntegerv(GL_ACTIVE_TEXTURE, &whichUnit);
+    
+    if( drawBuffers[index].hasTexture1 ) {
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, drawBuffers[index].textureID1);
+    } else {
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, drawBuffers[index].textureID);
+    
+    glActiveTexture(whichUnit);
+    
     
     if(drawBuffers[index].landscapeTexture) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //DCW added for landscape. Repeat horizontally
@@ -298,13 +381,14 @@ void DrawCache::drawAndResetBuffer(int index) {
     drawBuffers[index].numIndices = 0;
     drawBuffers[index].shader = NULL;
     drawBuffers[index].textureID = 0;
+    drawBuffers[index].hasTexture1 = 0;
+    drawBuffers[index].textureID1 = 0;
     
     if(originalShader) {
         originalShader->enable(); //We need to restore whatever shader was active, so we don't pollute outside state.
     }
 }
 
-void DrawCache::cacheActiveTextureID(GLuint texID) {lastActiveTexture = texID;}
 void DrawCache::cacheLandscapeTextureStatus(bool isLand) {lastTextureIsLandscape = isLand;}
 
 void DrawCache::cacheScaleX(GLfloat v) {scaleX = v;}

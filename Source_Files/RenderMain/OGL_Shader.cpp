@@ -1116,6 +1116,7 @@ void initDefaultPrograms() {
         "varying float FDxLOG2E;\n"
         "varying float classicDepth;\n"
         "varying vec4 vPosition_eyespace;\n"
+        "varying vec3 eyespaceNormal;\n"
         "highp mat4 transpose(in highp mat4 inMatrix) {\n"  //I have not tested this.
         "    highp vec4 i0 = inMatrix[0];\n"
          "   highp vec4 i1 = inMatrix[1];\n"
@@ -1163,7 +1164,7 @@ void initDefaultPrograms() {
         "    fClipPlane0 = vClipPlane0;\n"
         "    fClipPlane1 = vClipPlane1;\n"
         "    fClipPlane5 = vClipPlane5;\n"
-    
+        "    eyespaceNormal = vec3(MS_ModelViewMatrix * vec4(vNormal, 0.0));\n"
         "}\n";
     defaultFragmentPrograms["wall"] = ""
         "precision highp float;\n"
@@ -1173,6 +1174,8 @@ void initDefaultPrograms() {
         "varying vec4 fogColor; \n"
         "varying vec2 textureUV; \n"
         "uniform sampler2D texture0;\n"
+    
+        "uniform mat4 MS_ModelViewMatrix;\n"
         //"uniform float pulsate;\n"
         //"uniform float wobble;\n"
         //"uniform float glow;\n"
@@ -1192,6 +1195,7 @@ void initDefaultPrograms() {
         "varying float FDxLOG2E;\n"
         "varying float classicDepth;\n"
         "varying vec4 vPosition_eyespace;\n"
+        "varying vec3 eyespaceNormal;\n"
         "void main (void) {\n"
         "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {discard;}\n"
         "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}\n"

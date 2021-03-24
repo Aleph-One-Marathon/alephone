@@ -24,6 +24,8 @@
 struct DrawBuffer
 {
     GLint textureID;
+    bool hasTexture1;
+    GLint textureID1; //If texture unit 1 is active, set the ID here.
     Shader *shader;
     int verticesFilled; //How many of these vertices have been filled?
     
@@ -68,8 +70,9 @@ public:
     
     void drawAll(); //Draws what's in every buffer, and resets them. Call this before drawing anything that doesn't write to the depth buffer, or when finished drawing the whole scene.
     
-        //If anyone calls glBindTexture() for a texture that might be used in a buffered draw call, call this too, so we have a texid to bind to later.
-    void cacheActiveTextureID(GLuint texID);
+        //Given some vertices, returns whether they will be within the screen space rect.
+        //The model/view/projection matrices MUST be final for the scene in the MatrixStack for this call to work.
+    bool isPolygonOnScreen(int vertex_count, GLfloat *vertex_array);
     
         //Call this with true/false whenever you bind a landscape texture.
         //Landscapes have different wrap modes, and we need to set those when drawing later.
@@ -105,7 +108,8 @@ private:
     
         //Guaranteed to return a buffer index for the shader/texID combo big enough to hold vertex_count.
         //This might trigger a draw operation in order to free up a buffer if they are exhausted or full.
-    int getBufferFor(Shader* shader, GLuint texID, int vertex_count);
+        //If texID1 is zero, it is ignored.
+    int getBufferFor(Shader* shader, GLuint texID, GLuint texID1, int vertex_count);
     
     void drawAndResetBuffer(int index);
 };

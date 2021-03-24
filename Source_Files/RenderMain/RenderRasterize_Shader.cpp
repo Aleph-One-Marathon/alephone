@@ -1300,7 +1300,7 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
       lastShader->setVec4(Shader::U_ClipPlane1, plane1);
       lastShader->setVec4(Shader::U_ClipPlane5, plane5);
     }
-
+    
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, offset, renderStep)) {
