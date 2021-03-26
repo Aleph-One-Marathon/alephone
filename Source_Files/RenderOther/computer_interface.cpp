@@ -416,6 +416,27 @@ static void	set_text_face(struct text_face_data *text_face)
 	current_pixel = SDL_MapRGB(/*world_pixels*/draw_surface->format, color.r, color.g, color.b);
 }
 
+static bool can_break_after(char c)
+{
+	// determined empirically on my PowerBook
+	switch (c)
+	{
+	case '&':
+	case '*':
+	case '+':
+	case '-':
+	case '\\':
+	case '<':
+	case '=':
+	case '>':
+	case '/':
+	case '^':
+	case '|':
+		return true;
+	default:
+		return false;
+	}
+}
 
 static bool calculate_line(char *base_text, short width, short start_index, short text_end_index, short *end_index)
 {
@@ -431,21 +452,44 @@ static bool calculate_line(char *base_text, short width, short start_index, shor
 			running_width += char_width(base_text[index], terminal_font, current_style);
 			index++;
 		}
-		
-		// Now go backwards, looking for whitespace to split on
+
+		// Now go backwards, looking for a place to split
 		if (base_text[index] == MAC_LINE_END)
 			index++;
 		else if (base_text[index]) {
-			int break_point = index;
+			if (film_profile.better_terminal_word_wrap)
+			{
+				int break_point = index - 1;
+				while (break_point > start_index)
+				{
+					if (base_text[break_point] == ' ')
+					{
+						index = break_point + 1; // eat the space
+						break;
+					}
+					else if (break_point > start_index + 1 &&
+							 can_break_after(base_text[break_point - 1]))
+					{
+						index = break_point;
+						break;
+					}
 
-			while (break_point>start_index) {
-				if (base_text[break_point] == ' ')
-					break; 	// Non printing
-				break_point--;	// this needs to be in front of the test
+					--break_point;
+				}
 			}
-			
-			if (break_point != start_index)
-				index = break_point+1;	// Space at the end of the line
+			else
+			{
+				int break_point = index;
+				
+				while (break_point>start_index) {
+					if (base_text[break_point] == ' ')
+						break; 	// Non printing
+					break_point--;	// this needs to be in front of the test
+				}
+				
+				if (break_point != start_index)
+					index = break_point+1;	// Space at the end of the line
+			}
 		}
 		
 		*end_index= index;
