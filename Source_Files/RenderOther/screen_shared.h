@@ -73,7 +73,7 @@ static struct screen_mode_data screen_mode;
 class FpsCounter {
 public:
 	using clock = std::chrono::high_resolution_clock;
-	static constexpr auto update_time{std::chrono::milliseconds(250)};
+	static constexpr auto update_time = std::chrono::milliseconds(250);
 	
 	FpsCounter() :
 		next_update_{clock::now() + update_time},
