@@ -260,6 +260,16 @@ void MatrixStack::transformVertex (GLfloat &x, GLfloat &y, GLfloat &z){
   z = m[2]/m[3];
 }
 
+void MatrixStack::transformVertexToEyespace (GLfloat &x, GLfloat &y, GLfloat &z){
+  glm::vec4 v4(x,y,z, 1.0);
+  glm::vec4 Transformed = modelviewStack[modelviewIndex] *v4;
+  
+  GLfloat *m = glm::value_ptr(Transformed);
+  x = m[0]/m[3];
+  y = m[1]/m[3];
+  z = m[2]/m[3];
+}
+
 void MatrixStack::orthof (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar){
   activeStack()[activeStackIndex()] = glm::ortho(left, right, bottom, top, zNear, zFar);
 }

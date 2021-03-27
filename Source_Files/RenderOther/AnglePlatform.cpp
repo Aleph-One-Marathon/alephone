@@ -10,6 +10,7 @@
  */
 
 #include "AnglePlatform.h"
+#include "Logging.h"
 
 #ifdef __MACOSX__
     #include "MacOSHelper.h"
@@ -20,7 +21,7 @@ void* injectAngle(SDL_Window *main_screen)
     #ifdef __MACOSX__
         return injectMacOS(main_screen);
     #endif
-    
+        
     return NULL;
 }
 

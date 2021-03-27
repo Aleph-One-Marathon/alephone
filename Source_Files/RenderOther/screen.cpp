@@ -951,7 +951,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
         if(layer) {
             context_created = TRUE;
         } else {
-            fprintf(stderr, "WARNING: Failed to inject ANGLE layer\n");
+            logWarning("WARNING: Failed to inject ANGLE layer\n");
         }
         
 #endif

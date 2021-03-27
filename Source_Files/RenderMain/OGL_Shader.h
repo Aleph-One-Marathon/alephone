@@ -81,6 +81,8 @@ public:
         U_ClipPlane4,
         U_ClipPlane5,
         U_ClipPlane6,
+        U_LightPositions,
+        U_LightColors,
 		NUMBER_OF_UNIFORM_LOCATIONS
 	};
 
@@ -167,6 +169,7 @@ public:
 	void setFloat(UniformName name, float); // shader must be enabled
 	void setMatrix4(UniformName name, float *f);
     void setVec4(UniformName name, float *f);
+    void setVec4v(UniformName name, int count, float *f);
     void setVec2(UniformName name, float *f);
 
 	int16 passes();

@@ -20,6 +20,13 @@
     //Lots of buffers are nice, but at increasing cost. 20 seems like a good number.
 #define NUM_DRAW_BUFFERS 20
 
+    //Maximum number of dynamic lights per frame
+#define LIGHTS_MAX 8000
+
+    //Maximum number of lights allowed in a single draw call
+    //Each light requires 8 uniform slots. Don't over do it!
+    //This number also is a hard-coded cap in the shader to help with the unroller; if you increase this, increase it in the shaders too.
+#define ACTIVE_LIGHTS_MAX 32
 
 struct DrawBuffer
 {
@@ -57,6 +64,8 @@ struct DrawBuffer
     GLfloat vSxOxSyOy[DRAW_BUFFER_MAX * 4];
     GLfloat vBsBtFlSl[DRAW_BUFFER_MAX * 4];
     GLfloat vPuWoDeGl[DRAW_BUFFER_MAX * 4];
+    
+    GLfloat bb_high_x, bb_low_x, bb_high_y, bb_low_y, bb_high_z, bb_low_z; //Axis-aligned bounding box that contains all vertices.
 };
 
 
@@ -91,6 +100,13 @@ public:
     void cacheWobble(GLfloat v);
     void cacheDepth(GLfloat v);
     void cacheGlow(GLfloat v);
+    
+    void startGatheringLights();
+    void addLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size, GLfloat red, GLfloat green, GLfloat blue, GLfloat intensity );
+    void finishGatheringLights();
+        
+        //Call this before rendering the tree to update the list of dynamic lights.
+    void gatherLights();
 
     
 private:
@@ -103,6 +119,8 @@ private:
     DrawCache& operator=(DrawCache const&){};
     static DrawCache* m_pInstance;
   
+    bool gatheringLights;
+    
     //Private instance variables and methods
     void clearTextureAttributeCaches();
     

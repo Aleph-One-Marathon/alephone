@@ -1141,7 +1141,6 @@ uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 		for (short w = 0; w < TxtrWidth; w++)
 			*(OGLStrip++) = *(SrcStrip++) & rgb_mask;
 	}
-	
 	return Buffer;
 }
 

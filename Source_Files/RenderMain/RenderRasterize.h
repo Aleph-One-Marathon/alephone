@@ -80,7 +80,8 @@ struct vertical_surface_data
 
 typedef enum {
 	kDiffuse,
-	kGlow
+	kGlow,
+    kDiffuseDepthNoMedia
 } RenderStep;
 
 class RenderRasterizerClass

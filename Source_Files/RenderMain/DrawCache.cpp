@@ -12,7 +12,8 @@
 #include "MatrixStack.hpp"
 #include "screen.h"
 
-
+#include "map.h"
+#include "projectiles.h"
 
 
     //Caches for texture attributes as set by the texture manager.
@@ -22,6 +23,15 @@ GLfloat scaleX, offsetX, scaleY, offsetY, bloomScale, bloomShift, flare, selfLum
 
 DrawBuffer drawBuffers[NUM_DRAW_BUFFERS];
 DrawBuffer immediateBuffer; //Used to briefly hold attributes for a single geometry and draw call.
+
+int numLightsInScene;
+GLfloat lightPositions[LIGHTS_MAX * 4]; //Format: x, y, z (location), w (size in world units)
+GLfloat lightColors[LIGHTS_MAX * 4]; //Format: r, g, b, intensity?
+    
+    //The actual data fed into the shader.
+    //Same format as above, but position list must be terminated with a {0,0,0,0} light.
+GLfloat activeLightPositions[(ACTIVE_LIGHTS_MAX+1) * 4];
+GLfloat activeLightColors[ACTIVE_LIGHTS_MAX * 4];
 
 bool lastTextureIsLandscape;
 
@@ -46,10 +56,85 @@ void DrawCache::drawAll() {
     }
 }
 
+void DrawCache::startGatheringLights() {
+    numLightsInScene = 0;
+    gatheringLights = 1;
+}
+
+void DrawCache::addLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size, GLfloat red, GLfloat green, GLfloat blue, GLfloat intensity ) {
+    if(!gatheringLights) return;
+    
+    if(numLightsInScene < LIGHTS_MAX) {
+        lightPositions[numLightsInScene*4 + 0] = x;
+        lightPositions[numLightsInScene*4 + 1] = y;
+        lightPositions[numLightsInScene*4 + 2] = z;
+        lightPositions[numLightsInScene*4 + 3] = size; //Size in world units. 0 means no light. 1000ish would be typical
+        
+        lightColors[numLightsInScene*4 + 0] = red; //Red
+        lightColors[numLightsInScene*4 + 1] = green; //Green
+        lightColors[numLightsInScene*4 + 2] = blue; //Blue
+
+        lightColors[numLightsInScene*4 + 3] = intensity; //Intensity
+        numLightsInScene++;
+    }
+}
+
+void DrawCache::finishGatheringLights() {
+    gatheringLights = 0;
+}
+
+//DEPRECATED
+void DrawCache::gatherLights() {
+    numLightsInScene = 0;
+    
+    //Iterate through object list to find anything that is glowing.
+    for( projectile_data aProjectile : ProjectileList ) {
+  
+        world_point3d location = ObjectList[aProjectile.object_index].location;
+        
+        shape_descriptor shape = ObjectList[aProjectile.object_index].shape;
+        
+        //short TransferMode = 0;
+        //short CollColor = GET_DESCRIPTOR_COLLECTION(shape);
+        //short Collection = GET_COLLECTION(CollColor);
+
+        //if ()
+        {
+            
+            /*short CTable = GET_COLLECTION_CLUT(CollColor);
+            TxtrStatePtr = &CBTS.CTStates[CTable];
+            TextureState &CTState = *TxtrStatePtr;
+
+            if(CTState.IsGlowing == TRUE) {
+                
+            }*/
+        
+            if(numLightsInScene < LIGHTS_MAX) {
+                lightPositions[numLightsInScene*4 + 0] = location.x;
+                lightPositions[numLightsInScene*4 + 1] = location.y;
+                lightPositions[numLightsInScene*4 + 2] = location.z;
+                lightPositions[numLightsInScene*4 + 3] = 2000; //Size in world units. 0 means no light.
+                
+                //if(GET_OBJECT_STATUS(&anObject) == _object_is_effect) {
+                    lightColors[numLightsInScene*4 + 0] = 1.0; //Red
+                    lightColors[numLightsInScene*4 + 1] = .7; //Green
+                    lightColors[numLightsInScene*4 + 2] = 0; //Blue
+               // } else {
+                //    lightColors[numLightsInScene*4 + 0] = 0.0; //Red
+                //    lightColors[numLightsInScene*4 + 1] = 1.0; //Green
+                 //   lightColors[numLightsInScene*4 + 2] = 0.0; //Blue
+
+                //}
+                lightColors[numLightsInScene*4 + 3] = 1.0; //Intensity
+                numLightsInScene++;
+            }
+        }
+    }
+    
+}
+
 bool DrawCache::isPolygonOnScreen(int vertex_count, GLfloat *vertex_array) {
     if(vertex_count < 1) {return 0;}
-    
-    
     
     GLfloat vertexOnScreen[3] = {vertex_array[0], vertex_array[1], vertex_array[2]};
     MatrixStack::Instance()->transformVertex(vertexOnScreen[0], vertexOnScreen[1], vertexOnScreen[2]);
@@ -130,6 +215,7 @@ int DrawCache::getBufferFor(Shader* shader, GLuint texID, GLuint texID1, int ver
     return 0;
 }
 
+//THIS IS DEPRECATED
 //Requires 3 GLFloats in vertex_array per vertex, and 2 GLfloats per texcoord
 //tex4 is a 4-dimensional array, which is surface normal vector + sign.
 //Normalized is assumed to be GL_FALSE and Stride must be 0.
@@ -264,6 +350,17 @@ void DrawCache::drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLf
         drawBuffers[b].numIndices += 3;
     }
     
+        //Prime BB with the first vertex.
+    if(drawBuffers[b].verticesFilled == 0) {
+        drawBuffers[b].bb_high_x=vertex_array[0];
+        drawBuffers[b].bb_low_x=vertex_array[0];
+        drawBuffers[b].bb_high_y=vertex_array[1];
+        drawBuffers[b].bb_low_y=vertex_array[1];
+        drawBuffers[b].bb_high_z=vertex_array[2];
+        drawBuffers[b].bb_low_z=vertex_array[2];
+
+    }
+    
     //Fill 2-element components.
     int n = 0;
     for(int i = drawBuffers[b].verticesFilled*2; i < (drawBuffers[b].verticesFilled*2 + (vertex_count * 2)); i += 2) {
@@ -276,6 +373,15 @@ void DrawCache::drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLf
     GLfloat *normal_array = MSI()->normals();
     for(int i = drawBuffers[b].verticesFilled*3; i < (drawBuffers[b].verticesFilled*3 + (vertex_count * 3)); i += 3) {
         drawBuffers[b].vertexArray[i] = vertex_array[n]; drawBuffers[b].vertexArray[i+1] = vertex_array[n+1]; drawBuffers[b].vertexArray[i+2] = vertex_array[n+2];
+        
+        //Grow bounding box
+        if(vertex_array[n] >= drawBuffers[b].bb_high_x) drawBuffers[b].bb_high_x = vertex_array[n];
+        if(vertex_array[n] <= drawBuffers[b].bb_low_x) drawBuffers[b].bb_low_x = vertex_array[n];
+        if(vertex_array[n+1] >= drawBuffers[b].bb_high_y) drawBuffers[b].bb_high_y = vertex_array[n+1];
+        if(vertex_array[n+1] <= drawBuffers[b].bb_low_y) drawBuffers[b].bb_low_y = vertex_array[n+1];
+        if(vertex_array[n+2] >= drawBuffers[b].bb_high_z) drawBuffers[b].bb_high_z = vertex_array[n+2];
+        if(vertex_array[n+2] <= drawBuffers[b].bb_low_z) drawBuffers[b].bb_low_z = vertex_array[n+2];
+        
         drawBuffers[b].normalArray[i] = normal_array[n]; drawBuffers[b].normalArray[i+1] = normal_array[n+1]; drawBuffers[b].normalArray[i+2] = normal_array[n+2];
         n+=3;
     }
@@ -372,10 +478,84 @@ void DrawCache::drawAndResetBuffer(int index) {
     glVertexAttribPointer(Shader::ATTRIB_PuWoDeGl, 4, GL_FLOAT, GL_FALSE, 0, drawBuffers[index].vPuWoDeGl);
     glEnableVertexAttribArray(Shader::ATTRIB_PuWoDeGl);
     
+    
     glEnable(GL_BLEND); //We might always want to blend.
     
+    //Attach Lights
+    bool usedDynamicLight = 0;
+    bool didFirstDraw = 0; //Have we drawn any geometry with lights yet?
+    int lightsAttached = 0;
+    int lightsChecked = 0;
+    GLfloat x,y,z,size, red,green,blue,intensity;
+    if (!gatheringLights && !drawBuffers[index].landscapeTexture) {
+        for(int i = 0; i < numLightsInScene; i++) {
+            x = lightPositions[i*4];
+            y = lightPositions[i*4 + 1];
+            z = lightPositions[i*4 + 2];
+            size = lightPositions[i*4 + 3];
+            red = lightColors[i*4];
+            green = lightColors[i*4 + 1];
+            blue = lightColors[i*4 + 2];
+            intensity = lightColors[i*4 + 3];
+            
+                //Is the light inside the bounding box (plus the light size)?
+            if(x >= (drawBuffers[index].bb_low_x-size) &&
+               x <= (drawBuffers[index].bb_high_x+size) &&
+               y >= (drawBuffers[index].bb_low_y-size) &&
+               y <= (drawBuffers[index].bb_high_y+size) &&
+               z >= (drawBuffers[index].bb_low_z-size) &&
+               z <= (drawBuffers[index].bb_high_z+size) ) {
+            
+                //The vertex needs to be in eyespace
+                MSI()->transformVertexToEyespace(x, y, z);
+                
+                //We can only attach up to four lights, until we need to do another pass with additive only.
+                if(lightsAttached < ACTIVE_LIGHTS_MAX){
+                    activeLightPositions[lightsAttached*4] = x;
+                    activeLightPositions[lightsAttached*4 +1] = y;
+                    activeLightPositions[lightsAttached*4 +2] = z;
+                    activeLightPositions[lightsAttached*4 +3] = size;
+
+                    activeLightColors[lightsAttached*4] = red;
+                    activeLightColors[lightsAttached*4 +1] = green;
+                    activeLightColors[lightsAttached*4 +2] = blue;
+                    activeLightColors[lightsAttached*4 +3] = intensity;
+                    
+                    lightsAttached++;
+                }
+                
+            }
+            
+        }
+        
+        //Terminate active light list.
+        activeLightPositions[lightsAttached*4] = 0;
+        activeLightPositions[lightsAttached*4 +1] = 0;
+        activeLightPositions[lightsAttached*4 +2] = 0;
+        activeLightPositions[lightsAttached*4 +3] = 0;
+    }
+    
+    
+    
+    if(lightsAttached > 1) {
+        lightsAttached = lightsAttached;
+    }
+    
+    drawBuffers[index].shader->setVec4v(Shader::U_LightPositions, lightsAttached + 1, activeLightPositions);
+    drawBuffers[index].shader->setVec4v(Shader::U_LightColors, lightsAttached, activeLightColors);
+
     glDrawElements(GL_TRIANGLES, drawBuffers[index].numIndices, GL_UNSIGNED_INT, drawBuffers[index].indices);
     
+    //Reset lights in the shader so later draws don't see them accidentially.
+    lightsAttached = 0;
+    for(int n = 0; n < 4; n++) {
+        activeLightPositions[n]=0;
+        activeLightColors[n]=0;
+    }
+    drawBuffers[index].shader->setVec4v(Shader::U_LightPositions, 1, activeLightPositions);
+    drawBuffers[index].shader->setVec4v(Shader::U_LightColors, 1, activeLightColors);
+
+
         //Reset what we care about.
     drawBuffers[index].verticesFilled = 0;
     drawBuffers[index].numIndices = 0;

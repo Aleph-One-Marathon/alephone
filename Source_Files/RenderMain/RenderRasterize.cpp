@@ -302,7 +302,7 @@ void RenderRasterizerClass::render_node(
 	
 	// LP: render the liquid surface after the walls and the stuff behind it
 	// and before the stuff before it.
-	if (media && SeeThruLiquids)
+	if (media && SeeThruLiquids && renderStep != kDiffuseDepthNoMedia)
 	{
 		
 		// Render only if between the floor and the ceiling:

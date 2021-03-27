@@ -106,7 +106,9 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
     "clipPlane3",
     "clipPlane4",
     "clipPlane5",
-    "clipPlane6"
+    "clipPlane6",
+    "lightPositions",
+    "lightColors"
 };
 
 const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] = 
@@ -406,7 +408,12 @@ void Shader::setMatrix4(UniformName name, float *f) {
 }
 
 void Shader::setVec4(UniformName name, float *f) {
-  glUniform4f(getUniformLocation(name), f[0], f[1], f[2], f[3]);
+    glUniform4f(getUniformLocation(name), f[0], f[1], f[2], f[3]);
+}
+
+void Shader::setVec4v(UniformName name, int count, float *f) {
+
+    glUniform4fv(getUniformLocation(name), count, f);
 }
 
 void Shader::setVec2(UniformName name, float *f) {
@@ -1174,8 +1181,10 @@ void initDefaultPrograms() {
         "varying vec4 fogColor; \n"
         "varying vec2 textureUV; \n"
         "uniform sampler2D texture0;\n"
-    
-        "uniform mat4 MS_ModelViewMatrix;\n"
+        "uniform vec4 lightPositions[32];\n"
+        "uniform vec4 lightColors[32];\n"
+
+        //"uniform mat4 MS_ModelViewMatrix;\n"
         //"uniform float pulsate;\n"
         //"uniform float wobble;\n"
         //"uniform float glow;\n"
@@ -1224,11 +1233,26 @@ void initDefaultPrograms() {
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "    fogFactor=clamp( length(viewDir), 0.0, 1.0);\n"
         "    gl_FragColor = vec4(mix(fogColor.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
+    
+        //Add in light diffuse
+        "    for(int i = 0; i < 32; ++i) {\n"
+        "       float size = lightPositions[i].w;\n"
+        "       if( size < .1) { break; }\n" //End of light list
+        "       vec3 lightPosition = vec3(lightPositions[i].xyz);\n"
+        "       vec4 lightColor = vec4(lightColors[i].rgb, 1.0);\n"
+        "       float distance = length(lightPosition - vPosition_eyespace.xyz);\n"
+        "       vec3 lightVector = normalize(lightPosition - vPosition_eyespace.xyz);\n"
+        "       float diffuse = max(dot(eyespaceNormal, lightVector), 0.0);\n"
+        "       diffuse = diffuse * max((size - distance)/size, 0.0 );\n" //Attenuation
+        "       gl_FragColor = gl_FragColor + color * diffuse * lightColor;\n"
+        "    }\n"
+
         "}\n";
     defaultVertexPrograms["wall_bloom"] = defaultVertexPrograms["wall"];
     defaultFragmentPrograms["wall_bloom"] = ""
         "precision highp float;\n"
         "uniform sampler2D texture0;\n"
+
         /*"uniform float pulsate;\n"
         "uniform float wobble;\n"
         "uniform float glow;\n"
@@ -1252,6 +1276,7 @@ void initDefaultPrograms() {
         "varying vec4 vertexColor;\n"
         "varying float FDxLOG2E;\n"
         "varying vec4 vPosition_eyespace;\n"
+        "varying vec3 eyespaceNormal;\n"
         "void main (void) {\n"
         "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {discard;}\n"
         "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}\n"
@@ -1274,7 +1299,7 @@ void initDefaultPrograms() {
         "    intensity = intensity * intensity; // approximation of pow(intensity, 2.2)\n"
         "#endif\n"
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
-        "    fogFactor = 1.0;" //dcw this is not working yet. Just make is 1.0 for now.
+        "    fogFactor = 1.0;" //dcw this is not working yet. Just make it 1.0 for now.
         "    gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
 	defaultVertexPrograms["wall_infravision"] = defaultVertexPrograms["wall"];
@@ -1295,6 +1320,8 @@ void initDefaultPrograms() {
         "uniform float glow;\n"
         "uniform float flare;\n"
         "uniform float selfLuminosity;\n"
+        "uniform vec4 lightPositions[32];\n"
+        "uniform vec4 lightColors[32];\n"
         "varying vec4 fClipPlane0;   \n"
         "varying vec4 fClipPlane1;   \n"
         "varying vec4 fClipPlane5;   \n"
@@ -1306,6 +1333,7 @@ void initDefaultPrograms() {
         "varying vec4 vertexColor;\n"
         "varying float FDxLOG2E;\n"
         "varying vec4 vPosition_eyespace;\n"
+        "varying vec3 eyespaceNormal;\n"
         "void main (void) {\n"
         "   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {discard;}\n"
         "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}\n"
@@ -1344,7 +1372,20 @@ void initDefaultPrograms() {
         "    fogFactor=clamp( length(viewDir), 0.0, 1.0);\n"
 
         "	gl_FragColor = vec4(mix(fogColor.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
-    //"    gl_FragColor.rgb = color.rgb;\n"
+
+        //Add in light diffuse
+        "    for(int i = 0; i < 32; ++i) {\n"
+        "       float size = lightPositions[i].w;\n"
+        "       if( size < .1) { break; }\n" //End of light list
+        "       vec3 lightPosition = vec3(lightPositions[i].xyz);\n"
+        "       vec4 lightColor = vec4(lightColors[i].rgb, 1.0);\n"
+        "       float distance = length(lightPosition - vPosition_eyespace.xyz);\n"
+        "       vec3 lightVector = normalize(lightPosition - vPosition_eyespace.xyz);\n"
+        "       float diffuse = max(dot(eyespaceNormal, lightVector), 0.0);\n"
+        "       diffuse = diffuse * max((size - distance)/size, 0.0 );\n" //Attenuation
+        "       gl_FragColor = gl_FragColor + color * diffuse * lightColor;\n"
+        "    }\n"
+
 
         "}\n";
     defaultVertexPrograms["bump_bloom"] = defaultVertexPrograms["bump"];

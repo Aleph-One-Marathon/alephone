@@ -81,6 +81,7 @@ public:
   void multMatrixf (const GLfloat *m);
 
   void transformVertex (GLfloat &x, GLfloat &y, GLfloat &z);
+  void transformVertexToEyespace (GLfloat &x, GLfloat &y, GLfloat &z);
   
   void orthof (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
   void frustumf (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);

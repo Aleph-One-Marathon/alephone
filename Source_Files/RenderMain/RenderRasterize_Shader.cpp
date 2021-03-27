@@ -123,7 +123,7 @@ void RenderRasterize_Shader::setupGL(Rasterizer_Shader_Class& Rasterizer) {
 
 	Shader* s_blur = Shader::get(Shader::S_Blur);
 	Shader* s_bloom = Shader::get(Shader::S_Bloom);
-
+        
 	blur.reset();
 	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur)) {
 		if(s_blur && s_bloom) {
@@ -220,21 +220,47 @@ void RenderRasterize_Shader::render_tree() {
     Shader::get(Shader::S_BumpBloom)->enableAndSetStandardUniforms();
     Shader::disable();
 
+        //Needed for water ripple, SSAO, SSR, and dynamic lighting (only because we have no other way to feed light data).
+    if(0) { //Should be a prefences check later
+        if (colorDepthSansMedia._h == 0 && colorDepthSansMedia._w == 0) {
+          GLint viewPort[4];
+          glGetIntegerv(GL_VIEWPORT, viewPort);
+          colorDepthSansMedia.setup(viewPort[2], viewPort[3], false);
+        }
+        colorDepthSansMedia.activate();
+        glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glClearColor(0,0,0, 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        RenderRasterizerClass::render_tree(kDiffuseDepthNoMedia);
+        colorDepthSansMedia.deactivate();
+        RasPtr->Begin(); // Needing to call Rasterizer_Shader_Class::Begin() again is wonky.
+        glActiveTexture(GL_TEXTURE2); //Bind the colorDepthSansMedia texture to unit 2.
+        glBindTexture(GL_TEXTURE_2D, colorDepthSansMedia.texID);
+        glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glPopGroupMarkerEXT();
+        glActiveTexture(GL_TEXTURE0);
+    }
+    
+    //DC()->gatherLights(); //Find any dynamic lights that may be needed for rendering.
 	RenderRasterizerClass::render_tree(kDiffuse);
-    DC()->drawAll(); //Flush any buffers
+    DC()->drawAll(); //Draw and flush buffers
     
     render_viewer_sprite_layer(kDiffuse);
-    DC()->drawAll(); //Flush any buffers
+    DC()->drawAll(); //Draw and flush buffers
     
 	if (current_player->infravision_duration == 0 &&
 		TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur) &&
 		blur.get())
 	{
 		blur->begin();
+            DC()->startGatheringLights();
             RenderRasterizerClass::render_tree(kGlow);
-            DC()->drawAll(); //Flush any buffers
+            DC()->finishGatheringLights();
+            DC()->drawAll(); //Draw and flush buffers
             render_viewer_sprite_layer(kGlow);
-            DC()->drawAll(); //Flush any buffers
+            DC()->drawAll(); //Draw and flush buffers
 		blur->end();
 		RasPtr->swapper->deactivate();
 		blur->draw(*RasPtr->swapper);
@@ -323,7 +349,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 	}
 
 	float flare = weaponFlare;
-
+    
 	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 
 	// priorities: static, infravision, tinted/solid, shadeless
@@ -334,6 +360,9 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 			s = Shader::get(Shader::S_Invincible);
 		} else {
 			s = Shader::get(Shader::S_InvincibleBloom);
+            
+             //Add a random light slightly off the floor
+            DC()->addLight(rect.Position.x, rect.Position.y, rect.Position.z + 100, 2000, rand() / double(RAND_MAX), rand() / double(RAND_MAX), rand() / double(RAND_MAX), 1);
 		}
 		s->enable();
 	} else if (current_player->infravision_duration) {
@@ -357,7 +386,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 		color[2] = 0;
 	} else if (TMgr->TransferMode == _textured_transfer) {
 		if (TMgr->IsShadeless) {
-			if (renderStep == kDiffuse) {
+			if (renderStep == kDiffuse || renderStep == kDiffuseDepthNoMedia) {
 				color[0] = color[1] = color[2] = 1;
 			} else {
 				color[0] = color[1] = color[2] = 0;
@@ -461,7 +490,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 		default:
 			TMgr->TextureType = OGL_Txtr_Wall;
 			if(TMgr->IsShadeless) {
-				if (renderStep == kDiffuse) {
+				if (renderStep == kDiffuse || renderStep == kDiffuseDepthNoMedia) {
 					MSI()->color4f(1,1,1,1);
 				} else {
 					MSI()->color4f(0,0,0,1);
@@ -982,7 +1011,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		color[2] = 0;
 	} else if (RenderRectangle.transfer_mode == _textured_transfer) {
 		if (RenderRectangle.flags & _SHADELESS_BIT) {
-			if (renderStep == kDiffuse) {
+			if (renderStep == kDiffuse || renderStep == kDiffuseDepthNoMedia) {
 				color[0] = color[1] = color[2] = 1;
 			} else {
 				color[0] = color[1] = color[2] = 0;
@@ -1159,7 +1188,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 }
 
 void RenderRasterize_Shader::_render_node_object_helper(render_object_data *object, RenderStep renderStep) {
-
+    
     //Rendering a node object requires a flush of the draw buffers for walls and ceilings. Someday maybe sprites won't have to flush.
     DC()->drawAll();
     
@@ -1302,8 +1331,9 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
     }
     
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
+    
 	if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, offset, renderStep)) {
+        
         glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
         glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
         

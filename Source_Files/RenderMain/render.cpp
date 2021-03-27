@@ -450,8 +450,8 @@ void render_view(
 		// LP: now from the visibility-tree class
 		/* build the render tree, regardless of map mode, so the automap updates while active */
 		RenderVisTree.view = view;
-		RenderVisTree.build_render_tree();
-		
+        RenderVisTree.build_render_tree();
+        
 		/* do something complicated and difficult to explain */
 		if (!view->overhead_map_active || map_is_translucent())
 		{			

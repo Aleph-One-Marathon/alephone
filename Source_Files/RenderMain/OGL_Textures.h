@@ -206,7 +206,7 @@ public:
 	bool IsShadeless;
 	short TextureType;
 	bool LandscapeVertRepeat;
-
+    
 	bool FastPath;
 	
 	// The width of a landscape texture will be 2^(-Landscape_AspRatExp) * (the height)
