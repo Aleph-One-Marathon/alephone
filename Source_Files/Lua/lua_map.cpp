@@ -1295,10 +1295,10 @@ int Lua_Polygon_Check_Collision(lua_State* L)
 	int32_t dy = destination.y - origin.y;
 	int32_t dz = destination.z - origin.z;
 
-	world_point3d p0 = origin;
-	world_point3d p1;
-	short old_polygon = polygon_index;
-	short new_polygon;
+	world_point3d p0;
+	world_point3d p1 = origin;
+	short old_polygon;
+	short new_polygon = polygon_index;
 	short obstruction_index;
 	short line_index;
 	uint16_t flags = 0;
@@ -1314,6 +1314,9 @@ int Lua_Polygon_Check_Collision(lua_State* L)
 
 	for (auto i = 0; i < chunks && !(flags & _projectile_hit); ++i)
 	{
+		old_polygon = new_polygon;
+		p0 = p1;
+
 		p1 = {
 			static_cast<world_distance>(origin.x + dx * (i + 1) / chunks),
 			static_cast<world_distance>(origin.y + dy * (i + 1) / chunks),
@@ -1323,8 +1326,6 @@ int Lua_Polygon_Check_Collision(lua_State* L)
 		flags = translate_projectile(0, &p0, old_polygon,
 									 &p1, &new_polygon, owner,
 									 &obstruction_index, &line_index, true, NONE);
-		old_polygon = new_polygon;
-		p0 = p1;
 	}
 
 	projectile_definition->flags = projectile_flags;
@@ -1360,9 +1361,9 @@ int Lua_Polygon_Check_Collision(lua_State* L)
 		lua_pushnil(L);
 	}
 
-	lua_pushnumber(L, static_cast<double>(p1.x / WORLD_ONE));
-	lua_pushnumber(L, static_cast<double>(p1.y / WORLD_ONE));
-	lua_pushnumber(L, static_cast<double>(p1.z / WORLD_ONE));
+	lua_pushnumber(L, static_cast<double>(p1.x) / WORLD_ONE);
+	lua_pushnumber(L, static_cast<double>(p1.y) / WORLD_ONE);
+	lua_pushnumber(L, static_cast<double>(p1.z) / WORLD_ONE);
 	Lua_Polygon::Push(L, new_polygon);
 
 	return 5;
