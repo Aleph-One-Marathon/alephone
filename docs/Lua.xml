@@ -2171,7 +2171,7 @@
 		<description>returns a new ephemera</description>
 		<argument name="x"><type>WU</type></argument>
 		<argument name="y"><type>WU</type></argument>
-		<argument name="height"><type>WU</type></argument>
+		<argument name="z"><type>WU</type></argument>
 		<argument name="polygon"><type>polygon</type></argument>
 		<argument name="collection"><type>collection</type></argument>
 		<argument name="sequence"><type>shape</type></argument>
