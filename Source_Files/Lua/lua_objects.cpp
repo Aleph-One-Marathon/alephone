@@ -347,8 +347,25 @@ char Lua_Item_Name[] = "item";
 
 int Lua_Item_Delete(lua_State* L)
 {
-	object_data* object = get_object_data(Lua_Item::Index(L, 1));
+	auto object_index = Lua_Item::Index(L, 1);
+	object_data* object = get_object_data(object_index);
 	int16 item_type = object->permutation;
+
+	// check if the item is teleporting in and remove associated effect
+	if (OBJECT_IS_INVISIBLE(object))
+	{
+		for (auto i = 0; i < MAXIMUM_EFFECTS_PER_MAP; ++i)
+		{
+			auto effect = &effects[i];
+			if (SLOT_IS_USED(effect) &&
+				effect->type == _effect_teleport_object_in &&
+				effect->data == object_index)
+			{
+				remove_effect(i);
+				break;
+			}
+		}
+	}
 
 	remove_map_object(Lua_Item::Index(L, 1));
 	if (L_Get_Proper_Item_Accounting(L))
