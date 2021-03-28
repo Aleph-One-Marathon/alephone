@@ -1566,6 +1566,8 @@ void damage_monster(
 			// LP change: pegging to maximum value
 			monster->vitality = MIN(int32(monster->vitality) - int32(delta_vitality), int32(INT16_MAX));
 			L_Call_Monster_Damaged(target_index, aggressor_index, damage->type,  delta_vitality, projectile_index);
+			if (!SLOT_IS_USED(monster))
+				return; // Lua can delete monsters
 			
 			if (monster->vitality > 0)
 			{
@@ -1628,6 +1630,8 @@ void damage_monster(
 						if (MONSTER_IS_PLAYER(aggressor_monster))
 							aggressor_player_index = monster_index_to_player_index(aggressor_index);
 					L_Call_Monster_Killed (target_index, aggressor_player_index, projectile_index);
+					if (!SLOT_IS_USED(monster)) // Lua can delete monsters
+						return;
 				}
 			}
 		}
