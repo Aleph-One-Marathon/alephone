@@ -103,6 +103,7 @@ struct FilmProfile
 
 	// Aleph One 1.4 fixes
 	bool better_terminal_word_wrap; // fixes rare infinity films
+	bool lua_monster_killed_trigger_fix;
 };
 
 extern FilmProfile film_profile;

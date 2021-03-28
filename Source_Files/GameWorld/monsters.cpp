@@ -1579,7 +1579,8 @@ void damage_monster(
 			}
 			else
 			{
-				if (!MONSTER_IS_DYING(monster))
+				auto is_dying = MONSTER_IS_DYING(monster);
+				if (!is_dying)
 				{
 					short action;
 					
@@ -1619,12 +1620,15 @@ void damage_monster(
 					}
 				}
 				
-				// Lua script hook
-				int aggressor_player_index = -1;
-				if (aggressor_index!=NONE)
-					if (MONSTER_IS_PLAYER(aggressor_monster))
-						aggressor_player_index = monster_index_to_player_index(aggressor_index);
-				L_Call_Monster_Killed (target_index, aggressor_player_index, projectile_index);
+				if (!is_dying || !film_profile.lua_monster_killed_trigger_fix)
+				{
+					// Lua script hook
+					int aggressor_player_index = -1;
+					if (aggressor_index!=NONE)
+						if (MONSTER_IS_PLAYER(aggressor_monster))
+							aggressor_player_index = monster_index_to_player_index(aggressor_index);
+					L_Call_Monster_Killed (target_index, aggressor_player_index, projectile_index);
+				}
 			}
 		}
 		
