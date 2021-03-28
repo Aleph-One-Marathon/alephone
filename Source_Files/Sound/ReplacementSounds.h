@@ -53,7 +53,7 @@ public:
 	}
 
 	SoundOptions *GetSoundOptions(short Index, short Slot);
-	void Reset() { m_hash.clear(); }
+	void Reset();
 	void Add(const SoundOptions& Data, short Index, short Slot);
 
 private:

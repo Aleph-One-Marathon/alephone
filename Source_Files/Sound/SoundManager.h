@@ -70,6 +70,7 @@ public:
 
 	void OrphanSound(short identifier);
 
+	void UnloadSound(short sound);
 	void UnloadAllSounds();
 
 	void PlaySound(short sound_index, world_location3d *source, short identifier, _fixed pitch = _normal_frequency);
