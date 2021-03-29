@@ -1122,6 +1122,7 @@ void initDefaultPrograms() {
         "varying vec4 vertexColor;\n"
         "varying float FDxLOG2E;\n"
         "varying float classicDepth;\n"
+        "varying mat3 tbnMatrix;"
         "varying vec4 vPosition_eyespace;\n"
         "varying vec3 eyespaceNormal;\n"
         "highp mat4 transpose(in highp mat4 inMatrix) {\n"  //I have not tested this.
@@ -1156,7 +1157,7 @@ void initDefaultPrograms() {
         "    vec3 t = normalize(normalMatrix * vTexCoord4.xyz);\n"
         "    vec3 b = normalize(cross(n, t) * vTexCoord4.w);\n"
         "    /* (column wise) */\n"
-        "    mat3 tbnMatrix = mat3(t.x, b.x, n.x, t.y, b.y, n.y, t.z, b.z, n.z);\n"
+        "    tbnMatrix = mat3(t.x, b.x, n.x, t.y, b.y, n.y, t.z, b.z, n.z);\n"
         "    \n"
         "    /* SETUP VIEW DIRECTION in unprojected local coords */\n"
         "    viewDir = tbnMatrix * (MS_ModelViewMatrix * vPosition).xyz;\n"
@@ -1332,6 +1333,7 @@ void initDefaultPrograms() {
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
         "varying float FDxLOG2E;\n"
+        "varying mat3 tbnMatrix;"
         "varying vec4 vPosition_eyespace;\n"
         "varying vec3 eyespaceNormal;\n"
         "void main (void) {\n"
@@ -1374,6 +1376,10 @@ void initDefaultPrograms() {
         "	gl_FragColor = vec4(mix(fogColor.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
 
         //Add in light diffuse
+        "       vec3 t = vec3(tbnMatrix[0][0], tbnMatrix[1][0], tbnMatrix[2][0]);\n"
+        "       vec3 b = vec3(tbnMatrix[0][1], tbnMatrix[1][1], tbnMatrix[2][1]);\n"
+        "       vec3 n = vec3(tbnMatrix[0][2], tbnMatrix[1][2], tbnMatrix[2][2]);\n"
+
         "    for(int i = 0; i < 32; ++i) {\n"
         "       float size = lightPositions[i].w;\n"
         "       if( size < .1) { break; }\n" //End of light list
@@ -1381,10 +1387,35 @@ void initDefaultPrograms() {
         "       vec4 lightColor = vec4(lightColors[i].rgb, 1.0);\n"
         "       float distance = length(lightPosition - vPosition_eyespace.xyz);\n"
         "       vec3 lightVector = normalize(lightPosition - vPosition_eyespace.xyz);\n"
-        "       float diffuse = max(dot(eyespaceNormal, lightVector), 0.0);\n"
+
+        "       vec3 lightVecTangent;\n"
+        "       lightVecTangent.x = dot(lightVector, t);\n"
+        "       lightVecTangent.y = dot(lightVector, b);\n"
+        "       lightVecTangent.z = dot(lightVector, n);\n"
+        "       lightVecTangent = normalize(lightVecTangent);\n"
+        "       lightVector = tbnMatrix * lightVector;"
+        "       float diffuse = max(dot(lightVecTangent, norm), 0.0);\n"
+
         "       diffuse = diffuse * max((size*size - distance*distance)/(size*size), 0.0 );\n" //Attenuation
         "       gl_FragColor = gl_FragColor + color * diffuse * lightColor;\n"
         "    }\n"
+
+    
+        //Add in light diffuse
+     /*   "    for(int i = 0; i < 32; ++i) {\n"
+        "       float size = lightPositions[i].w;\n"
+        "       if( size < .1) { break; }\n" //End of light list
+        "       vec3 lightPosition = vec3(lightPositions[i].xyz);\n"
+        "       vec4 lightColor = vec4(lightColors[i].rgb, 1.0);\n"
+        "       float distance = length(lightPosition - vPosition_eyespace.xyz);\n"
+        "       vec3 lightVector = normalize(lightPosition - vPosition_eyespace.xyz);\n"
+        "       lightVector = lightVector * tbnMatrix;"
+       // "       float diffuse = max(dot(lightVector, norm), 0.0);\n"
+
+            "       float diffuse = max(dot(eyespaceNormal, lightVector), 0.0);\n"
+        "       diffuse = diffuse * max((size*size - distance*distance)/(size*size), 0.0 );\n" //Attenuation
+        "       gl_FragColor = gl_FragColor + color * diffuse * lightColor;\n"
+        "    }\n"*/
 
 
         "}\n";

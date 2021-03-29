@@ -86,12 +86,12 @@ void DrawCache::addDefaultLight(GLfloat x, GLfloat y, GLfloat z, short objectTyp
                 case _projectile_rocket:
                 case _projectile_juggernaut_rocket:
                 case _projectile_juggernaut_missile:
-                    addLight(x, y, z, 2000, 1, 1, .7, 1 );
+                    addLight(x, y, z, 4000, 1, 1, .7, 1 );
                     break;
                     
                 case _projectile_staff:
                 case _projectile_staff_bolt:
-                    addLight(x, y, z, 1000, .5, 1, .8, 1 );
+                    addLight(x, y, z, 1000, .5, 1, rand() / double(RAND_MAX), 1 );
                     break;
                 
                 case _projectile_minor_cyborg_ball:
@@ -105,14 +105,14 @@ void DrawCache::addDefaultLight(GLfloat x, GLfloat y, GLfloat z, short objectTyp
                     break;
                 
                 case _projectile_fusion_bolt_minor:
-                    addLight(x, y, z, 1000, .8, rand() / double(RAND_MAX), 1, 1 );
+                    addLight(x, y, z, 2000, .8, .7, 1, 1 );
                     break;
                 
                 case _projectile_minor_fusion_dispersal:
                 case _projectile_major_fusion_dispersal:
                 case _projectile_overloaded_fusion_dispersal:
                 case _projectile_fusion_bolt_major:
-                    addLight(x, y, z, 4000, .8, rand() / double(RAND_MAX), 1, 1 );
+                    addLight(x, y, z, 3000, .8, rand() / double(RAND_MAX), 1, 1 );
                     break;
             
                 default:

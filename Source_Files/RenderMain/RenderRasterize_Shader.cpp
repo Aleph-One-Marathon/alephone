@@ -255,7 +255,7 @@ void RenderRasterize_Shader::render_tree() {
 	{
 		blur->begin();
             DC()->startGatheringLights();
-       
+
             //Add a random light off the floor if the player has invincibility active.
             if(current_player->invincibility_duration) {
                 DC()->addLight(current_player->location.x, current_player->location.y, current_player->location.z + 200, 2000, rand() / double(RAND_MAX), rand() / double(RAND_MAX), rand() / double(RAND_MAX), 1);
