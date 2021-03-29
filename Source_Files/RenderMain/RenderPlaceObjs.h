@@ -51,6 +51,10 @@ struct render_object_data
 	struct rectangle_definition rectangle;
 	
 	int16 ymedia;
+    
+        //Hints to feed dynamic lighting
+    short object_owner_type; //_object_is_projectile or _object_is_projectile.
+    short object_owner_permutation_type; //If defined, 
 };
 
 

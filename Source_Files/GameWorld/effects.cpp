@@ -78,6 +78,20 @@ effect_data *get_effect_data(
 	return effect;
 }
 
+//Added for dynamic lighting hints
+//Returns negative number on no match
+int effect_index_matching_object(const short object_index)
+{
+    for (int i = 0; i < EffectList.size(); ++i)
+    {
+        if(EffectList[i].object_index == object_index)
+            return i;
+    }
+
+    return -1;
+}
+
+
 // LP change: moved down here because it refers to effect definitions
 effect_definition *get_effect_definition(const short type)
 {

@@ -1243,7 +1243,7 @@ void initDefaultPrograms() {
         "       float distance = length(lightPosition - vPosition_eyespace.xyz);\n"
         "       vec3 lightVector = normalize(lightPosition - vPosition_eyespace.xyz);\n"
         "       float diffuse = max(dot(eyespaceNormal, lightVector), 0.0);\n"
-        "       diffuse = diffuse * max((size - distance)/size, 0.0 );\n" //Attenuation
+        "       diffuse = diffuse * max((size*size - distance*distance)/(size*size), 0.0 );\n" //Attenuation
         "       gl_FragColor = gl_FragColor + color * diffuse * lightColor;\n"
         "    }\n"
 
@@ -1382,7 +1382,7 @@ void initDefaultPrograms() {
         "       float distance = length(lightPosition - vPosition_eyespace.xyz);\n"
         "       vec3 lightVector = normalize(lightPosition - vPosition_eyespace.xyz);\n"
         "       float diffuse = max(dot(eyespaceNormal, lightVector), 0.0);\n"
-        "       diffuse = diffuse * max((size - distance)/size, 0.0 );\n" //Attenuation
+        "       diffuse = diffuse * max((size*size - distance*distance)/(size*size), 0.0 );\n" //Attenuation
         "       gl_FragColor = gl_FragColor + color * diffuse * lightColor;\n"
         "    }\n"
 

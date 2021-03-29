@@ -193,6 +193,9 @@ bool ProjectileIsGuided(short Type);
 projectile_data *get_projectile_data(
 	const short projectile_index);
 
+//Added for dynamic lighting hints
+int projectile_index_matching_object(const short object_index);
+
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world
 

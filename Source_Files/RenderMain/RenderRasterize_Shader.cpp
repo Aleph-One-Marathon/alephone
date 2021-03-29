@@ -243,7 +243,6 @@ void RenderRasterize_Shader::render_tree() {
         glActiveTexture(GL_TEXTURE0);
     }
     
-    //DC()->gatherLights(); //Find any dynamic lights that may be needed for rendering.
 	RenderRasterizerClass::render_tree(kDiffuse);
     DC()->drawAll(); //Draw and flush buffers
     
@@ -256,6 +255,12 @@ void RenderRasterize_Shader::render_tree() {
 	{
 		blur->begin();
             DC()->startGatheringLights();
+       
+            //Add a random light off the floor if the player has invincibility active.
+            if(current_player->invincibility_duration) {
+                DC()->addLight(current_player->location.x, current_player->location.y, current_player->location.z + 200, 2000, rand() / double(RAND_MAX), rand() / double(RAND_MAX), rand() / double(RAND_MAX), 1);
+            }
+            
             RenderRasterizerClass::render_tree(kGlow);
             DC()->finishGatheringLights();
             DC()->drawAll(); //Draw and flush buffers
@@ -1194,6 +1199,8 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
     
 	rectangle_definition& rect = object->rectangle;
 	const world_point3d& pos = rect.Position;
+    
+    DC()->addDefaultLight(pos.x, pos.y, pos.z, object->object_owner_type, object->object_owner_permutation_type);
     
 	if(rect.ModelPtr) {
 		MSI()->pushMatrix();

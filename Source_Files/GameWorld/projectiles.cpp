@@ -166,6 +166,20 @@ projectile_data *get_projectile_data(
 	return projectile;
 }
 
+    //Added for dynamic lighting hints
+    //Returns negative number on no match
+int projectile_index_matching_object(
+    const short object_index)
+{
+    for (int i = 0; i < ProjectileList.size(); ++i)
+    {
+        if(ProjectileList[i].object_index == object_index)
+            return i;
+    }
+    
+    return -1;
+}
+
 // LP change: moved down here to use the projectile definitions
 projectile_definition *get_projectile_definition(
 	short type)

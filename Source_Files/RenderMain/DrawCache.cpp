@@ -14,7 +14,7 @@
 
 #include "map.h"
 #include "projectiles.h"
-
+#include "effects.h"
 
     //Caches for texture attributes as set by the texture manager.
     //These get cleared once drawn or fed into a buffer.
@@ -61,6 +61,138 @@ void DrawCache::startGatheringLights() {
     gatheringLights = 1;
 }
 
+void DrawCache::addDefaultLight(GLfloat x, GLfloat y, GLfloat z, short objectType, short permutationType) {
+    
+    if (objectType == _object_is_projectile)
+    {
+       switch (permutationType)
+        {
+                case _projectile_grenade:
+                case _projectile_trooper_grenade:
+                case _projectile_flamethrower_burst:
+                case _projectile_alien_weapon:
+                case _projectile_lava_yeti:
+                    addLight(x, y, z, 1000, 1, .8, 0, 1 );
+                    break;
+
+                case _projectile_minor_defender:
+                case _projectile_major_defender:
+                case _projectile_minor_hummer:
+                case _projectile_major_hummer:
+                case _projectile_durandal_hummer:
+                    addLight(x, y, z, 1000, 0, 1, .1, 1 );
+                    break;
+
+                case _projectile_rocket:
+                case _projectile_juggernaut_rocket:
+                case _projectile_juggernaut_missile:
+                    addLight(x, y, z, 2000, 1, 1, .7, 1 );
+                    break;
+                    
+                case _projectile_staff:
+                case _projectile_staff_bolt:
+                    addLight(x, y, z, 1000, .5, 1, .8, 1 );
+                    break;
+                
+                case _projectile_minor_cyborg_ball:
+                case _projectile_major_cyborg_ball:
+                case _projectile_compiler_bolt_minor:
+                case _projectile_compiler_bolt_major:
+                case _projectile_hunter:
+                case _projectile_armageddon_sphere:
+                case _projectile_armageddon_electricity:
+                    addLight(x, y, z, 2000, 0, 1, 1, 1 );
+                    break;
+                
+                case _projectile_fusion_bolt_minor:
+                    addLight(x, y, z, 1000, .8, rand() / double(RAND_MAX), 1, 1 );
+                    break;
+                
+                case _projectile_minor_fusion_dispersal:
+                case _projectile_major_fusion_dispersal:
+                case _projectile_overloaded_fusion_dispersal:
+                case _projectile_fusion_bolt_major:
+                    addLight(x, y, z, 4000, .8, rand() / double(RAND_MAX), 1, 1 );
+                    break;
+            
+                default:
+                    break;
+            }
+    } else if(objectType == _object_is_effect) {
+            switch (permutationType)
+            {
+                case _effect_rocket_explosion:
+                case _effect_grenade_explosion:
+                    addLight(x, y, z, 2000, 1, .9, 0, 1 );
+                    break;
+                    
+                case _effect_alien_lamp_breaking:
+                case _effect_water_lamp_breaking:
+                case _effect_lava_lamp_breaking:
+                case _effect_sewage_lamp_breaking:
+                case _effect_rocket_contrail:
+                case _effect_grenade_contrail:
+                case _effect_juggernaut_missile_contrail:
+                    addLight(x, y, z, 1000, .8, .8, .8, 1 );
+                    break;
+
+                case _effect_alien_weapon_ricochet:
+                case _effect_flamethrower_burst:
+                    addLight(x, y, z, 1000, .8, .7, 0, 1 );
+                    break;
+
+                case _effect_compiler_bolt_minor_detonation:
+                case _effect_compiler_bolt_major_detonation:
+                case _effect_compiler_bolt_major_contrail:
+                    addLight(x, y, z, 1000, 0, .7, .7, 1 );
+                    break;
+
+                case _effect_hunter_projectile_detonation:
+                    addLight(x, y, z, 1000, 0, 1, .8, 1 );
+                    break;
+
+                case _effect_minor_fusion_detonation:
+                case _effect_major_fusion_detonation:
+                    addLight(x, y, z, 2000, 1, 1, 1, 1 );
+                    break;
+
+                case _effect_major_fusion_contrail:
+                    addLight(x, y, z, 500, .7, .8, 1, 1 );
+                    break;
+
+                case _effect_minor_defender_detonation:
+                case _effect_major_defender_detonation:
+                    addLight(x, y, z, 1000, .5, .5, .5, 1 );
+                    break;
+
+
+                case _effect_minor_hummer_projectile_detonation:
+                case _effect_major_hummer_projectile_detonation:
+                case _effect_durandal_hummer_projectile_detonation:
+                    addLight(x, y, z, 2000, 0, 1, .1, 1 );
+                    break;
+
+                case _effect_cyborg_projectile_detonation:
+                    addLight(x, y, z, 2000, .1, .8, 1, 1 );
+                    break;
+
+                case _effect_minor_fusion_dispersal:
+                case _effect_major_fusion_dispersal:
+                case _effect_overloaded_fusion_dispersal:
+                    addLight(x, y, z, 4000, .8, 1, 1, 1 );
+                    break;
+
+                case _effect_lava_yeti_projectile_detonation:
+                    addLight(x, y, z, 2000, 1, 0, 0, 1 );
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    
+}
+
 void DrawCache::addLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size, GLfloat red, GLfloat green, GLfloat blue, GLfloat intensity ) {
     if(!gatheringLights) return;
     
@@ -73,8 +205,8 @@ void DrawCache::addLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size, GLfloat 
         lightColors[numLightsInScene*4 + 0] = red; //Red
         lightColors[numLightsInScene*4 + 1] = green; //Green
         lightColors[numLightsInScene*4 + 2] = blue; //Blue
-
         lightColors[numLightsInScene*4 + 3] = intensity; //Intensity
+
         numLightsInScene++;
     }
 }
@@ -482,10 +614,11 @@ void DrawCache::drawAndResetBuffer(int index) {
     glEnable(GL_BLEND); //We might always want to blend.
     
     //Attach Lights
-    bool usedDynamicLight = 0;
-    bool didFirstDraw = 0; //Have we drawn any geometry with lights yet?
     int lightsAttached = 0;
-    int lightsChecked = 0;
+    for(int n = 0; n < ACTIVE_LIGHTS_MAX*4; n++) {
+        activeLightPositions[n]=0;
+        activeLightColors[n]=0;
+    }
     GLfloat x,y,z,size, red,green,blue,intensity;
     if (!gatheringLights && !drawBuffers[index].landscapeTexture) {
         for(int i = 0; i < numLightsInScene; i++) {
@@ -509,7 +642,7 @@ void DrawCache::drawAndResetBuffer(int index) {
                 //The vertex needs to be in eyespace
                 MSI()->transformVertexToEyespace(x, y, z);
                 
-                //We can only attach up to four lights, until we need to do another pass with additive only.
+                //We can only attach up to ACTIVE_LIGHTS_MAX lights.
                 if(lightsAttached < ACTIVE_LIGHTS_MAX){
                     activeLightPositions[lightsAttached*4] = x;
                     activeLightPositions[lightsAttached*4 +1] = y;
@@ -529,31 +662,25 @@ void DrawCache::drawAndResetBuffer(int index) {
         }
         
         //Terminate active light list.
-        activeLightPositions[lightsAttached*4] = 0;
+        /*activeLightPositions[lightsAttached*4] = 0;
         activeLightPositions[lightsAttached*4 +1] = 0;
         activeLightPositions[lightsAttached*4 +2] = 0;
-        activeLightPositions[lightsAttached*4 +3] = 0;
+        activeLightPositions[lightsAttached*4 +3] = 0;*/
     }
     
-    
-    
-    if(lightsAttached > 1) {
-        lightsAttached = lightsAttached;
-    }
-    
-    drawBuffers[index].shader->setVec4v(Shader::U_LightPositions, lightsAttached + 1, activeLightPositions);
-    drawBuffers[index].shader->setVec4v(Shader::U_LightColors, lightsAttached, activeLightColors);
+    drawBuffers[index].shader->setVec4v(Shader::U_LightColors, ACTIVE_LIGHTS_MAX, activeLightColors);
+    drawBuffers[index].shader->setVec4v(Shader::U_LightPositions, ACTIVE_LIGHTS_MAX, activeLightPositions);
 
     glDrawElements(GL_TRIANGLES, drawBuffers[index].numIndices, GL_UNSIGNED_INT, drawBuffers[index].indices);
     
     //Reset lights in the shader so later draws don't see them accidentially.
     lightsAttached = 0;
-    for(int n = 0; n < 4; n++) {
+    for(int n = 0; n < ACTIVE_LIGHTS_MAX*4; n++) {
         activeLightPositions[n]=0;
         activeLightColors[n]=0;
     }
-    drawBuffers[index].shader->setVec4v(Shader::U_LightPositions, 1, activeLightPositions);
-    drawBuffers[index].shader->setVec4v(Shader::U_LightColors, 1, activeLightColors);
+    drawBuffers[index].shader->setVec4v(Shader::U_LightPositions, ACTIVE_LIGHTS_MAX, activeLightPositions);
+    drawBuffers[index].shader->setVec4v(Shader::U_LightColors, ACTIVE_LIGHTS_MAX, activeLightColors);
 
 
         //Reset what we care about.

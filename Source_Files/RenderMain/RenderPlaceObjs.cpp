@@ -60,6 +60,10 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "ephemera.h"
 #include "preferences.h"
 
+    //Needed for dynamic lighting hints
+#include "projectiles.h"
+#include "effects.h"
+
 #include <string.h>
 #include <limits.h>
 
@@ -137,6 +141,24 @@ void RenderPlaceObjsClass::build_render_object_list()
 			
 			if (render_object)
 			{
+                    //Hint to feed dynamic lighting
+                    //Here, the object permutation is not set. We need to check the owner list for the correct index.
+                object_data *object_data = get_object_data(object_index);
+                if(object_data && SLOT_IS_USED(object_data)) {
+                    render_object->object_owner_type = GET_OBJECT_OWNER(object_data);
+                    if(render_object->object_owner_type == _object_is_projectile){
+                        int projectile_index = projectile_index_matching_object(object_index);
+                        if(projectile_index >= 0) {
+                            render_object->object_owner_permutation_type = get_projectile_data(projectile_index)->type;
+                        }
+                    } else if (render_object->object_owner_type == _object_is_effect){
+                        int effect_index = effect_index_matching_object(object_index);
+                        if(effect_index >= 0) {
+                            render_object->object_owner_permutation_type = get_effect_data(effect_index)->type;
+                        }
+                    }
+                }
+                
 				build_aggregate_render_object_clipping_window(render_object, base_nodes, base_node_count);
 				sort_render_object_into_tree(render_object, base_nodes, base_node_count);
 			}

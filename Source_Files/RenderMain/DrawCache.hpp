@@ -102,6 +102,7 @@ public:
     void cacheGlow(GLfloat v);
     
     void startGatheringLights();
+    void addDefaultLight(GLfloat x, GLfloat y, GLfloat z, short objectType, short permutationType); //Only works for effects and projectiles ATM.
     void addLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size, GLfloat red, GLfloat green, GLfloat blue, GLfloat intensity );
     void finishGatheringLights();
         

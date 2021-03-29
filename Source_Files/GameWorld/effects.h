@@ -173,6 +173,10 @@ void teleport_object_out(short object_index);
 effect_data *get_effect_data(
 	const short effect_index);
 
+//Added for dynamic lighting hints
+int effect_index_matching_object(const short object_index);
+
+
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world
 
