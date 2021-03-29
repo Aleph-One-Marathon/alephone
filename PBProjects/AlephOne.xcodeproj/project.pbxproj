@@ -81,7 +81,7 @@
 		2748BDE91CC4053F0082F0E1 /* SDL2_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5B1BD2DA0C00A95619 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2748BDEA1CC4053F0082F0E1 /* SDL2_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5C1BD2DA0C00A95619 /* SDL2_net.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2748BDEB1CC4053F0082F0E1 /* SDL2_ttf.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5D1BD2DA0C00A95619 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		2748BDEC1CC4053F0082F0E1 /* SDL2.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2748BDEC1CC4053F0082F0E1 /* SDL2.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E5DD5E1BD2DA0C00A95619 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2759F31B10D5BC9C000204DD /* SDL_rwops_zzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */; };
 		2759F31C10D5BC9C000204DD /* SDL_rwops_zzip.h in Headers */ = {isa = PBXBuildFile; fileRef = 2759F31A10D5BC9C000204DD /* SDL_rwops_zzip.h */; };
 		2759F33010D5BCC0000204DD /* zziplib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; };
@@ -842,6 +842,10 @@
 		AE7C21B70BFF67B700CE63EC /* lzio.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C219B0BFF67B700CE63EC /* lzio.c */; };
 		AE7C21D60BFF688000CE63EC /* Update.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21D50BFF688000CE63EC /* Update.cpp */; };
 		AE9A39F70CCADFA7004717E3 /* ConnectPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */; };
+		AEA26AD325E3364A008895CC /* interpolated_world.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEA26AD225E3364A008895CC /* interpolated_world.cpp */; };
+		AEA26AD425E3364A008895CC /* interpolated_world.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEA26AD225E3364A008895CC /* interpolated_world.cpp */; };
+		AEA26AD525E3364A008895CC /* interpolated_world.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEA26AD225E3364A008895CC /* interpolated_world.cpp */; };
+		AEA26AD625E3364A008895CC /* interpolated_world.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEA26AD225E3364A008895CC /* interpolated_world.cpp */; };
 		AEA31D2C113C9DF700266621 /* csalerts.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEA31D2B113C9DF700266621 /* csalerts.mm */; };
 		AEA74E6E09B01BD900DC3B74 /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
 		AEA74E7109B01BE300DC3B74 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
@@ -2332,6 +2336,8 @@
 		AE941DE713E783F30077218A /* Info-AlephOne-Xcode4.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-AlephOne-Xcode4.plist"; sourceTree = "<group>"; };
 		AE9A39F40CCADF78004717E3 /* ConnectPool.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ConnectPool.h; path = ../Source_Files/Network/ConnectPool.h; sourceTree = "<group>"; };
 		AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ConnectPool.cpp; path = ../Source_Files/Network/ConnectPool.cpp; sourceTree = "<group>"; };
+		AEA26AD225E3364A008895CC /* interpolated_world.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = interpolated_world.cpp; sourceTree = "<group>"; };
+		AEA26AD725E33656008895CC /* interpolated_world.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = interpolated_world.h; sourceTree = "<group>"; };
 		AEA31D2B113C9DF700266621 /* csalerts.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = csalerts.mm; path = ../Source_Files/CSeries/csalerts.mm; sourceTree = SOURCE_ROOT; };
 		AEA85F4A24DF251300BB7827 /* webp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = webp.framework; sourceTree = "<group>"; };
 		AEA85F5324DF26F800BB7827 /* Aleph One.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Aleph One.entitlements"; sourceTree = "<group>"; };
@@ -3319,6 +3325,7 @@
 		F5CC924E0240D28201A80001 /* GameWorld */ = {
 			isa = PBXGroup;
 			children = (
+				AEA26AD225E3364A008895CC /* interpolated_world.cpp */,
 				F5CC92D50240D4C001A80001 /* Headers */,
 				F5CC924F0240D28201A80001 /* devices.cpp */,
 				F5CC92500240D28201A80001 /* dynamic_limits.cpp */,
@@ -3360,6 +3367,7 @@
 		F5CC92D50240D4C001A80001 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				AEA26AD725E33656008895CC /* interpolated_world.h */,
 				F5CC92510240D28201A80001 /* dynamic_limits.h */,
 				F5CC92520240D28201A80001 /* editor.h */,
 				F5CC92530240D28201A80001 /* effect_definitions.h */,
@@ -5040,6 +5048,7 @@
 				AE505C52141D45E600915344 /* weapons.cpp in Sources */,
 				AE505C53141D45E600915344 /* world.cpp in Sources */,
 				AE505C54141D45E600915344 /* mouse_sdl.cpp in Sources */,
+				AEA26AD525E3364A008895CC /* interpolated_world.cpp in Sources */,
 				AE505C55141D45E600915344 /* AnimatedTextures.cpp in Sources */,
 				AE505C56141D45E600915344 /* Crosshairs_SDL.cpp in Sources */,
 				AE505C57141D45E600915344 /* ImageLoader_SDL.cpp in Sources */,
@@ -5274,6 +5283,7 @@
 				AEB4A1F314296CAE00537AE7 /* weapons.cpp in Sources */,
 				AEB4A1F414296CAE00537AE7 /* world.cpp in Sources */,
 				AEB4A1F514296CAE00537AE7 /* mouse_sdl.cpp in Sources */,
+				AEA26AD625E3364A008895CC /* interpolated_world.cpp in Sources */,
 				AEB4A1F614296CAE00537AE7 /* AnimatedTextures.cpp in Sources */,
 				AEB4A1F714296CAE00537AE7 /* Crosshairs_SDL.cpp in Sources */,
 				AEB4A1F814296CAE00537AE7 /* ImageLoader_SDL.cpp in Sources */,
@@ -5508,6 +5518,7 @@
 				AEC3C81C09AD68AC003258E4 /* weapons.cpp in Sources */,
 				AEC3C81D09AD68AC003258E4 /* world.cpp in Sources */,
 				AEC3C81E09AD68AC003258E4 /* mouse_sdl.cpp in Sources */,
+				AEA26AD325E3364A008895CC /* interpolated_world.cpp in Sources */,
 				AEC3C81F09AD68AC003258E4 /* AnimatedTextures.cpp in Sources */,
 				AEC3C82009AD68AC003258E4 /* Crosshairs_SDL.cpp in Sources */,
 				AEC3C82109AD68AC003258E4 /* ImageLoader_SDL.cpp in Sources */,
@@ -5742,6 +5753,7 @@
 				AEFD86FF13EB84CF00C1E687 /* weapons.cpp in Sources */,
 				AEFD870013EB84CF00C1E687 /* world.cpp in Sources */,
 				AEFD870113EB84CF00C1E687 /* mouse_sdl.cpp in Sources */,
+				AEA26AD425E3364A008895CC /* interpolated_world.cpp in Sources */,
 				AEFD870213EB84CF00C1E687 /* AnimatedTextures.cpp in Sources */,
 				AEFD870313EB84CF00C1E687 /* Crosshairs_SDL.cpp in Sources */,
 				AEFD870413EB84CF00C1E687 /* ImageLoader_SDL.cpp in Sources */,
@@ -5944,6 +5956,7 @@
 		AE2A41530B5EFC1F00C567E6 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				CODE_SIGN_ENTITLEMENTS = "Aleph One.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -6076,6 +6089,7 @@
 		AE2A41760B5EFEA000C567E6 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				CODE_SIGN_ENTITLEMENTS = "Aleph One.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -6207,6 +6221,7 @@
 		AE505D08141D45E600915344 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				CODE_SIGN_ENTITLEMENTS = "Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -6235,6 +6250,7 @@
 		AE505D09141D45E600915344 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				CODE_SIGN_ENTITLEMENTS = "Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -6263,6 +6279,7 @@
 		AE505D0A141D45E600915344 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				CODE_SIGN_ENTITLEMENTS = "Marathon 2.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -6291,6 +6308,7 @@
 		AE78B59D09B00C34002CACF8 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				CODE_SIGN_ENTITLEMENTS = "Aleph One.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -6422,6 +6440,7 @@
 		AEB4A2AA14296CAE00537AE7 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				CODE_SIGN_ENTITLEMENTS = "Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -6450,6 +6469,7 @@
 		AEB4A2AB14296CAE00537AE7 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				CODE_SIGN_ENTITLEMENTS = "Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -6478,6 +6498,7 @@
 		AEB4A2AC14296CAE00537AE7 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				CODE_SIGN_ENTITLEMENTS = "Marathon Infinity.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -6506,6 +6527,7 @@
 		AEFD87C013EB84CF00C1E687 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				CODE_SIGN_ENTITLEMENTS = Marathon.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -6534,6 +6556,7 @@
 		AEFD87C113EB84CF00C1E687 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				CODE_SIGN_ENTITLEMENTS = Marathon.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -6562,6 +6585,7 @@
 		AEFD87C213EB84CF00C1E687 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				CODE_SIGN_ENTITLEMENTS = Marathon.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
