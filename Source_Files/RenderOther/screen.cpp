@@ -1438,7 +1438,7 @@ void render_screen(short ticks_elapsed)
 		software_render_dest.clear();
 	else if (software_render_dest.empty() || ViewChangedSize)
 		software_render_dest = bitmap_definition_of_sdl_surface(world_pixels);
-	
+    
 	// Render world view
 	render_view(world_view, software_render_dest.get());
 

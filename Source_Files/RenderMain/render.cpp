@@ -238,6 +238,7 @@ extern WindowPtr screen_window;
 #include "Rasterizer_OGL.h"
 #include "RenderRasterize_Shader.h"
 #include "Rasterizer_Shader.h"
+#include "DrawCache.hpp"
 #endif
 #include "preferences.h"
 #include "screen.h"
@@ -490,6 +491,8 @@ void render_view(
 			// LP: now from the clipping/rasterizer class
 #ifdef HAVE_OPENGL			
 			RenderRasterizerClass *RenPtr = (graphics_preferences->screen_mode.acceleration == _opengl_acceleration) ? &Render_Shader : &Render_Classic;
+            
+            DC()->resetStats();
 #else
 			RenderRasterizerClass *RenPtr = &Render_Classic;
 #endif

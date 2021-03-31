@@ -220,7 +220,7 @@ void RenderRasterize_Shader::render_tree() {
     Shader::get(Shader::S_BumpBloom)->enableAndSetStandardUniforms();
     Shader::disable();
 
-        //Needed for water ripple, SSAO, SSR, and dynamic lighting (only because we have no other way to feed light data).
+        //Needed for ripple, SSAO, SSR.
     if(0) { //Should be a prefences check later
         if (colorDepthSansMedia._h == 0 && colorDepthSansMedia._w == 0) {
           GLint viewPort[4];
@@ -233,6 +233,7 @@ void RenderRasterize_Shader::render_tree() {
         glClearColor(0,0,0, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         RenderRasterizerClass::render_tree(kDiffuseDepthNoMedia);
+        DC()->drawAll(); //Draw and flush buffers
         colorDepthSansMedia.deactivate();
         RasPtr->Begin(); // Needing to call Rasterizer_Shader_Class::Begin() again is wonky.
         glActiveTexture(GL_TEXTURE2); //Bind the colorDepthSansMedia texture to unit 2.
@@ -255,7 +256,7 @@ void RenderRasterize_Shader::render_tree() {
 	{
 		blur->begin();
             DC()->startGatheringLights();
-
+            
             //Add a random light off the floor if the player has invincibility active.
             if(current_player->invincibility_duration) {
                 DC()->addLight(current_player->location.x, current_player->location.y, current_player->location.z + 200, 2000, rand() / double(RAND_MAX), rand() / double(RAND_MAX), rand() / double(RAND_MAX), 1);

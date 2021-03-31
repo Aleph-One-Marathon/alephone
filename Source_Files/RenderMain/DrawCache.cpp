@@ -215,56 +215,6 @@ void DrawCache::finishGatheringLights() {
     gatheringLights = 0;
 }
 
-//DEPRECATED
-void DrawCache::gatherLights() {
-    numLightsInScene = 0;
-    
-    //Iterate through object list to find anything that is glowing.
-    for( projectile_data aProjectile : ProjectileList ) {
-  
-        world_point3d location = ObjectList[aProjectile.object_index].location;
-        
-        shape_descriptor shape = ObjectList[aProjectile.object_index].shape;
-        
-        //short TransferMode = 0;
-        //short CollColor = GET_DESCRIPTOR_COLLECTION(shape);
-        //short Collection = GET_COLLECTION(CollColor);
-
-        //if ()
-        {
-            
-            /*short CTable = GET_COLLECTION_CLUT(CollColor);
-            TxtrStatePtr = &CBTS.CTStates[CTable];
-            TextureState &CTState = *TxtrStatePtr;
-
-            if(CTState.IsGlowing == TRUE) {
-                
-            }*/
-        
-            if(numLightsInScene < LIGHTS_MAX) {
-                lightPositions[numLightsInScene*4 + 0] = location.x;
-                lightPositions[numLightsInScene*4 + 1] = location.y;
-                lightPositions[numLightsInScene*4 + 2] = location.z;
-                lightPositions[numLightsInScene*4 + 3] = 2000; //Size in world units. 0 means no light.
-                
-                //if(GET_OBJECT_STATUS(&anObject) == _object_is_effect) {
-                    lightColors[numLightsInScene*4 + 0] = 1.0; //Red
-                    lightColors[numLightsInScene*4 + 1] = .7; //Green
-                    lightColors[numLightsInScene*4 + 2] = 0; //Blue
-               // } else {
-                //    lightColors[numLightsInScene*4 + 0] = 0.0; //Red
-                //    lightColors[numLightsInScene*4 + 1] = 1.0; //Green
-                 //   lightColors[numLightsInScene*4 + 2] = 0.0; //Blue
-
-                //}
-                lightColors[numLightsInScene*4 + 3] = 1.0; //Intensity
-                numLightsInScene++;
-            }
-        }
-    }
-    
-}
-
 bool DrawCache::isPolygonOnScreen(int vertex_count, GLfloat *vertex_array) {
     if(vertex_count < 1) {return 0;}
     
@@ -309,7 +259,7 @@ bool DrawCache::isPolygonOnScreen(int vertex_count, GLfloat *vertex_array) {
         printf("Centered l %f, r %f, t %f, b %f\n", left_x, right_x, top_y, bottom_y);
     }*/
     
-
+    return 1;
     
 }
 
@@ -327,6 +277,7 @@ int DrawCache::getBufferFor(Shader* shader, GLuint texID, GLuint texID1, int ver
                 //If this buffer is full, draw and reset it, then return the index.
             if (drawBuffers[i].verticesFilled + neededVertices >= DRAW_BUFFER_MAX) {
                 drawAndResetBuffer(i);
+                drawBuffersFilledToMax ++;
                 //printf ("Reset full buffer\n");
             }
             return i;
@@ -340,100 +291,17 @@ int DrawCache::getBufferFor(Shader* shader, GLuint texID, GLuint texID1, int ver
         return firstEmptyBuffer;
     }
     
-        //If we get here, all buffers are used and we need to flush and return any index.
+    //If we get here, all buffers are used and we need to flush and return any index (zero is fine).
     //sprintf ("All buffers full.\n");
-
+    allBuffersUsed++;
+    
     drawAll();
     return 0;
 }
 
-//THIS IS DEPRECATED
 //Requires 3 GLFloats in vertex_array per vertex, and 2 GLfloats per texcoord
 //tex4 is a 4-dimensional array, which is surface normal vector + sign.
 //Normalized is assumed to be GL_FALSE and Stride must be 0.
-void DrawCache::drawSurfaceImmediate(int vertex_count, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *tex4) {
-
-        //The incoming data is a triangle fan: 0,1,2,3,4,5
-        //We need to create indices that convert into triangles: 0,1,2, 0,2,3, 0,3,4, 0,3,5
-    immediateBuffer.verticesFilled = 0;
-    immediateBuffer.numIndices = 0;
-    int numTriangles = vertex_count - 2; //The first 3 vertices make a triangle, and each subsequent vertex adds another.
-    for(int i = 0; i < numTriangles; ++i) {
-        immediateBuffer.indices[immediateBuffer.numIndices] = immediateBuffer.verticesFilled;
-        immediateBuffer.indices[immediateBuffer.numIndices + 1] = immediateBuffer.verticesFilled + i + 1;
-        immediateBuffer.indices[immediateBuffer.numIndices + 2] = immediateBuffer.verticesFilled + i + 2;
-        immediateBuffer.numIndices += 3;
-    }
-        
-    MatrixStack::Instance()->getFloatv(MS_TEXTURE, immediateBuffer.textureMatrix);
-    
-    GLfloat *color = MSI()->color();
-    GLfloat clipPlane0[4], clipPlane1[4], clipPlane5[4];
-    MSI()->getPlanev(0, clipPlane0);
-    MSI()->getPlanev(1, clipPlane1);
-    MSI()->getPlanev(5, clipPlane5);
-        
-    //Fill the immediate buffers with 4-element components
-    for(int i = 0; i < vertex_count * 4; i += 4) {
-        immediateBuffer.color[i] = color[0]; immediateBuffer.color[i+1] = color[1]; immediateBuffer.color[i+2] = color[2]; immediateBuffer.color[i+3] = color[3];
-        immediateBuffer.texCoords4[i] = tex4[0]; immediateBuffer.texCoords4[i+1] = tex4[1]; immediateBuffer.texCoords4[i+2] = tex4[2]; immediateBuffer.texCoords4[i+3] = tex4[3];
-        immediateBuffer.clipPlane0[i] = clipPlane0[0]; immediateBuffer.clipPlane0[i+1] = clipPlane0[1]; immediateBuffer.clipPlane0[i+2] = clipPlane0[2]; immediateBuffer.clipPlane0[i+3] = clipPlane0[3];
-        immediateBuffer.clipPlane1[i] = clipPlane1[0]; immediateBuffer.clipPlane1[i+1] = clipPlane1[1]; immediateBuffer.clipPlane1[i+2] = clipPlane1[2]; immediateBuffer.clipPlane1[i+3] = clipPlane1[3];
-        immediateBuffer.clipPlane5[i] = clipPlane5[0]; immediateBuffer.clipPlane5[i+1] = clipPlane5[1]; immediateBuffer.clipPlane5[i+2] = clipPlane5[2]; immediateBuffer.clipPlane5[i+3] = clipPlane5[3];
-    
-        
-        immediateBuffer.vSxOxSyOy[i] = scaleX; immediateBuffer.vSxOxSyOy[i+1] = offsetX; immediateBuffer.vSxOxSyOy[i+2] = scaleY; immediateBuffer.vSxOxSyOy[i+3] = offsetY;
-        immediateBuffer.vBsBtFlSl[i] = bloomScale; immediateBuffer.vBsBtFlSl[i+1] = bloomShift; immediateBuffer.vBsBtFlSl[i+2] = flare; immediateBuffer.vBsBtFlSl[i+3] = selfLuminosity;
-        immediateBuffer.vPuWoDeGl[i] = pulsate; immediateBuffer.vPuWoDeGl[i+1] = wobble; immediateBuffer.vPuWoDeGl[i+2] = depth; immediateBuffer.vPuWoDeGl[i+3] = glow;
-    }
-        
-    clearTextureAttributeCaches();
-    
-    immediateBuffer.verticesFilled = vertex_count;
-        
-        //Normally, we'd cache these three in the buffer, but it's not needed for immediate drawing.
-    glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
-    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
-    
-    glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, vertex_array);
-    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
-    
-    glVertexAttribPointer(Shader::ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, MSI()->normals());
-    glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
-    
-        
-    glVertexAttribPointer(Shader::ATTRIB_COLOR, 4, GL_FLOAT, GL_FALSE, 0, immediateBuffer.color);
-    glEnableVertexAttribArray(Shader::ATTRIB_COLOR);
-    
-    glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS4, 4, GL_FLOAT, GL_FALSE, 0, immediateBuffer.texCoords4);
-    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS4);
-    
-    //I think we only need 0, 1, and 5 for normal walls.
-    glVertexAttribPointer(Shader::ATTRIB_CLIPPLANE0, 4, GL_FLOAT, GL_FALSE, 0, immediateBuffer.clipPlane0);
-    glEnableVertexAttribArray(Shader::ATTRIB_CLIPPLANE0);
-    glVertexAttribPointer(Shader::ATTRIB_CLIPPLANE1, 4, GL_FLOAT, GL_FALSE, 0, immediateBuffer.clipPlane1);
-    glEnableVertexAttribArray(Shader::ATTRIB_CLIPPLANE1);
-    glVertexAttribPointer(Shader::ATTRIB_CLIPPLANE5, 4, GL_FLOAT, GL_FALSE, 0, immediateBuffer.clipPlane5);
-    glEnableVertexAttribArray(Shader::ATTRIB_CLIPPLANE5);
-        
-    glVertexAttribPointer(Shader::ATTRIB_SxOxSyOy, 4, GL_FLOAT, GL_FALSE, 0, immediateBuffer.vSxOxSyOy);
-    glEnableVertexAttribArray(Shader::ATTRIB_SxOxSyOy);
-    glVertexAttribPointer(Shader::ATTRIB_BsBtFlSl, 4, GL_FLOAT, GL_FALSE, 0, immediateBuffer.vBsBtFlSl);
-    glEnableVertexAttribArray(Shader::ATTRIB_BsBtFlSl);
-    glVertexAttribPointer(Shader::ATTRIB_PuWoDeGl, 4, GL_FLOAT, GL_FALSE, 0, immediateBuffer.vPuWoDeGl);
-    glEnableVertexAttribArray(Shader::ATTRIB_PuWoDeGl);
-    
-    
-    /*Shader* lastShader = lastEnabledShader();
-    if (lastShader) {
-      lastShader->setVec4(Shader::U_Color, MSI()->color());
-      lastShader->setVec4(Shader::U_TexCoords4, tex4);
-    }*/
-    
-    //glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);
-    glDrawElements(GL_TRIANGLES, immediateBuffer.numIndices, GL_UNSIGNED_INT, immediateBuffer.indices);
-}
-
 void DrawCache::drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *tex4) {
     
     GLint whichUnit, whichTextureID, whichTextureID1;
@@ -444,6 +312,7 @@ void DrawCache::drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLf
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &whichTextureID1);
     glActiveTexture(whichUnit);
     
+    bufferRequests ++;
     
     //int b = getBufferFor(lastEnabledShader(), lastActiveTexture, vertex_count);
     int b = getBufferFor(lastEnabledShader(), whichTextureID, whichTextureID1, vertex_count);
@@ -673,6 +542,8 @@ void DrawCache::drawAndResetBuffer(int index) {
 
     glDrawElements(GL_TRIANGLES, drawBuffers[index].numIndices, GL_UNSIGNED_INT, drawBuffers[index].indices);
     
+    drawCallsMade++;
+    
     //Reset lights in the shader so later draws don't see them accidentially.
     lightsAttached = 0;
     for(int n = 0; n < ACTIVE_LIGHTS_MAX*4; n++) {
@@ -724,4 +595,18 @@ void DrawCache::clearTextureAttributeCaches() {
     wobble = 0;
     depth = 0;
     glow = 0;
+}
+
+void DrawCache::resetStats() {
+
+    float bufferEfficiency = 0;
+    if (drawCallsMade > 0) {
+        bufferEfficiency = (float)bufferRequests / (float)drawCallsMade;
+    }
+    //printf("Drawbuffer Efficiency: %f (%i total draw calls). DrawBuffers filled to max: %i. Flushes caused by buffer depletion: %i\n", bufferEfficiency, drawCallsMade, drawBuffersFilledToMax, allBuffersUsed);
+
+    bufferRequests = 0;
+    drawCallsMade = 0;
+    drawBuffersFilledToMax = 0;
+    allBuffersUsed = 0;
 }

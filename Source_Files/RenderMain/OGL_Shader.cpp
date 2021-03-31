@@ -1393,31 +1393,11 @@ void initDefaultPrograms() {
         "       lightVecTangent.y = dot(lightVector, b);\n"
         "       lightVecTangent.z = dot(lightVector, n);\n"
         "       lightVecTangent = normalize(lightVecTangent);\n"
-        "       lightVector = tbnMatrix * lightVector;"
         "       float diffuse = max(dot(lightVecTangent, norm), 0.0);\n"
 
         "       diffuse = diffuse * max((size*size - distance*distance)/(size*size), 0.0 );\n" //Attenuation
         "       gl_FragColor = gl_FragColor + color * diffuse * lightColor;\n"
         "    }\n"
-
-    
-        //Add in light diffuse
-     /*   "    for(int i = 0; i < 32; ++i) {\n"
-        "       float size = lightPositions[i].w;\n"
-        "       if( size < .1) { break; }\n" //End of light list
-        "       vec3 lightPosition = vec3(lightPositions[i].xyz);\n"
-        "       vec4 lightColor = vec4(lightColors[i].rgb, 1.0);\n"
-        "       float distance = length(lightPosition - vPosition_eyespace.xyz);\n"
-        "       vec3 lightVector = normalize(lightPosition - vPosition_eyespace.xyz);\n"
-        "       lightVector = lightVector * tbnMatrix;"
-       // "       float diffuse = max(dot(lightVector, norm), 0.0);\n"
-
-            "       float diffuse = max(dot(eyespaceNormal, lightVector), 0.0);\n"
-        "       diffuse = diffuse * max((size*size - distance*distance)/(size*size), 0.0 );\n" //Attenuation
-        "       gl_FragColor = gl_FragColor + color * diffuse * lightColor;\n"
-        "    }\n"*/
-
-
         "}\n";
     defaultVertexPrograms["bump_bloom"] = defaultVertexPrograms["bump"];
     defaultFragmentPrograms["bump_bloom"] = ""

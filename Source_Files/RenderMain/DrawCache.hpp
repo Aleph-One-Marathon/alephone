@@ -74,7 +74,6 @@ public:
   static DrawCache* Instance();
         //Private instance variables and methods
     
-    void drawSurfaceImmediate(int vertex_count, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *tex4); //Draws the surface immediately.
     void drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *tex4); //Draws the surface sometime in the future.
     
     void drawAll(); //Draws what's in every buffer, and resets them. Call this before drawing anything that doesn't write to the depth buffer, or when finished drawing the whole scene.
@@ -105,9 +104,8 @@ public:
     void addDefaultLight(GLfloat x, GLfloat y, GLfloat z, short objectType, short permutationType); //Only works for effects and projectiles ATM.
     void addLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size, GLfloat red, GLfloat green, GLfloat blue, GLfloat intensity );
     void finishGatheringLights();
-        
-        //Call this before rendering the tree to update the list of dynamic lights.
-    void gatherLights();
+
+    void resetStats();
 
     
 private:
@@ -120,9 +118,16 @@ private:
     DrawCache& operator=(DrawCache const&){};
     static DrawCache* m_pInstance;
   
+    //Private instance variables and methods
+    
     bool gatheringLights;
     
-    //Private instance variables and methods
+    //Buffer requests and draw call stats.
+    int bufferRequests;
+    int drawCallsMade;
+    int drawBuffersFilledToMax;
+    int allBuffersUsed;
+    
     void clearTextureAttributeCaches();
     
         //Guaranteed to return a buffer index for the shader/texID combo big enough to hold vertex_count.
