@@ -338,7 +338,7 @@
       <argument name="x"><type>WU</type></argument>
       <argument name="y"><type>WU</type></argument>
       <argument name="z"><type>WU</type></argument>
-	  <argument name="t" version="git"><type>variant</type></argument>
+	  <argument name="t" version="20210408"><type>variant</type></argument>
 	  <note>t can be a side, polygon_floor, polygon_ceiling, monster, scenery, polygon; see Polygon:check_collision for info on how to decode. It can also be nil, in the rare case a projectile detonates without hitting something</note>
     </function>
   </triggers>
@@ -510,7 +510,7 @@
 		<argument name="n"><type>number</type></argument>
 		<return><type>number</type></return>
       </function>
-	  <function name="random_local" version="git">
+	  <function name="random_local" version="20210408">
 		<description>returns a random number between 0 and n-1 using a good random number generator</description>
 		<argument name="n"><type>number</type></argument>
 		<return><type>number</type></return>
@@ -864,7 +864,7 @@
 		<description>counterclockwise side of line</description>
 		<type>side</type>
       </variable>
-	  <variable name="decorative" version="git">
+	  <variable name="decorative" version="20210408">
 		<description>projectiles always pass the transparent sides of decorative lines</description>
 		<type>bool</type>
 	  </variable>
@@ -949,7 +949,7 @@
 		<description>instructs monster to attack target</description>
 		<argument name="target"><type>monster</type></argument>
       </function>
-	  <variable name="blind" version="git">
+	  <variable name="blind" version="20210408">
 		<description>monster is blind</description>
 		<note>only valid before monster activates</note>
 		<type>boolean</type>
@@ -960,12 +960,12 @@
 		<argument name="type" required="false"><type>damage_type</type></argument>
 		<note>if no type is specified, fist damage is dealt</note>
       </function>
-	  <variable name="deaf" version="git">
+	  <variable name="deaf" version="20210408">
 		<description>monster is deaf</description>
 		<note>only valid before monster activates</note>
 		<type>boolean</type>
 	  </variable>
-	  <function name="delete" version="git">
+	  <function name="delete" version="20210408">
 		<description>deletes monster</description>
 	  </function>
       <variable name="external_velocity" version="20090909">
@@ -1013,7 +1013,7 @@
 		<argument name="z"><type>WU</type></argument>
 		<argument name="polygon"><type>polygon</type></argument>
       </function>
-	  <variable name="teleports_out" version="git">
+	  <variable name="teleports_out" version="20210408">
 		<description>monster teleports out when deactivated</description>
 		<type>boolean</type>
 	  </variable>
@@ -1109,23 +1109,23 @@
       </function>
     </table>
     <table name="platform">
-	  <variable name="activates_adjacent_platforms_at_each_level" version="git">
+	  <variable name="activates_adjacent_platforms_at_each_level" version="20210408">
 		<description>platform will activate adjacent platforms at each elevation it comes to (ie.,at floor level and ceiling level)</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="activates_adjacent_platforms_when_activating" version="git">
+	  <variable name="activates_adjacent_platforms_when_activating" version="20210408">
 		<description>when activating, this platform activates adjacent platforms</description>
 		<type>boolean</type>
 	  </variable>
-	   <variable name="activates_adjacent_platforms_when_deactivating" version="git">
+	   <variable name="activates_adjacent_platforms_when_deactivating" version="20210408">
 		<description>when deactivating, this platform activates adjacent platforms</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="activates_light" version="git">
+	  <variable name="activates_light" version="20210408">
 		<description>activates floor and ceiling lightsources while activating</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="activates_only_once" version="git">
+	  <variable name="activates_only_once" version="20210408">
 		<description>cannot be activated a second time</description>
 		<type>boolean</type>
 	  </variable>
@@ -1133,7 +1133,7 @@
 		<description>whether platform is currently active</description>
 		<type>boolean</type>
       </variable>
-	  <variable name="cannot_be_externally_deactivated" version="git">
+	  <variable name="cannot_be_externally_deactivated" version="20210408">
 		<description>when active, can only be deactivated by itself</description>
 		<type>boolean</type>
 	  </variable>
@@ -1141,11 +1141,11 @@
 		<description>current ceiling height of platform</description>
 		<type>WU</type>
       </variable>
-	  <variable name="comes_from_ceiling" version="git" access="read-only">
+	  <variable name="comes_from_ceiling" version="20210408" access="read-only">
 		<description>platform lowers from ceiling</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="comes_from_floor" version="git" access="read-only">
+	  <variable name="comes_from_floor" version="20210408" access="read-only">
 		<description>platform rises from floor</description>
 		<type>boolean</type>
 	  </variable>
@@ -1153,35 +1153,35 @@
 		<description>direction platform is moving or will move when active</description>
 		<type>boolean</type>
       </variable>
-	  <variable name="contracts_slower" version="git">
+	  <variable name="contracts_slower" version="20210408">
 		<description>will move slower when contracting than when extending</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="deactivates_adjacent_platforms_when_activating" version="git">
+	  <variable name="deactivates_adjacent_platforms_when_activating" version="20210408">
 		<description>when activating, this platform deactivates adjacent platforms</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="deactivates_adjacent_platforms_when_deactivating" version="git">
+	  <variable name="deactivates_adjacent_platforms_when_deactivating" version="20210408">
 		<description>when deactivating, this platform deactivates adjacent platforms</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="deactivates_at_each_level" version="git">
+	  <variable name="deactivates_at_each_level" version="20210408">
 		<description>this platform will deactivate each time it reaches a discrete level</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="deactivates_at_initial_level" version="git">
+	  <variable name="deactivates_at_initial_level" version="20210408">
 		<description>this platform will deactivate upon returning to its initial position</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="deactivates_light" version="git">
+	  <variable name="deactivates_light" version="20210408">
 		<description>deactivates floor and ceiling lightsources while deactivating</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="delays_before_activation" version="git">
+	  <variable name="delays_before_activation" version="20210408">
 		<description>whether or not the platform begins with the maximum delay before moving</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="does_not_activate_parent" version="git">
+	  <variable name="does_not_activate_parent" version="20210408">
 		<description>does not reactive its parent (the platform which activated it)</description>
 		<type>boolean</type>
 	  </variable>
@@ -1193,7 +1193,7 @@
 		<description>direction platform is moving or will move when active</description>
 		<type>boolean</type>
       </variable>
-	  <variable name="extends_floor_to_ceiling" version="git" access="read-only">
+	  <variable name="extends_floor_to_ceiling" version="20210408" access="read-only">
 		<description>there is no empty space when the platform is fully extended</description>
 		<type>boolean</type>
       </variable>
@@ -1201,15 +1201,15 @@
 		<description>current floor height of platform</description>
 		<type>WU</type>
       </variable>
-	  <variable name="initially_active" version="git" access="read-only">
+	  <variable name="initially_active" version="20210408" access="read-only">
 		<description>otherwise inactive</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="has_been_activated" version="git">
+	  <variable name="has_been_activated" version="20210408">
 		<description>in case platform can only be activated once</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="initially_extended" version="git" access="read-only">
+	  <variable name="initially_extended" version="20210408" access="read-only">
 		<description>high for floor platforms, low for ceiling platforms, closed for two-way platforms</description>
 		<type>boolean</type>
 	  </variable>
@@ -1230,7 +1230,7 @@
 		<description>polygon of this platform</description>
 		<type>polygon</type>
       </variable>
-	  <variable name="reverses_direction_when_obstructed" version="git">
+	  <variable name="reverses_direction_when_obstructed" version="20210408">
 		<description>platform reverses direction when obstructed</description>
 		<type>boolean</type>
 	  </variable>
@@ -1248,7 +1248,7 @@
 		<type>platform_type</type>
 		<note>the only thing the engine uses type for is the platform’s sound</note>
       </variable>
-	  <variable name="uses_native_polygon_heights" version="git" access="read-only">
+	  <variable name="uses_native_polygon_heights" version="20210408" access="read-only">
 		<description>uses native polygon heights during automatic min,max calculation</description>
 		<type>boolean</type>
 	  </variable>
@@ -1440,7 +1440,7 @@
         <description>direction in which player is looking</description>
         <note>while glancing, this differs from .direction</note>
       </variable>
-	  <variable name="hotkey" version="git">
+	  <variable name="hotkey" version="20210408">
 		<note>only valid when read/written in idle()</note>
 		<note>hotkeys aren’t latched, and can only be transmitted every 3 ticks</note>
 		<note>to check for a continously pressed hotkey, or to implement your own latch, count down from 2 before checking it again</note>
@@ -1448,7 +1448,7 @@
 		<description>pressed hotkey, from 1-12, or 0 for no hotkey</description>
 		<type>number</type>
 	  </variable>
-	  <subtable-accessor name="hotkey_bindings" classname="hotkey_bindings" index="n" version="git" access="local-player">
+	  <subtable-accessor name="hotkey_bindings" classname="hotkey_bindings" index="n" version="20210408" access="local-player">
 		<description>keys or buttons the player has bound to hotkeys 1-12</description>
 		<variable name="joystick" access="read-only">
 		  <description>joystick button binding</description>
@@ -1566,7 +1566,7 @@
 		<description>prints message to player’s screen</description>
 		<argument name="message"><type>string</type></argument>
       </function>
-	  <function name="revive" version="git">
+	  <function name="revive" version="20210408">
 		<description>revives player</description>
 		<note>player must be totally dead</note>
 	  </function>
@@ -1613,7 +1613,7 @@
 		  </function>
 		</subtable-accessor>
       </subtable>
-	  <variable name="totally_dead" version="git" access="read-only">
+	  <variable name="totally_dead" version="20210408" access="read-only">
 		<description>the player is dead and the death animation has finished</description>
 	  </variable>
       <function name="view_player" version="20080707">
@@ -1741,7 +1741,7 @@
 		  <type>transfer_mode</type>
 		</variable>
       </subtable>
-	  <function name="change_height" version="git">
+	  <function name="change_height" version="20210408">
 		<description>changes polygon floor and ceiling heights, if possible</description>
 		<argument name="floor"><type>WU</type></argument>
 		<argument name="ceiling"><type>WU</type></argument>
@@ -1750,7 +1750,7 @@
 		<note>this is much less optimized than moving a platform</note>
 		<note>you may need to create sides if you are raising/lowering what used to be a flat floor/ceiling</note>
 	  </function>
-	  <function name="check_collision" version="git">
+	  <function name="check_collision" version="20210408">
 		<argument name="x0"><type>WU</type></argument>
 		<argument name="y0"><type>WU</type></argument>
 		<argument name="z0"><type>WU</type></argument>
@@ -1782,7 +1782,7 @@
       <function name="endpoints">
 		<description>iterates through all of this polygon’s endpoints</description>
       </function>
-	  <function name="find_polygon" version="git">
+	  <function name="find_polygon" version="20210408">
 		<description>traverses map from (x1, y1) and returns polygon containing (x2, y2)</description>
 		<argument name="x1"><type>WU</type></argument>
 		<argument name="y1"><type>WU</type></argument>
@@ -1965,7 +1965,7 @@
       </variable>
     </table>
     <table name="side">
-	  <variable name="ambient_delta" version="git">
+	  <variable name="ambient_delta" version="20210408">
 		<description>constant offset from calculated light intensity</description>
 	  </variable>
       <subtable name="control_panel" classname="side_control_panel">
@@ -2159,7 +2159,7 @@
 		<description>iterates through all endpoints in the level</description>
       </call>
     </accessor>
-	<accessor name="Ephemera" contains="ephemera" version="git">
+	<accessor name="Ephemera" contains="ephemera" version="20210408">
 	  <description>
 		<p>Ephemera are a render-only version of Effects. They were designed to be a lightweight way to add effects such as precipitation or decals. They do not use any global random functionality, and they don’t interact at all with other objects in the world, so they are safe to turn on and off without affecting net game sync and film playback (see <a href="#sync">"Net Games and Films"</a>).</p>
 		<p>Ephemera are not saved or restored in saved games, so it is up to the Lua script to serialize them and persist them if desired; and to recreate them upon resume. Likewise, ephemera custom fields are not saved/restored using <code>Level.restored_saved()</code></p>
@@ -2258,7 +2258,7 @@
       <call>
 		<description>iterates through all media on the level</description>
       </call>
-	  <function name="new" version="git">
+	  <function name="new" version="20210408">
 		<description>returns a new liquid</description>
 	  </function>
     </accessor>
@@ -2698,7 +2698,7 @@
 		<mnemonic name="netscript"/>
       </mnemonics>
     </enum>
-	<enum name="item_kind" version="git">
+	<enum name="item_kind" version="20210408">
 	  <mnemonics>
 		<mnemonic name="weapon"/>
 		<mnemonic name="ammunition"/>
@@ -2713,7 +2713,7 @@
 		<description>how many items of this type are placed in the level during initial placement</description>
 		<type>number</type>
       </variable>
-	  <variable name="kind" access="read-only" version="git">
+	  <variable name="kind" access="read-only" version="20210408">
 		<description>kind of item this is</description>
 		<type>item_kind</type>
 	  </variable>
@@ -2721,7 +2721,7 @@
 		<description>maximum number of this type of item in the level and in player inventories</description>
 		<type>number</type>
       </variable>
-	  <variable name="maximum_inventory" version="git">
+	  <variable name="maximum_inventory" version="20210408">
 		<description>maximum number of this type of item players can carry</description>
 		<type>number</type>
 	  </variable>
@@ -2874,11 +2874,11 @@
 		<description>class of monster type</description>
 		<type>monster_class</type>
       </variable>
-	  <variable name="collection" access="read-only" version="git">
+	  <variable name="collection" access="read-only" version="20210408">
 		<description>collection of monster type</description>
 		<type>collection</type>
 	  </variable>
-	  <variable name="clut_index" access="read-only" version="git">
+	  <variable name="clut_index" access="read-only" version="20210408">
 		<description>color table of monster type</description>
 		<type>number</type>
 	  </variable>
