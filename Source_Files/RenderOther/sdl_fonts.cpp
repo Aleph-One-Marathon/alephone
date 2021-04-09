@@ -40,9 +40,9 @@
 #include <string>
 
 #ifndef NO_STD_NAMESPACE
-using std::vector;
-using std::pair;
 using std::map;
+using std::pair;
+using std::vector;
 #endif
 
 #include <boost/tuple/tuple_comparison.hpp>
@@ -58,7 +58,7 @@ using std::map;
 // Global variables
 typedef pair<int, int> id_and_size_t;
 typedef map<id_and_size_t, sdl_font_info *> font_list_t;
-static font_list_t font_list;				// List of all loaded fonts
+static font_list_t font_list; // List of all loaded fonts
 
 typedef pair<TTF_Font *, int> ref_counted_ttf_font_t;
 typedef map<ttf_font_key_t, ref_counted_ttf_font_t> ttf_font_list_t;
@@ -66,7 +66,6 @@ static ttf_font_list_t ttf_font_list;
 
 // From shell_sdl.cpp
 extern vector<DirectorySpecifier> data_search_path;
-
 
 /*
  *  Initialize font management
@@ -79,8 +78,7 @@ typedef struct builtin_font
 	unsigned int size;
 } builtin_font_t;
 
-static builtin_font_t builtin_fontspecs[] = {
-};
+static builtin_font_t builtin_fontspecs[] = {};
 
 #define NUMBER_OF_BUILTIN_FONTS sizeof(builtin_fontspecs) / sizeof(builtin_font)
 
@@ -90,9 +88,7 @@ builtin_fonts_t builtin_fonts;
 void initialize_fonts(bool last_chance)
 {
 	logContext("initializing fonts");
-    
 }
-
 
 /*
  *  Load font from resources and allocate sdl_font_info
@@ -208,7 +204,7 @@ sdl_font_info *load_sdl_font(const TextSpec &spec)
 #endif
 }
 #define FONT_PATH "./Fonts.ttf"
-static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size)
+static TTF_Font *load_ttf_font(const std::string &path, uint16 style, int16 size)
 {
 	// already loaded? increment reference counter and return pointer
 	ttf_font_key_t search_key(path, style, size);
@@ -223,50 +219,58 @@ static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size
 	TTF_Init();
 	TTF_Font *font = 0;
 	static const string fontPath[] = {
-	  FONT_PATH,
+		FONT_PATH,
 #if defined(__WIN32__)
-	  // Path to the below Windows directory
-	  // for Windows 7 (Meiryo Bold)
-	  "C:/Windows/winsxs/x86_microsoft-windows-f..truetype-meiryobold_31bf3856ad364e35_6.1.7600.16385_none_cd23f5e0d8f9c6fa/meiryob.ttc",
-	  "C:/Windows/winsxs/amd64_microsoft-windows-f..truetype-meiryobold_31bf3856ad364e35_6.1.7600.16385_none_2942916491573830/meiryob.ttc",
-	  // for Windows Vista
-	  "C:/Windows/Fonts/meiryob.ttc",
-	  // for less than Windows XP (MS Gothic)
-	  "C:/Windows/fonts/msgothic.ttc",
+		// Path to the below Windows directory
+		// for Windows 7 (Meiryo Bold)
+		"C:/Windows/winsxs/x86_microsoft-windows-f..truetype-meiryobold_31bf3856ad364e35_6.1.7600.16385_none_cd23f5e0d8f9c6fa/meiryob.ttc",
+		"C:/Windows/winsxs/amd64_microsoft-windows-f..truetype-meiryobold_31bf3856ad364e35_6.1.7600.16385_none_2942916491573830/meiryob.ttc",
+		// for Windows Vista
+		"C:/Windows/Fonts/meiryob.ttc",
+		// for less than Windows XP (MS Gothic)
+		"C:/Windows/fonts/msgothic.ttc",
 #elif defined(__MACOS__)
-	  // for MacOS (Hiragino Kaku Gothic Pro W6)
-	  "/System/Library/Fonts/ヒラギノ角ゴ ProN W6.otf",
-	  "/System/Library/Fonts/Hiragino Kaku Gothic Pro W6.otf",
-	  "/System/Library/Fonts/Cache/HiraginoKakuGothicProNW6.otf"	// for iOS
+		// for MacOS (Hiragino Kaku Gothic Pro W6)
+		"/System/Library/Fonts/ヒラギノ角ゴ ProN W6.otf",
+		"/System/Library/Fonts/Hiragino Kaku Gothic Pro W6.otf",
+		"/System/Library/Fonts/Cache/HiraginoKakuGothicProNW6.otf" // for iOS
 #else
-	  // for Linux
-	  "/usr/share/fonts/truetype/vlgothic/VL-Gothic-Regular.ttf",
-	  "/usr/X11R6/lib/X11/fonts/TrueType/VL-Gothic-Regular.ttf",
-	  "/usr/X11/lib/X11/fonts/truetype/VL-Gothic-Regular.ttf",
-	  
-	  "/usr/share/fonts/truetype/takao/TakaoExGothic.ttf"
-	  "/usr/share/fonts/ja-ipafonts/ipag.ttc",
-	  
-	  "/usr/share/fonts/TrueType/mika.ttf",
-	  "/usr/X11R6/lib/X11/fonts/TrueType/mika.ttf",
-	  "/usr/X11R6/lib/X11/fonts/truetype/sazanami-gothic.ttf",
-	  "/usr/X11/lib/X11/fonts/truetype/sazanami-gothic.ttf",
-	  "/usr/share/fonts/TrueType/sazanami-gothic.ttf",
-	  "/usr/X11R6/lib/X11/fonts/TrueType/sazanami-gothic.ttf",
-	  "/usr/share/fonts/truetype/sazanami-gothic.ttf",
-	  "/usr/share/fonts/TrueType/FS-Gothic-gs.ttf",
-	  "/usr/X11R6/lib/X11/fonts/TrueType/FS-Gothic.ttf",
-	  "/usr/share/fonts/TrueType/gt200001.ttf",
-	  "/usr/X11R6/lib/X11/fonts/TrueType/gt200001.ttf",
+		// for Linux
+		"/usr/share/fonts/truetype/vlgothic/VL-Gothic-Regular.ttf",
+		"/usr/X11R6/lib/X11/fonts/TrueType/VL-Gothic-Regular.ttf",
+		"/usr/X11/lib/X11/fonts/truetype/VL-Gothic-Regular.ttf",
+
+		"/usr/share/fonts/truetype/takao/TakaoExGothic.ttf"
+		"/usr/share/fonts/ja-ipafonts/ipag.ttc",
+
+		"/usr/share/fonts/TrueType/mika.ttf",
+		"/usr/X11R6/lib/X11/fonts/TrueType/mika.ttf",
+		"/usr/X11R6/lib/X11/fonts/truetype/sazanami-gothic.ttf",
+		"/usr/X11/lib/X11/fonts/truetype/sazanami-gothic.ttf",
+		"/usr/share/fonts/TrueType/sazanami-gothic.ttf",
+		"/usr/X11R6/lib/X11/fonts/TrueType/sazanami-gothic.ttf",
+		"/usr/share/fonts/truetype/sazanami-gothic.ttf",
+		"/usr/share/fonts/TrueType/FS-Gothic-gs.ttf",
+		"/usr/X11R6/lib/X11/fonts/TrueType/FS-Gothic.ttf",
+		"/usr/share/fonts/TrueType/gt200001.ttf",
+		"/usr/X11R6/lib/X11/fonts/TrueType/gt200001.ttf",
 #endif
 	};
-	for ( int i=0; i < sizeof(fontPath)/sizeof(fontPath[0]); i++ ) {
-		const char* file = fontPath[i].c_str();
+	for (int i = 0; i < sizeof(fontPath) / sizeof(fontPath[0]); i++)
+	{
+		const char *file = fontPath[i].c_str();
 		font = TTF_OpenFont(file, size);
-		if ( !font ) { continue; }
-		else { break; }
+		if (!font)
+		{
+			continue;
+		}
+		else
+		{
+			break;
+		}
 	}
-	if( ! font ) {
+	if (!font)
+	{
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
 								 "cannot open ttf",
 								 "TTF is missing.", nullptr);
@@ -280,21 +284,21 @@ static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size
 		ttf_style |= TTF_STYLE_ITALIC;
 	if (style & styleUnderline)
 		ttf_style |= TTF_STYLE_UNDERLINE;
-	
+
 	TTF_SetFontStyle(font, ttf_style);
 #ifdef TTF_HINTING_LIGHT
 	TTF_SetFontHinting(font, TTF_HINTING_LIGHT);
 #endif
-	
+
 	ttf_font_key_t key(path, style, size);
 	ref_counted_ttf_font_t value(font, 1);
-	
+
 	ttf_font_list[key] = value;
-	
-	return font;	
+
+	return font;
 }
 
-static const char *locate_font(const std::string& path)
+static const char *locate_font(const std::string &path)
 {
 	builtin_fonts_t::iterator j = builtin_fonts.find(path);
 	if (j != builtin_fonts.end() || path == "")
@@ -310,26 +314,36 @@ static const char *locate_font(const std::string& path)
 			return "";
 	}
 }
-font_info *load_font(const TextSpec &spec) {
+font_info *load_font(const TextSpec &spec)
+{
 	std::string file;
 	file = locate_font(spec.normal);
 	ttf_font_info *info = new ttf_font_info;
-	for(int i = 0; i < styleMax; ++i ) {
+	for (int i = 0; i < styleMax; ++i)
+	{
 		TTF_Font *font = load_ttf_font(file, i, spec.size);
-		if (font) 
+		if (font)
+		{
+			int height;
+			TTF_SizeUTF8(font, "あAg", nullptr, &height);
+
+			info->m_line_height = std::max({TTF_FontLineSkip(font),
+											TTF_FontHeight(font),
+											height});
+
+			info->m_adjust_height = spec.adjust_height;
+
+			info->m_styles[i] = font;
+			info->m_keys[i] = ttf_font_key_t(file, i, spec.size);
+			for (int c = 32; c < 256; ++c)
 			{
-				info->m_adjust_height = spec.adjust_height;
-				info->m_styles[i] = font;
-				info->m_keys[i] = ttf_font_key_t(file, i, spec.size);
-				for(int c = 32; c < 256; ++c ) {
-					TTF_GlyphMetrics(font, c, nullptr, nullptr, nullptr, nullptr,&info->ascii_width[i][c]);
-				}
-				TTF_GlyphMetrics(font, u'あ', nullptr, nullptr, nullptr, nullptr,&info->wide_width[i]);
+				TTF_GlyphMetrics(font, c, nullptr, nullptr, nullptr, nullptr, &info->ascii_width[i][c]);
 			}
+			TTF_GlyphMetrics(font, u'あ', nullptr, nullptr, nullptr, nullptr, &info->wide_width[i]);
+		}
 	}
 	return info;
 }
-
 
 /*
  *  Unload font, free sdl_font_info
@@ -339,12 +353,15 @@ void sdl_font_info::_unload()
 {
 	// Look for font in list of loaded fonts
 	font_list_t::const_iterator i = font_list.begin(), end = font_list.end();
-	while (i != end) {
-		if (i->second == this) {
+	while (i != end)
+	{
+		if (i->second == this)
+		{
 
 			// Found, decrement reference counter and delete
 			ref_count--;
-			if (ref_count <= 0) {
+			if (ref_count <= 0)
+			{
 				delete this; // !
 				font_list.erase(i->first);
 				return;
@@ -385,7 +402,7 @@ int8 sdl_font_info::char_width(uint16 c, uint16 style) const
 	if (c < first_character || c > last_character)
 		return 0;
 	int8 width = width_table[(c - first_character) * 2 + 1] + ((style & styleBold) ? 1 : 0);
-	if (width == -1)	// non-existant character
+	if (width == -1) // non-existant character
 		width = width_table[(last_character - first_character + 1) * 2 + 1] + ((style & styleBold) ? 1 : 0);
 	return width;
 }
@@ -405,7 +422,7 @@ uint16 sdl_font_info::_text_width(const char *text, size_t length, uint16 style,
 {
 	int width = 0;
 	while (length--)
-		width += char_width(*text++, style); 
+		width += char_width(*text++, style);
 	assert(0 <= width);
 	assert(width == static_cast<int>(static_cast<uint16>(width)));
 	return width;
@@ -416,7 +433,8 @@ int sdl_font_info::_trunc_text(const char *text, int max_width, uint16 style) co
 	int width = 0;
 	int num = 0;
 	char c;
-	while ((c = *text++) != 0) {
+	while ((c = *text++) != 0)
+	{
 		width += char_width(c, style);
 		if (width > max_width)
 			break;
@@ -429,11 +447,16 @@ int sdl_font_info::_trunc_text(const char *text, int max_width, uint16 style) co
 
 int8 ttf_font_info::char_width(uint16 c, uint16 style) const
 {
-	if( c < 0x100) {
+	if (c < 0x100)
+	{
 		return ascii_width[style][c];
-	} else if( c >= 0x3040 && c <= 0x9fef) { 
+	}
+	else if (c >= 0x3040 && c <= 0x9fef)
+	{
 		return wide_width[style];
-	} else {
+	}
+	else
+	{
 		int advance;
 		TTF_GlyphMetrics(get_ttf(style), c, 0, 0, 0, 0, &advance);
 		return advance;
@@ -447,7 +470,8 @@ uint16 ttf_font_info::_text_width(const char *text, uint16 style, bool utf8) con
 uint16 ttf_font_info::_text_width(const char *text, size_t length, uint16 style, bool utf8) const
 {
 	int width = 0;
-	for(const char* c = text; *c; ) {
+	for (const char *c = text; *c;)
+	{
 		auto ret = next_utf8(c);
 		width += char_width(ret.second, style);
 		c += ret.first;
@@ -461,7 +485,8 @@ int ttf_font_info::_trunc_text(const char *text, int max_width, uint16 style) co
 	static uint16 temp[1024];
 	mac_roman_to_unicode(text, temp, 1024);
 	TTF_SizeUNICODE(get_ttf(style), temp, &width, 0);
-	if (width < max_width) return strlen(text);
+	if (width < max_width)
+		return strlen(text);
 
 	int num = strlen(text) - 1;
 
@@ -476,8 +501,6 @@ int ttf_font_info::_trunc_text(const char *text, int max_width, uint16 style) co
 }
 
 // ttf_font_info::_draw_text is in screen_drawing.cpp
-
-
 
 uint16 font_info::text_width(const char *text, uint16 style, bool utf8) const
 {
@@ -495,9 +518,10 @@ uint16 font_info::text_width(const char *text, size_t length, uint16 style, bool
 		return _text_width(text, length, style, utf8);
 }
 
-static 	inline bool style_code(char c)
+static inline bool style_code(char c)
 {
-	switch(tolower(c)) {
+	switch (tolower(c))
+	{
 	case 'p':
 	case 'b':
 	case 'i':
@@ -514,9 +538,10 @@ static 	inline bool style_code(char c)
 class style_separator
 {
 public:
-	bool operator() (std::string::const_iterator& next, std::string::const_iterator end, std::string& token)
+	bool operator()(std::string::const_iterator &next, std::string::const_iterator end, std::string &token)
 	{
-		if (next == end) return false;
+		if (next == end)
+			return false;
 
 		token = std::string();
 
@@ -534,7 +559,7 @@ public:
 		++next;
 
 		// add characters until we hit a token
-		for (;next != end && !(*next == '|' && next + 1 != end && style_code(*(next + 1))); ++next)
+		for (; next != end && !(*next == '|' && next + 1 != end && style_code(*(next + 1))); ++next)
 		{
 			token += *next;
 		}
@@ -542,16 +567,15 @@ public:
 		return true;
 	}
 
-	void reset() { }
-
+	void reset() {}
 };
 
-static inline bool is_style_token(const std::string& token)
+static inline bool is_style_token(const std::string &token)
 {
 	return (token.size() == 2 && token[0] == '|' && style_code(token[1]));
 }
 
-static void update_style(uint16& style, const std::string& token)
+static void update_style(uint16 &style, const std::string &token)
 {
 	if (tolower(token[1]) == 'p')
 		style &= ~(styleBold | styleItalic);
@@ -567,8 +591,7 @@ static void update_style(uint16& style, const std::string& token)
 	}
 }
 
-
-int font_info::draw_styled_text(SDL_Surface *s, const std::string& text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const 
+int font_info::draw_styled_text(SDL_Surface *s, const std::string &text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const
 {
 	int width = 0;
 	boost::tokenizer<style_separator> tok(text.begin(), text.begin() + length);
@@ -591,7 +614,7 @@ int font_info::draw_styled_text(SDL_Surface *s, const std::string& text, size_t 
 	return width;
 }
 
-int font_info::styled_text_width(const std::string& text, size_t length, uint16 style, bool utf8) const 
+int font_info::styled_text_width(const std::string &text, size_t length, uint16 style, bool utf8) const
 {
 	int width = 0;
 	boost::tokenizer<style_separator> tok(text.begin(), text.begin() + length);
@@ -613,7 +636,7 @@ int font_info::styled_text_width(const std::string& text, size_t length, uint16 
 		return width;
 }
 
-int font_info::trunc_styled_text(const std::string& text, int max_width, uint16 style) const
+int font_info::trunc_styled_text(const std::string &text, int max_width, uint16 style) const
 {
 	if (style & styleShadow)
 	{
@@ -643,7 +666,7 @@ int font_info::trunc_styled_text(const std::string& text, int max_width, uint16 
 	return length;
 }
 
-std::string font_info::style_at(const std::string& text, std::string::const_iterator pos, uint16 style) const
+std::string font_info::style_at(const std::string &text, std::string::const_iterator pos, uint16 style) const
 {
 	boost::tokenizer<style_separator> tok(text.begin(), pos);
 	for (boost::tokenizer<style_separator>::iterator it = tok.begin(); it != tok.end(); ++it)
@@ -651,7 +674,7 @@ std::string font_info::style_at(const std::string& text, std::string::const_iter
 		if (is_style_token(*it))
 			update_style(style, *it);
 	}
-	
+
 	if (style & styleBold)
 		return string("|b");
 	else if (style & styleItalic)

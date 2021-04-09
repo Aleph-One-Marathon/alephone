@@ -58,7 +58,8 @@ enum /* projectile flags */
 	_horizontal_wander= 0x40000, /* random horizontal error perpendicular to direction of movement */
 	_vertical_wander= 0x80000, /* random vertical movement perpendicular to direction of movement */
 	_affected_by_half_gravity= 0x100000,
-	_penetrates_media_boundary=0x200000 // Can enter/exit liquids
+	_penetrates_media_boundary=0x200000, // Can enter/exit liquids
+	_passes_through_objects = 0x400000	 // and does no damage as it passes
 };
 
 /* ---------- structures */

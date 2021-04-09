@@ -117,6 +117,9 @@ namespace alephone
 		SDL_Rect lua_map_rect;
 		SDL_Rect lua_term_rect;
 
+		// TODO: the HUD should really draw messages / fps / input line itself
+		Rect lua_text_margins;
+
 	private:
 		Screen() : m_initialized(false) { }
 		static Screen m_instance;

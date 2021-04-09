@@ -127,6 +127,26 @@ item_definition *get_item_definition_external(
 	return get_item_definition(type);
 }
 
+int16 item_definition::get_maximum_count_per_player(bool is_m1, int difficulty_level) const
+{
+	if (has_extended_maximum_count[difficulty_level])
+	{
+		return extended_maximum_count[difficulty_level];
+	}
+	else
+	{
+		if (difficulty_level == _total_carnage_level &&
+			(is_m1 || item_kind == _ammunition))
+		{
+			return INT16_MAX;
+		}
+		else
+		{
+			return maximum_count_per_player;
+		}
+	}
+}
+
 short new_item(
 	struct object_location *location,
 	short type)
@@ -647,8 +667,7 @@ bool try_and_add_player_item(
 				player->items[type]= 1;
 				success= true;
 			} 
-			else if(player->items[type]+1<=definition->maximum_count_per_player ||
-				(dynamic_world->game_information.difficulty_level==_total_carnage_level && ((static_world->environment_flags & _environment_m1_weapons) || definition->item_kind==_ammunition)))
+			else if(player->items[type]+1<=definition->get_maximum_count_per_player(static_world->environment_flags & _environment_m1_weapons, dynamic_world->game_information.difficulty_level))
 			{
 				/* Increment your count.. */
 				player->items[type]++;
@@ -851,7 +870,19 @@ void parse_mml_items(const InfoTree& root)
 		itree.read_indexed("maximum", def.maximum_count_per_player, SHRT_MAX+1);
 		itree.read_attr("invalid", def.invalid_environments);
 		itree.read_indexed("type", def.item_kind, NUMBER_OF_ITEM_TYPES);
-		
+
+		for (auto max : itree.children_named("difficulty"))
+		{
+			int16 difficulty;
+			if (!max.read_indexed("index", difficulty, NUMBER_OF_GAME_DIFFICULTY_LEVELS))
+				continue;
+
+			if (max.read_indexed("maximum", def.extended_maximum_count[difficulty], SHRT_MAX+1))
+			{
+				def.has_extended_maximum_count[difficulty] = true;
+			}
+		}
+
 		BOOST_FOREACH(InfoTree shape, itree.children_named("shape"))
 			shape.read_shape(def.base_shape);
 	}

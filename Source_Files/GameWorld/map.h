@@ -486,6 +486,7 @@ const int SIZEOF_world_point2d = 4;
 #define ELEVATION_LINE_BIT 0x800
 #define VARIABLE_ELEVATION_LINE_BIT 0x400
 #define LINE_HAS_TRANSPARENT_SIDE_BIT 0x200
+#define LINE_IS_DECORATIVE_BIT 0x100
 
 #define SET_LINE_SOLIDITY(l,v) ((v)?((l)->flags|=(uint16)SOLID_LINE_BIT):((l)->flags&=(uint16)~SOLID_LINE_BIT))
 #define LINE_IS_SOLID(l) ((l)->flags&SOLID_LINE_BIT)
@@ -522,6 +523,16 @@ struct line_data /* 32 bytes */
 	int16 clockwise_polygon_owner, counterclockwise_polygon_owner;
 	
 	int16 unused[6];
+
+	// decorative lines always pass projectiles through their transparent sides
+	bool is_decorative() const {
+		return flags & LINE_IS_DECORATIVE_BIT;
+	}
+
+	void set_decorative(bool b) {
+		if (b) flags |= LINE_IS_DECORATIVE_BIT;
+		else flags &= ~LINE_IS_DECORATIVE_BIT;
+	}
 };
 const int SIZEOF_line_data = 32;
 

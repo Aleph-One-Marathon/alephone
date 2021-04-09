@@ -338,6 +338,8 @@
       <argument name="x"><type>WU</type></argument>
       <argument name="y"><type>WU</type></argument>
       <argument name="z"><type>WU</type></argument>
+	  <argument name="t" version="git"><type>variant</type></argument>
+	  <note>t can be a side, polygon_floor, polygon_ceiling, monster, scenery, polygon; see Polygon:check_collision for info on how to decode. It can also be nil, in the rare case a projectile detonates without hitting something</note>
     </function>
   </triggers>
   <section id="using_tables" name="Using Tables">
@@ -862,6 +864,10 @@
 		<description>counterclockwise side of line</description>
 		<type>side</type>
       </variable>
+	  <variable name="decorative" version="git">
+		<description>projectiles always pass the transparent sides of decorative lines</description>
+		<type>bool</type>
+	  </variable>
       <subtable-accessor name="endpoints" classname="line_endpoints" index="n">
 		<description>returns line endpoint n</description>
       </subtable-accessor>
@@ -943,12 +949,25 @@
 		<description>instructs monster to attack target</description>
 		<argument name="target"><type>monster</type></argument>
       </function>
+	  <variable name="blind" version="git">
+		<description>monster is blind</description>
+		<note>only valid before monster activates</note>
+		<type>boolean</type>
+	  </variable>
       <function name="damage">
 		<description>damages monster</description>
 		<argument name="amount"><type>number</type></argument>
 		<argument name="type" required="false"><type>damage_type</type></argument>
 		<note>if no type is specified, fist damage is dealt</note>
       </function>
+	  <variable name="deaf" version="git">
+		<description>monster is deaf</description>
+		<note>only valid before monster activates</note>
+		<type>boolean</type>
+	  </variable>
+	  <function name="delete" version="git">
+		<description>deletes monster</description>
+	  </function>
       <variable name="external_velocity" version="20090909">
 		<description>monster’s current external velocity (always in the opposite direction of facing)</description>
 		<type>speed</type>
@@ -994,6 +1013,10 @@
 		<argument name="z"><type>WU</type></argument>
 		<argument name="polygon"><type>polygon</type></argument>
       </function>
+	  <variable name="teleports_out" version="git">
+		<description>monster teleports out when deactivated</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="type" access="read-only">
 		<description>type of monster</description>
 		<type>monster_type</type>
@@ -1086,18 +1109,78 @@
       </function>
     </table>
     <table name="platform">
+	  <variable name="activates_adjacent_platforms_at_each_level" version="git">
+		<description>platform will activate adjacent platforms at each elevation it comes to (ie.,at floor level and ceiling level)</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="activates_adjacent_platforms_when_activating" version="git">
+		<description>when activating, this platform activates adjacent platforms</description>
+		<type>boolean</type>
+	  </variable>
+	   <variable name="activates_adjacent_platforms_when_deactivating" version="git">
+		<description>when deactivating, this platform activates adjacent platforms</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="activates_light" version="git">
+		<description>activates floor and ceiling lightsources while activating</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="activates_only_once" version="git">
+		<description>cannot be activated a second time</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="active">
 		<description>whether platform is currently active</description>
 		<type>boolean</type>
       </variable>
+	  <variable name="cannot_be_externally_deactivated" version="git">
+		<description>when active, can only be deactivated by itself</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="ceiling_height">
 		<description>current ceiling height of platform</description>
 		<type>WU</type>
       </variable>
+	  <variable name="comes_from_ceiling" version="git" access="read-only">
+		<description>platform lowers from ceiling</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="comes_from_floor" version="git" access="read-only">
+		<description>platform rises from floor</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="contracting">
 		<description>direction platform is moving or will move when active</description>
 		<type>boolean</type>
       </variable>
+	  <variable name="contracts_slower" version="git">
+		<description>will move slower when contracting than when extending</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="deactivates_adjacent_platforms_when_activating" version="git">
+		<description>when activating, this platform deactivates adjacent platforms</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="deactivates_adjacent_platforms_when_deactivating" version="git">
+		<description>when deactivating, this platform deactivates adjacent platforms</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="deactivates_at_each_level" version="git">
+		<description>this platform will deactivate each time it reaches a discrete level</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="deactivates_light" version="git">
+		<description>deactivates floor and ceiling lightsources while deactivating</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="delays_before_activation" version="git">
+		<description>whether or not the platform begins with the maximum delay before moving</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="does_not_activate_parent" version="git">
+		<description>does not reactive its parent (the platform which activated it)</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="door" version="20100118">
 		<description>platform is a door</description>
 		<type>boolean</type>
@@ -1106,10 +1189,26 @@
 		<description>direction platform is moving or will move when active</description>
 		<type>boolean</type>
       </variable>
+	  <variable name="extends_floor_to_ceiling" version="git" access="read-only">
+		<description>there is no empty space when the platform is fully extended</description>
+		<type>boolean</type>
+      </variable>
       <variable name="floor_height">
 		<description>current floor height of platform</description>
 		<type>WU</type>
       </variable>
+	  <variable name="initially_active" version="git" access="read-only">
+		<description>otherwise inactive</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="has_been_activated" version="git">
+		<description>in case platform can only be activated once</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="initially_extended" version="git" access="read-only">
+		<description>high for floor platforms, low for ceiling platforms, closed for two-way platforms</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="locked" version="20100118">
 		<description>platform is locked</description>
 		<type>boolean</type>
@@ -1127,6 +1226,10 @@
 		<description>polygon of this platform</description>
 		<type>polygon</type>
       </variable>
+	  <variable name="reverses_direction_when_obstructed" version="git">
+		<description>platform reverses direction when obstructed</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="secret" version="20100118">
 		<description>platform is secret</description>
 		<type>boolean</type>
@@ -1141,6 +1244,10 @@
 		<type>platform_type</type>
 		<note>the only thing the engine uses type for is the platform’s sound</note>
       </variable>
+	  <variable name="uses_native_polygon_heights" version="git" access="read-only">
+		<description>uses native polygon heights during automatic min,max calculation</description>
+		<type>boolean</type>
+	  </variable>
     </table>
     <table name="player">
       <function name="accelerate">
@@ -1639,6 +1746,26 @@
 		<note>this is much less optimized than moving a platform</note>
 		<note>you may need to create sides if you are raising/lowering what used to be a flat floor/ceiling</note>
 	  </function>
+	  <function name="check_collision" version="git">
+		<argument name="x0"><type>WU</type></argument>
+		<argument name="y0"><type>WU</type></argument>
+		<argument name="z0"><type>WU</type></argument>
+		<argument name="owner"><type>monster</type></argument>
+		<argument name="x1"><type>WU</type></argument>
+		<argument name="y1"><type>WU</type></argument>
+		<argument name="z1"><type>WU</type></argument>
+		<argument name="include_objects" required="false"><type>boolean</type></argument>
+		<argument name="include_media" required="false"><type>boolean</type></argument>
+		<description>returns t, x, y, z, polygon, where t is nil (if there was no collision), or the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the collision is with the surface of a liquid) where the line segment collided with the map (or object or media); and x, y, z, polygon is the location of the collision, or the end point if there was no collision</description>
+		<return><type>variant</type></return>
+		<return><type>WU</type></return>
+		<return><type>WU</type></return>
+		<return><type>WU</type></return>
+		<return><type>polygon</type></return>
+		<note>the owner is a monster or player to ignore, or nil</note>
+		<note>you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon()</note>
+		<note>in order of descending speed: find_polygon(), check_collision() without objects, check_collision() including objects</note>
+	  </function>
       <function name="contains">
 		<description>whether the point is in this polygon</description>
 		<argument name="x"><type>WU</type></argument>
@@ -2044,7 +2171,7 @@
 		<description>returns a new ephemera</description>
 		<argument name="x"><type>WU</type></argument>
 		<argument name="y"><type>WU</type></argument>
-		<argument name="height"><type>WU</type></argument>
+		<argument name="z"><type>WU</type></argument>
 		<argument name="polygon"><type>polygon</type></argument>
 		<argument name="collection"><type>collection</type></argument>
 		<argument name="sequence"><type>shape</type></argument>
@@ -2567,15 +2694,33 @@
 		<mnemonic name="netscript"/>
       </mnemonics>
     </enum>
+	<enum name="item_kind" version="git">
+	  <mnemonics>
+		<mnemonic name="weapon"/>
+		<mnemonic name="ammunition"/>
+		<mnemonic name="powerup"/>
+		<mnemonic name="item"/>
+		<mnemonic name="weapon powerup"/>
+		<mnemonic name="ball"/>
+	  </mnemonics>
+	</enum>
     <enum name="item_type">
       <variable name="initial_count" version="20111201">
 		<description>how many items of this type are placed in the level during initial placement</description>
 		<type>number</type>
       </variable>
+	  <variable name="kind" access="read-only" version="git">
+		<description>kind of item this is</description>
+		<type>item_kind</type>
+	  </variable>
       <variable name="maximum_count" version="20111201">
 		<description>maximum number of this type of item in the level and in player inventories</description>
 		<type>number</type>
       </variable>
+	  <variable name="maximum_inventory" version="git">
+		<description>maximum number of this type of item players can carry</description>
+		<type>number</type>
+	  </variable>
       <variable name="minimum_count" version="20111201">
 		<description>minimum number of this type of item in the level and in player inventories</description>
 		<type>number</type>
@@ -3315,7 +3460,8 @@
 	<enum-accessor name="EphemeraQualities" contains="ephemera_quality" nice-name="Ephemera Quality"/>
     <enum-accessor name="FadeTypes" contains="fade_type" nice-name="Faders"/>
     <enum-accessor name="GameTypes" contains="game_type" nice-name="Game Types"/>
-    <enum-accessor name="ItemTypes" contains="item_type" nice-name="Items"/>
+    <enum-accessor name="ItemKinds" contains="item_kind" nice-name="Item Kinds"/>
+    <enum-accessor name="ItemTypes" contains="item_type" nice-name="Item Types"/>
     <enum-accessor name="MediaTypes" contains="media_type" nice-name="Media"/>
     <enum-accessor name="LightFunctions" contains="light_function" nice-name="Light Functions"/>
     <enum-accessor name="LightPresets" contains="light_preset" nice-name="Light Presets"/>

@@ -240,7 +240,7 @@ void detonate_projectile(
 	damage_monsters_in_radius(NONE, owner_index, owner_type, origin, polygon_index,
 		definition->area_of_effect, damage, NONE);
 	if (definition->detonation_effect!=NONE) new_effect(origin, polygon_index, definition->detonation_effect, 0);
-	L_Call_Projectile_Detonated(type, owner_index, polygon_index, *origin);
+	L_Call_Projectile_Detonated(type, owner_index, polygon_index, *origin, 0, NONE, NONE);
 }
 
 short new_projectile(
@@ -338,6 +338,7 @@ void move_projectiles(
 				short old_polygon_index= object->polygon;
 				world_point3d new_location, old_location;
 				short obstruction_index, new_polygon_index;
+				short line_index;
 				
 				new_location= old_location= object->location;
 	
@@ -389,7 +390,7 @@ void move_projectiles(
 					{
 						definition->flags ^= adjusted_definition_flags;
 					}
-					flags= translate_projectile(projectile->type, &old_location, object->polygon, &new_location, &new_polygon_index, projectile->owner_index, &obstruction_index, 0, false, projectile_index);
+					flags= translate_projectile(projectile->type, &old_location, object->polygon, &new_location, &new_polygon_index, projectile->owner_index, &obstruction_index, &line_index, false, projectile_index);
 					if (film_profile.infinity_smg)
 					{
 						definition->flags ^= adjusted_definition_flags;
@@ -512,7 +513,7 @@ void move_projectiles(
 								}
 								
 								if (detonation_effect!=NONE) new_effect(&new_location, new_polygon_index, detonation_effect, object->facing);
-								L_Call_Projectile_Detonated(projectile->type, projectile->owner_index, new_polygon_index, new_location);
+								L_Call_Projectile_Detonated(projectile->type, projectile->owner_index, new_polygon_index, new_location, flags, obstruction_index, line_index);
 								
 								if (!film_profile.infinity_smg || (!(definition->flags&_penetrates_media_boundary) || !(flags&_projectile_hit_media)))
 								{
@@ -812,8 +813,11 @@ uint16 translate_projectile(
 		}
 		
 		/* add this polygonÕs monsters to our non-redundant list of possible intersections */
-		possible_intersecting_monsters(&IntersectedObjects, GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE, old_polygon_index, true);
-		intersected_object_count = IntersectedObjects.size();
+		if (!(definition->flags & _passes_through_objects))
+		{
+			possible_intersecting_monsters(&IntersectedObjects, GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE, old_polygon_index, true);
+			intersected_object_count = IntersectedObjects.size();
+		}
 		
  		line_index= find_line_crossed_leaving_polygon(old_polygon_index, (world_point2d *)old_location, (world_point2d *)new_location);
 		if (line_index!=NONE)
@@ -849,7 +853,7 @@ uint16 translate_projectile(
 					{
 						if (intersection.z>adjacent_polygon->floor_height&&intersection.z<adjacent_polygon->ceiling_height)
 						{
-							if (!LINE_HAS_TRANSPARENT_SIDE(line) || (preflight && (definition->flags&(_usually_pass_transparent_side|_sometimes_pass_transparent_side))) ||
+							if (!LINE_HAS_TRANSPARENT_SIDE(line) || line->is_decorative() || (preflight && (definition->flags&(_usually_pass_transparent_side|_sometimes_pass_transparent_side))) ||
 								((definition->flags&_usually_pass_transparent_side) && (global_random()&3)) ||
 								((definition->flags&_sometimes_pass_transparent_side) && !(global_random()&3)))
 							{
@@ -959,6 +963,7 @@ uint16 translate_projectile(
 	/* check our object list and find the best intersection ... if we find an intersection at all,
 		then we hit this before we hit the wall, because the object list is checked against the
 		clipped new_location. */
+	if (!(definition->flags & _passes_through_objects))
 	{
 		world_distance best_intersection_distance = 0;
 		world_distance distance_traveled;

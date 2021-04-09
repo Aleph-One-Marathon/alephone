@@ -2121,6 +2121,8 @@ static bool begin_game(
 						load_film_profile(FILM_PROFILE_ALEPH_ONE_1_2);
 						break;
 					case RECORDING_VERSION_ALEPH_ONE_1_3:
+						load_film_profile(FILM_PROFILE_ALEPH_ONE_1_3);
+						break;
 					case RECORDING_VERSION_ALEPH_ONE_1_4:
 						load_film_profile(FILM_PROFILE_DEFAULT);
 						break;

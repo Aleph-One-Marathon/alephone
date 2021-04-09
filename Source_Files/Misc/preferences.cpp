@@ -113,7 +113,7 @@ May 22, 2003 (Woody Zenfell):
 #endif
 
 // 8-bit support is still here if you undefine this, but you'll need to fix it
-#define TRUE_COLOR_ONLY 1
+// #define TRUE_COLOR_ONLY 1
 
 using namespace alephone;
 
@@ -987,10 +987,10 @@ static const char *sw_sdl_driver_labels[5] = {
 	"デフォルト", "なし", "Direct3D", "OpenGL", NULL};
 
 static const char *ephemera_quality_labels[5] = {
-	"Off", "Low", "Medium", "High", "Ultra"};
+	"オフ", "低", "中", "高", "最高"};
 
 static const char *fps_target_labels[] = {
-	"30", "60 (interpolated)", "120 (interpolated)", "Unlimited (interpolated)", NULL};
+	"30", "60 (補完)", "120 (補完)", "無制限 (補完)", NULL};
 static const int16_t fps_target_values[] = {
 	30, 60, 120, 0};
 
@@ -1007,7 +1007,7 @@ static const char *term_scale_labels[] = {
 	"通常", "２倍", "最大", NULL};
 
 static const char *mouse_accel_labels[] = {
-	"Off", "Classic", NULL};
+	"オフ", "Classic", NULL};
 
 static const char *max_saves_labels[] = {
 	"20", "100", "500", "無制限", NULL};
@@ -1043,7 +1043,9 @@ static void software_rendering_options_dialog(void *arg)
 #ifdef TRUE_COLOR_ONLY
 	w_select *depth_w = new w_select(graphics_preferences->screen_mode.bit_depth == 16 ? 0 : 1, depth_labels);
 #else
-	w_select *depth_w = new w_select(graphics_preferences->screen_mode.bit_depth == 8 ? 0 : graphics_preferences->screen_mode.bit_depth == 16 ? 1 : 2, depth_labels);
+	w_select *depth_w = new w_select(graphics_preferences->screen_mode.bit_depth == 8 ? 0 : graphics_preferences->screen_mode.bit_depth == 16 ? 1
+																																			  : 2,
+									 depth_labels);
 #endif
 	table->dual_add(depth_w->label("色深度"), d);
 	table->dual_add(depth_w, d);
@@ -1059,7 +1061,7 @@ static void software_rendering_options_dialog(void *arg)
 	table->dual_add(sw_alpha_blending_w, d);
 
 	w_select *ephemera_quality_w = new w_select(graphics_preferences->ephemera_quality, ephemera_quality_labels);
-	table->dual_add(ephemera_quality_w->label("Scripted Effects Quality"), d);
+	table->dual_add(ephemera_quality_w->label("スクリプトによる効果の品質"), d);
 	table->dual_add(ephemera_quality_w, d);
 
 	w_select *sw_driver_w = new w_select(graphics_preferences->software_sdl_driver, sw_sdl_driver_labels);
@@ -1086,7 +1088,8 @@ static void software_rendering_options_dialog(void *arg)
 #ifdef TRUE_COLOR_ONLY
 		int depth = (depth_w->get_selection() == 0 ? 16 : 32);
 #else
-		int depth = (depth_w->get_selection() == 0 ? 8 : depth_w->get_selection() == 1 ? 16 : 32);
+		int depth = (depth_w->get_selection() == 0 ? 8 : depth_w->get_selection() == 1 ? 16
+																					   : 32);
 #endif
 		if (depth != graphics_preferences->screen_mode.bit_depth)
 		{
@@ -2109,7 +2112,7 @@ static void mouse_custom_dialog(void *arg)
 {
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("MOUSE ADVANCED"), d);
+	placer->dual_add(new w_title("マウス拡張"), d);
 	placer->add(new w_spacer());
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -2122,7 +2125,7 @@ static void mouse_custom_dialog(void *arg)
 	int hSliderPosition =
 		(int)((hSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
 	w_sens_slider *mouse_h_sens_w = new w_sens_slider(1000, hSliderPosition);
-	table->dual_add(mouse_h_sens_w->label("Horizontal Sensitivity"), d);
+	table->dual_add(mouse_h_sens_w->label("水平感度"), d);
 	table->dual_add(mouse_h_sens_w, d);
 
 	float vSensitivity = ((float)input_preferences->sens_vertical) / FIXED_ONE;
@@ -2132,12 +2135,12 @@ static void mouse_custom_dialog(void *arg)
 	int vSliderPosition =
 		(int)((vSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
 	w_sens_slider *mouse_v_sens_w = new w_sens_slider(1000, vSliderPosition);
-	table->dual_add(mouse_v_sens_w->label("Vertical Sensitivity"), d);
+	table->dual_add(mouse_v_sens_w->label("垂直感度"), d);
 	table->dual_add(mouse_v_sens_w, d);
 
 	w_toggle *mouse_v_invert_w = new w_toggle(input_preferences->modifiers & _inputmod_invert_mouse);
 	mouse_v_invert_w->set_selection_changed_callback(update_mouse_feel_details);
-	table->dual_add(mouse_v_invert_w->label("Invert Vertical Aim"), d);
+	table->dual_add(mouse_v_invert_w->label("垂直軸を反転"), d);
 	table->dual_add(mouse_v_invert_w, d);
 
 	table->add_row(new w_spacer(), true);
@@ -2146,35 +2149,35 @@ static void mouse_custom_dialog(void *arg)
 	mouse_feel_details_w->set_labels(mouse_feel_labels);
 	mouse_feel_details_w->set_selection(mouse_feel_w->get_selection());
 	mouse_feel_details_w->set_popup_callback(mouse_feel_details_changed, NULL);
-	table->dual_add(mouse_feel_details_w->label("Mouse Feel"), d);
+	table->dual_add(mouse_feel_details_w->label("マウスの感覚"), d);
 	table->dual_add(mouse_feel_details_w, d);
 
 	mouse_raw_w = new w_toggle(input_preferences->raw_mouse_input);
 	mouse_raw_w->set_selection_changed_callback(update_mouse_feel_details);
-	table->dual_add(mouse_raw_w->label("Raw Input Mode"), d);
+	table->dual_add(mouse_raw_w->label("生入力モード"), d);
 	table->dual_add(mouse_raw_w, d);
 
 	mouse_accel_w = new w_toggle(input_preferences->mouse_accel_type == _mouse_accel_classic);
 	mouse_accel_w->set_selection_changed_callback(update_mouse_feel_details);
-	table->dual_add(mouse_accel_w->label("Acceleration"), d);
+	table->dual_add(mouse_accel_w->label("加速"), d);
 	table->dual_add(mouse_accel_w, d);
 
 	mouse_vertical_w = new w_toggle(input_preferences->classic_vertical_aim);
 	mouse_vertical_w->set_selection_changed_callback(update_mouse_feel_details);
-	table->dual_add(mouse_vertical_w->label("Adjust Vertical Speed"), d);
+	table->dual_add(mouse_vertical_w->label("垂直速度を調整"), d);
 	table->dual_add(mouse_vertical_w, d);
 
 	mouse_precision_w = new w_toggle(!input_preferences->extra_mouse_precision);
 	mouse_precision_w->set_selection_changed_callback(update_mouse_feel_details);
-	table->dual_add(mouse_precision_w->label("Snap View to Weapon Aim"), d);
+	table->dual_add(mouse_precision_w->label("武器照準に表示をスナップ"), d);
 	table->dual_add(mouse_precision_w, d);
 
 	placer->add(table);
 	placer->add(new w_spacer(), true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("了承", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("キャンセル", dialog_cancel, &d), d);
 	placer->add(button_placer, true);
 
 	d.set_widget_placer(placer);
@@ -2256,7 +2259,7 @@ static void controller_details_dialog(void *arg)
 {
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("CONTROLLER ADVANCED"), d);
+	placer->dual_add(new w_title("コントローラー拡張"), d);
 	placer->add(new w_spacer());
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -2270,20 +2273,20 @@ static void controller_details_dialog(void *arg)
 		(int)((joySensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
 
 	w_sens_slider *sens_joy_w = new w_sens_slider(1000, joySliderPosition);
-	table->dual_add(sens_joy_w->label("Aiming Sensitivity"), d);
+	table->dual_add(sens_joy_w->label("照準感度"), d);
 	table->dual_add(sens_joy_w, d);
 
 	int joyDeadzone = (int)((input_preferences->controller_deadzone / 655.36f) + 0.5f);
 	w_deadzone_slider *dead_joy_w = new w_deadzone_slider(11, joyDeadzone);
-	table->dual_add(dead_joy_w->label("Analog Dead Zone"), d);
+	table->dual_add(dead_joy_w->label("アナログ・デッドゾーン"), d);
 	table->dual_add(dead_joy_w, d);
 
 	table->add_row(new w_spacer(), true);
 	placer->add(table, true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("了承", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("キャンセル", dialog_cancel, &d), d);
 	placer->add(button_placer, true);
 
 	d.set_widget_placer(placer);
@@ -2655,9 +2658,9 @@ static void controls_dialog(void *arg)
 	hotkey_table->col_flags(2, placeable::kAlignLeft);
 	hotkey_table->col_flags(3, placeable::kAlignLeft);
 	hotkey_table->add(new w_spacer(), true);
-	hotkey_table->dual_add(new w_label("Keyboard"), d);
-	hotkey_table->dual_add(new w_label("Mouse"), d);
-	hotkey_table->dual_add(new w_label("Controller"), d);
+	hotkey_table->dual_add(new w_label("キーボード"), d);
+	hotkey_table->dual_add(new w_label("マウス"), d);
+	hotkey_table->dual_add(new w_label("コントローラー"), d);
 
 	for (auto i = 0; i < NUMBER_OF_HOTKEYS; ++i)
 	{
@@ -2676,8 +2679,8 @@ static void controls_dialog(void *arg)
 	hotkeys->add(hotkey_table, true);
 
 	hotkeys->add(new w_spacer(), true);
-	hotkeys->dual_add(new w_static_text("Hotkeys 1-9 are used to switch weapons, but can be overriden by Lua scripts"), d);
-	hotkeys->dual_add(new w_static_text("Hotkeys 10-12 are reserved for Lua scripts"), d);
+	hotkeys->dual_add(new w_static_text("ホットキー1-9は武器の切り替えに使われるが、Luaスクリプトで上書きできます"), d);
+	hotkeys->dual_add(new w_static_text("ホットキー10-12はLuaスクリプト用に予約されています"), d);
 
 	vertical_placer *iface = new vertical_placer();
 	table_placer *interface_table = new table_placer(4, get_theme_space(ITEM_WIDGET), true);
@@ -3565,15 +3568,54 @@ static const char *binding_hotkey_action_name[NUMBER_OF_HOTKEYS] = {
 static const char *binding_mouse_button_name[NUM_SDL_MOUSE_BUTTONS] = {
 	"mouse-left", "mouse-middle", "mouse-right", "mouse-x1", "mouse-x2",
 	"mouse-scroll-up", "mouse-scroll-down"};
-static const char *binding_joystick_button_name[NUM_SDL_JOYSTICK_BUTTONS] = {
-	"controller-a", "controller-b", "controller-x", "controller-y",
-	"controller-back", "controller-guide", "controller-start",
-	"controller-ls", "controller-rs", "controller-lb", "controller-rb",
-	"controller-up", "controller-down", "controller-left", "controller-right",
-	"controller-ls-right", "controller-ls-down", "controller-rs-right",
-	"controller-rs-down", "controller-lt", "controller-rt",
-	"controller-ls-left", "controller-ls-up", "controller-rs-left",
-	"controller-rs-up", "controller-lt-neg", "controller-rt-neg"};
+
+static const char *get_binding_joystick_button_name(int offset)
+{
+	static_assert(SDL_CONTROLLER_BUTTON_MAX <= 21 &&
+					  SDL_CONTROLLER_AXIS_MAX <= 12,
+				  "SDL changed the number of buttons/axes again!");
+
+	static const char *buttons[] = {
+		"controller-a",
+		"controller-b",
+		"controller-x",
+		"controller-y",
+		"controller-back",
+		"controller-guide",
+		"controller-start",
+		"controller-ls",
+		"controller-rs",
+		"controller-lb",
+		"controller-rb",
+		"controller-up",
+		"controller-down",
+		"controller-left",
+		"controller-right",
+		// new in SDL 2.0.14
+		"controller-misc1",
+		"controller-paddle1",
+		"controller-paddle2",
+		"controller-paddle3",
+		"controller-paddle4",
+		"controller-touchpad-button",
+	};
+
+	static const char *axes[] = {
+		"controller-ls-right", "controller-ls-down", "controller-rs-right",
+		"controller-rs-down", "controller-lt", "controller-rt",
+		"controller-ls-left", "controller-ls-up", "controller-rs-left",
+		"controller-rs-up", "controller-lt-neg", "controller-rt-neg"};
+
+	if (offset < SDL_CONTROLLER_BUTTON_MAX)
+	{
+		return buttons[offset];
+	}
+	else
+	{
+		return axes[offset - SDL_CONTROLLER_BUTTON_MAX];
+	}
+}
+
 static const int binding_num_scancodes = 285;
 static const char *binding_scancode_name[binding_num_scancodes] = {
 	"unknown", "unknown-1", "unknown-2", "unknown-3", "a",
@@ -3645,7 +3687,8 @@ static const char *binding_name_for_code(SDL_Scancode code)
 		return binding_mouse_button_name[i - AO_SCANCODE_BASE_MOUSE_BUTTON];
 	else if (i >= AO_SCANCODE_BASE_JOYSTICK_BUTTON &&
 			 i < (AO_SCANCODE_BASE_JOYSTICK_BUTTON + NUM_SDL_JOYSTICK_BUTTONS))
-		return binding_joystick_button_name[i - AO_SCANCODE_BASE_JOYSTICK_BUTTON];
+		return get_binding_joystick_button_name(i - AO_SCANCODE_BASE_JOYSTICK_BUTTON);
+
 	return "unknown";
 }
 
@@ -3663,7 +3706,7 @@ static SDL_Scancode code_for_binding_name(std::string name)
 	}
 	for (int i = 0; i < NUM_SDL_JOYSTICK_BUTTONS; ++i)
 	{
-		if (name == binding_joystick_button_name[i])
+		if (name == get_binding_joystick_button_name(i))
 			return static_cast<SDL_Scancode>(i + AO_SCANCODE_BASE_JOYSTICK_BUTTON);
 	}
 	return SDL_SCANCODE_UNKNOWN;

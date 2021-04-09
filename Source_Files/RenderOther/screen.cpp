@@ -26,7 +26,6 @@
  * 
  *  Loren Petrich, Dec 23, 2000; moved shared content into screen_shared.cpp
  */
-
 #include "cseries.h"
 
 #include <math.h>
@@ -597,7 +596,7 @@ static void reallocate_world_pixels(int width, int height)
 	switch (bit_depth)
 	{
 	case 8:
-		world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, f->BitsPerPixel, 0, 0, 0, 0);
+		world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 8, 0, 0, 0, 0);
 		break;
 	case 16:
 		world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 16, pixel_format_16.Rmask, pixel_format_16.Gmask, pixel_format_16.Bmask, 0);
@@ -624,7 +623,7 @@ static void reallocate_map_pixels(int width, int height)
 		SDL_FreeSurface(Map_Buffer);
 		Map_Buffer = NULL;
 	}
-	Map_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, world_pixels->format->BitsPerPixel, world_pixels->format->Rmask, world_pixels->format->Gmask, world_pixels->format->Bmask, 0);
+	Map_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, main_surface->format->BitsPerPixel, main_surface->format->Rmask, main_surface->format->Gmask, main_surface->format->Bmask, 0);
 	if (Map_Buffer == NULL)
 		alert_out_of_memory();
 	if (map_is_translucent()) {
@@ -700,6 +699,11 @@ void enter_screen(void)
 	scr->lua_view_rect.y = scr->lua_map_rect.y = (h - wh) / 2;
 	scr->lua_view_rect.w = scr->lua_map_rect.w = ww;
 	scr->lua_view_rect.h = scr->lua_map_rect.h = wh;
+
+	scr->lua_text_margins.top = 0;
+	scr->lua_text_margins.left = 0;
+	scr->lua_text_margins.bottom = 0;
+	scr->lua_text_margins.right = 0;
 	
     screen_rectangle *term_rect = get_interface_rectangle(_terminal_screen_rect);
 	scr->lua_term_rect.x = (w - RECTANGLE_WIDTH(term_rect)) / 2;
@@ -1682,7 +1686,7 @@ static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez, 
 			if (SDL_LockSurface(main_surface) < 0) return;
 		}
 
-		if (s->format->BytesPerPixel != 1 && !pixel_formats_equal(s->format, main_surface->format))
+		if (!pixel_formats_equal(s->format, main_surface->format))
 		{
 			intermediary = SDL_ConvertSurface(s, main_surface->format, s->flags);
 			s = intermediary;
@@ -1777,8 +1781,13 @@ void change_interface_clut(struct color_table *color_table)
 
 void change_screen_clut(struct color_table *color_table)
 {
-	build_direct_color_table(uncorrected_color_table, bit_depth);
-	memcpy(interface_color_table, uncorrected_color_table, sizeof(struct color_table));
+	if (bit_depth == 8) {
+		memcpy(uncorrected_color_table, color_table, sizeof(struct color_table));
+		memcpy(interface_color_table, color_table, sizeof(struct color_table));
+	} else {
+		build_direct_color_table(uncorrected_color_table, bit_depth);
+		memcpy(interface_color_table, uncorrected_color_table, sizeof(struct color_table));
+	}
 
 	gamma_correct_color_table(uncorrected_color_table, world_color_table, screen_mode.gamma_level);
 	memcpy(visible_color_table, world_color_table, sizeof(struct color_table));
@@ -1794,6 +1803,15 @@ void animate_screen_clut(struct color_table *color_table, bool full_screen)
 		current_gamma_b[i] = color_table->colors[i].blue;
 	}
 	using_default_gamma = !memcmp(color_table, uncorrected_color_table, sizeof(struct color_table));
+	
+	if (interface_bit_depth == 8) {
+		SDL_Color colors[256];
+		build_sdl_color_table(color_table, colors);
+		if (world_pixels)
+			SDL_SetPaletteColors(world_pixels->format->palette, colors, 0, 256);
+		if (HUD_Buffer)
+			SDL_SetPaletteColors(HUD_Buffer->format->palette, colors, 0, 256);
+	}
 }
 
 void assert_world_color_table(struct color_table *interface_color_table, struct color_table *world_color_table)
@@ -1801,7 +1819,8 @@ void assert_world_color_table(struct color_table *interface_color_table, struct 
 	if (interface_bit_depth == 8) {
 		SDL_Color colors[256];
 		build_sdl_color_table(interface_color_table, colors);
-		SDL_SetPaletteColors(main_surface->format->palette, colors, 0, 256);
+		if (world_pixels)
+			SDL_SetPaletteColors(world_pixels->format->palette, colors, 0, 256);
 		if (HUD_Buffer)
 			SDL_SetPaletteColors(HUD_Buffer->format->palette, colors, 0, 256);
 	}
@@ -2053,7 +2072,7 @@ void draw_intro_screen(void)
 #endif
 	{
 		SDL_Surface *s = Intro_Buffer;
-		if (!using_default_gamma && bit_depth > 8) {
+		if (!using_default_gamma) {
 			apply_gamma(Intro_Buffer, Intro_Buffer_corrected);
 			SDL_SetSurfaceBlendMode(Intro_Buffer_corrected, SDL_BLENDMODE_NONE);
 			s = Intro_Buffer_corrected;

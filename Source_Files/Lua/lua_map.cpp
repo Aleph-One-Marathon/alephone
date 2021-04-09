@@ -27,15 +27,20 @@ LUA_MAP.CPP
 #include "lua_map.h"
 #include "lua_monsters.h"
 #include "lua_objects.h"
+#include "lua_player.h"
 #include "lua_templates.h"
 #include "lightsource.h"
 #include "map.h"
 #include "media.h"
 #include "platforms.h"
+#include "player.h"
+#include "projectile_definitions.h"
+#include "projectiles.h"
 #include "OGL_Setup.h"
 #include "SoundManager.h"
 
 #include "collection_definition.h"
+
 
 #include <boost/bind.hpp>
 
@@ -229,6 +234,12 @@ static int Lua_Line_Get_Counterclockwise_Side(lua_State *L)
 	return 1;
 }
 
+static int Lua_Line_Get_Decorative(lua_State* L)
+{
+	lua_pushboolean(L, get_line_data(Lua_Line::Index(L, 1))->is_decorative());
+	return 1;
+}
+
 static int Lua_Line_Get_Endpoints(lua_State *L)
 {
 	Lua_Line_Endpoints::Push(L, Lua_Line::Index(L, 1));
@@ -272,6 +283,15 @@ static int Lua_Line_Get_Visible_On_Automap(lua_State *L)
 	return 1;
 }
 
+static int Lua_Line_Set_Decorative(lua_State* L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, ("decorative: incorrect argument type"));
+
+	get_line_data(Lua_Line::Index(L, 1))->set_decorative(lua_toboolean(L, 2));
+	return 0;
+}
+
 static int Lua_Line_Set_Visible_On_Automap(lua_State *L)
 {
 	if (!lua_isboolean(L, 2))
@@ -294,6 +314,7 @@ const luaL_Reg Lua_Line_Get[] = {
 	{"clockwise_side", Lua_Line_Get_Clockwise_Side},
 	{"counterclockwise_polygon", Lua_Line_Get_Counterclockwise_Polygon},
 	{"counterclockwise_side", Lua_Line_Get_Counterclockwise_Side},
+	{"decorative", Lua_Line_Get_Decorative},
 	{"endpoints", Lua_Line_Get_Endpoints},
 	{"has_transparent_side", Lua_Line_Get_Has_Transparent_Side},
 	{"highest_adjacent_floor", Lua_Line_Get_Highest_Adjacent_Floor},
@@ -305,6 +326,7 @@ const luaL_Reg Lua_Line_Get[] = {
 };
 
 const luaL_Reg Lua_Line_Set[] = {
+	{"decorative", Lua_Line_Set_Decorative},
 	{"visible_on_automap", Lua_Line_Set_Visible_On_Automap},
 	{0, 0}
 };
@@ -325,6 +347,31 @@ bool Lua_Platform_Valid(int16 index)
 {
 	return index >= 0 && index < dynamic_world->platform_count;
 }
+
+template<int flag_bit> int 
+Lua_Platform_Get_Dynamic_Flag(lua_State* L)
+{
+	platform_data* platform = get_platform_data(Lua_Platform::Index(L, 1));
+	lua_pushboolean(L, platform->dynamic_flags & (1 << flag_bit));
+	return 1;
+}
+
+template<int flag_bit> int
+Lua_Platform_Set_Dynamic_Flag(lua_State* L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "platform: incorrect argument type");
+
+	platform_data* platform = get_platform_data(Lua_Platform::Index(L, 1));
+	bool flag = lua_toboolean(L, 2);
+	if (flag)
+		platform->dynamic_flags |= (1 << flag_bit);
+	else
+		platform->dynamic_flags &= ~(1 << flag_bit);
+
+	return 0;
+}
+
 
 template<int flag_bit> int 
 Lua_Platform_Get_Static_Flag(lua_State* L)
@@ -494,32 +541,72 @@ static int Lua_Platform_Set_Type(lua_State* L)
 	
 
 const luaL_Reg Lua_Platform_Get[] = {
+	{"activates_adjacent_platforms_at_each_level", Lua_Platform_Get_Static_Flag<_platform_activates_adjacent_platforms_at_each_level>},
+	{"activates_adjacent_platforms_when_activating", Lua_Platform_Get_Static_Flag<_platform_activates_adjacent_platforms_when_activating>},
+	{"activates_adjacent_platforms_when_deactivating", Lua_Platform_Get_Static_Flag<_platform_activates_adjacent_platforms_when_deactivating>},
+	{"activates_light", Lua_Platform_Get_Static_Flag<_platform_activates_light>},
+	{"activates_only_once", Lua_Platform_Get_Static_Flag<_platform_activates_only_once>},
 	{"active", Lua_Platform_Get_Active},
+	{"cannot_be_externally_deactivated", Lua_Platform_Get_Static_Flag<_platform_cannot_be_externally_deactivated>},
+	{"causes_damage", Lua_Platform_Get_Static_Flag<_platform_causes_damage>},
 	{"ceiling_height", Lua_Platform_Get_Ceiling_Height},
+	{"comes_from_ceiling", Lua_Platform_Get_Static_Flag<_platform_comes_from_ceiling>},
+	{"comes_from_floor", Lua_Platform_Get_Static_Flag<_platform_comes_from_floor>},
 	{"contracting", Lua_Platform_Get_Contracting},
+	{"contracts_slower", Lua_Platform_Get_Static_Flag<_platform_contracts_slower>},
+	{"deactivates_adjacent_platforms_when_activating", Lua_Platform_Get_Static_Flag<_platform_deactivates_adjacent_platforms_when_activating>},
+	{"deactivates_adjacent_platforms_when_deactivating", Lua_Platform_Get_Static_Flag<_platform_deactivates_adjacent_platforms_when_deactivating>},
+	{"deactivates_at_each_level", Lua_Platform_Get_Static_Flag<_platform_deactivates_at_each_level>},
+	{"deactivates_at_initial_level", Lua_Platform_Get_Static_Flag<_platform_deactivates_at_initial_level>},
+	{"deactivates_light", Lua_Platform_Get_Static_Flag<_platform_deactivates_light>},
+	{"delays_before_activation", Lua_Platform_Get_Static_Flag<_platform_delays_before_activation>},
+	{"does_not_activate_parent", Lua_Platform_Get_Static_Flag<_platform_does_not_activate_parent>},
 	{"door", Lua_Platform_Get_Static_Flag<_platform_is_door>},
 	{"extending", Lua_Platform_Get_Extending},
+	{"extends_floor_to_ceiling", Lua_Platform_Get_Static_Flag<_platform_extends_floor_to_ceiling>},
 	{"floor_height", Lua_Platform_Get_Floor_Height},
+	{"has_been_activated", Lua_Platform_Get_Dynamic_Flag<_platform_has_been_activated>},
+	{"initially_active", Lua_Platform_Get_Static_Flag<_platform_is_initially_active>},
+	{"initially_extended", Lua_Platform_Get_Static_Flag<_platform_is_initially_extended>},
 	{"locked", Lua_Platform_Get_Static_Flag<_platform_is_locked>},
 	{"monster_controllable", Lua_Platform_Get_Static_Flag<_platform_is_monster_controllable>},
+	{"reverses_direction_when_obstructed", Lua_Platform_Get_Static_Flag<_platform_reverses_direction_when_obstructed>},
 	{"player_controllable", Lua_Platform_Get_Static_Flag<_platform_is_player_controllable>},
 	{"polygon", Lua_Platform_Get_Polygon},
 	{"secret", Lua_Platform_Get_Static_Flag<_platform_is_secret>},
 	{"speed", Lua_Platform_Get_Speed},
 	{"type", Lua_Platform_Get_Type},
+	{"uses_native_polygon_heights", Lua_Platform_Get_Static_Flag<_platform_uses_native_polygon_heights>},
 	{0, 0}
 };
 
 const luaL_Reg Lua_Platform_Set[] = {
+	{"activates_adjacent_platforms_at_each_level", Lua_Platform_Set_Static_Flag<_platform_activates_adjacent_platforms_at_each_level>},
+	{"activates_adjacent_platforms_when_activating", Lua_Platform_Set_Static_Flag<_platform_activates_adjacent_platforms_when_activating>},
+	{"activates_adjacent_platforms_when_deactivating", Lua_Platform_Set_Static_Flag<_platform_activates_adjacent_platforms_when_deactivating>},
+	{"activates_light", Lua_Platform_Set_Static_Flag<_platform_activates_light>},
+	{"activates_only_once", Lua_Platform_Set_Static_Flag<_platform_activates_only_once>},
 	{"active", Lua_Platform_Set_Active},
+	{"cannot_be_externally_deactivated", Lua_Platform_Set_Static_Flag<_platform_cannot_be_externally_deactivated>},
+	{"causes_damage", Lua_Platform_Set_Static_Flag<_platform_causes_damage>},
 	{"ceiling_height", Lua_Platform_Set_Ceiling_Height},
 	{"contracting", Lua_Platform_Set_Contracting},
+	{"contracts_slower", Lua_Platform_Set_Static_Flag<_platform_contracts_slower>},
+	{"deactivates_adjacent_platforms_when_activating", Lua_Platform_Set_Static_Flag<_platform_deactivates_adjacent_platforms_when_activating>},
+	{"deactivates_adjacent_platforms_when_deactivating", Lua_Platform_Set_Static_Flag<_platform_deactivates_adjacent_platforms_when_deactivating>},
+	{"deactivates_at_each_level", Lua_Platform_Set_Static_Flag<_platform_deactivates_at_each_level>},
+	{"deactivates_at_initial_level", Lua_Platform_Set_Static_Flag<_platform_deactivates_at_initial_level>},
+	{"deactivates_light", Lua_Platform_Set_Static_Flag<_platform_deactivates_light>},
+	{"delays_before_activation", Lua_Platform_Set_Static_Flag<_platform_delays_before_activation>},
+	{"does_not_activate_parent", Lua_Platform_Set_Static_Flag<_platform_does_not_activate_parent>},
 	{"door", Lua_Platform_Set_Static_Flag<_platform_is_door>},
 	{"extending", Lua_Platform_Set_Extending},
 	{"floor_height", Lua_Platform_Set_Floor_Height},
+	{"has_been_activated", Lua_Platform_Get_Dynamic_Flag<_platform_has_been_activated>},
 	{"locked", Lua_Platform_Set_Static_Flag<_platform_is_locked>},
 	{"monster_controllable", Lua_Platform_Set_Static_Flag<_platform_is_monster_controllable>},
 	{"player_controllable", Lua_Platform_Set_Static_Flag<_platform_is_player_controllable>},
+	{"reverses_direction_when_obstructed", Lua_Platform_Set_Static_Flag<_platform_reverses_direction_when_obstructed>},
 	{"secret", Lua_Platform_Set_Static_Flag<_platform_is_secret>},
 	{"speed", Lua_Platform_Set_Speed},
 	{"type", Lua_Platform_Set_Type},
@@ -1153,6 +1240,135 @@ int Lua_Polygon_Change_Height(lua_State* L)
 	return 1;
 }
 
+extern projectile_definition* get_projectile_definition(short);
+
+// p, x1, y1, z1, owner, x2, y2, z2, [stop_at_objects], [stop_at_media]
+int Lua_Polygon_Check_Collision(lua_State* L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) ||
+		!lua_isnumber(L, 4) || !lua_isnumber(L, 6) ||
+		!lua_isnumber(L, 7) || !lua_isnumber(L, 8) ||
+		(lua_gettop(L) >= 9 && !(lua_isnil(L, 9) || lua_isboolean(L, 9))) ||
+		(lua_gettop(L) >= 10 && !(lua_isnil(L, 10) || lua_isboolean(L, 10))))
+	{
+		return luaL_error(L, ("check_collision: incorrect argument type"));
+	}
+
+	short owner = NONE;
+	if (Lua_Monster::Is(L, 5))
+	{
+		owner = Lua_Monster::Index(L, 5);
+	}
+	else if (Lua_Player::Is(L, 5))
+	{
+		auto player = get_player_data(Lua_Player::Index(L, 5));
+		owner = player->monster_index;
+	}
+	else if (!lua_isnil(L, 5))
+		return luaL_error(L, ("check_collision: incorrect argument type"));
+
+	world_point3d origin = {
+		static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE),
+		static_cast<world_distance>(lua_tonumber(L, 3) * WORLD_ONE),
+		static_cast<world_distance>(lua_tonumber(L, 4) * WORLD_ONE)
+	};
+	
+	world_point3d destination = {
+		static_cast<world_distance>(lua_tonumber(L, 6) * WORLD_ONE),
+		static_cast<world_distance>(lua_tonumber(L, 7) * WORLD_ONE),
+		static_cast<world_distance>(lua_tonumber(L, 8) * WORLD_ONE)
+	};
+
+	auto stop_at_objects = lua_toboolean(L, 9);
+	auto stop_at_media = lua_toboolean(L, 10);
+
+	short polygon_index = Lua_Polygon::Index(L, 1);
+
+	// preflight a projectile 1 WU at a time (because of the speed bug)
+	world_distance distance = distance2d(
+		reinterpret_cast<world_point2d*>(&origin),
+		reinterpret_cast<world_point2d*>(&destination));
+
+	int32_t chunks = (distance + WORLD_ONE - 1) / WORLD_ONE;
+
+	int32_t dx = destination.x - origin.x;
+	int32_t dy = destination.y - origin.y;
+	int32_t dz = destination.z - origin.z;
+
+	world_point3d p0;
+	world_point3d p1 = origin;
+	short old_polygon;
+	short new_polygon = polygon_index;
+	short obstruction_index;
+	short line_index;
+	uint16_t flags = 0;
+
+	auto projectile_definition = get_projectile_definition(0);
+	auto projectile_flags = projectile_definition->flags;
+
+	projectile_definition->flags =
+		_usually_pass_transparent_side |
+		_sometimes_pass_transparent_side |
+		(!stop_at_objects ? _passes_through_objects : 0) |
+		(!stop_at_media ? _penetrates_media : 0);
+
+	for (auto i = 0; i < chunks && !(flags & _projectile_hit); ++i)
+	{
+		old_polygon = new_polygon;
+		p0 = p1;
+
+		p1 = {
+			static_cast<world_distance>(origin.x + dx * (i + 1) / chunks),
+			static_cast<world_distance>(origin.y + dy * (i + 1) / chunks),
+			static_cast<world_distance>(origin.z + dz * (i + 1) / chunks)
+		};
+
+		flags = translate_projectile(0, &p0, old_polygon,
+									 &p1, &new_polygon, owner,
+									 &obstruction_index, &line_index, true, NONE);
+	}
+
+	projectile_definition->flags = projectile_flags;
+
+	if (flags & _projectile_hit_monster)
+	{
+		auto object = get_object_data(obstruction_index);
+		Lua_Monster::Push(L, object->permutation);
+	}
+	else if (flags & _projectile_hit_floor)
+	{
+		Lua_Polygon_Floor::Push(L, new_polygon);
+	}
+	else if (flags & _projectile_hit_media)
+	{
+		Lua_Polygon::Push(L, new_polygon);
+	}
+	else if (flags & _projectile_hit_scenery)
+	{
+		Lua_Scenery::Push(L, obstruction_index);
+	}
+	else if (obstruction_index != NONE)
+	{
+		Lua_Polygon_Ceiling::Push(L, new_polygon);
+	}
+	else if (flags & _projectile_hit)
+	{
+		auto side_index = find_adjacent_side(new_polygon, line_index);
+		Lua_Side::Push(L, side_index);
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	lua_pushnumber(L, static_cast<double>(p1.x) / WORLD_ONE);
+	lua_pushnumber(L, static_cast<double>(p1.y) / WORLD_ONE);
+	lua_pushnumber(L, static_cast<double>(p1.z) / WORLD_ONE);
+	Lua_Polygon::Push(L, new_polygon);
+
+	return 5;
+}
+
 // contains(x, y, z)
 int Lua_Polygon_Contains(lua_State *L)
 {
@@ -1481,6 +1697,7 @@ const luaL_Reg Lua_Polygon_Get[] = {
 	{"area", Lua_Polygon_Get_Area},
 	{"ceiling", Lua_Polygon_Get_Ceiling},
 	{"change_height", L_TableFunction<Lua_Polygon_Change_Height>},
+	{"check_collision", L_TableFunction<Lua_Polygon_Check_Collision>},
 	{"contains", L_TableFunction<Lua_Polygon_Contains>},
 	{"endpoints", Lua_Polygon_Get_Endpoints},
 	{"find_polygon", L_TableFunction<Lua_Polygon_Find_Polygon>},

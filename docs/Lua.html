@@ -171,7 +171,8 @@
 <li><a href="#EphemeraQualities">Ephemera Quality</a></li>
 <li><a href="#FadeTypes">Faders</a></li>
 <li><a href="#GameTypes">Game Types</a></li>
-<li><a href="#ItemTypes">Items</a></li>
+<li><a href="#ItemKinds">Item Kinds</a></li>
+<li><a href="#ItemTypes">Item Types</a></li>
 <li><a href="#LightFunctions">Light Functions</a></li>
 <li><a href="#LightPresets">Light Presets</a></li>
 <li><a href="#LightStates">Light States</a></li>
@@ -373,8 +374,11 @@
 <dt>.projectile_created(projectile) <span class="version">20150619</span>
 </dt>
 <dd><p class="description">whenever a projectile is created</p></dd>
-<dt>.projectile_detonated(type, owner, polygon, x, y, z)</dt>
-<dd><p class="description">whenever a projectile detonates, after it has done any area of effect damage</p></dd>
+<dt>.projectile_detonated(type, owner, polygon, x, y, z, t <span class="version">git</span>)</dt>
+<dd>
+<p class="description">whenever a projectile detonates, after it has done any area of effect damage</p>
+<p class="note">t can be a side, polygon_floor, polygon_ceiling, monster, scenery, polygon; see Polygon:check_collision for info on how to decode. It can also be nil, in the rare case a projectile detonates without hitting something </p>
+</dd>
 </dl></dd>
 </dl>
 </div>
@@ -521,7 +525,7 @@
 <dd><p class="description">maximum number of ephemera</p></dd>
 <dt>Ephemera()</dt>
 <dd><p class="description">iterates through all valid ephemera</p></dd>
-<dt>Ephemera.new(x, y, height, polygon, collection, sequence, facing)</dt>
+<dt>Ephemera.new(x, y, z, polygon, collection, sequence, facing)</dt>
 <dd><p class="description">returns a new ephemera</p></dd>
 <dt>Ephemera.quality<span class="access"> (read-only)</span>
 </dt>
@@ -911,6 +915,9 @@
       <dt>.counterclockwise_side<span class="access"> (read-only)</span><br>.ccw_side<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">counterclockwise side of line</p></dd>
+	  <dt>.decorative <span class="version">git</span>
+</dt>
+<dd><p class="description">projectiles always pass the transparent sides of decorative lines</p></dd>
       <dt>
     .endpoints[n]</dt>
 <dd><p class="description">returns line endpoint n</p></dd>
@@ -1037,11 +1044,26 @@
 <dd><p class="description">whether monster has been activated</p></dd>
       <dt>:attack(target)</dt>
 <dd><p class="description">instructs monster to attack target</p></dd>
+	  <dt>.blind <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">monster is blind</p>
+<p class="note">only valid before monster activates </p>
+</dd>
       <dt>:damage(amount [, type])</dt>
 <dd>
 <p class="description">damages monster</p>
 <p class="note">if no type is specified, fist damage is dealt </p>
 </dd>
+	  <dt>.deaf <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">monster is deaf</p>
+<p class="note">only valid before monster activates </p>
+</dd>
+	  <dt>:delete() <span class="version">git</span>
+</dt>
+<dd><p class="description">deletes monster</p></dd>
       <dt>.external_velocity <span class="version">20090909</span>
 </dt>
 <dd><p class="description">monster’s current external velocity (always in the opposite direction of facing)</p></dd>
@@ -1071,6 +1093,9 @@
 <dd><p class="description">polygon this monster is in</p></dd>
       <dt>:position(x, y, z, polygon)</dt>
 <dd><p class="description">sets position of monster</p></dd>
+	  <dt>.teleports_out <span class="version">git</span>
+</dt>
+<dd><p class="description">monster teleports out when deactivated</p></dd>
       <dt>.type<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">type of monster</p></dd>
@@ -1123,19 +1148,76 @@
 <dd><p class="description">iterates through all platforms in the level</p></dd>
 <dt>Platforms[index]</dt>
 <dd><dl>
+	  <dt>.activates_adjacent_platforms_at_each_level <span class="version">git</span>
+</dt>
+<dd><p class="description">platform will activate adjacent platforms at each elevation it comes to (ie.,at floor level and ceiling level)</p></dd>
+	  <dt>.activates_adjacent_platforms_when_activating <span class="version">git</span>
+</dt>
+<dd><p class="description">when activating, this platform activates adjacent platforms</p></dd>
+	   <dt>.activates_adjacent_platforms_when_deactivating <span class="version">git</span>
+</dt>
+<dd><p class="description">when deactivating, this platform activates adjacent platforms</p></dd>
+	  <dt>.activates_light <span class="version">git</span>
+</dt>
+<dd><p class="description">activates floor and ceiling lightsources while activating</p></dd>
+	  <dt>.activates_only_once <span class="version">git</span>
+</dt>
+<dd><p class="description">cannot be activated a second time</p></dd>
       <dt>.active</dt>
 <dd><p class="description">whether platform is currently active</p></dd>
+	  <dt>.cannot_be_externally_deactivated <span class="version">git</span>
+</dt>
+<dd><p class="description">when active, can only be deactivated by itself</p></dd>
       <dt>.ceiling_height</dt>
 <dd><p class="description">current ceiling height of platform</p></dd>
+	  <dt>.comes_from_ceiling<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">platform lowers from ceiling</p></dd>
+	  <dt>.comes_from_floor<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">platform rises from floor</p></dd>
       <dt>.contracting</dt>
 <dd><p class="description">direction platform is moving or will move when active</p></dd>
+	  <dt>.contracts_slower <span class="version">git</span>
+</dt>
+<dd><p class="description">will move slower when contracting than when extending</p></dd>
+	  <dt>.deactivates_adjacent_platforms_when_activating <span class="version">git</span>
+</dt>
+<dd><p class="description">when activating, this platform deactivates adjacent platforms</p></dd>
+	  <dt>.deactivates_adjacent_platforms_when_deactivating <span class="version">git</span>
+</dt>
+<dd><p class="description">when deactivating, this platform deactivates adjacent platforms</p></dd>
+	  <dt>.deactivates_at_each_level <span class="version">git</span>
+</dt>
+<dd><p class="description">this platform will deactivate each time it reaches a discrete level</p></dd>
+	  <dt>.deactivates_light <span class="version">git</span>
+</dt>
+<dd><p class="description">deactivates floor and ceiling lightsources while deactivating</p></dd>
+	  <dt>.delays_before_activation <span class="version">git</span>
+</dt>
+<dd><p class="description">whether or not the platform begins with the maximum delay before moving</p></dd>
+	  <dt>.does_not_activate_parent <span class="version">git</span>
+</dt>
+<dd><p class="description">does not reactive its parent (the platform which activated it)</p></dd>
       <dt>.door <span class="version">20100118</span>
 </dt>
 <dd><p class="description">platform is a door</p></dd>
       <dt>.extending</dt>
 <dd><p class="description">direction platform is moving or will move when active</p></dd>
+	  <dt>.extends_floor_to_ceiling<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">there is no empty space when the platform is fully extended</p></dd>
       <dt>.floor_height</dt>
 <dd><p class="description">current floor height of platform</p></dd>
+	  <dt>.initially_active<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">otherwise inactive</p></dd>
+	  <dt>.has_been_activated <span class="version">git</span>
+</dt>
+<dd><p class="description">in case platform can only be activated once</p></dd>
+	  <dt>.initially_extended<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">high for floor platforms, low for ceiling platforms, closed for two-way platforms</p></dd>
       <dt>.locked <span class="version">20100118</span>
 </dt>
 <dd>
@@ -1149,6 +1231,9 @@
       <dt>.polygon<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">polygon of this platform</p></dd>
+	  <dt>.reverses_direction_when_obstructed <span class="version">git</span>
+</dt>
+<dd><p class="description">platform reverses direction when obstructed</p></dd>
       <dt>.secret <span class="version">20100118</span>
 </dt>
 <dd>
@@ -1163,6 +1248,9 @@
 <p class="description">type of this platform</p>
 <p class="note">the only thing the engine uses type for is the platform’s sound </p>
 </dd>
+	  <dt>.uses_native_polygon_heights<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">uses native polygon heights during automatic min,max calculation</p></dd>
     </dl></dd>
 </dl>
 <h3>
@@ -1601,6 +1689,14 @@
 <p class="note">won’t squish monsters; returns false instead </p>
 <p class="note">this is much less optimized than moving a platform </p>
 <p class="note">you may need to create sides if you are raising/lowering what used to be a flat floor/ceiling </p>
+</dd>
+	  <dt>:check_collision(x0, y0, z0, owner, x1, y1, z1 [, include_objects] [, include_media]) <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">returns t, x, y, z, polygon, where t is nil (if there was no collision), or the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the collision is with the surface of a liquid) where the line segment collided with the map (or object or media); and x, y, z, polygon is the location of the collision, or the end point if there was no collision</p>
+<p class="note">the owner is a monster or player to ignore, or nil </p>
+<p class="note">you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon() </p>
+<p class="note">in order of descending speed: find_polygon(), check_collision() without objects, check_collision() including objects </p>
 </dd>
       <dt>:contains(x, y [, z])</dt>
 <dd><p class="description">whether the point is in this polygon</p></dd>
@@ -2344,7 +2440,22 @@ If you do this, you should customize them all at the beginning of the script. Ch
 </ul></div>
 <div class="end-mnemonics"></div>
 <h3>
-<a name="ItemTypes"></a>Items</h3>
+<a name="ItemKinds"></a>Item Kinds</h3>
+<dl>
+<dt># ItemKinds</dt>
+<dt>ItemKinds()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"weapon"</li>
+<li>"ammunition"</li>
+<li>"powerup"</li>
+<li>"item"</li>
+<li>"weapon powerup"</li>
+<li>"ball"</li>
+</ul>
+<h3>
+<a name="ItemTypes"></a>Item Types</h3>
 <dl>
 <dt># ItemTypes</dt>
 <dt>ItemTypes()</dt>
@@ -2353,9 +2464,15 @@ If you do this, you should customize them all at the beginning of the script. Ch
       <dt>.initial_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">how many items of this type are placed in the level during initial placement</p></dd>
+	  <dt>.kind<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">kind of item this is</p></dd>
       <dt>.maximum_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">maximum number of this type of item in the level and in player inventories</p></dd>
+	  <dt>.maximum_inventory <span class="version">git</span>
+</dt>
+<dd><p class="description">maximum number of this type of item players can carry</p></dd>
       <dt>.minimum_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">minimum number of this type of item in the level and in player inventories</p></dd>
