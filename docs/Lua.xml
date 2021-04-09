@@ -1169,6 +1169,10 @@
 		<description>this platform will deactivate each time it reaches a discrete level</description>
 		<type>boolean</type>
 	  </variable>
+	  <variable name="deactivates_at_initial_level" version="git">
+		<description>this platform will deactivate upon returning to its initial position</description>
+		<type>boolean</type>
+	  </variable>
 	  <variable name="deactivates_light" version="git">
 		<description>deactivates floor and ceiling lightsources while deactivating</description>
 		<type>boolean</type>
