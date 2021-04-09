@@ -1230,7 +1230,7 @@ static void graphics_dialog(void *arg)
 			fps_target_w->set_selection(i);
 		}
 	}
-	table->dual_add(fps_target_w->label("Framerate Target"), d);
+	table->dual_add(fps_target_w->label("フレームレート目標"), d);
 	table->dual_add(fps_target_w, d);
 
 	table->add_row(new w_spacer(), true);
