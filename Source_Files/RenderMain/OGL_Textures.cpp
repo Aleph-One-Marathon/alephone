@@ -1704,8 +1704,8 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
                     
                     glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
                     // OpenGL GL_RGBA is 6407 and GL_RGB is 6408
-                    assert ( internalFormat == GL_RGBA );
-                    glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat,
+                    assert ( internalFormat == GL_RGBA8 );
+                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                                  LoadedWidth,
                                  LoadedHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                                  Image.get()->GetBuffer());

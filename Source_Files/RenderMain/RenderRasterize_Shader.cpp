@@ -1106,7 +1106,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
     }
     
 	glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
-
+    
 	if (canGlow && SkinPtr->GlowImg.IsPresent()) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(SkinPtr->GlowBlend);

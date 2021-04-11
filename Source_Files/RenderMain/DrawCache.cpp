@@ -404,7 +404,7 @@ void DrawCache::drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLf
     clearTextureAttributeCaches();
     drawBuffers[b].verticesFilled += vertex_count;
     
-    //For debugging, it helps to draw right away. Much slower, though.
+    //For debugging, it helps to draw right away. Slower, though.
     //Normnally this should be commented out.
     //drawAndResetBuffer(b);
 }
