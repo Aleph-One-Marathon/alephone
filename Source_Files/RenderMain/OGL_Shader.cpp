@@ -42,7 +42,7 @@ static bool DisableClipVertex()
 }
 #endif
 
-//Global pointer to the last shader object enabled. May be NULL.    
+//Global pointer to the last shader object enabled. May be NULL.
 Shader* lastEnabledShaderRef;
 Shader* lastEnabledShader() {
   return lastEnabledShaderRef;
@@ -57,42 +57,42 @@ void initDefaultPrograms();
 
 std::vector<Shader> Shader::_shaders;
 
-const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] = 
+const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
 {
-	"texture0",
+    "texture0",
     "texture0_size",
-	"texture1",
+    "texture1",
     "texture1_size",
-	"texture2",
+    "texture2",
     "texture2_size",
-	"texture3",
+    "texture3",
     "texture3_size",
-	"time",
-	"pulsate",
-	"wobble",
-	"flare",
-	"bloomScale",
-	"bloomShift",
-	"repeat",
-	"offsetx",
-	"offsety",
-	"pass",
-	"usefog",
-	"visibility",
-	"depth",
-	"strictDepthMode",
-	"glow",
-	"landscapeInverseMatrix",
-	"scalex",
-	"scaley",
-	"yaw",
-	"pitch",
-	"selfLuminosity",
-	"gammaAdjust",
-	"logicalWidth",
-	"logicalHeight",
-	"pixelWidth",
-	"pixelHeight",
+    "time",
+    "pulsate",
+    "wobble",
+    "flare",
+    "bloomScale",
+    "bloomShift",
+    "repeat",
+    "offsetx",
+    "offsety",
+    "pass",
+    "usefog",
+    "visibility",
+    "depth",
+    "strictDepthMode",
+    "glow",
+    "landscapeInverseMatrix",
+    "scalex",
+    "scaley",
+    "yaw",
+    "pitch",
+    "selfLuminosity",
+    "gammaAdjust",
+    "logicalWidth",
+    "logicalHeight",
+    "pixelWidth",
+    "pixelHeight",
     "MS_ModelViewProjectionMatrix",
     "MS_ModelViewMatrix",
     "MS_ModelViewMatrixInverse",
@@ -111,27 +111,27 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
     "lightColors"
 };
 
-const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] = 
+const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] =
 {
-	"error",
+    "error",
     "blur",
-	"bloom",
-	"landscape",
-	"landscape_bloom",
-	"landscape_infravision",
-	"sprite",
-	"sprite_bloom",
-	"sprite_infravision",
-	"invincible",
-	"invincible_bloom",
-	"invisible",
-	"invisible_bloom",
-	"wall",
-	"wall_bloom",
-	"wall_infravision",
-	"bump",
-	"bump_bloom",
-	"gamma",
+    "bloom",
+    "landscape",
+    "landscape_bloom",
+    "landscape_infravision",
+    "sprite",
+    "sprite_bloom",
+    "sprite_infravision",
+    "invincible",
+    "invincible_bloom",
+    "invisible",
+    "invisible_bloom",
+    "wall",
+    "wall_bloom",
+    "wall_infravision",
+    "bump",
+    "bump_bloom",
+    "gamma",
     "rect",
     "plain_rect",
     "solid_color"
@@ -140,69 +140,69 @@ const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] =
 
 class Shader_MML_Parser {
 public:
-	static void reset();
-	static void parse(const InfoTree& root);
+    static void reset();
+    static void parse(const InfoTree& root);
 };
 
 void Shader_MML_Parser::reset()
 {
-	Shader::_shaders.clear();
+    Shader::_shaders.clear();
 }
 
 void Shader_MML_Parser::parse(const InfoTree& root)
 {
-	std::string name;
-	if (!root.read_attr("name", name))
-		return;
-	
-	for (int i = 0; i < Shader::NUMBER_OF_SHADER_TYPES; ++i) {
-		if (name == Shader::_shader_names[i]) {
-			initDefaultPrograms();
-			Shader::loadAll();
-			
-			FileSpecifier vert, frag;
-			root.read_path("vert", vert);
-			root.read_path("frag", frag);
-			int16 passes;
-			root.read_attr("passes", passes);
-			
-			Shader::_shaders[i] = Shader(name, vert, frag, passes);
-			break;
-		}
-	}
+    std::string name;
+    if (!root.read_attr("name", name))
+        return;
+    
+    for (int i = 0; i < Shader::NUMBER_OF_SHADER_TYPES; ++i) {
+        if (name == Shader::_shader_names[i]) {
+            initDefaultPrograms();
+            Shader::loadAll();
+            
+            FileSpecifier vert, frag;
+            root.read_path("vert", vert);
+            root.read_path("frag", frag);
+            int16 passes;
+            root.read_attr("passes", passes);
+            
+            Shader::_shaders[i] = Shader(name, vert, frag, passes);
+            break;
+        }
+    }
 }
 
 void reset_mml_opengl_shader()
 {
-	Shader_MML_Parser::reset();
+    Shader_MML_Parser::reset();
     Shader::loadAll(); //We need to reload these immediately, since the shaders are needed to draw the UI
 }
 
 void parse_mml_opengl_shader(const InfoTree& root)
 {
-	Shader_MML_Parser::parse(root);
+    Shader_MML_Parser::parse(root);
 }
 
 void parseFile(FileSpecifier& fileSpec, std::string& s) {
 
-	s.clear();
+    s.clear();
 
-	if (fileSpec == FileSpecifier() || !fileSpec.Exists()) {
-		return;
-	}
+    if (fileSpec == FileSpecifier() || !fileSpec.Exists()) {
+        return;
+    }
 
-	OpenedFile file;
-	if (!fileSpec.Open(file))
-	{
-		fprintf(stderr, "%s not found\n", fileSpec.GetPath());
-		return;
-	}
+    OpenedFile file;
+    if (!fileSpec.Open(file))
+    {
+        fprintf(stderr, "%s not found\n", fileSpec.GetPath());
+        return;
+    }
 
-	int32 length;
-	file.GetLength(length);
+    int32 length;
+    file.GetLength(length);
 
-	s.resize(length);
-	file.Read(length, &s[0]);
+    s.resize(length);
+    file.Read(length, &s[0]);
 }
 
 
@@ -251,22 +251,22 @@ GLuint parseShader(const GLcharARB* str, GLenum shaderType) {
 }
 
 void Shader::loadAll() {
-	initDefaultPrograms();
-	if (!_shaders.size()) 
-	{
-		_shaders.reserve(NUMBER_OF_SHADER_TYPES);
-		for (int i = 0; i < NUMBER_OF_SHADER_TYPES; ++i) 
-		{
-			_shaders.push_back(Shader(_shader_names[i]));
-		}
-	}
+    initDefaultPrograms();
+    if (!_shaders.size())
+    {
+        _shaders.reserve(NUMBER_OF_SHADER_TYPES);
+        for (int i = 0; i < NUMBER_OF_SHADER_TYPES; ++i)
+        {
+            _shaders.push_back(Shader(_shader_names[i]));
+        }
+    }
 }
 
 void Shader::unloadAll() {
-	for (int i = 0; i < _shaders.size(); ++i) 
-	{
-		_shaders[i].unload();
-	}
+    for (int i = 0; i < _shaders.size(); ++i)
+    {
+        _shaders[i].unload();
+    }
 }
 
 Shader::Shader(const std::string& name) : _programObj(0), _passes(-1), _loaded(false) {
@@ -421,7 +421,7 @@ void Shader::setVec2(UniformName name, float *f) {
 }
 
 Shader::~Shader() {
-	unload();
+    unload();
 }
 
 void Shader::enable() {
@@ -449,7 +449,7 @@ void Shader::unload() {
 }
 
 int16 Shader::passes() {
-	return _passes;
+    return _passes;
 }
 
 void initDefaultPrograms() {
@@ -484,7 +484,7 @@ void initDefaultPrograms() {
     "    }\n"
     "}\n";
     
-	defaultVertexPrograms["gamma"] = ""
+    defaultVertexPrograms["gamma"] = ""
       "uniform mat4 MS_ModelViewProjectionMatrix;\n"
       "uniform mat4 MS_ModelViewMatrix;\n"
       "attribute vec4 vPosition;\n"
@@ -826,10 +826,10 @@ void initDefaultPrograms() {
         "}\n";
 
     defaultVertexPrograms["landscape_infravision"] = defaultVertexPrograms["landscape"];
-	defaultFragmentPrograms["landscape_infravision"] =
+    defaultFragmentPrograms["landscape_infravision"] =
 #include "Shaders/landscape_infravision.frag"
-		;
-	
+        ;
+    
     defaultVertexPrograms["sprite"] = ""
         "uniform mat4 MS_ModelViewProjectionMatrix;\n"
         "uniform mat4 MS_ModelViewMatrix;\n"
@@ -936,11 +936,11 @@ void initDefaultPrograms() {
         "    gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
 
-	defaultVertexPrograms["sprite_infravision"] = defaultVertexPrograms["sprite"];
-	defaultFragmentPrograms["sprite_infravision"] =
+    defaultVertexPrograms["sprite_infravision"] = defaultVertexPrograms["sprite"];
+    defaultFragmentPrograms["sprite_infravision"] =
 #include "Shaders/sprite_infravision.frag"
-		;
-	
+        ;
+    
     defaultVertexPrograms["invincible"] = defaultVertexPrograms["sprite"];
     defaultFragmentPrograms["invincible"] = ""
         "precision highp float;\n"
@@ -1092,7 +1092,7 @@ void initDefaultPrograms() {
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "    gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), intensity, fogFactor), vertexColor.a * color.a * visibility);\n"
         "}\n";
-	
+    
     defaultVertexPrograms["wall"] = ""
         "uniform mat4 MS_ModelViewProjectionMatrix;\n"
         "uniform mat4 MS_ModelViewMatrix;\n"
@@ -1185,7 +1185,6 @@ void initDefaultPrograms() {
         //"uniform vec4 clipPlane0;\n"
         //"uniform vec4 clipPlane1;\n"
         //"uniform vec4 clipPlane5;\n"
-        "varying vec4 fogColor; \n"
         "varying vec2 textureUV; \n"
         "uniform sampler2D texture0;\n"
         "uniform vec4 lightPositions[32];\n"
@@ -1209,6 +1208,7 @@ void initDefaultPrograms() {
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
         "varying float FDxLOG2E;\n"
+        "varying vec4 fogColor; \n"
         "varying float classicDepth;\n"
         "varying vec4 vPosition_eyespace;\n"
         "varying vec3 eyespaceNormal;\n"
@@ -1238,10 +1238,9 @@ void initDefaultPrograms() {
         "#endif\n"
         "    vec4 color = texture2D(texture0, texCoords.xy);\n"
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
-        "    fogFactor=clamp( length(viewDir), 0.0, 1.0);\n"
-        "    gl_FragColor = vec4(mix(fogColor.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
-    
-        //Add in light diffuse
+        
+        //Calculate light
+        "    vec4 lightAddition = vec4(0.0, 0.0, 0.0, 1.0);\n"
         "    for(int i = 0; i < 32; ++i) {\n"
         "       float size = lightPositions[i].w;\n"
         "       if( size < .1) { break; }\n" //End of light list
@@ -1251,10 +1250,13 @@ void initDefaultPrograms() {
         "       vec3 lightVector = normalize(lightPosition - vPosition_eyespace.xyz);\n"
         "       float diffuse = max(dot(eyespaceNormal, lightVector), 0.0);\n"
         "       diffuse = diffuse * max((size*size - distance*distance)/(size*size), 0.0 );\n" //Attenuation
-        "       gl_FragColor = gl_FragColor + color * diffuse * lightColor;\n"
+        "       lightAddition = lightAddition + color * diffuse * lightColor;\n"
         "    }\n"
+    
+        "    gl_FragColor = vec4(mix(fogColor.rgb, lightAddition.rgb + color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
 
         "}\n";
+    
     defaultVertexPrograms["wall_bloom"] = defaultVertexPrograms["wall"];
     defaultFragmentPrograms["wall_bloom"] = ""
         "precision highp float;\n"
@@ -1309,10 +1311,10 @@ void initDefaultPrograms() {
         "    fogFactor = 1.0;" //dcw this is not working yet. Just make it 1.0 for now.
         "    gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
-	defaultVertexPrograms["wall_infravision"] = defaultVertexPrograms["wall"];
-	defaultFragmentPrograms["wall_infravision"] =
+    defaultVertexPrograms["wall_infravision"] = defaultVertexPrograms["wall"];
+    defaultFragmentPrograms["wall_infravision"] =
 #include "Shaders/wall_infravision.frag"
-		;
+        ;
     
     defaultVertexPrograms["bump"] = defaultVertexPrograms["wall"];
     defaultFragmentPrograms["bump"] = ""
@@ -1347,46 +1349,43 @@ void initDefaultPrograms() {
         "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}\n"
         "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {discard;}\n"
         "   vec3 texCoords = vec3(textureUV.xy, 0.0);\n"
-        "	vec3 normXY = normalize(viewXY);\n"
-        "	texCoords += vec3(normXY.y * -pulsate, normXY.x * pulsate, 0.0);\n"
-        "	texCoords += vec3(normXY.y * -wobble * texCoords.y, wobble * texCoords.y, 0.0);\n"
-        "	float mlFactor = clamp(selfLuminosity + flare - (length(viewDir)/8192.0), 0.0, 1.0);\n"
-        "	vec3 intensity;\n"
-        "	if (vertexColor.r > mlFactor) {\n"
-        "		intensity = vertexColor.rgb + (mlFactor * 0.5); }\n"
-        "	else {\n"
-        "		intensity = (vertexColor.rgb * 0.5) + mlFactor; }\n"
-        "	vec3 viewv = normalize(viewDir);\n"
-        "	// iterative parallax mapping\n"
-        "	float scale = 0.010;\n"
-        "	float bias = -0.005;\n"
-        "	for(int i = 0; i < 4; ++i) {\n"
-        "		vec4 normal = texture2D(texture1, texCoords.xy);\n"
-        "		float h = normal.a * scale + bias;\n"
-        "		texCoords.x += h * viewv.x;\n"
-        "		texCoords.y -= h * viewv.y;\n"
-        "	}\n"
-        "	vec3 norm = (texture2D(texture1, texCoords.xy).rgb - 0.5) * 2.0;\n"
-        "	float diffuse = 0.5 + abs(dot(norm, viewv))*0.5;\n"
+        "    vec3 normXY = normalize(viewXY);\n"
+        "    texCoords += vec3(normXY.y * -pulsate, normXY.x * pulsate, 0.0);\n"
+        "    texCoords += vec3(normXY.y * -wobble * texCoords.y, wobble * texCoords.y, 0.0);\n"
+        "    float mlFactor = clamp(selfLuminosity + flare - (length(viewDir)/8192.0), 0.0, 1.0);\n"
+        "    vec3 intensity;\n"
+        "    if (vertexColor.r > mlFactor) {\n"
+        "        intensity = vertexColor.rgb + (mlFactor * 0.5); }\n"
+        "    else {\n"
+        "        intensity = (vertexColor.rgb * 0.5) + mlFactor; }\n"
+        "    vec3 viewv = normalize(viewDir);\n"
+        "    // iterative parallax mapping\n"
+        "    float scale = 0.010;\n"
+        "    float bias = -0.005;\n"
+        "    for(int i = 0; i < 4; ++i) {\n"
+        "        vec4 normal = texture2D(texture1, texCoords.xy);\n"
+        "        float h = normal.a * scale + bias;\n"
+        "        texCoords.x += h * viewv.x;\n"
+        "        texCoords.y -= h * viewv.y;\n"
+        "    }\n"
+        "    vec3 norm = (texture2D(texture1, texCoords.xy).rgb - 0.5) * 2.0;\n"
+        "    float diffuse = 0.5 + abs(dot(norm, viewv))*0.5;\n"
         "   if (glow > 0.001) {\n"
         "       diffuse = 1.0;\n"
         "   }\n"
-        "	vec4 color = texture2D(texture0, texCoords.xy);\n"
-        "	intensity = clamp(intensity * diffuse, glow, 1.0);\n"
+        "    vec4 color = texture2D(texture0, texCoords.xy);\n"
+        "    intensity = clamp(intensity * diffuse, glow, 1.0);\n"
         "#ifdef GAMMA_CORRECTED_BLENDING\n"
-        "	intensity = intensity * intensity; // approximation of pow(intensity, 2.2)\n"
+        "    intensity = intensity * intensity; // approximation of pow(intensity, 2.2)\n"
         "#endif\n"
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
-        "    fogFactor=clamp( length(viewDir), 0.0, 1.0);\n"
 
-        "	gl_FragColor = vec4(mix(fogColor.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
-
-        //Add in light diffuse
-        "       vec3 t = vec3(tbnMatrix[0][0], tbnMatrix[1][0], tbnMatrix[2][0]);\n"
-        "       vec3 b = vec3(tbnMatrix[0][1], tbnMatrix[1][1], tbnMatrix[2][1]);\n"
-        "       vec3 n = vec3(tbnMatrix[0][2], tbnMatrix[1][2], tbnMatrix[2][2]);\n"
-
-        "    for(int i = 0; i < 32; ++i) {\n"
+        //Calculate light
+        "   vec3 t = vec3(tbnMatrix[0][0], tbnMatrix[1][0], tbnMatrix[2][0]);\n"
+        "   vec3 b = vec3(tbnMatrix[0][1], tbnMatrix[1][1], tbnMatrix[2][1]);\n"
+        "   vec3 n = vec3(tbnMatrix[0][2], tbnMatrix[1][2], tbnMatrix[2][2]);\n"
+        "   vec4 lightAddition = vec4(0.0, 0.0, 0.0, 1.0);\n"
+        "   for(int i = 0; i < 32; ++i) {\n"
         "       float size = lightPositions[i].w;\n"
         "       if( size < .1) { break; }\n" //End of light list
         "       vec3 lightPosition = vec3(lightPositions[i].xyz);\n"
@@ -1402,8 +1401,10 @@ void initDefaultPrograms() {
         "       float diffuse = max(dot(lightVecTangent, norm), 0.0);\n"
 
         "       diffuse = diffuse * max((size*size - distance*distance)/(size*size), 0.0 );\n" //Attenuation
-        "       gl_FragColor = gl_FragColor + color * diffuse * lightColor;\n"
-        "    }\n"
+        "       lightAddition = lightAddition + color * diffuse * lightColor;\n"
+        "   }\n"
+        
+        "    gl_FragColor = vec4(mix(fogColor.rgb, lightAddition.rgb + color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
     defaultVertexPrograms["bump_bloom"] = defaultVertexPrograms["bump"];
     defaultFragmentPrograms["bump_bloom"] = ""
@@ -1433,34 +1434,33 @@ void initDefaultPrograms() {
         "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}\n"
         "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {discard;}\n"
         "   vec3 texCoords = vec3(textureUV.xy, 0.0);\n"
-        "	vec3 normXY = normalize(viewXY);\n"
-        "	texCoords += vec3(normXY.y * -pulsate, normXY.x * pulsate, 0.0);\n"
-        "	texCoords += vec3(normXY.y * -wobble * texCoords.y, wobble * texCoords.y, 0.0);\n"
-        "	vec3 viewv = normalize(viewDir);\n"
-        "	// iterative parallax mapping\n"
-        "	float scale = 0.010;\n"
-        "	float bias = -0.005;\n"
-        "	for(int i = 0; i < 4; ++i) {\n"
-        "		vec4 normal = texture2D(texture1, texCoords.xy);\n"
-        "		float h = normal.a * scale + bias;\n"
-        "		texCoords.x += h * viewv.x;\n"
-        "		texCoords.y -= h * viewv.y;\n"
-        "	}\n"
-        "	vec3 norm = (texture2D(texture1, texCoords.xy).rgb - 0.5) * 2.0;\n"
-        "	float diffuse = 0.5 + abs(dot(norm, viewv))*0.5;\n"
+        "    vec3 normXY = normalize(viewXY);\n"
+        "    texCoords += vec3(normXY.y * -pulsate, normXY.x * pulsate, 0.0);\n"
+        "    texCoords += vec3(normXY.y * -wobble * texCoords.y, wobble * texCoords.y, 0.0);\n"
+        "    vec3 viewv = normalize(viewDir);\n"
+        "    // iterative parallax mapping\n"
+        "    float scale = 0.010;\n"
+        "    float bias = -0.005;\n"
+        "    for(int i = 0; i < 4; ++i) {\n"
+        "        vec4 normal = texture2D(texture1, texCoords.xy);\n"
+        "        float h = normal.a * scale + bias;\n"
+        "        texCoords.x += h * viewv.x;\n"
+        "        texCoords.y -= h * viewv.y;\n"
+        "    }\n"
+        "    vec3 norm = (texture2D(texture1, texCoords.xy).rgb - 0.5) * 2.0;\n"
+        "    float diffuse = 0.5 + abs(dot(norm, viewv))*0.5;\n"
         "   if (glow > 0.001) {\n"
         "       diffuse = 1.0;\n"
         "   }\n"
-        "	vec4 color = texture2D(texture0, texCoords.xy);\n"
-        "	vec3 intensity = clamp(vertexColor.rgb, glow, 1.0);\n"
-        "	intensity = clamp(intensity * bloomScale + bloomShift, 0.0, 1.0);\n"
+        "    vec4 color = texture2D(texture0, texCoords.xy);\n"
+        "    vec3 intensity = clamp(vertexColor.rgb, glow, 1.0);\n"
+        "    intensity = clamp(intensity * bloomScale + bloomShift, 0.0, 1.0);\n"
         "#ifdef GAMMA_CORRECTED_BLENDING\n"
-        "	intensity = intensity * intensity; // approximation of pow(intensity, 2.2)\n"
+        "    intensity = intensity * intensity; // approximation of pow(intensity, 2.2)\n"
         "#endif\n"
-        "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
-        "   fogFactor=clamp( length(viewDir), 0.0, 1.0);\n"
-        "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
+        "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
+        "    gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
-//		defaultFragmentPrograms["sprite"];
+//        defaultFragmentPrograms["sprite"];
 }
 
