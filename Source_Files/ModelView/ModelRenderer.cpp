@@ -29,6 +29,8 @@
 
 #ifdef HAVE_OPENGL
 
+#include "OGL_Shader.h"
+
 #include "ModelRenderer.h"
 #include <algorithm>
 
@@ -198,7 +200,7 @@ void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 			// of treatment as above
 			//glEnableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 			glColorPointer(3,GL_FLOAT,0,Model.ColBase());
-		}
+        }
         else {
 			//glDisableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
         }

@@ -291,7 +291,7 @@ void FBOSwapper::blend_multisample(FBO& other) {
     
 	glEnable(GL_TEXTURE_RECTANGLE_ARB);
 	glActiveTexture(GL_TEXTURE0);
-	
+    
 	glClientActiveTexture(GL_TEXTURE1);
 	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	//GLint multi_coordinates[8] = { 0, GLint(other._h), GLint(other._w), GLint(other._h), GLint(other._w), 0, 0, 0 };

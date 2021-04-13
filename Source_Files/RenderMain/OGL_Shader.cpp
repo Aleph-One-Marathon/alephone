@@ -108,7 +108,8 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
     "clipPlane5",
     "clipPlane6",
     "lightPositions",
-    "lightColors"
+    "lightColors",
+    "useUniformFeatures"
 };
 
 const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] =
@@ -802,11 +803,11 @@ void initDefaultPrograms() {
         "   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}\n"
         "   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {discard;}\n"
 
-      "   float scalex = fSxOxSyOy.x;\n"
-      "   float scaley = fSxOxSyOy.z;\n"
-      "   float offsetx = fSxOxSyOy.y;\n"
-      "   float offsety = fSxOxSyOy.w;\n"
-        
+        "   float scalex = fSxOxSyOy.x;\n"
+        "   float scaley = fSxOxSyOy.z;\n"
+        "   float offsetx = fSxOxSyOy.y;\n"
+        "   float offsety = fSxOxSyOy.w;\n"
+            
         "    vec3 facev = vec3(cos(yaw), sin(yaw), sin(pitch));\n"
         "    vec3 relv  = normalize(relDir);\n"
         "    float x = relv.x / (relv.z * zoom) + atan(facev.x, facev.y);\n"
@@ -1099,8 +1100,21 @@ void initDefaultPrograms() {
         "uniform mat4 MS_ModelViewMatrixInverse;\n"
         "uniform mat4 MS_TextureMatrix;\n"
         
-        "uniform vec4 uFogColor;\n"
+        "uniform float useUniformFeatures;\n" //Flag indicating whether to use the features as uniforms (such as for 3d models), or per-vertex attributes (normal walls).
+        "uniform vec4 clipPlane0;\n"
+        "uniform vec4 clipPlane1;\n"
+        "uniform vec4 clipPlane5;\n"
+        "uniform vec4 uColor;\n"
+        "uniform float bloomScale;\n"
+        "uniform float bloomShift;\n"
+        "uniform float flare;\n"
+        "uniform float selfLuminosity;\n"
+        "uniform float pulsate;\n"
+        "uniform float wobble;\n"
         //"uniform float depth;\n"
+        "uniform float glow;\n"
+
+        "uniform vec4 uFogColor;\n"
         "attribute vec2 vTexCoord;   \n"
         "attribute vec3 vNormal;   \n"
         "attribute vec4 vPosition;\n"
@@ -1172,12 +1186,28 @@ void initDefaultPrograms() {
         "    vertexColor = vColor;\n"
         "    FDxLOG2E = -uFogColor.a * 1.442695;\n"
         "    fogColor = uFogColor;"
-        "    fSxOxSyOy = vSxOxSyOy;\n"
-        "    fBsBtFlSl = vBsBtFlSl;\n"
-        "    fPuWoDeGl = vPuWoDeGl;\n"
-        "    fClipPlane0 = vClipPlane0;\n"
-        "    fClipPlane1 = vClipPlane1;\n"
-        "    fClipPlane5 = vClipPlane5;\n"
+        "    if( useUniformFeatures > 0.5 ) {\n"
+        "       fClipPlane0 = clipPlane0;\n"
+        "       fClipPlane0 = clipPlane1;\n"
+        "       fClipPlane0 = clipPlane5;\n"
+        "       vertexColor = uColor;\n"
+        "       fBsBtFlSl.x = bloomScale;\n"
+        "       fBsBtFlSl.y = bloomShift;\n"
+        "       fBsBtFlSl.z = flare;\n"
+        "       fBsBtFlSl.w = selfLuminosity;\n"
+        "       fPuWoDeGl.x = pulsate;\n"
+        "       fPuWoDeGl.y = wobble;\n"
+        "       fPuWoDeGl.z = depth;\n"
+        "       fPuWoDeGl.w = glow;\n"
+        "    } else { \n"
+        "       fClipPlane0 = vClipPlane0;\n"
+        "       fClipPlane1 = vClipPlane1;\n"
+        "       fClipPlane5 = vClipPlane5;\n"
+        "       vertexColor = vColor;\n"
+        "       fSxOxSyOy = vSxOxSyOy;\n"
+        "       fBsBtFlSl = vBsBtFlSl;\n"
+        "       fPuWoDeGl = vPuWoDeGl;\n"
+        "   }\n"
         "    eyespaceNormal = vec3(MS_ModelViewMatrix * vec4(vNormal, 0.0));\n"
         "}\n";
     defaultFragmentPrograms["wall"] = ""

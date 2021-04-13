@@ -1052,6 +1052,8 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	s->setFloat(Shader::U_Glow, 0);
 	MSI()->color4f(color[0], color[1], color[2], 1);
 
+    s->setFloat(Shader::U_UseUniformFeatures, 1); //Choose to use the features as uniforms.
+    
 	//glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
     glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.PosBase());
     glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
@@ -1060,17 +1062,20 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	if (ModelPtr->Model.TxtrCoords.empty()) {
 		//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	} else {
-		glTexCoordPointer(2,GL_FLOAT,0,ModelPtr->Model.TCBase());
+        glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, ModelPtr->Model.TCBase());
+        glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
 	}
 
 	//glEnableClientState(GL_NORMAL_ARRAY);
 	//glNormalPointer(GL_FLOAT,0,ModelPtr->Model.NormBase());
     glVertexAttribPointer(Shader::ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.NormBase());
     glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
-
+    
 	glClientActiveTexture(GL_TEXTURE1);
 	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
-	glTexCoordPointer(4,GL_FLOAT,sizeof(vec4),ModelPtr->Model.TangentBase());
+	//glTexCoordPointer(4,GL_FLOAT,sizeof(vec4),ModelPtr->Model.TangentBase());
+    glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS4, 4, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.TangentBase());
+    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS4);
 
 	if(ModelPtr->Use(CLUT,OGL_SkinManager::Normal)) {
 		LoadModelSkin(SkinPtr->NormalImg, Collection, CLUT);
@@ -1103,6 +1108,15 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
       lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
       lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
       lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
+        
+        GLfloat plane0[4], plane1[4], plane5[4];
+        MatrixStack::Instance()->getPlanev(0, plane0);
+        MatrixStack::Instance()->getPlanev(1, plane1);
+        MatrixStack::Instance()->getPlanev(5, plane5);
+        lastShader->setVec4(Shader::U_ClipPlane0, plane0);
+        lastShader->setVec4(Shader::U_ClipPlane1, plane1);
+        lastShader->setVec4(Shader::U_ClipPlane5, plane5);
+
     }
     
 	glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());

@@ -539,7 +539,8 @@ void DrawCache::drawAndResetBuffer(int index) {
     
     drawBuffers[index].shader->setVec4v(Shader::U_LightColors, ACTIVE_LIGHTS_MAX, activeLightColors);
     drawBuffers[index].shader->setVec4v(Shader::U_LightPositions, ACTIVE_LIGHTS_MAX, activeLightPositions);
-
+    drawBuffers[index].shader->setFloat(Shader::U_UseUniformFeatures, 0); //Choose to use the packed features per-vertex.
+    
     glDrawElements(GL_TRIANGLES, drawBuffers[index].numIndices, GL_UNSIGNED_INT, drawBuffers[index].indices);
     
     drawCallsMade++;
