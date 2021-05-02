@@ -143,6 +143,7 @@
     <ClCompile Include="GameWorld\effects.cpp" />
     <ClCompile Include="GameWorld\ephemera.cpp" />
     <ClCompile Include="GameWorld\flood_map.cpp" />
+    <ClCompile Include="GameWorld\interpolated_world.cpp" />
     <ClCompile Include="GameWorld\items.cpp" />
     <ClCompile Include="GameWorld\lightsource.cpp" />
     <ClCompile Include="GameWorld\map.cpp" />
@@ -303,6 +304,7 @@
     <ClCompile Include="RenderOther\ViewControl.cpp" />
     <ClCompile Include="shell.cpp" />
     <ClCompile Include="shell_misc.cpp" />
+    <ClCompile Include="shell_options.cpp" />
     <ClCompile Include="Sound\BasicIFFDecoder.cpp" />
     <ClCompile Include="Sound\Decoder.cpp" />
     <ClCompile Include="Sound\FFmpegDecoder.cpp" />
@@ -363,6 +365,7 @@
     <ClInclude Include="GameWorld\effect_definitions.h" />
     <ClInclude Include="GameWorld\ephemera.h" />
     <ClInclude Include="GameWorld\flood_map.h" />
+    <ClInclude Include="GameWorld\interpolated_world.h" />
     <ClInclude Include="GameWorld\items.h" />
     <ClInclude Include="GameWorld\item_definitions.h" />
     <ClInclude Include="GameWorld\lightsource.h" />
@@ -531,6 +534,7 @@
     <ClInclude Include="RenderOther\TextStrings.h" />
     <ClInclude Include="RenderOther\ViewControl.h" />
     <ClInclude Include="shell.h" />
+    <ClInclude Include="shell_options.h" />
     <ClInclude Include="Sound\BasicIFFDecoder.h" />
     <ClInclude Include="Sound\Decoder.h" />
     <ClInclude Include="Sound\FFmpegDecoder.h" />
