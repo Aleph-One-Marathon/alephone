@@ -411,6 +411,7 @@ const luaL_Reg Lua_HotkeyBinding_Get[] = {
 	{"joystick", Lua_HotkeyBinding_Get_Binding<type_joystick>},
 	{"key", Lua_HotkeyBinding_Get_Binding<type_keyboard>},
 	{"mouse", Lua_HotkeyBinding_Get_Binding<type_mouse>},
+	{0, 0}
 };
 
 char Lua_HotkeyBindings_Name[] = "hotkey_bindings";
