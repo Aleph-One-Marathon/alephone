@@ -432,6 +432,34 @@ static int Lua_Platform_Get_Floor_Height(lua_State *L)
 	return 1;
 }
 
+static int Lua_Platform_Get_Maximum_Ceiling_Height(lua_State *L)
+{
+	platform_data *platform = get_platform_data(Lua_Platform::Index(L, 1));
+	lua_pushnumber(L, (double) platform->maximum_ceiling_height / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Platform_Get_Maximum_Floor_Height(lua_State *L)
+{
+	platform_data *platform = get_platform_data(Lua_Platform::Index(L, 1));
+	lua_pushnumber(L, (double) platform->maximum_floor_height / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Platform_Get_Minimum_Ceiling_Height(lua_State *L)
+{
+	platform_data *platform = get_platform_data(Lua_Platform::Index(L, 1));
+	lua_pushnumber(L, (double) platform->minimum_ceiling_height / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Platform_Get_Minimum_Floor_Height(lua_State *L)
+{
+	platform_data *platform = get_platform_data(Lua_Platform::Index(L, 1));
+	lua_pushnumber(L, (double) platform->minimum_floor_height / WORLD_ONE);
+	return 1;
+}
+
 static int Lua_Platform_Get_Polygon(lua_State *L)
 {
 	Lua_Polygon::Push(L, get_platform_data(Lua_Platform::Index(L, 1))->polygon_index);
@@ -569,6 +597,10 @@ const luaL_Reg Lua_Platform_Get[] = {
 	{"initially_active", Lua_Platform_Get_Static_Flag<_platform_is_initially_active>},
 	{"initially_extended", Lua_Platform_Get_Static_Flag<_platform_is_initially_extended>},
 	{"locked", Lua_Platform_Get_Static_Flag<_platform_is_locked>},
+	{"maximum_ceiling_height", Lua_Platform_Get_Maximum_Ceiling_Height},
+	{"maximum_floor_height", Lua_Platform_Get_Maximum_Floor_Height},
+	{"minimum_ceiling_height", Lua_Platform_Get_Minimum_Ceiling_Height},
+	{"minimum_floor_height", Lua_Platform_Get_Minimum_Floor_Height},
 	{"monster_controllable", Lua_Platform_Get_Static_Flag<_platform_is_monster_controllable>},
 	{"reverses_direction_when_obstructed", Lua_Platform_Get_Static_Flag<_platform_reverses_direction_when_obstructed>},
 	{"player_controllable", Lua_Platform_Get_Static_Flag<_platform_is_player_controllable>},
