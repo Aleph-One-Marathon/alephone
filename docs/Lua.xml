@@ -1218,19 +1218,19 @@
 		<type>boolean</type>
 		<note>this flag doesn’t actually do anything</note>
       </variable>
-      <variable name="maximum_ceiling_height" version="SVN">
+      <variable name="maximum_ceiling_height" access="read-only" version="git">
     <description>greatest height a platform's ceiling can ever rise</description>
     <type>WU</type>
       </variable>
-      <variable name="maximum_floor_height" version="SVN">
+      <variable name="maximum_floor_height" access="read-only" version="git">
     <description>greatest height a platform's floor can ever rise</description>
     <type>WU</type>
       </variable>
-      <variable name="minimum_ceiling_height" version="SVN">
+      <variable name="minimum_ceiling_height" access="read-only" version="git">
     <description>least height a platform's ceiling must rise</description>
     <type>WU</type>
       </variable>
-      <variable name="minimum_floor_height" version="SVN">
+      <variable name="minimum_floor_height" access="read-only" version="git">
     <description>least height a platform's floor must rise</description>
     <type>WU</type>
       </variable>
