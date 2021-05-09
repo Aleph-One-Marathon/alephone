@@ -35,6 +35,7 @@ lib*.a
 # VisualStudio specific
 Debug/
 Release/
+Source_Files/packages
 .vs/
 *.vcxproj.user
 *.aps
