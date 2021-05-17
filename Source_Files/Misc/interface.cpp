@@ -1789,7 +1789,7 @@ static void display_about_dialog()
 	authors.push_back("Carl Gherardi");
 	authors.push_back("Thomas Herzog");
 	authors.push_back("Chris Hallock (LidMop)");
-	authors.push_back("Benoît Hauquier (Kolfering)");
+	authors.push_back(utf8_to_mac_roman("Benoît Hauquier (Kolfering)"));
 	authors.push_back("Peter Hessler");
 	authors.push_back("Matthew Hielscher");
 	authors.push_back("Rhys Hill");
