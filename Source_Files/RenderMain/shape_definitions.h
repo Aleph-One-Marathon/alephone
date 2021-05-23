@@ -44,7 +44,7 @@ struct collection_header /* 32 bytes on disk */
 
 	// LP: handles to pointers
 	collection_definition *collection;
-	byte *shading_tables;
+	std::vector<byte> shading_tables;
 };
 const int SIZEOF_collection_header = 32;
 

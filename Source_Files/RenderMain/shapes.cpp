@@ -736,10 +736,10 @@ static void allocate_shading_tables(short collection_index, bool strip)
 	collection_header *header = get_collection_header(collection_index);
 	// Allocate enough space for this collection's shading tables
 	if (strip)
-		header->shading_tables = NULL;
+		header->shading_tables.clear();
 	else {
 		collection_definition *definition = get_collection_definition(collection_index);
-		header->shading_tables = (byte *)malloc(get_shading_table_size(collection_index) * definition->clut_count + shading_table_size * NUMBER_OF_TINT_TABLES);
+		header->shading_tables.resize(get_shading_table_size(collection_index) * definition->clut_count + shading_table_size * NUMBER_OF_TINT_TABLES);
 	}
 }
 
@@ -848,7 +848,7 @@ static bool load_collection(short collection_index, bool strip)
 
 	allocate_shading_tables(collection_index, strip);
 	
-	if (header->shading_tables == NULL) {
+	if (header->shading_tables.empty()) {
 		delete header->collection;
 		header->collection = NULL;
 		return false;
@@ -867,9 +867,8 @@ static void unload_collection(struct collection_header *header)
 {
 	assert(header->collection);
 	delete header->collection;
-	free(header->shading_tables);
+	header->shading_tables.clear();
 	header->collection = NULL;
-	header->shading_tables = NULL;
 }
 
 #define ENDC_TAG FOUR_CHARS_TO_INT('e', 'n', 'd', 'c')
@@ -1084,7 +1083,7 @@ void open_shapes_file(FileSpecifier& File)
 			S += 6*2;
 			
 			ObjPtr->collection = NULL;	// so unloading can work properly
-			ObjPtr->shading_tables = NULL;	// so unloading can work properly
+			ObjPtr->shading_tables.clear();	// so unloading can work properly
 		}
 		
 		assert((S - CollHdrStream) == Count*SIZEOF_collection_header);
@@ -2363,7 +2362,7 @@ static void *get_collection_shading_tables(
 	short collection_index,
 	short clut_index)
 {
-	void *shading_tables= get_collection_header(collection_index)->shading_tables;
+	void *shading_tables= get_collection_header(collection_index)->shading_tables.data();
 
 	shading_tables = (uint8 *)shading_tables + clut_index*get_shading_table_size(collection_index);
 	
@@ -2377,7 +2376,7 @@ static void *get_collection_tint_tables(
 	struct collection_definition *definition= get_collection_definition(collection_index);
 	if (!definition) return NULL;
 	
-	void *tint_table= get_collection_header(collection_index)->shading_tables;
+	void *tint_table= get_collection_header(collection_index)->shading_tables.data();
 
 	tint_table = (uint8 *)tint_table + get_shading_table_size(collection_index)*definition->clut_count + shading_table_size*tint_index;
 	
