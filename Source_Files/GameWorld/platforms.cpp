@@ -151,7 +151,7 @@ short new_platform(
 		platform_index= dynamic_world->platform_count++;
 		platform= platforms+platform_index;
 
-		/* remember the platform_index in the polygonÕs .permutation field */
+		/* remember the platform_index in the polygonâ€™s .permutation field */
 		polygon->permutation= platform_index;
 		polygon->type= _polygon_is_platform;
 		
@@ -287,9 +287,9 @@ void update_platforms(
 				world_distance delta_height= PLATFORM_IS_EXTENDING(platform) ? platform->speed :
 					(PLATFORM_CONTRACTS_SLOWER(platform) ? (-(platform->speed>>2)) : -platform->speed);
 
-				/* adjust and pin heights: if we think weÕre fully contracted or expanded, make
-					sure our heights reflect that (we donÕt want a split platform to have blank
-					space between it because it didnÕt quite close all the way) */
+				/* adjust and pin heights: if we think weâ€™re fully contracted or expanded, make
+					sure our heights reflect that (we donâ€™t want a split platform to have blank
+					space between it because it didnâ€™t quite close all the way) */
 				CLEAR_PLATFORM_POSITIONING_FLAGS(platform);
 				if (PLATFORM_COMES_FROM_FLOOR(platform))
 				{
@@ -323,8 +323,8 @@ void update_platforms(
 				if (change_polygon_height(platform->polygon_index, new_floor_height, new_ceiling_height,
 					PLATFORM_CAUSES_DAMAGE(platform) ? &definition->damage : (struct damage_definition *) NULL))
 				{
-					/* if we werenÕt blocked, remember that we moved last time, change our current
-						level, adjust the textures if weÕre coming down from the ceiling,
+					/* if we werenâ€™t blocked, remember that we moved last time, change our current
+						level, adjust the textures if weâ€™re coming down from the ceiling,
 						and finally adjust the heights of all endpoints and lines which make
 						up our polygon to reflect the height change */
 					if (PLATFORM_COMES_FROM_CEILING(platform))
@@ -336,8 +336,8 @@ void update_platforms(
 				}
 				else
 				{
-					/* if we were blocked, play a sound if we werenÕt blocked last time and reverse
-						directions if weÕre supposed to */
+					/* if we were blocked, play a sound if we werenâ€™t blocked last time and reverse
+						directions if weâ€™re supposed to */
 					if (PLATFORM_WAS_MOVING(platform)) sound_code= _obstructed_sound;
 					if (PLATFORM_REVERSES_DIRECTION_WHEN_OBSTRUCTED(platform))
 					{
@@ -445,7 +445,7 @@ short monster_can_enter_platform(
 	{
 		if (PLATFORM_IS_ACTIVE(platform) && PLATFORM_COMES_FROM_FLOOR(platform) && !PLATFORM_COMES_FROM_CEILING(platform))
 		{
-			/* if this platform doesnÕt go floor to ceiling and it stops at the source polygon, it might be ok */
+			/* if this platform doesnâ€™t go floor to ceiling and it stops at the source polygon, it might be ok */
 			if (platform->maximum_floor_height!=platform->minimum_ceiling_height &&
 				(platform->minimum_floor_height==source_polygon->floor_height ||
 				platform->maximum_floor_height==source_polygon->floor_height))
@@ -527,9 +527,9 @@ void player_touch_platform_state(
 	if (!definition) return;
 	short sound_code= NONE;
 	
-	/* if we canÕt control this platform, play the uncontrollable sound, if itÕs inactive activate
-		it and if itÕs active and moving reverse itÕs direction if thatÕs what it does when itÕs
-		obstructed, if itÕs active but not moving then zero the delay */
+	/* if we canâ€™t control this platform, play the uncontrollable sound, if itâ€™s inactive activate
+		it and if itâ€™s active and moving reverse itâ€™s direction if thatâ€™s what it does when itâ€™s
+		obstructed, if itâ€™s active but not moving then zero the delay */
 	if (PLATFORM_IS_PLAYER_CONTROLLABLE(platform))
 	{
 		if (PLATFORM_IS_ACTIVE(platform))
@@ -876,7 +876,7 @@ void adjust_platform_endpoint_and_line_heights(
 			line->highest_adjacent_floor= MAX(polygon->floor_height, adjacent_polygon->floor_height);
 			line->lowest_adjacent_ceiling= MIN(polygon->ceiling_height, adjacent_polygon->ceiling_height);
 
-			/* only worry about transparency and solidity if thereÕs a polygon on the other side */
+			/* only worry about transparency and solidity if thereâ€™s a polygon on the other side */
 			if (LINE_IS_VARIABLE_ELEVATION(line))
 			{
 				SET_LINE_TRANSPARENCY(line, line->highest_adjacent_floor<line->lowest_adjacent_ceiling);
@@ -949,9 +949,9 @@ static void play_platform_sound(
 	SoundManager::instance()->CauseAmbientSoundSourceUpdate();
 }
 
-/* rules for using native polygon heights: a) if this is a floor platform, then take the polygonÕs
+/* rules for using native polygon heights: a) if this is a floor platform, then take the polygonâ€™s
 	native floor height to be the maximum height if it is greater than the minimum height, otherwise
-	use it as the minimum height; b) if this is a ceiling platform, then take the polygonÕs native
+	use it as the minimum height; b) if this is a ceiling platform, then take the polygonâ€™s native
 	ceiling height to be the minimum height if it is less than the maximum height, otherwise use it
 	as the maximum height; c) native polygon height is not used for floor/ceiling platforms */
 static void calculate_platform_extrema(

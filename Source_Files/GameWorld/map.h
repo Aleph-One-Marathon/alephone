@@ -322,7 +322,7 @@ const int SIZEOF_random_sound_image_data = 32;
 #define CLEAR_OBJECT_RENDERED_FLAG(o) ((o)->flags&=(uint16)~0x4000)
 
 /* this field is only valid after transmogrify_object_shape is called; in terms of our pipeline, that
-	means that itÕs only valid if OBJECT_WAS_RENDERED returns true *and* was cleared before
+	means that itâ€™s only valid if OBJECT_WAS_RENDERED returns true *and* was cleared before
 	the last call to render_scene() ... this means that if OBJECT_WAS_RENDERED returns false,
 	the monster and projectile managers will probably call transmogrif_object_shape themselves.
 	for reasons beyond this scope of this comment to explain, the keyframe cannot be frame zero!
@@ -798,7 +798,7 @@ struct object_frequency_definition
 	
 	int16 initial_count;   // number that initially appear. can be greater than maximum_count
 	int16 minimum_count;   // this number of objects will be maintained.
-	int16 maximum_count;   // canÕt exceed this, except at the beginning of the level.
+	int16 maximum_count;   // canâ€™t exceed this, except at the beginning of the level.
 	
 	int16 random_count;    // maximum random occurences of the object
 	uint16 random_chance;    // in (0, 65535]
@@ -1168,7 +1168,7 @@ struct shape_and_transfer_mode
 void get_object_shape_and_transfer_mode(world_point3d *camera_location, short object_index, struct shape_and_transfer_mode *data);
 void get_object_shape_and_transfer_mode(world_point3d *camera_location, object_data* object, shape_and_transfer_mode *data);
 void set_object_shape_and_transfer_mode(short object_index, shape_descriptor shape, short transfer_mode);
-void animate_object(short object_index); /* assumes ¶t==1 tick */
+void animate_object(short object_index); /* assumes âˆ‚t==1 tick */
 void animate_object(object_data* data, int16_t object_index);
 bool randomize_object_sequence(short object_index, shape_descriptor shape);
 

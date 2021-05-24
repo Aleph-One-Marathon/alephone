@@ -69,7 +69,7 @@ enum /* next_polygon_along_line() states */
 
 /* ---------- clipping data */
 
-enum /* É_clip_data flags */
+enum /* â€¦_clip_data flags */
 {
 	_clip_left= 0x0001,
 	_clip_right= 0x0002,

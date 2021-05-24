@@ -148,7 +148,7 @@ struct weapon_interface_data weapon_interface_definitions[NUMBER_OF_WEAPON_INTER
 		_i_assault_rifle,
 		BUILD_DESCRIPTOR(_collection_interface, _assault_panel),
 		430, 452,
-		439, NONE, //¥¥
+		439, NONE, //â€¢â€¢
 		366, 460, 
 		false,
 		{
@@ -246,7 +246,7 @@ struct weapon_interface_data weapon_interface_definitions[NUMBER_OF_WEAPON_INTER
 		_i_smg,
 		BUILD_DESCRIPTOR(_collection_interface, _smg),
 		430, 452,
-		439, NONE, //¥¥
+		439, NONE, //â€¢â€¢
 		366, 460, 
 		false,
 		{

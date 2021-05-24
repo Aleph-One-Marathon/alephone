@@ -22,7 +22,7 @@ Friday, August 19, 1994 2:05:54 PM
 
 Monday, February 27, 1995 11:40:47 PM  (Jason')
 	rob suggests that the PPC might not write-allocate cache lines so we might be faster if we
-	read from a location weÕre about to write to.  he also suggested a rowbytes of 704 instead
+	read from a location weâ€™re about to write to.  he also suggested a rowbytes of 704 instead
 	of 640 off-screen for better cache performance.
 
 Jan 30, 2000 (Loren Petrich):

@@ -35,11 +35,11 @@
 				passed in.
 
 Future Options:
-ğÊReentrancy
-ğÊUse malloc to actually make it possible to read the data as changes are made in the future?
+î€Â Reentrancy
+î€Â Use malloc to actually make it possible to read the data as changes are made in the future?
 
 	Saturday, October 28, 1995 1:13:38 PM- whoops.  Had a huge memory leak in the inflate wad
-		data.  Iâm fired.
+		data.  I'm fired.
 	
 Jan 30, 2000 (Loren Petrich):
 	Did some typecasts

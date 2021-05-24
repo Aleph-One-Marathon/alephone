@@ -80,7 +80,7 @@ enum /* static platform flags */
 	_platform_comes_from_floor, /* platform rises from floor */
 	_platform_comes_from_ceiling, /* platform lowers from ceiling */
 	_platform_causes_damage, /* when obstructed by monsters, this platform causes damage */
-	_platform_does_not_activate_parent, /* does not reactive itÕs parent (i.e., that platform which activated it) */
+	_platform_does_not_activate_parent, /* does not reactive itâ€™s parent (i.e., that platform which activated it) */
 	_platform_activates_only_once, /* cannot be activated a second time */
 	_platform_activates_light, /* activates floor and ceiling lightsources while activating */
 	_platform_deactivates_light, /* deactivates floor and ceiling lightsources while deactivating */
@@ -241,7 +241,7 @@ struct platform_data /* 140 bytes */
 
 	uint16 dynamic_flags;
 	world_distance floor_height, ceiling_height;
-	int16 ticks_until_restart; /* if weÕre not moving but are active, this is our delay until we move again */
+	int16 ticks_until_restart; /* if weâ€™re not moving but are active, this is our delay until we move again */
 
 	struct endpoint_owner_data endpoint_owners[MAXIMUM_VERTICES_PER_POLYGON];
 

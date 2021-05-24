@@ -755,7 +755,7 @@ static void	change_panel_state(
                                 //MH: Lua script hook
                                 L_Call_Terminal_Enter(side->control_panel_permutation,player_index);
 				
-				/* this will handle changing levels, if necessary (i.e., if weÕre finished) */
+				/* this will handle changing levels, if necessary (i.e., if weâ€™re finished) */
 				enter_computer_interface(player_index, side->control_panel_permutation, calculate_level_completion_state());
 			}
 			break;

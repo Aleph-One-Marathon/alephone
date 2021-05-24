@@ -279,7 +279,7 @@ struct physics_variables
 	_fixed actual_height;
 
 	/* used by mask_in_absolute_positioning_information (because it is not really absolute) to
-		keep track of where weÕre going */
+		keep track of where weâ€™re going */
 	_fixed adjusted_pitch, adjusted_yaw;
 	
 	fixed_vector3d external_velocity; /* from impacts; slowly absorbed */
@@ -293,7 +293,7 @@ struct physics_variables
 	_fixed ceiling_height; /* same as above, but ceiling height */
 	_fixed media_height; /* media height */
 
-	int16 action; /* what the playerÕs legs are doing, basically */
+	int16 action; /* what the playerâ€™s legs are doing, basically */
 	uint16 old_flags, flags; /* stuff like _RECENTERING */
 };
 
@@ -362,7 +362,7 @@ struct player_data
 	int16 team;
 	char name[MAXIMUM_PLAYER_NAME_LENGTH+1];
 	
-	/* shadowed from physics_variables structure below and the playerÕs object (read-only) */
+	/* shadowed from physics_variables structure below and the playerâ€™s object (read-only) */
 	world_point3d location;
 	world_point3d camera_location; // beginning of fake world_location3d structure
 	int16 camera_polygon_index;
@@ -370,10 +370,10 @@ struct player_data
 	int16 supporting_polygon_index; /* what polygon is actually supporting our weight */
 	int16 last_supporting_polygon_index;
 
-	/* suit energy shadows vitality in the playerÕs monster slot */
+	/* suit energy shadows vitality in the playerâ€™s monster slot */
 	int16 suit_energy, suit_oxygen;
 	
-	int16 monster_index; /* this playerÕs entry in the monster list */
+	int16 monster_index; /* this playerâ€™s entry in the monster list */
 	int16 object_index; /* monster->object_index */
 	
 	/* Reset by initialize_player_weapons */
@@ -500,7 +500,7 @@ void team_damage_from_player_data(void);
 // ZZZ: this now takes a set of ActionQueues as a parameter so the caller can redirect
 // the update routine's input.  Also, now callers can request a 'predictive update',
 // which changes less state, in an effort to make partial state saving/restoration successful.
-void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive); /* assumes ¶t==1 tick */
+void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive); /* assumes âˆ‚t==1 tick */
 void decode_hotkeys(ModifiableActionQueues& action_queues);
 
 // handle pausing Marathon 1 terminals

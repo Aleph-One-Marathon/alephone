@@ -49,7 +49,7 @@ struct physics_constants
 	_fixed maximum_elevation; /* positive and negative */
 	_fixed external_angular_deceleration;
 	
-	/* step_length is distance between adjacent nodes in the actorÕs phase */
+	/* step_length is distance between adjacent nodes in the actorâ€™s phase */
 	_fixed step_delta, step_amplitude;
 	_fixed radius, height, dead_height, camera_height, splash_height;
 	

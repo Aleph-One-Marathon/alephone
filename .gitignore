@@ -39,3 +39,4 @@ Source_Files/packages
 .vs/
 *.vcxproj.user
 *.aps
+.vscode/
