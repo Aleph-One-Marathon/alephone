@@ -1,0 +1,11 @@
+{
+   "name":"libnat",
+   "version-date":"2021-04-08",
+   "dependencies":[
+      {
+         "name":"expat",
+         "version>=":"2020-08-18"
+      }
+   ],
+   "builtin-baseline":"a3db16a4475b963cacf0260068c497fb72c8f3c0"
+}

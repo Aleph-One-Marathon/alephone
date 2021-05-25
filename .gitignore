@@ -36,6 +36,8 @@ lib*.a
 Debug/
 Release/
 Source_Files/packages
+vcpkg_installed_64/
+vcpkg_installed_86/
 .vs/
 *.vcxproj.user
 *.aps
