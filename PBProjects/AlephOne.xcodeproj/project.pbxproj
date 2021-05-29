@@ -1875,7 +1875,6 @@
 
 /* Begin PBXFileReference section */
 		088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = SdlMetaserverClientUi.cpp; path = ../Source_Files/Network/Metaserver/SdlMetaserverClientUi.cpp; sourceTree = SOURCE_ROOT; };
-		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		270D534B0FCB417500482ED4 /* OGL_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Blitter.h; sourceTree = "<group>"; };
 		2710CC5F1B8F94FC00CE2EAE /* OGL_FBO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_FBO.cpp; sourceTree = "<group>"; };
 		2710CC601B8F94FC00CE2EAE /* OGL_FBO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_FBO.h; sourceTree = "<group>"; };
@@ -1998,6 +1997,10 @@
 		AE179F0B09C3D79500512061 /* ssdp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = ssdp.c; path = ../Source_Files/LibNAT/ssdp.c; sourceTree = "<group>"; };
 		AE179F0C09C3D79500512061 /* upnp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = upnp.c; path = ../Source_Files/LibNAT/upnp.c; sourceTree = "<group>"; };
 		AE179F0D09C3D79500512061 /* utility.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = utility.c; path = ../Source_Files/LibNAT/utility.c; sourceTree = "<group>"; };
+		AE1F1B912662C5A500E6390E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		AE1F1B922662C5A500E6390E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = AppStore/Marathon/en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		AE1F1B932662C5A600E6390E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = "AppStore/Marathon 2/en.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		AE1F1B942662C5A600E6390E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = "AppStore/Marathon Infinity/en.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ReplacementSounds.cpp; sourceTree = "<group>"; };
 		AE2A50CC09C67253007681A4 /* Scenario.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Scenario.cpp; path = ../Source_Files/Misc/Scenario.cpp; sourceTree = SOURCE_ROOT; };
 		AE2A50CF09C6727C007681A4 /* Scenario.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Scenario.h; path = ../Source_Files/Misc/Scenario.h; sourceTree = SOURCE_ROOT; };
@@ -2011,7 +2014,6 @@
 		AE48F3551421900900051D61 /* Statistics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Statistics.h; path = ../Source_Files/Misc/Statistics.h; sourceTree = "<group>"; };
 		AE505D0B141D45E600915344 /* Marathon 2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Marathon 2.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE505D12141D46A900915344 /* Info-MAS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Info-MAS.plist"; path = "AppStore/Marathon 2/Info-MAS.plist"; sourceTree = "<group>"; };
-		AE505D15141D46B100915344 /* English */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = English; path = "AppStore/Marathon 2/English.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		AE505D20141D47BF00915344 /* Marathon 2.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = "Marathon 2.icns"; path = "AppStore/Marathon 2/Marathon 2.icns"; sourceTree = "<group>"; };
 		AE51545D0D46E84A00506B58 /* lua_map.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_map.cpp; sourceTree = "<group>"; };
 		AE51545E0D46E84A00506B58 /* lua_map.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_map.h; sourceTree = "<group>"; };
@@ -2046,7 +2048,6 @@
 		AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ImageLoader_Shared.cpp; path = ../Source_Files/RenderMain/ImageLoader_Shared.cpp; sourceTree = SOURCE_ROOT; };
 		AE791CF60968E49100350190 /* DDS.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = DDS.h; path = ../Source_Files/RenderMain/DDS.h; sourceTree = SOURCE_ROOT; };
 		AE7A1438141D15D600834C2D /* Info-MAS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Info-MAS.plist"; path = "AppStore/Marathon/Info-MAS.plist"; sourceTree = "<group>"; };
-		AE7A143B141D16D000834C2D /* English */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = English; path = AppStore/Marathon/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AE7C21800BFF67B700CE63EC /* lapi.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = lapi.c; sourceTree = "<group>"; };
 		AE7C21810BFF67B700CE63EC /* lauxlib.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = lauxlib.c; sourceTree = "<group>"; };
 		AE7C21820BFF67B700CE63EC /* lbaselib.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = lbaselib.c; sourceTree = "<group>"; };
@@ -2132,7 +2133,6 @@
 		AEAE132D0FC9C3C800EDA5A6 /* BStream.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = BStream.h; path = ../Source_Files/CSeries/BStream.h; sourceTree = "<group>"; };
 		AEB4A2AD14296CAE00537AE7 /* Marathon Infinity.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Marathon Infinity.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEB4A2B214296DC000537AE7 /* Marathon Infinity.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = "Marathon Infinity.icns"; path = "AppStore/Marathon Infinity/Marathon Infinity.icns"; sourceTree = "<group>"; };
-		AEB4A2B514296DC700537AE7 /* English */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = English; path = "AppStore/Marathon Infinity/English.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		AEB4A2B714296DCF00537AE7 /* Info-MAS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Info-MAS.plist"; path = "AppStore/Marathon Infinity/Info-MAS.plist"; sourceTree = "<group>"; };
 		AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SW_Texture_Extras.cpp; sourceTree = "<group>"; };
 		AEC3C89609AD68AE003258E4 /* Aleph One.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Aleph One.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -4342,7 +4342,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1000;
+				LastUpgradeCheck = 1240;
 				TargetAttributes = {
 					AE505B3A141D45E600915344 = {
 						SystemCapabilities = {
@@ -4369,10 +4369,11 @@
 			};
 			buildConfigurationList = AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne" */;
 			compatibilityVersion = "Xcode 10.0";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
-				English,
+				Base,
+				en,
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* SDL Application */;
 			projectDirPath = "";
@@ -5574,7 +5575,7 @@
 		089C165CFE840E0CC02AAC07 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				089C165DFE840E0CC02AAC07 /* English */,
+				AE1F1B912662C5A500E6390E /* en */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = SOURCE_ROOT;
@@ -5582,7 +5583,7 @@
 		AE505D14141D46B100915344 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				AE505D15141D46B100915344 /* English */,
+				AE1F1B932662C5A600E6390E /* en */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -5590,7 +5591,7 @@
 		AE7A143A141D16D000834C2D /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				AE7A143B141D16D000834C2D /* English */,
+				AE1F1B922662C5A500E6390E /* en */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -5598,7 +5599,7 @@
 		AEB4A2B414296DC700537AE7 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				AEB4A2B514296DC700537AE7 /* English */,
+				AE1F1B942662C5A600E6390E /* en */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -5646,6 +5647,7 @@
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -5791,6 +5793,7 @@
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
