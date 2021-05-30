@@ -111,7 +111,7 @@ Jan 17, 2001 (Loren Petrich):
 #include "Packing.h"
 #include "SW_Texture_Extras.h"
 
-#include <SDL_rwops.h>
+#include <SDL2/SDL_rwops.h>
 #include <memory>
 
 #include <boost/shared_ptr.hpp>
@@ -229,7 +229,7 @@ static struct high_level_shape_definition *get_high_level_shape_definition(short
 static struct bitmap_definition *get_bitmap_definition(short collection_index, short bitmap_index);
 
 
-#include <SDL_endian.h>
+#include <SDL2/SDL_endian.h>
 #include "byte_swapping.h"
 
 /*

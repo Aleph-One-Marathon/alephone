@@ -35,7 +35,7 @@
 
 #include "csfonts.h"
 #include "FileHandler.h"
-#include <SDL_ttf.h>
+#include <SDL2/SDL_ttf.h>
 #include <boost/tuple/tuple.hpp>
 
 #include <string>

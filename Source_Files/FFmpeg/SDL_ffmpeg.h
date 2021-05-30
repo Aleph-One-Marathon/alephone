@@ -23,8 +23,8 @@
 #ifndef SDL_FFMPEG_INCLUDED
 #define SDL_FFMPEG_INCLUDED
 
-#include "SDL_thread.h"
-#include "SDL.h"
+#include <SDL2/SDL_thread.h>
+#include <SDL2/SDL.h>
 
 #ifdef __cplusplus
 extern "C" {

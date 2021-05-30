@@ -22,7 +22,7 @@
 #include	"thread_priority_sdl.h"
 
 #include    <stdio.h>
-#include    <SDL_thread.h>
+#include    <SDL2/SDL_thread.h>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>

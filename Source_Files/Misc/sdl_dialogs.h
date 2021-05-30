@@ -32,7 +32,7 @@
 #include <vector>
 #include <memory>
 #include <boost/function.hpp>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #ifndef NO_STD_NAMESPACE
 using std::vector;

@@ -42,7 +42,7 @@
 #ifndef SDL_WIDGETS_H
 #define SDL_WIDGETS_H
 
-#include	<SDL.h>
+#include	<SDL2/SDL.h>
 
 #include	"cseries.h"
 #include	"sdl_dialogs.h"

@@ -23,7 +23,7 @@ May 18, 2009 (Eric Peterson):
 
 */
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <boost/ptr_container/ptr_map.hpp>
 
 #include "player.h" // for mask_in_absolute_positioning_information

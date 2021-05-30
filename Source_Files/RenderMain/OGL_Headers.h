@@ -34,7 +34,7 @@
 #define GL_GLEXT_PROTOTYPES 1
 #endif
 
-#include <SDL_opengl.h>
+#include <SDL2/SDL_opengl.h>
 
 #if defined (__APPLE__) && defined(__MACH__)
 #include <OpenGL/glu.h>

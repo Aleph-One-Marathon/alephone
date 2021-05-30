@@ -20,7 +20,7 @@
 */
 
 #include "BStream.h"
-#include <SDL_endian.h>
+#include <SDL2/SDL_endian.h>
 
 std::streampos BIStream::tellg() const
 {

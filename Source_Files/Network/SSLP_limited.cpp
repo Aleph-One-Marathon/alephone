@@ -45,9 +45,9 @@
 #include	<stdlib.h>
 
 // We depend on SDL, SDL_net, and SDL_netx (my broadcast stuff that works with SDL_net)
-#include	<SDL.h>
-#include	<SDL_thread.h>
-#include	<SDL_endian.h>
+#include	<SDL2/SDL.h>
+#include	<SDL2/SDL_thread.h>
+#include	<SDL2/SDL_endian.h>
 #include	"SSLP_API.h"
 #include	"SSLP_Protocol.h"
 #include	"SDL_netx.h"

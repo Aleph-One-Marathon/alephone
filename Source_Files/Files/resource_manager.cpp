@@ -28,7 +28,7 @@
  *      Reworked stemmed-file opening logic; now using new Logging facility
  */
 
-#include <SDL_endian.h>
+#include <SDL2/SDL_endian.h>
 
 #include "cseries.h"
 #include "resource_manager.h"

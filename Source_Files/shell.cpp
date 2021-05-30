@@ -93,7 +93,7 @@
 #endif
 
 #if !defined(DISABLE_NETWORKING)
-#include <SDL_net.h>
+#include <SDL2/SDL_net.h>
 #endif
 
 #ifdef HAVE_PNG
@@ -101,7 +101,7 @@
 #endif
 
 #ifdef HAVE_SDL_IMAGE
-#include <SDL_image.h>
+#include <SDL2/SDL_image.h>
 #if defined(__WIN32__)
 #include "alephone32.xpm"
 #elif !(defined(__APPLE__) && defined(__MACH__))
