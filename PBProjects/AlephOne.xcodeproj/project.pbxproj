@@ -5667,6 +5667,8 @@
 				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(VCPKG_ROOT)/installed/arm64-osx/lib";
 				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(VCPKG_ROOT)/installed/x64-osx/lib";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				"MACOSX_DEPLOYMENT_TARGET[arch=arm64]" = 11.0;
+				"MACOSX_DEPLOYMENT_TARGET[arch=x86_64]" = 10.11;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					"-lSDL2",
@@ -5813,6 +5815,8 @@
 				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(VCPKG_ROOT)/installed/arm64-osx/lib";
 				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(VCPKG_ROOT)/installed/x64-osx/lib";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				"MACOSX_DEPLOYMENT_TARGET[arch=arm64]" = 11.0;
+				"MACOSX_DEPLOYMENT_TARGET[arch=x86_64]" = 10.11;
 				OTHER_LDFLAGS = (
 					"-lSDL2",
 					"-liconv",
