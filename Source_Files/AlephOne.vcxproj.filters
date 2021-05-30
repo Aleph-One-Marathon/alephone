@@ -730,6 +730,12 @@
     <ClCompile Include="Lua\lua_ephemera.cpp">
       <Filter>Lua\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="shell_options.cpp">
+      <Filter>Main\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameWorld\interpolated_world.cpp">
+      <Filter>GameWorld\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CSeries\BStream.h">
@@ -1419,6 +1425,12 @@
     <ClInclude Include="Lua\lua_ephemera.h">
       <Filter>Lua\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="shell_options.h">
+      <Filter>Main\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameWorld\interpolated_world.h">
+      <Filter>GameWorld\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\Resources\Windows\alephone.rc">
@@ -1433,5 +1445,8 @@
     <ResourceCompile Include="..\Resources\Windows\marathon-infinity.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

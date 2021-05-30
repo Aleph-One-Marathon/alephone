@@ -375,6 +375,13 @@ int Lua_Item_Delete(lua_State* L)
 	return 0;
 }
 
+static int Lua_Item_Get_Visible(lua_State *L)
+{
+	object_data *object = get_object_data(Lua_Item::Index(L, 1));
+	lua_pushboolean(L, OBJECT_IS_VISIBLE(object));
+	return 1;
+}
+
 const luaL_Reg Lua_Item_Get[] = {
 	{"delete", L_TableFunction<Lua_Item_Delete>},
 	{"facing", get_object_facing<Lua_Item>},
@@ -382,6 +389,7 @@ const luaL_Reg Lua_Item_Get[] = {
 	{"polygon", get_object_polygon<Lua_Item>},
 	{"position", L_TableFunction<lua_object_position<Lua_Item> >},
 	{"type", get_object_type<Lua_Item, Lua_ItemType>},
+	{"visible", Lua_Item_Get_Visible},
 	{"x", get_object_x<Lua_Item>},
 	{"y", get_object_y<Lua_Item>},
 	{"z", get_object_z<Lua_Item>},

@@ -639,7 +639,7 @@ static void randomize_color_table(
 	}
 }
 
-/* unlike pathways, all colors wonÕt pass through 50% gray at the same time */
+/* unlike pathways, all colors wonâ€™t pass through 50% gray at the same time */
 static void negate_color_table(
 	struct color_table *original_color_table,
 	struct color_table *animated_color_table,

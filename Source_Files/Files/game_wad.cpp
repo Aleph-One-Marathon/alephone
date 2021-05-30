@@ -1229,7 +1229,7 @@ bool load_game_from_file(FileSpecifier& File, bool run_scripts)
 			set_map_file(map_parent, false);
 		else
 		{
-			/* Tell the user theyÕre screwed when they try to leave this level. */
+			/* Tell the user they’re screwed when they try to leave this level. */
 			alert_user(infoError, strERRORS, cantFindMap, 0);
 
 			// LP addition: makes the game look normal
@@ -1642,7 +1642,7 @@ bool process_map_wad(
 			load_lights(data, count, version);
 		}
 
-		//	HACK!!!!!!!!!!!!!!! vulcan doesnÕt NONE .first_object field after adding scenery
+		//	HACK!!!!!!!!!!!!!!! vulcan doesn’t NONE .first_object field after adding scenery
 		{
 			for (count= 0; count<static_cast<size_t>(dynamic_world->polygon_count); ++count)
 			{

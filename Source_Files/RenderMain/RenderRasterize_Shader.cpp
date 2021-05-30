@@ -1148,7 +1148,7 @@ void RenderRasterize_Shader::render_viewer_sprite_layer(RenderStep renderStep)
         rect.Opacity = 1;
 
         /* get_weapon_display_information() returns true if there is a weapon to be drawn.  it
-           should initially be passed a count of zero.  it returns the weaponÕs texture and
+           should initially be passed a count of zero.  it returns the weapon’s texture and
            enough information to draw it correctly. */
 	count= 0;
 	while (get_weapon_display_information(&count, &display_data))
@@ -1188,7 +1188,7 @@ void RenderRasterize_Shader::render_viewer_sprite_layer(RenderStep renderStep)
 		rect.flip_horizontal= display_data.flip_horizontal;
 		rect.flip_vertical= display_data.flip_vertical;
 		
-		/* lighting: depth of zero in the cameraÕs polygon index */
+		/* lighting: depth of zero in the camera’s polygon index */
 		rect.depth= 0;
 		rect.ambient_shade= get_light_intensity(get_polygon_data(view->origin_polygon_index)->floor_lightsource_index);
 		rect.ambient_shade= MAX(shape_information->minimum_light_intensity, rect.ambient_shade);
@@ -1198,7 +1198,7 @@ void RenderRasterize_Shader::render_viewer_sprite_layer(RenderStep renderStep)
 		// for the convenience of doing teleport-in/teleport-out
 		rect.xc = (rect.x0 + rect.x1) >> 1;
 
-                /* make the weapon reflect the ownerÕs transfer mode */
+                /* make the weapon reflect the owner’s transfer mode */
 		instantiate_rectangle_transfer_mode(view, &rect, display_data.transfer_mode, display_data.transfer_phase);
 
                 render_viewer_sprite(rect, renderStep);

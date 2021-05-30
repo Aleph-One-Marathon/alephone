@@ -165,7 +165,7 @@ enum /* monster types */
 #define MONSTER_IS_IDLE(m) ((m)->flags&(uint16)0x0800)
 #define SET_MONSTER_IDLE_STATUS(m,v) ((void)((v)?((m)->flags|=(uint16)0x0800):((m)->flags&=(uint16)~0x0800)))
 
-/* this flag is set if our current target has inflicted damage on us (because if he hasnÕt, weÕll
+/* this flag is set if our current target has inflicted damage on us (because if he hasnâ€™t, weâ€™ll
 	probably go after somebody else if they hit us first) */
 #define TARGET_HAS_DONE_DAMAGE(m) ((m)->flags&(uint16)0x0200)
 #define CLEAR_TARGET_DAMAGE_FLAG(m) ((m)->flags&=(uint16)~0x0200)
@@ -226,7 +226,7 @@ struct monster_data /* 64 bytes */
 	uint16 flags; /* [slot_used.1] [need_path.1] [recovering_from_hit.1] [active.1] [idle.1] [berserk.1] [target_damage.1] [unused.6] [never_activated.1] [demoted.1] [promoted.1] */
 	
 	short path; /* NONE is no path (the need path bit should be set in this case) */
-	world_distance path_segment_length; /* distance until weÕre through with this segment of the path */
+	world_distance path_segment_length; /* distance until weâ€™re through with this segment of the path */
 	world_distance desired_height;
 	
 	short mode, action;
@@ -246,7 +246,7 @@ struct monster_data /* 64 bytes */
 	
 	short goal_polygon_index; // used instead of NONE when generating random paths
 
-	// copied from monsterÕs object every tick but updated with height
+	// copied from monsterâ€™s object every tick but updated with height
 	world_point3d sound_location;
 	short sound_polygon_index;
 
@@ -272,7 +272,7 @@ extern vector<monster_data> MonsterList;
 void initialize_monsters(void);
 void initialize_monsters_for_new_level(void); /* when a map is loaded */
 
-void move_monsters(void); /* assumes ¶t==1 tick */
+void move_monsters(void); /* assumes âˆ‚t==1 tick */
 
 short new_monster(struct object_location *location, short monster_code);
 void remove_monster(short monster_index);

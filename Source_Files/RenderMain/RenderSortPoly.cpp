@@ -82,10 +82,10 @@ void RenderSortPolyClass::initialize_sorted_render_tree()
 tree decomposition:
 
 pick a leaf polygon
-	make sure the polygon is everywhere a leaf (donÕt walk the tree, search it linearly) 
-		if itÕs not, pick the node which obstructed it to test next
-		if it is, pull it off the tree (destructively) and accumulate itÕs clipping information
-			pick the one of the nodeÕs siblings (or itÕs parent if it has none) to handle next
+	make sure the polygon is everywhere a leaf (donâ€™t walk the tree, search it linearly)
+		if itâ€™s not, pick the node which obstructed it to test next
+		if it is, pull it off the tree (destructively) and accumulate itâ€™s clipping information
+			pick the one of the nodeâ€™s siblings (or itâ€™s parent if it has none) to handle next
 */
 
 void RenderSortPolyClass::sort_render_tree()
@@ -103,10 +103,10 @@ void RenderSortPolyClass::sort_render_tree()
 	{
 		// LP change: no more growable list of aliases,
 		// due to the sorted-polygon-tree structure of the nodes.
-		bool leaf_has_children= false; /* i.e., itÕs not a leaf */
+		bool leaf_has_children= false; /* i.e., itâ€™s not a leaf */
 		node_data *node = NULL;
 
-		/* if we donÕt have a leaf, find one */
+		/* if we donâ€™t have a leaf, find one */
 		if (!leaf)
 			for (leaf= &Nodes.front(); leaf->children; leaf= leaf->children)
 				;
@@ -211,14 +211,14 @@ void RenderSortPolyClass::sort_render_tree()
 				_polygon_is_visible) */
 			polygon_index_to_sorted_node[sorted_node->polygon_index]= sorted_node;
 			
-			/* walk this nodeÕs alias list, removing each from the tree */
+			/* walk this nodeâ€™s alias list, removing each from the tree */
 			// LP change: move down the chain of polygon-sharing nodes
 			for (node_data *Alias = FoundNode; Alias; Alias = Alias->PS_Shared)
 			{
 				// LP change: remember what the node was for when we break out
 				node = Alias;
 
-				/* remove this node and update the next nodeÕs reference (if there is a
+				/* remove this node and update the next nodeâ€™s reference (if there is a
 					reference and if there is a next node) */
 				if (node->reference)
 				{
@@ -227,7 +227,7 @@ void RenderSortPolyClass::sort_render_tree()
 				}
 			}
 
-			/* try to handle this nodeÕs siblings next (if there arenÕt any, then a ÔrandomÕ
+			/* try to handle this nodeâ€™s siblings next (if there arenâ€™t any, then a â€˜randomâ€™
 				node will be chosen) */
 			leaf= node ? node->siblings : NULL;
 		}
@@ -238,7 +238,7 @@ void RenderSortPolyClass::sort_render_tree()
 
 /* ---------- initializing and calculating clip data */
 
-/* be sure to examine all of a nodeÕs parents for clipping information (gak!) */
+/* be sure to examine all of a nodeâ€™s parents for clipping information (gak!) */
 clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	node_data *ChainBegin)
 {
@@ -247,7 +247,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	AccumulatedEndpointClips.clear();
 	endpoint_clip_data *endpoint;
 	line_clip_data *line;
-	short x0, x1; /* ignoring what clipping parameters weÕve gotten, this is the left and right borders of this node on the screen */
+	short x0, x1; /* ignoring what clipping parameters weâ€™ve gotten, this is the left and right borders of this node on the screen */
 	short i, j;
 
 	// LP: references to simplify the code

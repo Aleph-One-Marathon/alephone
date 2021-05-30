@@ -24,8 +24,8 @@ SHAPE_DESCRIPTORS.H
 Saturday, July 9, 1994 3:24:56 PM
 
 Saturday, July 9, 1994 6:47:04 PM
-	this header file is not in the makefile, so changing it wonÕt result in the nearly-full
-	rebuild that it should.  if you change this, which you shouldnÕt, you must touch the makefile.
+	this header file is not in the makefile, so changing it wonâ€™t result in the nearly-full
+	rebuild that it should.  if you change this, which you shouldnâ€™t, you must touch the makefile.
 	
 Feb 3, 2000 (Loren Petrich):
 	Renamed _collection_madd to _collection_vacbob
