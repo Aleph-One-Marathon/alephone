@@ -142,8 +142,6 @@ struct SwsContext* getContext( SDL_ffmpegConversionContext **context, int inWidt
     return ctx->context;
 }
 
-uint32_t SDL_ffmpegInitWasCalled = 0;
-
 /* error handling */
 char SDL_ffmpegErrorMessage[ 512 ];
 
@@ -221,24 +219,6 @@ SDL_ffmpegFile* SDL_ffmpegCreateFile()
 \endcond
 */
 
-
-/** \brief  Initializes the SDL_ffmpeg library
-
-            This is done automatically when using SDL_ffmpegOpen or
-            SDL_ffmpegCreateFile. This means that it is usualy unnescecairy
-            to explicitly call this function
-*/
-void SDL_ffmpegInit()
-{
-    /* register all codecs */
-    if ( !SDL_ffmpegInitWasCalled )
-    {
-        SDL_ffmpegInitWasCalled = 1;
-
-        avcodec_register_all();
-        av_register_all();
-    }
-}
 
 /** \brief  Use this to free an SDL_ffmpegFile.
 
@@ -391,8 +371,6 @@ void SDL_ffmpegFreeVideoFrame( SDL_ffmpegVideoFrame* frame )
 */
 SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
 {
-    SDL_ffmpegInit();
-
     /* open new ffmpegFile */
     SDL_ffmpegFile *file = SDL_ffmpegCreateFile();
     if ( !file ) return 0;
@@ -542,8 +520,6 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
 */
 SDL_ffmpegFile* SDL_ffmpegCreate( const char* filename )
 {
-    SDL_ffmpegInit();
-
     SDL_ffmpegFile *file = SDL_ffmpegCreateFile();
 
     file->_ffmpeg = avformat_alloc_context();
