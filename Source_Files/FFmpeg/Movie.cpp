@@ -655,6 +655,11 @@ void Movie::EncodeVideo(bool last)
                   av->video_frame->data, av->video_frame->linesize);
         av->video_frame->pts = av->video_counter++;
         frame = av->video_frame;
+
+        //Needed since ffmpeg version 4.4
+        frame->format = vcodec->pix_fmt;
+        frame->width = vcodec->width;
+        frame->height = vcodec->height;
     }
     
     bool done = false;
@@ -666,9 +671,9 @@ void Movie::EncodeVideo(bool last)
         pkt.data = av->video_buf;
         pkt.size = av->video_bufsize;
         
-        int got_packet = 0;
-        int vsize = avcodec_encode_video2(vcodec, &pkt, frame, &got_packet);
-        if (vsize == 0 && got_packet)
+        int vsize = avcodec_send_frame(vcodec, frame);
+        int got_packet = avcodec_receive_packet(vcodec, &pkt);
+        if (vsize == 0 && got_packet == 0)
         {
             if (pkt.pts != AV_NOPTS_VALUE && pkt.pts < pkt.dts)
                 pkt.pts = pkt.dts;
@@ -681,7 +686,7 @@ void Movie::EncodeVideo(bool last)
             av_interleaved_write_frame(av->fmt_ctx, &pkt);
             av_free_packet(&pkt);
         }
-        if (!last || vsize < 0 || !got_packet)
+        if (!last || vsize < 0 || got_packet < 0)
             done = true;
     }
 }
