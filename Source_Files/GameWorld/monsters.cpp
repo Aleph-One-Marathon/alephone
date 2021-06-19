@@ -237,9 +237,6 @@ struct damage_kick_definition damage_kick_definitions[NUMBER_OF_DAMAGE_TYPES] =
 /* import monster definition constants, structures and globals */
 #include "monster_definitions.h"
 
-// LP addition: growable list of intersected objects
-static vector<short> IntersectedObjects;
-
 /* ---------- private prototypes */
 
 static monster_definition *get_monster_definition(
@@ -1283,8 +1280,7 @@ short legal_player_move(
 	short obstacle_index= NONE;
 
 	get_monster_dimensions(monster_index, &radius, &height);	
-	
-	IntersectedObjects.clear();
+	std::vector<short> IntersectedObjects;
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, object->polygon, true);
 	monster_count = IntersectedObjects.size();
 	for (size_t i=0;i<monster_count;++i)
@@ -1356,7 +1352,7 @@ short legal_monster_move(
 
 	get_monster_dimensions(monster_index, &radius, &height);	
 	
-	IntersectedObjects.clear();
+	std::vector<short> IntersectedObjects;
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, object->polygon, true);
 	monster_count= IntersectedObjects.size();
 	for (size_t i=0;i<monster_count;++i)
@@ -1432,7 +1428,7 @@ void damage_monsters_in_radius(
 
 	(void) (primary_target_index);
 	
-	IntersectedObjects.clear();
+	std::vector<short> IntersectedObjects;
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, epicenter_polygon_index, false);
 	object_count= IntersectedObjects.size();
         struct object_data *aggressor = NULL;
