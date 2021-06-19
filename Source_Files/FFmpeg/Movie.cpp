@@ -655,6 +655,11 @@ void Movie::EncodeVideo(bool last)
                   av->video_frame->data, av->video_frame->linesize);
         av->video_frame->pts = av->video_counter++;
         frame = av->video_frame;
+
+        //Needed since ffmpeg version 4.4
+        frame->format = vcodec->pix_fmt;
+        frame->width = vcodec->width;
+        frame->height = vcodec->height;
     }
     
     bool done = false;
