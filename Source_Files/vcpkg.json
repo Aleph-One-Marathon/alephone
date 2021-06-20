@@ -44,19 +44,23 @@
       },
       {
          "name":"winsock2",
-         "version>=":"0.0-2"
+         "version>=":"0.0-2",
+         "platform":"windows"
       },
       {
          "name":"curl",
-         "version>=":"7.74.0#6"
+         "version>=":"7.74.0#6",
+         "platform":"windows"
       },
       {
          "name":"glew",
-         "version>=":"2.1.0#9"
+         "version>=":"2.1.0#9",
+         "platform":"windows"
       },
       {
          "name":"freeglut",
-         "version>=":"3.2.1#5"
+         "version>=":"3.2.1#5",
+         "platform":"windows"
       },
       {
          "name":"speex",
@@ -72,7 +76,7 @@
       },
       {
          "name":"ffmpeg",
-         "version>=":"4.4#1",
+         "version>=":"4.4#2",
          "features":[
             "vorbis",
             "vpx"
@@ -80,8 +84,9 @@
       },
       {
          "name":"expat",
-         "version>=":"2020-08-18"
+         "version>=":"2020-08-18",
+         "platform":"windows"
       }
    ],
-   "builtin-baseline":"a3db16a4475b963cacf0260068c497fb72c8f3c0"
+    "builtin-baseline":"08214e18eeb146542944067c35d77faca8962be5"
 }
