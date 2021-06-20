@@ -729,6 +729,10 @@ void Movie::EncodeAudio(bool last)
 #else
         av_frame_unref(av->audio_frame);
 #endif
+        //Needed since ffmpeg 4.4
+        av->audio_frame->channels = acodec->channels;
+        av->audio_frame->format = acodec->sample_fmt;
+
         av->audio_frame->nb_samples = write_samples;
         av->audio_frame->pts = av_rescale_q(av->audio_counter,
                                             AVRational{1, acodec->sample_rate},
