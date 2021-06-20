@@ -382,9 +382,6 @@ bool Movie::Setup()
 	if (!success) err_msg = "Could not create SDL surface";
 
     Mixer *mx = Mixer::instance();
-    
-    av_register_all();
-    avcodec_register_all();
 
 	const auto fps = std::max(get_fps_target(), static_cast<int16_t>(30));
     
