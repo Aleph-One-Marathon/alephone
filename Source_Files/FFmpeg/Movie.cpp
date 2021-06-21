@@ -382,9 +382,6 @@ bool Movie::Setup()
 	if (!success) err_msg = "Could not create SDL surface";
 
     Mixer *mx = Mixer::instance();
-    
-    av_register_all();
-    avcodec_register_all();
 
 	const auto fps = std::max(get_fps_target(), static_cast<int16_t>(30));
     
@@ -655,33 +652,37 @@ void Movie::EncodeVideo(bool last)
                   av->video_frame->data, av->video_frame->linesize);
         av->video_frame->pts = av->video_counter++;
         frame = av->video_frame;
+
+        //Needed since ffmpeg version 4.4
+        frame->format = vcodec->pix_fmt;
+        frame->width = vcodec->width;
+        frame->height = vcodec->height;
     }
     
     bool done = false;
     while (!done)
     {
         // add video
-        AVPacket pkt;
-        av_init_packet(&pkt);
-        pkt.data = av->video_buf;
-        pkt.size = av->video_bufsize;
+        AVPacket* pkt = av_packet_alloc();
+        pkt->data = av->video_buf;
+        pkt->size = av->video_bufsize;
         
-        int got_packet = 0;
-        int vsize = avcodec_encode_video2(vcodec, &pkt, frame, &got_packet);
-        if (vsize == 0 && got_packet)
+        int vsize = avcodec_send_frame(vcodec, frame);
+        int got_packet = avcodec_receive_packet(vcodec, pkt);
+        if (vsize == 0 && got_packet == 0)
         {
-            if (pkt.pts != AV_NOPTS_VALUE && pkt.pts < pkt.dts)
-                pkt.pts = pkt.dts;
-            if (pkt.pts != AV_NOPTS_VALUE)
-                pkt.pts = av_rescale_q(pkt.pts, vcodec->time_base, vstream->time_base);
-            if (pkt.dts != AV_NOPTS_VALUE)
-                pkt.dts = av_rescale_q(pkt.dts, vcodec->time_base, vstream->time_base);
-            pkt.duration = av_rescale_q(pkt.duration, vcodec->time_base, vstream->time_base);
-            pkt.stream_index = vstream->index;
-            av_interleaved_write_frame(av->fmt_ctx, &pkt);
-            av_free_packet(&pkt);
+            if (pkt->pts != AV_NOPTS_VALUE && pkt->pts < pkt->dts)
+                pkt->pts = pkt->dts;
+            if (pkt->pts != AV_NOPTS_VALUE)
+                pkt->pts = av_rescale_q(pkt->pts, vcodec->time_base, vstream->time_base);
+            if (pkt->dts != AV_NOPTS_VALUE)
+                pkt->dts = av_rescale_q(pkt->dts, vcodec->time_base, vstream->time_base);
+            pkt->duration = av_rescale_q(pkt->duration, vcodec->time_base, vstream->time_base);
+            pkt->stream_index = vstream->index;
+            av_interleaved_write_frame(av->fmt_ctx, pkt);
+            av_packet_unref(pkt);
         }
-        if (!last || vsize < 0 || !got_packet)
+        if (!last || vsize < 0 || got_packet < 0)
             done = true;
     }
 }
@@ -728,6 +729,10 @@ void Movie::EncodeAudio(bool last)
 #else
         av_frame_unref(av->audio_frame);
 #endif
+        //Needed since ffmpeg 4.4
+        av->audio_frame->channels = acodec->channels;
+        av->audio_frame->format = acodec->sample_fmt;
+
         av->audio_frame->nb_samples = write_samples;
         av->audio_frame->pts = av_rescale_q(av->audio_counter,
                                             AVRational{1, acodec->sample_rate},
@@ -739,24 +744,22 @@ void Movie::EncodeAudio(bool last)
                                              write_samples * write_bps * channels, 1);
         if (asize >= 0)
         {
-            AVPacket pkt;
-            memset(&pkt, 0, sizeof(AVPacket));
-            av_init_packet(&pkt);
-            
-            int got_pkt = 0;
-            if (0 == avcodec_encode_audio2(acodec, &pkt, av->audio_frame, &got_pkt)
-                && got_pkt)
+            AVPacket* pkt = av_packet_alloc();        
+            int vsize = avcodec_send_frame(acodec, av->audio_frame);
+            if (0 == vsize)
             {
-                if (pkt.pts != AV_NOPTS_VALUE && pkt.pts < pkt.dts)
-                    pkt.pts = pkt.dts;
-                if (pkt.pts != AV_NOPTS_VALUE)
-                    pkt.pts = av_rescale_q(pkt.pts, acodec->time_base, astream->time_base);
-                if (pkt.dts != AV_NOPTS_VALUE)
-                    pkt.dts = av_rescale_q(pkt.dts, acodec->time_base, astream->time_base);
-                pkt.duration = av_rescale_q(pkt.duration, acodec->time_base, astream->time_base);
-                pkt.stream_index = astream->index;
-                av_interleaved_write_frame(av->fmt_ctx, &pkt);
-                av_free_packet(&pkt);
+                while (avcodec_receive_packet(acodec, pkt) == 0) {
+                    if (pkt->pts != AV_NOPTS_VALUE && pkt->pts < pkt->dts)
+                        pkt->pts = pkt->dts;
+                    if (pkt->pts != AV_NOPTS_VALUE)
+                        pkt->pts = av_rescale_q(pkt->pts, acodec->time_base, astream->time_base);
+                    if (pkt->dts != AV_NOPTS_VALUE)
+                        pkt->dts = av_rescale_q(pkt->dts, acodec->time_base, astream->time_base);
+                    pkt->duration = av_rescale_q(pkt->duration, acodec->time_base, astream->time_base);
+                    pkt->stream_index = astream->index;
+                    av_interleaved_write_frame(av->fmt_ctx, pkt);
+                    av_packet_unref(pkt);
+                }
             }
         }
     }
@@ -765,24 +768,20 @@ void Movie::EncodeAudio(bool last)
         bool done = false;
         while (!done)
         {
-            AVPacket pkt;
-            memset(&pkt, 0, sizeof(AVPacket));
-            av_init_packet(&pkt);
-            
-            int got_pkt = 0;
-            if (0 == avcodec_encode_audio2(acodec, &pkt, NULL, &got_pkt)
-                && got_pkt)
+            AVPacket* pkt = av_packet_alloc();        
+            int got_pkt = avcodec_receive_packet(acodec, pkt);
+            if (got_pkt == 0)
             {
-                if (pkt.pts != AV_NOPTS_VALUE && pkt.pts < pkt.dts)
-                    pkt.pts = pkt.dts;
-                if (pkt.pts != AV_NOPTS_VALUE)
-                    pkt.pts = av_rescale_q(pkt.pts, acodec->time_base, astream->time_base);
-                if (pkt.dts != AV_NOPTS_VALUE)
-                    pkt.dts = av_rescale_q(pkt.dts, acodec->time_base, astream->time_base);
-                pkt.duration = av_rescale_q(pkt.duration, acodec->time_base, astream->time_base);
-                pkt.stream_index = astream->index;
-                av_interleaved_write_frame(av->fmt_ctx, &pkt);
-                av_free_packet(&pkt);
+                if (pkt->pts != AV_NOPTS_VALUE && pkt->pts < pkt->dts)
+                    pkt->pts = pkt->dts;
+                if (pkt->pts != AV_NOPTS_VALUE)
+                    pkt->pts = av_rescale_q(pkt->pts, acodec->time_base, astream->time_base);
+                if (pkt->pts != AV_NOPTS_VALUE)
+                    pkt->pts = av_rescale_q(pkt->dts, acodec->time_base, astream->time_base);
+                pkt->duration = av_rescale_q(pkt->duration, acodec->time_base, astream->time_base);
+                pkt->stream_index = astream->index;
+                av_interleaved_write_frame(av->fmt_ctx, pkt);
+                av_packet_unref(pkt);
             }
             else
             {
