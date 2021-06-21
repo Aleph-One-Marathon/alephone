@@ -4,8 +4,8 @@
    "dependencies":[
       {
          "name":"expat",
-         "version>=":"2020-08-18"
+         "version>=":"2.4.1"
       }
    ],
-   "builtin-baseline":"a3db16a4475b963cacf0260068c497fb72c8f3c0"
+   "builtin-baseline":"08214e18eeb146542944067c35d77faca8962be5"
 }

@@ -84,7 +84,7 @@
       },
       {
          "name":"expat",
-         "version>=":"2020-08-18",
+         "version>=":"2.4.1",
          "platform":"windows"
       }
    ],
