@@ -776,8 +776,8 @@ void Movie::EncodeAudio(bool last)
                     pkt->pts = pkt->dts;
                 if (pkt->pts != AV_NOPTS_VALUE)
                     pkt->pts = av_rescale_q(pkt->pts, acodec->time_base, astream->time_base);
-                if (pkt->pts != AV_NOPTS_VALUE)
-                    pkt->pts = av_rescale_q(pkt->dts, acodec->time_base, astream->time_base);
+                if (pkt->dts != AV_NOPTS_VALUE)
+                    pkt->dts = av_rescale_q(pkt->dts, acodec->time_base, astream->time_base);
                 pkt->duration = av_rescale_q(pkt->duration, acodec->time_base, astream->time_base);
                 pkt->stream_index = astream->index;
                 av_interleaved_write_frame(av->fmt_ctx, pkt);
