@@ -63,7 +63,7 @@
   /* defines for win32 */
   #define WIN32_LEAN_AND_MEAN
   #include <windows.h>
-  #include <winsock.h>
+  #include <winsock2.h>
   typedef int socklen_t;
   
   /* this is the win32 version of the OsSocket struct */

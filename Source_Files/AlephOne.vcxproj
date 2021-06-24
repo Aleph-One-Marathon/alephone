@@ -128,7 +128,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)XML;$(ProjectDir)TCPMess;$(ProjectDir)Sound;$(ProjectDir)RenderOther;$(ProjectDir)RenderMain;$(ProjectDir)Network\Metaserver;$(ProjectDir)Network;$(ProjectDir)ModelView;$(ProjectDir)Misc;$(ProjectDir)Lua;$(ProjectDir)LibNAT;$(ProjectDir)Input;$(ProjectDir)GameWorld;$(ProjectDir)Files;$(ProjectDir)FFmpeg;$(ProjectDir)CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
@@ -140,7 +140,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)XML;$(ProjectDir)TCPMess;$(ProjectDir)Sound;$(ProjectDir)RenderOther;$(ProjectDir)RenderMain;$(ProjectDir)Network\Metaserver;$(ProjectDir)Network;$(ProjectDir)ModelView;$(ProjectDir)Misc;$(ProjectDir)Lua;$(ProjectDir)LibNAT;$(ProjectDir)Input;$(ProjectDir)GameWorld;$(ProjectDir)Files;$(ProjectDir)FFmpeg;$(ProjectDir)CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
