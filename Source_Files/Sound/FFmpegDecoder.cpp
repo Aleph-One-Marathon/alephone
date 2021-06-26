@@ -71,8 +71,6 @@ FFmpegDecoder::FFmpegDecoder() :
     av = new ffmpeg_vars_t;
     memset(av, 0, sizeof(ffmpeg_vars_t));
     
-    av_register_all();
-    avcodec_register_all();
     av->temp_data = reinterpret_cast<uint8_t *>(av_malloc(262144));
     av->fifo = av_fifo_alloc(524288);
 }
@@ -179,72 +177,61 @@ void FFmpegDecoder::Close()
 
 bool FFmpegDecoder::GetAudio()
 {
-    AVPacket pkt;
-    av_init_packet(&pkt);
+    AVPacket* pkt = av_packet_alloc();
     
     while (true)
     {
-        int decode = av_read_frame(av->ctx, &pkt);
+        int decode = av_read_frame(av->ctx, pkt);
         if (decode < 0)
             return false;
-        if (pkt.stream_index == av->stream_idx)
+        if (pkt->stream_index == av->stream_idx)
             break;
-        av_free_packet(&pkt);
+        av_packet_unref(pkt);
     }
     
     av->started = true;
-    AVPacket pkt_temp;
-    av_init_packet(&pkt_temp);
-    pkt_temp.data = pkt.data;
-    pkt_temp.size = pkt.size;
-    
     AVCodecContext *dec_ctx = av->stream->codec;
-    
-    while (pkt_temp.size > 0)
-    {
+
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,0)
-        AVFrame *dframe = avcodec_alloc_frame();
+    AVFrame *dframe = avcodec_alloc_frame();
 #else
-        AVFrame *dframe = av_frame_alloc();
+    AVFrame *dframe = av_frame_alloc();
 #endif
-        int got_frame = 0;
-        int bytes_read = avcodec_decode_audio4(dec_ctx, dframe, &got_frame, &pkt_temp);
-        if (bytes_read < 0)
-        {
-            av_free_packet(&pkt);
-            return false;
-        }
-        if (got_frame && bytes_read > 0)
-        {
-            int channels = dec_ctx->channels;
-            enum AVSampleFormat in_fmt = dec_ctx->sample_fmt;
-            enum AVSampleFormat out_fmt = AV_SAMPLE_FMT_S16;
-            
-            int stride = -1;
-            if (channels > 1 && av_sample_fmt_is_planar(in_fmt))
-                stride = dframe->extended_data[1] - dframe->extended_data[0];
 
-            int written = convert_audio(dframe->nb_samples, channels,
-                                        stride,
-                                        in_fmt, dframe->extended_data[0],
-                                        dframe->nb_samples, channels,
-                                        -1,
-                                        out_fmt, av->temp_data);
+    int sent_packet = avcodec_send_packet(dec_ctx, pkt);
+    if (sent_packet < 0)
+    {
+        av_packet_unref(pkt);
+        return false;
+    }
+    while (avcodec_receive_frame(dec_ctx, dframe) == 0)
+    {
+        int channels = dec_ctx->channels;
+        enum AVSampleFormat in_fmt = dec_ctx->sample_fmt;
+        enum AVSampleFormat out_fmt = AV_SAMPLE_FMT_S16;
             
-            av_fifo_generic_write(av->fifo, av->temp_data, written, NULL);
+        int stride = -1;
+        if (channels > 1 && av_sample_fmt_is_planar(in_fmt))
+            stride = dframe->extended_data[1] - dframe->extended_data[0];
 
-            pkt_temp.data += bytes_read;
-            pkt_temp.size -= bytes_read;
-        }
+        int written = convert_audio(dframe->nb_samples, channels,
+                                    stride,
+                                    in_fmt, dframe->extended_data[0],
+                                    dframe->nb_samples, channels,
+                                    -1,
+                                    out_fmt, av->temp_data);
+            
+        av_fifo_generic_write(av->fifo, av->temp_data, written, NULL);
+
+    }
         
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,0)
-        av_freep(&dframe);
+    av_freep(&dframe);
 #else
-        av_frame_free(&dframe);
+    av_frame_free(&dframe);
 #endif
-    }
     
-    av_free_packet(&pkt);
+    av_packet_unref(pkt);
     return true;
 }
 
