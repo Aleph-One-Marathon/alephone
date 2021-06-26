@@ -301,15 +301,20 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 			for (i= 0;i<node->clipping_endpoint_count;++i)
 			{
 				endpoint= &EndpointClips[node->clipping_endpoints[i]];
+				const auto forward_vec = endpoint->forward_vector();
 				
 				short size = AccumulatedEndpointClips.size();
 				for (j= 0;j<size;++j)
 				{
 					if (AccumulatedEndpointClips[j]==endpoint) { j= NONE; break; } /* found duplicate */
-					if ((AccumulatedEndpointClips[j]->x==endpoint->x&&endpoint->flags==_clip_left) ||
-						AccumulatedEndpointClips[j]->x>endpoint->x)
+					
+					const auto element_j_forward_vec = AccumulatedEndpointClips[j]->forward_vector();
+					const Sint64 cross_k = cross_product_k(forward_vec, element_j_forward_vec);
+					
+					// If the clip is left of element j (or collinear and the clip is a left-clip)...
+					if (cross_k > 0 || (cross_k == 0 && (endpoint->flags & _clip_left)))
 					{
-						break; /* found sorting position if x is greater or x is equal and this is a left clip */
+						break; // insert the clip before element j
 					}
 				}
 				
