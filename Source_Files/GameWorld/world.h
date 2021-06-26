@@ -190,6 +190,9 @@ static inline angle normalize_angle(angle theta)
 	return NORMALIZE_ANGLE(theta);
 }
 
+// Return (a cross b).k
+inline Sint64 cross_product_k(long_vector2d a, long_vector2d b) { return 1LL*a.i*b.j - 1LL*a.j*b.i; }
+
 world_point2d *rotate_point2d(world_point2d *point, world_point2d *origin, angle theta);
 world_point3d *rotate_point3d(world_point3d *point, world_point3d *origin, angle theta, angle phi);
 
