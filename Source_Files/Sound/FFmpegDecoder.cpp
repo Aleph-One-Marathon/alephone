@@ -231,7 +231,7 @@ bool FFmpegDecoder::GetAudio()
     av_frame_free(&dframe);
 #endif
     
-    av_packet_unref(pkt);
+    av_packet_free(&pkt);
     return true;
 }
 
