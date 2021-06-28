@@ -85,6 +85,7 @@ extern "C"
 #include "libavutil/imgutils.h"
 #include "libavutil/fifo.h"
 #include "libswscale/swscale.h"
+#include "libswresample/swresample.h"
 #ifdef __cplusplus
 }
 #endif
@@ -129,8 +130,8 @@ struct libav_vars {
     AVFrame *audio_frame;
     AVFifoBuffer *audio_fifo;
     uint8_t *audio_data;
-    uint8_t *audio_data_conv;
-    
+    uint8_t **audio_data_conv;
+
     AVFrame *video_frame;
     uint8_t *video_buf;
     int video_bufsize;
@@ -146,6 +147,8 @@ struct libav_vars {
 
     size_t video_counter;
     size_t audio_counter;
+
+    SwrContext* swr_context;
 };
 typedef struct libav_vars libav_vars_t;
 
@@ -557,6 +560,15 @@ bool Movie::Setup()
     }
     if (success)
     {
+        // init resampler
+        av->swr_context = swr_alloc_set_opts(av->swr_context, av->audio_ctx->channel_layout, av->audio_ctx->sample_fmt, av->audio_ctx->sample_rate,
+            av->audio_ctx->channel_layout, AV_SAMPLE_FMT_S16, av->audio_ctx->sample_rate, 0, NULL);
+
+        success = av->swr_context && swr_init(av->swr_context) >= 0;
+        if (!success) err_msg = "Could not initialize resampler";
+    }
+    if (success)
+    {
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,0)
         av->audio_frame = avcodec_alloc_frame();
 #else
@@ -573,14 +585,12 @@ bool Movie::Setup()
     }
     if (success)
     {
-        av->audio_data = reinterpret_cast<uint8_t *>(av_malloc(524288));
-        success = av->audio_data;
+        success = av_samples_alloc(&av->audio_data, NULL, av->audio_ctx->channels, av->audio_ctx->frame_size, AV_SAMPLE_FMT_S16, 0) >= 0;
         if (!success) err_msg = "Could not allocate audio data buffer";
     }
     if (success)
     {
-        av->audio_data_conv = reinterpret_cast<uint8_t *>(av_malloc(524288));
-        success = av->audio_data_conv;
+        success = av_samples_alloc_array_and_samples(&av->audio_data_conv, NULL, av->audio_ctx->channels, av->audio_ctx->frame_size, av->audio_ctx->sample_fmt, 0) >= 0;
         if (!success) err_msg = "Could not allocate audio conversion buffer";
     }
     
@@ -743,10 +753,7 @@ void Movie::EncodeAudio(bool last)
                 write_samples = acodec->frame_size;
         }
 
-        convert_audio(read_samples, acodec->channels, -1,
-                      AV_SAMPLE_FMT_S16, av->audio_data,
-                      write_samples, acodec->channels, write_samples * write_bps,
-                      acodec->sample_fmt, av->audio_data_conv);
+        write_samples = swr_convert(av->swr_context, av->audio_data_conv, write_samples, (const uint8_t**)&av->audio_data, read_samples);
                       
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
         avcodec_get_frame_defaults(av->audio_frame);
@@ -763,11 +770,13 @@ void Movie::EncodeAudio(bool last)
         av->audio_frame->pts = av_rescale_q(av->audio_counter,
                                             AVRational{1, acodec->sample_rate},
                                             acodec->time_base);
+
         av->audio_counter += write_samples;
         int asize = avcodec_fill_audio_frame(av->audio_frame, acodec->channels,
                                              acodec->sample_fmt,
-                                             av->audio_data_conv,
+                                             av->audio_data_conv[0],
                                              write_samples * write_bps * channels, 1);
+
         if (asize >= 0)
         {
             AVPacket* pkt = av_packet_alloc();        
@@ -941,8 +950,12 @@ void Movie::StopRecording()
     }
     if (av->audio_data)
     {
-        av_free(av->audio_data);
-        av->audio_data = NULL;
+        av_freep(&av->audio_data);
+    }
+    if (av->audio_data_conv)
+    {
+        av_freep(&av->audio_data_conv[0]);
+        av_freep(&av->audio_data_conv);
     }
     if (av->audio_frame)
     {
@@ -980,6 +993,11 @@ void Movie::StopRecording()
     if (av->audio_ctx)
     {
         avcodec_free_context(&av->audio_ctx);
+    }
+    
+    if (av->swr_context)
+    {
+        swr_free(&av->swr_context);
     }
 
     if (av->fmt_ctx)
