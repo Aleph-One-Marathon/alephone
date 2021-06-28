@@ -42,14 +42,8 @@ extern "C"
 #include "libavutil/opt.h"
 #include "libavutil/fifo.h"
 #include "libswscale/swscale.h"
-
-    
-// Use audio conversion from Movie.cpp
-extern int convert_audio(int in_samples, int in_channels, int in_stride,
-                         enum AVSampleFormat in_fmt, const uint8_t *in_buf,
-                         int out_samples, int out_channels, int out_stride,
-                         enum AVSampleFormat out_fmt, uint8_t *out_buf);
-    
+#include "libswresample/swresample.h"
+ 
 
 #ifdef __cplusplus
 }
@@ -57,6 +51,7 @@ extern int convert_audio(int in_samples, int in_channels, int in_stride,
 
 struct ffmpeg_vars {
     AVCodecContext* codec_ctx;
+    SwrContext* swr_context;
     AVFormatContext *ctx;
     AVStream *stream;
     uint8_t *temp_data;
@@ -72,15 +67,12 @@ FFmpegDecoder::FFmpegDecoder() :
     av = new ffmpeg_vars_t;
     memset(av, 0, sizeof(ffmpeg_vars_t));
     
-    av->temp_data = reinterpret_cast<uint8_t *>(av_malloc(262144));
     av->fifo = av_fifo_alloc(524288);
 }
 
 FFmpegDecoder::~FFmpegDecoder()
 {
 	Close();
-    if (av && av->temp_data)
-        av_free(av->temp_data);
     if (av && av->fifo)
         av_fifo_free(av->fifo);
 }
@@ -90,7 +82,7 @@ bool FFmpegDecoder::Open(FileSpecifier& File)
 	Close();
     
     // make sure one-time setup succeeded
-    if (!av || !av->temp_data || !av->fifo)
+    if (!av || !av->fifo)
         return false;
     
     // open the file
@@ -121,7 +113,23 @@ bool FFmpegDecoder::Open(FileSpecifier& File)
     }
     channels = av->stream->codecpar->channels;
     rate = av->stream->codecpar->sample_rate;
-	
+
+    // init resampler
+    av->swr_context = swr_alloc_set_opts(av->swr_context, av->codec_ctx->channel_layout, AV_SAMPLE_FMT_S16, rate,
+        av->codec_ctx->channel_layout, av->codec_ctx->sample_fmt, rate, 0, NULL);
+
+    if (!av->swr_context || swr_init(av->swr_context) < 0)
+    {
+        Close();
+        return false;
+    }
+
+    if (av_samples_alloc(&av->temp_data, NULL, channels, 1024, AV_SAMPLE_FMT_S16, 0) < 0)
+    {
+        Close();
+        return false;
+    }
+
 	return true;
 }
 
@@ -172,6 +180,10 @@ void FFmpegDecoder::Close()
     }
     if (av && av->fifo)
         av_fifo_reset(av->fifo);
+    if (av && av->swr_context) 
+        swr_free(&av->swr_context);
+    if (av && av->temp_data)
+        av_freep(&av->temp_data);
     if (av)
         av->started = false;
 }
@@ -207,23 +219,9 @@ bool FFmpegDecoder::GetAudio()
     }
     while (avcodec_receive_frame(dec_ctx, dframe) == 0)
     {
-        int channels = dec_ctx->channels;
-        enum AVSampleFormat in_fmt = dec_ctx->sample_fmt;
-        enum AVSampleFormat out_fmt = AV_SAMPLE_FMT_S16;
-            
-        int stride = -1;
-        if (channels > 1 && av_sample_fmt_is_planar(in_fmt))
-            stride = dframe->extended_data[1] - dframe->extended_data[0];
-
-        int written = convert_audio(dframe->nb_samples, channels,
-                                    stride,
-                                    in_fmt, dframe->extended_data[0],
-                                    dframe->nb_samples, channels,
-                                    -1,
-                                    out_fmt, av->temp_data);
-            
-        av_fifo_generic_write(av->fifo, av->temp_data, written, NULL);
-
+        int nb_samples = swr_convert(av->swr_context, &av->temp_data, dframe->nb_samples, (const uint8_t**)dframe->extended_data, dframe->nb_samples);
+        int nb_bytes = nb_samples * channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+        av_fifo_generic_write(av->fifo, av->temp_data, nb_bytes, NULL);
     }
         
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,0)
