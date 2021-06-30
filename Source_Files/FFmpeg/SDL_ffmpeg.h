@@ -165,8 +165,6 @@ typedef struct SDL_ffmpegStream
     int sampleBufferSize;
     /** position of data in samplebuffer */
     int sampleBufferOffset;
-    /** stride of planar data in samplebuffer */
-    int sampleBufferStride;
     /** timestamp which fits the data in samplebuffer */
     int64_t sampleBufferTime;
 
@@ -180,6 +178,9 @@ typedef struct SDL_ffmpegStream
     /** This holds the lastTimeStamp calculated, usefull when frames don't provide
         a usefull dts/pts, also used for determining at what point we are in the file */
     int64_t lastTimeStamp;
+
+    /** This is used for audio resampling */
+    struct SwrContext* swr_context;
 
     /** pointer to the next stream, or NULL if current stream is the last one */
     struct SDL_ffmpegStream *next;
