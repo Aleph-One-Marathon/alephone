@@ -29,6 +29,11 @@ SOUND.C
 #include "images.h"
 #include "InfoTree.h"
 
+#undef SLOT_IS_USED
+#undef SLOT_IS_FREE
+#undef MARK_SLOT_AS_FREE
+#undef MARK_SLOT_AS_USED
+
 #define SLOT_IS_USED(o) ((o)->flags&(uint16)0x8000)
 #define SLOT_IS_FREE(o) (!SLOT_IS_USED(o))
 #define MARK_SLOT_AS_FREE(o) ((o)->flags&=(uint16)~0x8000)

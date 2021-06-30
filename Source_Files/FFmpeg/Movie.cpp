@@ -660,10 +660,10 @@ void Movie::EncodeVideo(bool last)
     }
     
     bool done = false;
+    AVPacket* pkt = av_packet_alloc();
     while (!done)
     {
         // add video
-        AVPacket* pkt = av_packet_alloc();
         pkt->data = av->video_buf;
         pkt->size = av->video_bufsize;
         
@@ -685,6 +685,7 @@ void Movie::EncodeVideo(bool last)
         if (!last || vsize < 0 || got_packet < 0)
             done = true;
     }
+    av_packet_free(&pkt);
 }
 
 void Movie::EncodeAudio(bool last)
@@ -761,14 +762,16 @@ void Movie::EncodeAudio(bool last)
                     av_packet_unref(pkt);
                 }
             }
+            av_packet_free(&pkt);
         }
     }
     if (last)
     {
         bool done = false;
-        while (!done)
+        AVPacket* pkt = av_packet_alloc();
+        int flush = avcodec_send_frame(acodec, NULL);
+        while (flush == 0 && !done)
         {
-            AVPacket* pkt = av_packet_alloc();        
             int got_pkt = avcodec_receive_packet(acodec, pkt);
             if (got_pkt == 0)
             {
@@ -788,6 +791,7 @@ void Movie::EncodeAudio(bool last)
                 done = true;
             }
         }
+        av_packet_free(&pkt);
         
     }
     
