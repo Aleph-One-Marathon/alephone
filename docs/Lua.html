@@ -761,6 +761,9 @@
       <dt>.type<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">type of item</p></dd>
+      <dt>.visible<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description"></p></dd>
       <dt>.x<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
@@ -1227,16 +1230,16 @@
 <p class="description">platform is locked</p>
 <p class="note">this flag doesn’t actually do anything </p>
 </dd>
-      <dt>.maximum_ceiling_height <span class="version">SVN</span>
+      <dt>.maximum_ceiling_height<span class="access"> (read-only)</span> <span class="version">git</span>
 </dt>
 <dd><p class="description">greatest height a platform's ceiling can ever rise</p></dd>
-      <dt>.maximum_floor_height <span class="version">SVN</span>
+      <dt>.maximum_floor_height<span class="access"> (read-only)</span> <span class="version">git</span>
 </dt>
 <dd><p class="description">greatest height a platform's floor can ever rise</p></dd>
-      <dt>.minimum_ceiling_height <span class="version">SVN</span>
+      <dt>.minimum_ceiling_height<span class="access"> (read-only)</span> <span class="version">git</span>
 </dt>
 <dd><p class="description">least height a platform's ceiling must rise</p></dd>
-      <dt>.minimum_floor_height <span class="version">SVN</span>
+      <dt>.minimum_floor_height<span class="access"> (read-only)</span> <span class="version">git</span>
 </dt>
 <dd><p class="description">least height a platform's floor must rise</p></dd>
       <dt>.monster_controllable</dt>
@@ -1439,6 +1442,9 @@
 <p class="description">returns t, x, y, z, polygon, where t is the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the target is the surface of a liquid) the player is looking at; and x, y, z, and polygon are the point the player is looking at</p>
 <p class="note">you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon() </p>
 </dd>
+	  <dt>.has_map_open<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">whether player has overhead map open</p></dd>
       <dt>.head_below_media<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether player is completely below liquid</p></dd>
@@ -1569,6 +1575,9 @@
 <dd><p class="description">teleports player to polygon</p></dd>
       <dt>:teleport_to_level(level)</dt>
 <dd><p class="description">teleports player to level (of course, all the other players will also go to that level)</p></dd>
+	  <dt>.teleporting<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">whether player is teleporting</p></dd>
       <dt>.texture_palette</dt>
 <dd>
 <p class="description">displays a texture palette instead of the classic HUD</p>

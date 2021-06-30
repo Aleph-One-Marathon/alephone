@@ -1451,6 +1451,9 @@
 		<return><type>polygon</type></return>
 		<note>you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon()</note>
       </function>
+	  <variable name="has_map_open" access="read-only" version="git">
+		<description>whether player has overhead map open</description>
+	  </variable>
       <variable name="head_below_media" access="read-only">
 		<description>whether player is completely below liquid</description>
 		<type>boolean</type>
@@ -1601,6 +1604,9 @@
 		<description>teleports player to level (of course, all the other players will also go to that level)</description>
 		<argument name="level"><type>number</type></argument>
       </function>
+	  <variable name="teleporting" access="read-only" version="git">
+		<description>whether player is teleporting</description>
+	  </variable>
       <subtable name="texture_palette">
 		<description>displays a texture palette instead of the classic HUD</description>
 		<variable name="highlight" access="local-player">
