@@ -28,7 +28,6 @@
 #include "Logging.h"
 
 #include <algorithm>
-#include <boost/lexical_cast.hpp>
 
 // for CPU count
 #ifdef HAVE_SYSCONF
@@ -460,7 +459,7 @@ bool Movie::Setup()
         video_stream->codec->bit_rate = bitrate;
         video_stream->codec->qmin = ScaleQuality(vq, 10, 4, 0);
         video_stream->codec->qmax = ScaleQuality(vq, 63, 63, 50);
-        std::string crf = boost::lexical_cast<std::string>(ScaleQuality(vq, 63, 10, 4));
+        std::string crf = std::to_string(ScaleQuality(vq, 63, 10, 4));
         av_opt_set(video_stream->codec->priv_data, "crf", crf.c_str(), 0);
         
         success = (0 <= avcodec_open2(video_stream->codec, video_codec, NULL));

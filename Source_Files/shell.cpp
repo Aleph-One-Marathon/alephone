@@ -68,7 +68,6 @@
 #include <vector>
 
 #include <sstream>
-#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
 #include "resource_manager.h"
@@ -1503,16 +1502,16 @@ void dump_screen(void)
 			metadata["Scenario"] = Scenario::instance()->GetName();
 		}
 
-		metadata["Polygon"] = boost::lexical_cast<std::string>(world_view->origin_polygon_index);
-		metadata["X"] = boost::lexical_cast<std::string>(world_view->origin.x / FLOAT_WORLD_ONE);
-		metadata["Y"] = boost::lexical_cast<std::string>(world_view->origin.y / FLOAT_WORLD_ONE);
-		metadata["Z"] = boost::lexical_cast<std::string>(world_view->origin.z / FLOAT_WORLD_ONE);
-		metadata["Yaw"] = boost::lexical_cast<std::string>(world_view->yaw * AngleConvert);
+		metadata["Polygon"] = std::to_string(world_view->origin_polygon_index);
+		metadata["X"] = std::to_string(world_view->origin.x / FLOAT_WORLD_ONE);
+		metadata["Y"] = std::to_string(world_view->origin.y / FLOAT_WORLD_ONE);
+		metadata["Z"] = std::to_string(world_view->origin.z / FLOAT_WORLD_ONE);
+		metadata["Yaw"] = std::to_string(world_view->yaw * AngleConvert);
 
 
 		short pitch = world_view->pitch;
 		if (pitch > HALF_CIRCLE) pitch -= HALF_CIRCLE;
-		metadata["Pitch"] = boost::lexical_cast<std::string>(pitch * AngleConvert);
+		metadata["Pitch"] = std::to_string(pitch * AngleConvert);
 	}
 
 	for (std::map<std::string, std::string>::const_iterator it = metadata.begin(); it != metadata.end(); ++it)
