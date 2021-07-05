@@ -82,6 +82,7 @@ extern "C"
 #include "libavcodec/avcodec.h"
 #include "libavutil/mathematics.h"
 #include "libavutil/opt.h"
+#include "libavutil/imgutils.h"
 #include "libavutil/fifo.h"
 #include "libswscale/swscale.h"
 #ifdef __cplusplus
@@ -139,7 +140,10 @@ struct libav_vars {
     AVFormatContext *fmt_ctx;
     int video_stream_idx;
     int audio_stream_idx;
-    
+
+    AVCodecContext* video_ctx;
+    AVCodecContext* audio_ctx;
+
     size_t video_counter;
     size_t audio_counter;
 };
@@ -401,8 +405,9 @@ bool Movie::Setup()
     if (success)
     {
         av->fmt_ctx->oformat = fmt;
-        strncpy(av->fmt_ctx->filename, moviefile.c_str(), 1024);
-        success = (0 <= avio_open(&av->fmt_ctx->pb, av->fmt_ctx->filename, AVIO_FLAG_WRITE));
+        av->fmt_ctx->url = (char*)av_malloc(moviefile.size() + 1);
+        snprintf(av->fmt_ctx->url, moviefile.size() + 1, moviefile.c_str());
+        success = (0 <= avio_open(&av->fmt_ctx->pb, av->fmt_ctx->url, AVIO_FLAG_WRITE));
         if (!success) err_msg = "Could not open movie file for writing";
     }
     
@@ -423,46 +428,54 @@ bool Movie::Setup()
     }
     if (success)
     {
-        video_stream->codec->codec_id = video_codec->id;
-        video_stream->codec->codec_type = AVMEDIA_TYPE_VIDEO;
-        video_stream->codec->width = view_rect.w;
-        video_stream->codec->height = view_rect.h;
-        video_stream->codec->time_base = AVRational{1, fps};
-        video_stream->codec->pix_fmt = AV_PIX_FMT_YUV420P;
-        video_stream->codec->flags |= AV_CODEC_FLAG_CLOSED_GOP;
-        video_stream->codec->thread_count = get_cpu_count();
+        int bitrate = graphics_preferences->movie_export_video_bitrate;
+
+        if (bitrate <= 0) // auto, based on YouTube's SDR standard frame rate
+                          // recommendations
+        {
+            if (view_rect.h >= 2160) bitrate = 40 * 1024 * 1024;
+            else if (view_rect.h >= 1440) bitrate = 16 * 1024 * 1024;
+            else if (view_rect.h >= 1080) bitrate = 8 * 1024 * 1024;
+            else if (view_rect.h >= 720) bitrate = 5 * 1024 * 1024;
+            else if (view_rect.h >= 480) bitrate = 5 * 1024 * 1024 / 2;
+            else                          bitrate = 1024 * 1024;
+
+            // YouTube recommends 50% more bitrate for 60 fps, so extrapolate
+            // from there
+            bitrate += std::log2(fps / 30) * bitrate / 2;
+        }
+
+        video_stream->codecpar->codec_id = video_codec->id;
+        video_stream->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
+        video_stream->codecpar->width = view_rect.w;
+        video_stream->codecpar->height = view_rect.h;
+        video_stream->codecpar->bit_rate = bitrate;
+        video_stream->codecpar->format = AV_PIX_FMT_YUV420P;
+
+        av->video_ctx = avcodec_alloc_context3(video_codec);
+        success = av->video_ctx && avcodec_parameters_to_context(av->video_ctx, video_stream->codecpar) >= 0;
+        if (!success) err_msg = "Could not setup video context";
+    }
+    if (success)
+    {
+        av->video_ctx->time_base = AVRational{ 1, fps };
+        av->video_ctx->flags |= AV_CODEC_FLAG_CLOSED_GOP;
+        av->video_ctx->thread_count = get_cpu_count();
 
         if (av->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-            video_stream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+            av->video_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
         av->video_stream_idx = video_stream->index;
         
         // tuning options
-        int vq = graphics_preferences->movie_export_video_quality;
-		int bitrate = graphics_preferences->movie_export_video_bitrate;
-
-		if (bitrate <= 0) // auto, based on YouTube's SDR standard frame rate
-						  // recommendations
-		{
-			if      (view_rect.h >= 2160) bitrate = 40 * 1024 * 1024;
-			else if (view_rect.h >= 1440) bitrate = 16 * 1024 * 1024;
-			else if (view_rect.h >= 1080) bitrate =  8 * 1024 * 1024;
-			else if (view_rect.h >=  720) bitrate =  5 * 1024 * 1024;
-			else if (view_rect.h >=  480) bitrate =  5 * 1024 * 1024 / 2;
-			else                          bitrate =      1024 * 1024;
-
-			// YouTube recommends 50% more bitrate for 60 fps, so extrapolate
-			// from there
-			bitrate += std::log2(fps / 30) * bitrate / 2;
-		}
-		
-        video_stream->codec->bit_rate = bitrate;
-        video_stream->codec->qmin = ScaleQuality(vq, 10, 4, 0);
-        video_stream->codec->qmax = ScaleQuality(vq, 63, 63, 50);
+        int vq = graphics_preferences->movie_export_video_quality;	
+        av->video_ctx->qmin = ScaleQuality(vq, 10, 4, 0);
+        av->video_ctx->qmax = ScaleQuality(vq, 63, 63, 50);
         std::string crf = std::to_string(ScaleQuality(vq, 63, 10, 4));
-        av_opt_set(video_stream->codec->priv_data, "crf", crf.c_str(), 0);
+        av_opt_set(av->video_ctx->priv_data, "crf", crf.c_str(), 0);
         
-        success = (0 <= avcodec_open2(video_stream->codec, video_codec, NULL));
+        //avcodec_open2 may fill some fields we need to have in codecpar
+        success = avcodec_open2(av->video_ctx, NULL, NULL) >= 0 && avcodec_parameters_from_context(video_stream->codecpar, av->video_ctx) >= 0;
         if (!success) err_msg = "Could not open video codec";
     }
     if (success)
@@ -484,14 +497,15 @@ bool Movie::Setup()
     }
     if (success)
     {
-        int numbytes = avpicture_get_size(video_stream->codec->pix_fmt, view_rect.w, view_rect.h);
+        int numbytes = av_image_get_buffer_size(av->video_ctx->pix_fmt, view_rect.w, view_rect.h, 1);
         av->video_data = static_cast<uint8_t *>(av_malloc(numbytes));
         success = av->video_data;
         if (!success) err_msg = "Could not allocate video data buffer";
     }
     if (success)
     {
-        avpicture_fill(reinterpret_cast<AVPicture *>(av->video_frame), av->video_data, video_stream->codec->pix_fmt, view_rect.w, view_rect.h);
+        success = av_image_fill_arrays(av->video_frame->data, av->video_frame->linesize, av->video_data, av->video_ctx->pix_fmt, view_rect.w, view_rect.h, 1) >= 0;
+        if (!success) err_msg = "Could not setup video data buffer";
     }
     
     // Open output audio stream
@@ -511,25 +525,34 @@ bool Movie::Setup()
     }
     if (success)
     {
-        audio_stream->codec->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
-        audio_stream->codec->codec_id = audio_codec->id;
-        audio_stream->codec->codec_type = AVMEDIA_TYPE_AUDIO;
-        audio_stream->codec->sample_rate = mx->obtained.freq;
-        audio_stream->codec->time_base = AVRational{1, mx->obtained.freq};
-        audio_stream->codec->channels = 2;
-        
+        audio_stream->codecpar->codec_id = audio_codec->id;
+        audio_stream->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
+        audio_stream->codecpar->format = AV_SAMPLE_FMT_FLTP;
+        audio_stream->codecpar->sample_rate = mx->obtained.freq;
+        audio_stream->codecpar->channel_layout = AV_CH_LAYOUT_STEREO;
+        audio_stream->codecpar->channels = 2;
+
+        av->audio_ctx = avcodec_alloc_context3(audio_codec);
+        success = av->audio_ctx && avcodec_parameters_to_context(av->audio_ctx, audio_stream->codecpar) >= 0;
+        if (!success) err_msg = "Could not setup audio context";
+    }
+    if (success)
+    {     
+        av->audio_ctx->time_base = AVRational{ 1, mx->obtained.freq };
+
         if (av->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-            audio_stream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+            av->audio_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
         
         av->audio_stream_idx = audio_stream->index;
-        
+        av->audio_ctx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
+
         // tuning options
         int aq = graphics_preferences->movie_export_audio_quality;
-        audio_stream->codec->global_quality = FF_QP2LAMBDA * (aq / 10);
-        audio_stream->codec->flags |= AV_CODEC_FLAG_QSCALE;
+        av->audio_ctx->global_quality = FF_QP2LAMBDA * (aq / 10);
+        av->audio_ctx->flags |= AV_CODEC_FLAG_QSCALE;
         
-        audio_stream->codec->sample_fmt = AV_SAMPLE_FMT_FLTP;
-        success = (0 <= avcodec_open2(audio_stream->codec, audio_codec, NULL));
+        //avcodec_open2 may fill some fields we need to have in codecpar
+        success = avcodec_open2(av->audio_ctx, NULL, NULL) >= 0 && avcodec_parameters_from_context(audio_stream->codecpar, av->audio_ctx) >= 0;
         if (!success) err_msg = "Could not open audio codec";
     }
     if (success)
@@ -565,9 +588,9 @@ bool Movie::Setup()
     if (success)
     {
         av->sws_ctx = sws_getContext(temp_surface->w, temp_surface->h, AV_PIX_FMT_RGB32,
-                                     video_stream->codec->width,
-                                     video_stream->codec->height,
-                                     video_stream->codec->pix_fmt,
+                                     av->video_ctx->width,
+                                     av->video_ctx->height,
+                                     av->video_ctx->pix_fmt,
                                      SWS_BILINEAR,
                                      NULL, NULL, NULL);
         success = av->sws_ctx;
@@ -579,7 +602,8 @@ bool Movie::Setup()
     {
         video_stream->time_base = AVRational{1, fps};
         audio_stream->time_base = AVRational{1, mx->obtained.freq};
-        avformat_write_header(av->fmt_ctx, NULL);
+        success = avformat_write_header(av->fmt_ctx, NULL) >= 0;
+        if (!success) err_msg = "Could not create write video header";
     }
     
     // set up our threads and intermediate storage
@@ -639,7 +663,7 @@ void Movie::EncodeVideo(bool last)
 {
     // convert video
     AVStream *vstream = av->fmt_ctx->streams[av->video_stream_idx];
-    AVCodecContext *vcodec = vstream->codec;
+    AVCodecContext *vcodec = av->video_ctx;
     
     AVFrame *frame = NULL;
     if (!last)
@@ -690,7 +714,7 @@ void Movie::EncodeVideo(bool last)
 void Movie::EncodeAudio(bool last)
 {
     AVStream *astream = av->fmt_ctx->streams[av->audio_stream_idx];
-    AVCodecContext *acodec = astream->codec;
+    AVCodecContext *acodec = av->audio_ctx;
     
     
     av_fifo_generic_write(av->audio_fifo, &audiobuf[0], audiobuf.size(), NULL);
@@ -732,8 +756,10 @@ void Movie::EncodeAudio(bool last)
         //Needed since ffmpeg 4.4
         av->audio_frame->channels = acodec->channels;
         av->audio_frame->format = acodec->sample_fmt;
-
+        av->audio_frame->channel_layout = acodec->channel_layout;
+        av->audio_frame->sample_rate = acodec->sample_rate;
         av->audio_frame->nb_samples = write_samples;
+
         av->audio_frame->pts = av_rescale_q(av->audio_counter,
                                             AVRational{1, acodec->sample_rate},
                                             acodec->time_base);
@@ -902,8 +928,8 @@ void Movie::StopRecording()
         // flush video and audio
         EncodeVideo(true);
         EncodeAudio(true);
-        avcodec_flush_buffers(av->fmt_ctx->streams[av->audio_stream_idx]->codec);
-        avcodec_flush_buffers(av->fmt_ctx->streams[av->video_stream_idx]->codec);
+        avcodec_flush_buffers(av->audio_ctx);
+        avcodec_flush_buffers(av->video_ctx);
         av_write_trailer(av->fmt_ctx);
         av->inited = false;
     }
@@ -946,12 +972,18 @@ void Movie::StopRecording()
         av->sws_ctx = NULL;
     }
 
+    if (av->video_ctx)
+    {
+        avcodec_free_context(&av->video_ctx);
+    }
+
+    if (av->audio_ctx)
+    {
+        avcodec_free_context(&av->audio_ctx);
+    }
+
     if (av->fmt_ctx)
     {
-        for (int i = 0; i < av->fmt_ctx->nb_streams; i++)
-        {
-            avcodec_close(av->fmt_ctx->streams[i]->codec);
-        }
         avio_close(av->fmt_ctx->pb);
         avformat_free_context(av->fmt_ctx);
         av->fmt_ctx = NULL;
