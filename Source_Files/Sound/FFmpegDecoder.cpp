@@ -56,6 +56,7 @@ extern int convert_audio(int in_samples, int in_channels, int in_stride,
 #endif
 
 struct ffmpeg_vars {
+    AVCodecContext* codec_ctx;
     AVFormatContext *ctx;
     AVStream *stream;
     uint8_t *temp_data;
@@ -112,13 +113,14 @@ bool FFmpegDecoder::Open(FileSpecifier& File)
         return false;
     }
     av->stream = av->ctx->streams[av->stream_idx];
-    if (avcodec_open2(av->stream->codec, codec, NULL) < 0)
+    av->codec_ctx = avcodec_alloc_context3(codec);
+    if (!av->codec_ctx || avcodec_parameters_to_context(av->codec_ctx, av->stream->codecpar) < 0 || avcodec_open2(av->codec_ctx, NULL, NULL) < 0)
     {
         Close();
         return false;
     }
-    channels = av->stream->codec->channels;
-    rate = av->stream->codec->sample_rate;
+    channels = av->stream->codecpar->channels;
+    rate = av->stream->codecpar->sample_rate;
 	
 	return true;
 }
@@ -158,10 +160,9 @@ void FFmpegDecoder::Rewind()
 
 void FFmpegDecoder::Close()
 {
-    if (av && av->stream)
+    if (av && av->codec_ctx)
     {
-        avcodec_close(av->stream->codec);
-        av->stream = NULL;
+        avcodec_free_context(&av->codec_ctx);
     }
     if (av && av->ctx)
     {
@@ -190,7 +191,7 @@ bool FFmpegDecoder::GetAudio()
     }
     
     av->started = true;
-    AVCodecContext *dec_ctx = av->stream->codec;
+    AVCodecContext *dec_ctx = av->codec_ctx;
 
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,0)
     AVFrame *dframe = avcodec_alloc_frame();
