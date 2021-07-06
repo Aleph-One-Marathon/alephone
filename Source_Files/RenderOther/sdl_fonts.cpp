@@ -45,7 +45,6 @@ using std::pair;
 using std::map;
 #endif
 
-#include <boost/tuple/tuple_comparison.hpp>
 #include "preferences.h" // smooth_font
 #include "AlephSansMono-Bold.h"
 #include "ProFontAO.h"
