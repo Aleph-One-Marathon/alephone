@@ -144,6 +144,8 @@ typedef struct SDL_ffmpegStream
     /** Pointer to ffmpeg data, internal use only! */
     struct AVStream *_ffmpeg;
 
+    struct AVCodecContext* _ctx;
+
     /** Intermediate frame which will be used when decoding */
     struct AVFrame *decodeFrame;
     /** Intermediate frame which will be used when encoding */
