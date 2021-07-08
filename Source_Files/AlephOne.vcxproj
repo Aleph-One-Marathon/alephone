@@ -615,9 +615,6 @@
     <ClInclude Include="XML\XML_ParseTreeRoot.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="LibNat\LibNat.vcxproj">
-      <Project>{23b53c43-591a-4e6a-acf5-f5f33c6697fc}</Project>
-    </ProjectReference>
     <ProjectReference Include="Lua\Lua.vcxproj">
       <Project>{272161cb-f5df-4f91-9c2f-d08e23ff1fdc}</Project>
     </ProjectReference>
