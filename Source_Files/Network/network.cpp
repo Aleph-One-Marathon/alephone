@@ -159,8 +159,6 @@ clearly this is all broken until we have packet types
 
 #include "lua_script.h"
 
-#include "libnat.h"
-
 #include <boost/bind.hpp>
 
 #include "network_metaserver.h"
@@ -207,7 +205,9 @@ static Capabilities my_capabilities;
 static GatherCallbacks *gatherCallbacks = NULL;
 static ChatCallbacks *chatCallbacks = NULL;
 
+#if 0
 static UpnpController *controller = NULL;
+#endif
 extern MetaserverClient* gMetaserverClient;
 
 static std::vector<NetworkStats> sNetworkStats;
@@ -1331,6 +1331,7 @@ void NetExit(
 	delete gMetaserverClient;
 	gMetaserverClient = new MetaserverClient();
 	
+#if 0 // TODO: add miniupnpc
 	if (controller)
 	{
 		open_progress_dialog(_closing_router_ports);
@@ -1340,6 +1341,7 @@ void NetExit(
 		controller = NULL;
 		close_progress_dialog();
 	}
+#endif
 
 	Console::instance()->unregister_command("ignore");
   
@@ -1494,7 +1496,8 @@ bool NetGather(
         
 	NetInitializeTopology(game_data, game_data_size, player_data, player_data_size);
 	NetInitializeSessionIdentifier();
-	
+
+#if 0 // TODO: replace this with miniupnpc
 	if (network_preferences->attempt_upnp)
 	{
 		// open the port!
@@ -1520,6 +1523,7 @@ bool NetGather(
 			alert_user(infoError, strNETWORK_ERRORS, netWarnUPnPConfigureFailed, ret);
 		}
 	}
+#endif
 	
 	// Start listening for joiners
 	server = new CommunicationsChannelFactory(GAME_PORT);

@@ -1035,7 +1035,7 @@ SetupNetgameDialog::~SetupNetgameDialog ()
 	delete m_laraCroftWidget;
 	delete m_carnageMessagesWidget;
 	
-	delete m_useUpnpWidget;
+//	delete m_useUpnpWidget;
 }
 
 extern int32& hub_get_minimum_send_period();
@@ -1180,8 +1180,8 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	FilePref scriptPref (active_network_preferences->netscript_file);
 	binders.insert<FileSpecifier> (m_scriptWidget, &scriptPref);
 	
-	BoolPref useUpnpPref (active_network_preferences->attempt_upnp);
-	binders.insert<bool> (m_useUpnpWidget, &useUpnpPref);
+//	BoolPref useUpnpPref (active_network_preferences->attempt_upnp);
+//	binders.insert<bool> (m_useUpnpWidget, &useUpnpPref);
 
 	LatencyTolerancePref latencyTolerancePref (hub_get_minimum_send_period());
 	binders.insert<int> (m_latencyToleranceWidget, &latencyTolerancePref);
@@ -2715,9 +2715,11 @@ public:
 		network_table->dual_add(advertise_on_metaserver_w, m_dialog);
 		network_table->dual_add(advertise_on_metaserver_w->label("Advertise Game on Internet"), m_dialog);
 
+#if 0 // TODO: restore once miniupnpc support is added
 		w_toggle *use_upnp_w = new w_toggle (true);
 		network_table->dual_add(use_upnp_w, m_dialog);
 		network_table->dual_add(use_upnp_w->label("Configure UPnP Router"), m_dialog);
+#endif
 
 		w_toggle* realtime_audio_w = new w_toggle(network_preferences->allow_microphone);
 		network_table->dual_add(realtime_audio_w, m_dialog);
@@ -2913,7 +2915,7 @@ public:
 		m_carnageMessagesWidget = new ToggleWidget (carnage_messages_w);
 		m_savingLevelWidget = new ToggleWidget (saving_level_w);
 		
-		m_useUpnpWidget = new ToggleWidget (use_upnp_w);
+//		m_useUpnpWidget = new ToggleWidget (use_upnp_w);
 		m_latencyToleranceWidget = new PopupSelectorWidget(latency_tolerance_w);
 	}
 	

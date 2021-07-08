@@ -79,11 +79,6 @@
             "vorbis",
             "vpx"
          ]
-      },
-      {
-         "name":"expat",
-         "version>=":"2.4.1",
-         "platform":"windows"
       }
    ],
     "builtin-baseline":"08214e18eeb146542944067c35d77faca8962be5"
