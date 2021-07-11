@@ -631,8 +631,8 @@ void RenderVisTreeClass::initialize_clip_data()
 		line_clip_data *line= &LineClips[indexTOP_AND_BOTTOM_OF_SCREEN];
 
 		line->flags= _clip_up|_clip_down;
-		line->x0= 0;
-		line->x1= view->screen_width;
+		line->x0 = INT16_MIN;
+		line->x1 = INT16_MAX;
 		line->top_y= 0; short_to_long_2d(view->top_edge,line->top_vector);
 		line->bottom_y= view->screen_height; short_to_long_2d(view->bottom_edge,line->bottom_vector);
 	}

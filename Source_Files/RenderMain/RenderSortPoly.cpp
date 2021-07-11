@@ -458,7 +458,6 @@ void RenderSortPolyClass::calculate_vertical_clip_data(
 	short x0,
 	short x1)
 {
-	if (x0<x1)
 	{
 		short x;
 		line_clip_data *highest_line, *locally_highest_line, *line;
