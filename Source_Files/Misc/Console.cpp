@@ -25,9 +25,8 @@
 #include "Logging.h"
 #include "InfoTree.h"
 
+#include <functional>
 #include <string>
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
 
 #include "network.h"
 
@@ -85,7 +84,7 @@ static pair<string, string> split(string buffer)
 	return pair<string, string>(command, remainder);
 }
 
-void CommandParser::register_command(string command, boost::function<void(const string&)> f)
+void CommandParser::register_command(string command, std::function<void(const string&)> f)
 {
 	lowercase(command);
 	m_commands[command] = f;
@@ -94,7 +93,7 @@ void CommandParser::register_command(string command, boost::function<void(const 
 void CommandParser::register_command(string command, const CommandParser& command_parser)
 {
 	lowercase(command);
-	m_commands[command] = boost::bind(&CommandParser::parse_and_execute, command_parser, _1);
+	m_commands[command] = std::bind(&CommandParser::parse_and_execute, command_parser, std::placeholders::_1);
 }
 
 void CommandParser::unregister_command(string command)
@@ -158,7 +157,7 @@ void Console::enter() {
 		m_callback(m_buffer);
 	}
 	
-	m_callback.clear();
+	m_callback = nullptr;
 	m_buffer.clear();
 	m_displayBuffer.clear();
 	m_active = false;
@@ -174,7 +173,7 @@ void Console::abort() {
 		m_callback(m_buffer);
 	}
 
-	m_callback.clear();
+	m_callback = nullptr;
 	m_active = false;
 	SDL_StopTextInput();
 }
@@ -289,7 +288,7 @@ void Console::line_end() {
 	m_cursor_position = m_buffer.length();
 }
 
-void Console::activate_input(boost::function<void (const std::string&)> callback,
+void Console::activate_input(std::function<void (const std::string&)> callback,
 			     const std::string& prompt)
 {
 	assert(!m_active);
@@ -307,7 +306,7 @@ void Console::deactivate_input() {
 	m_buffer.clear();
 	m_displayBuffer.clear();
 	
-	m_callback.clear();
+	m_callback = nullptr;
 	m_active = false;
 	SDL_StopTextInput();
 }

@@ -81,6 +81,7 @@ Apr 10, 2003 (Woody Zenfell):
 #include "game_wad.h" // get_map_file
 
 #include <map>
+#include <functional>
 
 // For LAN netgame location services
 #include	<sstream>
@@ -307,16 +308,16 @@ bool GatherDialog::GatherNetworkGameByRunning ()
 	chat_choice_labels.push_back ("with Internet players");
 	m_chatChoiceWidget->set_labels (chat_choice_labels);
 
-	m_cancelWidget->set_callback(boost::bind(&GatherDialog::Stop, this, false));
-	m_startWidget->set_callback(boost::bind(&GatherDialog::StartGameHit, this));
-	m_ungatheredWidget->SetItemSelectedCallback(boost::bind(&GatherDialog::gathered_player, this, _1));
+	m_cancelWidget->set_callback(std::bind(&GatherDialog::Stop, this, false));
+	m_startWidget->set_callback(std::bind(&GatherDialog::StartGameHit, this));
+	m_ungatheredWidget->SetItemSelectedCallback(std::bind(&GatherDialog::gathered_player, this, std::placeholders::_1));
 
 	m_startWidget->deactivate ();
 	
 	NetSetGatherCallbacks(this);
 	
-	m_chatChoiceWidget->set_callback(boost::bind(&GatherDialog::chatChoiceHit, this));
-	m_chatEntryWidget->set_callback(boost::bind(&GatherDialog::chatTextEntered, this, _1));
+	m_chatChoiceWidget->set_callback(std::bind(&GatherDialog::chatChoiceHit, this));
+	m_chatEntryWidget->set_callback(std::bind(&GatherDialog::chatTextEntered, this, std::placeholders::_1));
 	
 	gPregameChatHistory.clear ();
 	NetSetChatCallbacks(this);
@@ -568,15 +569,15 @@ const int JoinDialog::JoinNetworkGameByRunning ()
 	m_colourWidget->set_labels (kTeamColorsStringSetID);
 	m_teamWidget->set_labels (kTeamColorsStringSetID);
 	
-	m_cancelWidget->set_callback(boost::bind(&JoinDialog::Stop, this));
-	m_joinWidget->set_callback(boost::bind(&JoinDialog::attemptJoin, this));
-	m_joinMetaserverWidget->set_callback(boost::bind(&JoinDialog::getJoinAddressFromMetaserver, this));
+	m_cancelWidget->set_callback(std::bind(&JoinDialog::Stop, this));
+	m_joinWidget->set_callback(std::bind(&JoinDialog::attemptJoin, this));
+	m_joinMetaserverWidget->set_callback(std::bind(&JoinDialog::getJoinAddressFromMetaserver, this));
 	
 	m_chatChoiceWidget->set_value (kPregameChat);
 	m_chatChoiceWidget->deactivate ();
 	m_chatEntryWidget->deactivate ();
-	m_chatChoiceWidget->set_callback(boost::bind(&JoinDialog::chatChoiceHit, this));
-	m_chatEntryWidget->set_callback(boost::bind(&JoinDialog::chatTextEntered, this, _1));
+	m_chatChoiceWidget->set_callback(std::bind(&JoinDialog::chatChoiceHit, this));
+	m_chatEntryWidget->set_callback(std::bind(&JoinDialog::chatTextEntered, this, std::placeholders::_1));
 	
 	getcstr(temporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string);
 	m_messagesWidget->set_text(temporary);
@@ -717,8 +718,8 @@ void JoinDialog::gathererSearch ()
 					m_teamWidget->activate ();
 				}
 				m_colourWidget->activate ();
-				m_colourWidget->set_callback(boost::bind(&JoinDialog::changeColours, this));
-				m_teamWidget->set_callback(boost::bind(&JoinDialog::changeColours, this));
+				m_colourWidget->set_callback(std::bind(&JoinDialog::changeColours, this));
+				m_teamWidget->set_callback(std::bind(&JoinDialog::changeColours, this));
 			}
 			m_pigWidget->redraw ();
 			join_result = kNetworkJoinFailedJoined;
@@ -1190,12 +1191,12 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 
 	binders.migrate_all_second_to_first ();
 	
-	m_cancelWidget->set_callback (boost::bind (&SetupNetgameDialog::Stop, this, false));
-	m_okWidget->set_callback (boost::bind (&SetupNetgameDialog::okHit, this));
-	m_limitTypeWidget->set_callback (boost::bind (&SetupNetgameDialog::limitTypeHit, this));
-	m_allowTeamsWidget->set_callback (boost::bind (&SetupNetgameDialog::teamsHit, this));
-	m_gameTypeWidget->set_callback (boost::bind (&SetupNetgameDialog::gameTypeHit, this));
-	m_mapWidget->set_callback (boost::bind (&SetupNetgameDialog::chooseMapHit, this));
+	m_cancelWidget->set_callback (std::bind (&SetupNetgameDialog::Stop, this, false));
+	m_okWidget->set_callback (std::bind (&SetupNetgameDialog::okHit, this));
+	m_limitTypeWidget->set_callback (std::bind (&SetupNetgameDialog::limitTypeHit, this));
+	m_allowTeamsWidget->set_callback (std::bind (&SetupNetgameDialog::teamsHit, this));
+	m_gameTypeWidget->set_callback (std::bind (&SetupNetgameDialog::gameTypeHit, this));
+	m_mapWidget->set_callback (std::bind (&SetupNetgameDialog::chooseMapHit, this));
 
 	setupForGameType ();
 
@@ -2484,7 +2485,7 @@ public:
 	
 	virtual bool Run ()
 	{
-		m_dialog.set_processing_function (boost::bind(&SdlGatherDialog::idle, this));
+		m_dialog.set_processing_function (std::bind(&SdlGatherDialog::idle, this));
 		return (m_dialog.run() == 0);
 	}
 	
@@ -2639,7 +2640,7 @@ public:
 
 	virtual void Run ()
 	{
-		m_dialog.set_processing_function (boost::bind(&SdlJoinDialog::gathererSearch, this));
+		m_dialog.set_processing_function (std::bind(&SdlJoinDialog::gathererSearch, this));
 		m_dialog.run();
 	}
 	

@@ -72,6 +72,7 @@ extern "C"
 }
 #endif
 
+#include <functional>
 #include <string>
 #include <stdlib.h>
 #include <set>
@@ -122,7 +123,6 @@ extern "C"
 #include "lua_saved_objects.h"
 #include "lua_serialize.h"
 
-#include <boost/bind.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/iostreams/device/array.hpp>
@@ -992,7 +992,7 @@ void LuaState::ExecuteCommand(const std::string& line)
 
 extern bool can_load_collection(short);
 
-// pass by pointer because boost::bind can't do non-const past 2nd argument
+// pass by pointer because std::bind can't do non-const past 2nd argument
 void LuaState::MarkCollections(std::set<short>* collections)
 {
 	if (!running_)
@@ -1255,12 +1255,12 @@ void L_Call_Init(bool fRestoringSaved)
 		
 	}
 
-	L_Dispatch(boost::bind(&LuaState::Init, _1, fRestoringSaved));
+	L_Dispatch(std::bind(&LuaState::Init, std::placeholders::_1, fRestoringSaved));
 }
 
 void L_Call_Cleanup ()
 {
-	L_Dispatch(boost::bind(&LuaState::Cleanup, _1));
+	L_Dispatch(std::bind(&LuaState::Cleanup, std::placeholders::_1));
 }
 
 void UpdateLuaCameras();
@@ -1268,137 +1268,137 @@ void UpdateLuaCameras();
 void L_Call_Idle()
 {
 	UpdateLuaCameras();
-	L_Dispatch(boost::bind(&LuaState::Idle, _1));
+	L_Dispatch(std::bind(&LuaState::Idle, std::placeholders::_1));
 }
 
 void L_Call_PostIdle()
 {
-	L_Dispatch(boost::bind(&LuaState::PostIdle, _1));
+	L_Dispatch(std::bind(&LuaState::PostIdle, std::placeholders::_1));
 }
 
 void L_Call_Start_Refuel (short type, short player_index, short panel_side_index)
 {
-	L_Dispatch(boost::bind(&LuaState::StartRefuel, _1, type, player_index, panel_side_index));
+	L_Dispatch(std::bind(&LuaState::StartRefuel, std::placeholders::_1, type, player_index, panel_side_index));
 }
 
 void L_Call_End_Refuel (short type, short player_index, short panel_side_index)
 {
-	L_Dispatch(boost::bind(&LuaState::EndRefuel, _1, type, player_index, panel_side_index));
+	L_Dispatch(std::bind(&LuaState::EndRefuel, std::placeholders::_1, type, player_index, panel_side_index));
 }
 
 void L_Call_Tag_Switch(short tag, short player_index, short side_index)
 {
-	L_Dispatch(boost::bind(&LuaState::TagSwitch, _1, tag, player_index, side_index));
+	L_Dispatch(std::bind(&LuaState::TagSwitch, std::placeholders::_1, tag, player_index, side_index));
 }
 
 void L_Call_Light_Switch(short light, short player_index, short side_index)
 {
-	L_Dispatch(boost::bind(&LuaState::LightSwitch, _1, light, player_index, side_index));
+	L_Dispatch(std::bind(&LuaState::LightSwitch, std::placeholders::_1, light, player_index, side_index));
 }
 
 void L_Call_Platform_Switch(short platform, short player_index, short side_index)
 {
-	L_Dispatch(boost::bind(&LuaState::PlatformSwitch, _1, platform, player_index, side_index));
+	L_Dispatch(std::bind(&LuaState::PlatformSwitch, std::placeholders::_1, platform, player_index, side_index));
 }
 
 void L_Call_Projectile_Switch(short side_index, short projectile_index)
 {
-	L_Dispatch(boost::bind(&LuaState::ProjectileSwitch, _1, side_index, projectile_index));
+	L_Dispatch(std::bind(&LuaState::ProjectileSwitch, std::placeholders::_1, side_index, projectile_index));
 }
 
 void L_Call_Terminal_Enter(short terminal_id, short player_index)
 {
-	L_Dispatch(boost::bind(&LuaState::TerminalEnter, _1, terminal_id, player_index));
+	L_Dispatch(std::bind(&LuaState::TerminalEnter, std::placeholders::_1, terminal_id, player_index));
 }
 
 void L_Call_Terminal_Exit(short terminal_id, short player_index)
 {
-	L_Dispatch(boost::bind(&LuaState::TerminalExit, _1, terminal_id, player_index));
+	L_Dispatch(std::bind(&LuaState::TerminalExit, std::placeholders::_1, terminal_id, player_index));
 }
 
 void L_Call_Pattern_Buffer(short side_index, short player_index)
 {
-	L_Dispatch(boost::bind(&LuaState::PatternBuffer, _1, side_index, player_index));
+	L_Dispatch(std::bind(&LuaState::PatternBuffer, std::placeholders::_1, side_index, player_index));
 }
 
 void L_Call_Got_Item(short type, short player_index)
 {
-	L_Dispatch(boost::bind(&LuaState::GotItem, _1, type, player_index));
+	L_Dispatch(std::bind(&LuaState::GotItem, std::placeholders::_1, type, player_index));
 }
 
 void L_Call_Light_Activated(short index)
 {
-	L_Dispatch(boost::bind(&LuaState::LightActivated, _1, index));
+	L_Dispatch(std::bind(&LuaState::LightActivated, std::placeholders::_1, index));
 }
 
 void L_Call_Platform_Activated(short index)
 {
-	L_Dispatch(boost::bind(&LuaState::PlatformActivated, _1, index));
+	L_Dispatch(std::bind(&LuaState::PlatformActivated, std::placeholders::_1, index));
 }
 
 void L_Call_Player_Revived (short player_index)
 {
-	L_Dispatch(boost::bind(&LuaState::PlayerRevived, _1, player_index));
+	L_Dispatch(std::bind(&LuaState::PlayerRevived, std::placeholders::_1, player_index));
 }
 
 void L_Call_Player_Killed (short player_index, short aggressor_player_index, short action, short projectile_index)
 {
-	L_Dispatch(boost::bind(&LuaState::PlayerKilled, _1, player_index, aggressor_player_index, action, projectile_index));
+	L_Dispatch(std::bind(&LuaState::PlayerKilled, std::placeholders::_1, player_index, aggressor_player_index, action, projectile_index));
 }
 
 void L_Call_Monster_Killed (short monster_index, short aggressor_player_index, short projectile_index)
 {
-	L_Dispatch(boost::bind(&LuaState::MonsterKilled, _1, monster_index, aggressor_player_index, projectile_index));
+	L_Dispatch(std::bind(&LuaState::MonsterKilled, std::placeholders::_1, monster_index, aggressor_player_index, projectile_index));
 }
 
 void L_Call_Monster_Damaged(short monster_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index)
 {
-	L_Dispatch(boost::bind(&LuaState::MonsterDamaged, _1, monster_index, aggressor_monster_index, damage_type, damage_amount, projectile_index));
+	L_Dispatch(std::bind(&LuaState::MonsterDamaged, std::placeholders::_1, monster_index, aggressor_monster_index, damage_type, damage_amount, projectile_index));
 }
 
 void L_Call_Player_Damaged (short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index)
 {
-	L_Dispatch(boost::bind(&LuaState::PlayerDamaged, _1, player_index, aggressor_player_index, aggressor_monster_index, damage_type, damage_amount, projectile_index));
+	L_Dispatch(std::bind(&LuaState::PlayerDamaged, std::placeholders::_1, player_index, aggressor_player_index, aggressor_monster_index, damage_type, damage_amount, projectile_index));
 }
 
 void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location, uint16_t flags, int16_t obstruction_index, int16_t line_index) 
 {
-	L_Dispatch(boost::bind(&LuaState::ProjectileDetonated, _1, type, owner_index, polygon, location, flags, obstruction_index, line_index));
+	L_Dispatch(std::bind(&LuaState::ProjectileDetonated, std::placeholders::_1, type, owner_index, polygon, location, flags, obstruction_index, line_index));
 }
 
 void L_Call_Projectile_Created (short projectile_index)
 {
-	L_Dispatch(boost::bind(&LuaState::ProjectileCreated, _1, projectile_index));
+	L_Dispatch(std::bind(&LuaState::ProjectileCreated, std::placeholders::_1, projectile_index));
 }
 
 void L_Call_Item_Created (short item_index)
 {
-	L_Dispatch(boost::bind(&LuaState::ItemCreated, _1, item_index));
+	L_Dispatch(std::bind(&LuaState::ItemCreated, std::placeholders::_1, item_index));
 }
 
 void L_Invalidate_Effect(short effect_index)
 {
-	L_Dispatch(boost::bind(&LuaState::InvalidateEffect, _1, effect_index));
+	L_Dispatch(std::bind(&LuaState::InvalidateEffect, std::placeholders::_1, effect_index));
 }
 
 void L_Invalidate_Monster(short monster_index)
 {
-	L_Dispatch(boost::bind(&LuaState::InvalidateMonster, _1, monster_index));
+	L_Dispatch(std::bind(&LuaState::InvalidateMonster, std::placeholders::_1, monster_index));
 }
 
 void L_Invalidate_Projectile(short projectile_index)
 {
-	L_Dispatch(boost::bind(&LuaState::InvalidateProjectile, _1, projectile_index));
+	L_Dispatch(std::bind(&LuaState::InvalidateProjectile, std::placeholders::_1, projectile_index));
 }
 
 void L_Invalidate_Object(short object_index)
 {
-	L_Dispatch(boost::bind(&LuaState::InvalidateObject, _1, object_index));
+	L_Dispatch(std::bind(&LuaState::InvalidateObject, std::placeholders::_1, object_index));
 }
 
 void L_Invalidate_Ephemera(short ephemera_index)
 {
-	L_Dispatch(boost::bind(&LuaState::InvalidateEphemera, _1, ephemera_index));
+	L_Dispatch(std::bind(&LuaState::InvalidateEphemera, std::placeholders::_1, ephemera_index));
 }
 
 int L_Enable_Player(lua_State *L)
@@ -2178,7 +2178,7 @@ void MarkLuaCollections(bool loading)
 	{
 		collections.clear();
 
-		L_Dispatch(boost::bind(&LuaState::MarkCollections, _1, &collections));
+		L_Dispatch(std::bind(&LuaState::MarkCollections, std::placeholders::_1, &collections));
 	}
 	else
 	{

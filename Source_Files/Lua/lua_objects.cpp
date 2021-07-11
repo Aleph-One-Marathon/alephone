@@ -33,9 +33,9 @@ LUA_OBJECTS.CPP
 #include "item_definitions.h"
 #include "scenery_definitions.h"
 
-#include "SoundManager.h"
+#include <functional>
 
-#include <boost/bind.hpp>
+#include "SoundManager.h"
 
 #ifdef HAVE_LUA
 
@@ -831,19 +831,19 @@ int Lua_Objects_register(lua_State *L)
 	Lua_Effect::Valid = Lua_Effect_Valid;
 
 	Lua_Effects::Register(L, Lua_Effects_Methods);
-	Lua_Effects::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_effects);
+	Lua_Effects::Length = std::bind(get_dynamic_limit, (int) _dynamic_limit_effects);
 
 	Lua_Item::Register(L, Lua_Item_Get, Lua_Item_Set);
 	Lua_Item::Valid = Lua_Item_Valid;
 
 	Lua_Items::Register(L, Lua_Items_Methods);
-	Lua_Items::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_objects);
+	Lua_Items::Length = std::bind(get_dynamic_limit, (int) _dynamic_limit_objects);
 
 	Lua_Scenery::Register(L, Lua_Scenery_Get, Lua_Scenery_Set);
 	Lua_Scenery::Valid = Lua_Scenery_Valid;
 
 	Lua_Sceneries::Register(L, Lua_Sceneries_Methods);
-	Lua_Sceneries::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_objects);
+	Lua_Sceneries::Length = std::bind(get_dynamic_limit, (int) _dynamic_limit_objects);
 
 	Lua_EffectType::Register(L, 0, 0, 0, Lua_EffectType_Mnemonics);
 	Lua_EffectType::Valid = Lua_EffectType::ValidRange(NUMBER_OF_EFFECT_TYPES);

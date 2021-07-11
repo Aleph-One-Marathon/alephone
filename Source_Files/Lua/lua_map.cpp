@@ -42,8 +42,6 @@ LUA_MAP.CPP
 #include "collection_definition.h"
 
 
-#include <boost/bind.hpp>
-
 #ifdef HAVE_LUA
 
 char Lua_AmbientSound_Name[] = "ambient_sound";

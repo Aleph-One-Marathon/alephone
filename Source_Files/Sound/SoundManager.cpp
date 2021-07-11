@@ -21,6 +21,7 @@ SOUND.C
 */
 
 #include <iostream>
+#include <functional>
 
 #include "SoundManager.h"
 #include "ReplacementSounds.h"
@@ -48,7 +49,7 @@ public:
 	void Add(boost::shared_ptr<SoundData> data, short index, short slot);
 	boost::shared_ptr<SoundData> Get(short index, short slot) { return m_entries[index].data[slot]; }
 	void Update(short index);
-	boost::function<void (short)> SoundReleased;
+	std::function<void (short)> SoundReleased;
 
 	bool IsLoaded(short index) {
 		return m_entries.count(index);

@@ -63,6 +63,7 @@
 #include    "mouse.h"   // (ZZZ) NUM_SDL_MOUSE_BUTTONS, SDLK_BASE_MOUSE_BUTTON
 #include "joystick.h"
 
+#include <functional>
 #include <sstream>
 
 /*
@@ -386,7 +387,7 @@ void w_hyperlink::prochandler(void *arg)
 	get_owning_dialog()->draw();
 }
 
-w_hyperlink::w_hyperlink(const char *url, const char *txt) : w_button_base((txt ? txt : url), boost::bind(&w_hyperlink::prochandler, this, _1), const_cast<char *>(url), HYPERLINK_WIDGET)
+w_hyperlink::w_hyperlink(const char *url, const char *txt) : w_button_base((txt ? txt : url), std::bind(&w_hyperlink::prochandler, this, std::placeholders::_1), const_cast<char *>(url), HYPERLINK_WIDGET)
 {
 	rect.w = text_width(text.c_str(), font, style);
 	rect.h = font->get_line_height();

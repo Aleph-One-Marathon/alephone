@@ -161,8 +161,6 @@ clearly this is all broken until we have packet types
 
 #include "lua_script.h"
 
-#include <boost/bind.hpp>
-
 #include "network_metaserver.h"
 
 #include "network_sound.h"
@@ -2055,13 +2053,13 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 		{
 			ZippedPhysicsMessage zippedPhysicsMessage(physics_buffer, physics_length);
 			std::unique_ptr<UninflatedMessage> uninflatedMessage(zippedPhysicsMessage.deflate());
-			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, *uninflatedMessage));
+			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, *uninflatedMessage));
 		}
 
 		if (zipIncapableChannels.size())
 		{
 			PhysicsMessage physicsMessage(physics_buffer, physics_length);
-			std::for_each(zipIncapableChannels.begin(), zipIncapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, physicsMessage));
+			std::for_each(zipIncapableChannels.begin(), zipIncapableChannels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, physicsMessage));
 		}
 	}
 	
@@ -2074,13 +2072,13 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 			// since we may have to send this to multiple joiners,
 			// deflate it now so that compression only happens once
 			std::unique_ptr<UninflatedMessage> uninflatedMessage(zippedMapMessage.deflate());
-			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, *uninflatedMessage));
+			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, *uninflatedMessage));
 		}
 
 		if (zipIncapableChannels.size())
 		{
 			MapMessage mapMessage(wad_buffer, wad_length);
-			std::for_each(zipIncapableChannels.begin(), zipIncapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, mapMessage));
+			std::for_each(zipIncapableChannels.begin(), zipIncapableChannels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, mapMessage));
 		}
 	}
 
@@ -2090,19 +2088,19 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 		{
 			ZippedLuaMessage zippedLuaMessage(deferred_script_data, deferred_script_length);
 			std::unique_ptr<UninflatedMessage> uninflatedMessage(zippedLuaMessage.deflate());
-			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, *uninflatedMessage));
+			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, *uninflatedMessage));
 		}
 
 		if (zipIncapableChannels.size())
 		{
 			LuaMessage luaMessage(deferred_script_data, deferred_script_length);
-			std::for_each(zipIncapableChannels.begin(), zipIncapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, luaMessage));
+			std::for_each(zipIncapableChannels.begin(), zipIncapableChannels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, luaMessage));
 		}
 	}
 
 	{
 		EndGameDataMessage endGameDataMessage;
-		std::for_each(channels.begin(), channels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, endGameDataMessage));
+		std::for_each(channels.begin(), channels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, endGameDataMessage));
 	}
 
 	CommunicationsChannel::multipleFlushOutgoingMessages(channels, false, 30000, 30000);

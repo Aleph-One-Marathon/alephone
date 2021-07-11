@@ -101,8 +101,6 @@ AC_DEFUN([AX_CHECK_BOOST_HEADER],
            AC_LANG_POP(C++) ])
 
 dnl Some checks suppressed to speed configuration.
-AX_CHECK_BOOST_HEADER([boost/bind.hpp])
-AX_CHECK_BOOST_HEADER([boost/function.hpp])
 AX_CHECK_BOOST_HEADER([boost/foreach.hpp])
 AX_CHECK_BOOST_HEADER([boost/lexical_cast.hpp])
 dnl AX_CHECK_BOOST_HEADER([boost/make_shared.hpp])

@@ -50,7 +50,6 @@ LUA_HUD_OBJECTS.CPP
 #include "FileHandler.h"
 #include "Crosshairs.h"
 
-#include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <algorithm>
 #include <cmath>

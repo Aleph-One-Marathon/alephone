@@ -26,11 +26,11 @@ LUA_MONSTERS.CPP
 #include "lua_player.h"
 #include "lua_templates.h"
 
+#include <functional>
+
 #include "flood_map.h"
 #include "monsters.h"
 #include "player.h"
-
-#include <boost/bind.hpp>
 
 #define DONT_REPEAT_DEFINITIONS
 #include "monster_definitions.h"
@@ -1116,7 +1116,7 @@ int Lua_Monsters_register(lua_State *L)
 	Lua_Monster::Valid = Lua_Monster_Valid;
 
 	Lua_Monsters::Register(L, Lua_Monsters_Methods);
-	Lua_Monsters::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_monsters);
+	Lua_Monsters::Length = std::bind(get_dynamic_limit, (int) _dynamic_limit_monsters);
 
 	compatibility(L);
 	return 0;
