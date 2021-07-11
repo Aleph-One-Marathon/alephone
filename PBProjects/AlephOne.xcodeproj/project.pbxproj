@@ -690,6 +690,10 @@
 		AE626E730B878534009CFF2D /* SoundManager.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6A0B878534009CFF2D /* SoundManager.h */; };
 		AE626E740B878534009CFF2D /* SoundManagerEnums.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6B0B878534009CFF2D /* SoundManagerEnums.h */; };
 		AE69B5DD0D404F0400C42C11 /* lua_player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE69B5DB0D404F0400C42C11 /* lua_player.cpp */; };
+		AE72AA90269A7E7B001F7675 /* PortForward.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE72AA8F269A7E7B001F7675 /* PortForward.cpp */; };
+		AE72AA91269A7E7B001F7675 /* PortForward.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE72AA8F269A7E7B001F7675 /* PortForward.cpp */; };
+		AE72AA92269A7E7B001F7675 /* PortForward.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE72AA8F269A7E7B001F7675 /* PortForward.cpp */; };
+		AE72AA93269A7E7B001F7675 /* PortForward.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE72AA8F269A7E7B001F7675 /* PortForward.cpp */; };
 		AE780E102533A4C7002184B5 /* lua_ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */; };
 		AE780E112533A4C7002184B5 /* lua_ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */; };
 		AE780E122533A4C7002184B5 /* lua_ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */; };
@@ -1990,6 +1994,8 @@
 		AE626E6B0B878534009CFF2D /* SoundManagerEnums.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundManagerEnums.h; sourceTree = "<group>"; };
 		AE69B5DB0D404F0400C42C11 /* lua_player.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_player.cpp; sourceTree = "<group>"; };
 		AE69B5DC0D404F0400C42C11 /* lua_player.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_player.h; sourceTree = "<group>"; };
+		AE72AA8F269A7E7B001F7675 /* PortForward.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PortForward.cpp; path = ../Source_Files/Network/PortForward.cpp; sourceTree = "<group>"; };
+		AE72AA94269A7E9F001F7675 /* PortForward.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PortForward.h; path = ../Source_Files/Network/PortForward.h; sourceTree = "<group>"; };
 		AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_ephemera.cpp; sourceTree = "<group>"; };
 		AE780E142533A4D8002184B5 /* ephemera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ephemera.cpp; sourceTree = "<group>"; };
 		AE780E192533A4E9002184B5 /* ephemera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ephemera.h; sourceTree = "<group>"; };
@@ -2876,6 +2882,7 @@
 				EF2EF5C804819BD700A8000D /* network_star_hub.cpp */,
 				EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */,
 				F522138E0136ABAE01000001 /* network_udp.cpp */,
+				AE72AA8F269A7E7B001F7675 /* PortForward.cpp */,
 				AE7C21D50BFF688000CE63EC /* Update.cpp */,
 			);
 			name = Network;
@@ -2909,6 +2916,7 @@
 				F5A00037023FDC0301A80001 /* network_speaker_sdl.h */,
 				EFBAF0160485BEA500A8000D /* network_speex.h */,
 				EF2EF5CA04819BD700A8000D /* network_star.h */,
+				AE72AA94269A7E9F001F7675 /* PortForward.h */,
 			);
 			name = Headers;
 			sourceTree = "<group>";
@@ -4527,6 +4535,7 @@
 			files = (
 				AE505C10141D45E600915344 /* byte_swapping.cpp in Sources */,
 				AE505C11141D45E600915344 /* csalerts_sdl.cpp in Sources */,
+				AE72AA92269A7E7B001F7675 /* PortForward.cpp in Sources */,
 				AE505C12141D45E600915344 /* cscluts_sdl.cpp in Sources */,
 				AE505C13141D45E600915344 /* csmisc_sdl.cpp in Sources */,
 				AE505C17141D45E600915344 /* game_errors.cpp in Sources */,
@@ -4754,6 +4763,7 @@
 			files = (
 				AEB4A1B114296CAE00537AE7 /* byte_swapping.cpp in Sources */,
 				AEB4A1B214296CAE00537AE7 /* csalerts_sdl.cpp in Sources */,
+				AE72AA93269A7E7B001F7675 /* PortForward.cpp in Sources */,
 				AEB4A1B314296CAE00537AE7 /* cscluts_sdl.cpp in Sources */,
 				AEB4A1B414296CAE00537AE7 /* csmisc_sdl.cpp in Sources */,
 				AEB4A1B814296CAE00537AE7 /* game_errors.cpp in Sources */,
@@ -4981,6 +4991,7 @@
 			files = (
 				AEC3C7D109AD68AC003258E4 /* byte_swapping.cpp in Sources */,
 				AEC3C7D209AD68AC003258E4 /* csalerts_sdl.cpp in Sources */,
+				AE72AA90269A7E7B001F7675 /* PortForward.cpp in Sources */,
 				AEC3C7D309AD68AC003258E4 /* cscluts_sdl.cpp in Sources */,
 				AEC3C7D409AD68AC003258E4 /* csmisc_sdl.cpp in Sources */,
 				AEC3C7D909AD68AC003258E4 /* game_errors.cpp in Sources */,
@@ -5208,6 +5219,7 @@
 			files = (
 				AEFD86BD13EB84CF00C1E687 /* byte_swapping.cpp in Sources */,
 				AEFD86BE13EB84CF00C1E687 /* csalerts_sdl.cpp in Sources */,
+				AE72AA91269A7E7B001F7675 /* PortForward.cpp in Sources */,
 				AEFD86BF13EB84CF00C1E687 /* cscluts_sdl.cpp in Sources */,
 				AEFD86C013EB84CF00C1E687 /* csmisc_sdl.cpp in Sources */,
 				AEFD86C413EB84CF00C1E687 /* game_errors.cpp in Sources */,
@@ -5582,6 +5594,7 @@
 					"-lswresample",
 					"-lswscale",
 					"-lldap",
+					"-lminiupnpc",
 				);
 				STRIP_INSTALLED_PRODUCT = NO;
 				USER_HEADER_SEARCH_PATHS = (
@@ -5722,6 +5735,7 @@
 					"-lswresample",
 					"-lswscale",
 					"-lldap",
+					"-lminiupnpc",
 				);
 				STRIP_INSTALLED_PRODUCT = NO;
 				USER_HEADER_SEARCH_PATHS = (

@@ -133,9 +133,11 @@ clearly this is all broken until we have packet types
 #include "MessageDispatcher.h"
 #include "MessageInflater.h"
 #include "MessageHandler.h"
+#include "PortForward.h"
 #include "progress.h"
 #include "extensions.h"
 
+#include <memory>
 #include <stdlib.h>
 #include <string.h>
 
@@ -205,9 +207,10 @@ static Capabilities my_capabilities;
 static GatherCallbacks *gatherCallbacks = NULL;
 static ChatCallbacks *chatCallbacks = NULL;
 
-#if 0
-static UpnpController *controller = NULL;
+#ifdef HAVE_MINIUPNPC
+static std::unique_ptr<PortForward> port_forward;
 #endif
+
 extern MetaserverClient* gMetaserverClient;
 
 static std::vector<NetworkStats> sNetworkStats;
@@ -1331,18 +1334,6 @@ void NetExit(
 	delete gMetaserverClient;
 	gMetaserverClient = new MetaserverClient();
 	
-#if 0 // TODO: add miniupnpc
-	if (controller)
-	{
-		open_progress_dialog(_closing_router_ports);
-		LNat_Upnp_Remove_Port_Mapping(controller, GAME_PORT, "TCP");
-		LNat_Upnp_Remove_Port_Mapping(controller, GAME_PORT, "UDP");
-		LNat_Upnp_Controller_Free(&controller);
-		controller = NULL;
-		close_progress_dialog();
-	}
-#endif
-
 	Console::instance()->unregister_command("ignore");
   
 	NetDDPClose();
@@ -1497,34 +1488,28 @@ bool NetGather(
 	NetInitializeTopology(game_data, game_data_size, player_data, player_data_size);
 	NetInitializeSessionIdentifier();
 
-#if 0 // TODO: replace this with miniupnpc
-	if (network_preferences->attempt_upnp)
+#ifdef HAVE_MINIUPNPC
+	if (!port_forward && network_preferences->attempt_upnp)
 	{
-		// open the port!
 		open_progress_dialog(_opening_router_ports);
-		char public_ip[32];
-		int ret = 0;
-		if ((ret = LNat_Upnp_Discover(&controller)) != 0)
-			logWarning("LibNAT: Failed to discover UPnP controller");
-		if (ret == 0) 
-			if ((ret = LNat_Upnp_Get_Public_Ip(controller, public_ip, 32)) != 0)
-				logWarning("LibNAT: Failed to acquire public IP");
-		if (ret == 0)
-			if ((ret = LNat_Upnp_Set_Port_Mapping(controller, NULL, GAME_PORT, "TCP")) != 0)
-				logWarning("LibNAT: Failed to map port %d (TCP)", GAME_PORT);
-		if (ret == 0)
-			if ((ret = LNat_Upnp_Set_Port_Mapping(controller, NULL, GAME_PORT, "UDP")) != 0)
-				logWarning("LibNAT: Failed to map port %d (UDP)", GAME_PORT);
-		close_progress_dialog();
-		
-		if (ret != 0)
+		try
 		{
-			controller = 0;
-			alert_user(infoError, strNETWORK_ERRORS, netWarnUPnPConfigureFailed, ret);
+			port_forward.reset(new PortForward(4226));
+			close_progress_dialog();
+		}
+		catch (const PortForwardException& e)
+		{
+			logWarning("miniupnpc: %s", e.what());
+			close_progress_dialog();
+			alert_user(infoError, strNETWORK_ERRORS, netWarnUPnPConfigureFailed, -1);
 		}
 	}
+	else if (port_forward && !network_preferences->attempt_upnp)
+	{
+		port_forward.reset();
+	}
 #endif
-	
+
 	// Start listening for joiners
 	server = new CommunicationsChannelFactory(GAME_PORT);
 	

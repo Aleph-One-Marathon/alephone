@@ -79,6 +79,10 @@
             "vorbis",
             "vpx"
          ]
+      },
+	  {
+         "name":"miniupnpc",
+         "version>=":"2.1-1"
       }
    ],
     "builtin-baseline":"08214e18eeb146542944067c35d77faca8962be5"

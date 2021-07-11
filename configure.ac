@@ -43,7 +43,7 @@ AX_ARG_WITH([alsa], [ALSA net mic transmission])
 AX_ARG_WITH([curl], [cURL for HTTP communication])
 AX_ARG_WITH([zzip], [zziplib support])
 AX_ARG_WITH([png], [libpng PNG screenshot support])
-
+AX_ARG_WITH([miniupnpc], [miniupnpc support])
 
 dnl Check for programs.
 AC_PROG_CC
@@ -294,6 +294,7 @@ LIBS=`echo "$LIBS" | sed -E 's|-specs=@<:@^ @:>@+||'`
 AX_CHECK_FEATURE_PKG([png], [PNG],
                      [PNG], [libpng])
 
+AX_CHECK_FEATURE_LIB([miniupnpc], [MINIUPNPC], [miniupnpc/miniupnpc.h], [miniupnpc], [upnpDiscover])
 
 dnl Generate Makefiles.
 AC_CONFIG_FILES([
@@ -370,5 +371,6 @@ AX_PRINT_SUMMARY([alsa])
 AX_PRINT_SUMMARY([curl])
 AX_PRINT_SUMMARY([zzip])
 AX_PRINT_SUMMARY([png])
+AX_PRINT_SUMMARY([miniupnpc])
 AS_ECHO([""])
 AS_ECHO(["Configuration done. Now type \"make\"."])

@@ -736,6 +736,9 @@
     <ClCompile Include="GameWorld\interpolated_world.cpp">
       <Filter>GameWorld\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Network\PortForward.cpp">
+      <Filter>Network\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CSeries\BStream.h">
@@ -1430,6 +1433,9 @@
     </ClInclude>
     <ClInclude Include="GameWorld\interpolated_world.h">
       <Filter>GameWorld\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\PortForward.h">
+      <Filter>Network\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
