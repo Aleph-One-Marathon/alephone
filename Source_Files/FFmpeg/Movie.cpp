@@ -85,6 +85,7 @@ extern "C"
 #include "libavutil/imgutils.h"
 #include "libavutil/fifo.h"
 #include "libswscale/swscale.h"
+#include "libswresample/swresample.h"
 #ifdef __cplusplus
 }
 #endif
@@ -129,8 +130,8 @@ struct libav_vars {
     AVFrame *audio_frame;
     AVFifoBuffer *audio_fifo;
     uint8_t *audio_data;
-    uint8_t *audio_data_conv;
-    
+    uint8_t **audio_data_conv;
+
     AVFrame *video_frame;
     uint8_t *video_buf;
     int video_bufsize;
@@ -146,162 +147,10 @@ struct libav_vars {
 
     size_t video_counter;
     size_t audio_counter;
+
+    SwrContext* swr_context;
 };
 typedef struct libav_vars libav_vars_t;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int convert_audio(int in_samples, int in_channels, int in_stride,
-                  enum AVSampleFormat in_fmt,
-                  const uint8_t *in_buf,
-                  int out_samples, int out_channels, int out_stride,
-                  enum AVSampleFormat out_fmt,
-                  uint8_t *out_buf)
-{
-    auto clamp_to_int16 = [](float x){ return int16(x < -32768 ? -32768 : x > 32767 ? 32767 : x); };
-    
-    if (in_channels != out_channels)
-        return 0;   // unsupported conversion
-    if (out_samples < in_samples)
-        in_samples = out_samples;
-    
-    int in_bps;
-    switch (in_fmt)
-    {
-        case AV_SAMPLE_FMT_U8:
-            in_bps = 1;
-            break;
-        case AV_SAMPLE_FMT_S16:
-        case AV_SAMPLE_FMT_S16P:
-            in_bps = 2;
-            break;
-        case AV_SAMPLE_FMT_FLT:
-        case AV_SAMPLE_FMT_FLTP:
-            in_bps = 4;
-            break;
-        default:
-            return 0;   // unsupported format
-    }
-    int in_bytes = in_bps * in_samples * in_channels;
-    
-    int out_bps;
-    switch (out_fmt)
-    {
-        case AV_SAMPLE_FMT_S16:
-            out_bps = 2;
-            break;
-        case AV_SAMPLE_FMT_FLT:
-        case AV_SAMPLE_FMT_FLTP:
-            out_bps = 4;
-            break;
-        default:
-            return 0;   // unsupported format
-    }
-    int out_bytes = out_bps * out_samples * out_channels;
-    
-    in_stride = in_stride / in_bps;
-    out_stride = out_stride / out_bps;
-    
-    if (in_fmt == out_fmt)
-    {
-        if (av_sample_fmt_is_planar(in_fmt))
-            for (int c = 0; c < in_channels; c++)
-                memcpy(out_buf + (c * out_stride),
-                       in_buf + (c * in_stride),
-                       in_samples * in_bps);
-        else
-            memcpy(out_buf, in_buf, in_bytes);
-    }
-    else if (in_fmt == AV_SAMPLE_FMT_U8)
-    {
-        const uint8 *ib = reinterpret_cast<const uint8 *>(in_buf);
-        if (out_fmt == AV_SAMPLE_FMT_S16)
-        {
-            int16 *ob = reinterpret_cast<int16 *>(out_buf);
-            for (int i = 0; i < in_samples * in_channels; i++)
-                ob[i] = (ib[i] << 8) + ib[i] - 32768;
-        }
-        else
-            return 0;   // unsupported conversion
-    }
-    else if (in_fmt == AV_SAMPLE_FMT_S16)
-    {
-        const int16 *ib = reinterpret_cast<const int16 *>(in_buf);
-        if (out_fmt == AV_SAMPLE_FMT_FLT)
-        {
-            float *ob = reinterpret_cast<float *>(out_buf);
-            for (int i = 0; i < in_samples * in_channels; i++)
-                ob[i] = ib[i] / 32768.0f;
-        }
-        else if (out_fmt == AV_SAMPLE_FMT_FLTP)
-        {
-            float *ob = reinterpret_cast<float *>(out_buf);
-            for (int s = 0; s < in_samples; s++)
-                for (int c = 0; c < in_channels; c++)
-                    ob[(c * out_stride) + s] = ib[(s * in_channels) + c] / 32768.0f;
-        }
-        else
-            return 0;   // unsupported conversion
-    }
-    else if (in_fmt == AV_SAMPLE_FMT_FLT)
-    {
-        const float *ib = reinterpret_cast<const float *>(in_buf);
-        if (out_fmt == AV_SAMPLE_FMT_S16)
-        {
-            int16 *ob = reinterpret_cast<int16 *>(out_buf);
-            for (int i = 0; i < in_samples * in_channels; i++)
-                ob[i] = clamp_to_int16(ib[i] * 32768.0f);
-        }
-        else
-            return 0;   // unsupported conversion
-    }
-    else if (in_fmt == AV_SAMPLE_FMT_FLTP)
-    {
-        const float *ib = reinterpret_cast<const float *>(in_buf);
-        if (out_fmt == AV_SAMPLE_FMT_S16)
-        {
-            int16 *ob = reinterpret_cast<int16 *>(out_buf);
-            for (int s = 0; s < in_samples; s++)
-                for (int c = 0; c < in_channels; c++)
-                    ob[(s * in_channels) + c] = clamp_to_int16(ib[(c * in_stride) + s] * 32768.0f);
-        }
-        else
-            return 0;   // unsupported conversion
-    }
-    else if (in_fmt == AV_SAMPLE_FMT_S16P)
-    {
-        const int16 *ib = reinterpret_cast<const int16 *>(in_buf);
-        if (out_fmt == AV_SAMPLE_FMT_S16)
-        {
-            int16 *ob = reinterpret_cast<int16 *>(out_buf);
-            for (int s = 0; s < in_samples; s++)
-                for (int c = 0; c < in_channels; c++)
-                    ob[(s * in_channels) + c] = ib[(c * in_stride) + s];
-        }
-        else
-            return 0;   // unsupported conversion
-    }
-    
-    // pad output if desired
-    if (out_samples > in_samples)
-    {
-        if (av_sample_fmt_is_planar(out_fmt))
-        {
-            for (int c = 0; c < out_channels; c++)
-                memset(out_buf + (c * out_stride), 0, (out_samples - in_samples) * out_bps);
-        }
-        else
-            memset(out_buf + in_bytes, 0, out_bytes - in_bytes);
-    }
-
-    return out_bytes;
-}
-
-#ifdef __cplusplus
-}
-#endif
 
 int ScaleQuality(int quality, int zeroLevel, int fiftyLevel, int hundredLevel)
 {
@@ -557,6 +406,15 @@ bool Movie::Setup()
     }
     if (success)
     {
+        // init resampler
+        av->swr_context = swr_alloc_set_opts(av->swr_context, av->audio_ctx->channel_layout, av->audio_ctx->sample_fmt, av->audio_ctx->sample_rate,
+            av->audio_ctx->channel_layout, AV_SAMPLE_FMT_S16, av->audio_ctx->sample_rate, 0, NULL);
+
+        success = av->swr_context && swr_init(av->swr_context) >= 0;
+        if (!success) err_msg = "Could not initialize resampler";
+    }
+    if (success)
+    {
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,0)
         av->audio_frame = avcodec_alloc_frame();
 #else
@@ -573,14 +431,12 @@ bool Movie::Setup()
     }
     if (success)
     {
-        av->audio_data = reinterpret_cast<uint8_t *>(av_malloc(524288));
-        success = av->audio_data;
+        success = av_samples_alloc(&av->audio_data, NULL, av->audio_ctx->channels, av->audio_ctx->frame_size, AV_SAMPLE_FMT_S16, 0) >= 0;
         if (!success) err_msg = "Could not allocate audio data buffer";
     }
     if (success)
     {
-        av->audio_data_conv = reinterpret_cast<uint8_t *>(av_malloc(524288));
-        success = av->audio_data_conv;
+        success = av_samples_alloc_array_and_samples(&av->audio_data_conv, NULL, av->audio_ctx->channels, av->audio_ctx->frame_size, av->audio_ctx->sample_fmt, 0) >= 0;
         if (!success) err_msg = "Could not allocate audio conversion buffer";
     }
     
@@ -743,10 +599,7 @@ void Movie::EncodeAudio(bool last)
                 write_samples = acodec->frame_size;
         }
 
-        convert_audio(read_samples, acodec->channels, -1,
-                      AV_SAMPLE_FMT_S16, av->audio_data,
-                      write_samples, acodec->channels, write_samples * write_bps,
-                      acodec->sample_fmt, av->audio_data_conv);
+        write_samples = swr_convert(av->swr_context, av->audio_data_conv, write_samples, (const uint8_t**)&av->audio_data, read_samples);
                       
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
         avcodec_get_frame_defaults(av->audio_frame);
@@ -763,11 +616,13 @@ void Movie::EncodeAudio(bool last)
         av->audio_frame->pts = av_rescale_q(av->audio_counter,
                                             AVRational{1, acodec->sample_rate},
                                             acodec->time_base);
+
         av->audio_counter += write_samples;
         int asize = avcodec_fill_audio_frame(av->audio_frame, acodec->channels,
                                              acodec->sample_fmt,
-                                             av->audio_data_conv,
+                                             av->audio_data_conv[0],
                                              write_samples * write_bps * channels, 1);
+
         if (asize >= 0)
         {
             AVPacket* pkt = av_packet_alloc();        
@@ -941,8 +796,12 @@ void Movie::StopRecording()
     }
     if (av->audio_data)
     {
-        av_free(av->audio_data);
-        av->audio_data = NULL;
+        av_freep(&av->audio_data);
+    }
+    if (av->audio_data_conv)
+    {
+        av_freep(&av->audio_data_conv[0]);
+        av_freep(&av->audio_data_conv);
     }
     if (av->audio_frame)
     {
@@ -980,6 +839,11 @@ void Movie::StopRecording()
     if (av->audio_ctx)
     {
         avcodec_free_context(&av->audio_ctx);
+    }
+    
+    if (av->swr_context)
+    {
+        swr_free(&av->swr_context);
     }
 
     if (av->fmt_ctx)
