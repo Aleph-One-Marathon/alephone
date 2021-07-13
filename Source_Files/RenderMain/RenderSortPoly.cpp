@@ -304,7 +304,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 				const auto forward_vec = endpoint->forward_vector();
 				
 				short size = AccumulatedEndpointClips.size();
-				for (j= 0;j<size;++j)
+				for (j = 1; j < size; ++j) // starting at 1 to skip the left screen edge
 				{
 					if (AccumulatedEndpointClips[j]==endpoint) { j= NONE; break; } /* found duplicate */
 					
