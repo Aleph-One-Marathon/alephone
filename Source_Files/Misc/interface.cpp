@@ -93,6 +93,9 @@ Feb 8-12, 2003 (Woody Zenfell):
 
 Feb 13, 2003 (Woody Zenfell):
         We can now resume games as network games.
+        
+Jun 15, 2019 (Lia Gerty):
+        Restored the playing of music over minor dialouges.
 */
 
 // NEED VISIBLE FEEDBACK WHEN APPLETALK IS NOT AVAILABLE!!!
@@ -337,7 +340,7 @@ static void display_introduction_screen_for_demo(void);
 static void display_epilogue(void);
 static void display_about_dialog();
 
-static void force_system_colors(void);
+static void force_system_colors(bool fade_music);
 static bool point_in_rectangle(short x, short y, screen_rectangle *rect);
 
 static void start_interface_fade(short type, struct color_table *original_color_table);
@@ -894,7 +897,7 @@ bool load_and_start_game(FileSpecifier& File)
 	if (!success)
 	{
 		/* Reset the system colors, since the screen clut is all black.. */
-		force_system_colors();
+		force_system_colors(false);
 		show_cursor(); // JTP: Was hidden by force system colors
 		display_loading_map_error();
 	}
@@ -1016,7 +1019,7 @@ bool handle_open_replay(FileSpecifier& File)
 	
 	bool success;
 	
-	force_system_colors();
+	force_system_colors(true);
 	success= begin_game(_replay_from_file, false);
 	if(!success) display_main_menu();
 	return success;
@@ -1722,7 +1725,7 @@ public:
 
 static void display_about_dialog()
 {
-	force_system_colors();
+	force_system_colors(false);
 
 	dialog d;
 
@@ -1973,7 +1976,7 @@ static void handle_replay( /* This is gross. */
 {
 	bool success;
 	
-	if(!last_replay) force_system_colors();
+	if(!last_replay) force_system_colors(true);
 	success= begin_game(_replay, !last_replay);
 	if(!success) display_main_menu();
 }
@@ -2292,7 +2295,7 @@ void handle_load_game(
 	FileSpecifier FileToLoad;
 	bool success= false;
 
-	force_system_colors();
+	force_system_colors(false);
 	show_cursor(); // JTP: Was hidden by force system colors
 	if(choose_saved_game_to_load(FileToLoad))
 	{
@@ -2394,7 +2397,7 @@ static void finish_game(
 		game_state.state= _displaying_network_game_dialogs;
 
 		change_screen_mode(_screentype_menu);
-		force_system_colors();
+		force_system_colors(false);
 		display_net_game_stats();
 		exit_networking();
 	} 
@@ -2404,7 +2407,7 @@ static void finish_game(
 	{
 		game_state.state = _displaying_network_game_dialogs;
 
-		force_system_colors();
+		force_system_colors(false);
 		display_net_game_stats();
 	}
 	
@@ -2465,7 +2468,7 @@ static void handle_network_game(
 	bool successful_gather = false;
 	bool joined_resume_game = false;
 
-	force_system_colors();
+	force_system_colors(true);
 
 	/* Don't update the screen, etc.. */
 	game_state.state= _displaying_network_game_dialogs;
@@ -2501,7 +2504,7 @@ static void handle_network_game(
 static void handle_save_film(
 	void)
 {
-	force_system_colors();
+	force_system_colors(false);
 	show_cursor(); // JTP: Hidden by force_system_colors
 	move_replay();
 	hide_cursor(); // JTP: Will be shown by display_main_menu
@@ -2604,12 +2607,13 @@ static void display_loading_map_error(
 	set_game_error(systemError, errNone);
 }
 
+// LG: now specifies whether music should be cut or not
 static void force_system_colors(
-	void)
+	bool fade_music)
 {
 	if(can_interface_fade_out())
 	{
-		interface_fade_out(MAIN_MENU_BASE, true);
+		interface_fade_out(MAIN_MENU_BASE, fade_music);
 	}
 
 	if(interface_bit_depth==8)
@@ -2988,7 +2992,7 @@ void do_preferences(void)
 {
 	struct screen_mode_data mode = graphics_preferences->screen_mode;
 
-	force_system_colors();
+	force_system_colors(false);
 	handle_preferences();
 
 	if (mode.bit_depth != graphics_preferences->screen_mode.bit_depth) {
