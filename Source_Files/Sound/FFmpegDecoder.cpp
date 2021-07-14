@@ -113,10 +113,11 @@ bool FFmpegDecoder::Open(FileSpecifier& File)
     }
     channels = av->stream->codecpar->channels;
     rate = av->stream->codecpar->sample_rate;
+    int channel_layout = av->codec_ctx->channel_layout ? av->codec_ctx->channel_layout : (channels == 2 ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO);
 
     // init resampler
-    av->swr_context = swr_alloc_set_opts(av->swr_context, av->codec_ctx->channel_layout, AV_SAMPLE_FMT_S16, rate,
-        av->codec_ctx->channel_layout, av->codec_ctx->sample_fmt, rate, 0, NULL);
+    av->swr_context = swr_alloc_set_opts(av->swr_context, channel_layout, AV_SAMPLE_FMT_S16, rate,
+        channel_layout, av->codec_ctx->sample_fmt, rate, 0, NULL);
 
     if (!av->swr_context || swr_init(av->swr_context) < 0)
     {
@@ -124,7 +125,7 @@ bool FFmpegDecoder::Open(FileSpecifier& File)
         return false;
     }
 
-    if (av_samples_alloc(&av->temp_data, NULL, channels, 1024, AV_SAMPLE_FMT_S16, 0) < 0)
+    if (av_samples_alloc(&av->temp_data, NULL, channels, 8192, AV_SAMPLE_FMT_S16, 0) < 0)
     {
         Close();
         return false;

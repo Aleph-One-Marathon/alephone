@@ -476,9 +476,12 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
                 }
                 else
                 {
-                    stream->swr_context = swr_alloc_set_opts(stream->swr_context, stream->_ffmpeg->codec->channel_layout, AV_SAMPLE_FMT_S16,
-                        stream->_ffmpeg->codec->sample_rate, stream->_ffmpeg->codec->channel_layout,
-                        stream->_ffmpeg->codec->sample_fmt, stream->_ffmpeg->codec->sample_rate,
+                    int channel_layout = stream->_ffmpeg->codecpar->channel_layout ? stream->_ffmpeg->codecpar->channel_layout : 
+                        (stream->_ffmpeg->codecpar->channels == 2 ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO);
+
+                    stream->swr_context = swr_alloc_set_opts(stream->swr_context, channel_layout, AV_SAMPLE_FMT_S16,
+                        stream->_ffmpeg->codecpar->sample_rate, channel_layout,
+                        stream->_ffmpeg->codecpar->format, stream->_ffmpeg->codecpar->sample_rate,
                         0, NULL);
 
                     if (!stream->swr_context || swr_init(stream->swr_context) < 0) {
