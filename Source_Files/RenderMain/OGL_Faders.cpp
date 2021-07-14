@@ -85,7 +85,7 @@ inline void ComplementColor(GLfloat *InColor, GLfloat *OutColor)
 }
 
 
-bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
+bool OGL_DoFades(float Left, float Top, float Right, float Bottom, float liquidCutoff)
 {
 	if (!OGL_FaderActive()) return false;
 	
@@ -114,6 +114,14 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 	{
 		OGL_Fader& Fader = FaderQueue[f];
 		
+        if (Fader.isLiquid){
+            Vertices[0][1] = liquidCutoff;
+            Vertices[1][1] = liquidCutoff;
+        } else {
+            Vertices[0][1] = Top;
+            Vertices[1][1] = Top;
+        }
+        
 		switch(Fader.Type)
 		{
 		case NONE:

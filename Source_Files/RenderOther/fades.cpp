@@ -775,6 +775,7 @@ void SetOGLFader(int Index)
 	{
 		CurrentOGLFader = GetOGL_FaderQueueEntry(Index);
 		CurrentOGLFader->Type = NONE;
+		CurrentOGLFader->isLiquid = Index == FaderQueue_Liquid;
 	} else
 #endif
 		CurrentOGLFader = NULL;
