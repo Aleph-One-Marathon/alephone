@@ -114,8 +114,6 @@ Jan 17, 2001 (Loren Petrich):
 #include <SDL2/SDL_rwops.h>
 #include <memory>
 
-#include <boost/shared_ptr.hpp>
-
 #include "Plugins.h"
 
 /* ---------- constants */
@@ -750,7 +748,7 @@ static void allocate_shading_tables(short collection_index, bool strip)
 static bool load_collection(short collection_index, bool strip)
 {
 	SDL_RWops* p;
-	boost::shared_ptr<SDL_RWops> m1_p; // automatic deallocation
+	std::shared_ptr<SDL_RWops> m1_p; // automatic deallocation
 	LoadedResource r;
 	int32 src_offset;
 

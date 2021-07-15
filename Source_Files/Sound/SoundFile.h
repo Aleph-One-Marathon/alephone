@@ -29,8 +29,6 @@ SOUND_DEFINITIONS.H
 #include <memory>
 #include <vector>
 #include <map>
-#include <boost/shared_array.hpp>
-#include <boost/shared_ptr.hpp>
 
 typedef std::vector<uint8> SoundData;
 
@@ -65,13 +63,13 @@ public:
 	virtual ~SoundHeader() { };
 
 	bool Load(BIStreamBE& stream);
-	boost::shared_ptr<SoundData> LoadData(BIStreamBE& stream);
+	std::shared_ptr<SoundData> LoadData(BIStreamBE& stream);
 
 	bool Load(OpenedFile &SoundFile); // loads a system 7 header from file
-	boost::shared_ptr<SoundData> LoadData(OpenedFile& SoundFile);
+	std::shared_ptr<SoundData> LoadData(OpenedFile& SoundFile);
 	
 	bool Load(LoadedResource& rsrc); // finds system 7 header in rsrc
-	boost::shared_ptr<SoundData> LoadData(LoadedResource& rsrc);
+	std::shared_ptr<SoundData> LoadData(LoadedResource& rsrc);
 
 	int32 Length() const
 		{ return length; };
@@ -96,7 +94,7 @@ public:
 	SoundDefinition();
 	bool Unpack(OpenedFile &SoundFile);
 	bool Load(OpenedFile &SoundFile, bool LoadPermutations);
-	boost::shared_ptr<SoundData> LoadData(OpenedFile& SoundFile, short permutation);
+	std::shared_ptr<SoundData> LoadData(OpenedFile& SoundFile, short permutation);
 	void Unload() { sounds.clear(); }
 
 	static const int MAXIMUM_PERMUTATIONS_PER_SOUND = 5;
@@ -133,7 +131,7 @@ public:
 	virtual void Close() = 0;
 	virtual SoundDefinition* GetSoundDefinition(int source, int sound_index) = 0;
 	virtual SoundHeader GetSoundHeader(SoundDefinition* definition, int permutation) = 0;
-	virtual boost::shared_ptr<SoundData> GetSoundData(SoundDefinition* definition, int permutation) = 0;
+	virtual std::shared_ptr<SoundData> GetSoundData(SoundDefinition* definition, int permutation) = 0;
 
 	virtual int SourceCount() { return 1; };
 	virtual ~SoundFile() = default;
@@ -148,7 +146,7 @@ public:
 	void Close();
 	SoundDefinition* GetSoundDefinition(int source, int sound_index);
 	SoundHeader GetSoundHeader(SoundDefinition* definition, int permutation);
-	boost::shared_ptr<SoundData> GetSoundData(SoundDefinition* definition, int permutation);
+	std::shared_ptr<SoundData> GetSoundData(SoundDefinition* definition, int permutation);
 
 private:
 	OpenedResourceFile resource_file;
@@ -171,7 +169,7 @@ public:
 	SoundHeader GetSoundHeader(SoundDefinition* definition, int permutation) { 
 		return definition->sounds[permutation];
 	}
-	boost::shared_ptr<SoundData> GetSoundData(SoundDefinition* definition, int permutation);
+	std::shared_ptr<SoundData> GetSoundData(SoundDefinition* definition, int permutation);
 
 	int SourceCount() { return source_count; }
 

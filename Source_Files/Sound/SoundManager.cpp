@@ -46,8 +46,8 @@ public:
 
 	void SetMaxSize(std::size_t max_size) { m_max_size = max_size; }
 
-	void Add(boost::shared_ptr<SoundData> data, short index, short slot);
-	boost::shared_ptr<SoundData> Get(short index, short slot) { return m_entries[index].data[slot]; }
+	void Add(std::shared_ptr<SoundData> data, short index, short slot);
+	std::shared_ptr<SoundData> Get(short index, short slot) { return m_entries[index].data[slot]; }
 	void Update(short index);
 	std::function<void (short)> SoundReleased;
 
@@ -61,12 +61,12 @@ public:
 private:
 	struct Entry {
 		Entry() : data(5), last_played(0) { }
-		std::vector<boost::shared_ptr<SoundData> > data;
+		std::vector<std::shared_ptr<SoundData> > data;
 		uint32 last_played;
 
 		std::size_t size() {
 			std::size_t n = 0;
-			for (std::vector<boost::shared_ptr<SoundData> >::iterator it = data.begin(); it != data.end(); ++it) 
+			for (std::vector<std::shared_ptr<SoundData> >::iterator it = data.begin(); it != data.end(); ++it) 
 			{
 				if (it->get()) 
 				{
@@ -84,7 +84,7 @@ private:
 	std::size_t m_max_size;
 };
 
-void SoundMemoryManager::Add(boost::shared_ptr<SoundData> data, short index, short slot)
+void SoundMemoryManager::Add(std::shared_ptr<SoundData> data, short index, short slot)
 {
 	m_entries[index].data[slot] = data;
 	m_entries[index].last_played = machine_tick_count();
@@ -297,12 +297,12 @@ bool SoundManager::LoadSound(short sound_index)
 		{
 			for (int i = 0; i < NumSlots; ++i)
 			{
-				boost::shared_ptr<SoundData> p = sound_file->GetSoundData(definition, i);
+				auto p = sound_file->GetSoundData(definition, i);
 
 				SoundOptions *SndOpts = SoundReplacements::instance()->GetSoundOptions(sound_index, i);
 				if (SndOpts)
 				{
-					boost::shared_ptr<SoundData> x = SndOpts->Sound.LoadExternal(SndOpts->File);
+					auto x = SndOpts->Sound.LoadExternal(SndOpts->File);
 					if (x.get()) 
 					{
 						p = x;
@@ -848,7 +848,7 @@ void SoundManager::BufferSound(Channel &channel, short sound_index, _fixed pitch
 		header = sound_file->GetSoundHeader(definition, permutation);
 	}
 
-	boost::shared_ptr<SoundData> sound = sounds->Get(sound_index, permutation);
+	auto sound = sounds->Get(sound_index, permutation);
 	if (sound.get()) 
 	{
 		Mixer::instance()->BufferSound(channel.mixer_channel, header, sound, CalculatePitchModifier(sound_index, pitch));

@@ -34,8 +34,6 @@
 #include "curl/curl.h"
 #include "curl/easy.h"
 
-#include <boost/shared_ptr.hpp>
-
 void HTTPClient::Init()
 {
 	curl_global_init(CURL_GLOBAL_ALL);
@@ -52,7 +50,7 @@ bool HTTPClient::Get(const std::string& url)
 {
 	response_.clear();
 
-	boost::shared_ptr<CURL> handle(curl_easy_init(), curl_easy_cleanup);
+	std::shared_ptr<CURL> handle(curl_easy_init(), curl_easy_cleanup);
 	if (!handle)
 	{
 		logError("CURL init failed");
@@ -84,9 +82,9 @@ static std::string escape(CURL*, const std::string& s)
 #endif
 {
 #if LIBCURL_VERSION_NUM >= 0x071504
-	boost::shared_ptr<char> dst(curl_easy_escape(handle, s.c_str(), s.size()), curl_free);
+	std::shared_ptr<char> dst(curl_easy_escape(handle, s.c_str(), s.size()), curl_free);
 #else
-	boost::shared_ptr<char> dst(curl_escape(s.c_str(), s.size()), curl_free);
+	std::shared_ptr<char> dst(curl_escape(s.c_str(), s.size()), curl_free);
 #endif
 	return std::string(dst.get());
 }
@@ -95,7 +93,7 @@ bool HTTPClient::Post(const std::string& url, const parameter_map& parameters)
 {
 	response_.clear();
 
-	boost::shared_ptr<CURL> handle(curl_easy_init(), curl_easy_cleanup);
+	std::shared_ptr<CURL> handle(curl_easy_init(), curl_easy_cleanup);
 	if (!handle)
 	{
 		logError("CURL init failed");

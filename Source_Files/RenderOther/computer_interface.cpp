@@ -1335,7 +1335,7 @@ static void fill_terminal_with_static(
 
 // LP addition: will return NULL if no terminal data was found for this terminal number
 
-static boost::scoped_ptr<terminal_text_t> resource_terminal;
+static std::unique_ptr<terminal_text_t> resource_terminal;
 static int resource_terminal_id = NONE;
 
 void clear_compiled_terminal_cache()

@@ -71,7 +71,7 @@ void Mixer::Stop()
 	sound_channel_count = 0;
 }
 
-void Mixer::BufferSound(int channel, const SoundInfo& header, boost::shared_ptr<SoundData> data, _fixed pitch)
+void Mixer::BufferSound(int channel, const SoundInfo& header, std::shared_ptr<SoundData> data, _fixed pitch)
 {
 	SDL_LockAudio();
 	if (channels[channel].active)
@@ -185,7 +185,7 @@ void Mixer::PlaySoundResource(LoadedResource &rsrc, _fixed pitch)
 	SoundHeader header;
 	if (header.Load(rsrc))
 	{
-		boost::shared_ptr<SoundData> data = header.LoadData(rsrc);
+		std::shared_ptr<SoundData> data = header.LoadData(rsrc);
 		if (data.get())
 		{
 			SDL_LockAudio();
@@ -219,7 +219,7 @@ Mixer::Channel::Channel() :
 {
 }
 
-void Mixer::Channel::LoadSoundHeader(const SoundInfo& header, boost::shared_ptr<SoundData> data, _fixed pitch)
+void Mixer::Channel::LoadSoundHeader(const SoundInfo& header, std::shared_ptr<SoundData> data, _fixed pitch)
 {
 	if (!header.length) {
 		active = false;

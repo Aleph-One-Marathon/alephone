@@ -23,19 +23,16 @@
 #include "Decoder.h"
 #include "SoundManager.h"
 
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
-
-boost::shared_ptr<SoundData> ExternalSoundHeader::LoadExternal(FileSpecifier& File)
+std::shared_ptr<SoundData> ExternalSoundHeader::LoadExternal(FileSpecifier& File)
 {
-	boost::shared_ptr<SoundData> p;
+	std::shared_ptr<SoundData> p;
 	std::unique_ptr<Decoder> decoder(Decoder::Get(File));
 	if (!decoder.get()) return p;
 
 	length = decoder->Frames() * decoder->BytesPerFrame();
 	if (!length) return p;
 
-	p = boost::make_shared<SoundData>(length);
+	p = std::make_shared<SoundData>(length);
 
 	if (decoder->Decode(&(*p)[0], length) != length) 
 	{
