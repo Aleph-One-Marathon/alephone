@@ -250,7 +250,7 @@ AX_CHECK_FEATURE_PKG([sdl_image], [SDL_IMAGE],
                      [SDL_IMAGE], [SDL2_image])
 
 AX_CHECK_FEATURE_PKG([ffmpeg], [FFMPEG],
-                     [FFMPEG], [libavcodec >= 54.35.0 libavformat >= 54.20.0 libavutil >= 52.3.0 libswscale >= 2.1.1])
+                     [FFMPEG], [libavcodec >= 54.35.0 libavformat >= 54.20.0 libavutil >= 52.3.0 libswscale >= 2.1.1 libswresample >= 3.0.0 ])
 dnl Remove SDL 1 inclusions from ffmpeg (https://trac.ffmpeg.org/ticket/2009)
 FFMPEG_LIBS=`echo "$FFMPEG_LIBS" | sed 's|-lSDL ||' | sed 's|-lSDLmain ||'`
 LIBS=`echo "$LIBS" | sed 's|-lSDL ||' | sed 's|-lSDLmain ||'`
