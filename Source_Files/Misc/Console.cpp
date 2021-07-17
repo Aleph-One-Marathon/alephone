@@ -300,6 +300,7 @@ void Console::activate_input(std::function<void (const std::string&)> callback,
 	m_cursor_position = 0;
 	
 	SDL_StartTextInput();
+	SDL_FlushEvent(SDL_TEXTINPUT);
 }
 
 void Console::deactivate_input() {
