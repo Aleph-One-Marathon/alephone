@@ -724,25 +724,20 @@ static void main_event_loop(void)
 		if (poll_event) {
 			global_idle_proc();
 
-			while (true) {
-				SDL_Event event;
-				bool found_event = SDL_PollEvent(&event);
+			SDL_Event event;
+			if (yield_time)
+			{
+				// The game is not in a "hot" state, yield time to other
+				// processes but only try for a maximum of 30ms
+				if (SDL_WaitEventTimeout(&event, 30))
+				{
+					process_event(event);
+				}
+			}
 
-				if (yield_time) {
-					// The game is not in a "hot" state, yield time to other
-					// processes but only try for a maximum of 30ms
-					int num_tries = 0;
-					while (!found_event && num_tries < 3) {
-						sleep_for_machine_ticks(MACHINE_TICKS_PER_SECOND / 100);
-						found_event = SDL_PollEvent(&event);
-						num_tries++;
-					}
-					yield_time = false;
-				} else if (!found_event)
-					break;
-
-				if (found_event)
-					process_event(event); 
+			while (SDL_PollEvent(&event))
+			{
+				process_event(event);
 			}
 		}
 

@@ -2306,12 +2306,14 @@ void dialog::start(bool play_sound)
 
 bool dialog::process_events()
 {
-	while (!done) {
-		SDL_Event e;
-		if (SDL_PollEvent(&e))
+	SDL_Event e;
+	if (SDL_WaitEventTimeout(&e, 30))
+	{
+		event(e);
+		while (!done && SDL_PollEvent(&e))
+		{
 			event(e);
-		else
-			break;
+		}
 	}
 
 	return done;
