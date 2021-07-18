@@ -756,6 +756,7 @@ void SoundManager::SetStatus(bool active)
 		{
 			if (active) 
 			{
+				sounds->Clear();
 				uint32 total_buffer_size;
 
 				total_channel_count = parameters.channel_count;
