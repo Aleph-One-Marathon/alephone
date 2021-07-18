@@ -889,6 +889,8 @@ bool load_and_start_game(FileSpecifier& File)
 		interface_fade_out(MAIN_MENU_BASE, true);
 	}
 
+	auto pluginMode = saved_game_was_networked(File) == 1 ? Plugins::kMode_Net : Plugins::kMode_Solo;
+	Plugins::instance()->set_mode(pluginMode);
 	success= load_game_from_file(File, false);
 
 	if (!success)
@@ -929,7 +931,6 @@ bool load_and_start_game(FileSpecifier& File)
                 
 		if (success)
 		{
-			Plugins::instance()->set_mode(userWantsMultiplayer ? Plugins::kMode_Net : Plugins::kMode_Solo);
 			Crosshairs_SetActive(player_preferences->crosshairs_active);
 			LoadHUDLua();
 			RunLuaHUDScript();
