@@ -828,7 +828,7 @@ void parse_mml_faders(const InfoTree& root)
 			original_fade_effect_definitions[i] = fade_effect_definitions[i];
 	}
 	
-	BOOST_FOREACH(InfoTree ftree, root.children_named("fader"))
+	for (const InfoTree &ftree : root.children_named("fader"))
 	{
 		int16 index;
 		if (!ftree.read_indexed("index", index, NUMBER_OF_FADE_TYPES))
@@ -870,11 +870,11 @@ void parse_mml_faders(const InfoTree& root)
 		if (ftree.read_attr("period", period))
 			def.period = static_cast<int32>(period) * 1000 / MACHINE_TICKS_PER_SECOND;
 		
-		BOOST_FOREACH(InfoTree color, ftree.children_named("color"))
+		for (const InfoTree &color : ftree.children_named("color"))
 			color.read_color(def.color);
 	}
 	
-	BOOST_FOREACH(InfoTree ltree, root.children_named("liquid"))
+	for (const InfoTree &ltree : root.children_named("liquid"))
 	{
 		int16 index;
 		if (!ltree.read_indexed("index", index, NUMBER_OF_FADE_EFFECT_TYPES))

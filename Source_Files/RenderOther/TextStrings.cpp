@@ -116,7 +116,7 @@ void parse_mml_stringset(const InfoTree& root)
 	if (!root.read_attr("index", index))
 		return;
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("string"))
+	for (const InfoTree &child : root.children_named("string"))
 	{
 		int16 cindex;
 		if (!child.read_indexed("index", cindex, INT16_MAX))

@@ -101,12 +101,6 @@ AC_DEFUN([AX_CHECK_BOOST_HEADER],
            AC_LANG_POP(C++) ])
 
 dnl Some checks suppressed to speed configuration.
-AX_CHECK_BOOST_HEADER([boost/foreach.hpp])
-AX_CHECK_BOOST_HEADER([boost/lexical_cast.hpp])
-dnl AX_CHECK_BOOST_HEADER([boost/make_shared.hpp])
-dnl AX_CHECK_BOOST_HEADER([boost/scoped_ptr.hpp])
-dnl AX_CHECK_BOOST_HEADER([boost/shared_array.hpp])
-AX_CHECK_BOOST_HEADER([boost/shared_ptr.hpp])
 AX_CHECK_BOOST_HEADER([boost/tokenizer.hpp])
 AX_CHECK_BOOST_HEADER([boost/unordered_map.hpp])
 dnl AX_CHECK_BOOST_HEADER([boost/utility.hpp])
@@ -125,8 +119,6 @@ dnl AX_CHECK_BOOST_HEADER([boost/property_tree/ptree.hpp])
 AX_CHECK_BOOST_HEADER([boost/property_tree/xml_parser.hpp])
 AX_CHECK_BOOST_HEADER([boost/ptr_container/ptr_map.hpp])
 dnl AX_CHECK_BOOST_HEADER([boost/range/any_range.hpp])
-AX_CHECK_BOOST_HEADER([boost/tuple/tuple.hpp])
-dnl AX_CHECK_BOOST_HEADER([boost/tuple/tuple_comparison.hpp])
 AX_CHECK_BOOST_HEADER([boost/uuid/uuid.hpp])
 dnl AX_CHECK_BOOST_HEADER([boost/uuid/uuid_generators.hpp])
 dnl AX_CHECK_BOOST_HEADER([boost/uuid/uuid_io.hpp])
@@ -305,7 +297,6 @@ Source_Files/FFmpeg/Makefile
 Source_Files/Files/Makefile
 Source_Files/GameWorld/Makefile
 Source_Files/Input/Makefile
-Source_Files/LibNAT/Makefile
 Source_Files/Lua/Makefile
 Source_Files/Misc/Makefile
 Source_Files/ModelView/Makefile

@@ -858,7 +858,7 @@ void parse_mml_items(const InfoTree& root)
 			original_item_definitions[i] = item_definitions[i];
 	}
 	
-	BOOST_FOREACH(InfoTree itree, root.children_named("item"))
+	for (const InfoTree &itree : root.children_named("item"))
 	{
 		int16 index;
 		if (!itree.read_indexed("index", index, NUMBER_OF_DEFINED_ITEMS))
@@ -883,7 +883,7 @@ void parse_mml_items(const InfoTree& root)
 			}
 		}
 
-		BOOST_FOREACH(InfoTree shape, itree.children_named("shape"))
+		for (const InfoTree &shape : itree.children_named("shape"))
 			shape.read_shape(def.base_shape);
 	}
 }

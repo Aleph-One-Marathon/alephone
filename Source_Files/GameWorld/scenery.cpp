@@ -277,7 +277,7 @@ void parse_mml_scenery(const InfoTree& root)
 			original_scenery_definitions[i] = scenery_definitions[i];
 	}
 	
-	BOOST_FOREACH(InfoTree object, root.children_named("object"))
+	for (const InfoTree &object : root.children_named("object"))
 	{
 		int16 index;
 		if (!object.read_indexed("index", index, NUMBER_OF_SCENERY_DEFINITIONS))
@@ -289,11 +289,11 @@ void parse_mml_scenery(const InfoTree& root)
 		object.read_attr("height", def.height);
 		object.read_indexed("destruction", def.destroyed_effect, NUMBER_OF_EFFECT_TYPES, true);
 		
-		BOOST_FOREACH(InfoTree child, object.children_named("normal"))
-			BOOST_FOREACH(InfoTree shape, child.children_named("shape"))
+		for (const InfoTree &child : object.children_named("normal"))
+			for (const InfoTree &shape : child.children_named("shape"))
 				shape.read_shape(def.shape);
-		BOOST_FOREACH(InfoTree child, object.children_named("destroyed"))
-			BOOST_FOREACH(InfoTree shape, child.children_named("shape"))
+		for (const InfoTree &child : object.children_named("destroyed"))
+			for (const InfoTree &shape : child.children_named("shape"))
 				shape.read_shape(def.destroyed_shape);
 	}
 	

@@ -396,7 +396,7 @@ void parse_mml_cheats(const InfoTree& root)
 	
 	root.read_attr("on", CheatsActive);
 	
-	BOOST_FOREACH(InfoTree ktree, root.children_named("keyword"))
+	for(const InfoTree &ktree : root.children_named("keyword"))
 	{
 		int16 index;
 		if (!ktree.read_indexed("index", index, NUMBER_OF_KEYWORDS))

@@ -2439,7 +2439,7 @@ void parse_mml_player(const InfoTree& root)
 	root.read_attr("triple_energy", player_settings.TripleEnergy);
 	root.read_attr("can_swim", player_settings.CanSwim);
 	
-	BOOST_FOREACH(InfoTree item, root.children_named("item"))
+	for (const InfoTree &item : root.children_named("item"))
 	{
 		int16 index;
 		if (!item.read_indexed("index", index, NUMBER_OF_PLAYER_INITIAL_ITEMS))
@@ -2447,7 +2447,7 @@ void parse_mml_player(const InfoTree& root)
 		item.read_indexed("type", player_initial_items[index], NUMBER_OF_DEFINED_ITEMS);
 	}
 	
-	BOOST_FOREACH(InfoTree dmg, root.children_named("damage"))
+	for (const InfoTree &dmg : root.children_named("damage"))
 	{
 		int16 index;
 		if (!dmg.read_indexed("index", index, NUMBER_OF_DAMAGE_RESPONSE_DEFINITIONS))
@@ -2461,7 +2461,7 @@ void parse_mml_player(const InfoTree& root)
 		dmg.read_attr("death_action", def.death_action);
 	}
 	
-	BOOST_FOREACH(InfoTree assign, root.children_named("powerup_assign"))
+	for (const InfoTree &assign : root.children_named("powerup_assign"))
 	{
 		assign.read_indexed("invincibility", player_powerups.Powerup_Invincibility, NUMBER_OF_DEFINED_ITEMS, true);
 		assign.read_indexed("invisibility", player_powerups.Powerup_Invisibility, NUMBER_OF_DEFINED_ITEMS, true);
@@ -2473,7 +2473,7 @@ void parse_mml_player(const InfoTree& root)
 		assign.read_indexed("oxygen", player_powerups.Powerup_Oxygen, NUMBER_OF_DEFINED_ITEMS, true);
 	}
 	
-	BOOST_FOREACH(InfoTree powerup, root.children_named("powerup"))
+	for (const InfoTree &powerup : root.children_named("powerup"))
 	{
 		powerup.read_attr_bounded<int16>("invincibility", kINVINCIBILITY_DURATION, 0, SHRT_MAX);
 		powerup.read_attr_bounded<int16>("invisibility", kINVISIBILITY_DURATION, 0, SHRT_MAX);
@@ -2481,7 +2481,7 @@ void parse_mml_player(const InfoTree& root)
 		powerup.read_attr_bounded<int16>("extravision", kEXTRAVISION_DURATION, 0, SHRT_MAX);
 	}
 	
-	BOOST_FOREACH(InfoTree shp, root.children_named("shape"))
+	for (const InfoTree &shp : root.children_named("shape"))
 	{
 		int16 type;
 		if (!shp.read_indexed("type", type, 5))

@@ -34,7 +34,6 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include <boost/foreach.hpp>
 #include <boost/range/any_range.hpp>
 
 class InfoTree : public boost::property_tree::ptree

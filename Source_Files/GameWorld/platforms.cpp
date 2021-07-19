@@ -1280,7 +1280,7 @@ void parse_mml_platforms(const InfoTree& root)
 			original_platform_definitions[i] = platform_definitions[i];
 	}
 	
-	BOOST_FOREACH(InfoTree ptree, root.children_named("platform"))
+	for (const InfoTree &ptree : root.children_named("platform"))
 	{
 		int16 index;
 		if (!ptree.read_indexed("index", index, NUMBER_OF_PLATFORM_TYPES))
@@ -1296,7 +1296,7 @@ void parse_mml_platforms(const InfoTree& root)
 		ptree.read_indexed("moving", def.moving_sound, SHRT_MAX+1, true);
 		ptree.read_indexed("item", def.key_item_index, NUMBER_OF_DEFINED_ITEMS, true);
 		
-		BOOST_FOREACH(InfoTree dmg, ptree.children_named("damage"))
+		for (const InfoTree &dmg : ptree.children_named("damage"))
 		{
 			dmg.read_damage(def.damage);
 		}

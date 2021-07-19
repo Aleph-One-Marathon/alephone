@@ -274,7 +274,7 @@ void reset_mml_logging()
 
 void parse_mml_logging(const InfoTree& root)
 {
-	BOOST_FOREACH(InfoTree dtree, root.children_named("logging_domain"))
+	for (const InfoTree &dtree : root.children_named("logging_domain"))
 	{
 		std::string domain;
 		if (!dtree.read_attr("domain", domain) || !domain.size())

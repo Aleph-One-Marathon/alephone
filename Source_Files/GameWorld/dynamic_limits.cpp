@@ -111,7 +111,7 @@ void reset_mml_dynamic_limits()
 
 void parse_limit_value(const InfoTree& root, std::string child, int type)
 {
-	BOOST_FOREACH(InfoTree limit, root.children_named(child))
+	for (const InfoTree &limit : root.children_named(child))
 		limit.read_attr_bounded<uint16>("value", dynamic_limits[type], 0, 32767);
 }
 

@@ -2797,7 +2797,7 @@ void parse_mml_texture_loading(const InfoTree& root)
 	
 	root.read_attr("landscapes", LandscapesLoaded);
 	
-	BOOST_FOREACH(InfoTree env, root.children_named("texture_env"))
+	for (const InfoTree &env : root.children_named("texture_env"))
 	{
 		int16 index, which, coll;
 		if (env.read_indexed("index", index, NUMBER_OF_ENVIRONMENTS) &&
