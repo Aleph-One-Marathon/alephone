@@ -243,7 +243,6 @@ int main(int argc, char **argv)
 	  "Original code by Bungie Software <http://www.bungie.com/>\n"
 	  "Additional work by Loren Petrich, Chris Pruett, Rhys Hill et al.\n"
 	  "TCP/IP networking by Woody Zenfell\n"
-	  "Expat XML library by James Clark\n"
 	  "SDL port by Christian Bauer <Christian.Bauer@uni-mainz.de>\n"
 #if defined(__MACH__) && defined(__APPLE__)
 	  "Mac OS X/SDL version by Chris Lovell, Alexander Strange, and Woody Zenfell\n"
