@@ -188,14 +188,17 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon Infinity|Win32'" Label="Vcpkg">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgInstalledDir>vcpkg_installed_86</VcpkgInstalledDir>
+    <VcpkgConfiguration>Release</VcpkgConfiguration>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon 2|Win32'" Label="Vcpkg">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgInstalledDir>vcpkg_installed_86</VcpkgInstalledDir>
+    <VcpkgConfiguration>Release</VcpkgConfiguration>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon|Win32'" Label="Vcpkg">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgInstalledDir>vcpkg_installed_86</VcpkgInstalledDir>
+    <VcpkgConfiguration>Release</VcpkgConfiguration>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <VcpkgUseStatic>true</VcpkgUseStatic>
@@ -212,14 +215,17 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon Infinity|x64'" Label="Vcpkg">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgInstalledDir>vcpkg_installed_64</VcpkgInstalledDir>
+    <VcpkgConfiguration>Release</VcpkgConfiguration>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon 2|x64'" Label="Vcpkg">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgInstalledDir>vcpkg_installed_64</VcpkgInstalledDir>
+    <VcpkgConfiguration>Release</VcpkgConfiguration>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon|x64'" Label="Vcpkg">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgInstalledDir>vcpkg_installed_64</VcpkgInstalledDir>
+    <VcpkgConfiguration>Release</VcpkgConfiguration>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
