@@ -256,13 +256,13 @@ void parse_mml_view(const InfoTree& root)
 	root.read_attr("interlevel_in_effects", view_settings.DoInterlevelTeleportInEffects);
 	root.read_attr("interlevel_out_effects", view_settings.DoInterlevelTeleportOutEffects);
 	
-	BOOST_FOREACH(InfoTree font, root.children_named("font"))
+	for (const InfoTree &font : root.children_named("font"))
 	{
 		font.read_font(OnScreenFont);
 		ScreenFontInitedSize = -1;
 	}
 	
-	BOOST_FOREACH(InfoTree fov, root.children_named("fov"))
+	for (const InfoTree &fov : root.children_named("fov"))
 	{
 		fov.read_attr_bounded<float>("normal", FOV_Normal, 0, 180);
 		fov.read_attr_bounded<float>("extra", FOV_ExtraVision, 0, 180);
@@ -279,7 +279,7 @@ void reset_mml_landscapes()
 
 void parse_mml_landscapes(const InfoTree& root)
 {
-	BOOST_FOREACH(const InfoTree::value_type &v, root)
+	for (const InfoTree::value_type &v : root)
 	{
 		const std::string& name = v.first;
 		const InfoTree& child = v.second;

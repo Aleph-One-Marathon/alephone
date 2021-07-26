@@ -867,7 +867,7 @@ void parse_mml_motion_sensor(const InfoTree& root)
 	root.read_attr("update_frequency", MOTION_SENSOR_UPDATE_FREQUENCY);
 	root.read_attr("rescan_frequency", MOTION_SENSOR_RESCAN_FREQUENCY);
 	
-	BOOST_FOREACH(InfoTree assign, root.children_named("assign"))
+	for (const InfoTree &assign : root.children_named("assign"))
 	{
 		int16 index;
 		if (!assign.read_indexed("monster", index, NUMBER_OF_MONSTER_TYPES))

@@ -95,67 +95,67 @@ void ResetAllMMLValues()
 
 void _ParseAllMML(const InfoTree& fileroot)
 {
-	BOOST_FOREACH(InfoTree root, fileroot.children_named("marathon"))
+	for (const InfoTree &root : fileroot.children_named("marathon"))
 	{
-		BOOST_FOREACH(InfoTree child, root.children_named("stringset"))
+		for (const InfoTree &child : root.children_named("stringset"))
 			parse_mml_stringset(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("interface"))
+		for (const InfoTree &child : root.children_named("interface"))
 			parse_mml_interface(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("motion_sensor"))
+		for (const InfoTree &child : root.children_named("motion_sensor"))
 			parse_mml_motion_sensor(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("overhead_map"))
+		for (const InfoTree &child : root.children_named("overhead_map"))
 			parse_mml_overhead_map(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("infravision"))
+		for (const InfoTree &child : root.children_named("infravision"))
 			parse_mml_infravision(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("animated_textures"))
+		for (const InfoTree &child : root.children_named("animated_textures"))
 			parse_mml_animated_textures(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("control_panels"))
+		for (const InfoTree &child : root.children_named("control_panels"))
 			parse_mml_control_panels(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("platforms"))
+		for (const InfoTree &child : root.children_named("platforms"))
 			parse_mml_platforms(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("liquids"))
+		for (const InfoTree &child : root.children_named("liquids"))
 			parse_mml_liquids(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("sounds"))
+		for (const InfoTree &child : root.children_named("sounds"))
 			parse_mml_sounds(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("faders"))
+		for (const InfoTree &child : root.children_named("faders"))
 			parse_mml_faders(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("player"))
+		for (const InfoTree &child : root.children_named("player"))
 			parse_mml_player(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("view"))
+		for (const InfoTree &child : root.children_named("view"))
 			parse_mml_view(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("weapons"))
+		for (const InfoTree &child : root.children_named("weapons"))
 			parse_mml_weapons(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("items"))
+		for (const InfoTree &child : root.children_named("items"))
 			parse_mml_items(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("damage_kicks"))
+		for (const InfoTree &child : root.children_named("damage_kicks"))
 			parse_mml_damage_kicks(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("monsters"))
+		for (const InfoTree &child : root.children_named("monsters"))
 			parse_mml_monsters(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("scenery"))
+		for (const InfoTree &child : root.children_named("scenery"))
 			parse_mml_scenery(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("landscapes"))
+		for (const InfoTree &child : root.children_named("landscapes"))
 			parse_mml_landscapes(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("texture_loading"))
+		for (const InfoTree &child : root.children_named("texture_loading"))
 			parse_mml_texture_loading(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("opengl"))
+		for (const InfoTree &child : root.children_named("opengl"))
 			parse_mml_opengl(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("software"))
+		for (const InfoTree &child : root.children_named("software"))
 			parse_mml_software(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("dynamic_limits"))
+		for (const InfoTree &child : root.children_named("dynamic_limits"))
 			parse_mml_dynamic_limits(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("player_name"))
+		for (const InfoTree &child : root.children_named("player_name"))
 			parse_mml_player_name(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("scenario"))
+		for (const InfoTree &child : root.children_named("scenario"))
 			parse_mml_scenario(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("keyboard"))
+		for (const InfoTree &child : root.children_named("keyboard"))
 			parse_mml_keyboard(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("cheats"))
+		for (const InfoTree &child : root.children_named("cheats"))
 			parse_mml_cheats(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("logging"))
+		for (const InfoTree &child : root.children_named("logging"))
 			parse_mml_logging(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("console"))
+		for (const InfoTree &child : root.children_named("console"))
 			parse_mml_console(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("default_levels"))
+		for (const InfoTree &child : root.children_named("default_levels"))
 			parse_mml_default_levels(child);
 	}
 }

@@ -101,12 +101,6 @@ AC_DEFUN([AX_CHECK_BOOST_HEADER],
            AC_LANG_POP(C++) ])
 
 dnl Some checks suppressed to speed configuration.
-AX_CHECK_BOOST_HEADER([boost/foreach.hpp])
-AX_CHECK_BOOST_HEADER([boost/lexical_cast.hpp])
-dnl AX_CHECK_BOOST_HEADER([boost/make_shared.hpp])
-dnl AX_CHECK_BOOST_HEADER([boost/scoped_ptr.hpp])
-dnl AX_CHECK_BOOST_HEADER([boost/shared_array.hpp])
-AX_CHECK_BOOST_HEADER([boost/shared_ptr.hpp])
 AX_CHECK_BOOST_HEADER([boost/tokenizer.hpp])
 AX_CHECK_BOOST_HEADER([boost/unordered_map.hpp])
 dnl AX_CHECK_BOOST_HEADER([boost/utility.hpp])
@@ -125,8 +119,6 @@ dnl AX_CHECK_BOOST_HEADER([boost/property_tree/ptree.hpp])
 AX_CHECK_BOOST_HEADER([boost/property_tree/xml_parser.hpp])
 AX_CHECK_BOOST_HEADER([boost/ptr_container/ptr_map.hpp])
 dnl AX_CHECK_BOOST_HEADER([boost/range/any_range.hpp])
-AX_CHECK_BOOST_HEADER([boost/tuple/tuple.hpp])
-dnl AX_CHECK_BOOST_HEADER([boost/tuple/tuple_comparison.hpp])
 AX_CHECK_BOOST_HEADER([boost/uuid/uuid.hpp])
 dnl AX_CHECK_BOOST_HEADER([boost/uuid/uuid_generators.hpp])
 dnl AX_CHECK_BOOST_HEADER([boost/uuid/uuid_io.hpp])
@@ -167,13 +159,6 @@ AX_REQUIRE_PKG([SDL2_net], [SDL_NET], [SDL2_net])
 
 dnl Check for zlib.
 AX_REQUIRE_PKG([zlib], [ZLIB], [zlib])
-
-dnl Check for Expat.
-have_expat_h=no
-have_libexpat=no
-AC_CHECK_HEADER([expat.h], [have_expat_h=yes])
-AC_CHECK_LIB([expat], [XML_ParserCreate], [have_libexpat=yes])
-AM_CONDITIONAL([BUILD_EXPAT], [test "x$have_expat_h" != "xyes" -o "x$have_libexpat" != "xyes"])
 
 dnl Check for OpenGL.
 AS_IF([test "x$enable_opengl" != "xno"],
@@ -300,12 +285,10 @@ Makefile
 AlephOne.spec
 Source_Files/Makefile
 Source_Files/CSeries/Makefile
-Source_Files/Expat/Makefile
 Source_Files/FFmpeg/Makefile
 Source_Files/Files/Makefile
 Source_Files/GameWorld/Makefile
 Source_Files/Input/Makefile
-Source_Files/LibNAT/Makefile
 Source_Files/Lua/Makefile
 Source_Files/Misc/Makefile
 Source_Files/ModelView/Makefile
@@ -355,9 +338,6 @@ AS_ECHO(["Summary of optional features:"])
 AS_ECHO([""])
 AX_PRINT_SUMMARY([opengl])
 AX_PRINT_SUMMARY([lua])
-AS_IF([test "x$have_expat_h" != "xyes" -o "x$have_libexpat" != "xyes"],
-      AS_ECHO(["    Enabled: internal libexpat"]),
-      AS_ECHO(["    Enabled: system libexpat"]) )
 AX_PRINT_SUMMARY([sdl_image])
 AX_PRINT_SUMMARY([ffmpeg])
 AX_PRINT_SUMMARY([mad])

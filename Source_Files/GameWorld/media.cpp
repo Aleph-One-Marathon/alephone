@@ -376,7 +376,7 @@ void parse_mml_liquids(const InfoTree& root)
 			original_media_definitions[i] = media_definitions[i];
 	}
 	
-	BOOST_FOREACH(InfoTree liquid, root.children_named("liquid"))
+	for (const InfoTree &liquid : root.children_named("liquid"))
 	{
 		int16 index;
 		if (!liquid.read_indexed("index", index, NUMBER_OF_MEDIA_TYPES))
@@ -389,21 +389,21 @@ void parse_mml_liquids(const InfoTree& root)
 		liquid.read_attr("damage_freq", def.damage_frequency);
 		liquid.read_indexed("submerged", def.submerged_fade_effect, NUMBER_OF_FADE_EFFECT_TYPES);
 		
-		BOOST_FOREACH(InfoTree sound, liquid.children_named("sound"))
+		for (const InfoTree &sound : liquid.children_named("sound"))
 		{
 			int16 type;
 			if (!sound.read_indexed("type", type, NUMBER_OF_MEDIA_SOUNDS))
 				continue;
 			sound.read_indexed("which", def.sounds[type], SHRT_MAX+1, true);
 		}
-		BOOST_FOREACH(InfoTree effect, liquid.children_named("effect"))
+		for (const InfoTree &effect : liquid.children_named("effect"))
 		{
 			int16 type;
 			if (!effect.read_indexed("type", type, NUMBER_OF_MEDIA_DETONATION_TYPES))
 				continue;
 			effect.read_indexed("which", def.detonation_effects[type], NUMBER_OF_EFFECT_TYPES);
 		}
-		BOOST_FOREACH(InfoTree dmg, liquid.children_named("damage"))
+		for (const InfoTree &dmg : liquid.children_named("damage"))
 		{
 			dmg.read_damage(def.damage);
 		}

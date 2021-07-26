@@ -472,7 +472,7 @@ void parse_mml_console(const InfoTree& root)
 	if (root.read_attr("use_lua_console", use_lua_console))
 		console->use_lua_console(use_lua_console);
 	
-	BOOST_FOREACH(InfoTree macro, root.children_named("macro"))
+	for (const InfoTree &macro : root.children_named("macro"))
 	{
 		std::string input, output;
 		if (!macro.read_attr("input", input) || !input.size())
@@ -481,7 +481,7 @@ void parse_mml_console(const InfoTree& root)
 		macro.read_attr("output", output);
 		console->register_macro(input, output);
 	}
-	BOOST_FOREACH(InfoTree message, root.children_named("carnage_message"))
+	for (const InfoTree &message : root.children_named("carnage_message"))
 	{
 		int16 projectile_type;
 		if (!message.read_indexed("projectile_type", projectile_type, NUMBER_OF_PROJECTILE_TYPES))

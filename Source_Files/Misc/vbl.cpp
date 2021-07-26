@@ -974,7 +974,7 @@ void parse_mml_keyboard(const InfoTree& root)
 	if (!root.read_indexed("set", which_set, NUMBER_OF_KEY_SETUPS))
 		return;
 	
-	BOOST_FOREACH(InfoTree ktree, root.children_named("key"))
+	for (const InfoTree &ktree : root.children_named("key"))
 	{
 		int16 index;
 		if (!ktree.read_indexed("index", index, NUMBER_OF_STANDARD_KEY_DEFINITIONS))
@@ -1180,7 +1180,7 @@ uint32 parse_keymap(void)
       // Parse the keymap
 		for (int i = 0; i < NUMBER_OF_STANDARD_KEY_DEFINITIONS; ++i)
 		{
-			BOOST_FOREACH(const SDL_Scancode& code, input_preferences->key_bindings[i])
+			for (const SDL_Scancode& code : input_preferences->key_bindings[i])
 			{
 				if (key_map[code])
 					flags |= standard_key_definitions[i].action_flag;

@@ -264,7 +264,7 @@ void reset_mml_animated_textures()
 
 void parse_mml_animated_textures(const InfoTree& root)
 {
-	BOOST_FOREACH(const InfoTree::value_type &v, root)
+	for (const InfoTree::value_type &v : root)
 	{
 		std::string name = v.first;
 		const InfoTree& child = v.second;
@@ -286,7 +286,7 @@ void parse_mml_animated_textures(const InfoTree& root)
 				continue;
 			
 			vector<short> frames;
-			BOOST_FOREACH(InfoTree frame, child.children_named("frame"))
+			for (const InfoTree &frame : child.children_named("frame"))
 			{
 				int16 index = -1;
 				if (frame.read_indexed("index", index, 255))

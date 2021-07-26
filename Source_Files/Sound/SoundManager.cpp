@@ -756,6 +756,7 @@ void SoundManager::SetStatus(bool active)
 		{
 			if (active) 
 			{
+				sounds->Clear();
 				uint32 total_buffer_size;
 
 				total_channel_count = parameters.channel_count;
@@ -1412,21 +1413,21 @@ void parse_mml_sounds(const InfoTree& root)
 	root.read_attr("ogl_reset", _Sound_OGL_Reset);
 	root.read_attr("center_button", _Sound_Center_Button);
 	
-	BOOST_FOREACH(InfoTree ambient, root.children_named("ambient"))
+	for (const InfoTree &ambient : root.children_named("ambient"))
 	{
 		int16 index;
 		if (!ambient.read_indexed("index", index, NUMBER_OF_AMBIENT_SOUND_DEFINITIONS))
 			continue;
 		ambient.read_indexed("sound", ambient_sound_definitions[index].sound_index, SHRT_MAX+1, true);
 	}
-	BOOST_FOREACH(InfoTree random, root.children_named("random"))
+	for (const InfoTree &random : root.children_named("random"))
 	{
 		int16 index;
 		if (!random.read_indexed("index", index, NUMBER_OF_RANDOM_SOUND_DEFINITIONS))
 			continue;
 		random.read_indexed("sound", random_sound_definitions[index].sound_index, SHRT_MAX+1, true);
 	}
-	BOOST_FOREACH(InfoTree dialog, root.children_named("dialog"))
+	for (const InfoTree &dialog : root.children_named("dialog"))
 	{
 		int16 index;
 		if (!dialog.read_indexed("index", index, number_of_dialog_sounds()))
@@ -1435,7 +1436,7 @@ void parse_mml_sounds(const InfoTree& root)
 	}
 	
 	// external sounds: set or clear in order
-	BOOST_FOREACH(const InfoTree::value_type &v, root)
+	for (const InfoTree::value_type &v : root)
 	{
 		std::string name = v.first;
 		if (name == "sound_clear")

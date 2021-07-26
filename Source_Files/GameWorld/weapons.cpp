@@ -4541,7 +4541,7 @@ void parse_mml_weapons(const InfoTree& root)
 			original_weapon_ordering_array[i] = weapon_ordering_array[i];
 	}
 	
-	BOOST_FOREACH(InfoTree casing, root.children_named("shell_casings"))
+	for (const InfoTree &casing : root.children_named("shell_casings"))
 	{
 		int16 index;
 		if (!casing.read_indexed("index", index, NUMBER_OF_SHELL_CASING_TYPES))
@@ -4558,7 +4558,7 @@ void parse_mml_weapons(const InfoTree& root)
 		casing.read_fixed("dvy", def.dvy);
 	}
 	
-	BOOST_FOREACH(InfoTree order, root.children_named("order"))
+	for (const InfoTree &order : root.children_named("order"))
 	{
 		int16 index;
 		if (!order.read_indexed("index", index, NUMBER_OF_WEAPONS))

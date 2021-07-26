@@ -3931,7 +3931,7 @@ void parse_mml_damage_kicks(const InfoTree& root)
 			original_damage_kick_definitions[i] = damage_kick_definitions[i];
 	}
 	
-	BOOST_FOREACH(InfoTree kick, root.children_named("kick"))
+	for (const InfoTree &kick : root.children_named("kick"))
 	{
 		int16 index;
 		if (!kick.read_indexed("index", index, NUMBER_OF_DAMAGE_TYPES))
@@ -3953,7 +3953,7 @@ void reset_mml_monsters()
 
 void parse_mml_monsters(const InfoTree& root)
 {
-	BOOST_FOREACH(InfoTree monster, root.children_named("monster"))
+	for (const InfoTree &monster : root.children_named("monster"))
 	{
 		int16 index;
 		if (!monster.read_indexed("index", index, NUMBER_OF_MONSTER_TYPES))

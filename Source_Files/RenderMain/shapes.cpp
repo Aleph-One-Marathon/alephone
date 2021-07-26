@@ -2454,7 +2454,7 @@ void parse_mml_infravision(const InfoTree& root)
 			OriginalCollectionTints[i] = CollectionTints[i];
 	}
 
-	BOOST_FOREACH(InfoTree color, root.children_named("color"))
+	for (const InfoTree &color : root.children_named("color"))
 	{
 		int16 index;
 		if (!color.read_indexed("index", index, NUMBER_OF_TINT_COLORS))
@@ -2462,7 +2462,7 @@ void parse_mml_infravision(const InfoTree& root)
 		color.read_color(tint_colors16[index]);
 	}
 	
-	BOOST_FOREACH(InfoTree assign, root.children_named("assign"))
+	for (const InfoTree &assign : root.children_named("assign"))
 	{
 		int16 coll, color;
 		if (!assign.read_indexed("coll", coll, NUMBER_OF_COLLECTIONS) ||
