@@ -11,10 +11,6 @@
          "version>=":"1.75.0"
       },
       {
-         "name":"boost-ptr-container",
-         "version>=":"1.75.0"
-      },
-      {
          "name":"boost-property-tree",
          "version>=":"1.75.0"
       },

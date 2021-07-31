@@ -24,7 +24,6 @@ May 18, 2009 (Eric Peterson):
 */
 
 #include <SDL2/SDL.h>
-#include <boost/ptr_container/ptr_map.hpp>
 
 #include "player.h" // for mask_in_absolute_positioning_information
 #include "preferences.h"
@@ -34,7 +33,7 @@ May 18, 2009 (Eric Peterson):
 
 // internal handles
 int joystick_active = true;
-static boost::ptr_map<int, SDL_GameController*> active_instances;
+static std::map<int, SDL_GameController*> active_instances;
 int axis_values[SDL_CONTROLLER_AXIS_MAX] = {};
 bool button_values[NUM_SDL_JOYSTICK_BUTTONS] = {};
 

@@ -123,7 +123,6 @@ extern "C"
 #include "lua_saved_objects.h"
 #include "lua_serialize.h"
 
-#include <boost/ptr_container/ptr_map.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream_buffer.hpp>
 namespace io = boost::iostreams;
@@ -1152,7 +1151,7 @@ std::string LuaState::SavePassed()
 	}
 }
 
-typedef boost::ptr_map<int, LuaState> state_map;
+typedef std::map<ScriptType, std::unique_ptr<LuaState>> state_map;
 state_map states;
 
 // globals
@@ -1820,17 +1819,17 @@ static int L_Prompt(lua_State *L)
 
 
 
-static LuaState* LuaStateFactory(ScriptType script_type)
+static std::unique_ptr<LuaState> LuaStateFactory(ScriptType script_type)
 {
 	switch (script_type) {
 	case _embedded_lua_script:
-		return new EmbeddedLuaState;
+		return std::make_unique<EmbeddedLuaState>();
 	case _lua_netscript:
-		return new NetscriptState;
+		return std::make_unique<NetscriptState>();
 	case _solo_lua_script:
-		return new SoloScriptState;
+		return std::make_unique<SoloScriptState>();
 	case _stats_lua_script:
-		return new StatsLuaState;
+		return std::make_unique<StatsLuaState>();
 	}
 	return NULL;
 }
@@ -1840,9 +1839,8 @@ bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
 	assert(script_type >= _embedded_lua_script && script_type <= _stats_lua_script);
 	if (states.find(script_type) == states.end())
 	{
-		int type = script_type;
-		states.insert(type, LuaStateFactory(script_type));
-		states[script_type].Initialize();
+		states.insert({ script_type, LuaStateFactory(script_type) });
+		states[script_type]->Initialize();
 	}
 	const char *desc = "level_script";
 	switch (script_type) {
@@ -1859,7 +1857,7 @@ bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
 			desc = "Stats Lua";
 			break;
 	}
-	return states[script_type].Load(buffer, len, desc);
+	return states[script_type]->Load(buffer, len, desc);
 }
 
 #ifdef HAVE_OPENGL
@@ -1924,13 +1922,12 @@ void ExecuteLuaString(const std::string& line)
 {
 	if (states.find(_solo_lua_script) == states.end())
 	{
-		int type = _solo_lua_script;
-		states.insert(type, LuaStateFactory(_solo_lua_script));
-		states[_solo_lua_script].Initialize();
+		states.insert({ _solo_lua_script, LuaStateFactory(_solo_lua_script) });
+		states[_solo_lua_script]->Initialize();
 	}
 
 	exit_interpolated_world();
-	states[_solo_lua_script].ExecuteCommand(line);
+	states[_solo_lua_script]->ExecuteCommand(line);
 	enter_interpolated_world();
 }
 
@@ -1973,7 +1970,7 @@ void LoadSoloLua()
 				LoadLuaScript(&script_buffer[0], script_length, _solo_lua_script);
 				if (directory.size())
 				{
-					states[_solo_lua_script].SetSearchPath(directory);
+					states[_solo_lua_script]->SetSearchPath(directory);
 				}
 			}
 		}
@@ -2012,7 +2009,7 @@ void LoadStatsLua()
 				LoadLuaScript(&script_buffer[0], script_length, _stats_lua_script);
 				if (directory.size())
 				{
-					states[_stats_lua_script].SetSearchPath(directory);
+					states[_stats_lua_script]->SetSearchPath(directory);
 				}
 			}
 			
@@ -2027,10 +2024,9 @@ bool CollectLuaStats(std::map<std::string, std::string>& options, std::map<std::
 		return false;
 	}
 
-	LuaState& state = states[_stats_lua_script];
-	lua_State* L = state.State();
+	lua_State* L = states[_stats_lua_script]->State();
 	
-	if (!state.Running()) 
+	if (!states[_stats_lua_script]->Running())
 		return false;
 	
 	options.clear();
@@ -2117,7 +2113,7 @@ void LoadReplayNetLua()
 				LoadLuaScript(&script_buffer[0], script_length, _lua_netscript);
 				if (directory.size())
 				{
-					states[_lua_netscript].SetSearchPath(directory);
+					states[_lua_netscript]->SetSearchPath(directory);
 				}
 			}
 		}
