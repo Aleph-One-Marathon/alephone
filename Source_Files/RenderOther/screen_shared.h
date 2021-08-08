@@ -526,13 +526,17 @@ uint16 DisplayTextWidth(const char *Text)
 	return text_width(Text, DisplayTextFont, DisplayTextStyle);
 }
 
+extern bool game_is_being_replayed();
+extern char* get_replay_speed_string();
+
 static void update_fps_display(SDL_Surface *s)
 {
 	if (displaying_fps && !player_in_terminal_mode(current_player_index))
 	{
 		uint32 ticks = machine_tick_count();
-		char fps[sizeof("1000 fps (10000 ms)")];
+		char fps[sizeof("1000 fps (10000 ms) 1/10x")];
 		char ms[sizeof("(10000 ms)")];
+		char speed[sizeof("1/10x")];
 
 		fps_counter.update();
 
@@ -542,6 +546,14 @@ static void update_fps_display(SDL_Surface *s)
 		}
 		else
 		{
+			if (game_is_being_replayed())
+			{
+				strcpy(speed, get_replay_speed_string());
+			}
+			else
+			{
+				speed[0] = '\0';
+			}
 			
 			int latency = NetGetLatency();
 			if (latency > -1)
@@ -549,7 +561,7 @@ static void update_fps_display(SDL_Surface *s)
 			else
 				ms[0] = '\0';
 			
-			sprintf(fps, "%0.f fps %s", fps_counter.get(), ms);
+			sprintf(fps, "%0.f fps %s %s", fps_counter.get(), ms, speed);
 		}
 
 		FontSpecifier& Font = GetOnScreenFont();
