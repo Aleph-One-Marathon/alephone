@@ -106,8 +106,8 @@ Feb 20, 2002 (Woody Zenfell):
 #define MAXIMUM_TIME_DIFFERENCE     15 // allowed between heartbeat_count and dynamic_world->tick_count
 #define MAXIMUM_NET_QUEUE_SIZE       8
 #define DISK_CACHE_SIZE             ((sizeof(int16)+sizeof(uint32))*100)
-#define MAXIMUM_REPLAY_SPEED         5
-#define MINIMUM_REPLAY_SPEED        -5
+#define MAXIMUM_REPLAY_SPEED         10 // 10x
+#define MINIMUM_REPLAY_SPEED        -10 // -10 = pause, -9 = 1/10x
 
 /* ---------- macros */
 
