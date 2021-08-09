@@ -547,13 +547,9 @@ static void update_fps_display(SDL_Surface *s)
 		else
 		{
 			if (game_is_being_replayed())
-			{
 				strcpy(speed, get_replay_speed_string());
-			}
 			else
-			{
 				speed[0] = '\0';
-			}
 			
 			int latency = NetGetLatency();
 			if (latency > -1)
