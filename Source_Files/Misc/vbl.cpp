@@ -546,7 +546,8 @@ extern int movie_export_phase;
 bool setup_for_replay_from_file(
 	FileSpecifier& File,
 	uint32 map_checksum,
-	bool prompt_to_export)
+	bool prompt_to_export,
+	bool export_to_file)
 {
 	bool successful= false;
 
@@ -584,6 +585,16 @@ bool setup_for_replay_from_file(
 #endif
 			if (prompt_to_export)
 				Movie::instance()->PromptForRecording();
+			else if (export_to_file)
+			{
+				FileSpecifier moviePath;
+				std::string file;
+				FilmFileSpec.SplitPath(moviePath, file);
+				moviePath.AddPart("Untitled Movie.webm"); // TODO: FIXME
+
+				Movie::instance()->StartRecording(moviePath.GetPath());
+			}
+
 			successful= true;
 		} else {
 			/* Tell them that this map wasn't found.  They lose. */
