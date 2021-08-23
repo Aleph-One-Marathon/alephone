@@ -303,6 +303,9 @@ public:
 	// Rename file
 	bool Rename(const FileSpecifier& Destination);
 
+	// Set the file extension to ext
+	void SetExtension(const string& ext);
+
 	// Copy file specification
 	const FileSpecifier &operator=(const FileSpecifier &other);
 
