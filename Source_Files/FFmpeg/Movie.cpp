@@ -59,7 +59,6 @@ struct libav_vars {
     bool inited;
 };
 
-void Movie::PromptForRecording() {}
 void Movie::StartRecording(std::string path) {}
 bool Movie::IsRecording() { return false; }
 void Movie::StopRecording() {}
