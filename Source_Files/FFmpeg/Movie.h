@@ -41,7 +41,6 @@ public:
 		return m_instance; 
 	}
 	
-	void PromptForRecording();
 	void StartRecording(std::string path);
 	bool IsRecording();
 	void StopRecording();

@@ -2059,13 +2059,24 @@ static bool begin_game(
 								set_game_error(systemError, ENOENT);
 								display_loading_map_error();
 								success= false;
+								break;
+							}
+
+							if (prompt_to_export)
+							{
+								FileSpecifier dst_file;
+								success = dst_file.WriteDialog(_typecode_movie, "EXPORT FILM", "Untitled Movie.webm");
+								if (!success)
+									break;
+
+								success = setup_for_replay_from_file(ReplayFile, get_current_map_checksum(), true, dst_file.GetPath());
 							}
 							else
 							{
-								success= setup_for_replay_from_file(ReplayFile, get_current_map_checksum(), prompt_to_export);
-
-								hide_cursor();
+								success = setup_for_replay_from_file(ReplayFile, get_current_map_checksum());
 							}
+
+							hide_cursor();
 						}
 					} 
 					break;
@@ -2083,7 +2094,17 @@ static bool begin_game(
 #ifndef MAC_APP_STORE
 						export_from_shell = shell_options.export_film;
 #endif
-						success = setup_for_replay_from_file(DraggedReplayFile, get_current_map_checksum(), false, export_from_shell);
+						if (export_from_shell)
+						{
+							FileSpecifier moviePath = DraggedReplayFile;
+							moviePath.SetExtension(".webm");
+							success = setup_for_replay_from_file(DraggedReplayFile, get_current_map_checksum(), true, moviePath.GetPath());
+						}
+						else
+						{
+							success = setup_for_replay_from_file(DraggedReplayFile, get_current_map_checksum());
+						}
+
 						user = _replay;
 					}
 					break;

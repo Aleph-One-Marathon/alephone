@@ -546,8 +546,8 @@ extern int movie_export_phase;
 bool setup_for_replay_from_file(
 	FileSpecifier& File,
 	uint32 map_checksum,
-	bool prompt_to_export,
-	bool export_from_shell)
+	bool export_replay,
+	const char* export_path)
 {
 	bool successful= false;
 
@@ -583,14 +583,11 @@ bool setup_for_replay_from_file(
 #ifdef DEBUG_REPLAY
 			open_stream_file();
 #endif
-			if (prompt_to_export)
-				Movie::instance()->PromptForRecording();
-			else if (export_from_shell)
-			{
-				FileSpecifier moviePath = FilmFileSpec;
-				moviePath.SetExtension(".webm");
 
-				Movie::instance()->StartRecording(moviePath.GetPath());
+			if (export_replay)
+			{
+				Movie::instance()->StartRecording(export_path);
+				// TODO: make StartRecording indicate if it succeeded, and return false if not.
 			}
 
 			successful= true;
