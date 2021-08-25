@@ -20,8 +20,7 @@ struct ShellOptions {
 	bool force_windowed;
 
 	bool skip_intro;
-	bool exit_on_quit;
-	bool record_movie;
+	bool export_film;
 	bool editor;
 
 	std::string directory;

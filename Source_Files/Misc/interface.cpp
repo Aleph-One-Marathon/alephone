@@ -2081,7 +2081,7 @@ static bool begin_game(
 					{
 						bool export_from_shell = false;
 #ifndef MAC_APP_STORE
-						export_from_shell = shell_options.record_movie;
+						export_from_shell = shell_options.export_film;
 #endif
 						success = setup_for_replay_from_file(DraggedReplayFile, get_current_map_checksum(), false, export_from_shell);
 						user = _replay;
@@ -2367,9 +2367,6 @@ static void finish_game(
 			exit(-1);
 		}
 	}
-
-	if (shell_options.exit_on_quit)
-		exit(0);
 
 	/* Fade out! (Pray) */ // should be interface_color_table for valkyrie, but doesn't work.
 	Music::instance()->ClearLevelMusic();

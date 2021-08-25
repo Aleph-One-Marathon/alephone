@@ -115,8 +115,7 @@ static const std::vector<ShellOptionsFlag> shell_options_flags {
 	{"j", "nojoystick", "Do not initialize joysticks", shell_options.nojoystick},
 	{"i", "insecure_lua", "", shell_options.insecure_lua},
 	{"Q", "skip-intro", "Skip intro screens", shell_options.skip_intro},
-	{"x", "exit", "Exit on quit", shell_options.exit_on_quit},
-	{"r", "record", "With a film file, encode a video of the film", shell_options.record_movie},
+	{"x", "export", "With a film file, export a video of the film", shell_options.export_film},
 	{"e", "editor", "Use editor prefs; jump directly to map", shell_options.editor}
 };
 
