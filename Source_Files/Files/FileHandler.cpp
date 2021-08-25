@@ -1381,6 +1381,9 @@ public:
 		case _typecode_film:
 			m_extension = ".filA";
 			break;
+		case _typecode_movie:
+			m_extension = ".webm";
+			break;
 		default:
 			break;
 		}
