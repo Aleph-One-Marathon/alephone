@@ -313,6 +313,7 @@ public:
 	static std::string HideExtension(const std::string& filename);
 	
 	const char *GetPath(void) const {return name.c_str();}
+	const std::string& GetPathStr(void) const {return name;}
 
 	FileSpecifier();
 	FileSpecifier(const string &s) : name(s), err(0) {canonicalize_path();}

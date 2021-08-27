@@ -2069,11 +2069,11 @@ static bool begin_game(
 								if (!success)
 									break;
 
-								success = setup_for_replay_from_file(ReplayFile, get_current_map_checksum(), true, dst_file.GetPath());
+								success = setup_for_replay_from_file(ReplayFile, dst_file.GetPathStr());
 							}
 							else
 							{
-								success = setup_for_replay_from_file(ReplayFile, get_current_map_checksum());
+								success = setup_for_replay_from_file(ReplayFile);
 							}
 
 							hide_cursor();
@@ -2098,11 +2098,11 @@ static bool begin_game(
 						{
 							FileSpecifier moviePath = DraggedReplayFile;
 							moviePath.SetExtension(".webm");
-							success = setup_for_replay_from_file(DraggedReplayFile, get_current_map_checksum(), true, moviePath.GetPath());
+							success = setup_for_replay_from_file(DraggedReplayFile, moviePath.GetPathStr());
 						}
 						else
 						{
-							success = setup_for_replay_from_file(DraggedReplayFile, get_current_map_checksum());
+							success = setup_for_replay_from_file(DraggedReplayFile);
 						}
 
 						user = _replay;

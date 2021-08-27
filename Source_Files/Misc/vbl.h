@@ -34,8 +34,9 @@ Jul 5, 2000 (Loren Petrich):
 #include "FileHandler.h"
 
 /* ------------ prototypes/VBL.C */
-bool setup_for_replay_from_file(FileSpecifier& File, uint32 map_checksum,
-	bool export_replay = false, const char* export_path = NULL);
+// File: the replay file to use
+// export_path: if provided, export movie to this path
+bool setup_for_replay_from_file(FileSpecifier& File, const std::string& export_path = "");
 bool setup_replay_from_random_resource(uint32 map_checksum);
 
 void start_recording(void);

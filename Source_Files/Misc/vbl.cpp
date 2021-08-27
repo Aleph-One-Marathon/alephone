@@ -545,13 +545,9 @@ extern int movie_export_phase;
 
 bool setup_for_replay_from_file(
 	FileSpecifier& File,
-	uint32 map_checksum,
-	bool export_replay,
-	const char* export_path)
+	const std::string& export_path)
 {
 	bool successful= false;
-
-	(void)(map_checksum);
 	
 	FilmFileSpec = File;
 	if (FilmFileSpec.Open(FilmFile))
@@ -584,7 +580,7 @@ bool setup_for_replay_from_file(
 			open_stream_file();
 #endif
 
-			if (export_replay)
+			if (!export_path.empty())
 			{
 				Movie::instance()->StartRecording(export_path);
 				// TODO: make StartRecording indicate if it succeeded, and return false if not.
