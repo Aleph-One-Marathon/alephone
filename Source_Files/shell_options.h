@@ -27,6 +27,7 @@ struct ShellOptions {
 	std::vector<std::string> files;
 
 	std::string output;
+	std::string view_player;
 };
 
 extern ShellOptions shell_options;

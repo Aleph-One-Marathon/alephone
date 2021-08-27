@@ -2251,6 +2251,14 @@ static bool begin_game(
 		success= new_game(number_of_players, is_networked, &game_information, starts, &entry);
 		if(success)
 		{
+			if (user == _replay && !shell_options.view_player.empty()) {
+				try {
+					short player = std::stoi(shell_options.view_player);
+					if (player > 0 && player <= number_of_players)
+						set_current_player_index(player-1);
+				}
+				catch (...) {}
+			}
 			start_game(user, false);
 		} else {
 			clean_up_after_failed_game(user == _network_player, record_game, clean_up_on_failure);

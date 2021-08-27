@@ -120,7 +120,8 @@ static const std::vector<ShellOptionsFlag> shell_options_flags {
 };
 
 static const std::vector<ShellOptionsString> shell_options_strings {
-	{"o", "output", "With -e, output map to [file] and exit on quit", shell_options.output}
+	{"o", "output", "With -e, output map to [file] and exit on quit", shell_options.output},
+	{"p", "player", "With a net film file, start viewing [player]'s perspective (1-8)", shell_options.view_player}
 };
 
 bool ShellOptions::parse(int argc, char** argv)
