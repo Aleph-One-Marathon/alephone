@@ -2096,8 +2096,16 @@ static bool begin_game(
 #endif
 						if (export_from_shell)
 						{
-							FileSpecifier moviePath = DraggedReplayFile;
-							moviePath.SetExtension(".webm");
+							FileSpecifier moviePath;
+							if (shell_options.output.empty())
+							{
+								moviePath = DraggedReplayFile;
+								moviePath.SetExtension(".webm");
+							}
+							else
+							{
+								moviePath = FileSpecifier(shell_options.output);
+							}
 							success = setup_for_replay_from_file(DraggedReplayFile, moviePath.GetPathStr());
 						}
 						else
@@ -2384,7 +2392,12 @@ static void finish_game(
 	}
 	Movie::instance()->StopRecording();
 
-	if (shell_options.editor && shell_options.output.size())
+	if (shell_options.export_film)
+	{
+		exit(0);
+	}
+
+	if (shell_options.editor && !shell_options.output.empty())
 	{
 		FileSpecifier file(shell_options.output);
 		if (export_level(file))

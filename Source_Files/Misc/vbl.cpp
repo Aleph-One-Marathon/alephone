@@ -544,7 +544,7 @@ void get_recording_header_data(
 extern int movie_export_phase;
 
 bool setup_for_replay_from_file(
-	FileSpecifier& File,
+	const FileSpecifier& File,
 	const std::string& export_path)
 {
 	bool successful= false;
