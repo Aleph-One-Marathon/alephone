@@ -42,20 +42,16 @@ extern "C"
 #include "libavutil/opt.h"
 #include "libavutil/fifo.h"
 #include "libswscale/swscale.h"
-
-    
-// Use audio conversion from Movie.cpp
-extern int convert_audio(int in_samples, int in_channels, int in_stride,
-                         enum AVSampleFormat in_fmt, const uint8_t *in_buf,
-                         int out_samples, int out_channels, int out_stride,
-                         enum AVSampleFormat out_fmt, uint8_t *out_buf);
-    
+#include "libswresample/swresample.h"
+ 
 
 #ifdef __cplusplus
 }
 #endif
 
 struct ffmpeg_vars {
+    AVCodecContext* codec_ctx;
+    SwrContext* swr_context;
     AVFormatContext *ctx;
     AVStream *stream;
     uint8_t *temp_data;
@@ -71,17 +67,12 @@ FFmpegDecoder::FFmpegDecoder() :
     av = new ffmpeg_vars_t;
     memset(av, 0, sizeof(ffmpeg_vars_t));
     
-    av_register_all();
-    avcodec_register_all();
-    av->temp_data = reinterpret_cast<uint8_t *>(av_malloc(262144));
     av->fifo = av_fifo_alloc(524288);
 }
 
 FFmpegDecoder::~FFmpegDecoder()
 {
 	Close();
-    if (av && av->temp_data)
-        av_free(av->temp_data);
     if (av && av->fifo)
         av_fifo_free(av->fifo);
 }
@@ -91,7 +82,7 @@ bool FFmpegDecoder::Open(FileSpecifier& File)
 	Close();
     
     // make sure one-time setup succeeded
-    if (!av || !av->temp_data || !av->fifo)
+    if (!av || !av->fifo)
         return false;
     
     // open the file
@@ -114,14 +105,32 @@ bool FFmpegDecoder::Open(FileSpecifier& File)
         return false;
     }
     av->stream = av->ctx->streams[av->stream_idx];
-    if (avcodec_open2(av->stream->codec, codec, NULL) < 0)
+    av->codec_ctx = avcodec_alloc_context3(codec);
+    if (!av->codec_ctx || avcodec_parameters_to_context(av->codec_ctx, av->stream->codecpar) < 0 || avcodec_open2(av->codec_ctx, NULL, NULL) < 0)
     {
         Close();
         return false;
     }
-    channels = av->stream->codec->channels;
-    rate = av->stream->codec->sample_rate;
-	
+    channels = av->stream->codecpar->channels;
+    rate = av->stream->codecpar->sample_rate;
+    int channel_layout = av->codec_ctx->channel_layout ? av->codec_ctx->channel_layout : (channels == 2 ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO);
+
+    // init resampler
+    av->swr_context = swr_alloc_set_opts(av->swr_context, channel_layout, AV_SAMPLE_FMT_S16, rate,
+        channel_layout, av->codec_ctx->sample_fmt, rate, 0, NULL);
+
+    if (!av->swr_context || swr_init(av->swr_context) < 0)
+    {
+        Close();
+        return false;
+    }
+
+    if (av_samples_alloc(&av->temp_data, NULL, channels, 8192, AV_SAMPLE_FMT_S16, 0) < 0)
+    {
+        Close();
+        return false;
+    }
+
 	return true;
 }
 
@@ -160,10 +169,9 @@ void FFmpegDecoder::Rewind()
 
 void FFmpegDecoder::Close()
 {
-    if (av && av->stream)
+    if (av && av->codec_ctx)
     {
-        avcodec_close(av->stream->codec);
-        av->stream = NULL;
+        avcodec_free_context(&av->codec_ctx);
     }
     if (av && av->ctx)
     {
@@ -173,78 +181,57 @@ void FFmpegDecoder::Close()
     }
     if (av && av->fifo)
         av_fifo_reset(av->fifo);
+    if (av && av->swr_context) 
+        swr_free(&av->swr_context);
+    if (av && av->temp_data)
+        av_freep(&av->temp_data);
     if (av)
         av->started = false;
 }
 
 bool FFmpegDecoder::GetAudio()
 {
-    AVPacket pkt;
-    av_init_packet(&pkt);
+    AVPacket* pkt = av_packet_alloc();
     
     while (true)
     {
-        int decode = av_read_frame(av->ctx, &pkt);
+        int decode = av_read_frame(av->ctx, pkt);
         if (decode < 0)
             return false;
-        if (pkt.stream_index == av->stream_idx)
+        if (pkt->stream_index == av->stream_idx)
             break;
-        av_free_packet(&pkt);
+        av_packet_unref(pkt);
     }
     
     av->started = true;
-    AVPacket pkt_temp;
-    av_init_packet(&pkt_temp);
-    pkt_temp.data = pkt.data;
-    pkt_temp.size = pkt.size;
-    
-    AVCodecContext *dec_ctx = av->stream->codec;
-    
-    while (pkt_temp.size > 0)
-    {
+    AVCodecContext *dec_ctx = av->codec_ctx;
+
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,0)
-        AVFrame *dframe = avcodec_alloc_frame();
+    AVFrame *dframe = avcodec_alloc_frame();
 #else
-        AVFrame *dframe = av_frame_alloc();
+    AVFrame *dframe = av_frame_alloc();
 #endif
-        int got_frame = 0;
-        int bytes_read = avcodec_decode_audio4(dec_ctx, dframe, &got_frame, &pkt_temp);
-        if (bytes_read < 0)
-        {
-            av_free_packet(&pkt);
-            return false;
-        }
-        if (got_frame && bytes_read > 0)
-        {
-            int channels = dec_ctx->channels;
-            enum AVSampleFormat in_fmt = dec_ctx->sample_fmt;
-            enum AVSampleFormat out_fmt = AV_SAMPLE_FMT_S16;
-            
-            int stride = -1;
-            if (channels > 1 && av_sample_fmt_is_planar(in_fmt))
-                stride = dframe->extended_data[1] - dframe->extended_data[0];
 
-            int written = convert_audio(dframe->nb_samples, channels,
-                                        stride,
-                                        in_fmt, dframe->extended_data[0],
-                                        dframe->nb_samples, channels,
-                                        -1,
-                                        out_fmt, av->temp_data);
-            
-            av_fifo_generic_write(av->fifo, av->temp_data, written, NULL);
-
-            pkt_temp.data += bytes_read;
-            pkt_temp.size -= bytes_read;
-        }
+    int sent_packet = avcodec_send_packet(dec_ctx, pkt);
+    if (sent_packet < 0)
+    {
+        av_packet_unref(pkt);
+        return false;
+    }
+    while (avcodec_receive_frame(dec_ctx, dframe) == 0)
+    {
+        int nb_samples = swr_convert(av->swr_context, &av->temp_data, dframe->nb_samples, (const uint8_t**)dframe->extended_data, dframe->nb_samples);
+        int nb_bytes = nb_samples * channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+        av_fifo_generic_write(av->fifo, av->temp_data, nb_bytes, NULL);
+    }
         
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,0)
-        av_freep(&dframe);
+    av_freep(&dframe);
 #else
-        av_frame_free(&dframe);
+    av_frame_free(&dframe);
 #endif
-    }
     
-    av_free_packet(&pkt);
+    av_packet_free(&pkt);
     return true;
 }
 

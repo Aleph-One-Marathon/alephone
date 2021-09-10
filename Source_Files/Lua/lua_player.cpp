@@ -411,6 +411,7 @@ const luaL_Reg Lua_HotkeyBinding_Get[] = {
 	{"joystick", Lua_HotkeyBinding_Get_Binding<type_joystick>},
 	{"key", Lua_HotkeyBinding_Get_Binding<type_keyboard>},
 	{"mouse", Lua_HotkeyBinding_Get_Binding<type_mouse>},
+	{0, 0}
 };
 
 char Lua_HotkeyBindings_Name[] = "hotkey_bindings";
@@ -1870,6 +1871,13 @@ static int Lua_Player_Get_Flag(lua_State *L)
 	return 1;
 }
 
+static int Lua_Player_Get_Has_Map_Open(lua_State* L)
+{
+	auto player = get_player_data(Lua_Player::Index(L, 1));
+	lua_pushboolean(L, PLAYER_HAS_MAP_OPEN(player));
+	return 1;
+}
+
 static int Lua_Player_Get_Hotkey(lua_State* L)
 {
 	int player_index = Lua_Player::Index(L, 1);
@@ -2006,6 +2014,13 @@ static int Lua_Player_Get_Team(lua_State *L)
 	return 1;
 }
 
+static int Lua_Player_Get_Teleporting(lua_State* L)
+{
+	auto player = get_player_data(Lua_Player::Index(L, 1));
+	lua_pushboolean(L, PLAYER_IS_TELEPORTING(player));
+	return 1;
+}
+
 static int Lua_Player_Get_Texture_Palette(lua_State *L)
 {
 	Lua_Texture_Palette::Push(L, Lua_Player::Index(L, 1));
@@ -2092,6 +2107,7 @@ const luaL_Reg Lua_Player_Get[] = {
 	{"fade_screen", L_TableFunction<Lua_Player_Fade_Screen>},
 	{"find_action_key_target", L_TableFunction<Lua_Player_Find_Action_Key_Target>},
 	{"find_target", L_TableFunction<Lua_Player_Find_Target>},
+	{"has_map_open", Lua_Player_Get_Has_Map_Open},
 	{"head_below_media", Lua_Player_Get_Flag<_HEAD_BELOW_MEDIA_BIT>},
 	{"head_direction", Lua_Player_Get_Head_Direction},
 	{"hotkey", Lua_Player_Get_Hotkey},
@@ -2120,6 +2136,7 @@ const luaL_Reg Lua_Player_Get[] = {
 	{"team", Lua_Player_Get_Team},
 	{"teleport", L_TableFunction<Lua_Player_Teleport>},
 	{"teleport_to_level", L_TableFunction<Lua_Player_Teleport_To_Level>},
+	{"teleporting", Lua_Player_Get_Teleporting},
 	{"texture_palette", Lua_Player_Get_Texture_Palette},
 	{"totally_dead", Lua_Player_Get_Totally_Dead},
 	{"view_player", L_TableFunction<Lua_Player_View_Player>},

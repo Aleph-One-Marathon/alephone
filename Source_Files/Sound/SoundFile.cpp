@@ -26,7 +26,6 @@ SOUNDFILE.CPP
 #include "Decoder.h"
 
 #include <assert.h>
-#include <boost/make_shared.hpp>
 
 #include "BStream.h"
 #include <boost/iostreams/stream_buffer.hpp>
@@ -150,15 +149,15 @@ bool SoundHeader::Load(BIStreamBE& s)
 	return false;
 }
 
-boost::shared_ptr<SoundData> SoundHeader::LoadData(BIStreamBE& s)
+std::shared_ptr<SoundData> SoundHeader::LoadData(BIStreamBE& s)
 {
 	if (!data_offset)
 	{
-		return boost::shared_ptr<SoundData>();
+		return std::shared_ptr<SoundData>();
 	}
 
 	s.ignore(data_offset);
-	boost::shared_ptr<SoundData> p = boost::make_shared<SoundData>(length);
+	auto p = std::make_shared<SoundData>(length);
 	try 
 	{
 		s.read(reinterpret_cast<char*>(&(*p)[0]), length);
@@ -179,7 +178,7 @@ bool SoundHeader::Load(OpenedFile &SoundFile)
 	return Load(s);
 }
 
-boost::shared_ptr<SoundData> SoundHeader::LoadData(OpenedFile& SoundFile)
+std::shared_ptr<SoundData> SoundHeader::LoadData(OpenedFile& SoundFile)
 {
 	io::stream_buffer<opened_file_device> sb(SoundFile);
 	BIStreamBE s(&sb);
@@ -239,7 +238,7 @@ bool SoundHeader::Load(LoadedResource& rsrc)
 	return false;
 }
 
-boost::shared_ptr<SoundData> SoundHeader::LoadData(LoadedResource& rsrc)
+std::shared_ptr<SoundData> SoundHeader::LoadData(LoadedResource& rsrc)
 {
 	io::stream_buffer<io::array_source> sb(reinterpret_cast<char*>(rsrc.GetPointer()), rsrc.GetLength());
 	BIStreamBE s(&sb);
@@ -323,9 +322,9 @@ bool SoundDefinition::Load(OpenedFile &SoundFile, bool LoadPermutations)
 }
 
 
-boost::shared_ptr<SoundData> SoundDefinition::LoadData(OpenedFile& SoundFile, short permutation)
+std::shared_ptr<SoundData> SoundDefinition::LoadData(OpenedFile& SoundFile, short permutation)
 {
-	boost::shared_ptr<SoundData> p;
+	std::shared_ptr<SoundData> p;
 	if (!SoundFile.IsOpen()) 
 	{
 		return p;
@@ -417,7 +416,7 @@ SoundDefinition* M2SoundFile::GetSoundDefinition(int source, int sound_index)
 		return 0;
 }
 
-boost::shared_ptr<SoundData> M2SoundFile::GetSoundData(SoundDefinition* definition, int permutation)
+std::shared_ptr<SoundData> M2SoundFile::GetSoundData(SoundDefinition* definition, int permutation)
 {
 	return definition->LoadData(*opened_sound_file, permutation);
 }
@@ -488,7 +487,7 @@ SoundHeader M1SoundFile::GetSoundHeader(SoundDefinition* definition, int permuta
 	return it->second;
 }
 
-boost::shared_ptr<SoundData> M1SoundFile::GetSoundData(SoundDefinition* definition, int permutation)
+std::shared_ptr<SoundData> M1SoundFile::GetSoundData(SoundDefinition* definition, int permutation)
 {
 	int sound_index = definition->sound_code + std::min(permutation, MAXIMUM_PERMUTATIONS_PER_SOUND);
 

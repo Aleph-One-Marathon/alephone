@@ -53,7 +53,7 @@ March 18, 2002 (Br'fin (Jeremy Parsons)):
 #include <stddef.h>	// For size_t
 #include <time.h>	// For time_t
 #include <vector>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #include <errno.h>
 #include <string>

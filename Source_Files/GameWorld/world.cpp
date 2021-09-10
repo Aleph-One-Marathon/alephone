@@ -27,15 +27,15 @@ Thursday, January 21, 1993 9:46:24 PM
 Saturday, January 23, 1993 9:46:34 PM
 	fixed arctangent, hopefully for the last time.  normalize_angle() is a little faster.
 Monday, January 25, 1993 3:01:47 PM
-	arctangent works (tested at 0.5¡ increments against SANEÕs tan), the only anomoly was
-	apparently arctan(0)==180¡.
+	arctangent works (tested at 0.5Â° increments against SANEâ€™s tan), the only anomoly was
+	apparently arctan(0)==180Â°.
 Wednesday, January 27, 1993 3:49:04 PM
-	final fix to arctangent, we swear.  recall lim(arctan(x)) as x approaches ¹/2 or 3¹/4 is ±°,
+	final fix to arctangent, we swear.  recall lim(arctan(x)) as x approaches Ï€/2 or 3Ï€/4 is Â±âˆž,
 	depending on which side we come from.  because we didn't realize this, arctan failed in the
-	case where x was very close to but slightly below ¹/2.  i think weÕve seen the last monster
-	suddenly ÔpanicÕ and bolt directly into a wall.
+	case where x was very close to but slightly below Ï€/2.  i think weâ€™ve seen the last monster
+	suddenly â€˜panicâ€™ and bolt directly into a wall.
 Sunday, July 25, 1993 11:51:42 PM
-	the arctan of 0/0 is now (arbitrairly) ¹/2 because weÕre sick of assert(y) failing.
+	the arctan of 0/0 is now (arbitrairly) Ï€/2 because weâ€™re sick of assert(y) failing.
 Monday, June 20, 1994 4:15:06 PM
 	bug fix in translate_point3d().
 
@@ -86,8 +86,8 @@ angle normalize_angle(
 */
 
 /* remember this is not wholly accurate, both distance or the sine/cosine values could be
-	negative, and the shift canÕt make negative numbers zero; this is probably ok because
-	weÕll have -1/1024th instead of zero, which is basically our margin for error anyway ... */
+	negative, and the shift canâ€™t make negative numbers zero; this is probably ok because
+	weâ€™ll have -1/1024th instead of zero, which is basically our margin for error anyway ... */
 world_point2d *translate_point2d(
 	world_point2d *point,
 	world_distance distance,
@@ -225,7 +225,7 @@ void build_trig_tables(
 		if (i==HALF_CIRCLE) sine_table[i]= 0, cosine_table[i]= -TRIG_MAGNITUDE;
 		if (i==THREE_QUARTER_CIRCLE) sine_table[i]= -TRIG_MAGNITUDE, cosine_table[i]= 0;
 		
-		/* what we care about here is NOT accuracy, rather weÕre concerned with matching the
+		/* what we care about here is NOT accuracy, rather weâ€™re concerned with matching the
 			ratio of the existing sine and cosine tables as exactly as possible */
 		if (cosine_table[i])
 		{
@@ -233,7 +233,7 @@ void build_trig_tables(
 		}
 		else
 		{
-			/* we always take -°, even though the limit is ±°, depending on which side you
+			/* we always take -âˆž, even though the limit is Â±âˆž, depending on which side you
 				approach it from.  this is because of the direction we traverse the circle
 				looking for matches during arctan. */
 			tangent_table[i]= INT32_MIN;
@@ -291,11 +291,11 @@ static angle m2_arctangent(
 	}
 	else
 	{
-		/* so arctan(0,0)==¹/2 (bill me) */
+		/* so arctan(0,0)==Ï€/2 (bill me) */
 		return y<0 ? THREE_QUARTER_CIRCLE : QUARTER_CIRCLE;
 	}
 }
-/* one day weÕll come back here and actually make this run fast */
+/* one day weâ€™ll come back here and actually make this run fast */
 // LP change: made this long-distance friendly
 //
 static angle a1_arctangent(

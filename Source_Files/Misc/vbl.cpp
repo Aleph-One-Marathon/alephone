@@ -29,9 +29,9 @@ Thursday, November 19, 1992 1:27:23 AM
 	the enumeration 'turning_head' had to be changed to '_turn_not_rotate' to make this
 	file compile.  go figure.
 Wednesday, December 2, 1992 2:31:05 PM
-	the world doesnÕt change while the mouse button is pressed.
+	the world doesnâ€™t change while the mouse button is pressed.
 Friday, January 15, 1993 11:19:11 AM
-	the world doesnÕt change after 14 ticks have passed without a screen refresh.
+	the world doesnâ€™t change after 14 ticks have passed without a screen refresh.
 Friday, January 22, 1993 3:06:32 PM
 	world_ticks was never being initialized to zero.  hmmm.
 Saturday, March 6, 1993 12:23:48 PM
@@ -47,7 +47,7 @@ Sunday, May 22, 1994 8:51:15 PM
 	distribute a circular queue of keyboard flags (we're the keyboard_controller, not the
 	movement_controller).
 Thursday, June 2, 1994 12:55:52 PM
-	gee, now we donÕt even maintain the queue we just send our actions to PLAYER.C.
+	gee, now we donâ€™t even maintain the queue we just send our actions to PLAYER.C.
 Tuesday, July 5, 1994 9:27:49 PM
 	nuked most of the shit in here. changed the vbl task to a time
 	manager task. the only functions from the old vbl.c that remain are precalculate_key_information()
@@ -456,8 +456,8 @@ static bool pull_flags_from_recording(
 	short player_index;
 	bool success= true;
 	
-	// first check that we can pull something from each playerÕs queue
-	// (at the beginning of the game, we wonÕt be able to)
+	// first check that we can pull something from each playerâ€™s queue
+	// (at the beginning of the game, we wonâ€™t be able to)
 	// i'm not sure that i really need to do this check. oh well.
 	for (player_index = 0; success && player_index<dynamic_world->player_count; player_index++)
 	{
@@ -974,7 +974,7 @@ void parse_mml_keyboard(const InfoTree& root)
 	if (!root.read_indexed("set", which_set, NUMBER_OF_KEY_SETUPS))
 		return;
 	
-	BOOST_FOREACH(InfoTree ktree, root.children_named("key"))
+	for (const InfoTree &ktree : root.children_named("key"))
 	{
 		int16 index;
 		if (!ktree.read_indexed("index", index, NUMBER_OF_STANDARD_KEY_DEFINITIONS))
@@ -1180,7 +1180,7 @@ uint32 parse_keymap(void)
       // Parse the keymap
 		for (int i = 0; i < NUMBER_OF_STANDARD_KEY_DEFINITIONS; ++i)
 		{
-			BOOST_FOREACH(const SDL_Scancode& code, input_preferences->key_bindings[i])
+			for (const SDL_Scancode& code : input_preferences->key_bindings[i])
 			{
 				if (key_map[code])
 					flags |= standard_key_definitions[i].action_flag;

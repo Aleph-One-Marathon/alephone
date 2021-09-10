@@ -86,7 +86,7 @@ typedef int16 world_distance;
 /* arguments must be positive (!) or use guess_hypotenuse() */
 #define GUESS_HYPOTENUSE(x, y) ((x)>(y) ? ((x)+((y)>>1)) : ((y)+((x)>>1)))
 
-/* -360¡<t<720¡ (!) or use normalize_angle() */
+/* -360Â°<t<720Â° (!) or use normalize_angle() */
 //#define NORMALIZE_ANGLE(t) ((t)<(angle)0?(t)+NUMBER_OF_ANGLES:((t)>=NUMBER_OF_ANGLES?(t)-NUMBER_OF_ANGLES:(t)))
 #define NORMALIZE_ANGLE(t) ((t)&(angle)(NUMBER_OF_ANGLES-1))
 
@@ -190,6 +190,9 @@ static inline angle normalize_angle(angle theta)
 	return NORMALIZE_ANGLE(theta);
 }
 
+// Return (a cross b).k
+inline Sint64 cross_product_k(long_vector2d a, long_vector2d b) { return 1LL*a.i*b.j - 1LL*a.j*b.i; }
+
 world_point2d *rotate_point2d(world_point2d *point, world_point2d *origin, angle theta);
 world_point3d *rotate_point3d(world_point3d *point, world_point3d *origin, angle theta, angle phi);
 
@@ -199,7 +202,7 @@ world_point3d *translate_point3d(world_point3d *point, world_distance distance, 
 world_point2d *transform_point2d(world_point2d *point, world_point2d *origin, angle theta);
 world_point3d *transform_point3d(world_point3d *point, world_point3d *origin, angle theta, angle phi);
 
-/* angle is in [0,NUMBER_OF_ANGLES), or, [0,2¹) */
+/* angle is in [0,NUMBER_OF_ANGLES), or, [0,2Ï€) */
 // LP change: made this long-distance friendly
 angle arctangent(int32 x, int32 y);
 

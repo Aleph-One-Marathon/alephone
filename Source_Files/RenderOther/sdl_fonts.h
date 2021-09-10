@@ -35,9 +35,8 @@
 
 #include "csfonts.h"
 #include "FileHandler.h"
-#include <SDL_ttf.h>
-#include <boost/tuple/tuple.hpp>
-
+#include <SDL2/SDL_ttf.h>
+#include <tuple>
 #include <string>
 
 /*
@@ -125,7 +124,7 @@ private:
 	LoadedResource rsrc;
 };
 
-typedef boost::tuple<std::string, uint16, int16> ttf_font_key_t;
+typedef std::tuple<std::string, uint16, int16> ttf_font_key_t;
 
 class ttf_font_info : public font_info
 {

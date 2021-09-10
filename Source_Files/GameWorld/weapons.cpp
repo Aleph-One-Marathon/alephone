@@ -380,11 +380,11 @@ void mark_weapon_collections(
 	{
 		struct weapon_definition *definition= get_weapon_definition(index);
 		
-		/* Mark the weaponÕs collection */	
+		/* Mark the weaponâ€™s collection */
 		loading ? mark_collection_for_loading(definition->collection) : 
 			mark_collection_for_unloading(definition->collection);
 
-		/* Mark the projectileÕs collection, NONE is handled correctly */
+		/* Mark the projectileâ€™s collection, NONE is handled correctly */
 		if(index != _weapon_ball)
 		{
 			mark_projectile_collections(definition->weapons_by_trigger[_primary_weapon].projectile_type, loading);
@@ -2204,7 +2204,7 @@ static bool check_reload(
 							} else {
 								if(which_trigger==_primary_weapon)
 								{
-									/* ¥¥ÊProblems? */
+									/* â€¢â€¢Â Problems? */
 									struct trigger_data *other_trigger= 
 										get_player_trigger_data(player_index, !which_trigger);
 										
@@ -4541,7 +4541,7 @@ void parse_mml_weapons(const InfoTree& root)
 			original_weapon_ordering_array[i] = weapon_ordering_array[i];
 	}
 	
-	BOOST_FOREACH(InfoTree casing, root.children_named("shell_casings"))
+	for (const InfoTree &casing : root.children_named("shell_casings"))
 	{
 		int16 index;
 		if (!casing.read_indexed("index", index, NUMBER_OF_SHELL_CASING_TYPES))
@@ -4558,7 +4558,7 @@ void parse_mml_weapons(const InfoTree& root)
 		casing.read_fixed("dvy", def.dvy);
 	}
 	
-	BOOST_FOREACH(InfoTree order, root.children_named("order"))
+	for (const InfoTree &order : root.children_named("order"))
 	{
 		int16 index;
 		if (!order.read_indexed("index", index, NUMBER_OF_WEAPONS))

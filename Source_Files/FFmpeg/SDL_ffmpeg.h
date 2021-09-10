@@ -23,8 +23,8 @@
 #ifndef SDL_FFMPEG_INCLUDED
 #define SDL_FFMPEG_INCLUDED
 
-#include "SDL_thread.h"
-#include "SDL.h"
+#include <SDL2/SDL_thread.h>
+#include <SDL2/SDL.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -144,6 +144,8 @@ typedef struct SDL_ffmpegStream
     /** Pointer to ffmpeg data, internal use only! */
     struct AVStream *_ffmpeg;
 
+    struct AVCodecContext* _ctx;
+
     /** Intermediate frame which will be used when decoding */
     struct AVFrame *decodeFrame;
     /** Intermediate frame which will be used when encoding */
@@ -163,8 +165,6 @@ typedef struct SDL_ffmpegStream
     int sampleBufferSize;
     /** position of data in samplebuffer */
     int sampleBufferOffset;
-    /** stride of planar data in samplebuffer */
-    int sampleBufferStride;
     /** timestamp which fits the data in samplebuffer */
     int64_t sampleBufferTime;
 
@@ -178,6 +178,9 @@ typedef struct SDL_ffmpegStream
     /** This holds the lastTimeStamp calculated, usefull when frames don't provide
         a usefull dts/pts, also used for determining at what point we are in the file */
     int64_t lastTimeStamp;
+
+    /** This is used for audio resampling */
+    struct SwrContext* swr_context;
 
     /** pointer to the next stream, or NULL if current stream is the last one */
     struct SDL_ffmpegStream *next;

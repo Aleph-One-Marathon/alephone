@@ -38,6 +38,8 @@
 #include "Update.h"
 #include "progress.h"
 
+#include <functional>
+
 extern ChatHistory gMetaserverChatHistory;
 extern MetaserverClient* gMetaserverClient;
 
@@ -300,13 +302,13 @@ const IPaddress MetaserverClientUi::GetJoinAddressByRunning()
 	setupAndConnectClient(*gMetaserverClient);
 	gMetaserverClient->associateNotificationAdapter(this);
 
-	m_gamesInRoomWidget->SetItemSelectedCallback(bind(&MetaserverClientUi::GameSelected, this, _1));
-	m_playersInRoomWidget->SetItemSelectedCallback(bind(&MetaserverClientUi::PlayerSelected, this, _1));
-	m_muteWidget->set_callback(boost::bind(&MetaserverClientUi::MuteClicked, this));
-	m_chatEntryWidget->set_callback(bind(&MetaserverClientUi::ChatTextEntered, this, _1));
-	m_cancelWidget->set_callback(boost::bind(&MetaserverClientUi::handleCancel, this));
-	m_joinWidget->set_callback(boost::bind(&MetaserverClientUi::JoinClicked, this));
-	m_gameInfoWidget->set_callback(boost::bind(&MetaserverClientUi::InfoClicked, this));
+	m_gamesInRoomWidget->SetItemSelectedCallback(std::bind(&MetaserverClientUi::GameSelected, this, std::placeholders::_1));
+	m_playersInRoomWidget->SetItemSelectedCallback(std::bind(&MetaserverClientUi::PlayerSelected, this, std::placeholders::_1));
+	m_muteWidget->set_callback(std::bind(&MetaserverClientUi::MuteClicked, this));
+	m_chatEntryWidget->set_callback(std::bind(&MetaserverClientUi::ChatTextEntered, this, std::placeholders::_1));
+	m_cancelWidget->set_callback(std::bind(&MetaserverClientUi::handleCancel, this));
+	m_joinWidget->set_callback(std::bind(&MetaserverClientUi::JoinClicked, this));
+	m_gameInfoWidget->set_callback(std::bind(&MetaserverClientUi::InfoClicked, this));
 	
 	gMetaserverChatHistory.clear ();
 	m_chatWidget->attachHistory (&gMetaserverChatHistory);

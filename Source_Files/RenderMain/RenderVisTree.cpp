@@ -181,7 +181,7 @@ void RenderVisTreeClass::build_render_tree()
 				}
 				
 				/* do two cross products to determine whether this endpoint is in our view cone or not
-					(we donÕt have to cast at points outside the cone) */
+					(we donâ€™t have to cast at points outside the cone) */
 				if ((view->right_edge.i*_vector.j - view->right_edge.j*_vector.i)<=0 && (view->left_edge.i*_vector.j - view->left_edge.j*_vector.i)>=0)
 				{
 					cast_render_ray(&_vector, ENDPOINT_IS_TRANSPARENT(endpoint) ? NONE : endpoint_index, &Nodes.front(), _no_bias);
@@ -295,7 +295,7 @@ void RenderVisTreeClass::cast_render_ray(
 				}
 			}
 
-			/* update the line clipping information, if necessary, for this node (donÕt add
+			/* update the line clipping information, if necessary, for this node (donâ€™t add
 				duplicates */
 			if (clipping_line_index!=NONE)
 			{
@@ -346,8 +346,8 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 	short *polygon_index,
 	world_point2d *origin, /* not necessairly in polygon_index */
 	long_vector2d *_vector, // world_vector2d *vector,
-	short *clipping_endpoint_index, /* if non-NONE on entry this is the solid endpoint weÕre shooting for */
-	short *clipping_line_index, /* NONE on exit if this polygon transition wasnÕt accross an elevation line */
+	short *clipping_endpoint_index, /* if non-NONE on entry this is the solid endpoint weâ€™re shooting for */
+	short *clipping_line_index, /* NONE on exit if this polygon transition wasnâ€™t accross an elevation line */
 	short bias)
 {
 	polygon_data *polygon= get_polygon_data(*polygon_index);
@@ -438,10 +438,10 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 		    {
 			if (endpoint_index==*clipping_endpoint_index) passed_through_solid_vertex= true;
 
-			/* if we think we know whatÕs on the other side of this zero (these zeros)
-			change the state: if we donÕt find what weÕre looking for then the polygon
+			/* if we think we know whatâ€™s on the other side of this zero (these zeros)
+			change the state: if we donâ€™t find what weâ€™re looking for then the polygon
 			is entirely on one side of the line or the other (except for this vertex),
-			in any case we need to call decide_where_vertex_leads() to find out whatÕs
+			in any case we need to call decide_where_vertex_leads() to find out whatâ€™s
 			on the other side of this vertex */
 			switch (state)
 			{
@@ -466,8 +466,8 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 
 //	dprintf("exiting, cli=#%d, npi=#%d", crossed_line_index, next_polygon_index);
 
-	/* if we didnÕt pass through the solid vertex we were aiming for, set clipping_endpoint_index to NONE,
-		we assume the line we passed through doesnÕt clip, and set clipping_line_index to NONE
+	/* if we didnâ€™t pass through the solid vertex we were aiming for, set clipping_endpoint_index to NONE,
+		we assume the line we passed through doesnâ€™t clip, and set clipping_line_index to NONE
 		(this will be corrected in a few moments if we chose poorly) */
 	if (!passed_through_solid_vertex) *clipping_endpoint_index= NONE;
 	*clipping_line_index= NONE;
@@ -483,7 +483,7 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 		if (crossed_side_index!=NONE) SET_RENDER_FLAG(crossed_side_index, _side_is_visible);
 
 		/* if this line is transparent we need to check for a change in elevation for clipping,
-			if itÕs not transparent then we canÕt pass through it */
+			if itâ€™s not transparent then we canâ€™t pass through it */
 		// LP change: added test for there being a polygon on the other side
 		if (LINE_IS_TRANSPARENT(line) && next_polygon_index != NONE)
 		{
@@ -582,7 +582,7 @@ uint16 RenderVisTreeClass::decide_where_vertex_leads(
 			
 			if ((bias==_clockwise_bias&&cross_product>=0) || (bias==_counterclockwise_bias&&cross_product<=0))
 			{
-				/* weÕre leaving this endpoint, set clip flag in case itÕs solid */
+				/* weâ€™re leaving this endpoint, set clip flag in case itâ€™s solid */
 				clip_flags|= (bias==_clockwise_bias) ? _clip_left : _clip_right;
 			}
 		}
@@ -631,8 +631,8 @@ void RenderVisTreeClass::initialize_clip_data()
 		line_clip_data *line= &LineClips[indexTOP_AND_BOTTOM_OF_SCREEN];
 
 		line->flags= _clip_up|_clip_down;
-		line->x0= 0;
-		line->x1= view->screen_width;
+		line->x0 = INT16_MIN;
+		line->x1 = INT16_MAX;
 		line->top_y= 0; short_to_long_2d(view->top_edge,line->top_vector);
 		line->bottom_y= view->screen_height; short_to_long_2d(view->bottom_edge,line->bottom_vector);
 	}
@@ -661,7 +661,7 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 	// LP addition: place for new line data
 	line_clip_data *data= &LineClips[LastIndex];
 
-	/* itÕs possible (in fact, likely) that this lineÕs endpoints have not been transformed yet,
+	/* itâ€™s possible (in fact, likely) that this lineâ€™s endpoints have not been transformed yet,
 		so we have to do it ourselves */
 	// LP change: making the operation long-distance friendly
 	uint16 p0_flags = 0, p1_flags = 0;
@@ -712,7 +712,7 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 				if (y0<y1) y= y0, p= &p0; else y= y1, p= &p1;
 				y= PIN(y, 0, view->screen_height);
 				
-				/* if weÕre not useless (clipping up off the top of the screen) set up top-clip information) */
+				/* if weâ€™re not useless (clipping up off the top of the screen) set up top-clip information) */
 				if (y<=0)
 				{
 					clip_flags&= ~_clip_up;
@@ -737,7 +737,7 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 				if (y0>y1) y= y0, p= &p0; else y= y1, p= &p1;
 				y= PIN(y, 0, view->screen_height);
 				
-				/* if weÕre not useless (clipping up off the bottom of the screen) set up top-clip information) */
+				/* if weâ€™re not useless (clipping up off the bottom of the screen) set up top-clip information) */
 				if (y>=view->screen_height)
 				{
 					clip_flags&= ~_clip_down;
@@ -756,7 +756,7 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 }
 
 /* we can actually rely on the given endpoint being transformed because we only set clipping
-	information for endpoints weÕre aiming at, and we transform endpoints before firing at them */
+	information for endpoints weâ€™re aiming at, and we transform endpoints before firing at them */
 // Returns NONE of it does not have valid clip info
 short RenderVisTreeClass::calculate_endpoint_clipping_information(
 	short endpoint_index,
@@ -781,7 +781,7 @@ short RenderVisTreeClass::calculate_endpoint_clipping_information(
 	int32 x;
 
 	assert((clip_flags&(_clip_left|_clip_right))); /* must have a clip flag */
-	assert((clip_flags&(_clip_left|_clip_right))!=(_clip_left|_clip_right)); /* but canÕt have both */
+	assert((clip_flags&(_clip_left|_clip_right))!=(_clip_left|_clip_right)); /* but canâ€™t have both */
 	assert(!TEST_RENDER_FLAG(endpoint_index, _endpoint_has_clip_data));
 	
 	// LP change: compose a true transformed point to replace endpoint->transformed,

@@ -61,7 +61,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 #include <utility>
 #include <vector>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 struct Rect;
 

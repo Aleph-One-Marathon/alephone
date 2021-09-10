@@ -26,8 +26,7 @@
 #include "FileHandler.h"
 #include "wad.h"
 
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
+#include <tuple>
 #include <list>
 #include <map>
 
@@ -60,7 +59,7 @@ struct WadImageDescriptor {
 
 class WadImageCache {
 public:
-	typedef boost::tuple<WadImageDescriptor, int, int> cache_key_t;
+	typedef std::tuple<WadImageDescriptor, int, int> cache_key_t;
 	typedef std::pair<std::string, size_t> cache_value_t;
 	typedef std::pair<cache_key_t, cache_value_t> cache_pair_t;
 	typedef std::list<cache_pair_t>::iterator cache_iter_t;

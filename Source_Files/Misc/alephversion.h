@@ -29,6 +29,7 @@ ALEPHVERSION.H
 #define A1_DATE_VERSION "20210408"
 
 #ifdef WIN32
+#define WIN_VERSION_STRING 0,2021,4,8 // <-- don't forget to update that for windows releases
 #define A1_DISPLAY_PLATFORM "Windows"
 #define A1_UPDATE_PLATFORM "windows"
 #elif defined (__APPLE__) && defined(__MACH__)

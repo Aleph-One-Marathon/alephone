@@ -21,6 +21,7 @@ SOUND.C
 */
 
 #include <iostream>
+#include <functional>
 
 #include "SoundManager.h"
 #include "ReplacementSounds.h"
@@ -28,6 +29,11 @@ SOUND.C
 #include "Mixer.h"
 #include "images.h"
 #include "InfoTree.h"
+
+#undef SLOT_IS_USED
+#undef SLOT_IS_FREE
+#undef MARK_SLOT_AS_FREE
+#undef MARK_SLOT_AS_USED
 
 #define SLOT_IS_USED(o) ((o)->flags&(uint16)0x8000)
 #define SLOT_IS_FREE(o) (!SLOT_IS_USED(o))
@@ -40,10 +46,10 @@ public:
 
 	void SetMaxSize(std::size_t max_size) { m_max_size = max_size; }
 
-	void Add(boost::shared_ptr<SoundData> data, short index, short slot);
-	boost::shared_ptr<SoundData> Get(short index, short slot) { return m_entries[index].data[slot]; }
+	void Add(std::shared_ptr<SoundData> data, short index, short slot);
+	std::shared_ptr<SoundData> Get(short index, short slot) { return m_entries[index].data[slot]; }
 	void Update(short index);
-	boost::function<void (short)> SoundReleased;
+	std::function<void (short)> SoundReleased;
 
 	bool IsLoaded(short index) {
 		return m_entries.count(index);
@@ -55,12 +61,12 @@ public:
 private:
 	struct Entry {
 		Entry() : data(5), last_played(0) { }
-		std::vector<boost::shared_ptr<SoundData> > data;
+		std::vector<std::shared_ptr<SoundData> > data;
 		uint32 last_played;
 
 		std::size_t size() {
 			std::size_t n = 0;
-			for (std::vector<boost::shared_ptr<SoundData> >::iterator it = data.begin(); it != data.end(); ++it) 
+			for (std::vector<std::shared_ptr<SoundData> >::iterator it = data.begin(); it != data.end(); ++it) 
 			{
 				if (it->get()) 
 				{
@@ -78,7 +84,7 @@ private:
 	std::size_t m_max_size;
 };
 
-void SoundMemoryManager::Add(boost::shared_ptr<SoundData> data, short index, short slot)
+void SoundMemoryManager::Add(std::shared_ptr<SoundData> data, short index, short slot)
 {
 	m_entries[index].data[slot] = data;
 	m_entries[index].last_played = machine_tick_count();
@@ -291,12 +297,12 @@ bool SoundManager::LoadSound(short sound_index)
 		{
 			for (int i = 0; i < NumSlots; ++i)
 			{
-				boost::shared_ptr<SoundData> p = sound_file->GetSoundData(definition, i);
+				auto p = sound_file->GetSoundData(definition, i);
 
 				SoundOptions *SndOpts = SoundReplacements::instance()->GetSoundOptions(sound_index, i);
 				if (SndOpts)
 				{
-					boost::shared_ptr<SoundData> x = SndOpts->Sound.LoadExternal(SndOpts->File);
+					auto x = SndOpts->Sound.LoadExternal(SndOpts->File);
 					if (x.get()) 
 					{
 						p = x;
@@ -363,7 +369,7 @@ void SoundManager::PlaySound(short sound_index,
 			     short identifier, // NONE is no identifer and the sound is immediately orphaned
 			     _fixed pitch) // on top of all existing pitch modifiers
 {
-	/* donÕt do anything if weÕre not initialized or active, or our sound_code is NONE,
+	/* donâ€™t do anything if weâ€™re not initialized or active, or our sound_code is NONE,
 		or our volume is zero, our we have no sound channels */
 	if (sound_index!=NONE && active && parameters.volume_db > MINIMUM_VOLUME_DB && total_channel_count > 0)
 	{
@@ -393,7 +399,7 @@ void SoundManager::PlaySound(short sound_index,
 				/* start the sound playing */
 				BufferSound(*channel, sound_index, pitch);
 
-				/* if we have a valid source, copy it, otherwise remember that we donÕt */
+				/* if we have a valid source, copy it, otherwise remember that we donâ€™t */
 				if (source)
 				{
 					channel->source= *source;
@@ -409,7 +415,7 @@ void SoundManager::PlaySound(short sound_index,
 				
 void SoundManager::DirectPlaySound(short sound_index, angle direction, short volume, _fixed pitch)
 {
-	/* donÕt do anything if weÕre not initialized or active, or our sound_code is NONE,
+	/* donâ€™t do anything if weâ€™re not initialized or active, or our sound_code is NONE,
 	   or our volume is zero, our we have no sound channels */
 
 	if (sound_index != NONE && active && parameters.volume_db > MINIMUM_VOLUME_DB && total_channel_count > 0)
@@ -750,6 +756,7 @@ void SoundManager::SetStatus(bool active)
 		{
 			if (active) 
 			{
+				sounds->Clear();
 				uint32 total_buffer_size;
 
 				total_channel_count = parameters.channel_count;
@@ -842,7 +849,7 @@ void SoundManager::BufferSound(Channel &channel, short sound_index, _fixed pitch
 		header = sound_file->GetSoundHeader(definition, permutation);
 	}
 
-	boost::shared_ptr<SoundData> sound = sounds->Get(sound_index, permutation);
+	auto sound = sounds->Get(sound_index, permutation);
 	if (sound.get()) 
 	{
 		Mixer::instance()->BufferSound(channel.mixer_channel, header, sound, CalculatePitchModifier(sound_index, pitch));
@@ -889,9 +896,9 @@ SoundManager::Channel *SoundManager::BestChannel(short sound_index, Channel::Var
 						}
 					}
 					
-					/* if we havenÕt found an alternative channel or this channel is at a lower
-					   volume than our previously best channel (which isnÕt an unused channel),
-					   then weÕve found a new best channel */
+					/* if we havenâ€™t found an alternative channel or this channel is at a lower
+					   volume than our previously best channel (which isnâ€™t an unused channel),
+					   then weâ€™ve found a new best channel */
 					if (!best_channel ||
 					    (SLOT_IS_USED(best_channel) && best_channel->variables.volume > channel->variables.volume) ||
 					    (SLOT_IS_USED(best_channel) && best_channel->variables.priority < channel->variables.priority))
@@ -903,7 +910,7 @@ SoundManager::Channel *SoundManager::BestChannel(short sound_index, Channel::Var
 				{
 					if (channel->sound_index == sound_index && !(definition->flags & _sound_does_not_self_abort))
 					{
-						/* if weÕre already playing this sound at a higher volume, donÕt abort it */
+						/* if weâ€™re already playing this sound at a higher volume, donâ€™t abort it */
 						best_channel = 0;
 						break;
 					}
@@ -912,7 +919,7 @@ SoundManager::Channel *SoundManager::BestChannel(short sound_index, Channel::Var
 			}
 			else
 			{
-				/* unused channel (we wonÕt get much better than this!) */
+				/* unused channel (we wonâ€™t get much better than this!) */
 				if (SLOT_IS_USED(channel))
 					FreeChannel(*channel);
 				best_channel = channel;
@@ -1406,21 +1413,21 @@ void parse_mml_sounds(const InfoTree& root)
 	root.read_attr("ogl_reset", _Sound_OGL_Reset);
 	root.read_attr("center_button", _Sound_Center_Button);
 	
-	BOOST_FOREACH(InfoTree ambient, root.children_named("ambient"))
+	for (const InfoTree &ambient : root.children_named("ambient"))
 	{
 		int16 index;
 		if (!ambient.read_indexed("index", index, NUMBER_OF_AMBIENT_SOUND_DEFINITIONS))
 			continue;
 		ambient.read_indexed("sound", ambient_sound_definitions[index].sound_index, SHRT_MAX+1, true);
 	}
-	BOOST_FOREACH(InfoTree random, root.children_named("random"))
+	for (const InfoTree &random : root.children_named("random"))
 	{
 		int16 index;
 		if (!random.read_indexed("index", index, NUMBER_OF_RANDOM_SOUND_DEFINITIONS))
 			continue;
 		random.read_indexed("sound", random_sound_definitions[index].sound_index, SHRT_MAX+1, true);
 	}
-	BOOST_FOREACH(InfoTree dialog, root.children_named("dialog"))
+	for (const InfoTree &dialog : root.children_named("dialog"))
 	{
 		int16 index;
 		if (!dialog.read_indexed("index", index, number_of_dialog_sounds()))
@@ -1429,7 +1436,7 @@ void parse_mml_sounds(const InfoTree& root)
 	}
 	
 	// external sounds: set or clear in order
-	BOOST_FOREACH(const InfoTree::value_type &v, root)
+	for (const InfoTree::value_type &v : root)
 	{
 		std::string name = v.first;
 		if (name == "sound_clear")

@@ -70,6 +70,12 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
 
+/* ${desc_miniupnpc} enabled */
+#define HAVE_MINIUPNPC 1
+
+/* Define to 1 if you have the <miniupnpc/miniupnpc.h> header file. */
+#define HAVE_MINIUPNPC_MINIUPNPC_H 1
+
 /* OpenGL support enabled */
 #define HAVE_OPENGL 1
 

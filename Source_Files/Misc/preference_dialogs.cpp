@@ -25,6 +25,7 @@
 #include "OGL_Setup.h"
 #include "screen.h"
 
+#include <functional>
 #include <sstream>
 
 class TexQualityPref : public Bindable<int>
@@ -186,8 +187,8 @@ OpenGLDialog::~OpenGLDialog()
 
 void OpenGLDialog::OpenGLPrefsByRunning()
 {
-	m_cancelWidget->set_callback(boost::bind(&OpenGLDialog::Stop, this, false));
-	m_okWidget->set_callback(boost::bind(&OpenGLDialog::Stop, this, true));
+	m_cancelWidget->set_callback(std::bind(&OpenGLDialog::Stop, this, false));
+	m_okWidget->set_callback(std::bind(&OpenGLDialog::Stop, this, true));
 
 	BinderSet binders;
 

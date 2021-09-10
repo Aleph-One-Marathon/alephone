@@ -2745,38 +2745,37 @@ static void controls_dialog(void *arg)
 	table_placer *other_menu = new table_placer(2, get_theme_space(ITEM_WIDGET), false);
 	other_menu->col_flags(0, placeable::kAlignRight);
 	other_menu->col_flags(1, placeable::kAlignLeft);
-	std::vector<std::string> menu_shortcuts = {
-		"N",
-		"新規ゲーム開始",
+	std::vector<std::string> menu_shortcuts = { "N",
+												"新規ゲーム開始",
 #if (defined(__APPLE__) && defined(__MACH__))
-		"Cmd-Option-N",
-		"レベル選択",
+												"Cmd-Option-N",
+												"レベル選択",
 #else
-		"Ctrl+Shift+N",
-		"レベル選択",
+												"Ctrl+Shift+N",
+												"レベル選択",
 #endif
-		"O",
-		"保存したゲームを再開",
-		"G",
-		"ネットワークゲーム集合",
-		"J",
-		"ネットワークゲーム参加",
-		"R",
-		"保存した映画の再生",
-		"P",
-		"環境設定",
-		"Q",
-		"終了",
-		"C",
-		"シナリオクレジット",
-		"A",
-		"Aleph Oneについて",
+												"O",
+												"保存したゲームを再開",
+												"G",
+												"ネットワークゲーム集合",
+												"J",
+												"ネットワークゲーム参加",
+												"R",
+												"保存した映画の再生",
+												"P",
+												"環境設定",
+												"Q",
+												"終了",
+												"C",
+												"シナリオクレジット",
+												"A",
+												"Aleph Oneについて",
 #if (defined(__APPLE__) && defined(__MACH__))
-		"Cmd-Return",
-		"フルスクリーン切り替え",
+												"Cmd-Return",
+												"フルスクリーン切り替え",
 #else
-		"Alt+Enter",
-		"フルスクリーン切り替え",
+												"Alt+Enter",
+												"フルスクリーン切り替え",
 #endif
 	};
 	for (auto it = menu_shortcuts.begin(); it != menu_shortcuts.end(); ++it)
@@ -2788,30 +2787,29 @@ static void controls_dialog(void *arg)
 	table_placer *other_game = new table_placer(2, get_theme_space(ITEM_WIDGET), false);
 	other_game->col_flags(0, placeable::kAlignRight);
 	other_game->col_flags(1, placeable::kAlignLeft);
-	std::vector<std::string> game_shortcuts = {
-		"F1",
-		"解像度を下げる",
-		"F2",
-		"解像度を上げる",
-		"F8",
-		"クロスヘアー",
-		"F9",
-		"スクリーンショット",
-		"F10",
-		"デバッグ情報",
-		"F11",
-		"明るさを下げる",
-		"F12",
-		"明るさを上げる",
+	std::vector<std::string> game_shortcuts = { "F1",
+												"解像度を下げる",
+												"F2",
+												"解像度を上げる",
+												"F8",
+												"クロスヘアー",
+												"F9",
+												"スクリーンショット",
+												"F10",
+												"デバッグ情報",
+												"F11",
+												"明るさを下げる",
+												"F12",
+												"明るさを上げる",
 #if (defined(__APPLE__) && defined(__MACH__))
-		"Cmd-Return",
-		"フルスクリーン切り替え",
+												"Cmd-Return",
+												"フルスクリーン切り替え",
 #else
-		"Alt+Enter",
-		"フルスクリーン切り替え",
+												"Alt+Enter",
+												"フルスクリーン切り替え",
 #endif
-		"Escape",
-		"ゲーム終了"
+												"Escape",
+												"ゲーム終了"
 	};
 	for (auto it = game_shortcuts.begin(); it != game_shortcuts.end(); ++it)
 	{
@@ -3388,19 +3386,19 @@ void read_preferences()
 			else if (version > A1_DATE_VERSION)
 				logWarning("Reading newer preferences of version %s. Preferences will be downgraded to version %s when saved. (%s)", version.c_str(), A1_DATE_VERSION, FileSpec.GetPath());
 
-			BOOST_FOREACH (InfoTree child, root.children_named("graphics"))
+			for (const InfoTree &child : root.children_named("graphics"))
 				parse_graphics_preferences(child, version);
-			BOOST_FOREACH (InfoTree child, root.children_named("player"))
+			for (const InfoTree &child : root.children_named("player"))
 				parse_player_preferences(child, version);
-			BOOST_FOREACH (InfoTree child, root.children_named("input"))
+			for (const InfoTree &child : root.children_named("input"))
 				parse_input_preferences(child, version);
-			BOOST_FOREACH (InfoTree child, root.children_named("sound"))
+			for (const InfoTree &child : root.children_named("sound"))
 				parse_sound_preferences(child, version);
 #if !defined(DISABLE_NETWORKING)
-			BOOST_FOREACH (InfoTree child, root.children_named("network"))
+			for (const InfoTree &child : root.children_named("network"))
 				parse_network_preferences(child, version);
 #endif
-			BOOST_FOREACH (InfoTree child, root.children_named("environment"))
+			for (const InfoTree &child : root.children_named("environment"))
 				parse_environment_preferences(child, version);
 		}
 		catch (InfoTree::parse_error ex)
@@ -3782,7 +3780,7 @@ InfoTree input_preferences_tree()
 			name = binding_shell_action_name[i - NUMBER_OF_KEYS];
 		}
 
-		BOOST_FOREACH (const SDL_Scancode &code, codeset)
+		for (const SDL_Scancode &code : codeset)
 		{
 			if (code == SDL_SCANCODE_UNKNOWN)
 				continue;
@@ -4478,17 +4476,17 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 
 	root.read_attr("scripted_effects_quality", graphics_preferences->ephemera_quality);
 
-	BOOST_FOREACH (InfoTree vtree, root.children_named("void"))
+	for (const InfoTree &vtree : root.children_named("void"))
 	{
-		BOOST_FOREACH (InfoTree color, vtree.children_named("color"))
+		for (const InfoTree &color : vtree.children_named("color"))
 		{
 			color.read_color(graphics_preferences->OGL_Configure.VoidColor);
 		}
 	}
 
-	BOOST_FOREACH (InfoTree landscape, root.children_named("landscapes"))
+	for (const InfoTree &landscape : root.children_named("landscapes"))
 	{
-		BOOST_FOREACH (InfoTree color, root.children_named("color"))
+		for (const InfoTree &color : root.children_named("color"))
 		{
 			int16 index;
 			if (color.read_indexed("index", index, 8))
@@ -4496,7 +4494,7 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 		}
 	}
 
-	BOOST_FOREACH (InfoTree tex, root.children_named("texture"))
+	for (const InfoTree &tex : root.children_named("texture"))
 	{
 		int16 index;
 		if (tex.read_indexed("index", index, OGL_NUMBER_OF_TEXTURE_TYPES + 1))
@@ -4521,7 +4519,7 @@ void parse_player_preferences(InfoTree root, std::string version)
 	root.read_attr("bkgd_music", player_preferences->background_music_on);
 	root.read_attr("crosshairs_active", player_preferences->crosshairs_active);
 
-	BOOST_FOREACH (InfoTree child, root.children_named("chase_cam"))
+	for (const InfoTree &child : root.children_named("chase_cam"))
 	{
 		child.read_attr("behind", player_preferences->ChaseCam.Behind);
 		child.read_attr("upward", player_preferences->ChaseCam.Upward);
@@ -4532,7 +4530,7 @@ void parse_player_preferences(InfoTree root, std::string version)
 		child.read_attr("opacity", player_preferences->ChaseCam.Opacity);
 	}
 
-	BOOST_FOREACH (InfoTree child, root.children_named("crosshairs"))
+	for (const InfoTree &child : root.children_named("crosshairs"))
 	{
 		child.read_attr("thickness", player_preferences->Crosshairs.Thickness);
 		child.read_attr("from_center", player_preferences->Crosshairs.FromCenter);
@@ -4540,7 +4538,7 @@ void parse_player_preferences(InfoTree root, std::string version)
 		child.read_attr("shape", player_preferences->Crosshairs.Shape);
 		child.read_attr("opacity", player_preferences->Crosshairs.Opacity);
 
-		BOOST_FOREACH (InfoTree color, child.children_named("color"))
+		for (const InfoTree &color : child.children_named("color"))
 			color.read_color(player_preferences->Crosshairs.Color);
 	}
 }
@@ -4690,7 +4688,7 @@ void parse_input_preferences(InfoTree root, std::string version)
 	std::set<std::pair<BindingType, int>> seen_key;
 
 	// import old key bindings
-	BOOST_FOREACH (InfoTree key, root.children_named("sdl_key"))
+	for (const InfoTree &key : root.children_named("sdl_key"))
 	{
 		int16 index;
 		if (key.read_indexed("index", index, NUMBER_OF_KEYS))
@@ -4728,7 +4726,7 @@ void parse_input_preferences(InfoTree root, std::string version)
 		}
 	}
 
-	BOOST_FOREACH (InfoTree key, root.children_named("binding"))
+	for (const InfoTree &key : root.children_named("binding"))
 	{
 		std::string action_name, pressed_name;
 		if (key.read_attr("action", action_name) &&
@@ -4873,16 +4871,16 @@ void parse_network_preferences(InfoTree root, std::string version)
 	root.read_attr("join_metaserver_by_default", network_preferences->join_metaserver_by_default);
 	root.read_attr("allow_stats", network_preferences->allow_stats);
 
-	BOOST_FOREACH (InfoTree color, root.children_named("color"))
+	for (const InfoTree &color : root.children_named("color"))
 	{
 		int16 index;
 		if (color.read_indexed("index", index, 2))
 			color.read_color(network_preferences->metaserver_colors[index]);
 	}
 
-	BOOST_FOREACH (InfoTree child, root.children_named("star_protocol"))
+	for (const InfoTree &child : root.children_named("star_protocol"))
 		StarGameProtocol::ParsePreferencesTree(child, version);
-	BOOST_FOREACH (InfoTree child, root.children_named("ring_protocol"))
+	for (const InfoTree &child : root.children_named("ring_protocol"))
 		RingGameProtocol::ParsePreferencesTree(child, version);
 }
 
@@ -4911,8 +4909,7 @@ void parse_environment_preferences(InfoTree root, std::string version)
 		environment_preferences->film_profile = static_cast<FilmProfileType>(profile);
 
 	root.read_attr("maximum_quick_saves", environment_preferences->maximum_quick_saves);
-
-	BOOST_FOREACH (InfoTree plugin, root.children_named("disable_plugin"))
+	for (const InfoTree &plugin : root.children_named("disable_plugin"))
 	{
 		char tempstr[256];
 		if (plugin.read_path("path", tempstr))

@@ -34,7 +34,7 @@ class ExternalSoundHeader : public SoundInfo
 public:
 	ExternalSoundHeader() : SoundInfo() { }
 	~ExternalSoundHeader() { }
-	boost::shared_ptr<SoundData> LoadExternal(FileSpecifier& File);
+	std::shared_ptr<SoundData> LoadExternal(FileSpecifier& File);
 };
 
 struct SoundOptions

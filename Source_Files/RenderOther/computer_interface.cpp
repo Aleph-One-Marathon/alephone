@@ -664,7 +664,7 @@ void enter_computer_interface(
 	next_terminal_group(player_index, terminal_text);
 }
 
-/*  Assumes �t==1 tick */
+/*  Assumes ∂t==1 tick */
 void update_player_for_terminal_mode(
 	short player_index)
 {
@@ -1446,7 +1446,7 @@ static void fill_terminal_with_static(
 
 // LP addition: will return NULL if no terminal data was found for this terminal number
 
-static boost::scoped_ptr<terminal_text_t> resource_terminal;
+static std::unique_ptr<terminal_text_t> resource_terminal;
 static int resource_terminal_id = NONE;
 
 void clear_compiled_terminal_cache()

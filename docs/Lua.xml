@@ -600,6 +600,9 @@
 		<description>type of item</description>
 		<type>item_type</type>
       </variable>
+      <variable name="visible" access="read-only" version="git">
+    <type>boolean</type>
+      </variable>
       <variable name="x" access="read-only">
 		<type>WU</type>
       </variable>
@@ -1218,6 +1221,22 @@
 		<type>boolean</type>
 		<note>this flag doesn’t actually do anything</note>
       </variable>
+      <variable name="maximum_ceiling_height" access="read-only" version="git">
+    <description>greatest height a platform's ceiling can ever rise</description>
+    <type>WU</type>
+      </variable>
+      <variable name="maximum_floor_height" access="read-only" version="git">
+    <description>greatest height a platform's floor can ever rise</description>
+    <type>WU</type>
+      </variable>
+      <variable name="minimum_ceiling_height" access="read-only" version="git">
+    <description>least height a platform's ceiling must rise</description>
+    <type>WU</type>
+      </variable>
+      <variable name="minimum_floor_height" access="read-only" version="git">
+    <description>least height a platform's floor must rise</description>
+    <type>WU</type>
+      </variable>
       <variable name="monster_controllable">
 		<description>whether platform can be controlled by monsters</description>
 		<type>boolean</type>
@@ -1432,6 +1451,9 @@
 		<return><type>polygon</type></return>
 		<note>you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon()</note>
       </function>
+	  <variable name="has_map_open" access="read-only" version="git">
+		<description>whether player has overhead map open</description>
+	  </variable>
       <variable name="head_below_media" access="read-only">
 		<description>whether player is completely below liquid</description>
 		<type>boolean</type>
@@ -1582,6 +1604,9 @@
 		<description>teleports player to level (of course, all the other players will also go to that level)</description>
 		<argument name="level"><type>number</type></argument>
       </function>
+	  <variable name="teleporting" access="read-only" version="git">
+		<description>whether player is teleporting</description>
+	  </variable>
       <subtable name="texture_palette">
 		<description>displays a texture palette instead of the classic HUD</description>
 		<variable name="highlight" access="local-player">

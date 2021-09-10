@@ -17,7 +17,7 @@ libnetwork_a_SOURCES = ConnectPool.h network.h network_audio_shared.h network_ca
   network_sound.h network_speaker_sdl.h network_speex.h network_star.h \
   NetworkGameProtocol.h RingGameProtocol.h SDL_netx.h \
   SSLP_API.h SSLP_Protocol.h StarGameProtocol.h Update.h \
-  HTTP.h \
+  HTTP.h PortForward.h \
   \
   ConnectPool.cpp network.cpp network_capabilities.cpp network_data_formats.cpp \
   network_dialogs.cpp \
@@ -27,13 +27,13 @@ libnetwork_a_SOURCES = ConnectPool.h network.h network_audio_shared.h network_ca
   network_speaker_shared.cpp network_star_hub.cpp network_star_spoke.cpp \
   network_udp.cpp RingGameProtocol.cpp \
   SDL_netx.cpp SSLP_limited.cpp StarGameProtocol.cpp Update.cpp \
-  HTTP.cpp
+  HTTP.cpp PortForward.cpp
 
 EXTRA_libnetwork_a_SOURCES = network_dummy.cpp network_microphone_sdl_win32.cpp network_microphone_coreaudio.cpp network_microphone_sdl_dummy.cpp
 
 AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \
-  -I$(top_srcdir)/Source_Files/LibNAT -I$(top_srcdir)/Source_Files/Network/Metaserver \
+  -I$(top_srcdir)/Source_Files/Network/Metaserver \
   -I$(top_srcdir)/Source_Files/Misc -I$(top_srcdir)/Source_Files/ModelView \
   -I$(top_srcdir)/Source_Files/RenderMain \
   -I$(top_srcdir)/Source_Files/RenderOther -I$(top_srcdir)/Source_Files/Sound \

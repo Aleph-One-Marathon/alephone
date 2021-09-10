@@ -209,7 +209,7 @@ struct weapon_definition {
 	_fixed firing_light_intensity;
 	int16 firing_intensity_decay_ticks;
 
-	/* weapon will come up to FIXED_ONE when fired; idle_height±bob_amplitude should be in
+	/* weapon will come up to FIXED_ONE when fired; idle_heightÂ±bob_amplitude should be in
 		the range [0,FIXED_ONE] */
 	_fixed idle_height, bob_amplitude, kick_height, reload_height;
 	_fixed idle_width, horizontal_amplitude;

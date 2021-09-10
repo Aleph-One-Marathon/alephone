@@ -29,7 +29,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 
 #ifdef HAVE_SDL_IMAGE
-#include <SDL_image.h>
+#include <SDL2/SDL_image.h>
 #endif
 #ifdef HAVE_PNG
 #include "IMG_savepng.h"

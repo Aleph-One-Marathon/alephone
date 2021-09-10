@@ -29,10 +29,6 @@
 
 #include "SoundManagerEnums.h"
 
-#include <boost/function.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-
 struct ambient_sound_data;
 
 class SoundMemoryManager;
@@ -184,7 +180,7 @@ private:
 	
 	std::vector<Channel> channels;
 
-	boost::scoped_ptr<SoundFile> sound_file;
+	std::unique_ptr<SoundFile> sound_file;
 	SoundMemoryManager* sounds;
 
 	// buffer sizes

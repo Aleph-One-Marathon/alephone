@@ -23,8 +23,8 @@ DepsDir := cache/.deps
 # --------------
 
 # Parent directories of all headers in the Source_Files tree we want to cover
-# - currently this is just the entire Source_Files tree except Expat
-HeaderDirs := $(sort $(shell find $(SFDir) -type d ! -path $(SFDir)/Expat -print -o -prune))
+# - currently this is just the entire Source_Files tree
+HeaderDirs := $(sort $(shell find $(SFDir) -type d))
 
 # Customized header lists for specific directories (overrides the default '*.h' selection)
 # - format: <dir>-Headers := <non-empty header list>
@@ -45,7 +45,6 @@ HeaderTargets := $(Headers:$(SFDir)/%=%)
 z =
 
 # Include dirs normally specified in AM_CPPFLAGS in .am files and implicitly by Automake
-# - skip conditionally including Expat; only LibNAT/upnp.c #includes expat.h
 AMIncludeDirs := $(top_builddir) $(HeaderDirs)
 
 TestOptions := -x c++ -fsyntax-only -fdiagnostics-color

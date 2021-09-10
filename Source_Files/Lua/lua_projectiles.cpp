@@ -33,7 +33,7 @@ LUA_MONSTERS.CPP
 #include "player.h"
 #include "projectiles.h"
 
-#include <boost/bind.hpp>
+#include <functional>
 
 #define DONT_REPEAT_DEFINITIONS
 #include "projectile_definitions.h"
@@ -414,7 +414,7 @@ int Lua_Projectiles_register(lua_State *L)
 	Lua_Projectile::Valid = Lua_Projectile_Valid;
 
 	Lua_Projectiles::Register(L, Lua_Projectiles_Methods);
-	Lua_Projectiles::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_projectiles);
+	Lua_Projectiles::Length = std::bind(get_dynamic_limit, (int) _dynamic_limit_projectiles);
 
 	Lua_ProjectileType::Register(L, Lua_ProjectileType_Get, 0, 0, Lua_ProjectileType_Mnemonics);
 	Lua_ProjectileType::Valid = Lua_ProjectileType_Valid;

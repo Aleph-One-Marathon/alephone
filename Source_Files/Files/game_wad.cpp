@@ -959,36 +959,43 @@ void load_sides(
 {
 	size_t loop;
 
-	bool reserved_side_flag = false;
-	
 	// assert(count>=0 && count<=MAXIMUM_SIDES_PER_MAP);
 
 	unpack_side_data(sides,map_sides,count);
 
-	for(loop=0; loop<count; ++loop)
-	{
-		// whatever editor created Siege of Nor'Khor left all kinds of unused
-		// side flags set; try to detect them and clear them out
-		if (map_sides[loop].flags & _reserved_side_flag)
-		{
-			reserved_side_flag = true;
-		}
-		
-		if(version==MARATHON_ONE_DATA_VERSION)
-		{
-			map_sides[loop].transparent_texture.texture= UNONE;
-			map_sides[loop].ambient_delta= 0;
-			map_sides[loop].flags |= _side_item_is_optional;
-		}
-		++sides;
-	}
-
-	if (reserved_side_flag)
+	if (version == MARATHON_ONE_DATA_VERSION)
 	{
 		for (loop = 0; loop < count; ++loop)
 		{
-			static constexpr int m2_side_flags_mask = 0x007f;
-			map_sides[loop].flags &= m2_side_flags_mask;
+			// some editors set unused flags; clear them out
+			static constexpr int m1_side_flags_mask = 0x0007;
+			
+			map_sides[loop].transparent_texture.texture= UNONE;
+			map_sides[loop].ambient_delta= 0;
+			map_sides[loop].flags &= m1_side_flags_mask;
+			map_sides[loop].flags |= _side_item_is_optional;
+		}
+	}
+	else
+	{
+		bool editor_set_unused_flags = false;
+		for (loop = 0; loop < count; ++loop)
+		{
+			// some editors set unused flags; clear them out
+			if (map_sides[loop].flags & _reserved_side_flag)
+			{
+				editor_set_unused_flags = true;
+				break;
+			}
+		}
+			
+		if (editor_set_unused_flags)
+		{
+			for (loop = 0; loop < count; ++loop)
+			{
+				static constexpr int m2_side_flags_mask = 0x007f;
+				map_sides[loop].flags &= m2_side_flags_mask;
+			}
 		}
 	}
 
@@ -1229,7 +1236,7 @@ bool load_game_from_file(FileSpecifier& File, bool run_scripts)
 			set_map_file(map_parent, false);
 		else
 		{
-			/* Tell the user theyÕre screwed when they try to leave this level. */
+			/* Tell the user they’re screwed when they try to leave this level. */
 			alert_user(infoError, strERRORS, cantFindMap, 0);
 
 			// LP addition: makes the game look normal
@@ -1642,7 +1649,7 @@ bool process_map_wad(
 			load_lights(data, count, version);
 		}
 
-		//	HACK!!!!!!!!!!!!!!! vulcan doesnÕt NONE .first_object field after adding scenery
+		//	HACK!!!!!!!!!!!!!!! vulcan doesn’t NONE .first_object field after adding scenery
 		{
 			for (count= 0; count<static_cast<size_t>(dynamic_world->polygon_count); ++count)
 			{

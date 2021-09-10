@@ -34,8 +34,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <SDL.h>
-#include <SDL_thread.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_thread.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -44,6 +44,7 @@ extern "C"
 #include "libavformat/avformat.h"
 #include "libavutil/mathematics.h"
 #include "libswscale/swscale.h"
+#include "libswresample/swresample.h"
 #ifdef __cplusplus
 }
 #endif
@@ -60,21 +61,6 @@ extern "C"
 #ifndef INT64_C
 #define INT64_C(i) i
 #endif
-#endif
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-// Use audio conversion from Movie.cpp
-extern int convert_audio(int in_samples, int in_channels, int in_stride,
-                  enum AVSampleFormat in_fmt, const uint8_t *in_buf,
-                  int out_samples, int out_channels, int out_stride,
-                  enum AVSampleFormat out_fmt, uint8_t *out_buf);
-
-#ifdef __cplusplus
-}
 #endif
 
 
@@ -141,8 +127,6 @@ struct SwsContext* getContext( SDL_ffmpegConversionContext **context, int inWidt
 
     return ctx->context;
 }
-
-uint32_t SDL_ffmpegInitWasCalled = 0;
 
 /* error handling */
 char SDL_ffmpegErrorMessage[ 512 ];
@@ -222,24 +206,6 @@ SDL_ffmpegFile* SDL_ffmpegCreateFile()
 */
 
 
-/** \brief  Initializes the SDL_ffmpeg library
-
-            This is done automatically when using SDL_ffmpegOpen or
-            SDL_ffmpegCreateFile. This means that it is usualy unnescecairy
-            to explicitly call this function
-*/
-void SDL_ffmpegInit()
-{
-    /* register all codecs */
-    if ( !SDL_ffmpegInitWasCalled )
-    {
-        SDL_ffmpegInitWasCalled = 1;
-
-        avcodec_register_all();
-        av_register_all();
-    }
-}
-
 /** \brief  Use this to free an SDL_ffmpegFile.
 
             This function stops the decoding thread if needed
@@ -273,9 +239,7 @@ void SDL_ffmpegFree( SDL_ffmpegFile *file )
 
             old->buffer = old->buffer->next;
 
-            av_free_packet( pack->data );
-
-            av_free( pack->data );
+            av_packet_free( &pack->data );
 
             free( pack );
         }
@@ -293,7 +257,7 @@ void SDL_ffmpegFree( SDL_ffmpegFile *file )
 
         av_free( old->decodeFrame );
 
-        if ( old->_ffmpeg ) avcodec_close( old->_ffmpeg->codec );
+        if ( old->_ctx) avcodec_free_context( &old->_ctx );
 
         free( old );
     }
@@ -313,16 +277,16 @@ void SDL_ffmpegFree( SDL_ffmpegFile *file )
 
             old->buffer = old->buffer->next;
 
-            av_free_packet( pack->data );
-
-            av_free( pack->data );
+            av_packet_free( &pack->data );
 
             free( pack );
         }
 
         av_free( old->sampleBuffer );
 
-        if ( old->_ffmpeg ) avcodec_close( old->_ffmpeg->codec );
+        if ( old->_ctx) avcodec_free_context( &old->_ctx );
+
+        if (old->swr_context) swr_free(&old->swr_context);
 
         free( old );
     }
@@ -391,8 +355,6 @@ void SDL_ffmpegFreeVideoFrame( SDL_ffmpegVideoFrame* frame )
 */
 SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
 {
-    SDL_ffmpegInit();
-
     /* open new ffmpegFile */
     SDL_ffmpegFile *file = SDL_ffmpegCreateFile();
     if ( !file ) return 0;
@@ -426,7 +388,7 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
         /* disable all streams by default */
         file->_ffmpeg->streams[i]->discard = AVDISCARD_ALL;
 
-        if ( file->_ffmpeg->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO )
+        if ( file->_ffmpeg->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO )
         {
             /* if this is a packet of the correct type we create a new stream */
             SDL_ffmpegStream* stream = ( SDL_ffmpegStream* )malloc( sizeof( SDL_ffmpegStream ) );
@@ -443,14 +405,17 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
                 stream->_ffmpeg = file->_ffmpeg->streams[i];
 
                 /* get the correct decoder for this stream */
-                AVCodec *codec = avcodec_find_decoder( stream->_ffmpeg->codec->codec_id );
+                AVCodec *codec = avcodec_find_decoder( stream->_ffmpeg->codecpar->codec_id );
 
                 if ( !codec )
                 {
                     free( stream );
                     SDL_ffmpegSetError( "could not find video codec" );
+                    continue;
                 }
-                else if ( avcodec_open2( file->_ffmpeg->streams[i]->codec, codec, NULL ) < 0 )
+                stream->_ctx = avcodec_alloc_context3(codec);
+                if (!stream->_ctx || avcodec_parameters_to_context(stream->_ctx, stream->_ffmpeg->codecpar) < 0 
+                    || avcodec_open2(stream->_ctx, NULL, NULL ) < 0 || avcodec_parameters_from_context(stream->_ffmpeg->codecpar, stream->_ctx) < 0)
                 {
                     free( stream );
                     SDL_ffmpegSetError( "could not open video codec" );
@@ -477,7 +442,7 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
                 }
             }
         }
-        else if ( file->_ffmpeg->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO )
+        else if ( file->_ffmpeg->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO )
         {
             /* if this is a packet of the correct type we create a new stream */
             SDL_ffmpegStream* stream = ( SDL_ffmpegStream* )malloc( sizeof( SDL_ffmpegStream ) );
@@ -494,20 +459,37 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
                 stream->_ffmpeg = file->_ffmpeg->streams[i];
 
                 /* get the correct decoder for this stream */
-                AVCodec *codec = avcodec_find_decoder( file->_ffmpeg->streams[i]->codec->codec_id );
+                AVCodec *codec = avcodec_find_decoder( file->_ffmpeg->streams[i]->codecpar->codec_id );
 
                 if ( !codec )
                 {
                     free( stream );
                     SDL_ffmpegSetError( "could not find audio codec" );
+                    continue;
                 }
-                else if ( avcodec_open2( file->_ffmpeg->streams[i]->codec, codec, NULL ) < 0 )
+                stream->_ctx = avcodec_alloc_context3(codec);
+                if (!stream->_ctx || avcodec_parameters_to_context(stream->_ctx, stream->_ffmpeg->codecpar) < 0 
+                    || avcodec_open2(stream->_ctx, NULL, NULL) < 0 || avcodec_parameters_from_context(stream->_ffmpeg->codecpar, stream->_ctx) < 0)
                 {
                     free( stream );
                     SDL_ffmpegSetError( "could not open audio codec" );
                 }
                 else
                 {
+                    int channel_layout = stream->_ffmpeg->codecpar->channel_layout ? stream->_ffmpeg->codecpar->channel_layout : 
+                        (stream->_ffmpeg->codecpar->channels == 2 ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO);
+
+                    stream->swr_context = swr_alloc_set_opts(stream->swr_context, channel_layout, AV_SAMPLE_FMT_S16,
+                        stream->_ffmpeg->codecpar->sample_rate, channel_layout,
+                        stream->_ffmpeg->codecpar->format, stream->_ffmpeg->codecpar->sample_rate,
+                        0, NULL);
+
+                    if (!stream->swr_context || swr_init(stream->swr_context) < 0) {
+                        free(stream);
+                        SDL_ffmpegSetError("could not initialize resampler");
+                        continue;
+                    }
+
                     stream->mutex = SDL_CreateMutex();
 
                     stream->sampleBuffer = ( int8_t* )av_malloc( AVCODEC_MAX_AUDIO_FRAME_SIZE * sizeof( int16_t ) );
@@ -542,8 +524,6 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
 */
 SDL_ffmpegFile* SDL_ffmpegCreate( const char* filename )
 {
-    SDL_ffmpegInit();
-
     SDL_ffmpegFile *file = SDL_ffmpegCreateFile();
 
     file->_ffmpeg = avformat_alloc_context();
@@ -780,7 +760,7 @@ SDL_ffmpegAudioFrame* SDL_ffmpegCreateAudioFrame( SDL_ffmpegFile *file, uint32_t
 
     if ( file->type == SDL_ffmpegOutputStream )
     {
-        bytes = file->audioStream->encodeAudioInputSize * 2 * file->audioStream->_ffmpeg->codec->channels;
+        bytes = file->audioStream->encodeAudioInputSize * 2 * file->audioStream->_ctx->channels;
     }
 
     SDL_UnlockMutex( file->streamMutex );
@@ -858,9 +838,7 @@ int SDL_ffmpegGetVideoFrame( SDL_ffmpegFile* file, SDL_ffmpegVideoFrame *frame )
         SDL_ffmpegDecodeVideoFrame( file, pack->data, frame );
 
         /* destroy used packet */
-        av_free_packet( pack->data );
-
-        av_free( pack->data );
+        av_packet_free( &pack->data );
 
         free( pack );
 
@@ -1133,9 +1111,7 @@ int SDL_ffmpegFlush( SDL_ffmpegFile *file )
 
             pack = pack->next;
 
-            av_free_packet( old->data );
-
-            av_free( old->data );
+            av_packet_free( &old->data );
 
             free( old );
         }
@@ -1145,7 +1121,7 @@ int SDL_ffmpegFlush( SDL_ffmpegFile *file )
         /* flush internal ffmpeg buffers */
         if ( file->audioStream->_ffmpeg )
         {
-            avcodec_flush_buffers( file->audioStream->_ffmpeg->codec );
+            avcodec_flush_buffers( file->audioStream->_ctx );
         }
 
         SDL_UnlockMutex( file->audioStream->mutex );
@@ -1164,9 +1140,7 @@ int SDL_ffmpegFlush( SDL_ffmpegFile *file )
 
             pack = pack->next;
 
-            av_free_packet( old->data );
-
-            av_free( old->data );
+            av_packet_free( &old->data );
 
             free( old );
         }
@@ -1174,7 +1148,7 @@ int SDL_ffmpegFlush( SDL_ffmpegFile *file )
         file->videoStream->buffer = 0;
 
         /* flush internal ffmpeg buffers */
-        if ( file->videoStream->_ffmpeg ) avcodec_flush_buffers( file->videoStream->_ffmpeg->codec );
+        if ( file->videoStream->_ffmpeg ) avcodec_flush_buffers( file->videoStream->_ctx );
 
         SDL_UnlockMutex( file->videoStream->mutex );
     }
@@ -1235,9 +1209,7 @@ int SDL_ffmpegGetAudioFrame( SDL_ffmpegFile *file, SDL_ffmpegAudioFrame *frame )
     while ( pack && SDL_ffmpegDecodeAudioFrame( file, pack->data, frame ) )
     {
         /* destroy used packet */
-        av_free_packet( pack->data );
-
-        av_free( pack->data );
+        av_packet_free( &pack->data );
 
         free( pack );
 
@@ -1322,7 +1294,7 @@ int64_t SDL_ffmpegGetPosition( SDL_ffmpegFile *file )
 */
 float SDL_ffmpegGetFrameRate( SDL_ffmpegStream *stream, int *nominator, int *denominator )
 {
-    if ( stream && stream->_ffmpeg && stream->_ffmpeg->codec )
+    if ( stream && stream->_ctx )
     {
         AVRational frate;
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(55,12,100)
@@ -1381,8 +1353,8 @@ SDL_AudioSpec SDL_ffmpegGetAudioSpec( SDL_ffmpegFile *file, uint16_t samples, SD
         spec.samples = samples;
         spec.userdata = file;
         spec.callback = callback;
-        spec.freq = file->audioStream->_ffmpeg->codec->sample_rate;
-        spec.channels = ( uint8_t )file->audioStream->_ffmpeg->codec->channels;
+        spec.freq = file->audioStream->_ctx->sample_rate;
+        spec.channels = ( uint8_t )file->audioStream->_ctx->channels;
     }
     else
     {
@@ -1449,7 +1421,7 @@ uint64_t SDL_ffmpegAudioDuration( SDL_ffmpegFile *file )
         }
         else if ( file->type == SDL_ffmpegOutputStream )
         {
-            duration = file->audioStream->frameCount * file->audioStream->encodeAudioInputSize / ( file->audioStream->_ffmpeg->codec->sample_rate / 1000 );
+            duration = file->audioStream->frameCount * file->audioStream->encodeAudioInputSize / ( file->audioStream->_ctx->sample_rate / 1000 );
         }
     }
     else
@@ -1486,7 +1458,7 @@ uint64_t SDL_ffmpegVideoDuration( SDL_ffmpegFile *file )
         }
         else if ( file->type == SDL_ffmpegOutputStream )
         {
-            duration = av_rescale( 1000 * file->videoStream->frameCount, file->videoStream->_ffmpeg->codec->time_base.num, file->videoStream->_ffmpeg->codec->time_base.den );
+            duration = av_rescale( 1000 * file->videoStream->frameCount, file->videoStream->_ctx->time_base.num, file->videoStream->_ctx->time_base.den );
         }
     }
     else
@@ -1523,8 +1495,8 @@ int SDL_ffmpegGetVideoSize( SDL_ffmpegFile *file, int *w, int *h )
        by checking the return value you can check if you got a valid size */
     if ( file->videoStream )
     {
-        *w = file->videoStream->_ffmpeg->codec->width;
-        *h = file->videoStream->_ffmpeg->codec->height;
+        *w = file->videoStream->_ctx->width;
+        *h = file->videoStream->_ctx->height;
 
         SDL_UnlockMutex( file->streamMutex );
 
@@ -1876,10 +1848,9 @@ int SDL_ffmpegGetPacket( SDL_ffmpegFile *file )
     /* entering this function, streamMutex should have been locked */
 
     /* create a packet for our data */
-    AVPacket *pack = ( AVPacket* )av_malloc( sizeof( AVPacket ) );
+    AVPacket *pack = av_packet_alloc();
 
-    /* initialize packet */
-    av_init_packet( pack );
+    if (!pack) return 0;
 
     /* read a packet from the file */
     int decode = av_read_frame( file->_ffmpeg, pack );
@@ -1887,7 +1858,7 @@ int SDL_ffmpegGetPacket( SDL_ffmpegFile *file )
     /* if we did not get a packet, we probably reached the end of the file */
     if ( decode < 0 )
     {
-        av_free( pack );
+        av_packet_free( &pack );
 
         /* signal EOF */
         return 1;
@@ -1895,56 +1866,47 @@ int SDL_ffmpegGetPacket( SDL_ffmpegFile *file )
 
     /* we got a packet, lets handle it */
 
-    /* try to allocate the packet */
-    if ( av_dup_packet( pack ) )
+    /* If it's a packet from either of our streams, return it */
+    if ( file->audioStream && pack->stream_index == file->audioStream->id )
     {
-        /* error allocating packet */
-        av_free_packet( pack );
-    }
-    else
-    {
-        /* If it's a packet from either of our streams, return it */
-        if ( file->audioStream && pack->stream_index == file->audioStream->id )
+        /* prepare packet */
+        SDL_ffmpegPacket *temp = ( SDL_ffmpegPacket* )malloc( sizeof( SDL_ffmpegPacket ) );
+        // TODO check and handle the case where temp failed to malloc
+        temp->data = pack;
+        temp->next = 0;
+
+        SDL_ffmpegPacket **p = &file->audioStream->buffer;
+
+        while ( *p )
         {
-            /* prepare packet */
-            SDL_ffmpegPacket *temp = ( SDL_ffmpegPacket* )malloc( sizeof( SDL_ffmpegPacket ) );
-            // TODO check and handle the case where temp failed to malloc
-            temp->data = pack;
-            temp->next = 0;
-
-            SDL_ffmpegPacket **p = &file->audioStream->buffer;
-
-            while ( *p )
-            {
-                p = &( *p )->next;
-            }
-
-            *p = temp;
+            p = &( *p )->next;
         }
-        else if ( file->videoStream && pack->stream_index == file->videoStream->id )
-        {
-            /* prepare packet */
-            SDL_ffmpegPacket *temp = ( SDL_ffmpegPacket* )malloc( sizeof( SDL_ffmpegPacket ) );
-            temp->data = pack;
-            temp->next = 0;
+
+        *p = temp;
+    }
+    else if ( file->videoStream && pack->stream_index == file->videoStream->id )
+    {
+        /* prepare packet */
+        SDL_ffmpegPacket *temp = ( SDL_ffmpegPacket* )malloc( sizeof( SDL_ffmpegPacket ) );
+        temp->data = pack;
+        temp->next = 0;
 
 //            SDL_LockMutex( file->videoStream->mutex );
 
-            SDL_ffmpegPacket **p = &file->videoStream->buffer;
+        SDL_ffmpegPacket **p = &file->videoStream->buffer;
 
-            while ( *p )
-            {
-                p = &( *p )->next;
-            }
+        while ( *p )
+        {
+            p = &( *p )->next;
+        }
 
-            *p = temp;
+        *p = temp;
 
 //            SDL_UnlockMutex( file->videoStream->mutex );
-        }
-        else
-        {
-            av_free_packet( pack );
-        }
+    }
+    else
+    {
+        av_packet_unref( pack );
     }
 
     return 0;
@@ -1992,15 +1954,11 @@ SDL_ffmpegPacket* SDL_ffmpegGetVideoPacket( SDL_ffmpegFile *file )
 
 int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpegAudioFrame *frame )
 {
-    uint8_t *data = pack->data;
-    int size = pack->size;
     int audioSize = AVCODEC_MAX_AUDIO_FRAME_SIZE * sizeof( int16_t );
 
-    int channels = file->audioStream->_ffmpeg->codec->channels;
-    enum AVSampleFormat in_fmt = file->audioStream->_ffmpeg->codec->sample_fmt;
-    int in_bps = av_get_bytes_per_sample(in_fmt);
-    enum AVSampleFormat out_fmt = AV_SAMPLE_FMT_S16;
-    int out_bps = av_get_bytes_per_sample(out_fmt);
+    int channels = file->audioStream->_ctx->channels;
+    enum AVSampleFormat format = AV_SAMPLE_FMT_S16;
+    int bps = av_get_bytes_per_sample(format);
 
     /* check if there is still data in the buffer */
     if ( file->audioStream->sampleBufferSize )
@@ -2012,39 +1970,35 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
         int fs = frame->capacity - frame->size;
 
         /* check the amount of data which needs to be copied */
-        int in_samples = file->audioStream->sampleBufferSize / (channels * in_bps);
-        int out_samples = fs / (channels * out_bps);
+        int in_samples = file->audioStream->sampleBufferSize / (channels * bps);
+        int out_samples = fs / (channels * bps);
         
         if (out_samples < in_samples)
         {
             /* copy data from sampleBuffer into frame buffer until frame buffer is full */
-            int written = convert_audio(out_samples, channels, file->audioStream->sampleBufferStride,
-                                        in_fmt, (uint8_t *)(file->audioStream->sampleBuffer + file->audioStream->sampleBufferOffset),
-                                        out_samples, channels, -1,
-                                        out_fmt, frame->buffer + frame->size);
+            int size = out_samples * channels * bps;
+            memcpy(frame->buffer + frame->size, file->audioStream->sampleBuffer + file->audioStream->sampleBufferOffset, size);
             
             /* mark the amount of bytes still in the buffer */
-            file->audioStream->sampleBufferSize -= out_samples * channels * in_bps;
+            file->audioStream->sampleBufferSize -= out_samples * channels * bps;
 
             /* move offset accordingly */
-            if (av_sample_fmt_is_planar(in_fmt))
-                file->audioStream->sampleBufferOffset += out_samples * in_bps;
+            if (av_sample_fmt_is_planar(format))
+                file->audioStream->sampleBufferOffset += out_samples * bps;
             else
-                file->audioStream->sampleBufferOffset += out_samples * in_bps * channels;
+                file->audioStream->sampleBufferOffset += out_samples * bps * channels;
 
             /* update framesize */
-            frame->size += written;
+            frame->size += size;
         }
         else
         {
             /* copy data from sampleBuffer into frame buffer until sampleBuffer is empty */
-            int written = convert_audio(in_samples, channels, file->audioStream->sampleBufferStride,
-                                        in_fmt, (uint8_t *)(file->audioStream->sampleBuffer + file->audioStream->sampleBufferOffset),
-                                        in_samples, channels, -1,
-                                        out_fmt, frame->buffer + frame->size);
+            int size = in_samples * channels * bps;
+            memcpy(frame->buffer + frame->size, file->audioStream->sampleBuffer + file->audioStream->sampleBufferOffset, size);
 
             /* update framesize */
-            frame->size += written;
+            frame->size += size;
 
             /* at this point, samplebuffer should have been handled */
             file->audioStream->sampleBufferSize = 0;
@@ -2061,116 +2015,122 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
     /* calculate pts to determine wheter or not this frame should be stored */
     file->audioStream->sampleBufferTime = av_rescale(( pack->dts - file->audioStream->_ffmpeg->start_time ) * 1000, file->audioStream->_ffmpeg->time_base.num, file->audioStream->_ffmpeg->time_base.den );
 
-    while ( size > 0 )
-    {
-        /* Decode the packet */
-        AVCodecContext *avctx = file->audioStream->_ffmpeg->codec;
+    /* Decode the packet */
+    AVCodecContext *avctx = file->audioStream->_ctx;
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
-		AVFrame *dframe = avcodec_alloc_frame();
-        avcodec_get_frame_defaults(dframe);
+	AVFrame *dframe = avcodec_alloc_frame();
+    avcodec_get_frame_defaults(dframe);
 #else
-		AVFrame *dframe = av_frame_alloc();
+	AVFrame *dframe = av_frame_alloc();
 #endif
-        int got_frame = 0;
-        int len = avcodec_decode_audio4( avctx, dframe, &got_frame, pack );
+    int len = avcodec_send_packet( avctx, pack );
         
-        if (len < 0 || !got_frame)
+    if (len < 0)
+    {
+        SDL_ffmpegSetError( "error decoding audio frame" );
+        return 0;
+    }
+
+    AVFrame* convertedFrame = av_frame_alloc();
+
+    while (avcodec_receive_frame(avctx, dframe) == 0) {
+
+        convertedFrame->nb_samples = dframe->nb_samples;
+        convertedFrame->channel_layout = dframe->channel_layout;
+        convertedFrame->sample_rate = dframe->sample_rate;
+        convertedFrame->format = AV_SAMPLE_FMT_S16;
+
+        if (swr_convert_frame(file->audioStream->swr_context, convertedFrame, dframe) < 0)
         {
-            SDL_ffmpegSetError( "error decoding audio frame" );
+            SDL_ffmpegSetError("can't convert audio frame");
             break;
         }
-        
-        int planar = av_sample_fmt_is_planar( avctx->sample_fmt );
+
+        int planar = av_sample_fmt_is_planar(convertedFrame->format);
         int plane_size;
-        int data_size = av_samples_get_buffer_size( &plane_size, avctx->channels, dframe->nb_samples, avctx->sample_fmt, 1 );
-        if ( data_size > 10000 )
+
+        int data_size = av_samples_get_buffer_size(&plane_size, convertedFrame->channels, convertedFrame->nb_samples, convertedFrame->format, 1);
+        if (data_size > 10000)
         {
-            SDL_ffmpegSetError( "too much data in decoded audio frame" );
+            SDL_ffmpegSetError("too much data in decoded audio frame");
             break;
         }
-        memcpy( file->audioStream->sampleBuffer, dframe->extended_data[0], plane_size );
+
+        memcpy(file->audioStream->sampleBuffer, convertedFrame->extended_data[0], plane_size);
         audioSize = plane_size;
-        if ( planar && avctx->channels > 1 )
+        if (planar && convertedFrame->channels > 1)
         {
-            int8_t *out = file->audioStream->sampleBuffer + plane_size;
+            int8_t* out = file->audioStream->sampleBuffer + plane_size;
             int ch;
-            for ( ch = 1; ch < avctx->channels; ch++ )
+            for (ch = 1; ch < convertedFrame->channels; ch++)
             {
-                memcpy( out, dframe->extended_data[ch], plane_size );
+                memcpy(out, convertedFrame->extended_data[ch], plane_size);
                 out += plane_size;
                 audioSize += plane_size;
             }
         }
 
-        /* change pointers */
-        data += len;
-        size -= len;
-    }
-
-    {
-        /* set new pts */
-        if ( !frame->size ) frame->pts = file->audioStream->sampleBufferTime;
-
-        /* save stride of data we just grabbed */
-        file->audioStream->sampleBufferStride = audioSize / channels;
-        
-        /* room in frame */
-        int fs = frame->capacity - frame->size;
-
-        /* check if there is room at all */
-        if ( fs )
         {
-            /* check the amount of data which needs to be copied */
-            int in_samples = audioSize / (channels * in_bps);
-            int out_samples = fs / (channels * out_bps);
-            
-            if (out_samples < in_samples)
+            /* set new pts */
+            if (!frame->size) frame->pts = file->audioStream->sampleBufferTime;
+
+            /* room in frame */
+            int fs = frame->capacity - frame->size;
+
+            /* check if there is room at all */
+            if (fs)
             {
-                /* copy data from sampleBuffer into frame buffer until frame buffer is full */
-                int written = convert_audio(out_samples, channels, file->audioStream->sampleBufferStride,
-                                            in_fmt, (uint8_t *)(file->audioStream->sampleBuffer),
-                                            out_samples, channels, -1,
-                                            out_fmt, frame->buffer + frame->size);
+                /* check the amount of data which needs to be copied */
+                int in_samples = audioSize / (channels * bps);
+                int out_samples = fs / (channels * bps);
 
-                /* mark the amount of bytes still in the buffer */
-                file->audioStream->sampleBufferSize = ((in_samples - out_samples) * channels * in_bps);
+                if (out_samples < in_samples)
+                {
+                    /* copy data from sampleBuffer into frame buffer until frame buffer is full */
+                    int size = out_samples * channels * bps;
+                    memcpy(frame->buffer + frame->size, file->audioStream->sampleBuffer, size);
 
-                /* set the offset so the remaining data can be found */
-                if (av_sample_fmt_is_planar(in_fmt))
-                    file->audioStream->sampleBufferOffset = out_samples * in_bps;
+                    /* mark the amount of bytes still in the buffer */
+                    file->audioStream->sampleBufferSize = ((in_samples - out_samples) * channels * bps);
+
+                    /* set the offset so the remaining data can be found */
+                    if (av_sample_fmt_is_planar(format))
+                        file->audioStream->sampleBufferOffset = out_samples * bps;
+                    else
+                        file->audioStream->sampleBufferOffset = out_samples * bps * channels;
+
+                    /* update framesize */
+                    frame->size += size;
+                }
                 else
-                    file->audioStream->sampleBufferOffset = out_samples * in_bps * channels;
+                {
+                    /* copy data from sampleBuffer into frame buffer until sampleBuffer is empty */
+                    int size = in_samples * channels * bps;
+                    memcpy(frame->buffer + frame->size, file->audioStream->sampleBuffer, size);
 
-                /* update framesize */
-                frame->size += written;
+                    /* mark the amount of bytes still in the buffer */
+                    file->audioStream->sampleBufferSize = 0;
+
+                    /* reset buffer offset */
+                    file->audioStream->sampleBufferOffset = 0;
+
+                    /* update framesize */
+                    frame->size += size;
+                }
             }
             else
             {
-                /* copy data from sampleBuffer into frame buffer until sampleBuffer is empty */
-                int written = convert_audio(in_samples, channels, file->audioStream->sampleBufferStride,
-                                            in_fmt, (uint8_t *)(file->audioStream->sampleBuffer),
-                                            in_samples, channels, -1,
-                                            out_fmt, frame->buffer + frame->size);
-
-                /* mark the amount of bytes still in the buffer */
-                file->audioStream->sampleBufferSize = 0;
+                /* no room in frame, mark samplebuffer as full */
+                file->audioStream->sampleBufferSize = audioSize;
 
                 /* reset buffer offset */
                 file->audioStream->sampleBufferOffset = 0;
-
-                /* update framesize */
-                frame->size += written;
             }
         }
-        else
-        {
-            /* no room in frame, mark samplebuffer as full */
-            file->audioStream->sampleBufferSize = audioSize;
-
-            /* reset buffer offset */
-            file->audioStream->sampleBufferOffset = 0;
-        }
     }
+
+    av_frame_free(&dframe);
+    av_frame_free(&convertedFrame);
 
     /* pack was used, return 1 */
     return 1;
@@ -2199,7 +2159,10 @@ int SDL_ffmpegDecodeVideoFrame( SDL_ffmpegFile* file, AVPacket *pack, SDL_ffmpeg
 #if ( ( LIBAVCODEC_VERSION_MAJOR <= 52 ) && ( LIBAVCODEC_VERSION_MINOR <= 20 ) )
         avcodec_decode_video( file->videoStream->_ffmpeg->codec, file->videoStream->decodeFrame, &got_frame, pack->data, pack->size );
 #else
-        avcodec_decode_video2( file->videoStream->_ffmpeg->codec, file->videoStream->decodeFrame, &got_frame, pack );
+        if (avcodec_send_packet(file->videoStream->_ctx, pack) == 0)
+        {
+            got_frame = avcodec_receive_frame(file->videoStream->_ctx, file->videoStream->decodeFrame) == 0;
+        }
 #endif
     }
     else
@@ -2209,12 +2172,10 @@ int SDL_ffmpegDecodeVideoFrame( SDL_ffmpegFile* file, AVPacket *pack, SDL_ffmpeg
 #if ( LIBAVCODEC_VERSION_MAJOR <= 52 && LIBAVCODEC_VERSION_MINOR <= 20 )
         avcodec_decode_video( file->videoStream->_ffmpeg->codec, file->videoStream->decodeFrame, &got_frame, 0, 0 );
 #else
-        AVPacket temp;
-        av_init_packet( &temp );
-        temp.data = 0;
-        temp.size = 0;
-        temp.stream_index = file->videoStream->_ffmpeg->index;
-        avcodec_decode_video2( file->videoStream->_ffmpeg->codec, file->videoStream->decodeFrame, &got_frame, &temp );
+        if (avcodec_send_packet(file->videoStream->_ctx, NULL) == 0)
+        {
+            got_frame = avcodec_receive_frame(file->videoStream->_ctx, file->videoStream->decodeFrame) == 0;
+        }
 #endif
     }
 
@@ -2254,29 +2215,29 @@ int SDL_ffmpegDecodeVideoFrame( SDL_ffmpegFile* file, AVPacket *pack, SDL_ffmpeg
             {
                 case 32:
                     sws_scale( getContext( &file->videoStream->conversionContext,
-                                           file->videoStream->_ffmpeg->codec->width,
-                                           file->videoStream->_ffmpeg->codec->height,
-                                           file->videoStream->_ffmpeg->codec->pix_fmt,
+                                           file->videoStream->_ctx->width,
+                                           file->videoStream->_ctx->height,
+                                           file->videoStream->_ctx->pix_fmt,
                                            frame->surface->w, frame->surface->h,
                                            AV_PIX_FMT_RGB32 ),
                                ( const uint8_t* const* )file->videoStream->decodeFrame->data,
                                file->videoStream->decodeFrame->linesize,
                                0,
-                               file->videoStream->_ffmpeg->codec->height,
+                               file->videoStream->_ctx->height,
                                ( uint8_t* const* )&frame->surface->pixels,
                                &pitch );
                     break;
                 case 24:
                     sws_scale( getContext( &file->videoStream->conversionContext,
-                                           file->videoStream->_ffmpeg->codec->width,
-                                           file->videoStream->_ffmpeg->codec->height,
-                                           file->videoStream->_ffmpeg->codec->pix_fmt,
+                                           file->videoStream->_ctx->width,
+                                           file->videoStream->_ctx->height,
+                                           file->videoStream->_ctx->pix_fmt,
                                            frame->surface->w, frame->surface->h,
                                            AV_PIX_FMT_RGB24 ),
                                ( const uint8_t* const* )file->videoStream->decodeFrame->data,
                                file->videoStream->decodeFrame->linesize,
                                0,
-                               file->videoStream->_ffmpeg->codec->height,
+                               file->videoStream->_ctx->height,
                                ( uint8_t* const* )&frame->surface->pixels,
                                &pitch );
                     break;

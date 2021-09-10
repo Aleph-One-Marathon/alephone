@@ -28,7 +28,6 @@
 #include "Logging.h"
 
 #include <algorithm>
-#include <boost/lexical_cast.hpp>
 
 // for CPU count
 #ifdef HAVE_SYSCONF
@@ -83,8 +82,10 @@ extern "C"
 #include "libavcodec/avcodec.h"
 #include "libavutil/mathematics.h"
 #include "libavutil/opt.h"
+#include "libavutil/imgutils.h"
 #include "libavutil/fifo.h"
 #include "libswscale/swscale.h"
+#include "libswresample/swresample.h"
 #ifdef __cplusplus
 }
 #endif
@@ -129,8 +130,8 @@ struct libav_vars {
     AVFrame *audio_frame;
     AVFifoBuffer *audio_fifo;
     uint8_t *audio_data;
-    uint8_t *audio_data_conv;
-    
+    uint8_t **audio_data_conv;
+
     AVFrame *video_frame;
     uint8_t *video_buf;
     int video_bufsize;
@@ -140,165 +141,16 @@ struct libav_vars {
     AVFormatContext *fmt_ctx;
     int video_stream_idx;
     int audio_stream_idx;
-    
+
+    AVCodecContext* video_ctx;
+    AVCodecContext* audio_ctx;
+
     size_t video_counter;
     size_t audio_counter;
+
+    SwrContext* swr_context;
 };
 typedef struct libav_vars libav_vars_t;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int convert_audio(int in_samples, int in_channels, int in_stride,
-                  enum AVSampleFormat in_fmt,
-                  const uint8_t *in_buf,
-                  int out_samples, int out_channels, int out_stride,
-                  enum AVSampleFormat out_fmt,
-                  uint8_t *out_buf)
-{
-    auto clamp_to_int16 = [](float x){ return int16(x < -32768 ? -32768 : x > 32767 ? 32767 : x); };
-    
-    if (in_channels != out_channels)
-        return 0;   // unsupported conversion
-    if (out_samples < in_samples)
-        in_samples = out_samples;
-    
-    int in_bps;
-    switch (in_fmt)
-    {
-        case AV_SAMPLE_FMT_U8:
-            in_bps = 1;
-            break;
-        case AV_SAMPLE_FMT_S16:
-        case AV_SAMPLE_FMT_S16P:
-            in_bps = 2;
-            break;
-        case AV_SAMPLE_FMT_FLT:
-        case AV_SAMPLE_FMT_FLTP:
-            in_bps = 4;
-            break;
-        default:
-            return 0;   // unsupported format
-    }
-    int in_bytes = in_bps * in_samples * in_channels;
-    
-    int out_bps;
-    switch (out_fmt)
-    {
-        case AV_SAMPLE_FMT_S16:
-            out_bps = 2;
-            break;
-        case AV_SAMPLE_FMT_FLT:
-        case AV_SAMPLE_FMT_FLTP:
-            out_bps = 4;
-            break;
-        default:
-            return 0;   // unsupported format
-    }
-    int out_bytes = out_bps * out_samples * out_channels;
-    
-    in_stride = in_stride / in_bps;
-    out_stride = out_stride / out_bps;
-    
-    if (in_fmt == out_fmt)
-    {
-        if (av_sample_fmt_is_planar(in_fmt))
-            for (int c = 0; c < in_channels; c++)
-                memcpy(out_buf + (c * out_stride),
-                       in_buf + (c * in_stride),
-                       in_samples * in_bps);
-        else
-            memcpy(out_buf, in_buf, in_bytes);
-    }
-    else if (in_fmt == AV_SAMPLE_FMT_U8)
-    {
-        const uint8 *ib = reinterpret_cast<const uint8 *>(in_buf);
-        if (out_fmt == AV_SAMPLE_FMT_S16)
-        {
-            int16 *ob = reinterpret_cast<int16 *>(out_buf);
-            for (int i = 0; i < in_samples * in_channels; i++)
-                ob[i] = (ib[i] << 8) + ib[i] - 32768;
-        }
-        else
-            return 0;   // unsupported conversion
-    }
-    else if (in_fmt == AV_SAMPLE_FMT_S16)
-    {
-        const int16 *ib = reinterpret_cast<const int16 *>(in_buf);
-        if (out_fmt == AV_SAMPLE_FMT_FLT)
-        {
-            float *ob = reinterpret_cast<float *>(out_buf);
-            for (int i = 0; i < in_samples * in_channels; i++)
-                ob[i] = ib[i] / 32768.0f;
-        }
-        else if (out_fmt == AV_SAMPLE_FMT_FLTP)
-        {
-            float *ob = reinterpret_cast<float *>(out_buf);
-            for (int s = 0; s < in_samples; s++)
-                for (int c = 0; c < in_channels; c++)
-                    ob[(c * out_stride) + s] = ib[(s * in_channels) + c] / 32768.0f;
-        }
-        else
-            return 0;   // unsupported conversion
-    }
-    else if (in_fmt == AV_SAMPLE_FMT_FLT)
-    {
-        const float *ib = reinterpret_cast<const float *>(in_buf);
-        if (out_fmt == AV_SAMPLE_FMT_S16)
-        {
-            int16 *ob = reinterpret_cast<int16 *>(out_buf);
-            for (int i = 0; i < in_samples * in_channels; i++)
-                ob[i] = clamp_to_int16(ib[i] * 32768.0f);
-        }
-        else
-            return 0;   // unsupported conversion
-    }
-    else if (in_fmt == AV_SAMPLE_FMT_FLTP)
-    {
-        const float *ib = reinterpret_cast<const float *>(in_buf);
-        if (out_fmt == AV_SAMPLE_FMT_S16)
-        {
-            int16 *ob = reinterpret_cast<int16 *>(out_buf);
-            for (int s = 0; s < in_samples; s++)
-                for (int c = 0; c < in_channels; c++)
-                    ob[(s * in_channels) + c] = clamp_to_int16(ib[(c * in_stride) + s] * 32768.0f);
-        }
-        else
-            return 0;   // unsupported conversion
-    }
-    else if (in_fmt == AV_SAMPLE_FMT_S16P)
-    {
-        const int16 *ib = reinterpret_cast<const int16 *>(in_buf);
-        if (out_fmt == AV_SAMPLE_FMT_S16)
-        {
-            int16 *ob = reinterpret_cast<int16 *>(out_buf);
-            for (int s = 0; s < in_samples; s++)
-                for (int c = 0; c < in_channels; c++)
-                    ob[(s * in_channels) + c] = ib[(c * in_stride) + s];
-        }
-        else
-            return 0;   // unsupported conversion
-    }
-    
-    // pad output if desired
-    if (out_samples > in_samples)
-    {
-        if (av_sample_fmt_is_planar(out_fmt))
-        {
-            for (int c = 0; c < out_channels; c++)
-                memset(out_buf + (c * out_stride), 0, (out_samples - in_samples) * out_bps);
-        }
-        else
-            memset(out_buf + in_bytes, 0, out_bytes - in_bytes);
-    }
-
-    return out_bytes;
-}
-
-#ifdef __cplusplus
-}
-#endif
 
 int ScaleQuality(int quality, int zeroLevel, int fiftyLevel, int hundredLevel)
 {
@@ -382,9 +234,6 @@ bool Movie::Setup()
 	if (!success) err_msg = "Could not create SDL surface";
 
     Mixer *mx = Mixer::instance();
-    
-    av_register_all();
-    avcodec_register_all();
 
 	const auto fps = std::max(get_fps_target(), static_cast<int16_t>(30));
     
@@ -405,8 +254,9 @@ bool Movie::Setup()
     if (success)
     {
         av->fmt_ctx->oformat = fmt;
-        strncpy(av->fmt_ctx->filename, moviefile.c_str(), 1024);
-        success = (0 <= avio_open(&av->fmt_ctx->pb, av->fmt_ctx->filename, AVIO_FLAG_WRITE));
+        av->fmt_ctx->url = (char*)av_malloc(moviefile.size() + 1);
+        snprintf(av->fmt_ctx->url, moviefile.size() + 1, moviefile.c_str());
+        success = (0 <= avio_open(&av->fmt_ctx->pb, av->fmt_ctx->url, AVIO_FLAG_WRITE));
         if (!success) err_msg = "Could not open movie file for writing";
     }
     
@@ -427,46 +277,54 @@ bool Movie::Setup()
     }
     if (success)
     {
-        video_stream->codec->codec_id = video_codec->id;
-        video_stream->codec->codec_type = AVMEDIA_TYPE_VIDEO;
-        video_stream->codec->width = view_rect.w;
-        video_stream->codec->height = view_rect.h;
-        video_stream->codec->time_base = AVRational{1, fps};
-        video_stream->codec->pix_fmt = AV_PIX_FMT_YUV420P;
-        video_stream->codec->flags |= AV_CODEC_FLAG_CLOSED_GOP;
-        video_stream->codec->thread_count = get_cpu_count();
+        int bitrate = graphics_preferences->movie_export_video_bitrate;
+
+        if (bitrate <= 0) // auto, based on YouTube's SDR standard frame rate
+                          // recommendations
+        {
+            if (view_rect.h >= 2160) bitrate = 40 * 1024 * 1024;
+            else if (view_rect.h >= 1440) bitrate = 16 * 1024 * 1024;
+            else if (view_rect.h >= 1080) bitrate = 8 * 1024 * 1024;
+            else if (view_rect.h >= 720) bitrate = 5 * 1024 * 1024;
+            else if (view_rect.h >= 480) bitrate = 5 * 1024 * 1024 / 2;
+            else                          bitrate = 1024 * 1024;
+
+            // YouTube recommends 50% more bitrate for 60 fps, so extrapolate
+            // from there
+            bitrate += std::log2(fps / 30) * bitrate / 2;
+        }
+
+        video_stream->codecpar->codec_id = video_codec->id;
+        video_stream->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
+        video_stream->codecpar->width = view_rect.w;
+        video_stream->codecpar->height = view_rect.h;
+        video_stream->codecpar->bit_rate = bitrate;
+        video_stream->codecpar->format = AV_PIX_FMT_YUV420P;
+
+        av->video_ctx = avcodec_alloc_context3(video_codec);
+        success = av->video_ctx && avcodec_parameters_to_context(av->video_ctx, video_stream->codecpar) >= 0;
+        if (!success) err_msg = "Could not setup video context";
+    }
+    if (success)
+    {
+        av->video_ctx->time_base = AVRational{ 1, fps };
+        av->video_ctx->flags |= AV_CODEC_FLAG_CLOSED_GOP;
+        av->video_ctx->thread_count = get_cpu_count();
 
         if (av->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-            video_stream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+            av->video_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
         av->video_stream_idx = video_stream->index;
         
         // tuning options
-        int vq = graphics_preferences->movie_export_video_quality;
-		int bitrate = graphics_preferences->movie_export_video_bitrate;
-
-		if (bitrate <= 0) // auto, based on YouTube's SDR standard frame rate
-						  // recommendations
-		{
-			if      (view_rect.h >= 2160) bitrate = 40 * 1024 * 1024;
-			else if (view_rect.h >= 1440) bitrate = 16 * 1024 * 1024;
-			else if (view_rect.h >= 1080) bitrate =  8 * 1024 * 1024;
-			else if (view_rect.h >=  720) bitrate =  5 * 1024 * 1024;
-			else if (view_rect.h >=  480) bitrate =  5 * 1024 * 1024 / 2;
-			else                          bitrate =      1024 * 1024;
-
-			// YouTube recommends 50% more bitrate for 60 fps, so extrapolate
-			// from there
-			bitrate += std::log2(fps / 30) * bitrate / 2;
-		}
-		
-        video_stream->codec->bit_rate = bitrate;
-        video_stream->codec->qmin = ScaleQuality(vq, 10, 4, 0);
-        video_stream->codec->qmax = ScaleQuality(vq, 63, 63, 50);
-        std::string crf = boost::lexical_cast<std::string>(ScaleQuality(vq, 63, 10, 4));
-        av_opt_set(video_stream->codec->priv_data, "crf", crf.c_str(), 0);
+        int vq = graphics_preferences->movie_export_video_quality;	
+        av->video_ctx->qmin = ScaleQuality(vq, 10, 4, 0);
+        av->video_ctx->qmax = ScaleQuality(vq, 63, 63, 50);
+        std::string crf = std::to_string(ScaleQuality(vq, 63, 10, 4));
+        av_opt_set(av->video_ctx->priv_data, "crf", crf.c_str(), 0);
         
-        success = (0 <= avcodec_open2(video_stream->codec, video_codec, NULL));
+        //avcodec_open2 may fill some fields we need to have in codecpar
+        success = avcodec_open2(av->video_ctx, NULL, NULL) >= 0 && avcodec_parameters_from_context(video_stream->codecpar, av->video_ctx) >= 0;
         if (!success) err_msg = "Could not open video codec";
     }
     if (success)
@@ -488,14 +346,15 @@ bool Movie::Setup()
     }
     if (success)
     {
-        int numbytes = avpicture_get_size(video_stream->codec->pix_fmt, view_rect.w, view_rect.h);
+        int numbytes = av_image_get_buffer_size(av->video_ctx->pix_fmt, view_rect.w, view_rect.h, 1);
         av->video_data = static_cast<uint8_t *>(av_malloc(numbytes));
         success = av->video_data;
         if (!success) err_msg = "Could not allocate video data buffer";
     }
     if (success)
     {
-        avpicture_fill(reinterpret_cast<AVPicture *>(av->video_frame), av->video_data, video_stream->codec->pix_fmt, view_rect.w, view_rect.h);
+        success = av_image_fill_arrays(av->video_frame->data, av->video_frame->linesize, av->video_data, av->video_ctx->pix_fmt, view_rect.w, view_rect.h, 1) >= 0;
+        if (!success) err_msg = "Could not setup video data buffer";
     }
     
     // Open output audio stream
@@ -515,26 +374,44 @@ bool Movie::Setup()
     }
     if (success)
     {
-        audio_stream->codec->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
-        audio_stream->codec->codec_id = audio_codec->id;
-        audio_stream->codec->codec_type = AVMEDIA_TYPE_AUDIO;
-        audio_stream->codec->sample_rate = mx->obtained.freq;
-        audio_stream->codec->time_base = AVRational{1, mx->obtained.freq};
-        audio_stream->codec->channels = 2;
-        
+        audio_stream->codecpar->codec_id = audio_codec->id;
+        audio_stream->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
+        audio_stream->codecpar->format = AV_SAMPLE_FMT_FLTP;
+        audio_stream->codecpar->sample_rate = mx->obtained.freq;
+        audio_stream->codecpar->channel_layout = AV_CH_LAYOUT_STEREO;
+        audio_stream->codecpar->channels = 2;
+
+        av->audio_ctx = avcodec_alloc_context3(audio_codec);
+        success = av->audio_ctx && avcodec_parameters_to_context(av->audio_ctx, audio_stream->codecpar) >= 0;
+        if (!success) err_msg = "Could not setup audio context";
+    }
+    if (success)
+    {     
+        av->audio_ctx->time_base = AVRational{ 1, mx->obtained.freq };
+
         if (av->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-            audio_stream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+            av->audio_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
         
         av->audio_stream_idx = audio_stream->index;
-        
+        av->audio_ctx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
+
         // tuning options
         int aq = graphics_preferences->movie_export_audio_quality;
-        audio_stream->codec->global_quality = FF_QP2LAMBDA * (aq / 10);
-        audio_stream->codec->flags |= AV_CODEC_FLAG_QSCALE;
+        av->audio_ctx->global_quality = FF_QP2LAMBDA * (aq / 10);
+        av->audio_ctx->flags |= AV_CODEC_FLAG_QSCALE;
         
-        audio_stream->codec->sample_fmt = AV_SAMPLE_FMT_FLTP;
-        success = (0 <= avcodec_open2(audio_stream->codec, audio_codec, NULL));
+        //avcodec_open2 may fill some fields we need to have in codecpar
+        success = avcodec_open2(av->audio_ctx, NULL, NULL) >= 0 && avcodec_parameters_from_context(audio_stream->codecpar, av->audio_ctx) >= 0;
         if (!success) err_msg = "Could not open audio codec";
+    }
+    if (success)
+    {
+        // init resampler
+        av->swr_context = swr_alloc_set_opts(av->swr_context, av->audio_ctx->channel_layout, av->audio_ctx->sample_fmt, av->audio_ctx->sample_rate,
+            av->audio_ctx->channel_layout, AV_SAMPLE_FMT_S16, av->audio_ctx->sample_rate, 0, NULL);
+
+        success = av->swr_context && swr_init(av->swr_context) >= 0;
+        if (!success) err_msg = "Could not initialize resampler";
     }
     if (success)
     {
@@ -554,14 +431,12 @@ bool Movie::Setup()
     }
     if (success)
     {
-        av->audio_data = reinterpret_cast<uint8_t *>(av_malloc(524288));
-        success = av->audio_data;
+        success = av_samples_alloc(&av->audio_data, NULL, av->audio_ctx->channels, av->audio_ctx->frame_size, AV_SAMPLE_FMT_S16, 0) >= 0;
         if (!success) err_msg = "Could not allocate audio data buffer";
     }
     if (success)
     {
-        av->audio_data_conv = reinterpret_cast<uint8_t *>(av_malloc(524288));
-        success = av->audio_data_conv;
+        success = av_samples_alloc_array_and_samples(&av->audio_data_conv, NULL, av->audio_ctx->channels, av->audio_ctx->frame_size, av->audio_ctx->sample_fmt, 0) >= 0;
         if (!success) err_msg = "Could not allocate audio conversion buffer";
     }
     
@@ -569,9 +444,9 @@ bool Movie::Setup()
     if (success)
     {
         av->sws_ctx = sws_getContext(temp_surface->w, temp_surface->h, AV_PIX_FMT_RGB32,
-                                     video_stream->codec->width,
-                                     video_stream->codec->height,
-                                     video_stream->codec->pix_fmt,
+                                     av->video_ctx->width,
+                                     av->video_ctx->height,
+                                     av->video_ctx->pix_fmt,
                                      SWS_BILINEAR,
                                      NULL, NULL, NULL);
         success = av->sws_ctx;
@@ -583,7 +458,8 @@ bool Movie::Setup()
     {
         video_stream->time_base = AVRational{1, fps};
         audio_stream->time_base = AVRational{1, mx->obtained.freq};
-        avformat_write_header(av->fmt_ctx, NULL);
+        success = avformat_write_header(av->fmt_ctx, NULL) >= 0;
+        if (!success) err_msg = "Could not create write video header";
     }
     
     // set up our threads and intermediate storage
@@ -643,7 +519,7 @@ void Movie::EncodeVideo(bool last)
 {
     // convert video
     AVStream *vstream = av->fmt_ctx->streams[av->video_stream_idx];
-    AVCodecContext *vcodec = vstream->codec;
+    AVCodecContext *vcodec = av->video_ctx;
     
     AVFrame *frame = NULL;
     if (!last)
@@ -655,41 +531,46 @@ void Movie::EncodeVideo(bool last)
                   av->video_frame->data, av->video_frame->linesize);
         av->video_frame->pts = av->video_counter++;
         frame = av->video_frame;
+
+        //Needed since ffmpeg version 4.4
+        frame->format = vcodec->pix_fmt;
+        frame->width = vcodec->width;
+        frame->height = vcodec->height;
     }
     
     bool done = false;
+    AVPacket* pkt = av_packet_alloc();
     while (!done)
     {
         // add video
-        AVPacket pkt;
-        av_init_packet(&pkt);
-        pkt.data = av->video_buf;
-        pkt.size = av->video_bufsize;
+        pkt->data = av->video_buf;
+        pkt->size = av->video_bufsize;
         
-        int got_packet = 0;
-        int vsize = avcodec_encode_video2(vcodec, &pkt, frame, &got_packet);
-        if (vsize == 0 && got_packet)
+        int vsize = avcodec_send_frame(vcodec, frame);
+        int got_packet = avcodec_receive_packet(vcodec, pkt);
+        if (vsize == 0 && got_packet == 0)
         {
-            if (pkt.pts != AV_NOPTS_VALUE && pkt.pts < pkt.dts)
-                pkt.pts = pkt.dts;
-            if (pkt.pts != AV_NOPTS_VALUE)
-                pkt.pts = av_rescale_q(pkt.pts, vcodec->time_base, vstream->time_base);
-            if (pkt.dts != AV_NOPTS_VALUE)
-                pkt.dts = av_rescale_q(pkt.dts, vcodec->time_base, vstream->time_base);
-            pkt.duration = av_rescale_q(pkt.duration, vcodec->time_base, vstream->time_base);
-            pkt.stream_index = vstream->index;
-            av_interleaved_write_frame(av->fmt_ctx, &pkt);
-            av_free_packet(&pkt);
+            if (pkt->pts != AV_NOPTS_VALUE && pkt->pts < pkt->dts)
+                pkt->pts = pkt->dts;
+            if (pkt->pts != AV_NOPTS_VALUE)
+                pkt->pts = av_rescale_q(pkt->pts, vcodec->time_base, vstream->time_base);
+            if (pkt->dts != AV_NOPTS_VALUE)
+                pkt->dts = av_rescale_q(pkt->dts, vcodec->time_base, vstream->time_base);
+            pkt->duration = av_rescale_q(pkt->duration, vcodec->time_base, vstream->time_base);
+            pkt->stream_index = vstream->index;
+            av_interleaved_write_frame(av->fmt_ctx, pkt);
+            av_packet_unref(pkt);
         }
-        if (!last || vsize < 0 || !got_packet)
+        if (!last || vsize < 0 || got_packet < 0)
             done = true;
     }
+    av_packet_free(&pkt);
 }
 
 void Movie::EncodeAudio(bool last)
 {
     AVStream *astream = av->fmt_ctx->streams[av->audio_stream_idx];
-    AVCodecContext *acodec = astream->codec;
+    AVCodecContext *acodec = av->audio_ctx;
     
     
     av_fifo_generic_write(av->audio_fifo, &audiobuf[0], audiobuf.size(), NULL);
@@ -718,77 +599,79 @@ void Movie::EncodeAudio(bool last)
                 write_samples = acodec->frame_size;
         }
 
-        convert_audio(read_samples, acodec->channels, -1,
-                      AV_SAMPLE_FMT_S16, av->audio_data,
-                      write_samples, acodec->channels, write_samples * write_bps,
-                      acodec->sample_fmt, av->audio_data_conv);
+        write_samples = swr_convert(av->swr_context, av->audio_data_conv, write_samples, (const uint8_t**)&av->audio_data, read_samples);
                       
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
         avcodec_get_frame_defaults(av->audio_frame);
 #else
         av_frame_unref(av->audio_frame);
 #endif
+        //Needed since ffmpeg 4.4
+        av->audio_frame->channels = acodec->channels;
+        av->audio_frame->format = acodec->sample_fmt;
+        av->audio_frame->channel_layout = acodec->channel_layout;
+        av->audio_frame->sample_rate = acodec->sample_rate;
         av->audio_frame->nb_samples = write_samples;
+
         av->audio_frame->pts = av_rescale_q(av->audio_counter,
                                             AVRational{1, acodec->sample_rate},
                                             acodec->time_base);
+
         av->audio_counter += write_samples;
         int asize = avcodec_fill_audio_frame(av->audio_frame, acodec->channels,
                                              acodec->sample_fmt,
-                                             av->audio_data_conv,
+                                             av->audio_data_conv[0],
                                              write_samples * write_bps * channels, 1);
+
         if (asize >= 0)
         {
-            AVPacket pkt;
-            memset(&pkt, 0, sizeof(AVPacket));
-            av_init_packet(&pkt);
-            
-            int got_pkt = 0;
-            if (0 == avcodec_encode_audio2(acodec, &pkt, av->audio_frame, &got_pkt)
-                && got_pkt)
+            AVPacket* pkt = av_packet_alloc();        
+            int vsize = avcodec_send_frame(acodec, av->audio_frame);
+            if (0 == vsize)
             {
-                if (pkt.pts != AV_NOPTS_VALUE && pkt.pts < pkt.dts)
-                    pkt.pts = pkt.dts;
-                if (pkt.pts != AV_NOPTS_VALUE)
-                    pkt.pts = av_rescale_q(pkt.pts, acodec->time_base, astream->time_base);
-                if (pkt.dts != AV_NOPTS_VALUE)
-                    pkt.dts = av_rescale_q(pkt.dts, acodec->time_base, astream->time_base);
-                pkt.duration = av_rescale_q(pkt.duration, acodec->time_base, astream->time_base);
-                pkt.stream_index = astream->index;
-                av_interleaved_write_frame(av->fmt_ctx, &pkt);
-                av_free_packet(&pkt);
+                while (avcodec_receive_packet(acodec, pkt) == 0) {
+                    if (pkt->pts != AV_NOPTS_VALUE && pkt->pts < pkt->dts)
+                        pkt->pts = pkt->dts;
+                    if (pkt->pts != AV_NOPTS_VALUE)
+                        pkt->pts = av_rescale_q(pkt->pts, acodec->time_base, astream->time_base);
+                    if (pkt->dts != AV_NOPTS_VALUE)
+                        pkt->dts = av_rescale_q(pkt->dts, acodec->time_base, astream->time_base);
+                    pkt->duration = av_rescale_q(pkt->duration, acodec->time_base, astream->time_base);
+                    pkt->stream_index = astream->index;
+                    av_interleaved_write_frame(av->fmt_ctx, pkt);
+                    av_packet_unref(pkt);
+                }
             }
+            av_packet_free(&pkt);
         }
     }
     if (last)
     {
         bool done = false;
-        while (!done)
+        AVPacket* pkt = av_packet_alloc();
+        int flush = avcodec_send_frame(acodec, NULL);
+        while (flush == 0 && !done)
         {
-            AVPacket pkt;
-            memset(&pkt, 0, sizeof(AVPacket));
-            av_init_packet(&pkt);
-            
-            int got_pkt = 0;
-            if (0 == avcodec_encode_audio2(acodec, &pkt, NULL, &got_pkt)
-                && got_pkt)
+            int got_pkt = avcodec_receive_packet(acodec, pkt);
+            if (got_pkt == 0)
             {
-                if (pkt.pts != AV_NOPTS_VALUE && pkt.pts < pkt.dts)
-                    pkt.pts = pkt.dts;
-                if (pkt.pts != AV_NOPTS_VALUE)
-                    pkt.pts = av_rescale_q(pkt.pts, acodec->time_base, astream->time_base);
-                if (pkt.dts != AV_NOPTS_VALUE)
-                    pkt.dts = av_rescale_q(pkt.dts, acodec->time_base, astream->time_base);
-                pkt.duration = av_rescale_q(pkt.duration, acodec->time_base, astream->time_base);
-                pkt.stream_index = astream->index;
-                av_interleaved_write_frame(av->fmt_ctx, &pkt);
-                av_free_packet(&pkt);
+                if (pkt->pts != AV_NOPTS_VALUE && pkt->pts < pkt->dts)
+                    pkt->pts = pkt->dts;
+                if (pkt->pts != AV_NOPTS_VALUE)
+                    pkt->pts = av_rescale_q(pkt->pts, acodec->time_base, astream->time_base);
+                if (pkt->dts != AV_NOPTS_VALUE)
+                    pkt->dts = av_rescale_q(pkt->dts, acodec->time_base, astream->time_base);
+                pkt->duration = av_rescale_q(pkt->duration, acodec->time_base, astream->time_base);
+                pkt->stream_index = astream->index;
+                av_interleaved_write_frame(av->fmt_ctx, pkt);
+                av_packet_unref(pkt);
             }
             else
             {
                 done = true;
             }
         }
+        av_packet_free(&pkt);
         
     }
     
@@ -900,8 +783,8 @@ void Movie::StopRecording()
         // flush video and audio
         EncodeVideo(true);
         EncodeAudio(true);
-        avcodec_flush_buffers(av->fmt_ctx->streams[av->audio_stream_idx]->codec);
-        avcodec_flush_buffers(av->fmt_ctx->streams[av->video_stream_idx]->codec);
+        avcodec_flush_buffers(av->audio_ctx);
+        avcodec_flush_buffers(av->video_ctx);
         av_write_trailer(av->fmt_ctx);
         av->inited = false;
     }
@@ -913,8 +796,12 @@ void Movie::StopRecording()
     }
     if (av->audio_data)
     {
-        av_free(av->audio_data);
-        av->audio_data = NULL;
+        av_freep(&av->audio_data);
+    }
+    if (av->audio_data_conv)
+    {
+        av_freep(&av->audio_data_conv[0]);
+        av_freep(&av->audio_data_conv);
     }
     if (av->audio_frame)
     {
@@ -944,12 +831,23 @@ void Movie::StopRecording()
         av->sws_ctx = NULL;
     }
 
+    if (av->video_ctx)
+    {
+        avcodec_free_context(&av->video_ctx);
+    }
+
+    if (av->audio_ctx)
+    {
+        avcodec_free_context(&av->audio_ctx);
+    }
+    
+    if (av->swr_context)
+    {
+        swr_free(&av->swr_context);
+    }
+
     if (av->fmt_ctx)
     {
-        for (int i = 0; i < av->fmt_ctx->nb_streams; i++)
-        {
-            avcodec_close(av->fmt_ctx->streams[i]->codec);
-        }
         avio_close(av->fmt_ctx->pb);
         avformat_free_context(av->fmt_ctx);
         av->fmt_ctx = NULL;

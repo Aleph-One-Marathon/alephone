@@ -68,24 +68,25 @@ Apr 10, 2003 (Woody Zenfell):
 
 #if !defined(DISABLE_NETWORKING)
 
-#include	"cseries.h"
-#include	"map.h"
-#include	"shell.h"
-#include	"preferences.h"
-#include	"network.h"
-#include	"network_dialogs.h"
-#include	"network_games.h"
-#include	"player.h" // ZZZ: for MAXIMUM_NUMBER_OF_PLAYERS, for reassign_player_colors
-#include	"metaserver_dialogs.h" // GameAvailableMetaserverAnnouncer
-#include	"wad.h" // jkvw: for read_wad_file_checksum 
-#include "game_wad.h" // get_map_file
+#include "cseries.h"
+#include "map.h"
+#include "shell.h"
+#include "preferences.h"
+#include "network.h"
+#include "network_dialogs.h"
+#include "network_games.h"
+#include "player.h"				// ZZZ: for MAXIMUM_NUMBER_OF_PLAYERS, for reassign_player_colors
+#include "metaserver_dialogs.h" // GameAvailableMetaserverAnnouncer
+#include "wad.h"				// jkvw: for read_wad_file_checksum
+#include "game_wad.h"			// get_map_file
 
 #include <map>
+#include <functional>
 
 // For LAN netgame location services
-#include	<sstream>
-#include	"network_private.h" // actually just need "network_dialogs_private.h"
-#include	"SSLP_API.h"
+#include <sstream>
+#include "network_private.h" // actually just need "network_dialogs_private.h"
+#include "SSLP_API.h"
 
 // for game types...
 #include "network_dialogs.h"
@@ -96,20 +97,15 @@ Apr 10, 2003 (Woody Zenfell):
 #include "SoundManager.h"
 #include "progress.h"
 
-
-extern void NetRetargetJoinAttempts(const IPaddress* inAddress);
-
+extern void NetRetargetJoinAttempts(const IPaddress *inAddress);
 
 // Metaserver Globals
 // We can't construct a MetaserverClient until MetaserverClient::s_instances is initialised.
-MetaserverClient* gMetaserverClient = NULL;
+MetaserverClient *gMetaserverClient = NULL;
 
 // Chat History Globals
 ChatHistory gMetaserverChatHistory;
 ChatHistory gPregameChatHistory;
-
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // LAN game-location services support
@@ -119,7 +115,6 @@ get_sslp_service_type()
 {
 	return kNetworkSetupProtocolID;
 }
-
 
 GathererAvailableAnnouncer::GathererAvailableAnnouncer()
 {
@@ -141,21 +136,19 @@ GathererAvailableAnnouncer::pump()
 	SSLP_Pump();
 }
 
-
 JoinerSeekingGathererAnnouncer::JoinerSeekingGathererAnnouncer(bool shouldSeek) : mShouldSeek(shouldSeek)
 {
-	if(mShouldSeek)
+	if (mShouldSeek)
 		SSLP_Locate_Service_Instances(
-				get_sslp_service_type().c_str(),
-				found_gatherer_callback,
-				lost_gatherer_callback,
-				found_gatherer_callback
-				);
+			get_sslp_service_type().c_str(),
+			found_gatherer_callback,
+			lost_gatherer_callback,
+			found_gatherer_callback);
 }
 
 JoinerSeekingGathererAnnouncer::~JoinerSeekingGathererAnnouncer()
 {
-	if(mShouldSeek)
+	if (mShouldSeek)
 		SSLP_Stop_Locating_Service_Instances(get_sslp_service_type().c_str());
 }
 
@@ -166,17 +159,16 @@ JoinerSeekingGathererAnnouncer::pump()
 }
 
 void // static
-JoinerSeekingGathererAnnouncer::found_gatherer_callback(const SSLP_ServiceInstance* instance)
+JoinerSeekingGathererAnnouncer::found_gatherer_callback(const SSLP_ServiceInstance *instance)
 {
 	NetRetargetJoinAttempts(&instance->sslps_address);
 }
 
 void // static
-JoinerSeekingGathererAnnouncer::lost_gatherer_callback(const SSLP_ServiceInstance* instance)
+JoinerSeekingGathererAnnouncer::lost_gatherer_callback(const SSLP_ServiceInstance *instance)
 {
 	NetRetargetJoinAttempts(NULL);
 }
-
 
 /****************************************************
  *
@@ -186,7 +178,7 @@ JoinerSeekingGathererAnnouncer::lost_gatherer_callback(const SSLP_ServiceInstanc
 
 bool network_gather(bool inResumingGame)
 {
-	bool successful= false;
+	bool successful = false;
 	game_info myGameInfo;
 	player_info myPlayerInfo;
 	bool advertiseOnMetaserver = false;
@@ -194,45 +186,46 @@ bool network_gather(bool inResumingGame)
 	show_cursor(); // JTP: Hidden one way or another
 	if (network_game_setup(&myPlayerInfo, &myGameInfo, inResumingGame, advertiseOnMetaserver))
 	{
-		myPlayerInfo.desired_color= myPlayerInfo.color;
+		myPlayerInfo.desired_color = myPlayerInfo.color;
 		memset(myPlayerInfo.long_serial_number, 0, LONG_SERIAL_NUMBER_LENGTH);
-		
+
 		std::unique_ptr<GameAvailableMetaserverAnnouncer> metaserverAnnouncer;
-		if(NetEnter())
+		if (NetEnter())
 		{
 			bool gather_dialog_result;
-		
-			if(NetGather(&myGameInfo, sizeof(game_info), (void*) &myPlayerInfo, 
-				sizeof(myPlayerInfo), inResumingGame))
+
+			if (NetGather(&myGameInfo, sizeof(game_info), (void *)&myPlayerInfo,
+						  sizeof(myPlayerInfo), inResumingGame))
 			{
 				GathererAvailableAnnouncer announcer;
-				
-				if (!gMetaserverClient) gMetaserverClient = new MetaserverClient ();
 
-				if(advertiseOnMetaserver)
+				if (!gMetaserverClient)
+					gMetaserverClient = new MetaserverClient();
+
+				if (advertiseOnMetaserver)
 				{
 					try
 					{
 						metaserverAnnouncer.reset(new GameAvailableMetaserverAnnouncer(myGameInfo));
 					}
-					catch (const MetaserverClient::LoginDeniedException& e)
+					catch (const MetaserverClient::LoginDeniedException &e)
 					{
 						char message[1024];
 						if (e.code() == MetaserverClient::LoginDeniedException::BadUserOrPassword)
 						{
-							strncpy(message, "ƒƒOƒCƒ“‹‘”ÛFƒ†[ƒU[–¼‚à‚µ‚­‚ÍAƒpƒXƒ[ƒh‚ªŠÔˆá‚Á‚Ä‚¢‚Ü‚·BƒCƒ“ƒ^[ƒlƒbƒgã‚ÉƒQ[ƒ€‚Ì•åWL‚ðo‚·‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½B", 1024);
+							strncpy(message, "ãƒ­ã‚°ã‚¤ãƒ³æ‹’å¦ï¼šãƒ¦ãƒ¼ã‚¶ãƒ¼åã‚‚ã—ãã¯ã€ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ãŒé–“é•ã£ã¦ã„ã¾ã™ã€‚ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒƒãƒˆä¸Šã«ã‚²ãƒ¼ãƒ ã®å‹Ÿé›†åºƒå‘Šã‚’å‡ºã™ã“ã¨ãŒã§ãã¾ã›ã‚“ã§ã—ãŸã€‚", 1024);
 						}
 						else if (e.code() == MetaserverClient::LoginDeniedException::UserAlreadyLoggedIn)
 						{
-							strncpy(message, "ƒƒOƒCƒ“‹‘”ÛF‚»‚Ìƒ†[ƒU‚ÍA‚·‚Å‚ÉƒƒOƒCƒ“‚µ‚Ä‚¢‚Ü‚·BƒCƒ“ƒ^[ƒlƒbƒgã‚ÉƒQ[ƒ€‚Ì•åWL‚ðo‚·‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½B", 1024);
+							strncpy(message, "ãƒ­ã‚°ã‚¤ãƒ³æ‹’å¦ï¼šãã®ãƒ¦ãƒ¼ã‚¶ã¯ã€ã™ã§ã«ãƒ­ã‚°ã‚¤ãƒ³ã—ã¦ã„ã¾ã™ã€‚ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒƒãƒˆä¸Šã«ã‚²ãƒ¼ãƒ ã®å‹Ÿé›†åºƒå‘Šã‚’å‡ºã™ã“ã¨ãŒã§ãã¾ã›ã‚“ã§ã—ãŸã€‚", 1024);
 						}
 						else if (e.code() == MetaserverClient::LoginDeniedException::AccountAlreadyLoggedIn)
 						{
-							strncpy(message, "ƒƒOƒCƒ“‹‘”ÛF‚»‚ÌƒAƒJƒEƒ“ƒg‚ÍA‚·‚Å‚ÉƒƒOƒCƒ“‚µ‚Ä‚¢‚Ü‚·BƒCƒ“ƒ^[ƒlƒbƒgã‚ÉƒQ[ƒ€‚Ì•åWL‚ðo‚·‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½B", 1024);
+							strncpy(message, "ãƒ­ã‚°ã‚¤ãƒ³æ‹’å¦ï¼šãã®ã‚¢ã‚«ã‚¦ãƒ³ãƒˆã¯ã€ã™ã§ã«ãƒ­ã‚°ã‚¤ãƒ³ã—ã¦ã„ã¾ã™ã€‚ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒƒãƒˆä¸Šã«ã‚²ãƒ¼ãƒ ã®å‹Ÿé›†åºƒå‘Šã‚’å‡ºã™ã“ã¨ãŒã§ãã¾ã›ã‚“ã§ã—ãŸã€‚", 1024);
 						}
 						else if (e.code() == MetaserverClient::LoginDeniedException::RoomFull)
 						{
-							strncpy(message, "ƒƒOƒCƒ“‹‘”ÛFƒ‹[ƒ€‚ª–žŽº‚Å‚·IƒCƒ“ƒ^[ƒlƒbƒgã‚ÉƒQ[ƒ€‚Ì•åWL‚ðo‚·‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½B", 1024);
+							strncpy(message, "ãƒ­ã‚°ã‚¤ãƒ³æ‹’å¦ï¼šãƒ«ãƒ¼ãƒ ãŒæº€å®¤ã§ã™ï¼ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒƒãƒˆä¸Šã«ã‚²ãƒ¼ãƒ ã®å‹Ÿé›†åºƒå‘Šã‚’å‡ºã™ã“ã¨ãŒã§ãã¾ã›ã‚“ã§ã—ãŸã€‚", 1024);
 						}
 						else if (e.code() == MetaserverClient::LoginDeniedException::AccountLocked)
 						{
@@ -240,32 +233,34 @@ bool network_gather(bool inResumingGame)
 						}
 						else
 						{
-							sprintf(message, "ƒƒOƒCƒ“‹‘”ÛF‚»‚ÌƒAƒJƒEƒ“ƒg‚ÍƒƒbƒN‚³‚ê‚Ä‚¢‚Ü‚·BƒCƒ“ƒ^[ƒlƒbƒgã‚ÉƒQ[ƒ€‚Ì•åWL‚ðo‚·‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½B", e.what());
+							sprintf(message, "ãƒ­ã‚°ã‚¤ãƒ³æ‹’å¦ï¼šãã®ã‚¢ã‚«ã‚¦ãƒ³ãƒˆã¯ãƒ­ãƒƒã‚¯ã•ã‚Œã¦ã„ã¾ã™ã€‚ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒƒãƒˆä¸Šã«ã‚²ãƒ¼ãƒ ã®å‹Ÿé›†åºƒå‘Šã‚’å‡ºã™ã“ã¨ãŒã§ãã¾ã›ã‚“ã§ã—ãŸã€‚", e.what());
 						}
 
 						alert_user(message, 0);
 					}
-					catch (const MetaserverClient::ServerConnectException&)
+					catch (const MetaserverClient::ServerConnectException &)
 					{
 						alert_user(infoError, strNETWORK_ERRORS, netWarnCouldNotAdvertiseOnMetaserver, 0);
 					}
 				}
 
 				gather_dialog_result = GatherDialog::Create()->GatherNetworkGameByRunning();
-				
-			} else {
+			}
+			else
+			{
 				gather_dialog_result = false;
 			}
-			
-			if (gather_dialog_result) {
+
+			if (gather_dialog_result)
+			{
 				NetDoneGathering();
-				if (advertiseOnMetaserver) 
+				if (advertiseOnMetaserver)
 				{
 					metaserverAnnouncer->Start(myGameInfo.time_limit);
 					gMetaserverClient->setMode(1, NetSessionIdentifier());
 					gMetaserverClient->pump();
 				}
-				successful= true;
+				successful = true;
 			}
 			else
 			{
@@ -274,7 +269,9 @@ bool network_gather(bool inResumingGame)
 				NetCancelGather();
 				NetExit();
 			}
-		} else {
+		}
+		else
+		{
 			/* error correction handled in the network code now.. */
 		}
 	}
@@ -283,7 +280,7 @@ bool network_gather(bool inResumingGame)
 	return successful;
 }
 
-GatherDialog::GatherDialog() {  }
+GatherDialog::GatherDialog() {}
 
 GatherDialog::~GatherDialog()
 {
@@ -297,124 +294,134 @@ GatherDialog::~GatherDialog()
 	delete m_chatChoiceWidget;
 
 	gMetaserverClient->associateNotificationAdapter(0);
-
 }
 
-bool GatherDialog::GatherNetworkGameByRunning ()
+bool GatherDialog::GatherNetworkGameByRunning()
 {
 	vector<string> chat_choice_labels;
-	chat_choice_labels.push_back ("ŽQ‰ÁŽÒ‚Æ");
-	chat_choice_labels.push_back ("ƒCƒ“ƒ^[ƒlƒbƒg‚ÌƒvƒŒƒCƒ„[‚Æ");
-	m_chatChoiceWidget->set_labels (chat_choice_labels);
+	chat_choice_labels.push_back("å‚åŠ è€…ã¨");
+	chat_choice_labels.push_back("ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒƒãƒˆã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨");
+	m_chatChoiceWidget->set_labels(chat_choice_labels);
 
-	m_cancelWidget->set_callback(boost::bind(&GatherDialog::Stop, this, false));
-	m_startWidget->set_callback(boost::bind(&GatherDialog::StartGameHit, this));
-	m_ungatheredWidget->SetItemSelectedCallback(boost::bind(&GatherDialog::gathered_player, this, _1));
+	m_cancelWidget->set_callback(std::bind(&GatherDialog::Stop, this, false));
+	m_startWidget->set_callback(std::bind(&GatherDialog::StartGameHit, this));
+	m_ungatheredWidget->SetItemSelectedCallback(std::bind(&GatherDialog::gathered_player, this, std::placeholders::_1));
 
-	m_startWidget->deactivate ();
-	
+	m_startWidget->deactivate();
+
 	NetSetGatherCallbacks(this);
-	
-	m_chatChoiceWidget->set_callback(boost::bind(&GatherDialog::chatChoiceHit, this));
-	m_chatEntryWidget->set_callback(boost::bind(&GatherDialog::chatTextEntered, this, _1));
-	
-	gPregameChatHistory.clear ();
+
+	m_chatChoiceWidget->set_callback(std::bind(&GatherDialog::chatChoiceHit, this));
+	m_chatEntryWidget->set_callback(std::bind(&GatherDialog::chatTextEntered, this, std::placeholders::_1));
+
+	gPregameChatHistory.clear();
 	NetSetChatCallbacks(this);
 
-	BoolPref autoGatherPref (network_preferences->autogather);
-	Binder<bool> binder (m_autogatherWidget, &autoGatherPref);
-	binder.migrate_second_to_first ();
-	
-	if (gMetaserverClient->isConnected ()) {
+	BoolPref autoGatherPref(network_preferences->autogather);
+	Binder<bool> binder(m_autogatherWidget, &autoGatherPref);
+	binder.migrate_second_to_first();
+
+	if (gMetaserverClient->isConnected())
+	{
 		gMetaserverClient->associateNotificationAdapter(this);
-		m_chatChoiceWidget->set_value (kMetaserverChat);
-		gMetaserverChatHistory.clear ();
-		m_chatWidget->attachHistory (&gMetaserverChatHistory);
-	} else {
-		m_chatChoiceWidget->deactivate ();
-		m_chatChoiceWidget->set_value (kPregameChat);
-		gMetaserverChatHistory.clear ();
-		m_chatWidget->attachHistory (&gPregameChatHistory);
+		m_chatChoiceWidget->set_value(kMetaserverChat);
+		gMetaserverChatHistory.clear();
+		m_chatWidget->attachHistory(&gMetaserverChatHistory);
 	}
-	
-	bool result = Run ();
-	
-	binder.migrate_first_to_second ();
-	
+	else
+	{
+		m_chatChoiceWidget->deactivate();
+		m_chatChoiceWidget->set_value(kPregameChat);
+		gMetaserverChatHistory.clear();
+		m_chatWidget->attachHistory(&gPregameChatHistory);
+	}
+
+	bool result = Run();
+
+	binder.migrate_first_to_second();
+
 	// Save autogather setting, even if we cancel the dialog
-	write_preferences ();
-	
+	write_preferences();
+
 	return result;
 }
 
-void GatherDialog::idle ()
+void GatherDialog::idle()
 {
 	MetaserverClient::pumpAll();
-	
+
 	prospective_joiner_info info;
-	if (player_search(info)) {
+	if (player_search(info))
+	{
 		m_ungathered_players[info.stream_id] = info;
-		update_ungathered_widget ();
+		update_ungathered_widget();
 	}
-	
-	if (m_autogatherWidget->get_value ()) {
+
+	if (m_autogatherWidget->get_value())
+	{
 		std::map<int, prospective_joiner_info>::iterator it;
-		it = m_ungathered_players.begin ();
-		while (it != m_ungathered_players.end () && NetGetNumberOfPlayers() < MAXIMUM_NUMBER_OF_PLAYERS) {
-			gathered_player ((it++)->second);
+		it = m_ungathered_players.begin();
+		while (it != m_ungathered_players.end() && NetGetNumberOfPlayers() < MAXIMUM_NUMBER_OF_PLAYERS)
+		{
+			gathered_player((it++)->second);
 		}
 	}
 }
 
-void GatherDialog::update_ungathered_widget ()
+void GatherDialog::update_ungathered_widget()
 {
 	vector<prospective_joiner_info> temp;
 
-	for (std::map<int, prospective_joiner_info>::iterator it = m_ungathered_players.begin (); it != m_ungathered_players.end (); ++it)
-		temp.push_back ((*it).second);
-	
-	m_ungatheredWidget->SetItems (temp);
+	for (std::map<int, prospective_joiner_info>::iterator it = m_ungathered_players.begin(); it != m_ungathered_players.end(); ++it)
+		temp.push_back((*it).second);
+
+	m_ungatheredWidget->SetItems(temp);
 }
 
-bool GatherDialog::player_search (prospective_joiner_info& player)
+bool GatherDialog::player_search(prospective_joiner_info &player)
 {
 	GathererAvailableAnnouncer::pump();
 
-	if (NetCheckForNewJoiner(player)) {
+	if (NetCheckForNewJoiner(player))
+	{
 		m_ungathered_players[player.stream_id] = player;
-		update_ungathered_widget ();
+		update_ungathered_widget();
 		return true;
-	} else
+	}
+	else
 		return false;
 }
 
-bool GatherDialog::gathered_player (const prospective_joiner_info& player)
+bool GatherDialog::gathered_player(const prospective_joiner_info &player)
 {
-	if (NetGetNumberOfPlayers() >= MAXIMUM_NUMBER_OF_PLAYERS) return false;
+	if (NetGetNumberOfPlayers() >= MAXIMUM_NUMBER_OF_PLAYERS)
+		return false;
 	int theGatherPlayerResult = NetGatherPlayer(player, reassign_player_colors);
-	
-	if (theGatherPlayerResult != kGatherPlayerFailed) {
-		m_ungathered_players.erase (m_ungathered_players.find (player.stream_id));
-		update_ungathered_widget ();
+
+	if (theGatherPlayerResult != kGatherPlayerFailed)
+	{
+		m_ungathered_players.erase(m_ungathered_players.find(player.stream_id));
+		update_ungathered_widget();
 		return true;
-	} else
+	}
+	else
 		return false;
 }
 
-void GatherDialog::StartGameHit ()
+void GatherDialog::StartGameHit()
 {
-	for (std::map<int, prospective_joiner_info>::iterator it = m_ungathered_players.begin (); it != m_ungathered_players.end (); ++it)
-		NetHandleUngatheredPlayer ((*it).second);
-	
-	Stop (true);
+	for (std::map<int, prospective_joiner_info>::iterator it = m_ungathered_players.begin(); it != m_ungathered_players.end(); ++it)
+		NetHandleUngatheredPlayer((*it).second);
+
+	Stop(true);
 }
 
-void GatherDialog::JoinSucceeded(const prospective_joiner_info* player)
+void GatherDialog::JoinSucceeded(const prospective_joiner_info *player)
 {
-	if (NetGetNumberOfPlayers () > 1)
-		m_startWidget->activate ();
-	
-	m_pigWidget->redraw ();
+	if (NetGetNumberOfPlayers() > 1)
+		m_startWidget->activate();
+
+	m_pigWidget->redraw();
 
 	if (gMetaserverClient->isConnected())
 	{
@@ -422,21 +429,21 @@ void GatherDialog::JoinSucceeded(const prospective_joiner_info* player)
 	}
 }
 
-void GatherDialog::JoiningPlayerDropped(const prospective_joiner_info* player)
+void GatherDialog::JoiningPlayerDropped(const prospective_joiner_info *player)
 {
-	std::map<int, prospective_joiner_info>::iterator it = m_ungathered_players.find (player->stream_id);
-	if (it != m_ungathered_players.end ())
-		m_ungathered_players.erase (it);
-	
-	update_ungathered_widget ();
+	std::map<int, prospective_joiner_info>::iterator it = m_ungathered_players.find(player->stream_id);
+	if (it != m_ungathered_players.end())
+		m_ungathered_players.erase(it);
+
+	update_ungathered_widget();
 }
 
-void GatherDialog::JoinedPlayerDropped(const prospective_joiner_info* player)
+void GatherDialog::JoinedPlayerDropped(const prospective_joiner_info *player)
 {
-	if (NetGetNumberOfPlayers () < 2)
-		m_startWidget->deactivate ();
+	if (NetGetNumberOfPlayers() < 2)
+		m_startWidget->deactivate();
 
-	m_pigWidget->redraw ();
+	m_pigWidget->redraw();
 
 	if (gMetaserverClient->isConnected())
 	{
@@ -444,39 +451,39 @@ void GatherDialog::JoinedPlayerDropped(const prospective_joiner_info* player)
 	}
 }
 
-void GatherDialog::JoinedPlayerChanged(const prospective_joiner_info* player)
-{	
-	m_pigWidget->redraw ();
+void GatherDialog::JoinedPlayerChanged(const prospective_joiner_info *player)
+{
+	m_pigWidget->redraw();
 }
 
-void GatherDialog::sendChat ()
+void GatherDialog::sendChat()
 {
 	string message = m_chatEntryWidget->get_text();
-		
-	if (m_chatChoiceWidget->get_value () == kMetaserverChat)
-		gMetaserverClient->sendChatMessage(message);		
+
+	if (m_chatChoiceWidget->get_value() == kMetaserverChat)
+		gMetaserverClient->sendChatMessage(message);
 	else
 		SendChatMessage(message);
-	
+
 	m_chatEntryWidget->set_text(string());
 }
 
-void GatherDialog::chatTextEntered (char character)
+void GatherDialog::chatTextEntered(char character)
 {
 	if (character == '\r')
 		sendChat();
 }
 
-void GatherDialog::chatChoiceHit ()
+void GatherDialog::chatChoiceHit()
 {
-	if (m_chatChoiceWidget->get_value () == kPregameChat)
-		m_chatWidget->attachHistory (&gPregameChatHistory);
+	if (m_chatChoiceWidget->get_value() == kPregameChat)
+		m_chatWidget->attachHistory(&gPregameChatHistory);
 	else
-		m_chatWidget->attachHistory (&gMetaserverChatHistory);
+		m_chatWidget->attachHistory(&gMetaserverChatHistory);
 }
 
 void GatherDialog::ReceivedMessageFromPlayer(
-	const char *player_name, 
+	const char *player_name,
 	const char *message)
 {
 	ColoredChatEntry e;
@@ -498,18 +505,18 @@ int network_join(void)
 	int join_dialog_result;
 
 	show_cursor(); // Hidden one way or another
-	
+
 	/* If we can enter the network... */
-	if(NetEnter())
+	if (NetEnter())
 	{
 
 		join_dialog_result = JoinDialog::Create()->JoinNetworkGameByRunning();
-		
+
 		if (join_dialog_result == kNetworkJoinedNewGame || join_dialog_result == kNetworkJoinedResumeGame)
 		{
-			write_preferences ();
-		
-			game_info* myGameInfo= (game_info *)NetGetGameData();
+			write_preferences();
+
+			game_info *myGameInfo = (game_info *)NetGetGameData();
 			NetSetInitialParameters(myGameInfo->initial_updates_per_packet, myGameInfo->initial_update_latency);
 			if (gMetaserverClient && gMetaserverClient->isConnected())
 			{
@@ -519,28 +526,33 @@ int network_join(void)
 		}
 		else
 		{
-			read_preferences ();
-		
+			read_preferences();
+
 			if (join_dialog_result == kNetworkJoinFailedJoined)
 				NetCancelJoin();
-			
+
 			NetExit();
 		}
-	} else { // Failed NetEnter
+	}
+	else
+	{ // Failed NetEnter
 		join_dialog_result = kNetworkJoinFailedUnjoined;
 	}
-	
+
 	hide_cursor();
 	return join_dialog_result;
 }
 
 JoinDialog::JoinDialog() : got_gathered(false), skipToMetaserver(network_preferences->join_metaserver_by_default)
-	{ if (!gMetaserverClient) gMetaserverClient = new MetaserverClient (); }
+{
+	if (!gMetaserverClient)
+		gMetaserverClient = new MetaserverClient();
+}
 
-JoinDialog::~JoinDialog ()
+JoinDialog::~JoinDialog()
 {
 	gMetaserverClient->associateNotificationAdapter(0);
-	
+
 	delete m_cancelWidget;
 	delete m_joinWidget;
 	delete m_joinMetaserverWidget;
@@ -556,113 +568,119 @@ JoinDialog::~JoinDialog ()
 	delete m_chatWidget;
 }
 
-const int JoinDialog::JoinNetworkGameByRunning ()
+const int JoinDialog::JoinNetworkGameByRunning()
 {
 	join_result = kNetworkJoinFailedUnjoined;
-	
-	vector<string> chat_choice_labels;
-	chat_choice_labels.push_back ("ŽQ‰ÁŽÒ^•åWŽÒ‚Æ");
-	chat_choice_labels.push_back ("ƒCƒ“ƒ^[ƒlƒbƒg‚ÌƒvƒŒƒCƒ„[‚Æ");
-	m_chatChoiceWidget->set_labels (chat_choice_labels);
 
-	m_colourWidget->set_labels (kTeamColorsStringSetID);
-	m_teamWidget->set_labels (kTeamColorsStringSetID);
-	
-	m_cancelWidget->set_callback(boost::bind(&JoinDialog::Stop, this));
-	m_joinWidget->set_callback(boost::bind(&JoinDialog::attemptJoin, this));
-	m_joinMetaserverWidget->set_callback(boost::bind(&JoinDialog::getJoinAddressFromMetaserver, this));
-	
-	m_chatChoiceWidget->set_value (kPregameChat);
-	m_chatChoiceWidget->deactivate ();
-	m_chatEntryWidget->deactivate ();
-	m_chatChoiceWidget->set_callback(boost::bind(&JoinDialog::chatChoiceHit, this));
-	m_chatEntryWidget->set_callback(boost::bind(&JoinDialog::chatTextEntered, this, _1));
-	
+	vector<string> chat_choice_labels;
+	chat_choice_labels.push_back("å‚åŠ è€…ï¼å‹Ÿé›†è€…ã¨");
+	chat_choice_labels.push_back("ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒƒãƒˆã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨");
+	m_chatChoiceWidget->set_labels(chat_choice_labels);
+
+	m_colourWidget->set_labels(kTeamColorsStringSetID);
+	m_teamWidget->set_labels(kTeamColorsStringSetID);
+
+	m_cancelWidget->set_callback(std::bind(&JoinDialog::Stop, this));
+	m_joinWidget->set_callback(std::bind(&JoinDialog::attemptJoin, this));
+	m_joinMetaserverWidget->set_callback(std::bind(&JoinDialog::getJoinAddressFromMetaserver, this));
+
+	m_chatChoiceWidget->set_value(kPregameChat);
+	m_chatChoiceWidget->deactivate();
+	m_chatEntryWidget->deactivate();
+	m_chatChoiceWidget->set_callback(std::bind(&JoinDialog::chatChoiceHit, this));
+	m_chatEntryWidget->set_callback(std::bind(&JoinDialog::chatTextEntered, this, std::placeholders::_1));
+
 	getcstr(temporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string);
 	m_messagesWidget->set_text(temporary);
-	
-	CStringPref joinAddressPref (network_preferences->join_address, 255);
-	binders.insert<std::string> (m_joinAddressWidget, &joinAddressPref);
-	BoolPref joinByAddressPref (network_preferences->join_by_address);
-	binders.insert<bool> (m_joinByAddressWidget, &joinByAddressPref);
-	
-	CStringPref namePref (player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH);
-	binders.insert<std::string> (m_nameWidget, &namePref);
-	Int16Pref colourPref (player_preferences->color);
-	binders.insert<int> (m_colourWidget, &colourPref);
-	Int16Pref teamPref (player_preferences->team);
-	binders.insert<int> (m_teamWidget, &teamPref);
-	
-	binders.migrate_all_second_to_first ();
-	
-	Run ();
-	
-	binders.migrate_all_first_to_second ();
-	
+
+	CStringPref joinAddressPref(network_preferences->join_address, 255);
+	binders.insert<std::string>(m_joinAddressWidget, &joinAddressPref);
+	BoolPref joinByAddressPref(network_preferences->join_by_address);
+	binders.insert<bool>(m_joinByAddressWidget, &joinByAddressPref);
+
+	CStringPref namePref(player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH);
+	binders.insert<std::string>(m_nameWidget, &namePref);
+	Int16Pref colourPref(player_preferences->color);
+	binders.insert<int>(m_colourWidget, &colourPref);
+	Int16Pref teamPref(player_preferences->team);
+	binders.insert<int>(m_teamWidget, &teamPref);
+
+	binders.migrate_all_second_to_first();
+
+	Run();
+
+	binders.migrate_all_first_to_second();
+
 	return join_result;
-	
+
 	// We'll choose to use old prefs or new changes when we return into network_join
 }
 
 void JoinDialog::respondToJoinHit()
 {
-	gPregameChatHistory.clear ();
-	if (gMetaserverClient->isConnected ()) {
-		m_chatChoiceWidget->activate ();
-		m_chatChoiceWidget->set_value (kMetaserverChat);
+	gPregameChatHistory.clear();
+	if (gMetaserverClient->isConnected())
+	{
+		m_chatChoiceWidget->activate();
+		m_chatChoiceWidget->set_value(kMetaserverChat);
 		gMetaserverClient->associateNotificationAdapter(this);
-		m_chatWidget->attachHistory (&gMetaserverChatHistory);
-	} else {
-		m_chatWidget->attachHistory (&gPregameChatHistory);
+		m_chatWidget->attachHistory(&gMetaserverChatHistory);
 	}
-	m_chatEntryWidget->activate ();	
+	else
+	{
+		m_chatWidget->attachHistory(&gPregameChatHistory);
+	}
+	m_chatEntryWidget->activate();
 	NetSetChatCallbacks(this);
 }
 
-void JoinDialog::attemptJoin ()
+void JoinDialog::attemptJoin()
 {
-	char* hintString = NULL;
-	
-	if(m_joinByAddressWidget->get_value()) {
+	char *hintString = NULL;
+
+	if (m_joinByAddressWidget->get_value())
+	{
 		hintString = new char[256];
-		copy_string_to_cstring (m_joinAddressWidget->get_text (), hintString);
+		copy_string_to_cstring(m_joinAddressWidget->get_text(), hintString);
 	}
-	
+
 	player_info myPlayerInfo;
-	copy_string_to_cstring (m_nameWidget->get_text (), myPlayerInfo.name, MAX_NET_PLAYER_NAME_LENGTH);
-	myPlayerInfo.team = m_teamWidget->get_value ();
-	myPlayerInfo.desired_color = m_colourWidget->get_value ();
-	
+	copy_string_to_cstring(m_nameWidget->get_text(), myPlayerInfo.name, MAX_NET_PLAYER_NAME_LENGTH);
+	myPlayerInfo.team = m_teamWidget->get_value();
+	myPlayerInfo.desired_color = m_colourWidget->get_value();
+
 	// jkvw: It may look like we're passing our player name into NetGameJoin,
 	//       but network code will later draw the name directly from prefs.
-	binders.migrate_all_first_to_second ();	
-	bool result = NetGameJoin((void *) &myPlayerInfo, sizeof(myPlayerInfo), hintString);
-	
+	binders.migrate_all_first_to_second();
+	bool result = NetGameJoin((void *)&myPlayerInfo, sizeof(myPlayerInfo), hintString);
+
 	if (hintString)
-		delete [] hintString;
+		delete[] hintString;
 
-	if (result) {
-		m_nameWidget->deactivate ();
-		m_teamWidget->deactivate ();
-		m_colourWidget->deactivate ();
+	if (result)
+	{
+		m_nameWidget->deactivate();
+		m_teamWidget->deactivate();
+		m_colourWidget->deactivate();
 
-		m_joinAddressWidget->deactivate ();
-		m_joinByAddressWidget->deactivate ();
-		m_joinWidget->deactivate ();
-		m_joinMetaserverWidget->deactivate ();
-		
+		m_joinAddressWidget->deactivate();
+		m_joinByAddressWidget->deactivate();
+		m_joinWidget->deactivate();
+		m_joinMetaserverWidget->deactivate();
+
 		getcstr(temporary, strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string);
 		m_messagesWidget->set_text(temporary);
 
-		if (!m_joinByAddressWidget->get_value()) {
+		if (!m_joinByAddressWidget->get_value())
+		{
 			join_announcer.reset(new JoinerSeekingGathererAnnouncer(true));
 		}
-		
-		respondToJoinHit ();
+
+		respondToJoinHit();
 	}
 }
 
-void JoinDialog::gathererSearch ()
+void JoinDialog::gathererSearch()
 {
 	if (skipToMetaserver)
 	{
@@ -672,91 +690,93 @@ void JoinDialog::gathererSearch ()
 
 	JoinerSeekingGathererAnnouncer::pump();
 	MetaserverClient::pumpAll();
-	
+
 	switch (NetUpdateJoinState())
 	{
-		case NONE: // haven't Joined yet.
-			join_result = kNetworkJoinFailedUnjoined;
-			break;
+	case NONE: // haven't Joined yet.
+		join_result = kNetworkJoinFailedUnjoined;
+		break;
 
-		case netConnecting:
-		case netJoining:
-			join_result = kNetworkJoinFailedJoined;
-			break;
+	case netConnecting:
+	case netJoining:
+		join_result = kNetworkJoinFailedJoined;
+		break;
 
-		case netCancelled: // the server cancelled the game; force bail
-			join_result = kNetworkJoinFailedJoined;
-			Stop ();
-			break;
+	case netCancelled: // the server cancelled the game; force bail
+		join_result = kNetworkJoinFailedJoined;
+		Stop();
+		break;
 
-		case netWaiting:
-			join_result = kNetworkJoinFailedJoined;
-			break;
+	case netWaiting:
+		join_result = kNetworkJoinFailedJoined;
+		break;
 
-		case netStartingUp: // the game is starting up (we have the network topography)
-			join_result = kNetworkJoinedNewGame;
-			Stop ();
-			break;
+	case netStartingUp: // the game is starting up (we have the network topography)
+		join_result = kNetworkJoinedNewGame;
+		Stop();
+		break;
 
-		case netStartingResumeGame: // the game is starting up a resume game (we have the network topography)
-			join_result = kNetworkJoinedResumeGame;
-			Stop ();
-			break;
+	case netStartingResumeGame: // the game is starting up a resume game (we have the network topography)
+		join_result = kNetworkJoinedResumeGame;
+		Stop();
+		break;
 
-		case netPlayerChanged:
-		case netPlayerAdded:
-	        case netPlayerDropped:
-			if (!got_gathered) {
-				// Do this stuff only once - when we become gathered
-				got_gathered = true;
-				char joinMessage[256];
-				game_info *info= (game_info *)NetGetGameData();
-				get_network_joined_message(joinMessage, info->net_game_type);
-				m_messagesWidget->set_text(std::string(joinMessage));
-				if (!(info->game_options & _force_unique_teams)) {
-					m_teamWidget->activate ();
-				}
-				m_colourWidget->activate ();
-				m_colourWidget->set_callback(boost::bind(&JoinDialog::changeColours, this));
-				m_teamWidget->set_callback(boost::bind(&JoinDialog::changeColours, this));
+	case netPlayerChanged:
+	case netPlayerAdded:
+	case netPlayerDropped:
+		if (!got_gathered)
+		{
+			// Do this stuff only once - when we become gathered
+			got_gathered = true;
+			char joinMessage[256];
+			game_info *info = (game_info *)NetGetGameData();
+			get_network_joined_message(joinMessage, info->net_game_type);
+			m_messagesWidget->set_text(std::string(joinMessage));
+			if (!(info->game_options & _force_unique_teams))
+			{
+				m_teamWidget->activate();
 			}
-			m_pigWidget->redraw ();
-			join_result = kNetworkJoinFailedJoined;
-			break;
+			m_colourWidget->activate();
+			m_colourWidget->set_callback(std::bind(&JoinDialog::changeColours, this));
+			m_teamWidget->set_callback(std::bind(&JoinDialog::changeColours, this));
+		}
+		m_pigWidget->redraw();
+		join_result = kNetworkJoinFailedJoined;
+		break;
 
-		case netJoinErrorOccurred:
-			join_result = kNetworkJoinFailedJoined;
-			Stop ();
-			break;
-                
-		case netChatMessageReceived:
-			// Show chat message
-			join_result = kNetworkJoinFailedJoined;
-			break;
+	case netJoinErrorOccurred:
+		join_result = kNetworkJoinFailedJoined;
+		Stop();
+		break;
 
-		default:
-			assert(false);
+	case netChatMessageReceived:
+		// Show chat message
+		join_result = kNetworkJoinFailedJoined;
+		break;
+
+	default:
+		assert(false);
 	}
 }
 
-void JoinDialog::changeColours ()
+void JoinDialog::changeColours()
 {
-	int requested_colour = m_colourWidget->get_value ();
-	int requested_team = m_teamWidget->get_value ();
+	int requested_colour = m_colourWidget->get_value();
+	int requested_team = m_teamWidget->get_value();
 	NetChangeColors(requested_colour, requested_team);
 }
 
-void JoinDialog::getJoinAddressFromMetaserver ()
+void JoinDialog::getJoinAddressFromMetaserver()
 {
 	// jkvw: The network metaserver code will draw our name and colour info directly from prefs.
-	binders.migrate_all_first_to_second ();
+	binders.migrate_all_first_to_second();
 
 	try
 	{
 		IPaddress result = run_network_metaserver_ui();
-		if(result.host != 0)
+		if (result.host != 0)
 		{
-			uint8* hostBytes = reinterpret_cast<uint8*>(&(result.host));
+			uint8 *hostBytes = reinterpret_cast<uint8 *>(&(result.host));
 			std::ostringstream s;
 			s << (uint16)hostBytes[0] << '.'
 			  << (uint16)hostBytes[1] << '.'
@@ -766,71 +786,71 @@ void JoinDialog::getJoinAddressFromMetaserver ()
 			{
 				s << ':' << result.port;
 			}
-			m_joinByAddressWidget->set_value (true);
-			m_joinAddressWidget->set_text (s.str());
-			m_joinWidget->push ();
+			m_joinByAddressWidget->set_value(true);
+			m_joinAddressWidget->set_text(s.str());
+			m_joinWidget->push();
 		}
 	}
-	catch (const MetaserverClient::LoginDeniedException& e)
+	catch (const MetaserverClient::LoginDeniedException &e)
 	{
 		char message[1024];
 		if (e.code() == MetaserverClient::LoginDeniedException::BadUserOrPassword)
 		{
-			strcpy(message, "ƒƒOƒCƒ“‹‘”ÛF•s³‚Èƒ†[ƒU–¼‚à‚µ‚­‚ÍAƒpƒXƒ[ƒh‚Å‚·B");
+			strcpy(message, "ãƒ­ã‚°ã‚¤ãƒ³æ‹’å¦ï¼šä¸æ­£ãªãƒ¦ãƒ¼ã‚¶åã‚‚ã—ãã¯ã€ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã§ã™ã€‚");
 		}
 		else if (e.code() == MetaserverClient::LoginDeniedException::UserAlreadyLoggedIn)
 		{
-			strcpy(message, "ƒƒOƒCƒ“‹‘”ÛF‚»‚Ìƒ†[ƒU‚ÍA‚·‚Å‚ÉƒƒOƒCƒ“‚µ‚Ä‚¢‚Ü‚·B");
+			strcpy(message, "ãƒ­ã‚°ã‚¤ãƒ³æ‹’å¦ï¼šãã®ãƒ¦ãƒ¼ã‚¶ã¯ã€ã™ã§ã«ãƒ­ã‚°ã‚¤ãƒ³ã—ã¦ã„ã¾ã™ã€‚");
 		}
 		else if (e.code() == MetaserverClient::LoginDeniedException::AccountAlreadyLoggedIn)
 		{
-			strcpy(message, "ƒƒOƒCƒ“‹‘”ÛF‚»‚ÌƒAƒJƒEƒ“ƒg‚ÍA‚·‚Å‚ÉƒƒOƒCƒ“‚µ‚Ä‚¢‚Ü‚·B");
+			strcpy(message, "ãƒ­ã‚°ã‚¤ãƒ³æ‹’å¦ï¼šãã®ã‚¢ã‚«ã‚¦ãƒ³ãƒˆã¯ã€ã™ã§ã«ãƒ­ã‚°ã‚¤ãƒ³ã—ã¦ã„ã¾ã™ã€‚");
 		}
 		else if (e.code() == MetaserverClient::LoginDeniedException::RoomFull)
 		{
-			strcpy(message, "ƒƒOƒCƒ“‹‘”ÛFƒ‹[ƒ€‚ª–žÈIH");
+			strcpy(message, "ãƒ­ã‚°ã‚¤ãƒ³æ‹’å¦ï¼šãƒ«ãƒ¼ãƒ ãŒæº€å¸­ï¼ï¼Ÿ");
 		}
 		else if (e.code() == MetaserverClient::LoginDeniedException::AccountLocked)
 		{
-			strcpy(message, "ƒƒOƒCƒ“‹‘”ÛF‚ ‚È‚½‚ÌƒAƒJƒEƒ“ƒg‚ÍƒƒbƒN‚³‚ê‚Ä‚¢‚Ü‚·B");
+			strcpy(message, "ãƒ­ã‚°ã‚¤ãƒ³æ‹’å¦ï¼šã‚ãªãŸã®ã‚¢ã‚«ã‚¦ãƒ³ãƒˆã¯ãƒ­ãƒƒã‚¯ã•ã‚Œã¦ã„ã¾ã™ã€‚");
 		}
 		else
 		{
-			sprintf(message, "ƒCƒ“ƒ^[ƒlƒbƒgã‚ÌƒT[ƒo[‚Ö‚ÌÚ‘±Žž‚É–â‘è‚ª”­¶‚µ‚Ü‚µ‚½F%s@‚¨Žè”‚Å‚·‚ªA‚µ‚Î‚ç‚­‚½‚Á‚Ä‚©‚ç‚à‚¤ˆê“x‚â‚è’¼‚µ‚Ä‚­‚¾‚³‚¢B", e.what());
+			sprintf(message, "ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒƒãƒˆä¸Šã®ã‚µãƒ¼ãƒãƒ¼ã¸ã®æŽ¥ç¶šæ™‚ã«å•é¡ŒãŒç™ºç”Ÿã—ã¾ã—ãŸï¼š%sã€€ãŠæ‰‹æ•°ã§ã™ãŒã€ã—ã°ã‚‰ããŸã£ã¦ã‹ã‚‰ã‚‚ã†ä¸€åº¦ã‚„ã‚Šç›´ã—ã¦ãã ã•ã„ã€‚", e.what());
 		}
 
 		alert_user(message, 0);
 	}
-	catch (const MetaserverClient::ServerConnectException&)
+	catch (const MetaserverClient::ServerConnectException &)
 	{
 		alert_user(infoError, strNETWORK_ERRORS, netErrMetaserverConnectionFailure, 0);
 	}
 }
 
-void JoinDialog::sendChat ()
+void JoinDialog::sendChat()
 {
 	string message = m_chatEntryWidget->get_text();
-	
-	if (m_chatChoiceWidget->get_value () == kMetaserverChat)
-		gMetaserverClient->sendChatMessage(message);		
+
+	if (m_chatChoiceWidget->get_value() == kMetaserverChat)
+		gMetaserverClient->sendChatMessage(message);
 	else
 		SendChatMessage(message);
-	
+
 	m_chatEntryWidget->set_text(string());
 }
 
-void JoinDialog::chatTextEntered (char character)
+void JoinDialog::chatTextEntered(char character)
 {
 	if (character == '\r')
 		sendChat();
 }
 
-void JoinDialog::chatChoiceHit ()
+void JoinDialog::chatChoiceHit()
 {
-	if (m_chatChoiceWidget->get_value () == kPregameChat)
-		m_chatWidget->attachHistory (&gPregameChatHistory);
+	if (m_chatChoiceWidget->get_value() == kPregameChat)
+		m_chatWidget->attachHistory(&gPregameChatHistory);
 	else
-		m_chatWidget->attachHistory (&gMetaserverChatHistory);
+		m_chatWidget->attachHistory(&gMetaserverChatHistory);
 }
 
 void JoinDialog::ReceivedMessageFromPlayer(const char *player_name, const char *message)
@@ -839,7 +859,7 @@ void JoinDialog::ReceivedMessageFromPlayer(const char *player_name, const char *
 	e.type = ColoredChatEntry::ChatMessage;
 	e.sender = player_name;
 	e.message = message;
-	
+
 	gPregameChatHistory.append(e);
 }
 
@@ -853,13 +873,16 @@ bool network_game_setup(
 	player_info *player_information,
 	game_info *game_information,
 	bool ResumingGame,
-	bool& outAdvertiseGameOnMetaserver)
+	bool &outAdvertiseGameOnMetaserver)
 {
-	if (SetupNetgameDialog::Create ()->SetupNetworkGameByRunning (player_information, game_information, ResumingGame, outAdvertiseGameOnMetaserver)) {
-		write_preferences ();
+	if (SetupNetgameDialog::Create()->SetupNetworkGameByRunning(player_information, game_information, ResumingGame, outAdvertiseGameOnMetaserver))
+	{
+		write_preferences();
 		return true;
-	} else {
-		read_preferences ();
+	}
+	else
+	{
+		read_preferences();
 		load_environment_from_preferences(); // In case user changed map
 		return false;
 	}
@@ -869,77 +892,82 @@ bool network_game_setup(
 class LevelInt16Pref : public Bindable<int>
 {
 public:
-	LevelInt16Pref (int16& pref, int& gametype) : m_pref (pref), m_gametype (gametype) {}
-	
-	virtual int bind_export ()
+	LevelInt16Pref(int16 &pref, int &gametype) : m_pref(pref), m_gametype(gametype) {}
+
+	virtual int bind_export()
 	{
-		int32 entry_flags = get_entry_point_flags_for_game_type (m_gametype);
-		return level_index_to_menu_index (m_pref, entry_flags);
+		int32 entry_flags = get_entry_point_flags_for_game_type(m_gametype);
+		return level_index_to_menu_index(m_pref, entry_flags);
 	}
-	
-	virtual void bind_import (int value)
+
+	virtual void bind_import(int value)
 	{
-		int32 entry_flags = get_entry_point_flags_for_game_type (m_gametype);
-		m_pref = menu_index_to_level_index (value, entry_flags);
+		int32 entry_flags = get_entry_point_flags_for_game_type(m_gametype);
+		m_pref = menu_index_to_level_index(value, entry_flags);
 	}
-	
+
 protected:
-	int16& m_pref;
-	int& m_gametype;
+	int16 &m_pref;
+	int &m_gametype;
 };
 
 class TimerInt32Pref : public Bindable<int>
 {
 public:
-	TimerInt32Pref (int32& pref) : m_pref (pref) {}
-	
-	virtual int bind_export ()
+	TimerInt32Pref(int32 &pref) : m_pref(pref) {}
+
+	virtual int bind_export()
 	{
 		return m_pref / (60 * TICKS_PER_SECOND);
 	}
-	
-	virtual void bind_import (int value)
+
+	virtual void bind_import(int value)
 	{
 		m_pref = static_cast<int32>(value) * (60 * TICKS_PER_SECOND);
 	}
-	
+
 protected:
-	int32& m_pref;
+	int32 &m_pref;
 };
 
 // limit type is represented by a bool and a bit in game options
 class LimitTypePref : public Bindable<int>
 {
 public:
-	LimitTypePref (bool& untimed_pref, uint16& options_pref, uint16 kill_limit_mask)
-		: m_untimed (untimed_pref)
-		, m_kill_limited (options_pref, kill_limit_mask)
-		{}
-	
-	virtual int bind_export ()
+	LimitTypePref(bool &untimed_pref, uint16 &options_pref, uint16 kill_limit_mask)
+		: m_untimed(untimed_pref), m_kill_limited(options_pref, kill_limit_mask)
 	{
-		if (!m_untimed.bind_export ())
+	}
+
+	virtual int bind_export()
+	{
+		if (!m_untimed.bind_export())
 			return duration_time_limit;
-		else if (m_kill_limited.bind_export ())
+		else if (m_kill_limited.bind_export())
 			return duration_kill_limit;
 		else
 			return duration_no_time_limit;
 	}
-	
-	virtual void bind_import (int value)
+
+	virtual void bind_import(int value)
 	{
-		if (value == duration_no_time_limit) {
-			m_untimed.bind_import (true);
-			m_kill_limited.bind_import (false);
-		} else if (value == duration_time_limit) {
-			m_untimed.bind_import (false);
-			m_kill_limited.bind_import (false);
-		} else {
-			m_untimed.bind_import (true);
-			m_kill_limited.bind_import (true);
+		if (value == duration_no_time_limit)
+		{
+			m_untimed.bind_import(true);
+			m_kill_limited.bind_import(false);
+		}
+		else if (value == duration_time_limit)
+		{
+			m_untimed.bind_import(false);
+			m_kill_limited.bind_import(false);
+		}
+		else
+		{
+			m_untimed.bind_import(true);
+			m_kill_limited.bind_import(true);
 		}
 	}
-	
+
 protected:
 	BoolPref m_untimed;
 	BitPref m_kill_limited;
@@ -948,108 +976,112 @@ protected:
 class GametypePref : public Bindable<int>
 {
 public:
-	GametypePref (int16& pref) : m_pref (pref) {}
-	
-	virtual int bind_export ()
+	GametypePref(int16 &pref) : m_pref(pref) {}
+
+	virtual int bind_export()
 	{
 		return ((m_pref < 5) ? m_pref : m_pref - 1);
 	}
-	
-	virtual void bind_import (int value)
+
+	virtual void bind_import(int value)
 	{
 		m_pref = ((value < 5) ? value : value + 1);
 	}
-	
+
 protected:
-	int16& m_pref;
+	int16 &m_pref;
 };
 
 class LatencyTolerancePref : public Bindable<int>
 {
 public:
-	LatencyTolerancePref (int32& pref) : m_pref(pref) { }
-	
-	virtual int bind_export () {
+	LatencyTolerancePref(int32 &pref) : m_pref(pref) {}
+
+	virtual int bind_export()
+	{
 		return (m_pref == 0) ? 5 : (m_pref - 1);
 	}
 
-	virtual void bind_import(int value) {
+	virtual void bind_import(int value)
+	{
 		m_pref = (value == 5) ? 0 : (value + 1);
 	}
+
 protected:
-	int32& m_pref;
+	int32 &m_pref;
 };
 
-static const vector<string> make_entry_vector (int32 entry_flags)
-{	
+static const vector<string> make_entry_vector(int32 entry_flags)
+{
 	vector<string> result;
-	
+
 	entry_point ep;
 	short index = 0;
-	
-	while (get_indexed_entry_point (&ep, &index, entry_flags))
-		result.push_back (string (ep.level_name));
-	
+
+	while (get_indexed_entry_point(&ep, &index, entry_flags))
+		result.push_back(string(ep.level_name));
+
 	return result;
 }
 
 SetupNetgameDialog::SetupNetgameDialog()
-{  }
+{
+}
 
-SetupNetgameDialog::~SetupNetgameDialog ()
+SetupNetgameDialog::~SetupNetgameDialog()
 {
 	delete m_cancelWidget;
 	delete m_okWidget;
-	
+
 	delete m_nameWidget;
 	delete m_colourWidget;
 	delete m_teamWidget;
-	
+
 	delete m_mapWidget;
 	delete m_levelWidget;
 	delete m_gameTypeWidget;
 	delete m_difficultyWidget;
-	
+
 	delete m_timeLimitWidget;
 	delete m_scoreLimitWidget;
-	
+
 	delete m_aliensWidget;
 	delete m_allowTeamsWidget;
 	delete m_deadPlayersDropItemsWidget;
 	delete m_penalizeDeathWidget;
 	delete m_penalizeSuicideWidget;
-	
+
 	delete m_useMetaserverWidget;
-	
+
 	delete m_useScriptWidget;
 	delete m_scriptWidget;
-	
+
 	delete m_allowMicWidget;
-	
+
 	delete m_liveCarnageWidget;
 	delete m_motionSensorWidget;
-	
+
 	delete m_zoomWidget;
 	delete m_crosshairWidget;
 	delete m_overlayWidget;
 	delete m_laraCroftWidget;
 	delete m_carnageMessagesWidget;
-	
+
 	delete m_useUpnpWidget;
 }
 
-extern int32& hub_get_minimum_send_period();
+extern int32 &hub_get_minimum_send_period();
 
-bool SetupNetgameDialog::SetupNetworkGameByRunning (
+bool SetupNetgameDialog::SetupNetworkGameByRunning(
 	player_info *player_information,
 	game_info *game_information,
 	bool resuming_game,
-	bool& outAdvertiseGameOnMetaserver)
+	bool &outAdvertiseGameOnMetaserver)
 {
 	int32 entry_flags;
 
-	m_allow_all_levels = allLevelsAllowed ();
-	
+	m_allow_all_levels = allLevelsAllowed();
+
 	// We use a temporary structure so that we can change things without messing with the real preferences
 	network_preferences_data theAdjustedPreferences = *network_preferences;
 	if (resuming_game)
@@ -1071,39 +1103,41 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 			theAdjustedPreferences.game_options |= _live_network_stats; // single-player game doesn't, and they probably want it
 		}
 		m_allow_all_levels = true;
-		
+
 		// If resuming an untimed game, show the "time limit" from the prefs in the grayed-out widget
 		// rather than some ridiculously large number
 		if (theAdjustedPreferences.game_is_untimed)
-			theAdjustedPreferences.time_limit = theAdjustedPreferences.time_limit/TICKS_PER_SECOND/60;
-		
+			theAdjustedPreferences.time_limit = theAdjustedPreferences.time_limit / TICKS_PER_SECOND / 60;
+
 		// Disable certain elements when resuming a game
-		m_gameTypeWidget->deactivate ();
-		m_levelWidget->deactivate ();
-		m_scoreLimitWidget->deactivate ();
-		m_timeLimitWidget->deactivate ();
-		m_limitTypeWidget->deactivate ();
-		m_mapWidget->deactivate ();
+		m_gameTypeWidget->deactivate();
+		m_levelWidget->deactivate();
+		m_scoreLimitWidget->deactivate();
+		m_timeLimitWidget->deactivate();
+		m_limitTypeWidget->deactivate();
+		m_mapWidget->deactivate();
 	}
 
 	// if we're resuming, use the temporary prefs structure, otherwise use the prefs as usual
-	network_preferences_data* active_network_preferences = resuming_game ? &theAdjustedPreferences : network_preferences;
+	network_preferences_data *active_network_preferences = resuming_game ? &theAdjustedPreferences : network_preferences;
 
 	m_old_game_type = active_network_preferences->game_type;
 
 	/* Fill in the entry points */
-	if(m_allow_all_levels)
+	if (m_allow_all_levels)
 	{
-		entry_flags= NONE;
-	} else {
-		entry_flags= get_entry_point_flags_for_game_type(active_network_preferences->game_type);
+		entry_flags = NONE;
 	}
-	m_levelWidget->set_labels (make_entry_vector (entry_flags));
-	m_gameTypeWidget->set_labels (kNetworkGameTypesStringSetID);
-	m_colourWidget->set_labels (kTeamColorsStringSetID);
-	m_teamWidget->set_labels (kTeamColorsStringSetID);
-	m_difficultyWidget->set_labels (kDifficultyLevelsStringSetID);
-	m_limitTypeWidget->set_labels (kEndConditionTypeStringSetID);
+	else
+	{
+		entry_flags = get_entry_point_flags_for_game_type(active_network_preferences->game_type);
+	}
+	m_levelWidget->set_labels(make_entry_vector(entry_flags));
+	m_gameTypeWidget->set_labels(kNetworkGameTypesStringSetID);
+	m_colourWidget->set_labels(kTeamColorsStringSetID);
+	m_teamWidget->set_labels(kTeamColorsStringSetID);
+	m_difficultyWidget->set_labels(kDifficultyLevelsStringSetID);
+	m_limitTypeWidget->set_labels(kEndConditionTypeStringSetID);
 
 	vector<string> toleranceLabels;
 	toleranceLabels.push_back("33 ms");
@@ -1112,114 +1146,117 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	toleranceLabels.push_back("133 ms");
 	toleranceLabels.push_back("166 ms");
 	toleranceLabels.push_back("2 sec");
-	m_latencyToleranceWidget->set_labels (toleranceLabels);
-	
+	m_latencyToleranceWidget->set_labels(toleranceLabels);
+
 	BinderSet binders;
-	
-	CStringPref namePref (player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH);
-	binders.insert<std::string> (m_nameWidget, &namePref);
-	Int16Pref colourPref (player_preferences->color);
-	binders.insert<int> (m_colourWidget, &colourPref);
-	Int16Pref teamPref (player_preferences->team);
-	binders.insert<int> (m_teamWidget, &teamPref);
 
-	FilePref mapPref (environment_preferences->map_file);
-	binders.insert<FileSpecifier> (m_mapWidget, &mapPref);
+	CStringPref namePref(player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH);
+	binders.insert<std::string>(m_nameWidget, &namePref);
+	Int16Pref colourPref(player_preferences->color);
+	binders.insert<int>(m_colourWidget, &colourPref);
+	Int16Pref teamPref(player_preferences->team);
+	binders.insert<int>(m_teamWidget, &teamPref);
 
-	LevelInt16Pref levelPref (active_network_preferences->entry_point, m_old_game_type);
-	binders.insert<int> (m_levelWidget, &levelPref);
-	GametypePref gameTypePref (active_network_preferences->game_type);
-	binders.insert<int> (m_gameTypeWidget, &gameTypePref);
-	Int16Pref difficultyPref (active_network_preferences->difficulty_level);
-	binders.insert<int> (m_difficultyWidget, &difficultyPref);
+	FilePref mapPref(environment_preferences->map_file);
+	binders.insert<FileSpecifier>(m_mapWidget, &mapPref);
 
-	LimitTypePref limitTypePref (active_network_preferences->game_is_untimed, active_network_preferences->game_options, _game_has_kill_limit);
-	binders.insert<int> (m_limitTypeWidget, &limitTypePref);
-	TimerInt32Pref timeLimitPref (active_network_preferences->time_limit);
-	binders.insert<int> (m_timeLimitWidget, &timeLimitPref);
-	Int16Pref scoreLimitPref (active_network_preferences->kill_limit);
-	binders.insert<int> (m_scoreLimitWidget, &scoreLimitPref);
-	
-	BitPref aliensPref (active_network_preferences->game_options, _monsters_replenish);
-	binders.insert<bool> (m_aliensWidget, &aliensPref);
-	BitPref allowTeamsPref (active_network_preferences->game_options, _force_unique_teams, true);
-	binders.insert<bool> (m_allowTeamsWidget, &allowTeamsPref);
-	BitPref deadPlayersDropItemsPref (active_network_preferences->game_options, _burn_items_on_death, true);
-	binders.insert<bool> (m_deadPlayersDropItemsWidget, &deadPlayersDropItemsPref);
-	BitPref penalizeDeathPref (active_network_preferences->game_options, _dying_is_penalized);
-	binders.insert<bool> (m_penalizeDeathWidget, &penalizeDeathPref);
-	BitPref penalizeSuicidePref (active_network_preferences->game_options, _suicide_is_penalized);
-	binders.insert<bool> (m_penalizeSuicideWidget, &penalizeSuicidePref);
-				
-	BoolPref useMetaserverPref (active_network_preferences->advertise_on_metaserver);
-	binders.insert<bool> (m_useMetaserverWidget, &useMetaserverPref);
-	
-	BoolPref allowMicPref (active_network_preferences->allow_microphone);
-	binders.insert<bool> (m_allowMicWidget, &allowMicPref);
-	
-	BitPref liveCarnagePref (active_network_preferences->game_options, _live_network_stats);
-	binders.insert<bool> (m_liveCarnageWidget, &liveCarnagePref);
-	BitPref motionSensorPref (active_network_preferences->game_options, _motion_sensor_does_not_work);
-	binders.insert<bool> (m_motionSensorWidget, &motionSensorPref);
+	LevelInt16Pref levelPref(active_network_preferences->entry_point, m_old_game_type);
+	binders.insert<int>(m_levelWidget, &levelPref);
+	GametypePref gameTypePref(active_network_preferences->game_type);
+	binders.insert<int>(m_gameTypeWidget, &gameTypePref);
+	Int16Pref difficultyPref(active_network_preferences->difficulty_level);
+	binders.insert<int>(m_difficultyWidget, &difficultyPref);
 
-	BitPref zoomPref (active_network_preferences->cheat_flags, _allow_tunnel_vision);
-	binders.insert<bool> (m_zoomWidget, &zoomPref);
-	BitPref crosshairPref (active_network_preferences->cheat_flags, _allow_crosshair);
-	binders.insert<bool> (m_crosshairWidget, &crosshairPref);
-	BitPref overlayPref (active_network_preferences->cheat_flags, _allow_overlay_map);
-	binders.insert<bool> (m_overlayWidget, &overlayPref);
-	BitPref laraCroftPref (active_network_preferences->cheat_flags, _allow_behindview);
-	binders.insert<bool> (m_laraCroftWidget, &laraCroftPref);
-	BitPref carnageMessagesPref (active_network_preferences->cheat_flags, _disable_carnage_messages, true);
-	binders.insert<bool> (m_carnageMessagesWidget, &carnageMessagesPref);
-	BitPref savingLevelPref (active_network_preferences->cheat_flags, _disable_saving_level, true);
-	binders.insert<bool> (m_savingLevelWidget, &savingLevelPref);
+	LimitTypePref limitTypePref(active_network_preferences->game_is_untimed, active_network_preferences->game_options, _game_has_kill_limit);
+	binders.insert<int>(m_limitTypeWidget, &limitTypePref);
+	TimerInt32Pref timeLimitPref(active_network_preferences->time_limit);
+	binders.insert<int>(m_timeLimitWidget, &timeLimitPref);
+	Int16Pref scoreLimitPref(active_network_preferences->kill_limit);
+	binders.insert<int>(m_scoreLimitWidget, &scoreLimitPref);
 
-	BoolPref useScriptPref (active_network_preferences->use_netscript);
-	binders.insert<bool> (m_useScriptWidget, &useScriptPref);
-	FilePref scriptPref (active_network_preferences->netscript_file);
-	binders.insert<FileSpecifier> (m_scriptWidget, &scriptPref);
-	
-	BoolPref useUpnpPref (active_network_preferences->attempt_upnp);
-	binders.insert<bool> (m_useUpnpWidget, &useUpnpPref);
+	BitPref aliensPref(active_network_preferences->game_options, _monsters_replenish);
+	binders.insert<bool>(m_aliensWidget, &aliensPref);
+	BitPref allowTeamsPref(active_network_preferences->game_options, _force_unique_teams, true);
+	binders.insert<bool>(m_allowTeamsWidget, &allowTeamsPref);
+	BitPref deadPlayersDropItemsPref(active_network_preferences->game_options, _burn_items_on_death, true);
+	binders.insert<bool>(m_deadPlayersDropItemsWidget, &deadPlayersDropItemsPref);
+	BitPref penalizeDeathPref(active_network_preferences->game_options, _dying_is_penalized);
+	binders.insert<bool>(m_penalizeDeathWidget, &penalizeDeathPref);
+	BitPref penalizeSuicidePref(active_network_preferences->game_options, _suicide_is_penalized);
+	binders.insert<bool>(m_penalizeSuicideWidget, &penalizeSuicidePref);
 
-	LatencyTolerancePref latencyTolerancePref (hub_get_minimum_send_period());
-	binders.insert<int> (m_latencyToleranceWidget, &latencyTolerancePref);
+	BoolPref useMetaserverPref(active_network_preferences->advertise_on_metaserver);
+	binders.insert<bool>(m_useMetaserverWidget, &useMetaserverPref);
 
-	binders.migrate_all_second_to_first ();
-	
-	m_cancelWidget->set_callback (boost::bind (&SetupNetgameDialog::Stop, this, false));
-	m_okWidget->set_callback (boost::bind (&SetupNetgameDialog::okHit, this));
-	m_limitTypeWidget->set_callback (boost::bind (&SetupNetgameDialog::limitTypeHit, this));
-	m_allowTeamsWidget->set_callback (boost::bind (&SetupNetgameDialog::teamsHit, this));
-	m_gameTypeWidget->set_callback (boost::bind (&SetupNetgameDialog::gameTypeHit, this));
-	m_mapWidget->set_callback (boost::bind (&SetupNetgameDialog::chooseMapHit, this));
+	BoolPref allowMicPref(active_network_preferences->allow_microphone);
+	binders.insert<bool>(m_allowMicWidget, &allowMicPref);
 
-	setupForGameType ();
+	BitPref liveCarnagePref(active_network_preferences->game_options, _live_network_stats);
+	binders.insert<bool>(m_liveCarnageWidget, &liveCarnagePref);
+	BitPref motionSensorPref(active_network_preferences->game_options, _motion_sensor_does_not_work);
+	binders.insert<bool>(m_motionSensorWidget, &motionSensorPref);
 
-	if (m_limitTypeWidget->get_value () == duration_kill_limit)
-		setupForScoreGame ();
-	else if (m_limitTypeWidget->get_value () == duration_no_time_limit)
-		setupForUntimedGame ();
+	BitPref zoomPref(active_network_preferences->cheat_flags, _allow_tunnel_vision);
+	binders.insert<bool>(m_zoomWidget, &zoomPref);
+	BitPref crosshairPref(active_network_preferences->cheat_flags, _allow_crosshair);
+	binders.insert<bool>(m_crosshairWidget, &crosshairPref);
+	BitPref overlayPref(active_network_preferences->cheat_flags, _allow_overlay_map);
+	binders.insert<bool>(m_overlayWidget, &overlayPref);
+	BitPref laraCroftPref(active_network_preferences->cheat_flags, _allow_behindview);
+	binders.insert<bool>(m_laraCroftWidget, &laraCroftPref);
+	BitPref carnageMessagesPref(active_network_preferences->cheat_flags, _disable_carnage_messages, true);
+	binders.insert<bool>(m_carnageMessagesWidget, &carnageMessagesPref);
+	BitPref savingLevelPref(active_network_preferences->cheat_flags, _disable_saving_level, true);
+	binders.insert<bool>(m_savingLevelWidget, &savingLevelPref);
+
+	BoolPref useScriptPref(active_network_preferences->use_netscript);
+	binders.insert<bool>(m_useScriptWidget, &useScriptPref);
+	FilePref scriptPref(active_network_preferences->netscript_file);
+	binders.insert<FileSpecifier>(m_scriptWidget, &scriptPref);
+
+#ifdef HAVE_MINIUPNPC
+	BoolPref useUpnpPref(active_network_preferences->attempt_upnp);
+	binders.insert<bool>(m_useUpnpWidget, &useUpnpPref);
+#endif
+
+	LatencyTolerancePref latencyTolerancePref(hub_get_minimum_send_period());
+	binders.insert<int>(m_latencyToleranceWidget, &latencyTolerancePref);
+
+	binders.migrate_all_second_to_first();
+
+	m_cancelWidget->set_callback(std::bind(&SetupNetgameDialog::Stop, this, false));
+	m_okWidget->set_callback(std::bind(&SetupNetgameDialog::okHit, this));
+	m_limitTypeWidget->set_callback(std::bind(&SetupNetgameDialog::limitTypeHit, this));
+	m_allowTeamsWidget->set_callback(std::bind(&SetupNetgameDialog::teamsHit, this));
+	m_gameTypeWidget->set_callback(std::bind(&SetupNetgameDialog::gameTypeHit, this));
+	m_mapWidget->set_callback(std::bind(&SetupNetgameDialog::chooseMapHit, this));
+
+	setupForGameType();
+
+	if (m_limitTypeWidget->get_value() == duration_kill_limit)
+		setupForScoreGame();
+	else if (m_limitTypeWidget->get_value() == duration_no_time_limit)
+		setupForUntimedGame();
 	else
-		setupForTimedGame ();
+		setupForTimedGame();
 
 	/* Setup the team popup.. */
-	if (!m_allowTeamsWidget->get_value ())
-		m_teamWidget->deactivate ();
-	
-	if (Run ()) {
-	
+	if (!m_allowTeamsWidget->get_value())
+		m_teamWidget->deactivate();
+
+	if (Run())
+	{
+
 		// migrate widget settings to preferences structure
-		binders.migrate_all_first_to_second ();
-	
-		strncpy (player_information->name, player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH+1);
+		binders.migrate_all_first_to_second();
+
+		strncpy(player_information->name, player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH + 1);
 		player_information->color = player_preferences->color;
 		player_information->team = player_preferences->team;
 
 		game_information->server_is_playing = true;
 		game_information->net_game_type = active_network_preferences->game_type;
-		
+
 		game_information->game_options = active_network_preferences->game_options;
 		game_information->game_options |= (_ammo_replenishes | _weapons_replenish | _specials_replenish);
 		if (active_network_preferences->game_type == _game_of_cooperative_play)
@@ -1230,19 +1267,21 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 		{
 			game_information->time_limit = dynamic_world->game_information.game_time_remaining;
 			game_information->kill_limit = dynamic_world->game_information.kill_limit;
-		} else {
+		}
+		else
+		{
 			if (!active_network_preferences->game_is_untimed)
-				game_information->time_limit = m_timeLimitWidget->get_value () * TICKS_PER_SECOND * 60;
+				game_information->time_limit = m_timeLimitWidget->get_value() * TICKS_PER_SECOND * 60;
 			else
 				game_information->time_limit = INT32_MAX;
-			
+
 			game_information->kill_limit = active_network_preferences->kill_limit;
 		}
-		
+
 		entry_point entry;
-		menu_index_to_level_entry (active_network_preferences->entry_point, NONE, &entry);
+		menu_index_to_level_entry(active_network_preferences->entry_point, NONE, &entry);
 		game_information->level_number = entry.level_number;
-		strncpy (game_information->level_name, entry.level_name, MAX_LEVEL_NAME_LENGTH+1);
+		strncpy(game_information->level_name, entry.level_name, MAX_LEVEL_NAME_LENGTH + 1);
 		game_information->parent_checksum = read_wad_file_checksum(get_map_file());
 		game_information->difficulty_level = active_network_preferences->difficulty_level;
 		game_information->allow_mic = active_network_preferences->allow_microphone;
@@ -1250,218 +1289,222 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 		int updates_per_packet = 1;
 		int update_latency = 0;
 		vassert(updates_per_packet > 0 && update_latency >= 0 && updates_per_packet < 16,
-			csprintf(temporary, "You idiot! updates_per_packet = %d, update_latency = %d", updates_per_packet, update_latency));
+				csprintf(temporary, "You idiot! updates_per_packet = %d, update_latency = %d", updates_per_packet, update_latency));
 		game_information->initial_updates_per_packet = updates_per_packet;
 		game_information->initial_update_latency = update_latency;
 		NetSetInitialParameters(updates_per_packet, update_latency);
-	
-		game_information->initial_random_seed = resuming_game ? dynamic_world->random_seed : (uint16) machine_tick_count();
+
+		game_information->initial_random_seed = resuming_game ? dynamic_world->random_seed : (uint16)machine_tick_count();
 
 #if mac
 		FileSpecifier theNetscriptFile;
-		theNetscriptFile.SetSpec (active_network_preferences->netscript_file);
+		theNetscriptFile.SetSpec(active_network_preferences->netscript_file);
 #else
-		FileSpecifier theNetscriptFile (active_network_preferences->netscript_file);
+		FileSpecifier theNetscriptFile(active_network_preferences->netscript_file);
 #endif
 
 		// This will be set true below if appropriate
 		SetNetscriptStatus(false);
-	
+
 		if (active_network_preferences->use_netscript)
 		{
 			OpenedFile script_file;
 
-			if (theNetscriptFile.Open (script_file))
+			if (theNetscriptFile.Open(script_file))
 			{
 				int32 script_length;
-				script_file.GetLength (script_length);
+				script_file.GetLength(script_length);
 
 				// DeferredScriptSend will delete this storage the *next time* we call it (!)
-				byte* script_buffer = new byte [script_length];
-			
-				if (script_file.Read (script_length, script_buffer))
+				byte *script_buffer = new byte[script_length];
+
+				if (script_file.Read(script_length, script_buffer))
 				{
-					DeferredScriptSend (script_buffer, script_length);
-					SetNetscriptStatus (true);
+					DeferredScriptSend(script_buffer, script_length);
+					SetNetscriptStatus(true);
 				}
-			
-				script_file.Close ();
+
+				script_file.Close();
 			}
 			else
 				// hmm failing quietly is probably not the best course of action, but ...
 				;
 		}
-	
+
 		game_information->cheat_flags = active_network_preferences->cheat_flags;
 
 		outAdvertiseGameOnMetaserver = active_network_preferences->advertise_on_metaserver;
 
 		//if(shouldUseNetscript)
 		//{
-			// Sorry, probably should use a FileSpecifier in the prefs,
-			// but that means prefs reading/writing have to be reworked instead
+		// Sorry, probably should use a FileSpecifier in the prefs,
+		// but that means prefs reading/writing have to be reworked instead
 		//	strncpy(network_preferences->netscript_file, theNetscriptFile.GetPath(), sizeof(network_preferences->netscript_file));
 		//}
-		
-		return true;
 
-	} else // dialog was cancelled
+		return true;
+	}
+	else // dialog was cancelled
 		return false;
 }
 
-void SetupNetgameDialog::setupForUntimedGame ()
+void SetupNetgameDialog::setupForUntimedGame()
 {
-	m_timeLimitWidget->hide ();
-	m_scoreLimitWidget->hide ();
+	m_timeLimitWidget->hide();
+	m_scoreLimitWidget->hide();
 }
 
-void SetupNetgameDialog::setupForTimedGame ()
+void SetupNetgameDialog::setupForTimedGame()
 {
-	m_timeLimitWidget->show ();
-	m_scoreLimitWidget->hide ();
+	m_timeLimitWidget->show();
+	m_scoreLimitWidget->hide();
 }
 
-void SetupNetgameDialog::setupForScoreGame ()
+void SetupNetgameDialog::setupForScoreGame()
 {
-	m_timeLimitWidget->hide ();
-	m_scoreLimitWidget->show ();
+	m_timeLimitWidget->hide();
+	m_scoreLimitWidget->show();
 }
 
-void SetupNetgameDialog::limitTypeHit ()
+void SetupNetgameDialog::limitTypeHit()
 {
-	switch(m_limitTypeWidget->get_value ())
+	switch (m_limitTypeWidget->get_value())
 	{
-		case 0:
-			setupForUntimedGame ();
-			break;
-			
-		case 1:
-			setupForTimedGame ();
-			break;
-			
-		case 2:
-			setupForScoreGame ();
-			break;
+	case 0:
+		setupForUntimedGame();
+		break;
+
+	case 1:
+		setupForTimedGame();
+		break;
+
+	case 2:
+		setupForScoreGame();
+		break;
 	}
 }
 
-void SetupNetgameDialog::teamsHit ()
+void SetupNetgameDialog::teamsHit()
 {
-	if (m_allowTeamsWidget->get_value ())
-		m_teamWidget->activate ();
+	if (m_allowTeamsWidget->get_value())
+		m_teamWidget->activate();
 	else
-		m_teamWidget->deactivate ();
+		m_teamWidget->deactivate();
 }
 
-void SetupNetgameDialog::setupForGameType ()
+void SetupNetgameDialog::setupForGameType()
 {
-	int raw_value = m_gameTypeWidget->get_value ();
+	int raw_value = m_gameTypeWidget->get_value();
 	switch (raw_value < 5 ? raw_value : raw_value + 1)
 	{
-		case _game_of_cooperative_play:
-			m_allowTeamsWidget->activate ();
-			m_deadPlayersDropItemsWidget->deactivate ();
-			m_aliensWidget->deactivate ();
-			
-			m_deadPlayersDropItemsWidget->set_value (true);
-			m_aliensWidget->set_value (true);
-			break;
-			
-		case _game_of_kill_monsters:
-		case _game_of_king_of_the_hill:
-		case _game_of_kill_man_with_ball:
-		case _game_of_tag:
-	case _game_of_custom:
-			m_allowTeamsWidget->activate ();
-			m_deadPlayersDropItemsWidget->activate ();
-			m_aliensWidget->activate ();
-			break;
+	case _game_of_cooperative_play:
+		m_allowTeamsWidget->activate();
+		m_deadPlayersDropItemsWidget->deactivate();
+		m_aliensWidget->deactivate();
 
-		case _game_of_capture_the_flag:
-			m_allowTeamsWidget->deactivate ();
-			m_deadPlayersDropItemsWidget->activate ();
-			m_aliensWidget->activate ();
-			
-			m_allowTeamsWidget->set_value (true);
-			m_teamWidget->activate ();
-			break;
-			
-		case _game_of_rugby:
-			m_allowTeamsWidget->deactivate ();
-			m_deadPlayersDropItemsWidget->activate ();
-			m_aliensWidget->activate ();
-			
-			m_allowTeamsWidget->set_value (true);
-			m_teamWidget->activate ();
-			break;
-			
-		default:
-			assert(false);
-			break;
+		m_deadPlayersDropItemsWidget->set_value(true);
+		m_aliensWidget->set_value(true);
+		break;
+
+	case _game_of_kill_monsters:
+	case _game_of_king_of_the_hill:
+	case _game_of_kill_man_with_ball:
+	case _game_of_tag:
+	case _game_of_custom:
+		m_allowTeamsWidget->activate();
+		m_deadPlayersDropItemsWidget->activate();
+		m_aliensWidget->activate();
+		break;
+
+	case _game_of_capture_the_flag:
+		m_allowTeamsWidget->deactivate();
+		m_deadPlayersDropItemsWidget->activate();
+		m_aliensWidget->activate();
+
+		m_allowTeamsWidget->set_value(true);
+		m_teamWidget->activate();
+		break;
+
+	case _game_of_rugby:
+		m_allowTeamsWidget->deactivate();
+		m_deadPlayersDropItemsWidget->activate();
+		m_aliensWidget->activate();
+
+		m_allowTeamsWidget->set_value(true);
+		m_teamWidget->activate();
+		break;
+
+	default:
+		assert(false);
+		break;
 	}
 }
 
-void SetupNetgameDialog::gameTypeHit ()
+void SetupNetgameDialog::gameTypeHit()
 {
-	int new_game_type= m_gameTypeWidget->get_value ();
+	int new_game_type = m_gameTypeWidget->get_value();
 	if (new_game_type >= 5)
 		++new_game_type;
-	
-	if (new_game_type != m_old_game_type) {
+
+	if (new_game_type != m_old_game_type)
+	{
 		int32 new_entry_flags, old_entry_flags;
 		struct entry_point entry;
-			
-		if(m_allow_all_levels) {
-			new_entry_flags= old_entry_flags= NONE;
-		} else {
-			new_entry_flags= get_entry_point_flags_for_game_type(new_game_type);
-			old_entry_flags= get_entry_point_flags_for_game_type(m_old_game_type);
+
+		if (m_allow_all_levels)
+		{
+			new_entry_flags = old_entry_flags = NONE;
 		}
-		menu_index_to_level_entry (m_levelWidget->get_value (), old_entry_flags, &entry);
-			
+		else
+		{
+			new_entry_flags = get_entry_point_flags_for_game_type(new_game_type);
+			old_entry_flags = get_entry_point_flags_for_game_type(m_old_game_type);
+		}
+		menu_index_to_level_entry(m_levelWidget->get_value(), old_entry_flags, &entry);
+
 		/* Now reset entry points */
-		m_levelWidget->set_labels (make_entry_vector (new_entry_flags));
-		m_levelWidget->set_value (level_index_to_menu_index (entry.level_number, new_entry_flags));
-		m_old_game_type= new_game_type;
-				
-		setupForGameType ();
+		m_levelWidget->set_labels(make_entry_vector(new_entry_flags));
+		m_levelWidget->set_value(level_index_to_menu_index(entry.level_number, new_entry_flags));
+		m_old_game_type = new_game_type;
+
+		setupForGameType();
 	}
 }
 
-void SetupNetgameDialog::chooseMapHit ()
+void SetupNetgameDialog::chooseMapHit()
 {
-	FileSpecifier mapFile = m_mapWidget->get_file ();
+	FileSpecifier mapFile = m_mapWidget->get_file();
 
-	environment_preferences->map_checksum = read_wad_file_checksum (mapFile);
+	environment_preferences->map_checksum = read_wad_file_checksum(mapFile);
 	strncpy(environment_preferences->map_file, mapFile.GetPath(), 256);
 	load_environment_from_preferences();
-		
-	m_levelWidget->set_labels (make_entry_vector (get_entry_point_flags_for_game_type (m_old_game_type)));
-	m_levelWidget->set_value (0);
+
+	m_levelWidget->set_labels(make_entry_vector(get_entry_point_flags_for_game_type(m_old_game_type)));
+	m_levelWidget->set_value(0);
 }
 
-bool SetupNetgameDialog::informationIsAcceptable ()
+bool SetupNetgameDialog::informationIsAcceptable()
 {
 	bool information_is_acceptable = true;
-	short game_limit_type = m_limitTypeWidget->get_value ();
-	
+	short game_limit_type = m_limitTypeWidget->get_value();
+
 	if (information_is_acceptable)
 		if (game_limit_type == duration_time_limit)
 		{
-			information_is_acceptable = m_timeLimitWidget->get_value () >= 1;
+			information_is_acceptable = m_timeLimitWidget->get_value() >= 1;
 		}
-		
+
 	if (information_is_acceptable)
 		if (game_limit_type == duration_kill_limit)
 		{
-			information_is_acceptable = m_scoreLimitWidget->get_value () >= 1;
+			information_is_acceptable = m_scoreLimitWidget->get_value() >= 1;
 		}
-	
+
 	if (information_is_acceptable)
-		information_is_acceptable = !(m_nameWidget->get_text ().empty ());
-	
+		information_is_acceptable = !(m_nameWidget->get_text().empty());
+
 	if (information_is_acceptable)
-		information_is_acceptable = m_mapWidget->get_file ().Exists ();
+		information_is_acceptable = m_mapWidget->get_file().Exists();
 
 	if (information_is_acceptable)
 	{
@@ -1469,28 +1512,27 @@ bool SetupNetgameDialog::informationIsAcceptable ()
 		short index = 0;
 		information_is_acceptable = get_indexed_entry_point(&ep, &index, get_entry_point_flags_for_game_type(m_old_game_type));
 	}
-		
+
 	return (information_is_acceptable);
 }
 
-void SetupNetgameDialog::okHit ()
+void SetupNetgameDialog::okHit()
 {
-	if (informationIsAcceptable ())
-		Stop (true);
+	if (informationIsAcceptable())
+		Stop(true);
 	else
-		unacceptableInfo ();
-		
+		unacceptableInfo();
 }
 
 void menu_index_to_level_entry(
-	short menu_index, 
+	short menu_index,
 	int32 entry_flags,
 	struct entry_point *entry)
 {
-	short  i, map_index;
+	short i, map_index;
 
-	map_index= 0;
-	for (i= 0; i<=menu_index; i++)
+	map_index = 0;
+	for (i = 0; i <= menu_index; i++)
 	{
 		get_indexed_entry_point(entry, &map_index, entry_flags);
 	}
@@ -1498,28 +1540,29 @@ void menu_index_to_level_entry(
 	return;
 }
 
-int menu_index_to_level_index (int menu_index, int32 entry_flags)
-{	
+int menu_index_to_level_index(int menu_index, int32 entry_flags)
+{
 	entry_point entry;
 	entry.level_number = 0;
 
-	menu_index_to_level_entry (menu_index, entry_flags, &entry);
-	
+	menu_index_to_level_entry(menu_index, entry_flags, &entry);
+
 	return entry.level_number;
 }
 
-int level_index_to_menu_index (int level_index, int32 entry_flags)
-{	
+int level_index_to_menu_index(int level_index, int32 entry_flags)
+{
 	entry_point entry;
 	short map_index = 0;
 
 	int result = 0;
-	while (get_indexed_entry_point(&entry, &map_index, entry_flags)) {
+	while (get_indexed_entry_point(&entry, &map_index, entry_flags))
+	{
 		if (map_index == level_index + 1)
 			return result;
 		++result;
 	}
-	
+
 	return 0;
 }
 
@@ -1540,90 +1583,92 @@ void reassign_player_colors(
 	short player_index,
 	short num_players)
 {
-	short actual_colors[MAXIMUM_NUMBER_OF_PLAYERS];  // indexed by player
-	bool colors_taken[NUMBER_OF_TEAM_COLORS];   // as opposed to desired team. indexed by team
+	short actual_colors[MAXIMUM_NUMBER_OF_PLAYERS]; // indexed by player
+	bool colors_taken[NUMBER_OF_TEAM_COLORS];		// as opposed to desired team. indexed by team
 	game_info *game;
-	
+
 	(void)(player_index);
 
-	assert(num_players<=MAXIMUM_NUMBER_OF_PLAYERS);
-	game= (game_info *)NetGetGameData();
+	assert(num_players <= MAXIMUM_NUMBER_OF_PLAYERS);
+	game = (game_info *)NetGetGameData();
 
 	objlist_set(colors_taken, false, NUMBER_OF_TEAM_COLORS);
 	objlist_set(actual_colors, NONE, MAXIMUM_NUMBER_OF_PLAYERS);
 
-	if(game->game_options & _force_unique_teams)
+	if (game->game_options & _force_unique_teams)
 	{
 		short index;
-		
-		for(index= 0; index<num_players; ++index)
+
+		for (index = 0; index < num_players; ++index)
 		{
-			player_info *player= (player_info *)NetGetPlayerData(index);
-			if(!colors_taken[player->desired_color])
+			player_info *player = (player_info *)NetGetPlayerData(index);
+			if (!colors_taken[player->desired_color])
 			{
-				player->color= player->desired_color;
-				player->team= player->color;
-				colors_taken[player->color]= true;
-				actual_colors[index]= player->color;
+				player->color = player->desired_color;
+				player->team = player->color;
+				colors_taken[player->color] = true;
+				actual_colors[index] = player->color;
 			}
 		}
-		
-		/* Now give them a random color.. */
-		for (index= 0; index<num_players; index++)
-		{
-			player_info *player= (player_info *)NetGetPlayerData(index);
 
-			if (actual_colors[index]==NONE) // This player needs a team
+		/* Now give them a random color.. */
+		for (index = 0; index < num_players; index++)
+		{
+			player_info *player = (player_info *)NetGetPlayerData(index);
+
+			if (actual_colors[index] == NONE) // This player needs a team
 			{
 				short remap_index;
-				
-				for (remap_index= 0; remap_index<num_players; remap_index++)
+
+				for (remap_index = 0; remap_index < num_players; remap_index++)
 				{
 					if (!colors_taken[remap_index])
 					{
-						player->color= remap_index;
-						player->team= remap_index;
+						player->color = remap_index;
+						player->team = remap_index;
 						colors_taken[remap_index] = true;
 						break;
 					}
 				}
-				assert(remap_index<num_players);
+				assert(remap_index < num_players);
 			}
-		}	
-	} else {
+		}
+	}
+	else
+	{
 		short index;
 		short team_color;
-		
+
 		/* Allow teams.. */
-		for(team_color= 0; team_color<NUMBER_OF_TEAM_COLORS; ++team_color)
+		for (team_color = 0; team_color < NUMBER_OF_TEAM_COLORS; ++team_color)
 		{
 			// let's mark everybody down for the teams that they can get without conflicts.
 			for (index = 0; index < num_players; index++)
 			{
-				player_info *player= (player_info *)NetGetPlayerData(index);
-		
-				if (player->team==team_color && !colors_taken[player->desired_color])
+				player_info *player = (player_info *)NetGetPlayerData(index);
+
+				if (player->team == team_color && !colors_taken[player->desired_color])
 				{
-					player->color= player->desired_color;
+					player->color = player->desired_color;
 					colors_taken[player->color] = true;
-					actual_colors[index]= player->color;
+					actual_colors[index] = player->color;
 				}
 			}
-			
+
 			// ok, everyone remaining gets a team that we pick for them.
 			for (index = 0; index < num_players; index++)
 			{
-				player_info *player= (player_info *)NetGetPlayerData(index);
-	
-				if (player->team==team_color && actual_colors[index]==NONE) // This player needs a team
+				player_info *player = (player_info *)NetGetPlayerData(index);
+
+				if (player->team == team_color && actual_colors[index] == NONE) // This player needs a team
 				{
 					short j;
-					
+
 					for (j = 0; j < num_players; j++)
 					{
 						if (!colors_taken[j])
 						{
-							player->color= j;
+							player->color = j;
 							colors_taken[j] = true;
 							break;
 						}
@@ -1635,185 +1680,179 @@ void reassign_player_colors(
 	}
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Postgame Carnage Report stuff
 struct net_rank rankings[MAXIMUM_NUMBER_OF_PLAYERS];
 
 // (ZZZ annotation:) Figure out which graph type the user wants to display based
 // on his selection from the popup/selection control.  (See also draw_new_graph().)
-short
-find_graph_mode(
+short find_graph_mode(
 	NetgameOutcomeData &outcome,
 	short *index)
 {
 	short value;
 	short graph_type = NONE;
 	bool has_scores;
-	
-	has_scores= current_net_game_has_scores();
-	
+
+	has_scores = current_net_game_has_scores();
+
 	/* Popups are 1 based */
-	value = get_selection_control_value(outcome, iGRAPH_POPUP)-1;
-	if(value<dynamic_world->player_count)
+	value = get_selection_control_value(outcome, iGRAPH_POPUP) - 1;
+	if (value < dynamic_world->player_count)
 	{
-		if(index) *index= value;
-		graph_type= _player_graph;
-	} 
-	else 
+		if (index)
+			*index = value;
+		graph_type = _player_graph;
+	}
+	else
 	{
-                int theValueAfterPlayers = value-dynamic_world->player_count;
-                // ZZZ: Account for (lack of) separators
-                if(theValueAfterPlayers >= 0)	theValueAfterPlayers++;
-                if(theValueAfterPlayers >= 3)	theValueAfterPlayers++;
-                
+		int theValueAfterPlayers = value - dynamic_world->player_count;
+		// ZZZ: Account for (lack of) separators
+		if (theValueAfterPlayers >= 0)
+			theValueAfterPlayers++;
+		if (theValueAfterPlayers >= 3)
+			theValueAfterPlayers++;
+
 		/* Different numbers of items based on game type. */
-		switch(theValueAfterPlayers)
+		switch (theValueAfterPlayers)
 		{
-			case 0:
-				/* Separator line */
-				assert(false);
-				break;
-		
-			case 1: /* FIrst item after the players. */
-				graph_type= _total_carnage_graph; /* Always.. */
-				break;
-			
-			case 2: /* May be either: _total_scores or _total_team_carnage */
-				if(has_scores)
-				{
-					graph_type= _total_scores_graph;
-				} else {
-					assert(!(GET_GAME_OPTIONS() & _force_unique_teams));
-					graph_type= _total_team_carnage_graph;
-				}
-				break;
-				
-			case 3:
-				/* Separator line */
-				assert(false);
-				break;
-				
-			case 4:	
+		case 0:
+			/* Separator line */
+			assert(false);
+			break;
+
+		case 1:								   /* FIrst item after the players. */
+			graph_type = _total_carnage_graph; /* Always.. */
+			break;
+
+		case 2: /* May be either: _total_scores or _total_team_carnage */
+			if (has_scores)
+			{
+				graph_type = _total_scores_graph;
+			}
+			else
+			{
 				assert(!(GET_GAME_OPTIONS() & _force_unique_teams));
-				graph_type= _total_team_carnage_graph;
-				break;
-				
-			case 5:
-				assert(has_scores);
-				graph_type= _total_team_scores_graph;
-				break;
-				
-			default:
-				assert(false);
-				break;
+				graph_type = _total_team_carnage_graph;
+			}
+			break;
+
+		case 3:
+			/* Separator line */
+			assert(false);
+			break;
+
+		case 4:
+			assert(!(GET_GAME_OPTIONS() & _force_unique_teams));
+			graph_type = _total_team_carnage_graph;
+			break;
+
+		case 5:
+			assert(has_scores);
+			graph_type = _total_team_scores_graph;
+			break;
+
+		default:
+			assert(false);
+			break;
 		}
 	}
 
 	return graph_type;
 }
 
-
-
-// (ZZZ annotation:) Fill in array of net_rank with total carnage values, individual scores, 
-// colors, etc.  Note that team-by-team rankings (draw_team_*_graph()) and player vs. 
+// (ZZZ annotation:) Fill in array of net_rank with total carnage values, individual scores,
+// colors, etc.  Note that team-by-team rankings (draw_team_*_graph()) and player vs.
 // player rankings (draw_player_graph()) use their own local ranks[] arrays instead.
 // The team-by-team rankings are computed from these; the player vs. player are not.
 void calculate_rankings(
-	struct net_rank *ranks, 
+	struct net_rank *ranks,
 	short num_players)
 {
 	short player_index;
-	
-	for(player_index= 0; player_index<num_players; ++player_index)
+
+	for (player_index = 0; player_index < num_players; ++player_index)
 	{
-		ranks[player_index].player_index= player_index;
-		ranks[player_index].color= get_player_data(player_index)->color;
-		ranks[player_index].game_ranking= get_player_net_ranking(player_index, 
-			&ranks[player_index].kills,
-			&ranks[player_index].deaths, true);
-		ranks[player_index].ranking= ranks[player_index].kills-ranks[player_index].deaths;
+		ranks[player_index].player_index = player_index;
+		ranks[player_index].color = get_player_data(player_index)->color;
+		ranks[player_index].game_ranking = get_player_net_ranking(player_index,
+																  &ranks[player_index].kills,
+																  &ranks[player_index].deaths, true);
+		ranks[player_index].ranking = ranks[player_index].kills - ranks[player_index].deaths;
 	}
 }
 
-
 // (ZZZ annotation:) Individual carnage totals comparison for sorting.
 int rank_compare(
-	void const *r1, 
+	void const *r1,
 	void const *r2)
 {
-	struct net_rank const *rank1=(struct net_rank const *)r1;
-	struct net_rank const *rank2=(struct net_rank const *)r2;
+	struct net_rank const *rank1 = (struct net_rank const *)r1;
+	struct net_rank const *rank2 = (struct net_rank const *)r2;
 	int diff;
 	struct player_data *p1, *p2;
-	
+
 	diff = rank2->ranking - rank1->ranking;
-	
-    // (ZZZ annotation:) Tiebreaker: which player did more killing (and thus dying)?
-    if (diff == 0)
+
+	// (ZZZ annotation:) Tiebreaker: which player did more killing (and thus dying)?
+	if (diff == 0)
 	{
 		// i have to resort to looking here because the information may not be contained
-		// in the rank structure if we're not displaying the totals graph. 
+		// in the rank structure if we're not displaying the totals graph.
 		p1 = get_player_data(rank1->player_index);
 		p2 = get_player_data(rank2->player_index);
 		diff = p2->total_damage_given.kills - p1->total_damage_given.kills;
 	}
-	
+
 	return diff;
 }
 
 // (ZZZ annotation:) Team carnage totals comparison for sorting.
 // Same as rank_compare(), but without tiebreaking.
 int team_rank_compare(
-	void const *rank1, 
+	void const *rank1,
 	void const *rank2)
 {
-	return ((struct net_rank const *)rank2)->ranking
-		  -((struct net_rank const *)rank1)->ranking;
+	return ((struct net_rank const *)rank2)->ranking - ((struct net_rank const *)rank1)->ranking;
 }
 
 // (ZZZ annotation:) Game-specific score comparison for sorting.
 int score_rank_compare(
-	void const *rank1, 
+	void const *rank1,
 	void const *rank2)
 {
-	return ((struct net_rank const *)rank2)->game_ranking
-		  -((struct net_rank const *)rank1)->game_ranking;
+	return ((struct net_rank const *)rank2)->game_ranking - ((struct net_rank const *)rank1)->game_ranking;
 }
-
-
 
 // (ZZZ annotation:) Graph of player's killing performance vs each other player
 void draw_player_graph(
 	NetgameOutcomeData &outcome,
 	short index)
 {
-	short key_player_index= rankings[index].player_index;
-	struct player_data *key_player= get_player_data(key_player_index);
+	short key_player_index = rankings[index].player_index;
+	struct player_data *key_player = get_player_data(key_player_index);
 	struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
 	short loop;
 
-	/* Copy in the total ranks. */	
-	for(loop= 0; loop<dynamic_world->player_count; ++loop)
+	/* Copy in the total ranks. */
+	for (loop = 0; loop < dynamic_world->player_count; ++loop)
 	{
-		short test_player_index= rankings[loop].player_index;
-		struct player_data *player= get_player_data(test_player_index);
-	
+		short test_player_index = rankings[loop].player_index;
+		struct player_data *player = get_player_data(test_player_index);
+
 		/* Copy most of the data */
-		ranks[loop]= rankings[loop];
-		
+		ranks[loop] = rankings[loop];
+
 		/* How many times did I kill this guy? */
-		ranks[loop].kills= player->damage_taken[key_player_index].kills;
+		ranks[loop].kills = player->damage_taken[key_player_index].kills;
 
 		/* How many times did this guy kill me? */
-		ranks[loop].deaths= key_player->damage_taken[test_player_index].kills;
+		ranks[loop].deaths = key_player->damage_taken[test_player_index].kills;
 	}
 
 	draw_names(outcome, ranks, dynamic_world->player_count, index);
 	draw_kill_bars(outcome, ranks, dynamic_world->player_count, index, false, false);
 }
-
 
 // ZZZ: team vs team carnage (analogous to draw_player_graph's player vs player carnage)
 // THIS IS UNFINISHED (and thus unused at the moment :) )
@@ -1821,43 +1860,41 @@ void draw_team_graph(
 	NetgameOutcomeData &outcome,
 	short team_index)
 {
-    // ZZZZZZ this is where I add my team vs team ranking computation.  Yay.
-    // We'll just fill in the rank structures straight, then count the teams later.
-    struct net_rank team_ranks[NUMBER_OF_TEAM_COLORS];
+	// ZZZZZZ this is where I add my team vs team ranking computation.  Yay.
+	// We'll just fill in the rank structures straight, then count the teams later.
+	struct net_rank team_ranks[NUMBER_OF_TEAM_COLORS];
 
-    objlist_clear(team_ranks, NUMBER_OF_TEAM_COLORS);
-    
+	objlist_clear(team_ranks, NUMBER_OF_TEAM_COLORS);
+
 	/* Loop across players on the reference team */
-	for(int ref_player_index = 0; ref_player_index < dynamic_world->player_count; ref_player_index++)
+	for (int ref_player_index = 0; ref_player_index < dynamic_world->player_count; ref_player_index++)
 	{
-//		short test_player_index= rankings[loop].player_index;
-		struct player_data *ref_player= get_player_data(ref_player_index);
+		//		short test_player_index= rankings[loop].player_index;
+		struct player_data *ref_player = get_player_data(ref_player_index);
 
-        if(ref_player->team != team_index)
-            continue;
+		if (ref_player->team != team_index)
+			continue;
 
-	    /* Loop across all players */
-	    for(int player_index = 0; player_index < dynamic_world->player_count; player_index++)
-	    {
-    //		short test_player_index= rankings[loop].player_index;
-		    struct player_data *player= get_player_data(player_index);
+		/* Loop across all players */
+		for (int player_index = 0; player_index < dynamic_world->player_count; player_index++)
+		{
+			//		short test_player_index= rankings[loop].player_index;
+			struct player_data *player = get_player_data(player_index);
 
-            team_ranks[player->team].player_index   = NONE;
-            team_ranks[player->team].color          = player->team;
-            team_ranks[player->team].kills  += player->damage_taken[ref_player_index].kills;
-            team_ranks[player->team].deaths += ref_player->damage_taken[player_index].kills;
-        } // all players
-    } // players on reference team
+			team_ranks[player->team].player_index = NONE;
+			team_ranks[player->team].color = player->team;
+			team_ranks[player->team].kills += player->damage_taken[ref_player_index].kills;
+			team_ranks[player->team].deaths += ref_player->damage_taken[player_index].kills;
+		} // all players
+	}	  // players on reference team
 
-    // Condense into the first group of slots in the rankings
-    // NOTE ideally these will be ordered the same way the team_total_carnage rankings are.
+	// Condense into the first group of slots in the rankings
+	// NOTE ideally these will be ordered the same way the team_total_carnage rankings are.
 
-    // Draw the bars
-//	draw_names(dialog, team_ranks, dynamic_world->player_count, index);
-//	draw_kill_bars(dialog, team_ranks, dynamic_world->player_count, index, false, false);
+	// Draw the bars
+	//	draw_names(dialog, team_ranks, dynamic_world->player_count, index);
+	//	draw_kill_bars(dialog, team_ranks, dynamic_world->player_count, index, false, false);
 }
-
-
 
 // (ZZZ annotation:) Total Carnage graph
 void draw_totals_graph(
@@ -1866,7 +1903,6 @@ void draw_totals_graph(
 	draw_names(outcome, rankings, dynamic_world->player_count, NONE);
 	draw_kill_bars(outcome, rankings, dynamic_world->player_count, NONE, true, false);
 }
-
 
 // (ZZZ annotation:) Total Team Carnage graph
 void draw_team_totals_graph(
@@ -1877,49 +1913,54 @@ void draw_team_totals_graph(
 	struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
 
 	objlist_clear(ranks, MAXIMUM_NUMBER_OF_PLAYERS);
-	for (team_index = 0, num_teams = 0; team_index < NUMBER_OF_TEAM_COLORS; team_index++) {
-	  found_team_of_current_color = false;
-	  if (team_damage_given[team_index].kills ||
-	      (team_damage_taken[team_index].kills + team_monster_damage_taken[team_index].kills)) {
-	    found_team_of_current_color = true;
-	  } else {
-	    for (player_index = 0; player_index < dynamic_world->player_count; player_index++) {
-	      struct player_data *player = get_player_data(player_index);
-	      if (player->team == team_index) {
-		found_team_of_current_color = true;
-		break;
-	      }
-	    }
-	  }
-	  if (found_team_of_current_color) {
-	    ranks[num_teams].player_index = NONE;
-	    ranks[num_teams].color = team_index;
-	    ranks[num_teams].kills = team_damage_given[team_index].kills;
-	    ranks[num_teams].deaths = team_damage_taken[team_index].kills + team_monster_damage_taken[team_index].kills;
-	    ranks[num_teams].friendly_fire_kills = team_friendly_fire[team_index].kills;
-	    num_teams++;
-	  }
+	for (team_index = 0, num_teams = 0; team_index < NUMBER_OF_TEAM_COLORS; team_index++)
+	{
+		found_team_of_current_color = false;
+		if (team_damage_given[team_index].kills ||
+			(team_damage_taken[team_index].kills + team_monster_damage_taken[team_index].kills))
+		{
+			found_team_of_current_color = true;
+		}
+		else
+		{
+			for (player_index = 0; player_index < dynamic_world->player_count; player_index++)
+			{
+				struct player_data *player = get_player_data(player_index);
+				if (player->team == team_index)
+				{
+					found_team_of_current_color = true;
+					break;
+				}
+			}
+		}
+		if (found_team_of_current_color)
+		{
+			ranks[num_teams].player_index = NONE;
+			ranks[num_teams].color = team_index;
+			ranks[num_teams].kills = team_damage_given[team_index].kills;
+			ranks[num_teams].deaths = team_damage_taken[team_index].kills + team_monster_damage_taken[team_index].kills;
+			ranks[num_teams].friendly_fire_kills = team_friendly_fire[team_index].kills;
+			num_teams++;
+		}
 	}
 
 	/* Setup the team rankings.. */
-	for (team_index= 0; team_index<num_teams; team_index++)
-	  {
-	    ranks[team_index].ranking= ranks[team_index].kills - ranks[team_index].deaths;
-	  }
+	for (team_index = 0; team_index < num_teams; team_index++)
+	{
+		ranks[team_index].ranking = ranks[team_index].kills - ranks[team_index].deaths;
+	}
 	qsort(ranks, num_teams, sizeof(struct net_rank), team_rank_compare);
-	
+
 	draw_names(outcome, ranks, num_teams, NONE);
 	draw_kill_bars(outcome, ranks, num_teams, NONE, true, true);
 }
-
-
 
 // (ZZZ annotation:) Time on Hill, etc. graph
 void draw_total_scores_graph(
 	NetgameOutcomeData &outcome)
 {
 	struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
-	
+
 	/* Use a private copy to avoid boning things */
 	objlist_copy(ranks, rankings, dynamic_world->player_count);
 
@@ -1929,8 +1970,6 @@ void draw_total_scores_graph(
 	draw_names(outcome, ranks, dynamic_world->player_count, NONE);
 	draw_score_bars(outcome, ranks, dynamic_world->player_count);
 }
-
-
 
 // (ZZZ annotation:) Team Time on Hill, etc. graph
 void draw_team_total_scores_graph(
@@ -1942,24 +1981,31 @@ void draw_team_total_scores_graph(
 	objlist_clear(ranks, MAXIMUM_NUMBER_OF_PLAYERS);
 	team_count = 0;
 
-	for (team_index = 0; team_index < NUMBER_OF_TEAM_COLORS; ++team_index) {
+	for (team_index = 0; team_index < NUMBER_OF_TEAM_COLORS; ++team_index)
+	{
 		bool team_is_valid = false;
 		short kills, deaths;
 		int32 ranking = get_team_net_ranking(team_index, &kills, &deaths, true);
 
-		if (kills || deaths || ranking) {
+		if (kills || deaths || ranking)
+		{
 			team_is_valid = true;
-		} else {
-			for (short player_index = 0; player_index < dynamic_world->player_count; ++player_index) {
+		}
+		else
+		{
+			for (short player_index = 0; player_index < dynamic_world->player_count; ++player_index)
+			{
 				struct player_data *player = get_player_data(player_index);
-				if (player->team == team_index) {
+				if (player->team == team_index)
+				{
 					team_is_valid = true;
 					break;
 				}
 			}
 		}
-    
-		if (team_is_valid) {
+
+		if (team_is_valid)
+		{
 			ranks[team_count].kills = kills;
 			ranks[team_count].deaths = deaths;
 			ranks[team_count].player_index = NONE;
@@ -1977,30 +2023,28 @@ void draw_team_total_scores_graph(
 	draw_score_bars(outcome, ranks, team_count);
 }
 
-
-
 // (ZZZ) ripped this out of draw_kill_bars since we can share this bit but not the rest of draw_kill_bars().
 // (ZZZ annotation:) Update the "N deaths total (D dpm) including S suicides"-type text at the bottom.
-void update_carnage_summary(                 	
+void update_carnage_summary(
 	NetgameOutcomeData &outcome,
-	struct net_rank *ranks, 
-	short num_players, 
-	short suicide_index, 
-	bool do_totals, 
+	struct net_rank *ranks,
+	short num_players,
+	short suicide_index,
+	bool do_totals,
 	bool friendly_fire)
 {
-    short   i;
-    short   num_suicides;
-    float   minutes;
-    float   kpm;
-    float   dpm;
-    int32    total_kills = 0;
-    int32    total_deaths = 0;
-	char    kill_string_format[65];
-    char    death_string_format[65];
-    char    suicide_string_format[65];
-    
-    for (i = 0; i < num_players; i++)
+	short i;
+	short num_suicides;
+	float minutes;
+	float kpm;
+	float dpm;
+	int32 total_kills = 0;
+	int32 total_deaths = 0;
+	char kill_string_format[65];
+	char death_string_format[65];
+	char suicide_string_format[65];
+
+	for (i = 0; i < num_players; i++)
 	{
 		if (do_totals || i != suicide_index)
 			total_kills += ranks[i].kills;
@@ -2013,81 +2057,83 @@ void update_carnage_summary(
 			if (friendly_fire)
 				num_suicides += ranks[i].friendly_fire_kills;
 			else
-				num_suicides += (players+i)->damage_taken[i].kills;
+				num_suicides += (players + i)->damage_taken[i].kills;
 		}
 	}
 	else
 		num_suicides = ranks[suicide_index].kills;
 
 	minutes = ((float)dynamic_world->tick_count / TICKS_PER_SECOND) / 60.0F;
-	if (minutes > 0) kpm = total_kills / minutes;
-	else kpm = 0;
+	if (minutes > 0)
+		kpm = total_kills / minutes;
+	else
+		kpm = 0;
 	getcstr(kill_string_format, strNET_STATS_STRINGS, strTOTAL_KILLS_STRING);
 	csprintf(temporary, kill_string_format, total_kills, kpm);
-//	GetDialogItem(dialog, iTOTAL_KILLS, &item_type, &item_handle, &item_rect);
-//	SetDialogItemText(item_handle, ptemporary);
-    
-    copy_cstring_to_static_text(outcome, iTOTAL_KILLS, temporary);
+	//	GetDialogItem(dialog, iTOTAL_KILLS, &item_type, &item_handle, &item_rect);
+	//	SetDialogItemText(item_handle, ptemporary);
 
-	if (minutes > 0) dpm = total_deaths / minutes;
-	else dpm = 0;
+	copy_cstring_to_static_text(outcome, iTOTAL_KILLS, temporary);
+
+	if (minutes > 0)
+		dpm = total_deaths / minutes;
+	else
+		dpm = 0;
 	getcstr(death_string_format, strNET_STATS_STRINGS, strTOTAL_DEATHS_STRING);
-	
+
 	if (num_suicides)
 	{
 		if (friendly_fire)
 			getcstr(suicide_string_format, strNET_STATS_STRINGS, strFRIENDLY_FIRE_STRING);
 		else
 			getcstr(suicide_string_format, strNET_STATS_STRINGS, strINCLUDING_SUICIDES_STRING);
-		strncat(death_string_format, suicide_string_format, 65-strlen(death_string_format)-1);
+		strncat(death_string_format, suicide_string_format, 65 - strlen(death_string_format) - 1);
 		csprintf(temporary, death_string_format, total_deaths, dpm, num_suicides);
 	}
 	else
 		csprintf(temporary, death_string_format, total_deaths, dpm);
-//	GetDialogItem(dialog, iTOTAL_DEATHS, &item_type, &item_handle, &item_rect);
-//	SetDialogItemText(item_handle, ptemporary);
+	//	GetDialogItem(dialog, iTOTAL_DEATHS, &item_type, &item_handle, &item_rect);
+	//	SetDialogItemText(item_handle, ptemporary);
 
-    copy_cstring_to_static_text(outcome, iTOTAL_DEATHS, temporary);
+	copy_cstring_to_static_text(outcome, iTOTAL_DEATHS, temporary);
 }
-
-
 
 // ZZZ: ripped out of update_damage_item
 // (ZZZ annotation:) Demultiplex to draw_X_graph() function based on find_graph_mode().
 void draw_new_graph(
 	NetgameOutcomeData &outcome)
 {
-    short   graph_type;
-    short   index;
+	short graph_type;
+	short index;
 
-    graph_type= find_graph_mode(outcome, &index);
+	graph_type = find_graph_mode(outcome, &index);
 
-	switch(graph_type)
+	switch (graph_type)
 	{
-		case _player_graph:
-			draw_player_graph(outcome, index);
-			break;
+	case _player_graph:
+		draw_player_graph(outcome, index);
+		break;
 
-		case _total_carnage_graph:
-			draw_totals_graph(outcome);
-			break;
+	case _total_carnage_graph:
+		draw_totals_graph(outcome);
+		break;
 
-		case _total_scores_graph:
-			draw_total_scores_graph(outcome);
-			break;
+	case _total_scores_graph:
+		draw_total_scores_graph(outcome);
+		break;
 
-		/* These two functions need to have the team colors. */
-		case _total_team_carnage_graph:
-			draw_team_totals_graph(outcome);
-			break;
+	/* These two functions need to have the team colors. */
+	case _total_team_carnage_graph:
+		draw_team_totals_graph(outcome);
+		break;
 
-		case _total_team_scores_graph:
-			draw_team_total_scores_graph(outcome);
-			break;
+	case _total_team_scores_graph:
+		draw_team_total_scores_graph(outcome);
+		break;
 
-		default:
-			assert(false);
-			break;
+	default:
+		assert(false);
+		break;
 	}
 }
 
@@ -2096,26 +2142,24 @@ void draw_new_graph(
 short calculate_max_kills(
 	size_t num_players)
 {
-	short  max_kills = 0;
-	size_t  i, j;
-	
+	short max_kills = 0;
+	size_t i, j;
+
 	for (i = 0; i < num_players; i++)
 	{
 		for (j = 0; j < num_players; j++)
 		{
-			struct player_data *player= get_player_data(i);
-			
+			struct player_data *player = get_player_data(i);
+
 			if (player->damage_taken[j].kills > max_kills)
 			{
-				max_kills= player->damage_taken[j].kills;
+				max_kills = player->damage_taken[j].kills;
 			}
 		}
 	}
-	
+
 	return max_kills;
 }
-
-
 
 // (ZZZ annotation:) Get postgame bar color for _suicide_color, etc.
 /* If alain wasn't a tool, this would be in a resource.. */
@@ -2123,26 +2167,25 @@ void get_net_color(
 	short index,
 	RGBColor *color)
 {
-	switch(index)
+	switch (index)
 	{
-		case _suicide_color:
-			color->red= color->green= USHRT_MAX;
-			color->blue= 0;
-			break;
-		case _kill_color:
-			color->red= USHRT_MAX;
-			color->green= color->blue= 0;
-			break;
-		case _death_color:
-		case _score_color:
-			color->red= color->green= color->blue= 60000;
-			break;
-		default:
-			assert(false);
-			break;
+	case _suicide_color:
+		color->red = color->green = USHRT_MAX;
+		color->blue = 0;
+		break;
+	case _kill_color:
+		color->red = USHRT_MAX;
+		color->green = color->blue = 0;
+		break;
+	case _death_color:
+	case _score_color:
+		color->red = color->green = color->blue = 60000;
+		break;
+	default:
+		assert(false);
+		break;
 	}
 }
-
 
 // Get player name from outside
 // ZZZ random note: I didn't do this part, and I'm not sure it's right.  At least, the
@@ -2160,13 +2203,13 @@ void get_net_color(
 // to work in pre/postgame also, so the text chat becomes less important.
 // NOTE - if you enable the POSTGAME_CHAT UI, you will need to edit kPostgameTopMargin in
 // w_players_in_game2's implementation to reduce the dialog height it uses.  (network_dialog_widgets_sdl.cpp)
-#define	NETWORK_PREGAME_CHAT	// Gatherer can message joiners at pregame
-#undef	NETWORK_POSTGAME_CHAT	// Gatherer can message joiners at postgame
-#undef	NETWORK_TWO_WAY_CHAT	// Joiners can message whenever the gatherer can
+#define NETWORK_PREGAME_CHAT // Gatherer can message joiners at pregame
+#undef NETWORK_POSTGAME_CHAT // Gatherer can message joiners at postgame
+#undef NETWORK_TWO_WAY_CHAT	 // Joiners can message whenever the gatherer can
 
 // Stuff that used to live in network_dialogs_sdl.cpp
 
-#ifdef	DEBUG
+#ifdef DEBUG
 //#define	NETWORK_TEST_POSTGAME_DIALOG	// For testing without having to play a netgame
 
 // Note!  If you use NETWORK_TEST_MICROPHONE_LOCALLY you'll also want to set the microphone
@@ -2175,238 +2218,242 @@ void get_net_color(
 #endif
 
 #ifdef NETWORK_TEST_MICROPHONE_LOCALLY
-#include    "network_speaker_sdl.h"
-#include	"network_sound.h"
+#include "network_speaker_sdl.h"
+#include "network_sound.h"
 #endif
 
 // ZZZ: graph types are a dynamically-generated StringSet (not loaded from MML)
-enum {
-    kGraphTypesStringSetID	= 3180
+enum
+{
+	kGraphTypesStringSetID = 3180
 };
 
 // limit types, 0-based, for w_select-compatible use.  (see also set_limit_type())
-enum {    
-    kNoLimit			= 0,
-    kTimeLimit			= 0x01,
-    kScoreLimit			= 0x02,
-    kScoreAndTimeLimits		= kScoreLimit | kTimeLimit // currently cannot be selected directly
+enum
+{
+	kNoLimit = 0,
+	kTimeLimit = 0x01,
+	kScoreLimit = 0x02,
+	kScoreAndTimeLimits = kScoreLimit | kTimeLimit // currently cannot be selected directly
 };
 
 // Some identifiers used only locally.  Hope the numeric equivalents don't conflict!
 // (they shouldn't.)
-enum {
-        iDONT_DO_THIS_USE_SHARED_SYMBOLS= 4242,	// Score limit?  Time limit?  No limit?
-        iCHAT_HISTORY,				// Where chat text appears
-        iCHAT_ENTRY,				// Where chat text is entered
-                
-};
+enum
+{
+	iDONT_DO_THIS_USE_SHARED_SYMBOLS = 4242, // Score limit?  Time limit?  No limit?
+	iCHAT_HISTORY,							 // Where chat text appears
+	iCHAT_ENTRY,							 // Where chat text is entered
 
+};
 
 static bool sAdvertiseGameOnMetaserver = false;
 
 // ZZZ: this is based on the eponymous function on the Mac side
-static short create_graph_popup_menu(w_select* theMenu)
+static short create_graph_popup_menu(w_select *theMenu)
 {
 	short index;
 	bool has_scores;
 
-        // Clear the graph types stringset
-        TS_DeleteStringSet(kGraphTypesStringSetID);
+	// Clear the graph types stringset
+	TS_DeleteStringSet(kGraphTypesStringSetID);
 
 	/* Setup the player names */
-	for (index= 0; index<dynamic_world->player_count; index++)
+	for (index = 0; index < dynamic_world->player_count; index++)
 	{
-		struct player_data *player= get_player_data(rankings[index].player_index);
+		struct player_data *player = get_player_data(rankings[index].player_index);
 
-                TS_PutCString(kGraphTypesStringSetID, index, player->name);
+		TS_PutCString(kGraphTypesStringSetID, index, player->name);
 	}
-	
+
 	/* Add in the total carnage.. */
-        getcstr(temporary, strNET_STATS_STRINGS, strTOTALS_STRING);
-        TS_PutCString(kGraphTypesStringSetID, index, temporary);
-        index++;
-	
-	/* Add in the scores */
-	has_scores= get_network_score_text_for_postgame(temporary, false);
-	if(has_scores)
-	{
-                TS_PutCString(kGraphTypesStringSetID, index, temporary);
-                index++;
-	}
-	
-	/* If the game has teams, show the team stats. */
-	if (!(dynamic_world->game_information.game_options & _force_unique_teams)) 
-	{
-                getcstr(temporary, strNET_STATS_STRINGS, strTEAM_TOTALS_STRING);
-                TS_PutCString(kGraphTypesStringSetID, index, temporary);
-                index++;
+	getcstr(temporary, strNET_STATS_STRINGS, strTOTALS_STRING);
+	TS_PutCString(kGraphTypesStringSetID, index, temporary);
+	index++;
 
-		if(has_scores)
+	/* Add in the scores */
+	has_scores = get_network_score_text_for_postgame(temporary, false);
+	if (has_scores)
+	{
+		TS_PutCString(kGraphTypesStringSetID, index, temporary);
+		index++;
+	}
+
+	/* If the game has teams, show the team stats. */
+	if (!(dynamic_world->game_information.game_options & _force_unique_teams))
+	{
+		getcstr(temporary, strNET_STATS_STRINGS, strTEAM_TOTALS_STRING);
+		TS_PutCString(kGraphTypesStringSetID, index, temporary);
+		index++;
+
+		if (has_scores)
 		{
 			get_network_score_text_for_postgame(temporary, true);
-                        TS_PutCString(kGraphTypesStringSetID, index, temporary);
-                        index++;
+			TS_PutCString(kGraphTypesStringSetID, index, temporary);
+			index++;
 		}
-	} 
+	}
 
-        // Place the newly-constructed StringSet into the graph selection widget.
-        theMenu->set_labels_stringset(kGraphTypesStringSetID);
+	// Place the newly-constructed StringSet into the graph selection widget.
+	theMenu->set_labels_stringset(kGraphTypesStringSetID);
 
-        // Change of behavior here: instead of choosing individual scores, or failing that, Total Carnage,
-        // I select team scores, then failing that either team carnage or individual scores, then failing that,
-        // Total Carnage.  I think this better reflects what really happens - in a team game, it's *teams*
-        // that win things.  You can view the individual results, sure, but the first thing that pops up
-        // (who won??) is a team stat.
-        theMenu->set_selection(index - 1);        
-        
+	// Change of behavior here: instead of choosing individual scores, or failing that, Total Carnage,
+	// I select team scores, then failing that either team carnage or individual scores, then failing that,
+	// Total Carnage.  I think this better reflects what really happens - in a team game, it's *teams*
+	// that win things.  You can view the individual results, sure, but the first thing that pops up
+	// (who won??) is a team stat.
+	theMenu->set_selection(index - 1);
+
 	return index;
 }
 
-
-void
-draw_names(DialogPtr &dialog, struct net_rank *ranks, short number_of_bars, short which_player) {
-    // This does nothing here - draw_kill_bars or draw_score_bars is assumed to have enough data to work with,
-    // and one of those is always called adjacent to a call to draw_names in practice.
-}
-
-void
-draw_kill_bars(DialogPtr &dialog, struct net_rank *ranks, short num_players, 
-               short suicide_index, bool do_totals, bool friendly_fire)
+void draw_names(DialogPtr &dialog, struct net_rank *ranks, short number_of_bars, short which_player)
 {
-    // We don't actually draw here - we just pass the data along to the widget, and it will take care of the rest. 
-    w_players_in_game2* wpig2 = dynamic_cast<w_players_in_game2*>(dialog->get_widget_by_id(iDAMAGE_STATS));
-    wpig2->set_graph_data(ranks, num_players, suicide_index, (ranks[0].player_index == NONE) ? true : false, false);
-
-    update_carnage_summary(dialog, ranks, num_players, suicide_index, do_totals, friendly_fire);
+	// This does nothing here - draw_kill_bars or draw_score_bars is assumed to have enough data to work with,
+	// and one of those is always called adjacent to a call to draw_names in practice.
 }
 
-void
-draw_score_bars(DialogPtr &dialog, struct net_rank *ranks, short bar_count) {
-    // We don't actually draw here - we just pass the data along to the widget, and it will take care of the rest. 
-    w_players_in_game2* wpig2 = dynamic_cast<w_players_in_game2*>(dialog->get_widget_by_id(iDAMAGE_STATS));
-    wpig2->set_graph_data(ranks, bar_count, NONE, (ranks[0].player_index == NONE) ? true : false, true);
+void draw_kill_bars(DialogPtr &dialog, struct net_rank *ranks, short num_players,
+					short suicide_index, bool do_totals, bool friendly_fire)
+{
+	// We don't actually draw here - we just pass the data along to the widget, and it will take care of the rest.
+	w_players_in_game2 *wpig2 = dynamic_cast<w_players_in_game2 *>(dialog->get_widget_by_id(iDAMAGE_STATS));
+	wpig2->set_graph_data(ranks, num_players, suicide_index, (ranks[0].player_index == NONE) ? true : false, false);
 
-    // clear the summary text
-    copy_cstring_to_static_text(dialog, iTOTAL_KILLS, "");
-    copy_cstring_to_static_text(dialog, iTOTAL_DEATHS, "");
+	update_carnage_summary(dialog, ranks, num_players, suicide_index, do_totals, friendly_fire);
+}
+
+void draw_score_bars(DialogPtr &dialog, struct net_rank *ranks, short bar_count)
+{
+	// We don't actually draw here - we just pass the data along to the widget, and it will take care of the rest.
+	w_players_in_game2 *wpig2 = dynamic_cast<w_players_in_game2 *>(dialog->get_widget_by_id(iDAMAGE_STATS));
+	wpig2->set_graph_data(ranks, bar_count, NONE, (ranks[0].player_index == NONE) ? true : false, true);
+
+	// clear the summary text
+	copy_cstring_to_static_text(dialog, iTOTAL_KILLS, "");
+	copy_cstring_to_static_text(dialog, iTOTAL_DEATHS, "");
 }
 
 // User clicked on a postgame carnage report element.  If it was a player and we're showing Total Carnage
 // or a player vs player graph, switch to showing a player vs player graph according to the player clicked.
 static void
-respond_to_element_clicked(w_players_in_game2* inWPIG2, bool inTeam, bool inGraph, bool inScore, size_t inDrawIndex,
-                           int inPlayerIndexOrTeamColor) {
-    if(inGraph && !inTeam && !inScore) {
-        w_select*   theGraphMenu = dynamic_cast<w_select*>(inWPIG2->get_owning_dialog()->get_widget_by_id(iGRAPH_POPUP));
+respond_to_element_clicked(w_players_in_game2 *inWPIG2, bool inTeam, bool inGraph, bool inScore, size_t inDrawIndex,
+						   int inPlayerIndexOrTeamColor)
+{
+	if (inGraph && !inTeam && !inScore)
+	{
+		w_select *theGraphMenu = dynamic_cast<w_select *>(inWPIG2->get_owning_dialog()->get_widget_by_id(iGRAPH_POPUP));
 
-        if(theGraphMenu->get_selection() != inDrawIndex)
-            theGraphMenu->set_selection(inDrawIndex, true);
-    }
+		if (theGraphMenu->get_selection() != inDrawIndex)
+			theGraphMenu->set_selection(inDrawIndex, true);
+	}
 }
 
 // User twiddled the iGRAPH_POPUP; draw a new kind of graph in response.
 static void
-respond_to_graph_type_change(w_select* inGraphMenu) {
-    DialogPtr p = inGraphMenu->get_owning_dialog();
-    draw_new_graph(p);
+respond_to_graph_type_change(w_select *inGraphMenu)
+{
+	DialogPtr p = inGraphMenu->get_owning_dialog();
+	draw_new_graph(p);
 }
 
 #ifdef NETWORK_TWO_WAY_CHAT
 // There's currently no underlying support for this, so we just do some fakery.
 static void
-send_text_fake(w_text_entry* te) {
-    assert(te != NULL);
-    
-    dialog* d = te->get_owning_dialog();
-    
-    w_chat_history* ch = dynamic_cast<w_chat_history*>(d->get_widget_by_id(iCHAT_HISTORY));
-    assert(ch != NULL);
-    
-    int netState = NetState();
-    
-    if(netState != netUninitialized && netState != netJoining && netState != netDown
-        && !(netState == netGathering && NetGetNumberOfPlayers() <= 1))
-    {
-        ch->append_chat_entry(NULL, "This is not finished yet.  Your text will not be seen by others.");
-        player_info* info = (player_info*)NetGetPlayerData(NetGetLocalPlayerIndex());
-        ch->append_chat_entry(info, te->get_text());
-    
-        te->set_text("");
-    }
-    else {
-        ch->append_chat_entry(NULL, "There is nobody in the game to hear you yet.");
-    }
+send_text_fake(w_text_entry *te)
+{
+	assert(te != NULL);
+
+	dialog *d = te->get_owning_dialog();
+
+	w_chat_history *ch = dynamic_cast<w_chat_history *>(d->get_widget_by_id(iCHAT_HISTORY));
+	assert(ch != NULL);
+
+	int netState = NetState();
+
+	if (netState != netUninitialized && netState != netJoining && netState != netDown && !(netState == netGathering && NetGetNumberOfPlayers() <= 1))
+	{
+		ch->append_chat_entry(NULL, "This is not finished yet.  Your text will not be seen by others.");
+		player_info *info = (player_info *)NetGetPlayerData(NetGetLocalPlayerIndex());
+		ch->append_chat_entry(info, te->get_text());
+
+		te->set_text("");
+	}
+	else
+	{
+		ch->append_chat_entry(NULL, "There is nobody in the game to hear you yet.");
+	}
 }
 #endif // NETWORK_TWO_WAY_CHAT
 
 // Here's the main entry point for thgametypee postgame carnage report.
 void display_net_game_stats(void)
 {
-//printf("display_net_game_stats\n");
+	//printf("display_net_game_stats\n");
 
-	if (gMetaserverClient) 
+	if (gMetaserverClient)
 	{
 		gMetaserverClient->announceGameDeleted();
 		gMetaserverClient->pump();
 	}
 
-    dialog d;
-    
-    vertical_placer *placer = new vertical_placer;
-    placer->dual_add(new w_title("POSTGAME CARNAGE REPORT"), d);
-    
-    horizontal_placer *graph_type_placer = new horizontal_placer;
-    w_select* graph_type_w = new w_select(0, NULL);
-    graph_type_w->set_identifier(iGRAPH_POPUP);
-    graph_type_w->set_selection_changed_callback(respond_to_graph_type_change);
-    graph_type_placer->dual_add(graph_type_w->label("Report on"), d);
-    graph_type_placer->dual_add(graph_type_w, d);
+	dialog d;
 
-    placer->add(graph_type_placer, true);
-    
-    w_players_in_game2* wpig2 = new w_players_in_game2(true);	// "true": extra space for postgame labels etc.
-    wpig2->set_identifier(iDAMAGE_STATS);
-    wpig2->set_element_clicked_callback(respond_to_element_clicked);
-    wpig2->update_display(true);	// "true": widget gets data from dynamic_world, not topology
-    placer->dual_add(wpig2, d);
-    
-    placer->add(new w_spacer(), true);
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add(new w_title("POSTGAME CARNAGE REPORT"), d);
 
-    horizontal_placer *carnage_and_ok_placer = new horizontal_placer;
-    vertical_placer *carnage_placer = new vertical_placer;
+	horizontal_placer *graph_type_placer = new horizontal_placer;
+	w_select *graph_type_w = new w_select(0, NULL);
+	graph_type_w->set_identifier(iGRAPH_POPUP);
+	graph_type_w->set_selection_changed_callback(respond_to_graph_type_change);
+	graph_type_placer->dual_add(graph_type_w->label("Report on"), d);
+	graph_type_placer->dual_add(graph_type_w, d);
 
-    carnage_placer->add_flags((placeable::placement_flags) ((int) placeable::kAlignLeft | (int) placeable::kFill));
-    // (total kills) and (total deaths) will be replaced by update_carnage_summary() or set to "".
-    w_static_text*  total_kills_w = new w_static_text("(total kills)");
-    total_kills_w->set_identifier(iTOTAL_KILLS);
-    carnage_placer->dual_add(total_kills_w, d);
+	placer->add(graph_type_placer, true);
 
-    w_static_text*  total_deaths_w = new w_static_text("(total deaths)");
-    total_deaths_w->set_identifier(iTOTAL_DEATHS);
-    carnage_placer->dual_add(total_deaths_w, d);
-    
-    carnage_and_ok_placer->add_flags(placeable::kFill);
-    carnage_and_ok_placer->add(carnage_placer, true);
-    carnage_and_ok_placer->add_flags();
-    carnage_and_ok_placer->dual_add(new w_button("OK", dialog_ok, &d), d);
+	w_players_in_game2 *wpig2 = new w_players_in_game2(true); // "true": extra space for postgame labels etc.
+	wpig2->set_identifier(iDAMAGE_STATS);
+	wpig2->set_element_clicked_callback(respond_to_element_clicked);
+	wpig2->update_display(true); // "true": widget gets data from dynamic_world, not topology
+	placer->dual_add(wpig2, d);
 
-    placer->add_flags(placeable::kFill);
-    placer->add(carnage_and_ok_placer, true);
+	placer->add(new w_spacer(), true);
 
-    /* Calculate the rankings (once) for the entire graph */
-    calculate_rankings(rankings, dynamic_world->player_count);
-    qsort(rankings, dynamic_world->player_count, sizeof(struct net_rank), rank_compare);
-    
-    /* Create the graph popup menu */
-    create_graph_popup_menu(graph_type_w);
-    
-    {
-	    DialogPtr p = &d;
-	    draw_new_graph(p);
-    }
-    
-    d.set_widget_placer(placer);
-    d.run();
+	horizontal_placer *carnage_and_ok_placer = new horizontal_placer;
+	vertical_placer *carnage_placer = new vertical_placer;
+
+	carnage_placer->add_flags((placeable::placement_flags)((int)placeable::kAlignLeft | (int)placeable::kFill));
+	// (total kills) and (total deaths) will be replaced by update_carnage_summary() or set to "".
+	w_static_text *total_kills_w = new w_static_text("(total kills)");
+	total_kills_w->set_identifier(iTOTAL_KILLS);
+	carnage_placer->dual_add(total_kills_w, d);
+
+	w_static_text *total_deaths_w = new w_static_text("(total deaths)");
+	total_deaths_w->set_identifier(iTOTAL_DEATHS);
+	carnage_placer->dual_add(total_deaths_w, d);
+
+	carnage_and_ok_placer->add_flags(placeable::kFill);
+	carnage_and_ok_placer->add(carnage_placer, true);
+	carnage_and_ok_placer->add_flags();
+	carnage_and_ok_placer->dual_add(new w_button("OK", dialog_ok, &d), d);
+
+	placer->add_flags(placeable::kFill);
+	placer->add(carnage_and_ok_placer, true);
+
+	/* Calculate the rankings (once) for the entire graph */
+	calculate_rankings(rankings, dynamic_world->player_count);
+	qsort(rankings, dynamic_world->player_count, sizeof(struct net_rank), rank_compare);
+
+	/* Create the graph popup menu */
+	create_graph_popup_menu(graph_type_w);
+
+	{
+		DialogPtr p = &d;
+		draw_new_graph(p);
+	}
+
+	d.set_widget_placer(placer);
+	d.run();
 }
 
 class SdlGatherDialog : public GatherDialog
@@ -2415,48 +2462,48 @@ public:
 	SdlGatherDialog()
 	{
 		vertical_placer *placer = new vertical_placer;
-		placer->dual_add(new w_title("ƒlƒbƒgƒ[ƒNƒQ[ƒ€‚Ì•åW"), m_dialog);
+		placer->dual_add(new w_title("ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯ã‚²ãƒ¼ãƒ ã®å‹Ÿé›†"), m_dialog);
 		placer->add(new w_spacer());
-	
+
 		// m_dialog.add(new w_static_text("Players on Network"));
 
-		w_joining_players_in_room* foundplayers_w = new w_joining_players_in_room(NULL, 320, 3);
+		w_joining_players_in_room *foundplayers_w = new w_joining_players_in_room(NULL, 320, 3);
 		placer->dual_add(foundplayers_w, m_dialog);
-	
+
 		horizontal_placer *autogather_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET), true);
-		w_toggle* autogather_w = new w_toggle(false);
-		autogather_placer->dual_add(autogather_w->label("Ž©“®•åW"), m_dialog);
+		w_toggle *autogather_w = new w_toggle(false);
+		autogather_placer->dual_add(autogather_w->label("è‡ªå‹•å‹Ÿé›†"), m_dialog);
 		autogather_placer->dual_add(autogather_w, m_dialog);
 
 		placer->add(autogather_placer, true);
 		placer->add(new w_spacer(), true);
-	
-		w_players_in_game2* players_w = new w_players_in_game2(false);
+
+		w_players_in_game2 *players_w = new w_players_in_game2(false);
 		placer->dual_add(players_w, m_dialog);
 
 		horizontal_placer *button_placer = new horizontal_placer;
-		w_button* play_button_w = new w_button("ƒvƒŒƒC");
+		w_button *play_button_w = new w_button("ãƒ—ãƒ¬ã‚¤");
 		button_placer->dual_add(play_button_w, m_dialog);
 
-		w_button* cancel_w = new w_button("ƒLƒƒƒ“ƒZƒ‹");
+		w_button *cancel_w = new w_button("ã‚­ãƒ£ãƒ³ã‚»ãƒ«");
 		button_placer->dual_add(cancel_w, m_dialog);
 
 		placer->add(button_placer, true);
 
 		horizontal_placer *chat_choice_placer = new horizontal_placer;
-		w_select_popup* chat_choice_w = new w_select_popup();
-		chat_choice_placer->dual_add(chat_choice_w->label("ƒ`ƒƒƒbƒgF"), m_dialog);
+		w_select_popup *chat_choice_w = new w_select_popup();
+		chat_choice_placer->dual_add(chat_choice_w->label("ãƒãƒ£ãƒƒãƒˆï¼š"), m_dialog);
 		chat_choice_placer->dual_add(chat_choice_w, m_dialog);
 		placer->add(chat_choice_placer, true);
 
-		w_colorful_chat* chat_history_w = new w_colorful_chat(600, 6);
+		w_colorful_chat *chat_history_w = new w_colorful_chat(600, 6);
 		placer->dual_add(chat_history_w, m_dialog);
 
-		w_chat_entry* chatentry_w = new w_chat_entry(240);
+		w_chat_entry *chatentry_w = new w_chat_entry(240);
 		chatentry_w->enable_mac_roman_input();
 
 		horizontal_placer *say_placer = new horizontal_placer;
-		say_placer->dual_add(chatentry_w->label("”­Œ¾:"), m_dialog);
+		say_placer->dual_add(chatentry_w->label("ç™ºè¨€:"), m_dialog);
 		say_placer->add_flags(placeable::kFill);
 		say_placer->dual_add(chatentry_w, m_dialog);
 
@@ -2466,34 +2513,34 @@ public:
 		m_dialog.activate_widget(chatentry_w);
 
 		m_dialog.set_widget_placer(placer);
-		
-		m_cancelWidget = new ButtonWidget (cancel_w);
-		m_startWidget = new ButtonWidget (play_button_w);
-		
-		m_autogatherWidget = new ToggleWidget (autogather_w);
-	
-		m_ungatheredWidget = new JoiningPlayerListWidget (foundplayers_w);
-		m_pigWidget = new PlayersInGameWidget (players_w);
-		
-		m_chatEntryWidget = new EditTextWidget (chatentry_w);
+
+		m_cancelWidget = new ButtonWidget(cancel_w);
+		m_startWidget = new ButtonWidget(play_button_w);
+
+		m_autogatherWidget = new ToggleWidget(autogather_w);
+
+		m_ungatheredWidget = new JoiningPlayerListWidget(foundplayers_w);
+		m_pigWidget = new PlayersInGameWidget(players_w);
+
+		m_chatEntryWidget = new EditTextWidget(chatentry_w);
 		m_chatWidget = new ColorfulChatWidget(new ColorfulChatWidgetImpl(chat_history_w));
-		m_chatChoiceWidget = new PopupSelectorWidget (chat_choice_w);
+		m_chatChoiceWidget = new PopupSelectorWidget(chat_choice_w);
 	}
-	
-	virtual bool Run ()
+
+	virtual bool Run()
 	{
-		m_dialog.set_processing_function (boost::bind(&SdlGatherDialog::idle, this));
+		m_dialog.set_processing_function(std::bind(&SdlGatherDialog::idle, this));
 		return (m_dialog.run() == 0);
 	}
-	
-	virtual void Stop (bool result)
+
+	virtual void Stop(bool result)
 	{
 		if (result)
-			m_dialog.quit (0);
+			m_dialog.quit(0);
 		else
-			m_dialog.quit (-1);
+			m_dialog.quit(-1);
 	}
-	
+
 private:
 	dialog m_dialog;
 };
@@ -2512,10 +2559,11 @@ public:
 	SdlJoinDialog() : m_tabs(0)
 	{
 		SDL_Keymod m = SDL_GetModState();
-		if ((m & KMOD_ALT) || (m & KMOD_GUI)) skipToMetaserver = !skipToMetaserver;
+		if ((m & KMOD_ALT) || (m & KMOD_GUI))
+			skipToMetaserver = !skipToMetaserver;
 
 		vertical_placer *placer = new vertical_placer;
-		placer->dual_add(new w_title("ƒlƒbƒgƒ[ƒNƒQ[ƒ€‚ÉŽQ‰Á"), m_dialog);
+		placer->dual_add(new w_title("ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯ã‚²ãƒ¼ãƒ ã«å‚åŠ "), m_dialog);
 		placer->add(new w_spacer(), true);
 
 		table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -2523,15 +2571,15 @@ public:
 
 		w_text_entry *name_w = new w_text_entry(PREFERENCES_NAME_LENGTH, "");
 		name_w->enable_mac_roman_input();
-		table->dual_add(name_w->label("–¼‘O"), m_dialog);
+		table->dual_add(name_w->label("åå‰"), m_dialog);
 		table->dual_add(name_w, m_dialog);
-	
+
 		w_player_color *pcolor_w = new w_player_color(0);
-		table->dual_add(pcolor_w->label("F"), m_dialog);
+		table->dual_add(pcolor_w->label("è‰²"), m_dialog);
 		table->dual_add(pcolor_w, m_dialog);
 
 		w_player_color *tcolor_w = new w_player_color(0);
-		table->dual_add(tcolor_w->label("ƒ`[ƒ€F"), m_dialog);
+		table->dual_add(tcolor_w->label("ãƒãƒ¼ãƒ è‰²"), m_dialog);
 		table->dual_add(tcolor_w, m_dialog);
 
 		placer->add(table, true);
@@ -2542,32 +2590,32 @@ public:
 		vertical_placer *prejoin_placer = new vertical_placer;
 		table_placer *prejoin_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 		prejoin_table->col_flags(0, placeable::kAlignRight);
-		
+
 		prejoin_table->add_row(new w_spacer(), true);
-		
-		w_button* join_by_metaserver_w = new w_button("ƒCƒ“ƒ^[ƒlƒbƒgƒQ[ƒ€‚ð’T‚·");
+
+		w_button *join_by_metaserver_w = new w_button("ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒƒãƒˆã‚²ãƒ¼ãƒ ã‚’æŽ¢ã™");
 		prejoin_table->dual_add_row(join_by_metaserver_w, m_dialog);
 		prejoin_table->add_row(new w_spacer(), true);
-		
-		w_toggle* hint_w = new w_toggle(false);
-		prejoin_table->dual_add(hint_w->label("ƒAƒhƒŒƒX“ü—Í‚ÅŽQ‰Á"), m_dialog);
+
+		w_toggle *hint_w = new w_toggle(false);
+		prejoin_table->dual_add(hint_w->label("ã‚¢ãƒ‰ãƒ¬ã‚¹å…¥åŠ›ã§å‚åŠ "), m_dialog);
 		prejoin_table->dual_add(hint_w, m_dialog);
 
-		w_text_entry* hint_address_w = new w_text_entry(kJoinHintingAddressLength, "");
-		prejoin_table->dual_add(hint_address_w->label("ƒAƒhƒŒƒX"), m_dialog);
+		w_text_entry *hint_address_w = new w_text_entry(kJoinHintingAddressLength, "");
+		prejoin_table->dual_add(hint_address_w->label("ã‚¢ãƒ‰ãƒ¬ã‚¹"), m_dialog);
 		prejoin_table->dual_add(hint_address_w, m_dialog);
 
 		prejoin_table->add_row(new w_spacer(), true);
 
-		w_button* join_w = new w_button("ƒ[ƒJƒ‹ƒQ[ƒ€‚ÉŽQ‰Á");
+		w_button *join_w = new w_button("ãƒ­ãƒ¼ã‚«ãƒ«ã‚²ãƒ¼ãƒ ã«å‚åŠ ");
 		prejoin_table->dual_add_row(join_w, m_dialog);
-		
+
 		prejoin_placer->add(prejoin_table, true);
 		prejoin_placer->add(new w_spacer(), true);
 
 		vertical_placer *postjoin_placer = new vertical_placer;
 
-		w_static_text* join_messages_w = new w_static_text("");
+		w_static_text *join_messages_w = new w_static_text("");
 
 		// jkvw: add it to dialog, but never show it.
 		//       Two things which we need don't work:
@@ -2575,25 +2623,25 @@ public:
 		//       2) widgets in dialog don't update layout position once dialog starts to run
 		//       If we get solutions to these issues, then we can show the join messages.
 
-		w_players_in_game2* players_w = new w_players_in_game2(false);
+		w_players_in_game2 *players_w = new w_players_in_game2(false);
 		postjoin_placer->dual_add(players_w, m_dialog);
 
 		horizontal_placer *chat_choice_placer = new horizontal_placer;
 
-		w_select_popup* chat_choice_w = new w_select_popup();
-		chat_choice_placer->dual_add(chat_choice_w->label("ƒ`ƒƒƒbƒg:"), m_dialog);
+		w_select_popup *chat_choice_w = new w_select_popup();
+		chat_choice_placer->dual_add(chat_choice_w->label("ãƒãƒ£ãƒƒãƒˆ:"), m_dialog);
 		chat_choice_placer->dual_add(chat_choice_w, m_dialog);
 
 		postjoin_placer->add(chat_choice_placer, true);
 
-		w_colorful_chat* chat_history_w = new w_colorful_chat(600, 7);
+		w_colorful_chat *chat_history_w = new w_colorful_chat(600, 7);
 		postjoin_placer->dual_add(chat_history_w, m_dialog);
 
 		chatentry_w = new w_chat_entry(240);
 		chatentry_w->enable_mac_roman_input();
 
 		horizontal_placer *say_placer = new horizontal_placer;
-		say_placer->dual_add(chatentry_w->label("”­Œ¾:"), m_dialog);
+		say_placer->dual_add(chatentry_w->label("ç™ºè¨€:"), m_dialog);
 		say_placer->add_flags(placeable::kFill);
 		say_placer->dual_add(chatentry_w, m_dialog);
 
@@ -2607,40 +2655,40 @@ public:
 		placer->add(m_tabs, true);
 
 		horizontal_placer *button_placer = new horizontal_placer;
-		
-		w_button* cancel_w = new w_button("ƒLƒƒƒ“ƒZƒ‹");
+
+		w_button *cancel_w = new w_button("ã‚­ãƒ£ãƒ³ã‚»ãƒ«");
 		button_placer->dual_add(cancel_w, m_dialog);
 
 		placer->add(button_placer, true);
 
 		m_dialog.set_widget_placer(placer);
 
-		m_cancelWidget = new ButtonWidget (cancel_w);
-		m_joinWidget = new ButtonWidget (join_w);
-	
-		m_joinMetaserverWidget = new ButtonWidget (join_by_metaserver_w);
-		m_joinAddressWidget = new EditTextWidget (hint_address_w);
-		m_joinByAddressWidget = new ToggleWidget (hint_w);
-	
-		m_nameWidget = new EditTextWidget (name_w);
-		m_colourWidget = new ColourSelectorWidget (pcolor_w);
-		m_teamWidget = new ColourSelectorWidget (tcolor_w);
-	
-		m_messagesWidget = new StaticTextWidget (join_messages_w);
-	
-		m_pigWidget = new PlayersInGameWidget (players_w);
-		
-		m_chatEntryWidget = new EditTextWidget (chatentry_w);
+		m_cancelWidget = new ButtonWidget(cancel_w);
+		m_joinWidget = new ButtonWidget(join_w);
+
+		m_joinMetaserverWidget = new ButtonWidget(join_by_metaserver_w);
+		m_joinAddressWidget = new EditTextWidget(hint_address_w);
+		m_joinByAddressWidget = new ToggleWidget(hint_w);
+
+		m_nameWidget = new EditTextWidget(name_w);
+		m_colourWidget = new ColourSelectorWidget(pcolor_w);
+		m_teamWidget = new ColourSelectorWidget(tcolor_w);
+
+		m_messagesWidget = new StaticTextWidget(join_messages_w);
+
+		m_pigWidget = new PlayersInGameWidget(players_w);
+
+		m_chatEntryWidget = new EditTextWidget(chatentry_w);
 		m_chatWidget = new ColorfulChatWidget(new ColorfulChatWidgetImpl(chat_history_w));
-		m_chatChoiceWidget = new PopupSelectorWidget (chat_choice_w);
+		m_chatChoiceWidget = new PopupSelectorWidget(chat_choice_w);
 	}
 
-	virtual void Run ()
+	virtual void Run()
 	{
-		m_dialog.set_processing_function (boost::bind(&SdlJoinDialog::gathererSearch, this));
+		m_dialog.set_processing_function(std::bind(&SdlJoinDialog::gathererSearch, this));
 		m_dialog.run();
 	}
-	
+
 	virtual void Stop()
 	{
 		if (join_result == kNetworkJoinFailedUnjoined || join_result == kNetworkJoinFailedJoined)
@@ -2648,18 +2696,19 @@ public:
 		else
 			m_dialog.quit(0);
 	}
-	
+
 	virtual void respondToJoinHit()
 	{
 		play_dialog_sound(DIALOG_OK_SOUND);
 		m_tabs->choose_tab(1);
 		m_dialog.draw();
 		JoinDialog::respondToJoinHit();
-		m_dialog.activate_widget(chatentry_w);		
+		m_dialog.activate_widget(chatentry_w);
 	}
 
 private:
-	enum {
+	enum
+	{
 		iJOIN_PREJOIN_TAB,
 		iJOIN_POSTJOIN_TAB,
 		iJOIN_NEVERSHOW_TAB
@@ -2679,96 +2728,103 @@ JoinDialog::Create()
 class SdlSetupNetgameDialog : public SetupNetgameDialog
 {
 public:
-	SdlSetupNetgameDialog ()
+	SdlSetupNetgameDialog()
 	{
 		vertical_placer *placer = new vertical_placer;
 
-		placer->dual_add(new w_title("ƒlƒbƒgƒ[ƒNƒQ[ƒ€‚ÌƒZƒbƒgƒAƒbƒv"), m_dialog);
+		placer->dual_add(new w_title("ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯ã‚²ãƒ¼ãƒ ã®ã‚»ãƒƒãƒˆã‚¢ãƒƒãƒ—"), m_dialog);
 		placer->add(new w_spacer(), true);
 
 		table_placer *table = new table_placer(2, 10);
 		vertical_placer *left_placer = new vertical_placer;
 		vertical_placer *right_placer = new vertical_placer;
-		
+
 		table_placer *player_table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 		player_table->col_flags(0, placeable::kAlignRight);
-		player_table->dual_add_row(new w_static_text("ŠOŠÏ"), m_dialog);
-		w_text_entry *name_w = new w_text_entry (PREFERENCES_NAME_LENGTH, "");
+		player_table->dual_add_row(new w_static_text("å¤–è¦³"), m_dialog);
+		w_text_entry *name_w = new w_text_entry(PREFERENCES_NAME_LENGTH, "");
 		name_w->enable_mac_roman_input();
 
-		player_table->dual_add(name_w->label("–¼‘O"), m_dialog);
+		player_table->dual_add(name_w->label("åå‰"), m_dialog);
 		player_table->dual_add(name_w, m_dialog);
 
-		w_player_color *pcolor_w = new w_player_color (player_preferences->color);
-		player_table->dual_add(pcolor_w->label("F"), m_dialog);
+		w_player_color *pcolor_w = new w_player_color(player_preferences->color);
+		player_table->dual_add(pcolor_w->label("è‰²"), m_dialog);
 		player_table->dual_add(pcolor_w, m_dialog);
 
-		w_player_color *tcolor_w = new w_player_color (player_preferences->team);
-		player_table->dual_add(tcolor_w->label("ƒ`[ƒ€"), m_dialog);
+		w_player_color *tcolor_w = new w_player_color(player_preferences->team);
+		player_table->dual_add(tcolor_w->label("ãƒãƒ¼ãƒ "), m_dialog);
 		player_table->dual_add(tcolor_w, m_dialog);
 
-		right_placer->dual_add(new w_static_text("ƒlƒbƒgƒ[ƒN"), m_dialog);
+		right_placer->dual_add(new w_static_text("ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯"), m_dialog);
 		table_placer *network_table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 		network_table->col_flags(1, placeable::kAlignLeft);
 
-		w_toggle *advertise_on_metaserver_w = new w_toggle (sAdvertiseGameOnMetaserver);
+		w_toggle *advertise_on_metaserver_w = new w_toggle(sAdvertiseGameOnMetaserver);
 		network_table->dual_add(advertise_on_metaserver_w, m_dialog);
-		network_table->dual_add(advertise_on_metaserver_w->label("ƒCƒ“ƒ^[ƒlƒbƒg‚ÉƒQ[ƒ€•åW‚ð•\\Ž¦"), m_dialog);
+		network_table->dual_add(advertise_on_metaserver_w->label("ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒƒãƒˆã«ã‚²ãƒ¼ãƒ å‹Ÿé›†ã‚’è¡¨\ç¤º"), m_dialog);
 
-		w_toggle *use_upnp_w = new w_toggle (true);
+#ifdef HAVE_MINIUPNPC
+		w_toggle *use_upnp_w = new w_toggle(true);
+#else
+		w_toggle *use_upnp_w = new w_toggle(false);
+#endif
 		network_table->dual_add(use_upnp_w, m_dialog);
-		network_table->dual_add(use_upnp_w->label("UPnPƒ‹[ƒ^[‚ÌÝ’è"), m_dialog);
+		network_table->dual_add(use_upnp_w->label("UPnPãƒ«ãƒ¼ã‚¿ãƒ¼ã®è¨­å®š"), m_dialog);
+#ifndef HAVE_MINIUPNPC
+		use_upnp_w->set_enabled(false);
+#endif
 
-		w_toggle* realtime_audio_w = new w_toggle(network_preferences->allow_microphone);
+		w_toggle *realtime_audio_w = new w_toggle(network_preferences->allow_microphone);
 		network_table->dual_add(realtime_audio_w, m_dialog);
-		network_table->dual_add(realtime_audio_w->label("ƒ}ƒCƒN‚ð—LŒø‰»"), m_dialog);
+		network_table->dual_add(realtime_audio_w->label("ãƒžã‚¤ã‚¯ã‚’æœ‰åŠ¹åŒ–"), m_dialog);
 
 		w_select_popup *latency_tolerance_w = new w_select_popup();
 		horizontal_placer *latency_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET));
-		latency_placer->dual_add(latency_tolerance_w->label("‹–—e’x‰„Œë·"), m_dialog);
+		latency_placer->dual_add(latency_tolerance_w->label("è¨±å®¹é…å»¶èª¤å·®"), m_dialog);
 		latency_placer->dual_add(latency_tolerance_w, m_dialog);
-		
+
 		network_table->add(new w_spacer(), true);
 		network_table->add(latency_placer, true);
 
 		right_placer->add(network_table, true);
 
 		player_table->add_row(new w_spacer(), true);
-		player_table->dual_add_row(new w_static_text("ƒQ[ƒ€"), m_dialog);
+		player_table->dual_add_row(new w_static_text("ã‚²ãƒ¼ãƒ "), m_dialog);
 
 		// Could eventually store this path in network_preferences somewhere, so to have separate map file
 		// prefs for single- and multi-player.
-		w_file_chooser* map_w = new w_file_chooser ("ƒ}ƒbƒv‘I‘ð", _typecode_scenario);
+		w_file_chooser *map_w = new w_file_chooser("ãƒžãƒƒãƒ—é¸æŠž", _typecode_scenario);
 #ifndef MAC_APP_STORE
-		player_table->dual_add(map_w->label("ƒ}ƒbƒv"), m_dialog);
+		player_table->dual_add(map_w->label("ãƒžãƒƒãƒ—"), m_dialog);
 		player_table->dual_add(map_w, m_dialog);
 #endif
 
-		w_select_popup* entry_point_w = new w_select_popup ();
-		player_table->dual_add(entry_point_w->label("ƒŒƒxƒ‹"), m_dialog);
+		w_select_popup *entry_point_w = new w_select_popup();
+		player_table->dual_add(entry_point_w->label("ãƒ¬ãƒ™ãƒ«"), m_dialog);
 		player_table->dual_add(entry_point_w, m_dialog);
 
-		w_select_popup* game_type_w = new w_select_popup ();
-		player_table->dual_add(game_type_w->label("ƒQ[ƒ€‚ÌŽí—Þ"), m_dialog);
+		w_select_popup *game_type_w = new w_select_popup();
+		player_table->dual_add(game_type_w->label("ã‚²ãƒ¼ãƒ ã®ç¨®é¡ž"), m_dialog);
 		player_table->dual_add(game_type_w, m_dialog);
 
 		w_select *diff_w = new w_select(network_preferences->difficulty_level, NULL);
-		player_table->dual_add(diff_w->label("“ïˆÕ“x"), m_dialog);
+		player_table->dual_add(diff_w->label("é›£æ˜“åº¦"), m_dialog);
 		player_table->dual_add(diff_w, m_dialog);
 
 		left_placer->add(player_table, true);
 
 #ifndef MAC_APP_STORE
 		network_table->add_row(new w_spacer(), true);
-		network_table->dual_add_row(new w_static_text("ƒlƒbƒgƒXƒNƒŠƒvƒg"), m_dialog);
+		network_table->dual_add_row(new w_static_text("ãƒãƒƒãƒˆã‚¹ã‚¯ãƒªãƒ—ãƒˆ"), m_dialog);
 #endif
-		w_enabling_toggle* use_netscript_w = new w_enabling_toggle (network_preferences->use_netscript);
+		w_enabling_toggle *use_netscript_w = new w_enabling_toggle(network_preferences->use_netscript);
 #ifndef MAC_APP_STORE
 		network_table->dual_add(use_netscript_w, m_dialog);
-		network_table->dual_add(use_netscript_w->label("ƒlƒbƒgƒXƒNƒŠƒvƒg‚ðŽg—p"), m_dialog);
+		network_table->dual_add(use_netscript_w->label("ãƒãƒƒãƒˆã‚¹ã‚¯ãƒªãƒ—ãƒˆã‚’ä½¿ç”¨"), m_dialog);
 #endif
 
-		w_file_chooser* choose_script_w = new w_file_chooser ("ƒXƒNƒŠƒvƒg‚ðŽg—p", _typecode_netscript);
+		w_file_chooser *choose_script_w = new w_file_chooser("ã‚¹ã‚¯ãƒªãƒ—ãƒˆã‚’ä½¿ç”¨", _typecode_netscript);
 #ifndef MAC_APP_STORE
 		network_table->add(new w_spacer(), true);
 		network_table->dual_add(choose_script_w, m_dialog);
@@ -2778,85 +2834,85 @@ public:
 		left_placer->add(new w_spacer(), true);
 		table_placer *options_table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 		options_table->col_flags(1, placeable::kAlignLeft);
-		options_table->dual_add_row(new w_static_text("ƒIƒvƒVƒ‡ƒ“"), m_dialog);
+		options_table->dual_add_row(new w_static_text("ã‚ªãƒ—ã‚·ãƒ§ãƒ³"), m_dialog);
 
 		w_toggle *aliens_w = new w_toggle((network_preferences->game_options & _monsters_replenish) != 0);
 		options_table->dual_add(aliens_w, m_dialog);
-		options_table->dual_add(aliens_w->label("ƒGƒCƒŠƒAƒ“"), m_dialog);
+		options_table->dual_add(aliens_w->label("ã‚¨ã‚¤ãƒªã‚¢ãƒ³"), m_dialog);
 
 		w_toggle *live_w = new w_toggle((network_preferences->game_options & _live_network_stats) != 0);
 		options_table->dual_add(live_w, m_dialog);
-		options_table->dual_add(live_w->label("ƒ‰ƒCƒu‹sŽEƒŒƒ|[ƒg"), m_dialog);
+		options_table->dual_add(live_w->label("ãƒ©ã‚¤ãƒ–è™æ®ºãƒ¬ãƒãƒ¼ãƒˆ"), m_dialog);
 
 		w_toggle *teams_w = new w_toggle(!(network_preferences->game_options & _force_unique_teams));
 		options_table->dual_add(teams_w, m_dialog);
-		options_table->dual_add(teams_w->label("ƒ`[ƒ€"), m_dialog);
+		options_table->dual_add(teams_w->label("ãƒãƒ¼ãƒ "), m_dialog);
 
 		w_toggle *drop_w = new w_toggle(!(network_preferences->game_options & _burn_items_on_death));
 		options_table->dual_add(drop_w, m_dialog);
-		options_table->dual_add(drop_w->label("Ž€‚ñ‚¾ƒvƒŒƒCƒ„[‚ÍƒAƒCƒeƒ€‚ð—Ž‚Æ‚·"), m_dialog);
+		options_table->dual_add(drop_w->label("æ­»ã‚“ã ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¯ã‚¢ã‚¤ãƒ†ãƒ ã‚’è½ã¨ã™"), m_dialog);
 
 		w_toggle *sensor_w = new w_toggle((network_preferences->game_options & _motion_sensor_does_not_work) != 0);
 		options_table->dual_add(sensor_w, m_dialog);
-		options_table->dual_add(sensor_w->label("ƒ‚[ƒVƒ‡ƒ“ƒZƒ“ƒT[‚ð–³Œø‰»"), m_dialog);
+		options_table->dual_add(sensor_w->label("ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚»ãƒ³ã‚µãƒ¼ã‚’ç„¡åŠ¹åŒ–"), m_dialog);
 
 		w_toggle *pen_die_w = new w_toggle((network_preferences->game_options & _dying_is_penalized) != 0);
 		options_table->dual_add(pen_die_w, m_dialog);
-		options_table->dual_add(pen_die_w->label("Ž€–Sƒyƒiƒ‹ƒeƒB(10•b)"), m_dialog);
+		options_table->dual_add(pen_die_w->label("æ­»äº¡ãƒšãƒŠãƒ«ãƒ†ã‚£(10ç§’)"), m_dialog);
 
 		w_toggle *pen_sui_w = new w_toggle((network_preferences->game_options & _suicide_is_penalized) != 0);
 		options_table->dual_add(pen_sui_w, m_dialog);
-		options_table->dual_add(pen_sui_w->label("Ž©ŽEƒyƒiƒ‹ƒeƒB(15•b)"), m_dialog);
+		options_table->dual_add(pen_sui_w->label("è‡ªæ®ºãƒšãƒŠãƒ«ãƒ†ã‚£(15ç§’)"), m_dialog);
 
 		left_placer->add(options_table, true);
 
 		network_table->add_row(new w_spacer(), true);
-		network_table->dual_add_row(new w_static_text("ƒ`[ƒg^‚»‚Ì‘¼"), m_dialog);
+		network_table->dual_add_row(new w_static_text("ãƒãƒ¼ãƒˆï¼ãã®ä»–"), m_dialog);
 		w_toggle *zoom_w = new w_toggle(true);
 		network_table->dual_add(zoom_w, m_dialog);
-		network_table->dual_add(zoom_w->label("ƒY[ƒ€‚ð‹–‰Â"), m_dialog);
-	
+		network_table->dual_add(zoom_w->label("ã‚ºãƒ¼ãƒ ã‚’è¨±å¯"), m_dialog);
+
 		w_toggle *crosshairs_w = new w_toggle(true);
 		network_table->dual_add(crosshairs_w, m_dialog);
-		network_table->dual_add(crosshairs_w->label("ƒNƒƒXƒwƒA[‚ð‹–‰Â"), m_dialog);
-	
+		network_table->dual_add(crosshairs_w->label("ã‚¯ãƒ­ã‚¹ãƒ˜ã‚¢ãƒ¼ã‚’è¨±å¯"), m_dialog);
+
 		w_toggle *overlay_w = new w_toggle(true);
 		network_table->dual_add(overlay_w, m_dialog);
-		network_table->dual_add(overlay_w->label("ƒI[ƒo[ƒŒƒCƒ}ƒbƒv‚ð‹–‰Â"), m_dialog);
-		
+		network_table->dual_add(overlay_w->label("ã‚ªãƒ¼ãƒãƒ¼ãƒ¬ã‚¤ãƒžãƒƒãƒ—ã‚’è¨±å¯"), m_dialog);
+
 		w_toggle *lara_croft_w = new w_toggle(true);
 		network_table->dual_add(lara_croft_w, m_dialog);
-		network_table->dual_add(lara_croft_w->label("’ÇÕƒJƒƒ‰‚ð‹–‰Â"), m_dialog);
+		network_table->dual_add(lara_croft_w->label("è¿½è·¡ã‚«ãƒ¡ãƒ©ã‚’è¨±å¯"), m_dialog);
 
 		w_toggle *carnage_messages_w = new w_toggle(true);
 		network_table->dual_add(carnage_messages_w, m_dialog);
-		network_table->dual_add(carnage_messages_w->label("ŽEƒƒbƒZ[ƒW‚ð‹–‰Â"), m_dialog);
+		network_table->dual_add(carnage_messages_w->label("æ®ºå‚·ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è¨±å¯"), m_dialog);
 
 		w_toggle *saving_level_w = new w_toggle(true);
 #ifndef MAC_APP_STORE
 		network_table->dual_add(saving_level_w, m_dialog);
-		network_table->dual_add(saving_level_w->label("ƒŒƒxƒ‹‚Ì•Û‘¶‚ð‹–‰Â"), m_dialog);
+		network_table->dual_add(saving_level_w->label("ãƒ¬ãƒ™ãƒ«ã®ä¿å­˜ã‚’è¨±å¯"), m_dialog);
 #endif
 
 		right_placer->add(new w_spacer(), true);
-		right_placer->dual_add(new w_static_text("ŠúŠÔ"), m_dialog);
+		right_placer->dual_add(new w_static_text("æœŸé–“"), m_dialog);
 		table_placer *limits_table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 		limits_table->col_flags(0, placeable::kAlignRight);
-		
-		w_select* endcondition_w = new w_select(kTimeLimit, NULL);
-		limits_table->dual_add(endcondition_w->label("ƒQ[ƒ€‚ÌI—¹ðŒ"), m_dialog);
+
+		w_select *endcondition_w = new w_select(kTimeLimit, NULL);
+		limits_table->dual_add(endcondition_w->label("ã‚²ãƒ¼ãƒ ã®çµ‚äº†æ¡ä»¶"), m_dialog);
 		limits_table->dual_add(endcondition_w, m_dialog);
 
-		w_number_entry*	timelimit_w = new w_number_entry (network_preferences->time_limit);
-		limits_table->dual_add(timelimit_w->label("ŽžŠÔ§ŒÀi•ªj"), m_dialog);
+		w_number_entry *timelimit_w = new w_number_entry(network_preferences->time_limit);
+		limits_table->dual_add(timelimit_w->label("æ™‚é–“åˆ¶é™ï¼ˆåˆ†ï¼‰"), m_dialog);
 		limits_table->dual_add(timelimit_w, m_dialog);
 
 		// The name of this widget (score limit) will be replaced by Kill Limit, Flag Capture Limit, etc.
-		w_number_entry*	scorelimit_w = new w_number_entry (network_preferences->kill_limit);
-		limits_table->dual_add(scorelimit_w->label("ŽEE“_”§ŒÀ"), m_dialog);
+		w_number_entry *scorelimit_w = new w_number_entry(network_preferences->kill_limit);
+		limits_table->dual_add(scorelimit_w->label("æ®ºå‚·ãƒ»ç‚¹æ•°åˆ¶é™"), m_dialog);
 		limits_table->dual_add(scorelimit_w, m_dialog);
 		right_placer->add(limits_table, true);
-		
+
 		table->add(left_placer, true);
 		table->add(right_placer, true);
 
@@ -2865,79 +2921,79 @@ public:
 		placer->add(new w_spacer(), true);
 
 		horizontal_placer *button_placer = new horizontal_placer;
-		w_button* ok_w = new w_button ("—¹³");
+		w_button *ok_w = new w_button("äº†æ‰¿");
 		button_placer->dual_add(ok_w, m_dialog);
-		w_button* cancel_w = new w_button ("ƒLƒƒƒ“ƒZƒ‹");
+		w_button *cancel_w = new w_button("ã‚­ãƒ£ãƒ³ã‚»ãƒ«");
 		button_placer->dual_add(cancel_w, m_dialog);
 		placer->add(button_placer, true);
 
 		m_dialog.set_widget_placer(placer);
 
-		m_cancelWidget = new ButtonWidget (cancel_w);
-		m_okWidget = new ButtonWidget (ok_w);
-	
-		m_nameWidget = new EditTextWidget (name_w);
-		m_colourWidget = new ColourSelectorWidget (pcolor_w);
-		m_teamWidget = new ColourSelectorWidget (tcolor_w);
-	
-		m_mapWidget = new FileChooserWidget (map_w);
-		
-		m_levelWidget = new PopupSelectorWidget (entry_point_w);
-		m_gameTypeWidget = new PopupSelectorWidget (game_type_w);
-		m_difficultyWidget = new SelectSelectorWidget (diff_w);
-	
-		m_limitTypeWidget = new SelectSelectorWidget (endcondition_w);
-		m_timeLimitWidget = new EditNumberWidget (timelimit_w);
-		m_scoreLimitWidget = new EditNumberWidget (scorelimit_w);
-	
-		m_aliensWidget = new ToggleWidget (aliens_w);
-		m_allowTeamsWidget = new ToggleWidget (teams_w);
-		m_deadPlayersDropItemsWidget = new ToggleWidget (drop_w);
-		m_penalizeDeathWidget = new ToggleWidget (pen_die_w);
-		m_penalizeSuicideWidget = new ToggleWidget (pen_sui_w);
-	
-		m_useMetaserverWidget = new ToggleWidget (advertise_on_metaserver_w);
-	
-		m_useScriptWidget = new ToggleWidget (use_netscript_w);
-		m_scriptWidget = new FileChooserWidget (choose_script_w);
-	
-		m_allowMicWidget = new ToggleWidget (realtime_audio_w);
+		m_cancelWidget = new ButtonWidget(cancel_w);
+		m_okWidget = new ButtonWidget(ok_w);
 
-		m_liveCarnageWidget = new ToggleWidget (live_w);
-		m_motionSensorWidget = new ToggleWidget (sensor_w);
-	
-		m_zoomWidget = new ToggleWidget (zoom_w);
-		m_crosshairWidget = new ToggleWidget (crosshairs_w);
-		m_overlayWidget = new ToggleWidget (overlay_w);
-		m_laraCroftWidget = new ToggleWidget (lara_croft_w);
-		m_carnageMessagesWidget = new ToggleWidget (carnage_messages_w);
-		m_savingLevelWidget = new ToggleWidget (saving_level_w);
-		
-		m_useUpnpWidget = new ToggleWidget (use_upnp_w);
+		m_nameWidget = new EditTextWidget(name_w);
+		m_colourWidget = new ColourSelectorWidget(pcolor_w);
+		m_teamWidget = new ColourSelectorWidget(tcolor_w);
+
+		m_mapWidget = new FileChooserWidget(map_w);
+
+		m_levelWidget = new PopupSelectorWidget(entry_point_w);
+		m_gameTypeWidget = new PopupSelectorWidget(game_type_w);
+		m_difficultyWidget = new SelectSelectorWidget(diff_w);
+
+		m_limitTypeWidget = new SelectSelectorWidget(endcondition_w);
+		m_timeLimitWidget = new EditNumberWidget(timelimit_w);
+		m_scoreLimitWidget = new EditNumberWidget(scorelimit_w);
+
+		m_aliensWidget = new ToggleWidget(aliens_w);
+		m_allowTeamsWidget = new ToggleWidget(teams_w);
+		m_deadPlayersDropItemsWidget = new ToggleWidget(drop_w);
+		m_penalizeDeathWidget = new ToggleWidget(pen_die_w);
+		m_penalizeSuicideWidget = new ToggleWidget(pen_sui_w);
+
+		m_useMetaserverWidget = new ToggleWidget(advertise_on_metaserver_w);
+
+		m_useScriptWidget = new ToggleWidget(use_netscript_w);
+		m_scriptWidget = new FileChooserWidget(choose_script_w);
+
+		m_allowMicWidget = new ToggleWidget(realtime_audio_w);
+
+		m_liveCarnageWidget = new ToggleWidget(live_w);
+		m_motionSensorWidget = new ToggleWidget(sensor_w);
+
+		m_zoomWidget = new ToggleWidget(zoom_w);
+		m_crosshairWidget = new ToggleWidget(crosshairs_w);
+		m_overlayWidget = new ToggleWidget(overlay_w);
+		m_laraCroftWidget = new ToggleWidget(lara_croft_w);
+		m_carnageMessagesWidget = new ToggleWidget(carnage_messages_w);
+		m_savingLevelWidget = new ToggleWidget(saving_level_w);
+
+		m_useUpnpWidget = new ToggleWidget(use_upnp_w);
 		m_latencyToleranceWidget = new PopupSelectorWidget(latency_tolerance_w);
 	}
-	
-	virtual bool Run ()
-	{		
-		return (m_dialog.run () == 0);
+
+	virtual bool Run()
+	{
+		return (m_dialog.run() == 0);
 	}
 
-	virtual void Stop (bool result)
+	virtual void Stop(bool result)
 	{
 		if (result)
-			m_dialog.quit (0);
+			m_dialog.quit(0);
 		else
-			m_dialog.quit (-1);
+			m_dialog.quit(-1);
 	}
 
-	virtual bool allLevelsAllowed ()
+	virtual bool allLevelsAllowed()
 	{
 		return false;
 	}
 
-	virtual void unacceptableInfo ()
+	virtual void unacceptableInfo()
 	{
-		play_dialog_sound (DIALOG_ERROR_SOUND);
+		play_dialog_sound(DIALOG_ERROR_SOUND);
 	}
 
 private:
@@ -2945,7 +3001,7 @@ private:
 };
 
 std::unique_ptr<SetupNetgameDialog>
-SetupNetgameDialog::Create ()
+SetupNetgameDialog::Create()
 {
 	return std::unique_ptr<SetupNetgameDialog>(new SdlSetupNetgameDialog);
 }
@@ -2954,187 +3010,184 @@ SetupNetgameDialog::Create ()
 // Currently no actual bar is drawn (just a box with message), and no effort is made to make sure all messages
 // will physically fit into the box.  (should probably somehow force the dialog to a width and set_full_width on
 // the text widget.  Maybe alter its justification also.)
-dialog*		sProgressDialog 	= NULL;
-w_static_text*	sProgressMessage	= NULL;
-w_progress_bar* sProgressBar		= NULL;
+dialog *sProgressDialog = NULL;
+w_static_text *sProgressMessage = NULL;
+w_progress_bar *sProgressBar = NULL;
 
 void open_progress_dialog(size_t message_id, bool show_progress_bar)
 {
-//printf("open_progress_dialog %d\n", message_id);
+	//printf("open_progress_dialog %d\n", message_id);
 
-    assert(sProgressDialog == NULL);
-    
-    sProgressDialog 	= new dialog;
-    sProgressMessage	= new w_static_text(TS_GetCString(strPROGRESS_MESSAGES, message_id));
-    if (show_progress_bar) 
-	    sProgressBar	= new w_progress_bar(200);
-    
-    vertical_placer *placer = new vertical_placer;
-    placer->dual_add(sProgressMessage, *sProgressDialog);
-    if (show_progress_bar) 
-	    placer->dual_add(sProgressBar, *sProgressDialog);
-    
-    sProgressDialog->set_widget_placer(placer);
-    
-    sProgressDialog->start(false);
+	assert(sProgressDialog == NULL);
 
-//    bool done = sProgressDialog->process_events();
-//    assert(!done);
+	sProgressDialog = new dialog;
+	sProgressMessage = new w_static_text(TS_GetCString(strPROGRESS_MESSAGES, message_id));
+	if (show_progress_bar)
+		sProgressBar = new w_progress_bar(200);
+
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add(sProgressMessage, *sProgressDialog);
+	if (show_progress_bar)
+		placer->dual_add(sProgressBar, *sProgressDialog);
+
+	sProgressDialog->set_widget_placer(placer);
+
+	sProgressDialog->start(false);
+
+	//    bool done = sProgressDialog->process_events();
+	//    assert(!done);
 }
-
 
 void set_progress_dialog_message(size_t message_id)
 {
-//printf("set_progress_dialog_message %d\n", message_id);
-    assert(sProgressMessage != NULL);
+	//printf("set_progress_dialog_message %d\n", message_id);
+	assert(sProgressMessage != NULL);
 
-    sProgressMessage->set_text(TS_GetCString(strPROGRESS_MESSAGES, message_id));
-    
-//    bool done = sProgressDialog->process_events();
+	sProgressMessage->set_text(TS_GetCString(strPROGRESS_MESSAGES, message_id));
 
-//    assert(!done);
+	//    bool done = sProgressDialog->process_events();
+
+	//    assert(!done);
 }
 
 void close_progress_dialog(void)
 {
-//printf("close_progress_dialog\n");
+	//printf("close_progress_dialog\n");
 
-    assert(sProgressDialog != NULL);
-    
-    sProgressDialog->quit(0);
-    
-//    bool done = sProgressDialog->process_events();
-    
-//    assert(done);
-    
-    int result = sProgressDialog->finish(false);
-    
-    assert(result == 0);
-    
-    delete sProgressDialog;
-    
-    sProgressDialog	= NULL;
-    sProgressMessage	= NULL;
-    sProgressBar	= NULL;
+	assert(sProgressDialog != NULL);
+
+	sProgressDialog->quit(0);
+
+	//    bool done = sProgressDialog->process_events();
+
+	//    assert(done);
+
+	int result = sProgressDialog->finish(false);
+
+	assert(result == 0);
+
+	delete sProgressDialog;
+
+	sProgressDialog = NULL;
+	sProgressMessage = NULL;
+	sProgressBar = NULL;
 }
 
 void draw_progress_bar(size_t sent, size_t total)
 {
-	if (!sProgressBar) return;
+	if (!sProgressBar)
+		return;
 	sProgressBar->set_progress(sent, total);
 	sProgressDialog->draw();
 }
 
 void reset_progress_bar(void)
 {
-	if (!sProgressBar) return;
+	if (!sProgressBar)
+		return;
 	sProgressBar->set_progress(0, 1);
 	sProgressDialog->draw();
 }
 
-
 #ifdef NETWORK_TEST_POSTGAME_DIALOG
-static const char*    sTestingNames[] = {
-        "Doctor Burrito",
-        "Carnage Asada",
-        "Bongo Bob",
-        "The Napalm Man",
-        "Kissy Monster",
-        "lala",
-        "Prof. Windsurf",
-        "-ZED-"
-};
+static const char *sTestingNames[] = {
+	"Doctor Burrito",
+	"Carnage Asada",
+	"Bongo Bob",
+	"The Napalm Man",
+	"Kissy Monster",
+	"lala",
+	"Prof. Windsurf",
+	"-ZED-"};
 
 // THIS ONE IS FAKE - used to test postgame report dialog without going through a game.
-bool network_gather(void) {
-    short i, j;
-    player_info thePlayerInfo;
-    game_info   theGameInfo;
-	
-    if(network_game_setup(&thePlayerInfo, &theGameInfo)) {
+bool network_gather(void)
+{
+	short i, j;
+	player_info thePlayerInfo;
+	game_info theGameInfo;
 
-	for (i = 0; i < MAXIMUM_NUMBER_OF_PLAYERS; i++)
+	if (network_game_setup(&thePlayerInfo, &theGameInfo))
 	{
-        // make up a name
-        /*int theNameLength = (local_random() % MAXIMUM_PLAYER_NAME_LENGTH) + 1;
+
+		for (i = 0; i < MAXIMUM_NUMBER_OF_PLAYERS; i++)
+		{
+			// make up a name
+			/*int theNameLength = (local_random() % MAXIMUM_PLAYER_NAME_LENGTH) + 1;
         for(int n = 0; n < theNameLength; n++)
             players[i].name[n] = 'a' + (local_random() % ('z' - 'a'));
 
         players[i].name[theNameLength] = '\0';
 */
-        strcpy(players[i].name, sTestingNames[i]);
+			strcpy(players[i].name, sTestingNames[i]);
 
-        // make up a team and color
-        players[i].color = local_random() % 8;
-        int theNumberOfTeams = 2 + (local_random() % 3);
-        players[i].team  = local_random() % theNumberOfTeams;
+			// make up a team and color
+			players[i].color = local_random() % 8;
+			int theNumberOfTeams = 2 + (local_random() % 3);
+			players[i].team = local_random() % theNumberOfTeams;
 
-		(players+i)->monster_damage_taken.damage = abs(local_random()%200);
-		(players+i)->monster_damage_taken.kills = abs(local_random()%30);
-		(players+i)->monster_damage_given.damage = abs(local_random()%200);
-		(players+i)->monster_damage_given.kills = abs(local_random()%30);
-                
-                players[i].netgame_parameters[0] = local_random() % 200;
-                players[i].netgame_parameters[1] = local_random() % 200;
-		
-		for (j = 0; j < MAXIMUM_NUMBER_OF_PLAYERS; j++)
-		{
-			(players+i)->damage_taken[j].damage = abs(local_random()%200);
-			(players+i)->damage_taken[j].kills = abs(local_random()%6);
+			(players + i)->monster_damage_taken.damage = abs(local_random() % 200);
+			(players + i)->monster_damage_taken.kills = abs(local_random() % 30);
+			(players + i)->monster_damage_given.damage = abs(local_random() % 200);
+			(players + i)->monster_damage_given.kills = abs(local_random() % 30);
+
+			players[i].netgame_parameters[0] = local_random() % 200;
+			players[i].netgame_parameters[1] = local_random() % 200;
+
+			for (j = 0; j < MAXIMUM_NUMBER_OF_PLAYERS; j++)
+			{
+				(players + i)->damage_taken[j].damage = abs(local_random() % 200);
+				(players + i)->damage_taken[j].kills = abs(local_random() % 6);
+			}
 		}
-	}
 
-    dynamic_world->player_count = MAXIMUM_NUMBER_OF_PLAYERS;
+		dynamic_world->player_count = MAXIMUM_NUMBER_OF_PLAYERS;
 
-    game_data& game_information = dynamic_world->game_information;
-    game_info* network_game_info = &theGameInfo;
+		game_data &game_information = dynamic_world->game_information;
+		game_info *network_game_info = &theGameInfo;
 
-	game_information.game_time_remaining= network_game_info->time_limit;
-	game_information.kill_limit= network_game_info->kill_limit;
-	game_information.game_type= network_game_info->net_game_type;
-	game_information.game_options= network_game_info->game_options;
-	game_information.initial_random_seed= network_game_info->initial_random_seed;
-	game_information.difficulty_level= network_game_info->difficulty_level;
+		game_information.game_time_remaining = network_game_info->time_limit;
+		game_information.kill_limit = network_game_info->kill_limit;
+		game_information.game_type = network_game_info->net_game_type;
+		game_information.game_options = network_game_info->game_options;
+		game_information.initial_random_seed = network_game_info->initial_random_seed;
+		game_information.difficulty_level = network_game_info->difficulty_level;
 
-    display_net_game_stats();
-    } // if setup box was OK'd
-    return false;
+		display_net_game_stats();
+	} // if setup box was OK'd
+	return false;
 }
 #endif // NETWORK_TEST_POSTGAME_DIALOG
 
-
-
-
-
 #ifdef NETWORK_TEST_MICROPHONE_LOCALLY
 static void
-respond_to_microphone_toggle(w_select* inWidget) {
-    set_network_microphone_state(inWidget->get_selection() != 0);
+respond_to_microphone_toggle(w_select *inWidget)
+{
+	set_network_microphone_state(inWidget->get_selection() != 0);
 }
 
-bool
-network_gather(bool) {
-    open_network_speaker();
-    open_network_microphone();
+bool network_gather(bool)
+{
+	open_network_speaker();
+	open_network_microphone();
 
-    dialog d;
+	dialog d;
 
-    d.add(new w_title("ƒ}ƒCƒN‚ÌƒeƒXƒg"));
+	d.add(new w_title("ãƒžã‚¤ã‚¯ã®ãƒ†ã‚¹ãƒˆ"));
 
-    w_toggle*   onoff_w = new w_toggle("ƒAƒNƒeƒBƒu", 0);
-    onoff_w->set_selection_changed_callback(respond_to_microphone_toggle);
-    d.add(onoff_w);
+	w_toggle *onoff_w = new w_toggle("ã‚¢ã‚¯ãƒ†ã‚£ãƒ–", 0);
+	onoff_w->set_selection_changed_callback(respond_to_microphone_toggle);
+	d.add(onoff_w);
 
-    d.add(new w_button("Š®—¹", dialog_ok, &d));
+	d.add(new w_button("å®Œäº†", dialog_ok, &d));
 
-    d.run();
+	d.run();
 
-    close_network_microphone();
-    close_network_speaker();
+	close_network_microphone();
+	close_network_speaker();
 
-    return false;
+	return false;
 }
 #endif
 
 #endif // !defined(DISABLE_NETWORKING)
-

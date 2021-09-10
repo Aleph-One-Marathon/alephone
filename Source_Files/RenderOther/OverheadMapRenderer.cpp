@@ -510,14 +510,14 @@ int32 OverheadMapClass::false_automap_cost_proc(
 	(void) (line_index);
 	(void) (caller_data);
 	
-	/* canÕt leave secret platforms */
+	/* canâ€™t leave secret platforms */
 	if (source_polygon->type==_polygon_is_platform &&
 		PLATFORM_IS_SECRET(get_platform_data(source_polygon->permutation)))
 	{
 		cost= -1;
 	}
 	
-	/* canÕt enter secret platforms which are also doors */
+	/* canâ€™t enter secret platforms which are also doors */
 	if (destination_polygon->type==_polygon_is_platform)
 	{
 		struct platform_data *platform= get_platform_data(destination_polygon->permutation);

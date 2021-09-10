@@ -34,13 +34,13 @@
 
 Feb 2, 2000 (Loren Petrich):
 	Changed application creator to 26.A "Aleph One"
-	Changed soundfile type to 'snd°' to be Marathon-Infinity compatible
+	Changed soundfile type to 'sndâˆž' to be Marathon-Infinity compatible
 
 Feb 3, 2000 (Loren Petrich):
-	Changed shapes-file type to 'shp°' to be Marathon-Infinity compatible
+	Changed shapes-file type to 'shpâˆž' to be Marathon-Infinity compatible
 
 Feb 4, 2000 (Loren Petrich):
-	Changed most of the other 2's to °'s to be Marathon-Infinity compatible,
+	Changed most of the other 2's to âˆž's to be Marathon-Infinity compatible,
 	except for the map file type.
 
 Feb 6, 2000 (Loren Petrich):

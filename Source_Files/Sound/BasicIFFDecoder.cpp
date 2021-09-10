@@ -29,7 +29,7 @@
 #include "BasicIFFDecoder.h"
 #include "AStream.h"
 #include <vector>
-#include <SDL_endian.h>
+#include <SDL2/SDL_endian.h>
 
 using std::vector;
 

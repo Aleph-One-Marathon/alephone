@@ -5,14 +5,18 @@ VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AlephOne", "AlephOne.vcxproj", "{D1A548FF-F15F-43CA-8891-F4B367122282}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LibNat", "LibNAT\LibNat.vcxproj", "{23B53C43-591A-4E6A-ACF5-F5F33C6697FC}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Lua", "Lua\Lua.vcxproj", "{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Marathon 2|x64 = Marathon 2|x64
+		Marathon 2|x86 = Marathon 2|x86
+		Marathon Infinity|x64 = Marathon Infinity|x64
+		Marathon Infinity|x86 = Marathon Infinity|x86
+		Marathon|x64 = Marathon|x64
+		Marathon|x86 = Marathon|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
@@ -21,22 +25,38 @@ Global
 		{D1A548FF-F15F-43CA-8891-F4B367122282}.Debug|x64.Build.0 = Debug|x64
 		{D1A548FF-F15F-43CA-8891-F4B367122282}.Debug|x86.ActiveCfg = Debug|Win32
 		{D1A548FF-F15F-43CA-8891-F4B367122282}.Debug|x86.Build.0 = Debug|Win32
+		{D1A548FF-F15F-43CA-8891-F4B367122282}.Marathon 2|x64.ActiveCfg = Marathon 2|x64
+		{D1A548FF-F15F-43CA-8891-F4B367122282}.Marathon 2|x64.Build.0 = Marathon 2|x64
+		{D1A548FF-F15F-43CA-8891-F4B367122282}.Marathon 2|x86.ActiveCfg = Marathon 2|Win32
+		{D1A548FF-F15F-43CA-8891-F4B367122282}.Marathon 2|x86.Build.0 = Marathon 2|Win32
+		{D1A548FF-F15F-43CA-8891-F4B367122282}.Marathon Infinity|x64.ActiveCfg = Marathon Infinity|x64
+		{D1A548FF-F15F-43CA-8891-F4B367122282}.Marathon Infinity|x64.Build.0 = Marathon Infinity|x64
+		{D1A548FF-F15F-43CA-8891-F4B367122282}.Marathon Infinity|x86.ActiveCfg = Marathon Infinity|Win32
+		{D1A548FF-F15F-43CA-8891-F4B367122282}.Marathon Infinity|x86.Build.0 = Marathon Infinity|Win32
+		{D1A548FF-F15F-43CA-8891-F4B367122282}.Marathon|x64.ActiveCfg = Marathon|x64
+		{D1A548FF-F15F-43CA-8891-F4B367122282}.Marathon|x64.Build.0 = Marathon|x64
+		{D1A548FF-F15F-43CA-8891-F4B367122282}.Marathon|x86.ActiveCfg = Marathon|Win32
+		{D1A548FF-F15F-43CA-8891-F4B367122282}.Marathon|x86.Build.0 = Marathon|Win32
 		{D1A548FF-F15F-43CA-8891-F4B367122282}.Release|x64.ActiveCfg = Release|x64
 		{D1A548FF-F15F-43CA-8891-F4B367122282}.Release|x64.Build.0 = Release|x64
 		{D1A548FF-F15F-43CA-8891-F4B367122282}.Release|x86.ActiveCfg = Release|Win32
 		{D1A548FF-F15F-43CA-8891-F4B367122282}.Release|x86.Build.0 = Release|Win32
-		{23B53C43-591A-4E6A-ACF5-F5F33C6697FC}.Debug|x64.ActiveCfg = Debug|x64
-		{23B53C43-591A-4E6A-ACF5-F5F33C6697FC}.Debug|x64.Build.0 = Debug|x64
-		{23B53C43-591A-4E6A-ACF5-F5F33C6697FC}.Debug|x86.ActiveCfg = Debug|Win32
-		{23B53C43-591A-4E6A-ACF5-F5F33C6697FC}.Debug|x86.Build.0 = Debug|Win32
-		{23B53C43-591A-4E6A-ACF5-F5F33C6697FC}.Release|x64.ActiveCfg = Release|x64
-		{23B53C43-591A-4E6A-ACF5-F5F33C6697FC}.Release|x64.Build.0 = Release|x64
-		{23B53C43-591A-4E6A-ACF5-F5F33C6697FC}.Release|x86.ActiveCfg = Release|Win32
-		{23B53C43-591A-4E6A-ACF5-F5F33C6697FC}.Release|x86.Build.0 = Release|Win32
 		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Debug|x64.ActiveCfg = Debug|x64
 		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Debug|x64.Build.0 = Debug|x64
 		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Debug|x86.ActiveCfg = Debug|Win32
 		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Debug|x86.Build.0 = Debug|Win32
+		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Marathon 2|x64.ActiveCfg = Marathon 2|x64
+		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Marathon 2|x64.Build.0 = Marathon 2|x64
+		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Marathon 2|x86.ActiveCfg = Marathon 2|Win32
+		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Marathon 2|x86.Build.0 = Marathon 2|Win32
+		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Marathon Infinity|x64.ActiveCfg = Marathon Infinity|x64
+		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Marathon Infinity|x64.Build.0 = Marathon Infinity|x64
+		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Marathon Infinity|x86.ActiveCfg = Marathon Infinity|Win32
+		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Marathon Infinity|x86.Build.0 = Marathon Infinity|Win32
+		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Marathon|x64.ActiveCfg = Marathon|x64
+		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Marathon|x64.Build.0 = Marathon|x64
+		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Marathon|x86.ActiveCfg = Marathon|Win32
+		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Marathon|x86.Build.0 = Marathon|Win32
 		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Release|x64.ActiveCfg = Release|x64
 		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Release|x64.Build.0 = Release|x64
 		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Release|x86.ActiveCfg = Release|Win32
