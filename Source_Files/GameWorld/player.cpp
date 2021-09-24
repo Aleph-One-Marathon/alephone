@@ -1399,7 +1399,12 @@ static void update_player_teleport(
 					}
 				} 
 				player->teleporting_destination= NO_TELEPORTATION_DESTINATION;
-				break;
+
+				if (!View_DoInterlevelTeleportInEffects()) {
+					player->teleporting_phase = PLAYER_TELEPORTING_DURATION;
+				} else {
+					break;
+				}
 			
 			case PLAYER_TELEPORTING_DURATION:
 				monster->action= _monster_is_moving;
