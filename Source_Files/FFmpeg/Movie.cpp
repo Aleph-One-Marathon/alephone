@@ -255,7 +255,7 @@ bool Movie::Setup()
     {
         av->fmt_ctx->oformat = fmt;
         av->fmt_ctx->url = (char*)av_malloc(moviefile.size() + 1);
-        snprintf(av->fmt_ctx->url, moviefile.size() + 1, moviefile.c_str());
+        sprintf(av->fmt_ctx->url, "%s", moviefile.c_str());
         success = (0 <= avio_open(&av->fmt_ctx->pb, av->fmt_ctx->url, AVIO_FLAG_WRITE));
         if (!success) err_msg = "Could not open movie file for writing";
     }
