@@ -208,6 +208,9 @@ static short sSavedPlayerObjectNextObject[MAXIMUM_NUMBER_OF_PLAYERS];
 static int32 sSavedTickCount;
 static uint16 sSavedRandomSeed;
 
+static bool levelChanged = false;
+bool can_update_player_teleport() { return !levelChanged; };
+
 
 // ZZZ: If not already in predictive mode, save off partial game-state for later restoration.
 static void
@@ -532,10 +535,11 @@ update_world()
 
 		}
 
-
+		levelChanged = false;
         // This and the following voodoo comes, effectively, from Bungie's code.
         if(theUpdateResult == kUpdateChangeLevel)
         {
+				levelChanged = true;
                 theElapsedTime = 0;
         }
 

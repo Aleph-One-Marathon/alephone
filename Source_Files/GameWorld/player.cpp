@@ -821,7 +821,10 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 				cause_polygon_damage(player->supporting_polygon_index,player->monster_index);
 			}
 
-			update_player_teleport(player_index);
+			if (can_update_player_teleport()) {
+				update_player_teleport(player_index);
+			}
+
 			update_player_media(player_index);
 			set_player_shapes(player_index, true);
 			
