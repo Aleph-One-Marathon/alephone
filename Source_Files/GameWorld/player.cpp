@@ -1397,14 +1397,13 @@ static void update_player_teleport(
 						start_teleporting_effect(false);
 						play_object_sound(player->object_index, Sound_TeleportIn()); 
 					}
+					else {
+						player->teleporting_phase = PLAYER_TELEPORTING_DURATION;
+					}
 				} 
 				player->teleporting_destination= NO_TELEPORTATION_DESTINATION;
 
-				if (!View_DoInterlevelTeleportInEffects()) {
-					player->teleporting_phase = PLAYER_TELEPORTING_DURATION;
-				} else {
-					break;
-				}
+				if (player->teleporting_phase != PLAYER_TELEPORTING_DURATION) break;
 			
 			case PLAYER_TELEPORTING_DURATION:
 				monster->action= _monster_is_moving;
