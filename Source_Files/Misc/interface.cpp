@@ -1104,6 +1104,8 @@ void update_interface_display(
 	}
 }
 
+extern bool first_frame_rendered;
+
 bool idle_game_state(uint32 time)
 {
 	static float last_heartbeat_fraction = -1.f;
@@ -1228,6 +1230,7 @@ bool idle_game_state(uint32 time)
 			if (theUpdateResult.first || (last_heartbeat_fraction != -1 && last_heartbeat_fraction != heartbeat_fraction)) {
 				last_heartbeat_fraction = heartbeat_fraction;
 				render_screen(ticks_elapsed);
+				first_frame_rendered = true;
 			}
 		}
 		

@@ -647,6 +647,8 @@ void leaving_map(
 	SoundManager::instance()->StopAllSounds();
 }
 
+extern bool first_frame_rendered;
+
 /* call this function after the new level has been completely read into memory, after
 	player->location and player->facing have been updated, and as close to the end of
 	the loading process in general as possible. */
@@ -705,6 +707,8 @@ bool entering_map(bool restoring_saved)
 	set_fade_effect(NONE);
 	
 	if (!success) leaving_map();
+
+	first_frame_rendered = false;
 
 	return success;
 }

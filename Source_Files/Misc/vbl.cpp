@@ -275,13 +275,15 @@ bool has_recording_file(void)
 	return get_recording_filedesc(File);
 }
 
+bool first_frame_rendered = true;
+
 /* Called by the time manager task in vbl_macintosh.c */
 bool input_controller(
 	void)
 {
 	if (input_task_active || Movie::instance()->IsRecording())
 	{
-		if((heartbeat_count-dynamic_world->tick_count) < MAXIMUM_TIME_DIFFERENCE)
+		if((heartbeat_count-dynamic_world->tick_count) < ((first_frame_rendered || game_is_networked) ? MAXIMUM_TIME_DIFFERENCE : 1))
 		{
 			if (game_is_networked) // input from network
 			{
