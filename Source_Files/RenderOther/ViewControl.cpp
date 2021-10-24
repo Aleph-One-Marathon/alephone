@@ -41,7 +41,7 @@ Dec 17, 2000 (Loren Petrich:
 #include "screen.h"
 #include "ViewControl.h"
 #include "InfoTree.h"
-
+#include "preferences.h"
 
 struct view_settings_definition {
 	bool MapActive;
@@ -101,9 +101,42 @@ static bool ScreenFontInited = false;
 static short ScreenFontInitedSize = -1;
 
 // Accessors:
-float View_FOV_Normal() {return FOV_Normal;}
-float View_FOV_ExtraVision() {return FOV_ExtraVision;}
-float View_FOV_TunnelVision() {return FOV_TunnelVision;}
+float View_FOV_Normal()
+{
+	if (graphics_preferences->screen_mode.fov != 0)
+	{
+		return graphics_preferences->screen_mode.fov;
+	}
+	else
+	{
+		return FOV_Normal;
+	}
+}
+
+float View_FOV_ExtraVision()
+{
+	// controversial; next someone will complain this isn't a separate slider
+	if (graphics_preferences->screen_mode.fov != 0)
+	{
+		return std::min(130, graphics_preferences->screen_mode.fov + 50);
+	}
+	else
+	{
+		return FOV_ExtraVision;
+	}
+}
+
+float View_FOV_TunnelVision()
+{
+	if (graphics_preferences->screen_mode.fov != 0)
+	{
+		return std::max(30, graphics_preferences->screen_mode.fov - 50);
+	}
+	else
+	{
+		return FOV_TunnelVision;
+	}
+}
 
 FontSpecifier& GetOnScreenFont()
 {

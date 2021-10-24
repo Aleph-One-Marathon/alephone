@@ -1155,6 +1155,21 @@ std::vector<std::string> build_resolution_labels()
 	return result;
 }
 
+class w_fov_slider : public w_slider {
+public:
+	w_fov_slider(int sel) : w_slider(101, sel) {
+		init_formatted_value();
+	}
+
+	virtual std::string formatted_value(void) {
+		std::ostringstream oss;
+		oss << (selection + 30);
+		return oss.str();
+	}
+};
+
+extern float View_FOV_Normal();
+
 static void graphics_dialog(void *arg)
 {
 	dialog *parent = (dialog *)arg;
@@ -1168,6 +1183,7 @@ static void graphics_dialog(void *arg)
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
+	table->col_flags(1, placeable::kAlignLeft);
 	
 	w_select* renderer_w = new w_select(graphics_preferences->screen_mode.acceleration, renderer_labels);
 	renderer_w->set_identifier(iRENDERING_SYSTEM);
@@ -1178,6 +1194,8 @@ static void graphics_dialog(void *arg)
 	table->dual_add(renderer_w->label("Rendering System"), d);
 	table->dual_add(renderer_w, d);
 
+	table->add_row(new w_spacer(), true);
+
 	w_select_popup *size_w = new w_select_popup();
 	size_w->set_labels(build_resolution_labels());
 	if (graphics_preferences->screen_mode.auto_resolution)
@@ -1186,6 +1204,10 @@ static void graphics_dialog(void *arg)
 		size_w->set_selection(Screen::instance()->FindMode(graphics_preferences->screen_mode.width, graphics_preferences->screen_mode.height) + 1);
 	table->dual_add(size_w->label("Screen Size"), d);
 	table->dual_add(size_w, d);
+		
+	w_toggle *fullscreen_w = new w_toggle(!graphics_preferences->screen_mode.fullscreen);
+	table->dual_add(fullscreen_w->label("Windowed Mode"), d);
+	table->dual_add(fullscreen_w, d);
 
 	w_toggle *high_dpi_w = NULL;
 	high_dpi_w = new w_toggle(graphics_preferences->screen_mode.high_dpi);
@@ -1194,16 +1216,8 @@ static void graphics_dialog(void *arg)
 	table->dual_add(high_dpi_w->label("Use High DPI"), d);
 	table->dual_add(high_dpi_w, d);
 #endif
-	
-	w_toggle *fixh_w = new w_toggle(!graphics_preferences->screen_mode.fix_h_not_v);
-	table->dual_add(fixh_w->label("Limit Vertical View"), d);
-	table->dual_add(fixh_w, d);
-    
-	w_toggle *bob_w = new w_toggle(graphics_preferences->screen_mode.camera_bob);
-	table->dual_add(bob_w->label("Camera Bobbing"), d);
-	table->dual_add(bob_w, d);
-	
-  	w_select_popup *gamma_w = new w_select_popup();
+
+	w_select_popup *gamma_w = new w_select_popup();
 	gamma_w->set_labels(build_stringvector_from_cstring_array(gamma_labels));
 	gamma_w->set_selection(graphics_preferences->screen_mode.gamma_level);
 	table->dual_add(gamma_w->label("Brightness"), d);
@@ -1221,10 +1235,40 @@ static void graphics_dialog(void *arg)
 	table->dual_add(fps_target_w, d);
 
 	table->add_row(new w_spacer(), true);
+	
+	w_toggle *fixh_w = new w_toggle(!graphics_preferences->screen_mode.fix_h_not_v);
+	table->dual_add(fixh_w->label("Limit Vertical View"), d);
+	table->dual_add(fixh_w, d);
 
-	w_toggle *fullscreen_w = new w_toggle(!graphics_preferences->screen_mode.fullscreen);
-	table->dual_add(fullscreen_w->label("Windowed Mode"), d);
-	table->dual_add(fullscreen_w, d);
+	w_toggle *override_fov_w = new w_toggle(graphics_preferences->screen_mode.fov != 0);
+	w_fov_slider *fov_slider_w = new w_fov_slider((graphics_preferences->screen_mode.fov == 0 ? static_cast<int>(View_FOV_Normal()) : graphics_preferences->screen_mode.fov) - 30);
+	fov_slider_w->set_enabled(graphics_preferences->screen_mode.fov != 0);
+	override_fov_w->set_selection_changed_callback(
+		[&](w_select*) {
+			if (override_fov_w->get_selection())
+			{
+				fov_slider_w->set_enabled(true);
+			}
+			else
+			{
+				fov_slider_w->set_enabled(false);
+			}
+		});
+
+	table->dual_add(override_fov_w->label("Override FOV*"), d);
+	auto fov_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET));
+	fov_placer->dual_add(override_fov_w, d);
+	fov_placer->dual_add(fov_slider_w, d);
+
+	table->add(fov_placer);
+
+	table->dual_add_row(new w_static_text("*may interfere with third-party scenario effects"), d);
+
+	table->add_row(new w_spacer(), true);
+	
+	w_toggle *bob_w = new w_toggle(graphics_preferences->screen_mode.camera_bob);
+	table->dual_add(bob_w->label("Camera Bobbing"), d);
+	table->dual_add(bob_w, d);
 
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("Heads-Up Display"), d);
@@ -1361,6 +1405,13 @@ static void graphics_dialog(void *arg)
 		bool camera_bob = bob_w->get_selection() != 0;
 		if (camera_bob != graphics_preferences->screen_mode.camera_bob) {
 			graphics_preferences->screen_mode.camera_bob = camera_bob;
+			changed = true;
+		}
+
+		int fov = override_fov_w->get_selection() == 0 ? 0 : fov_slider_w->get_selection() + 30;
+		if (fov != graphics_preferences->screen_mode.fov)
+		{
+			graphics_preferences->screen_mode.fov = fov;
 			changed = true;
 		}
 		
@@ -3323,6 +3374,7 @@ InfoTree graphics_preferences_tree()
 	root.put_attr("scmode_accel", graphics_preferences->screen_mode.acceleration);
 	root.put_attr("scmode_highres", graphics_preferences->screen_mode.high_resolution);
 	root.put_attr("scmode_draw_every_other_line", graphics_preferences->screen_mode.draw_every_other_line);
+	root.put_attr("scmode_fov", graphics_preferences->screen_mode.fov);
 	root.put_attr("scmode_fullscreen", graphics_preferences->screen_mode.fullscreen);
 	root.put_attr("scmode_bitdepth", graphics_preferences->screen_mode.bit_depth);
 	root.put_attr("scmode_gamma", graphics_preferences->screen_mode.gamma_level);
@@ -3810,6 +3862,8 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.bit_depth = 32;
 	
 	preferences->screen_mode.draw_every_other_line= false;
+
+	preferences->screen_mode.fov = 0; // use default
 	
 	OGL_SetDefaults(preferences->OGL_Configure);
 
@@ -4006,6 +4060,18 @@ static bool validate_graphics_preferences(graphics_preferences_data *preferences
 		changed = true;
 	}
 #endif
+
+	if (preferences->screen_mode.fov < 30 && preferences->screen_mode.fov != 0)
+	{
+		preferences->screen_mode.fov = 30;
+		changed = true;
+	}
+
+	if (preferences->screen_mode.fov > 130)
+	{
+		preferences->screen_mode.fov = 130;
+		changed = true;
+	}
 
 	return changed;
 }
@@ -4280,6 +4346,7 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr("scmode_fix_h_not_v", graphics_preferences->screen_mode.fix_h_not_v);
 	root.read_attr("scmode_bitdepth", graphics_preferences->screen_mode.bit_depth);
 	root.read_attr("scmode_gamma", graphics_preferences->screen_mode.gamma_level);
+	root.read_attr("scmode_fov", graphics_preferences->screen_mode.fov);
 	root.read_attr("ogl_flags", graphics_preferences->OGL_Configure.Flags);
 	root.read_attr("software_alpha_blending", graphics_preferences->software_alpha_blending);
 	root.read_attr("software_sdl_driver", graphics_preferences->software_sdl_driver);

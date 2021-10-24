@@ -81,7 +81,8 @@ struct screen_mode_data
 	bool fix_h_not_v;
 	bool translucent_map;
 	bool camera_bob;
-	
+
+	int fov; // 0 = use default (or MML/plugin)
 };
 
 #define NUMBER_OF_KEYS 21
