@@ -1437,10 +1437,11 @@
 <p class="description">if player is in range of a platform or control panel, returns a platform or side; otherwise returns nil</p>
 <p class="note">you can check the type of the return with is_polygon() and is_side() </p>
 </dd>
-      <dt>:find_target()</dt>
+      <dt>:find_target( [penetrate_media] <span class="version">git</span>)</dt>
 <dd>
-<p class="description">returns t, x, y, z, polygon, where t is the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the target is the surface of a liquid) the player is looking at; and x, y, z, and polygon are the point the player is looking at</p>
+<p class="description">returns t, x, y, z, polygon, where t is the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the target is the surface of a liquid, and penetrate_media is false) the player is looking at; and x, y, z, and polygon are the point the player is looking at</p>
 <p class="note">you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon() </p>
+<p class="note">this function will not work under liquid unless penetrate_media is true </p>
 </dd>
 	  <dt>.has_map_open<span class="access"> (read-only)</span> <span class="version">git</span>
 </dt>

@@ -1511,9 +1511,13 @@ int Lua_Player_Find_Target(lua_State *L)
 	short line_index;
 
 	projectile_definition *definition = get_projectile_definition(0);
-	bool was_pass_transparent = definition->flags & _usually_pass_transparent_side;
-	if (!was_pass_transparent)
-		definition->flags |= _usually_pass_transparent_side;
+	
+	auto projectile_flags = definition->flags;
+	definition->flags |= _usually_pass_transparent_side;
+	if (lua_isboolean(L, 2) && lua_toboolean(L, 2))
+	{
+		definition->flags |= _penetrates_media | _penetrates_media_boundary;
+	}
 
 	// preflight a projectile, 1 WU at a time (because of projectile speed bug)
 	uint16 flags = translate_projectile(0, &origin, old_polygon, &destination, &new_polygon, player->monster_index, &obstruction_index, &line_index, true, NONE);
@@ -1527,8 +1531,7 @@ int Lua_Player_Find_Target(lua_State *L)
 		flags = translate_projectile(0, &origin, old_polygon, &destination, &new_polygon, player->monster_index, &obstruction_index, &line_index, true, NONE);
 	}
 
-	if (!was_pass_transparent) 
-		definition->flags &= ~_usually_pass_transparent_side;
+	definition->flags = projectile_flags;
 
 	if (flags & _projectile_hit_monster)
 	{
