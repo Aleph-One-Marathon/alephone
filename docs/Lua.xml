@@ -2890,14 +2890,40 @@
       </mnemonics>
     </enum>
     <enum name="monster_type">
+	  <variable name="alien" version="git">
+		<description>moves slower on slower levels, etc.</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="attacks_immediately" version="20120128">
 		<description>monster will try an attack immediately</description>
 		<type>boolean</type>
       </variable>
+	  <variable name="berserker" version="git">
+		<description>below 1/4 vitality, this monster goes berserk</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="can_die_in_flames" version="git">
+		<description>uses humanoid dying shape</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="can_teleport_under_media" version="git">
+		<type>boolean</type>
+	  </variable>
+	  <variable name="cannot_attack" version="git">
+		<description>monster has no weapons and cannot attack (runs constantly to safety)</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="cannot_be_dropped" version="20120128">
 		<description>monster cannot be skipped during placement</description>
 		<type>boolean</type>
       </variable>
+	  <variable name="cannot_fire_backward" version="git">
+		<description>monster can’t turn more than 135 degrees</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="chooses_weapons_randomly" version="git">
+		<type>boolean</type>
+	  </variable>
       <variable name="class">
 		<description>class of monster type</description>
 		<type>monster_class</type>
@@ -2915,32 +2941,66 @@
 		<argument name="monster_class"><type>monster_class</type></argument>
 		<type>boolean</type>
       </function-variable>
+	  <variable name="enlarged" version="git">
+		<description>monster is 1.25 times normal height</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="fires_symmetrically" version="git">
+		<description>fires at +/- dy, simultaneously</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="flies" version="git">
+		<type>boolean</type>
+	  </variable>
+	  <variable name="floats" version="git">
+		<description>exclusive from flies; forces the monster to take delta-h gradually</description>
+		<type>boolean</type>
+	  </variable>
       <function-variable name="friends" classname="monster_type_friends">
 		<description>whether monster class is a friend</description>
 		<argument name="monster_class"><type>monster_class</type></argument>
 		<type>boolean</type>
       </function-variable>
+	  <variable name="has_delayed_hard_death" version="git">
+		<description>always dies soft, then switches to hard</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="has_nuclear_hard_death" version="git">
+		<description>player’s screen whites out and slowly recovers</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="impact_effect" access="read-only">
 		<description>type of effect generated when monster gets hit by a bleeding projectile</description>
 		<type>effect_type</type>
-      </variable>
-      <function-variable name="immunities" classname="monster_type_immunities">
-		<description>whether monster type is immune to damage type</description>
-		<argument name="damage_type"><type>damage_type</type></argument>
-		<type>boolean</type>
-      </function-variable>
-      <variable name="initial_count" version="20111201">
-		<description>how many monsters of this type are placed in the level during initial placement</description>
-		<type>number</type>
       </variable>
       <variable name="height" access="read-only">
 		<description>height of monster</description>
 		<type>WU</type>
       </variable>
+	  <function-variable name="immunities" classname="monster_type_immunities">
+		<description>whether monster type is immune to damage type</description>
+		<argument name="damage_type"><type>damage_type</type></argument>
+		<type>boolean</type>
+	  </function-variable>
+	  <variable name="impact_effect" access="read-only">
+		<type>effect</type>
+	  </variable>
+      <variable name="initial_count" version="20111201">
+		<description>how many monsters of this type are placed in the level during initial placement</description>
+		<type>number</type>
+      </variable>
+	  <variable name="invisible" version="git">
+		<description>this monster uses _xfer_invisibility</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="item">
 		<description>type of item the monster drops when it dies</description>
 		<type>item_type</type>
       </variable>
+	  <variable name="kamikaze" version="git">
+		<description>monster does shrapnel damage and will suicide if close enough to target</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="major" version="20120128">
 		<description>monster is major</description>
 		<type>boolean</type>
@@ -2948,6 +3008,10 @@
       <variable name="maximum_count" version="20111201">
 		<description>maximum number of this type of monster in the level</description>
 		<type>number</type>
+      </variable>
+      <variable name="melee_impact_effect" access="read-only">
+		<description>type of effect generated when monster gets hit by a melee projectile</description>
+		<type>effect_type</type>
       </variable>
       <variable name="minimum_count" version="20111201">
 		<description>minimum number of this type of monster in the level</description>
@@ -2957,10 +3021,22 @@
 		<description>monster is minor</description>
 		<type>boolean</type>
       </variable>
-      <variable name="melee_impact_effect" access="read-only">
-		<description>type of effect generated when monster gets hit by a melee projectile</description>
-		<type>effect_type</type>
-      </variable>
+	  <variable name="not_afraid_of_goo" version="git">
+		<type>boolean</type>
+	  </variable>
+	  <variable name="not_afraid_of_lava" version="git">
+		<type>boolean</type>
+	  </variable>
+	  <variable name="not_afraid_of_sewage" version="git">
+		<type>boolean</type>
+	  </variable>
+	  <variable name="not_afraid_of_water" version="git">
+		<type>boolean</type>
+	  </variable>
+	  <variable name="omniscient" version="git">
+		<description>ignores line-of-sight during find_closest_appropriate_target()</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="radius" access="read-only">
 		<description>radius of monster</description>
 		<type>WU</type>
@@ -2973,12 +3049,28 @@
 		<description>whether monsters of this type spawn in random locations</description>
 		<type>boolean</type>
       </variable>
+	  <variable name="subtly_invisible" version="git">
+		<description>this monster uses _xfer_subtle_invisibility</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="tiny" version="git">
+		<description>0.25-size normal height</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="total_available" version="20111201">
 		<description>total number of monsters of this type that can be spawned in this level</description>
 		<type>number</type>
 		<note>-1 means infinite monsters are available</note>
 		<note>setting this to anything but -1 will only be effective if changed immediately when the script runs, before monster placement is done</note>
       </variable>
+	  <variable name="uses_sniper_ledges" version="git">
+		<description>sit on ledges and hurl shit at the player (ranged attack monsters only</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="vitality" version="git" access="read-only">
+		<description>monster’s initial vitality</description>
+		<type>number</type>
+	  </variable>
       <function-variable name="weaknesses" classname="monster_type_weaknesses">
 		<description>whether monster type has a weakness to damage type</description>
 		<argument name="damage type"><type>damage_type</type></argument>

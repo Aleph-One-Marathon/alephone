@@ -2729,12 +2729,33 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>MonsterTypes()</dt>
 <dt>MonsterTypes[monster_type]</dt>
 <dd><dl>
+	  <dt>.alien <span class="version">git</span>
+</dt>
+<dd><p class="description">moves slower on slower levels, etc.</p></dd>
       <dt>.attacks_immediately <span class="version">20120128</span>
 </dt>
 <dd><p class="description">monster will try an attack immediately</p></dd>
+	  <dt>.berserker <span class="version">git</span>
+</dt>
+<dd><p class="description">below 1/4 vitality, this monster goes berserk</p></dd>
+	  <dt>.can_die_in_flames <span class="version">git</span>
+</dt>
+<dd><p class="description">uses humanoid dying shape</p></dd>
+	  <dt>.can_teleport_under_media <span class="version">git</span>
+</dt>
+<dd><p class="description"></p></dd>
+	  <dt>.cannot_attack <span class="version">git</span>
+</dt>
+<dd><p class="description">monster has no weapons and cannot attack (runs constantly to safety)</p></dd>
       <dt>.cannot_be_dropped <span class="version">20120128</span>
 </dt>
 <dd><p class="description">monster cannot be skipped during placement</p></dd>
+	  <dt>.cannot_fire_backward <span class="version">git</span>
+</dt>
+<dd><p class="description">monster can’t turn more than 135 degrees</p></dd>
+	  <dt>.chooses_weapons_randomly <span class="version">git</span>
+</dt>
+<dd><p class="description"></p></dd>
       <dt>.class</dt>
 <dd><p class="description">class of monster type</p></dd>
 	  <dt>.collection<span class="access"> (read-only)</span> <span class="version">20210408</span>
@@ -2747,40 +2768,82 @@ If you do this, you should customize them all at the beginning of the script. Ch
     .enemies[monster_class]
   </dt>
 <dd><p class="description">whether monster class is an enemy</p></dd>
+	  <dt>.enlarged <span class="version">git</span>
+</dt>
+<dd><p class="description">monster is 1.25 times normal height</p></dd>
+	  <dt>.fires_symmetrically <span class="version">git</span>
+</dt>
+<dd><p class="description">fires at +/- dy, simultaneously</p></dd>
+	  <dt>.flies <span class="version">git</span>
+</dt>
+<dd><p class="description"></p></dd>
+	  <dt>.floats <span class="version">git</span>
+</dt>
+<dd><p class="description">exclusive from flies; forces the monster to take delta-h gradually</p></dd>
       <dt>
     .friends[monster_class]
   </dt>
 <dd><p class="description">whether monster class is a friend</p></dd>
+	  <dt>.has_delayed_hard_death <span class="version">git</span>
+</dt>
+<dd><p class="description">always dies soft, then switches to hard</p></dd>
+	  <dt>.has_nuclear_hard_death <span class="version">git</span>
+</dt>
+<dd><p class="description">player’s screen whites out and slowly recovers</p></dd>
       <dt>.impact_effect<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">type of effect generated when monster gets hit by a bleeding projectile</p></dd>
-      <dt>
-    .immunities[damage_type]
-  </dt>
-<dd><p class="description">whether monster type is immune to damage type</p></dd>
-      <dt>.initial_count <span class="version">20111201</span>
-</dt>
-<dd><p class="description">how many monsters of this type are placed in the level during initial placement</p></dd>
       <dt>.height<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">height of monster</p></dd>
+	  <dt>
+    .immunities[damage_type]
+  </dt>
+<dd><p class="description">whether monster type is immune to damage type</p></dd>
+	  <dt>.impact_effect<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description"></p></dd>
+      <dt>.initial_count <span class="version">20111201</span>
+</dt>
+<dd><p class="description">how many monsters of this type are placed in the level during initial placement</p></dd>
+	  <dt>.invisible <span class="version">git</span>
+</dt>
+<dd><p class="description">this monster uses _xfer_invisibility</p></dd>
       <dt>.item</dt>
 <dd><p class="description">type of item the monster drops when it dies</p></dd>
+	  <dt>.kamikaze <span class="version">git</span>
+</dt>
+<dd><p class="description">monster does shrapnel damage and will suicide if close enough to target</p></dd>
       <dt>.major <span class="version">20120128</span>
 </dt>
 <dd><p class="description">monster is major</p></dd>
       <dt>.maximum_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">maximum number of this type of monster in the level</p></dd>
+      <dt>.melee_impact_effect<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">type of effect generated when monster gets hit by a melee projectile</p></dd>
       <dt>.minimum_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">minimum number of this type of monster in the level</p></dd>
       <dt>.minor <span class="version">20120128</span>
 </dt>
 <dd><p class="description">monster is minor</p></dd>
-      <dt>.melee_impact_effect<span class="access"> (read-only)</span>
+	  <dt>.not_afraid_of_goo <span class="version">git</span>
 </dt>
-<dd><p class="description">type of effect generated when monster gets hit by a melee projectile</p></dd>
+<dd><p class="description"></p></dd>
+	  <dt>.not_afraid_of_lava <span class="version">git</span>
+</dt>
+<dd><p class="description"></p></dd>
+	  <dt>.not_afraid_of_sewage <span class="version">git</span>
+</dt>
+<dd><p class="description"></p></dd>
+	  <dt>.not_afraid_of_water <span class="version">git</span>
+</dt>
+<dd><p class="description"></p></dd>
+	  <dt>.omniscient <span class="version">git</span>
+</dt>
+<dd><p class="description">ignores line-of-sight during find_closest_appropriate_target()</p></dd>
       <dt>.radius<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">radius of monster</p></dd>
@@ -2790,6 +2853,12 @@ If you do this, you should customize them all at the beginning of the script. Ch
       <dt>.random_location <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether monsters of this type spawn in random locations</p></dd>
+	  <dt>.subtly_invisible <span class="version">git</span>
+</dt>
+<dd><p class="description">this monster uses _xfer_subtle_invisibility</p></dd>
+	  <dt>.tiny <span class="version">git</span>
+</dt>
+<dd><p class="description">0.25-size normal height</p></dd>
       <dt>.total_available <span class="version">20111201</span>
 </dt>
 <dd>
@@ -2797,6 +2866,12 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <p class="note">-1 means infinite monsters are available </p>
 <p class="note">setting this to anything but -1 will only be effective if changed immediately when the script runs, before monster placement is done </p>
 </dd>
+	  <dt>.uses_sniper_ledges <span class="version">git</span>
+</dt>
+<dd><p class="description">sit on ledges and hurl shit at the player (ranged attack monsters only</p></dd>
+	  <dt>.vitality<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">monster’s initial vitality</p></dd>
       <dt>
     .weaknesses[damage type]
   </dt>

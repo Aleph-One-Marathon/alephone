@@ -355,6 +355,13 @@ static int Lua_MonsterType_Get_Random_Location(lua_State* L)
 	return 1;
 }
 
+static int Lua_MonsterType_Get_Vitality(lua_State* L)
+{
+	monster_definition *definition = get_monster_definition_external(Lua_MonsterType::Index(L, 1));
+	lua_pushnumber(L, definition->vitality);
+	return 1;
+}
+
 static int Lua_MonsterType_Get_Weaknesses(lua_State *L) {
 	Lua_MonsterType_Weaknesses::Push(L, Lua_MonsterType::Index(L, 1));
 	return 1;
@@ -496,45 +503,92 @@ static int Lua_MonsterType_Set_Random_Location(lua_State* L)
 }
 
 const luaL_Reg Lua_MonsterType_Get[] = {
+	{"alien", Lua_MonsterType_Get_Flag<_monster_is_alien>},
 	{"attacks_immediately", Lua_MonsterType_Get_Flag<_monster_attacks_immediately>},
+	{"berserker", Lua_MonsterType_Get_Flag<_monster_is_berserker>},
+	{"can_die_in_flames", Lua_MonsterType_Get_Flag<_monster_can_die_in_flames>},
+	{"can_teleport_under_media", Lua_MonsterType_Get_Flag<_monster_can_teleport_under_media>},
+	{"cannot_attack", Lua_MonsterType_Get_Flag<_monster_cannot_attack>},
 	{"cannot_be_dropped", Lua_MonsterType_Get_Flag<_monster_cannot_be_dropped>},
+	{"cannot_fire_backward", Lua_MonsterType_Get_Flag<_monster_cant_fire_backwards>},
+	{"chooses_weapons_randomly", Lua_MonsterType_Get_Flag<_monster_chooses_weapons_randomly>},
 	{"class", Lua_MonsterType_Get_Class},
 	{"collection", Lua_MonsterType_Get_Collection},
 	{"clut_index", Lua_MonsterType_Get_Clut_Index},
 	{"enemies", Lua_MonsterType_Get_Enemies},
+	{"enlarged", Lua_MonsterType_Get_Flag<_monster_is_enlarged>},
+	{"fires_symmetrically", Lua_MonsterType_Get_Flag<_monster_fires_symmetrically>},
+	{"flies", Lua_MonsterType_Get_Flag<_monster_flys>},
+	{"floats", Lua_MonsterType_Get_Flag<_monster_floats>},
 	{"friends", Lua_MonsterType_Get_Friends},
+	{"has_delayed_hard_death", Lua_MonsterType_Get_Flag<_monster_has_delayed_hard_death>},
+	{"has_nuclear_hard_death", Lua_MonsterType_Get_Flag<_monster_has_nuclear_hard_death>},
 	{"height", Lua_MonsterType_Get_Height},
 	{"immunities", Lua_MonsterType_Get_Immunities},
 	{"impact_effect", Lua_MonsterType_Get_Impact_Effect},
 	{"initial_count", Lua_MonsterType_Get_Initial_Count},
+	{"invisible", Lua_MonsterType_Get_Flag<_monster_is_invisible>},
+	{"item", Lua_MonsterType_Get_Item},
+	{"kamikaze", Lua_MonsterType_Get_Flag<_monster_is_kamakazi>},
 	{"major", Lua_MonsterType_Get_Flag<_monster_major>},
 	{"maximum_count", Lua_MonsterType_Get_Maximum_Count},
 	{"melee_impact_effect", Lua_MonsterType_Get_Melee_Impact_Effect},
 	{"minimum_count", Lua_MonsterType_Get_Minimum_Count},
 	{"minor", Lua_MonsterType_Get_Flag<_monster_minor>},
-	{"item", Lua_MonsterType_Get_Item},
+	{"not_afraid_of_goo", Lua_MonsterType_Get_Flag<_monster_is_not_afraid_of_goo>},
+	{"not_afraid_of_lava", Lua_MonsterType_Get_Flag<_monster_is_not_afraid_of_lava>},
+	{"not_afraid_of_sewage", Lua_MonsterType_Get_Flag<_monster_is_not_afraid_of_sewage>},
+	{"not_afraid_of_water", Lua_MonsterType_Get_Flag<_monster_is_not_afraid_of_water>},
+	{"omniscient", Lua_MonsterType_Get_Flag<_monster_is_omniscent>},
 	{"radius", Lua_MonsterType_Get_Radius},
 	{"random_chance", Lua_MonsterType_Get_Random_Chance},
 	{"random_location", Lua_MonsterType_Get_Random_Location},
+	{"subtly_invisible", Lua_MonsterType_Get_Flag<_monster_is_subtly_invisible>},
+	{"tiny", Lua_MonsterType_Get_Flag<_monster_is_tiny>},
 	{"total_available", Lua_MonsterType_Get_Random_Count},
+	{"uses_sniper_ledges", Lua_MonsterType_Get_Flag<_monster_uses_sniper_ledges>},
+	{"vitality", Lua_MonsterType_Get_Vitality},
 	{"weaknesses", Lua_MonsterType_Get_Weaknesses},
 	{"waits_with_clear_shot", Lua_MonsterType_Get_Flag<_monster_waits_with_clear_shot>},
 	{0, 0}
 };
 
 const luaL_Reg Lua_MonsterType_Set[] = {
+	{"alien", Lua_MonsterType_Set_Flag<_monster_is_alien>},
 	{"attacks_immediately", Lua_MonsterType_Set_Flag<_monster_attacks_immediately>},
+	{"berserker", Lua_MonsterType_Set_Flag<_monster_is_berserker>},
+	{"can_die_in_flames", Lua_MonsterType_Set_Flag<_monster_can_die_in_flames>},
+	{"can_teleport_under_media", Lua_MonsterType_Set_Flag<_monster_can_teleport_under_media>},
+	{"cannot_attack", Lua_MonsterType_Set_Flag<_monster_cannot_attack>},
 	{"cannot_be_dropped", Lua_MonsterType_Set_Flag<_monster_cannot_be_dropped>},
+	{"cannot_fire_backward", Lua_MonsterType_Set_Flag<_monster_cant_fire_backwards>},
+	{"chooses_weapons_randomly", Lua_MonsterType_Set_Flag<_monster_chooses_weapons_randomly>},
 	{"class", Lua_MonsterType_Set_Class},
+	{"enlarged", Lua_MonsterType_Set_Flag<_monster_is_enlarged>},
+	{"fires_symmetrically", Lua_MonsterType_Set_Flag<_monster_fires_symmetrically>},
+	{"flies", Lua_MonsterType_Set_Flag<_monster_flys>},
+	{"floats", Lua_MonsterType_Set_Flag<_monster_floats>},
+	{"has_delayed_hard_death", Lua_MonsterType_Set_Flag<_monster_has_delayed_hard_death>},
+	{"has_nuclear_hard_death", Lua_MonsterType_Set_Flag<_monster_has_nuclear_hard_death>},
 	{"initial_count", Lua_MonsterType_Set_Initial_Count},
+	{"invisible", Lua_MonsterType_Set_Flag<_monster_is_invisible>},
 	{"item", Lua_MonsterType_Set_Item},
+	{"kamikaze", Lua_MonsterType_Set_Flag<_monster_is_kamakazi>},
 	{"major", Lua_MonsterType_Set_Flag<_monster_major>},
 	{"maximum_count", Lua_MonsterType_Set_Maximum_Count},
 	{"minimum_count", Lua_MonsterType_Set_Minimum_Count},
 	{"minor", Lua_MonsterType_Set_Flag<_monster_minor>},
+	{"not_afraid_of_goo", Lua_MonsterType_Set_Flag<_monster_is_not_afraid_of_goo>},
+	{"not_afraid_of_lava", Lua_MonsterType_Set_Flag<_monster_is_not_afraid_of_lava>},
+	{"not_afraid_of_sewage", Lua_MonsterType_Set_Flag<_monster_is_not_afraid_of_sewage>},
+	{"not_afraid_of_water", Lua_MonsterType_Set_Flag<_monster_is_not_afraid_of_water>},
+	{"omniscient", Lua_MonsterType_Set_Flag<_monster_is_omniscent>},
 	{"random_chance", Lua_MonsterType_Set_Random_Chance},
 	{"random_location", Lua_MonsterType_Set_Random_Location},
+	{"subtly_invisible", Lua_MonsterType_Set_Flag<_monster_is_subtly_invisible>},
+	{"tiny", Lua_MonsterType_Set_Flag<_monster_is_tiny>},
 	{"total_available", Lua_MonsterType_Set_Random_Count},
+	{"uses_sniper_ledges", Lua_MonsterType_Set_Flag<_monster_uses_sniper_ledges>},
 	{"waits_with_clear_shot", Lua_MonsterType_Set_Flag<_monster_waits_with_clear_shot>},
 	{0, 0}
 };
