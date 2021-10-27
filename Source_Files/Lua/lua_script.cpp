@@ -1823,15 +1823,15 @@ static std::unique_ptr<LuaState> LuaStateFactory(ScriptType script_type)
 {
 	switch (script_type) {
 	case _embedded_lua_script:
-		return std::make_unique<EmbeddedLuaState>();
+        return std::unique_ptr<LuaState>(new EmbeddedLuaState());    
 	case _lua_netscript:
-		return std::make_unique<NetscriptState>();
+        return std::unique_ptr<LuaState>(new NetscriptState());
 	case _solo_lua_script:
-		return std::make_unique<SoloScriptState>();
+        return std::unique_ptr<LuaState>(new SoloScriptState());
 	case _stats_lua_script:
-		return std::make_unique<StatsLuaState>();
+        return std::unique_ptr<LuaState>(new StatsLuaState());
 	}
-	return NULL;
+    return nullptr;
 }
 
 bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
