@@ -45,6 +45,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <map>
 
 #include <SDL2/SDL_endian.h>
 
@@ -77,6 +78,10 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>
+
+#ifdef HAVE_NFD
+#include "nfd.h"
+#endif
 
 namespace io = boost::iostreams;
 namespace sys = boost::system;
@@ -1304,18 +1309,97 @@ private:
 	std::string m_filename;
 };
 
+static std::map<Typecode, const char*> typecode_filters {
+    {_typecode_scenario, "sceA"},
+    {_typecode_savegame, "sgaA"},
+    {_typecode_film, "filA"},
+    {_typecode_physics, "phyA"},
+    {_typecode_shapes, "shpA"},
+    {_typecode_sounds, "sndA"},
+    {_typecode_patch, "ShPa"},
+    {_typecode_images, "imgA"},
+    {_typecode_music, "aif;wav;ogg"},
+    {_typecode_movie, "webm"}
+};
+
 bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 {
-	ReadFileDialog d(*this, type, prompt);
-	if (d.Run()) 
+#ifdef HAVE_NFD
+	if (environment_preferences->use_native_file_dialogs)
 	{
-		*this = d.GetFile();
-		return true;
-	} 
-	else 
-	{
-		return false;
+		// TODO: DRY (this is mostly copied from ReadFileDialog)
+		FileSpecifier dir = *this;
+		switch (type)
+		{
+		case _typecode_savegame:
+			dir.SetToSavedGamesDir();
+			break;
+		case _typecode_film:
+			dir.SetToRecordingsDir();
+			break;
+		case _typecode_scenario:
+		case _typecode_netscript:
+			// I think these should be in ReadFileDialog too, it's just never
+			// called on them
+		case _typecode_physics:
+		case _typecode_shapes:
+		case _typecode_sounds:
+		case _typecode_images:
+		case _typecode_unknown: // used for external resources
+		{
+			std::string filename;
+			DirectorySpecifier theDirectory;
+			dir.SplitPath(theDirectory, filename);
+			dir.FromDirectory(theDirectory);
+			if (!dir.Exists())
+			{
+				dir.SetToLocalDataDir();
+			}
+			break;
+		}
+		default:
+			dir.SetToLocalDataDir();
+			break;
+		}
+
+#if (defined(__APPLE__) && defined(__MACH__))
+		// NFD doesn't append a wildcard filter on mac, so if you set ANY
+		// filter here, anything without that extension gets grayed out. So, I
+		// guess just accept any files
+		const char* filters = nullptr;
+#else
+		auto filters = typecode_filters[type];
+#endif
+		
+		nfdchar_t* outpath;
+		auto result = NFD_OpenDialog(filters, dir.GetPath(), &outpath);
+		if (result == NFD_OKAY)
+		{
+			name = outpath;
+			free(outpath);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
+	else
+	{
+#endif
+    ReadFileDialog d(*this, type, prompt);
+    if (d.Run()) 
+    {
+        *this = d.GetFile();
+        return true;
+    } 
+    else 
+    {
+        return false;
+    }
+#ifdef HAVE_NFD
+	}
+#endif
 }
 
 class w_file_name : public w_text_entry {
@@ -1499,6 +1583,49 @@ static bool confirm_save_choice(FileSpecifier & file);
 
 bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *default_name)
 {
+#ifdef HAVE_NFD
+	if (environment_preferences->use_native_file_dialogs)
+	{
+		// TODO: DRY (this is copied from WriteDialog)
+		DirectorySpecifier dir = *this;
+		switch (type)
+		{
+		case _typecode_savegame:
+		{
+			std::string base;
+			std::string part;
+			dir.SplitPath(base, part);
+			if (part != std::string())
+			{
+				dir = base;
+			}
+			break;
+		}
+		case _typecode_film:
+		case _typecode_movie:
+			dir.SetToRecordingsDir();
+			break;
+		default:
+			dir.SetToLocalDataDir();
+			break;
+		}
+		
+		nfdchar_t* outpath;
+		auto result = NFD_SaveDialog(typecode_filters[type], dir.GetPath(), &outpath);
+		if (result == NFD_OKAY)
+		{
+			name = outpath;
+			free(outpath);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+#endif
 again:
 	WriteFileDialog d(*this, type, prompt, default_name);
 	bool result = false;
@@ -1521,7 +1648,9 @@ again:
 	}
 		
 	return result;
-
+#ifdef HAVE_NFD
+	}
+#endif
 }
 
 bool FileSpecifier::WriteDialogAsync(Typecode type, char *prompt, char *default_name)

@@ -5595,6 +5595,7 @@
 					"-lswscale",
 					"-lldap",
 					"-lminiupnpc",
+					"-lnfd",
 				);
 				STRIP_INSTALLED_PRODUCT = NO;
 				USER_HEADER_SEARCH_PATHS = (
@@ -5736,6 +5737,7 @@
 					"-lswscale",
 					"-lldap",
 					"-lminiupnpc",
+					"-lnfd",
 				);
 				STRIP_INSTALLED_PRODUCT = NO;
 				USER_HEADER_SEARCH_PATHS = (

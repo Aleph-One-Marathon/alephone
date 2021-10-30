@@ -266,6 +266,10 @@ struct environment_preferences_data
 
 	// how many auto-named save files to keep around (0 is unlimited)
 	uint32 maximum_quick_saves;
+
+#ifdef HAVE_NFD
+	bool use_native_file_dialogs;
+#endif
 };
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */

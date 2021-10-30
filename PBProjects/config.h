@@ -201,3 +201,5 @@
 
 /* Win32 music disabled */
 /* #undef WIN32_DISABLE_MUSIC */
+
+#define HAVE_NFD 1

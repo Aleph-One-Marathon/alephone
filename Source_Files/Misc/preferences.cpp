@@ -3000,6 +3000,12 @@ static void environment_dialog(void *arg)
 	table->dual_add(hide_extensions_w, d);
 #endif
 
+#ifdef HAVE_NFD
+	w_toggle *use_native_file_dialogs_w = new w_toggle(environment_preferences->use_native_file_dialogs);
+	table->dual_add(use_native_file_dialogs_w->label("Use Native File Dialogs"), d);
+	table->dual_add(use_native_file_dialogs_w, d);
+#endif
+
 	w_select *max_saves_w = new w_select(0, max_saves_labels);
 	for (int i = 0; max_saves_labels[i] != NULL; ++i) {
 		if (max_saves_values[i] == environment_preferences->maximum_quick_saves)
@@ -3132,6 +3138,13 @@ static void environment_dialog(void *arg)
 		if (saves != environment_preferences->maximum_quick_saves) {
 			environment_preferences->maximum_quick_saves = saves;
 			saves_changed = true;
+		}
+
+		auto use_native_file_dialogs = use_native_file_dialogs_w->get_selection() != 0;
+		if (use_native_file_dialogs != environment_preferences->use_native_file_dialogs)
+		{
+			environment_preferences->use_native_file_dialogs = use_native_file_dialogs;
+			changed = true;
 		}
 
 		if (changed)
@@ -3788,6 +3801,9 @@ InfoTree environment_preferences_tree()
 	root.put_attr("hide_alephone_extensions", environment_preferences->hide_extensions);
 	root.put_attr("film_profile", static_cast<uint32>(environment_preferences->film_profile));
 	root.put_attr("maximum_quick_saves", environment_preferences->maximum_quick_saves);
+#ifdef HAVE_NFD
+	root.put_attr("use_native_file_dialogs", environment_preferences->use_native_file_dialogs);
+#endif
 
 	for (Plugins::iterator it = Plugins::instance()->begin(); it != Plugins::instance()->end(); ++it) {
 		if (it->compatible() && !it->enabled) {
@@ -4020,6 +4036,9 @@ static void default_environment_preferences(environment_preferences_data *prefer
 	preferences->hide_extensions = true;
 	preferences->film_profile = FILM_PROFILE_DEFAULT;
 	preferences->maximum_quick_saves = 0;
+#ifdef HAVE_NFD
+	preferences->use_native_file_dialogs = false;
+#endif
 }
 
 
@@ -4801,6 +4820,9 @@ void parse_environment_preferences(InfoTree root, std::string version)
 		environment_preferences->film_profile = static_cast<FilmProfileType>(profile);
 	
 	root.read_attr("maximum_quick_saves", environment_preferences->maximum_quick_saves);
+#ifdef HAVE_NFD
+	root.read_attr("use_native_file_dialogs", environment_preferences->use_native_file_dialogs);
+#endif
 	
 	for (const InfoTree &plugin : root.children_named("disable_plugin"))
 	{
