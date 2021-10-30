@@ -36,6 +36,7 @@
 
 #include "shell.h"
 #include "interface.h"
+#include "screen.h"
 #include "tags.h"
 
 #include <stdio.h>
@@ -1370,9 +1371,22 @@ bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 #else
 		auto filters = typecode_filters[type];
 #endif
-		
+
 		nfdchar_t* outpath;
+#if defined(_WIN32) || defined(_WIN64)
+		auto fullscreen = get_screen_mode()->fullscreen;
+		if (fullscreen)
+		{
+			toggle_fullscreen(false);
+		}
+#endif		
 		auto result = NFD_OpenDialog(filters, dir.GetPath(), &outpath);
+#if defined(_WIN32) || defined(_WIN64)
+		if (fullscreen)
+		{
+			toggle_fullscreen(true);
+		}
+#endif
 		if (result == NFD_OKAY)
 		{
 			name = outpath;
@@ -1611,7 +1625,20 @@ bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *d
 		}
 		
 		nfdchar_t* outpath;
+#if defined(_WIN32) || defined(_WIN64)
+		auto fullscreen = get_screen_mode()->fullscreen;
+		if (fullscreen)
+		{
+			toggle_fullscreen(false);
+		}
+#endif
 		auto result = NFD_SaveDialog(typecode_filters[type], dir.GetPath(), &outpath);
+#if defined(_WIN32) || defined(_WIN64)
+		if (fullscreen)
+		{
+			toggle_fullscreen(true);
+		}
+#endif
 		if (result == NFD_OKAY)
 		{
 			name = outpath;
