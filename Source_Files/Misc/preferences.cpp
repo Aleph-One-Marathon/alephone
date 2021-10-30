@@ -3140,12 +3140,14 @@ static void environment_dialog(void *arg)
 			saves_changed = true;
 		}
 
+#ifdef HAVE_NFD
 		auto use_native_file_dialogs = use_native_file_dialogs_w->get_selection() != 0;
 		if (use_native_file_dialogs != environment_preferences->use_native_file_dialogs)
 		{
 			environment_preferences->use_native_file_dialogs = use_native_file_dialogs;
 			changed = true;
 		}
+#endif
 
 		if (changed)
 			load_environment_from_preferences();
