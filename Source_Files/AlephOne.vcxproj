@@ -232,7 +232,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -249,7 +249,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -267,7 +267,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon Infinity|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -285,7 +285,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon 2|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -303,7 +303,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -322,7 +322,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)XML;$(ProjectDir)TCPMess;$(ProjectDir)Sound;$(ProjectDir)RenderOther;$(ProjectDir)RenderMain;$(ProjectDir)Network\Metaserver;$(ProjectDir)Network;$(ProjectDir)ModelView;$(ProjectDir)Misc;$(ProjectDir)Lua;$(ProjectDir)LibNAT;$(ProjectDir)Input;$(ProjectDir)GameWorld;$(ProjectDir)Files;$(ProjectDir)FFmpeg;$(ProjectDir)CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
@@ -346,7 +346,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon Infinity|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)XML;$(ProjectDir)TCPMess;$(ProjectDir)Sound;$(ProjectDir)RenderOther;$(ProjectDir)RenderMain;$(ProjectDir)Network\Metaserver;$(ProjectDir)Network;$(ProjectDir)ModelView;$(ProjectDir)Misc;$(ProjectDir)Lua;$(ProjectDir)LibNAT;$(ProjectDir)Input;$(ProjectDir)GameWorld;$(ProjectDir)Files;$(ProjectDir)FFmpeg;$(ProjectDir)CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
@@ -358,7 +358,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon 2|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)XML;$(ProjectDir)TCPMess;$(ProjectDir)Sound;$(ProjectDir)RenderOther;$(ProjectDir)RenderMain;$(ProjectDir)Network\Metaserver;$(ProjectDir)Network;$(ProjectDir)ModelView;$(ProjectDir)Misc;$(ProjectDir)Lua;$(ProjectDir)LibNAT;$(ProjectDir)Input;$(ProjectDir)GameWorld;$(ProjectDir)Files;$(ProjectDir)FFmpeg;$(ProjectDir)CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
@@ -370,7 +370,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)XML;$(ProjectDir)TCPMess;$(ProjectDir)Sound;$(ProjectDir)RenderOther;$(ProjectDir)RenderMain;$(ProjectDir)Network\Metaserver;$(ProjectDir)Network;$(ProjectDir)ModelView;$(ProjectDir)Misc;$(ProjectDir)Lua;$(ProjectDir)LibNAT;$(ProjectDir)Input;$(ProjectDir)GameWorld;$(ProjectDir)Files;$(ProjectDir)FFmpeg;$(ProjectDir)CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
