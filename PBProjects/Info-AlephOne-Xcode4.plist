@@ -35,6 +35,7 @@
 			<array>
 				<string>sndA</string>
 				<string>snds</string>
+				<string>sndz</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>SoundsIcon.icns</string>
@@ -44,6 +45,7 @@
 			<array>
 				<string>snd∞</string>
 				<string>snd2</string>
+				<string>sndz</string>
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
@@ -362,11 +364,13 @@
 				<array>
 					<string>snd∞</string>
 					<string>snd2</string>
+					<string>sndz</string>
 				</array>
 				<key>public.filename-extension</key>
 				<array>
 					<string>sndA</string>
 					<string>snds</string>
+					<string>sndz</string>
 				</array>
 			</dict>
 		</dict>
