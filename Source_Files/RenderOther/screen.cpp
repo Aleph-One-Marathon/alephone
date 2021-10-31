@@ -1245,9 +1245,7 @@ static bool clear_next_screen = false;
 void update_world_view_camera()
 {
 	world_view->yaw = current_player->facing;
-	world_view->virtual_yaw = (current_player->facing * FIXED_ONE) + virtual_aim_delta().yaw;
 	world_view->pitch = current_player->elevation;
-	world_view->virtual_pitch = (current_player->elevation * FIXED_ONE) + virtual_aim_delta().pitch;
 	world_view->maximum_depth_intensity = current_player->weapon_intensity;
 
 	world_view->origin = current_player->camera_location;
@@ -1256,8 +1254,24 @@ void update_world_view_camera()
 	world_view->origin_polygon_index = current_player->camera_polygon_index;
 
 	// Script-based camera control
-	if (!UseLuaCameras())
-		world_view->show_weapons_in_hand = !ChaseCam_GetPosition(world_view->origin, world_view->origin_polygon_index, world_view->yaw, world_view->pitch);	
+	auto use_cameras = UseLuaCameras();
+
+	world_view->virtual_yaw = world_view->yaw * FIXED_ONE;
+	world_view->virtual_pitch = world_view->pitch * FIXED_ONE;
+
+	if (!use_cameras)
+	{
+		world_view->show_weapons_in_hand =
+			!ChaseCam_GetPosition(world_view->origin,
+								  world_view->origin_polygon_index,
+								  world_view->yaw, world_view->pitch);
+
+		if (current_player_index == local_player_index)
+		{
+			world_view->virtual_yaw += virtual_aim_delta().yaw;
+			world_view->virtual_pitch += virtual_aim_delta().pitch;
+		}
+	}
 }
 
 void render_screen(short ticks_elapsed)
