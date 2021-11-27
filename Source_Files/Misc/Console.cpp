@@ -179,7 +179,7 @@ void Console::abort() {
 }
 
 void Console::backspace() {
-	if (!m_buffer.empty()) {
+	if (m_cursor_position > 0) {
 		m_cursor_position--;
 		m_buffer.erase(m_cursor_position, 1);
 		m_displayBuffer.erase(cursor_position(), 1);
