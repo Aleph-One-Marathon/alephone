@@ -2354,6 +2354,7 @@ static void finish_game(
 
 	if (shell_options.editor && shell_options.output.size())
 	{
+		L_Call_Cleanup();
 		FileSpecifier file(shell_options.output);
 		if (export_level(file))
 		{
