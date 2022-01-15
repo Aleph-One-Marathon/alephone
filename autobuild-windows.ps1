@@ -76,7 +76,7 @@ function Package {
 	
 	#now we have our folder with all files except data files
 	
-	$os_target = if($x64) {"64"} else {"32"}
+	$os_target = if($x64) {""} else {"32"}
 	#we can already pack what we have if we wanna pack without data
 	if(($data -ne 1) -and ($build -ne "Release")) {		
 		$zip_name = "${package_fullname}-Exe-Win${os_target}.zip"
