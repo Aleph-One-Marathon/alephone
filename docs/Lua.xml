@@ -600,7 +600,7 @@
 		<description>type of item</description>
 		<type>item_type</type>
       </variable>
-      <variable name="visible" access="read-only" version="git">
+      <variable name="visible" access="read-only" version="20220115">
     <type>boolean</type>
       </variable>
       <variable name="x" access="read-only">
@@ -1221,19 +1221,19 @@
 		<type>boolean</type>
 		<note>this flag doesn’t actually do anything</note>
       </variable>
-      <variable name="maximum_ceiling_height" access="read-only" version="git">
+      <variable name="maximum_ceiling_height" access="read-only" version="20220115">
     <description>greatest height a platform's ceiling can ever rise</description>
     <type>WU</type>
       </variable>
-      <variable name="maximum_floor_height" access="read-only" version="git">
+      <variable name="maximum_floor_height" access="read-only" version="20220115">
     <description>greatest height a platform's floor can ever rise</description>
     <type>WU</type>
       </variable>
-      <variable name="minimum_ceiling_height" access="read-only" version="git">
+      <variable name="minimum_ceiling_height" access="read-only" version="20220115">
     <description>least height a platform's ceiling must rise</description>
     <type>WU</type>
       </variable>
-      <variable name="minimum_floor_height" access="read-only" version="git">
+      <variable name="minimum_floor_height" access="read-only" version="20220115">
     <description>least height a platform's floor must rise</description>
     <type>WU</type>
       </variable>
@@ -1445,7 +1445,7 @@
       </function>
       <function name="find_target" return="variant">
 		<description>returns t, x, y, z, polygon, where t is the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the target is the surface of a liquid, and penetrate_media is false) the player is looking at; and x, y, z, and polygon are the point the player is looking at</description>
-		<argument name="penetrate_media" required="false" version="git"><type>boolean</type></argument>
+		<argument name="penetrate_media" required="false" version="20220115"><type>boolean</type></argument>
 		<return><type>variant</type></return>
 		<return><type>WU</type></return>
 		<return><type>WU</type></return>
@@ -1454,7 +1454,7 @@
 		<note>you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon()</note>
 		<note>this function will not work under liquid unless penetrate_media is true</note>
       </function>
-	  <variable name="has_map_open" access="read-only" version="git">
+	  <variable name="has_map_open" access="read-only" version="20220115">
 		<description>whether player has overhead map open</description>
 	  </variable>
       <variable name="head_below_media" access="read-only">
@@ -1607,7 +1607,7 @@
 		<description>teleports player to level (of course, all the other players will also go to that level)</description>
 		<argument name="level"><type>number</type></argument>
       </function>
-	  <variable name="teleporting" access="read-only" version="git">
+	  <variable name="teleporting" access="read-only" version="20220115">
 		<description>whether player is teleporting</description>
 	  </variable>
       <subtable name="texture_palette">
@@ -2890,7 +2890,7 @@
       </mnemonics>
     </enum>
     <enum name="monster_type">
-	  <variable name="alien" version="git">
+	  <variable name="alien" version="20220115">
 		<description>moves slower on slower levels, etc.</description>
 		<type>boolean</type>
 	  </variable>
@@ -2898,18 +2898,18 @@
 		<description>monster will try an attack immediately</description>
 		<type>boolean</type>
       </variable>
-	  <variable name="berserker" version="git">
+	  <variable name="berserker" version="20220115">
 		<description>below 1/4 vitality, this monster goes berserk</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="can_die_in_flames" version="git">
+	  <variable name="can_die_in_flames" version="20220115">
 		<description>uses humanoid dying shape</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="can_teleport_under_media" version="git">
+	  <variable name="can_teleport_under_media" version="20220115">
 		<type>boolean</type>
 	  </variable>
-	  <variable name="cannot_attack" version="git">
+	  <variable name="cannot_attack" version="20220115">
 		<description>monster has no weapons and cannot attack (runs constantly to safety)</description>
 		<type>boolean</type>
 	  </variable>
@@ -2917,11 +2917,11 @@
 		<description>monster cannot be skipped during placement</description>
 		<type>boolean</type>
       </variable>
-	  <variable name="cannot_fire_backward" version="git">
+	  <variable name="cannot_fire_backward" version="20220115">
 		<description>monster can’t turn more than 135 degrees</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="chooses_weapons_randomly" version="git">
+	  <variable name="chooses_weapons_randomly" version="20220115">
 		<type>boolean</type>
 	  </variable>
       <variable name="class">
@@ -2941,18 +2941,18 @@
 		<argument name="monster_class"><type>monster_class</type></argument>
 		<type>boolean</type>
       </function-variable>
-	  <variable name="enlarged" version="git">
+	  <variable name="enlarged" version="20220115">
 		<description>monster is 1.25 times normal height</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="fires_symmetrically" version="git">
+	  <variable name="fires_symmetrically" version="20220115">
 		<description>fires at +/- dy, simultaneously</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="flies" version="git">
+	  <variable name="flies" version="20220115">
 		<type>boolean</type>
 	  </variable>
-	  <variable name="floats" version="git">
+	  <variable name="floats" version="20220115">
 		<description>exclusive from flies; forces the monster to take delta-h gradually</description>
 		<type>boolean</type>
 	  </variable>
@@ -2961,11 +2961,11 @@
 		<argument name="monster_class"><type>monster_class</type></argument>
 		<type>boolean</type>
       </function-variable>
-	  <variable name="has_delayed_hard_death" version="git">
+	  <variable name="has_delayed_hard_death" version="20220115">
 		<description>always dies soft, then switches to hard</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="has_nuclear_hard_death" version="git">
+	  <variable name="has_nuclear_hard_death" version="20220115">
 		<description>player’s screen whites out and slowly recovers</description>
 		<type>boolean</type>
 	  </variable>
@@ -2989,7 +2989,7 @@
 		<description>how many monsters of this type are placed in the level during initial placement</description>
 		<type>number</type>
       </variable>
-	  <variable name="invisible" version="git">
+	  <variable name="invisible" version="20220115">
 		<description>this monster uses _xfer_invisibility</description>
 		<type>boolean</type>
 	  </variable>
@@ -2997,7 +2997,7 @@
 		<description>type of item the monster drops when it dies</description>
 		<type>item_type</type>
       </variable>
-	  <variable name="kamikaze" version="git">
+	  <variable name="kamikaze" version="20220115">
 		<description>monster does shrapnel damage and will suicide if close enough to target</description>
 		<type>boolean</type>
 	  </variable>
@@ -3021,19 +3021,19 @@
 		<description>monster is minor</description>
 		<type>boolean</type>
       </variable>
-	  <variable name="not_afraid_of_goo" version="git">
+	  <variable name="not_afraid_of_goo" version="20220115">
 		<type>boolean</type>
 	  </variable>
-	  <variable name="not_afraid_of_lava" version="git">
+	  <variable name="not_afraid_of_lava" version="20220115">
 		<type>boolean</type>
 	  </variable>
-	  <variable name="not_afraid_of_sewage" version="git">
+	  <variable name="not_afraid_of_sewage" version="20220115">
 		<type>boolean</type>
 	  </variable>
-	  <variable name="not_afraid_of_water" version="git">
+	  <variable name="not_afraid_of_water" version="20220115">
 		<type>boolean</type>
 	  </variable>
-	  <variable name="omniscient" version="git">
+	  <variable name="omniscient" version="20220115">
 		<description>ignores line-of-sight during find_closest_appropriate_target()</description>
 		<type>boolean</type>
 	  </variable>
@@ -3049,11 +3049,11 @@
 		<description>whether monsters of this type spawn in random locations</description>
 		<type>boolean</type>
       </variable>
-	  <variable name="subtly_invisible" version="git">
+	  <variable name="subtly_invisible" version="20220115">
 		<description>this monster uses _xfer_subtle_invisibility</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="tiny" version="git">
+	  <variable name="tiny" version="20220115">
 		<description>0.25-size normal height</description>
 		<type>boolean</type>
 	  </variable>
@@ -3063,11 +3063,11 @@
 		<note>-1 means infinite monsters are available</note>
 		<note>setting this to anything but -1 will only be effective if changed immediately when the script runs, before monster placement is done</note>
       </variable>
-	  <variable name="uses_sniper_ledges" version="git">
+	  <variable name="uses_sniper_ledges" version="20220115">
 		<description>sit on ledges and hurl shit at the player (ranged attack monsters only</description>
 		<type>boolean</type>
 	  </variable>
-	  <variable name="vitality" version="git" access="read-only">
+	  <variable name="vitality" version="20220115" access="read-only">
 		<description>monster’s initial vitality</description>
 		<type>number</type>
 	  </variable>

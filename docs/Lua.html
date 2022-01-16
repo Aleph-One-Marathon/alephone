@@ -761,7 +761,7 @@
       <dt>.type<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">type of item</p></dd>
-      <dt>.visible<span class="access"> (read-only)</span> <span class="version">git</span>
+      <dt>.visible<span class="access"> (read-only)</span> <span class="version">20220115</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>.x<span class="access"> (read-only)</span>
@@ -1230,16 +1230,16 @@
 <p class="description">platform is locked</p>
 <p class="note">this flag doesn’t actually do anything </p>
 </dd>
-      <dt>.maximum_ceiling_height<span class="access"> (read-only)</span> <span class="version">git</span>
+      <dt>.maximum_ceiling_height<span class="access"> (read-only)</span> <span class="version">20220115</span>
 </dt>
 <dd><p class="description">greatest height a platform's ceiling can ever rise</p></dd>
-      <dt>.maximum_floor_height<span class="access"> (read-only)</span> <span class="version">git</span>
+      <dt>.maximum_floor_height<span class="access"> (read-only)</span> <span class="version">20220115</span>
 </dt>
 <dd><p class="description">greatest height a platform's floor can ever rise</p></dd>
-      <dt>.minimum_ceiling_height<span class="access"> (read-only)</span> <span class="version">git</span>
+      <dt>.minimum_ceiling_height<span class="access"> (read-only)</span> <span class="version">20220115</span>
 </dt>
 <dd><p class="description">least height a platform's ceiling must rise</p></dd>
-      <dt>.minimum_floor_height<span class="access"> (read-only)</span> <span class="version">git</span>
+      <dt>.minimum_floor_height<span class="access"> (read-only)</span> <span class="version">20220115</span>
 </dt>
 <dd><p class="description">least height a platform's floor must rise</p></dd>
       <dt>.monster_controllable</dt>
@@ -1437,13 +1437,13 @@
 <p class="description">if player is in range of a platform or control panel, returns a platform or side; otherwise returns nil</p>
 <p class="note">you can check the type of the return with is_polygon() and is_side() </p>
 </dd>
-      <dt>:find_target( [penetrate_media] <span class="version">git</span>)</dt>
+      <dt>:find_target( [penetrate_media] <span class="version">20220115</span>)</dt>
 <dd>
 <p class="description">returns t, x, y, z, polygon, where t is the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the target is the surface of a liquid, and penetrate_media is false) the player is looking at; and x, y, z, and polygon are the point the player is looking at</p>
 <p class="note">you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon() </p>
 <p class="note">this function will not work under liquid unless penetrate_media is true </p>
 </dd>
-	  <dt>.has_map_open<span class="access"> (read-only)</span> <span class="version">git</span>
+	  <dt>.has_map_open<span class="access"> (read-only)</span> <span class="version">20220115</span>
 </dt>
 <dd><p class="description">whether player has overhead map open</p></dd>
       <dt>.head_below_media<span class="access"> (read-only)</span>
@@ -1576,7 +1576,7 @@
 <dd><p class="description">teleports player to polygon</p></dd>
       <dt>:teleport_to_level(level)</dt>
 <dd><p class="description">teleports player to level (of course, all the other players will also go to that level)</p></dd>
-	  <dt>.teleporting<span class="access"> (read-only)</span> <span class="version">git</span>
+	  <dt>.teleporting<span class="access"> (read-only)</span> <span class="version">20220115</span>
 </dt>
 <dd><p class="description">whether player is teleporting</p></dd>
       <dt>.texture_palette</dt>
@@ -2729,31 +2729,31 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>MonsterTypes()</dt>
 <dt>MonsterTypes[monster_type]</dt>
 <dd><dl>
-	  <dt>.alien <span class="version">git</span>
+	  <dt>.alien <span class="version">20220115</span>
 </dt>
 <dd><p class="description">moves slower on slower levels, etc.</p></dd>
       <dt>.attacks_immediately <span class="version">20120128</span>
 </dt>
 <dd><p class="description">monster will try an attack immediately</p></dd>
-	  <dt>.berserker <span class="version">git</span>
+	  <dt>.berserker <span class="version">20220115</span>
 </dt>
 <dd><p class="description">below 1/4 vitality, this monster goes berserk</p></dd>
-	  <dt>.can_die_in_flames <span class="version">git</span>
+	  <dt>.can_die_in_flames <span class="version">20220115</span>
 </dt>
 <dd><p class="description">uses humanoid dying shape</p></dd>
-	  <dt>.can_teleport_under_media <span class="version">git</span>
+	  <dt>.can_teleport_under_media <span class="version">20220115</span>
 </dt>
 <dd><p class="description"></p></dd>
-	  <dt>.cannot_attack <span class="version">git</span>
+	  <dt>.cannot_attack <span class="version">20220115</span>
 </dt>
 <dd><p class="description">monster has no weapons and cannot attack (runs constantly to safety)</p></dd>
       <dt>.cannot_be_dropped <span class="version">20120128</span>
 </dt>
 <dd><p class="description">monster cannot be skipped during placement</p></dd>
-	  <dt>.cannot_fire_backward <span class="version">git</span>
+	  <dt>.cannot_fire_backward <span class="version">20220115</span>
 </dt>
 <dd><p class="description">monster can’t turn more than 135 degrees</p></dd>
-	  <dt>.chooses_weapons_randomly <span class="version">git</span>
+	  <dt>.chooses_weapons_randomly <span class="version">20220115</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>.class</dt>
@@ -2768,26 +2768,26 @@ If you do this, you should customize them all at the beginning of the script. Ch
     .enemies[monster_class]
   </dt>
 <dd><p class="description">whether monster class is an enemy</p></dd>
-	  <dt>.enlarged <span class="version">git</span>
+	  <dt>.enlarged <span class="version">20220115</span>
 </dt>
 <dd><p class="description">monster is 1.25 times normal height</p></dd>
-	  <dt>.fires_symmetrically <span class="version">git</span>
+	  <dt>.fires_symmetrically <span class="version">20220115</span>
 </dt>
 <dd><p class="description">fires at +/- dy, simultaneously</p></dd>
-	  <dt>.flies <span class="version">git</span>
+	  <dt>.flies <span class="version">20220115</span>
 </dt>
 <dd><p class="description"></p></dd>
-	  <dt>.floats <span class="version">git</span>
+	  <dt>.floats <span class="version">20220115</span>
 </dt>
 <dd><p class="description">exclusive from flies; forces the monster to take delta-h gradually</p></dd>
       <dt>
     .friends[monster_class]
   </dt>
 <dd><p class="description">whether monster class is a friend</p></dd>
-	  <dt>.has_delayed_hard_death <span class="version">git</span>
+	  <dt>.has_delayed_hard_death <span class="version">20220115</span>
 </dt>
 <dd><p class="description">always dies soft, then switches to hard</p></dd>
-	  <dt>.has_nuclear_hard_death <span class="version">git</span>
+	  <dt>.has_nuclear_hard_death <span class="version">20220115</span>
 </dt>
 <dd><p class="description">player’s screen whites out and slowly recovers</p></dd>
       <dt>.impact_effect<span class="access"> (read-only)</span>
@@ -2806,12 +2806,12 @@ If you do this, you should customize them all at the beginning of the script. Ch
       <dt>.initial_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">how many monsters of this type are placed in the level during initial placement</p></dd>
-	  <dt>.invisible <span class="version">git</span>
+	  <dt>.invisible <span class="version">20220115</span>
 </dt>
 <dd><p class="description">this monster uses _xfer_invisibility</p></dd>
       <dt>.item</dt>
 <dd><p class="description">type of item the monster drops when it dies</p></dd>
-	  <dt>.kamikaze <span class="version">git</span>
+	  <dt>.kamikaze <span class="version">20220115</span>
 </dt>
 <dd><p class="description">monster does shrapnel damage and will suicide if close enough to target</p></dd>
       <dt>.major <span class="version">20120128</span>
@@ -2829,19 +2829,19 @@ If you do this, you should customize them all at the beginning of the script. Ch
       <dt>.minor <span class="version">20120128</span>
 </dt>
 <dd><p class="description">monster is minor</p></dd>
-	  <dt>.not_afraid_of_goo <span class="version">git</span>
+	  <dt>.not_afraid_of_goo <span class="version">20220115</span>
 </dt>
 <dd><p class="description"></p></dd>
-	  <dt>.not_afraid_of_lava <span class="version">git</span>
+	  <dt>.not_afraid_of_lava <span class="version">20220115</span>
 </dt>
 <dd><p class="description"></p></dd>
-	  <dt>.not_afraid_of_sewage <span class="version">git</span>
+	  <dt>.not_afraid_of_sewage <span class="version">20220115</span>
 </dt>
 <dd><p class="description"></p></dd>
-	  <dt>.not_afraid_of_water <span class="version">git</span>
+	  <dt>.not_afraid_of_water <span class="version">20220115</span>
 </dt>
 <dd><p class="description"></p></dd>
-	  <dt>.omniscient <span class="version">git</span>
+	  <dt>.omniscient <span class="version">20220115</span>
 </dt>
 <dd><p class="description">ignores line-of-sight during find_closest_appropriate_target()</p></dd>
       <dt>.radius<span class="access"> (read-only)</span>
@@ -2853,10 +2853,10 @@ If you do this, you should customize them all at the beginning of the script. Ch
       <dt>.random_location <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether monsters of this type spawn in random locations</p></dd>
-	  <dt>.subtly_invisible <span class="version">git</span>
+	  <dt>.subtly_invisible <span class="version">20220115</span>
 </dt>
 <dd><p class="description">this monster uses _xfer_subtle_invisibility</p></dd>
-	  <dt>.tiny <span class="version">git</span>
+	  <dt>.tiny <span class="version">20220115</span>
 </dt>
 <dd><p class="description">0.25-size normal height</p></dd>
       <dt>.total_available <span class="version">20111201</span>
@@ -2866,10 +2866,10 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <p class="note">-1 means infinite monsters are available </p>
 <p class="note">setting this to anything but -1 will only be effective if changed immediately when the script runs, before monster placement is done </p>
 </dd>
-	  <dt>.uses_sniper_ledges <span class="version">git</span>
+	  <dt>.uses_sniper_ledges <span class="version">20220115</span>
 </dt>
 <dd><p class="description">sit on ledges and hurl shit at the player (ranged attack monsters only</p></dd>
-	  <dt>.vitality<span class="access"> (read-only)</span> <span class="version">git</span>
+	  <dt>.vitality<span class="access"> (read-only)</span> <span class="version">20220115</span>
 </dt>
 <dd><p class="description">monster’s initial vitality</p></dd>
       <dt>
