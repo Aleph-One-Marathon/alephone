@@ -970,8 +970,8 @@ static const char *sw_sdl_driver_labels[5] = {
 };
 
 
-static const char* ephemera_quality_labels[5] = {
-	"Off", "Low", "Medium", "High", "Ultra"
+static const char* ephemera_quality_labels[] = {
+	"Off", "Low", "Medium", "High", "Ultra", NULL
 };
 
 static const char *fps_target_labels[] = {
