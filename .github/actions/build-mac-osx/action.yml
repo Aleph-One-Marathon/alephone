@@ -1,0 +1,50 @@
+name: mac-osx
+description: template used to build for mac osx
+
+inputs:
+ vcpkg_installed_folder:
+    required: true
+    type: string
+ vcpkg_arch:
+    required: true
+    type: string
+ xcode_arch:
+    required: true
+    type: string
+
+runs:
+    using: "composite"
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Install Tools
+      run: brew install nasm automake
+      shell: bash
+      
+    - name: Get workspace directory
+      run: echo "workspace_directory=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+      shell: bash
+      
+    - name: Vcpkg Integration
+      run: $VCPKG_INSTALLATION_ROOT/vcpkg integrate install
+      shell: bash
+      
+    - name: Cache Vcpkg
+      uses: actions/cache@v2
+      with:
+        path: ${{env.workspace_directory}}/vcpkg/${{inputs.vcpkg_installed_folder}}
+        key: ${{runner.os}}-${{inputs.vcpkg_installed_folder}}-${{hashFiles('**/vcpkg.json')}}
+      
+    - name: Switch to Xcode 12.5.1
+      run: sudo xcode-select --switch /Applications/Xcode_12.5.1.app
+      shell: bash
+      
+    - name: Install Dependencies
+      working-directory: ${{env.workspace_directory}}
+      run: cd vcpkg && ./install-${{inputs.vcpkg_arch}}-osx.sh
+      shell: bash
+      
+    - name: Build
+      working-directory: ${{env.workspace_directory}}
+      run: cd PBProjects && xcodebuild -arch ${{inputs.xcode_arch}} -scheme "Aleph One" TEAM_ID='' DEVELOPMENT_TEAM='' CODE_SIGNING_REQUIRED='NO' CODE_SIGN_IDENTITY='' CODE_SIGN_STYLE='' build
+      shell: bash

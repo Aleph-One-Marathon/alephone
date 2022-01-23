@@ -1,0 +1,14 @@
+name: windows-x86
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        uses: ./.github/actions/build-windows
+        with:
+          platform: x86
+          vcpkg_installed_folder: vcpkg_installed_86

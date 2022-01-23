@@ -1,0 +1,16 @@
+name: linux
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: sudo apt-get update -y 
+    - name: Install Dependencies 
+      run: sudo apt-get install libboost-all-dev libsdl2-dev libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev libspeexdsp-dev libzzip-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev libpng-dev libcurl4-gnutls-dev libminiupnpc-dev
+    - name: Configure
+      run: ./autogen.sh
+    - name: Build
+      run: make -j 2
