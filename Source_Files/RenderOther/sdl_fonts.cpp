@@ -574,7 +574,7 @@ char *ttf_font_info::process_printable(const char *src, int len) const
 	while (*src && len-- > 0)
 	{
 		if ((unsigned char) *src >= ' ') *p++ = *src;
-		src++;
+		if (len > 0) src++;
 	}
 
 	*p = '\0';
@@ -592,7 +592,7 @@ uint16 *ttf_font_info::process_macroman(const char *src, int len) const
 		else if ((unsigned char) *src == '\t')
 			*p++ = ' ';
 		
-		src++;
+		if (len > 0) src++;
 	}
 
 	*p = 0x0;
