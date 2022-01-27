@@ -1,6 +1,6 @@
 {
    "name":"alephone",
-   "version-date":"2021-04-08",
+   "version-date":"2022-01-15",
    "dependencies":[
       {
          "name":"boost-algorithm",
@@ -76,14 +76,14 @@
             "vpx"
          ]
       },
-	  {
+      {
          "name":"miniupnpc",
          "version>=":"2.1-1"
       },
-	{
-	"name":"nativefiledialog",
-	"version>=":"2019-08-28"
-	}
+      {
+         "name":"nativefiledialog",
+         "version>=":"2019-08-28"
+      }
    ],
-    "builtin-baseline":"08214e18eeb146542944067c35d77faca8962be5"
+   "builtin-baseline":"08214e18eeb146542944067c35d77faca8962be5"
 }
