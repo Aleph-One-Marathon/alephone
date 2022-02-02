@@ -1230,7 +1230,7 @@ bool idle_game_state(uint32 time)
 			if (theUpdateResult.first || (last_heartbeat_fraction != -1 && last_heartbeat_fraction != heartbeat_fraction)) {
 				last_heartbeat_fraction = heartbeat_fraction;
 				render_screen(ticks_elapsed);
-				first_frame_rendered = true;
+				first_frame_rendered = ticks_elapsed > 0;
 			}
 		}
 		
