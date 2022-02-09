@@ -5554,16 +5554,18 @@
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
 				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(SRCROOT)/../vcpkg/installed-arm64-osx/arm64-osx/lib";
 				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(SRCROOT)/../vcpkg/installed-x64-osx/x64-osx/lib";
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				"MACOSX_DEPLOYMENT_TARGET[arch=arm64]" = 11.0;
-				"MACOSX_DEPLOYMENT_TARGET[arch=x86_64]" = 10.11;
+				"MACOSX_DEPLOYMENT_TARGET[arch=x86_64]" = 10.13;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					"-lSDL2",
 					"-liconv",
 					"-lm",
+					"-Wl,-weak_framework,CoreHaptics",
 					"-Wl,-weak_framework,QuartzCore",
 					"-Wl,-weak_framework,Metal",
+					"-Wl,-weak_framework,GameController",
 					"-Wl,-current_version,15.0.0",
 					"-Wl,-compatibility_version,1.0.0",
 					"-Wl,-undefined,error",
@@ -5697,15 +5699,17 @@
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
 				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(SRCROOT)/../vcpkg/installed-arm64-osx/arm64-osx/lib";
 				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(SRCROOT)/../vcpkg/installed-x64-osx/x64-osx/lib";
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				"MACOSX_DEPLOYMENT_TARGET[arch=arm64]" = 11.0;
-				"MACOSX_DEPLOYMENT_TARGET[arch=x86_64]" = 10.11;
+				"MACOSX_DEPLOYMENT_TARGET[arch=x86_64]" = 10.13;
 				OTHER_LDFLAGS = (
 					"-lSDL2",
 					"-liconv",
 					"-lm",
+					"-Wl,-weak_framework,CoreHaptics",
 					"-Wl,-weak_framework,QuartzCore",
 					"-Wl,-weak_framework,Metal",
+					"-Wl,-weak_framework,GameController",
 					"-Wl,-current_version,15.0.0",
 					"-Wl,-compatibility_version,1.0.0",
 					"-Wl,-undefined,error",

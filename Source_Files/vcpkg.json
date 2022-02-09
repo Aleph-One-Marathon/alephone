@@ -3,87 +3,70 @@
    "version-date":"2022-01-15",
    "dependencies":[
       {
-         "name":"boost-algorithm",
-         "version>=":"1.75.0"
+         "name":"boost-algorithm"
       },
       {
-         "name":"boost-uuid",
-         "version>=":"1.75.0"
+         "name":"boost-uuid"
       },
       {
-         "name":"boost-property-tree",
-         "version>=":"1.75.0"
+         "name":"boost-property-tree"
       },
       {
-         "name":"boost-iostreams",
-         "version>=":"1.75.0#1"
+         "name":"boost-iostreams"
       },
       {
-         "name":"boost-filesystem",
-         "version>=":"1.75.0#1"
+         "name":"boost-filesystem"
       },
       {
-         "name":"sdl2",
-         "version>=":"2.0.14#4"
+         "name":"sdl2"
       },
       {
          "name":"sdl2-image",
-         "version>=":"2.0.5#1",
          "features":[
             "libjpeg-turbo"
          ]
       },
       {
-         "name":"sdl2-net",
-         "version>=":"2.0.1-8"
+         "name":"sdl2-net"
       },
       {
-         "name":"sdl2-ttf",
-         "version>=":"2.0.15-3"
+         "name":"sdl2-ttf"
       },
       {
          "name":"curl",
-         "version>=":"7.74.0#6",
          "platform":"windows"
       },
       {
          "name":"glew",
-         "version>=":"2.1.0#9",
          "platform":"windows"
       },
       {
          "name":"freeglut",
-         "version>=":"3.2.1#5",
          "platform":"windows"
       },
       {
-         "name":"speex",
-         "version>=":"1.2.0#8"
-      },
+         "name":"speex"
+       },
       {
-         "name":"speexdsp",
-         "version>=":"1.2.0#5"
-      },
+         "name":"speexdsp"
+       },
       {
-         "name":"zziplib",
-         "version>=":"0.13.71#1"
-      },
+         "name":"zziplib"
+       },
       {
          "name":"ffmpeg",
-         "version>=":"4.4#2",
          "features":[
             "vorbis",
             "vpx"
          ]
       },
-      {
-         "name":"miniupnpc",
-         "version>=":"2.1-1"
+	  {
+         "name":"miniupnpc"
       },
-      {
-         "name":"nativefiledialog",
-         "version>=":"2019-08-28"
-      }
+	{
+	"name":"nativefiledialog"
+	}
    ],
-   "builtin-baseline":"08214e18eeb146542944067c35d77faca8962be5"
+    "builtin-baseline":"d2b22891a13123accac084b5feabfd0914f4e243"
 }
+
