@@ -244,7 +244,6 @@ enum { /* states. */
 bool game_window_is_full_screen(void);
 void set_change_level_destination(short level_number);
 bool networking_available(void);
-void free_and_unlock_memory(void);
 
 /* ---------- prototypes/INTERFACE.C */
 

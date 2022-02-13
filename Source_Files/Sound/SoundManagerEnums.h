@@ -371,12 +371,12 @@ enum // sound sources
 enum // initialization flags (some of these are used by the prefs, which fixes them)
 {
 	_stereo_flag= 0x0001, /* play sounds in stereo [prefs] */
-	_dynamic_tracking_flag= 0x0002, /* tracks sound sources during idle_proc [prefs] */
+	_hrtf_flag = 0x0002, /* play sounds using HRTF [prefs] */
 	_doppler_shift_flag= 0x0004, /* adjusts sound pitch during idle_proc */
-	_ambient_sound_flag= 0x0008, /* plays and tracks ambient sounds (valid iff _dynamic_tracking_flag) [prefs] */
+	_ambient_sound_flag= 0x0008, /* plays and tracks ambient sounds [prefs] */
 	_16bit_sound_flag= 0x0010, /* loads 16bit audio instead of 8bit [prefs] */
 	_more_sounds_flag= 0x0020, /* loads all permutations; only loads #0 if false [prefs] */
-	_relative_volume_flag = 0x0040, /* LP: Ian Rickard's relative-volume flag [prefs] */
+	_3d_sounds_flag = 0x0040, /* enable 3D sounds instead of emulating 2D panning */
 	_extra_memory_flag= 0x0100, /* double usual memory */
 	_extra_extra_memory_flag= 0x0200, /* LP: quadruple usual memory, because RAM is more available */
 	_zero_restart_delay = 0x0400 /* ghs: restart sounds immediately */

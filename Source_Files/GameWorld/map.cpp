@@ -124,6 +124,7 @@ find_line_crossed leaving polygon could be sped up considerable by reversing the
 #include <limits.h>
 
 #include <list>
+#include "OpenALManager.h"
 
 /* ---------- structures */
 
@@ -824,7 +825,6 @@ void remove_map_object(
 		MARK_SLOT_AS_FREE(parasite);
 	}
 
-	SoundManager::instance()->OrphanSound(object_index);
 	L_Invalidate_Object(object_index);
 	*next_object= object->next_object;
 	MARK_SLOT_AS_FREE(object);
@@ -2472,14 +2472,15 @@ bool line_has_variable_height(
 
 void play_object_sound(
 	short object_index,
-	short sound_code)
+	short sound_code,
+	bool local_sound)
 {
 	struct object_data *object= get_object_data(object_index);
 	world_location3d *location= GET_OBJECT_OWNER(object)==_object_is_monster ?
 		(world_location3d *) &get_monster_data(object->permutation)->sound_location : 
 		(world_location3d *) &object->location;
 
-	SoundManager::instance()->PlaySound(sound_code, location, object_index, object->sound_pitch);
+	SoundManager::instance()->PlaySound(sound_code, location, local_sound ? NONE : object_index, local_sound, object->sound_pitch);
 }
 
 void play_polygon_sound(
@@ -2493,13 +2494,14 @@ void play_polygon_sound(
 	source.point.z= polygon->floor_height;
 	source.polygon_index= polygon_index;
 	
-	SoundManager::instance()->PlaySound(sound_code, &source, NONE);
+	SoundManager::instance()->PlaySound(sound_code, &source, NONE, false);
 }
 
 void _play_side_sound(
 	short side_index,
 	short sound_code,
-	_fixed pitch)
+	_fixed pitch,
+	bool loop)
 {
 	struct side_data *side= get_side_data(side_index);
 	world_location3d source;
@@ -2507,7 +2509,13 @@ void _play_side_sound(
 	calculate_line_midpoint(side->line_index, &source.point);
 	source.polygon_index= side->polygon_index;
 
-	SoundManager::instance()->PlaySound(sound_code, &source, NONE, pitch);
+	if (!OpenALManager::Get()) return;
+	//If we already have a player, don't replay the sound
+	auto player = OpenALManager::Get()->GetSoundPlayer(sound_code, NONE);
+
+	if (!player || !player->IsActive()) {
+		SoundManager::instance()->PlaySound(sound_code, &source, NONE, false, pitch, loop);
+	}
 }
 
 void play_world_sound(
@@ -2519,7 +2527,7 @@ void play_world_sound(
 	
 	source.point= *origin;
 	source.polygon_index= polygon_index;
-	SoundManager::instance()->PlaySound(sound_code, &source, NONE);
+	SoundManager::instance()->PlaySound(sound_code, &source, NONE, false);
 }
 
 world_location3d *_sound_listener_proc(

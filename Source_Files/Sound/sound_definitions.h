@@ -49,7 +49,7 @@ enum
 	MAXIMUM_PERMUTATIONS_PER_SOUND= 5
 };
 
-enum /* sound behaviors */
+enum sound_behavior /* sound behaviors */
 {
 	_sound_is_quiet,
 	_sound_is_normal,

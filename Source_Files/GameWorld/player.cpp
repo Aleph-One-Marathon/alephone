@@ -155,6 +155,7 @@ May 22, 2003 (Woody Zenfell):
 #include "Console.h"
 #include "ViewControl.h"
 #include "InfoTree.h"
+#include "OpenALManager.h"
 
 /*
 //anybody on the receiving pad of a teleport should explode (what happens to invincible guys?)
@@ -898,7 +899,7 @@ void damage_player(
 						{
 							short action= definition->death_action;
 							
-							play_object_sound(player->object_index, definition->death_sound);
+							play_object_sound(player->object_index, definition->death_sound, player_index == current_player_index);
 
 							if (action==NONE)
 							{
@@ -947,7 +948,7 @@ void damage_player(
 	}
 	
 	{
-		if (!PLAYER_IS_DEAD(player)) play_object_sound(player->object_index, definition->sound);
+		if (!PLAYER_IS_DEAD(player)) play_object_sound(player->object_index, definition->sound, player_index == current_player_index);
 		if (player_index==current_player_index)
 		{
 			if (definition->fade!=NONE) start_fade((definition->damage_threshhold!=NONE&&damage_amount>definition->damage_threshhold) ? (definition->fade+1) : definition->fade);

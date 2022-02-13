@@ -62,6 +62,7 @@ private:
   
   std::vector<uint8> videobuf;
   std::vector<uint8> audiobuf;
+  int in_bps;
   
   struct libav_vars *av;
   

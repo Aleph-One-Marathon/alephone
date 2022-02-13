@@ -301,15 +301,6 @@ void global_idle_proc(void)
 }
 
 /*
- *  Somebody wants to do something important; free as much temporary memory as possible
- */
-
-void free_and_unlock_memory(void)
-{
-	SoundManager::instance()->StopAllSounds();
-}
-
-/*
  *  Special version of malloc() used for level transitions, frees some
  *  memory if possible
  */

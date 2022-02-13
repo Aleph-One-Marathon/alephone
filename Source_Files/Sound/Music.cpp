@@ -20,20 +20,8 @@
 */
 
 #include "Music.h"
-#include "Mixer.h"
 #include "XML_LevelScript.h"
-
-static int16_t db_to_channel_volume(float db)
-{
-	if (db <= SoundManager::MINIMUM_VOLUME_DB / 2)
-	{
-		return 0;
-	}
-	else
-	{
-		return static_cast<int16_t>(Mixer::from_db(db) * MAXIMUM_SOUND_VOLUME);
-	}
-}
+#include "OpenALManager.h"
 
 Music::Music() : 
 	music_initialized(false), 
@@ -106,7 +94,11 @@ void Music::FadeOut(short duration)
 bool Music::Playing()
 {
 	if (!SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return false;
-	return Mixer::instance()->MusicPlaying();
+	if (musicPlayer && musicPlayer->IsActive()) {
+		CheckVolume();
+		return true;
+	}
+	return false;
 }
 
 void Music::Restart()
@@ -128,6 +120,7 @@ void Music::Restart()
 
 void Music::Idle()
 {
+
 	if (!SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return;
 	if (music_prelevel)
 	{
@@ -141,8 +134,8 @@ void Music::Idle()
 	if (music_fading)
 	{
 		uint32 elapsed = machine_tick_count() - music_fade_start;
-		int max_vol = db_to_channel_volume(GetVolumeLevel());
-		int vol = max_vol - (elapsed * max_vol) / music_fade_duration;
+		float max_vol = OpenALManager::From_db(GetVolumeLevel(), true);
+		float vol = max_vol - (elapsed * max_vol) / music_fade_duration;
 		if (vol <= 0)
 			Pause();
 		else
@@ -150,8 +143,7 @@ void Music::Idle()
 			if (vol > max_vol)
 				vol = max_vol;
 			// set music channel volume
-
-			Mixer::instance()->SetMusicChannelVolume(vol);
+			musicPlayer->SetVolume(vol);
 		}
 	}
 }
@@ -159,7 +151,9 @@ void Music::Idle()
 void Music::Pause()
 {
 	if (!SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return;
-	Mixer::instance()->StopMusicChannel();
+	if (Playing()) {
+		musicPlayer->Stop();
+	}
 	music_fading = false;
 }
 
@@ -186,9 +180,8 @@ bool Music::Load(FileSpecifier &song_file)
 		stereo = decoder->IsStereo();
 		signed_8bit = decoder->IsSigned();
 		bytes_per_frame = decoder->BytesPerFrame();
-		rate = (_fixed) ((decoder->Rate() / Mixer::instance()->obtained.freq) * (1 << FIXED_FRACTIONAL_BITS));
+		rate = decoder->Rate();
 		little_endian = decoder->IsLittleEndian();
-
 		return true;
 		
 	}
@@ -200,7 +193,7 @@ bool Music::Load(FileSpecifier &song_file)
 
 void Music::Rewind()
 {
-	
+
 	if (decoder)
 		decoder->Rewind();
 }
@@ -208,27 +201,12 @@ void Music::Rewind()
 void Music::Play()
 {
 	if (!music_initialized || !SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return;
-	if (FillBuffer()) {
-		// let the mixer handle it
-		Mixer::instance()->StartMusicChannel(sixteen_bit, stereo, signed_8bit, bytes_per_frame, rate, little_endian);
-		CheckVolume();
-	}
-}
+	if (GetVolumeLevel() <= SoundManager::MINIMUM_VOLUME_DB) return;
 
-bool Music::FillBuffer()
-{
-	if (GetVolumeLevel() <= SoundManager::MINIMUM_VOLUME_DB) return false;
-
-	if (!decoder) return false;
-	int32 bytes_read = decoder->Decode(&music_buffer.front(), MUSIC_BUFFER_SIZE);
-	if (bytes_read)
-	{
-		Mixer::instance()->UpdateMusicChannel(&music_buffer.front(), bytes_read);
-		return true;
+	if (!musicPlayer || !musicPlayer->IsActive()) {
+		musicPlayer = OpenALManager::Get()->PlayMusic(decoder);
 	}
 
-	// Failed
-	return false;
 }
 
 void Music::LoadLevelMusic()
@@ -307,5 +285,5 @@ FileSpecifier* Music::GetLevelMusic()
 void Music::CheckVolume()
 {
 	if (!music_fading)
-		Mixer::instance()->SetMusicChannelVolume(db_to_channel_volume(GetVolumeLevel()));
+		musicPlayer->SetVolume(OpenALManager::From_db(GetVolumeLevel(), true));
 }

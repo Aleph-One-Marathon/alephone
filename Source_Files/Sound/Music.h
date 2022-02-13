@@ -30,6 +30,7 @@
 #include "Random.h"
 #include "SoundManager.h"
 #include <vector>
+#include "MusicPlayer.h"
 
 class Music
 {
@@ -52,7 +53,6 @@ public:
 	bool Playing();
 	void Rewind();
 	void Restart();
-	bool FillBuffer();
 
 	void Idle();
 
@@ -85,6 +85,7 @@ private:
 	StreamDecoder *decoder;
 
 	SDL_RWops* music_rw;
+	std::shared_ptr<MusicPlayer> musicPlayer = nullptr;
 
 	// info about the music's format
 	bool sixteen_bit;

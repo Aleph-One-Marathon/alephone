@@ -1172,9 +1172,9 @@ void animate_object(short object_index); /* assumes ∂t==1 tick */
 void animate_object(object_data* data, int16_t object_index);
 bool randomize_object_sequence(short object_index, shape_descriptor shape);
 
-void play_object_sound(short object_index, short sound_code);
+void play_object_sound(short object_index, short sound_code, bool local_sound = false);
 void play_polygon_sound(short polygon_index, short sound_code);
-void _play_side_sound(short side_index, short sound_code, _fixed pitch);
+void _play_side_sound(short side_index, short sound_code, _fixed pitch, bool loop = false);
 void play_world_sound(short polygon_index, world_point3d *origin, short sound_code);
 
 #define play_side_sound(side_index, sound_code) _play_side_sound(side_index, sound_code, FIXED_ONE)

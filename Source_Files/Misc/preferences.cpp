@@ -101,6 +101,7 @@ May 22, 2003 (Woody Zenfell):
 #include <boost/algorithm/hex.hpp>
 
 #include "shell_options.h"
+#include "OpenALManager.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -1008,6 +1009,11 @@ static const uint32 max_saves_values[] = {
 	20, 100, 500, 0
 };
 
+static const char* renderer_audio_labels[] = { 
+	"SDL", "OpenAL", NULL 
+};
+
+
 
 enum {
     iRENDERING_SYSTEM = 1000
@@ -1429,35 +1435,6 @@ static void graphics_dialog(void *arg)
  *  Sound dialog
  */
 
-class w_toggle *stereo_w, *dynamic_w;
-
-class w_stereo_toggle : public w_toggle {
-public:
-	w_stereo_toggle(bool selection) : w_toggle(selection) {}
-
-	void selection_changed(void)
-	{
-		// Turning off stereo turns off dynamic tracking
-		w_toggle::selection_changed();
-		if (selection == false)
-			dynamic_w->set_selection(false);
-	}
-};
-
-class w_dynamic_toggle : public w_toggle {
-public:
-	w_dynamic_toggle(bool selection) : w_toggle(selection) {}
-
-	void selection_changed(void)
-	{
-		// Turning on dynamic tracking turns on stereo
-		w_toggle::selection_changed();
-		if (selection == true)
-			stereo_w->set_selection(true);
-	}
-};
-
-static const char *channel_labels[] = {"1", "2", "4", "8", "16", "32", NULL};
 
 class w_volume_slider : public w_percentage_slider {
 public:
@@ -1494,18 +1471,27 @@ static void sound_dialog(void *arg)
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 
+	w_toggle* audio_renderer_w = new w_toggle(sound_preferences->audio_backend != SoundManager::AudioBackend::SDLAudio, renderer_audio_labels);
+	table->dual_add(audio_renderer_w->label("Rendering System"), d);
+	table->dual_add(audio_renderer_w, d);
+
 	static const char *quality_labels[3] = {"8 Bit", "16 Bit", NULL};
 	w_toggle *quality_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _16bit_sound_flag), quality_labels);
 	table->dual_add(quality_w->label("Quality"), d);
 	table->dual_add(quality_w, d);
 
-	stereo_w = new w_stereo_toggle(sound_preferences->flags & _stereo_flag);
+	w_toggle *stereo_w = new w_toggle(sound_preferences->flags & _stereo_flag);
 	table->dual_add(stereo_w->label("Stereo"), d);
 	table->dual_add(stereo_w, d);
 
-	dynamic_w = new w_dynamic_toggle(TEST_FLAG(sound_preferences->flags, _dynamic_tracking_flag));
-	table->dual_add(dynamic_w->label("Active Panning"), d);
-	table->dual_add(dynamic_w, d);
+	w_toggle *sounds3d_w = new w_toggle(sound_preferences->flags & _3d_sounds_flag);
+	table->dual_add(sounds3d_w->label("3D Sounds"), d);
+	table->dual_add(sounds3d_w, d);
+
+	w_toggle *hrtf_w = new w_toggle((OpenALManager::Get() && OpenALManager::Get()->Is_HRTF_Enabled()) || sound_preferences->flags & _hrtf_flag);
+	table->dual_add(hrtf_w->label("HRTF"), d);
+	table->dual_add(hrtf_w, d);
+	hrtf_w->set_enabled(OpenALManager::Get() && OpenALManager::Get()->Support_HRTF_Toggling());
 
 	w_toggle *ambient_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _ambient_sound_flag));
 	table->dual_add(ambient_w->label("Ambient Sounds"), d);
@@ -1518,10 +1504,6 @@ static void sound_dialog(void *arg)
 	w_toggle *button_sounds_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
 	table->dual_add(button_sounds_w->label("In Game F-Key Sounds"), d);
 	table->dual_add(button_sounds_w, d);
-
-	w_select *channels_w = new w_select(static_cast<int>(std::floor(std::log(static_cast<float>(sound_preferences->channel_count)) / std::log(2.0) + 0.5)), channel_labels);
-	table->dual_add(channels_w->label("Channels"), d);
-	table->dual_add(channels_w, d);
 
 	w_volume_slider *volume_w = new w_volume_slider(static_cast<int>(sound_preferences->volume_db / 2 + 20));
 	table->dual_add(volume_w->label("Master Volume"), d);
@@ -1557,8 +1539,9 @@ static void sound_dialog(void *arg)
 
 		uint16 flags = 0;
 		if (quality_w->get_selection()) flags |= _16bit_sound_flag;
+		if (sounds3d_w->get_selection()) flags |= _3d_sounds_flag;
+		if (hrtf_w->get_selection()) flags |= _hrtf_flag;
 		if (stereo_w->get_selection()) flags |= _stereo_flag;
-		if (dynamic_w->get_selection()) flags |= _dynamic_tracking_flag;
 		if (ambient_w->get_selection()) flags |= _ambient_sound_flag;
 		if (more_w->get_selection()) flags |= _more_sounds_flag;
 		if (zrd_w->get_selection()) flags |= _zero_restart_delay;
@@ -1572,12 +1555,6 @@ static void sound_dialog(void *arg)
 		if (button_sounds_w->get_selection()) flags |= _inputmod_use_button_sounds;
 		if (flags != input_preferences->modifiers) {
 			input_preferences->modifiers = flags;
-			changed = true;
-		}
-
-		int16 channel_count = 1 << (channels_w->get_selection() == UNONE ? 1 : channels_w->get_selection());
-		if (channel_count != sound_preferences->channel_count) {
-			sound_preferences->channel_count = channel_count;
 			changed = true;
 		}
 
@@ -3728,14 +3705,14 @@ InfoTree sound_preferences_tree()
 {
 	InfoTree root;
 	
-	root.put_attr("channels", sound_preferences->channel_count);
 	root.put_attr("volume_db", sound_preferences->volume_db);
 	root.put_attr("music_db", sound_preferences->music_db);
 	root.put_attr("flags", sound_preferences->flags);
 	root.put_attr("rate", sound_preferences->rate);
 	root.put_attr("samples", sound_preferences->samples);
 	root.put_attr("video_export_volume_db", sound_preferences->video_export_volume_db);
-	
+	root.put_attr("audio_backend", sound_preferences->audio_backend);
+
 	return root;
 }
 
@@ -4674,8 +4651,6 @@ void parse_input_preferences(InfoTree root, std::string version)
 
 void parse_sound_preferences(InfoTree root, std::string version)
 {
-	root.read_attr("channels", sound_preferences->channel_count);
-
 	if (!version.length() || version < "20200803")
 	{
 		int old_volume;
@@ -4716,6 +4691,7 @@ void parse_sound_preferences(InfoTree root, std::string version)
 	root.read_attr("rate", sound_preferences->rate);
 	root.read_attr("samples", sound_preferences->samples);
 	root.read_attr("video_export_volume_db", sound_preferences->video_export_volume_db);
+	root.read_attr("audio_backend", sound_preferences->audio_backend);
 }
 
 

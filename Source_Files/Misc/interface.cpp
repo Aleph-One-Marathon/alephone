@@ -131,7 +131,6 @@ extern TP2PerfGlobals perf_globals;
 #include "fades.h"
 #include "game_window.h"
 #include "game_errors.h"
-#include "Mixer.h"
 #include "Music.h"
 #include "images.h"
 #include "screen.h"
@@ -149,6 +148,7 @@ extern TP2PerfGlobals perf_globals;
 #include "Plugins.h"
 #include "Statistics.h"
 #include "shell_options.h"
+#include "OpenALManager.h"
 
 #ifdef HAVE_SMPEG
 #include <smpeg/smpeg.h>
@@ -293,6 +293,7 @@ struct screen_data m1_display_screens[]= {
 
 /* -------------- local globals */
 static struct game_state game_state;
+static std::shared_ptr<SoundPlayer> introduction_sound = nullptr;
 static FileSpecifier DraggedReplayFile;
 static bool interface_fade_in_progress= false;
 static short current_picture_clut_depth;
@@ -1450,7 +1451,7 @@ void do_menu_item_command(
 					break;
 					
 				case iCenterButton:
-					SoundManager::instance()->PlaySound(Sound_Center_Button(), 0, NONE);
+					SoundManager::instance()->PlaySound(Sound_Center_Button(), 0, NONE, true);
 					break;
 					
 				case iSaveLastFilm:
@@ -1637,11 +1638,15 @@ static void display_introduction(
 		game_state.last_ticks_on_idle= machine_tick_count();
 		display_screen(screen_data->screen_base);
 
-		Mixer::instance()->StopSoundResource();
+		if (introduction_sound) {
+			introduction_sound->Stop();
+			introduction_sound.reset();
+		}
 		SoundRsrc.Unload();
 		if (get_sound_resource_from_images(screen_data->screen_base, SoundRsrc))
 		{
-			Mixer::instance()->PlaySoundResource(SoundRsrc);
+			SoundParameters parameters;
+			if (OpenALManager::Get()) introduction_sound = OpenALManager::Get()->PlaySound(SoundRsrc, parameters);
 		}
 	}
 	else
@@ -2362,7 +2367,6 @@ static void finish_game(
 	Music::instance()->StopLevelMusic();
 	
 	/* Get as much memory back as we can. */
-	free_and_unlock_memory(); // this could call free_map.. 
 	unload_all_collections();
 	SoundManager::instance()->UnloadAllSounds();
 	
@@ -2528,12 +2532,17 @@ static void next_game_screen(
 			display_screen(data->screen_base);
 			if (game_state.state == _display_intro_screens)
 			{
-				Mixer::instance()->StopSoundResource();
+				if (introduction_sound) {
+					introduction_sound->Stop();
+					introduction_sound.reset();
+				}
 				SoundRsrc.Unload();
 				if (get_sound_resource_from_images(pict_resource_number, SoundRsrc))
 				{
 					_fixed pitch = (shapes_file_is_m1() && game_state.state==_display_intro_screens) ? _m1_high_frequency : _normal_frequency;
-					Mixer::instance()->PlaySoundResource(SoundRsrc, pitch);
+					SoundParameters parameters;
+					parameters.pitch = pitch * 1.f / _normal_frequency;
+					if (OpenALManager::Get()) introduction_sound = OpenALManager::Get()->PlaySound(SoundRsrc, parameters);
 				}
 			}
 		}
@@ -2756,7 +2765,7 @@ static void try_and_display_chapter_screen(
 	{
 		short existing_state= game_state.state;
 		game_state.state= _display_chapter_heading;
-		free_and_unlock_memory();
+		SoundManager::instance()->StopAllSounds();
 		
 		/* This will NOT work if the initial level entered has a chapter screen, which is why */
 		/*  we perform this check. (The interface_color_table is not valid...) */
@@ -2787,10 +2796,13 @@ static void try_and_display_chapter_screen(
 			/* Draw the picture */
 			draw_full_screen_pict_resource_from_scenario(pict_resource_number);
 
+			std::shared_ptr<SoundPlayer> soundPlayer;
 			if (get_sound_resource_from_scenario(pict_resource_number,SoundRsrc))
 			{
 				_fixed pitch = (shapes_file_is_m1() && level == 101) ? _m1_high_frequency : _normal_frequency;
-				Mixer::instance()->PlaySoundResource(SoundRsrc, pitch);
+				SoundParameters parameters;
+				parameters.pitch = pitch * 1.f / _normal_frequency;
+				if (OpenALManager::Get()) soundPlayer = OpenALManager::Get()->PlaySound(SoundRsrc, parameters);
 			}
 			
 			/* Fade in.... */
@@ -2804,7 +2816,7 @@ static void try_and_display_chapter_screen(
 			/* Fade out! (Pray) */
 			interface_fade_out(pict_resource_number, false);
 			
-			Mixer::instance()->StopSoundResource();
+			if(soundPlayer) soundPlayer->Stop();
 		}
 		game_state.state= existing_state;
 	}
@@ -2894,7 +2906,6 @@ void interface_fade_out(
 		
 		if(fade_music) 
 		{
-			Mixer::instance()->StopSoundResource();
 			while(Music::instance()->Playing()) 
 				Music::instance()->Idle();
 
@@ -3026,8 +3037,10 @@ static SDL_mutex *movie_audio_mutex = NULL;
 static const int AUDIO_BUF_SIZE = 10;
 static SDL_ffmpegAudioFrame *aframes[AUDIO_BUF_SIZE];
 static uint64_t movie_sync = 0;
-void movie_audio_callback(void *data, Uint8 *stream, int length)
+static SDL_AudioSpec specs;
+int movie_audio_callback(uint8* stream, int length)
 {
+	int returnLength = 0;
 	if (movie_audio_mutex && SDL_LockMutex(movie_audio_mutex) != -1)
 	{
 		if (aframes[0]->size == length)
@@ -3035,18 +3048,18 @@ void movie_audio_callback(void *data, Uint8 *stream, int length)
 			movie_sync = aframes[0]->pts;
 			memcpy(stream, aframes[0]->buffer, aframes[0]->size);
 			aframes[0]->size = 0;
-			
-			SDL_ffmpegAudioFrame *f = aframes[0];
+
+			SDL_ffmpegAudioFrame* f = aframes[0];
 			for (int i = 1; i < AUDIO_BUF_SIZE; i++)
 				aframes[i - 1] = aframes[i];
 			aframes[AUDIO_BUF_SIZE - 1] = f;
+			returnLength = length;
 		}
-		else
-		{
-			memset(stream, 0, length);
-		}
+
 		SDL_UnlockMutex(movie_audio_mutex);
 	}
+
+	return returnLength;
 }
 #endif
 
@@ -3070,6 +3083,7 @@ void show_movie(short index)
 	}
 
 	if (!File) return;
+	if (!OpenALManager::Get()) return;
 
 	change_screen_mode(_screentype_chapter);
 
@@ -3104,15 +3118,12 @@ void show_movie(short index)
 		if (astream)
 		{
 			movie_audio_mutex = SDL_CreateMutex();
-			SDL_AudioSpec specs = SDL_ffmpegGetAudioSpec(sffile, 512, movie_audio_callback);
-			if (SDL_OpenAudio(&specs, 0) >= 0)
+			specs = SDL_ffmpegGetAudioSpec(sffile, 512, NULL);
+			int frameSize = specs.channels * specs.samples * 2;
+			for (int i = 0; i < AUDIO_BUF_SIZE; i++)
 			{
-				int frameSize = specs.channels * specs.samples * 2;
-				for (int i = 0; i < AUDIO_BUF_SIZE; i++)
-				{
-					aframes[i] = SDL_ffmpegCreateAudioFrame(sffile, frameSize);
-					SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
-				}
+				aframes[i] = SDL_ffmpegCreateAudioFrame(sffile, frameSize);
+				SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
 			}
 		}
 				
@@ -3120,10 +3131,10 @@ void show_movie(short index)
 		if (OGL_IsActive())
 			OGL_ClearScreen();
 #endif
-		
-		SDL_PauseAudio(false);
+		OpenALManager::Get()->Start();
 		bool done = false;
 		int64_t movie_waudio_sync = 0;
+		std::shared_ptr<CallBackableStreamPlayer> movie_audio_player;
 		while (!done)
 		{
 			SDL_Event event;
@@ -3155,6 +3166,9 @@ void show_movie(short index)
 				SDL_UnlockMutex(movie_audio_mutex);
 			}
 			
+			if (!movie_audio_player || !movie_audio_player->IsActive()) {
+				movie_audio_player = OpenALManager::Get()->PlayStream(movie_audio_callback, specs.channels * specs.samples * 2, specs.freq, specs.channels == 2, true);
+			}
 			if (vframe)
 			{
 				if (!astream) 
@@ -3194,8 +3208,14 @@ void show_movie(short index)
 				}
 			}
 		}
-		
-		SDL_PauseAudio(true);
+
+		while (movie_audio_player->IsActive()) {
+			sleep_for_machine_ticks(MACHINE_TICKS_PER_SECOND / 100);
+		}
+
+		OpenALManager::Get()->Stop();
+		movie_audio_player.reset();
+
 		if (astream)
 		{
 			for (int i = 0; i < AUDIO_BUF_SIZE; i++)
@@ -3209,7 +3229,6 @@ void show_movie(short index)
 		if (vframe)
 			SDL_ffmpegFreeVideoFrame(vframe);
 		SDL_ffmpegFree(sffile);
-		SDL_CloseAudio();
 
 #elif defined(HAVE_SMPEG) // end HAVE_FFMPEG
 		

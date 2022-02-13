@@ -24,7 +24,7 @@ SOUNDFILE.CPP
 #include "Logging.h"
 #include "csmisc.h"
 #include "Decoder.h"
-
+#include "byte_swapping.h"
 #include <assert.h>
 
 #include "BStream.h"
@@ -161,6 +161,10 @@ std::shared_ptr<SoundData> SoundHeader::LoadData(BIStreamBE& s)
 	try 
 	{
 		s.read(reinterpret_cast<char*>(&(*p)[0]), length);
+
+		if (sixteen_bit && (little_endian ^ PlatformIsLittleEndian())) {
+			byte_swap_memory(p->data(), _2byte, length / 2);
+		}
 	}
 	catch (basic_bstream::failure e)
 	{

@@ -2929,7 +2929,7 @@ static void play_weapon_sound(
 	_fixed old_pitch= object->sound_pitch;
 
 	object->sound_pitch= pitch;
-	play_object_sound(monster->object_index, sound);
+	play_object_sound(monster->object_index, sound, player_index == current_player_index);
 	object->sound_pitch= old_pitch;
 }
 
@@ -3943,7 +3943,7 @@ static void	play_shell_casing_sound(
 		location.yaw= location.pitch= 0;
 		location.velocity.i= location.velocity.j= location.velocity.k= 0;
 	
-		SoundManager::instance()->PlaySound(sound_index, &location, NONE);
+		SoundManager::instance()->PlaySound(sound_index, &location, NONE, true);
 	}
 }
 

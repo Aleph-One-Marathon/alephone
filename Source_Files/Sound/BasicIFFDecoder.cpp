@@ -29,6 +29,7 @@
 #include "BasicIFFDecoder.h"
 #include "AStream.h"
 #include <vector>
+#include "byte_swapping.h"
 #include <SDL2/SDL_endian.h>
 
 using std::vector;
@@ -187,6 +188,10 @@ int32 BasicIFFDecoder::Decode(uint8* buffer, int32 max_length)
 	int32 length = std::min(max_length, (int32) (data_offset + this->length - position));
 	if (length && file.Read(length, buffer))
 	{
+		if (sixteen_bit && (little_endian ^ PlatformIsLittleEndian())) {
+			byte_swap_memory(buffer, _2byte, length / 2);
+		}
+
 		return length;
 	}
 	else

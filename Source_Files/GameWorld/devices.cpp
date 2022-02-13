@@ -228,7 +228,7 @@ static bool line_is_within_range(short monster_index, short line_index, world_di
 
 static bool switch_can_be_toggled(short line_index, bool player_hit, bool *should_destroy_switch);
 
-static void play_control_panel_sound(short side_index, short sound_index);
+static void play_control_panel_sound(short side_index, short sound_index, bool loop = false);
 
 static bool get_recharge_status(short side_index);
 
@@ -372,7 +372,7 @@ void update_control_panels(
 				if (still_in_use)
 				{
 					set_control_panel_texture(side);
-					play_control_panel_sound(side_index, _activating_sound);
+					play_control_panel_sound(side_index, _activating_sound, true); //still to be managed with stop sound
 				}
 				else
 				{
@@ -889,7 +889,8 @@ static bool switch_can_be_toggled(
 
 static void play_control_panel_sound(
 	short side_index,
-	short sound_index)
+	short sound_index,
+	bool loop)
 {
 	struct side_data *side= get_side_data(side_index);
 	struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);
@@ -899,7 +900,7 @@ static void play_control_panel_sound(
 
 	if (!(sound_index>=0 && sound_index<NUMBER_OF_CONTROL_PANEL_SOUNDS)) return;
 	
-	_play_side_sound(side_index, definition->sounds[sound_index], definition->sound_frequency);
+	_play_side_sound(side_index, definition->sounds[sound_index], definition->sound_frequency, loop);
 }
 
 static bool get_recharge_status(

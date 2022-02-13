@@ -153,6 +153,8 @@ AX_REQUIRE_PKG([SDL2_net], [SDL_NET], [SDL2_net])
 dnl Check for zlib.
 AX_REQUIRE_PKG([zlib], [ZLIB], [zlib])
 
+AX_REQUIRE_PKG([openal], [OPENAL], [openal >= 1.14.0])
+
 dnl Check for OpenGL.
 AS_IF([test "x$enable_opengl" != "xno"],
       [ AC_MSG_CHECKING([for OpenGL support])

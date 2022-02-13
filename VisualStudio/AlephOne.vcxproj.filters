@@ -640,9 +640,6 @@
     <ClCompile Include="..\Source_Files\Sound\MADDecoder.cpp">
       <Filter>Sound\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source_Files\Sound\Mixer.cpp">
-      <Filter>Sound\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\Source_Files\Sound\Music.cpp">
       <Filter>Sound\Source Files</Filter>
     </ClCompile>
@@ -711,6 +708,21 @@
     </ClCompile>
     <ClCompile Include="..\Source_Files\Network\PortForward.cpp">
       <Filter>Network\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source_Files\Sound\StreamPlayer.cpp">
+      <Filter>Sound\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source_Files\Sound\SoundPlayer.cpp">
+      <Filter>Sound\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source_Files\Sound\OpenALManager.cpp">
+      <Filter>Sound\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source_Files\Sound\MusicPlayer.cpp">
+      <Filter>Sound\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source_Files\Sound\AudioPlayer.cpp">
+      <Filter>Sound\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1317,9 +1329,6 @@
     <ClInclude Include="..\Source_Files\Sound\MADDecoder.h">
       <Filter>Sound\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source_Files\Sound\Mixer.h">
-      <Filter>Sound\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Source_Files\Sound\Music.h">
       <Filter>Sound\Header Files</Filter>
     </ClInclude>
@@ -1394,6 +1403,21 @@
     </ClInclude>
     <ClInclude Include="..\Source_Files\Network\PortForward.h">
       <Filter>Network\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source_Files\Sound\AudioPlayer.h">
+      <Filter>Sound\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source_Files\Sound\MusicPlayer.h">
+      <Filter>Sound\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source_Files\Sound\OpenALManager.h">
+      <Filter>Sound\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source_Files\Sound\SoundPlayer.h">
+      <Filter>Sound\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source_Files\Sound\StreamPlayer.h">
+      <Filter>Sound\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

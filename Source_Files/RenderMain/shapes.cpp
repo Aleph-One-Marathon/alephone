@@ -1390,9 +1390,7 @@ void load_collections(
 //		draw_progress_bar(0, 2*MAXIMUM_COLLECTIONS);
 	}
 	precalculate_bit_depth_constants();
-	
-	free_and_unlock_memory(); /* do our best to get a big, unfragmented heap */
-	
+		
 	/* first go through our list of shape collections and dispose of any collections which
 		were marked for unloading.  at the same time, unlock all those collections which
 		will be staying (so the heap can move around) */
