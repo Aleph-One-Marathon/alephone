@@ -41,18 +41,14 @@
          "platform":"windows"
       },
       {
-         "name":"freeglut",
-         "platform":"windows"
+         "name":"speex"
       },
       {
-         "name":"speex"
-       },
-      {
          "name":"speexdsp"
-       },
+      },
       {
          "name":"zziplib"
-       },
+      },
       {
          "name":"ffmpeg",
          "features":[
@@ -60,13 +56,12 @@
             "vpx"
          ]
       },
-	  {
+      {
          "name":"miniupnpc"
       },
-	{
-	"name":"nativefiledialog"
-	}
+      {
+         "name":"nativefiledialog"
+      }
    ],
-    "builtin-baseline":"9eb76edabf4b1cb1abfb67823d900daf8112da0f"
+   "builtin-baseline":"9eb76edabf4b1cb1abfb67823d900daf8112da0f"
 }
-
