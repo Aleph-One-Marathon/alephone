@@ -130,7 +130,7 @@ Screen Screen::m_instance;
 
 // Prototypes
 static bool need_mode_change(int window_width, int window_height, int log_width, int log_height, int depth, bool nogl);
-static void change_screen_mode(int width, int height, int depth, bool nogl, bool force_menu);
+static void change_screen_mode(int width, int height, int depth, bool nogl, bool force_menu, bool force_resize_hud = false);
 static bool get_auto_resolution_size(short *w, short *h, struct screen_mode_data *mode);
 static void build_sdl_color_table(const color_table *color_table, SDL_Color *colors);
 static void reallocate_world_pixels(int width, int height);
@@ -824,7 +824,7 @@ static int change_window_filter(void *ctx, SDL_Event *event)
 	return 1;
 }
 
-static void change_screen_mode(int width, int height, int depth, bool nogl, bool force_menu)
+static void change_screen_mode(int width, int height, int depth, bool nogl, bool force_menu, bool force_resize_hud)
 {
 	int prev_width = 0;
 	int prev_height = 0;
@@ -1131,12 +1131,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	}
 #endif
 	
-	if (in_game && screen_mode.hud)
+	if (in_game && (screen_mode.hud && (prev_width != main_surface->w || prev_height != main_surface->h)) || force_resize_hud)
 	{
-		if (prev_width != main_surface->w || prev_height != main_surface->h)
-		{
-			L_Call_HUDResize();
-	  }
+		L_Call_HUDResize();
 	}
 }
 
@@ -1168,7 +1165,7 @@ bool get_auto_resolution_size(short *w, short *h, struct screen_mode_data *mode)
 	return false;
 }
 	
-void change_screen_mode(struct screen_mode_data *mode, bool redraw)
+void change_screen_mode(struct screen_mode_data *mode, bool redraw, bool resize_hud)
 {
 	// Get the screen mode here
 	screen_mode = *mode;
@@ -1184,7 +1181,7 @@ void change_screen_mode(struct screen_mode_data *mode, bool redraw)
 		}
 		else
 			get_auto_resolution_size(&w, &h, mode);
-		change_screen_mode(w, h, mode->bit_depth, false, !in_game);
+		change_screen_mode(w, h, mode->bit_depth, false, !in_game, resize_hud);
 		clear_screen();
 		recenter_mouse();
 	}
