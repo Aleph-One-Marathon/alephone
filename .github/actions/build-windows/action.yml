@@ -17,10 +17,6 @@ runs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
       
-    - name: Get workspace directory
-      run: echo "workspace_directory=${env:GITHUB_WORKSPACE}" >> $env:GITHUB_ENV
-      shell: pwsh
-      
     - name: Vcpkg Integration
       run: $vcpkg_path = (Join-Path ${env:VCPKG_INSTALLATION_ROOT} vcpkg.exe); &$vcpkg_path integrate install
       shell: pwsh
@@ -28,10 +24,9 @@ runs:
     - name: Cache Vcpkg
       uses: actions/cache@v2
       with:
-        path: ${{env.workspace_directory}}/Source_Files/${{inputs.vcpkg_installed_folder}}
+        path: Source_Files/${{inputs.vcpkg_installed_folder}}
         key: ${{runner.os}}-${{inputs.vcpkg_installed_folder}}-${{hashFiles('**/vcpkg.json')}}
         
     - name: Build
-      working-directory: ${{env.workspace_directory}}
       run: msbuild /m /p:Platform=${{inputs.platform}} /p:Configuration=Release ./Source_Files/AlephOne.sln
       shell: pwsh
