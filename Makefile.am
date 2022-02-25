@@ -14,7 +14,7 @@ EXTRA_DIST = INSTALL.MacOSX INSTALL.Unix INSTALL.Windows	\
   Resources/Windows/marathon-infinity.rc                                \
   Resources/Windows/marathon-infinity.ico                               \
   PBProjects/AlephOne.xcodeproj/project.pbxproj				\
-  PBProjects/English.lproj/InfoPlist.strings PBProjects/FilmIcon.icns	\
+  PBProjects/en.lproj/InfoPlist.strings PBProjects/FilmIcon.icns	\
   PBProjects/ImagesIcon.icns PBProjects/MapIcon.icns			\
   PBProjects/MMLIcon.icns PBProjects/MusakIcon.icns			\
   PBProjects/PhysIcon.icns			                        \
@@ -29,20 +29,20 @@ EXTRA_DIST = INSTALL.MacOSX INSTALL.Unix INSTALL.Windows	\
   PBProjects/Info-AlephOne-Xcode4.plist\
 	PBProjects/AppStore/Marathon/Info.plist \
 	PBProjects/AppStore/Marathon/Marathon.icns \
-	PBProjects/AppStore/Marathon/English.lproj/InfoPlist.strings
+	PBProjects/AppStore/Marathon/en.lproj/InfoPlist.strings
 
 man_MANS = docs/alephone.6
 
 dist-hook: AlephOne.spec
 	cp AlephOne.spec $(distdir)
-	mkdir -p "$(distdir)/PBProjects/AppStore/Marathon 2/English.lproj"
+	mkdir -p "$(distdir)/PBProjects/AppStore/Marathon 2/en.lproj"
 	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/Info.plist" "$(distdir)/PBProjects/AppStore/Marathon 2/"
 	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/Marathon 2.icns" "$(distdir)/PBProjects/AppStore/Marathon 2/"
-	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/English.lproj/InfoPlist.strings" "$(distdir)/PBProjects/AppStore/Marathon 2/English.lproj/"
-	mkdir -p "$(distdir)/PBProjects/AppStore/Marathon Infinity/English.lproj"
+	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/en.lproj/InfoPlist.strings" "$(distdir)/PBProjects/AppStore/Marathon 2/en.lproj/"
+	mkdir -p "$(distdir)/PBProjects/AppStore/Marathon Infinity/en.lproj"
 	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/Info.plist" "$(distdir)/PBProjects/AppStore/Marathon Infinity/"
 	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/Marathon Infinity.icns" "$(distdir)/PBProjects/AppStore/Marathon Infinity/"
-	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/English.lproj/InfoPlist.strings" "$(distdir)/PBProjects/AppStore/Marathon Infinity/English.lproj/"
+	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/en.lproj/InfoPlist.strings" "$(distdir)/PBProjects/AppStore/Marathon Infinity/en.lproj/"
 
 
 release: dist windist
