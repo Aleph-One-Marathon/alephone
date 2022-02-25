@@ -18,7 +18,9 @@ runs:
       uses: microsoft/setup-msbuild@v1.0.2
       
     - name: Vcpkg Integration
-      run: $vcpkg_path = (Join-Path ${env:VCPKG_INSTALLATION_ROOT} vcpkg.exe); &$vcpkg_path integrate install
+      run: |
+        $vcpkg_path = (Join-Path ${env:VCPKG_INSTALLATION_ROOT} vcpkg.exe)
+        &$vcpkg_path integrate install
       shell: pwsh
       
     - name: Cache Vcpkg

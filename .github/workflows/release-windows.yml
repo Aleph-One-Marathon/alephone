@@ -1,0 +1,40 @@
+name: release-windows
+
+on: [workflow_dispatch, workflow_call]
+
+jobs:
+  release:
+    runs-on: windows-2022
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        
+    - name: Restore vcpkg cache for x64
+      uses: actions/cache@v2
+      with:
+        path: ./Source_Files/vcpkg_installed_64
+        key: ${{runner.os}}-vcpkg_installed_64-${{hashFiles('**/vcpkg.json')}}
+        
+    - name: Restore vcpkg cache for x86
+      uses: actions/cache@v2
+      with:
+        path: ./Source_Files/vcpkg_installed_86
+        key: ${{runner.os}}-vcpkg_installed_86-${{hashFiles('**/vcpkg.json')}}
+        
+    - name: Vcpkg Integration
+      run: |
+        $vcpkg_path = (Join-Path ${env:VCPKG_INSTALLATION_ROOT} vcpkg.exe)
+        &$vcpkg_path integrate install
+        
+    - name: Build archives
+      run: |
+        ./autobuild-windows.ps1 -x64 $true -a1 $true -m1 $true -m2 $true -m3 $true -output_path windows-build-archives
+        ./autobuild-windows.ps1 -x64 $false -a1 $true -m1 $false -m2 $false -m3 $false -output_path windows-build-archives
+    
+    - name: Upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: alephone-release
+        if-no-files-found: error
+        path: 'windows-build-archives/*.zip'
