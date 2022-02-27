@@ -1392,7 +1392,8 @@ void render_screen(short ticks_elapsed)
 	bool update_full_screen = false;
 	if (ViewChangedSize || MapChangedSize || SwitchedModes) {
 		clear_screen_margin();
-		clear_screen();
+		if (!OGL_IsActive() && DrawEveryOtherLine)
+			clear_screen();
 		update_full_screen = true;
 		if (Screen::instance()->hud() && !Screen::instance()->lua_hud())
 			draw_interface();
