@@ -200,6 +200,7 @@ void init_interpolated_world()
 
 	weapon_display_information data;
 	short count = 0;
+	current_tick_weapon_display.clear();
 	while (get_weapon_display_information(&count, &data))
 	{	
 		current_tick_weapon_display.push_back(data);
