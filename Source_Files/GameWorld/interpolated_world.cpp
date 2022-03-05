@@ -863,7 +863,6 @@ static void interpolate_weapon_display_information(
 bool get_interpolated_weapon_display_information(short* count,
 												 weapon_display_information* data)
 {
-	auto heartbeat_fraction = get_heartbeat_fraction();
 	if (*count < current_tick_weapon_display.size())
 	{
 		*data = current_tick_weapon_display[*count];

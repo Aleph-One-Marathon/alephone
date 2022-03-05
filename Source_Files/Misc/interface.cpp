@@ -1105,10 +1105,10 @@ void update_interface_display(
 }
 
 extern bool first_frame_rendered;
+float last_heartbeat_fraction = -1.f;
 
 bool idle_game_state(uint32 time)
 {
-	static float last_heartbeat_fraction = -1.f;
 	int machine_ticks_elapsed = time - game_state.last_ticks_on_idle;
 
 	if(machine_ticks_elapsed || game_state.phase==0)

@@ -648,6 +648,7 @@ void leaving_map(
 }
 
 extern bool first_frame_rendered;
+extern float last_heartbeat_fraction;
 
 /* call this function after the new level has been completely read into memory, after
 	player->location and player->facing have been updated, and as close to the end of
@@ -709,6 +710,7 @@ bool entering_map(bool restoring_saved)
 	if (!success) leaving_map();
 
 	first_frame_rendered = false;
+	last_heartbeat_fraction = -1.f;
 
 	return success;
 }
