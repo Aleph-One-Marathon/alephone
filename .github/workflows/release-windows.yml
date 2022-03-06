@@ -13,14 +13,14 @@ jobs:
     - name: Restore vcpkg cache for x64
       uses: actions/cache@v2
       with:
-        path: ./Source_Files/vcpkg_installed_64
-        key: ${{runner.os}}-vcpkg_installed_64-${{hashFiles('**/vcpkg.json')}}
+        path: VisualStudio/installed-x64-windows
+        key: ${{runner.os}}-installed-x64-windows-${{hashFiles('**/vcpkg.json')}}
         
     - name: Restore vcpkg cache for x86
       uses: actions/cache@v2
       with:
-        path: ./Source_Files/vcpkg_installed_86
-        key: ${{runner.os}}-vcpkg_installed_86-${{hashFiles('**/vcpkg.json')}}
+        path: VisualStudio/installed-x86-windows
+        key: ${{runner.os}}-installed-x86-windows-${{hashFiles('**/vcpkg.json')}}
         
     - name: Vcpkg Integration
       run: |
@@ -29,6 +29,7 @@ jobs:
         
     - name: Build archives
       run: |
+        cd VisualStudio
         ./autobuild-windows.ps1 -x64 $true -a1 $true -m1 $true -m2 $true -m3 $true -output_path windows-build-archives
         ./autobuild-windows.ps1 -x64 $false -a1 $true -m1 $false -m2 $false -m3 $false -output_path windows-build-archives
     
@@ -37,4 +38,4 @@ jobs:
       with:
         name: alephone-release
         if-no-files-found: error
-        path: 'windows-build-archives/*.zip'
+        path: 'VisualStudio/windows-build-archives/*.zip'

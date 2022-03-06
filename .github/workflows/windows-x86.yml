@@ -11,4 +11,4 @@ jobs:
         uses: ./.github/actions/build-windows
         with:
           platform: x86
-          vcpkg_installed_folder: vcpkg_installed_86
+          vcpkg_installed_folder: installed-x86-windows

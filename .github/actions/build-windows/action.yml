@@ -26,9 +26,9 @@ runs:
     - name: Cache Vcpkg
       uses: actions/cache@v2
       with:
-        path: Source_Files/${{inputs.vcpkg_installed_folder}}
+        path: vcpkg/${{inputs.vcpkg_installed_folder}}
         key: ${{runner.os}}-${{inputs.vcpkg_installed_folder}}-${{hashFiles('**/vcpkg.json')}}
         
     - name: Build
-      run: msbuild /m /p:Platform=${{inputs.platform}} /p:Configuration=Release ./Source_Files/AlephOne.sln
+      run: msbuild /m /p:Platform=${{inputs.platform}} /p:Configuration=Release ./VisualStudio/AlephOne.sln
       shell: pwsh

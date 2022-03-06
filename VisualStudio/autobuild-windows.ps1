@@ -8,7 +8,7 @@ param(
 [bool]$m2=$false, #Build Marathon 2
 [bool]$m3=$false, #Build Marathon Infinity
 [int]$data=0, #0 or whatever is for building packages with data and without, 1 is build only with data (except for A1), 2 is build only without data
-[string]$input_path="./Source_files/AlephOne.sln", #Path to the solution to build (must include the solution file in the path)
+[string]$input_path="./AlephOne.sln", #Path to the solution to build (must include the solution file in the path)
 [string]$output_path="./" #Path to the directory where save build packages
 ) 
 
