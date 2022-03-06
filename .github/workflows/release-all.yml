@@ -8,3 +8,6 @@ jobs:
   
   windows:
     uses: ./.github/workflows/release-windows.yml
+    
+  mac-osx:
+    uses: ./.github/workflows/release-mac-osx.yml
