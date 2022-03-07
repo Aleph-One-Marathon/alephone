@@ -40,5 +40,5 @@ runs:
       shell: bash
       
     - name: Build
-      run: cd PBProjects && xcodebuild -arch ${{inputs.xcode_arch}} -target "Aleph One" TEAM_ID='' DEVELOPMENT_TEAM='' CODE_SIGNING_REQUIRED='NO' CODE_SIGN_IDENTITY='' CODE_SIGN_STYLE='' build
+      run: cd PBProjects && xcodebuild -arch ${{inputs.xcode_arch}} -target "Aleph One" DEVELOPMENT_TEAM='' CODE_SIGN_IDENTITY='-' CODE_SIGN_STYLE='Automatic' build
       shell: bash
