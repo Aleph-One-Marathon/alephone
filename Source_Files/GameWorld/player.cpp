@@ -1309,6 +1309,8 @@ static void ReplenishPlayerOxygen(short player_index, uint32 action_flags)
 	}
 }
 
+extern bool shapes_file_is_m1();
+
 static void update_player_teleport(
 	short player_index)
 {
@@ -1341,6 +1343,7 @@ static void update_player_teleport(
 					if (View_DoInterlevelTeleportInEffects()) {
 						start_teleporting_effect(false);
 						play_object_sound(player->object_index, Sound_TeleportIn()); 
+						if (shapes_file_is_m1()) start_fade(_fade_bright);
 					}
 				}
 				player->teleporting_destination= NO_TELEPORTATION_DESTINATION;
@@ -1396,6 +1399,7 @@ static void update_player_teleport(
 					if (player->teleporting_destination >= 0 || View_DoInterlevelTeleportInEffects()) {
 						start_teleporting_effect(false);
 						play_object_sound(player->object_index, Sound_TeleportIn()); 
+						if (shapes_file_is_m1()) start_fade(_fade_bright);
 					}
 					else {
 						player->teleporting_phase = PLAYER_TELEPORTING_DURATION;
