@@ -1081,21 +1081,11 @@ static void adjust_platform_sides(
 		side_index= polygon->side_indexes[i];
 		if (side_index!=NONE)
 		{
-			world_distance top_of_side_height;
-			
 			side= get_side_data(side_index);
 			switch (side->type)
 			{
 				case _split_side: /* secondary */
-					top_of_side_height= MIN(line->highest_adjacent_floor,  polygon->ceiling_height);
-					side->primary_texture.y0-= (old_ceiling_height<top_of_side_height && new_ceiling_height<top_of_side_height) ?
-						delta_height : new_ceiling_height-top_of_side_height;
-					break;
 				case _high_side: /* primary */
-//					top_of_side_height= polygon->ceiling_height;
-					side->primary_texture.y0-= delta_height; //(old_ceiling_height<top_of_side_height && new_ceiling_height<top_of_side_height) ?
-//						delta_height : new_ceiling_height-top_of_side_height;
-					break;
 				case _full_side: /* primary */
 					side->primary_texture.y0-= delta_height;
 					break;
