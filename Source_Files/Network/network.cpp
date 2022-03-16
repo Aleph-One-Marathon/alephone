@@ -1479,7 +1479,8 @@ bool NetGather(
 	short game_data_size,
 	void *player_data,
 	short player_data_size,
-        bool resuming_game)
+	bool resuming_game,
+	bool attempt_upnp)
 {
         resuming_saved_game = resuming_game;
         
@@ -1487,7 +1488,7 @@ bool NetGather(
 	NetInitializeSessionIdentifier();
 
 #ifdef HAVE_MINIUPNPC
-	if (!port_forward && network_preferences->attempt_upnp)
+	if (!port_forward && attempt_upnp)
 	{
 		open_progress_dialog(_opening_router_ports);
 		try
@@ -1502,7 +1503,7 @@ bool NetGather(
 			alert_user(infoError, strNETWORK_ERRORS, netWarnUPnPConfigureFailed, -1);
 		}
 	}
-	else if (port_forward && !network_preferences->attempt_upnp)
+	else if (port_forward && !attempt_upnp)
 	{
 		port_forward.reset();
 	}

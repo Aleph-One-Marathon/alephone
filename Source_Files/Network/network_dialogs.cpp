@@ -191,9 +191,10 @@ bool network_gather(bool inResumingGame)
 	game_info myGameInfo;
 	player_info myPlayerInfo;
 	bool advertiseOnMetaserver = false;
+	bool outUpnpPortForward = false;
 
 	show_cursor(); // JTP: Hidden one way or another
-	if (network_game_setup(&myPlayerInfo, &myGameInfo, inResumingGame, advertiseOnMetaserver))
+	if (network_game_setup(&myPlayerInfo, &myGameInfo, inResumingGame, advertiseOnMetaserver, outUpnpPortForward))
 	{
 		myPlayerInfo.desired_color= myPlayerInfo.color;
 		memset(myPlayerInfo.long_serial_number, 0, LONG_SERIAL_NUMBER_LENGTH);
@@ -204,7 +205,7 @@ bool network_gather(bool inResumingGame)
 			bool gather_dialog_result;
 		
 			if(NetGather(&myGameInfo, sizeof(game_info), (void*) &myPlayerInfo, 
-				sizeof(myPlayerInfo), inResumingGame))
+				sizeof(myPlayerInfo), inResumingGame, outUpnpPortForward))
 			{
 				GathererAvailableAnnouncer announcer;
 				
@@ -854,9 +855,10 @@ bool network_game_setup(
 	player_info *player_information,
 	game_info *game_information,
 	bool ResumingGame,
-	bool& outAdvertiseGameOnMetaserver)
+	bool& outAdvertiseGameOnMetaserver,
+	bool& outUpnpPortForward)
 {
-	if (SetupNetgameDialog::Create ()->SetupNetworkGameByRunning (player_information, game_information, ResumingGame, outAdvertiseGameOnMetaserver)) {
+	if (SetupNetgameDialog::Create ()->SetupNetworkGameByRunning (player_information, game_information, ResumingGame, outAdvertiseGameOnMetaserver, outUpnpPortForward)) {
 		write_preferences ();
 		return true;
 	} else {
@@ -1045,7 +1047,8 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	player_info *player_information,
 	game_info *game_information,
 	bool resuming_game,
-	bool& outAdvertiseGameOnMetaserver)
+	bool& outAdvertiseGameOnMetaserver,
+	bool& outUpnpPortForward)
 {
 	int32 entry_flags;
 
@@ -1298,6 +1301,7 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 		game_information->cheat_flags = active_network_preferences->cheat_flags;
 
 		outAdvertiseGameOnMetaserver = active_network_preferences->advertise_on_metaserver;
+		outUpnpPortForward = active_network_preferences->attempt_upnp;
 
 		//if(shouldUseNetscript)
 		//{
