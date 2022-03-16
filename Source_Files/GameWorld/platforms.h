@@ -276,6 +276,8 @@ void platform_was_entered(short platform_index, bool player);
 bool try_and_change_platform_state(short platform_index, bool state);
 bool try_and_change_tagged_platform_states(short tag, bool state);
 
+void adjust_platform_sides(platform_data* platform, vector<polygon_data>& polygon_list, vector<line_data>& line_list, vector<side_data>& side_list, world_distance old_ceiling_height, world_distance new_ceiling_height);
+
 enum /* return values from monster_can_enter_platform() and monster_can_leave_platform() */
 {
 	_platform_will_never_be_accessable,
