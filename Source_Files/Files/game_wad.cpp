@@ -2540,7 +2540,7 @@ static wad_data *build_export_wad(wad_header *header, int32 *length)
 			}
 			if (PLATFORM_COMES_FROM_CEILING(platform))
 			{
-				adjust_platform_sides(platform, PolygonList, LineList, SideList, platform->ceiling_height, platform->maximum_ceiling_height);
+				adjust_platform_sides(platform, platform->ceiling_height, platform->maximum_ceiling_height);
 				platform->ceiling_height = platform->maximum_ceiling_height;
 				PolygonList[platform->polygon_index].ceiling_height = platform->ceiling_height;
 			}

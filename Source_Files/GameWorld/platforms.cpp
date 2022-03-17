@@ -327,7 +327,7 @@ void update_platforms(
 						and finally adjust the heights of all endpoints and lines which make
 						up our polygon to reflect the height change */
 					if (PLATFORM_COMES_FROM_CEILING(platform))
-						adjust_platform_sides(platform, PolygonList, LineList, SideList, platform->ceiling_height, new_ceiling_height);
+						adjust_platform_sides(platform, platform->ceiling_height, new_ceiling_height);
 					platform->ceiling_height= new_ceiling_height, platform->floor_height= new_floor_height;
 					SET_PLATFORM_WAS_MOVING(platform);
 					adjust_platform_endpoint_and_line_heights(platform_index);
@@ -1043,21 +1043,18 @@ static void calculate_platform_extrema(
 
 void adjust_platform_sides(
 	platform_data* platform,
-	vector<polygon_data> &polygon_list,
-	vector<line_data> &line_list,
-	vector<side_data> &side_list,
 	world_distance old_ceiling_height,
 	world_distance new_ceiling_height
 	)
 {
-	struct polygon_data *polygon= &polygon_list[platform->polygon_index];
+	struct polygon_data *polygon= get_polygon_data(platform->polygon_index);
 	world_distance delta_height= new_ceiling_height-old_ceiling_height;
 	
 	for (short i= 0; i<polygon->vertex_count; ++i)
 	{
 		short side_index;
 		struct side_data *side;
-		struct line_data *line = &line_list[polygon->line_indexes[i]];
+		struct line_data *line = get_line_data(polygon->line_indexes[i]);
 		short adjacent_polygon_index= polygon->adjacent_polygon_indexes[i];
 		
 		/* adjust the platform side (i.e., the texture on the side of the platform) */
@@ -1066,7 +1063,7 @@ void adjust_platform_sides(
 			side_index= adjacent_polygon_index==line->clockwise_polygon_owner ? line->clockwise_polygon_side_index : line->counterclockwise_polygon_side_index;
 			if (side_index!=NONE)
 			{
-				side= &side_list[side_index];
+				side= get_side_data(side_index);
 				switch (side->type)
 				{
 					case _full_side:
@@ -1082,7 +1079,7 @@ void adjust_platform_sides(
 		side_index= polygon->side_indexes[i];
 		if (side_index!=NONE)
 		{
-			side = &side_list[side_index];
+			side = get_side_data(side_index);
 			switch (side->type)
 			{
 				case _split_side: /* secondary */
