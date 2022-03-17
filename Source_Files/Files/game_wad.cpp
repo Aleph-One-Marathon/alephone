@@ -2535,13 +2535,13 @@ static wad_data *build_export_wad(wad_header *header, int32 *length)
 			// reset the polygon heights
 			if (PLATFORM_COMES_FROM_FLOOR(platform))
 			{
-				platform->floor_height = platform->minimum_floor_height;
+				platform->floor_height = platform->maximum_floor_height;
 				PolygonList[platform->polygon_index].floor_height = platform->floor_height;
 			}
 			if (PLATFORM_COMES_FROM_CEILING(platform))
 			{
-				adjust_platform_sides(platform, platform->ceiling_height, platform->maximum_ceiling_height);
-				platform->ceiling_height = platform->maximum_ceiling_height;
+				adjust_platform_sides(platform, platform->ceiling_height, platform->minimum_ceiling_height);
+				platform->ceiling_height = platform->minimum_ceiling_height;
 				PolygonList[platform->polygon_index].ceiling_height = platform->ceiling_height;
 			}
 		}
