@@ -13,13 +13,13 @@ jobs:
     - name: Restore vcpkg cache for x64
       uses: actions/cache@v2
       with:
-        path: VisualStudio/installed-x64-windows
+        path: vcpkg/installed-x64-windows
         key: ${{runner.os}}-installed-x64-windows-${{hashFiles('**/vcpkg.json')}}
         
     - name: Restore vcpkg cache for x86
       uses: actions/cache@v2
       with:
-        path: VisualStudio/installed-x86-windows
+        path: vcpkg/installed-x86-windows
         key: ${{runner.os}}-installed-x86-windows-${{hashFiles('**/vcpkg.json')}}
         
     - name: Vcpkg Integration
