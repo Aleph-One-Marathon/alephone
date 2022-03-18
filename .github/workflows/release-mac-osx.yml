@@ -38,12 +38,7 @@ jobs:
       run: cd vcpkg && ./install-x64-osx.sh && ./install-arm-osx.sh
       
     - name: Build
-      run: |
-        cd PBProjects
-        xcodebuild -target "Aleph One" DEVELOPMENT_TEAM='' CODE_SIGN_IDENTITY='-' CODE_SIGN_STYLE='Automatic' build
-        xcodebuild -target "Marathon" DEVELOPMENT_TEAM='' CODE_SIGN_IDENTITY='-' CODE_SIGN_STYLE='Automatic' build
-        xcodebuild -target "Marathon 2" DEVELOPMENT_TEAM='' CODE_SIGN_IDENTITY='-' CODE_SIGN_STYLE='Automatic' build
-        xcodebuild -target "Marathon Infinity" DEVELOPMENT_TEAM='' CODE_SIGN_IDENTITY='-' CODE_SIGN_STYLE='Automatic' build
+      run: cd PBProjects && xcodebuild -target "Aleph One" -target "Marathon" -target "Marathon 2" -target "Marathon Infinity" DEVELOPMENT_TEAM='' CODE_SIGN_IDENTITY='-' CODE_SIGN_STYLE='Automatic' build
       
     - name: Create DMGs
       run: cd tools && ./build_dmg.sh $GITHUB_WORKSPACE $GITHUB_WORKSPACE/PBProjects/build/Release

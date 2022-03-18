@@ -26,7 +26,7 @@ END
 make_dmg()
 {
     appname="$1"
-    if [ $SIGNATURE != "" ]; then
+    if [ "$SIGNATURE" != "" ]; then
         codesign --timestamp --deep --force -o runtime --sign "$SIGNATURE" "$TARGET_BUILD_DIR/$appname.app"
         spctl -a -t execute -v "$TARGET_BUILD_DIR/$appname.app"
     fi
@@ -60,7 +60,7 @@ make_dmg()
     imgname="${appname// }"
     imgfile="$TARGET_BUILD_DIR/$imgname-$version-Mac.dmg"
     hdiutil create -ov -fs HFS+ -format UDBZ -layout GPTSPUD -srcfolder "$diskdir" -volname "$appname" "$imgfile"
-    if [ $SIGNATURE != "" ]; then
+    if [ "$SIGNATURE" != "" ]; then
         codesign -s "$SIGNATURE" "$imgfile"
         spctl -a -t open --context context:primary-signature -v "$imgfile"
     fi
