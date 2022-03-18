@@ -348,6 +348,8 @@ void allocate_render_memory(
 	RenderVisTree.Resize(MAXIMUM_ENDPOINTS_PER_MAP,MAXIMUM_LINES_PER_MAP);
 	RenderSortPoly.Resize(MAXIMUM_POLYGONS_PER_MAP);
 	
+	// Reset to have the tree correctly resized if m1 exploration level
+	explore_tree.view = nullptr;
 	// LP change: set up pointers
 	RenderSortPoly.RVPtr = &RenderVisTree;
 	RenderPlaceObjs.RVPtr = &RenderVisTree;
