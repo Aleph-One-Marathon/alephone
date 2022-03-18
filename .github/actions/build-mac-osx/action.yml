@@ -25,11 +25,15 @@ runs:
       run: $VCPKG_INSTALLATION_ROOT/vcpkg integrate install
       shell: bash
       
+    - name: Get Vcpkg current hash
+      run: echo "vcpkg_current_hash=$(git -C $VCPKG_INSTALLATION_ROOT rev-parse --short HEAD)" >> $GITHUB_ENV
+      shell: bash
+      
     - name: Cache Vcpkg
       uses: actions/cache@v2
       with:
         path: vcpkg/${{inputs.vcpkg_installed_folder}}
-        key: ${{runner.os}}-${{inputs.vcpkg_installed_folder}}-${{hashFiles('**/vcpkg.json')}}
+        key: ${{runner.os}}-${{inputs.vcpkg_installed_folder}}-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
       
     - name: Switch to Xcode 12.5.1
       run: sudo xcode-select --switch /Applications/Xcode_12.5.1.app

@@ -15,18 +15,21 @@ jobs:
       
     - name: Vcpkg Integration
       run: $VCPKG_INSTALLATION_ROOT/vcpkg integrate install
+      
+    - name: Get Vcpkg current hash
+      run: echo "vcpkg_current_hash=$(git -C $VCPKG_INSTALLATION_ROOT rev-parse --short HEAD)" >> $GITHUB_ENV
         
     - name: Restore vcpkg cache for x64
       uses: actions/cache@v2
       with:
         path: vcpkg/installed-x64-osx
-        key: ${{runner.os}}-installed-x64-osx-${{hashFiles('**/vcpkg.json')}}
+        key: ${{runner.os}}-installed-x64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
         
     - name: Restore vcpkg cache for arm64
       uses: actions/cache@v2
       with:
         path: vcpkg/installed-arm64-osx
-        key: ${{runner.os}}-installed-arm64-osx-${{hashFiles('**/vcpkg.json')}}
+        key: ${{runner.os}}-installed-arm64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
         
     - name: Switch to Xcode 12.5.1
       run: sudo xcode-select --switch /Applications/Xcode_12.5.1.app
