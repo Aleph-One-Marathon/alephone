@@ -29,6 +29,9 @@
     Even the beginning programmer should be able to use this library
     so he or she can use multimedia in his/her program.
 **/
+#ifdef HAVE_CONFIG_H // for HAVE_FFMPEG
+#include "config.h"
+#endif
 
 #ifdef HAVE_FFMPEG
 
