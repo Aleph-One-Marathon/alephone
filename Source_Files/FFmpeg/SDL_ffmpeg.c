@@ -30,6 +30,8 @@
     so he or she can use multimedia in his/her program.
 **/
 
+#ifdef HAVE_FFMPEG
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -2258,3 +2260,4 @@ int SDL_ffmpegDecodeVideoFrame( SDL_ffmpegFile* file, AVPacket *pack, SDL_ffmpeg
 /**
 \endcond
 */
+#endif
