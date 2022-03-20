@@ -699,7 +699,7 @@ spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags)
 				if(theSmallestUnreadTick >= sSmallestRealGameTick)
 				{
 					WritableTickBasedActionQueue& theQueue = *(sNetworkPlayers[i].mQueue);
-					assert(theQueue.getWriteTick() == sSmallestUnreceivedTick);
+					assert(!sNetworkPlayers[i].mConnected || (theQueue.getWriteTick() == sSmallestUnreceivedTick && sNetworkPlayers[i].mConnected));
 					assert(theQueue.availableCapacity() > 0);
 					logTraceNMT("enqueueing flags %x for player %d tick %d", theFlags, i, theQueue.getWriteTick());
 					theQueue.enqueue(theFlags);
