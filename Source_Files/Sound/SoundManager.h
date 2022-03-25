@@ -49,11 +49,6 @@ public:
 		return m_instance; 
 	}
 
-	enum AudioBackend {
-		SDLAudio,
-		OpenAL //Doesn't support device management for now
-	};
-
 	struct Parameters;
 	void Initialize(const Parameters&);
 	void SetParameters(const Parameters&);
@@ -100,7 +95,6 @@ public:
 	{
 		static const int DEFAULT_RATE = 44100;
 		static const int DEFAULT_SAMPLES = 1024;
-		uint16 audio_backend;
 		float volume_db; // db
 		uint16 flags; // stereo, dynamic_tracking, etc. 
 		

@@ -2,7 +2,6 @@
 #include "sound_definitions.h"
 #include "Logging.h"
 
-//TODO: manage openal device disconnected with openal renderer (won't do before next openal release at least)
 LPALCLOOPBACKOPENDEVICESOFT OpenALManager::alcLoopbackOpenDeviceSOFT;
 LPALCISRENDERFORMATSUPPORTEDSOFT OpenALManager::alcIsRenderFormatSupportedSOFT;
 LPALCRENDERSAMPLESSOFT OpenALManager::alcRenderSamplesSOFT;
@@ -14,13 +13,11 @@ OpenALManager* OpenALManager::Get() {
 	return instance;
 }
 
-//I won't support device switch with OpenAL as backend until their next release at least,
-//so it's better to stay with SDLAudio as renderer for now
-bool OpenALManager::Init(SoundManager::AudioBackend backend, AudioParameters parameters) {
+bool OpenALManager::Init(AudioParameters parameters) {
 
 	if (instance) { //Don't bother recreating all the OpenAL context if nothing changed for it
-		if (backend != instance->audio_backend || parameters.hrtf != instance->audio_parameters.hrtf ||
-			parameters.rate != instance->audio_parameters.rate || parameters.stereo != instance->audio_parameters.stereo) {
+		if (parameters.hrtf != instance->audio_parameters.hrtf || parameters.rate != instance->audio_parameters.rate 
+			|| parameters.stereo != instance->audio_parameters.stereo) {
 
 			delete instance;
 			instance = nullptr;
@@ -37,59 +34,36 @@ bool OpenALManager::Init(SoundManager::AudioBackend backend, AudioParameters par
 			LOAD_PROC(LPALCRENDERSAMPLESSOFT, alcRenderSamplesSOFT);
 		}
 		else {
-			logError("ALC_SOFT_loopback extension is not supported");
+			logError("ALC_SOFT_loopback extension is not supported"); //Should never be the case as long as >= OpenAL 1.14
 			return false;
 		}
 	}
 
-	switch (backend) {
-	case SoundManager::AudioBackend::OpenAL:
-	default:
-		instance = new OpenALManager(parameters);
-		break;
-	case SoundManager::AudioBackend::SDLAudio:
-		instance = new OpenALManager::SDLBackend(parameters);
-		break;
-	}
-
-	return instance->OpenPlayingDevice() && instance->GenerateSources();
+	instance = new OpenALManager(parameters);
+	return instance->OpenDevice() && instance->GenerateSources();
 }
 
-//let's process the next item in the queue !
-void OpenALManager::ConsumeAudioQueue() {
-	std::lock_guard<std::mutex> guard(mutex_player);
-	if (audio_players.empty()) return;
-
-	auto audio = audio_players.front();
-
-	audio->Lock_Internal();
-	bool mustStillPlay = audio->IsActive() && audio->AssignSource() && audio->SetUpALSourceIdle() && audio->Play();
-
-	audio_players.pop_front();
-
-	if (!mustStillPlay) {
-		RetrieveSource(audio);
-		audio->Unlock_Internal();
-		audio.reset();
-		return;
-	}
-
-	audio->Unlock_Internal();
-	audio_players.push_back(audio); //We have just processed a part of the data for you, now wait your next turn
-}
-
-//our seperated thread processing audio queue
 void OpenALManager::ProcessAudioQueue() {
+	std::lock_guard<std::mutex> guard(mutex_player);
+	
+	for (int i = 0; i < audio_players.size(); i++) {
 
-	int iteration = 0;
-	while (consuming_audio_enable) {
-		ConsumeAudioQueue();
-		iteration++;
+		auto audio = audio_players.front();
 
-		if (iteration > audio_players.size()) {
-			sleep_for_machine_ticks(30); //could be way more if we were not supporting that restart sound thing (parameter_balance_rewind)
-			iteration = 0;
+		audio->Lock_Internal();
+		bool mustStillPlay = audio->IsActive() && audio->AssignSource() && audio->SetUpALSourceIdle() && audio->Play();
+
+		audio_players.pop_front();
+
+		if (!mustStillPlay) {
+			RetrieveSource(audio);
+			audio->Unlock_Internal();
+			audio.reset();
+			continue;
 		}
+
+		audio->Unlock_Internal();
+		audio_players.push_back(audio); //We have just processed a part of the data for you, now wait your next turn
 	}
 }
 
@@ -120,22 +94,20 @@ void OpenALManager::UpdateListener(world_location3d listener) {
 	alListenerfv(AL_VELOCITY, velocity);
 }
 
-//it's kinda like SDL_PauseAudio(False), go sounds
 void OpenALManager::Start() {
-	if (!consuming_audio_enable && !process_consuming_audio.joinable()) {
-		consuming_audio_enable = true;
-		process_consuming_audio = std::thread([this]() {ProcessAudioQueue(); });
-	}
+	process_audio_active = true;
+	SDL_PauseAudio(is_using_recording_device); //Start playing only if not recording playback
 }
 
-//it's kinda like SDL_PauseAudio(True), no more sounds
 void OpenALManager::Stop() {
-	if (consuming_audio_enable && process_consuming_audio.joinable()) {
-		consuming_audio_enable = false;
-		process_consuming_audio.join();
-	}
-
+	SDL_PauseAudio(true);
 	StopAllPlayers();
+	process_audio_active = false;
+}
+
+void OpenALManager::ToggleDeviceMode(bool recording_device) {
+	is_using_recording_device = recording_device;
+	SDL_PauseAudio(is_using_recording_device);
 }
 
 void OpenALManager::SetDefaultVolume(float volume) {
@@ -149,7 +121,7 @@ void OpenALManager::QueueAudio(std::shared_ptr<AudioPlayer> audioPlayer) {
 
 //Do we have a player currently streaming with the same sound we want to play ?
 //A sound is identified as unique with sound index + source index, NONE is considered as a valid source index (local sounds)
-//The flag sound_identifier_only must be used to know if there is a sound playing with a specific identifier without carring of the source
+//The flag sound_identifier_only must be used to know if there is a sound playing with a specific identifier without caring of the source
 std::shared_ptr<SoundPlayer> OpenALManager::GetSoundPlayer(short identifier, short source_identifier, bool sound_identifier_only) const {
 	std::lock_guard<std::mutex> guard(mutex_player);
 	auto player = std::find_if(std::begin(audio_players), std::end(audio_players),
@@ -160,12 +132,10 @@ std::shared_ptr<SoundPlayer> OpenALManager::GetSoundPlayer(short identifier, sho
 	return player != audio_players.end() ? std::dynamic_pointer_cast<SoundPlayer>(*player) : std::shared_ptr<SoundPlayer>(); //only sounds are supported, not musics
 }
 
-//All calls to play sounds use this
-//We will fill the buffer queue with this sound
 std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(const SoundInfo& header, const SoundData& data, SoundParameters parameters) {
 	auto soundPlayer = std::shared_ptr<SoundPlayer>();
 	const float simulatedVolume = SoundPlayer::Simulate(parameters);
-	if (!consuming_audio_enable || simulatedVolume <= 0) return soundPlayer;
+	if (!process_audio_active || simulatedVolume <= 0) return soundPlayer;
 
 	//We have to play a sound, but let's find out first if we don't have a player with the source we would need
 	if (!(parameters.flags & _sound_does_not_self_abort)) {
@@ -184,21 +154,18 @@ std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(const SoundInfo& header, c
 	return soundPlayer;
 }
 
-//^ I said all calls but except those ones...
 std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(LoadedResource& rsrc, SoundParameters parameters) {
 	SoundHeader header;
 	if (header.Load(rsrc)) {
 		auto data = header.LoadData(rsrc);
-		return PlaySound(header, *data, parameters); //Or nvm, they also call it \o/
+		return PlaySound(header, *data, parameters);
 	}
 
 	return std::shared_ptr<SoundPlayer>();
 }
 
-//All calls to play music use this
-//We will fill the buffer queue with this music
 std::shared_ptr<MusicPlayer> OpenALManager::PlayMusic(StreamDecoder* decoder) {
-	if (!consuming_audio_enable) return std::shared_ptr<MusicPlayer>();
+	if (!process_audio_active) return std::shared_ptr<MusicPlayer>();
 	auto musicPlayer = std::make_shared<MusicPlayer>(decoder);
 	QueueAudio(musicPlayer);
 	return musicPlayer;
@@ -207,7 +174,7 @@ std::shared_ptr<MusicPlayer> OpenALManager::PlayMusic(StreamDecoder* decoder) {
 //Used by net mic only but that could be used by other things
 //StreamPlayers allow to directly feed audio data while it's playing  
 std::shared_ptr<StreamPlayer> OpenALManager::PlayStream(uint8* data, int length, int rate, bool stereo, bool sixteen_bit) {
-	if (!consuming_audio_enable) return std::shared_ptr<StreamPlayer>();
+	if (!process_audio_active) return std::shared_ptr<StreamPlayer>();
 	auto streamPlayer = std::make_shared<StreamPlayer>(data, length, rate, stereo, sixteen_bit);
 	QueueAudio(streamPlayer);
 	return streamPlayer;
@@ -216,7 +183,7 @@ std::shared_ptr<StreamPlayer> OpenALManager::PlayStream(uint8* data, int length,
 //Used by video playback
 //Same thing as StreamPlayers but it uses a callback to get more data instead of having to be fed
 std::shared_ptr<CallBackableStreamPlayer> OpenALManager::PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, bool sixteen_bit) {
-	if (!consuming_audio_enable) return std::shared_ptr<CallBackableStreamPlayer>();
+	if (!process_audio_active) return std::shared_ptr<CallBackableStreamPlayer>();
 	auto streamPlayer = std::make_shared<CallBackableStreamPlayer>(callback, length, rate, stereo, sixteen_bit);
 	QueueAudio(streamPlayer);
 	return streamPlayer;
@@ -270,13 +237,33 @@ int OpenALManager::GetFrequency() const {
 //this is used with the recording device and this allows OpenAL to
 //not output the audio once it has mixed it but instead, makes 
 //the mixed data available with alcRenderSamplesSOFT
-//Used in our case with SDLAudio Backend and for video export
 void OpenALManager::GetPlayBackAudio(uint8* data, int length) {
+	ProcessAudioQueue();
 	alcRenderSamplesSOFT(p_ALCDevice, data, length);
 }
 
-//See GetPlayBackAudio
-bool OpenALManager::OpenRecordingDevice() {
+//This return true if the device supports switching from hrtf enabled <-> hrtf disabled
+bool OpenALManager::Support_HRTF_Toggling() const {
+	ALCint hrtfStatus;
+	alcGetIntegerv(p_ALCDevice, ALC_HRTF_STATUS_SOFT, 1, &hrtfStatus);
+
+	switch (hrtfStatus) {
+		case ALC_HRTF_DENIED_SOFT:
+		case ALC_HRTF_UNSUPPORTED_FORMAT_SOFT:
+		case ALC_HRTF_REQUIRED_SOFT:
+			return false;
+		default:
+			return true;
+	}
+}
+
+bool OpenALManager::Is_HRTF_Enabled() const {
+	ALCint hrtfStatus;
+	alcGetIntegerv(p_ALCDevice, ALC_HRTF_SOFT, 1, &hrtfStatus);
+	return hrtfStatus;
+}
+
+bool OpenALManager::OpenDevice() {
 	if (p_ALCDevice) return true;
 
 	p_ALCDevice = alcLoopbackOpenDeviceSOFT(nullptr);
@@ -316,57 +303,6 @@ bool OpenALManager::OpenRecordingDevice() {
 	return false;
 }
 
-//This return true if the device support switching from hrtf enabled <-> hrtf disabled
-bool OpenALManager::Support_HRTF_Toggling() const {
-	ALCint hrtfStatus;
-	alcGetIntegerv(p_ALCDevice, ALC_HRTF_STATUS_SOFT, 1, &hrtfStatus);
-
-	switch (hrtfStatus) {
-	case ALC_HRTF_DENIED_SOFT:
-	case ALC_HRTF_UNSUPPORTED_FORMAT_SOFT:
-	case ALC_HRTF_REQUIRED_SOFT:
-		return false;
-	default:
-		return true;
-	}
-}
-
-bool OpenALManager::Is_HRTF_Enabled() const {
-	ALCint hrtfStatus;
-	alcGetIntegerv(p_ALCDevice, ALC_HRTF_SOFT, 1, &hrtfStatus);
-	return hrtfStatus;
-}
-
-bool OpenALManager::OpenPlayingDevice() {
-	if (p_ALCDevice) return true;
-
-	p_ALCDevice = alcOpenDevice(nullptr);
-	if (!p_ALCDevice) {
-		logError("Could not open audio device");
-		return false;
-	}
-
-	ALCint attrs[] = { //Cannot request OpenAL to render mono or stereo
-		ALC_HRTF_SOFT, audio_parameters.hrtf,
-		ALC_FREQUENCY, audio_parameters.rate,
-		0
-	};
-
-	p_ALCContext = alcCreateContext(p_ALCDevice, attrs);
-	if (!p_ALCContext) {
-		logError("Could not create audio context");
-		return false;
-	}
-
-	if (!alcMakeContextCurrent(p_ALCContext)) {
-		logError("Could not make audio context current");
-		return false;
-	}
-
-	alcGetIntegerv(p_ALCDevice, ALC_FREQUENCY, 1, &audio_parameters.rate);
-	return true;
-}
-
 bool OpenALManager::CloseDevice() {
 	if (!alcMakeContextCurrent(nullptr)) {
 		logError("Could not remove current audio context");
@@ -388,30 +324,6 @@ bool OpenALManager::CloseDevice() {
 	}
 
 	return true;
-}
-
-void OpenALManager::SetUpRecordingDevice() {
-
-	if (!is_using_recording_device) {
-		CleanEverything();
-		bool openedDevice = OpenRecordingDevice();
-		assert(openedDevice && "Could not open recording device");
-		bool generateSources = GenerateSources();
-		assert(generateSources && "Could not generate audio sources");
-		is_using_recording_device = true;
-	}
-}
-
-void OpenALManager::SetUpPlayingDevice() {
-
-	if (is_using_recording_device) {
-		CleanEverything();
-		bool openedDevice = OpenPlayingDevice();
-		assert(openedDevice && "Could not open playing device");
-		bool generateSources = GenerateSources();
-		assert(generateSources && "Could not generate audio sources");
-		is_using_recording_device = false;
-	}
 }
 
 bool OpenALManager::GenerateSources() {
@@ -455,14 +367,36 @@ bool OpenALManager::GenerateSources() {
 
 OpenALManager::OpenALManager(AudioParameters parameters) {
 	audio_parameters = parameters;
-	audio_backend = SoundManager::AudioBackend::OpenAL;
 	default_volume = parameters.volume;
 	alListener3i(AL_POSITION, 0, 0, 0);
+
+	auto openalFormat = GetBestOpenALRenderingFormat(parameters.stereo ? ALC_STEREO_SOFT : ALC_MONO_SOFT);
+	assert(openalFormat && "Audio format not found or not supported");
+	desired.freq = parameters.rate;
+	desired.format = openalFormat ? mapping_openal_sdl.at(openalFormat) : 0;
+	desired.channels = parameters.stereo ? 2 : 1;
+	desired.samples = number_samples * desired.channels * SDL_AUDIO_BITSIZE(desired.format) / 8;
+	desired.callback = MixerCallback;
+	desired.userdata = reinterpret_cast<void*>(this);
+
+	if (SDL_OpenAudio(&desired, &obtained) < 0) {
+		CleanEverything();
+	}
+	else {
+		audio_parameters.rate = obtained.freq;
+		audio_parameters.stereo = obtained.channels == 2;
+		rendering_format = mapping_sdl_openal.at(obtained.format);
+	}
+}
+
+void OpenALManager::MixerCallback(void* usr, uint8* stream, int len) {
+	auto manager = (OpenALManager*)usr;
+	int frameSize = manager->obtained.channels * SDL_AUDIO_BITSIZE(manager->obtained.format) / 8;
+	manager->GetPlayBackAudio(stream, len / frameSize);
 }
 
 void OpenALManager::CleanEverything() {
 	Stop();
-	StopAllPlayers();
 
 	while (!sources_pool.empty()) {
 		const auto& audioSource = sources_pool.front();
@@ -513,62 +447,5 @@ int OpenALManager::GetBestOpenALRenderingFormat(ALCint channelsType) {
 
 OpenALManager::~OpenALManager() {
 	CleanEverything();
-}
-
-/* SDL as audio renderer part */
-OpenALManager::SDLBackend::SDLBackend(AudioParameters parameters)
-	: OpenALManager(parameters) {
-
-	audio_backend = SoundManager::AudioBackend::SDLAudio;
-	auto openalFormat = GetBestOpenALRenderingFormat(parameters.stereo ? ALC_STEREO_SOFT : ALC_MONO_SOFT);
-	assert(openalFormat && "Audio format not found or not supported");
-	desired.freq = parameters.rate;
-	desired.format = openalFormat ? mapping_openal_sdl.at(openalFormat) : 0;
-	desired.channels = parameters.stereo ? 2 : 1;
-	desired.samples = number_samples * desired.channels * SDL_AUDIO_BITSIZE(desired.format) / 8;
-	desired.callback = MixerCallback;
-	desired.userdata = reinterpret_cast<void*>(this);
-
-	if (SDL_OpenAudio(&desired, &obtained) < 0) {
-		CleanEverything();
-	}
-	else {
-		audio_parameters.rate = obtained.freq;
-		audio_parameters.stereo = obtained.channels == 2;
-		rendering_format = mapping_sdl_openal.at(obtained.format);
-	}
-}
-
-OpenALManager::SDLBackend::~SDLBackend() {
-	Stop();
 	SDL_CloseAudio();
-}
-
-bool OpenALManager::SDLBackend::OpenPlayingDevice() {
-	return OpenALManager::OpenRecordingDevice();
-}
-
-void OpenALManager::SDLBackend::SetUpRecordingDevice() {
-	SDL_PauseAudio(true);
-	is_using_recording_device = true;
-}
-void OpenALManager::SDLBackend::SetUpPlayingDevice() {
-	SDL_PauseAudio(false);
-	is_using_recording_device = false;
-}
-
-void OpenALManager::SDLBackend::Start() {
-	OpenALManager::Start(); //Start mixing
-	SDL_PauseAudio(is_using_recording_device); //Start playing only if not recording playback
-}
-
-void OpenALManager::SDLBackend::Stop() {
-	SDL_PauseAudio(true);
-	OpenALManager::Stop();
-}
-
-void OpenALManager::SDLBackend::MixerCallback(void* usr, uint8* stream, int len) {
-	auto manager = (SDLBackend*)usr;
-	int frameSize = manager->obtained.channels * SDL_AUDIO_BITSIZE(manager->obtained.format) / 8;
-	manager->GetPlayBackAudio(stream, len / frameSize);
 }

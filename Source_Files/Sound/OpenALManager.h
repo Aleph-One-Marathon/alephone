@@ -6,7 +6,6 @@
 #include "StreamPlayer.h"
 #include "SoundManager.h"
 #include <queue>
-#include <thread>
 #include <unordered_map>
 
 #if defined (_MSC_VER) && !defined (M_PI)
@@ -52,10 +51,10 @@ struct AudioParameters {
 class OpenALManager {
 public:
 	static OpenALManager* Get();
-	static bool Init(SoundManager::AudioBackend backend, AudioParameters parameters);
+	static bool Init(AudioParameters parameters);
 	static float From_db(float db, bool music = false) { return db <= (SoundManager::MINIMUM_VOLUME_DB / (music ? 2 : 1)) ? 0 : std::pow(10.f, db / 20.f); }
-	virtual void Start();
-	virtual void Stop();
+	void Start();
+	void Stop();
 	void StopAllPlayers();
 	std::shared_ptr<SoundPlayer> PlaySound(const SoundInfo& header, const SoundData& data, SoundParameters parameters);
 	std::shared_ptr<SoundPlayer> PlaySound(LoadedResource& rsrc, SoundParameters parameters);
@@ -69,8 +68,7 @@ public:
 	world_location3d GetListener() const { return listener_location; }
 	void SetDefaultVolume(float volume);
 	float GetComputedVolume(bool filtered = true) const { return default_volume * (filters_volume.empty() || !filtered ? 1 : filters_volume.front()); }
-	virtual void SetUpRecordingDevice();
-	virtual void SetUpPlayingDevice();
+	void ToggleDeviceMode(bool recording_device);
 	int GetFrequency() const;
 	void GetPlayBackAudio(uint8* data, int length);
 	void ApplyVolumeFilter(float volume_filter) { filters_volume.push(volume_filter); }
@@ -81,36 +79,34 @@ public:
 	ALCint GetRenderingFormat() const { return rendering_format; }
 private:
 	static OpenALManager* instance;
-	SoundManager::AudioBackend audio_backend;
 	ALCdevice* p_ALCDevice = nullptr;
 	ALCcontext* p_ALCContext = nullptr;
 	OpenALManager(AudioParameters parameters);
-	virtual ~OpenALManager();
+	~OpenALManager();
 	std::queue<float> filters_volume;
 	std::atomic<float> default_volume;
+	std::atomic<bool> process_audio_active = { false };
 	world_location3d listener_location = {};
 	void CleanEverything();
 	bool GenerateSources();
-	virtual bool OpenPlayingDevice();
-	bool OpenRecordingDevice();
+	bool OpenDevice();
 	bool CloseDevice();
-	void ConsumeAudioQueue();
 	void ProcessAudioQueue();
 	void QueueAudio(std::shared_ptr<AudioPlayer> audioPlayer);
 	bool is_using_recording_device = false;
-	std::atomic<bool> consuming_audio_enable = { false };
-	std::thread process_consuming_audio;
 	std::queue<AudioPlayer::AudioSource> sources_pool;
 	std::deque<std::shared_ptr<AudioPlayer>> audio_players;
 	int GetBestOpenALRenderingFormat(ALCint channelsType);
 	void RetrieveSource(std::shared_ptr<AudioPlayer> player);
 
-	/* Loopback device functions (SDL backend and video export) */
+	/* Loopback device functions */
 	static LPALCLOOPBACKOPENDEVICESOFT alcLoopbackOpenDeviceSOFT;
 	static LPALCISRENDERFORMATSUPPORTEDSOFT alcIsRenderFormatSupportedSOFT;
 	static LPALCRENDERSAMPLESSOFT alcRenderSamplesSOFT;
 
-	class SDLBackend;
+	static void MixerCallback(void* usr, uint8* stream, int len);
+	const static int number_samples = 512;
+	SDL_AudioSpec desired, obtained;
 	AudioParameters audio_parameters;
 	ALCint rendering_format = 0;
 
@@ -124,22 +120,6 @@ private:
 		ALC_INT_SOFT,
 		ALC_UNSIGNED_BYTE_SOFT
 	};
-};
-
-class OpenALManager::SDLBackend : public OpenALManager {
-public:
-	SDLBackend(AudioParameters parameters);
-	~SDLBackend();
-
-	void SetUpRecordingDevice();
-	void SetUpPlayingDevice();
-	void Start();
-	void Stop();
-private:
-	const static int number_samples = 512;
-	SDL_AudioSpec desired, obtained;
-	static void MixerCallback(void* usr, uint8* stream, int len);
-	bool OpenPlayingDevice();
 
 	//should probably replace those by boost bimap
 	const std::unordered_map<ALCint, int> mapping_openal_sdl = {

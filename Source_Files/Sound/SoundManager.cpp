@@ -777,7 +777,7 @@ void SoundManager::SetStatus(bool active)
 					OpenALManager::From_db(parameters.volume_db)
 				};
 
-				bool success = OpenALManager::Init((AudioBackend)parameters.audio_backend, audio_parameters);
+				bool success = OpenALManager::Init(audio_parameters);
 
 				if (!success) return;
 
