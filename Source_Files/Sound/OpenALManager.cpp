@@ -19,8 +19,7 @@ bool OpenALManager::Init(AudioParameters parameters) {
 		if (parameters.hrtf != instance->audio_parameters.hrtf || parameters.rate != instance->audio_parameters.rate 
 			|| parameters.stereo != instance->audio_parameters.stereo) {
 
-			delete instance;
-			instance = nullptr;
+			Shutdown();
 
 		} else {
 			instance->audio_parameters = parameters;
@@ -443,6 +442,11 @@ int OpenALManager::GetBestOpenALRenderingFormat(ALCint channelsType) {
 	}
 
 	return format;
+}
+
+void OpenALManager::Shutdown() {
+	delete instance;
+	instance = nullptr;
 }
 
 OpenALManager::~OpenALManager() {

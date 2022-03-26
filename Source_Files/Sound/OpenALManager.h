@@ -53,6 +53,7 @@ public:
 	static OpenALManager* Get();
 	static bool Init(AudioParameters parameters);
 	static float From_db(float db, bool music = false) { return db <= (SoundManager::MINIMUM_VOLUME_DB / (music ? 2 : 1)) ? 0 : std::pow(10.f, db / 20.f); }
+	static void Shutdown();
 	void Start();
 	void Stop();
 	void StopAllPlayers();

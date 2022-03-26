@@ -140,6 +140,7 @@ void SoundMemoryManager::Update(short index)
 static void Shutdown()
 {
 	SoundManager::instance()->Shutdown();
+	OpenALManager::Shutdown();
 }
 
 // From FileSpecifier_SDL.cpp
