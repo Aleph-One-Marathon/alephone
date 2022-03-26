@@ -421,9 +421,9 @@ void SoundManager::DirectPlaySound(short sound_index, angle direction, short vol
 			{
 				AngleAndVolumeToStereoVolume(direction - listener->yaw, volume, &variables.right_volume, &variables.left_volume);
 				parameters.stereo_parameters.is_panning = true;
-				parameters.stereo_parameters.gain_global = volume * 1.f / MAXIMUM_AMBIENT_SOUND_VOLUME;
-				parameters.stereo_parameters.gain_left = variables.left_volume * 1.f / MAXIMUM_AMBIENT_SOUND_VOLUME;
-				parameters.stereo_parameters.gain_right = variables.right_volume * 1.f / MAXIMUM_AMBIENT_SOUND_VOLUME;
+				parameters.stereo_parameters.gain_global = volume * 1.f / MAXIMUM_SOUND_VOLUME;
+				parameters.stereo_parameters.gain_left = variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
+				parameters.stereo_parameters.gain_right = variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
 			}
 
 			/* start the sound playing */
@@ -1039,9 +1039,9 @@ void SoundManager::UpdateAmbientSoundSources()
 			if (soundPlayer)
 			{
 				auto parameters = soundPlayer.get()->GetParameters();
-				parameters.stereo_parameters.gain_global = ambient_sounds[i].variables.volume * 1.f / MAXIMUM_AMBIENT_SOUND_VOLUME;
-				parameters.stereo_parameters.gain_left = ambient_sounds[i].variables.left_volume * 1.f / MAXIMUM_AMBIENT_SOUND_VOLUME;
-				parameters.stereo_parameters.gain_right = ambient_sounds[i].variables.right_volume * 1.f / MAXIMUM_AMBIENT_SOUND_VOLUME;
+				parameters.stereo_parameters.gain_global = ambient_sounds[i].variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
+				parameters.stereo_parameters.gain_left = ambient_sounds[i].variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
+				parameters.stereo_parameters.gain_right = ambient_sounds[i].variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
 				soundPlayer->UpdateParameters(parameters);
 			}
 			else if (LoadSound(ambient_sounds[i].sound_index)) {
@@ -1051,9 +1051,9 @@ void SoundManager::UpdateAmbientSoundSources()
 				parameters.pitch = FIXED_ONE;
 				parameters.flags = ambient_sounds[i].flags;
 				parameters.stereo_parameters.is_panning = true;
-				parameters.stereo_parameters.gain_global = ambient_sounds[i].variables.volume * 1.f / MAXIMUM_AMBIENT_SOUND_VOLUME;
-				parameters.stereo_parameters.gain_left = ambient_sounds[i].variables.left_volume * 1.f / MAXIMUM_AMBIENT_SOUND_VOLUME;
-				parameters.stereo_parameters.gain_right = ambient_sounds[i].variables.right_volume * 1.f / MAXIMUM_AMBIENT_SOUND_VOLUME;
+				parameters.stereo_parameters.gain_global = ambient_sounds[i].variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
+				parameters.stereo_parameters.gain_left = ambient_sounds[i].variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
+				parameters.stereo_parameters.gain_right = ambient_sounds[i].variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
 
 				auto ambientSound = BufferSound(parameters);
 				if (ambientSound) {
