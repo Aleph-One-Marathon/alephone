@@ -2844,7 +2844,7 @@ static void controls_dialog(void *arg)
 			changed = true;
 		}
 		
-		bool jaim = (joystick_aiming_w->get_selection() == 1);
+		bool jaim = (joystick_aiming_w->get_selection() == 0);
 		if (input_preferences->controller_analog != jaim) {
 			input_preferences->controller_analog = jaim;
 			changed = true;
