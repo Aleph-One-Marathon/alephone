@@ -37,17 +37,17 @@ class SoundPlayer : public AudioPlayer {
 public:
 	SoundPlayer(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters); //Must not be used outside OpenALManager (public for make_shared)
 	void UpdateParameters(SoundParameters parameters);
-	short GetIdentifier() const { return parameters.identifier; }
-	short GetSourceIdentifier() const { return parameters.source_identifier; }
+	short GetIdentifier() const override { return parameters.identifier; }
+	short GetSourceIdentifier() const override { return parameters.source_identifier; }
 	SoundParameters GetParameters() const { return parameters; }
 	static float Simulate(SoundParameters soundParameters);
-	float GetPriority() const { return Simulate(parameters); }
+	float GetPriority() const override { return Simulate(parameters); }
 private:
-	void Rewind();
-	int GetNextData(uint8* data, int length);
+	void Rewind() override;
+	int GetNextData(uint8* data, int length) override;
 	int LoopManager(uint8* data, int length);
-	bool SetUpALSourceIdle() const;
-	bool SetUpALSourceInit() const;
+	bool SetUpALSourceIdle() const override;
+	bool SetUpALSourceInit() const override;
 	void SetUpALSource3D() const;
 	SoundParameters parameters;
 	SoundInfo header;
