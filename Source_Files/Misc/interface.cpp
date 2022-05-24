@@ -2929,8 +2929,6 @@ void interface_fade_out(
 	assert(current_picture_clut);
 	if(current_picture_clut)
 	{
-		struct color_table *fadeout_animated_color_table;
-
 		/* We have to check this because they could go into preferences and change on us, */
 		/*  the evil swine. */
 		if(current_picture_clut_depth != interface_bit_depth)
@@ -2941,21 +2939,11 @@ void interface_fade_out(
 		}
 		
 		hide_cursor();
-			
-		fadeout_animated_color_table= new color_table;
-		obj_copy(*fadeout_animated_color_table, *current_picture_clut);
 
 		if(fade_music) 
 			Music::instance()->FadeOut(MACHINE_TICKS_PER_SECOND/2);
-		if (fadeout_animated_color_table)
-		{
-			explicit_start_fade(_cinematic_fade_out, current_picture_clut, fadeout_animated_color_table);
-			while (update_fades()) 
-				Music::instance()->Idle();
 
-			/* Oops.  Founda  memory leak.. */
-			delete fadeout_animated_color_table;
-		}
+		full_fade(_cinematic_fade_out, current_picture_clut);
 		
 		if(fade_music) 
 		{
@@ -3091,8 +3079,6 @@ static SDL_mutex *movie_audio_mutex = NULL;
 static const int AUDIO_BUF_SIZE = 10;
 static SDL_ffmpegAudioFrame *aframes[AUDIO_BUF_SIZE];
 static uint64_t movie_sync = 0;
-static int64_t movie_waudio_sync = 0;
-static int64_t latest_frame_rendered = 0;
 void movie_audio_callback(void *data, Uint8 *stream, int length)
 {
 	if (movie_audio_mutex && SDL_LockMutex(movie_audio_mutex) != -1)
@@ -3190,6 +3176,7 @@ void show_movie(short index)
 		
 		SDL_PauseAudio(false);
 		bool done = false;
+		int64_t movie_waudio_sync = 0;
 		while (!done)
 		{
 			SDL_Event event;
@@ -3225,7 +3212,7 @@ void show_movie(short index)
 			{
 				if (!astream) 
 				{
-					movie_sync = machine_tick_count() - movie_waudio_sync + latest_frame_rendered;
+					movie_sync = machine_tick_count() - movie_waudio_sync;
 				}
 				if (!vframe->ready)
 				{
@@ -3252,8 +3239,7 @@ void show_movie(short index)
 					if (vframe->last)
 						done = true;
 
-					latest_frame_rendered = vframe->pts;
-					movie_waudio_sync = machine_tick_count();
+					movie_waudio_sync = machine_tick_count() - vframe->pts;
 				}
 				else 
 				{
