@@ -3091,6 +3091,8 @@ static SDL_mutex *movie_audio_mutex = NULL;
 static const int AUDIO_BUF_SIZE = 10;
 static SDL_ffmpegAudioFrame *aframes[AUDIO_BUF_SIZE];
 static uint64_t movie_sync = 0;
+static int64_t movie_waudio_sync = 0;
+static int64_t latest_frame_rendered = 0;
 void movie_audio_callback(void *data, Uint8 *stream, int length)
 {
 	if (movie_audio_mutex && SDL_LockMutex(movie_audio_mutex) != -1)
@@ -3221,6 +3223,10 @@ void show_movie(short index)
 			
 			if (vframe)
 			{
+				if (!astream) 
+				{
+					movie_sync = machine_tick_count() - movie_waudio_sync + latest_frame_rendered;
+				}
 				if (!vframe->ready)
 				{
 					SDL_ffmpegGetVideoFrame(sffile, vframe);
@@ -3245,6 +3251,9 @@ void show_movie(short index)
 					vframe->ready = 0;
 					if (vframe->last)
 						done = true;
+
+					latest_frame_rendered = vframe->pts;
+					movie_waudio_sync = machine_tick_count();
 				}
 				else 
 				{
