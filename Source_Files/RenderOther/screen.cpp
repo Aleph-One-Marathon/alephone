@@ -188,6 +188,9 @@ void Screen::Initialize(screen_mode_data* mode)
 		pixel_format_32 = *pf;
 		SDL_FreeFormat(pf);
 
+		Intro_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, 0);
+		Intro_Buffer_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, 0);
+
 		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 
 		uncorrected_color_table = (struct color_table *)malloc(sizeof(struct color_table));
@@ -1089,20 +1092,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		SDL_FreeSurface(Term_Buffer);
 		Term_Buffer = NULL;
 	}
-	if (Intro_Buffer) {
-		SDL_FreeSurface(Intro_Buffer);
-		Intro_Buffer = NULL;
-	}
-	if (Intro_Buffer_corrected) {
-		SDL_FreeSurface(Intro_Buffer_corrected);
-		Intro_Buffer_corrected = NULL;
-	}
 
     screen_rectangle *term_rect = get_interface_rectangle(_terminal_screen_rect);
 	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, RECTANGLE_WIDTH(term_rect), RECTANGLE_HEIGHT(term_rect), 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, pixel_format_32.Amask);
-
-	Intro_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, 0);
-	Intro_Buffer_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, 0);
 
 #ifdef HAVE_OPENGL
 	if (!nogl && screen_mode.acceleration != _no_acceleration) {
