@@ -37,7 +37,7 @@ void CallBackableStreamPlayer::FillBuffers() {
 	UnqueueBuffers(); //First we unqueue buffers that can be
 
 	for (auto& buffer : audio_source.buffers) {
-		if (!buffer.queue_state) {
+		if (!buffer.second) {
 
 			std::vector<uint8> data;
 			size_t bufferOffset = 0;
@@ -52,9 +52,9 @@ void CallBackableStreamPlayer::FillBuffers() {
 			}
 
 			if (data.size() <= 0) return;
-			alBufferData(buffer.buffer_id, format, data.data(), data.size(), rate);
-			alSourceQueueBuffers(audio_source.source_id, 1, &buffer.buffer_id);
-			buffer.queue_state = true;
+			alBufferData(buffer.first, format, data.data(), data.size(), rate);
+			alSourceQueueBuffers(audio_source.source_id, 1, &buffer.first);
+			buffer.second = true;
 		}
 	}
 }

@@ -6,7 +6,6 @@
 #include "StreamPlayer.h"
 #include "SoundManager.h"
 #include <queue>
-#include <unordered_map>
 
 #if defined (_MSC_VER) && !defined (M_PI)
 #define _USE_MATH_DEFINES

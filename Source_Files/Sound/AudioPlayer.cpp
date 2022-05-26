@@ -20,7 +20,7 @@ void AudioPlayer::ResetSource() {
 		alSourcei(audio_source.source_id, AL_BUFFER, 0);
 
 		for (auto& buffer : audio_source.buffers) {
-			buffer.queue_state = false;
+			buffer.second = false;
 		}
 	}
 }
@@ -37,12 +37,10 @@ void AudioPlayer::UnqueueBuffers() {
 	ALint nbBuffersProcessed;
 	alGetSourcei(audio_source.source_id, AL_BUFFERS_PROCESSED, &nbBuffersProcessed);
 
-	while (nbBuffersProcessed > 0) {
+	while (nbBuffersProcessed-- > 0) {
 		ALuint bufid;
 		alSourceUnqueueBuffers(audio_source.source_id, 1, &bufid);
-		auto buffer = std::find_if(std::begin(audio_source.buffers), std::end(audio_source.buffers), [&bufid](const AudioPlayerBuffer buffer) -> ALuint {return buffer.buffer_id == bufid; });
-		buffer->queue_state = false;
-		nbBuffersProcessed--;
+		audio_source.buffers[bufid] = false;
 	}
 }
 
@@ -51,13 +49,13 @@ void AudioPlayer::FillBuffers() {
 	UnqueueBuffers(); //First we unqueue buffers that can be
 
 	for (auto& buffer : audio_source.buffers) {
-		if (!buffer.queue_state) { //now we process our buffers that are ready
+		if (!buffer.second) { //now we process our buffers that are ready
 			std::vector<uint8> data(buffer_samples);
 			int dataLength = GetNextData(data.data(), buffer_samples);
 			if (dataLength <= 0) return;
-			alBufferData(buffer.buffer_id, format, data.data(), dataLength, rate);
-			alSourceQueueBuffers(audio_source.source_id, 1, &buffer.buffer_id);
-			buffer.queue_state = true;
+			alBufferData(buffer.first, format, data.data(), dataLength, rate);
+			alSourceQueueBuffers(audio_source.source_id, 1, &buffer.first);
+			buffer.second = true;
 		}
 	}
 }

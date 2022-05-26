@@ -13,6 +13,7 @@
 #include <atomic>
 #include <algorithm>
 #include <mutex>
+#include <unordered_map>
 
 static constexpr int num_buffers = 4;
 static constexpr int buffer_samples = 8192;
@@ -20,14 +21,11 @@ static constexpr int buffer_samples = 8192;
 class AudioPlayer {
 private:
    
-    struct AudioPlayerBuffer { //this is just because it's a bit hard to know which buffer is queued and which is not without that
-        ALuint buffer_id;
-        bool queue_state = false;
-    };
+    typedef std::unordered_map<ALuint, bool> AudioPlayerBuffers; //<buffer id, is queued for processing>
 
     struct AudioSource {
         ALuint source_id = 0; //Source used by this player
-        AudioPlayerBuffer buffers[num_buffers]; //this is just because it's a bit hard to know which buffer is queued and which is not without that
+        AudioPlayerBuffers buffers;
     };
 
     bool Play();

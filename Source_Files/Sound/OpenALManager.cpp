@@ -355,7 +355,7 @@ bool OpenALManager::GenerateSources() {
 		}
 
 		for (int i = 0; i < num_buffers; i++) {
-			audioSource.buffers[i] = { buffers_id[i] };
+			audioSource.buffers.insert({ buffers_id[i], false });
 		}
 
 		sources_pool.push(audioSource);
@@ -401,8 +401,8 @@ void OpenALManager::CleanEverything() {
 		const auto& audioSource = sources_pool.front();
 		alDeleteSources(1, &audioSource.source_id);
 
-		for (int i = 0; i < num_buffers; i++) {
-			alDeleteBuffers(1, &audioSource.buffers[i].buffer_id);
+		for (auto const& buffer : audioSource.buffers) {
+			alDeleteBuffers(1, &buffer.first);
 		}
 
 		sources_pool.pop();
