@@ -1584,6 +1584,7 @@ int Lua_Player_Damage(lua_State *L)
 	damage.base = static_cast<int>(lua_tonumber(L, 2));
 	damage.random = 0;
 	damage.scale = FIXED_ONE;
+	damage.flags = 0;
 
 	if (args > 2)
 	{
