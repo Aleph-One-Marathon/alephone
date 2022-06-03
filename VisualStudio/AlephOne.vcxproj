@@ -239,6 +239,7 @@
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(ProjectDir)..\Source_Files\;$(ProjectDir)..\Source_Files\XML;$(ProjectDir)..\Source_Files\TCPMess;$(ProjectDir)..\Source_Files\Sound;$(ProjectDir)..\Source_Files\RenderOther;$(ProjectDir)..\Source_Files\RenderMain;$(ProjectDir)..\Source_Files\Network\Metaserver;$(ProjectDir)..\Source_Files\Network;$(ProjectDir)..\Source_Files\ModelView;$(ProjectDir)..\Source_Files\Misc;$(ProjectDir)..\Source_Files\Lua;$(ProjectDir)..\Source_Files\Input;$(ProjectDir)..\Source_Files\GameWorld;$(ProjectDir)..\Source_Files\Files;$(ProjectDir)..\Source_Files\FFmpeg;$(ProjectDir)..\Source_Files\CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -257,6 +258,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)..\Source_Files\;$(ProjectDir)..\Source_Files\XML;$(ProjectDir)..\Source_Files\TCPMess;$(ProjectDir)..\Source_Files\Sound;$(ProjectDir)..\Source_Files\RenderOther;$(ProjectDir)..\Source_Files\RenderMain;$(ProjectDir)..\Source_Files\Network\Metaserver;$(ProjectDir)..\Source_Files\Network;$(ProjectDir)..\Source_Files\ModelView;$(ProjectDir)..\Source_Files\Misc;$(ProjectDir)..\Source_Files\Lua;$(ProjectDir)..\Source_Files\Input;$(ProjectDir)..\Source_Files\GameWorld;$(ProjectDir)..\Source_Files\Files;$(ProjectDir)..\Source_Files\FFmpeg;$(ProjectDir)..\Source_Files\CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -278,6 +280,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)..\Source_Files\;$(ProjectDir)..\Source_Files\XML;$(ProjectDir)..\Source_Files\TCPMess;$(ProjectDir)..\Source_Files\Sound;$(ProjectDir)..\Source_Files\RenderOther;$(ProjectDir)..\Source_Files\RenderMain;$(ProjectDir)..\Source_Files\Network\Metaserver;$(ProjectDir)..\Source_Files\Network;$(ProjectDir)..\Source_Files\ModelView;$(ProjectDir)..\Source_Files\Misc;$(ProjectDir)..\Source_Files\Lua;$(ProjectDir)..\Source_Files\Input;$(ProjectDir)..\Source_Files\GameWorld;$(ProjectDir)..\Source_Files\Files;$(ProjectDir)..\Source_Files\FFmpeg;$(ProjectDir)..\Source_Files\CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -299,6 +302,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)..\Source_Files\;$(ProjectDir)..\Source_Files\XML;$(ProjectDir)..\Source_Files\TCPMess;$(ProjectDir)..\Source_Files\Sound;$(ProjectDir)..\Source_Files\RenderOther;$(ProjectDir)..\Source_Files\RenderMain;$(ProjectDir)..\Source_Files\Network\Metaserver;$(ProjectDir)..\Source_Files\Network;$(ProjectDir)..\Source_Files\ModelView;$(ProjectDir)..\Source_Files\Misc;$(ProjectDir)..\Source_Files\Lua;$(ProjectDir)..\Source_Files\Input;$(ProjectDir)..\Source_Files\GameWorld;$(ProjectDir)..\Source_Files\Files;$(ProjectDir)..\Source_Files\FFmpeg;$(ProjectDir)..\Source_Files\CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -320,6 +324,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)..\Source_Files\;$(ProjectDir)..\Source_Files\XML;$(ProjectDir)..\Source_Files\TCPMess;$(ProjectDir)..\Source_Files\Sound;$(ProjectDir)..\Source_Files\RenderOther;$(ProjectDir)..\Source_Files\RenderMain;$(ProjectDir)..\Source_Files\Network\Metaserver;$(ProjectDir)..\Source_Files\Network;$(ProjectDir)..\Source_Files\ModelView;$(ProjectDir)..\Source_Files\Misc;$(ProjectDir)..\Source_Files\Lua;$(ProjectDir)..\Source_Files\Input;$(ProjectDir)..\Source_Files\GameWorld;$(ProjectDir)..\Source_Files\Files;$(ProjectDir)..\Source_Files\FFmpeg;$(ProjectDir)..\Source_Files\CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -339,6 +344,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>SDL2maind.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;wldap32.lib;crypt32.lib;Secur32.lib;dsound.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -353,6 +359,7 @@
       <WarningLevel>Level3</WarningLevel>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>SDL2main.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;wldap32.lib;crypt32.lib;Secur32.lib;dsound.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -368,6 +375,7 @@
       <WarningLevel>Level3</WarningLevel>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>SDL2main.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;wldap32.lib;crypt32.lib;Secur32.lib;dsound.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -383,6 +391,7 @@
       <WarningLevel>Level3</WarningLevel>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>SDL2main.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;wldap32.lib;crypt32.lib;Secur32.lib;dsound.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -398,6 +407,7 @@
       <WarningLevel>Level3</WarningLevel>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>SDL2main.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;wldap32.lib;crypt32.lib;Secur32.lib;dsound.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>

@@ -435,7 +435,7 @@ MetaserverClient::pump()
 void
 MetaserverClient::pumpAll()
 {
-	for_each(s_instances.begin(), s_instances.end(), mem_fun(&MetaserverClient::pump));
+	for_each(s_instances.begin(), s_instances.end(), mem_fn(&MetaserverClient::pump));
 }
 
 
