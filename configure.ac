@@ -54,8 +54,8 @@ AC_PROG_OBJCXX
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
-dnl Require C++11 or newer and enable C++11 if needed.
-AX_CXX_COMPILE_STDCXX([11], [], [mandatory])
+dnl Require C++17 or newer and enable C++17 if needed.
+AX_CXX_COMPILE_STDCXX([17], [], [mandatory])
 
 dnl Some platform specific stuff.
 AS_CASE([$target],
