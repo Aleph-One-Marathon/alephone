@@ -10,9 +10,9 @@ runs:
       shell: bash
       
     - name: Install Dependencies 
-      run: sudo apt-get install libboost-all-dev libsdl2-dev libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev libspeexdsp-dev libzzip-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev libpng-dev libcurl4-gnutls-dev libminiupnpc-dev
+      run: sudo apt-get install autoconf-archive libboost-all-dev libsdl2-dev libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev libspeexdsp-dev libzzip-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev libpng-dev libcurl4-gnutls-dev libminiupnpc-dev
       shell: bash
       
     - name: Configure
-      run: ./autogen.sh
+      run: autoreconf -i && ./configure
       shell: bash
