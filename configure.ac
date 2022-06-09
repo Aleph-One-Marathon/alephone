@@ -12,7 +12,7 @@ AC_CANONICAL_TARGET
 
 dnl Init automake.
 AM_INIT_AUTOMAKE([subdir-objects])
-AM_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 
 dnl Configure options.
 
