@@ -2525,10 +2525,10 @@ void play_world_sound(
 world_location3d *_sound_listener_proc(
 	void)
 {
-	return (world_location3d *) ((get_game_state()==_game_in_progress) ?
+	return (world_location3d *) (current_player ?
 		&current_player->camera_location :
 //		&get_object_data(get_monster_data(current_player->monster_index)->object_index)->location :
-		NULL);
+		nullptr);
 }
 
 // stuff floating on top of media is above it

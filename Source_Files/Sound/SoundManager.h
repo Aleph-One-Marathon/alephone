@@ -127,10 +127,8 @@ public:
 		short identifier; // unique sound identifier for the sound being played in this channel (object_index)
 		struct Variables
 		{
-			short volume, left_volume, right_volume;
-			_fixed original_pitch, pitch;
-			
-			short priority;
+			short volume = 0, left_volume = 0, right_volume = 0;
+			short priority = 0;
 		} variables; // variables of the sound being played
 
 		world_location3d *dynamic_source; // can be NULL for immobile sounds
@@ -160,7 +158,7 @@ private:
 	void UnlockLockedSounds();
 
 	void CalculateSoundVariables(short sound_index, world_location3d *source, Channel::Variables& variables);
-	void CalculateInitialSoundVariables(short sound_index, world_location3d *source, Channel::Variables& variables, _fixed pitch);
+	void CalculateInitialSoundVariables(short sound_index, world_location3d *source, Channel::Variables& variables);
 	void InstantiateSoundVariables(Channel::Variables& variables, Channel& channel, bool first_time);
 
 	_fixed CalculatePitchModifier(short sound_index, _fixed pitch_modifier);

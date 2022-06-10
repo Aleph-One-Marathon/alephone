@@ -367,7 +367,7 @@ void SoundManager::UnloadAllSounds()
 void SoundManager::PlaySound(short sound_index, 
 			     world_location3d *source,
 			     short identifier, // NONE is no identifer and the sound is immediately orphaned
-			     _fixed pitch) // on top of all existing pitch modifiers
+			     _fixed pitch)
 {
 	/* don’t do anything if we’re not initialized or active, or our sound_code is NONE,
 		or our volume is zero, our we have no sound channels */
@@ -375,7 +375,7 @@ void SoundManager::PlaySound(short sound_index,
 	{
 		Channel::Variables variables;
 
-		CalculateInitialSoundVariables(sound_index, source, variables, pitch);
+		CalculateInitialSoundVariables(sound_index, source, variables);
 		
 		/* make sure the sound data is in memory */
 		if (LoadSound(sound_index))
@@ -384,7 +384,7 @@ void SoundManager::PlaySound(short sound_index,
 			/* get the channel, and free it for our new sound */
 			if (channel)
 			{
-				/* set the volume and pitch in this channel */
+				/* set the volume */
 				InstantiateSoundVariables(variables, *channel, true);
 				
 				/* initialize the channel */
@@ -428,7 +428,6 @@ void SoundManager::DirectPlaySound(short sound_index, angle direction, short vol
 			{
 				world_location3d *listener = _sound_listener_proc();
 
-				variables.priority = 0;
 				variables.volume = volume;
 
 				if (direction == NONE || !listener)
@@ -998,7 +997,7 @@ void SoundManager::CalculateSoundVariables(short sound_index, world_location3d *
 
 }
 
-void SoundManager::CalculateInitialSoundVariables(short sound_index, world_location3d *source, Channel::Variables& variables, _fixed)
+void SoundManager::CalculateInitialSoundVariables(short sound_index, world_location3d *source, Channel::Variables& variables)
 {
 	SoundDefinition *definition = GetSoundDefinition(sound_index);
 	if (!definition) return;
