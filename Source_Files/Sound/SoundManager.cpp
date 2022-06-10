@@ -380,7 +380,7 @@ void SoundManager::PlaySound(short sound_index,
 		/* make sure the sound data is in memory */
 		if (LoadSound(sound_index))
 		{
-			Channel *channel = BestChannel(sound_index, variables);;
+			Channel *channel = BestChannel(sound_index, variables);
 			/* get the channel, and free it for our new sound */
 			if (channel)
 			{
@@ -497,7 +497,7 @@ void SoundManager::StopSound(short identifier, short sound_index)
 
 		for (short i = 0; i < total_channel_count; i++)
 		{
-			if (SLOT_IS_USED(&channels[i]) && (channels[i].identifier == identifier || identifier == NONE) && (channels[i].sound_index == sound_index || sound_index == NONE))
+			if ((channels[i].identifier == identifier || identifier == NONE) && (channels[i].sound_index == sound_index || sound_index == NONE))
 			{
 				FreeChannel(channels[i]);
 			}
@@ -920,8 +920,7 @@ SoundManager::Channel *SoundManager::BestChannel(short sound_index, Channel::Var
 			else
 			{
 				/* unused channel (we won’t get much better than this!) */
-				if (SLOT_IS_USED(channel))
-					FreeChannel(*channel);
+				FreeChannel(*channel);
 				best_channel = channel;
 			}
 		}
@@ -929,7 +928,6 @@ SoundManager::Channel *SoundManager::BestChannel(short sound_index, Channel::Var
 
 	if (best_channel)
 	{
-		
 		/* stop whatever sound is playing and unlock the old handle if necessary */
 		FreeChannel(*best_channel);
 	}
@@ -957,7 +955,7 @@ void SoundManager::UnlockLockedSounds()
 		for (short i = 0; i < parameters.channel_count; i++)
 		{
 			Channel *channel = &channels[i];
-			if (SLOT_IS_USED(channel) && !Mixer::instance()->ChannelBusy(channel->mixer_channel))
+			if (!Mixer::instance()->ChannelBusy(channel->mixer_channel))
 			{
 				FreeChannel(*channel);
 			}
@@ -1240,7 +1238,7 @@ void SoundManager::UpdateAmbientSoundSources()
 				Channel *channel = &channels[j + parameters.channel_count];
 				if (!channel_used[j])
 				{
-					if (SLOT_IS_USED(channel)) FreeChannel(*channel);
+					FreeChannel(*channel);
 					channel->flags = 0;
 					channel->callback_count = 2; // #MD as if two sounds had just stopped playing
 					channel->sound_index = ambient->sound_index;
@@ -1259,7 +1257,7 @@ void SoundManager::UpdateAmbientSoundSources()
 	for (short i = 0; i < MAXIMUM_AMBIENT_SOUND_CHANNELS; i++)
 	{
 		Channel *channel = &channels[i + parameters.channel_count];
-		if (SLOT_IS_USED(channel) && !channel_used[i])
+		if (!channel_used[i])
 		{
 			FreeChannel(*channel);
 		}
