@@ -808,17 +808,18 @@ SoundDefinition* SoundManager::GetSoundDefinition(short sound_index)
 std::shared_ptr<SoundPlayer> SoundManager::BufferSound(SoundParameters parameters)
 {
 	auto returnedPlayer = std::shared_ptr<SoundPlayer>(nullptr);
-	SoundDefinition *definition = GetSoundDefinition(parameters.identifier);
+	SoundDefinition* definition = GetSoundDefinition(parameters.identifier);
 	if (!definition || !definition->permutations)
 		return returnedPlayer;
 
 	int permutation = GetRandomSoundPermutation(parameters.identifier);
 
 	assert(permutation >= 0 && permutation < definition->permutations);
+	parameters.permutation = permutation;
 
 	SoundInfo header;
 
-	SoundOptions *SndOpts = SoundReplacements::instance()->GetSoundOptions(parameters.identifier, permutation);
+	SoundOptions* SndOpts = SoundReplacements::instance()->GetSoundOptions(parameters.identifier, permutation);
 	if (SndOpts && SndOpts->Sound.length)
 	{
 		header = SndOpts->Sound;
@@ -829,23 +830,11 @@ std::shared_ptr<SoundPlayer> SoundManager::BufferSound(SoundParameters parameter
 	}
 
 	auto sound = sounds->Get(parameters.identifier, permutation);
-	if (sound.get()) 
+	if (sound.get())
 	{
 		parameters.pitch = CalculatePitchModifier(parameters.identifier, parameters.pitch);
 		parameters.flags |= definition->flags;
-
-}
-
-void SoundManager::CalculateInitialSoundVariables(short sound_index, world_location3d *source, Channel::Variables& variables)
-{
-	SoundDefinition *definition = GetSoundDefinition(sound_index);
-	if (!definition) return;
-
-	if (!source)
-	{
-		variables.volume = variables.left_volume = variables.right_volume = MAXIMUM_SOUND_VOLUME;
-		// ghs: is this what the priority should be if there's no source?
-		variables.priority = definition->behavior_index;
+		parameters.behavior = (sound_behavior)definition->behavior_index;
 
 		returnedPlayer = OpenALManager::Get()->PlaySound(header, *sound, parameters);
 		if (returnedPlayer) sound_players.insert(returnedPlayer);
@@ -853,7 +842,6 @@ void SoundManager::CalculateInitialSoundVariables(short sound_index, world_locat
 
 	return returnedPlayer;
 }
-
 
 float SoundManager::CalculatePitchModifier(short sound_index, _fixed pitch_modifier)
 {

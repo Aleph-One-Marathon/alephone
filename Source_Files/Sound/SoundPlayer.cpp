@@ -5,13 +5,17 @@ constexpr SoundBehavior SoundPlayer::sound_behavior_parameters[];
 constexpr SoundBehavior SoundPlayer::sound_obstruct_behavior_parameters[];
 SoundPlayer::SoundPlayer(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters)
 	: AudioPlayer(header.rate >> 16, header.stereo, header.sixteen_bit) {  //since header.rate is on 16.16 format
+	Load(header, sound_data, parameters);
+	start_tick = machine_tick_count();
+}
+
+void SoundPlayer::Load(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters) {
 	this->sound_data = sound_data;
 	this->header = header;
 	this->parameters = parameters;
 	this->parameters.loop = this->parameters.loop || header.loop_end - header.loop_start >= 4;
 	data_length = header.length;
 	filterable = parameters.filterable;
-	start_tick = machine_tick_count();
 }
 
 //Simulate what the volume of our sound would be if we play it
@@ -42,6 +46,12 @@ void SoundPlayer::UpdateParameters(SoundParameters parameters) {
 	std::lock_guard<std::mutex> guard(mutex_internal);
 	this->parameters = parameters;
 	filterable = parameters.filterable;
+}
+
+void SoundPlayer::Replace(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters) {
+	std::lock_guard<std::mutex> guard(mutex_internal);
+	AudioPlayer::Load(header.rate >> 16, header.stereo, header.sixteen_bit);
+	Load(header, sound_data, parameters);
 }
 
 void SoundPlayer::Rewind() {

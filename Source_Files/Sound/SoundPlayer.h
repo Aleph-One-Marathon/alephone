@@ -19,6 +19,7 @@ struct SoundParameters {
 	bool loop = false; //for now it will only be used by sound (musics work differently but should use this tbh)
 	bool local = true; //if false it will use source_location3d to position sound (3D sounds)
 	bool filterable = true; //for now volume only / if true, can be modified by global filters, otherwise is immune to that
+	uint16_t permutation = 0;
 	uint16_t obstruction_flags = 0;
 	sound_behavior behavior = _sound_is_normal;
 	world_location3d source_location3d = {};
@@ -43,12 +44,14 @@ public:
 	static float Simulate(SoundParameters soundParameters);
 	float GetPriority() const override { return Simulate(parameters); }
 private:
+	void Load(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters);
 	void Rewind() override;
 	int GetNextData(uint8* data, int length) override;
 	int LoopManager(uint8* data, int length);
 	bool SetUpALSourceIdle() const override;
 	bool SetUpALSourceInit() const override;
 	void SetUpALSource3D() const;
+	void Replace(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters);
 	SoundParameters parameters;
 	SoundInfo header;
 	SoundData sound_data;

@@ -58,6 +58,7 @@ protected:
     void UnqueueBuffers();
     virtual void FillBuffers();
     virtual int GetNextData(uint8* data, int length) = 0;
+    void Load(int rate, bool stereo, bool sixteen_bit);
     std::atomic<bool> rewind_state = { false };
     std::atomic<bool> filterable = { true };
     std::atomic<bool> is_active = { true };
