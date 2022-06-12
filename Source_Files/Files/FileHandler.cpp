@@ -26,7 +26,7 @@
  */
 
 #if defined _MSC_VER 
- //not #if defined(_WIN32) || defined(_WIN64) because we have strcasecmp in mingw
+ //not #if defined(_WIN32) because we have strcasecmp in mingw
 #define strcasecmp _stricmp
 #endif
 
@@ -1373,7 +1373,7 @@ bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 #endif
 
 		nfdchar_t* outpath;
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
 		auto fullscreen = get_screen_mode()->fullscreen;
 		if (fullscreen)
 		{
@@ -1381,7 +1381,7 @@ bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 		}
 #endif		
 		auto result = NFD_OpenDialog(filters, dir.GetPath(), &outpath);
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
 		if (fullscreen)
 		{
 			toggle_fullscreen(true);
@@ -1625,7 +1625,7 @@ bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *d
 		}
 		
 		nfdchar_t* outpath;
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
 		auto fullscreen = get_screen_mode()->fullscreen;
 		if (fullscreen)
 		{
@@ -1633,7 +1633,7 @@ bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *d
 		}
 #endif
 		auto result = NFD_SaveDialog(typecode_filters[type], dir.GetPath(), &outpath);
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
 		if (fullscreen)
 		{
 			toggle_fullscreen(true);
