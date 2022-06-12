@@ -339,7 +339,7 @@ bool Screen::fifty_percent()
 
 bool Screen::seventyfive_percent()
 {
-	return screen_mode.height == 240;;
+	return screen_mode.height == 240;
 }
 
 SDL_Rect Screen::window_rect()

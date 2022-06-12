@@ -416,7 +416,7 @@ static void crosshair_dialog(void *arg)
 	table->dual_add(red_w, d);
 
 	w_slider *green_w = new w_percentage_slider(16, 0);
-	SliderSelectorWidget greenWidget(green_w);;
+	SliderSelectorWidget greenWidget(green_w);
 	ColorComponentPref greenPref(player_preferences->Crosshairs.Color.green);
 	crosshair_binders->insert<int> (&greenWidget, &greenPref);
 	table->dual_add(green_w->label("Green"), d);
