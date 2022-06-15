@@ -92,6 +92,8 @@ struct graphics_preferences_data
 	OGL_ConfigureData OGL_Configure;
 
 	bool double_corpse_limit;
+	
+	int16 bob_disable;
 
 	int16 software_alpha_blending;
 	int16 software_sdl_driver;

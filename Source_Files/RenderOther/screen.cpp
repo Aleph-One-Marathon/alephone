@@ -1238,7 +1238,7 @@ void update_world_view_camera()
 	world_view->maximum_depth_intensity = current_player->weapon_intensity;
 
 	world_view->origin = current_player->camera_location;
-	if (!graphics_preferences->screen_mode.camera_bob)
+	if (graphics_preferences->screen_mode.bob_disable)
 		world_view->origin.z -= current_player->step_height;
 	world_view->origin_polygon_index = current_player->camera_polygon_index;
 

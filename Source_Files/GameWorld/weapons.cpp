@@ -2812,13 +2812,13 @@ static void calculate_weapon_position_for_idle(
 	/* Weapons are the first thing drawn */
 	bob_height= (player->variables.step_amplitude*definition->bob_amplitude)>>FIXED_FRACTIONAL_BITS;
 	bob_height= (bob_height*table[vertical_angle])>>TRIG_SHIFT;
-	if (!graphics_preferences->screen_mode.weapon_bob) bob_height= 0;
+	if (graphics_preferences->screen_mode.bob_disable == 2) bob_height= 0;
 	if (use_elevation) bob_height+= sine_table[player->elevation]<<3;
 	*height+= bob_height;
 
 	bob_width= (player->variables.step_amplitude*definition->horizontal_amplitude)>>FIXED_FRACTIONAL_BITS;
 	bob_width= (bob_width*table[horizontal_phase>>(FIXED_FRACTIONAL_BITS-ANGULAR_BITS)])>>TRIG_SHIFT;
-	if (!graphics_preferences->screen_mode.weapon_bob) bob_width= 0;
+	if (graphics_preferences->screen_mode.bob_disable == 2) bob_width= 0;
 	*width += bob_width;
 }
 
