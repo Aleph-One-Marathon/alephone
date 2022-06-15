@@ -1271,6 +1271,8 @@ static void graphics_dialog(void *arg)
 
 	table->dual_add_row(new w_static_text("*may interfere with third-party scenario effects"), d);
 
+	table->add_row(new w_spacer(), true);
+
 	w_select *bob_disable_w = new w_select(0, bob_disable_labels);
 	for (auto i = 0; bob_disable_labels[i] != NULL; ++i)
 	{
