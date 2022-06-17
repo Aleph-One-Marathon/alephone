@@ -102,7 +102,7 @@ bool BasicIFFDecoder::Open(FileSpecifier& File)
 			case FOUR_CHARS_TO_INT('S', 'S', 'N', 'D'):
 				ssnd_found = true;
 			
-			length = size;
+			length = size - 8; //chunk size contains offset & blocksize
 			SDL_RWseek(music_rw, 8, SEEK_CUR);
 			data_offset = SDL_RWtell(music_rw);
 			break;
