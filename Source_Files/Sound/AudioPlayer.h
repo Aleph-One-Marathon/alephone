@@ -1,13 +1,8 @@
 #ifndef __AUDIO_PLAYER_H
 #define __AUDIO_PLAYER_H
 
-#if defined(__APPLE__)
-#include <OpenAL/al.h>
-#include <OpenAL/alext.h>
-#else
 #include <AL/al.h>
 #include <AL/alext.h>
-#endif
 
 #include "Decoder.h"
 #include <atomic>
