@@ -266,7 +266,7 @@ extern vector<platform_data> PlatformList;
 
 /* --------- prototypes/PLATFORMS.C */
 
-short new_platform(struct static_platform_data *data, short polygon_index, short version);
+short new_platform(struct static_platform_data *data, short polygon_index);
 struct static_platform_data *get_defaults_for_platform_type(short type);
 
 void update_platforms(void);
@@ -311,7 +311,7 @@ platform_data *get_platform_data(
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world
 
-uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data *Objects, size_t Count);
+uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data *Objects, size_t Count, short version);
 uint8 *pack_static_platform_data(uint8 *Stream, static_platform_data *Objects, size_t Count);
 uint8 *unpack_platform_data(uint8 *Stream, platform_data *Objects, size_t Count);
 uint8 *pack_platform_data(uint8 *Stream, platform_data *Objects, size_t Count);

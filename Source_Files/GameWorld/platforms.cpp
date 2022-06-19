@@ -131,8 +131,7 @@ platform_definition *get_platform_definition(const short type)
 
 short new_platform(
 	struct static_platform_data *data,
-	short polygon_index,
-	short version)
+	short polygon_index)
 {
 	short platform_index= NONE;
 	struct platform_data *platform;
@@ -164,23 +163,6 @@ short new_platform(
 		platform->parent_platform_index= NONE;
 		calculate_platform_extrema(platform_index, data->minimum_height, data->maximum_height);
 		
-		if (version == MARATHON_ONE_DATA_VERSION)
-		{
-			switch (platform->type)
-			{
-			case 0: // marathon door
-			case 3: // pfhor door
-				SET_PLATFORM_IS_DOOR(platform, true);
-				break;
-			}
-			
-			if (PLATFORM_IS_LOCKED(platform))
-			{
-				SET_PLATFORM_IS_LOCKED(platform, false);
-				SET_PLATFORM_FLOODS_M1(platform, true);
-			}
-		}
-
 #if 0
 		switch (platform->type)
 		{
@@ -1104,7 +1086,7 @@ void adjust_platform_sides(
 	}
 }
 
-uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data* Objects, size_t Count)
+uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data* Objects, size_t Count, short version) 
 {
 	uint8* S = Stream;
 	static_platform_data* ObjPtr = Objects;
@@ -1124,6 +1106,23 @@ uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data* Objects,
 		StreamToValue(S,ObjPtr->tag);
 		
 		S += 7*2;
+
+		if (version == MARATHON_ONE_DATA_VERSION)
+		{
+			switch (ObjPtr->type)
+			{
+			case 0: // marathon door
+			case 3: // pfhor door
+				SET_PLATFORM_IS_DOOR(ObjPtr, true);
+				break;
+			}
+			
+			if (PLATFORM_IS_LOCKED(ObjPtr))
+			{
+				SET_PLATFORM_IS_LOCKED(ObjPtr, false);
+				SET_PLATFORM_FLOODS_M1(ObjPtr, true);
+			}
+		}
 	}
 	
 	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_static_platform_data));
