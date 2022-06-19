@@ -54,7 +54,6 @@ struct ffmpeg_vars {
     SDL_ffmpegFile* file;
     SDL_ffmpegAudioFrame* frame;
     AVFifoBuffer *fifo;
-    int stream_idx;
     bool started;
 };
 typedef struct ffmpeg_vars ffmpeg_vars_t;
