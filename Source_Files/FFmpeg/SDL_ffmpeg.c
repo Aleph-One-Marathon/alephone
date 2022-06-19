@@ -46,6 +46,7 @@
 extern "C"
 {
 #endif
+#include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 #include "libavutil/mathematics.h"
 #include "libswscale/swscale.h"
@@ -2040,6 +2041,7 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
 
     while (avcodec_receive_frame(avctx, dframe) == 0) {
 
+        dframe->channel_layout |= dframe->channels == 2 ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO; 
         convertedFrame->nb_samples = dframe->nb_samples;
         convertedFrame->channel_layout = dframe->channel_layout;
         convertedFrame->sample_rate = dframe->sample_rate;

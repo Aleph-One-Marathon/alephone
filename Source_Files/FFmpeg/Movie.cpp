@@ -238,13 +238,6 @@ bool Movie::Setup()
 	const auto fps = std::max(get_fps_target(), static_cast<int16_t>(30));
     
     // Open output file
-    AVOutputFormat *fmt;
-    if (success)
-    {
-        fmt = av_guess_format("webm", NULL, NULL);
-        success = fmt;
-        if (!success) err_msg = "Could not find output format";
-    }
     if (success)
     {
         av->fmt_ctx = avformat_alloc_context();
@@ -253,15 +246,15 @@ bool Movie::Setup()
     }
     if (success)
     {
-        av->fmt_ctx->oformat = fmt;
+        av->fmt_ctx->oformat = av_guess_format("webm", NULL, NULL);
         av->fmt_ctx->url = (char*)av_malloc(moviefile.size() + 1);
         sprintf(av->fmt_ctx->url, "%s", moviefile.c_str());
-        success = (0 <= avio_open(&av->fmt_ctx->pb, av->fmt_ctx->url, AVIO_FLAG_WRITE));
+        success = av->fmt_ctx->oformat && (0 <= avio_open(&av->fmt_ctx->pb, av->fmt_ctx->url, AVIO_FLAG_WRITE));
         if (!success) err_msg = "Could not open movie file for writing";
     }
     
     // Open output video stream
-    AVCodec *video_codec;
+    const AVCodec *video_codec;
     AVStream *video_stream;
     if (success)
     {
@@ -358,7 +351,7 @@ bool Movie::Setup()
     }
     
     // Open output audio stream
-    AVCodec *audio_codec;
+    const AVCodec *audio_codec;
     AVStream *audio_stream;
     if (success)
     {
@@ -459,7 +452,7 @@ bool Movie::Setup()
         video_stream->time_base = AVRational{1, fps};
         audio_stream->time_base = AVRational{1, mx->obtained.freq};
         success = avformat_write_header(av->fmt_ctx, NULL) >= 0;
-        if (!success) err_msg = "Could not create write video header";
+        if (!success) err_msg = "Could not write video header";
     }
     
     // set up our threads and intermediate storage
