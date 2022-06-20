@@ -76,6 +76,7 @@ private:
   void EncodeThread();
   void EncodeVideo(bool last);
   void EncodeAudio(bool last);
+  void ThrowUserError(std::string error_msg);
 };
 	
 #endif
