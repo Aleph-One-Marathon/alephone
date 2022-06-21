@@ -34,6 +34,7 @@ std::shared_ptr<SoundData> ExternalSoundHeader::LoadExternal(FileSpecifier& File
 
 	p = std::make_shared<SoundData>(length);
 
+	decoder->Rewind();
 	if (decoder->Decode(&(*p)[0], length) != length) 
 	{
 		p.reset();

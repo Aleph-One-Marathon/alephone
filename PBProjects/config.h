@@ -110,7 +110,7 @@
 /* #undef HAVE_SMPEG_SMPEG_H */
 
 /* ${desc_sndfile} enabled */
-/* #undef HAVE_SNDFILE */
+#define HAVE_SNDFILE 1
 
 /* Define to 1 if you have the <sndfile.h> header file. */
 /* #undef HAVE_SNDFILE_H */

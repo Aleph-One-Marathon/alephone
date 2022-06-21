@@ -61,7 +61,11 @@
       },
       {
          "name":"nativefiledialog"
-      }
+      },
+	  {
+	      "name":"libsndfile",
+		  "default-features": false
+	  }
    ],
    "builtin-baseline":"9eb76edabf4b1cb1abfb67823d900daf8112da0f"
 }

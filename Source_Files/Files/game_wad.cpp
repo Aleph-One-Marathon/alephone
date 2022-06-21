@@ -1527,7 +1527,7 @@ static void scan_and_add_platforms(
 	objlist_clear(platforms,count);
 
 	static_platforms.resize(count);
-	unpack_static_platform_data(platform_static_data, static_platforms.data(), count);
+	unpack_static_platform_data(platform_static_data, static_platforms.data(), count, version);
 
 	polygon= map_polygons;
 	for(loop=0; loop<dynamic_world->polygon_count; ++loop)
@@ -1542,7 +1542,7 @@ static void scan_and_add_platforms(
 			{
 				if (static_platforms[platform_static_data_index].polygon_index == loop)
 				{
-					new_platform(&static_platforms[platform_static_data_index], loop, version);
+					new_platform(&static_platforms[platform_static_data_index], loop);
 					break;
 				}
 			}
@@ -1551,7 +1551,7 @@ static void scan_and_add_platforms(
 			if(platform_static_data_index==count)
 			{
 				polygon->permutation= 1;
-				new_platform(get_defaults_for_platform_type(polygon->permutation), loop, version);
+				new_platform(get_defaults_for_platform_type(polygon->permutation), loop);
 			}	
 		}
 		++polygon;

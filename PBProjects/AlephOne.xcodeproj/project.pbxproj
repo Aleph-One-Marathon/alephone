@@ -5598,6 +5598,7 @@
 					"-lldap",
 					"-lminiupnpc",
 					"-lnfd",
+					"-lsndfile",
 				);
 				STRIP_INSTALLED_PRODUCT = NO;
 				USER_HEADER_SEARCH_PATHS = (
@@ -5742,6 +5743,7 @@
 					"-lldap",
 					"-lminiupnpc",
 					"-lnfd",
+					"-lsndfile",
 				);
 				STRIP_INSTALLED_PRODUCT = NO;
 				USER_HEADER_SEARCH_PATHS = (

@@ -43,6 +43,7 @@ extern "C"
 #include "libavutil/fifo.h"
 #include "libswscale/swscale.h"
 #include "libswresample/swresample.h"
+#include "SDL_ffmpeg.h"
  
 
 #ifdef __cplusplus
@@ -50,13 +51,9 @@ extern "C"
 #endif
 
 struct ffmpeg_vars {
-    AVCodecContext* codec_ctx;
-    SwrContext* swr_context;
-    AVFormatContext *ctx;
-    AVStream *stream;
-    uint8_t *temp_data;
+    SDL_ffmpegFile* file;
+    SDL_ffmpegAudioFrame* frame;
     AVFifoBuffer *fifo;
-    int stream_idx;
     bool started;
 };
 typedef struct ffmpeg_vars ffmpeg_vars_t;
@@ -84,54 +81,27 @@ bool FFmpegDecoder::Open(FileSpecifier& File)
     // make sure one-time setup succeeded
     if (!av || !av->fifo)
         return false;
-    
-    // open the file
-    if (avformat_open_input(&av->ctx, File.GetPath(), NULL, NULL) != 0)
-        return false;
-    
-    // retrieve format info
-    if (avformat_find_stream_info(av->ctx, NULL) < 0)
-    {
-        Close();
-        return false;
-    }
-    
-    // find the audio
-    AVCodec *codec;
-    av->stream_idx = av_find_best_stream(av->ctx, AVMEDIA_TYPE_AUDIO, -1, -1, &codec, 0);
-    if (av->stream_idx < 0)
-    {
-        Close();
-        return false;
-    }
-    av->stream = av->ctx->streams[av->stream_idx];
-    av->codec_ctx = avcodec_alloc_context3(codec);
-    if (!av->codec_ctx || avcodec_parameters_to_context(av->codec_ctx, av->stream->codecpar) < 0 || avcodec_open2(av->codec_ctx, NULL, NULL) < 0)
-    {
-        Close();
-        return false;
-    }
-    channels = av->stream->codecpar->channels;
-    rate = av->stream->codecpar->sample_rate;
-    int channel_layout = av->codec_ctx->channel_layout ? av->codec_ctx->channel_layout : (channels == 2 ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO);
 
-    // init resampler
-    av->swr_context = swr_alloc_set_opts(av->swr_context, channel_layout, AV_SAMPLE_FMT_S16, rate,
-        channel_layout, av->codec_ctx->sample_fmt, rate, 0, NULL);
-
-    if (!av->swr_context || swr_init(av->swr_context) < 0)
+    av->file = SDL_ffmpegOpen(File.GetPath());
+    if (!av->file || !av->file->as)
+    {
+        Close();
+        return false;
+    }
+    if (SDL_ffmpegSelectAudioStream(av->file, av->file->as->id) == -1)
+    {
+        Close();
+        return false;
+    }
+    if ((av->frame = SDL_ffmpegCreateAudioFrame(av->file, 8192)) == 0)
     {
         Close();
         return false;
     }
 
-    if (av_samples_alloc(&av->temp_data, NULL, channels, 8192, AV_SAMPLE_FMT_S16, 0) < 0)
-    {
-        Close();
-        return false;
-    }
-
-	return true;
+    channels = av->file->audioStream->_ffmpeg->codecpar->channels;
+    rate = av->file->audioStream->_ffmpeg->codecpar->sample_rate;
+    return true;
 }
 
 int32 FFmpegDecoder::Decode(uint8* buffer, int32 max_length)
@@ -161,7 +131,7 @@ void FFmpegDecoder::Rewind()
 {
     if (av->started)
     {
-        av_seek_frame(av->ctx, -1, 0, AVSEEK_FLAG_BACKWARD);
+        SDL_ffmpegSeekRelative(av->file, 0);
         av_fifo_reset(av->fifo);
         av->started = false;
     }
@@ -169,69 +139,21 @@ void FFmpegDecoder::Rewind()
 
 void FFmpegDecoder::Close()
 {
-    if (av && av->codec_ctx)
-    {
-        avcodec_free_context(&av->codec_ctx);
-    }
-    if (av && av->ctx)
-    {
-        avio_close(av->ctx->pb);
-        avformat_free_context(av->ctx);
-        av->ctx = NULL;
-    }
+    if (av && av->file)
+        SDL_ffmpegFree(av->file);
+    if (av && av->frame)
+        SDL_ffmpegFreeAudioFrame(av->frame);
     if (av && av->fifo)
         av_fifo_reset(av->fifo);
-    if (av && av->swr_context) 
-        swr_free(&av->swr_context);
-    if (av && av->temp_data)
-        av_freep(&av->temp_data);
     if (av)
         av->started = false;
 }
 
 bool FFmpegDecoder::GetAudio()
 {
-    AVPacket* pkt = av_packet_alloc();
-    
-    while (true)
-    {
-        int decode = av_read_frame(av->ctx, pkt);
-        if (decode < 0)
-            return false;
-        if (pkt->stream_index == av->stream_idx)
-            break;
-        av_packet_unref(pkt);
-    }
-    
+    if (!SDL_ffmpegGetAudioFrame(av->file, av->frame)) return false;
+    av_fifo_generic_write(av->fifo, av->frame->buffer, av->frame->size, NULL);
     av->started = true;
-    AVCodecContext *dec_ctx = av->codec_ctx;
-
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,0)
-    AVFrame *dframe = avcodec_alloc_frame();
-#else
-    AVFrame *dframe = av_frame_alloc();
-#endif
-
-    int sent_packet = avcodec_send_packet(dec_ctx, pkt);
-    if (sent_packet < 0)
-    {
-        av_packet_unref(pkt);
-        return false;
-    }
-    while (avcodec_receive_frame(dec_ctx, dframe) == 0)
-    {
-        int nb_samples = swr_convert(av->swr_context, &av->temp_data, dframe->nb_samples, (const uint8_t**)dframe->extended_data, dframe->nb_samples);
-        int nb_bytes = nb_samples * channels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
-        av_fifo_generic_write(av->fifo, av->temp_data, nb_bytes, NULL);
-    }
-        
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,0)
-    av_freep(&dframe);
-#else
-    av_frame_free(&dframe);
-#endif
-    
-    av_packet_free(&pkt);
     return true;
 }
 
