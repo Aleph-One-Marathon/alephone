@@ -87,6 +87,8 @@ typedef struct
     const char* crf;
     int32_t cpuCount;
     int32_t audioQuality;
+    /** audio format of input stream */
+    enum AVSampleFormat audioFormat;
 } SDL_ffmpegCodec;
 
 /** predefined codec for PAL DVD */

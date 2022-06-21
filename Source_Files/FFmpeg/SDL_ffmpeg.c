@@ -1773,7 +1773,7 @@ SDL_ffmpegStream* SDL_ffmpegAddAudioStream( SDL_ffmpegFile *file, SDL_ffmpegCode
 
         // init resampler
         str->swr_context = swr_alloc_set_opts(str->swr_context, context->channel_layout, context->sample_fmt, context->sample_rate,
-            context->channel_layout, AV_SAMPLE_FMT_S16, context->sample_rate, 0, NULL);
+            context->channel_layout, codec.audioFormat, context->sample_rate, 0, NULL);
 
         if (!str->swr_context || swr_init(str->swr_context) < 0)
         {

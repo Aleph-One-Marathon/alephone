@@ -189,12 +189,7 @@ void Movie::StartRecording(std::string path)
 	StopRecording(); 
 	moviefile = path;
     OpenALManager::Get()->Stop();
-    if (IsRecording()) {
-        OpenALManager::Get()->ToggleDeviceMode(true);
-    }
-    else {
-        OpenALManager::Get()->ToggleDeviceMode(false);
-    }
+    OpenALManager::Get()->ToggleDeviceMode(IsRecording());
     OpenALManager::Get()->Start();
 }
 
@@ -263,6 +258,9 @@ bool Movie::Setup()
     codec.crf = crf.c_str();
     codec.framerateNum = 1;
     codec.framerateDen = fps;
+    codec.audioFormat = mapping_openal_ffmpeg.at(OpenALManager::Get()->GetRenderingFormat());
+
+    in_bps = av_get_bytes_per_sample(codec.audioFormat);
 
     auto video_stream = SDL_ffmpegAddVideoStream(av->ffmpeg_file, codec);
     if (!video_stream) { ThrowUserError("Could not add video stream: " + std::string(SDL_ffmpegGetError())); return false; }
@@ -283,7 +281,7 @@ bool Movie::Setup()
 
     // set up our threads and intermediate storage
     videobuf.resize(view_rect.w * view_rect.h * 4 + 10000);
-    audiobuf.resize(2 * 2 * OpenALManager::Get()->GetFrequency() / fps);
+    audiobuf.resize(2 * in_bps * OpenALManager::Get()->GetFrequency() / fps);
 
     // TODO: fixme!
     if (OpenALManager::Get()->GetFrequency() % fps != 0) { ThrowUserError("Audio buffer size is non-integer; try lowering FPS target"); return false; }
