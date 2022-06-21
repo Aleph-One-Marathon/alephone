@@ -771,10 +771,10 @@ void SoundManager::SetStatus(bool active)
 
 				AudioParameters audio_parameters = {
 					parameters.rate,
-					parameters.flags & _stereo_flag,
+                    static_cast<bool>(parameters.flags & _stereo_flag),
 					!(parameters.flags & _zero_restart_delay),
-					parameters.flags & _hrtf_flag,
-					parameters.flags & _3d_sounds_flag,
+                    static_cast<bool>(parameters.flags & _hrtf_flag),
+                    static_cast<bool>(parameters.flags & _3d_sounds_flag),
 					OpenALManager::From_db(parameters.volume_db)
 				};
 

@@ -434,7 +434,6 @@
 		AE505BE6141D45E600915344 /* Console.h in Headers */ = {isa = PBXBuildFile; fileRef = AEC6C89E0879A6020055EC57 /* Console.h */; };
 		AE505BE7141D45E600915344 /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
 		AE505BE8141D45E600915344 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
-		AE505BE9141D45E600915344 /* Mixer.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E640B878534009CFF2D /* Mixer.h */; };
 		AE505BEA141D45E600915344 /* Music.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E660B878534009CFF2D /* Music.h */; };
 		AE505BEB141D45E600915344 /* SoundFile.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E680B878534009CFF2D /* SoundFile.h */; };
 		AE505BEC141D45E600915344 /* SoundManager.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6A0B878534009CFF2D /* SoundManager.h */; };
@@ -596,7 +595,6 @@
 		AE505CAA141D45E600915344 /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
 		AE505CAB141D45E600915344 /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
 		AE505CAC141D45E600915344 /* SW_Texture_Extras.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */; };
-		AE505CAD141D45E600915344 /* Mixer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E630B878534009CFF2D /* Mixer.cpp */; };
 		AE505CAE141D45E600915344 /* Music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E650B878534009CFF2D /* Music.cpp */; };
 		AE505CAF141D45E600915344 /* SoundFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E670B878534009CFF2D /* SoundFile.cpp */; };
 		AE505CB0141D45E600915344 /* SoundManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E690B878534009CFF2D /* SoundManager.cpp */; };
@@ -667,8 +665,26 @@
 		AE601F0C0B927C25009F881C /* MADDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F070B927C25009F881C /* MADDecoder.cpp */; };
 		AE601F0D0B927C25009F881C /* SndfileDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F080B927C25009F881C /* SndfileDecoder.cpp */; };
 		AE601F0E0B927C25009F881C /* VorbisDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F090B927C25009F881C /* VorbisDecoder.cpp */; };
-		AE626E6C0B878534009CFF2D /* Mixer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E630B878534009CFF2D /* Mixer.cpp */; };
-		AE626E6D0B878534009CFF2D /* Mixer.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E640B878534009CFF2D /* Mixer.h */; };
+		AE61F16928615A22003128EE /* OpenALManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16428615A21003128EE /* OpenALManager.cpp */; };
+		AE61F16A28615A22003128EE /* OpenALManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16428615A21003128EE /* OpenALManager.cpp */; };
+		AE61F16B28615A22003128EE /* OpenALManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16428615A21003128EE /* OpenALManager.cpp */; };
+		AE61F16C28615A22003128EE /* OpenALManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16428615A21003128EE /* OpenALManager.cpp */; };
+		AE61F16D28615A22003128EE /* MusicPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16528615A22003128EE /* MusicPlayer.cpp */; };
+		AE61F16E28615A22003128EE /* MusicPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16528615A22003128EE /* MusicPlayer.cpp */; };
+		AE61F16F28615A22003128EE /* MusicPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16528615A22003128EE /* MusicPlayer.cpp */; };
+		AE61F17028615A22003128EE /* MusicPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16528615A22003128EE /* MusicPlayer.cpp */; };
+		AE61F17128615A22003128EE /* AudioPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16628615A22003128EE /* AudioPlayer.cpp */; };
+		AE61F17228615A22003128EE /* AudioPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16628615A22003128EE /* AudioPlayer.cpp */; };
+		AE61F17328615A22003128EE /* AudioPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16628615A22003128EE /* AudioPlayer.cpp */; };
+		AE61F17428615A22003128EE /* AudioPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16628615A22003128EE /* AudioPlayer.cpp */; };
+		AE61F17528615A22003128EE /* SoundPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16728615A22003128EE /* SoundPlayer.cpp */; };
+		AE61F17628615A22003128EE /* SoundPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16728615A22003128EE /* SoundPlayer.cpp */; };
+		AE61F17728615A22003128EE /* SoundPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16728615A22003128EE /* SoundPlayer.cpp */; };
+		AE61F17828615A22003128EE /* SoundPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16728615A22003128EE /* SoundPlayer.cpp */; };
+		AE61F17928615A22003128EE /* StreamPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16828615A22003128EE /* StreamPlayer.cpp */; };
+		AE61F17A28615A22003128EE /* StreamPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16828615A22003128EE /* StreamPlayer.cpp */; };
+		AE61F17B28615A22003128EE /* StreamPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16828615A22003128EE /* StreamPlayer.cpp */; };
+		AE61F17C28615A22003128EE /* StreamPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16828615A22003128EE /* StreamPlayer.cpp */; };
 		AE626E6E0B878534009CFF2D /* Music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E650B878534009CFF2D /* Music.cpp */; };
 		AE626E6F0B878534009CFF2D /* Music.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E660B878534009CFF2D /* Music.h */; };
 		AE626E700B878534009CFF2D /* SoundFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E670B878534009CFF2D /* SoundFile.cpp */; };
@@ -895,7 +911,6 @@
 		AEB4A18614296CAE00537AE7 /* Console.h in Headers */ = {isa = PBXBuildFile; fileRef = AEC6C89E0879A6020055EC57 /* Console.h */; };
 		AEB4A18714296CAE00537AE7 /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
 		AEB4A18814296CAE00537AE7 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
-		AEB4A18914296CAE00537AE7 /* Mixer.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E640B878534009CFF2D /* Mixer.h */; };
 		AEB4A18A14296CAE00537AE7 /* Music.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E660B878534009CFF2D /* Music.h */; };
 		AEB4A18B14296CAE00537AE7 /* SoundFile.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E680B878534009CFF2D /* SoundFile.h */; };
 		AEB4A18C14296CAE00537AE7 /* SoundManager.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6A0B878534009CFF2D /* SoundManager.h */; };
@@ -1058,7 +1073,6 @@
 		AEB4A24B14296CAE00537AE7 /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
 		AEB4A24C14296CAE00537AE7 /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
 		AEB4A24D14296CAE00537AE7 /* SW_Texture_Extras.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */; };
-		AEB4A24E14296CAE00537AE7 /* Mixer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E630B878534009CFF2D /* Mixer.cpp */; };
 		AEB4A24F14296CAE00537AE7 /* Music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E650B878534009CFF2D /* Music.cpp */; };
 		AEB4A25014296CAE00537AE7 /* SoundFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E670B878534009CFF2D /* SoundFile.cpp */; };
 		AEB4A25114296CAE00537AE7 /* SoundManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E690B878534009CFF2D /* SoundManager.cpp */; };
@@ -1571,7 +1585,6 @@
 		AEFD869413EB84CF00C1E687 /* Console.h in Headers */ = {isa = PBXBuildFile; fileRef = AEC6C89E0879A6020055EC57 /* Console.h */; };
 		AEFD869513EB84CF00C1E687 /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
 		AEFD869613EB84CF00C1E687 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
-		AEFD869713EB84CF00C1E687 /* Mixer.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E640B878534009CFF2D /* Mixer.h */; };
 		AEFD869813EB84CF00C1E687 /* Music.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E660B878534009CFF2D /* Music.h */; };
 		AEFD869913EB84CF00C1E687 /* SoundFile.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E680B878534009CFF2D /* SoundFile.h */; };
 		AEFD869A13EB84CF00C1E687 /* SoundManager.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6A0B878534009CFF2D /* SoundManager.h */; };
@@ -1732,7 +1745,6 @@
 		AEFD875713EB84CF00C1E687 /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
 		AEFD875813EB84CF00C1E687 /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
 		AEFD875913EB84CF00C1E687 /* SW_Texture_Extras.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */; };
-		AEFD875A13EB84CF00C1E687 /* Mixer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E630B878534009CFF2D /* Mixer.cpp */; };
 		AEFD875B13EB84CF00C1E687 /* Music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E650B878534009CFF2D /* Music.cpp */; };
 		AEFD875C13EB84CF00C1E687 /* SoundFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E670B878534009CFF2D /* SoundFile.cpp */; };
 		AEFD875D13EB84CF00C1E687 /* SoundManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E690B878534009CFF2D /* SoundManager.cpp */; };
@@ -1939,8 +1951,16 @@
 		AE601F110B927C51009F881C /* MADDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MADDecoder.h; sourceTree = "<group>"; };
 		AE601F120B927C51009F881C /* SndfileDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SndfileDecoder.h; sourceTree = "<group>"; };
 		AE601F130B927C51009F881C /* VorbisDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VorbisDecoder.h; sourceTree = "<group>"; };
-		AE626E630B878534009CFF2D /* Mixer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Mixer.cpp; sourceTree = "<group>"; };
-		AE626E640B878534009CFF2D /* Mixer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Mixer.h; sourceTree = "<group>"; };
+		AE61F16428615A21003128EE /* OpenALManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OpenALManager.cpp; sourceTree = "<group>"; };
+		AE61F16528615A22003128EE /* MusicPlayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MusicPlayer.cpp; sourceTree = "<group>"; };
+		AE61F16628615A22003128EE /* AudioPlayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AudioPlayer.cpp; sourceTree = "<group>"; };
+		AE61F16728615A22003128EE /* SoundPlayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundPlayer.cpp; sourceTree = "<group>"; };
+		AE61F16828615A22003128EE /* StreamPlayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StreamPlayer.cpp; sourceTree = "<group>"; };
+		AE61F17D28615A37003128EE /* AudioPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioPlayer.h; sourceTree = "<group>"; };
+		AE61F17E28615A37003128EE /* SoundPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SoundPlayer.h; sourceTree = "<group>"; };
+		AE61F17F28615A37003128EE /* StreamPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StreamPlayer.h; sourceTree = "<group>"; };
+		AE61F18028615A37003128EE /* OpenALManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OpenALManager.h; sourceTree = "<group>"; };
+		AE61F18128615A37003128EE /* MusicPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MusicPlayer.h; sourceTree = "<group>"; };
 		AE626E650B878534009CFF2D /* Music.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Music.cpp; sourceTree = "<group>"; };
 		AE626E660B878534009CFF2D /* Music.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Music.h; sourceTree = "<group>"; };
 		AE626E670B878534009CFF2D /* SoundFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundFile.cpp; sourceTree = "<group>"; };
@@ -3166,6 +3186,16 @@
 		F5CC94110240DA4301A80001 /* Sound */ = {
 			isa = PBXGroup;
 			children = (
+				AE61F17D28615A37003128EE /* AudioPlayer.h */,
+				AE61F18128615A37003128EE /* MusicPlayer.h */,
+				AE61F18028615A37003128EE /* OpenALManager.h */,
+				AE61F17E28615A37003128EE /* SoundPlayer.h */,
+				AE61F17F28615A37003128EE /* StreamPlayer.h */,
+				AE61F16628615A22003128EE /* AudioPlayer.cpp */,
+				AE61F16528615A22003128EE /* MusicPlayer.cpp */,
+				AE61F16428615A21003128EE /* OpenALManager.cpp */,
+				AE61F16728615A22003128EE /* SoundPlayer.cpp */,
+				AE61F16828615A22003128EE /* StreamPlayer.cpp */,
 				27E878F1173202F80010F485 /* FFmpegDecoder.cpp */,
 				27E878F2173202F80010F485 /* FFmpegDecoder.h */,
 				AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */,
@@ -3180,8 +3210,6 @@
 				AE601F070B927C25009F881C /* MADDecoder.cpp */,
 				AE601F080B927C25009F881C /* SndfileDecoder.cpp */,
 				AE601F090B927C25009F881C /* VorbisDecoder.cpp */,
-				AE626E630B878534009CFF2D /* Mixer.cpp */,
-				AE626E640B878534009CFF2D /* Mixer.h */,
 				AE626E650B878534009CFF2D /* Music.cpp */,
 				AE626E660B878534009CFF2D /* Music.h */,
 				AE626E670B878534009CFF2D /* SoundFile.cpp */,
@@ -3446,7 +3474,6 @@
 				AE505BE6141D45E600915344 /* Console.h in Headers */,
 				AE505BE7141D45E600915344 /* ImageLoader.h in Headers */,
 				AE505BE8141D45E600915344 /* DDS.h in Headers */,
-				AE505BE9141D45E600915344 /* Mixer.h in Headers */,
 				AE505BEA141D45E600915344 /* Music.h in Headers */,
 				272BA5B11E635266008C5335 /* cspaths.h in Headers */,
 				AE505BEB141D45E600915344 /* SoundFile.h in Headers */,
@@ -3662,7 +3689,6 @@
 				AEB4A18614296CAE00537AE7 /* Console.h in Headers */,
 				AEB4A18714296CAE00537AE7 /* ImageLoader.h in Headers */,
 				AEB4A18814296CAE00537AE7 /* DDS.h in Headers */,
-				AEB4A18914296CAE00537AE7 /* Mixer.h in Headers */,
 				AEB4A18A14296CAE00537AE7 /* Music.h in Headers */,
 				272BA5B21E635266008C5335 /* cspaths.h in Headers */,
 				AEB4A18B14296CAE00537AE7 /* SoundFile.h in Headers */,
@@ -3878,7 +3904,6 @@
 				AEC3C7C009AD68AC003258E4 /* Console.h in Headers */,
 				AEA74E6E09B01BD900DC3B74 /* ImageLoader.h in Headers */,
 				AEA74E7109B01BE300DC3B74 /* DDS.h in Headers */,
-				AE626E6D0B878534009CFF2D /* Mixer.h in Headers */,
 				272BA59F1E622438008C5335 /* cspaths.h in Headers */,
 				AE626E6F0B878534009CFF2D /* Music.h in Headers */,
 				AE626E710B878534009CFF2D /* SoundFile.h in Headers */,
@@ -4094,7 +4119,6 @@
 				AEFD869413EB84CF00C1E687 /* Console.h in Headers */,
 				AEFD869513EB84CF00C1E687 /* ImageLoader.h in Headers */,
 				AEFD869613EB84CF00C1E687 /* DDS.h in Headers */,
-				AEFD869713EB84CF00C1E687 /* Mixer.h in Headers */,
 				AEFD869813EB84CF00C1E687 /* Music.h in Headers */,
 				272BA5B01E635265008C5335 /* cspaths.h in Headers */,
 				AEFD869913EB84CF00C1E687 /* SoundFile.h in Headers */,
@@ -4468,6 +4492,7 @@
 				AE505C20141D45E600915344 /* network_lookup_sdl.cpp in Sources */,
 				AE505C21141D45E600915344 /* network_udp.cpp in Sources */,
 				AE505C22141D45E600915344 /* network.cpp in Sources */,
+				AE61F17328615A22003128EE /* AudioPlayer.cpp in Sources */,
 				272BA5AB1E628223008C5335 /* cspaths_sdl.cpp in Sources */,
 				AE505C23141D45E600915344 /* network_games.cpp in Sources */,
 				AE505C24141D45E600915344 /* Model3D.cpp in Sources */,
@@ -4496,6 +4521,7 @@
 				AE505C3C141D45E600915344 /* resource_manager.cpp in Sources */,
 				AE505C3D141D45E600915344 /* wad.cpp in Sources */,
 				AE505C3E141D45E600915344 /* wad_prefs.cpp in Sources */,
+				AE61F16F28615A22003128EE /* MusicPlayer.cpp in Sources */,
 				AE505C3F141D45E600915344 /* wad_sdl.cpp in Sources */,
 				AE505C40141D45E600915344 /* devices.cpp in Sources */,
 				AE505C41141D45E600915344 /* dynamic_limits.cpp in Sources */,
@@ -4513,6 +4539,7 @@
 				AE505C4C141D45E600915344 /* physics.cpp in Sources */,
 				AE505C4D141D45E600915344 /* placement.cpp in Sources */,
 				AE780E122533A4C7002184B5 /* lua_ephemera.cpp in Sources */,
+				AE61F16B28615A22003128EE /* OpenALManager.cpp in Sources */,
 				AE505C4E141D45E600915344 /* platforms.cpp in Sources */,
 				AE505C4F141D45E600915344 /* player.cpp in Sources */,
 				AE505C50141D45E600915344 /* projectiles.cpp in Sources */,
@@ -4522,6 +4549,7 @@
 				AE505C54141D45E600915344 /* mouse_sdl.cpp in Sources */,
 				AEA26AD525E3364A008895CC /* interpolated_world.cpp in Sources */,
 				AE505C55141D45E600915344 /* AnimatedTextures.cpp in Sources */,
+				AE61F17B28615A22003128EE /* StreamPlayer.cpp in Sources */,
 				AE505C56141D45E600915344 /* Crosshairs_SDL.cpp in Sources */,
 				AE505C57141D45E600915344 /* ImageLoader_SDL.cpp in Sources */,
 				278E0C751AA3CD4500FA93B7 /* WadImageCache.cpp in Sources */,
@@ -4595,7 +4623,6 @@
 				AE505CAA141D45E600915344 /* preference_dialogs.cpp in Sources */,
 				AE505CAB141D45E600915344 /* OGL_Blitter.cpp in Sources */,
 				AE505CAC141D45E600915344 /* SW_Texture_Extras.cpp in Sources */,
-				AE505CAD141D45E600915344 /* Mixer.cpp in Sources */,
 				AE505CAE141D45E600915344 /* Music.cpp in Sources */,
 				AEEA4E812544B50B0031363A /* shell_options.cpp in Sources */,
 				AE505CAF141D45E600915344 /* SoundFile.cpp in Sources */,
@@ -4658,6 +4685,7 @@
 				AE505CE7141D45E600915344 /* RenderRasterize_Shader.cpp in Sources */,
 				AE505CE8141D45E600915344 /* SDL_rwops_zzip.c in Sources */,
 				AE505CE9141D45E600915344 /* IMG_savepng.c in Sources */,
+				AE61F17728615A22003128EE /* SoundPlayer.cpp in Sources */,
 				AE505CEA141D45E600915344 /* csalerts.mm in Sources */,
 				2710CC631B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */,
 				AE505CEB141D45E600915344 /* lua_saved_objects.cpp in Sources */,
@@ -4691,6 +4719,7 @@
 				AEB4A1C114296CAE00537AE7 /* network_lookup_sdl.cpp in Sources */,
 				AEB4A1C214296CAE00537AE7 /* network_udp.cpp in Sources */,
 				AEB4A1C314296CAE00537AE7 /* network.cpp in Sources */,
+				AE61F17428615A22003128EE /* AudioPlayer.cpp in Sources */,
 				272BA5AC1E628223008C5335 /* cspaths_sdl.cpp in Sources */,
 				AEB4A1C414296CAE00537AE7 /* network_games.cpp in Sources */,
 				AEB4A1C514296CAE00537AE7 /* Model3D.cpp in Sources */,
@@ -4719,6 +4748,7 @@
 				AEB4A1DD14296CAE00537AE7 /* resource_manager.cpp in Sources */,
 				AEB4A1DE14296CAE00537AE7 /* wad.cpp in Sources */,
 				AEB4A1DF14296CAE00537AE7 /* wad_prefs.cpp in Sources */,
+				AE61F17028615A22003128EE /* MusicPlayer.cpp in Sources */,
 				AEB4A1E014296CAE00537AE7 /* wad_sdl.cpp in Sources */,
 				AEB4A1E114296CAE00537AE7 /* devices.cpp in Sources */,
 				AEB4A1E214296CAE00537AE7 /* dynamic_limits.cpp in Sources */,
@@ -4736,6 +4766,7 @@
 				AEB4A1ED14296CAE00537AE7 /* physics.cpp in Sources */,
 				AEB4A1EE14296CAE00537AE7 /* placement.cpp in Sources */,
 				AE780E132533A4C7002184B5 /* lua_ephemera.cpp in Sources */,
+				AE61F16C28615A22003128EE /* OpenALManager.cpp in Sources */,
 				AEB4A1EF14296CAE00537AE7 /* platforms.cpp in Sources */,
 				AEB4A1F014296CAE00537AE7 /* player.cpp in Sources */,
 				AEB4A1F114296CAE00537AE7 /* projectiles.cpp in Sources */,
@@ -4745,6 +4776,7 @@
 				AEB4A1F514296CAE00537AE7 /* mouse_sdl.cpp in Sources */,
 				AEA26AD625E3364A008895CC /* interpolated_world.cpp in Sources */,
 				AEB4A1F614296CAE00537AE7 /* AnimatedTextures.cpp in Sources */,
+				AE61F17C28615A22003128EE /* StreamPlayer.cpp in Sources */,
 				AEB4A1F714296CAE00537AE7 /* Crosshairs_SDL.cpp in Sources */,
 				AEB4A1F814296CAE00537AE7 /* ImageLoader_SDL.cpp in Sources */,
 				278E0C761AA3CD4500FA93B7 /* WadImageCache.cpp in Sources */,
@@ -4818,7 +4850,6 @@
 				AEB4A24B14296CAE00537AE7 /* preference_dialogs.cpp in Sources */,
 				AEB4A24C14296CAE00537AE7 /* OGL_Blitter.cpp in Sources */,
 				AEB4A24D14296CAE00537AE7 /* SW_Texture_Extras.cpp in Sources */,
-				AEB4A24E14296CAE00537AE7 /* Mixer.cpp in Sources */,
 				AEB4A24F14296CAE00537AE7 /* Music.cpp in Sources */,
 				AEEA4E822544B50B0031363A /* shell_options.cpp in Sources */,
 				AEB4A25014296CAE00537AE7 /* SoundFile.cpp in Sources */,
@@ -4881,6 +4912,7 @@
 				AEB4A28814296CAE00537AE7 /* RenderRasterize_Shader.cpp in Sources */,
 				AEB4A28914296CAE00537AE7 /* SDL_rwops_zzip.c in Sources */,
 				AEB4A28A14296CAE00537AE7 /* IMG_savepng.c in Sources */,
+				AE61F17828615A22003128EE /* SoundPlayer.cpp in Sources */,
 				AEB4A28B14296CAE00537AE7 /* csalerts.mm in Sources */,
 				2710CC641B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */,
 				AEB4A28C14296CAE00537AE7 /* lua_saved_objects.cpp in Sources */,
@@ -4914,6 +4946,7 @@
 				AEC3C7E409AD68AC003258E4 /* network_lookup_sdl.cpp in Sources */,
 				AEC3C7E509AD68AC003258E4 /* network_udp.cpp in Sources */,
 				AEC3C7E609AD68AC003258E4 /* network.cpp in Sources */,
+				AE61F17128615A22003128EE /* AudioPlayer.cpp in Sources */,
 				272BA5A31E628212008C5335 /* cspaths_sdl.cpp in Sources */,
 				AEC3C7EA09AD68AC003258E4 /* network_games.cpp in Sources */,
 				AEC3C7EB09AD68AC003258E4 /* Model3D.cpp in Sources */,
@@ -4942,6 +4975,7 @@
 				AEC3C80509AD68AC003258E4 /* preprocess_map_sdl.cpp in Sources */,
 				AEC3C80609AD68AC003258E4 /* resource_manager.cpp in Sources */,
 				AEC3C80709AD68AC003258E4 /* wad.cpp in Sources */,
+				AE61F16D28615A22003128EE /* MusicPlayer.cpp in Sources */,
 				AEC3C80809AD68AC003258E4 /* wad_prefs.cpp in Sources */,
 				AEC3C80909AD68AC003258E4 /* wad_sdl.cpp in Sources */,
 				AEC3C80A09AD68AC003258E4 /* devices.cpp in Sources */,
@@ -4959,6 +4993,7 @@
 				AEC3C81609AD68AC003258E4 /* physics.cpp in Sources */,
 				AEC3C81709AD68AC003258E4 /* placement.cpp in Sources */,
 				AE780E102533A4C7002184B5 /* lua_ephemera.cpp in Sources */,
+				AE61F16928615A22003128EE /* OpenALManager.cpp in Sources */,
 				AEC3C81809AD68AC003258E4 /* platforms.cpp in Sources */,
 				AEC3C81909AD68AC003258E4 /* player.cpp in Sources */,
 				AEC3C81A09AD68AC003258E4 /* projectiles.cpp in Sources */,
@@ -4968,6 +5003,7 @@
 				AEC3C81E09AD68AC003258E4 /* mouse_sdl.cpp in Sources */,
 				AEA26AD325E3364A008895CC /* interpolated_world.cpp in Sources */,
 				AEC3C81F09AD68AC003258E4 /* AnimatedTextures.cpp in Sources */,
+				AE61F17928615A22003128EE /* StreamPlayer.cpp in Sources */,
 				AEC3C82009AD68AC003258E4 /* Crosshairs_SDL.cpp in Sources */,
 				AEC3C82109AD68AC003258E4 /* ImageLoader_SDL.cpp in Sources */,
 				278E0C731AA3CD4500FA93B7 /* WadImageCache.cpp in Sources */,
@@ -5041,7 +5077,6 @@
 				AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */,
 				AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */,
 				AEC02F910B6D8B310095E8C9 /* SW_Texture_Extras.cpp in Sources */,
-				AE626E6C0B878534009CFF2D /* Mixer.cpp in Sources */,
 				AE626E6E0B878534009CFF2D /* Music.cpp in Sources */,
 				AEEA4E7F2544B50B0031363A /* shell_options.cpp in Sources */,
 				AE626E700B878534009CFF2D /* SoundFile.cpp in Sources */,
@@ -5104,6 +5139,7 @@
 				2759F31B10D5BC9C000204DD /* SDL_rwops_zzip.c in Sources */,
 				AEF1AC1610E05835007EE0D5 /* IMG_savepng.c in Sources */,
 				AEA31D2C113C9DF700266621 /* csalerts.mm in Sources */,
+				AE61F17528615A22003128EE /* SoundPlayer.cpp in Sources */,
 				276589F8119DF1DD0096F75B /* lua_saved_objects.cpp in Sources */,
 				2710CC611B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */,
 				27D1A4F312FDF3630085E79C /* FilmProfile.cpp in Sources */,
@@ -5137,6 +5173,7 @@
 				AEFD86CD13EB84CF00C1E687 /* network_lookup_sdl.cpp in Sources */,
 				AEFD86CE13EB84CF00C1E687 /* network_udp.cpp in Sources */,
 				AEFD86CF13EB84CF00C1E687 /* network.cpp in Sources */,
+				AE61F17228615A22003128EE /* AudioPlayer.cpp in Sources */,
 				272BA5AA1E628222008C5335 /* cspaths_sdl.cpp in Sources */,
 				AEFD86D013EB84CF00C1E687 /* network_games.cpp in Sources */,
 				AEFD86D113EB84CF00C1E687 /* Model3D.cpp in Sources */,
@@ -5165,6 +5202,7 @@
 				AEFD86E913EB84CF00C1E687 /* resource_manager.cpp in Sources */,
 				AEFD86EA13EB84CF00C1E687 /* wad.cpp in Sources */,
 				AEFD86EB13EB84CF00C1E687 /* wad_prefs.cpp in Sources */,
+				AE61F16E28615A22003128EE /* MusicPlayer.cpp in Sources */,
 				AEFD86EC13EB84CF00C1E687 /* wad_sdl.cpp in Sources */,
 				AEFD86ED13EB84CF00C1E687 /* devices.cpp in Sources */,
 				AEFD86EE13EB84CF00C1E687 /* dynamic_limits.cpp in Sources */,
@@ -5182,6 +5220,7 @@
 				AEFD86F913EB84CF00C1E687 /* physics.cpp in Sources */,
 				AEFD86FA13EB84CF00C1E687 /* placement.cpp in Sources */,
 				AE780E112533A4C7002184B5 /* lua_ephemera.cpp in Sources */,
+				AE61F16A28615A22003128EE /* OpenALManager.cpp in Sources */,
 				AEFD86FB13EB84CF00C1E687 /* platforms.cpp in Sources */,
 				AEFD86FC13EB84CF00C1E687 /* player.cpp in Sources */,
 				AEFD86FD13EB84CF00C1E687 /* projectiles.cpp in Sources */,
@@ -5191,6 +5230,7 @@
 				AEFD870113EB84CF00C1E687 /* mouse_sdl.cpp in Sources */,
 				AEA26AD425E3364A008895CC /* interpolated_world.cpp in Sources */,
 				AEFD870213EB84CF00C1E687 /* AnimatedTextures.cpp in Sources */,
+				AE61F17A28615A22003128EE /* StreamPlayer.cpp in Sources */,
 				AEFD870313EB84CF00C1E687 /* Crosshairs_SDL.cpp in Sources */,
 				AEFD870413EB84CF00C1E687 /* ImageLoader_SDL.cpp in Sources */,
 				278E0C741AA3CD4500FA93B7 /* WadImageCache.cpp in Sources */,
@@ -5264,7 +5304,6 @@
 				AEFD875713EB84CF00C1E687 /* preference_dialogs.cpp in Sources */,
 				AEFD875813EB84CF00C1E687 /* OGL_Blitter.cpp in Sources */,
 				AEFD875913EB84CF00C1E687 /* SW_Texture_Extras.cpp in Sources */,
-				AEFD875A13EB84CF00C1E687 /* Mixer.cpp in Sources */,
 				AEFD875B13EB84CF00C1E687 /* Music.cpp in Sources */,
 				AEEA4E802544B50B0031363A /* shell_options.cpp in Sources */,
 				AEFD875C13EB84CF00C1E687 /* SoundFile.cpp in Sources */,
@@ -5327,6 +5366,7 @@
 				AEFD879413EB84CF00C1E687 /* RenderRasterize_Shader.cpp in Sources */,
 				AEFD879513EB84CF00C1E687 /* SDL_rwops_zzip.c in Sources */,
 				AEFD879613EB84CF00C1E687 /* IMG_savepng.c in Sources */,
+				AE61F17628615A22003128EE /* SoundPlayer.cpp in Sources */,
 				AEFD879713EB84CF00C1E687 /* csalerts.mm in Sources */,
 				2710CC621B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */,
 				AEFD879813EB84CF00C1E687 /* lua_saved_objects.cpp in Sources */,
@@ -5494,6 +5534,7 @@
 					"-lminiupnpc",
 					"-lnfd",
 					"-lsndfile",
+					"-lopenal",
 				);
 				STRIP_INSTALLED_PRODUCT = NO;
 				USER_HEADER_SEARCH_PATHS = (
@@ -5635,6 +5676,7 @@
 					"-lminiupnpc",
 					"-lnfd",
 					"-lsndfile",
+					"-lopenal",
 				);
 				STRIP_INSTALLED_PRODUCT = NO;
 				USER_HEADER_SEARCH_PATHS = (
