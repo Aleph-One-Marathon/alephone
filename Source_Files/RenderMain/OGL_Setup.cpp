@@ -495,7 +495,7 @@ void parse_mml_opengl(const InfoTree& root)
 	}
 
 	// texture options / clear, in order
-	BOOST_FOREACH(const InfoTree::value_type &v, root)
+	for (const InfoTree::value_type &v : root)
 	{
 		if (v.first == "texture")
 			parse_mml_opengl_texture(v.second);
@@ -504,7 +504,7 @@ void parse_mml_opengl(const InfoTree& root)
 	}
 	
 	// model data / clear, in order
-	BOOST_FOREACH(const InfoTree::value_type &v, root)
+	for (const InfoTree::value_type &v : root)
 	{
 		if (v.first == "model")
 			parse_mml_opengl_model(v.second);
@@ -512,12 +512,12 @@ void parse_mml_opengl(const InfoTree& root)
 			parse_mml_opengl_model_clear(v.second);
 	}
 	
-	BOOST_FOREACH(InfoTree shader, root.children_named("shader"))
+	for (const InfoTree &shader : root.children_named("shader"))
 	{
 		parse_mml_opengl_shader(shader);
 	}
 	
-	BOOST_FOREACH(InfoTree fog, root.children_named("fog"))
+	for (const InfoTree &fog : root.children_named("fog"))
 	{
 		int16 type = 0;
 		fog.read_indexed("type", type, OGL_NUMBER_OF_FOG_TYPES);
@@ -527,7 +527,7 @@ void parse_mml_opengl(const InfoTree& root)
 		fog.read_attr("depth", def.Depth);
 		fog.read_attr("landscapes", def.AffectsLandscapes);
 		
-		BOOST_FOREACH(InfoTree color, fog.children_named("color"))
+		for (const InfoTree &color : fog.children_named("color"))
 		{
 			color.read_color(def.Color);
 		}

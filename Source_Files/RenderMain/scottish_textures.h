@@ -56,7 +56,7 @@ enum /* transfer modes */
 {
 	_tinted_transfer, /* pass background through given shading table for non-transparent
 		pixels; config word is $mmnn: mm is a mask applied to a random number in [0,32)
-		which is then added to nn and used to retrieve a tinting table.  ÔordinaryÕ (pathways-style)
+		which is then added to nn and used to retrieve a tinting table.  â€˜ordinaryâ€™ (pathways-style)
 		tinting can be accomplished by passing an alternate shading table. */
 	_solid_transfer, /* writes (0,0) color of texture for non-transparent pixels; does not
 		respect shading */

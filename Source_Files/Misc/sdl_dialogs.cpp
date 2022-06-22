@@ -159,7 +159,7 @@ static void parse_theme_image(InfoTree root, int type, int state, int max_index)
 
 static void parse_theme_images(InfoTree root, int type, int state, int num_items = 1)
 {
-	BOOST_FOREACH(InfoTree img, root.children_named("image"))
+	for (const InfoTree &img : root.children_named("image"))
 	{
 		parse_theme_image(img, type, state, num_items - 1);
 	}
@@ -186,7 +186,7 @@ static void parse_theme_color(InfoTree root, int type, int state, int max_index)
 
 static void parse_theme_colors(InfoTree root, int type, int state, int num_items = 1)
 {
-	BOOST_FOREACH(InfoTree color, root.children_named("color"))
+	for (const InfoTree &color : root.children_named("color"))
 	{
 		parse_theme_color(color, type, state, num_items - 1);
 	}
@@ -222,7 +222,7 @@ static void parse_theme_font(InfoTree root, int type)
 
 static void parse_theme_fonts(InfoTree root, int type)
 {
-	BOOST_FOREACH(InfoTree child, root.children_named("font"))
+	for (const InfoTree &child : root.children_named("font"))
 		parse_theme_font(child, type);
 }
 
@@ -273,17 +273,17 @@ static void parse_button(InfoTree root)
 	parse_theme_fonts(root, BUTTON_WIDGET);
 	parse_theme_images(root, BUTTON_WIDGET, DEFAULT_STATE, 3);
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("active"))
+	for (const InfoTree &child : root.children_named("active"))
 	{
 		parse_theme_colors(child, BUTTON_WIDGET, ACTIVE_STATE, 3);
 		parse_theme_images(child, BUTTON_WIDGET, ACTIVE_STATE, 3);
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("disabled"))
+	for (const InfoTree &child : root.children_named("disabled"))
 	{
 		parse_theme_colors(child, BUTTON_WIDGET, DISABLED_STATE, 3);
 		parse_theme_images(child, BUTTON_WIDGET, DISABLED_STATE, 3);
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("pressed"))
+	for (const InfoTree &child : root.children_named("pressed"))
 	{
 		parse_theme_colors(child, BUTTON_WIDGET, PRESSED_STATE, 3);
 		parse_theme_images(child, BUTTON_WIDGET, PRESSED_STATE, 3);
@@ -302,17 +302,17 @@ static void parse_tiny_button(InfoTree root)
 	parse_theme_fonts(root, TINY_BUTTON);
 	parse_theme_images(root, TINY_BUTTON, DEFAULT_STATE, 3);
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("active"))
+	for (const InfoTree &child : root.children_named("active"))
 	{
 		parse_theme_colors(child, TINY_BUTTON, ACTIVE_STATE, 3);
 		parse_theme_images(child, TINY_BUTTON, ACTIVE_STATE, 3);
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("disabled"))
+	for (const InfoTree &child : root.children_named("disabled"))
 	{
 		parse_theme_colors(child, TINY_BUTTON, DISABLED_STATE, 3);
 		parse_theme_images(child, TINY_BUTTON, DISABLED_STATE, 3);
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("pressed"))
+	for (const InfoTree &child : root.children_named("pressed"))
 	{
 		parse_theme_colors(child, TINY_BUTTON, PRESSED_STATE, 3);
 		parse_theme_images(child, TINY_BUTTON, PRESSED_STATE, 3);
@@ -326,15 +326,15 @@ static void parse_hyperlink(InfoTree root)
 	parse_theme_colors(root, HYPERLINK_WIDGET, DEFAULT_STATE, 3);
 	parse_theme_fonts(root, HYPERLINK_WIDGET);
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("active"))
+	for (const InfoTree &child : root.children_named("active"))
 	{
 		parse_theme_colors(child, HYPERLINK_WIDGET, ACTIVE_STATE, 3);
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("disabled"))
+	for (const InfoTree &child : root.children_named("disabled"))
 	{
 		parse_theme_colors(child, HYPERLINK_WIDGET, DISABLED_STATE, 3);
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("pressed"))
+	for (const InfoTree &child : root.children_named("pressed"))
 	{
 		parse_theme_colors(child, HYPERLINK_WIDGET, PRESSED_STATE, 3);
 	}
@@ -348,11 +348,11 @@ static void parse_item(InfoTree root)
 	parse_theme_colors(root, ITEM_WIDGET, DEFAULT_STATE);
 	parse_theme_fonts(root, ITEM_WIDGET);
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("active"))
+	for (const InfoTree &child : root.children_named("active"))
 	{
 		parse_theme_colors(child, ITEM_WIDGET, ACTIVE_STATE);
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("disabled"))
+	for (const InfoTree &child : root.children_named("disabled"))
 	{
 		parse_theme_colors(child, ITEM_WIDGET, DISABLED_STATE);
 	}
@@ -365,11 +365,11 @@ static void parse_label(InfoTree root)
 	parse_theme_colors(root, LABEL_WIDGET, DEFAULT_STATE);
 	parse_theme_fonts(root, LABEL_WIDGET);
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("active"))
+	for (const InfoTree &child : root.children_named("active"))
 	{
 		parse_theme_colors(child, LABEL_WIDGET, ACTIVE_STATE);
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("disabled"))
+	for (const InfoTree &child : root.children_named("disabled"))
 	{
 		parse_theme_colors(child, LABEL_WIDGET, DISABLED_STATE);
 	}
@@ -389,15 +389,15 @@ static void parse_text_entry(InfoTree root)
 	parse_theme_colors(root, TEXT_ENTRY_WIDGET, DEFAULT_STATE);
 	parse_theme_fonts(root, TEXT_ENTRY_WIDGET);
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("active"))
+	for (const InfoTree &child : root.children_named("active"))
 	{
 		parse_theme_colors(child, TEXT_ENTRY_WIDGET, ACTIVE_STATE);
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("disabled"))
+	for (const InfoTree &child : root.children_named("disabled"))
 	{
 		parse_theme_colors(child, TEXT_ENTRY_WIDGET, DISABLED_STATE);
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("cursor"))
+	for (const InfoTree &child : root.children_named("cursor"))
 	{
 		parse_theme_colors(child, TEXT_ENTRY_WIDGET, CURSOR_STATE);
 	}
@@ -423,14 +423,14 @@ static void parse_list(InfoTree root)
 	parse_theme_colors(root, LIST_WIDGET, DEFAULT_STATE, 3);
 	parse_theme_images(root, LIST_WIDGET, DEFAULT_STATE, 8);
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("trough"))
+	for (const InfoTree &child : root.children_named("trough"))
 	{
 		child.read_attr("top", dialog_theme[LIST_WIDGET].spaces[TROUGH_T_SPACE]);
 		child.read_attr("bottom", dialog_theme[LIST_WIDGET].spaces[TROUGH_B_SPACE]);
 		child.read_attr("right", dialog_theme[LIST_WIDGET].spaces[TROUGH_R_SPACE]);
 		child.read_attr("width", dialog_theme[LIST_WIDGET].spaces[TROUGH_WIDTH]);
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("thumb"))
+	for (const InfoTree &child : root.children_named("thumb"))
 	{
 		start_parse_widget(LIST_THUMB);
 		parse_theme_colors(child, LIST_THUMB, DEFAULT_STATE, 3);
@@ -448,7 +448,7 @@ static void parse_slider(InfoTree root)
 	parse_theme_colors(root, SLIDER_WIDGET, DEFAULT_STATE, 3);
 	parse_theme_images(root, SLIDER_WIDGET, DEFAULT_STATE, 3);
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("thumb"))
+	for (const InfoTree &child : root.children_named("thumb"))
 	{
 		start_parse_widget(SLIDER_THUMB);
 		parse_theme_colors(child, SLIDER_THUMB, DEFAULT_STATE, 3);
@@ -465,11 +465,11 @@ static void parse_checkbox(InfoTree root)
 	parse_theme_fonts(root, CHECKBOX);
 	parse_theme_images(root, CHECKBOX, DEFAULT_STATE, 2);
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("active"))
+	for (const InfoTree &child : root.children_named("active"))
 	{
 		parse_theme_images(child, CHECKBOX, ACTIVE_STATE, 2);
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("disabled"))
+	for (const InfoTree &child : root.children_named("disabled"))
 	{
 		parse_theme_images(child, CHECKBOX, DISABLED_STATE, 2);
 	}
@@ -489,17 +489,17 @@ static void parse_tab(InfoTree root)
 	parse_theme_fonts(root, TAB_WIDGET);
 	parse_theme_images(root, TAB_WIDGET, DEFAULT_STATE, 5);
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("active"))
+	for (const InfoTree &child : root.children_named("active"))
 	{
 		parse_theme_colors(child, TAB_WIDGET, ACTIVE_STATE, 3);
 		parse_theme_images(child, TAB_WIDGET, ACTIVE_STATE, 5);
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("disabled"))
+	for (const InfoTree &child : root.children_named("disabled"))
 	{
 		parse_theme_colors(child, TAB_WIDGET, DISABLED_STATE, 3);
 		parse_theme_images(child, TAB_WIDGET, DISABLED_STATE, 5);
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("pressed"))
+	for (const InfoTree &child : root.children_named("pressed"))
 	{
 		parse_theme_colors(child, TAB_WIDGET, PRESSED_STATE, 3);
 		parse_theme_images(child, TAB_WIDGET, PRESSED_STATE, 5);
@@ -509,7 +509,7 @@ static void parse_tab(InfoTree root)
 static void parse_metaserver(InfoTree root)
 {
 	start_parse_widget(METASERVER_WIDGETS);
-	BOOST_FOREACH(InfoTree child, root.children_named("games"))
+	for (const InfoTree &child : root.children_named("games"))
 	{
 		start_parse_widget(METASERVER_GAMES);
 		child.read_attr("entries", dialog_theme[METASERVER_GAMES].spaces[w_games_in_room::GAME_ENTRIES]);
@@ -518,28 +518,28 @@ static void parse_metaserver(InfoTree root)
 		parse_theme_colors(child, METASERVER_GAMES, w_games_in_room::GAME, 3);
 		parse_theme_fonts(child, METASERVER_GAMES);
 		
-		BOOST_FOREACH(InfoTree gtype, child.children_named("selected"))
+		for (const InfoTree &gtype : child.children_named("selected"))
 		{
 			parse_theme_colors(gtype, METASERVER_GAMES, w_games_in_room::SELECTED_GAME, 3);
 		}
-		BOOST_FOREACH(InfoTree gtype, child.children_named("running"))
+		for (const InfoTree &gtype : child.children_named("running"))
 		{
 			parse_theme_colors(gtype, METASERVER_GAMES, w_games_in_room::RUNNING_GAME, 3);
-			BOOST_FOREACH(InfoTree stype, gtype.children_named("selected"))
+			for (const InfoTree &stype : gtype.children_named("selected"))
 			{
 				parse_theme_colors(stype, METASERVER_GAMES, w_games_in_room::SELECTED_RUNNING_GAME, 3);
 			}
 		}
-		BOOST_FOREACH(InfoTree gtype, child.children_named("incompatible"))
+		for (const InfoTree &gtype : child.children_named("incompatible"))
 		{
 			parse_theme_colors(gtype, METASERVER_GAMES, w_games_in_room::INCOMPATIBLE_GAME, 3);
-			BOOST_FOREACH(InfoTree stype, gtype.children_named("selected"))
+			for (const InfoTree &stype : gtype.children_named("selected"))
 			{
 				parse_theme_colors(stype, METASERVER_GAMES, w_games_in_room::SELECTED_INCOMPATIBLE_GAME, 3);
 			}
 		}
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("players"))
+	for (const InfoTree &child : root.children_named("players"))
 	{
 		start_parse_widget(METASERVER_PLAYERS);
 		child.read_attr("lines", dialog_theme[METASERVER_PLAYERS].spaces[0]);
@@ -556,39 +556,39 @@ static bool parse_theme_file(FileSpecifier& theme_mml)
 	try {
 		InfoTree root = InfoTree::load_xml(theme_mml).get_child("marathon.theme");
 		
-		BOOST_FOREACH(InfoTree child, root.children_named("default"))
+		for (const InfoTree &child : root.children_named("default"))
 			parse_default(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("frame"))
+		for (const InfoTree &child : root.children_named("frame"))
 			parse_frame(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("title"))
+		for (const InfoTree &child : root.children_named("title"))
 			parse_title(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("spacer"))
+		for (const InfoTree &child : root.children_named("spacer"))
 			parse_spacer(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("button"))
+		for (const InfoTree &child : root.children_named("button"))
 			parse_button(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("tiny_button"))
+		for (const InfoTree &child : root.children_named("tiny_button"))
 			parse_tiny_button(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("hyperlink"))
+		for (const InfoTree &child : root.children_named("hyperlink"))
 			parse_hyperlink(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("item"))
+		for (const InfoTree &child : root.children_named("item"))
 			parse_item(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("label"))
+		for (const InfoTree &child : root.children_named("label"))
 			parse_label(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("message"))
+		for (const InfoTree &child : root.children_named("message"))
 			parse_message(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("text_entry"))
+		for (const InfoTree &child : root.children_named("text_entry"))
 			parse_text_entry(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("chat_entry"))
+		for (const InfoTree &child : root.children_named("chat_entry"))
 			parse_chat_entry(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("list"))
+		for (const InfoTree &child : root.children_named("list"))
 			parse_list(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("slider"))
+		for (const InfoTree &child : root.children_named("slider"))
 			parse_slider(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("checkbox"))
+		for (const InfoTree &child : root.children_named("checkbox"))
 			parse_checkbox(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("tab"))
+		for (const InfoTree &child : root.children_named("tab"))
 			parse_tab(child);
-		BOOST_FOREACH(InfoTree child, root.children_named("metaserver"))
+		for (const InfoTree &child : root.children_named("metaserver"))
 			parse_metaserver(child);
 		
 		success = true;
@@ -2306,12 +2306,14 @@ void dialog::start(bool play_sound)
 
 bool dialog::process_events()
 {
-	while (!done) {
-		SDL_Event e;
-		if (SDL_PollEvent(&e))
+	SDL_Event e;
+	if (SDL_WaitEventTimeout(&e, 30))
+	{
+		event(e);
+		while (!done && SDL_PollEvent(&e))
+		{
 			event(e);
-		else
-			break;
+		}
 	}
 
 	return done;

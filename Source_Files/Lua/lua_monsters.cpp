@@ -26,11 +26,11 @@ LUA_MONSTERS.CPP
 #include "lua_player.h"
 #include "lua_templates.h"
 
+#include <functional>
+
 #include "flood_map.h"
 #include "monsters.h"
 #include "player.h"
-
-#include <boost/bind.hpp>
 
 #define DONT_REPEAT_DEFINITIONS
 #include "monster_definitions.h"
@@ -355,6 +355,13 @@ static int Lua_MonsterType_Get_Random_Location(lua_State* L)
 	return 1;
 }
 
+static int Lua_MonsterType_Get_Vitality(lua_State* L)
+{
+	monster_definition *definition = get_monster_definition_external(Lua_MonsterType::Index(L, 1));
+	lua_pushnumber(L, definition->vitality);
+	return 1;
+}
+
 static int Lua_MonsterType_Get_Weaknesses(lua_State *L) {
 	Lua_MonsterType_Weaknesses::Push(L, Lua_MonsterType::Index(L, 1));
 	return 1;
@@ -496,45 +503,92 @@ static int Lua_MonsterType_Set_Random_Location(lua_State* L)
 }
 
 const luaL_Reg Lua_MonsterType_Get[] = {
+	{"alien", Lua_MonsterType_Get_Flag<_monster_is_alien>},
 	{"attacks_immediately", Lua_MonsterType_Get_Flag<_monster_attacks_immediately>},
+	{"berserker", Lua_MonsterType_Get_Flag<_monster_is_berserker>},
+	{"can_die_in_flames", Lua_MonsterType_Get_Flag<_monster_can_die_in_flames>},
+	{"can_teleport_under_media", Lua_MonsterType_Get_Flag<_monster_can_teleport_under_media>},
+	{"cannot_attack", Lua_MonsterType_Get_Flag<_monster_cannot_attack>},
 	{"cannot_be_dropped", Lua_MonsterType_Get_Flag<_monster_cannot_be_dropped>},
+	{"cannot_fire_backward", Lua_MonsterType_Get_Flag<_monster_cant_fire_backwards>},
+	{"chooses_weapons_randomly", Lua_MonsterType_Get_Flag<_monster_chooses_weapons_randomly>},
 	{"class", Lua_MonsterType_Get_Class},
 	{"collection", Lua_MonsterType_Get_Collection},
 	{"clut_index", Lua_MonsterType_Get_Clut_Index},
 	{"enemies", Lua_MonsterType_Get_Enemies},
+	{"enlarged", Lua_MonsterType_Get_Flag<_monster_is_enlarged>},
+	{"fires_symmetrically", Lua_MonsterType_Get_Flag<_monster_fires_symmetrically>},
+	{"flies", Lua_MonsterType_Get_Flag<_monster_flys>},
+	{"floats", Lua_MonsterType_Get_Flag<_monster_floats>},
 	{"friends", Lua_MonsterType_Get_Friends},
+	{"has_delayed_hard_death", Lua_MonsterType_Get_Flag<_monster_has_delayed_hard_death>},
+	{"has_nuclear_hard_death", Lua_MonsterType_Get_Flag<_monster_has_nuclear_hard_death>},
 	{"height", Lua_MonsterType_Get_Height},
 	{"immunities", Lua_MonsterType_Get_Immunities},
 	{"impact_effect", Lua_MonsterType_Get_Impact_Effect},
 	{"initial_count", Lua_MonsterType_Get_Initial_Count},
+	{"invisible", Lua_MonsterType_Get_Flag<_monster_is_invisible>},
+	{"item", Lua_MonsterType_Get_Item},
+	{"kamikaze", Lua_MonsterType_Get_Flag<_monster_is_kamakazi>},
 	{"major", Lua_MonsterType_Get_Flag<_monster_major>},
 	{"maximum_count", Lua_MonsterType_Get_Maximum_Count},
 	{"melee_impact_effect", Lua_MonsterType_Get_Melee_Impact_Effect},
 	{"minimum_count", Lua_MonsterType_Get_Minimum_Count},
 	{"minor", Lua_MonsterType_Get_Flag<_monster_minor>},
-	{"item", Lua_MonsterType_Get_Item},
+	{"not_afraid_of_goo", Lua_MonsterType_Get_Flag<_monster_is_not_afraid_of_goo>},
+	{"not_afraid_of_lava", Lua_MonsterType_Get_Flag<_monster_is_not_afraid_of_lava>},
+	{"not_afraid_of_sewage", Lua_MonsterType_Get_Flag<_monster_is_not_afraid_of_sewage>},
+	{"not_afraid_of_water", Lua_MonsterType_Get_Flag<_monster_is_not_afraid_of_water>},
+	{"omniscient", Lua_MonsterType_Get_Flag<_monster_is_omniscent>},
 	{"radius", Lua_MonsterType_Get_Radius},
 	{"random_chance", Lua_MonsterType_Get_Random_Chance},
 	{"random_location", Lua_MonsterType_Get_Random_Location},
+	{"subtly_invisible", Lua_MonsterType_Get_Flag<_monster_is_subtly_invisible>},
+	{"tiny", Lua_MonsterType_Get_Flag<_monster_is_tiny>},
 	{"total_available", Lua_MonsterType_Get_Random_Count},
+	{"uses_sniper_ledges", Lua_MonsterType_Get_Flag<_monster_uses_sniper_ledges>},
+	{"vitality", Lua_MonsterType_Get_Vitality},
 	{"weaknesses", Lua_MonsterType_Get_Weaknesses},
 	{"waits_with_clear_shot", Lua_MonsterType_Get_Flag<_monster_waits_with_clear_shot>},
 	{0, 0}
 };
 
 const luaL_Reg Lua_MonsterType_Set[] = {
+	{"alien", Lua_MonsterType_Set_Flag<_monster_is_alien>},
 	{"attacks_immediately", Lua_MonsterType_Set_Flag<_monster_attacks_immediately>},
+	{"berserker", Lua_MonsterType_Set_Flag<_monster_is_berserker>},
+	{"can_die_in_flames", Lua_MonsterType_Set_Flag<_monster_can_die_in_flames>},
+	{"can_teleport_under_media", Lua_MonsterType_Set_Flag<_monster_can_teleport_under_media>},
+	{"cannot_attack", Lua_MonsterType_Set_Flag<_monster_cannot_attack>},
 	{"cannot_be_dropped", Lua_MonsterType_Set_Flag<_monster_cannot_be_dropped>},
+	{"cannot_fire_backward", Lua_MonsterType_Set_Flag<_monster_cant_fire_backwards>},
+	{"chooses_weapons_randomly", Lua_MonsterType_Set_Flag<_monster_chooses_weapons_randomly>},
 	{"class", Lua_MonsterType_Set_Class},
+	{"enlarged", Lua_MonsterType_Set_Flag<_monster_is_enlarged>},
+	{"fires_symmetrically", Lua_MonsterType_Set_Flag<_monster_fires_symmetrically>},
+	{"flies", Lua_MonsterType_Set_Flag<_monster_flys>},
+	{"floats", Lua_MonsterType_Set_Flag<_monster_floats>},
+	{"has_delayed_hard_death", Lua_MonsterType_Set_Flag<_monster_has_delayed_hard_death>},
+	{"has_nuclear_hard_death", Lua_MonsterType_Set_Flag<_monster_has_nuclear_hard_death>},
 	{"initial_count", Lua_MonsterType_Set_Initial_Count},
+	{"invisible", Lua_MonsterType_Set_Flag<_monster_is_invisible>},
 	{"item", Lua_MonsterType_Set_Item},
+	{"kamikaze", Lua_MonsterType_Set_Flag<_monster_is_kamakazi>},
 	{"major", Lua_MonsterType_Set_Flag<_monster_major>},
 	{"maximum_count", Lua_MonsterType_Set_Maximum_Count},
 	{"minimum_count", Lua_MonsterType_Set_Minimum_Count},
 	{"minor", Lua_MonsterType_Set_Flag<_monster_minor>},
+	{"not_afraid_of_goo", Lua_MonsterType_Set_Flag<_monster_is_not_afraid_of_goo>},
+	{"not_afraid_of_lava", Lua_MonsterType_Set_Flag<_monster_is_not_afraid_of_lava>},
+	{"not_afraid_of_sewage", Lua_MonsterType_Set_Flag<_monster_is_not_afraid_of_sewage>},
+	{"not_afraid_of_water", Lua_MonsterType_Set_Flag<_monster_is_not_afraid_of_water>},
+	{"omniscient", Lua_MonsterType_Set_Flag<_monster_is_omniscent>},
 	{"random_chance", Lua_MonsterType_Set_Random_Chance},
 	{"random_location", Lua_MonsterType_Set_Random_Location},
+	{"subtly_invisible", Lua_MonsterType_Set_Flag<_monster_is_subtly_invisible>},
+	{"tiny", Lua_MonsterType_Set_Flag<_monster_is_tiny>},
 	{"total_available", Lua_MonsterType_Set_Random_Count},
+	{"uses_sniper_ledges", Lua_MonsterType_Set_Flag<_monster_uses_sniper_ledges>},
 	{"waits_with_clear_shot", Lua_MonsterType_Set_Flag<_monster_waits_with_clear_shot>},
 	{0, 0}
 };
@@ -619,6 +673,30 @@ int Lua_Monster_Damage(lua_State *L)
 	int monster_index = Lua_Monster::Index(L, 1);
 	monster_data *monster = get_monster_data(monster_index);
 	damage_monster(monster_index, NONE, NONE, &(monster->sound_location), &damage, NONE);
+	return 0;
+}
+
+int Lua_Monster_Delete(lua_State* L)
+{
+	auto monster_index = Lua_Monster::Index(L, 1);
+	auto monster = get_monster_data(monster_index);
+	if (MONSTER_IS_PLAYER(monster))
+		return luaL_error(L, "delete: monster is player");
+
+	monster->action = _monster_is_dying_soft; // to prevent aggressors from
+											  // relocking, per monsters.cpp
+	monster_died(monster_index);
+	auto object = get_object_data(monster->object_index);
+	remove_map_object(monster->object_index);
+
+	/* recover original type and notify the object stuff a monster died */
+	if (monster->flags&_monster_was_promoted) monster->type-= 1;
+	if (monster->flags&_monster_was_demoted) monster->type+= 1;
+	object_was_just_destroyed(_object_is_monster, monster->type);
+	
+	L_Invalidate_Monster(monster_index);
+	MARK_SLOT_AS_FREE(monster);
+
 	return 0;
 }
 
@@ -769,6 +847,14 @@ static int Lua_Monster_Get_Facing(lua_State *L)
 	return 1;
 }
 
+template<uint32 flag>
+static int Lua_Monster_Get_Flag(lua_State* L)
+{
+	auto monster = get_monster_data(Lua_Monster::Index(L, 1));
+	lua_pushboolean(L, monster->flags & flag);
+	return 1;
+}
+
 static int Lua_Monster_Get_Mode(lua_State *L)
 {
 	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
@@ -899,6 +985,28 @@ static int Lua_Monster_Set_Facing(lua_State *L)
 	return 0;
 }
 
+template<uint32 flag, bool before_activation>
+static int Lua_Monster_Set_Flag(lua_State* L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "monster flag: incorrect argument type");
+
+	auto monster = get_monster_data(Lua_Monster::Index(L, 1));
+	if (before_activation && MONSTER_IS_ACTIVE(monster))
+		return luaL_error(L, "monster flag: monster already active");
+
+	if (lua_toboolean(L, 2))
+	{
+		monster->flags |= flag;
+	}
+	else
+	{
+		monster->flags &= ~flag;
+	}
+
+	return 0;
+}
+
 static int Lua_Monster_Set_Vertical_Velocity(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
@@ -915,20 +1023,11 @@ static int Lua_Monster_Set_Visible(lua_State *L) {
 	object_data *object = get_object_data(monster->object_index);
 	int invisible = !lua_toboolean(L, 2);
 	if(monster->action == _monster_is_teleporting_out) return 0;
-	if(MONSTER_IS_ACTIVE(monster) || monster->vitality >= 0) {
-		// Cool stuff happens if you just set an active
-		// monster to invisible.  What we should do instead of
-		// the below is expose teleports_out_when_deactivated
-		/*if(invisible) {
-		  monster->flags |= (uint16)_monster_teleports_out_when_deactivated;
-		  deactivate_monster(monster_index);
-		  }*/
+	if(MONSTER_IS_ACTIVE(monster) || monster->vitality >= 0)
 		return luaL_error(L, "visible: monster already activated");
-	}
-	else {
-		// No real possibility of messing stuff up here.
-		SET_OBJECT_INVISIBILITY(object, invisible);
-	}
+
+	// No real possibility of messing stuff up here.
+	SET_OBJECT_INVISIBILITY(object, invisible);
 	return 0;
 }
 
@@ -947,7 +1046,10 @@ const luaL_Reg Lua_Monster_Get[] = {
 	{"action", Lua_Monster_Get_Action},
 	{"active", Lua_Monster_Get_Active},
 	{"attack", L_TableFunction<Lua_Monster_Attack>},
+	{"blind", Lua_Monster_Get_Flag<_monster_is_blind>},
 	{"damage", L_TableFunction<Lua_Monster_Damage>},
+	{"deaf", Lua_Monster_Get_Flag<_monster_is_deaf>},
+	{"delete", L_TableFunction<Lua_Monster_Delete>},
 	{"external_velocity", Lua_Monster_Get_External_Velocity},
 	{"facing", Lua_Monster_Get_Facing},
 	{"life", Lua_Monster_Get_Vitality},
@@ -957,6 +1059,7 @@ const luaL_Reg Lua_Monster_Get[] = {
 	{"play_sound", L_TableFunction<Lua_Monster_Play_Sound>},
 	{"polygon", Lua_Monster_Get_Polygon},
 	{"position", L_TableFunction<Lua_Monster_Position>},
+	{"teleports_out", Lua_Monster_Get_Flag<_monster_teleports_out_when_deactivated>},
 	{"type", Lua_Monster_Get_Type},
 	{"valid", Lua_Monster_Get_Valid},
 	{"vertical_velocity", Lua_Monster_Get_Vertical_Velocity},
@@ -971,9 +1074,12 @@ const luaL_Reg Lua_Monster_Get[] = {
 
 const luaL_Reg Lua_Monster_Set[] = {
 	{"active", Lua_Monster_Set_Active},
+	{"blind", Lua_Monster_Set_Flag<_monster_is_blind, true>},
+	{"deaf", Lua_Monster_Set_Flag<_monster_is_deaf, true>},
 	{"external_velocity", Lua_Monster_Set_External_Velocity},
 	{"facing", Lua_Monster_Set_Facing},
 	{"life", Lua_Monster_Set_Vitality},
+	{"teleports_out", Lua_Monster_Set_Flag<_monster_teleports_out_when_deactivated, false>},
 	{"vertical_velocity", Lua_Monster_Set_Vertical_Velocity},
 	{"visible", Lua_Monster_Set_Visible},
 	{"vitality", Lua_Monster_Set_Vitality},
@@ -1064,7 +1170,7 @@ int Lua_Monsters_register(lua_State *L)
 	Lua_Monster::Valid = Lua_Monster_Valid;
 
 	Lua_Monsters::Register(L, Lua_Monsters_Methods);
-	Lua_Monsters::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_monsters);
+	Lua_Monsters::Length = std::bind(get_dynamic_limit, (int) _dynamic_limit_monsters);
 
 	compatibility(L);
 	return 0;

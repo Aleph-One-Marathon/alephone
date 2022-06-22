@@ -4,7 +4,7 @@ SRCROOT="$1/PBProjects"
 TARGET_BUILD_DIR="$2"
 SIGNATURE="$3"
 
-if [[ ! -d "$SRCROOT" || ! -d "$TARGET_BUILD_DIR" || "$SIGNATURE" == "" ]]; then
+if [[ ! -d "$SRCROOT" || ! -d "$TARGET_BUILD_DIR" ]]; then
   echo "Usage: $0 <source-directory> <binary-directory> <signature>"
   exit 1
 fi
@@ -26,9 +26,10 @@ END
 make_dmg()
 {
     appname="$1"
-    codesign --timestamp --deep --force -o runtime --sign "$SIGNATURE" "$TARGET_BUILD_DIR/$appname.app"
-    spctl -a -t execute -v "$TARGET_BUILD_DIR/$appname.app"
-   
+    if [ "$SIGNATURE" != "" ]; then
+        codesign --timestamp --deep --force -o runtime --sign "$SIGNATURE" "$TARGET_BUILD_DIR/$appname.app"
+        spctl -a -t execute -v "$TARGET_BUILD_DIR/$appname.app"
+    fi
     diskdir=`mktemp -d -t Aleph`
     rsync -a "$TARGET_BUILD_DIR/$appname.app" "$diskdir"
     ln -s /Applications "$diskdir"
@@ -59,8 +60,10 @@ make_dmg()
     imgname="${appname// }"
     imgfile="$TARGET_BUILD_DIR/$imgname-$version-Mac.dmg"
     hdiutil create -ov -fs HFS+ -format UDBZ -layout GPTSPUD -srcfolder "$diskdir" -volname "$appname" "$imgfile"
-    codesign -s "$SIGNATURE" "$imgfile"
-    spctl -a -t open --context context:primary-signature -v "$imgfile"
+    if [ "$SIGNATURE" != "" ]; then
+        codesign -s "$SIGNATURE" "$imgfile"
+        spctl -a -t open --context context:primary-signature -v "$imgfile"
+    fi
     
     rm -rf "$diskdir"
 }

@@ -537,13 +537,21 @@ w_players_in_game2::find_maximum_bar_value() const {
             }
         }
     }
-    
+
     // If all values were nonpositive, and we had at least one negative, we
     // return the (negative) value furthest from 0.
     // The Mac version seems to do nothing of the sort - how can it possibly
     // display correct bars for games with negative scores like "Tag"??
     if(theMaxValue <= 0 && theMinValue < 0)
+	{
         theMaxValue = theMinValue;
+	}
+	// if there is a mix of positive and negative, draw two different colored
+	// bars
+	else if (theMinValue < 0)
+	{
+		theMaxValue = std::max(std::abs(theMinValue), std::abs(theMaxValue));
+	}
 
     return theMaxValue;
 }
@@ -565,12 +573,23 @@ w_players_in_game2::draw_bar_or_bars(SDL_Surface* s, size_t rank_index, int cent
         calculate_ranking_text_for_post_game(temporary, theScore);
         theBarInfo.label_text = temporary;  // this makes a copy
 
-        draw_bar(s, center_x, _score_color, theScore, maximum_value, theBarInfo);
+		if ((theScore < 0) == (maximum_value <= 0))
+		{
+			draw_bar(s, center_x, _score_color, theScore, maximum_value, theBarInfo);
+		}
+		else if (theScore >= 0)
+		{
+			draw_bar(s, center_x, _score_color, theScore, maximum_value, theBarInfo);
+		}
+		else
+		{
+			draw_bar(s, center_x, _kill_color, -theScore, maximum_value, theBarInfo);
+		}
 
-        // Don't draw a "0" score label
-        if(theScore != 0)
-            outBarInfos.push_back(theBarInfo);
-    }
+		// Don't draw a "0" score label
+		if(theScore != 0)
+			outBarInfos.push_back(theBarInfo);
+	}
     else {
         // Draw carnage bar(s)
         if(rank_index == selected_player) {

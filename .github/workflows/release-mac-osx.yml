@@ -1,0 +1,51 @@
+name: release-mac-osx
+
+on: [workflow_dispatch, workflow_call]
+
+jobs:
+  release:
+    runs-on: macos-11
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        
+    - name: Install Tools
+      run: brew install nasm automake
+      
+    - name: Vcpkg Integration
+      run: $VCPKG_INSTALLATION_ROOT/vcpkg integrate install
+      
+    - name: Get Vcpkg current hash
+      run: echo "vcpkg_current_hash=$(git -C $VCPKG_INSTALLATION_ROOT rev-parse --short HEAD)" >> $GITHUB_ENV
+        
+    - name: Restore vcpkg cache for x64
+      uses: actions/cache@v2
+      with:
+        path: vcpkg/installed-x64-osx
+        key: ${{runner.os}}-installed-x64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
+        
+    - name: Restore vcpkg cache for arm64
+      uses: actions/cache@v2
+      with:
+        path: vcpkg/installed-arm64-osx
+        key: ${{runner.os}}-installed-arm64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
+        
+    - name: Switch to Xcode 12.5.1
+      run: sudo xcode-select --switch /Applications/Xcode_12.5.1.app
+      
+    - name: Install Dependencies
+      run: cd vcpkg && ./install-x64-osx.sh && ./install-arm-osx.sh
+      
+    - name: Build
+      run: cd PBProjects && xcodebuild -target "Aleph One" -target "Marathon" -target "Marathon 2" -target "Marathon Infinity" DEVELOPMENT_TEAM='' CODE_SIGN_IDENTITY='-' CODE_SIGN_STYLE='Automatic' build
+      
+    - name: Create DMGs
+      run: cd tools && ./build_dmg.sh $GITHUB_WORKSPACE $GITHUB_WORKSPACE/PBProjects/build/Release
+      
+    - name: Upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: alephone-release
+        if-no-files-found: error
+        path: 'PBProjects/build/Release/*.dmg'

@@ -47,7 +47,6 @@ extern "C"
 #include "lua_hud_script.h"
 #include "lua_hud_objects.h"
 
-#include <boost/shared_ptr.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream_buffer.hpp>
 namespace io = boost::iostreams;
@@ -127,7 +126,7 @@ protected:
 
 	virtual void RegisterFunctions();
 
-	boost::shared_ptr<lua_State> state_;
+	std::shared_ptr<lua_State> state_;
 	lua_State* State() { return state_.get(); }
 
 public:

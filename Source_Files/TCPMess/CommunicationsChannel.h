@@ -38,7 +38,7 @@
 #include <memory>
 #include <stdexcept>
 #include <vector>
-#include "SDL_net.h"
+#include <SDL2/SDL_net.h>
 
 #include "Message.h"
 #include "csmisc.h"

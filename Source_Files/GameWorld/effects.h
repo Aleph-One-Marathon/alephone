@@ -160,7 +160,7 @@ extern std::vector<effect_data> EffectList;
 /* ---------- prototypes/EFFECTS.C */
 
 short new_effect(world_point3d *origin, short polygon_index, short type, angle facing);
-void update_effects(void); /* assumes ¶t==1 tick */
+void update_effects(void); /* assumes âˆ‚t==1 tick */
 
 void remove_all_nonpersistent_effects(void);
 void remove_effect(short effect_index);

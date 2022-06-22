@@ -62,12 +62,12 @@ struct flagged_world_point3d /* for ceilings */
 
 /* ---------- vertical surface definition */
 
-/* itÕs not worth putting this into the side_data structure, although the transfer mode should
+/* itâ€™s not worth putting this into the side_data structure, although the transfer mode should
 	be in the side_texture_definition structure */
 struct vertical_surface_data
 {
 	short lightsource_index;
-	_fixed ambient_delta; /* a delta to the lightsourceÕs intensity, then pinned to [0,FIXED_ONE] */
+	_fixed ambient_delta; /* a delta to the lightsourceâ€™s intensity, then pinned to [0,FIXED_ONE] */
 	
 	world_distance length;
 	world_distance h0, h1, hmax; /* h0<h1; hmax<=h1 and is the height where this wall side meets the ceiling */

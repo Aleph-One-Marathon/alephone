@@ -278,7 +278,7 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 					!plugin_file_exists(Data, Data.theme + "/theme2.mml"))
 					Data.theme = "";
 				
-				BOOST_FOREACH(InfoTree tree, root.children_named("mml"))
+				for (const InfoTree &tree : root.children_named("mml"))
 				{
 					std::string mml_path;
 					if (tree.read_attr("file", mml_path) &&
@@ -286,7 +286,7 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 						Data.mmls.push_back(mml_path);
 				}
 
-				BOOST_FOREACH(InfoTree tree, root.children_named("shapes_patch"))
+				for (const InfoTree &tree : root.children_named("shapes_patch"))
 				{
 					ShapesPatch patch;
 					tree.read_attr("file", patch.path);
@@ -295,7 +295,7 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 						Data.shapes_patches.push_back(patch);
 				}
 
-				BOOST_FOREACH(InfoTree tree, root.children_named("scenario"))
+				for (const InfoTree &tree : root.children_named("scenario"))
 				{
 					ScenarioInfo info;
 					tree.read_attr("name", info.name);

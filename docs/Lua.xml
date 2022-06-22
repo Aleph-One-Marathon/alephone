@@ -338,6 +338,8 @@
       <argument name="x"><type>WU</type></argument>
       <argument name="y"><type>WU</type></argument>
       <argument name="z"><type>WU</type></argument>
+	  <argument name="t" version="20210408"><type>variant</type></argument>
+	  <note>t can be a side, polygon_floor, polygon_ceiling, monster, scenery, polygon; see Polygon:check_collision for info on how to decode. It can also be nil, in the rare case a projectile detonates without hitting something</note>
     </function>
   </triggers>
   <section id="using_tables" name="Using Tables">
@@ -508,7 +510,7 @@
 		<argument name="n"><type>number</type></argument>
 		<return><type>number</type></return>
       </function>
-	  <function name="random_local" version="git">
+	  <function name="random_local" version="20210408">
 		<description>returns a random number between 0 and n-1 using a good random number generator</description>
 		<argument name="n"><type>number</type></argument>
 		<return><type>number</type></return>
@@ -597,6 +599,9 @@
       <variable name="type" access="read-only">
 		<description>type of item</description>
 		<type>item_type</type>
+      </variable>
+      <variable name="visible" access="read-only" version="20220115">
+    <type>boolean</type>
       </variable>
       <variable name="x" access="read-only">
 		<type>WU</type>
@@ -862,6 +867,10 @@
 		<description>counterclockwise side of line</description>
 		<type>side</type>
       </variable>
+	  <variable name="decorative" version="20210408">
+		<description>projectiles always pass the transparent sides of decorative lines</description>
+		<type>bool</type>
+	  </variable>
       <subtable-accessor name="endpoints" classname="line_endpoints" index="n">
 		<description>returns line endpoint n</description>
       </subtable-accessor>
@@ -943,12 +952,25 @@
 		<description>instructs monster to attack target</description>
 		<argument name="target"><type>monster</type></argument>
       </function>
+	  <variable name="blind" version="20210408">
+		<description>monster is blind</description>
+		<note>only valid before monster activates</note>
+		<type>boolean</type>
+	  </variable>
       <function name="damage">
 		<description>damages monster</description>
 		<argument name="amount"><type>number</type></argument>
 		<argument name="type" required="false"><type>damage_type</type></argument>
 		<note>if no type is specified, fist damage is dealt</note>
       </function>
+	  <variable name="deaf" version="20210408">
+		<description>monster is deaf</description>
+		<note>only valid before monster activates</note>
+		<type>boolean</type>
+	  </variable>
+	  <function name="delete" version="20210408">
+		<description>deletes monster</description>
+	  </function>
       <variable name="external_velocity" version="20090909">
 		<description>monster’s current external velocity (always in the opposite direction of facing)</description>
 		<type>speed</type>
@@ -994,6 +1016,10 @@
 		<argument name="z"><type>WU</type></argument>
 		<argument name="polygon"><type>polygon</type></argument>
       </function>
+	  <variable name="teleports_out" version="20210408">
+		<description>monster teleports out when deactivated</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="type" access="read-only">
 		<description>type of monster</description>
 		<type>monster_type</type>
@@ -1086,18 +1112,82 @@
       </function>
     </table>
     <table name="platform">
+	  <variable name="activates_adjacent_platforms_at_each_level" version="20210408">
+		<description>platform will activate adjacent platforms at each elevation it comes to (ie.,at floor level and ceiling level)</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="activates_adjacent_platforms_when_activating" version="20210408">
+		<description>when activating, this platform activates adjacent platforms</description>
+		<type>boolean</type>
+	  </variable>
+	   <variable name="activates_adjacent_platforms_when_deactivating" version="20210408">
+		<description>when deactivating, this platform activates adjacent platforms</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="activates_light" version="20210408">
+		<description>activates floor and ceiling lightsources while activating</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="activates_only_once" version="20210408">
+		<description>cannot be activated a second time</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="active">
 		<description>whether platform is currently active</description>
 		<type>boolean</type>
       </variable>
+	  <variable name="cannot_be_externally_deactivated" version="20210408">
+		<description>when active, can only be deactivated by itself</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="ceiling_height">
 		<description>current ceiling height of platform</description>
 		<type>WU</type>
       </variable>
+	  <variable name="comes_from_ceiling" version="20210408" access="read-only">
+		<description>platform lowers from ceiling</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="comes_from_floor" version="20210408" access="read-only">
+		<description>platform rises from floor</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="contracting">
 		<description>direction platform is moving or will move when active</description>
 		<type>boolean</type>
       </variable>
+	  <variable name="contracts_slower" version="20210408">
+		<description>will move slower when contracting than when extending</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="deactivates_adjacent_platforms_when_activating" version="20210408">
+		<description>when activating, this platform deactivates adjacent platforms</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="deactivates_adjacent_platforms_when_deactivating" version="20210408">
+		<description>when deactivating, this platform deactivates adjacent platforms</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="deactivates_at_each_level" version="20210408">
+		<description>this platform will deactivate each time it reaches a discrete level</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="deactivates_at_initial_level" version="20210408">
+		<description>this platform will deactivate upon returning to its initial position</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="deactivates_light" version="20210408">
+		<description>deactivates floor and ceiling lightsources while deactivating</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="delays_before_activation" version="20210408">
+		<description>whether or not the platform begins with the maximum delay before moving</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="does_not_activate_parent" version="20210408">
+		<description>does not reactive its parent (the platform which activated it)</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="door" version="20100118">
 		<description>platform is a door</description>
 		<type>boolean</type>
@@ -1106,14 +1196,46 @@
 		<description>direction platform is moving or will move when active</description>
 		<type>boolean</type>
       </variable>
+	  <variable name="extends_floor_to_ceiling" version="20210408" access="read-only">
+		<description>there is no empty space when the platform is fully extended</description>
+		<type>boolean</type>
+      </variable>
       <variable name="floor_height">
 		<description>current floor height of platform</description>
 		<type>WU</type>
       </variable>
+	  <variable name="initially_active" version="20210408" access="read-only">
+		<description>otherwise inactive</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="has_been_activated" version="20210408">
+		<description>in case platform can only be activated once</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="initially_extended" version="20210408" access="read-only">
+		<description>high for floor platforms, low for ceiling platforms, closed for two-way platforms</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="locked" version="20100118">
 		<description>platform is locked</description>
 		<type>boolean</type>
 		<note>this flag doesn’t actually do anything</note>
+      </variable>
+      <variable name="maximum_ceiling_height" access="read-only" version="20220115">
+    <description>greatest height a platform's ceiling can ever rise</description>
+    <type>WU</type>
+      </variable>
+      <variable name="maximum_floor_height" access="read-only" version="20220115">
+    <description>greatest height a platform's floor can ever rise</description>
+    <type>WU</type>
+      </variable>
+      <variable name="minimum_ceiling_height" access="read-only" version="20220115">
+    <description>least height a platform's ceiling must rise</description>
+    <type>WU</type>
+      </variable>
+      <variable name="minimum_floor_height" access="read-only" version="20220115">
+    <description>least height a platform's floor must rise</description>
+    <type>WU</type>
       </variable>
       <variable name="monster_controllable">
 		<description>whether platform can be controlled by monsters</description>
@@ -1127,6 +1249,10 @@
 		<description>polygon of this platform</description>
 		<type>polygon</type>
       </variable>
+	  <variable name="reverses_direction_when_obstructed" version="20210408">
+		<description>platform reverses direction when obstructed</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="secret" version="20100118">
 		<description>platform is secret</description>
 		<type>boolean</type>
@@ -1141,6 +1267,10 @@
 		<type>platform_type</type>
 		<note>the only thing the engine uses type for is the platform’s sound</note>
       </variable>
+	  <variable name="uses_native_polygon_heights" version="20210408" access="read-only">
+		<description>uses native polygon heights during automatic min,max calculation</description>
+		<type>boolean</type>
+	  </variable>
     </table>
     <table name="player">
       <function name="accelerate">
@@ -1310,17 +1440,23 @@
       <function name="find_action_key_target" return="variant">
 		<description>if player is in range of a platform or control panel, returns a platform or side; otherwise returns nil</description>
 		<return><type>variant</type></return>
+		
 		<note>you can check the type of the return with is_polygon() and is_side()</note>
       </function>
       <function name="find_target" return="variant">
-		<description>returns t, x, y, z, polygon, where t is the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the target is the surface of a liquid) the player is looking at; and x, y, z, and polygon are the point the player is looking at</description>
+		<description>returns t, x, y, z, polygon, where t is the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the target is the surface of a liquid, and penetrate_media is false) the player is looking at; and x, y, z, and polygon are the point the player is looking at</description>
+		<argument name="penetrate_media" required="false" version="20220115"><type>boolean</type></argument>
 		<return><type>variant</type></return>
 		<return><type>WU</type></return>
 		<return><type>WU</type></return>
 		<return><type>WU</type></return>
 		<return><type>polygon</type></return>
 		<note>you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon()</note>
+		<note>this function will not work under liquid unless penetrate_media is true</note>
       </function>
+	  <variable name="has_map_open" access="read-only" version="20220115">
+		<description>whether player has overhead map open</description>
+	  </variable>
       <variable name="head_below_media" access="read-only">
 		<description>whether player is completely below liquid</description>
 		<type>boolean</type>
@@ -1329,6 +1465,29 @@
         <description>direction in which player is looking</description>
         <note>while glancing, this differs from .direction</note>
       </variable>
+	  <variable name="hotkey" version="20210408">
+		<note>only valid when read/written in idle()</note>
+		<note>hotkeys aren’t latched, and can only be transmitted every 3 ticks</note>
+		<note>to check for a continously pressed hotkey, or to implement your own latch, count down from 2 before checking it again</note>
+		<note>hotkeys override cycle weapon backward/forward; these flags will be false for 3 ticks after a hotkey is pressed</note>
+		<description>pressed hotkey, from 1-12, or 0 for no hotkey</description>
+		<type>number</type>
+	  </variable>
+	  <subtable-accessor name="hotkey_bindings" classname="hotkey_bindings" index="n" version="20210408" access="local-player">
+		<description>keys or buttons the player has bound to hotkeys 1-12</description>
+		<variable name="joystick" access="read-only">
+		  <description>joystick button binding</description>
+		  <type>string</type>
+		</variable>
+		<variable name="key" access="read-only">
+		  <description>key binding</description>
+		  <type>string</type>
+		</variable>
+		<variable name="mouse" access="read-only">
+		  <description>mouse button binding</description>
+		  <type>string</type>
+		</variable>
+	  </subtable-accessor>
       <variable name="infravision_duration">
 		<description>infravision time remaining</description>
 		<type>time</type>
@@ -1432,7 +1591,7 @@
 		<description>prints message to player’s screen</description>
 		<argument name="message"><type>string</type></argument>
       </function>
-	  <function name="revive" version="git">
+	  <function name="revive" version="20210408">
 		<description>revives player</description>
 		<note>player must be totally dead</note>
 	  </function>
@@ -1448,6 +1607,9 @@
 		<description>teleports player to level (of course, all the other players will also go to that level)</description>
 		<argument name="level"><type>number</type></argument>
       </function>
+	  <variable name="teleporting" access="read-only" version="20220115">
+		<description>whether player is teleporting</description>
+	  </variable>
       <subtable name="texture_palette">
 		<description>displays a texture palette instead of the classic HUD</description>
 		<variable name="highlight" access="local-player">
@@ -1479,7 +1641,7 @@
 		  </function>
 		</subtable-accessor>
       </subtable>
-	  <variable name="totally_dead" version="git" access="read-only">
+	  <variable name="totally_dead" version="20210408" access="read-only">
 		<description>the player is dead and the death animation has finished</description>
 	  </variable>
       <function name="view_player" version="20080707">
@@ -1607,7 +1769,7 @@
 		  <type>transfer_mode</type>
 		</variable>
       </subtable>
-	  <function name="change_height" version="git">
+	  <function name="change_height" version="20210408">
 		<description>changes polygon floor and ceiling heights, if possible</description>
 		<argument name="floor"><type>WU</type></argument>
 		<argument name="ceiling"><type>WU</type></argument>
@@ -1615,6 +1777,26 @@
 		<note>won’t squish monsters; returns false instead</note>
 		<note>this is much less optimized than moving a platform</note>
 		<note>you may need to create sides if you are raising/lowering what used to be a flat floor/ceiling</note>
+	  </function>
+	  <function name="check_collision" version="20210408">
+		<argument name="x0"><type>WU</type></argument>
+		<argument name="y0"><type>WU</type></argument>
+		<argument name="z0"><type>WU</type></argument>
+		<argument name="owner"><type>monster</type></argument>
+		<argument name="x1"><type>WU</type></argument>
+		<argument name="y1"><type>WU</type></argument>
+		<argument name="z1"><type>WU</type></argument>
+		<argument name="include_objects" required="false"><type>boolean</type></argument>
+		<argument name="include_media" required="false"><type>boolean</type></argument>
+		<description>returns t, x, y, z, polygon, where t is nil (if there was no collision), or the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the collision is with the surface of a liquid) where the line segment collided with the map (or object or media); and x, y, z, polygon is the location of the collision, or the end point if there was no collision</description>
+		<return><type>variant</type></return>
+		<return><type>WU</type></return>
+		<return><type>WU</type></return>
+		<return><type>WU</type></return>
+		<return><type>polygon</type></return>
+		<note>the owner is a monster or player to ignore, or nil</note>
+		<note>you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon()</note>
+		<note>in order of descending speed: find_polygon(), check_collision() without objects, check_collision() including objects</note>
 	  </function>
       <function name="contains">
 		<description>whether the point is in this polygon</description>
@@ -1628,7 +1810,7 @@
       <function name="endpoints">
 		<description>iterates through all of this polygon’s endpoints</description>
       </function>
-	  <function name="find_polygon" version="git">
+	  <function name="find_polygon" version="20210408">
 		<description>traverses map from (x1, y1) and returns polygon containing (x2, y2)</description>
 		<argument name="x1"><type>WU</type></argument>
 		<argument name="y1"><type>WU</type></argument>
@@ -1811,7 +1993,7 @@
       </variable>
     </table>
     <table name="side">
-	  <variable name="ambient_delta" version="git">
+	  <variable name="ambient_delta" version="20210408">
 		<description>constant offset from calculated light intensity</description>
 	  </variable>
       <subtable name="control_panel" classname="side_control_panel">
@@ -2005,7 +2187,7 @@
 		<description>iterates through all endpoints in the level</description>
       </call>
     </accessor>
-	<accessor name="Ephemera" contains="ephemera" version="git">
+	<accessor name="Ephemera" contains="ephemera" version="20210408">
 	  <description>
 		<p>Ephemera are a render-only version of Effects. They were designed to be a lightweight way to add effects such as precipitation or decals. They do not use any global random functionality, and they don’t interact at all with other objects in the world, so they are safe to turn on and off without affecting net game sync and film playback (see <a href="#sync">"Net Games and Films"</a>).</p>
 		<p>Ephemera are not saved or restored in saved games, so it is up to the Lua script to serialize them and persist them if desired; and to recreate them upon resume. Likewise, ephemera custom fields are not saved/restored using <code>Level.restored_saved()</code></p>
@@ -2021,7 +2203,7 @@
 		<description>returns a new ephemera</description>
 		<argument name="x"><type>WU</type></argument>
 		<argument name="y"><type>WU</type></argument>
-		<argument name="height"><type>WU</type></argument>
+		<argument name="z"><type>WU</type></argument>
 		<argument name="polygon"><type>polygon</type></argument>
 		<argument name="collection"><type>collection</type></argument>
 		<argument name="sequence"><type>shape</type></argument>
@@ -2104,7 +2286,7 @@
       <call>
 		<description>iterates through all media on the level</description>
       </call>
-	  <function name="new" version="git">
+	  <function name="new" version="20210408">
 		<description>returns a new liquid</description>
 	  </function>
     </accessor>
@@ -2544,15 +2726,33 @@
 		<mnemonic name="netscript"/>
       </mnemonics>
     </enum>
+	<enum name="item_kind" version="20210408">
+	  <mnemonics>
+		<mnemonic name="weapon"/>
+		<mnemonic name="ammunition"/>
+		<mnemonic name="powerup"/>
+		<mnemonic name="item"/>
+		<mnemonic name="weapon powerup"/>
+		<mnemonic name="ball"/>
+	  </mnemonics>
+	</enum>
     <enum name="item_type">
       <variable name="initial_count" version="20111201">
 		<description>how many items of this type are placed in the level during initial placement</description>
 		<type>number</type>
       </variable>
+	  <variable name="kind" access="read-only" version="20210408">
+		<description>kind of item this is</description>
+		<type>item_kind</type>
+	  </variable>
       <variable name="maximum_count" version="20111201">
 		<description>maximum number of this type of item in the level and in player inventories</description>
 		<type>number</type>
       </variable>
+	  <variable name="maximum_inventory" version="20210408">
+		<description>maximum number of this type of item players can carry</description>
+		<type>number</type>
+	  </variable>
       <variable name="minimum_count" version="20111201">
 		<description>minimum number of this type of item in the level and in player inventories</description>
 		<type>number</type>
@@ -2690,23 +2890,49 @@
       </mnemonics>
     </enum>
     <enum name="monster_type">
+	  <variable name="alien" version="20220115">
+		<description>moves slower on slower levels, etc.</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="attacks_immediately" version="20120128">
 		<description>monster will try an attack immediately</description>
 		<type>boolean</type>
       </variable>
+	  <variable name="berserker" version="20220115">
+		<description>below 1/4 vitality, this monster goes berserk</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="can_die_in_flames" version="20220115">
+		<description>uses humanoid dying shape</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="can_teleport_under_media" version="20220115">
+		<type>boolean</type>
+	  </variable>
+	  <variable name="cannot_attack" version="20220115">
+		<description>monster has no weapons and cannot attack (runs constantly to safety)</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="cannot_be_dropped" version="20120128">
 		<description>monster cannot be skipped during placement</description>
 		<type>boolean</type>
       </variable>
+	  <variable name="cannot_fire_backward" version="20220115">
+		<description>monster can’t turn more than 135 degrees</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="chooses_weapons_randomly" version="20220115">
+		<type>boolean</type>
+	  </variable>
       <variable name="class">
 		<description>class of monster type</description>
 		<type>monster_class</type>
       </variable>
-	  <variable name="collection" access="read-only" version="git">
+	  <variable name="collection" access="read-only" version="20210408">
 		<description>collection of monster type</description>
 		<type>collection</type>
 	  </variable>
-	  <variable name="clut_index" access="read-only" version="git">
+	  <variable name="clut_index" access="read-only" version="20210408">
 		<description>color table of monster type</description>
 		<type>number</type>
 	  </variable>
@@ -2715,32 +2941,66 @@
 		<argument name="monster_class"><type>monster_class</type></argument>
 		<type>boolean</type>
       </function-variable>
+	  <variable name="enlarged" version="20220115">
+		<description>monster is 1.25 times normal height</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="fires_symmetrically" version="20220115">
+		<description>fires at +/- dy, simultaneously</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="flies" version="20220115">
+		<type>boolean</type>
+	  </variable>
+	  <variable name="floats" version="20220115">
+		<description>exclusive from flies; forces the monster to take delta-h gradually</description>
+		<type>boolean</type>
+	  </variable>
       <function-variable name="friends" classname="monster_type_friends">
 		<description>whether monster class is a friend</description>
 		<argument name="monster_class"><type>monster_class</type></argument>
 		<type>boolean</type>
       </function-variable>
+	  <variable name="has_delayed_hard_death" version="20220115">
+		<description>always dies soft, then switches to hard</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="has_nuclear_hard_death" version="20220115">
+		<description>player’s screen whites out and slowly recovers</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="impact_effect" access="read-only">
 		<description>type of effect generated when monster gets hit by a bleeding projectile</description>
 		<type>effect_type</type>
-      </variable>
-      <function-variable name="immunities" classname="monster_type_immunities">
-		<description>whether monster type is immune to damage type</description>
-		<argument name="damage_type"><type>damage_type</type></argument>
-		<type>boolean</type>
-      </function-variable>
-      <variable name="initial_count" version="20111201">
-		<description>how many monsters of this type are placed in the level during initial placement</description>
-		<type>number</type>
       </variable>
       <variable name="height" access="read-only">
 		<description>height of monster</description>
 		<type>WU</type>
       </variable>
+	  <function-variable name="immunities" classname="monster_type_immunities">
+		<description>whether monster type is immune to damage type</description>
+		<argument name="damage_type"><type>damage_type</type></argument>
+		<type>boolean</type>
+	  </function-variable>
+	  <variable name="impact_effect" access="read-only">
+		<type>effect</type>
+	  </variable>
+      <variable name="initial_count" version="20111201">
+		<description>how many monsters of this type are placed in the level during initial placement</description>
+		<type>number</type>
+      </variable>
+	  <variable name="invisible" version="20220115">
+		<description>this monster uses _xfer_invisibility</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="item">
 		<description>type of item the monster drops when it dies</description>
 		<type>item_type</type>
       </variable>
+	  <variable name="kamikaze" version="20220115">
+		<description>monster does shrapnel damage and will suicide if close enough to target</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="major" version="20120128">
 		<description>monster is major</description>
 		<type>boolean</type>
@@ -2748,6 +3008,10 @@
       <variable name="maximum_count" version="20111201">
 		<description>maximum number of this type of monster in the level</description>
 		<type>number</type>
+      </variable>
+      <variable name="melee_impact_effect" access="read-only">
+		<description>type of effect generated when monster gets hit by a melee projectile</description>
+		<type>effect_type</type>
       </variable>
       <variable name="minimum_count" version="20111201">
 		<description>minimum number of this type of monster in the level</description>
@@ -2757,10 +3021,22 @@
 		<description>monster is minor</description>
 		<type>boolean</type>
       </variable>
-      <variable name="melee_impact_effect" access="read-only">
-		<description>type of effect generated when monster gets hit by a melee projectile</description>
-		<type>effect_type</type>
-      </variable>
+	  <variable name="not_afraid_of_goo" version="20220115">
+		<type>boolean</type>
+	  </variable>
+	  <variable name="not_afraid_of_lava" version="20220115">
+		<type>boolean</type>
+	  </variable>
+	  <variable name="not_afraid_of_sewage" version="20220115">
+		<type>boolean</type>
+	  </variable>
+	  <variable name="not_afraid_of_water" version="20220115">
+		<type>boolean</type>
+	  </variable>
+	  <variable name="omniscient" version="20220115">
+		<description>ignores line-of-sight during find_closest_appropriate_target()</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="radius" access="read-only">
 		<description>radius of monster</description>
 		<type>WU</type>
@@ -2773,12 +3049,28 @@
 		<description>whether monsters of this type spawn in random locations</description>
 		<type>boolean</type>
       </variable>
+	  <variable name="subtly_invisible" version="20220115">
+		<description>this monster uses _xfer_subtle_invisibility</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="tiny" version="20220115">
+		<description>0.25-size normal height</description>
+		<type>boolean</type>
+	  </variable>
       <variable name="total_available" version="20111201">
 		<description>total number of monsters of this type that can be spawned in this level</description>
 		<type>number</type>
 		<note>-1 means infinite monsters are available</note>
 		<note>setting this to anything but -1 will only be effective if changed immediately when the script runs, before monster placement is done</note>
       </variable>
+	  <variable name="uses_sniper_ledges" version="20220115">
+		<description>sit on ledges and hurl shit at the player (ranged attack monsters only</description>
+		<type>boolean</type>
+	  </variable>
+	  <variable name="vitality" version="20220115" access="read-only">
+		<description>monster’s initial vitality</description>
+		<type>number</type>
+	  </variable>
       <function-variable name="weaknesses" classname="monster_type_weaknesses">
 		<description>whether monster type has a weakness to damage type</description>
 		<argument name="damage type"><type>damage_type</type></argument>
@@ -3292,7 +3584,8 @@
 	<enum-accessor name="EphemeraQualities" contains="ephemera_quality" nice-name="Ephemera Quality"/>
     <enum-accessor name="FadeTypes" contains="fade_type" nice-name="Faders"/>
     <enum-accessor name="GameTypes" contains="game_type" nice-name="Game Types"/>
-    <enum-accessor name="ItemTypes" contains="item_type" nice-name="Items"/>
+    <enum-accessor name="ItemKinds" contains="item_kind" nice-name="Item Kinds"/>
+    <enum-accessor name="ItemTypes" contains="item_type" nice-name="Item Types"/>
     <enum-accessor name="MediaTypes" contains="media_type" nice-name="Media"/>
     <enum-accessor name="LightFunctions" contains="light_function" nice-name="Light Functions"/>
     <enum-accessor name="LightPresets" contains="light_preset" nice-name="Light Presets"/>

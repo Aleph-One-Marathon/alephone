@@ -181,7 +181,7 @@ void RenderRasterizerClass::render_node(
 	// LP change: always render liquids that are semitransparent
 	else if (!SeeThruLiquids)
 	{
-		// if weÕre trying to draw a polygon without media from under a polygon with media, donÕt
+		// if weâ€™re trying to draw a polygon without media from under a polygon with media, donâ€™t
 		if (view->under_media_boundary) return;
 	}
 	
@@ -698,7 +698,7 @@ short RenderRasterizerClass::xy_clip_horizontal_polygon(
 //					dprintf("vertex#%d is on the clip line s==#%d", vertex_index, state);
 					switch (state)
 					{
-						/* if weÕre testing the first vertex, this tells us nothing */
+						/* if weâ€™re testing the first vertex, this tells us nothing */
 						
 						case _searching_cw_for_out_in_transition:
 							entrance_vertex= vertex_index;
@@ -735,7 +735,7 @@ short RenderRasterizerClass::xy_clip_horizontal_polygon(
 			}
 
 			/* adjust vertex_index (clockwise or counterclockwise, depending on vertex_delta)
-				if weÕve come back to the first vertex without finding an entrance point weÕre
+				if weâ€™ve come back to the first vertex without finding an entrance point weâ€™re
 				either all the way in or all the way out */
 			vertex_index= (vertex_delta<0) ? WRAP_LOW(vertex_index, vertex_count-1) :
 				WRAP_HIGH(vertex_index, vertex_count-1);
@@ -755,7 +755,7 @@ short RenderRasterizerClass::xy_clip_horizontal_polygon(
 		}
 		while (state!=NONE);
 		
-		if (exit_vertex!=NONE) /* weÕve got clipping to do */
+		if (exit_vertex!=NONE) /* weâ€™ve got clipping to do */
 		{
 			flagged_world_point2d new_entrance_point, new_exit_point;
 			
@@ -830,9 +830,9 @@ short RenderRasterizerClass::xy_clip_horizontal_polygon(
 }
 
 /* sort points before clipping to assure consistency; there is a way to make this more accurate
-	but it requires the downshifting game, as played in SCOTTISH_TEXTURES.C.  itÕs tempting to
+	but it requires the downshifting game, as played in SCOTTISH_TEXTURES.C.  itâ€™s tempting to
 	think that having a smaller scale for our world coordinates would help here (i.e., less bits
-	per distance) but then wouldnÕt we be screwed when we tried to rotate? */
+	per distance) but then wouldnâ€™t we be screwed when we tried to rotate? */
 // LP change: make it better able to do long-distance views
 void RenderRasterizerClass::xy_clip_flagged_world_points(
 	flagged_world_point2d *p0,
@@ -850,8 +850,8 @@ void RenderRasterizerClass::xy_clip_flagged_world_points(
 	short shift_count= FIXED_FRACTIONAL_BITS;
 	_fixed t;
 
-	/* give numerator 16 significant bits over denominator and then calculate t==n/d;  MPWÕs PPCC
-		didnÕt seem to like (INT32_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */
+	/* give numerator 16 significant bits over denominator and then calculate t==n/d;  MPWâ€™s PPCC
+		didnâ€™t seem to like (INT32_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */
 	while (numerator<=(int32)0x3fffffff && numerator>=(int32)0xc0000000 && shift_count--) numerator<<= 1;
 	if (shift_count>0) denominator>>= shift_count;
 	t= numerator;
@@ -937,7 +937,7 @@ short RenderRasterizerClass::z_clip_horizontal_polygon(
 				{
 					switch (state)
 					{
-						/* if weÕre testing the first vertex (_testing_first_vertex), this tells us nothing */
+						/* if weâ€™re testing the first vertex (_testing_first_vertex), this tells us nothing */
 						
 						case _searching_cw_for_out_in_transition:
 							entrance_vertex= vertex_index;
@@ -957,7 +957,7 @@ short RenderRasterizerClass::z_clip_horizontal_polygon(
 			}
 
 			/* adjust vertex_index (clockwise or counterclockwise, depending on vertex_delta)
-				if weÕve come back to the first vertex without finding an entrance point weÕre
+				if weâ€™ve come back to the first vertex without finding an entrance point weâ€™re
 				either all the way in or all the way out */
 			vertex_index= (vertex_delta<0) ? WRAP_LOW(vertex_index, vertex_count-1) :
 				WRAP_HIGH(vertex_index, vertex_count-1);
@@ -977,7 +977,7 @@ short RenderRasterizerClass::z_clip_horizontal_polygon(
 		}
 		while (state!=NONE);
 		
-		if (exit_vertex!=NONE) /* weÕve got clipping to do */
+		if (exit_vertex!=NONE) /* weâ€™ve got clipping to do */
 		{
 			flagged_world_point2d new_entrance_point, new_exit_point;
 			
@@ -1051,7 +1051,7 @@ short RenderRasterizerClass::z_clip_horizontal_polygon(
 	return vertex_count;
 }
 
-/* sort points before clipping to assure consistency; this is almost identical to xz_clipÉ()
+/* sort points before clipping to assure consistency; this is almost identical to xz_clipâ€¦()
 	except that it clips 2d points in the xy-plane at the given height. */
 // LP change: make it better able to do long-distance views
 void RenderRasterizerClass::z_clip_flagged_world_points(
@@ -1071,8 +1071,8 @@ void RenderRasterizerClass::z_clip_flagged_world_points(
 	short shift_count= FIXED_FRACTIONAL_BITS;
 	_fixed t;
 
-	/* give numerator 16 significant bits over denominator and then calculate t==n/d;  MPWÕs PPCC
-		didnÕt seem to like (INT32_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */
+	/* give numerator 16 significant bits over denominator and then calculate t==n/d;  MPWâ€™s PPCC
+		didnâ€™t seem to like (INT32_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */
 	while (numerator<=(int32)0x3fffffff && numerator>=(int32)0xc0000000 && shift_count--) numerator<<= 1;
 	if (shift_count>0) denominator>>= shift_count;
 	t= numerator;
@@ -1189,7 +1189,7 @@ short RenderRasterizerClass::xz_clip_vertical_polygon(
 //					dprintf("vertex#%d is on the clip line s==#%d", vertex_index, state);
 					switch (state)
 					{
-						/* if weÕre testing the first vertex, this tells us nothing */
+						/* if weâ€™re testing the first vertex, this tells us nothing */
 						
 						case _searching_cw_for_out_in_transition:
 							entrance_vertex= vertex_index;
@@ -1226,7 +1226,7 @@ short RenderRasterizerClass::xz_clip_vertical_polygon(
 			}
 
 			/* adjust vertex_index (clockwise or counterclockwise, depending on vertex_delta)
-				if weÕve come back to the first vertex without finding an entrance point weÕre
+				if weâ€™ve come back to the first vertex without finding an entrance point weâ€™re
 				either all the way in or all the way out */
 			vertex_index= (vertex_delta<0) ? WRAP_LOW(vertex_index, vertex_count-1) :
 				WRAP_HIGH(vertex_index, vertex_count-1);
@@ -1246,7 +1246,7 @@ short RenderRasterizerClass::xz_clip_vertical_polygon(
 		}
 		while (state!=NONE);
 		
-		if (exit_vertex!=NONE) /* weÕve got clipping to do */
+		if (exit_vertex!=NONE) /* weâ€™ve got clipping to do */
 		{
 			flagged_world_point3d new_entrance_point, new_exit_point;
 			
@@ -1339,8 +1339,8 @@ void RenderRasterizerClass::xz_clip_flagged_world_points(
 	short shift_count= FIXED_FRACTIONAL_BITS;
 	_fixed t;
 
-	/* give numerator 16 significant bits over denominator and then calculate t==n/d;  MPWÕs PPCC
-		didnÕt seem to like (INT32_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */
+	/* give numerator 16 significant bits over denominator and then calculate t==n/d;  MPWâ€™s PPCC
+		didnâ€™t seem to like (INT32_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */
 	while (numerator<=(int32)0x3fffffff && numerator>=(int32)0xc0000000 && shift_count--) numerator<<= 1;
 	if (shift_count>0) denominator>>= shift_count;
 	t = numerator;

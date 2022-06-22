@@ -1,0 +1,18 @@
+name: configure-linux
+description: used to setup the environment before using make
+
+runs:
+    using: "composite"
+    steps:
+    - uses: actions/checkout@v2
+    
+    - run: sudo apt-get update -y 
+      shell: bash
+      
+    - name: Install Dependencies 
+      run: sudo apt-get install autoconf-archive libboost-all-dev libsdl2-dev libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev libspeexdsp-dev libzzip-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev libpng-dev libcurl4-gnutls-dev libminiupnpc-dev libsndfile-dev
+      shell: bash
+      
+    - name: Configure
+      run: autoreconf -i && ./configure
+      shell: bash

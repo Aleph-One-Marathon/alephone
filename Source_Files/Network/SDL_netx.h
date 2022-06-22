@@ -31,7 +31,7 @@
 // deranged enough to detach SDL_netx from Aleph One and position it as a real extension to SDL_net,
 // these things should be investigated.
 
-#include "SDL_net.h"
+#include <SDL2/SDL_net.h>
 
 // SDLNetx_EnableBroadcast - allow SDLNetx_UDP_Broadcast to succeed on inSocket
 //   inputs: UDPsocket inSocket - socket for which broadcasting should be enabled

@@ -23,9 +23,9 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
+#include <functional>
 #include <string>
 #include <map>
-#include <boost/function.hpp>
 #include "preferences.h"
 
 class CommandParser
@@ -33,13 +33,13 @@ class CommandParser
 public:
 	CommandParser() { }
 	virtual ~CommandParser() = default;
-	void register_command(std::string command, boost::function<void(const std::string&)> f);
+	void register_command(std::string command, std::function<void(const std::string&)> f);
 	void register_command(std::string command, const CommandParser& command_parser);
 	void unregister_command(std::string command);
 
 	virtual void parse_and_execute(const std::string& command_string);
 private:
-	typedef std::map<std::string, boost::function<void(const std::string&)> > command_map;
+	typedef std::map<std::string, std::function<void(const std::string&)> > command_map;
 	command_map m_commands;
 };
 
@@ -66,7 +66,7 @@ public:
 	void line_end();
 	const std::string &displayBuffer() { return m_displayBuffer; }
 
-	void activate_input(boost::function<void (const std::string&)> callback,
+	void activate_input(std::function<void (const std::string&)> callback,
 			    const std::string& prompt);
 	void deactivate_input(); // like abort, but no callback
 
@@ -91,7 +91,7 @@ public:
 private:
 	Console();
 
-	boost::function<void (std::string)> m_callback;
+	std::function<void (std::string)> m_callback;
 	std::string m_buffer;
 	std::string m_displayBuffer;
 	std::string m_prompt;

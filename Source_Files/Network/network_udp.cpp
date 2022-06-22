@@ -35,7 +35,7 @@
 #include "sdl_network.h"
 #include "network_private.h"
 
-#include <SDL_thread.h>
+#include <SDL2/SDL_thread.h>
 
 #include "thread_priority_sdl.h"
 #include "mytm.h" // mytm_mutex stuff

@@ -155,9 +155,9 @@ static short Environments[NUMBER_OF_ENVIRONMENTS][NUMBER_OF_ENV_COLLECTIONS] =
 };
 
 /*
-static short e1[]= {_collection_walls1, _collection_scenery1, NONE}; // lhÕowon
-static short e2[]= {_collection_walls2, _collection_scenery2, NONE}; // lhÕowon
-static short e3[]= {_collection_walls3, _collection_scenery3, NONE}; // lhÕowon
+static short e1[]= {_collection_walls1, _collection_scenery1, NONE}; // lhâ€™owon
+static short e2[]= {_collection_walls2, _collection_scenery2, NONE}; // lhâ€™owon
+static short e3[]= {_collection_walls3, _collection_scenery3, NONE}; // lhâ€™owon
 static short e4[]= {_collection_walls4, _collection_scenery4, NONE}; // pathways (or marathon) (LP: jjaro)
 static short e5[]= {_collection_walls5, _collection_scenery5, NONE}; // pfhor ship
 
@@ -777,7 +777,7 @@ short attach_parasitic_object(
 	struct object_data *host_object, *parasite_object;
 	short parasite_index;
 
-	/* walk this objectÕs parasite list until we find the last parasite and then attach there */
+	/* walk this objectâ€™s parasite list until we find the last parasite and then attach there */
 	for (host_object= get_object_data(host_index);
 			host_object->parasitic_object!=NONE;
 			host_index= host_object->parasitic_object, host_object= get_object_data(host_index))
@@ -832,7 +832,7 @@ void remove_map_object(
 
 
 
-/* remove the object from the old_polygonÕs object list*/
+/* remove the object from the old_polygonâ€™s object list*/
 void
 remove_object_from_polygon_object_list(short object_index, short polygon_index)
 {
@@ -862,7 +862,7 @@ remove_object_from_polygon_object_list(short object_index)
 
 
 
-/* add the object to the new_polygonÕs object list */
+/* add the object to the new_polygonâ€™s object list */
 void
 add_object_to_polygon_object_list(short object_index, short polygon_index)
 {
@@ -949,7 +949,7 @@ perform_deferred_polygon_object_list_manipulations()
 
 
 
-/* if a new polygon index is supplied, it will be used, otherwise weÕll try to find the new
+/* if a new polygon index is supplied, it will be used, otherwise weâ€™ll try to find the new
 	polygon index ourselves */
 bool translate_map_object(
 	short object_index,
@@ -973,14 +973,14 @@ bool translate_map_object(
 			{
 				*(world_point2d *)new_location= get_polygon_data(old_polygon_index)->center;
 				new_polygon_index= old_polygon_index;
-				changed_polygons= true; /* tell the caller we switched polygons, even though we didnÕt */
+				changed_polygons= true; /* tell the caller we switched polygons, even though we didnâ€™t */
 				break;
 			}
 		}
 		while (line_index!=NONE);
 	}
 	
-	/* if we changed polygons, update the old and new polygonÕs linked lists of objects */
+	/* if we changed polygons, update the old and new polygonâ€™s linked lists of objects */
 	if (old_polygon_index!=new_polygon_index)
 	{
 		remove_object_from_polygon_object_list(object_index, old_polygon_index);
@@ -1045,10 +1045,10 @@ void get_object_shape_and_transfer_mode(
 		case _animated4:
 			switch (FACING4(theta))
 			{
-				case 0: view= 3; break; /* 90¡ (facing left) */
-				case 1: view= 0; break; /* 0¡ (facing forward) */
-				case 2: view= 1; break; /* -90¡ (facing right) */
-				case 3: view= 2; break; /* ±180¡ (facing away) */
+				case 0: view= 3; break; /* 90Â° (facing left) */
+				case 1: view= 0; break; /* 0Â° (facing forward) */
+				case 2: view= 1; break; /* -90Â° (facing right) */
+				case 3: view= 2; break; /* Â±180Â° (facing away) */
 				default:
 					data->collection_code = NONE; // Deliberate bad value
 					return;
@@ -1076,14 +1076,14 @@ void get_object_shape_and_transfer_mode(
 		case _animated8:
 			switch (FACING8(theta))
 			{
-				case 0: view= 3; break; /* 135¡ (facing left) */
-				case 1: view= 2; break; /* 90¡ (facing left) */
-				case 2: view= 1; break; /* 45¡ (facing left) */
-				case 3: view= 0; break; /* 0¡ (facing forward) */
-				case 4: view= 7; break; /* -45¡ (facing right) */
-				case 5: view= 6; break; /* -90¡ (facing right) */
-				case 6: view= 5; break; /* -135¡ (facing right) */
-				case 7: view= 4; break; /* ±180¡ (facing away) */
+				case 0: view= 3; break; /* 135Â° (facing left) */
+				case 1: view= 2; break; /* 90Â° (facing left) */
+				case 2: view= 1; break; /* 45Â° (facing left) */
+				case 3: view= 0; break; /* 0Â° (facing forward) */
+				case 4: view= 7; break; /* -45Â° (facing right) */
+				case 5: view= 6; break; /* -90Â° (facing right) */
+				case 6: view= 5; break; /* -135Â° (facing right) */
+				case 7: view= 4; break; /* Â±180Â° (facing away) */
 				default:
 					data->collection_code = NONE; // Deliberate bad value
 					return;
@@ -1192,7 +1192,7 @@ void animate_object(short object_index)
 }
 
 /* no longer called by RENDER.C; must be called by monster, projectile or effect controller;
-	now assumes ¶t==1 tick */
+	now assumes âˆ‚t==1 tick */
 void animate_object(
 	object_data* object,
 	int16_t sound_id)
@@ -1200,7 +1200,7 @@ void animate_object(
 	struct shape_animation_data *animation;
 	short animation_type= _obj_not_animated;
 
-	if (!OBJECT_IS_INVISIBLE(object)) /* invisible objects donÕt have valid .shape fields */
+	if (!OBJECT_IS_INVISIBLE(object)) /* invisible objects donâ€™t have valid .shape fields */
 	{
 		animation= get_shape_animation_data(object->shape);
 		if (!animation) return;
@@ -1378,7 +1378,7 @@ short world_point_to_polygon_index(
 }
 
 /* return the polygon on the other side of the given line from the given polygon (i.e., return
-	the polygon adjacent to line_index which isnÕt polygon_index).  can return NONE. */
+	the polygon adjacent to line_index which isnâ€™t polygon_index).  can return NONE. */
 short find_adjacent_polygon(
 	short polygon_index,
 	short line_index)
@@ -1517,7 +1517,7 @@ bool line_is_landscaped(
 	return landscaped;
 }
 
-/* return the line_index where the two polygons meet (or NONE if they donÕt meet) */
+/* return the line_index where the two polygons meet (or NONE if they donâ€™t meet) */
 short find_shared_line(
 	short polygon_index1,
 	short polygon_index2)
@@ -1603,9 +1603,9 @@ _fixed find_line_intersection(
 	
 	/* calculate the numerator and denominator to compute t; our basic strategy here is to
 		shift the numerator up by eight bits and the denominator down by eight bits, yeilding
-		a fixed number in [0,FIXED_ONE] for t.  this wonÕt work if the numerator is greater
-		than or equal to 2^24, or the numerator is less than 2^8.  the first case canÕt be
-		fixed in any decent way and shouldnÕt happen if we have small deltas.  the second case
+		a fixed number in [0,FIXED_ONE] for t.  this wonâ€™t work if the numerator is greater
+		than or equal to 2^24, or the numerator is less than 2^8.  the first case canâ€™t be
+		fixed in any decent way and shouldnâ€™t happen if we have small deltas.  the second case
 		is approximated with a denominator of 1 or -1 (depending on the sign of the old
 		denominator, although notice here that numbers in [1,2^8) will get downshifted to
 		zero and then set to one, while numbers in (-2^8,-1] will get downshifted to -1 and
@@ -1625,7 +1625,7 @@ _fixed find_line_intersection(
 	return t;
 }
 
-/* closest_point may be the same as p; if weÕre within 1 of our source point in either
+/* closest_point may be the same as p; if weâ€™re within 1 of our source point in either
 	direction assume that we are actually at the source point */
 _fixed closest_point_on_line(
 	world_point2d *e0,
@@ -1650,7 +1650,7 @@ _fixed closest_point_on_line(
 	if (!(denominator>>= 8)) denominator= 1;
 	t= numerator/denominator;
 
-	/* if weÕve only changed by ±1 in x and y, return the original p to avoid sliding down
+	/* if weâ€™ve only changed by Â±1 in x and y, return the original p to avoid sliding down
 		the edge on successive calls */
 	calculated_closest_point.x= e0->x + FIXED_INTEGERAL_PART(t*line_dx);
 	calculated_closest_point.y= e0->y + FIXED_INTEGERAL_PART(t*line_dy);
@@ -1739,8 +1739,8 @@ enum /* keep out states */
 {
 	_first_line_pass,
 	_second_line_pass, /* if _first_line_pass yeilded more than one collision we have to go back
-		and make sure we donÕt hit anything (or only hit one thing which we hit the first time) */
-	_second_line_pass_made_contact, /* weÕve already hit one thing we hit last time, if we hit
+		and make sure we donâ€™t hit anything (or only hit one thing which we hit the first time) */
+	_second_line_pass_made_contact, /* weâ€™ve already hit one thing we hit last time, if we hit
 		anything else then we abort */
 	_aborted, /* if we hit two lines on the second pass, we give up */
 	_point_pass /* checking against all points (and hit as many as we can) */
@@ -1817,7 +1817,7 @@ bool keep_line_segment_out_of_walls(
 
 					/* if a) this line is solid, b) the new polygon is farther than maximum_delta height
 						above our feet, or c) the new polygon is lower than the top of our head then
-						we canÕt move into the new polygon */
+						we canâ€™t move into the new polygon */
 					if (LINE_IS_SOLID(line) || adjacent_polygon == NULL ||
 						adjacent_polygon->floor_height-p1->z>maximum_delta_height ||
 						adjacent_polygon->ceiling_height-p1->z<height ||
@@ -1843,7 +1843,7 @@ bool keep_line_segment_out_of_walls(
 								}
 								else
 								{
-									/* forget it; we hit something we didnÕt hit the first time */
+									/* forget it; we hit something we didnâ€™t hit the first time */
 									state= _aborted;
 								}
 								break;
@@ -1882,7 +1882,7 @@ bool keep_line_segment_out_of_walls(
 	}
 	while (state==_second_line_pass);
 
-	/* if we didnÕt abort while clipping lines, try clipping against points... */
+	/* if we didnâ€™t abort while clipping lines, try clipping against points... */
 	if (state!=_aborted)
 	{
 		for (i=0;i<polygon->point_exclusion_zone_count;++i)
@@ -1994,7 +1994,7 @@ int32 point_to_line_segment_distance_squared(
 	else
 	{
 		/* if BA dot AP is greather than or equal to zero, d is the distance between A and P
-			(we donÕt calculate BA and use -AB instead */
+			(we donâ€™t calculate BA and use -AB instead */
 		if (abx*apx+aby*apy<=0)
 		{
 			distance= apx*apx + apy*apy;
@@ -2132,7 +2132,7 @@ bool change_polygon_height(
 		polygon->ceiling_height= new_ceiling_height;
 		
 		/* the highest_adjacent_floor, lowest_adjacent_ceiling and supporting_polygon_index fields
-			of all of this polygonÕs endpoints and lines are potentially invalid now.  to assure
+			of all of this polygonâ€™s endpoints and lines are potentially invalid now.  to assure
 			that they are correct, recalculate them using the appropriate redundant functions.
 			to do things quickly, slam them yourself.  only these three fields of are invalid,
 			nothing else is effected by the height change. */
@@ -2141,7 +2141,7 @@ bool change_polygon_height(
 	return legal_change;
 }
 
-/* we used to check to see that the point in question was within the playerÕs view
+/* we used to check to see that the point in question was within the playerâ€™s view
 	cone, but that was queer because stuff would appear behind him all the time
 	(which was completely inconvient when this happened to monsters) */
 /*
@@ -2249,7 +2249,7 @@ bool line_is_obstructed(
 		{
 			/* the polygon we ended up in is different than the polygon the caller thinks the
 				destination point is in; this probably means that the source is on a different
-				level than the caller, but it could also easily mean that weÕre dealing with
+				level than the caller, but it could also easily mean that weâ€™re dealing with
 				weird boundary conditions of find_line_crossed_leaving_polygon() */
 			if (polygon_index!=polygon_index2) 
 			{
@@ -2316,7 +2316,7 @@ void turn_object_to_shit( /* garbage that is, garbage */
 			could be really obvious... but who pays attention to dead bodies anyway?) */
 	  if (dynamic_world->garbage_object_count>= (graphics_preferences->double_corpse_limit? MAXIMUM_GARBAGE_OBJECTS_PER_MAP * 2 : MAXIMUM_GARBAGE_OBJECTS_PER_MAP))
 	    {
-			/* find a garbage object to remove, and do so (weÕre certain that many exist) */
+			/* find a garbage object to remove, and do so (weâ€™re certain that many exist) */
 			for (object_index= garbage_object_index, object= garbage_object;
 					SLOT_IS_FREE(object) || GET_OBJECT_OWNER(object)!=_object_is_garbage;
 					object_index= (object_index==MAXIMUM_OBJECTS_PER_MAP-1) ? 0 : (object_index+1), object= objects+object_index)
@@ -2525,10 +2525,10 @@ void play_world_sound(
 world_location3d *_sound_listener_proc(
 	void)
 {
-	return (world_location3d *) ((get_game_state()==_game_in_progress) ?
+	return (world_location3d *) (current_player ?
 		&current_player->camera_location :
 //		&get_object_data(get_monster_data(current_player->monster_index)->object_index)->location :
-		NULL);
+		nullptr);
 }
 
 // stuff floating on top of media is above it
@@ -2619,7 +2619,7 @@ void _sound_add_ambient_sources_proc(
 		// add ambient sound image
 		if (media && listener->point.z<media->height)
 		{
-			// if weÕre under media donÕt play the ambient sound image
+			// if weâ€™re under media donâ€™t play the ambient sound image
 			add_one_ambient_sound_source((struct ambient_sound_data *)data, (world_location3d *) NULL, listener,
 				get_media_sound(listener_polygon->media_index, _media_snd_ambient_under), MAXIMUM_SOUND_VOLUME);
 			under_media= true;
@@ -2638,7 +2638,7 @@ void _sound_add_ambient_sources_proc(
 					listener_polygon->ambient_sound_image_index = NONE;
 			}
 
-			// if weÕre over media, play that ambient sound image
+			// if weâ€™re over media, play that ambient sound image
 			if (media && (media->height>=listener_polygon->floor_height || !MEDIA_SOUND_OBSTRUCTED_BY_FLOOR(media)))
 			{
 				source= *listener, source.point.z= media->height;
@@ -2797,7 +2797,7 @@ void parse_mml_texture_loading(const InfoTree& root)
 	
 	root.read_attr("landscapes", LandscapesLoaded);
 	
-	BOOST_FOREACH(InfoTree env, root.children_named("texture_env"))
+	for (const InfoTree &env : root.children_named("texture_env"))
 	{
 		int16 index, which, coll;
 		if (env.read_indexed("index", index, NUMBER_OF_ENVIRONMENTS) &&

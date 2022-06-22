@@ -755,7 +755,7 @@ static void	change_panel_state(
                                 //MH: Lua script hook
                                 L_Call_Terminal_Enter(side->control_panel_permutation,player_index);
 				
-				/* this will handle changing levels, if necessary (i.e., if weÕre finished) */
+				/* this will handle changing levels, if necessary (i.e., if weâ€™re finished) */
 				enter_computer_interface(player_index, side->control_panel_permutation, calculate_level_completion_state());
 			}
 			break;
@@ -962,7 +962,7 @@ void parse_mml_control_panels(const InfoTree& root)
 	root.read_attr("triple_energy", control_panel_settings.TripleEnergy);
 	root.read_attr("triple_energy_rate", control_panel_settings.TripleEnergyRate);
 	
-	BOOST_FOREACH(InfoTree panel, root.children_named("panel"))
+	for (const InfoTree &panel : root.children_named("panel"))
 	{
 		int16 index;
 		if (!panel.read_indexed("index", index, NUMBER_OF_CONTROL_PANEL_DEFINITIONS))
@@ -976,7 +976,7 @@ void parse_mml_control_panels(const InfoTree& root)
 		panel.read_indexed("item", def.item, NUMBER_OF_DEFINED_ITEMS, true);
 		panel.read_fixed("pitch", def.sound_frequency, 0, SHRT_MAX+1);
 		
-		BOOST_FOREACH(InfoTree sound, panel.children_named("sound"))
+		for (const InfoTree &sound : panel.children_named("sound"))
 		{
 			int16 type, which;
 			if (!sound.read_indexed("type", type, NUMBER_OF_CONTROL_PANEL_SOUNDS) ||

@@ -353,7 +353,7 @@ protected:
 };
 
 
-bool network_game_setup(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver);
+bool network_game_setup(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver, bool& outUpnpPortForward);
 
 class SetupNetgameDialog
 {
@@ -365,7 +365,8 @@ public:
 		player_info *player_information,
 		game_info *game_information,
 		bool ResumingGame,
-		bool& outAdvertiseGameOnMetaserver);
+		bool& outAdvertiseGameOnMetaserver,
+		bool& outUpnpPortForward);
 
 	virtual ~SetupNetgameDialog ();
 

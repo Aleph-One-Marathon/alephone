@@ -114,7 +114,7 @@ struct prospective_joiner_info {
 
 
 /* ---------------- functions from network.c */
-enum /* message types passed to the userÕs names lookup update procedure */
+enum /* message types passed to the userâ€™s names lookup update procedure */
 {
 	removeEntity,
 	insertEntity
@@ -192,7 +192,7 @@ void NetDoneGathering (void);
 void NetExit(void);
 
 bool NetGather(void *game_data, short game_data_size, void *player_data, 
-	short player_data_size, bool resuming_game);
+	short player_data_size, bool resuming_game, bool attempt_upnp);
 
 struct SSLP_ServiceInstance;
 

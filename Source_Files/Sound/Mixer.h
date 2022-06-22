@@ -24,7 +24,7 @@
 
 #include <cmath>
 
-#include <SDL_endian.h>
+#include <SDL2/SDL_endian.h>
 #include "cseries.h"
 #include "network_speaker_sdl.h"
 #include "network_audio_shared.h"
@@ -58,7 +58,7 @@ public:
 
 	void SetVolume(float db) { main_volume = from_db(db); }
 
-	void BufferSound(int channel, const SoundInfo& header, boost::shared_ptr<SoundData> data, _fixed pitch);
+	void BufferSound(int channel, const SoundInfo& header, std::shared_ptr<SoundData> data, _fixed pitch);
 
 	// returns the number of normal/ambient channels
 	int SoundChannelCount() { return sound_channel_count; }
@@ -99,7 +99,7 @@ private:
 		SoundInfo info;
 		bool active;			// Flag: currently playing sound
 		
-		boost::shared_ptr<SoundData> sound_data;
+		std::shared_ptr<SoundData> sound_data;
 		const uint8 *data;              // Current pointer to sound data
 		int32 length;			// Length in bytes remaining to be played
 		const uint8 *loop;		// Pointer to loop start
@@ -112,12 +112,12 @@ private:
 		int16 right_volume;
 		
 		SoundInfo next_header;            // Info for next sound
-		boost::shared_ptr<SoundData> next_data;
+		std::shared_ptr<SoundData> next_data;
 		_fixed next_pitch;		// Pitch of next queued sound header
 
 		Channel();
-		void LoadSoundHeader(const SoundInfo& header, boost::shared_ptr<SoundData> data, _fixed pitch);
-		void BufferSoundHeader(const SoundInfo& header, boost::shared_ptr<SoundData> data, _fixed pitch) {
+		void LoadSoundHeader(const SoundInfo& header, std::shared_ptr<SoundData> data, _fixed pitch);
+		void BufferSoundHeader(const SoundInfo& header, std::shared_ptr<SoundData> data, _fixed pitch) {
 			next_header = header;
 			next_data = data;
 			next_pitch = pitch;

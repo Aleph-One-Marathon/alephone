@@ -38,7 +38,7 @@
 #ifndef SSLP_API_H
 #define	SSLP_API_H
 
-#include	<SDL_net.h>
+#include	<SDL2/SDL_net.h>
 
 // SSLP does not "guarantee" anything about its findings - it's intended merely as an aid.  This means (in particular)
 // a host that found a service via SSLP cannot assume that the service definitely exists at the host and port provided...

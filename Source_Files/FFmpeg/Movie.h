@@ -29,7 +29,7 @@
 #include <memory>
 #include <string.h>
 #include <vector>
-#include <SDL_thread.h>
+#include <SDL2/SDL_thread.h>
 
 class Movie
 {
@@ -76,6 +76,7 @@ private:
   void EncodeThread();
   void EncodeVideo(bool last);
   void EncodeAudio(bool last);
+  void ThrowUserError(std::string error_msg);
 };
 	
 #endif

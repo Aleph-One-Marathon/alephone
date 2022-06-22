@@ -21,21 +21,20 @@
 
 #include "ReplacementSounds.h"
 #include "Decoder.h"
+#include "SoundManager.h"
 
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
-
-boost::shared_ptr<SoundData> ExternalSoundHeader::LoadExternal(FileSpecifier& File)
+std::shared_ptr<SoundData> ExternalSoundHeader::LoadExternal(FileSpecifier& File)
 {
-	boost::shared_ptr<SoundData> p;
+	std::shared_ptr<SoundData> p;
 	std::unique_ptr<Decoder> decoder(Decoder::Get(File));
 	if (!decoder.get()) return p;
 
 	length = decoder->Frames() * decoder->BytesPerFrame();
 	if (!length) return p;
 
-	p = boost::make_shared<SoundData>(length);
+	p = std::make_shared<SoundData>(length);
 
+	decoder->Rewind();
 	if (decoder->Decode(&(*p)[0], length) != length) 
 	{
 		p.reset();
@@ -69,5 +68,15 @@ SoundOptions* SoundReplacements::GetSoundOptions(short Index, short Slot)
 
 void SoundReplacements::Add(const SoundOptions& Data, short Index, short Slot)
 {
+	SoundManager::instance()->UnloadSound(Index);
 	m_hash[key(Index, Slot)] = Data;
+}
+
+void SoundReplacements::Reset()
+{
+	for (auto kvp : m_hash)
+	{
+		SoundManager::instance()->UnloadSound(kvp.first.first);
+	}
+	m_hash.clear();
 }

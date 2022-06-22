@@ -67,7 +67,7 @@
 #ifndef __RESIZEpp__
 #define __RESIZEpp__
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 SDL_Surface * SDL_Resize(SDL_Surface *src, float scale_factor,   bool free_src = true, int filter = 4);
 SDL_Surface * SDL_Resize(SDL_Surface *src, int new_w, int new_h, bool free_src = true, int filter = 4);

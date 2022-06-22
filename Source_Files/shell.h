@@ -24,7 +24,7 @@ SHELL.H
 Saturday, August 22, 1992 2:18:48 PM
 
 Saturday, January 2, 1993 10:22:46 PM
-	thank god c doesnÕt choke on incomplete structure references.
+	thank god c doesnâ€™t choke on incomplete structure references.
 
 Jul 5, 2000 (Loren Petrich):
 	Added XML support for controlling the cheats
@@ -81,7 +81,8 @@ struct screen_mode_data
 	bool fix_h_not_v;
 	bool translucent_map;
 	bool camera_bob;
-	
+
+	int fov; // 0 = use default (or MML/plugin)
 };
 
 #define NUMBER_OF_KEYS 21

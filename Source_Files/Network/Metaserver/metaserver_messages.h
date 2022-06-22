@@ -28,7 +28,7 @@
 #include "Message.h"
 
 #include "AStream.h"
-#include "SDL_net.h"
+#include <SDL2/SDL_net.h>
 #include "Scenario.h" // for scenario name and ID
 #include "network.h" // for network protocol ID
 

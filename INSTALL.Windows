@@ -7,6 +7,3 @@ Binary releases are available from the Aleph One web site:
 For compilation instructions, please check the Aleph One wiki:
 
 <https://github.com/Aleph-One-Marathon/alephone/wiki/Developer-Notes>
-
-Windows binaries are compiled using MXE from a Linux or Mac OS X machine.
-Native Windows compilation is not currently supported.

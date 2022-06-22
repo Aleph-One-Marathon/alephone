@@ -23,7 +23,7 @@
 
 	Friday, July 8, 1994 2:32:44 PM (alain)
 		All old code in here is obsolete. This now has interface for the top-level
-		interface (Begin Game, etcÉ)
+		interface (Begin Game, etcâ€¦)
 	Saturday, September 10, 1994 12:45:48 AM  (alain)
 		the interface gutted again. just the stuff that handles the menu though, the rest stayed
 		the same.
@@ -174,9 +174,10 @@ enum recording_version {
 	RECORDING_VERSION_ALEPH_ONE_1_1 = 8,
 	RECORDING_VERSION_ALEPH_ONE_1_2 = 9,
 	RECORDING_VERSION_ALEPH_ONE_1_3 = 10,
+	RECORDING_VERSION_ALEPH_ONE_1_4 = 11
 };
-const short default_recording_version = RECORDING_VERSION_ALEPH_ONE_1_3;
-const short max_handled_recording= RECORDING_VERSION_ALEPH_ONE_1_3;
+const short default_recording_version = RECORDING_VERSION_ALEPH_ONE_1_4;
+const short max_handled_recording= RECORDING_VERSION_ALEPH_ONE_1_4;
 
 #include "screen_definitions.h"
 #include "interface_menus.h"
@@ -839,7 +840,7 @@ bool join_networked_resume_game()
                         }
                         else
                         {
-                                /* Tell the user theyÕre screwed when they try to leave this level. */
+                                /* Tell the user theyâ€™re screwed when they try to leave this level. */
                                 // ZZZ: should really issue a different warning since the ramifications are different
                                 alert_user(infoError, strERRORS, cantFindMap, 0);
         
@@ -888,6 +889,8 @@ bool load_and_start_game(FileSpecifier& File)
 		interface_fade_out(MAIN_MENU_BASE, true);
 	}
 
+	auto pluginMode = saved_game_was_networked(File) == 1 ? Plugins::kMode_Net : Plugins::kMode_Solo;
+	Plugins::instance()->set_mode(pluginMode);
 	success= load_game_from_file(File, false);
 
 	if (!success)
@@ -928,7 +931,6 @@ bool load_and_start_game(FileSpecifier& File)
                 
 		if (success)
 		{
-			Plugins::instance()->set_mode(userWantsMultiplayer ? Plugins::kMode_Net : Plugins::kMode_Solo);
 			Crosshairs_SetActive(player_preferences->crosshairs_active);
 			LoadHUDLua();
 			RunLuaHUDScript();
@@ -1102,9 +1104,11 @@ void update_interface_display(
 	}
 }
 
+extern bool first_frame_rendered;
+float last_heartbeat_fraction = -1.f;
+
 bool idle_game_state(uint32 time)
 {
-	static float last_heartbeat_fraction = -1.f;
 	int machine_ticks_elapsed = time - game_state.last_ticks_on_idle;
 
 	if(machine_ticks_elapsed || game_state.phase==0)
@@ -1208,7 +1212,7 @@ bool idle_game_state(uint32 time)
 		game_state.last_ticks_on_idle= machine_tick_count();
 	}
 
-	/* if weÕre not paused and thereÕs something to draw (i.e., anything different from
+	/* if weâ€™re not paused and thereâ€™s something to draw (i.e., anything different from
 		last time), render a frame */
 	if(game_state.state==_game_in_progress)
 	{
@@ -1226,6 +1230,7 @@ bool idle_game_state(uint32 time)
 			if (theUpdateResult.first || (last_heartbeat_fraction != -1 && last_heartbeat_fraction != heartbeat_fraction)) {
 				last_heartbeat_fraction = heartbeat_fraction;
 				render_screen(ticks_elapsed);
+				first_frame_rendered = ticks_elapsed > 0;
 			}
 		}
 		
@@ -1788,7 +1793,7 @@ static void display_about_dialog()
 	authors.push_back("Carl Gherardi");
 	authors.push_back("Thomas Herzog");
 	authors.push_back("Chris Hallock (LidMop)");
-	authors.push_back("Beno”t Hauquier (Kolfering)");
+	authors.push_back(utf8_to_mac_roman("BenoÃ®t Hauquier (Kolfering)"));
 	authors.push_back("Peter Hessler");
 	authors.push_back("Matthew Hielscher");
 	authors.push_back("Rhys Hill");
@@ -2120,6 +2125,9 @@ static bool begin_game(
 						load_film_profile(FILM_PROFILE_ALEPH_ONE_1_2);
 						break;
 					case RECORDING_VERSION_ALEPH_ONE_1_3:
+						load_film_profile(FILM_PROFILE_ALEPH_ONE_1_3);
+						break;
+					case RECORDING_VERSION_ALEPH_ONE_1_4:
 						load_film_profile(FILM_PROFILE_DEFAULT);
 						break;
 					default:
@@ -2346,6 +2354,7 @@ static void finish_game(
 
 	if (shell_options.editor && shell_options.output.size())
 	{
+		L_Call_Cleanup();
 		FileSpecifier file(shell_options.output);
 		if (export_level(file))
 		{
@@ -2920,8 +2929,6 @@ void interface_fade_out(
 	assert(current_picture_clut);
 	if(current_picture_clut)
 	{
-		struct color_table *fadeout_animated_color_table;
-
 		/* We have to check this because they could go into preferences and change on us, */
 		/*  the evil swine. */
 		if(current_picture_clut_depth != interface_bit_depth)
@@ -2932,21 +2939,11 @@ void interface_fade_out(
 		}
 		
 		hide_cursor();
-			
-		fadeout_animated_color_table= new color_table;
-		obj_copy(*fadeout_animated_color_table, *current_picture_clut);
 
 		if(fade_music) 
 			Music::instance()->FadeOut(MACHINE_TICKS_PER_SECOND/2);
-		if (fadeout_animated_color_table)
-		{
-			explicit_start_fade(_cinematic_fade_out, current_picture_clut, fadeout_animated_color_table);
-			while (update_fades()) 
-				Music::instance()->Idle();
 
-			/* Oops.  Founda  memory leak.. */
-			delete fadeout_animated_color_table;
-		}
+		full_fade(_cinematic_fade_out, current_picture_clut);
 		
 		if(fade_music) 
 		{
@@ -3179,6 +3176,7 @@ void show_movie(short index)
 		
 		SDL_PauseAudio(false);
 		bool done = false;
+		int64_t movie_waudio_sync = 0;
 		while (!done)
 		{
 			SDL_Event event;
@@ -3212,6 +3210,10 @@ void show_movie(short index)
 			
 			if (vframe)
 			{
+				if (!astream) 
+				{
+					movie_sync = machine_tick_count() - movie_waudio_sync;
+				}
 				if (!vframe->ready)
 				{
 					SDL_ffmpegGetVideoFrame(sffile, vframe);
@@ -3236,6 +3238,8 @@ void show_movie(short index)
 					vframe->ready = 0;
 					if (vframe->last)
 						done = true;
+
+					movie_waudio_sync = machine_tick_count() - vframe->pts;
 				}
 				else 
 				{

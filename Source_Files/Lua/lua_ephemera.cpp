@@ -210,6 +210,9 @@ static int Lua_Ephemera_Set_Clut_Index(lua_State* L)
 	auto object = get_ephemera_data(ephemera_index);
 	uint16_t clut_index = lua_tonumber(L, 2);
 
+	if (clut_index >= MAXIMUM_CLUTS_PER_COLLECTION)
+		return luaL_error(L, "clut_index: invalid argument");
+
 	set_ephemera_shape(ephemera_index, set_clut(object->shape, clut_index));
 
 	return 0;
@@ -276,6 +279,8 @@ static int Lua_Ephemera_Set_Shape_Index(lua_State* L)
 	auto ephemera_index = Lua_Ephemera::Index(L, 1);
 	auto object = get_ephemera_data(Lua_Ephemera::Index(L, 1));
 	int16_t shape_index = lua_tonumber(L, 2);
+	if (shape_index < 0 || shape_index >= MAXIMUM_SHAPES_PER_COLLECTION)
+		return luaL_error(L, "shape_index: invalid argument");
 
 	set_ephemera_shape(ephemera_index, set_shape(object->shape, shape_index));
 

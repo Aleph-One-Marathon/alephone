@@ -70,6 +70,12 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
 
+/* ${desc_miniupnpc} enabled */
+#define HAVE_MINIUPNPC 1
+
+/* Define to 1 if you have the <miniupnpc/miniupnpc.h> header file. */
+#define HAVE_MINIUPNPC_MINIUPNPC_H 1
+
 /* OpenGL support enabled */
 #define HAVE_OPENGL 1
 
@@ -104,7 +110,7 @@
 /* #undef HAVE_SMPEG_SMPEG_H */
 
 /* ${desc_sndfile} enabled */
-/* #undef HAVE_SNDFILE */
+#define HAVE_SNDFILE 1
 
 /* Define to 1 if you have the <sndfile.h> header file. */
 /* #undef HAVE_SNDFILE_H */
@@ -195,3 +201,5 @@
 
 /* Win32 music disabled */
 /* #undef WIN32_DISABLE_MUSIC */
+
+#define HAVE_NFD 1

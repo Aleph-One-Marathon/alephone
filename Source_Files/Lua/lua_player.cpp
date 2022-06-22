@@ -376,6 +376,81 @@ const luaL_Reg Lua_Crosshairs_Set[] = {
 	{0, 0}
 };
 
+
+char Lua_HotkeyBinding_Name[] = "hotkey_binding";
+typedef L_Class<Lua_HotkeyBinding_Name> Lua_HotkeyBinding;
+
+extern const char* get_hotkey_binding(int, int);
+
+template<int type>
+static int Lua_HotkeyBinding_Get_Binding(lua_State* L)
+{
+	auto hotkey = Lua_HotkeyBinding::Index(L, 1);
+	auto binding = get_hotkey_binding(hotkey, type);
+
+	if (binding[0])
+	{
+		lua_pushstring(L, binding);
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
+// matches w_key::Type
+enum {
+	type_keyboard,
+	type_mouse,
+	type_joystick
+};
+
+const luaL_Reg Lua_HotkeyBinding_Get[] = {
+	{"joystick", Lua_HotkeyBinding_Get_Binding<type_joystick>},
+	{"key", Lua_HotkeyBinding_Get_Binding<type_keyboard>},
+	{"mouse", Lua_HotkeyBinding_Get_Binding<type_mouse>},
+	{0, 0}
+};
+
+char Lua_HotkeyBindings_Name[] = "hotkey_bindings";
+typedef L_Class<Lua_HotkeyBindings_Name> Lua_HotkeyBindings;
+
+static int Lua_HotkeyBindings_Get(lua_State* L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		auto index = static_cast<int>(lua_tonumber(L, 2));
+		if (index >= 1 && index <= 12)
+		{
+			Lua_HotkeyBinding::Push(L, index);
+		}
+		else
+		{
+			lua_pushnil(L);
+		}
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
+static int Lua_HotkeyBindings_Length(lua_State *L)
+{
+	lua_pushnumber(L, 12);
+	return 1;
+}
+
+const luaL_Reg Lua_HotkeyBindings_Metatable[] = {
+	{"__index", Lua_HotkeyBindings_Get},
+	{"__len", Lua_HotkeyBindings_Length},
+	{0, 0}
+};
+
 char Lua_OverlayColor_Name[] = "overlay_color";
 typedef L_Enum<Lua_OverlayColor_Name> Lua_OverlayColor;
 
@@ -1436,9 +1511,13 @@ int Lua_Player_Find_Target(lua_State *L)
 	short line_index;
 
 	projectile_definition *definition = get_projectile_definition(0);
-	bool was_pass_transparent = definition->flags & _usually_pass_transparent_side;
-	if (!was_pass_transparent)
-		definition->flags |= _usually_pass_transparent_side;
+	
+	auto projectile_flags = definition->flags;
+	definition->flags |= _usually_pass_transparent_side;
+	if (lua_isboolean(L, 2) && lua_toboolean(L, 2))
+	{
+		definition->flags |= _penetrates_media | _penetrates_media_boundary;
+	}
 
 	// preflight a projectile, 1 WU at a time (because of projectile speed bug)
 	uint16 flags = translate_projectile(0, &origin, old_polygon, &destination, &new_polygon, player->monster_index, &obstruction_index, &line_index, true, NONE);
@@ -1452,8 +1531,7 @@ int Lua_Player_Find_Target(lua_State *L)
 		flags = translate_projectile(0, &origin, old_polygon, &destination, &new_polygon, player->monster_index, &obstruction_index, &line_index, true, NONE);
 	}
 
-	if (!was_pass_transparent) 
-		definition->flags &= ~_usually_pass_transparent_side;
+	definition->flags = projectile_flags;
 
 	if (flags & _projectile_hit_monster)
 	{
@@ -1506,6 +1584,7 @@ int Lua_Player_Damage(lua_State *L)
 	damage.base = static_cast<int>(lua_tonumber(L, 2));
 	damage.random = 0;
 	damage.scale = FIXED_ONE;
+	damage.flags = 0;
 
 	if (args > 2)
 	{
@@ -1796,6 +1875,43 @@ static int Lua_Player_Get_Flag(lua_State *L)
 	return 1;
 }
 
+static int Lua_Player_Get_Has_Map_Open(lua_State* L)
+{
+	auto player = get_player_data(Lua_Player::Index(L, 1));
+	lua_pushboolean(L, PLAYER_HAS_MAP_OPEN(player));
+	return 1;
+}
+
+static int Lua_Player_Get_Hotkey(lua_State* L)
+{
+	int player_index = Lua_Player::Index(L, 1);
+	if (GetGameQueue()->countActionFlags(player_index))
+	{
+		auto player = get_player_data(player_index);
+		lua_pushnumber(L, player->hotkey);
+	}
+	else
+	{
+		return luaL_error(L, "hotkey is only accessible in idle()");
+	}
+
+	return 1;
+}
+
+static int Lua_Player_Get_Hotkey_Bindings(lua_State* L)
+{
+	auto player_index = Lua_Player::Index(L, 1);
+	if (player_index == local_player_index)
+	{
+		Lua_HotkeyBindings::Push(L, Lua_Player::Index(L, 1));
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 static int Lua_Player_Get_Infravision_Duration(lua_State *L)
 {
 	lua_pushnumber(L, get_player_data(Lua_Player::Index(L, 1))->infravision_duration);
@@ -1902,6 +2018,13 @@ static int Lua_Player_Get_Team(lua_State *L)
 	return 1;
 }
 
+static int Lua_Player_Get_Teleporting(lua_State* L)
+{
+	auto player = get_player_data(Lua_Player::Index(L, 1));
+	lua_pushboolean(L, PLAYER_IS_TELEPORTING(player));
+	return 1;
+}
+
 static int Lua_Player_Get_Texture_Palette(lua_State *L)
 {
 	Lua_Texture_Palette::Push(L, Lua_Player::Index(L, 1));
@@ -1979,7 +2102,6 @@ const luaL_Reg Lua_Player_Get[] = {
 	{"dead", Lua_Player_Get_Dead},
 	{"deaths", Lua_Player_Get_Deaths},
 	{"direction", Lua_Player_Get_Direction},
-	{"head_direction", Lua_Player_Get_Head_Direction},
 	{"disconnected", Lua_Player_Get_Netdead},
 	{"energy", Lua_Player_Get_Energy},
 	{"elevation", Lua_Player_Get_Elevation},
@@ -1989,7 +2111,11 @@ const luaL_Reg Lua_Player_Get[] = {
 	{"fade_screen", L_TableFunction<Lua_Player_Fade_Screen>},
 	{"find_action_key_target", L_TableFunction<Lua_Player_Find_Action_Key_Target>},
 	{"find_target", L_TableFunction<Lua_Player_Find_Target>},
+	{"has_map_open", Lua_Player_Get_Has_Map_Open},
 	{"head_below_media", Lua_Player_Get_Flag<_HEAD_BELOW_MEDIA_BIT>},
+	{"head_direction", Lua_Player_Get_Head_Direction},
+	{"hotkey", Lua_Player_Get_Hotkey},
+	{"hotkey_bindings", Lua_Player_Get_Hotkey_Bindings},
 	{"infravision_duration", Lua_Player_Get_Infravision_Duration},
 	{"internal_velocity", Lua_Player_Get_Internal_Velocity},
 	{"invincibility_duration", Lua_Player_Get_Invincibility_Duration},
@@ -2014,6 +2140,7 @@ const luaL_Reg Lua_Player_Get[] = {
 	{"team", Lua_Player_Get_Team},
 	{"teleport", L_TableFunction<Lua_Player_Teleport>},
 	{"teleport_to_level", L_TableFunction<Lua_Player_Teleport_To_Level>},
+	{"teleporting", Lua_Player_Get_Teleporting},
 	{"texture_palette", Lua_Player_Get_Texture_Palette},
 	{"totally_dead", Lua_Player_Get_Totally_Dead},
 	{"view_player", L_TableFunction<Lua_Player_View_Player>},
@@ -2089,6 +2216,26 @@ static int Lua_Player_Set_Head_Direction(lua_State *L)
 	}
 	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0), &player->variables, player_index, false, false);
 	
+	return 0;
+}
+
+static int Lua_Player_Set_Hotkey(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "hotkey: incorrect argument type");
+
+	int hotkey = static_cast<int>(lua_tonumber(L, 2));
+	int player_index = Lua_Player::Index(L, 1);
+	if (GetGameQueue()->countActionFlags(player_index))
+	{
+		auto player = get_player_data(player_index);
+		player->hotkey = hotkey;
+	}
+	else
+	{
+		return luaL_error(L, "hotkey is only accessible in idle()");
+	}
+
 	return 0;
 }
 
@@ -2252,6 +2399,7 @@ const luaL_Reg Lua_Player_Set[] = {
 	{"deaths", Lua_Player_Set_Deaths},
 	{"direction", Lua_Player_Set_Direction},
 	{"head_direction", Lua_Player_Set_Head_Direction},
+	{"hotkey", Lua_Player_Set_Hotkey},
 	{"elevation", Lua_Player_Set_Elevation},
 	{"energy", Lua_Player_Set_Energy},
 	{"extravision_duration", Lua_Player_Set_Extravision_Duration},
@@ -2733,6 +2881,10 @@ int Lua_Player_register (lua_State *L)
 	Lua_Cameras::Length = Lua_Cameras_Length;
 	
 	Lua_Crosshairs::Register(L, Lua_Crosshairs_Get, Lua_Crosshairs_Set);
+
+	Lua_HotkeyBindings::Register(L, 0, 0, Lua_HotkeyBindings_Metatable);
+	Lua_HotkeyBinding::Register(L, Lua_HotkeyBinding_Get);
+	
 	Lua_Player_Compass::Register(L, Lua_Player_Compass_Get, Lua_Player_Compass_Set);
 	Lua_Player_Items::Register(L, 0, 0, Lua_Player_Items_Metatable);
 	Lua_Player_Kills::Register(L, 0, 0, Lua_Player_Kills_Metatable);

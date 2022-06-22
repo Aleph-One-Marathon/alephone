@@ -15,7 +15,7 @@ Targets:
   clean    - deletes cache/, resetting all tests
 
 Headers in scope (recalculated on every invocation):
-  - all .h files in the Source_Files tree, outside of Expat and Lua
+  - all .h files in the Source_Files tree, outside of Lua
   - Source_Files/Lua/lua_*.h
 
 Headers are compiled as C++ using the current build configuration. Successful 

@@ -959,36 +959,43 @@ void load_sides(
 {
 	size_t loop;
 
-	bool reserved_side_flag = false;
-	
 	// assert(count>=0 && count<=MAXIMUM_SIDES_PER_MAP);
 
 	unpack_side_data(sides,map_sides,count);
 
-	for(loop=0; loop<count; ++loop)
-	{
-		// whatever editor created Siege of Nor'Khor left all kinds of unused
-		// side flags set; try to detect them and clear them out
-		if (map_sides[loop].flags & _reserved_side_flag)
-		{
-			reserved_side_flag = true;
-		}
-		
-		if(version==MARATHON_ONE_DATA_VERSION)
-		{
-			map_sides[loop].transparent_texture.texture= UNONE;
-			map_sides[loop].ambient_delta= 0;
-			map_sides[loop].flags |= _side_item_is_optional;
-		}
-		++sides;
-	}
-
-	if (reserved_side_flag)
+	if (version == MARATHON_ONE_DATA_VERSION)
 	{
 		for (loop = 0; loop < count; ++loop)
 		{
-			static constexpr int m2_side_flags_mask = 0x007f;
-			map_sides[loop].flags &= m2_side_flags_mask;
+			// some editors set unused flags; clear them out
+			static constexpr int m1_side_flags_mask = 0x0007;
+			
+			map_sides[loop].transparent_texture.texture= UNONE;
+			map_sides[loop].ambient_delta= 0;
+			map_sides[loop].flags &= m1_side_flags_mask;
+			map_sides[loop].flags |= _side_item_is_optional;
+		}
+	}
+	else
+	{
+		bool editor_set_unused_flags = false;
+		for (loop = 0; loop < count; ++loop)
+		{
+			// some editors set unused flags; clear them out
+			if (map_sides[loop].flags & _reserved_side_flag)
+			{
+				editor_set_unused_flags = true;
+				break;
+			}
+		}
+			
+		if (editor_set_unused_flags)
+		{
+			for (loop = 0; loop < count; ++loop)
+			{
+				static constexpr int m2_side_flags_mask = 0x007f;
+				map_sides[loop].flags &= m2_side_flags_mask;
+			}
 		}
 	}
 
@@ -1229,7 +1236,7 @@ bool load_game_from_file(FileSpecifier& File, bool run_scripts)
 			set_map_file(map_parent, false);
 		else
 		{
-			/* Tell the user theyÕre screwed when they try to leave this level. */
+			/* Tell the user they’re screwed when they try to leave this level. */
 			alert_user(infoError, strERRORS, cantFindMap, 0);
 
 			// LP addition: makes the game look normal
@@ -1520,7 +1527,7 @@ static void scan_and_add_platforms(
 	objlist_clear(platforms,count);
 
 	static_platforms.resize(count);
-	unpack_static_platform_data(platform_static_data, static_platforms.data(), count);
+	unpack_static_platform_data(platform_static_data, static_platforms.data(), count, version);
 
 	polygon= map_polygons;
 	for(loop=0; loop<dynamic_world->polygon_count; ++loop)
@@ -1535,7 +1542,7 @@ static void scan_and_add_platforms(
 			{
 				if (static_platforms[platform_static_data_index].polygon_index == loop)
 				{
-					new_platform(&static_platforms[platform_static_data_index], loop, version);
+					new_platform(&static_platforms[platform_static_data_index], loop);
 					break;
 				}
 			}
@@ -1544,7 +1551,7 @@ static void scan_and_add_platforms(
 			if(platform_static_data_index==count)
 			{
 				polygon->permutation= 1;
-				new_platform(get_defaults_for_platform_type(polygon->permutation), loop, version);
+				new_platform(get_defaults_for_platform_type(polygon->permutation), loop);
 			}	
 		}
 		++polygon;
@@ -1642,7 +1649,7 @@ bool process_map_wad(
 			load_lights(data, count, version);
 		}
 
-		//	HACK!!!!!!!!!!!!!!! vulcan doesnÕt NONE .first_object field after adding scenery
+		//	HACK!!!!!!!!!!!!!!! vulcan doesn’t NONE .first_object field after adding scenery
 		{
 			for (count= 0; count<static_cast<size_t>(dynamic_world->polygon_count); ++count)
 			{
@@ -2520,6 +2527,7 @@ static wad_data *build_export_wad(wad_header *header, int32 *length)
 		vector<platform_data> SavedPlatforms = PlatformList;
 		vector<polygon_data> SavedPolygons = PolygonList;
 		vector<line_data> SavedLines = LineList;
+		vector<side_data> SavedSides = SideList;
 
 		for (size_t loop = 0; loop < PlatformList.size(); ++loop)
 		{
@@ -2532,6 +2540,12 @@ static wad_data *build_export_wad(wad_header *header, int32 *length)
 			}
 			if (PLATFORM_COMES_FROM_CEILING(platform))
 			{
+				adjust_platform_sides(platform, platform->ceiling_height, 
+					PLATFORM_IS_INITIALLY_EXTENDED(platform) ?
+					platform->minimum_ceiling_height :
+					platform->maximum_ceiling_height
+				);
+
 				platform->ceiling_height = platform->maximum_ceiling_height;
 				PolygonList[platform->polygon_index].ceiling_height = platform->ceiling_height;
 			}
@@ -2574,6 +2588,7 @@ static wad_data *build_export_wad(wad_header *header, int32 *length)
 		PlatformList = SavedPlatforms;
 		PolygonList = SavedPolygons;
 		LineList = SavedLines;
+		SideList = SavedSides;
 
 		if(wad) *length= calculate_wad_length(header, wad);
 	}

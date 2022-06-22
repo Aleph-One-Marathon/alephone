@@ -31,6 +31,8 @@
 #include    "preferences_widgets_sdl.h"
 #include "Crosshairs.h"
 
+#include "preferences.h"
+
 extern bool use_lua_hud_crosshairs;
 
 /*
@@ -44,6 +46,22 @@ void w_env_select::select_item_callback(void* arg) {
 
 void w_env_select::select_item(dialog *parent)
 {
+#ifdef HAVE_NFD
+	if (environment_preferences->use_native_file_dialogs)
+	{
+		auto spec = item;
+        if (spec.ReadDialog(type, nullptr))
+		{
+			set_path(spec.GetPath());
+			if (mCallback)
+			{
+				mCallback(this);
+			}
+		}
+	}
+	else
+	{
+#endif
 	// Find available files
 	vector<FileSpecifier> files;
 	if (type != _typecode_theme) {
@@ -103,6 +121,9 @@ void w_env_select::select_item(dialog *parent)
         if(mCallback)
             mCallback(this);
 	}
+#ifdef HAVE_NFD
+	}
+#endif
 }
 
 w_crosshair_display::w_crosshair_display() : surface(0)

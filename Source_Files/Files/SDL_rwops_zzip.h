@@ -14,7 +14,7 @@
 #ifndef _SDL_RWops_ZZIP_h
 #define _SDL_RWops_ZZIP_h
 
-#include <SDL_rwops.h>
+#include <SDL2/SDL_rwops.h>
 #include <zzip/plugin.h>
 
 #ifndef ZZIP_NO_DECLSPEC

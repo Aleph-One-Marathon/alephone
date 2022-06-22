@@ -80,7 +80,7 @@ enum /* static platform flags */
 	_platform_comes_from_floor, /* platform rises from floor */
 	_platform_comes_from_ceiling, /* platform lowers from ceiling */
 	_platform_causes_damage, /* when obstructed by monsters, this platform causes damage */
-	_platform_does_not_activate_parent, /* does not reactive itÕs parent (i.e., that platform which activated it) */
+	_platform_does_not_activate_parent, /* does not reactive itâ€™s parent (i.e., that platform which activated it) */
 	_platform_activates_only_once, /* cannot be activated a second time */
 	_platform_activates_light, /* activates floor and ceiling lightsources while activating */
 	_platform_deactivates_light, /* deactivates floor and ceiling lightsources while deactivating */
@@ -241,7 +241,7 @@ struct platform_data /* 140 bytes */
 
 	uint16 dynamic_flags;
 	world_distance floor_height, ceiling_height;
-	int16 ticks_until_restart; /* if weÕre not moving but are active, this is our delay until we move again */
+	int16 ticks_until_restart; /* if weâ€™re not moving but are active, this is our delay until we move again */
 
 	struct endpoint_owner_data endpoint_owners[MAXIMUM_VERTICES_PER_POLYGON];
 
@@ -266,7 +266,7 @@ extern vector<platform_data> PlatformList;
 
 /* --------- prototypes/PLATFORMS.C */
 
-short new_platform(struct static_platform_data *data, short polygon_index, short version);
+short new_platform(struct static_platform_data *data, short polygon_index);
 struct static_platform_data *get_defaults_for_platform_type(short type);
 
 void update_platforms(void);
@@ -275,6 +275,8 @@ void platform_was_entered(short platform_index, bool player);
 
 bool try_and_change_platform_state(short platform_index, bool state);
 bool try_and_change_tagged_platform_states(short tag, bool state);
+
+void adjust_platform_sides(platform_data* platform, world_distance old_ceiling_height, world_distance new_ceiling_height);
 
 enum /* return values from monster_can_enter_platform() and monster_can_leave_platform() */
 {
@@ -309,7 +311,7 @@ platform_data *get_platform_data(
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world
 
-uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data *Objects, size_t Count);
+uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data *Objects, size_t Count, short version);
 uint8 *pack_static_platform_data(uint8 *Stream, static_platform_data *Objects, size_t Count);
 uint8 *unpack_platform_data(uint8 *Stream, platform_data *Objects, size_t Count);
 uint8 *pack_platform_data(uint8 *Stream, platform_data *Objects, size_t Count);

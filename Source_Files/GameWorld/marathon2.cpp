@@ -401,6 +401,7 @@ update_world_elements_one_tick(bool& call_postidle)
 	} 
 	else
 	{
+		decode_hotkeys(*GameQueue);
 		L_Call_Idle();
 		call_postidle = true;
 		
@@ -561,7 +562,7 @@ update_world()
 
 		// We use "2" to make sure there's always room for our one set of elements.
 		// (thePredictiveQueues should always hold only 0 or 1 element for each player.)
-		ActionQueues	thePredictiveQueues(dynamic_world->player_count, 2, true);
+		ModifiableActionQueues	thePredictiveQueues(dynamic_world->player_count, 2, true);
 
 		// Observe, since we don't use a speed-limiter in predictive mode, that there cannot be flags
 		// stranded in the GameQueue.  Unfortunately this approach will mispredict if a script is
@@ -581,6 +582,7 @@ update_world()
 			}
 			
 			// update_players() will dequeue the elements we just put in there
+			decode_hotkeys(thePredictiveQueues);
 			update_players(&thePredictiveQueues, true);
 
 			didPredict = true;
@@ -645,6 +647,9 @@ void leaving_map(
 	SoundManager::instance()->StopAllSounds();
 }
 
+extern bool first_frame_rendered;
+extern float last_heartbeat_fraction;
+
 /* call this function after the new level has been completely read into memory, after
 	player->location and player->facing have been updated, and as close to the end of
 	the loading process in general as possible. */
@@ -678,7 +683,7 @@ bool entering_map(bool restoring_saved)
 	if (game_is_networked) success= NetSync(); /* make sure everybody is ready */
 #endif // !defined(DISABLE_NETWORKING)
 
-	/* make sure nobodyÕs holding a weapon illegal in the new environment */
+	/* make sure nobodyâ€™s holding a weapon illegal in the new environment */
 	check_player_weapons_for_environment_change();
 
 #if !defined(DISABLE_NETWORKING)
@@ -686,7 +691,7 @@ bool entering_map(bool restoring_saved)
 #endif // !defined(DISABLE_NETWORKING)
 	randomize_scenery_shapes();
 
-//	reset_action_queues(); //¦¦
+//	reset_action_queues(); //Â¶Â¶
 //	sync_heartbeat_count();
 //	set_keyboard_controller_status(true);
 
@@ -703,6 +708,9 @@ bool entering_map(bool restoring_saved)
 	set_fade_effect(NONE);
 	
 	if (!success) leaving_map();
+
+	first_frame_rendered = false;
+	last_heartbeat_fraction = -1.f;
 
 	return success;
 }
@@ -785,13 +793,13 @@ short calculate_level_completion_state(
 {
 	short completion_state= _level_finished;
 	
-	/* if there are any monsters left on an extermination map, we havenÕt finished yet */
+	/* if there are any monsters left on an extermination map, we havenâ€™t finished yet */
 	if (static_world->mission_flags&_mission_extermination)
 	{
 		if (live_aliens_on_map()) completion_state= _level_unfinished;
 	}
 	
-	/* if there are any polygons which must be explored and have not been entered, weÕre not done */
+	/* if there are any polygons which must be explored and have not been entered, weâ€™re not done */
 	if ((static_world->mission_flags&_mission_exploration) ||
 	    (static_world->mission_flags&_mission_exploration_m1))
 	{
@@ -808,13 +816,13 @@ short calculate_level_completion_state(
 		}
 	}
 	
-	/* if there are any items left on this map, weÕre not done */
+	/* if there are any items left on this map, weâ€™re not done */
 	if (static_world->mission_flags&_mission_retrieval)
 	{
 		if (unretrieved_items_on_map()) completion_state= _level_unfinished;
 	}
 	
-	/* if there are any untoggled repair switches on this level then weÕre not there */
+	/* if there are any untoggled repair switches on this level then weâ€™re not there */
 	if ((static_world->mission_flags&_mission_repair) ||
 	    (static_world->mission_flags&_mission_repair_m1))
 	{
@@ -823,7 +831,7 @@ short calculate_level_completion_state(
 		if (untoggled_repair_switches_on_level(only_last_switch)) completion_state= _level_unfinished;
 	}
 
-	/* if weÕve finished the level, check failure conditions */
+	/* if weâ€™ve finished the level, check failure conditions */
 	if (completion_state==_level_finished)
 	{
 		/* if this is a rescue mission and more than half of the civilians died, the mission failed */

@@ -31,8 +31,8 @@
 #include "cstypes.h"
 #include <vector>
 #include <memory>
-#include <boost/function.hpp>
-#include <SDL.h>
+#include <functional>
+#include <SDL2/SDL.h>
 
 #ifndef NO_STD_NAMESPACE
 using std::vector;
@@ -191,7 +191,7 @@ private:
 // Dialog structure
 class dialog {
 public:
-	typedef boost::function<void (dialog* d)> Callback;
+	typedef std::function<void (dialog* d)> Callback;
 
 	dialog();
 	~dialog();

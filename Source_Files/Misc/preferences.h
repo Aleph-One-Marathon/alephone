@@ -197,6 +197,7 @@ enum {
 	NUMBER_OF_MOUSE_ACCEL_TYPES
 };
 
+static constexpr int NUMBER_OF_HOTKEYS = 12;
 
 typedef std::map<int, std::set<SDL_Scancode> > key_binding_map;
 
@@ -227,6 +228,7 @@ struct input_preferences_data
 	
 	key_binding_map key_bindings;
 	key_binding_map shell_key_bindings;
+	key_binding_map hotkey_bindings;
 };
 
 #define MAXIMUM_PATCHES_PER_ENVIRONMENT (32)
@@ -264,6 +266,10 @@ struct environment_preferences_data
 
 	// how many auto-named save files to keep around (0 is unlimited)
 	uint32 maximum_quick_saves;
+
+#ifdef HAVE_NFD
+	bool use_native_file_dialogs;
+#endif
 };
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */

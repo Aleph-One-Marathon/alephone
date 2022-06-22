@@ -26,7 +26,6 @@
  * 
  *  Loren Petrich, Dec 23, 2000; moved shared content into screen_shared.cpp
  */
-
 #include "cseries.h"
 
 #include <math.h>
@@ -133,13 +132,13 @@ Screen Screen::m_instance;
 
 // Prototypes
 static bool need_mode_change(int window_width, int window_height, int log_width, int log_height, int depth, bool nogl);
-static void change_screen_mode(int width, int height, int depth, bool nogl, bool force_menu);
+static void change_screen_mode(int width, int height, int depth, bool nogl, bool force_menu, bool force_resize_hud = false);
 static bool get_auto_resolution_size(short *w, short *h, struct screen_mode_data *mode);
 static void build_sdl_color_table(const color_table *color_table, SDL_Color *colors);
 static void reallocate_world_pixels(int width, int height);
 static void reallocate_map_pixels(int width, int height);
 static void apply_gamma(SDL_Surface *src, SDL_Surface *dst);
-static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez);
+static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez, bool every_other_line);
 static void update_fps_display(SDL_Surface *s);
 static void DisplayPosition(SDL_Surface *s);
 static void DisplayMessages(SDL_Surface *s);
@@ -190,6 +189,9 @@ void Screen::Initialize(screen_mode_data* mode)
 		pf = SDL_AllocFormat(SDL_PIXELFORMAT_ARGB8888);
 		pixel_format_32 = *pf;
 		SDL_FreeFormat(pf);
+
+		Intro_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, 0);
+		Intro_Buffer_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, 0);
 
 		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 
@@ -339,7 +341,7 @@ bool Screen::fifty_percent()
 
 bool Screen::seventyfive_percent()
 {
-	return screen_mode.height == 240;;
+	return screen_mode.height == 240;
 }
 
 SDL_Rect Screen::window_rect()
@@ -599,7 +601,7 @@ static void reallocate_world_pixels(int width, int height)
 	switch (bit_depth)
 	{
 	case 8:
-		world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, f->BitsPerPixel, 0, 0, 0, 0);
+		world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 8, 0, 0, 0, 0);
 		break;
 	case 16:
 		world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 16, pixel_format_16.Rmask, pixel_format_16.Gmask, pixel_format_16.Bmask, 0);
@@ -626,7 +628,7 @@ static void reallocate_map_pixels(int width, int height)
 		SDL_FreeSurface(Map_Buffer);
 		Map_Buffer = NULL;
 	}
-	Map_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, world_pixels->format->BitsPerPixel, world_pixels->format->Rmask, world_pixels->format->Gmask, world_pixels->format->Bmask, 0);
+	Map_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, main_surface->format->BitsPerPixel, main_surface->format->Rmask, main_surface->format->Gmask, main_surface->format->Bmask, 0);
 	if (Map_Buffer == NULL)
 		alert_out_of_memory();
 	if (map_is_translucent()) {
@@ -702,6 +704,11 @@ void enter_screen(void)
 	scr->lua_view_rect.y = scr->lua_map_rect.y = (h - wh) / 2;
 	scr->lua_view_rect.w = scr->lua_map_rect.w = ww;
 	scr->lua_view_rect.h = scr->lua_map_rect.h = wh;
+
+	scr->lua_text_margins.top = 0;
+	scr->lua_text_margins.left = 0;
+	scr->lua_text_margins.bottom = 0;
+	scr->lua_text_margins.right = 0;
 	
     screen_rectangle *term_rect = get_interface_rectangle(_terminal_screen_rect);
 	scr->lua_term_rect.x = (w - RECTANGLE_WIDTH(term_rect)) / 2;
@@ -823,7 +830,7 @@ static int change_window_filter(void *ctx, SDL_Event *event)
 	return 1;
 }
 
-static void change_screen_mode(int width, int height, int depth, bool nogl, bool force_menu)
+static void change_screen_mode(int width, int height, int depth, bool nogl, bool force_menu, bool force_resize_hud)
 {
 	int prev_width = 0;
 	int prev_height = 0;
@@ -1102,20 +1109,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		SDL_FreeSurface(Term_Buffer);
 		Term_Buffer = NULL;
 	}
-	if (Intro_Buffer) {
-		SDL_FreeSurface(Intro_Buffer);
-		Intro_Buffer = NULL;
-	}
-	if (Intro_Buffer_corrected) {
-		SDL_FreeSurface(Intro_Buffer_corrected);
-		Intro_Buffer_corrected = NULL;
-	}
 
     screen_rectangle *term_rect = get_interface_rectangle(_terminal_screen_rect);
 	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, RECTANGLE_WIDTH(term_rect), RECTANGLE_HEIGHT(term_rect), 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, pixel_format_32.Amask);
-
-	Intro_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, 0);
-	Intro_Buffer_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, 0);
 
 #ifdef HAVE_OPENGL
 	if (!nogl && screen_mode.acceleration != _no_acceleration) {
@@ -1144,12 +1140,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	}
 #endif
 	
-	if (in_game && screen_mode.hud)
+	if (in_game && (screen_mode.hud && (prev_width != main_surface->w || prev_height != main_surface->h)) || force_resize_hud)
 	{
-		if (prev_width != main_surface->w || prev_height != main_surface->h)
-		{
-			L_Call_HUDResize();
-	  }
+		L_Call_HUDResize();
 	}
     
     refreshAngle(main_screen);
@@ -1183,7 +1176,7 @@ bool get_auto_resolution_size(short *w, short *h, struct screen_mode_data *mode)
 	return false;
 }
 	
-void change_screen_mode(struct screen_mode_data *mode, bool redraw)
+void change_screen_mode(struct screen_mode_data *mode, bool redraw, bool resize_hud)
 {
 	// Get the screen mode here
 	screen_mode = *mode;
@@ -1199,7 +1192,7 @@ void change_screen_mode(struct screen_mode_data *mode, bool redraw)
 		}
 		else
 			get_auto_resolution_size(&w, &h, mode);
-		change_screen_mode(w, h, mode->bit_depth, false, !in_game);
+		change_screen_mode(w, h, mode->bit_depth, false, !in_game, resize_hud);
 		clear_screen();
 		recenter_mouse();
 	}
@@ -1260,9 +1253,7 @@ static bool clear_next_screen = false;
 void update_world_view_camera()
 {
 	world_view->yaw = current_player->facing;
-	world_view->virtual_yaw = (current_player->facing * FIXED_ONE) + virtual_aim_delta().yaw;
 	world_view->pitch = current_player->elevation;
-	world_view->virtual_pitch = (current_player->elevation * FIXED_ONE) + virtual_aim_delta().pitch;
 	world_view->maximum_depth_intensity = current_player->weapon_intensity;
 
 	world_view->origin = current_player->camera_location;
@@ -1271,8 +1262,24 @@ void update_world_view_camera()
 	world_view->origin_polygon_index = current_player->camera_polygon_index;
 
 	// Script-based camera control
-	if (!UseLuaCameras())
-		world_view->show_weapons_in_hand = !ChaseCam_GetPosition(world_view->origin, world_view->origin_polygon_index, world_view->yaw, world_view->pitch);	
+	auto use_cameras = UseLuaCameras();
+
+	world_view->virtual_yaw = world_view->yaw * FIXED_ONE;
+	world_view->virtual_pitch = world_view->pitch * FIXED_ONE;
+
+	if (!use_cameras)
+	{
+		world_view->show_weapons_in_hand =
+			!ChaseCam_GetPosition(world_view->origin,
+								  world_view->origin_polygon_index,
+								  world_view->yaw, world_view->pitch);
+
+		if (current_player_index == local_player_index)
+		{
+			world_view->virtual_yaw += virtual_aim_delta().yaw;
+			world_view->virtual_pitch += virtual_aim_delta().pitch;
+		}
+	}
 }
 
 void render_screen(short ticks_elapsed)
@@ -1373,6 +1380,13 @@ void render_screen(short ticks_elapsed)
 		PrevDepth = mode->bit_depth;
 	}
 
+	static bool PrevDrawEveryOtherLine = false;
+	bool DrawEveryOtherLine = mode->draw_every_other_line;
+	if (PrevDrawEveryOtherLine != DrawEveryOtherLine) {
+		ViewChangedSize = true;
+		PrevDrawEveryOtherLine = DrawEveryOtherLine;
+	}
+
 	SDL_Rect BufferRect = {0, 0, ViewRect.w, ViewRect.h};
 	// Now the buffer rectangle; be sure to shrink it as appropriate
 	if (!HighResolution && screen_mode.acceleration == _no_acceleration) {
@@ -1389,6 +1403,8 @@ void render_screen(short ticks_elapsed)
 	bool update_full_screen = false;
 	if (ViewChangedSize || MapChangedSize || SwitchedModes) {
 		clear_screen_margin();
+		if (!OGL_IsActive() && DrawEveryOtherLine)
+			clear_screen();
 		update_full_screen = true;
 		if (Screen::instance()->hud() && !Screen::instance()->lua_hud())
 			draw_interface();
@@ -1510,7 +1526,7 @@ void render_screen(short ticks_elapsed)
 		// Update world window
 		if (!world_view->terminal_mode_active &&
 			(!world_view->overhead_map_active || MapIsTranslucent))
-			update_screen(BufferRect, ViewRect, HighResolution);
+			update_screen(BufferRect, ViewRect, HighResolution, DrawEveryOtherLine);
 		
 		// Update map
 		if (world_view->overhead_map_active) {
@@ -1563,19 +1579,44 @@ void render_screen(short ticks_elapsed)
  */
 
 template <class T>
-static inline void quadruple_surface(const T *src, int src_pitch, T *dst, int dst_pitch, const SDL_Rect &dst_rect)
+static inline void quadruple_surface(
+	const T *src,
+	int src_pitch,
+	T *dst, int dst_pitch,
+	const SDL_Rect &dst_rect,
+	bool every_other_line)
 {
 	int width = dst_rect.w / 2;
 	int height = dst_rect.h / 2;
 	dst += dst_rect.y * dst_pitch / sizeof(T) + dst_rect.x;
 	T *dst2 = dst + dst_pitch / sizeof(T);
 
+	uint32 black_pixel = SDL_MapRGB(main_surface->format, 0, 0, 0);
+	bool overlay_active = world_view->overhead_map_active
+		&& map_is_translucent();
+	
 	while (height-- > 0) {
-		for (int x=0; x<width; x++) {
-			T p = src[x];
-			dst[x * 2] = dst[x * 2 + 1] = p;
-			dst2[x * 2] = dst2[x * 2 + 1] = p;
+		if (every_other_line) {
+			if (overlay_active) {
+				// overlay map needs us to clear all the scanlines, so we have
+				// to put black in the "skipped" lines
+				for (int x=0; x<width; x++) {
+					dst[x * 2] = dst[x * 2 + 1] = src[x];
+					dst2[x * 2] = dst2[x * 2 + 1] = black_pixel;
+				}
+			} else {
+				for (int x=0; x<width; x++) {
+					dst[x * 2] = dst[x * 2 + 1] = src[x];
+				}
+			}
+		} else {
+			for (int x=0; x<width; x++) {
+				T p = src[x];
+				dst[x * 2] = dst[x * 2 + 1] = p;
+				dst2[x * 2] = dst2[x * 2 + 1] = p;
+			}
 		}
+
 		src += src_pitch / sizeof(T);
 		dst += dst_pitch * 2 / sizeof(T);
 		dst2 += dst_pitch * 2 / sizeof(T);
@@ -1648,7 +1689,7 @@ static inline bool pixel_formats_equal(SDL_PixelFormat* a, SDL_PixelFormat* b)
 		a->Bmask == b->Bmask);
 }
 
-static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
+static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez, bool every_other_line)
 {
 	SDL_Surface *s = world_pixels;
 	if (!using_default_gamma && bit_depth > 8) {
@@ -1668,7 +1709,7 @@ static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 			if (SDL_LockSurface(main_surface) < 0) return;
 		}
 
-		if (s->format->BytesPerPixel != 1 && !pixel_formats_equal(s->format, main_surface->format))
+		if (!pixel_formats_equal(s->format, main_surface->format))
 		{
 			intermediary = SDL_ConvertSurface(s, main_surface->format, s->flags);
 			s = intermediary;
@@ -1677,13 +1718,13 @@ static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 		switch (s->format->BytesPerPixel) 
 		{
 		case 1:
-			quadruple_surface((pixel8 *)s->pixels, s->pitch, (pixel8 *)main_surface->pixels, main_surface->pitch, destination);
+			quadruple_surface((pixel8 *)s->pixels, s->pitch, (pixel8 *)main_surface->pixels, main_surface->pitch, destination, every_other_line);
 			break;
 		case 2:
-			quadruple_surface((pixel16 *)s->pixels, s->pitch, (pixel16 *)main_surface->pixels, main_surface->pitch, destination);
+			quadruple_surface((pixel16 *)s->pixels, s->pitch, (pixel16 *)main_surface->pixels, main_surface->pitch, destination, every_other_line);
 			break;
 		case 4:
-			quadruple_surface((pixel32 *)s->pixels, s->pitch, (pixel32 *)main_surface->pixels, main_surface->pitch, destination);
+			quadruple_surface((pixel32 *)s->pixels, s->pitch, (pixel32 *)main_surface->pixels, main_surface->pitch, destination, every_other_line);
 			break;
 		}
 		
@@ -1763,8 +1804,13 @@ void change_interface_clut(struct color_table *color_table)
 
 void change_screen_clut(struct color_table *color_table)
 {
-	build_direct_color_table(uncorrected_color_table, bit_depth);
-	memcpy(interface_color_table, uncorrected_color_table, sizeof(struct color_table));
+	if (bit_depth == 8) {
+		memcpy(uncorrected_color_table, color_table, sizeof(struct color_table));
+		memcpy(interface_color_table, color_table, sizeof(struct color_table));
+	} else {
+		build_direct_color_table(uncorrected_color_table, bit_depth);
+		memcpy(interface_color_table, uncorrected_color_table, sizeof(struct color_table));
+	}
 
 	gamma_correct_color_table(uncorrected_color_table, world_color_table, screen_mode.gamma_level);
 	memcpy(visible_color_table, world_color_table, sizeof(struct color_table));
@@ -1780,6 +1826,15 @@ void animate_screen_clut(struct color_table *color_table, bool full_screen)
 		current_gamma_b[i] = color_table->colors[i].blue;
 	}
 	using_default_gamma = !memcmp(color_table, uncorrected_color_table, sizeof(struct color_table));
+	
+	if (interface_bit_depth == 8) {
+		SDL_Color colors[256];
+		build_sdl_color_table(color_table, colors);
+		if (world_pixels)
+			SDL_SetPaletteColors(world_pixels->format->palette, colors, 0, 256);
+		if (HUD_Buffer)
+			SDL_SetPaletteColors(HUD_Buffer->format->palette, colors, 0, 256);
+	}
 }
 
 void assert_world_color_table(struct color_table *interface_color_table, struct color_table *world_color_table)
@@ -1787,7 +1842,8 @@ void assert_world_color_table(struct color_table *interface_color_table, struct 
 	if (interface_bit_depth == 8) {
 		SDL_Color colors[256];
 		build_sdl_color_table(interface_color_table, colors);
-		SDL_SetPaletteColors(main_surface->format->palette, colors, 0, 256);
+		if (world_pixels)
+			SDL_SetPaletteColors(world_pixels->format->palette, colors, 0, 256);
 		if (HUD_Buffer)
 			SDL_SetPaletteColors(HUD_Buffer->format->palette, colors, 0, 256);
 	}
@@ -2054,7 +2110,7 @@ void draw_intro_screen(void)
 #endif
 	{
 		SDL_Surface *s = Intro_Buffer;
-		if (!using_default_gamma && bit_depth > 8) {
+		if (!using_default_gamma) {
 			apply_gamma(Intro_Buffer, Intro_Buffer_corrected);
 			SDL_SetSurfaceBlendMode(Intro_Buffer_corrected, SDL_BLENDMODE_NONE);
 			s = Intro_Buffer_corrected;

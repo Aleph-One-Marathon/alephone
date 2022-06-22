@@ -113,7 +113,7 @@ May 22, 2003 (Woody Zenfell):
 #endif
 
 // 8-bit support is still here if you undefine this, but you'll need to fix it
-#define TRUE_COLOR_ONLY 1
+// #define TRUE_COLOR_ONLY 1
 
 using namespace alephone;
 
@@ -416,7 +416,7 @@ static void crosshair_dialog(void *arg)
 	table->dual_add(red_w, d);
 
 	w_slider *green_w = new w_percentage_slider(16, 0);
-	SliderSelectorWidget greenWidget(green_w);;
+	SliderSelectorWidget greenWidget(green_w);
 	ColorComponentPref greenPref(player_preferences->Crosshairs.Color.green);
 	crosshair_binders->insert<int> (&greenWidget, &greenPref);
 	table->dual_add(green_w->label("Green"), d);
@@ -970,8 +970,8 @@ static const char *sw_sdl_driver_labels[5] = {
 };
 
 
-static const char* ephemera_quality_labels[5] = {
-	"Off", "Low", "Medium", "High", "Ultra"
+static const char* ephemera_quality_labels[] = {
+	"Off", "Low", "Medium", "High", "Ultra", NULL
 };
 
 static const char *fps_target_labels[] = {
@@ -1155,6 +1155,21 @@ std::vector<std::string> build_resolution_labels()
 	return result;
 }
 
+class w_fov_slider : public w_slider {
+public:
+	w_fov_slider(int sel) : w_slider(101, sel) {
+		init_formatted_value();
+	}
+
+	virtual std::string formatted_value(void) {
+		std::ostringstream oss;
+		oss << (selection + 30);
+		return oss.str();
+	}
+};
+
+extern float View_FOV_Normal();
+
 static void graphics_dialog(void *arg)
 {
 	dialog *parent = (dialog *)arg;
@@ -1168,6 +1183,7 @@ static void graphics_dialog(void *arg)
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
+	table->col_flags(1, placeable::kAlignLeft);
 	
 	w_select* renderer_w = new w_select(graphics_preferences->screen_mode.acceleration, renderer_labels);
 	renderer_w->set_identifier(iRENDERING_SYSTEM);
@@ -1178,6 +1194,8 @@ static void graphics_dialog(void *arg)
 	table->dual_add(renderer_w->label("Rendering System"), d);
 	table->dual_add(renderer_w, d);
 
+	table->add_row(new w_spacer(), true);
+
 	w_select_popup *size_w = new w_select_popup();
 	size_w->set_labels(build_resolution_labels());
 	if (graphics_preferences->screen_mode.auto_resolution)
@@ -1186,6 +1204,10 @@ static void graphics_dialog(void *arg)
 		size_w->set_selection(Screen::instance()->FindMode(graphics_preferences->screen_mode.width, graphics_preferences->screen_mode.height) + 1);
 	table->dual_add(size_w->label("Screen Size"), d);
 	table->dual_add(size_w, d);
+		
+	w_toggle *fullscreen_w = new w_toggle(!graphics_preferences->screen_mode.fullscreen);
+	table->dual_add(fullscreen_w->label("Windowed Mode"), d);
+	table->dual_add(fullscreen_w, d);
 
 	w_toggle *high_dpi_w = NULL;
 	high_dpi_w = new w_toggle(graphics_preferences->screen_mode.high_dpi);
@@ -1194,16 +1216,8 @@ static void graphics_dialog(void *arg)
 	table->dual_add(high_dpi_w->label("Use High DPI"), d);
 	table->dual_add(high_dpi_w, d);
 #endif
-	
-	w_toggle *fixh_w = new w_toggle(!graphics_preferences->screen_mode.fix_h_not_v);
-	table->dual_add(fixh_w->label("Limit Vertical View"), d);
-	table->dual_add(fixh_w, d);
-    
-	w_toggle *bob_w = new w_toggle(graphics_preferences->screen_mode.camera_bob);
-	table->dual_add(bob_w->label("Camera Bobbing"), d);
-	table->dual_add(bob_w, d);
-	
-  	w_select_popup *gamma_w = new w_select_popup();
+
+	w_select_popup *gamma_w = new w_select_popup();
 	gamma_w->set_labels(build_stringvector_from_cstring_array(gamma_labels));
 	gamma_w->set_selection(graphics_preferences->screen_mode.gamma_level);
 	table->dual_add(gamma_w->label("Brightness"), d);
@@ -1221,10 +1235,40 @@ static void graphics_dialog(void *arg)
 	table->dual_add(fps_target_w, d);
 
 	table->add_row(new w_spacer(), true);
+	
+	w_toggle *fixh_w = new w_toggle(!graphics_preferences->screen_mode.fix_h_not_v);
+	table->dual_add(fixh_w->label("Limit Vertical View"), d);
+	table->dual_add(fixh_w, d);
 
-	w_toggle *fullscreen_w = new w_toggle(!graphics_preferences->screen_mode.fullscreen);
-	table->dual_add(fullscreen_w->label("Windowed Mode"), d);
-	table->dual_add(fullscreen_w, d);
+	w_toggle *override_fov_w = new w_toggle(graphics_preferences->screen_mode.fov != 0);
+	w_fov_slider *fov_slider_w = new w_fov_slider((graphics_preferences->screen_mode.fov == 0 ? static_cast<int>(View_FOV_Normal()) : graphics_preferences->screen_mode.fov) - 30);
+	fov_slider_w->set_enabled(graphics_preferences->screen_mode.fov != 0);
+	override_fov_w->set_selection_changed_callback(
+		[&](w_select*) {
+			if (override_fov_w->get_selection())
+			{
+				fov_slider_w->set_enabled(true);
+			}
+			else
+			{
+				fov_slider_w->set_enabled(false);
+			}
+		});
+
+	table->dual_add(override_fov_w->label("Override FOV*"), d);
+	auto fov_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET));
+	fov_placer->dual_add(override_fov_w, d);
+	fov_placer->dual_add(fov_slider_w, d);
+
+	table->add(fov_placer);
+
+	table->dual_add_row(new w_static_text("*may interfere with third-party scenario effects"), d);
+
+	table->add_row(new w_spacer(), true);
+	
+	w_toggle *bob_w = new w_toggle(graphics_preferences->screen_mode.camera_bob);
+	table->dual_add(bob_w->label("Camera Bobbing"), d);
+	table->dual_add(bob_w, d);
 
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("Heads-Up Display"), d);
@@ -1361,6 +1405,13 @@ static void graphics_dialog(void *arg)
 		bool camera_bob = bob_w->get_selection() != 0;
 		if (camera_bob != graphics_preferences->screen_mode.camera_bob) {
 			graphics_preferences->screen_mode.camera_bob = camera_bob;
+			changed = true;
+		}
+
+		int fov = override_fov_w->get_selection() == 0 ? 0 : fov_slider_w->get_selection() + 30;
+		if (fov != graphics_preferences->screen_mode.fov)
+		{
+			graphics_preferences->screen_mode.fov = fov;
 			changed = true;
 		}
 		
@@ -1713,8 +1764,38 @@ static key_binding_map default_shell_key_bindings = {
 	} },
 	{ 8, { SDL_SCANCODE_BACKSLASH
 	} },
-	{ 9, { SDL_SCANCODE_1
+	{ 9, { SDL_SCANCODE_N
 	} },
+};
+
+static const char* hotkey_action_name[NUMBER_OF_HOTKEYS] = {
+	"Hotkey 1",
+	"Hotkey 2",
+	"Hotkey 3",
+	"Hotkey 4",
+	"Hotkey 5",
+	"Hotkey 6",
+	"Hotkey 7",
+	"Hotkey 8",
+	"Hotkey 9",
+	"Hotkey 10",
+	"Hotkey 11",
+	"Hotkey 12",
+};
+
+static key_binding_map default_hotkey_bindings = {
+	{ 0, { SDL_SCANCODE_1 }},
+	{ 1, { SDL_SCANCODE_2 }},
+	{ 2, { SDL_SCANCODE_3 }},
+	{ 3, { SDL_SCANCODE_4 }},
+	{ 4, { SDL_SCANCODE_5 }},
+	{ 5, { SDL_SCANCODE_6 }},
+	{ 6, { SDL_SCANCODE_7 }},
+	{ 7, { SDL_SCANCODE_8 }},
+	{ 8, { SDL_SCANCODE_9 }},
+	{ 9, { SDL_SCANCODE_T }},
+	{ 10, { SDL_SCANCODE_G }},
+	{ 11, { SDL_SCANCODE_B }}
 };
 
 class w_prefs_key;
@@ -1723,6 +1804,7 @@ typedef std::multimap<int, w_prefs_key*> prefsKeyMap;
 typedef std::pair<int, w_prefs_key*> prefsKeyMapPair;
 static prefsKeyMap key_w;
 static prefsKeyMap shell_key_w;
+static prefsKeyMap hotkey_w;
 
 class w_prefs_key : public w_key {
 public:
@@ -1772,6 +1854,15 @@ public:
 		}
 		for (auto it = shell_key_w.begin(); it != shell_key_w.end(); ++it) {
 			if (it->second != this && it->second->get_key() == new_key) {
+				it->second->set_key(SDL_SCANCODE_UNKNOWN);
+				it->second->dirty = true;
+			}
+		}
+		
+		for (auto it = hotkey_w.begin(); it != hotkey_w.end(); ++it)
+		{
+			if (it->second != this && it->second->get_key() == new_key)
+			{
 				it->second->set_key(SDL_SCANCODE_UNKNOWN);
 				it->second->dirty = true;
 			}
@@ -1859,6 +1950,46 @@ static void load_default_keys(void *arg)
 		}
 	}
 
+	for (int i = 0; i < NUMBER_OF_HOTKEYS; ++i)
+	{
+		SDL_Scancode kcode = SDL_SCANCODE_UNKNOWN;
+		SDL_Scancode mcode = SDL_SCANCODE_UNKNOWN;
+		SDL_Scancode jcode = SDL_SCANCODE_UNKNOWN;
+		for (auto it = default_hotkey_bindings[i].begin(); it != default_hotkey_bindings[i].end(); ++it) {
+			SDL_Scancode code = *it;
+			if (code == SDL_SCANCODE_UNKNOWN)
+				continue;
+			switch (w_key::event_type_for_key(code)) {
+				case w_key::MouseButton:
+					mcode = code;
+					break;
+				case w_key::JoystickButton:
+					jcode = code;
+					break;
+				case w_key::KeyboardKey:
+				default:
+					kcode = code;
+					break;
+			}
+		}
+		auto range = hotkey_w.equal_range(i);
+		for (auto ik = range.first; ik != range.second; ++ik) {
+			w_prefs_key *pk = ik->second;
+			switch (pk->event_type) {
+				case w_key::MouseButton:
+					pk->set_key(mcode);
+					break;
+				case w_key::JoystickButton:
+					pk->set_key(jcode);
+					break;
+				case w_key::KeyboardKey:
+				default:
+					pk->set_key(kcode);
+					break;
+			}
+		}
+	}
+
 	dialog *d = (dialog *)arg;
 	d->draw();
 }
@@ -1869,6 +2000,10 @@ static void unset_scancode(SDL_Scancode code)
 		input_preferences->key_bindings[i].erase(code);
 	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; ++i)
 		input_preferences->shell_key_bindings[i].erase(code);
+	for (int i = 0; i < NUMBER_OF_HOTKEYS; ++i)
+	{
+		input_preferences->hotkey_bindings[i].erase(code);
+	}
 }
 
 enum {
@@ -2206,6 +2341,7 @@ static void controls_dialog(void *arg)
 	// Clear array of key widgets (because w_prefs_key::set_key() scans it)
 	key_w.clear();
 	shell_key_w.clear();
+	hotkey_w.clear();
 
 	// Create dialog
 	dialog d;
@@ -2251,9 +2387,29 @@ static void controls_dialog(void *arg)
 		shell_key_w.insert(prefsKeyMapPair(i, new w_prefs_key(jcode, w_key::JoystickButton)));
 	}
 	
+	for (int i = 0; i < NUMBER_OF_HOTKEYS; ++i)
+	{
+		SDL_Scancode kcode = SDL_SCANCODE_UNKNOWN;
+		SDL_Scancode mcode = SDL_SCANCODE_UNKNOWN;
+		SDL_Scancode jcode = SDL_SCANCODE_UNKNOWN;
+		for (std::set<SDL_Scancode>::const_iterator bit = input_preferences->hotkey_bindings[i].begin(); bit != input_preferences->hotkey_bindings[i].end(); ++bit) {
+			SDL_Scancode code = *bit;
+			if (code >= AO_SCANCODE_BASE_JOYSTICK_BUTTON && code < (AO_SCANCODE_BASE_JOYSTICK_BUTTON + NUM_SDL_JOYSTICK_BUTTONS)) {
+				jcode = code;
+			} else if (code >= AO_SCANCODE_BASE_MOUSE_BUTTON && code < (AO_SCANCODE_BASE_MOUSE_BUTTON + NUM_SDL_MOUSE_BUTTONS)) {
+				mcode = code;
+			} else {
+				kcode = code;
+			}
+		}
+		hotkey_w.insert(prefsKeyMapPair(i, new w_prefs_key(kcode, w_key::KeyboardKey)));
+		hotkey_w.insert(prefsKeyMapPair(i, new w_prefs_key(mcode, w_key::MouseButton)));
+		hotkey_w.insert(prefsKeyMapPair(i, new w_prefs_key(jcode, w_key::JoystickButton)));
+	}
+	
 	tab_placer* tabs = new tab_placer();
 	
-	std::vector<std::string> labels = { "AIM", "MOVE", "ACTIONS", "INTERFACE", "OTHER" };
+	std::vector<std::string> labels = { "AIM", "MOVE", "ACTIONS", "HOTKEYS", "INTERFACE", "OTHER" };
 	w_tab *tab_w = new w_tab(labels, tabs);
 	
 	placer->dual_add(tab_w, d);
@@ -2464,6 +2620,36 @@ static void controls_dialog(void *arg)
 	actions->dual_add(new w_static_text("network play.  Turning it OFF will also disable"), d);
 	actions->dual_add(new w_static_text("film recording for single-player games."), d);
 
+	vertical_placer* hotkeys = new vertical_placer();
+	table_placer* hotkey_table = new table_placer(4, get_theme_space(ITEM_WIDGET), true);
+	hotkey_table->col_flags(0, placeable::kAlignRight);
+	hotkey_table->col_flags(1, placeable::kAlignLeft);
+	hotkey_table->col_flags(2, placeable::kAlignLeft);
+	hotkey_table->col_flags(3, placeable::kAlignLeft);
+	hotkey_table->add(new w_spacer(), true);
+	hotkey_table->dual_add(new w_label("Keyboard"), d);
+	hotkey_table->dual_add(new w_label("Mouse"), d);
+	hotkey_table->dual_add(new w_label("Controller"), d);
+
+	for (auto i = 0; i < NUMBER_OF_HOTKEYS; ++i)
+	{
+		if (i == 9)
+		{
+			hotkey_table->add_row(new w_spacer(), true);			
+		}
+		
+		hotkey_table->dual_add(new w_label(hotkey_action_name[i]), d);
+		auto range = hotkey_w.equal_range(i);
+		for (auto ik = range.first; ik != range.second; ++ik)
+		{
+			hotkey_table->dual_add(ik->second, d);
+		}
+	}
+	hotkeys->add(hotkey_table, true);
+
+	hotkeys->add(new w_spacer(), true);
+	hotkeys->dual_add(new w_static_text("Hotkeys 1-9 are used to switch weapons, but can be overriden by Lua scripts"), d);
+	hotkeys->dual_add(new w_static_text("Hotkeys 10-12 are reserved for Lua scripts"), d);
 
 	vertical_placer *iface = new vertical_placer();
 	table_placer *interface_table = new table_placer(4, get_theme_space(ITEM_WIDGET), true);
@@ -2572,6 +2758,7 @@ static void controls_dialog(void *arg)
 	tabs->add(look, true);
 	tabs->add(move, true);
 	tabs->add(actions, true);
+	tabs->add(hotkeys, true);
 	tabs->add(iface, true);
 	tabs->add(other, true);
 	placer->add(tabs, true);
@@ -2614,6 +2801,11 @@ static void controls_dialog(void *arg)
 			input_preferences->shell_key_bindings[i].clear();
 		}
 
+		for (int i = 0; i < NUMBER_OF_HOTKEYS; ++i)
+		{
+			input_preferences->hotkey_bindings[i].clear();
+		}
+
 		for (auto it = key_w.begin(); it != key_w.end(); ++it) {
 			int i = it->first;
 			SDL_Scancode key = it->second->get_key();
@@ -2633,6 +2825,18 @@ static void controls_dialog(void *arg)
 				changed = true;
 			}
 		}
+
+		for (auto it = hotkey_w.begin(); it != hotkey_w.end(); ++it)
+		{
+			int i = it->first;
+			auto key = it->second->get_key();
+			if (key != SDL_SCANCODE_UNKNOWN)
+			{
+				unset_scancode(key);
+				input_preferences->hotkey_bindings[i].insert(key);
+				changed = true;
+			}
+		}
 		
 		int16 device = enable_mouse_w->get_selection() ? _mouse_yaw_pitch : _keyboard_or_game_pad;
 		if (input_preferences->input_device != device) {
@@ -2640,7 +2844,7 @@ static void controls_dialog(void *arg)
 			changed = true;
 		}
 		
-		bool jaim = (joystick_aiming_w->get_selection() == 1);
+		bool jaim = (joystick_aiming_w->get_selection() == 0);
 		if (input_preferences->controller_analog != jaim) {
 			input_preferences->controller_analog = jaim;
 			changed = true;
@@ -2796,6 +3000,12 @@ static void environment_dialog(void *arg)
 	table->dual_add(hide_extensions_w, d);
 #endif
 
+#ifdef HAVE_NFD
+	w_toggle *use_native_file_dialogs_w = new w_toggle(environment_preferences->use_native_file_dialogs);
+	table->dual_add(use_native_file_dialogs_w->label("Use Native File Dialogs"), d);
+	table->dual_add(use_native_file_dialogs_w, d);
+#endif
+
 	w_select *max_saves_w = new w_select(0, max_saves_labels);
 	for (int i = 0; max_saves_labels[i] != NULL; ++i) {
 		if (max_saves_values[i] == environment_preferences->maximum_quick_saves)
@@ -2929,6 +3139,15 @@ static void environment_dialog(void *arg)
 			environment_preferences->maximum_quick_saves = saves;
 			saves_changed = true;
 		}
+
+#ifdef HAVE_NFD
+		auto use_native_file_dialogs = use_native_file_dialogs_w->get_selection() != 0;
+		if (use_native_file_dialogs != environment_preferences->use_native_file_dialogs)
+		{
+			environment_preferences->use_native_file_dialogs = use_native_file_dialogs;
+			changed = true;
+		}
+#endif
 
 		if (changed)
 			load_environment_from_preferences();
@@ -3088,19 +3307,19 @@ void read_preferences ()
 			else if (version > A1_DATE_VERSION)
 				logWarning("Reading newer preferences of version %s. Preferences will be downgraded to version %s when saved. (%s)", version.c_str(), A1_DATE_VERSION, FileSpec.GetPath());
 			
-			BOOST_FOREACH(InfoTree child, root.children_named("graphics"))
+			for (const InfoTree &child : root.children_named("graphics"))
 				parse_graphics_preferences(child, version);
-			BOOST_FOREACH(InfoTree child, root.children_named("player"))
+			for (const InfoTree &child : root.children_named("player"))
 				parse_player_preferences(child, version);
-			BOOST_FOREACH(InfoTree child, root.children_named("input"))
+			for (const InfoTree &child : root.children_named("input"))
 				parse_input_preferences(child, version);
-			BOOST_FOREACH(InfoTree child, root.children_named("sound"))
+			for (const InfoTree &child : root.children_named("sound"))
 				parse_sound_preferences(child, version);
 #if !defined(DISABLE_NETWORKING)
-			BOOST_FOREACH(InfoTree child, root.children_named("network"))
+			for (const InfoTree &child : root.children_named("network"))
 				parse_network_preferences(child, version);
 #endif
-			BOOST_FOREACH(InfoTree child, root.children_named("environment"))
+			for (const InfoTree &child : root.children_named("environment"))
 				parse_environment_preferences(child, version);
 			
 		} catch (InfoTree::parse_error ex) {
@@ -3169,6 +3388,8 @@ InfoTree graphics_preferences_tree()
 	root.put_attr("scmode_camera_bob", graphics_preferences->screen_mode.camera_bob);
 	root.put_attr("scmode_accel", graphics_preferences->screen_mode.acceleration);
 	root.put_attr("scmode_highres", graphics_preferences->screen_mode.high_resolution);
+	root.put_attr("scmode_draw_every_other_line", graphics_preferences->screen_mode.draw_every_other_line);
+	root.put_attr("scmode_fov", graphics_preferences->screen_mode.fov);
 	root.put_attr("scmode_fullscreen", graphics_preferences->screen_mode.fullscreen);
 	root.put_attr("scmode_bitdepth", graphics_preferences->screen_mode.bit_depth);
 	root.put_attr("scmode_gamma", graphics_preferences->screen_mode.gamma_level);
@@ -3259,20 +3480,49 @@ static const char *binding_shell_action_name[NUMBER_OF_SHELL_KEYS] = {
 	"inventory-left", "inventory-right", "switch-player-view", "volume-up", "volume-down",
 	"map-zoom-in", "map-zoom-out", "fps", "chat", "net-stats"
 };
+static const char *binding_hotkey_action_name[NUMBER_OF_HOTKEYS] = {
+	"hotkey-1", "hotkey-2", "hotkey-3", "hotkey-4", "hotkey-5", "hotkey-6", "hotkey-7", "hotkey-8", "hotkey-9", "hotkey-10", "hotkey-11", "hotkey-12"
+};
 static const char *binding_mouse_button_name[NUM_SDL_MOUSE_BUTTONS] = {
 	"mouse-left", "mouse-middle", "mouse-right", "mouse-x1", "mouse-x2",
 	"mouse-scroll-up", "mouse-scroll-down"
 };
-static const char *binding_joystick_button_name[NUM_SDL_JOYSTICK_BUTTONS] = {
-	"controller-a", "controller-b", "controller-x", "controller-y",
-	"controller-back", "controller-guide", "controller-start",
-	"controller-ls", "controller-rs", "controller-lb", "controller-rb",
-	"controller-up", "controller-down", "controller-left", "controller-right",
-	"controller-ls-right", "controller-ls-down", "controller-rs-right",
-	"controller-rs-down", "controller-lt", "controller-rt",
-	"controller-ls-left", "controller-ls-up", "controller-rs-left",
-	"controller-rs-up", "controller-lt-neg", "controller-rt-neg"
-};
+
+static const char* get_binding_joystick_button_name(int offset)
+{
+	static_assert(SDL_CONTROLLER_BUTTON_MAX <= 21 &&
+				  SDL_CONTROLLER_AXIS_MAX <= 12,
+				  "SDL changed the number of buttons/axes again!");
+
+	static const char* buttons[] = {
+		"controller-a", "controller-b", "controller-x", "controller-y",
+		"controller-back", "controller-guide", "controller-start",
+		"controller-ls", "controller-rs", "controller-lb", "controller-rb",
+		"controller-up", "controller-down", "controller-left",
+		"controller-right",
+		// new in SDL 2.0.14
+		"controller-misc1", "controller-paddle1", "controller-paddle2",
+		"controller-paddle3", "controller-paddle4",
+		"controller-touchpad-button",
+	};
+
+	static const char* axes[] = {
+		"controller-ls-right", "controller-ls-down", "controller-rs-right",
+		"controller-rs-down", "controller-lt", "controller-rt",
+		"controller-ls-left", "controller-ls-up", "controller-rs-left",
+		"controller-rs-up", "controller-lt-neg", "controller-rt-neg"
+	};
+
+	if (offset < SDL_CONTROLLER_BUTTON_MAX)
+	{
+		return buttons[offset];
+	}
+	else
+	{
+		return axes[offset - SDL_CONTROLLER_BUTTON_MAX];
+	}
+}
+
 static const int binding_num_scancodes = 285;
 static const char *binding_scancode_name[binding_num_scancodes] = {
 	"unknown", "unknown-1", "unknown-2", "unknown-3", "a",
@@ -3345,7 +3595,8 @@ static const char *binding_name_for_code(SDL_Scancode code)
 		return binding_mouse_button_name[i - AO_SCANCODE_BASE_MOUSE_BUTTON];
 	else if (i >= AO_SCANCODE_BASE_JOYSTICK_BUTTON &&
 			 i < (AO_SCANCODE_BASE_JOYSTICK_BUTTON + NUM_SDL_JOYSTICK_BUTTONS))
-		return binding_joystick_button_name[i - AO_SCANCODE_BASE_JOYSTICK_BUTTON];
+		return get_binding_joystick_button_name(i - AO_SCANCODE_BASE_JOYSTICK_BUTTON);
+
 	return "unknown";
 }
 
@@ -3363,19 +3614,25 @@ static SDL_Scancode code_for_binding_name(std::string name)
 	}
 	for (int i = 0; i < NUM_SDL_JOYSTICK_BUTTONS; ++i)
 	{
-		if (name == binding_joystick_button_name[i])
+		if (name == get_binding_joystick_button_name(i))
 			return static_cast<SDL_Scancode>(i + AO_SCANCODE_BASE_JOYSTICK_BUTTON);
 	}
 	return SDL_SCANCODE_UNKNOWN;
 }
 
-static int index_for_action_name(std::string name, bool& is_shell)
+enum class BindingType {
+	in_game,
+	shell,
+	hotkey
+};
+
+static int index_for_action_name(std::string name, BindingType& binding_type)
 {
 	for (int i = 0; i < NUM_KEYS; ++i)
 	{
 		if (name == binding_action_name[i])
 		{
-			is_shell = false;
+			binding_type = BindingType::in_game;
 			return i;
 		}
 	}
@@ -3383,7 +3640,15 @@ static int index_for_action_name(std::string name, bool& is_shell)
 	{
 		if (name == binding_shell_action_name[i])
 		{
-			is_shell = true;
+			binding_type = BindingType::shell;
+			return i;
+		}
+	}
+	for (int i = 0; i < NUMBER_OF_HOTKEYS; ++i)
+	{
+		if (name == binding_hotkey_action_name[i])
+		{
+			binding_type = BindingType::hotkey;
 			return i;
 		}
 	}
@@ -3421,12 +3686,28 @@ InfoTree input_preferences_tree()
 			name = binding_shell_action_name[i - NUMBER_OF_KEYS];
 		}
 		
-		BOOST_FOREACH(const SDL_Scancode &code, codeset)
+		for (const SDL_Scancode &code : codeset)
 		{
 			if (code == SDL_SCANCODE_UNKNOWN)
 				continue;
 			InfoTree key;
 			key.put_attr("action", name);
+			key.put_attr("pressed", binding_name_for_code(code));
+			root.add_child("binding", key);
+		}
+	}
+
+	for (auto i = 0;i < NUMBER_OF_HOTKEYS; ++i)
+	{
+		for (auto code : input_preferences->hotkey_bindings[i])
+		{
+			if (code == SDL_SCANCODE_UNKNOWN)
+			{
+				continue;
+			}
+
+			InfoTree key;
+			key.put_attr("action", binding_hotkey_action_name[i]);
 			key.put_attr("pressed", binding_name_for_code(code));
 			root.add_child("binding", key);
 		}
@@ -3522,6 +3803,9 @@ InfoTree environment_preferences_tree()
 	root.put_attr("hide_alephone_extensions", environment_preferences->hide_extensions);
 	root.put_attr("film_profile", static_cast<uint32>(environment_preferences->film_profile));
 	root.put_attr("maximum_quick_saves", environment_preferences->maximum_quick_saves);
+#ifdef HAVE_NFD
+	root.put_attr("use_native_file_dialogs", environment_preferences->use_native_file_dialogs);
+#endif
 
 	for (Plugins::iterator it = Plugins::instance()->begin(); it != Plugins::instance()->end(); ++it) {
 		if (it->compatible() && !it->enabled) {
@@ -3596,6 +3880,8 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.bit_depth = 32;
 	
 	preferences->screen_mode.draw_every_other_line= false;
+
+	preferences->screen_mode.fov = 0; // use default
 	
 	OGL_SetDefaults(preferences->OGL_Configure);
 
@@ -3685,6 +3971,7 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->input_device= _mouse_yaw_pitch;
 	preferences->key_bindings = default_key_bindings;
 	preferences->shell_key_bindings = default_shell_key_bindings;
+	preferences->hotkey_bindings = default_hotkey_bindings;
 	
 	// LP addition: set up defaults for modifiers:
 	// interchange run and walk, but don't interchange swim and sink.
@@ -3751,6 +4038,9 @@ static void default_environment_preferences(environment_preferences_data *prefer
 	preferences->hide_extensions = true;
 	preferences->film_profile = FILM_PROFILE_DEFAULT;
 	preferences->maximum_quick_saves = 0;
+#ifdef HAVE_NFD
+	preferences->use_native_file_dialogs = false;
+#endif
 }
 
 
@@ -3791,6 +4081,18 @@ static bool validate_graphics_preferences(graphics_preferences_data *preferences
 		changed = true;
 	}
 #endif
+
+	if (preferences->screen_mode.fov < 30 && preferences->screen_mode.fov != 0)
+	{
+		preferences->screen_mode.fov = 30;
+		changed = true;
+	}
+
+	if (preferences->screen_mode.fov > 130)
+	{
+		preferences->screen_mode.fov = 130;
+		changed = true;
+	}
 
 	return changed;
 }
@@ -4059,11 +4361,13 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr("scmode_camera_bob", graphics_preferences->screen_mode.camera_bob);
 	root.read_attr("scmode_accel", graphics_preferences->screen_mode.acceleration);
 	root.read_attr("scmode_highres", graphics_preferences->screen_mode.high_resolution);
+	root.read_attr("scmode_draw_every_other_line", graphics_preferences->screen_mode.draw_every_other_line);
 	root.read_attr("scmode_fullscreen", graphics_preferences->screen_mode.fullscreen);
 	
 	root.read_attr("scmode_fix_h_not_v", graphics_preferences->screen_mode.fix_h_not_v);
 	root.read_attr("scmode_bitdepth", graphics_preferences->screen_mode.bit_depth);
 	root.read_attr("scmode_gamma", graphics_preferences->screen_mode.gamma_level);
+	root.read_attr("scmode_fov", graphics_preferences->screen_mode.fov);
 	root.read_attr("ogl_flags", graphics_preferences->OGL_Configure.Flags);
 	root.read_attr("software_alpha_blending", graphics_preferences->software_alpha_blending);
 	root.read_attr("software_sdl_driver", graphics_preferences->software_sdl_driver);
@@ -4081,17 +4385,17 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 
 	root.read_attr("scripted_effects_quality", graphics_preferences->ephemera_quality);
 	
-	BOOST_FOREACH(InfoTree vtree, root.children_named("void"))
+	for (const InfoTree &vtree : root.children_named("void"))
 	{
-		BOOST_FOREACH(InfoTree color, vtree.children_named("color"))
+		for (const InfoTree &color : vtree.children_named("color"))
 		{
 			color.read_color(graphics_preferences->OGL_Configure.VoidColor);
 		}
 	}
 	
-	BOOST_FOREACH(InfoTree landscape, root.children_named("landscapes"))
+	for (const InfoTree &landscape : root.children_named("landscapes"))
 	{
-		BOOST_FOREACH(InfoTree color, root.children_named("color"))
+		for (const InfoTree &color : root.children_named("color"))
 		{
 			int16 index;
 			if (color.read_indexed("index", index, 8))
@@ -4099,7 +4403,7 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 		}
 	}
 	
-	BOOST_FOREACH(InfoTree tex, root.children_named("texture"))
+	for (const InfoTree &tex : root.children_named("texture"))
 	{
 		int16 index;
 		if (tex.read_indexed("index", index, OGL_NUMBER_OF_TEXTURE_TYPES+1))
@@ -4125,7 +4429,7 @@ void parse_player_preferences(InfoTree root, std::string version)
 	root.read_attr("bkgd_music", player_preferences->background_music_on);
 	root.read_attr("crosshairs_active", player_preferences->crosshairs_active);
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("chase_cam"))
+	for (const InfoTree &child : root.children_named("chase_cam"))
 	{
 		child.read_attr("behind", player_preferences->ChaseCam.Behind);
 		child.read_attr("upward", player_preferences->ChaseCam.Upward);
@@ -4136,7 +4440,7 @@ void parse_player_preferences(InfoTree root, std::string version)
 		child.read_attr("opacity", player_preferences->ChaseCam.Opacity);
 	}
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("crosshairs"))
+	for (const InfoTree &child : root.children_named("crosshairs"))
 	{
 		child.read_attr("thickness", player_preferences->Crosshairs.Thickness);
 		child.read_attr("from_center", player_preferences->Crosshairs.FromCenter);
@@ -4144,7 +4448,7 @@ void parse_player_preferences(InfoTree root, std::string version)
 		child.read_attr("shape", player_preferences->Crosshairs.Shape);
 		child.read_attr("opacity", player_preferences->Crosshairs.Opacity);
 		
-		BOOST_FOREACH(InfoTree color, child.children_named("color"))
+		for (const InfoTree &color : child.children_named("color"))
 			color.read_color(player_preferences->Crosshairs.Color);
 	}
 }
@@ -4290,23 +4594,21 @@ void parse_input_preferences(InfoTree root, std::string version)
 	root.read_attr("controller_analog", input_preferences->controller_analog);
 	root.read_attr("controller_sensitivity", input_preferences->controller_sensitivity);
 	root.read_attr("controller_deadzone", input_preferences->controller_deadzone);
-	
+
 	// remove default key bindings the first time we see one from these prefs
-	bool seen_key[NUMBER_OF_KEYS];
-	memset(seen_key, 0, sizeof(seen_key));
-	bool seen_shell_key[NUMBER_OF_SHELL_KEYS];
-	memset(seen_shell_key, 0, sizeof(seen_shell_key));
+	std::set<std::pair<BindingType, int>> seen_key;
 	
 	// import old key bindings
-	BOOST_FOREACH(InfoTree key, root.children_named("sdl_key"))
+	for (const InfoTree &key : root.children_named("sdl_key"))
 	{
 		int16 index;
 		if (key.read_indexed("index", index, NUMBER_OF_KEYS))
 		{
-			if (!seen_key[index])
+			auto k = std::make_pair(BindingType::in_game, index);
+			if (seen_key.count(k) == 0)
 			{
 				input_preferences->key_bindings[index].clear();
-				seen_key[index] = true;
+				seen_key.insert(k);
 			}
 			int code;
 			if (key.read_attr("value", code))
@@ -4319,10 +4621,11 @@ void parse_input_preferences(InfoTree root, std::string version)
 		else if (key.read_indexed("index", index, NUMBER_OF_KEYS + NUMBER_OF_SHELL_KEYS))
 		{
 			int shell_index = index - NUMBER_OF_KEYS;
-			if (!seen_shell_key[shell_index])
+			auto k = std::make_pair(BindingType::shell, shell_index);
+			if (seen_key.count(k) == 0)
 			{
 				input_preferences->shell_key_bindings[shell_index].clear();
-				seen_shell_key[shell_index] = true;
+				seen_key.insert(k);
 			}
 			int code;
 			if (key.read_attr("value", code))
@@ -4334,37 +4637,42 @@ void parse_input_preferences(InfoTree root, std::string version)
 		}
 	}
 	
-	BOOST_FOREACH(InfoTree key, root.children_named("binding"))
+	for (const InfoTree &key : root.children_named("binding"))
 	{
 		std::string action_name, pressed_name;
 		if (key.read_attr("action", action_name) &&
 			key.read_attr("pressed", pressed_name))
 		{
+			BindingType binding_type;
 			bool shell = false;
-			int index = index_for_action_name(action_name, shell);
+			int index = index_for_action_name(action_name, binding_type);
 			if (index < 0)
 				continue;
 			SDL_Scancode code = code_for_binding_name(pressed_name);
-			if (shell)
+			key_binding_map* map;
+			
+			switch (binding_type)
 			{
-				if (!seen_shell_key[index])
-				{
-					input_preferences->shell_key_bindings[index].clear();
-					seen_shell_key[index] = true;
-				}
-				unset_scancode(code);
-				input_preferences->shell_key_bindings[index].insert(code);
+			case BindingType::in_game:
+				map = &input_preferences->key_bindings;
+				break;
+			case BindingType::shell:
+				map = &input_preferences->shell_key_bindings;
+				break;
+			case BindingType::hotkey:
+				map = &input_preferences->hotkey_bindings;
+				break;
 			}
-			else
+
+			auto k = std::make_pair(binding_type, index);
+			if (seen_key.count(k) == 0)
 			{
-				if (!seen_key[index])
-				{
-					input_preferences->key_bindings[index].clear();
-					seen_key[index] = true;
-				}
-				unset_scancode(code);
-				input_preferences->key_bindings[index].insert(code);
+				(*map)[index].clear();
+				seen_key.insert(k);
 			}
+
+			unset_scancode(code);
+			(*map)[index].insert(code);
 		}
 	}
 }
@@ -4476,16 +4784,16 @@ void parse_network_preferences(InfoTree root, std::string version)
 	root.read_attr("join_metaserver_by_default", network_preferences->join_metaserver_by_default);
 	root.read_attr("allow_stats", network_preferences->allow_stats);
 
-	BOOST_FOREACH(InfoTree color, root.children_named("color"))
+	for (const InfoTree &color : root.children_named("color"))
 	{
 		int16 index;
 		if (color.read_indexed("index", index, 2))
 			color.read_color(network_preferences->metaserver_colors[index]);
 	}
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("star_protocol"))
+	for (const InfoTree &child : root.children_named("star_protocol"))
 		StarGameProtocol::ParsePreferencesTree(child, version);
-	BOOST_FOREACH(InfoTree child, root.children_named("ring_protocol"))
+	for (const InfoTree &child : root.children_named("ring_protocol"))
 		RingGameProtocol::ParsePreferencesTree(child, version);
 }
 
@@ -4514,8 +4822,11 @@ void parse_environment_preferences(InfoTree root, std::string version)
 		environment_preferences->film_profile = static_cast<FilmProfileType>(profile);
 	
 	root.read_attr("maximum_quick_saves", environment_preferences->maximum_quick_saves);
+#ifdef HAVE_NFD
+	root.read_attr("use_native_file_dialogs", environment_preferences->use_native_file_dialogs);
+#endif
 	
-	BOOST_FOREACH(InfoTree plugin, root.children_named("disable_plugin"))
+	for (const InfoTree &plugin : root.children_named("disable_plugin"))
 	{
 		char tempstr[256];
 		if (plugin.read_path("path", tempstr))
@@ -4523,4 +4834,25 @@ void parse_environment_preferences(InfoTree root, std::string version)
 			Plugins::instance()->disable(tempstr);
 		}
 	}
+}
+
+extern const char* GetSDLKeyName(SDL_Scancode);
+
+const char* get_hotkey_binding(int hotkey, int type)
+{
+	
+	auto bindings = input_preferences->hotkey_bindings[hotkey - 1];
+	for (auto it = bindings.begin(); it != bindings.end(); ++it)
+	{
+		if (w_key::event_type_for_key(*it) == type)
+		{
+			return GetSDLKeyName(*it);
+		}
+		else
+		{
+			continue;
+		}
+	}
+
+	return "";
 }

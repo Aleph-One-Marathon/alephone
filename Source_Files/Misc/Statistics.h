@@ -28,8 +28,8 @@
 #include <queue>
 #include <string>
 
-#include <SDL_mutex.h>
-#include <SDL_thread.h>
+#include <SDL2/SDL_mutex.h>
+#include <SDL2/SDL_thread.h>
 
 #include "sdl_dialogs.h"
 

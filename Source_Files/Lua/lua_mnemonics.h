@@ -288,6 +288,16 @@ const lang_def Lua_ScoringMode_Mnemonics[] = {
   {0, 0}
 };
 
+const lang_def Lua_ItemKind_Mnemonics[] = {
+	{"weapon", 0},
+	{"ammunition", 1},
+	{"powerup", 2},
+	{"item", 3},
+	{"weapon_powerup", 4},
+	{"ball", 5},
+	{0, 0}
+};
+
 const lang_def Lua_ItemType_Mnemonics[] = {
 	{"knife", 0},
 	{"pistol", 1},

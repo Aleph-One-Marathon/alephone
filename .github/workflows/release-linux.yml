@@ -1,0 +1,28 @@
+name: release-linux
+
+on: [workflow_dispatch, workflow_call]
+
+jobs:
+  release:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        
+    - name: Configure
+      uses: ./.github/actions/configure-linux
+        
+    - run: make dist
+    - uses: actions/upload-artifact@v2
+      with:
+        name: alephone-release
+        if-no-files-found: error
+        path: '*.tar.bz2'
+          
+    - run: make datadist
+    - uses: actions/upload-artifact@v2
+      with:
+        name: alephone-release
+        if-no-files-found: error
+        path: '*.zip'

@@ -416,6 +416,27 @@ static void	set_text_face(struct text_face_data *text_face)
 	current_pixel = SDL_MapRGB(/*world_pixels*/draw_surface->format, color.r, color.g, color.b);
 }
 
+static bool can_break_after(char c)
+{
+	// determined empirically on my PowerBook
+	switch (c)
+	{
+	case '&':
+	case '*':
+	case '+':
+	case '-':
+	case '\\':
+	case '<':
+	case '=':
+	case '>':
+	case '/':
+	case '^':
+	case '|':
+		return true;
+	default:
+		return false;
+	}
+}
 
 static bool calculate_line(char *base_text, short width, short start_index, short text_end_index, short *end_index)
 {
@@ -431,21 +452,44 @@ static bool calculate_line(char *base_text, short width, short start_index, shor
 			running_width += char_width(base_text[index], terminal_font, current_style);
 			index++;
 		}
-		
-		// Now go backwards, looking for whitespace to split on
+
+		// Now go backwards, looking for a place to split
 		if (base_text[index] == MAC_LINE_END)
 			index++;
 		else if (base_text[index]) {
-			int break_point = index;
+			if (film_profile.better_terminal_word_wrap)
+			{
+				int break_point = index - 1;
+				while (break_point > start_index)
+				{
+					if (base_text[break_point] == ' ')
+					{
+						index = break_point + 1; // eat the space
+						break;
+					}
+					else if (break_point > start_index + 1 &&
+							 can_break_after(base_text[break_point - 1]))
+					{
+						index = break_point;
+						break;
+					}
 
-			while (break_point>start_index) {
-				if (base_text[break_point] == ' ')
-					break; 	// Non printing
-				break_point--;	// this needs to be in front of the test
+					--break_point;
+				}
 			}
-			
-			if (break_point != start_index)
-				index = break_point+1;	// Space at the end of the line
+			else
+			{
+				int break_point = index;
+				
+				while (break_point>start_index) {
+					if (base_text[break_point] == ' ')
+						break; 	// Non printing
+					break_point--;	// this needs to be in front of the test
+				}
+				
+				if (break_point != start_index)
+					index = break_point+1;	// Space at the end of the line
+			}
 		}
 		
 		*end_index= index;
@@ -550,7 +594,7 @@ void enter_computer_interface(
 	next_terminal_group(player_index, terminal_text);
 }
 
-/*  Assumes ¶t==1 tick */
+/*  Assumes âˆ‚t==1 tick */
 void update_player_for_terminal_mode(
 	short player_index)
 {
@@ -1291,7 +1335,7 @@ static void fill_terminal_with_static(
 
 // LP addition: will return NULL if no terminal data was found for this terminal number
 
-static boost::scoped_ptr<terminal_text_t> resource_terminal;
+static std::unique_ptr<terminal_text_t> resource_terminal;
 static int resource_terminal_id = NONE;
 
 void clear_compiled_terminal_cache()
@@ -2034,7 +2078,8 @@ static void calculate_maximum_lines_for_groups(struct terminal_groupings *groups
 class MarathonTerminalCompiler
 {
 public:
-	MarathonTerminalCompiler(char* text, short length) : terminal(new terminal_text_t), in_buffer(text, length), in(&in_buffer) { 
+	MarathonTerminalCompiler(char* text, short length) : terminal(new terminal_text_t), in_buffer(text, length), in(&in_buffer) {
+		information_group.type = 0;
 		briefing_group.type = 0;
 		success_group.type = 0;
 		failure_group.type = 0;
@@ -2062,11 +2107,16 @@ private:
 	terminal_groupings group;
 
 	terminal_groupings logon_group;
+	terminal_groupings information_group;
 	terminal_groupings briefing_group;
 	terminal_groupings unfinished_group;
 	terminal_groupings failure_group;
 	terminal_groupings success_group;
-	std::vector<terminal_groupings> other_groups;
+
+	std::vector<terminal_groupings> information_checkpoints;
+	std::vector<terminal_groupings> unfinished_checkpoints;
+	// does Marathon allow #checkpoints inside success/failure/briefing?
+	std::vector<terminal_groupings>* checkpoints;
 };
 
 terminal_text_t* MarathonTerminalCompiler::Compile()
@@ -2157,23 +2207,36 @@ void MarathonTerminalCompiler::FinishGroup()
 	switch (group.type)
 	{
 	case _logon_group:
+		checkpoints = nullptr;
 		logon_group = group;
 		break;
 	case _information_group:
+		information_group = group;
+		information_checkpoints.clear();
+		checkpoints = &information_checkpoints;
+		break;
 	case _checkpoint_group:
-		other_groups.push_back(group);
+		if (checkpoints)
+		{
+			checkpoints->push_back(group);
+		}
 		break;
 	case _interlevel_teleport_group:
+		checkpoints = nullptr;
 		briefing_group = group;
 		break;
 	case _success_group:
+		checkpoints = nullptr;
 		success_group = group;
 		break;
 	case _failure_group:
+		checkpoints = nullptr;
 		failure_group = group;
 		break;
 	case _unfinished_group:
 		unfinished_group = group;
+		unfinished_checkpoints.clear();
+		checkpoints = &unfinished_checkpoints;
 		break;
 	}
 }
@@ -2290,26 +2353,28 @@ void MarathonTerminalCompiler::BuildUnfinishedGroup()
 
 	terminal->groupings.push_back(logon_group);
 
-	// if there's an unfinished group, push it as unfinished
-	// otherwise, this must not be an end-of-level term, use all the other groups
+	if (information_group.type)
+	{
+		terminal->groupings.push_back(information_group);
+		terminal->groupings.insert(terminal->groupings.end(),
+								   information_checkpoints.begin(),
+								   information_checkpoints.end());
+	}
+
 	if (unfinished_group.type)
 	{
 		group = unfinished_group;
 		group.type = _information_group;
 		terminal->groupings.push_back(group);
 
-		group = logon_group;
-		group.type = _logoff_group;
-		terminal->groupings.push_back(group);
+		terminal->groupings.insert(terminal->groupings.end(),
+								   unfinished_checkpoints.begin(),
+								   unfinished_checkpoints.end());
 	}
-	else
-	{
-		terminal->groupings.insert(terminal->groupings.end(), other_groups.begin(), other_groups.end());
 
-		group = logon_group;
-		group.type = _logoff_group;
-		terminal->groupings.push_back(group);
-	}
+	group = logon_group;
+	group.type = _logoff_group;
+	terminal->groupings.push_back(group);
 
 	group.type = _end_group;
 	group.flags = 0;

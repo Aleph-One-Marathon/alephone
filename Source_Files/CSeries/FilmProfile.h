@@ -100,6 +100,10 @@ struct FilmProfile
 	bool m1_object_unused; // location.z and flags are unused in Marathon
 	bool m1_platform_flood; // checks more than just adjacent polygons
 	bool m1_teleport_without_delay; // Marathon terminals teleport immediately
+
+	// Aleph One 1.4 fixes
+	bool better_terminal_word_wrap; // fixes rare infinity films
+	bool lua_monster_killed_trigger_fix;
 };
 
 extern FilmProfile film_profile;
@@ -110,6 +114,7 @@ enum FilmProfileType {
 	FILM_PROFILE_MARATHON_INFINITY,
 	FILM_PROFILE_ALEPH_ONE_1_1,
 	FILM_PROFILE_ALEPH_ONE_1_2,
+	FILM_PROFILE_ALEPH_ONE_1_3,
 	FILM_PROFILE_DEFAULT,
 };
 

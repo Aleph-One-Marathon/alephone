@@ -27,7 +27,6 @@
 
 #include <type_traits>
 
-#include <boost/function.hpp>
 #include <boost/version.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/iostreams/stream.hpp>

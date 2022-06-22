@@ -29,7 +29,7 @@
 #include "FileHandler.h"
 #include "find_files.h"
 
-#include <SDL_endian.h>
+#include <SDL2/SDL_endian.h>
 
 
 // From shell_sdl.cpp
