@@ -5,7 +5,7 @@
 //  Created by Dustin Wenz on 3/2/21.
 //
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 
 #ifndef AnglePlatform_h
 #define AnglePlatform_h

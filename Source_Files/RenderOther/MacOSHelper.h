@@ -5,7 +5,7 @@
 //  Created by Dustin Wenz on 2/19/21.
 //
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 
 #ifndef MetalHelper_h
 #define MetalHelper_h

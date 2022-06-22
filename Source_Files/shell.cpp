@@ -68,7 +68,6 @@
 #include <vector>
 
 #include <sstream>
-#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
 #include "resource_manager.h"
@@ -94,7 +93,7 @@
 #endif
 
 #if !defined(DISABLE_NETWORKING)
-#include <SDL_net.h>
+#include <SDL2/SDL_net.h>
 #endif
 
 #ifdef HAVE_PNG
@@ -102,7 +101,7 @@
 #endif
 
 #ifdef HAVE_SDL_IMAGE
-#include <SDL_image.h>
+#include <SDL2/SDL_image.h>
 #if defined(__WIN32__)
 #include "alephone32.xpm"
 #elif !(defined(__APPLE__) && defined(__MACH__))
@@ -245,7 +244,6 @@ int main(int argc, char **argv)
 	  "Original code by Bungie Software <http://www.bungie.com/>\n"
 	  "Additional work by Loren Petrich, Chris Pruett, Rhys Hill et al.\n"
 	  "TCP/IP networking by Woody Zenfell\n"
-	  "Expat XML library by James Clark\n"
 	  "SDL port by Christian Bauer <Christian.Bauer@uni-mainz.de>\n"
 #if defined(__MACH__) && defined(__APPLE__)
 	  "Mac OS X/SDL version by Chris Lovell, Alexander Strange, and Woody Zenfell\n"
@@ -731,25 +729,20 @@ static void main_event_loop(void)
 		if (poll_event) {
 			global_idle_proc();
 
-			while (true) {
-				SDL_Event event;
-				bool found_event = SDL_PollEvent(&event);
+			SDL_Event event;
+			if (yield_time)
+			{
+				// The game is not in a "hot" state, yield time to other
+				// processes but only try for a maximum of 30ms
+				if (SDL_WaitEventTimeout(&event, 30))
+				{
+					process_event(event);
+				}
+			}
 
-				if (yield_time) {
-					// The game is not in a "hot" state, yield time to other
-					// processes but only try for a maximum of 30ms
-					int num_tries = 0;
-					while (!found_event && num_tries < 3) {
-						sleep_for_machine_ticks(MACHINE_TICKS_PER_SECOND / 100);
-						found_event = SDL_PollEvent(&event);
-						num_tries++;    
-					}
-					yield_time = false;
-				} else if (!found_event)
-					break;
-
-				if (found_event)
-					process_event(event); 
+			while (SDL_PollEvent(&event))
+			{
+				process_event(event);
 			}
 		}
 
@@ -803,6 +796,7 @@ static void handle_game_key(const SDL_Event &event)
 	SDL_Scancode sc = event.key.keysym.scancode;
 	bool changed_screen_mode = false;
 	bool changed_prefs = false;
+	bool changed_resolution = false;
 
 	if (!game_is_networked && (event.key.keysym.mod & KMOD_CTRL) && CheatsActive) {
 		int type_of_cheat = process_keyword_key(key);
@@ -1006,7 +1000,7 @@ static void handle_game_key(const SDL_Event &event)
 					graphics_preferences->screen_mode.height = alephone::Screen::instance()->ModeHeight(mode + 1);
 					graphics_preferences->screen_mode.auto_resolution = false;
 					graphics_preferences->screen_mode.hud = false;
-					changed_screen_mode = changed_prefs = true;
+					changed_screen_mode = changed_prefs = changed_resolution = true;
 				} else
 					PlayInterfaceButtonSound(Sound_ButtonFailure());
 			}
@@ -1031,7 +1025,7 @@ static void handle_game_key(const SDL_Event &event)
 					if ((mode - 1) == automode)
 						graphics_preferences->screen_mode.auto_resolution = true;
 					graphics_preferences->screen_mode.hud = true;
-					changed_screen_mode = changed_prefs = true;
+					changed_screen_mode = changed_prefs = changed_resolution = true;
 				} else
 					PlayInterfaceButtonSound(Sound_ButtonFailure());
 			}
@@ -1040,7 +1034,15 @@ static void handle_game_key(const SDL_Event &event)
 		{
 			if (!OGL_IsActive()) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
-				graphics_preferences->screen_mode.high_resolution = !graphics_preferences->screen_mode.high_resolution;
+				if (graphics_preferences->screen_mode.high_resolution) {
+					graphics_preferences->screen_mode.high_resolution = false;
+					graphics_preferences->screen_mode.draw_every_other_line = false;
+				} else if (!graphics_preferences->screen_mode.draw_every_other_line) {
+					graphics_preferences->screen_mode.draw_every_other_line = true;
+				} else {
+					graphics_preferences->screen_mode.high_resolution = true;
+					graphics_preferences->screen_mode.draw_every_other_line = false;
+				}
 				changed_screen_mode = changed_prefs = true;
 			} else
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
@@ -1123,7 +1125,7 @@ static void handle_game_key(const SDL_Event &event)
 	if (changed_screen_mode) {
 		screen_mode_data temp_screen_mode = graphics_preferences->screen_mode;
 		temp_screen_mode.fullscreen = get_screen_mode()->fullscreen;
-		change_screen_mode(&temp_screen_mode, true);
+		change_screen_mode(&temp_screen_mode, true, changed_resolution);
 		render_screen(0);
 	}
 
@@ -1501,16 +1503,16 @@ void dump_screen(void)
 			metadata["Scenario"] = Scenario::instance()->GetName();
 		}
 
-		metadata["Polygon"] = boost::lexical_cast<std::string>(world_view->origin_polygon_index);
-		metadata["X"] = boost::lexical_cast<std::string>(world_view->origin.x / FLOAT_WORLD_ONE);
-		metadata["Y"] = boost::lexical_cast<std::string>(world_view->origin.y / FLOAT_WORLD_ONE);
-		metadata["Z"] = boost::lexical_cast<std::string>(world_view->origin.z / FLOAT_WORLD_ONE);
-		metadata["Yaw"] = boost::lexical_cast<std::string>(world_view->yaw * AngleConvert);
+		metadata["Polygon"] = std::to_string(world_view->origin_polygon_index);
+		metadata["X"] = std::to_string(world_view->origin.x / FLOAT_WORLD_ONE);
+		metadata["Y"] = std::to_string(world_view->origin.y / FLOAT_WORLD_ONE);
+		metadata["Z"] = std::to_string(world_view->origin.z / FLOAT_WORLD_ONE);
+		metadata["Yaw"] = std::to_string(world_view->yaw * AngleConvert);
 
 
 		short pitch = world_view->pitch;
 		if (pitch > HALF_CIRCLE) pitch -= HALF_CIRCLE;
-		metadata["Pitch"] = boost::lexical_cast<std::string>(pitch * AngleConvert);
+		metadata["Pitch"] = std::to_string(pitch * AngleConvert);
 	}
 
 	for (std::map<std::string, std::string>::const_iterator it = metadata.begin(); it != metadata.end(); ++it)
