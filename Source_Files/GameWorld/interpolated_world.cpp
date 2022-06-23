@@ -200,6 +200,7 @@ void init_interpolated_world()
 
 	weapon_display_information data;
 	short count = 0;
+	current_tick_weapon_display.clear();
 	while (get_weapon_display_information(&count, &data))
 	{	
 		current_tick_weapon_display.push_back(data);
@@ -492,8 +493,8 @@ void update_interpolated_world(float heartbeat_fraction)
 		for (auto j = 0; j < polygon.vertex_count; ++j)
 		{
 			auto side_index = polygon.side_indexes[j];
-            if (side_index != NONE &&
-                current_tick_sides[side_index].y0 !=
+			if (side_index != NONE &&
+				current_tick_sides[side_index].y0 !=
 				previous_tick_sides[side_index].y0)
 			{
 				map_sides[side_index].primary_texture.y0 = lerp(
@@ -862,7 +863,6 @@ static void interpolate_weapon_display_information(
 bool get_interpolated_weapon_display_information(short* count,
 												 weapon_display_information* data)
 {
-	auto heartbeat_fraction = get_heartbeat_fraction();
 	if (*count < current_tick_weapon_display.size())
 	{
 		*data = current_tick_weapon_display[*count];
