@@ -238,6 +238,14 @@
 		27FF26611B6F170600DA0A19 /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
 		27FF26621B6F170600DA0A19 /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
 		27FF26631B6F1E0700DA0A19 /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
+		5135B6C72863A03000BA51D2 /* MetalANGLE.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		5142EDB528636AAB00DC8E34 /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */; };
+		5142EDB628636AAB00DC8E34 /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */; };
+		5142EDB728636AAB00DC8E34 /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */; };
+		5142EDB828636AAB00DC8E34 /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */; };
+		5142EDBA28636B6B00DC8E34 /* MetalANGLE.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		5142EDBE286372F200DC8E34 /* MetalANGLE.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		5142EDC02863730B00DC8E34 /* MetalANGLE.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		518271032862BFBE005E6684 /* MacOSHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 518271022862BFBE005E6684 /* MacOSHelper.mm */; };
 		518271042862BFBE005E6684 /* MacOSHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 518271022862BFBE005E6684 /* MacOSHelper.mm */; };
 		518271052862BFBE005E6684 /* MacOSHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 518271022862BFBE005E6684 /* MacOSHelper.mm */; };
@@ -270,10 +278,6 @@
 		518271272862C061005E6684 /* MatrixStack.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 518271252862C061005E6684 /* MatrixStack.hpp */; };
 		518271282862C061005E6684 /* MatrixStack.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 518271252862C061005E6684 /* MatrixStack.hpp */; };
 		518271292862C061005E6684 /* MatrixStack.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 518271252862C061005E6684 /* MatrixStack.hpp */; };
-		5182712B2862C188005E6684 /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5182712A2862C188005E6684 /* MetalANGLE.framework */; };
-		5182712C2862C188005E6684 /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5182712A2862C188005E6684 /* MetalANGLE.framework */; };
-		5182712D2862C188005E6684 /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5182712A2862C188005E6684 /* MetalANGLE.framework */; };
-		5182712E2862C188005E6684 /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5182712A2862C188005E6684 /* MetalANGLE.framework */; };
 		518271302862C1AB005E6684 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5182712F2862C1AB005E6684 /* Metal.framework */; };
 		518271312862C1AB005E6684 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5182712F2862C1AB005E6684 /* Metal.framework */; };
 		518271322862C1AB005E6684 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5182712F2862C1AB005E6684 /* Metal.framework */; };
@@ -1885,6 +1889,49 @@
 		C13C71EA1B3FB4C500F1188D /* DefaultStringSets.h in Headers */ = {isa = PBXBuildFile; fileRef = C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		5135B6C62863A01F00BA51D2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				5135B6C72863A03000BA51D2 /* MetalANGLE.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5142EDB928636B5900DC8E34 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				5142EDBA28636B6B00DC8E34 /* MetalANGLE.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5142EDBD286372E300DC8E34 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				5142EDBE286372F200DC8E34 /* MetalANGLE.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5142EDBF286372FD00DC8E34 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				5142EDC02863730B00DC8E34 /* MetalANGLE.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SdlMetaserverClientUi.cpp; path = ../Source_Files/Network/Metaserver/SdlMetaserverClientUi.cpp; sourceTree = SOURCE_ROOT; };
 		270D534B0FCB417500482ED4 /* OGL_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Blitter.h; sourceTree = "<group>"; };
@@ -1991,6 +2038,7 @@
 		3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Texture_Def.h; sourceTree = "<group>"; };
 		3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Model_Def.cpp; sourceTree = "<group>"; };
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
+		5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalANGLE.framework; path = ../../../../../Library/Frameworks/MetalANGLE.framework; sourceTree = "<group>"; };
 		518271022862BFBE005E6684 /* MacOSHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MacOSHelper.mm; sourceTree = "<group>"; };
 		518271072862BFD2005E6684 /* AnglePlatform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnglePlatform.cpp; sourceTree = "<group>"; };
 		5182710C2862C003005E6684 /* AnglePlatform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnglePlatform.h; sourceTree = "<group>"; };
@@ -1999,7 +2047,6 @@
 		5182711B2862C047005E6684 /* MatrixStack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MatrixStack.cpp; sourceTree = "<group>"; };
 		518271202862C053005E6684 /* DrawCache.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DrawCache.hpp; sourceTree = "<group>"; };
 		518271252862C061005E6684 /* MatrixStack.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = MatrixStack.hpp; sourceTree = "<group>"; };
-		5182712A2862C188005E6684 /* MetalANGLE.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalANGLE.framework; path = ../../../../../Library/Frameworks/MetalANGLE.framework; sourceTree = "<group>"; };
 		5182712F2862C1AB005E6684 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = ../../../../../System/Library/Frameworks/Metal.framework; sourceTree = "<group>"; };
 		518271342862C1AE005E6684 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = ../../../../../System/Library/Frameworks/MetalKit.framework; sourceTree = "<group>"; };
 		AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Blitter.cpp; sourceTree = "<group>"; };
@@ -2433,7 +2480,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5182712D2862C188005E6684 /* MetalANGLE.framework in Frameworks */,
 				AE1F1BA52662C6A800E6390E /* CoreMedia.framework in Frameworks */,
 				AE1F1BB42662C6B900E6390E /* libz.tbd in Frameworks */,
 				AE1F1B9F2662C6A000E6390E /* Cocoa.framework in Frameworks */,
@@ -2444,6 +2490,7 @@
 				AE1F1BB72662C6BC00E6390E /* OpenGL.framework in Frameworks */,
 				518271372862C1AE005E6684 /* MetalKit.framework in Frameworks */,
 				AE1F1BAB2662C6AE00E6390E /* IOKit.framework in Frameworks */,
+				5142EDB728636AAB00DC8E34 /* MetalANGLE.framework in Frameworks */,
 				AE1F1B9C2662C69D00E6390E /* Carbon.framework in Frameworks */,
 				AE1F1BA22662C6A300E6390E /* CoreAudio.framework in Frameworks */,
 				AE1F1BB12662C6B500E6390E /* libexpat.tbd in Frameworks */,
@@ -2456,7 +2503,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5182712E2862C188005E6684 /* MetalANGLE.framework in Frameworks */,
 				AE1F1BA62662C6A800E6390E /* CoreMedia.framework in Frameworks */,
 				AE1F1BB52662C6B900E6390E /* libz.tbd in Frameworks */,
 				AE1F1BA02662C6A000E6390E /* Cocoa.framework in Frameworks */,
@@ -2467,6 +2513,7 @@
 				AE1F1BB82662C6BD00E6390E /* OpenGL.framework in Frameworks */,
 				518271382862C1AE005E6684 /* MetalKit.framework in Frameworks */,
 				AE1F1BAC2662C6AF00E6390E /* IOKit.framework in Frameworks */,
+				5142EDB828636AAB00DC8E34 /* MetalANGLE.framework in Frameworks */,
 				AE1F1B9D2662C69D00E6390E /* Carbon.framework in Frameworks */,
 				AE1F1BA32662C6A300E6390E /* CoreAudio.framework in Frameworks */,
 				AE1F1BB22662C6B600E6390E /* libexpat.tbd in Frameworks */,
@@ -2479,7 +2526,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5182712B2862C188005E6684 /* MetalANGLE.framework in Frameworks */,
 				AE9975082661D6E400DDD370 /* CoreAudio.framework in Frameworks */,
 				AE9975152661D91A00DDD370 /* libexpat.tbd in Frameworks */,
 				AE9975042661D63700DDD370 /* CoreMedia.framework in Frameworks */,
@@ -2490,6 +2536,7 @@
 				AE99750E2661D7F200DDD370 /* IOKit.framework in Frameworks */,
 				518271352862C1AE005E6684 /* MetalKit.framework in Frameworks */,
 				AE9975062661D66600DDD370 /* Security.framework in Frameworks */,
+				5142EDB528636AAB00DC8E34 /* MetalANGLE.framework in Frameworks */,
 				AE9975112661D82700DDD370 /* OpenGL.framework in Frameworks */,
 				AE9975132661D85000DDD370 /* Cocoa.framework in Frameworks */,
 				AE9975002661D4DD00DDD370 /* Carbon.framework in Frameworks */,
@@ -2502,7 +2549,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5182712C2862C188005E6684 /* MetalANGLE.framework in Frameworks */,
 				AE1F1BA42662C6A700E6390E /* CoreMedia.framework in Frameworks */,
 				AE1F1BB32662C6B800E6390E /* libz.tbd in Frameworks */,
 				AE1F1B9E2662C6A000E6390E /* Cocoa.framework in Frameworks */,
@@ -2513,6 +2559,7 @@
 				AE1F1BB62662C6BC00E6390E /* OpenGL.framework in Frameworks */,
 				518271362862C1AE005E6684 /* MetalKit.framework in Frameworks */,
 				AE1F1BAA2662C6AE00E6390E /* IOKit.framework in Frameworks */,
+				5142EDB628636AAB00DC8E34 /* MetalANGLE.framework in Frameworks */,
 				AE1F1B9B2662C69D00E6390E /* Carbon.framework in Frameworks */,
 				AE1F1BA12662C6A300E6390E /* CoreAudio.framework in Frameworks */,
 				AE1F1BB02662C6B500E6390E /* libexpat.tbd in Frameworks */,
@@ -2728,7 +2775,7 @@
 		AE9974FC2661D49E00DDD370 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				5182712A2862C188005E6684 /* MetalANGLE.framework */,
+				5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */,
 				5182712F2862C1AB005E6684 /* Metal.framework */,
 				518271342862C1AE005E6684 /* MetalKit.framework */,
 				AE9974FD2661D49E00DDD370 /* AudioToolbox.framework */,
@@ -4313,6 +4360,7 @@
 				AE505C0E141D45E600915344 /* Sources */,
 				AE505CEE141D45E600915344 /* Frameworks */,
 				AE505D06141D45E600915344 /* Copy Scenario */,
+				5142EDBD286372E300DC8E34 /* CopyFiles */,
 				AE505D04141D45E600915344 /* Insert Version */,
 			);
 			buildRules = (
@@ -4334,6 +4382,7 @@
 				AEB4A29014296CAE00537AE7 /* Frameworks */,
 				AEB4A2A814296CAE00537AE7 /* Copy Scenario */,
 				AEB4A2A614296CAE00537AE7 /* Insert Version */,
+				5135B6C62863A01F00BA51D2 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -4353,6 +4402,7 @@
 				AEC3C7CF09AD68AC003258E4 /* Sources */,
 				AEC3C86F09AD68AC003258E4 /* Frameworks */,
 				AEC3C87609AD68AC003258E4 /* Copy Default Theme */,
+				5142EDB928636B5900DC8E34 /* CopyFiles */,
 				275F9A49217F7CBA00337B05 /* Insert Version */,
 			);
 			buildRules = (
@@ -4374,6 +4424,7 @@
 				AEFD879A13EB84CF00C1E687 /* Frameworks */,
 				AEFD87D713EB944800C1E687 /* Copy Scenario */,
 				AEFD87AF13EB84CF00C1E687 /* Insert Version */,
+				5142EDBF286372FD00DC8E34 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -5593,8 +5644,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
-				CODE_SIGN_ENTITLEMENTS = "Aleph One.entitlements";
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_ENTITLEMENTS = "Aleph OneDebug.entitlements";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = TZ45ZW2588;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -5605,6 +5656,10 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(LD_RUNPATH_SEARCH_PATHS_$(IS_MACCATALYST))",
+					"@executable_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
 				PRODUCT_NAME = "Aleph One";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -5740,7 +5795,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "Aleph One.entitlements";
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = TZ45ZW2588;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -5751,6 +5806,10 @@
 					SPEEX,
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(LD_RUNPATH_SEARCH_PATHS_$(IS_MACCATALYST))",
+					"@executable_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
 				PRODUCT_NAME = "Aleph One";
 				PROVISIONING_PROFILE_SPECIFIER = "";

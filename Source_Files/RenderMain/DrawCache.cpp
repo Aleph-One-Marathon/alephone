@@ -10,6 +10,7 @@
 #include "OGL_Headers.h"
 #include "OGL_Shader.h"
 #include "MatrixStack.hpp"
+#include "cseries.h"
 #include "screen.h"
 
 #include "map.h"

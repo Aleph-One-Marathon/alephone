@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1240"
+   LastUpgradeVersion = "1330"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "AEC3C6FE09AD68AC003258E4"
-               BuildableName = "Aleph One.app"
-               BlueprintName = "Aleph One"
+               BlueprintIdentifier = "AEFD85E813EB84CF00C1E687"
+               BuildableName = "Marathon.app"
+               BlueprintName = "Marathon"
                ReferencedContainer = "container:AlephOne.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -44,9 +44,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AEC3C6FE09AD68AC003258E4"
-            BuildableName = "Aleph One.app"
-            BlueprintName = "Aleph One"
+            BlueprintIdentifier = "AEFD85E813EB84CF00C1E687"
+            BuildableName = "Marathon.app"
+            BlueprintName = "Marathon"
             ReferencedContainer = "container:AlephOne.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -56,23 +56,23 @@
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
-      debugDocumentVersioning = "NO">
+      debugDocumentVersioning = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AEC3C6FE09AD68AC003258E4"
-            BuildableName = "Aleph One.app"
-            BlueprintName = "Aleph One"
+            BlueprintIdentifier = "AEFD85E813EB84CF00C1E687"
+            BuildableName = "Marathon.app"
+            BlueprintName = "Marathon"
             ReferencedContainer = "container:AlephOne.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
-      buildConfiguration = "Release">
+      buildConfiguration = "Debug">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "Deployment (Universal)"
+      buildConfiguration = "Release"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>

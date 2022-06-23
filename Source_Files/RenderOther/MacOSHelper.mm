@@ -10,13 +10,13 @@
 #import <QuartzCore/QuartzCore.h>
 #import <Metal/Metal.h>
 #import <MetalKit/MetalKit.h>
-#import <MGLContext.h>
-#import <MGLKView.h>
+#import <MetalANGLE/MGLContext.h>
+#import <MetalANGLE/MGLKView.h>
 
 #include "OGL_Headers.h"
 
-#include "SDL_syswm.h"
-#include "screen.h"
+#include <SDL2/SDL_syswm.h>
+//#include "screen.h"
 
 MGLContext *context;
 
@@ -71,8 +71,13 @@ void* injectMacOS(SDL_Window *main_screen)
     mglLayer.drawableColorFormat = MGLDrawableColorFormatRGBA8888;
 
     // Set the layer's scale factor as you wish
-    mglLayer.contentsScale = MainScreenPixelScale();// [[NSScreen mainScreen] scale];
-        
+    // Cribbed from MainScreenPixelScale() to avoid dependency issues with screen.h
+    int ww = 0;
+    int wd = 0;
+    SDL_GetWindowSize(main_screen, &ww, NULL);
+    SDL_GL_GetDrawableSize(main_screen, &wd, NULL);
+    mglLayer.contentsScale = (float)((float)wd / static_cast<float>(ww));
+    
     // Initialize OpenGL context
     context = [[MGLContext alloc] initWithAPI:kMGLRenderingAPIOpenGLES2];
 
