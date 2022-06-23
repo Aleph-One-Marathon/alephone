@@ -38,7 +38,7 @@
 #include "OGL_Blitter.h"
 #include "OGL_Faders.h"
 #include "MatrixStack.hpp"
-#include "AnglePlatform.h"
+#include "AccelerationPlatform.h"
 #endif
 
 #include "world.h"
@@ -953,7 +953,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 			failed_multisamples = Get_OGL_ConfigureData().Multisamples;
 	}*/
         
-        void* layer = injectAngle(main_screen);
+        void* layer = injectAccelerationContext(main_screen);
         
         if(layer) {
             context_created = TRUE;
@@ -1145,7 +1145,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		L_Call_HUDResize();
 	}
     
-    refreshAngle(main_screen);
+    refreshAccelerationContext(main_screen);
 }
 
 bool get_auto_resolution_size(short *w, short *h, struct screen_mode_data *mode)
@@ -2255,7 +2255,7 @@ bool MainScreenIsOpenGL()
 }
 void MainScreenSwap()
 {
-    swapWindowAngle(main_screen);
+    swapAcceleratedWindow(main_screen);
 	//SDL_GL_SwapWindow(main_screen);
 }
 void MainScreenCenterMouse()

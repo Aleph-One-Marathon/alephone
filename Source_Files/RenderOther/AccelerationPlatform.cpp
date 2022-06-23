@@ -1,5 +1,5 @@
 //
-//  AnglePlatform.cpp
+//  AccelerationPlatform.cpp
 //  AlephOne
 //
 //  Created by Dustin Wenz on 3/2/21.
@@ -9,14 +9,14 @@
  This is intended to hold any platform-specific code for implementing ANGLE on Windows, MacOS, Linux, etc.
  */
 
-#include "AnglePlatform.h"
+#include "AccelerationPlatform.h"
 #include "Logging.h"
 
 #ifdef __MACOSX__
     #include "MacOSHelper.h"
 #endif
 
-void* injectAngle(SDL_Window *main_screen)
+void* injectAccelerationContext(SDL_Window *main_screen)
 {
     #ifdef __MACOSX__
         return injectMacOS(main_screen);
@@ -25,7 +25,7 @@ void* injectAngle(SDL_Window *main_screen)
     return NULL;
 }
 
-void refreshAngle(SDL_Window *main_screen)
+void refreshAccelerationContext(SDL_Window *main_screen)
 {
     #ifdef __MACOSX__
         refreshMacOS(main_screen);
@@ -33,7 +33,7 @@ void refreshAngle(SDL_Window *main_screen)
 
 }
 
-void swapWindowAngle(SDL_Window *main_screen)
+void swapAcceleratedWindow(SDL_Window *main_screen)
 {
     #ifdef __MACOSX__
         swapWindowMacOS(main_screen);

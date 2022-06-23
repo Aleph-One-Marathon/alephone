@@ -250,14 +250,14 @@
 		518271042862BFBE005E6684 /* MacOSHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 518271022862BFBE005E6684 /* MacOSHelper.mm */; };
 		518271052862BFBE005E6684 /* MacOSHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 518271022862BFBE005E6684 /* MacOSHelper.mm */; };
 		518271062862BFBE005E6684 /* MacOSHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 518271022862BFBE005E6684 /* MacOSHelper.mm */; };
-		518271082862BFD2005E6684 /* AnglePlatform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 518271072862BFD2005E6684 /* AnglePlatform.cpp */; };
-		518271092862BFD2005E6684 /* AnglePlatform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 518271072862BFD2005E6684 /* AnglePlatform.cpp */; };
-		5182710A2862BFD2005E6684 /* AnglePlatform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 518271072862BFD2005E6684 /* AnglePlatform.cpp */; };
-		5182710B2862BFD2005E6684 /* AnglePlatform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 518271072862BFD2005E6684 /* AnglePlatform.cpp */; };
-		5182710D2862C003005E6684 /* AnglePlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 5182710C2862C003005E6684 /* AnglePlatform.h */; };
-		5182710E2862C003005E6684 /* AnglePlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 5182710C2862C003005E6684 /* AnglePlatform.h */; };
-		5182710F2862C003005E6684 /* AnglePlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 5182710C2862C003005E6684 /* AnglePlatform.h */; };
-		518271102862C003005E6684 /* AnglePlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 5182710C2862C003005E6684 /* AnglePlatform.h */; };
+		518271082862BFD2005E6684 /* AccelerationPlatform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 518271072862BFD2005E6684 /* AccelerationPlatform.cpp */; };
+		518271092862BFD2005E6684 /* AccelerationPlatform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 518271072862BFD2005E6684 /* AccelerationPlatform.cpp */; };
+		5182710A2862BFD2005E6684 /* AccelerationPlatform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 518271072862BFD2005E6684 /* AccelerationPlatform.cpp */; };
+		5182710B2862BFD2005E6684 /* AccelerationPlatform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 518271072862BFD2005E6684 /* AccelerationPlatform.cpp */; };
+		5182710D2862C003005E6684 /* AccelerationPlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 5182710C2862C003005E6684 /* AccelerationPlatform.h */; };
+		5182710E2862C003005E6684 /* AccelerationPlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 5182710C2862C003005E6684 /* AccelerationPlatform.h */; };
+		5182710F2862C003005E6684 /* AccelerationPlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 5182710C2862C003005E6684 /* AccelerationPlatform.h */; };
+		518271102862C003005E6684 /* AccelerationPlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 5182710C2862C003005E6684 /* AccelerationPlatform.h */; };
 		518271122862C00D005E6684 /* MacOSHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 518271112862C00D005E6684 /* MacOSHelper.h */; };
 		518271132862C00D005E6684 /* MacOSHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 518271112862C00D005E6684 /* MacOSHelper.h */; };
 		518271142862C00D005E6684 /* MacOSHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 518271112862C00D005E6684 /* MacOSHelper.h */; };
@@ -2040,8 +2040,8 @@
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalANGLE.framework; path = ../../../../../Library/Frameworks/MetalANGLE.framework; sourceTree = "<group>"; };
 		518271022862BFBE005E6684 /* MacOSHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MacOSHelper.mm; sourceTree = "<group>"; };
-		518271072862BFD2005E6684 /* AnglePlatform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnglePlatform.cpp; sourceTree = "<group>"; };
-		5182710C2862C003005E6684 /* AnglePlatform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnglePlatform.h; sourceTree = "<group>"; };
+		518271072862BFD2005E6684 /* AccelerationPlatform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AccelerationPlatform.cpp; sourceTree = "<group>"; };
+		5182710C2862C003005E6684 /* AccelerationPlatform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AccelerationPlatform.h; sourceTree = "<group>"; };
 		518271112862C00D005E6684 /* MacOSHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MacOSHelper.h; sourceTree = "<group>"; };
 		518271162862C03E005E6684 /* DrawCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DrawCache.cpp; sourceTree = "<group>"; };
 		5182711B2862C047005E6684 /* MatrixStack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MatrixStack.cpp; sourceTree = "<group>"; };
@@ -3291,7 +3291,7 @@
 				F5CC93920240D85D01A80001 /* HUDRenderer_OGL.cpp */,
 				F5CC93930240D85D01A80001 /* HUDRenderer_SW.cpp */,
 				F5CC93940240D85D01A80001 /* images.cpp */,
-				518271072862BFD2005E6684 /* AnglePlatform.cpp */,
+				518271072862BFD2005E6684 /* AccelerationPlatform.cpp */,
 				518271022862BFBE005E6684 /* MacOSHelper.mm */,
 				F5CC93950240D85D01A80001 /* motion_sensor.cpp */,
 				AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */,
@@ -3324,7 +3324,7 @@
 				F5CC93760240D85D01A80001 /* HUDRenderer_OGL.h */,
 				F5CC93770240D85D01A80001 /* HUDRenderer_SW.h */,
 				F5CC93780240D85D01A80001 /* images.h */,
-				5182710C2862C003005E6684 /* AnglePlatform.h */,
+				5182710C2862C003005E6684 /* AccelerationPlatform.h */,
 				518271112862C00D005E6684 /* MacOSHelper.h */,
 				F5CC93790240D85D01A80001 /* motion_sensor.h */,
 				F5CC937A0240D85D01A80001 /* overhead_map.h */,
@@ -3525,7 +3525,7 @@
 				AE505B7D141D45E600915344 /* lightsource.h in Headers */,
 				AE505B7E141D45E600915344 /* map.h in Headers */,
 				276BED121A846FD900AE52F4 /* CourierPrimeBoldItalic.h in Headers */,
-				5182710F2862C003005E6684 /* AnglePlatform.h in Headers */,
+				5182710F2862C003005E6684 /* AccelerationPlatform.h in Headers */,
 				27A6DB521B9CED1E003DA766 /* confpaths.h in Headers */,
 				AE505B7F141D45E600915344 /* media.h in Headers */,
 				AE505B80141D45E600915344 /* media_definitions.h in Headers */,
@@ -3749,7 +3749,7 @@
 				AEB4A11D14296CAE00537AE7 /* lightsource.h in Headers */,
 				AEB4A11E14296CAE00537AE7 /* map.h in Headers */,
 				276BED131A846FD900AE52F4 /* CourierPrimeBoldItalic.h in Headers */,
-				518271102862C003005E6684 /* AnglePlatform.h in Headers */,
+				518271102862C003005E6684 /* AccelerationPlatform.h in Headers */,
 				27A6DB531B9CED1E003DA766 /* confpaths.h in Headers */,
 				AEB4A11F14296CAE00537AE7 /* media.h in Headers */,
 				AEB4A12014296CAE00537AE7 /* media_definitions.h in Headers */,
@@ -3973,7 +3973,7 @@
 				AEC3C74F09AD68AC003258E4 /* lightsource.h in Headers */,
 				27A6DB501B9CED1E003DA766 /* confpaths.h in Headers */,
 				276BECFA1A846D2000AE52F4 /* network_dialog_widgets_sdl.h in Headers */,
-				5182710D2862C003005E6684 /* AnglePlatform.h in Headers */,
+				5182710D2862C003005E6684 /* AccelerationPlatform.h in Headers */,
 				AEC3C75009AD68AC003258E4 /* map.h in Headers */,
 				AEC3C75109AD68AC003258E4 /* media.h in Headers */,
 				AEC3C75209AD68AC003258E4 /* media_definitions.h in Headers */,
@@ -4197,7 +4197,7 @@
 				AEFD862B13EB84CF00C1E687 /* lightsource.h in Headers */,
 				AEFD862C13EB84CF00C1E687 /* map.h in Headers */,
 				276BED111A846FD900AE52F4 /* CourierPrimeBoldItalic.h in Headers */,
-				5182710E2862C003005E6684 /* AnglePlatform.h in Headers */,
+				5182710E2862C003005E6684 /* AccelerationPlatform.h in Headers */,
 				27A6DB511B9CED1E003DA766 /* confpaths.h in Headers */,
 				AEFD862D13EB84CF00C1E687 /* media.h in Headers */,
 				AEFD862E13EB84CF00C1E687 /* media_definitions.h in Headers */,
@@ -4708,7 +4708,7 @@
 				AE505C2A141D45E600915344 /* PlayerImage_sdl.cpp in Sources */,
 				AE505C2B141D45E600915344 /* thread_priority_sdl_macosx.cpp in Sources */,
 				AE505C2C141D45E600915344 /* network_data_formats.cpp in Sources */,
-				5182710A2862BFD2005E6684 /* AnglePlatform.cpp in Sources */,
+				5182710A2862BFD2005E6684 /* AccelerationPlatform.cpp in Sources */,
 				AE505C2D141D45E600915344 /* network_dialog_widgets_sdl.cpp in Sources */,
 				AE505C2E141D45E600915344 /* SDL_netx.cpp in Sources */,
 				AE505C2F141D45E600915344 /* SSLP_limited.cpp in Sources */,
@@ -4940,7 +4940,7 @@
 				AEB4A1CB14296CAE00537AE7 /* PlayerImage_sdl.cpp in Sources */,
 				AEB4A1CC14296CAE00537AE7 /* thread_priority_sdl_macosx.cpp in Sources */,
 				AEB4A1CD14296CAE00537AE7 /* network_data_formats.cpp in Sources */,
-				5182710B2862BFD2005E6684 /* AnglePlatform.cpp in Sources */,
+				5182710B2862BFD2005E6684 /* AccelerationPlatform.cpp in Sources */,
 				AEB4A1CE14296CAE00537AE7 /* network_dialog_widgets_sdl.cpp in Sources */,
 				AEB4A1CF14296CAE00537AE7 /* SDL_netx.cpp in Sources */,
 				AEB4A1D014296CAE00537AE7 /* SSLP_limited.cpp in Sources */,
@@ -5172,7 +5172,7 @@
 				AEC3C7F109AD68AC003258E4 /* PlayerImage_sdl.cpp in Sources */,
 				AEC3C7F209AD68AC003258E4 /* thread_priority_sdl_macosx.cpp in Sources */,
 				AEC3C7F309AD68AC003258E4 /* network_data_formats.cpp in Sources */,
-				518271082862BFD2005E6684 /* AnglePlatform.cpp in Sources */,
+				518271082862BFD2005E6684 /* AccelerationPlatform.cpp in Sources */,
 				276D4E771A2E734E00C16CF5 /* QuickSave.cpp in Sources */,
 				AEC3C7F409AD68AC003258E4 /* network_dialog_widgets_sdl.cpp in Sources */,
 				AEC3C7F509AD68AC003258E4 /* SDL_netx.cpp in Sources */,
@@ -5404,7 +5404,7 @@
 				AEFD86D713EB84CF00C1E687 /* PlayerImage_sdl.cpp in Sources */,
 				AEFD86D813EB84CF00C1E687 /* thread_priority_sdl_macosx.cpp in Sources */,
 				AEFD86D913EB84CF00C1E687 /* network_data_formats.cpp in Sources */,
-				518271092862BFD2005E6684 /* AnglePlatform.cpp in Sources */,
+				518271092862BFD2005E6684 /* AccelerationPlatform.cpp in Sources */,
 				AEFD86DA13EB84CF00C1E687 /* network_dialog_widgets_sdl.cpp in Sources */,
 				AEFD86DB13EB84CF00C1E687 /* SDL_netx.cpp in Sources */,
 				AEFD86DC13EB84CF00C1E687 /* SSLP_limited.cpp in Sources */,
@@ -5644,7 +5644,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
-				CODE_SIGN_ENTITLEMENTS = "Aleph OneDebug.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "Aleph One.entitlements";
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = TZ45ZW2588;
