@@ -938,8 +938,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 #ifdef HAVE_OPENGL
 	bool context_created = false;
     
-    //Not applicable for ANGLE
-    /*
+    #ifndef USE_ALTERNATE_ACCELERATION
 	if (main_screen == NULL && !nogl && screen_mode.acceleration != _no_acceleration && Get_OGL_ConfigureData().Multisamples > 0) {
 		// retry with multisampling off
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
@@ -951,8 +950,12 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 									   flags);
 		if (main_screen)
 			failed_multisamples = Get_OGL_ConfigureData().Multisamples;
-	}*/
+	}
+    #endif
         
+        
+        #ifdef USE_ALTERNATE_ACCELERATION
+        //Alternate injection step to gank acceleration responsibilities away from SDL.
         void* layer = injectAccelerationContext(main_screen);
         
         if(layer) {
@@ -960,7 +963,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
         } else {
             logWarning("WARNING: Failed to inject ANGLE layer\n");
         }
-        
+        #endif
 #endif
 	if (main_screen == NULL && !nogl && screen_mode.acceleration != _no_acceleration) {
 		fprintf(stderr, "WARNING: Failed to initialize OpenGL with 24 bit depth\n");
@@ -1129,7 +1132,15 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		int pixh = MainScreenPixelHeight();
 		glScissor(0, 0, pixw, pixh);
 		glViewport(0, 0, pixw, pixh);
-		
+        
+        //Get the Matrix Stack into a cleaner state
+        MSI()->matrixMode(MS_MODELVIEW);
+        MSI()->loadIdentity();
+        MSI()->matrixMode(MS_TEXTURE);
+        MSI()->loadIdentity();
+        MSI()->matrixMode(MS_PROJECTION);
+        MSI()->loadIdentity();
+
 		OGL_ClearScreen();
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		//glEnableClientState(GL_VERTEX_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
@@ -2255,8 +2266,11 @@ bool MainScreenIsOpenGL()
 }
 void MainScreenSwap()
 {
+#ifdef USE_ALTERNATE_ACCELERATION
     swapAcceleratedWindow(main_screen);
-	//SDL_GL_SwapWindow(main_screen);
+#else
+	SDL_GL_SwapWindow(main_screen);
+#endif
 }
 void MainScreenCenterMouse()
 {
