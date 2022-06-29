@@ -22,6 +22,7 @@
 
 #include "cseries.h"
 #include "OGL_FBO.h"
+#include "Logging.h"
 
 #ifdef HAVE_OPENGL
 
@@ -52,30 +53,49 @@ FBO::FBO(GLuint w, GLuint h, bool srgb) : _h(h), _w(w), _srgb(srgb) {
 }
 
 void FBO::setup(GLuint w, GLuint h, bool srgb) {
-  
+    GLenum err;
   _h = h; _w = w; _srgb = srgb;
   
+  printf("Setup new FBO h:%d, w:%d\n", h, w);
+    
   //Do nothing if not valid size. Call again later to initialize.
   if( w == 0 && h == 0) {
     return;
   }
   
+  while (glGetError()) {} //Clear earlier errors
+    
   glGenFramebuffers(1, &_fbo);
+    while ((err = glGetError())) { printf("FBO glGenFramebuffers: OpenGL Error %d\n",err);}
   glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-  
+    while ((err = glGetError())) { printf("FBO glBindFramebuffer: OpenGL Error %d\n",err);}
+    
   //Create texture and attach it to framebuffer's color attachment point
   glGenTextures(1, &texID);
+    while ((err = glGetError())) { printf("FBO glGenTextures: OpenGL Error %d\n",err);}
   glBindTexture(GL_TEXTURE_2D, texID); //DCW was GL_TEXTURE_RECTANGE
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  //DCW
+    while ((err = glGetError())) { printf("FBO glBindTexture: OpenGL Error %d\n",err);}
   glTexImage2D(GL_TEXTURE_2D, 0, srgb ? GL_SRGB : GL_RGBA, _w, _h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);//DCW was GL_TEXTURE_RECTANGLE, changed GL_RGB to GL_RGBA
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texID, 0); //DCW was GL_TEXTURE_RECTANGLE
+    while ((err = glGetError())) { printf("FBO glTexImage2D: OpenGL Error %d\n",err);}
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    while ((err = glGetError())) { printf("FBO glTexParameteri: OpenGL Error %d\n",err);}
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texID, 0);
+    while ((err = glGetError())) { printf("FBO glFramebufferTexture2D: OpenGL Error %d\n",err);}
+
   
   //Generate depth buffer
   glGenRenderbuffers(1, &_depthBuffer);
+    while ((err = glGetError())) { printf("FBO glGenRenderbuffers: OpenGL Error %d\n",err);}
   glBindRenderbuffer(GL_RENDERBUFFER, _depthBuffer);
+    while ((err = glGetError())) { printf("FBO glBindRenderbuffer: OpenGL Error %d\n",err);}
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, _w, _h);
+    while ((err = glGetError())) { printf("FBO glRenderbufferStorage: OpenGL Error %d\n",err);}
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthBuffer);
+    while ((err = glGetError())) { printf("FBO glFramebufferRenderbuffer: OpenGL Error %d\n",err);}
   
+  if( glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE ) { printf("FBO framebuffer not complete\n"); }
+    
   glBindFramebuffer(GL_FRAMEBUFFER, 1);
   glBindRenderbuffer(GL_RENDERBUFFER, 1);
   
@@ -92,8 +112,8 @@ void FBO::activate(bool clear, GLuint fboTarget) {
         glGetIntegerv(GL_VIEWPORT, viewportCache);
         glDisable(GL_SCISSOR_TEST); //DCW Disable scissor, otherwise it cuts into full screen sometimes.
         glViewport(0, 0, _w, _h);
-		if (_srgb)
-			glEnable(GL_FRAMEBUFFER_SRGB);
+        if (_srgb) {}
+			//////glEnable(GL_FRAMEBUFFER_SRGB);
         else {
 			//glDisable(GL_FRAMEBUFFER_SRGB); //NOT SUPPORTED ANGLE ENUM
         }
@@ -116,8 +136,8 @@ void FBO::deactivate() {
 		}
 		glBindFramebuffer(_fboTarget, prev_fbo);
         
-		if (prev_srgb)
-			glEnable(GL_FRAMEBUFFER_SRGB);
+        if (prev_srgb) {}
+			//////glEnable(GL_FRAMEBUFFER_SRGB);
         else {
 			//glDisable(GL_FRAMEBUFFER_SRGB); //NOT SUPPORTED ANGLE ENUM
         }
@@ -268,10 +288,10 @@ void FBOSwapper::copy(FBO& other, bool srgb) {
 
 void FBOSwapper::blend(FBO& other, bool srgb) {
 	activate();
-	if (!srgb)
-		glDisable(GL_FRAMEBUFFER_SRGB_EXT);
+    if (!srgb){}
+		//////glDisable(GL_FRAMEBUFFER_SRGB_EXT);
 	else
-		glEnable(GL_FRAMEBUFFER_SRGB_EXT);
+		//////glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 	other.draw_full(true);
 	deactivate();
 }
@@ -289,25 +309,25 @@ void FBOSwapper::blend_multisample(FBO& other) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);*/
     
     
-	glEnable(GL_TEXTURE_RECTANGLE_ARB);
+	//////glEnable(GL_TEXTURE_RECTANGLE_ARB);
 	glActiveTexture(GL_TEXTURE0);
     
-	glClientActiveTexture(GL_TEXTURE1);
+	//////glClientActiveTexture(GL_TEXTURE1);
 	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	//GLint multi_coordinates[8] = { 0, GLint(other._h), GLint(other._w), GLint(other._h), GLint(other._w), 0, 0, 0 };
 	//glTexCoordPointer(2, GL_INT, 0, multi_coordinates); //NOT SUPPORTED ANGLE FUNCTION
-	glClientActiveTexture(GL_TEXTURE0);
+	//////glClientActiveTexture(GL_TEXTURE0);
 	
 	draw(true);
 	
 	// tear down multitexture stuff
 	glActiveTexture(GL_TEXTURE1);
-	glDisable(GL_TEXTURE_RECTANGLE_ARB);
+	//////glDisable(GL_TEXTURE_RECTANGLE_ARB);
 	glActiveTexture(GL_TEXTURE0);
 	
-	glClientActiveTexture(GL_TEXTURE1);
+	//////glClientActiveTexture(GL_TEXTURE1);
 	//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
-	glClientActiveTexture(GL_TEXTURE0);
+	//////glClientActiveTexture(GL_TEXTURE0);
 	
 	deactivate();
 }
