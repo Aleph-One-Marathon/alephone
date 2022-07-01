@@ -89,6 +89,7 @@
 
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
+#include "OGL_Shader.h"
 #endif
 
 #if !defined(DISABLE_NETWORKING)
@@ -495,6 +496,11 @@ static void initialize_application(void)
 	
 	WadImageCache::instance()->initialize_cache();
 
+#ifdef HAVE_OPENGL
+    //Initialize shader immediately, since it will be used for intro screen fades.
+       Shader::loadAll();
+#endif
+    
 #ifndef HAVE_OPENGL
 	graphics_preferences->screen_mode.acceleration = _no_acceleration;
 #endif

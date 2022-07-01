@@ -34,6 +34,7 @@ HUD_RENDERER_LUA.CPP
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
 #include "OGL_Render.h"
+#include "MatrixStack.hpp"
 #endif
 
 #include <math.h>
@@ -53,9 +54,32 @@ HUD_Lua_Class *Lua_HUDInstance()
 void Lua_DrawHUD(short time_elapsed)
 {
 	HUD_Lua.update_motion_sensor(time_elapsed);
+    
+    #ifdef HAVE_OPENGL
+    //bool isEnabled_GT2 = glIsEnabled (GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
+    bool isEnabled_GCF = glIsEnabled (GL_CULL_FACE);
+    bool isEnabled_GDT = glIsEnabled (GL_DEPTH_TEST);
+    //bool isEnabled_GAT = glIsEnabled (GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+    bool isEnabled_GST = glIsEnabled (GL_STENCIL_TEST);
+    bool isEnabled_GB = glIsEnabled (GL_BLEND);
+    //bool isEnabled_GF = glIsEnabled (GL_FOG); //NOT SUPPORTED ANGLE ENUM
+    int previousMode = MSI()->currentActiveMode();
+    #endif
+    
 	HUD_Lua.start_draw();
 	L_Call_HUDDraw();
 	HUD_Lua.end_draw();
+    
+    #ifdef HAVE_OPENGL
+    MSI()->matrixMode(previousMode);
+    //if ( isEnabled_GT2 ) { glEnable ( GL_TEXTURE_2D ) ; } else { glDisable ( GL_TEXTURE_2D ); } //NOT SUPPORTED ANGLE ENUM
+    if ( isEnabled_GCF ) { glEnable ( GL_CULL_FACE ) ; } else { glDisable ( GL_CULL_FACE ); }
+    if ( isEnabled_GDT ) { glEnable ( GL_DEPTH_TEST ) ; } else { glDisable ( GL_DEPTH_TEST ); }
+    //if ( isEnabled_GAT ) { glEnable ( GL_ALPHA_TEST ) ; } else { glDisable ( GL_ALPHA_TEST ); } //NOT SUPPORTED ANGLE ENUM
+    if ( isEnabled_GST ) { glEnable ( GL_STENCIL_TEST ) ; } else { glDisable ( GL_STENCIL_TEST ); }
+    if ( isEnabled_GB )  { glEnable ( GL_BLEND ) ; } else { glDisable ( GL_BLEND ); }
+    //if ( isEnabled_GF )  { glEnable ( GL_FOG ) ; } else { glDisable ( GL_FOG ); } //NOT SUPPORTED ANGLE ENUM
+    #endif
 }
 
 /*
@@ -109,20 +133,24 @@ void HUD_Lua_Class::start_draw(void)
 #ifdef HAVE_OPENGL
 	if (m_opengl)
 	{
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
-		glEnable(GL_TEXTURE_2D);
+		//glPushAttrib(GL_ALL_ATTRIB_BITS);
+		//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		glDisable(GL_STENCIL_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glDisable(GL_FOG);
+		//glDisable(GL_FOG); //NOT SUPPORTED ANGLE ENUM
         
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        glLoadIdentity();
-        glTranslatef(m_wr.x, m_wr.y, 0.0);
-		
+        
+        MSI()->matrixMode(MS_MODELVIEW);
+        MSI()->pushMatrix();
+        MSI()->loadIdentity();
+        MSI()->translatef(m_wr.x, m_wr.y, 0.0);
+        
+        //DCW oh jeez... I cannot explain why I need to set MS_PROJECTION here, when we didn't need it for Classic OpenGL.
+        MSI()->matrixMode(MS_PROJECTION);
+
 		m_surface = NULL;
 	}
 	else
@@ -155,9 +183,9 @@ void HUD_Lua_Class::end_draw(void)
 #ifdef HAVE_OPENGL
 	if (m_opengl)
 	{
-        glMatrixMode(GL_MODELVIEW);
-        glPopMatrix();
-		glPopAttrib();
+        MSI()->matrixMode(MS_MODELVIEW);
+        MSI()->popMatrix();
+        //glPopAttrib();
 	}
 #endif
 }
@@ -258,8 +286,8 @@ void HUD_Lua_Class::start_drawing_mask(bool erase)
 		glStencilFunc(GL_ALWAYS, erase ? 0 : 1, 1);
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 		
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.5);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.5); //NOT SUPPORTED ANGLE FUNCTION
 		
 		glColorMask(false, false, false, false);
 	}
@@ -272,7 +300,7 @@ void HUD_Lua_Class::end_drawing_mask(void)
 	if (m_opengl)
 	{
 		glDisable(GL_STENCIL_TEST);
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		glColorMask(true, true, true, true);
 	}
 #endif
@@ -291,7 +319,7 @@ void HUD_Lua_Class::fill_rect(float x, float y, float w, float h,
 #ifdef HAVE_OPENGL
 	if (m_opengl)
 	{
-		glColor4f(r, g, b, a);
+        MSI()->color4f(r, g, b, a);
 		OGL_RenderRect(x, y, w, h);
 	}
 	else
@@ -321,7 +349,7 @@ void HUD_Lua_Class::frame_rect(float x, float y, float w, float h,
 #ifdef HAVE_OPENGL
 	if (m_opengl)
 	{
-		glColor4f(r, g, b, a);
+        MSI()->color4f(r, g, b, a);
 		OGL_RenderFrame(x, y, w, h, t);
 	}
 	else
@@ -373,14 +401,14 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
 #ifdef HAVE_OPENGL
 	if (m_opengl)
 	{
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glTranslatef(x, y + (font->Height * scale), 0);
-        glScalef(scale, scale, 1.0);
-		glColor4f(r, g, b, a);
+		MSI()->matrixMode(MS_MODELVIEW);
+		MSI()->pushMatrix();
+		MSI()->translatef(x, y + (font->Height * scale), 0);
+        MSI()->scalef(scale, scale, 1.0);
+		MSI()->color4f(r, g, b, a);
 		font->OGL_Render(text);
-		glColor4f(1, 1, 1, 1);
-		glPopMatrix();
+		MSI()->color4f(1, 1, 1, 1);
+		MSI()->popMatrix();
 	}
 	else
 #endif

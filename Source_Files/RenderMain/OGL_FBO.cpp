@@ -22,42 +22,101 @@
 
 #include "cseries.h"
 #include "OGL_FBO.h"
+#include "Logging.h"
 
 #ifdef HAVE_OPENGL
 
 #include "OGL_Setup.h"
 #include "OGL_Render.h"
+#include "OGL_Shader.h"
 
 std::vector<FBO *> FBO::active_chain;
 
 FBO::FBO(GLuint w, GLuint h, bool srgb) : _h(h), _w(w), _srgb(srgb) {
-	glGenFramebuffersEXT(1, &_fbo);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _fbo);
+    setup(w, h, srgb);
+
+    /*
+	glGenFramebuffers(1, &_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 	
-	glGenRenderbuffersEXT(1, &_depthBuffer);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _depthBuffer);
-	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, _w, _h);
-	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, _depthBuffer);
+	glGenRenderbuffers(1, &_depthBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, _depthBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _w, _h);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthBuffer);
 	
 	glGenTextures(1, &texID);
-	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
-	glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, srgb ? GL_SRGB : GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_RECTANGLE_ARB, texID, 0);
-	assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) == GL_FRAMEBUFFER_COMPLETE_EXT);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glBindTexture(GL_TEXTURE_RECTANGLE, texID);
+	glTexImage2D(GL_TEXTURE_RECTANGLE, 0, srgb ? GL_SRGB : GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, texID, 0);
+	assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
+}
+
+void FBO::setup(GLuint w, GLuint h, bool srgb) {
+    GLenum err;
+  _h = h; _w = w; _srgb = srgb;
+  
+  printf("Setup new FBO h:%d, w:%d\n", h, w);
+    
+  //Do nothing if not valid size. Call again later to initialize.
+  if( w == 0 && h == 0) {
+    return;
+  }
+  
+  while (glGetError()) {} //Clear earlier errors
+    
+  glGenFramebuffers(1, &_fbo);
+    while ((err = glGetError())) { printf("FBO glGenFramebuffers: OpenGL Error %d\n",err);}
+  glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+    while ((err = glGetError())) { printf("FBO glBindFramebuffer: OpenGL Error %d\n",err);}
+    
+  //Create texture and attach it to framebuffer's color attachment point
+  glGenTextures(1, &texID);
+    while ((err = glGetError())) { printf("FBO glGenTextures: OpenGL Error %d\n",err);}
+  glBindTexture(GL_TEXTURE_2D, texID); //DCW was GL_TEXTURE_RECTANGE
+    while ((err = glGetError())) { printf("FBO glBindTexture: OpenGL Error %d\n",err);}
+  glTexImage2D(GL_TEXTURE_2D, 0, srgb ? GL_SRGB : GL_RGBA, _w, _h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);//DCW was GL_TEXTURE_RECTANGLE, changed GL_RGB to GL_RGBA
+    while ((err = glGetError())) { printf("FBO glTexImage2D: OpenGL Error %d\n",err);}
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    while ((err = glGetError())) { printf("FBO glTexParameteri: OpenGL Error %d\n",err);}
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texID, 0);
+    while ((err = glGetError())) { printf("FBO glFramebufferTexture2D: OpenGL Error %d\n",err);}
+
+  
+  //Generate depth buffer
+  glGenRenderbuffers(1, &_depthBuffer);
+    while ((err = glGetError())) { printf("FBO glGenRenderbuffers: OpenGL Error %d\n",err);}
+  glBindRenderbuffer(GL_RENDERBUFFER, _depthBuffer);
+    while ((err = glGetError())) { printf("FBO glBindRenderbuffer: OpenGL Error %d\n",err);}
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, _w, _h);
+    while ((err = glGetError())) { printf("FBO glRenderbufferStorage: OpenGL Error %d\n",err);}
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthBuffer);
+    while ((err = glGetError())) { printf("FBO glFramebufferRenderbuffer: OpenGL Error %d\n",err);}
+  
+  if( glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE ) { printf("FBO framebuffer not complete\n"); }
+    
+  glBindFramebuffer(GL_FRAMEBUFFER, 1);
+  glBindRenderbuffer(GL_RENDERBUFFER, 1);
+  
+  glPopGroupMarkerEXT();
 }
 
 void FBO::activate(bool clear, GLuint fboTarget) {
 	if (!active_chain.size() || active_chain.back() != this) {
 		active_chain.push_back(this);
-		_fboTarget = fboTarget;
-		glBindFramebufferEXT(fboTarget, _fbo);
-		glPushAttrib(GL_VIEWPORT_BIT);
-		glViewport(0, 0, _w, _h);
-		if (_srgb)
-			glEnable(GL_FRAMEBUFFER_SRGB_EXT);
-		else
-			glDisable(GL_FRAMEBUFFER_SRGB_EXT);
+        _fboTarget = fboTarget;
+        glBindFramebuffer(fboTarget, _fbo);
+		
+        //glPushAttrib(GL_VIEWPORT_BIT);
+        glGetIntegerv(GL_VIEWPORT, viewportCache);
+        glDisable(GL_SCISSOR_TEST); //DCW Disable scissor, otherwise it cuts into full screen sometimes.
+        glViewport(0, 0, _w, _h);
+        if (_srgb) {}
+			//////glEnable(GL_FRAMEBUFFER_SRGB);
+        else {
+			//glDisable(GL_FRAMEBUFFER_SRGB); //NOT SUPPORTED ANGLE ENUM
+        }
 		if (clear)
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
@@ -66,52 +125,109 @@ void FBO::activate(bool clear, GLuint fboTarget) {
 void FBO::deactivate() {
 	if (active_chain.size() && active_chain.back() == this) {
 		active_chain.pop_back();
-		glPopAttrib();
 		
+        //glPopAttrib();
+		glViewport(viewportCache[0], viewportCache[1], viewportCache[2], viewportCache[3]);
 		GLuint prev_fbo = 0;
 		bool prev_srgb = Using_sRGB;
 		if (active_chain.size()) {
 			prev_fbo = active_chain.back()->_fbo;
 			prev_srgb = active_chain.back()->_srgb;
 		}
-		glBindFramebufferEXT(_fboTarget, prev_fbo);
-		if (prev_srgb)
-			glEnable(GL_FRAMEBUFFER_SRGB_EXT);
-		else
-			glDisable(GL_FRAMEBUFFER_SRGB_EXT);
+		glBindFramebuffer(_fboTarget, prev_fbo);
+        
+        if (prev_srgb) {}
+			//////glEnable(GL_FRAMEBUFFER_SRGB);
+        else {
+			//glDisable(GL_FRAMEBUFFER_SRGB); //NOT SUPPORTED ANGLE ENUM
+        }
 	}
 }
 
 void FBO::draw() {
-	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
+	/*glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
 	glEnable(GL_TEXTURE_RECTANGLE_ARB);
 	OGL_RenderTexturedRect(0, 0, _w, _h, 0, _h, _w, 0);
-	glDisable(GL_TEXTURE_RECTANGLE_ARB);
+	glDisable(GL_TEXTURE_RECTANGLE_ARB);*/
+    
+    
+    glBindTexture(GL_TEXTURE_2D, texID);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+      //DCW if there is a shader already active, draw the quad using that. Otherwise, draw with the default shader.
+    if (lastEnabledShader()) {
+      drawQuadWithActiveShader(0, 0, _w, _h, 0, _h, _w, 0);
+    } else {
+      OGL_RenderTexturedRect(0, 0, _w, _h, 0, 1.0, 1.0, 0); //DCW; uses normalized texture coordinates
+    }
+}
+
+void FBO::drawQuadWithActiveShader(float x, float y, float w, float h, float tleft, float ttop, float tright, float tbottom)
+{
+  GLfloat modelMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
+  
+  Shader *theShader = lastEnabledShader();
+  
+  MSI()->getFloatv(MS_MODELVIEW, modelMatrix);
+  MSI()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
+  MSI()->getFloatv(MS_TEXTURE, textureMatrix);
+  MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
+  
+  theShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
+  theShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+  theShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
+  theShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+  theShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+  
+  GLfloat vVertices[12] = { x, y, 0,
+    x + w, y, 0,
+    x + w, y + h, 0,
+    x, y + h, 0};
+  
+  GLfloat texCoords[8] = { tleft, ttop, tright, ttop, tright, tbottom, tleft, tbottom };
+  
+  GLubyte indices[] =   {0,1,2,
+    0,2,3};
+    
+  
+  glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texCoords);
+  glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
+  
+  glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, vVertices);
+  glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+  
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
+    
+  glDisableVertexAttribArray(0);
 }
 
 void FBO::prepare_drawing_mode(bool blend) {
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
+	MSI()->matrixMode(MS_PROJECTION);
+	MSI()->pushMatrix();
+	MSI()->loadIdentity();
+	MSI()->matrixMode(MS_MODELVIEW);
+	MSI()->pushMatrix();
+	MSI()->loadIdentity();
 	
 	glDisable(GL_DEPTH_TEST);
 	if (!blend)
 		glDisable(GL_BLEND);
-	
-	glOrtho(0, _w, _h, 0, -1, 1);
-	glColor4f(1.0, 1.0, 1.0, 1.0);
+    
+	MSI()->orthof(0, _w, _h, 0, -1, 1);
+	MSI()->color4f(1.0, 1.0, 1.0, 1.0);
 }
 
 void FBO::reset_drawing_mode() {
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
+    MSI()->matrixMode(MS_PROJECTION);
+    MSI()->popMatrix();
+	MSI()->matrixMode(MS_MODELVIEW);
+	MSI()->popMatrix();
 }
 
 void FBO::draw_full(bool blend) {
@@ -121,8 +237,8 @@ void FBO::draw_full(bool blend) {
 }
 
 FBO::~FBO() {
-	glDeleteFramebuffersEXT(1, &_fbo);
-	glDeleteRenderbuffersEXT(1, &_depthBuffer);
+	glDeleteFramebuffers(1, &_fbo);
+	glDeleteRenderbuffers(1, &_depthBuffer);
 }
 
 
@@ -172,10 +288,10 @@ void FBOSwapper::copy(FBO& other, bool srgb) {
 
 void FBOSwapper::blend(FBO& other, bool srgb) {
 	activate();
-	if (!srgb)
-		glDisable(GL_FRAMEBUFFER_SRGB_EXT);
+    if (!srgb){}
+		//////glDisable(GL_FRAMEBUFFER_SRGB_EXT);
 	else
-		glEnable(GL_FRAMEBUFFER_SRGB_EXT);
+		//////glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 	other.draw_full(true);
 	deactivate();
 }
@@ -185,27 +301,33 @@ void FBOSwapper::blend_multisample(FBO& other) {
 	activate();
 	
 	// set up FBO passed in as texture #1
-	glActiveTextureARB(GL_TEXTURE1_ARB);
-	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, other.texID);
-	glEnable(GL_TEXTURE_RECTANGLE_ARB);
-	glActiveTextureARB(GL_TEXTURE0_ARB);
-	
-	glClientActiveTextureARB(GL_TEXTURE1_ARB);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	GLint multi_coordinates[8] = { 0, GLint(other._h), GLint(other._w), GLint(other._h), GLint(other._w), 0, 0, 0 };
-	glTexCoordPointer(2, GL_INT, 0, multi_coordinates);
-	glClientActiveTextureARB(GL_TEXTURE0_ARB);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, other.texID);
+    /*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);*/
+    
+    
+	//////glEnable(GL_TEXTURE_RECTANGLE_ARB);
+	glActiveTexture(GL_TEXTURE0);
+    
+	//////glClientActiveTexture(GL_TEXTURE1);
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
+	//GLint multi_coordinates[8] = { 0, GLint(other._h), GLint(other._w), GLint(other._h), GLint(other._w), 0, 0, 0 };
+	//glTexCoordPointer(2, GL_INT, 0, multi_coordinates); //NOT SUPPORTED ANGLE FUNCTION
+	//////glClientActiveTexture(GL_TEXTURE0);
 	
 	draw(true);
 	
 	// tear down multitexture stuff
-	glActiveTextureARB(GL_TEXTURE1_ARB);
-	glDisable(GL_TEXTURE_RECTANGLE_ARB);
-	glActiveTextureARB(GL_TEXTURE0_ARB);
+	glActiveTexture(GL_TEXTURE1);
+	//////glDisable(GL_TEXTURE_RECTANGLE_ARB);
+	glActiveTexture(GL_TEXTURE0);
 	
-	glClientActiveTextureARB(GL_TEXTURE1_ARB);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glClientActiveTextureARB(GL_TEXTURE0_ARB);
+	//////glClientActiveTexture(GL_TEXTURE1);
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
+	//////glClientActiveTexture(GL_TEXTURE0);
 	
 	deactivate();
 }

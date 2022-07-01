@@ -37,6 +37,8 @@
 #include "OGL_Headers.h"
 #include "OGL_Blitter.h"
 #include "OGL_Faders.h"
+#include "MatrixStack.hpp"
+#include "AccelerationPlatform.h"
 #endif
 
 #include "world.h"
@@ -519,14 +521,14 @@ void Screen::bound_screen_to_rect(SDL_Rect &r, bool in_game)
 		int vpx = static_cast<int>(pixw/2.0f - (virw * vscale)/2.0f + (r.x * vscale) + 0.5f);
 		int vpy = static_cast<int>(pixh/2.0f - (virh * vscale)/2.0f + (r.y * vscale) + 0.5f);
 
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
+		MSI()->matrixMode(MS_PROJECTION);
+		MSI()->loadIdentity();
 		glViewport(vpx, pixh - vph - vpy, vpw, vph);
 		m_viewport_rect.x = vpx;
 		m_viewport_rect.y = pixh - vph - vpy;
 		m_viewport_rect.w = vpw;
 		m_viewport_rect.h = vph;
-		glOrtho(0, r.w, r.h, 0, -1.0, 1.0);
+		MSI()->orthof(0, r.w, r.h, 0, -1.0, 1.0);
 		m_ortho_rect.x = m_ortho_rect.y = 0;
 		m_ortho_rect.w = r.w;
 		m_ortho_rect.h = r.h;
@@ -753,7 +755,8 @@ static bool need_mode_change(int window_width, int window_height,
 	bool wantgl = false;
 	bool hasgl = MainScreenIsOpenGL();
 #ifdef HAVE_OPENGL
-	wantgl = !nogl && (screen_mode.acceleration != _no_acceleration);
+        //Just for testing ANGLE
+/*	wantgl = !nogl && (screen_mode.acceleration != _no_acceleration);
 	if (wantgl != hasgl)
 		return true;
 	if (wantgl) {
@@ -770,7 +773,7 @@ static bool need_mode_change(int window_width, int window_height,
 		int has_vsync = SDL_GL_GetSwapInterval();
 		if ((has_vsync == 0) != (want_vsync == 0))
 			SDL_GL_SetSwapInterval(want_vsync);
-	}
+	}*/
 #endif
 		
 	// are we switching to/from fullscreen?
@@ -812,8 +815,8 @@ static bool need_mode_change(int window_width, int window_height,
 	
 	// reset title, since SDL forgets sometimes
 	SDL_SetWindowTitle(main_screen, get_application_name().c_str());
-	
-	return false;
+
+    return false;
 }
 
 static int change_window_filter(void *ctx, SDL_Event *event)
@@ -886,7 +889,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	
 	if (need_mode_change(sdl_width, sdl_height, vmode_width, vmode_height, depth, nogl)) {
 #ifdef HAVE_OPENGL
-	if (!nogl && screen_mode.acceleration != _no_acceleration) {
+           //Just for testing ANGLE
+/*	if (!nogl && screen_mode.acceleration != _no_acceleration) {
 		passed_shader = false;
 		flags |= SDL_WINDOW_OPENGL;
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -903,7 +907,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 		}
 		SDL_GL_SetSwapInterval(Get_OGL_ConfigureData().WaitForVSync ? 1 : 0);
-	}
+	}*/
 #endif 
 
 		
@@ -933,6 +937,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 
 #ifdef HAVE_OPENGL
 	bool context_created = false;
+    
+    #ifndef USE_ALTERNATE_ACCELERATION
 	if (main_screen == NULL && !nogl && screen_mode.acceleration != _no_acceleration && Get_OGL_ConfigureData().Multisamples > 0) {
 		// retry with multisampling off
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
@@ -945,6 +951,19 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		if (main_screen)
 			failed_multisamples = Get_OGL_ConfigureData().Multisamples;
 	}
+    #endif
+        
+        
+        #ifdef USE_ALTERNATE_ACCELERATION
+        //Alternate injection step to gank acceleration responsibilities away from SDL.
+        void* layer = injectAccelerationContext(main_screen);
+        
+        if(layer) {
+            context_created = TRUE;
+        } else {
+            logWarning("WARNING: Failed to inject ANGLE layer\n");
+        }
+        #endif
 #endif
 	if (main_screen == NULL && !nogl && screen_mode.acceleration != _no_acceleration) {
 		fprintf(stderr, "WARNING: Failed to initialize OpenGL with 24 bit depth\n");
@@ -969,7 +988,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 #ifdef __WIN32__
 		glewInit();
 #endif
-		if (!OGL_CheckExtension("GL_ARB_vertex_shader") || !OGL_CheckExtension("GL_ARB_fragment_shader") || !OGL_CheckExtension("GL_ARB_shader_objects") || !OGL_CheckExtension("GL_ARB_shading_language_100"))
+        //Just for testing ANGLE
+		/*if (!OGL_CheckExtension("GL_ARB_vertex_shader") || !OGL_CheckExtension("GL_ARB_fragment_shader") || !OGL_CheckExtension("GL_ARB_shader_objects") || !OGL_CheckExtension("GL_ARB_shading_language_100"))
 		{
 			logWarning("OpenGL (Shader) renderer is not available");
 			fprintf(stderr, "WARNING: Failed to initialize OpenGL renderer\n");
@@ -982,9 +1002,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 										   flags);
 		}
 		else
-		{
+		{*/
 			passed_shader = true;
-		}
+		//}
 	}
 //#endif
 
@@ -1112,11 +1132,19 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		int pixh = MainScreenPixelHeight();
 		glScissor(0, 0, pixw, pixh);
 		glViewport(0, 0, pixw, pixh);
-		
+        
+        //Get the Matrix Stack into a cleaner state
+        MSI()->matrixMode(MS_MODELVIEW);
+        MSI()->loadIdentity();
+        MSI()->matrixMode(MS_TEXTURE);
+        MSI()->loadIdentity();
+        MSI()->matrixMode(MS_PROJECTION);
+        MSI()->loadIdentity();
+
 		OGL_ClearScreen();
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		//glEnableClientState(GL_VERTEX_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
+		//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 #ifdef __WIN32__
 		clear_screen();
 #endif
@@ -1127,6 +1155,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	{
 		L_Call_HUDResize();
 	}
+    
+    refreshAccelerationContext(main_screen);
 }
 
 bool get_auto_resolution_size(short *w, short *h, struct screen_mode_data *mode)
@@ -1435,7 +1465,7 @@ void render_screen(short ticks_elapsed)
 		software_render_dest.clear();
 	else if (software_render_dest.empty() || ViewChangedSize)
 		software_render_dest = bitmap_definition_of_sdl_surface(world_pixels);
-	
+    
 	// Render world view
 	render_view(world_view, software_render_dest.get());
 
@@ -1945,36 +1975,51 @@ void darken_world_window(void)
 	if (MainScreenIsOpenGL()) {
 
 		// Save current state
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
-
+        //glPushAttrib(GL_ALL_ATTRIB_BITS);
+        //bool isEnabled_GT2 = glIsEnabled (GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
+        bool isEnabled_GCF = glIsEnabled (GL_CULL_FACE);
+        bool isEnabled_GDT = glIsEnabled (GL_DEPTH_TEST);
+        //bool isEnabled_GAT = glIsEnabled (GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+        bool isEnabled_GST = glIsEnabled (GL_STENCIL_TEST);
+        bool isEnabled_GB = glIsEnabled (GL_BLEND);
+        //bool isEnabled_GF = glIsEnabled (GL_FOG); //NOT SUPPORTED ANGLE ENUM
+        
 		// Disable everything but alpha blending
 		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		glEnable(GL_BLEND);
-		glDisable(GL_TEXTURE_2D);
-		glDisable(GL_FOG);
+		//glDisable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
+		//glDisable(GL_FOG);v
 		glDisable(GL_SCISSOR_TEST);
 		glDisable(GL_STENCIL_TEST);
 
 		// Direct projection
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-		glOrtho(0.0, GLdouble(main_surface->w), GLdouble(main_surface->h), 0.0, 0.0, 1.0);
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glLoadIdentity();
+		MSI()->matrixMode(MS_PROJECTION);
+		MSI()->pushMatrix();
+		MSI()->loadIdentity();
+		MSI()->orthof(0.0, GLfloat(main_surface->w), GLfloat(main_surface->h), 0.0, 0.0, 1.0);
+		MSI()->matrixMode(MS_MODELVIEW);
+		MSI()->pushMatrix();
+		MSI()->loadIdentity();
 
 		// Draw 50% black rectangle
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glColor4f(0.0, 0.0, 0.0, 0.5);
+		MSI()->color4f(0.0, 0.0, 0.0, 0.5);
 		OGL_RenderRect(r);
 
 		// Restore projection and state
-		glPopMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-		glPopAttrib();
+		MSI()->popMatrix();
+		MSI()->matrixMode(MS_PROJECTION);
+		MSI()->popMatrix();
+		//glPopAttrib();
+        //if ( isEnabled_GT2 ) { glEnable ( GL_TEXTURE_2D ) ; } else { glDisable ( GL_TEXTURE_2D ); } //NOT SUPPORTED ANGLE ENUM
+        if ( isEnabled_GCF ) { glEnable ( GL_CULL_FACE ) ; } else { glDisable ( GL_CULL_FACE ); }
+        if ( isEnabled_GDT ) { glEnable ( GL_DEPTH_TEST ) ; } else { glDisable ( GL_DEPTH_TEST ); }
+        //if ( isEnabled_GAT ) { glEnable ( GL_ALPHA_TEST ) ; } else { glDisable ( GL_ALPHA_TEST ); } //NOT SUPPORTED ANGLE ENUM
+        if ( isEnabled_GST ) { glEnable ( GL_STENCIL_TEST ) ; } else { glDisable ( GL_STENCIL_TEST ); }
+        if ( isEnabled_GB )  { glEnable ( GL_BLEND ) ; } else { glDisable ( GL_BLEND ); }
+        //if ( isEnabled_GF )  { glEnable ( GL_FOG ) ; } else { glDisable ( GL_FOG ); } //NOT SUPPORTED ANGLE ENUM
+
 
 		MainScreenSwap();
 		return;
@@ -2068,8 +2113,8 @@ void draw_intro_screen(void)
 		Intro_Blitter.Draw(dst_rect);
 		
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		//glEnableClientState(GL_VERTEX_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
+		//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 		OGL_DoFades(dst_rect.x, dst_rect.y, dst_rect.x + dst_rect.w, dst_rect.y + dst_rect.h);		
 		OGL_SwapBuffers();
 	} else
@@ -2221,7 +2266,11 @@ bool MainScreenIsOpenGL()
 }
 void MainScreenSwap()
 {
+#ifdef USE_ALTERNATE_ACCELERATION
+    swapAcceleratedWindow(main_screen);
+#else
 	SDL_GL_SwapWindow(main_screen);
+#endif
 }
 void MainScreenCenterMouse()
 {

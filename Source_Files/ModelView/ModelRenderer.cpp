@@ -29,6 +29,8 @@
 
 #ifdef HAVE_OPENGL
 
+#include "OGL_Shader.h"
+
 #include "ModelRenderer.h"
 #include <algorithm>
 
@@ -38,7 +40,7 @@ void ModelRenderer::Render(Model3D& Model, ModelRenderShader *Shaders, int NumSh
 	if (NumShaders <= 0) return;
 	if (!Shaders) return;
 	if (Model.Positions.empty()) return;
-	glEnableClientState(GL_VERTEX_ARRAY);
+	//glEnableClientState(GL_VERTEX_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	glVertexPointer(3,GL_FLOAT,0,Model.PosBase());
 	
 	// Effective number of separable shaders when the Z-buffer is absent: none
@@ -141,14 +143,14 @@ void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 	// Do textured rendering
 	if (!Model.TxtrCoords.empty() && TEST_FLAG(Shader.Flags,Textured))
 	{
-		glEnable(GL_TEXTURE_2D);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
+		//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 		glTexCoordPointer(2,GL_FLOAT,0,Model.TCBase());
 	}
 	else
 	{
-		glDisable(GL_TEXTURE_2D);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		//glDisable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
+		//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	}
 	
 	// Check whether to use external lighting
@@ -186,7 +188,7 @@ void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 			}
 		}
 		
-		glEnableClientState(GL_COLOR_ARRAY);
+		//glEnableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 		glColorPointer((GLint)NumCPlanes,GL_FLOAT,0,&ExtLightColors[0]);
 	}
 	else
@@ -196,11 +198,12 @@ void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 		{
 			// May want to recover the currently-set color and do the same kind
 			// of treatment as above
-			glEnableClientState(GL_COLOR_ARRAY);
+			//glEnableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 			glColorPointer(3,GL_FLOAT,0,Model.ColBase());
-		}
-		else
-			glDisableClientState(GL_COLOR_ARRAY);
+        }
+        else {
+			//glDisableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
+        }
 	}
 	
 	// Do whatever texture management is necessary

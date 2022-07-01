@@ -73,6 +73,8 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
 #include "OGL_Render.h"
+#include "MatrixStack.hpp"
+#include "OGL_Shader.h"
 #endif
 
 
@@ -81,9 +83,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 static inline void SetColor(rgb_color& Color)
 {
 	if (map_is_translucent())
-		glColor4us(Color.red, Color.green, Color.blue, 32767);
+		MSI()->color4f((float)Color.red / 65535,(float)Color.green / 65535,(float)Color.blue / 65535, .5);
 	else
-		glColor3usv((unsigned short *)(&Color));
+		MSI()->color4f((float)Color.red / 65535,(float)Color.green / 65535,(float)Color.blue / 65535, 1.0);
 }
 
 // Need to test this so as to find out when the color changes
@@ -102,12 +104,18 @@ extern short ViewWidth, ViewHeight;
 
 void OverheadMap_OGL_Class::begin_overall()
 {
+    GLfloat modelProjection[16];
+    MSI()->getFloatvModelviewProjection(modelProjection);
+    
+    Shader *s = Shader::get(Shader::S_SolidColor);
+    s->enable();
+    s->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
 
 	// Blank out the screen
 	// Do that by painting a black polygon
 	if (!map_is_translucent())
 	{
-		glColor3f(0,0,0);
+		MSI()->color3f(0,0,0);
 		OGL_RenderRect(0, 0, ViewWidth, ViewHeight);
 	}
 	
@@ -120,19 +128,19 @@ void OverheadMap_OGL_Class::begin_overall()
 	
 	// Here's for the overhead map
 	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_ALPHA_TEST);
+	//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 	if (map_is_translucent())
 		glEnable(GL_BLEND);
 	else
 		glDisable(GL_BLEND);
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_FOG);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glDisable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
+	//glDisable(GL_FOG); //NOT SUPPORTED ANGLE ENUM
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 }
 
 void OverheadMap_OGL_Class::end_overall()
 {
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 }
 
 
@@ -141,7 +149,9 @@ void OverheadMap_OGL_Class::begin_polygons()
 	// Polygons are rendered before lines, and use the endpoint array,
 	// so both of them will have it set here. Using the compiled-vertex extension,
 	// however, makes everything the same color :-P
-	glVertexPointer(2,GL_SHORT,GetVertexStride(),GetFirstVertex());
+    glVertexAttribPointer(Shader::ATTRIB_VERTEX, 2, GL_SHORT, GL_FALSE, GetVertexStride(), GetFirstVertex());
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+	//glVertexPointer(2,GL_SHORT,GetVertexStride(),GetFirstVertex());
 
 	// Reset color defaults
 	SavedColor.red = SavedColor.green = SavedColor.blue = 0;
@@ -186,6 +196,9 @@ void OverheadMap_OGL_Class::end_polygons()
 
 void OverheadMap_OGL_Class::DrawCachedPolygons()
 {
+    Shader* lastShader = lastEnabledShader();
+    lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+    
 	glDrawElements(GL_TRIANGLES, PolygonCache.size(),
 		GL_UNSIGNED_SHORT, PolygonCache.data());
 	PolygonCache.clear();
@@ -249,19 +262,34 @@ void OverheadMap_OGL_Class::draw_thing(
 	short shape,
 	short radius)
 {
+    
+    Shader* previousShader = NULL;
+    Shader* rectShader = NULL;
+
 	SetColor(color);
 	
 	// Let OpenGL do the transformation work
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glTranslatef(center.x,center.y,0);
-	glScalef(radius, radius, 1);
+	MSI()->matrixMode(MS_MODELVIEW);
+	MSI()->pushMatrix();
+	MSI()->translatef(center.x,center.y,0);
+	MSI()->scalef(radius, radius, 1);
 
 	switch(shape)
 	{
 	case _rectangle_thing:
 		{
+            previousShader = lastEnabledShader();
+            rectShader = Shader::get(Shader::S_SolidColor);
+            rectShader->enable();
+            
+            GLfloat modelProjection[16];
+            MSI()->getFloatvModelviewProjection(modelProjection);
+            rectShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+
 			OGL_RenderRect(-0.75f, -0.75f, 1.5f, 1.5f);
+            if(previousShader) {
+                previousShader->enable();
+            }
 		}
 		break;
 	case _circle_thing:
@@ -288,14 +316,26 @@ void OverheadMap_OGL_Class::draw_thing(
 				-0.30f - ht, -0.75f,
 				-0.30f + ht, -0.75f + ft
 			};
-			glVertexPointer(2, GL_FLOAT, 0, vertices);
+            
+            //DCW I haven't tested this at all for shader!
+            
+            Shader *lastShader = lastEnabledShader();
+            GLfloat modelProjection[16];
+            MSI()->getFloatvModelviewProjection(modelProjection);
+            
+            lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+            lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+            glVertexAttribPointer(Shader::ATTRIB_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+            glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+			//glVertexPointer(2, GL_FLOAT, 0, vertices);
+            
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 36);
 		}
 		break;
 	default:
 		break;
 	}
-	glPopMatrix();
+	MSI()->popMatrix();
 }
 
 void OverheadMap_OGL_Class::draw_player(
@@ -323,18 +363,28 @@ void OverheadMap_OGL_Class::draw_player(
 	PlayerShape[2][1] = - rear_y;
 	
 	// Let OpenGL do the transformation work
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glTranslatef(center.x,center.y,0);
-	glRotatef(facing*(360.0F/FULL_CIRCLE),0,0,1);
+	MSI()->matrixMode(MS_MODELVIEW);
+	MSI()->pushMatrix();
+	MSI()->translatef(center.x,center.y,0);
+	MSI()->rotatef(facing*(360.0F/FULL_CIRCLE),0,0,1);
 	float scale = 1/float(1 << shrink);
-	glScalef(scale,scale,1);
+	MSI()->scalef(scale,scale,1);
 	glDisable(GL_TEXTURE_2D);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glVertexPointer(2,GL_FLOAT,0,PlayerShape[0]);
-	glDrawArrays(GL_POLYGON,0,3);
+    
+    GLfloat modelProjection[16];
+    MSI()->getFloatvModelviewProjection(modelProjection);
+    
+    Shader *lastShader = lastEnabledShader();
+    glVertexAttribPointer(Shader::ATTRIB_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, PlayerShape[0]);
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+    lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+    
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
+	//glVertexPointer(2,GL_FLOAT,0,PlayerShape[0]);
+	glDrawArrays(GL_TRIANGLE_FAN,0,3);
 
-	glPopMatrix();
+	MSI()->popMatrix();
 }
 
 	
@@ -364,12 +414,12 @@ void OverheadMap_OGL_Class::draw_text(
 	// Set color and location	
 	SetColor(color);
 	
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	glTranslatef(left_location.x,left_location.y,0);	
+	MSI()->matrixMode(MS_MODELVIEW);
+	MSI()->pushMatrix();
+	MSI()->loadIdentity();
+	MSI()->translatef(left_location.x,left_location.y,0);	
 	FontData.OGL_Render(text);
-	glPopMatrix();
+	MSI()->popMatrix();
 }
 	
 void OverheadMap_OGL_Class::set_path_drawing(rgb_color& color)

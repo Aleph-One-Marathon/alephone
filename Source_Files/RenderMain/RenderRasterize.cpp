@@ -46,6 +46,8 @@ Sep 2, 2000 (Loren Petrich):
 #include "screen.h"
 #include "platforms.h"
 
+#include "DrawCache.hpp"
+
 #include <string.h>
 
 
@@ -300,7 +302,7 @@ void RenderRasterizerClass::render_node(
 	
 	// LP: render the liquid surface after the walls and the stuff behind it
 	// and before the stuff before it.
-	if (media && SeeThruLiquids)
+	if (media && SeeThruLiquids && renderStep != kDiffuseDepthNoMedia)
 	{
 		
 		// Render only if between the floor and the ceiling:
@@ -317,6 +319,10 @@ void RenderRasterizerClass::render_node(
 			LiquidSurface.lightsource_index= polygon->media_lightsource_index;
 			LiquidSurface.transfer_mode= media->transfer_mode;
 			LiquidSurface.transfer_mode_data= 0;
+			
+			//We need to flush before drawing see-through liquids.
+			//In the future, we should cache this status so we can buffer media surfaces, too.
+			DC()->drawAll();
 			
 			for (window= node->clipping_windows; window; window= window->next_window)
 			{

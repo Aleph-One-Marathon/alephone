@@ -32,6 +32,8 @@ class RenderRasterize_Shader : public RenderRasterizerClass {
 	
 	long_vector2d leftmost_clip, rightmost_clip;
 
+    FBO colorDepthSansMedia = FBO(0, 0, false); //FBO to hold scene color data (without media) and depth
+    
 protected:
 	virtual void render_node(sorted_node_data *node, bool SeeThruLiquids, RenderStep renderStep);	
 	virtual void store_endpoint(endpoint_data *endpoint, long_vector2d& p);
@@ -53,7 +55,7 @@ protected:
 	
 public:
 
-	RenderRasterize_Shader();
+    RenderRasterize_Shader();
 	~RenderRasterize_Shader();
 
 	virtual void setupGL(Rasterizer_Shader_Class& Rasterizer);

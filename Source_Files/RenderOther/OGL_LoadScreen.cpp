@@ -112,13 +112,13 @@ void OGL_LoadScreen::Progress(const int progress)
 
 	if (useProgress) 
 	{
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glTranslated(x_offset, y_offset, 0.0);
-		glScaled(x_scale, y_scale, 1.0);
+		MSI()->matrixMode(MS_MODELVIEW);
+		MSI()->pushMatrix();
+		MSI()->translatef(x_offset, y_offset, 0.0);
+		MSI()->scalef(x_scale, y_scale, 1.0);
 		
 		// draw the progress bar background
-		glColor3us(colors[0].red, colors[0].green, colors[0].blue);
+		SglColor3us(colors[0].red, colors[0].green, colors[0].blue);
 		OGL_RenderRect(x, y, w, h);
 		
 		int height = h, width = w;
@@ -134,10 +134,10 @@ void OGL_LoadScreen::Progress(const int progress)
 		}
 			
 		// draw the progress bar foreground
-		glColor3us(colors[1].red, colors[1].green, colors[1].blue);
+		SglColor3us(colors[1].red, colors[1].green, colors[1].blue);
 		OGL_RenderRect(left, top, width, height);
 		
-		glPopMatrix();
+		MSI()->popMatrix();
 	}
 	
 	OGL_SwapBuffers();

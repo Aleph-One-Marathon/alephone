@@ -31,6 +31,7 @@
 
 #ifdef HAVE_OPENGL
 #include "OGL_Render.h"
+#include "MatrixStack.hpp"
 
 const int OGL_Blitter::tile_size;
 std::set<OGL_Blitter*> *OGL_Blitter::m_blitter_registry = NULL;
@@ -83,7 +84,7 @@ void OGL_Blitter::_LoadTextures()
 
 	uint32 rgb_mask = ~(t->format->Amask);
 
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 	int i = 0;
 	for (int y = 0; y < v_rects; y++)
 	{
@@ -198,17 +199,24 @@ void OGL_Blitter::Draw(const Image_Rect& dst, const Image_Rect& raw_src)
 	if (!m_textures_loaded)
 		return;
 
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
+    //glPushAttrib(GL_ALL_ATTRIB_BITS);
+//    bool isEnabled_GT2 = glIsEnabled (GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
+    bool isEnabled_GCF = glIsEnabled (GL_CULL_FACE);
+    bool isEnabled_GDT = glIsEnabled (GL_DEPTH_TEST);
+//    bool isEnabled_GAT = glIsEnabled (GL_ALPHA_TEST);  //NOT SUPPORTED ANGLE ENUM
+    bool isEnabled_GST = glIsEnabled (GL_STENCIL_TEST);
+    bool isEnabled_GB = glIsEnabled (GL_BLEND);
+//    bool isEnabled_GF = glIsEnabled (GL_FOG);  //NOT SUPPORTED ANGLE ENUM
 	
 	// disable everything but alpha blending and clipping
 	glDisable(GL_DEPTH_TEST);
 //	glDisable(GL_ALPHA_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDisable(GL_FOG);
-//	glDisable(GL_SCISSOR_TEST);
+//	glDisable(GL_FOG);  //NOT SUPPORTED ANGLE ENUM
+	//  glDisable(GL_SCISSOR_TEST);
 //	glDisable(GL_STENCIL_TEST);
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 
 	Image_Rect src;
 	if (m_src.w != m_scaled_src.w)
@@ -232,20 +240,20 @@ void OGL_Blitter::Draw(const Image_Rect& dst, const Image_Rect& raw_src)
 		src.h = raw_src.h;
 	}
 
-	GLdouble x_scale = dst.w / (GLdouble) src.w;
-	GLdouble y_scale = dst.h / (GLdouble) src.h;
+	GLfloat x_scale = dst.w / (GLfloat) src.w;
+	GLfloat y_scale = dst.h / (GLfloat) src.h;
 	
 	bool rotating = (rotation > 0.1 || rotation < -0.1);
 	if (rotating)
 	{
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glTranslatef((dst.x + dst.w/2.0), (dst.y + dst.h/2.0), 0.0);
-		glRotatef(rotation, 0.0, 0.0, 1.0);
-		glTranslatef(-(dst.x + dst.w/2.0), -(dst.y + dst.h/2.0), 0.0);
+		MSI()->matrixMode(MS_MODELVIEW);
+		MSI()->pushMatrix();
+		MSI()->translatef((dst.x + dst.w/2.0), (dst.y + dst.h/2.0), 0.0);
+		MSI()->rotatef(rotation, 0.0, 0.0, 1.0);
+		MSI()->translatef(-(dst.x + dst.w/2.0), -(dst.y + dst.h/2.0), 0.0);
 	}
 	
-	glColor4f(tint_color_r, tint_color_g, tint_color_b, tint_color_a);
+	MSI()->color4f(tint_color_r, tint_color_g, tint_color_b, tint_color_a);
 	
 	for (int i = 0; i < m_rects.size(); i++)
 	{
@@ -255,20 +263,20 @@ void OGL_Blitter::Draw(const Image_Rect& dst, const Image_Rect& raw_src)
 		    src.y + src.h < m_rects[i].y)
 			continue;
 		
-		GLdouble tx = MAX(0, src.x - m_rects[i].x);
-		GLdouble ty = MAX(0, src.y - m_rects[i].y);
-		GLdouble tw = MIN(m_rects[i].w, src.x + src.w - m_rects[i].x) - tx;
-		GLdouble th = MIN(m_rects[i].h, src.y + src.h - m_rects[i].y) - ty;
+		GLfloat tx = MAX(0, src.x - m_rects[i].x);
+		GLfloat ty = MAX(0, src.y - m_rects[i].y);
+		GLfloat tw = MIN(m_rects[i].w, src.x + src.w - m_rects[i].x) - tx;
+		GLfloat th = MIN(m_rects[i].h, src.y + src.h - m_rects[i].y) - ty;
 		
-		GLdouble VMin = tx / (GLdouble) m_tile_width;
-		GLdouble VMax = (tx + tw) / (GLdouble) m_tile_width;
-		GLdouble UMin = ty / (GLdouble) m_tile_height;
-		GLdouble UMax = (ty + th) / (GLdouble) m_tile_height;
+		GLfloat VMin = tx / (GLfloat) m_tile_width;
+		GLfloat VMax = (tx + tw) / (GLfloat) m_tile_width;
+		GLfloat UMin = ty / (GLfloat) m_tile_height;
+		GLfloat UMax = (ty + th) / (GLfloat) m_tile_height;
 		
-		GLdouble tleft   = ((m_rects[i].x + tx) * x_scale) + (GLdouble) (dst.x - (src.x * x_scale));
-		GLdouble tright  = tleft + (tw * x_scale);
-		GLdouble ttop    = ((m_rects[i].y + ty) * y_scale) + (GLdouble) (dst.y - (src.y * y_scale));
-		GLdouble tbottom = ttop + (th * y_scale);
+		GLfloat tleft   = ((m_rects[i].x + tx) * x_scale) + (GLfloat) (dst.x - (src.x * x_scale));
+		GLfloat tright  = tleft + (tw * x_scale);
+		GLfloat ttop    = ((m_rects[i].y + ty) * y_scale) + (GLfloat) (dst.y - (src.y * y_scale));
+		GLfloat tbottom = ttop + (th * y_scale);
 		
 		glBindTexture(GL_TEXTURE_2D, m_refs[i]);
 		
@@ -277,8 +285,16 @@ void OGL_Blitter::Draw(const Image_Rect& dst, const Image_Rect& raw_src)
 	}
 	
 	if (rotating)
-		glPopMatrix();
-	glPopAttrib();
+		MSI()->popMatrix();
+    
+	 //glPopAttrib();
+   //if ( isEnabled_GT2 ) { glEnable ( GL_TEXTURE_2D ) ; } else { glDisable ( GL_TEXTURE_2D ); }  //NOT SUPPORTED ANGLE ENUM
+   if ( isEnabled_GCF ) { glEnable ( GL_CULL_FACE ) ; } else { glDisable ( GL_CULL_FACE ); }
+   if ( isEnabled_GDT ) { glEnable ( GL_DEPTH_TEST ) ; } else { glDisable ( GL_DEPTH_TEST ); }
+   //if ( isEnabled_GAT ) { glEnable ( GL_ALPHA_TEST ) ; } else { glDisable ( GL_ALPHA_TEST ); }  //NOT SUPPORTED ANGLE ENUM
+   if ( isEnabled_GST ) { glEnable ( GL_STENCIL_TEST ) ; } else { glDisable ( GL_STENCIL_TEST ); }
+   if ( isEnabled_GB )  { glEnable ( GL_BLEND ) ; } else { glDisable ( GL_BLEND ); }
+   //if ( isEnabled_GF )  { glEnable ( GL_FOG ) ; } else { glDisable ( GL_FOG ); }  //NOT SUPPORTED ANGLE ENUM
 }
 
 void OGL_Blitter::Register(OGL_Blitter *B)

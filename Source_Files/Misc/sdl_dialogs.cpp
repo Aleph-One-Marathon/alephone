@@ -2348,7 +2348,7 @@ int dialog::finish(bool play_sound)
 
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive()) {
-        glColor4f(0, 0, 0, 1);
+        MSI()->color4f(0, 0, 0, 1);
 #ifdef OPENGL_DOESNT_COPY_ON_SWAP
         for (int i = 0; i < 2; i++)  // execute for both buffers
 #endif
@@ -2376,8 +2376,8 @@ int dialog::finish(bool play_sound)
 	top_dialog = parent_dialog;
 	parent_dialog = NULL;
 	if (top_dialog) {
-		clear_screen();
-		top_dialog->draw();
+        clear_screen();
+        top_dialog->draw();
 	}
         
 	// Allow dialog to be run again later

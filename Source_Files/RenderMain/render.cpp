@@ -238,6 +238,7 @@ extern WindowPtr screen_window;
 #include "Rasterizer_OGL.h"
 #include "RenderRasterize_Shader.h"
 #include "Rasterizer_Shader.h"
+#include "DrawCache.hpp"
 #endif
 #include "preferences.h"
 #include "screen.h"
@@ -452,8 +453,8 @@ void render_view(
 		// LP: now from the visibility-tree class
 		/* build the render tree, regardless of map mode, so the automap updates while active */
 		RenderVisTree.view = view;
-		RenderVisTree.build_render_tree();
-		
+        RenderVisTree.build_render_tree();
+        
 		/* do something complicated and difficult to explain */
 		if (!view->overhead_map_active || map_is_translucent())
 		{			
@@ -492,6 +493,8 @@ void render_view(
 			// LP: now from the clipping/rasterizer class
 #ifdef HAVE_OPENGL			
 			RenderRasterizerClass *RenPtr = (graphics_preferences->screen_mode.acceleration == _opengl_acceleration) ? &Render_Shader : &Render_Classic;
+            
+            DC()->resetStats();
 #else
 			RenderRasterizerClass *RenPtr = &Render_Classic;
 #endif
