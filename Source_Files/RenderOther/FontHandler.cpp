@@ -288,7 +288,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
      glBindTexture(GL_TEXTURE_2D,TxtrID);
     OGL_Register(this);
      
-     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    // glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -573,7 +573,7 @@ int FontSpecifier::DrawText(SDL_Surface *s, const char *text, int x, int y, uint
 		
 	uint8 r, g, b;
 	SDL_GetRGB(pixel, s->format, &r, &g, &b);
-	glColor4ub(r, g, b, 255);
+	//glColor4ub(r, g, b, 255);
 	
 	// draw into both buffers
 	for (int i = 0; i < 2; i++)

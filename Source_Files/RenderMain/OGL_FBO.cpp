@@ -99,7 +99,7 @@ void FBO::setup(GLuint w, GLuint h, bool srgb) {
   glBindFramebuffer(GL_FRAMEBUFFER, 1);
   glBindRenderbuffer(GL_RENDERBUFFER, 1);
   
-  glPopGroupMarkerEXT();
+  //glPopGroupMarkerEXT();
 }
 
 void FBO::activate(bool clear, GLuint fboTarget) {

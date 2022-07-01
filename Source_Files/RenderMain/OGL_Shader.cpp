@@ -312,26 +312,26 @@ void Shader::init() {
 
     assert(!_vert.empty());
     
-    logError("Parsing vertex shader: %s\n", shaderName.c_str());
+    logTrace("Parsing vertex shader: %s\n", shaderName.c_str());
     
-    GLuint vertexShader = parseShader(_vert.c_str(), GL_VERTEX_SHADER_ARB);
+    GLuint vertexShader = parseShader(_vert.c_str(), GL_VERTEX_SHADER);
     
     if(!vertexShader) {
         _vert = defaultVertexPrograms["error"];
-        vertexShader = parseShader(_vert.c_str(), GL_VERTEX_SHADER_ARB);
+        vertexShader = parseShader(_vert.c_str(), GL_VERTEX_SHADER);
     }
     
     glAttachShader((GLuint)(size_t)_programObj, (GLuint)(size_t)vertexShader);
     glDeleteShader((GLuint)(size_t)vertexShader);
 
-    logError("Parsing fragment shader: %s\n", shaderName.c_str());
+    logTrace("Parsing fragment shader: %s\n", shaderName.c_str());
     
     assert(!_frag.empty());
-    GLuint fragmentShader = parseShader(_frag.c_str(), GL_FRAGMENT_SHADER_ARB);
-    glPushGroupMarkerEXT(0, "Draw ES Quad");
+    GLuint fragmentShader = parseShader(_frag.c_str(), GL_FRAGMENT_SHADER);
+   // glPushGroupMarkerEXT(0, "Draw ES Quad");
     if(!fragmentShader) {
         _frag = defaultFragmentPrograms["error"];
-        fragmentShader = parseShader(_frag.c_str(), GL_FRAGMENT_SHADER_ARB);
+        fragmentShader = parseShader(_frag.c_str(), GL_FRAGMENT_SHADER);
     }
     
     glAttachShader((GLuint)(size_t)_programObj, (GLuint)(size_t)fragmentShader);
@@ -899,6 +899,7 @@ void initDefaultPrograms() {
         "#endif\n"
         "    vec4 color = texture2D(texture0, textureUV.xy);\n"
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
+        "    fogFactor = 1.0;\n"
         "    gl_FragColor = vec4(mix(fogColor.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
 //        "    if ( gl_FragColor.a == 0.0 ) {discard;} //discard transparent fragments so they don't write on the depth buffer \n "
         "}\n";
@@ -934,6 +935,7 @@ void initDefaultPrograms() {
         "  color.rgb = (color.rgb - 0.2) * 1.25;\n"
         "#endif\n"
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
+        "    fogFactor = 1.0;"
         "    gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
 
@@ -992,6 +994,7 @@ void initDefaultPrograms() {
         "   intensity = intensity * intensity;  // approximation of pow(intensity, 2.2)\n"
         "#endif\n"
         "   float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
+        "    fogFactor = 1.0;\n"
         "   gl_FragColor = vec4(mix(fogColor.rgb, intensity, fogFactor), vertexColor.a * color.a);\n"
 //        "    if ( gl_FragColor.a == 0.0 ) {discard;} //discard transparent fragments so they don't write on the depth buffer \n "
         "}\n";
@@ -1044,6 +1047,7 @@ void initDefaultPrograms() {
         "   intensity = intensity * intensity;  // approximation of pow(intensity, 2.2)\n"
         "#endif\n"
         "   float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
+        "    fogFactor = 1.0;\n"
         "   gl_FragColor = vec4(mix(fogColor.rgb, intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
 
@@ -1068,6 +1072,7 @@ void initDefaultPrograms() {
         "    vec4 color = texture2D(texture0, textureUV.xy);\n"
         "    vec3 intensity = vec3(0.0, 0.0, 0.0);\n"
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
+        "    fogFactor = 1.0;"
         "    gl_FragColor = vec4(mix(fogColor.rgb, intensity, fogFactor), vertexColor.a * color.a * visibility);\n"
         "}\n";
     defaultVertexPrograms["invisible_bloom"] = defaultVertexPrograms["invisible"];
@@ -1091,6 +1096,7 @@ void initDefaultPrograms() {
         "    vec4 color = texture2D(texture0, textureUV.xy);\n"
         "    vec3 intensity = vec3(0.0, 0.0, 0.0);\n"
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
+        "    fogFactor = 1.0;\n"
         "    gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), intensity, fogFactor), vertexColor.a * color.a * visibility);\n"
         "}\n";
     
@@ -1282,7 +1288,7 @@ void initDefaultPrograms() {
         "       diffuse = diffuse * max((size*size - distance*distance)/(size*size), 0.0 );\n" //Attenuation
         "       lightAddition = lightAddition + color * diffuse * lightColor;\n"
         "    }\n"
-    
+        " fogFactor = 1.0; \n"
         "    gl_FragColor = vec4(mix(fogColor.rgb, lightAddition.rgb + color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
 
         "}\n";
@@ -1433,7 +1439,7 @@ void initDefaultPrograms() {
         "       diffuse = diffuse * max((size*size - distance*distance)/(size*size), 0.0 );\n" //Attenuation
         "       lightAddition = lightAddition + color * diffuse * lightColor;\n"
         "   }\n"
-        
+        " fogFactor = 1.0; \n"
         "    gl_FragColor = vec4(mix(fogColor.rgb, lightAddition.rgb + color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
     defaultVertexPrograms["bump_bloom"] = defaultVertexPrograms["bump"];
@@ -1489,6 +1495,7 @@ void initDefaultPrograms() {
         "    intensity = intensity * intensity; // approximation of pow(intensity, 2.2)\n"
         "#endif\n"
         "    float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
+        "    fogFactor = 1.0;"
         "    gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
 //        defaultFragmentPrograms["sprite"];

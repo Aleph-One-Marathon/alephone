@@ -384,18 +384,18 @@ void Movie::AddFrame(FrameType ftype)
         GLint fbx = viewportDimensions.x, fby = viewportDimensions.y, fbWidth = viewportDimensions.w, fbHeight = viewportDimensions.h;
 
         // Copy default frame buffer to another one with correct viewport resized/pixels rescaled
-        frameBufferObject->activate(true, GL_DRAW_FRAMEBUFFER_EXT);
+        frameBufferObject->activate(true, GL_DRAW_FRAMEBUFFER);
         glBlitFramebuffer(fbx, fby, fbWidth + fbx, fbHeight + fby, view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
         frameBufferObject->deactivate();
 
         // Read our new frame buffer with rescaled pixels
-        frameBufferObject->activate(true, GL_READ_FRAMEBUFFER_EXT);
-        glReadPixels(view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, &videobuf.front());
+        frameBufferObject->activate(true, GL_READ_FRAMEBUFFER);
+        glReadPixels(view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_RGBA, GL_UNSIGNED_BYTE, &videobuf.front());
         frameBufferObject->deactivate();
 
 		// Copy pixel buffer (which is upside-down) to surface
 		for (int y = 0; y < view_rect.h; y++)
-			memcpy((uint8 *)temp_surface->pixels + temp_surface->pitch * y, &videobuf.front() + view_rect.w * 4 * (view_rect.h - y - 1), view_rect.w * 4);
+            SDL_ConvertPixels(view_rect.w, 1, temp_surface->format->format, &videobuf.front() + view_rect.w * 4 * (view_rect.h - y - 1), temp_surface->pitch, SDL_PIXELFORMAT_XBGR8888, (uint8*)temp_surface->pixels + temp_surface->pitch * y, temp_surface->pitch);
 	}
 #endif
 	

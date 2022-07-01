@@ -263,7 +263,7 @@ void FlatBumpTexture() {
 		
 		GLubyte flatTextureData[4] = {0x80, 0x80, 0xFF, 0x80};
 		
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -307,12 +307,11 @@ void OGL_StartTextures()
 		GL_NEAREST_MIPMAP_LINEAR,
 		GL_LINEAR_MIPMAP_LINEAR
 	};
-	const int NUMBER_OF_COLOR_FORMATS = 3;
+	const int NUMBER_OF_COLOR_FORMATS = 2;
 	const GLenum ColorFormatList[NUMBER_OF_COLOR_FORMATS] = 
 	{
 		GL_RGBA8,
-		GL_RGBA4,
-		GL_RGBA2
+		GL_RGBA4
 	};
 	
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
@@ -1219,7 +1218,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 			//internalFormat = GL_RGB8;
             internalFormat = GL_RGBA; //DCW I hope this is ok
 		else if (internalFormat == GL_RGBA4)
-			internalFormat = GL_RGB5;
+			internalFormat = 0;
 	} 
 	else if (!IsBlended() && internalFormat == GL_RGBA4)
 	{
@@ -1233,23 +1232,14 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 	if(load_as_sRGB) {
 	  switch(internalFormat) {
 	  case GL_RGB:
-	  case GL_R3_G3_B2:
-	  case GL_RGB4:
-	  case GL_RGB5:
 	  case GL_RGB8:
-	  case GL_RGB10:
-	  case GL_RGB12:
-	  case GL_RGB16:
 	    internalFormat = GL_SRGB;
 	    break;
 	  case GL_RGBA:
-	  case GL_RGBA2:
 	  case GL_RGBA4:
 	  case GL_RGB5_A1:
 	  case GL_RGBA8:
 	  case GL_RGB10_A2:
-	  case GL_RGBA12:
-	  case GL_RGBA16:
 	    internalFormat = GL_SRGB_ALPHA;
 	    break;
 #if defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
@@ -1418,7 +1408,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 			else
 #endif
 			{
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);			
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);			
 			}	
 		}
 		break;
@@ -1426,8 +1416,8 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 	case OGL_Txtr_Inhabitant:
 	case OGL_Txtr_WeaponsInHand:
 		// Sprites have both horizontal and vertical limits
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
             
 		break;
 	}
@@ -1702,7 +1692,7 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 					/*gluBuild2DMipmaps(GL_TEXTURE_2D, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
                               GL_RGBA, GL_UNSIGNED_BYTE, Image.get()->GetBuffer());*/
                     
-                    glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+                    //glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
                     // OpenGL GL_RGBA is 6407 and GL_RGB is 6408
                     assert ( internalFormat == GL_RGBA8 );
                     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
@@ -1782,7 +1772,7 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 	}
 	
 	// Set texture-mapping features
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, TxtrTypeInfo.NearFilter);
 	if ((TxtrTypeInfo.FarFilter == GL_NEAREST_MIPMAP_NEAREST || TxtrTypeInfo.FarFilter == GL_LINEAR_MIPMAP_NEAREST || TxtrTypeInfo.FarFilter == GL_NEAREST_MIPMAP_LINEAR || TxtrTypeInfo.FarFilter == GL_LINEAR_MIPMAP_LINEAR) && !mipmapsLoaded)
 	{
@@ -1795,8 +1785,8 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 
 	
 	// Like sprites, model textures have both horizontal and vertical limits
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 }
 

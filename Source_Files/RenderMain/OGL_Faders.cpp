@@ -160,11 +160,11 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 				MultAlpha(Fader.Color,BlendColor);
 				MSI()->color3f(BlendColor[0], BlendColor[1], BlendColor[2]);
                 s->setVec4(Shader::U_Color, MSI()->color());
-				glEnable(GL_COLOR_LOGIC_OP);
-				glLogicOp(GL_XOR);
+				//glEnable(GL_COLOR_LOGIC_OP);
+				//glLogicOp(GL_XOR);
 				glDrawArrays(GL_TRIANGLE_FAN,0,4);
 				// Revert to defaults
-				glDisable(GL_COLOR_LOGIC_OP);
+				//glDisable(GL_COLOR_LOGIC_OP);
 				glEnable(GL_BLEND);
 			}
 			break;

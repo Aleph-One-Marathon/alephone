@@ -240,7 +240,7 @@ void RenderRasterize_Shader::render_tree() {
         glBindTexture(GL_TEXTURE_2D, colorDepthSansMedia.texID);
         glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
         glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glPopGroupMarkerEXT();
+        //glPopGroupMarkerEXT();
         glActiveTexture(GL_TEXTURE0);
     }
     
@@ -1058,7 +1058,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
     glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.PosBase());
     glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
     
-	glClientActiveTexture(GL_TEXTURE0);
+	//glClientActiveTexture(GL_TEXTURE0);
 	if (ModelPtr->Model.TxtrCoords.empty()) {
 		//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	} else {
@@ -1071,7 +1071,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
     glVertexAttribPointer(Shader::ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.NormBase());
     glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
     
-	glClientActiveTexture(GL_TEXTURE1);
+	//glClientActiveTexture(GL_TEXTURE1);
 	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	//glTexCoordPointer(4,GL_FLOAT,sizeof(vec4),ModelPtr->Model.TangentBase());
     glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS4, 4, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.TangentBase());
@@ -1161,7 +1161,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 
 	//glDisableClientState(GL_NORMAL_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
-	glClientActiveTexture(GL_TEXTURE0);
+	//glClientActiveTexture(GL_TEXTURE0);
 	if (ModelPtr->Model.TxtrCoords.empty()) {
 		//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	}

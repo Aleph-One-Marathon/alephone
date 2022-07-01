@@ -41,7 +41,7 @@ void ModelRenderer::Render(Model3D& Model, ModelRenderShader *Shaders, int NumSh
 	if (!Shaders) return;
 	if (Model.Positions.empty()) return;
 	//glEnableClientState(GL_VERTEX_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
-	glVertexPointer(3,GL_FLOAT,0,Model.PosBase());
+	//glVertexPointer(3,GL_FLOAT,0,Model.PosBase());
 	
 	// Effective number of separable shaders when the Z-buffer is absent: none
 	// (the Z-buffer enables separability).
@@ -145,7 +145,7 @@ void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 	{
 		//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 		//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
-		glTexCoordPointer(2,GL_FLOAT,0,Model.TCBase());
+		//glTexCoordPointer(2,GL_FLOAT,0,Model.TCBase());
 	}
 	else
 	{
@@ -189,7 +189,7 @@ void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 		}
 		
 		//glEnableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
-		glColorPointer((GLint)NumCPlanes,GL_FLOAT,0,&ExtLightColors[0]);
+		//glColorPointer((GLint)NumCPlanes,GL_FLOAT,0,&ExtLightColors[0]);
 	}
 	else
 	{
@@ -199,7 +199,7 @@ void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 			// May want to recover the currently-set color and do the same kind
 			// of treatment as above
 			//glEnableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
-			glColorPointer(3,GL_FLOAT,0,Model.ColBase());
+			//glColorPointer(3,GL_FLOAT,0,Model.ColBase());
         }
         else {
 			//glDisableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION

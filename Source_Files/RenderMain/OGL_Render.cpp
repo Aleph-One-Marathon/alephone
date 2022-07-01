@@ -515,7 +515,7 @@ bool OGL_StartRun()
 	if (OGL_IsActive()) OGL_StopRun();
 
 #ifdef __WIN32__
-	glewInit();
+	
 #endif
 
 	Wanting_sRGB = false;
@@ -1548,7 +1548,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 			
 			// Set up for vertex lighting
 			//glEnableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
-			glColorPointer(3,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].Color);
+			//glColorPointer(3,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].Color);
 			
 			// Calculate the lighting
 			for (int k=0; k<NumVertices; k++)
@@ -1591,8 +1591,8 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	SetProjectionType(Projection_OpenGL_Eye);
 	
 	// Location of data:
-	glVertexPointer(4,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].Vertex);
-	glTexCoordPointer(2,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
+	//glVertexPointer(4,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].Vertex);
+	//glTexCoordPointer(2,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
 	
 	// Painting a texture...
 	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
@@ -1770,7 +1770,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		if (PolygonVariableShade)
 		{
 			//glEnableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
-			glColorPointer(3,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].GlowColor);
+			//glColorPointer(3,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].GlowColor);
 			glDrawElements(GL_TRIANGLES,3*(NumVertices-2),GL_UNSIGNED_INT,VertIndices);
 			//glDisableClientState(GL_COLOR_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 		}
@@ -1834,7 +1834,7 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 		}
 		// Fog is flat-colored
 		//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
-		glVertexPointer(3,GL_SHORT,sizeof(AltExtendedVertexData),AltEVList[0].Vertex);
+		//glVertexPointer(3,GL_SHORT,sizeof(AltExtendedVertexData),AltEVList[0].Vertex);
 		
 		// Go!
 		glDrawArrays(GL_TRIANGLE_FAN,0,NumVertices);
@@ -1953,8 +1953,8 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	SetProjectionType(Projection_Screen);
 	
 	// Location of data:
-	glVertexPointer(3,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].Vertex);
-	glTexCoordPointer(2,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
+	//glVertexPointer(3,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].Vertex);
+	//glTexCoordPointer(2,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
 	
 	// Painting a texture...
 	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
@@ -2163,8 +2163,8 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	MSI()->color4f(Color[0],Color[1],Color[2],Color[3]);
 	
 	// Location of data:
-	glVertexPointer(3,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].Vertex);
-	glTexCoordPointer(2,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
+	//glVertexPointer(3,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].Vertex);
+	//glTexCoordPointer(2,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
 	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 		
 	// Go!
@@ -2629,7 +2629,7 @@ void SetupStaticMode(int16 transfer_data)
 		}
 		
 		// Get ready to use those static patterns
-		glEnable(GL_POLYGON_STIPPLE);
+		//glEnable(GL_POLYGON_STIPPLE);
 #else
 		// Use the stencil buffer to create the static effect
 		glEnable(GL_STENCIL_TEST);
@@ -2651,7 +2651,7 @@ void TeardownStaticMode()
 		// Restore the default blending
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		// glDisable(GL_COLOR_LOGIC_OP);
-		glDisable(GL_POLYGON_STIPPLE);
+		//glDisable(GL_POLYGON_STIPPLE);
 #else
 		// Done with the stencil buffer
 		glDisable(GL_STENCIL_TEST);
@@ -2984,7 +2984,7 @@ bool OGL_RenderCrosshairs()
                     static_cast<GLfloat>(LenMin + WidthMin), static_cast<GLfloat>(LenMax + HeightMin),
                     static_cast<GLfloat>(LenMin + WidthMin), static_cast<GLfloat>(LenMax + HeightMax)
                 };
-                glVertexPointer(2, GL_FLOAT, 0, vertices);
+                //glVertexPointer(2, GL_FLOAT, 0, vertices);
 				glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
 			}
 			break;
