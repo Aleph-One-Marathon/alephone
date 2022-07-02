@@ -739,6 +739,15 @@
     <ClCompile Include="..\Source_Files\Network\PortForward.cpp">
       <Filter>Network\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source_Files\RenderOther\AccelerationPlatform.cpp">
+      <Filter>RenderOther\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source_Files\RenderMain\DrawCache.cpp">
+      <Filter>RenderMain\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source_Files\RenderMain\MatrixStack.cpp">
+      <Filter>RenderMain\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source_Files\CSeries\BStream.h">
@@ -1436,6 +1445,18 @@
     </ClInclude>
     <ClInclude Include="..\Source_Files\Network\PortForward.h">
       <Filter>Network\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source_Files\RenderOther\MacOSHelper.h">
+      <Filter>RenderOther\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source_Files\RenderOther\AccelerationPlatform.h">
+      <Filter>RenderOther\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source_Files\RenderMain\DrawCache.hpp">
+      <Filter>RenderMain\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source_Files\RenderMain\MatrixStack.hpp">
+      <Filter>RenderMain\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

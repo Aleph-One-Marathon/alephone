@@ -27,6 +27,7 @@ function MsBuild {
 
 function GetCommonFiles() {
 	Copy-Item $exe_path -Destination $output_package_folder
+	Copy-Item (Join-Path -Path (Split-Path -Path $exe_path) -ChildPath "*.dll") -Destination $output_package_folder
 	Copy-Item (Join-Path -Path $root_directory -ChildPath "THANKS") -Destination (Join-Path -Path $output_package_folder -ChildPath "THANKS.txt")
 	Copy-Item (Join-Path -Path $root_directory -ChildPath "COPYING") -Destination (Join-Path -Path $output_package_folder -ChildPath "COPYING.txt")
 	Copy-Item (Join-Path -Path $root_directory -ChildPath "README") -Destination (Join-Path -Path $output_package_folder -ChildPath "README.txt")

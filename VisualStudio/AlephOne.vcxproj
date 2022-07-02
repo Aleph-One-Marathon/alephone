@@ -184,48 +184,58 @@
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgInstalledDir>..\vcpkg\installed-x86-windows</VcpkgInstalledDir>
+    <VcpkgAdditionalInstallOptions>--overlay-triplets=..\vcpkg\custom-triplets</VcpkgAdditionalInstallOptions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon Infinity|Win32'" Label="Vcpkg">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgInstalledDir>..\vcpkg\installed-x86-windows</VcpkgInstalledDir>
     <VcpkgConfiguration>Release</VcpkgConfiguration>
+    <VcpkgAdditionalInstallOptions>--overlay-triplets=..\vcpkg\custom-triplets</VcpkgAdditionalInstallOptions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon 2|Win32'" Label="Vcpkg">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgInstalledDir>..\vcpkg\installed-x86-windows</VcpkgInstalledDir>
     <VcpkgConfiguration>Release</VcpkgConfiguration>
+    <VcpkgAdditionalInstallOptions>--overlay-triplets=..\vcpkg\custom-triplets</VcpkgAdditionalInstallOptions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon|Win32'" Label="Vcpkg">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgInstalledDir>..\vcpkg\installed-x86-windows</VcpkgInstalledDir>
     <VcpkgConfiguration>Release</VcpkgConfiguration>
+    <VcpkgAdditionalInstallOptions>--overlay-triplets=..\vcpkg\custom-triplets</VcpkgAdditionalInstallOptions>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgInstalledDir>..\vcpkg\installed-x86-windows</VcpkgInstalledDir>
+    <VcpkgAdditionalInstallOptions>--overlay-triplets=..\vcpkg\custom-triplets</VcpkgAdditionalInstallOptions>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgInstalledDir>..\vcpkg\installed-x64-windows</VcpkgInstalledDir>
+    <VcpkgAdditionalInstallOptions>--overlay-triplets=..\vcpkg\custom-triplets</VcpkgAdditionalInstallOptions>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgInstalledDir>..\vcpkg\installed-x64-windows</VcpkgInstalledDir>
+    <VcpkgAdditionalInstallOptions>--overlay-triplets=..\vcpkg\custom-triplets</VcpkgAdditionalInstallOptions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon Infinity|x64'" Label="Vcpkg">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgInstalledDir>..\vcpkg\installed-x64-windows</VcpkgInstalledDir>
     <VcpkgConfiguration>Release</VcpkgConfiguration>
+    <VcpkgAdditionalInstallOptions>--overlay-triplets=..\vcpkg\custom-triplets</VcpkgAdditionalInstallOptions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon 2|x64'" Label="Vcpkg">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgInstalledDir>..\vcpkg\installed-x64-windows</VcpkgInstalledDir>
     <VcpkgConfiguration>Release</VcpkgConfiguration>
+    <VcpkgAdditionalInstallOptions>--overlay-triplets=..\vcpkg\custom-triplets</VcpkgAdditionalInstallOptions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon|x64'" Label="Vcpkg">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgInstalledDir>..\vcpkg\installed-x64-windows</VcpkgInstalledDir>
     <VcpkgConfiguration>Release</VcpkgConfiguration>
+    <VcpkgAdditionalInstallOptions>--overlay-triplets=..\vcpkg\custom-triplets</VcpkgAdditionalInstallOptions>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
@@ -248,6 +258,12 @@
       <AdditionalDependencies>SDL2maind.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;wldap32.lib;crypt32.lib;Secur32.lib;dsound.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmt.lib</IgnoreSpecificDefaultLibraries>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(VcpkgInstalledDir)\$(VcpkgTriplet)\bin\* $(OutDir)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy Angle dlls to output directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -270,6 +286,12 @@
       <IgnoreSpecificDefaultLibraries>libcmtd.lib</IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(VcpkgInstalledDir)\$(VcpkgTriplet)\bin\* $(OutDir)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy Angle dlls to output directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon Infinity|Win32'">
     <ClCompile>
@@ -292,10 +314,16 @@
       <IgnoreSpecificDefaultLibraries>libcmtd.lib</IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(VcpkgInstalledDir)\$(VcpkgTriplet)\bin\* $(OutDir)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy Angle dlls to output directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon 2|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>HAVE_SNDFILE;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_FFMPEG;HAVE_SNDFILE;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;BOOST_UUID_FORCE_AUTO_LINK;SPEEX;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_LUA;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -314,6 +342,12 @@
       <IgnoreSpecificDefaultLibraries>libcmtd.lib</IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(VcpkgInstalledDir)\$(VcpkgTriplet)\bin\* $(OutDir)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy Angle dlls to output directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon|Win32'">
     <ClCompile>
@@ -336,6 +370,12 @@
       <IgnoreSpecificDefaultLibraries>libcmtd.lib</IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(VcpkgInstalledDir)\$(VcpkgTriplet)\bin\* $(OutDir)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy Angle dlls to output directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -350,6 +390,12 @@
       <AdditionalDependencies>SDL2maind.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;wldap32.lib;crypt32.lib;Secur32.lib;dsound.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(VcpkgInstalledDir)\$(VcpkgTriplet)\bin\* $(OutDir)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy Angle dlls to output directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -366,6 +412,12 @@
       <SubSystem>Windows</SubSystem>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(VcpkgInstalledDir)\$(VcpkgTriplet)\bin\* $(OutDir)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy Angle dlls to output directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon Infinity|x64'">
     <ClCompile>
@@ -382,6 +434,12 @@
       <SubSystem>Windows</SubSystem>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(VcpkgInstalledDir)\$(VcpkgTriplet)\bin\* $(OutDir)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy Angle dlls to output directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon 2|x64'">
     <ClCompile>
@@ -398,6 +456,12 @@
       <SubSystem>Windows</SubSystem>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(VcpkgInstalledDir)\$(VcpkgTriplet)\bin\* $(OutDir)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy Angle dlls to output directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon|x64'">
     <ClCompile>
@@ -414,6 +478,12 @@
       <SubSystem>Windows</SubSystem>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y $(VcpkgInstalledDir)\$(VcpkgTriplet)\bin\* $(OutDir)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copy Angle dlls to output directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Source_Files\CSeries\BStream.cpp" />
@@ -617,8 +687,10 @@
     <ClCompile Include="..\Source_Files\Network\Update.cpp" />
     <ClCompile Include="..\Source_Files\RenderMain\AnimatedTextures.cpp" />
     <ClCompile Include="..\Source_Files\RenderMain\Crosshairs_SDL.cpp" />
+    <ClCompile Include="..\Source_Files\RenderMain\DrawCache.cpp" />
     <ClCompile Include="..\Source_Files\RenderMain\ImageLoader_SDL.cpp" />
     <ClCompile Include="..\Source_Files\RenderMain\ImageLoader_Shared.cpp" />
+    <ClCompile Include="..\Source_Files\RenderMain\MatrixStack.cpp" />
     <ClCompile Include="..\Source_Files\RenderMain\OGL_Faders.cpp" />
     <ClCompile Include="..\Source_Files\RenderMain\OGL_FBO.cpp" />
     <ClCompile Include="..\Source_Files\RenderMain\OGL_Model_Def.cpp" />
@@ -638,6 +710,7 @@
     <ClCompile Include="..\Source_Files\RenderMain\shapes.cpp" />
     <ClCompile Include="..\Source_Files\RenderMain\SW_Texture_Extras.cpp" />
     <ClCompile Include="..\Source_Files\RenderMain\textures.cpp" />
+    <ClCompile Include="..\Source_Files\RenderOther\AccelerationPlatform.cpp" />
     <ClCompile Include="..\Source_Files\RenderOther\ChaseCam.cpp" />
     <ClCompile Include="..\Source_Files\RenderOther\computer_interface.cpp" />
     <ClCompile Include="..\Source_Files\RenderOther\fades.cpp" />
@@ -840,8 +913,10 @@
     <ClInclude Include="..\Source_Files\RenderMain\collection_definition.h" />
     <ClInclude Include="..\Source_Files\RenderMain\Crosshairs.h" />
     <ClInclude Include="..\Source_Files\RenderMain\DDS.h" />
+    <ClInclude Include="..\Source_Files\RenderMain\DrawCache.hpp" />
     <ClInclude Include="..\Source_Files\RenderMain\ImageLoader.h" />
     <ClInclude Include="..\Source_Files\RenderMain\low_level_textures.h" />
+    <ClInclude Include="..\Source_Files\RenderMain\MatrixStack.hpp" />
     <ClInclude Include="..\Source_Files\RenderMain\OGL_Faders.h" />
     <ClInclude Include="..\Source_Files\RenderMain\OGL_FBO.h" />
     <ClInclude Include="..\Source_Files\RenderMain\OGL_Headers.h" />
@@ -868,6 +943,7 @@
     <ClInclude Include="..\Source_Files\RenderMain\SW_Texture_Extras.h" />
     <ClInclude Include="..\Source_Files\RenderMain\textures.h" />
     <ClInclude Include="..\Source_Files\RenderMain\vec3.h" />
+    <ClInclude Include="..\Source_Files\RenderOther\AccelerationPlatform.h" />
     <ClInclude Include="..\Source_Files\RenderOther\ChaseCam.h" />
     <ClInclude Include="..\Source_Files\RenderOther\computer_interface.h" />
     <ClInclude Include="..\Source_Files\RenderOther\fades.h" />
@@ -880,6 +956,7 @@
     <ClInclude Include="..\Source_Files\RenderOther\images.h" />
     <ClInclude Include="..\Source_Files\RenderOther\Image_Blitter.h" />
     <ClInclude Include="..\Source_Files\RenderOther\IMG_savepng.h" />
+    <ClInclude Include="..\Source_Files\RenderOther\MacOSHelper.h" />
     <ClInclude Include="..\Source_Files\RenderOther\motion_sensor.h" />
     <ClInclude Include="..\Source_Files\RenderOther\OGL_Blitter.h" />
     <ClInclude Include="..\Source_Files\RenderOther\OGL_LoadScreen.h" />

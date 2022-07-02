@@ -116,9 +116,6 @@ bool OGL_IsPresent() {return _OGL_IsPresent;}
 
 bool OGL_CheckExtension(const std::string extension) {
 #ifdef HAVE_OPENGL
-#ifdef __WIN32__
-	return glewIsSupported(extension.c_str());
-#else
 	char *extensions = (char *) glGetString(GL_EXTENSIONS);
 	if (!extensions) return false;
 
@@ -133,7 +130,6 @@ bool OGL_CheckExtension(const std::string extension) {
 
 		extensions += length + 1;
 	}
-#endif
 #endif
 	return false;
 }

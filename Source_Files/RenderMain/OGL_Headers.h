@@ -24,10 +24,7 @@
 */
 
 #ifdef __WIN32__
-
-#define GLEW_STATIC 1
-#include <GL/glew.h>
-
+#include <glad/glad.h>
 #else
 
 #ifndef GL_GLEXT_PROTOTYPES

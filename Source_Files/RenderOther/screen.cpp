@@ -890,7 +890,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	if (need_mode_change(sdl_width, sdl_height, vmode_width, vmode_height, depth, nogl)) {
 #ifdef HAVE_OPENGL
            //Just for testing ANGLE
-/*	if (!nogl && screen_mode.acceleration != _no_acceleration) {
+#ifndef __APPLE__
+	if (!nogl && screen_mode.acceleration != _no_acceleration) {
 		passed_shader = false;
 		flags |= SDL_WINDOW_OPENGL;
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -899,6 +900,13 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+#ifdef _WIN32
+		SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
+		SDL_SetHint(SDL_HINT_VIDEO_WIN_D3DCOMPILER, "none");
+#endif
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 		if (Get_OGL_ConfigureData().Multisamples > 0) {
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, Get_OGL_ConfigureData().Multisamples);
@@ -907,7 +915,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 		}
 		SDL_GL_SetSwapInterval(Get_OGL_ConfigureData().WaitForVSync ? 1 : 0);
-	}*/
+	}
+#endif
 #endif 
 
 		
@@ -935,6 +944,19 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 								   sdl_width, sdl_height,
 								   flags);
 
+#ifdef _WIN32
+	if (main_screen == NULL && !nogl && screen_mode.acceleration != _no_acceleration) {
+		fprintf(stderr, "WARNING: Failed to create display window with Angle\n");
+		fprintf(stderr, "WARNING: Retrying with OpenGL ES\n");
+		SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "0");
+		main_screen = SDL_CreateWindow(get_application_name().c_str(),
+			SDL_WINDOWPOS_CENTERED,
+			SDL_WINDOWPOS_CENTERED,
+			sdl_width, sdl_height,
+			flags);
+	}
+
+#endif
 #ifdef HAVE_OPENGL
 	bool context_created = false;
     
@@ -959,7 +981,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
         void* layer = injectAccelerationContext(main_screen);
         
         if(layer) {
-            context_created = TRUE;
+            context_created = true;
         } else {
             logWarning("WARNING: Failed to inject ANGLE layer\n");
         }
@@ -985,8 +1007,10 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 			SDL_GL_CreateContext(main_screen);
 			context_created = true;
 		}
-#ifdef __WIN32__
-		glewInit();
+
+#ifdef _WIN32
+		// Load GLES extensions using glad
+		gladLoadGLES2Loader((GLADloadproc)SDL_GL_GetProcAddress);
 #endif
         //Just for testing ANGLE
 		/*if (!OGL_CheckExtension("GL_ARB_vertex_shader") || !OGL_CheckExtension("GL_ARB_fragment_shader") || !OGL_CheckExtension("GL_ARB_shader_objects") || !OGL_CheckExtension("GL_ARB_shading_language_100"))

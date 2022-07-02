@@ -514,10 +514,6 @@ bool OGL_StartRun()
 	// Will stop previous run if it had been active
 	if (OGL_IsActive()) OGL_StopRun();
 
-#ifdef __WIN32__
-	
-#endif
-
 	Wanting_sRGB = false;
 	if(graphics_preferences->OGL_Configure.Use_sRGB) {
 	  if(!OGL_CheckExtension("GL_EXT_framebuffer_sRGB") || !OGL_CheckExtension("GL_EXT_texture_sRGB"))
