@@ -117,8 +117,8 @@ private:
     
   };
   
-  MatrixStack(MatrixStack const&){};
-  MatrixStack& operator=(MatrixStack const&){};
+  MatrixStack(MatrixStack const&) = delete;
+  MatrixStack& operator=(MatrixStack const&) = delete;
   static MatrixStack* m_pInstance;
   
   int activeMode;
