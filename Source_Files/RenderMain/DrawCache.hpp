@@ -114,8 +114,8 @@ private:
     
     };
   
-    DrawCache(DrawCache const&){};
-    DrawCache& operator=(DrawCache const&){};
+    DrawCache(DrawCache const&) = delete;
+    DrawCache& operator=(DrawCache const&) = delete;
     static DrawCache* m_pInstance;
   
     //Private instance variables and methods
