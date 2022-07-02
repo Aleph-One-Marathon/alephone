@@ -207,12 +207,12 @@ void parseFile(FileSpecifier& fileSpec, std::string& s) {
 }
 
 
-GLuint parseShader(const GLcharARB* str, GLenum shaderType) {
+GLuint parseShader(const GLchar* str, GLenum shaderType) {
 
     GLint status;
     GLuint shader = glCreateShader(shaderType);
 
-    std::vector<const GLcharARB*> source;
+    std::vector<const GLchar*> source;
 
         if (DisableClipVertex()) {
             source.push_back("#define DISABLE_CLIP_VERTEX\n");

@@ -27,17 +27,7 @@
 #include <glad/glad.h>
 #else
 
-#ifndef GL_GLEXT_PROTOTYPES
-#define GL_GLEXT_PROTOTYPES 1
-#endif
-
-#include <SDL2/SDL_opengl.h>
-
-#if defined (__APPLE__) && defined(__MACH__)
-#include <OpenGL/glu.h>
-#else
-#include <GL/glu.h>
-#endif
+#include <GLES3/gl3.h>
 
 #endif
 
