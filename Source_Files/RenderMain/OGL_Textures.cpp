@@ -310,7 +310,7 @@ void OGL_StartTextures()
 	const int NUMBER_OF_COLOR_FORMATS = 2;
 	const GLenum ColorFormatList[NUMBER_OF_COLOR_FORMATS] = 
 	{
-		GL_RGBA8,
+		GL_RGBA8_OES,
 		GL_RGBA4
 	};
 	
@@ -339,7 +339,7 @@ void OGL_StartTextures()
 		if (ColorFormat < NUMBER_OF_COLOR_FORMATS)
 			TxtrTypeInfo.ColorFormat = ColorFormatList[ColorFormat];
 		else
-			TxtrTypeInfo.ColorFormat = GL_RGBA8;
+			TxtrTypeInfo.ColorFormat = GL_RGBA8_OES;
 	}
 
 	// Model skin
@@ -365,7 +365,7 @@ void OGL_StartTextures()
 		if (ColorFormat < NUMBER_OF_COLOR_FORMATS)
 			TxtrTypeInfo.ColorFormat = ColorFormatList[ColorFormat];
 		else
-			TxtrTypeInfo.ColorFormat = GL_RGBA8;
+			TxtrTypeInfo.ColorFormat = GL_RGBA8_OES;
 	}
 
 #if defined GL_SGIS_generate_mipmap
@@ -1214,7 +1214,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 	// some optimizations here:
 	if (TextureType == 1) // landscape
 	{
-		if (internalFormat == GL_RGBA8)
+		if (internalFormat == GL_RGBA8_OES)
 			//internalFormat = GL_RGB8;
             internalFormat = GL_RGBA; //DCW I hope this is ok
 		else if (internalFormat == GL_RGBA4)
@@ -1232,14 +1232,14 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 	if(load_as_sRGB) {
 	  switch(internalFormat) {
 	  case GL_RGB:
-	  case GL_RGB8:
+	  case GL_RGB8_OES:
 	    internalFormat = GL_SRGB;
 	    break;
 	  case GL_RGBA:
 	  case GL_RGBA4:
 	  case GL_RGB5_A1:
-	  case GL_RGBA8:
-	  case GL_RGB10_A2:
+	  case GL_RGBA8_OES:
+	  case GL_RGB10_A2_EXT:
 	    internalFormat = GL_SRGB_ALPHA;
 	    break;
 #if defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
@@ -1260,7 +1260,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 	  }
 	}
 
-    if (internalFormat == GL_RGBA8 ) {internalFormat = GL_RGBA;} //DCW I hope GL_RGBA and GL_RGBA8 are equivalent
+    if (internalFormat == GL_RGBA8_OES ) {internalFormat = GL_RGBA;} //DCW I hope GL_RGBA and GL_RGBA8 are equivalent
     
 	if (Image->GetFormat() == ImageDescriptor::RGBA8) {
 		switch (TxtrTypeInfo.FarFilter)
@@ -1296,7 +1296,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
                 
                 //glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); //NOT SUPPORTED ANGLE FUNCTION
                 // OpenGL GL_RGBA is 6407 and GL_RGB is 6408
-                if (internalFormat == GL_RGBA8 ) {internalFormat = GL_RGBA;} //DCW I hope GL_RGBA and GL_RGBA8 are equivalent
+                if (internalFormat == GL_RGBA8_OES ) {internalFormat = GL_RGBA;} //DCW I hope GL_RGBA and GL_RGBA8 are equivalent
                 assert ( internalFormat == GL_RGBA );
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA /*internalFormat*/,
                              Image->GetWidth(),
@@ -1694,7 +1694,7 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
                     
                     //glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
                     // OpenGL GL_RGBA is 6407 and GL_RGB is 6408
-                    assert ( internalFormat == GL_RGBA8 );
+                    assert ( internalFormat == GL_RGBA8_OES);
                     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                                  LoadedWidth,
                                  LoadedHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,

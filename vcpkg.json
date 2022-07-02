@@ -43,7 +43,8 @@
          "name":"glad",
          "platform":"windows",
          "features":[
-            "gles2-api-30",
+            "gles2-api-20",
+			"extensions",
             "loader"
          ]
       },

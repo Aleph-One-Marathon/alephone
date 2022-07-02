@@ -383,16 +383,16 @@ void Movie::AddFrame(FrameType ftype)
         SDL_Rect viewportDimensions = alephone::Screen::instance()->OpenGLViewPort();
         GLint fbx = viewportDimensions.x, fby = viewportDimensions.y, fbWidth = viewportDimensions.w, fbHeight = viewportDimensions.h;
 
+        /*Commented for OpenGL ES 2*/
         // Copy default frame buffer to another one with correct viewport resized/pixels rescaled
-        frameBufferObject->activate(true, GL_DRAW_FRAMEBUFFER);
-        glBlitFramebuffer(fbx, fby, fbWidth + fbx, fbHeight + fby, view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-        frameBufferObject->deactivate();
+        //frameBufferObject->activate(true, GL_DRAW_FRAMEBUFFER_ANGLE);
+        //glBlitFramebufferANGLE(fbx, fby, fbWidth + fbx, fbHeight + fby, view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        //frameBufferObject->deactivate();
 
         // Read our new frame buffer with rescaled pixels
-        frameBufferObject->activate(true, GL_READ_FRAMEBUFFER);
+        //frameBufferObject->activate(true, GL_READ_FRAMEBUFFER_ANGLE);
         glReadPixels(view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_RGBA, GL_UNSIGNED_BYTE, &videobuf.front());
-        frameBufferObject->deactivate();
-
+        //frameBufferObject->deactivate();
 		// Copy pixel buffer (which is upside-down) to surface
 		for (int y = 0; y < view_rect.h; y++)
             SDL_ConvertPixels(view_rect.w, 1, temp_surface->format->format, &videobuf.front() + view_rect.w * 4 * (view_rect.h - y - 1), temp_surface->pitch, SDL_PIXELFORMAT_XBGR8888, (uint8*)temp_surface->pixels + temp_surface->pitch * y, temp_surface->pitch);
