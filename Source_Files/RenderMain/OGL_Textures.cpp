@@ -121,8 +121,6 @@ struct TxtrTypeInfoData
 static TxtrTypeInfoData TxtrTypeInfoList[OGL_NUMBER_OF_TEXTURE_TYPES];
 static TxtrTypeInfoData ModelSkinInfo;
 
-static bool useSGISMipmaps = false;
-
 // Infravision: use algorithm (red + green + blue)/3 to compose intensity,
 // then shade with these colors, one color for each collection.
 
@@ -366,10 +364,6 @@ void OGL_StartTextures()
 		else
 			TxtrTypeInfo.ColorFormat = GL_RGBA8_OES;
 	}
-
-#if defined GL_SGIS_generate_mipmap
-	useSGISMipmaps = OGL_CheckExtension("GL_SGIS_generate_mipmap");
-#endif
 }
 
 
@@ -1270,27 +1264,12 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 		case GL_NEAREST_MIPMAP_LINEAR:
 		case GL_LINEAR_MIPMAP_LINEAR:
 			if (Image->GetMipMapCount() > 1) {
-#ifdef GL_SGIS_generate_mipmap
-	if (useSGISMipmaps) {
-		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_FALSE);
-	}
-#endif
 				int i = 0;
 				for (i = 0; i < Image->GetMipMapCount(); i++) {
 					glTexImage2D(GL_TEXTURE_2D, i, internalFormat, max(1, Image->GetWidth() >> i), max(1, Image->GetHeight() >> i), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetMipMapPtr(i));
 				}
 				mipmapsLoaded = true;
 			} else {
-#ifdef GL_SGIS_generate_mipmap
-			if (useSGISMipmaps) {
-				glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
-				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
-			} else 
-#endif
-			{
-                //gluBuild2DMipmaps(GL_TEXTURE_2D, internalFormat, Image->GetWidth(), Image->GetHeight(), GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
-                
-                //glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); //NOT SUPPORTED ANGLE FUNCTION
                 // OpenGL GL_RGBA is 6407 and GL_RGB is 6408
                 if (internalFormat == GL_RGBA8_OES ) {internalFormat = GL_RGBA;} //DCW I hope GL_RGBA and GL_RGBA8 are equivalent
                 assert ( internalFormat == GL_RGBA );
@@ -1298,11 +1277,10 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
                              Image->GetWidth(),
                              Image->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
                              Image->GetBuffer());
-
+				
                 glGenerateMipmap(GL_TEXTURE_2D);
             }
 			mipmapsLoaded = true;
-			}
 			break;
 		default:
 			assert(false);
