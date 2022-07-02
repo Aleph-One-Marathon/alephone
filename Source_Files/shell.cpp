@@ -1543,7 +1543,7 @@ void dump_screen(void)
 
 #ifdef HAVE_OPENGL
 	// Otherwise, allocate temporary surface...
-	SDL_Surface *t = SDL_CreateRGBSurface(SDL_SWSURFACE, video_w, video_h, 24,
+	SDL_Surface *t = SDL_CreateRGBSurface(SDL_SWSURFACE, video_w, video_h, 32,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 	  0x000000ff, 0x0000ff00, 0x00ff0000, 0);
 #else
@@ -1553,7 +1553,7 @@ void dump_screen(void)
 		return;
 
 	// ...and pixel buffer
-	void *pixels = malloc(video_w * video_h * 3);
+	void *pixels = malloc(video_w * video_h * 4);
 	if (pixels == NULL) {
 		SDL_FreeSurface(t);
 		return;
@@ -1561,12 +1561,12 @@ void dump_screen(void)
 
 	// Read OpenGL frame buffer
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glReadPixels(0, 0, video_w, video_h, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+	glReadPixels(0, 0, video_w, video_h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 	glPixelStorei(GL_PACK_ALIGNMENT, 4);  // return to default
 
 	// Copy pixel buffer (which is upside-down) to surface
 	for (int y = 0; y < video_h; y++)
-		memcpy((uint8 *)t->pixels + t->pitch * y, (uint8 *)pixels + video_w * 3 * (video_h - y - 1), video_w * 3);
+		memcpy((uint8*)t->pixels + t->pitch * y, (uint8*)pixels + video_w * 4 * (video_h - y - 1), video_w * 4);
 	free(pixels);
 
 	// Save surface
