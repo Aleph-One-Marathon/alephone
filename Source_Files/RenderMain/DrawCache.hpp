@@ -133,7 +133,7 @@ private:
         //Guaranteed to return a buffer index for the shader/texID combo big enough to hold vertex_count.
         //This might trigger a draw operation in order to free up a buffer if they are exhausted or full.
         //If texID1 is zero, it is ignored.
-    int getBufferFor(Shader* shader, GLuint texID, GLuint texID1, int vertex_count);
+    int getBufferFor(Shader* shader, GLuint texID, GLuint texID1, int vertex_count, bool isBlended);
     
     void drawAndResetBuffer(int index);
 };

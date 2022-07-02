@@ -264,10 +264,22 @@ bool DrawCache::isPolygonOnScreen(int vertex_count, GLfloat *vertex_array) {
     
 }
 
-int DrawCache::getBufferFor(Shader* shader, GLuint texID, GLuint texID1, int vertex_count) {
+int DrawCache::getBufferFor(Shader* shader, GLuint texID, GLuint texID1, int vertex_count, bool isBlended) {
 
     int firstEmptyBuffer = -1;
-    for(int i = 0; i < NUM_DRAW_BUFFERS; ++i) {
+    int i = 0;
+    
+    //Blended textures can only get buffered in the very last buffer filled, up until now. Otherwise they might get drawn out of order ( over the top of non-blended textures (as in Where are Monsters in Dreams)). Start the iterator i at the last occupied buffer.
+    if (isBlended) {
+        for(; i < NUM_DRAW_BUFFERS - 1; ++i) {
+            if(drawBuffers[i+1].verticesFilled == 0) {
+                break;
+            }
+        }
+    }
+    
+    //Search for a matching buffer, or the next empty one.
+    for(; i < NUM_DRAW_BUFFERS; ++i) {
         if(drawBuffers[i].verticesFilled == 0 && firstEmptyBuffer < 0 ) {firstEmptyBuffer=i;}
         
         if(drawBuffers[i].shader == shader && drawBuffers[i].textureID == texID && (texID1 == 0 || texID1 == drawBuffers[i].textureID1)) {
@@ -293,7 +305,7 @@ int DrawCache::getBufferFor(Shader* shader, GLuint texID, GLuint texID1, int ver
     }
     
     //If we get here, all buffers are used and we need to flush and return any index (zero is fine).
-    //sprintf ("All buffers full.\n");
+    //printf ("All buffers full.\n");
     allBuffersUsed++;
     
     drawAll();
@@ -304,19 +316,20 @@ int DrawCache::getBufferFor(Shader* shader, GLuint texID, GLuint texID1, int ver
 //tex4 is a 4-dimensional array, which is surface normal vector + sign.
 //Normalized is assumed to be GL_FALSE and Stride must be 0.
 void DrawCache::drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *tex4) {
-    
     GLint whichUnit, whichTextureID, whichTextureID1;
+    GLboolean isBlended;
     glGetIntegerv(GL_ACTIVE_TEXTURE, &whichUnit); //Store active texture so we can reset it later.
     glActiveTexture(GL_TEXTURE0);
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &whichTextureID);
     glActiveTexture(GL_TEXTURE1);
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &whichTextureID1);
     glActiveTexture(whichUnit);
+    glGetBooleanv(GL_BLEND, &isBlended);
     
     bufferRequests ++;
     
     //int b = getBufferFor(lastEnabledShader(), lastActiveTexture, vertex_count);
-    int b = getBufferFor(lastEnabledShader(), whichTextureID, whichTextureID1, vertex_count);
+    int b = getBufferFor(lastEnabledShader(), whichTextureID, whichTextureID1, vertex_count, isBlended);
     
         //Capture volatile state data.
     GLfloat *color = MSI()->color();
