@@ -755,8 +755,7 @@ static bool need_mode_change(int window_width, int window_height,
 	bool wantgl = false;
 	bool hasgl = MainScreenIsOpenGL();
 #ifdef HAVE_OPENGL
-        //Just for testing ANGLE
-/*	wantgl = !nogl && (screen_mode.acceleration != _no_acceleration);
+	wantgl = !nogl && (screen_mode.acceleration != _no_acceleration);
 	if (wantgl != hasgl)
 		return true;
 	if (wantgl) {
@@ -773,7 +772,7 @@ static bool need_mode_change(int window_width, int window_height,
 		int has_vsync = SDL_GL_GetSwapInterval();
 		if ((has_vsync == 0) != (want_vsync == 0))
 			SDL_GL_SetSwapInterval(want_vsync);
-	}*/
+	}
 #endif
 		
 	// are we switching to/from fullscreen?
@@ -1538,7 +1537,7 @@ void render_screen(short ticks_elapsed)
 #ifdef HAVE_OPENGL
 		if (Screen::instance()->hud()) {
 			if (Screen::instance()->lua_hud())
-				Lua_DrawHUD(ticks_elapsed);
+				HUD_Lua_Class::Lua_DrawHUD(ticks_elapsed);
 			else {
 				Rect dr = MakeRect(HUD_DestRect);
 				OGL_DrawHUD(dr, ticks_elapsed);
@@ -1572,7 +1571,7 @@ void render_screen(short ticks_elapsed)
 		// Update HUD
 		if (Screen::instance()->lua_hud())
 		{
-			Lua_DrawHUD(ticks_elapsed);
+			HUD_Lua_Class::Lua_DrawHUD(ticks_elapsed);
 		}
 		else if (HUD_RenderRequest) {
 			SDL_Rect src_rect = { 0, 320, 640, 160 };

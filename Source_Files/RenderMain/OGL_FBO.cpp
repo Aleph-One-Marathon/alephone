@@ -237,6 +237,7 @@ void FBO::draw_full(bool blend) {
 }
 
 FBO::~FBO() {
+	if (_w == 0 && _h == 0) return;
 	glDeleteFramebuffers(1, &_fbo);
 	glDeleteRenderbuffers(1, &_depthBuffer);
 }
