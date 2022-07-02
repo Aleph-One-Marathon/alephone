@@ -1208,7 +1208,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 			//internalFormat = GL_RGB8;
             internalFormat = GL_RGBA; //DCW I hope this is ok
 		else if (internalFormat == GL_RGBA4)
-			internalFormat = 0;
+			internalFormat = GL_RGB5_A1;
 	} 
 	else if (!IsBlended() && internalFormat == GL_RGBA4)
 	{
@@ -1223,6 +1223,8 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 	  switch(internalFormat) {
 	  case GL_RGB:
 	  case GL_RGB8_OES:
+	  case GL_RGB10_EXT:
+	  case GL_RGB16_EXT:
 	    internalFormat = GL_SRGB;
 	    break;
 	  case GL_RGBA:
