@@ -38,3 +38,10 @@ runs:
     - name: Build
       run: msbuild /m /p:Platform=${{inputs.platform}} /p:Configuration=Release ./VisualStudio/AlephOne.sln
       shell: pwsh
+      
+    - name: Debug
+      if: always()
+      run: Get-Content -Path C:\vcpkg\buildtrees\angle\install-x64-windows-static-dbg-out.log
+      shell: pwsh
+      
+      
