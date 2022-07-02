@@ -385,12 +385,12 @@ void Movie::AddFrame(FrameType ftype)
 
         /*Commented for OpenGL ES 2*/
         // Copy default frame buffer to another one with correct viewport resized/pixels rescaled
-        //frameBufferObject->activate(true, GL_DRAW_FRAMEBUFFER_ANGLE);
-        //glBlitFramebufferANGLE(fbx, fby, fbWidth + fbx, fbHeight + fby, view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        //frameBufferObject->activate(true, GL_DRAW_FRAMEBUFFER);
+        //glBlitFramebuffer(fbx, fby, fbWidth + fbx, fbHeight + fby, view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
         //frameBufferObject->deactivate();
 
         // Read our new frame buffer with rescaled pixels
-        //frameBufferObject->activate(true, GL_READ_FRAMEBUFFER_ANGLE);
+        //frameBufferObject->activate(true, GL_READ_FRAMEBUFFER);
         glReadPixels(view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_RGBA, GL_UNSIGNED_BYTE, &videobuf.front());
         //frameBufferObject->deactivate();
 		// Copy pixel buffer (which is upside-down) to surface
