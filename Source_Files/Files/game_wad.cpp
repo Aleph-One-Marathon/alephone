@@ -139,7 +139,6 @@ static bool file_is_set= false;
 // LP addition: was a physics model loaded from the previous level loaded?
 static bool PhysicsModelLoadedEarlier = false;
 
-static vector<side_data> SideListCopy;
 static vector<polygon_data> PolygonListCopy;
 static vector<platform_data> PlatformListCopy;
 
@@ -1948,7 +1947,6 @@ bool process_map_wad(
 
 	PlatformListCopy = PlatformList;
 	PolygonListCopy = PolygonList;
-	SideListCopy = SideList;
 	
 	/* ... and bail */
 	return true;
@@ -2542,6 +2540,17 @@ static wad_data *build_export_wad(wad_header *header, int32 *length)
 			platform_data* platform = &PlatformList[loop];
 			platform_data* original_platform = &PlatformListCopy[loop];
 
+			if (PLATFORM_COMES_FROM_CEILING(platform))
+			{
+				world_distance delta_height = PLATFORM_IS_EXTENDING(platform) ? platform->speed :
+					(PLATFORM_CONTRACTS_SLOWER(platform) ? (-(platform->speed >> 2)) : -platform->speed);
+
+				auto new_ceiling_height = PLATFORM_IS_INITIALLY_EXTENDED(platform) ? platform->minimum_ceiling_height : platform->maximum_ceiling_height;
+				if (!PLATFORM_IS_FULLY_EXTENDED(platform)) new_ceiling_height -= delta_height;
+
+				adjust_platform_sides(platform, platform->ceiling_height, new_ceiling_height);
+			}
+
 			platform->floor_height = original_platform->floor_height;
 			platform->ceiling_height = original_platform->ceiling_height;
 			platform->maximum_ceiling_height = original_platform->maximum_ceiling_height;
@@ -2551,14 +2560,6 @@ static wad_data *build_export_wad(wad_header *header, int32 *length)
 
 			PolygonList[platform->polygon_index].floor_height = PolygonListCopy[platform->polygon_index].floor_height;
 			PolygonList[platform->polygon_index].ceiling_height = PolygonListCopy[platform->polygon_index].ceiling_height;
-		}
-
-		for (size_t loop = 0; loop < SideList.size(); ++loop)
-		{
-			side_data* side = &SideList[loop];
-			side_data* original_side = &SideListCopy[loop];
-
-			side->primary_texture.y0 = original_side->primary_texture.y0;
 		}
 
 		for (size_t loop = 0; loop < LineList.size(); ++loop)
