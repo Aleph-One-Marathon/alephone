@@ -2442,11 +2442,7 @@ static void controls_dialog(void *arg)
 			move_table->dual_add(new w_label(action_name[i]), d);
 			auto range = key_w.equal_range(i);
 			for (auto ik = range.first; ik != range.second; ++ik) {
-				if ((ik->second->event_type == w_key::MouseButton) &&
-					(i == 0 || i == 1 || i == 4 || i == 5))
-					move_table->dual_add(new w_label(""), d);
-				else
-					move_table->dual_add(ik->second, d);
+				move_table->dual_add(ik->second, d);
 			}
 		}
 	}
