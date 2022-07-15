@@ -24,6 +24,7 @@
 
 #include <string.h>
 #include <math.h>
+#include <iostream>
 
 #include "VecOps.h"
 #include "cseries.h"
@@ -657,9 +658,13 @@ void Model3D::BuildTrigTables()
 void Model3D::BuildInverseVSIndices()
 {
 	if (VtxSrcIndices.empty()) return;
+
+	std::cerr << "VtxSrcIndices.size(): " << VtxSrcIndices.size() << "\n";
+	std::cerr << "VtxSources.size(): " << VtxSources.size() << "\n";
 	
 	InverseVSIndices.resize(VtxSrcIndices.size());
-	InvVSIPointers.resize(VtxSources.size()+1);		// One extra member
+//	InvVSIPointers.resize(VtxSources.size()+1);		// One extra member
+	InvVSIPointers.resize(VtxSrcIndices.size() + 1);
 	
 	// Use the pointers as temporary storage for the count
 	objlist_clear(InvVSIPtrBase(),InvVSIPointers.size());	

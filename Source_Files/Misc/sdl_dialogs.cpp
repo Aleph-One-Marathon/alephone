@@ -99,7 +99,6 @@ static FileSpecifier theme_path;
 static std::map<int, theme_widget> dialog_theme;
 
 // Prototypes
-static void shutdown_dialogs(void);
 static bool load_theme(FileSpecifier &theme);
 static void unload_theme(void);
 static void set_theme_defaults(void);
@@ -124,8 +123,6 @@ void initialize_dialogs()
 
 	// Load theme from preferences, if it exists
 	load_dialog_theme(true);
-
-	atexit(shutdown_dialogs);
 }
 
 
@@ -133,7 +130,7 @@ void initialize_dialogs()
  *  Shutdown dialog manager
  */
 
-static void shutdown_dialogs(void)
+void shutdown_dialogs(void)
 {
 	unload_theme();
 }

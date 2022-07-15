@@ -267,6 +267,8 @@ int main(int argc, char **argv)
 
 	shell_options.parse(argc, argv);
 
+	auto code = 0;
+
 	try {
 		
 		// Initialize everything
@@ -291,7 +293,7 @@ int main(int argc, char **argv)
 		catch (...) 
 		{
 		}
-		exit(1);
+		code = 1;
 	} catch (...) {
 		try
 		{
@@ -300,10 +302,19 @@ int main(int argc, char **argv)
 		catch (...)
 		{
 		}
-		exit(1);
+		code = 1;
 	}
 
-	return 0;
+	try
+	{
+		shutdown_application();
+	}
+	catch (...)
+	{
+
+	}
+
+	return code;
 }
                
 static int char_is_not_filesafe(int c)
@@ -445,8 +456,7 @@ static void initialize_application(void)
 
 	// Check for presence of strings
 	if (!TS_IsPresent(strERRORS) || !TS_IsPresent(strFILENAMES)) {
-		fprintf(stderr, "Can't find required text strings (missing MML?).\n");
-		exit(1);
+		throw std::runtime_error("Can't find required text strings (missing MML?)");
 	}
 	
 	// Check for presence of files (one last chance to change data_search_path)
@@ -511,20 +521,25 @@ static void initialize_application(void)
 // #if defined(HAVE_SDL_IMAGE) && !(defined(__APPLE__) && defined(__MACH__))
 // 	SDL_WM_SetIcon(IMG_ReadXPMFromArray(const_cast<char**>(alephone_xpm)), 0);
 // #endif
-	atexit(shutdown_application);
 
 #if !defined(DISABLE_NETWORKING)
-	// Initialize SDL_net
-	if (SDLNet_Init () < 0) {
-		fprintf (stderr, "Couldn't initialize SDL_net (%s)\n", SDLNet_GetError());
-		exit(1);
+	if (SDLNet_Init() < 0)
+	{
+		std::ostringstream oss;
+		oss << "Couldn't initialize SDL_net (" << SDLNet_GetError() << ")";
+
+		throw std::runtime_error(oss.str());
 	}
 #endif
 
-	if (TTF_Init() < 0) {
-		fprintf (stderr, "Couldn't initialize SDL_ttf (%s)\n", TTF_GetError());
-		exit(1);
+	if (TTF_Init() < 0)
+	{
+		std::ostringstream oss;
+		oss << "Couldn't initialize SDL_ttf (" << TTF_GetError() << ")";
+
+		throw std::runtime_error(oss.str());
 	}
+	
 	HTTPClient::Init();
 
 	// Initialize everything
@@ -549,15 +564,10 @@ static void initialize_application(void)
 
 void shutdown_application(void)
 {
-        // ZZZ: seem to be having weird recursive shutdown problems esp. with fullscreen modes...
-        static bool already_shutting_down = false;
-        if(already_shutting_down)
-                return;
-
-        already_shutting_down = true;
-        
 	WadImageCache::instance()->save_cache();
 	close_external_resources();
+
+	shutdown_dialogs();
         
 #if defined(HAVE_SDL_IMAGE) && (SDL_IMAGE_PATCHLEVEL >= 8)
 	IMG_Quit();
