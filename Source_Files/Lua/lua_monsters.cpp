@@ -628,7 +628,9 @@ int Lua_Monster_Accelerate(lua_State *L)
 int Lua_Monster_Attack(lua_State *L)
 {
 	short target = 0;
-	if (lua_isnumber(L, 2))
+	if (lua_isnil(L, 2))
+		target = -1;
+	else if (lua_isnumber(L, 2))
 		target = static_cast<short>(lua_tonumber(L, 2));
 	else if (Lua_Monster::Is(L, 2))
 		target = Lua_Monster::Index(L, 2);
