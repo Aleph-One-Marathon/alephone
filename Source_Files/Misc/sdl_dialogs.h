@@ -302,6 +302,7 @@ enum {
  */
 
 extern void initialize_dialogs();
+extern void shutdown_dialogs();
 
 extern bool load_dialog_theme(bool force_reload = false);
 

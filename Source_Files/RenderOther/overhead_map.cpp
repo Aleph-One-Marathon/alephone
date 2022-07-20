@@ -309,13 +309,18 @@ static void InitMapFonts()
 	// Init the fonts the first time through
 	if (!MapFontsInited)
 	{
-		for (int i=0; i<NUMBER_OF_ANNOTATION_DEFINITIONS; i++)
+		for (int i = 0; i < NUMBER_OF_ANNOTATION_DEFINITIONS; i++)
 		{
 			annotation_definition& NoteDef = OvhdMap_ConfigData.annotation_definitions[i];
-			for (int j=0; j<NUMBER_OF_ANNOTATION_SIZES; j++)
-				NoteDef.Fonts[j].Init();
+			for (int j = 0; j < NUMBER_OF_ANNOTATION_SIZES; j++) {
+				if (!NoteDef.Fonts[j].Info)
+					NoteDef.Fonts[j].Init();
+			}
 		}
-		OvhdMap_ConfigData.map_name_data.Font.Init();
+
+		if (!OvhdMap_ConfigData.map_name_data.Font.Info)
+			OvhdMap_ConfigData.map_name_data.Font.Init();
+
 		MapFontsInited = true;
 	}
 }

@@ -38,7 +38,8 @@ INTERPOLATED_WORLD.CPP
 extern std::vector<int16_t> polygon_ephemera;
 
 // above this speed, don't interpolate
-static const world_distance speed_limit = WORLD_ONE_HALF;
+static const world_distance default_speed_limit = WORLD_ONE_HALF;
+static const world_distance projectile_speed_limit = WORLD_ONE;
 
 bool world_is_interpolated;
 static uint32_t start_machine_tick;
@@ -448,12 +449,24 @@ static fixed_angle lerp_fixed_angle(fixed_angle a, fixed_angle b, float t)
 }
 
 
-static bool should_interpolate(world_point3d& prev, world_point3d& next)
+static bool should_interpolate(world_point3d& prev, world_point3d& next,
+	world_distance speed_limit = default_speed_limit)
 {
 	return world_is_interpolated &&
 		guess_distance2d(reinterpret_cast<world_point2d*>(&prev),
 						 reinterpret_cast<world_point2d*>(&next))
 		<= speed_limit;
+}
+
+static world_distance get_object_speed_limit(const TickObjectData* object)
+{
+	switch (GET_OBJECT_OWNER(object))
+	{
+	case _object_is_projectile:
+		return projectile_speed_limit;
+	default:
+		return default_speed_limit;
+	}
 }
 
 extern void add_object_to_polygon_object_list(short, short);
@@ -564,7 +577,8 @@ void update_interpolated_world(float heartbeat_fraction)
 		}
 
 
-		if (!should_interpolate(prev->location, next->location))
+		if (!should_interpolate(prev->location, next->location,
+								get_object_speed_limit(next)))
 		{
 			continue;
 		}

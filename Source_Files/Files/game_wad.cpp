@@ -139,6 +139,9 @@ static bool file_is_set= false;
 // LP addition: was a physics model loaded from the previous level loaded?
 static bool PhysicsModelLoadedEarlier = false;
 
+static vector<polygon_data> PolygonListCopy;
+static vector<platform_data> PlatformListCopy;
+
 // The following local globals are for handling games that need to be restored.
 struct revert_game_info
 {
@@ -1941,6 +1944,9 @@ bool process_map_wad(
 			platform_structure_count, version);
 
 	}
+
+	PlatformListCopy = PlatformList;
+	PolygonListCopy = PolygonList;
 	
 	/* ... and bail */
 	return true;
@@ -2531,24 +2537,29 @@ static wad_data *build_export_wad(wad_header *header, int32 *length)
 
 		for (size_t loop = 0; loop < PlatformList.size(); ++loop)
 		{
-			platform_data *platform = &PlatformList[loop];
-			// reset the polygon heights
-			if (PLATFORM_COMES_FROM_FLOOR(platform))
-			{
-				platform->floor_height = platform->minimum_floor_height;
-				PolygonList[platform->polygon_index].floor_height = platform->floor_height;
-			}
+			platform_data* platform = &PlatformList[loop];
+			platform_data* original_platform = &PlatformListCopy[loop];
+
 			if (PLATFORM_COMES_FROM_CEILING(platform))
 			{
-				adjust_platform_sides(platform, platform->ceiling_height, 
-					PLATFORM_IS_INITIALLY_EXTENDED(platform) ?
-					platform->minimum_ceiling_height :
-					platform->maximum_ceiling_height
-				);
+				world_distance delta_height = PLATFORM_IS_EXTENDING(platform) ? platform->speed :
+					(PLATFORM_CONTRACTS_SLOWER(platform) ? (-(platform->speed >> 2)) : -platform->speed);
 
-				platform->ceiling_height = platform->maximum_ceiling_height;
-				PolygonList[platform->polygon_index].ceiling_height = platform->ceiling_height;
+				auto new_ceiling_height = PLATFORM_IS_INITIALLY_EXTENDED(platform) ? platform->minimum_ceiling_height : platform->maximum_ceiling_height;
+				if (!PLATFORM_IS_FULLY_EXTENDED(platform)) new_ceiling_height -= delta_height;
+
+				adjust_platform_sides(platform, platform->ceiling_height, new_ceiling_height);
 			}
+
+			platform->floor_height = original_platform->floor_height;
+			platform->ceiling_height = original_platform->ceiling_height;
+			platform->maximum_ceiling_height = original_platform->maximum_ceiling_height;
+			platform->minimum_ceiling_height = original_platform->minimum_ceiling_height;
+			platform->maximum_floor_height = original_platform->maximum_floor_height;
+			platform->minimum_floor_height = original_platform->minimum_floor_height;
+
+			PolygonList[platform->polygon_index].floor_height = PolygonListCopy[platform->polygon_index].floor_height;
+			PolygonList[platform->polygon_index].ceiling_height = PolygonListCopy[platform->polygon_index].ceiling_height;
 		}
 
 		for (size_t loop = 0; loop < LineList.size(); ++loop)
