@@ -81,7 +81,7 @@ AC_CHECK_HEADERS([unistd.h pwd.h])
 dnl Check for boost functions and libraries.
 AX_BOOST_BASE([1.53.0],
               ,
-              [AC_MSG_ERROR([You need Boost 1.53.0 or higher to build Aleph One.])])
+              AC_MSG_ERROR([You need Boost 1.53.0 or higher to build Aleph One.]))
 AX_BOOST_SYSTEM
 AS_IF([ test "x$BOOST_SYSTEM_LIB" != "x" ],
       [ LIBS="$BOOST_SYSTEM_LIB $LIBS" ],
