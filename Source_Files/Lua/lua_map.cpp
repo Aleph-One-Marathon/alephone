@@ -471,6 +471,12 @@ static int Lua_Platform_Get_Speed(lua_State *L)
 	return 1;
 }
 
+static int Lua_Platform_Get_Tag(lua_State* L)
+{
+	auto* platform = get_platform_data(Lua_Platform::Index(L, 1));
+	Lua_Tag::Push(L, platform->tag);
+}
+
 static int Lua_Platform_Get_Type(lua_State* L)
 {
 	platform_data* platform = get_platform_data(Lua_Platform::Index(L, 1));
@@ -558,6 +564,26 @@ static int Lua_Platform_Set_Speed(lua_State *L)
 	return 0;
 }
 
+static int Lua_Platform_Set_Tag(lua_State* L)
+{
+	int16_t tag = NONE;
+	if (lua_isnumber(L, 2))
+	{
+		tag = static_cast<int16_t>(lua_tonumber(L, 2));
+		if (!Lua_Tag::Valid(tag))
+			return luaL_error(L, "tag: invalid tag index");
+	}
+	else if (Lua_Tag::Is(L, 2))
+	{
+		tag = Lua_Tag::Index(L, 2);
+	}
+	else return luaL_error(L, "tag: incorrect argument type");
+
+	auto platform = get_platform_data(Lua_Platform::Index(L, 1));
+	platform->tag = tag;
+	return 0;
+}
+
 static int Lua_Platform_Set_Type(lua_State* L)
 {
 	platform_data* platform = get_platform_data(Lua_Platform::Index(L, 1));
@@ -605,6 +631,7 @@ const luaL_Reg Lua_Platform_Get[] = {
 	{"polygon", Lua_Platform_Get_Polygon},
 	{"secret", Lua_Platform_Get_Static_Flag<_platform_is_secret>},
 	{"speed", Lua_Platform_Get_Speed},
+	{"tag", Lua_Platform_Get_Tag},
 	{"type", Lua_Platform_Get_Type},
 	{"uses_native_polygon_heights", Lua_Platform_Get_Static_Flag<_platform_uses_native_polygon_heights>},
 	{0, 0}
@@ -639,6 +666,7 @@ const luaL_Reg Lua_Platform_Set[] = {
 	{"reverses_direction_when_obstructed", Lua_Platform_Set_Static_Flag<_platform_reverses_direction_when_obstructed>},
 	{"secret", Lua_Platform_Set_Static_Flag<_platform_is_secret>},
 	{"speed", Lua_Platform_Set_Speed},
+	{"tag", Lua_Platform_Set_Tag},
 	{"type", Lua_Platform_Set_Type},
 	{0, 0}
 };

@@ -1262,6 +1262,10 @@
 		<description>platform speed</description>
 		<type>speed</type>
       </variable>
+	  <variable name="tag" version="git">
+		<description>tag of platform</description>
+		<type>tag</type>
+	  </variable>
       <variable name="type" version="20100118">
 		<description>type of this platform</description>
 		<type>platform_type</type>
