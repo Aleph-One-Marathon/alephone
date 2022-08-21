@@ -1749,7 +1749,7 @@ SDL_ffmpegStream* SDL_ffmpegAddAudioStream( SDL_ffmpegFile *file, SDL_ffmpegCode
     /* some formats want stream headers to be separate */
     if ( file->_ffmpeg->oformat->flags & AVFMT_GLOBALHEADER )
     {
-        stream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+        file->_ffmpeg->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     }
 
     /* create a new stream */
