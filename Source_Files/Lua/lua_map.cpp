@@ -475,6 +475,7 @@ static int Lua_Platform_Get_Tag(lua_State* L)
 {
 	auto* platform = get_platform_data(Lua_Platform::Index(L, 1));
 	Lua_Tag::Push(L, platform->tag);
+	return 1;
 }
 
 static int Lua_Platform_Get_Type(lua_State* L)
