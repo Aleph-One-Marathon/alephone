@@ -43,13 +43,11 @@ float SoundPlayer::Simulate(SoundParameters soundParameters) {
 }
 
 void SoundPlayer::UpdateParameters(SoundParameters parameters) {
-	std::lock_guard<std::mutex> guard(mutex_internal);
 	this->parameters = parameters;
 	filterable = parameters.filterable;
 }
 
 void SoundPlayer::Replace(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters) {
-	std::lock_guard<std::mutex> guard(mutex_internal);
 	AudioPlayer::Load(header.rate >> 16, header.stereo, header.sixteen_bit);
 	Load(header, sound_data, parameters);
 }

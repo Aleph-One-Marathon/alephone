@@ -3134,7 +3134,7 @@ void show_movie(short index)
 		OpenALManager::Get()->Start();
 		bool done = false;
 		int64_t movie_waudio_sync = 0;
-		std::shared_ptr<CallBackableStreamPlayer> movie_audio_player;
+		std::shared_ptr<StreamPlayer> movie_audio_player;
 		while (!done)
 		{
 			SDL_Event event;

@@ -59,8 +59,7 @@ public:
 	std::shared_ptr<SoundPlayer> PlaySound(const SoundInfo& header, const SoundData& data, SoundParameters parameters);
 	std::shared_ptr<SoundPlayer> PlaySound(LoadedResource& rsrc, SoundParameters parameters);
 	std::shared_ptr<MusicPlayer> PlayMusic(StreamDecoder* decoder);
-	std::shared_ptr<StreamPlayer> PlayStream(uint8* data, int length, int rate, bool stereo, bool sixteen_bit);
-	std::shared_ptr<CallBackableStreamPlayer> PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, bool sixteen_bit);
+	std::shared_ptr<StreamPlayer> PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, bool sixteen_bit);
 	void StopSound(short sound_identifier, short source_identifier);
 	AudioPlayer::AudioSource PickAvailableSource(const AudioPlayer* player);
 	std::shared_ptr<SoundPlayer> GetSoundPlayer(short identifier, short source_identifier, bool sound_identifier_only = false) const;

@@ -31,11 +31,6 @@ private:
     virtual bool SetUpALSourceInit() const; //Init of the source parameters (AL), done when the source is assigned to the player
     int GetCorrespondingFormat(bool stereo, bool isSixteenBit) const;
 
-    /*This guarantees the player is not being handled
-     by the queue manager when locked. It may still be in
-     playing state. It is blocking for the queue manager.*/
-    void Lock_Internal() { mutex_internal.lock(); Lock(); }
-    void Unlock_Internal() { mutex_internal.unlock(); Unlock(); }
     friend class OpenALManager;
 public:
     void Stop();
@@ -45,8 +40,6 @@ public:
     virtual short GetIdentifier() const { return NONE; }
     virtual short GetSourceIdentifier() const { return NONE; }
     void SetFilterable(bool filterable) { this->filterable = filterable; }
-    void Lock() { mutex_public.lock(); }
-    void Unlock() { mutex_public.unlock(); }
     virtual float GetPriority() const = 0;
 protected:
     AudioPlayer(int rate, bool stereo, bool sixteen_bit);
@@ -58,8 +51,6 @@ protected:
     std::atomic<bool> filterable = { true };
     std::atomic<bool> is_active = { true };
     std::atomic<float> volume = { 0 };
-    std::mutex mutex_internal;
-    std::mutex mutex_public;
     int rate = 0;
     ALenum format = 0; //Mono 8-16 or stereo 8-16
     AudioSource audio_source;

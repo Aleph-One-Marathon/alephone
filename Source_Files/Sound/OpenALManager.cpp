@@ -48,20 +48,16 @@ void OpenALManager::ProcessAudioQueue() {
 	for (int i = 0; i < audio_players.size(); i++) {
 
 		auto audio = audio_players.front();
-
-		audio->Lock_Internal();
 		bool mustStillPlay = audio->IsActive() && audio->AssignSource() && audio->SetUpALSourceIdle() && audio->Play();
 
 		audio_players.pop_front();
 
 		if (!mustStillPlay) {
 			RetrieveSource(audio);
-			audio->Unlock_Internal();
 			audio.reset();
 			continue;
 		}
 
-		audio->Unlock_Internal();
 		audio_players.push_back(audio); //We have just processed a part of the data for you, now wait your next turn
 	}
 }
@@ -142,10 +138,13 @@ std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(const SoundInfo& header, c
 		if (existingPlayer) {
 			if (!(parameters.flags & _sound_cannot_be_restarted) && simulatedVolume + abortAmplitudeThreshold > SoundPlayer::Simulate(existingPlayer->parameters)) {
 
-				if (existingPlayer->parameters.permutation == parameters.permutation)
-					existingPlayer->UpdateParameters(parameters);
-				else
-					existingPlayer->Replace(header, data, parameters);
+				{
+					std::lock_guard<std::mutex> guard(mutex_player);
+					if (existingPlayer->parameters.permutation == parameters.permutation)
+						existingPlayer->UpdateParameters(parameters);
+					else
+						existingPlayer->Replace(header, data, parameters);
+				}
 
 				existingPlayer->AskRewind(); //we found one, we won't create another player but rewind this one instead
 			}
@@ -175,20 +174,10 @@ std::shared_ptr<MusicPlayer> OpenALManager::PlayMusic(StreamDecoder* decoder) {
 	return musicPlayer;
 }
 
-//Used by net mic only but that could be used by other things
-//StreamPlayers allow to directly feed audio data while it's playing  
-std::shared_ptr<StreamPlayer> OpenALManager::PlayStream(uint8* data, int length, int rate, bool stereo, bool sixteen_bit) {
+//Used for video playback & net mic
+std::shared_ptr<StreamPlayer> OpenALManager::PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, bool sixteen_bit) {
 	if (!process_audio_active) return std::shared_ptr<StreamPlayer>();
-	auto streamPlayer = std::make_shared<StreamPlayer>(data, length, rate, stereo, sixteen_bit);
-	QueueAudio(streamPlayer);
-	return streamPlayer;
-}
-
-//Used by video playback
-//Same thing as StreamPlayers but it uses a callback to get more data instead of having to be fed
-std::shared_ptr<CallBackableStreamPlayer> OpenALManager::PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, bool sixteen_bit) {
-	if (!process_audio_active) return std::shared_ptr<CallBackableStreamPlayer>();
-	auto streamPlayer = std::make_shared<CallBackableStreamPlayer>(callback, length, rate, stereo, sixteen_bit);
+	auto streamPlayer = std::make_shared<StreamPlayer>(callback, length, rate, stereo, sixteen_bit);
 	QueueAudio(streamPlayer);
 	return streamPlayer;
 }
