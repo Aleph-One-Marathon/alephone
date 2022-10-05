@@ -301,6 +301,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 			s = Shader::get(Shader::S_InvincibleBloom);
 		}
 		s->enable();
+        s->setFloat(Shader::U_TransferFadeOut,((float)((uint16)rect.transfer_data))/(float)((int)FIXED_ONE));
 	} else if (current_player->infravision_duration) {
 		color[0] = color[1] = color[2] = 1;
 		FindInfravisionVersionRGBA(GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(rect.ShapeDesc)), color);
@@ -400,6 +401,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 			flare = -1;
 			s = Shader::get(renderStep == kGlow ? Shader::S_InvincibleBloom : Shader::S_Invincible);
 			s->enable();
+            s->setFloat(Shader::U_TransferFadeOut,0);
 			break;
 		case _xfer_landscape:
 		case _xfer_big_landscape:
@@ -851,6 +853,8 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		} else {
 			s = Shader::get(Shader::S_InvincibleBloom);
 		}
+        s->enable();
+        s->setFloat(Shader::U_TransferFadeOut,((float)((uint16)RenderRectangle.transfer_data))/(float)((int)FIXED_ONE));
 	} else if (current_player->infravision_duration) {
 		color[0] = color[1] = color[2] = 1;
 		FindInfravisionVersionRGBA(GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(RenderRectangle.ShapeDesc)), color);

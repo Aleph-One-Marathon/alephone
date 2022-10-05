@@ -49,6 +49,7 @@ public:
 		U_Pass,
 		U_UseFog,
 		U_Visibility,
+        U_TransferFadeOut,
 		U_Depth,
 		U_StrictDepthMode,
 		U_Glow,
