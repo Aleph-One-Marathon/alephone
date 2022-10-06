@@ -120,7 +120,6 @@ static TxtrTypeInfoData TxtrTypeInfoList[OGL_NUMBER_OF_TEXTURE_TYPES];
 static TxtrTypeInfoData ModelSkinInfo;
 
 static bool useSGISMipmaps = false;
-static bool useMirroredRepeat = false;
 
 // Infravision: use algorithm (red + green + blue)/3 to compose intensity,
 // then shade with these colors, one color for each collection.
@@ -368,9 +367,6 @@ void OGL_StartTextures()
 
 #if defined GL_SGIS_generate_mipmap
 	useSGISMipmaps = OGL_CheckExtension("GL_SGIS_generate_mipmap");
-#endif
-#if defined GL_ARB_texture_mirrored_repeat
-	useMirroredRepeat = OGL_CheckExtension("GL_ARB_texture_mirrored_repeat");
 #endif
 }
 
@@ -1392,16 +1388,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		else
 		{
-#if defined(GL_ARB_texture_mirrored_repeat)
-			if (useMirroredRepeat)
-			{
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT_ARB);
-			}
-			else
-#endif
-			{
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);			
-			}	
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 		}
 		break;
 		
