@@ -2019,6 +2019,7 @@ static w_toggle *mouse_raw_w;
 static w_toggle *mouse_vertical_w;
 static w_toggle *mouse_accel_w;
 static w_toggle *mouse_precision_w;
+static w_toggle *mouse_speed_limit_w;
 static bool inside_callback = false;  // prevent circular changes
 
 static void mouse_feel_details_changed(void *arg)
@@ -2033,12 +2034,14 @@ static void mouse_feel_details_changed(void *arg)
 			mouse_accel_w->set_selection(1);
 			mouse_vertical_w->set_selection(1);
 			mouse_precision_w->set_selection(1);
+			mouse_speed_limit_w->set_selection(1);
 			break;
 		case 1:
 			mouse_raw_w->set_selection(1);
 			mouse_accel_w->set_selection(0);
 			mouse_vertical_w->set_selection(0);
 			mouse_precision_w->set_selection(0);
+			mouse_speed_limit_w->set_selection(0);
 			break;
 		default:
 			break;
@@ -2054,14 +2057,16 @@ static void update_mouse_feel_details(void *arg)
 	if (mouse_raw_w->get_selection() == 1 &&
 		mouse_accel_w->get_selection() == 1 &&
 		mouse_vertical_w->get_selection() == 1 &&
-		mouse_precision_w->get_selection() == 1)
+		mouse_precision_w->get_selection() == 1 &&
+		mouse_speed_limit_w->get_selection() == 1)
 	{
 		mouse_feel_details_w->set_selection(0);
 	}
 	else if (mouse_raw_w->get_selection() == 1 &&
 			 mouse_accel_w->get_selection() == 0 &&
 			 mouse_vertical_w->get_selection() == 0 &&
-			 mouse_precision_w->get_selection() == 0)
+			 mouse_precision_w->get_selection() == 0 &&
+			 mouse_speed_limit_w->get_selection() == 0)
 	{
 		mouse_feel_details_w->set_selection(1);
 	}
@@ -2077,14 +2082,16 @@ static void update_mouse_feel(void *arg)
 	if (input_preferences->raw_mouse_input == true &&
 		input_preferences->mouse_accel_type == _mouse_accel_classic &&
 		input_preferences->classic_vertical_aim == true &&
-		input_preferences->extra_mouse_precision == false)
+		input_preferences->extra_mouse_precision == false &&
+		input_preferences->classic_aim_speed_limits)
 	{
 		mouse_feel_w->set_selection(0);
 	}
 	else if (input_preferences->raw_mouse_input == true &&
 			 input_preferences->mouse_accel_type == _mouse_accel_none &&
 			 input_preferences->classic_vertical_aim == false &&
-			 input_preferences->extra_mouse_precision == true)
+			 input_preferences->extra_mouse_precision == true &&
+			 !input_preferences->classic_aim_speed_limits)
 	{
 		mouse_feel_w->set_selection(1);
 	}
@@ -2116,6 +2123,11 @@ static bool apply_mouse_feel(int selection)
 				input_preferences->extra_mouse_precision = false;
 				changed = true;
 			}
+			if (!input_preferences->classic_aim_speed_limits)
+			{
+				input_preferences->classic_aim_speed_limits = true;
+				changed = true;
+			}
 			break;
 		case 1:
 			if (true != input_preferences->raw_mouse_input) {
@@ -2132,6 +2144,10 @@ static bool apply_mouse_feel(int selection)
 			}
 			if (true != input_preferences->extra_mouse_precision) {
 				input_preferences->extra_mouse_precision = true;
+				changed = true;
+			}
+			if (input_preferences->classic_aim_speed_limits) {
+				input_preferences->classic_aim_speed_limits = false;
 				changed = true;
 			}
 			break;
@@ -2202,6 +2218,11 @@ static void mouse_custom_dialog(void *arg)
 	mouse_precision_w->set_selection_changed_callback(update_mouse_feel_details);
 	table->dual_add(mouse_precision_w->label("Snap View to Weapon Aim"), d);
 	table->dual_add(mouse_precision_w, d);
+
+	mouse_speed_limit_w = new w_toggle(input_preferences->classic_aim_speed_limits);
+	mouse_speed_limit_w->set_selection_changed_callback(update_mouse_feel_details);
+	table->dual_add(mouse_speed_limit_w->label("Classic Aim Speed Limit"), d);
+	table->dual_add(mouse_speed_limit_w, d);
 	
 	placer->add(table);
 	placer->add(new w_spacer(), true);
@@ -2264,6 +2285,12 @@ static void mouse_custom_dialog(void *arg)
 		bool precision = (mouse_precision_w->get_selection() == 0);
 		if (precision != input_preferences->extra_mouse_precision) {
 			input_preferences->extra_mouse_precision = precision;
+			changed = true;
+		}
+
+		auto speed_limit = mouse_precision_w->get_selection();
+		if (speed_limit != input_preferences->classic_aim_speed_limits) {
+			input_preferences->classic_aim_speed_limits = speed_limit;
 			changed = true;
 		}
 
@@ -3982,7 +4009,7 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->raw_mouse_input = true;
 	preferences->extra_mouse_precision = true;
 	preferences->classic_vertical_aim = false;
-	preferences->classic_aim_speed_limits = true;
+	preferences->classic_aim_speed_limits = false;
 
 	preferences->controller_analog = true;
 	preferences->controller_sensitivity = FIXED_ONE;
