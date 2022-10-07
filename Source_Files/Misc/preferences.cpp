@@ -4000,10 +4000,8 @@ static void default_input_preferences(input_preferences_data *preferences)
 	// interchange run and walk, but don't interchange swim and sink.
 	preferences->modifiers = _inputmod_interchange_run_walk;
 
-	// LP: split into horizontal and vertical sensitivities
-	// ZZZ addition: sensitivity factor starts at 1 (no adjustment)
-	preferences->sens_horizontal = FIXED_ONE;
-	preferences->sens_vertical = FIXED_ONE;
+	preferences->sens_horizontal = FIXED_ONE / 4;
+	preferences->sens_vertical = FIXED_ONE / 4;
 	preferences->mouse_accel_type = _mouse_accel_none;
 	preferences->mouse_accel_scale = 1.f;
 	preferences->raw_mouse_input = true;
