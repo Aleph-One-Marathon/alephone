@@ -1173,6 +1173,8 @@ uint32 parse_keymap(void)
 	memset(key_map, 0, sizeof(key_map));
       } else {
 		  memcpy(key_map, SDL_GetKeyboardState(NULL), sizeof(key_map));
+		  auto mod_state = SDL_GetModState();
+		  key_map[SDL_SCANCODE_CAPSLOCK] = mod_state & KMOD_CAPS ? 1 : 0;
       }
       
       // ZZZ: let mouse code simulate keypresses
