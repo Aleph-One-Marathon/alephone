@@ -1042,10 +1042,15 @@ void set_shapes_images_file(FileSpecifier &file)
 void set_external_resources_images_file(FileSpecifier &file)
 {
     // fail here, instead of above, if Images is missing
-	if ((!file.Exists() || !ExternalResourcesFile.open_file(file)) &&
-        !ImagesFile.is_open())
-        alert_bad_extra_file();
-        
+	if (!file.Exists() || !ExternalResourcesFile.open_file(file))
+	{
+		file.SetNameWithPath(getcstr(temporary, strFILENAMES, filenameEXTERNAL_RESOURCES));
+		if ((!file.Exists() || !ExternalResourcesFile.open_file(file)) &&
+			!ImagesFile.is_open())
+		{
+			alert_bad_extra_file();
+		}
+	}
 }
 
 void set_sounds_images_file(FileSpecifier &file)
