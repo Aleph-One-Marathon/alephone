@@ -2237,6 +2237,7 @@ bool UseLuaCameras()
 		}
 
 		world_view->show_weapons_in_hand = false;
+		world_view->maximum_depth_intensity = NATURAL_LIGHT_INTENSITY;
 		using_lua_cameras = true;
 		
 		short point_index = it->path.current_point_index;
