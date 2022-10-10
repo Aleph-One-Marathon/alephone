@@ -2192,9 +2192,10 @@ int MainScreenWindowHeight()
 int MainScreenPixelWidth()
 {
 	int w = 0;
+	int dummy = 0;				// SDL 2.24/Win crashes if you pass nullptr
 #ifdef HAVE_OPENGL
 	if (MainScreenIsOpenGL())
-		SDL_GL_GetDrawableSize(main_screen, &w, NULL);
+		SDL_GL_GetDrawableSize(main_screen, &w, &dummy);
 	else
 #endif
 		SDL_GetRendererOutputSize(main_render, &w, NULL);
@@ -2203,9 +2204,10 @@ int MainScreenPixelWidth()
 int MainScreenPixelHeight()
 {
 	int h = 0;
+	int dummy = 0;				// SDL 2.24/Win crashes if you pass nullptr
 #ifdef HAVE_OPENGL
 	if (MainScreenIsOpenGL())
-		SDL_GL_GetDrawableSize(main_screen, NULL, &h);
+		SDL_GL_GetDrawableSize(main_screen, &dummy, &h);
 	else
 #endif
 		SDL_GetRendererOutputSize(main_render, NULL, &h);
