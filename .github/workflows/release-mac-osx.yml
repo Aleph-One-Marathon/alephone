@@ -6,7 +6,7 @@ jobs:
   release:
     runs-on: macos-11
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         submodules: true
         
@@ -20,13 +20,13 @@ jobs:
       run: echo "vcpkg_current_hash=$(git -C $VCPKG_INSTALLATION_ROOT rev-parse --short HEAD)" >> $GITHUB_ENV
         
     - name: Restore vcpkg cache for x64
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: vcpkg/installed-x64-osx
         key: ${{runner.os}}-installed-x64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
         
     - name: Restore vcpkg cache for arm64
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: vcpkg/installed-arm64-osx
         key: ${{runner.os}}-installed-arm64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
@@ -123,7 +123,7 @@ jobs:
       run: cd tools && ./build_dmg.sh $GITHUB_WORKSPACE $GITHUB_WORKSPACE/PBProjects/build/Release
       
     - name: Upload
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: alephone-release
         if-no-files-found: error
