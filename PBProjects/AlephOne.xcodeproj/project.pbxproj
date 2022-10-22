@@ -268,9 +268,6 @@
 		AE1F1BAD2662C6B100E6390E /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AE99750C2661D71000DDD370 /* libcurl.tbd */; };
 		AE1F1BAE2662C6B200E6390E /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AE99750C2661D71000DDD370 /* libcurl.tbd */; };
 		AE1F1BAF2662C6B200E6390E /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AE99750C2661D71000DDD370 /* libcurl.tbd */; };
-		AE1F1BB02662C6B500E6390E /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AE99750B2661D70900DDD370 /* libexpat.tbd */; };
-		AE1F1BB12662C6B500E6390E /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AE99750B2661D70900DDD370 /* libexpat.tbd */; };
-		AE1F1BB22662C6B600E6390E /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AE99750B2661D70900DDD370 /* libexpat.tbd */; };
 		AE1F1BB32662C6B800E6390E /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AE99750F2661D81600DDD370 /* libz.tbd */; };
 		AE1F1BB42662C6B900E6390E /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AE99750F2661D81600DDD370 /* libz.tbd */; };
 		AE1F1BB52662C6B900E6390E /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AE99750F2661D81600DDD370 /* libz.tbd */; };
@@ -743,7 +740,6 @@
 		AE9975112661D82700DDD370 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9975102661D82700DDD370 /* OpenGL.framework */; };
 		AE9975132661D85000DDD370 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9975122661D85000DDD370 /* Cocoa.framework */; };
 		AE9975142661D91600DDD370 /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AE99750C2661D71000DDD370 /* libcurl.tbd */; };
-		AE9975152661D91A00DDD370 /* libexpat.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AE99750B2661D70900DDD370 /* libexpat.tbd */; };
 		AE9975162661D91D00DDD370 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AE99750F2661D81600DDD370 /* libz.tbd */; };
 		AE9A39F70CCADFA7004717E3 /* ConnectPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */; };
 		AEA26AD325E3364A008895CC /* interpolated_world.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEA26AD225E3364A008895CC /* interpolated_world.cpp */; };
@@ -2065,7 +2061,6 @@
 		AE9975052661D66600DDD370 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		AE9975072661D6E300DDD370 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		AE9975092661D6F400DDD370 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
-		AE99750B2661D70900DDD370 /* libexpat.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libexpat.tbd; path = usr/lib/libexpat.tbd; sourceTree = SDKROOT; };
 		AE99750C2661D71000DDD370 /* libcurl.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcurl.tbd; path = usr/lib/libcurl.tbd; sourceTree = SDKROOT; };
 		AE99750D2661D7F200DDD370 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		AE99750F2661D81600DDD370 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
@@ -2388,7 +2383,6 @@
 				AE1F1BAB2662C6AE00E6390E /* IOKit.framework in Frameworks */,
 				AE1F1B9C2662C69D00E6390E /* Carbon.framework in Frameworks */,
 				AE1F1BA22662C6A300E6390E /* CoreAudio.framework in Frameworks */,
-				AE1F1BB12662C6B500E6390E /* libexpat.tbd in Frameworks */,
 				AE1F1BA82662C6AB00E6390E /* ForceFeedback.framework in Frameworks */,
 				AE1F1B992662C69A00E6390E /* AudioUnit.framework in Frameworks */,
 			);
@@ -2408,7 +2402,6 @@
 				AE1F1BAC2662C6AF00E6390E /* IOKit.framework in Frameworks */,
 				AE1F1B9D2662C69D00E6390E /* Carbon.framework in Frameworks */,
 				AE1F1BA32662C6A300E6390E /* CoreAudio.framework in Frameworks */,
-				AE1F1BB22662C6B600E6390E /* libexpat.tbd in Frameworks */,
 				AE1F1BA92662C6AB00E6390E /* ForceFeedback.framework in Frameworks */,
 				AE1F1B9A2662C69A00E6390E /* AudioUnit.framework in Frameworks */,
 			);
@@ -2419,7 +2412,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AE9975082661D6E400DDD370 /* CoreAudio.framework in Frameworks */,
-				AE9975152661D91A00DDD370 /* libexpat.tbd in Frameworks */,
 				AE9975042661D63700DDD370 /* CoreMedia.framework in Frameworks */,
 				AE9975142661D91600DDD370 /* libcurl.tbd in Frameworks */,
 				AE9975162661D91D00DDD370 /* libz.tbd in Frameworks */,
@@ -2448,7 +2440,6 @@
 				AE1F1BAA2662C6AE00E6390E /* IOKit.framework in Frameworks */,
 				AE1F1B9B2662C69D00E6390E /* Carbon.framework in Frameworks */,
 				AE1F1BA12662C6A300E6390E /* CoreAudio.framework in Frameworks */,
-				AE1F1BB02662C6B500E6390E /* libexpat.tbd in Frameworks */,
 				AE1F1BA72662C6AA00E6390E /* ForceFeedback.framework in Frameworks */,
 				AE1F1B982662C69900E6390E /* AudioUnit.framework in Frameworks */,
 			);
@@ -2670,7 +2661,6 @@
 				AE9975012661D50F00DDD370 /* ForceFeedback.framework */,
 				AE99750D2661D7F200DDD370 /* IOKit.framework */,
 				AE99750C2661D71000DDD370 /* libcurl.tbd */,
-				AE99750B2661D70900DDD370 /* libexpat.tbd */,
 				AE99750F2661D81600DDD370 /* libz.tbd */,
 				AE9975102661D82700DDD370 /* OpenGL.framework */,
 				AE9975052661D66600DDD370 /* Security.framework */,
@@ -5609,7 +5599,6 @@
 					"$(SRCROOT)/../Source_Files/FFmpeg",
 					"$(SRCROOT)/../Source_Files/GameWorld",
 					"$(SRCROOT)/../Source_Files/Input",
-					"$(SRCROOT)/../Source_Files/LibNAT",
 					"$(SRCROOT)/../Source_Files/Lua",
 					"$(SRCROOT)/../Source_Files/Misc",
 					"$(SRCROOT)/../Source_Files/ModelView",
@@ -5754,7 +5743,6 @@
 					"$(SRCROOT)/../Source_Files/FFmpeg",
 					"$(SRCROOT)/../Source_Files/GameWorld",
 					"$(SRCROOT)/../Source_Files/Input",
-					"$(SRCROOT)/../Source_Files/LibNAT",
 					"$(SRCROOT)/../Source_Files/Lua",
 					"$(SRCROOT)/../Source_Files/Misc",
 					"$(SRCROOT)/../Source_Files/ModelView",
