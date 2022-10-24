@@ -1843,6 +1843,8 @@ bool process_map_wad(
 
 	init_ephemera(dynamic_world->polygon_count);
 
+	PolygonListCopy = PolygonList; // must be done before polygons heights are modified below
+
 	/* If we are restoring the game, then we need to add the dynamic data */
 	if(restoring_game)
 	{
@@ -1946,8 +1948,7 @@ bool process_map_wad(
 	}
 
 	PlatformListCopy = PlatformList;
-	PolygonListCopy = PolygonList;
-	
+
 	/* ... and bail */
 	return true;
 }
