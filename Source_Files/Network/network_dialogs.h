@@ -434,6 +434,10 @@ protected:
 	
 	ToggleWidget*       m_useUpnpWidget;
 	SelectorWidget*         m_latencyToleranceWidget;
+
+#ifndef MAC_APP_STORE
+	std::function<void()> netscript_script_enable_callback;
+#endif
 };
 
 

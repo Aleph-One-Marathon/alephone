@@ -175,6 +175,10 @@ static void environment_dialog(void *arg);
 static void plugins_dialog(void *arg);
 static void keyboard_dialog(void *arg);
 //static void texture_options_dialog(void *arg);
+#ifndef MAC_APP_STORE
+extern void script_configuration_dialog(void *arg);
+extern bool script_is_configurable(w_file_chooser*);
+#endif
 
 /*
  *  Get user name
@@ -2984,7 +2988,7 @@ static void environment_dialog(void *arg)
 #ifndef MAC_APP_STORE
 	table->add_row(new w_spacer, true);
 	table->dual_add_row(new w_static_text("Solo Script"), d);
-	w_enabling_toggle* use_solo_lua_w = new w_enabling_toggle(environment_preferences->use_solo_lua);
+	w_toggle* use_solo_lua_w = new w_toggle(environment_preferences->use_solo_lua);
 	table->dual_add(use_solo_lua_w->label("Use Solo Script"), d);
 	table->dual_add(use_solo_lua_w, d);
 
@@ -2992,7 +2996,20 @@ static void environment_dialog(void *arg)
 	solo_lua_w->set_file(environment_preferences->solo_lua_file);
 	table->dual_add(solo_lua_w->label("Script File"), d);
 	table->dual_add(solo_lua_w, d);
-	use_solo_lua_w->add_dependent_widget(solo_lua_w);
+
+	table->add_row(new w_spacer, true);
+	w_button* solo_lua_config_button_w = new w_button("SOLO SCRIPT OPTIONS", script_configuration_dialog, solo_lua_w);
+	table->dual_add_row(solo_lua_config_button_w, d);
+
+	auto solo_script_enable_callback = [use_solo_lua_w, solo_lua_w, solo_lua_config_button_w]() {
+	    bool enabled = !!use_solo_lua_w->get_selection();
+	    solo_lua_w->set_enabled(enabled);
+		solo_lua_config_button_w->set_enabled(enabled && script_is_configurable(solo_lua_w));
+	};
+
+	solo_script_enable_callback();
+	use_solo_lua_w->set_selection_changed_callback([&solo_script_enable_callback](w_select*) { solo_script_enable_callback(); });
+	solo_lua_w->set_callback(solo_script_enable_callback);
 #endif
 
 	table->add_row(new w_spacer, true);
@@ -3003,7 +3020,7 @@ static void environment_dialog(void *arg)
 	table->dual_add(film_profile_w, d);
 	
 #ifndef MAC_APP_STORE
-	w_enabling_toggle* use_replay_net_lua_w = new w_enabling_toggle(environment_preferences->use_replay_net_lua);
+	w_toggle* use_replay_net_lua_w = new w_enabling_toggle(environment_preferences->use_replay_net_lua);
 	table->dual_add(use_replay_net_lua_w->label("Use Netscript in Films"), d);
 	table->dual_add(use_replay_net_lua_w, d);
 	
@@ -3011,7 +3028,20 @@ static void environment_dialog(void *arg)
 	replay_net_lua_w->set_file(network_preferences->netscript_file);
 	table->dual_add(replay_net_lua_w->label("Netscript File"), d);
 	table->dual_add(replay_net_lua_w, d);
-	use_replay_net_lua_w->add_dependent_widget(replay_net_lua_w);
+
+	table->add_row(new w_spacer, true);
+	w_button* replay_net_lua_config_button_w = new w_button("FILM NETSCRIPT OPTIONS", script_configuration_dialog, replay_net_lua_w);
+	table->dual_add_row(replay_net_lua_config_button_w, d);
+
+	auto replay_net_script_enable_callback = [use_replay_net_lua_w, replay_net_lua_w, replay_net_lua_config_button_w]() {
+	    bool enabled = !!use_replay_net_lua_w->get_selection();
+	    replay_net_lua_w->set_enabled(enabled);
+		replay_net_lua_config_button_w->set_enabled(enabled && script_is_configurable(replay_net_lua_w));
+	};
+
+	replay_net_script_enable_callback();
+	use_replay_net_lua_w->set_selection_changed_callback([&replay_net_script_enable_callback](w_select*) { replay_net_script_enable_callback(); });
+	replay_net_lua_w->set_callback(replay_net_script_enable_callback);
 #endif
 	
 	table->add_row(new w_spacer, true);

@@ -99,7 +99,10 @@ Apr 10, 2003 (Woody Zenfell):
 
 
 extern void NetRetargetJoinAttempts(const IPaddress* inAddress);
-
+#ifndef MAC_APP_STORE
+extern void script_configuration_dialog(void *arg);
+extern bool script_is_configurable(w_file_chooser*);
+#endif
 
 // Metaserver Globals
 // We can't construct a MetaserverClient until MetaserverClient::s_instances is initialised.
@@ -1194,6 +1197,10 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 
 	binders.migrate_all_second_to_first ();
 	
+#ifndef MAC_APP_STORE
+	netscript_script_enable_callback();
+#endif
+
 	m_cancelWidget->set_callback (std::bind (&SetupNetgameDialog::Stop, this, false));
 	m_okWidget->set_callback (std::bind (&SetupNetgameDialog::okHit, this));
 	m_limitTypeWidget->set_callback (std::bind (&SetupNetgameDialog::limitTypeHit, this));
@@ -2776,7 +2783,7 @@ public:
 		network_table->add_row(new w_spacer(), true);
 		network_table->dual_add_row(new w_static_text("Net Script"), m_dialog);
 #endif
-		w_enabling_toggle* use_netscript_w = new w_enabling_toggle (network_preferences->use_netscript);
+		w_toggle* use_netscript_w = new w_toggle(network_preferences->use_netscript);
 #ifndef MAC_APP_STORE
 		network_table->dual_add(use_netscript_w, m_dialog);
 		network_table->dual_add(use_netscript_w->label("Use Netscript"), m_dialog);
@@ -2786,8 +2793,21 @@ public:
 #ifndef MAC_APP_STORE
 		network_table->add(new w_spacer(), true);
 		network_table->dual_add(choose_script_w, m_dialog);
+
+		network_table->add_row(new w_spacer, true);
+		w_button* netscript_lua_config_button_w = new w_button("NETSCRIPT OPTIONS", script_configuration_dialog, choose_script_w);
+		network_table->dual_add_row(netscript_lua_config_button_w, m_dialog);
+
+		netscript_script_enable_callback = [use_netscript_w, choose_script_w, netscript_lua_config_button_w]() {
+			bool enabled = !!use_netscript_w->get_selection();
+			choose_script_w->set_enabled(enabled);
+			netscript_lua_config_button_w->set_enabled(enabled && script_is_configurable(choose_script_w));
+		};
+
+		netscript_script_enable_callback();
+		use_netscript_w->set_selection_changed_callback([this](w_select*) { netscript_script_enable_callback(); });
+		choose_script_w->set_callback(netscript_script_enable_callback);
 #endif
-		use_netscript_w->add_dependent_widget(choose_script_w);
 
 		left_placer->add(new w_spacer(), true);
 		table_placer *options_table = new table_placer(2, get_theme_space(ITEM_WIDGET));

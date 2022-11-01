@@ -20,7 +20,7 @@ libmisc_a_SOURCES = ActionQueues.h alephversion.h binders.h CircularByteBuffer.h
   \
   ActionQueues.cpp CircularByteBuffer.cpp Console.cpp DefaultStringSets.cpp game_errors.cpp \
   interface.cpp \
-  Logging.cpp PlayerImage_sdl.cpp PlayerName.cpp preferences.cpp \
+  Logging.cpp PlayerImage_sdl.cpp PlayerName.cpp preferences.cpp script_configuration.cpp \
   preference_dialogs.cpp preferences_widgets_sdl.cpp Scenario.cpp sdl_dialogs.cpp $(THREAD_PRIORITY) \
   sdl_widgets.cpp shared_widgets.cpp vbl.cpp \
   Statistics.cpp \

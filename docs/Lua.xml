@@ -3695,4 +3695,29 @@ string.
       </pre>
     </description>
   </section>
+  <section name="Configuration Dialog" id="configuration_dialog" version="git">
+	<description>
+	  <p>Scripts intended for use as solo scripts or netscripts can optionally contain a specification for a configuration dialog. This can be used in case your script has lots of optional features, or might need tweaking to match some peoples' tastes. (Currently, there is no provision for configuring plugin scripts. This may change at a later date.)</p>
+	  <p>Changed settings are written back to the script file. For this and other reasons, the syntax is extremely strict. The chances for corruption must be minimized. An advantage is that the configuration values will be sent over the network with no compatibility issues. As far as the game is concerned, outside the configuration dialog, the file contains an ordinary, self-contained netscript.</p>
+	  <p>To use this feature, place a block like the following at the <b>exact top</b> of the file, with no whitespace above, below, or between:</p>
+	  <pre>--! configuration 1.0
+--! toggle var_name "This is a checkbox"
+local var_name = false
+--! toggle var2 "Variable name goes first, then label"
+local var2 = true
+--! spacer
+--! text "You can put small blank spaces using \"spacer\","
+--! text "and create readable text using \"text\". In any"
+--! text "element of a widget specification, you can"
+--! text "optionally use double quotes, or use simple"
+--! text backslash\ escapes\ as\ needed.
+--! spacer
+--! select best "Favorite opponent" Fighter Compiler Tick Juggernaut "Mother of All Hunters"
+local best = 3
+--! end configuration</pre>
+	  <p>Anything after the "end configuration" line is ignored for purposes of creating the configuration dialog.</p>
+	  <p>The variable specification after a widget must match that <b>exact</b> syntax, must match the given variable name, and must have a valid choice for that widget. "toggle" widgets can have true or false, "select" widgets must have a number between 1 and the number of options.</p>
+	  <p>You can have quite a few widgets. At least twenty will fit on the screen. Please don't!</p>
+	</description>
+  </section>
 </document>

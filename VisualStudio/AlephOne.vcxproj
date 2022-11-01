@@ -454,6 +454,7 @@
     <ClCompile Include="..\Source_Files\Misc\preferences_widgets_sdl.cpp" />
     <ClCompile Include="..\Source_Files\Misc\preference_dialogs.cpp" />
     <ClCompile Include="..\Source_Files\Misc\Scenario.cpp" />
+    <ClCompile Include="..\Source_Files\Misc\script_configuration.cpp" />
     <ClCompile Include="..\Source_Files\Misc\sdl_dialogs.cpp" />
     <ClCompile Include="..\Source_Files\Misc\sdl_widgets.cpp" />
     <ClCompile Include="..\Source_Files\Misc\shared_widgets.cpp" />

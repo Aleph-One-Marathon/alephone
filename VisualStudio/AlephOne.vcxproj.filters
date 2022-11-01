@@ -370,6 +370,9 @@
     <ClCompile Include="..\Source_Files\Misc\Scenario.cpp">
       <Filter>Misc\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source_Files\Misc\script_configuration.cpp" />
+      <Filter>Misc\Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\Source_Files\Misc\sdl_dialogs.cpp">
       <Filter>Misc\Source Files</Filter>
     </ClCompile>
