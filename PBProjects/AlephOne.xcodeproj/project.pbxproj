@@ -238,6 +238,10 @@
 		27FF26611B6F170600DA0A19 /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
 		27FF26621B6F170600DA0A19 /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
 		27FF26631B6F1E0700DA0A19 /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
+		4EDBFB6F2911D5FA00BBE2C3 /* script_configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4EDBFB6E2911D5FA00BBE2C3 /* script_configuration.cpp */; };
+		4EDBFB702911D5FA00BBE2C3 /* script_configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4EDBFB6E2911D5FA00BBE2C3 /* script_configuration.cpp */; };
+		4EDBFB712911D5FA00BBE2C3 /* script_configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4EDBFB6E2911D5FA00BBE2C3 /* script_configuration.cpp */; };
+		4EDBFB722911D5FA00BBE2C3 /* script_configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4EDBFB6E2911D5FA00BBE2C3 /* script_configuration.cpp */; };
 		AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
 		AE005FD40EE2D6DE007FE7C6 /* screen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE005FD30EE2D6DE007FE7C6 /* screen.cpp */; };
 		AE0E4EC2141D148F00AAA02F /* Marathon.icns in Resources */ = {isa = PBXBuildFile; fileRef = AE0E4EC1141D148F00AAA02F /* Marathon.icns */; };
@@ -1943,6 +1947,7 @@
 		3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Texture_Def.h; sourceTree = "<group>"; };
 		3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Model_Def.cpp; sourceTree = "<group>"; };
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
+		4EDBFB6E2911D5FA00BBE2C3 /* script_configuration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = script_configuration.cpp; path = ../Source_Files/Misc/script_configuration.cpp; sourceTree = "<group>"; };
 		AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Blitter.cpp; sourceTree = "<group>"; };
 		AE005FD30EE2D6DE007FE7C6 /* screen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = screen.cpp; sourceTree = "<group>"; };
 		AE0E4EC1141D148F00AAA02F /* Marathon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Marathon.icns; path = AppStore/Marathon/Marathon.icns; sourceTree = "<group>"; };
@@ -2795,6 +2800,7 @@
 				F52211C40136A6FD01000001 /* interface.cpp */,
 				F522120F0136A6FD01000001 /* preferences.cpp */,
 				AE2A50CC09C67253007681A4 /* Scenario.cpp */,
+				4EDBFB6E2911D5FA00BBE2C3 /* script_configuration.cpp */,
 				AE437C8E08779BE500038E30 /* shared_widgets.cpp */,
 				27FC2E091A7DF51E0057BF42 /* Statistics.cpp */,
 				F52212590136A6FD01000001 /* vbl.cpp */,
@@ -4536,6 +4542,7 @@
 				AE505C1C141D45E600915344 /* sdl_widgets.cpp in Sources */,
 				AE505C1D141D45E600915344 /* shell_misc.cpp in Sources */,
 				AE505C1E141D45E600915344 /* shell.cpp in Sources */,
+				4EDBFB712911D5FA00BBE2C3 /* script_configuration.cpp in Sources */,
 				AE505C1F141D45E600915344 /* vbl.cpp in Sources */,
 				AE505C20141D45E600915344 /* network_lookup_sdl.cpp in Sources */,
 				AE505C21141D45E600915344 /* network_udp.cpp in Sources */,
@@ -4764,6 +4771,7 @@
 				AEB4A1BD14296CAE00537AE7 /* sdl_widgets.cpp in Sources */,
 				AEB4A1BE14296CAE00537AE7 /* shell_misc.cpp in Sources */,
 				AEB4A1BF14296CAE00537AE7 /* shell.cpp in Sources */,
+				4EDBFB722911D5FA00BBE2C3 /* script_configuration.cpp in Sources */,
 				AEB4A1C014296CAE00537AE7 /* vbl.cpp in Sources */,
 				AEB4A1C114296CAE00537AE7 /* network_lookup_sdl.cpp in Sources */,
 				AEB4A1C214296CAE00537AE7 /* network_udp.cpp in Sources */,
@@ -4992,6 +5000,7 @@
 				AEC3C7DF09AD68AC003258E4 /* sdl_widgets.cpp in Sources */,
 				AEC3C7E009AD68AC003258E4 /* shell_misc.cpp in Sources */,
 				AEC3C7E109AD68AC003258E4 /* shell.cpp in Sources */,
+				4EDBFB6F2911D5FA00BBE2C3 /* script_configuration.cpp in Sources */,
 				AEC3C7E309AD68AC003258E4 /* vbl.cpp in Sources */,
 				AEC3C7E409AD68AC003258E4 /* network_lookup_sdl.cpp in Sources */,
 				AEC3C7E509AD68AC003258E4 /* network_udp.cpp in Sources */,
@@ -5220,6 +5229,7 @@
 				AEFD86C913EB84CF00C1E687 /* sdl_widgets.cpp in Sources */,
 				AEFD86CA13EB84CF00C1E687 /* shell_misc.cpp in Sources */,
 				AEFD86CB13EB84CF00C1E687 /* shell.cpp in Sources */,
+				4EDBFB702911D5FA00BBE2C3 /* script_configuration.cpp in Sources */,
 				AEFD86CC13EB84CF00C1E687 /* vbl.cpp in Sources */,
 				AEFD86CD13EB84CF00C1E687 /* network_lookup_sdl.cpp in Sources */,
 				AEFD86CE13EB84CF00C1E687 /* network_udp.cpp in Sources */,
