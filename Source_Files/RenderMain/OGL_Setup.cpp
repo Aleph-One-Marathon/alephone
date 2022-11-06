@@ -240,7 +240,7 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 	// Reasonable default flags
 	Data.Flags = OGL_Flag_Fader | OGL_Flag_Map |
 		OGL_Flag_HUD | OGL_Flag_LiqSeeThru | OGL_Flag_3D_Models | OGL_Flag_ZBuffer |
-		OGL_Flag_Fog;
+		OGL_Flag_Fog | OGL_Flag_MimicSW;
 
         Data.AnisotropyLevel = 0.0; // off
 	Data.Multisamples = 0; // off
