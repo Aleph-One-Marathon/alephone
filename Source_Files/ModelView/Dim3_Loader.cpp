@@ -141,21 +141,21 @@ static void parse_dim3(const InfoTree& root, Model3D& Model)
 			bt.Tag0[0] = bt.Tag1[0] = '\0';
 			
 			std::string tempstr;
-			if (root.read_attr("c3", tempstr))
+			if (v.read_attr("c3", tempstr))
 				sscanf(tempstr.c_str(), "%f,%f,%f", &data.Position[0], &data.Position[1], &data.Position[2]);
-			if (root.read_attr("n3", tempstr))
+			if (v.read_attr("n3", tempstr))
 				sscanf(tempstr.c_str(), "%f,%f,%f", &norm[0], &norm[1], &norm[2]);
-			root.read_attr("x", data.Position[0]);
-			root.read_attr("y", data.Position[1]);
-			root.read_attr("z", data.Position[2]);
+			v.read_attr("x", data.Position[0]);
+			v.read_attr("y", data.Position[1]);
+			v.read_attr("z", data.Position[2]);
 			
-			if (root.read_attr("major", tempstr))
+			if (v.read_attr("major", tempstr))
 				strncpy(bt.Tag0, tempstr.c_str(), BoneTagSize);
-			if (root.read_attr("minor", tempstr))
+			if (v.read_attr("minor", tempstr))
 				strncpy(bt.Tag1, tempstr.c_str(), BoneTagSize);
 			
 			float factor;
-			if (root.read_attr("factor", factor))
+			if (v.read_attr("factor", factor))
 				data.Blend = 1 - factor/100;
 			
 			Model.VtxSources.push_back(data);
@@ -167,18 +167,18 @@ static void parse_dim3(const InfoTree& root, Model3D& Model)
 	}
 	for (const InfoTree &bones : root.children_named("Bones"))
 	{
-		for (const InfoTree &bone : root.children_named("Bone"))
+		for (const InfoTree &bone : bones.children_named("Bone"))
 		{
 			Model3D_Bone data;
 			data.Position[0] = data.Position[1] = data.Position[2] = 0;
 			data.Flags = 0;
 			
 			std::string tempstr;
-			if (root.read_attr("c3", tempstr))
+			if (bone.read_attr("c3", tempstr))
 				sscanf(tempstr.c_str(), "%f,%f,%f", &data.Position[0], &data.Position[1], &data.Position[2]);
-			root.read_attr("x", data.Position[0]);
-			root.read_attr("y", data.Position[1]);
-			root.read_attr("z", data.Position[2]);
+			bone.read_attr("x", data.Position[0]);
+			bone.read_attr("y", data.Position[1]);
+			bone.read_attr("z", data.Position[2]);
 			
 			BoneTagWrapper bt;
 			bt.Tag0[0] = bt.Tag1[0] = '\0';
