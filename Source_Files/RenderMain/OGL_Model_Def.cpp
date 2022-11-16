@@ -56,7 +56,8 @@ struct SequenceMapEntry
 	}
 	bool operator<(const SequenceMapEntry& other) const
 	{
-		return (Sequence < other.Sequence || ModelSequence < other.ModelSequence);
+		if (Sequence != other.Sequence) return Sequence < other.Sequence;
+		return ModelSequence < other.ModelSequence;
 	}
 };
 
