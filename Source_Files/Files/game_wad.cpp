@@ -2543,12 +2543,7 @@ static wad_data *build_export_wad(wad_header *header, int32 *length)
 
 			if (PLATFORM_COMES_FROM_CEILING(platform))
 			{
-				world_distance delta_height = PLATFORM_IS_EXTENDING(platform) ? platform->speed :
-					(PLATFORM_CONTRACTS_SLOWER(platform) ? (-(platform->speed >> 2)) : -platform->speed);
-
 				auto new_ceiling_height = PLATFORM_IS_INITIALLY_EXTENDED(platform) ? platform->minimum_ceiling_height : platform->maximum_ceiling_height;
-				if (!PLATFORM_IS_FULLY_EXTENDED(platform)) new_ceiling_height -= delta_height;
-
 				adjust_platform_sides(platform, platform->ceiling_height, new_ceiling_height);
 			}
 
