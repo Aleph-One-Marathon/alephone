@@ -91,9 +91,9 @@ Plugins* Plugins::instance() {
 	return m_instance;
 }
 
-void Plugins::disable(const std::string& path) {
+void Plugins::disable(const std::filesystem::path& path) {
 	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it) {
-		if (it->directory == path) {
+		if (it->directory.GetPath() == path) {
 			it->enabled = false;
 			m_validated = false;
 			return;
