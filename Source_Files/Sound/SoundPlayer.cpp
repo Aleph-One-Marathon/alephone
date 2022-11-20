@@ -1,12 +1,13 @@
 #include "SoundPlayer.h"
 #include "OpenALManager.h"
+#include "Movie.h"
 
 constexpr SoundBehavior SoundPlayer::sound_behavior_parameters[];
 constexpr SoundBehavior SoundPlayer::sound_obstruct_behavior_parameters[];
 SoundPlayer::SoundPlayer(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters)
 	: AudioPlayer(header.rate >> 16, header.stereo, header.sixteen_bit) {  //since header.rate is on 16.16 format
 	Load(header, sound_data, parameters);
-	start_tick = machine_tick_count();
+	SetStartTick();
 }
 
 void SoundPlayer::Load(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters) {
@@ -53,13 +54,24 @@ void SoundPlayer::Replace(const SoundInfo& header, const SoundData& sound_data, 
 }
 
 void SoundPlayer::Rewind() {
-	if (OpenALManager::Get()->IsBalanceRewindSound() && start_tick + rewind_time > machine_tick_count())
+	if (OpenALManager::Get()->IsBalanceRewindSound() && !CanRewindSound(start_tick))
 		rewind_state = false;
 	else {
 		AudioPlayer::Rewind();
 		current_index_data = 0;
-		start_tick = machine_tick_count();
+		SetStartTick();
 	}
+}
+
+bool SoundPlayer::CanRewindSound(int baseTick) const {
+	if (Movie::instance()->IsRecording())
+		return baseTick + rewind_time < Movie::instance()->GetCurrentAudioTimeStamp();
+	else
+		return baseTick + rewind_time < machine_tick_count();
+}
+
+void SoundPlayer::SetStartTick() {
+	start_tick = Movie::instance()->IsRecording() ? Movie::instance()->GetCurrentAudioTimeStamp() : machine_tick_count();
 }
 
 int SoundPlayer::LoopManager(uint8* data, int length) {

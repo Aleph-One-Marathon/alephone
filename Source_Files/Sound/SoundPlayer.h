@@ -51,6 +51,8 @@ private:
 	bool SetUpALSourceIdle() const override;
 	bool SetUpALSourceInit() const override;
 	void SetUpALSource3D() const;
+	bool CanRewindSound(int baseTick) const;
+	void SetStartTick();
 	void Replace(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters);
 	SoundParameters parameters;
 	SoundInfo header;
