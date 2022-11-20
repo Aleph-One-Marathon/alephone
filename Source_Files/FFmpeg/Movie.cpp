@@ -303,6 +303,11 @@ void Movie::ThrowUserError(std::string error_msg)
     alert_user(full_msg.c_str());
 }
 
+long Movie::GetCurrentAudioTimeStamp()
+{
+    return IsRecording() && av->inited && av->ffmpeg_file->audioStream ? av->ffmpeg_file->audioStream->lastTimeStamp : 0;
+}
+
 int Movie::Movie_EncodeThread(void *arg)
 {
 	reinterpret_cast<Movie *>(arg)->EncodeThread();

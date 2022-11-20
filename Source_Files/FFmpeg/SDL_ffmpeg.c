@@ -729,6 +729,7 @@ int SDL_ffmpegAddAudioFrame( SDL_ffmpegFile *file, SDL_ffmpegAudioFrame *frame, 
                 if (pkt->dts != AV_NOPTS_VALUE) pkt->dts = av_rescale_q(pkt->dts, acodec->time_base, file->audioStream->_ffmpeg->time_base);
                 pkt->duration = av_rescale_q(pkt->duration, acodec->time_base, file->audioStream->_ffmpeg->time_base);
                 pkt->stream_index = file->audioStream->_ffmpeg->index;
+                file->audioStream->lastTimeStamp = pkt->pts + pkt->duration;
                 av_interleaved_write_frame(file->_ffmpeg, pkt);
                 av_packet_unref(pkt);
             }

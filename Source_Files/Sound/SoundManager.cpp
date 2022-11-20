@@ -29,6 +29,7 @@ SOUND.C
 #include "Mixer.h"
 #include "images.h"
 #include "InfoTree.h"
+#include "Movie.h"
 
 #undef SLOT_IS_USED
 #undef SLOT_IS_FREE
@@ -390,7 +391,7 @@ void SoundManager::PlaySound(short sound_index,
 				/* initialize the channel */
 				channel->flags= 0;
 				channel->callback_count= 0; // #MD
-				channel->start_tick= machine_tick_count();
+				channel->start_tick= Movie::instance()->IsRecording() ? Movie::instance()->GetCurrentAudioTimeStamp() : machine_tick_count();
 				channel->sound_index= sound_index;
 				channel->identifier= identifier;
 				channel->dynamic_source= (identifier==NONE) ? (world_location3d *) NULL : source;
@@ -443,7 +444,7 @@ void SoundManager::DirectPlaySound(short sound_index, angle direction, short vol
 				/* initialize the channel */
 				channel->flags = _sound_is_local; // but possibly being played in stereo
 				channel->callback_count = 0;
-				channel->start_tick = machine_tick_count();
+				channel->start_tick = Movie::instance()->IsRecording() ? Movie::instance()->GetCurrentAudioTimeStamp() : machine_tick_count();
 				channel->sound_index = sound_index;
 				channel->dynamic_source = 0;
 				MARK_SLOT_AS_USED(channel);
@@ -855,6 +856,14 @@ void SoundManager::BufferSound(Channel &channel, short sound_index, _fixed pitch
 	}
 }
 
+bool SoundManager::CanRestartSound(int baseTick)
+{
+	if (Movie::instance()->IsRecording())
+		return baseTick + MINIMUM_RESTART_TICKS < Movie::instance()->GetCurrentAudioTimeStamp();
+	else
+		return baseTick + MINIMUM_RESTART_TICKS < machine_tick_count();
+}
+
 SoundManager::Channel *SoundManager::BestChannel(short sound_index, Channel::Variables &variables)
 {
 	Channel *best_channel;
@@ -887,7 +896,7 @@ SoundManager::Channel *SoundManager::BestChannel(short sound_index, Channel::Var
 						
 						if (!(definition->flags & _sound_does_not_self_abort))
 						{
-							if ((parameters.flags & _zero_restart_delay) || channel->variables.volume == 0 || channel->start_tick + MINIMUM_RESTART_TICKS < machine_tick_count())
+							if ((parameters.flags & _zero_restart_delay) || channel->variables.volume == 0 || CanRestartSound(channel->start_tick))
 								best_channel = channel;
 							else
 								best_channel = 0;
