@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Marathon
+Exec=run.sh
+Icon=org.bungie.Marathon
+Categories=Game
