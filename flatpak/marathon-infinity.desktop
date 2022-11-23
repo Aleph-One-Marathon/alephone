@@ -3,4 +3,4 @@ Type=Application
 Name=Marathon Infinity
 Exec=run.sh
 Icon=org.bungie.MarathonInfinity
-Categories=Games
+Categories=Game
