@@ -1,3 +1,4 @@
+
 ## Process this file with automake to produce Makefile.in
 
 SUBDIRS = Source_Files tools data
@@ -31,8 +32,9 @@ EXTRA_DIST = INSTALL.MacOSX INSTALL.Unix INSTALL.Windows	\
 	PBProjects/AppStore/Marathon/Marathon.icns \
 	PBProjects/AppStore/Marathon/en.lproj/InfoPlist.strings \
   flatpak/alephone.desktop flatpak/alephone.png flatpak/marathon2.desktop      \
-  flatpak/marathon2.png flatpak/marathon.desktop marathon-infinity.desktop     \
-  marathon-infinity.png flatpak/marathon.png flatpak/org.bungie.AlephOne.yml   \
+  flatpak/marathon2.png flatpak/marathon.desktop			       \
+  flatpak/marathon-infinity.desktop flatpak/marathon-infinity.png	       \
+  flatpak/marathon.png flatpak/org.bungie.AlephOne.yml			       \
   flatpak/org.bungie.Marathon2.yml flatpak/org.bungie.MarathonInfinity.yml     \
   flatpak/org.bungie.Marathon.yml flatpak/shared/alephone.yml		       \
   flatpak/shared/boost.yml flatpak/shared/glu.yml flatpak/shared/miniupnpc.yml \
