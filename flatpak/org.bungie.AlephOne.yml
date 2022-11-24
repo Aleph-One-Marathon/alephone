@@ -12,11 +12,11 @@ modules:
   - name: app-data
     buildsystem: simple
     build-commands:
-      - install -D run.sh /app/bin/run.sh
+      - install -D run-nodata.sh /app/bin/run.sh
       - install -D alephone.desktop /app/share/applications/org.bungie.AlephOne.desktop
       - install -D alephone.png /app/share/icons/hicolor/512x512/apps/org.bungie.AlephOne.png
     sources:
-      - {type: file, path: run.sh}
+      - {type: file, path: run-nodata.sh}
       - {type: file, path: alephone.desktop}
       - {type: file, path: alephone.png}
 finish-args:
