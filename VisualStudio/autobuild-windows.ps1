@@ -29,7 +29,7 @@ function GetCommonFiles() {
 	Copy-Item $exe_path -Destination $output_package_folder
 	Copy-Item (Join-Path -Path $root_directory -ChildPath "THANKS") -Destination (Join-Path -Path $output_package_folder -ChildPath "THANKS.txt")
 	Copy-Item (Join-Path -Path $root_directory -ChildPath "COPYING") -Destination (Join-Path -Path $output_package_folder -ChildPath "COPYING.txt")
-	Copy-Item (Join-Path -Path $root_directory -ChildPath "README") -Destination (Join-Path -Path $output_package_folder -ChildPath "README.txt")
+	Copy-Item (Join-Path -Path $root_directory -ChildPath "/docs/README.txt") -Destination (Join-Path -Path $output_package_folder -ChildPath "README.txt")
 	New-Item -Path (Join-Path -Path $output_package_folder -ChildPath "/docs") -ItemType Directory -ErrorAction Stop | Out-Null
 	Copy-Item (Join-Path -Path $root_directory -ChildPath "/docs/Lua.html") -Destination (Join-Path -Path $output_package_folder -ChildPath "/docs")
 	Copy-Item (Join-Path -Path $root_directory -ChildPath "/docs/Lua_HUD.html") -Destination (Join-Path -Path $output_package_folder -ChildPath "/docs")
