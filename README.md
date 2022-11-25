@@ -24,7 +24,7 @@ Alternatively, you can download the [data files](https://alephone.lhowon.org/sce
 
 These instructions assume familiarity with the Xcode tools and the macOS command line.
 
-macOS dependencies are managed by [vcpkg](https://vcpkg.io).
+macOS dependencies are managed by [vcpkg](https://github.com/microsoft/vcpkg).
 
 Download, bootstrap, and install vcpkg:
 
@@ -40,13 +40,13 @@ You should now be able to open `PBProjects/AlephOne.xcodeproj` in Xcode and buil
 
 Windows builds are built using [Visual Studio](https://visualstudio.microsoft.com/vs/)
 
-Windows dependencies are managed by [vcpkg](https://vcpkg.io).
+Windows dependencies are managed by [vcpkg](https://github.com/microsoft/vcpkg).
 
 Note this important recommendation in the vcpkg getting-started guide: _If installing globally, we recommend a short install path like: C:\src\vcpkg or C:\dev\vcpkg, since otherwise you may run into path issues for some port build systems._
 
 Download, bootstrap, and install vcpkg:
 
-    git clone https://github.com/Microsoft/vcpkg.git
+    git clone https://github.com/microsoft/vcpkg.git
     .\vcpkg\bootstrap-vcpkg.bat
     .\vcpkg integrate install
 
