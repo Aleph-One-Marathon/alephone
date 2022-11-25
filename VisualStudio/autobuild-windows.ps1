@@ -71,7 +71,6 @@ function Package {
 	GetCommonFiles -ErrorAction Stop
 	
 	if($build -eq "Release") {
-		Copy-Item (Join-Path -Path $root_directory -ChildPath "INSTALL.Windows") -Destination (Join-Path -Path $output_package_folder -ChildPath "/docs/INSTALL.Windows.txt")
 		Copy-Item (Join-Path -Path $root_directory -ChildPath "/data/Transparent_Sprites.mml") -Destination (Join-Path -Path $output_package_folder -ChildPath "/Extras")
 		Copy-Item (Join-Path -Path $root_directory -ChildPath "/data/Transparent_Liquids.mml") -Destination (Join-Path -Path $output_package_folder -ChildPath "/Extras")
 		Copy-Item (Join-Path -Path $root_directory -ChildPath "/data/default_theme") -Destination (Join-Path -Path $output_package_folder -ChildPath "/Plugins/Default_Theme") -Recurse -Exclude $array_exclude_copy
