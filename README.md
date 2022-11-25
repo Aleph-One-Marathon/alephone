@@ -29,7 +29,7 @@ macOS dependencies are managed by [vcpkg](https://vcpkg.io).
 Download, bootstrap, and install vcpkg:
 
     git clone https://github.com/microsoft/vcpkg
-    ./vcpkg/bootstrap-vcpkg.bat
+    ./vcpkg/bootstrap-vcpkg.sh
     ./vcpkg/vcpkg integrate install
 
 `cd` into Aleph One's vcpkg subdirectory and use the `install-arm-osx.sh` and `install-x64-osx.sh` scripts to install macOS dependencies for arm64 and x64.
