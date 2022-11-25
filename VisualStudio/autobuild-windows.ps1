@@ -29,7 +29,7 @@ function GetCommonFiles() {
 	Copy-Item $exe_path -Destination $output_package_folder
 	Copy-Item (Join-Path -Path $root_directory -ChildPath "THANKS") -Destination (Join-Path -Path $output_package_folder -ChildPath "THANKS.txt")
 	Copy-Item (Join-Path -Path $root_directory -ChildPath "COPYING") -Destination (Join-Path -Path $output_package_folder -ChildPath "COPYING.txt")
-	Copy-Item (Join-Path -Path $root_directory -ChildPath "README") -Destination (Join-Path -Path $output_package_folder -ChildPath "README.txt")
+	Copy-Item (Join-Path -Path $root_directory -ChildPath "/docs/README.txt") -Destination (Join-Path -Path $output_package_folder -ChildPath "README.txt")
 	New-Item -Path (Join-Path -Path $output_package_folder -ChildPath "/docs") -ItemType Directory -ErrorAction Stop | Out-Null
 	Copy-Item (Join-Path -Path $root_directory -ChildPath "/docs/Lua.html") -Destination (Join-Path -Path $output_package_folder -ChildPath "/docs")
 	Copy-Item (Join-Path -Path $root_directory -ChildPath "/docs/Lua_HUD.html") -Destination (Join-Path -Path $output_package_folder -ChildPath "/docs")
@@ -71,7 +71,6 @@ function Package {
 	GetCommonFiles -ErrorAction Stop
 	
 	if($build -eq "Release") {
-		Copy-Item (Join-Path -Path $root_directory -ChildPath "INSTALL.Windows") -Destination (Join-Path -Path $output_package_folder -ChildPath "/docs/INSTALL.Windows.txt")
 		Copy-Item (Join-Path -Path $root_directory -ChildPath "/data/Transparent_Sprites.mml") -Destination (Join-Path -Path $output_package_folder -ChildPath "/Extras")
 		Copy-Item (Join-Path -Path $root_directory -ChildPath "/data/Transparent_Liquids.mml") -Destination (Join-Path -Path $output_package_folder -ChildPath "/Extras")
 		Copy-Item (Join-Path -Path $root_directory -ChildPath "/data/default_theme") -Destination (Join-Path -Path $output_package_folder -ChildPath "/Plugins/Default_Theme") -Recurse -Exclude $array_exclude_copy

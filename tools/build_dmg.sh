@@ -35,6 +35,7 @@ make_dmg()
     ln -s /Applications "$diskdir"
     create_webloc "https://alephone.lhowon.org/" "$diskdir/Aleph One home page"
     cp "$SRCROOT/../COPYING" "$diskdir/COPYING.txt"
+    cp "$SRCROOT/../docs/README.txt" "$diskdir/README.txt"
 
     docdir="$diskdir/Documentation"
     mkdir "$docdir"

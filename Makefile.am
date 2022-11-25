@@ -6,9 +6,8 @@ SUBDIRS = Source_Files tools data
 # Requires automake 1.5
 AUTOMAKE_OPTIONS = 1.5 foreign dist-bzip2 no-dist-gzip
 
-EXTRA_DIST = INSTALL.MacOSX INSTALL.Unix INSTALL.Windows	\
-  docs/MML.html docs/Lua.html docs/Lua_HUD.html		\
-  Resources/Windows/alephone.ico				\
+EXTRA_DIST = docs/MML.html docs/Lua.html docs/Lua_HUD.html		\
+  docs/README.txt Resources/Windows/alephone.ico		        \
   Resources/Windows/alephone.rc						\
   Resources/Windows/marathon.rc Resources/Windows/marathon.ico          \
   Resources/Windows/marathon2.rc Resources/Windows/marathon2.ico        \
@@ -25,7 +24,7 @@ EXTRA_DIST = INSTALL.MacOSX INSTALL.Unix INSTALL.Windows	\
   PBProjects/config.h PBProjects/confpaths.h	\
   data/AlephSansMono-Bold.ttf data/AlephSansMonoLicense.txt		\
   data/ProFontAO.ttf data/ProFontAOLicense.txt		\
-  docs/alephone.6 examples/lua/Cheats.lua THANKS			\
+  docs/alephone.6 examples/lua/Cheats.lua THANKS README.md		\
   data/powered-by-alephone.svg						\
   PBProjects/Info-AlephOne-Xcode4.plist\
 	PBProjects/AppStore/Marathon/Info.plist \
