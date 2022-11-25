@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Marathon Infinity
+Exec=run.sh
+Icon=org.bungie.MarathonInfinity
+Categories=Game

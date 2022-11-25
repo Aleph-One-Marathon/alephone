@@ -659,12 +659,8 @@ void Model3D::BuildInverseVSIndices()
 {
 	if (VtxSrcIndices.empty()) return;
 
-	std::cerr << "VtxSrcIndices.size(): " << VtxSrcIndices.size() << "\n";
-	std::cerr << "VtxSources.size(): " << VtxSources.size() << "\n";
-	
 	InverseVSIndices.resize(VtxSrcIndices.size());
-//	InvVSIPointers.resize(VtxSources.size()+1);		// One extra member
-	InvVSIPointers.resize(VtxSrcIndices.size() + 1);
+	InvVSIPointers.resize(VtxSources.size()+1);		// One extra member
 	
 	// Use the pointers as temporary storage for the count
 	objlist_clear(InvVSIPtrBase(),InvVSIPointers.size());	

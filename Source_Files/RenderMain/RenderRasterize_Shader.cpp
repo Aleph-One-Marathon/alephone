@@ -909,6 +909,25 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	s->setFloat(Shader::U_Glow, 0);
 	glColor4f(color[0], color[1], color[2], 1);
 
+	// Find an animated model's vertex positions and normals:
+	short ModelSequence = RenderRectangle.ModelSequence;
+	if (ModelSequence >= 0)
+	{
+		int NumFrames = ModelPtr->Model.NumSeqFrames(ModelSequence);
+		if (NumFrames > 0)
+		{
+			short ModelFrame = PIN(RenderRectangle.ModelFrame, 0, NumFrames - 1);
+			short NextModelFrame = PIN(RenderRectangle.NextModelFrame, 0, NumFrames - 1);
+			float MixFrac = RenderRectangle.MixFrac;
+			ModelPtr->Model.FindPositions_Sequence(true,
+				ModelSequence, ModelFrame, MixFrac, NextModelFrame);
+		}
+		else
+			ModelPtr->Model.FindPositions_Neutral(true);	// Fallback: neutral
+	}
+	else
+		ModelPtr->Model.FindPositions_Neutral(true);	// Fallback: neutral (will do nothing for static models)
+
 	glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	if (ModelPtr->Model.TxtrCoords.empty()) {

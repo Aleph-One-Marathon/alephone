@@ -6,7 +6,7 @@ jobs:
   release:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         submodules: true
         
@@ -14,15 +14,28 @@ jobs:
       uses: ./.github/actions/configure-linux
         
     - run: make dist
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: alephone-release
         if-no-files-found: error
         path: '*.tar.bz2'
           
     - run: make datadist
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: alephone-release
         if-no-files-found: error
         path: '*.zip'
+        
+    - name: Build flatpaks
+      run: | 
+        sudo apt-get install flatpak-builder
+        sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        sudo flatpak install flathub org.freedesktop.Platform//22.08 org.freedesktop.Sdk//22.08 -y
+        make flatpaks
+        
+    - uses: actions/upload-artifact@v3
+      with:
+        name: alephone-release
+        if-no-files-found: error
+        path: '*.flatpak'

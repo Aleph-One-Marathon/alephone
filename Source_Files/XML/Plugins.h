@@ -26,6 +26,7 @@
 #include "FileHandler.h"
 #include <string>
 #include <vector>
+#include <boost/filesystem.hpp>
 
 struct ScenarioInfo {
 	std::string name;
@@ -79,7 +80,7 @@ public:
 
 	void load_shapes_patches(bool opengl);
 
-	void disable(const std::string& path);
+	void disable(const boost::filesystem::path& path);
 
 	iterator begin() { return m_plugins.begin(); }
 	iterator end() { return m_plugins.end(); }

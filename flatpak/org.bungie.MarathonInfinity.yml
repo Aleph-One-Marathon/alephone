@@ -1,0 +1,34 @@
+app-id: org.bungie.MarathonInfinity
+runtime: org.freedesktop.Platform
+runtime-version: '22.08'
+sdk: org.freedesktop.Sdk
+command: run.sh
+modules:
+  - shared/boost.yml
+  - shared/glu.yml
+  - shared/zzip.yml
+  - shared/miniupnpc.yml
+  - shared/alephone.yml
+  - name: game-data
+    buildsystem: simple
+    build-commands:
+      - cp -r . /app/game-data
+    sources:
+      - type: dir
+        path: ../data/Scenarios/Marathon Infinity
+  - name: app-data
+    buildsystem: simple
+    build-commands:
+      - install -D run.sh /app/bin/run.sh
+      - install -D marathon-infinity.desktop /app/share/applications/org.bungie.MarathonInfinity.desktop
+      - install -D marathon-infinity.png /app/share/icons/hicolor/512x512/apps/org.bungie.MarathonInfinity.png
+    sources:
+      - {type: file, path: run.sh}
+      - {type: file, path: marathon-infinity.desktop}
+      - {type: file, path: marathon-infinity.png}
+finish-args:
+  - --device=dri
+  - --socket=x11
+  - --socket=pulseaudio
+  - --share=network
+  - --filesystem=home

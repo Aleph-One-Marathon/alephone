@@ -57,21 +57,21 @@ InfoTree InfoTree::load_xml(FileSpecifier filename)
 {
 	InfoTreeFileStream stream(filename);
 	InfoTree xtree;
-	pt::read_xml<pt::ptree>(stream, xtree);
+	pt::read_xml<pt::iptree>(stream, xtree);
 	return xtree;
 }
 
 InfoTree InfoTree::load_xml(std::istringstream& stream)
 {
 	InfoTree xtree;
-	pt::read_xml<pt::ptree>(stream, xtree);
+	pt::read_xml<pt::iptree>(stream, xtree);
 	return xtree;
 }
 
-static void write_indented_xml(std::ostream& dest, const pt::ptree& src)
+static void write_indented_xml(std::ostream& dest, const pt::iptree& src)
 {
 	using settings_t = pt::xml_writer_settings< std::conditional<BOOST_VERSION >= 105600, std::string, char>::type >;
-	pt::write_xml<pt::ptree>(dest, src, settings_t(' ', 2));
+	pt::write_xml<pt::iptree>(dest, src, settings_t(' ', 2));
 } 
 
 void InfoTree::save_xml(FileSpecifier filename) const
@@ -89,26 +89,26 @@ InfoTree InfoTree::load_ini(FileSpecifier filename)
 {
 	InfoTreeFileStream stream(filename);
 	InfoTree itree;
-	pt::read_ini<pt::ptree>(stream, itree);
+	pt::read_ini<pt::iptree>(stream, itree);
 	return itree;
 }
 
 InfoTree InfoTree::load_ini(std::istringstream& stream)
 {
 	InfoTree itree;
-	pt::read_ini<pt::ptree>(stream, itree);
+	pt::read_ini<pt::iptree>(stream, itree);
 	return itree;
 }
 
 void InfoTree::save_ini(FileSpecifier filename) const
 {
 	InfoTreeFileStream stream(filename, /*write:*/ true);
-	pt::write_ini<pt::ptree>(stream, *this);
+	pt::write_ini<pt::iptree>(stream, *this);
 }
 
 void InfoTree::save_ini(std::ostringstream& stream) const
 {
-	pt::write_ini<pt::ptree>(stream, *this);
+	pt::write_ini<pt::iptree>(stream, *this);
 }
 
 bool InfoTree::read_fixed(std::string path, _fixed& value, float min, float max) const

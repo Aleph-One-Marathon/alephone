@@ -68,6 +68,7 @@ public:
 
 	void UnloadSound(short sound);
 	void UnloadAllSounds();
+	bool CanRestartSound(int baseTick);
 
 	void PlaySound(short sound_index, world_location3d *source, short identifier, _fixed pitch = _normal_frequency);
 	void PlayLocalSound(short sound_index, _fixed pitch = _normal_frequency) { PlaySound(sound_index, 0, NONE, pitch); }
