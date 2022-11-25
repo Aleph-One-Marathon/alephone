@@ -26,6 +26,8 @@ These instructions assume familiarity with the Xcode tools and the macOS command
 
 macOS dependencies are managed by [vcpkg](https://github.com/microsoft/vcpkg).
 
+Some users have had issues building Aleph One when there are spaces in the path to vcpkg and alephone, so it is recommended to put them in paths without spaces.
+
 Download, bootstrap, and install vcpkg:
 
     git clone https://github.com/microsoft/vcpkg
@@ -42,7 +44,7 @@ Windows builds are built using [Visual Studio](https://visualstudio.microsoft.co
 
 Windows dependencies are managed by [vcpkg](https://github.com/microsoft/vcpkg).
 
-Note this important recommendation in the vcpkg getting-started guide: _If installing globally, we recommend a short install path like: C:\src\vcpkg or C:\dev\vcpkg, since otherwise you may run into path issues for some port build systems._
+Note this important recommendation in the vcpkg getting-started guide: _If installing globally, we recommend a short install path like: C:\src\vcpkg or C:\dev\vcpkg, since otherwise you may run into path issues for some port build systems._ Spaces in the path and non-ASCII characters can also cause problems. These notes apply to the Aleph One source location as well.
 
 Download, bootstrap, and install vcpkg:
 
