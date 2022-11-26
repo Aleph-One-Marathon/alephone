@@ -12,6 +12,10 @@ Windows, and Linux Flatpak, visit
 
 # Build from source
 
+## CI status
+
+[![Build Status](https://github.com/Aleph-One-Marathon/alephone/actions/workflows/ci-build.yml/badge.svg)](https://github.com/Aleph-One-Marathon/alephone/actions/workflows/ci-build.yml?query=branch%3Amaster+)
+
 ## Scenario data
 
 If you only want an Aleph One executable, you can simply download and untar a release source tarball. However, to build all-in-one Mac apps, flatpaks, or Windows zip files, you will need to populate the data/Scenarios directory. The easiest way to do that is to clone the repository and submodules:
