@@ -1516,7 +1516,7 @@ static void sound_dialog(void *arg)
 	table->dual_add(more_w, d);
 
 	w_toggle *button_sounds_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
-	table->dual_add(button_sounds_w->label("Interface Button Sounds"), d);
+	table->dual_add(button_sounds_w->label("In Game F-Key Sounds"), d);
 	table->dual_add(button_sounds_w, d);
 
 	w_select *channels_w = new w_select(static_cast<int>(std::floor(std::log(static_cast<float>(sound_preferences->channel_count)) / std::log(2.0) + 0.5)), channel_labels);
