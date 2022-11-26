@@ -47,7 +47,6 @@ jobs:
         MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_PWD }}
         MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_NAME }}
         MACOS_CI_KEYCHAIN_PWD: ${{ secrets.PROD_MACOS_CI_KEYCHAIN_PWD }}
-      if: "${{ env.MACOS_CERTIFICATE != '' }}"
       run: |
         # Turn our base64-encoded certificate back to a regular .p12 file
     
@@ -75,7 +74,6 @@ jobs:
         PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_APPLE_ID }}
         PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID }}
         PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}
-      if: "${{ env.PROD_MACOS_NOTARIZATION_APPLE_ID != '' }}"
       run: |
         # Store the notarization credentials so that we can prevent a UI password dialog
         # from blocking the CI
