@@ -136,9 +136,6 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 FileSpecifier MapFileSpec;
 static bool file_is_set= false;
 
-// LP addition: was a physics model loaded from the previous level loaded?
-static bool PhysicsModelLoadedEarlier = false;
-
 static vector<polygon_data> PolygonListCopy;
 static vector<platform_data> PlatformListCopy;
 
@@ -1832,12 +1829,9 @@ bool process_map_wad(
 		unpack_weapon_definition(data,count);
 	}
 	
-	// LP addition: Reload the physics model if it had been loaded in the previous level,
-	// but not in the current level. This avoids the persistent-physics bug.
 	// ghs: always reload the physics model if there isn't one merged
-	if (PhysicsModelLoadedEarlier && !PhysicsModelLoaded && !game_is_networked)
+	if (!PhysicsModelLoaded && !game_is_networked)
 		import_definition_structures();
-	PhysicsModelLoadedEarlier = PhysicsModelLoaded;
 	
 	RunScriptChunks();
 
