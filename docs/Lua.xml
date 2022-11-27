@@ -516,6 +516,11 @@
 		<return><type>number</type></return>
 		<note>use only for local player effects (see Net Games and Films)</note>
 	  </function>
+	  <variable name="replay" access="read-only" version="git">
+		<description>is the script being run during a film replay</description>
+		<return><type>boolean</type></return>
+		<note>use sparingly; altering the world differently during a replay than during live playback will cause the replay go out of sync</note>
+	  </variable>
       <function name="restore_passed" version="20090909">
 		<description>tries to restore any Player or Game custom fields from before the last level jump; returns true if custom fields were successfully restored</description>
 		<note>if successful, overwrites all existing Player or Game custom fields</note>

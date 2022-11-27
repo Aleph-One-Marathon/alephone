@@ -2517,6 +2517,14 @@ static int Lua_Game_Get_Nonlocal_Overlays(lua_State* L)
 	return 1;
 }
 
+
+static int Lua_Game_Get_Replay(lua_State* L)
+{
+	auto user = get_game_controller();
+	lua_pushboolean(L, user == _replay || user == _demo);
+	return 1;
+}
+
 static int Lua_Game_Get_Time_Remaining(lua_State* L)
 {
   if(dynamic_world->game_information.game_time_remaining > 999 * 30)
@@ -2761,13 +2769,14 @@ const luaL_Reg Lua_Game_Get[] = {
 	{"nonlocal_overlays", Lua_Game_Get_Nonlocal_Overlays},
 	{"random", L_TableFunction<Lua_Game_Better_Random>},
 	{"random_local", L_TableFunction<Lua_Game_Random_Local>},
+	{"replay", Lua_Game_Get_Replay},
 	{"restore_passed", L_TableFunction<L_Restore_Passed>},
 	{"restore_saved", L_TableFunction<L_Restore_Saved>},
+	{"save", L_TableFunction<Lua_Game_Save>},
+	{"scoring_mode", Lua_Game_Get_Scoring_Mode},
+	{"serialize", L_TableFunction<Lua_Game_Serialize>},
 	{"ticks", Lua_Game_Get_Ticks},
 	{"type", Lua_Game_Get_Type},
-	{"save", L_TableFunction<Lua_Game_Save>},
-	{"serialize", L_TableFunction<Lua_Game_Serialize>},
-	{"scoring_mode", Lua_Game_Get_Scoring_Mode},
 	{"version", Lua_Game_Get_Version},
 	{0, 0}
 };
