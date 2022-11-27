@@ -516,7 +516,7 @@
 		<return><type>number</type></return>
 		<note>use only for local player effects (see Net Games and Films)</note>
 	  </function>
-	  <variable name="replay" access="read-only" version="git">
+	  <variable name="replay" access="read-only" version="20221126">
 		<description>is the script being run during a film replay</description>
 		<return><type>boolean</type></return>
 		<note>use sparingly; altering the world differently during a replay than during live playback will cause the replay go out of sync</note>
@@ -1267,7 +1267,7 @@
 		<description>platform speed</description>
 		<type>speed</type>
       </variable>
-	  <variable name="tag" version="git">
+	  <variable name="tag" version="20221126">
 		<description>tag of platform</description>
 		<type>tag</type>
 	  </variable>
