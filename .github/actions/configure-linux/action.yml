@@ -1,6 +1,11 @@
 name: configure-linux
 description: used to setup the environment before using make
 
+inputs:
+ configure_options:
+    required: false
+    type: string
+
 runs:
     using: "composite"
     steps:
@@ -14,5 +19,5 @@ runs:
       shell: bash
       
     - name: Configure
-      run: autoreconf -i && ./configure
+      run: autoreconf -i && ./configure ${{inputs.configure_options}}
       shell: bash

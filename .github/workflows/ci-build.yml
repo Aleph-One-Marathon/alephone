@@ -6,11 +6,23 @@ jobs:
   linux:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
-    - name: Configure
-      uses: ./.github/actions/configure-linux
-    - name: Build
-      run: make -j 2
+      - uses: actions/checkout@v3
+      - name: Configure
+        uses: ./.github/actions/configure-linux
+      - name: Build
+        run: make -j 2
+        
+  linux-without-ffmpeg:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure
+        uses: ./.github/actions/configure-linux
+        with:
+          configure_options: --without-ffmpeg
+          
+      - name: Build
+        run: make -j 2
       
   mac-osx-x64:
     runs-on: macos-11
