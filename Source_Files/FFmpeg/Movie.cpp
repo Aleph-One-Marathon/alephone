@@ -70,6 +70,7 @@ int Movie::Movie_EncodeThread(void *arg) { return 0; }
 void Movie::EncodeThread() {}
 void Movie::EncodeVideo(bool last) {}
 void Movie::EncodeAudio(bool last) {}
+long Movie::GetCurrentAudioTimeStamp() { return 0; }
 Movie::Movie() {}
 
 #else
