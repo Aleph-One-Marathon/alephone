@@ -11,40 +11,38 @@ void AudioPlayer::Load(int rate, bool stereo, bool sixteen_bit) {
 }
 
 bool AudioPlayer::AssignSource() {
-	if (audio_source.source_id) return true;
+	if (audio_source) return true;
 	audio_source = OpenALManager::Get()->PickAvailableSource(this);
-	return this->audio_source.source_id && SetUpALSourceInit();
+	return this->audio_source && SetUpALSourceInit();
 }
 
 void AudioPlayer::ResetSource() {
-	if (audio_source.source_id) {
-		alSourceStop(audio_source.source_id);
+	if (audio_source) {
+		alSourceStop(audio_source->source_id);
 
 		//let's be sure all of our buffers are detached from the source
-		alSourcei(audio_source.source_id, AL_BUFFER, 0);
+		alSourcei(audio_source->source_id, AL_BUFFER, 0);
 
-		for (auto& buffer : audio_source.buffers) {
+		for (auto& buffer : audio_source->buffers) {
 			buffer.second = false;
 		}
 	}
 }
 
 //Get back the source of the player
-AudioPlayer::AudioSource AudioPlayer::RetrieveSource() {
+std::unique_ptr<AudioPlayer::AudioSource> AudioPlayer::RetrieveSource() {
 	ResetSource();
-	AudioPlayer::AudioSource resetSource = audio_source;
-	audio_source.source_id = 0;
-	return resetSource;
+	return std::move(audio_source);
 }
 
 void AudioPlayer::UnqueueBuffers() {
 	ALint nbBuffersProcessed;
-	alGetSourcei(audio_source.source_id, AL_BUFFERS_PROCESSED, &nbBuffersProcessed);
+	alGetSourcei(audio_source->source_id, AL_BUFFERS_PROCESSED, &nbBuffersProcessed);
 
 	while (nbBuffersProcessed-- > 0) {
 		ALuint bufid;
-		alSourceUnqueueBuffers(audio_source.source_id, 1, &bufid);
-		audio_source.buffers[bufid] = false;
+		alSourceUnqueueBuffers(audio_source->source_id, 1, &bufid);
+		audio_source->buffers[bufid] = false;
 	}
 }
 
@@ -52,13 +50,13 @@ void AudioPlayer::FillBuffers() {
 
 	UnqueueBuffers(); //First we unqueue buffers that can be
 
-	for (auto& buffer : audio_source.buffers) {
+	for (auto& buffer : audio_source->buffers) {
 		if (!buffer.second) { //now we process our buffers that are ready
 			std::vector<uint8> data(buffer_samples);
 			int dataLength = GetNextData(data.data(), buffer_samples);
 			if (dataLength <= 0) return;
 			alBufferData(buffer.first, format, data.data(), dataLength, rate);
-			alSourceQueueBuffers(audio_source.source_id, 1, &buffer.first);
+			alSourceQueueBuffers(audio_source->source_id, 1, &buffer.first);
 			buffer.second = true;
 		}
 	}
@@ -78,7 +76,7 @@ bool AudioPlayer::Play() {
 	ALint state;
 
 	//Get relevant source info 
-	alGetSourcei(audio_source.source_id, AL_SOURCE_STATE, &state);
+	alGetSourcei(audio_source->source_id, AL_SOURCE_STATE, &state);
 
 	//Make sure the source hasn't underrun 
 	if (state != AL_PLAYING && state != AL_PAUSED)
@@ -86,10 +84,10 @@ bool AudioPlayer::Play() {
 		ALint queued;
 
 		//If no buffers are queued, playback is finished 
-		alGetSourcei(audio_source.source_id, AL_BUFFERS_QUEUED, &queued);
+		alGetSourcei(audio_source->source_id, AL_BUFFERS_QUEUED, &queued);
 		if (queued == 0) return false; //End playing
 
-		alSourcePlay(audio_source.source_id);
+		alSourcePlay(audio_source->source_id);
 	}
 
 	return true; //still has to play some data
@@ -106,20 +104,20 @@ int AudioPlayer::GetCorrespondingFormat(bool stereo, bool isSixteenBit) const {
 }
 
 bool AudioPlayer::SetUpALSourceIdle() const {
-	alSourcef(audio_source.source_id, AL_MAX_GAIN, OpenALManager::Get()->GetComputedVolume(filterable));
-	alSourcef(audio_source.source_id, AL_GAIN, volume ? volume * OpenALManager::Get()->GetComputedVolume(filterable) : OpenALManager::Get()->GetComputedVolume(filterable));
+	alSourcef(audio_source->source_id, AL_MAX_GAIN, OpenALManager::Get()->GetComputedVolume(filterable));
+	alSourcef(audio_source->source_id, AL_GAIN, volume ? volume * OpenALManager::Get()->GetComputedVolume(filterable) : OpenALManager::Get()->GetComputedVolume(filterable));
 	return true;
 }
 
 bool AudioPlayer::SetUpALSourceInit() const {
-	alSourcei(audio_source.source_id, AL_MIN_GAIN, 0);
-	alSourcei(audio_source.source_id, AL_PITCH, 1);
-	alSourcei(audio_source.source_id, AL_SOURCE_RELATIVE, AL_TRUE);
-	alSource3i(audio_source.source_id, AL_POSITION, 0, 0, 0);
-	alSourcei(audio_source.source_id, AL_ROLLOFF_FACTOR, 0);
-	alSource3i(audio_source.source_id, AL_DIRECTION, 0, 0, 0);
-	alSourcei(audio_source.source_id, AL_DISTANCE_MODEL, AL_NONE);
-	alSourcei(audio_source.source_id, AL_REFERENCE_DISTANCE, 0);
-	alSourcei(audio_source.source_id, AL_MAX_DISTANCE, 0);
+	alSourcei(audio_source->source_id, AL_MIN_GAIN, 0);
+	alSourcei(audio_source->source_id, AL_PITCH, 1);
+	alSourcei(audio_source->source_id, AL_SOURCE_RELATIVE, AL_TRUE);
+	alSource3i(audio_source->source_id, AL_POSITION, 0, 0, 0);
+	alSourcei(audio_source->source_id, AL_ROLLOFF_FACTOR, 0);
+	alSource3i(audio_source->source_id, AL_DIRECTION, 0, 0, 0);
+	alSourcei(audio_source->source_id, AL_DISTANCE_MODEL, AL_NONE);
+	alSourcei(audio_source->source_id, AL_REFERENCE_DISTANCE, 0);
+	alSourcei(audio_source->source_id, AL_MAX_DISTANCE, 0);
 	return true;
 }

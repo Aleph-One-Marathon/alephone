@@ -16,7 +16,7 @@ void StreamPlayer::FillBuffers() {
 
 	UnqueueBuffers(); //First we unqueue buffers that can be
 
-	for (auto& buffer : audio_source.buffers) {
+	for (auto& buffer : audio_source->buffers) {
 		if (!buffer.second) {
 
 			std::vector<uint8> data;
@@ -33,7 +33,7 @@ void StreamPlayer::FillBuffers() {
 
 			if (data.size() <= 0) return;
 			alBufferData(buffer.first, format, data.data(), data.size(), rate);
-			alSourceQueueBuffers(audio_source.source_id, 1, &buffer.first);
+			alSourceQueueBuffers(audio_source->source_id, 1, &buffer.first);
 			buffer.second = true;
 		}
 	}

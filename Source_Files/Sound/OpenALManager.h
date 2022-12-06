@@ -38,6 +38,26 @@ const std::unordered_map<ALCint, AVSampleFormat> mapping_openal_ffmpeg = {
 
 #endif //  HAVE_FFMPEG
 
+template <typename T>
+struct AtomicStructure {
+private:
+	std::atomic<bool> index = 0;
+	T structure[2];
+
+	void SetValue(const T& value) {
+		bool swappedIndex = !index;
+		structure[swappedIndex] = value;
+		index = swappedIndex;
+	}
+
+public:
+	T GetValue() const { return structure[index]; }
+	AtomicStructure& operator= (const T& structure) {
+		SetValue(structure);
+		return *this;
+	}
+};
+
 struct AudioParameters {
 	int rate;
 	bool stereo;
@@ -61,10 +81,10 @@ public:
 	std::shared_ptr<MusicPlayer> PlayMusic(StreamDecoder* decoder);
 	std::shared_ptr<StreamPlayer> PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, bool sixteen_bit);
 	void StopSound(short sound_identifier, short source_identifier);
-	AudioPlayer::AudioSource PickAvailableSource(const AudioPlayer* player);
+	std::unique_ptr<AudioPlayer::AudioSource> PickAvailableSource(const AudioPlayer* player);
 	std::shared_ptr<SoundPlayer> GetSoundPlayer(short identifier, short source_identifier, bool sound_identifier_only = false) const;
 	void UpdateListener(world_location3d listener);
-	world_location3d GetListener() const { return listener_location; }
+	world_location3d GetListener() const { return listener_location.GetValue(); }
 	void SetDefaultVolume(float volume);
 	float GetComputedVolume(bool filtered = true) const { return default_volume * (filters_volume.empty() || !filtered ? 1 : filters_volume.front()); }
 	void ToggleDeviceMode(bool recording_device);
@@ -85,7 +105,7 @@ private:
 	std::queue<float> filters_volume;
 	std::atomic<float> default_volume;
 	std::atomic<bool> process_audio_active = { false };
-	world_location3d listener_location = {};
+	AtomicStructure<world_location3d> listener_location = {};
 	void CleanEverything();
 	bool GenerateSources();
 	bool OpenDevice();
@@ -93,7 +113,7 @@ private:
 	void ProcessAudioQueue();
 	void QueueAudio(std::shared_ptr<AudioPlayer> audioPlayer);
 	bool is_using_recording_device = false;
-	std::queue<AudioPlayer::AudioSource> sources_pool;
+	std::queue<std::unique_ptr<AudioPlayer::AudioSource>> sources_pool;
 	std::deque<std::shared_ptr<AudioPlayer>> audio_players;
 	int GetBestOpenALRenderingFormat(ALCint channelsType);
 	void RetrieveSource(std::shared_ptr<AudioPlayer> player);

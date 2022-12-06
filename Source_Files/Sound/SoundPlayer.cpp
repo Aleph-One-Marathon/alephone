@@ -11,10 +11,10 @@ SoundPlayer::SoundPlayer(const SoundInfo& header, const SoundData& sound_data, S
 }
 
 void SoundPlayer::Load(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters) {
+	parameters.loop = parameters.loop || header.loop_end - header.loop_start >= 4;
 	this->sound_data = sound_data;
 	this->header = header;
 	this->parameters = parameters;
-	this->parameters.loop = this->parameters.loop || header.loop_end - header.loop_start >= 4;
 	data_length = header.length;
 	filterable = parameters.filterable;
 }
@@ -96,7 +96,7 @@ int SoundPlayer::LoopManager(uint8* data, int length) {
 //This is called everytime we process a player in the queue with this source
 bool SoundPlayer::SetUpALSourceIdle() const {
 
-	alSourcef(audio_source.source_id, AL_PITCH, parameters.pitch);
+	alSourcef(audio_source->source_id, AL_PITCH, parameters.pitch);
 
 	if (parameters.local) {
 
@@ -105,15 +105,15 @@ bool SoundPlayer::SetUpALSourceIdle() const {
 			auto pan = (acosf(std::min(parameters.stereo_parameters.gain_left, 1.f)) + asinf(std::min(parameters.stereo_parameters.gain_right, 1.f))) / ((float)M_PI); // average angle in [0,1]
 			pan = 2 * pan - 1; // convert to [-1, 1]
 			pan *= 0.5f; // 0.5 = sin(30') for a +/- 30 degree arc
-			alSource3f(audio_source.source_id, AL_POSITION, pan, 0, -sqrtf(1.0f - pan * pan));
+			alSource3f(audio_source->source_id, AL_POSITION, pan, 0, -sqrtf(1.0f - pan * pan));
 			vol *= parameters.stereo_parameters.gain_global;
 		}
 		else {
-			alSource3i(audio_source.source_id, AL_POSITION, 0, 0, 0);
+			alSource3i(audio_source->source_id, AL_POSITION, 0, 0, 0);
 		}
 
-		alSourcef(audio_source.source_id, AL_GAIN, vol);
-		alSourcef(audio_source.source_id, AL_MAX_GAIN, vol);
+		alSourcef(audio_source->source_id, AL_GAIN, vol);
+		alSourcef(audio_source->source_id, AL_MAX_GAIN, vol);
 	}
 	else {
 		auto positionX = (float)(parameters.source_location3d.point.x) / WORLD_ONE;
@@ -131,9 +131,9 @@ bool SoundPlayer::SetUpALSourceIdle() const {
 		ALfloat	v = std::sin(degreToRadian * yaw) * std::cos(degreToRadian * pitch);
 		ALfloat	w = std::sin(degreToRadian * pitch);
 
-		alSource3f(audio_source.source_id, AL_DIRECTION, u, w, v);
+		alSource3f(audio_source->source_id, AL_DIRECTION, u, w, v);
 #endif
-		alSource3f(audio_source.source_id, AL_POSITION, positionX, positionZ, positionY);
+		alSource3f(audio_source->source_id, AL_POSITION, positionX, positionZ, positionY);
 		SetUpALSource3D();
 	}
 
@@ -142,20 +142,20 @@ bool SoundPlayer::SetUpALSourceIdle() const {
 
 //This is called once, when we assign the source to the player
 bool SoundPlayer::SetUpALSourceInit() const {
-	alSourcei(audio_source.source_id, AL_MIN_GAIN, 0);
+	alSourcei(audio_source->source_id, AL_MIN_GAIN, 0);
 
 	if (parameters.local) {
-		alSourcei(audio_source.source_id, AL_DISTANCE_MODEL, AL_NONE);
-		alSourcei(audio_source.source_id, AL_SOURCE_RELATIVE, AL_TRUE);
-		alSource3i(audio_source.source_id, AL_POSITION, 0, 0, 0);
-		alSourcei(audio_source.source_id, AL_ROLLOFF_FACTOR, 0);
-		alSource3i(audio_source.source_id, AL_DIRECTION, 0, 0, 0);
-		alSourcei(audio_source.source_id, AL_REFERENCE_DISTANCE, 0);
-		alSourcei(audio_source.source_id, AL_MAX_DISTANCE, 0);
+		alSourcei(audio_source->source_id, AL_DISTANCE_MODEL, AL_NONE);
+		alSourcei(audio_source->source_id, AL_SOURCE_RELATIVE, AL_TRUE);
+		alSource3i(audio_source->source_id, AL_POSITION, 0, 0, 0);
+		alSourcei(audio_source->source_id, AL_ROLLOFF_FACTOR, 0);
+		alSource3i(audio_source->source_id, AL_DIRECTION, 0, 0, 0);
+		alSourcei(audio_source->source_id, AL_REFERENCE_DISTANCE, 0);
+		alSourcei(audio_source->source_id, AL_MAX_DISTANCE, 0);
 	}
 	else {
-		alSourcei(audio_source.source_id, AL_DISTANCE_MODEL, AL_LINEAR_DISTANCE_CLAMPED);
-		alSourcei(audio_source.source_id, AL_SOURCE_RELATIVE, AL_FALSE);
+		alSourcei(audio_source->source_id, AL_DISTANCE_MODEL, AL_LINEAR_DISTANCE_CLAMPED);
+		alSourcei(audio_source->source_id, AL_SOURCE_RELATIVE, AL_FALSE);
 	}
 
 	return true;
@@ -176,21 +176,21 @@ void SoundPlayer::SetUpALSource3D() const {
 
 	//Exception to the rule
 	if (parameters.behavior == _sound_is_quiet && obstruction) {
-		alSourcef(audio_source.source_id, AL_GAIN, 0);
+		alSourcef(audio_source->source_id, AL_GAIN, 0);
 		return;
 	}
 
 	//One more rule for this case
 	if (parameters.behavior == _sound_is_loud && !obstruction) {
-		alSourcef(audio_source.source_id, AL_MIN_GAIN, calculated_volume / 8);
+		alSourcef(audio_source->source_id, AL_MIN_GAIN, calculated_volume / 8);
 	}
 
 	SoundBehavior behaviorParameters = obstruction ? sound_obstruct_behavior_parameters[parameters.behavior] : sound_behavior_parameters[parameters.behavior];
-	alSourcef(audio_source.source_id, AL_REFERENCE_DISTANCE, behaviorParameters.distance_reference);
-	alSourcef(audio_source.source_id, AL_MAX_DISTANCE, behaviorParameters.distance_max);
-	alSourcef(audio_source.source_id, AL_ROLLOFF_FACTOR, behaviorParameters.rolloff_factor);
-	alSourcef(audio_source.source_id, AL_MAX_GAIN, behaviorParameters.max_gain * calculated_volume);
-	alSourcef(audio_source.source_id, AL_GAIN, behaviorParameters.max_gain * calculated_volume);
+	alSourcef(audio_source->source_id, AL_REFERENCE_DISTANCE, behaviorParameters.distance_reference);
+	alSourcef(audio_source->source_id, AL_MAX_DISTANCE, behaviorParameters.distance_max);
+	alSourcef(audio_source->source_id, AL_ROLLOFF_FACTOR, behaviorParameters.rolloff_factor);
+	alSourcef(audio_source->source_id, AL_MAX_GAIN, behaviorParameters.max_gain * calculated_volume);
+	alSourcef(audio_source->source_id, AL_GAIN, behaviorParameters.max_gain * calculated_volume);
 }
 
 int SoundPlayer::GetNextData(uint8* data, int length) {

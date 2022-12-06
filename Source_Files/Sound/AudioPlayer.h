@@ -25,7 +25,7 @@ private:
 
     bool Play();
     void ResetSource();
-    AudioSource RetrieveSource();
+    std::unique_ptr<AudioSource> RetrieveSource();
     bool AssignSource();
     virtual bool SetUpALSourceIdle() const; //Update of the source parameters (AL), done everytime the player is processed in the queue
     virtual bool SetUpALSourceInit() const; //Init of the source parameters (AL), done when the source is assigned to the player
@@ -53,7 +53,7 @@ protected:
     std::atomic<float> volume = { 0 };
     int rate = 0;
     ALenum format = 0; //Mono 8-16 or stereo 8-16
-    AudioSource audio_source;
+    std::unique_ptr<AudioSource> audio_source;
     virtual void Rewind();
 };
 

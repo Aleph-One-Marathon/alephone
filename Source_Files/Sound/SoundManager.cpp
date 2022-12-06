@@ -442,18 +442,19 @@ void SoundManager::StopAllSounds() {
 void SoundManager::ManagePlayers() {
 	auto sound = sound_players.begin();
 	while (sound != sound_players.end()) {
-		if (!sound->get()->IsActive()) {
+		auto& soundPlayer = (*sound);
+		if (!soundPlayer->IsActive()) {
 			sound = sound_players.erase(sound);
 		} else {
 
-			auto parameters = sound->get()->GetParameters();
+			auto parameters = soundPlayer->GetParameters();
 
-			if (parameters.loop && SoundPlayer::Simulate(sound->get()->GetParameters()) <= 0) {
-				sound->get()->Stop();
+			if (parameters.loop && SoundPlayer::Simulate(soundPlayer->GetParameters()) <= 0) {
+				soundPlayer->Stop();
 			}
 			else if (!parameters.local) {
 				parameters.obstruction_flags = GetSoundObstructionFlags(parameters.identifier, &parameters.source_location3d);
-				sound->get()->UpdateParameters(parameters);
+				soundPlayer->UpdateParameters(parameters);
 			}
 			else if (parameters.stereo_parameters.is_panning && parameters.source_identifier != NONE) { //only occurs when 3D sounds is disabled
 				Channel::Variables variables;
@@ -461,7 +462,7 @@ void SoundManager::ManagePlayers() {
 				parameters.stereo_parameters.gain_global = variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
 				parameters.stereo_parameters.gain_left = variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
 				parameters.stereo_parameters.gain_right = variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
-				sound->get()->UpdateParameters(parameters);
+				soundPlayer->UpdateParameters(parameters);
 			}
 
 			sound++;
@@ -474,7 +475,7 @@ void SoundManager::Idle()
 	if (active)
 	{
 		auto listener = _sound_listener_proc();
-		if(listener) OpenALManager::Get()->UpdateListener(*listener);
+		if (listener) OpenALManager::Get()->UpdateListener(*listener);
 		CauseAmbientSoundSourceUpdate();
 		ManagePlayers();
 	}
@@ -946,7 +947,7 @@ void SoundManager::UpdateAmbientSoundSources()
 {
 	auto iterator = ambient_sound_players.begin();
 	while (iterator != ambient_sound_players.end()) { //Remove sound players that are done playing
-		if (!iterator->get()->IsActive())
+		if (!(*iterator)->IsActive())
 			iterator = ambient_sound_players.erase(iterator);
 		else 
 			iterator++;
@@ -1007,15 +1008,16 @@ void SoundManager::UpdateAmbientSoundSources()
 
 	for (auto sound = ambient_sound_players.begin(); sound != ambient_sound_players.end(); sound++) { //we are playing a sound that shouldn't be played anymore, stop the looping sound
 		bool found = false;
+		auto &soundPlayer = *sound;
 		for (int i = 0; i < MAXIMUM_PROCESSED_AMBIENT_SOUNDS; i++) {
-			if (SLOT_IS_USED(&ambient_sounds[i]) && sound->get()->GetIdentifier() == ambient_sounds[i].sound_index) {
+			if (SLOT_IS_USED(&ambient_sounds[i]) && soundPlayer->GetIdentifier() == ambient_sounds[i].sound_index) {
 				found = true;
 				break;
 			}
 		}
 
 		if (!found) {
-			sound->get()->Stop();
+			soundPlayer->Stop();
 		}
 	}
 
@@ -1027,7 +1029,7 @@ void SoundManager::UpdateAmbientSoundSources()
 
 			if (soundPlayer)
 			{
-				auto parameters = soundPlayer.get()->GetParameters();
+				auto parameters = soundPlayer->GetParameters();
 				parameters.stereo_parameters.gain_global = ambient_sounds[i].variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
 				parameters.stereo_parameters.gain_left = ambient_sounds[i].variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
 				parameters.stereo_parameters.gain_right = ambient_sounds[i].variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;

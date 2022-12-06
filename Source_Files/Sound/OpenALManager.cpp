@@ -7,7 +7,6 @@ LPALCISRENDERFORMATSUPPORTEDSOFT OpenALManager::alcIsRenderFormatSupportedSOFT;
 LPALCRENDERSAMPLESSOFT OpenALManager::alcRenderSamplesSOFT;
 
 std::mutex mutex_player;
-std::mutex mutex_source;
 OpenALManager* OpenALManager::instance = nullptr;
 OpenALManager* OpenALManager::Get() {
 	return instance;
@@ -16,7 +15,7 @@ OpenALManager* OpenALManager::Get() {
 bool OpenALManager::Init(AudioParameters parameters) {
 
 	if (instance) { //Don't bother recreating all the OpenAL context if nothing changed for it
-		if (parameters.hrtf != instance->audio_parameters.hrtf || parameters.rate != instance->audio_parameters.rate 
+		if (parameters.hrtf != instance->audio_parameters.hrtf || parameters.rate != instance->audio_parameters.rate
 			|| parameters.stereo != instance->audio_parameters.stereo) {
 
 			Shutdown();
@@ -31,8 +30,7 @@ bool OpenALManager::Init(AudioParameters parameters) {
 			LOAD_PROC(LPALCLOOPBACKOPENDEVICESOFT, alcLoopbackOpenDeviceSOFT);
 			LOAD_PROC(LPALCISRENDERFORMATSUPPORTEDSOFT, alcIsRenderFormatSupportedSOFT);
 			LOAD_PROC(LPALCRENDERSAMPLESSOFT, alcRenderSamplesSOFT);
-		}
-		else {
+		} else {
 			logError("ALC_SOFT_loopback extension is not supported"); //Should never be the case as long as >= OpenAL 1.14
 			return false;
 		}
@@ -44,7 +42,7 @@ bool OpenALManager::Init(AudioParameters parameters) {
 
 void OpenALManager::ProcessAudioQueue() {
 	std::lock_guard<std::mutex> guard(mutex_player);
-	
+
 	for (int i = 0; i < audio_players.size(); i++) {
 
 		auto audio = audio_players.front();
@@ -54,7 +52,6 @@ void OpenALManager::ProcessAudioQueue() {
 
 		if (!mustStillPlay) {
 			RetrieveSource(audio);
-			audio.reset();
 			continue;
 		}
 
@@ -67,22 +64,22 @@ void OpenALManager::UpdateListener(world_location3d listener) {
 
 	listener_location = listener;
 
-	auto yaw = listener_location.yaw * angleConvert;
-	auto pitch = listener_location.pitch * angleConvert;
+	auto yaw = listener.yaw * angleConvert;
+	auto pitch = listener.pitch * angleConvert;
 
 	ALfloat u = std::cos(degreToRadian * yaw) * std::cos(degreToRadian * pitch);
 	ALfloat	v = std::sin(degreToRadian * yaw) * std::cos(degreToRadian * pitch);
 	ALfloat	w = std::sin(degreToRadian * pitch);
 
-	auto positionX = (float)(listener_location.point.x) / WORLD_ONE;
-	auto positionY = (float)(listener_location.point.y) / WORLD_ONE;
-	auto positionZ = (float)(listener_location.point.z) / WORLD_ONE;
+	auto positionX = (float)(listener.point.x) / WORLD_ONE;
+	auto positionY = (float)(listener.point.y) / WORLD_ONE;
+	auto positionZ = (float)(listener.point.z) / WORLD_ONE;
 
 	//OpenAL uses the same coordinate system as OpenGL, so we have to swap Z <-> Y
 	ALfloat vectordirection[] = { u, w, v, 0, 1, 0 };
-	ALfloat velocity[] = { (float)listener_location.velocity.i / WORLD_ONE,
-						   (float)listener_location.velocity.k / WORLD_ONE,
-						   (float)listener_location.velocity.j / WORLD_ONE };
+	ALfloat velocity[] = { (float)listener.velocity.i / WORLD_ONE,
+						   (float)listener.velocity.k / WORLD_ONE,
+						   (float)listener.velocity.j / WORLD_ONE };
 
 	alListenerfv(AL_ORIENTATION, vectordirection);
 	alListener3f(AL_POSITION, positionX, positionZ, positionY);
@@ -120,8 +117,8 @@ void OpenALManager::QueueAudio(std::shared_ptr<AudioPlayer> audioPlayer) {
 std::shared_ptr<SoundPlayer> OpenALManager::GetSoundPlayer(short identifier, short source_identifier, bool sound_identifier_only) const {
 	std::lock_guard<std::mutex> guard(mutex_player);
 	auto player = std::find_if(std::begin(audio_players), std::end(audio_players),
-		[&identifier, &source_identifier, &sound_identifier_only] (const std::shared_ptr<AudioPlayer> player)
-		{return identifier != NONE && player->GetIdentifier() == identifier && 
+		[identifier, source_identifier, sound_identifier_only](const std::shared_ptr<AudioPlayer> player)
+		{return identifier != NONE && player->GetIdentifier() == identifier &&
 		(sound_identifier_only || player->GetSourceIdentifier() == source_identifier); });
 
 	return player != audio_players.end() ? std::dynamic_pointer_cast<SoundPlayer>(*player) : std::shared_ptr<SoundPlayer>(); //only sounds are supported, not musics
@@ -185,19 +182,16 @@ std::shared_ptr<StreamPlayer> OpenALManager::PlayStream(CallBackStreamPlayer cal
 //It's not a good idea generating dynamically a new source for each player
 //It's slow so it's better having a pool, also we already know the max amount
 //of supported simultaneous playing sources for the device
-AudioPlayer::AudioSource OpenALManager::PickAvailableSource(const AudioPlayer* player) {
-	std::lock_guard<std::mutex> guard(mutex_source);
+std::unique_ptr<AudioPlayer::AudioSource> OpenALManager::PickAvailableSource(const AudioPlayer* player) {
 	if (sources_pool.empty()) {
-		const auto victimPlayer = std::min_element(audio_players.begin(), audio_players.end(),
-			[](const std::shared_ptr<AudioPlayer>& a, const std::shared_ptr<AudioPlayer>& b) {  return a->GetPriority() < b->GetPriority(); })->get();
+		const auto& victimPlayer = *std::min_element(audio_players.begin(), audio_players.end(),
+			[](const std::shared_ptr<AudioPlayer>& a, const std::shared_ptr<AudioPlayer>& b)
+			{  return a->audio_source && a->GetPriority() < b->GetPriority(); });
 
-		if (victimPlayer->GetPriority() < player->GetPriority()) {
-			return victimPlayer->RetrieveSource();
-		}
-
-		return {};
+		return victimPlayer->GetPriority() < player->GetPriority() ? victimPlayer->RetrieveSource() : nullptr;
 	}
-	auto source = sources_pool.front();
+
+	auto source = std::move(sources_pool.front());
 	sources_pool.pop();
 	return source;
 }
@@ -210,16 +204,15 @@ void OpenALManager::StopSound(short sound_identifier, short source_identifier) {
 void OpenALManager::StopAllPlayers() {
 	std::lock_guard<std::mutex> guard(mutex_player);
 	for (auto player : audio_players) {
-		if (player->IsActive()) RetrieveSource(player);
+		RetrieveSource(player);
 	}
 
 	audio_players.clear();
 }
 
 void OpenALManager::RetrieveSource(std::shared_ptr<AudioPlayer> player) {
-	std::lock_guard<std::mutex> guard(mutex_source);
 	auto audioSource = player->RetrieveSource();
-	if (audioSource.source_id) sources_pool.push(audioSource);
+	if (audioSource) sources_pool.push(std::move(audioSource));
 	player->Stop();
 }
 
@@ -352,7 +345,7 @@ bool OpenALManager::GenerateSources() {
 			audioSource.buffers.insert({ buffers_id[i], false });
 		}
 
-		sources_pool.push(audioSource);
+		sources_pool.push(std::make_unique<AudioPlayer::AudioSource>(audioSource));
 	}
 
 	return !sources_id.empty();
@@ -374,8 +367,7 @@ OpenALManager::OpenALManager(AudioParameters parameters) {
 
 	if (SDL_OpenAudio(&desired, &obtained) < 0) {
 		CleanEverything();
-	}
-	else {
+	} else {
 		audio_parameters.rate = obtained.freq;
 		audio_parameters.stereo = obtained.channels == 2;
 		rendering_format = mapping_sdl_openal.at(obtained.format);
@@ -393,9 +385,9 @@ void OpenALManager::CleanEverything() {
 
 	while (!sources_pool.empty()) {
 		const auto& audioSource = sources_pool.front();
-		alDeleteSources(1, &audioSource.source_id);
+		alDeleteSources(1, &audioSource->source_id);
 
-		for (auto const& buffer : audioSource.buffers) {
+		for (auto const& buffer : audioSource->buffers) {
 			alDeleteBuffers(1, &buffer.first);
 		}
 
