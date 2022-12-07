@@ -7,11 +7,30 @@
 #include "Decoder.h"
 #include <atomic>
 #include <algorithm>
-#include <mutex>
 #include <unordered_map>
 
 static constexpr int num_buffers = 4;
 static constexpr int buffer_samples = 8192;
+
+template <typename T>
+struct AtomicStructure {
+private:
+    std::atomic<bool> index = 0;
+    T structure[2];
+
+    void SetValue(const T& value) {
+        bool swappedIndex = !index;
+        structure[swappedIndex] = value;
+        index = swappedIndex;
+    }
+
+public:
+    T GetValue() const { return structure[index]; }
+    AtomicStructure& operator= (const T& structure) {
+        SetValue(structure);
+        return *this;
+    }
+};
 
 class AudioPlayer {
 private:

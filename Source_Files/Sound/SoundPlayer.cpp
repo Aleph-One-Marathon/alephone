@@ -75,7 +75,7 @@ void SoundPlayer::SetStartTick() {
 }
 
 int SoundPlayer::LoopManager(uint8* data, int length) {
-	if (parameters.loop) {
+	if (parameters.GetValue().loop) {
 
 		int loopLength = header.loop_end - header.loop_start;
 
@@ -96,17 +96,18 @@ int SoundPlayer::LoopManager(uint8* data, int length) {
 //This is called everytime we process a player in the queue with this source
 bool SoundPlayer::SetUpALSourceIdle() const {
 
-	alSourcef(audio_source->source_id, AL_PITCH, parameters.pitch);
+	auto sound_parameters = parameters.GetValue();
+	alSourcef(audio_source->source_id, AL_PITCH, sound_parameters.pitch);
 
-	if (parameters.local) {
+	if (sound_parameters.local) {
 
 		float vol = volume ? volume * OpenALManager::Get()->GetComputedVolume(filterable) : OpenALManager::Get()->GetComputedVolume(filterable);
-		if (parameters.stereo_parameters.is_panning) {
-			auto pan = (acosf(std::min(parameters.stereo_parameters.gain_left, 1.f)) + asinf(std::min(parameters.stereo_parameters.gain_right, 1.f))) / ((float)M_PI); // average angle in [0,1]
+		if (sound_parameters.stereo_parameters.is_panning) {
+			auto pan = (acosf(std::min(sound_parameters.stereo_parameters.gain_left, 1.f)) + asinf(std::min(sound_parameters.stereo_parameters.gain_right, 1.f))) / ((float)M_PI); // average angle in [0,1]
 			pan = 2 * pan - 1; // convert to [-1, 1]
 			pan *= 0.5f; // 0.5 = sin(30') for a +/- 30 degree arc
 			alSource3f(audio_source->source_id, AL_POSITION, pan, 0, -sqrtf(1.0f - pan * pan));
-			vol *= parameters.stereo_parameters.gain_global;
+			vol *= sound_parameters.stereo_parameters.gain_global;
 		}
 		else {
 			alSource3i(audio_source->source_id, AL_POSITION, 0, 0, 0);
@@ -116,9 +117,9 @@ bool SoundPlayer::SetUpALSourceIdle() const {
 		alSourcef(audio_source->source_id, AL_MAX_GAIN, vol);
 	}
 	else {
-		auto positionX = (float)(parameters.source_location3d.point.x) / WORLD_ONE;
-		auto positionY = (float)(parameters.source_location3d.point.y) / WORLD_ONE;
-		auto positionZ = (float)(parameters.source_location3d.point.z) / WORLD_ONE;
+		auto positionX = (float)(sound_parameters.source_location3d.point.x) / WORLD_ONE;
+		auto positionY = (float)(sound_parameters.source_location3d.point.y) / WORLD_ONE;
+		auto positionZ = (float)(sound_parameters.source_location3d.point.z) / WORLD_ONE;
 
 		/*This part is valid when we have yaw and pitch of the source (it seems we don't)
 		* This would allow to play with OpenAL cone attenuation. For instance, a sound of a monster firing in
@@ -144,7 +145,7 @@ bool SoundPlayer::SetUpALSourceIdle() const {
 bool SoundPlayer::SetUpALSourceInit() const {
 	alSourcei(audio_source->source_id, AL_MIN_GAIN, 0);
 
-	if (parameters.local) {
+	if (parameters.GetValue().local) {
 		alSourcei(audio_source->source_id, AL_DISTANCE_MODEL, AL_NONE);
 		alSourcei(audio_source->source_id, AL_SOURCE_RELATIVE, AL_TRUE);
 		alSource3i(audio_source->source_id, AL_POSITION, 0, 0, 0);
@@ -168,24 +169,25 @@ bool SoundPlayer::SetUpALSourceInit() const {
 //Distance units are WORLD_ONE and are a copy of sound_behavior_definition for most part
 void SoundPlayer::SetUpALSource3D() const {
 
-	bool obstruction = (parameters.obstruction_flags & _sound_was_obstructed) || (parameters.obstruction_flags & _sound_was_media_obstructed);
-	bool muffled = parameters.obstruction_flags & _sound_was_media_muffled;
+	auto sound_parameters = parameters.GetValue();
+	bool obstruction = (sound_parameters.obstruction_flags & _sound_was_obstructed) || (sound_parameters.obstruction_flags & _sound_was_media_obstructed);
+	bool muffled = sound_parameters.obstruction_flags & _sound_was_media_muffled;
 	float calculated_volume = volume ? volume * OpenALManager::Get()->GetComputedVolume(filterable) : OpenALManager::Get()->GetComputedVolume(filterable);
 
 	if (muffled) calculated_volume /= 2;
 
 	//Exception to the rule
-	if (parameters.behavior == _sound_is_quiet && obstruction) {
+	if (sound_parameters.behavior == _sound_is_quiet && obstruction) {
 		alSourcef(audio_source->source_id, AL_GAIN, 0);
 		return;
 	}
 
 	//One more rule for this case
-	if (parameters.behavior == _sound_is_loud && !obstruction) {
+	if (sound_parameters.behavior == _sound_is_loud && !obstruction) {
 		alSourcef(audio_source->source_id, AL_MIN_GAIN, calculated_volume / 8);
 	}
 
-	SoundBehavior behaviorParameters = obstruction ? sound_obstruct_behavior_parameters[parameters.behavior] : sound_behavior_parameters[parameters.behavior];
+	SoundBehavior behaviorParameters = obstruction ? sound_obstruct_behavior_parameters[sound_parameters.behavior] : sound_behavior_parameters[sound_parameters.behavior];
 	alSourcef(audio_source->source_id, AL_REFERENCE_DISTANCE, behaviorParameters.distance_reference);
 	alSourcef(audio_source->source_id, AL_MAX_DISTANCE, behaviorParameters.distance_max);
 	alSourcef(audio_source->source_id, AL_ROLLOFF_FACTOR, behaviorParameters.rolloff_factor);
@@ -199,6 +201,6 @@ int SoundPlayer::GetNextData(uint8* data, int length) {
 	int returnedDataLength = std::min(remainingDataLength, length);
 	std::copy(sound_data.data() + current_index_data, sound_data.data() + current_index_data + returnedDataLength, data);
 	current_index_data += returnedDataLength;
-	if (returnedDataLength < length && parameters.loop) return returnedDataLength + LoopManager(data + returnedDataLength, length - returnedDataLength);
+	if (returnedDataLength < length && parameters.GetValue().loop) return returnedDataLength + LoopManager(data + returnedDataLength, length - returnedDataLength);
 	return returnedDataLength;
 }

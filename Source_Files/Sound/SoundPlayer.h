@@ -38,11 +38,11 @@ class SoundPlayer : public AudioPlayer {
 public:
 	SoundPlayer(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters); //Must not be used outside OpenALManager (public for make_shared)
 	void UpdateParameters(SoundParameters parameters);
-	short GetIdentifier() const override { return parameters.identifier; }
-	short GetSourceIdentifier() const override { return parameters.source_identifier; }
-	SoundParameters GetParameters() const { return parameters; }
+	short GetIdentifier() const override { return parameters.GetValue().identifier; }
+	short GetSourceIdentifier() const override { return parameters.GetValue().source_identifier; }
+	SoundParameters GetParameters() const { return parameters.GetValue(); }
 	static float Simulate(SoundParameters soundParameters);
-	float GetPriority() const override { return Simulate(parameters); }
+	float GetPriority() const override { return Simulate(parameters.GetValue()); }
 private:
 	void Load(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters);
 	void Rewind() override;
@@ -54,7 +54,7 @@ private:
 	bool CanRewindSound(int baseTick) const;
 	void SetStartTick();
 	void Replace(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters);
-	SoundParameters parameters;
+	AtomicStructure<SoundParameters> parameters;
 	SoundInfo header;
 	SoundData sound_data;
 	uint32_t data_length;

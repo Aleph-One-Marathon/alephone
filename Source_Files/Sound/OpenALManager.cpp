@@ -1,6 +1,7 @@
 #include "OpenALManager.h"
 #include "sound_definitions.h"
 #include "Logging.h"
+#include <mutex>
 
 LPALCLOOPBACKOPENDEVICESOFT OpenALManager::alcLoopbackOpenDeviceSOFT;
 LPALCISRENDERFORMATSUPPORTEDSOFT OpenALManager::alcIsRenderFormatSupportedSOFT;
@@ -131,20 +132,23 @@ std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(const SoundInfo& header, c
 
 	//We have to play a sound, but let's find out first if we don't have a player with the source we would need
 	if (!(parameters.flags & _sound_does_not_self_abort)) {
+
 		auto existingPlayer = GetSoundPlayer(parameters.identifier, parameters.source_identifier, !audio_parameters.sounds_3d || (parameters.flags & _sound_cannot_be_restarted));
 		if (existingPlayer) {
-			if (!(parameters.flags & _sound_cannot_be_restarted) && simulatedVolume + abortAmplitudeThreshold > SoundPlayer::Simulate(existingPlayer->parameters)) {
 
-				{
+			auto existingPlayerParameters = existingPlayer->parameters.GetValue();
+			if (!(parameters.flags & _sound_cannot_be_restarted) && simulatedVolume + abortAmplitudeThreshold > SoundPlayer::Simulate(existingPlayerParameters)) {
+
+				if (existingPlayerParameters.permutation == parameters.permutation)
+					existingPlayer->UpdateParameters(parameters);
+				else {
 					std::lock_guard<std::mutex> guard(mutex_player);
-					if (existingPlayer->parameters.permutation == parameters.permutation)
-						existingPlayer->UpdateParameters(parameters);
-					else
-						existingPlayer->Replace(header, data, parameters);
+					existingPlayer->Replace(header, data, parameters);
 				}
 
 				existingPlayer->AskRewind(); //we found one, we won't create another player but rewind this one instead
 			}
+
 			return existingPlayer;
 		}
 	}

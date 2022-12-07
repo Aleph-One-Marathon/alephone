@@ -449,7 +449,7 @@ void SoundManager::ManagePlayers() {
 
 			auto parameters = soundPlayer->GetParameters();
 
-			if (parameters.loop && SoundPlayer::Simulate(soundPlayer->GetParameters()) <= 0) {
+			if (parameters.loop && SoundPlayer::Simulate(parameters) <= 0) {
 				soundPlayer->Stop();
 			}
 			else if (!parameters.local) {

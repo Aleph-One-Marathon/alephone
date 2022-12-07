@@ -38,26 +38,6 @@ const std::unordered_map<ALCint, AVSampleFormat> mapping_openal_ffmpeg = {
 
 #endif //  HAVE_FFMPEG
 
-template <typename T>
-struct AtomicStructure {
-private:
-	std::atomic<bool> index = 0;
-	T structure[2];
-
-	void SetValue(const T& value) {
-		bool swappedIndex = !index;
-		structure[swappedIndex] = value;
-		index = swappedIndex;
-	}
-
-public:
-	T GetValue() const { return structure[index]; }
-	AtomicStructure& operator= (const T& structure) {
-		SetValue(structure);
-		return *this;
-	}
-};
-
 struct AudioParameters {
 	int rate;
 	bool stereo;
