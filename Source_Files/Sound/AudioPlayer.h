@@ -15,7 +15,7 @@ static constexpr int buffer_samples = 8192;
 template <typename T>
 struct AtomicStructure {
 private:
-    std::atomic<bool> index = 0;
+    std::atomic_bool index = 0;
     T structure[2];
 
     void SetValue(const T& value) {
@@ -66,9 +66,9 @@ protected:
     virtual void FillBuffers();
     virtual int GetNextData(uint8* data, int length) = 0;
     void Load(int rate, bool stereo, bool sixteen_bit);
-    std::atomic<bool> rewind_state = { false };
-    std::atomic<bool> filterable = { true };
-    std::atomic<bool> is_active = { true };
+    std::atomic_bool rewind_state = { false };
+    std::atomic_bool filterable = { true };
+    std::atomic_bool is_active = { true };
     std::atomic<float> volume = { 0 };
     int rate = 0;
     ALenum format = 0; //Mono 8-16 or stereo 8-16

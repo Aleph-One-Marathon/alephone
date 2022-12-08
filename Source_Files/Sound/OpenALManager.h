@@ -84,7 +84,7 @@ private:
 	~OpenALManager();
 	std::queue<float> filters_volume;
 	std::atomic<float> default_volume;
-	std::atomic<bool> process_audio_active = { false };
+	bool process_audio_active = false;
 	AtomicStructure<world_location3d> listener_location = {};
 	void CleanEverything();
 	bool GenerateSources();
