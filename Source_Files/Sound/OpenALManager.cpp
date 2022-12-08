@@ -119,8 +119,8 @@ std::shared_ptr<SoundPlayer> OpenALManager::GetSoundPlayer(short identifier, sho
 	std::lock_guard<std::mutex> guard(mutex_player);
 	auto player = std::find_if(std::begin(audio_players), std::end(audio_players),
 		[identifier, source_identifier, sound_identifier_only](const std::shared_ptr<AudioPlayer> player)
-		{return identifier != NONE && player->GetIdentifier() == identifier &&
-		(sound_identifier_only || player->GetSourceIdentifier() == source_identifier); });
+		{return player->IsActive() && (identifier != NONE && player->GetIdentifier() == identifier &&
+		(sound_identifier_only || player->GetSourceIdentifier() == source_identifier)); });
 
 	return player != audio_players.end() ? std::dynamic_pointer_cast<SoundPlayer>(*player) : std::shared_ptr<SoundPlayer>(); //only sounds are supported, not musics
 }
@@ -202,6 +202,7 @@ std::unique_ptr<AudioPlayer::AudioSource> OpenALManager::PickAvailableSource(con
 
 void OpenALManager::StopSound(short sound_identifier, short source_identifier) {
 	auto player = GetSoundPlayer(sound_identifier, source_identifier, !audio_parameters.sounds_3d);
+	std::lock_guard<std::mutex> guard(mutex_player);
 	if (player) RetrieveSource(player);
 }
 
