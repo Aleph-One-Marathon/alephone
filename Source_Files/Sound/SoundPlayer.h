@@ -38,22 +38,26 @@ class SoundPlayer : public AudioPlayer {
 public:
 	SoundPlayer(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters); //Must not be used outside OpenALManager (public for make_shared)
 	void UpdateParameters(SoundParameters parameters);
-	short GetIdentifier() const override { return parameters.GetValue().identifier; }
-	short GetSourceIdentifier() const override { return parameters.GetValue().source_identifier; }
-	SoundParameters GetParameters() const { return parameters.GetValue(); }
+	short GetIdentifier() const override { return parameters.Get().identifier; }
+	short GetSourceIdentifier() const override { return parameters.Get().source_identifier; }
+	SoundParameters GetParameters() const { return parameters.Get(); }
 	static float Simulate(SoundParameters soundParameters);
-	float GetPriority() const override { return Simulate(parameters.GetValue()); }
+	float GetPriority() const override { return Simulate(parameters.Get()); }
 private:
 	void Load(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters);
+	void Reload(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters);
 	void Rewind() override;
 	int GetNextData(uint8* data, int length) override;
 	int LoopManager(uint8* data, int length);
+	bool Play() override;
 	bool SetUpALSourceIdle() const override;
 	bool SetUpALSourceInit() const override;
 	void SetUpALSource3D() const;
 	bool CanRewindSound(int baseTick) const;
 	void SetStartTick();
 	void Replace(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters);
+	std::atomic_bool reload_sound_data = { false };
+	AtomicStructure<std::tuple<SoundInfo, SoundData, SoundParameters>> sound_permutation_data;
 	AtomicStructure<SoundParameters> parameters;
 	SoundInfo header;
 	SoundData sound_data;

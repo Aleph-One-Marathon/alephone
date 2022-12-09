@@ -64,7 +64,7 @@ public:
 	std::unique_ptr<AudioPlayer::AudioSource> PickAvailableSource(const AudioPlayer* player);
 	std::shared_ptr<SoundPlayer> GetSoundPlayer(short identifier, short source_identifier, bool sound_identifier_only = false) const;
 	void UpdateListener(world_location3d listener);
-	world_location3d GetListener() const { return listener_location.GetValue(); }
+	world_location3d GetListener() const { return listener_location.Get(); }
 	void SetDefaultVolume(float volume);
 	float GetComputedVolume(bool filtered = true) const { return default_volume * (filters_volume.empty() || !filtered ? 1 : filters_volume.front()); }
 	void ToggleDeviceMode(bool recording_device);

@@ -19,6 +19,11 @@ void SoundPlayer::Load(const SoundInfo& header, const SoundData& sound_data, Sou
 	filterable = parameters.filterable;
 }
 
+void SoundPlayer::Reload(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters) {
+	AudioPlayer::Load(header.rate >> 16, header.stereo, header.sixteen_bit);
+	Load(header, sound_data, parameters);
+}
+
 //Simulate what the volume of our sound would be if we play it
 //If the volume is 0 then we just don't play the sound and drop it
 float SoundPlayer::Simulate(SoundParameters soundParameters) {
@@ -49,8 +54,8 @@ void SoundPlayer::UpdateParameters(SoundParameters parameters) {
 }
 
 void SoundPlayer::Replace(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters) {
-	AudioPlayer::Load(header.rate >> 16, header.stereo, header.sixteen_bit);
-	Load(header, sound_data, parameters);
+	sound_permutation_data.Store(std::make_tuple(header, sound_data, parameters));
+	reload_sound_data = true;
 }
 
 void SoundPlayer::Rewind() {
@@ -75,7 +80,7 @@ void SoundPlayer::SetStartTick() {
 }
 
 int SoundPlayer::LoopManager(uint8* data, int length) {
-	if (parameters.GetValue().loop) {
+	if (parameters.Get().loop) {
 
 		int loopLength = header.loop_end - header.loop_start;
 
@@ -93,10 +98,25 @@ int SoundPlayer::LoopManager(uint8* data, int length) {
 	return 0;
 }
 
+bool SoundPlayer::Play() {
+
+	if (reload_sound_data) {
+		sound_permutation_data.Swap();
+		auto sound_permutation_loaded = sound_permutation_data.Get();
+		auto header_loaded = std::get<0>(sound_permutation_loaded);
+		auto sound_data_loaded = std::get<1>(sound_permutation_loaded);
+		auto parameters_loaded = std::get<2>(sound_permutation_loaded);
+		Reload(header_loaded, sound_data_loaded, parameters_loaded);
+		reload_sound_data = false;
+	}
+
+	return AudioPlayer::Play();
+}
+
 //This is called everytime we process a player in the queue with this source
 bool SoundPlayer::SetUpALSourceIdle() const {
 
-	auto sound_parameters = parameters.GetValue();
+	auto sound_parameters = parameters.Get();
 	alSourcef(audio_source->source_id, AL_PITCH, sound_parameters.pitch);
 
 	if (sound_parameters.local) {
@@ -145,7 +165,7 @@ bool SoundPlayer::SetUpALSourceIdle() const {
 bool SoundPlayer::SetUpALSourceInit() const {
 	alSourcei(audio_source->source_id, AL_MIN_GAIN, 0);
 
-	if (parameters.GetValue().local) {
+	if (parameters.Get().local) {
 		alSourcei(audio_source->source_id, AL_DISTANCE_MODEL, AL_NONE);
 		alSourcei(audio_source->source_id, AL_SOURCE_RELATIVE, AL_TRUE);
 		alSource3i(audio_source->source_id, AL_POSITION, 0, 0, 0);
@@ -169,7 +189,7 @@ bool SoundPlayer::SetUpALSourceInit() const {
 //Distance units are WORLD_ONE and are a copy of sound_behavior_definition for most part
 void SoundPlayer::SetUpALSource3D() const {
 
-	auto sound_parameters = parameters.GetValue();
+	auto sound_parameters = parameters.Get();
 	bool obstruction = (sound_parameters.obstruction_flags & _sound_was_obstructed) || (sound_parameters.obstruction_flags & _sound_was_media_obstructed);
 	bool muffled = sound_parameters.obstruction_flags & _sound_was_media_muffled;
 	float calculated_volume = volume ? volume * OpenALManager::Get()->GetComputedVolume(filterable) : OpenALManager::Get()->GetComputedVolume(filterable);
@@ -201,6 +221,6 @@ int SoundPlayer::GetNextData(uint8* data, int length) {
 	int returnedDataLength = std::min(remainingDataLength, length);
 	std::copy(sound_data.data() + current_index_data, sound_data.data() + current_index_data + returnedDataLength, data);
 	current_index_data += returnedDataLength;
-	if (returnedDataLength < length && parameters.GetValue().loop) return returnedDataLength + LoopManager(data + returnedDataLength, length - returnedDataLength);
+	if (returnedDataLength < length && parameters.Get().loop) return returnedDataLength + LoopManager(data + returnedDataLength, length - returnedDataLength);
 	return returnedDataLength;
 }

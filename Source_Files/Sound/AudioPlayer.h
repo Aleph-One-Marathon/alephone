@@ -15,20 +15,31 @@ static constexpr int buffer_samples = 8192;
 template <typename T>
 struct AtomicStructure {
 private:
-    std::atomic_bool index = 0;
+    std::atomic_int index = 0;
     T structure[2];
 
-    void SetValue(const T& value) {
-        bool swappedIndex = !index;
-        structure[swappedIndex] = value;
-        index = swappedIndex;
+    void ChangeValue(const T& value) {
+        structure[index ^ 1] = value;
     }
 
 public:
-    T GetValue() const { return structure[index]; }
+    T Get() const { return structure[index]; }
     AtomicStructure& operator= (const T& structure) {
-        SetValue(structure);
+        Update(structure);
         return *this;
+    }
+
+    void Update(const T& value) {
+        ChangeValue(value);
+        Swap();
+    }
+
+    void Store(const T& value) {
+        ChangeValue(value);
+    }
+
+    void Swap() {
+        index ^= 1;
     }
 };
 
@@ -42,7 +53,6 @@ private:
         AudioPlayerBuffers buffers;
     };
 
-    bool Play();
     void ResetSource();
     std::unique_ptr<AudioSource> RetrieveSource();
     bool AssignSource();
@@ -63,6 +73,7 @@ public:
 protected:
     AudioPlayer(int rate, bool stereo, bool sixteen_bit);
     void UnqueueBuffers();
+    virtual bool Play();
     virtual void FillBuffers();
     virtual int GetNextData(uint8* data, int length) = 0;
     void Load(int rate, bool stereo, bool sixteen_bit);
