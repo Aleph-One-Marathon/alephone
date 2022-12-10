@@ -210,10 +210,10 @@ void OpenALManager::StopSound(short sound_identifier, short source_identifier) {
 }
 
 void OpenALManager::StopAllPlayers() {
+	audio_players_local.clear();
 	SDL_LockAudio();
 	for (auto player : audio_players_queue) RetrieveSource(player);
 	audio_players_queue.clear();
-	audio_players_local.clear();
 	audio_players_shared.reset();
 	SDL_UnlockAudio();
 }

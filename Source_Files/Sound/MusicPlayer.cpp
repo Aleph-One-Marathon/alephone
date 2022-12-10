@@ -14,6 +14,6 @@ bool MusicPlayer::SetUpALSourceIdle() const {
 	float default_music_volume = default_volume.load();
 	float music_volume = volume.load();
 	alSourcef(audio_source->source_id, AL_MAX_GAIN, default_music_volume * OpenALManager::Get()->GetComputedVolume(filterable));
-	alSourcef(audio_source->source_id, AL_GAIN, music_volume ? music_volume * OpenALManager::Get()->GetComputedVolume(filterable) : default_music_volume * OpenALManager::Get()->GetComputedVolume(filterable));
+	alSourcef(audio_source->source_id, AL_GAIN, default_music_volume * music_volume * OpenALManager::Get()->GetComputedVolume(filterable));
 	return true;
 }

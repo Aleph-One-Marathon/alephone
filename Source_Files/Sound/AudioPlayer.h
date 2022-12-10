@@ -83,7 +83,7 @@ protected:
     std::atomic_bool rewind_state = { false };
     std::atomic_bool filterable = { true };
     std::atomic_bool is_active = { true };
-    std::atomic<float> volume = { 0 };
+    std::atomic<float> volume = { 1 };
     int rate = 0;
     ALenum format = 0; //Mono 8-16 or stereo 8-16
     std::unique_ptr<AudioSource> audio_source;
