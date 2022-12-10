@@ -34,9 +34,14 @@ struct SoundBehavior {
 	float max_gain;
 };
 
+struct Sound {
+	SoundInfo header;
+	SoundData data;
+};
+
 class SoundPlayer : public AudioPlayer {
 public:
-	SoundPlayer(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters); //Must not be used outside OpenALManager (public for make_shared)
+	SoundPlayer(const Sound sound, SoundParameters parameters); //Must not be used outside OpenALManager (public for make_shared)
 	void UpdateParameters(SoundParameters parameters);
 	short GetIdentifier() const override { return parameters.Get().identifier; }
 	short GetSourceIdentifier() const override { return parameters.Get().source_identifier; }
@@ -44,23 +49,18 @@ public:
 	static float Simulate(SoundParameters soundParameters);
 	float GetPriority() const override { return Simulate(parameters.Get()); }
 private:
-	void Load(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters);
-	void Reload(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters);
 	void Rewind() override;
 	int GetNextData(uint8* data, int length) override;
 	int LoopManager(uint8* data, int length);
-	bool Play() override;
 	bool SetUpALSourceIdle() const override;
 	bool SetUpALSourceInit() const override;
 	void SetUpALSource3D() const;
 	bool CanRewindSound(int baseTick) const;
 	void SetStartTick();
-	void Replace(const SoundInfo& header, const SoundData& sound_data, SoundParameters parameters);
-	std::atomic_bool reload_sound_data = { false };
-	AtomicStructure<std::tuple<SoundInfo, SoundData, SoundParameters>> sound_permutation_data;
+	void Replace(const Sound sound);
+	bool Update() override;
+	AtomicStructure<Sound> sound;
 	AtomicStructure<SoundParameters> parameters;
-	SoundInfo header;
-	SoundData sound_data;
 	uint32_t data_length;
 	uint32_t current_index_data = 0;
 	uint32_t start_tick;

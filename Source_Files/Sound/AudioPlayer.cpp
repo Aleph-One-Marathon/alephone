@@ -2,10 +2,6 @@
 #include "OpenALManager.h"
 
 AudioPlayer::AudioPlayer(int rate, bool stereo, bool sixteen_bit) {
-	Load(rate, stereo, sixteen_bit);
-}
-
-void AudioPlayer::Load(int rate, bool stereo, bool sixteen_bit) {
 	this->rate = rate;
 	format = GetCorrespondingFormat(stereo, sixteen_bit);
 }

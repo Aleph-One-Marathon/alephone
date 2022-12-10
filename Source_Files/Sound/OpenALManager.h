@@ -56,7 +56,7 @@ public:
 	void Start();
 	void Stop();
 	void StopAllPlayers();
-	std::shared_ptr<SoundPlayer> PlaySound(const SoundInfo& header, const SoundData& data, SoundParameters parameters);
+	std::shared_ptr<SoundPlayer> PlaySound(const Sound& sound, SoundParameters parameters);
 	std::shared_ptr<SoundPlayer> PlaySound(LoadedResource& rsrc, SoundParameters parameters);
 	std::shared_ptr<MusicPlayer> PlayMusic(StreamDecoder* decoder);
 	std::shared_ptr<StreamPlayer> PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, bool sixteen_bit);
@@ -75,7 +75,9 @@ public:
 	bool Support_HRTF_Toggling() const;
 	bool Is_HRTF_Enabled() const;
 	bool IsBalanceRewindSound() const { return audio_parameters.balance_rewind; }
+	void CleanInactivePlayers();
 	ALCint GetRenderingFormat() const { return rendering_format; }
+	const std::vector<std::shared_ptr<AudioPlayer>>& GetAudioPlayers() const { return audio_players_local; }
 private:
 	static OpenALManager* instance;
 	ALCdevice* p_ALCDevice = nullptr;
@@ -86,6 +88,7 @@ private:
 	std::atomic<float> default_volume;
 	bool process_audio_active = false;
 	AtomicStructure<world_location3d> listener_location = {};
+	void UpdateListener();
 	void CleanEverything();
 	bool GenerateSources();
 	bool OpenDevice();
@@ -94,7 +97,9 @@ private:
 	void QueueAudio(std::shared_ptr<AudioPlayer> audioPlayer);
 	bool is_using_recording_device = false;
 	std::queue<std::unique_ptr<AudioPlayer::AudioSource>> sources_pool;
-	std::deque<std::shared_ptr<AudioPlayer>> audio_players;
+	std::deque<std::shared_ptr<AudioPlayer>> audio_players_queue;
+	std::vector<std::shared_ptr<AudioPlayer>> audio_players_local;
+	boost::lockfree::spsc_queue<std::shared_ptr<AudioPlayer>, boost::lockfree::capacity<256>> audio_players_shared;
 	int GetBestOpenALRenderingFormat(ALCint channelsType);
 	void RetrieveSource(std::shared_ptr<AudioPlayer> player);
 

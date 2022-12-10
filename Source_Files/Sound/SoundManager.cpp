@@ -195,7 +195,6 @@ void SoundManager::Shutdown()
 
 bool SoundManager::OpenSoundFile(FileSpecifier& File)
 {
-	StopAllSounds();
 	UnloadAllSounds();
 	sound_file.reset(new M2SoundFile);
 	if (!sound_file->Open(File))
@@ -440,13 +439,12 @@ void SoundManager::StopAllSounds() {
 
 //if we want to manage things with our sound players, it's here
 void SoundManager::ManagePlayers() {
+	OpenALManager::Get()->CleanInactivePlayers();
+	auto& sound_players = OpenALManager::Get()->GetAudioPlayers();
 	auto sound = sound_players.begin();
 	while (sound != sound_players.end()) {
-		auto& soundPlayer = (*sound);
-		if (!soundPlayer->IsActive()) {
-			sound = sound_players.erase(sound);
-		} else {
-
+		auto soundPlayer = std::dynamic_pointer_cast<SoundPlayer>(*sound);
+		if (soundPlayer) {
 			auto parameters = soundPlayer->GetParameters();
 
 			if (parameters.loop && SoundPlayer::Simulate(parameters) <= 0) {
@@ -464,9 +462,9 @@ void SoundManager::ManagePlayers() {
 				parameters.stereo_parameters.gain_right = variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
 				soundPlayer->UpdateParameters(parameters);
 			}
-
-			sound++;
 		}
+
+		sound++;
 	}
 }
 
@@ -837,8 +835,7 @@ std::shared_ptr<SoundPlayer> SoundManager::BufferSound(SoundParameters parameter
 		parameters.flags |= definition->flags;
 		parameters.behavior = (sound_behavior)definition->behavior_index;
 
-		returnedPlayer = OpenALManager::Get()->PlaySound(header, *sound, parameters);
-		if (returnedPlayer) sound_players.insert(returnedPlayer);
+		returnedPlayer = OpenALManager::Get()->PlaySound({ header, *sound }, parameters);
 	}
 
 	return returnedPlayer;

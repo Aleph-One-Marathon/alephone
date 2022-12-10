@@ -17,6 +17,9 @@
       {
          "name":"boost-filesystem"
       },
+	  {
+         "name":"boost-lockfree"
+      },
       {
          "name":"sdl2"
       },

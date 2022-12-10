@@ -8,40 +8,43 @@
 #include <atomic>
 #include <algorithm>
 #include <unordered_map>
-
-static constexpr int num_buffers = 4;
-static constexpr int buffer_samples = 8192;
+#include <boost/lockfree/spsc_queue.hpp>
 
 template <typename T>
 struct AtomicStructure {
 private:
-    std::atomic_int index = 0;
-    T structure[2];
-
-    void ChangeValue(const T& value) {
-        structure[index ^ 1] = value;
-    }
-
+    static constexpr int queue_size = 5;
+    boost::lockfree::spsc_queue<T, boost::lockfree::capacity<queue_size>> shared_queue;
+    T structure;
 public:
-    T Get() const { return structure[index]; }
     AtomicStructure& operator= (const T& structure) {
-        Update(structure);
+        this->structure = structure;
         return *this;
     }
 
-    void Update(const T& value) {
-        ChangeValue(value);
-        Swap();
-    }
+    const T& Get() const { return structure; }
 
     void Store(const T& value) {
-        ChangeValue(value);
+        shared_queue.push(value);
     }
 
-    void Swap() {
-        index ^= 1;
+    void Set(const T& value) {
+        structure = value;
+    }
+
+    bool Consume(T& returnValue) {
+        return shared_queue.pop(returnValue);
+    }
+
+    void Update() {
+        T returnValue[queue_size];
+        auto size = shared_queue.pop(returnValue, queue_size);
+        if (size) structure = returnValue[size - 1];
     }
 };
+
+static constexpr int num_buffers = 4;
+static constexpr int buffer_samples = 8192;
 
 class AudioPlayer {
 private:
@@ -53,6 +56,8 @@ private:
         AudioPlayerBuffers buffers;
     };
 
+    virtual bool Update() { return true; };
+    bool Play();
     void ResetSource();
     std::unique_ptr<AudioSource> RetrieveSource();
     bool AssignSource();
@@ -73,10 +78,8 @@ public:
 protected:
     AudioPlayer(int rate, bool stereo, bool sixteen_bit);
     void UnqueueBuffers();
-    virtual bool Play();
     virtual void FillBuffers();
     virtual int GetNextData(uint8* data, int length) = 0;
-    void Load(int rate, bool stereo, bool sixteen_bit);
     std::atomic_bool rewind_state = { false };
     std::atomic_bool filterable = { true };
     std::atomic_bool is_active = { true };
