@@ -66,8 +66,9 @@ void OpenALManager::ProcessAudioQueue() {
 //we update our listener's position for 3D sounds
 void OpenALManager::UpdateListener() {
 
-	listener_location.Update();
-	auto& listener = listener_location.Get();
+	if (!audio_parameters.sounds_3d || !listener_location.Update()) return;
+
+	const auto& listener = listener_location.Get();
 
 	auto yaw = listener.yaw * angleConvert;
 	auto pitch = listener.pitch * angleConvert;
@@ -91,10 +92,6 @@ void OpenALManager::UpdateListener() {
 	alListenerfv(AL_VELOCITY, velocity);
 }
 
-void OpenALManager::UpdateListener(world_location3d listener) {
-	listener_location.Store(listener);
-}
-
 void OpenALManager::Start() {
 	process_audio_active = true;
 	SDL_PauseAudio(is_using_recording_device); //Start playing only if not recording playback
@@ -109,10 +106,6 @@ void OpenALManager::Stop() {
 void OpenALManager::ToggleDeviceMode(bool recording_device) {
 	is_using_recording_device = recording_device;
 	SDL_PauseAudio(is_using_recording_device);
-}
-
-void OpenALManager::SetDefaultVolume(float volume) {
-	default_volume = volume;
 }
 
 void OpenALManager::QueueAudio(std::shared_ptr<AudioPlayer> audioPlayer) {

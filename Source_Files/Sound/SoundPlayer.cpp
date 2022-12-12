@@ -1,6 +1,5 @@
 #include "SoundPlayer.h"
 #include "OpenALManager.h"
-#include "Movie.h"
 
 constexpr SoundBehavior SoundPlayer::sound_behavior_parameters[];
 constexpr SoundBehavior SoundPlayer::sound_obstruct_behavior_parameters[];
@@ -11,7 +10,7 @@ SoundPlayer::SoundPlayer(const Sound sound, SoundParameters parameters)
 	this->parameters = parameters;
 	data_length = sound.header.length;
 	filterable = parameters.filterable;
-	SetStartTick();
+	start_tick = GetCurrentTick();
 }
 
 //Simulate what the volume of our sound would be if we play it
@@ -38,33 +37,14 @@ float SoundPlayer::Simulate(SoundParameters soundParameters) {
 	return volume;
 }
 
-void SoundPlayer::UpdateParameters(SoundParameters parameters) {
-	this->parameters.Store(parameters);
-}
-
-void SoundPlayer::Replace(const Sound sound) {
-	this->sound.Store(sound);
-}
-
 void SoundPlayer::Rewind() {
 	if (OpenALManager::Get()->IsBalanceRewindSound() && !CanRewindSound(start_tick))
 		rewind_state = false;
 	else {
 		AudioPlayer::Rewind();
 		current_index_data = 0;
-		SetStartTick();
+		start_tick = GetCurrentTick();
 	}
-}
-
-bool SoundPlayer::CanRewindSound(int baseTick) const {
-	if (Movie::instance()->IsRecording())
-		return baseTick + rewind_time < Movie::instance()->GetCurrentAudioTimeStamp();
-	else
-		return baseTick + rewind_time < machine_tick_count();
-}
-
-void SoundPlayer::SetStartTick() {
-	start_tick = Movie::instance()->IsRecording() ? Movie::instance()->GetCurrentAudioTimeStamp() : machine_tick_count();
 }
 
 int SoundPlayer::LoopManager(uint8* data, int length) {
@@ -132,7 +112,7 @@ bool SoundPlayer::SetUpALSourceIdle() const {
 		alSourcef(audio_source->source_id, AL_GAIN, vol);
 		alSourcef(audio_source->source_id, AL_MAX_GAIN, vol);
 	}
-	else {
+	else { //3d sounds
 		auto positionX = (float)(sound_parameters.source_location3d.point.x) / WORLD_ONE;
 		auto positionY = (float)(sound_parameters.source_location3d.point.y) / WORLD_ONE;
 		auto positionZ = (float)(sound_parameters.source_location3d.point.z) / WORLD_ONE;
@@ -178,7 +158,6 @@ bool SoundPlayer::SetUpALSourceInit() const {
 	return true;
 }
 
-//The model used (attenuation function) is set in openalmanager constructor
 //We use the AL_LINEAR_DISTANCE_CLAMPED function which isn't really realistic but this is how actual
 //sounds work in marathon. If we want more realistic sounds, we should move to the default function AL_INVERSE_DISTANCE_CLAMPED
 //Obstructions can also be done using openal filters but I won't use it here

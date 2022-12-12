@@ -1,5 +1,6 @@
 #include "AudioPlayer.h"
 #include "OpenALManager.h"
+#include "Movie.h"
 
 AudioPlayer::AudioPlayer(int rate, bool stereo, bool sixteen_bit) {
 	this->rate = rate;
@@ -23,6 +24,10 @@ void AudioPlayer::ResetSource() {
 			buffer.second = false;
 		}
 	}
+}
+
+int AudioPlayer::GetCurrentTick() const { 
+	return Movie::instance()->IsRecording() ? Movie::instance()->GetCurrentAudioTimeStamp() : machine_tick_count(); 
 }
 
 //Get back the source of the player

@@ -42,7 +42,7 @@ struct Sound {
 class SoundPlayer : public AudioPlayer {
 public:
 	SoundPlayer(const Sound sound, SoundParameters parameters); //Must not be used outside OpenALManager (public for make_shared)
-	void UpdateParameters(SoundParameters parameters);
+	void UpdateParameters(SoundParameters parameters) { this->parameters.Store(parameters); }
 	short GetIdentifier() const override { return parameters.Get().identifier; }
 	short GetSourceIdentifier() const override { return parameters.Get().source_identifier; }
 	SoundParameters GetParameters() const { return parameters.Get(); }
@@ -55,9 +55,8 @@ private:
 	bool SetUpALSourceIdle() const override;
 	bool SetUpALSourceInit() const override;
 	void SetUpALSource3D() const;
-	bool CanRewindSound(int baseTick) const;
-	void SetStartTick();
-	void Replace(const Sound sound);
+	bool CanRewindSound(int baseTick) const { return baseTick + rewind_time < GetCurrentTick(); }
+	void Replace(const Sound sound) { this->sound.Store(sound); }
 	bool Update() override;
 	AtomicStructure<Sound> sound;
 	AtomicStructure<SoundParameters> parameters;

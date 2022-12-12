@@ -36,10 +36,11 @@ public:
         return shared_queue.pop(returnValue);
     }
 
-    void Update() {
+    bool Update() {
         T returnValue[queue_size];
         auto size = shared_queue.pop(returnValue, queue_size);
         if (size) structure = returnValue[size - 1];
+        return size;
     }
 };
 
@@ -80,6 +81,7 @@ protected:
     void UnqueueBuffers();
     virtual void FillBuffers();
     virtual int GetNextData(uint8* data, int length) = 0;
+    int GetCurrentTick() const;
     std::atomic_bool rewind_state = { false };
     std::atomic_bool filterable = { true };
     std::atomic_bool is_active = { true };

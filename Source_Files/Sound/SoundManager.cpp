@@ -472,8 +472,11 @@ void SoundManager::Idle()
 {
 	if (active)
 	{
-		auto listener = _sound_listener_proc();
-		if (listener) OpenALManager::Get()->UpdateListener(*listener);
+		if (parameters.flags & _3d_sounds_flag) {
+			auto listener = _sound_listener_proc();
+			if (listener) OpenALManager::Get()->UpdateListener(*listener);
+		}
+
 		CauseAmbientSoundSourceUpdate();
 		ManagePlayers();
 	}

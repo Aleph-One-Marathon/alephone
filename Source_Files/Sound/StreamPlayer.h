@@ -15,6 +15,7 @@ private:
 	void FillBuffers() override;
 	CallBackStreamPlayer CallBackFunction;
 	int data_length;
+
 	friend class OpenALManager;
 };
 

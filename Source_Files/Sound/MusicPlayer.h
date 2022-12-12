@@ -14,6 +14,7 @@ private:
 	int GetNextData(uint8* data, int length) override;
 	bool SetUpALSourceIdle() const override;
 	static std::atomic<float> default_volume;
+
 	friend class OpenALManager;
 };
 
