@@ -3943,7 +3943,7 @@ static void	play_shell_casing_sound(
 		location.yaw= location.pitch= 0;
 		location.velocity.i= location.velocity.j= location.velocity.k= 0;
 	
-		SoundManager::instance()->PlaySound(sound_index, &location, NONE, true);
+		SoundManager::instance()->PlaySound(sound_index, &location, NONE, player_index == current_player_index);
 	}
 }
 
