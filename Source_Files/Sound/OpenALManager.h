@@ -61,7 +61,7 @@ public:
 	std::shared_ptr<MusicPlayer> PlayMusic(StreamDecoder* decoder);
 	std::shared_ptr<StreamPlayer> PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, bool sixteen_bit);
 	void StopSound(short sound_identifier, short source_identifier);
-	std::unique_ptr<AudioPlayer::AudioSource> PickAvailableSource(const AudioPlayer* player);
+	std::unique_ptr<AudioPlayer::AudioSource> PickAvailableSource(float priority);
 	std::shared_ptr<SoundPlayer> GetSoundPlayer(short identifier, short source_identifier, bool sound_identifier_only = false) const;
 	void UpdateListener(world_location3d listener) { listener_location.Store(listener); }
 	const world_location3d GetListener() const { return listener_location.Get(); }
