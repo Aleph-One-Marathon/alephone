@@ -66,7 +66,7 @@ void OpenALManager::ProcessAudioQueue() {
 //we update our listener's position for 3D sounds
 void OpenALManager::UpdateListener() {
 
-	if (!audio_parameters.sounds_3d || !listener_location.Update()) return;
+	if (!audio_parameters.sounds_3d) return;
 
 	const auto& listener = listener_location.Get();
 
