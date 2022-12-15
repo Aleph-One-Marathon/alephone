@@ -15,7 +15,7 @@ SoundPlayer::SoundPlayer(const Sound sound, SoundParameters parameters)
 
 //Simulate what the volume of our sound would be if we play it
 //If the volume is 0 then we just don't play the sound and drop it
-float SoundPlayer::Simulate(SoundParameters soundParameters) {
+float SoundPlayer::Simulate(const SoundParameters soundParameters) {
 	if (soundParameters.local && !soundParameters.stereo_parameters.is_panning) return 1; //ofc we play all local sounds without stereo panning
 	if (soundParameters.stereo_parameters.is_panning) return soundParameters.stereo_parameters.gain_global;
 
@@ -43,6 +43,7 @@ void SoundPlayer::Rewind() {
 	else {
 		AudioPlayer::Rewind();
 		current_index_data = 0;
+		data_length = sound.Get().header.length;
 		start_tick = GetCurrentTick();
 	}
 }

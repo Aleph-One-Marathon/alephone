@@ -446,7 +446,6 @@ void SoundManager::ManagePlayers() {
 		auto soundPlayer = std::dynamic_pointer_cast<SoundPlayer>(*sound);
 		if (soundPlayer) {
 			auto parameters = soundPlayer->GetParameters();
-
 			if (parameters.loop && SoundPlayer::Simulate(parameters) <= 0) {
 				soundPlayer->Stop();
 			}
@@ -468,15 +467,18 @@ void SoundManager::ManagePlayers() {
 	}
 }
 
+void SoundManager::UpdateListener() {
+	if (parameters.flags & _3d_sounds_flag) {
+		auto listener = _sound_listener_proc();
+		if (listener) OpenALManager::Get()->UpdateListener(*listener);
+	}
+}
+
 void SoundManager::Idle()
 {
 	if (active)
 	{
-		if (parameters.flags & _3d_sounds_flag) {
-			auto listener = _sound_listener_proc();
-			if (listener) OpenALManager::Get()->UpdateListener(*listener);
-		}
-
+		UpdateListener();
 		CauseAmbientSoundSourceUpdate();
 		ManagePlayers();
 	}
@@ -838,6 +840,7 @@ std::shared_ptr<SoundPlayer> SoundManager::BufferSound(SoundParameters parameter
 		parameters.flags |= definition->flags;
 		parameters.behavior = (sound_behavior)definition->behavior_index;
 
+		UpdateListener(); //to be sure we have a listener for the first sounds we will play when entering a map
 		returnedPlayer = OpenALManager::Get()->PlaySound({ header, *sound }, parameters);
 	}
 

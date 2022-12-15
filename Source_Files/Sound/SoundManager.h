@@ -74,6 +74,8 @@ public:
 	void StopSound(short identifier, short sound_index);
 	void StopAllSounds();
 
+	void UpdateListener();
+
 	void Idle();
 
 	class Pause

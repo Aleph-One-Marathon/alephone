@@ -15,21 +15,24 @@ struct AtomicStructure {
 private:
     static constexpr int queue_size = 5;
     boost::lockfree::spsc_queue<T, boost::lockfree::capacity<queue_size>> shared_queue;
-    T structure;
+    std::atomic_int index = { 0 };
+    T structure[2];
 public:
     AtomicStructure& operator= (const T& structure) {
-        this->structure = structure;
+        this->structure[index] = structure;
         return *this;
     }
 
-    const T& Get() const { return structure; }
+    const T& Get() const { return structure[index]; }
 
     void Store(const T& value) {
         shared_queue.push(value);
     }
 
     void Set(const T& value) {
-        structure = value;
+        int swappedIndex = index ^ 1;
+        structure[swappedIndex] = value;
+        index = swappedIndex;
     }
 
     bool Consume(T& returnValue) {
@@ -39,7 +42,7 @@ public:
     bool Update() {
         T returnValue[queue_size];
         auto size = shared_queue.pop(returnValue, queue_size);
-        if (size) structure = returnValue[size - 1];
+        if (size) Set(returnValue[size - 1]);
         return size;
     }
 };

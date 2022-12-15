@@ -64,7 +64,7 @@ public:
 	std::unique_ptr<AudioPlayer::AudioSource> PickAvailableSource(const AudioPlayer* player);
 	std::shared_ptr<SoundPlayer> GetSoundPlayer(short identifier, short source_identifier, bool sound_identifier_only = false) const;
 	void UpdateListener(world_location3d listener) { listener_location.Store(listener); }
-	world_location3d GetListener() const { return listener_location.Get(); }
+	const world_location3d GetListener() const { return listener_location.Get(); }
 	void SetDefaultVolume(float volume) { default_volume = volume; }
 	float GetComputedVolume(bool filtered = true) const { return default_volume * (filters_volume.empty() || !filtered ? 1 : filters_volume.front()); }
 	void ToggleDeviceMode(bool recording_device);
@@ -97,9 +97,9 @@ private:
 	void QueueAudio(std::shared_ptr<AudioPlayer> audioPlayer);
 	bool is_using_recording_device = false;
 	std::queue<std::unique_ptr<AudioPlayer::AudioSource>> sources_pool;
-	std::deque<std::shared_ptr<AudioPlayer>> audio_players_queue;
-	std::vector<std::shared_ptr<AudioPlayer>> audio_players_local;
-	boost::lockfree::spsc_queue<std::shared_ptr<AudioPlayer>, boost::lockfree::capacity<256>> audio_players_shared;
+	std::deque<std::shared_ptr<AudioPlayer>> audio_players_queue; //for audio thread only
+	std::vector<std::shared_ptr<AudioPlayer>> audio_players_local; //for OpenALManager only (main thread)
+	boost::lockfree::spsc_queue<std::shared_ptr<AudioPlayer>, boost::lockfree::capacity<256>> audio_players_shared; //pipeline main => audio thread
 	int GetBestOpenALRenderingFormat(ALCint channelsType);
 	void RetrieveSource(std::shared_ptr<AudioPlayer> player);
 

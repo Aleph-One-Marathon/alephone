@@ -14,7 +14,7 @@ private:
 	int GetNextData(uint8* data, int length) override;
 	void FillBuffers() override;
 	CallBackStreamPlayer CallBackFunction;
-	int data_length;
+	uint32_t data_length;
 
 	friend class OpenALManager;
 };

@@ -46,7 +46,7 @@ public:
 	short GetIdentifier() const override { return parameters.Get().identifier; }
 	short GetSourceIdentifier() const override { return parameters.Get().source_identifier; }
 	SoundParameters GetParameters() const { return parameters.Get(); }
-	static float Simulate(SoundParameters soundParameters);
+	static float Simulate(const SoundParameters soundParameters);
 	float GetPriority() const override { return Simulate(parameters.Get()); }
 private:
 	void Rewind() override;
