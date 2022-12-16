@@ -37,7 +37,6 @@ Music::Music() :
 	song_number(0),
 	random_order(false)
 {
-	music_buffer.resize(MUSIC_BUFFER_SIZE);
 }
 
 void Music::Open(FileSpecifier *file)
@@ -46,7 +45,7 @@ void Music::Open(FileSpecifier *file)
 	{
 		if (file && *file == music_file)
 		{
-			Rewind();
+			if (decoder) decoder->Rewind();
 			return;
 		}
 
@@ -95,7 +94,7 @@ bool Music::Playing()
 {
 	if (!SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return false;
 	if (musicPlayer && musicPlayer->IsActive()) {
-		CheckVolume();
+		if (!music_fading) musicPlayer->SetVolume(OpenALManager::From_db(GetVolumeLevel(), true));
 		return true;
 	}
 	return false;
@@ -170,32 +169,9 @@ void Music::Close()
 
 bool Music::Load(FileSpecifier &song_file)
 {
-
 	delete decoder;
 	decoder = StreamDecoder::Get(song_file);
-
-	if (decoder)
-	{
-		sixteen_bit = decoder->IsSixteenBit();
-		stereo = decoder->IsStereo();
-		signed_8bit = decoder->IsSigned();
-		bytes_per_frame = decoder->BytesPerFrame();
-		rate = decoder->Rate();
-		little_endian = decoder->IsLittleEndian();
-		return true;
-		
-	}
-	else
-	{
-		return false;
-	}
-}
-
-void Music::Rewind()
-{
-
-	if (decoder)
-		decoder->Rewind();
+	return decoder;
 }
 
 void Music::Play()
@@ -280,10 +256,4 @@ FileSpecifier* Music::GetLevelMusic()
 	else if (song_number >= NumSongs) song_number = 0;
 
 	return &playlist[song_number++];
-}
-
-void Music::CheckVolume()
-{
-	if (!music_fading)
-		musicPlayer->SetVolume(OpenALManager::From_db(GetVolumeLevel(), true));
 }
