@@ -94,10 +94,6 @@ bool AudioPlayer::Play() {
 	return true; //still has to play some data
 }
 
-void AudioPlayer::Stop() {
-	is_active = false;
-}
-
 //Figure out the OpenAL format for formats we are currently supporting
 int AudioPlayer::GetCorrespondingFormat(bool stereo, bool isSixteenBit) const {
 	return stereo ? isSixteenBit ? AL_FORMAT_STEREO16 : AL_FORMAT_STEREO8 :

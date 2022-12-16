@@ -71,7 +71,7 @@ private:
 
     friend class OpenALManager;
 public:
-    void Stop();
+    void Stop() { is_active = false; }
     bool IsActive() const { return is_active; }
     void SetVolume(float volume) { this->volume = volume; }
     void AskRewind() { rewind_state = true; }

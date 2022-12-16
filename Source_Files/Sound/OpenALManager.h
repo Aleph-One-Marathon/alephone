@@ -49,7 +49,7 @@ struct AudioParameters {
 
 class OpenALManager {
 public:
-	static OpenALManager* Get();
+	static OpenALManager* Get() { return instance; }
 	static bool Init(AudioParameters parameters);
 	static float From_db(float db, bool music = false) { return db <= (SoundManager::MINIMUM_VOLUME_DB / (music ? 2 : 1)) ? 0 : std::pow(10.f, db / 20.f); }
 	static void Shutdown();
@@ -68,7 +68,7 @@ public:
 	void SetDefaultVolume(float volume) { default_volume = volume; }
 	float GetComputedVolume(bool filtered = true) const { return default_volume * (filters_volume.empty() || !filtered ? 1 : filters_volume.front()); }
 	void ToggleDeviceMode(bool recording_device);
-	int GetFrequency() const;
+	int GetFrequency() const { return audio_parameters.rate; }
 	void GetPlayBackAudio(uint8* data, int length);
 	void ApplyVolumeFilter(float volume_filter) { filters_volume.push(volume_filter); }
 	void RemoveVolumeFilter() { if(!filters_volume.empty()) filters_volume.pop(); }

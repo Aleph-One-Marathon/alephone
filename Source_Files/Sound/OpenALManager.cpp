@@ -7,9 +7,6 @@ LPALCISRENDERFORMATSUPPORTEDSOFT OpenALManager::alcIsRenderFormatSupportedSOFT;
 LPALCRENDERSAMPLESSOFT OpenALManager::alcRenderSamplesSOFT;
 
 OpenALManager* OpenALManager::instance = nullptr;
-OpenALManager* OpenALManager::Get() {
-	return instance;
-}
 
 bool OpenALManager::Init(AudioParameters parameters) {
 
@@ -215,10 +212,6 @@ void OpenALManager::RetrieveSource(std::shared_ptr<AudioPlayer> player) {
 	auto audioSource = player->RetrieveSource();
 	if (audioSource) sources_pool.push(std::move(audioSource));
 	player->Stop();
-}
-
-int OpenALManager::GetFrequency() const {
-	return audio_parameters.rate;
 }
 
 void OpenALManager::CleanInactivePlayers() {
