@@ -263,13 +263,24 @@ void enter_interpolated_world()
 		current_tick_polygon_ephemera[i] = polygon_ephemera[i];
 	}
 
+	// Lua scripts can add sides
+	if (current_tick_sides.size() != MAXIMUM_SIDES_PER_MAP) {
+		for (auto i = current_tick_sides.size();
+			 i < MAXIMUM_SIDES_PER_MAP;
+			 ++i)
+		{
+			current_tick_sides.push_back({map_sides[i].primary_texture.y0});
+		}
+	}
+	
 	previous_tick_sides.assign(current_tick_sides.begin(),
 							   current_tick_sides.end());
+	
 	for (auto i = 0; i < MAXIMUM_SIDES_PER_MAP; ++i)
 	{
 		current_tick_sides[i].y0 = map_sides[i].primary_texture.y0;
 	}
-
+	
 	previous_tick_lines.assign(current_tick_lines.begin(),
 							   current_tick_lines.end());
 	for (auto i = 0; i < MAXIMUM_LINES_PER_MAP; ++i)
