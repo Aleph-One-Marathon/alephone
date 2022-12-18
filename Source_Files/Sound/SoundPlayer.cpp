@@ -41,6 +41,7 @@ void SoundPlayer::Rewind() {
 	if (OpenALManager::Get()->IsBalanceRewindSound() && !CanRewindSound(start_tick))
 		rewind_state = false;
 	else {
+		sound.Update();
 		AudioPlayer::Rewind();
 		current_index_data = 0;
 		data_length = sound.Get().header.length;
@@ -86,7 +87,6 @@ bool SoundPlayer::Update() {
 		parameters.Set(best_parameters);
 	}
 
-	sound.Update();
 	return true;
 }
 
