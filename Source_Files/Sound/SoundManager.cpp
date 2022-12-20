@@ -378,6 +378,7 @@ void SoundManager::PlaySound(short sound_index,
 			if (source) {
 
 				parameters.source_location3d = *source;
+				parameters.dynamic_source_location3d = identifier != NONE ? source : nullptr;
 
 				if (this->parameters.flags & _3d_sounds_flag) {
 					parameters.obstruction_flags = GetSoundObstructionFlags(sound_index, source);
@@ -449,17 +450,26 @@ void SoundManager::ManagePlayers() {
 			if (parameters.loop && SoundPlayer::Simulate(parameters) <= 0) {
 				soundPlayer->Stop();
 			}
-			else if (!parameters.local) {
-				parameters.obstruction_flags = GetSoundObstructionFlags(parameters.identifier, &parameters.source_location3d);
-				soundPlayer->UpdateParameters(parameters);
-			}
-			else if (parameters.stereo_parameters.is_panning && parameters.source_identifier != NONE) { //only occurs when 3D sounds is disabled
-				Channel::Variables variables;
-				CalculateInitialSoundVariables(parameters.identifier, &parameters.source_location3d, variables);
-				parameters.stereo_parameters.gain_global = variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
-				parameters.stereo_parameters.gain_left = variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
-				parameters.stereo_parameters.gain_right = variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
-				soundPlayer->UpdateParameters(parameters);
+			else {
+
+				bool updateParameters = false;
+				if (parameters.dynamic_source_location3d) {
+					parameters.source_location3d = *parameters.dynamic_source_location3d;
+					updateParameters = true;
+				}
+				if (!parameters.local) {
+					parameters.obstruction_flags = GetSoundObstructionFlags(parameters.identifier, &parameters.source_location3d);
+					updateParameters = true;
+				} else if (parameters.stereo_parameters.is_panning && parameters.source_identifier != NONE) { //only occurs when 3D sounds is disabled
+					Channel::Variables variables;
+					CalculateInitialSoundVariables(parameters.identifier, &parameters.source_location3d, variables);
+					parameters.stereo_parameters.gain_global = variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
+					parameters.stereo_parameters.gain_left = variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
+					parameters.stereo_parameters.gain_right = variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
+					updateParameters = true;
+				}
+
+				if (updateParameters) soundPlayer->UpdateParameters(parameters);
 			}
 		}
 

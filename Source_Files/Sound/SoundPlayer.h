@@ -23,6 +23,7 @@ struct SoundParameters {
 	uint16_t obstruction_flags = 0;
 	sound_behavior behavior = _sound_is_normal;
 	world_location3d source_location3d = {};
+	world_location3d* dynamic_source_location3d = nullptr;
 	SoundStereo stereo_parameters = {}; //2D panning
 	uint16_t flags = 0;
 };
