@@ -362,6 +362,7 @@ OpenALManager::OpenALManager(AudioParameters parameters) {
 
 	auto openalFormat = GetBestOpenALRenderingFormat(parameters.stereo ? ALC_STEREO_SOFT : ALC_MONO_SOFT);
 	assert(openalFormat && "Audio format not found or not supported");
+	SDL_AudioSpec desired = {};
 	desired.freq = parameters.rate;
 	desired.format = openalFormat ? mapping_openal_sdl.at(openalFormat) : 0;
 	desired.channels = parameters.stereo ? 2 : 1;

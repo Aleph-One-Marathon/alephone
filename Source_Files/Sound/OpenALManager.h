@@ -109,8 +109,8 @@ private:
 	static LPALCRENDERSAMPLESSOFT alcRenderSamplesSOFT;
 
 	static void MixerCallback(void* usr, uint8* stream, int len);
-	const static int number_samples = 512;
-	SDL_AudioSpec desired, obtained;
+	constexpr static int number_samples = 512;
+	SDL_AudioSpec obtained;
 	AudioParameters audio_parameters;
 	ALCint rendering_format = 0;
 
