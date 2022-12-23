@@ -2288,7 +2288,7 @@ static void mouse_custom_dialog(void *arg)
 			changed = true;
 		}
 
-		auto speed_limit = mouse_precision_w->get_selection();
+		auto speed_limit = mouse_speed_limit_w->get_selection();
 		if (speed_limit != input_preferences->classic_aim_speed_limits) {
 			input_preferences->classic_aim_speed_limits = speed_limit;
 			changed = true;
