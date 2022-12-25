@@ -125,7 +125,6 @@ private:
 		ALC_UNSIGNED_BYTE_SOFT
 	};
 
-	//should probably replace those by boost bimap
 	const std::unordered_map<ALCint, int> mapping_openal_sdl = {
 		{ALC_FLOAT_SOFT, AUDIO_F32SYS},
 		{ALC_INT_SOFT, AUDIO_S32SYS},

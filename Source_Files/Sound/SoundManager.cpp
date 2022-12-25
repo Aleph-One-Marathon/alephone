@@ -364,7 +364,7 @@ void SoundManager::PlaySound(short sound_index,
 		or our volume is zero */
 	if (sound_index!=NONE && active && parameters.volume_db > MINIMUM_VOLUME_DB)
 	{
-		Channel::Variables variables;
+		SoundVolumes variables;
 		
 		/* make sure the sound data is in memory */
 		if (LoadSound(sound_index))
@@ -407,11 +407,10 @@ void SoundManager::DirectPlaySound(short sound_index, angle direction, short vol
 	{
 		if (LoadSound(sound_index))
 		{
-			Channel::Variables variables;
+			SoundVolumes variables;
 
 			world_location3d *listener = _sound_listener_proc();
 
-			variables.priority = 0;
 			variables.volume = volume;
 
 			SoundParameters parameters;
@@ -461,7 +460,7 @@ void SoundManager::ManagePlayers() {
 					parameters.obstruction_flags = GetSoundObstructionFlags(parameters.identifier, &parameters.source_location3d);
 					updateParameters = true;
 				} else if (parameters.stereo_parameters.is_panning && parameters.source_identifier != NONE) { //only occurs when 3D sounds is disabled
-					Channel::Variables variables;
+					SoundVolumes variables;
 					CalculateInitialSoundVariables(parameters.identifier, &parameters.source_location3d, variables);
 					parameters.stereo_parameters.gain_global = variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
 					parameters.stereo_parameters.gain_left = variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
@@ -509,10 +508,7 @@ struct ambient_sound_data
 {
 	uint16 flags;
 	short sound_index;
-
-	SoundManager::Channel::Variables variables;
-	
-	struct channel_data *channel;
+	SoundManager::SoundVolumes variables;
 };
 
 static sound_behavior_definition *get_sound_behavior_definition(
@@ -648,8 +644,6 @@ void SoundManager::AddOneAmbientSoundSource(ambient_sound_data *ambient_sounds, 
 							MARK_SLOT_AS_USED(ambient);
 
 							ambient->sound_index = sound_index;
-
-							ambient->variables.priority = definition->behavior_index;
 							ambient->variables.volume = ambient->variables.left_volume = ambient->variables.right_volume = 0;
 
 							break;
@@ -722,7 +716,6 @@ SoundManager::Parameters::Parameters() :
 	volume_db(DEFAULT_SOUND_LEVEL_DB),
 	flags(_more_sounds_flag | _stereo_flag | _ambient_sound_flag | _16bit_sound_flag),
 	rate(DEFAULT_RATE),
-	samples(DEFAULT_SAMPLES),
 	music_db(DEFAULT_MUSIC_LEVEL_DB),
 	video_export_volume_db(DEFAULT_VIDEO_EXPORT_VOLUME_DB)
 {
@@ -758,7 +751,6 @@ void SoundManager::SetStatus(bool active)
 				sounds->Clear();
 				uint32 total_buffer_size;
 
-				int32 samples = parameters.samples;
 				if (parameters.flags & _more_sounds_flag)
 					total_buffer_size = MORE_SOUND_BUFFER_SIZE;
 				else
@@ -768,18 +760,13 @@ void SoundManager::SetStatus(bool active)
 				if (parameters.flags & _16bit_sound_flag)
 				{
 					total_buffer_size *= 2;
-					samples *= 2;
 				}
 
 				total_buffer_size *= 16;
 
 				sounds->SetMaxSize(total_buffer_size);
 				
-				if (parameters.flags & _stereo_flag)
-					samples *= 2;
 				sound_source = (parameters.flags & _16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
-
-				samples = samples * parameters.rate / Parameters::DEFAULT_RATE;
 
 				if (shell_options.nosound) return;
 
@@ -1070,7 +1057,7 @@ void SoundManager::UpdateAmbientSoundSources()
 }
 
 
-void SoundManager::CalculateSoundVariables(short sound_index, world_location3d* source, Channel::Variables& variables)
+void SoundManager::CalculateSoundVariables(short sound_index, world_location3d* source, SoundVolumes& variables)
 {
 	SoundDefinition* definition = GetSoundDefinition(sound_index);
 	if (!definition) return;
@@ -1084,9 +1071,6 @@ void SoundManager::CalculateSoundVariables(short sound_index, world_location3d* 
 		// LP change: made this long-distance friendly
 		int32 dx = int32(listener->point.x) - int32(source->point.x);
 		int32 dy = int32(listener->point.y) - int32(source->point.y);
-
-		// for now, a sound's priority is its behavior index
-		variables.priority = definition->behavior_index;
 
 		// calculate the relative volume due to the given depth curve
 		variables.volume = distance_to_volume(definition, distance, _sound_obstructed_proc(source));
@@ -1105,7 +1089,7 @@ void SoundManager::CalculateSoundVariables(short sound_index, world_location3d* 
 
 }
 
-void SoundManager::CalculateInitialSoundVariables(short sound_index, world_location3d* source, Channel::Variables& variables)
+void SoundManager::CalculateInitialSoundVariables(short sound_index, world_location3d* source, SoundVolumes& variables)
 {
 	SoundDefinition* definition = GetSoundDefinition(sound_index);
 	if (!definition) return;
@@ -1113,8 +1097,6 @@ void SoundManager::CalculateInitialSoundVariables(short sound_index, world_locat
 	if (!source)
 	{
 		variables.volume = variables.left_volume = variables.right_volume = MAXIMUM_SOUND_VOLUME;
-		// ghs: is this what the priority should be if there's no source?
-		variables.priority = definition->behavior_index;
 	}
 
 	// and finally, do all the stuff we regularly do ...

@@ -95,13 +95,10 @@ public:
 	struct Parameters
 	{
 		static const int DEFAULT_RATE = 44100;
-		static const int DEFAULT_SAMPLES = 1024;
 		float volume_db; // db
 		uint16 flags; // stereo, dynamic_tracking, etc. 
 		
 		uint16 rate; // in Hz
-		uint16 samples; // size of buffer
-
 		float music_db; // music volume in dB
 
 		float video_export_volume_db;
@@ -110,25 +107,9 @@ public:
 		bool Verify();
 	} parameters;
 
-	struct Channel
+	struct SoundVolumes
 	{
-		uint16 flags;
-		
-		short sound_index; // sound_index being played in this channel
-		short identifier; // unique sound identifier for the sound being played in this channel (object_index)
-		struct Variables
-		{
-			short volume = 0, left_volume = 0, right_volume = 0;
-			short priority = 0;
-		} variables; // variables of the sound being played
-
-		world_location3d *dynamic_source; // can be NULL for immobile sounds
-		world_location3d source; // must be valid
-
-		uint32 start_tick;
-
-		int mixer_channel;
-		short callback_count;
+		short volume = 0, left_volume = 0, right_volume = 0;
 	};
 
 	bool IsActive() { return active; }
@@ -149,13 +130,11 @@ private:
 	std::set<std::shared_ptr<SoundPlayer>> ambient_sound_players; //our sound players
 	bool initialized;
 	bool active;
-	void CalculateSoundVariables(short sound_index, world_location3d* source, Channel::Variables& variables);
-	void CalculateInitialSoundVariables(short sound_index, world_location3d* source, Channel::Variables& variables);
+	void CalculateSoundVariables(short sound_index, world_location3d* source, SoundVolumes& variables);
+	void CalculateInitialSoundVariables(short sound_index, world_location3d* source, SoundVolumes& variables);
 
 	short sound_source; // 8-bit, 16-bit
 	
-	std::vector<Channel> channels;
-
 	std::unique_ptr<SoundFile> sound_file;
 	SoundMemoryManager* sounds;
 
