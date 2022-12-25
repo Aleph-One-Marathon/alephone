@@ -41,6 +41,7 @@ Jul 1, 2000 (Loren Petrich):
 #define _WORLD_H
 
 #include "cstypes.h"
+#include <tuple>
 
 /* ---------- constants */
 
@@ -101,6 +102,14 @@ typedef struct world_point2d world_point2d;
 struct world_point3d
 {
 	world_distance x, y, z;
+
+	bool operator==(const world_point3d& other) const {
+		return std::tie(x, y, z) == std::tie(other.x, other.y, other.z);
+	}
+
+	bool operator!=(const world_point3d& other) const {
+		return !(*(this) == other);
+	}
 };
 typedef struct world_point3d world_point3d;
 
@@ -121,6 +130,14 @@ typedef struct world_vector2d world_vector2d;
 struct world_vector3d
 {
 	world_distance i, j, k;
+
+	bool operator==(const world_vector3d& other) const {
+		return std::tie(i, j, k) == std::tie(other.i, other.j, other.k);
+	}
+
+	bool operator!=(const world_vector3d& other) const {
+		return !(*(this) == other);
+	}
 };
 typedef struct world_vector3d world_vector3d;
 
@@ -171,6 +188,14 @@ struct world_location3d
 	angle yaw, pitch;
 
 	world_vector3d velocity;
+
+	bool operator==(const world_location3d& other) const {
+		return std::tie(pitch, yaw, polygon_index, point, velocity) == std::tie(other.pitch, other.yaw, other.polygon_index, other.point, other.velocity);
+	}
+
+	bool operator!=(const world_location3d& other) const {
+		return !(*(this) == other);
+	}
 };
 typedef struct world_location3d world_location3d;
 

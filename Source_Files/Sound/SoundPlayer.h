@@ -6,10 +6,19 @@
 #include "sound_definitions.h"
 
 struct SoundStereo {
+
 	bool is_panning;
 	float gain_global;
 	float gain_left;
 	float gain_right;
+
+	bool operator==(const SoundStereo& other) const {
+		return std::tie(is_panning, gain_global, gain_right, gain_left) == std::tie(other.is_panning, other.gain_global, other.gain_right, other.gain_left);
+	}
+
+	bool operator!=(const SoundStereo& other) const {
+		return !(*(this) == other);
+	}
 };
 
 struct SoundParameters {
