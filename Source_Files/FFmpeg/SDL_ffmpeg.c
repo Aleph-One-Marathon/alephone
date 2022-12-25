@@ -263,8 +263,8 @@ void SDL_ffmpegFree( SDL_ffmpegFile *file )
             free( ctx );
         }
 
-        av_free( old->encodeFrame );
-        av_free( old->decodeFrame );
+        av_frame_free( &old->encodeFrame );
+        av_frame_free( &old->decodeFrame );
 
         if ( old->_ctx) avcodec_free_context( &old->_ctx );
 
@@ -292,7 +292,8 @@ void SDL_ffmpegFree( SDL_ffmpegFile *file )
         }
 
         av_free( old->sampleBuffer );
-        av_free( old->encodeFrame );
+        av_frame_free( &old->encodeFrame );
+        av_frame_free( &old->decodeFrame );
 
         if ( old->_ctx) avcodec_free_context( &old->_ctx );
 
@@ -497,7 +498,8 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
                     }
 
                     stream->mutex = SDL_CreateMutex();
-
+                    stream->encodeFrame = av_frame_alloc();
+                    stream->decodeFrame = av_frame_alloc();
                     stream->sampleBuffer = ( int8_t* )av_malloc( AVCODEC_MAX_AUDIO_FRAME_SIZE * sizeof( int16_t ) );
                     stream->sampleBufferSize = 0;
                     stream->sampleBufferOffset = 0;
@@ -2043,7 +2045,7 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
 
     /* Decode the packet */
     AVCodecContext *avctx = file->audioStream->_ctx;
-	AVFrame *dframe = av_frame_alloc();
+    AVFrame* dframe = file->audioStream->decodeFrame;
 
     int len = avcodec_send_packet( avctx, pack );
         
@@ -2053,7 +2055,7 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
         return 0;
     }
 
-    AVFrame* convertedFrame = av_frame_alloc();
+    AVFrame* convertedFrame = file->audioStream->encodeFrame;
 
     while (avcodec_receive_frame(avctx, dframe) == 0) {
 
@@ -2150,10 +2152,10 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
                 file->audioStream->sampleBufferOffset = 0;
             }
         }
-    }
 
-    av_frame_free(&dframe);
-    av_frame_free(&convertedFrame);
+        av_frame_unref(dframe);
+        av_frame_unref(convertedFrame);
+    }
 
     /* pack was used, return 1 */
     return 1;

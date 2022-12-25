@@ -147,7 +147,7 @@ typedef struct SDL_ffmpegStream
 
     /** Intermediate frame which will be used when decoding */
     struct AVFrame *decodeFrame;
-    /** Intermediate frame which will be used when encoding */
+    /** Intermediate frame which will be used when encoding or for conversion when decoding */
     struct AVFrame *encodeFrame;
     /** Store conversion context for this stream */
     struct SDL_ffmpegConversionContext *conversionContext;
