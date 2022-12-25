@@ -1319,7 +1319,7 @@ static void update_player_teleport(
 				{
 					if (View_DoInterlevelTeleportInEffects()) {
 						start_teleporting_effect(false);
-						play_object_sound(player->object_index, Sound_TeleportIn()); 
+						play_object_sound(player->object_index, Sound_TeleportIn(), true); 
 						if (shapes_file_is_m1()) start_fade(_fade_bright);
 					}
 				}
@@ -1375,7 +1375,7 @@ static void update_player_teleport(
 				{
 					if (player->teleporting_destination >= 0 || View_DoInterlevelTeleportInEffects()) {
 						start_teleporting_effect(false);
-						play_object_sound(player->object_index, Sound_TeleportIn()); 
+						play_object_sound(player->object_index, Sound_TeleportIn(), true); 
 						if (shapes_file_is_m1()) start_fade(_fade_bright);
 					}
 					else {
@@ -1433,7 +1433,7 @@ static void update_player_teleport(
 					{
 						start_teleporting_effect(true);
 					}
-					play_object_sound(player->object_index, Sound_TeleportOut());
+					play_object_sound(player->object_index, Sound_TeleportOut(), player_index == current_player_index);
 				}
 				else /* Level change */
 				{
@@ -1442,7 +1442,7 @@ static void update_player_teleport(
 					/* Everyone plays the teleporting effect out. */
 					if (View_DoInterlevelTeleportOutEffects()) {
 						start_teleporting_effect(true);
-						play_object_sound(current_player->object_index, Sound_TeleportOut());
+						play_object_sound(current_player->object_index, Sound_TeleportOut(), player_index == current_player_index);
 					}
 					
 					/* Every players object plays the sound, and everyones monster responds. */
@@ -1531,7 +1531,7 @@ static void update_player_media(
 		
 		if (sound_type!=NONE)
 		{
-			play_object_sound(monster->object_index, get_media_sound(polygon->media_index, sound_type));
+			play_object_sound(monster->object_index, get_media_sound(polygon->media_index, sound_type), player_index == current_player_index);
 		}
 	}
 
@@ -1550,7 +1550,7 @@ static void update_player_media(
 		
 		if (sound_index!=NONE)
 		{
-			play_object_sound(monster->object_index, sound_index);
+			play_object_sound(monster->object_index, sound_index, player_index == current_player_index);
 		}
 	}
 }
