@@ -482,7 +482,7 @@ void SoundManager::ManagePlayers() {
 void SoundManager::UpdateListener() {
 	if (parameters.flags & _3d_sounds_flag) {
 		auto listener = _sound_listener_proc();
-		if (listener) OpenALManager::Get()->UpdateListener(*listener);
+		if (listener && *listener != OpenALManager::Get()->GetListener()) OpenALManager::Get()->UpdateListener(*listener);
 	}
 }
 
@@ -1033,10 +1033,11 @@ void SoundManager::UpdateAmbientSoundSources()
 			if (soundPlayer)
 			{
 				auto parameters = soundPlayer->GetParameters();
+				auto stereo_parameters = parameters.stereo_parameters;
 				parameters.stereo_parameters.gain_global = ambient_sounds[i].variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
 				parameters.stereo_parameters.gain_left = ambient_sounds[i].variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
 				parameters.stereo_parameters.gain_right = ambient_sounds[i].variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
-				soundPlayer->UpdateParameters(parameters);
+				if (stereo_parameters != parameters.stereo_parameters) soundPlayer->UpdateParameters(parameters);
 			}
 			else if (LoadSound(ambient_sounds[i].sound_index)) {
 				SoundParameters parameters;
