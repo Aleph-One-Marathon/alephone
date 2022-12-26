@@ -60,9 +60,9 @@ private:
         AudioPlayerBuffers buffers;
     };
 
-    virtual bool Update() { return true; };
     bool Play();
     void ResetSource();
+    bool Update();
     std::unique_ptr<AudioSource> RetrieveSource();
     bool AssignSource();
     virtual bool SetUpALSourceIdle() const; //Update of the source parameters (AL), done everytime the player is processed in the queue
@@ -73,7 +73,7 @@ private:
 public:
     void Stop() { is_active = false; }
     bool IsActive() const { return is_active; }
-    void SetVolume(float volume) { this->volume = volume; }
+    void SetVolume(float volume);
     void AskRewind() { rewind_state = true; }
     virtual short GetIdentifier() const { return NONE; }
     virtual short GetSourceIdentifier() const { return NONE; }
@@ -84,10 +84,12 @@ protected:
     void UnqueueBuffers();
     virtual void FillBuffers();
     virtual int GetNextData(uint8* data, int length) = 0;
+    virtual bool LoadParametersUpdates() { return false; }
     int GetCurrentTick() const;
     std::atomic_bool rewind_state = { false };
     std::atomic_bool filterable = { true };
     std::atomic_bool is_active = { true };
+    std::atomic_bool is_sync_with_al_parameters = { false };
     std::atomic<float> volume = { 1 };
     int rate = 0;
     ALenum format = 0; //Mono 8-16 or stereo 8-16

@@ -94,6 +94,19 @@ bool AudioPlayer::Play() {
 	return true; //still has to play some data
 }
 
+bool AudioPlayer::Update() {
+	bool needs_update = LoadParametersUpdates() || !is_sync_with_al_parameters;
+	if (!needs_update) return true;
+	is_sync_with_al_parameters = true;
+	return SetUpALSourceIdle();
+}
+
+void AudioPlayer::SetVolume(float volume) {
+	if (volume == this->volume) return;
+	this->volume = volume;
+	is_sync_with_al_parameters = false;
+}
+
 //Figure out the OpenAL format for formats we are currently supporting
 int AudioPlayer::GetCorrespondingFormat(bool stereo, bool isSixteenBit) const {
 	return stereo ? isSixteenBit ? AL_FORMAT_STEREO16 : AL_FORMAT_STEREO8 :

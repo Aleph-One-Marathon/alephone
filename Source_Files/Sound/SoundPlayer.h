@@ -67,7 +67,7 @@ private:
 	void SetUpALSource3D() const;
 	bool CanRewindSound(int baseTick) const { return baseTick + rewind_time < GetCurrentTick(); }
 	void Replace(const Sound sound) { this->sound.Store(sound); }
-	bool Update() override;
+	bool LoadParametersUpdates() override;
 	AtomicStructure<Sound> sound;
 	AtomicStructure<SoundParameters> parameters;
 	uint32_t data_length;

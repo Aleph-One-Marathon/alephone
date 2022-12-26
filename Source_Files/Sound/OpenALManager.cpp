@@ -47,7 +47,7 @@ void OpenALManager::ProcessAudioQueue() {
 	for (int i = 0; i < audio_players_queue.size(); i++) {
 
 		auto audio = audio_players_queue.front();
-		bool mustStillPlay = audio->IsActive() && audio->AssignSource() && audio->Update() && audio->SetUpALSourceIdle() && audio->Play();
+		bool mustStillPlay = audio->IsActive() && audio->AssignSource() && audio->Update() && audio->Play();
 
 		audio_players_queue.pop_front();
 
@@ -87,6 +87,12 @@ void OpenALManager::UpdateListener() {
 	alListenerfv(AL_ORIENTATION, vectordirection);
 	alListener3f(AL_POSITION, positionX, positionZ, positionY);
 	alListenerfv(AL_VELOCITY, velocity);
+}
+
+void OpenALManager::SetDefaultVolume(float volume) {
+	if (default_volume == volume) return;
+	default_volume = volume;
+	for (auto& player : audio_players_local) player->is_sync_with_al_parameters = false;
 }
 
 void OpenALManager::Start() {

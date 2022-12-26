@@ -69,7 +69,7 @@ int SoundPlayer::LoopManager(uint8* data, int length) {
 	return 0;
 }
 
-bool SoundPlayer::Update() {
+bool SoundPlayer::LoadParametersUpdates() {
 
 	SoundParameters sound_parameters, best_parameters;
 	float priority = 0, last_priority = 0;
@@ -85,9 +85,10 @@ bool SoundPlayer::Update() {
 
 	if (last_priority > 0) {
 		parameters.Set(best_parameters);
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 //This is called everytime we process a player in the queue with this source
