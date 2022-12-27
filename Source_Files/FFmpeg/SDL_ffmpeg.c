@@ -2075,11 +2075,6 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
         int plane_size;
 
         int data_size = av_samples_get_buffer_size(&plane_size, convertedFrame->channels, convertedFrame->nb_samples, convertedFrame->format, 1);
-        if (data_size > 10000)
-        {
-            SDL_ffmpegSetError("too much data in decoded audio frame");
-            break;
-        }
 
         memcpy(file->audioStream->sampleBuffer, convertedFrame->extended_data[0], plane_size);
         audioSize = plane_size;
