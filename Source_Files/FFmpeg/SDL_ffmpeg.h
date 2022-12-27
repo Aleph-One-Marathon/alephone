@@ -183,6 +183,9 @@ typedef struct SDL_ffmpegStream
     /** This is used for audio resampling */
     struct SwrContext* swr_context;
 
+    /** The input audio format used before resampling */
+    enum AVSampleFormat audioFormat;
+
     /** pointer to the next stream, or NULL if current stream is the last one */
     struct SDL_ffmpegStream *next;
 } SDL_ffmpegStream;

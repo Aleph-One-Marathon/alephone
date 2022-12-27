@@ -335,10 +335,9 @@ void Movie::EncodeAudio(bool last)
     
     // bps: bytes per sample
     int channels = acodec->channels;
-    int read_bps = 2;
     
-    int max_read = acodec->frame_size * read_bps * channels;
-    int min_read = last ? read_bps * channels : max_read;
+    int max_read = acodec->frame_size * in_bps * channels;
+    int min_read = last ? in_bps * channels : max_read;
     while (av_fifo_size(av->audio_fifo) >= min_read)
     {
         int read_bytes = av->audio_frame->size = MIN(av_fifo_size(av->audio_fifo), max_read);
