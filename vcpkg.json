@@ -17,7 +17,7 @@
       {
          "name":"boost-filesystem"
       },
-	  {
+      {
          "name":"boost-lockfree"
       },
       {
@@ -59,13 +59,12 @@
       {
          "name":"nativefiledialog"
       },
-	  {
-	      "name":"libsndfile",
-		  "default-features": false
-	  },
-     {
-		 "name":"openal-soft"
-	 }
+      {
+         "name":"libsndfile"
+      },
+      {
+         "name":"openal-soft"
+      }
    ],
    "builtin-baseline":"6ca56aeb457f033d344a7106cb3f9f1abf8f4e98"
 }

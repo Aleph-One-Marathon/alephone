@@ -2,7 +2,7 @@
 #include "OpenALManager.h"
 
 std::atomic<float> MusicPlayer::default_volume = { 1 };
-MusicPlayer::MusicPlayer(StreamDecoder* decoder) : AudioPlayer(decoder->Rate(), decoder->IsStereo(), decoder->IsSixteenBit()) {
+MusicPlayer::MusicPlayer(StreamDecoder* decoder) : AudioPlayer(decoder->Rate(), decoder->IsStereo(), decoder->GetAudioFormat()) {
 	this->decoder = decoder;
 }
 

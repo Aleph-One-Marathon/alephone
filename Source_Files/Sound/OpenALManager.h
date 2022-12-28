@@ -60,7 +60,7 @@ public:
 	std::shared_ptr<SoundPlayer> PlaySound(const Sound& sound, SoundParameters parameters);
 	std::shared_ptr<SoundPlayer> PlaySound(LoadedResource& rsrc, SoundParameters parameters);
 	std::shared_ptr<MusicPlayer> PlayMusic(StreamDecoder* decoder);
-	std::shared_ptr<StreamPlayer> PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, bool sixteen_bit);
+	std::shared_ptr<StreamPlayer> PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, AudioFormat audioFormat);
 	void StopSound(short sound_identifier, short source_identifier);
 	std::unique_ptr<AudioPlayer::AudioSource> PickAvailableSource(float priority);
 	std::shared_ptr<SoundPlayer> GetSoundPlayer(short identifier, short source_identifier, bool sound_identifier_only = false) const;

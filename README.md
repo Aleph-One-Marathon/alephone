@@ -74,13 +74,13 @@ Aleph One requires a C++17 compiler and the following libraries:
 + `SDL2_net`
 + `SDL2_ttf`
 + `zlib`
++ `libsndfile`
 + `openal-soft`
 
 These libraries are recommended for full features and third-party scenario compatibility:
 
 + `curl` _for stats upload to lhowon.org_
 + `ffmpeg` _for music playback and film video export_
-+ `libsndfile` _for some old third party scenarios with compressed audio_
 + `miniupnpc` _for opening router ports_
 + `zziplib` _for using zipped plugins_
 

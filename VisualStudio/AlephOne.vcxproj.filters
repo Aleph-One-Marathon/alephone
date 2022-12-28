@@ -628,16 +628,7 @@
     <ClCompile Include="..\Source_Files\RenderOther\ViewControl.cpp">
       <Filter>RenderOther\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source_Files\Sound\BasicIFFDecoder.cpp">
-      <Filter>Sound\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\Source_Files\Sound\Decoder.cpp">
-      <Filter>Sound\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source_Files\Sound\FFmpegDecoder.cpp">
-      <Filter>Sound\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source_Files\Sound\MADDecoder.cpp">
       <Filter>Sound\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Source_Files\Sound\Music.cpp">
@@ -653,9 +644,6 @@
       <Filter>Sound\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Source_Files\Sound\SoundManager.cpp">
-      <Filter>Sound\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source_Files\Sound\VorbisDecoder.cpp">
       <Filter>Sound\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Source_Files\TCPMess\CommunicationsChannel.cpp">
@@ -1317,16 +1305,7 @@
     <ClInclude Include="..\Source_Files\RenderOther\ViewControl.h">
       <Filter>RenderOther\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source_Files\Sound\BasicIFFDecoder.h">
-      <Filter>Sound\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Source_Files\Sound\Decoder.h">
-      <Filter>Sound\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source_Files\Sound\FFmpegDecoder.h">
-      <Filter>Sound\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source_Files\Sound\MADDecoder.h">
       <Filter>Sound\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source_Files\Sound\Music.h">
@@ -1351,9 +1330,6 @@
       <Filter>Sound\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source_Files\Sound\SoundManagerEnums.h">
-      <Filter>Sound\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source_Files\Sound\VorbisDecoder.h">
       <Filter>Sound\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source_Files\TCPMess\CommunicationsChannel.h">

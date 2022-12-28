@@ -207,7 +207,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>SDL2maind.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2maind.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmt.lib</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
@@ -228,7 +228,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2main.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmtd.lib</IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -250,7 +250,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2main.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmtd.lib</IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -272,7 +272,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2main.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmtd.lib</IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -294,7 +294,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2main.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmtd.lib</IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -309,7 +309,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>SDL2maind.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2maind.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -324,7 +324,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>SDL2main.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -340,7 +340,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>SDL2main.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -356,7 +356,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>SDL2main.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -372,7 +372,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>SDL2main.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -578,10 +578,7 @@
     <ClCompile Include="..\Source_Files\shell_misc.cpp" />
     <ClCompile Include="..\Source_Files\shell_options.cpp" />
     <ClCompile Include="..\Source_Files\Sound\AudioPlayer.cpp" />
-    <ClCompile Include="..\Source_Files\Sound\BasicIFFDecoder.cpp" />
     <ClCompile Include="..\Source_Files\Sound\Decoder.cpp" />
-    <ClCompile Include="..\Source_Files\Sound\FFmpegDecoder.cpp" />
-    <ClCompile Include="..\Source_Files\Sound\MADDecoder.cpp" />
     <ClCompile Include="..\Source_Files\Sound\Music.cpp" />
     <ClCompile Include="..\Source_Files\Sound\MusicPlayer.cpp" />
     <ClCompile Include="..\Source_Files\Sound\OpenALManager.cpp" />
@@ -591,7 +588,6 @@
     <ClCompile Include="..\Source_Files\Sound\SoundManager.cpp" />
     <ClCompile Include="..\Source_Files\Sound\SoundPlayer.cpp" />
     <ClCompile Include="..\Source_Files\Sound\StreamPlayer.cpp" />
-    <ClCompile Include="..\Source_Files\Sound\VorbisDecoder.cpp" />
     <ClCompile Include="..\Source_Files\TCPMess\CommunicationsChannel.cpp" />
     <ClCompile Include="..\Source_Files\TCPMess\Message.cpp" />
     <ClCompile Include="..\Source_Files\TCPMess\MessageDispatcher.cpp" />
@@ -808,10 +804,7 @@
     <ClInclude Include="..\Source_Files\shell.h" />
     <ClInclude Include="..\Source_Files\shell_options.h" />
     <ClInclude Include="..\Source_Files\Sound\AudioPlayer.h" />
-    <ClInclude Include="..\Source_Files\Sound\BasicIFFDecoder.h" />
     <ClInclude Include="..\Source_Files\Sound\Decoder.h" />
-    <ClInclude Include="..\Source_Files\Sound\FFmpegDecoder.h" />
-    <ClInclude Include="..\Source_Files\Sound\MADDecoder.h" />
     <ClInclude Include="..\Source_Files\Sound\Music.h" />
     <ClInclude Include="..\Source_Files\Sound\MusicPlayer.h" />
     <ClInclude Include="..\Source_Files\Sound\OpenALManager.h" />
@@ -824,7 +817,6 @@
     <ClInclude Include="..\Source_Files\Sound\SoundPlayer.h" />
     <ClInclude Include="..\Source_Files\Sound\sound_definitions.h" />
     <ClInclude Include="..\Source_Files\Sound\StreamPlayer.h" />
-    <ClInclude Include="..\Source_Files\Sound\VorbisDecoder.h" />
     <ClInclude Include="..\Source_Files\TCPMess\CommunicationsChannel.h" />
     <ClInclude Include="..\Source_Files\TCPMess\Message.h" />
     <ClInclude Include="..\Source_Files\TCPMess\MessageDispatcher.h" />
