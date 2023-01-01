@@ -47,7 +47,7 @@ void OpenALManager::ProcessAudioQueue() {
 	for (int i = 0; i < audio_players_queue.size(); i++) {
 
 		auto audio = audio_players_queue.front();
-		bool mustStillPlay = audio->IsActive() && audio->AssignSource() && audio->Update() && audio->Play();
+		bool mustStillPlay = !audio->stop_signal && audio->AssignSource() && audio->Update() && audio->Play();
 
 		audio_players_queue.pop_front();
 
@@ -202,7 +202,7 @@ std::unique_ptr<AudioPlayer::AudioSource> OpenALManager::PickAvailableSource(flo
 
 void OpenALManager::StopSound(short sound_identifier, short source_identifier) {
 	auto player = GetSoundPlayer(sound_identifier, source_identifier, !audio_parameters.sounds_3d);
-	if (player) player->Stop();
+	if (player) player->AskStop();
 }
 
 void OpenALManager::StopAllPlayers() {
@@ -217,7 +217,7 @@ void OpenALManager::StopAllPlayers() {
 void OpenALManager::RetrieveSource(std::shared_ptr<AudioPlayer> player) {
 	auto audioSource = player->RetrieveSource();
 	if (audioSource) sources_pool.push(std::move(audioSource));
-	player->Stop();
+	player->is_active = false;
 }
 
 void OpenALManager::CleanInactivePlayers() {

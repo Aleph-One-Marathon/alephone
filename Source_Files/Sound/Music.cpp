@@ -151,7 +151,7 @@ void Music::Pause()
 {
 	if (!SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return;
 	if (Playing()) {
-		musicPlayer->Stop();
+		musicPlayer->AskStop();
 	}
 	music_fading = false;
 }

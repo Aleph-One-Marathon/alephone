@@ -14,15 +14,15 @@ bool AudioPlayer::AssignSource() {
 }
 
 void AudioPlayer::ResetSource() {
-	if (audio_source) {
-		alSourceStop(audio_source->source_id);
+	if (!audio_source) return;
 
-		//let's be sure all of our buffers are detached from the source
-		alSourcei(audio_source->source_id, AL_BUFFER, 0);
+	alSourceStop(audio_source->source_id);
 
-		for (auto& buffer : audio_source->buffers) {
-			buffer.second = false;
-		}
+	//let's be sure all of our buffers are detached from the source
+	alSourcei(audio_source->source_id, AL_BUFFER, 0);
+
+	for (auto& buffer : audio_source->buffers) {
+		buffer.second = false;
 	}
 }
 
@@ -66,12 +66,12 @@ void AudioPlayer::FillBuffers() {
 //we stop the source to get rid of the playing sounds
 void AudioPlayer::Rewind() {
 	ResetSource();
-	rewind_state = false;
+	rewind_signal = false;
 }
 
 bool AudioPlayer::Play() {
 
-	if (rewind_state) Rewind(); //We have to restart the sound here
+	if (rewind_signal) Rewind(); //We have to restart the sound here
 
 	FillBuffers();
 	ALint state;

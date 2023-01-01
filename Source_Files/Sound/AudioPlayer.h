@@ -71,10 +71,10 @@ private:
 
     friend class OpenALManager;
 public:
-    void Stop() { is_active = false; }
+    void AskStop() { stop_signal = true; }
     bool IsActive() const { return is_active; }
     void SetVolume(float volume);
-    void AskRewind() { rewind_state = true; }
+    void AskRewind() { rewind_signal = true; }
     virtual short GetIdentifier() const { return NONE; }
     virtual short GetSourceIdentifier() const { return NONE; }
     void SetFilterable(bool filterable) { this->filterable = filterable; }
@@ -86,8 +86,9 @@ protected:
     virtual int GetNextData(uint8* data, int length) = 0;
     virtual bool LoadParametersUpdates() { return false; }
     int GetCurrentTick() const;
-    std::atomic_bool rewind_state = { false };
+    std::atomic_bool rewind_signal = { false };
     std::atomic_bool filterable = { true };
+    std::atomic_bool stop_signal = { false };
     std::atomic_bool is_active = { true };
     std::atomic_bool is_sync_with_al_parameters = { false };
     std::atomic<float> volume = { 1 };

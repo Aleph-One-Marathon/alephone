@@ -39,7 +39,7 @@ float SoundPlayer::Simulate(const SoundParameters soundParameters) {
 
 void SoundPlayer::Rewind() {
 	if (OpenALManager::Get()->IsBalanceRewindSound() && !CanRewindSound(start_tick))
-		rewind_state = false;
+		rewind_signal = false;
 	else {
 		sound.Update();
 		AudioPlayer::Rewind();
