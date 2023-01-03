@@ -299,7 +299,6 @@ struct screen_data m1_display_screens[]= {
 static struct game_state game_state;
 static FileSpecifier DraggedReplayFile;
 static bool interface_fade_in_progress= false;
-static short interface_fade_type;
 static short current_picture_clut_depth;
 static struct color_table *animated_color_table= NULL;
 static struct color_table *current_picture_clut= NULL;
@@ -2876,7 +2875,6 @@ static void start_interface_fade(
 	if(animated_color_table)
 	{
 		interface_fade_in_progress= true;
-		interface_fade_type= type;
 
 		explicit_start_fade(type, original_color_table, animated_color_table);
 	}
