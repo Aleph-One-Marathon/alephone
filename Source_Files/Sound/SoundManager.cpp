@@ -719,6 +719,7 @@ SoundManager::Parameters::Parameters() :
 	volume_db(DEFAULT_SOUND_LEVEL_DB),
 	flags(_more_sounds_flag | _stereo_flag | _ambient_sound_flag | _16bit_sound_flag),
 	rate(DEFAULT_RATE),
+	samples(DEFAULT_SAMPLES),
 	music_db(DEFAULT_MUSIC_LEVEL_DB),
 	video_export_volume_db(DEFAULT_VIDEO_EXPORT_VOLUME_DB)
 {
@@ -775,6 +776,7 @@ void SoundManager::SetStatus(bool active)
 
 				AudioParameters audio_parameters = {
 					parameters.rate,
+					parameters.samples,
                     static_cast<bool>(parameters.flags & _stereo_flag),
 					!(parameters.flags & _zero_restart_delay),
                     static_cast<bool>(parameters.flags & _hrtf_flag),

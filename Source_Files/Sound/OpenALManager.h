@@ -40,6 +40,7 @@ const std::unordered_map<ALCint, AVSampleFormat> mapping_openal_ffmpeg = {
 
 struct AudioParameters {
 	int rate;
+	int sample_frame_size;
 	bool stereo;
 	bool balance_rewind;
 	bool hrtf;
@@ -109,7 +110,6 @@ private:
 	static LPALCRENDERSAMPLESSOFT alcRenderSamplesSOFT;
 
 	static void MixerCallback(void* usr, uint8* stream, int len);
-	constexpr static int number_samples = 512;
 	SDL_AudioSpec obtained;
 	AudioParameters audio_parameters;
 	ALCint rendering_format = 0;

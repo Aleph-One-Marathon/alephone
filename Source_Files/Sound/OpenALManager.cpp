@@ -12,7 +12,7 @@ bool OpenALManager::Init(AudioParameters parameters) {
 
 	if (instance) { //Don't bother recreating all the OpenAL context if nothing changed for it
 		if (parameters.hrtf != instance->audio_parameters.hrtf || parameters.rate != instance->audio_parameters.rate
-			|| parameters.stereo != instance->audio_parameters.stereo) {
+			|| parameters.stereo != instance->audio_parameters.stereo || parameters.sample_frame_size != instance->audio_parameters.sample_frame_size) {
 
 			Shutdown();
 
@@ -372,7 +372,7 @@ OpenALManager::OpenALManager(AudioParameters parameters) {
 	desired.freq = parameters.rate;
 	desired.format = openalFormat ? mapping_openal_sdl.at(openalFormat) : 0;
 	desired.channels = parameters.stereo ? 2 : 1;
-	desired.samples = number_samples * desired.channels * SDL_AUDIO_BITSIZE(desired.format) / 8;
+	desired.samples = parameters.sample_frame_size;
 	desired.callback = MixerCallback;
 	desired.userdata = reinterpret_cast<void*>(this);
 
