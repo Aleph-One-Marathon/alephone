@@ -435,6 +435,7 @@
     <ClCompile Include="..\Source_Files\Lua\lua_hud_script.cpp" />
     <ClCompile Include="..\Source_Files\Lua\lua_map.cpp" />
     <ClCompile Include="..\Source_Files\Lua\lua_monsters.cpp" />
+    <ClCompile Include="..\Source_Files\Lua\lua_music.cpp" />
     <ClCompile Include="..\Source_Files\Lua\lua_objects.cpp" />
     <ClCompile Include="..\Source_Files\Lua\lua_player.cpp" />
     <ClCompile Include="..\Source_Files\Lua\lua_projectiles.cpp" />
@@ -668,6 +669,7 @@
     <ClInclude Include="..\Source_Files\Lua\lua_map.h" />
     <ClInclude Include="..\Source_Files\Lua\lua_mnemonics.h" />
     <ClInclude Include="..\Source_Files\Lua\lua_monsters.h" />
+    <ClInclude Include="..\Source_Files\Lua\lua_music.h" />
     <ClInclude Include="..\Source_Files\Lua\lua_objects.h" />
     <ClInclude Include="..\Source_Files\Lua\lua_player.h" />
     <ClInclude Include="..\Source_Files\Lua\lua_projectiles.h" />

@@ -169,9 +169,9 @@ std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(LoadedResource& rsrc, Soun
 	return std::shared_ptr<SoundPlayer>();
 }
 
-std::shared_ptr<MusicPlayer> OpenALManager::PlayMusic(StreamDecoder* decoder) {
+std::shared_ptr<MusicPlayer> OpenALManager::PlayMusic(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters) {
 	if (!process_audio_active) return std::shared_ptr<MusicPlayer>();
-	auto musicPlayer = std::make_shared<MusicPlayer>(decoder);
+	auto musicPlayer = std::make_shared<MusicPlayer>(decoder, parameters);
 	QueueAudio(musicPlayer);
 	return musicPlayer;
 }

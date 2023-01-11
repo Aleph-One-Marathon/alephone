@@ -2,12 +2,18 @@
 #include "OpenALManager.h"
 
 std::atomic<float> MusicPlayer::default_volume = { 1 };
-MusicPlayer::MusicPlayer(StreamDecoder* decoder) : AudioPlayer(decoder->Rate(), decoder->IsStereo(), decoder->GetAudioFormat()) {
+MusicPlayer::MusicPlayer(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters) : AudioPlayer(decoder->Rate(), decoder->IsStereo(), decoder->GetAudioFormat()) {
 	this->decoder = decoder;
+	this->parameters = parameters;
+	this->volume = parameters.volume;
+	this->decoder->Rewind();
 }
 
 int MusicPlayer::GetNextData(uint8* data, int length) {
-	return decoder->Decode(data, length);
+	int dataSize = decoder->Decode(data, length);
+	if (dataSize == length || !parameters.loop) return dataSize;
+	decoder->Rewind();
+	return dataSize + GetNextData(data + dataSize, length - dataSize);
 }
 
 bool MusicPlayer::SetUpALSourceIdle() const {

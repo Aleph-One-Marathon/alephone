@@ -1,6 +1,5 @@
 #include "AudioPlayer.h"
 #include "OpenALManager.h"
-#include "Movie.h"
 #include <array>
 
 AudioPlayer::AudioPlayer(int rate, bool stereo, AudioFormat audioFormat) {
@@ -25,10 +24,6 @@ void AudioPlayer::ResetSource() {
 	for (auto& buffer : audio_source->buffers) {
 		buffer.second = false;
 	}
-}
-
-int AudioPlayer::GetCurrentTick() const { 
-	return Movie::instance()->IsRecording() ? Movie::instance()->GetCurrentAudioTimeStamp() : machine_tick_count(); 
 }
 
 //Get back the source of the player
@@ -111,6 +106,7 @@ bool AudioPlayer::Update() {
 }
 
 void AudioPlayer::SetVolume(float volume) {
+	volume = std::min(1.f, std::max(0.f, volume));
 	if (volume == this->volume) return;
 	this->volume = volume;
 	is_sync_with_al_parameters = false;

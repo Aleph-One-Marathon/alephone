@@ -64,7 +64,7 @@ private:
 	bool SetUpALSourceIdle() const override;
 	bool SetUpALSourceInit() const override;
 	void SetUpALSource3D() const;
-	bool CanRewindSound(int baseTick) const { return baseTick + rewind_time < GetCurrentTick(); }
+	bool CanRewindSound(int baseTick) const;
 	void Replace(const Sound sound) { this->sound.Store(sound); }
 	bool LoadParametersUpdates() override;
 	AtomicStructure<Sound> sound;

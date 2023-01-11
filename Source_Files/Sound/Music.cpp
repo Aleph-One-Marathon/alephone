@@ -23,30 +23,21 @@
 #include "XML_LevelScript.h"
 #include "OpenALManager.h"
 
-Music::Music() : 
-	music_initialized(false), 
-	music_intro(false), 
-	music_play(false), 
-	music_prelevel(false),
-	music_level(false), 
-	music_fading(false), 
-	music_fade_start(0), 
-	music_fade_duration(0),
-	decoder(0),
+Music::Music() :
 	marathon_1_song_index(NONE),
 	song_number(0),
-	random_order(false)
+	random_order(false),
+	music_slots(reserved_music_slots)
 {
 }
 
-void Music::Open(FileSpecifier *file)
+bool Music::Slot::Open(FileSpecifier *file)
 {
-	if (music_initialized)
+	if (decoder)
 	{
 		if (file && *file == music_file)
 		{
-			if (decoder) decoder->Rewind();
-			return;
+			return true;
 		}
 
 		Close();
@@ -54,148 +45,153 @@ void Music::Open(FileSpecifier *file)
 
 	if (file)
 	{
-		music_initialized = Load(*file);
+		decoder = StreamDecoder::Get(*file);
 		music_file = *file;
 	}
-		
-}
-
-bool Music::SetupIntroMusic(FileSpecifier &file)
-{
-	music_intro_file = file;
-	Open(&file);
-	if (music_initialized)
-		music_intro = true;
-	return music_initialized;
+	
+	return decoder != nullptr;
 }
 
 void Music::RestartIntroMusic()
 {
-	if (music_intro)
+	auto& introSlot = music_slots[MusicSlot::Intro];
+	if (introSlot.IsInit() && !introSlot.Playing() && introSlot.SetParameters(true, 1)) introSlot.Play();
+}
+
+void Music::Pause(int index)
+{
+	if (index != NONE) music_slots[index].Pause();
+	else
 	{
-		Open(&music_intro_file);
-		Play();
-		music_play = true;
+		for (auto& slot : music_slots) {
+			slot.Pause();
+		}
+
+		music_slots.resize(reserved_music_slots);
 	}
 }
 
-void Music::FadeOut(short duration)
+void Music::Fade(float limitVolume, short duration, bool stopOnNoVolume, int index)
 {
-	if (music_play)
+	if (index != NONE) music_slots[index].Fade(limitVolume, duration, stopOnNoVolume);
+	else
 	{
-		if (!music_level) music_play = false;
-		music_fading = true;
-		music_fade_start = machine_tick_count();
+		for (auto& slot : music_slots) {
+			slot.Fade(limitVolume, duration, stopOnNoVolume);
+		}
+	}
+}
+
+void Music::Slot::Fade(float limitVolume, short duration, bool stopOnNoVolume)
+{
+	if (Playing())
+	{
+		auto currentVolume = musicPlayer->GetVolume();
+		if (currentVolume == limitVolume) return;
+
+		music_fade_start_volume = currentVolume;
+		music_fade_limit_volume = limitVolume;
+		music_fade_start = SoundManager::GetCurrentAudioTick();
 		music_fade_duration = duration;
+		music_fade_stop_no_volume = stopOnNoVolume;
 	}
 }
 
-bool Music::Playing()
+int Music::Load(FileSpecifier& file, bool loop, float volume)
 {
-	if (!SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return false;
-	if (musicPlayer && musicPlayer->IsActive()) {
-		if (!music_fading) musicPlayer->SetVolume(OpenALManager::From_db(GetVolumeLevel(), true));
-		return true;
-	}
-	return false;
+	music_slots.resize(music_slots.size() + 1);
+	int index = music_slots.size() - 1;
+	auto& slot = music_slots[index];
+	return slot.Open(&file) && slot.SetParameters(loop, volume) ? index : NONE;
 }
 
-void Music::Restart()
+bool Music::Playing(int index)
 {
-	if (music_play)
+	if (index != NONE) return music_slots[index].Playing();
+	else 
 	{
-		if (music_level)
-		{
-			LoadLevelMusic();
-			Play();
+		for (auto& slot : music_slots) {
+			if (slot.Playing()) return true;
 		}
-		else if (music_intro)
-		{
-			Open(&music_intro_file);
-			Play();
-		}
+
+		return false;
 	}
 }
 
 void Music::Idle()
 {
-
 	if (!SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return;
-	if (music_prelevel)
-	{
-		music_prelevel = false;
-		Play();
+
+	auto& levelSlot = music_slots[MusicSlot::Level];
+	if (levelSlot.IsInit() && !levelSlot.Playing() && LoadLevelMusic()) {
+		levelSlot.Play();
 	}
 
-	if (!Playing())
-		Restart();
+	for (int i = 0; i < music_slots.size(); i++) {
 
-	if (music_fading)
-	{
-		uint32 elapsed = machine_tick_count() - music_fade_start;
-		float max_vol = OpenALManager::From_db(GetVolumeLevel(), true);
-		float vol = max_vol - (elapsed * max_vol) / music_fade_duration;
-		if (vol <= 0)
-			Pause();
-		else
-		{
-			if (vol > max_vol)
-				vol = max_vol;
-			// set music channel volume
-			musicPlayer->SetVolume(vol);
-		}
+		auto& slot = music_slots.at(i);
+		if (slot.IsInit() && slot.IsFading()) {
+			auto volumeResult = slot.ComputeFadingVolume();
+			bool fadeIn = volumeResult.first;
+			float vol = fadeIn ? std::min(volumeResult.second, slot.GetLimitFadeVolume()) : std::max(volumeResult.second, slot.GetLimitFadeVolume());
+			slot.SetVolume(vol);
+			if (vol == slot.GetLimitFadeVolume()) slot.StopFade();
+			if (vol <= 0 && slot.StopPlayerAfterFadeOut()) slot.Pause();
+		} 
 	}
 }
 
-void Music::Pause()
+std::pair<bool, float> Music::Slot::ComputeFadingVolume() 
 {
-	if (!SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return;
-	if (Playing()) {
-		musicPlayer->AskStop();
-	}
-	music_fading = false;
+	bool fadeIn = music_fade_limit_volume > music_fade_start_volume;
+	uint32 elapsed = SoundManager::GetCurrentAudioTick() - music_fade_start;
+	float volume = ((float)elapsed / music_fade_duration) * (fadeIn ? music_fade_limit_volume : 1 - music_fade_limit_volume);
+	volume = fadeIn ? volume + music_fade_start_volume : music_fade_start_volume - volume;
+	return { fadeIn, volume };
 }
 
-void Music::Close()
+void Music::Slot::SetVolume(float volume)
 {
-	if (music_initialized)
-	{
-		music_initialized = false;
-		Pause();
-		delete decoder;
-		decoder = 0;
-	}
+	parameters.volume = volume;
+	if (musicPlayer) musicPlayer->SetVolume(volume);
 }
 
-bool Music::Load(FileSpecifier &song_file)
+void Music::Slot::Pause()
 {
-	delete decoder;
-	decoder = StreamDecoder::Get(song_file);
-	return decoder;
+	if (Playing()) musicPlayer->AskStop();
+	StopFade();
 }
 
-void Music::Play()
+void Music::Slot::Close()
 {
-	if (!music_initialized || !SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return;
-	if (GetVolumeLevel() <= SoundManager::MINIMUM_VOLUME_DB) return;
-
-	if (!musicPlayer || !musicPlayer->IsActive()) {
-		musicPlayer = OpenALManager::Get()->PlayMusic(decoder);
-	}
-
+	Pause();
+	musicPlayer.reset();
+	decoder.reset();
 }
 
-void Music::LoadLevelMusic()
+bool Music::Slot::SetParameters(bool loop, float volume)
+{
+	parameters.loop = loop;
+	parameters.volume = volume;
+	return true;
+}
+
+void Music::Slot::Play()
+{
+	if (!Playing()) musicPlayer = OpenALManager::Get()->PlayMusic(decoder, parameters);
+}
+
+bool Music::LoadLevelMusic()
 {
 	FileSpecifier* level_song_file = GetLevelMusic();
-	Open(level_song_file);
+	return music_slots[MusicSlot::Level].Open(level_song_file);
 }
 
 void Music::SeedLevelMusic()
 {
 	song_number = 0;
 	
-	randomizer.z ^= machine_tick_count();
+	randomizer.z ^= SoundManager::GetCurrentAudioTick();
 	randomizer.SetTable();
 }
 
@@ -218,25 +214,6 @@ void Music::SetClassicLevelMusic(short song_index)
     
     PushBackLevelMusic(file);
     marathon_1_song_index = song_index;
-}
-
-void Music::PreloadLevelMusic()
-{
-	LoadLevelMusic();
-
-	if (music_initialized)
-	{
-		music_prelevel = true;
-		music_level = true;
-		music_play = true;
-	}
-}
-
-void Music::StopLevelMusic()
-{
-	music_level = false;
-	music_play = false;
-	Close();
 }
 
 FileSpecifier* Music::GetLevelMusic()

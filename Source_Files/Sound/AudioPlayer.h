@@ -84,6 +84,7 @@ public:
     void AskStop() { stop_signal = true; }
     bool IsActive() const { return is_active.load(); }
     void SetVolume(float volume);
+    float GetVolume() const { return volume.load(); }
     void AskRewind() { rewind_signal = true; }
     virtual short GetIdentifier() const { return NONE; }
     virtual short GetSourceIdentifier() const { return NONE; }
@@ -94,7 +95,6 @@ protected:
     void FillBuffers();
     virtual int GetNextData(uint8* data, int length) = 0;
     virtual bool LoadParametersUpdates() { return false; }
-    int GetCurrentTick() const;
     std::atomic_bool rewind_signal = { false };
     std::atomic_bool stop_signal = { false };
     std::atomic_bool is_active = { true };

@@ -220,7 +220,7 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 void ResetLevelScript()
 {
 	// For whatever previous music had been playing...
-	Music::instance()->FadeOut(MACHINE_TICKS_PER_SECOND/2);
+	Music::instance()->Fade(0, MACHINE_TICKS_PER_SECOND/2);
 	
 	// If no scripts were loaded or none of them had music specified,
 	// then don't play any music

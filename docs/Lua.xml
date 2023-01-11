@@ -1092,29 +1092,32 @@
 		<type>WU</type>
       </variable>
     </table>
-    <table name="music" singleton="true">
-      <function name="clear">
-		<description>clears the level playlist</description>
-      </function>
-      <function name="fade">
-		<description>fades out the currently playing track and clears the playlist</description>
-		<argument name="duration"><type>seconds</type></argument>
-      </function>
-      <function name="play">
-		<description>appends all of the specified tracks to the end of the playlist</description>
-		<argument name="track1"><type>string</type></argument>
-		<argument name="track2" required="false"><type>string</type></argument>
-		<argument name="..." required="false"><type>string</type></argument>
-      </function>
-      <function name="stop">
-		<description>stops level music and clears the playlist</description>
-      </function>
-      <function name="valid">
-		<description>for every track passed, return true if it exists and is playable and false otherwise</description>
-		<argument name="track1"><type>string</type></argument>
-		<argument name="track2" required="false"><type>string</type></argument>
-		<argument name="..." required="false"><type>string</type></argument>
-      </function>
+    <table name="music">
+	  <function name="play" version="big K">
+		<description>plays the music</description>
+		<note>if the music was stopped, restarts it</note>
+	  </function>
+	  <function name="stop" version="big K">
+		<description>stops the music</description>
+	  </function>
+	  <function name="fade" version="big K">
+		<description>fades the music</description>
+		<argument name="volume"><type>number</type></argument>
+		<argument name="duration" required="false"><type>number</type></argument>
+		<argument name="stop_after_fade" required="false"><type>boolean</type></argument>
+		<note>it will fade in until volume is reached. volume is decimal [0 - 1]</note>
+		<note>duration unit is ms and is 1000 if not specified</note>
+		<note>stop_after_fade is disabled by default, if set to true if the volume reaches 0 while fading the music will automatically stop</note>
+	  </function>
+	  <variable name="volume" version="big K">
+		<description>the volume of the music</description>
+		<type>number</type>
+		<note>volume is decimal [0 - 1]</note>
+	  </variable>
+	  <variable name="active" access="read-only" version="big K">
+		<description>returns true if the music is still playing</description>
+		<type>boolean</type>
+	  </variable>
     </table>
     <table name="platform">
 	  <variable name="activates_adjacent_platforms_at_each_level" version="20210408">
@@ -2326,7 +2329,46 @@
 		<description>iterates through all monster starting locations in the level</description>
       </call>
     </accessor>
-    <accessor name="Music" contains="music"/>
+    <accessor name="Music" contains="music">
+      <length>
+		<description>maximum number of musics (not used, you can go beyond)</description>
+      </length>
+      <index/>
+      <call>
+		<description>iterates through all the musics in the level</description>
+      </call>
+	  <function name="new" version="big K">
+		<description>returns a new loaded music</description>
+		<argument name="track"><type>string</type></argument>
+		<argument name="volume" required="false"><type>number</type></argument>
+		<argument name="loop" required="false"><type>boolean</type></argument>
+		<return><type>music</type></return>
+		<note>volume is decimal [0 - 1] and is 1 if not specified</note>
+		<note>loop is enabled by default</note>
+	  </function>
+	  <function name="clear">
+		<description>clears the level playlist</description>
+      </function>
+      <function name="fade">
+		<description>fades out the currently playing track and clears the playlist</description>
+		<argument name="duration"><type>seconds</type></argument>
+      </function>
+      <function name="play">
+		<description>appends all of the specified tracks to the end of the playlist</description>
+		<argument name="track1"><type>string</type></argument>
+		<argument name="track2" required="false"><type>string</type></argument>
+		<argument name="..." required="false"><type>string</type></argument>
+      </function>
+      <function name="stop">
+		<description>stops level music and clears the playlist</description>
+      </function>
+      <function name="valid">
+		<description>for every track passed, return true if it exists and is playable and false otherwise</description>
+		<argument name="track1"><type>string</type></argument>
+		<argument name="track2" required="false"><type>string</type></argument>
+		<argument name="..." required="false"><type>string</type></argument>
+      </function>
+    </accessor>
     <accessor name="Platforms" contains="platform">
       <length>
 		<description>number of platforms on the level</description>

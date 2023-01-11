@@ -92,6 +92,8 @@ public:
 	// random sounds
 	short RandomSoundIndexToSoundIndex(short random_sound_index);
 
+	static int GetCurrentAudioTick();
+
 	struct Parameters
 	{
 		static const int DEFAULT_RATE = 44100;

@@ -30,6 +30,7 @@ SOUND.C
 #include "InfoTree.h"
 #include "OpenALManager.h"
 #include "shell_options.h"
+#include "Movie.h"
 
 #undef SLOT_IS_USED
 #undef SLOT_IS_FREE
@@ -435,6 +436,10 @@ void SoundManager::DirectPlaySound(short sound_index, angle direction, short vol
 void SoundManager::StopAllSounds() {
 	 auto manager = OpenALManager::Get();
 	 if (manager) manager->StopAllPlayers();
+}
+
+int SoundManager::GetCurrentAudioTick() {
+	return Movie::instance()->IsRecording() ? Movie::instance()->GetCurrentAudioTimeStamp() : machine_tick_count();
 }
 
 //if we want to manage things with our sound players, it's here
