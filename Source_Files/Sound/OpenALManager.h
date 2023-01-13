@@ -102,7 +102,7 @@ private:
 	std::vector<std::shared_ptr<AudioPlayer>> audio_players_local; //for OpenALManager only (main thread)
 	boost::lockfree::spsc_queue<std::shared_ptr<AudioPlayer>, boost::lockfree::capacity<256>> audio_players_shared; //pipeline main => audio thread
 	int GetBestOpenALRenderingFormat(ALCint channelsType);
-	void RetrieveSource(std::shared_ptr<AudioPlayer> player);
+	void RetrieveSource(const std::shared_ptr<AudioPlayer>& player);
 
 	/* Loopback device functions */
 	static LPALCLOOPBACKOPENDEVICESOFT alcLoopbackOpenDeviceSOFT;
