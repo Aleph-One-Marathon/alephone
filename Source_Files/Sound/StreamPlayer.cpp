@@ -17,24 +17,24 @@ void StreamPlayer::FillBuffers() {
 	UnqueueBuffers(); //First we unqueue buffers that can be
 
 	for (auto& buffer : audio_source->buffers) {
-		if (!buffer.second) {
 
-			std::vector<uint8> data;
-			size_t bufferOffset = 0;
-			int actualDataLength = 0;
+		if (buffer.second) continue;
 
-			while (buffer_samples >= bufferOffset + data_length) {
-				data.resize(bufferOffset + data_length);
-				actualDataLength = GetNextData(data.data() + bufferOffset, data_length);
-				data.resize(data.size() + actualDataLength - data_length);
-				if (actualDataLength <= 0) break;
-				bufferOffset += actualDataLength;
-			}
+		std::vector<uint8> data;
+		size_t bufferOffset = 0;
+		int actualDataLength = 0;
 
-			if (data.size() <= 0) return;
-			alBufferData(buffer.first, format, data.data(), data.size(), rate);
-			alSourceQueueBuffers(audio_source->source_id, 1, &buffer.first);
-			buffer.second = true;
+		while (buffer_samples >= bufferOffset + data_length) {
+			data.resize(bufferOffset + data_length);
+			actualDataLength = GetNextData(data.data() + bufferOffset, data_length);
+			data.resize(data.size() + actualDataLength - data_length);
+			if (actualDataLength <= 0) break;
+			bufferOffset += actualDataLength;
 		}
+
+		if (data.size() <= 0) return;
+		alBufferData(buffer.first, format, data.data(), data.size(), rate);
+		alSourceQueueBuffers(audio_source->source_id, 1, &buffer.first);
+		buffer.second = true;
 	}
 }
