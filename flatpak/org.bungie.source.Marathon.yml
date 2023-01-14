@@ -1,4 +1,4 @@
-app-id: org.bungie.Marathon
+app-id: org.bungie.source.Marathon
 runtime: org.freedesktop.Platform
 runtime-version: '22.08'
 sdk: org.freedesktop.Sdk
@@ -20,8 +20,8 @@ modules:
     buildsystem: simple
     build-commands:
       - install -D run.sh /app/bin/run.sh
-      - install -D marathon.desktop /app/share/applications/org.bungie.Marathon.desktop
-      - install -D marathon.png /app/share/icons/hicolor/512x512/apps/org.bungie.Marathon.png
+      - install -D marathon.desktop /app/share/applications/org.bungie.source.Marathon.desktop
+      - install -D marathon.png /app/share/icons/hicolor/512x512/apps/org.bungie.source.Marathon.png
     sources:
       - {type: file, path: run.sh}
       - {type: file, path: marathon.desktop}

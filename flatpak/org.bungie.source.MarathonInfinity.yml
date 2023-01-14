@@ -1,4 +1,4 @@
-app-id: org.bungie.MarathonInfinity
+app-id: org.bungie.source.MarathonInfinity
 runtime: org.freedesktop.Platform
 runtime-version: '22.08'
 sdk: org.freedesktop.Sdk
@@ -20,8 +20,8 @@ modules:
     buildsystem: simple
     build-commands:
       - install -D run.sh /app/bin/run.sh
-      - install -D marathon-infinity.desktop /app/share/applications/org.bungie.MarathonInfinity.desktop
-      - install -D marathon-infinity.png /app/share/icons/hicolor/512x512/apps/org.bungie.MarathonInfinity.png
+      - install -D marathon-infinity.desktop /app/share/applications/org.bungie.source.MarathonInfinity.desktop
+      - install -D marathon-infinity.png /app/share/icons/hicolor/512x512/apps/org.bungie.source.MarathonInfinity.png
     sources:
       - {type: file, path: run.sh}
       - {type: file, path: marathon-infinity.desktop}

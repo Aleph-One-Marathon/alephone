@@ -1,4 +1,4 @@
-app-id: org.bungie.AlephOne
+app-id: org.bungie.source.AlephOne
 runtime: org.freedesktop.Platform
 runtime-version: '22.08'
 sdk: org.freedesktop.Sdk
@@ -13,8 +13,8 @@ modules:
     buildsystem: simple
     build-commands:
       - install -D run-nodata.sh /app/bin/run.sh
-      - install -D alephone.desktop /app/share/applications/org.bungie.AlephOne.desktop
-      - install -D alephone.png /app/share/icons/hicolor/512x512/apps/org.bungie.AlephOne.png
+      - install -D alephone.desktop /app/share/applications/org.bungie.source.AlephOne.desktop
+      - install -D alephone.png /app/share/icons/hicolor/512x512/apps/org.bungie.source.AlephOne.png
     sources:
       - {type: file, path: run-nodata.sh}
       - {type: file, path: alephone.desktop}

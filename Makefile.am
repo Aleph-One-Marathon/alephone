@@ -33,9 +33,10 @@ EXTRA_DIST = docs/MML.html docs/Lua.html docs/Lua_HUD.html		\
   flatpak/alephone.desktop flatpak/alephone.png flatpak/marathon2.desktop	  \
   flatpak/marathon2.png flatpak/marathon.desktop							  \
   flatpak/marathon-infinity.desktop flatpak/marathon-infinity.png			  \
-  flatpak/marathon.png flatpak/org.bungie.AlephOne.yml						  \
-  flatpak/org.bungie.Marathon2.yml flatpak/org.bungie.MarathonInfinity.yml	  \
-  flatpak/org.bungie.Marathon.yml flatpak/run-nodata.sh flatpak/run.sh		  \
+  flatpak/marathon.png flatpak/org.bungie.source.AlephOne.yml				  \
+  flatpak/org.bungie.source.Marathon2.yml									  \
+  flatpak/org.bungie.source.MarathonInfinity.yml							  \
+  flatpak/org.bungie.source.Marathon.yml flatpak/run-nodata.sh flatpak/run.sh \
   flatpak/shared/alephone.yml flatpak/shared/boost.yml flatpak/shared/glu.yml \
   flatpak/shared/miniupnpc.yml flatpak/shared/zzip.yml
 
@@ -224,19 +225,19 @@ a1-flatpak: $(A1_FLATPAK)
 flatpaks: m1-flatpak m2-flatpak minf-flatpak a1-flatpak
 
 $(M1_FLATPAK):
-	flatpak-builder --repo=flatpak/repo --force-clean flatpak/Marathon.build $(srcdir)/flatpak/org.bungie.Marathon.yml
-	flatpak build-bundle flatpak/repo $@ org.bungie.Marathon
+	flatpak-builder --repo=flatpak/repo --force-clean flatpak/Marathon.build $(srcdir)/flatpak/org.bungie.source.Marathon.yml
+	flatpak build-bundle flatpak/repo $@ org.bungie.source.Marathon
 
 $(M2_FLATPAK):
-	flatpak-builder --repo=flatpak/repo --force-clean flatpak/Marathon2.build $(srcdir)/flatpak/org.bungie.Marathon2.yml
-	flatpak build-bundle flatpak/repo $@ org.bungie.Marathon2
+	flatpak-builder --repo=flatpak/repo --force-clean flatpak/Marathon2.build $(srcdir)/flatpak/org.bungie.source.Marathon2.yml
+	flatpak build-bundle flatpak/repo $@ org.bungie.source.Marathon2
 
 $(MINF_FLATPAK):
-	flatpak-builder --repo=flatpak/repo --force-clean flatpak/MarathonInfinity.build $(srcdir)/flatpak/org.bungie.MarathonInfinity.yml
-	flatpak build-bundle flatpak/repo $@ org.bungie.MarathonInfinity
+	flatpak-builder --repo=flatpak/repo --force-clean flatpak/MarathonInfinity.build $(srcdir)/flatpak/org.bungie.source.MarathonInfinity.yml
+	flatpak build-bundle flatpak/repo $@ org.bungie.source.MarathonInfinity
 
 $(A1_FLATPAK):
-	flatpak-builder --repo=flatpak/repo --force-clean flatpak/AlephOne.build $(srcdir)/flatpak/org.bungie.AlephOne.yml
-	flatpak build-bundle flatpak/repo $@ org.bungie.AlephOne
+	flatpak-builder --repo=flatpak/repo --force-clean flatpak/AlephOne.build $(srcdir)/flatpak/org.bungie.source.AlephOne.yml
+	flatpak build-bundle flatpak/repo $@ org.bungie.source.AlephOne
 
 FORCE:
