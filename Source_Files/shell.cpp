@@ -119,8 +119,9 @@
 
 #ifdef __WIN32__
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include <dwmapi.h>
 #undef CreateDirectory
+#undef PlaySound
 #endif
 
 #include "shell_options.h"
@@ -176,6 +177,21 @@ static void process_event(const SDL_Event &event);
 
 // cross-platform static variables
 short vidmasterStringSetID = -1; // can be set with MML
+
+static bool IsCompositingWindowManagerEnabled() // double buffering
+{
+#if defined(__APPLE__) || defined(__MACH__)
+	return true;
+#endif
+
+#if defined __WIN32__
+	BOOL result;
+	if (DwmIsCompositionEnabled(&result) != S_OK) return false;
+	return result;
+#endif
+
+	return false;
+}
 
 static std::string a1_getenv(const char* name)
 {
@@ -1416,15 +1432,15 @@ static void process_event(const SDL_Event &event)
 					// leave it alone
 					break;
 				}
-				
-#if !defined(__APPLE__) && !defined(__MACH__) // double buffering :)
+	
+			if (!IsCompositingWindowManagerEnabled()) {
 #ifdef HAVE_OPENGL
 				if (MainScreenIsOpenGL())
 					MainScreenSwap();
 				else
 #endif
 					update_game_window();
-#endif
+				}
 				break;
 		}
 		break;
