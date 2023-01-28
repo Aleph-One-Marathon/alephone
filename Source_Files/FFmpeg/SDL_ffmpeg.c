@@ -155,41 +155,55 @@ int SDL_ffmpegDecodeVideoFrame( SDL_ffmpegFile*, AVPacket*, SDL_ffmpegVideoFrame
 
 const SDL_ffmpegCodec SDL_ffmpegCodecAUTO =
 {
-    -1,
-    720, 576,
-    1, 25,
-    6000000,
-    -1, -1,
-    -1,
-    2, 48000,
-    192000,
-    -1, -1
+    .videoCodecID=-1,
+    .width=720,
+    .height=576,
+    .framerateNum=1,
+    .framerateDen=25,
+    .videoBitrate=6000000,
+    .videoMinRate=-1,
+    .videoMaxRate=-1,
+    .audioCodecID=-1,
+    .channels=2,
+    .sampleRate=48000,
+    .cpuCount=-1,
+    .audioQuality=-1
 };
+
+
 
 const SDL_ffmpegCodec SDL_ffmpegCodecPALDVD =
 {
-    AV_CODEC_ID_MPEG2VIDEO,
-    720, 576,
-    1, 25,
-    6000000,
-    -1, -1,
-    AV_CODEC_ID_MP2,
-    2, 48000,
-    192000,
-    -1, -1
+    .videoCodecID=AV_CODEC_ID_MPEG2VIDEO,
+    .width=720,
+    .height=576,
+    .framerateNum=1,
+    .framerateDen=25,
+    .videoBitrate=6000000,
+    .videoMinRate=-1,
+    .videoMaxRate=-1,
+    .audioCodecID=AV_CODEC_ID_MP2,
+    .channels=2,
+    .sampleRate=48000,
+    .cpuCount=-1,
+    .audioQuality=-1
 };
 
 const SDL_ffmpegCodec SDL_ffmpegCodecPALDV =
 {
-    AV_CODEC_ID_DVVIDEO,
-    720, 576,
-    1, 25,
-    6553600,
-    -1, -1,
-    AV_CODEC_ID_DVAUDIO,
-    2, 48000,
-    256000,
-    -1, -1
+    .videoCodecID=AV_CODEC_ID_DVVIDEO,
+    .width=720,
+    .height=576,
+    .framerateNum=1,
+    .framerateDen=25,
+    .videoBitrate=6553600,
+    .videoMinRate=-1,
+    .videoMaxRate=-1,
+    .audioCodecID=AV_CODEC_ID_DVAUDIO,
+    .channels=2,
+    .sampleRate=48000,
+    .cpuCount=-1,
+    .audioQuality=-1
 };
 
 SDL_ffmpegFile* SDL_ffmpegCreateFile()
