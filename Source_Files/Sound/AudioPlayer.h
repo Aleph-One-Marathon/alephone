@@ -82,7 +82,7 @@ public:
 protected:
     AudioPlayer(int rate, bool stereo, bool sixteen_bit);
     void UnqueueBuffers();
-    virtual void FillBuffers();
+    void FillBuffers();
     virtual int GetNextData(uint8* data, int length) = 0;
     virtual bool LoadParametersUpdates() { return false; }
     int GetCurrentTick() const;

@@ -12,9 +12,8 @@ public:
 	float GetPriority() const override { return 10; } //As long as it's only used for intro video & net mic, it doesn't really matter
 private:
 	int GetNextData(uint8* data, int length) override;
-	void FillBuffers() override;
 	CallBackStreamPlayer CallBackFunction;
-	uint32_t data_length;
+	int data_length;
 
 	friend class OpenALManager;
 };

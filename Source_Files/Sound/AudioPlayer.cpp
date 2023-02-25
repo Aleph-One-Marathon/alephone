@@ -1,6 +1,7 @@
 #include "AudioPlayer.h"
 #include "OpenALManager.h"
 #include "Movie.h"
+#include <array>
 
 AudioPlayer::AudioPlayer(int rate, bool stereo, bool sixteen_bit) {
 	this->rate = rate;
@@ -41,9 +42,9 @@ void AudioPlayer::UnqueueBuffers() {
 	alGetSourcei(audio_source->source_id, AL_BUFFERS_PROCESSED, &nbBuffersProcessed);
 
 	while (nbBuffersProcessed-- > 0) {
-		ALuint bufid;
-		alSourceUnqueueBuffers(audio_source->source_id, 1, &bufid);
-		audio_source->buffers[bufid] = false;
+		ALuint bufferId;
+		alSourceUnqueueBuffers(audio_source->source_id, 1, &bufferId);
+		audio_source->buffers[bufferId] = false;
 	}
 }
 
@@ -51,15 +52,23 @@ void AudioPlayer::FillBuffers() {
 
 	UnqueueBuffers(); //First we unqueue buffers that can be
 
-	for (auto& buffer : audio_source->buffers) {
-		if (!buffer.second) { //now we process our buffers that are ready
-			std::vector<uint8> data(buffer_samples);
-			int dataLength = GetNextData(data.data(), buffer_samples);
-			if (dataLength <= 0) return;
-			alBufferData(buffer.first, format, data.data(), dataLength, rate);
-			alSourceQueueBuffers(audio_source->source_id, 1, &buffer.first);
-			buffer.second = true;
+	for (auto& buffer : audio_source->buffers) { //now we process our buffers that are ready
+
+		if (buffer.second) continue;
+
+		std::array<uint8, buffer_samples> data = {};
+		size_t bufferOffset = 0;
+
+		while (buffer_samples > bufferOffset) {
+			int actualDataLength = GetNextData(data.data() + bufferOffset, buffer_samples - bufferOffset);
+			if (actualDataLength <= 0) break;
+			bufferOffset += actualDataLength;
 		}
+
+		if (bufferOffset <= 0) return;
+		alBufferData(buffer.first, format, data.data(), bufferOffset, rate);
+		alSourceQueueBuffers(audio_source->source_id, 1, &buffer.first);
+		buffer.second = true;
 	}
 }
 
