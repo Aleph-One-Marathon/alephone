@@ -378,7 +378,7 @@ void SoundManager::PlaySound(short sound_index,
 			if (source) {
 
 				parameters.source_location3d = *source;
-				parameters.dynamic_source_location3d = identifier != NONE ? source : nullptr;
+				parameters.dynamic_source_location3d = _dynamic_tracking_flag && identifier != NONE ? source : nullptr;
 
 				if (this->parameters.flags & _3d_sounds_flag) {
 					parameters.obstruction_flags = GetSoundObstructionFlags(sound_index, source);
@@ -717,7 +717,7 @@ short SoundManager::RandomSoundIndexToSoundIndex(short random_sound_index)
 
 SoundManager::Parameters::Parameters() :
 	volume_db(DEFAULT_SOUND_LEVEL_DB),
-	flags(_more_sounds_flag | _stereo_flag | _ambient_sound_flag | _16bit_sound_flag),
+	flags(_more_sounds_flag | _stereo_flag | _dynamic_tracking_flag | _ambient_sound_flag | _16bit_sound_flag),
 	rate(DEFAULT_RATE),
 	samples(DEFAULT_SAMPLES),
 	music_db(DEFAULT_MUSIC_LEVEL_DB),

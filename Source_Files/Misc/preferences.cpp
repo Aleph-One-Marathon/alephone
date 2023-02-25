@@ -1435,6 +1435,33 @@ static void graphics_dialog(void *arg)
  *  Sound dialog
  */
 
+class w_toggle* stereo_w, * dynamic_w;
+
+class w_stereo_toggle : public w_toggle {
+public:
+	w_stereo_toggle(bool selection) : w_toggle(selection) {}
+
+	void selection_changed(void)
+	{
+		// Turning off stereo turns off dynamic tracking
+		w_toggle::selection_changed();
+		if (selection == false)
+			dynamic_w->set_selection(false);
+	}
+};
+
+class w_dynamic_toggle : public w_toggle {
+public:
+	w_dynamic_toggle(bool selection) : w_toggle(selection) {}
+
+	void selection_changed(void)
+	{
+		// Turning on dynamic tracking turns on stereo
+		w_toggle::selection_changed();
+		if (selection == true)
+			stereo_w->set_selection(true);
+	}
+};
 
 class w_volume_slider : public w_percentage_slider {
 public:
@@ -1476,9 +1503,13 @@ static void sound_dialog(void *arg)
 	table->dual_add(quality_w->label("Quality"), d);
 	table->dual_add(quality_w, d);
 
-	w_toggle *stereo_w = new w_toggle(sound_preferences->flags & _stereo_flag);
+	stereo_w = new w_stereo_toggle(sound_preferences->flags & _stereo_flag);
 	table->dual_add(stereo_w->label("Stereo"), d);
 	table->dual_add(stereo_w, d);
+
+	dynamic_w = new w_dynamic_toggle(TEST_FLAG(sound_preferences->flags, _dynamic_tracking_flag));
+	table->dual_add(dynamic_w->label("Active Panning"), d);
+	table->dual_add(dynamic_w, d);
 
 	w_toggle *sounds3d_w = new w_toggle(sound_preferences->flags & _3d_sounds_flag);
 	table->dual_add(sounds3d_w->label("3D Sounds"), d);
@@ -1538,6 +1569,7 @@ static void sound_dialog(void *arg)
 		if (sounds3d_w->get_selection()) flags |= _3d_sounds_flag;
 		if (hrtf_w->get_selection()) flags |= _hrtf_flag;
 		if (stereo_w->get_selection()) flags |= _stereo_flag;
+		if (dynamic_w->get_selection()) flags |= _dynamic_tracking_flag;
 		if (ambient_w->get_selection()) flags |= _ambient_sound_flag;
 		if (more_w->get_selection()) flags |= _more_sounds_flag;
 		if (zrd_w->get_selection()) flags |= _zero_restart_delay;
