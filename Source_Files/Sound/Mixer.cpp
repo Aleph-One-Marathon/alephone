@@ -58,7 +58,6 @@ void Mixer::Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, 
 
 		channels[sound_channel_count + MUSIC_CHANNEL].source = Channel::SOURCE_MUSIC;
 		channels[sound_channel_count + RESOURCE_CHANNEL].source = Channel::SOURCE_RESOURCE;
-		channels[sound_channel_count + NETWORK_AUDIO_CHANNEL].source = Channel::SOURCE_NETWORK_AUDIO;
 
 		SDL_PauseAudio(false);
 	}
@@ -121,59 +120,6 @@ void Mixer::UpdateMusicChannel(uint8* data, int len)
 	Channel *c = &channels[sound_channel_count + MUSIC_CHANNEL];
 	c->data = data;
 	c->length = len;
-}
-
-// ZZZ: realtime microphone stuff
-// Is the locking necessary?  If checking c->active is the first thing the interrupt proc does,
-// but setting c->active is the last thing we do, there's no way we can get mixed up, right?
-void Mixer::EnsureNetworkAudioPlaying()
-{
-#if !defined(DISABLE_NETWORKING)
-	if (!channels.size()) return;
-	Channel *c = &channels[sound_channel_count + NETWORK_AUDIO_CHANNEL];
-	if (!c->active)
-	{
-		sNetworkAudioBufferDesc = dequeue_network_speaker_data();
-
-		if (sNetworkAudioBufferDesc)
-		{
-			SDL_LockAudio();
-			c->info.stereo = kNetworkAudioIsStereo;
-			c->info.sixteen_bit = kNetworkAudioIs16Bit;
-			c->info.signed_8bit = kNetworkAudioIsSigned8Bit;
-			c->info.bytes_per_frame = kNetworkAudioBytesPerFrame;
-			c->data = sNetworkAudioBufferDesc->mData;
-			c->length = sNetworkAudioBufferDesc->mLength;
-			c->loop_length = 0;
-			c->rate = (kNetworkAudioSampleRate << 16) / obtained.freq;
-			c->info.little_endian = PlatformIsLittleEndian();
-			c->left_volume = 0x100;
-			c->right_volume = 0x100;
-			c->counter = 0;
-			c->active = true;
-
-			SDL_UnlockAudio();
-		}
-	}
-#endif
-}
-
-// I can see locking here because we're invalidating some storage, and we want to
-// make sure the play routine does not trail on a little bit using that storage.
-void Mixer::StopNetworkAudio()
-{
-#if !defined(DISABLE_NETWORKING)
-	if (!channels.size()) return;
-	SDL_LockAudio();
-	channels[sound_channel_count + NETWORK_AUDIO_CHANNEL].active = false;
-	if (sNetworkAudioBufferDesc)
-	{
-		if (is_sound_data_disposable(sNetworkAudioBufferDesc))
-			release_network_speaker_buffer(sNetworkAudioBufferDesc->mData);
-		sNetworkAudioBufferDesc = 0;
-	}
-	SDL_UnlockAudio();
-#endif
 }
 
 void Mixer::PlaySoundResource(LoadedResource &rsrc, _fixed pitch)
@@ -260,32 +206,6 @@ void Mixer::Channel::GetMoreData()
 	else if (source == SOURCE_RESOURCE)
 	{
 		active = false;
-	}
-	else if (source == SOURCE_NETWORK_AUDIO)
-	{
-#if !defined(DISABLE_NETWORKING)
-		// this is pretty hacky, could be refactored better
-		Mixer* mixer = Mixer::instance();
-
-		// ZZZ: if we're supposed to dispose of the storage, so be it
-		if (is_sound_data_disposable(mixer->sNetworkAudioBufferDesc))
-		{
-			release_network_speaker_buffer(mixer->sNetworkAudioBufferDesc->mData);
-		}
-		
-		// Get the next buffer of data
-		mixer->sNetworkAudioBufferDesc = dequeue_network_speaker_data();
-		
-		// If we have a buffer to play, set it up; else deactivate the channel.
-		if (mixer->sNetworkAudioBufferDesc != NULL) {
-			data = mixer->sNetworkAudioBufferDesc->mData;
-			length = mixer->sNetworkAudioBufferDesc->mLength;
-		}
-		else
-		{
-			active = false;
-		}
-#endif // !defined(DISABLE_NETWORKING)
 	}
 	else
 	{
@@ -558,10 +478,6 @@ void Mixer::Mix(uint8* p, int len, bool stereo, bool is_sixteen_bit, bool is_sig
 
 			int16 left_volume = c->left_volume;
 			int16 right_volume = c->right_volume;
-			if (IsNetworkAudioPlaying() && c->source != Channel::SOURCE_NETWORK_AUDIO)
-			{
-				left_volume = right_volume = SoundManager::instance()->GetNetmicVolumeAdjustment();
-			}
 
 			for (int i = 0; i < samples; ++i)
 			{
@@ -570,61 +486,45 @@ void Mixer::Mix(uint8* p, int len, bool stereo, bool is_sixteen_bit, bool is_sig
 			}
 		}
 
-		if (game_is_networked &&
-		    SoundManager::instance()->parameters.mute_while_transmitting &&
-			dynamic_world->speaking_player_index != -1 && 
-		    dynamic_world->speaking_player_index == local_player_index)
+		// Mix left+right for mono
+		if (!stereo)
 		{
-			// mute sound!
 			for (int i = 0; i < samples; ++i)
 			{
-				*p++ = 0;
-				if (stereo) 
-					*p++ = 0;
+				output_left[i] = (output_left[i] + output_right[i]) / 2;
+			}
+		}
+
+		apply_volume_and_clip(output_left, main_volume, samples);
+		if (stereo)
+		{
+			apply_volume_and_clip(output_right, main_volume, samples);
+		}
+
+		if (stereo)
+		{
+			if (is_sixteen_bit)
+			{
+				Output(reinterpret_cast<int16*>(p), output_left, output_right, samples, is_signed);
+				p += samples * 4;
+			}
+			else
+			{
+				Output(reinterpret_cast<int8*>(p), output_left, output_right, samples, is_signed);
+				p += samples * 2;
 			}
 		}
 		else
 		{
-			// Mix left+right for mono
-			if (!stereo)
+			if (is_sixteen_bit)
 			{
-				for (int i = 0; i < samples; ++i)
-				{
-					output_left[i] = (output_left[i] + output_right[i]) / 2;
-				}
-			}
-
-			apply_volume_and_clip(output_left, main_volume, samples);
-			if (stereo)
-			{
-				apply_volume_and_clip(output_right, main_volume, samples);
-			}
-
-			if (stereo)
-			{
-				if (is_sixteen_bit)
-				{
-					Output(reinterpret_cast<int16*>(p), output_left, output_right, samples, is_signed);
-					p += samples * 4;
-				}
-				else
-				{
-					Output(reinterpret_cast<int8*>(p), output_left, output_right, samples, is_signed);
-					p += samples * 2;
-				}
+				Output(reinterpret_cast<int16*>(p), output_left, samples, is_signed);
+				p += samples * 2;
 			}
 			else
 			{
-				if (is_sixteen_bit)
-				{
-					Output(reinterpret_cast<int16*>(p), output_left, samples, is_signed);
-					p += samples * 2;
-				}
-				else
-				{
-					Output(reinterpret_cast<int8*>(p), output_left, samples, is_signed);
-					p += samples;
-				}
+				Output(reinterpret_cast<int8*>(p), output_left, samples, is_signed);
+				p += samples;
 			}
 		}
 		

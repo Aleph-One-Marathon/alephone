@@ -1027,8 +1027,6 @@ SetupNetgameDialog::~SetupNetgameDialog ()
 	delete m_useScriptWidget;
 	delete m_scriptWidget;
 	
-	delete m_allowMicWidget;
-	
 	delete m_liveCarnageWidget;
 	delete m_motionSensorWidget;
 	
@@ -1158,9 +1156,6 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	BoolPref useMetaserverPref (active_network_preferences->advertise_on_metaserver);
 	binders.insert<bool> (m_useMetaserverWidget, &useMetaserverPref);
 	
-	BoolPref allowMicPref (active_network_preferences->allow_microphone);
-	binders.insert<bool> (m_allowMicWidget, &allowMicPref);
-	
 	BitPref liveCarnagePref (active_network_preferences->game_options, _live_network_stats);
 	binders.insert<bool> (m_liveCarnageWidget, &liveCarnagePref);
 	BitPref motionSensorPref (active_network_preferences->game_options, _motion_sensor_does_not_work);
@@ -1251,7 +1246,7 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 		strncpy (game_information->level_name, entry.level_name, MAX_LEVEL_NAME_LENGTH+1);
 		game_information->parent_checksum = read_wad_file_checksum(get_map_file());
 		game_information->difficulty_level = active_network_preferences->difficulty_level;
-		game_information->allow_mic = active_network_preferences->allow_microphone;
+		game_information->allow_mic = false;
 
 		int updates_per_packet = 1;
 		int update_latency = 0;
@@ -2733,10 +2728,6 @@ public:
 		use_upnp_w->set_enabled(false);
 #endif
 
-		w_toggle* realtime_audio_w = new w_toggle(network_preferences->allow_microphone);
-		network_table->dual_add(realtime_audio_w, m_dialog);
-		network_table->dual_add(realtime_audio_w->label("Allow Microphone"), m_dialog);
-
 		w_select_popup *latency_tolerance_w = new w_select_popup();
 		horizontal_placer *latency_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET));
 		latency_placer->dual_add(latency_tolerance_w->label("Latency Tolerance"), m_dialog);
@@ -2915,8 +2906,6 @@ public:
 		m_useScriptWidget = new ToggleWidget (use_netscript_w);
 		m_scriptWidget = new FileChooserWidget (choose_script_w);
 	
-		m_allowMicWidget = new ToggleWidget (realtime_audio_w);
-
 		m_liveCarnageWidget = new ToggleWidget (live_w);
 		m_motionSensorWidget = new ToggleWidget (sensor_w);
 	

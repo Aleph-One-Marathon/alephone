@@ -78,10 +78,6 @@ public:
 	void StopSound(short identifier, short sound_index);
 	void StopAllSounds() { StopSound(NONE, NONE); }
 
-	inline int16 GetNetmicVolumeAdjustment() {
-		return (parameters.volume_while_speaking);
-	}
-
 	void Idle();
 
 	class Pause
@@ -110,9 +106,6 @@ public:
 		uint16 samples; // size of buffer
 
 		float music_db; // music volume in dB
-
-		int16 volume_while_speaking; // [0, NUMBER_OF_SOUND_VOLUME_LEVELS)
-		bool mute_while_transmitting;
 
 		float video_export_volume_db;
 

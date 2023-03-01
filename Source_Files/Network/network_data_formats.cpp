@@ -128,21 +128,5 @@ netcpy(IPaddress* dest, const IPaddress_NET* src) {
 	memcpy(&dest->port,S,2);	// 16-bit integer
 }
 
-void
-netcpy(network_audio_header_NET* dest, const network_audio_header* src) {
-    uint8* S = dest->data;
-    ValueToStream(S, src->mReserved);
-    ValueToStream(S, src->mFlags);
-    assert(S == dest->data + SIZEOF_network_audio_header);
-}
-
-void
-netcpy(network_audio_header* dest, const network_audio_header_NET* src) {
-    uint8* S = (uint8*) src->data;
-    StreamToValue(S, dest->mReserved);
-    StreamToValue(S, dest->mFlags);
-    assert(S == src->data + SIZEOF_network_audio_header);
-}
-
 #endif // !defined(DISABLE_NETWORKING)
 

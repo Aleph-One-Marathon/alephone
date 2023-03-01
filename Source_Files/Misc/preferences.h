@@ -114,7 +114,6 @@ enum {
 
 struct network_preferences_data
 {
-	bool allow_microphone;
 	bool game_is_untimed;
 	int16 type; // look in network_dialogs.c for _ethernet, etc...
 	int16 game_type;

@@ -2079,8 +2079,7 @@ static int Lua_HUDPlayer_Get_Velocity(lua_State *L)
 
 static int Lua_HUDPlayer_Get_Microphone(lua_State *L)
 {    
-    lua_pushboolean(L, current_netgame_allows_microphone() &&
-                    (dynamic_world->speaking_player_index == local_player_index));
+    lua_pushboolean(L, false);
 	return 1;
 }
 

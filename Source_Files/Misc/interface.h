@@ -258,7 +258,6 @@ bool suppress_background_events(void);
 void set_game_state(short new_state);
 short get_game_state(void);
 short get_game_controller(void);
-bool current_netgame_allows_microphone();
 void set_change_level_destination(short level_number);
 bool check_level_change(void);
 void pause_game(void);
@@ -280,8 +279,6 @@ void paint_window_black(void);
 void do_preferences(void);
 short get_level_number_from_user(void);
 void toggle_menus(bool game_started);
-void install_network_microphone(void);
-void remove_network_microphone(void);
 
 // Should return NONE if user cancels, 0 for single player, or 1 for multiplayer.
 // Game has been loaded from file before this is called so elements like
@@ -406,10 +403,6 @@ enum {	// Results for network_join
 
 bool network_gather(bool inResumingGame);
 int network_join(void);
-
-/* ---------- prototypes/NETWORK_MICROPHONE.C */
-
-void handle_microphone(bool triggered);
 
 /* ---------- prototypes/PHYSICS.C */
 

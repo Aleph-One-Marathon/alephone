@@ -1531,14 +1531,6 @@ static void sound_dialog(void *arg)
 	table->dual_add(music_volume_w->label("Music Volume"), d);
 	table->dual_add(music_volume_w, d);
 
-
-	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("Network Microphone"), d);
-
-	w_toggle* mute_while_transmitting_w = new w_toggle(!sound_preferences->mute_while_transmitting);
-	table->dual_add(mute_while_transmitting_w->label("Headset Mic Mode"), d);
-	table->dual_add(mute_while_transmitting_w, d);
-
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("Experimental Sound Options"), d);
 		w_toggle *zrd_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _zero_restart_delay));
@@ -1598,13 +1590,6 @@ static void sound_dialog(void *arg)
 		float music_db = music_volume_w->get_selection() - 20;
 		if (music_db != sound_preferences->music_db) {
 			sound_preferences->music_db = music_db;
-			changed = true;
-		}
-
-		bool mute_while_transmitting = !mute_while_transmitting_w->get_selection();
-		if (mute_while_transmitting != sound_preferences->mute_while_transmitting)
-		{
-			sound_preferences->mute_while_transmitting = mute_while_transmitting;
 			changed = true;
 		}
 
@@ -3749,8 +3734,6 @@ InfoTree sound_preferences_tree()
 	root.put_attr("flags", sound_preferences->flags);
 	root.put_attr("rate", sound_preferences->rate);
 	root.put_attr("samples", sound_preferences->samples);
-	root.put_attr("volume_while_speaking", sound_preferences->volume_while_speaking);
-	root.put_attr("mute_while_transmitting", sound_preferences->mute_while_transmitting);
 	root.put_attr("video_export_volume_db", sound_preferences->video_export_volume_db);
 	
 	return root;
@@ -3760,7 +3743,6 @@ InfoTree network_preferences_tree()
 {
 	InfoTree root;
 
-	root.put_attr("microphone", network_preferences->allow_microphone);
 	root.put_attr("untimed", network_preferences->game_is_untimed);
 	root.put_attr("type", network_preferences->type);
 	root.put_attr("game_type", network_preferences->game_type);
@@ -3925,7 +3907,6 @@ static void default_network_preferences(network_preferences_data *preferences)
 {
 	preferences->type= _ethernet;
 
-	preferences->allow_microphone = true;
 	preferences->game_is_untimed = false;
 	preferences->difficulty_level = 2;
 	preferences->game_options =	_multiplayer_game | _ammo_replenishes | _weapons_replenish
@@ -4123,7 +4104,6 @@ static bool validate_network_preferences(network_preferences_data *preferences)
 	bool changed= false;
 
 	// Fix bool options
-	preferences->allow_microphone = !!preferences->allow_microphone;
 	preferences->game_is_untimed = !!preferences->game_is_untimed;
 
 	if(preferences->type<0||preferences->type>_ethernet)
@@ -4140,12 +4120,6 @@ static bool validate_network_preferences(network_preferences_data *preferences)
 	if(preferences->game_is_untimed != true && preferences->game_is_untimed != false)
 	{
 		preferences->game_is_untimed= false;
-		changed= true;
-	}
-
-	if(preferences->allow_microphone != true && preferences->allow_microphone != false)
-	{
-		preferences->allow_microphone= true;
 		changed= true;
 	}
 
@@ -4741,8 +4715,6 @@ void parse_sound_preferences(InfoTree root, std::string version)
 	root.read_attr("flags", sound_preferences->flags);
 	root.read_attr("rate", sound_preferences->rate);
 	root.read_attr("samples", sound_preferences->samples);
-	root.read_attr("volume_while_speaking", sound_preferences->volume_while_speaking);
-	root.read_attr("mute_while_transmitting", sound_preferences->mute_while_transmitting);
 	root.read_attr("video_export_volume_db", sound_preferences->video_export_volume_db);
 }
 
@@ -4750,7 +4722,6 @@ void parse_sound_preferences(InfoTree root, std::string version)
 
 void parse_network_preferences(InfoTree root, std::string version)
 {
-	root.read_attr("microphone", network_preferences->allow_microphone);
 	root.read_attr("untimed", network_preferences->game_is_untimed);
 	root.read_attr("type", network_preferences->type);
 	root.read_attr("game_type", network_preferences->game_type);

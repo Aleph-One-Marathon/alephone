@@ -192,10 +192,6 @@ const short max_handled_recording= RECORDING_VERSION_ALEPH_ONE_1_4;
 // and also to run the end-game script
 #include "XML_LevelScript.h"
 
-// Network microphone/speaker
-#include "network_sound.h"
-#include "network_distribution_types.h"
-
 // ZZZ: should the function that uses these (join_networked_resume_game()) go elsewhere?
 #include "wad.h"
 #include "game_wad.h"
@@ -735,14 +731,6 @@ static bool make_restored_game_relevant(bool inNetgame, const player_start_data*
                 dynamic_world->game_information.initial_random_seed= network_game_info->initial_random_seed;
                 dynamic_world->game_information.difficulty_level= network_game_info->difficulty_level;
                 dynamic_world->game_information.cheat_flags= network_game_info->cheat_flags;
-
-                if (network_game_info->allow_mic)
-                {
-                        install_network_microphone();
-                        game_state.current_netgame_allows_microphone= true;
-                } else {
-                        game_state.current_netgame_allows_microphone= false;
-                }
 
                 // ZZZ: until players specify their behavior modifiers over the network,
                 // to avoid out-of-sync we must force them all the same.
@@ -2018,13 +2006,6 @@ static bool begin_game(
 				entry.level_number = network_game_info->level_number;
 				entry.level_name[0] = 0;
 	
-				if (network_game_info->allow_mic)
-				{
-					install_network_microphone();
-					game_state.current_netgame_allows_microphone= true;
-				} else {
-					game_state.current_netgame_allows_microphone= false;
-				}
 				game_information.cheat_flags = network_game_info->cheat_flags;
 				std::fill_n(game_information.parameters, 2, 0);
 
@@ -2388,10 +2369,6 @@ static void finish_game(
 #if !defined(DISABLE_NETWORKING)
 	if (game_state.user==_network_player)
 	{
-		if(game_state.current_netgame_allows_microphone)
-		{
-			remove_network_microphone();
-		}
 		NetUnSync(); // gracefully exit from the game
 
 		/* Don't update the screen, etc.. */
@@ -2444,10 +2421,6 @@ static void clean_up_after_failed_game(bool inNetgame, bool inRecording, bool in
                 if (inNetgame)
                 {
 #if !defined(DISABLE_NETWORKING)
-                        if(game_state.current_netgame_allows_microphone)
-                        {
-                                remove_network_microphone();
-                        }
                         exit_networking();
 #endif // !defined(DISABLE_NETWORKING)
                 } else {
@@ -2836,30 +2809,6 @@ static void try_and_display_chapter_screen(
 		game_state.state= existing_state;
 	}
 }
-
-
-#if !defined(DISABLE_NETWORKING)
-/*
- *  Network microphone handling
- */
-
-void install_network_microphone(
-	void)
-{
-	open_network_speaker();
-	NetAddDistributionFunction(kNewNetworkAudioDistributionTypeID, received_network_audio_proc, true);
-	open_network_microphone();
-}
-
-void remove_network_microphone(
-	void)
-{
-	close_network_microphone();
-	NetRemoveDistributionFunction(kNewNetworkAudioDistributionTypeID);
-	close_network_speaker();
-}
-#endif // !defined(DISABLE_NETWORKING)
-
 
 /* ------------ interface fade code */
 /* Be aware that we could try to change bit depths before a fade is completed. */

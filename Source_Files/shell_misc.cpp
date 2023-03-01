@@ -43,7 +43,6 @@ bool chat_input_mode = false;
 #include "player.h"
 #include "Music.h"
 #include "items.h"
-#include "network_sound.h"
 #include "TextStrings.h"
 #include "InfoTree.h"
 
@@ -56,7 +55,6 @@ extern void mark_shield_display_as_dirty();
 extern void mark_oxygen_display_as_dirty();
 extern void accelerate_monster(short monster_index,	world_distance vertical_velocity, 
 							   angle direction, world_distance velocity);
-extern void network_speaker_idle_proc(void);
 extern void update_interface(short time_elapsed);
 
 
@@ -299,8 +297,6 @@ void handle_keyword(int tag)
 void global_idle_proc(void)
 {
 	Music::instance()->Idle();
-	network_speaker_idle_proc();
-	network_microphone_idle_proc();
 	SoundManager::instance()->Idle();
 }
 

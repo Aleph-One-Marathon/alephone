@@ -34,8 +34,6 @@ AX_ARG_WITH([mad], [libmad MP3 playback])
 AX_ARG_WITH([sndfile], [libsndfile audio decoding])
 AX_ARG_WITH([vorbis], [libvorbis Ogg/Vorbis music playback])
 AX_ARG_WITH([smpeg], [SMPEG movie playback])
-AX_ARG_WITH([speex], [Speex net mic playback])
-AX_ARG_WITH([alsa], [ALSA net mic transmission])
 AX_ARG_WITH([curl], [cURL for HTTP communication])
 AX_ARG_WITH([zzip], [zziplib support])
 AX_ARG_WITH([png], [libpng PNG screenshot support])
@@ -245,18 +243,6 @@ AX_CHECK_FEATURE_PKG([vorbis], [VORBISFILE],
 AX_CHECK_FEATURE_LIB([smpeg], [SMPEG],
                      [smpeg/smpeg.h], [smpeg], [SMPEG_new])
 
-AX_CHECK_FEATURE_PKG([speex], [SPEEX], [speex], [speex])
-AS_IF([test "x$have_speex" = "xtrue"],
-      [ PKG_CHECK_MODULES([speexdsp], [speexdsp],
-              [ CPPFLAGS="-DSPEEX $speexdsp_CFLAGS $CPPFLAGS"
-                LIBS="$speexdsp_LIBS $LIBS" ],
-              [ have_speex=false
-                AS_IF([test "x$with_speex" = "xyes"],
-                      [AC_MSG_ERROR([$desc_speex requested but not available])])])])
-
-AX_CHECK_FEATURE_LIB([alsa], [ALSA],
-                     [alsa/asoundlib.h], [asound], [snd_pcm_open])
-
 AX_CHECK_FEATURE_PKG([curl], [CURL],
                      [CURL], [libcurl >= 7.31.0])
 
@@ -337,8 +323,6 @@ AX_PRINT_SUMMARY([mad])
 AX_PRINT_SUMMARY([sndfile])
 AX_PRINT_SUMMARY([vorbis])
 AX_PRINT_SUMMARY([smpeg])
-AX_PRINT_SUMMARY([speex])
-AX_PRINT_SUMMARY([alsa])
 AX_PRINT_SUMMARY([curl])
 AX_PRINT_SUMMARY([zzip])
 AX_PRINT_SUMMARY([png])

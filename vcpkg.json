@@ -41,12 +41,6 @@
          "platform":"windows"
       },
       {
-         "name":"speex"
-      },
-      {
-         "name":"speexdsp"
-      },
-      {
          "name":"zziplib"
       },
       {

@@ -39,7 +39,6 @@
 #include "vbl.h"
 #include "preferences.h"
 #include "tags.h" /* for scenario file type.. */
-#include "network_sound.h"
 #include "mouse.h"
 #include "joystick.h"
 #include "screen_drawing.h"

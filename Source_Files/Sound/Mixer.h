@@ -26,9 +26,6 @@
 
 #include <SDL2/SDL_endian.h>
 #include "cseries.h"
-#include "network_speaker_sdl.h"
-#include "network_audio_shared.h"
-#include "map.h" // to find if netmic is transmitting :(
 #include "Music.h"
 #include "SoundManager.h"
 
@@ -85,14 +82,11 @@ public:
 
 	SDL_AudioSpec desired, obtained;
 
-	void EnsureNetworkAudioPlaying();
-	void StopNetworkAudio();
-
 	void PlaySoundResource(LoadedResource &rsrc, _fixed pitch = _normal_frequency);
 	void StopSoundResource();
 
 private:
-        Mixer() : sNetworkAudioBufferDesc(0) { };
+        Mixer() { };
 	
 	
 	struct Channel {
@@ -129,7 +123,6 @@ private:
 			SOURCE_SOUND_HEADERS,
 			SOURCE_MUSIC,
 			SOURCE_RESOURCE,
-			SOURCE_NETWORK_AUDIO,
 		} source;
 
 		int sound_manager_index;
@@ -137,15 +130,12 @@ private:
 		void GetMoreData();
 	};
 
-	friend class Channel; // hack for sNetworkAudioBufferDesc in GetMoreData
-
 	std::vector<Channel> channels;
 
 	enum
 	{
 		MUSIC_CHANNEL,
 		RESOURCE_CHANNEL,
-		NETWORK_AUDIO_CHANNEL,
 		EXTRA_CHANNELS
 	};
 
@@ -161,10 +151,6 @@ private:
 	void Callback(uint8 *stream, int len);
 	
 	friend class Movie; // to let Movie recorder call our callback
-
-	NetworkSpeakerSoundBufferDescriptor* sNetworkAudioBufferDesc;
-
-	inline bool IsNetworkAudioPlaying() { return channels[sound_channel_count + NETWORK_AUDIO_CHANNEL].active; }
 
 	void Mix(uint8* p, int len, bool stereo, bool is_sixteen_bit, bool is_signed);
 };

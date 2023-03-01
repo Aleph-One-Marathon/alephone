@@ -748,30 +748,6 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 
 			// if ((static_world->environment_flags&_environment_vacuum) || (player->variables.flags&_HEAD_BELOW_MEDIA_BIT)) handle_player_in_vacuum(player_index, action_flags);
 
-#if !defined(DISABLE_NETWORKING)
-			/* handle arbitration of the communications channel (i.e., dynamic_world->speaking_player_index) */
-			if (action_flags&_microphone_button)
-			{
-				if (dynamic_world->speaking_player_index==NONE)
-				{
-					if (GET_GAME_OPTIONS() & _force_unique_teams || (get_player_data(player_index)->team == get_player_data(local_player_index)->team))
-					{
-						dynamic_world->speaking_player_index= player_index;
-					} 
-
-					if (player_index==local_player_index) set_interface_microphone_recording_state(true);
-				}
-			}
-			else
-			{
-				if (dynamic_world->speaking_player_index==player_index)
-				{
-					dynamic_world->speaking_player_index= NONE;
-					if (player_index==local_player_index) set_interface_microphone_recording_state(false);
-				}
-			}
-#endif // !defined(DISABLE_NETWORKING)
-
 			if (PLAYER_IS_DEAD(player))
 			{
 				/* do things dead players do (sit around and check for self-reincarnation) */

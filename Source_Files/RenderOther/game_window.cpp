@@ -78,8 +78,6 @@ Mar 08, 2002 (Woody Zenfell):
 #include "images.h"
 #include "InfoTree.h"
 
-#include    "network_sound.h"
-
 extern void draw_panels(void);
 extern void validate_world_window(void);
 static void set_current_inventory_screen(short player_index, short screen);
@@ -382,13 +380,6 @@ void mark_player_network_stats_as_dirty(short player_index)
 		set_current_inventory_screen(player_index, _network_statistics);
 		SET_INVENTORY_DIRTY_STATE(player, true);
 	}
-}
-
-void set_interface_microphone_recording_state(bool state)
-{
-#if !defined(DISABLE_NETWORKING)
-	set_network_microphone_state(state);
-#endif // !defined(DISABLE_NETWORKING)
 }
 
 void scroll_inventory(short dy)
