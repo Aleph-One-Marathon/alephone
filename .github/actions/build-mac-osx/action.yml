@@ -18,7 +18,7 @@ runs:
     - uses: actions/checkout@v3
     
     - name: Install Tools
-      run: brew install nasm automake
+      run: brew install nasm
       shell: bash
       
     - name: Vcpkg Integration

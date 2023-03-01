@@ -11,7 +11,7 @@ jobs:
         submodules: true
         
     - name: Install Tools
-      run: brew install nasm automake
+      run: brew install nasm
       
     - name: Vcpkg Integration
       run: $VCPKG_INSTALLATION_ROOT/vcpkg integrate install
