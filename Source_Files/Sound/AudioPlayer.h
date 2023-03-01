@@ -72,12 +72,11 @@ private:
     friend class OpenALManager;
 public:
     void AskStop() { stop_signal = true; }
-    bool IsActive() const { return is_active; }
+    bool IsActive() const { return is_active.load(); }
     void SetVolume(float volume);
     void AskRewind() { rewind_signal = true; }
     virtual short GetIdentifier() const { return NONE; }
     virtual short GetSourceIdentifier() const { return NONE; }
-    void SetFilterable(bool filterable) { this->filterable = filterable; }
     virtual float GetPriority() const = 0;
 protected:
     AudioPlayer(int rate, bool stereo, bool sixteen_bit);
@@ -87,7 +86,6 @@ protected:
     virtual bool LoadParametersUpdates() { return false; }
     int GetCurrentTick() const;
     std::atomic_bool rewind_signal = { false };
-    std::atomic_bool filterable = { true };
     std::atomic_bool stop_signal = { false };
     std::atomic_bool is_active = { true };
     std::atomic_bool is_sync_with_al_parameters = { false };

@@ -89,9 +89,9 @@ void OpenALManager::UpdateListener() {
 	alListenerfv(AL_VELOCITY, velocity);
 }
 
-void OpenALManager::SetDefaultVolume(float volume) {
-	if (default_volume == volume) return;
-	default_volume = volume;
+void OpenALManager::SetMasterVolume(float volume) {
+	if (master_volume == volume) return;
+	master_volume = volume;
 	for (auto& player : audio_players_local) player->is_sync_with_al_parameters = false;
 }
 
@@ -175,7 +175,7 @@ std::shared_ptr<MusicPlayer> OpenALManager::PlayMusic(StreamDecoder* decoder) {
 	return musicPlayer;
 }
 
-//Used for video playback & net mic
+//Used for video playback
 std::shared_ptr<StreamPlayer> OpenALManager::PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, bool sixteen_bit) {
 	if (!process_audio_active) return std::shared_ptr<StreamPlayer>();
 	auto streamPlayer = std::make_shared<StreamPlayer>(callback, length, rate, stereo, sixteen_bit);
@@ -363,7 +363,7 @@ bool OpenALManager::GenerateSources() {
 
 OpenALManager::OpenALManager(AudioParameters parameters) {
 	audio_parameters = parameters;
-	default_volume = parameters.volume;
+	master_volume = parameters.volume;
 	alListener3i(AL_POSITION, 0, 0, 0);
 
 	auto openalFormat = GetBestOpenALRenderingFormat(parameters.stereo ? ALC_STEREO_SOFT : ALC_MONO_SOFT);

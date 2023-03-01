@@ -9,7 +9,6 @@ SoundPlayer::SoundPlayer(const Sound sound, SoundParameters parameters)
 	this->sound = sound;
 	this->parameters = parameters;
 	data_length = sound.header.length;
-	filterable = parameters.filterable;
 	start_tick = GetCurrentTick();
 }
 
@@ -99,7 +98,7 @@ bool SoundPlayer::SetUpALSourceIdle() const {
 
 	if (sound_parameters.local) {
 
-		float vol = volume * OpenALManager::Get()->GetComputedVolume(filterable);
+		float vol = volume * OpenALManager::Get()->GetMasterVolume();
 		if (sound_parameters.stereo_parameters.is_panning) {
 			auto pan = (acosf(std::min(sound_parameters.stereo_parameters.gain_left, 1.f)) + asinf(std::min(sound_parameters.stereo_parameters.gain_right, 1.f))) / ((float)M_PI); // average angle in [0,1]
 			pan = 2 * pan - 1; // convert to [-1, 1]
@@ -169,7 +168,7 @@ void SoundPlayer::SetUpALSource3D() const {
 	auto& sound_parameters = parameters.Get();
 	bool obstruction = (sound_parameters.obstruction_flags & _sound_was_obstructed) || (sound_parameters.obstruction_flags & _sound_was_media_obstructed);
 	bool muffled = sound_parameters.obstruction_flags & _sound_was_media_muffled;
-	float calculated_volume = volume * OpenALManager::Get()->GetComputedVolume(filterable);
+	float calculated_volume = volume * OpenALManager::Get()->GetMasterVolume();
 
 	if (muffled) calculated_volume /= 2;
 

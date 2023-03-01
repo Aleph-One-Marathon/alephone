@@ -124,8 +124,9 @@ int AudioPlayer::GetCorrespondingFormat(bool stereo, bool isSixteenBit) const {
 
 bool AudioPlayer::SetUpALSourceIdle() const {
 	float audio_volume = volume.load();
-	alSourcef(audio_source->source_id, AL_MAX_GAIN, OpenALManager::Get()->GetComputedVolume(filterable));
-	alSourcef(audio_source->source_id, AL_GAIN, audio_volume * OpenALManager::Get()->GetComputedVolume(filterable));
+	float master_volume = OpenALManager::Get()->GetMasterVolume();
+	alSourcef(audio_source->source_id, AL_MAX_GAIN, master_volume);
+	alSourcef(audio_source->source_id, AL_GAIN, audio_volume * master_volume);
 	return true;
 }
 

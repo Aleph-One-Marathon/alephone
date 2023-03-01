@@ -66,13 +66,11 @@ public:
 	std::shared_ptr<SoundPlayer> GetSoundPlayer(short identifier, short source_identifier, bool sound_identifier_only = false) const;
 	void UpdateListener(world_location3d listener) { listener_location.Set(listener); }
 	const world_location3d GetListener() const { return listener_location.Get(); }
-	void SetDefaultVolume(float volume);
-	float GetComputedVolume(bool filtered = true) const { return default_volume * (filters_volume.empty() || !filtered ? 1 : filters_volume.front()); }
+	void SetMasterVolume(float volume);
+	float GetMasterVolume() const { return master_volume.load(); }
 	void ToggleDeviceMode(bool recording_device);
 	int GetFrequency() const { return audio_parameters.rate; }
 	void GetPlayBackAudio(uint8* data, int length);
-	void ApplyVolumeFilter(float volume_filter) { filters_volume.push(volume_filter); }
-	void RemoveVolumeFilter() { if(!filters_volume.empty()) filters_volume.pop(); }
 	bool Support_HRTF_Toggling() const;
 	bool Is_HRTF_Enabled() const;
 	bool IsBalanceRewindSound() const { return audio_parameters.balance_rewind; }
@@ -85,8 +83,7 @@ private:
 	ALCcontext* p_ALCContext = nullptr;
 	OpenALManager(AudioParameters parameters);
 	~OpenALManager();
-	std::queue<float> filters_volume;
-	std::atomic<float> default_volume;
+	std::atomic<float> master_volume;
 	bool process_audio_active = false;
 	AtomicStructure<world_location3d> listener_location = {};
 	void UpdateListener();

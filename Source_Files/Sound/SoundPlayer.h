@@ -27,7 +27,6 @@ struct SoundParameters {
 	float pitch = 1;
 	bool loop = false; //for now it will only be used by sound (musics work differently but should use this tbh)
 	bool local = true; //if false it will use source_location3d to position sound (3D sounds)
-	bool filterable = true; //for now volume only / if true, can be modified by global filters, otherwise is immune to that
 	uint16_t permutation = 0;
 	uint16_t obstruction_flags = 0;
 	sound_behavior behavior = _sound_is_normal;

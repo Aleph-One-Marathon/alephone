@@ -414,10 +414,10 @@ void Movie::AddFrame(FrameType ftype)
 	
 	int bytes = audiobuf.size();
     int frameSize = 2 * in_bps;
-    auto oldVol = OpenALManager::Get()->GetComputedVolume();
-    OpenALManager::Get()->SetDefaultVolume(OpenALManager::From_db(sound_preferences->video_export_volume_db));
+    auto oldVol = OpenALManager::Get()->GetMasterVolume();
+    OpenALManager::Get()->SetMasterVolume(OpenALManager::From_db(sound_preferences->video_export_volume_db));
     OpenALManager::Get()->GetPlayBackAudio(&audiobuf.front(), bytes / frameSize);
-    OpenALManager::Get()->SetDefaultVolume(oldVol);
+    OpenALManager::Get()->SetMasterVolume(oldVol);
 	
 	SDL_SemPost(encodeReady);
 }

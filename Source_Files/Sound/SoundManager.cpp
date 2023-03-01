@@ -230,7 +230,7 @@ bool SoundManager::AdjustVolumeUp(short sound_index)
 		{
 			parameters.volume_db = MAXIMUM_VOLUME_DB;
 		}
-		OpenALManager::Get()->SetDefaultVolume(OpenALManager::From_db(parameters.volume_db));
+		OpenALManager::Get()->SetMasterVolume(OpenALManager::From_db(parameters.volume_db));
 		PlaySound(sound_index, 0, NONE, true);
 		return true;
 	}
@@ -246,7 +246,7 @@ bool SoundManager::AdjustVolumeDown(short sound_index)
 		{
 			parameters.volume_db = MINIMUM_VOLUME_DB;
 		}
-		OpenALManager::Get()->SetDefaultVolume(OpenALManager::From_db(parameters.volume_db));
+		OpenALManager::Get()->SetMasterVolume(OpenALManager::From_db(parameters.volume_db));
 		PlaySound(sound_index, 0, NONE, true);
 		return true;
 	}
@@ -259,7 +259,7 @@ void SoundManager::TestVolume(float db, short sound_index)
 	{
 		if (db > MINIMUM_VOLUME_DB)
 		{
-			OpenALManager::Get()->SetDefaultVolume(OpenALManager::From_db(db));
+			OpenALManager::Get()->SetMasterVolume(OpenALManager::From_db(db));
 			PlaySound(sound_index, 0, NONE, true);
 		}
 	}	
