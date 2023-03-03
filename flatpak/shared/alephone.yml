@@ -9,8 +9,6 @@ config-opts:
   - --with-ffmpeg
   - --with-sndfile
   - --with-vorbis
-  - --with-speex
-  - --with-alsa
   - --with-curl
   - --with-zzip
   - --with-png
