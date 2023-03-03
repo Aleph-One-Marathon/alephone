@@ -153,45 +153,6 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile*, AVPacket*, SDL_ffmpegAudioFrame
 
 int SDL_ffmpegDecodeVideoFrame( SDL_ffmpegFile*, AVPacket*, SDL_ffmpegVideoFrame* );
 
-const SDL_ffmpegCodec SDL_ffmpegCodecAUTO =
-{
-    -1,
-    720, 576,
-    1, 25,
-    6000000,
-    -1, -1,
-    -1,
-    2, 48000,
-    192000,
-    -1, -1
-};
-
-const SDL_ffmpegCodec SDL_ffmpegCodecPALDVD =
-{
-    AV_CODEC_ID_MPEG2VIDEO,
-    720, 576,
-    1, 25,
-    6000000,
-    -1, -1,
-    AV_CODEC_ID_MP2,
-    2, 48000,
-    192000,
-    -1, -1
-};
-
-const SDL_ffmpegCodec SDL_ffmpegCodecPALDV =
-{
-    AV_CODEC_ID_DVVIDEO,
-    720, 576,
-    1, 25,
-    6553600,
-    -1, -1,
-    AV_CODEC_ID_DVAUDIO,
-    2, 48000,
-    256000,
-    -1, -1
-};
-
 SDL_ffmpegFile* SDL_ffmpegCreateFile()
 {
     /* create SDL_ffmpegFile pointer */

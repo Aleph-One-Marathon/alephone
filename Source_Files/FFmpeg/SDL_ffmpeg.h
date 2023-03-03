@@ -89,15 +89,6 @@ typedef struct
     int32_t audioQuality;
 } SDL_ffmpegCodec;
 
-/** predefined codec for PAL DVD */
-EXPORT extern const SDL_ffmpegCodec SDL_ffmpegCodecPALDVD;
-
-/** predefined codec for DV */
-EXPORT extern const SDL_ffmpegCodec SDL_ffmpegCodecPALDV;
-
-/** predefined codec based on extension of output file */
-EXPORT extern const SDL_ffmpegCodec SDL_ffmpegCodecAUTO;
-
 /** Struct to hold packet buffers */
 typedef struct SDL_ffmpegPacket {
     struct AVPacket *data;
