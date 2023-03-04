@@ -74,18 +74,19 @@ void OpenALManager::UpdateListener() {
 	ALfloat	v = std::sin(degreToRadian * yaw) * std::cos(degreToRadian * pitch);
 	ALfloat	w = std::sin(degreToRadian * pitch);
 
-	auto positionX = (float)(listener.point.x) / WORLD_ONE;
-	auto positionY = (float)(listener.point.y) / WORLD_ONE;
-	auto positionZ = (float)(listener.point.z) / WORLD_ONE;
-
 	//OpenAL uses the same coordinate system as OpenGL, so we have to swap Z <-> Y
-	ALfloat vectordirection[] = { u, w, v, 0, 1, 0 };
+	ALfloat vectorDirection[] = { u, w, v, 0, 1, 0 };
+
+	ALfloat position[] = { (float)(listener.point.x) / WORLD_ONE,
+						   (float)(listener.point.z) / WORLD_ONE,
+						   (float)(listener.point.y) / WORLD_ONE };
+
 	ALfloat velocity[] = { (float)listener.velocity.i / WORLD_ONE,
 						   (float)listener.velocity.k / WORLD_ONE,
 						   (float)listener.velocity.j / WORLD_ONE };
 
-	alListenerfv(AL_ORIENTATION, vectordirection);
-	alListener3f(AL_POSITION, positionX, positionZ, positionY);
+	alListenerfv(AL_ORIENTATION, vectorDirection);
+	alListenerfv(AL_POSITION, position);
 	alListenerfv(AL_VELOCITY, velocity);
 }
 
