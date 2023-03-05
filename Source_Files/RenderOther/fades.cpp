@@ -413,14 +413,17 @@ void explicit_start_fade(
 void stop_fade(
 	void)
 {
-	struct fade_definition *definition= get_fade_definition(fade->type);
-	// LP change: idiot-proofing
-	if (!definition) return;
-		
-	recalculate_and_display_color_table(fade->type, definition->final_transparency,
-		fade->original_color_table, fade->animated_color_table, false);
-		
-	SET_FADE_ACTIVE_STATUS(fade, false);
+	if (FADE_IS_ACTIVE(fade))
+	{
+		struct fade_definition* definition = get_fade_definition(fade->type);
+		// LP change: idiot-proofing
+		if (!definition) return;
+
+		recalculate_and_display_color_table(fade->type, definition->final_transparency,
+			fade->original_color_table, fade->animated_color_table, false);
+
+		SET_FADE_ACTIVE_STATUS(fade, false);
+	}
 }
 
 bool fade_finished(
