@@ -44,7 +44,7 @@ bool SoundHeader::UnpackStandardSystem7Header(BIStreamBE &header)
 	try 
 	{
 		bytes_per_frame = 1;
-		audio_format = _8_bit;
+		audio_format = AudioFormat::_8_bit;
 		stereo = false;
 		little_endian = false;
 		header.ignore(4); // sample pointer
@@ -96,8 +96,8 @@ bool SoundHeader::UnpackExtendedSystem7Header(BIStreamBE &header)
 		int16 sample_size;
 		header >> sample_size;
 
-		audio_format = sample_size == 16 ? _16_bit : _8_bit;
-		bytes_per_frame = (audio_format == _16_bit ? 2 : 1) * (stereo ? 2 : 1);
+		audio_format = sample_size == 16 ? AudioFormat::_16_bit : AudioFormat::_8_bit;
+		bytes_per_frame = (audio_format == AudioFormat::_16_bit ? 2 : 1) * (stereo ? 2 : 1);
 
 		length = num_frames * bytes_per_frame;
 		little_endian = false;
@@ -159,7 +159,7 @@ std::shared_ptr<SoundData> SoundHeader::LoadData(BIStreamBE& s)
 	{
 		s.read(reinterpret_cast<char*>(&(*p)[0]), length);
 
-		if (audio_format == _16_bit && (little_endian ^ PlatformIsLittleEndian())) {
+		if (audio_format == AudioFormat::_16_bit && (little_endian ^ PlatformIsLittleEndian())) {
 			byte_swap_memory(p->data(), _2byte, length / 2);
 		}
 	}

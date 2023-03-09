@@ -360,7 +360,15 @@ enum
 	MAXIMUM_SOUND_VOLUME= 1<<MAXIMUM_SOUND_VOLUME_BITS,
 };
 
-enum AudioFormat
+enum // sound sources
+{
+	_8bit_22k_source,
+	_16bit_22k_source,
+	
+	NUMBER_OF_SOUND_SOURCES
+};
+
+enum class AudioFormat
 {
 	_8_bit,
 	_16_bit,

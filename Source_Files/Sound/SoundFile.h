@@ -36,7 +36,7 @@ typedef std::vector<uint8> SoundData;
 class SoundInfo 
 {
 public:
-	SoundInfo() : audio_format(_8_bit),
+	SoundInfo() : audio_format(AudioFormat::_8_bit),
 		      stereo(false), 
 		      little_endian(false), 
 		      bytes_per_frame(1),

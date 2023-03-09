@@ -208,9 +208,9 @@ bool SoundManager::OpenSoundFile(FileSpecifier& File)
 		set_sounds_images_file(File);
 	}
 
-	sound_source = (parameters.flags & _16bit_sound_flag) ? _16_bit : _8_bit;
+	sound_source = (parameters.flags & _16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
 	if (sound_file->SourceCount() == 1)
-		sound_source = _8_bit;
+		sound_source = _8bit_22k_source;
 
 	return true;
 }
@@ -770,7 +770,7 @@ void SoundManager::SetStatus(bool active)
 
 				sounds->SetMaxSize(total_buffer_size);
 				
-				sound_source = (parameters.flags & _16bit_sound_flag) ? _16_bit : _8_bit;
+				sound_source = (parameters.flags & _16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
 
 				if (shell_options.nosound) return;
 
@@ -803,9 +803,9 @@ void SoundManager::SetStatus(bool active)
 SoundDefinition* SoundManager::GetSoundDefinition(short sound_index)
 {
 	SoundDefinition* sound_definition = sound_file->GetSoundDefinition(sound_source, sound_index);
-	if (sound_source == _16_bit && sound_definition && sound_definition->permutations == 0)
+	if (sound_source == _16bit_22k_source && sound_definition && sound_definition->permutations == 0)
 	{
-		sound_definition = sound_file->GetSoundDefinition(_8_bit, sound_index);
+		sound_definition = sound_file->GetSoundDefinition(_8bit_22k_source, sound_index);
 	}
 
 	return sound_definition;

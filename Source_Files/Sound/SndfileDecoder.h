@@ -35,7 +35,7 @@ public:
 	void Rewind();
 	void Close();
 
-	AudioFormat GetAudioFormat() { return _32_float; }
+	AudioFormat GetAudioFormat() { return AudioFormat::_32_float; }
 	bool IsStereo() { return (sfinfo.channels == 2); }
 	int BytesPerFrame() { return 4 * (IsStereo() ? 2 : 1); }
 	float Rate() { return (float) sfinfo.samplerate; }

@@ -70,12 +70,12 @@ private:
     virtual bool SetUpALSourceInit() const; //Init of the source parameters (AL), done when the source is assigned to the player
 
     const boost::unordered_map<std::pair<AudioFormat, bool>, int> mapping_audio_format_openal = {
-        {{_8_bit, false}, AL_FORMAT_MONO8},
-        {{_8_bit, true}, AL_FORMAT_STEREO8},
-        {{_16_bit, false}, AL_FORMAT_MONO16},
-        {{_16_bit, true}, AL_FORMAT_STEREO16},
-        {{_32_float, false}, AL_FORMAT_MONO_FLOAT32},
-        {{_32_float, true}, AL_FORMAT_STEREO_FLOAT32}
+        {{AudioFormat::_8_bit, false}, AL_FORMAT_MONO8},
+        {{AudioFormat::_8_bit, true}, AL_FORMAT_STEREO8},
+        {{AudioFormat::_16_bit, false}, AL_FORMAT_MONO16},
+        {{AudioFormat::_16_bit, true}, AL_FORMAT_STEREO16},
+        {{AudioFormat::_32_float, false}, AL_FORMAT_MONO_FLOAT32},
+        {{AudioFormat::_32_float, true}, AL_FORMAT_STEREO_FLOAT32}
     };
 
     friend class OpenALManager;
