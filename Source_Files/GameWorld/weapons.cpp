@@ -2516,7 +2516,7 @@ static bool handle_trigger_up(
 				weapon->triggers[which_trigger].state= _weapon_idle;
 				weapon->triggers[which_trigger].phase= IDLE_PHASE_COUNT;
 				weapon->triggers[which_trigger].sequence= 0;
-				SoundManager::instance()->StopSound(player->object_index, trigger_definition->charging_sound);
+				SoundManager::instance()->StopSound(player_index == current_player_index ? NONE : player->object_index, trigger_definition->charging_sound);
 			}
 		}
 	}
