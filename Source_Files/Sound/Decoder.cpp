@@ -23,12 +23,21 @@
 
 #include "Decoder.h"
 #include "SndfileDecoder.h"
+#include "FFmpegDecoder.h"
 #include <memory>
 
 using std::unique_ptr;
 
-StreamDecoder *StreamDecoder::Get(FileSpecifier& File)
+StreamDecoder* StreamDecoder::Get(FileSpecifier& File)
 {
+#ifdef HAVE_FFMPEG
+	{
+		unique_ptr<FFmpegDecoder> ffmpegDecoder(std::make_unique<FFmpegDecoder>());
+		if (ffmpegDecoder->Open(File))
+			return ffmpegDecoder.release();
+	}
+#endif
+
 	unique_ptr<SndfileDecoder> sndfileDecoder(std::make_unique<SndfileDecoder>());
 	if (sndfileDecoder->Open(File))
 		return sndfileDecoder.release();
@@ -36,7 +45,7 @@ StreamDecoder *StreamDecoder::Get(FileSpecifier& File)
 	return 0;
 }
 
-Decoder *Decoder::Get(FileSpecifier &File)
+Decoder* Decoder::Get(FileSpecifier& File)
 {
 	unique_ptr<SndfileDecoder> sndfileDecoder(std::make_unique<SndfileDecoder>());
 	if (sndfileDecoder->Open(File))

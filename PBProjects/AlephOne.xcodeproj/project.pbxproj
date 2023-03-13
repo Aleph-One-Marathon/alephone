@@ -128,6 +128,9 @@
 		2792861C170F92DD0005CD56 /* lctype.h in Headers */ = {isa = PBXBuildFile; fileRef = 2792861A170F92DD0005CD56 /* lctype.h */; };
 		2792861D170F92DD0005CD56 /* lctype.h in Headers */ = {isa = PBXBuildFile; fileRef = 2792861A170F92DD0005CD56 /* lctype.h */; };
 		2792861E170F92DD0005CD56 /* lctype.h in Headers */ = {isa = PBXBuildFile; fileRef = 2792861A170F92DD0005CD56 /* lctype.h */; };
+		279A462518286FA900F7BFDA /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E878F1173202F80010F485 /* FFmpegDecoder.cpp */; };
+		279A462618286FA900F7BFDA /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E878F1173202F80010F485 /* FFmpegDecoder.cpp */; };
+		279A462718286FAA00F7BFDA /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E878F1173202F80010F485 /* FFmpegDecoder.cpp */; };
 		27A6DABC1B9CE947003DA766 /* preference_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = AE2FDED109E9352B00A18ABC /* preference_dialogs.h */; };
 		27A6DABD1B9CE947003DA766 /* preference_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = AE2FDED109E9352B00A18ABC /* preference_dialogs.h */; };
 		27A6DABE1B9CE948003DA766 /* preference_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = AE2FDED109E9352B00A18ABC /* preference_dialogs.h */; };
@@ -140,6 +143,9 @@
 		27A6DAD21B9CE9A5003DA766 /* mytm.h in Headers */ = {isa = PBXBuildFile; fileRef = F522112D0136A4DD01000001 /* mytm.h */; };
 		27A6DAD31B9CE9A5003DA766 /* mytm.h in Headers */ = {isa = PBXBuildFile; fileRef = F522112D0136A4DD01000001 /* mytm.h */; };
 		27A6DAD41B9CE9A6003DA766 /* mytm.h in Headers */ = {isa = PBXBuildFile; fileRef = F522112D0136A4DD01000001 /* mytm.h */; };
+		27A6DB091B9CEA50003DA766 /* FFmpegDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E878F2173202F80010F485 /* FFmpegDecoder.h */; };
+		27A6DB0A1B9CEA51003DA766 /* FFmpegDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E878F2173202F80010F485 /* FFmpegDecoder.h */; };
+		27A6DB0B1B9CEA51003DA766 /* FFmpegDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E878F2173202F80010F485 /* FFmpegDecoder.h */; };
 		27A6DB161B9CEA66003DA766 /* Decoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F100B927C51009F881C /* Decoder.h */; };
 		27A6DB171B9CEA67003DA766 /* Decoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F100B927C51009F881C /* Decoder.h */; };
 		27A6DB181B9CEA67003DA766 /* Decoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F100B927C51009F881C /* Decoder.h */; };
@@ -175,6 +181,8 @@
 		27DC607010917F690062003A /* OGL_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27DC606E10917F690062003A /* OGL_Shader.cpp */; };
 		27DC607110917F690062003A /* OGL_Shader.h in Headers */ = {isa = PBXBuildFile; fileRef = 27DC606F10917F690062003A /* OGL_Shader.h */; };
 		27DC60C5109218800062003A /* vec3.h in Headers */ = {isa = PBXBuildFile; fileRef = 27DC60C4109218800062003A /* vec3.h */; };
+		27E878F3173202F80010F485 /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E878F1173202F80010F485 /* FFmpegDecoder.cpp */; };
+		27E878F4173202F80010F485 /* FFmpegDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E878F2173202F80010F485 /* FFmpegDecoder.h */; };
 		27ECF2991698DD7700BE9C35 /* Movie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27ECF2911698DD7700BE9C35 /* Movie.cpp */; };
 		27ECF29A1698DD7700BE9C35 /* Movie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27ECF2911698DD7700BE9C35 /* Movie.cpp */; };
 		27ECF29B1698DD7700BE9C35 /* Movie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27ECF2911698DD7700BE9C35 /* Movie.cpp */; };
@@ -1843,6 +1851,8 @@
 		27DC606E10917F690062003A /* OGL_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Shader.cpp; sourceTree = "<group>"; };
 		27DC606F10917F690062003A /* OGL_Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Shader.h; sourceTree = "<group>"; };
 		27DC60C4109218800062003A /* vec3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vec3.h; sourceTree = "<group>"; };
+		27E878F1173202F80010F485 /* FFmpegDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FFmpegDecoder.cpp; sourceTree = "<group>"; };
+		27E878F2173202F80010F485 /* FFmpegDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFmpegDecoder.h; sourceTree = "<group>"; };
 		27ECF2911698DD7700BE9C35 /* Movie.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Movie.cpp; path = ../Source_Files/FFmpeg/Movie.cpp; sourceTree = "<group>"; };
 		27ECF2921698DD7700BE9C35 /* Movie.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Movie.h; path = ../Source_Files/FFmpeg/Movie.h; sourceTree = "<group>"; };
 		27ECF2931698DD7700BE9C35 /* SDL_ffmpeg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_ffmpeg.c; path = ../Source_Files/FFmpeg/SDL_ffmpeg.c; sourceTree = "<group>"; };
@@ -3156,6 +3166,8 @@
 				AE61F16428615A21003128EE /* OpenALManager.cpp */,
 				AE61F16728615A22003128EE /* SoundPlayer.cpp */,
 				AE61F16828615A22003128EE /* StreamPlayer.cpp */,
+				27E878F1173202F80010F485 /* FFmpegDecoder.cpp */,
+				27E878F2173202F80010F485 /* FFmpegDecoder.h */,
 				AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */,
 				276BECEF1A846BC500AE52F4 /* ReplacementSounds.h */,
 				AE601F100B927C51009F881C /* Decoder.h */,
@@ -3282,6 +3294,7 @@
 				AE505B63141D45E600915344 /* WavefrontLoader.h in Headers */,
 				276BECFC1A846D2000AE52F4 /* network_dialog_widgets_sdl.h in Headers */,
 				AE505B64141D45E600915344 /* Dim3_Loader.h in Headers */,
+				27A6DB0A1B9CEA51003DA766 /* FFmpegDecoder.h in Headers */,
 				276BECF71A846CC800AE52F4 /* SW_Texture_Extras.h in Headers */,
 				AE505B65141D45E600915344 /* network_dialogs.h in Headers */,
 				AE505B66141D45E600915344 /* network_lookup_sdl.h in Headers */,
@@ -3493,6 +3506,7 @@
 				AEB4A10314296CAE00537AE7 /* WavefrontLoader.h in Headers */,
 				276BECFD1A846D2000AE52F4 /* network_dialog_widgets_sdl.h in Headers */,
 				AEB4A10414296CAE00537AE7 /* Dim3_Loader.h in Headers */,
+				27A6DB0B1B9CEA51003DA766 /* FFmpegDecoder.h in Headers */,
 				276BECF81A846CC800AE52F4 /* SW_Texture_Extras.h in Headers */,
 				AEB4A10514296CAE00537AE7 /* network_dialogs.h in Headers */,
 				AEB4A10614296CAE00537AE7 /* network_lookup_sdl.h in Headers */,
@@ -3871,6 +3885,7 @@
 				27ECF29D1698DD7700BE9C35 /* Movie.h in Headers */,
 				27ECF2A51698DD7700BE9C35 /* SDL_ffmpeg.h in Headers */,
 				2792861B170F92DD0005CD56 /* lctype.h in Headers */,
+				27E878F4173202F80010F485 /* FFmpegDecoder.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3915,6 +3930,7 @@
 				AEFD861113EB84CF00C1E687 /* WavefrontLoader.h in Headers */,
 				276BECFB1A846D2000AE52F4 /* network_dialog_widgets_sdl.h in Headers */,
 				AEFD861213EB84CF00C1E687 /* Dim3_Loader.h in Headers */,
+				27A6DB091B9CEA50003DA766 /* FFmpegDecoder.h in Headers */,
 				276BECF61A846CC800AE52F4 /* SW_Texture_Extras.h in Headers */,
 				AEFD861313EB84CF00C1E687 /* network_dialogs.h in Headers */,
 				AEFD861413EB84CF00C1E687 /* network_lookup_sdl.h in Headers */,
@@ -4471,6 +4487,7 @@
 				AE505C49141D45E600915344 /* media.cpp in Sources */,
 				AE505C4A141D45E600915344 /* monsters.cpp in Sources */,
 				AE505C4B141D45E600915344 /* pathfinding.cpp in Sources */,
+				279A462618286FA900F7BFDA /* FFmpegDecoder.cpp in Sources */,
 				AE505C4C141D45E600915344 /* physics.cpp in Sources */,
 				AE505C4D141D45E600915344 /* placement.cpp in Sources */,
 				AE780E122533A4C7002184B5 /* lua_ephemera.cpp in Sources */,
@@ -4694,6 +4711,7 @@
 				AEB4A1EA14296CAE00537AE7 /* media.cpp in Sources */,
 				AEB4A1EB14296CAE00537AE7 /* monsters.cpp in Sources */,
 				AEB4A1EC14296CAE00537AE7 /* pathfinding.cpp in Sources */,
+				279A462718286FAA00F7BFDA /* FFmpegDecoder.cpp in Sources */,
 				AEB4A1ED14296CAE00537AE7 /* physics.cpp in Sources */,
 				AEB4A1EE14296CAE00537AE7 /* placement.cpp in Sources */,
 				AE780E132533A4C7002184B5 /* lua_ephemera.cpp in Sources */,
@@ -5073,6 +5091,7 @@
 				27ECF2A11698DD7700BE9C35 /* SDL_ffmpeg.c in Sources */,
 				27928612170F92D20005CD56 /* lbitlib.c in Sources */,
 				27928616170F92D20005CD56 /* lctype.c in Sources */,
+				27E878F3173202F80010F485 /* FFmpegDecoder.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5140,6 +5159,7 @@
 				AEFD86F613EB84CF00C1E687 /* media.cpp in Sources */,
 				AEFD86F713EB84CF00C1E687 /* monsters.cpp in Sources */,
 				AEFD86F813EB84CF00C1E687 /* pathfinding.cpp in Sources */,
+				279A462518286FA900F7BFDA /* FFmpegDecoder.cpp in Sources */,
 				AEFD86F913EB84CF00C1E687 /* physics.cpp in Sources */,
 				AEFD86FA13EB84CF00C1E687 /* placement.cpp in Sources */,
 				AE780E112533A4C7002184B5 /* lua_ephemera.cpp in Sources */,

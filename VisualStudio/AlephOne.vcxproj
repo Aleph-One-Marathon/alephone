@@ -579,6 +579,7 @@
     <ClCompile Include="..\Source_Files\shell_options.cpp" />
     <ClCompile Include="..\Source_Files\Sound\AudioPlayer.cpp" />
     <ClCompile Include="..\Source_Files\Sound\Decoder.cpp" />
+    <ClCompile Include="..\Source_Files\Sound\FFmpegDecoder.cpp" />
     <ClCompile Include="..\Source_Files\Sound\Music.cpp" />
     <ClCompile Include="..\Source_Files\Sound\MusicPlayer.cpp" />
     <ClCompile Include="..\Source_Files\Sound\OpenALManager.cpp" />
@@ -805,6 +806,7 @@
     <ClInclude Include="..\Source_Files\shell_options.h" />
     <ClInclude Include="..\Source_Files\Sound\AudioPlayer.h" />
     <ClInclude Include="..\Source_Files\Sound\Decoder.h" />
+    <ClInclude Include="..\Source_Files\Sound\FFmpegDecoder.h" />
     <ClInclude Include="..\Source_Files\Sound\Music.h" />
     <ClInclude Include="..\Source_Files\Sound\MusicPlayer.h" />
     <ClInclude Include="..\Source_Files\Sound\OpenALManager.h" />

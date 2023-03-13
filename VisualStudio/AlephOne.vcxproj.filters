@@ -631,6 +631,9 @@
     <ClCompile Include="..\Source_Files\Sound\Decoder.cpp">
       <Filter>Sound\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source_Files\Sound\FFmpegDecoder.cpp">
+      <Filter>Sound\Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\Source_Files\Sound\Music.cpp">
       <Filter>Sound\Source Files</Filter>
     </ClCompile>
@@ -1306,6 +1309,9 @@
       <Filter>RenderOther\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source_Files\Sound\Decoder.h">
+      <Filter>Sound\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source_Files\Sound\FFmpegDecoder.h">
       <Filter>Sound\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source_Files\Sound\Music.h">
