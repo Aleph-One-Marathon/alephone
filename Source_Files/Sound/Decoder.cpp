@@ -22,73 +22,34 @@
 */
 
 #include "Decoder.h"
-#include "BasicIFFDecoder.h"
-#include "MADDecoder.h"
 #include "SndfileDecoder.h"
-#include "VorbisDecoder.h"
 #include "FFmpegDecoder.h"
 #include <memory>
 
 using std::unique_ptr;
 
-StreamDecoder *StreamDecoder::Get(FileSpecifier& File)
+StreamDecoder* StreamDecoder::Get(FileSpecifier& File)
 {
 #ifdef HAVE_FFMPEG
 	{
-		unique_ptr<FFmpegDecoder> ffmpegDecoder(new FFmpegDecoder);
+		unique_ptr<FFmpegDecoder> ffmpegDecoder(std::make_unique<FFmpegDecoder>());
 		if (ffmpegDecoder->Open(File))
 			return ffmpegDecoder.release();
 	}
 #endif
 
-#ifdef HAVE_SNDFILE
-	{ 
-		unique_ptr<SndfileDecoder> sndfileDecoder(new SndfileDecoder);
-		if (sndfileDecoder->Open(File))
-			return sndfileDecoder.release();
-	}
-#else
-	{
-		unique_ptr<BasicIFFDecoder> iffDecoder(new BasicIFFDecoder);
-		if (iffDecoder->Open(File))
-			return iffDecoder.release();
-	}
-#endif
-
-#ifdef HAVE_VORBISFILE
-	{
-		unique_ptr<VorbisDecoder> vorbisDecoder(new VorbisDecoder);
-		if (vorbisDecoder->Open(File))
-			return vorbisDecoder.release();
-	}
-#endif
-
-#ifdef HAVE_MAD
-	{
-		unique_ptr<MADDecoder> madDecoder(new MADDecoder);
-		if (madDecoder->Open(File))
-			return madDecoder.release();
-	}
-#endif
+	unique_ptr<SndfileDecoder> sndfileDecoder(std::make_unique<SndfileDecoder>());
+	if (sndfileDecoder->Open(File))
+		return sndfileDecoder.release();
 
 	return 0;
 }
 
-Decoder *Decoder::Get(FileSpecifier &File)
+Decoder* Decoder::Get(FileSpecifier& File)
 {
-#ifdef HAVE_SNDFILE
-	{
-		unique_ptr<SndfileDecoder> sndfileDecoder(new SndfileDecoder);
-		if (sndfileDecoder->Open(File))
-			return sndfileDecoder.release();
-	}
-#else
-	{
-		unique_ptr<BasicIFFDecoder> iffDecoder(new BasicIFFDecoder);
-		if (iffDecoder->Open(File))
-			return iffDecoder.release();
-	}
-#endif
-    
-    return 0;
+	unique_ptr<SndfileDecoder> sndfileDecoder(std::make_unique<SndfileDecoder>());
+	if (sndfileDecoder->Open(File))
+		return sndfileDecoder.release();
+
+	return 0;
 }

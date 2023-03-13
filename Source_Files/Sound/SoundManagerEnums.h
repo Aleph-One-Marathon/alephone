@@ -368,6 +368,13 @@ enum // sound sources
 	NUMBER_OF_SOUND_SOURCES
 };
 
+enum class AudioFormat
+{
+	_8_bit,
+	_16_bit,
+	_32_float
+};
+
 enum // initialization flags (some of these are used by the prefs, which fixes them)
 {
 	_stereo_flag= 0x0001, /* play sounds in stereo [prefs] */

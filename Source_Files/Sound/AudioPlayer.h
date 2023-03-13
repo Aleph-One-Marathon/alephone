@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <unordered_map>
 #include <boost/lockfree/spsc_queue.hpp>
+#include <boost/unordered/unordered_map.hpp>
 
 template <typename T>
 struct AtomicStructure {
@@ -67,9 +68,18 @@ private:
     bool AssignSource();
     virtual bool SetUpALSourceIdle() const; //Update of the source parameters (AL), done everytime the player is processed in the queue
     virtual bool SetUpALSourceInit() const; //Init of the source parameters (AL), done when the source is assigned to the player
-    int GetCorrespondingFormat(bool stereo, bool isSixteenBit) const;
+
+    const boost::unordered_map<std::pair<AudioFormat, bool>, int> mapping_audio_format_openal = {
+        {{AudioFormat::_8_bit, false}, AL_FORMAT_MONO8},
+        {{AudioFormat::_8_bit, true}, AL_FORMAT_STEREO8},
+        {{AudioFormat::_16_bit, false}, AL_FORMAT_MONO16},
+        {{AudioFormat::_16_bit, true}, AL_FORMAT_STEREO16},
+        {{AudioFormat::_32_float, false}, AL_FORMAT_MONO_FLOAT32},
+        {{AudioFormat::_32_float, true}, AL_FORMAT_STEREO_FLOAT32}
+    };
 
     friend class OpenALManager;
+
 public:
     void AskStop() { stop_signal = true; }
     bool IsActive() const { return is_active.load(); }
@@ -79,7 +89,7 @@ public:
     virtual short GetSourceIdentifier() const { return NONE; }
     virtual float GetPriority() const = 0;
 protected:
-    AudioPlayer(int rate, bool stereo, bool sixteen_bit);
+    AudioPlayer(int rate, bool stereo, AudioFormat audioFormat);
     void UnqueueBuffers();
     void FillBuffers();
     virtual int GetNextData(uint8* data, int length) = 0;
@@ -91,7 +101,7 @@ protected:
     std::atomic_bool is_sync_with_al_parameters = { false };
     std::atomic<float> volume = { 1 };
     int rate = 0;
-    ALenum format = 0; //Mono 8-16 or stereo 8-16
+    ALenum format = 0; //Mono 8-16-32f or stereo 8-16-32f
     std::unique_ptr<AudioSource> audio_source;
     virtual void Rewind();
 };

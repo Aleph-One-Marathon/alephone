@@ -3,9 +3,9 @@
 #include "Movie.h"
 #include <array>
 
-AudioPlayer::AudioPlayer(int rate, bool stereo, bool sixteen_bit) {
+AudioPlayer::AudioPlayer(int rate, bool stereo, AudioFormat audioFormat) {
 	this->rate = rate;
-	format = GetCorrespondingFormat(stereo, sixteen_bit);
+	format = mapping_audio_format_openal.at({ audioFormat, stereo });
 }
 
 bool AudioPlayer::AssignSource() {
@@ -114,12 +114,6 @@ void AudioPlayer::SetVolume(float volume) {
 	if (volume == this->volume) return;
 	this->volume = volume;
 	is_sync_with_al_parameters = false;
-}
-
-//Figure out the OpenAL format for formats we are currently supporting
-int AudioPlayer::GetCorrespondingFormat(bool stereo, bool isSixteenBit) const {
-	return stereo ? isSixteenBit ? AL_FORMAT_STEREO16 : AL_FORMAT_STEREO8 :
-		            isSixteenBit ? AL_FORMAT_MONO16 : AL_FORMAT_MONO8;
 }
 
 bool AudioPlayer::SetUpALSourceIdle() const {

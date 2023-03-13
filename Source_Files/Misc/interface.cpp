@@ -3169,7 +3169,7 @@ void show_movie(short index)
 			}
 			
 			if (!movie_audio_player || !movie_audio_player->IsActive()) {
-				movie_audio_player = OpenALManager::Get()->PlayStream(movie_audio_callback, specs.channels * specs.samples * 2, specs.freq, specs.channels == 2, true);
+				movie_audio_player = OpenALManager::Get()->PlayStream(movie_audio_callback, specs.channels * specs.samples * 2, specs.freq, specs.channels == 2, AudioFormat::_32_float);
 			}
 			if (vframe)
 			{

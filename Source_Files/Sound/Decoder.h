@@ -26,6 +26,7 @@
 
 #include "cseries.h"
 #include "FileHandler.h"
+#include "SoundManagerEnums.h"
 
 class StreamDecoder
 {
@@ -35,9 +36,8 @@ public:
 	virtual void Rewind() = 0;
 	virtual void Close() = 0;
 
-	virtual bool IsSixteenBit() = 0;
+	virtual AudioFormat GetAudioFormat() = 0;
 	virtual bool IsStereo() = 0;
-	virtual bool IsSigned() = 0;
 	virtual int BytesPerFrame() = 0;
 	virtual float Rate() = 0;
 	virtual bool IsLittleEndian() = 0;

@@ -177,9 +177,9 @@ std::shared_ptr<MusicPlayer> OpenALManager::PlayMusic(StreamDecoder* decoder) {
 }
 
 //Used for video playback
-std::shared_ptr<StreamPlayer> OpenALManager::PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, bool sixteen_bit) {
+std::shared_ptr<StreamPlayer> OpenALManager::PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, AudioFormat audioFormat) {
 	if (!process_audio_active) return std::shared_ptr<StreamPlayer>();
-	auto streamPlayer = std::make_shared<StreamPlayer>(callback, length, rate, stereo, sixteen_bit);
+	auto streamPlayer = std::make_shared<StreamPlayer>(callback, length, rate, stereo, audioFormat);
 	QueueAudio(streamPlayer);
 	return streamPlayer;
 }

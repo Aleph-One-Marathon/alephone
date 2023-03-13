@@ -26,6 +26,7 @@ SOUND_DEFINITIONS.H
 #include "AStream.h"
 #include "BStream.h"
 #include "FileHandler.h"
+#include "SoundManagerEnums.h"
 #include <memory>
 #include <vector>
 #include <map>
@@ -35,9 +36,8 @@ typedef std::vector<uint8> SoundData;
 class SoundInfo 
 {
 public:
-	SoundInfo() : sixteen_bit(false), 
+	SoundInfo() : audio_format(AudioFormat::_8_bit),
 		      stereo(false), 
-		      signed_8bit(false), 
 		      little_endian(false), 
 		      bytes_per_frame(1),
 		      loop_start(0),
@@ -45,9 +45,8 @@ public:
 		      rate(0),
 		      length(0) { }
 	
-	bool sixteen_bit;
+	AudioFormat audio_format;
 	bool stereo;
-	bool signed_8bit;
 	bool little_endian;
 	int bytes_per_frame;
 	int32 loop_start;

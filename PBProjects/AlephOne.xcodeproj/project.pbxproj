@@ -146,26 +146,14 @@
 		27A6DB091B9CEA50003DA766 /* FFmpegDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E878F2173202F80010F485 /* FFmpegDecoder.h */; };
 		27A6DB0A1B9CEA51003DA766 /* FFmpegDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E878F2173202F80010F485 /* FFmpegDecoder.h */; };
 		27A6DB0B1B9CEA51003DA766 /* FFmpegDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E878F2173202F80010F485 /* FFmpegDecoder.h */; };
-		27A6DB0F1B9CEA61003DA766 /* BasicIFFDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F0F0B927C51009F881C /* BasicIFFDecoder.h */; };
-		27A6DB101B9CEA61003DA766 /* BasicIFFDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F0F0B927C51009F881C /* BasicIFFDecoder.h */; };
-		27A6DB111B9CEA62003DA766 /* BasicIFFDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F0F0B927C51009F881C /* BasicIFFDecoder.h */; };
-		27A6DB121B9CEA62003DA766 /* BasicIFFDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F0F0B927C51009F881C /* BasicIFFDecoder.h */; };
 		27A6DB161B9CEA66003DA766 /* Decoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F100B927C51009F881C /* Decoder.h */; };
 		27A6DB171B9CEA67003DA766 /* Decoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F100B927C51009F881C /* Decoder.h */; };
 		27A6DB181B9CEA67003DA766 /* Decoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F100B927C51009F881C /* Decoder.h */; };
 		27A6DB191B9CEA68003DA766 /* Decoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F100B927C51009F881C /* Decoder.h */; };
-		27A6DB1D1B9CEA6B003DA766 /* MADDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F110B927C51009F881C /* MADDecoder.h */; };
-		27A6DB1E1B9CEA6C003DA766 /* MADDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F110B927C51009F881C /* MADDecoder.h */; };
-		27A6DB1F1B9CEA6C003DA766 /* MADDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F110B927C51009F881C /* MADDecoder.h */; };
-		27A6DB201B9CEA6D003DA766 /* MADDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F110B927C51009F881C /* MADDecoder.h */; };
 		27A6DB241B9CEA71003DA766 /* SndfileDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F120B927C51009F881C /* SndfileDecoder.h */; };
 		27A6DB251B9CEA71003DA766 /* SndfileDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F120B927C51009F881C /* SndfileDecoder.h */; };
 		27A6DB261B9CEA72003DA766 /* SndfileDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F120B927C51009F881C /* SndfileDecoder.h */; };
 		27A6DB271B9CEA72003DA766 /* SndfileDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F120B927C51009F881C /* SndfileDecoder.h */; };
-		27A6DB2B1B9CEA76003DA766 /* VorbisDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F130B927C51009F881C /* VorbisDecoder.h */; };
-		27A6DB2C1B9CEA76003DA766 /* VorbisDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F130B927C51009F881C /* VorbisDecoder.h */; };
-		27A6DB2D1B9CEA77003DA766 /* VorbisDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F130B927C51009F881C /* VorbisDecoder.h */; };
-		27A6DB2E1B9CEA78003DA766 /* VorbisDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F130B927C51009F881C /* VorbisDecoder.h */; };
 		27A6DB321B9CEAA3003DA766 /* IMG_savepng.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF1AC1410E05826007EE0D5 /* IMG_savepng.h */; };
 		27A6DB331B9CEAA4003DA766 /* IMG_savepng.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF1AC1410E05826007EE0D5 /* IMG_savepng.h */; };
 		27A6DB341B9CEAA4003DA766 /* IMG_savepng.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF1AC1410E05826007EE0D5 /* IMG_savepng.h */; };
@@ -598,11 +586,8 @@
 		AE505CAE141D45E600915344 /* Music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E650B878534009CFF2D /* Music.cpp */; };
 		AE505CAF141D45E600915344 /* SoundFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E670B878534009CFF2D /* SoundFile.cpp */; };
 		AE505CB0141D45E600915344 /* SoundManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E690B878534009CFF2D /* SoundManager.cpp */; };
-		AE505CB1141D45E600915344 /* BasicIFFDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F050B927C25009F881C /* BasicIFFDecoder.cpp */; };
 		AE505CB2141D45E600915344 /* Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F060B927C25009F881C /* Decoder.cpp */; };
-		AE505CB3141D45E600915344 /* MADDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F070B927C25009F881C /* MADDecoder.cpp */; };
 		AE505CB4141D45E600915344 /* SndfileDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F080B927C25009F881C /* SndfileDecoder.cpp */; };
-		AE505CB5141D45E600915344 /* VorbisDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F090B927C25009F881C /* VorbisDecoder.cpp */; };
 		AE505CB6141D45E600915344 /* ReplacementSounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */; };
 		AE505CB8141D45E600915344 /* lapi.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21800BFF67B700CE63EC /* lapi.c */; };
 		AE505CB9141D45E600915344 /* lauxlib.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21810BFF67B700CE63EC /* lauxlib.c */; };
@@ -660,11 +645,8 @@
 		AE505D16141D46B100915344 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AE505D14141D46B100915344 /* InfoPlist.strings */; };
 		AE505D21141D47BF00915344 /* Marathon 2.icns in Resources */ = {isa = PBXBuildFile; fileRef = AE505D20141D47BF00915344 /* Marathon 2.icns */; };
 		AE5154600D46E84A00506B58 /* lua_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE51545D0D46E84A00506B58 /* lua_map.cpp */; };
-		AE601F0A0B927C25009F881C /* BasicIFFDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F050B927C25009F881C /* BasicIFFDecoder.cpp */; };
 		AE601F0B0B927C25009F881C /* Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F060B927C25009F881C /* Decoder.cpp */; };
-		AE601F0C0B927C25009F881C /* MADDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F070B927C25009F881C /* MADDecoder.cpp */; };
 		AE601F0D0B927C25009F881C /* SndfileDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F080B927C25009F881C /* SndfileDecoder.cpp */; };
-		AE601F0E0B927C25009F881C /* VorbisDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F090B927C25009F881C /* VorbisDecoder.cpp */; };
 		AE61F16928615A22003128EE /* OpenALManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16428615A21003128EE /* OpenALManager.cpp */; };
 		AE61F16A28615A22003128EE /* OpenALManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16428615A21003128EE /* OpenALManager.cpp */; };
 		AE61F16B28615A22003128EE /* OpenALManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16428615A21003128EE /* OpenALManager.cpp */; };
@@ -1076,11 +1058,8 @@
 		AEB4A24F14296CAE00537AE7 /* Music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E650B878534009CFF2D /* Music.cpp */; };
 		AEB4A25014296CAE00537AE7 /* SoundFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E670B878534009CFF2D /* SoundFile.cpp */; };
 		AEB4A25114296CAE00537AE7 /* SoundManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E690B878534009CFF2D /* SoundManager.cpp */; };
-		AEB4A25214296CAE00537AE7 /* BasicIFFDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F050B927C25009F881C /* BasicIFFDecoder.cpp */; };
 		AEB4A25314296CAE00537AE7 /* Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F060B927C25009F881C /* Decoder.cpp */; };
-		AEB4A25414296CAE00537AE7 /* MADDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F070B927C25009F881C /* MADDecoder.cpp */; };
 		AEB4A25514296CAE00537AE7 /* SndfileDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F080B927C25009F881C /* SndfileDecoder.cpp */; };
-		AEB4A25614296CAE00537AE7 /* VorbisDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F090B927C25009F881C /* VorbisDecoder.cpp */; };
 		AEB4A25714296CAE00537AE7 /* ReplacementSounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */; };
 		AEB4A25914296CAE00537AE7 /* lapi.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21800BFF67B700CE63EC /* lapi.c */; };
 		AEB4A25A14296CAE00537AE7 /* lauxlib.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21810BFF67B700CE63EC /* lauxlib.c */; };
@@ -1748,11 +1727,8 @@
 		AEFD875B13EB84CF00C1E687 /* Music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E650B878534009CFF2D /* Music.cpp */; };
 		AEFD875C13EB84CF00C1E687 /* SoundFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E670B878534009CFF2D /* SoundFile.cpp */; };
 		AEFD875D13EB84CF00C1E687 /* SoundManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E690B878534009CFF2D /* SoundManager.cpp */; };
-		AEFD875E13EB84CF00C1E687 /* BasicIFFDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F050B927C25009F881C /* BasicIFFDecoder.cpp */; };
 		AEFD875F13EB84CF00C1E687 /* Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F060B927C25009F881C /* Decoder.cpp */; };
-		AEFD876013EB84CF00C1E687 /* MADDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F070B927C25009F881C /* MADDecoder.cpp */; };
 		AEFD876113EB84CF00C1E687 /* SndfileDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F080B927C25009F881C /* SndfileDecoder.cpp */; };
-		AEFD876213EB84CF00C1E687 /* VorbisDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F090B927C25009F881C /* VorbisDecoder.cpp */; };
 		AEFD876313EB84CF00C1E687 /* ReplacementSounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */; };
 		AEFD876513EB84CF00C1E687 /* lapi.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21800BFF67B700CE63EC /* lapi.c */; };
 		AEFD876613EB84CF00C1E687 /* lauxlib.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21810BFF67B700CE63EC /* lauxlib.c */; };
@@ -1941,16 +1917,10 @@
 		AE51545F0D46E84A00506B58 /* lua_templates.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_templates.h; sourceTree = "<group>"; };
 		AE5604DD086F6DF100D9797C /* network_capabilities.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network_capabilities.cpp; path = ../Source_Files/Network/network_capabilities.cpp; sourceTree = SOURCE_ROOT; };
 		AE5604E0086F6E0D00D9797C /* network_capabilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = network_capabilities.h; path = ../Source_Files/Network/network_capabilities.h; sourceTree = SOURCE_ROOT; };
-		AE601F050B927C25009F881C /* BasicIFFDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BasicIFFDecoder.cpp; sourceTree = "<group>"; };
 		AE601F060B927C25009F881C /* Decoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Decoder.cpp; sourceTree = "<group>"; };
-		AE601F070B927C25009F881C /* MADDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MADDecoder.cpp; sourceTree = "<group>"; };
 		AE601F080B927C25009F881C /* SndfileDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SndfileDecoder.cpp; sourceTree = "<group>"; };
-		AE601F090B927C25009F881C /* VorbisDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VorbisDecoder.cpp; sourceTree = "<group>"; };
-		AE601F0F0B927C51009F881C /* BasicIFFDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BasicIFFDecoder.h; sourceTree = "<group>"; };
 		AE601F100B927C51009F881C /* Decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Decoder.h; sourceTree = "<group>"; };
-		AE601F110B927C51009F881C /* MADDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MADDecoder.h; sourceTree = "<group>"; };
 		AE601F120B927C51009F881C /* SndfileDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SndfileDecoder.h; sourceTree = "<group>"; };
-		AE601F130B927C51009F881C /* VorbisDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VorbisDecoder.h; sourceTree = "<group>"; };
 		AE61F16428615A21003128EE /* OpenALManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OpenALManager.cpp; sourceTree = "<group>"; };
 		AE61F16528615A22003128EE /* MusicPlayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MusicPlayer.cpp; sourceTree = "<group>"; };
 		AE61F16628615A22003128EE /* AudioPlayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AudioPlayer.cpp; sourceTree = "<group>"; };
@@ -3200,16 +3170,10 @@
 				27E878F2173202F80010F485 /* FFmpegDecoder.h */,
 				AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */,
 				276BECEF1A846BC500AE52F4 /* ReplacementSounds.h */,
-				AE601F0F0B927C51009F881C /* BasicIFFDecoder.h */,
 				AE601F100B927C51009F881C /* Decoder.h */,
-				AE601F110B927C51009F881C /* MADDecoder.h */,
 				AE601F120B927C51009F881C /* SndfileDecoder.h */,
-				AE601F130B927C51009F881C /* VorbisDecoder.h */,
-				AE601F050B927C25009F881C /* BasicIFFDecoder.cpp */,
 				AE601F060B927C25009F881C /* Decoder.cpp */,
-				AE601F070B927C25009F881C /* MADDecoder.cpp */,
 				AE601F080B927C25009F881C /* SndfileDecoder.cpp */,
-				AE601F090B927C25009F881C /* VorbisDecoder.cpp */,
 				AE626E650B878534009CFF2D /* Music.cpp */,
 				AE626E660B878534009CFF2D /* Music.h */,
 				AE626E670B878534009CFF2D /* SoundFile.cpp */,
@@ -3430,7 +3394,6 @@
 				276BED161A846FD900AE52F4 /* CourierPrimeItalic.h in Headers */,
 				AE505BB6141D45E600915344 /* TextLayoutHelper.h in Headers */,
 				AE505BB7141D45E600915344 /* TextStrings.h in Headers */,
-				27A6DB2D1B9CEA77003DA766 /* VorbisDecoder.h in Headers */,
 				AE505BB8141D45E600915344 /* ViewControl.h in Headers */,
 				AE505BB9141D45E600915344 /* song_definitions.h in Headers */,
 				27A6DB421B9CEB47003DA766 /* OGL_Headers.h in Headers */,
@@ -3451,7 +3414,6 @@
 				AE505BD0141D45E600915344 /* AStream.h in Headers */,
 				AE505BD1141D45E600915344 /* TickBasedCircularQueue.h in Headers */,
 				AE505BD2141D45E600915344 /* WindowedNthElementFinder.h in Headers */,
-				27A6DB1F1B9CEA6C003DA766 /* MADDecoder.h in Headers */,
 				AE505BD4141D45E600915344 /* thread_priority_sdl.h in Headers */,
 				AE505BD6141D45E600915344 /* network_data_formats.h in Headers */,
 				27EFC4BA1A7C935500A95592 /* QuickSave.h in Headers */,
@@ -3459,7 +3421,6 @@
 				AE505BD9141D45E600915344 /* SSLP_API.h in Headers */,
 				AE505BDA141D45E600915344 /* SSLP_Protocol.h in Headers */,
 				AE505BDB141D45E600915344 /* CircularByteBuffer.h in Headers */,
-				27A6DB111B9CEA62003DA766 /* BasicIFFDecoder.h in Headers */,
 				AE505BDC141D45E600915344 /* metaserver_dialogs.h in Headers */,
 				AE505BDD141D45E600915344 /* metaserver_messages.h in Headers */,
 				AE505BDE141D45E600915344 /* network_metaserver.h in Headers */,
@@ -3645,7 +3606,6 @@
 				276BED171A846FD900AE52F4 /* CourierPrimeItalic.h in Headers */,
 				AEB4A15614296CAE00537AE7 /* TextLayoutHelper.h in Headers */,
 				AEB4A15714296CAE00537AE7 /* TextStrings.h in Headers */,
-				27A6DB2E1B9CEA78003DA766 /* VorbisDecoder.h in Headers */,
 				AEB4A15814296CAE00537AE7 /* ViewControl.h in Headers */,
 				AEB4A15914296CAE00537AE7 /* song_definitions.h in Headers */,
 				27A6DB431B9CEB48003DA766 /* OGL_Headers.h in Headers */,
@@ -3666,7 +3626,6 @@
 				AEB4A17014296CAE00537AE7 /* AStream.h in Headers */,
 				AEB4A17114296CAE00537AE7 /* TickBasedCircularQueue.h in Headers */,
 				AEB4A17214296CAE00537AE7 /* WindowedNthElementFinder.h in Headers */,
-				27A6DB201B9CEA6D003DA766 /* MADDecoder.h in Headers */,
 				AEB4A17414296CAE00537AE7 /* thread_priority_sdl.h in Headers */,
 				AEB4A17614296CAE00537AE7 /* network_data_formats.h in Headers */,
 				27EFC4BB1A7C935600A95592 /* QuickSave.h in Headers */,
@@ -3674,7 +3633,6 @@
 				AEB4A17914296CAE00537AE7 /* SSLP_API.h in Headers */,
 				AEB4A17A14296CAE00537AE7 /* SSLP_Protocol.h in Headers */,
 				AEB4A17B14296CAE00537AE7 /* CircularByteBuffer.h in Headers */,
-				27A6DB121B9CEA62003DA766 /* BasicIFFDecoder.h in Headers */,
 				AEB4A17C14296CAE00537AE7 /* metaserver_dialogs.h in Headers */,
 				AEB4A17D14296CAE00537AE7 /* metaserver_messages.h in Headers */,
 				AEB4A17E14296CAE00537AE7 /* network_metaserver.h in Headers */,
@@ -3856,7 +3814,6 @@
 				AEC3C78809AD68AC003258E4 /* screen_definitions.h in Headers */,
 				AEC3C78909AD68AC003258E4 /* screen_drawing.h in Headers */,
 				AEC3C78B09AD68AC003258E4 /* screen_shared.h in Headers */,
-				27A6DB2B1B9CEA76003DA766 /* VorbisDecoder.h in Headers */,
 				AEC3C78C09AD68AC003258E4 /* sdl_fonts.h in Headers */,
 				AEC3C78D09AD68AC003258E4 /* TextLayoutHelper.h in Headers */,
 				27A6DB401B9CEB46003DA766 /* OGL_Headers.h in Headers */,
@@ -3878,7 +3835,6 @@
 				AEC3C7A709AD68AC003258E4 /* NetworkGameProtocol.h in Headers */,
 				AEC3C7A809AD68AC003258E4 /* RingGameProtocol.h in Headers */,
 				AEC3C7A909AD68AC003258E4 /* StarGameProtocol.h in Headers */,
-				27A6DB1D1B9CEA6B003DA766 /* MADDecoder.h in Headers */,
 				AEC3C7AA09AD68AC003258E4 /* AStream.h in Headers */,
 				AEC3C7AB09AD68AC003258E4 /* TickBasedCircularQueue.h in Headers */,
 				AEC3C7AC09AD68AC003258E4 /* WindowedNthElementFinder.h in Headers */,
@@ -3887,7 +3843,6 @@
 				276BED311A8470A900AE52F4 /* PlayerImage_sdl.h in Headers */,
 				276BECF01A846BC500AE52F4 /* ReplacementSounds.h in Headers */,
 				AEC3C7B209AD68AC003258E4 /* SDL_netx.h in Headers */,
-				27A6DB0F1B9CEA61003DA766 /* BasicIFFDecoder.h in Headers */,
 				AEC3C7B309AD68AC003258E4 /* SSLP_API.h in Headers */,
 				AEC3C7B409AD68AC003258E4 /* SSLP_Protocol.h in Headers */,
 				AEC3C7B509AD68AC003258E4 /* CircularByteBuffer.h in Headers */,
@@ -4075,7 +4030,6 @@
 				276BED151A846FD900AE52F4 /* CourierPrimeItalic.h in Headers */,
 				AEFD866413EB84CF00C1E687 /* TextLayoutHelper.h in Headers */,
 				AEFD866513EB84CF00C1E687 /* TextStrings.h in Headers */,
-				27A6DB2C1B9CEA76003DA766 /* VorbisDecoder.h in Headers */,
 				AEFD866613EB84CF00C1E687 /* ViewControl.h in Headers */,
 				AEFD866713EB84CF00C1E687 /* song_definitions.h in Headers */,
 				27A6DB411B9CEB47003DA766 /* OGL_Headers.h in Headers */,
@@ -4096,7 +4050,6 @@
 				AEFD867E13EB84CF00C1E687 /* AStream.h in Headers */,
 				AEFD867F13EB84CF00C1E687 /* TickBasedCircularQueue.h in Headers */,
 				AEFD868013EB84CF00C1E687 /* WindowedNthElementFinder.h in Headers */,
-				27A6DB1E1B9CEA6C003DA766 /* MADDecoder.h in Headers */,
 				AEFD868213EB84CF00C1E687 /* thread_priority_sdl.h in Headers */,
 				AEFD868413EB84CF00C1E687 /* network_data_formats.h in Headers */,
 				27EFC4B91A7C935500A95592 /* QuickSave.h in Headers */,
@@ -4104,7 +4057,6 @@
 				AEFD868713EB84CF00C1E687 /* SSLP_API.h in Headers */,
 				AEFD868813EB84CF00C1E687 /* SSLP_Protocol.h in Headers */,
 				AEFD868913EB84CF00C1E687 /* CircularByteBuffer.h in Headers */,
-				27A6DB101B9CEA61003DA766 /* BasicIFFDecoder.h in Headers */,
 				AEFD868A13EB84CF00C1E687 /* metaserver_dialogs.h in Headers */,
 				AEFD868B13EB84CF00C1E687 /* metaserver_messages.h in Headers */,
 				AEFD868C13EB84CF00C1E687 /* network_metaserver.h in Headers */,
@@ -4627,11 +4579,8 @@
 				AEEA4E812544B50B0031363A /* shell_options.cpp in Sources */,
 				AE505CAF141D45E600915344 /* SoundFile.cpp in Sources */,
 				AE505CB0141D45E600915344 /* SoundManager.cpp in Sources */,
-				AE505CB1141D45E600915344 /* BasicIFFDecoder.cpp in Sources */,
 				AE505CB2141D45E600915344 /* Decoder.cpp in Sources */,
-				AE505CB3141D45E600915344 /* MADDecoder.cpp in Sources */,
 				AE505CB4141D45E600915344 /* SndfileDecoder.cpp in Sources */,
-				AE505CB5141D45E600915344 /* VorbisDecoder.cpp in Sources */,
 				AE505CB6141D45E600915344 /* ReplacementSounds.cpp in Sources */,
 				AE505CB8141D45E600915344 /* lapi.c in Sources */,
 				AE505CB9141D45E600915344 /* lauxlib.c in Sources */,
@@ -4854,11 +4803,8 @@
 				AEEA4E822544B50B0031363A /* shell_options.cpp in Sources */,
 				AEB4A25014296CAE00537AE7 /* SoundFile.cpp in Sources */,
 				AEB4A25114296CAE00537AE7 /* SoundManager.cpp in Sources */,
-				AEB4A25214296CAE00537AE7 /* BasicIFFDecoder.cpp in Sources */,
 				AEB4A25314296CAE00537AE7 /* Decoder.cpp in Sources */,
-				AEB4A25414296CAE00537AE7 /* MADDecoder.cpp in Sources */,
 				AEB4A25514296CAE00537AE7 /* SndfileDecoder.cpp in Sources */,
-				AEB4A25614296CAE00537AE7 /* VorbisDecoder.cpp in Sources */,
 				AEB4A25714296CAE00537AE7 /* ReplacementSounds.cpp in Sources */,
 				AEB4A25914296CAE00537AE7 /* lapi.c in Sources */,
 				AEB4A25A14296CAE00537AE7 /* lauxlib.c in Sources */,
@@ -5081,11 +5027,8 @@
 				AEEA4E7F2544B50B0031363A /* shell_options.cpp in Sources */,
 				AE626E700B878534009CFF2D /* SoundFile.cpp in Sources */,
 				AE626E720B878534009CFF2D /* SoundManager.cpp in Sources */,
-				AE601F0A0B927C25009F881C /* BasicIFFDecoder.cpp in Sources */,
 				AE601F0B0B927C25009F881C /* Decoder.cpp in Sources */,
-				AE601F0C0B927C25009F881C /* MADDecoder.cpp in Sources */,
 				AE601F0D0B927C25009F881C /* SndfileDecoder.cpp in Sources */,
-				AE601F0E0B927C25009F881C /* VorbisDecoder.cpp in Sources */,
 				AE23F59A0BDAC23E00C11385 /* ReplacementSounds.cpp in Sources */,
 				AE7C219C0BFF67B700CE63EC /* lapi.c in Sources */,
 				AE7C219D0BFF67B700CE63EC /* lauxlib.c in Sources */,
@@ -5308,11 +5251,8 @@
 				AEEA4E802544B50B0031363A /* shell_options.cpp in Sources */,
 				AEFD875C13EB84CF00C1E687 /* SoundFile.cpp in Sources */,
 				AEFD875D13EB84CF00C1E687 /* SoundManager.cpp in Sources */,
-				AEFD875E13EB84CF00C1E687 /* BasicIFFDecoder.cpp in Sources */,
 				AEFD875F13EB84CF00C1E687 /* Decoder.cpp in Sources */,
-				AEFD876013EB84CF00C1E687 /* MADDecoder.cpp in Sources */,
 				AEFD876113EB84CF00C1E687 /* SndfileDecoder.cpp in Sources */,
-				AEFD876213EB84CF00C1E687 /* VorbisDecoder.cpp in Sources */,
 				AEFD876313EB84CF00C1E687 /* ReplacementSounds.cpp in Sources */,
 				AEFD876513EB84CF00C1E687 /* lapi.c in Sources */,
 				AEFD876613EB84CF00C1E687 /* lauxlib.c in Sources */,
@@ -5525,6 +5465,10 @@
 					"-lzzip",
 					"-lvpx",
 					"-lvorbis",
+					"-lFLAC",
+					"-lopus",
+					"-lmpg123",
+					"-lmp3lame",
 					"-lpng",
 					"-logg",
 					"-lvorbisenc",
@@ -5667,6 +5611,10 @@
 					"-lzzip",
 					"-lvpx",
 					"-lvorbis",
+					"-lFLAC",
+					"-lopus",
+					"-lmpg123",
+					"-lmp3lame",
 					"-lpng",
 					"-logg",
 					"-lvorbisenc",

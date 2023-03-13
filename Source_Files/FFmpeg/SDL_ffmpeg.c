@@ -447,7 +447,7 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
                     int channel_layout = stream->_ffmpeg->codecpar->channel_layout ? stream->_ffmpeg->codecpar->channel_layout : 
                         (stream->_ffmpeg->codecpar->channels == 2 ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO);
 
-                    stream->swr_context = swr_alloc_set_opts(stream->swr_context, channel_layout, AV_SAMPLE_FMT_S16,
+                    stream->swr_context = swr_alloc_set_opts(stream->swr_context, channel_layout, AV_SAMPLE_FMT_FLT,
                         stream->_ffmpeg->codecpar->sample_rate, channel_layout,
                         stream->_ffmpeg->codecpar->format, stream->_ffmpeg->codecpar->sample_rate,
                         0, NULL);
@@ -1745,9 +1745,9 @@ SDL_ffmpegStream* SDL_ffmpegAddAudioStream( SDL_ffmpegFile *file, SDL_ffmpegCode
 
         str->mutex = SDL_CreateMutex();
 
-        str->sampleBufferSize = av_samples_get_buffer_size(0, stream->codecpar->channels, stream->codecpar->frame_size, AV_SAMPLE_FMT_S16, 0);
+        str->sampleBufferSize = av_samples_get_buffer_size(0, stream->codecpar->channels, stream->codecpar->frame_size, AV_SAMPLE_FMT_FLT, 0);
 
-        if (av_samples_alloc(&str->sampleBuffer, 0, stream->codecpar->channels, stream->codecpar->frame_size, AV_SAMPLE_FMT_S16, 0) < 0)
+        if (av_samples_alloc(&str->sampleBuffer, 0, stream->codecpar->channels, stream->codecpar->frame_size, AV_SAMPLE_FMT_FLT, 0) < 0)
         {
             SDL_ffmpegSetError("could not allocate samples for audio buffer");
             return 0;
@@ -1944,10 +1944,10 @@ SDL_ffmpegPacket* SDL_ffmpegGetVideoPacket( SDL_ffmpegFile *file )
 
 int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpegAudioFrame *frame )
 {
-    int audioSize = AVCODEC_MAX_AUDIO_FRAME_SIZE * sizeof( int16_t );
+    int audioSize = AVCODEC_MAX_AUDIO_FRAME_SIZE * sizeof( float );
 
     int channels = file->audioStream->_ctx->channels;
-    enum AVSampleFormat format = AV_SAMPLE_FMT_S16;
+    enum AVSampleFormat format = AV_SAMPLE_FMT_FLT;
     int bps = av_get_bytes_per_sample(format);
 
     /* check if there is still data in the buffer */
@@ -2025,7 +2025,7 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
         convertedFrame->nb_samples = dframe->nb_samples;
         convertedFrame->channel_layout = dframe->channel_layout;
         convertedFrame->sample_rate = dframe->sample_rate;
-        convertedFrame->format = AV_SAMPLE_FMT_S16;
+        convertedFrame->format = AV_SAMPLE_FMT_FLT;
 
         if (swr_convert_frame(file->audioStream->swr_context, convertedFrame, dframe) < 0)
         {

@@ -4,7 +4,7 @@
 constexpr SoundBehavior SoundPlayer::sound_behavior_parameters[];
 constexpr SoundBehavior SoundPlayer::sound_obstruct_behavior_parameters[];
 SoundPlayer::SoundPlayer(const Sound sound, SoundParameters parameters)
-	: AudioPlayer(sound.header.rate >> 16, sound.header.stereo, sound.header.sixteen_bit) {  //since header.rate is on 16.16 format
+	: AudioPlayer(sound.header.rate >> 16, sound.header.stereo, sound.header.audio_format) {  //since header.rate is on 16.16 format
 	parameters.loop = parameters.loop || sound.header.loop_end - sound.header.loop_start >= 4;
 	this->sound = sound;
 	this->parameters = parameters;
