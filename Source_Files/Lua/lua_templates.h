@@ -595,8 +595,11 @@ void L_Enum<name, index_t>::Register(lua_State *L, const luaL_Reg get[], const l
 	lua_pushcfunction(L, _equals);
 	lua_setfield(L, -2, "__eq");
 
-	lua_pushcfunction(L, _get_mnemonic);
-	lua_setfield(L, -2, "__tostring");
+	if (mnemonics)
+	{
+		lua_pushcfunction(L, _get_mnemonic);
+		lua_setfield(L, -2, "__tostring");
+	}
 
 	if (metatable)
 		luaL_setfuncs(L, metatable, 0);
