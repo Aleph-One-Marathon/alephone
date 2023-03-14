@@ -112,12 +112,12 @@ static int Lua_MusicManager_Play(lua_State* L)
 		FileSpecifier file;
 		if (search_path.size())
 		{
-			if (!file.SetNameWithPath(lua_tostring(L, n), search_path))
+			if (file.SetNameWithPath(lua_tostring(L, n), search_path))
 				Music::instance()->PushBackLevelMusic(file);
 		}
 		else
 		{
-			if (!file.SetNameWithPath(lua_tostring(L, n)))
+			if (file.SetNameWithPath(lua_tostring(L, n)))
 				Music::instance()->PushBackLevelMusic(file);
 		}
 	}
