@@ -101,7 +101,6 @@ static int Lua_MusicManager_New(lua_State* L)
 
 static int Lua_MusicManager_Play(lua_State* L)
 {
-	bool restart_music = !Music::instance()->IsLevelMusicActive() && !Music::instance()->Playing();
 	for (int n = 1; n <= lua_gettop(L); n++)
 	{
 		if (!lua_isstring(L, n))
@@ -122,8 +121,6 @@ static int Lua_MusicManager_Play(lua_State* L)
 		}
 	}
 
-	if (restart_music)
-		Music::instance()->PreloadLevelMusic();
 	return 0;
 }
 

@@ -123,7 +123,7 @@ void Music::Idle()
 	if (!SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return;
 
 	auto& levelSlot = music_slots[MusicSlot::Level];
-	if (levelSlot.IsInit() && !levelSlot.Playing() && LoadLevelMusic()) {
+	if (!levelSlot.Playing() && LoadLevelMusic()) {
 		levelSlot.Play();
 	}
 
@@ -184,13 +184,13 @@ void Music::Slot::Play()
 bool Music::LoadLevelMusic()
 {
 	FileSpecifier* level_song_file = GetLevelMusic();
-	return music_slots[MusicSlot::Level].Open(level_song_file);
+	auto& slot = music_slots[MusicSlot::Level];
+	return slot.Open(level_song_file) && slot.SetParameters(false, 1);
 }
 
 void Music::SeedLevelMusic()
 {
 	song_number = 0;
-	
 	randomizer.z ^= SoundManager::GetCurrentAudioTick();
 	randomizer.SetTable();
 }
