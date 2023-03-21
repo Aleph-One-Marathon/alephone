@@ -1270,10 +1270,19 @@ static void handle_player_in_vacuum(
 		{
 			player->suit_oxygen -= 1;
 			oxygenChange += 1;
-			if (!(player->suit_oxygen%breathing_frequency)) 
+			if (player->suit_oxygen % breathing_frequency == 0 &&
+				player_index == current_player_index)
+			{
 				SoundManager::instance()->PlayLocalSound(Sound_Breathing());
-			if ((player->suit_oxygen+OXYGEN_WARNING_OFFSET)<OXYGEN_WARNING_LEVEL && !((player->suit_oxygen+OXYGEN_WARNING_OFFSET)%OXYGEN_WARNING_FREQUENCY)) 
+			}
+
+			const auto offset_o2 = player->suit_oxygen + OXYGEN_WARNING_OFFSET;
+			if (offset_o2 < OXYGEN_WARNING_LEVEL &&
+				offset_o2 % OXYGEN_WARNING_FREQUENCY == 0 &&
+				player_index == current_player_index)
+			{
 				SoundManager::instance()->PlayLocalSound(Sound_OxygenWarning());
+			}
 		}
 				
 		if (player->suit_oxygen<=0)
