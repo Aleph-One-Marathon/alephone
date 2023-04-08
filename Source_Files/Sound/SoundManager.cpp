@@ -181,7 +181,7 @@ void SoundManager::SetParameters(const Parameters& parameters)
 		this->parameters.Verify();
 
 		// If it was initially on, turn the sound manager back on
-		if (initial_state && parameters.volume_db > MINIMUM_VOLUME_DB)
+		if (initial_state)
 			SetStatus(true);
 	}
 
@@ -257,11 +257,8 @@ void SoundManager::TestVolume(float db, short sound_index)
 {
 	if (active)
 	{
-		if (db > MINIMUM_VOLUME_DB)
-		{
-			OpenALManager::Get()->SetMasterVolume(OpenALManager::From_db(db));
-			PlaySound(sound_index, 0, NONE, true);
-		}
+		OpenALManager::Get()->SetMasterVolume(OpenALManager::From_db(db));
+		PlaySound(sound_index, 0, NONE, true);
 	}	
 }
 
@@ -362,7 +359,7 @@ void SoundManager::PlaySound(short sound_index,
 {
 	/* don’t do anything if we’re not initialized or active, or our sound_code is NONE,
 		or our volume is zero */
-	if (sound_index!=NONE && active && parameters.volume_db > MINIMUM_VOLUME_DB)
+	if (sound_index!=NONE && active && OpenALManager::Get()->GetMasterVolume() > 0)
 	{
 		SoundVolumes variables;
 		

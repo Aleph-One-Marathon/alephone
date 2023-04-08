@@ -91,6 +91,7 @@ void OpenALManager::UpdateListener() {
 }
 
 void OpenALManager::SetMasterVolume(float volume) {
+	volume = std::min(1.f, std::max(volume, 0.f));
 	if (master_volume == volume) return;
 	master_volume = volume;
 	for (auto& player : audio_players_local) player->is_sync_with_al_parameters = false;
