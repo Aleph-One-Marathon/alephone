@@ -17,7 +17,7 @@ bool OpenALManager::Init(AudioParameters parameters) {
 			Shutdown();
 
 		} else {
-			instance->audio_parameters = parameters;
+			instance->UpdateParameters(parameters);
 			return true;
 		}
 	}
@@ -364,8 +364,7 @@ bool OpenALManager::GenerateSources() {
 }
 
 OpenALManager::OpenALManager(AudioParameters parameters) {
-	audio_parameters = parameters;
-	master_volume = parameters.volume;
+	UpdateParameters(parameters);
 	alListener3i(AL_POSITION, 0, 0, 0);
 
 	auto openalFormat = GetBestOpenALRenderingFormat(parameters.stereo ? ALC_STEREO_SOFT : ALC_MONO_SOFT);
@@ -441,6 +440,11 @@ int OpenALManager::GetBestOpenALRenderingFormat(ALCint channelsType) {
 	}
 
 	return format;
+}
+
+void OpenALManager::UpdateParameters(AudioParameters parameters) {
+	audio_parameters = parameters;
+	master_volume = parameters.volume;
 }
 
 void OpenALManager::Shutdown() {

@@ -258,7 +258,10 @@ void SoundManager::TestVolume(float db, short sound_index)
 	if (active)
 	{
 		OpenALManager::Get()->SetMasterVolume(OpenALManager::From_db(db));
-		PlaySound(sound_index, 0, NONE, true);
+		auto sound = PlaySound(sound_index, 0, NONE, true);
+		while (sound && sound->IsActive())
+		yield();
+		OpenALManager::Get()->SetMasterVolume(OpenALManager::From_db(parameters.volume_db));
 	}	
 }
 
@@ -350,7 +353,7 @@ void SoundManager::UnloadAllSounds()
 	}
 }
 
-void SoundManager::PlaySound(short sound_index, 
+std::shared_ptr<AudioPlayer> SoundManager::PlaySound(short sound_index, 
 			     world_location3d *source,
 			     short identifier, // NONE is no identifer and the sound is immediately orphaned
 				 bool local,
@@ -390,9 +393,11 @@ void SoundManager::PlaySound(short sound_index,
 				}
 				
 			}
-			BufferSound(parameters);
+			return BufferSound(parameters);
 		}
 	}
+
+	return nullptr;
 }
 				
 void SoundManager::DirectPlaySound(short sound_index, angle direction, short volume, _fixed pitch)

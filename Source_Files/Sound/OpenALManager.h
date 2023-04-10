@@ -86,6 +86,7 @@ private:
 	std::atomic<float> master_volume;
 	bool process_audio_active = false;
 	AtomicStructure<world_location3d> listener_location = {};
+	void UpdateParameters(AudioParameters parameters);
 	void UpdateListener();
 	void CleanEverything();
 	bool GenerateSources();
