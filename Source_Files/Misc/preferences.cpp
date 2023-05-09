@@ -2671,7 +2671,7 @@ static void controls_dialog(void *arg)
 	hotkeys->add(hotkey_table, true);
 
 	hotkeys->add(new w_spacer(), true);
-	hotkeys->dual_add(new w_static_text("Hotkeys 1-9 are used to switch weapons, but can be overriden by Lua scripts"), d);
+	hotkeys->dual_add(new w_static_text("Hotkeys 1-9 are used to switch weapons, but can be overridden by Lua scripts"), d);
 	hotkeys->dual_add(new w_static_text("Hotkeys 10-12 are reserved for Lua scripts"), d);
 
 	vertical_placer *iface = new vertical_placer();
