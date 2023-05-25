@@ -140,15 +140,11 @@ std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(const Sound& sound, SoundP
 	if (!(parameters.flags & _sound_does_not_self_abort)) {
 
 		auto existingPlayer = GetSoundPlayer(parameters.identifier, parameters.source_identifier, !audio_parameters.sounds_3d || (parameters.flags & _sound_cannot_be_restarted));
+
 		if (existingPlayer) {
 
 			if (!(parameters.flags & _sound_cannot_be_restarted) && simulatedVolume + abortAmplitudeThreshold > SoundPlayer::Simulate(existingPlayer->parameters.Get())) {
-
-				if (existingPlayer->parameters.Get().permutation != parameters.permutation)
-					existingPlayer->Replace(sound);
-
-				existingPlayer->UpdateParameters(parameters);
-				existingPlayer->AskRewind(); //we found one, we won't create another player but rewind this one instead
+				existingPlayer->AskRewind(parameters, sound); //we found one, we won't create another player but rewind this one instead
 			}
 
 			return existingPlayer;

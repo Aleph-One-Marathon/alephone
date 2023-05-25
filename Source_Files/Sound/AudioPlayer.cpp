@@ -80,8 +80,6 @@ void AudioPlayer::Rewind() {
 
 bool AudioPlayer::Play() {
 
-	if (rewind_signal) Rewind(); //We have to restart the sound here
-
 	FillBuffers();
 	ALint state;
 
@@ -105,6 +103,7 @@ bool AudioPlayer::Play() {
 
 bool AudioPlayer::Update() {
 	bool needs_update = LoadParametersUpdates() || !is_sync_with_al_parameters;
+	if (rewind_signal) Rewind();
 	if (!needs_update) return true;
 	is_sync_with_al_parameters = true;
 	return SetUpALSourceIdle();

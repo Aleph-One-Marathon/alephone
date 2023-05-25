@@ -36,11 +36,23 @@ float SoundPlayer::Simulate(const SoundParameters soundParameters) {
 	return volume;
 }
 
+void SoundPlayer::AskRewind(SoundParameters soundParameters, const Sound& newSound) {
+	soundParameters._is_for_rewind = true;
+	UpdateParameters(soundParameters);
+
+	if (parameters.Get().permutation != soundParameters.permutation) {
+		sound.Store(newSound);
+	}
+
+	AudioPlayer::AskRewind();
+}
+
 void SoundPlayer::Rewind() {
-	if (OpenALManager::Get()->IsBalanceRewindSound() && !CanRewindSound(start_tick))
+	if ((OpenALManager::Get()->IsBalanceRewindSound() || rewind_parameters.source_identifier != parameters.Get().source_identifier) && !CanRewindSound(start_tick))
 		rewind_signal = false;
 	else {
 		sound.Update();
+		parameters.Set(rewind_parameters);
 		AudioPlayer::Rewind();
 		current_index_data = 0;
 		data_length = sound.Get().header.length;
@@ -72,6 +84,7 @@ bool SoundPlayer::LoadParametersUpdates() {
 
 	SoundParameters sound_parameters, best_parameters;
 	float priority = 0, last_priority = 0;
+
 	while (parameters.Consume(sound_parameters)) {
 
 		priority = Simulate(sound_parameters);
@@ -83,7 +96,12 @@ bool SoundPlayer::LoadParametersUpdates() {
 	}
 
 	if (last_priority > 0) {
-		parameters.Set(best_parameters);
+
+		if (best_parameters._is_for_rewind)
+			rewind_parameters = best_parameters;
+		else
+			parameters.Set(best_parameters);
+
 		return true;
 	}
 

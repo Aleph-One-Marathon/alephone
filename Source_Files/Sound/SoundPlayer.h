@@ -27,6 +27,7 @@ struct SoundParameters {
 	float pitch = 1;
 	bool loop = false; //for now it will only be used by sound (musics work differently but should use this tbh)
 	bool local = true; //if false it will use source_location3d to position sound (3D sounds)
+	bool _is_for_rewind = false; //internal flag to know if those parameters must be loaded when rewinding sound or not
 	uint16_t permutation = 0;
 	uint16_t obstruction_flags = 0;
 	sound_behavior behavior = _sound_is_normal;
@@ -65,10 +66,11 @@ private:
 	bool SetUpALSourceInit() const override;
 	void SetUpALSource3D() const;
 	bool CanRewindSound(int baseTick) const { return baseTick + rewind_time < GetCurrentTick(); }
-	void Replace(const Sound sound) { this->sound.Store(sound); }
 	bool LoadParametersUpdates() override;
+	void AskRewind(SoundParameters soundParameters, const Sound& sound);
 	AtomicStructure<Sound> sound;
 	AtomicStructure<SoundParameters> parameters;
+	SoundParameters rewind_parameters;
 	uint32_t data_length;
 	uint32_t current_index_data = 0;
 	uint32_t start_tick;
