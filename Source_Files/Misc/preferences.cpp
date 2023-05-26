@@ -240,7 +240,9 @@ void handle_preferences(void)
 	d.add(w_controls);
 	w_button *w_environment = new w_button("ENVIRONMENT", environment_dialog, &d);
 	d.add(w_environment);
-	
+	w_button *w_plugins = new w_button("PLUGINS", plugins_dialog, &d);
+	d.add(w_plugins);
+
 	w_button *w_return = new w_button("RETURN", dialog_cancel, &d);
 	d.add(w_return);
 
@@ -252,6 +254,7 @@ void handle_preferences(void)
 	placer->add(w_sound);
 	placer->add(w_controls);
 	placer->add(w_environment);
+	placer->add(w_plugins);
 	placer->add(new w_spacer, true);
 	placer->add(w_return);
 
@@ -2977,9 +2980,6 @@ static void environment_dialog(void *arg)
 	table->dual_add(resources_w->label("External Resources"), d);
 	table->dual_add(resources_w, d);
 #endif
-
-	table->add_row(new w_spacer, true);
-	table->dual_add_row(new w_button("PLUGINS", plugins_dialog, &d), d);
 
 #ifndef MAC_APP_STORE
 	table->add_row(new w_spacer, true);
