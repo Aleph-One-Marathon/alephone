@@ -3981,9 +3981,7 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->shell_key_bindings = default_shell_key_bindings;
 	preferences->hotkey_bindings = default_hotkey_bindings;
 	
-	// LP addition: set up defaults for modifiers:
-	// interchange run and walk, but don't interchange swim and sink.
-	preferences->modifiers = _inputmod_interchange_run_walk;
+	preferences->modifiers = 0;
 
 	preferences->sens_horizontal = FIXED_ONE / 4;
 	preferences->sens_vertical = FIXED_ONE / 4;
