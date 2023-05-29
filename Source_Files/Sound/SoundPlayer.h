@@ -79,8 +79,8 @@ private:
 
 	static constexpr SoundBehavior sound_behavior_parameters[] = {
 		{0.5, 5, 1, 1},
-		{1, 10, 1, 1},
-		{2, 15, 1, 1}
+		{2.5, 15, 1.7, 1},
+		{3, 20, 1.2, 1}
 	};
 
 	static constexpr SoundBehavior sound_obstruct_behavior_parameters[] = {

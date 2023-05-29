@@ -28,10 +28,13 @@ float SoundPlayer::Simulate(const SoundParameters soundParameters) {
 	const bool obstruction = (soundParameters.obstruction_flags & _sound_was_obstructed) || (soundParameters.obstruction_flags & _sound_was_media_obstructed);
 	const auto behaviorParameters = obstruction ? sound_obstruct_behavior_parameters[soundParameters.behavior] : sound_behavior_parameters[soundParameters.behavior];
 
-	//This is the AL_LINEAR_DISTANCE_CLAMPED function we simulate
+	if (distance > behaviorParameters.distance_max) {
+		return 0;
+	}
+
+	//This is the AL_INVERSE_DISTANCE_CLAMPED function we simulate
 	distance = std::max(distance, behaviorParameters.distance_reference);
-	distance = std::min(distance, behaviorParameters.distance_max);
-	float volume = 1 - behaviorParameters.rolloff_factor * (distance - behaviorParameters.distance_reference) / (behaviorParameters.distance_max - behaviorParameters.distance_reference);
+	float volume = behaviorParameters.distance_reference / (behaviorParameters.distance_reference + behaviorParameters.rolloff_factor * (distance - behaviorParameters.distance_reference));
 
 	return volume;
 }
@@ -170,15 +173,13 @@ bool SoundPlayer::SetUpALSourceInit() const {
 		alSourcei(audio_source->source_id, AL_MAX_DISTANCE, 0);
 	}
 	else {
-		alSourcei(audio_source->source_id, AL_DISTANCE_MODEL, AL_LINEAR_DISTANCE_CLAMPED);
+		alSourcei(audio_source->source_id, AL_DISTANCE_MODEL, AL_INVERSE_DISTANCE_CLAMPED);
 		alSourcei(audio_source->source_id, AL_SOURCE_RELATIVE, AL_FALSE);
 	}
 
 	return true;
 }
 
-//We use the AL_LINEAR_DISTANCE_CLAMPED function which isn't really realistic but this is how actual
-//sounds work in marathon. If we want more realistic sounds, we should move to the default function AL_INVERSE_DISTANCE_CLAMPED
 //Obstructions can also be done using openal filters but I won't use it here
 //Distance units are WORLD_ONE and are a copy of sound_behavior_definition for most part
 void SoundPlayer::SetUpALSource3D() const {
