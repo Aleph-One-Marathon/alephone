@@ -6,6 +6,11 @@ LPALCLOOPBACKOPENDEVICESOFT OpenALManager::alcLoopbackOpenDeviceSOFT;
 LPALCISRENDERFORMATSUPPORTEDSOFT OpenALManager::alcIsRenderFormatSupportedSOFT;
 LPALCRENDERSAMPLESSOFT OpenALManager::alcRenderSamplesSOFT;
 
+LPALGENFILTERS OpenALManager::alGenFilters;
+LPALDELETEFILTERS OpenALManager::alDeleteFilters;
+LPALFILTERF OpenALManager::alFilterf;
+LPALFILTERI OpenALManager::alFilteri;
+
 OpenALManager* OpenALManager::instance = nullptr;
 
 bool OpenALManager::Init(AudioParameters parameters) {
@@ -23,9 +28,15 @@ bool OpenALManager::Init(AudioParameters parameters) {
 	}
 	else {
 		if (alcIsExtensionPresent(NULL, "ALC_SOFT_loopback")) {
+#define LOAD_PROC(T, x)  ((x) = (T)alGetProcAddress(#x))
 			LOAD_PROC(LPALCLOOPBACKOPENDEVICESOFT, alcLoopbackOpenDeviceSOFT);
 			LOAD_PROC(LPALCISRENDERFORMATSUPPORTEDSOFT, alcIsRenderFormatSupportedSOFT);
 			LOAD_PROC(LPALCRENDERSAMPLESSOFT, alcRenderSamplesSOFT);
+			LOAD_PROC(LPALGENFILTERS, alGenFilters);
+			LOAD_PROC(LPALDELETEFILTERS, alDeleteFilters);
+			LOAD_PROC(LPALFILTERI, alFilteri);
+			LOAD_PROC(LPALFILTERF, alFilterf);
+#undef LOAD_PROC
 		} else {
 			logError("ALC_SOFT_loopback extension is not supported"); //Should never be the case as long as >= OpenAL 1.14
 			return false;
@@ -33,7 +44,7 @@ bool OpenALManager::Init(AudioParameters parameters) {
 	}
 
 	instance = new OpenALManager(parameters);
-	return instance->OpenDevice() && instance->GenerateSources();
+	return instance->OpenDevice() && instance->GenerateSources() && instance->GenerateEffects();
 }
 
 void OpenALManager::ProcessAudioQueue() {
@@ -320,6 +331,14 @@ bool OpenALManager::CloseDevice() {
 	return true;
 }
 
+bool OpenALManager::GenerateEffects() {
+	alGenFilters(1, &obstruction_filter);
+	alFilteri(obstruction_filter, AL_FILTER_TYPE, AL_FILTER_LOWPASS);
+	alFilterf(obstruction_filter, AL_LOWPASS_GAIN, 1.f);
+	alFilterf(obstruction_filter, AL_LOWPASS_GAINHF, 0.25f);
+	return alGetError() == AL_NO_ERROR;
+}
+
 bool OpenALManager::GenerateSources() {
 
 	/* how many simultaneous sources are supported on this device ? */
@@ -402,6 +421,7 @@ void OpenALManager::CleanEverything() {
 		sources_pool.pop();
 	}
 
+	alDeleteFilters(1, &obstruction_filter);
 	bool closedDevice = CloseDevice();
 	assert(closedDevice && "Could not close audio device");
 }

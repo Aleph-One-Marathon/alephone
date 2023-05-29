@@ -156,12 +156,13 @@ bool SoundPlayer::SetUpALSourceIdle() const {
 		SetUpALSource3D();
 	}
 
-	return true;
+	return alGetError() == AL_NO_ERROR;
 }
 
 //This is called once, when we assign the source to the player
 bool SoundPlayer::SetUpALSourceInit() const {
 	alSourcei(audio_source->source_id, AL_MIN_GAIN, 0);
+	alSourcei(audio_source->source_id, AL_DIRECT_FILTER, AL_FILTER_NULL);
 
 	if (parameters.Get().local) {
 		alSourcei(audio_source->source_id, AL_DISTANCE_MODEL, AL_NONE);
@@ -177,10 +178,9 @@ bool SoundPlayer::SetUpALSourceInit() const {
 		alSourcei(audio_source->source_id, AL_SOURCE_RELATIVE, AL_FALSE);
 	}
 
-	return true;
+	return alGetError() == AL_NO_ERROR;
 }
 
-//Obstructions can also be done using openal filters but I won't use it here
 //Distance units are WORLD_ONE and are a copy of sound_behavior_definition for most part
 void SoundPlayer::SetUpALSource3D() const {
 
@@ -188,6 +188,8 @@ void SoundPlayer::SetUpALSource3D() const {
 	bool obstruction = (sound_parameters.obstruction_flags & _sound_was_obstructed) || (sound_parameters.obstruction_flags & _sound_was_media_obstructed);
 	bool muffled = sound_parameters.obstruction_flags & _sound_was_media_muffled;
 	float calculated_volume = volume * OpenALManager::Get()->GetMasterVolume();
+
+#if 0 //previous rulesets for obstructions
 
 	if (muffled) calculated_volume /= 2;
 
@@ -202,12 +204,15 @@ void SoundPlayer::SetUpALSource3D() const {
 		alSourcef(audio_source->source_id, AL_MIN_GAIN, calculated_volume / 8);
 	}
 
+#endif // 0
+
 	SoundBehavior behaviorParameters = obstruction ? sound_obstruct_behavior_parameters[sound_parameters.behavior] : sound_behavior_parameters[sound_parameters.behavior];
 	alSourcef(audio_source->source_id, AL_REFERENCE_DISTANCE, behaviorParameters.distance_reference);
 	alSourcef(audio_source->source_id, AL_MAX_DISTANCE, behaviorParameters.distance_max);
 	alSourcef(audio_source->source_id, AL_ROLLOFF_FACTOR, behaviorParameters.rolloff_factor);
 	alSourcef(audio_source->source_id, AL_MAX_GAIN, behaviorParameters.max_gain * calculated_volume);
 	alSourcef(audio_source->source_id, AL_GAIN, behaviorParameters.max_gain * calculated_volume);
+	alSourcei(audio_source->source_id, AL_DIRECT_FILTER, muffled || obstruction ? OpenALManager::Get()->GetObstructionFilter() : AL_FILTER_NULL);
 }
 
 int SoundPlayer::GetNextData(uint8* data, int length) {

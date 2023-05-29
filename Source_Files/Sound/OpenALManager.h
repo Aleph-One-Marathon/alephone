@@ -13,8 +13,6 @@
 
 #include <math.h>
 
-#define LOAD_PROC(T, x)  ((x) = (T)alGetProcAddress(#x))
-
 constexpr float abortAmplitudeThreshold = MAXIMUM_SOUND_VOLUME / 6.f / 256;
 constexpr float angleConvert = 360 / float(FULL_CIRCLE);
 constexpr float degreToRadian = M_PI / 180.f;
@@ -76,6 +74,7 @@ public:
 	bool IsBalanceRewindSound() const { return audio_parameters.balance_rewind; }
 	void CleanInactivePlayers();
 	ALCint GetRenderingFormat() const { return rendering_format; }
+	ALuint GetObstructionFilter() const { return obstruction_filter; }
 	const std::vector<std::shared_ptr<AudioPlayer>>& GetAudioPlayers() const { return audio_players_local; }
 private:
 	static OpenALManager* instance;
@@ -90,6 +89,7 @@ private:
 	void UpdateListener();
 	void CleanEverything();
 	bool GenerateSources();
+	bool GenerateEffects();
 	bool OpenDevice();
 	bool CloseDevice();
 	void ProcessAudioQueue();
@@ -107,10 +107,17 @@ private:
 	static LPALCISRENDERFORMATSUPPORTEDSOFT alcIsRenderFormatSupportedSOFT;
 	static LPALCRENDERSAMPLESSOFT alcRenderSamplesSOFT;
 
+	/* Filter object functions */
+	static LPALGENFILTERS alGenFilters;
+	static LPALDELETEFILTERS alDeleteFilters;
+	static LPALFILTERI alFilteri;
+	static LPALFILTERF alFilterf;
+
 	static void MixerCallback(void* usr, uint8* stream, int len);
 	SDL_AudioSpec obtained;
 	AudioParameters audio_parameters;
 	ALCint rendering_format = 0;
+	ALuint obstruction_filter;
 
 	/* format type we supports for mixing / rendering
 	* those are used from the first to the last of the list

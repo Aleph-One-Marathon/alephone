@@ -84,9 +84,9 @@ private:
 	};
 
 	static constexpr SoundBehavior sound_obstruct_behavior_parameters[] = {
-		{0, 0, 1, 0}, //This line is never used and wouldn't work
-		{0.5, 7, 1, 0.5},
-		{0.5, 10, 1, 4.f / 3}
+		{0.5, 3, 2, 0.3},
+		{2.5, 9, 3.4, 0.5},
+		{3, 12, 2.4, 0.75}
 	};
 
 	friend class OpenALManager;

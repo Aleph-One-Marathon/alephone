@@ -120,7 +120,7 @@ bool AudioPlayer::SetUpALSourceIdle() const {
 	float master_volume = OpenALManager::Get()->GetMasterVolume();
 	alSourcef(audio_source->source_id, AL_MAX_GAIN, master_volume);
 	alSourcef(audio_source->source_id, AL_GAIN, audio_volume * master_volume);
-	return true;
+	return alGetError() == AL_NO_ERROR;
 }
 
 bool AudioPlayer::SetUpALSourceInit() const {
@@ -133,5 +133,6 @@ bool AudioPlayer::SetUpALSourceInit() const {
 	alSourcei(audio_source->source_id, AL_DISTANCE_MODEL, AL_NONE);
 	alSourcei(audio_source->source_id, AL_REFERENCE_DISTANCE, 0);
 	alSourcei(audio_source->source_id, AL_MAX_DISTANCE, 0);
-	return true;
+	alSourcei(audio_source->source_id, AL_DIRECT_FILTER, AL_FILTER_NULL);
+	return alGetError() == AL_NO_ERROR;
 }
