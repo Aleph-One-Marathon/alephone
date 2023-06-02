@@ -114,16 +114,18 @@ private:
 	static LPALFILTERF alFilterf;
 
 	static void MixerCallback(void* usr, uint8* stream, int len);
-	SDL_AudioSpec obtained;
+	SDL_AudioSpec sdl_audio_specs_obtained;
 	AudioParameters audio_parameters;
 	ALCint rendering_format = 0;
 	ALuint obstruction_filter;
+
+	static constexpr int max_sounds_for_source = 3;
 
 	/* format type we supports for mixing / rendering
 	* those are used from the first to the last of the list
 	  and we stop when our device support the corresponding format 
 	  Short is first, because there is no real purpose to use other format now */
-	const std::vector<ALCint> formatType = {
+	const std::vector<ALCint> format_type = {
 		ALC_SHORT_SOFT,
 		ALC_FLOAT_SOFT,
 		ALC_INT_SOFT,

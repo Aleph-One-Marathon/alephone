@@ -25,8 +25,7 @@ bool OpenALManager::Init(AudioParameters parameters) {
 			instance->UpdateParameters(parameters);
 			return true;
 		}
-	}
-	else {
+	} else {
 		if (alcIsExtensionPresent(NULL, "ALC_SOFT_loopback")) {
 #define LOAD_PROC(T, x)  ((x) = (T)alGetProcAddress(#x))
 			LOAD_PROC(LPALCLOOPBACKOPENDEVICESOFT, alcLoopbackOpenDeviceSOFT);
@@ -134,12 +133,28 @@ void OpenALManager::QueueAudio(std::shared_ptr<AudioPlayer> audioPlayer) {
 //The flag sound_identifier_only must be used to know if there is a sound playing with a specific identifier without caring of the source
 std::shared_ptr<SoundPlayer> OpenALManager::GetSoundPlayer(short identifier, short source_identifier, bool sound_identifier_only) const {
 
-	auto player = std::find_if(audio_players_local.begin(), audio_players_local.end(),
-		[identifier, source_identifier, sound_identifier_only](const std::shared_ptr<AudioPlayer> player)
-		{return player->IsActive() && (identifier != NONE && player->GetIdentifier() == identifier &&
-		(sound_identifier_only || player->GetSourceIdentifier() == source_identifier)); });
+	std::vector<std::shared_ptr<AudioPlayer>> matchingPlayers;
+	std::copy_if(audio_players_local.begin(), audio_players_local.end(), std::back_inserter(matchingPlayers), 
+		[identifier](const std::shared_ptr<AudioPlayer> player) { return player->IsActive() && (identifier != NONE && player->GetIdentifier() == identifier); });
 
-	return player != audio_players_local.end() ? std::dynamic_pointer_cast<SoundPlayer>(*player) : std::shared_ptr<SoundPlayer>(); //only sounds are supported, not musics
+	auto matchingPlayer = matchingPlayers.size() > 0 ? matchingPlayers[0] : std::shared_ptr<AudioPlayer>();
+
+	if (!sound_identifier_only) {
+
+		auto matchingSourcePlayer = std::find_if(matchingPlayers.begin(), matchingPlayers.end(),
+			[source_identifier](const std::shared_ptr<AudioPlayer> player) { return player->GetSourceIdentifier() == source_identifier; });
+
+		if (matchingSourcePlayer == matchingPlayers.end() && matchingPlayers.size() >= max_sounds_for_source) {
+			matchingPlayer = *std::min_element(matchingPlayers.begin(), matchingPlayers.end(),
+				[](const std::shared_ptr<AudioPlayer>& a, const std::shared_ptr<AudioPlayer>& b)
+				{  return a->GetPriority() < b->GetPriority(); });
+		}
+		else {
+			matchingPlayer = matchingSourcePlayer != matchingPlayers.end() ? *matchingSourcePlayer : std::shared_ptr<AudioPlayer>();
+		}
+	}
+
+	return std::dynamic_pointer_cast<SoundPlayer>(matchingPlayer); //only sounds are supported, not musics
 }
 
 std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(const Sound& sound, SoundParameters parameters) {
@@ -230,13 +245,9 @@ void OpenALManager::RetrieveSource(const std::shared_ptr<AudioPlayer>& player) {
 }
 
 void OpenALManager::CleanInactivePlayers() {
-
-	auto toRemove = std::find_if(audio_players_local.begin(), audio_players_local.end(),
-		[](const std::shared_ptr<AudioPlayer> player) { return !player->IsActive(); });
-
-	if (toRemove != audio_players_local.end()) {
-		audio_players_local.erase(toRemove);
-	}
+	audio_players_local.erase(std::remove_if(
+		audio_players_local.begin(), audio_players_local.end(),
+		[](const std::shared_ptr<AudioPlayer> player) { return !player->IsActive(); }), audio_players_local.end());
 }
 
 //this is used with the recording device and this allows OpenAL to
@@ -392,18 +403,18 @@ OpenALManager::OpenALManager(AudioParameters parameters) {
 	desired.callback = MixerCallback;
 	desired.userdata = reinterpret_cast<void*>(this);
 
-	if (SDL_OpenAudio(&desired, &obtained) < 0) {
+	if (SDL_OpenAudio(&desired, &sdl_audio_specs_obtained) < 0) {
 		CleanEverything();
 	} else {
-		audio_parameters.rate = obtained.freq;
-		audio_parameters.stereo = obtained.channels == 2;
-		rendering_format = mapping_sdl_openal.at(obtained.format);
+		audio_parameters.rate = sdl_audio_specs_obtained.freq;
+		audio_parameters.stereo = sdl_audio_specs_obtained.channels == 2;
+		rendering_format = mapping_sdl_openal.at(sdl_audio_specs_obtained.format);
 	}
 }
 
 void OpenALManager::MixerCallback(void* usr, uint8* stream, int len) {
 	auto manager = (OpenALManager*)usr;
-	int frameSize = manager->obtained.channels * SDL_AUDIO_BITSIZE(manager->obtained.format) / 8;
+	int frameSize = manager->sdl_audio_specs_obtained.channels * SDL_AUDIO_BITSIZE(manager->sdl_audio_specs_obtained.format) / 8;
 	manager->GetPlayBackAudio(stream, len / frameSize);
 }
 
@@ -434,16 +445,16 @@ int OpenALManager::GetBestOpenALRenderingFormat(ALCint channelsType) {
 	}
 
 	ALCint format = 0;
-	for (int i = 0; i < formatType.size(); i++) {
+	for (int i = 0; i < format_type.size(); i++) {
 
 		ALCint attrs[] = {
-			ALC_FORMAT_TYPE_SOFT,     formatType[i],
+			ALC_FORMAT_TYPE_SOFT,     format_type[i],
 			ALC_FORMAT_CHANNELS_SOFT, channelsType,
 			ALC_FREQUENCY,            audio_parameters.rate
 		};
 
 		if (alcIsRenderFormatSupportedSOFT(device, attrs[5], attrs[3], attrs[1]) == AL_TRUE) {
-			format = formatType[i];
+			format = format_type[i];
 			break;
 		}
 	}

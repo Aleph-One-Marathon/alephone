@@ -69,7 +69,7 @@ private:
     virtual bool SetUpALSourceIdle() const; //Update of the source parameters (AL), done everytime the player is processed in the queue
     virtual bool SetUpALSourceInit() const; //Init of the source parameters (AL), done when the source is assigned to the player
 
-    const boost::unordered_map<std::pair<AudioFormat, bool>, int> mapping_audio_format_openal = {
+    static inline const boost::unordered_map<std::pair<AudioFormat, bool>, int> mapping_audio_format_openal = {
         {{AudioFormat::_8_bit, false}, AL_FORMAT_MONO8},
         {{AudioFormat::_8_bit, true}, AL_FORMAT_STEREO8},
         {{AudioFormat::_16_bit, false}, AL_FORMAT_MONO16},

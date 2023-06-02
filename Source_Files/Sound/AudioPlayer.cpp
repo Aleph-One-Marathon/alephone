@@ -11,7 +11,7 @@ AudioPlayer::AudioPlayer(int rate, bool stereo, AudioFormat audioFormat) {
 bool AudioPlayer::AssignSource() {
 	if (audio_source) return true;
 	audio_source = OpenALManager::Get()->PickAvailableSource(GetPriority());
-	return this->audio_source && SetUpALSourceInit();
+	return audio_source && SetUpALSourceInit();
 }
 
 void AudioPlayer::ResetSource() {
@@ -25,6 +25,8 @@ void AudioPlayer::ResetSource() {
 	for (auto& buffer : audio_source->buffers) {
 		buffer.second = false;
 	}
+
+	SetUpALSourceInit();
 }
 
 int AudioPlayer::GetCurrentTick() const { 
