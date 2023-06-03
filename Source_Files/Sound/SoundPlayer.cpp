@@ -93,9 +93,16 @@ bool SoundPlayer::LoadParametersUpdates() {
 		float priority = Simulate(soundParameters);
 
 		if (soundParameters._is_for_rewind) {
+
+			if (priority <= rewindLastPriority) continue;
+
 			bestRewindParameters = soundParameters;
 			rewindLastPriority = priority;
+
 		} else {
+
+			if (priority <= lastPriority) continue;
+
 			bestParameters = soundParameters;
 			lastPriority = priority;
 		}
