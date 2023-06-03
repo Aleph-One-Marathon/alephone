@@ -85,30 +85,26 @@ int SoundPlayer::LoopManager(uint8* data, int length) {
 
 bool SoundPlayer::LoadParametersUpdates() {
 
-	SoundParameters sound_parameters, best_parameters;
-	float priority = 0, last_priority = 0;
+	SoundParameters soundParameters, bestParameters, bestRewindParameters;
+	float lastPriority = 0, rewindLastPriority = 0;
 
-	while (parameters.Consume(sound_parameters)) {
+	while (parameters.Consume(soundParameters)) {
 
-		priority = Simulate(sound_parameters);
+		float priority = Simulate(soundParameters);
 
-		if (priority > last_priority) {
-			best_parameters = sound_parameters;
-			last_priority = priority;
+		if (soundParameters._is_for_rewind) {
+			bestRewindParameters = soundParameters;
+			rewindLastPriority = priority;
+		} else {
+			bestParameters = soundParameters;
+			lastPriority = priority;
 		}
 	}
 
-	if (last_priority > 0) {
+	if (lastPriority > 0) parameters.Set(bestParameters);
+	if (rewindLastPriority > 0) rewind_parameters = bestRewindParameters;
 
-		if (best_parameters._is_for_rewind)
-			rewind_parameters = best_parameters;
-		else
-			parameters.Set(best_parameters);
-
-		return true;
-	}
-
-	return false;
+	return lastPriority > 0 || rewindLastPriority > 0;
 }
 
 //This is called everytime we process a player in the queue with this source
