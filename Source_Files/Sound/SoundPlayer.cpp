@@ -60,6 +60,7 @@ void SoundPlayer::Rewind() {
 		current_index_data = 0;
 		data_length = sound.Get().header.length;
 		start_tick = GetCurrentTick();
+		sound_transition.allow_transition = false;
 	}
 }
 
@@ -108,46 +109,59 @@ bool SoundPlayer::LoadParametersUpdates() {
 		}
 	}
 
-	if (lastPriority > 0) parameters.Set(bestParameters);
+	if (lastPriority > 0) {
+		parameters.Set(bestParameters);
+		sound_transition.allow_transition = true;
+		sound_transition.last_update_tick = GetCurrentTick();
+	}
+
 	if (rewindLastPriority > 0) rewind_parameters = bestRewindParameters;
 
 	return lastPriority > 0 || rewindLastPriority > 0;
 }
 
 //This is called everytime we process a player in the queue with this source
-bool SoundPlayer::SetUpALSourceIdle() const {
+std::pair<bool, bool> SoundPlayer::SetUpALSourceIdle() {
 
-	auto& sound_parameters = parameters.Get();
-	alSourcef(audio_source->source_id, AL_PITCH, sound_parameters.pitch);
+	auto& soundParameters = parameters.Get();
+	alSourcef(audio_source->source_id, AL_PITCH, soundParameters.pitch);
+	bool updatesDone = true;
 
-	if (sound_parameters.local) {
+	if (soundParameters.local) {
 
-		float vol = volume * OpenALManager::Get()->GetMasterVolume();
-		if (sound_parameters.stereo_parameters.is_panning) {
-			auto pan = (acosf(std::min(sound_parameters.stereo_parameters.gain_left, 1.f)) + asinf(std::min(sound_parameters.stereo_parameters.gain_right, 1.f))) / ((float)M_PI); // average angle in [0,1]
+		float vol = volume;
+		if (soundParameters.stereo_parameters.is_panning) {
+			auto pan = (acosf(std::min(soundParameters.stereo_parameters.gain_left, 1.f)) + asinf(std::min(soundParameters.stereo_parameters.gain_right, 1.f))) / ((float)M_PI); // average angle in [0,1]
 			pan = 2 * pan - 1; // convert to [-1, 1]
 			pan *= 0.5f; // 0.5 = sin(30') for a +/- 30 degree arc
 			alSource3f(audio_source->source_id, AL_POSITION, pan, 0, -sqrtf(1.0f - pan * pan));
-			vol *= sound_parameters.stereo_parameters.gain_global;
+			vol *= soundParameters.stereo_parameters.gain_global;
 		}
 		else {
 			alSource3i(audio_source->source_id, AL_POSITION, 0, 0, 0);
 		}
 
-		alSourcef(audio_source->source_id, AL_GAIN, vol);
-		alSourcef(audio_source->source_id, AL_MAX_GAIN, vol);
+		ComputeVolumeForTransition(vol);
+		auto finalVolume = sound_transition.current_volume;
+		updatesDone = sound_transition.current_volume == vol;
+
+		printf("%f\n", sound_transition.current_volume);
+
+		finalVolume *= OpenALManager::Get()->GetMasterVolume();
+		alSourcef(audio_source->source_id, AL_GAIN, finalVolume);
+		alSourcef(audio_source->source_id, AL_MAX_GAIN, finalVolume);
 	}
 	else { //3d sounds
-		auto positionX = (float)(sound_parameters.source_location3d.point.x) / WORLD_ONE;
-		auto positionY = (float)(sound_parameters.source_location3d.point.y) / WORLD_ONE;
-		auto positionZ = (float)(sound_parameters.source_location3d.point.z) / WORLD_ONE;
+		auto positionX = (float)(soundParameters.source_location3d.point.x) / WORLD_ONE;
+		auto positionY = (float)(soundParameters.source_location3d.point.y) / WORLD_ONE;
+		auto positionZ = (float)(soundParameters.source_location3d.point.z) / WORLD_ONE;
 
 		/*This part is valid when we have yaw and pitch of the source (it seems we don't)
 		* This would allow to play with OpenAL cone attenuation. For instance, a sound of a monster firing in
 		* our direction would have more gain than if it's firing while facing back to us */
 #if 0
-		auto yaw = parameters.source_location3d.yaw * angleConvert;
-		auto pitch = parameters.source_location3d.pitch * angleConvert;
+		auto yaw = soundParameters.source_location3d.yaw * angleConvert;
+		auto pitch = soundParameters.source_location3d.pitch * angleConvert;
 
 		ALfloat u = std::cos(degreToRadian * yaw) * std::cos(degreToRadian * pitch);
 		ALfloat	v = std::sin(degreToRadian * yaw) * std::cos(degreToRadian * pitch);
@@ -159,11 +173,14 @@ bool SoundPlayer::SetUpALSourceIdle() const {
 		SetUpALSource3D();
 	}
 
-	return alGetError() == AL_NO_ERROR;
+	return std::pair<bool, bool>(alGetError() == AL_NO_ERROR, updatesDone);
 }
 
 //This is called once, when we assign the source to the player
-bool SoundPlayer::SetUpALSourceInit() const {
+bool SoundPlayer::SetUpALSourceInit() {
+
+	alSourcei(audio_source->source_id, AL_GAIN, 0);
+	alSourcei(audio_source->source_id, AL_MAX_GAIN, 0);
 	alSourcei(audio_source->source_id, AL_MIN_GAIN, 0);
 	alSourcei(audio_source->source_id, AL_DIRECT_FILTER, AL_FILTER_NULL);
 
@@ -182,6 +199,23 @@ bool SoundPlayer::SetUpALSourceInit() const {
 	}
 
 	return alGetError() == AL_NO_ERROR;
+}
+
+void SoundPlayer::ComputeVolumeForTransition(float targetVolume) {
+
+	float volume;
+	auto currentTick = GetCurrentTick();
+
+	if (sound_transition.allow_transition && std::abs(targetVolume - sound_transition.current_volume) > smooth_volume_transition_threshold) {
+		volume = std::max((targetVolume - sound_transition.current_volume) * std::min((currentTick - sound_transition.last_update_tick) / (float)smooth_volume_transition_time_ms, 1.f) + sound_transition.current_volume, 0.f);
+		volume = targetVolume > sound_transition.current_volume ? std::min(targetVolume, volume) : std::max(targetVolume, volume);
+	}
+	else {
+		volume = targetVolume;
+	}
+	
+	sound_transition.last_update_tick = currentTick;
+	sound_transition.current_volume = volume;
 }
 
 //Distance units are WORLD_ONE and are a copy of sound_behavior_definition for most part

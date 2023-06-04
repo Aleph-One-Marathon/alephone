@@ -59,23 +59,34 @@ public:
 	static float Simulate(const SoundParameters soundParameters);
 	float GetPriority() const override { return Simulate(parameters.Get()); }
 private:
+
+	struct SoundTransition {
+		uint32_t last_update_tick = 0;
+		float current_volume = 0;
+		bool allow_transition = false;
+	};
+
 	void Rewind() override;
 	int GetNextData(uint8* data, int length) override;
 	int LoopManager(uint8* data, int length);
-	bool SetUpALSourceIdle() const override;
-	bool SetUpALSourceInit() const override;
+	std::pair<bool, bool> SetUpALSourceIdle() override;
+	bool SetUpALSourceInit() override;
 	void SetUpALSource3D() const;
 	bool CanRewindSound(int baseTick) const { return baseTick + rewind_time < GetCurrentTick(); }
 	bool LoadParametersUpdates() override;
 	void AskRewind(SoundParameters soundParameters, const Sound& sound);
+	void ComputeVolumeForTransition(float targetVolume);
 	AtomicStructure<Sound> sound;
 	AtomicStructure<SoundParameters> parameters;
 	SoundParameters rewind_parameters;
+	SoundTransition sound_transition;
 	uint32_t data_length;
 	uint32_t current_index_data = 0;
 	uint32_t start_tick;
 
 	static constexpr int rewind_time = 83;
+	static constexpr float smooth_volume_transition_threshold = 0.1f;
+	static constexpr int smooth_volume_transition_time_ms = 300;
 
 	static constexpr SoundBehavior sound_behavior_parameters[] = {
 		{0.5, 5, 1, 1},

@@ -66,8 +66,8 @@ private:
     bool Update();
     std::unique_ptr<AudioSource> RetrieveSource();
     bool AssignSource();
-    virtual bool SetUpALSourceIdle() const; //Update of the source parameters (AL), done everytime the player is processed in the queue
-    virtual bool SetUpALSourceInit() const; //Init of the source parameters (AL), done when the source is assigned to the player
+    virtual std::pair<bool, bool> SetUpALSourceIdle(); //Update of the source parameters (AL), done everytime the player is processed in the queue
+    virtual bool SetUpALSourceInit(); //Init of the source parameters (AL), done when the source is assigned to the player
 
     static inline const boost::unordered_map<std::pair<AudioFormat, bool>, int> mapping_audio_format_openal = {
         {{AudioFormat::_8_bit, false}, AL_FORMAT_MONO8},

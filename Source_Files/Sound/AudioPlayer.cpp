@@ -104,11 +104,13 @@ bool AudioPlayer::Play() {
 }
 
 bool AudioPlayer::Update() {
-	bool needs_update = LoadParametersUpdates() || !is_sync_with_al_parameters;
+	bool needsUpdate = LoadParametersUpdates() || !is_sync_with_al_parameters;
 	if (rewind_signal) Rewind();
-	if (!needs_update) return true;
+	if (!needsUpdate) return true;
 	is_sync_with_al_parameters = true;
-	return SetUpALSourceIdle();
+	auto updateStatus = SetUpALSourceIdle();
+	is_sync_with_al_parameters.store(is_sync_with_al_parameters && updateStatus.second);
+	return updateStatus.first;
 }
 
 void AudioPlayer::SetVolume(float volume) {
@@ -117,15 +119,15 @@ void AudioPlayer::SetVolume(float volume) {
 	is_sync_with_al_parameters = false;
 }
 
-bool AudioPlayer::SetUpALSourceIdle() const {
+std::pair<bool, bool> AudioPlayer::SetUpALSourceIdle() {
 	float audio_volume = volume.load();
 	float master_volume = OpenALManager::Get()->GetMasterVolume();
 	alSourcef(audio_source->source_id, AL_MAX_GAIN, master_volume);
 	alSourcef(audio_source->source_id, AL_GAIN, audio_volume * master_volume);
-	return alGetError() == AL_NO_ERROR;
+	return std::pair<bool, bool>(alGetError() == AL_NO_ERROR, true);
 }
 
-bool AudioPlayer::SetUpALSourceInit() const {
+bool AudioPlayer::SetUpALSourceInit() {
 	alSourcei(audio_source->source_id, AL_MIN_GAIN, 0);
 	alSourcei(audio_source->source_id, AL_PITCH, 1);
 	alSourcei(audio_source->source_id, AL_SOURCE_RELATIVE, AL_TRUE);
