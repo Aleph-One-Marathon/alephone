@@ -449,7 +449,7 @@ void SoundManager::ManagePlayers() {
 		if (soundPlayer) {
 			auto parameters = soundPlayer->GetParameters();
 			if (parameters.loop && SoundPlayer::Simulate(parameters) <= 0) {
-				soundPlayer->AskStop();
+				soundPlayer->AskSoftStop();
 			}
 			else {
 
@@ -1024,7 +1024,7 @@ void SoundManager::UpdateAmbientSoundSources()
 		}
 
 		if (!found) {
-			soundPlayer->AskStop();
+			soundPlayer->AskSoftStop();
 		}
 	}
 

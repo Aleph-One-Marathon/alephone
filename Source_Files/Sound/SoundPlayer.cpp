@@ -86,8 +86,11 @@ int SoundPlayer::LoopManager(uint8* data, int length) {
 
 bool SoundPlayer::LoadParametersUpdates() {
 
+	bool softStop = soft_stop_signal.load();
 	SoundParameters soundParameters, bestParameters, bestRewindParameters;
 	float lastPriority = 0, rewindLastPriority = 0;
+
+	if (softStop && sound_transition.allow_transition) return true;
 
 	while (parameters.Consume(soundParameters)) {
 
@@ -109,15 +112,10 @@ bool SoundPlayer::LoadParametersUpdates() {
 		}
 	}
 
-	if (lastPriority > 0) {
-		parameters.Set(bestParameters);
-		sound_transition.allow_transition = true;
-		sound_transition.last_update_tick = GetCurrentTick();
-	}
-
+	if (lastPriority > 0) parameters.Set(bestParameters);
 	if (rewindLastPriority > 0) rewind_parameters = bestRewindParameters;
 
-	return lastPriority > 0 || rewindLastPriority > 0;
+	return lastPriority > 0 || rewindLastPriority > 0 || softStop;
 }
 
 //This is called everytime we process a player in the queue with this source
@@ -125,7 +123,8 @@ std::pair<bool, bool> SoundPlayer::SetUpALSourceIdle() {
 
 	auto& soundParameters = parameters.Get();
 	alSourcef(audio_source->source_id, AL_PITCH, soundParameters.pitch);
-	bool updatesDone = true;
+	bool needAnotherPass = false;
+	bool softStopDone = false;
 
 	if (soundParameters.local) {
 
@@ -141,11 +140,14 @@ std::pair<bool, bool> SoundPlayer::SetUpALSourceIdle() {
 			alSource3i(audio_source->source_id, AL_POSITION, 0, 0, 0);
 		}
 
+		bool softStopSignal = soft_stop_signal.load();
+		if (softStopSignal) vol = 0;
+
 		ComputeVolumeForTransition(vol);
 		auto finalVolume = sound_transition.current_volume;
-		updatesDone = sound_transition.current_volume == vol;
+		needAnotherPass = finalVolume != vol;
 
-		printf("%f\n", sound_transition.current_volume);
+		if (softStopSignal && finalVolume == 0) softStopDone = true;
 
 		finalVolume *= OpenALManager::Get()->GetMasterVolume();
 		alSourcef(audio_source->source_id, AL_GAIN, finalVolume);
@@ -173,7 +175,7 @@ std::pair<bool, bool> SoundPlayer::SetUpALSourceIdle() {
 		SetUpALSource3D();
 	}
 
-	return std::pair<bool, bool>(alGetError() == AL_NO_ERROR, updatesDone);
+	return std::pair<bool, bool>(alGetError() == AL_NO_ERROR && !softStopDone, needAnotherPass);
 }
 
 //This is called once, when we assign the source to the player
@@ -214,6 +216,7 @@ void SoundPlayer::ComputeVolumeForTransition(float targetVolume) {
 		volume = targetVolume;
 	}
 	
+	sound_transition.allow_transition = true;
 	sound_transition.last_update_tick = currentTick;
 	sound_transition.current_volume = volume;
 }

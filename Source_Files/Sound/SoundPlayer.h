@@ -58,6 +58,7 @@ public:
 	SoundParameters GetParameters() const { return parameters.Get(); }
 	static float Simulate(const SoundParameters soundParameters);
 	float GetPriority() const override { return Simulate(parameters.Get()); }
+	void AskSoftStop() { soft_stop_signal = true; }
 private:
 
 	struct SoundTransition {
@@ -83,6 +84,8 @@ private:
 	uint32_t data_length;
 	uint32_t current_index_data = 0;
 	uint32_t start_tick;
+
+	std::atomic_bool soft_stop_signal = { false };
 
 	static constexpr int rewind_time = 83;
 	static constexpr float smooth_volume_transition_threshold = 0.1f;
