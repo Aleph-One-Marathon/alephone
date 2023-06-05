@@ -119,11 +119,11 @@ bool SoundPlayer::LoadParametersUpdates() {
 }
 
 //This is called everytime we process a player in the queue with this source
-std::pair<bool, bool> SoundPlayer::SetUpALSourceIdle() {
+SetupALResult SoundPlayer::SetUpALSourceIdle() {
 
 	auto& soundParameters = parameters.Get();
 	alSourcef(audio_source->source_id, AL_PITCH, soundParameters.pitch);
-	bool needAnotherPass = false;
+	SetupALResult result = {true, true};
 	bool softStopDone = false;
 
 	if (soundParameters.local) {
@@ -143,9 +143,8 @@ std::pair<bool, bool> SoundPlayer::SetUpALSourceIdle() {
 		bool softStopSignal = soft_stop_signal.load();
 		if (softStopSignal) vol = 0;
 
-		ComputeVolumeForTransition(vol);
-		auto finalVolume = sound_transition.current_volume;
-		needAnotherPass = finalVolume != vol;
+		float finalVolume = ComputeVolumeForTransition(vol);
+		result.second = finalVolume == vol;
 
 		if (softStopSignal && finalVolume == 0) softStopDone = true;
 
@@ -172,10 +171,11 @@ std::pair<bool, bool> SoundPlayer::SetUpALSourceIdle() {
 		alSource3f(audio_source->source_id, AL_DIRECTION, u, w, v);
 #endif
 		alSource3f(audio_source->source_id, AL_POSITION, positionX, positionZ, positionY);
-		SetUpALSource3D();
+		result = SetUpALSource3D();
 	}
 
-	return std::pair<bool, bool>(alGetError() == AL_NO_ERROR && !softStopDone, needAnotherPass);
+	result.first &= alGetError() == AL_NO_ERROR && !softStopDone;
+	return result;
 }
 
 //This is called once, when we assign the source to the player
@@ -203,26 +203,46 @@ bool SoundPlayer::SetUpALSourceInit() {
 	return alGetError() == AL_NO_ERROR;
 }
 
-void SoundPlayer::ComputeVolumeForTransition(float targetVolume) {
+float SoundPlayer::ComputeParameterForTransition(float targetParameter, float currentParameter, int currentTick) const {
+	float computedParameter = std::max((targetParameter - currentParameter) * std::min((currentTick - sound_transition.last_update_tick) / (float)smooth_volume_transition_time_ms, 1.f) + currentParameter, 0.f);
+	return targetParameter > currentParameter ? std::min(targetParameter, computedParameter) : std::max(targetParameter, computedParameter);
+}
 
-	float volume;
+SoundBehavior SoundPlayer::ComputeVolumeForTransition(SoundBehavior targetSoundBehavior) {
+
+	auto currentTick = GetCurrentTick();
+	SoundBehavior computedSoundBehavior = targetSoundBehavior;
+
+	if (sound_transition.allow_transition && targetSoundBehavior != sound_transition.sound_behavior) {
+		computedSoundBehavior.distance_max = ComputeParameterForTransition(targetSoundBehavior.distance_max, sound_transition.sound_behavior.distance_max, currentTick);
+		computedSoundBehavior.distance_reference = ComputeParameterForTransition(targetSoundBehavior.distance_reference, sound_transition.sound_behavior.distance_reference, currentTick);
+		computedSoundBehavior.max_gain = ComputeParameterForTransition(targetSoundBehavior.max_gain, sound_transition.sound_behavior.max_gain, currentTick);
+		computedSoundBehavior.rolloff_factor = ComputeParameterForTransition(targetSoundBehavior.rolloff_factor, sound_transition.sound_behavior.rolloff_factor, currentTick);
+	}
+
+	sound_transition.allow_transition = true;
+	sound_transition.last_update_tick = currentTick;
+	sound_transition.sound_behavior = computedSoundBehavior;
+
+	return computedSoundBehavior;
+}
+
+float SoundPlayer::ComputeVolumeForTransition(float targetVolume) {
+
 	auto currentTick = GetCurrentTick();
 
-	if (sound_transition.allow_transition && std::abs(targetVolume - sound_transition.current_volume) > smooth_volume_transition_threshold) {
-		volume = std::max((targetVolume - sound_transition.current_volume) * std::min((currentTick - sound_transition.last_update_tick) / (float)smooth_volume_transition_time_ms, 1.f) + sound_transition.current_volume, 0.f);
-		volume = targetVolume > sound_transition.current_volume ? std::min(targetVolume, volume) : std::max(targetVolume, volume);
-	}
-	else {
-		volume = targetVolume;
-	}
+	float volume = sound_transition.allow_transition && std::abs(targetVolume - sound_transition.current_volume) > smooth_volume_transition_threshold ? 
+		ComputeParameterForTransition(targetVolume, sound_transition.current_volume, currentTick) : targetVolume;
 	
 	sound_transition.allow_transition = true;
 	sound_transition.last_update_tick = currentTick;
 	sound_transition.current_volume = volume;
+
+	return volume;
 }
 
 //Distance units are WORLD_ONE and are a copy of sound_behavior_definition for most part
-void SoundPlayer::SetUpALSource3D() const {
+SetupALResult SoundPlayer::SetUpALSource3D() {
 
 	auto& sound_parameters = parameters.Get();
 	bool obstruction = (sound_parameters.obstruction_flags & _sound_was_obstructed) || (sound_parameters.obstruction_flags & _sound_was_media_obstructed);
@@ -247,12 +267,16 @@ void SoundPlayer::SetUpALSource3D() const {
 #endif // 0
 
 	SoundBehavior behaviorParameters = obstruction ? sound_obstruct_behavior_parameters[sound_parameters.behavior] : sound_behavior_parameters[sound_parameters.behavior];
-	alSourcef(audio_source->source_id, AL_REFERENCE_DISTANCE, behaviorParameters.distance_reference);
-	alSourcef(audio_source->source_id, AL_MAX_DISTANCE, behaviorParameters.distance_max);
-	alSourcef(audio_source->source_id, AL_ROLLOFF_FACTOR, behaviorParameters.rolloff_factor);
-	alSourcef(audio_source->source_id, AL_MAX_GAIN, behaviorParameters.max_gain * calculated_volume);
-	alSourcef(audio_source->source_id, AL_GAIN, behaviorParameters.max_gain * calculated_volume);
+	SoundBehavior finalBehaviorParameters = ComputeVolumeForTransition(behaviorParameters);
+
+	alSourcef(audio_source->source_id, AL_REFERENCE_DISTANCE, finalBehaviorParameters.distance_reference);
+	alSourcef(audio_source->source_id, AL_MAX_DISTANCE, finalBehaviorParameters.distance_max);
+	alSourcef(audio_source->source_id, AL_ROLLOFF_FACTOR, finalBehaviorParameters.rolloff_factor);
+	alSourcef(audio_source->source_id, AL_MAX_GAIN, finalBehaviorParameters.max_gain * calculated_volume);
+	alSourcef(audio_source->source_id, AL_GAIN, finalBehaviorParameters.max_gain * calculated_volume);
 	alSourcei(audio_source->source_id, AL_DIRECT_FILTER, muffled || obstruction ? OpenALManager::Get()->GetObstructionFilter() : AL_FILTER_NULL);
+
+	return SetupALResult(alGetError() == AL_NO_ERROR, finalBehaviorParameters == behaviorParameters);
 }
 
 int SoundPlayer::GetNextData(uint8* data, int length) {

@@ -11,6 +11,8 @@
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/unordered/unordered_map.hpp>
 
+using SetupALResult = std::pair<bool, bool>; //first is source configuration suceeded for this pass, second is source is fully setup and doesn't need another pass
+
 template <typename T>
 struct AtomicStructure {
 private:
@@ -66,7 +68,7 @@ private:
     bool Update();
     std::unique_ptr<AudioSource> RetrieveSource();
     bool AssignSource();
-    virtual std::pair<bool, bool> SetUpALSourceIdle(); //Update of the source parameters (AL), done everytime the player is processed in the queue
+    virtual SetupALResult SetUpALSourceIdle(); //Update of the source parameters (AL), done everytime the player is processed in the queue
     virtual bool SetUpALSourceInit(); //Init of the source parameters (AL), done when the source is assigned to the player
 
     static inline const boost::unordered_map<std::pair<AudioFormat, bool>, int> mapping_audio_format_openal = {

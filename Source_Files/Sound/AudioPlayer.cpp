@@ -119,12 +119,12 @@ void AudioPlayer::SetVolume(float volume) {
 	is_sync_with_al_parameters = false;
 }
 
-std::pair<bool, bool> AudioPlayer::SetUpALSourceIdle() {
+SetupALResult AudioPlayer::SetUpALSourceIdle() {
 	float audio_volume = volume.load();
 	float master_volume = OpenALManager::Get()->GetMasterVolume();
 	alSourcef(audio_source->source_id, AL_MAX_GAIN, master_volume);
 	alSourcef(audio_source->source_id, AL_GAIN, audio_volume * master_volume);
-	return std::pair<bool, bool>(alGetError() == AL_NO_ERROR, true);
+	return SetupALResult(alGetError() == AL_NO_ERROR, true);
 }
 
 bool AudioPlayer::SetUpALSourceInit() {

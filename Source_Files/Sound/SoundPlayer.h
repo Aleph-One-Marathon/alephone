@@ -42,6 +42,14 @@ struct SoundBehavior {
 	float distance_max;
 	float rolloff_factor;
 	float max_gain;
+
+	bool operator==(const SoundBehavior& other) const {
+		return std::tie(distance_reference, distance_max, rolloff_factor, max_gain) == std::tie(other.distance_reference, other.distance_max, other.rolloff_factor, other.max_gain);
+	}
+
+	bool operator!=(const SoundBehavior& other) const {
+		return !(*(this) == other);
+	}
 };
 
 struct Sound {
@@ -58,25 +66,28 @@ public:
 	SoundParameters GetParameters() const { return parameters.Get(); }
 	static float Simulate(const SoundParameters soundParameters);
 	float GetPriority() const override { return Simulate(parameters.Get()); }
-	void AskSoftStop() { soft_stop_signal = true; }
+	void AskSoftStop() { soft_stop_signal = true; } //not supported by 3d sounds because no need to
 private:
 
 	struct SoundTransition {
 		uint32_t last_update_tick = 0;
 		float current_volume = 0;
+		SoundBehavior sound_behavior;
 		bool allow_transition = false;
 	};
 
 	void Rewind() override;
 	int GetNextData(uint8* data, int length) override;
 	int LoopManager(uint8* data, int length);
-	std::pair<bool, bool> SetUpALSourceIdle() override;
+	SetupALResult SetUpALSourceIdle() override;
+	SetupALResult SetUpALSource3D();
 	bool SetUpALSourceInit() override;
-	void SetUpALSource3D() const;
 	bool CanRewindSound(int baseTick) const { return baseTick + rewind_time < GetCurrentTick(); }
 	bool LoadParametersUpdates() override;
 	void AskRewind(SoundParameters soundParameters, const Sound& sound);
-	void ComputeVolumeForTransition(float targetVolume);
+	float ComputeParameterForTransition(float targetParameter, float currentParameter, int currentTick) const;
+	float ComputeVolumeForTransition(float targetVolume);
+	SoundBehavior ComputeVolumeForTransition(SoundBehavior targetSoundBehavior);
 	AtomicStructure<Sound> sound;
 	AtomicStructure<SoundParameters> parameters;
 	SoundParameters rewind_parameters;

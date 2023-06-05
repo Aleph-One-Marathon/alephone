@@ -11,7 +11,7 @@ public:
 private:
 	StreamDecoder* decoder;
 	int GetNextData(uint8* data, int length) override;
-	std::pair<bool, bool> SetUpALSourceIdle() override;
+	SetupALResult SetUpALSourceIdle() override;
 	static std::atomic<float> default_volume;
 
 	friend class OpenALManager;
