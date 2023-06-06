@@ -111,9 +111,9 @@ private:
 	};
 
 	static constexpr SoundBehavior sound_obstructed_or_muffled_behavior_parameters[] = {
-		{0.3, 3, 2, 0.3, 0.15},
-		{2, 9, 3.4, 0.5, 0.2},
-		{2.5, 12, 2.4, 0.75, 0.3}
+		{0.5, 3, 2, 0.3, 0.15},
+		{2.5, 9, 3.4, 0.5, 0.2},
+		{3, 12, 2.4, 0.75, 0.3}
 	};
 
 	static constexpr SoundBehavior sound_obstructed_and_muffled_behavior_parameters[] = {
