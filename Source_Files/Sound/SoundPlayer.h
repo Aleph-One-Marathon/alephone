@@ -42,9 +42,11 @@ struct SoundBehavior {
 	float distance_max;
 	float rolloff_factor;
 	float max_gain;
+	float high_frequency_gain;
 
 	bool operator==(const SoundBehavior& other) const {
-		return std::tie(distance_reference, distance_max, rolloff_factor, max_gain) == std::tie(other.distance_reference, other.distance_max, other.rolloff_factor, other.max_gain);
+		return std::tie(distance_reference, distance_max, rolloff_factor, max_gain, high_frequency_gain) == 
+			std::tie(other.distance_reference, other.distance_max, other.rolloff_factor, other.max_gain, other.high_frequency_gain);
 	}
 
 	bool operator!=(const SoundBehavior& other) const {
@@ -70,9 +72,9 @@ public:
 private:
 
 	struct SoundTransition {
-		uint32_t last_update_tick = 0;
+		uint32_t start_transition_tick = 0;
 		float current_volume = 0;
-		SoundBehavior sound_behavior;
+		SoundBehavior current_sound_behavior;
 		bool allow_transition = false;
 	};
 
@@ -103,15 +105,21 @@ private:
 	static constexpr int smooth_volume_transition_time_ms = 300;
 
 	static constexpr SoundBehavior sound_behavior_parameters[] = {
-		{0.5, 5, 1, 1},
-		{2.5, 15, 1.7, 1},
-		{3, 20, 1.2, 1}
+		{0.5, 5, 1, 1, 1},
+		{2.5, 15, 1.7, 1, 1},
+		{3, 20, 1.2, 1, 1}
 	};
 
-	static constexpr SoundBehavior sound_obstruct_behavior_parameters[] = {
-		{0.5, 3, 2, 0.3},
-		{2.5, 9, 3.4, 0.5},
-		{3, 12, 2.4, 0.75}
+	static constexpr SoundBehavior sound_obstructed_or_muffled_behavior_parameters[] = {
+		{0.3, 3, 2, 0.3, 0.15},
+		{2, 9, 3.4, 0.5, 0.2},
+		{2.5, 12, 2.4, 0.75, 0.3}
+	};
+
+	static constexpr SoundBehavior sound_obstructed_and_muffled_behavior_parameters[] = {
+		{0.2, 2, 3, 0.15, 0.1},
+		{1.5, 6, 4.2, 0.25, 0.15},
+		{2, 9, 3.6, 0.375, 0.2}
 	};
 
 	friend class OpenALManager;

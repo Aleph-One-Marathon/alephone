@@ -74,7 +74,7 @@ public:
 	bool IsBalanceRewindSound() const { return audio_parameters.balance_rewind; }
 	void CleanInactivePlayers();
 	ALCint GetRenderingFormat() const { return rendering_format; }
-	ALuint GetObstructionFilter() const { return obstruction_filter; }
+	ALuint GetLowPassFilter(float highFrequencyGain) const;
 	const std::vector<std::shared_ptr<AudioPlayer>>& GetAudioPlayers() const { return audio_players_local; }
 private:
 	static OpenALManager* instance;
@@ -117,7 +117,7 @@ private:
 	SDL_AudioSpec sdl_audio_specs_obtained;
 	AudioParameters audio_parameters;
 	ALCint rendering_format = 0;
-	ALuint obstruction_filter;
+	ALuint low_pass_filter;
 
 	static constexpr int max_sounds_for_source = 3;
 

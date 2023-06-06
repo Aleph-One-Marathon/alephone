@@ -169,7 +169,9 @@ std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(const Sound& sound, SoundP
 
 		if (existingPlayer) {
 
-			if (!(parameters.flags & _sound_cannot_be_restarted) && simulatedVolume + abortAmplitudeThreshold > SoundPlayer::Simulate(existingPlayer->parameters.Get())) {
+			const auto existingParameters = existingPlayer->parameters.Get();
+
+			if (!(parameters.flags & _sound_cannot_be_restarted) && (parameters.source_identifier == existingParameters.source_identifier || simulatedVolume + abortAmplitudeThreshold > SoundPlayer::Simulate(existingParameters))) {
 				existingPlayer->AskRewind(parameters, sound); //we found one, we won't create another player but rewind this one instead
 			}
 
@@ -343,11 +345,16 @@ bool OpenALManager::CloseDevice() {
 }
 
 bool OpenALManager::GenerateEffects() {
-	alGenFilters(1, &obstruction_filter);
-	alFilteri(obstruction_filter, AL_FILTER_TYPE, AL_FILTER_LOWPASS);
-	alFilterf(obstruction_filter, AL_LOWPASS_GAIN, 1.f);
-	alFilterf(obstruction_filter, AL_LOWPASS_GAINHF, 0.25f);
+	alGenFilters(1, &low_pass_filter);
+	alFilteri(low_pass_filter, AL_FILTER_TYPE, AL_FILTER_LOWPASS);
+	alFilterf(low_pass_filter, AL_LOWPASS_GAIN, 1.f);
+	alFilterf(low_pass_filter, AL_LOWPASS_GAINHF, 1.f);
 	return alGetError() == AL_NO_ERROR;
+}
+
+ALuint OpenALManager::GetLowPassFilter(float highFrequencyGain) const {
+	alFilterf(low_pass_filter, AL_LOWPASS_GAINHF, highFrequencyGain);
+	return low_pass_filter;
 }
 
 bool OpenALManager::GenerateSources() {
@@ -432,7 +439,7 @@ void OpenALManager::CleanEverything() {
 		sources_pool.pop();
 	}
 
-	alDeleteFilters(1, &obstruction_filter);
+	alDeleteFilters(1, &low_pass_filter);
 	bool closedDevice = CloseDevice();
 	assert(closedDevice && "Could not close audio device");
 }
