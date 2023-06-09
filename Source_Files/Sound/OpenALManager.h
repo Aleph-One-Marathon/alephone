@@ -13,8 +13,6 @@
 
 #include <math.h>
 
-#define LOAD_PROC(T, x)  ((x) = (T)alGetProcAddress(#x))
-
 constexpr float abortAmplitudeThreshold = MAXIMUM_SOUND_VOLUME / 6.f / 256;
 constexpr float angleConvert = 360 / float(FULL_CIRCLE);
 constexpr float degreToRadian = M_PI / 180.f;
@@ -76,6 +74,7 @@ public:
 	bool IsBalanceRewindSound() const { return audio_parameters.balance_rewind; }
 	void CleanInactivePlayers();
 	ALCint GetRenderingFormat() const { return rendering_format; }
+	ALuint GetLowPassFilter(float highFrequencyGain) const;
 	const std::vector<std::shared_ptr<AudioPlayer>>& GetAudioPlayers() const { return audio_players_local; }
 private:
 	static OpenALManager* instance;
@@ -86,9 +85,11 @@ private:
 	std::atomic<float> master_volume;
 	bool process_audio_active = false;
 	AtomicStructure<world_location3d> listener_location = {};
+	void UpdateParameters(AudioParameters parameters);
 	void UpdateListener();
 	void CleanEverything();
 	bool GenerateSources();
+	bool GenerateEffects();
 	bool OpenDevice();
 	bool CloseDevice();
 	void ProcessAudioQueue();
@@ -106,16 +107,25 @@ private:
 	static LPALCISRENDERFORMATSUPPORTEDSOFT alcIsRenderFormatSupportedSOFT;
 	static LPALCRENDERSAMPLESSOFT alcRenderSamplesSOFT;
 
+	/* Filter object functions */
+	static LPALGENFILTERS alGenFilters;
+	static LPALDELETEFILTERS alDeleteFilters;
+	static LPALFILTERI alFilteri;
+	static LPALFILTERF alFilterf;
+
 	static void MixerCallback(void* usr, uint8* stream, int len);
-	SDL_AudioSpec obtained;
+	SDL_AudioSpec sdl_audio_specs_obtained;
 	AudioParameters audio_parameters;
 	ALCint rendering_format = 0;
+	ALuint low_pass_filter;
+
+	static constexpr int max_sounds_for_source = 3;
 
 	/* format type we supports for mixing / rendering
 	* those are used from the first to the last of the list
 	  and we stop when our device support the corresponding format 
 	  Short is first, because there is no real purpose to use other format now */
-	const std::vector<ALCint> formatType = {
+	const std::vector<ALCint> format_type = {
 		ALC_SHORT_SOFT,
 		ALC_FLOAT_SOFT,
 		ALC_INT_SOFT,

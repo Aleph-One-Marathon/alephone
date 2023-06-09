@@ -17,7 +17,7 @@ private:
 	std::shared_ptr<StreamDecoder> decoder;
 	MusicParameters parameters;
 	int GetNextData(uint8* data, int length) override;
-	bool SetUpALSourceIdle() const override;
+	SetupALResult SetUpALSourceIdle() override;
 	static std::atomic<float> default_volume;
 
 	friend class OpenALManager;

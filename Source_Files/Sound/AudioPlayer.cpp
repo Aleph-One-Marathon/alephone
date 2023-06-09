@@ -10,7 +10,7 @@ AudioPlayer::AudioPlayer(int rate, bool stereo, AudioFormat audioFormat) {
 bool AudioPlayer::AssignSource() {
 	if (audio_source) return true;
 	audio_source = OpenALManager::Get()->PickAvailableSource(GetPriority());
-	return this->audio_source && SetUpALSourceInit();
+	return audio_source && SetUpALSourceInit();
 }
 
 void AudioPlayer::ResetSource() {
@@ -24,6 +24,8 @@ void AudioPlayer::ResetSource() {
 	for (auto& buffer : audio_source->buffers) {
 		buffer.second = false;
 	}
+
+	SetUpALSourceInit();
 }
 
 //Get back the source of the player
@@ -75,8 +77,6 @@ void AudioPlayer::Rewind() {
 
 bool AudioPlayer::Play() {
 
-	if (rewind_signal) Rewind(); //We have to restart the sound here
-
 	FillBuffers();
 	ALint state;
 
@@ -99,10 +99,13 @@ bool AudioPlayer::Play() {
 }
 
 bool AudioPlayer::Update() {
-	bool needs_update = LoadParametersUpdates() || !is_sync_with_al_parameters;
-	if (!needs_update) return true;
+	bool needsUpdate = LoadParametersUpdates() || !is_sync_with_al_parameters;
+	if (rewind_signal) Rewind();
+	if (!needsUpdate) return true;
 	is_sync_with_al_parameters = true;
-	return SetUpALSourceIdle();
+	auto updateStatus = SetUpALSourceIdle();
+	is_sync_with_al_parameters.store(is_sync_with_al_parameters && updateStatus.second);
+	return updateStatus.first;
 }
 
 void AudioPlayer::SetVolume(float volume) {
@@ -112,15 +115,15 @@ void AudioPlayer::SetVolume(float volume) {
 	is_sync_with_al_parameters = false;
 }
 
-bool AudioPlayer::SetUpALSourceIdle() const {
+SetupALResult AudioPlayer::SetUpALSourceIdle() {
 	float audio_volume = volume.load();
 	float master_volume = OpenALManager::Get()->GetMasterVolume();
 	alSourcef(audio_source->source_id, AL_MAX_GAIN, master_volume);
 	alSourcef(audio_source->source_id, AL_GAIN, audio_volume * master_volume);
-	return true;
+	return SetupALResult(alGetError() == AL_NO_ERROR, true);
 }
 
-bool AudioPlayer::SetUpALSourceInit() const {
+bool AudioPlayer::SetUpALSourceInit() {
 	alSourcei(audio_source->source_id, AL_MIN_GAIN, 0);
 	alSourcei(audio_source->source_id, AL_PITCH, 1);
 	alSourcei(audio_source->source_id, AL_SOURCE_RELATIVE, AL_TRUE);
@@ -130,5 +133,6 @@ bool AudioPlayer::SetUpALSourceInit() const {
 	alSourcei(audio_source->source_id, AL_DISTANCE_MODEL, AL_NONE);
 	alSourcei(audio_source->source_id, AL_REFERENCE_DISTANCE, 0);
 	alSourcei(audio_source->source_id, AL_MAX_DISTANCE, 0);
-	return true;
+	alSourcei(audio_source->source_id, AL_DIRECT_FILTER, AL_FILTER_NULL);
+	return alGetError() == AL_NO_ERROR;
 }

@@ -241,7 +241,9 @@ void handle_preferences(void)
 	d.add(w_controls);
 	w_button *w_environment = new w_button("ENVIRONMENT", environment_dialog, &d);
 	d.add(w_environment);
-	
+	w_button *w_plugins = new w_button("PLUGINS", plugins_dialog, &d);
+	d.add(w_plugins);
+
 	w_button *w_return = new w_button("RETURN", dialog_cancel, &d);
 	d.add(w_return);
 
@@ -253,6 +255,7 @@ void handle_preferences(void)
 	placer->add(w_sound);
 	placer->add(w_controls);
 	placer->add(w_environment);
+	placer->add(w_plugins);
 	placer->add(new w_spacer, true);
 	placer->add(w_return);
 
@@ -2661,7 +2664,7 @@ static void controls_dialog(void *arg)
 	hotkeys->add(hotkey_table, true);
 
 	hotkeys->add(new w_spacer(), true);
-	hotkeys->dual_add(new w_static_text("Hotkeys 1-9 are used to switch weapons, but can be overriden by Lua scripts"), d);
+	hotkeys->dual_add(new w_static_text("Hotkeys 1-9 are used to switch weapons, but can be overridden by Lua scripts"), d);
 	hotkeys->dual_add(new w_static_text("Hotkeys 10-12 are reserved for Lua scripts"), d);
 
 	vertical_placer *iface = new vertical_placer();
@@ -2967,9 +2970,6 @@ static void environment_dialog(void *arg)
 	table->dual_add(resources_w->label("External Resources"), d);
 	table->dual_add(resources_w, d);
 #endif
-
-	table->add_row(new w_spacer, true);
-	table->dual_add_row(new w_button("PLUGINS", plugins_dialog, &d), d);
 
 #ifndef MAC_APP_STORE
 	table->add_row(new w_spacer, true);
@@ -3981,9 +3981,7 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->shell_key_bindings = default_shell_key_bindings;
 	preferences->hotkey_bindings = default_hotkey_bindings;
 	
-	// LP addition: set up defaults for modifiers:
-	// interchange run and walk, but don't interchange swim and sink.
-	preferences->modifiers = _inputmod_interchange_run_walk;
+	preferences->modifiers = 0;
 
 	preferences->sens_horizontal = FIXED_ONE / 4;
 	preferences->sens_vertical = FIXED_ONE / 4;
