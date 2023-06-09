@@ -216,10 +216,11 @@ float SoundPlayer::ComputeParameterForTransition(float targetParameter, float cu
 
 SoundBehavior SoundPlayer::ComputeVolumeForTransition(SoundBehavior targetSoundBehavior) {
 
-	const auto currentTick = GetCurrentTick();
 	auto computedSoundBehavior = targetSoundBehavior;
 
 	if (sound_transition.allow_transition && targetSoundBehavior != sound_transition.current_sound_behavior) {
+
+		const auto currentTick = GetCurrentTick();
 
 		if (sound_transition.start_transition_tick == 0) {
 			sound_transition.start_transition_tick = currentTick;
@@ -245,10 +246,11 @@ SoundBehavior SoundPlayer::ComputeVolumeForTransition(SoundBehavior targetSoundB
 
 float SoundPlayer::ComputeVolumeForTransition(float targetVolume) {
 
-	const auto currentTick = GetCurrentTick();
 	float volume = targetVolume;
 
 	if (sound_transition.allow_transition && std::abs(targetVolume - sound_transition.current_volume) > smooth_volume_transition_threshold) {
+
+		const auto currentTick = GetCurrentTick();
 
 		if (sound_transition.start_transition_tick == 0) {
 			sound_transition.start_transition_tick = currentTick;
