@@ -542,14 +542,13 @@ static void update_fps_display(SDL_Surface *s)
 		}
 		else
 		{
-			
 			int latency = NetGetLatency();
-			if (latency > -1)
-				sprintf(ms, "(%i ms)", latency);
+			if (latency > -1 && latency < 10000)
+				sprintf(ms, "(%d ms)", latency);
 			else
 				ms[0] = '\0';
 			
-			sprintf(fps, "%0.f fps %s", fps_counter.get(), ms);
+			snprintf(fps, sizeof(fps), "%0.f fps %s", fps_counter.get(), ms);
 		}
 
 		FontSpecifier& Font = GetOnScreenFont();

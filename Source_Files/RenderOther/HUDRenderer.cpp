@@ -419,10 +419,10 @@ void HUD_Class::update_inventory_panel(bool force_redraw)
 						{
 							struct player_data *player = get_player_data(player_index);
 
-							int kills_left = dynamic_world->game_information.kill_limit - (player->total_damage_given.kills - player->damage_taken[player_index].kills);
-							if (kills_left < kill_limit) kill_limit = kills_left;
+							int n_kills_left = dynamic_world->game_information.kill_limit - (player->total_damage_given.kills - player->damage_taken[player_index].kills);
+							if (n_kills_left < kill_limit) kill_limit = n_kills_left;
 						}
-						char kills_left[4];
+						char kills_left[16];
 						sprintf(kills_left, "%d", kill_limit);
 						draw_inventory_time(kills_left, current_row-1);
 						break;
