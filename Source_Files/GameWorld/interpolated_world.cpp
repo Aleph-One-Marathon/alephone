@@ -198,6 +198,7 @@ void init_interpolated_world()
 	}
 
 	previous_tick_world_view.origin_polygon_index = NONE;
+	current_tick_world_view.origin_polygon_index = NONE;
 
 	weapon_display_information data;
 	short count = 0;
