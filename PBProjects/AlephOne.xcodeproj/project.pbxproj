@@ -717,6 +717,10 @@
 		AE7C21B60BFF67B700CE63EC /* lvm.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C219A0BFF67B700CE63EC /* lvm.c */; };
 		AE7C21B70BFF67B700CE63EC /* lzio.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C219B0BFF67B700CE63EC /* lzio.c */; };
 		AE7C21D60BFF688000CE63EC /* Update.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21D50BFF688000CE63EC /* Update.cpp */; };
+		AE96370C2A39578600DE43FF /* lua_music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE96370B2A39578600DE43FF /* lua_music.cpp */; };
+		AE96370D2A39578600DE43FF /* lua_music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE96370B2A39578600DE43FF /* lua_music.cpp */; };
+		AE96370E2A39578600DE43FF /* lua_music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE96370B2A39578600DE43FF /* lua_music.cpp */; };
+		AE96370F2A39578600DE43FF /* lua_music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE96370B2A39578600DE43FF /* lua_music.cpp */; };
 		AE9974FE2661D49E00DDD370 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9974FD2661D49E00DDD370 /* AudioToolbox.framework */; };
 		AE9975002661D4DD00DDD370 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9974FF2661D4DD00DDD370 /* Carbon.framework */; };
 		AE9975022661D50F00DDD370 /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9975012661D50F00DDD370 /* ForceFeedback.framework */; };
@@ -2004,6 +2008,8 @@
 		AE7C21D40BFF686200CE63EC /* Update.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Update.h; path = ../Source_Files/Network/Update.h; sourceTree = "<group>"; };
 		AE7C21D50BFF688000CE63EC /* Update.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Update.cpp; path = ../Source_Files/Network/Update.cpp; sourceTree = "<group>"; };
 		AE941DE713E783F30077218A /* Info-AlephOne-Xcode4.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-AlephOne-Xcode4.plist"; sourceTree = "<group>"; };
+		AE96370A2A39577800DE43FF /* lua_music.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = lua_music.h; sourceTree = "<group>"; };
+		AE96370B2A39578600DE43FF /* lua_music.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_music.cpp; sourceTree = "<group>"; };
 		AE9974FD2661D49E00DDD370 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		AE9974FF2661D4DD00DDD370 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		AE9975012661D50F00DDD370 /* ForceFeedback.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ForceFeedback.framework; path = System/Library/Frameworks/ForceFeedback.framework; sourceTree = SDKROOT; };
@@ -2627,6 +2633,8 @@
 		F51B0587047AC6DA01C5C930 /* Lua */ = {
 			isa = PBXGroup;
 			children = (
+				AE96370B2A39578600DE43FF /* lua_music.cpp */,
+				AE96370A2A39577800DE43FF /* lua_music.h */,
 				AE780E1A2533A4FF002184B5 /* lua_ephemera.h */,
 				AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */,
 				276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */,
@@ -4551,6 +4559,7 @@
 				AE505C89141D45E600915344 /* network_star_spoke.cpp in Sources */,
 				AE505C8B141D45E600915344 /* RingGameProtocol.cpp in Sources */,
 				AE505C8C141D45E600915344 /* StarGameProtocol.cpp in Sources */,
+				AE96370E2A39578600DE43FF /* lua_music.cpp in Sources */,
 				AE505C8D141D45E600915344 /* AStream.cpp in Sources */,
 				AE505C8F141D45E600915344 /* CircularByteBuffer.cpp in Sources */,
 				AE505C90141D45E600915344 /* lua_script.cpp in Sources */,
@@ -4775,6 +4784,7 @@
 				AEB4A22A14296CAE00537AE7 /* network_star_spoke.cpp in Sources */,
 				AEB4A22C14296CAE00537AE7 /* RingGameProtocol.cpp in Sources */,
 				AEB4A22D14296CAE00537AE7 /* StarGameProtocol.cpp in Sources */,
+				AE96370F2A39578600DE43FF /* lua_music.cpp in Sources */,
 				AEB4A22E14296CAE00537AE7 /* AStream.cpp in Sources */,
 				AEB4A23014296CAE00537AE7 /* CircularByteBuffer.cpp in Sources */,
 				AEB4A23114296CAE00537AE7 /* lua_script.cpp in Sources */,
@@ -4999,6 +5009,7 @@
 				AEC3C85709AD68AC003258E4 /* network_star_spoke.cpp in Sources */,
 				AEC3C85909AD68AC003258E4 /* RingGameProtocol.cpp in Sources */,
 				AEC3C85A09AD68AC003258E4 /* StarGameProtocol.cpp in Sources */,
+				AE96370C2A39578600DE43FF /* lua_music.cpp in Sources */,
 				AEC3C85B09AD68AC003258E4 /* AStream.cpp in Sources */,
 				AEC3C85D09AD68AC003258E4 /* CircularByteBuffer.cpp in Sources */,
 				AEC3C85E09AD68AC003258E4 /* lua_script.cpp in Sources */,
@@ -5223,6 +5234,7 @@
 				AEFD873613EB84CF00C1E687 /* network_star_spoke.cpp in Sources */,
 				AEFD873813EB84CF00C1E687 /* RingGameProtocol.cpp in Sources */,
 				AEFD873913EB84CF00C1E687 /* StarGameProtocol.cpp in Sources */,
+				AE96370D2A39578600DE43FF /* lua_music.cpp in Sources */,
 				AEFD873A13EB84CF00C1E687 /* AStream.cpp in Sources */,
 				AEFD873C13EB84CF00C1E687 /* CircularByteBuffer.cpp in Sources */,
 				AEFD873D13EB84CF00C1E687 /* lua_script.cpp in Sources */,
