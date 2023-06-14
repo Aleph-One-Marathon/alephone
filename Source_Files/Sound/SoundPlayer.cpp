@@ -138,23 +138,22 @@ SetupALResult SoundPlayer::SetUpALSourceIdle() {
 
 	if (soundParameters.local) {
 
-		float vol = volume;
+		bool softStopSignal = soft_stop_signal.load();
+		float volume = softStopSignal ? 0 : 1;
+
 		if (soundParameters.stereo_parameters.is_panning) {
 			auto pan = (acosf(std::min(soundParameters.stereo_parameters.gain_left, 1.f)) + asinf(std::min(soundParameters.stereo_parameters.gain_right, 1.f))) / ((float)M_PI); // average angle in [0,1]
 			pan = 2 * pan - 1; // convert to [-1, 1]
 			pan *= 0.5f; // 0.5 = sin(30') for a +/- 30 degree arc
 			alSource3f(audio_source->source_id, AL_POSITION, pan, 0, -sqrtf(1.0f - pan * pan));
-			vol *= soundParameters.stereo_parameters.gain_global;
+			volume *= soundParameters.stereo_parameters.gain_global;
 		}
 		else {
 			alSource3i(audio_source->source_id, AL_POSITION, 0, 0, 0);
 		}
 
-		bool softStopSignal = soft_stop_signal.load();
-		if (softStopSignal) vol = 0;
-
-		float finalVolume = ComputeVolumeForTransition(vol);
-		result.second = finalVolume == vol;
+		float finalVolume = ComputeVolumeForTransition(volume);
+		result.second = finalVolume == volume;
 
 		if (softStopSignal && finalVolume == 0) softStopDone = true;
 
@@ -280,11 +279,11 @@ SetupALResult SoundPlayer::SetUpALSource3D() {
 	const auto& soundParameters = parameters.Get();
 	const bool obstruction = (soundParameters.obstruction_flags & _sound_was_obstructed) || (soundParameters.obstruction_flags & _sound_was_media_obstructed);
 	const bool muffled = soundParameters.obstruction_flags & _sound_was_media_muffled;
-	float calculated_volume = volume * OpenALManager::Get()->GetMasterVolume();
+	float volume = OpenALManager::Get()->GetMasterVolume();
 
 #if 0 //previous rulesets for obstructions
 
-	if (muffled) calculated_volume /= 2;
+	if (muffled) volume /= 2;
 
 	//Exception to the rule
 	if (sound_parameters.behavior == _sound_is_quiet && obstruction) {
@@ -294,7 +293,7 @@ SetupALResult SoundPlayer::SetUpALSource3D() {
 
 	//One more rule for this case
 	if (sound_parameters.behavior == _sound_is_loud && !obstruction) {
-		alSourcef(audio_source->source_id, AL_MIN_GAIN, calculated_volume / 8);
+		alSourcef(audio_source->source_id, AL_MIN_GAIN, volume / 8);
 	}
 
 #endif // 0
@@ -308,8 +307,8 @@ SetupALResult SoundPlayer::SetUpALSource3D() {
 	alSourcef(audio_source->source_id, AL_REFERENCE_DISTANCE, finalBehaviorParameters.distance_reference);
 	alSourcef(audio_source->source_id, AL_MAX_DISTANCE, finalBehaviorParameters.distance_max);
 	alSourcef(audio_source->source_id, AL_ROLLOFF_FACTOR, finalBehaviorParameters.rolloff_factor);
-	alSourcef(audio_source->source_id, AL_MAX_GAIN, finalBehaviorParameters.max_gain * calculated_volume);
-	alSourcef(audio_source->source_id, AL_GAIN, finalBehaviorParameters.max_gain * calculated_volume);
+	alSourcef(audio_source->source_id, AL_MAX_GAIN, finalBehaviorParameters.max_gain * volume);
+	alSourcef(audio_source->source_id, AL_GAIN, finalBehaviorParameters.max_gain * volume);
 	alSourcei(audio_source->source_id, AL_DIRECT_FILTER, OpenALManager::Get()->GetLowPassFilter(finalBehaviorParameters.high_frequency_gain));
 	return SetupALResult(alGetError() == AL_NO_ERROR, finalBehaviorParameters == behaviorParameters);
 }

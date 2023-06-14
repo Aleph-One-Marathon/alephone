@@ -108,18 +108,10 @@ bool AudioPlayer::Update() {
 	return updateStatus.first;
 }
 
-void AudioPlayer::SetVolume(float volume) {
-	volume = std::min(1.f, std::max(0.f, volume));
-	if (volume == this->volume) return;
-	this->volume = volume;
-	is_sync_with_al_parameters = false;
-}
-
 SetupALResult AudioPlayer::SetUpALSourceIdle() {
-	float audio_volume = volume.load();
 	float master_volume = OpenALManager::Get()->GetMasterVolume();
 	alSourcef(audio_source->source_id, AL_MAX_GAIN, master_volume);
-	alSourcef(audio_source->source_id, AL_GAIN, audio_volume * master_volume);
+	alSourcef(audio_source->source_id, AL_GAIN, master_volume);
 	return SetupALResult(alGetError() == AL_NO_ERROR, true);
 }
 

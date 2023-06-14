@@ -86,7 +86,7 @@ void Music::Slot::Fade(float limitVolume, short duration, bool stopOnNoVolume)
 {
 	if (Playing())
 	{
-		auto currentVolume = musicPlayer->GetVolume();
+		auto currentVolume = musicPlayer->GetParameters().volume;
 		if (currentVolume == limitVolume) return;
 
 		music_fade_start_volume = currentVolume;
@@ -152,8 +152,8 @@ std::pair<bool, float> Music::Slot::ComputeFadingVolume()
 
 void Music::Slot::SetVolume(float volume)
 {
-	parameters.volume = volume;
-	if (musicPlayer) musicPlayer->SetVolume(volume);
+	SetParameters(parameters.loop, volume);
+	if (musicPlayer) musicPlayer->UpdateParameters(parameters);
 }
 
 void Music::Slot::Pause()
@@ -172,7 +172,7 @@ void Music::Slot::Close()
 bool Music::Slot::SetParameters(bool loop, float volume)
 {
 	parameters.loop = loop;
-	parameters.volume = volume;
+	parameters.volume = std::max(std::min(volume, 1.f), 0.f);
 	return true;
 }
 
