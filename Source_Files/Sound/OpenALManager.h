@@ -57,7 +57,7 @@ public:
 	void StopAllPlayers();
 	std::shared_ptr<SoundPlayer> PlaySound(const Sound& sound, SoundParameters parameters);
 	std::shared_ptr<SoundPlayer> PlaySound(LoadedResource& rsrc, SoundParameters parameters);
-	std::shared_ptr<MusicPlayer> PlayMusic(StreamDecoder* decoder);
+	std::shared_ptr<MusicPlayer> PlayMusic(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters);
 	std::shared_ptr<StreamPlayer> PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, AudioFormat audioFormat);
 	void StopSound(short sound_identifier, short source_identifier);
 	std::unique_ptr<AudioPlayer::AudioSource> PickAvailableSource(float priority);

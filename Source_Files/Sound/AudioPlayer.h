@@ -85,7 +85,6 @@ private:
 public:
     void AskStop() { stop_signal = true; }
     bool IsActive() const { return is_active.load(); }
-    void SetVolume(float volume);
     void AskRewind() { rewind_signal = true; }
     virtual short GetIdentifier() const { return NONE; }
     virtual short GetSourceIdentifier() const { return NONE; }
@@ -96,12 +95,10 @@ protected:
     void FillBuffers();
     virtual int GetNextData(uint8* data, int length) = 0;
     virtual bool LoadParametersUpdates() { return false; }
-    int GetCurrentTick() const;
     std::atomic_bool rewind_signal = { false };
     std::atomic_bool stop_signal = { false };
     std::atomic_bool is_active = { true };
     std::atomic_bool is_sync_with_al_parameters = { false };
-    std::atomic<float> volume = { 1 };
     int rate = 0;
     ALenum format = 0; //Mono 8-16-32f or stereo 8-16-32f
     std::unique_ptr<AudioSource> audio_source;

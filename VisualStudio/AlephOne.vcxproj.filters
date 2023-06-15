@@ -715,6 +715,9 @@
     <ClCompile Include="..\Source_Files\Sound\AudioPlayer.cpp">
       <Filter>Sound\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source_Files\Lua\lua_music.cpp">
+      <Filter>Lua\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source_Files\CSeries\BStream.h">
@@ -1400,6 +1403,9 @@
     </ClInclude>
     <ClInclude Include="..\Source_Files\Sound\StreamPlayer.h">
       <Filter>Sound\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source_Files\Lua\lua_music.h">
+      <Filter>Lua\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

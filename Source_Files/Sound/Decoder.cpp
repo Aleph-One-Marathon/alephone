@@ -28,19 +28,19 @@
 
 using std::unique_ptr;
 
-StreamDecoder* StreamDecoder::Get(FileSpecifier& File)
+unique_ptr<StreamDecoder> StreamDecoder::Get(FileSpecifier& File)
 {
 #ifdef HAVE_FFMPEG
 	{
 		unique_ptr<FFmpegDecoder> ffmpegDecoder(std::make_unique<FFmpegDecoder>());
 		if (ffmpegDecoder->Open(File))
-			return ffmpegDecoder.release();
+			return ffmpegDecoder;
 	}
 #endif
 
 	unique_ptr<SndfileDecoder> sndfileDecoder(std::make_unique<SndfileDecoder>());
 	if (sndfileDecoder->Open(File))
-		return sndfileDecoder.release();
+		return sndfileDecoder;
 
 	return 0;
 }

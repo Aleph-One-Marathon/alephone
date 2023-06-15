@@ -1,6 +1,5 @@
 #include "AudioPlayer.h"
 #include "OpenALManager.h"
-#include "Movie.h"
 #include <array>
 
 AudioPlayer::AudioPlayer(int rate, bool stereo, AudioFormat audioFormat) {
@@ -27,10 +26,6 @@ void AudioPlayer::ResetSource() {
 	}
 
 	SetUpALSourceInit();
-}
-
-int AudioPlayer::GetCurrentTick() const { 
-	return Movie::instance()->IsRecording() ? Movie::instance()->GetCurrentAudioTimeStamp() : machine_tick_count(); 
 }
 
 //Get back the source of the player
@@ -113,17 +108,10 @@ bool AudioPlayer::Update() {
 	return updateStatus.first;
 }
 
-void AudioPlayer::SetVolume(float volume) {
-	if (volume == this->volume) return;
-	this->volume = volume;
-	is_sync_with_al_parameters = false;
-}
-
 SetupALResult AudioPlayer::SetUpALSourceIdle() {
-	float audio_volume = volume.load();
 	float master_volume = OpenALManager::Get()->GetMasterVolume();
 	alSourcef(audio_source->source_id, AL_MAX_GAIN, master_volume);
-	alSourcef(audio_source->source_id, AL_GAIN, audio_volume * master_volume);
+	alSourcef(audio_source->source_id, AL_GAIN, master_volume);
 	return SetupALResult(alGetError() == AL_NO_ERROR, true);
 }
 

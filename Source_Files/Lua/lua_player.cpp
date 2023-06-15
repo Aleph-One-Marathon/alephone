@@ -37,7 +37,6 @@ LUA_PLAYER.CPP
 #include "lua_templates.h"
 #include "map.h"
 #include "monsters.h"
-#include "Music.h"
 #include "network.h"
 #include "player.h"
 #include "projectiles.h"
@@ -2791,89 +2790,7 @@ const luaL_Reg Lua_Game_Set[] = {
 	{0, 0}
 };
 
-char Lua_Music_Name[] = "Music";
-typedef L_Class<Lua_Music_Name> Lua_Music;
 
-int Lua_Music_Clear(lua_State *L)
-{
-	Music::instance()->ClearLevelMusic();
-	return 0;
-}
-
-int Lua_Music_Fade(lua_State *L)
-{
-	int duration;
-	if (!lua_isnumber(L, 1))
-		duration = 1000;
-	else
-		duration = static_cast<int>(lua_tonumber(L, 1) * 1000);
-	Music::instance()->FadeOut(duration);
-	Music::instance()->ClearLevelMusic();
-	return 0;
-}
-
-int Lua_Music_Play(lua_State *L)
-{
-	bool restart_music;
-	restart_music = !Music::instance()->IsLevelMusicActive() && !Music::instance()->Playing();
-	for (int n = 1; n <= lua_gettop(L); n++)
-	{
-		if (!lua_isstring(L, n))
-			return luaL_error(L, "play: invalid file specifier");
-
-		std::string search_path = L_Get_Search_Path(L);
-
-		FileSpecifier file;
-		if (search_path.size())
-		{
-			if (!file.SetNameWithPath(lua_tostring(L, n), search_path))
-				Music::instance()->PushBackLevelMusic(file);
-		}
-		else
-		{
-			if (file.SetNameWithPath(lua_tostring(L, n)))
-				Music::instance()->PushBackLevelMusic(file);
-		}
-	}
-
-	if (restart_music)
-		Music::instance()->PreloadLevelMusic();
-	return 0;
-}
-
-int Lua_Music_Stop(lua_State *L)
-{
-	Music::instance()->ClearLevelMusic();
-	Music::instance()->StopLevelMusic();
-
-	return 0;
-}
-
-int Lua_Music_Valid(lua_State* L) {
-	int top = lua_gettop(L);
-	for(int n = 1; n <= top; n++) {
-		if(!lua_isstring(L, n))
-			return luaL_error(L, "valid: invalid file specifier");
-		FileSpecifier path;
-		if(path.SetNameWithPath(lua_tostring(L, n))) {
-			StreamDecoder* stream = StreamDecoder::Get(path);
-			if(stream) {
-				lua_pushboolean(L, true);
-				delete stream;
-			} else lua_pushboolean(L, false);
-		} else lua_pushboolean(L, false);
-	}
-	return top;
-}
-
-const luaL_Reg Lua_Music_Get[] = {
-	{"clear", L_TableFunction<Lua_Music_Clear>},
-	{"fade", L_TableFunction<Lua_Music_Fade>},
-	{"play", L_TableFunction<Lua_Music_Play>},
-	{"stop", L_TableFunction<Lua_Music_Stop>},
-	{"valid", L_TableFunction<Lua_Music_Valid>},
-	{0, 0}
-};
 
 static void Lua_Player_load_compatibility(lua_State *L);
 
@@ -2972,15 +2889,9 @@ int Lua_Player_register (lua_State *L)
 	Lua_TextureTypes::Register(L);
 	Lua_TextureTypes::Length = Lua_TextureTypes::ConstantLength(NUMBER_OF_LUA_TEXTURE_TYPES);
 
-	Lua_Music::Register(L, Lua_Music_Get);
-
 	// register one Game userdatum globally
 	Lua_Game::Push(L, 0);
 	lua_setglobal(L, Lua_Game_Name);
-
-	// register one Music userdatum
-	Lua_Music::Push(L, 0);
-	lua_setglobal(L, Lua_Music_Name);
 	
 	Lua_Player_load_compatibility(L);
 	

@@ -814,7 +814,6 @@ bool goto_level(
 		}
 		LoadStatsLua();
 
-		Music::instance()->PreloadLevelMusic();
 		set_game_error(SavedType,SavedError);
 		
 		if (!new_game)
@@ -1291,7 +1290,6 @@ bool revert_game(
 		successful= load_game_from_file(revert_game_data.SavedGame, true);
 		if (successful) 
 		{
-			Music::instance()->PreloadLevelMusic();
 			RunLuaScript();
 			
 			// LP: added for loading the textures if one had died on another level;

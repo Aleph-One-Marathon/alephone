@@ -1134,19 +1134,56 @@
 <h3>
 <a name="Music"></a>Music</h3>
 <dl>
-<dt>Music</dt>
-<dd><dl>
-<dt>.clear()</dt>
+<dt># Music</dt>
+<dd><p class="description">maximum number of music channels active simultaneously</p></dd>
+<dt>Music()</dt>
+<dd><p class="description">iterates through all the music channels</p></dd>
+<dt>Music.new(track [, volume] [, loop]) <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">returns a new music channel</p>
+<p class="note">volume is decimal [0 - 1] and is 1 if not specified </p>
+<p class="note">loop is enabled by default </p>
+</dd>
+<dt>Music.clear()</dt>
 <dd><p class="description">clears the level playlist</p></dd>
-<dt>.fade(duration)</dt>
+<dt>Music.fade(duration)</dt>
 <dd><p class="description">fades out the currently playing track and clears the playlist</p></dd>
-<dt>.play(track1 [, track2] [, ...])</dt>
+<dt>Music.play(track1 [, track2] [, ...])</dt>
 <dd><p class="description">appends all of the specified tracks to the end of the playlist</p></dd>
-<dt>.stop()</dt>
-<dd><p class="description">stops level music and clears the playlist</p></dd>
-<dt>.valid(track1 [, track2] [, ...])</dt>
+<dt>Music.stop()</dt>
+<dd><p class="description">stops level music and clears the playlist; also invalidates all music channels</p></dd>
+<dt>Music.valid(track1 [, track2] [, ...])</dt>
 <dd><p class="description">for every track passed, return true if it exists and is playable and false otherwise</p></dd>
-</dl></dd>
+<dt>Music[index]</dt>
+<dd><dl>
+	  <dt>:play() <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">plays the music</p>
+<p class="note">if the music was stopped, restarts it </p>
+</dd>
+	  <dt>:stop() <span class="version">git</span>
+</dt>
+<dd><p class="description">stops the music</p></dd>
+	  <dt>:fade(volume [, duration] [, stop_after_fade]) <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">fades the music</p>
+<p class="note">it will fade in until volume is reached. volume is decimal [0 - 1] </p>
+<p class="note">duration unit is ms and is 1000 if not specified </p>
+<p class="note">stop_after_fade is disabled by default, if set to true if the volume reaches 0 while fading the music will automatically stop </p>
+</dd>
+	  <dt>.volume <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">the volume of the music</p>
+<p class="note">volume is decimal [0 - 1] </p>
+</dd>
+	  <dt>.active<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">returns true if the music is still playing</p></dd>
+    </dl></dd>
 </dl>
 <h3>
 <a name="Platforms"></a>Platforms</h3>

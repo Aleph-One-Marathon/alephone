@@ -114,6 +114,7 @@ extern "C"
 #include "interpolated_world.h"
 
 #include "lua_script.h"
+#include "lua_music.h"
 #include "lua_ephemera.h"
 #include "lua_map.h"
 #include "lua_monsters.h"
@@ -839,6 +840,7 @@ void LuaState::RegisterFunctions()
 	lua_register(State(), "player_control", L_Player_Control);
 //	lua_register(state, "prompt", L_Prompt);
 
+	Lua_Music_register(State());
 	Lua_Ephemera_register(State());
 	Lua_Map_register(State());
 	Lua_Monsters_register(State());
