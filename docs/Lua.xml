@@ -1093,14 +1093,14 @@
       </variable>
     </table>
     <table name="music">
-	  <function name="play" version="big K">
+	  <function name="play" version="git">
 		<description>plays the music</description>
 		<note>if the music was stopped, restarts it</note>
 	  </function>
-	  <function name="stop" version="big K">
+	  <function name="stop" version="git">
 		<description>stops the music</description>
 	  </function>
-	  <function name="fade" version="big K">
+	  <function name="fade" version="git">
 		<description>fades the music</description>
 		<argument name="volume"><type>number</type></argument>
 		<argument name="duration" required="false"><type>number</type></argument>
@@ -1109,12 +1109,12 @@
 		<note>duration unit is ms and is 1000 if not specified</note>
 		<note>stop_after_fade is disabled by default, if set to true if the volume reaches 0 while fading the music will automatically stop</note>
 	  </function>
-	  <variable name="volume" version="big K">
+	  <variable name="volume" version="git">
 		<description>the volume of the music</description>
 		<type>number</type>
 		<note>volume is decimal [0 - 1]</note>
 	  </variable>
-	  <variable name="active" access="read-only" version="big K">
+	  <variable name="active" access="read-only" version="git">
 		<description>returns true if the music is still playing</description>
 		<type>boolean</type>
 	  </variable>
@@ -2331,14 +2331,14 @@
     </accessor>
     <accessor name="Music" contains="music">
       <length>
-		<description>maximum number of musics (not used, you can go beyond)</description>
+		<description>maximum number of music channels active simultaneously</description>
       </length>
       <index/>
       <call>
-		<description>iterates through all the musics in the level</description>
+		<description>iterates through all the music channels</description>
       </call>
-	  <function name="new" version="big K">
-		<description>returns a new loaded music</description>
+	  <function name="new" version="git">
+		<description>returns a new music channel</description>
 		<argument name="track"><type>string</type></argument>
 		<argument name="volume" required="false"><type>number</type></argument>
 		<argument name="loop" required="false"><type>boolean</type></argument>
@@ -2360,7 +2360,7 @@
 		<argument name="..." required="false"><type>string</type></argument>
       </function>
       <function name="stop">
-		<description>stops level music and clears the playlist</description>
+		<description>stops level music and clears the playlist; also invalidates all music channels</description>
       </function>
       <function name="valid">
 		<description>for every track passed, return true if it exists and is playable and false otherwise</description>
