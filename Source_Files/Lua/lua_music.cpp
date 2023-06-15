@@ -24,35 +24,35 @@ static int Lua_Music_Fade(lua_State* L)
 	int duration = lua_isnumber(L, 3) ? static_cast<int>(lua_tonumber(L, 3)) : 1000;
 	bool stopOnNoVolume = lua_isboolean(L, 4) ? static_cast<bool>(lua_toboolean(L, 4)) : true;
 
-	int index = Lua_Music::Index(L, 1);
+	int index = Lua_Music::Index(L, 1) + Music::reserved_music_slots;
 	Music::instance()->Fade(limitVolume, duration, stopOnNoVolume, index);
 	return 0;
 }
 
 static int Lua_Music_Play(lua_State* L)
 {
-	int index = Lua_Music::Index(L, 1);
+	int index = Lua_Music::Index(L, 1) + Music::reserved_music_slots;
 	Music::instance()->Play(index);
 	return 0;
 }
 
 static int Lua_Music_Stop(lua_State* L)
 {
-	int index = Lua_Music::Index(L, 1);
+	int index = Lua_Music::Index(L, 1) + Music::reserved_music_slots;
 	Music::instance()->Pause(index);
 	return 0;
 }
 
 static int Lua_Music_Active_Get(lua_State* L)
 {
-	int index = Lua_Music::Index(L, 1);
+	int index = Lua_Music::Index(L, 1) + Music::reserved_music_slots;
 	lua_pushboolean(L, Music::instance()->Playing(index));
 	return 1;
 }
 
 static int Lua_Music_Volume_Get(lua_State* L)
 {
-	int index = Lua_Music::Index(L, 1);
+	int index = Lua_Music::Index(L, 1) + Music::reserved_music_slots;
 	lua_pushnumber(L, static_cast<double>(Music::instance()->GetVolume(index)));
 	return 1;
 }
@@ -62,14 +62,14 @@ static int Lua_Music_Volume_Set(lua_State* L)
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "volume: incorrect argument type");
 
-	int index = Lua_Music::Index(L, 1);
+	int index = Lua_Music::Index(L, 1) + Music::reserved_music_slots;
 	Music::instance()->SetVolume(index, static_cast<float>(lua_tonumber(L, 2)));
 	return 0;
 }
 
 static bool Lua_Music_Valid(int16 index)
 {
-	return index > 0 && Music::instance()->IsInit(index);
+	return index >= 0 && Music::instance()->IsInit(index + Music::reserved_music_slots);
 }
 
 static int Lua_MusicManager_New(lua_State* L)
@@ -93,9 +93,9 @@ static int Lua_MusicManager_New(lua_State* L)
 	}
 
 	int id = Music::instance()->Load(file, loop, volume);
-	if (id < 0) return 0;
+	if (id < Music::reserved_music_slots) return 0;
 
-	Lua_Music::Push(L, id);
+	Lua_Music::Push(L, id - Music::reserved_music_slots);
 	return 1;
 }
 
