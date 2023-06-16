@@ -124,11 +124,12 @@ short new_effect(
 						effect->type= type;
 						effect->flags= 0;
 						effect->object_index= object_index;
-						effect->data= 0;
+						effect->data= NONE;
 						effect->delay= definition->delay ? global_random()%definition->delay : 0;
 						MARK_SLOT_AS_USED(effect);
 						
 						SET_OBJECT_OWNER(object, _object_is_effect);
+						object->permutation = effect_index;
 						object->sound_pitch= definition->sound_pitch;
 						if (effect->delay) SET_OBJECT_INVISIBILITY(object, true);
 						if (definition->flags&_media_effect) SET_OBJECT_IS_MEDIA_EFFECT(object);
@@ -259,6 +260,7 @@ void teleport_object_out(
 			struct effect_data *effect= get_effect_data(effect_index);
 			struct object_data *effect_object= get_object_data(effect->object_index);
 			
+			effect->data = object_index;
 			// make the effect look like the object
 			effect_object->shape= object->shape;
 			effect_object->sequence= object->sequence;

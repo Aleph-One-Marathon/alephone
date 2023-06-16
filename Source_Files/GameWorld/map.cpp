@@ -2470,17 +2470,31 @@ bool line_has_variable_height(
 
 /* ---------- sound code */
 
+world_location3d* get_object_sound_location(short object_index) {
+
+	struct object_data* object = get_object_data(object_index);
+
+	switch (GET_OBJECT_OWNER(object)) {
+	case _object_is_monster:
+		return (world_location3d*)&get_monster_data(object->permutation)->sound_location;
+	case _object_is_effect:
+	{
+		auto object_owner_index = get_effect_data(object->permutation)->data;
+		if (object_owner_index != NONE) return get_object_sound_location(object_owner_index);
+	}
+	[[fallthrough]];
+	default:
+		return (world_location3d*)&object->location;
+	}
+}
+
 void play_object_sound(
 	short object_index,
 	short sound_code,
 	bool local_sound)
 {
 	struct object_data *object= get_object_data(object_index);
-	world_location3d *location= GET_OBJECT_OWNER(object)==_object_is_monster ?
-		(world_location3d *) &get_monster_data(object->permutation)->sound_location : 
-		(world_location3d *) &object->location;
-
-	SoundManager::instance()->PlaySound(sound_code, location, local_sound ? NONE : object_index, local_sound, object->sound_pitch);
+	SoundManager::instance()->PlaySound(sound_code, get_object_sound_location(object_index), local_sound ? NONE : object_index, local_sound, object->sound_pitch);
 }
 
 void play_polygon_sound(

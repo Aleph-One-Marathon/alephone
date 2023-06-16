@@ -417,6 +417,7 @@ short new_monster(
 						nearest_goal_polygon_index(location->polygon_index) : NONE;
 					monster->sound_polygon_index= object->polygon;
 					monster->sound_location= object->location;
+					monster->sound_location.z += definition->height - (definition->height >> 1);
 					MARK_SLOT_AS_USED(monster);
 					
 					/* initialize the monster’s object */
