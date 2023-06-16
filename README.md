@@ -4,6 +4,8 @@ Aleph One is the open source continuation of Bungie™’s _Marathon® 2_ and _M
 
 Aleph One is available under the terms of the [GNU General Public License (GPL 3)](http://www.gnu.org/licenses/gpl-3.0.html)
 
+[![](https://dcbadge.vercel.app/api/server/NvF3pdV)](https://discord.gg/NvF3pdV)
+
 # Download
 
 To download ready-to-run versions of all three _Marathon_ games for macOS,
