@@ -3496,8 +3496,6 @@ InfoTree graphics_preferences_tree()
 		tex.put_attr("index", i);
 		tex.put_attr("near_filter", Config.NearFilter);
 		tex.put_attr("far_filter", Config.FarFilter);
-		tex.put_attr("resolution", Config.Resolution);
-		tex.put_attr("color_format", Config.ColorFormat);
 		tex.put_attr("max_size", Config.MaxSize);
 		root.add_child("texture", tex);
 	}
@@ -4466,8 +4464,6 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 			OGL_Texture_Configure& Config = (index == OGL_NUMBER_OF_TEXTURE_TYPES) ? graphics_preferences->OGL_Configure.ModelConfig : graphics_preferences->OGL_Configure.TxtrConfigList[index];
 			tex.read_attr("near_filter", Config.NearFilter);
 			tex.read_attr("far_filter", Config.FarFilter);
-			tex.read_attr("resolution", Config.Resolution);
-			tex.read_attr("color_format", Config.ColorFormat);
 			tex.read_attr("max_size", Config.MaxSize);
 		}
 	}

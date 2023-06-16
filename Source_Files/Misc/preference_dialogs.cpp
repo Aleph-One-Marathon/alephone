@@ -174,8 +174,6 @@ OpenGLDialog::~OpenGLDialog()
 	for (int i=0; i<OGL_NUMBER_OF_TEXTURE_TYPES; ++i) {
 		delete m_textureQualityWidget [i];
 		delete m_nearFiltersWidget[i];
-		delete m_textureResolutionWidget [i];
-		delete m_textureDepthWidget[i];
 	}
 
 }
@@ -249,25 +247,6 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	binders.insert<int> (m_textureQualityWidget [3], &weaponQualityPref);
 	TexQualityPref modelQualityPref (graphics_preferences->OGL_Configure.ModelConfig.MaxSize, 256);
 	binders.insert<int> (m_modelQualityWidget, &modelQualityPref);
-	
-	Int16Pref wallResoPref (graphics_preferences->OGL_Configure.TxtrConfigList [0].Resolution);
-	binders.insert<int> (m_textureResolutionWidget [0], &wallResoPref);
-	Int16Pref landscapeResoPref (graphics_preferences->OGL_Configure.TxtrConfigList [1].Resolution);
-	binders.insert<int> (m_textureResolutionWidget [1], &landscapeResoPref);
-	Int16Pref spriteResoPref (graphics_preferences->OGL_Configure.TxtrConfigList [2].Resolution);
-	binders.insert<int> (m_textureResolutionWidget [2], &spriteResoPref);
-	Int16Pref weaponResoPref (graphics_preferences->OGL_Configure.TxtrConfigList [3].Resolution);
-	binders.insert<int> (m_textureResolutionWidget [3], &weaponResoPref);
-
-	Int16Pref wallDepthPref(graphics_preferences->OGL_Configure.TxtrConfigList[0].ColorFormat);
-	binders.insert<int> (m_textureDepthWidget[0], &wallDepthPref);
-	Int16Pref landscapeDepthPref(graphics_preferences->OGL_Configure.TxtrConfigList[1].ColorFormat);
-	binders.insert<int> (m_textureDepthWidget[1], &landscapeDepthPref);
-	Int16Pref spriteDepthPref(graphics_preferences->OGL_Configure.TxtrConfigList[2].ColorFormat);
-	binders.insert<int> (m_textureDepthWidget[2], &spriteDepthPref);
-	Int16Pref weaponDepthPref(graphics_preferences->OGL_Configure.TxtrConfigList[3].ColorFormat);
-	binders.insert<int> (m_textureDepthWidget[3], &weaponDepthPref);
-	
 	
 	// Set initial values from prefs
 	binders.migrate_all_second_to_first ();
@@ -518,47 +497,6 @@ public:
 		texture_labels[OGL_Txtr_Inhabitant] = new w_label("Sprites");
 		texture_labels[OGL_Txtr_WeaponsInHand] = new w_label("Weapons in Hand / HUD");
 
-		advanced_placer->dual_add(new w_static_text("Built-in Texture Size and Depth"), m_dialog);
-		advanced_placer->dual_add(new w_static_text("(reduce for machines with low VRAM)"), m_dialog);
-
-		vector<string> tex_reso_strings;
-		tex_reso_strings.push_back ("Full");
-		tex_reso_strings.push_back ("1/2");
-		tex_reso_strings.push_back ("1/4");
-
-		vector<string> tex_depth_strings;
-		tex_depth_strings.push_back ("32-bit");
-		tex_depth_strings.push_back ("16-bit");
-		tex_depth_strings.push_back ("8-bit");
-
-		table_placer *table = new table_placer(3, get_theme_space(ITEM_WIDGET));
-
-		table->col_flags(0, placeable::kAlignRight);
-		table->col_flags(1, placeable::kAlignLeft);
-		table->col_flags(2, placeable::kAlignLeft);
-
-		table->add(new w_spacer(), true);
-		table->dual_add(new w_label("Size"), m_dialog);
-		table->dual_add(new w_label("Depth"), m_dialog);
-
-		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++)
-		{
-			table->dual_add(texture_labels[i], m_dialog);
-			table->dual_add(texture_resolution_wa[i], m_dialog);
-			table->dual_add(texture_depth_wa[i], m_dialog);
-
-			texture_resolution_wa[i]->associate_label(texture_labels[i]);
-			texture_resolution_wa[i]->set_labels(tex_reso_strings);
-
-			texture_depth_wa[i]->associate_label(texture_labels[i]);
-			texture_depth_wa[i]->set_labels(tex_depth_strings);
-		}
-
-		table->col_min_width(1, (table->col_width(0) - get_theme_space(ITEM_WIDGET)) / 2);
-		table->col_min_width(2, (table->col_width(0) - get_theme_space(ITEM_WIDGET)) / 2);
-
-		advanced_placer->add(table, true);
-
 		m_tabs->add(general_table, true);
 		m_tabs->add(advanced_placer, true);
 		placer->add(m_tabs, false);
@@ -606,8 +544,6 @@ public:
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; ++i) {
 			m_textureQualityWidget [i] = new PopupSelectorWidget (texture_quality_wa[i]);
 			m_nearFiltersWidget[i] = new SelectSelectorWidget(near_filter_wa[i]);
-			m_textureResolutionWidget [i] = new PopupSelectorWidget (texture_resolution_wa[i]);
-			m_textureDepthWidget [i] = new PopupSelectorWidget(texture_depth_wa[i]);
 		}
 		m_modelQualityWidget = new PopupSelectorWidget(model_quality_w);
 	}

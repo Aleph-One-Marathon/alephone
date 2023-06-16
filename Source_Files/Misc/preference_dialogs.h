@@ -72,9 +72,6 @@ protected:
 	SelectSelectorWidget*		m_spritesFilterWidget;
 
 	SelectSelectorWidget* m_nearFiltersWidget[OGL_NUMBER_OF_TEXTURE_TYPES];
-	
-	SelectorWidget* m_textureResolutionWidget [OGL_NUMBER_OF_TEXTURE_TYPES];
-	SelectorWidget* m_textureDepthWidget [OGL_NUMBER_OF_TEXTURE_TYPES];
 };
 
 #endif
