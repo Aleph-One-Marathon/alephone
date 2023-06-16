@@ -1179,6 +1179,9 @@ public:
 
 extern float View_FOV_Normal();
 
+extern bool shapes_file_is_m1();
+extern void ResetAllMMLValues();
+
 static void graphics_dialog(void *arg)
 {
 	dialog *parent = (dialog *)arg;
@@ -1281,9 +1284,38 @@ static void graphics_dialog(void *arg)
 
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("Heads-Up Display"), d);
+
 	w_enabling_toggle *hud_w = new w_enabling_toggle(graphics_preferences->screen_mode.hud);
 	table->dual_add(hud_w->label("Show HUD"), d);
 	table->dual_add(hud_w, d);
+	
+	std::vector<Plugin*> hud_plugins;
+	auto hud_plugin_index = -1;
+	for (auto& plugin : *Plugins::instance()) {
+		if (plugin.hud_lua.size() && plugin.compatible() && plugin.allowed()) {
+			hud_plugins.push_back(&plugin);
+			if (plugin.enabled) {
+				hud_plugin_index = hud_plugins.size() - 1;
+			}
+		}
+	}
+
+	std::vector<std::string> hud_plugin_labels;
+	if (!shapes_file_is_m1()) {
+		++hud_plugin_index;
+		hud_plugin_labels.push_back("Classic (Built-in)");
+	}
+
+	for (auto hud_plugin : hud_plugins) {
+		hud_plugin_labels.push_back(hud_plugin->name);
+	}
+
+	w_select_popup *hud_plugin_w = new w_select_popup();
+	hud_plugin_w->set_labels(hud_plugin_labels);
+	hud_plugin_w->set_selection(hud_plugin_index >= 0 ? hud_plugin_index : 0);
+
+	table->dual_add(hud_plugin_w->label("HUD Plugin"), d);
+	table->dual_add(hud_plugin_w, d);
 	
 	w_select_popup *hud_scale_w = new w_select_popup();
 	hud_scale_w->set_labels(build_stringvector_from_cstring_array(hud_scale_labels));
@@ -1390,6 +1422,19 @@ static void graphics_dialog(void *arg)
 		    graphics_preferences->screen_mode.hud = hud;
 		    changed = true;
 	    }
+
+		auto hud_plugin = static_cast<int>(hud_plugin_w->get_selection());
+		if (hud_plugin != hud_plugin_index) {
+			if (!shapes_file_is_m1()) {
+				--hud_plugin;
+			}
+
+			for (auto i = 0; i < hud_plugins.size(); ++i) {
+				hud_plugins[i]->enabled = i == hud_plugin;
+			}
+			
+			changed = true;
+		}
 	    
 	    short hud_scale = static_cast<short>(hud_scale_w->get_selection());
 	    if (hud_scale != graphics_preferences->screen_mode.hud_scale_level)
@@ -1425,7 +1470,13 @@ static void graphics_dialog(void *arg)
 		}
 		
 	    if (changed) {
+			Plugins::instance()->invalidate();
 		    write_preferences();
+
+			ResetAllMMLValues();
+			LoadBaseMMLScripts();
+			Plugins::instance()->load_mml();
+			
 		    change_screen_mode(&graphics_preferences->screen_mode, true);
 		    clear_screen(true);
 		    parent->layout();
@@ -2876,8 +2927,6 @@ static void controls_dialog(void *arg)
 
 	exit_joystick();
 }
-
-extern void ResetAllMMLValues();
 
 static void plugins_dialog(void *)
 {
