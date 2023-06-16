@@ -1552,10 +1552,6 @@ static void sound_dialog(void *arg)
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 
-	static const char *quality_labels[3] = {"8 Bit", "16 Bit", NULL};
-	w_toggle *quality_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _16bit_sound_flag), quality_labels);
-	table->dual_add(quality_w->label("Quality"), d);
-	table->dual_add(quality_w, d);
 
 	stereo_w = new w_stereo_toggle(sound_preferences->flags & _stereo_flag);
 	table->dual_add(stereo_w->label("Stereo"), d);
@@ -1574,6 +1570,21 @@ static void sound_dialog(void *arg)
 	table->dual_add(hrtf_w, d);
 	hrtf_w->set_enabled(OpenALManager::Get() && OpenALManager::Get()->Support_HRTF_Toggling());
 
+	w_volume_slider *volume_w = new w_volume_slider(static_cast<int>(sound_preferences->volume_db / 2 + 20));
+	table->dual_add(volume_w->label("Master Volume"), d);
+	table->dual_add(volume_w, d);
+
+	w_slider *music_volume_w = new w_music_slider(sound_preferences->music_db + 20);
+	table->dual_add(music_volume_w->label("Music Volume"), d);
+	table->dual_add(music_volume_w, d);
+
+	table->add_row(new w_spacer(), true);
+	
+	static const char *quality_labels[3] = {"8-bit Slot", "16-bit Slot", NULL};
+	w_toggle *quality_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _16bit_sound_flag), quality_labels);
+	table->dual_add(quality_w->label("Source"), d);
+	table->dual_add(quality_w, d);
+
 	w_toggle *ambient_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _ambient_sound_flag));
 	table->dual_add(ambient_w->label("Ambient Sounds"), d);
 	table->dual_add(ambient_w, d);
@@ -1582,17 +1593,16 @@ static void sound_dialog(void *arg)
 	table->dual_add(more_w->label("More Sounds"), d);
 	table->dual_add(more_w, d);
 
+	table->add_row(new w_spacer(), true);
+	table->dual_add_row(new w_static_text("Interface Sounds"), d);
+	
 	w_toggle *button_sounds_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
-	table->dual_add(button_sounds_w->label("In Game F-Key Sounds"), d);
+	table->dual_add(button_sounds_w->label("In Game (F-key)"), d);
 	table->dual_add(button_sounds_w, d);
 
-	w_volume_slider *volume_w = new w_volume_slider(static_cast<int>(sound_preferences->volume_db / 2 + 20));
-	table->dual_add(volume_w->label("Master Volume"), d);
-	table->dual_add(volume_w, d);
-
-	w_slider *music_volume_w = new w_music_slider(sound_preferences->music_db + 20);
-	table->dual_add(music_volume_w->label("Music Volume"), d);
-	table->dual_add(music_volume_w, d);
+	w_toggle *dialog_sounds_w = new w_toggle(!TEST_FLAG(sound_preferences->flags, _mute_dialogs));
+	table->dual_add(dialog_sounds_w->label("Dialogs"), d);
+	table->dual_add(dialog_sounds_w, d);
 
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("Experimental Sound Options"), d);
@@ -1627,6 +1637,7 @@ static void sound_dialog(void *arg)
 		if (ambient_w->get_selection()) flags |= _ambient_sound_flag;
 		if (more_w->get_selection()) flags |= _more_sounds_flag;
 		if (zrd_w->get_selection()) flags |= _lower_restart_delay;
+		if (!dialog_sounds_w->get_selection()) flags |= _mute_dialogs;
 
 		if (flags != sound_preferences->flags) {
 			sound_preferences->flags = flags;
@@ -4030,7 +4041,7 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->shell_key_bindings = default_shell_key_bindings;
 	preferences->hotkey_bindings = default_hotkey_bindings;
 	
-	preferences->modifiers = 0;
+	preferences->modifiers = _inputmod_use_button_sounds;
 
 	preferences->sens_horizontal = FIXED_ONE / 4;
 	preferences->sens_vertical = FIXED_ONE / 4;

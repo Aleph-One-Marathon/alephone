@@ -387,7 +387,8 @@ enum // initialization flags (some of these are used by the prefs, which fixes t
 	_hrtf_flag = 0x0080, /* play sounds using HRTF [prefs] */
 	_extra_memory_flag= 0x0100, /* double usual memory */
 	_extra_extra_memory_flag= 0x0200, /* LP: quadruple usual memory, because RAM is more available */
-	_lower_restart_delay = 0x0400 /* ghs: restart sounds faster */
+	_lower_restart_delay = 0x0400, /* ghs: restart sounds faster */
+	_mute_dialogs = 0x0800
 };
 
 enum // _sound_obstructed_proc() flags
