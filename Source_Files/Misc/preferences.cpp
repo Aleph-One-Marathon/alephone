@@ -3473,7 +3473,6 @@ InfoTree graphics_preferences_tree()
 	root.put_attr("fps_target", graphics_preferences->fps_target);
 	root.put_attr("anisotropy_level", graphics_preferences->OGL_Configure.AnisotropyLevel);
 	root.put_attr("multisamples", graphics_preferences->OGL_Configure.Multisamples);
-	root.put_attr("geforce_fix", graphics_preferences->OGL_Configure.GeForceFix);
 	root.put_attr("wait_for_vsync", graphics_preferences->OGL_Configure.WaitForVSync);
 	root.put_attr("gamma_corrected_blending", graphics_preferences->OGL_Configure.Use_sRGB);
 	root.put_attr("use_npot", graphics_preferences->OGL_Configure.Use_NPOT);
@@ -4431,7 +4430,6 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr("fps_target", graphics_preferences->fps_target);
 	root.read_attr("anisotropy_level", graphics_preferences->OGL_Configure.AnisotropyLevel);
 	root.read_attr("multisamples", graphics_preferences->OGL_Configure.Multisamples);
-	root.read_attr("geforce_fix", graphics_preferences->OGL_Configure.GeForceFix);
 	root.read_attr("wait_for_vsync", graphics_preferences->OGL_Configure.WaitForVSync);
 	root.read_attr("gamma_corrected_blending", graphics_preferences->OGL_Configure.Use_sRGB);
 	root.read_attr("use_npot", graphics_preferences->OGL_Configure.Use_NPOT);

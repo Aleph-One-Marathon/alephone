@@ -166,7 +166,6 @@ OpenGLDialog::~OpenGLDialog()
 	delete m_fsaaWidget;
 	delete m_anisotropicWidget;
 	delete m_sRGBWidget;
-	delete m_geForceFixWidget;
 	delete m_useNPOTWidget;
 	delete m_vsyncWidget;
 	delete m_wallsFilterWidget;
@@ -216,9 +215,6 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 
 	BoolPref sRGBPref (graphics_preferences->OGL_Configure.Use_sRGB);
 	binders.insert<bool> (m_sRGBWidget, &sRGBPref);
-	
-	BoolPref geForceFixPref (graphics_preferences->OGL_Configure.GeForceFix);
-	binders.insert<bool> (m_geForceFixWidget, &geForceFixPref);
 	
 	BoolPref useNPOTPref (graphics_preferences->OGL_Configure.Use_NPOT);
 	binders.insert<bool> (m_useNPOTWidget, &useNPOTPref);
@@ -450,10 +446,6 @@ public:
 		table_placer *advanced_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 		advanced_table->col_flags(0, placeable::kAlignRight);
 	
-		w_toggle *geforce_fix_w = new w_toggle(false);
-		advanced_table->dual_add(geforce_fix_w->label("GeForce 1-4 Texture Fix"), m_dialog);
-		advanced_table->dual_add(geforce_fix_w, m_dialog);
-		
 		w_toggle *use_npot_w = new w_toggle(false);
 		advanced_table->dual_add(use_npot_w->label("Non-Power-of-Two Textures"), m_dialog);
 		advanced_table->dual_add(use_npot_w, m_dialog);
@@ -605,7 +597,6 @@ public:
 
 		m_sRGBWidget = new ToggleWidget(srgb_w);
 
-		m_geForceFixWidget = new ToggleWidget (geforce_fix_w);
 		m_useNPOTWidget = new ToggleWidget (use_npot_w);
 		m_vsyncWidget = new ToggleWidget (vsync_w);
 		
