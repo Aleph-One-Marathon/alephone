@@ -1519,7 +1519,7 @@ static void sound_dialog(void *arg)
 	table->dual_add(sounds3d_w, d);
 
 	w_toggle *hrtf_w = new w_toggle((OpenALManager::Get() && OpenALManager::Get()->Is_HRTF_Enabled()) || sound_preferences->flags & _hrtf_flag);
-	table->dual_add(hrtf_w->label("HRTF"), d);
+	table->dual_add(hrtf_w->label("HRTF (Headphones)"), d);
 	table->dual_add(hrtf_w, d);
 	hrtf_w->set_enabled(OpenALManager::Get() && OpenALManager::Get()->Support_HRTF_Toggling());
 
@@ -1545,8 +1545,8 @@ static void sound_dialog(void *arg)
 
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("Experimental Sound Options"), d);
-		w_toggle *zrd_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _zero_restart_delay));
-	table->dual_add(zrd_w->label("Zero Restart Delay"), d);
+		w_toggle *zrd_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _lower_restart_delay));
+	table->dual_add(zrd_w->label("Rapid-fire Sounds"), d);
 	table->dual_add(zrd_w, d);
 
 	placer->add(table, true);
@@ -1575,7 +1575,7 @@ static void sound_dialog(void *arg)
 		if (dynamic_w->get_selection()) flags |= _dynamic_tracking_flag;
 		if (ambient_w->get_selection()) flags |= _ambient_sound_flag;
 		if (more_w->get_selection()) flags |= _more_sounds_flag;
-		if (zrd_w->get_selection()) flags |= _zero_restart_delay;
+		if (zrd_w->get_selection()) flags |= _lower_restart_delay;
 
 		if (flags != sound_preferences->flags) {
 			sound_preferences->flags = flags;

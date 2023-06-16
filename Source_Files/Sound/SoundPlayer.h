@@ -101,6 +101,7 @@ private:
 	std::atomic_bool soft_stop_signal = { false };
 
 	static constexpr int rewind_time = 83;
+	static constexpr int fast_rewind_time = 35;
 	static constexpr float smooth_volume_transition_threshold = 0.1f;
 	static constexpr int smooth_volume_transition_time_ms = 300;
 

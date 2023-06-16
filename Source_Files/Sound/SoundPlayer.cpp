@@ -45,7 +45,8 @@ float SoundPlayer::Simulate(const SoundParameters soundParameters) {
 }
 
 bool SoundPlayer::CanRewindSound(int baseTick) const { 
-	return baseTick + rewind_time < SoundManager::GetCurrentAudioTick(); 
+	auto rewindTime = OpenALManager::Get()->IsBalanceRewindSound() || rewind_parameters.source_identifier != parameters.Get().source_identifier ? rewind_time : fast_rewind_time;
+	return baseTick + rewindTime < SoundManager::GetCurrentAudioTick();
 }
 
 void SoundPlayer::AskRewind(SoundParameters soundParameters, const Sound& newSound) {
@@ -60,9 +61,7 @@ void SoundPlayer::AskRewind(SoundParameters soundParameters, const Sound& newSou
 }
 
 void SoundPlayer::Rewind() {
-	if ((OpenALManager::Get()->IsBalanceRewindSound() || rewind_parameters.source_identifier != parameters.Get().source_identifier) && !CanRewindSound(start_tick))
-		rewind_signal = false;
-	else {
+	if (CanRewindSound(start_tick)) {
 		sound.Update();
 		parameters.Set(rewind_parameters);
 		AudioPlayer::Rewind();
@@ -72,6 +71,8 @@ void SoundPlayer::Rewind() {
 		sound_transition.allow_transition = false;
 		sound_transition.start_transition_tick = 0;
 	}
+	else 
+		rewind_signal = false;
 }
 
 int SoundPlayer::LoopManager(uint8* data, int length) {

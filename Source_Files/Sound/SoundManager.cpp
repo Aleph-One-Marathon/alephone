@@ -785,7 +785,7 @@ void SoundManager::SetStatus(bool active)
 					parameters.rate,
 					parameters.samples,
                     static_cast<bool>(parameters.flags & _stereo_flag),
-					!(parameters.flags & _zero_restart_delay),
+					!(parameters.flags & _lower_restart_delay),
                     static_cast<bool>(parameters.flags & _hrtf_flag),
                     static_cast<bool>(parameters.flags & _3d_sounds_flag),
 					OpenALManager::From_db(parameters.volume_db)
