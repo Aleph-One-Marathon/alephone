@@ -379,7 +379,7 @@ std::shared_ptr<AudioPlayer> SoundManager::PlaySound(short sound_index,
 			if (source) {
 
 				parameters.source_location3d = *source;
-				parameters.dynamic_source_location3d = _dynamic_tracking_flag && identifier != NONE ? source : nullptr;
+				parameters.dynamic_source_location3d = (this->parameters.flags & _dynamic_tracking_flag) && identifier != NONE ? source : nullptr;
 
 				if (this->parameters.flags & _3d_sounds_flag) {
 					parameters.obstruction_flags = GetSoundObstructionFlags(sound_index, source);
