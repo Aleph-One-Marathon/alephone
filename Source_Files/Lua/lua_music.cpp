@@ -173,8 +173,8 @@ const luaL_Reg Lua_Music_Set[] = {
 	{0, 0}
 };
 
-extern char Lua_Music_Name[] = "music";
-extern char Lua_MusicManager_Name[] = "Music";
+char Lua_Music_Name[] = "music";
+char Lua_MusicManager_Name[] = "Music";
 
 int Lua_Music_register(lua_State* L)
 {
