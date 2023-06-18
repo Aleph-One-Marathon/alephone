@@ -229,8 +229,7 @@ FileSpecifier* Music::GetLevelMusic()
 
 	// Get the song number to within range if playing sequentially;
 	// if the song number gets too big, then it's reset back to the first one
-	if (song_number < 0) song_number = 0;
-	else if (song_number >= NumSongs) song_number = 0;
+	if (song_number >= NumSongs) song_number = 0;
 
 	return &playlist[song_number++];
 }
