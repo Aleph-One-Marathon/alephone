@@ -24,6 +24,8 @@
 
 */
 
+#include <memory>
+
 #include "cseries.h"
 #include "FileHandler.h"
 #include "SoundManagerEnums.h"
