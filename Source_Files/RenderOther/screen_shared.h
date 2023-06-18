@@ -545,7 +545,7 @@ static void update_fps_display(SDL_Surface *s)
 			
 			int latency = NetGetLatency();
 			if (latency > -1)
-				sprintf(ms, "(%i ms)", latency);
+				sprintf(ms, "(%i ms)", std::min(latency, 10000));
 			else
 				ms[0] = '\0';
 			
