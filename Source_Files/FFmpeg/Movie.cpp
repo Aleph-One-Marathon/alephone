@@ -116,9 +116,6 @@ static int get_cpu_count(void)
     return cpu_count;
 }
 
-
-#define MAX_AUDIO_CHANNELS 2
-
 struct libav_vars {
     bool inited;
     
@@ -209,6 +206,12 @@ bool Movie::Setup()
 
     alephone::Screen* scr = alephone::Screen::instance();
     view_rect = scr->window_rect();
+
+    const float pixel_scale = scr->pixel_scale();
+    view_rect.x *= pixel_scale;
+    view_rect.y *= pixel_scale;
+    view_rect.h *= pixel_scale;
+    view_rect.w *= pixel_scale;
 
     const auto fps = std::max(get_fps_target(), static_cast<int16_t>(30));
 

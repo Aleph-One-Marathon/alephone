@@ -306,6 +306,11 @@ int Screen::width()
 	return MainScreenLogicalWidth();
 }
 
+float Screen::pixel_scale()
+{
+	return MainScreenPixelScale();
+}
+
 int Screen::window_height()
 {
 	return std::max(static_cast<short>(480), screen_mode.height);
