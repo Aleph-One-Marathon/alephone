@@ -2196,7 +2196,7 @@ int MainScreenPixelWidth()
 		SDL_GL_GetDrawableSize(main_screen, &w, &dummy);
 	else
 #endif
-		SDL_GetRendererOutputSize(main_render, &w, NULL);
+		SDL_GetRendererOutputSize(main_render, &w, &dummy);
 	return w;
 }
 int MainScreenPixelHeight()
@@ -2208,7 +2208,7 @@ int MainScreenPixelHeight()
 		SDL_GL_GetDrawableSize(main_screen, &dummy, &h);
 	else
 #endif
-		SDL_GetRendererOutputSize(main_render, NULL, &h);
+		SDL_GetRendererOutputSize(main_render, &dummy, &h);
 	return h;
 }
 float MainScreenPixelScale()
