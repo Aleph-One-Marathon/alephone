@@ -2033,8 +2033,13 @@ static bool begin_game(
 						
 						bool prompt_to_export = false;
 #ifndef MAC_APP_STORE
+						
 						SDL_Keymod m = SDL_GetModState();
+#if defined(__APPLE__) && defined(__MACH__)
+						if (m & KMOD_ALT) prompt_to_export = true;
+#else
 						if ((m & KMOD_ALT) || (m & KMOD_GUI)) prompt_to_export = true;
+#endif
 #endif
 						
 						success= find_replay_to_use(cheat, ReplayFile);
