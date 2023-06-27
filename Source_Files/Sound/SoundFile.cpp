@@ -148,7 +148,7 @@ bool SoundHeader::Load(BIStreamBE& s)
 
 std::shared_ptr<SoundData> SoundHeader::LoadData(BIStreamBE& s)
 {
-	if (!data_offset)
+	if (!data_offset || length <= 0)
 	{
 		return std::shared_ptr<SoundData>();
 	}
