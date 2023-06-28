@@ -5,7 +5,7 @@
 LPALCLOOPBACKOPENDEVICESOFT OpenALManager::alcLoopbackOpenDeviceSOFT;
 LPALCISRENDERFORMATSUPPORTEDSOFT OpenALManager::alcIsRenderFormatSupportedSOFT;
 LPALCRENDERSAMPLESSOFT OpenALManager::alcRenderSamplesSOFT;
-
+LPALGETSTRINGISOFT OpenALManager::alGetStringiSOFT;
 LPALGENFILTERS OpenALManager::alGenFilters;
 LPALDELETEFILTERS OpenALManager::alDeleteFilters;
 LPALFILTERF OpenALManager::alFilterf;
@@ -17,7 +17,8 @@ bool OpenALManager::Init(AudioParameters parameters) {
 
 	if (instance) { //Don't bother recreating all the OpenAL context if nothing changed for it
 		if (parameters.hrtf != instance->audio_parameters.hrtf || parameters.rate != instance->audio_parameters.rate
-			|| parameters.stereo != instance->audio_parameters.stereo || parameters.sample_frame_size != instance->audio_parameters.sample_frame_size) {
+			|| parameters.stereo != instance->audio_parameters.stereo || parameters.sample_frame_size != instance->audio_parameters.sample_frame_size
+			|| parameters.resampler_index != instance->audio_parameters.resampler_index) {
 
 			Shutdown();
 
@@ -31,6 +32,7 @@ bool OpenALManager::Init(AudioParameters parameters) {
 			LOAD_PROC(LPALCLOOPBACKOPENDEVICESOFT, alcLoopbackOpenDeviceSOFT);
 			LOAD_PROC(LPALCISRENDERFORMATSUPPORTEDSOFT, alcIsRenderFormatSupportedSOFT);
 			LOAD_PROC(LPALCRENDERSAMPLESSOFT, alcRenderSamplesSOFT);
+			LOAD_PROC(LPALGETSTRINGISOFT, alGetStringiSOFT);
 			LOAD_PROC(LPALGENFILTERS, alGenFilters);
 			LOAD_PROC(LPALDELETEFILTERS, alDeleteFilters);
 			LOAD_PROC(LPALFILTERI, alFilteri);
@@ -281,6 +283,22 @@ bool OpenALManager::Is_HRTF_Enabled() const {
 	return hrtfStatus;
 }
 
+std::string OpenALManager::GetResamplerName(int resamplerIndex) const {
+	return alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, resamplerIndex);
+}
+
+int OpenALManager::GetCurrentResampler() const {
+	ALint index;
+	alGetIntegerv(AL_DEFAULT_RESAMPLER_SOFT, &index);
+	return index;
+}
+
+int OpenALManager::GetResamplersNumber() const {
+	ALint number;
+	alGetIntegerv(AL_NUM_RESAMPLERS_SOFT, &number);
+	return number;
+}
+
 bool OpenALManager::OpenDevice() {
 	if (p_ALCDevice) return true;
 
@@ -364,12 +382,14 @@ bool OpenALManager::GenerateSources() {
 	alcGetIntegerv(p_ALCDevice, ALC_MONO_SOURCES, 1, &monoSources);
 	alcGetIntegerv(p_ALCDevice, ALC_STEREO_SOURCES, 1, &stereoSources);
 	int nbSources = monoSources + stereoSources;
+	int resampler = audio_parameters.resampler_index != NONE ? audio_parameters.resampler_index : GetCurrentResampler();
 
 	std::vector<ALuint> sources_id(nbSources);
 	alGenSources(nbSources, sources_id.data());
 	for (auto source_id : sources_id) {
 
 		alSourcei(source_id, AL_BUFFER, 0);
+		alSourcei(source_id, AL_SOURCE_RESAMPLER_SOFT, resampler);
 		alSourceRewind(source_id);
 
 		if (alGetError() != AL_NO_ERROR) {

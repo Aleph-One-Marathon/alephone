@@ -39,6 +39,7 @@ const std::unordered_map<ALCint, AVSampleFormat> mapping_openal_ffmpeg = {
 struct AudioParameters {
 	int rate;
 	int sample_frame_size;
+	int resampler_index;
 	bool stereo;
 	bool balance_rewind;
 	bool hrtf;
@@ -69,6 +70,9 @@ public:
 	void ToggleDeviceMode(bool recording_device);
 	int GetFrequency() const { return audio_parameters.rate; }
 	void GetPlayBackAudio(uint8* data, int length);
+	int GetCurrentResampler() const;
+	int GetResamplersNumber() const;
+	std::string GetResamplerName(int resamplerIndex) const;
 	bool Support_HRTF_Toggling() const;
 	bool Is_HRTF_Enabled() const;
 	bool IsBalanceRewindSound() const { return audio_parameters.balance_rewind; }
@@ -106,6 +110,7 @@ private:
 	static LPALCLOOPBACKOPENDEVICESOFT alcLoopbackOpenDeviceSOFT;
 	static LPALCISRENDERFORMATSUPPORTEDSOFT alcIsRenderFormatSupportedSOFT;
 	static LPALCRENDERSAMPLESSOFT alcRenderSamplesSOFT;
+	static LPALGETSTRINGISOFT alGetStringiSOFT;
 
 	/* Filter object functions */
 	static LPALGENFILTERS alGenFilters;

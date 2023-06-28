@@ -104,6 +104,8 @@ public:
 		uint16 rate; // in Hz
 		uint16 samples; // size of buffer
 
+		int16 resampler_index = NONE;
+
 		float music_db; // music volume in dB
 
 		float video_export_volume_db;
