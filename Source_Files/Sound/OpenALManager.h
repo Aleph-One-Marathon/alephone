@@ -27,7 +27,7 @@ extern "C"
 }
 #endif
 
-const std::unordered_map<ALCint, AVSampleFormat> mapping_openal_ffmpeg = {
+const inline std::unordered_map<ALCint, AVSampleFormat> mapping_openal_ffmpeg = {
 	{ALC_FLOAT_SOFT, AV_SAMPLE_FMT_FLT},
 	{ALC_INT_SOFT, AV_SAMPLE_FMT_S32},
 	{ALC_SHORT_SOFT, AV_SAMPLE_FMT_S16},
