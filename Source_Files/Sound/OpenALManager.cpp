@@ -77,7 +77,7 @@ void OpenALManager::UpdateListener() {
 
 	if (!audio_parameters.sounds_3d) return;
 
-	const auto& listener = listener_location.Get();
+	const auto listener = listener_location.Get();
 
 	auto yaw = listener.yaw * angleConvert;
 	auto pitch = listener.pitch * angleConvert;
