@@ -83,7 +83,11 @@ bool is_macbinary(SDL_RWops *f, int32 &data_length, int32 &rsrc_length)
 	// This recognizes up to macbinary III (0x81)
 	SDL_RWseek(f, 0, SEEK_SET);
 	uint8 header[128];
-	SDL_RWread(f, header, 1, 128);
+	if (SDL_RWread(f, header, 1, 128) != 128)
+	{
+		return false;
+	}
+	
 	if (header[0] || header[1] > 63 || header[74]  || header[123] > 0x81)
 		return false;
 	
