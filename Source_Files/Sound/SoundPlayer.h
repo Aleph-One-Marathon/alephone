@@ -25,7 +25,7 @@ struct SoundParameters {
 	short identifier = NONE; //Identifier of the sound
 	short source_identifier = NONE; //Identifier of the source emitting the sound
 	float pitch = 1;
-	bool loop = false; //for now it will only be used by sound (musics work differently but should use this tbh)
+	bool loop = false;
 	bool local = true; //if false it will use source_location3d to position sound (3D sounds)
 	bool _is_for_rewind = false; //internal flag to know if those parameters must be loaded when rewinding sound or not
 	uint16_t permutation = 0;

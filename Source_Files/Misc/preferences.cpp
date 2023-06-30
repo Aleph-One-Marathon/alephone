@@ -1572,9 +1572,12 @@ static void sound_dialog(void *arg)
 		resamplers[i] = OpenALManager::Get()->GetResamplerName(i);
 	}
 
+	int resampler_index = sound_preferences->resampler_index != NONE && sound_preferences->resampler_index < resamplers_number ?
+		sound_preferences->resampler_index : OpenALManager::Get() ? OpenALManager::Get()->GetDefaultResampler() : NONE;
+
 	w_select_popup* resampler_w = new w_select_popup();
 	resampler_w->set_labels(resamplers);
-	resampler_w->set_selection(sound_preferences->resampler_index != NONE ? sound_preferences->resampler_index : OpenALManager::Get() ? OpenALManager::Get()->GetCurrentResampler() : NONE);
+	resampler_w->set_selection(resampler_index);
 	table->dual_add(resampler_w->label("Resampler"), d);
 	table->dual_add(resampler_w, d);
 

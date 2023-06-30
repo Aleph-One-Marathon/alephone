@@ -70,7 +70,7 @@ public:
 	void ToggleDeviceMode(bool recording_device);
 	int GetFrequency() const { return audio_parameters.rate; }
 	void GetPlayBackAudio(uint8* data, int length);
-	int GetCurrentResampler() const;
+	int GetDefaultResampler() const;
 	int GetResamplersNumber() const;
 	std::string GetResamplerName(int resamplerIndex) const;
 	bool Support_HRTF_Toggling() const;
@@ -110,6 +110,7 @@ private:
 	static LPALCLOOPBACKOPENDEVICESOFT alcLoopbackOpenDeviceSOFT;
 	static LPALCISRENDERFORMATSUPPORTEDSOFT alcIsRenderFormatSupportedSOFT;
 	static LPALCRENDERSAMPLESSOFT alcRenderSamplesSOFT;
+
 	static LPALGETSTRINGISOFT alGetStringiSOFT;
 
 	/* Filter object functions */

@@ -287,7 +287,7 @@ std::string OpenALManager::GetResamplerName(int resamplerIndex) const {
 	return alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, resamplerIndex);
 }
 
-int OpenALManager::GetCurrentResampler() const {
+int OpenALManager::GetDefaultResampler() const {
 	ALint index;
 	alGetIntegerv(AL_DEFAULT_RESAMPLER_SOFT, &index);
 	return index;
@@ -382,7 +382,8 @@ bool OpenALManager::GenerateSources() {
 	alcGetIntegerv(p_ALCDevice, ALC_MONO_SOURCES, 1, &monoSources);
 	alcGetIntegerv(p_ALCDevice, ALC_STEREO_SOURCES, 1, &stereoSources);
 	int nbSources = monoSources + stereoSources;
-	int resampler = audio_parameters.resampler_index != NONE ? audio_parameters.resampler_index : GetCurrentResampler();
+	int resampler = audio_parameters.resampler_index != NONE && audio_parameters.resampler_index < GetResamplersNumber() ?
+					audio_parameters.resampler_index : GetDefaultResampler();
 
 	std::vector<ALuint> sources_id(nbSources);
 	alGenSources(nbSources, sources_id.data());

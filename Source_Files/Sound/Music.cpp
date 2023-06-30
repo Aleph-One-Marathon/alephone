@@ -178,7 +178,8 @@ bool Music::Slot::SetParameters(bool loop, float volume)
 
 void Music::Slot::Play()
 {
-	if (!Playing()) musicPlayer = OpenALManager::Get()->PlayMusic(decoder, parameters);
+	if (!OpenALManager::Get() || Playing()) return;
+	musicPlayer = OpenALManager::Get()->PlayMusic(decoder, parameters);
 }
 
 bool Music::LoadLevelMusic()
