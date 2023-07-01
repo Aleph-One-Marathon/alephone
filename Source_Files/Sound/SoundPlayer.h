@@ -84,7 +84,8 @@ private:
 	SetupALResult SetUpALSourceIdle() override;
 	SetupALResult SetUpALSource3D();
 	bool SetUpALSourceInit() override;
-	bool CanRewindSound(int baseTick) const;
+	bool CanRewind(int baseTick) const;
+	bool CanFastRewind(int rewindSourceIdentifier) const;
 	bool LoadParametersUpdates() override;
 	void AskRewind(SoundParameters soundParameters, const Sound& sound);
 	float ComputeParameterForTransition(float targetParameter, float currentParameter, int currentTick) const;
