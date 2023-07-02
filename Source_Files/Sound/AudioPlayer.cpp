@@ -9,7 +9,7 @@ AudioPlayer::AudioPlayer(int rate, bool stereo, AudioFormat audioFormat) {
 
 bool AudioPlayer::AssignSource() {
 	if (audio_source) return true;
-	audio_source = OpenALManager::Get()->PickAvailableSource(GetPriority());
+	audio_source = OpenALManager::Get()->PickAvailableSource(*this);
 	return audio_source && SetUpALSourceInit();
 }
 

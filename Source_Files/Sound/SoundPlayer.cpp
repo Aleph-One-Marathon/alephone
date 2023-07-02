@@ -15,11 +15,11 @@ SoundPlayer::SoundPlayer(const Sound sound, SoundParameters parameters)
 
 //Simulate what the volume of our sound would be if we play it
 //If the volume is 0 then we just don't play the sound and drop it
-float SoundPlayer::Simulate(const SoundParameters soundParameters) {
+float SoundPlayer::Simulate(const SoundParameters& soundParameters) {
 	if (soundParameters.local && !soundParameters.stereo_parameters.is_panning) return 1; //ofc we play all local sounds without stereo panning
 	if (soundParameters.stereo_parameters.is_panning) return soundParameters.stereo_parameters.gain_global;
 
-	const auto listener = OpenALManager::Get()->GetListener(); //if we don't have a listener on a non local sound, there is a problem
+	const auto& listener = OpenALManager::Get()->GetListener(); //if we don't have a listener on a non local sound, there is a problem
 	float distance = std::sqrt(
 		std::pow((float)(soundParameters.source_location3d.point.x - listener.point.x) / WORLD_ONE, 2) +
 		std::pow((float)(soundParameters.source_location3d.point.y - listener.point.y) / WORLD_ONE, 2) +
@@ -223,7 +223,7 @@ float SoundPlayer::ComputeParameterForTransition(float targetParameter, float cu
 	return targetParameter > currentParameter ? std::min(targetParameter, computedParameter) : std::max(targetParameter, computedParameter);
 }
 
-SoundBehavior SoundPlayer::ComputeVolumeForTransition(SoundBehavior targetSoundBehavior) {
+SoundBehavior SoundPlayer::ComputeVolumeForTransition(const SoundBehavior& targetSoundBehavior) {
 
 	auto computedSoundBehavior = targetSoundBehavior;
 

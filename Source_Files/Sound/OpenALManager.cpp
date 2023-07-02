@@ -77,7 +77,7 @@ void OpenALManager::UpdateListener() {
 
 	if (!audio_parameters.sounds_3d) return;
 
-	const auto listener = listener_location.Get();
+	const auto& listener = listener_location.Get();
 
 	auto yaw = listener.yaw * angleConvert;
 	auto pitch = listener.pitch * angleConvert;
@@ -212,13 +212,13 @@ std::shared_ptr<StreamPlayer> OpenALManager::PlayStream(CallBackStreamPlayer cal
 //It's not a good idea generating dynamically a new source for each player
 //It's slow so it's better having a pool, also we already know the max amount
 //of supported simultaneous playing sources for the device
-std::unique_ptr<AudioPlayer::AudioSource> OpenALManager::PickAvailableSource(float priority) {
+std::unique_ptr<AudioPlayer::AudioSource> OpenALManager::PickAvailableSource(const AudioPlayer& audioPlayer) {
 	if (sources_pool.empty()) {
 		const auto& victimPlayer = *std::min_element(audio_players_queue.begin(), audio_players_queue.end(),
 			[](const std::shared_ptr<AudioPlayer>& a, const std::shared_ptr<AudioPlayer>& b)
 			{  return a->audio_source && a->GetPriority() < b->GetPriority(); });
 
-		return victimPlayer->GetPriority() < priority ? victimPlayer->RetrieveSource() : nullptr;
+		return victimPlayer->GetPriority() < audioPlayer.GetPriority() ? victimPlayer->RetrieveSource() : nullptr;
 	}
 
 	auto source = std::move(sources_pool.front());

@@ -66,7 +66,7 @@ public:
 	short GetIdentifier() const override { return parameters.Get().identifier; }
 	short GetSourceIdentifier() const override { return parameters.Get().source_identifier; }
 	SoundParameters GetParameters() const { return parameters.Get(); }
-	static float Simulate(const SoundParameters soundParameters);
+	static float Simulate(const SoundParameters& soundParameters);
 	float GetPriority() const override { return Simulate(parameters.Get()); }
 	void AskSoftStop() { soft_stop_signal = true; } //not supported by 3d sounds because no need to
 private:
@@ -90,7 +90,7 @@ private:
 	void AskRewind(SoundParameters soundParameters, const Sound& sound);
 	float ComputeParameterForTransition(float targetParameter, float currentParameter, int currentTick) const;
 	float ComputeVolumeForTransition(float targetVolume);
-	SoundBehavior ComputeVolumeForTransition(SoundBehavior targetSoundBehavior);
+	SoundBehavior ComputeVolumeForTransition(const SoundBehavior& targetSoundBehavior);
 	AtomicStructure<Sound> sound;
 	AtomicStructure<SoundParameters> parameters;
 	SoundParameters rewind_parameters;

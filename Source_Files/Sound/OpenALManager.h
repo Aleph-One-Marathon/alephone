@@ -61,10 +61,10 @@ public:
 	std::shared_ptr<MusicPlayer> PlayMusic(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters);
 	std::shared_ptr<StreamPlayer> PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, AudioFormat audioFormat);
 	void StopSound(short sound_identifier, short source_identifier);
-	std::unique_ptr<AudioPlayer::AudioSource> PickAvailableSource(float priority);
+	std::unique_ptr<AudioPlayer::AudioSource> PickAvailableSource(const AudioPlayer& audioPlayer);
 	std::shared_ptr<SoundPlayer> GetSoundPlayer(short identifier, short source_identifier, bool sound_identifier_only = false) const;
 	void UpdateListener(world_location3d listener) { listener_location.Set(listener); }
-	const world_location3d GetListener() const { return listener_location.Get(); }
+	const world_location3d& GetListener() const { return listener_location.Get(); }
 	void SetMasterVolume(float volume);
 	float GetMasterVolume() const { return master_volume.load(); }
 	void ToggleDeviceMode(bool recording_device);
