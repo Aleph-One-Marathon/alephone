@@ -50,14 +50,14 @@ struct AudioParameters {
 class OpenALManager {
 public:
 	static OpenALManager* Get() { return instance; }
-	static bool Init(AudioParameters parameters);
+	static bool Init(const AudioParameters& parameters);
 	static float From_db(float db, bool music = false) { return db <= (SoundManager::MINIMUM_VOLUME_DB / (music ? 2 : 1)) ? 0 : std::pow(10.f, db / 20.f); }
 	static void Shutdown();
 	void Start();
 	void Stop();
 	void StopAllPlayers();
-	std::shared_ptr<SoundPlayer> PlaySound(const Sound& sound, SoundParameters parameters);
-	std::shared_ptr<SoundPlayer> PlaySound(LoadedResource& rsrc, SoundParameters parameters);
+	std::shared_ptr<SoundPlayer> PlaySound(const Sound& sound, const SoundParameters& parameters);
+	std::shared_ptr<SoundPlayer> PlaySound(LoadedResource& rsrc, const SoundParameters& parameters);
 	std::shared_ptr<MusicPlayer> PlayMusic(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters);
 	std::shared_ptr<StreamPlayer> PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, AudioFormat audioFormat);
 	void StopSound(short sound_identifier, short source_identifier);
@@ -84,12 +84,12 @@ private:
 	static OpenALManager* instance;
 	ALCdevice* p_ALCDevice = nullptr;
 	ALCcontext* p_ALCContext = nullptr;
-	OpenALManager(AudioParameters parameters);
+	OpenALManager(const AudioParameters& parameters);
 	~OpenALManager();
 	std::atomic<float> master_volume;
 	bool process_audio_active = false;
 	AtomicStructure<world_location3d> listener_location = {};
-	void UpdateParameters(AudioParameters parameters);
+	void UpdateParameters(const AudioParameters& parameters);
 	void UpdateListener();
 	void CleanEverything();
 	bool GenerateSources();

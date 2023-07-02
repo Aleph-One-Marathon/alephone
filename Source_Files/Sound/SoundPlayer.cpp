@@ -4,11 +4,12 @@
 constexpr SoundBehavior SoundPlayer::sound_behavior_parameters[];
 constexpr SoundBehavior SoundPlayer::sound_obstructed_or_muffled_behavior_parameters[];
 constexpr SoundBehavior SoundPlayer::sound_obstructed_and_muffled_behavior_parameters[];
-SoundPlayer::SoundPlayer(const Sound sound, SoundParameters parameters)
+SoundPlayer::SoundPlayer(const Sound& sound, const SoundParameters& parameters)
 	: AudioPlayer(sound.header.rate >> 16, sound.header.stereo, sound.header.audio_format) {  //since header.rate is on 16.16 format
-	parameters.loop = parameters.loop || sound.header.loop_end - sound.header.loop_start >= 4;
+	auto soundParameters = parameters;
+	soundParameters.loop = parameters.loop || sound.header.loop_end - sound.header.loop_start >= 4; //where does this happen?
 	this->sound = sound;
-	this->parameters = parameters;
+	this->parameters = soundParameters;
 	data_length = sound.header.length;
 	start_tick = SoundManager::GetCurrentAudioTick();
 }
@@ -54,11 +55,12 @@ bool SoundPlayer::CanFastRewind(const SoundParameters& soundParameters) const {
 		&& soundParameters.source_identifier == GetSourceIdentifier();
 }
 
-void SoundPlayer::AskRewind(SoundParameters soundParameters, const Sound& newSound) {
-	soundParameters._is_for_rewind = true;
-	UpdateParameters(soundParameters);
+void SoundPlayer::AskRewind(const SoundParameters& soundParameters, const Sound& newSound) {
+	auto soundParametersRewind = soundParameters;
+	soundParametersRewind._is_for_rewind = true;
+	UpdateParameters(soundParametersRewind);
 
-	if (parameters.Get().permutation != soundParameters.permutation) {
+	if (parameters.Get().permutation != soundParametersRewind.permutation) {
 		sound.Store(newSound);
 	}
 
@@ -86,7 +88,7 @@ int SoundPlayer::LoopManager(uint8* data, int length) {
 		auto header = sound.Get().header;
 		int loopLength = header.loop_end - header.loop_start;
 
-		if (loopLength >= 4) {
+		if (loopLength >= 4) { //where does this happen?
 			data_length = loopLength;
 			current_index_data = header.loop_start;
 		}

@@ -61,8 +61,8 @@ struct Sound {
 
 class SoundPlayer : public AudioPlayer {
 public:
-	SoundPlayer(const Sound sound, SoundParameters parameters); //Must not be used outside OpenALManager (public for make_shared)
-	void UpdateParameters(SoundParameters parameters) { this->parameters.Store(parameters); }
+	SoundPlayer(const Sound& sound, const SoundParameters& parameters); //Must not be used outside OpenALManager (public for make_shared)
+	void UpdateParameters(const SoundParameters& parameters) { this->parameters.Store(parameters); }
 	short GetIdentifier() const override { return parameters.Get().identifier; }
 	short GetSourceIdentifier() const override { return parameters.Get().source_identifier; }
 	SoundParameters GetParameters() const { return parameters.Get(); }
@@ -87,7 +87,7 @@ private:
 	bool CanRewind(int baseTick) const;
 	bool CanFastRewind(const SoundParameters& soundParameters) const;
 	bool LoadParametersUpdates() override;
-	void AskRewind(SoundParameters soundParameters, const Sound& sound);
+	void AskRewind(const SoundParameters& soundParameters, const Sound& sound);
 	float ComputeParameterForTransition(float targetParameter, float currentParameter, int currentTick) const;
 	float ComputeVolumeForTransition(float targetVolume);
 	SoundBehavior ComputeVolumeForTransition(const SoundBehavior& targetSoundBehavior);

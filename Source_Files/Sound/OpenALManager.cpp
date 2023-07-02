@@ -13,7 +13,7 @@ LPALFILTERI OpenALManager::alFilteri;
 
 OpenALManager* OpenALManager::instance = nullptr;
 
-bool OpenALManager::Init(AudioParameters parameters) {
+bool OpenALManager::Init(const AudioParameters& parameters) {
 
 	if (instance) { //Don't bother recreating all the OpenAL context if nothing changed for it
 		if (parameters.hrtf != instance->audio_parameters.hrtf || parameters.rate != instance->audio_parameters.rate
@@ -159,7 +159,8 @@ std::shared_ptr<SoundPlayer> OpenALManager::GetSoundPlayer(short identifier, sho
 	return std::dynamic_pointer_cast<SoundPlayer>(matchingPlayer); //only sounds are supported, not musics
 }
 
-std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(const Sound& sound, SoundParameters parameters) {
+std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(const Sound& sound, const SoundParameters& parameters) {
+
 	auto soundPlayer = std::shared_ptr<SoundPlayer>();
 	const float simulatedVolume = SoundPlayer::Simulate(parameters);
 	if (!process_audio_active || simulatedVolume <= 0) return soundPlayer;
@@ -184,7 +185,7 @@ std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(const Sound& sound, SoundP
 	return soundPlayer;
 }
 
-std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(LoadedResource& rsrc, SoundParameters parameters) {
+std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(LoadedResource& rsrc, const SoundParameters& parameters) {
 	SoundHeader header;
 	if (header.Load(rsrc)) {
 		auto data = header.LoadData(rsrc);
@@ -415,7 +416,7 @@ bool OpenALManager::GenerateSources() {
 	return !sources_id.empty();
 }
 
-OpenALManager::OpenALManager(AudioParameters parameters) {
+OpenALManager::OpenALManager(const AudioParameters& parameters) {
 	UpdateParameters(parameters);
 	alListener3i(AL_POSITION, 0, 0, 0);
 
@@ -495,7 +496,7 @@ int OpenALManager::GetBestOpenALRenderingFormat(ALCint channelsType) {
 	return format;
 }
 
-void OpenALManager::UpdateParameters(AudioParameters parameters) {
+void OpenALManager::UpdateParameters(const AudioParameters& parameters) {
 	audio_parameters = parameters;
 	master_volume = parameters.volume;
 }
