@@ -4468,7 +4468,7 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	
 	for (const InfoTree &landscape : root.children_named("landscapes"))
 	{
-		for (const InfoTree &color : root.children_named("color"))
+		for (const InfoTree &color : landscape.children_named("color"))
 		{
 			int16 index;
 			if (color.read_indexed("index", index, 8))
@@ -4715,7 +4715,6 @@ void parse_input_preferences(InfoTree root, std::string version)
 			key.read_attr("pressed", pressed_name))
 		{
 			BindingType binding_type;
-			bool shell = false;
 			int index = index_for_action_name(action_name, binding_type);
 			if (index < 0)
 				continue;

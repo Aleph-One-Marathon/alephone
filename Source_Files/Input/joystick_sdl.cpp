@@ -120,11 +120,6 @@ static const std::vector<AxisInfo> axis_mappings = {
 	{ 9, _flags_pitch, false }
 };
 
-static const float axis_limits[NUMBER_OF_ABSOLUTE_POSITION_VALUES] = {
-	0.5f - 1.f / (1<<ABSOLUTE_YAW_BITS),
-	0.5f - 1.f / (1<<ABSOLUTE_PITCH_BITS)
-};
-
 static int axis_mapped_to_action(int action, bool* negative) {
 	auto codeset = input_preferences->key_bindings[action];
 	for (auto it = codeset.begin(); it != codeset.end(); ++it) {

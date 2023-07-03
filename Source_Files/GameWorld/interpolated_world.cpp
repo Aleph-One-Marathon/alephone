@@ -873,9 +873,6 @@ static void interpolate_weapon_display_information(
 	{
 		return;
 	}
-	
-	auto dx = next->horizontal_position - prev->horizontal_position;
-	auto dy = next->vertical_position - prev->vertical_position;
 
 	data->vertical_position = lerp(prev->vertical_position,
 								   next->vertical_position,

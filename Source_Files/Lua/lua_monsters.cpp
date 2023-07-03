@@ -688,7 +688,6 @@ int Lua_Monster_Delete(lua_State* L)
 	monster->action = _monster_is_dying_soft; // to prevent aggressors from
 											  // relocking, per monsters.cpp
 	monster_died(monster_index);
-	auto object = get_object_data(monster->object_index);
 	remove_map_object(monster->object_index);
 
 	/* recover original type and notify the object stuff a monster died */
