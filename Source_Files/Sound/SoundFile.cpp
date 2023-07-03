@@ -54,7 +54,7 @@ bool SoundHeader::UnpackStandardSystem7Header(BIStreamBE &header)
 		header >> loop_end;
 		
 		return true;
-	} catch (basic_bstream::failure e) {
+	} catch (const basic_bstream::failure& e) {
 		return false;
 	}
 }
@@ -110,7 +110,7 @@ bool SoundHeader::UnpackExtendedSystem7Header(BIStreamBE &header)
 		}
 		
 		return true;
-	} catch (basic_bstream::failure e) {
+	} catch (const basic_bstream::failure& e) {
 		return false;
 	}
 }
@@ -163,7 +163,7 @@ std::shared_ptr<SoundData> SoundHeader::LoadData(BIStreamBE& s)
 			byte_swap_memory(p->data(), _2byte, length / 2);
 		}
 	}
-	catch (basic_bstream::failure e)
+	catch (const basic_bstream::failure& e)
 	{
 		p.reset();
 	}

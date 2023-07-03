@@ -64,7 +64,7 @@ public:
 		try {
 			value = get_child(path).get_value<T>();
 			return true;
-		} catch (path_error ep) {} catch (data_error ed) {}
+		} catch (const path_error& ep) {} catch (const data_error& ed) {}
 		return false;
 	}
 

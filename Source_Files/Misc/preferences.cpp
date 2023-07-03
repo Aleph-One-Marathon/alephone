@@ -3414,16 +3414,16 @@ void read_preferences ()
 			for (const InfoTree &child : root.children_named("environment"))
 				parse_environment_preferences(child, version);
 			
-		} catch (InfoTree::parse_error ex) {
+		} catch (const InfoTree::parse_error& ex) {
 			logError("Error parsing preferences file (%s): %s", FileSpec.GetPath(), ex.what());
 			parse_error = true;
-		} catch (InfoTree::path_error ep) {
+		} catch (const InfoTree::path_error& ep) {
 			logError("Could not find mara_prefs in preferences file (%s): %s", FileSpec.GetPath(), ep.what());
 			parse_error = true;
-		} catch (InfoTree::data_error ed) {
+		} catch (const InfoTree::data_error& ed) {
 			logError("Unexpected data error in preferences file (%s): %s", FileSpec.GetPath(), ed.what());
 			parse_error = true;
-		} catch (InfoTree::unexpected_error ee) {
+		} catch (const InfoTree::unexpected_error& ee) {
 			logError("Unexpected error in preferences file (%s): %s", FileSpec.GetPath(), ee.what());
 			parse_error = true;
 		}
@@ -3933,9 +3933,9 @@ void write_preferences()
 	
 	try {
 		fileroot.save_xml(FileSpec);
-	} catch (InfoTree::parse_error ex) {
+	} catch (const InfoTree::parse_error& ex) {
 		logError("Error saving preferences file (%s): %s", FileSpec.GetPath(), ex.what());
-	} catch (InfoTree::unexpected_error ex) {
+	} catch (const InfoTree::unexpected_error& ex) {
 		logError("Error saving preferences file (%s): %s", FileSpec.GetPath(), ex.what());
 	}
 }

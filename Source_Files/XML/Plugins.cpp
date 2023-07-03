@@ -324,13 +324,13 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 					Plugins::instance()->add(Data);
 				}
 				
-			} catch (InfoTree::parse_error e) {
+			} catch (const InfoTree::parse_error& e) {
 				logError("There were parsing errors in %s Plugin.xml: %s", name, e.what());
-			} catch (InfoTree::path_error e) {
+			} catch (const InfoTree::path_error& e) {
 				logError("There were parsing errors in %s Plugin.xml: %s", name, e.what());
-			} catch (InfoTree::data_error e) {
+			} catch (const InfoTree::data_error& e) {
 				logError("There were parsing errors in %s Plugin.xml: %s", name, e.what());
-			} catch (InfoTree::unexpected_error e) {
+			} catch (const InfoTree::unexpected_error& e) {
 				logError("There were parsing errors in %s Plugin.xml: %s", name, e.what());
 			}
 		}

@@ -206,13 +206,13 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 	try {
 		InfoTree root = InfoTree::load_xml(strm).get_child("marathon_levels");
 		parse_levels_xml(root);
-	} catch (InfoTree::parse_error e) {
+	} catch (const InfoTree::parse_error& e) {
 		logError("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
-	} catch (InfoTree::path_error e) {
+	} catch (const InfoTree::path_error& e) {
 		logError("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
-	} catch (InfoTree::data_error e) {
+	} catch (const InfoTree::data_error& e) {
 		logError("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
-	} catch (InfoTree::unexpected_error e) {
+	} catch (const InfoTree::unexpected_error& e) {
 		logError("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
 	}
 }
