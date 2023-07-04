@@ -111,7 +111,7 @@ public:
 private:
 	Plugins() { }
 
-	void add(Plugin plugin) { m_plugins.push_back(plugin); }
+	void add(const Plugin& plugin) { m_plugins.push_back(plugin); }
 	void validate();
 
 	std::vector<Plugin> m_plugins;

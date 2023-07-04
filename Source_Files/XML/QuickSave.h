@@ -58,7 +58,7 @@ public:
     
 private:
     QuickSaves() { }
-    void add(QuickSave save) { m_saves.push_back(save); }
+    void add(const QuickSave& save) { m_saves.push_back(save); }
     
     std::vector<QuickSave> m_saves;
 };
