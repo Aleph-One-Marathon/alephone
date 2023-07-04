@@ -61,6 +61,7 @@ Jul 31, 2002 (Loren Petrich)
 #include "OGL_Render.h"
 #include "OGL_Blitter.h"
 #include "screen_definitions.h"
+#include "Plugins.h"
 
 
 // Constants
@@ -1418,12 +1419,27 @@ void draw_full_screen_pict_resource_from_images(int pict_resource_number)
 
 bool get_picture_resource_from_scenario(int base_resource, LoadedResource &PictRsrc)
 {
-    bool found = false;
-    
-    if (!found && ScenarioFile.is_open())
-        found = ScenarioFile.get_pict(ScenarioFile.determine_pict_resource_id(base_resource, _scenario_file_delta16, _scenario_file_delta32), PictRsrc);
+	bool found = false;
+
+	if (!found && ScenarioFile.is_open())
+	{
+		auto id = ScenarioFile.determine_pict_resource_id(base_resource, _scenario_file_delta16, _scenario_file_delta32);
+		found = Plugins::instance()->get_resource(FOUR_CHARS_TO_INT('P','I','C','T'), id, PictRsrc);
+		if (!found)
+		{
+			found = ScenarioFile.get_pict(ScenarioFile.determine_pict_resource_id(base_resource, _scenario_file_delta16, _scenario_file_delta32), PictRsrc);
+		}
+	}
+	
     if (!found && ShapesImagesFile.is_open())
-        found = ShapesImagesFile.get_pict(base_resource, PictRsrc);
+	{
+		found = Plugins::instance()->get_resource(FOUR_CHARS_TO_INT('P','I','C','T'), base_resource, PictRsrc);
+
+		if (!found)
+		{
+			found = ShapesImagesFile.get_pict(base_resource, PictRsrc);
+		}
+	}
     
     return found;
 }
@@ -1448,13 +1464,27 @@ void draw_full_screen_pict_resource_from_scenario(int pict_resource_number)
 
 bool get_sound_resource_from_scenario(int resource_number, LoadedResource &SoundRsrc)
 {
-    bool found = false;
+	bool found = false;
     
     if (!found && ScenarioFile.is_open())
-        found = ScenarioFile.get_snd(resource_number, SoundRsrc);
+	{
+		found = Plugins::instance()->get_resource(FOUR_CHARS_TO_INT('s','n','d',' '), resource_number, SoundRsrc);
+		if (!found)
+		{
+			found = ScenarioFile.get_snd(resource_number, SoundRsrc);
+		}
+	}
+	
     if (!found && SoundsImagesFile.is_open())
+	{
         // Marathon 1 case: only one sound used for chapter screens
-        found = SoundsImagesFile.get_snd(1240, SoundRsrc);
+		found = Plugins::instance()->get_resource(FOUR_CHARS_TO_INT('s','n','d', ' '), 1240, SoundRsrc);
+
+		if (!found)
+		{
+			found = SoundsImagesFile.get_snd(1240, SoundRsrc);
+		}
+	}
     
     return found;
 }
@@ -1467,7 +1497,13 @@ bool get_text_resource_from_scenario(int resource_number, LoadedResource &TextRs
 	if (!ScenarioFile.is_open())
 		return false;
 
-	bool success = ScenarioFile.get_text(resource_number, TextRsrc);
+	auto success = Plugins::instance()->get_resource(FOUR_CHARS_TO_INT('T','E','X','T'), resource_number, TextRsrc);
+
+	if (!success)
+	{
+		success = ScenarioFile.get_text(resource_number, TextRsrc);
+	}
+	
 	return success;
 }
 

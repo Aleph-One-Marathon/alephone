@@ -232,13 +232,15 @@ void set_map_file(FileSpecifier& File, bool loadScripts)
 
 	MapFileSpec = File;
 	set_scenario_images_file(File);
+	file_is_set = true;
+
+	Plugins::instance()->set_map_checksum(get_current_map_checksum());
+	
 	// Only need to do this here
 	if(loadScripts) LoadLevelScripts(File);
 
 	// Don't care whether there was an error when checking on the file's scenario images
 	clear_game_error();
-
-	file_is_set= true;
 }
 
 /* Set to the default map.. (Only if no map doubleclicked upon on startup.. */

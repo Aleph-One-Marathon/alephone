@@ -103,6 +103,8 @@ May 22, 2003 (Woody Zenfell):
 #include "shell_options.h"
 #include "OpenALManager.h"
 
+#include "XML_LevelScript.h"
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -1471,7 +1473,7 @@ static void graphics_dialog(void *arg)
 			ResetAllMMLValues();
 			LoadBaseMMLScripts();
 			Plugins::instance()->load_mml();
-			
+
 		    change_screen_mode(&graphics_preferences->screen_mode, true);
 		    clear_screen(true);
 		    parent->layout();
@@ -2998,6 +3000,9 @@ static void plugins_dialog(void *)
 			ResetAllMMLValues();
 			LoadBaseMMLScripts();
 			Plugins::instance()->load_mml();
+
+			Plugins::instance()->set_map_checksum(get_current_map_checksum());
+			LoadLevelScripts(get_map_file());
 		}
 	}
 }
