@@ -94,11 +94,7 @@ Then, install the following packages.
 
     sudo dnf install boost-devel curl-devel ffmpeg-devel gcc-c++ \
       libpng-devel SDL2-devel SDL2_ttf-devel SDL2_image-devel SDL2_net-devel \
-      zziplib-devel miniupnpc-devel openal-soft-devel
-
-As an alternative to using FFmpeg (which requires the RPM Fusion Repository), you can install alternative libraries:
-
-    sudo dnf install libsndfile-devel libvorbis-devel
+      zziplib-devel miniupnpc-devel openal-soft-devel libsndfile-devel
 
 If you don't compile with FFmpeg support, you won't be able to use WebM export in Aleph One.
 
