@@ -136,9 +136,6 @@ static std::map<int, LevelScriptHeader> LevelScripts;
 // Current script for adding commands to and for running
 static LevelScriptHeader *CurrScriptPtr = NULL;
 
-// Map-file parent directory (where all map-related files are supposed to live)
-static DirectorySpecifier MapParentDir;
-
 #ifdef HAVE_LUA
 // Same for Lua
 static bool LuaFound = false;
@@ -175,9 +172,6 @@ extern bool get_text_resource_from_scenario(int resource_number, LoadedResource&
 // Loads all those in resource 128 in a map file (or some appropriate equivalent)
 void LoadLevelScripts(FileSpecifier& MapFile)
 {
-	// Because all the files are to live in the map file's parent directory
-	MapFile.ToDirectory(MapParentDir);
-	
 	// Get rid of the previous level script
 	// ghs: unless it's the first time, in which case we would be clearing
 	// any external level scripts, so don't
