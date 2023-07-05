@@ -264,7 +264,6 @@ void initialize_fades(
 {
 	/* allocate and initialize space for our fade_data structure */
 	fade= new fade_data;
-	assert(fade);
 	fade->flags = 0;
 	
 	SET_FADE_ACTIVE_STATUS(fade, false);

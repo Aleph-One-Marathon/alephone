@@ -102,7 +102,6 @@ void allocate_pathfinding_memory(
 	// Made reentrant because this is called every time MAXIMUM_PATHS is changed
 	if (paths) delete []paths;
 	paths= new path_definition[MAXIMUM_PATHS];
-	assert(paths);
 
 #ifdef VERIFY_PATH_SYNC
 	if (path_validation_area) delete []path_validation_area;

@@ -515,7 +515,6 @@ void initialize_terminal_manager(
 	void)
 {
 	player_terminals= new player_terminal_data[MAXIMUM_NUMBER_OF_PLAYERS];
-	assert(player_terminals);
 	objlist_clear(player_terminals, MAXIMUM_NUMBER_OF_PLAYERS);
 
 /*

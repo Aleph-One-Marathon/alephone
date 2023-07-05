@@ -91,7 +91,6 @@ void allocate_flood_map_memory(
 	nodes= new node_data[MAXIMUM_FLOOD_NODES];
 	if (visited_polygons) delete []visited_polygons;
 	visited_polygons= new short[MAXIMUM_POLYGONS_PER_MAP];
-	assert(nodes&&visited_polygons);
 }
 
 /* returns next polygon index or NONE if there are no more polygons left cheaper than maximum_cost */

@@ -403,7 +403,6 @@ void allocate_player_memory(
 {
 	/* allocate space for all our players */
 	players= new player_data[MAXIMUM_NUMBER_OF_PLAYERS];
-	assert(players);
 
 #ifdef BETA
 	dprintf("#%d players at %p (%x bytes each) ---------------------------------------;g;", MAXIMUM_NUMBER_OF_PLAYERS, players, sizeof(struct player_data));

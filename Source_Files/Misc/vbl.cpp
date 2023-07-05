@@ -187,8 +187,6 @@ void initialize_keyboard_controller(
 	
 	/* Allocate the recording queues */	
 	replay.recording_queues = new ActionQueue[MAXIMUM_NUMBER_OF_PLAYERS];
-	assert(replay.recording_queues);
-	if(!replay.recording_queues) alert_out_of_memory();
 	
 	/* Allocate the individual ones */
 	for (player_index= 0; player_index<MAXIMUM_NUMBER_OF_PLAYERS; player_index++)
@@ -196,7 +194,6 @@ void initialize_keyboard_controller(
 		queue= get_player_recording_queue(player_index);
 		queue->read_index= queue->write_index = 0;
 		queue->buffer= new uint32[MAXIMUM_QUEUE_SIZE];
-		if(!queue->buffer) alert_out_of_memory();
 	}
 	enter_mouse(0);
 }
@@ -574,9 +571,7 @@ bool setup_for_replay_from_file(
 		/* Set to the mapfile this replay came from.. */
 		if(use_map_file(replay.header.map_checksum))
 		{
-			replay.fsread_buffer= new char[DISK_CACHE_SIZE]; 
-			assert(replay.fsread_buffer);
-			
+			replay.fsread_buffer= new char[DISK_CACHE_SIZE];
 			replay.location_in_cache= NULL;
 			replay.bytes_in_cache= 0;
 			replay.replay_speed= 1;

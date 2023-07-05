@@ -53,9 +53,7 @@ ActionQueues::ActionQueues(unsigned int inNumPlayers, unsigned int inQueueSize, 
     /* allocate space for our action queue headers and the queues themselves */
     mQueueHeaders	= new action_queue[mNumPlayers];
     mFlagsBuffer	= new uint32[mNumPlayers * mQueueSize];
-    
-    assert(mQueueHeaders && mFlagsBuffer);
-    
+        
     /* tell the queues where their buffers are */
     for (unsigned i = 0; i < mNumPlayers; ++i)
     {
