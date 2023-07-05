@@ -136,11 +136,6 @@ static std::map<int, LevelScriptHeader> LevelScripts;
 // Current script for adding commands to and for running
 static LevelScriptHeader *CurrScriptPtr = NULL;
 
-#ifdef HAVE_LUA
-// Same for Lua
-static bool LuaFound = false;
-#endif /* HAVE_LUA */
-
 // Movie filespec and whether it points to a real file
 static FileSpecifier MovieFile;
 static bool MovieFileExists = false;
@@ -237,16 +232,9 @@ void ResetLevelScript()
 // runs level-specific MML...
 void RunLevelScript(int LevelIndex)
 {
-	// None found just yet...
-#ifdef HAVE_LUA
-	LuaFound = false;
-#endif /* HAVE_LUA */
-	
 	GeneralRunScript(LevelScriptHeader::Default);
 	GeneralRunScript(LevelIndex);
-	
 	Music::instance()->SeedLevelMusic();
-
 }
 
 std::vector<uint8> mmls_chunk;
@@ -380,9 +368,7 @@ void GeneralRunScript(int LevelIndex)
 				// Skip if not loaded
 				if (Data == NULL || DataLen <= 0) break;
 				
-				// Load and indicate whether loading was successful
-				if (LoadLuaScript(Data, DataLen, _embedded_lua_script))
-					LuaFound = true;
+				LoadLuaScript(Data, DataLen, _embedded_lua_script);
 			}
 			break;
 #endif /* HAVE_LUA */
