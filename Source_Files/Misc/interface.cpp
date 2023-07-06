@@ -2388,24 +2388,33 @@ static void finish_game(
 	} 
 	else
 #endif // !defined(DISABLE_NETWORKING)
-	if (game_state.user == _replay && !(dynamic_world->game_information.game_type == _game_of_kill_monsters && dynamic_world->player_count == 1))
-	{
-		game_state.state = _displaying_network_game_dialogs;
 
-		force_system_colors();
-		display_net_game_stats();
+	if (game_state.user == _replay)
+	{
+		if (shell_options.replay_film_and_exit)
+		{
+			game_state.state = _quit_game;
+			return_to_main_menu = false;
+		}
+		else if (!(dynamic_world->game_information.game_type == _game_of_kill_monsters && dynamic_world->player_count == 1))
+		{
+			game_state.state = _displaying_network_game_dialogs;
+
+			force_system_colors();
+			display_net_game_stats();
+		}
 	}
 	
 	set_local_player_index(NONE);
 	set_current_player_index(NONE);
 	
 	load_environment_from_preferences();
-	if (game_state.user == _replay || game_state.user == _demo)
+	if ((game_state.user == _replay && !shell_options.replay_film_and_exit) || game_state.user == _demo)
 	{
 		Plugins::instance()->set_mode(Plugins::kMode_Menu);
 		load_film_profile(FILM_PROFILE_DEFAULT);
 	}
-	if(return_to_main_menu) display_main_menu();
+	if (return_to_main_menu) display_main_menu();
 }
 
 static void clean_up_after_failed_game(bool inNetgame, bool inRecording, bool inFullCleanup)
