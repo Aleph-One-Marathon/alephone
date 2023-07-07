@@ -173,11 +173,13 @@ bool ShellOptions::parse(int argc, char** argv)
 		{
 			if (option.match(*it))
 			{
-                if (it != args.end() && (*(++it))[0] != '-')
-                {
+				auto next_it = it + 1;
+				if (next_it != args.end() && (*next_it)[0] != '-')
+				{
 					found = true;
-                    option.string = *it;
-                }
+					option.string = *next_it;
+					it = next_it;
+				}
                 else
                 {
 					logFatal("%s requires an additional argument", it->c_str());
