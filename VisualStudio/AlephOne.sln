@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AlephOne", "AlephOne.vcxproj", "{D1A548FF-F15F-43CA-8891-F4B367122282}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AlephOne", "AlephOne\AlephOne.vcxproj", "{D1A548FF-F15F-43CA-8891-F4B367122282}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Lua", "Lua\Lua.vcxproj", "{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}"
 EndProject
