@@ -62,7 +62,6 @@
 #include "mytm.h"	// mytm_initialize(), for platform-specific shell_*.h
 
 #include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
 #include <vector>
 
@@ -155,7 +154,6 @@ static bool force_windowed = false;   // Force windowed mode
 */
 
 // Prototypes
-static void main_event_loop(void);
 extern int process_keyword_key(char key);
 extern void handle_keyword(int type_of_cheat);
 
@@ -169,8 +167,6 @@ extern bool get_default_theme_spec(FileSpecifier& file);
 void execute_timer_tasks(uint32 time);
 
 // Prototypes
-static void initialize_application(void);
-void shutdown_application(void);
 static void initialize_marathon_music_handler(void);
 static void process_event(const SDL_Event &event);
 
@@ -337,7 +333,7 @@ static int char_is_not_filesafe(int c)
     return (c != ' ' && !std::isalnum(c));
 }
 
-static void initialize_application(void)
+void initialize_application(void)
 {
 #if defined(__WIN32__)
 	if (LoadLibraryW(L"exchndl.dll")) shell_options.debug = true;
@@ -700,7 +696,7 @@ short get_level_number_from_user(void)
 }
 
 const uint32 TICKS_BETWEEN_EVENT_POLL = 16; // 60 Hz
-static void main_event_loop(void)
+void main_event_loop(void)
 {
 	uint32 last_event_poll = 0;
 	short game_state;
