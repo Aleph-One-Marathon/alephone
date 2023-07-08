@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Lua", "Lua\Lua.vcxproj", "{
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AlephOne", "AlephOne\AlephOne.vcxproj", "{9AF0CA66-A621-4FE5-B986-F0CAB7647C24}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tests", "Tests\Tests.vcxproj", "{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -83,6 +85,26 @@ Global
 		{9AF0CA66-A621-4FE5-B986-F0CAB7647C24}.Release|x64.Build.0 = Release|x64
 		{9AF0CA66-A621-4FE5-B986-F0CAB7647C24}.Release|x86.ActiveCfg = Release|Win32
 		{9AF0CA66-A621-4FE5-B986-F0CAB7647C24}.Release|x86.Build.0 = Release|Win32
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Debug|x64.ActiveCfg = Debug|x64
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Debug|x64.Build.0 = Debug|x64
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Debug|x86.ActiveCfg = Debug|Win32
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Debug|x86.Build.0 = Debug|Win32
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Marathon 2|x64.ActiveCfg = Release|x64
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Marathon 2|x64.Build.0 = Release|x64
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Marathon 2|x86.ActiveCfg = Release|Win32
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Marathon 2|x86.Build.0 = Release|Win32
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Marathon Infinity|x64.ActiveCfg = Release|x64
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Marathon Infinity|x64.Build.0 = Release|x64
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Marathon Infinity|x86.ActiveCfg = Release|Win32
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Marathon Infinity|x86.Build.0 = Release|Win32
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Marathon|x64.ActiveCfg = Release|x64
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Marathon|x64.Build.0 = Release|x64
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Marathon|x86.ActiveCfg = Release|Win32
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Marathon|x86.Build.0 = Release|Win32
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Release|x64.ActiveCfg = Release|x64
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Release|x64.Build.0 = Release|x64
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Release|x86.ActiveCfg = Release|Win32
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
