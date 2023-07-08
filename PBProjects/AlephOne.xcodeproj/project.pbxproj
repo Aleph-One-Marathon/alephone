@@ -229,6 +229,10 @@
 		AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
 		AE005FD40EE2D6DE007FE7C6 /* screen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE005FD30EE2D6DE007FE7C6 /* screen.cpp */; };
 		AE0E4EC2141D148F00AAA02F /* Marathon.icns in Resources */ = {isa = PBXBuildFile; fileRef = AE0E4EC1141D148F00AAA02F /* Marathon.icns */; };
+		AE171BCD2A59F6EE00A4D3FC /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE171BCC2A59F6EE00A4D3FC /* main.cpp */; };
+		AE171BCE2A59F6EE00A4D3FC /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE171BCC2A59F6EE00A4D3FC /* main.cpp */; };
+		AE171BCF2A59F6EE00A4D3FC /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE171BCC2A59F6EE00A4D3FC /* main.cpp */; };
+		AE171BD02A59F6EE00A4D3FC /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE171BCC2A59F6EE00A4D3FC /* main.cpp */; };
 		AE1F1B952662C69500E6390E /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9974FD2661D49E00DDD370 /* AudioToolbox.framework */; };
 		AE1F1B962662C69600E6390E /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9974FD2661D49E00DDD370 /* AudioToolbox.framework */; };
 		AE1F1B972662C69600E6390E /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9974FD2661D49E00DDD370 /* AudioToolbox.framework */; };
@@ -1899,6 +1903,7 @@
 		AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Blitter.cpp; sourceTree = "<group>"; };
 		AE005FD30EE2D6DE007FE7C6 /* screen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = screen.cpp; sourceTree = "<group>"; };
 		AE0E4EC1141D148F00AAA02F /* Marathon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Marathon.icns; path = AppStore/Marathon/Marathon.icns; sourceTree = "<group>"; };
+		AE171BCC2A59F6EE00A4D3FC /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../Source_Files/main.cpp; sourceTree = "<group>"; };
 		AE1F1B912662C5A500E6390E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AE1F1B922662C5A500E6390E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = AppStore/Marathon/en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AE1F1B932662C5A600E6390E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = "AppStore/Marathon 2/en.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
@@ -3239,6 +3244,7 @@
 		F5CF58580245987901A80001 /* Main */ = {
 			isa = PBXGroup;
 			children = (
+				AE171BCC2A59F6EE00A4D3FC /* main.cpp */,
 				AEEA4E832544B51D0031363A /* shell_options.h */,
 				AEEA4E7E2544B50B0031363A /* shell_options.cpp */,
 				27A6DB4F1B9CED1E003DA766 /* confpaths.h */,
@@ -4551,6 +4557,7 @@
 				AE505C80141D45E600915344 /* Packing.cpp in Sources */,
 				AE505C81141D45E600915344 /* DefaultStringSets.cpp in Sources */,
 				AE505C82141D45E600915344 /* Logging.cpp in Sources */,
+				AE171BCF2A59F6EE00A4D3FC /* main.cpp in Sources */,
 				AE505C85141D45E600915344 /* preprocess_map_shared.cpp in Sources */,
 				AE505C86141D45E600915344 /* OGL_Model_Def.cpp in Sources */,
 				AE505C87141D45E600915344 /* OGL_Subst_Texture_Def.cpp in Sources */,
@@ -4776,6 +4783,7 @@
 				AEB4A22114296CAE00537AE7 /* Packing.cpp in Sources */,
 				AEB4A22214296CAE00537AE7 /* DefaultStringSets.cpp in Sources */,
 				AEB4A22314296CAE00537AE7 /* Logging.cpp in Sources */,
+				AE171BD02A59F6EE00A4D3FC /* main.cpp in Sources */,
 				AEB4A22614296CAE00537AE7 /* preprocess_map_shared.cpp in Sources */,
 				AEB4A22714296CAE00537AE7 /* OGL_Model_Def.cpp in Sources */,
 				AEB4A22814296CAE00537AE7 /* OGL_Subst_Texture_Def.cpp in Sources */,
@@ -5001,6 +5009,7 @@
 				AEC3C84D09AD68AC003258E4 /* Packing.cpp in Sources */,
 				AEC3C84E09AD68AC003258E4 /* DefaultStringSets.cpp in Sources */,
 				AEC3C84F09AD68AC003258E4 /* Logging.cpp in Sources */,
+				AE171BCD2A59F6EE00A4D3FC /* main.cpp in Sources */,
 				AEC3C85309AD68AC003258E4 /* preprocess_map_shared.cpp in Sources */,
 				AEC3C85409AD68AC003258E4 /* OGL_Model_Def.cpp in Sources */,
 				AEC3C85509AD68AC003258E4 /* OGL_Subst_Texture_Def.cpp in Sources */,
@@ -5226,6 +5235,7 @@
 				AEFD872D13EB84CF00C1E687 /* Packing.cpp in Sources */,
 				AEFD872E13EB84CF00C1E687 /* DefaultStringSets.cpp in Sources */,
 				AEFD872F13EB84CF00C1E687 /* Logging.cpp in Sources */,
+				AE171BCE2A59F6EE00A4D3FC /* main.cpp in Sources */,
 				AEFD873213EB84CF00C1E687 /* preprocess_map_shared.cpp in Sources */,
 				AEFD873313EB84CF00C1E687 /* OGL_Model_Def.cpp in Sources */,
 				AEFD873413EB84CF00C1E687 /* OGL_Subst_Texture_Def.cpp in Sources */,

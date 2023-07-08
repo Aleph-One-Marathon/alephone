@@ -442,6 +442,7 @@
     <ClCompile Include="..\..\Source_Files\Lua\lua_saved_objects.cpp" />
     <ClCompile Include="..\..\Source_Files\Lua\lua_script.cpp" />
     <ClCompile Include="..\..\Source_Files\Lua\lua_serialize.cpp" />
+    <ClCompile Include="..\..\Source_Files\main.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\ActionQueues.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\CircularByteBuffer.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\Console.cpp" />

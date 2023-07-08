@@ -718,6 +718,9 @@
     <ClCompile Include="..\..\Source_Files\Lua\lua_music.cpp">
       <Filter>Lua\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source_Files\main.cpp">
+      <Filter>Main\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source_Files\CSeries\BStream.h">
