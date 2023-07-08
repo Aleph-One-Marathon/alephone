@@ -142,19 +142,21 @@ if(!(Test-Path -Path $msbuild_path)) {
 [string]$solution_directory = Split-Path -Path $input_path
 [string]$root_directory = Join-Path -Path $solution_directory -ChildPath "../"
 [string]$platform = if ($x64) {"x64"} else {"x86"}
-[string]$exe_path = if ($x64) {"/x64/Release"} else {"/Release"}
-[string]$exe_path = Join-Path -Path $solution_directory -ChildPath $exe_path
-[string]$exe_path = Join-Path -Path $exe_path -ChildPath "*.exe"
+[string]$exe_path_only = if ($x64) {"/x64/Release"} else {"/Release"}
+[string]$exe_path_only = Join-Path -Path $solution_directory -ChildPath $exe_path_only
 
 $array_exclude_copy = @('Makefile','Makefile.*','*.svn','*.git')
 $array_build = @()
-if($a1) {$array_build += "Release"}
-if($m1) {$array_build += "Marathon"}
-if($m2) {$array_build += "Marathon 2"}
-if($m3) {$array_build += "Marathon Infinity"}
+$array_exe_name = @()
+if($a1) {$array_build += "Release"; $array_exe_name += "Aleph One.exe"}
+if($m1) {$array_build += "Marathon"; $array_exe_name += "Marathon.exe"}
+if($m2) {$array_build += "Marathon 2"; $array_exe_name += "Marathon 2.exe"}
+if($m3) {$array_build += "Marathon Infinity"; $array_exe_name += "Marathon Infinity.exe"}
 
-foreach ($build in $array_build) {
+for (($i = 0); $i -lt $array_build.Count; $i++) {
+	$build = $array_build[$i]
 	Write-Host "Building ${build} ${platform}" -ForegroundColor green
+	[string]$exe_path = Join-Path -Path $exe_path_only -ChildPath $array_exe_name[$i]
 	[bool]$success = &MsBuild -configuration $build
 	if(!($success)) {
 		Write-Error "${build} build failed" -ErrorAction Stop
