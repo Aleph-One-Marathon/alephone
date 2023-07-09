@@ -2,6 +2,7 @@
 #include "world.h"
 #include "FileHandler.h"
 #include "shell_options.h"
+#include "interface.h"
 #include <catch2/catch_test_macros.hpp>
 
 extern ShellOptions shell_options;
@@ -51,6 +52,7 @@ TEST_CASE("Film replay") {
 	for (const auto& replay : replays) {
 
 		REQUIRE(handle_open_document(replay.first));
+		set_replay_speed(INT16_MAX);
 		main_event_loop();
 		auto seed = get_random_seed();
 		REQUIRE(seed == replay.second);
@@ -98,6 +100,7 @@ TEST_CASE("Film replay set seed") {
 	for (const auto& replay : replays) {
 
 		REQUIRE(handle_open_document(replay));
+		set_replay_speed(INT16_MAX);
 		main_event_loop();
 		auto seed = get_random_seed();
 		FileSpecifier file = replay;

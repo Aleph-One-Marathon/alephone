@@ -251,6 +251,11 @@ void decrement_replay_speed(
 	if (replay.replay_speed > MINIMUM_REPLAY_SPEED) replay.replay_speed--;
 }
 
+void set_replay_speed(short speed)
+{
+	replay.replay_speed = speed;
+}
+
 int get_replay_speed()
 {
 	return replay.replay_speed;

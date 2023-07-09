@@ -377,6 +377,7 @@ void check_recording_replaying(void);
 bool has_recording_file(void);
 void increment_replay_speed(void);
 void decrement_replay_speed(void);
+void set_replay_speed(short);
 void reset_recording_and_playback_queues(void);
 uint32 parse_keymap(void);
 
