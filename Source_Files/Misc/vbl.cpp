@@ -146,7 +146,7 @@ ActionQueue *get_player_recording_queue(
 static void remove_input_controller(void);
 static void save_recording_queue_chunk(short player_index);
 static void read_recording_queue_chunks(void);
-static bool pull_flags_from_recording(short count);
+static short pull_flags_from_recording(short count);
 // LP modifications for object-oriented file handling; returns a test for end-of-file
 static bool vblFSRead(OpenedFile& File, int32 *count, void *dest, bool& HitEOF);
 static void record_action_flags(short player_identifier, const uint32 *action_flags, short count);
@@ -296,8 +296,9 @@ bool input_controller(
 					if (replay.replay_speed > 0 || (--phase<=0))
 					{
 						short flag_count= MAX(replay.replay_speed, 1);
+						flag_count = pull_flags_from_recording(flag_count);
 					
-						if (!pull_flags_from_recording(flag_count)) // oops. silly me.
+						if (!flag_count) // oops. silly me.
 						{
 							if (replay.have_read_last_chunk)
 							{
@@ -446,48 +447,34 @@ void save_recording_queue_chunk(
  *
  * Function: pull_flags_from_recording
  * Purpose:  remove one flag from each queue from the recording buffer.
- * Returns:  true if it pulled the flags, false if it didn't
+ * Returns:  number of flags actually pulled
  *
  *********************************************************************************************/
-static bool pull_flags_from_recording(
+static short pull_flags_from_recording(
 	short count)
 {
-	short player_index;
-	bool success= true;
-	
-	// first check that we can pull something from each player’s queue
-	// (at the beginning of the game, we won’t be able to)
-	// i'm not sure that i really need to do this check. oh well.
-	for (player_index = 0; success && player_index<dynamic_world->player_count; player_index++)
+	short true_count = count;
+	for (short player_index = 0; player_index < dynamic_world->player_count; player_index++)
 	{
-		if(get_recording_queue_size(player_index)==0) success= false;
-	}
-
-	if(success)
-	{
-		for (player_index = 0; player_index < dynamic_world->player_count; player_index++)
+		ActionQueue* queue = get_player_recording_queue(player_index);
+		for (short index = 0; index < count; index++)
 		{
-			short index;
-			ActionQueue  *queue;
-		
-			queue= get_player_recording_queue(player_index);
-			for (index= 0; index<count; index++)
+			if (get_recording_queue_size(player_index) != 0)
 			{
-				if (queue->read_index != queue->write_index)
-				{
 #ifdef DEBUG_REPLAY
-					debug_stream_of_flags(*(queue->buffer+queue->read_index), player_index);
+				debug_stream_of_flags(*(queue->buffer + queue->read_index), player_index);
 #endif
-                    GetRealActionQueues()->enqueueActionFlags(player_index, queue->buffer + queue->read_index, 1);
-					INCREMENT_QUEUE_COUNTER(queue->read_index);
-				} else {
-					dprintf("Dropping flag?");
-				}
+				GetRealActionQueues()->enqueueActionFlags(player_index, queue->buffer + queue->read_index, 1);
+				INCREMENT_QUEUE_COUNTER(queue->read_index);
+			}
+			else {
+				true_count = index;
+				break;
 			}
 		}
 	}
 	
-	return success;
+	return true_count;
 }
 
 static short get_recording_queue_size(
