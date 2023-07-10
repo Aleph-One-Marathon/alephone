@@ -55,6 +55,10 @@ jobs:
         with:
           platform: x64
           vcpkg_installed_folder: installed-x64-windows
+      - name: Run Tests
+        uses: ./.github/actions/run-tests
+        with:
+          test_application_path: VisualStudio/x64/Release/Tests.exe
           
   windows-x86:
     runs-on: windows-2022
@@ -65,3 +69,7 @@ jobs:
         with:
           platform: x86
           vcpkg_installed_folder: installed-x86-windows
+      - name: Run Tests
+        uses: ./.github/actions/run-tests
+        with:
+          test_application_path: VisualStudio/Release/Tests.exe
