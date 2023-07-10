@@ -197,18 +197,22 @@ std::unordered_map<int, bool> ShellOptions::parse(int argc, char** argv, bool ig
 			if (arg[0] != '-')
 			{
 				FileSpecifier f(arg);
-				if (f.IsDir())
+				if (f.Exists())
 				{
-					shell_options.directory = arg;
-				}
-				else
-				{
-					shell_options.files.push_back(arg);
-				}
+					if (f.IsDir())
+					{
+						shell_options.directory = arg;
+					}
+					else
+					{
+						shell_options.files.push_back(arg);
+					}
 
-				found = true;
+					found = true;
+				}
 			}
-			else if (!ignore_unknown_args)
+
+			if (!found && !ignore_unknown_args)
 			{
 				logFatal("Unrecognized argument '%s'.", arg.c_str());
 				printf("Unrecognized argument '%s'.\n", arg.c_str());
