@@ -373,7 +373,7 @@ void initialize_game_state(
 	  alert_user(expand_app_variables("Insecure Lua has been manually enabled. Malicious Lua scripts can use Insecure Lua to take over your computer. Unless you specifically trust every single Lua script that will be running, you should quit $appName$ IMMEDIATELY.").c_str());
 	}
 
-	if (!shell_options.editor)
+	if (!shell_options.editor && !shell_options.replay_film_and_exit)
 	{
 		if (shell_options.skip_intro)
 		{
