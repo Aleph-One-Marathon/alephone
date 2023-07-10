@@ -5,7 +5,7 @@ extern ShellOptions shell_options;
 
 int main(int argc, char* argv[]) {
 
-	auto results = shell_options.parse(argc, argv);
+	auto results = shell_options.parse(argc, argv, true);
 
 	int argc_catch = 0;
 	char* argv_catch[64];
