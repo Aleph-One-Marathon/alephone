@@ -1,0 +1,35 @@
+name: run-tests
+description: cross-platform action to run Aleph One tests
+
+inputs:
+ test_application_path:
+    required: true
+    type: string
+    description: File path to the unit tests runner application
+
+runs:
+    using: "composite"
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: true
+        clean: false
+        
+    - name: Run Unit Tests
+      run: ./${{inputs.test_application_path}} --allow-running-no-tests ~[Replay]
+      shell: pwsh
+      
+    - name: Run Marathon Replays
+      if: success() || failure()
+      run: ./${{inputs.test_application_path}} "${{github.workspace}}/data/Scenarios/Marathon" --replay-quit --replay-directory "${{github.workspace}}/tests/replays/Marathon" [Replay]
+      shell: pwsh
+      
+    - name: Run Marathon 2 Replays
+      if: success() || failure()
+      run: ./${{inputs.test_application_path}} "${{github.workspace}}/data/Scenarios/Marathon 2" --replay-quit --replay-directory "${{github.workspace}}/tests/replays/Marathon 2" [Replay]
+      shell: pwsh
+      
+    - name: Run Marathon Infinity Replays
+      if: success() || failure()
+      run: ./${{inputs.test_application_path}} "${{github.workspace}}/data/Scenarios/Marathon Infinity" --replay-quit --replay-directory "${{github.workspace}}/tests/replays/Marathon Infinity" [Replay]
+      shell: pwsh

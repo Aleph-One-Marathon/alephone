@@ -39,7 +39,7 @@ static std::vector<Replay> get_replays(std::string& directory_path) {
 	return results;
 }
 
-TEST_CASE("Film replay") {
+TEST_CASE("Film replay", "[Replay]") {
 
 	REQUIRE(shell_options.replay_film_and_exit);
 	REQUIRE(!shell_options.directory.empty());
@@ -87,7 +87,7 @@ static std::vector<std::string> get_replays(std::string& directory_path) {
 	return results;
 }
 
-TEST_CASE("Film replay set seed") {
+TEST_CASE("Film replay set seed", "[Replay]") {
 
 	REQUIRE(shell_options.replay_film_and_exit);
 	REQUIRE(!shell_options.directory.empty());
