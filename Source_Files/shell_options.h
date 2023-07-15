@@ -23,7 +23,6 @@ struct ShellOptions {
 	bool skip_intro;
 	bool editor;
 
-	bool replay_film_and_exit;
 	std::string replay_directory;
 
 	std::string directory;

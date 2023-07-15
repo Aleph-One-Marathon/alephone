@@ -373,7 +373,7 @@ void initialize_game_state(
 	  alert_user(expand_app_variables("Insecure Lua has been manually enabled. Malicious Lua scripts can use Insecure Lua to take over your computer. Unless you specifically trust every single Lua script that will be running, you should quit $appName$ IMMEDIATELY.").c_str());
 	}
 
-	if (!shell_options.editor && !shell_options.replay_film_and_exit)
+	if (!shell_options.editor && shell_options.replay_directory.empty())
 	{
 		if (shell_options.skip_intro)
 		{
@@ -2391,7 +2391,7 @@ static void finish_game(
 
 	if (game_state.user == _replay)
 	{
-		if (shell_options.replay_film_and_exit)
+		if (!shell_options.replay_directory.empty())
 		{
 			game_state.state = _quit_game;
 			return_to_main_menu = false;
@@ -2409,7 +2409,7 @@ static void finish_game(
 	set_current_player_index(NONE);
 	
 	load_environment_from_preferences();
-	if ((game_state.user == _replay && !shell_options.replay_film_and_exit) || game_state.user == _demo)
+	if ((game_state.user == _replay && shell_options.replay_directory.empty()) || game_state.user == _demo)
 	{
 		Plugins::instance()->set_mode(Plugins::kMode_Menu);
 		load_film_profile(FILM_PROFILE_DEFAULT);
@@ -2769,7 +2769,7 @@ static void try_and_display_chapter_screen(
 	bool text_block,
 	bool epilogue_screen)
 {
-	if (Movie::instance()->IsRecording() || shell_options.replay_film_and_exit)
+	if (Movie::instance()->IsRecording() || !shell_options.replay_directory.empty())
 		return;
 	
 	short pict_resource_number = get_screen_data(_display_chapter_heading)->screen_base + level;
@@ -3081,7 +3081,7 @@ extern bool option_nosound;
 
 void show_movie(short index)
 {
-	if (Movie::instance()->IsRecording() || shell_options.replay_film_and_exit)
+	if (Movie::instance()->IsRecording() || !shell_options.replay_directory.empty())
 		return;
 	
 #if defined(HAVE_FFMPEG) || defined(HAVE_SMPEG)

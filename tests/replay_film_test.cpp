@@ -50,7 +50,6 @@ static std::vector<Replay> get_replays(std::string& directory_path) {
 
 TEST_CASE("Film replay", "[Replay]") {
 
-	REQUIRE(shell_options.replay_film_and_exit);
 	REQUIRE(!shell_options.directory.empty());
 	REQUIRE(!shell_options.replay_directory.empty());
 
@@ -59,12 +58,12 @@ TEST_CASE("Film replay", "[Replay]") {
 	initialize_application();
 
 	for (const auto& replay : replays) {
-
+		INFO(replay.first);
 		REQUIRE(handle_open_document(replay.first));
 		set_replay_speed(INT16_MAX);
 		main_event_loop();
 		auto seed = get_random_seed();
-		REQUIRE(seed == replay.second);
+		CHECK(seed == replay.second);
 	}
 
 	shutdown_application();
@@ -107,7 +106,6 @@ static std::vector<std::string> get_replays(std::string& directory_path) {
 
 TEST_CASE("Film replay set seed", "[Replay]") {
 
-	REQUIRE(shell_options.replay_film_and_exit);
 	REQUIRE(!shell_options.directory.empty());
 	REQUIRE(!shell_options.replay_directory.empty());
 
@@ -116,7 +114,7 @@ TEST_CASE("Film replay set seed", "[Replay]") {
 	initialize_application();
 
 	for (const auto& replay : replays) {
-
+		INFO(replay);
 		REQUIRE(handle_open_document(replay));
 		set_replay_speed(INT16_MAX);
 		main_event_loop();
