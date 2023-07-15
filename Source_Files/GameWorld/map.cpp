@@ -2479,7 +2479,8 @@ world_location3d* get_object_sound_location(short object_index) {
 	case _object_is_effect:
 	{
 		auto object_owner_index = get_effect_data(object->permutation)->data;
-		if (object_owner_index != NONE) return get_object_sound_location(object_owner_index);
+		auto object_owner = GetMemberWithBounds(objects, object_owner_index, MAXIMUM_OBJECTS_PER_MAP);
+		if (object_owner_index != NONE && object_owner && SLOT_IS_USED(object_owner)) return get_object_sound_location(object_owner_index);
 	}
 	[[fallthrough]];
 	default:
