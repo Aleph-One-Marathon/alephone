@@ -12,8 +12,9 @@ using Replay = std::pair<std::string, uint16_t>; //replay file path and seed
 static uint16_t get_seed_from_filename(const std::string& file_name) {
 	auto position = file_name.find_last_of('.');
 	auto name_without_ext = file_name.substr(0, position);
-	auto seed_position = name_without_ext.find_last_of('.') + 1;
-	return stoi(name_without_ext.substr(seed_position));
+	auto seed_position = name_without_ext.find_last_of('.');
+	if (seed_position == string::npos) throw std::exception();
+	return stoi(name_without_ext.substr(seed_position + 1));
 }
 
 #ifndef REPLAY_SET_SEED_FILENAME //enable and run this to set the correct file name with seed on new replay files
@@ -28,12 +29,20 @@ static std::vector<Replay> get_replays(std::string& directory_path) {
 	std::vector<Replay> results;
 	for (std::vector<dir_entry>::const_iterator it = entries.begin(); it != entries.end(); ++it) {
 
-		FileSpecifier file = directory + it->name;
+		FileSpecifier entry = directory + it->name;
+		std::string entry_path = entry.GetPath();
 
-		if (file.GetType() != _typecode_film) continue;
+		if (entry.IsDir()) {
+			auto sub_replays = get_replays(entry_path);
+			results.insert(results.end(), sub_replays.begin(), sub_replays.end());
+		}
+		else
+		{
+			if (entry.GetType() != _typecode_film) continue;
 
-		auto seed = get_seed_from_filename(it->name);
-		results.push_back({ std::string(file.GetPath()), seed });
+			auto seed = get_seed_from_filename(it->name);
+			results.push_back({ entry_path, seed });
+		}
 	}
 
 	return results;
@@ -73,14 +82,23 @@ static std::vector<std::string> get_replays(std::string& directory_path) {
 	std::vector<string> results;
 	for (std::vector<dir_entry>::const_iterator it = entries.begin(); it != entries.end(); ++it) {
 
-		FileSpecifier file = directory + it->name;
+		FileSpecifier entry = directory + it->name;
+		std::string entry_path = entry.GetPath();
 
-		if (file.GetType() != _typecode_film) continue;
+		if (entry.IsDir()) {
+			auto sub_replays = get_replays(entry_path);
+			results.insert(results.end(), sub_replays.begin(), sub_replays.end());
+		}
+		else
+		{
+			if (entry.GetType() != _typecode_film) continue;
 
-		try {
-			get_seed_from_filename(it->name);
-		} catch (...) {
-			results.push_back(file.GetPath());
+			try {
+				get_seed_from_filename(it->name);
+			}
+			catch (...) {
+				results.push_back(entry_path);
+			}
 		}
 	}
 
