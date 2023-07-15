@@ -7,8 +7,6 @@ config-opts:
   - --with-boost-libdir=/app/lib
   - --with-sdl_image
   - --with-ffmpeg
-  - --with-sndfile
-  - --with-vorbis
   - --with-curl
   - --with-zzip
   - --with-png
