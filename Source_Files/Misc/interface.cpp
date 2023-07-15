@@ -2769,7 +2769,7 @@ static void try_and_display_chapter_screen(
 	bool text_block,
 	bool epilogue_screen)
 {
-	if (Movie::instance()->IsRecording())
+	if (Movie::instance()->IsRecording() || shell_options.replay_film_and_exit)
 		return;
 	
 	short pict_resource_number = get_screen_data(_display_chapter_heading)->screen_base + level;
@@ -3081,7 +3081,7 @@ extern bool option_nosound;
 
 void show_movie(short index)
 {
-	if (Movie::instance()->IsRecording())
+	if (Movie::instance()->IsRecording() || shell_options.replay_film_and_exit)
 		return;
 	
 #if defined(HAVE_FFMPEG) || defined(HAVE_SMPEG)
