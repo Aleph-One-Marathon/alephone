@@ -44,7 +44,7 @@ private:
 	SDL_mutex* mutex_;
 };
 
-StatsManager::StatsManager() : thread_(0), run_(true)
+StatsManager::StatsManager() : thread_(0), run_(true), busy_(false)
 {
 	entry_mutex_ = SDL_CreateMutex();
 
