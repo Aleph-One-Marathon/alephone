@@ -204,8 +204,7 @@ void RenderVisTreeClass::cast_render_ray(
 	short bias) /* _clockwise or _counterclockwise for walking endpoints */
 {
 	short polygon_index= parent->polygon_index;
-
-//	dprintf("shooting at e#%d of p#%d", endpoint_index, polygon_index);
+	bool add_endpoint_clip_to_next_clippable_poly = false;
 	
 	do
 	{
@@ -316,10 +315,13 @@ void RenderVisTreeClass::cast_render_ray(
 				}
 			}
 			
+			if (clipping_endpoint_index != NONE) // if we're targeting an opaque endpoint and we just hit it
+				add_endpoint_clip_to_next_clippable_poly = true;
+			
 			/* update endpoint clipping information for this node if we have a valid endpoint with clip */
-			if (clipping_endpoint_index!=NONE && (clip_flags&(_clip_left|_clip_right)))
+			if (add_endpoint_clip_to_next_clippable_poly && (clip_flags&(_clip_left|_clip_right)))
 			{
-				clipping_endpoint_index= calculate_endpoint_clipping_information(clipping_endpoint_index, clip_flags);
+				clipping_endpoint_index = calculate_endpoint_clipping_information(endpoint_index, clip_flags);
 				
 				// Be sure it's valid
 				if (clipping_endpoint_index != NONE)
@@ -327,6 +329,10 @@ void RenderVisTreeClass::cast_render_ray(
 					if (node->clipping_endpoint_count<MAXIMUM_CLIPPING_ENDPOINTS_PER_NODE)
 						node->clipping_endpoints[node->clipping_endpoint_count++]= clipping_endpoint_index;
 				}
+				
+				// Don't add the clip more than once (child nodes implicitly use their parent's clips)
+				add_endpoint_clip_to_next_clippable_poly = false;
+				endpoint_index = NONE;
 			}
 			
 			parent= node;
@@ -762,6 +768,8 @@ short RenderVisTreeClass::calculate_endpoint_clipping_information(
 	short endpoint_index,
 	uint16 clip_flags)
 {
+	assert(endpoint_index != NONE);
+	
 	// If this endpoint was not transformed, then don't do anything with it,
 	// and indicate that it's not a valid endpoint
 	if (!TEST_RENDER_FLAG(endpoint_index, _endpoint_has_been_transformed))
