@@ -509,7 +509,8 @@ void move_projectiles(
 								}
 								else
 								{
-									if (flags&_projectile_hit_landscape) detonation_effect = NONE;
+									// When the projecticle hits a landscape it checks game version and sets the detonation effect to none outside of M1
+									if (flags&_projectile_hit_landscape && !(static_world->environment_flags&_environment_m1_weapons)) detonation_effect = NONE;
 								}
 								
 								if (detonation_effect!=NONE) new_effect(&new_location, new_polygon_index, detonation_effect, object->facing);

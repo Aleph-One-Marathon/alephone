@@ -833,7 +833,7 @@ enum /* environment flags */
 	_environment_song_index_m1 = 0x0080, // play music
 	_environment_terminals_stop_time = 0x0100, // solo only
 	_environment_activation_ranges = 0x0200, // Marathon 1 monster activation limits
-	_environment_m1_weapons = 0x0400,    // multiple weapon pickups on TC; low gravity grenades
+	_environment_m1_weapons = 0x0400,    // multiple weapon pickups on TC; low gravity grenades; detonation on landscapes
         
 	_environment_network= 0x2000,	// these two pseudo-environments are used to prevent items 
 	_environment_single_player= 0x4000 // from arriving in the items.c code.
