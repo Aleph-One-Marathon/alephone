@@ -1691,12 +1691,11 @@
 		<function name="select">
 		  <description>attempts to force player to ready weapon</description>
 		</function>
+		<variable name="type" access="read-only">
+		  <description>type of this weapon</description>
+		  <type>weapon_type</type>
+		</variable>
       </subtable-accessor>
-      <variable name="weapons.current" access="read-only">
-		<description>weapon the player is currently wielding</description>
-		<type>player_weapon</type>
-		<note>can be nil</note>
-      </variable>
       <variable name="x" access="read-only">
 		<type>WU</type>
       </variable>
