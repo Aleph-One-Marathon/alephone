@@ -444,7 +444,7 @@ void HUD_Class::update_inventory_panel(bool force_redraw)
 				calculate_ranking_text(temporary, rankings[loop].ranking);
 					
 				/* Draw the player name.. */
-				width= _text_width(temporary, _interface_font);
+				width= TextWidth(temporary, _interface_font);
 				dest_rect.right-= width;
 				dest_rect.left+= TEXT_INSET;
 				DrawText(player->name, &dest_rect, _center_vertical, 
@@ -508,7 +508,7 @@ void HUD_Class::draw_inventory_time(char *text, short offset)
         
     calculate_inventory_rectangle_from_offset(&destination, offset);
     
-    destination.left = destination.right - _text_width(text, _interface_font) - TEXT_INSET;
+    destination.left = destination.right - TextWidth(text, _interface_font) - TEXT_INSET;
     DrawText(text, &destination, _center_vertical, _interface_font, _inventory_text_color);
 }
 

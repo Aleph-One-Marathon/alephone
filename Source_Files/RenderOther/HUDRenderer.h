@@ -236,6 +236,8 @@ protected:
 	virtual void SetClipPlane(int x, int y, int c_x, int c_y, int radius) = 0;
 	virtual void DisableClipPlane(void) = 0;
 
+	virtual int TextWidth(const char* text, short font_id) = 0;
+
 protected:
 	bool ForceUpdate;
 };
