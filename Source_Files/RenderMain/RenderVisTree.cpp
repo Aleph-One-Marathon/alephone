@@ -130,14 +130,8 @@ void RenderVisTreeClass::build_render_tree()
 	/* reset clipping buffers */
 	initialize_clip_data();
 	
-	// LP change:
-	// Adjusted for long-vector handling
-	// Using start index of list of nodes: 0
-	long_vector2d view_edge;
-	short_to_long_2d(view->left_edge,view_edge);
-	cast_render_ray(&view_edge, NONE, &Nodes.front(), _counterclockwise_bias);
-	short_to_long_2d(view->right_edge,view_edge);
-	cast_render_ray(&view_edge, NONE, &Nodes.front(), _clockwise_bias);
+	cast_render_ray(&view->left_edge, NONE, &Nodes.front(), _counterclockwise_bias);
+	cast_render_ray(&view->right_edge, NONE, &Nodes.front(), _clockwise_bias);
 	
 	/* pull polygons off the queue, fire at all their new endpoints, building the tree as we go */
 	while (polygon_queue_size)
@@ -621,12 +615,13 @@ void RenderVisTreeClass::initialize_clip_data()
 		
 		endpoint= &EndpointClips[indexLEFT_SIDE_OF_SCREEN];
 		endpoint->flags= _clip_left;
-		short_to_long_2d(view->untransformed_left_edge,endpoint->vector);
+		endpoint->vector = {view->world_to_screen_x, -view->half_screen_width};
 		endpoint->x= 0;
 
 		endpoint= &EndpointClips[indexRIGHT_SIDE_OF_SCREEN];
 		endpoint->flags= _clip_right;
-		short_to_long_2d(view->untransformed_right_edge,endpoint->vector);
+		// Right clip vector is negated to clip rightward
+		endpoint->vector = {-view->world_to_screen_x, -(+view->half_screen_width)};
 		endpoint->x= view->screen_width;
 	}
 	
@@ -639,8 +634,11 @@ void RenderVisTreeClass::initialize_clip_data()
 		line->flags= _clip_up|_clip_down;
 		line->x0 = INT16_MIN;
 		line->x1 = INT16_MAX;
-		line->top_y= 0; short_to_long_2d(view->top_edge,line->top_vector);
-		line->bottom_y= view->screen_height; short_to_long_2d(view->bottom_edge,line->bottom_vector);
+		line->top_y = 0;
+		line->bottom_y = view->screen_height;
+		// Top clip vector is negated to clip upward
+		line->top_vector = {-view->world_to_screen_y, -(+view->half_screen_height + view->dtanpitch)}; // {i, k}
+		line->bottom_vector = {view->world_to_screen_y, -view->half_screen_height + view->dtanpitch}; // {i, k}
 	}
 
 	// LP change:

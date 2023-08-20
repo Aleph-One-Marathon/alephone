@@ -101,8 +101,7 @@ struct view_data
 	angle half_cone; /* often ==field_of_view/2 (when screen_width==standard_screen_width) */
 	angle half_vertical_cone;
 
-	world_vector2d untransformed_left_edge, untransformed_right_edge;
-	world_vector2d left_edge, right_edge, top_edge, bottom_edge;
+	long_vector2d left_edge, right_edge; // view cone edges as world directions
 
 	short ticks_elapsed;
 	uint32 tick_count; /* for effects and transfer modes */
