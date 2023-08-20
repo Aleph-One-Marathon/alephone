@@ -592,12 +592,6 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 	}
 }
 
-enum /* build_base_node_list() states */
-{
-	_casting_left,
-	_casting_right
-};
-
 /* we once thought it would be a clever idea to use the transformed endpoints, but, not.  we
 	now bail if we can’t find a way out of the polygon we are given; usually this happens
 	when we’re moving along gridlines */
@@ -608,7 +602,7 @@ short RenderPlaceObjsClass::build_base_node_list(
 	world_distance right_distance,
 	sorted_node_data **base_nodes)
 {
-	short cast_state;
+	const angle rightward_angle = view->yaw + QUARTER_CIRCLE;
 	short base_node_count;
 	world_distance origin_polygon_floor_height= get_polygon_data(origin_polygon_index)->floor_height;
 	// LP: reference to simplify the code
@@ -617,30 +611,13 @@ short RenderPlaceObjsClass::build_base_node_list(
 	base_node_count= 1;
 	base_nodes[0]= polygon_index_to_sorted_node[origin_polygon_index];
 
-	cast_state= _casting_left;
-	do
+	auto scan_left_or_right = [&](world_distance distance) // + scans rightward, - scans leftward
 	{
 		world_point2d destination= *((world_point2d *)origin);
 		short polygon_index= origin_polygon_index;
 		world_vector2d vector;
 		
-		switch (cast_state)
-		{
-			case _casting_left:
-				translate_point2d(&destination, right_distance, NORMALIZE_ANGLE(view->yaw-QUARTER_CIRCLE));
-//				dprintf("%s: (#%d,#%d)==>(#%d,#%d) (by #%d)", cast_state==_casting_left ? "left" : "right", origin->x, origin->y, destination.x, destination.y, cast_state==_casting_left ? left_distance : right_distance);
-				cast_state= _casting_right;
-				break;
-			case _casting_right:
-				translate_point2d(&destination, left_distance, NORMALIZE_ANGLE(view->yaw-QUARTER_CIRCLE));
-//				dprintf("%s: (#%d,#%d)==>(#%d,#%d) (by #%d)", cast_state==_casting_left ? "left" : "right", origin->x, origin->y, destination.x, destination.y, cast_state==_casting_left ? left_distance : right_distance);
-				cast_state= NONE;
-				break;
-			
-			default:
-				assert(false);
-				break;
-		}
+		translate_point2d(&destination, distance, rightward_angle);
 
 		vector.i= destination.x - origin->x;
 		vector.j= destination.y - origin->y;
@@ -724,10 +701,13 @@ short RenderPlaceObjsClass::build_base_node_list(
 			}
 		}
 		while (polygon_index!=NONE);
-	}
-	while (cast_state!=NONE);
-
-//	dprintf("found #%d polygons @ %p;dm %x %d;", base_polygon_count, base_polygon_indexes, base_polygon_indexes, base_polygon_count*sizeof(short));
+	};
+	
+	if (left_distance < 0)
+		scan_left_or_right(left_distance);
+	
+	if (right_distance > 0)
+		scan_left_or_right(right_distance);
 	
 	return base_node_count;
 }
