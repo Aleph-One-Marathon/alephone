@@ -125,22 +125,8 @@ void RenderPlaceObjsClass::build_render_object_list()
 		
 		while (object_index!=NONE)
 		{
-			short base_node_count;
-			sorted_node_data *base_nodes[MAXIMUM_OBJECT_BASE_NODES];
-			
 			float Opacity = (object_index == self_index) ? GetChaseCamData().Opacity : 1;
-			render_object_data *render_object=
-				build_render_object(NULL, floor_intensity, ceiling_intensity,
-									base_nodes, &base_node_count,
-									get_object_data(object_index),
-									Opacity, NULL);
-			
-			if (render_object)
-			{
-				build_aggregate_render_object_clipping_window(render_object, base_nodes, base_node_count);
-				sort_render_object_into_tree(render_object, base_nodes, base_node_count);
-			}
-			
+			add_object_to_sorted_nodes(get_object_data(object_index), floor_intensity, ceiling_intensity, Opacity);
 			object_index= get_object_data(object_index)->next_object;
 		}
 
@@ -149,34 +135,22 @@ void RenderPlaceObjsClass::build_render_object_list()
 			auto ephemera_index = get_polygon_ephemera(sorted_node->polygon_index);
 			while (ephemera_index != NONE)
 			{
-				short base_node_count;
-				sorted_node_data* base_nodes[MAXIMUM_OBJECT_BASE_NODES];
-				
-				render_object_data* render_object =
-					build_render_object(nullptr, floor_intensity, ceiling_intensity, base_nodes, &base_node_count, get_ephemera_data(ephemera_index), 1, nullptr);
-				
-				if (render_object)
-				{
-					build_aggregate_render_object_clipping_window(render_object, base_nodes, base_node_count);
-					sort_render_object_into_tree(render_object, base_nodes, base_node_count);
-				}
-				
+				add_object_to_sorted_nodes(get_ephemera_data(ephemera_index), floor_intensity, ceiling_intensity, 1);
 				ephemera_index = get_ephemera_data(ephemera_index)->next_object;
 			}
 		}
 	}
 }
 
-
-// LP change: make it better able to do long-distance views
+// Return a linked list of new render objects (or null) for an object and any parasites, in draw order (back-to-front),
+// without clipping windows, and unattached to any sorted node
 render_object_data *RenderPlaceObjsClass::build_render_object(
-	long_point3d *origin, // world_point3d *origin,
+	object_data* object,
 	_fixed floor_intensity,
 	_fixed ceiling_intensity,
-	sorted_node_data **base_nodes,
-	short *base_node_count,
-	object_data* object, float Opacity,
-	long_point3d *rel_origin)
+	float Opacity,
+	long_point3d* origin,
+	long_point3d* rel_origin)
 {
 	render_object_data *render_object= NULL;
 	// LP: reference to simplify the code
@@ -272,13 +246,6 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			
 			// Too close?
 			if (Farthest < MINIMUM_OBJECT_DISTANCE) return NULL;
-			
-			/* if the caller wants it, give him the left and right extents of this shape */
-			if (base_nodes)
-			{
-				*base_node_count= build_base_node_list(object->polygon, &object->location,
-					shape_information->world_left, shape_information->world_right, base_nodes);
-			}
 			
 			if (ProjDistance == 0)
 			{
@@ -428,10 +395,13 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					
 					const auto render_object_index = render_object - RenderObjects.data();
 					
-					parasitic_render_object= build_render_object
-						(&parasitic_origin, floor_intensity, ceiling_intensity,
-						 NULL, NULL, get_object_data(object->parasitic_object),
-						 Opacity, &parasitic_rel_origin);
+					parasitic_render_object = build_render_object(
+						get_object_data(object->parasitic_object),
+						floor_intensity,
+						ceiling_intensity,
+						Opacity,
+						&parasitic_origin,
+						&parasitic_rel_origin);
 					
 					// Recover our pointer after build_render_object() potentially invalidated it
 					render_object = &RenderObjects[render_object_index];
@@ -596,12 +566,13 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 	now bail if we can’t find a way out of the polygon we are given; usually this happens
 	when we’re moving along gridlines */
 short RenderPlaceObjsClass::build_base_node_list(
+	const render_object_data* render_object,
 	short origin_polygon_index,
-	world_point3d *origin,
-	world_distance left_distance,
-	world_distance right_distance,
 	sorted_node_data **base_nodes)
 {
+	assert(render_object);
+	
+	const auto origin = &render_object->rectangle.Position;
 	const angle rightward_angle = view->yaw + QUARTER_CIRCLE;
 	short base_node_count;
 	world_distance origin_polygon_floor_height= get_polygon_data(origin_polygon_index)->floor_height;
@@ -702,6 +673,9 @@ short RenderPlaceObjsClass::build_base_node_list(
 		}
 		while (polygon_index!=NONE);
 	};
+	
+	const world_distance left_distance = render_object->rectangle.WorldLeft;
+	const world_distance right_distance = render_object->rectangle.WorldRight;
 	
 	if (left_distance < 0)
 		scan_left_or_right(left_distance);
@@ -866,6 +840,25 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 	
 	/* stuff our windows in all objects hanging off our first object (i.e., all parasites) */	
 	for (; render_object; render_object= render_object->next_object) render_object->clipping_windows= first_window;
+}
+
+bool RenderPlaceObjsClass::add_object_to_sorted_nodes(
+	object_data* object,
+	_fixed floor_intensity,
+	_fixed ceiling_intensity,
+	float Opacity)
+{
+	const auto render_object = build_render_object(object, floor_intensity, ceiling_intensity, Opacity, nullptr, nullptr);
+	if (!render_object)
+		return false;
+	
+	sorted_node_data *base_nodes[MAXIMUM_OBJECT_BASE_NODES];
+	const auto base_node_count = build_base_node_list(render_object, object->polygon, base_nodes);
+	
+	build_aggregate_render_object_clipping_window(render_object, base_nodes, base_node_count);
+	sort_render_object_into_tree(render_object, base_nodes, base_node_count); // consumes the render_object list
+	
+	return true;
 }
 
 #define NUMBER_OF_SCALED_VALUES 6
