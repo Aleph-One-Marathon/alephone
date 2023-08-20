@@ -451,11 +451,11 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 							MAX(parasitic_render_object->rectangle.ceiling_light, render_object->rectangle.ceiling_light);
 						*/
 						
-						if (shape_information->flags&_KEYPOINT_OBSCURED_BIT) /* host obscures parasite */
+						if (shape_information->flags&_KEYPOINT_OBSCURED_BIT) /* host obscured by parasite */
 						{
 							render_object->next_object= parasitic_render_object;
 						}
-						else /* parasite obscures host; does not properly handle multiple parasites */
+						else /* parasite obscured by host; does not properly handle multiple parasites */
 						{
 							parasitic_render_object->next_object= render_object;
 							render_object= parasitic_render_object;
