@@ -62,6 +62,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 
 #include <string.h>
 #include <limits.h>
+#include <algorithm>
 
 
 // LP: "recommended" sizes of stuff in growable lists
@@ -674,8 +675,13 @@ short RenderPlaceObjsClass::build_base_node_list(
 		while (polygon_index!=NONE);
 	};
 	
-	const world_distance left_distance = render_object->rectangle.WorldLeft;
-	const world_distance right_distance = render_object->rectangle.WorldRight;
+	world_distance left_distance = INT16_MAX;
+	world_distance right_distance = INT16_MIN;
+	for (const auto* ro = render_object; ro; ro = ro->next_object)
+	{
+		left_distance = std::min(left_distance, ro->rectangle.WorldLeft);
+		right_distance = std::max(right_distance, ro->rectangle.WorldRight);
+	}
 	
 	if (left_distance < 0)
 		scan_left_or_right(left_distance);
