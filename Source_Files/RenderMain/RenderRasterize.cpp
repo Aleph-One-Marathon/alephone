@@ -213,12 +213,11 @@ void RenderRasterizerClass::render_node(
 					
 					// LP change: indicate in all cases whether the void is on the other side;
 					// added a workaround for full-side textures with a polygon on the other side
-					bool void_present;
+					bool void_present = true;
 					
 					switch (side->type)
 					{
 						case _full_side:
-							void_present = true;
 							// Suppress the void if there is a polygon on the other side.
 							if (polygon->adjacent_polygon_indexes[i] != NONE) void_present = false;
 							
@@ -238,6 +237,11 @@ void RenderRasterizerClass::render_node(
 							surface.texture_definition= &side->secondary_texture;
 							surface.transfer_mode= side->secondary_transfer_mode;
 							render_node_side(window, &surface, true, renderStep);
+							
+							// Ensure the high side draws over the low side if they overlap
+							if (line->lowest_adjacent_ceiling < line->highest_adjacent_floor)
+								void_present = false;
+							
 							/* fall through and render high side */
 						case _high_side:
 							surface.lightsource_index= side->primary_lightsource_index;
@@ -246,7 +250,7 @@ void RenderRasterizerClass::render_node(
 							surface.h1= polygon->ceiling_height - view->origin.z;
 							surface.texture_definition= &side->primary_texture;
 							surface.transfer_mode= side->primary_transfer_mode;
-							render_node_side(window, &surface, true, renderStep);
+							render_node_side(window, &surface, void_present, renderStep);
 							// render_node_side(view, destination, window, &surface);
 							break;
 						case _low_side:
