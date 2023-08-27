@@ -1925,7 +1925,11 @@ static void transfer_to_new_level(
 		if (level_number == (shapes_file_is_m1() ? 100 : EPILOGUE_LEVEL_NUMBER)) {
 			finish_game(false);
 			show_cursor(); // for some reason, cursor stays hidden otherwise
-			set_game_state(_begin_display_of_epilogue);
+
+			if (shell_options.replay_directory.empty()) {
+				set_game_state(_begin_display_of_epilogue);
+			}
+
 			force_game_state_change();
 			return;
 		}
