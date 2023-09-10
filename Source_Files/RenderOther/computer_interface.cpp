@@ -1209,7 +1209,7 @@ static void display_picture(
 
 		int pict_header_width = get_pict_header_width(PictRsrc);
 		bool cinemascopeHack = false;
-		if (bounds.right != pict_header_width)
+		if (bounds.right != pict_header_width && bounds.right == 614)
 		{
 			cinemascopeHack = true;
 			bounds.right = pict_header_width;
