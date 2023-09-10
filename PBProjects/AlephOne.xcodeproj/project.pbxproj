@@ -5501,6 +5501,7 @@
 					"-lnfd",
 					"-lsndfile",
 					"-lopenal",
+					"-ljpeg",
 				);
 				STRIP_INSTALLED_PRODUCT = NO;
 				USER_HEADER_SEARCH_PATHS = (
@@ -5647,6 +5648,7 @@
 					"-lnfd",
 					"-lsndfile",
 					"-lopenal",
+					"-ljpeg",
 				);
 				STRIP_INSTALLED_PRODUCT = NO;
 				USER_HEADER_SEARCH_PATHS = (
