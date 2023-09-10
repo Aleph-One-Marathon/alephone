@@ -1567,22 +1567,6 @@ static void sound_dialog(void *arg)
 	table->dual_add(hrtf_w, d);
 	hrtf_w->set_enabled(OpenALManager::Get() && OpenALManager::Get()->Support_HRTF_Toggling());
 
-	int resamplers_number = OpenALManager::Get() ? OpenALManager::Get()->GetResamplersNumber() : 0;
-	static std::vector<std::string> resamplers(resamplers_number);
-
-	for (int i = 0; i < resamplers_number; i++) {
-		resamplers[i] = OpenALManager::Get()->GetResamplerName(i);
-	}
-
-	int resampler_index = sound_preferences->resampler_index != NONE && sound_preferences->resampler_index < resamplers_number ?
-		sound_preferences->resampler_index : OpenALManager::Get() ? OpenALManager::Get()->GetDefaultResampler() : NONE;
-
-	w_select_popup* resampler_w = new w_select_popup();
-	resampler_w->set_labels(resamplers);
-	resampler_w->set_selection(resampler_index);
-	table->dual_add(resampler_w->label("Resampler"), d);
-	table->dual_add(resampler_w, d);
-
 	table->add_row(new w_spacer(), true);
 
 	w_volume_slider *volume_w = new w_volume_slider(static_cast<int>(sound_preferences->volume_db / 2 + 20));
@@ -1675,12 +1659,6 @@ static void sound_dialog(void *arg)
 		float music_db = music_volume_w->get_selection() - 20;
 		if (music_db != sound_preferences->music_db) {
 			sound_preferences->music_db = music_db;
-			changed = true;
-		}
-
-		int resampler_index = resampler_w->get_selection();
-		if (resampler_index != sound_preferences->resampler_index) {
-			sound_preferences->resampler_index = resampler_index;
 			changed = true;
 		}
 
@@ -3820,7 +3798,6 @@ InfoTree sound_preferences_tree()
 	root.put_attr("rate", sound_preferences->rate);
 	root.put_attr("samples", sound_preferences->samples);
 	root.put_attr("video_export_volume_db", sound_preferences->video_export_volume_db);
-	root.put_attr("resampler_index", sound_preferences->resampler_index);
 
 	return root;
 }
@@ -4794,7 +4771,6 @@ void parse_sound_preferences(InfoTree root, std::string version)
 	root.read_attr("rate", sound_preferences->rate);
 	root.read_attr("samples", sound_preferences->samples);
 	root.read_attr("video_export_volume_db", sound_preferences->video_export_volume_db);
-	root.read_attr("resampler_index", sound_preferences->resampler_index);
 }
 
 

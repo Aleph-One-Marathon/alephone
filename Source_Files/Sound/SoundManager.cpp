@@ -784,7 +784,6 @@ void SoundManager::SetStatus(bool active)
 				AudioParameters audio_parameters = {
 					parameters.rate,
 					parameters.samples,
-					parameters.resampler_index,
                     static_cast<bool>(parameters.flags & _stereo_flag),
 					!(parameters.flags & _lower_restart_delay),
                     static_cast<bool>(parameters.flags & _hrtf_flag),
