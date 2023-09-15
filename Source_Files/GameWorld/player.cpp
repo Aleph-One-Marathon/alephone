@@ -1323,13 +1323,15 @@ static void update_player_teleport(
 			/*  after the level transition */
 			case PLAYER_TELEPORTING_MIDPOINT+1:
 				/* Either the player is teleporting, or everyone is. (level change) */
-				if(player_index==current_player_index)
+				if (View_DoInterlevelTeleportInEffects()) 
 				{
-					if (View_DoInterlevelTeleportInEffects()) {
+					if (player_index == current_player_index) 
+					{
 						start_teleporting_effect(false);
-						play_object_sound(player->object_index, Sound_TeleportIn(), true); 
 						if (shapes_file_is_m1()) start_fade(_fade_bright);
 					}
+
+					play_object_sound(player->object_index, Sound_TeleportIn(), player_index == current_player_index);
 				}
 				player->teleporting_destination= NO_TELEPORTATION_DESTINATION;
 				break;
@@ -1379,21 +1381,25 @@ static void update_player_teleport(
 
 			case PLAYER_TELEPORTING_MIDPOINT+1:
 				 /* Interlevel or my intralevel.. */
-				if(player_index==current_player_index)
+				if (player->teleporting_destination >= 0 || View_DoInterlevelTeleportInEffects())
 				{
-					if (player->teleporting_destination >= 0 || View_DoInterlevelTeleportInEffects()) {
+					if (player_index == current_player_index)
+					{
 						start_teleporting_effect(false);
-						play_object_sound(player->object_index, Sound_TeleportIn(), true); 
 						if (shapes_file_is_m1()) start_fade(_fade_bright);
 					}
-					else {
-						player->teleporting_phase = PLAYER_TELEPORTING_DURATION;
-					}
-				} 
-				player->teleporting_destination= NO_TELEPORTATION_DESTINATION;
+
+					play_object_sound(player->object_index, Sound_TeleportIn(), player_index == current_player_index);
+				}
+				else {
+					player->teleporting_phase = PLAYER_TELEPORTING_DURATION;
+				}
+
+				player->teleporting_destination = NO_TELEPORTATION_DESTINATION;
 
 				if (player->teleporting_phase != PLAYER_TELEPORTING_DURATION) break;
 			
+				[[fallthrough]];
 			case PLAYER_TELEPORTING_DURATION:
 				monster->action= _monster_is_moving;
 				SET_PLAYER_TELEPORTING_STATUS(player, false);
