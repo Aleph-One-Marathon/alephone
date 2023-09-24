@@ -3,9 +3,23 @@ R"(
 uniform sampler2D texture0;
 uniform float time;
 uniform float transferFadeOut;
+uniform float fogMode;
+
 varying vec3 viewDir;
 varying vec4 vertexColor;
-varying float FDxLOG2E;
+
+float getFogFactor(float distance) {
+	if (fogMode == 0.0) {
+        return clamp((gl_Fog.end - distance) / (gl_Fog.end - gl_Fog.start), 0.0, 1.0);
+    } else if (fogMode == 1.0) {
+        return clamp(exp(-gl_Fog.density * distance), 0.0, 1.0);
+    } else if (fogMode == 2.0) {
+        return clamp(exp(-gl_Fog.density * gl_Fog.density * distance * distance), 0.0, 1.0);
+	} else {
+		return 1.0;
+	}
+}
+
 float rand(vec2 co){ 
 	float a = 12.9898; 
 	float b = 78.233; 
@@ -40,7 +54,7 @@ void main(void) {
 #ifdef GAMMA_CORRECTED_BLENDING
 	intensity = intensity * intensity;  // approximation of pow(intensity, 2.2)
 #endif
-	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);
+	float fogFactor = getFogFactor(length(viewDir));
 	gl_FragColor = vec4(mix(gl_Fog.color.rgb, intensity, fogFactor), vertexColor.a * color.a);
 }
 

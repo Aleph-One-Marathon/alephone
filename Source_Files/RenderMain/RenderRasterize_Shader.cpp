@@ -26,8 +26,6 @@
 
 #define MAXIMUM_VERTICES_PER_WORLD_POLYGON (MAXIMUM_VERTICES_PER_POLYGON+4)
 
-inline bool FogActive();
-
 class Blur {
 
 private:
@@ -161,17 +159,16 @@ void RenderRasterize_Shader::render_tree() {
 	}
 	
 	bool usefog = false;
-	int fogtype;
-	OGL_FogData *fogdata;
-	if (TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fog))
-	{
-		fogtype = (current_player->variables.flags&_HEAD_BELOW_MEDIA_BIT) ?
-		OGL_Fog_BelowLiquid : OGL_Fog_AboveLiquid;
-		fogdata = OGL_GetFogData(fogtype);
-		if (fogdata && fogdata->IsPresent && fogdata->AffectsLandscapes) {
-			usefog = true;
-		}
+	auto fogdata = OGL_GetCurrFogData();
+	if (fogdata && fogdata->IsPresent && fogdata->AffectsLandscapes) {
+		usefog = true;
 	}
+
+	float fogmode = -1.0;
+	if (fogdata) {
+		fogmode = fogdata->Mode;
+	}
+
 	const float virtual_yaw = view->virtual_yaw * FixedAngleToRadians;
 	const float virtual_pitch = view->virtual_pitch * FixedAngleToRadians;
 	s = Shader::get(Shader::S_Landscape);
@@ -189,6 +186,27 @@ void RenderRasterize_Shader::render_tree() {
 	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
 	s->setFloat(Shader::U_Yaw, virtual_yaw);
 	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 :virtual_pitch);
+
+	Shader* fog_mode_shaders[] = {
+		Shader::get(Shader::S_Bump),
+		Shader::get(Shader::S_BumpBloom),
+		Shader::get(Shader::S_Invincible),
+		Shader::get(Shader::S_InvincibleBloom),
+		Shader::get(Shader::S_Invisible),
+		Shader::get(Shader::S_InvisibleBloom),
+		Shader::get(Shader::S_Wall),
+		Shader::get(Shader::S_WallBloom),
+		Shader::get(Shader::S_WallInfravision),
+		Shader::get(Shader::S_Sprite),
+		Shader::get(Shader::S_SpriteBloom),
+		Shader::get(Shader::S_SpriteInfravision)
+	};
+	
+	for (auto s : fog_mode_shaders) {
+		s->enable();
+		s->setFloat(Shader::U_FogMode, fogmode);
+	}
+	
 	Shader::disable();
 
 	RenderRasterizerClass::render_tree(kDiffuse);

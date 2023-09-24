@@ -81,7 +81,8 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
 	"logicalWidth",
 	"logicalHeight",
 	"pixelWidth",
-	"pixelHeight"
+	"pixelHeight",
+	"fogMode"
 };
 
 const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] = 

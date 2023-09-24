@@ -4,7 +4,6 @@ uniform float depth;
 varying vec3 viewXY;
 varying vec3 viewDir;
 varying vec4 vertexColor;
-varying float FDxLOG2E;
 varying float classicDepth;
 void main(void) {
 	gl_Position  = gl_ModelViewProjectionMatrix * gl_Vertex;
@@ -26,7 +25,6 @@ void main(void) {
 	viewXY = -(gl_TextureMatrix[0] * vec4(viewDir.xyz, 1.0)).xyz;
 	viewDir = -viewDir;
 	vertexColor = gl_Color;
-	FDxLOG2E = -gl_Fog.density * 1.442695;
 };
 
 )"

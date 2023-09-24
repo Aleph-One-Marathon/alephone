@@ -1774,13 +1774,22 @@ The final one, &lt;fog&gt;, has these attributes:
 </ol>
 The default is 0 (above liquid).
 <li>on: (<a href="#boolean">boolean</a>; default: false)
+<li>mode: the equation used to calculate the fog (default: 1)
 <li>depth: the fog depth in World Units (default: 8)
+<li>start: the start of fog in World Units (default: 0); only applies to linear fog
 <li>landscapes: whether this fog affects landscape textures (default: true)
 </ul>
 <p>
 
 and a <a href="#color">color</a> subelement, which indicates the fog color
 (default: gray [red = green = blue = 0.5]).
+<p>
+Here are the fog modes:
+<ol type=1 start="0">
+<li>linear from start to (start + depth)
+<li>exp with density = 1/depth
+<li>exp2 with density = 1/depth
+</ol>
 <p>
 
 <hr>

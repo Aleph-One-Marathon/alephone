@@ -697,6 +697,15 @@
 		  <description>fog depth in WU</description>
 		  <type>number</type>
 		</variable>
+		<variable name="mode" version="git">
+		  <description>linear, exp, or exp2</description>
+		  <type>fog_mode</type>
+		</variable>
+		<variable name="start" version="git">
+		  <description>fog start in WU</description>
+		  <type>number</type>
+		  <note>only applies to linear fog</note>
+		</variable>
       </subtable>
       <variable name="low_gravity" access="read-only">
 		<description>whether level is low gravity</description>
@@ -2763,6 +2772,13 @@
 		<mnemonic name="tint jjaro"/>
       </mnemonics>
     </enum>
+	<enum name="fog_mode">
+	  <mnemonics>
+		<mnemonic name="linear"/>
+		<mnemonic name="exp"/>
+		<mnemonic name="exp2"/>
+	  </mnemonics>
+	</enum>
     <enum name="game_type">
       <mnemonics>
 		<mnemonic name="kill monsters"/>
@@ -3633,6 +3649,7 @@
     <enum-accessor name="EffectTypes" contains="effect_type" nice-name="Effects"/>
 	<enum-accessor name="EphemeraQualities" contains="ephemera_quality" nice-name="Ephemera Quality"/>
     <enum-accessor name="FadeTypes" contains="fade_type" nice-name="Faders"/>
+	<enum-accessor name="FogModes" contains="fog_mode" nice-name="Fog Modes"/>
     <enum-accessor name="GameTypes" contains="game_type" nice-name="Game Types"/>
     <enum-accessor name="ItemKinds" contains="item_kind" nice-name="Item Kinds"/>
     <enum-accessor name="ItemTypes" contains="item_type" nice-name="Item Types"/>

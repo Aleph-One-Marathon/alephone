@@ -8,10 +8,23 @@ uniform float glow;
 uniform float flare;
 uniform float bloomScale;
 uniform float bloomShift;
+uniform float fogMode;
 varying vec3 viewXY;
 varying vec3 viewDir;
 varying vec4 vertexColor;
-varying float FDxLOG2E;
+
+float getFogFactor(float distance) {
+	if (fogMode == 0.0) {
+        return clamp((gl_Fog.end - distance) / (gl_Fog.end - gl_Fog.start), 0.0, 1.0);
+    } else if (fogMode == 1.0) {
+        return clamp(exp(-gl_Fog.density * distance), 0.0, 1.0);
+    } else if (fogMode == 2.0) {
+        return clamp(exp(-gl_Fog.density * gl_Fog.density * distance * distance), 0.0, 1.0);
+	} else {
+		return 1.0;
+	}
+}
+
 void main (void) {
 	vec3 texCoords = vec3(gl_TexCoord[0].xy, 0.0);
 	vec3 normXY = normalize(viewXY);
@@ -38,7 +51,7 @@ void main (void) {
 #ifdef GAMMA_CORRECTED_BLENDING
 	intensity = intensity * intensity; // approximation of pow(intensity, 2.2)
 #endif
-	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);
+	float fogFactor = getFogFactor(length(viewDir));
 	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);
 }
 

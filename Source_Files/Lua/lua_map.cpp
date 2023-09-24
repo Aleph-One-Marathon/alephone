@@ -3361,6 +3361,9 @@ const luaL_Reg Lua_Fog_Color_Set[] = {
 	{0, 0}
 };
 
+char Lua_FogMode_Name[] = "fog_mode";
+char Lua_FogModes_Name[] = "FogModes";
+
 char Lua_Fog_Name[] = "fog";
 typedef L_Class<Lua_Fog_Name> Lua_Fog;
 
@@ -3388,12 +3391,26 @@ static int Lua_Fog_Get_Depth(lua_State *L)
 	return 1;
 }
 
+static int Lua_Fog_Get_Mode(lua_State* L)
+{
+	Lua_FogMode::Push(L, OGL_GetFogData(Lua_Fog::Index(L, 1))->Mode);
+	return 1;
+}
+
+static int Lua_Fog_Get_Start(lua_State* L)
+{
+	lua_pushnumber(L, OGL_GetFogData(Lua_Fog::Index(L, 1))->Start);
+	return 1;
+}
+
 const luaL_Reg Lua_Fog_Get[] = {
 	{"active", Lua_Fog_Get_Active},
 	{"affects_landscapes", Lua_Fog_Get_Affects_Landscapes},
 	{"color", Lua_Fog_Get_Color},
 	{"depth", Lua_Fog_Get_Depth},
+	{"mode", Lua_Fog_Get_Mode},
 	{"present", Lua_Fog_Get_Active},
+	{"start", Lua_Fog_Get_Start},
 	{0, 0}
 };
 
@@ -3424,11 +3441,28 @@ static int Lua_Fog_Set_Depth(lua_State *L)
 	return 0;
 }
 
+static int Lua_Fog_Set_Mode(lua_State* L)
+{
+	OGL_GetFogData(Lua_Fog::Index(L, 1))->Mode = Lua_FogMode::ToIndex(L, 2);
+	return 0;
+}
+
+static int Lua_Fog_Set_Start(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "start: incorrect argument type");
+
+	OGL_GetFogData(Lua_Fog::Index(L, 1))->Start = static_cast<float>(lua_tonumber(L, 2));
+	return 0;
+}
+
 const luaL_Reg Lua_Fog_Set[] = {
 	{"active", Lua_Fog_Set_Active},
 	{"affects_landscapes", Lua_Fog_Set_Affects_Landscapes},
 	{"depth", Lua_Fog_Set_Depth},
+	{"mode", Lua_Fog_Set_Mode},
 	{"present", Lua_Fog_Set_Active},
+	{"start", Lua_Fog_Set_Start},
 	{0, 0}
 };
 
@@ -3760,6 +3794,11 @@ int Lua_Map_register(lua_State *L)
 	Lua_Annotations::Length = Lua_Annotations_Length;
 
 	Lua_Fog::Register(L, Lua_Fog_Get, Lua_Fog_Set);
+
+	Lua_FogMode::Register(L, 0, 0, 0, Lua_FogMode_Mnemonics);
+	Lua_FogMode::Valid = Lua_FogMode::ValidRange(3);
+	Lua_FogModes::Register(L);
+	Lua_FogModes::Length = Lua_FogModes::ConstantLength(3);
 
 	Lua_Fog_Color::Register(L, Lua_Fog_Color_Get, Lua_Fog_Color_Set);
 

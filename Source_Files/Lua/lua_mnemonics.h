@@ -267,6 +267,13 @@ const lang_def Lua_FadeType_Mnemonics[] = {
 	{0, 0}
 };
 
+const lang_def Lua_FogMode_Mnemonics[] = {
+	{"linear", 0},
+	{"exp", 1},
+	{"exp2", 2},
+	{0, 0}
+};
+
 const lang_def Lua_GameType_Mnemonics[] = {
 	{"kill monsters", 0x00},
 	{"cooperative play", 0x01},

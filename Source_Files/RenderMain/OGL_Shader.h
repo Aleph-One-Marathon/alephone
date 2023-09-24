@@ -64,6 +64,7 @@ public:
 		U_LogicalHeight,
 		U_PixelWidth,
 		U_PixelHeight,
+		U_FogMode,
 		NUMBER_OF_UNIFORM_LOCATIONS
 	};
 
