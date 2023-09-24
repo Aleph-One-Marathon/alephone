@@ -874,6 +874,10 @@ void instantiate_polygon_transfer_mode(
 		case _xfer_fast_vertical_slide:
 		case _xfer_wander:
 		case _xfer_fast_wander:
+		case _xfer_reverse_horizontal_slide:
+		case _xfer_reverse_fast_horizontal_slide:
+		case _xfer_reverse_vertical_slide:
+		case _xfer_reverse_fast_vertical_slide:
 			x0= y0= 0;
 			switch (transfer_mode)
 			{
@@ -882,7 +886,13 @@ void instantiate_polygon_transfer_mode(
 				
 				case _xfer_fast_vertical_slide: transfer_phase<<= 1;
 				case _xfer_vertical_slide: y0= (transfer_phase<<2)&(WORLD_ONE-1); break;
-				
+					
+				case _xfer_reverse_fast_horizontal_slide: transfer_phase<<= 1;
+				case _xfer_reverse_horizontal_slide: x0 = WORLD_ONE - (transfer_phase<<2)&(WORLD_ONE-1); break;
+					
+		        case _xfer_reverse_fast_vertical_slide: transfer_phase<<= 1;
+				case _xfer_reverse_vertical_slide: y0 = WORLD_ONE - (transfer_phase<<2)&(WORLD_ONE-1); break;
+					
 				case _xfer_fast_wander: transfer_phase<<= 1;
 				case _xfer_wander:
 					alternate_transfer_phase= transfer_phase%(10*FULL_CIRCLE);

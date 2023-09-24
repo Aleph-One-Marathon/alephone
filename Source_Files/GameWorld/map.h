@@ -410,6 +410,10 @@ enum /* object transfer modes (high-level) */
 	_xfer_wander,
 	_xfer_fast_wander,
 	_xfer_big_landscape,
+	_xfer_reverse_horizontal_slide,
+	_xfer_reverse_fast_horizontal_slide,
+	_xfer_reverse_vertical_slide,
+	_xfer_reverse_fast_vertical_slide,
 	NUMBER_OF_TRANSFER_MODES
 };
 

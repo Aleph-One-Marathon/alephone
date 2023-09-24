@@ -3628,6 +3628,10 @@
 		<mnemonic name="fast vertical slide"/>
 		<mnemonic name="wander"/>
 		<mnemonic name="fast wander"/>
+		<mnemonic name="reverse horizontal slide" version="git"/>
+		<mnemonic name="reverse fast horizontal slide" version="git"/>
+		<mnemonic name="reverse vertical slide" version="git"/>
+		<mnemonic name="reverse fast vertical slide" version="git"/>
       </mnemonics>
     </enum>
     <enum name="weapon_type">

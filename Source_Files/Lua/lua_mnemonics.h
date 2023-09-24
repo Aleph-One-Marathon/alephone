@@ -909,6 +909,10 @@ const lang_def Lua_TransferMode_Mnemonics[] = {
 	{"fast vertical slide", 18},
 	{"wander", 19},
 	{"fast wander", 20},
+	{"reverse horizontal slide", 22},
+	{"reverse fast horizontal slide", 23},
+	{"reverse vertical slide", 24},
+	{"reverse fast vertical slide", 25},
 	{0, 0}
 };
 
