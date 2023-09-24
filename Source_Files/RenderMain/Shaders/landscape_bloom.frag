@@ -1,7 +1,7 @@
 R"(
 
 uniform sampler2D texture0;
-uniform float usefog;
+uniform float fogMix;
 uniform float scalex;
 uniform float scaley;
 uniform float offsetx;
@@ -20,16 +20,14 @@ void main(void) {
 	float y = relv.y / (relv.z * zoom) - (facev.z * pitch_adjust);
 	vec4 color = texture2D(texture0, vec2(offsetx - x * scalex, offsety - y * scaley));
 	float intensity = clamp(bloomScale, 0.0, 1.0);
-	if (usefog > 0.0) {
-		intensity = 0.0;
-	}
+
 #ifdef GAMMA_CORRECTED_BLENDING
 	//intensity = intensity * intensity;
 	color.rgb = (color.rgb - 0.01) * 1.01;
 #else
 	color.rgb = (color.rgb - 0.1) * 1.11;
 #endif
-	gl_FragColor = vec4(color.rgb * intensity, 1.0);
+	gl_FragColor = vec4(color.rgb * intensity * (1.0 - fogMix), 1.0);
 }
 
 )"

@@ -404,6 +404,8 @@ struct OGL_FogData
 	bool IsPresent;
 	bool AffectsLandscapes;
 	int Mode;
+
+	float LandscapeMix;	// 0-1
 };
 
 // Fog types

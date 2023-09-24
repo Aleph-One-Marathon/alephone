@@ -3391,6 +3391,12 @@ static int Lua_Fog_Get_Depth(lua_State *L)
 	return 1;
 }
 
+static int Lua_Fog_Get_Landscape_Mix(lua_State* L)
+{
+	lua_pushnumber(L, OGL_GetFogData(Lua_Fog::Index(L, 1))->LandscapeMix);
+	return 1;
+}
+
 static int Lua_Fog_Get_Mode(lua_State* L)
 {
 	Lua_FogMode::Push(L, OGL_GetFogData(Lua_Fog::Index(L, 1))->Mode);
@@ -3408,6 +3414,7 @@ const luaL_Reg Lua_Fog_Get[] = {
 	{"affects_landscapes", Lua_Fog_Get_Affects_Landscapes},
 	{"color", Lua_Fog_Get_Color},
 	{"depth", Lua_Fog_Get_Depth},
+	{"landscape_mix", Lua_Fog_Get_Landscape_Mix},
 	{"mode", Lua_Fog_Get_Mode},
 	{"present", Lua_Fog_Get_Active},
 	{"start", Lua_Fog_Get_Start},
@@ -3441,6 +3448,15 @@ static int Lua_Fog_Set_Depth(lua_State *L)
 	return 0;
 }
 
+static int Lua_Fog_Set_Landscape_Mix(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "landscape_mix: incorrect argument type");
+
+	OGL_GetFogData(Lua_Fog::Index(L, 1))->LandscapeMix = static_cast<float>(lua_tonumber(L, 2));
+	return 0;
+}
+
 static int Lua_Fog_Set_Mode(lua_State* L)
 {
 	OGL_GetFogData(Lua_Fog::Index(L, 1))->Mode = Lua_FogMode::ToIndex(L, 2);
@@ -3460,6 +3476,7 @@ const luaL_Reg Lua_Fog_Set[] = {
 	{"active", Lua_Fog_Set_Active},
 	{"affects_landscapes", Lua_Fog_Set_Affects_Landscapes},
 	{"depth", Lua_Fog_Set_Depth},
+	{"landscape_mix", Lua_Fog_Set_Landscape_Mix},
 	{"mode", Lua_Fog_Set_Mode},
 	{"present", Lua_Fog_Set_Active},
 	{"start", Lua_Fog_Set_Start},

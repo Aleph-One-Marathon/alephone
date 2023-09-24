@@ -47,7 +47,7 @@ public:
 		U_OffsetX,
 		U_OffsetY,
 		U_Pass,
-		U_UseFog,
+		U_FogMix,
 		U_Visibility,
         U_TransferFadeOut,
 		U_Depth,

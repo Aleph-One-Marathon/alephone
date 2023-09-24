@@ -188,8 +188,8 @@ void OGL_StopProgress()
 // Sensible defaults for the fog:
 static OGL_FogData FogData[OGL_NUMBER_OF_FOG_TYPES] = 
 {
-	{{0x8000,0x8000,0x8000},8,0,false,true,OGL_Fog_Exp},
-	{{0x8000,0x8000,0x8000},8,0,false,true,OGL_Fog_Exp}
+	{{0x8000,0x8000,0x8000},8,0,false,true,OGL_Fog_Exp,1},
+	{{0x8000,0x8000,0x8000},8,0,false,true,OGL_Fog_Exp,1}
 };
 
 
@@ -521,6 +521,7 @@ void parse_mml_opengl(const InfoTree& root)
 		fog.read_attr("start", def.Start);
 		fog.read_attr("landscapes", def.AffectsLandscapes);
 		fog.read_attr("mode", def.Mode);
+		fog.read_attr("landscape_mix", def.LandscapeMix);
 		
 		for (const InfoTree &color : fog.children_named("color"))
 		{

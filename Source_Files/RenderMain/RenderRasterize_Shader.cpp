@@ -158,10 +158,10 @@ void RenderRasterize_Shader::render_tree() {
 		}
 	}
 	
-	bool usefog = false;
+	float fogMix = 0.0;
 	auto fogdata = OGL_GetCurrFogData();
 	if (fogdata && fogdata->IsPresent && fogdata->AffectsLandscapes) {
-		usefog = true;
+		fogMix = fogdata->LandscapeMix;
 	}
 
 	float fogmode = -1.0;
@@ -171,21 +171,19 @@ void RenderRasterize_Shader::render_tree() {
 
 	const float virtual_yaw = view->virtual_yaw * FixedAngleToRadians;
 	const float virtual_pitch = view->virtual_pitch * FixedAngleToRadians;
-	s = Shader::get(Shader::S_Landscape);
-	s->enable();
-	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
-	s->setFloat(Shader::U_Yaw, virtual_yaw);
-	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 : virtual_pitch);
-	s = Shader::get(Shader::S_LandscapeBloom);
-	s->enable();
-	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
-	s->setFloat(Shader::U_Yaw, virtual_yaw);
-	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 : virtual_pitch);
-	s = Shader::get(Shader::S_LandscapeInfravision);
-	s->enable();
-	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
-	s->setFloat(Shader::U_Yaw, virtual_yaw);
-	s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 :virtual_pitch);
+
+	Shader* landscape_shaders[] = {
+		Shader::get(Shader::S_Landscape),
+		Shader::get(Shader::S_LandscapeBloom),
+		Shader::get(Shader::S_LandscapeInfravision)
+	};
+
+	for (auto s : landscape_shaders) {
+		s->enable();
+		s->setFloat(Shader::U_FogMix, fogMix);
+		s->setFloat(Shader::U_Yaw, virtual_yaw);
+		s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 : virtual_pitch);
+	}
 
 	Shader* fog_mode_shaders[] = {
 		Shader::get(Shader::S_Bump),

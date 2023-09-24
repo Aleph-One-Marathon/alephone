@@ -65,7 +65,7 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
 	"offsetx",
 	"offsety",
 	"pass",
-	"usefog",
+	"fogMix",
 	"visibility",
     "transferFadeOut",
 	"depth",

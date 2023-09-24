@@ -1,7 +1,7 @@
 R"(
 
 uniform sampler2D texture0;
-uniform float usefog;
+uniform float fogMix;
 uniform float scalex;
 uniform float scaley;
 uniform float offsetx;
@@ -18,10 +18,7 @@ void main(void) {
 	float x = relv.x / (relv.z * zoom) + atan(facev.x, facev.y);
 	float y = relv.y / (relv.z * zoom) - (facev.z * pitch_adjust);
 	vec4 color = texture2D(texture0, vec2(offsetx - x * scalex, offsety - y * scaley));
-	vec3 intensity = color.rgb;
-	if (usefog > 0.0) {
-		intensity = gl_Fog.color.rgb;
-	}
+	vec3 intensity = mix(color.rgb, gl_Fog.color.rgb, fogMix);
 	gl_FragColor = vec4(intensity, 1.0);
 }
 

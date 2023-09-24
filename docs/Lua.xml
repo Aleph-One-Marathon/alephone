@@ -697,6 +697,11 @@
 		  <description>fog depth in WU</description>
 		  <type>number</type>
 		</variable>
+		<variable name="landscape_mix" version="git">
+		  <description>amount of fog to mix into landscape</description>
+		  <type>number</type>
+		  <note>values range from 0.0 to 1.0</note>
+		</variable>
 		<variable name="mode" version="git">
 		  <description>linear, exp, or exp2</description>
 		  <type>fog_mode</type>
