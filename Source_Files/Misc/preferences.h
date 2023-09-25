@@ -91,8 +91,6 @@ struct graphics_preferences_data
 	// LP change: added OpenGL support
 	OGL_ConfigureData OGL_Configure;
 
-	bool double_corpse_limit;
-
 	int16 software_alpha_blending;
 	int16 software_sdl_driver;
 	int16 fps_target; // should be a multiple of 30; 0 = unlimited
