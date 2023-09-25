@@ -683,6 +683,21 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 
 		GLfloat* vp = vertex_array;
 		GLfloat* tp = texcoord_array;
+		float scale;
+
+		switch (surface->transfer_mode)
+		{
+			case _xfer_4x_replacement:
+				scale = 4 * WORLD_ONE;
+				break;
+			case _xfer_16x_replacement:
+				scale = 16 * WORLD_ONE;
+				break;
+			default:
+				scale = WORLD_ONE;
+				break;
+		}
+
 		if (ceil)
 		{
 			for(short i = 0; i < vertex_count; ++i) {
@@ -690,8 +705,8 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 				*vp++ = vertex.x;
 				*vp++ = vertex.y;
 				*vp++ = surface->height;
-				*tp++ = (vertex.x + surface->origin.x + x) / float(WORLD_ONE);
-				*tp++ = (vertex.y + surface->origin.y + y) / float(WORLD_ONE);
+				*tp++ = (vertex.x + surface->origin.x + x) / scale;
+				*tp++ = (vertex.y + surface->origin.y + y) / scale;
 			}
 		}
 		else
@@ -701,8 +716,8 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 				*vp++ = vertex.x;
 				*vp++ = vertex.y;
 				*vp++ = surface->height;
-				*tp++ = (vertex.x + surface->origin.x + x) / float(WORLD_ONE);
-				*tp++ = (vertex.y + surface->origin.y + y) / float(WORLD_ONE);
+				*tp++ = (vertex.x + surface->origin.x + x) / scale;
+				*tp++ = (vertex.y + surface->origin.y + y) / scale;
 			}
 		}
 		glVertexPointer(3, GL_FLOAT, 0, vertex_array);
@@ -781,12 +796,25 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			vertices[0].flags = vertices[3].flags = 0;
 			vertices[1].flags = vertices[2].flags = 0;
 
-			double div = WORLD_ONE;
+			uint16 div;
+			switch (surface->transfer_mode)
+			{
+				case _xfer_4x_replacement:
+					div = 4 * WORLD_ONE;
+					break;
+				case _xfer_16x_replacement:
+					div = 16 * WORLD_ONE;
+					break;
+				default:
+					div = WORLD_ONE;
+					break;
+			}
+			
 			double dx = (surface->p1.i - surface->p0.i) / double(surface->length);
 			double dy = (surface->p1.j - surface->p0.j) / double(surface->length);
 
-			world_distance x0 = WORLD_FRACTIONAL_PART(surface->texture_definition->x0);
-			world_distance y0 = WORLD_FRACTIONAL_PART(surface->texture_definition->y0);
+			world_distance x0 = surface->texture_definition->x0 % div;
+			world_distance y0 = surface->texture_definition->y0 % div;
 
 			double tOffset = surface->h1 + view->origin.z + y0;
 
@@ -815,8 +843,8 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 				*vp++ = vertices[i].x;
 				*vp++ = vertices[i].y;
 				*vp++ = vertices[i].z;
-				*tp++ = (tOffset - vertices[i].z) / div;
-				*tp++ = (x0+p2) / div;
+				*tp++ = (tOffset - vertices[i].z) / static_cast<float>(div);
+				*tp++ = (x0+p2) / static_cast<float>(div);
 			}
 			glVertexPointer(3, GL_FLOAT, 0, vertex_array);
 			glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);

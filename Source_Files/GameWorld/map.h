@@ -414,6 +414,9 @@ enum /* object transfer modes (high-level) */
 	_xfer_reverse_fast_horizontal_slide,
 	_xfer_reverse_vertical_slide,
 	_xfer_reverse_fast_vertical_slide,
+	_xfer_4x_replacement,	  // scales texture by 4x in hardware; 1x software
+	_xfer_16x_replacement,	  // scales texture by 16x in hardware; 1x software
+	
 	NUMBER_OF_TRANSFER_MODES
 };
 
