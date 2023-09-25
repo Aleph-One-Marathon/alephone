@@ -2278,8 +2278,8 @@ bool line_is_obstructed(
 	return obstructed;
 }
 
-#define MAXIMUM_GARBAGE_OBJECTS_PER_MAP 256
-#define MAXIMUM_GARBAGE_OBJECTS_PER_POLYGON 10
+#define MAXIMUM_GARBAGE_OBJECTS_PER_MAP (get_dynamic_limit(_dynamic_limit_garbage))
+#define MAXIMUM_GARBAGE_OBJECTS_PER_POLYGON (get_dynamic_limit(_dynamic_limit_garbage_per_polygon))
 
 void turn_object_to_shit( /* garbage that is, garbage */
 	short garbage_object_index)
