@@ -1073,11 +1073,13 @@ static void _pretexture_horizontal_polygon_lines(
 				source_y= ((screen_x*hcosine + dhsine)/screen_y)*polygon->origin.z + (polygon->origin.y<<TRIG_SHIFT);
 				source_dy= (hcosine*polygon->origin.z)/screen_y;
 			}
+
+			auto bits = HORIZONTAL_FREE_BITS - (polygon->flags & _SCALE_BITS);
 		
 			/* voodoo so x,y texture wrapping is handled automatically by downshifting
 				(subtract one from HORIZONTAL_FREE_BITS to double scale) */
-			data->source_x= source_x<<HORIZONTAL_FREE_BITS, data->source_dx= source_dx<<HORIZONTAL_FREE_BITS;
-			data->source_y= source_y<<HORIZONTAL_FREE_BITS, data->source_dy= source_dy<<HORIZONTAL_FREE_BITS;
+			data->source_x= source_x<<bits, data->source_dx= source_dx<<bits;
+			data->source_y= source_y<<bits, data->source_dy= source_dy<<bits;
 		
 
 		/* get shading table (with absolute value of depth) */

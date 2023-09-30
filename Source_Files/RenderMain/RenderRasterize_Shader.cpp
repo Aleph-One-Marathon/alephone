@@ -687,14 +687,14 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 
 		switch (surface->transfer_mode)
 		{
-			case _xfer_4x_replacement:
-				scale = 4 * WORLD_ONE;
+			case _xfer_2x:
+				scale = 2 * WORLD_ONE * TMgr->TileRatio();
 				break;
-			case _xfer_16x_replacement:
-				scale = 16 * WORLD_ONE;
+		    case _xfer_4x:
+				scale = 4 * WORLD_ONE * TMgr->TileRatio();
 				break;
 			default:
-				scale = WORLD_ONE;
+				scale = WORLD_ONE * TMgr->TileRatio();
 				break;
 		}
 
@@ -799,14 +799,14 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			uint16 div;
 			switch (surface->transfer_mode)
 			{
-				case _xfer_4x_replacement:
-					div = 4 * WORLD_ONE;
+				case _xfer_2x:
+					div = 2 * WORLD_ONE * TMgr->TileRatio();
 					break;
-				case _xfer_16x_replacement:
-					div = 16 * WORLD_ONE;
+				case _xfer_4x:
+					div = 4 * WORLD_ONE * TMgr->TileRatio();
 					break;
 				default:
-					div = WORLD_ONE;
+					div = WORLD_ONE * TMgr->TileRatio();;
 					break;
 			}
 			

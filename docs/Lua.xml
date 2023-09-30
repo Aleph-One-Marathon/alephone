@@ -3632,8 +3632,8 @@
 		<mnemonic name="reverse fast horizontal slide" version="git"/>
 		<mnemonic name="reverse vertical slide" version="git"/>
 		<mnemonic name="reverse fast vertical slide" version="git"/>
-		<mnemonic name="4x replacement" version="git"/>
-		<mnemonic name="16x replacement" version="git"/>
+		<mnemonic name="2x" version="git"/>
+		<mnemonic name="4x" version="git"/>
       </mnemonics>
     </enum>
     <enum name="weapon_type">

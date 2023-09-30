@@ -437,6 +437,14 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 			
 			/* setup the other parameters of the textured polygon */
 			textured_polygon.flags= 0;
+			if (surface->transfer_mode == _xfer_2x)
+			{
+				textured_polygon.flags |= _SCALE_2X_BIT;
+			}
+			else if (surface->transfer_mode == _xfer_4x)
+			{
+				textured_polygon.flags |= _SCALE_4X_BIT;
+			}
 			textured_polygon.origin.x= view->origin.x + surface->origin.x;
 			textured_polygon.origin.y= view->origin.y + surface->origin.y;
 			textured_polygon.origin.z= adjusted_height;
@@ -511,16 +519,27 @@ void RenderRasterizerClass::render_node_side(
 			{
 				world_distance dx= surface->p1.i - surface->p0.i;
 				world_distance dy= surface->p1.j - surface->p0.j;
-				world_distance x0= WORLD_FRACTIONAL_PART(surface->texture_definition->x0);
-				world_distance y0= WORLD_FRACTIONAL_PART(surface->texture_definition->y0);
+
+				auto scale = WORLD_ONE;
+				if (surface->transfer_mode == _xfer_2x)
+				{
+					scale *= 2;
+				}
+				else if (surface->transfer_mode == _xfer_4x)
+				{
+					scale *= 4;
+				}
 				
+				world_distance x0= surface->texture_definition->x0 % scale;
+				world_distance y0= surface->texture_definition->y0 % scale;
+
 				/* calculate texture origin and direction */	
 				world_distance divisor = surface->length;
 				if (divisor == 0)
 					divisor = 1;
-				textured_polygon.vector.i= (WORLD_ONE*dx)/divisor;
-				textured_polygon.vector.j= (WORLD_ONE*dy)/divisor;
-				textured_polygon.vector.k= -WORLD_ONE;
+				textured_polygon.vector.i= (scale*dx)/divisor;
+				textured_polygon.vector.j= (scale*dy)/divisor;
+				textured_polygon.vector.k= -scale;
 				textured_polygon.origin.x= surface->p0.i - (x0*dx)/divisor;
 				textured_polygon.origin.y= surface->p0.j - (x0*dy)/divisor;
 				textured_polygon.origin.z= surface->h1 + y0;

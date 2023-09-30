@@ -211,7 +211,7 @@ public:
 	
 	// The width of a landscape texture will be 2^(-Landscape_AspRatExp) * (the height)
 	short Landscape_AspRatExp;
-	
+
 	// Sets up all the texture stuff:	
 	bool Setup();
 	
@@ -238,6 +238,7 @@ public:
 	float GlowBloomScale() {return (TxtrOptsPtr->GlowBloomScale);}
 	float GlowBloomShift() {return (TxtrOptsPtr->GlowBloomShift);}
 	float LandscapeBloom() {return (TxtrOptsPtr->LandscapeBloom);}
+	int TileRatio() { return (1 << TxtrOptsPtr->TileRatioExp); }
 	
 	// Scaling and offset of the current texture;
 	// important for sprites, which will be padded to make them OpenGL-friendly.
