@@ -1491,7 +1491,7 @@ Currently, both texture-rendering modification and fog are supported;
 texture-rendering modification modifies the rendering of each bitmap.
 
 This element has these kinds of child elements, &lt;txtr_clear&gt;, &lt;texture&gt;,
-&lt;model_clear&gt;, &lt;model&gt;, &lt;shader&gt;, and &lt;fog&gt;.
+&lt;model_clear&gt;, &lt;model&gt;, and &lt;fog&gt;.
 <p>
 
 
@@ -1737,32 +1737,6 @@ It must be used with a glow_image file.
 <li>normal_bloom_shift: when rendering bloom effects in the shader renderer, add this value to the normal image's light level after scaling. (default: 0)
 <li>glow_bloom_scale: when rendering bloom effects in the shader renderer, scale the glow image's light level by this amount. (default: 1 -- full intensity during bloom effect)
 <li>glow_bloom_shift: when rendering bloom effects in the shader renderer, add this value to the glow image's light level after scaling. (default: 0)
-</ul>
-<p>
-
-The next one, &lt;shader&gt;, specifies custom shader definitions used by the shader-capable renderer.
-It takes these attributes:
-<ul>
-<li>name: which shader to specify (mandatory). The following shaders are used:
-<ul>
-<li>sprite
-<li>invincible
-<li>invisible
-<li>landscape
-<li>wall
-<li>bump
-<li>sprite_bloom
-<li>invincible_bloom
-<li>invisible_bloom
-<li>landscape_bloom
-<li>wall_bloom
-<li>bump_bloom
-<li>blur
-<li>bloom
-</ul>
-<li>vert: the path to a file containing the vertex shader program.
-<li>frag: the path to a file containing the fragment shader program.
-<li>passes: number of passes to use when rendering. Currently only the "bloom" shader supports multiple passes. (default: -1 -- use shader default, which is 3 for bloom)
 </ul>
 <p>
 
