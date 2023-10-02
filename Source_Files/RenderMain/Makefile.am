@@ -16,7 +16,7 @@ librendermain_a_SOURCES = AnimatedTextures.h collection_definition.h		   \
   RenderPlaceObjs.h RenderRasterize.h RenderRasterize_Shader.h				   \
   RenderSortPoly.h RenderVisTree.h scottish_textures.h shape_definitions.h	   \
   shape_descriptors.h SW_Texture_Extras.h textures.h OGL_Shader.h vec3.h	   \
-  Shaders/bump_bloom.frag Shaders/bump.frag Shaders/invicible_bloom.frag	   \
+  Shaders/bump_bloom.frag Shaders/bump.frag Shaders/invincible_bloom.frag	   \
   Shaders/invincible.frag Shaders/invisible_bloom.frag Shaders/invisible.frag  \
   Shaders/landscape_bloom.frag Shaders/landscape.frag						   \
   Shaders/landscape_infravision.frag Shaders/landscape.vert					   \
