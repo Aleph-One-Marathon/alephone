@@ -25,6 +25,6 @@ void main(void) {
 	viewXY = -(gl_TextureMatrix[0] * vec4(viewDir.xyz, 1.0)).xyz;
 	viewDir = -viewDir;
 	vertexColor = gl_Color;
-};
+}
 
 )"

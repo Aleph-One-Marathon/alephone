@@ -43,6 +43,6 @@ void main (void) {
 	vec4 color = texture2D(texture0, texCoords.xy);
 	float fogFactor = getFogFactor(length(viewDir));
 	gl_FragColor = vec4(mix(gl_Fog.color.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);
-};
+}
 
 )"
