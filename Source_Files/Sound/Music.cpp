@@ -20,7 +20,7 @@
 */
 
 #include "Music.h"
-#include "XML_LevelScript.h"
+#include "interface.h"
 #include "OpenALManager.h"
 
 Music::Music() :
@@ -122,9 +122,8 @@ void Music::Idle()
 {
 	if (!SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return;
 
-	auto& levelSlot = music_slots[MusicSlot::Level];
-	if (!levelSlot.Playing() && LoadLevelMusic()) {
-		levelSlot.Play();
+	if (get_game_state() >= _game_in_progress && !music_slots[MusicSlot::Level].Playing() && LoadLevelMusic()) {
+		music_slots[MusicSlot::Level].Play();
 	}
 
 	for (int i = 0; i < music_slots.size(); i++) {
