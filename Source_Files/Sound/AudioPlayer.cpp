@@ -3,6 +3,10 @@
 #include <array>
 
 AudioPlayer::AudioPlayer(int rate, bool stereo, AudioFormat audioFormat) {
+	Init(rate, stereo, audioFormat);
+}
+
+void AudioPlayer::Init(int rate, bool stereo, AudioFormat audioFormat) {
 	this->rate = rate;
 	format = mapping_audio_format_openal.at({ audioFormat, stereo });
 }

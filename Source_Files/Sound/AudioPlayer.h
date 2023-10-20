@@ -66,6 +66,8 @@ private:
     bool Play();
     void ResetSource();
     bool Update();
+    void UnqueueBuffers();
+    void FillBuffers();
     std::unique_ptr<AudioSource> RetrieveSource();
     bool AssignSource();
     virtual SetupALResult SetUpALSourceIdle(); //Update of the source parameters (AL), done everytime the player is processed in the queue
@@ -91,8 +93,7 @@ public:
     virtual float GetPriority() const = 0;
 protected:
     AudioPlayer(int rate, bool stereo, AudioFormat audioFormat);
-    void UnqueueBuffers();
-    void FillBuffers();
+    void Init(int rate, bool stereo, AudioFormat audioFormat);
     virtual int GetNextData(uint8* data, int length) = 0;
     virtual bool LoadParametersUpdates() { return false; }
     std::atomic_bool rewind_signal = { false };

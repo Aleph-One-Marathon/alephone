@@ -6,12 +6,21 @@ constexpr SoundBehavior SoundPlayer::sound_obstructed_or_muffled_behavior_parame
 constexpr SoundBehavior SoundPlayer::sound_obstructed_and_muffled_behavior_parameters[];
 SoundPlayer::SoundPlayer(const Sound& sound, const SoundParameters& parameters)
 	: AudioPlayer(sound.header.rate >> 16, sound.header.stereo, sound.header.audio_format) {  //since header.rate is on 16.16 format
-	auto soundParameters = parameters;
-	soundParameters.loop = parameters.loop || sound.header.loop_end - sound.header.loop_start >= 4; //where does this happen?
 	this->sound = sound;
-	this->parameters = soundParameters;
+	Init(parameters);
+}
+
+void SoundPlayer::Init(const SoundParameters& parameters) {
+	auto& sound = this->sound.Get();
+	AudioPlayer::Init(sound.header.rate >> 16, sound.header.stereo, sound.header.audio_format);
+	auto soundParameters = parameters;
+	soundParameters.loop = parameters.loop || sound.header.loop_end - sound.header.loop_start >= 4;
+	this->parameters.Set(soundParameters);
 	data_length = sound.header.length;
 	start_tick = SoundManager::GetCurrentAudioTick();
+	sound_transition.allow_transition = false;
+	sound_transition.start_transition_tick = 0;
+	current_index_data = 0;
 }
 
 //Simulate what the volume of our sound would be if we play it
@@ -68,27 +77,25 @@ void SoundPlayer::AskRewind(const SoundParameters& soundParameters, const Sound&
 }
 
 void SoundPlayer::Rewind() {
-	if (CanRewind(start_tick)) {
-		sound.Update();
-		parameters.Set(rewind_parameters);
-		AudioPlayer::Rewind();
-		current_index_data = 0;
-		data_length = sound.Get().header.length;
-		start_tick = SoundManager::GetCurrentAudioTick();
-		sound_transition.allow_transition = false;
-		sound_transition.start_transition_tick = 0;
-	}
-	else 
+
+	if (!CanRewind(start_tick)) {
 		rewind_signal = false;
+		return;
+	}
+
+	AudioPlayer::Rewind();
+	sound.Update();
+	Init(rewind_parameters);
 }
 
 int SoundPlayer::LoopManager(uint8* data, int length) {
+
 	if (parameters.Get().loop) {
 
 		auto header = sound.Get().header;
 		int loopLength = header.loop_end - header.loop_start;
 
-		if (loopLength >= 4) { //where does this happen?
+		if (loopLength >= 4) {
 			data_length = loopLength;
 			current_index_data = header.loop_start;
 		}

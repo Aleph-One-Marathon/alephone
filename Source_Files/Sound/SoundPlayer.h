@@ -72,13 +72,14 @@ public:
 private:
 
 	struct SoundTransition {
-		uint32_t start_transition_tick = 0;
+		uint32_t start_transition_tick;
 		float current_volume = 0;
 		SoundBehavior current_sound_behavior;
-		bool allow_transition = false;
+		bool allow_transition;
 	};
 
 	void Rewind() override;
+	void Init(const SoundParameters& parameters);
 	int GetNextData(uint8* data, int length) override;
 	int LoopManager(uint8* data, int length);
 	SetupALResult SetUpALSourceIdle() override;
@@ -96,7 +97,7 @@ private:
 	SoundParameters rewind_parameters;
 	SoundTransition sound_transition;
 	uint32_t data_length;
-	uint32_t current_index_data = 0;
+	uint32_t current_index_data;
 	uint32_t start_tick;
 
 	std::atomic_bool soft_stop_signal = { false };
