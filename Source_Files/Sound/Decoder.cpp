@@ -30,6 +30,10 @@ using std::unique_ptr;
 
 unique_ptr<StreamDecoder> StreamDecoder::Get(FileSpecifier& File)
 {
+	unique_ptr<SndfileDecoder> sndfileDecoder(std::make_unique<SndfileDecoder>());
+	if (sndfileDecoder->Open(File))
+		return sndfileDecoder;
+
 #ifdef HAVE_FFMPEG
 	{
 		unique_ptr<FFmpegDecoder> ffmpegDecoder(std::make_unique<FFmpegDecoder>());
@@ -37,10 +41,6 @@ unique_ptr<StreamDecoder> StreamDecoder::Get(FileSpecifier& File)
 			return ffmpegDecoder;
 	}
 #endif
-
-	unique_ptr<SndfileDecoder> sndfileDecoder(std::make_unique<SndfileDecoder>());
-	if (sndfileDecoder->Open(File))
-		return sndfileDecoder;
 
 	return 0;
 }
