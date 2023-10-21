@@ -27,7 +27,7 @@ struct SoundParameters {
 	float pitch = 1;
 	bool loop = false;
 	bool local = true; //if false it will use source_location3d to position sound (3D sounds)
-	bool _is_for_rewind = false; //internal flag to know if those parameters must be loaded when rewinding sound or not
+	bool soft_rewind = false; //if true the sound can only rewind after it's done playing
 	uint16_t permutation = 0;
 	uint16_t obstruction_flags = 0;
 	sound_behavior behavior = _sound_is_normal;
@@ -63,6 +63,7 @@ class SoundPlayer : public AudioPlayer {
 public:
 	SoundPlayer(const Sound& sound, const SoundParameters& parameters); //Must not be used outside OpenALManager (public for make_shared)
 	void UpdateParameters(const SoundParameters& parameters) { this->parameters.Store(parameters); }
+	void UpdateRewindParameters(const SoundParameters& parameters) { this->rewind_parameters.Store(parameters); }
 	short GetIdentifier() const override { return parameters.Get().identifier; }
 	short GetSourceIdentifier() const override { return parameters.Get().source_identifier; }
 	SoundParameters GetParameters() const { return parameters.Get(); }
@@ -94,7 +95,7 @@ private:
 	SoundBehavior ComputeVolumeForTransition(const SoundBehavior& targetSoundBehavior);
 	AtomicStructure<Sound> sound;
 	AtomicStructure<SoundParameters> parameters;
-	SoundParameters rewind_parameters;
+	AtomicStructure<SoundParameters> rewind_parameters;
 	SoundTransition sound_transition;
 	uint32_t data_length;
 	uint32_t current_index_data;

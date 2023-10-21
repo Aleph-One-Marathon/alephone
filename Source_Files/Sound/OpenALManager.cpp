@@ -171,7 +171,7 @@ std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(const Sound& sound, const 
 
 		if (existingPlayer) {
 
-			if (!(parameters.flags & _sound_cannot_be_restarted) && (existingPlayer->CanFastRewind(parameters) || simulatedVolume + abortAmplitudeThreshold > SoundPlayer::Simulate(existingPlayer->GetParameters()))) {
+			if (parameters.soft_rewind || (!(parameters.flags & _sound_cannot_be_restarted) && (existingPlayer->CanFastRewind(parameters) || simulatedVolume + abortAmplitudeThreshold > SoundPlayer::Simulate(existingPlayer->GetParameters())))) {
 				existingPlayer->AskRewind(parameters, sound); //we found one, we won't create another player but rewind this one instead
 			}
 

@@ -87,6 +87,7 @@ private:
 public:
     void AskStop() { stop_signal = true; }
     bool IsActive() const { return is_active.load(); }
+    bool HasRewind() const { return rewind_signal.load(); }
     void AskRewind() { rewind_signal = true; }
     virtual short GetIdentifier() const { return NONE; }
     virtual short GetSourceIdentifier() const { return NONE; }

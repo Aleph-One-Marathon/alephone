@@ -1039,19 +1039,23 @@ void SoundManager::UpdateAmbientSoundSources()
 		if (SLOT_IS_USED(&ambient_sounds[i])) {
 			auto soundPlayer = OpenALManager::Get()->GetSoundPlayer(ambient_sounds[i].sound_index, NONE);
 
-			if (soundPlayer)
+			if (soundPlayer && soundPlayer->HasRewind())
 			{
 				auto parameters = soundPlayer->GetParameters();
 				auto stereo_parameters = parameters.stereo_parameters;
 				parameters.stereo_parameters.gain_global = ambient_sounds[i].variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
 				parameters.stereo_parameters.gain_left = ambient_sounds[i].variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
 				parameters.stereo_parameters.gain_right = ambient_sounds[i].variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
-				if (stereo_parameters != parameters.stereo_parameters) soundPlayer->UpdateParameters(parameters);
+
+				if (stereo_parameters != parameters.stereo_parameters) {
+					soundPlayer->UpdateParameters(parameters);
+					soundPlayer->UpdateRewindParameters(parameters);
+				}
 			}
 			else if (LoadSound(ambient_sounds[i].sound_index)) {
 				SoundParameters parameters;
 				parameters.identifier = ambient_sounds[i].sound_index;
-				parameters.loop = true;
+				parameters.soft_rewind = true;
 				parameters.pitch = FIXED_ONE;
 				parameters.flags = ambient_sounds[i].flags;
 				parameters.stereo_parameters.is_panning = true;
