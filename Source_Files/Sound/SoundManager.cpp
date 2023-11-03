@@ -795,7 +795,7 @@ void SoundManager::SetStatus(bool active)
 
 				if (!success) return;
 
-				MusicPlayer::SetDefaultVolume(OpenALManager::From_db(parameters.music_db));
+				MusicPlayer::SetDefaultVolume(OpenALManager::From_db(parameters.music_db, true));
 				OpenALManager::Get()->Start();
 			}
 			else
