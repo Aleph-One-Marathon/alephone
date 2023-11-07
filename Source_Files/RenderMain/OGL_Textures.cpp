@@ -754,6 +754,8 @@ bool TextureManager::LoadSubstituteTexture()
 	return true;
 }
 
+extern bool shapes_file_is_m1();
+
 bool TextureManager::SetupTextureGeometry()
 {	
 	// How many rows (scanlines) and columns
@@ -780,8 +782,17 @@ bool TextureManager::SetupTextureGeometry()
 	case OGL_Txtr_Wall:
 		// For tiling to be possible, the width and height must be powers of 2
 		// Match M1 engine, and truncate larger textures to 128px square
-		TxtrWidth = std::min(static_cast<int>(BaseTxtrWidth), 128);
-		TxtrHeight = std::min(static_cast<int>(BaseTxtrHeight), 128);
+		if (shapes_file_is_m1())
+		{
+			TxtrWidth = std::min(static_cast<int>(BaseTxtrWidth), 128);
+			TxtrHeight = std::min(static_cast<int>(BaseTxtrHeight), 128);
+		}
+		else
+		{
+			TxtrWidth = BaseTxtrWidth;
+			TxtrHeight = BaseTxtrHeight;
+		}
+		
 		if (!npotTextures) 
 		{
 			if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
