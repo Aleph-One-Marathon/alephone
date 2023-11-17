@@ -1117,10 +1117,10 @@
 	  <function name="fade" version="git">
 		<description>fades the music</description>
 		<argument name="volume"><type>number</type></argument>
-		<argument name="duration" required="false"><type>number</type></argument>
+		<argument name="duration" required="false"><type>seconds</type></argument>
 		<argument name="stop_after_fade" required="false"><type>boolean</type></argument>
 		<note>it will fade in until volume is reached. volume is decimal [0 - 1]</note>
-		<note>duration unit is ms and is 1000 if not specified</note>
+		<note>duration unit is seconds and is 1 if not specified</note>
 		<note>stop_after_fade is disabled by default, if set to true if the volume reaches 0 while fading the music will automatically stop</note>
 	  </function>
 	  <variable name="volume" version="git">

@@ -9,7 +9,7 @@ static int Lua_MusicManager_Clear(lua_State* L)
 
 static int Lua_MusicManager_Fade(lua_State* L)
 {
-	int duration = lua_isnumber(L, 1) ? static_cast<int>(lua_tonumber(L, 1)) : 1000;
+	int duration = lua_isnumber(L, 1) ? static_cast<int>(lua_tonumber(L, 1) * 1000) : 1000;
 	Music::instance()->Fade(0, duration);
 	Music::instance()->ClearLevelMusic();
 	return 0;
@@ -21,7 +21,7 @@ static int Lua_Music_Fade(lua_State* L)
 		return luaL_error(L, "volume: incorrect argument type");
 
 	float limitVolume = static_cast<float>(lua_tonumber(L, 2));
-	int duration = lua_isnumber(L, 3) ? static_cast<int>(lua_tonumber(L, 3)) : 1000;
+	int duration = lua_isnumber(L, 3) ? static_cast<int>(lua_tonumber(L, 3) * 1000) : 1000;
 	bool stopOnNoVolume = lua_isboolean(L, 4) ? static_cast<bool>(lua_toboolean(L, 4)) : true;
 
 	int index = Lua_Music::Index(L, 1) + Music::reserved_music_slots;
