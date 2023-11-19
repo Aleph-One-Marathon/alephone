@@ -110,6 +110,7 @@ struct FilmProfile
 	bool page_up_past_full_width_term_pict;
 	bool fix_destroy_scenery_random_frame;
 	bool m1_reload_sound;		// play the reload sound on the key frame
+	bool m1_landscape_effects;	// projectiles detonate on M1 landscapes
 };
 
 extern FilmProfile film_profile;

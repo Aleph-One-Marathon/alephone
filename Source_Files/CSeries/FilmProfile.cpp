@@ -41,6 +41,7 @@ static FilmProfile alephone1_7 = {
 	true,  // page_up_past_full_width_term_pict
 	true,  // fix_destroy_scenery_random_frame
 	true,  // m1_reload_sound
+	true,  // m1_landscape_effects
 };
 
 static FilmProfile alephone1_4 = {
@@ -82,6 +83,7 @@ static FilmProfile alephone1_4 = {
 	false, // page_up_past_full_width_term_pict
 	false, // fix_destroy_scenery_random_frame
 	false, // m1_reload_sound
+	false, // m1_landscape_effects
 };
 
 
@@ -124,6 +126,7 @@ static FilmProfile alephone1_3 = {
 	false, // page_up_past_full_width_term_pict
 	false, // fix_destroy_scenery_random_frame
 	false, // m1_reload_sound
+	false, // m1_landscape_effects
 };
 
 static FilmProfile alephone1_2 = {
@@ -165,6 +168,7 @@ static FilmProfile alephone1_2 = {
 	false, // page_up_past_full_width_term_pict
 	false, // fix_destroy_scenery_random_frame
 	false, // m1_reload_sound
+	false, // m1_landscape_effects
 };
 
 static FilmProfile alephone1_1 = {
@@ -206,6 +210,7 @@ static FilmProfile alephone1_1 = {
 	false, // page_up_past_full_width_term_pict
 	false, // fix_destroy_scenery_random_frame
 	false, // m1_reload_sound
+	false, // m1_landscape_effects
 };
 
 static FilmProfile alephone1_0 = {
@@ -247,6 +252,7 @@ static FilmProfile alephone1_0 = {
 	false, // page_up_past_full_width_term_pict
 	false, // fix_destroy_scenery_random_frame
 	false, // m1_reload_sound
+	false, // m1_landscape_effects
 };
 
 static FilmProfile marathon2 = {
@@ -288,6 +294,7 @@ static FilmProfile marathon2 = {
 	false, // page_up_past_full_width_term_pict
 	false, // fix_destroy_scenery_random_frame
 	false, // m1_reload_sound
+	false, // m1_landscape_effects
 };
 
 static FilmProfile marathon_infinity = {
@@ -329,6 +336,7 @@ static FilmProfile marathon_infinity = {
 	false, // page_up_past_full_width_term_pict
 	false, // fix_destroy_scenery_random_frame
 	false, // m1_reload_sound
+	false, // m1_landscape_effects
 };
 
 FilmProfile film_profile = alephone1_7;

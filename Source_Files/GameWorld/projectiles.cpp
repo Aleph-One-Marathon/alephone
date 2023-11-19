@@ -507,7 +507,8 @@ void move_projectiles(
 									// so be careful.
 									if (flags&_projectile_hit_landscape && !(flags&_projectile_hit_media)) detonation_effect= NONE;
 								}
-								else
+								else if (!film_profile.m1_landscape_effects ||
+										 !(static_world->environment_flags & _environment_m1_weapons))
 								{
 									if (flags&_projectile_hit_landscape) detonation_effect = NONE;
 								}
