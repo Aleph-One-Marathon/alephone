@@ -104,6 +104,8 @@ struct FilmProfile
 	// Aleph One 1.4 fixes
 	bool better_terminal_word_wrap; // fixes rare infinity films
 	bool lua_monster_killed_trigger_fix;
+
+	// Aleph One 1.7 fixes
 };
 
 extern FilmProfile film_profile;
@@ -115,6 +117,7 @@ enum FilmProfileType {
 	FILM_PROFILE_ALEPH_ONE_1_1,
 	FILM_PROFILE_ALEPH_ONE_1_2,
 	FILM_PROFILE_ALEPH_ONE_1_3,
+	FILM_PROFILE_ALEPH_ONE_1_4,
 	FILM_PROFILE_DEFAULT,
 };
 
