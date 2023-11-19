@@ -40,6 +40,7 @@ static FilmProfile alephone1_7 = {
 	true,  // chip_insertion_ignores_tag_state
 	true,  // page_up_past_full_width_term_pict
 	true,  // fix_destroy_scenery_random_frame
+	true,  // m1_reload_sound
 };
 
 static FilmProfile alephone1_4 = {
@@ -80,6 +81,7 @@ static FilmProfile alephone1_4 = {
 	false, // chip_insertion_ignores_tag_state
 	false, // page_up_past_full_width_term_pict
 	false, // fix_destroy_scenery_random_frame
+	false, // m1_reload_sound
 };
 
 
@@ -121,6 +123,7 @@ static FilmProfile alephone1_3 = {
 	false, // chip_insertion_ignores_tag_state
 	false, // page_up_past_full_width_term_pict
 	false, // fix_destroy_scenery_random_frame
+	false, // m1_reload_sound
 };
 
 static FilmProfile alephone1_2 = {
@@ -161,6 +164,7 @@ static FilmProfile alephone1_2 = {
 	false, // chip_insertion_ignores_tag_state
 	false, // page_up_past_full_width_term_pict
 	false, // fix_destroy_scenery_random_frame
+	false, // m1_reload_sound
 };
 
 static FilmProfile alephone1_1 = {
@@ -201,6 +205,7 @@ static FilmProfile alephone1_1 = {
 	false, // chip_insertion_ignores_tag_state
 	false, // page_up_past_full_width_term_pict
 	false, // fix_destroy_scenery_random_frame
+	false, // m1_reload_sound
 };
 
 static FilmProfile alephone1_0 = {
@@ -241,6 +246,7 @@ static FilmProfile alephone1_0 = {
 	false, // chip_insertion_ignores_tag_state
 	false, // page_up_past_full_width_term_pict
 	false, // fix_destroy_scenery_random_frame
+	false, // m1_reload_sound
 };
 
 static FilmProfile marathon2 = {
@@ -281,6 +287,7 @@ static FilmProfile marathon2 = {
 	false, // chip_insertion_ignores_tag_state
 	false, // page_up_past_full_width_term_pict
 	false, // fix_destroy_scenery_random_frame
+	false, // m1_reload_sound
 };
 
 static FilmProfile marathon_infinity = {
@@ -321,6 +328,7 @@ static FilmProfile marathon_infinity = {
 	false, // chip_insertion_ignores_tag_state
 	false, // page_up_past_full_width_term_pict
 	false, // fix_destroy_scenery_random_frame
+	false, // m1_reload_sound
 };
 
 FilmProfile film_profile = alephone1_7;
