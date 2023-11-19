@@ -39,6 +39,7 @@ static FilmProfile alephone1_7 = {
 	true,  // lua_monster_killed_trigger_fix
 	true,  // chip_insertion_ignores_tag_state
 	true,  // page_up_past_full_width_term_pict
+	true,  // fix_destroy_scenery_random_frame
 };
 
 static FilmProfile alephone1_4 = {
@@ -78,6 +79,7 @@ static FilmProfile alephone1_4 = {
 	true,  // lua_monster_killed_trigger_fix
 	false, // chip_insertion_ignores_tag_state
 	false, // page_up_past_full_width_term_pict
+	false, // fix_destroy_scenery_random_frame
 };
 
 
@@ -118,6 +120,7 @@ static FilmProfile alephone1_3 = {
 	false, // lua_monster_killed_trigger_fix
 	false, // chip_insertion_ignores_tag_state
 	false, // page_up_past_full_width_term_pict
+	false, // fix_destroy_scenery_random_frame
 };
 
 static FilmProfile alephone1_2 = {
@@ -157,6 +160,7 @@ static FilmProfile alephone1_2 = {
 	false, // lua_monster_killed_trigger_fix
 	false, // chip_insertion_ignores_tag_state
 	false, // page_up_past_full_width_term_pict
+	false, // fix_destroy_scenery_random_frame
 };
 
 static FilmProfile alephone1_1 = {
@@ -196,6 +200,7 @@ static FilmProfile alephone1_1 = {
 	false, // lua_monster_killed_trigger_fix
 	false, // chip_insertion_ignores_tag_state
 	false, // page_up_past_full_width_term_pict
+	false, // fix_destroy_scenery_random_frame
 };
 
 static FilmProfile alephone1_0 = {
@@ -235,6 +240,7 @@ static FilmProfile alephone1_0 = {
 	false, // lua_monster_killed_trigger_fix
 	false, // chip_insertion_ignores_tag_state
 	false, // page_up_past_full_width_term_pict
+	false, // fix_destroy_scenery_random_frame
 };
 
 static FilmProfile marathon2 = {
@@ -274,6 +280,7 @@ static FilmProfile marathon2 = {
 	false, // lua_monster_killed_trigger_fix
 	false, // chip_insertion_ignores_tag_state
 	false, // page_up_past_full_width_term_pict
+	false, // fix_destroy_scenery_random_frame
 };
 
 static FilmProfile marathon_infinity = {
@@ -313,6 +320,7 @@ static FilmProfile marathon_infinity = {
 	false, // lua_monster_killed_trigger_fix
 	false, // chip_insertion_ignores_tag_state
 	false, // page_up_past_full_width_term_pict
+	false, // fix_destroy_scenery_random_frame
 };
 
 FilmProfile film_profile = alephone1_7;

@@ -108,6 +108,7 @@ struct FilmProfile
 	// Aleph One 1.7 fixes
 	bool chip_insertion_ignores_tag_state; // always toggle when using a chip
 	bool page_up_past_full_width_term_pict;
+	bool fix_destroy_scenery_random_frame;
 };
 
 extern FilmProfile film_profile;
