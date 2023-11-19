@@ -37,6 +37,7 @@ static FilmProfile alephone1_7 = {
 	true,  // m1_teleport_without_delay
 	true,  // better_terminal_word_wrap
 	true,  // lua_monster_killed_trigger_fix
+	true,  // chip_insertion_ignores_tag_state
 };
 
 static FilmProfile alephone1_4 = {
@@ -74,6 +75,7 @@ static FilmProfile alephone1_4 = {
 	true,  // m1_teleport_without_delay
 	true,  // better_terminal_word_wrap
 	true,  // lua_monster_killed_trigger_fix
+	false, // chip_insertion_ignores_tag_state
 };
 
 
@@ -112,6 +114,7 @@ static FilmProfile alephone1_3 = {
 	true, // m1_teleport_without_delay
 	false, // better_terminal_word_wrap
 	false, // lua_monster_killed_trigger_fix
+	false, // chip_insertion_ignores_tag_state
 };
 
 static FilmProfile alephone1_2 = {
@@ -149,6 +152,7 @@ static FilmProfile alephone1_2 = {
 	false, // m1_teleport_without_delay
 	false, // better_terminal_word_wrap
 	false, // lua_monster_killed_trigger_fix
+	false, // chip_insertion_ignores_tag_state
 };
 
 static FilmProfile alephone1_1 = {
@@ -186,6 +190,7 @@ static FilmProfile alephone1_1 = {
 	false, // m1_teleport_without_delay
 	false, // better_terminal_word_wrap
 	false, // lua_monster_killed_trigger_fix
+	false, // chip_insertion_ignores_tag_state
 };
 
 static FilmProfile alephone1_0 = {
@@ -223,6 +228,7 @@ static FilmProfile alephone1_0 = {
 	false, // m1_teleport_without_delay
 	false, // better_terminal_word_wrap
 	false, // lua_monster_killed_trigger_fix
+	false, // chip_insertion_ignores_tag_state
 };
 
 static FilmProfile marathon2 = {
@@ -260,6 +266,7 @@ static FilmProfile marathon2 = {
 	false, // m1_teleport_without_delay
 	true,  // better_terminal_word_wrap
 	false, // lua_monster_killed_trigger_fix
+	false, // chip_insertion_ignores_tag_state
 };
 
 static FilmProfile marathon_infinity = {
@@ -297,6 +304,7 @@ static FilmProfile marathon_infinity = {
 	false, // m1_teleport_without_delay
 	true,  // better_terminal_word_wrap
 	false, // lua_monster_killed_trigger_fix
+	false, // chip_insertion_ignores_tag_state
 };
 
 FilmProfile film_profile = alephone1_7;

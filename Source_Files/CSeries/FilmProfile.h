@@ -106,6 +106,7 @@ struct FilmProfile
 	bool lua_monster_killed_trigger_fix;
 
 	// Aleph One 1.7 fixes
+	bool chip_insertion_ignores_tag_state; // always toggle when using a chip
 };
 
 extern FilmProfile film_profile;
