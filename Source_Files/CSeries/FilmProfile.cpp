@@ -299,7 +299,7 @@ static FilmProfile marathon_infinity = {
 	false, // lua_monster_killed_trigger_fix
 };
 
-FilmProfile film_profile = alephone1_4;
+FilmProfile film_profile = alephone1_7;
 
 extern void LoadBaseMMLScripts();
 extern void ResetAllMMLValues();
