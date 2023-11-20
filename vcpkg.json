@@ -72,7 +72,8 @@
    "overrides":[
       {
          "name":"ffmpeg",
-         "version":"5.0.2"
+         "version":"5.0.2",
+         "port-version":3
       }
    ],
    "builtin-baseline":"2c356da17069ed4ce4d793d03a60bf87b3e5cf2a"
