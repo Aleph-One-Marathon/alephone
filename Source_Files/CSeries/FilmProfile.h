@@ -111,6 +111,7 @@ struct FilmProfile
 	bool fix_destroy_scenery_random_frame;
 	bool m1_reload_sound;		// play the reload sound on the key frame
 	bool m1_landscape_effects;	// projectiles detonate on M1 landscapes
+	bool m1_bce_pickup;	 // you can pick up another BCE if you already have one
 };
 
 extern FilmProfile film_profile;
