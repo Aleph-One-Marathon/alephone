@@ -2554,7 +2554,7 @@ static void controls_dialog(void *arg)
 	};
 
 	w_select *run_w = new w_select(input_preferences->modifiers & _inputmod_run_key_toggle ? 2 : input_preferences->modifiers & _inputmod_interchange_swim_sink ? 1 : 0, run_option_labels);
-	move_options->dual_add(run_w->label("Run/Swim"), d);
+	move_options->dual_add(run_w->label("Run/Swim Behavior"), d);
 	move_options->dual_add(run_w, d);
 
 	w_select *swim_w = new w_select(input_preferences->modifiers & _inputmod_interchange_swim_sink ? 1 : 0, swim_option_labels);
@@ -2577,6 +2577,9 @@ static void controls_dialog(void *arg)
 	run_w->set_selection_changed_callback(update_swim_w);
 
 	move->add(move_options, true);
+	move->add(new w_spacer(), true);
+	move->dual_add(new w_static_text("Double-tap Run/Walk to activate control panels and doors"), d);
+	move->dual_add(new w_static_text("Double-tap Move -> Look to center vertical view"), d);
 
 	vertical_placer *look = new vertical_placer();
 	table_placer *look_table = new table_placer(4, get_theme_space(ITEM_WIDGET), true);
