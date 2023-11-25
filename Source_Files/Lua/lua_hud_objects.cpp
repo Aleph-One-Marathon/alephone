@@ -2143,6 +2143,12 @@ static int Lua_HUDPlayer_Get_Texture_Palette(lua_State *L)
     return 1;
 }
 
+static int Lua_HUDPlayer_Get_Run_Key(lua_State* L)
+{
+	lua_pushboolean(L, current_player->run_key);
+	return 1;
+}
+
 const luaL_Reg Lua_HUDPlayer_Get[] = {
 {"color", Lua_HUDPlayer_Get_Color},
 {"dead", Lua_HUDPlayer_Get_Dead},
@@ -2165,6 +2171,7 @@ const luaL_Reg Lua_HUDPlayer_Get[] = {
 {"zoom_active", Lua_HUDPlayer_Get_Zoom},
 {"texture_palette", Lua_HUDPlayer_Get_Texture_Palette},
 {"respawn_duration", Lua_HUDPlayer_Get_Respawn_Duration},
+{"run_key", Lua_HUDPlayer_Get_Run_Key},
 {0, 0}
 };
 

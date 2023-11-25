@@ -684,6 +684,8 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 			action_flags= 0;
 		}
 		
+		player->run_key = action_flags & _run_dont_walk;
+		
 		bool IsSwimming = TEST_FLAG(player->variables.flags,_HEAD_BELOW_MEDIA_BIT) && player_settings.CanSwim;
 
 		// if we’ve got the ball we can’t run (that sucks)
@@ -701,7 +703,7 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 		
 		// if our head is under media, we can’t run (that sucks, too)
 		if (IsSwimming && (action_flags&_run_dont_walk)) action_flags&= ~_run_dont_walk, action_flags|= _swim;
-		
+
 		update_player_physics_variables(player_index, action_flags, inPredictive);
 
 		if(!inPredictive)

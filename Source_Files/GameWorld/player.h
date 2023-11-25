@@ -419,6 +419,8 @@ struct player_data
 	uint8_t hotkey_sequence;    // not serialized, used to decode hotkey
 	int16_t hotkey; 			// not serialized, used to store hotkey
 
+	bool run_key;				// not serialized, used by HUD
+
 	// ZZZ: since we don't put this structure directly into files or network communications,
 	// there ought? to be no reason for the padding
 //	int16 unused[256];

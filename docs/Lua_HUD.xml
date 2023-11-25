@@ -622,10 +622,6 @@ end
         <description>amount of suit energy player has (150 is normal red health)</description>
         <type>number</type>
       </variable>
-      <variable name="microphone_active">
-        <description>true if netmic is on</description>
-        <type>boolean</type>
-      </variable>
       <subtable name="inventory_sections">
         <variable name="current">
           <description>which section of the inventory to display</description>
@@ -725,6 +721,9 @@ end
         <note>nil until player is completely dead</note>
         <type>number</type>
       </variable>
+	  <variable name="run_key" version="git">
+		<description>whether the run key is down</description>
+	  </variable>
       <variable name="team">
         <description>player's team (pants color)</description>
         <type>number</type>
