@@ -131,6 +131,7 @@ static int Lua_Action_Flags_Set_Microphone(lua_State *L)
 
 const luaL_Reg Lua_Action_Flags_Get[] = {
 	{"action_trigger", Lua_Action_Flags_Get_t<_action_trigger_state>},
+	{"aux_trigger", Lua_Action_Flags_Get_t<_microphone_button>},
 	{"cycle_weapons_backward", Lua_Action_Flags_Get_t<_cycle_weapons_backward>},
 	{"cycle_weapons_forward", Lua_Action_Flags_Get_t<_cycle_weapons_forward>},
 	{"left_trigger", Lua_Action_Flags_Get_t<_left_trigger_state>},
@@ -142,6 +143,7 @@ const luaL_Reg Lua_Action_Flags_Get[] = {
 
 const luaL_Reg Lua_Action_Flags_Set[] = {
 	{"action_trigger", Lua_Action_Flags_Set_t<_action_trigger_state>},
+	{"aux_trigger", Lua_Action_Flags_Set_t<_microphone_button>},
 	{"cycle_weapons_backward", Lua_Action_Flags_Set_t<_cycle_weapons_backward>},
 	{"cycle_weapons_forward", Lua_Action_Flags_Set_t<_cycle_weapons_forward>},
 	{"left_trigger", Lua_Action_Flags_Set_t<_left_trigger_state>},

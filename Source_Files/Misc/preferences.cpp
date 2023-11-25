@@ -1722,7 +1722,7 @@ static const char *action_name[NUM_KEYS] = {
 	"Glance Left", "Glance Right", "Look Up", "Look Down", "Recenter View",
 	"Previous Weapon", "Next Weapon", "Trigger", "2nd Trigger",
 	"Turn -> Sidestep", "Run/Swim", "Move -> Look",
-	"Action", "Auto Map", "Microphone"
+	"Action", "Auto Map", "Aux Trigger"
 };
 
 static key_binding_map default_key_bindings = {

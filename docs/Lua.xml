@@ -1314,6 +1314,10 @@
 		  <type>boolean</type>
 		  <note>latched</note>
 		</variable>
+		<variable name="aux_trigger" version="git">
+		  <description>formerly microphone button; now dedicated to Lua scripts</description>
+		  <type>boolean</type>
+		</variable>
 		<variable name="cycle_weapons_forward">
 		  <description>switches to next weapon</description>
 		  <type>boolean</type>
@@ -1327,11 +1331,6 @@
 		<variable name="left_trigger">
 		  <description>fires primary trigger</description>
 		  <type>boolean</type>
-		</variable>
-		<variable name="microphone_button">
-		  <description>activates the net mic</description>
-		  <type>boolean</type>
-		  <note>can not be set to true; can be set to false</note>
 		</variable>
 		<variable name="right_trigger">
 		  <description>fires secondary trigger</description>
