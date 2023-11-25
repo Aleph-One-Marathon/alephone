@@ -169,7 +169,8 @@ enum {
 	_inputmod_dont_switch_to_new_weapon = 0x0004,
 	_inputmod_invert_mouse = 0x0008,
 	_inputmod_use_button_sounds = 0x0010,
-	_inputmod_dont_auto_recenter = 0x0020   // ZZZ addition
+	_inputmod_dont_auto_recenter = 0x0020,   // ZZZ addition
+	_inputmod_run_key_toggle = 0x0040,
 };
 
 // shell keys
