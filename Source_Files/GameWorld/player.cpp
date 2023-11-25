@@ -1080,6 +1080,12 @@ bool legal_player_powerup(
 	struct player_data *player= get_player_data(player_index);
 	bool legal= true;
 
+	if ((static_world->environment_flags & _environment_m1_weapons)
+		&& film_profile.m1_bce_pickup)
+	{
+		return true;
+	}
+
 	if (item_index == player_powerups.Powerup_Invincibility)
 	{
 		if (player->invincibility_duration) legal= false;

@@ -3143,11 +3143,20 @@ static void calculate_ticks_from_shapes(
 				definition->reloading_shape));
 			// Skip over if the sequence is nonexistent
 			if(!high_level_data) continue;
-	
+
 			total_ticks= high_level_data->ticks_per_frame*high_level_data->frames_per_view;
 			definition->await_reload_ticks= 0;
-			definition->loading_ticks= high_level_data->ticks_per_frame*(high_level_data->key_frame+1)
-				- definition->await_reload_ticks;
+			if (definition->flags & _weapon_is_marathon_1 &&
+				film_profile.m1_reload_sound)
+			{
+				definition->loading_ticks= high_level_data->ticks_per_frame*(high_level_data->key_frame)
+					- definition->await_reload_ticks;
+			}
+			else
+			{
+				definition->loading_ticks= high_level_data->ticks_per_frame*(high_level_data->key_frame+1)
+					- definition->await_reload_ticks;
+			}
 			definition->finish_loading_ticks= total_ticks - definition->loading_ticks 
 				- definition->await_reload_ticks;
 		} else {

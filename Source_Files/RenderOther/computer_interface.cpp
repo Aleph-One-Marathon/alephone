@@ -1717,6 +1717,12 @@ static void goto_terminal_group(
 				terminal_data->maximum_line= count_total_lines(get_text_base(terminal_text),
 					RECTANGLE_WIDTH(&text_bounds), current_group->start_index, 
 					current_group->start_index+current_group->length);
+
+				if (film_profile.page_up_past_full_width_term_pict &&
+					terminal_data->maximum_line == 0)
+				{
+					terminal_data->maximum_line = 1;
+				}
 			}
 			break;
 			
