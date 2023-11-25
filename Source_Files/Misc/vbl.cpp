@@ -1208,25 +1208,6 @@ uint32 parse_keymap(void)
 	  special->persistence = FLOOR(special->persistence-1, 0);
       }
 
-      // if the user prefers to toggle run/swim, the flag becomes latched
-      if (input_preferences->modifiers & _inputmod_run_key_toggle)
-      {
-          static bool persistence = false;
-          if (flags & _run_dont_walk)
-          {
-              if (persistence)
-              {
-                  flags &= ~_run_dont_walk;
-              }
-
-              persistence = true;
-          }
-          else
-          {
-              persistence = false;
-          }
-      }
-
 	  if (!hotkey_sequence[0])
 	  {
 		  for (auto i = 0; i < NUMBER_OF_HOTKEYS; ++i)
@@ -1260,6 +1241,25 @@ uint32 parse_keymap(void)
       int joyflags = process_joystick_axes(flags, heartbeat_count);
       if (joyflags != flags) {
           flags = joyflags;
+      }
+
+      // if the user prefers to toggle run/swim, the flag becomes latched
+      if (input_preferences->modifiers & _inputmod_run_key_toggle)
+      {
+          static bool persistence = false;
+          if (flags & _run_dont_walk)
+          {
+              if (persistence)
+              {
+                  flags &= ~_run_dont_walk;
+              }
+
+              persistence = true;
+          }
+          else
+          {
+              persistence = false;
+          }
       }
 
       if (input_preferences->modifiers & _inputmod_run_key_toggle)
