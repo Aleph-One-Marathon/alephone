@@ -152,7 +152,6 @@ std::pair<bool, float> Music::Slot::ComputeFadingVolume()
 void Music::Slot::SetVolume(float volume)
 {
 	SetParameters(parameters.loop, volume);
-	if (musicPlayer) musicPlayer->UpdateParameters(parameters);
 }
 
 void Music::Slot::Pause()
@@ -172,6 +171,7 @@ bool Music::Slot::SetParameters(bool loop, float volume)
 {
 	parameters.loop = loop;
 	parameters.volume = std::max(std::min(volume, 1.f), 0.f);
+	if (musicPlayer) musicPlayer->UpdateParameters(parameters);
 	return true;
 }
 
@@ -185,7 +185,7 @@ bool Music::LoadLevelMusic()
 {
 	FileSpecifier* level_song_file = GetLevelMusic();
 	auto& slot = music_slots[MusicSlot::Level];
-	return slot.Open(level_song_file) && slot.SetParameters(false, 1);
+	return slot.Open(level_song_file) && slot.SetParameters(playlist.size() == 1, 1);
 }
 
 void Music::SeedLevelMusic()
@@ -214,6 +214,23 @@ void Music::SetClassicLevelMusic(short song_index)
     
     PushBackLevelMusic(file);
     marathon_1_song_index = song_index;
+}
+
+void Music::ClearLevelMusic()
+{
+	playlist.clear(); 
+	marathon_1_song_index = NONE; 
+	music_slots[MusicSlot::Level].SetParameters(true, 1);
+}
+
+void Music::PushBackLevelMusic(const FileSpecifier& file)
+{
+	playlist.push_back(file);
+
+	if (playlist.size() > 1)
+	{
+		music_slots[MusicSlot::Level].SetParameters(false, 1);
+	}
 }
 
 FileSpecifier* Music::GetLevelMusic()

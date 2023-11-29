@@ -61,9 +61,8 @@ public:
 	float GetVolume(int index) const { return music_slots[index].GetVolume(); }
 	void SetVolume(int index, float volume) { music_slots[index].SetVolume(volume); }
 	void StopLevelMusic() { music_slots[MusicSlot::Level].Close(); }
-	void ClearLevelMusic() { playlist.clear(); marathon_1_song_index = NONE; }
-	void PushBackLevelMusic(FileSpecifier& file) { playlist.push_back(file); }
-	bool IsLevelMusicActive() { return (!playlist.empty()); }
+	void ClearLevelMusic();
+	void PushBackLevelMusic(const FileSpecifier& file);
 	void LevelMusicRandom(bool fRandom) { random_order = fRandom; }
 	void SeedLevelMusic();
 	void SetClassicLevelMusic(short song_index);
