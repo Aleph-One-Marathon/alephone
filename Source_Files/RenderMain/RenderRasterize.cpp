@@ -209,6 +209,10 @@ void RenderRasterizerClass::render_node(
 					surface.length= line->length;
 					store_endpoint(get_endpoint_data(polygon->endpoint_indexes[i]), surface.p0);
 					store_endpoint(get_endpoint_data(polygon->endpoint_indexes[WRAP_HIGH(i, polygon->vertex_count-1)]), surface.p1);
+					
+					if (surface.p0 == surface.p1)
+						continue; // skip sides that are degenerate, as produced by store_endpoint()
+					
 					surface.ambient_delta= side->ambient_delta;
 					
 					// LP change: indicate in all cases whether the void is on the other side;
