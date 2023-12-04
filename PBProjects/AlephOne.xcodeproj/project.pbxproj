@@ -238,30 +238,16 @@
 		27FF26611B6F170600DA0A19 /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
 		27FF26621B6F170600DA0A19 /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
 		27FF26631B6F1E0700DA0A19 /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
-		5135B6C72863A03000BA51D2 /* MetalANGLE.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		5142EDB528636AAB00DC8E34 /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */; };
-		5142EDB628636AAB00DC8E34 /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */; };
-		5142EDB728636AAB00DC8E34 /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */; };
-		5142EDB828636AAB00DC8E34 /* MetalANGLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */; };
-		5142EDBA28636B6B00DC8E34 /* MetalANGLE.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		5142EDBE286372F200DC8E34 /* MetalANGLE.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		5142EDC02863730B00DC8E34 /* MetalANGLE.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		518271032862BFBE005E6684 /* MacOSHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 518271022862BFBE005E6684 /* MacOSHelper.mm */; };
-		518271042862BFBE005E6684 /* MacOSHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 518271022862BFBE005E6684 /* MacOSHelper.mm */; };
-		518271052862BFBE005E6684 /* MacOSHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 518271022862BFBE005E6684 /* MacOSHelper.mm */; };
-		518271062862BFBE005E6684 /* MacOSHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 518271022862BFBE005E6684 /* MacOSHelper.mm */; };
-		518271082862BFD2005E6684 /* AccelerationPlatform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 518271072862BFD2005E6684 /* AccelerationPlatform.cpp */; };
-		518271092862BFD2005E6684 /* AccelerationPlatform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 518271072862BFD2005E6684 /* AccelerationPlatform.cpp */; };
-		5182710A2862BFD2005E6684 /* AccelerationPlatform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 518271072862BFD2005E6684 /* AccelerationPlatform.cpp */; };
-		5182710B2862BFD2005E6684 /* AccelerationPlatform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 518271072862BFD2005E6684 /* AccelerationPlatform.cpp */; };
-		5182710D2862C003005E6684 /* AccelerationPlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 5182710C2862C003005E6684 /* AccelerationPlatform.h */; };
-		5182710E2862C003005E6684 /* AccelerationPlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 5182710C2862C003005E6684 /* AccelerationPlatform.h */; };
-		5182710F2862C003005E6684 /* AccelerationPlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 5182710C2862C003005E6684 /* AccelerationPlatform.h */; };
-		518271102862C003005E6684 /* AccelerationPlatform.h in Headers */ = {isa = PBXBuildFile; fileRef = 5182710C2862C003005E6684 /* AccelerationPlatform.h */; };
-		518271122862C00D005E6684 /* MacOSHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 518271112862C00D005E6684 /* MacOSHelper.h */; };
-		518271132862C00D005E6684 /* MacOSHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 518271112862C00D005E6684 /* MacOSHelper.h */; };
-		518271142862C00D005E6684 /* MacOSHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 518271112862C00D005E6684 /* MacOSHelper.h */; };
-		518271152862C00D005E6684 /* MacOSHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 518271112862C00D005E6684 /* MacOSHelper.h */; };
+		514E2AB12B1E5295004C7EF2 /* libEGL.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 514E2AAF2B1E5295004C7EF2 /* libEGL.dylib */; };
+		514E2AB22B1E5295004C7EF2 /* libEGL.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 514E2AAF2B1E5295004C7EF2 /* libEGL.dylib */; };
+		514E2AB32B1E5295004C7EF2 /* libEGL.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 514E2AAF2B1E5295004C7EF2 /* libEGL.dylib */; };
+		514E2AB42B1E5295004C7EF2 /* libEGL.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 514E2AAF2B1E5295004C7EF2 /* libEGL.dylib */; };
+		514E2AB52B1E5295004C7EF2 /* libGLESv2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 514E2AB02B1E5295004C7EF2 /* libGLESv2.dylib */; };
+		514E2AB62B1E5295004C7EF2 /* libGLESv2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 514E2AB02B1E5295004C7EF2 /* libGLESv2.dylib */; };
+		514E2AB72B1E5295004C7EF2 /* libGLESv2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 514E2AB02B1E5295004C7EF2 /* libGLESv2.dylib */; };
+		514E2AB82B1E5295004C7EF2 /* libGLESv2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 514E2AB02B1E5295004C7EF2 /* libGLESv2.dylib */; };
+		514E2AB92B1E52A7004C7EF2 /* libEGL.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 514E2AAF2B1E5295004C7EF2 /* libEGL.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		514E2ABA2B1E52A7004C7EF2 /* libGLESv2.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 514E2AB02B1E5295004C7EF2 /* libGLESv2.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		518271172862C03E005E6684 /* DrawCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 518271162862C03E005E6684 /* DrawCache.cpp */; };
 		518271182862C03E005E6684 /* DrawCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 518271162862C03E005E6684 /* DrawCache.cpp */; };
 		518271192862C03E005E6684 /* DrawCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 518271162862C03E005E6684 /* DrawCache.cpp */; };
@@ -1896,7 +1882,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				5135B6C72863A03000BA51D2 /* MetalANGLE.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1906,7 +1891,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				5142EDBA28636B6B00DC8E34 /* MetalANGLE.framework in CopyFiles */,
+				514E2AB92B1E52A7004C7EF2 /* libEGL.dylib in CopyFiles */,
+				514E2ABA2B1E52A7004C7EF2 /* libGLESv2.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1916,7 +1902,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				5142EDBE286372F200DC8E34 /* MetalANGLE.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1926,7 +1911,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				5142EDC02863730B00DC8E34 /* MetalANGLE.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2038,11 +2022,8 @@
 		3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Texture_Def.h; sourceTree = "<group>"; };
 		3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Model_Def.cpp; sourceTree = "<group>"; };
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
-		5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalANGLE.framework; path = ../../../../../Library/Frameworks/MetalANGLE.framework; sourceTree = "<group>"; };
-		518271022862BFBE005E6684 /* MacOSHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MacOSHelper.mm; sourceTree = "<group>"; };
-		518271072862BFD2005E6684 /* AccelerationPlatform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AccelerationPlatform.cpp; sourceTree = "<group>"; };
-		5182710C2862C003005E6684 /* AccelerationPlatform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AccelerationPlatform.h; sourceTree = "<group>"; };
-		518271112862C00D005E6684 /* MacOSHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MacOSHelper.h; sourceTree = "<group>"; };
+		514E2AAF2B1E5295004C7EF2 /* libEGL.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libEGL.dylib; path = ../../vcpkg/merged_dylibs/libEGL.dylib; sourceTree = "<group>"; };
+		514E2AB02B1E5295004C7EF2 /* libGLESv2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libGLESv2.dylib; path = ../../vcpkg/merged_dylibs/libGLESv2.dylib; sourceTree = "<group>"; };
 		518271162862C03E005E6684 /* DrawCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DrawCache.cpp; sourceTree = "<group>"; };
 		5182711B2862C047005E6684 /* MatrixStack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MatrixStack.cpp; sourceTree = "<group>"; };
 		518271202862C053005E6684 /* DrawCache.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DrawCache.hpp; sourceTree = "<group>"; };
@@ -2485,15 +2466,16 @@
 				AE1F1B9F2662C6A000E6390E /* Cocoa.framework in Frameworks */,
 				AE1F1BAE2662C6B200E6390E /* libcurl.tbd in Frameworks */,
 				AE1F1B962662C69600E6390E /* AudioToolbox.framework in Frameworks */,
+				514E2AB72B1E5295004C7EF2 /* libGLESv2.dylib in Frameworks */,
 				AE1F1BBA2662C6C000E6390E /* Security.framework in Frameworks */,
 				518271322862C1AB005E6684 /* Metal.framework in Frameworks */,
 				AE1F1BB72662C6BC00E6390E /* OpenGL.framework in Frameworks */,
 				518271372862C1AE005E6684 /* MetalKit.framework in Frameworks */,
 				AE1F1BAB2662C6AE00E6390E /* IOKit.framework in Frameworks */,
-				5142EDB728636AAB00DC8E34 /* MetalANGLE.framework in Frameworks */,
 				AE1F1B9C2662C69D00E6390E /* Carbon.framework in Frameworks */,
 				AE1F1BA22662C6A300E6390E /* CoreAudio.framework in Frameworks */,
 				AE1F1BB12662C6B500E6390E /* libexpat.tbd in Frameworks */,
+				514E2AB32B1E5295004C7EF2 /* libEGL.dylib in Frameworks */,
 				AE1F1BA82662C6AB00E6390E /* ForceFeedback.framework in Frameworks */,
 				AE1F1B992662C69A00E6390E /* AudioUnit.framework in Frameworks */,
 			);
@@ -2508,15 +2490,16 @@
 				AE1F1BA02662C6A000E6390E /* Cocoa.framework in Frameworks */,
 				AE1F1BAF2662C6B200E6390E /* libcurl.tbd in Frameworks */,
 				AE1F1B972662C69600E6390E /* AudioToolbox.framework in Frameworks */,
+				514E2AB82B1E5295004C7EF2 /* libGLESv2.dylib in Frameworks */,
 				AE1F1BBB2662C6C000E6390E /* Security.framework in Frameworks */,
 				518271332862C1AB005E6684 /* Metal.framework in Frameworks */,
 				AE1F1BB82662C6BD00E6390E /* OpenGL.framework in Frameworks */,
 				518271382862C1AE005E6684 /* MetalKit.framework in Frameworks */,
 				AE1F1BAC2662C6AF00E6390E /* IOKit.framework in Frameworks */,
-				5142EDB828636AAB00DC8E34 /* MetalANGLE.framework in Frameworks */,
 				AE1F1B9D2662C69D00E6390E /* Carbon.framework in Frameworks */,
 				AE1F1BA32662C6A300E6390E /* CoreAudio.framework in Frameworks */,
 				AE1F1BB22662C6B600E6390E /* libexpat.tbd in Frameworks */,
+				514E2AB42B1E5295004C7EF2 /* libEGL.dylib in Frameworks */,
 				AE1F1BA92662C6AB00E6390E /* ForceFeedback.framework in Frameworks */,
 				AE1F1B9A2662C69A00E6390E /* AudioUnit.framework in Frameworks */,
 			);
@@ -2531,15 +2514,16 @@
 				AE9975042661D63700DDD370 /* CoreMedia.framework in Frameworks */,
 				AE9975142661D91600DDD370 /* libcurl.tbd in Frameworks */,
 				AE9975162661D91D00DDD370 /* libz.tbd in Frameworks */,
+				514E2AB52B1E5295004C7EF2 /* libGLESv2.dylib in Frameworks */,
 				AE9975022661D50F00DDD370 /* ForceFeedback.framework in Frameworks */,
 				518271302862C1AB005E6684 /* Metal.framework in Frameworks */,
 				AE99750E2661D7F200DDD370 /* IOKit.framework in Frameworks */,
 				518271352862C1AE005E6684 /* MetalKit.framework in Frameworks */,
 				AE9975062661D66600DDD370 /* Security.framework in Frameworks */,
-				5142EDB528636AAB00DC8E34 /* MetalANGLE.framework in Frameworks */,
 				AE9975112661D82700DDD370 /* OpenGL.framework in Frameworks */,
 				AE9975132661D85000DDD370 /* Cocoa.framework in Frameworks */,
 				AE9975002661D4DD00DDD370 /* Carbon.framework in Frameworks */,
+				514E2AB12B1E5295004C7EF2 /* libEGL.dylib in Frameworks */,
 				AE9974FE2661D49E00DDD370 /* AudioToolbox.framework in Frameworks */,
 				AE99750A2661D6F400DDD370 /* AudioUnit.framework in Frameworks */,
 			);
@@ -2554,15 +2538,16 @@
 				AE1F1B9E2662C6A000E6390E /* Cocoa.framework in Frameworks */,
 				AE1F1BAD2662C6B100E6390E /* libcurl.tbd in Frameworks */,
 				AE1F1B952662C69500E6390E /* AudioToolbox.framework in Frameworks */,
+				514E2AB62B1E5295004C7EF2 /* libGLESv2.dylib in Frameworks */,
 				AE1F1BB92662C6BF00E6390E /* Security.framework in Frameworks */,
 				518271312862C1AB005E6684 /* Metal.framework in Frameworks */,
 				AE1F1BB62662C6BC00E6390E /* OpenGL.framework in Frameworks */,
 				518271362862C1AE005E6684 /* MetalKit.framework in Frameworks */,
 				AE1F1BAA2662C6AE00E6390E /* IOKit.framework in Frameworks */,
-				5142EDB628636AAB00DC8E34 /* MetalANGLE.framework in Frameworks */,
 				AE1F1B9B2662C69D00E6390E /* Carbon.framework in Frameworks */,
 				AE1F1BA12662C6A300E6390E /* CoreAudio.framework in Frameworks */,
 				AE1F1BB02662C6B500E6390E /* libexpat.tbd in Frameworks */,
+				514E2AB22B1E5295004C7EF2 /* libEGL.dylib in Frameworks */,
 				AE1F1BA72662C6AA00E6390E /* ForceFeedback.framework in Frameworks */,
 				AE1F1B982662C69900E6390E /* AudioUnit.framework in Frameworks */,
 			);
@@ -2611,6 +2596,7 @@
 				F52214490136C0C401000001 /* Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
+				514E2A962B1AA87C004C7EF2 /* Dynamic Libraries */,
 				AE9974FC2661D49E00DDD370 /* Frameworks */,
 			);
 			name = "SDL Application";
@@ -2679,6 +2665,15 @@
 			name = TCPMess;
 			path = ../Source_Files/TCPMess;
 			sourceTree = SOURCE_ROOT;
+		};
+		514E2A962B1AA87C004C7EF2 /* Dynamic Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				514E2AAF2B1E5295004C7EF2 /* libEGL.dylib */,
+				514E2AB02B1E5295004C7EF2 /* libGLESv2.dylib */,
+			);
+			path = "Dynamic Libraries";
+			sourceTree = "<group>";
 		};
 		AE0E4EC0141D144000AAA02F /* Marathon */ = {
 			isa = PBXGroup;
@@ -2775,7 +2770,6 @@
 		AE9974FC2661D49E00DDD370 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				5142EDB428636AAB00DC8E34 /* MetalANGLE.framework */,
 				5182712F2862C1AB005E6684 /* Metal.framework */,
 				518271342862C1AE005E6684 /* MetalKit.framework */,
 				AE9974FD2661D49E00DDD370 /* AudioToolbox.framework */,
@@ -3291,8 +3285,6 @@
 				F5CC93920240D85D01A80001 /* HUDRenderer_OGL.cpp */,
 				F5CC93930240D85D01A80001 /* HUDRenderer_SW.cpp */,
 				F5CC93940240D85D01A80001 /* images.cpp */,
-				518271072862BFD2005E6684 /* AccelerationPlatform.cpp */,
-				518271022862BFBE005E6684 /* MacOSHelper.mm */,
 				F5CC93950240D85D01A80001 /* motion_sensor.cpp */,
 				AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */,
 				AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */,
@@ -3324,8 +3316,6 @@
 				F5CC93760240D85D01A80001 /* HUDRenderer_OGL.h */,
 				F5CC93770240D85D01A80001 /* HUDRenderer_SW.h */,
 				F5CC93780240D85D01A80001 /* images.h */,
-				5182710C2862C003005E6684 /* AccelerationPlatform.h */,
-				518271112862C00D005E6684 /* MacOSHelper.h */,
 				F5CC93790240D85D01A80001 /* motion_sensor.h */,
 				F5CC937A0240D85D01A80001 /* overhead_map.h */,
 				F5CC937B0240D85D01A80001 /* OverheadMap_OGL.h */,
@@ -3525,7 +3515,6 @@
 				AE505B7D141D45E600915344 /* lightsource.h in Headers */,
 				AE505B7E141D45E600915344 /* map.h in Headers */,
 				276BED121A846FD900AE52F4 /* CourierPrimeBoldItalic.h in Headers */,
-				5182710F2862C003005E6684 /* AccelerationPlatform.h in Headers */,
 				27A6DB521B9CED1E003DA766 /* confpaths.h in Headers */,
 				AE505B7F141D45E600915344 /* media.h in Headers */,
 				AE505B80141D45E600915344 /* media_definitions.h in Headers */,
@@ -3604,7 +3593,6 @@
 				AE505BBA141D45E600915344 /* sound_definitions.h in Headers */,
 				C13C71E91B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
 				AE505BC1141D45E600915344 /* XML_LevelScript.h in Headers */,
-				518271142862C00D005E6684 /* MacOSHelper.h in Headers */,
 				AE505BC3141D45E600915344 /* XML_ParseTreeRoot.h in Headers */,
 				AE505BC6141D45E600915344 /* alephversion.h in Headers */,
 				AE505BC7141D45E600915344 /* Logging.h in Headers */,
@@ -3749,7 +3737,6 @@
 				AEB4A11D14296CAE00537AE7 /* lightsource.h in Headers */,
 				AEB4A11E14296CAE00537AE7 /* map.h in Headers */,
 				276BED131A846FD900AE52F4 /* CourierPrimeBoldItalic.h in Headers */,
-				518271102862C003005E6684 /* AccelerationPlatform.h in Headers */,
 				27A6DB531B9CED1E003DA766 /* confpaths.h in Headers */,
 				AEB4A11F14296CAE00537AE7 /* media.h in Headers */,
 				AEB4A12014296CAE00537AE7 /* media_definitions.h in Headers */,
@@ -3828,7 +3815,6 @@
 				AEB4A15A14296CAE00537AE7 /* sound_definitions.h in Headers */,
 				C13C71EA1B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
 				AEB4A16114296CAE00537AE7 /* XML_LevelScript.h in Headers */,
-				518271152862C00D005E6684 /* MacOSHelper.h in Headers */,
 				AEB4A16314296CAE00537AE7 /* XML_ParseTreeRoot.h in Headers */,
 				AEB4A16614296CAE00537AE7 /* alephversion.h in Headers */,
 				AEB4A16714296CAE00537AE7 /* Logging.h in Headers */,
@@ -3973,7 +3959,6 @@
 				AEC3C74F09AD68AC003258E4 /* lightsource.h in Headers */,
 				27A6DB501B9CED1E003DA766 /* confpaths.h in Headers */,
 				276BECFA1A846D2000AE52F4 /* network_dialog_widgets_sdl.h in Headers */,
-				5182710D2862C003005E6684 /* AccelerationPlatform.h in Headers */,
 				AEC3C75009AD68AC003258E4 /* map.h in Headers */,
 				AEC3C75109AD68AC003258E4 /* media.h in Headers */,
 				AEC3C75209AD68AC003258E4 /* media_definitions.h in Headers */,
@@ -4052,7 +4037,6 @@
 				AEC3C79309AD68AC003258E4 /* sound_definitions.h in Headers */,
 				AEC3C79B09AD68AC003258E4 /* XML_LevelScript.h in Headers */,
 				AEC3C79D09AD68AC003258E4 /* XML_ParseTreeRoot.h in Headers */,
-				518271122862C00D005E6684 /* MacOSHelper.h in Headers */,
 				C13C71E71B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
 				AEC3C7A009AD68AC003258E4 /* alephversion.h in Headers */,
 				AEC3C7A109AD68AC003258E4 /* Logging.h in Headers */,
@@ -4197,7 +4181,6 @@
 				AEFD862B13EB84CF00C1E687 /* lightsource.h in Headers */,
 				AEFD862C13EB84CF00C1E687 /* map.h in Headers */,
 				276BED111A846FD900AE52F4 /* CourierPrimeBoldItalic.h in Headers */,
-				5182710E2862C003005E6684 /* AccelerationPlatform.h in Headers */,
 				27A6DB511B9CED1E003DA766 /* confpaths.h in Headers */,
 				AEFD862D13EB84CF00C1E687 /* media.h in Headers */,
 				AEFD862E13EB84CF00C1E687 /* media_definitions.h in Headers */,
@@ -4276,7 +4259,6 @@
 				AEFD866813EB84CF00C1E687 /* sound_definitions.h in Headers */,
 				C13C71E81B3FB4C500F1188D /* DefaultStringSets.h in Headers */,
 				AEFD866F13EB84CF00C1E687 /* XML_LevelScript.h in Headers */,
-				518271132862C00D005E6684 /* MacOSHelper.h in Headers */,
 				AEFD867113EB84CF00C1E687 /* XML_ParseTreeRoot.h in Headers */,
 				AEFD867413EB84CF00C1E687 /* alephversion.h in Headers */,
 				AEFD867513EB84CF00C1E687 /* Logging.h in Headers */,
@@ -4708,7 +4690,6 @@
 				AE505C2A141D45E600915344 /* PlayerImage_sdl.cpp in Sources */,
 				AE505C2B141D45E600915344 /* thread_priority_sdl_macosx.cpp in Sources */,
 				AE505C2C141D45E600915344 /* network_data_formats.cpp in Sources */,
-				5182710A2862BFD2005E6684 /* AccelerationPlatform.cpp in Sources */,
 				AE505C2D141D45E600915344 /* network_dialog_widgets_sdl.cpp in Sources */,
 				AE505C2E141D45E600915344 /* SDL_netx.cpp in Sources */,
 				AE505C2F141D45E600915344 /* SSLP_limited.cpp in Sources */,
@@ -4788,7 +4769,6 @@
 				AE505C75141D45E600915344 /* TextStrings.cpp in Sources */,
 				AE505C76141D45E600915344 /* ViewControl.cpp in Sources */,
 				AE505C7D141D45E600915344 /* XML_LevelScript.cpp in Sources */,
-				518271052862BFBE005E6684 /* MacOSHelper.mm in Sources */,
 				27EFC4B61A7C933C00A95592 /* QuickSave.cpp in Sources */,
 				AE505C7F141D45E600915344 /* XML_MakeRoot.cpp in Sources */,
 				27EFC4C01A7D8CBF00A95592 /* sdl_resize.cpp in Sources */,
@@ -4940,7 +4920,6 @@
 				AEB4A1CB14296CAE00537AE7 /* PlayerImage_sdl.cpp in Sources */,
 				AEB4A1CC14296CAE00537AE7 /* thread_priority_sdl_macosx.cpp in Sources */,
 				AEB4A1CD14296CAE00537AE7 /* network_data_formats.cpp in Sources */,
-				5182710B2862BFD2005E6684 /* AccelerationPlatform.cpp in Sources */,
 				AEB4A1CE14296CAE00537AE7 /* network_dialog_widgets_sdl.cpp in Sources */,
 				AEB4A1CF14296CAE00537AE7 /* SDL_netx.cpp in Sources */,
 				AEB4A1D014296CAE00537AE7 /* SSLP_limited.cpp in Sources */,
@@ -5020,7 +4999,6 @@
 				AEB4A21614296CAE00537AE7 /* TextStrings.cpp in Sources */,
 				AEB4A21714296CAE00537AE7 /* ViewControl.cpp in Sources */,
 				AEB4A21E14296CAE00537AE7 /* XML_LevelScript.cpp in Sources */,
-				518271062862BFBE005E6684 /* MacOSHelper.mm in Sources */,
 				27EFC4B71A7C933D00A95592 /* QuickSave.cpp in Sources */,
 				AEB4A22014296CAE00537AE7 /* XML_MakeRoot.cpp in Sources */,
 				27EFC4C11A7D8CBF00A95592 /* sdl_resize.cpp in Sources */,
@@ -5172,7 +5150,6 @@
 				AEC3C7F109AD68AC003258E4 /* PlayerImage_sdl.cpp in Sources */,
 				AEC3C7F209AD68AC003258E4 /* thread_priority_sdl_macosx.cpp in Sources */,
 				AEC3C7F309AD68AC003258E4 /* network_data_formats.cpp in Sources */,
-				518271082862BFD2005E6684 /* AccelerationPlatform.cpp in Sources */,
 				276D4E771A2E734E00C16CF5 /* QuickSave.cpp in Sources */,
 				AEC3C7F409AD68AC003258E4 /* network_dialog_widgets_sdl.cpp in Sources */,
 				AEC3C7F509AD68AC003258E4 /* SDL_netx.cpp in Sources */,
@@ -5252,7 +5229,6 @@
 				AEC3C84009AD68AC003258E4 /* TextLayoutHelper.cpp in Sources */,
 				AEC3C84109AD68AC003258E4 /* TextStrings.cpp in Sources */,
 				AEC3C84209AD68AC003258E4 /* ViewControl.cpp in Sources */,
-				518271032862BFBE005E6684 /* MacOSHelper.mm in Sources */,
 				AEC3C84A09AD68AC003258E4 /* XML_LevelScript.cpp in Sources */,
 				AEC3C84C09AD68AC003258E4 /* XML_MakeRoot.cpp in Sources */,
 				27EFC4BE1A7D8CBF00A95592 /* sdl_resize.cpp in Sources */,
@@ -5404,7 +5380,6 @@
 				AEFD86D713EB84CF00C1E687 /* PlayerImage_sdl.cpp in Sources */,
 				AEFD86D813EB84CF00C1E687 /* thread_priority_sdl_macosx.cpp in Sources */,
 				AEFD86D913EB84CF00C1E687 /* network_data_formats.cpp in Sources */,
-				518271092862BFD2005E6684 /* AccelerationPlatform.cpp in Sources */,
 				AEFD86DA13EB84CF00C1E687 /* network_dialog_widgets_sdl.cpp in Sources */,
 				AEFD86DB13EB84CF00C1E687 /* SDL_netx.cpp in Sources */,
 				AEFD86DC13EB84CF00C1E687 /* SSLP_limited.cpp in Sources */,
@@ -5484,7 +5459,6 @@
 				AEFD872213EB84CF00C1E687 /* TextStrings.cpp in Sources */,
 				AEFD872313EB84CF00C1E687 /* ViewControl.cpp in Sources */,
 				AEFD872A13EB84CF00C1E687 /* XML_LevelScript.cpp in Sources */,
-				518271042862BFBE005E6684 /* MacOSHelper.mm in Sources */,
 				27EFC4B51A7C933C00A95592 /* QuickSave.cpp in Sources */,
 				AEFD872C13EB84CF00C1E687 /* XML_MakeRoot.cpp in Sources */,
 				27EFC4BF1A7D8CBF00A95592 /* sdl_resize.cpp in Sources */,
@@ -5660,6 +5634,14 @@
 					"$(LD_RUNPATH_SEARCH_PATHS_$(IS_MACCATALYST))",
 					"@executable_path/../Frameworks",
 				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = (
+					"$(SRCROOT)/../vcpkg/merged_dylibs",
+					"$(SRCROOT)/../vcpkg/installed-arm64-osx/arm64-osx/lib",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = (
+					"$(SRCROOT)/../vcpkg/merged_dylibs",
+					"$(SRCROOT)/../vcpkg/installed-x64-osx/x64-osx/lib",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
 				PRODUCT_NAME = "Aleph One";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -5809,6 +5791,14 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(LD_RUNPATH_SEARCH_PATHS_$(IS_MACCATALYST))",
 					"@executable_path/../Frameworks",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = (
+					"$(SRCROOT)/../vcpkg/merged_dylibs",
+					"$(SRCROOT)/../vcpkg/installed-arm64-osx/arm64-osx/lib",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = (
+					"$(SRCROOT)/../vcpkg/merged_dylibs",
+					"$(SRCROOT)/../vcpkg/installed-x64-osx/x64-osx/lib",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOne;
 				PRODUCT_NAME = "Aleph One";

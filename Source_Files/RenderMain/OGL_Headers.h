@@ -27,7 +27,27 @@
 #include <glad/glad.h>
 #else
 
+#ifdef __APPLE__
+//Below is cribbed from angle_gl.h, which vcpkg for some reason isn't grabbing as expected. Normally you would just need: #include <angle_gl.h>
+//In the future, we will just probqbly use something more like #include <SDL_opengles2.h>
+    #include "GLES/gl.h"
+    #include "GLES/glext.h"
+    #include "GLES2/gl2.h"
+    #include "GLES2/gl2ext.h"
+    #include "GLES3/gl3.h"
+    #include "GLES3/gl31.h"
+    #include "GLES3/gl32.h"
+
+    // TODO(http://anglebug.com/3730): Autogenerate these enums from gl.xml
+    // HACK: Defines for queries that are not in GLES
+    #define GL_CONTEXT_PROFILE_MASK 0x9126
+    #define GL_CONTEXT_COMPATIBILITY_PROFILE_BIT 0x00000002
+    #define GL_CONTEXT_CORE_PROFILE_BIT 0x00000001
+#endif
+
+#ifndef __APPLE__
 #include <SDL2/SDL_opengles2.h>
+#endif
 
 #endif
 

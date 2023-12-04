@@ -419,7 +419,7 @@ void DrawCache::drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLf
     drawBuffers[b].verticesFilled += vertex_count;
     
     //For debugging, it helps to draw right away. Slower, though.
-    //Normnally this should be commented out.
+    //Normally this should be commented out.
     //drawAndResetBuffer(b);
 }
 
@@ -618,7 +618,7 @@ void DrawCache::resetStats() {
     if (drawCallsMade > 0) {
         bufferEfficiency = (float)bufferRequests / (float)drawCallsMade;
     }
-    //printf("Drawbuffer Efficiency: %f (%i total draw calls). DrawBuffers filled to max: %i. Flushes caused by buffer depletion: %i\n", bufferEfficiency, drawCallsMade, drawBuffersFilledToMax, allBuffersUsed);
+    //printf("Drawbuffer Efficiency: %f (%i requests vs %i real draw calls). DrawBuffers filled to max: %i. Flushes caused by buffer depletion: %i\n", bufferEfficiency, bufferRequests, drawCallsMade, drawBuffersFilledToMax, allBuffersUsed);
 
     bufferRequests = 0;
     drawCallsMade = 0;

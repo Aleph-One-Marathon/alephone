@@ -38,7 +38,6 @@
 #include "OGL_Blitter.h"
 #include "OGL_Faders.h"
 #include "MatrixStack.hpp"
-#include "AccelerationPlatform.h"
 #endif
 
 #include "world.h"
@@ -888,7 +887,21 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	
 	if (need_mode_change(sdl_width, sdl_height, vmode_width, vmode_height, depth, nogl)) {
 #ifdef HAVE_OPENGL
-           //Just for testing ANGLE
+
+#ifdef        __APPLE__
+        SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+        
+        // Explicitly set channel depths, otherwise we might get some < 8
+        SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+#endif
+
 #ifndef __APPLE__
 	if (!nogl && screen_mode.acceleration != _no_acceleration) {
 		passed_shader = false;
@@ -896,9 +909,11 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16); //was SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+		//SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+        
 #ifdef _WIN32
 		SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
 		SDL_SetHint(SDL_HINT_VIDEO_WIN_D3DCOMPILER, "none");
@@ -941,7 +956,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 								   SDL_WINDOWPOS_CENTERED,
 								   SDL_WINDOWPOS_CENTERED,
 								   sdl_width, sdl_height,
-								   flags);
+                                   flags);
 
 #ifdef _WIN32
 	if (main_screen == NULL && !nogl && screen_mode.acceleration != _no_acceleration) {
@@ -959,7 +974,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 #ifdef HAVE_OPENGL
 	bool context_created = false;
     
-    #ifndef USE_ALTERNATE_ACCELERATION
+    
 	if (main_screen == NULL && !nogl && screen_mode.acceleration != _no_acceleration && Get_OGL_ConfigureData().Multisamples > 0) {
 		// retry with multisampling off
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
@@ -972,19 +987,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		if (main_screen)
 			failed_multisamples = Get_OGL_ConfigureData().Multisamples;
 	}
-    #endif
-        
-        
-        #ifdef USE_ALTERNATE_ACCELERATION
-        //Alternate injection step to gank acceleration responsibilities away from SDL.
-        void* layer = injectAccelerationContext(main_screen);
-        
-        if(layer) {
-            context_created = true;
-        } else {
-            logWarning("WARNING: Failed to inject ANGLE layer\n");
-        }
-        #endif
+    
 #endif
 	if (main_screen == NULL && !nogl && screen_mode.acceleration != _no_acceleration) {
 		fprintf(stderr, "WARNING: Failed to initialize OpenGL with 24 bit depth\n");
@@ -1003,15 +1006,19 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	{
 		// see if we can actually run shaders
 		if (!context_created) {
-			SDL_GL_CreateContext(main_screen);
-			context_created = true;
+            
+            if(!SDL_GL_CreateContext(main_screen)) {
+                logWarning("Context could not be created!");
+            } else {
+                context_created = true;
+            }
 		}
 
 #ifdef _WIN32
 		// Load GLES extensions using glad
 		gladLoadGLES2Loader((GLADloadproc)SDL_GL_GetProcAddress);
 #endif
-        //Just for testing ANGLE
+                
 		/*if (!OGL_CheckExtension("GL_ARB_vertex_shader") || !OGL_CheckExtension("GL_ARB_fragment_shader") || !OGL_CheckExtension("GL_ARB_shader_objects") || !OGL_CheckExtension("GL_ARB_shading_language_100"))
 		{
 			logWarning("OpenGL (Shader) renderer is not available");
@@ -1047,6 +1054,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 									   SDL_WINDOWPOS_CENTERED,
 									   sdl_width, sdl_height,
 									   flags);
+        
+               
 #endif
 	}
 	if (main_screen == NULL && (flags & SDL_WINDOW_FULLSCREEN_DESKTOP)) {
@@ -1100,8 +1109,11 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	}
 #ifdef HAVE_OPENGL
 	if (!context_created && !nogl && screen_mode.acceleration != _no_acceleration) {
-		SDL_GL_CreateContext(main_screen);
-		context_created = true;
+        if(!SDL_GL_CreateContext(main_screen)) {
+            logWarning("Context could not be created!");
+        } else {
+            context_created = true;
+        }
 	}
 #endif
 	} // end if need_window
@@ -1144,9 +1156,22 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		static bool gl_info_printed = false;
 		if (!gl_info_printed)
 		{
-			printf("GL_VENDOR: %s\n", glGetString(GL_VENDOR));
+            SDL_version compiled;
+            SDL_version linked;
+
+            SDL_VERSION(&compiled);
+            SDL_GetVersion(&linked);
+            printf("Compiled against SDL version %d.%d.%d, and are linking against SDL version %d.%d.%d.\n",
+                   compiled.major, compiled.minor, compiled.patch, linked.major, linked.minor, linked.patch);
+            SDL_GLContext context = SDL_GL_GetCurrentContext();
+            if (context == NULL) {
+                printf("SDL GL Context is NULL!\n");
+            }
+
+            printf("GL_VENDOR: %s\n", glGetString(GL_VENDOR));
 			printf("GL_RENDERER: %s\n", glGetString(GL_RENDERER));
 			printf("GL_VERSION: %s\n", glGetString(GL_VERSION));
+            printf("GL_SHADING_LANGUAGE_VERSION: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 //		const char *gl_extensions = (const char *)glGetString(GL_EXTENSIONS);
 //		printf("GL_EXTENSIONS: %s\n", gl_extensions);
 			gl_info_printed = true;
@@ -1179,7 +1204,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		L_Call_HUDResize();
 	}
     
-    refreshAccelerationContext(main_screen);
+    //refreshAccelerationContext(main_screen);
 }
 
 bool get_auto_resolution_size(short *w, short *h, struct screen_mode_data *mode)
@@ -2289,11 +2314,7 @@ bool MainScreenIsOpenGL()
 }
 void MainScreenSwap()
 {
-#ifdef USE_ALTERNATE_ACCELERATION
-    swapAcceleratedWindow(main_screen);
-#else
-	SDL_GL_SwapWindow(main_screen);
-#endif
+    SDL_GL_SwapWindow(main_screen);
 }
 void MainScreenCenterMouse()
 {
