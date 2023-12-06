@@ -102,7 +102,7 @@ public:
 		static const int DEFAULT_RATE = 44100;
 		static const int DEFAULT_SAMPLES = 1024;
 		float volume_db; // db
-		uint16 flags; // stereo, dynamic_tracking, etc. 
+		uint16 flags; // dynamic_tracking, etc. 
 		
 		uint16 rate; // in Hz
 		uint16 samples; // size of buffer
@@ -110,6 +110,8 @@ public:
 		float music_db; // music volume in dB
 
 		float video_export_volume_db;
+
+		ChannelType channel_type;
 
 		Parameters();
 		bool Verify();

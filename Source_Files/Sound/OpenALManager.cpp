@@ -17,7 +17,7 @@ bool OpenALManager::Init(const AudioParameters& parameters) {
 
 	if (instance) { //Don't bother recreating all the OpenAL context if nothing changed for it
 		if (parameters.hrtf != instance->audio_parameters.hrtf || parameters.rate != instance->audio_parameters.rate
-			|| parameters.stereo != instance->audio_parameters.stereo || parameters.sample_frame_size != instance->audio_parameters.sample_frame_size) {
+			|| parameters.channel_type != instance->audio_parameters.channel_type || parameters.sample_frame_size != instance->audio_parameters.sample_frame_size) {
 
 			Shutdown();
 
@@ -221,15 +221,14 @@ bool OpenALManager::OpenDevice() {
 		return false;
 	}
 
-	ALCint channelsType = audio_parameters.stereo ? ALC_STEREO_SOFT : ALC_MONO_SOFT;
-	ALCint format = rendering_format ? rendering_format : GetBestOpenALRenderingFormat(channelsType);
+	if (!openal_rendering_format) {
+		openal_rendering_format = GetBestOpenALSupportedFormat();
+	}
 
-	rendering_format = format;
-
-	if (format) {
+	if (openal_rendering_format) {
 		ALCint attrs[] = {
-			ALC_FORMAT_TYPE_SOFT,     format,
-			ALC_FORMAT_CHANNELS_SOFT, channelsType,
+			ALC_FORMAT_TYPE_SOFT,     openal_rendering_format,
+			ALC_FORMAT_CHANNELS_SOFT, mapping_sdl_openal_channel.at(audio_parameters.channel_type),
 			ALC_FREQUENCY,            audio_parameters.rate,
 			ALC_HRTF_SOFT,			  audio_parameters.hrtf,
 			0,
@@ -331,12 +330,12 @@ OpenALManager::OpenALManager(const AudioParameters& parameters) {
 	UpdateParameters(parameters);
 	alListener3i(AL_POSITION, 0, 0, 0);
 
-	auto openalFormat = GetBestOpenALRenderingFormat(parameters.stereo ? ALC_STEREO_SOFT : ALC_MONO_SOFT);
+	auto openalFormat = GetBestOpenALSupportedFormat();
 	assert(openalFormat && "Audio format not found or not supported");
 	SDL_AudioSpec desired = {};
 	desired.freq = parameters.rate;
-	desired.format = openalFormat ? mapping_openal_sdl.at(openalFormat) : 0;
-	desired.channels = parameters.stereo ? 2 : 1;
+	desired.format = mapping_openal_sdl_format.at(openalFormat);
+	desired.channels = static_cast<int>(parameters.channel_type);
 	desired.samples = parameters.sample_frame_size;
 	desired.callback = MixerCallback;
 	desired.userdata = reinterpret_cast<void*>(this);
@@ -345,8 +344,8 @@ OpenALManager::OpenALManager(const AudioParameters& parameters) {
 		CleanEverything();
 	} else {
 		audio_parameters.rate = sdl_audio_specs_obtained.freq;
-		audio_parameters.stereo = sdl_audio_specs_obtained.channels == 2;
-		rendering_format = mapping_sdl_openal.at(sdl_audio_specs_obtained.format);
+		audio_parameters.channel_type = static_cast<ChannelType>(sdl_audio_specs_obtained.channels);
+		openal_rendering_format = mapping_sdl_openal_format.at(sdl_audio_specs_obtained.format);
 	}
 }
 
@@ -375,7 +374,7 @@ void OpenALManager::CleanEverything() {
 	assert(closedDevice && "Could not close audio device");
 }
 
-int OpenALManager::GetBestOpenALRenderingFormat(ALCint channelsType) {
+int OpenALManager::GetBestOpenALSupportedFormat() {
 	auto device = p_ALCDevice ? p_ALCDevice : alcLoopbackOpenDeviceSOFT(nullptr);
 	if (!device) {
 		logError("Could not open audio loopback device to find best rendering format");
@@ -387,7 +386,7 @@ int OpenALManager::GetBestOpenALRenderingFormat(ALCint channelsType) {
 
 		ALCint attrs[] = {
 			ALC_FORMAT_TYPE_SOFT,     format_type[i],
-			ALC_FORMAT_CHANNELS_SOFT, channelsType,
+			ALC_FORMAT_CHANNELS_SOFT, mapping_sdl_openal_channel.at(audio_parameters.channel_type),
 			ALC_FREQUENCY,            audio_parameters.rate
 		};
 

@@ -1014,6 +1014,24 @@ static const uint32 max_saves_values[] = {
 	20, 100, 500, 0
 };
 
+static const std::unordered_map<ChannelType, int> mapping_channel_index = {
+	{ChannelType::_mono, 0},
+	{ChannelType::_stereo, 1},
+	{ChannelType::_quad, 2},
+	{ChannelType::_5_1, 3},
+	{ChannelType::_6_1, 4},
+	{ChannelType::_7_1, 5}
+};
+
+static const std::unordered_map<int, ChannelType> mapping_index_channel = {
+	{0, ChannelType::_mono},
+	{1, ChannelType::_stereo},
+	{2, ChannelType::_quad},
+	{3, ChannelType::_5_1},
+	{4, ChannelType::_6_1},
+	{5, ChannelType::_7_1}
+};
+
 
 enum {
     iRENDERING_SYSTEM = 1000
@@ -1486,34 +1504,6 @@ static void graphics_dialog(void *arg)
  *  Sound dialog
  */
 
-class w_toggle* stereo_w, * dynamic_w;
-
-class w_stereo_toggle : public w_toggle {
-public:
-	w_stereo_toggle(bool selection) : w_toggle(selection) {}
-
-	void selection_changed(void)
-	{
-		// Turning off stereo turns off dynamic tracking
-		w_toggle::selection_changed();
-		if (selection == false)
-			dynamic_w->set_selection(false);
-	}
-};
-
-class w_dynamic_toggle : public w_toggle {
-public:
-	w_dynamic_toggle(bool selection) : w_toggle(selection) {}
-
-	void selection_changed(void)
-	{
-		// Turning on dynamic tracking turns on stereo
-		w_toggle::selection_changed();
-		if (selection == true)
-			stereo_w->set_selection(true);
-	}
-};
-
 class w_volume_slider : public w_percentage_slider {
 public:
 	w_volume_slider(int vol) : w_percentage_slider(21, vol) {}
@@ -1549,12 +1539,14 @@ static void sound_dialog(void *arg)
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 
+	static const std::vector<std::string> channel_labels = { "Mono", "Stereo", "Quad", "5.1", "6.1", "7.1" };
+	w_select_popup* channel_w = new w_select_popup();
+	channel_w->set_labels(channel_labels);
+	channel_w->set_selection(mapping_channel_index.at(sound_preferences->channel_type));
+	table->dual_add(channel_w->label("Channels"), d);
+	table->dual_add(channel_w, d);
 
-	stereo_w = new w_stereo_toggle(sound_preferences->flags & _stereo_flag);
-	table->dual_add(stereo_w->label("Stereo"), d);
-	table->dual_add(stereo_w, d);
-
-	dynamic_w = new w_dynamic_toggle(TEST_FLAG(sound_preferences->flags, _dynamic_tracking_flag));
+	w_toggle* dynamic_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _dynamic_tracking_flag));
 	table->dual_add(dynamic_w->label("Active Panning"), d);
 	table->dual_add(dynamic_w, d);
 
@@ -1631,7 +1623,6 @@ static void sound_dialog(void *arg)
 		if (quality_w->get_selection()) flags |= _16bit_sound_flag;
 		if (sounds3d_w->get_selection()) flags |= _3d_sounds_flag;
 		if (hrtf_w->get_selection()) flags |= _hrtf_flag;
-		if (stereo_w->get_selection()) flags |= _stereo_flag;
 		if (dynamic_w->get_selection()) flags |= _dynamic_tracking_flag;
 		if (ambient_w->get_selection()) flags |= _ambient_sound_flag;
 		if (more_w->get_selection()) flags |= _more_sounds_flag;
@@ -1659,6 +1650,12 @@ static void sound_dialog(void *arg)
 		float music_db = music_volume_w->get_selection() - 20;
 		if (music_db != sound_preferences->music_db) {
 			sound_preferences->music_db = music_db;
+			changed = true;
+		}
+
+		auto channel = mapping_index_channel.at(channel_w->get_selection());
+		if (channel != sound_preferences->channel_type) {
+			sound_preferences->channel_type = channel;
 			changed = true;
 		}
 
@@ -3844,6 +3841,7 @@ InfoTree sound_preferences_tree()
 	root.put_attr("rate", sound_preferences->rate);
 	root.put_attr("samples", sound_preferences->samples);
 	root.put_attr("video_export_volume_db", sound_preferences->video_export_volume_db);
+	root.put_attr("channel", static_cast<int>(sound_preferences->channel_type));
 
 	return root;
 }
@@ -4814,6 +4812,14 @@ void parse_sound_preferences(InfoTree root, std::string version)
 	root.read_attr("rate", sound_preferences->rate);
 	root.read_attr("samples", sound_preferences->samples);
 	root.read_attr("video_export_volume_db", sound_preferences->video_export_volume_db);
+
+	int channel_type = 0;
+	root.read_attr("channel", channel_type);
+
+	if (channel_type) 
+	{
+		sound_preferences->channel_type = static_cast<ChannelType>(channel_type);
+	}
 }
 
 
