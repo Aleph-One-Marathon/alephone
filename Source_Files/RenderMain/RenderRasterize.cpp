@@ -533,9 +533,9 @@ void RenderRasterizerClass::render_node_side(
 				{
 					scale *= 4;
 				}
-				
-				world_distance x0= surface->texture_definition->x0 % scale;
-				world_distance y0= surface->texture_definition->y0 % scale;
+
+				world_distance x0 = surface->texture_definition->x0 & (scale - 1);
+				world_distance y0 = surface->texture_definition->y0 & (scale - 1);
 
 				/* calculate texture origin and direction */	
 				world_distance divisor = surface->length;
