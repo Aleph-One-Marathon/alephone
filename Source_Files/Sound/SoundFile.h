@@ -83,7 +83,10 @@ private:
 
 	bool UnpackStandardSystem7Header(BIStreamBE &header);
 	bool UnpackExtendedSystem7Header(BIStreamBE &header);
+
+	void ConvertSignedToUnsignedByte(uint8* data, int length);
 	
+	bool signed_8bits;
 	uint32 data_offset;
 };
 

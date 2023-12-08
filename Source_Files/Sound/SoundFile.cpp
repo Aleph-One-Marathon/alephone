@@ -35,7 +35,8 @@ namespace io = boost::iostreams;
 
 SoundHeader::SoundHeader() :
 	SoundInfo(),
-	data_offset(0)
+	data_offset(0),
+	signed_8bits(false)
 {
 }
 
@@ -88,6 +89,7 @@ bool SoundHeader::UnpackExtendedSystem7Header(BIStreamBE &header)
 			if (format != FOUR_CHARS_TO_INT('t','w','o','s') || comp_id != -1) {
 				return false;
 			}
+			signed_8bits = true;
 			header.ignore(4);
 		} else {
 			header.ignore(22);
@@ -159,8 +161,18 @@ std::shared_ptr<SoundData> SoundHeader::LoadData(BIStreamBE& s)
 	{
 		s.read(reinterpret_cast<char*>(&(*p)[0]), length);
 
-		if (audio_format == AudioFormat::_16_bit && (little_endian ^ PlatformIsLittleEndian())) {
-			byte_swap_memory(p->data(), _2byte, length / 2);
+		switch (audio_format)
+		{
+			case AudioFormat::_8_bit:
+				if (signed_8bits) {
+					ConvertSignedToUnsignedByte(p->data(), length);
+				}
+				break;
+			case AudioFormat::_16_bit:
+				if (little_endian ^ PlatformIsLittleEndian()) {
+					byte_swap_memory(p->data(), _2byte, length / 2);
+				}
+				break;
 		}
 	}
 	catch (const basic_bstream::failure& e)
@@ -169,6 +181,13 @@ std::shared_ptr<SoundData> SoundHeader::LoadData(BIStreamBE& s)
 	}
 
 	return p;
+}
+
+void SoundHeader::ConvertSignedToUnsignedByte(uint8* data, int length) 
+{
+	for (int i = 0; i < length; i++) {
+		data[i] = static_cast<int8>(data[i]) + 128;
+	}
 }
 
 bool SoundHeader::Load(OpenedFile &SoundFile)
