@@ -2514,8 +2514,7 @@ void play_polygon_sound(
 void _play_side_sound(
 	short side_index,
 	short sound_code,
-	_fixed pitch,
-	bool loop)
+	_fixed pitch)
 {
 	struct side_data *side= get_side_data(side_index);
 	world_location3d source;
@@ -2523,13 +2522,7 @@ void _play_side_sound(
 	calculate_line_midpoint(side->line_index, &source.point);
 	source.polygon_index= side->polygon_index;
 
-	if (!OpenALManager::Get()) return;
-	//If we already have a player, don't replay the sound
-	auto player = OpenALManager::Get()->GetSoundPlayer(sound_code, NONE);
-
-	if (!player || !player->IsActive()) {
-		SoundManager::instance()->PlaySound(sound_code, &source, NONE, false, pitch, loop);
-	}
+	SoundManager::instance()->PlaySound(sound_code, &source, NONE, false, pitch);
 }
 
 void play_world_sound(

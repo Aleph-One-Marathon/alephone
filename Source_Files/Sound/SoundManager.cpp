@@ -358,8 +358,7 @@ std::shared_ptr<AudioPlayer> SoundManager::PlaySound(short sound_index,
 			     world_location3d *source,
 			     short identifier, // NONE is no identifer and the sound is immediately orphaned
 				 bool local,
-			     _fixed pitch,
-				 bool loop) 
+			     _fixed pitch)
 {
 	/* don’t do anything if we’re not initialized or active, or our sound_code is NONE,
 		or our volume is zero */
@@ -373,7 +372,6 @@ std::shared_ptr<AudioPlayer> SoundManager::PlaySound(short sound_index,
 			SoundParameters parameters;
 			parameters.identifier = sound_index;
 			parameters.pitch = pitch;
-			parameters.loop = loop;
 			parameters.local = local;
 			parameters.source_identifier = identifier;
 			if (source) {
