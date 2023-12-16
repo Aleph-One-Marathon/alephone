@@ -1194,7 +1194,7 @@ void draw_polygon(SDL_Surface *s, const world_point2d *vertex_array, int vertex_
 
 void _get_interface_color(size_t color_index, SDL_Color *color)
 {	
-	assert(color_index>=0 && color_index<NumInterfaceColors);
+	assert(color_index<NumInterfaceColors);
 	
 	rgb_color &c = InterfaceColors[color_index];
 	color->r = c.red >> 8;
@@ -1207,7 +1207,7 @@ void _get_interface_color(size_t color_index, SDL_Color *color)
 
 void _get_player_color(size_t color_index, RGBColor *color)
 {
-	assert(color_index>=0 && color_index<NUMBER_OF_PLAYER_COLORS);
+	assert(color_index<NUMBER_OF_PLAYER_COLORS);
 
 	rgb_color &c = InterfaceColors[color_index + PLAYER_COLOR_BASE_INDEX];
 	color->red = c.red;
@@ -1217,7 +1217,7 @@ void _get_player_color(size_t color_index, RGBColor *color)
 
 void _get_player_color(size_t color_index, SDL_Color *color)
 {
-    assert(color_index>=0 && color_index<NUMBER_OF_PLAYER_COLORS);
+    assert(color_index<NUMBER_OF_PLAYER_COLORS);
 
     rgb_color &c = InterfaceColors[color_index + PLAYER_COLOR_BASE_INDEX];
     color->r = static_cast<Uint8>(c.red);

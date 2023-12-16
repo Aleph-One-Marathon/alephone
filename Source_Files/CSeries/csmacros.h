@@ -92,11 +92,7 @@ static inline int NextPowerOfTwo(int n)
 
 template<class T> T* GetMemberWithBounds(T* Array, const size_t Index, const size_t Number)
 {
-	// Bounds checking
-	if (!(Index>=0 && Index<Number)) return NULL;
-	
-	// The appropriate pointer
-	return (Array + Index);
+	return (Index < Number) ? (Array + Index) : NULL;
 }
 
 /*
