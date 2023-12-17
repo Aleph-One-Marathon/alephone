@@ -155,7 +155,6 @@ void SoundManager::Initialize(const Parameters& new_parameters)
 	if (OpenSoundFile(InitialSoundFile))
 	{
 		atexit(::Shutdown);
-
 		parameters.flags = 0;
 		initialized = true;
 		active = false;
@@ -166,26 +165,24 @@ void SoundManager::Initialize(const Parameters& new_parameters)
 
 void SoundManager::SetParameters(const Parameters& parameters)
 {
-	if (initialized)
-	{
-		bool initial_state = active;
+	if (!initialized) return;
 
-		// If it was initially on, turn off the sound manager
-		if (initial_state)
-			SetStatus(false);
+	bool initial_state = active;
 
-		// We need to get rid of the sounds we have in memory
-		UnloadAllSounds();
+	// If it was initially on, turn off the sound manager
+	if (initial_state)
+		SetStatus(false);
 
-		// Stuff in our new parameters
-		this->parameters = parameters;
-		this->parameters.Verify();
+	// We need to get rid of the sounds we have in memory
+	UnloadAllSounds();
 
-		// If it was initially on, turn the sound manager back on
-		if (initial_state)
-			SetStatus(true);
-	}
+	// Stuff in our new parameters
+	this->parameters = parameters;
+	this->parameters.Verify();
 
+	// If it was initially on, turn the sound manager back on
+	if (initial_state)
+		SetStatus(true);
 }
 
 void SoundManager::Shutdown()
@@ -268,56 +265,53 @@ void SoundManager::TestVolume(float db, short sound_index)
 
 bool SoundManager::LoadSound(short sound_index)
 {
-	if (active)
+	if (!active) return false;
+
+	SoundDefinition *definition = GetSoundDefinition(sound_index);
+	if (!definition) return false;
+
+	// Load all the external-file sounds for each index;
+	// fill the slots appropriately.
+	int NumSlots= (parameters.flags & _more_sounds_flag) ? definition->permutations : 1;
+
+	if (definition->sound_code == NONE) 
 	{
-		SoundDefinition *definition = GetSoundDefinition(sound_index);
-		if (!definition) return false;
+		return false;
+	}
 
-		// Load all the external-file sounds for each index;
-		// fill the slots appropriately.
-		int NumSlots= (parameters.flags & _more_sounds_flag) ? definition->permutations : 1;
-
-		if (definition->sound_code == NONE) 
-		{
-			return false;
-		}
-
-		if (!(parameters.flags & _ambient_sound_flag) && (definition->flags & _sound_is_ambient))
-		{
-			return false;
-		}
+	if (!(parameters.flags & _ambient_sound_flag) && (definition->flags & _sound_is_ambient))
+	{
+		return false;
+	}
 			
-		if (sounds->IsLoaded(sound_index))
+	if (sounds->IsLoaded(sound_index))
+	{
+		sounds->Update(sound_index);
+	} 
+	else
+	{
+		for (int i = 0; i < NumSlots; ++i)
 		{
-			sounds->Update(sound_index);
-		} 
-		else
-		{
-			for (int i = 0; i < NumSlots; ++i)
+			auto p = sound_file->GetSoundData(definition, i);
+
+			SoundOptions *SndOpts = SoundReplacements::instance()->GetSoundOptions(sound_index, i);
+			if (SndOpts)
 			{
-				auto p = sound_file->GetSoundData(definition, i);
-
-				SoundOptions *SndOpts = SoundReplacements::instance()->GetSoundOptions(sound_index, i);
-				if (SndOpts)
+				auto x = SndOpts->Sound.LoadExternal(SndOpts->File);
+				if (x.get()) 
 				{
-					auto x = SndOpts->Sound.LoadExternal(SndOpts->File);
-					if (x.get()) 
-					{
-						p = x;
-					}
-				}
-
-				if (p.get())
-				{
-					sounds->Add(p, sound_index, i);
+					p = x;
 				}
 			}
+
+			if (p.get())
+			{
+				sounds->Add(p, sound_index, i);
+			}
 		}
+	}
 
-		return sounds->IsLoaded(sound_index);
-	}	
-
-	return false;
+	return sounds->IsLoaded(sound_index);
 }
 
 void SoundManager::LoadSounds(short *sounds, short count)
@@ -354,83 +348,65 @@ void SoundManager::UnloadAllSounds()
 	}
 }
 
-std::shared_ptr<AudioPlayer> SoundManager::PlaySound(short sound_index, 
+std::shared_ptr<SoundPlayer> SoundManager::PlaySound(short sound_index, 
 			     world_location3d *source,
 			     short identifier, // NONE is no identifer and the sound is immediately orphaned
 				 bool local,
 			     _fixed pitch)
 {
-	/* don’t do anything if we’re not initialized or active, or our sound_code is NONE,
-		or our volume is zero */
-	if (sound_index!=NONE && active && OpenALManager::Get()->GetMasterVolume() > 0)
-	{
-		SoundVolumes variables;
-		
-		/* make sure the sound data is in memory */
-		if (LoadSound(sound_index))
-		{	
-			SoundParameters parameters;
-			parameters.identifier = sound_index;
-			parameters.pitch = pitch;
-			parameters.local = local;
-			parameters.source_identifier = identifier;
-			if (source) {
+	if (sound_index == NONE || !active || OpenALManager::Get()->GetMasterVolume() <= 0 || !LoadSound(sound_index))
+		return std::shared_ptr<SoundPlayer>();
 
-				parameters.source_location3d = *source;
-				parameters.dynamic_source_location3d = (this->parameters.flags & _dynamic_tracking_flag) && identifier != NONE ? source : nullptr;
+	SoundParameters parameters;
+	parameters.identifier = sound_index;
+	parameters.pitch = pitch;
+	parameters.local = local;
+	parameters.source_identifier = identifier;
 
-				if (this->parameters.flags & _3d_sounds_flag) {
-					parameters.obstruction_flags = GetSoundObstructionFlags(sound_index, source);
-				}
-				else if (!local) {
-					CalculateInitialSoundVariables(sound_index, source, variables); //obstruction calcul is done here
-					parameters.local = true;
-					parameters.stereo_parameters.is_panning = true;
-					parameters.stereo_parameters.gain_global = variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
-					parameters.stereo_parameters.gain_left = variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
-					parameters.stereo_parameters.gain_right = variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
-				}
-				
-			}
-			return BufferSound(parameters);
+	if (source) {
+
+		parameters.source_location3d = *source;
+		parameters.dynamic_source_location3d = (this->parameters.flags & _dynamic_tracking_flag) && identifier != NONE ? source : nullptr;
+
+		if (this->parameters.flags & _3d_sounds_flag) {
+			parameters.obstruction_flags = GetSoundObstructionFlags(sound_index, source);
+		}
+		else if (!local) {
+			SoundVolumes variables;
+			CalculateInitialSoundVariables(sound_index, source, variables); //obstruction calcul is done here
+			parameters.local = true;
+			parameters.stereo_parameters.is_panning = true;
+			parameters.stereo_parameters.gain_global = variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
+			parameters.stereo_parameters.gain_left = variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
+			parameters.stereo_parameters.gain_right = variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
 		}
 	}
 
-	return nullptr;
+	return BufferSound(parameters);
 }
 				
 void SoundManager::DirectPlaySound(short sound_index, angle direction, short volume, _fixed pitch)
 {
-	/* don’t do anything if we’re not initialized or active, or our sound_code is NONE,
-	   or our volume is zero */
+	if (sound_index == NONE || !active || parameters.volume_db <= MINIMUM_VOLUME_DB || !LoadSound(sound_index))
+		return;
 
-	if (sound_index != NONE && active && parameters.volume_db > MINIMUM_VOLUME_DB)
+	SoundParameters parameters;
+	parameters.identifier = sound_index;
+	parameters.pitch = pitch;
+
+	world_location3d* listener = _sound_listener_proc();
+	if (direction != NONE && listener)
 	{
-		if (LoadSound(sound_index))
-		{
-			SoundVolumes variables;
-
-			world_location3d *listener = _sound_listener_proc();
-
-			variables.volume = volume;
-
-			SoundParameters parameters;
-			parameters.identifier = sound_index;
-			parameters.pitch = pitch;
-
-			if (direction != NONE && listener)
-			{
-				AngleAndVolumeToStereoVolume(direction - listener->yaw, volume, &variables.right_volume, &variables.left_volume);
-				parameters.stereo_parameters.is_panning = true;
-				parameters.stereo_parameters.gain_global = volume * 1.f / MAXIMUM_SOUND_VOLUME;
-				parameters.stereo_parameters.gain_left = variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
-				parameters.stereo_parameters.gain_right = variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
-			}
-
-			/* start the sound playing */
-			BufferSound(parameters);
-		}
+		SoundVolumes variables;
+		variables.volume = volume;
+		AngleAndVolumeToStereoVolume(direction - listener->yaw, volume, &variables.right_volume, &variables.left_volume);
+		parameters.stereo_parameters.is_panning = true;
+		parameters.stereo_parameters.gain_global = volume * 1.f / MAXIMUM_SOUND_VOLUME;
+		parameters.stereo_parameters.gain_left = variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
+		parameters.stereo_parameters.gain_right = variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
 	}
+
+	BufferSound(parameters);
 }
 
 void SoundManager::StopAllSounds() {
@@ -499,12 +475,9 @@ void SoundManager::Idle()
 
 void SoundManager::CauseAmbientSoundSourceUpdate()
 {
-	if (active && parameters.volume_db > MINIMUM_VOLUME_DB)
+	if (active && parameters.volume_db > MINIMUM_VOLUME_DB && (parameters.flags & _ambient_sound_flag))
 	{
-		if (parameters.flags & _ambient_sound_flag)
-		{
-			UpdateAmbientSoundSources();
-		}
+		UpdateAmbientSoundSources();
 	}
 }
 
@@ -607,97 +580,85 @@ static ambient_sound_definition *get_ambient_sound_definition(
 
 void SoundManager::AddOneAmbientSoundSource(ambient_sound_data *ambient_sounds, world_location3d *source, world_location3d *listener, short ambient_sound_index, short absolute_volume)
 {
-	if (ambient_sound_index != NONE)
+	if (ambient_sound_index == NONE) return;
+
+	// LP change; make NONE in case this sound definition is invalid
+	struct ambient_sound_definition* SoundDef = get_ambient_sound_definition(ambient_sound_index);
+	short sound_index = (SoundDef) ? SoundDef->sound_index : NONE;
+
+	if (sound_index == NONE) return;
+
+	SoundDefinition* definition = SoundManager::instance()->GetSoundDefinition(sound_index);
+
+	// LP change: idiot-proofing
+	if (!definition || definition->sound_code == NONE) return;
+
+	struct sound_behavior_definition* behavior = get_sound_behavior_definition(definition->behavior_index);
+	// LP change: idiot-proofing
+	if (!behavior) return; // Silence
+
+	struct ambient_sound_data* ambient;
+	short distance = 0;
+	short i;
+
+	if (source)
 	{
-		// LP change; make NONE in case this sound definition is invalid
-		struct ambient_sound_definition* SoundDef = get_ambient_sound_definition(ambient_sound_index);
-		short sound_index = (SoundDef) ? SoundDef->sound_index : NONE;
+		distance = distance3d(&listener->point, &source->point);
+	}
 
-		if (sound_index != NONE)
+	for (i = 0, ambient = ambient_sounds;
+		i < MAXIMUM_PROCESSED_AMBIENT_SOUNDS;
+		++i, ++ambient)
+	{
+		if (SLOT_IS_USED(ambient))
 		{
-			SoundDefinition* definition = SoundManager::instance()->GetSoundDefinition(sound_index);
+			if (ambient->sound_index == sound_index) break;
+		}
+		else
+		{
+			MARK_SLOT_AS_USED(ambient);
 
-			// LP change: idiot-proofing
-			if (definition)
-			{
-				if (definition->sound_code != NONE)
-				{
-					struct sound_behavior_definition* behavior = get_sound_behavior_definition(definition->behavior_index);
-					// LP change: idiot-proofing
-					if (!behavior) return; // Silence
-
-					struct ambient_sound_data* ambient;
-					short distance = 0;
-					short i;
-
-					if (source)
-					{
-						distance = distance3d(&listener->point, &source->point);
-					}
-
-					for (i = 0, ambient = ambient_sounds;
-						i < MAXIMUM_PROCESSED_AMBIENT_SOUNDS;
-						++i, ++ambient)
-					{
-						if (SLOT_IS_USED(ambient))
-						{
-							if (ambient->sound_index == sound_index) break;
-						}
-						else
-						{
-							MARK_SLOT_AS_USED(ambient);
-
-							ambient->sound_index = sound_index;
-							ambient->variables.volume = ambient->variables.left_volume = ambient->variables.right_volume = 0;
-
-							break;
-						}
-					}
-
-					if (i != MAXIMUM_PROCESSED_AMBIENT_SOUNDS)
-					{
-						if (!source || distance < behavior->unobstructed_curve.minimum_volume_distance)
-						{
-							short volume, left_volume, right_volume;
-
-							if (source)
-							{
-								// LP change: made this long-distance friendly
-								int32 dx = int32(listener->point.x) - int32(source->point.x);
-								int32 dy = int32(listener->point.y) - int32(source->point.y);
-
-								volume = distance_to_volume(definition, distance, _sound_obstructed_proc(source));
-								volume = (absolute_volume * volume) >> MAXIMUM_SOUND_VOLUME_BITS;
-
-								if (dx || dy)
-								{
-									AngleAndVolumeToStereoVolume(arctangent(dx, dy) - listener->yaw, volume, &right_volume, &left_volume);
-								}
-								else
-								{
-									left_volume = right_volume = volume;
-								}
-							}
-							else
-							{
-								volume = left_volume = right_volume = absolute_volume;
-							}
-
-							{
-								short maximum_volume = MAX(MAXIMUM_AMBIENT_SOUND_VOLUME, volume);
-								short maximum_left_volume = MAX(MAXIMUM_AMBIENT_SOUND_VOLUME, left_volume);
-								short maximum_right_volume = MAX(MAXIMUM_AMBIENT_SOUND_VOLUME, right_volume);
-
-								ambient->variables.volume = CEILING(ambient->variables.volume + volume, maximum_volume);
-								ambient->variables.left_volume = CEILING(ambient->variables.left_volume + left_volume, maximum_left_volume);
-								ambient->variables.right_volume = CEILING(ambient->variables.right_volume + right_volume, maximum_right_volume);
-							}
-						}
-					}
-				}
-			}
+			ambient->sound_index = sound_index;
+			ambient->variables.volume = ambient->variables.left_volume = ambient->variables.right_volume = 0;
+			break;
 		}
 	}
+
+	if (i == MAXIMUM_PROCESSED_AMBIENT_SOUNDS) return;
+	if (source && distance >= behavior->unobstructed_curve.minimum_volume_distance) return;
+
+	short volume, left_volume, right_volume;
+
+	if (source)
+	{
+		// LP change: made this long-distance friendly
+		int32 dx = int32(listener->point.x) - int32(source->point.x);
+		int32 dy = int32(listener->point.y) - int32(source->point.y);
+
+		volume = distance_to_volume(definition, distance, _sound_obstructed_proc(source));
+		volume = (absolute_volume * volume) >> MAXIMUM_SOUND_VOLUME_BITS;
+
+		if (dx || dy)
+		{
+			AngleAndVolumeToStereoVolume(arctangent(dx, dy) - listener->yaw, volume, &right_volume, &left_volume);
+		}
+		else
+		{
+			left_volume = right_volume = volume;
+		}
+	}
+	else
+	{
+		volume = left_volume = right_volume = absolute_volume;
+	}
+
+	short maximum_volume = MAX(MAXIMUM_AMBIENT_SOUND_VOLUME, volume);
+	short maximum_left_volume = MAX(MAXIMUM_AMBIENT_SOUND_VOLUME, left_volume);
+	short maximum_right_volume = MAX(MAXIMUM_AMBIENT_SOUND_VOLUME, right_volume);
+
+	ambient->variables.volume = CEILING(ambient->variables.volume + volume, maximum_volume);
+	ambient->variables.left_volume = CEILING(ambient->variables.left_volume + left_volume, maximum_left_volume);
+	ambient->variables.right_volume = CEILING(ambient->variables.right_volume + right_volume, maximum_right_volume);
 }
 
 struct random_sound_definition *get_random_sound_definition(
@@ -709,11 +670,7 @@ struct random_sound_definition *get_random_sound_definition(
 short SoundManager::RandomSoundIndexToSoundIndex(short random_sound_index)
 {
 	random_sound_definition *definition = get_random_sound_definition(random_sound_index);
-
-	if (definition) 
-		return definition->sound_index;
-	else
-		return NONE;
+	return definition ? definition->sound_index : NONE;
 }
 
 SoundManager::Parameters::Parameters() :
@@ -747,58 +704,55 @@ SoundManager::SoundManager() : active(false), initialized(false), sounds(new Sou
 
 void SoundManager::SetStatus(bool active)
 {
-	if (initialized)
+	if (!initialized || active == this->active) return;
+
+	if (active) 
 	{
-		if (active != this->active)
+		sounds->Clear();
+		uint32 total_buffer_size;
+
+		if (parameters.flags & _more_sounds_flag)
+			total_buffer_size = MORE_SOUND_BUFFER_SIZE;
+		else
+			total_buffer_size = MINIMUM_SOUND_BUFFER_SIZE;
+		if (parameters.flags & _ambient_sound_flag)
+			total_buffer_size += AMBIENT_SOUND_BUFFER_SIZE;
+		if (parameters.flags & _16bit_sound_flag)
 		{
-			if (active) 
-			{
-				sounds->Clear();
-				uint32 total_buffer_size;
-
-				if (parameters.flags & _more_sounds_flag)
-					total_buffer_size = MORE_SOUND_BUFFER_SIZE;
-				else
-					total_buffer_size = MINIMUM_SOUND_BUFFER_SIZE;
-				if (parameters.flags & _ambient_sound_flag)
-					total_buffer_size += AMBIENT_SOUND_BUFFER_SIZE;
-				if (parameters.flags & _16bit_sound_flag)
-				{
-					total_buffer_size *= 2;
-				}
-
-				total_buffer_size *= 16;
-
-				sounds->SetMaxSize(total_buffer_size);
-				
-				sound_source = (parameters.flags & _16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
-
-				if (shell_options.nosound) return;
-
-				AudioParameters audio_parameters = {
-					parameters.rate,
-					parameters.samples,
-                    static_cast<bool>(parameters.flags & _stereo_flag),
-					!(parameters.flags & _lower_restart_delay),
-                    static_cast<bool>(parameters.flags & _hrtf_flag),
-                    static_cast<bool>(parameters.flags & _3d_sounds_flag),
-					OpenALManager::From_db(parameters.volume_db)
-				};
-
-				bool success = OpenALManager::Init(audio_parameters);
-
-				if (!success) return;
-
-				MusicPlayer::SetDefaultVolume(OpenALManager::From_db(parameters.music_db, true));
-				OpenALManager::Get()->Start();
-			}
-			else
-			{
-				OpenALManager::Get()->Stop();
-			}
-			this->active = active;
+			total_buffer_size *= 2;
 		}
+
+		total_buffer_size *= 16;
+
+		sounds->SetMaxSize(total_buffer_size);
+				
+		sound_source = (parameters.flags & _16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
+
+		if (shell_options.nosound) return;
+
+		AudioParameters audio_parameters = {
+			parameters.rate,
+			parameters.samples,
+            static_cast<bool>(parameters.flags & _stereo_flag),
+			!(parameters.flags & _lower_restart_delay),
+            static_cast<bool>(parameters.flags & _hrtf_flag),
+            static_cast<bool>(parameters.flags & _3d_sounds_flag),
+			OpenALManager::From_db(parameters.volume_db)
+		};
+
+		bool success = OpenALManager::Init(audio_parameters);
+
+		if (!success) return;
+
+		MusicPlayer::SetDefaultVolume(OpenALManager::From_db(parameters.music_db, true));
+		OpenALManager::Get()->Start();
 	}
+	else
+	{
+		OpenALManager::Get()->Stop();
+	}
+
+	this->active = active;
 }
 
 SoundDefinition* SoundManager::GetSoundDefinition(short sound_index)
@@ -1030,41 +984,40 @@ void SoundManager::UpdateAmbientSoundSources()
 	// update ambient sounds already playing and add new ones if necessary
 	for (short i = 0; i < MAXIMUM_AMBIENT_SOUND_CHANNELS; i++)
 	{
-		if (SLOT_IS_USED(&ambient_sounds[i])) {
-			auto soundPlayer = OpenALManager::Get()->GetSoundPlayer(ambient_sounds[i].sound_index, NONE);
+		if (SLOT_IS_FREE(&ambient_sounds[i])) continue;
 
-			if (soundPlayer && soundPlayer->HasRewind())
-			{
-				auto parameters = soundPlayer->GetParameters();
-				auto stereo_parameters = parameters.stereo_parameters;
-				parameters.stereo_parameters.gain_global = ambient_sounds[i].variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
-				parameters.stereo_parameters.gain_left = ambient_sounds[i].variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
-				parameters.stereo_parameters.gain_right = ambient_sounds[i].variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
+		auto soundPlayer = OpenALManager::Get()->GetSoundPlayer(ambient_sounds[i].sound_index, NONE);
 
-				if (stereo_parameters != parameters.stereo_parameters) {
-					soundPlayer->UpdateParameters(parameters);
-					soundPlayer->UpdateRewindParameters(parameters);
-				}
+		if (soundPlayer && soundPlayer->HasRewind())
+		{
+			auto parameters = soundPlayer->GetParameters();
+			auto stereo_parameters = parameters.stereo_parameters;
+			parameters.stereo_parameters.gain_global = ambient_sounds[i].variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
+			parameters.stereo_parameters.gain_left = ambient_sounds[i].variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
+			parameters.stereo_parameters.gain_right = ambient_sounds[i].variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
+
+			if (stereo_parameters != parameters.stereo_parameters) {
+				soundPlayer->UpdateParameters(parameters);
+				soundPlayer->UpdateRewindParameters(parameters);
 			}
-			else if (LoadSound(ambient_sounds[i].sound_index)) {
-				SoundParameters parameters;
-				parameters.identifier = ambient_sounds[i].sound_index;
-				parameters.soft_rewind = true;
-				parameters.pitch = FIXED_ONE;
-				parameters.flags = ambient_sounds[i].flags;
-				parameters.stereo_parameters.is_panning = true;
-				parameters.stereo_parameters.gain_global = ambient_sounds[i].variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
-				parameters.stereo_parameters.gain_left = ambient_sounds[i].variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
-				parameters.stereo_parameters.gain_right = ambient_sounds[i].variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
+		}
+		else if (LoadSound(ambient_sounds[i].sound_index)) {
+			SoundParameters parameters;
+			parameters.identifier = ambient_sounds[i].sound_index;
+			parameters.soft_rewind = true;
+			parameters.pitch = FIXED_ONE;
+			parameters.flags = ambient_sounds[i].flags;
+			parameters.stereo_parameters.is_panning = true;
+			parameters.stereo_parameters.gain_global = ambient_sounds[i].variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
+			parameters.stereo_parameters.gain_left = ambient_sounds[i].variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
+			parameters.stereo_parameters.gain_right = ambient_sounds[i].variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
 
-				auto ambientSound = BufferSound(parameters);
-				if (ambientSound) {
-					ambient_sound_players.insert(ambientSound);
-				}
+			auto ambientSound = BufferSound(parameters);
+			if (ambientSound) {
+				ambient_sound_players.insert(ambientSound);
 			}
 		}
 	}
-
 }
 
 
