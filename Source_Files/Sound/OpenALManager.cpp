@@ -105,7 +105,13 @@ void OpenALManager::SetMasterVolume(float volume) {
 	volume = std::min(1.f, std::max(volume, 0.f));
 	if (master_volume == volume) return;
 	master_volume = volume;
-	for (auto& player : audio_players_local) player->is_sync_with_al_parameters = false;
+	ResyncPlayers();
+}
+
+void OpenALManager::ResyncPlayers() {
+	SDL_LockAudio();
+	for (auto& player : audio_players_queue) player->is_sync_with_al_parameters = false;
+	SDL_UnlockAudio();
 }
 
 void OpenALManager::Start() {
@@ -124,38 +130,33 @@ void OpenALManager::ToggleDeviceMode(bool recording_device) {
 	SDL_PauseAudio(is_using_recording_device);
 }
 
-void OpenALManager::QueueAudio(std::shared_ptr<AudioPlayer> audioPlayer) {
-	audio_players_local.push_back(audioPlayer);
-	audio_players_shared.push(audioPlayer);
-}
-
 //Do we have a player currently streaming with the same sound we want to play ?
 //A sound is identified as unique with sound index + source index, NONE is considered as a valid source index (local sounds)
 //The flag sound_identifier_only must be used to know if there is a sound playing with a specific identifier without caring of the source
 std::shared_ptr<SoundPlayer> OpenALManager::GetSoundPlayer(short identifier, short source_identifier, bool sound_identifier_only) const {
 
-	std::vector<std::shared_ptr<AudioPlayer>> matchingPlayers;
-	std::copy_if(audio_players_local.begin(), audio_players_local.end(), std::back_inserter(matchingPlayers), 
-		[identifier](const std::shared_ptr<AudioPlayer> player) { return player->IsActive() && (identifier != NONE && player->GetIdentifier() == identifier); });
+	std::vector<std::shared_ptr<SoundPlayer>> matchingPlayers;
+	std::copy_if(sound_players_local.begin(), sound_players_local.end(), std::back_inserter(matchingPlayers),
+		[identifier](const std::shared_ptr<SoundPlayer> player) { return player->IsActive() && (identifier != NONE && player->GetIdentifier() == identifier); });
 
-	auto matchingPlayer = matchingPlayers.size() > 0 ? matchingPlayers[0] : std::shared_ptr<AudioPlayer>();
+	auto matchingPlayer = matchingPlayers.size() > 0 ? matchingPlayers[0] : std::shared_ptr<SoundPlayer>();
 
 	if (!sound_identifier_only) {
 
 		auto matchingSourcePlayer = std::find_if(matchingPlayers.begin(), matchingPlayers.end(),
-			[source_identifier](const std::shared_ptr<AudioPlayer> player) { return player->GetSourceIdentifier() == source_identifier; });
+			[source_identifier](const std::shared_ptr<SoundPlayer> player) { return player->GetSourceIdentifier() == source_identifier; });
 
 		if (matchingSourcePlayer == matchingPlayers.end() && matchingPlayers.size() >= max_sounds_for_source) {
 			matchingPlayer = *std::min_element(matchingPlayers.begin(), matchingPlayers.end(),
-				[](const std::shared_ptr<AudioPlayer>& a, const std::shared_ptr<AudioPlayer>& b)
+				[](const std::shared_ptr<SoundPlayer>& a, const std::shared_ptr<SoundPlayer>& b)
 				{  return a->GetPriority() < b->GetPriority(); });
 		}
 		else {
-			matchingPlayer = matchingSourcePlayer != matchingPlayers.end() ? *matchingSourcePlayer : std::shared_ptr<AudioPlayer>();
+			matchingPlayer = matchingSourcePlayer != matchingPlayers.end() ? *matchingSourcePlayer : std::shared_ptr<SoundPlayer>();
 		}
 	}
 
-	return std::dynamic_pointer_cast<SoundPlayer>(matchingPlayer); //only sounds are supported, not musics
+	return matchingPlayer;
 }
 
 std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(const Sound& sound, const SoundParameters& parameters) {
@@ -180,7 +181,8 @@ std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(const Sound& sound, const 
 	}
 
 	soundPlayer = std::make_shared<SoundPlayer>(sound, parameters);
-	QueueAudio(soundPlayer);
+	sound_players_local.push_back(soundPlayer);
+	audio_players_shared.push(soundPlayer);
 	return soundPlayer;
 }
 
@@ -197,7 +199,7 @@ std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(LoadedResource& rsrc, cons
 std::shared_ptr<MusicPlayer> OpenALManager::PlayMusic(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters) {
 	if (!process_audio_active) return std::shared_ptr<MusicPlayer>();
 	auto musicPlayer = std::make_shared<MusicPlayer>(decoder, parameters);
-	QueueAudio(musicPlayer);
+	audio_players_shared.push(musicPlayer);
 	return musicPlayer;
 }
 
@@ -205,7 +207,7 @@ std::shared_ptr<MusicPlayer> OpenALManager::PlayMusic(std::shared_ptr<StreamDeco
 std::shared_ptr<StreamPlayer> OpenALManager::PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, AudioFormat audioFormat) {
 	if (!process_audio_active) return std::shared_ptr<StreamPlayer>();
 	auto streamPlayer = std::make_shared<StreamPlayer>(callback, length, rate, stereo, audioFormat);
-	QueueAudio(streamPlayer);
+	audio_players_shared.push(streamPlayer);
 	return streamPlayer;
 }
 
@@ -233,8 +235,8 @@ void OpenALManager::StopSound(short sound_identifier, short source_identifier) {
 
 void OpenALManager::StopAllPlayers() {
 	SDL_LockAudio();
-	for (auto& player : audio_players_local) RetrieveSource(player);
-	audio_players_local.clear();
+	for (auto& player : audio_players_queue) RetrieveSource(player);
+	sound_players_local.clear();
 	audio_players_queue.clear();
 	audio_players_shared.reset();
 	SDL_UnlockAudio();
@@ -247,9 +249,9 @@ void OpenALManager::RetrieveSource(const std::shared_ptr<AudioPlayer>& player) {
 }
 
 void OpenALManager::CleanInactivePlayers() {
-	audio_players_local.erase(std::remove_if(
-		audio_players_local.begin(), audio_players_local.end(),
-		[](const std::shared_ptr<AudioPlayer> player) { return !player->IsActive(); }), audio_players_local.end());
+	sound_players_local.erase(std::remove_if(
+		sound_players_local.begin(), sound_players_local.end(),
+		[](const std::shared_ptr<SoundPlayer> player) { return !player->IsActive(); }), sound_players_local.end());
 }
 
 //this is used with the recording device and this allows OpenAL to

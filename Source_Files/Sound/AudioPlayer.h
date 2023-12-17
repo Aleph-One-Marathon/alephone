@@ -89,8 +89,6 @@ public:
     bool IsActive() const { return is_active.load(); }
     bool HasRewind() const { return rewind_signal.load(); }
     void AskRewind() { rewind_signal = true; }
-    virtual short GetIdentifier() const { return NONE; }
-    virtual short GetSourceIdentifier() const { return NONE; }
     virtual float GetPriority() const = 0;
 protected:
     AudioPlayer(int rate, bool stereo, AudioFormat audioFormat);
@@ -100,7 +98,7 @@ protected:
     std::atomic_bool rewind_signal = { false };
     std::atomic_bool stop_signal = { false };
     std::atomic_bool is_active = { true };
-    std::atomic_bool is_sync_with_al_parameters = { false };
+    bool is_sync_with_al_parameters = false; //uses locks
     int rate = 0;
     ALenum format = 0; //Mono 8-16-32f or stereo 8-16-32f
     std::unique_ptr<AudioSource> audio_source;

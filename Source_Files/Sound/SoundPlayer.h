@@ -64,8 +64,8 @@ public:
 	SoundPlayer(const Sound& sound, const SoundParameters& parameters); //Must not be used outside OpenALManager (public for make_shared)
 	void UpdateParameters(const SoundParameters& parameters) { this->parameters.Store(parameters); }
 	void UpdateRewindParameters(const SoundParameters& parameters) { this->rewind_parameters.Store(parameters); }
-	short GetIdentifier() const override { return parameters.Get().identifier; }
-	short GetSourceIdentifier() const override { return parameters.Get().source_identifier; }
+	short GetIdentifier() const { return parameters.Get().identifier; }
+	short GetSourceIdentifier() const { return parameters.Get().source_identifier; }
 	SoundParameters GetParameters() const { return parameters.Get(); }
 	static float Simulate(const SoundParameters& soundParameters);
 	float GetPriority() const override { return Simulate(parameters.Get()); }

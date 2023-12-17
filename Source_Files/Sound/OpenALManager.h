@@ -75,7 +75,7 @@ public:
 	void CleanInactivePlayers();
 	ALCint GetRenderingFormat() const { return rendering_format; }
 	ALuint GetLowPassFilter(float highFrequencyGain) const;
-	const std::vector<std::shared_ptr<AudioPlayer>>& GetAudioPlayers() const { return audio_players_local; }
+	const std::vector<std::shared_ptr<SoundPlayer>>& GetSoundPlayers() const { return sound_players_local; }
 private:
 	static OpenALManager* instance;
 	ALCdevice* p_ALCDevice = nullptr;
@@ -93,11 +93,11 @@ private:
 	bool OpenDevice();
 	bool CloseDevice();
 	void ProcessAudioQueue();
-	void QueueAudio(std::shared_ptr<AudioPlayer> audioPlayer);
+	void ResyncPlayers();
 	bool is_using_recording_device = false;
 	std::queue<std::unique_ptr<AudioPlayer::AudioSource>> sources_pool;
 	std::deque<std::shared_ptr<AudioPlayer>> audio_players_queue; //for audio thread only
-	std::vector<std::shared_ptr<AudioPlayer>> audio_players_local; //for OpenALManager only (main thread)
+	std::vector<std::shared_ptr<SoundPlayer>> sound_players_local; //for OpenALManager only (main thread)
 	boost::lockfree::spsc_queue<std::shared_ptr<AudioPlayer>, boost::lockfree::capacity<256>> audio_players_shared; //pipeline main => audio thread
 	int GetBestOpenALRenderingFormat(ALCint channelsType);
 	void RetrieveSource(const std::shared_ptr<AudioPlayer>& player);
