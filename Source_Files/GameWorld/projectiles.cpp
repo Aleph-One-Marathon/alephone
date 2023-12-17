@@ -758,7 +758,7 @@ static void update_guided_projectile(
 				delta_yaw= -delta_yaw;
 			}
 			
-			dx= ABS(dx), dy= ABS(dy);
+			dx= std::abs(dx), dy= std::abs(dy);
 			if (GUESS_HYPOTENUSE(dx, dy)*sine_table[projectile->elevation] - dz*cosine_table[projectile->elevation] > 0)
 			{
 				// turn down

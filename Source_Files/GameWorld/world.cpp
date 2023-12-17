@@ -269,7 +269,7 @@ static angle m2_arctangent(
 				
 				if ((last_difference<=0&&new_difference>=0) || (last_difference>=0&&new_difference<=0))
 				{
-					if (ABS(last_difference)<ABS(new_difference))
+					if (std::abs(last_difference)< std::abs(new_difference))
 					{
 						return theta-1;
 					}

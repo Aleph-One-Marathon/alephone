@@ -2020,7 +2020,7 @@ int32 point_to_line_distance_squared(
 	/* numerator is absolute value of the cross product of AB and AP, denominator is the
 		magnitude of AB squared */
 	signed_numerator= apx*aby - apy*abx;
-	numerator= ABS(signed_numerator);
+	numerator= std::abs(signed_numerator);
 	denominator= abx*abx + aby*aby;
 
 	/* before squaring numerator we make sure that it is smaller than fifteen bits (and we

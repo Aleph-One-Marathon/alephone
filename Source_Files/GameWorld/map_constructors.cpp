@@ -602,7 +602,7 @@ static int32 calculate_polygon_area(
 	}
 	
 	/* real area is absolute value of calculated area divided by two */
-     area= (ABS(area) >> 1);
+     area= (std::abs(area) >> 1);
 	
 	return area;
 }

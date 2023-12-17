@@ -481,7 +481,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 	TMgr->SetupTextureMatrix();
 	
 	if (TMgr->TextureType == OGL_Txtr_Landscape && opts) {
-		double TexScale = ABS(TMgr->U_Scale);
+		double TexScale = std::abs(TMgr->U_Scale);
 		double HorizScale = double(1 << opts->HorizExp);
 		s->setFloat(Shader::U_ScaleX, HorizScale * (npotTextures ? 1.0 : TexScale) * Radian2Circle);
 		s->setFloat(Shader::U_OffsetX, HorizScale * (0.25 + opts->Azimuth * FullCircleReciprocal));

@@ -699,7 +699,7 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 	
 		data->x0= (short)PIN(x0, 0, view->screen_width);
 		data->x1= (short)PIN(x1, 0, view->screen_width);
-		if (data->x1<data->x0) SWAP(data->x0, data->x1);
+		if (data->x1<data->x0) std::swap(data->x0, data->x1);
 		if (data->x1>data->x0)
 		{
 			if (clip_flags&_clip_up)

@@ -1183,8 +1183,8 @@ static short *build_x_table(
 	short *record;
 
 	/* calculate SGN(dx),SGN(dy) and the absolute values of dx,dy */	
-	dx= x1-x0, adx= ABS(dx), dx= SGN(dx);
-	dy= y1-y0, ady= ABS(dy), dy= SGN(dy);
+	dx= x1-x0, adx= std::abs(dx), dx= SGN(dx);
+	dy= y1-y0, ady= std::abs(dy), dy= SGN(dy);
 
 	fc_assert(ady<MAXIMUM_SCRATCH_TABLE_ENTRIES); /* can't overflow table */
 	if (dy>0)
@@ -1241,8 +1241,8 @@ static short *build_y_table(
 	short *record;
 
 	/* calculate SGN(dx),SGN(dy) and the absolute values of dx,dy */	
-	dx= x1-x0, adx= ABS(dx), dx= SGN(dx);
-	dy= y1-y0, ady= ABS(dy), dy= SGN(dy);
+	dx= x1-x0, adx= std::abs(dx), dx= SGN(dx);
+	dy= y1-y0, ady= std::abs(dy), dy= SGN(dy);
 
 	fc_assert(adx<MAXIMUM_SCRATCH_TABLE_ENTRIES); /* can't overflow table */
 	if (dx>=0) /* vertical lines allowed */

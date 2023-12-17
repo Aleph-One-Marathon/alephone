@@ -1899,11 +1899,11 @@ static inline uint16 SetPixelOpacitiesDXTC5Pair(int scale, int shift, uint16 alp
 		if (a1 > a2)
 			if (new_a2) new_a2--;
 			else new_a1++;
-		else 
+		else
 			if (new_a1) new_a1--;
 			else new_a2++;
 	else if ((new_a1 > new_a2) != (a1 > a2))
-		SWAP(new_a1, new_a2);
+		std::swap(new_a1, new_a2);
 	
 	return (new_a1 << 8 | new_a2);
 }

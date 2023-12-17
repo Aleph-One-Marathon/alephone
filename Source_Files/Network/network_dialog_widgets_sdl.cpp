@@ -313,7 +313,7 @@ w_players_in_game2::click(int x, int) {
 
         if(clump_players_by_team) {
             for(size_t i = 0; i < num_valid_net_rankings; i++) {
-                if(ABS(x - get_wide_spaced_center_offset(rect.x, rect.w, i, num_valid_net_rankings))
+                if(std::abs(x - get_wide_spaced_center_offset(rect.x, rect.w, i, num_valid_net_rankings))
                         < (get_wide_spaced_width(rect.w, num_valid_net_rankings) / 2))
                 {
                     if(element_clicked_callback != NULL)
@@ -327,7 +327,7 @@ w_players_in_game2::click(int x, int) {
         
         else {
             for(size_t i = 0; i < num_valid_net_rankings; i++) {
-                if(ABS(x - get_close_spaced_center_offset(rect.x, rect.w, i, num_valid_net_rankings))
+                if(std::abs(x - get_close_spaced_center_offset(rect.x, rect.w, i, num_valid_net_rankings))
                         < (get_close_spaced_width(rect.w, num_valid_net_rankings) / 2))
                 {
                     if(element_clicked_callback != NULL)

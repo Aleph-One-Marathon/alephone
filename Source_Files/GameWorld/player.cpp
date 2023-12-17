@@ -1528,7 +1528,7 @@ static void update_player_media(
 			struct media_data *media= get_media_data(polygon->media_index); // should be valid
 			{
 			world_distance current_magnitude= (player->variables.old_flags&_HEAD_BELOW_MEDIA_BIT) ? media->current_magnitude : (media->current_magnitude>>1);
-			world_distance external_magnitude= FIXED_TO_WORLD(GUESS_HYPOTENUSE(ABS(player->variables.external_velocity.i), ABS(player->variables.external_velocity.j)));
+			world_distance external_magnitude= FIXED_TO_WORLD(GUESS_HYPOTENUSE(std::abs(player->variables.external_velocity.i), std::abs(player->variables.external_velocity.j)));
 			struct damage_definition *damage= get_media_damage(polygon->media_index, (player->variables.flags&_HEAD_BELOW_MEDIA_BIT) ? FIXED_ONE : FIXED_ONE/4);
 			
 			// apply current if possible
