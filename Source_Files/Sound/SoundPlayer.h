@@ -70,6 +70,9 @@ public:
 	static float Simulate(const SoundParameters& soundParameters);
 	float GetPriority() const override { return Simulate(parameters.Get()); }
 	void AskSoftStop() { soft_stop_signal = true; } //not supported by 3d sounds because no need to
+	void AskRewind(const SoundParameters& soundParameters, const Sound& sound);
+	bool CanRewind(int baseTick) const;
+	bool CanFastRewind(const SoundParameters& soundParameters) const;
 private:
 
 	struct SoundTransition {
@@ -86,10 +89,7 @@ private:
 	SetupALResult SetUpALSourceIdle() override;
 	SetupALResult SetUpALSource3D();
 	bool SetUpALSourceInit() override;
-	bool CanRewind(int baseTick) const;
-	bool CanFastRewind(const SoundParameters& soundParameters) const;
 	bool LoadParametersUpdates() override;
-	void AskRewind(const SoundParameters& soundParameters, const Sound& sound);
 	float ComputeParameterForTransition(float targetParameter, float currentParameter, int currentTick) const;
 	float ComputeVolumeForTransition(float targetVolume);
 	SoundBehavior ComputeVolumeForTransition(const SoundBehavior& targetSoundBehavior);

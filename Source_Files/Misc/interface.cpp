@@ -1645,7 +1645,7 @@ static void display_introduction(
 		if (get_sound_resource_from_images(screen_data->screen_base, SoundRsrc))
 		{
 			SoundParameters parameters;
-			if (OpenALManager::Get()) introduction_sound = OpenALManager::Get()->PlaySound(SoundRsrc, parameters);
+			introduction_sound = SoundManager::instance()->PlaySound(SoundRsrc, parameters);
 		}
 	}
 	else
@@ -2562,7 +2562,7 @@ static void next_game_screen(
 					_fixed pitch = (shapes_file_is_m1() && game_state.state==_display_intro_screens) ? _m1_high_frequency : _normal_frequency;
 					SoundParameters parameters;
 					parameters.pitch = pitch * 1.f / _normal_frequency;
-					if (OpenALManager::Get()) introduction_sound = OpenALManager::Get()->PlaySound(SoundRsrc, parameters);
+					introduction_sound = SoundManager::instance()->PlaySound(SoundRsrc, parameters);
 				}
 			}
 		}
@@ -2824,7 +2824,7 @@ static void try_and_display_chapter_screen(
 				_fixed pitch = (shapes_file_is_m1() && level == 101) ? _m1_high_frequency : _normal_frequency;
 				SoundParameters parameters;
 				parameters.pitch = pitch * 1.f / _normal_frequency;
-				if (OpenALManager::Get()) soundPlayer = OpenALManager::Get()->PlaySound(SoundRsrc, parameters);
+				soundPlayer = SoundManager::instance()->PlaySound(SoundRsrc, parameters);
 			}
 			
 			/* Fade in.... */

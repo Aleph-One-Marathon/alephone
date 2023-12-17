@@ -4,7 +4,6 @@
 #include "MusicPlayer.h"
 #include "SoundPlayer.h"
 #include "StreamPlayer.h"
-#include "SoundManager.h"
 #include <queue>
 
 #if defined (_MSC_VER) && !defined (M_PI)
@@ -50,18 +49,14 @@ class OpenALManager {
 public:
 	static OpenALManager* Get() { return instance; }
 	static bool Init(const AudioParameters& parameters);
-	static float From_db(float db, bool music = false) { return db <= (SoundManager::MINIMUM_VOLUME_DB / (music ? 2 : 1)) ? 0 : std::pow(10.f, db / 20.f); }
 	static void Shutdown();
 	void Start();
 	void Stop();
 	void StopAllPlayers();
 	std::shared_ptr<SoundPlayer> PlaySound(const Sound& sound, const SoundParameters& parameters);
-	std::shared_ptr<SoundPlayer> PlaySound(LoadedResource& rsrc, const SoundParameters& parameters);
 	std::shared_ptr<MusicPlayer> PlayMusic(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters);
 	std::shared_ptr<StreamPlayer> PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, AudioFormat audioFormat);
-	void StopSound(short sound_identifier, short source_identifier);
 	std::unique_ptr<AudioPlayer::AudioSource> PickAvailableSource(const AudioPlayer& audioPlayer);
-	std::shared_ptr<SoundPlayer> GetSoundPlayer(short identifier, short source_identifier, bool sound_identifier_only = false) const;
 	void UpdateListener(world_location3d listener) { listener_location.Set(listener); }
 	const world_location3d& GetListener() const { return listener_location.Get(); }
 	void SetMasterVolume(float volume);
@@ -72,10 +67,8 @@ public:
 	bool Support_HRTF_Toggling() const;
 	bool Is_HRTF_Enabled() const;
 	bool IsBalanceRewindSound() const { return audio_parameters.balance_rewind; }
-	void CleanInactivePlayers();
 	ALCint GetRenderingFormat() const { return rendering_format; }
 	ALuint GetLowPassFilter(float highFrequencyGain) const;
-	const std::vector<std::shared_ptr<SoundPlayer>>& GetSoundPlayers() const { return sound_players_local; }
 private:
 	static OpenALManager* instance;
 	ALCdevice* p_ALCDevice = nullptr;
@@ -97,7 +90,6 @@ private:
 	bool is_using_recording_device = false;
 	std::queue<std::unique_ptr<AudioPlayer::AudioSource>> sources_pool;
 	std::deque<std::shared_ptr<AudioPlayer>> audio_players_queue; //for audio thread only
-	std::vector<std::shared_ptr<SoundPlayer>> sound_players_local; //for OpenALManager only (main thread)
 	boost::lockfree::spsc_queue<std::shared_ptr<AudioPlayer>, boost::lockfree::capacity<256>> audio_players_shared; //pipeline main => audio thread
 	int GetBestOpenALRenderingFormat(ALCint channelsType);
 	void RetrieveSource(const std::shared_ptr<AudioPlayer>& player);
@@ -120,8 +112,6 @@ private:
 	AudioParameters audio_parameters;
 	ALCint rendering_format = 0;
 	ALuint low_pass_filter;
-
-	static constexpr int max_sounds_for_source = 3;
 
 	/* format type we supports for mixing / rendering
 	* those are used from the first to the last of the list

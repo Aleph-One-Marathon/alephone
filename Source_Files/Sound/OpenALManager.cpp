@@ -130,70 +130,11 @@ void OpenALManager::ToggleDeviceMode(bool recording_device) {
 	SDL_PauseAudio(is_using_recording_device);
 }
 
-//Do we have a player currently streaming with the same sound we want to play ?
-//A sound is identified as unique with sound index + source index, NONE is considered as a valid source index (local sounds)
-//The flag sound_identifier_only must be used to know if there is a sound playing with a specific identifier without caring of the source
-std::shared_ptr<SoundPlayer> OpenALManager::GetSoundPlayer(short identifier, short source_identifier, bool sound_identifier_only) const {
-
-	std::vector<std::shared_ptr<SoundPlayer>> matchingPlayers;
-	std::copy_if(sound_players_local.begin(), sound_players_local.end(), std::back_inserter(matchingPlayers),
-		[identifier](const std::shared_ptr<SoundPlayer> player) { return player->IsActive() && (identifier != NONE && player->GetIdentifier() == identifier); });
-
-	auto matchingPlayer = matchingPlayers.size() > 0 ? matchingPlayers[0] : std::shared_ptr<SoundPlayer>();
-
-	if (!sound_identifier_only) {
-
-		auto matchingSourcePlayer = std::find_if(matchingPlayers.begin(), matchingPlayers.end(),
-			[source_identifier](const std::shared_ptr<SoundPlayer> player) { return player->GetSourceIdentifier() == source_identifier; });
-
-		if (matchingSourcePlayer == matchingPlayers.end() && matchingPlayers.size() >= max_sounds_for_source) {
-			matchingPlayer = *std::min_element(matchingPlayers.begin(), matchingPlayers.end(),
-				[](const std::shared_ptr<SoundPlayer>& a, const std::shared_ptr<SoundPlayer>& b)
-				{  return a->GetPriority() < b->GetPriority(); });
-		}
-		else {
-			matchingPlayer = matchingSourcePlayer != matchingPlayers.end() ? *matchingSourcePlayer : std::shared_ptr<SoundPlayer>();
-		}
-	}
-
-	return matchingPlayer;
-}
-
 std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(const Sound& sound, const SoundParameters& parameters) {
-
-	auto soundPlayer = std::shared_ptr<SoundPlayer>();
-	const float simulatedVolume = SoundPlayer::Simulate(parameters);
-	if (!process_audio_active || simulatedVolume <= 0) return soundPlayer;
-
-	//We have to play a sound, but let's find out first if we don't have a player with the source we would need
-	if (!(parameters.flags & _sound_does_not_self_abort)) {
-
-		auto existingPlayer = GetSoundPlayer(parameters.identifier, parameters.source_identifier, !audio_parameters.sounds_3d || (parameters.flags & _sound_cannot_be_restarted));
-
-		if (existingPlayer) {
-
-			if (parameters.soft_rewind || (!(parameters.flags & _sound_cannot_be_restarted) && (existingPlayer->CanFastRewind(parameters) || simulatedVolume + abortAmplitudeThreshold > SoundPlayer::Simulate(existingPlayer->GetParameters())))) {
-				existingPlayer->AskRewind(parameters, sound); //we found one, we won't create another player but rewind this one instead
-			}
-
-			return existingPlayer;
-		}
-	}
-
-	soundPlayer = std::make_shared<SoundPlayer>(sound, parameters);
-	sound_players_local.push_back(soundPlayer);
+	if (!process_audio_active) return std::shared_ptr<SoundPlayer>();
+	auto soundPlayer = std::make_shared<SoundPlayer>(sound, parameters);
 	audio_players_shared.push(soundPlayer);
 	return soundPlayer;
-}
-
-std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(LoadedResource& rsrc, const SoundParameters& parameters) {
-	SoundHeader header;
-	if (header.Load(rsrc)) {
-		auto data = header.LoadData(rsrc);
-		return PlaySound({ header, *data }, parameters);
-	}
-
-	return std::shared_ptr<SoundPlayer>();
 }
 
 std::shared_ptr<MusicPlayer> OpenALManager::PlayMusic(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters) {
@@ -228,15 +169,9 @@ std::unique_ptr<AudioPlayer::AudioSource> OpenALManager::PickAvailableSource(con
 	return source;
 }
 
-void OpenALManager::StopSound(short sound_identifier, short source_identifier) {
-	auto player = GetSoundPlayer(sound_identifier, source_identifier, !audio_parameters.sounds_3d);
-	if (player) player->AskStop();
-}
-
 void OpenALManager::StopAllPlayers() {
 	SDL_LockAudio();
 	for (auto& player : audio_players_queue) RetrieveSource(player);
-	sound_players_local.clear();
 	audio_players_queue.clear();
 	audio_players_shared.reset();
 	SDL_UnlockAudio();
@@ -246,12 +181,6 @@ void OpenALManager::RetrieveSource(const std::shared_ptr<AudioPlayer>& player) {
 	auto audioSource = player->RetrieveSource();
 	if (audioSource) sources_pool.push(std::move(audioSource));
 	player->is_active = false;
-}
-
-void OpenALManager::CleanInactivePlayers() {
-	sound_players_local.erase(std::remove_if(
-		sound_players_local.begin(), sound_players_local.end(),
-		[](const std::shared_ptr<SoundPlayer> player) { return !player->IsActive(); }), sound_players_local.end());
 }
 
 //this is used with the recording device and this allows OpenAL to

@@ -42,6 +42,7 @@ public:
 	static constexpr float MINIMUM_VOLUME_DB = -40.f;
 	static constexpr float DEFAULT_MUSIC_LEVEL_DB = -12.f;
 	static constexpr float DEFAULT_VIDEO_EXPORT_VOLUME_DB = -8.f;
+	static constexpr int MAX_SOUNDS_FOR_SOURCE = 3;
 	
 	static inline SoundManager* instance() { 
 		static SoundManager *m_instance = 0;
@@ -67,6 +68,7 @@ public:
 	void UnloadSound(short sound);
 	void UnloadAllSounds();
 
+	std::shared_ptr<SoundPlayer> PlaySound(LoadedResource& rsrc, const SoundParameters& parameters);
 	std::shared_ptr<SoundPlayer> PlaySound(short sound_index, world_location3d *source, short identifier, bool local, _fixed pitch = _normal_frequency);
 	void PlayLocalSound(short sound_index, _fixed pitch = _normal_frequency) { PlaySound(sound_index, NULL, NONE, true, pitch); }
 	void DirectPlaySound(short sound_index, angle direction, short volume, _fixed pitch);
@@ -93,6 +95,7 @@ public:
 	short RandomSoundIndexToSoundIndex(short random_sound_index);
 
 	static int GetCurrentAudioTick();
+	static float From_db(float db, bool music = false) { return db <= (SoundManager::MINIMUM_VOLUME_DB / (music ? 2 : 1)) ? 0 : std::pow(10.f, db / 20.f); }
 
 	struct Parameters
 	{
@@ -131,13 +134,16 @@ private:
 	uint16 GetSoundObstructionFlags(short sound_index, world_location3d* source);
 	void UpdateAmbientSoundSources();
 	void ManagePlayers();
-	std::set<std::shared_ptr<SoundPlayer>> sound_players; //our sound players
-	std::set<std::shared_ptr<SoundPlayer>> ambient_sound_players; //our sound players
+	std::set<std::shared_ptr<SoundPlayer>> sound_players;
+	std::set<std::shared_ptr<SoundPlayer>> ambient_sound_players;
 	bool initialized;
 	bool active;
+	static void CleanInactivePlayers(std::set<std::shared_ptr<SoundPlayer>>& players);
 	void CalculateSoundVariables(short sound_index, world_location3d* source, SoundVolumes& variables);
 	void CalculateInitialSoundVariables(short sound_index, world_location3d* source, SoundVolumes& variables);
-
+	std::shared_ptr<SoundPlayer> GetSoundPlayer(short identifier, short source_identifier, bool sound_identifier_only = false) const;
+	std::shared_ptr<SoundPlayer> UpdateExistingPlayer(const Sound& sound, const SoundParameters& soundParameters, float simulatedVolume);
+	std::shared_ptr<SoundPlayer> ManageSound(const Sound& sound, const SoundParameters& parameters);
 	short sound_source; // 8-bit, 16-bit
 	
 	std::unique_ptr<SoundFile> sound_file;

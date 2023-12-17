@@ -228,7 +228,7 @@ bool SoundManager::AdjustVolumeUp(short sound_index)
 		{
 			parameters.volume_db = MAXIMUM_VOLUME_DB;
 		}
-		OpenALManager::Get()->SetMasterVolume(OpenALManager::From_db(parameters.volume_db));
+		OpenALManager::Get()->SetMasterVolume(From_db(parameters.volume_db));
 		PlaySound(sound_index, 0, NONE, true);
 		return true;
 	}
@@ -244,7 +244,7 @@ bool SoundManager::AdjustVolumeDown(short sound_index)
 		{
 			parameters.volume_db = MINIMUM_VOLUME_DB;
 		}
-		OpenALManager::Get()->SetMasterVolume(OpenALManager::From_db(parameters.volume_db));
+		OpenALManager::Get()->SetMasterVolume(From_db(parameters.volume_db));
 		PlaySound(sound_index, 0, NONE, true);
 		return true;
 	}
@@ -255,11 +255,11 @@ void SoundManager::TestVolume(float db, short sound_index)
 {
 	if (active)
 	{
-		OpenALManager::Get()->SetMasterVolume(OpenALManager::From_db(db));
+		OpenALManager::Get()->SetMasterVolume(From_db(db));
 		auto sound = PlaySound(sound_index, 0, NONE, true);
 		while (sound && sound->IsActive())
 		yield();
-		OpenALManager::Get()->SetMasterVolume(OpenALManager::From_db(parameters.volume_db));
+		OpenALManager::Get()->SetMasterVolume(From_db(parameters.volume_db));
 	}	
 }
 
@@ -326,7 +326,8 @@ void SoundManager::StopSound(short identifier, short sound_index)
 {
 	if (active)
 	{
-		OpenALManager::Get()->StopSound(sound_index, identifier);
+		auto player = GetSoundPlayer(sound_index, identifier, !(parameters.flags & _3d_sounds_flag));
+		if (player) player->AskStop();
 	}
 }
 
@@ -346,6 +347,44 @@ void SoundManager::UnloadAllSounds()
 		StopAllSounds();
 		sounds->Clear();
 	}
+}
+
+//Do we have a player currently streaming with the same sound we want to play ?
+//A sound is identified as unique with sound index + source index, NONE is considered as a valid source index (local sounds)
+//The flag sound_identifier_only must be used to know if there is a sound playing with a specific identifier without caring of the source
+std::shared_ptr<SoundPlayer> SoundManager::GetSoundPlayer(short identifier, short source_identifier, bool sound_identifier_only) const {
+
+	std::vector<std::shared_ptr<SoundPlayer>> matchingPlayers;
+	std::copy_if(sound_players.begin(), sound_players.end(), std::back_inserter(matchingPlayers),
+		[identifier](const std::shared_ptr<SoundPlayer> player) { return player->IsActive() && (identifier != NONE && player->GetIdentifier() == identifier); });
+
+	auto matchingPlayer = matchingPlayers.size() > 0 ? matchingPlayers[0] : std::shared_ptr<SoundPlayer>();
+
+	if (!sound_identifier_only) {
+
+		auto matchingSourcePlayer = std::find_if(matchingPlayers.begin(), matchingPlayers.end(),
+			[source_identifier](const std::shared_ptr<SoundPlayer> player) { return player->GetSourceIdentifier() == source_identifier; });
+
+		if (matchingSourcePlayer == matchingPlayers.end() && matchingPlayers.size() >= MAX_SOUNDS_FOR_SOURCE) {
+			matchingPlayer = *std::min_element(matchingPlayers.begin(), matchingPlayers.end(),
+				[](const std::shared_ptr<SoundPlayer>& a, const std::shared_ptr<SoundPlayer>& b)
+				{  return a->GetPriority() < b->GetPriority(); });
+		}
+		else {
+			matchingPlayer = matchingSourcePlayer != matchingPlayers.end() ? *matchingSourcePlayer : std::shared_ptr<SoundPlayer>();
+		}
+	}
+
+	return matchingPlayer;
+}
+
+std::shared_ptr<SoundPlayer> SoundManager::PlaySound(LoadedResource& rsrc, const SoundParameters& parameters) {
+	SoundHeader header;
+	if (!active || OpenALManager::Get()->GetMasterVolume() <= 0 || !(header.Load(rsrc)))
+		return std::shared_ptr<SoundPlayer>();
+
+	auto data = header.LoadData(rsrc);
+	return ManageSound({ header, *data }, parameters);
 }
 
 std::shared_ptr<SoundPlayer> SoundManager::PlaySound(short sound_index, 
@@ -420,9 +459,10 @@ int SoundManager::GetCurrentAudioTick() {
 
 //if we want to manage things with our sound players, it's here
 void SoundManager::ManagePlayers() {
-	OpenALManager::Get()->CleanInactivePlayers();
 
-	for (auto& soundPlayer : OpenALManager::Get()->GetSoundPlayers()) {
+	CleanInactivePlayers(sound_players);
+
+	for (auto& soundPlayer : sound_players) {
 
 		auto parameters = soundPlayer->GetParameters();
 
@@ -737,14 +777,14 @@ void SoundManager::SetStatus(bool active)
 			!(parameters.flags & _lower_restart_delay),
             static_cast<bool>(parameters.flags & _hrtf_flag),
             static_cast<bool>(parameters.flags & _3d_sounds_flag),
-			OpenALManager::From_db(parameters.volume_db)
+			From_db(parameters.volume_db)
 		};
 
 		bool success = OpenALManager::Init(audio_parameters);
 
 		if (!success) return;
 
-		MusicPlayer::SetDefaultVolume(OpenALManager::From_db(parameters.music_db, true));
+		MusicPlayer::SetDefaultVolume(From_db(parameters.music_db, true));
 		OpenALManager::Get()->Start();
 	}
 	else
@@ -753,6 +793,24 @@ void SoundManager::SetStatus(bool active)
 	}
 
 	this->active = active;
+}
+
+std::shared_ptr<SoundPlayer> SoundManager::UpdateExistingPlayer(const Sound& sound, const SoundParameters& soundParameters, float simulatedVolume)
+{
+	//We have to play a sound, but let's find out first if we don't have a player with the source we would need
+	if (soundParameters.flags & _sound_does_not_self_abort) return std::shared_ptr<SoundPlayer>();
+
+	auto existingPlayer = GetSoundPlayer(soundParameters.identifier, soundParameters.source_identifier, !(parameters.flags & _3d_sounds_flag) || (soundParameters.flags & _sound_cannot_be_restarted));
+
+	if (existingPlayer) {
+
+		if (soundParameters.soft_rewind || (!(soundParameters.flags & _sound_cannot_be_restarted) &&
+			(existingPlayer->CanFastRewind(soundParameters) || simulatedVolume + abortAmplitudeThreshold > SoundPlayer::Simulate(existingPlayer->GetParameters())))) {
+			existingPlayer->AskRewind(soundParameters, sound); //we found one, we won't create another player but rewind this one instead
+		}
+	}
+
+	return existingPlayer;
 }
 
 SoundDefinition* SoundManager::GetSoundDefinition(short sound_index)
@@ -766,9 +824,22 @@ SoundDefinition* SoundManager::GetSoundDefinition(short sound_index)
 	return sound_definition;
 }
 
+std::shared_ptr<SoundPlayer> SoundManager::ManageSound(const Sound& sound, const SoundParameters& parameters)
+{
+	auto returnedPlayer = std::shared_ptr<SoundPlayer>();
+	UpdateListener(); //to be sure we have a listener for the first sounds we will play when entering a map
+	float simulatedVolume = SoundPlayer::Simulate(parameters);
+	if (simulatedVolume <= 0) return returnedPlayer;
+	auto existingPlayer = UpdateExistingPlayer(sound, parameters, simulatedVolume);
+	if (existingPlayer) return existingPlayer;
+	returnedPlayer = OpenALManager::Get()->PlaySound(sound, parameters);
+	if (returnedPlayer) sound_players.insert(returnedPlayer);
+	return returnedPlayer;
+}
+
 std::shared_ptr<SoundPlayer> SoundManager::BufferSound(SoundParameters parameters)
 {
-	auto returnedPlayer = std::shared_ptr<SoundPlayer>(nullptr);
+	auto returnedPlayer = std::shared_ptr<SoundPlayer>();
 	SoundDefinition* definition = GetSoundDefinition(parameters.identifier);
 	if (!definition || !definition->permutations)
 		return returnedPlayer;
@@ -797,8 +868,7 @@ std::shared_ptr<SoundPlayer> SoundManager::BufferSound(SoundParameters parameter
 		parameters.flags |= definition->flags;
 		parameters.behavior = (sound_behavior)definition->behavior_index;
 
-		UpdateListener(); //to be sure we have a listener for the first sounds we will play when entering a map
-		returnedPlayer = OpenALManager::Get()->PlaySound({ header, *sound }, parameters);
+		return ManageSound({ header, *sound }, parameters);
 	}
 
 	return returnedPlayer;
@@ -903,16 +973,19 @@ static void add_one_ambient_sound_source(struct ambient_sound_data *ambient_soun
 	SoundManager::instance()->AddOneAmbientSoundSource(ambient_sounds, source, listener, sound_index, absolute_volume);
 }
 
-void SoundManager::UpdateAmbientSoundSources()
-{
-	auto iterator = ambient_sound_players.begin();
-	while (iterator != ambient_sound_players.end()) { //Remove sound players that are done playing
+void SoundManager::CleanInactivePlayers(std::set<std::shared_ptr<SoundPlayer>>& players) {
+	auto iterator = players.begin();
+	while (iterator != players.end()) {
 		if (!(*iterator)->IsActive())
-			iterator = ambient_sound_players.erase(iterator);
-		else 
+			iterator = players.erase(iterator);
+		else
 			iterator++;
 	}
+}
 
+void SoundManager::UpdateAmbientSoundSources()
+{
+	CleanInactivePlayers(ambient_sound_players);
 	ambient_sound_data ambient_sounds[MAXIMUM_PROCESSED_AMBIENT_SOUNDS];
 
 	// reset all local copies
@@ -986,7 +1059,7 @@ void SoundManager::UpdateAmbientSoundSources()
 	{
 		if (SLOT_IS_FREE(&ambient_sounds[i])) continue;
 
-		auto soundPlayer = OpenALManager::Get()->GetSoundPlayer(ambient_sounds[i].sound_index, NONE);
+		auto soundPlayer = GetSoundPlayer(ambient_sounds[i].sound_index, NONE);
 
 		if (soundPlayer && soundPlayer->HasRewind())
 		{

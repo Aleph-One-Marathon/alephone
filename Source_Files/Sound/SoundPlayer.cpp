@@ -1,5 +1,6 @@
 #include "SoundPlayer.h"
 #include "OpenALManager.h"
+#include "SoundManager.h"
 
 constexpr SoundBehavior SoundPlayer::sound_behavior_parameters[];
 constexpr SoundBehavior SoundPlayer::sound_obstructed_or_muffled_behavior_parameters[];
