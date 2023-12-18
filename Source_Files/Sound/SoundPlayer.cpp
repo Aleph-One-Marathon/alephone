@@ -349,7 +349,7 @@ int SoundPlayer::GetNextData(uint8* data, int length) {
 	if (remainingDataLength <= 0) return LoopManager(data, length);
 	int returnedDataLength = std::min(remainingDataLength, length);
 	auto& sound_data = sound.Get().data;
-	std::copy(sound_data.data() + current_index_data, sound_data.data() + current_index_data + returnedDataLength, data);
+	std::copy(sound_data->data() + current_index_data, sound_data->data() + current_index_data + returnedDataLength, data);
 	current_index_data += returnedDataLength;
 	if (returnedDataLength < length && parameters.Get().loop) return returnedDataLength + LoopManager(data + returnedDataLength, length - returnedDataLength);
 	return returnedDataLength;

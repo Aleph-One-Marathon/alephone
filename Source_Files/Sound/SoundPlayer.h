@@ -56,7 +56,7 @@ struct SoundBehavior {
 
 struct Sound {
 	SoundInfo header;
-	SoundData data;
+	std::shared_ptr<SoundData> data;
 };
 
 class SoundPlayer : public AudioPlayer {

@@ -384,7 +384,7 @@ std::shared_ptr<SoundPlayer> SoundManager::PlaySound(LoadedResource& rsrc, const
 		return std::shared_ptr<SoundPlayer>();
 
 	auto data = header.LoadData(rsrc);
-	return ManageSound({ header, *data }, parameters);
+	return ManageSound({ header, data }, parameters);
 }
 
 std::shared_ptr<SoundPlayer> SoundManager::PlaySound(short sound_index, 
@@ -868,7 +868,7 @@ std::shared_ptr<SoundPlayer> SoundManager::BufferSound(SoundParameters parameter
 		parameters.flags |= definition->flags;
 		parameters.behavior = (sound_behavior)definition->behavior_index;
 
-		return ManageSound({ header, *sound }, parameters);
+		return ManageSound({ header, sound }, parameters);
 	}
 
 	return returnedPlayer;
