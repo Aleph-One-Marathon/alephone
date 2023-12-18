@@ -28,8 +28,6 @@ void AudioPlayer::ResetSource() {
 	for (auto& buffer : audio_source->buffers) {
 		buffer.second = false;
 	}
-
-	SetUpALSourceInit();
 }
 
 //Get back the source of the player

@@ -98,6 +98,7 @@ void SoundPlayer::Rewind() {
 
 	sound.Update();
 	Init(rewindParameters);
+	SetUpALSourceInit();
 }
 
 int SoundPlayer::LoopManager(uint8* data, int length) {
