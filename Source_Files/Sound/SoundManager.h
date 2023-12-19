@@ -70,7 +70,7 @@ public:
 
 	std::shared_ptr<SoundPlayer> PlaySound(LoadedResource& rsrc, const SoundParameters& parameters);
 	std::shared_ptr<SoundPlayer> PlaySound(short sound_index, world_location3d *source, short identifier, _fixed pitch = _normal_frequency);
-	void DirectPlaySound(short sound_index, angle direction, short volume, _fixed pitch);
+	std::shared_ptr<SoundPlayer> DirectPlaySound(short sound_index, angle direction, short volume, _fixed pitch);
 
 	void StopSound(short identifier, short sound_index);
 	void StopAllSounds();

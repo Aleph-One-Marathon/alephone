@@ -423,10 +423,10 @@ std::shared_ptr<SoundPlayer> SoundManager::PlaySound(short sound_index,
 	return BufferSound(parameters);
 }
 				
-void SoundManager::DirectPlaySound(short sound_index, angle direction, short volume, _fixed pitch)
+std::shared_ptr<SoundPlayer> SoundManager::DirectPlaySound(short sound_index, angle direction, short volume, _fixed pitch)
 {
 	if (sound_index == NONE || !active || parameters.volume_db <= MINIMUM_VOLUME_DB || !LoadSound(sound_index))
-		return;
+		return std::shared_ptr<SoundPlayer>();
 
 	SoundParameters parameters;
 	parameters.identifier = sound_index;
@@ -444,7 +444,7 @@ void SoundManager::DirectPlaySound(short sound_index, angle direction, short vol
 		parameters.stereo_parameters.gain_right = variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
 	}
 
-	BufferSound(parameters);
+	return BufferSound(parameters);
 }
 
 void SoundManager::StopAllSounds() {
@@ -876,9 +876,8 @@ std::shared_ptr<SoundPlayer> SoundManager::BufferSound(SoundParameters parameter
 float SoundManager::CalculatePitchModifier(short sound_index, _fixed pitch_modifier)
 {
 	SoundDefinition *definition = GetSoundDefinition(sound_index);
-	if (!definition) return FIXED_ONE;
 
-	if (!(definition->flags & _sound_cannot_change_pitch))
+	if (definition && !(definition->flags & _sound_cannot_change_pitch))
 	{
 		if (!(definition->flags & _sound_resists_pitch_changes))
 		{
@@ -887,7 +886,7 @@ float SoundManager::CalculatePitchModifier(short sound_index, _fixed pitch_modif
 	}
 	else
 	{
-		pitch_modifier= FIXED_ONE;
+		pitch_modifier = FIXED_ONE;
 	}
 
 	return pitch_modifier * 1.f / _normal_frequency;
