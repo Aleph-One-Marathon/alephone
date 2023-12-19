@@ -1625,7 +1625,7 @@ int Lua_Player_Play_Sound(lua_State *L)
 	if (local_player_index != player_index)
 		return 0;
 
-	SoundManager::instance()->PlaySound(sound_index, NULL, NONE, true, _fixed(FIXED_ONE * pitch));
+	SoundManager::instance()->PlaySound(sound_index, NULL, NONE, _fixed(FIXED_ONE * pitch));
 	return 0;
 }
 

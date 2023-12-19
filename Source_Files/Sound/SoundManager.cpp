@@ -229,7 +229,7 @@ bool SoundManager::AdjustVolumeUp(short sound_index)
 			parameters.volume_db = MAXIMUM_VOLUME_DB;
 		}
 		OpenALManager::Get()->SetMasterVolume(From_db(parameters.volume_db));
-		PlaySound(sound_index, 0, NONE, true);
+		PlaySound(sound_index, 0, NONE);
 		return true;
 	}
 	return false;
@@ -245,7 +245,7 @@ bool SoundManager::AdjustVolumeDown(short sound_index)
 			parameters.volume_db = MINIMUM_VOLUME_DB;
 		}
 		OpenALManager::Get()->SetMasterVolume(From_db(parameters.volume_db));
-		PlaySound(sound_index, 0, NONE, true);
+		PlaySound(sound_index, 0, NONE);
 		return true;
 	}
 	return false;
@@ -256,7 +256,7 @@ void SoundManager::TestVolume(float db, short sound_index)
 	if (active)
 	{
 		OpenALManager::Get()->SetMasterVolume(From_db(db));
-		auto sound = PlaySound(sound_index, 0, NONE, true);
+		auto sound = PlaySound(sound_index, 0, NONE);
 		while (sound && sound->IsActive())
 		yield();
 		OpenALManager::Get()->SetMasterVolume(From_db(parameters.volume_db));
@@ -390,7 +390,6 @@ std::shared_ptr<SoundPlayer> SoundManager::PlaySound(LoadedResource& rsrc, const
 std::shared_ptr<SoundPlayer> SoundManager::PlaySound(short sound_index, 
 			     world_location3d *source,
 			     short identifier, // NONE is no identifer and the sound is immediately orphaned
-				 bool local,
 			     _fixed pitch)
 {
 	if (sound_index == NONE || !active || OpenALManager::Get()->GetMasterVolume() <= 0 || !LoadSound(sound_index))
@@ -399,7 +398,7 @@ std::shared_ptr<SoundPlayer> SoundManager::PlaySound(short sound_index,
 	SoundParameters parameters;
 	parameters.identifier = sound_index;
 	parameters.pitch = pitch;
-	parameters.local = local;
+	parameters.is_2d = !source;
 	parameters.source_identifier = identifier;
 
 	if (source) {
@@ -410,10 +409,10 @@ std::shared_ptr<SoundPlayer> SoundManager::PlaySound(short sound_index,
 		if (this->parameters.flags & _3d_sounds_flag) {
 			parameters.obstruction_flags = GetSoundObstructionFlags(sound_index, source);
 		}
-		else if (!local) {
+		else {
 			SoundVolumes variables;
 			CalculateInitialSoundVariables(sound_index, source, variables); //obstruction calcul is done here
-			parameters.local = true;
+			parameters.is_2d = true;
 			parameters.stereo_parameters.is_panning = true;
 			parameters.stereo_parameters.gain_global = variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
 			parameters.stereo_parameters.gain_left = variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
@@ -477,7 +476,7 @@ void SoundManager::ManagePlayers() {
 				parameters.source_location3d = *parameters.dynamic_source_location3d;
 				updateParameters = source_location3d != parameters.source_location3d;
 			}
-			if (!parameters.local) {
+			if (!parameters.is_2d) {
 				auto obstruction_flags = parameters.obstruction_flags;
 				parameters.obstruction_flags = GetSoundObstructionFlags(parameters.identifier, &parameters.source_location3d);
 				updateParameters = updateParameters || obstruction_flags != parameters.obstruction_flags;

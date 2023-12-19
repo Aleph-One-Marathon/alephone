@@ -1614,5 +1614,5 @@ char *contract_symbolic_paths(char *dest, const char *src, int maxlen)
 void PlayInterfaceButtonSound(short SoundID)
 {
 	if (TEST_FLAG(input_preferences->modifiers,_inputmod_use_button_sounds))
-		SoundManager::instance()->PlaySound(SoundID, (world_location3d *) NULL, NONE, true);
+		SoundManager::instance()->PlaySound(SoundID, (world_location3d *) NULL, NONE);
 }

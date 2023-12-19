@@ -1450,7 +1450,7 @@ void do_menu_item_command(
 					break;
 					
 				case iCenterButton:
-					SoundManager::instance()->PlaySound(Sound_Center_Button(), 0, NONE, true);
+					SoundManager::instance()->PlaySound(Sound_Center_Button(), 0, NONE);
 					break;
 					
 				case iSaveLastFilm:
