@@ -195,7 +195,7 @@ short new_item(
 			else if ((get_item_kind(type) == _ball) && !static_world->ball_in_play)
 			{
 				static_world->ball_in_play = true;
-				SoundManager::instance()->PlayLocalSound(_snd_got_ball);
+				SoundManager::instance()->PlaySound(_snd_got_ball, nullptr, NONE);
 			}
 			
 			/* let PLACEMENT.C keep track of how many there are */
@@ -706,7 +706,7 @@ bool try_and_add_player_item(
 	/* Play the pickup sound */
 	if (success && player_index==current_player_index)
 	{
-		SoundManager::instance()->PlayLocalSound(grabbed_sound_index);
+		SoundManager::instance()->PlaySound(grabbed_sound_index, nullptr, NONE);
 	
 		/* Flash screen */
 		start_fade(_fade_bonus);

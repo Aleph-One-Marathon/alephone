@@ -389,7 +389,7 @@ std::shared_ptr<SoundPlayer> SoundManager::PlaySound(LoadedResource& rsrc, const
 
 std::shared_ptr<SoundPlayer> SoundManager::PlaySound(short sound_index, 
 			     world_location3d *source,
-			     short identifier, // NONE is no identifer and the sound is immediately orphaned
+			     short identifier, // NONE is no identifier and the sound is immediately orphaned
 			     _fixed pitch)
 {
 	if (sound_index == NONE || !active || OpenALManager::Get()->GetMasterVolume() <= 0 || !LoadSound(sound_index))

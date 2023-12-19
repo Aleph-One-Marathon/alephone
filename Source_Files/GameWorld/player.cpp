@@ -1256,7 +1256,7 @@ static void handle_player_in_vacuum(
 			if (player->suit_oxygen % breathing_frequency == 0 &&
 				player_index == current_player_index)
 			{
-				SoundManager::instance()->PlayLocalSound(Sound_Breathing());
+				SoundManager::instance()->PlaySound(Sound_Breathing(), nullptr, NONE);
 			}
 
 			const auto offset_o2 = player->suit_oxygen + OXYGEN_WARNING_OFFSET;
@@ -1264,7 +1264,7 @@ static void handle_player_in_vacuum(
 				offset_o2 % OXYGEN_WARNING_FREQUENCY == 0 &&
 				player_index == current_player_index)
 			{
-				SoundManager::instance()->PlayLocalSound(Sound_OxygenWarning());
+				SoundManager::instance()->PlaySound(Sound_OxygenWarning(), nullptr, NONE);
 			}
 		}
 				
