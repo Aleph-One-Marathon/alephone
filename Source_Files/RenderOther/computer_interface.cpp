@@ -1784,10 +1784,10 @@ static void get_date_string(
 	}
 	else
 	{
-		seconds = 800070137;
+		seconds = 800070137; // Wednesday, May 10, 1995 1:42:17
 		seconds += game_time_passed / TICKS_PER_SECOND;
 	}
-	game_time = *localtime(&seconds);
+	game_time = *gmtime(&seconds);
 	game_time.tm_year= 437;
 	game_time.tm_yday= 0;
 	game_time.tm_isdst= 0;
