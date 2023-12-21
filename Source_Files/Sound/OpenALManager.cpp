@@ -171,9 +171,15 @@ std::unique_ptr<AudioPlayer::AudioSource> OpenALManager::PickAvailableSource(con
 
 void OpenALManager::StopAllPlayers() {
 	SDL_LockAudio();
-	for (auto& player : audio_players_queue) RetrieveSource(player);
+
+	for (auto& audioPlayer : audio_players_queue) RetrieveSource(audioPlayer);
 	audio_players_queue.clear();
-	audio_players_shared.reset();
+
+	std::shared_ptr<AudioPlayer> audioPlayer;
+	while (audio_players_shared.pop(audioPlayer)) {
+		audioPlayer->is_active = false;
+	}
+
 	SDL_UnlockAudio();
 }
 
