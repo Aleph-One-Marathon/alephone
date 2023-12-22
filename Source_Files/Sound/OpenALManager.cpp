@@ -1,5 +1,4 @@
 #include "OpenALManager.h"
-#include "sound_definitions.h"
 #include "Logging.h"
 
 LPALCLOOPBACKOPENDEVICESOFT OpenALManager::alcLoopbackOpenDeviceSOFT;
@@ -172,7 +171,10 @@ std::unique_ptr<AudioPlayer::AudioSource> OpenALManager::PickAvailableSource(con
 void OpenALManager::StopAllPlayers() {
 	SDL_LockAudio();
 
-	for (auto& audioPlayer : audio_players_queue) RetrieveSource(audioPlayer);
+	for (auto& audioPlayer : audio_players_queue) {
+		RetrieveSource(audioPlayer);
+	}
+
 	audio_players_queue.clear();
 
 	std::shared_ptr<AudioPlayer> audioPlayer;
