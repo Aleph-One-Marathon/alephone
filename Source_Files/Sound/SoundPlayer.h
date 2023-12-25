@@ -109,21 +109,21 @@ private:
 	static constexpr int smooth_volume_transition_time_ms = 300;
 
 	static constexpr SoundBehavior sound_behavior_parameters[] = {
-		{0.5, 5, 1, 1, 1},
-		{2.5, 15, 1.7, 1, 1},
-		{3, 20, 1.2, 1, 1}
+		{0.5f, 5.f, 1.f, 1.f, 1.f},
+		{2.5f, 15.f, 1.7f, 1.f, 1.f},
+		{3.f, 20.f, 1.2f, 1.f, 1.f}
 	};
 
 	static constexpr SoundBehavior sound_obstructed_or_muffled_behavior_parameters[] = {
-		{0.5, 3, 2, 0.3, 0.15},
-		{2.5, 9, 3.4, 0.5, 0.2},
-		{3, 12, 2.4, 0.75, 0.3}
+		{0.5f, 3.f, 2.f, 0.3f, 0.15f},
+		{2.5f, 9.f, 3.4f, 0.5f, 0.2f},
+		{3.f, 12.f, 2.4f, 0.75f, 0.3f}
 	};
 
 	static constexpr SoundBehavior sound_obstructed_and_muffled_behavior_parameters[] = {
-		{0.2, 2, 3, 0.15, 0.1},
-		{1.5, 6, 4.2, 0.25, 0.15},
-		{2, 9, 3.6, 0.375, 0.2}
+		{0.2f, 2.f, 3.f, 0.15f, 0.1f},
+		{1.5f, 6.f, 4.2f, 0.25f, 0.15f},
+		{2.f, 9.f, 3.6f, 0.375f, 0.2f}
 	};
 
 	friend class OpenALManager;
