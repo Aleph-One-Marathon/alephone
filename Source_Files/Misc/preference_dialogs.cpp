@@ -578,5 +578,5 @@ void SdlOpenGLDialog::choose_advanced_tab(void *arg)
 std::unique_ptr<OpenGLDialog>
 OpenGLDialog::Create(int theSelectedRenderer)
 {
-	return std::unique_ptr<OpenGLDialog>(new SdlOpenGLDialog(theSelectedRenderer));
+	return std::make_unique<SdlOpenGLDialog>(theSelectedRenderer);
 }

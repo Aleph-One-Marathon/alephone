@@ -369,7 +369,7 @@ private:
 std::unique_ptr<MetaserverClientUi>
 MetaserverClientUi::Create()
 {
-	return std::unique_ptr<MetaserverClientUi>(new SdlMetaserverClientUi);
+	return std::make_unique<SdlMetaserverClientUi>();
 }
 
 #endif // !defined(DISABLE_NETWORKING)

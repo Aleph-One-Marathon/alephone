@@ -362,7 +362,7 @@ bool M2SoundFile::Open(FileSpecifier& SoundFileSpec)
 {
 	Close();
 
-	std::unique_ptr<OpenedFile> sound_file(new OpenedFile);
+	auto sound_file = std::make_unique<OpenedFile>();
 
 	if (!SoundFileSpec.Open(*sound_file, false)) return false;
 

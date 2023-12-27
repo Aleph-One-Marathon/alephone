@@ -299,7 +299,7 @@ bool Movie::Setup()
 
     if (MainScreenIsOpenGL())
     {
-        frameBufferObject = std::unique_ptr<FBO>(new FBO(view_rect.w, view_rect.h));
+        frameBufferObject = std::make_unique<FBO>(view_rect.w, view_rect.h);
     }
 
 	return av->inited = true;

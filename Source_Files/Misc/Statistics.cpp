@@ -125,7 +125,7 @@ int StatsManager::Run(void *pv)
 			}
 			else
 			{
-				entry.reset(new Entry(sm->entries_.front()));
+				entry = std::make_unique<Entry>(sm->entries_.front());
 				sm->entries_.pop();
 			}
 		}

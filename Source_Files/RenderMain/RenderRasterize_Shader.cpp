@@ -286,7 +286,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 	GLdouble shade = PIN(static_cast<GLfloat>(rect.ambient_shade)/static_cast<GLfloat>(FIXED_ONE),0,1);
 	color[0] = color[1] = color[2] = shade;
 
-	auto TMgr = std::unique_ptr<TextureManager>(new TextureManager());
+	auto TMgr = std::make_unique<TextureManager>();
 
 	TMgr->ShapeDesc = rect.ShapeDesc;
 	TMgr->LowLevelShape = rect.LowLevelShape;
@@ -394,7 +394,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 
 	Shader *s = NULL;
 
-	auto TMgr = std::unique_ptr<TextureManager>(new TextureManager());
+	auto TMgr = std::make_unique<TextureManager>();
 	LandscapeOptions *opts = NULL;
 	TMgr->ShapeDesc = Texture;
 	if (TMgr->ShapeDesc == UNONE) { return TMgr; }

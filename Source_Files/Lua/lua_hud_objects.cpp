@@ -959,7 +959,7 @@ int Lua_Fonts_New(lua_State *L)
 	std::unique_ptr<ScopedSearchPath> ssp;
 	if (search_path.size())
 	{
-		ssp.reset(new ScopedSearchPath(DirectorySpecifier(search_path)));
+		ssp = std::make_unique<ScopedSearchPath>(DirectorySpecifier(search_path));
 	}
 
 	FontSpecifier *ff = new FontSpecifier(f);
