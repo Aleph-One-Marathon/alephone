@@ -1167,6 +1167,7 @@ bool idle_game_state(uint32 time)
 						game_state.state= _game_in_progress;
 						game_state.phase = 15 * MACHINE_TICKS_PER_SECOND;
 						game_state.last_ticks_on_idle= machine_tick_count();
+						SoundManager::instance()->UpdateListener();
 						update_interface(NONE);
 					} else {
 						/* Give them the error... */
@@ -2282,7 +2283,9 @@ static void start_game(
 	if(!changing_level)
 	{
 		set_keyboard_controller_status(true);
-	} 
+	}
+
+	SoundManager::instance()->UpdateListener();
 }
 
 // LP: "static" removed

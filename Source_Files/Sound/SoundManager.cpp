@@ -459,6 +459,8 @@ int SoundManager::GetCurrentAudioTick() {
 //if we want to manage things with our sound players, it's here
 void SoundManager::ManagePlayers() {
 
+	if (!active) return;
+
 	CleanInactivePlayers(sound_players);
 
 	for (auto& soundPlayer : sound_players) {
@@ -496,20 +498,16 @@ void SoundManager::ManagePlayers() {
 }
 
 void SoundManager::UpdateListener() {
-	if (parameters.flags & _3d_sounds_flag) {
-		auto listener = _sound_listener_proc();
-		if (listener && *listener != OpenALManager::Get()->GetListener()) OpenALManager::Get()->UpdateListener(*listener);
-	}
+	if (!active || !(parameters.flags & _3d_sounds_flag)) return;
+	auto listener = _sound_listener_proc();
+	if (listener && *listener != OpenALManager::Get()->GetListener()) OpenALManager::Get()->UpdateListener(*listener);
 }
 
 void SoundManager::Idle()
 {
-	if (active)
-	{
-		UpdateListener();
-		CauseAmbientSoundSourceUpdate();
-		ManagePlayers();
-	}
+	UpdateListener();
+	CauseAmbientSoundSourceUpdate();
+	ManagePlayers();
 }
 
 void SoundManager::CauseAmbientSoundSourceUpdate()
@@ -826,7 +824,6 @@ SoundDefinition* SoundManager::GetSoundDefinition(short sound_index)
 std::shared_ptr<SoundPlayer> SoundManager::ManageSound(const Sound& sound, const SoundParameters& parameters)
 {
 	auto returnedPlayer = std::shared_ptr<SoundPlayer>();
-	UpdateListener(); //to be sure we have a listener for the first sounds we will play when entering a map
 	float simulatedVolume = SoundPlayer::Simulate(parameters);
 	if (simulatedVolume <= 0) return returnedPlayer;
 	auto existingPlayer = UpdateExistingPlayer(sound, parameters, simulatedVolume);
