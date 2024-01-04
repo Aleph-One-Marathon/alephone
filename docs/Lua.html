@@ -749,7 +749,7 @@
 <dd><p class="description">maximum number of map objects</p></dd>
 <dt>Items()</dt>
 <dd><p class="description">iterates through all valid items</p></dd>
-<dt>Items.new(x, y, height, polygon, type)</dt>
+<dt>Items.new(x, y, height, polygon, type [, invisible] <span class="version">git</span>)</dt>
 <dd><p class="description">returns a new item</p></dd>
 <dt>Items[index]</dt>
 <dd><dl>
@@ -1055,8 +1055,11 @@
 <dd><p class="description">maximum number of monsters</p></dd>
 <dt>Monsters()</dt>
 <dd><p class="description">iterates through all valid monsters (including player monsters)</p></dd>
-<dt>Monsters.new(x, y, height, polygon, type)</dt>
-<dd><p class="description">returns a new monster</p></dd>
+<dt>Monsters.new(x, y, height, polygon, type [, invisible] <span class="version">git</span>)</dt>
+<dd>
+<p class="description">returns a new monster</p>
+<p class="note">if you want to make a monster teleport in immediately, spawn it as invisible and then activate it </p>
+</dd>
 <dt>Monsters[index]</dt>
 <dd><dl>
       <dt>:accelerate(direction, velocity, vertical_velocity) <span class="version">20081213</span>

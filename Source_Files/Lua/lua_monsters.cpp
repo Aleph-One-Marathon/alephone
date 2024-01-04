@@ -1126,6 +1126,14 @@ int Lua_Monsters_New(lua_State *L)
 	if (monster_index == NONE)
 		return 0;
 
+	if (lua_toboolean(L, 6))
+	{
+		struct monster_data *monster= get_monster_data(monster_index);
+		object_data *object = get_object_data(monster->object_index);
+	
+		SET_OBJECT_INVISIBILITY(object, true);
+	}
+
 	Lua_Monster::Push(L, monster_index);
 	return 1;
 }

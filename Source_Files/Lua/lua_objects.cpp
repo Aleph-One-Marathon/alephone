@@ -439,6 +439,13 @@ int Lua_Items_New(lua_State *L)
 	if (item_index == NONE)
 		return 0;
 
+	if (lua_toboolean(L, 6))
+	{
+		struct object_data *object= get_object_data(item_index);
+		
+		SET_OBJECT_INVISIBILITY(object, true);
+	}
+
 	Lua_Item::Push(L, item_index);
 	return 1;
 }
