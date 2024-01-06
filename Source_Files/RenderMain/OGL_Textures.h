@@ -186,7 +186,7 @@ class TextureManager
 	uint32 *GetOGLTexture(uint32 *ColorTable);
 	
 	// This one creates a fake landscape
-	uint32 *GetFakeLandscape();
+	uint32 *GetFakeLandscape() const;
 	
 	// This is for shrinking a texture
 	uint32 *Shrink(uint32 *Buffer);

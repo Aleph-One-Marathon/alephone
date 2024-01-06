@@ -94,7 +94,7 @@ private:
 		void StopFade() { music_fade_start = 0; }
 		void SetVolume(float volume);
 		float GetVolume() const { return parameters.volume; }
-		std::pair<bool, float> ComputeFadingVolume();
+		std::pair<bool, float> ComputeFadingVolume() const;
 	};
 
 	std::vector<Slot> music_slots;

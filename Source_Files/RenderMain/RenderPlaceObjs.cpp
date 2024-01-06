@@ -461,7 +461,6 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 	render_object_data *render_object, *last_new_render_object;
 	render_object_data *deep_render_object= NULL;
 	render_object_data *shallow_render_object= NULL;
-	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 
 	/* find the last render_object in the given list of new objects */
 	for (last_new_render_object= new_render_object;
