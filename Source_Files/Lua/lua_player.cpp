@@ -1520,7 +1520,7 @@ int Lua_Player_Find_Target(lua_State *L)
 		definition->flags |= _penetrates_media | _penetrates_media_boundary;
 	}
 
-	auto final_destination = origin;
+	auto final_destination = origin.xy();
 
 	// preflight a projectile, 1 WU at a time (because of projectile speed bug)
 	uint16 flags = translate_projectile(0, &origin, old_polygon, &destination, &new_polygon, player->monster_index, &obstruction_index, &line_index, true, NONE);
@@ -1531,7 +1531,7 @@ int Lua_Player_Find_Target(lua_State *L)
 		old_polygon = new_polygon;
 
 		translate_point3d(&destination, WORLD_ONE, player->facing, player->elevation);
-		if (destination == final_destination)
+		if (destination.xy() == final_destination)
 		{
 			return 0;
 		}
