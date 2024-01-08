@@ -1050,7 +1050,7 @@ void SoundManager::UpdateAmbientSoundSources()
 	}
 
 	// update ambient sounds already playing and add new ones if necessary
-	for (short i = 0; i < MAXIMUM_AMBIENT_SOUND_CHANNELS; i++)
+	for (short i = 0; i < MAXIMUM_PROCESSED_AMBIENT_SOUNDS; i++)
 	{
 		if (SLOT_IS_FREE(&ambient_sounds[i])) continue;
 
