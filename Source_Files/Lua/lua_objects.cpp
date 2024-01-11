@@ -392,7 +392,14 @@ static int Lua_Item_Set_Visible(lua_State *L)
 		if (!is_visible) {
 			teleport_object_in(object_index);
 		} else {
+			if (L_Get_Proper_Item_Accounting(L))
+			{
+				object_was_just_destroyed(_object_is_item, object->permutation);
+			}
 			teleport_object_out(object_index);
+			remove_map_object(object_index);
+			L_Invalidate_Object(object_index);
+			MARK_SLOT_AS_FREE(object);
 		}
 	}
 	return 0;
