@@ -382,6 +382,22 @@ static int Lua_Item_Get_Visible(lua_State *L)
 	return 1;
 }
 
+static int Lua_Item_Set_Visible(lua_State *L)
+{
+	int object_index = Lua_Item::Index(L, 1);
+	object_data *object = get_object_data(object_index);
+	bool should_be_visible = lua_toboolean(L, 2);
+	bool is_visible = OBJECT_IS_VISIBLE(object);
+	if (should_be_visible != is_visible) {
+		if (!is_visible) {
+			teleport_object_in(object_index);
+		} else {
+			teleport_object_out(object_index);
+		}
+	}
+	return 0;
+}
+
 const luaL_Reg Lua_Item_Get[] = {
 	{"delete", L_TableFunction<Lua_Item_Delete>},
 	{"facing", get_object_facing<Lua_Item>},
@@ -398,6 +414,7 @@ const luaL_Reg Lua_Item_Get[] = {
 
 const luaL_Reg Lua_Item_Set[] = {
 	{"facing", set_object_facing<Lua_Item>},
+	{"visible", Lua_Item_Set_Visible},
 	{0, 0}
 };
 

@@ -605,8 +605,9 @@
 		<description>type of item</description>
 		<type>item_type</type>
       </variable>
-      <variable name="visible" access="read-only" version="20220115">
+      <variable name="visible" version="git">
     <type>boolean</type>
+	<description>Changing visible from false to true makes the item teleport in. Changing visible from true to false makes the item teleport out and immediately removes it.</description>
       </variable>
       <variable name="x" access="read-only">
 		<type>WU</type>
