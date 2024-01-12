@@ -136,14 +136,6 @@ static std::map<int, LevelScriptHeader> LevelScripts;
 // Current script for adding commands to and for running
 static LevelScriptHeader *CurrScriptPtr = NULL;
 
-// Map-file parent directory (where all map-related files are supposed to live)
-static DirectorySpecifier MapParentDir;
-
-#ifdef HAVE_LUA
-// Same for Lua
-static bool LuaFound = false;
-#endif /* HAVE_LUA */
-
 // Movie filespec and whether it points to a real file
 static FileSpecifier MovieFile;
 static bool MovieFileExists = false;
@@ -175,9 +167,6 @@ extern bool get_text_resource_from_scenario(int resource_number, LoadedResource&
 // Loads all those in resource 128 in a map file (or some appropriate equivalent)
 void LoadLevelScripts(FileSpecifier& MapFile)
 {
-	// Because all the files are to live in the map file's parent directory
-	MapFile.ToDirectory(MapParentDir);
-	
 	// Get rid of the previous level script
 	// ghs: unless it's the first time, in which case we would be clearing
 	// any external level scripts, so don't
@@ -206,13 +195,13 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 	try {
 		InfoTree root = InfoTree::load_xml(strm).get_child("marathon_levels");
 		parse_levels_xml(root);
-	} catch (InfoTree::parse_error e) {
+	} catch (const InfoTree::parse_error& e) {
 		logError("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
-	} catch (InfoTree::path_error e) {
+	} catch (const InfoTree::path_error& e) {
 		logError("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
-	} catch (InfoTree::data_error e) {
+	} catch (const InfoTree::data_error& e) {
 		logError("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
-	} catch (InfoTree::unexpected_error e) {
+	} catch (const InfoTree::unexpected_error& e) {
 		logError("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
 	}
 }
@@ -220,7 +209,7 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 void ResetLevelScript()
 {
 	// For whatever previous music had been playing...
-	Music::instance()->FadeOut(MACHINE_TICKS_PER_SECOND/2);
+	Music::instance()->Fade(0, MACHINE_TICKS_PER_SECOND/2);
 	
 	// If no scripts were loaded or none of them had music specified,
 	// then don't play any music
@@ -243,16 +232,9 @@ void ResetLevelScript()
 // runs level-specific MML...
 void RunLevelScript(int LevelIndex)
 {
-	// None found just yet...
-#ifdef HAVE_LUA
-	LuaFound = false;
-#endif /* HAVE_LUA */
-	
 	GeneralRunScript(LevelScriptHeader::Default);
 	GeneralRunScript(LevelIndex);
-	
 	Music::instance()->SeedLevelMusic();
-
 }
 
 std::vector<uint8> mmls_chunk;
@@ -386,9 +368,7 @@ void GeneralRunScript(int LevelIndex)
 				// Skip if not loaded
 				if (Data == NULL || DataLen <= 0) break;
 				
-				// Load and indicate whether loading was successful
-				if (LoadLuaScript(Data, DataLen, _embedded_lua_script))
-					LuaFound = true;
+				LoadLuaScript(Data, DataLen, _embedded_lua_script);
 			}
 			break;
 #endif /* HAVE_LUA */

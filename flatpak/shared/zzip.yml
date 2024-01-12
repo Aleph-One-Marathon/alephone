@@ -1,0 +1,8 @@
+name: zzip
+buildsystem: cmake-ninja
+config-opts: [-DZZIPBINS=0FF -DZZIPDOCS=OFF -DZZIPSDL=OFF -DZZIPTEST=OFF -DZZIPWRAP=OFF -DZZIP_COMPAT=OFF]
+sources:
+  - type: archive
+    url: https://github.com/gdraheim/zziplib/archive/refs/tags/v0.13.72.zip
+    sha256: 4a0239186dc07ee21096c6b051e10e7fbebcb05eed06b540acb02a31b3e76cd4
+cleanup: [/bin, /include, /share, /lib/debug, /lib/pkgconfig]

@@ -3,9 +3,10 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 struct ShellOptions {
-	bool parse(int argc, char** argv);
+	std::unordered_map<int, bool> parse(int argc, char** argv, bool ignore_unknown_args = false);
 
 	std::string program_name;
 	
@@ -21,6 +22,8 @@ struct ShellOptions {
 
 	bool skip_intro;
 	bool editor;
+
+	std::string replay_directory;
 
 	std::string directory;
 	std::vector<std::string> files;

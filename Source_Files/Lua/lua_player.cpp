@@ -37,7 +37,6 @@ LUA_PLAYER.CPP
 #include "lua_templates.h"
 #include "map.h"
 #include "monsters.h"
-#include "Music.h"
 #include "network.h"
 #include "player.h"
 #include "projectiles.h"
@@ -132,6 +131,7 @@ static int Lua_Action_Flags_Set_Microphone(lua_State *L)
 
 const luaL_Reg Lua_Action_Flags_Get[] = {
 	{"action_trigger", Lua_Action_Flags_Get_t<_action_trigger_state>},
+	{"aux_trigger", Lua_Action_Flags_Get_t<_microphone_button>},
 	{"cycle_weapons_backward", Lua_Action_Flags_Get_t<_cycle_weapons_backward>},
 	{"cycle_weapons_forward", Lua_Action_Flags_Get_t<_cycle_weapons_forward>},
 	{"left_trigger", Lua_Action_Flags_Get_t<_left_trigger_state>},
@@ -143,6 +143,7 @@ const luaL_Reg Lua_Action_Flags_Get[] = {
 
 const luaL_Reg Lua_Action_Flags_Set[] = {
 	{"action_trigger", Lua_Action_Flags_Set_t<_action_trigger_state>},
+	{"aux_trigger", Lua_Action_Flags_Set_t<_microphone_button>},
 	{"cycle_weapons_backward", Lua_Action_Flags_Set_t<_cycle_weapons_backward>},
 	{"cycle_weapons_forward", Lua_Action_Flags_Set_t<_cycle_weapons_forward>},
 	{"left_trigger", Lua_Action_Flags_Set_t<_left_trigger_state>},
@@ -1519,6 +1520,8 @@ int Lua_Player_Find_Target(lua_State *L)
 		definition->flags |= _penetrates_media | _penetrates_media_boundary;
 	}
 
+	auto final_destination = origin.xy();
+
 	// preflight a projectile, 1 WU at a time (because of projectile speed bug)
 	uint16 flags = translate_projectile(0, &origin, old_polygon, &destination, &new_polygon, player->monster_index, &obstruction_index, &line_index, true, NONE);
 
@@ -1528,6 +1531,11 @@ int Lua_Player_Find_Target(lua_State *L)
 		old_polygon = new_polygon;
 
 		translate_point3d(&destination, WORLD_ONE, player->facing, player->elevation);
+		if (destination.xy() == final_destination)
+		{
+			return 0;
+		}
+		
 		flags = translate_projectile(0, &origin, old_polygon, &destination, &new_polygon, player->monster_index, &obstruction_index, &line_index, true, NONE);
 	}
 
@@ -2517,6 +2525,14 @@ static int Lua_Game_Get_Nonlocal_Overlays(lua_State* L)
 	return 1;
 }
 
+
+static int Lua_Game_Get_Replay(lua_State* L)
+{
+	auto user = get_game_controller();
+	lua_pushboolean(L, user == _replay || user == _demo);
+	return 1;
+}
+
 static int Lua_Game_Get_Time_Remaining(lua_State* L)
 {
   if(dynamic_world->game_information.game_time_remaining > 999 * 30)
@@ -2761,13 +2777,14 @@ const luaL_Reg Lua_Game_Get[] = {
 	{"nonlocal_overlays", Lua_Game_Get_Nonlocal_Overlays},
 	{"random", L_TableFunction<Lua_Game_Better_Random>},
 	{"random_local", L_TableFunction<Lua_Game_Random_Local>},
+	{"replay", Lua_Game_Get_Replay},
 	{"restore_passed", L_TableFunction<L_Restore_Passed>},
 	{"restore_saved", L_TableFunction<L_Restore_Saved>},
+	{"save", L_TableFunction<Lua_Game_Save>},
+	{"scoring_mode", Lua_Game_Get_Scoring_Mode},
+	{"serialize", L_TableFunction<Lua_Game_Serialize>},
 	{"ticks", Lua_Game_Get_Ticks},
 	{"type", Lua_Game_Get_Type},
-	{"save", L_TableFunction<Lua_Game_Save>},
-	{"serialize", L_TableFunction<Lua_Game_Serialize>},
-	{"scoring_mode", Lua_Game_Get_Scoring_Mode},
 	{"version", Lua_Game_Get_Version},
 	{0, 0}
 };
@@ -2782,89 +2799,7 @@ const luaL_Reg Lua_Game_Set[] = {
 	{0, 0}
 };
 
-char Lua_Music_Name[] = "Music";
-typedef L_Class<Lua_Music_Name> Lua_Music;
 
-int Lua_Music_Clear(lua_State *L)
-{
-	Music::instance()->ClearLevelMusic();
-	return 0;
-}
-
-int Lua_Music_Fade(lua_State *L)
-{
-	int duration;
-	if (!lua_isnumber(L, 1))
-		duration = 1000;
-	else
-		duration = static_cast<int>(lua_tonumber(L, 1) * 1000);
-	Music::instance()->FadeOut(duration);
-	Music::instance()->ClearLevelMusic();
-	return 0;
-}
-
-int Lua_Music_Play(lua_State *L)
-{
-	bool restart_music;
-	restart_music = !Music::instance()->IsLevelMusicActive() && !Music::instance()->Playing();
-	for (int n = 1; n <= lua_gettop(L); n++)
-	{
-		if (!lua_isstring(L, n))
-			return luaL_error(L, "play: invalid file specifier");
-
-		std::string search_path = L_Get_Search_Path(L);
-
-		FileSpecifier file;
-		if (search_path.size())
-		{
-			if (!file.SetNameWithPath(lua_tostring(L, n), search_path))
-				Music::instance()->PushBackLevelMusic(file);
-		}
-		else
-		{
-			if (file.SetNameWithPath(lua_tostring(L, n)))
-				Music::instance()->PushBackLevelMusic(file);
-		}
-	}
-
-	if (restart_music)
-		Music::instance()->PreloadLevelMusic();
-	return 0;
-}
-
-int Lua_Music_Stop(lua_State *L)
-{
-	Music::instance()->ClearLevelMusic();
-	Music::instance()->StopLevelMusic();
-
-	return 0;
-}
-
-int Lua_Music_Valid(lua_State* L) {
-	int top = lua_gettop(L);
-	for(int n = 1; n <= top; n++) {
-		if(!lua_isstring(L, n))
-			return luaL_error(L, "valid: invalid file specifier");
-		FileSpecifier path;
-		if(path.SetNameWithPath(lua_tostring(L, n))) {
-			StreamDecoder* stream = StreamDecoder::Get(path);
-			if(stream) {
-				lua_pushboolean(L, true);
-				delete stream;
-			} else lua_pushboolean(L, false);
-		} else lua_pushboolean(L, false);
-	}
-	return top;
-}
-
-const luaL_Reg Lua_Music_Get[] = {
-	{"clear", L_TableFunction<Lua_Music_Clear>},
-	{"fade", L_TableFunction<Lua_Music_Fade>},
-	{"play", L_TableFunction<Lua_Music_Play>},
-	{"stop", L_TableFunction<Lua_Music_Stop>},
-	{"valid", L_TableFunction<Lua_Music_Valid>},
-	{0, 0}
-};
 
 static void Lua_Player_load_compatibility(lua_State *L);
 
@@ -2963,15 +2898,9 @@ int Lua_Player_register (lua_State *L)
 	Lua_TextureTypes::Register(L);
 	Lua_TextureTypes::Length = Lua_TextureTypes::ConstantLength(NUMBER_OF_LUA_TEXTURE_TYPES);
 
-	Lua_Music::Register(L, Lua_Music_Get);
-
 	// register one Game userdatum globally
 	Lua_Game::Push(L, 0);
 	lua_setglobal(L, Lua_Game_Name);
-
-	// register one Music userdatum
-	Lua_Music::Push(L, 0);
-	lua_setglobal(L, Lua_Music_Name);
 	
 	Lua_Player_load_compatibility(L);
 	

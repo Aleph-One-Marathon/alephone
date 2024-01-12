@@ -6,7 +6,7 @@ jobs:
   release:
     runs-on: windows-2022
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         submodules: true
         
@@ -16,13 +16,13 @@ jobs:
         echo vcpkg_current_hash=$vcpkg_commit_id >> $env:GITHUB_ENV
         
     - name: Restore vcpkg cache for x64
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: vcpkg/installed-x64-windows
         key: ${{runner.os}}-installed-x64-windows-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
         
     - name: Restore vcpkg cache for x86
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: vcpkg/installed-x86-windows
         key: ${{runner.os}}-installed-x86-windows-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
@@ -34,12 +34,12 @@ jobs:
         
     - name: Build archives
       run: |
-        cd VisualStudio
-        ./autobuild-windows.ps1 -x64 $true -a1 $true -m1 $true -m2 $true -m3 $true -output_path windows-build-archives
+        cd VisualStudio &&
+        ./autobuild-windows.ps1 -x64 $true -a1 $true -m1 $true -m2 $true -m3 $true -output_path windows-build-archives &&
         ./autobuild-windows.ps1 -x64 $false -a1 $true -m1 $false -m2 $false -m3 $false -output_path windows-build-archives
     
     - name: Upload
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: alephone-release
         if-no-files-found: error

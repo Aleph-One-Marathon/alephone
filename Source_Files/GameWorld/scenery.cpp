@@ -197,6 +197,13 @@ void damage_scenery(
 	if (definition->flags&_scenery_can_be_destroyed)
 	{
 		object->shape= definition->destroyed_shape;
+		object->sequence = 0;
+
+		if (film_profile.fix_destroy_scenery_random_frame)
+		{
+			randomize_object_sequence(object_index, object->shape);
+		}
+
 		// LP addition: don't create a destruction effect if the effect type is NONE
 		if (definition->destroyed_effect != NONE)
 			new_effect(&object->location, object->polygon, definition->destroyed_effect, object->facing);

@@ -1,6 +1,6 @@
 {
    "name":"alephone",
-   "version-date":"2023-01-20",
+   "version-date":"2023-11-25",
    "dependencies":[
       {
          "name":"boost-algorithm"
@@ -18,7 +18,7 @@
          "name":"boost-filesystem"
       },
       {
-         "name":"glm"
+         "name":"boost-lockfree"
       },
       {
          "name":"sdl2"
@@ -36,31 +36,12 @@
          "name":"sdl2-ttf"
       },
       {
-         "name":"angle",
-         "platform":"osx"
-      },
-      {
-         "name":"angle",
-         "platform":"windows"
-      },
-      {
-         "name":"glad",
-         "platform":"windows",
-         "features":[
-            "gles2-api-20",
-			"extensions",
-            "loader"
-         ]
-      },
-      {
          "name":"curl",
          "platform":"windows"
       },
       {
-         "name":"speex"
-      },
-      {
-         "name":"speexdsp"
+         "name":"glew",
+         "platform":"windows"
       },
       {
          "name":"zziplib"
@@ -79,25 +60,21 @@
          "name":"nativefiledialog"
       },
       {
-         "name":"libsndfile",
-         "default-features":false
+         "name":"libsndfile"
+      },
+      {
+         "name":"openal-soft"
+      },
+      {
+         "name":"catch2"
       }
    ],
    "overrides":[
-         {
-            "name":"ffmpeg",
-            "version": "4.4.1",
-            "port-version":22
-         },
-         {
-             "name":"sdl2-image",
-             "version": "2.0.5",
-             "port-version":7
-         },
-         {
-             "name":"sdl2",
-             "version": "2.26.1"
-         }
-      ],
-   "builtin-baseline":"2c356da17069ed4ce4d793d03a60bf87b3e5cf2a"
+      {
+         "name":"ffmpeg",
+         "version":"5.0.2",
+         "port-version":3
+      }
+   ],
+   "builtin-baseline":"0e47c1985273129e4d0ee52ff73bed9125555de8"
 }

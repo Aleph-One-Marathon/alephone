@@ -35,6 +35,7 @@ make_dmg()
     ln -s /Applications "$diskdir"
     create_webloc "https://alephone.lhowon.org/" "$diskdir/Aleph One home page"
     cp "$SRCROOT/../COPYING" "$diskdir/COPYING.txt"
+    cp "$SRCROOT/../docs/README.txt" "$diskdir/README.txt"
 
     docdir="$diskdir/Documentation"
     mkdir "$docdir"
@@ -59,7 +60,7 @@ make_dmg()
     version=`grep '^#define A1_DATE_VERSION' "$SRCROOT/../Source_Files/Misc/alephversion.h" | sed -e 's/\(.*\"\)\(.*\)\(\"\)/\2/g'`
     imgname="${appname// }"
     imgfile="$TARGET_BUILD_DIR/$imgname-$version-Mac.dmg"
-    hdiutil create -ov -fs HFS+ -format UDBZ -layout GPTSPUD -srcfolder "$diskdir" -volname "$appname" "$imgfile"
+    hdiutil create -ov -fs HFS+ -format ULFO -layout GPTSPUD -srcfolder "$diskdir" -volname "$appname" "$imgfile"
     if [ "$SIGNATURE" != "" ]; then
         codesign -s "$SIGNATURE" "$imgfile"
         spctl -a -t open --context context:primary-signature -v "$imgfile"

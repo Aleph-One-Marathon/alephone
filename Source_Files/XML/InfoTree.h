@@ -36,7 +36,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/range/any_range.hpp>
 
-class InfoTree : public boost::property_tree::ptree
+class InfoTree : public boost::property_tree::iptree
 {
 public:
 	typedef boost::property_tree::xml_parser_error parse_error;
@@ -46,8 +46,8 @@ public:
 	typedef boost::property_tree::ptree_error unexpected_error;
 	
 	InfoTree() {}
-	explicit InfoTree(const data_type &data) : boost::property_tree::ptree(data) {}
-	InfoTree(const boost::property_tree::ptree &rhs) : boost::property_tree::ptree(rhs) {}
+	explicit InfoTree(const data_type &data) : boost::property_tree::iptree(data) {}
+	InfoTree(const boost::property_tree::iptree &rhs) : boost::property_tree::iptree(rhs) {}
 	
 	static InfoTree load_xml(FileSpecifier filename);
 	static InfoTree load_xml(std::istringstream& stream);
@@ -64,7 +64,7 @@ public:
 		try {
 			value = get_child(path).get_value<T>();
 			return true;
-		} catch (path_error ep) {} catch (data_error ed) {}
+		} catch (const path_error& ep) {} catch (const data_error& ed) {}
 		return false;
 	}
 

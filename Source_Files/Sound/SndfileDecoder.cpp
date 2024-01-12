@@ -23,8 +23,6 @@
 
 #include "SndfileDecoder.h"
 
-#ifdef HAVE_SNDFILE
-
 // these should really probably use the OpenedFile abstraction rather
 // than SDL_RWops? but seek would be more complex and I'm so lazy
 
@@ -95,7 +93,7 @@ int32 SndfileDecoder::Decode(uint8* buffer, int32 max_length)
 {
 	if (!sndfile) return 0;
 
-	return sf_read_short(sndfile, (int16*) buffer, max_length / 2) * 2;
+	return sf_read_float(sndfile, (float*) buffer, max_length / 4) * 4;
 
 }
 
@@ -119,4 +117,3 @@ void SndfileDecoder::Close()
 		rwops = 0;
 	}
 }
-#endif

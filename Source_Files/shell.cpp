@@ -39,7 +39,6 @@
 #include "vbl.h"
 #include "preferences.h"
 #include "tags.h" /* for scenario file type.. */
-#include "network_sound.h"
 #include "mouse.h"
 #include "joystick.h"
 #include "screen_drawing.h"
@@ -63,7 +62,6 @@
 #include "mytm.h"	// mytm_initialize(), for platform-specific shell_*.h
 
 #include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
 #include <vector>
 
@@ -120,8 +118,9 @@
 
 #ifdef __WIN32__
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include <dwmapi.h>
 #undef CreateDirectory
+#undef PlaySound
 #endif
 
 #include "shell_options.h"
@@ -156,7 +155,6 @@ static bool force_windowed = false;   // Force windowed mode
 */
 
 // Prototypes
-static void main_event_loop(void);
 extern int process_keyword_key(char key);
 extern void handle_keyword(int type_of_cheat);
 
@@ -170,13 +168,26 @@ extern bool get_default_theme_spec(FileSpecifier& file);
 void execute_timer_tasks(uint32 time);
 
 // Prototypes
-static void initialize_application(void);
-void shutdown_application(void);
 static void initialize_marathon_music_handler(void);
 static void process_event(const SDL_Event &event);
 
 // cross-platform static variables
 short vidmasterStringSetID = -1; // can be set with MML
+
+static bool IsCompositingWindowManagerEnabled() // double buffering
+{
+#if defined(__APPLE__) || defined(__MACH__)
+	return true;
+#endif
+
+#if defined __WIN32__
+	BOOL result;
+	if (DwmIsCompositionEnabled(&result) != S_OK) return false;
+	return result;
+#endif
+
+	return false;
+}
 
 static std::string a1_getenv(const char* name)
 {
@@ -234,91 +245,15 @@ bool handle_open_document(const std::string& filename)
 	return done;
 }
 
-
-int main(int argc, char **argv)
-{
-	// Print banner (don't bother if this doesn't appear when started from a GUI)
-	char app_name_version[256];
-	expand_app_variables(app_name_version, "Aleph One $appLongVersion$");
-	printf ("%s\n%s\n\n"
-	  "Original code by Bungie Software <http://www.bungie.com/>\n"
-	  "Additional work by Loren Petrich, Chris Pruett, Rhys Hill et al.\n"
-	  "TCP/IP networking by Woody Zenfell\n"
-	  "SDL port by Christian Bauer <Christian.Bauer@uni-mainz.de>\n"
-#if defined(__MACH__) && defined(__APPLE__)
-	  "Mac OS X/SDL version by Chris Lovell, Alexander Strange, and Woody Zenfell\n"
-#endif
-	  "\nThis is free software with ABSOLUTELY NO WARRANTY.\n"
-	  "You are welcome to redistribute it under certain conditions.\n"
-	  "For details, see the file COPYING.\n"
-#if defined(__WIN32__)
-	  // Windows is statically linked against SDL, so we have to include this:
-	  "\nSimple DirectMedia Layer (SDL) Library included under the terms of the\n"
-	  "GNU Library General Public License.\n"
-	  "For details, see the file COPYING.SDL.\n"
-#endif
-#if !defined(DISABLE_NETWORKING)
-	  "\nBuilt with network play enabled.\n"
-#endif
-#ifdef HAVE_LUA
-	  "\nBuilt with Lua scripting enabled.\n"
-#endif
-	  , app_name_version, A1_HOMEPAGE_URL
-    );
-
-	shell_options.parse(argc, argv);
-
-	try {
-		
-		// Initialize everything
-		initialize_application();
-
-		for (std::vector<std::string>::iterator it = shell_options.files.begin(); it != shell_options.files.end(); ++it)
-		{
-			if (handle_open_document(*it))
-			{
-				break;
-			}
-		}
-
-		// Run the main loop
-		main_event_loop();
-
-	} catch (std::exception &e) {
-		try 
-		{
-			logFatal("Unhandled exception: %s", e.what());
-		}
-		catch (...) 
-		{
-		}
-		exit(1);
-	} catch (...) {
-		try
-		{
-			logFatal("Unknown exception");
-		}
-		catch (...)
-		{
-		}
-		exit(1);
-	}
-
-	return 0;
-}
-               
 static int char_is_not_filesafe(int c)
 {
     return (c != ' ' && !std::isalnum(c));
 }
 
-static void initialize_application(void)
+void initialize_application(void)
 {
-#if defined(__WIN32__) && defined(__MINGW32__)
-	if (LoadLibraryW(L"exchndl.dll")) shell_options.debug = true;
-#endif
-
 #if defined(__WIN32__)
+	if (LoadLibraryW(L"exchndl.dll")) shell_options.debug = true;
 	SDL_setenv("SDL_AUDIODRIVER", "directsound", 0);
 #endif
 
@@ -446,8 +381,7 @@ static void initialize_application(void)
 
 	// Check for presence of strings
 	if (!TS_IsPresent(strERRORS) || !TS_IsPresent(strFILENAMES)) {
-		fprintf(stderr, "Can't find required text strings (missing MML?).\n");
-		exit(1);
+		throw std::runtime_error("Can't find required text strings (missing MML?)");
 	}
 	
 	// Check for presence of files (one last chance to change data_search_path)
@@ -517,20 +451,25 @@ static void initialize_application(void)
 // #if defined(HAVE_SDL_IMAGE) && !(defined(__APPLE__) && defined(__MACH__))
 // 	SDL_WM_SetIcon(IMG_ReadXPMFromArray(const_cast<char**>(alephone_xpm)), 0);
 // #endif
-	atexit(shutdown_application);
 
 #if !defined(DISABLE_NETWORKING)
-	// Initialize SDL_net
-	if (SDLNet_Init () < 0) {
-		fprintf (stderr, "Couldn't initialize SDL_net (%s)\n", SDLNet_GetError());
-		exit(1);
+	if (SDLNet_Init() < 0)
+	{
+		std::ostringstream oss;
+		oss << "Couldn't initialize SDL_net (" << SDLNet_GetError() << ")";
+
+		throw std::runtime_error(oss.str());
 	}
 #endif
 
-	if (TTF_Init() < 0) {
-		fprintf (stderr, "Couldn't initialize SDL_ttf (%s)\n", TTF_GetError());
-		exit(1);
+	if (TTF_Init() < 0)
+	{
+		std::ostringstream oss;
+		oss << "Couldn't initialize SDL_ttf (" << TTF_GetError() << ")";
+
+		throw std::runtime_error(oss.str());
 	}
+	
 	HTTPClient::Init();
 
 	// Initialize everything
@@ -555,15 +494,10 @@ static void initialize_application(void)
 
 void shutdown_application(void)
 {
-        // ZZZ: seem to be having weird recursive shutdown problems esp. with fullscreen modes...
-        static bool already_shutting_down = false;
-        if(already_shutting_down)
-                return;
-
-        already_shutting_down = true;
-        
 	WadImageCache::instance()->save_cache();
 	close_external_resources();
+
+	shutdown_dialogs();
         
 #if defined(HAVE_SDL_IMAGE) && (SDL_IMAGE_PATCHLEVEL >= 8)
 	IMG_Quit();
@@ -684,7 +618,7 @@ short get_level_number_from_user(void)
 }
 
 const uint32 TICKS_BETWEEN_EVENT_POLL = 16; // 60 Hz
-static void main_event_loop(void)
+void main_event_loop(void)
 {
 	uint32 last_event_poll = 0;
 	short game_state;
@@ -1380,7 +1314,7 @@ static void process_event(const SDL_Event &event)
 	case SDL_WINDOWEVENT:
 		switch (event.window.event) {
 			case SDL_WINDOWEVENT_FOCUS_LOST:
-				if (get_game_state() == _game_in_progress && get_keyboard_controller_status() && !Movie::instance()->IsRecording()) {
+				if (get_game_state() == _game_in_progress && get_keyboard_controller_status() && !Movie::instance()->IsRecording() && shell_options.replay_directory.empty()) {
 					darken_world_window();
 					set_keyboard_controller_status(false);
 					show_cursor();
@@ -1412,15 +1346,15 @@ static void process_event(const SDL_Event &event)
 					// leave it alone
 					break;
 				}
-				
-#if !defined(__APPLE__) && !defined(__MACH__) // double buffering :)
+	
+			if (!IsCompositingWindowManagerEnabled()) {
 #ifdef HAVE_OPENGL
 				if (MainScreenIsOpenGL())
 					MainScreenSwap();
 				else
 #endif
 					update_game_window();
-#endif
+				}
 				break;
 		}
 		break;

@@ -136,8 +136,8 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 FileSpecifier MapFileSpec;
 static bool file_is_set= false;
 
-// LP addition: was a physics model loaded from the previous level loaded?
-static bool PhysicsModelLoadedEarlier = false;
+static vector<polygon_data> PolygonListCopy;
+static vector<platform_data> PlatformListCopy;
 
 // The following local globals are for handling games that need to be restored.
 struct revert_game_info
@@ -232,13 +232,15 @@ void set_map_file(FileSpecifier& File, bool loadScripts)
 
 	MapFileSpec = File;
 	set_scenario_images_file(File);
+	file_is_set = true;
+
+	Plugins::instance()->set_map_checksum(get_current_map_checksum());
+	
 	// Only need to do this here
 	if(loadScripts) LoadLevelScripts(File);
 
 	// Don't care whether there was an error when checking on the file's scenario images
 	clear_game_error();
-
-	file_is_set= true;
 }
 
 /* Set to the default map.. (Only if no map doubleclicked upon on startup.. */
@@ -814,7 +816,6 @@ bool goto_level(
 		}
 		LoadStatsLua();
 
-		Music::instance()->PreloadLevelMusic();
 		set_game_error(SavedType,SavedError);
 		
 		if (!new_game)
@@ -1291,7 +1292,6 @@ bool revert_game(
 		successful= load_game_from_file(revert_game_data.SavedGame, true);
 		if (successful) 
 		{
-			Music::instance()->PreloadLevelMusic();
 			RunLuaScript();
 			
 			// LP: added for loading the textures if one had died on another level;
@@ -1829,16 +1829,15 @@ bool process_map_wad(
 		unpack_weapon_definition(data,count);
 	}
 	
-	// LP addition: Reload the physics model if it had been loaded in the previous level,
-	// but not in the current level. This avoids the persistent-physics bug.
 	// ghs: always reload the physics model if there isn't one merged
-	if (PhysicsModelLoadedEarlier && !PhysicsModelLoaded && !game_is_networked)
+	if (!PhysicsModelLoaded && !game_is_networked)
 		import_definition_structures();
-	PhysicsModelLoadedEarlier = PhysicsModelLoaded;
 	
 	RunScriptChunks();
 
 	init_ephemera(dynamic_world->polygon_count);
+
+	PolygonListCopy = PolygonList; // must be done before polygons heights are modified below
 
 	/* If we are restoring the game, then we need to add the dynamic data */
 	if(restoring_game)
@@ -1941,7 +1940,9 @@ bool process_map_wad(
 			platform_structure_count, version);
 
 	}
-	
+
+	PlatformListCopy = PlatformList;
+
 	/* ... and bail */
 	return true;
 }
@@ -2531,24 +2532,24 @@ static wad_data *build_export_wad(wad_header *header, int32 *length)
 
 		for (size_t loop = 0; loop < PlatformList.size(); ++loop)
 		{
-			platform_data *platform = &PlatformList[loop];
-			// reset the polygon heights
-			if (PLATFORM_COMES_FROM_FLOOR(platform))
-			{
-				platform->floor_height = platform->minimum_floor_height;
-				PolygonList[platform->polygon_index].floor_height = platform->floor_height;
-			}
+			platform_data* platform = &PlatformList[loop];
+			platform_data* original_platform = &PlatformListCopy[loop];
+
 			if (PLATFORM_COMES_FROM_CEILING(platform))
 			{
-				adjust_platform_sides(platform, platform->ceiling_height, 
-					PLATFORM_IS_INITIALLY_EXTENDED(platform) ?
-					platform->minimum_ceiling_height :
-					platform->maximum_ceiling_height
-				);
-
-				platform->ceiling_height = platform->maximum_ceiling_height;
-				PolygonList[platform->polygon_index].ceiling_height = platform->ceiling_height;
+				auto new_ceiling_height = PLATFORM_IS_INITIALLY_EXTENDED(platform) ? platform->minimum_ceiling_height : platform->maximum_ceiling_height;
+				adjust_platform_sides(platform, platform->ceiling_height, new_ceiling_height);
 			}
+
+			platform->floor_height = original_platform->floor_height;
+			platform->ceiling_height = original_platform->ceiling_height;
+			platform->maximum_ceiling_height = original_platform->maximum_ceiling_height;
+			platform->minimum_ceiling_height = original_platform->minimum_ceiling_height;
+			platform->maximum_floor_height = original_platform->maximum_floor_height;
+			platform->minimum_floor_height = original_platform->minimum_floor_height;
+
+			PolygonList[platform->polygon_index].floor_height = PolygonListCopy[platform->polygon_index].floor_height;
+			PolygonList[platform->polygon_index].ceiling_height = PolygonListCopy[platform->polygon_index].ceiling_height;
 		}
 
 		for (size_t loop = 0; loop < LineList.size(); ++loop)

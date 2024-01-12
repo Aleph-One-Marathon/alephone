@@ -34,13 +34,9 @@ friend class Shader_MML_Parser;
 public:
 	enum UniformName {
 		U_Texture0,
-        U_Texture0_Size,
 		U_Texture1,
-        U_Texture1_Size,
 		U_Texture2,
-        U_Texture2_Size,
 		U_Texture3,
-        U_Texture3_Size,
 		U_Time,
 		U_Pulsate,
 		U_Wobble,
@@ -51,8 +47,9 @@ public:
 		U_OffsetX,
 		U_OffsetY,
 		U_Pass,
-		U_UseFog,
+		U_FogMix,
 		U_Visibility,
+        U_TransferFadeOut,
 		U_Depth,
 		U_StrictDepthMode,
 		U_Glow,
@@ -67,23 +64,7 @@ public:
 		U_LogicalHeight,
 		U_PixelWidth,
 		U_PixelHeight,
-        U_ModelViewProjectionMatrix,
-        U_ModelViewMatrix,
-        U_ModelViewMatrixInverse,
-        U_TextureMatrix,
-        U_Color,
-        U_FogColor,
-        U_TexCoords4,
-        U_ClipPlane0,
-        U_ClipPlane1,
-        U_ClipPlane2,
-        U_ClipPlane3,
-        U_ClipPlane4,
-        U_ClipPlane5,
-        U_ClipPlane6,
-        U_LightPositions,
-        U_LightColors,
-        U_UseUniformFeatures,
+		U_FogMode,
 		NUMBER_OF_UNIFORM_LOCATIONS
 	};
 
@@ -107,35 +88,15 @@ public:
 		S_Bump,
 		S_BumpBloom,
 		S_Gamma,
-        S_Rect,
-        S_PlainRect,
-        S_SolidColor,
 		NUMBER_OF_SHADER_TYPES
 	};
-    
-    enum {
-        ATTRIB_VERTEX,
-        ATTRIB_TEXCOORDS,
-        ATTRIB_NORMAL,
-        ATTRIB_COLOR,
-        ATTRIB_TEXCOORDS4,
-        ATTRIB_CLIPPLANE0,
-        ATTRIB_CLIPPLANE1,
-        ATTRIB_CLIPPLANE5,
-        ATTRIB_SxOxSyOy, //Pack in scaleX, offsetX, scaleY, offsetY
-        ATTRIB_BsBtFlSl, //Pack in bloomScale, bloomShift, flare, selfLuminosity
-        ATTRIB_PuWoDeGl, //Pack in pulsate, wobble, depth, glow
-        NUM_ATTRIBUTES
-    };
-    
 private:
 
-	GLuint _programObj;
+	GLhandleARB _programObj;
 	std::string _vert;
 	std::string _frag;
 	int16 _passes;
 	bool _loaded;
-    std::string shaderName;
 
 	static const char* _shader_names[NUMBER_OF_SHADER_TYPES];
 	static std::vector<Shader> _shaders;
@@ -146,7 +107,7 @@ private:
 
 	GLint getUniformLocation(UniformName name) { 
 		if (_uniform_locations[name] == -1) {
-			_uniform_locations[name] = glGetUniformLocation(_programObj, _uniform_names[name]);
+			_uniform_locations[name] = glGetUniformLocationARB(_programObj, _uniform_names[name]);
 		}
 		return _uniform_locations[name];
 	}
@@ -166,12 +127,8 @@ public:
 	void init();
 	void enable();
 	void unload();
-    void enableAndSetStandardUniforms();
 	void setFloat(UniformName name, float); // shader must be enabled
 	void setMatrix4(UniformName name, float *f);
-    void setVec4(UniformName name, float *f);
-    void setVec4v(UniformName name, int count, float *f);
-    void setVec2(UniformName name, float *f);
 
 	int16 passes();
 
@@ -182,7 +139,5 @@ public:
 class InfoTree;
 void parse_mml_opengl_shader(const InfoTree& root);
 void reset_mml_opengl_shader();
-
-Shader* lastEnabledShader();
 
 #endif

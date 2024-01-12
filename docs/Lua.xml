@@ -516,6 +516,11 @@
 		<return><type>number</type></return>
 		<note>use only for local player effects (see Net Games and Films)</note>
 	  </function>
+	  <variable name="replay" access="read-only" version="20221126">
+		<description>is the script being run during a film replay</description>
+		<return><type>boolean</type></return>
+		<note>use sparingly; altering the world differently during a replay than during live playback will cause the replay go out of sync</note>
+	  </variable>
       <function name="restore_passed" version="20090909">
 		<description>tries to restore any Player or Game custom fields from before the last level jump; returns true if custom fields were successfully restored</description>
 		<note>if successful, overwrites all existing Player or Game custom fields</note>
@@ -691,6 +696,20 @@
 		<variable name="depth">
 		  <description>fog depth in WU</description>
 		  <type>number</type>
+		</variable>
+		<variable name="landscape_mix" version="git">
+		  <description>amount of fog to mix into landscape</description>
+		  <type>number</type>
+		  <note>values range from 0.0 to 1.0</note>
+		</variable>
+		<variable name="mode" version="git">
+		  <description>linear, exp, or exp2</description>
+		  <type>fog_mode</type>
+		</variable>
+		<variable name="start" version="git">
+		  <description>fog start in WU</description>
+		  <type>number</type>
+		  <note>only applies to linear fog</note>
 		</variable>
       </subtable>
       <variable name="low_gravity" access="read-only">
@@ -1087,29 +1106,32 @@
 		<type>WU</type>
       </variable>
     </table>
-    <table name="music" singleton="true">
-      <function name="clear">
-		<description>clears the level playlist</description>
-      </function>
-      <function name="fade">
-		<description>fades out the currently playing track and clears the playlist</description>
-		<argument name="duration"><type>seconds</type></argument>
-      </function>
-      <function name="play">
-		<description>appends all of the specified tracks to the end of the playlist</description>
-		<argument name="track1"><type>string</type></argument>
-		<argument name="track2" required="false"><type>string</type></argument>
-		<argument name="..." required="false"><type>string</type></argument>
-      </function>
-      <function name="stop">
-		<description>stops level music and clears the playlist</description>
-      </function>
-      <function name="valid">
-		<description>for every track passed, return true if it exists and is playable and false otherwise</description>
-		<argument name="track1"><type>string</type></argument>
-		<argument name="track2" required="false"><type>string</type></argument>
-		<argument name="..." required="false"><type>string</type></argument>
-      </function>
+    <table name="music">
+	  <function name="play" version="git">
+		<description>plays the music</description>
+		<note>if the music was stopped, restarts it</note>
+	  </function>
+	  <function name="stop" version="git">
+		<description>stops the music</description>
+	  </function>
+	  <function name="fade" version="git">
+		<description>fades the music</description>
+		<argument name="volume"><type>number</type></argument>
+		<argument name="duration" required="false"><type>seconds</type></argument>
+		<argument name="stop_after_fade" required="false"><type>boolean</type></argument>
+		<note>it will fade in until volume is reached. volume is decimal [0 - 1]</note>
+		<note>duration unit is seconds and is 1 if not specified</note>
+		<note>stop_after_fade is disabled by default, if set to true if the volume reaches 0 while fading the music will automatically stop</note>
+	  </function>
+	  <variable name="volume" version="git">
+		<description>the volume of the music</description>
+		<type>number</type>
+		<note>volume is decimal [0 - 1]</note>
+	  </variable>
+	  <variable name="active" access="read-only" version="git">
+		<description>returns true if the music is still playing</description>
+		<type>boolean</type>
+	  </variable>
     </table>
     <table name="platform">
 	  <variable name="activates_adjacent_platforms_at_each_level" version="20210408">
@@ -1262,6 +1284,10 @@
 		<description>platform speed</description>
 		<type>speed</type>
       </variable>
+	  <variable name="tag" version="20221126">
+		<description>tag of platform</description>
+		<type>tag</type>
+	  </variable>
       <variable name="type" version="20100118">
 		<description>type of this platform</description>
 		<type>platform_type</type>
@@ -1288,6 +1314,10 @@
 		  <type>boolean</type>
 		  <note>latched</note>
 		</variable>
+		<variable name="aux_trigger" version="git">
+		  <description>formerly microphone button; now dedicated to Lua scripts</description>
+		  <type>boolean</type>
+		</variable>
 		<variable name="cycle_weapons_forward">
 		  <description>switches to next weapon</description>
 		  <type>boolean</type>
@@ -1301,11 +1331,6 @@
 		<variable name="left_trigger">
 		  <description>fires primary trigger</description>
 		  <type>boolean</type>
-		</variable>
-		<variable name="microphone_button">
-		  <description>activates the net mic</description>
-		  <type>boolean</type>
-		  <note>can not be set to true; can be set to false</note>
 		</variable>
 		<variable name="right_trigger">
 		  <description>fires secondary trigger</description>
@@ -1679,12 +1704,11 @@
 		<function name="select">
 		  <description>attempts to force player to ready weapon</description>
 		</function>
+		<variable name="type" access="read-only">
+		  <description>type of this weapon</description>
+		  <type>weapon_type</type>
+		</variable>
       </subtable-accessor>
-      <variable name="weapons.current" access="read-only">
-		<description>weapon the player is currently wielding</description>
-		<type>player_weapon</type>
-		<note>can be nil</note>
-      </variable>
       <variable name="x" access="read-only">
 		<type>WU</type>
       </variable>
@@ -2317,7 +2341,46 @@
 		<description>iterates through all monster starting locations in the level</description>
       </call>
     </accessor>
-    <accessor name="Music" contains="music"/>
+    <accessor name="Music" contains="music">
+      <length>
+		<description>maximum number of music channels active simultaneously</description>
+      </length>
+      <index/>
+      <call>
+		<description>iterates through all the music channels</description>
+      </call>
+	  <function name="new" version="git">
+		<description>returns a new music channel</description>
+		<argument name="track"><type>string</type></argument>
+		<argument name="volume" required="false"><type>number</type></argument>
+		<argument name="loop" required="false"><type>boolean</type></argument>
+		<return><type>music</type></return>
+		<note>volume is decimal [0 - 1] and is 1 if not specified</note>
+		<note>loop is enabled by default</note>
+	  </function>
+	  <function name="clear">
+		<description>clears the level playlist</description>
+      </function>
+      <function name="fade">
+		<description>fades out the currently playing track and clears the playlist</description>
+		<argument name="duration"><type>seconds</type></argument>
+      </function>
+      <function name="play">
+		<description>appends all of the specified tracks to the end of the playlist</description>
+		<argument name="track1"><type>string</type></argument>
+		<argument name="track2" required="false"><type>string</type></argument>
+		<argument name="..." required="false"><type>string</type></argument>
+      </function>
+      <function name="stop">
+		<description>stops level music and clears the playlist; also invalidates all music channels</description>
+      </function>
+      <function name="valid">
+		<description>for every track passed, return true if it exists and is playable and false otherwise</description>
+		<argument name="track1"><type>string</type></argument>
+		<argument name="track2" required="false"><type>string</type></argument>
+		<argument name="..." required="false"><type>string</type></argument>
+      </function>
+    </accessor>
     <accessor name="Platforms" contains="platform">
       <length>
 		<description>number of platforms on the level</description>
@@ -2713,6 +2776,13 @@
 		<mnemonic name="tint jjaro"/>
       </mnemonics>
     </enum>
+	<enum name="fog_mode">
+	  <mnemonics>
+		<mnemonic name="linear"/>
+		<mnemonic name="exp"/>
+		<mnemonic name="exp2"/>
+	  </mnemonics>
+	</enum>
     <enum name="game_type">
       <mnemonics>
 		<mnemonic name="kill monsters"/>
@@ -3557,6 +3627,12 @@
 		<mnemonic name="fast vertical slide"/>
 		<mnemonic name="wander"/>
 		<mnemonic name="fast wander"/>
+		<mnemonic name="reverse horizontal slide" version="git"/>
+		<mnemonic name="reverse fast horizontal slide" version="git"/>
+		<mnemonic name="reverse vertical slide" version="git"/>
+		<mnemonic name="reverse fast vertical slide" version="git"/>
+		<mnemonic name="2x" version="git"/>
+		<mnemonic name="4x" version="git"/>
       </mnemonics>
     </enum>
     <enum name="weapon_type">
@@ -3583,6 +3659,7 @@
     <enum-accessor name="EffectTypes" contains="effect_type" nice-name="Effects"/>
 	<enum-accessor name="EphemeraQualities" contains="ephemera_quality" nice-name="Ephemera Quality"/>
     <enum-accessor name="FadeTypes" contains="fade_type" nice-name="Faders"/>
+	<enum-accessor name="FogModes" contains="fog_mode" nice-name="Fog Modes"/>
     <enum-accessor name="GameTypes" contains="game_type" nice-name="Game Types"/>
     <enum-accessor name="ItemKinds" contains="item_kind" nice-name="Item Kinds"/>
     <enum-accessor name="ItemTypes" contains="item_type" nice-name="Item Types"/>

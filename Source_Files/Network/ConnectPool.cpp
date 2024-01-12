@@ -76,7 +76,7 @@ int NonblockingConnect::Thread()
 
 	}
 
-	std::unique_ptr<CommunicationsChannel> channel(new CommunicationsChannel);
+	auto channel = std::make_unique<CommunicationsChannel>();
 
 	channel->connect(m_ip);
 	if (channel->isConnected())

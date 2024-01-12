@@ -91,8 +91,6 @@ struct graphics_preferences_data
 	// LP change: added OpenGL support
 	OGL_ConfigureData OGL_Configure;
 
-	bool double_corpse_limit;
-
 	int16 software_alpha_blending;
 	int16 software_sdl_driver;
 	int16 fps_target; // should be a multiple of 30; 0 = unlimited
@@ -114,7 +112,6 @@ enum {
 
 struct network_preferences_data
 {
-	bool allow_microphone;
 	bool game_is_untimed;
 	int16 type; // look in network_dialogs.c for _ethernet, etc...
 	int16 game_type;
@@ -172,7 +169,8 @@ enum {
 	_inputmod_dont_switch_to_new_weapon = 0x0004,
 	_inputmod_invert_mouse = 0x0008,
 	_inputmod_use_button_sounds = 0x0010,
-	_inputmod_dont_auto_recenter = 0x0020   // ZZZ addition
+	_inputmod_dont_auto_recenter = 0x0020,   // ZZZ addition
+	_inputmod_run_key_toggle = 0x0040,
 };
 
 // shell keys

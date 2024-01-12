@@ -6,16 +6,28 @@ jobs:
   linux:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v2
-    - name: Configure
-      uses: ./.github/actions/configure-linux
-    - name: Build
-      run: make -j 2
+      - uses: actions/checkout@v4
+      - name: Configure
+        uses: ./.github/actions/configure-linux
+      - name: Build
+        run: make -j 2
+        
+  linux-without-ffmpeg:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        uses: ./.github/actions/configure-linux
+        with:
+          configure_options: --without-ffmpeg
+          
+      - name: Build
+        run: make -j 2
       
   mac-osx-x64:
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Build
         uses: ./.github/actions/build-mac-osx
         with:
@@ -24,9 +36,9 @@ jobs:
           xcode_arch: x86_64
           
   mac-osx-arm:
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Build
         uses: ./.github/actions/build-mac-osx
         with:
@@ -37,19 +49,27 @@ jobs:
   windows-x64:
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Build
         uses: ./.github/actions/build-windows
         with:
           platform: x64
           vcpkg_installed_folder: installed-x64-windows
+      - name: Run Tests
+        uses: ./.github/actions/run-tests
+        with:
+          test_application_path: VisualStudio/x64/Release/Tests.exe
           
   windows-x86:
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Build
         uses: ./.github/actions/build-windows
         with:
           platform: x86
           vcpkg_installed_folder: installed-x86-windows
+      - name: Run Tests
+        uses: ./.github/actions/run-tests
+        with:
+          test_application_path: VisualStudio/Release/Tests.exe

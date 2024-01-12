@@ -114,6 +114,7 @@ extern "C"
 #include "interpolated_world.h"
 
 #include "lua_script.h"
+#include "lua_music.h"
 #include "lua_ephemera.h"
 #include "lua_map.h"
 #include "lua_monsters.h"
@@ -839,6 +840,7 @@ void LuaState::RegisterFunctions()
 	lua_register(State(), "player_control", L_Player_Control);
 //	lua_register(state, "prompt", L_Prompt);
 
+	Lua_Music_register(State());
 	Lua_Ephemera_register(State());
 	Lua_Map_register(State());
 	Lua_Monsters_register(State());
@@ -1823,13 +1825,13 @@ static std::unique_ptr<LuaState> LuaStateFactory(ScriptType script_type)
 {
 	switch (script_type) {
 	case _embedded_lua_script:
-        return std::unique_ptr<LuaState>(new EmbeddedLuaState());    
+        return std::make_unique<EmbeddedLuaState>();
 	case _lua_netscript:
-        return std::unique_ptr<LuaState>(new NetscriptState());
+        return std::make_unique<NetscriptState>();
 	case _solo_lua_script:
-        return std::unique_ptr<LuaState>(new SoloScriptState());
+        return std::make_unique<SoloScriptState>();
 	case _stats_lua_script:
-        return std::unique_ptr<LuaState>(new StatsLuaState());
+        return std::make_unique<StatsLuaState>();
 	}
     return nullptr;
 }
@@ -2237,6 +2239,7 @@ bool UseLuaCameras()
 		}
 
 		world_view->show_weapons_in_hand = false;
+		world_view->maximum_depth_intensity = NATURAL_LIGHT_INTENSITY;
 		using_lua_cameras = true;
 		
 		short point_index = it->path.current_point_index;

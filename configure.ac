@@ -4,7 +4,7 @@ dnl Written by Christian Bauer and the Aleph One developers.
 AC_INIT([Aleph One],m4_esyscmd([grep '^#define A1_DATE_VERSION' Source_Files/Misc/alephversion.h | sed -e 's/\(.*\"\)\(.*\)\(\"\)/\2/g' | tr -d '\n']),[https://github.com/Aleph-One-Marathon/alephone/issues],[AlephOne],[https://alephone.lhowon.org/])
 AC_CONFIG_SRCDIR([Source_Files/shell.cpp])
 AC_CONFIG_MACRO_DIR([m4])
-AC_PREREQ([2.71])
+AC_PREREQ([2.69])
 
 dnl Detect the canonical host and target build environment.
 AC_CANONICAL_HOST
@@ -30,12 +30,7 @@ AX_ARG_ENABLE([lua], [built-in Lua scripting])
 
 AX_ARG_WITH([sdl_image], [SDL2_image support])
 AX_ARG_WITH([ffmpeg], [FFmpeg playback and film export])
-AX_ARG_WITH([mad], [libmad MP3 playback])
-AX_ARG_WITH([sndfile], [libsndfile audio decoding])
-AX_ARG_WITH([vorbis], [libvorbis Ogg/Vorbis music playback])
 AX_ARG_WITH([smpeg], [SMPEG movie playback])
-AX_ARG_WITH([speex], [Speex net mic playback])
-AX_ARG_WITH([alsa], [ALSA net mic transmission])
 AX_ARG_WITH([curl], [cURL for HTTP communication])
 AX_ARG_WITH([zzip], [zziplib support])
 AX_ARG_WITH([png], [libpng PNG screenshot support])
@@ -79,9 +74,9 @@ dnl Check for headers.
 AC_CHECK_HEADERS([unistd.h pwd.h])
 
 dnl Check for boost functions and libraries.
-AX_BOOST_BASE([1.53.0],
+AX_BOOST_BASE([1.65.0],
               ,
-              [AC_MSG_ERROR([You need Boost 1.53.0 or higher to build Aleph One.])])
+              [AC_MSG_ERROR([You need Boost 1.65.0 or higher to build Aleph One.])])
 AX_BOOST_SYSTEM
 AS_IF([ test "x$BOOST_SYSTEM_LIB" != "x" ],
       [ LIBS="$BOOST_SYSTEM_LIB $LIBS" ],
@@ -154,6 +149,10 @@ AX_REQUIRE_PKG([SDL2_net], [SDL_NET], [SDL2_net])
 
 dnl Check for zlib.
 AX_REQUIRE_PKG([zlib], [ZLIB], [zlib])
+
+AX_REQUIRE_PKG([sndfile], [SNDFILE], [sndfile])
+
+AX_REQUIRE_PKG([openal], [OPENAL], [openal >= 1.14.0])
 
 dnl Check for OpenGL.
 AS_IF([test "x$enable_opengl" != "xno"],
@@ -233,29 +232,8 @@ dnl Remove SDL 1 inclusions from ffmpeg (https://trac.ffmpeg.org/ticket/2009)
 FFMPEG_LIBS=`echo "$FFMPEG_LIBS" | sed 's|-lSDL ||' | sed 's|-lSDLmain ||'`
 LIBS=`echo "$LIBS" | sed 's|-lSDL ||' | sed 's|-lSDLmain ||'`
 
-AX_CHECK_FEATURE_LIB([mad], [MAD],
-                     [mad.h], [mad], [mad_stream_init])
-
-AX_CHECK_FEATURE_PKG([sndfile], [SNDFILE],
-                     [SNDFILE], [sndfile])
-
-AX_CHECK_FEATURE_PKG([vorbis], [VORBISFILE],
-                     [VORBISFILE], [vorbisfile])
-
 AX_CHECK_FEATURE_LIB([smpeg], [SMPEG],
                      [smpeg/smpeg.h], [smpeg], [SMPEG_new])
-
-AX_CHECK_FEATURE_PKG([speex], [SPEEX], [speex], [speex])
-AS_IF([test "x$have_speex" = "xtrue"],
-      [ PKG_CHECK_MODULES([speexdsp], [speexdsp],
-              [ CPPFLAGS="-DSPEEX $speexdsp_CFLAGS $CPPFLAGS"
-                LIBS="$speexdsp_LIBS $LIBS" ],
-              [ have_speex=false
-                AS_IF([test "x$with_speex" = "xyes"],
-                      [AC_MSG_ERROR([$desc_speex requested but not available])])])])
-
-AX_CHECK_FEATURE_LIB([alsa], [ALSA],
-                     [alsa/asoundlib.h], [asound], [snd_pcm_open])
 
 AX_CHECK_FEATURE_PKG([curl], [CURL],
                      [CURL], [libcurl >= 7.31.0])
@@ -333,12 +311,7 @@ AX_PRINT_SUMMARY([opengl])
 AX_PRINT_SUMMARY([lua])
 AX_PRINT_SUMMARY([sdl_image])
 AX_PRINT_SUMMARY([ffmpeg])
-AX_PRINT_SUMMARY([mad])
-AX_PRINT_SUMMARY([sndfile])
-AX_PRINT_SUMMARY([vorbis])
 AX_PRINT_SUMMARY([smpeg])
-AX_PRINT_SUMMARY([speex])
-AX_PRINT_SUMMARY([alsa])
 AX_PRINT_SUMMARY([curl])
 AX_PRINT_SUMMARY([zzip])
 AX_PRINT_SUMMARY([png])

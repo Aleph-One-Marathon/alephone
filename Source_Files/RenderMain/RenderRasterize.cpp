@@ -211,16 +211,19 @@ void RenderRasterizerClass::render_node(
 					surface.length= line->length;
 					store_endpoint(get_endpoint_data(polygon->endpoint_indexes[i]), surface.p0);
 					store_endpoint(get_endpoint_data(polygon->endpoint_indexes[WRAP_HIGH(i, polygon->vertex_count-1)]), surface.p1);
+					
+					if (surface.p0 == surface.p1)
+						continue; // skip sides that are degenerate, as produced by store_endpoint()
+					
 					surface.ambient_delta= side->ambient_delta;
 					
 					// LP change: indicate in all cases whether the void is on the other side;
 					// added a workaround for full-side textures with a polygon on the other side
-					bool void_present;
+					bool void_present = true;
 					
 					switch (side->type)
 					{
 						case _full_side:
-							void_present = true;
 							// Suppress the void if there is a polygon on the other side.
 							if (polygon->adjacent_polygon_indexes[i] != NONE) void_present = false;
 							
@@ -240,6 +243,11 @@ void RenderRasterizerClass::render_node(
 							surface.texture_definition= &side->secondary_texture;
 							surface.transfer_mode= side->secondary_transfer_mode;
 							render_node_side(window, &surface, true, renderStep);
+							
+							// Ensure the high side draws over the low side if they overlap
+							if (line->lowest_adjacent_ceiling < line->highest_adjacent_floor)
+								void_present = false;
+							
 							/* fall through and render high side */
 						case _high_side:
 							surface.lightsource_index= side->primary_lightsource_index;
@@ -248,7 +256,7 @@ void RenderRasterizerClass::render_node(
 							surface.h1= polygon->ceiling_height - view->origin.z;
 							surface.texture_definition= &side->primary_texture;
 							surface.transfer_mode= side->primary_transfer_mode;
-							render_node_side(window, &surface, true, renderStep);
+							render_node_side(window, &surface, void_present, renderStep);
 							// render_node_side(view, destination, window, &surface);
 							break;
 						case _low_side:
@@ -439,6 +447,14 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 			
 			/* setup the other parameters of the textured polygon */
 			textured_polygon.flags= 0;
+			if (surface->transfer_mode == _xfer_2x)
+			{
+				textured_polygon.flags |= _SCALE_2X_BIT;
+			}
+			else if (surface->transfer_mode == _xfer_4x)
+			{
+				textured_polygon.flags |= _SCALE_4X_BIT;
+			}
 			textured_polygon.origin.x= view->origin.x + surface->origin.x;
 			textured_polygon.origin.y= view->origin.y + surface->origin.y;
 			textured_polygon.origin.z= adjusted_height;
@@ -513,16 +529,27 @@ void RenderRasterizerClass::render_node_side(
 			{
 				world_distance dx= surface->p1.i - surface->p0.i;
 				world_distance dy= surface->p1.j - surface->p0.j;
-				world_distance x0= WORLD_FRACTIONAL_PART(surface->texture_definition->x0);
-				world_distance y0= WORLD_FRACTIONAL_PART(surface->texture_definition->y0);
-				
+
+				auto scale = WORLD_ONE;
+				if (surface->transfer_mode == _xfer_2x)
+				{
+					scale *= 2;
+				}
+				else if (surface->transfer_mode == _xfer_4x)
+				{
+					scale *= 4;
+				}
+
+				world_distance x0 = surface->texture_definition->x0 & (scale - 1);
+				world_distance y0 = surface->texture_definition->y0 & (scale - 1);
+
 				/* calculate texture origin and direction */	
 				world_distance divisor = surface->length;
 				if (divisor == 0)
 					divisor = 1;
-				textured_polygon.vector.i= (WORLD_ONE*dx)/divisor;
-				textured_polygon.vector.j= (WORLD_ONE*dy)/divisor;
-				textured_polygon.vector.k= -WORLD_ONE;
+				textured_polygon.vector.i= (scale*dx)/divisor;
+				textured_polygon.vector.j= (scale*dy)/divisor;
+				textured_polygon.vector.k= -scale;
 				textured_polygon.origin.x= surface->p0.i - (x0*dx)/divisor;
 				textured_polygon.origin.y= surface->p0.j - (x0*dy)/divisor;
 				textured_polygon.origin.z= surface->h1 + y0;

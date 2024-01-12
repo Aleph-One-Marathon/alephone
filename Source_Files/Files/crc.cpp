@@ -74,11 +74,8 @@ uint32 calculate_crc_for_opened_file(OpenedFile& OFile)
 	if(build_crc_table())
 	{
 		buffer = new byte[BUFFER_SIZE];
-		if(buffer) 
-		{
-			crc= calculate_file_crc(buffer, BUFFER_SIZE, OFile);
-			delete []buffer;
-		}
+		crc= calculate_file_crc(buffer, BUFFER_SIZE, OFile);
+		delete []buffer;
 		
 		/* free the crc table! */
 		free_crc_table();
@@ -115,31 +112,25 @@ uint32 calculate_data_crc(
 static bool build_crc_table(
 	void)
 {
-	bool success= false;
-
 	assert(!crc_table);
 	crc_table= new uint32[TABLE_SIZE];
-	if(crc_table)
-	{
-		/* Build the table */
-		short index, j;
-		uint32 crc;
 
-		for(index= 0; index<TABLE_SIZE; ++index)
+	/* Build the table */
+	short index, j;
+	uint32 crc;
+
+	for(index= 0; index<TABLE_SIZE; ++index)
+	{
+		crc= index;
+		for(j=0; j<8; j++)
 		{
-			crc= index;
-			for(j=0; j<8; j++)
-			{
-				if(crc & 1) crc=(crc>>1) ^ CRC32_POLYNOMIAL;
-				else crc>>=1;
-			}
-			crc_table[index] = crc;
+			if(crc & 1) crc=(crc>>1) ^ CRC32_POLYNOMIAL;
+			else crc>>=1;
 		}
-		
-		success= true;
+		crc_table[index] = crc;
 	}
-	
-	return success;
+
+	return true;
 }
 
 static void free_crc_table(

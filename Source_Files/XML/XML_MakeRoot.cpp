@@ -166,16 +166,16 @@ bool ParseMMLFromFile(const FileSpecifier& FileSpec)
 	try {
 		InfoTree fileroot = InfoTree::load_xml(FileSpec);
 		_ParseAllMML(fileroot);
-	} catch (InfoTree::parse_error ex) {
+	} catch (const InfoTree::parse_error& ex) {
 		logError("Error parsing MML file (%s): %s", FileSpec.GetPath(), ex.what());
 		parse_error = true;
-	} catch (InfoTree::path_error ep) {
+	} catch (const InfoTree::path_error& ep) {
 		logError("Path error parsing MML file (%s): %s", FileSpec.GetPath(), ep.what());
 		parse_error = true;
-	} catch (InfoTree::data_error ed) {
+	} catch (const InfoTree::data_error& ed) {
 		logError("Data error parsing MML file (%s): %s", FileSpec.GetPath(), ed.what());
 		parse_error = true;
-	} catch (InfoTree::unexpected_error ee) {
+	} catch (const InfoTree::unexpected_error& ee) {
 		logError("Unexpected error parsing MML file (%s): %s", FileSpec.GetPath(), ee.what());
 		parse_error = true;
 	}
@@ -189,16 +189,16 @@ bool ParseMMLFromData(const char *buffer, size_t buflen)
 		std::istringstream strm(std::string(buffer, buflen));
 		InfoTree fileroot = InfoTree::load_xml(strm);
 		_ParseAllMML(fileroot);
-	} catch (InfoTree::parse_error ex) {
+	} catch (const InfoTree::parse_error& ex) {
 		logError("Error parsing MML data: %s", ex.what());
 		parse_error = true;
-	} catch (InfoTree::path_error ep) {
+	} catch (const InfoTree::path_error& ep) {
 		logError("Path error parsing MML data: %s", ep.what());
 		parse_error = true;
-	} catch (InfoTree::data_error ed) {
+	} catch (const InfoTree::data_error& ed) {
 		logError("Data error parsing MML data: %s", ed.what());
 		parse_error = true;
-	} catch (InfoTree::unexpected_error ee) {
+	} catch (const InfoTree::unexpected_error& ee) {
 		logError("Unexpected error parsing MML data: %s", ee.what());
 		parse_error = true;
 	}

@@ -93,6 +93,7 @@ namespace alephone
 
 		int height();
 		int width();
+		float pixel_scale();
 		int window_height();
 		int window_width();
 		bool hud();

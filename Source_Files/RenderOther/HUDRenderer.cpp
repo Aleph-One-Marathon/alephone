@@ -422,7 +422,7 @@ void HUD_Class::update_inventory_panel(bool force_redraw)
 							int kills_left = dynamic_world->game_information.kill_limit - (player->total_damage_given.kills - player->damage_taken[player_index].kills);
 							if (kills_left < kill_limit) kill_limit = kills_left;
 						}
-						char kills_left[4];
+						char kills_left[16];
 						sprintf(kills_left, "%d", kill_limit);
 						draw_inventory_time(kills_left, current_row-1);
 						break;
@@ -444,7 +444,7 @@ void HUD_Class::update_inventory_panel(bool force_redraw)
 				calculate_ranking_text(temporary, rankings[loop].ranking);
 					
 				/* Draw the player name.. */
-				width= _text_width(temporary, _interface_font);
+				width= TextWidth(temporary, _interface_font);
 				dest_rect.right-= width;
 				dest_rect.left+= TEXT_INSET;
 				DrawText(player->name, &dest_rect, _center_vertical, 
@@ -508,7 +508,7 @@ void HUD_Class::draw_inventory_time(char *text, short offset)
         
     calculate_inventory_rectangle_from_offset(&destination, offset);
     
-    destination.left = destination.right - _text_width(text, _interface_font) - TEXT_INSET;
+    destination.left = destination.right - TextWidth(text, _interface_font) - TEXT_INSET;
     DrawText(text, &destination, _center_vertical, _interface_font, _inventory_text_color);
 }
 

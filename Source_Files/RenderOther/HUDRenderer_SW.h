@@ -52,6 +52,8 @@ protected:
 
 	void SetClipPlane(int x, int y, int c_x, int c_y, int radius) {}
 	void DisableClipPlane(void) {}
+
+	int TextWidth(const char* text, short font_id) override;
 };
 
 #endif

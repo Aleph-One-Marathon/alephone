@@ -363,6 +363,12 @@ class ScopedSearchPath
 public:
 	ScopedSearchPath(const DirectorySpecifier& dir);
 	~ScopedSearchPath();
+
+private:
+	ScopedSearchPath(const ScopedSearchPath&) = delete;
+	ScopedSearchPath& operator=(const ScopedSearchPath&) = delete;
+
+	const DirectorySpecifier d;
 };
 
 #endif

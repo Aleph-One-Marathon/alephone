@@ -751,7 +751,7 @@ w_select::w_select(size_t s, const char **l) : widget(LABEL_WIDGET), labels(l), 
         if(labels) {
             while (labels[num_labels])
                     num_labels++;
-            if (selection >= num_labels || selection < 0)
+            if (selection >= num_labels)
                     selection = 0;
         }
 
@@ -1044,17 +1044,9 @@ w_player_color::w_player_color(int selection) : w_select(selection, NULL)
 void w_player_color::draw(SDL_Surface *s) const
 {
 	int y = rect.y + font->get_ascent();
-
-	// Selection
-	if (selection >= 0) {
-		uint32 pixel = get_dialog_player_color(selection);
-		SDL_Rect r = {rect.x, rect.y + 1, 48, rect.h - 2};
-		SDL_FillRect(s, &r, pixel);
-	} else {
-		int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
-
-		draw_text(s, "<unknown>", rect.x, y, get_theme_color(ITEM_WIDGET, state), font, style);
-	}
+	uint32 pixel = get_dialog_player_color(selection);
+	SDL_Rect r = {rect.x, rect.y + 1, 48, rect.h - 2};
+	SDL_FillRect(s, &r, pixel);
 
 	// Cursor
 	if (active)	{
@@ -1922,7 +1914,7 @@ std::string w_percentage_slider::formatted_value()
  *  List selection
  */
 
-w_list_base::w_list_base(uint16 width, size_t lines, size_t /*sel*/) : widget(ITEM_WIDGET), num_items(0), shown_items(lines), thumb_dragging(false), top_item(0)
+w_list_base::w_list_base(uint16 width, size_t lines, size_t /*sel*/) : widget(ITEM_WIDGET), selection(0), num_items(0), shown_items(lines), thumb_dragging(false), top_item(0)
 {
 	rect.w = width;
 	rect.h = item_height() * static_cast<uint16>(shown_items) + get_theme_space(LIST_WIDGET, T_SPACE) + get_theme_space(LIST_WIDGET, B_SPACE);

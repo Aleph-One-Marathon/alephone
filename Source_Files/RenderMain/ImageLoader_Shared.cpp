@@ -416,7 +416,7 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 		inputStream.ignore(8);
 
 		inputStream.ignore(4);
-	} catch (AStream::failure f) {
+	} catch (const AStream::failure& f) {
 		fprintf(stderr, "exception %s, returning false\n", f.what());
 		return false;
 	}

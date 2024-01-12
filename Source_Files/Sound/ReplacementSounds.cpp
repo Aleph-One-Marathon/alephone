@@ -42,9 +42,8 @@ std::shared_ptr<SoundData> ExternalSoundHeader::LoadExternal(FileSpecifier& File
 		return p;
 	}
 	
-	sixteen_bit = decoder->IsSixteenBit();
+	audio_format = decoder->GetAudioFormat();
 	stereo = decoder->IsStereo();
-	signed_8bit = decoder->IsSigned();
 	bytes_per_frame = decoder->BytesPerFrame();
 	little_endian = decoder->IsLittleEndian();
 	loop_start = loop_end = 0;

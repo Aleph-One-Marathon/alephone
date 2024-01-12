@@ -417,6 +417,7 @@ short new_monster(
 						nearest_goal_polygon_index(location->polygon_index) : NONE;
 					monster->sound_polygon_index= object->polygon;
 					monster->sound_location= object->location;
+					monster->sound_location.z += definition->height - (definition->height >> 1);
 					MARK_SLOT_AS_USED(monster);
 					
 					/* initialize the monster’s object */
@@ -2356,15 +2357,15 @@ static bool clear_line_of_sight(
 		int32 dx= int32(destination->x)-int32(origin->x);
 		int32 dy= int32(destination->y)-int32(origin->y);
 		world_distance dz= destination->z-origin->z;
-		int32 distance2d= GUESS_HYPOTENUSE(ABS(dx), ABS(dy));
+		int32 distance2d= GUESS_HYPOTENUSE(std::abs(dx), std::abs(dy));
 
 		/* if we can’t see full circle, make sure the target is in our visual arc */
 		if (!full_circle)
 		{
 			angle theta= arctangent(dx, dy)-viewer_object->facing;
-			angle phi= arctangent(distance2d, ABS(dz));
+			angle phi= arctangent(distance2d, std::abs(dz));
 			
-			if (ABS(theta)>viewer_definition->half_visual_arc) target_visible= false;
+			if (std::abs(theta)>viewer_definition->half_visual_arc) target_visible= false;
 			if (phi>=viewer_definition->half_vertical_visual_arc&&phi<FULL_CIRCLE-viewer_definition->half_vertical_visual_arc) target_visible= false;
 		}
 
@@ -2620,7 +2621,7 @@ void set_monster_action(
 		if ((definition->flags&_monster_has_nuclear_hard_death) && action==_monster_is_dying_hard)
 		{
 			start_fade(_fade_long_bright);
-			SoundManager::instance()->PlayLocalSound(Sound_Exploding());
+			SoundManager::instance()->PlaySound(Sound_Exploding(), nullptr, NONE);
 		}
 	}
 }
@@ -2790,7 +2791,7 @@ static bool translate_monster(
 			case _flying_or_floating_transition:
 				/* there is a wall in our way which we have to rise (or fall) along, so don’t
 					go anywhere unless we’re over it (or under it) */
-				if (ABS(object->location.z-monster->desired_height)>MINIMUM_FLOATING_HEIGHT) legal_move= false;
+				if (std::abs(object->location.z-monster->desired_height)>MINIMUM_FLOATING_HEIGHT) legal_move= false;
 				break;
 			
 			case _standing_on_sniper_ledge:

@@ -734,7 +734,7 @@ bool QuickSaveLoader::ParseQuickSave(FileSpecifier& file_name)
 				std::istringstream strm(metadata);
 				try {
 					pt = InfoTree::load_ini(strm);
-				} catch (InfoTree::ini_error e) {
+				} catch (const InfoTree::ini_error& e) {
 					return false;
 				}
 				

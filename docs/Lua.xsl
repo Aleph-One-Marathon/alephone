@@ -268,7 +268,7 @@
 </xsl:template>
 
 <xsl:template name="mnemonic">
-  <li>"<xsl:value-of select="@name"/>"</li>
+  <li>"<xsl:value-of select="@name"/>"<xsl:choose><xsl:when test="@version"><xsl:text> </xsl:text><span class="version"><xsl:value-of select="@version"/></span></xsl:when></xsl:choose></li>
 </xsl:template>
 
 <xsl:template match="accessor">

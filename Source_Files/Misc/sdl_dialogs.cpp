@@ -99,7 +99,6 @@ static FileSpecifier theme_path;
 static std::map<int, theme_widget> dialog_theme;
 
 // Prototypes
-static void shutdown_dialogs(void);
 static bool load_theme(FileSpecifier &theme);
 static void unload_theme(void);
 static void set_theme_defaults(void);
@@ -124,8 +123,6 @@ void initialize_dialogs()
 
 	// Load theme from preferences, if it exists
 	load_dialog_theme(true);
-
-	atexit(shutdown_dialogs);
 }
 
 
@@ -133,7 +130,7 @@ void initialize_dialogs()
  *  Shutdown dialog manager
  */
 
-static void shutdown_dialogs(void)
+void shutdown_dialogs(void)
 {
 	unload_theme();
 }
@@ -592,13 +589,13 @@ static bool parse_theme_file(FileSpecifier& theme_mml)
 			parse_metaserver(child);
 		
 		success = true;
-	} catch (InfoTree::parse_error e) {
+	} catch (const InfoTree::parse_error& e) {
 		logError("error parsing %s: %s", theme_mml.GetPath(), e.what());
-	} catch (InfoTree::path_error e) {
+	} catch (const InfoTree::path_error& e) {
 		logError("error parsing %s: %s", theme_mml.GetPath(), e.what());
-	} catch (InfoTree::data_error e) {
+	} catch (const InfoTree::data_error& e) {
 		logError("error parsing %s: %s", theme_mml.GetPath(), e.what());
-	} catch (InfoTree::unexpected_error e) {
+	} catch (const InfoTree::unexpected_error& e) {
 		logError("error parsing %s: %s", theme_mml.GetPath(), e.what());
 	}
 	return success;
@@ -1062,7 +1059,8 @@ int number_of_dialog_sounds() { return NUMBER_OF_DIALOG_SOUNDS; }
 
 void play_dialog_sound(int which)
 {
-	if (dialog_sound_definitions[which] != NONE)
+	if (!(sound_preferences->flags & _mute_dialogs) &&
+		dialog_sound_definitions[which] != NONE)
 	{
 		SoundManager::instance()->PlaySound(dialog_sound_definitions[which], 0, NONE);
 	}

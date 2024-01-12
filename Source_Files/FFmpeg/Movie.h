@@ -45,6 +45,7 @@ public:
 	void StartRecording(std::string path);
 	bool IsRecording();
 	void StopRecording();
+	long GetCurrentAudioTimeStamp();
 	
 	enum FrameType {
 	  FRAME_NORMAL,
@@ -61,6 +62,7 @@ private:
   
   std::vector<uint8> videobuf;
   std::vector<uint8> audiobuf;
+  int in_bps;
   
   struct libav_vars *av;
   

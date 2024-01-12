@@ -628,7 +628,9 @@ int Lua_Monster_Accelerate(lua_State *L)
 int Lua_Monster_Attack(lua_State *L)
 {
 	short target = 0;
-	if (lua_isnumber(L, 2))
+	if (lua_isnil(L, 2))
+		target = -1;
+	else if (lua_isnumber(L, 2))
 		target = static_cast<short>(lua_tonumber(L, 2));
 	else if (Lua_Monster::Is(L, 2))
 		target = Lua_Monster::Index(L, 2);
@@ -686,7 +688,6 @@ int Lua_Monster_Delete(lua_State* L)
 	monster->action = _monster_is_dying_soft; // to prevent aggressors from
 											  // relocking, per monsters.cpp
 	monster_died(monster_index);
-	auto object = get_object_data(monster->object_index);
 	remove_map_object(monster->object_index);
 
 	/* recover original type and notify the object stuff a monster died */

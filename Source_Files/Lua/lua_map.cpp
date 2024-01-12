@@ -471,6 +471,13 @@ static int Lua_Platform_Get_Speed(lua_State *L)
 	return 1;
 }
 
+static int Lua_Platform_Get_Tag(lua_State* L)
+{
+	auto* platform = get_platform_data(Lua_Platform::Index(L, 1));
+	Lua_Tag::Push(L, platform->tag);
+	return 1;
+}
+
 static int Lua_Platform_Get_Type(lua_State* L)
 {
 	platform_data* platform = get_platform_data(Lua_Platform::Index(L, 1));
@@ -558,6 +565,26 @@ static int Lua_Platform_Set_Speed(lua_State *L)
 	return 0;
 }
 
+static int Lua_Platform_Set_Tag(lua_State* L)
+{
+	int16_t tag = NONE;
+	if (lua_isnumber(L, 2))
+	{
+		tag = static_cast<int16_t>(lua_tonumber(L, 2));
+		if (!Lua_Tag::Valid(tag))
+			return luaL_error(L, "tag: invalid tag index");
+	}
+	else if (Lua_Tag::Is(L, 2))
+	{
+		tag = Lua_Tag::Index(L, 2);
+	}
+	else return luaL_error(L, "tag: incorrect argument type");
+
+	auto platform = get_platform_data(Lua_Platform::Index(L, 1));
+	platform->tag = tag;
+	return 0;
+}
+
 static int Lua_Platform_Set_Type(lua_State* L)
 {
 	platform_data* platform = get_platform_data(Lua_Platform::Index(L, 1));
@@ -605,6 +632,7 @@ const luaL_Reg Lua_Platform_Get[] = {
 	{"polygon", Lua_Platform_Get_Polygon},
 	{"secret", Lua_Platform_Get_Static_Flag<_platform_is_secret>},
 	{"speed", Lua_Platform_Get_Speed},
+	{"tag", Lua_Platform_Get_Tag},
 	{"type", Lua_Platform_Get_Type},
 	{"uses_native_polygon_heights", Lua_Platform_Get_Static_Flag<_platform_uses_native_polygon_heights>},
 	{0, 0}
@@ -639,6 +667,7 @@ const luaL_Reg Lua_Platform_Set[] = {
 	{"reverses_direction_when_obstructed", Lua_Platform_Set_Static_Flag<_platform_reverses_direction_when_obstructed>},
 	{"secret", Lua_Platform_Set_Static_Flag<_platform_is_secret>},
 	{"speed", Lua_Platform_Set_Speed},
+	{"tag", Lua_Platform_Set_Tag},
 	{"type", Lua_Platform_Set_Type},
 	{0, 0}
 };
@@ -3332,6 +3361,9 @@ const luaL_Reg Lua_Fog_Color_Set[] = {
 	{0, 0}
 };
 
+char Lua_FogMode_Name[] = "fog_mode";
+char Lua_FogModes_Name[] = "FogModes";
+
 char Lua_Fog_Name[] = "fog";
 typedef L_Class<Lua_Fog_Name> Lua_Fog;
 
@@ -3359,12 +3391,33 @@ static int Lua_Fog_Get_Depth(lua_State *L)
 	return 1;
 }
 
+static int Lua_Fog_Get_Landscape_Mix(lua_State* L)
+{
+	lua_pushnumber(L, OGL_GetFogData(Lua_Fog::Index(L, 1))->LandscapeMix);
+	return 1;
+}
+
+static int Lua_Fog_Get_Mode(lua_State* L)
+{
+	Lua_FogMode::Push(L, OGL_GetFogData(Lua_Fog::Index(L, 1))->Mode);
+	return 1;
+}
+
+static int Lua_Fog_Get_Start(lua_State* L)
+{
+	lua_pushnumber(L, OGL_GetFogData(Lua_Fog::Index(L, 1))->Start);
+	return 1;
+}
+
 const luaL_Reg Lua_Fog_Get[] = {
 	{"active", Lua_Fog_Get_Active},
 	{"affects_landscapes", Lua_Fog_Get_Affects_Landscapes},
 	{"color", Lua_Fog_Get_Color},
 	{"depth", Lua_Fog_Get_Depth},
+	{"landscape_mix", Lua_Fog_Get_Landscape_Mix},
+	{"mode", Lua_Fog_Get_Mode},
 	{"present", Lua_Fog_Get_Active},
+	{"start", Lua_Fog_Get_Start},
 	{0, 0}
 };
 
@@ -3395,11 +3448,38 @@ static int Lua_Fog_Set_Depth(lua_State *L)
 	return 0;
 }
 
+static int Lua_Fog_Set_Landscape_Mix(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "landscape_mix: incorrect argument type");
+
+	OGL_GetFogData(Lua_Fog::Index(L, 1))->LandscapeMix = static_cast<float>(lua_tonumber(L, 2));
+	return 0;
+}
+
+static int Lua_Fog_Set_Mode(lua_State* L)
+{
+	OGL_GetFogData(Lua_Fog::Index(L, 1))->Mode = Lua_FogMode::ToIndex(L, 2);
+	return 0;
+}
+
+static int Lua_Fog_Set_Start(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "start: incorrect argument type");
+
+	OGL_GetFogData(Lua_Fog::Index(L, 1))->Start = static_cast<float>(lua_tonumber(L, 2));
+	return 0;
+}
+
 const luaL_Reg Lua_Fog_Set[] = {
 	{"active", Lua_Fog_Set_Active},
 	{"affects_landscapes", Lua_Fog_Set_Affects_Landscapes},
 	{"depth", Lua_Fog_Set_Depth},
+	{"landscape_mix", Lua_Fog_Set_Landscape_Mix},
+	{"mode", Lua_Fog_Set_Mode},
 	{"present", Lua_Fog_Set_Active},
+	{"start", Lua_Fog_Set_Start},
 	{0, 0}
 };
 
@@ -3731,6 +3811,11 @@ int Lua_Map_register(lua_State *L)
 	Lua_Annotations::Length = Lua_Annotations_Length;
 
 	Lua_Fog::Register(L, Lua_Fog_Get, Lua_Fog_Set);
+
+	Lua_FogMode::Register(L, 0, 0, 0, Lua_FogMode_Mnemonics);
+	Lua_FogMode::Valid = Lua_FogMode::ValidRange(3);
+	Lua_FogModes::Register(L);
+	Lua_FogModes::Length = Lua_FogModes::ConstantLength(3);
 
 	Lua_Fog_Color::Register(L, Lua_Fog_Color_Get, Lua_Fog_Color_Set);
 

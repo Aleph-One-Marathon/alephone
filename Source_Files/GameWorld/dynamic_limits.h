@@ -45,6 +45,8 @@ enum {
 	_dynamic_limit_local_collision,		// [16] Local collision buffer (target visibility, NPC-NPC collisions, etc.)
 	_dynamic_limit_global_collision,	// [64] Global collision buffer (projectiles with other objects)
 	_dynamic_limit_ephemera,			// [1024] Ephemeral objects (render effects)
+	_dynamic_limit_garbage,				// Garbage objects (corpses) across the whole map
+	_dynamic_limit_garbage_per_polygon, // Garbage objects (corpses) within a single polygon
 	NUMBER_OF_DYNAMIC_LIMITS
 };
 

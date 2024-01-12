@@ -109,6 +109,10 @@ struct prospective_joiner_info {
 	int16 color;
 	int16 team;
 	bool gathering;
+
+	bool operator==(const prospective_joiner_info& other) const {
+		return stream_id == other.stream_id;
+	}
 };
 
 

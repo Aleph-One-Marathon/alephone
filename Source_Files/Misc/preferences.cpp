@@ -101,6 +101,9 @@ May 22, 2003 (Woody Zenfell):
 #include <boost/algorithm/hex.hpp>
 
 #include "shell_options.h"
+#include "OpenALManager.h"
+
+#include "XML_LevelScript.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -240,7 +243,9 @@ void handle_preferences(void)
 	d.add(w_controls);
 	w_button *w_environment = new w_button("ENVIRONMENT", environment_dialog, &d);
 	d.add(w_environment);
-	
+	w_button *w_plugins = new w_button("PLUGINS", plugins_dialog, &d);
+	d.add(w_plugins);
+
 	w_button *w_return = new w_button("RETURN", dialog_cancel, &d);
 	d.add(w_return);
 
@@ -252,6 +257,7 @@ void handle_preferences(void)
 	placer->add(w_sound);
 	placer->add(w_controls);
 	placer->add(w_environment);
+	placer->add(w_plugins);
 	placer->add(new w_spacer, true);
 	placer->add(w_return);
 
@@ -1170,6 +1176,9 @@ public:
 
 extern float View_FOV_Normal();
 
+extern bool shapes_file_is_m1();
+extern void ResetAllMMLValues();
+
 static void graphics_dialog(void *arg)
 {
 	dialog *parent = (dialog *)arg;
@@ -1272,9 +1281,38 @@ static void graphics_dialog(void *arg)
 
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("Heads-Up Display"), d);
+
 	w_enabling_toggle *hud_w = new w_enabling_toggle(graphics_preferences->screen_mode.hud);
 	table->dual_add(hud_w->label("Show HUD"), d);
 	table->dual_add(hud_w, d);
+	
+	std::vector<Plugin*> hud_plugins;
+	auto hud_plugin_index = -1;
+	for (auto& plugin : *Plugins::instance()) {
+		if (plugin.hud_lua.size() && plugin.compatible() && plugin.allowed()) {
+			hud_plugins.push_back(&plugin);
+			if (plugin.enabled) {
+				hud_plugin_index = hud_plugins.size() - 1;
+			}
+		}
+	}
+
+	std::vector<std::string> hud_plugin_labels;
+	if (!shapes_file_is_m1()) {
+		++hud_plugin_index;
+		hud_plugin_labels.push_back("Classic (Built-in)");
+	}
+
+	for (auto hud_plugin : hud_plugins) {
+		hud_plugin_labels.push_back(hud_plugin->name);
+	}
+
+	w_select_popup *hud_plugin_w = new w_select_popup();
+	hud_plugin_w->set_labels(hud_plugin_labels);
+	hud_plugin_w->set_selection(hud_plugin_index >= 0 ? hud_plugin_index : 0);
+
+	table->dual_add(hud_plugin_w->label("HUD Plugin"), d);
+	table->dual_add(hud_plugin_w, d);
 	
 	w_select_popup *hud_scale_w = new w_select_popup();
 	hud_scale_w->set_labels(build_stringvector_from_cstring_array(hud_scale_labels));
@@ -1381,6 +1419,19 @@ static void graphics_dialog(void *arg)
 		    graphics_preferences->screen_mode.hud = hud;
 		    changed = true;
 	    }
+
+		auto hud_plugin = static_cast<int>(hud_plugin_w->get_selection());
+		if (hud_plugin != hud_plugin_index) {
+			if (!shapes_file_is_m1()) {
+				--hud_plugin;
+			}
+
+			for (auto i = 0; i < hud_plugins.size(); ++i) {
+				hud_plugins[i]->enabled = i == hud_plugin;
+			}
+			
+			changed = true;
+		}
 	    
 	    short hud_scale = static_cast<short>(hud_scale_w->get_selection());
 	    if (hud_scale != graphics_preferences->screen_mode.hud_scale_level)
@@ -1416,7 +1467,13 @@ static void graphics_dialog(void *arg)
 		}
 		
 	    if (changed) {
+			Plugins::instance()->invalidate();
 		    write_preferences();
+
+			ResetAllMMLValues();
+			LoadBaseMMLScripts();
+			Plugins::instance()->load_mml();
+
 		    change_screen_mode(&graphics_preferences->screen_mode, true);
 		    clear_screen(true);
 		    parent->layout();
@@ -1429,7 +1486,7 @@ static void graphics_dialog(void *arg)
  *  Sound dialog
  */
 
-class w_toggle *stereo_w, *dynamic_w;
+class w_toggle* stereo_w, * dynamic_w;
 
 class w_stereo_toggle : public w_toggle {
 public:
@@ -1456,8 +1513,6 @@ public:
 			stereo_w->set_selection(true);
 	}
 };
-
-static const char *channel_labels[] = {"1", "2", "4", "8", "16", "32", NULL};
 
 class w_volume_slider : public w_percentage_slider {
 public:
@@ -1494,10 +1549,6 @@ static void sound_dialog(void *arg)
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 
-	static const char *quality_labels[3] = {"8 Bit", "16 Bit", NULL};
-	w_toggle *quality_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _16bit_sound_flag), quality_labels);
-	table->dual_add(quality_w->label("Quality"), d);
-	table->dual_add(quality_w, d);
 
 	stereo_w = new w_stereo_toggle(sound_preferences->flags & _stereo_flag);
 	table->dual_add(stereo_w->label("Stereo"), d);
@@ -1507,21 +1558,16 @@ static void sound_dialog(void *arg)
 	table->dual_add(dynamic_w->label("Active Panning"), d);
 	table->dual_add(dynamic_w, d);
 
-	w_toggle *ambient_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _ambient_sound_flag));
-	table->dual_add(ambient_w->label("Ambient Sounds"), d);
-	table->dual_add(ambient_w, d);
+	w_toggle *sounds3d_w = new w_toggle(sound_preferences->flags & _3d_sounds_flag);
+	table->dual_add(sounds3d_w->label("3D Sounds"), d);
+	table->dual_add(sounds3d_w, d);
 
-	w_toggle *more_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _more_sounds_flag));
-	table->dual_add(more_w->label("More Sounds"), d);
-	table->dual_add(more_w, d);
+	w_toggle *hrtf_w = new w_toggle((OpenALManager::Get() && OpenALManager::Get()->Is_HRTF_Enabled()) || sound_preferences->flags & _hrtf_flag);
+	table->dual_add(hrtf_w->label("HRTF (Headphones)"), d);
+	table->dual_add(hrtf_w, d);
+	hrtf_w->set_enabled(OpenALManager::Get() && OpenALManager::Get()->Support_HRTF_Toggling());
 
-	w_toggle *button_sounds_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
-	table->dual_add(button_sounds_w->label("Interface Button Sounds"), d);
-	table->dual_add(button_sounds_w, d);
-
-	w_select *channels_w = new w_select(static_cast<int>(std::floor(std::log(static_cast<float>(sound_preferences->channel_count)) / std::log(2.0) + 0.5)), channel_labels);
-	table->dual_add(channels_w->label("Channels"), d);
-	table->dual_add(channels_w, d);
+	table->add_row(new w_spacer(), true);
 
 	w_volume_slider *volume_w = new w_volume_slider(static_cast<int>(sound_preferences->volume_db / 2 + 20));
 	table->dual_add(volume_w->label("Master Volume"), d);
@@ -1531,18 +1577,36 @@ static void sound_dialog(void *arg)
 	table->dual_add(music_volume_w->label("Music Volume"), d);
 	table->dual_add(music_volume_w, d);
 
+	table->add_row(new w_spacer(), true);
+	
+	static const char *quality_labels[3] = {"8-bit Slot", "16-bit Slot", NULL};
+	w_toggle *quality_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _16bit_sound_flag), quality_labels);
+	table->dual_add(quality_w->label("Source"), d);
+	table->dual_add(quality_w, d);
+
+	w_toggle *ambient_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _ambient_sound_flag));
+	table->dual_add(ambient_w->label("Ambient Sounds"), d);
+	table->dual_add(ambient_w, d);
+
+	w_toggle *more_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _more_sounds_flag));
+	table->dual_add(more_w->label("More Sounds"), d);
+	table->dual_add(more_w, d);
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("Network Microphone"), d);
+	table->dual_add_row(new w_static_text("Interface Sounds"), d);
+	
+	w_toggle *button_sounds_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
+	table->dual_add(button_sounds_w->label("In Game (F-key)"), d);
+	table->dual_add(button_sounds_w, d);
 
-	w_toggle* mute_while_transmitting_w = new w_toggle(!sound_preferences->mute_while_transmitting);
-	table->dual_add(mute_while_transmitting_w->label("Headset Mic Mode"), d);
-	table->dual_add(mute_while_transmitting_w, d);
+	w_toggle *dialog_sounds_w = new w_toggle(!TEST_FLAG(sound_preferences->flags, _mute_dialogs));
+	table->dual_add(dialog_sounds_w->label("Dialogs"), d);
+	table->dual_add(dialog_sounds_w, d);
 
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("Experimental Sound Options"), d);
-		w_toggle *zrd_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _zero_restart_delay));
-	table->dual_add(zrd_w->label("Zero Restart Delay"), d);
+		w_toggle *zrd_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _lower_restart_delay));
+	table->dual_add(zrd_w->label("Rapid-fire Sounds"), d);
 	table->dual_add(zrd_w, d);
 
 	placer->add(table, true);
@@ -1565,11 +1629,14 @@ static void sound_dialog(void *arg)
 
 		uint16 flags = 0;
 		if (quality_w->get_selection()) flags |= _16bit_sound_flag;
+		if (sounds3d_w->get_selection()) flags |= _3d_sounds_flag;
+		if (hrtf_w->get_selection()) flags |= _hrtf_flag;
 		if (stereo_w->get_selection()) flags |= _stereo_flag;
 		if (dynamic_w->get_selection()) flags |= _dynamic_tracking_flag;
 		if (ambient_w->get_selection()) flags |= _ambient_sound_flag;
 		if (more_w->get_selection()) flags |= _more_sounds_flag;
-		if (zrd_w->get_selection()) flags |= _zero_restart_delay;
+		if (zrd_w->get_selection()) flags |= _lower_restart_delay;
+		if (!dialog_sounds_w->get_selection()) flags |= _mute_dialogs;
 
 		if (flags != sound_preferences->flags) {
 			sound_preferences->flags = flags;
@@ -1583,12 +1650,6 @@ static void sound_dialog(void *arg)
 			changed = true;
 		}
 
-		int16 channel_count = 1 << (channels_w->get_selection() == UNONE ? 1 : channels_w->get_selection());
-		if (channel_count != sound_preferences->channel_count) {
-			sound_preferences->channel_count = channel_count;
-			changed = true;
-		}
-
 		float volume_db = (volume_w->get_selection() - 20) * 2;
 		if (volume_db != sound_preferences->volume_db) {
 			sound_preferences->volume_db = volume_db;
@@ -1598,13 +1659,6 @@ static void sound_dialog(void *arg)
 		float music_db = music_volume_w->get_selection() - 20;
 		if (music_db != sound_preferences->music_db) {
 			sound_preferences->music_db = music_db;
-			changed = true;
-		}
-
-		bool mute_while_transmitting = !mute_while_transmitting_w->get_selection();
-		if (mute_while_transmitting != sound_preferences->mute_while_transmitting)
-		{
-			sound_preferences->mute_while_transmitting = mute_while_transmitting;
 			changed = true;
 		}
 
@@ -1668,7 +1722,7 @@ static const char *action_name[NUM_KEYS] = {
 	"Glance Left", "Glance Right", "Look Up", "Look Down", "Recenter View",
 	"Previous Weapon", "Next Weapon", "Trigger", "2nd Trigger",
 	"Turn -> Sidestep", "Run/Swim", "Move -> Look",
-	"Action", "Auto Map", "Microphone"
+	"Action", "Auto Map", "Aux Trigger"
 };
 
 static key_binding_map default_key_bindings = {
@@ -2019,6 +2073,7 @@ static w_toggle *mouse_raw_w;
 static w_toggle *mouse_vertical_w;
 static w_toggle *mouse_accel_w;
 static w_toggle *mouse_precision_w;
+static w_toggle *mouse_speed_limit_w;
 static bool inside_callback = false;  // prevent circular changes
 
 static void mouse_feel_details_changed(void *arg)
@@ -2033,12 +2088,14 @@ static void mouse_feel_details_changed(void *arg)
 			mouse_accel_w->set_selection(1);
 			mouse_vertical_w->set_selection(1);
 			mouse_precision_w->set_selection(1);
+			mouse_speed_limit_w->set_selection(1);
 			break;
 		case 1:
 			mouse_raw_w->set_selection(1);
 			mouse_accel_w->set_selection(0);
 			mouse_vertical_w->set_selection(0);
 			mouse_precision_w->set_selection(0);
+			mouse_speed_limit_w->set_selection(0);
 			break;
 		default:
 			break;
@@ -2054,14 +2111,16 @@ static void update_mouse_feel_details(void *arg)
 	if (mouse_raw_w->get_selection() == 1 &&
 		mouse_accel_w->get_selection() == 1 &&
 		mouse_vertical_w->get_selection() == 1 &&
-		mouse_precision_w->get_selection() == 1)
+		mouse_precision_w->get_selection() == 1 &&
+		mouse_speed_limit_w->get_selection() == 1)
 	{
 		mouse_feel_details_w->set_selection(0);
 	}
 	else if (mouse_raw_w->get_selection() == 1 &&
 			 mouse_accel_w->get_selection() == 0 &&
 			 mouse_vertical_w->get_selection() == 0 &&
-			 mouse_precision_w->get_selection() == 0)
+			 mouse_precision_w->get_selection() == 0 &&
+			 mouse_speed_limit_w->get_selection() == 0)
 	{
 		mouse_feel_details_w->set_selection(1);
 	}
@@ -2077,14 +2136,16 @@ static void update_mouse_feel(void *arg)
 	if (input_preferences->raw_mouse_input == true &&
 		input_preferences->mouse_accel_type == _mouse_accel_classic &&
 		input_preferences->classic_vertical_aim == true &&
-		input_preferences->extra_mouse_precision == false)
+		input_preferences->extra_mouse_precision == false &&
+		input_preferences->classic_aim_speed_limits)
 	{
 		mouse_feel_w->set_selection(0);
 	}
 	else if (input_preferences->raw_mouse_input == true &&
 			 input_preferences->mouse_accel_type == _mouse_accel_none &&
 			 input_preferences->classic_vertical_aim == false &&
-			 input_preferences->extra_mouse_precision == true)
+			 input_preferences->extra_mouse_precision == true &&
+			 !input_preferences->classic_aim_speed_limits)
 	{
 		mouse_feel_w->set_selection(1);
 	}
@@ -2116,6 +2177,11 @@ static bool apply_mouse_feel(int selection)
 				input_preferences->extra_mouse_precision = false;
 				changed = true;
 			}
+			if (!input_preferences->classic_aim_speed_limits)
+			{
+				input_preferences->classic_aim_speed_limits = true;
+				changed = true;
+			}
 			break;
 		case 1:
 			if (true != input_preferences->raw_mouse_input) {
@@ -2132,6 +2198,10 @@ static bool apply_mouse_feel(int selection)
 			}
 			if (true != input_preferences->extra_mouse_precision) {
 				input_preferences->extra_mouse_precision = true;
+				changed = true;
+			}
+			if (input_preferences->classic_aim_speed_limits) {
+				input_preferences->classic_aim_speed_limits = false;
 				changed = true;
 			}
 			break;
@@ -2202,6 +2272,11 @@ static void mouse_custom_dialog(void *arg)
 	mouse_precision_w->set_selection_changed_callback(update_mouse_feel_details);
 	table->dual_add(mouse_precision_w->label("Snap View to Weapon Aim"), d);
 	table->dual_add(mouse_precision_w, d);
+
+	mouse_speed_limit_w = new w_toggle(input_preferences->classic_aim_speed_limits);
+	mouse_speed_limit_w->set_selection_changed_callback(update_mouse_feel_details);
+	table->dual_add(mouse_speed_limit_w->label("Classic Aim Speed Limit"), d);
+	table->dual_add(mouse_speed_limit_w, d);
 	
 	placer->add(table);
 	placer->add(new w_spacer(), true);
@@ -2264,6 +2339,12 @@ static void mouse_custom_dialog(void *arg)
 		bool precision = (mouse_precision_w->get_selection() == 0);
 		if (precision != input_preferences->extra_mouse_precision) {
 			input_preferences->extra_mouse_precision = precision;
+			changed = true;
+		}
+
+		auto speed_limit = mouse_speed_limit_w->get_selection();
+		if (speed_limit != input_preferences->classic_aim_speed_limits) {
+			input_preferences->classic_aim_speed_limits = speed_limit;
 			changed = true;
 		}
 
@@ -2442,29 +2523,63 @@ static void controls_dialog(void *arg)
 			move_table->dual_add(new w_label(action_name[i]), d);
 			auto range = key_w.equal_range(i);
 			for (auto ik = range.first; ik != range.second; ++ik) {
-				if ((ik->second->event_type == w_key::MouseButton) &&
-					(i == 0 || i == 1 || i == 4 || i == 5))
-					move_table->dual_add(new w_label(""), d);
-				else
-					move_table->dual_add(ik->second, d);
+				move_table->dual_add(ik->second, d);
 			}
 		}
 	}
 	move->add(move_table, true);
 	move->add(new w_spacer(), true);
-	
-	table_placer *move_options = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+
+	table_placer* move_options = new table_placer(3, get_theme_space(ITEM_WIDGET));
 	move_options->col_flags(0, placeable::kAlignRight);
 
-	w_toggle *always_run_w = new w_toggle(input_preferences->modifiers & _inputmod_interchange_run_walk);
-	move_options->dual_add(always_run_w->label("Always Run"), d);
-	move_options->dual_add(always_run_w, d);
-	
-	w_toggle *always_swim_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_swim_sink));
-	move_options->dual_add(always_swim_w->label("Always Swim"), d);
-	move_options->dual_add(always_swim_w, d);
-	
+	static const char* run_option_labels[] = {
+		"Hold to Run",
+		"Hold to Walk",
+		"Tap to Toggle",
+		nullptr
+	};
+
+	static const char* swim_option_labels[] = {
+		"Hold to Swim",
+		"Hold to Sink",
+		nullptr
+	};
+
+	static const char* swim_toggle_labels[] = {
+		"",
+		"",
+		"Hold to Swim", // hack, otherwise width changes
+		nullptr
+	};
+
+	w_select *run_w = new w_select(input_preferences->modifiers & _inputmod_run_key_toggle ? 2 : input_preferences->modifiers & _inputmod_interchange_swim_sink ? 1 : 0, run_option_labels);
+	move_options->dual_add(run_w->label("Run/Swim Behavior"), d);
+	move_options->dual_add(run_w, d);
+
+	w_select *swim_w = new w_select(input_preferences->modifiers & _inputmod_interchange_swim_sink ? 1 : 0, swim_option_labels);
+	move_options->dual_add(swim_w, d);
+
+	const auto update_swim_w = [&](w_select*) {
+		if (run_w->get_selection() == 2)
+		{
+			swim_w->set_labels(swim_toggle_labels);
+			swim_w->set_enabled(false);
+		}
+		else
+		{
+			swim_w->set_labels(swim_option_labels);
+			swim_w->set_enabled(true);
+		}
+	};
+
+	update_swim_w(swim_w);
+	run_w->set_selection_changed_callback(update_swim_w);
+
 	move->add(move_options, true);
+	move->add(new w_spacer(), true);
+	move->dual_add(new w_static_text("Double-tap Run/Walk to activate control panels and doors"), d);
+	move->dual_add(new w_static_text("Double-tap Move -> Look to center vertical view"), d);
 
 	vertical_placer *look = new vertical_placer();
 	table_placer *look_table = new table_placer(4, get_theme_space(ITEM_WIDGET), true);
@@ -2648,7 +2763,7 @@ static void controls_dialog(void *arg)
 	hotkeys->add(hotkey_table, true);
 
 	hotkeys->add(new w_spacer(), true);
-	hotkeys->dual_add(new w_static_text("Hotkeys 1-9 are used to switch weapons, but can be overriden by Lua scripts"), d);
+	hotkeys->dual_add(new w_static_text("Hotkeys 1-9 are used to switch weapons, but can be overridden by Lua scripts"), d);
 	hotkeys->dual_add(new w_static_text("Hotkeys 10-12 are reserved for Lua scripts"), d);
 
 	vertical_placer *iface = new vertical_placer();
@@ -2784,8 +2899,17 @@ static void controls_dialog(void *arg)
 		bool changed = false;
 		
 		uint16 flags = input_preferences->modifiers & (_inputmod_use_button_sounds|_inputmod_invert_mouse);
-		if (always_run_w->get_selection()) flags |= _inputmod_interchange_run_walk;
-		if (always_swim_w->get_selection()) flags |= _inputmod_interchange_swim_sink;
+
+		if (run_w->get_selection() == 2)
+		{
+			flags |= _inputmod_run_key_toggle;
+		}
+		else
+		{
+			if (run_w->get_selection()) flags |= _inputmod_interchange_run_walk;
+			if (swim_w->get_selection()) flags |= _inputmod_interchange_swim_sink;
+		}
+
 		if (!(weapon_w->get_selection())) flags |= _inputmod_dont_switch_to_new_weapon;
 		if (!(auto_recenter_w->get_selection())) flags |= _inputmod_dont_auto_recenter;
 		
@@ -2861,8 +2985,6 @@ static void controls_dialog(void *arg)
 	exit_joystick();
 }
 
-extern void ResetAllMMLValues();
-
 static void plugins_dialog(void *)
 {
 	dialog d;
@@ -2903,6 +3025,9 @@ static void plugins_dialog(void *)
 			ResetAllMMLValues();
 			LoadBaseMMLScripts();
 			Plugins::instance()->load_mml();
+
+			Plugins::instance()->set_map_checksum(get_current_map_checksum());
+			LoadLevelScripts(get_map_file());
 		}
 	}
 }
@@ -2954,9 +3079,6 @@ static void environment_dialog(void *arg)
 	table->dual_add(resources_w->label("External Resources"), d);
 	table->dual_add(resources_w, d);
 #endif
-
-	table->add_row(new w_spacer, true);
-	table->dual_add_row(new w_button("PLUGINS", plugins_dialog, &d), d);
 
 #ifndef MAC_APP_STORE
 	table->add_row(new w_spacer, true);
@@ -3322,16 +3444,16 @@ void read_preferences ()
 			for (const InfoTree &child : root.children_named("environment"))
 				parse_environment_preferences(child, version);
 			
-		} catch (InfoTree::parse_error ex) {
+		} catch (const InfoTree::parse_error& ex) {
 			logError("Error parsing preferences file (%s): %s", FileSpec.GetPath(), ex.what());
 			parse_error = true;
-		} catch (InfoTree::path_error ep) {
+		} catch (const InfoTree::path_error& ep) {
 			logError("Could not find mara_prefs in preferences file (%s): %s", FileSpec.GetPath(), ep.what());
 			parse_error = true;
-		} catch (InfoTree::data_error ed) {
+		} catch (const InfoTree::data_error& ed) {
 			logError("Unexpected data error in preferences file (%s): %s", FileSpec.GetPath(), ed.what());
 			parse_error = true;
-		} catch (InfoTree::unexpected_error ee) {
+		} catch (const InfoTree::unexpected_error& ee) {
 			logError("Unexpected error in preferences file (%s): %s", FileSpec.GetPath(), ee.what());
 			parse_error = true;
 		}
@@ -3400,11 +3522,9 @@ InfoTree graphics_preferences_tree()
 	root.put_attr("fps_target", graphics_preferences->fps_target);
 	root.put_attr("anisotropy_level", graphics_preferences->OGL_Configure.AnisotropyLevel);
 	root.put_attr("multisamples", graphics_preferences->OGL_Configure.Multisamples);
-	root.put_attr("geforce_fix", graphics_preferences->OGL_Configure.GeForceFix);
 	root.put_attr("wait_for_vsync", graphics_preferences->OGL_Configure.WaitForVSync);
 	root.put_attr("gamma_corrected_blending", graphics_preferences->OGL_Configure.Use_sRGB);
 	root.put_attr("use_npot", graphics_preferences->OGL_Configure.Use_NPOT);
-	root.put_attr("double_corpse_limit", graphics_preferences->double_corpse_limit);
 	root.put_attr("movie_export_video_quality", graphics_preferences->movie_export_video_quality);
 	root.put_attr("movie_export_video_bitrate", graphics_preferences->movie_export_video_bitrate);
 	root.put_attr("movie_export_audio_quality", graphics_preferences->movie_export_audio_quality);
@@ -3424,8 +3544,6 @@ InfoTree graphics_preferences_tree()
 		tex.put_attr("index", i);
 		tex.put_attr("near_filter", Config.NearFilter);
 		tex.put_attr("far_filter", Config.FarFilter);
-		tex.put_attr("resolution", Config.Resolution);
-		tex.put_attr("color_format", Config.ColorFormat);
 		tex.put_attr("max_size", Config.MaxSize);
 		root.add_child("texture", tex);
 	}
@@ -3720,16 +3838,13 @@ InfoTree sound_preferences_tree()
 {
 	InfoTree root;
 	
-	root.put_attr("channels", sound_preferences->channel_count);
 	root.put_attr("volume_db", sound_preferences->volume_db);
 	root.put_attr("music_db", sound_preferences->music_db);
 	root.put_attr("flags", sound_preferences->flags);
 	root.put_attr("rate", sound_preferences->rate);
 	root.put_attr("samples", sound_preferences->samples);
-	root.put_attr("volume_while_speaking", sound_preferences->volume_while_speaking);
-	root.put_attr("mute_while_transmitting", sound_preferences->mute_while_transmitting);
 	root.put_attr("video_export_volume_db", sound_preferences->video_export_volume_db);
-	
+
 	return root;
 }
 
@@ -3737,7 +3852,6 @@ InfoTree network_preferences_tree()
 {
 	InfoTree root;
 
-	root.put_attr("microphone", network_preferences->allow_microphone);
 	root.put_attr("untimed", network_preferences->game_is_untimed);
 	root.put_attr("type", network_preferences->type);
 	root.put_attr("game_type", network_preferences->game_type);
@@ -3847,9 +3961,9 @@ void write_preferences()
 	
 	try {
 		fileroot.save_xml(FileSpec);
-	} catch (InfoTree::parse_error ex) {
+	} catch (const InfoTree::parse_error& ex) {
 		logError("Error saving preferences file (%s): %s", FileSpec.GetPath(), ex.what());
-	} catch (InfoTree::unexpected_error ex) {
+	} catch (const InfoTree::unexpected_error& ex) {
 		logError("Error saving preferences file (%s): %s", FileSpec.GetPath(), ex.what());
 	}
 }
@@ -3885,8 +3999,6 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	
 	OGL_SetDefaults(preferences->OGL_Configure);
 
-	preferences->double_corpse_limit= false;
-
 	preferences->software_alpha_blending = _sw_alpha_off;
 	preferences->software_sdl_driver = _sw_driver_default;
 	preferences->fps_target = 30;
@@ -3902,7 +4014,6 @@ static void default_network_preferences(network_preferences_data *preferences)
 {
 	preferences->type= _ethernet;
 
-	preferences->allow_microphone = true;
 	preferences->game_is_untimed = false;
 	preferences->difficulty_level = 2;
 	preferences->game_options =	_multiplayer_game | _ammo_replenishes | _weapons_replenish
@@ -3973,20 +4084,16 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->shell_key_bindings = default_shell_key_bindings;
 	preferences->hotkey_bindings = default_hotkey_bindings;
 	
-	// LP addition: set up defaults for modifiers:
-	// interchange run and walk, but don't interchange swim and sink.
-	preferences->modifiers = _inputmod_interchange_run_walk;
+	preferences->modifiers = _inputmod_use_button_sounds;
 
-	// LP: split into horizontal and vertical sensitivities
-	// ZZZ addition: sensitivity factor starts at 1 (no adjustment)
-	preferences->sens_horizontal = FIXED_ONE;
-	preferences->sens_vertical = FIXED_ONE;
+	preferences->sens_horizontal = FIXED_ONE / 4;
+	preferences->sens_vertical = FIXED_ONE / 4;
 	preferences->mouse_accel_type = _mouse_accel_none;
 	preferences->mouse_accel_scale = 1.f;
 	preferences->raw_mouse_input = true;
 	preferences->extra_mouse_precision = true;
 	preferences->classic_vertical_aim = false;
-	preferences->classic_aim_speed_limits = true;
+	preferences->classic_aim_speed_limits = false;
 
 	preferences->controller_analog = true;
 	preferences->controller_sensitivity = FIXED_ONE;
@@ -4102,7 +4209,6 @@ static bool validate_network_preferences(network_preferences_data *preferences)
 	bool changed= false;
 
 	// Fix bool options
-	preferences->allow_microphone = !!preferences->allow_microphone;
 	preferences->game_is_untimed = !!preferences->game_is_untimed;
 
 	if(preferences->type<0||preferences->type>_ethernet)
@@ -4119,12 +4225,6 @@ static bool validate_network_preferences(network_preferences_data *preferences)
 	if(preferences->game_is_untimed != true && preferences->game_is_untimed != false)
 	{
 		preferences->game_is_untimed= false;
-		changed= true;
-	}
-
-	if(preferences->allow_microphone != true && preferences->allow_microphone != false)
-	{
-		preferences->allow_microphone= true;
 		changed= true;
 	}
 
@@ -4374,11 +4474,9 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr("fps_target", graphics_preferences->fps_target);
 	root.read_attr("anisotropy_level", graphics_preferences->OGL_Configure.AnisotropyLevel);
 	root.read_attr("multisamples", graphics_preferences->OGL_Configure.Multisamples);
-	root.read_attr("geforce_fix", graphics_preferences->OGL_Configure.GeForceFix);
 	root.read_attr("wait_for_vsync", graphics_preferences->OGL_Configure.WaitForVSync);
 	root.read_attr("gamma_corrected_blending", graphics_preferences->OGL_Configure.Use_sRGB);
 	root.read_attr("use_npot", graphics_preferences->OGL_Configure.Use_NPOT);
-	root.read_attr("double_corpse_limit", graphics_preferences->double_corpse_limit);
 	root.read_attr_bounded<int16>("movie_export_video_quality", graphics_preferences->movie_export_video_quality, 0, 100);
 	root.read_attr_bounded<int16>("movie_export_audio_quality", graphics_preferences->movie_export_audio_quality, 0, 100);
 	root.read_attr("movie_export_video_bitrate", graphics_preferences->movie_export_video_bitrate);
@@ -4395,7 +4493,7 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	
 	for (const InfoTree &landscape : root.children_named("landscapes"))
 	{
-		for (const InfoTree &color : root.children_named("color"))
+		for (const InfoTree &color : landscape.children_named("color"))
 		{
 			int16 index;
 			if (color.read_indexed("index", index, 8))
@@ -4411,8 +4509,6 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 			OGL_Texture_Configure& Config = (index == OGL_NUMBER_OF_TEXTURE_TYPES) ? graphics_preferences->OGL_Configure.ModelConfig : graphics_preferences->OGL_Configure.TxtrConfigList[index];
 			tex.read_attr("near_filter", Config.NearFilter);
 			tex.read_attr("far_filter", Config.FarFilter);
-			tex.read_attr("resolution", Config.Resolution);
-			tex.read_attr("color_format", Config.ColorFormat);
 			tex.read_attr("max_size", Config.MaxSize);
 		}
 	}
@@ -4644,7 +4740,6 @@ void parse_input_preferences(InfoTree root, std::string version)
 			key.read_attr("pressed", pressed_name))
 		{
 			BindingType binding_type;
-			bool shell = false;
 			int index = index_for_action_name(action_name, binding_type);
 			if (index < 0)
 				continue;
@@ -4679,8 +4774,6 @@ void parse_input_preferences(InfoTree root, std::string version)
 
 void parse_sound_preferences(InfoTree root, std::string version)
 {
-	root.read_attr("channels", sound_preferences->channel_count);
-
 	if (!version.length() || version < "20200803")
 	{
 		int old_volume;
@@ -4720,8 +4813,6 @@ void parse_sound_preferences(InfoTree root, std::string version)
 	root.read_attr("flags", sound_preferences->flags);
 	root.read_attr("rate", sound_preferences->rate);
 	root.read_attr("samples", sound_preferences->samples);
-	root.read_attr("volume_while_speaking", sound_preferences->volume_while_speaking);
-	root.read_attr("mute_while_transmitting", sound_preferences->mute_while_transmitting);
 	root.read_attr("video_export_volume_db", sound_preferences->video_export_volume_db);
 }
 
@@ -4729,7 +4820,6 @@ void parse_sound_preferences(InfoTree root, std::string version)
 
 void parse_network_preferences(InfoTree root, std::string version)
 {
-	root.read_attr("microphone", network_preferences->allow_microphone);
 	root.read_attr("untimed", network_preferences->game_is_untimed);
 	root.read_attr("type", network_preferences->type);
 	root.read_attr("game_type", network_preferences->game_type);

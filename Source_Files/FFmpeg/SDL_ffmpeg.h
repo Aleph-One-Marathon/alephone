@@ -87,16 +87,9 @@ typedef struct
     const char* crf;
     int32_t cpuCount;
     int32_t audioQuality;
+    /** audio format of input stream */
+    enum AVSampleFormat audioFormat;
 } SDL_ffmpegCodec;
-
-/** predefined codec for PAL DVD */
-EXPORT extern const SDL_ffmpegCodec SDL_ffmpegCodecPALDVD;
-
-/** predefined codec for DV */
-EXPORT extern const SDL_ffmpegCodec SDL_ffmpegCodecPALDV;
-
-/** predefined codec based on extension of output file */
-EXPORT extern const SDL_ffmpegCodec SDL_ffmpegCodecAUTO;
 
 /** Struct to hold packet buffers */
 typedef struct SDL_ffmpegPacket {
@@ -147,7 +140,7 @@ typedef struct SDL_ffmpegStream
 
     /** Intermediate frame which will be used when decoding */
     struct AVFrame *decodeFrame;
-    /** Intermediate frame which will be used when encoding */
+    /** Intermediate frame which will be used when encoding or for conversion when decoding */
     struct AVFrame *encodeFrame;
     /** Store conversion context for this stream */
     struct SDL_ffmpegConversionContext *conversionContext;
@@ -180,6 +173,9 @@ typedef struct SDL_ffmpegStream
 
     /** This is used for audio resampling */
     struct SwrContext* swr_context;
+
+    /** The input audio format used before resampling */
+    enum AVSampleFormat audioFormat;
 
     /** pointer to the next stream, or NULL if current stream is the last one */
     struct SDL_ffmpegStream *next;

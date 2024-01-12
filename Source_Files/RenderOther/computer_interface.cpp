@@ -515,7 +515,6 @@ void initialize_terminal_manager(
 	void)
 {
 	player_terminals= new player_terminal_data[MAXIMUM_NUMBER_OF_PLAYERS];
-	assert(player_terminals);
 	objlist_clear(player_terminals, MAXIMUM_NUMBER_OF_PLAYERS);
 
 /*
@@ -1210,7 +1209,7 @@ static void display_picture(
 
 		int pict_header_width = get_pict_header_width(PictRsrc);
 		bool cinemascopeHack = false;
-		if (bounds.right != pict_header_width)
+		if (bounds.right != pict_header_width && bounds.right == 614)
 		{
 			cinemascopeHack = true;
 			bounds.right = pict_header_width;
@@ -1718,6 +1717,12 @@ static void goto_terminal_group(
 				terminal_data->maximum_line= count_total_lines(get_text_base(terminal_text),
 					RECTANGLE_WIDTH(&text_bounds), current_group->start_index, 
 					current_group->start_index+current_group->length);
+
+				if (film_profile.page_up_past_full_width_term_pict &&
+					terminal_data->maximum_line == 0)
+				{
+					terminal_data->maximum_line = 1;
+				}
 			}
 			break;
 			
@@ -1779,10 +1784,10 @@ static void get_date_string(
 	}
 	else
 	{
-		seconds = 800070137;
+		seconds = 800070137; // Wednesday, May 10, 1995 1:42:17
 		seconds += game_time_passed / TICKS_PER_SECOND;
 	}
-	game_time = *localtime(&seconds);
+	game_time = *gmtime(&seconds);
 	game_time.tm_year= 437;
 	game_time.tm_yday= 0;
 	game_time.tm_isdst= 0;

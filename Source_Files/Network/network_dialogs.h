@@ -420,8 +420,6 @@ protected:
 	ToggleWidget*		m_useScriptWidget;
 	FileChooserWidget*	m_scriptWidget;
 	
-	ToggleWidget*		m_allowMicWidget;
-	
 	ToggleWidget*		m_liveCarnageWidget;
 	ToggleWidget*		m_motionSensorWidget;
 	

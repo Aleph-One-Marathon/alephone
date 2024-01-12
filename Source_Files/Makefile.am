@@ -11,7 +11,7 @@ endif
 
 alephone_SOURCES = shell.h \
   \
-  shell.cpp shell_misc.cpp shell_options.h shell_options.cpp
+  shell.cpp shell_misc.cpp shell_options.h shell_options.cpp main.cpp
 
 alephone_LDADD = \
   CSeries/libcseries.a Files/libfiles.a FFmpeg/libffmpeg.a \

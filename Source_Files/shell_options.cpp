@@ -119,10 +119,11 @@ static const std::vector<ShellOptionsFlag> shell_options_flags {
 };
 
 static const std::vector<ShellOptionsString> shell_options_strings {
-	{"o", "output", "With -e, output to [file] and exit on quit", shell_options.output}
+	{"o", "output", "With -e, output to [file] and exit on quit", shell_options.output},
+	{"l", "replay-directory", "Directory with replays to load", shell_options.replay_directory}
 };
 
-bool ShellOptions::parse(int argc, char** argv)
+std::unordered_map<int, bool> ShellOptions::parse(int argc, char** argv, bool ignore_unknown_args)
 {
 	shell_options.program_name = argv[0];
 	--argc;
@@ -144,13 +145,16 @@ bool ShellOptions::parse(int argc, char** argv)
         ++argv;
     }
 
-    for (auto it = args.begin(); it != args.end(); ++it)
+	std::unordered_map<int, bool> results;
+
+    for (int i = 0; i < args.size(); i++)
     {
+		const auto& arg = args[i];
 		bool found = false;
 
 		for (auto command : shell_options_commands)
 		{
-			if (command.match(*it))
+			if (command.match(arg))
 			{
 				command.command();
 				exit(0);
@@ -159,7 +163,7 @@ bool ShellOptions::parse(int argc, char** argv)
 
 		for (auto flag : shell_options_flags)
 		{
-			if (flag.match(*it))
+			if (flag.match(arg))
 			{
 				found = true;
 				flag.flag = true;
@@ -169,17 +173,18 @@ bool ShellOptions::parse(int argc, char** argv)
 
 		for (auto option : shell_options_strings)
 		{
-			if (option.match(*it))
+			if (option.match(arg))
 			{
-                if (it != args.end() && (*(++it))[0] != '-')
-                {
+				if (i < args.size() - 1 && args[i + 1][0] != '-')
+				{
 					found = true;
-                    option.string = *it;
+					results.insert({ i++ + 1, true });
+                    option.string = args[i];
                 }
                 else
                 {
-					logFatal("%s requires an additional argument", it->c_str());
-                    printf("%s requires an additional argument\n", it->c_str());
+					logFatal("%s requires an additional argument", arg.c_str());
+                    printf("%s requires an additional argument\n", arg.c_str());
                     print_usage();
                     exit(1);
                 }
@@ -188,29 +193,37 @@ bool ShellOptions::parse(int argc, char** argv)
 
 		if (!found)
 		{
-			if ((*it)[0] != '-')
+			if (arg[0] != '-')
 			{
-				FileSpecifier f(*it);
-				if (f.IsDir())
+				FileSpecifier f(arg);
+				if (f.Exists())
 				{
-					shell_options.directory = *it;
-				}
-				else
-				{
-					shell_options.files.push_back(*it);
+					if (f.IsDir())
+					{
+						shell_options.directory = arg;
+					}
+					else
+					{
+						shell_options.files.push_back(arg);
+					}
+
+					found = true;
 				}
 			}
-			else
+
+			if (!found && !ignore_unknown_args)
 			{
-				logFatal("Unrecognized argument '%s'.", it->c_str());
-				printf("Unrecognized argument '%s'.\n", it->c_str());
+				logFatal("Unrecognized argument '%s'.", arg.c_str());
+				printf("Unrecognized argument '%s'.\n", arg.c_str());
 				print_usage();
 				exit(1);
 			}
 		}
+
+		results.insert({ i + 1, found });
 	}
 
-	return true;
+	return results;
 }
 
 void print_version()

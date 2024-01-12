@@ -959,7 +959,7 @@ int Lua_Fonts_New(lua_State *L)
 	std::unique_ptr<ScopedSearchPath> ssp;
 	if (search_path.size())
 	{
-		ssp.reset(new ScopedSearchPath(DirectorySpecifier(search_path)));
+		ssp = std::make_unique<ScopedSearchPath>(DirectorySpecifier(search_path));
 	}
 
 	FontSpecifier *ff = new FontSpecifier(f);
@@ -2079,8 +2079,7 @@ static int Lua_HUDPlayer_Get_Velocity(lua_State *L)
 
 static int Lua_HUDPlayer_Get_Microphone(lua_State *L)
 {    
-    lua_pushboolean(L, current_netgame_allows_microphone() &&
-                    (dynamic_world->speaking_player_index == local_player_index));
+    lua_pushboolean(L, false);
 	return 1;
 }
 
@@ -2144,6 +2143,12 @@ static int Lua_HUDPlayer_Get_Texture_Palette(lua_State *L)
     return 1;
 }
 
+static int Lua_HUDPlayer_Get_Run_Key(lua_State* L)
+{
+	lua_pushboolean(L, current_player->run_key);
+	return 1;
+}
+
 const luaL_Reg Lua_HUDPlayer_Get[] = {
 {"color", Lua_HUDPlayer_Get_Color},
 {"dead", Lua_HUDPlayer_Get_Dead},
@@ -2166,6 +2171,7 @@ const luaL_Reg Lua_HUDPlayer_Get[] = {
 {"zoom_active", Lua_HUDPlayer_Get_Zoom},
 {"texture_palette", Lua_HUDPlayer_Get_Texture_Palette},
 {"respawn_duration", Lua_HUDPlayer_Get_Respawn_Duration},
+{"run_key", Lua_HUDPlayer_Get_Run_Key},
 {0, 0}
 };
 

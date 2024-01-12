@@ -521,7 +521,8 @@ void move_projectiles(
 									// so be careful.
 									if (flags&_projectile_hit_landscape && !(flags&_projectile_hit_media)) detonation_effect= NONE;
 								}
-								else
+								else if (!film_profile.m1_landscape_effects ||
+										 !(static_world->environment_flags & _environment_m1_weapons))
 								{
 									if (flags&_projectile_hit_landscape) detonation_effect = NONE;
 								}
@@ -771,7 +772,7 @@ static void update_guided_projectile(
 				delta_yaw= -delta_yaw;
 			}
 			
-			dx= ABS(dx), dy= ABS(dy);
+			dx= std::abs(dx), dy= std::abs(dy);
 			if (GUESS_HYPOTENUSE(dx, dy)*sine_table[projectile->elevation] - dz*cosine_table[projectile->elevation] > 0)
 			{
 				// turn down

@@ -324,6 +324,11 @@ void HUD_OGL_Class::DisableClipPlane(void)
     MSI()->disablePlane(0);
 }
 
+int HUD_OGL_Class::TextWidth(const char* text, short font_id)
+{
+	return get_interface_font(font_id).TextWidth(text);
+}
+
 #define MESSAGE_AREA_X_OFFSET -9
 #define MESSAGE_AREA_Y_OFFSET -5
 

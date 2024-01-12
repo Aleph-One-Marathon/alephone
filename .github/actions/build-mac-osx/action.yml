@@ -15,10 +15,10 @@ inputs:
 runs:
     using: "composite"
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     
     - name: Install Tools
-      run: brew install nasm automake
+      run: brew install nasm
       shell: bash
       
     - name: Vcpkg Integration
@@ -30,13 +30,13 @@ runs:
       shell: bash
       
     - name: Cache Vcpkg
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: vcpkg/${{inputs.vcpkg_installed_folder}}
         key: ${{runner.os}}-${{inputs.vcpkg_installed_folder}}-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
       
-    - name: Switch to Xcode 12.5.1
-      run: sudo xcode-select --switch /Applications/Xcode_12.5.1.app
+    - name: Switch to Xcode 13.4.1
+      run: sudo xcode-select --switch /Applications/Xcode_13.4.1.app
       shell: bash
       
     - name: Install Dependencies

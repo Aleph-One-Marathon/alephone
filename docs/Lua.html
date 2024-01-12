@@ -170,6 +170,7 @@
 <li><a href="#EffectTypes">Effects</a></li>
 <li><a href="#EphemeraQualities">Ephemera Quality</a></li>
 <li><a href="#FadeTypes">Faders</a></li>
+<li><a href="#FogModes">Fog Modes</a></li>
 <li><a href="#GameTypes">Game Types</a></li>
 <li><a href="#ItemKinds">Item Kinds</a></li>
 <li><a href="#ItemTypes">Item Types</a></li>
@@ -634,6 +635,12 @@
 <p class="description">returns a random number between 0 and n-1 using a good random number generator</p>
 <p class="note">use only for local player effects (see Net Games and Films) </p>
 </dd>
+<dt>.replay<span class="access"> (read-only)</span> <span class="version">20221126</span>
+</dt>
+<dd>
+<p class="description">is the script being run during a film replay</p>
+<p class="note">use sparingly; altering the world differently during a replay than during live playback will cause the replay go out of sync </p>
+</dd>
 <dt>.restore_passed() <span class="version">20090909</span>
 </dt>
 <dd>
@@ -812,6 +819,21 @@
 </dd>
 <dt>.depth</dt>
 <dd><p class="description">fog depth in WU</p></dd>
+<dt>.landscape_mix <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">amount of fog to mix into landscape</p>
+<p class="note">values range from 0.0 to 1.0 </p>
+</dd>
+<dt>.mode <span class="version">git</span>
+</dt>
+<dd><p class="description">linear, exp, or exp2</p></dd>
+<dt>.start <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">fog start in WU</p>
+<p class="note">only applies to linear fog </p>
+</dd>
 </dl></dd>
 <dt>.low_gravity<span class="access"> (read-only)</span>
 </dt>
@@ -1128,19 +1150,56 @@
 <h3>
 <a name="Music"></a>Music</h3>
 <dl>
-<dt>Music</dt>
-<dd><dl>
-<dt>.clear()</dt>
+<dt># Music</dt>
+<dd><p class="description">maximum number of music channels active simultaneously</p></dd>
+<dt>Music()</dt>
+<dd><p class="description">iterates through all the music channels</p></dd>
+<dt>Music.new(track [, volume] [, loop]) <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">returns a new music channel</p>
+<p class="note">volume is decimal [0 - 1] and is 1 if not specified </p>
+<p class="note">loop is enabled by default </p>
+</dd>
+<dt>Music.clear()</dt>
 <dd><p class="description">clears the level playlist</p></dd>
-<dt>.fade(duration)</dt>
+<dt>Music.fade(duration)</dt>
 <dd><p class="description">fades out the currently playing track and clears the playlist</p></dd>
-<dt>.play(track1 [, track2] [, ...])</dt>
+<dt>Music.play(track1 [, track2] [, ...])</dt>
 <dd><p class="description">appends all of the specified tracks to the end of the playlist</p></dd>
-<dt>.stop()</dt>
-<dd><p class="description">stops level music and clears the playlist</p></dd>
-<dt>.valid(track1 [, track2] [, ...])</dt>
+<dt>Music.stop()</dt>
+<dd><p class="description">stops level music and clears the playlist; also invalidates all music channels</p></dd>
+<dt>Music.valid(track1 [, track2] [, ...])</dt>
 <dd><p class="description">for every track passed, return true if it exists and is playable and false otherwise</p></dd>
-</dl></dd>
+<dt>Music[index]</dt>
+<dd><dl>
+	  <dt>:play() <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">plays the music</p>
+<p class="note">if the music was stopped, restarts it </p>
+</dd>
+	  <dt>:stop() <span class="version">git</span>
+</dt>
+<dd><p class="description">stops the music</p></dd>
+	  <dt>:fade(volume [, duration] [, stop_after_fade]) <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">fades the music</p>
+<p class="note">it will fade in until volume is reached. volume is decimal [0 - 1] </p>
+<p class="note">duration unit is seconds and is 1 if not specified </p>
+<p class="note">stop_after_fade is disabled by default, if set to true if the volume reaches 0 while fading the music will automatically stop </p>
+</dd>
+	  <dt>.volume <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">the volume of the music</p>
+<p class="note">volume is decimal [0 - 1] </p>
+</dd>
+	  <dt>.active<span class="access"> (read-only)</span> <span class="version">git</span>
+</dt>
+<dd><p class="description">returns true if the music is still playing</p></dd>
+    </dl></dd>
 </dl>
 <h3>
 <a name="Platforms"></a>Platforms</h3>
@@ -1260,6 +1319,9 @@
 </dd>
       <dt>.speed</dt>
 <dd><p class="description">platform speed</p></dd>
+	  <dt>.tag <span class="version">20221126</span>
+</dt>
+<dd><p class="description">tag of platform</p></dd>
       <dt>.type <span class="version">20100118</span>
 </dt>
 <dd>
@@ -1333,6 +1395,9 @@
 <p class="description">respawns, or activates platforms/doors/control panels</p>
 <p class="note">latched </p>
 </dd>
+<dt>.aux_trigger <span class="version">git</span>
+</dt>
+<dd><p class="description">formerly microphone button; now dedicated to Lua scripts</p></dd>
 <dt>.cycle_weapons_backward</dt>
 <dd>
 <p class="description">switches to previous weapon</p>
@@ -1345,11 +1410,6 @@
 </dd>
 <dt>.left_trigger</dt>
 <dd><p class="description">fires primary trigger</p></dd>
-<dt>.microphone_button</dt>
-<dd>
-<p class="description">activates the net mic</p>
-<p class="note">can not be set to true; can be set to false </p>
-</dd>
 <dt>.right_trigger</dt>
 <dd><p class="description">fires secondary trigger</p></dd>
 <dt>.toggle_map</dt>
@@ -1652,13 +1712,10 @@
 </dl></dd>
 <dt>:select()</dt>
 <dd><p class="description">attempts to force player to ready weapon</p></dd>
-</dl></dd>
-      <dt>.weapons.current<span class="access"> (read-only)</span>
+<dt>.type<span class="access"> (read-only)</span>
 </dt>
-<dd>
-<p class="description">weapon the player is currently wielding</p>
-<p class="note">can be nil </p>
-</dd>
+<dd><p class="description">type of this weapon</p></dd>
+</dl></dd>
       <dt>.x<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
@@ -2441,6 +2498,18 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"tint jjaro"</li>
 </ul></div>
 <div class="end-mnemonics"></div>
+<h3>
+<a name="FogModes"></a>Fog Modes</h3>
+<dl>
+<dt># FogModes</dt>
+<dt>FogModes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"linear"</li>
+<li>"exp"</li>
+<li>"exp2"</li>
+</ul>
 <h3>
 <a name="GameTypes"></a>Game Types</h3>
 <dl>
@@ -3489,18 +3558,30 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"pulsate"</li>
 <li>"wobble"</li>
 <li>"fast wobble"</li>
-</ul></div>
-<div class="mnemonics-column"><ul class="mnemonics">
 <li>"static"</li>
 <li>"landscape"</li>
-<li>"horizontal slide"</li>
-<li>"fast horizontal slide"</li>
 </ul></div>
 <div class="mnemonics-column"><ul class="mnemonics">
+<li>"horizontal slide"</li>
+<li>"fast horizontal slide"</li>
 <li>"vertical slide"</li>
 <li>"fast vertical slide"</li>
 <li>"wander"</li>
 <li>"fast wander"</li>
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
+<li>"reverse horizontal slide" <span class="version">git</span>
+</li>
+<li>"reverse fast horizontal slide" <span class="version">git</span>
+</li>
+<li>"reverse vertical slide" <span class="version">git</span>
+</li>
+<li>"reverse fast vertical slide" <span class="version">git</span>
+</li>
+<li>"2x" <span class="version">git</span>
+</li>
+<li>"4x" <span class="version">git</span>
+</li>
 </ul></div>
 <div class="end-mnemonics"></div>
 <h3>

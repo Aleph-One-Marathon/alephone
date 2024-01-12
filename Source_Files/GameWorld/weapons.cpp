@@ -2516,7 +2516,7 @@ static bool handle_trigger_up(
 				weapon->triggers[which_trigger].state= _weapon_idle;
 				weapon->triggers[which_trigger].phase= IDLE_PHASE_COUNT;
 				weapon->triggers[which_trigger].sequence= 0;
-				SoundManager::instance()->StopSound(player->object_index, trigger_definition->charging_sound);
+				SoundManager::instance()->StopSound(player_index == current_player_index ? NONE : player->object_index, trigger_definition->charging_sound);
 			}
 		}
 	}
@@ -2929,7 +2929,7 @@ static void play_weapon_sound(
 	_fixed old_pitch= object->sound_pitch;
 
 	object->sound_pitch= pitch;
-	play_object_sound(monster->object_index, sound);
+	play_object_sound(monster->object_index, sound, player_index == current_player_index);
 	object->sound_pitch= old_pitch;
 }
 
@@ -3143,11 +3143,20 @@ static void calculate_ticks_from_shapes(
 				definition->reloading_shape));
 			// Skip over if the sequence is nonexistent
 			if(!high_level_data) continue;
-	
+
 			total_ticks= high_level_data->ticks_per_frame*high_level_data->frames_per_view;
 			definition->await_reload_ticks= 0;
-			definition->loading_ticks= high_level_data->ticks_per_frame*(high_level_data->key_frame+1)
-				- definition->await_reload_ticks;
+			if (definition->flags & _weapon_is_marathon_1 &&
+				film_profile.m1_reload_sound)
+			{
+				definition->loading_ticks= high_level_data->ticks_per_frame*(high_level_data->key_frame)
+					- definition->await_reload_ticks;
+			}
+			else
+			{
+				definition->loading_ticks= high_level_data->ticks_per_frame*(high_level_data->key_frame+1)
+					- definition->await_reload_ticks;
+			}
 			definition->finish_loading_ticks= total_ticks - definition->loading_ticks 
 				- definition->await_reload_ticks;
 		} else {
@@ -3943,7 +3952,7 @@ static void	play_shell_casing_sound(
 		location.yaw= location.pitch= 0;
 		location.velocity.i= location.velocity.j= location.velocity.k= 0;
 	
-		SoundManager::instance()->PlaySound(sound_index, &location, NONE);
+		SoundManager::instance()->PlaySound(sound_index, player_index != current_player_index ? &location : 0, NONE);
 	}
 }
 

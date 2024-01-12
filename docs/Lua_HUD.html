@@ -302,7 +302,7 @@ end
 <dd>
 <p class="note">all items in Game are read-only </p>
 <dl>
-<dt>.deserialize(s) <span class="version">git</span>
+<dt>.deserialize(s) <span class="version">20200830</span>
 </dt>
 <dd>
 <p class="description">deserializes s and returns the original Lua value</p>
@@ -424,7 +424,7 @@ end
 <dt>.map_checksum <span class="version">20150619</span>
 </dt>
 <dd><p class="description">checksum of map file</p></dd>
-<dt>.stash[key] <span class="version">git</span>
+<dt>.stash[key] <span class="version">20200830</span>
 </dt>
 <dd>
 <p class="description">reads values from a stash shared between all running Lua scripts</p>
@@ -500,8 +500,6 @@ end
 </dl></dd>
 <dt>.energy<br>.life</dt>
 <dd><p class="description">amount of suit energy player has (150 is normal red health)</p></dd>
-<dt>.microphone_active</dt>
-<dd><p class="description">true if netmic is on</p></dd>
 <dt>.inventory_sections</dt>
 <dd><dl>
 <dt>.current</dt>
@@ -587,6 +585,9 @@ end
 <p class="description">ticks remaining before dead player can revive</p>
 <p class="note">nil until player is completely dead </p>
 </dd>
+<dt>.run_key <span class="version">git</span>
+</dt>
+<dd><p class="description">whether the run key is down</p></dd>
 <dt>.team</dt>
 <dd><p class="description">player's team (pants color)</p></dd>
 <dt>.texture_palette</dt>
@@ -836,7 +837,7 @@ end
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
-<dt>.text_margins <span class="version">git</span>
+<dt>.text_margins <span class="version">20210408</span>
 </dt>
 <dd>
 <p class="description">specifies margins from the edges of the world_rect for drawing text such as Lua overlays, messages, and the input console</p>

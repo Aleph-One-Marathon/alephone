@@ -410,6 +410,13 @@ enum /* object transfer modes (high-level) */
 	_xfer_wander,
 	_xfer_fast_wander,
 	_xfer_big_landscape,
+	_xfer_reverse_horizontal_slide,
+	_xfer_reverse_fast_horizontal_slide,
+	_xfer_reverse_vertical_slide,
+	_xfer_reverse_fast_vertical_slide,
+	_xfer_2x,				  // scales texture by 2x
+	_xfer_4x,				  // scales texture by 4x
+	
 	NUMBER_OF_TRANSFER_MODES
 };
 
@@ -1172,7 +1179,8 @@ void animate_object(short object_index); /* assumes ∂t==1 tick */
 void animate_object(object_data* data, int16_t object_index);
 bool randomize_object_sequence(short object_index, shape_descriptor shape);
 
-void play_object_sound(short object_index, short sound_code);
+world_location3d* get_object_sound_location(short object_index);
+void play_object_sound(short object_index, short sound_code, bool local_sound = false);
 void play_polygon_sound(short polygon_index, short sound_code);
 void _play_side_sound(short side_index, short sound_code, _fixed pitch);
 void play_world_sound(short polygon_index, world_point3d *origin, short sound_code);

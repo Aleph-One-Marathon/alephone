@@ -44,7 +44,7 @@ private:
 	SDL_mutex* mutex_;
 };
 
-StatsManager::StatsManager() : thread_(0), run_(true)
+StatsManager::StatsManager() : thread_(0), run_(true), busy_(false)
 {
 	entry_mutex_ = SDL_CreateMutex();
 
@@ -125,7 +125,7 @@ int StatsManager::Run(void *pv)
 			}
 			else
 			{
-				entry.reset(new Entry(sm->entries_.front()));
+				entry = std::make_unique<Entry>(sm->entries_.front());
 				sm->entries_.pop();
 			}
 		}

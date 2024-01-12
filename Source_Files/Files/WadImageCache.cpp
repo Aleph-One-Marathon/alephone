@@ -324,7 +324,7 @@ void WadImageCache::initialize_cache()
 	InfoTree pt;
 	try {
 		pt = InfoTree::load_ini(info);
-	} catch (InfoTree::ini_error e) {
+	} catch (const InfoTree::ini_error& e) {
 		logError("Could not read image cache from %s (%s)", info.GetPath(), e.what());
 	}
 	
@@ -385,7 +385,7 @@ void WadImageCache::save_cache()
 	try {
 		pt.save_ini(info);
 		m_cache_dirty = false;
-	} catch (InfoTree::ini_error e) {
+	} catch (const InfoTree::ini_error& e) {
 		logError("Could not save image cache to %s (%s)", info.GetPath(), e.what());
 		return;
 	}

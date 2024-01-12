@@ -130,14 +130,8 @@ void RenderVisTreeClass::build_render_tree()
 	/* reset clipping buffers */
 	initialize_clip_data();
 	
-	// LP change:
-	// Adjusted for long-vector handling
-	// Using start index of list of nodes: 0
-	long_vector2d view_edge;
-	short_to_long_2d(view->left_edge,view_edge);
-	cast_render_ray(&view_edge, NONE, &Nodes.front(), _counterclockwise_bias);
-	short_to_long_2d(view->right_edge,view_edge);
-	cast_render_ray(&view_edge, NONE, &Nodes.front(), _clockwise_bias);
+	cast_render_ray(&view->left_edge, NONE, &Nodes.front(), _counterclockwise_bias);
+	cast_render_ray(&view->right_edge, NONE, &Nodes.front(), _clockwise_bias);
 	
 	/* pull polygons off the queue, fire at all their new endpoints, building the tree as we go */
 	while (polygon_queue_size)
@@ -204,8 +198,7 @@ void RenderVisTreeClass::cast_render_ray(
 	short bias) /* _clockwise or _counterclockwise for walking endpoints */
 {
 	short polygon_index= parent->polygon_index;
-
-//	dprintf("shooting at e#%d of p#%d", endpoint_index, polygon_index);
+	bool add_endpoint_clip_to_next_clippable_poly = false;
 	
 	do
 	{
@@ -316,10 +309,13 @@ void RenderVisTreeClass::cast_render_ray(
 				}
 			}
 			
+			if (clipping_endpoint_index != NONE) // if we're targeting an opaque endpoint and we just hit it
+				add_endpoint_clip_to_next_clippable_poly = true;
+			
 			/* update endpoint clipping information for this node if we have a valid endpoint with clip */
-			if (clipping_endpoint_index!=NONE && (clip_flags&(_clip_left|_clip_right)))
+			if (add_endpoint_clip_to_next_clippable_poly && (clip_flags&(_clip_left|_clip_right)))
 			{
-				clipping_endpoint_index= calculate_endpoint_clipping_information(clipping_endpoint_index, clip_flags);
+				clipping_endpoint_index = calculate_endpoint_clipping_information(endpoint_index, clip_flags);
 				
 				// Be sure it's valid
 				if (clipping_endpoint_index != NONE)
@@ -327,6 +323,10 @@ void RenderVisTreeClass::cast_render_ray(
 					if (node->clipping_endpoint_count<MAXIMUM_CLIPPING_ENDPOINTS_PER_NODE)
 						node->clipping_endpoints[node->clipping_endpoint_count++]= clipping_endpoint_index;
 				}
+				
+				// Don't add the clip more than once (child nodes implicitly use their parent's clips)
+				add_endpoint_clip_to_next_clippable_poly = false;
+				endpoint_index = NONE;
 			}
 			
 			parent= node;
@@ -615,12 +615,13 @@ void RenderVisTreeClass::initialize_clip_data()
 		
 		endpoint= &EndpointClips[indexLEFT_SIDE_OF_SCREEN];
 		endpoint->flags= _clip_left;
-		short_to_long_2d(view->untransformed_left_edge,endpoint->vector);
+		endpoint->vector = {view->world_to_screen_x, -view->half_screen_width};
 		endpoint->x= 0;
 
 		endpoint= &EndpointClips[indexRIGHT_SIDE_OF_SCREEN];
 		endpoint->flags= _clip_right;
-		short_to_long_2d(view->untransformed_right_edge,endpoint->vector);
+		// Right clip vector is negated to clip rightward
+		endpoint->vector = {-view->world_to_screen_x, -(+view->half_screen_width)};
 		endpoint->x= view->screen_width;
 	}
 	
@@ -633,8 +634,11 @@ void RenderVisTreeClass::initialize_clip_data()
 		line->flags= _clip_up|_clip_down;
 		line->x0 = INT16_MIN;
 		line->x1 = INT16_MAX;
-		line->top_y= 0; short_to_long_2d(view->top_edge,line->top_vector);
-		line->bottom_y= view->screen_height; short_to_long_2d(view->bottom_edge,line->bottom_vector);
+		line->top_y = 0;
+		line->bottom_y = view->screen_height;
+		// Top clip vector is negated to clip upward
+		line->top_vector = {-view->world_to_screen_y, -(+view->half_screen_height + view->dtanpitch)}; // {i, k}
+		line->bottom_vector = {view->world_to_screen_y, -view->half_screen_height + view->dtanpitch}; // {i, k}
 	}
 
 	// LP change:
@@ -695,7 +699,7 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 	
 		data->x0= (short)PIN(x0, 0, view->screen_width);
 		data->x1= (short)PIN(x1, 0, view->screen_width);
-		if (data->x1<data->x0) SWAP(data->x0, data->x1);
+		if (data->x1<data->x0) std::swap(data->x0, data->x1);
 		if (data->x1>data->x0)
 		{
 			if (clip_flags&_clip_up)
@@ -762,6 +766,8 @@ short RenderVisTreeClass::calculate_endpoint_clipping_information(
 	short endpoint_index,
 	uint16 clip_flags)
 {
+	assert(endpoint_index != NONE);
+	
 	// If this endpoint was not transformed, then don't do anything with it,
 	// and indicate that it's not a valid endpoint
 	if (!TEST_RENDER_FLAG(endpoint_index, _endpoint_has_been_transformed))

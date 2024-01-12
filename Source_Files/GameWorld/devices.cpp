@@ -503,6 +503,8 @@ void try_and_toggle_control_panel(
 						make_sound= set_tagged_light_statuses(side->control_panel_permutation, state);
 						if (try_and_change_tagged_platform_states(side->control_panel_permutation, state)) make_sound= true;
 						if (!side->control_panel_permutation) make_sound= true;
+						if (film_profile.chip_insertion_ignores_tag_state &&
+							definition->item != NONE) make_sound = true;
 						if (make_sound)
 						{
 							SET_CONTROL_PANEL_STATUS(side, state);

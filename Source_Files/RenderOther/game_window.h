@@ -47,8 +47,6 @@ void mark_player_inventory_as_dirty(short player_index, short dirty_item);
 void mark_interface_collections(bool loading);
 void mark_player_network_stats_as_dirty(short player_index);
 
-void set_interface_microphone_recording_state(bool state);
-
 class InfoTree;
 void parse_mml_interface(const InfoTree& root);
 void reset_mml_interface();

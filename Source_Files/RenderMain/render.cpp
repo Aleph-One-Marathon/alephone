@@ -406,14 +406,6 @@ void initialize_view_data(
 	/* calculate the vertical cone angle; again, overflow instead of underflow when rounding */
 	view->half_vertical_cone= (angle) (NUMBER_OF_ANGLES*atan(((double)view->half_screen_height*view->vertical_scale)/world_to_screen)/two_pi+1.0);
 
-	/* calculate left edge vector */
-	view->untransformed_left_edge.i= view->world_to_screen_x;
-	view->untransformed_left_edge.j= - view->half_screen_width;
-
-	/* calculate right edge vector (negative, so it clips in the right direction) */
-	view->untransformed_right_edge.i= - view->world_to_screen_x;
-	view->untransformed_right_edge.j= - view->half_screen_width;
-
 	/* view needs to know if OpenGL renderer should mimic software's pitch */
 	if (!ignore_preferences && graphics_preferences->screen_mode.acceleration == _opengl_acceleration)
 		view->mimic_sw_perspective = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_MimicSW);
@@ -625,9 +617,6 @@ static void update_view_data(
 		update_render_effect(view);
 	}
 	
-	view->untransformed_left_edge.i= view->world_to_screen_x;
-	view->untransformed_right_edge.i= - view->world_to_screen_x;
-	
 	/* calculate world_to_screen_y*tan(pitch) */
 	view->dtanpitch= (view->world_to_screen_y*sine_table[view->pitch])/cosine_table[view->pitch];
 
@@ -639,14 +628,6 @@ static void update_view_data(
 	theta= NORMALIZE_ANGLE(view->yaw+view->half_cone);
 	view->right_edge.i= cosine_table[theta], view->right_edge.j= sine_table[theta];
 	
-	/* calculate top cone vector (negative to clip the right direction) */
-	view->top_edge.i= - view->world_to_screen_y;
-	view->top_edge.j= - (view->half_screen_height + view->dtanpitch); /* ==k */
-
-	/* calculate bottom cone vector */
-	view->bottom_edge.i= view->world_to_screen_y;
-	view->bottom_edge.j= - view->half_screen_height + view->dtanpitch; /* ==k */
-
 	/* if we’re sitting on one of the endpoints in our origin polygon, move us back slightly (±1) into
 		that polygon.  when we split rays we’re assuming that we’ll never pass through a given
 		vertex in different directions (because if we do the tree becomes a graph) but when
@@ -896,6 +877,10 @@ void instantiate_polygon_transfer_mode(
 		case _xfer_fast_vertical_slide:
 		case _xfer_wander:
 		case _xfer_fast_wander:
+		case _xfer_reverse_horizontal_slide:
+		case _xfer_reverse_fast_horizontal_slide:
+		case _xfer_reverse_vertical_slide:
+		case _xfer_reverse_fast_vertical_slide:
 			x0= y0= 0;
 			switch (transfer_mode)
 			{
@@ -904,7 +889,13 @@ void instantiate_polygon_transfer_mode(
 				
 				case _xfer_fast_vertical_slide: transfer_phase<<= 1;
 				case _xfer_vertical_slide: y0= (transfer_phase<<2)&(WORLD_ONE-1); break;
-				
+					
+				case _xfer_reverse_fast_horizontal_slide: transfer_phase<<= 1;
+				case _xfer_reverse_horizontal_slide: x0 = WORLD_ONE - (transfer_phase<<2)&(WORLD_ONE-1); break;
+					
+		        case _xfer_reverse_fast_vertical_slide: transfer_phase<<= 1;
+				case _xfer_reverse_vertical_slide: y0 = WORLD_ONE - (transfer_phase<<2)&(WORLD_ONE-1); break;
+					
 				case _xfer_fast_wander: transfer_phase<<= 1;
 				case _xfer_wander:
 					alternate_transfer_phase= transfer_phase%(10*FULL_CIRCLE);

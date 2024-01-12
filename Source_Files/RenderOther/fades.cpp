@@ -264,7 +264,6 @@ void initialize_fades(
 {
 	/* allocate and initialize space for our fade_data structure */
 	fade= new fade_data;
-	assert(fade);
 	fade->flags = 0;
 	
 	SET_FADE_ACTIVE_STATUS(fade, false);
@@ -415,13 +414,13 @@ void stop_fade(
 {
 	if (FADE_IS_ACTIVE(fade))
 	{
-		struct fade_definition *definition= get_fade_definition(fade->type);
+		struct fade_definition* definition = get_fade_definition(fade->type);
 		// LP change: idiot-proofing
 		if (!definition) return;
-		
+
 		recalculate_and_display_color_table(fade->type, definition->final_transparency,
 			fade->original_color_table, fade->animated_color_table, false);
-		
+
 		SET_FADE_ACTIVE_STATUS(fade, false);
 	}
 }
@@ -444,16 +443,6 @@ void full_fade(
 	while (update_fades())
 		Music::instance()->Idle();
 		;
-}
-
-short get_fade_period(
-	short type)
-{
-	struct fade_definition *definition= get_fade_definition(type);
-	// LP change: idiot-proofing
-	if (!definition) return 0;	
-	
-	return definition->period;
 }
 
 void gamma_correct_color_table(

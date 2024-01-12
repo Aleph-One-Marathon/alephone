@@ -68,6 +68,12 @@ typedef L_Enum<Lua_DamageType_Name> Lua_DamageType;
 extern char Lua_DamageTypes_Name[]; // "DamageTypes"
 typedef L_EnumContainer<Lua_DamageTypes_Name, Lua_DamageType> Lua_DamageTypes;
 
+extern char Lua_FogMode_Name[]; // "fog_mode"
+typedef L_Enum<Lua_FogMode_Name> Lua_FogMode;
+
+extern char Lua_FogModes_Name[]; // "FogModes"
+typedef L_EnumContainer<Lua_FogModes_Name, Lua_FogMode> Lua_FogModes;
+
 extern char Lua_Line_Name[]; // "line"
 typedef L_Class<Lua_Line_Name> Lua_Line;
 

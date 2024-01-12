@@ -11,3 +11,4 @@ jobs:
     
   mac-osx:
     uses: ./.github/workflows/release-mac-osx.yml
+    secrets: inherit

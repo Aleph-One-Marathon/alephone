@@ -241,13 +241,11 @@ void initialize_motion_sensor(
 	compass_shapes= compasses;
 	
 	entities= new entity_data[MAXIMUM_MOTION_SENSOR_ENTITIES];
-	assert(entities);
 	for (int i = 0; i < MAXIMUM_MOTION_SENSOR_ENTITIES; i++) {
 	  entities[i].flags = 0;
 	}
 
 	sensor_region= new region_data[side_length];
-	assert(sensor_region);
 	
 	/* precalculate the sensor region */
 	precalculate_sensor_region(side_length);	

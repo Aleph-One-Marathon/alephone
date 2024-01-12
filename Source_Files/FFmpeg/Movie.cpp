@@ -26,6 +26,7 @@
 #include "cseries.h"
 #include "csalerts.h"
 #include "Logging.h"
+#include "OpenALManager.h"
 
 #include <algorithm>
 
@@ -45,7 +46,6 @@
 #include "Movie.h"
 #include "interface.h"
 #include "screen.h"
-#include "Mixer.h"
 #include "preferences.h"
 
 #ifdef __WIN32__
@@ -70,6 +70,7 @@ int Movie::Movie_EncodeThread(void *arg) { return 0; }
 void Movie::EncodeThread() {}
 void Movie::EncodeVideo(bool last) {}
 void Movie::EncodeAudio(bool last) {}
+long Movie::GetCurrentAudioTimeStamp() { return 0; }
 Movie::Movie() {}
 
 #else
@@ -114,9 +115,6 @@ static int get_cpu_count(void)
     }
     return cpu_count;
 }
-
-
-#define MAX_AUDIO_CHANNELS 2
 
 struct libav_vars {
     bool inited;
@@ -183,9 +181,13 @@ void Movie::PromptForRecording()
 
 void Movie::StartRecording(std::string path)
 {
-	StopRecording();
+    if (!OpenALManager::Get()) return;
+
+	StopRecording(); 
 	moviefile = path;
-	SDL_PauseAudio(IsRecording());
+    OpenALManager::Get()->Stop();
+    OpenALManager::Get()->ToggleDeviceMode(IsRecording());
+    OpenALManager::Get()->Start();
 }
 
 bool Movie::IsRecording()
@@ -199,11 +201,18 @@ bool Movie::Setup()
         return false;
     if (!av)
         return false;
+    if (!OpenALManager::Get())
+        return false;
 
     alephone::Screen* scr = alephone::Screen::instance();
     view_rect = scr->window_rect();
 
-    Mixer* mx = Mixer::instance();
+    const float pixel_scale = scr->pixel_scale();
+    view_rect.x *= pixel_scale;
+    view_rect.y *= pixel_scale;
+    view_rect.h *= pixel_scale;
+    view_rect.w *= pixel_scale;
+
     const auto fps = std::max(get_fps_target(), static_cast<int16_t>(30));
 
     temp_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, view_rect.w, view_rect.h, 32,
@@ -240,7 +249,7 @@ bool Movie::Setup()
     SDL_ffmpegCodec codec = {};
     codec.videoCodecID = AV_CODEC_ID_VP8;
     codec.audioCodecID = AV_CODEC_ID_VORBIS;
-    codec.sampleRate = mx->obtained.freq;
+    codec.sampleRate = OpenALManager::Get()->GetFrequency();
     codec.channels = 2;
     codec.width = view_rect.w;
     codec.height = view_rect.h;
@@ -252,6 +261,9 @@ bool Movie::Setup()
     codec.crf = crf.c_str();
     codec.framerateNum = 1;
     codec.framerateDen = fps;
+    codec.audioFormat = mapping_openal_ffmpeg.at(OpenALManager::Get()->GetRenderingFormat());
+
+    in_bps = av_get_bytes_per_sample(codec.audioFormat);
 
     auto video_stream = SDL_ffmpegAddVideoStream(av->ffmpeg_file, codec);
     if (!video_stream) { ThrowUserError("Could not add video stream: " + std::string(SDL_ffmpegGetError())); return false; }
@@ -272,10 +284,10 @@ bool Movie::Setup()
 
     // set up our threads and intermediate storage
     videobuf.resize(view_rect.w * view_rect.h * 4 + 10000);
-    audiobuf.resize(2 * 2 * mx->obtained.freq / fps);
+    audiobuf.resize(2 * in_bps * OpenALManager::Get()->GetFrequency() / fps);
 
     // TODO: fixme!
-    if (mx->obtained.freq % fps != 0) { ThrowUserError("Audio buffer size is non-integer; try lowering FPS target"); return false; }
+    if (OpenALManager::Get()->GetFrequency() % fps != 0) { ThrowUserError("Audio buffer size is non-integer; try lowering FPS target"); return false; }
 
 	encodeReady = SDL_CreateSemaphore(0);
 	fillReady = SDL_CreateSemaphore(1);
@@ -287,7 +299,7 @@ bool Movie::Setup()
 
     if (MainScreenIsOpenGL())
     {
-        frameBufferObject = std::unique_ptr<FBO>(new FBO(view_rect.w, view_rect.h));
+        frameBufferObject = std::make_unique<FBO>(view_rect.w, view_rect.h);
     }
 
 	return av->inited = true;
@@ -301,6 +313,11 @@ void Movie::ThrowUserError(std::string error_msg)
     full_msg += ".)";
     logError(full_msg.c_str());
     alert_user(full_msg.c_str());
+}
+
+long Movie::GetCurrentAudioTimeStamp()
+{
+    return IsRecording() && av->inited && av->ffmpeg_file->audioStream ? av->ffmpeg_file->audioStream->lastTimeStamp : 0;
 }
 
 int Movie::Movie_EncodeThread(void *arg)
@@ -321,10 +338,9 @@ void Movie::EncodeAudio(bool last)
     
     // bps: bytes per sample
     int channels = acodec->channels;
-    int read_bps = 2;
     
-    int max_read = acodec->frame_size * read_bps * channels;
-    int min_read = last ? read_bps * channels : max_read;
+    int max_read = acodec->frame_size * in_bps * channels;
+    int min_read = last ? in_bps * channels : max_read;
     while (av_fifo_size(av->audio_fifo) >= min_read)
     {
         int read_bytes = av->audio_frame->size = MIN(av_fifo_size(av->audio_fifo), max_read);
@@ -399,12 +415,12 @@ void Movie::AddFrame(FrameType ftype)
 	}
 #endif
 	
-	int audio_bytes_per_frame = audiobuf.size();
-	Mixer *mx = Mixer::instance();
-	float old_vol = mx->main_volume;
-	mx->SetVolume(sound_preferences->video_export_volume_db);
-	mx->Mix(&audiobuf.front(), audio_bytes_per_frame / 4, true, true, true);
-	mx->main_volume = old_vol;
+	int bytes = audiobuf.size();
+    int frameSize = 2 * in_bps;
+    auto oldVol = OpenALManager::Get()->GetMasterVolume();
+    OpenALManager::Get()->SetMasterVolume(SoundManager::From_db(sound_preferences->video_export_volume_db));
+    OpenALManager::Get()->GetPlayBackAudio(&audiobuf.front(), bytes / frameSize);
+    OpenALManager::Get()->SetMasterVolume(oldVol);
 	
 	SDL_SemPost(encodeReady);
 }
@@ -453,7 +469,10 @@ void Movie::StopRecording()
     }
 
 	moviefile = "";
-	SDL_PauseAudio(false);
+    if (OpenALManager::Get()) {
+        OpenALManager::Get()->ToggleDeviceMode(false);
+        OpenALManager::Get()->Start();
+    }
 }
 
 #endif

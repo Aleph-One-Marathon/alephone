@@ -530,7 +530,6 @@ static void update_fps_display(SDL_Surface *s)
 {
 	if (displaying_fps && !player_in_terminal_mode(current_player_index))
 	{
-		uint32 ticks = machine_tick_count();
 		char fps[sizeof("1000 fps (10000 ms)")];
 		char ms[sizeof("(10000 ms)")];
 
@@ -545,7 +544,7 @@ static void update_fps_display(SDL_Surface *s)
 			
 			int latency = NetGetLatency();
 			if (latency > -1)
-				sprintf(ms, "(%i ms)", latency);
+				sprintf(ms, "(%i ms)", std::min(latency, 10000));
 			else
 				ms[0] = '\0';
 			
@@ -758,77 +757,6 @@ static void DisplayMessages(SDL_Surface *s)
 
 extern short local_player_index;
 extern bool game_is_networked;
-
-static void DisplayNetMicStatus(SDL_Surface *s)
-{
-	if (!game_is_networked) return;
-
-	// the net mic status is a message, and a colored text "icon"
-	string icon;
-	string status;
-	SDL_Color iconColor;
-
-	if (!current_netgame_allows_microphone())
-	{
-		if (dynamic_world->speaking_player_index == local_player_index)
-		{
-			status = "disabled";
-			icon = "  x";
-			iconColor.r = 0xff;
-			iconColor.g = iconColor.b = 0x0;
-			iconColor.a = 0xff;
-
-		}
-		else
-		{
-			return;
-		}
-	}
-	else if (dynamic_world->speaking_player_index == local_player_index)
-	{
-		if (GET_GAME_OPTIONS() & _force_unique_teams)
-			status = "all";
-		else
-			status = "team";
-		icon = "<!>";
-
-		player_data *player = get_player_data(dynamic_world->speaking_player_index);
-		if (GET_GAME_OPTIONS() & _force_unique_teams)
-			_get_interface_color(PLAYER_COLOR_BASE_INDEX + player->color, &iconColor);
-		else
-			_get_interface_color(PLAYER_COLOR_BASE_INDEX + player->team, &iconColor);
-	} 
-	else if (dynamic_world->speaking_player_index != NONE)
-	{
-		// find the name and color of the person who is speaking
-		player_data *player = get_player_data(dynamic_world->speaking_player_index);
-		status = player->name;
-		_get_interface_color(PLAYER_COLOR_BASE_INDEX + player->color, &iconColor);
-		icon = ">!<";
-	}
-	else
-	{
-		return;
-	}
-
-	FontSpecifier& Font = GetOnScreenFont();
-
-	DisplayTextDest = s;
-	DisplayTextFont = Font.Info;
-	DisplayTextStyle = Font.Style;
-
-	auto text_margins = alephone::Screen::instance()->lua_text_margins;
-	short Y = s->h - text_margins.bottom - Font.LineSpacing / 3;
-	if (Console::instance()->input_active())
-	{
-		Y -= Font.LineSpacing;
-	}
-	short Xicon = s->w - text_margins.right - DisplayTextWidth(icon.c_str()) - Font.LineSpacing / 3;
-	short Xstatus = Xicon - DisplayTextWidth(" ") - DisplayTextWidth(status.c_str());
-
-	DisplayText(Xicon, Y, icon.c_str(), iconColor.r, iconColor.g, iconColor.b);
-	DisplayText(Xstatus, Y, status.c_str());
-}
 
 static const SDL_Color Green = { 0x0, 0xff, 0x0, 0xff };
 static const SDL_Color Yellow = { 0xff, 0xff, 0x0, 0xff };

@@ -402,7 +402,6 @@ void allocate_player_memory(
 {
 	/* allocate space for all our players */
 	players= new player_data[MAXIMUM_NUMBER_OF_PLAYERS];
-	assert(players);
 
 #ifdef BETA
 	dprintf("#%d players at %p (%x bytes each) ---------------------------------------;g;", MAXIMUM_NUMBER_OF_PLAYERS, players, sizeof(struct player_data));
@@ -684,6 +683,8 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 			action_flags= 0;
 		}
 		
+		player->run_key = action_flags & _run_dont_walk;
+		
 		bool IsSwimming = TEST_FLAG(player->variables.flags,_HEAD_BELOW_MEDIA_BIT) && player_settings.CanSwim;
 
 		// if we’ve got the ball we can’t run (that sucks)
@@ -701,7 +702,7 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 		
 		// if our head is under media, we can’t run (that sucks, too)
 		if (IsSwimming && (action_flags&_run_dont_walk)) action_flags&= ~_run_dont_walk, action_flags|= _swim;
-		
+
 		update_player_physics_variables(player_index, action_flags, inPredictive);
 
 		if(!inPredictive)
@@ -747,30 +748,6 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 				ReplenishPlayerOxygen(player_index, action_flags);
 
 			// if ((static_world->environment_flags&_environment_vacuum) || (player->variables.flags&_HEAD_BELOW_MEDIA_BIT)) handle_player_in_vacuum(player_index, action_flags);
-
-#if !defined(DISABLE_NETWORKING)
-			/* handle arbitration of the communications channel (i.e., dynamic_world->speaking_player_index) */
-			if (action_flags&_microphone_button)
-			{
-				if (dynamic_world->speaking_player_index==NONE)
-				{
-					if (GET_GAME_OPTIONS() & _force_unique_teams || (get_player_data(player_index)->team == get_player_data(local_player_index)->team))
-					{
-						dynamic_world->speaking_player_index= player_index;
-					} 
-
-					if (player_index==local_player_index) set_interface_microphone_recording_state(true);
-				}
-			}
-			else
-			{
-				if (dynamic_world->speaking_player_index==player_index)
-				{
-					dynamic_world->speaking_player_index= NONE;
-					if (player_index==local_player_index) set_interface_microphone_recording_state(false);
-				}
-			}
-#endif // !defined(DISABLE_NETWORKING)
 
 			if (PLAYER_IS_DEAD(player))
 			{
@@ -922,7 +899,7 @@ void damage_player(
 						{
 							short action= definition->death_action;
 							
-							play_object_sound(player->object_index, definition->death_sound);
+							play_object_sound(player->object_index, definition->death_sound, player_index == current_player_index);
 
 							if (action==NONE)
 							{
@@ -971,7 +948,7 @@ void damage_player(
 	}
 	
 	{
-		if (!PLAYER_IS_DEAD(player)) play_object_sound(player->object_index, definition->sound);
+		if (!PLAYER_IS_DEAD(player)) play_object_sound(player->object_index, definition->sound, player_index == current_player_index);
 		if (player_index==current_player_index)
 		{
 			if (definition->fade!=NONE) start_fade((definition->damage_threshhold!=NONE&&damage_amount>definition->damage_threshhold) ? (definition->fade+1) : definition->fade);
@@ -1101,6 +1078,12 @@ bool legal_player_powerup(
 {
 	struct player_data *player= get_player_data(player_index);
 	bool legal= true;
+
+	if ((static_world->environment_flags & _environment_m1_weapons)
+		&& film_profile.m1_bce_pickup)
+	{
+		return true;
+	}
 
 	if (item_index == player_powerups.Powerup_Invincibility)
 	{
@@ -1270,10 +1253,19 @@ static void handle_player_in_vacuum(
 		{
 			player->suit_oxygen -= 1;
 			oxygenChange += 1;
-			if (!(player->suit_oxygen%breathing_frequency)) 
-				SoundManager::instance()->PlayLocalSound(Sound_Breathing());
-			if ((player->suit_oxygen+OXYGEN_WARNING_OFFSET)<OXYGEN_WARNING_LEVEL && !((player->suit_oxygen+OXYGEN_WARNING_OFFSET)%OXYGEN_WARNING_FREQUENCY)) 
-				SoundManager::instance()->PlayLocalSound(Sound_OxygenWarning());
+			if (player->suit_oxygen % breathing_frequency == 0 &&
+				player_index == current_player_index)
+			{
+				SoundManager::instance()->PlaySound(Sound_Breathing(), nullptr, NONE);
+			}
+
+			const auto offset_o2 = player->suit_oxygen + OXYGEN_WARNING_OFFSET;
+			if (offset_o2 < OXYGEN_WARNING_LEVEL &&
+				offset_o2 % OXYGEN_WARNING_FREQUENCY == 0 &&
+				player_index == current_player_index)
+			{
+				SoundManager::instance()->PlaySound(Sound_OxygenWarning(), nullptr, NONE);
+			}
 		}
 				
 		if (player->suit_oxygen<=0)
@@ -1338,13 +1330,15 @@ static void update_player_teleport(
 			/*  after the level transition */
 			case PLAYER_TELEPORTING_MIDPOINT+1:
 				/* Either the player is teleporting, or everyone is. (level change) */
-				if(player_index==current_player_index)
+				if (View_DoInterlevelTeleportInEffects()) 
 				{
-					if (View_DoInterlevelTeleportInEffects()) {
+					if (player_index == current_player_index) 
+					{
 						start_teleporting_effect(false);
-						play_object_sound(player->object_index, Sound_TeleportIn()); 
 						if (shapes_file_is_m1()) start_fade(_fade_bright);
 					}
+
+					play_object_sound(player->object_index, Sound_TeleportIn(), player_index == current_player_index);
 				}
 				player->teleporting_destination= NO_TELEPORTATION_DESTINATION;
 				break;
@@ -1394,21 +1388,25 @@ static void update_player_teleport(
 
 			case PLAYER_TELEPORTING_MIDPOINT+1:
 				 /* Interlevel or my intralevel.. */
-				if(player_index==current_player_index)
+				if (player->teleporting_destination >= 0 || View_DoInterlevelTeleportInEffects())
 				{
-					if (player->teleporting_destination >= 0 || View_DoInterlevelTeleportInEffects()) {
+					if (player_index == current_player_index)
+					{
 						start_teleporting_effect(false);
-						play_object_sound(player->object_index, Sound_TeleportIn()); 
 						if (shapes_file_is_m1()) start_fade(_fade_bright);
 					}
-					else {
-						player->teleporting_phase = PLAYER_TELEPORTING_DURATION;
-					}
-				} 
-				player->teleporting_destination= NO_TELEPORTATION_DESTINATION;
+
+					play_object_sound(player->object_index, Sound_TeleportIn(), player_index == current_player_index);
+				}
+				else {
+					player->teleporting_phase = PLAYER_TELEPORTING_DURATION;
+				}
+
+				player->teleporting_destination = NO_TELEPORTATION_DESTINATION;
 
 				if (player->teleporting_phase != PLAYER_TELEPORTING_DURATION) break;
 			
+				[[fallthrough]];
 			case PLAYER_TELEPORTING_DURATION:
 				monster->action= _monster_is_moving;
 				SET_PLAYER_TELEPORTING_STATUS(player, false);
@@ -1456,7 +1454,7 @@ static void update_player_teleport(
 					{
 						start_teleporting_effect(true);
 					}
-					play_object_sound(player->object_index, Sound_TeleportOut());
+					play_object_sound(player->object_index, Sound_TeleportOut(), player_index == current_player_index);
 				}
 				else /* Level change */
 				{
@@ -1465,7 +1463,7 @@ static void update_player_teleport(
 					/* Everyone plays the teleporting effect out. */
 					if (View_DoInterlevelTeleportOutEffects()) {
 						start_teleporting_effect(true);
-						play_object_sound(current_player->object_index, Sound_TeleportOut());
+						play_object_sound(current_player->object_index, Sound_TeleportOut(), player_index == current_player_index);
 					}
 					
 					/* Every players object plays the sound, and everyones monster responds. */
@@ -1529,7 +1527,7 @@ static void update_player_media(
 			struct media_data *media= get_media_data(polygon->media_index); // should be valid
 			{
 			world_distance current_magnitude= (player->variables.old_flags&_HEAD_BELOW_MEDIA_BIT) ? media->current_magnitude : (media->current_magnitude>>1);
-			world_distance external_magnitude= FIXED_TO_WORLD(GUESS_HYPOTENUSE(ABS(player->variables.external_velocity.i), ABS(player->variables.external_velocity.j)));
+			world_distance external_magnitude= FIXED_TO_WORLD(GUESS_HYPOTENUSE(std::abs(player->variables.external_velocity.i), std::abs(player->variables.external_velocity.j)));
 			struct damage_definition *damage= get_media_damage(polygon->media_index, (player->variables.flags&_HEAD_BELOW_MEDIA_BIT) ? FIXED_ONE : FIXED_ONE/4);
 			
 			// apply current if possible
@@ -1554,7 +1552,7 @@ static void update_player_media(
 		
 		if (sound_type!=NONE)
 		{
-			play_object_sound(monster->object_index, get_media_sound(polygon->media_index, sound_type));
+			play_object_sound(monster->object_index, get_media_sound(polygon->media_index, sound_type), player_index == current_player_index);
 		}
 	}
 
@@ -1573,7 +1571,7 @@ static void update_player_media(
 		
 		if (sound_index!=NONE)
 		{
-			play_object_sound(monster->object_index, sound_index);
+			play_object_sound(monster->object_index, sound_index, player_index == current_player_index);
 		}
 	}
 }

@@ -146,7 +146,7 @@ ActionQueue *get_player_recording_queue(
 static void remove_input_controller(void);
 static void save_recording_queue_chunk(short player_index);
 static void read_recording_queue_chunks(void);
-static bool pull_flags_from_recording(short count);
+static short pull_flags_from_recording(short count);
 // LP modifications for object-oriented file handling; returns a test for end-of-file
 static bool vblFSRead(OpenedFile& File, int32 *count, void *dest, bool& HitEOF);
 static void record_action_flags(short player_identifier, const uint32 *action_flags, short count);
@@ -187,8 +187,6 @@ void initialize_keyboard_controller(
 	
 	/* Allocate the recording queues */	
 	replay.recording_queues = new ActionQueue[MAXIMUM_NUMBER_OF_PLAYERS];
-	assert(replay.recording_queues);
-	if(!replay.recording_queues) alert_out_of_memory();
 	
 	/* Allocate the individual ones */
 	for (player_index= 0; player_index<MAXIMUM_NUMBER_OF_PLAYERS; player_index++)
@@ -196,7 +194,6 @@ void initialize_keyboard_controller(
 		queue= get_player_recording_queue(player_index);
 		queue->read_index= queue->write_index = 0;
 		queue->buffer= new uint32[MAXIMUM_QUEUE_SIZE];
-		if(!queue->buffer) alert_out_of_memory();
 	}
 	enter_mouse(0);
 }
@@ -254,6 +251,11 @@ void decrement_replay_speed(
 	if (replay.replay_speed > MINIMUM_REPLAY_SPEED) replay.replay_speed--;
 }
 
+void set_replay_speed(short speed)
+{
+	replay.replay_speed = speed;
+}
+
 int get_replay_speed()
 {
 	return replay.replay_speed;
@@ -299,8 +301,9 @@ bool input_controller(
 					if (replay.replay_speed > 0 || (--phase<=0))
 					{
 						short flag_count= MAX(replay.replay_speed, 1);
+						flag_count = pull_flags_from_recording(flag_count);
 					
-						if (!pull_flags_from_recording(flag_count)) // oops. silly me.
+						if (!flag_count) // oops. silly me.
 						{
 							if (replay.have_read_last_chunk)
 							{
@@ -449,48 +452,34 @@ void save_recording_queue_chunk(
  *
  * Function: pull_flags_from_recording
  * Purpose:  remove one flag from each queue from the recording buffer.
- * Returns:  true if it pulled the flags, false if it didn't
+ * Returns:  number of flags actually pulled
  *
  *********************************************************************************************/
-static bool pull_flags_from_recording(
+static short pull_flags_from_recording(
 	short count)
 {
-	short player_index;
-	bool success= true;
-	
-	// first check that we can pull something from each player’s queue
-	// (at the beginning of the game, we won’t be able to)
-	// i'm not sure that i really need to do this check. oh well.
-	for (player_index = 0; success && player_index<dynamic_world->player_count; player_index++)
+	short true_count = count;
+	for (short player_index = 0; player_index < dynamic_world->player_count; player_index++)
 	{
-		if(get_recording_queue_size(player_index)==0) success= false;
-	}
-
-	if(success)
-	{
-		for (player_index = 0; player_index < dynamic_world->player_count; player_index++)
+		ActionQueue* queue = get_player_recording_queue(player_index);
+		for (short index = 0; index < count; index++)
 		{
-			short index;
-			ActionQueue  *queue;
-		
-			queue= get_player_recording_queue(player_index);
-			for (index= 0; index<count; index++)
+			if (get_recording_queue_size(player_index) != 0)
 			{
-				if (queue->read_index != queue->write_index)
-				{
 #ifdef DEBUG_REPLAY
-					debug_stream_of_flags(*(queue->buffer+queue->read_index), player_index);
+				debug_stream_of_flags(*(queue->buffer + queue->read_index), player_index);
 #endif
-                    GetRealActionQueues()->enqueueActionFlags(player_index, queue->buffer + queue->read_index, 1);
-					INCREMENT_QUEUE_COUNTER(queue->read_index);
-				} else {
-					dprintf("Dropping flag?");
-				}
+				GetRealActionQueues()->enqueueActionFlags(player_index, queue->buffer + queue->read_index, 1);
+				INCREMENT_QUEUE_COUNTER(queue->read_index);
+			}
+			else {
+				true_count = index;
+				break;
 			}
 		}
 	}
 	
-	return success;
+	return true_count;
 }
 
 static short get_recording_queue_size(
@@ -574,9 +563,7 @@ bool setup_for_replay_from_file(
 		/* Set to the mapfile this replay came from.. */
 		if(use_map_file(replay.header.map_checksum))
 		{
-			replay.fsread_buffer= new char[DISK_CACHE_SIZE]; 
-			assert(replay.fsread_buffer);
-			
+			replay.fsread_buffer= new char[DISK_CACHE_SIZE];
 			replay.location_in_cache= NULL;
 			replay.bytes_in_cache= 0;
 			replay.replay_speed= 1;
@@ -1173,6 +1160,8 @@ uint32 parse_keymap(void)
 	memset(key_map, 0, sizeof(key_map));
       } else {
 		  memcpy(key_map, SDL_GetKeyboardState(NULL), sizeof(key_map));
+		  auto mod_state = SDL_GetModState();
+		  key_map[SDL_SCANCODE_CAPSLOCK] = mod_state & KMOD_CAPS ? 1 : 0;
       }
       
       // ZZZ: let mouse code simulate keypresses
@@ -1244,23 +1233,64 @@ uint32 parse_keymap(void)
 		  hotkey_sequence[2] = 0;
 	  }
 
-      bool do_interchange =
-	      (local_player->variables.flags & _HEAD_BELOW_MEDIA_BIT) ?
-	      (input_preferences->modifiers & _inputmod_interchange_swim_sink) != 0:
-	      (input_preferences->modifiers & _inputmod_interchange_run_walk) != 0;
-      
       // Handle the selected input controller
       if (input_preferences->input_device == _mouse_yaw_pitch) {
           flags = process_aim_input(flags, pull_mouselook_delta());
       }
-        int joyflags = process_joystick_axes(flags, heartbeat_count);
-        if (joyflags != flags) {
-            flags = joyflags;
-        }
+      
+      int joyflags = process_joystick_axes(flags, heartbeat_count);
+      if (joyflags != flags) {
+          flags = joyflags;
+      }
 
-          // Modify flags with run/walk and swim/sink
-        if (do_interchange)
-	    flags ^= _run_dont_walk;
+      // if the user prefers to toggle run/swim, the flag becomes latched
+      if (input_preferences->modifiers & _inputmod_run_key_toggle)
+      {
+          static bool persistence = false;
+          if (flags & _run_dont_walk)
+          {
+              if (persistence)
+              {
+                  flags &= ~_run_dont_walk;
+              }
+
+              persistence = true;
+          }
+          else
+          {
+              persistence = false;
+          }
+      }
+
+      if (input_preferences->modifiers & _inputmod_run_key_toggle)
+      {
+          static bool run_swim = false;
+          if (flags & _run_dont_walk)
+          {
+              run_swim = !run_swim;
+          }
+
+          if (run_swim)
+          {
+              flags |= _run_dont_walk;
+          }
+          else
+          {
+              flags &= ~_run_dont_walk;
+          }
+      }
+      else
+      {
+          bool do_interchange =
+              (local_player->variables.flags & _HEAD_BELOW_MEDIA_BIT) ?
+              (input_preferences->modifiers & _inputmod_interchange_swim_sink) != 0:
+              (input_preferences->modifiers & _inputmod_interchange_run_walk) != 0;
+
+           if (do_interchange)
+           {
+               flags ^= _run_dont_walk;
+           }
+      }
 		
       
       if (player_in_terminal_mode(local_player_index))

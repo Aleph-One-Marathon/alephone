@@ -1,18 +1,23 @@
 name: configure-linux
 description: used to setup the environment before using make
 
+inputs:
+ configure_options:
+    required: false
+    type: string
+
 runs:
     using: "composite"
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     
     - run: sudo apt-get update -y 
       shell: bash
       
     - name: Install Dependencies 
-      run: sudo apt-get install autoconf-archive libboost-all-dev libsdl2-dev libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev libspeexdsp-dev libzzip-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev libpng-dev libcurl4-gnutls-dev libminiupnpc-dev libsndfile-dev libglm-dev
+      run: sudo apt-get install autoconf-archive libboost-all-dev libsdl2-dev libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev libzzip-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev libpng-dev libcurl4-gnutls-dev libminiupnpc-dev libsndfile-dev libopenal-dev
       shell: bash
       
     - name: Configure
-      run: autoreconf -i && ./configure
+      run: autoreconf -i && ./configure ${{inputs.configure_options}}
       shell: bash

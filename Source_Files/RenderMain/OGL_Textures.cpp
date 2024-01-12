@@ -86,8 +86,6 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #ifdef HAVE_OPENGL
 
 #include "OGL_Headers.h"
-#include "OGL_Shader.h"
-#include "DrawCache.hpp"
 
 #include "preferences.h"
 
@@ -120,6 +118,8 @@ struct TxtrTypeInfoData
 
 static TxtrTypeInfoData TxtrTypeInfoList[OGL_NUMBER_OF_TEXTURE_TYPES];
 static TxtrTypeInfoData ModelSkinInfo;
+
+static bool useSGISMipmaps = false;
 
 // Infravision: use algorithm (red + green + blue)/3 to compose intensity,
 // then shade with these colors, one color for each collection.
@@ -192,7 +192,6 @@ bool TextureState::Allocate(short txType)
 bool TextureState::Use(int Which)
 {
 	glBindTexture(GL_TEXTURE_2D,IDs[Which]);
-    DC()->cacheLandscapeTextureStatus(TextureType == OGL_Txtr_Landscape);
 	bool result = !TexGened[Which];
 	TexGened[Which] = true;
 	IDUsage[Which]++;
@@ -260,12 +259,12 @@ void FlatBumpTexture() {
 		
 		GLubyte flatTextureData[4] = {0x80, 0x80, 0xFF, 0x80};
 		
-		//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, flatTextureData);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, flatTextureData);
 	}
 	else
 		glBindTexture(GL_TEXTURE_2D, flatBumpTextureID);
@@ -304,11 +303,12 @@ void OGL_StartTextures()
 		GL_NEAREST_MIPMAP_LINEAR,
 		GL_LINEAR_MIPMAP_LINEAR
 	};
-	const int NUMBER_OF_COLOR_FORMATS = 2;
+	const int NUMBER_OF_COLOR_FORMATS = 3;
 	const GLenum ColorFormatList[NUMBER_OF_COLOR_FORMATS] = 
 	{
-		GL_RGBA8_OES,
-		GL_RGBA4
+		GL_RGBA8,
+		GL_RGBA4,
+		GL_RGBA2
 	};
 	
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
@@ -336,7 +336,7 @@ void OGL_StartTextures()
 		if (ColorFormat < NUMBER_OF_COLOR_FORMATS)
 			TxtrTypeInfo.ColorFormat = ColorFormatList[ColorFormat];
 		else
-			TxtrTypeInfo.ColorFormat = GL_RGBA8_OES;
+			TxtrTypeInfo.ColorFormat = GL_RGBA8;
 	}
 
 	// Model skin
@@ -362,8 +362,12 @@ void OGL_StartTextures()
 		if (ColorFormat < NUMBER_OF_COLOR_FORMATS)
 			TxtrTypeInfo.ColorFormat = ColorFormatList[ColorFormat];
 		else
-			TxtrTypeInfo.ColorFormat = GL_RGBA8_OES;
+			TxtrTypeInfo.ColorFormat = GL_RGBA8;
 	}
+
+#if defined GL_SGIS_generate_mipmap
+	useSGISMipmaps = OGL_CheckExtension("GL_SGIS_generate_mipmap");
+#endif
 }
 
 
@@ -750,6 +754,8 @@ bool TextureManager::LoadSubstituteTexture()
 	return true;
 }
 
+extern bool shapes_file_is_m1();
+
 bool TextureManager::SetupTextureGeometry()
 {	
 	// How many rows (scanlines) and columns
@@ -776,8 +782,17 @@ bool TextureManager::SetupTextureGeometry()
 	case OGL_Txtr_Wall:
 		// For tiling to be possible, the width and height must be powers of 2
 		// Match M1 engine, and truncate larger textures to 128px square
-		TxtrWidth = std::min(static_cast<int>(BaseTxtrWidth), 128);
-		TxtrHeight = std::min(static_cast<int>(BaseTxtrHeight), 128);
+		if (shapes_file_is_m1())
+		{
+			TxtrWidth = std::min(static_cast<int>(BaseTxtrWidth), 128);
+			TxtrHeight = std::min(static_cast<int>(BaseTxtrHeight), 128);
+		}
+		else
+		{
+			TxtrWidth = BaseTxtrWidth;
+			TxtrHeight = BaseTxtrHeight;
+		}
+		
 		if (!npotTextures) 
 		{
 			if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
@@ -1130,11 +1145,12 @@ uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 		for (short w = 0; w < TxtrWidth; w++)
 			*(OGLStrip++) = *(SrcStrip++) & rgb_mask;
 	}
+	
 	return Buffer;
 }
 
 
-uint32 *TextureManager::GetFakeLandscape()
+uint32 *TextureManager::GetFakeLandscape() const
 {
 	// Allocate and set to black and transparent
 	int NumPixels = int(TxtrWidth)*int(TxtrHeight);
@@ -1145,7 +1161,7 @@ uint32 *TextureManager::GetFakeLandscape()
 	// be sure to idiot-proof out-of-range ones
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
 	int LscpIndx = static_world->song_index;
-	if (!LandscapesLoaded || (LscpIndx < 0 && LscpIndx >= 4))
+	if (!LandscapesLoaded || LscpIndx < 0 || LscpIndx >= 4)
 	{
 		memset(Buffer,0,NumPixels*sizeof(uint32));
 		return Buffer;
@@ -1182,11 +1198,9 @@ uint32 *TextureManager::Shrink(uint32 *Buffer)
 {
 	int NumPixels = int(LoadedWidth)*int(LoadedHeight);
 	GLuint *NewBuffer = new GLuint[NumPixels];
-    
-    //gluScaleImage is deprecated. I hope nothing needs this...
-    /*gluScaleImage(GL_RGBA, TxtrWidth, TxtrHeight, GL_UNSIGNED_BYTE, Buffer,
-        LoadedWidth, LoadedHeight, GL_UNSIGNED_BYTE, NewBuffer);*/
-    
+	gluScaleImage(GL_RGBA, TxtrWidth, TxtrHeight, GL_UNSIGNED_BYTE, Buffer,
+		LoadedWidth, LoadedHeight, GL_UNSIGNED_BYTE, NewBuffer);
+	
 	return (uint32 *)NewBuffer;
 }
 
@@ -1200,15 +1214,14 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 
 	TxtrTypeInfoData& TxtrTypeInfo = TxtrTypeInfoList[TextureType];
 
-    GLenum internalFormat = TxtrTypeInfo.ColorFormat;
+	GLenum internalFormat = TxtrTypeInfo.ColorFormat;
 	// some optimizations here:
 	if (TextureType == 1) // landscape
 	{
-		if (internalFormat == GL_RGBA8_OES)
-			//internalFormat = GL_RGB8;
-            internalFormat = GL_RGBA; //DCW I hope this is ok
+		if (internalFormat == GL_RGBA8)
+			internalFormat = GL_RGB8;
 		else if (internalFormat == GL_RGBA4)
-			internalFormat = GL_RGB5_A1;
+			internalFormat = GL_RGB5;
 	} 
 	else if (!IsBlended() && internalFormat == GL_RGBA4)
 	{
@@ -1222,16 +1235,23 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 	if(load_as_sRGB) {
 	  switch(internalFormat) {
 	  case GL_RGB:
-	  case GL_RGB8_OES:
-	  case GL_RGB10_EXT:
-	  case GL_RGB16_EXT:
+	  case GL_R3_G3_B2:
+	  case GL_RGB4:
+	  case GL_RGB5:
+	  case GL_RGB8:
+	  case GL_RGB10:
+	  case GL_RGB12:
+	  case GL_RGB16:
 	    internalFormat = GL_SRGB;
 	    break;
 	  case GL_RGBA:
+	  case GL_RGBA2:
 	  case GL_RGBA4:
 	  case GL_RGB5_A1:
-	  case GL_RGBA8_OES:
-	  case GL_RGB10_A2_EXT:
+	  case GL_RGBA8:
+	  case GL_RGB10_A2:
+	  case GL_RGBA12:
+	  case GL_RGBA16:
 	    internalFormat = GL_SRGB_ALPHA;
 	    break;
 #if defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
@@ -1252,8 +1272,6 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 	  }
 	}
 
-    if (internalFormat == GL_RGBA8_OES ) {internalFormat = GL_RGBA;} //DCW I hope GL_RGBA and GL_RGBA8 are equivalent
-    
 	if (Image->GetFormat() == ImageDescriptor::RGBA8) {
 		switch (TxtrTypeInfo.FarFilter)
 		{
@@ -1266,23 +1284,28 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 		case GL_NEAREST_MIPMAP_LINEAR:
 		case GL_LINEAR_MIPMAP_LINEAR:
 			if (Image->GetMipMapCount() > 1) {
+#ifdef GL_SGIS_generate_mipmap
+	if (useSGISMipmaps) {
+		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_FALSE);
+	}
+#endif
 				int i = 0;
 				for (i = 0; i < Image->GetMipMapCount(); i++) {
 					glTexImage2D(GL_TEXTURE_2D, i, internalFormat, max(1, Image->GetWidth() >> i), max(1, Image->GetHeight() >> i), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetMipMapPtr(i));
 				}
 				mipmapsLoaded = true;
 			} else {
-                // OpenGL GL_RGBA is 6407 and GL_RGB is 6408
-                if (internalFormat == GL_RGBA8_OES ) {internalFormat = GL_RGBA;} //DCW I hope GL_RGBA and GL_RGBA8 are equivalent
-                assert ( internalFormat == GL_RGBA );
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA /*internalFormat*/,
-                             Image->GetWidth(),
-                             Image->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                             Image->GetBuffer());
-				
-                glGenerateMipmap(GL_TEXTURE_2D);
-            }
+#ifdef GL_SGIS_generate_mipmap
+			if (useSGISMipmaps) {
+				glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
+			} else 
+#endif
+			{
+				gluBuild2DMipmaps(GL_TEXTURE_2D, internalFormat, Image->GetWidth(), Image->GetHeight(), GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
+			}
 			mipmapsLoaded = true;
+			}
 			break;
 		default:
 			assert(false);
@@ -1303,7 +1326,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 		{
 		case GL_NEAREST:
 		case GL_LINEAR:
-			glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetMipMapSize(0), Image->GetBuffer());
+			glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetMipMapSize(0), Image->GetBuffer());
 			break;
 		case GL_NEAREST_MIPMAP_NEAREST:
 		case GL_LINEAR_MIPMAP_NEAREST:
@@ -1317,7 +1340,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 #endif
 				int i = 0;
 				for (i = 0; i < Image->GetMipMapCount(); i++) {
-					glCompressedTexImage2D(GL_TEXTURE_2D, i, internalFormat, max(1, Image->GetWidth() >> i), max(1, Image->GetHeight() >> i), 0, Image->GetMipMapSize(i), Image->GetMipMapPtr(i));
+					glCompressedTexImage2DARB(GL_TEXTURE_2D, i, internalFormat, max(1, Image->GetWidth() >> i), max(1, Image->GetHeight() >> i), 0, Image->GetMipMapSize(i), Image->GetMipMapPtr(i));
 				}
 				mipmapsLoaded = true;
 			} else {
@@ -1325,9 +1348,9 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 				if (useSGISMipmaps) {
 					glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
 					mipmapsLoaded = true;
-				}
+				}  
 #endif
-				glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetMipMapSize(0), Image->GetBuffer());
+				glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetMipMapSize(0), Image->GetBuffer());
 			}
 			break;
 			
@@ -1341,7 +1364,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 	}
 	
 	// Set texture-mapping features
-	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); //NOT SUPPORTED ANGLE FUNCTION
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, TxtrTypeInfo.NearFilter);
 	if ((TxtrTypeInfo.FarFilter == GL_NEAREST_MIPMAP_NEAREST || TxtrTypeInfo.FarFilter == GL_LINEAR_MIPMAP_NEAREST || TxtrTypeInfo.FarFilter == GL_NEAREST_MIPMAP_LINEAR || TxtrTypeInfo.FarFilter == GL_LINEAR_MIPMAP_LINEAR) && !mipmapsLoaded)
 	{
@@ -1349,8 +1372,6 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 	} else {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, TxtrTypeInfo.FarFilter);
 	}
-
-	return;
 
 	switch(TextureType)
 	{
@@ -1364,7 +1385,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
                     float anisoLevel = Get_OGL_ConfigureData().AnisotropyLevel;
                     if (anisoLevel > 0.0) {
                         GLfloat max_aniso;
-                        MSI()->getFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
+                        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
                         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0F + ((anisoLevel-1.0F)/15.0F)*(max_aniso-1.0F));
                     }
                 }
@@ -1378,16 +1399,15 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		else
 		{
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 		}
 		break;
 		
 	case OGL_Txtr_Inhabitant:
 	case OGL_Txtr_WeaponsInHand:
 		// Sprites have both horizontal and vertical limits
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		break;
 	}
 }
@@ -1463,38 +1483,31 @@ void TextureManager::SetupTextureMatrix()
 	case OGL_Txtr_Wall:
 	case OGL_Txtr_WeaponsInHand:
 	case OGL_Txtr_Inhabitant:
-		MSI()->matrixMode(MS_TEXTURE);
-		MSI()->loadIdentity();
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
 		if (TxtrOptsPtr->Substitution) {
 			// these come in right side up, but the renderer
 			// expects them to be upside down and sideways
-			MSI()->rotatef(90.0, 0.0, 0.0, 1.0);
-			MSI()->scalef(1.0, -1.0, 1.0);
+			glRotatef(90.0, 0.0, 0.0, 1.0);
+			glScalef(1.0, -1.0, 1.0);
 		}
-		MSI()->matrixMode(MS_MODELVIEW);
+		glMatrixMode(GL_MODELVIEW);
 		break;
 	case OGL_Txtr_Landscape:
-		MSI()->matrixMode(MS_TEXTURE);
-		MSI()->loadIdentity();
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
 		if (TxtrOptsPtr->Substitution) {
 			// these come in right side up, and un-centered
 			// the renderer expects them upside down, and centered
-			MSI()->scalef(1.0, -U_Scale, 1.0);
-			MSI()->translatef(0.0, U_Offset, 0.0);
+			glScalef(1.0, -U_Scale, 1.0);
+			glTranslatef(0.0, U_Offset, 0.0);
 		} else {
-			MSI()->scalef(1.0, U_Scale, 1.0);
-			MSI()->translatef(0.0, U_Offset, 0.0);
+			glScalef(1.0, U_Scale, 1.0);
+			glTranslatef(0.0, U_Offset, 0.0);
 		}
-		MSI()->matrixMode(MS_MODELVIEW);
+		glMatrixMode(GL_MODELVIEW);
 		break;
 	}
-    
-    Shader* lastShader = lastEnabledShader();
-    if (lastShader) {
-        GLfloat textureMatrix[16];
-        MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);
-        lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
-    }
 }
 
 void TextureManager::RestoreTextureMatrix()
@@ -1505,9 +1518,9 @@ void TextureManager::RestoreTextureMatrix()
 	case OGL_Txtr_WeaponsInHand:
 	case OGL_Txtr_Inhabitant:
 	case OGL_Txtr_Landscape:
-		MSI()->matrixMode(MS_TEXTURE);
-		MSI()->loadIdentity();
-		MSI()->matrixMode(MS_MODELVIEW);
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);
 	}
 }
 
@@ -1658,19 +1671,8 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 				else
 #endif
 				{
-					/*gluBuild2DMipmaps(GL_TEXTURE_2D, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
-                              GL_RGBA, GL_UNSIGNED_BYTE, Image.get()->GetBuffer());*/
-                    
-                    //glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-                    // OpenGL GL_RGBA is 6407 and GL_RGB is 6408
-                    assert ( internalFormat == GL_RGBA8_OES);
-                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-                                 LoadedWidth,
-                                 LoadedHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                                 Image.get()->GetBuffer());
-                     
-                    glGenerateMipmap(GL_TEXTURE_2D);
-                    
+					gluBuild2DMipmaps(GL_TEXTURE_2D, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
+							  GL_RGBA, GL_UNSIGNED_BYTE, Image.get()->GetBuffer());
 				}
 				mipmapsLoaded = true;
 			}
@@ -1697,7 +1699,7 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 		{
 		case GL_NEAREST:
 		case GL_LINEAR:
-			glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image.get()->GetWidth(), Image.get()->GetHeight(), 0, Image.get()->GetMipMapSize(0), Image.get()->GetBuffer());
+			glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, Image.get()->GetWidth(), Image.get()->GetHeight(), 0, Image.get()->GetMipMapSize(0), Image.get()->GetBuffer());
 			break;
 		case GL_NEAREST_MIPMAP_NEAREST:
 		case GL_LINEAR_MIPMAP_NEAREST:
@@ -1714,7 +1716,7 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 				int i = 0;
 				for (i = 0; i < Image.get()->GetMipMapCount(); i++)
 				{
-					glCompressedTexImage2D(GL_TEXTURE_2D, i, internalFormat, max(1, Image.get()->GetWidth() >> i), max(1, Image.get()->GetHeight() >> i), 0, Image.get()->GetMipMapSize(i), Image.get()->GetMipMapPtr(i));
+					glCompressedTexImage2DARB(GL_TEXTURE_2D, i, internalFormat, max(1, Image.get()->GetWidth() >> i), max(1, Image.get()->GetHeight() >> i), 0, Image.get()->GetMipMapSize(i), Image.get()->GetMipMapPtr(i));
 				}
 				mipmapsLoaded = true;
 			}
@@ -1727,7 +1729,7 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 					mipmapsLoaded = true;
 				}
 #endif
-				glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image.get()->GetWidth(), Image.get()->GetHeight(), 0, Image.get()->GetMipMapSize(0), Image.get()->GetBuffer());
+				glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, Image.get()->GetWidth(), Image.get()->GetHeight(), 0, Image.get()->GetMipMapSize(0), Image.get()->GetBuffer());
 			}
 			break;
 
@@ -1741,7 +1743,7 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 	}
 	
 	// Set texture-mapping features
-	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, TxtrTypeInfo.NearFilter);
 	if ((TxtrTypeInfo.FarFilter == GL_NEAREST_MIPMAP_NEAREST || TxtrTypeInfo.FarFilter == GL_LINEAR_MIPMAP_NEAREST || TxtrTypeInfo.FarFilter == GL_NEAREST_MIPMAP_LINEAR || TxtrTypeInfo.FarFilter == GL_LINEAR_MIPMAP_LINEAR) && !mipmapsLoaded)
 	{
@@ -1754,8 +1756,8 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 
 	
 	// Like sprites, model textures have both horizontal and vertical limits
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
 }
 
@@ -1897,11 +1899,11 @@ static inline uint16 SetPixelOpacitiesDXTC5Pair(int scale, int shift, uint16 alp
 		if (a1 > a2)
 			if (new_a2) new_a2--;
 			else new_a1++;
-		else 
+		else
 			if (new_a1) new_a1--;
 			else new_a2++;
 	else if ((new_a1 > new_a2) != (a1 > a2))
-		SWAP(new_a1, new_a2);
+		std::swap(new_a1, new_a2);
 	
 	return (new_a1 << 8 | new_a2);
 }
