@@ -33,3 +33,4 @@ lib*.a
 /*.tar.bz2
 
 .vscode/
+*.dylib
