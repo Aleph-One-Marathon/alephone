@@ -992,7 +992,10 @@
 <dd><p class="description">high tide of media</p></dd>
       <dt>.light <span class="version">20100118</span>
 </dt>
-<dd><p class="description">light that controls this media’s tide</p></dd>
+<dd>
+<p class="description">light that controls this media’s tide</p>
+<p class="note">not to be confused with polygon.media_light, which controls how that specific polygon's media is lit </p>
+</dd>
       <dt>.low <span class="version">20100118</span>
 </dt>
 <dd><p class="description">low tide of media</p></dd>
@@ -1807,6 +1810,12 @@
 <dd><p class="description">iterates through all of this polygon’s lines</p></dd>
       <dt>.media</dt>
 <dd><p class="description">polygon media (liquid)</p></dd>
+	  <dt>.media_light <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">light on polygon media</p>
+<p class="note">not to be confused with polygon.media.light, which is the light that controls the height of the media </p>
+</dd>
       <dt>:monsters()</dt>
 <dd><p class="description">iterates through all monsters in this polygon (including player monsters)</p></dd>
       <dt>.permutation</dt>

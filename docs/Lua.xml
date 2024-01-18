@@ -933,6 +933,7 @@
       </variable>
       <variable name="light" version="20100118">
 		<description>light that controls this media’s tide</description>
+		<note>not to be confused with polygon.media_light, which controls how that specific polygon's media is lit</note>
 		<type>light</type>
       </variable>
       <variable name="low" version="20100118">
@@ -1861,6 +1862,11 @@
 		<description>polygon media (liquid)</description>
 		<type>media</type>
       </variable>
+	  <variable name="media_light" version="git">
+	  	<description>light on polygon media</description>
+		<note>not to be confused with polygon.media.light, which is the light that controls the height of the media</note>
+		<type>light</type>
+	  </variable>
       <function name="monsters">
 		<description>iterates through all monsters in this polygon (including player monsters)</description>
       </function>

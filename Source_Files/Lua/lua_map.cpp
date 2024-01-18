@@ -1635,6 +1635,12 @@ static int Lua_Polygon_Get_Media(lua_State *L)
 	return 1;
 }
 
+static int Lua_Polygon_Get_Media_Light(lua_State *L)
+{
+	Lua_Light::Push(L, get_polygon_data(Lua_Polygon::Index(L, 1))->media_lightsource_index);
+	return 1;
+}
+
 static int Lua_Polygon_Get_Permutation(lua_State *L)
 {
 	polygon_data *polygon = get_polygon_data(Lua_Polygon::Index(L, 1));
@@ -1716,6 +1722,24 @@ static int Lua_Polygon_Set_Media(lua_State *L)
 	polygon->media_index = media_index;
 	return 0;
 }
+
+static int Lua_Polygon_Set_Media_Light(lua_State *L)
+{
+	short light_index;
+	if (lua_isnumber(L, 2))
+	{
+		light_index = static_cast<short>(lua_tonumber(L, 2));
+		if (light_index < 0 || light_index >= MAXIMUM_LIGHTS_PER_MAP)
+			return luaL_error(L, "media_light: invalid light index");
+	}
+	else
+	{
+		light_index = Lua_Light::Index(L, 2);
+	}
+	
+	get_polygon_data(Lua_Polygon::Index(L, 1))->media_lightsource_index = light_index;
+	return 0;
+}
 		
 static int Lua_Polygon_Set_Permutation(lua_State *L)
 {
@@ -1764,6 +1788,7 @@ const luaL_Reg Lua_Polygon_Get[] = {
 	{"floor", Lua_Polygon_Get_Floor},
 	{"lines", Lua_Polygon_Get_Lines},
 	{"media", Lua_Polygon_Get_Media},
+	{"media_light", Lua_Polygon_Get_Media_Light},
 	{"monsters", L_TableFunction<Lua_Polygon_Monsters>},
 	{"permutation", Lua_Polygon_Get_Permutation},
 	{"platform", Lua_Polygon_Get_Platform},
@@ -1779,6 +1804,7 @@ const luaL_Reg Lua_Polygon_Get[] = {
 
 const luaL_Reg Lua_Polygon_Set[] = {
 	{"media", Lua_Polygon_Set_Media},
+	{"media_light", Lua_Polygon_Set_Media_Light},
 	{"permutation", Lua_Polygon_Set_Permutation},
 	{"type", Lua_Polygon_Set_Type},
 	{"visible_on_automap", Lua_Polygon_Set_Visible_On_Automap},
