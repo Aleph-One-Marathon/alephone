@@ -712,11 +712,12 @@ short SoundManager::RandomSoundIndexToSoundIndex(short random_sound_index)
 
 SoundManager::Parameters::Parameters() :
 	volume_db(DEFAULT_SOUND_LEVEL_DB),
-	flags(_more_sounds_flag | _stereo_flag | _dynamic_tracking_flag | _ambient_sound_flag | _16bit_sound_flag),
+	flags(_more_sounds_flag | _dynamic_tracking_flag | _ambient_sound_flag | _16bit_sound_flag),
 	rate(DEFAULT_RATE),
 	samples(DEFAULT_SAMPLES),
 	music_db(DEFAULT_MUSIC_LEVEL_DB),
-	video_export_volume_db(DEFAULT_VIDEO_EXPORT_VOLUME_DB)
+	video_export_volume_db(DEFAULT_VIDEO_EXPORT_VOLUME_DB),
+	channel_type(ChannelType::_stereo)
 {
 }
 
@@ -770,7 +771,7 @@ void SoundManager::SetStatus(bool active)
 		AudioParameters audio_parameters = {
 			parameters.rate,
 			parameters.samples,
-            static_cast<bool>(parameters.flags & _stereo_flag),
+            parameters.channel_type,
 			!(parameters.flags & _lower_restart_delay),
             static_cast<bool>(parameters.flags & _hrtf_flag),
             static_cast<bool>(parameters.flags & _3d_sounds_flag),
@@ -891,7 +892,7 @@ float SoundManager::CalculatePitchModifier(short sound_index, _fixed pitch_modif
 
 void SoundManager::AngleAndVolumeToStereoVolume(angle delta, short volume, short *right_volume, short *left_volume)
 {
-	if (parameters.flags & _stereo_flag)
+	if (parameters.channel_type != ChannelType::_mono)
 	{
 		short fraction = delta & ((1<<(ANGULAR_BITS-2))-1);
 		short maximum_volume = volume + (volume >> 1);
