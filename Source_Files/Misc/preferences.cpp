@@ -2553,7 +2553,7 @@ static void controls_dialog(void *arg)
 		nullptr
 	};
 
-	w_select *run_w = new w_select(input_preferences->modifiers & _inputmod_run_key_toggle ? 2 : input_preferences->modifiers & _inputmod_interchange_swim_sink ? 1 : 0, run_option_labels);
+	w_select *run_w = new w_select(input_preferences->modifiers & _inputmod_run_key_toggle ? 2 : input_preferences->modifiers & _inputmod_interchange_run_walk ? 1 : 0, run_option_labels);
 	move_options->dual_add(run_w->label("Run/Swim Behavior"), d);
 	move_options->dual_add(run_w, d);
 
