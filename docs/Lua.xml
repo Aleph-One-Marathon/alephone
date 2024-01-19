@@ -575,6 +575,7 @@
       </variable>
       <variable name="z" access="read-only" version="20111201">
 		<type>WU</type>
+		<note>from floor or ceiling</note>
       </variable>
     </table>
     <table name="item">
@@ -647,6 +648,7 @@
       </variable>
       <variable name="z" access="read-only" version="20111201">
 		<type>WU</type>
+		<note>from floor or ceiling</note>
       </variable>
     </table>
 
@@ -1104,6 +1106,7 @@
       </variable>
       <variable name="z" access="read-only" version="20111201">
 		<type>WU</type>
+		<note>from floor or ceiling</note>
       </variable>
     </table>
     <table name="music">
@@ -1748,6 +1751,7 @@
       </variable>
       <variable name="z" access="read-only" version="20111201">
 		<type>WU</type>
+		<note>from floor or ceiling</note>
       </variable>
     </table>
     <table name="polygon">
@@ -2145,6 +2149,7 @@
       </variable>
       <variable name="z" access="read-only" version="20111201">
 		<type>WU</type>
+		<note>from floor or ceiling</note>
       </variable>
     </table>
     <table name="tag">
