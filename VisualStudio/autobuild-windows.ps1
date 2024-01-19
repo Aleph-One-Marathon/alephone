@@ -43,7 +43,8 @@ function GetCommonFiles() {
 
 function Package {
 	Param (
-        [string]$build
+        [string]$build,
+		[string]$package_name
     )
 	
 	#path to the executable
@@ -56,9 +57,6 @@ function Package {
 	$package_version_day = '{0:d2}' -f $package_version.Revision
 	$package_version_string = "${package_version_year}${package_version_month}${package_version_day}"
 	
-	#get the name of the executable without the extension and without spaces
-	$package_name = (Get-Item $exe_path).BaseName
-	$package_name = $package_name.replace(' ','')
 	
 	$package_fullname = "${package_name}-${package_version_string}"
 	
@@ -148,13 +146,15 @@ if(!(Test-Path -Path $msbuild_path)) {
 $array_exclude_copy = @('Makefile','Makefile.*','*.svn','*.git')
 $array_build = @()
 $array_exe_name = @()
-if($a1) {$array_build += "Release"; $array_exe_name += "Aleph One.exe"}
-if($m1) {$array_build += "Marathon"; $array_exe_name += "Marathon.exe"}
-if($m2) {$array_build += "Marathon 2"; $array_exe_name += "Marathon 2.exe"}
-if($m3) {$array_build += "Marathon Infinity"; $array_exe_name += "Marathon Infinity.exe"}
+$array_package_name = @()
+if($a1) {$array_build += "Release"; $array_exe_name += "Aleph One.exe"; $array_package_name += "AlephOne"}
+if($m1) {$array_build += "Marathon"; $array_exe_name += "Classic Marathon.exe"; $array_package_name += "Marathon"}
+if($m2) {$array_build += "Marathon 2"; $array_exe_name += "Classic Marathon 2.exe"; $array_package_name += "Marathon2"}
+if($m3) {$array_build += "Marathon Infinity"; $array_exe_name += "Classic Marathon Infinity.exe"; $array_package_name += "MarathonInfinity"}
 
 for (($i = 0); $i -lt $array_build.Count; $i++) {
 	$build = $array_build[$i]
+	$package_name = $array_package_name[$i]
 	Write-Host "Building ${build} ${platform}" -ForegroundColor green
 	[string]$exe_path = Join-Path -Path $exe_path_only -ChildPath $array_exe_name[$i]
 	[bool]$success = &MsBuild -configuration $build
@@ -164,7 +164,7 @@ for (($i = 0); $i -lt $array_build.Count; $i++) {
 	else {
 		Write-Host "${build} build succeeded" -ForegroundColor green
 		Write-Host "Starting packaging ${build}" -ForegroundColor green
-		Package -build $build
+		Package -build $build -package_name $package_name
 		Write-Host "Packaging for ${build} done" -ForegroundColor green
 	}
 }

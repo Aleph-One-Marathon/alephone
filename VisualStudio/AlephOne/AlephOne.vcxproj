@@ -135,19 +135,19 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon Infinity|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>Marathon Infinity</TargetName>
+    <TargetName>Classic Marathon Infinity</TargetName>
     <OutDir>$(SolutionDir)$(Platform)\Release\</OutDir>
     <IntDir>$(Platform)\Release\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>Marathon</TargetName>
+    <TargetName>Classic Marathon</TargetName>
     <OutDir>$(SolutionDir)$(Platform)\Release\</OutDir>
     <IntDir>$(Platform)\Release\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon 2|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>Marathon 2</TargetName>
+    <TargetName>Classic Marathon 2</TargetName>
     <OutDir>$(SolutionDir)$(Platform)\Release\</OutDir>
     <IntDir>$(Platform)\Release\</IntDir>
   </PropertyGroup>

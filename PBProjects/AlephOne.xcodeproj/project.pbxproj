@@ -1918,7 +1918,7 @@
 		AE437C8B08779BC900038E30 /* shared_widgets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = shared_widgets.h; path = ../Source_Files/Misc/shared_widgets.h; sourceTree = SOURCE_ROOT; };
 		AE437C8E08779BE500038E30 /* shared_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = shared_widgets.cpp; path = ../Source_Files/Misc/shared_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE48F3551421900900051D61 /* Statistics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Statistics.h; path = ../Source_Files/Misc/Statistics.h; sourceTree = "<group>"; };
-		AE505D0B141D45E600915344 /* Marathon 2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Marathon 2.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE505D0B141D45E600915344 /* Classic Marathon 2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Classic Marathon 2.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE505D12141D46A900915344 /* Info-MAS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Info-MAS.plist"; path = "AppStore/Marathon 2/Info-MAS.plist"; sourceTree = "<group>"; };
 		AE505D20141D47BF00915344 /* Marathon 2.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = "Marathon 2.icns"; path = "AppStore/Marathon 2/Marathon 2.icns"; sourceTree = "<group>"; };
 		AE51545D0D46E84A00506B58 /* lua_map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_map.cpp; sourceTree = "<group>"; };
@@ -2042,7 +2042,7 @@
 		AEAE13200FC9C38400EDA5A6 /* lua_serialize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_serialize.h; sourceTree = "<group>"; };
 		AEAE132C0FC9C3C800EDA5A6 /* BStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BStream.cpp; path = ../Source_Files/CSeries/BStream.cpp; sourceTree = "<group>"; };
 		AEAE132D0FC9C3C800EDA5A6 /* BStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BStream.h; path = ../Source_Files/CSeries/BStream.h; sourceTree = "<group>"; };
-		AEB4A2AD14296CAE00537AE7 /* Marathon Infinity.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Marathon Infinity.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AEB4A2AD14296CAE00537AE7 /* Classic Marathon Infinity.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Classic Marathon Infinity.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEB4A2B214296DC000537AE7 /* Marathon Infinity.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = "Marathon Infinity.icns"; path = "AppStore/Marathon Infinity/Marathon Infinity.icns"; sourceTree = "<group>"; };
 		AEB4A2B714296DCF00537AE7 /* Info-MAS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Info-MAS.plist"; path = "AppStore/Marathon Infinity/Info-MAS.plist"; sourceTree = "<group>"; };
 		AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SW_Texture_Extras.cpp; sourceTree = "<group>"; };
@@ -2061,7 +2061,7 @@
 		AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_LoadScreen.h; sourceTree = "<group>"; };
 		AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_LoadScreen.cpp; sourceTree = "<group>"; };
 		AEF8C4F210AEFEB500ED84AD /* OGL_Headers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Headers.h; sourceTree = "<group>"; };
-		AEFD87C313EB84CF00C1E687 /* Marathon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Marathon.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AEFD87C313EB84CF00C1E687 /* Classic Marathon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Classic Marathon.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DefaultStringSets.h; path = ../Source_Files/Misc/DefaultStringSets.h; sourceTree = "<group>"; };
 		EF2EF5C804819BD700A8000D /* network_star_hub.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network_star_hub.cpp; path = ../Source_Files/Network/network_star_hub.cpp; sourceTree = "<group>"; };
 		EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network_star_spoke.cpp; path = ../Source_Files/Network/network_star_spoke.cpp; sourceTree = "<group>"; };
@@ -2407,9 +2407,9 @@
 			isa = PBXGroup;
 			children = (
 				AEC3C89609AD68AE003258E4 /* Aleph One.app */,
-				AEFD87C313EB84CF00C1E687 /* Marathon.app */,
-				AE505D0B141D45E600915344 /* Marathon 2.app */,
-				AEB4A2AD14296CAE00537AE7 /* Marathon Infinity.app */,
+				AEFD87C313EB84CF00C1E687 /* Classic Marathon.app */,
+				AE505D0B141D45E600915344 /* Classic Marathon 2.app */,
+				AEB4A2AD14296CAE00537AE7 /* Classic Marathon Infinity.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -4135,7 +4135,7 @@
 			);
 			name = "Marathon 2";
 			productName = "SDL Application";
-			productReference = AE505D0B141D45E600915344 /* Marathon 2.app */;
+			productReference = AE505D0B141D45E600915344 /* Classic Marathon 2.app */;
 			productType = "com.apple.product-type.application";
 		};
 		AEB4A0DA14296CAE00537AE7 /* Marathon Infinity */ = {
@@ -4155,7 +4155,7 @@
 			);
 			name = "Marathon Infinity";
 			productName = "SDL Application";
-			productReference = AEB4A2AD14296CAE00537AE7 /* Marathon Infinity.app */;
+			productReference = AEB4A2AD14296CAE00537AE7 /* Classic Marathon Infinity.app */;
 			productType = "com.apple.product-type.application";
 		};
 		AEC3C6FE09AD68AC003258E4 /* Aleph One */ = {
@@ -4195,7 +4195,7 @@
 			);
 			name = Marathon;
 			productName = "SDL Application";
-			productReference = AEFD87C313EB84CF00C1E687 /* Marathon.app */;
+			productReference = AEFD87C313EB84CF00C1E687 /* Classic Marathon.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -5695,7 +5695,7 @@
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon2;
-				PRODUCT_NAME = "Marathon 2";
+				PRODUCT_NAME = "Classic Marathon 2";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
@@ -5722,7 +5722,7 @@
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon2;
-				PRODUCT_NAME = "Marathon 2";
+				PRODUCT_NAME = "Classic Marathon 2";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
@@ -5749,7 +5749,7 @@
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.MarathonInfinity;
-				PRODUCT_NAME = "Marathon Infinity";
+				PRODUCT_NAME = "Classic Marathon Infinity";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
@@ -5776,7 +5776,7 @@
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.MarathonInfinity;
-				PRODUCT_NAME = "Marathon Infinity";
+				PRODUCT_NAME = "Classic Marathon Infinity";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
@@ -5803,7 +5803,7 @@
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
-				PRODUCT_NAME = Marathon;
+				PRODUCT_NAME = "Classic Marathon";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};
@@ -5830,7 +5830,7 @@
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
-				PRODUCT_NAME = Marathon;
+				PRODUCT_NAME = "Classic Marathon";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
 			};

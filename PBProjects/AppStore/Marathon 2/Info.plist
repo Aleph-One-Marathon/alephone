@@ -270,7 +270,7 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>Marathon 2</string>
+	<string>Classic Marathon 2</string>
 	<key>CFBundleIconFile</key>
 	<string>Marathon 2.icns</string>
 	<key>CFBundleIdentifier</key>
