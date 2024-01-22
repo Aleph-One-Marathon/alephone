@@ -2377,7 +2377,7 @@
 		<argument name="..." required="false"><type>string</type></argument>
       </function>
       <function name="stop">
-		<description>stops level music and clears the playlist; also invalidates all music channels</description>
+		<description>stops level music and clears the playlist</description>
       </function>
       <function name="valid">
 		<description>for every track passed, return true if it exists and is playable and false otherwise</description>

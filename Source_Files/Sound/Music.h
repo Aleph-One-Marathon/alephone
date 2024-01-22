@@ -66,7 +66,7 @@ public:
 	void LevelMusicRandom(bool fRandom) { random_order = fRandom; }
 	void SeedLevelMusic();
 	void SetClassicLevelMusic(short song_index);
-	bool HasClassicLevelMusic() { return marathon_1_song_index >= 0; }
+	bool HasClassicLevelMusic() const { return marathon_1_song_index >= 0; }
 private:
 	class Slot {
 	private:

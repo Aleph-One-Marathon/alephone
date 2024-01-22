@@ -1911,7 +1911,6 @@ static void transfer_to_new_level(
 	{
 		stop_fade();
 		set_fade_effect(NONE);
-		Music::instance()->StopLevelMusic();
 //		if(OGL_IsActive())
 		{
 			exit_screen();
@@ -2376,9 +2375,6 @@ static void finish_game(
 
 	leaving_map();
 	CloseLuaHUDScript();
-	
-	// LP: stop playing the background music if it was present
-	Music::instance()->StopLevelMusic();
 	
 	/* Get as much memory back as we can. */
 	unload_all_collections();
