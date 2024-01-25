@@ -25,7 +25,6 @@ LUA_MAP.H
 
 #include "cseries.h"
 
-#ifdef HAVE_LUA
 extern "C"
 {
 #include "lua.h"
@@ -147,7 +146,5 @@ extern char Lua_Medias_Name[]; // "Media"
 typedef L_Container<Lua_Medias_Name, Lua_Media> Lua_Medias;
 
 int Lua_Map_register (lua_State *L);
-
-#endif
 
 #endif

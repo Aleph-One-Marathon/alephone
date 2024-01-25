@@ -54,8 +54,6 @@ LUA_HUD_OBJECTS.CPP
 #include <cmath>
 #include <unordered_map>
 
-#ifdef HAVE_LUA
-
 extern struct view_data *world_view;
 
 const float AngleConvert = 360/float(FULL_CIRCLE);
@@ -3403,5 +3401,3 @@ int Lua_HUDObjects_register(lua_State *L)
 	
 	return 0;
 }
-
-#endif

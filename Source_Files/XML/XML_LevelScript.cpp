@@ -66,9 +66,7 @@ struct LevelScriptCommand
 		MML,
 		Music,
 		Movie,
-#ifdef HAVE_LUA
 		Lua,
-#endif /* HAVE_LUA */
 #ifdef HAVE_OPENGL
 		LoadScreen
 #endif
@@ -336,9 +334,7 @@ void GeneralRunScript(int LevelIndex)
 		switch(Cmd.Type)
 		{
 		case LevelScriptCommand::MML:
-#ifdef HAVE_LUA
 		case LevelScriptCommand::Lua:
-#endif /* HAVE_LUA */
 			// if (Cmd.RsrcPresent() && OFile.Get('T','E','X','T',Cmd.RsrcID,ScriptRsrc))
 			if (Cmd.RsrcPresent() && get_text_resource_from_scenario(Cmd.RsrcID,ScriptRsrc))
 			{
@@ -360,18 +356,15 @@ void GeneralRunScript(int LevelIndex)
 				ParseMMLFromData(Data, DataLen);
 			}
 			break;
-		
-#ifdef HAVE_LUA
-                        
-			case LevelScriptCommand::Lua:
-			{
-				// Skip if not loaded
-				if (Data == NULL || DataLen <= 0) break;
+
+		case LevelScriptCommand::Lua:
+		{
+			// Skip if not loaded
+			if (Data == NULL || DataLen <= 0) break;
 				
-				LoadLuaScript(Data, DataLen, _embedded_lua_script);
-			}
-			break;
-#endif /* HAVE_LUA */
+			LoadLuaScript(Data, DataLen, _embedded_lua_script);
+		}
+		break;
 		
 		case LevelScriptCommand::Music:
 			{
@@ -576,7 +569,6 @@ void parse_level_commands(InfoTree root, int index)
 		ls_ptr->Commands.push_back(cmd);
 	}
 
-#ifdef HAVE_LUA
 	for (const InfoTree &child : root.children_named("lua"))
 	{
 		LevelScriptCommand cmd;
@@ -587,7 +579,6 @@ void parse_level_commands(InfoTree root, int index)
 		
 		ls_ptr->Commands.push_back(cmd);
 	}
-#endif
 	
 	for (const InfoTree &child : root.children_named("music"))
 	{

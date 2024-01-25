@@ -55,8 +55,6 @@ namespace io = boost::iostreams;
 #include "item_definitions.h"
 #include "projectile_definitions.h"
 
-#ifdef HAVE_LUA
-
 const float AngleConvert = 360/float(FULL_CIRCLE);
 
 char Lua_Action_Flags_Name[] = "action_flags";
@@ -2989,5 +2987,3 @@ static void Lua_Player_load_compatibility(lua_State *L)
 	luaL_loadbuffer(L, compatibility_script, strlen(compatibility_script), "player_compatibility");
 	lua_pcall(L, 0, 0, 0);
 }
-
-#endif

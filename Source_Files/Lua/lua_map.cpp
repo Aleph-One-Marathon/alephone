@@ -41,9 +41,6 @@ LUA_MAP.CPP
 
 #include "collection_definition.h"
 
-
-#ifdef HAVE_LUA
-
 char Lua_AmbientSound_Name[] = "ambient_sound";
 char Lua_AmbientSounds_Name[] = "AmbientSounds";
 
@@ -3891,6 +3888,3 @@ static void compatibility(lua_State *L)
 	luaL_loadbuffer(L, compatibility_script, strlen(compatibility_script), "map_compatibility");
 	lua_pcall(L, 0, 0, 0);
 }
-
-#endif
-

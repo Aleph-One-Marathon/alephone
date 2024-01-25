@@ -57,20 +57,17 @@ LUA_SCRIPT.CPP
  L_Call_* no longer need guarding with #ifdef HAVE_LUA
  */
 
-// cseries defines HAVE_LUA on A1/SDL
 #include "cseries.h"
 
 #include "mouse.h"
 #include "interface.h"
 
-#ifdef HAVE_LUA
 extern "C"
 {
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
 }
-#endif
 
 #include <functional>
 #include <string>
@@ -147,60 +144,6 @@ int game_end_condition = _game_normal_end_condition;
 int GetLuaScoringMode() {
 	return game_scoring_mode;
 }
-
-#ifndef HAVE_LUA
-
-void L_Call_Init(bool) {}
-void L_Call_Cleanup() {}
-void L_Call_Idle() {}
-void L_Call_PostIdle() {}
-void L_Call_Sent_Message(const char* username, const char* message) {}
-void L_Call_Start_Refuel(short type, short player_index, short panel_side_index) {}
-void L_Call_End_Refuel(short type, short player_index, short panel_side_index) {}
-void L_Call_Tag_Switch(short tag, short player_index, short) {}
-void L_Call_Light_Switch(short light, short player_index, short) {}
-void L_Call_Platform_Switch(short platform, short player_index, short) {}
-void L_Call_Terminal_Enter(short terminal_id, short player_index) {}
-void L_Call_Terminal_Exit(short terminal_id, short player_index) {}
-void L_Call_Pattern_Buffer(short side_index, short player_index) {}
-void L_Call_Got_Item(short type, short player_index) {}
-void L_Call_Light_Activated(short index) {}
-void L_Call_Platform_Activated(short index) {}
-void L_Call_Player_Revived(short player_index) {}
-void L_Call_Player_Killed(short player_index, short aggressor_player_index, short action, short projectile_index) {}
-void L_Call_Monster_Killed(short monster_index, short aggressor_player_index, short projectile_index) {}
-void L_Call_Monster_Damaged(short monster_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index) { }
-void L_Call_Player_Damaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index) {}
-void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location, uint16_t flags, int16_t obstruction_index, int16_t line_index) {}
-void L_Call_Projectile_Switch(short, short) {}
-void L_Call_Projectile_Created(short projectile_index) {}
-void L_Call_Item_Created(short item_index) {}
-
-void L_Invalidate_Effect(short) { }
-void L_Invalidate_Monster(short) { }
-void L_Invalidate_Projectile(short) { }
-void L_Invalidate_Object(short) { }
-void L_Invalidate_Ephemera(short) { }
-
-bool LoadLuaScript(const char *buffer, size_t len, const char *desc) { /* Should never get here! */ return false; }
-bool RunLuaScript() {
-	for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++)
-		use_lua_compass [i] = false;
-	return false;
-}
-void CloseLuaScript() {}
-
-void ToggleLuaMute() {}
-void ResetLuaMute() {}
-
-bool UseLuaCameras() { return false; }
-bool LuaPlayerCanWieldWeapons(short) { return true; }
-
-int GetLuaGameEndCondition() {
-	return _game_normal_end_condition;
-}
-
-#else /* HAVE_LUA */
 
 bool mute_lua = false;
 
@@ -2342,4 +2285,3 @@ void unpack_lua_states(uint8* data, size_t length)
 		s.read(&SavedLuaState[index][0], SavedLuaState[index].size());
 	}
 }
-#endif /* HAVE_LUA */

@@ -26,7 +26,6 @@ AC_DEFUN([AX_ARG_WITH],
            AC_ARG_WITH([$1], AS_HELP_STRING([--without-$1], [do not use $2])) ])
 
 AX_ARG_ENABLE([opengl], [OpenGL rendering])
-AX_ARG_ENABLE([lua], [built-in Lua scripting])
 
 AX_ARG_WITH([sdl_image], [SDL2_image support])
 AX_ARG_WITH([ffmpeg], [FFmpeg playback and film export])
@@ -190,11 +189,6 @@ AS_IF([test "x$enable_opengl" != "xno"],
                       [AC_MSG_WARN([OpenGL not available])]) ]) ])
 AM_CONDITIONAL([MAKE_OPENGL], [test "x$have_opengl" = "xtrue" ])
 
-dnl Enable Lua.
-AS_IF([test "x$enable_lua" != "xno"],
-      [ have_lua=true
-        AC_DEFINE([HAVE_LUA], [1], [Lua support enabled]) ])
-
 
 dnl Check optional packages.
 
@@ -308,7 +302,6 @@ AS_ECHO([""])
 AS_ECHO(["Summary of optional features:"])
 AS_ECHO([""])
 AX_PRINT_SUMMARY([opengl])
-AX_PRINT_SUMMARY([lua])
 AX_PRINT_SUMMARY([sdl_image])
 AX_PRINT_SUMMARY([ffmpeg])
 AX_PRINT_SUMMARY([smpeg])

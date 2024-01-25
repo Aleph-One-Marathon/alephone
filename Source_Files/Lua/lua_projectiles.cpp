@@ -38,8 +38,6 @@ LUA_MONSTERS.CPP
 #define DONT_REPEAT_DEFINITIONS
 #include "projectile_definitions.h"
 
-#ifdef HAVE_LUA
-
 const float AngleConvert = 360/float(FULL_CIRCLE);
 
 char Lua_Projectile_Name[] = "projectile";
@@ -447,4 +445,3 @@ static void compatibility(lua_State *L)
 	luaL_loadbuffer(L, compatibility_script, strlen(compatibility_script), "projectiles_compatibility");
 	lua_pcall(L, 0, 0, 0);
 }
-#endif

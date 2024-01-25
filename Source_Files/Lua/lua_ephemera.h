@@ -25,7 +25,6 @@ LUA_EPHEMERA.H
 
 #include "cseries.h"
 
-#ifdef HAVE_LUA
 extern "C"
 {
 #include "lua.h"
@@ -42,7 +41,5 @@ extern char Lua_Ephemeras_Name[]; // "Ephemera"
 typedef L_Container<Lua_Ephemeras_Name, Lua_Ephemera> Lua_Ephemeras;
 
 int Lua_Ephemera_register(lua_State* L);
-
-#endif
 
 #endif

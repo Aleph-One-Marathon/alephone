@@ -25,7 +25,6 @@ LUA_PLAYER.H
 
 #include "cseries.h"
 
-#ifdef HAVE_LUA
 extern "C"
 {
 #include "lua.h"
@@ -49,7 +48,5 @@ extern char Lua_PlayerColors_Name[]; // "PlayerColors"
 typedef L_EnumContainer<Lua_PlayerColors_Name, Lua_PlayerColor> Lua_PlayerColors;
 
 int Lua_Player_register (lua_State *L);
-
-#endif
 
 #endif

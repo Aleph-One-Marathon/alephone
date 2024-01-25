@@ -4,7 +4,6 @@
 
 #include "cseries.h"
 
-#ifdef HAVE_LUA
 extern "C"
 {
 #include "lua.h"
@@ -21,7 +20,5 @@ extern char Lua_MusicManager_Name[]; //Music
 typedef L_Container<Lua_MusicManager_Name, Lua_Music> Lua_MusicManager;
 
 int Lua_Music_register(lua_State* L);
-
-#endif
 
 #endif
