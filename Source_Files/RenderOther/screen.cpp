@@ -935,8 +935,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 								   sdl_width, sdl_height,
 								   flags);
 
-#ifdef HAVE_OPENGL
 	bool context_created = false;
+#ifdef HAVE_OPENGL
 	if (main_screen == NULL && !nogl && screen_mode.acceleration != _no_acceleration && Get_OGL_ConfigureData().Multisamples > 0) {
 		// retry with multisampling off
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
@@ -970,7 +970,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 			SDL_GL_CreateContext(main_screen);
 			context_created = true;
 		}
-#ifdef __WIN32__
+#if defined (__WIN32__) && (HAVE_OPENGL)
 		glewInit();
 #endif
 		if (!OGL_CheckExtension("GL_ARB_vertex_shader") || !OGL_CheckExtension("GL_ARB_fragment_shader") || !OGL_CheckExtension("GL_ARB_shader_objects") || !OGL_CheckExtension("GL_ARB_shading_language_100"))

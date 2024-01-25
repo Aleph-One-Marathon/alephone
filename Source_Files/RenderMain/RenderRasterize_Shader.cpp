@@ -24,6 +24,8 @@
 #include "preferences.h"
 #include "screen.h"
 
+#ifdef HAVE_OPENGL
+
 #define MAXIMUM_VERTICES_PER_WORLD_POLYGON (MAXIMUM_VERTICES_PER_POLYGON+4)
 
 class Blur {
@@ -1397,3 +1399,5 @@ void RenderRasterize_Shader::render_viewer_sprite(rectangle_definition& RenderRe
 	TMgr->RestoreTextureMatrix();
 
 }
+
+#endif

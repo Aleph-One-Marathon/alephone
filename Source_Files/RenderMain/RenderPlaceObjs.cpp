@@ -241,6 +241,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			
 			// Create a fake sprite rectangle using the model's bounding box
 			float Scale = 1;
+#ifdef HAVE_OPENGL
 			if (ModelPtr)
 			{
 				// Copy over
@@ -258,7 +259,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				// Set pointer back
 				shape_information = &model_shape_information;
 			}
-			
+#endif
 			// Too close?
 			if (Farthest < MINIMUM_OBJECT_DISTANCE) return NULL;
 			
@@ -350,6 +351,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				render_object->rectangle.ShapeDesc = BUILD_DESCRIPTOR(data.collection_code,0);
 				render_object->rectangle.LowLevelShape = data.low_level_shape_index;
 				render_object->rectangle.ModelPtr = ModelPtr;
+#ifdef HAVE_OPENGL
 				if (ModelPtr)
 				{
 					render_object->rectangle.ModelSequence = ModelSequence;
@@ -361,6 +363,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					render_object->rectangle.LightDepth = LightDepth;
 					objlist_copy(render_object->rectangle.LightDirection,LightDirection,3);
 				}
+#endif
 				// need this for new rendering pipeline
 				render_object->rectangle.WorldLeft = shape_information->world_left;
 				render_object->rectangle.WorldBottom = shape_information->world_bottom;

@@ -465,6 +465,7 @@ OGL_FogData *OriginalFogData = NULL;
 
 void reset_mml_opengl()
 {
+#ifdef HAVE_OPENGL
 	reset_mml_opengl_texture();
 	reset_mml_opengl_model();
 	reset_mml_opengl_shader();
@@ -475,10 +476,12 @@ void reset_mml_opengl()
 		free(OriginalFogData);
 		OriginalFogData = NULL;
 	}
+#endif
 }
 
 void parse_mml_opengl(const InfoTree& root)
 {
+#ifdef HAVE_OPENGL
 	// back up old values first
 	if (!OriginalFogData) {
 		OriginalFogData = (OGL_FogData *) malloc(sizeof(OGL_FogData) * OGL_NUMBER_OF_FOG_TYPES);
@@ -528,6 +531,7 @@ void parse_mml_opengl(const InfoTree& root)
 			color.read_color(def.Color);
 		}
 	}
+#endif
 }
 
 #ifdef HAVE_OPENGL

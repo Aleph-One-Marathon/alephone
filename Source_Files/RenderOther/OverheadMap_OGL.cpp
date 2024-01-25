@@ -70,11 +70,8 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 #ifdef HAVE_OPENGL
 
-#ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
 #include "OGL_Render.h"
-#endif
-
 
 
 // rgb_color straight to OpenGL

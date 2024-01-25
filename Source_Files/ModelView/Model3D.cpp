@@ -33,10 +33,7 @@
 #ifdef HAVE_OPENGL
 
 #include "Model3D.h"
-
-#ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
-#endif
 
 /* Need Sgl* macros */
 #include "OGL_Setup.h"

@@ -60,9 +60,7 @@ Mar 08, 2002 (Woody Zenfell):
 
 #include "cseries.h"
 
-#ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
-#endif
 
 #include "HUDRenderer_SW.h"
 #include "game_window.h"

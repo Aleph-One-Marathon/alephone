@@ -23,6 +23,12 @@
 	Uniform header for all Aleph One OpenGL users
 */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef HAVE_OPENGL
+
 #ifdef __WIN32__
 
 #define GLEW_STATIC 1
@@ -40,6 +46,8 @@
 #include <OpenGL/glu.h>
 #else
 #include <GL/glu.h>
+#endif
+
 #endif
 
 #endif

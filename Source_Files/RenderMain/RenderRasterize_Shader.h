@@ -19,6 +19,8 @@
 
 #include <memory>
 
+#ifdef HAVE_OPENGL
+
 class Blur;
 class RenderRasterize_Shader : public RenderRasterizerClass {
 
@@ -65,4 +67,5 @@ public:
 	std::unique_ptr<TextureManager> setupSpriteTexture(const rectangle_definition& rect, short type, float offset, RenderStep renderStep);
 };
 
+#endif
 #endif

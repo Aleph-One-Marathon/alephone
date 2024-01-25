@@ -85,9 +85,7 @@
 #include <unistd.h>
 #endif
 
-#ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
-#endif
 
 #if !defined(DISABLE_NETWORKING)
 #include <SDL2/SDL_net.h>

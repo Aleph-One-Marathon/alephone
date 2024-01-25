@@ -27,6 +27,8 @@
 #include "OGL_Headers.h"
 #include "FileHandler.h"
 
+#ifdef HAVE_OPENGL
+
 class Shader {
 
 friend class XML_ShaderParser;
@@ -139,5 +141,7 @@ public:
 class InfoTree;
 void parse_mml_opengl_shader(const InfoTree& root);
 void reset_mml_opengl_shader();
+
+#endif
 
 #endif
