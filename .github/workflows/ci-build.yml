@@ -23,6 +23,18 @@ jobs:
           
       - name: Build
         run: make -j 2
+        
+  linux-without-opengl:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        uses: ./.github/actions/configure-linux
+        with:
+          configure_options: --disable-opengl
+          
+      - name: Build
+        run: make -j 2
       
   mac-osx-x64:
     runs-on: macos-12
