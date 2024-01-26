@@ -1199,7 +1199,6 @@ bool NetEnter(void)
 	my_capabilities.clear();
 	my_capabilities[Capabilities::kGameworld] = Capabilities::kGameworldVersion;
 	my_capabilities[Capabilities::kGameworldM1] = Capabilities::kGameworldM1Version;
-	my_capabilities[Capabilities::kSpeex] = Capabilities::kSpeexVersion;
 	if (network_preferences->game_protocol == _network_game_protocol_star) {
 		my_capabilities[Capabilities::kStar] = Capabilities::kStarVersion;
 	} else {

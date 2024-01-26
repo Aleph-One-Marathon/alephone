@@ -125,7 +125,6 @@ struct network_preferences_data
 	char join_address[256];
 	uint16 game_port;	// TCP and UDP port number used for game traffic (not player-location traffic)
 	uint16 game_protocol; // _network_game_protocol_star, etc.
-	bool use_speex_encoder;
 	bool use_netscript;
 	char netscript_file[256];
 	uint16 cheat_flags;

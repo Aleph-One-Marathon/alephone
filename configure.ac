@@ -29,7 +29,6 @@ AX_ARG_ENABLE([opengl], [OpenGL rendering])
 
 AX_ARG_WITH([sdl_image], [SDL2_image support])
 AX_ARG_WITH([ffmpeg], [FFmpeg playback and film export])
-AX_ARG_WITH([smpeg], [SMPEG movie playback])
 AX_ARG_WITH([curl], [cURL for HTTP communication])
 AX_ARG_WITH([zzip], [zziplib support])
 AX_ARG_WITH([png], [libpng PNG screenshot support])
@@ -226,9 +225,6 @@ dnl Remove SDL 1 inclusions from ffmpeg (https://trac.ffmpeg.org/ticket/2009)
 FFMPEG_LIBS=`echo "$FFMPEG_LIBS" | sed 's|-lSDL ||' | sed 's|-lSDLmain ||'`
 LIBS=`echo "$LIBS" | sed 's|-lSDL ||' | sed 's|-lSDLmain ||'`
 
-AX_CHECK_FEATURE_LIB([smpeg], [SMPEG],
-                     [smpeg/smpeg.h], [smpeg], [SMPEG_new])
-
 AX_CHECK_FEATURE_PKG([curl], [CURL],
                      [CURL], [libcurl >= 7.31.0])
 
@@ -304,7 +300,6 @@ AS_ECHO([""])
 AX_PRINT_SUMMARY([opengl])
 AX_PRINT_SUMMARY([sdl_image])
 AX_PRINT_SUMMARY([ffmpeg])
-AX_PRINT_SUMMARY([smpeg])
 AX_PRINT_SUMMARY([curl])
 AX_PRINT_SUMMARY([zzip])
 AX_PRINT_SUMMARY([png])

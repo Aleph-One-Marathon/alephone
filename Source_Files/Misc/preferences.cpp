@@ -3863,7 +3863,6 @@ InfoTree network_preferences_tree()
 	root.put_attr("join_address", network_preferences->join_address);
 	root.put_attr("local_game_port", network_preferences->game_port);
 	root.put_attr("game_protocol", sNetworkGameProtocolNames[network_preferences->game_protocol]);
-	root.put_attr("use_speex_netmic_encoder", network_preferences->use_speex_encoder);
 	root.put_attr("use_netscript", network_preferences->use_netscript);
 	root.put_attr_path("netscript_file", network_preferences->netscript_file);
 	root.put_attr("cheat_flags", network_preferences->cheat_flags);
@@ -4030,7 +4029,6 @@ static void default_network_preferences(network_preferences_data *preferences)
 	DefaultStarPreferences();
 	DefaultRingPreferences();
 #endif // !defined(DISABLE_NETWORKING)
-	preferences->use_speex_encoder = true;
 	preferences->use_netscript = false;
 	preferences->netscript_file[0] = '\0';
 	preferences->cheat_flags = _allow_tunnel_vision | _allow_crosshair | _allow_behindview | _allow_overlay_map;
@@ -4852,7 +4850,6 @@ void parse_network_preferences(InfoTree root, std::string version)
 		}
 	}
 	
-	root.read_attr("use_speex_netmic_encoder", network_preferences->use_speex_encoder);
 	root.read_attr("use_netscript", network_preferences->use_netscript);
 	root.read_path("netscript_file", network_preferences->netscript_file);
 	root.read_attr("cheat_flags", network_preferences->cheat_flags);
