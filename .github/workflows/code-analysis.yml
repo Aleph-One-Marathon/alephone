@@ -27,7 +27,7 @@ jobs:
           queries: security-and-quality
 
       - name: Build
-        run: make -j 4
+        run: make -j $(nproc)
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
