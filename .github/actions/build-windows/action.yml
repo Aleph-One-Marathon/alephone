@@ -15,7 +15,7 @@ runs:
     - uses: actions/checkout@v4
     
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.1.3
+      uses: microsoft/setup-msbuild@v1
       
     - name: Vcpkg Integration
       run: |
@@ -30,7 +30,7 @@ runs:
       shell: pwsh
       
     - name: Cache Vcpkg
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: vcpkg/${{inputs.vcpkg_installed_folder}}
         key: ${{runner.os}}-${{inputs.vcpkg_installed_folder}}-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}

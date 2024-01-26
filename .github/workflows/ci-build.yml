@@ -10,7 +10,7 @@ jobs:
       - name: Configure
         uses: ./.github/actions/configure-linux
       - name: Build
-        run: make -j 2
+        run: make -j 4
         
   linux-without-ffmpeg:
     runs-on: ubuntu-22.04
@@ -22,7 +22,7 @@ jobs:
           configure_options: --without-ffmpeg
           
       - name: Build
-        run: make -j 2
+        run: make -j 4
         
   linux-without-opengl:
     runs-on: ubuntu-22.04
@@ -34,7 +34,7 @@ jobs:
           configure_options: --disable-opengl
           
       - name: Build
-        run: make -j 2
+        run: make -j 4
       
   mac-osx-x64:
     runs-on: macos-12

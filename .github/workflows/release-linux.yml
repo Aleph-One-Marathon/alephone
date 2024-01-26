@@ -14,18 +14,8 @@ jobs:
       uses: ./.github/actions/configure-linux
         
     - run: make dist
-    - uses: actions/upload-artifact@v3
-      with:
-        name: alephone-release
-        if-no-files-found: error
-        path: '*.tar.bz2'
           
     - run: make datadist
-    - uses: actions/upload-artifact@v3
-      with:
-        name: alephone-release
-        if-no-files-found: error
-        path: '*.zip'
         
     - name: Build flatpaks
       run: | 
@@ -34,8 +24,12 @@ jobs:
         sudo flatpak install flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08 -y
         make flatpaks
         
-    - uses: actions/upload-artifact@v3
+    - name: Upload
+      uses: actions/upload-artifact@v4
       with:
-        name: alephone-release
+        name: alephone-linux-release
         if-no-files-found: error
-        path: '*.flatpak'
+        path: |
+         *.tar.bz2
+         *.zip
+         *.flatpak

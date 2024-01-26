@@ -16,13 +16,13 @@ jobs:
         echo vcpkg_current_hash=$vcpkg_commit_id >> $env:GITHUB_ENV
         
     - name: Restore vcpkg cache for x64
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: vcpkg/installed-x64-windows
         key: ${{runner.os}}-installed-x64-windows-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
         
     - name: Restore vcpkg cache for x86
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: vcpkg/installed-x86-windows
         key: ${{runner.os}}-installed-x86-windows-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
@@ -39,8 +39,8 @@ jobs:
         ./autobuild-windows.ps1 -x64 $false -a1 $true -m1 $false -m2 $false -m3 $false -output_path windows-build-archives
     
     - name: Upload
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: alephone-release
+        name: alephone-windows-release
         if-no-files-found: error
         path: 'VisualStudio/windows-build-archives/*.zip'
