@@ -311,7 +311,7 @@ void OGL_TextureOptionsBase::Load()
 	}
 
 	// load a heightmap
-	if(OffsetMap != FileSpecifier() && OffsetMap.Exists()) {
+	if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap) && OffsetMap != FileSpecifier() && OffsetMap.Exists()) {
 		if(!OffsetImg.LoadFromFile(OffsetMap, ImageLoader_Colors, flags | (NormalIsPremultiplied ? ImageLoader_ImageIsAlreadyPremultiplied : 0), actual_width, actual_height, maxTextureSize)) {
 			return;
 		}
@@ -423,8 +423,7 @@ void OGL_LoadModelsImages(short Collection)
 	OGL_LoadTextures(Collection);
 	
 	// For models, skins
-	bool UseModels = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_3D_Models) ? true : false;
-	if (UseModels)
+	if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_3D_Models))
 		OGL_LoadModels(Collection);
 	else
 		OGL_UnloadModels(Collection);
