@@ -69,11 +69,7 @@ bool SoundPlayer::CanFastRewind(const SoundParameters& soundParameters) const {
 
 void SoundPlayer::AskRewind(const SoundParameters& soundParameters, const Sound& newSound) {
 	UpdateRewindParameters(soundParameters);
-
-	if (parameters.Get().permutation != soundParameters.permutation) {
-		sound.Store(newSound);
-	}
-
+	sound.Store(newSound);
 	AudioPlayer::AskRewind();
 }
 

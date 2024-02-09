@@ -28,7 +28,6 @@ struct SoundParameters {
 	bool loop = false;
 	bool is_2d = true; //if false it will use source_location3d to position sound (3D sounds)
 	bool soft_rewind = false; //if true the sound can only rewind after it's done playing
-	uint16_t permutation = 0;
 	uint16_t obstruction_flags = 0;
 	sound_behavior behavior = _sound_is_normal;
 	world_location3d source_location3d = {};

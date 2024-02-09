@@ -844,7 +844,6 @@ std::shared_ptr<SoundPlayer> SoundManager::BufferSound(SoundParameters parameter
 	int permutation = GetRandomSoundPermutation(parameters.identifier);
 
 	assert(permutation >= 0 && permutation < definition->permutations);
-	parameters.permutation = permutation;
 
 	SoundInfo header;
 
