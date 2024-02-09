@@ -107,7 +107,7 @@ bool AudioPlayer::Play() {
 		alSourcePlay(audio_source->source_id);
 	}
 
-	return true; //still has to play some data
+	return alGetError() == AL_NO_ERROR; //still has to play some data
 }
 
 bool AudioPlayer::Update() {
