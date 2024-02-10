@@ -37,7 +37,7 @@ jobs:
         run: make -j $(nproc)
       
   mac-osx-x64:
-    runs-on: macos-12
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
       - name: Build
@@ -48,7 +48,7 @@ jobs:
           xcode_arch: x86_64
           
   mac-osx-arm:
-    runs-on: macos-12
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
       - name: Build

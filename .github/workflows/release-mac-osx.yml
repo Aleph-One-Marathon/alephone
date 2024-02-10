@@ -4,7 +4,7 @@ on: [workflow_dispatch, workflow_call]
 
 jobs:
   release:
-    runs-on: macos-12
+    runs-on: macos-13
     steps:
     - uses: actions/checkout@v4
       with:
@@ -31,8 +31,8 @@ jobs:
         path: vcpkg/installed-arm64-osx
         key: ${{runner.os}}-installed-arm64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
         
-    - name: Switch to Xcode 13.4.1
-      run: sudo xcode-select --switch /Applications/Xcode_13.4.1.app
+    - name: Switch to Xcode 14.3.1
+      run: sudo xcode-select --switch /Applications/Xcode_14.3.1.app
       
     - name: Install Dependencies
       run: cd vcpkg && ./install-x64-osx.sh && ./install-arm-osx.sh
