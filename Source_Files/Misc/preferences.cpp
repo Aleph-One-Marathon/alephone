@@ -134,6 +134,8 @@ static const size_t NUMBER_OF_NETWORK_GAME_PROTOCOL_NAMES = sizeof(sNetworkGameP
 // Have the prefs been inited?
 static bool PrefsInited = false;
 
+static std::vector<boost::filesystem::path> orphan_disabled_plugins;
+static std::vector<boost::filesystem::path> orphan_enabled_plugins;
 
 // Global preferences data
 struct graphics_preferences_data *graphics_preferences = NULL;
@@ -3947,6 +3949,18 @@ InfoTree environment_preferences_tree()
 			}
 		}
 	}
+
+	for (const auto& plugin : orphan_disabled_plugins) {
+		InfoTree disable;
+		disable.put_attr_path("path", plugin.string());
+		root.add_child("disable_plugin", disable);
+	}
+
+	for (const auto& plugin : orphan_enabled_plugins) {
+		InfoTree enable;
+		enable.put_attr_path("path", plugin.string());
+		root.add_child("enable_plugin", enable);
+	}
 	
 	return root;
 }
@@ -4953,21 +4967,29 @@ void parse_environment_preferences(InfoTree root, std::string version)
 	root.read_attr("use_native_file_dialogs", environment_preferences->use_native_file_dialogs);
 #endif
 	
+	orphan_disabled_plugins.clear();
 	for (const InfoTree &plugin : root.children_named("disable_plugin"))
 	{
 		char tempstr[256];
 		if (plugin.read_path("path", tempstr))
 		{
-			Plugins::instance()->disable(tempstr);
+			if (!Plugins::instance()->disable(tempstr))
+			{
+				orphan_disabled_plugins.push_back(tempstr);
+			}
 		}
 	}
 
+	orphan_enabled_plugins.clear();
 	for (const InfoTree& plugin : root.children_named("enable_plugin"))
 	{
 		char tempstr[256];
 		if (plugin.read_path("path", tempstr))
 		{
-			Plugins::instance()->enable(tempstr);
+			if (!Plugins::instance()->enable(tempstr))
+			{
+				orphan_enabled_plugins.push_back(tempstr);
+			}
 		}
 	}
 }
