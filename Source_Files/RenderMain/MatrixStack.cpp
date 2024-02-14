@@ -319,6 +319,19 @@ void MatrixStack::fogDensity (GLfloat density) {
   fogColor[3] = density;
 }
 
+
+void MatrixStack::fogStartEnd (GLfloat start, GLfloat end) {
+	fogStartValue = start;
+	fogEndValue = end;
+}
+
+GLfloat* MatrixStack::fogStart() {
+	return &fogStartValue;
+}
+GLfloat* MatrixStack::fogEnd(){
+	return &fogEndValue;
+}
+
 void MatrixStack::normal3f (GLfloat nx, GLfloat ny, GLfloat nz) {
   //Just fill the entire array with the same data, so it can be used as an attribute in the shader.
   //Shitty mashup of the old of glNormal and glNormalPointer behaviors

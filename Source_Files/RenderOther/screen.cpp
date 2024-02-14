@@ -896,7 +896,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
         SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-        
+		
         // Explicitly set channel depths, otherwise we might get some < 8
         SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
         SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -2040,7 +2040,7 @@ void darken_world_window(void)
 		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 		glEnable(GL_BLEND);
 		//glDisable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
-		//glDisable(GL_FOG);v
+		//glDisable(GL_FOG);
 		glDisable(GL_SCISSOR_TEST);
 		glDisable(GL_STENCIL_TEST);
 

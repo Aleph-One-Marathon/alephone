@@ -56,87 +56,93 @@
 
 class MatrixStack{
 public:
-  static MatrixStack* Instance();
-  
-  glm::mat4 (&activeStack())[STACK_MAX]; //Returns a reference to the active matrix stack.
-  int activeStackIndex(); //Returns reference to top index of active stack.
-  void setActiveStackIndex(int index); //Sets index for the top of active stack.
+	static MatrixStack* Instance();
 
-  void matrixMode(int newMode);
-  int currentActiveMode();
-  glm::mat4 activeMatrix();
-  void pushMatrix();
-  void popMatrix();
-  void getFloatv (GLenum pname, GLfloat* params);
-  void getFloatvInverse (GLenum pname, GLfloat* params);
-  void getFloatvModelviewProjection(GLfloat* params); //populates params with the product of modelview and projection
-  void getFloatvModelview(GLfloat* params); //populates params with unmodified modelview
+	glm::mat4 (&activeStack())[STACK_MAX]; //Returns a reference to the active matrix stack.
+	int activeStackIndex(); //Returns reference to top index of active stack.
+	void setActiveStackIndex(int index); //Sets index for the top of active stack.
 
-  void loadIdentity();
-  void loadZero();
-  void loadMatrixf(const GLfloat *m);
-  void translatef(GLfloat x, GLfloat y, GLfloat z);
-  void scalef (GLfloat x, GLfloat y, GLfloat z);
-  void rotatef (GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
-  void multMatrixf (const GLfloat *m);
+	void matrixMode(int newMode);
+	int currentActiveMode();
+	glm::mat4 activeMatrix();
+	void pushMatrix();
+	void popMatrix();
+	void getFloatv (GLenum pname, GLfloat* params);
+	void getFloatvInverse (GLenum pname, GLfloat* params);
+	void getFloatvModelviewProjection(GLfloat* params); //populates params with the product of modelview and projection
+	void getFloatvModelview(GLfloat* params); //populates params with unmodified modelview
 
-  void transformVertex (GLfloat &x, GLfloat &y, GLfloat &z);
-  void transformVertexToEyespace (GLfloat &x, GLfloat &y, GLfloat &z);
-  
-  void orthof (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
-  void frustumf (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
-  
-  void clipPlanef (int index, const GLfloat *equation);
-  void enablePlane (int index);
-  void disablePlane (int index);
-  void getPlanev (int index, GLfloat* params);
-  
-  void color3f (GLfloat red, GLfloat green, GLfloat blue);
-  void color4f (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
-  GLfloat* color();
-  
-    //Substitutes for glFogfv and glFogf. RGB channels go into the first three elements, and density is in the alpha channel.
-  void fogColor3f (GLfloat red, GLfloat green, GLfloat blue);
-  void fogDensity (GLfloat density);
-  GLfloat* fog();
-  
-  void normal3f (GLfloat nx, GLfloat ny, GLfloat nz);
-  GLfloat* normals();
+	void loadIdentity();
+	void loadZero();
+	void loadMatrixf(const GLfloat *m);
+	void translatef(GLfloat x, GLfloat y, GLfloat z);
+	void scalef (GLfloat x, GLfloat y, GLfloat z);
+	void rotatef (GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
+	void multMatrixf (const GLfloat *m);
+
+	void transformVertex (GLfloat &x, GLfloat &y, GLfloat &z);
+	void transformVertexToEyespace (GLfloat &x, GLfloat &y, GLfloat &z);
+
+	void orthof (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
+	void frustumf (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
+
+	void clipPlanef (int index, const GLfloat *equation);
+	void enablePlane (int index);
+	void disablePlane (int index);
+	void getPlanev (int index, GLfloat* params);
+
+	void color3f (GLfloat red, GLfloat green, GLfloat blue);
+	void color4f (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+	GLfloat* color();
+
+	//Substitutes for glFogfv and glFogf. RGB channels go into the first three elements, and density is in the alpha channel.
+	void fogColor3f (GLfloat red, GLfloat green, GLfloat blue);
+	void fogStartEnd (GLfloat start, GLfloat end);
+	void fogDensity (GLfloat density);
+	
+	GLfloat* fog();
+	GLfloat* fogStart();
+	GLfloat* fogEnd();
+	
+	void normal3f (GLfloat nx, GLfloat ny, GLfloat nz);
+	GLfloat* normals();
   
 private:
-  MatrixStack(){
-    activeMode=MS_MODELVIEW; modelviewIndex=projectionIndex=textureIndex=0;
-    
-    for( int i = 0; i < CLIPPING_PLANES; i++) {
-      planeActivated[i]=0;
-      glm::vec4 v(0,0,0,0);
-      clippingPlanes[i] = v;
-    }
-    glm::vec4 v(0,0,0,0);
-    nullPlane = v;
-    
-  };
-  
-  MatrixStack(MatrixStack const&) = delete;
-  MatrixStack& operator=(MatrixStack const&) = delete;
-  static MatrixStack* m_pInstance;
-  
-  int activeMode;
-  int modelviewIndex;
-  int projectionIndex;
-  int textureIndex;
+	MatrixStack(){
+	activeMode=MS_MODELVIEW; modelviewIndex=projectionIndex=textureIndex=0;
 
-  glm::mat4 modelviewStack[STACK_MAX];
-  glm::mat4 projectionStack[STACK_MAX];
-  glm::mat4 textureStack[STACK_MAX];
-  
-  bool planeActivated[CLIPPING_PLANES];
-  glm::vec4 clippingPlanes[CLIPPING_PLANES];
-  glm::vec4 nullPlane;
-  
-  GLfloat vertexColor[4];
-  GLfloat fogColor[4];
-  GLfloat normalArray[MAX_NORMAL_ELEMENTS];
+	for( int i = 0; i < CLIPPING_PLANES; i++) {
+	  planeActivated[i]=0;
+	  glm::vec4 v(0,0,0,0);
+	  clippingPlanes[i] = v;
+	}
+	glm::vec4 v(0,0,0,0);
+	nullPlane = v;
+
+	};
+
+	MatrixStack(MatrixStack const&) = delete;
+	MatrixStack& operator=(MatrixStack const&) = delete;
+	static MatrixStack* m_pInstance;
+
+	int activeMode;
+	int modelviewIndex;
+	int projectionIndex;
+	int textureIndex;
+
+	glm::mat4 modelviewStack[STACK_MAX];
+	glm::mat4 projectionStack[STACK_MAX];
+	glm::mat4 textureStack[STACK_MAX];
+
+	bool planeActivated[CLIPPING_PLANES];
+	glm::vec4 clippingPlanes[CLIPPING_PLANES];
+	glm::vec4 nullPlane;
+
+	GLfloat vertexColor[4];
+
+	GLfloat fogColor[4];
+	GLfloat fogStartValue, fogEndValue;
+	GLfloat normalArray[MAX_NORMAL_ELEMENTS];
 };
 
 MatrixStack* MSI(); //Convenience instance access

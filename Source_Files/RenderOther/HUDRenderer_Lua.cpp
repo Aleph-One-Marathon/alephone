@@ -152,7 +152,6 @@ void HUD_Lua_Class::start_draw(void)
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		//glDisable(GL_FOG); //NOT SUPPORTED ANGLE ENUM
         
-        
         MSI()->matrixMode(MS_MODELVIEW);
         MSI()->pushMatrix();
         MSI()->loadIdentity();

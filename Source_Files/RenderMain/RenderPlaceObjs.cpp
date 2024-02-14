@@ -60,6 +60,10 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "ephemera.h"
 #include "preferences.h"
 
+//Needed for dynamic lighting hints
+#include "projectiles.h"
+#include "effects.h"
+
 #include <string.h>
 #include <limits.h>
 #include <algorithm>
@@ -141,7 +145,7 @@ void RenderPlaceObjsClass::build_render_object_list()
 		while (object_index!=NONE)
 		{
 			float Opacity = (object_index == self_index) ? GetChaseCamData().Opacity : 1;
-			add_object_to_sorted_nodes(get_object_data(object_index), floor_intensity, ceiling_intensity, Opacity);
+			add_object_to_sorted_nodes(get_object_data(object_index), object_index, floor_intensity, ceiling_intensity, Opacity);
 			object_index= get_object_data(object_index)->next_object;
 		}
 
@@ -150,7 +154,7 @@ void RenderPlaceObjsClass::build_render_object_list()
 			auto ephemera_index = get_polygon_ephemera(sorted_node->polygon_index);
 			while (ephemera_index != NONE)
 			{
-				add_object_to_sorted_nodes(get_ephemera_data(ephemera_index), floor_intensity, ceiling_intensity, 1);
+				add_object_to_sorted_nodes(get_ephemera_data(ephemera_index), object_index, floor_intensity, ceiling_intensity, 1);
 				ephemera_index = get_ephemera_data(ephemera_index)->next_object;
 			}
 		}
@@ -856,6 +860,7 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 
 bool RenderPlaceObjsClass::add_object_to_sorted_nodes(
 	object_data* object,
+	short object_index,
 	_fixed floor_intensity,
 	_fixed ceiling_intensity,
 	float Opacity)
@@ -863,6 +868,23 @@ bool RenderPlaceObjsClass::add_object_to_sorted_nodes(
 	const auto render_object = build_render_object(object, floor_intensity, ceiling_intensity, Opacity, nullptr, nullptr);
 	if (!render_object)
 		return false;
+	
+		//Hint to feed dynamic lighting
+		//Here, the object permutation is not set. We need to check the owner list for the correct index.
+	if(object && SLOT_IS_USED(object)) {
+		render_object->object_owner_type = GET_OBJECT_OWNER(object);
+		if(render_object->object_owner_type == _object_is_projectile){
+			int projectile_index = projectile_index_matching_object(object_index);
+			if(projectile_index >= 0) {
+				render_object->object_owner_permutation_type = get_projectile_data(projectile_index)->type;
+			}
+		} else if (render_object->object_owner_type == _object_is_effect){
+			int effect_index = effect_index_matching_object(object_index);
+			if(effect_index >= 0) {
+				render_object->object_owner_permutation_type = get_effect_data(effect_index)->type;
+			}
+		}
+	}
 	
 	const auto span = build_base_node_list(render_object, object->polygon);
 	

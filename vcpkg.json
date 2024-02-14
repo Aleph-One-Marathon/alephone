@@ -20,6 +20,9 @@
       {
          "name":"boost-lockfree"
       },
+	  {
+			   "name":"glm"
+	  },
       {
          "name":"sdl2"
       },
@@ -39,10 +42,23 @@
          "name":"curl",
          "platform":"windows"
       },
-      {
-         "name":"glew",
+	  {
+         "name":"angle",
+         "platform":"osx"
+	  },
+	  {
+         "name":"angle",
          "platform":"windows"
-      },
+	  },
+	  {
+         "name":"glad",
+         "platform":"windows",
+         "features":[
+			 "gles2-api-20",
+			 "extensions",
+			 "loader"
+		   ]
+	  },
       {
          "name":"zziplib"
       },
@@ -74,7 +90,11 @@
          "name":"ffmpeg",
          "version":"5.0.2",
          "port-version":3
-      }
+      },
+	  {
+		 "name":"sdl2",
+		 "version":"2.26.1"
+	  }
    ],
    "builtin-baseline":"0e47c1985273129e4d0ee52ff73bed9125555de8"
 }

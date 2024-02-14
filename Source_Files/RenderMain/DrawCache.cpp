@@ -63,7 +63,7 @@ void DrawCache::startGatheringLights() {
 }
 
 void DrawCache::addDefaultLight(GLfloat x, GLfloat y, GLfloat z, short objectType, short permutationType) {
-    
+	
     if (objectType == _object_is_projectile)
     {
        switch (permutationType)
@@ -418,8 +418,8 @@ void DrawCache::drawSurfaceBuffered(int vertex_count, GLfloat *vertex_array, GLf
     clearTextureAttributeCaches();
     drawBuffers[b].verticesFilled += vertex_count;
     
-    //For debugging, it helps to draw right away. Slower, though.
-    //Normally this should be commented out.
+    //For debugging visual glitches due to caching, it helps to draw right away. Slower, though.
+    //Ideally this should be commented out.
     //drawAndResetBuffer(b);
 }
 
@@ -556,7 +556,7 @@ void DrawCache::drawAndResetBuffer(int index) {
     drawBuffers[index].shader->setFloat(Shader::U_UseUniformFeatures, 0); //Choose to use the packed features per-vertex.
     
     glDrawElements(GL_TRIANGLES, drawBuffers[index].numIndices, GL_UNSIGNED_INT, drawBuffers[index].indices);
-    
+	
     drawCallsMade++;
     
     //Reset lights in the shader so later draws don't see them accidentially.

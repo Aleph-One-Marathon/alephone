@@ -16,6 +16,7 @@ librendermain_a_SOURCES = AnimatedTextures.h collection_definition.h		   \
   RenderPlaceObjs.h RenderRasterize.h RenderRasterize_Shader.h				   \
   RenderSortPoly.h RenderVisTree.h scottish_textures.h shape_definitions.h	   \
   shape_descriptors.h SW_Texture_Extras.h textures.h OGL_Shader.h vec3.h	   \
+  MatrixStack.hpp DrawCache.hpp												   \
   Shaders/bump_bloom.frag Shaders/bump.frag Shaders/invincible_bloom.frag	   \
   Shaders/invincible.frag Shaders/invisible_bloom.frag Shaders/invisible.frag  \
   Shaders/landscape_bloom.frag Shaders/landscape.frag						   \
@@ -28,7 +29,8 @@ librendermain_a_SOURCES = AnimatedTextures.h collection_definition.h		   \
   OGL_Setup.cpp OGL_Subst_Texture_Def.cpp OGL_Textures.cpp render.cpp		   \
   RenderPlaceObjs.cpp $(OPENGL_SOURCES) RenderRasterize.cpp RenderSortPoly.cpp \
   RenderVisTree.cpp scottish_textures.cpp shapes.cpp SW_Texture_Extras.cpp	   \
-  textures.cpp OGL_Shader.cpp OGL_FBO.cpp
+  textures.cpp OGL_Shader.cpp OGL_FBO.cpp									   \
+  MatrixStack.cpp DrawCache.cpp
 
 EXTRA_librendermain_a_SOURCES = Rasterizer_Shader.cpp	\
 RenderRasterize_Shader.cpp

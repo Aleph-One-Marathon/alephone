@@ -23,6 +23,8 @@
 #include "ChaseCam.h"
 #include "preferences.h"
 #include "screen.h"
+#include "MatrixStack.hpp"
+#include "DrawCache.hpp"
 
 #define MAXIMUM_VERTICES_PER_WORLD_POLYGON (MAXIMUM_VERTICES_PER_POLYGON+4)
 
@@ -57,21 +59,39 @@ public:
 		int passes = _shader_bloom->passes();
 		if (passes < 0)
 			passes = 5;
+        
+        GLfloat modelProjection[16];
+        MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
 
+        GLfloat mainColorBufferSize[2], blurBufferSize[2];
+        mainColorBufferSize[0]=dest.current_contents()._w ;
+        mainColorBufferSize[1]=dest.current_contents()._h;
+        
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 		for (int i = 0; i < passes; i++) {
+            
+            blurBufferSize[0]=_swapper.current_contents()._w;
+            blurBufferSize[1]=_swapper.current_contents()._h;
+
 			_shader_blur->enable();
+            _shader_blur->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+            _shader_blur->setVec2(Shader::U_Texture0_Size, blurBufferSize);
 			_shader_blur->setFloat(Shader::U_OffsetX, 1);
 			_shader_blur->setFloat(Shader::U_OffsetY, 0);
 			_shader_blur->setFloat(Shader::U_Pass, i + 1);
 			_swapper.filter(false);
 
+            _shader_blur->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+            _shader_blur->setVec2(Shader::U_Texture0_Size, blurBufferSize);
 			_shader_blur->setFloat(Shader::U_OffsetX, 0);
 			_shader_blur->setFloat(Shader::U_OffsetY, 1);
 			_shader_blur->setFloat(Shader::U_Pass, i + 1);
 			_swapper.filter(false);
-
-			_shader_bloom->enable();
+            
+            _shader_bloom->enable();
+            _shader_bloom->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+            _shader_bloom->setVec2(Shader::U_Texture0_Size, mainColorBufferSize);
+            _shader_bloom->setVec2(Shader::U_Texture1_Size, blurBufferSize);
 			_shader_bloom->setFloat(Shader::U_Pass, i + 1);
 //			if (Bloom_sRGB)
 //				dest.blend(_swapper.current_contents(), true);
@@ -101,7 +121,7 @@ void RenderRasterize_Shader::setupGL(Rasterizer_Shader_Class& Rasterizer) {
 
 	Shader* s_blur = Shader::get(Shader::S_Blur);
 	Shader* s_bloom = Shader::get(Shader::S_Bloom);
-
+        
 	blur.reset();
 	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur)) {
 		if(s_blur && s_bloom) {
@@ -160,8 +180,8 @@ void RenderRasterize_Shader::render_tree() {
 	
 	float fogMix = 0.0;
 	auto fogdata = OGL_GetCurrFogData();
-	if (fogdata && fogdata->IsPresent && fogdata->AffectsLandscapes) {
-		fogMix = fogdata->LandscapeMix;
+		if (fogdata && fogdata->IsPresent && fogdata->AffectsLandscapes) {
+			fogMix = fogdata->LandscapeMix;
 	}
 
 	float fogmode = -1.0;
@@ -171,7 +191,7 @@ void RenderRasterize_Shader::render_tree() {
 
 	const float virtual_yaw = view->virtual_yaw * FixedAngleToRadians;
 	const float virtual_pitch = view->virtual_pitch * FixedAngleToRadians;
-
+	
 	Shader* landscape_shaders[] = {
 		Shader::get(Shader::S_Landscape),
 		Shader::get(Shader::S_LandscapeBloom),
@@ -184,22 +204,23 @@ void RenderRasterize_Shader::render_tree() {
 		s->setFloat(Shader::U_Yaw, virtual_yaw);
 		s->setFloat(Shader::U_Pitch, view->mimic_sw_perspective ? 0.0 : virtual_pitch);
 	}
-
-	Shader* fog_mode_shaders[] = {
-		Shader::get(Shader::S_Bump),
-		Shader::get(Shader::S_BumpBloom),
-		Shader::get(Shader::S_Invincible),
-		Shader::get(Shader::S_InvincibleBloom),
-		Shader::get(Shader::S_Invisible),
-		Shader::get(Shader::S_InvisibleBloom),
-		Shader::get(Shader::S_Wall),
-		Shader::get(Shader::S_WallBloom),
-		Shader::get(Shader::S_WallInfravision),
-		Shader::get(Shader::S_Sprite),
-		Shader::get(Shader::S_SpriteBloom),
-		Shader::get(Shader::S_SpriteInfravision)
-	};
 	
+		//May not be needed after a loadAll
+	Shader* fog_mode_shaders[] = {
+			Shader::get(Shader::S_Bump),
+			Shader::get(Shader::S_BumpBloom),
+			Shader::get(Shader::S_Invincible),
+			Shader::get(Shader::S_InvincibleBloom),
+			Shader::get(Shader::S_Invisible),
+			Shader::get(Shader::S_InvisibleBloom),
+			Shader::get(Shader::S_Wall),
+			Shader::get(Shader::S_WallBloom),
+			Shader::get(Shader::S_WallInfravision),
+			Shader::get(Shader::S_Sprite),
+			Shader::get(Shader::S_SpriteBloom),
+			Shader::get(Shader::S_SpriteInfravision)
+	};
+
 	for (auto s : fog_mode_shaders) {
 		s->enable();
 		s->setFloat(Shader::U_FogMode, fogmode);
@@ -207,23 +228,69 @@ void RenderRasterize_Shader::render_tree() {
 	
 	Shader::disable();
 
-	RenderRasterizerClass::render_tree(kDiffuse);
-        render_viewer_sprite_layer(kDiffuse);
+    //Set standard uniforms for all applicable shaders.
+    Shader::get(Shader::S_Wall)->enableAndSetStandardUniforms();
+    Shader::get(Shader::S_Landscape)->enableAndSetStandardUniforms();
+    Shader::get(Shader::S_WallBloom)->enableAndSetStandardUniforms();
+    Shader::get(Shader::S_WallInfravision)->enableAndSetStandardUniforms();
+    Shader::get(Shader::S_Bump)->enableAndSetStandardUniforms();
+    Shader::get(Shader::S_BumpBloom)->enableAndSetStandardUniforms();
+    Shader::disable();
 
+        //Needed for ripple, SSAO, SSR.
+    if(0) { //Should be a prefences check later
+        if (colorDepthSansMedia._h == 0 && colorDepthSansMedia._w == 0) {
+          GLint viewPort[4];
+          glGetIntegerv(GL_VIEWPORT, viewPort);
+          colorDepthSansMedia.setup(viewPort[2], viewPort[3], false);
+        }
+        colorDepthSansMedia.activate();
+        glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glClearColor(0,0,0, 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        RenderRasterizerClass::render_tree(kDiffuseDepthNoMedia);
+        DC()->drawAll(); //Draw and flush buffers
+        colorDepthSansMedia.deactivate();
+        RasPtr->Begin(); // Needing to call Rasterizer_Shader_Class::Begin() again is wonky.
+        glActiveTexture(GL_TEXTURE2); //Bind the colorDepthSansMedia texture to unit 2.
+        glBindTexture(GL_TEXTURE_2D, colorDepthSansMedia.texID);
+        glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        //glPopGroupMarkerEXT();
+        glActiveTexture(GL_TEXTURE0);
+    }
+    
+	RenderRasterizerClass::render_tree(kDiffuse);
+    DC()->drawAll(); //Draw and flush buffers
+    
+    render_viewer_sprite_layer(kDiffuse);
+    DC()->drawAll(); //Draw and flush buffers
+    
 	if (current_player->infravision_duration == 0 &&
 		TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur) &&
 		blur.get())
 	{
 		blur->begin();
-		RenderRasterizerClass::render_tree(kGlow);
-                render_viewer_sprite_layer(kGlow);
+            DC()->startGatheringLights();
+            
+            //Add a random light off the floor if the player has invincibility active.
+            if(current_player->invincibility_duration) {
+                DC()->addLight(current_player->location.x, current_player->location.y, current_player->location.z + 200, 2000, rand() / double(RAND_MAX), rand() / double(RAND_MAX), rand() / double(RAND_MAX), 1);
+            }
+            
+            RenderRasterizerClass::render_tree(kGlow);
+            DC()->finishGatheringLights();
+            DC()->drawAll(); //Draw and flush buffers
+            render_viewer_sprite_layer(kGlow);
+            DC()->drawAll(); //Draw and flush buffers
 		blur->end();
 		RasPtr->swapper->deactivate();
 		blur->draw(*RasPtr->swapper);
 		RasPtr->swapper->activate();
 	}
 
-	glAlphaFunc(GL_GREATER, 0.5);
+	//glAlphaFunc(GL_GREATER, 0.5); //NOT SUPPORTED ANGLE FUNCTION
 }
 
 void RenderRasterize_Shader::render_node(sorted_node_data *node, bool SeeThruLiquids, RenderStep renderStep)
@@ -235,40 +302,41 @@ void RenderRasterize_Shader::render_node(sorted_node_data *node, bool SeeThruLiq
     RenderRasterizerClass::render_node(node, SeeThruLiquids, renderStep);
 
 	// turn off clipping planes
-	glDisable(GL_CLIP_PLANE0);
-	glDisable(GL_CLIP_PLANE1);
+    MSI()->disablePlane(0);
+    MSI()->disablePlane(1);
 }
 
 void RenderRasterize_Shader::clip_to_window(clipping_window_data *win)
 {
-    GLdouble clip[] = { 0., 0., 0., 0. };
+    GLfloat clip[] = { 0., 0., 0., 0. };
         
     // recenter to player's orientation temporarily
-    glPushMatrix();
-    glTranslatef(view->origin.x, view->origin.y, 0.);
-    glRotatef(view->yaw * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
+    MSI()->pushMatrix();
+    MSI()->translatef(view->origin.x, view->origin.y, 0.);
+    MSI()->rotatef(view->yaw * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
     
-    glRotatef(-0.1, 0., 0., 1.); // leave some excess to avoid artifacts at edges
+    MSI()->rotatef(-0.1, 0., 0., 1.); // leave some excess to avoid artifacts at edges
 	if (win->left.i != leftmost_clip.i || win->left.j != leftmost_clip.j) {
 		clip[0] = win->left.i;
 		clip[1] = win->left.j;
-		glEnable(GL_CLIP_PLANE0);
-		glClipPlane(GL_CLIP_PLANE0, clip);
+        MSI()->enablePlane(0);
+		MSI()->clipPlanef(0, clip);
 	} else {
-		glDisable(GL_CLIP_PLANE0);
+        MSI()->disablePlane(0);
 	}
 	
-    glRotatef(0.2, 0., 0., 1.); // breathing room for right-hand clip
+    MSI()->rotatef(0.2, 0., 0., 1.); // breathing room for right-hand clip
 	if (win->right.i != rightmost_clip.i || win->right.j != rightmost_clip.j) {
 		clip[0] = win->right.i;
 		clip[1] = win->right.j;
-		glEnable(GL_CLIP_PLANE1);
-		glClipPlane(GL_CLIP_PLANE1, clip);
+		
+        MSI()->enablePlane(1);
+		MSI()->clipPlanef(1, clip);
 	} else {
-		glDisable(GL_CLIP_PLANE1);
+        MSI()->disablePlane(1);
 	}
     
-    glPopMatrix();
+    MSI()->popMatrix();
 }
 
 void RenderRasterize_Shader::store_endpoint(
@@ -283,7 +351,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 
 	Shader *s = NULL;
 	GLfloat color[3];
-	GLdouble shade = PIN(static_cast<GLfloat>(rect.ambient_shade)/static_cast<GLfloat>(FIXED_ONE),0,1);
+	GLfloat shade = PIN(static_cast<GLfloat>(rect.ambient_shade)/static_cast<GLfloat>(FIXED_ONE),0,1);
 	color[0] = color[1] = color[2] = shade;
 
 	auto TMgr = std::make_unique<TextureManager>();
@@ -304,8 +372,8 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 	}
 
 	float flare = weaponFlare;
-
-	glEnable(GL_TEXTURE_2D);
+    
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 
 	// priorities: static, infravision, tinted/solid, shadeless
 	if (TMgr->TransferMode == _static_transfer) {
@@ -315,9 +383,12 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 			s = Shader::get(Shader::S_Invincible);
 		} else {
 			s = Shader::get(Shader::S_InvincibleBloom);
+            
+             //Add a random light slightly off the floor
+            DC()->addLight(rect.Position.x, rect.Position.y, rect.Position.z + 100, 2000, rand() / double(RAND_MAX), rand() / double(RAND_MAX), rand() / double(RAND_MAX), 1);
 		}
 		s->enable();
-        s->setFloat(Shader::U_TransferFadeOut,((float)((uint16)rect.transfer_data))/(float)((int)FIXED_ONE));
+		s->setFloat(Shader::U_TransferFadeOut,((float)((uint16)rect.transfer_data))/(float)((int)FIXED_ONE));
 	} else if (current_player->infravision_duration) {
 		color[0] = color[1] = color[2] = 1;
 		FindInfravisionVersionRGBA(GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(rect.ShapeDesc)), color);
@@ -339,7 +410,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 		color[2] = 0;
 	} else if (TMgr->TransferMode == _textured_transfer) {
 		if (TMgr->IsShadeless) {
-			if (renderStep == kDiffuse) {
+			if (renderStep == kDiffuse || renderStep == kDiffuseDepthNoMedia) {
 				color[0] = color[1] = color[2] = 1;
 			} else {
 				color[0] = color[1] = color[2] = 0;
@@ -382,7 +453,8 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 	s->setFloat(Shader::U_Depth, offset);
 	s->setFloat(Shader::U_StrictDepthMode, OGL_ForceSpriteDepth() ? 1 : 0);
 	s->setFloat(Shader::U_Glow, 0);
-	glColor4f(color[0], color[1], color[2], 1);
+	MSI()->color4f(color[0], color[1], color[2], 1);
+    s->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
 	return TMgr;
 }
 
@@ -406,8 +478,8 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 
 	float flare = weaponFlare;
 
-	glEnable(GL_TEXTURE_2D);
-	glColor4f(intensity, intensity, intensity, 1.0);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
+	MSI()->color4f(intensity, intensity, intensity, 1.0);
 
 	switch(transferMode) {
 		case _xfer_static:
@@ -417,7 +489,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 			flare = -1;
 			s = Shader::get(renderStep == kGlow ? Shader::S_InvincibleBloom : Shader::S_Invincible);
 			s->enable();
-            s->setFloat(Shader::U_TransferFadeOut,0);
+			s->setFloat(Shader::U_TransferFadeOut,0);
 			break;
 		case _xfer_landscape:
 		case _xfer_big_landscape:
@@ -429,7 +501,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 			if (current_player->infravision_duration) {
 				GLfloat color[3] {1, 1, 1};
 				FindInfravisionVersionRGBA(GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(Texture)), color);
-				glColor4f(color[0], color[1], color[2], 1);
+				MSI()->color4f(color[0], color[1], color[2], 1);
 				s = Shader::get(Shader::S_LandscapeInfravision);
 			} else {
 				if (renderStep == kDiffuse) {
@@ -443,10 +515,10 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 		default:
 			TMgr->TextureType = OGL_Txtr_Wall;
 			if(TMgr->IsShadeless) {
-				if (renderStep == kDiffuse) {
-					glColor4f(1,1,1,1);
+				if (renderStep == kDiffuse || renderStep == kDiffuseDepthNoMedia) {
+					MSI()->color4f(1,1,1,1);
 				} else {
-					glColor4f(0,0,0,1);
+					MSI()->color4f(0,0,0,1);
 				}
 				flare = -1;
 			}
@@ -456,7 +528,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 		if (current_player->infravision_duration) {
 			GLfloat color[3] {1, 1, 1};
 			FindInfravisionVersionRGBA(GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(Texture)), color);
-			glColor4f(color[0], color[1], color[2], 1);
+			MSI()->color4f(color[0], color[1], color[2], 1);
 			s = Shader::get(Shader::S_WallInfravision);
 		} else if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
 			s = Shader::get(renderStep == kGlow ? Shader::S_BumpBloom : Shader::S_Bump);
@@ -469,9 +541,9 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 	if(TMgr->Setup()) {
 		TMgr->RenderNormal(); // must allocate first
 		if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
-			glActiveTextureARB(GL_TEXTURE1_ARB);
+			glActiveTexture(GL_TEXTURE1);
 			TMgr->RenderBump();
-			glActiveTextureARB(GL_TEXTURE0_ARB);
+			glActiveTexture(GL_TEXTURE0);
 		}
 	} else {
 		TMgr->ShapeDesc = UNONE;
@@ -484,29 +556,48 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 		double TexScale = std::abs(TMgr->U_Scale);
 		double HorizScale = double(1 << opts->HorizExp);
 		s->setFloat(Shader::U_ScaleX, HorizScale * (npotTextures ? 1.0 : TexScale) * Radian2Circle);
+        DC()->cacheScaleX(HorizScale * (npotTextures ? 1.0 : TexScale) * Radian2Circle);
 		s->setFloat(Shader::U_OffsetX, HorizScale * (0.25 + opts->Azimuth * FullCircleReciprocal));
-		
+        DC()->cacheOffsetX(HorizScale * (0.25 + opts->Azimuth * FullCircleReciprocal));
+        
 		short AdjustedVertExp = opts->VertExp + opts->OGL_AspRatExp;
 		double VertScale = (AdjustedVertExp >= 0) ? double(1 << AdjustedVertExp)
 		                                          : 1/double(1 << (-AdjustedVertExp));
 		s->setFloat(Shader::U_ScaleY, VertScale * TexScale * Radian2Circle);
+        DC()->cacheScaleY(VertScale * TexScale * Radian2Circle);
 		s->setFloat(Shader::U_OffsetY, (0.5 + TMgr->U_Offset) * TexScale);
-	}
+        DC()->cacheOffsetY((0.5 + TMgr->U_Offset) * TexScale);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //DCW added for landscape. Repeat horizontally
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT); //DCW added for landscape. Mirror vertically.
+
+      } else {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //DCW this is probably better for non-landscapes
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); //DCW this is probably better for non-landscapes
+      }
 
 	if (renderStep == kGlow) {
 		if (TMgr->TextureType == OGL_Txtr_Landscape) {
 			s->setFloat(Shader::U_BloomScale, TMgr->LandscapeBloom());
+            DC()->cacheBloomScale(TMgr->LandscapeBloom());
 		} else {
 			s->setFloat(Shader::U_BloomScale, TMgr->BloomScale());
+            DC()->cacheBloomScale(TMgr->BloomScale());
 			s->setFloat(Shader::U_BloomShift, TMgr->BloomShift());
+            DC()->cacheBloomShift(TMgr->BloomShift());
 		}
 	}
 	s->setFloat(Shader::U_Flare, flare);
+    DC()->cacheFlare(flare);
 	s->setFloat(Shader::U_SelfLuminosity, selfLuminosity);
+    DC()->cacheSelfLuminosity(selfLuminosity);
 	s->setFloat(Shader::U_Pulsate, pulsate);
+    DC()->cachePulsate(pulsate);
 	s->setFloat(Shader::U_Wobble, wobble);
+    DC()->cacheWobble(wobble);
 	s->setFloat(Shader::U_Depth, offset);
+    DC()->cacheDepth(offset);
 	s->setFloat(Shader::U_Glow, 0);
+    DC()->cacheGlow(0);
 	return TMgr;
 }
 
@@ -535,8 +626,8 @@ void instantiate_transfer_mode(struct view_data *view, short transfer_mode, worl
 				case _xfer_vertical_slide: y0= (transfer_phase<<2)&(WORLD_ONE-1); break;
 				case _xfer_reverse_fast_horizontal_slide: transfer_phase<<= 1;
 				case _xfer_reverse_horizontal_slide: x0 = WORLD_ONE - (transfer_phase<<2)&(WORLD_ONE-1); break;
-			
-		        case _xfer_reverse_fast_vertical_slide: transfer_phase<<= 1;
+
+				case _xfer_reverse_fast_vertical_slide: transfer_phase<<= 1;
 				case _xfer_reverse_vertical_slide: y0 = WORLD_ONE - (transfer_phase<<2)&(WORLD_ONE-1); break;
 
 				case _xfer_fast_wander: transfer_phase<<= 1;
@@ -606,28 +697,34 @@ bool setupGlow(struct view_data *view, std::unique_ptr<TextureManager>& TMgr, fl
 
 		TMgr->RenderGlowing();
 		setupBlendFunc(TMgr->GlowBlend());
-		glEnable(GL_TEXTURE_2D);
+		//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 		glEnable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.001);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.001); //NOT SUPPORTED ANGLE FUNCTION
 
 		s->enable();
 		if (renderStep == kGlow) {
 			s->setFloat(Shader::U_BloomScale, TMgr->GlowBloomScale());
+            DC()->cacheBloomScale(TMgr->GlowBloomScale());
 			s->setFloat(Shader::U_BloomShift, TMgr->GlowBloomShift());
+            DC()->cacheBloomShift(TMgr->GlowBloomShift());
 		}
 		s->setFloat(Shader::U_Flare, flare);
+        DC()->cacheFlare(flare);
 		s->setFloat(Shader::U_SelfLuminosity, selfLuminosity);
+        DC()->cacheSelfLuminosity(selfLuminosity);
 		s->setFloat(Shader::U_Wobble, wobble);
+        DC()->cacheWobble(wobble);
 		s->setFloat(Shader::U_Depth, offset - 1.0);
+        DC()->cacheDepth(offset - 1.0);
 		s->setFloat(Shader::U_Glow, TMgr->MinGlowIntensity());
+        DC()->cacheGlow(TMgr->MinGlowIntensity());
 		return true;
 	}
 	return false;
 }
 
-void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *window,
-	polygon_data *polygon, horizontal_surface_data *surface, bool void_present, bool ceil, RenderStep renderStep) {
+void    RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *window, polygon_data *polygon, horizontal_surface_data *surface, bool void_present, bool ceil, RenderStep renderStep) {
 
 	float offset = 0;
 
@@ -642,17 +739,19 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 	if (TMgr->IsBlended()) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(TMgr->NormalBlend());
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.001);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.001); //NOT SUPPORTED ANGLE FUNCTION
 	} else {
 		glDisable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.5);
+        
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.5); //NOT SUPPORTED ANGLE FUNCTION
 	}
 
 	if (void_present && TMgr->IsBlended()) {
 		glDisable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
+        
+		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 	}
 
 	short vertex_count = polygon->vertex_count;
@@ -675,8 +774,11 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 			T = vec3(0,1,0);
 			sign = -1;
 		}
-		glNormal3f(N[0], N[1], N[2]);
-		glMultiTexCoord4fARB(GL_TEXTURE1_ARB, T[0], T[1], T[2], sign);
+		MSI()->normal3f(N[0], N[1], N[2]);
+        
+        GLfloat tex4[4] = {T[0], T[1], T[2], sign};
+        
+		//glMultiTexCoord4f(GL_TEXTURE1, T[0], T[1], T[2], sign); //NOT SUPPORTED ANGLE FUNCTION
 
 		GLfloat vertex_array[MAXIMUM_VERTICES_PER_POLYGON * 3];
 		GLfloat texcoord_array[MAXIMUM_VERTICES_PER_POLYGON * 2];
@@ -690,7 +792,7 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 			case _xfer_2x:
 				scale = 2 * WORLD_ONE * TMgr->TileRatio();
 				break;
-		    case _xfer_4x:
+			case _xfer_4x:
 				scale = 4 * WORLD_ONE * TMgr->TileRatio();
 				break;
 			default:
@@ -720,20 +822,40 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 				*tp++ = (vertex.y + surface->origin.y + y) / scale;
 			}
 		}
-		glVertexPointer(3, GL_FLOAT, 0, vertex_array);
-		glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
+        
+		//glVertexPointer(3, GL_FLOAT, 0, vertex_array);
+		//glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
+        
+        /*glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
+        glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
+        
+        glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, vertex_array);
+        glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+        
+        glVertexAttribPointer(Shader::ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, MSI()->normals());
+        glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
 
-		glDrawArrays(GL_POLYGON, 0, vertex_count);
 
+        Shader* lastShader = lastEnabledShader();
+        if (lastShader) {
+          lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+          lastShader->setVec4(Shader::U_TexCoords4, tex4);
+        }
+        
+		glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);*/
+
+        DC()->drawSurfaceBuffered(vertex_count, vertex_array, texcoord_array, tex4);
+        
 		// see note 2 above; pulsate uniform should stay set from setupWall call
 		if (setupGlow(view, TMgr, 0, intensity, weaponFlare, selfLuminosity, offset, renderStep)) {
-			glDrawArrays(GL_POLYGON, 0, vertex_count);
+			//glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);
+            DC()->drawSurfaceBuffered(vertex_count, vertex_array, texcoord_array, tex4);
 		}
 
 		Shader::disable();
-		glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
-		glMatrixMode(GL_MODELVIEW);
+		MSI()->matrixMode(MS_TEXTURE);
+		MSI()->loadIdentity();
+		MSI()->matrixMode(MS_MODELVIEW);
 	}
 }
 
@@ -758,17 +880,22 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 	if (TMgr->IsBlended()) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(TMgr->NormalBlend());
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.001);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.001); //NOT SUPPORTED ANGLE FUNCTION
 	} else {
-		glDisable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.5);
+		//glDisable(GL_BLEND);
+        
+        glEnable(GL_BLEND); //DCW seriously, why would we ever want to not blend?
+        
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.5); //NOT SUPPORTED ANGLE FUNCTION
 	}
 
 	if (void_present && TMgr->IsBlended()) {
-		glDisable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
+		//glDisable(GL_BLEND);
+        glEnable(GL_BLEND); //DCW seriously, why would we ever want to not blend?
+        
+		//glDisable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
 	}
 
 	world_distance h= MIN(surface->h1, surface->hmax);
@@ -791,8 +918,8 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			vertex_count= 4;
 			vertices[0].z= vertices[1].z= h + view->origin.z;
 			vertices[2].z= vertices[3].z= surface->h0 + view->origin.z;
-			vertices[0].x= vertices[3].x= vertex[0].x, vertices[0].y= vertices[3].y= vertex[0].y;
-			vertices[1].x= vertices[2].x= vertex[1].x, vertices[1].y= vertices[2].y= vertex[1].y;
+            vertices[0].x= vertices[3].x= vertex[0].x; vertices[0].y= vertices[3].y= vertex[0].y; //DCW changed , to ;
+            vertices[1].x= vertices[2].x= vertex[1].x; vertices[1].y= vertices[2].y= vertex[1].y;//DCW changed , to ;
 			vertices[0].flags = vertices[3].flags = 0;
 			vertices[1].flags = vertices[2].flags = 0;
 
@@ -809,7 +936,7 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 					div = WORLD_ONE * TMgr->TileRatio();;
 					break;
 			}
-			
+
 			double dx = (surface->p1.i - surface->p0.i) / double(surface->length);
 			double dy = (surface->p1.j - surface->p0.j) / double(surface->length);
 
@@ -821,8 +948,9 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			vec3 N(-dy, dx, 0);
 			vec3 T(dx, dy, 0);
 			float sign = 1;
-			glNormal3f(N[0], N[1], N[2]);
-			glMultiTexCoord4fARB(GL_TEXTURE1_ARB, T[0], T[1], T[2], sign);
+			MSI()->normal3f(N[0], N[1], N[2]);
+            GLfloat tex4[4] = {T[0], T[1], T[2], sign};
+			//glMultiTexCoord4f(GL_TEXTURE1, tex4[0], tex4[1], tex4[2], tex4[3]); //NOT SUPPORTED ANGLE FUNCTION
 
 			world_distance x = 0.0, y = 0.0;
 			instantiate_transfer_mode(view, surface->transfer_mode, x, y);
@@ -846,19 +974,39 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 				*tp++ = (tOffset - vertices[i].z) / static_cast<float>(div);
 				*tp++ = (x0+p2) / static_cast<float>(div);
 			}
-			glVertexPointer(3, GL_FLOAT, 0, vertex_array);
-			glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
-			
-			glDrawArrays(GL_QUADS, 0, vertex_count);
+			//glVertexPointer(3, GL_FLOAT, 0, vertex_array);
+			//glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
+            /*glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
+            glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
+            
+            glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, vertex_array);
+            glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+            
+            glVertexAttribPointer(Shader::ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, MatrixStack::Instance()->normals());
+            glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
+
+            
+            Shader* lastShader = lastEnabledShader();
+            if (lastShader) {
+              lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+              lastShader->setVec4(Shader::U_TexCoords4, tex4);
+            }*/
+            
+            //These originally drew GL_QUADS with a vertex_count. If that's ever not 4, the triangle fan substitution will be bad.
+            assert(vertex_count < 5); //If we ever hit this, I will need to rewrite the below for GL_QUADS (or ignore the visial glitch?);
+            
+			//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+            DC()->drawSurfaceBuffered(vertex_count, vertex_array, texcoord_array, tex4);
 
 			if (setupGlow(view, TMgr, wobble, intensity, weaponFlare, selfLuminosity, offset, renderStep)) {
-				glDrawArrays(GL_QUADS, 0, vertex_count);
+				//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+                DC()->drawSurfaceBuffered(vertex_count, vertex_array, texcoord_array, tex4);
 			}
 
 			Shader::disable();
-			glMatrixMode(GL_TEXTURE);
-			glLoadIdentity();
-			glMatrixMode(GL_MODELVIEW);
+			MSI()->matrixMode(MS_TEXTURE);
+			MSI()->loadIdentity();
+			MSI()->matrixMode(MS_MODELVIEW);
 		}
 	}
 }
@@ -881,20 +1029,20 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		glDisable(GL_CULL_FACE);
 	}
 
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 	if (SkinPtr->OpacityType != OGL_OpacType_Crisp || RenderRectangle.transfer_mode == _tinted_transfer) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(SkinPtr->NormalBlend);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.001);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.001); //NOT SUPPORTED ANGLE FUNCTION
 	} else {
 		glDisable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.5);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.5); //NOT SUPPORTED ANGLE FUNCTION
 	}
 
 	GLfloat color[3];
-	GLdouble shade = PIN(static_cast<GLfloat>(RenderRectangle.ambient_shade)/static_cast<GLfloat>(FIXED_ONE),0,1);
+	GLfloat shade = PIN(static_cast<GLfloat>(RenderRectangle.ambient_shade)/static_cast<GLfloat>(FIXED_ONE),0,1);
 	color[0] = color[1] = color[2] = shade;
 
 	Shader *s = NULL;
@@ -906,8 +1054,8 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		} else {
 			s = Shader::get(Shader::S_InvincibleBloom);
 		}
-        s->enable();
-        s->setFloat(Shader::U_TransferFadeOut,((float)((uint16)RenderRectangle.transfer_data))/(float)((int)FIXED_ONE));
+		s->enable();
+		s->setFloat(Shader::U_TransferFadeOut,((float)((uint16)RenderRectangle.transfer_data))/(float)((int)FIXED_ONE));
 	} else if (current_player->infravision_duration) {
 		color[0] = color[1] = color[2] = 1;
 		FindInfravisionVersionRGBA(GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(RenderRectangle.ShapeDesc)), color);
@@ -927,7 +1075,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		color[2] = 0;
 	} else if (RenderRectangle.transfer_mode == _textured_transfer) {
 		if (RenderRectangle.flags & _SHADELESS_BIT) {
-			if (renderStep == kDiffuse) {
+			if (renderStep == kDiffuse || renderStep == kDiffuseDepthNoMedia) {
 				color[0] = color[1] = color[2] = 1;
 			} else {
 				color[0] = color[1] = color[2] = 0;
@@ -960,8 +1108,8 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	s->setFloat(Shader::U_Wobble, 0);
 	s->setFloat(Shader::U_Depth, 0);
 	s->setFloat(Shader::U_Glow, 0);
-	glColor4f(color[0], color[1], color[2], 1);
-
+	MSI()->color4f(color[0], color[1], color[2], 1);
+	
 	// Find an animated model's vertex positions and normals:
 	short ModelSequence = RenderRectangle.ModelSequence;
 	if (ModelSequence >= 0)
@@ -981,43 +1129,82 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	else
 		ModelPtr->Model.FindPositions_Neutral(true);	// Fallback: neutral (will do nothing for static models)
 
-	glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
-	glClientActiveTextureARB(GL_TEXTURE0_ARB);
+    s->setFloat(Shader::U_UseUniformFeatures, 1); //Choose to use the features as uniforms.
+    
+	//glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
+    glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.PosBase());
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    
+	//glClientActiveTexture(GL_TEXTURE0);
 	if (ModelPtr->Model.TxtrCoords.empty()) {
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	} else {
-		glTexCoordPointer(2,GL_FLOAT,0,ModelPtr->Model.TCBase());
+        glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, ModelPtr->Model.TCBase());
+        glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
 	}
 
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glNormalPointer(GL_FLOAT,0,ModelPtr->Model.NormBase());
-
-	glClientActiveTextureARB(GL_TEXTURE1_ARB);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glTexCoordPointer(4,GL_FLOAT,sizeof(vec4),ModelPtr->Model.TangentBase());
+	//glEnableClientState(GL_NORMAL_ARRAY);
+	//glNormalPointer(GL_FLOAT,0,ModelPtr->Model.NormBase());
+    glVertexAttribPointer(Shader::ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.NormBase());
+    glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
+    
+	//glClientActiveTexture(GL_TEXTURE1);
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
+	//glTexCoordPointer(4,GL_FLOAT,sizeof(vec4),ModelPtr->Model.TangentBase());
+    glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS4, 4, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.TangentBase());
+    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS4);
 
 	if(ModelPtr->Use(CLUT,OGL_SkinManager::Normal)) {
 		LoadModelSkin(SkinPtr->NormalImg, Collection, CLUT);
 	}
 
 	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
-		glActiveTextureARB(GL_TEXTURE1_ARB);
+		glActiveTexture(GL_TEXTURE1);
 		if(ModelPtr->Use(CLUT,OGL_SkinManager::Bump)) {
 			LoadModelSkin(SkinPtr->OffsetImg, Collection, CLUT);
 		}
 		if (!SkinPtr->OffsetImg.IsPresent()) {
 			FlatBumpTexture();
 		}
-		glActiveTextureARB(GL_TEXTURE0_ARB);
+		glActiveTexture(GL_TEXTURE0);
 	}
 
-	glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
+    Shader* lastShader = lastEnabledShader();
+    if (lastShader) {
+		GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
 
+		MatrixStack::Instance()->getFloatv(MS_MODELVIEW, modelMatrix);
+		MatrixStack::Instance()->getFloatv(MS_PROJECTION, projectionMatrix);
+		MatrixStack::Instance()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
+		MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
+		MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);
+
+		lastShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
+		lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+		lastShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
+		lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+		lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+		lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
+		lastShader->setVec4(Shader::U_FogStart, MatrixStack::Instance()->fogStart());
+		lastShader->setVec4(Shader::U_FogStart, MatrixStack::Instance()->fogEnd());
+        
+        GLfloat plane0[4], plane1[4], plane5[4];
+        MatrixStack::Instance()->getPlanev(0, plane0);
+        MatrixStack::Instance()->getPlanev(1, plane1);
+        MatrixStack::Instance()->getPlanev(5, plane5);
+        lastShader->setVec4(Shader::U_ClipPlane0, plane0);
+        lastShader->setVec4(Shader::U_ClipPlane1, plane1);
+        lastShader->setVec4(Shader::U_ClipPlane5, plane5);
+
+    }
+    
+	glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
+    
 	if (canGlow && SkinPtr->GlowImg.IsPresent()) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(SkinPtr->GlowBlend);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.001);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.001); //NOT SUPPORTED ANGLE FUNCTION
 
 		s->enable();
 		s->setFloat(Shader::U_Glow, SkinPtr->MinGlowIntensity);
@@ -1029,14 +1216,35 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		if(ModelPtr->Use(CLUT,OGL_SkinManager::Glowing)) {
 			LoadModelSkin(SkinPtr->GlowImg, Collection, CLUT);
 		}
+        
+        Shader* lastShader = lastEnabledShader();
+        if (lastShader) {
+			GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
+
+			MatrixStack::Instance()->getFloatv(MS_MODELVIEW, modelMatrix);
+			MatrixStack::Instance()->getFloatv(MS_PROJECTION, projectionMatrix);
+			MatrixStack::Instance()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
+			MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
+			MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);
+
+			lastShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
+			lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+			lastShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
+			lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+			lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+			lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
+			lastShader->setVec4(Shader::U_FogStart, MatrixStack::Instance()->fogStart());
+			lastShader->setVec4(Shader::U_FogStart, MatrixStack::Instance()->fogEnd());
+        }
+        
 		glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
 	}
 
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glClientActiveTextureARB(GL_TEXTURE0_ARB);
+	//glDisableClientState(GL_NORMAL_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
+	//glClientActiveTexture(GL_TEXTURE0);
 	if (ModelPtr->Model.TxtrCoords.empty()) {
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	}
 
 	// Restore the default render sidedness
@@ -1047,11 +1255,10 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 }
 
 void RenderRasterize_Shader::render_node_object(render_object_data *object, bool other_side_of_media, RenderStep renderStep) {
-
     if (!object->clipping_windows)
         return;
-
-	clipping_window_data *win;
+    
+    clipping_window_data *win;
 
 	// To properly handle sprites in media, we render above and below
 	// the media boundary in separate passes, just like the original
@@ -1060,13 +1267,13 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 	media_data *media = (media_index != NONE) ? get_media_data(media_index) : NULL;
 	if (media) {
 		float h = media->height;
-		GLdouble plane[] = { 0.0, 0.0, 1.0, -h };
+		GLfloat plane[] = { 0.0, 0.0, 1.0, -h };
 		if (view->under_media_boundary ^ other_side_of_media) {
 			plane[2] = -1.0;
 			plane[3] = h;
 		}
-		glClipPlane(GL_CLIP_PLANE5, plane);
-		glEnable(GL_CLIP_PLANE5);
+		MSI()->clipPlanef(5, plane);
+        MSI()->enablePlane(5);
 	} else if (other_side_of_media) {
 		// When there's no media present, we can skip the second pass.
 		return;
@@ -1078,35 +1285,40 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
         _render_node_object_helper(object, renderStep);
     }
     
-    glDisable(GL_CLIP_PLANE5);
+    MSI()->disablePlane(5);
 }
 
 void RenderRasterize_Shader::_render_node_object_helper(render_object_data *object, RenderStep renderStep) {
-
+	
+    //Rendering a node object requires a flush of the draw buffers for walls and ceilings. Someday maybe sprites won't have to flush.
+    DC()->drawAll();
+    
 	rectangle_definition& rect = object->rectangle;
 	const world_point3d& pos = rect.Position;
     
+    DC()->addDefaultLight(pos.x, pos.y, pos.z, object->object_owner_type, object->object_owner_permutation_type);
+    
 	if(rect.ModelPtr) {
-		glPushMatrix();
-		glTranslated(pos.x, pos.y, pos.z);
-		glRotated((360.0/FULL_CIRCLE)*rect.Azimuth,0,0,1);
+		MSI()->pushMatrix();
+		MSI()->translatef(pos.x, pos.y, pos.z);
+		MSI()->rotatef((360.0/FULL_CIRCLE)*rect.Azimuth,0,0,1);
 		GLfloat HorizScale = rect.Scale*rect.HorizScale;
-		glScalef(HorizScale,HorizScale,rect.Scale);
+		MSI()->scalef(HorizScale,HorizScale,rect.Scale);
 
 		short descriptor = GET_DESCRIPTOR_COLLECTION(rect.ShapeDesc);
 		short collection = GET_COLLECTION(descriptor);
 		short clut = ModifyCLUT(rect.transfer_mode,GET_COLLECTION_CLUT(descriptor));
 
 		RenderModel(rect, collection, clut, weaponFlare, selfLuminosity, renderStep);
-		glPopMatrix();
+		MSI()->popMatrix();
 		return;
 	}
 
-	glPushMatrix();
-	glTranslated(pos.x, pos.y, pos.z);
+	MSI()->pushMatrix();
+	MSI()->translatef(pos.x, pos.y, pos.z);
 
 	double yaw = view->virtual_yaw * FixedAngleToDegrees;
-	glRotated(yaw, 0.0, 0.0, 1.0);
+	MSI()->rotatef(yaw, 0.0, 0.0, 1.0);
 
 	float offset = 0;
 	if (OGL_ForceSpriteDepth()) {
@@ -1124,7 +1336,7 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 	}
 
 	auto TMgr = setupSpriteTexture(rect, OGL_Txtr_Inhabitant, offset, renderStep);
-	if (TMgr->ShapeDesc == UNONE) { glPopMatrix(); return; }
+	if (TMgr->ShapeDesc == UNONE) { MSI()->popMatrix(); return; }
 
 	float texCoords[2][2];
 
@@ -1147,12 +1359,14 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 	if(TMgr->IsBlended() || TMgr->TransferMode == _tinted_transfer) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(TMgr->NormalBlend());
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.001);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.001); //NOT SUPPORTED ANGLE FUNCTION
 	} else {
-		glDisable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.5);
+		//glDisable(GL_BLEND);
+        glEnable(GL_BLEND); //DCW seriously, why would we ever want to not blend?
+        
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.5); //NOT SUPPORTED ANGLE FUNCTION
 	}
 
 	GLfloat vertex_array[12] = {
@@ -1181,39 +1395,115 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 		texCoords[1][0]
 	};
 
-	glVertexPointer(3, GL_FLOAT, 0, vertex_array);
-	glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
+	//glVertexPointer(3, GL_FLOAT, 0, vertex_array);
+	//glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
+    
+    glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
+    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
+    
+    glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, vertex_array);
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    
+    glVertexAttribPointer(Shader::ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, MatrixStack::Instance()->normals());
+    glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
 
-	glDrawArrays(GL_QUADS, 0, 4);
+    Shader* lastShader = lastEnabledShader();
+    if (lastShader) {
+		GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
+		MatrixStack::Instance()->getFloatv(MS_MODELVIEW, modelMatrix);
+		MatrixStack::Instance()->getFloatv(MS_PROJECTION, projectionMatrix);
+		MatrixStack::Instance()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
+		MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
+		MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);
 
+		lastShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
+		lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+		lastShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
+		lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+		lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+		lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
+		lastShader->setVec4(Shader::U_FogStart, MatrixStack::Instance()->fogStart());
+		lastShader->setVec4(Shader::U_FogStart, MatrixStack::Instance()->fogEnd());
+
+
+		GLfloat plane0[4], plane1[4], plane5[4], media6[4];
+		MatrixStack::Instance()->getPlanev(0, plane0);
+		MatrixStack::Instance()->getPlanev(1, plane1);
+		MatrixStack::Instance()->getPlanev(5, plane5);
+		MatrixStack::Instance()->getPlanev(6, media6);
+		lastShader->setVec4(Shader::U_ClipPlane0, plane0);
+		lastShader->setVec4(Shader::U_ClipPlane1, plane1);
+		lastShader->setVec4(Shader::U_ClipPlane5, plane5);
+    }
+    
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    
 	if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, offset, renderStep)) {
-		glDrawArrays(GL_QUADS, 0, 4);
+        
+        glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
+        glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
+        
+        glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, vertex_array);
+        glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+        
+        glVertexAttribPointer(Shader::ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, MatrixStack::Instance()->normals());
+        glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
+        
+        lastShader = lastEnabledShader();
+        if (lastShader) {
+			GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
+			MatrixStack::Instance()->getFloatv(MS_MODELVIEW, modelMatrix);
+			MatrixStack::Instance()->getFloatv(MS_PROJECTION, projectionMatrix);
+			MatrixStack::Instance()->getFloatvInverse(MS_MODELVIEW, modelMatrixInverse);
+			MatrixStack::Instance()->getFloatvModelviewProjection(modelProjection);
+			MatrixStack::Instance()->getFloatv(MS_TEXTURE, textureMatrix);
+
+			lastShader->setMatrix4(Shader::U_ModelViewMatrix, modelMatrix);
+			lastShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjection);
+			lastShader->setMatrix4(Shader::U_ModelViewMatrixInverse, modelMatrixInverse);
+			lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+			lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+			lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
+			lastShader->setVec4(Shader::U_FogStart, MatrixStack::Instance()->fogStart());
+			lastShader->setVec4(Shader::U_FogStart, MatrixStack::Instance()->fogEnd());
+
+
+			GLfloat plane0[4], plane1[4], plane5[4], media6[4];
+			MatrixStack::Instance()->getPlanev(0, plane0);
+			MatrixStack::Instance()->getPlanev(1, plane1);
+			MatrixStack::Instance()->getPlanev(5, plane5);
+			MatrixStack::Instance()->getPlanev(6, media6);
+			lastShader->setVec4(Shader::U_ClipPlane0, plane0);
+			lastShader->setVec4(Shader::U_ClipPlane1, plane1);
+			lastShader->setVec4(Shader::U_ClipPlane5, plane5);
+        }
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	}
         
 	glEnable(GL_DEPTH_TEST);
-	glPopMatrix();
+	MSI()->popMatrix();
 	Shader::disable();
 	TMgr->RestoreTextureMatrix();
 }
 
 extern void position_sprite_axis(short *x0, short *x1, short scale_width, short screen_width, short positioning_mode, _fixed position, bool flip, world_distance world_left, world_distance world_right);
 
-extern GLdouble Screen_2_Clip[16];
+extern GLfloat Screen_2_Clip[16];
 
 void RenderRasterize_Shader::render_viewer_sprite_layer(RenderStep renderStep)
 {
         if (!view->show_weapons_in_hand) return;
     
-        glMatrixMode(GL_TEXTURE);
-        glPushMatrix();
+        MSI()->matrixMode(MS_TEXTURE);
+        MSI()->pushMatrix();
     
-        glMatrixMode(GL_PROJECTION);
-        glPushMatrix();
-        glLoadMatrixd(Screen_2_Clip);
+        MSI()->matrixMode(MS_PROJECTION);
+        MSI()->pushMatrix();
+        MSI()->loadMatrixf(Screen_2_Clip);
 
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        glLoadIdentity();
+        MSI()->matrixMode(MS_MODELVIEW);
+        MSI()->pushMatrix();
+        MSI()->loadIdentity();
 
         rectangle_definition rect;
 	weapon_display_information display_data;
@@ -1282,21 +1572,21 @@ void RenderRasterize_Shader::render_viewer_sprite_layer(RenderStep renderStep)
 
         Shader::disable();
     
-        glPopMatrix();
+        MSI()->popMatrix();
 
-        glMatrixMode(GL_PROJECTION);
-        glPopMatrix();
+        MSI()->matrixMode(MS_PROJECTION);
+        MSI()->popMatrix();
 
-        glMatrixMode(GL_TEXTURE);
-        glPopMatrix();
+        MSI()->matrixMode(MS_TEXTURE);
+        MSI()->popMatrix();
     
-        glMatrixMode(GL_MODELVIEW);
+        MSI()->matrixMode(MS_MODELVIEW);
 }
 
 struct ExtendedVertexData
 {
-	GLdouble Vertex[4];
-	GLdouble TexCoord[2];
+	GLfloat Vertex[4];
+	GLfloat TexCoord[2];
 	GLfloat Color[3];
 	GLfloat GlowColor[3];
 };
@@ -1331,10 +1621,10 @@ void RenderRasterize_Shader::render_viewer_sprite(rectangle_definition& RenderRe
 	// Calculate the texture coordinates;
 	// the scanline direction is downward, (texture coordinate 0)
 	// while the line-to-line direction is rightward (texture coordinate 1)
-	GLdouble U_Scale = TMgr->U_Scale/(RenderRectangle.y1 - RenderRectangle.y0);
-	GLdouble V_Scale = TMgr->V_Scale/(RenderRectangle.x1 - RenderRectangle.x0);
-	GLdouble U_Offset = TMgr->U_Offset;
-	GLdouble V_Offset = TMgr->V_Offset;
+	GLfloat U_Scale = TMgr->U_Scale/(RenderRectangle.y1 - RenderRectangle.y0);
+	GLfloat V_Scale = TMgr->V_Scale/(RenderRectangle.x1 - RenderRectangle.x0);
+	GLfloat U_Offset = TMgr->U_Offset;
+	GLfloat V_Offset = TMgr->V_Offset;
 	
 	if (RenderRectangle.flip_vertical)
 	{
@@ -1367,29 +1657,57 @@ void RenderRasterize_Shader::render_viewer_sprite(rectangle_definition& RenderRe
 	ExtendedVertexList[3].TexCoord[0] = ExtendedVertexList[2].TexCoord[0];
 	ExtendedVertexList[3].TexCoord[1] = ExtendedVertexList[0].TexCoord[1];
 
-        if(TMgr->IsBlended() || TMgr->TransferMode == _tinted_transfer) {
+    if(TMgr->IsBlended() || TMgr->TransferMode == _tinted_transfer) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(TMgr->NormalBlend());
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.001);
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.001); //NOT SUPPORTED ANGLE FUNCTION
 	} else {
-		glDisable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.5);
+		//glDisable(GL_BLEND);
+        glEnable(GL_BLEND); //DCW seriously, why would we ever want to not blend?
+        
+		//glEnable(GL_ALPHA_TEST); //NOT SUPPORTED ANGLE ENUM
+		//glAlphaFunc(GL_GREATER, 0.5); //NOT SUPPORTED ANGLE FUNCTION
 	}
 
-        glDisable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
 
 	// Location of data:
-	glVertexPointer(3,GL_DOUBLE,sizeof(ExtendedVertexData),ExtendedVertexList[0].Vertex);
-	glTexCoordPointer(2,GL_DOUBLE,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
-	glEnable(GL_TEXTURE_2D);
+	GLfloat modelProjectionMatrix[16], textureMatrix[16];
+    Shader *theShader = lastEnabledShader();
+    
+    glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, sizeof(ExtendedVertexData), ExtendedVertexList[0].TexCoord);
+    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
+    
+    glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, sizeof(ExtendedVertexData), ExtendedVertexList[0].Vertex);
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    
+    MatrixStack::Instance()->getFloatvModelviewProjection(modelProjectionMatrix);
+    MatrixStack::Instance()->getFloatv(MS_TEXTURE_MATRIX, textureMatrix);
+    
+    theShader->setMatrix4(Shader::U_ModelViewProjectionMatrix, modelProjectionMatrix);
+    theShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
+    theShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+    
+    GLfloat plane0[4], plane1[4], plane5[4];
+    MatrixStack::Instance()->getPlanev(0, plane0);
+    MatrixStack::Instance()->getPlanev(1, plane1);
+    MatrixStack::Instance()->getPlanev(5, plane5);
+    theShader->setVec4(Shader::U_ClipPlane0, plane0);
+    theShader->setVec4(Shader::U_ClipPlane1, plane1);
+    theShader->setVec4(Shader::U_ClipPlane5, plane5);
+    
+    //If invincibility in M1 is not blending, try uncommenting this out:
+    //glEnable(GL_BLEND);
+    
+	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 		
 	// Go!
-        glDrawArrays(GL_POLYGON,0,4);
+        glDrawArrays(GL_TRIANGLE_FAN,0,4);
 
         if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, 0, renderStep)) {
-            glDrawArrays(GL_QUADS, 0, 4);
+            //DCW I don't know about changing this to a triangle fan...  was originally glDrawArrays(GL_QUADS, 0, 4);
+            glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	}
 	
 	glEnable(GL_DEPTH_TEST);

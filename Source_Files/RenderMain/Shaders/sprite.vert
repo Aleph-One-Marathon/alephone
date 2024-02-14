@@ -1,20 +1,33 @@
 R"(
 
+uniform mat4 MS_ModelViewProjectionMatrix;
+uniform mat4 MS_ModelViewMatrix;
+uniform mat4 MS_ModelViewMatrixInverse;
+uniform mat4 MS_TextureMatrix;
+uniform vec4 uColor;
+uniform vec4 uFogColor;
 uniform float depth;
 uniform float strictDepthMode;
+attribute vec4 vPosition;
+attribute vec2 vTexCoord;
+varying vec2 textureUV;
+varying vec4 fogColor;
 varying vec3 viewDir;
 varying vec4 vertexColor;
+varying float FDxLOG2E;
 varying float classicDepth;
+varying vec4 vPosition_eyespace;
 void main(void) {
-	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-	classicDepth = gl_Position.z / 8192.0;
-#ifndef DISABLE_CLIP_VERTEX
-	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;
-#endif
-	vec4 v = gl_ModelViewMatrixInverse * vec4(0.0, 0.0, 0.0, 1.0);
-	viewDir = (gl_Vertex - v).xyz;
-	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;
-	vertexColor = gl_Color;
+    vPosition_eyespace = MS_ModelViewMatrix * vPosition;
+    gl_Position = MS_ModelViewProjectionMatrix * vPosition;
+    classicDepth = gl_Position.z / 8192.0;
+    vec4 v = MS_ModelViewMatrixInverse * vec4(0.0, 0.0, 0.0, 1.0);
+    viewDir = (vPosition - v).xyz;
+    vec4 UV4 = vec4(vTexCoord.x, vTexCoord.y, 0.0, 1.0);           //DCW shitty attempt to stuff texUV into a vec4
+    textureUV = (MS_TextureMatrix * UV4).xy;
+    vertexColor = uColor;
+    FDxLOG2E = -uFogColor.a * 1.442695;
+    fogColor = uFogColor;
 }
 
 )"

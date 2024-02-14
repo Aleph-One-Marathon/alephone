@@ -52,48 +52,6 @@
             ReferencedContainer = "container:AlephOne.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <EnvironmentVariables>
-         <EnvironmentVariable
-            key = "METAL_ERROR_CHECK_EXTENDED_MODE"
-            value = "4"
-            isEnabled = "NO">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "METAL_DEVICE_WRAPPER_TYPE"
-            value = "1"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "METAL_ERROR_MODE"
-            value = "5"
-            isEnabled = "NO">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "METAL_DEBUG_MODE"
-            value = "5"
-            isEnabled = "NO">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "ANGLE_ENABLE_DEBUG_MARKERS"
-            value = "1"
-            isEnabled = "NO">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "ANGLE_METAL_FRAME_CAPTURE"
-            value = "1"
-            isEnabled = "NO">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "ANGLE_CAPTURE_ENABLED"
-            value = "1"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "ANGLE_DEFAULT_PLATFORM"
-            value = "metal"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

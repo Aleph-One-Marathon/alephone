@@ -54,7 +54,7 @@ struct render_object_data
     
         //Hints to feed dynamic lighting
     short object_owner_type; //_object_is_projectile or _object_is_projectile.
-    short object_owner_permutation_type; //If defined, 
+    short object_owner_permutation_type; //If defined, will be the specific object type
 };
 
 
@@ -80,6 +80,7 @@ class RenderPlaceObjsClass
 		
 	bool add_object_to_sorted_nodes(
 		object_data* object,
+		short object_index,
 		_fixed floor_intensity,
 		_fixed ceiling_intensity,
 		float Opacity);

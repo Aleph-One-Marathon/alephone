@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1240"
+   LastUpgradeVersion = "1330"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "AEC3C6FE09AD68AC003258E4"
-               BuildableName = "Aleph One.app"
-               BlueprintName = "Aleph One"
+               BlueprintIdentifier = "AEFD85E813EB84CF00C1E687"
+               BuildableName = "Marathon.app"
+               BlueprintName = "Marathon"
                ReferencedContainer = "container:AlephOne.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -39,84 +39,40 @@
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "NO"
       debugServiceExtension = "internal"
-      enableGPUFrameCaptureMode = "1"
-      enableGPUValidationMode = "1"
       allowLocationSimulation = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AEC3C6FE09AD68AC003258E4"
-            BuildableName = "Aleph One.app"
-            BlueprintName = "Aleph One"
+            BlueprintIdentifier = "AEFD85E813EB84CF00C1E687"
+            BuildableName = "Marathon.app"
+            BlueprintName = "Marathon"
             ReferencedContainer = "container:AlephOne.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <EnvironmentVariables>
-         <EnvironmentVariable
-            key = "METAL_ERROR_CHECK_EXTENDED_MODE"
-            value = "4"
-            isEnabled = "NO">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "METAL_DEVICE_WRAPPER_TYPE"
-            value = "1"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "METAL_ERROR_MODE"
-            value = "5"
-            isEnabled = "NO">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "METAL_DEBUG_MODE"
-            value = "5"
-            isEnabled = "NO">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "ANGLE_ENABLE_DEBUG_MARKERS"
-            value = "1"
-            isEnabled = "NO">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "ANGLE_METAL_FRAME_CAPTURE"
-            value = "1"
-            isEnabled = "NO">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "ANGLE_CAPTURE_ENABLED"
-            value = "1"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "ANGLE_DEFAULT_PLATFORM"
-            value = "metal"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
-      debugDocumentVersioning = "NO">
+      debugDocumentVersioning = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AEC3C6FE09AD68AC003258E4"
-            BuildableName = "Aleph One.app"
-            BlueprintName = "Aleph One"
+            BlueprintIdentifier = "AEFD85E813EB84CF00C1E687"
+            BuildableName = "Marathon.app"
+            BlueprintName = "Marathon"
             ReferencedContainer = "container:AlephOne.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
-      buildConfiguration = "Release">
+      buildConfiguration = "Debug">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "Deployment (Universal)"
+      buildConfiguration = "Release"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>
