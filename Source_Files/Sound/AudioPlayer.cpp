@@ -88,6 +88,7 @@ void AudioPlayer::Rewind() {
 }
 
 bool AudioPlayer::IsPlaying() const {
+	if (!audio_source) return false;
 	ALint state;
 	alGetSourcei(audio_source->source_id, AL_SOURCE_STATE, &state);
 	return state == AL_PLAYING || state == AL_PAUSED; //underrun source is considered as playing
