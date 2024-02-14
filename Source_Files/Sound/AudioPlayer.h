@@ -98,6 +98,7 @@ protected:
     void Init(int rate, bool stereo, AudioFormat audioFormat);
     virtual int GetNextData(uint8* data, int length) = 0;
     virtual bool LoadParametersUpdates() { return false; }
+    bool IsPlaying() const;
     std::atomic_bool rewind_signal = { false };
     std::atomic_bool stop_signal = { false };
     std::atomic_bool is_active = { true };

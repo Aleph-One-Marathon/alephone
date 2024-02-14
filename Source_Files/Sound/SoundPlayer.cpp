@@ -75,7 +75,7 @@ void SoundPlayer::AskRewind(const SoundParameters& soundParameters, const Sound&
 
 void SoundPlayer::Rewind() {
 
-	if (!CanRewind(start_tick)) {
+	if (!CanRewind(start_tick) && (current_index_data > 0 || IsPlaying())) { //if a sound hasn't started playing yet, it's ok to replace it
 		rewind_signal = false;
 		return;
 	}

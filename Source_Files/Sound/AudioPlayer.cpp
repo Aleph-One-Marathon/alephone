@@ -87,17 +87,18 @@ void AudioPlayer::Rewind() {
 	rewind_signal = false;
 }
 
+bool AudioPlayer::IsPlaying() const {
+	ALint state;
+	alGetSourcei(audio_source->source_id, AL_SOURCE_STATE, &state);
+	return state == AL_PLAYING || state == AL_PAUSED; //underrun source is considered as playing
+}
+
 bool AudioPlayer::Play() {
 
 	FillBuffers();
-	ALint state;
 
-	//Get relevant source info 
-	alGetSourcei(audio_source->source_id, AL_SOURCE_STATE, &state);
+	if (!IsPlaying()) {
 
-	//Make sure the source hasn't underrun 
-	if (state != AL_PLAYING && state != AL_PAUSED)
-	{
 		ALint queued;
 
 		//If no buffers are queued, playback is finished 
