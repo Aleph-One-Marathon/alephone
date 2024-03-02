@@ -893,6 +893,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 #ifdef HAVE_OPENGL
 
 #ifdef        __APPLE__
+		
+		setenv("ANGLE_DEFAULT_PLATFORM", "metal", 0); //If we don't specify this, ANGLE will probably try to use the OpenGL backend (which is super slow)
+		
         SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
@@ -922,7 +925,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
 		SDL_SetHint(SDL_HINT_VIDEO_WIN_D3DCOMPILER, "none");
 #endif
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 		if (Get_OGL_ConfigureData().Multisamples > 0) {
