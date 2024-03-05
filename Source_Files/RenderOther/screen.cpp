@@ -294,7 +294,8 @@ void Screen::Initialize(screen_mode_data* mode)
 	screen_mode = *mode;
 	change_screen_mode(&screen_mode, true);
 	screen_initialized = true;
-
+	
+	SDL_GL_SetSwapInterval(0); //Set default to no vsync like legacy OpenGL, unless player requests it (they really should).
 }
 
 int Screen::height()
