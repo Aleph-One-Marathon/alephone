@@ -59,7 +59,7 @@ void DrawCache::growGeometryList() {
 	if(current_geometry_list_size == 0) {
 		current_geometry_list_size = 8196;
 	} else {
-		drawAndResetBuffer(0);
+		drawAll();
 		free(geometry);
 		current_geometry_list_size *= 2;
 	}
@@ -72,7 +72,7 @@ void DrawCache::growIndexList() {
 	if(current_index_list_size == 0) {
 		current_index_list_size = 8196;
 	} else {
-		drawAndResetBuffer(0);
+		drawAll();
 		free(indices);
 		current_index_list_size *= 2;
 	}
@@ -85,7 +85,7 @@ void DrawCache::growVertexLists() {
 	if(current_vertex_list_size == 0) {
 		current_vertex_list_size = 8196;
 	} else {
-		drawAndResetBuffer(0);
+		drawAll();
 		free(vertexArray);
 		free(texcoordArray);
 		free(normalArray);
@@ -101,10 +101,6 @@ void DrawCache::growVertexLists() {
 	texCoords4 = (GLfloat*)malloc(sizeof(GLfloat) * current_vertex_list_size * 4);
 
 	verticesFilled = 0;
-}
-
-void DrawCache::drawAll() {
-    drawAndResetBuffer(0);
 }
 
 void DrawCache::startGatheringLights() {
@@ -393,11 +389,11 @@ void DrawCache::addGeometry(int vertex_count, GLfloat *vertex_array, GLfloat *te
     verticesFilled += vertex_count;
 	geometryFilled ++;
 	
-	//drawAndResetBuffer(0); //DCW DESTRUCTIVE TEST
+	//drawAll(); //DCW DESTRUCTIVE TEST
 }
 
 
-void DrawCache::drawAndResetBuffer(int index) {
+void DrawCache::drawAll() {
 	glGenBuffers(NUM_VBOS, vboIDs);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, vboIDs[TEXCOORDARRAY_VBO]);
