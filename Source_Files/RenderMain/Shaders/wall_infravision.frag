@@ -7,14 +7,14 @@ uniform float fogMode;
 uniform float fogStart;
 uniform float fogEnd;
 
-varying highp vec4 fogColor;
+uniform float pulsate;
+uniform float wobble;
+uniform vec4 clipPlane0;
+uniform vec4 clipPlane1;
+uniform vec4 clipPlane5;
+
+varying vec4 fogColor;
 varying vec2 textureUV;
-varying vec4 fSxOxSyOy;
-varying vec4 fBsBtFlSl;
-varying vec4 fPuWoDeGl;
-varying vec4 fClipPlane0;
-varying vec4 fClipPlane1;
-varying vec4 fClipPlane5;
 varying vec3 viewXY;
 varying vec3 viewDir;
 varying vec4 vertexColor;
@@ -36,12 +36,9 @@ float getFogFactor(float distance) {
 
 void main (void) {
 	bool unwantedFragment = false;
-	if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {discard;}
-	if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}
-	if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {discard;}
-
-	float pulsate = fPuWoDeGl.x;
-	float wobble = fPuWoDeGl.y;
+	if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {discard;}
+	if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {discard;}
+	if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {discard;}
 	
 	// infravision sees right through fog, and see textures at full intensity
 	vec3 texCoords = vec3(textureUV.xy, 0.0);

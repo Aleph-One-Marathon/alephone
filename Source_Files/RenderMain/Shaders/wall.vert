@@ -5,7 +5,6 @@ uniform mat4 MS_ModelViewMatrix;
 uniform mat4 MS_ModelViewMatrixInverse;
 uniform mat4 MS_TextureMatrix;
 
-uniform float useUniformFeatures; //Flag indicating whether to use the features as uniforms (such as for 3d models), or per-vertex attributes (normal walls).
 uniform vec4 clipPlane0;
 uniform vec4 clipPlane1;
 uniform vec4 clipPlane5;
@@ -17,30 +16,17 @@ uniform float selfLuminosity;
 uniform float pulsate;
 uniform float wobble;
 uniform float glow;
-
+uniform float depth;
 uniform vec4 uFogColor;
+
 attribute vec2 vTexCoord;
 attribute vec3 vNormal;
 attribute vec4 vPosition;
 attribute vec4 vColor;
 attribute vec4 vTexCoord4;
-attribute vec4 vClipPlane0;
-attribute vec4 vClipPlane1;
-attribute vec4 vClipPlane5;
-attribute vec4 vSxOxSyOy;
-attribute vec4 vBsBtFlSl;
-attribute vec4 vPuWoDeGl;
-
-varying vec4 fSxOxSyOy;
-varying vec4 fBsBtFlSl;
-varying vec4 fPuWoDeGl;
-varying vec4 fClipPlane0;
-varying vec4 fClipPlane1;
-varying vec4 fClipPlane5;
 
 varying vec2 textureUV2;
 varying vec2 textureUV;
-varying vec4 fogColor;
 varying vec3 viewXY;
 varying vec3 viewDir;
 varying vec4 vertexColor;
@@ -49,6 +35,7 @@ varying float classicDepth;
 varying mat3 tbnMatrix;
 varying vec4 vPosition_eyespace;
 varying vec3 eyespaceNormal;
+varying vec4 fogColor;
 
 highp mat4 transpose(in highp mat4 inMatrix) {  //I have not tested this.
     highp vec4 i0 = inMatrix[0];
@@ -69,7 +56,6 @@ highp mat4 transpose(in highp mat4 inMatrix) {  //I have not tested this.
 void main(void) {
     vPosition_eyespace = MS_ModelViewMatrix * vPosition;
     gl_Position  = MS_ModelViewProjectionMatrix * vPosition;
-    float depth = vPuWoDeGl.z;
     gl_Position.z = gl_Position.z + depth*gl_Position.z/65536.0;
     classicDepth = gl_Position.z / 8192.0;
 	
@@ -94,28 +80,7 @@ void main(void) {
     vertexColor = vColor;
     FDxLOG2E = -uFogColor.a * 1.442695;
     fogColor = uFogColor;
-    if( useUniformFeatures > 0.5 ) {
-       fClipPlane0 = clipPlane0;
-       fClipPlane0 = clipPlane1;
-       fClipPlane0 = clipPlane5;
-       vertexColor = uColor;
-       fBsBtFlSl.x = bloomScale;
-       fBsBtFlSl.y = bloomShift;
-       fBsBtFlSl.z = flare;
-       fBsBtFlSl.w = selfLuminosity;
-       fPuWoDeGl.x = pulsate;
-       fPuWoDeGl.y = wobble;
-       fPuWoDeGl.z = depth;
-       fPuWoDeGl.w = glow;
-    } else {
-       fClipPlane0 = vClipPlane0;
-       fClipPlane1 = vClipPlane1;
-       fClipPlane5 = vClipPlane5;
-       vertexColor = vColor;
-       fSxOxSyOy = vSxOxSyOy;
-       fBsBtFlSl = vBsBtFlSl;
-       fPuWoDeGl = vPuWoDeGl;
-   }
+ 
     eyespaceNormal = vec3(MS_ModelViewMatrix * vec4(vNormal, 0.0));
 }
 

@@ -237,7 +237,7 @@ void RenderRasterize_Shader::render_tree() {
     Shader::get(Shader::S_BumpBloom)->enableAndSetStandardUniforms();
     Shader::disable();
 
-        //Needed for ripple, SSAO, SSR.
+        //Buffer test for for ripple, SSAO, SSR. DO NOT USE. Just a demo.
     if(0) { //Should be a prefences check later
         if (colorDepthSansMedia._h == 0 && colorDepthSansMedia._w == 0) {
           GLint viewPort[4];
@@ -262,10 +262,11 @@ void RenderRasterize_Shader::render_tree() {
     }
     
 	RenderRasterizerClass::render_tree(kDiffuse);
-    DC()->drawAll(); //Draw and flush buffers
-    
+    //DC()->drawAll(); //Draw and flush buffers
+	Shader::disable(); //For some reason, the screen goes a solid color if we don't do this here or in render_viewer_sprite_layer
+	
     render_viewer_sprite_layer(kDiffuse);
-    DC()->drawAll(); //Draw and flush buffers
+	DC()->drawAll(); //Draw and flush buffers
     
 	if (current_player->infravision_duration == 0 &&
 		TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur) &&
@@ -281,9 +282,10 @@ void RenderRasterize_Shader::render_tree() {
             
             RenderRasterizerClass::render_tree(kGlow);
             DC()->finishGatheringLights();
-            DC()->drawAll(); //Draw and flush buffers
+            //DC()->drawAll(); //Draw and flush buffers
             render_viewer_sprite_layer(kGlow);
             DC()->drawAll(); //Draw and flush buffers
+		
 		blur->end();
 		RasPtr->swapper->deactivate();
 		blur->draw(*RasPtr->swapper);
@@ -443,18 +445,28 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 	TMgr->SetupTextureMatrix();
 
 	if (renderStep == kGlow) {
-		s->setFloat(Shader::U_BloomScale, TMgr->BloomScale());
-		s->setFloat(Shader::U_BloomShift, TMgr->BloomShift());
+		//s->setFloat(Shader::U_BloomScale, TMgr->BloomScale());
+		//s->setFloat(Shader::U_BloomShift, TMgr->BloomShift());
+		DC()->cacheBloomScale(TMgr->BloomScale());
+		DC()->cacheBloomShift(TMgr->BloomShift());
 	}
-	s->setFloat(Shader::U_Flare, flare);
+	/*s->setFloat(Shader::U_Flare, flare);
 	s->setFloat(Shader::U_SelfLuminosity, selfLuminosity);
 	s->setFloat(Shader::U_Pulsate, 0);
 	s->setFloat(Shader::U_Wobble, 0);
 	s->setFloat(Shader::U_Depth, offset);
 	s->setFloat(Shader::U_StrictDepthMode, OGL_ForceSpriteDepth() ? 1 : 0);
-	s->setFloat(Shader::U_Glow, 0);
+	s->setFloat(Shader::U_Glow, 0);*/
 	MSI()->color4f(color[0], color[1], color[2], 1);
-    s->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+    //s->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
+	DC()->cacheFlare(flare);
+	DC()->cacheSelfLuminosity(selfLuminosity);
+	DC()->cachePulsate(0);
+	DC()->cacheWobble(0);
+	DC()->cacheDepth(offset);
+	DC()->cacheStrictDepthMode(OGL_ForceSpriteDepth() ? 1 : 0);
+	DC()->cacheGlow(0);
+
 	return TMgr;
 }
 
@@ -577,26 +589,26 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 
 	if (renderStep == kGlow) {
 		if (TMgr->TextureType == OGL_Txtr_Landscape) {
-			s->setFloat(Shader::U_BloomScale, TMgr->LandscapeBloom());
+			//s->setFloat(Shader::U_BloomScale, TMgr->LandscapeBloom());
             DC()->cacheBloomScale(TMgr->LandscapeBloom());
 		} else {
-			s->setFloat(Shader::U_BloomScale, TMgr->BloomScale());
+			//s->setFloat(Shader::U_BloomScale, TMgr->BloomScale());
             DC()->cacheBloomScale(TMgr->BloomScale());
-			s->setFloat(Shader::U_BloomShift, TMgr->BloomShift());
+			//s->setFloat(Shader::U_BloomShift, TMgr->BloomShift());
             DC()->cacheBloomShift(TMgr->BloomShift());
 		}
 	}
-	s->setFloat(Shader::U_Flare, flare);
+	//s->setFloat(Shader::U_Flare, flare);
     DC()->cacheFlare(flare);
-	s->setFloat(Shader::U_SelfLuminosity, selfLuminosity);
+	//s->setFloat(Shader::U_SelfLuminosity, selfLuminosity);
     DC()->cacheSelfLuminosity(selfLuminosity);
-	s->setFloat(Shader::U_Pulsate, pulsate);
+	//s->setFloat(Shader::U_Pulsate, pulsate);
     DC()->cachePulsate(pulsate);
-	s->setFloat(Shader::U_Wobble, wobble);
+	//s->setFloat(Shader::U_Wobble, wobble);
     DC()->cacheWobble(wobble);
-	s->setFloat(Shader::U_Depth, offset);
+	//s->setFloat(Shader::U_Depth, offset);
     DC()->cacheDepth(offset);
-	s->setFloat(Shader::U_Glow, 0);
+	//s->setFloat(Shader::U_Glow, 0);
     DC()->cacheGlow(0);
 	return TMgr;
 }
@@ -704,20 +716,20 @@ bool setupGlow(struct view_data *view, std::unique_ptr<TextureManager>& TMgr, fl
 
 		s->enable();
 		if (renderStep == kGlow) {
-			s->setFloat(Shader::U_BloomScale, TMgr->GlowBloomScale());
+			//s->setFloat(Shader::U_BloomScale, TMgr->GlowBloomScale());
             DC()->cacheBloomScale(TMgr->GlowBloomScale());
-			s->setFloat(Shader::U_BloomShift, TMgr->GlowBloomShift());
+			//s->setFloat(Shader::U_BloomShift, TMgr->GlowBloomShift());
             DC()->cacheBloomShift(TMgr->GlowBloomShift());
 		}
-		s->setFloat(Shader::U_Flare, flare);
+		//s->setFloat(Shader::U_Flare, flare);
         DC()->cacheFlare(flare);
-		s->setFloat(Shader::U_SelfLuminosity, selfLuminosity);
+		//s->setFloat(Shader::U_SelfLuminosity, selfLuminosity);
         DC()->cacheSelfLuminosity(selfLuminosity);
-		s->setFloat(Shader::U_Wobble, wobble);
+		//s->setFloat(Shader::U_Wobble, wobble);
         DC()->cacheWobble(wobble);
-		s->setFloat(Shader::U_Depth, offset - 1.0);
+		//s->setFloat(Shader::U_Depth, offset - 1.0);
         DC()->cacheDepth(offset - 1.0);
-		s->setFloat(Shader::U_Glow, TMgr->MinGlowIntensity());
+		//s->setFloat(Shader::U_Glow, TMgr->MinGlowIntensity());
         DC()->cacheGlow(TMgr->MinGlowIntensity());
 		return true;
 	}
@@ -844,12 +856,12 @@ void    RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_dat
         
 		glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);*/
 
-        DC()->drawSurfaceBuffered(vertex_count, vertex_array, texcoord_array, tex4);
+        DC()->addGeometry(vertex_count, vertex_array, texcoord_array, tex4);
         
 		// see note 2 above; pulsate uniform should stay set from setupWall call
 		if (setupGlow(view, TMgr, 0, intensity, weaponFlare, selfLuminosity, offset, renderStep)) {
 			//glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);
-            DC()->drawSurfaceBuffered(vertex_count, vertex_array, texcoord_array, tex4);
+            DC()->addGeometry(vertex_count, vertex_array, texcoord_array, tex4);
 		}
 
 		Shader::disable();
@@ -996,11 +1008,11 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
             assert(vertex_count < 5); //If we ever hit this, I will need to rewrite the below for GL_QUADS (or ignore the visial glitch?);
             
 			//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-            DC()->drawSurfaceBuffered(vertex_count, vertex_array, texcoord_array, tex4);
+            DC()->addGeometry(vertex_count, vertex_array, texcoord_array, tex4);
 
 			if (setupGlow(view, TMgr, wobble, intensity, weaponFlare, selfLuminosity, offset, renderStep)) {
 				//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-                DC()->drawSurfaceBuffered(vertex_count, vertex_array, texcoord_array, tex4);
+                DC()->addGeometry(vertex_count, vertex_array, texcoord_array, tex4);
 			}
 
 			Shader::disable();
@@ -1128,8 +1140,6 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	}
 	else
 		ModelPtr->Model.FindPositions_Neutral(true);	// Fallback: neutral (will do nothing for static models)
-
-    s->setFloat(Shader::U_UseUniformFeatures, 1); //Choose to use the features as uniforms.
     
 	//glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
     glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.PosBase());
@@ -1288,11 +1298,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
     MSI()->disablePlane(5);
 }
 
-void RenderRasterize_Shader::_render_node_object_helper(render_object_data *object, RenderStep renderStep) {
-	
-    //Rendering a node object requires a flush of the draw buffers for walls and ceilings. Someday maybe sprites won't have to flush.
-    DC()->drawAll();
-    
+void RenderRasterize_Shader::_render_node_object_helper(render_object_data *object, RenderStep renderStep) {	
 	rectangle_definition& rect = object->rectangle;
 	const world_point3d& pos = rect.Position;
     
@@ -1398,16 +1404,17 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 	//glVertexPointer(3, GL_FLOAT, 0, vertex_array);
 	//glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
     
-    glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
+    /*glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
     glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
     
     glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, vertex_array);
     glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
     
     glVertexAttribPointer(Shader::ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, MatrixStack::Instance()->normals());
-    glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
+    glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);*/
 
     Shader* lastShader = lastEnabledShader();
+	/*
     if (lastShader) {
 		GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
 		MatrixStack::Instance()->getFloatv(MS_MODELVIEW, modelMatrix);
@@ -1434,13 +1441,14 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 		lastShader->setVec4(Shader::U_ClipPlane0, plane0);
 		lastShader->setVec4(Shader::U_ClipPlane1, plane1);
 		lastShader->setVec4(Shader::U_ClipPlane5, plane5);
-    }
+    }*/
     
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-    
+	//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	DC()->addGeometry(4, vertex_array, texcoord_array, NULL);
+	
 	if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, offset, renderStep)) {
         
-        glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
+        /*glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, texcoord_array);
         glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
         
         glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, vertex_array);
@@ -1477,7 +1485,9 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 			lastShader->setVec4(Shader::U_ClipPlane1, plane1);
 			lastShader->setVec4(Shader::U_ClipPlane5, plane5);
         }
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);*/
+		
+		DC()->addGeometry(4, vertex_array, texcoord_array, NULL);
 	}
         
 	glEnable(GL_DEPTH_TEST);
@@ -1673,7 +1683,7 @@ void RenderRasterize_Shader::render_viewer_sprite(rectangle_definition& RenderRe
     glDisable(GL_DEPTH_TEST);
 
 	// Location of data:
-	GLfloat modelProjectionMatrix[16], textureMatrix[16];
+	/*GLfloat modelProjectionMatrix[16], textureMatrix[16];
     Shader *theShader = lastEnabledShader();
     
     glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, sizeof(ExtendedVertexData), ExtendedVertexList[0].TexCoord);
@@ -1681,7 +1691,7 @@ void RenderRasterize_Shader::render_viewer_sprite(rectangle_definition& RenderRe
     
     glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, sizeof(ExtendedVertexData), ExtendedVertexList[0].Vertex);
     glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
-    
+	
     MatrixStack::Instance()->getFloatvModelviewProjection(modelProjectionMatrix);
     MatrixStack::Instance()->getFloatv(MS_TEXTURE_MATRIX, textureMatrix);
     
@@ -1695,7 +1705,7 @@ void RenderRasterize_Shader::render_viewer_sprite(rectangle_definition& RenderRe
     MatrixStack::Instance()->getPlanev(5, plane5);
     theShader->setVec4(Shader::U_ClipPlane0, plane0);
     theShader->setVec4(Shader::U_ClipPlane1, plane1);
-    theShader->setVec4(Shader::U_ClipPlane5, plane5);
+    theShader->setVec4(Shader::U_ClipPlane5, plane5);*/
     
     //If invincibility in M1 is not blending, try uncommenting this out:
     //glEnable(GL_BLEND);
@@ -1703,15 +1713,25 @@ void RenderRasterize_Shader::render_viewer_sprite(rectangle_definition& RenderRe
 	//glEnable(GL_TEXTURE_2D); //NOT SUPPORTED ANGLE ENUM
 		
 	// Go!
-        glDrawArrays(GL_TRIANGLE_FAN,0,4);
-
+        //glDrawArrays(GL_TRIANGLE_FAN,0,4); //This will no longer work since we've changed vertexColor = vColor; in the vert shader.
+	
+	//Re-pack vertex and texture data because the new draw operation doesn't support a custom stride.
+	//This is stupid - maybe sometime we can replace the ExtendedVertexData with somethign different, or maybe support a custom stride in the future.
+	GLfloat newVertexData[12], newTexData[8];
+	for(int i = 0; i < 4; i++) {
+		newVertexData[i*3] = ExtendedVertexList[i].Vertex[0]; newVertexData[i*3 + 1] = ExtendedVertexList[i].Vertex[1]; newVertexData[i*3 + 2] = ExtendedVertexList[i].Vertex[2];
+		newTexData[i*2] = ExtendedVertexList[i].TexCoord[0]; newTexData[i*2 + 1] = ExtendedVertexList[i].TexCoord[1];
+	}
+	
+	DC()->addGeometry(4, newVertexData, newTexData, NULL);
+	
         if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, 0, renderStep)) {
             //DCW I don't know about changing this to a triangle fan...  was originally glDrawArrays(GL_QUADS, 0, 4);
-            glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+            //glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+			DC()->addGeometry(4, newVertexData, newTexData, NULL);
 	}
 	
 	glEnable(GL_DEPTH_TEST);
         Shader::disable();
 	TMgr->RestoreTextureMatrix();
-
 }

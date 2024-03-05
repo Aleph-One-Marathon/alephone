@@ -52,7 +52,7 @@ void main (void) {
 #endif
     vec4 color = texture2D(texture0, textureUV.xy);
 	float fogFactor = getFogFactor(length(viewDir));
-    gl_FragColor = vec4(mix(fogColor.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);
+    gl_FragColor = vec4(mix(fogColor.rgb, color.rgb * intensity, fogFactor), color.a * vertexColor.a);
 //        "    if ( gl_FragColor.a == 0.0 ) {discard;} //discard transparent fragments so they don't write on the depth buffer \n "
 }
 

@@ -87,7 +87,6 @@ public:
         U_ClipPlane6,
         U_LightPositions,
         U_LightColors,
-        U_UseUniformFeatures,
 		NUMBER_OF_UNIFORM_LOCATIONS
 	};
 

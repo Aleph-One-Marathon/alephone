@@ -16,9 +16,6 @@ uniform float fogStart;
 uniform float fogEnd;
 
 varying vec4 fogColor;
-varying vec4 fClipPlane0;
-varying vec4 fClipPlane1;   
-varying vec4 fClipPlane5;   
 varying vec2 textureUV; 
 varying vec3 viewXY;
 varying vec3 viewDir;
@@ -39,9 +36,9 @@ float getFogFactor(float distance) {
 }
 
 void main (void) {
-   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {discard;}
-   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}
-   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {discard;}
+   if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {discard;}
+   if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {discard;}
+   if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {discard;}
    vec3 texCoords = vec3(textureUV.xy, 0.0);
     vec3 normXY = normalize(viewXY);
     texCoords += vec3(normXY.y * -pulsate, normXY.x * pulsate, 0.0);

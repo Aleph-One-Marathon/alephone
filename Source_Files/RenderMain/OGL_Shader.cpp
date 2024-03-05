@@ -112,8 +112,7 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
     "clipPlane5",
     "clipPlane6",
     "lightPositions",
-    "lightColors",
-    "useUniformFeatures"
+    "lightColors"
 };
 
 const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] =
@@ -346,12 +345,6 @@ void Shader::init() {
     glBindAttribLocation(_programObj, Shader::ATTRIB_NORMAL, "vNormal");
     glBindAttribLocation(_programObj, Shader::ATTRIB_COLOR, "vColor");
     glBindAttribLocation(_programObj, Shader::ATTRIB_TEXCOORDS4, "vTexCoords4");
-    glBindAttribLocation(_programObj, Shader::ATTRIB_CLIPPLANE0, "vClipPlane0");
-    glBindAttribLocation(_programObj, Shader::ATTRIB_CLIPPLANE1, "vClipPlane1");
-    glBindAttribLocation(_programObj, Shader::ATTRIB_CLIPPLANE5, "vClipPlane5");
-    glBindAttribLocation(_programObj, Shader::ATTRIB_SxOxSyOy, "vSxOxSyOy");
-    glBindAttribLocation(_programObj, Shader::ATTRIB_BsBtFlSl, "vBsBtFlSl");
-    glBindAttribLocation(_programObj, Shader::ATTRIB_PuWoDeGl, "vPuWoDeGl");
     
     glLinkProgram(_programObj);
 
@@ -365,7 +358,7 @@ void Shader::init() {
       {
         char* infoLog = (char*) malloc(sizeof(char) * infoLen);
         glGetProgramInfoLog(_programObj, infoLen, NULL, infoLog);
-        logError("Error linking program:\n%s\n", infoLog);
+        logError("Error linking program '%s':\n%s\n", shaderName.c_str(), infoLog);
         free(infoLog);
       }
       glDeleteProgram(_programObj);

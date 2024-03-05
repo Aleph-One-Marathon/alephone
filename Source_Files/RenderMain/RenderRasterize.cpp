@@ -330,7 +330,7 @@ void RenderRasterizerClass::render_node(
 			
 			//We need to flush before drawing see-through liquids.
 			//In the future, we should cache this status so we can buffer media surfaces, too.
-			DC()->drawAll();
+			//DC()->drawAll();
 			
 			for (window= node->clipping_windows; window; window= window->next_window)
 			{

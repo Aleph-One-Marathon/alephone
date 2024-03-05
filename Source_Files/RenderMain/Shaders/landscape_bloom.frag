@@ -7,12 +7,13 @@ uniform sampler2D texture0;
 uniform float usefog;
 uniform float fogMix;
 
-varying vec4 fSxOxSyOy; 
-varying vec4 fBsBtFlSl; 
-varying vec4 fPuWoDeGl; 
-varying vec4 fClipPlane0;   
-varying vec4 fClipPlane1;   
-varying vec4 fClipPlane5;   
+uniform float scalex;
+uniform float scaley;
+uniform float offsetx;
+uniform float offsety;
+uniform vec4 clipPlane0;
+uniform vec4 clipPlane1;
+uniform vec4 clipPlane5;
 
 uniform float yaw;
 uniform float pitch;
@@ -24,14 +25,9 @@ const float zoom = 1.205;
 const float pitch_adjust = 0.955;
 varying vec4 vPosition_eyespace;
 void main(void) {
-   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {discard;}
-   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}
-   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {discard;}
-
-   float scalex = fSxOxSyOy.x;
-   float scaley = fSxOxSyOy.z;
-   float offsetx = fSxOxSyOy.y;
-   float offsety = fSxOxSyOy.w;
+   if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {discard;}
+   if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {discard;}
+   if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {discard;}
 	
     vec3 facev = vec3(cos(yaw), sin(yaw), sin(pitch));
     vec3 relv  = normalize(relDir);

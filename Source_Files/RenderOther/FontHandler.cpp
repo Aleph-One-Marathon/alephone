@@ -368,14 +368,14 @@ void FontSpecifier::OGL_Render(const char *Text)
     previousShader = lastEnabledShader();
     textShader = Shader::get(Shader::S_Rect);
     textShader->enable();
-    
+	
     // Bug out if no texture to render
     if (!OGL_Texture)
     {
         OGL_Reset(true);
         if (!OGL_Texture) return;
     }
-    
+	
     //glPushAttrib(GL_ENABLE_BIT);
     
         //Save and restore state without push/pop attributes.
@@ -389,20 +389,20 @@ void FontSpecifier::OGL_Render(const char *Text)
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
     glBindTexture(GL_TEXTURE_2D,TxtrID);
-    
+	
     glVertexAttribPointer(Shader::ATTRIB_VERTEX, 2, GL_SHORT, GL_FALSE, 0, VertexCache);
     glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
     glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, TextureCache);
     glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
-
+	
     size_t Len = MIN(strlen(Text),255);
     for (size_t k=0; k<Len; k++)
     {
         unsigned char c = Text[k];
-        
+		
         // DJB OpenGL Rather than call the list, just render here glCallList(DispList+c);
         MatrixStack::Instance()->translatef(-PadCache,0,0);
-        
+		
         //Set shader uniforms, etc.
         Shader* lastShader = lastEnabledShader();
         if (lastShader) {
@@ -414,14 +414,16 @@ void FontSpecifier::OGL_Render(const char *Text)
             lastShader->setMatrix4(Shader::U_TextureMatrix, textureMatrix);
             lastShader->setVec4(Shader::U_Color, MatrixStack::Instance()->color());
           }
-        
+		 
+		 
         glDrawArrays(GL_TRIANGLE_FAN, c*4, 4);
         
+
         MatrixStack::Instance()->translatef(WidthCache[c]-PadCache,0,0);
-        
+		 
         //glCallList(DispList+c);
     }
-    
+	
     //glPopAttrib();
     //if ( isEnabled_GT2 ) { glEnable ( GL_TEXTURE_2D ); } else { glDisable ( GL_TEXTURE_2D ); } //NOT SUPPORTED ANGLE ENUM
     if ( isEnabled_GB ) { glEnable ( GL_BLEND ); } else { glDisable ( GL_BLEND ); }

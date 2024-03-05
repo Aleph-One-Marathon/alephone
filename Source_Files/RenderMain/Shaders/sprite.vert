@@ -10,6 +10,7 @@ uniform float depth;
 uniform float strictDepthMode;
 attribute vec4 vPosition;
 attribute vec2 vTexCoord;
+attribute vec4 vColor;
 varying vec2 textureUV;
 varying vec4 fogColor;
 varying vec3 viewDir;
@@ -25,7 +26,7 @@ void main(void) {
     viewDir = (vPosition - v).xyz;
     vec4 UV4 = vec4(vTexCoord.x, vTexCoord.y, 0.0, 1.0);           //DCW shitty attempt to stuff texUV into a vec4
     textureUV = (MS_TextureMatrix * UV4).xy;
-    vertexColor = uColor;
+    vertexColor = vColor; //Might need to switch between the u and v versions of this during debugging.
     FDxLOG2E = -uFogColor.a * 1.442695;
     fogColor = uFogColor;
 }

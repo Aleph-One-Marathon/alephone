@@ -3030,7 +3030,7 @@ bool OGL_RenderCrosshairs()
 bool OGL_RenderText(short BaseX, short BaseY, const char *Text, unsigned char r, unsigned char g, unsigned char b)
 {
     if (!OGL_IsActive()) return false;
-    
+	
     Shader* previousShader = NULL;
     int previousMode;
     previousShader = lastEnabledShader();

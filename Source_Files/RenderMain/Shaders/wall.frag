@@ -8,18 +8,21 @@ uniform vec4 lightColors[32];
 uniform float fogMode;
 uniform float fogStart;
 uniform float fogEnd;
+uniform vec4 uFogColor;
+uniform vec4 clipPlane0;
+uniform vec4 clipPlane1;
+uniform vec4 clipPlane5;
+uniform float pulsate;
+uniform float wobble;
+uniform float glow;
+uniform float flare;
+uniform float selfLuminosity;
 
-varying vec4 fSxOxSyOy;
-varying vec4 fBsBtFlSl;
-varying vec4 fPuWoDeGl;
-varying vec4 fClipPlane0;
-varying vec4 fClipPlane1;
-varying vec4 fClipPlane5;
+varying vec4 fogColor;
 varying vec3 viewXY;
 varying vec3 viewDir;
 varying vec4 vertexColor;
 varying float FDxLOG2E;
-varying vec4 fogColor;
 varying float classicDepth;
 varying vec4 vPosition_eyespace;
 varying vec3 eyespaceNormal;
@@ -37,14 +40,10 @@ float getFogFactor(float distance) {
 }
 
 void main (void) {
-   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {discard;}
-   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}
-   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {discard;}
-    float pulsate = fPuWoDeGl.x;
-    float wobble = fPuWoDeGl.y;
-    float glow = fPuWoDeGl.w;
-    float flare = fBsBtFlSl.z;
-    float selfLuminosity = fBsBtFlSl.w;
+	if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {discard;}
+	if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {discard;}
+	if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {discard;}
+
     vec3 texCoords = vec3(textureUV.xy, 0.0);
     vec3 normXY = normalize(viewXY);
     texCoords += vec3(normXY.y * -pulsate, normXY.x * pulsate, 0.0);
@@ -60,7 +59,7 @@ void main (void) {
 #ifdef GAMMA_CORRECTED_BLENDING
     intensity = intensity * intensity; // approximation of pow(intensity, 2.2)
 #endif
-    vec4 color = texture2D(texture0, texCoords.xy);
+	vec4 color = texture2D(texture0, texCoords.xy);
 	float fogFactor = getFogFactor(length(viewDir));
 
 //Calculate light
@@ -77,7 +76,7 @@ void main (void) {
        lightAddition = lightAddition + color * diffuse * lightColor;
     }
 	
-    gl_FragColor = vec4(mix(fogColor.rgb, lightAddition.rgb + color.rgb * intensity, fogFactor), vertexColor.a * color.a);
+    gl_FragColor = vec4(mix(fogColor.rgb, lightAddition.rgb + color.rgb * intensity, fogFactor), color.a);
 }
 
 )"

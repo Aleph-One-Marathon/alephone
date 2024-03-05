@@ -5,13 +5,17 @@ uniform sampler2D texture0;
 uniform float fogMode;
 uniform float fogStart;
 uniform float fogEnd;
+uniform vec4 clipPlane0;
+uniform vec4 clipPlane1;
+uniform vec4 clipPlane5;
+uniform vec4 uFogColor;
+uniform float pulsate;
+uniform float wobble;
+uniform float glow;
+uniform float flare;
+uniform float bloomScale;
+uniform float bloomShift;
 
-varying vec4 fSxOxSyOy;
-varying vec4 fBsBtFlSl;
-varying vec4 fPuWoDeGl;
-varying vec4 fClipPlane0;
-varying vec4 fClipPlane1;
-varying vec4 fClipPlane5;
 varying vec4 fogColor;
 varying vec2 textureUV;
 varying vec3 viewXY;
@@ -34,15 +38,10 @@ float getFogFactor(float distance) {
 }
 
 void main (void) {
-   if( dot( vPosition_eyespace, fClipPlane0) < 0.0 ) {discard;}
-   if( dot( vPosition_eyespace, fClipPlane1) < 0.0 ) {discard;}
-   if( dot( vPosition_eyespace, fClipPlane5) < 0.0 ) {discard;}
-    float pulsate = fPuWoDeGl.x;
-    float wobble = fPuWoDeGl.y;
-    float glow = fPuWoDeGl.w;
-    float flare = fBsBtFlSl.z;
-    float bloomScale = fBsBtFlSl.x;
-    float bloomShift = fBsBtFlSl.y;
+   if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {discard;}
+   if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {discard;}
+   if( dot( vPosition_eyespace, clipPlane5) < 0.0 ) {discard;}
+	
     vec3 texCoords = vec3(textureUV.xy, 0.0);
     vec3 normXY = normalize(viewXY);
     texCoords += vec3(normXY.y * -pulsate, normXY.x * pulsate, 0.0);
@@ -55,7 +54,7 @@ void main (void) {
     intensity = intensity * intensity; // approximation of pow(intensity, 2.2)
 #endif
 	float fogFactor = getFogFactor(length(viewDir));
-    gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);
+    gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), color.a) * vertexColor;
 }
 
 )"

@@ -61,7 +61,7 @@
          <EnvironmentVariable
             key = "METAL_DEVICE_WRAPPER_TYPE"
             value = "1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "METAL_ERROR_MODE"
@@ -86,12 +86,12 @@
          <EnvironmentVariable
             key = "ANGLE_CAPTURE_ENABLED"
             value = "1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "ANGLE_DEFAULT_PLATFORM"
             value = "metal"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>

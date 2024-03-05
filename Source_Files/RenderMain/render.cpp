@@ -485,8 +485,6 @@ void render_view(
 			// LP: now from the clipping/rasterizer class
 #ifdef HAVE_OPENGL			
 			RenderRasterizerClass *RenPtr = (graphics_preferences->screen_mode.acceleration == _opengl_acceleration) ? &Render_Shader : &Render_Classic;
-            
-            DC()->resetStats();
 #else
 			RenderRasterizerClass *RenPtr = &Render_Classic;
 #endif
