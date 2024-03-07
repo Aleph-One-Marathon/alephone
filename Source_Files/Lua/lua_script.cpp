@@ -1101,6 +1101,7 @@ state_map states;
 
 // globals
 std::vector<lua_camera> lua_cameras;
+short lua_completion_state_override = NONE;
 std::unordered_map<std::string, std::string> lua_stash;
 
 uint32 *action_flags;
@@ -2081,6 +2082,7 @@ void CloseLuaScript()
 
 	lua_cameras.resize(0);
         lua_stash.clear();
+	lua_completion_state_override = NONE;
 
 	LuaTexturePaletteClear();
 
@@ -2222,6 +2224,14 @@ bool UseLuaCameras()
 	}
 
 	return using_lua_cameras;
+}
+
+short GetLuaCompletion()
+{
+	if (!LuaRunning())
+		return NONE;
+
+	return lua_completion_state_override;
 }
 
 bool LuaPlayerCanWieldWeapons(short player_index)

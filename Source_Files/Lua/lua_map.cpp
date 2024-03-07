@@ -69,6 +69,8 @@ char Lua_ControlPanelType_Name[] = "control_panel_type";
 
 extern short get_panel_class(short panel_type);
 
+extern short lua_completion_state_override;
+
 // no devices.h, so copy this from devices.cpp:
 
 enum // control panel sounds
@@ -3551,6 +3553,23 @@ int Lua_Level_Get_Completed(lua_State* L)
 	return 1;
 }
 
+int Lua_Level_Get_Completion_State_Override(lua_State* L)
+{
+	Lua_CompletionState::Push(L, lua_completion_state_override);
+	return 1;
+}
+
+int Lua_Level_Set_Completion_State_Override(lua_State* L)
+{
+	if(lua_isnil(L, 2)) lua_completion_state_override = NONE;
+	else
+	{
+		lua_completion_state_override = Lua_CompletionState::ToIndex(L, 2);
+	}
+
+	return 0;
+}
+
 template<int16 flag>
 static int Lua_Level_Get_Environment_Flag(lua_State *L)
 {
@@ -3609,6 +3628,7 @@ static int Lua_Level_Get_Underwater_Fog(lua_State *L)
 const luaL_Reg Lua_Level_Get[] = {
 	{"calculate_completion_state", L_TableFunction<Lua_Level_Calculate_Completion_State>},
 	{"completed", Lua_Level_Get_Completed},
+	{"completion_state_override", Lua_Level_Get_Completion_State_Override},
 	{"extermination", Lua_Level_Get_Mission_Flag<_mission_extermination>},
 	{"exploration", Lua_Level_Get_Mission_Flag<_mission_exploration>},
 	{"fog", Lua_Level_Get_Fog},
@@ -3624,6 +3644,11 @@ const luaL_Reg Lua_Level_Get[] = {
         {"stash", Lua_Level_Get_Stash},
 	{"underwater_fog", Lua_Level_Get_Underwater_Fog},
 	{"vacuum", Lua_Level_Get_Environment_Flag<_environment_vacuum>},
+	{0, 0}
+};
+
+const luaL_Reg Lua_Level_Set[] = {
+	{"completion_state_override", Lua_Level_Set_Completion_State_Override},
 	{0, 0}
 };
 
@@ -3799,7 +3824,7 @@ int Lua_Map_register(lua_State *L)
 
         Lua_Level_Stash::Register(L, 0, 0, Lua_Level_Stash_Metatable);
 
-	Lua_Level::Register(L, Lua_Level_Get);
+	Lua_Level::Register(L, Lua_Level_Get, Lua_Level_Set);
 
 	Lua_Annotation::Register(L, Lua_Annotation_Get, Lua_Annotation_Set);
 	Lua_Annotation::Valid = Lua_Annotation_Valid;

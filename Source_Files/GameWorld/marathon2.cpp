@@ -792,7 +792,10 @@ void changed_polygon(
 short calculate_level_completion_state(
 	void)
 {
-	short completion_state= _level_finished;
+	short completion_state = GetLuaCompletion();
+	if (completion_state != NONE) return completion_state;
+	
+	completion_state = _level_finished;
 	
 	/* if there are any monsters left on an extermination map, we haven’t finished yet */
 	if (static_world->mission_flags&_mission_extermination)

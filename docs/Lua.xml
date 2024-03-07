@@ -661,6 +661,10 @@
 		<description>check this in Triggers.cleanup() to determine whether the player(s) teleported out</description>
 		<type>boolean</type>
       </variable>
+      <variable name="completion_state_override" version="git">
+		<description>set to a completion state to override game's built-in level completion logic, or set to nil to remove the override</description>
+		<type>completion_state</type>
+      </variable>
       <variable name="extermination" access="read-only" version="20081213">
 		<description>whether level has extermination flag set</description>
 		<type>boolean</type>
