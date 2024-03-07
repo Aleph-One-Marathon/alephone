@@ -801,7 +801,10 @@
 <dd><p class="description">check this in Triggers.cleanup() to determine whether the player(s) teleported out</p></dd>
 <dt>.completion_state_override <span class="version">git</span>
 </dt>
-<dd><p class="description">set to a completion state to override game's built-in level completion logic, or set to nil to remove the override</p></dd>
+<dd>
+<p class="description">set to a completion state to override game's built-in level completion logic, or set to nil to remove the override</p>
+<p class="note">This variable is not stored in saved games. If you set this variable every tick from Triggers.idle(), you're fine. If you only set this variable as needed, make sure you also set it in Triggers.init(). </p>
+</dd>
 <dt>.extermination<span class="access"> (read-only)</span> <span class="version">20081213</span>
 </dt>
 <dd><p class="description">whether level has extermination flag set</p></dd>
