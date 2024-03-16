@@ -17,6 +17,7 @@
 #include "projectiles.h"
 #include "effects.h"
 
+#include "logging.h"
 
 bool lastTextureIsLandscape;
 
@@ -57,8 +58,12 @@ DrawCache* DC() {
 
 void DrawCache::growGeometryList() {
 	if(current_geometry_list_size == 0) {
-		current_geometry_list_size = 8196;
+		//There can be visual glitches (that only happen for one frame per game launch) if these ever grow during rendering, so start them high-ish.
+		//This is due to the instant draw/flush operation, which changes the active texture (and other state) from what the geometry being cached should have.
+		//That issue is probably fixable if we want, by caching before the flush operations.
+		current_geometry_list_size = 65536;
 	} else {
+		logWarning("Growing geometry list from %d to %d. A brief visual glitch is possible.\n", current_geometry_list_size, current_geometry_list_size*2);
 		drawAll();
 		free(geometry);
 		current_geometry_list_size *= 2;
@@ -70,8 +75,9 @@ void DrawCache::growGeometryList() {
 
 void DrawCache::growIndexList() {
 	if(current_index_list_size == 0) {
-		current_index_list_size = 8196;
+		current_index_list_size = 131072;
 	} else {
+		logWarning("Growing index list from %d to %d. A brief visual glitch is possible.\n", current_index_list_size, current_index_list_size*2);
 		drawAll();
 		free(indices);
 		current_index_list_size *= 2;
@@ -83,8 +89,9 @@ void DrawCache::growIndexList() {
 
 void DrawCache::growVertexLists() {
 	if(current_vertex_list_size == 0) {
-		current_vertex_list_size = 8196;
+		current_vertex_list_size = 65536;
 	} else {
+		logWarning("Growing vertex list from %d to %d. A brief visual glitch is possible.\n", current_vertex_list_size, current_vertex_list_size*2);
 		drawAll();
 		free(vertexArray);
 		free(texcoordArray);
@@ -119,7 +126,7 @@ void DrawCache::addDefaultLight(GLfloat x, GLfloat y, GLfloat z, short objectTyp
                 case _projectile_flamethrower_burst:
                 case _projectile_alien_weapon:
                 case _projectile_lava_yeti:
-                    addLight(x, y, z, 1000, 1, .8, 0, 1 );
+                    addPointLight(x, y, z, 1000, 1, .8, 0, 0 );
                     break;
 
                 case _projectile_minor_defender:
@@ -127,18 +134,18 @@ void DrawCache::addDefaultLight(GLfloat x, GLfloat y, GLfloat z, short objectTyp
                 case _projectile_minor_hummer:
                 case _projectile_major_hummer:
                 case _projectile_durandal_hummer:
-                    addLight(x, y, z, 1000, 0, 1, .1, 1 );
+					addPointLight(x, y, z, 1000, 0, 1, .1, 0 );
                     break;
 
                 case _projectile_rocket:
                 case _projectile_juggernaut_rocket:
                 case _projectile_juggernaut_missile:
-                    addLight(x, y, z, 4000, 1, 1, .7, 1 );
+					addPointLight(x, y, z, 4000, 1, 1, .7, 0 );
                     break;
                     
                 case _projectile_staff:
                 case _projectile_staff_bolt:
-                    addLight(x, y, z, 1000, .5, 1, rand() / double(RAND_MAX), 1 );
+					addPointLight(x, y, z, 1000, .5, 1, rand() / double(RAND_MAX), 0 );
                     break;
                 
                 case _projectile_minor_cyborg_ball:
@@ -148,18 +155,18 @@ void DrawCache::addDefaultLight(GLfloat x, GLfloat y, GLfloat z, short objectTyp
                 case _projectile_hunter:
                 case _projectile_armageddon_sphere:
                 case _projectile_armageddon_electricity:
-                    addLight(x, y, z, 2000, 0, 1, 1, 1 );
+                    addPointLight(x, y, z, 2000, 0, 1, 1, 0 );
                     break;
                 
                 case _projectile_fusion_bolt_minor:
-                    addLight(x, y, z, 2000, .8, .7, 1, 1 );
+                    addPointLight(x, y, z, 2000, .8, .7, 1, 0 );
                     break;
                 
                 case _projectile_minor_fusion_dispersal:
                 case _projectile_major_fusion_dispersal:
                 case _projectile_overloaded_fusion_dispersal:
                 case _projectile_fusion_bolt_major:
-                    addLight(x, y, z, 3000, .8, rand() / double(RAND_MAX), 1, 1 );
+                    addPointLight(x, y, z, 3000, .8, rand() / double(RAND_MAX), 1, 0 );
                     break;
             
                 default:
@@ -170,7 +177,7 @@ void DrawCache::addDefaultLight(GLfloat x, GLfloat y, GLfloat z, short objectTyp
             {
                 case _effect_rocket_explosion:
                 case _effect_grenade_explosion:
-                    addLight(x, y, z, 2000, 1, .9, 0, 1 );
+                    addPointLight(x, y, z, 2000, 1, .9, 0, 0 );
                     break;
                     
                 case _effect_alien_lamp_breaking:
@@ -180,57 +187,57 @@ void DrawCache::addDefaultLight(GLfloat x, GLfloat y, GLfloat z, short objectTyp
                 case _effect_rocket_contrail:
                 case _effect_grenade_contrail:
                 case _effect_juggernaut_missile_contrail:
-                    addLight(x, y, z, 1000, .8, .8, .8, 1 );
+                    addPointLight(x, y, z, 1000, .8, .8, .8, 0 );
                     break;
 
                 case _effect_alien_weapon_ricochet:
                 case _effect_flamethrower_burst:
-                    addLight(x, y, z, 1000, .8, .7, 0, 1 );
+                    addPointLight(x, y, z, 1000, .8, .7, 0, 0 );
                     break;
 
                 case _effect_compiler_bolt_minor_detonation:
                 case _effect_compiler_bolt_major_detonation:
                 case _effect_compiler_bolt_major_contrail:
-                    addLight(x, y, z, 1000, 0, .7, .7, 1 );
+                    addPointLight(x, y, z, 1000, 0, .7, .7, 0 );
                     break;
 
                 case _effect_hunter_projectile_detonation:
-                    addLight(x, y, z, 1000, 0, 1, .8, 1 );
+                    addPointLight(x, y, z, 1000, 0, 1, .8, 0 );
                     break;
 
                 case _effect_minor_fusion_detonation:
                 case _effect_major_fusion_detonation:
-                    addLight(x, y, z, 2000, 1, 1, 1, 1 );
+                    addPointLight(x, y, z, 2000, 1, 1, 1, 0 );
                     break;
 
                 case _effect_major_fusion_contrail:
-                    addLight(x, y, z, 500, .7, .8, 1, 1 );
+                    addPointLight(x, y, z, 500, .7, .8, 1, 0 );
                     break;
 
                 case _effect_minor_defender_detonation:
                 case _effect_major_defender_detonation:
-                    addLight(x, y, z, 1000, .5, .5, .5, 1 );
+                    addPointLight(x, y, z, 1000, .5, .5, .5, 0 );
                     break;
 
 
                 case _effect_minor_hummer_projectile_detonation:
                 case _effect_major_hummer_projectile_detonation:
                 case _effect_durandal_hummer_projectile_detonation:
-                    addLight(x, y, z, 2000, 0, 1, .1, 1 );
+                    addPointLight(x, y, z, 2000, 0, 1, .1, 0 );
                     break;
 
                 case _effect_cyborg_projectile_detonation:
-                    addLight(x, y, z, 2000, .1, .8, 1, 1 );
+                    addPointLight(x, y, z, 2000, .1, .8, 1, 0 );
                     break;
 
                 case _effect_minor_fusion_dispersal:
                 case _effect_major_fusion_dispersal:
                 case _effect_overloaded_fusion_dispersal:
-                    addLight(x, y, z, 4000, .8, 1, 1, 1 );
+                    addPointLight(x, y, z, 4000, .8, 1, 1, 0 );
                     break;
 
                 case _effect_lava_yeti_projectile_detonation:
-                    addLight(x, y, z, 2000, 1, 0, 0, 1 );
+                    addPointLight(x, y, z, 2000, 1, 0, 0, 0 );
                     break;
 
                 default:
@@ -240,7 +247,7 @@ void DrawCache::addDefaultLight(GLfloat x, GLfloat y, GLfloat z, short objectTyp
     
 }
 
-void DrawCache::addLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size, GLfloat red, GLfloat green, GLfloat blue, GLfloat intensity ) {
+void DrawCache::addPointLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size, GLfloat red, GLfloat green, GLfloat blue, bool negative) {
     if(!gatheringLights) return;
     
     if(numLightsInScene < LIGHTS_MAX) {
@@ -252,47 +259,200 @@ void DrawCache::addLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size, GLfloat 
         lightColors[numLightsInScene*4 + 0] = red; //Red
         lightColors[numLightsInScene*4 + 1] = green; //Green
         lightColors[numLightsInScene*4 + 2] = blue; //Blue
-        lightColors[numLightsInScene*4 + 3] = intensity; //Intensity
+        lightColors[numLightsInScene*4 + 3] = negative ? POINT_LIGHT_NEGATIVE : POINT_LIGHT; //Light mode
 
         numLightsInScene++;
     }
+}
+
+void DrawCache::addSpotLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size,  GLfloat dirX, GLfloat dirY, GLfloat dirZ, GLfloat outerAngle, GLfloat innerAngle,  GLfloat red, GLfloat green, GLfloat blue, bool negative) {
+	if(!gatheringLights) return;
+	
+		//Spot lights take up two lighting slots.
+	if(numLightsInScene + 1 < LIGHTS_MAX) {
+		int baseIndex = numLightsInScene*4;
+		
+		lightPositions[baseIndex + 0] = x;
+		lightPositions[baseIndex + 1] = y;
+		lightPositions[baseIndex + 2] = z;
+		lightPositions[baseIndex + 3] = size; //Size in world units. 0 means no light.
+		lightPositions[baseIndex + 4] = dirX;
+		lightPositions[baseIndex + 5] = dirY;
+		lightPositions[baseIndex + 6] = dirZ;
+		lightPositions[baseIndex + 7] = 0; //Unused
+		
+		lightColors[baseIndex + 0] = red; //Red
+		lightColors[baseIndex + 1] = green; //Green
+		lightColors[baseIndex + 2] = blue; //Blue
+		lightColors[baseIndex + 3] = negative ? SPOT_LIGHT_NEGATIVE : SPOT_LIGHT; //Light mode
+		lightColors[baseIndex + 4] = outerAngle;
+		lightColors[baseIndex + 5] = innerAngle;
+		lightColors[baseIndex + 6] = 0; //Unused
+		lightColors[baseIndex + 7] = 0; //Unused
+
+		numLightsInScene += 2;
+	}
 }
 
 void DrawCache::finishGatheringLights() {
     gatheringLights = 0;
 }
 
-//Requires 3 GLFloats in vertex_array per vertex, and 2 GLfloats per texcoord
-//tex4 is a 4-dimensional array, which is surface normal vector + sign.
-//Normalized is assumed to be GL_FALSE and Stride must be 0.
-void DrawCache::addGeometry(int vertex_count, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *tex4) {
-	
-	//Check to see that geometry list is large enough.
+void DrawCache::growToFit(int triangleCount, int vertexCount) {
+	//Guarantee that the geometry list is large enough for at least one more item.
 	while(geometryFilled >= current_geometry_list_size - 1) {
 		growGeometryList();
 	}
 	
-	//Check to see if index list is large enough. We will need enough indices to turn vertex_count into triangles ((vertex_count-2) * 3)
-	while( indicesFilled + (vertex_count * 3) >= current_index_list_size - 1) {
+	//Guarantee that the index list is large enough. Assume each triangle needs three indices.
+	while( indicesFilled + (triangleCount * 3) >= current_index_list_size - 1) {
 		growIndexList();
 	}
 	
-	//Check to see if the vertex lists are large enough.
-	while( verticesFilled + vertex_count >= current_vertex_list_size - 1) {
+	//Guarantee the vertex lists are large enough.
+	while( verticesFilled + vertexCount >= current_vertex_list_size - 1) {
 		growVertexLists();
 	}
-	
-	int g = geometryFilled;//Convenience capture of current geometry index.
+}
 
-	GLint whichUnit;
-    glGetIntegerv(GL_ACTIVE_TEXTURE, &whichUnit); //Store active texture so we can reset it later.
-    glActiveTexture(GL_TEXTURE0);
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &(geometry[g].textureID0));
-    glActiveTexture(GL_TEXTURE1);
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &(geometry[g].textureID1));
-    glActiveTexture(whichUnit);
-        
-        //Capture volatile state data for this geometry.
+//Requires 3 GLFloats in vertex_array per vertex, and 2 GLfloats per texcoord
+//tex4 is a 4-dimensional array, which is surface normal vector + sign.
+//Normalized is assumed to be GL_FALSE and Stride must be 0.
+void DrawCache::addTriangleFan(int vertex_count, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *tex4) {
+	
+	int numTriangles = vertex_count - 2; //The first 3 vertices make a triangle, and each subsequent vertex adds another.
+	growToFit(numTriangles, vertex_count); //Make room for the incoming triangle fan. Do this first, because it might change geometryFilled should a draw be triggered.
+	
+	int g = geometryFilled; //Convenience index.
+	captureState(g); //Capture volatile state data for this geometry.
+	
+        //The incoming data is a triangle fan: 0,1,2,3,4,5
+        //We need to create indices that convert the fan into triangles: 0,1,2, 0,2,3, 0,3,4, etc
+		//Note that indicesFilled is always a multiple of three (because they describe triangles), but verticesFilled is the total number of input vertices.
+	geometry[g].numIndices = numTriangles * 3;
+    for(int i = 0; i < numTriangles; ++i) {
+        indices[indicesFilled] = verticesFilled;
+        indices[indicesFilled + 1] = verticesFilled + i + 1;
+        indices[indicesFilled + 2] = verticesFilled + i + 2;
+		indicesFilled += 3;
+    }
+
+    //Fill 2-element components.
+    int n = 0;
+    for(int i = verticesFilled*2; i < (verticesFilled*2 + (vertex_count * 2)); i += 2) {
+        texcoordArray[i] = texcoord_array[n];
+		texcoordArray[i+1] = texcoord_array[n+1];
+        n+=2;
+    }
+    
+    //Fill the 3-element components, and make sure the bounding box will enclose all vertices.
+    n = 0;
+    GLfloat *normal_array = MSI()->normals();
+	primeBoundingBox(g, vertex_array[0], vertex_array[1], vertex_array[2]);
+	
+    for(int i = verticesFilled*3; i < (verticesFilled*3 + (vertex_count*3)); i += 3) {
+        vertexArray[i] = vertex_array[n]; vertexArray[i+1] = vertex_array[n+1]; vertexArray[i+2] = vertex_array[n+2];
+		normalArray[i] = normal_array[n]; normalArray[i+1] = normal_array[n+1]; normalArray[i+2] = normal_array[n+2];
+		
+		growBoundingBox(g, vertex_array[n], vertex_array[n+1], vertex_array[n+2]);
+        n+=3;
+    }
+    
+	//Fill the 4-element components
+	for(int i = verticesFilled*4; i < (verticesFilled*4 + (vertex_count * 4)); i += 4) {
+		colors[i] = geometry[g].primaryColor[0]; colors[i+1] = geometry[g].primaryColor[1]; colors[i+2] = geometry[g].primaryColor[2]; colors[i+3] = geometry[g].primaryColor[3];
+		
+		if(tex4) {
+			texCoords4[i] = tex4[0]; texCoords4[i+1] = tex4[1]; texCoords4[i+2] = tex4[2]; texCoords4[i+3] = tex4[3];
+		} else {
+			texCoords4[i] = 0; texCoords4[i+1] = 0; texCoords4[i+2] = 0; texCoords4[i+3] = 1; //not sure if 0s or 1s are better here, or maybe 0,0,0,1...
+		}
+	}
+
+	//Unfortunately, stuff like viewer sprite glow assume that these properties persist across draw calls, but ideally we would call this after every one: clearTextureAttributeCaches();
+
+    verticesFilled += vertex_count;
+	geometryFilled ++;
+}
+
+
+void DrawCache::addTriangles(int index_count, GLushort *index_array, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *normals, GLfloat *tangents)
+{
+	// TODO: support normals. looks like ATTRIB_TEXCOORDS4 were originally tangents?
+	// TODO: support glEnable(GL_CULL_FACE);
+	// TODO: support glFrontFace
+	
+	//Is there a better way to figure out how big vertex_array is?
+	int max_index = 0;
+	for (int i = 0; i < index_count; i++) {
+		if( index_array[i] > max_index )
+			max_index = index_array[i];
+	}
+	int vertex_count = max_index + 1;
+	int numTriangles = index_count/3;
+	
+	growToFit(numTriangles, vertex_count);
+	
+	int g = geometryFilled; //Convenience index.
+	captureState(g); //Capture volatile state data for this geometry.
+	
+		//Since these are triangles, the number of triangles must always be index_count/3.
+		//Can't memcopy the indices though because we need a short to int conversion. :(
+	geometry[g].numIndices = index_count;
+	for(int i = 0; i < index_count; ++i) {
+		indices[indicesFilled] = index_array[i] + verticesFilled;
+		indicesFilled ++;
+	}
+	
+	//TODO: use something like memcopy for the arrays.
+
+	//Fill 2-element components.
+	int n = 0;
+	for(int i = verticesFilled*2; i < (verticesFilled*2 + (vertex_count * 2)); i += 2) {
+		texcoordArray[i] = texcoord_array[n];
+		texcoordArray[i+1] = texcoord_array[n+1];
+		n+=2;
+	}
+	
+	//Fill the 3-element components, and make sure the bounding box will enclose all vertices.
+	n = 0;
+	primeBoundingBox(g, vertex_array[0], vertex_array[1], vertex_array[2]);
+	
+	for(int i = verticesFilled*3; i < (verticesFilled*3 + (vertex_count*3)); i += 3) {
+		vertexArray[i] = vertex_array[n]; vertexArray[i+1] = vertex_array[n+1]; vertexArray[i+2] = vertex_array[n+2];
+		normalArray[i] =  normals[n]; normalArray[i+1] =  normals[n+1]; normalArray[i+2] =  normals[n+2];
+		
+		growBoundingBox(g, vertex_array[n], vertex_array[n+1], vertex_array[n+2]);
+		n+=3;
+	}
+	
+	//Fill the 4-element components
+	for(int i = verticesFilled*4; i < (verticesFilled*4 + (vertex_count * 4)); i += 4) {
+		colors[i] = geometry[g].primaryColor[0]; colors[i+1] = geometry[g].primaryColor[1]; colors[i+2] = geometry[g].primaryColor[2]; colors[i+3] = geometry[g].primaryColor[3];
+		
+		if(tangents) {
+			texCoords4[i] = tangents[0]; texCoords4[i+1] = tangents[1]; texCoords4[i+2] = tangents[2]; texCoords4[i+3] = tangents[3];
+		} else {
+			texCoords4[i] = 0; texCoords4[i+1] = 0; texCoords4[i+2] = 0; texCoords4[i+3] = 1; //not sure if 0s or 1s are better here, or maybe 0,0,0,1...
+		}
+	}
+	
+	verticesFilled += vertex_count;
+	geometryFilled++;
+}
+
+	//Captures current volatile state information into geometry[g]
+void DrawCache::captureState(int g)
+{
+	
+	GLint initialUnit;
+	glGetIntegerv(GL_ACTIVE_TEXTURE, &initialUnit); //Store active texture so we can reset it later.
+	glActiveTexture(GL_TEXTURE0);
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &(geometry[g].textureID0));
+	glActiveTexture(GL_TEXTURE1);
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &(geometry[g].textureID1));
+	glActiveTexture(initialUnit);
+	
 	geometry[g].shader = lastEnabledShader();
 	geometry[g].landscapeTexture = lastTextureIsLandscape;
 	GLfloat *activeColor = MSI()->color();
@@ -300,10 +460,10 @@ void DrawCache::addGeometry(int vertex_count, GLfloat *vertex_array, GLfloat *te
 	MatrixStack::Instance()->getFloatv(MS_PROJECTION, geometry[g].projectionMatrix);
 	MatrixStack::Instance()->getFloatvInverse(MS_MODELVIEW, geometry[g].modelMatrixInverse);
 	MatrixStack::Instance()->getFloatvModelviewProjection(geometry[g].modelProjection);
-    MSI()->getFloatv(MS_TEXTURE, geometry[g].textureMatrix);
-    MSI()->getPlanev(0, geometry[g].clipPlane0);
-    MSI()->getPlanev(1, geometry[g].clipPlane1);
-    MSI()->getPlanev(5, geometry[g].clipPlane5);
+	MSI()->getFloatv(MS_TEXTURE, geometry[g].textureMatrix);
+	MSI()->getPlanev(0, geometry[g].clipPlane0);
+	MSI()->getPlanev(1, geometry[g].clipPlane1);
+	MSI()->getPlanev(5, geometry[g].clipPlane5);
 	glGetIntegerv(GL_DEPTH_FUNC, &(geometry[g].depthFunction));
 	glGetIntegerv(GL_DEPTH_TEST, &(geometry[g].depthTest));
 	glGetBooleanv(GL_BLEND, &(geometry[g].isBlended));
@@ -320,76 +480,28 @@ void DrawCache::addGeometry(int vertex_count, GLfloat *vertex_array, GLfloat *te
 	geometry[g].depth = depth;
 	geometry[g].glow = glow;
 	
-	
-	GLfloat plane0[4], plane1[4], plane5[4], media6[4];
-	MatrixStack::Instance()->getPlanev(0, plane0);
-	MatrixStack::Instance()->getPlanev(1, plane1);
-	MatrixStack::Instance()->getPlanev(5, plane5);
-	
-	
-        //The incoming data is a triangle fan: 0,1,2,3,4,5
-        //We need to create indices that convert the fan into triangles: 0,1,2, 0,2,3, 0,3,4, etc
-    int numTriangles = vertex_count - 2; //The first 3 vertices make a triangle, and each subsequent vertex adds another.
-	//Note that indicesFilled is always a multiple of three (because they describe triangles), but verticesFilled is the total number of input vertices.
-	geometry[g].numIndices = numTriangles * 3; //Hopefully this is correct...
-    for(int i = 0; i < numTriangles; ++i) {
-        indices[indicesFilled] = verticesFilled;
-        indices[indicesFilled + 1] = verticesFilled + i + 1;
-        indices[indicesFilled + 2] = verticesFilled + i + 2;
-		indicesFilled += 3;
-    }
-    
-        //Prime bounding box with the first vertex.
-	geometry[g].bb_high_x=vertex_array[0];
-	geometry[g].bb_low_x=vertex_array[0];
-	geometry[g].bb_high_y=vertex_array[1];
-	geometry[g].bb_low_y=vertex_array[1];
-	geometry[g].bb_high_z=vertex_array[2];
-	geometry[g].bb_low_z=vertex_array[2];
-    
-    //Fill 2-element components.
-    int n = 0;
-    for(int i = verticesFilled*2; i < (verticesFilled*2 + (vertex_count * 2)); i += 2) {
-        texcoordArray[i] = texcoord_array[n];
-		texcoordArray[i+1] = texcoord_array[n+1];
-        n+=2;
-    }
-    
-    //Fill the 3-element components.
-    n = 0;
-    GLfloat *normal_array = MSI()->normals();
-    for(int i = verticesFilled*3; i < (verticesFilled*3 + (vertex_count*3)); i += 3) {
-        vertexArray[i] = vertex_array[n]; vertexArray[i+1] = vertex_array[n+1]; vertexArray[i+2] = vertex_array[n+2];
-		normalArray[i] = normal_array[n]; normalArray[i+1] = normal_array[n+1]; normalArray[i+2] = normal_array[n+2];
-        
-			//Grow bounding box
-        if(vertex_array[n] >= geometry[g].bb_high_x) geometry[g].bb_high_x = vertex_array[n];
-        if(vertex_array[n] <= geometry[g].bb_low_x) geometry[g].bb_low_x = vertex_array[n];
-        if(vertex_array[n+1] >= geometry[g].bb_high_y) geometry[g].bb_high_y = vertex_array[n+1];
-        if(vertex_array[n+1] <= geometry[g].bb_low_y) geometry[g].bb_low_y = vertex_array[n+1];
-        if(vertex_array[n+2] >= geometry[g].bb_high_z) geometry[g].bb_high_z = vertex_array[n+2];
-        if(vertex_array[n+2] <= geometry[g].bb_low_z) geometry[g].bb_low_z = vertex_array[n+2];
-        
-        n+=3;
-    }
-    
-	//Fill the 4-element components
-	for(int i = verticesFilled*4; i < (verticesFilled*4 + (vertex_count * 4)); i += 4) {
-		colors[i] = activeColor[0]; colors[i+1] = activeColor[1]; colors[i+2] = activeColor[2]; colors[i+3] = activeColor[3];
-		
-		if(tex4) {
-			texCoords4[i] = tex4[0]; texCoords4[i+1] = tex4[1]; texCoords4[i+2] = tex4[2]; texCoords4[i+3] = tex4[3];
-		} else {
-			texCoords4[i] = 0; texCoords4[i+1] = 0; texCoords4[i+2] = 0; texCoords4[i+3] = 1; //not sure if 0s or 1s are better here, or maybe 0,0,0,1...
-		}
-	}
+	geometry[g].primaryColor[0] = MSI()->color()[0];
+	geometry[g].primaryColor[1] = MSI()->color()[1];
+	geometry[g].primaryColor[2] = MSI()->color()[2];
+	geometry[g].primaryColor[3] = MSI()->color()[3];
+}
 
-	//Unfortunately, stuff like viewer sprite glow assume that these properties persist across draw calls, but ideally we would call this after every one: clearTextureAttributeCaches();
+void DrawCache::primeBoundingBox(int g, GLfloat x, GLfloat y, GLfloat z) {
+	geometry[g].bb_high_x=x;
+	geometry[g].bb_low_x=x;
+	geometry[g].bb_high_y=y;
+	geometry[g].bb_low_y=y;
+	geometry[g].bb_high_z=z;
+	geometry[g].bb_low_z=z;
+}
 
-    verticesFilled += vertex_count;
-	geometryFilled ++;
-	
-	//drawAll(); //DCW DESTRUCTIVE TEST
+void DrawCache::growBoundingBox(int g, GLfloat x, GLfloat y, GLfloat z){
+	if(x >= geometry[g].bb_high_x) geometry[g].bb_high_x = x;
+	if(x <= geometry[g].bb_low_x) geometry[g].bb_low_x = x;
+	if(y >= geometry[g].bb_high_y) geometry[g].bb_high_y = y;
+	if(y <= geometry[g].bb_low_y) geometry[g].bb_low_y = y;
+	if(z >= geometry[g].bb_high_z) geometry[g].bb_high_z = z;
+	if(z <= geometry[g].bb_low_z) geometry[g].bb_low_z = z;
 }
 
 
@@ -473,6 +585,9 @@ void DrawCache::drawAll() {
 			glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS4);
 			glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS4, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4, 0);
 			
+			/*glEnable(GL_CULL_FACE);
+			glFrontFace(GL_CW);*/
+			
 			if( geometry[g].textureID1 ) {
 				glActiveTexture(GL_TEXTURE1);
 				glBindTexture(GL_TEXTURE_2D, geometry[g].textureID1);
@@ -495,8 +610,10 @@ void DrawCache::drawAll() {
 			
 			if(geometry[g].isBlended) {
 				glEnable(GL_BLEND);
+				glDepthMask(GL_FALSE); //Blended (transparent) surfaces should not update the depth buffer.
 			} else {
 				glDisable(GL_BLEND);
+				glDepthMask(GL_TRUE);
 			}
 			if(geometry[g].depthTest) {
 				glEnable(GL_DEPTH_TEST);
@@ -505,25 +622,33 @@ void DrawCache::drawAll() {
 			}
 			glDepthFunc(geometry[g].depthFunction);
 			
-			//glEnable(GL_BLEND); //We might always want to blend.
-			
 			//Attach Lights
 			int lightsAttached = 0;
 			for(int n = 0; n < ACTIVE_LIGHTS_MAX*4; n++) {
 				activeLightPositions[n]=0;
 				activeLightColors[n]=0;
 			}
-			GLfloat x,y,z,size, red,green,blue,intensity;
+			GLfloat x,y,z,size, dirX,dirY,dirZ, outerLimitCos,innerLimitCos, red,green,blue, mode;
 			if (!gatheringLights && !geometry[g].landscapeTexture) {
 				for(int l = 0; l < numLightsInScene; l++) {
-					x = lightPositions[l*4];
+					x = lightPositions[l*4 + 0];
 					y = lightPositions[l*4 + 1];
 					z = lightPositions[l*4 + 2];
 					size = lightPositions[l*4 + 3];
+					
 					red = lightColors[l*4];
 					green = lightColors[l*4 + 1];
 					blue = lightColors[l*4 + 2];
-					intensity = lightColors[l*4 + 3];
+					mode = lightColors[l*4 + 3];
+					
+						//Is this a spot light
+					if(mode >= SPOT_LIGHT_PACK_MIN && mode <= SPOT_LIGHT_PACK_MAX) {
+						dirX = lightPositions[l*4 + 4];
+						dirY = lightPositions[l*4 + 5];
+						dirZ = lightPositions[l*4 + 6];
+						outerLimitCos = cos(lightColors[l*4 + 4] * 0.0174533); //Convert to cos(radians)
+						innerLimitCos = cos(lightColors[l*4 + 5] * 0.0174533); //Convert to cos(radians)
+					}
 					
 					//Is the light inside the bounding box (plus the light size)?
 					if(   x >= (geometry[g].bb_low_x-size)
@@ -539,15 +664,29 @@ void DrawCache::drawAll() {
 						
 						//We can only attach up to ACTIVE_LIGHTS_MAX lights.
 						if(lightsAttached < ACTIVE_LIGHTS_MAX){
-							activeLightPositions[lightsAttached*4] = x;
+							activeLightPositions[lightsAttached*4 +0] = x;
 							activeLightPositions[lightsAttached*4 +1] = y;
 							activeLightPositions[lightsAttached*4 +2] = z;
 							activeLightPositions[lightsAttached*4 +3] = size;
 							
-							activeLightColors[lightsAttached*4] = red;
+							activeLightColors[lightsAttached*4 +0] = red;
 							activeLightColors[lightsAttached*4 +1] = green;
 							activeLightColors[lightsAttached*4 +2] = blue;
-							activeLightColors[lightsAttached*4 +3] = intensity;
+							activeLightColors[lightsAttached*4 +3] = mode;
+							
+								//Spot lights also take up the second slot.
+							if(mode >= SPOT_LIGHT_PACK_MIN && mode <= SPOT_LIGHT_PACK_MAX) {
+								//WHAT IS THE DIFFERENCE HERE? WHY DOESN'T THIS WORK?
+								//MSI()->transformVectorToEyespace(dirX, dirY, dirZ); //Direction vector, if any, also needs to be in eyespace.
+								
+								activeLightPositions[lightsAttached*4 +4] = dirX;
+								activeLightPositions[lightsAttached*4 +5] = dirY;
+								activeLightPositions[lightsAttached*4 +6] = dirZ;
+								
+								activeLightColors[lightsAttached*4 +4] = outerLimitCos;
+								activeLightColors[lightsAttached*4 +5] = innerLimitCos;
+								lightsAttached++;
+							}
 							
 							lightsAttached++;
 						}
@@ -593,6 +732,7 @@ void DrawCache::drawAll() {
     if(originalShader) {
         originalShader->enable(); //We need to restore whatever shader was active, so we don't pollute outside state.
     }
+	glDepthMask(GL_TRUE);
 }
 
 void DrawCache::cacheLandscapeTextureStatus(bool isLand) {lastTextureIsLandscape = isLand;}

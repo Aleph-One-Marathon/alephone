@@ -277,9 +277,17 @@ void RenderRasterize_Shader::render_tree() {
             
             //Add a random light off the floor if the player has invincibility active.
             if(current_player->invincibility_duration) {
-                DC()->addLight(current_player->location.x, current_player->location.y, current_player->location.z + 200, 2000, rand() / double(RAND_MAX), rand() / double(RAND_MAX), rand() / double(RAND_MAX), 1);
+                DC()->addPointLight(current_player->location.x, current_player->location.y, current_player->location.z + 200, 2000, rand() / double(RAND_MAX), rand() / double(RAND_MAX), rand() / double(RAND_MAX), 0);
             }
             
+			//DCW demo from coordinates: -4737, 15180, 0
+			//DC()->addSpotLight( -4737,15180,200, 4000, 1,0,-.1, 20,10, 1,.1,.1, 0);
+			//DC()->addSpotLight( -4737,15180,200, 4000, -1,0,-.1, 20,10, .1,1,.1, 0);
+			//DC()->addPointLight( -4737,15180,100, 4000, 1,0,0, 0);
+			//DC()->addPointLight( -15061,5715,200, 1000, 1,1,1, 0);
+			//DC()->addSpotLight( -15061,5715,200, 4000, 0,1,-.1, 20,10, 1,.1,.1, 0);
+			//DC()->addSpotLight( -15061,5715,200, 4000, 0,-1,-.1, 20,10, .1,1,.1, 0);
+		
             RenderRasterizerClass::render_tree(kGlow);
             DC()->finishGatheringLights();
             //DC()->drawAll(); //Draw and flush buffers
@@ -387,7 +395,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupSpriteTexture(const
 			s = Shader::get(Shader::S_InvincibleBloom);
             
              //Add a random light slightly off the floor
-            DC()->addLight(rect.Position.x, rect.Position.y, rect.Position.z + 100, 2000, rand() / double(RAND_MAX), rand() / double(RAND_MAX), rand() / double(RAND_MAX), 1);
+            DC()->addPointLight(rect.Position.x, rect.Position.y, rect.Position.z + 100, 2000, rand() / double(RAND_MAX), rand() / double(RAND_MAX), rand() / double(RAND_MAX), 0);
 		}
 		s->enable();
 		s->setFloat(Shader::U_TransferFadeOut,((float)((uint16)rect.transfer_data))/(float)((int)FIXED_ONE));
@@ -856,12 +864,12 @@ void    RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_dat
         
 		glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);*/
 
-        DC()->addGeometry(vertex_count, vertex_array, texcoord_array, tex4);
+        DC()->addTriangleFan(vertex_count, vertex_array, texcoord_array, tex4);
         
 		// see note 2 above; pulsate uniform should stay set from setupWall call
 		if (setupGlow(view, TMgr, 0, intensity, weaponFlare, selfLuminosity, offset, renderStep)) {
 			//glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);
-            DC()->addGeometry(vertex_count, vertex_array, texcoord_array, tex4);
+            DC()->addTriangleFan(vertex_count, vertex_array, texcoord_array, tex4);
 		}
 
 		Shader::disable();
@@ -1008,11 +1016,11 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
             assert(vertex_count < 5); //If we ever hit this, I will need to rewrite the below for GL_QUADS (or ignore the visial glitch?);
             
 			//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-            DC()->addGeometry(vertex_count, vertex_array, texcoord_array, tex4);
+            DC()->addTriangleFan(vertex_count, vertex_array, texcoord_array, tex4);
 
 			if (setupGlow(view, TMgr, wobble, intensity, weaponFlare, selfLuminosity, offset, renderStep)) {
 				//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-                DC()->addGeometry(vertex_count, vertex_array, texcoord_array, tex4);
+                DC()->addTriangleFan(vertex_count, vertex_array, texcoord_array, tex4);
 			}
 
 			Shader::disable();
@@ -1112,14 +1120,23 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	}
 
 	if (renderStep == kGlow) {
-		s->setFloat(Shader::U_BloomScale, SkinPtr->BloomScale);
-		s->setFloat(Shader::U_BloomShift, SkinPtr->BloomShift);
+		/*s->setFloat(Shader::U_BloomScale, SkinPtr->BloomScale);
+		s->setFloat(Shader::U_BloomShift, SkinPtr->BloomShift);*/
+		DC()->cacheBloomScale(SkinPtr->BloomScale);
+		DC()->cacheBloomShift(SkinPtr->BloomShift);
 	}
-	s->setFloat(Shader::U_Flare, flare);
+	/*s->setFloat(Shader::U_Flare, flare);
 	s->setFloat(Shader::U_SelfLuminosity, selfLuminosity);
 	s->setFloat(Shader::U_Wobble, 0);
 	s->setFloat(Shader::U_Depth, 0);
-	s->setFloat(Shader::U_Glow, 0);
+	s->setFloat(Shader::U_Glow, 0);*/
+	
+	DC()->cacheFlare(flare);
+	DC()->cacheSelfLuminosity(selfLuminosity);
+	DC()->cacheWobble(0);
+	DC()->cacheDepth(0);
+	DC()->cacheGlow(0);
+	
 	MSI()->color4f(color[0], color[1], color[2], 1);
 	
 	// Find an animated model's vertex positions and normals:
@@ -1142,27 +1159,27 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		ModelPtr->Model.FindPositions_Neutral(true);	// Fallback: neutral (will do nothing for static models)
     
 	//glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
-    glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.PosBase());
-    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);
+    /*glVertexAttribPointer(Shader::ATTRIB_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.PosBase());
+    glEnableVertexAttribArray(Shader::ATTRIB_VERTEX);*/
     
 	//glClientActiveTexture(GL_TEXTURE0);
 	if (ModelPtr->Model.TxtrCoords.empty()) {
 		//glDisableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	} else {
-        glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, ModelPtr->Model.TCBase());
-        glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);
+        /*glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS, 2, GL_FLOAT, 0, 0, ModelPtr->Model.TCBase());
+        glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS);*/
 	}
 
 	//glEnableClientState(GL_NORMAL_ARRAY);
 	//glNormalPointer(GL_FLOAT,0,ModelPtr->Model.NormBase());
-    glVertexAttribPointer(Shader::ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.NormBase());
-    glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);
+    /*glVertexAttribPointer(Shader::ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.NormBase());
+    glEnableVertexAttribArray(Shader::ATTRIB_NORMAL);*/
     
 	//glClientActiveTexture(GL_TEXTURE1);
 	//glEnableClientState(GL_TEXTURE_COORD_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
 	//glTexCoordPointer(4,GL_FLOAT,sizeof(vec4),ModelPtr->Model.TangentBase());
-    glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS4, 4, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.TangentBase());
-    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS4);
+    /*glVertexAttribPointer(Shader::ATTRIB_TEXCOORDS4, 4, GL_FLOAT, GL_FALSE, 0, ModelPtr->Model.TangentBase());
+    glEnableVertexAttribArray(Shader::ATTRIB_TEXCOORDS4);*/
 
 	if(ModelPtr->Use(CLUT,OGL_SkinManager::Normal)) {
 		LoadModelSkin(SkinPtr->NormalImg, Collection, CLUT);
@@ -1179,7 +1196,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		glActiveTexture(GL_TEXTURE0);
 	}
 
-    Shader* lastShader = lastEnabledShader();
+    /*Shader* lastShader = lastEnabledShader();
     if (lastShader) {
 		GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
 
@@ -1206,10 +1223,12 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
         lastShader->setVec4(Shader::U_ClipPlane1, plane1);
         lastShader->setVec4(Shader::U_ClipPlane5, plane5);
 
-    }
+    }*/
     
-	glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
-    
+	//glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
+	
+	DC()->addTriangles(ModelPtr->Model.NumVI(), ModelPtr->Model.VIBase(), ModelPtr->Model.PosBase(), ModelPtr->Model.TCBase(), ModelPtr->Model.NormBase(), ModelPtr->Model.TangentBase());
+	
 	if (canGlow && SkinPtr->GlowImg.IsPresent()) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(SkinPtr->GlowBlend);
@@ -1227,7 +1246,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 			LoadModelSkin(SkinPtr->GlowImg, Collection, CLUT);
 		}
         
-        Shader* lastShader = lastEnabledShader();
+        /*Shader* lastShader = lastEnabledShader();
         if (lastShader) {
 			GLfloat modelMatrix[16], projectionMatrix[16], modelProjection[16], modelMatrixInverse[16], textureMatrix[16];
 
@@ -1245,9 +1264,10 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 			lastShader->setVec4(Shader::U_FogColor, MatrixStack::Instance()->fog());
 			lastShader->setVec4(Shader::U_FogStart, MatrixStack::Instance()->fogStart());
 			lastShader->setVec4(Shader::U_FogStart, MatrixStack::Instance()->fogEnd());
-        }
+        }*/
         
-		glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
+		//glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
+		DC()->addTriangles(ModelPtr->Model.NumVI(), ModelPtr->Model.VIBase(), ModelPtr->Model.PosBase(), ModelPtr->Model.TCBase(), ModelPtr->Model.NormBase(), ModelPtr->Model.TangentBase());
 	}
 
 	//glDisableClientState(GL_NORMAL_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
@@ -1444,7 +1464,7 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
     }*/
     
 	//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	DC()->addGeometry(4, vertex_array, texcoord_array, NULL);
+	DC()->addTriangleFan(4, vertex_array, texcoord_array, NULL);
 	
 	if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, offset, renderStep)) {
         
@@ -1487,7 +1507,7 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
         }
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);*/
 		
-		DC()->addGeometry(4, vertex_array, texcoord_array, NULL);
+		DC()->addTriangleFan(4, vertex_array, texcoord_array, NULL);
 	}
         
 	glEnable(GL_DEPTH_TEST);
@@ -1723,12 +1743,12 @@ void RenderRasterize_Shader::render_viewer_sprite(rectangle_definition& RenderRe
 		newTexData[i*2] = ExtendedVertexList[i].TexCoord[0]; newTexData[i*2 + 1] = ExtendedVertexList[i].TexCoord[1];
 	}
 	
-	DC()->addGeometry(4, newVertexData, newTexData, NULL);
+	DC()->addTriangleFan(4, newVertexData, newTexData, NULL);
 	
         if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, 0, renderStep)) {
             //DCW I don't know about changing this to a triangle fan...  was originally glDrawArrays(GL_QUADS, 0, 4);
             //glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-			DC()->addGeometry(4, newVertexData, newTexData, NULL);
+			DC()->addTriangleFan(4, newVertexData, newTexData, NULL);
 	}
 	
 	glEnable(GL_DEPTH_TEST);

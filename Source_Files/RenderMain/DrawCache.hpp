@@ -21,6 +21,24 @@
     //This number also is a hard-coded cap in the shader to help with the unroller; if you increase this, increase it in the shaders too.
 #define ACTIVE_LIGHTS_MAX 32
 
+//Light modes, to be packed into a single float value. Point, spot and directional, where each can be positive or negative.
+//Boundaries: 0-.16 (point light), .16-.33 (negative point light), .33-.50 (spot light), .50-.66 (negative spot light), .66-.83 (directional light), .83-1.0 (negative directional light)
+//Because these are floating point values, we need to be a little bit fuzzy. This list is used in the shader.
+#define POINT_LIGHT_PACK_MIN 		0.00
+#define POINT_LIGHT 				0.08
+#define POINT_LIGHT_NEGATIVE		0.25
+#define POINT_LIGHT_PACK_MAX 		0.32
+
+#define SPOT_LIGHT_PACK_MIN			0.33
+#define SPOT_LIGHT					0.42
+#define SPOT_LIGHT_NEGATIVE			0.58
+#define SPOT_LIGHT_PACK_MAX			0.66
+
+#define DIRECTIONAL_LIGHT_PACK_MIN	0.67
+#define DIRECTIONAL_LIGHT			0.75
+#define DIRECTIONAL_LIGHT_NEGATIVE	0.92
+#define DIRECTIONAL_LIGHT_PACK_MAX	1.00
+
 	//Structure containing properties that apply to a single surface, composed of one or more triangles.
 	//These are generally going to be uniforms, or some other state that applies to the surface
 struct GeometryProperties {
@@ -61,6 +79,9 @@ struct GeometryProperties {
 	GLfloat depth;
 	GLfloat glow;
 	
+		//RGBA representation of the solid color for this geometry, if needed.
+	GLfloat primaryColor[4];
+	
 	GLfloat bb_high_x, bb_low_x, bb_high_y, bb_low_y, bb_high_z, bb_low_z; //Axis-aligned bounding box that contains all vertices.
 };
 
@@ -74,9 +95,15 @@ public:
 	void growGeometryList();
 	void growIndexList();
 	void growVertexLists();
+	void growToFit(int triangleCount, int vertexCount); //Guarantees that all lists will fit specified number triangles and vertices, including one more geometry item. Might trigger a draw.
 	
-    void addGeometry(int vertex_count, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *tex4); //Ingest geometry, to be drawn at a later time.
-    void drawAll(); //Draws what's in the buffers, and reset. Typically call this when finished caching the whole scene.
+	void captureState(int g); //Captire all volatile state this geometry will need later. Active texture, matrices, cached properties, etc.
+	void primeBoundingBox(int g, GLfloat x, GLfloat y, GLfloat z); //Initialize BB for geometry[g] to a point xyz.
+	void growBoundingBox(int g, GLfloat x, GLfloat y, GLfloat z); //Expand BB for geometry[g] to include the point xyz.
+	
+    void addTriangleFan(int vertex_count, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *tex4); //Ingest geometry in the form of a triangle fan, to be drawn at a later time.
+	void addTriangles(int index_count, GLushort *index_array, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *normals, GLfloat *tangents); //Ingest geometry in the form of a GLushort indexed triangles, to be drawn at a later time.
+    void drawAll(); //Draws what's in the buffers, and reset. Typically call this when finished caching the whole scene or maybe if the buffers need flushing before reallocation.
         
         //Call this with true/false whenever you bind a landscape texture.
         //Landscapes have different wrap modes, and we need to set those when drawing later.
@@ -99,7 +126,8 @@ public:
     
     void startGatheringLights();
     void addDefaultLight(GLfloat x, GLfloat y, GLfloat z, short objectType, short permutationType); //Only works for effects and projectiles ATM.
-    void addLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size, GLfloat red, GLfloat green, GLfloat blue, GLfloat intensity );
+    void addPointLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size, GLfloat red, GLfloat green, GLfloat blue, bool negative);
+	void addSpotLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size,  GLfloat dirX, GLfloat dirY, GLfloat dirZ, GLfloat outerAngle, GLfloat innerAngle,  GLfloat red, GLfloat green, GLfloat blue, bool negative);
     void finishGatheringLights();
     
 private:
