@@ -114,8 +114,8 @@ void OpenALManager::ResyncPlayers() {
 }
 
 void OpenALManager::Start() {
-	process_audio_active = true;
 	SDL_PauseAudio(is_using_recording_device); //Start playing only if not recording playback
+	process_audio_active = SDL_GetAudioStatus() != SDL_AUDIO_STOPPED;
 }
 
 void OpenALManager::Stop() {
