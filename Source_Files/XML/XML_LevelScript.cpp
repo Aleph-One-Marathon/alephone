@@ -221,8 +221,8 @@ void ResetLevelScript()
 	// reset values to engine defaults first
 	ResetAllMMLValues();
 	// then load the base stuff (from Scripts folder and whatnot)
-	LoadBaseMMLScripts();
-	Plugins::instance()->load_mml();
+	LoadBaseMMLScripts(false);
+	Plugins::instance()->load_mml(false);
 }
 
 

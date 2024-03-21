@@ -1505,8 +1505,8 @@ static void graphics_dialog(void *arg)
 		    write_preferences();
 
 			ResetAllMMLValues();
-			LoadBaseMMLScripts();
-			Plugins::instance()->load_mml();
+			LoadBaseMMLScripts(true);
+			Plugins::instance()->load_mml(true);
 
 		    change_screen_mode(&graphics_preferences->screen_mode, true);
 		    clear_screen(true);
@@ -3033,8 +3033,8 @@ static void plugins_dialog(void *)
 			write_preferences();
 
 			ResetAllMMLValues();
-			LoadBaseMMLScripts();
-			Plugins::instance()->load_mml();
+			LoadBaseMMLScripts(true);
+			Plugins::instance()->load_mml(true);
 
 			Plugins::instance()->set_map_checksum(get_current_map_checksum());
 			LoadLevelScripts(get_map_file());

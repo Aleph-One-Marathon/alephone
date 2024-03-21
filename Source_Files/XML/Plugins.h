@@ -93,7 +93,7 @@ public:
 	void invalidate() { m_validated = false; }
 	void set_mode(GameMode mode) { m_mode = mode; }
 	GameMode mode() { return m_mode; }
-	void load_mml();
+	void load_mml(bool load_menu_mml_only);
 
 	void load_shapes_patches(bool opengl);
 
