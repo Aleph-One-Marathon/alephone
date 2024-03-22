@@ -13,7 +13,11 @@ runs:
     using: "composite"
     steps:
     - uses: actions/checkout@v4
-    
+      
+    - name: Temp hack to delete broken VC tools
+      run: Remove-Item -Path "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\Microsoft.VCToolsVersion.v143.default.*" -Recurse
+      shell: pwsh
+     
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
       
