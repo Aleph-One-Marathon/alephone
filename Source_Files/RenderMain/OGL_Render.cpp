@@ -1046,7 +1046,7 @@ bool OGL_SetView(view_data &View)
 	MSI()->loadMatrixf(MaraEye_2_OGLEye);
 	MSI()->multMatrixf(World_2_MaraEye);
 	MSI()->getFloatv(MS_MODELVIEW_MATRIX,World_2_OGLEye);
-	
+		
 	// Find the appropriate modelview matrix for 3D-model skybox rendering
 	MSI()->loadMatrixf(MaraEye_2_OGLEye);
 	MSI()->multMatrixf(CenteredWorld_2_MaraEye);

@@ -11,6 +11,7 @@
 
 #include "OGL_Headers.h"
 #include "OGL_Shader.h"
+#include "scottish_textures.h"
 
 
     //Maximum number of dynamic lights per frame
@@ -102,7 +103,8 @@ public:
 	void growBoundingBox(int g, GLfloat x, GLfloat y, GLfloat z); //Expand BB for geometry[g] to include the point xyz.
 	
     void addTriangleFan(int vertex_count, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *tex4); //Ingest geometry in the form of a triangle fan, to be drawn at a later time.
-	void addTriangles(int index_count, GLushort *index_array, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *normals, GLfloat *tangents); //Ingest geometry in the form of a GLushort indexed triangles, to be drawn at a later time.
+	void addModel(rectangle_definition& RenderRectangle); //Add model data, to be drawn at a later time.
+	
     void drawAll(); //Draws what's in the buffers, and reset. Typically call this when finished caching the whole scene or maybe if the buffers need flushing before reallocation.
         
         //Call this with true/false whenever you bind a landscape texture.
@@ -129,6 +131,10 @@ public:
     void addPointLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size, GLfloat red, GLfloat green, GLfloat blue, bool negative);
 	void addSpotLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size,  GLfloat dirX, GLfloat dirY, GLfloat dirZ, GLfloat outerAngle, GLfloat innerAngle,  GLfloat red, GLfloat green, GLfloat blue, bool negative);
     void finishGatheringLights();
+	
+	//Sets the cached values back to default.
+	//It is sometimes a good idea to call this after adding geometry, or before starting to configure some new state.
+	void clearTextureAttributeCaches();
     
 private:
     DrawCache(){
@@ -170,8 +176,6 @@ private:
 	//These get cleared once drawn or fed into a buffer.
 	GLfloat scaleX, offsetX, scaleY, offsetY, bloomScale, bloomShift, flare, selfLuminosity, pulsate, wobble, depth, glow;
 	GLfloat strictDepthMode;
-
-    void clearTextureAttributeCaches();
 };
 
 DrawCache* DC(); //Convenience instance access

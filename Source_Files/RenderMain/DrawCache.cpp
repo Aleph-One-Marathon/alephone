@@ -12,6 +12,7 @@
 #include "MatrixStack.hpp"
 #include "cseries.h"
 #include "screen.h"
+#include "OGL_Model_Def.h"
 
 #include "map.h"
 #include "projectiles.h"
@@ -22,9 +23,12 @@
 bool lastTextureIsLandscape;
 
 	//Main list of dynamic lights
+	//Some lights (like spot lights) take two slots, so actual number of lights may be as few as half of this.
 int numLightsInScene;
-GLfloat lightPositions[LIGHTS_MAX * 4]; //Format: x, y, z (location), w (size in world units)
-GLfloat lightColors[LIGHTS_MAX * 4]; //Format: r, g, b, intensity?
+
+	//Allocate LIGHTS_MAX + 1 because some lights (like spot lights) require an extra slot.
+GLfloat lightPositions[(LIGHTS_MAX+1) * 4]; //Format: x, y, z (world space location), w (size in world units).
+GLfloat lightColors[(LIGHTS_MAX+1) * 4]; //Format: r, g, b, mode
 
 	//The actual data fed into the shader.
 	//Same format as above, but position list must be terminated with a {0,0,0,0} light.
@@ -250,6 +254,8 @@ void DrawCache::addDefaultLight(GLfloat x, GLfloat y, GLfloat z, short objectTyp
 void DrawCache::addPointLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size, GLfloat red, GLfloat green, GLfloat blue, bool negative) {
     if(!gatheringLights) return;
     
+	if (size < 1) { size = 1; } //A size of zero signals the shader to stop processing, so disallow that input.
+	
     if(numLightsInScene < LIGHTS_MAX) {
         lightPositions[numLightsInScene*4 + 0] = x;
         lightPositions[numLightsInScene*4 + 1] = y;
@@ -267,6 +273,8 @@ void DrawCache::addPointLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size, GLf
 
 void DrawCache::addSpotLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size,  GLfloat dirX, GLfloat dirY, GLfloat dirZ, GLfloat outerAngle, GLfloat innerAngle,  GLfloat red, GLfloat green, GLfloat blue, bool negative) {
 	if(!gatheringLights) return;
+	
+	if (size < 1) { size = 1; } //A size of zero signals the shader to stop processing, so disallow that input.
 	
 		//Spot lights take up two lighting slots.
 	if(numLightsInScene + 1 < LIGHTS_MAX) {
@@ -369,18 +377,26 @@ void DrawCache::addTriangleFan(int vertex_count, GLfloat *vertex_array, GLfloat 
 		}
 	}
 
-	//Unfortunately, stuff like viewer sprite glow assume that these properties persist across draw calls, but ideally we would call this after every one: clearTextureAttributeCaches();
-
+	clearTextureAttributeCaches();
+	
     verticesFilled += vertex_count;
 	geometryFilled ++;
 }
 
 
-void DrawCache::addTriangles(int index_count, GLushort *index_array, GLfloat *vertex_array, GLfloat *texcoord_array, GLfloat *normals, GLfloat *tangents)
+void DrawCache::addModel(rectangle_definition& RenderRectangle)
 {
 	// TODO: support normals. looks like ATTRIB_TEXCOORDS4 were originally tangents?
 	// TODO: support glEnable(GL_CULL_FACE);
 	// TODO: support glFrontFace
+	
+	OGL_ModelData *ModelPtr = RenderRectangle.ModelPtr;
+	int index_count = ModelPtr->Model.NumVI();
+	GLushort *index_array = ModelPtr->Model.VIBase();
+	GLfloat *vertex_array = ModelPtr->Model.PosBase();
+	GLfloat *texcoord_array = ModelPtr->Model.TCBase();
+	GLfloat *normals = ModelPtr->Model.NormBase();
+	GLfloat *tangents = ModelPtr->Model.TangentBase();
 	
 	//Is there a better way to figure out how big vertex_array is?
 	int max_index = 0;
@@ -416,13 +432,9 @@ void DrawCache::addTriangles(int index_count, GLushort *index_array, GLfloat *ve
 	
 	//Fill the 3-element components, and make sure the bounding box will enclose all vertices.
 	n = 0;
-	primeBoundingBox(g, vertex_array[0], vertex_array[1], vertex_array[2]);
-	
 	for(int i = verticesFilled*3; i < (verticesFilled*3 + (vertex_count*3)); i += 3) {
 		vertexArray[i] = vertex_array[n]; vertexArray[i+1] = vertex_array[n+1]; vertexArray[i+2] = vertex_array[n+2];
-		normalArray[i] =  normals[n]; normalArray[i+1] =  normals[n+1]; normalArray[i+2] =  normals[n+2];
-		
-		growBoundingBox(g, vertex_array[n], vertex_array[n+1], vertex_array[n+2]);
+		normalArray[i] =  0-normals[n]; normalArray[i+1] =  0-normals[n+1]; normalArray[i+2] =  0-normals[n+2];
 		n+=3;
 	}
 	
@@ -432,10 +444,31 @@ void DrawCache::addTriangles(int index_count, GLushort *index_array, GLfloat *ve
 		
 		if(tangents) {
 			texCoords4[i] = tangents[0]; texCoords4[i+1] = tangents[1]; texCoords4[i+2] = tangents[2]; texCoords4[i+3] = tangents[3];
+			//printf("Sign: %f\n", normals[3]);
 		} else {
 			texCoords4[i] = 0; texCoords4[i+1] = 0; texCoords4[i+2] = 0; texCoords4[i+3] = 1; //not sure if 0s or 1s are better here, or maybe 0,0,0,1...
 		}
 	}
+
+		//The model should already have a bounding box, but for lighting we must transform the supplied box into a world location and then create a new axis-aligned box which contains it.
+	//Create and apply the world space transform.
+	const world_point3d& pos = RenderRectangle.Position;
+	GLfloat HorizScale = RenderRectangle.Scale*RenderRectangle.HorizScale;
+	GLfloat lowerCorner[3], upperCorner[3];
+	MSI()->pushMatrix();
+		MSI()->loadIdentity();
+		MSI()->translatef(pos.x, pos.y, pos.z);
+		MSI()->rotatef((360.0/FULL_CIRCLE)*RenderRectangle.Azimuth,0,0,1);
+		MSI()->scalef(HorizScale,HorizScale,RenderRectangle.Scale);
+		lowerCorner[0] = ModelPtr->Model.BoundingBox[0][0]; lowerCorner[1] = ModelPtr->Model.BoundingBox[0][1]; lowerCorner[2] = ModelPtr->Model.BoundingBox[0][2];
+		upperCorner[0] = ModelPtr->Model.BoundingBox[1][0]; upperCorner[1] = ModelPtr->Model.BoundingBox[1][1]; upperCorner[2] = ModelPtr->Model.BoundingBox[1][2];
+		MSI()->transformVertex(lowerCorner[0], lowerCorner[1], lowerCorner[2]);
+		MSI()->transformVertex(upperCorner[0], upperCorner[1], upperCorner[2]);
+	MSI()->popMatrix();
+	primeBoundingBox(g, lowerCorner[0], lowerCorner[1], lowerCorner[2]);
+	growBoundingBox(g, upperCorner[0], upperCorner[1], upperCorner[2]);
+	
+	clearTextureAttributeCaches();
 	
 	verticesFilled += vertex_count;
 	geometryFilled++;
@@ -444,7 +477,6 @@ void DrawCache::addTriangles(int index_count, GLushort *index_array, GLfloat *ve
 	//Captures current volatile state information into geometry[g]
 void DrawCache::captureState(int g)
 {
-	
 	GLint initialUnit;
 	glGetIntegerv(GL_ACTIVE_TEXTURE, &initialUnit); //Store active texture so we can reset it later.
 	glActiveTexture(GL_TEXTURE0);
@@ -651,7 +683,8 @@ void DrawCache::drawAll() {
 					}
 					
 					//Is the light inside the bounding box (plus the light size)?
-					if(   x >= (geometry[g].bb_low_x-size)
+					if( size > 0
+					   && x >= (geometry[g].bb_low_x-size)
 					   && x <= (geometry[g].bb_high_x+size)
 					   && y >= (geometry[g].bb_low_y-size)
 					   && y <= (geometry[g].bb_high_y+size)
@@ -659,11 +692,12 @@ void DrawCache::drawAll() {
 					   && z <= (geometry[g].bb_high_z+size)
 					   ) {
 						
-						//The vertex needs to be in eyespace
-						MSI()->transformVertexToEyespace(x, y, z);
-						
 						//We can only attach up to ACTIVE_LIGHTS_MAX lights.
 						if(lightsAttached < ACTIVE_LIGHTS_MAX){
+							
+							//Light positions must now be in eye space
+							MSI()->transformVertexToEyespace(x,y,z);
+							
 							activeLightPositions[lightsAttached*4 +0] = x;
 							activeLightPositions[lightsAttached*4 +1] = y;
 							activeLightPositions[lightsAttached*4 +2] = z;
@@ -676,8 +710,8 @@ void DrawCache::drawAll() {
 							
 								//Spot lights also take up the second slot.
 							if(mode >= SPOT_LIGHT_PACK_MIN && mode <= SPOT_LIGHT_PACK_MAX) {
-								//WHAT IS THE DIFFERENCE HERE? WHY DOESN'T THIS WORK?
-								//MSI()->transformVectorToEyespace(dirX, dirY, dirZ); //Direction vector, if any, also needs to be in eyespace.
+								//CONSIDER THAT 3D models have their own MVP matrix, which is usually different than the active one in MSI.
+								MSI()->transformVectorToEyespace(dirX, dirY, dirZ); //Direction vector, if any, also needs to be in eyespace.
 								
 								activeLightPositions[lightsAttached*4 +4] = dirX;
 								activeLightPositions[lightsAttached*4 +5] = dirY;
@@ -686,6 +720,7 @@ void DrawCache::drawAll() {
 								activeLightColors[lightsAttached*4 +4] = outerLimitCos;
 								activeLightColors[lightsAttached*4 +5] = innerLimitCos;
 								lightsAttached++;
+								l++; //Skip over processing of this slot on next loop, since it's not a whole light.
 							}
 							
 							lightsAttached++;
@@ -758,7 +793,7 @@ void DrawCache::clearTextureAttributeCaches() {
     bloomScale = 0;
     bloomShift = 0;
     flare = 0;
-    selfLuminosity = 0;
+    selfLuminosity = 0.5; //Default is not 0
     pulsate = 0;
     wobble = 0;
     depth = 0;

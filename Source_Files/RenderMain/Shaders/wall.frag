@@ -2,7 +2,6 @@ R"(
 
 precision highp float;
 varying vec2 textureUV;
-uniform mat4 MS_ModelViewMatrix;
 uniform sampler2D texture0;
 uniform vec4 lightPositions[32];
 uniform vec4 lightColors[32];
@@ -64,11 +63,11 @@ void main (void) {
 	float fogFactor = getFogFactor(length(viewDir));
 
 	//Calculate light
-    vec4 lightAddition = vec4(0.0, 0.0, 0.0, 1.0);
-    for(int i = 0; i < 32; ++i) {
+	vec4 lightAddition = vec4(0.0, 0.0, 0.0, 1.0);
+	for(int i = 0; i < 32; ++i) {
 		float size = lightPositions[i].w;
 		if( size < .1) { break; } //End of light list
-		vec3 lightPosition = vec3(lightPositions[i].xyz);
+		vec3 lightPosition = lightPositions[i].xyz;
 		vec4 lightColor = vec4(lightColors[i].rgb, 1.0);
 		float mode = lightColors[i].a;
 		float distance = length(lightPosition - vPosition_eyespace.xyz);
@@ -78,9 +77,8 @@ void main (void) {
 
 		// Spotlight attenuation
 		if(mode >= 0.33 && mode <= 0.66) {
-			//vec3 spotlightDirection = normalize(vec3(lightPositions[i+1].xyz)); //Input should be an eyespace vector.
-			vec3 spotlightDirection = (MS_ModelViewMatrix * normalize(vec4(lightPositions[i+1].x, lightPositions[i+1].y, lightPositions[i+1].z, 0.0))).xyz; //Convert world spotlight vector to eyespace vector.
-
+			vec3 spotlightDirection = normalize(vec3(lightPositions[i+1].xyz)); //Input should be an eyespace vector.
+			
 			float outerLimitCos = lightColors[i+1].x; //Cosine of outside angle (in radians). There is no light beyond this angle.
 			float innerLimitCos = lightColors[i+1].y; //Cosine of inside angle (in radians). Light is at 100% inside of this angle.
 			float dotFromDirection = dot(-lightVector, spotlightDirection);

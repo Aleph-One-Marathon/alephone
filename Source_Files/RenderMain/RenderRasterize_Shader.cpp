@@ -279,14 +279,6 @@ void RenderRasterize_Shader::render_tree() {
             if(current_player->invincibility_duration) {
                 DC()->addPointLight(current_player->location.x, current_player->location.y, current_player->location.z + 200, 2000, rand() / double(RAND_MAX), rand() / double(RAND_MAX), rand() / double(RAND_MAX), 0);
             }
-            
-			//DCW demo from coordinates: -4737, 15180, 0
-			//DC()->addSpotLight( -4737,15180,200, 4000, 1,0,-.1, 20,10, 1,.1,.1, 0);
-			//DC()->addSpotLight( -4737,15180,200, 4000, -1,0,-.1, 20,10, .1,1,.1, 0);
-			//DC()->addPointLight( -4737,15180,100, 4000, 1,0,0, 0);
-			//DC()->addPointLight( -15061,5715,200, 1000, 1,1,1, 0);
-			//DC()->addSpotLight( -15061,5715,200, 4000, 0,1,-.1, 20,10, 1,.1,.1, 0);
-			//DC()->addSpotLight( -15061,5715,200, 4000, 0,-1,-.1, 20,10, .1,1,.1, 0);
 		
             RenderRasterizerClass::render_tree(kGlow);
             DC()->finishGatheringLights();
@@ -871,7 +863,7 @@ void    RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_dat
 			//glDrawArrays(GL_TRIANGLE_FAN, 0, vertex_count);
             DC()->addTriangleFan(vertex_count, vertex_array, texcoord_array, tex4);
 		}
-
+		
 		Shader::disable();
 		MSI()->matrixMode(MS_TEXTURE);
 		MSI()->loadIdentity();
@@ -1227,7 +1219,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
     
 	//glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
 	
-	DC()->addTriangles(ModelPtr->Model.NumVI(), ModelPtr->Model.VIBase(), ModelPtr->Model.PosBase(), ModelPtr->Model.TCBase(), ModelPtr->Model.NormBase(), ModelPtr->Model.TangentBase());
+	DC()->addModel(RenderRectangle);
 	
 	if (canGlow && SkinPtr->GlowImg.IsPresent()) {
 		glEnable(GL_BLEND);
@@ -1267,7 +1259,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
         }*/
         
 		//glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
-		DC()->addTriangles(ModelPtr->Model.NumVI(), ModelPtr->Model.VIBase(), ModelPtr->Model.PosBase(), ModelPtr->Model.TCBase(), ModelPtr->Model.NormBase(), ModelPtr->Model.TangentBase());
+		DC()->addModel(RenderRectangle);
 	}
 
 	//glDisableClientState(GL_NORMAL_ARRAY); //NOT SUPPORTED ANGLE FUNCTION
@@ -1330,7 +1322,7 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 		MSI()->rotatef((360.0/FULL_CIRCLE)*rect.Azimuth,0,0,1);
 		GLfloat HorizScale = rect.Scale*rect.HorizScale;
 		MSI()->scalef(HorizScale,HorizScale,rect.Scale);
-
+		
 		short descriptor = GET_DESCRIPTOR_COLLECTION(rect.ShapeDesc);
 		short collection = GET_COLLECTION(descriptor);
 		short clut = ModifyCLUT(rect.transfer_mode,GET_COLLECTION_CLUT(descriptor));
@@ -1509,7 +1501,7 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 		
 		DC()->addTriangleFan(4, vertex_array, texcoord_array, NULL);
 	}
-        
+	
 	glEnable(GL_DEPTH_TEST);
 	MSI()->popMatrix();
 	Shader::disable();

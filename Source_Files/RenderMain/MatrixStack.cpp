@@ -250,24 +250,43 @@ void MatrixStack::multMatrixf (const GLfloat *m){
   
   activeStack()[activeStackIndex()] = activeMatrix() * multiplier;
 }
+
 void MatrixStack::transformVertex (GLfloat &x, GLfloat &y, GLfloat &z){
-  glm::vec4 v4(x,y,z, 1.0);
-  glm::vec4 Transformed = activeMatrix() *v4;
-  
-  GLfloat *m = glm::value_ptr(Transformed);
-  x = m[0]/m[3];
-  y = m[1]/m[3];
-  z = m[2]/m[3];
+	glm::vec4 v4(x,y,z, 1.0);
+	glm::vec4 Transformed = activeMatrix() *v4;
+
+	GLfloat *m = glm::value_ptr(Transformed);
+	x = m[0];///m[3];
+	y = m[1];///m[3];
+	z = m[2];///m[3];
+}
+
+void MatrixStack::setWorldToEyespaceMatrix(const GLfloat *m) {
+	GLfloat* target = glm::value_ptr(worldToEyespace);
+	target[0]  = m[0];  target[1]  = m[1];  target[2]  = m[2];  target[3]  = m[3];
+	target[4]  = m[4];  target[5]  = m[5];  target[6]  = m[6];  target[7]  = m[7];
+	target[8]  = m[8];  target[9]  = m[9];  target[10] = m[10]; target[11] = m[11];
+	target[12] = m[12]; target[13] = m[13]; target[14] = m[14]; target[15] = m[15];
 }
 
 void MatrixStack::transformVertexToEyespace (GLfloat &x, GLfloat &y, GLfloat &z){
-  glm::vec4 v4(x,y,z, 1.0);
-  glm::vec4 Transformed = modelviewStack[modelviewIndex] *v4;
-  
-  GLfloat *m = glm::value_ptr(Transformed);
-  x = m[0]/m[3];
-  y = m[1]/m[3];
-  z = m[2]/m[3];
+	glm::vec4 v4(x,y,z, 1.0);
+	glm::vec4 Transformed = worldToEyespace *v4;
+
+	GLfloat *m = glm::value_ptr(Transformed);
+	x = m[0];///m[3];
+	y = m[1];///m[3];
+	z = m[2];///m[3];
+}
+
+ void MatrixStack::transformVectorToEyespace(GLfloat &x, GLfloat &y, GLfloat &z){
+	 glm::vec4 v4(x,y,z, 0.0); //w=0 when transforming vectors, to avoid translating.
+	 glm::vec4 Transformed = worldToEyespace *v4;
+	 
+	 GLfloat *m = glm::value_ptr(Transformed);
+	 x = m[0];
+	 y = m[1];
+	 z = m[2];
 }
 
 void MatrixStack::orthof (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar){

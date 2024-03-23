@@ -4,7 +4,6 @@ precision highp float;
 uniform vec4 clipPlane0;
 uniform vec4 clipPlane1;
 uniform vec4 clipPlane5;
-uniform mat4 MS_ModelViewMatrix;
 uniform sampler2D texture0;
 uniform sampler2D texture1;
 uniform float pulsate;
@@ -28,6 +27,7 @@ varying float FDxLOG2E;
 varying mat3 tbnMatrix;
 varying vec4 vPosition_eyespace;
 varying vec3 eyespaceNormal;
+varying mat3 normalMatrix;
 
 float getFogFactor(float distance) {
 	if (fogMode == 0.0) {
@@ -102,8 +102,7 @@ void main (void) {
 
 		// Spotlight attenuation
 		if(mode >= 0.33 && mode <= 0.66) {
-			//vec3 spotlightDirection = normalize(vec3(lightPositions[i+1].xyz)); //Input should be an eyespace vector.
-			vec3 spotlightDirection = (MS_ModelViewMatrix * normalize(vec4(lightPositions[i+1].x, lightPositions[i+1].y, lightPositions[i+1].z, 0.0))).xyz; //Convert world spotlight vector to eyespace vector.
+			vec3 spotlightDirection = normalize(vec3(lightPositions[i+1].xyz)); //Input should be an eyespace vector.
 
 			float outerLimitCos = lightColors[i+1].x; //Cosine of outside angle (in radians). There is no light beyond this angle.
 			float innerLimitCos = lightColors[i+1].y; //Cosine of inside angle (in radians). Light is at 100% inside of this angle.

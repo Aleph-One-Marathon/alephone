@@ -124,6 +124,10 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 //	MSI()->rotatef(roll, 1.0, 0.0, 0.0);
 	MSI()->rotatef(-yaw, 0.0, 0.0, 1.0);
 	MSI()->translatef(-view.origin.x, -view.origin.y, -view.origin.z);
+	
+	GLfloat worldToEye[16];
+	MSI()->getFloatv(MS_MODELVIEW_MATRIX,worldToEye);
+	MSI()->setWorldToEyespaceMatrix(worldToEye);
 }
 
 void Rasterizer_Shader_Class::setupGL()

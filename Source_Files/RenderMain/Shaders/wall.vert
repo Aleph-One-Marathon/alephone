@@ -35,6 +35,7 @@ varying float classicDepth;
 varying mat3 tbnMatrix;
 varying vec4 vPosition_eyespace;
 varying vec3 eyespaceNormal;
+varying mat3 normalMatrix;
 varying vec4 fogColor;
 
 highp mat4 transpose(in highp mat4 inMatrix) {  //I have not tested this.
@@ -43,12 +44,18 @@ highp mat4 transpose(in highp mat4 inMatrix) {  //I have not tested this.
     highp vec4 i2 = inMatrix[2];
     highp vec4 i3 = inMatrix[3];
 
-    highp mat4 outMatrix = mat4(
+    /*highp mat4 outMatrix = mat4(
                  vec4(i0.x, i1.x, i2.x, i3.x),
                  vec4(i0.y, i1.y, i2.y, i3.y),
                  vec4(i0.z, i1.z, i2.z, i3.z),
                  vec4(i0.w, i1.w, i2.w, i3.w)
-                 );
+                 );*/
+	highp mat4 outMatrix;
+	for(int i = 0; i < 4; i++) {
+			for(int j = 0; j < 4; j++) {
+				outMatrix[i][j] = inMatrix[j][i];
+			}
+		}
 
     return outMatrix;
 }
@@ -64,7 +71,7 @@ void main(void) {
 #endif
 	
     vec4 UV4 = vec4(vTexCoord.x, vTexCoord.y, 0.0, 1.0);           //DCW shitty attempt to stuff texUV into a vec4
-    mat3 normalMatrix = mat3(transpose(MS_ModelViewMatrixInverse));           //DCW shitty replacement for gl_NormalMatrix
+    normalMatrix = mat3(transpose(MS_ModelViewMatrixInverse));           //DCW shitty replacement for gl_NormalMatrix
     textureUV = (MS_TextureMatrix * UV4).xy;
     /* SETUP TBN MATRIX in normal matrix coords, gl_MultiTexCoord1 = tangent vector */
     vec3 n = normalize(normalMatrix * vNormal);

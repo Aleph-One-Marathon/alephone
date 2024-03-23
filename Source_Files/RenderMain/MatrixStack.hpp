@@ -81,7 +81,10 @@ public:
 	void multMatrixf (const GLfloat *m);
 
 	void transformVertex (GLfloat &x, GLfloat &y, GLfloat &z);
+	
+	void setWorldToEyespaceMatrix(const GLfloat *m); //A convenient way to capture world->eysspace matrix, used for various effects.
 	void transformVertexToEyespace (GLfloat &x, GLfloat &y, GLfloat &z);
+	void transformVectorToEyespace (GLfloat &x, GLfloat &y, GLfloat &z);
 
 	void orthof (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
 	void frustumf (GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
@@ -133,7 +136,8 @@ private:
 	glm::mat4 modelviewStack[STACK_MAX];
 	glm::mat4 projectionStack[STACK_MAX];
 	glm::mat4 textureStack[STACK_MAX];
-
+	glm::mat4 worldToEyespace;
+	
 	bool planeActivated[CLIPPING_PLANES];
 	glm::vec4 clippingPlanes[CLIPPING_PLANES];
 	glm::vec4 nullPlane;
