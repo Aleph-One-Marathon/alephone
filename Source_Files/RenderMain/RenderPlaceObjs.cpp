@@ -265,24 +265,15 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			// Too close?
 			if (Farthest < MINIMUM_OBJECT_DISTANCE) return NULL;
 			
-			if (ProjDistance == 0)
-			{
-				x0 = view->half_screen_width;
-				x1 = x0 + 1;
-				y0 = view->half_screen_height;
-				y1 = y0 + 1;
-			}
-			else
+			assert(DistanceRef > 0);
+			
 			{
 				// Doing this with full-integer arithmetic to avoid mis-clipping;
-				x0= view->half_screen_width + (int(transformed_origin.y+shape_information->world_left)*view->world_to_screen_x)/ProjDistance;
-				x1= view->half_screen_width + (int(transformed_origin.y+shape_information->world_right)*view->world_to_screen_x)/ProjDistance;
-				y0=	view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_top))/ProjDistance + view->dtanpitch;
-				y1= view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_bottom))/ProjDistance + view->dtanpitch;
-			}
-			if (x0<x1 && y0<y1)
-			{
-				// LP Change:
+				x0= view->half_screen_width + (int(transformed_origin.y+shape_information->world_left)*view->world_to_screen_x)/DistanceRef;
+				x1= view->half_screen_width + (int(transformed_origin.y+shape_information->world_right)*view->world_to_screen_x)/DistanceRef;
+				y0=	view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_top))/DistanceRef + view->dtanpitch;
+				y1= view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_bottom))/DistanceRef + view->dtanpitch;
+			
 				size_t Length = RenderObjects.size();
 				POINTER_DATA OldROPointer = POINTER_CAST(RenderObjects.data());
 				
@@ -925,6 +916,8 @@ shape_information_data *RenderPlaceObjsClass::rescale_shape_information(
 
 
 // Creates a fake sprite rectangle from a model's bounding box;
+// models behind the view get a degenerate rectangle (and thus just 1 base node)
+//
 // also finds:
 //
 // Distance of farthest part of the bounding box
@@ -1062,10 +1055,10 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	Proj_ZMax -= Z0;
 	
 	// Plug back into the sprite
-	ShapeInfo.world_left = int(PIN(Proj_YMin,SHRT_MIN,SHRT_MAX));
-	ShapeInfo.world_right = int(PIN(Proj_YMax,SHRT_MIN,SHRT_MAX));
-	ShapeInfo.world_bottom = int(PIN(Proj_ZMin,SHRT_MIN,SHRT_MAX));
-	ShapeInfo.world_top = int(PIN(Proj_ZMax,SHRT_MIN,SHRT_MAX));
+	ShapeInfo.world_left = int16(std::clamp<float>(Proj_YMin, INT16_MIN, 0));
+	ShapeInfo.world_right = int16(std::clamp<float>(Proj_YMax, 0, INT16_MAX));
+	ShapeInfo.world_bottom = int16(std::clamp<float>(Proj_ZMin, INT16_MIN, 0));
+	ShapeInfo.world_top = int16(std::clamp<float>(Proj_ZMax, 0, INT16_MAX));
 	
 	// Set X0, Y0, Z0 to location of center of bounding box
 	X0 += (ExpandedBB[0][0] + ExpandedBB[7][0])/2;
