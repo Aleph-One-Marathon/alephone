@@ -75,12 +75,14 @@ struct RenderPlaceObjsClass::span_data
 	struct base_node_data
 	{
 		sorted_node_data* node;
-		world_point2d right_pt; // right edge of object's span in this node, or span_data::right_pt if rightmost node
-	};	                        // (even if that point lies outside)
+		long_point2d right_pt; // right edge of object's span in this node, or span_data::right_pt if rightmost node
+	};	                       // (even if that point lies outside)
 	
 	boost::container::small_vector<base_node_data, 6> base_nodes; // left-to-right
-	world_point2d left_pt;
-	world_point2d right_pt;
+	
+	// Total span (can be off-map: coords are within +/- 2^16 instead of 2^15)
+	long_point2d left_pt;
+	long_point2d right_pt;
 };
 
 // For finding the 2D projection of the bounding box;
@@ -589,7 +591,7 @@ auto RenderPlaceObjsClass::build_base_node_list(
 	vector<sorted_node_data *>& polygon_index_to_sorted_node = RSPtr->polygon_index_to_sorted_node;
 	
 	// Add nodes to result.base_nodes in order found (updating the previous node's .right_pt if scanning rightward)
-	auto scan_toward = [&](world_point2d destination, bool scanning_rightward)
+	auto scan_toward = [&](long_point2d destination, bool scanning_rightward)
 	{
 		short polygon_index= origin_polygon_index;
 		auto scan_vector = destination - origin.xy();
@@ -682,7 +684,7 @@ auto RenderPlaceObjsClass::build_base_node_list(
 						// Update the relevant .right_pt (the previous node if scanning rightward, else the new node)
 						const auto cpk_vl = cross_product_k(scan_vector, line_vec); // > 0
 						const float u = 1.f*cross_product_k(vertex_a - origin.xy(), scan_vector) / cpk_vl; // [0, 1]
-						const world_point2d right_pt = to_world(vertex_a + u*line_vec);
+						const auto right_pt = vertex_a + u*line_vec;
 						const int new_index = result.base_nodes.size() - 1;
 						result.base_nodes[new_index - (scanning_rightward ? 1 : 0)].right_pt = right_pt;
 					}
@@ -700,10 +702,11 @@ auto RenderPlaceObjsClass::build_base_node_list(
 		right_distance = std::max(right_distance, ro->rectangle.WorldRight);
 	}
 	
-	auto pt_along_object_rect = [&](world_distance offset_from_origin) -> world_point2d
+	auto pt_along_object_rect = [&](world_distance offset_from_origin) -> long_point2d // can be off-map
 	{
-		world_point2d pt = origin.xy();
-		return *translate_point2d(&pt, offset_from_origin, view->yaw + QUARTER_CIRCLE);
+		const angle right = normalize_angle(view->yaw + QUARTER_CIRCLE);
+		const auto v = (1.f*offset_from_origin/TRIG_MAGNITUDE) * long_vector2d{cosine_table[right], sine_table[right]};
+		return origin.xy() + v;
 	};
 	
 	result.left_pt = pt_along_object_rect(left_distance);
@@ -750,7 +753,7 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 		// Add new windows with x-extents that are the union of every overlap between a node window and the span of the
 		// object in that node, but without clipping the outermost extents of the outermost contributing windows
 	
-		auto eye_vec_toward = [&](world_point2d pt) -> long_vector2d // == 1024*(eye vec _to_ the pt)
+		auto eye_vec_toward = [&](long_point2d pt) -> long_vector2d // == 1024*(eye vec _to_ the pt)
 		{ 
 			const auto v = pt - view->origin.xy();
 			const int16 c = cosine_table[view->yaw];
