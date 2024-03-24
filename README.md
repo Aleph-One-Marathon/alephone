@@ -85,6 +85,7 @@ These libraries are recommended for full features and third-party scenario compa
 + `ffmpeg` _for music playback and film video export_
 + `miniupnpc` _for opening router ports_
 + `zziplib` _for using zipped plugins_
++ `GLM` _for using accelerated graphics
 
 #### Fedora
 
@@ -105,7 +106,7 @@ Run this command to install the necessary prerequisites for building Aleph One:
     sudo apt install build-essential libboost-all-dev libsdl2-dev \
       libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev \
       libzzip-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev \
-      libpng-dev libcurl4-gnutls-dev libminiupnpc-dev libopenal-dev libsndfile1-dev
+      libpng-dev libcurl4-gnutls-dev libminiupnpc-dev libopenal-dev libsndfile1-dev libglm-dev
 
 ### Compile
 

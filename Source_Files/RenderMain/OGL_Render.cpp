@@ -867,12 +867,14 @@ bool OGL_StartMain()
 		}
 		else if (CurrFog->Mode == OGL_Fog_Exp2)
 		{
-			glFogf(GL_FOG_DENSITY,1.0F/MAX(1,WORLD_ONE*CurrFog->Depth));
+			//glFogf(GL_FOG_DENSITY,1.0F/MAX(1,WORLD_ONE*CurrFog->Depth));
+			MSI()->fogDensity(1.0F/MAX(1,WORLD_ONE*CurrFog->Depth));
 			MSI()->fogStartEnd(0,0);
 		}
 		else
 		{
-			glFogf(GL_FOG_DENSITY,1.0F/MAX(1,WORLD_ONE*CurrFog->Depth));
+			//glFogf(GL_FOG_DENSITY,1.0F/MAX(1,WORLD_ONE*CurrFog->Depth));
+			MSI()->fogDensity(1.0F/MAX(1,WORLD_ONE*CurrFog->Depth));
 			MSI()->fogStartEnd(0,0);
 		}
 		
