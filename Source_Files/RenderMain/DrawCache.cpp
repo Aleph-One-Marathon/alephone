@@ -18,7 +18,7 @@
 #include "projectiles.h"
 #include "effects.h"
 
-#include "logging.h"
+#include "Logging.h"
 
 bool lastTextureIsLandscape;
 
