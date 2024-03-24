@@ -132,14 +132,17 @@ public:
 	void addSpotLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size,  GLfloat dirX, GLfloat dirY, GLfloat dirZ, GLfloat outerAngle, GLfloat innerAngle,  GLfloat red, GLfloat green, GLfloat blue, bool negative);
     void finishGatheringLights();
 	
-	//Sets the cached values back to default.
-	//It is sometimes a good idea to call this after adding geometry, or before starting to configure some new state.
-	void clearTextureAttributeCaches();
-    
 private:
     DrawCache(){
 		current_vertex_list_size = 0;
 		current_geometry_list_size = 0;
+		current_index_list_size = 0;
+		geometryFilled = 0;
+		indicesFilled = 0;
+		verticesFilled = 0;
+		gatheringLights = 0;
+		
+		clearTextureAttributeCaches();
     };
   
     DrawCache(DrawCache const&) = delete;
@@ -176,6 +179,9 @@ private:
 	//These get cleared once drawn or fed into a buffer.
 	GLfloat scaleX, offsetX, scaleY, offsetY, bloomScale, bloomShift, flare, selfLuminosity, pulsate, wobble, depth, glow;
 	GLfloat strictDepthMode;
+	
+	//Sets the cached geometry state values back to default.
+	void clearTextureAttributeCaches();
 };
 
 DrawCache* DC(); //Convenience instance access
