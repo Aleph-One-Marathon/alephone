@@ -15,7 +15,6 @@ inputs:
 runs:
     using: "composite"
     steps:
-    - uses: actions/checkout@v4
     
     - name: Install Tools
       run: brew install nasm
