@@ -46,7 +46,9 @@ struct OGL_Fader
 	short Type;
 	// The three color channels and a transparency channel
 	float Color[4];
-	
+    //Flag indicating whether this fader represents media
+    bool isLiquid;
+
 	OGL_Fader(): Type(NONE) {}
 };
 
@@ -54,6 +56,6 @@ struct OGL_Fader
 OGL_Fader *GetOGL_FaderQueueEntry(int Index);
 
 // Fader renderer; returns whether or not OpenGL faders were active.
-bool OGL_DoFades(float Left, float Top, float Right, float Bottom);
+bool OGL_DoFades(float Left, float Top, float Right, float Bottom, float liquidCutoff);
 
 #endif
