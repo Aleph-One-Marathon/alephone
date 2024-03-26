@@ -380,6 +380,29 @@ static int Lua_Item_Get_Visible(lua_State *L)
 	return 1;
 }
 
+static int Lua_Item_Set_Visible(lua_State *L)
+{
+	int object_index = Lua_Item::Index(L, 1);
+	object_data *object = get_object_data(object_index);
+	bool should_be_visible = lua_toboolean(L, 2);
+	bool is_visible = OBJECT_IS_VISIBLE(object);
+	if (should_be_visible != is_visible) {
+		if (!is_visible) {
+			teleport_object_in(object_index);
+		} else {
+			if (L_Get_Proper_Item_Accounting(L))
+			{
+				object_was_just_destroyed(_object_is_item, object->permutation);
+			}
+			teleport_object_out(object_index);
+			remove_map_object(object_index);
+			L_Invalidate_Object(object_index);
+			MARK_SLOT_AS_FREE(object);
+		}
+	}
+	return 0;
+}
+
 const luaL_Reg Lua_Item_Get[] = {
 	{"delete", L_TableFunction<Lua_Item_Delete>},
 	{"facing", get_object_facing<Lua_Item>},
@@ -396,6 +419,7 @@ const luaL_Reg Lua_Item_Get[] = {
 
 const luaL_Reg Lua_Item_Set[] = {
 	{"facing", set_object_facing<Lua_Item>},
+	{"visible", Lua_Item_Set_Visible},
 	{0, 0}
 };
 
@@ -436,6 +460,13 @@ int Lua_Items_New(lua_State *L)
 	short item_index = ::new_item(&location, item_type);
 	if (item_index == NONE)
 		return 0;
+
+	if (lua_toboolean(L, 6))
+	{
+		struct object_data *object= get_object_data(item_index);
+		
+		SET_OBJECT_INVISIBILITY(object, true);
+	}
 
 	Lua_Item::Push(L, item_index);
 	return 1;
