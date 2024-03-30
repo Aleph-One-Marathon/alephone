@@ -995,6 +995,10 @@ static const char* renderer_labels[] = {
 	"Software", "OpenGL", NULL
 };
 
+static const char *bobbing_view_labels[] = {
+	"None", "Full", "Weapon Only", NULL
+};
+
 static const char* hud_scale_labels[] = {
 "Normal", "Double", "Largest", NULL
 };
@@ -1292,10 +1296,12 @@ static void graphics_dialog(void *arg)
 	table->dual_add_row(new w_static_text("*may interfere with third-party scenario effects"), d);
 
 	table->add_row(new w_spacer(), true);
-	
-	w_toggle *bob_w = new w_toggle(graphics_preferences->screen_mode.camera_bob);
-	table->dual_add(bob_w->label("Camera Bobbing"), d);
-	table->dual_add(bob_w, d);
+
+	w_select *bobbing_type_w = new w_select(0, bobbing_view_labels);
+	bobbing_type_w->set_selection(static_cast<int>(graphics_preferences->screen_mode.bobbing_type));
+
+	table->dual_add(bobbing_type_w->label("View Bobbing"), d);
+	table->dual_add(bobbing_type_w, d);
 
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("Heads-Up Display"), d);
@@ -1470,10 +1476,10 @@ static void graphics_dialog(void *arg)
 			graphics_preferences->screen_mode.translucent_map = translucent_map;
 			changed = true;
 		}
-	    
-		bool camera_bob = bob_w->get_selection() != 0;
-		if (camera_bob != graphics_preferences->screen_mode.camera_bob) {
-			graphics_preferences->screen_mode.camera_bob = camera_bob;
+
+		auto bobbing_type = static_cast<BobbingType>(bobbing_type_w->get_selection());
+		if (bobbing_type != graphics_preferences->screen_mode.bobbing_type) {
+			graphics_preferences->screen_mode.bobbing_type = bobbing_type;
 			changed = true;
 		}
 
@@ -3504,7 +3510,7 @@ InfoTree graphics_preferences_tree()
 	root.put_attr("scmode_hud_scale", graphics_preferences->screen_mode.hud_scale_level);
 	root.put_attr("scmode_term_scale", graphics_preferences->screen_mode.term_scale_level);
 	root.put_attr("scmode_translucent_map", graphics_preferences->screen_mode.translucent_map);
-	root.put_attr("scmode_camera_bob", graphics_preferences->screen_mode.camera_bob);
+	root.put_attr("scmode_camera_bob", static_cast<int>(graphics_preferences->screen_mode.bobbing_type));
 	root.put_attr("scmode_accel", graphics_preferences->screen_mode.acceleration);
 	root.put_attr("scmode_highres", graphics_preferences->screen_mode.high_resolution);
 	root.put_attr("scmode_draw_every_other_line", graphics_preferences->screen_mode.draw_every_other_line);
@@ -3987,7 +3993,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.high_resolution = true;
 	preferences->screen_mode.fullscreen = true;
 	preferences->screen_mode.fix_h_not_v = true;
-	preferences->screen_mode.camera_bob = true;
+	preferences->screen_mode.bobbing_type = BobbingType::full;
 	preferences->screen_mode.bit_depth = 32;
 	
 	preferences->screen_mode.draw_every_other_line= false;
@@ -4454,7 +4460,15 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr("scmode_hud_scale", graphics_preferences->screen_mode.hud_scale_level);
 	root.read_attr("scmode_term_scale", graphics_preferences->screen_mode.term_scale_level);
 	root.read_attr("scmode_translucent_map", graphics_preferences->screen_mode.translucent_map);
-	root.read_attr("scmode_camera_bob", graphics_preferences->screen_mode.camera_bob);
+
+	int bobbing_type = -1;
+	root.read_attr("scmode_camera_bob", bobbing_type);
+
+	if (bobbing_type != -1)
+	{
+		graphics_preferences->screen_mode.bobbing_type = static_cast<BobbingType>(bobbing_type);
+	}
+
 	root.read_attr("scmode_accel", graphics_preferences->screen_mode.acceleration);
 	root.read_attr("scmode_highres", graphics_preferences->screen_mode.high_resolution);
 	root.read_attr("scmode_draw_every_other_line", graphics_preferences->screen_mode.draw_every_other_line);

@@ -59,6 +59,13 @@ enum {
 	_default_prompt
 };
 
+enum class BobbingType
+{
+	none,
+	full,
+	weapon_only
+};
+
 /* ---------- structures */
 
 struct screen_mode_data
@@ -81,7 +88,7 @@ struct screen_mode_data
 	short term_scale_level;
 	bool fix_h_not_v;
 	bool translucent_map;
-	bool camera_bob;
+	BobbingType bobbing_type;
 
 	int fov; // 0 = use default (or MML/plugin)
 };
