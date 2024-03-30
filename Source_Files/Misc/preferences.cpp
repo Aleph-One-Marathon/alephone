@@ -996,7 +996,7 @@ static const char* renderer_labels[] = {
 };
 
 static const char *bobbing_view_labels[] = {
-	"None", "Full", "Weapon Only", NULL
+	"None", "Default", "Weapon Only", NULL
 };
 
 static const char* hud_scale_labels[] = {
@@ -3993,7 +3993,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.high_resolution = true;
 	preferences->screen_mode.fullscreen = true;
 	preferences->screen_mode.fix_h_not_v = true;
-	preferences->screen_mode.bobbing_type = BobbingType::full;
+	preferences->screen_mode.bobbing_type = BobbingType::camera_and_weapon;
 	preferences->screen_mode.bit_depth = 32;
 	
 	preferences->screen_mode.draw_every_other_line= false;

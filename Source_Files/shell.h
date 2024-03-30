@@ -62,7 +62,7 @@ enum {
 enum class BobbingType
 {
 	none,
-	full,
+	camera_and_weapon,
 	weapon_only
 };
 
