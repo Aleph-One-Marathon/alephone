@@ -66,7 +66,7 @@ jobs:
         uses: ./.github/actions/build-windows
         with:
           platform: x64
-          configuration: Release
+          configurations: Release
           vcpkg_installed_folder: installed-x64-windows
       - name: Run Tests
         uses: ./.github/actions/run-tests
@@ -81,7 +81,7 @@ jobs:
         uses: ./.github/actions/build-windows
         with:
           platform: x86
-          configuration: Release
+          configurations: Release
           vcpkg_installed_folder: installed-x86-windows
       - name: Run Tests
         uses: ./.github/actions/run-tests

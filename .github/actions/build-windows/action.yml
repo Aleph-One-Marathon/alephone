@@ -5,7 +5,8 @@ inputs:
  platform:
     required: true
     type: string
- configuration:
+ configurations:
+    description: "comma separated list of Visual Studio configurations we want to build"
     required: true
     type: string
  vcpkg_installed_folder:
@@ -42,5 +43,5 @@ runs:
         key: ${{runner.os}}-${{inputs.vcpkg_installed_folder}}-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
         
     - name: Build
-      run: msbuild /m /p:Platform=${{inputs.platform}} /p:Configuration="${{inputs.configuration}}" ./VisualStudio/AlephOne.sln
+      run: foreach ($configuration in "${{inputs.configurations}}".Split(",").Trim()) { msbuild /m /p:Platform=${{inputs.platform}} /p:Configuration="$configuration" ./VisualStudio/AlephOne.sln }
       shell: pwsh
