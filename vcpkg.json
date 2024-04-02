@@ -12,7 +12,8 @@
          "name":"boost-property-tree"
       },
       {
-         "name":"boost-iostreams"
+         "name":"boost-iostreams",
+         "default-features": false
       },
       {
          "name":"boost-filesystem"
