@@ -1344,6 +1344,7 @@ void clear_compiled_terminal_cache()
 }
 
 extern OpenedResourceFile M1ShapesFile;
+extern OpenedResourceFile ExternalResources;
 
 static terminal_text_t* compile_marathon_terminal(char*, short);
 

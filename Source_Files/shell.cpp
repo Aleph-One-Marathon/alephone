@@ -487,7 +487,6 @@ void initialize_application(void)
 void shutdown_application(void)
 {
 	WadImageCache::instance()->save_cache();
-	close_external_resources();
 
 	shutdown_dialogs();
         

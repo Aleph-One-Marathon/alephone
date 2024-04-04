@@ -3274,15 +3274,3 @@ size_t should_restore_game_networked(FileSpecifier& file)
 
         return theResult;
 }
-
-OpenedResourceFile ExternalResources;
-
-void set_external_resources_file(FileSpecifier& f)
-{
-	f.Open(ExternalResources);
-}
-
-void close_external_resources()
-{
-	ExternalResources.Close();
-}

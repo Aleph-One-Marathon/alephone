@@ -102,7 +102,7 @@ May 22, 2003 (Woody Zenfell):
 
 #include "shell_options.h"
 #include "OpenALManager.h"
-
+#include "resource_manager.h"
 #include "XML_LevelScript.h"
 
 #ifdef HAVE_UNISTD_H
