@@ -249,6 +249,13 @@ end
         <variable name="width"><type>number</type></variable>
         <variable name="height"><type>number</type></variable>
       </subtable>
+	  <subtable name="text_margins" classname="lua_text_margins" version="20210408">
+		<description>specifies margins from the edges of the world_rect for drawing text such as Lua overlays, messages, and the input console</description>
+		<variable name="bottom"><type>number</type></variable>
+		<variable name="left"><type>number</type></variable>
+		<variable name="right"><type>number</type></variable>
+		<variable name="top"><type>number</type></variable>
+	  </subtable>
       <function name="clear_mask">
         <description>reset the image-based mask</description>
       </function>
@@ -486,7 +493,7 @@ end
 
     <table name="game" singleton="true">
       <note>all items in Game are read-only</note>
-      <function name="deserialize" version="git">
+      <function name="deserialize" version="20200830">
         <description>deserializes s and returns the original Lua value</description>
         <argument name="s"><type>string</type></argument>
         <return><type>value</type></return>
@@ -564,7 +571,7 @@ end
         <description>checksum of map file</description>
         <type>number</type>
       </variable>
-      <variable name="stash[key]" version="git">
+      <variable name="stash[key]" version="20200830">
         <description>reads values from a stash shared between all running Lua scripts</description>
         <note>keys/values must be strings</note>
         <type>string</type>
@@ -614,10 +621,6 @@ end
         <alias>life</alias>
         <description>amount of suit energy player has (150 is normal red health)</description>
         <type>number</type>
-      </variable>
-      <variable name="microphone_active">
-        <description>true if netmic is on</description>
-        <type>boolean</type>
       </variable>
       <subtable name="inventory_sections">
         <variable name="current">
@@ -718,6 +721,9 @@ end
         <note>nil until player is completely dead</note>
         <type>number</type>
       </variable>
+	  <variable name="run_key" version="git">
+		<description>whether the run key is down</description>
+	  </variable>
       <variable name="team">
         <description>player's team (pants color)</description>
         <type>number</type>

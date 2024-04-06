@@ -267,6 +267,13 @@ const lang_def Lua_FadeType_Mnemonics[] = {
 	{0, 0}
 };
 
+const lang_def Lua_FogMode_Mnemonics[] = {
+	{"linear", 0},
+	{"exp", 1},
+	{"exp2", 2},
+	{0, 0}
+};
+
 const lang_def Lua_GameType_Mnemonics[] = {
 	{"kill monsters", 0x00},
 	{"cooperative play", 0x01},
@@ -286,6 +293,16 @@ const lang_def Lua_ScoringMode_Mnemonics[] = {
   {"least points", _game_of_least_points},
   {"least time", _game_of_least_time},
   {0, 0}
+};
+
+const lang_def Lua_ItemKind_Mnemonics[] = {
+	{"weapon", 0},
+	{"ammunition", 1},
+	{"powerup", 2},
+	{"item", 3},
+	{"weapon_powerup", 4},
+	{"ball", 5},
+	{0, 0}
 };
 
 const lang_def Lua_ItemType_Mnemonics[] = {
@@ -326,6 +343,15 @@ const lang_def Lua_ItemType_Mnemonics[] = {
 	{"smg", 34},
 	{"smg ammo", 35},
 	{0, 0}
+};
+
+const lang_def Lua_EphemeraQuality_Mnemonics[] = {
+	{"off", 0},
+	{"low", 1},
+	{"medium", 2},
+	{"high", 3},
+	{"ultra", 4},
+        {0, 0}
 };
 
 const lang_def Lua_LightFunction_Mnenonics[] = {
@@ -883,6 +909,12 @@ const lang_def Lua_TransferMode_Mnemonics[] = {
 	{"fast vertical slide", 18},
 	{"wander", 19},
 	{"fast wander", 20},
+	{"reverse horizontal slide", 22},
+	{"reverse fast horizontal slide", 23},
+	{"reverse vertical slide", 24},
+	{"reverse fast vertical slide", 25},
+	{"2x", 26},
+	{"4x", 27},
 	{0, 0}
 };
 

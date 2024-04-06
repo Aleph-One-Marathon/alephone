@@ -266,7 +266,15 @@ void initialize_control_panels_for_level(
 					break;
 				
 				case _panel_is_platform_switch:
-					if (platform_is_on(get_polygon_data(side->control_panel_permutation)->permutation)) status= true;
+					if (side->control_panel_permutation >= 0)
+					{
+						if (platform_is_on(get_polygon_data(side->control_panel_permutation)->permutation)) status= true;
+					}
+					else
+					{
+						SET_SIDE_CONTROL_PANEL(side, false);
+						continue;
+					}
 					break;
 			}
 			
@@ -495,6 +503,8 @@ void try_and_toggle_control_panel(
 						make_sound= set_tagged_light_statuses(side->control_panel_permutation, state);
 						if (try_and_change_tagged_platform_states(side->control_panel_permutation, state)) make_sound= true;
 						if (!side->control_panel_permutation) make_sound= true;
+						if (film_profile.chip_insertion_ignores_tag_state &&
+							definition->item != NONE) make_sound = true;
 						if (make_sound)
 						{
 							SET_CONTROL_PANEL_STATUS(side, state);
@@ -747,7 +757,7 @@ static void	change_panel_state(
                                 //MH: Lua script hook
                                 L_Call_Terminal_Enter(side->control_panel_permutation,player_index);
 				
-				/* this will handle changing levels, if necessary (i.e., if weÕre finished) */
+				/* this will handle changing levels, if necessary (i.e., if weâ€™re finished) */
 				enter_computer_interface(player_index, side->control_panel_permutation, calculate_level_completion_state());
 			}
 			break;
@@ -863,6 +873,10 @@ static bool switch_can_be_toggled(
 	{
 		valid_toggle= get_light_intensity(side->primary_lightsource_index)>(3*FIXED_ONE/4) ? true : false;
 	}
+    else if (side->flags & _side_is_m1_lighted_switch)
+    {
+        valid_toggle = get_light_intensity(side->primary_lightsource_index)>(FIXED_ONE/2) ? true : false;
+    }
 
 	if (definition->item!=NONE && !player_hit) valid_toggle= false;
 	if (player_hit && (side->flags&_side_switch_can_only_be_hit_by_projectiles)) valid_toggle= false;
@@ -950,7 +964,7 @@ void parse_mml_control_panels(const InfoTree& root)
 	root.read_attr("triple_energy", control_panel_settings.TripleEnergy);
 	root.read_attr("triple_energy_rate", control_panel_settings.TripleEnergyRate);
 	
-	BOOST_FOREACH(InfoTree panel, root.children_named("panel"))
+	for (const InfoTree &panel : root.children_named("panel"))
 	{
 		int16 index;
 		if (!panel.read_indexed("index", index, NUMBER_OF_CONTROL_PANEL_DEFINITIONS))
@@ -964,7 +978,7 @@ void parse_mml_control_panels(const InfoTree& root)
 		panel.read_indexed("item", def.item, NUMBER_OF_DEFINED_ITEMS, true);
 		panel.read_fixed("pitch", def.sound_frequency, 0, SHRT_MAX+1);
 		
-		BOOST_FOREACH(InfoTree sound, panel.children_named("sound"))
+		for (const InfoTree &sound : panel.children_named("sound"))
 		{
 			int16 type, which;
 			if (!sound.read_indexed("type", type, NUMBER_OF_CONTROL_PANEL_SOUNDS) ||

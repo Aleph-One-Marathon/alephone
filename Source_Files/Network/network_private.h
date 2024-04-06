@@ -180,7 +180,7 @@ struct NetDistributionPacket
 	int16 distribution_type;  // type of information
 	int16 first_player_index; // who sent the information
 	int16 data_size;          // how much they're sending.
-	uint8  data[2];            // the chunk Õo shit to send
+	uint8  data[2];            // the chunk â€™o shit to send
 };
 typedef struct NetDistributionPacket NetDistributionPacket, *NetDistributionPacketPtr;
 

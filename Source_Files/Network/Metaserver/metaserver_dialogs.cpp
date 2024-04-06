@@ -38,6 +38,8 @@
 #include "Update.h"
 #include "progress.h"
 
+#include <functional>
+
 extern ChatHistory gMetaserverChatHistory;
 extern MetaserverClient* gMetaserverClient;
 
@@ -65,14 +67,14 @@ setupAndConnectClient(MetaserverClient& client)
 		
 		if (first_check)
 		{
-			uint32 ticks = SDL_GetTicks();
+			uint32 ticks = machine_tick_count();
 
 			// if we get an update in a short amount of time, don't display progress
-			while (Update::instance()->GetStatus() == Update::CheckingForUpdate && SDL_GetTicks() - ticks < 500);
+			while (Update::instance()->GetStatus() == Update::CheckingForUpdate && machine_tick_count() - ticks < 500);
 
 			// check another couple seconds, but with a progress dialog
 			open_progress_dialog(_checking_for_updates);
-			while (Update::instance()->GetStatus() == Update::CheckingForUpdate && SDL_GetTicks() - ticks < 2500);
+			while (Update::instance()->GetStatus() == Update::CheckingForUpdate && machine_tick_count() - ticks < 2500);
 			close_progress_dialog();
 			first_check = false;
 		}
@@ -300,13 +302,13 @@ const IPaddress MetaserverClientUi::GetJoinAddressByRunning()
 	setupAndConnectClient(*gMetaserverClient);
 	gMetaserverClient->associateNotificationAdapter(this);
 
-	m_gamesInRoomWidget->SetItemSelectedCallback(bind(&MetaserverClientUi::GameSelected, this, _1));
-	m_playersInRoomWidget->SetItemSelectedCallback(bind(&MetaserverClientUi::PlayerSelected, this, _1));
-	m_muteWidget->set_callback(boost::bind(&MetaserverClientUi::MuteClicked, this));
-	m_chatEntryWidget->set_callback(bind(&MetaserverClientUi::ChatTextEntered, this, _1));
-	m_cancelWidget->set_callback(boost::bind(&MetaserverClientUi::handleCancel, this));
-	m_joinWidget->set_callback(boost::bind(&MetaserverClientUi::JoinClicked, this));
-	m_gameInfoWidget->set_callback(boost::bind(&MetaserverClientUi::InfoClicked, this));
+	m_gamesInRoomWidget->SetItemSelectedCallback(std::bind(&MetaserverClientUi::GameSelected, this, std::placeholders::_1));
+	m_playersInRoomWidget->SetItemSelectedCallback(std::bind(&MetaserverClientUi::PlayerSelected, this, std::placeholders::_1));
+	m_muteWidget->set_callback(std::bind(&MetaserverClientUi::MuteClicked, this));
+	m_chatEntryWidget->set_callback(std::bind(&MetaserverClientUi::ChatTextEntered, this, std::placeholders::_1));
+	m_cancelWidget->set_callback(std::bind(&MetaserverClientUi::handleCancel, this));
+	m_joinWidget->set_callback(std::bind(&MetaserverClientUi::JoinClicked, this));
+	m_gameInfoWidget->set_callback(std::bind(&MetaserverClientUi::InfoClicked, this));
 	
 	gMetaserverChatHistory.clear ();
 	m_chatWidget->attachHistory (&gMetaserverChatHistory);
@@ -322,7 +324,7 @@ void MetaserverClientUi::GameSelected(GameListMessage::GameListEntry game)
 {
 	if (gMetaserverClient->game_target() == game.id())
 	{
-		if (SDL_GetTicks() - m_lastGameSelected < 333 && (!game.running() && Scenario::instance()->IsCompatible(game.m_description.m_scenarioID)))
+		if (machine_tick_count() - m_lastGameSelected < 333 && (!game.running() && Scenario::instance()->IsCompatible(game.m_description.m_scenarioID)))
 		{
 			JoinClicked();
 		}
@@ -333,7 +335,7 @@ void MetaserverClientUi::GameSelected(GameListMessage::GameListEntry game)
 	}
 	else
 	{
-		m_lastGameSelected = SDL_GetTicks();
+		m_lastGameSelected = machine_tick_count();
 		gMetaserverClient->game_target(game.id());
 	}
 

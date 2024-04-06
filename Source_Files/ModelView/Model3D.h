@@ -22,16 +22,19 @@
 	
 	By Loren Petrich, June 16, 2001
 */
+
+#if defined _MSC_VER
+#define NOMINMAX
+#include <algorithm>
+#endif
+
 #ifndef MODEL_3D
 #define MODEL_3D
 
 #include "cseries.h"
 
 #ifdef HAVE_OPENGL
-
-#ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
-#endif
 
 #include <vector>
 #include "vec3.h"

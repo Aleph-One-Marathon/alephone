@@ -48,16 +48,7 @@ Aug 27, 2000 (Loren Petrich):
 #define PIN(value,floor,ceiling) \
 	((film_profile.inexplicable_pin_change) ? (A1_PIN(value,floor,ceiling)) : (M2_PIN(value,floor,ceiling)))
 
-#define ABS(x) ((x)<0 ? -(x) : (x))
 #define SGN(x) ((x)<0 ? -1 : (x)>0 ? 1 : 0)
-
-template <typename T> void
-SWAP(T& a, T& b)
-{
-	T t = a;
-	a = b;
-	b = t;
-}
 
 #define FLAG(bit) (1L<<(bit))
 #define TEST_FLAG32(flags,bit) (((flags)&FLAG(bit))!=0)
@@ -92,11 +83,7 @@ static inline int NextPowerOfTwo(int n)
 
 template<class T> T* GetMemberWithBounds(T* Array, const size_t Index, const size_t Number)
 {
-	// Bounds checking
-	if (!(Index>=0 && Index<Number)) return NULL;
-	
-	// The appropriate pointer
-	return (Array + Index);
+	return (Index < Number) ? (Array + Index) : NULL;
 }
 
 /*

@@ -113,4 +113,6 @@ void OGL_RenderLines(const std::vector<world_point2d>& points, float thickness);
 // Returns whether or not 2D stuff is to be piped through OpenGL
 bool OGL_Get2D();
 
+OGL_FogData* OGL_GetCurrFogData();
+
 #endif

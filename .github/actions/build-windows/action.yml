@@ -1,0 +1,47 @@
+name: windows
+description: template used to build for windows
+
+inputs:
+ platform:
+    required: true
+    type: string
+ configurations:
+    description: "comma separated list of Visual Studio configurations we want to build"
+    required: true
+    type: string
+ vcpkg_installed_folder:
+    required: true
+    type: string
+
+runs:
+    using: "composite"
+    steps:
+    
+    - name: Temp hack to delete broken VC tools
+      run: Remove-Item -Path "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\Microsoft.VCToolsVersion.v143.default.*" -Recurse
+      shell: pwsh
+     
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+      
+    - name: Vcpkg Integration
+      run: |
+        $vcpkg_path = (Join-Path ${env:VCPKG_INSTALLATION_ROOT} vcpkg.exe)
+        &$vcpkg_path integrate install
+      shell: pwsh
+      
+    - name: Get Vcpkg current hash
+      run: | 
+        $vcpkg_commit_id = git -C ${env:VCPKG_INSTALLATION_ROOT} rev-parse --short HEAD
+        echo vcpkg_current_hash=$vcpkg_commit_id >> $env:GITHUB_ENV
+      shell: pwsh
+      
+    - name: Cache Vcpkg
+      uses: actions/cache@v4
+      with:
+        path: vcpkg/${{inputs.vcpkg_installed_folder}}
+        key: ${{runner.os}}-${{inputs.vcpkg_installed_folder}}-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
+        
+    - name: Build
+      run: foreach ($configuration in "${{inputs.configurations}}".Split(",").Trim()) { msbuild /m /p:Platform=${{inputs.platform}} /p:Configuration="$configuration" ./VisualStudio/AlephOne.sln }
+      shell: pwsh

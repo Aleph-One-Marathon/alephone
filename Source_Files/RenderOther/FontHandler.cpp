@@ -379,14 +379,15 @@ void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, sh
 	if (flags & _wrap_text) {
 		int last_non_printing_character = 0, text_width = 0;
 		unsigned count = 0;
-		while (count < strlen(text_to_draw) && text_width < RECTANGLE_WIDTH(&r)) {
+		auto len = strlen(text_to_draw);
+		while (count < len && text_width < RECTANGLE_WIDTH(&r)) {
 			text_width += CharWidth(text_to_draw[count]);
 			if (text_to_draw[count] == ' ')
 				last_non_printing_character = count;
 			count++;
 		}
 		
-		if( count != strlen(text_to_draw)) {
+		if( count != len) {
 			char remaining_text_to_draw[256];
 			
 			// If we ever have to wrap text, we can't also center vertically. Sorry.

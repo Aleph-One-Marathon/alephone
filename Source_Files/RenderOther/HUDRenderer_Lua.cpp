@@ -38,10 +38,6 @@ HUD_RENDERER_LUA.CPP
 
 #include <math.h>
 
-#if defined(__WIN32__) || defined(__MINGW32__)
-#undef DrawText
-#endif
-
 extern bool MotionSensorActive;
 
 
@@ -144,10 +140,7 @@ void HUD_Lua_Class::start_draw(void)
 			m_surface = SDL_ConvertSurfaceFormat(MainScreenSurface(), SDL_PIXELFORMAT_BGRA8888, 0);
 			SDL_SetSurfaceBlendMode(m_surface, SDL_BLENDMODE_BLEND);
 		}
-		SDL_SetClipRect(m_surface, NULL);
-		SDL_FillRect(m_surface, NULL, SDL_MapRGBA(m_surface->format, 0, 0, 0, 0));
-		
-//		SDL_SetAlpha(MainScreenSurface(), SDL_SRCALPHA, 0xff);
+		SDL_FillRect(m_surface, NULL, SDL_MapRGBA(m_surface->format, 0, 0, 0, 0));	
 	}
 	
 	
@@ -166,15 +159,7 @@ void HUD_Lua_Class::end_draw(void)
         glPopMatrix();
 		glPopAttrib();
 	}
-	else
 #endif
-	if (m_surface)
-	{
-		SDL_Surface *video = MainScreenSurface();
-		SDL_BlitSurface(m_surface, NULL, video, NULL);
-//		SDL_SetAlpha(video, 0, 0xff);
-		SDL_SetClipRect(video, 0);
-	}
 }
 
 void HUD_Lua_Class::apply_clip(void)
@@ -321,6 +306,7 @@ void HUD_Lua_Class::fill_rect(float x, float y, float w, float h,
 		SDL_FillRect(m_surface, &rect,
 								 SDL_MapRGBA(m_surface->format, static_cast<unsigned char>(r * 255), static_cast<unsigned char>(g * 255), static_cast<unsigned char>(b * 255), static_cast<unsigned char>(a * 255)));
 		SDL_BlitSurface(m_surface, &rect, MainScreenSurface(), &rect);
+		SDL_SetClipRect(MainScreenSurface(), NULL);
 	}
 }	
 
@@ -368,6 +354,7 @@ void HUD_Lua_Class::frame_rect(float x, float y, float w, float h,
 		rect.h = static_cast<Uint16>(h - t - t);
 		SDL_FillRect(m_surface, &rect, color);
 		SDL_BlitSurface(m_surface, &rect, MainScreenSurface(), &rect);
+		SDL_SetClipRect(MainScreenSurface(), NULL);
 	}
 }	
 
@@ -447,6 +434,7 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
                                               static_cast<unsigned char>(a * 255)),
                                   font->Style);
             SDL_BlitSurface(m_surface, &rect, MainScreenSurface(), &rect);
+			SDL_SetClipRect(MainScreenSurface(), NULL);
         }
 	}
 }
@@ -468,6 +456,7 @@ void HUD_Lua_Class::draw_image(Image_Blitter *image, float x, float y)
         r.y += m_wr.y;
     }
 	image->Draw(MainScreenSurface(), r);
+	SDL_SetClipRect(MainScreenSurface(), NULL);
 }
 
 void HUD_Lua_Class::draw_shape(Shape_Blitter *shape, float x, float y)
@@ -497,5 +486,6 @@ void HUD_Lua_Class::draw_shape(Shape_Blitter *shape, float x, float y)
         r.x += m_wr.x;
         r.y += m_wr.y;
         shape->SDL_Draw(MainScreenSurface(), r);
+		SDL_SetClipRect(MainScreenSurface(), NULL);
     }
 }

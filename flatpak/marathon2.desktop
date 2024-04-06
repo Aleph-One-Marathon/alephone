@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Classic Marathon 2
+Exec=run.sh
+Icon=org.bungie.source.Marathon2
+Categories=Game

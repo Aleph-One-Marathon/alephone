@@ -264,7 +264,6 @@ void initialize_fades(
 {
 	/* allocate and initialize space for our fade_data structure */
 	fade= new fade_data;
-	assert(fade);
 	fade->flags = 0;
 	
 	SET_FADE_ACTIVE_STATUS(fade, false);
@@ -415,13 +414,13 @@ void stop_fade(
 {
 	if (FADE_IS_ACTIVE(fade))
 	{
-		struct fade_definition *definition= get_fade_definition(fade->type);
+		struct fade_definition* definition = get_fade_definition(fade->type);
 		// LP change: idiot-proofing
 		if (!definition) return;
-		
+
 		recalculate_and_display_color_table(fade->type, definition->final_transparency,
 			fade->original_color_table, fade->animated_color_table, false);
-		
+
 		SET_FADE_ACTIVE_STATUS(fade, false);
 	}
 }
@@ -444,16 +443,6 @@ void full_fade(
 	while (update_fades())
 		Music::instance()->Idle();
 		;
-}
-
-short get_fade_period(
-	short type)
-{
-	struct fade_definition *definition= get_fade_definition(type);
-	// LP change: idiot-proofing
-	if (!definition) return 0;	
-	
-	return definition->period;
 }
 
 void gamma_correct_color_table(
@@ -639,7 +628,7 @@ static void randomize_color_table(
 	}
 }
 
-/* unlike pathways, all colors wonÕt pass through 50% gray at the same time */
+/* unlike pathways, all colors wonâ€™t pass through 50% gray at the same time */
 static void negate_color_table(
 	struct color_table *original_color_table,
 	struct color_table *animated_color_table,
@@ -828,7 +817,7 @@ void parse_mml_faders(const InfoTree& root)
 			original_fade_effect_definitions[i] = fade_effect_definitions[i];
 	}
 	
-	BOOST_FOREACH(InfoTree ftree, root.children_named("fader"))
+	for (const InfoTree &ftree : root.children_named("fader"))
 	{
 		int16 index;
 		if (!ftree.read_indexed("index", index, NUMBER_OF_FADE_TYPES))
@@ -870,11 +859,11 @@ void parse_mml_faders(const InfoTree& root)
 		if (ftree.read_attr("period", period))
 			def.period = static_cast<int32>(period) * 1000 / MACHINE_TICKS_PER_SECOND;
 		
-		BOOST_FOREACH(InfoTree color, ftree.children_named("color"))
+		for (const InfoTree &color : ftree.children_named("color"))
 			color.read_color(def.color);
 	}
 	
-	BOOST_FOREACH(InfoTree ltree, root.children_named("liquid"))
+	for (const InfoTree &ltree : root.children_named("liquid"))
 	{
 		int16 index;
 		if (!ltree.read_indexed("index", index, NUMBER_OF_FADE_EFFECT_TYPES))

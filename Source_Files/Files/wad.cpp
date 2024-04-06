@@ -35,11 +35,11 @@
 				passed in.
 
 Future Options:
-ðÊReentrancy
-ðÊUse malloc to actually make it possible to read the data as changes are made in the future?
+î€žÂ Reentrancy
+î€žÂ Use malloc to actually make it possible to read the data as changes are made in the future?
 
 	Saturday, October 28, 1995 1:13:38 PM- whoops.  Had a huge memory leak in the inflate wad
-		data.  Iâm fired.
+		data.  I'm fired.
 	
 Jan 30, 2000 (Loren Petrich):
 	Did some typecasts
@@ -929,14 +929,24 @@ bool create_wadfile(FileSpecifier& File, Typecode Type)
 	return File.Create(Type);
 }
 
+static bool open_wad_file_or_set_error(FileSpecifier& File, OpenedFile& OFile, bool Writable)
+{
+	if (!File.Open(OFile, Writable))
+	{
+		set_game_error(systemError, File.GetError());
+		return false;
+	}
+	return true;
+}
+
 bool open_wad_file_for_reading(FileSpecifier& File, OpenedFile& OFile)
 {
-	return File.Open(OFile);
+	return open_wad_file_or_set_error(File, OFile, false);
 }
 
 bool open_wad_file_for_writing(FileSpecifier& File, OpenedFile& OFile)
 {
-	return File.Open(OFile,true);
+	return open_wad_file_or_set_error(File, OFile, true);
 }
 
 void close_wad_file(OpenedFile& File)

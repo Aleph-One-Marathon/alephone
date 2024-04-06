@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Aleph One
+Exec=run.sh
+Icon=org.bungie.source.AlephOne
+Categories=Game

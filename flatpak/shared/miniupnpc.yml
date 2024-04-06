@@ -1,0 +1,8 @@
+name: miniupnpc
+buildsystem: cmake-ninja
+config-opts: [-DUPNPC_BUILD_STATIC=OFF -DUPNPC_BUILD_TESTS=off -DUPNPC_BUILD_SAMPLE=OFF]
+sources:
+  - type: archive
+    url: http://miniupnp.free.fr/files/miniupnpc-2.2.2.tar.gz
+    sha256: 888fb0976ba61518276fe1eda988589c700a3f2a69d71089260d75562afd3687
+cleanup: [/include, /share, /lib/debug, /lib/cmake, /lib/*.a]

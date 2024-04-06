@@ -49,7 +49,7 @@ enum
 	MAXIMUM_PERMUTATIONS_PER_SOUND= 5
 };
 
-enum /* sound behaviors */
+enum sound_behavior /* sound behaviors */
 {
 	_sound_is_quiet,
 	_sound_is_normal,
@@ -260,7 +260,7 @@ static struct sound_definition sound_definitions[NUMBER_OF_SOUND_DEFINITIONS]=
 	{11010, _sound_is_normal}, // _snd_metallic_ricochet
 	{11020, _sound_is_quiet}, // _snd_empty_gun
 
-	// sÕpht doors and platforms
+	// sâ€™pht doors and platforms
 	{12000, _sound_is_normal}, // _snd_spht_door_opening,
 	{12010, _sound_is_normal}, // _snd_spht_door_closing,
 	{12020, _sound_is_normal}, // _snd_spht_door_obstructed,
@@ -342,11 +342,11 @@ static struct sound_definition sound_definitions[NUMBER_OF_SOUND_DEFINITIONS]=
 	{15400, _sound_is_loud}, // _snd_human_wail
 	{15410, _sound_is_normal}, // _snd_human_scream
 	{15420, _sound_is_normal}, // _snd_human_hit
-	{15430, _sound_is_normal, _sound_cannot_be_restarted}, // _snd_human_chatter "theyÕre everywhere!"
-	{15440, _sound_is_normal, _sound_cannot_be_restarted}, // _snd_assimilated_human_chatter "thank god itÕs you!"
+	{15430, _sound_is_normal, _sound_cannot_be_restarted}, // _snd_human_chatter "theyâ€™re everywhere!"
+	{15440, _sound_is_normal, _sound_cannot_be_restarted}, // _snd_assimilated_human_chatter "thank god itâ€™s you!"
 	{15450, _sound_is_normal, _sound_cannot_be_restarted, _seventy_percent}, // _snd_human_trash_talk "eat that!"
 	{15460, _sound_is_normal, _sound_cannot_be_restarted}, // _snd_human_apology "oops!"
-	{15470, _sound_is_normal, _sound_cannot_be_restarted}, // _snd_human_activation "theyÕre over here!"
+	{15470, _sound_is_normal, _sound_cannot_be_restarted}, // _snd_human_activation "theyâ€™re over here!"
 	{15480, _sound_is_normal, _sound_cannot_be_restarted, _fifty_percent}, // _snd_human_clear "out of the way!"
 	{15490, _sound_is_normal, _sound_cannot_be_restarted, _thirty_percent}, // _snd_human_stop_shooting_me_you_bastard
 	{15500, _sound_is_normal, _sound_cannot_be_restarted, _fifty_percent}, // _snd_human_area_secure

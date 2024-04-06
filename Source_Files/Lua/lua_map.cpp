@@ -27,19 +27,19 @@ LUA_MAP.CPP
 #include "lua_map.h"
 #include "lua_monsters.h"
 #include "lua_objects.h"
+#include "lua_player.h"
 #include "lua_templates.h"
 #include "lightsource.h"
 #include "map.h"
 #include "media.h"
 #include "platforms.h"
+#include "player.h"
+#include "projectile_definitions.h"
+#include "projectiles.h"
 #include "OGL_Setup.h"
 #include "SoundManager.h"
 
 #include "collection_definition.h"
-
-#include <boost/bind.hpp>
-
-#ifdef HAVE_LUA
 
 char Lua_AmbientSound_Name[] = "ambient_sound";
 char Lua_AmbientSounds_Name[] = "AmbientSounds";
@@ -229,6 +229,12 @@ static int Lua_Line_Get_Counterclockwise_Side(lua_State *L)
 	return 1;
 }
 
+static int Lua_Line_Get_Decorative(lua_State* L)
+{
+	lua_pushboolean(L, get_line_data(Lua_Line::Index(L, 1))->is_decorative());
+	return 1;
+}
+
 static int Lua_Line_Get_Endpoints(lua_State *L)
 {
 	Lua_Line_Endpoints::Push(L, Lua_Line::Index(L, 1));
@@ -272,6 +278,15 @@ static int Lua_Line_Get_Visible_On_Automap(lua_State *L)
 	return 1;
 }
 
+static int Lua_Line_Set_Decorative(lua_State* L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, ("decorative: incorrect argument type"));
+
+	get_line_data(Lua_Line::Index(L, 1))->set_decorative(lua_toboolean(L, 2));
+	return 0;
+}
+
 static int Lua_Line_Set_Visible_On_Automap(lua_State *L)
 {
 	if (!lua_isboolean(L, 2))
@@ -294,6 +309,7 @@ const luaL_Reg Lua_Line_Get[] = {
 	{"clockwise_side", Lua_Line_Get_Clockwise_Side},
 	{"counterclockwise_polygon", Lua_Line_Get_Counterclockwise_Polygon},
 	{"counterclockwise_side", Lua_Line_Get_Counterclockwise_Side},
+	{"decorative", Lua_Line_Get_Decorative},
 	{"endpoints", Lua_Line_Get_Endpoints},
 	{"has_transparent_side", Lua_Line_Get_Has_Transparent_Side},
 	{"highest_adjacent_floor", Lua_Line_Get_Highest_Adjacent_Floor},
@@ -305,6 +321,7 @@ const luaL_Reg Lua_Line_Get[] = {
 };
 
 const luaL_Reg Lua_Line_Set[] = {
+	{"decorative", Lua_Line_Set_Decorative},
 	{"visible_on_automap", Lua_Line_Set_Visible_On_Automap},
 	{0, 0}
 };
@@ -325,6 +342,31 @@ bool Lua_Platform_Valid(int16 index)
 {
 	return index >= 0 && index < dynamic_world->platform_count;
 }
+
+template<int flag_bit> int 
+Lua_Platform_Get_Dynamic_Flag(lua_State* L)
+{
+	platform_data* platform = get_platform_data(Lua_Platform::Index(L, 1));
+	lua_pushboolean(L, platform->dynamic_flags & (1 << flag_bit));
+	return 1;
+}
+
+template<int flag_bit> int
+Lua_Platform_Set_Dynamic_Flag(lua_State* L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "platform: incorrect argument type");
+
+	platform_data* platform = get_platform_data(Lua_Platform::Index(L, 1));
+	bool flag = lua_toboolean(L, 2);
+	if (flag)
+		platform->dynamic_flags |= (1 << flag_bit);
+	else
+		platform->dynamic_flags &= ~(1 << flag_bit);
+
+	return 0;
+}
+
 
 template<int flag_bit> int 
 Lua_Platform_Get_Static_Flag(lua_State* L)
@@ -385,6 +427,34 @@ static int Lua_Platform_Get_Floor_Height(lua_State *L)
 	return 1;
 }
 
+static int Lua_Platform_Get_Maximum_Ceiling_Height(lua_State *L)
+{
+	platform_data *platform = get_platform_data(Lua_Platform::Index(L, 1));
+	lua_pushnumber(L, (double) platform->maximum_ceiling_height / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Platform_Get_Maximum_Floor_Height(lua_State *L)
+{
+	platform_data *platform = get_platform_data(Lua_Platform::Index(L, 1));
+	lua_pushnumber(L, (double) platform->maximum_floor_height / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Platform_Get_Minimum_Ceiling_Height(lua_State *L)
+{
+	platform_data *platform = get_platform_data(Lua_Platform::Index(L, 1));
+	lua_pushnumber(L, (double) platform->minimum_ceiling_height / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Platform_Get_Minimum_Floor_Height(lua_State *L)
+{
+	platform_data *platform = get_platform_data(Lua_Platform::Index(L, 1));
+	lua_pushnumber(L, (double) platform->minimum_floor_height / WORLD_ONE);
+	return 1;
+}
+
 static int Lua_Platform_Get_Polygon(lua_State *L)
 {
 	Lua_Polygon::Push(L, get_platform_data(Lua_Platform::Index(L, 1))->polygon_index);
@@ -395,6 +465,13 @@ static int Lua_Platform_Get_Speed(lua_State *L)
 {
 	platform_data *platform = get_platform_data(Lua_Platform::Index(L, 1));
 	lua_pushnumber(L, (double) platform->speed / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Platform_Get_Tag(lua_State* L)
+{
+	auto* platform = get_platform_data(Lua_Platform::Index(L, 1));
+	Lua_Tag::Push(L, platform->tag);
 	return 1;
 }
 
@@ -485,6 +562,26 @@ static int Lua_Platform_Set_Speed(lua_State *L)
 	return 0;
 }
 
+static int Lua_Platform_Set_Tag(lua_State* L)
+{
+	int16_t tag = NONE;
+	if (lua_isnumber(L, 2))
+	{
+		tag = static_cast<int16_t>(lua_tonumber(L, 2));
+		if (!Lua_Tag::Valid(tag))
+			return luaL_error(L, "tag: invalid tag index");
+	}
+	else if (Lua_Tag::Is(L, 2))
+	{
+		tag = Lua_Tag::Index(L, 2);
+	}
+	else return luaL_error(L, "tag: incorrect argument type");
+
+	auto platform = get_platform_data(Lua_Platform::Index(L, 1));
+	platform->tag = tag;
+	return 0;
+}
+
 static int Lua_Platform_Set_Type(lua_State* L)
 {
 	platform_data* platform = get_platform_data(Lua_Platform::Index(L, 1));
@@ -494,34 +591,80 @@ static int Lua_Platform_Set_Type(lua_State* L)
 	
 
 const luaL_Reg Lua_Platform_Get[] = {
+	{"activates_adjacent_platforms_at_each_level", Lua_Platform_Get_Static_Flag<_platform_activates_adjacent_platforms_at_each_level>},
+	{"activates_adjacent_platforms_when_activating", Lua_Platform_Get_Static_Flag<_platform_activates_adjacent_platforms_when_activating>},
+	{"activates_adjacent_platforms_when_deactivating", Lua_Platform_Get_Static_Flag<_platform_activates_adjacent_platforms_when_deactivating>},
+	{"activates_light", Lua_Platform_Get_Static_Flag<_platform_activates_light>},
+	{"activates_only_once", Lua_Platform_Get_Static_Flag<_platform_activates_only_once>},
 	{"active", Lua_Platform_Get_Active},
+	{"cannot_be_externally_deactivated", Lua_Platform_Get_Static_Flag<_platform_cannot_be_externally_deactivated>},
+	{"causes_damage", Lua_Platform_Get_Static_Flag<_platform_causes_damage>},
 	{"ceiling_height", Lua_Platform_Get_Ceiling_Height},
+	{"comes_from_ceiling", Lua_Platform_Get_Static_Flag<_platform_comes_from_ceiling>},
+	{"comes_from_floor", Lua_Platform_Get_Static_Flag<_platform_comes_from_floor>},
 	{"contracting", Lua_Platform_Get_Contracting},
+	{"contracts_slower", Lua_Platform_Get_Static_Flag<_platform_contracts_slower>},
+	{"deactivates_adjacent_platforms_when_activating", Lua_Platform_Get_Static_Flag<_platform_deactivates_adjacent_platforms_when_activating>},
+	{"deactivates_adjacent_platforms_when_deactivating", Lua_Platform_Get_Static_Flag<_platform_deactivates_adjacent_platforms_when_deactivating>},
+	{"deactivates_at_each_level", Lua_Platform_Get_Static_Flag<_platform_deactivates_at_each_level>},
+	{"deactivates_at_initial_level", Lua_Platform_Get_Static_Flag<_platform_deactivates_at_initial_level>},
+	{"deactivates_light", Lua_Platform_Get_Static_Flag<_platform_deactivates_light>},
+	{"delays_before_activation", Lua_Platform_Get_Static_Flag<_platform_delays_before_activation>},
+	{"does_not_activate_parent", Lua_Platform_Get_Static_Flag<_platform_does_not_activate_parent>},
 	{"door", Lua_Platform_Get_Static_Flag<_platform_is_door>},
 	{"extending", Lua_Platform_Get_Extending},
+	{"extends_floor_to_ceiling", Lua_Platform_Get_Static_Flag<_platform_extends_floor_to_ceiling>},
 	{"floor_height", Lua_Platform_Get_Floor_Height},
+	{"has_been_activated", Lua_Platform_Get_Dynamic_Flag<_platform_has_been_activated>},
+	{"initially_active", Lua_Platform_Get_Static_Flag<_platform_is_initially_active>},
+	{"initially_extended", Lua_Platform_Get_Static_Flag<_platform_is_initially_extended>},
 	{"locked", Lua_Platform_Get_Static_Flag<_platform_is_locked>},
+	{"maximum_ceiling_height", Lua_Platform_Get_Maximum_Ceiling_Height},
+	{"maximum_floor_height", Lua_Platform_Get_Maximum_Floor_Height},
+	{"minimum_ceiling_height", Lua_Platform_Get_Minimum_Ceiling_Height},
+	{"minimum_floor_height", Lua_Platform_Get_Minimum_Floor_Height},
 	{"monster_controllable", Lua_Platform_Get_Static_Flag<_platform_is_monster_controllable>},
+	{"reverses_direction_when_obstructed", Lua_Platform_Get_Static_Flag<_platform_reverses_direction_when_obstructed>},
 	{"player_controllable", Lua_Platform_Get_Static_Flag<_platform_is_player_controllable>},
 	{"polygon", Lua_Platform_Get_Polygon},
 	{"secret", Lua_Platform_Get_Static_Flag<_platform_is_secret>},
 	{"speed", Lua_Platform_Get_Speed},
+	{"tag", Lua_Platform_Get_Tag},
 	{"type", Lua_Platform_Get_Type},
+	{"uses_native_polygon_heights", Lua_Platform_Get_Static_Flag<_platform_uses_native_polygon_heights>},
 	{0, 0}
 };
 
 const luaL_Reg Lua_Platform_Set[] = {
+	{"activates_adjacent_platforms_at_each_level", Lua_Platform_Set_Static_Flag<_platform_activates_adjacent_platforms_at_each_level>},
+	{"activates_adjacent_platforms_when_activating", Lua_Platform_Set_Static_Flag<_platform_activates_adjacent_platforms_when_activating>},
+	{"activates_adjacent_platforms_when_deactivating", Lua_Platform_Set_Static_Flag<_platform_activates_adjacent_platforms_when_deactivating>},
+	{"activates_light", Lua_Platform_Set_Static_Flag<_platform_activates_light>},
+	{"activates_only_once", Lua_Platform_Set_Static_Flag<_platform_activates_only_once>},
 	{"active", Lua_Platform_Set_Active},
+	{"cannot_be_externally_deactivated", Lua_Platform_Set_Static_Flag<_platform_cannot_be_externally_deactivated>},
+	{"causes_damage", Lua_Platform_Set_Static_Flag<_platform_causes_damage>},
 	{"ceiling_height", Lua_Platform_Set_Ceiling_Height},
 	{"contracting", Lua_Platform_Set_Contracting},
+	{"contracts_slower", Lua_Platform_Set_Static_Flag<_platform_contracts_slower>},
+	{"deactivates_adjacent_platforms_when_activating", Lua_Platform_Set_Static_Flag<_platform_deactivates_adjacent_platforms_when_activating>},
+	{"deactivates_adjacent_platforms_when_deactivating", Lua_Platform_Set_Static_Flag<_platform_deactivates_adjacent_platforms_when_deactivating>},
+	{"deactivates_at_each_level", Lua_Platform_Set_Static_Flag<_platform_deactivates_at_each_level>},
+	{"deactivates_at_initial_level", Lua_Platform_Set_Static_Flag<_platform_deactivates_at_initial_level>},
+	{"deactivates_light", Lua_Platform_Set_Static_Flag<_platform_deactivates_light>},
+	{"delays_before_activation", Lua_Platform_Set_Static_Flag<_platform_delays_before_activation>},
+	{"does_not_activate_parent", Lua_Platform_Set_Static_Flag<_platform_does_not_activate_parent>},
 	{"door", Lua_Platform_Set_Static_Flag<_platform_is_door>},
 	{"extending", Lua_Platform_Set_Extending},
 	{"floor_height", Lua_Platform_Set_Floor_Height},
+	{"has_been_activated", Lua_Platform_Get_Dynamic_Flag<_platform_has_been_activated>},
 	{"locked", Lua_Platform_Set_Static_Flag<_platform_is_locked>},
 	{"monster_controllable", Lua_Platform_Set_Static_Flag<_platform_is_monster_controllable>},
 	{"player_controllable", Lua_Platform_Set_Static_Flag<_platform_is_player_controllable>},
+	{"reverses_direction_when_obstructed", Lua_Platform_Set_Static_Flag<_platform_reverses_direction_when_obstructed>},
 	{"secret", Lua_Platform_Set_Static_Flag<_platform_is_secret>},
 	{"speed", Lua_Platform_Set_Speed},
+	{"tag", Lua_Platform_Set_Tag},
 	{"type", Lua_Platform_Set_Type},
 	{0, 0}
 };
@@ -1127,6 +1270,161 @@ const luaL_Reg Lua_Polygon_Sides_Metatable[] = {
 	{0, 0}
 };
 
+int Lua_Polygon_Change_Height(lua_State* L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3))
+		return luaL_error(L, ("change_height: incorrect argument type"));
+
+	short polygon_index = Lua_Polygon::Index(L, 1);
+
+	auto floor_height = lua_tonumber(L, 2) * WORLD_ONE;
+	auto ceiling_height = lua_tonumber(L, 3) * WORLD_ONE;
+
+	auto success = change_polygon_height(polygon_index, floor_height, ceiling_height, nullptr);
+
+	if (success)
+	{
+		auto polygon = get_polygon_data(polygon_index);
+		for (auto i = 0; i < polygon->vertex_count; ++i)
+		{
+			recalculate_redundant_line_data(polygon->line_indexes[i]);
+			recalculate_redundant_endpoint_data(polygon->endpoint_indexes[i]);
+		}
+	}
+
+	lua_pushboolean(L, success);
+	return 1;
+}
+
+extern projectile_definition* get_projectile_definition(short);
+
+// p, x1, y1, z1, owner, x2, y2, z2, [stop_at_objects], [stop_at_media]
+int Lua_Polygon_Check_Collision(lua_State* L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) ||
+		!lua_isnumber(L, 4) || !lua_isnumber(L, 6) ||
+		!lua_isnumber(L, 7) || !lua_isnumber(L, 8) ||
+		(lua_gettop(L) >= 9 && !(lua_isnil(L, 9) || lua_isboolean(L, 9))) ||
+		(lua_gettop(L) >= 10 && !(lua_isnil(L, 10) || lua_isboolean(L, 10))))
+	{
+		return luaL_error(L, ("check_collision: incorrect argument type"));
+	}
+
+	short owner = NONE;
+	if (Lua_Monster::Is(L, 5))
+	{
+		owner = Lua_Monster::Index(L, 5);
+	}
+	else if (Lua_Player::Is(L, 5))
+	{
+		auto player = get_player_data(Lua_Player::Index(L, 5));
+		owner = player->monster_index;
+	}
+	else if (!lua_isnil(L, 5))
+		return luaL_error(L, ("check_collision: incorrect argument type"));
+
+	world_point3d origin = {
+		static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE),
+		static_cast<world_distance>(lua_tonumber(L, 3) * WORLD_ONE),
+		static_cast<world_distance>(lua_tonumber(L, 4) * WORLD_ONE)
+	};
+	
+	world_point3d destination = {
+		static_cast<world_distance>(lua_tonumber(L, 6) * WORLD_ONE),
+		static_cast<world_distance>(lua_tonumber(L, 7) * WORLD_ONE),
+		static_cast<world_distance>(lua_tonumber(L, 8) * WORLD_ONE)
+	};
+
+	auto stop_at_objects = lua_toboolean(L, 9);
+	auto stop_at_media = lua_toboolean(L, 10);
+
+	short polygon_index = Lua_Polygon::Index(L, 1);
+
+	// preflight a projectile 1 WU at a time (because of the speed bug)
+	world_distance distance = distance2d(
+		reinterpret_cast<world_point2d*>(&origin),
+		reinterpret_cast<world_point2d*>(&destination));
+
+	int32_t chunks = (distance + WORLD_ONE - 1) / WORLD_ONE;
+
+	int32_t dx = destination.x - origin.x;
+	int32_t dy = destination.y - origin.y;
+	int32_t dz = destination.z - origin.z;
+
+	world_point3d p0;
+	world_point3d p1 = origin;
+	short old_polygon;
+	short new_polygon = polygon_index;
+	short obstruction_index;
+	short line_index;
+	uint16_t flags = 0;
+
+	auto projectile_definition = get_projectile_definition(0);
+	auto projectile_flags = projectile_definition->flags;
+
+	projectile_definition->flags =
+		_usually_pass_transparent_side |
+		_sometimes_pass_transparent_side |
+		(!stop_at_objects ? _passes_through_objects : 0) |
+		(!stop_at_media ? _penetrates_media : 0);
+
+	for (auto i = 0; i < chunks && !(flags & _projectile_hit); ++i)
+	{
+		old_polygon = new_polygon;
+		p0 = p1;
+
+		p1 = {
+			static_cast<world_distance>(origin.x + dx * (i + 1) / chunks),
+			static_cast<world_distance>(origin.y + dy * (i + 1) / chunks),
+			static_cast<world_distance>(origin.z + dz * (i + 1) / chunks)
+		};
+
+		flags = translate_projectile(0, &p0, old_polygon,
+									 &p1, &new_polygon, owner,
+									 &obstruction_index, &line_index, true, NONE);
+	}
+
+	projectile_definition->flags = projectile_flags;
+
+	if (flags & _projectile_hit_monster)
+	{
+		auto object = get_object_data(obstruction_index);
+		Lua_Monster::Push(L, object->permutation);
+	}
+	else if (flags & _projectile_hit_floor)
+	{
+		Lua_Polygon_Floor::Push(L, new_polygon);
+	}
+	else if (flags & _projectile_hit_media)
+	{
+		Lua_Polygon::Push(L, new_polygon);
+	}
+	else if (flags & _projectile_hit_scenery)
+	{
+		Lua_Scenery::Push(L, obstruction_index);
+	}
+	else if (obstruction_index != NONE)
+	{
+		Lua_Polygon_Ceiling::Push(L, new_polygon);
+	}
+	else if (flags & _projectile_hit)
+	{
+		auto side_index = find_adjacent_side(new_polygon, line_index);
+		Lua_Side::Push(L, side_index);
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	lua_pushnumber(L, static_cast<double>(p1.x) / WORLD_ONE);
+	lua_pushnumber(L, static_cast<double>(p1.y) / WORLD_ONE);
+	lua_pushnumber(L, static_cast<double>(p1.z) / WORLD_ONE);
+	Lua_Polygon::Push(L, new_polygon);
+
+	return 5;
+}
+
 // contains(x, y, z)
 int Lua_Polygon_Contains(lua_State *L)
 {
@@ -1154,6 +1452,33 @@ int Lua_Polygon_Contains(lua_State *L)
 	}
 
 	lua_pushboolean(L, point_in_polygon(polygon_index, &p) && z >= polygon->floor_height && z <= polygon->ceiling_height);
+	return 1;
+}
+
+static int Lua_Polygon_Find_Polygon(lua_State* L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) ||
+		!lua_isnumber(L, 4) || !lua_isnumber(L, 5))
+		return luaL_error(L, "find_polygon: incorrect argument type");
+
+	world_point2d origin;
+	origin.x = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	origin.y = static_cast<world_distance>(lua_tonumber(L, 3) * WORLD_ONE);
+
+	world_point2d destination;
+	destination.x = static_cast<world_distance>(lua_tonumber(L, 4) * WORLD_ONE);
+	destination.y = static_cast<world_distance>(lua_tonumber(L, 5) * WORLD_ONE);
+
+	auto polygon_index = find_new_object_polygon(&origin, &destination, Lua_Polygon::Index(L, 1));
+	if (polygon_index != NONE)
+	{
+		Lua_Polygon::Push(L, polygon_index);
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
 	return 1;
 }
 
@@ -1401,23 +1726,8 @@ static int Lua_Polygon_Set_Permutation(lua_State *L)
 
 static int Lua_Polygon_Set_Type(lua_State *L)
 {
-	short type = NONE;
-	if (lua_isnumber(L, 2))
-	{
-		type = static_cast<short>(lua_tonumber(L, 2));
-		if (type < 0 || type > _polygon_is_superglue) {
-			luaL_error(L, "type: invalid polygon type index");
-		}
-	}
-	else if (Lua_PolygonType::Is(L, 2)) {
-		type = Lua_PolygonType::Index(L, 2);
-	} 
-	else
-	{
-		return luaL_error(L, "type: incorrect argument type");
-	}
-
-	get_polygon_data(Lua_Polygon::Index(L, 1))->type = type;
+	polygon_data* polygon = get_polygon_data(Lua_Polygon::Index(L, 1));
+	polygon->type = Lua_PolygonType::ToIndex(L, 2);
 	return 0;
 }
 
@@ -1442,8 +1752,11 @@ const luaL_Reg Lua_Polygon_Get[] = {
 	{"adjacent_polygons", Lua_Polygon_Get_Adjacent},
 	{"area", Lua_Polygon_Get_Area},
 	{"ceiling", Lua_Polygon_Get_Ceiling},
+	{"change_height", L_TableFunction<Lua_Polygon_Change_Height>},
+	{"check_collision", L_TableFunction<Lua_Polygon_Check_Collision>},
 	{"contains", L_TableFunction<Lua_Polygon_Contains>},
 	{"endpoints", Lua_Polygon_Get_Endpoints},
+	{"find_polygon", L_TableFunction<Lua_Polygon_Find_Polygon>},
 	{"find_line_crossed_leaving", L_TableFunction<Lua_Polygon_Find_Line_Crossed_Leaving>},
 	{"floor", Lua_Polygon_Get_Floor},
 	{"lines", Lua_Polygon_Get_Lines},
@@ -2036,6 +2349,13 @@ int Lua_Side_Recalculate_Type(lua_State *L)
 	return 0;
 }
 
+static int Lua_Side_Get_Ambient_Delta(lua_State* L)
+{
+	auto side = get_side_data(Lua_Side::Index(L, 1));
+	lua_pushnumber(L, static_cast<double>(side->ambient_delta) / FIXED_ONE);
+	return 1;
+}
+
 static int Lua_Side_Get_Control_Panel(lua_State *L)
 {
 	int16 side_index = Lua_Side::Index(L, 1);
@@ -2089,6 +2409,7 @@ static int Lua_Side_Get_Type(lua_State *L)
 }
 
 const luaL_Reg Lua_Side_Get[] = {
+	{"ambient_delta", Lua_Side_Get_Ambient_Delta},
 	{"control_panel", Lua_Side_Get_Control_Panel},
 	{"line", Lua_Side_Get_Line},
 	{"play_sound", L_TableFunction<Lua_Side_Play_Sound>},
@@ -2100,6 +2421,16 @@ const luaL_Reg Lua_Side_Get[] = {
 	{"type", Lua_Side_Get_Type},
 	{0, 0}
 };
+
+static int Lua_Side_Set_Ambient_Delta(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "ambient_delta: incorrect argument type");
+
+	auto side = get_side_data(Lua_Side::Index(L, 1));
+	side->ambient_delta = static_cast<int32_t>(lua_tonumber(L, 2) * FIXED_ONE);
+	return 1;
+}
 
 static int Lua_Side_Set_Control_Panel(lua_State *L)
 {
@@ -2122,6 +2453,7 @@ static int Lua_Side_Set_Control_Panel(lua_State *L)
 }
 
 const luaL_Reg Lua_Side_Set[] = {
+	{"ambient_delta", Lua_Side_Set_Ambient_Delta},
 	{"control_panel", Lua_Side_Set_Control_Panel},
 	{0, 0}
 };
@@ -2798,6 +3130,23 @@ static bool Lua_Media_Valid(int16 index)
 char Lua_Medias_Name[] = "Media";
 static int16 Lua_Medias_Length() { return MediaList.size(); }
 
+int Lua_Medias_New(lua_State* L)
+{
+	if (MediaList.size() == INT16_MAX)
+		return 0;
+
+	struct media_data data{0};
+	MediaList.resize(MediaList.size() + 1);
+	short index = new_media(&data);
+	Lua_Media::Push(L, index);
+	return 1;
+}
+
+const luaL_Reg Lua_Medias_Methods[] = {
+	{"new", L_TableFunction<Lua_Medias_New>},
+	{0, 0}
+};
+
 char Lua_Annotation_Name[] = "annotation";
 typedef L_Class<Lua_Annotation_Name> Lua_Annotation;
 
@@ -3009,6 +3358,9 @@ const luaL_Reg Lua_Fog_Color_Set[] = {
 	{0, 0}
 };
 
+char Lua_FogMode_Name[] = "fog_mode";
+char Lua_FogModes_Name[] = "FogModes";
+
 char Lua_Fog_Name[] = "fog";
 typedef L_Class<Lua_Fog_Name> Lua_Fog;
 
@@ -3036,12 +3388,33 @@ static int Lua_Fog_Get_Depth(lua_State *L)
 	return 1;
 }
 
+static int Lua_Fog_Get_Landscape_Mix(lua_State* L)
+{
+	lua_pushnumber(L, OGL_GetFogData(Lua_Fog::Index(L, 1))->LandscapeMix);
+	return 1;
+}
+
+static int Lua_Fog_Get_Mode(lua_State* L)
+{
+	Lua_FogMode::Push(L, OGL_GetFogData(Lua_Fog::Index(L, 1))->Mode);
+	return 1;
+}
+
+static int Lua_Fog_Get_Start(lua_State* L)
+{
+	lua_pushnumber(L, OGL_GetFogData(Lua_Fog::Index(L, 1))->Start);
+	return 1;
+}
+
 const luaL_Reg Lua_Fog_Get[] = {
 	{"active", Lua_Fog_Get_Active},
 	{"affects_landscapes", Lua_Fog_Get_Affects_Landscapes},
 	{"color", Lua_Fog_Get_Color},
 	{"depth", Lua_Fog_Get_Depth},
+	{"landscape_mix", Lua_Fog_Get_Landscape_Mix},
+	{"mode", Lua_Fog_Get_Mode},
 	{"present", Lua_Fog_Get_Active},
+	{"start", Lua_Fog_Get_Start},
 	{0, 0}
 };
 
@@ -3072,11 +3445,38 @@ static int Lua_Fog_Set_Depth(lua_State *L)
 	return 0;
 }
 
+static int Lua_Fog_Set_Landscape_Mix(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "landscape_mix: incorrect argument type");
+
+	OGL_GetFogData(Lua_Fog::Index(L, 1))->LandscapeMix = static_cast<float>(lua_tonumber(L, 2));
+	return 0;
+}
+
+static int Lua_Fog_Set_Mode(lua_State* L)
+{
+	OGL_GetFogData(Lua_Fog::Index(L, 1))->Mode = Lua_FogMode::ToIndex(L, 2);
+	return 0;
+}
+
+static int Lua_Fog_Set_Start(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "start: incorrect argument type");
+
+	OGL_GetFogData(Lua_Fog::Index(L, 1))->Start = static_cast<float>(lua_tonumber(L, 2));
+	return 0;
+}
+
 const luaL_Reg Lua_Fog_Set[] = {
 	{"active", Lua_Fog_Set_Active},
 	{"affects_landscapes", Lua_Fog_Set_Affects_Landscapes},
 	{"depth", Lua_Fog_Set_Depth},
+	{"landscape_mix", Lua_Fog_Set_Landscape_Mix},
+	{"mode", Lua_Fog_Set_Mode},
 	{"present", Lua_Fog_Set_Active},
+	{"start", Lua_Fog_Set_Start},
 	{0, 0}
 };
 
@@ -3394,7 +3794,7 @@ int Lua_Map_register(lua_State *L)
 	Lua_Media::Register(L, Lua_Media_Get, Lua_Media_Set);
 	Lua_Media::Valid = Lua_Media_Valid;
 
-	Lua_Medias::Register(L);
+	Lua_Medias::Register(L, Lua_Medias_Methods);
 	Lua_Medias::Length = Lua_Medias_Length;
 
         Lua_Level_Stash::Register(L, 0, 0, Lua_Level_Stash_Metatable);
@@ -3408,6 +3808,11 @@ int Lua_Map_register(lua_State *L)
 	Lua_Annotations::Length = Lua_Annotations_Length;
 
 	Lua_Fog::Register(L, Lua_Fog_Get, Lua_Fog_Set);
+
+	Lua_FogMode::Register(L, 0, 0, 0, Lua_FogMode_Mnemonics);
+	Lua_FogMode::Valid = Lua_FogMode::ValidRange(3);
+	Lua_FogModes::Register(L);
+	Lua_FogModes::Length = Lua_FogModes::ConstantLength(3);
 
 	Lua_Fog_Color::Register(L, Lua_Fog_Color_Get, Lua_Fog_Color_Set);
 
@@ -3483,6 +3888,3 @@ static void compatibility(lua_State *L)
 	luaL_loadbuffer(L, compatibility_script, strlen(compatibility_script), "map_compatibility");
 	lua_pcall(L, 0, 0, 0);
 }
-
-#endif
-

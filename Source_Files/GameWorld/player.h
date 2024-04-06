@@ -279,7 +279,7 @@ struct physics_variables
 	_fixed actual_height;
 
 	/* used by mask_in_absolute_positioning_information (because it is not really absolute) to
-		keep track of where weÕre going */
+		keep track of where weâ€™re going */
 	_fixed adjusted_pitch, adjusted_yaw;
 	
 	fixed_vector3d external_velocity; /* from impacts; slowly absorbed */
@@ -293,7 +293,7 @@ struct physics_variables
 	_fixed ceiling_height; /* same as above, but ceiling height */
 	_fixed media_height; /* media height */
 
-	int16 action; /* what the playerÕs legs are doing, basically */
+	int16 action; /* what the playerâ€™s legs are doing, basically */
 	uint16 old_flags, flags; /* stuff like _RECENTERING */
 };
 
@@ -362,7 +362,7 @@ struct player_data
 	int16 team;
 	char name[MAXIMUM_PLAYER_NAME_LENGTH+1];
 	
-	/* shadowed from physics_variables structure below and the playerÕs object (read-only) */
+	/* shadowed from physics_variables structure below and the playerâ€™s object (read-only) */
 	world_point3d location;
 	world_point3d camera_location; // beginning of fake world_location3d structure
 	int16 camera_polygon_index;
@@ -370,10 +370,10 @@ struct player_data
 	int16 supporting_polygon_index; /* what polygon is actually supporting our weight */
 	int16 last_supporting_polygon_index;
 
-	/* suit energy shadows vitality in the playerÕs monster slot */
+	/* suit energy shadows vitality in the playerâ€™s monster slot */
 	int16 suit_energy, suit_oxygen;
 	
-	int16 monster_index; /* this playerÕs entry in the monster list */
+	int16 monster_index; /* this playerâ€™s entry in the monster list */
 	int16 object_index; /* monster->object_index */
 	
 	/* Reset by initialize_player_weapons */
@@ -416,6 +416,10 @@ struct player_data
 	bool	netdead;	// ZZZ: added this; it should not be serialized/deserialized
 
 	world_distance step_height; // not serialized, used to correct chase cam bob
+	uint8_t hotkey_sequence;    // not serialized, used to decode hotkey
+	int16_t hotkey; 			// not serialized, used to store hotkey
+
+	bool run_key;				// not serialized, used by HUD
 
 	// ZZZ: since we don't put this structure directly into files or network communications,
 	// there ought? to be no reason for the padding
@@ -469,6 +473,7 @@ extern struct player_data *local_player, *current_player;
 // will be operations on the returned value.  Returned from a function to avoid
 // accidental assignment to the pointer.
 class ActionQueues;
+class ModifiableActionQueues;
 extern ActionQueues*    GetRealActionQueues();
 
 /* ---------- prototypes/PLAYER.C */
@@ -497,7 +502,8 @@ void team_damage_from_player_data(void);
 // ZZZ: this now takes a set of ActionQueues as a parameter so the caller can redirect
 // the update routine's input.  Also, now callers can request a 'predictive update',
 // which changes less state, in an effort to make partial state saving/restoration successful.
-void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive); /* assumes ¶t==1 tick */
+void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive); /* assumes âˆ‚t==1 tick */
+void decode_hotkeys(ModifiableActionQueues& action_queues);
 
 // handle pausing Marathon 1 terminals
 bool m1_solo_player_in_terminal();
@@ -547,6 +553,8 @@ _fixed get_player_forward_velocity_scale(short player_index);
 // Delta from the low-precision physical aim to the virtual "true" aim implied by high-precision aiming input;
 // |<yaw or pitch delta>| <= FIXED_ONE/2
 fixed_yaw_pitch virtual_aim_delta();
+
+fixed_yaw_pitch prev_virtual_aim_delta(); // for interpolation
 
 // Resync the virtual aim to the current physical aim
 void resync_virtual_aim();

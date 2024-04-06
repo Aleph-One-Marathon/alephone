@@ -29,7 +29,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 
 #ifdef HAVE_SDL_IMAGE
-#include <SDL_image.h>
+#include <SDL2/SDL_image.h>
 #endif
 #ifdef HAVE_PNG
 #include "IMG_savepng.h"
@@ -586,6 +586,10 @@ void create_updated_save(QuickSave& save)
 		err = currentFile.GetError();
 		close_wad_file(currentFile);
 	}
+	else
+	{
+		err = save.save_file.GetError();
+	}
 	
 	// create updated save file
 	int32 offset, meta_wad_length;
@@ -730,7 +734,7 @@ bool QuickSaveLoader::ParseQuickSave(FileSpecifier& file_name)
 				std::istringstream strm(metadata);
 				try {
 					pt = InfoTree::load_ini(strm);
-				} catch (InfoTree::ini_error e) {
+				} catch (const InfoTree::ini_error& e) {
 					return false;
 				}
 				

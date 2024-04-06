@@ -79,6 +79,7 @@ struct NetStatus
 	uint8 *buffer;
 
 	int32 localNetTime;
+	bool worldUpdate;
 };
 typedef struct NetStatus NetStatus, *NetStatusPtr;
 
@@ -651,6 +652,7 @@ RingGameProtocol::Sync(NetTopology* inTopology, int32 inSmallestGameTick, size_t
 	status->ringPacketCount= 0;
 	status->server_player_index= inServerPlayerIndex;
 	status->last_extra_flags= 0;
+	status->worldUpdate = false;
 	status->acceptPackets= true; /* let the PacketHandler see incoming packets */
 	status->acceptRingPackets= true;
 	local_queue.read_index= local_queue.write_index= 0;
@@ -1826,6 +1828,8 @@ static bool NetServerTask(
 			} // we have accumulated enough data to let the ring go on
 	} // reinstall (netState != netDown)
 
+	status->worldUpdate = true;
+
 		return reinstall;
 } // NetServerTask
 
@@ -1855,6 +1859,8 @@ static bool NetQueueingTask(
 			status->localNetTime++;
 		} // room to store an action_flag
 	} // reinstall (netState != netDown)
+
+	status->worldUpdate = true;
 
 	return reinstall;
 } // NetQueueingTask
@@ -2128,6 +2134,20 @@ RingGameProtocol::GetNetTime(void)
 #endif
 }
 
+bool
+RingGameProtocol::CheckWorldUpdate()
+{
+	if (status->worldUpdate)
+	{
+		status->worldUpdate = false;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 int32 RingGameProtocol::GetUnconfirmedActionFlagsCount()
 {
 	return GetRealActionQueues()->countActionFlags(NetGetLocalPlayerIndex());
@@ -2365,7 +2385,7 @@ void
 record_profile(int req_action_flags) {
 	if(net_profile_index < 1000) {
 		// capture 1000 profiling entries
-		net_profile[net_profile_index].timestamp	= SDL_GetTicks();
+		net_profile[net_profile_index].timestamp	= machine_tick_count();
 		net_profile[net_profile_index].local_queue_size	= NetSizeofLocalQueue();
 		net_profile[net_profile_index].required_action_flags = req_action_flags;
 		net_profile[net_profile_index].player_queue_size= get_action_queue_size(local_player_index);

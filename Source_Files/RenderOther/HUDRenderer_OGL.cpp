@@ -49,10 +49,6 @@
 
 #include <math.h>
 
-#if defined(__WIN32__) || defined(__MINGW32__)
-#undef DrawText
-#endif
-
 extern bool MotionSensorActive;
 
 
@@ -232,11 +228,6 @@ void HUD_OGL_Class::DrawTexture(shape_descriptor shape, short texture_type, shor
  *  Draw text
  */
 
-// WZ: Work around some Win32 oddness
-#ifdef DrawText
-#undef DrawText
-#endif
-
 void HUD_OGL_Class::DrawText(const char *text, screen_rectangle *dest, short flags, short font_id, short text_color)
 {
 	// Get color
@@ -314,6 +305,11 @@ void HUD_OGL_Class::SetClipPlane(int x, int y, int c_x, int c_y, int radius)
 void HUD_OGL_Class::DisableClipPlane(void)
 {
 	glDisable(GL_CLIP_PLANE0);
+}
+
+int HUD_OGL_Class::TextWidth(const char* text, short font_id)
+{
+	return get_interface_font(font_id).TextWidth(text);
 }
 
 #define MESSAGE_AREA_X_OFFSET -9

@@ -24,13 +24,19 @@
  *
  *  Written in 2000 by Christian Bauer
  */
+
+#if defined _MSC_VER 
+ //not #if defined(_WIN32) because we have strcasecmp in mingw
+#define strcasecmp _stricmp
+#endif
+
 #include "cseries.h"
 #include "FileHandler.h"
 #include "resource_manager.h"
 
 #include "shell.h"
 #include "interface.h"
-#include "game_errors.h"
+#include "screen.h"
 #include "tags.h"
 
 #include <stdio.h>
@@ -39,13 +45,14 @@
 #include <limits.h>
 #include <string>
 #include <vector>
+#include <functional>
+#include <map>
 
-#include <SDL_endian.h>
+#include <SDL2/SDL_endian.h>
 
 #ifdef HAVE_UNISTD_H
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <dirent.h>
 #include <unistd.h>
 #endif
 
@@ -55,6 +62,10 @@
 #endif
 
 #if defined(__WIN32__)
+#if defined _MSC_VER
+#define R_OK 4
+#endif
+#include <wchar.h>
 #define PATH_SEP '\\'
 #else
 #define PATH_SEP '/'
@@ -66,12 +77,16 @@
 
 #include "preferences.h"
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>
 
+#ifdef HAVE_NFD
+#include "nfd.h"
+#endif
+
 namespace io = boost::iostreams;
+namespace sys = boost::system;
+namespace fs = boost::filesystem;
 
 // From shell_sdl.cpp
 extern vector<DirectorySpecifier> data_search_path;
@@ -79,6 +94,46 @@ extern DirectorySpecifier local_data_dir, preferences_dir, saved_games_dir, quic
 
 extern bool is_applesingle(SDL_RWops *f, bool rsrc_fork, int32 &offset, int32 &length);
 extern bool is_macbinary(SDL_RWops *f, int32 &data_length, int32 &rsrc_length);
+
+#ifdef O_BINARY // Microsoft extension
+constexpr int o_binary = O_BINARY;
+#else
+constexpr int o_binary = 0;
+#endif
+
+static int to_posix_code_or_unknown(sys::error_code ec)
+{
+	const auto cond = ec.default_error_condition();
+	return cond.category() == sys::generic_category() ? cond.value() : unknown_filesystem_error;
+}
+
+#ifdef __WIN32__
+static fs::path utf8_to_path(const std::string& utf8) { return utf8_to_wide(utf8); }
+static std::string path_to_utf8(const fs::path& path) { return wide_to_utf8(path.native()); }
+#else
+static fs::path utf8_to_path(const std::string& utf8) { return utf8; }
+static std::string path_to_utf8(const fs::path& path) { return path.native(); }
+#endif
+
+// utf8_zzip_io(): a zzip I/O handler set with a UTF-8-compatible 'open' handler
+#ifdef HAVE_ZZIP
+#ifdef __WIN32__
+static int win_zzip_open(const char* f, int o, ...) { return _wopen(utf8_to_wide(f).c_str(), o); }
+
+static const zzip_plugin_io_handlers& utf8_zzip_io()
+{
+	static const zzip_plugin_io_handlers io = []
+	{
+		zzip_plugin_io_handlers io = {zzip_get_default_io()->fd};
+		io.fd.open = &win_zzip_open;
+		return io;
+	}();
+	return io;
+}
+#else
+static const zzip_plugin_io_handlers& utf8_zzip_io() { return *zzip_get_default_io(); }
+#endif
+#endif // HAVE_ZZIP
 
 /*
  *  Opened file
@@ -121,7 +176,7 @@ bool OpenedFile::SetPosition(int32 Position)
 
 	err = 0;
 	if (SDL_RWseek(f, Position + fork_offset, SEEK_SET) < 0)
-		err = errno;
+		err = unknown_filesystem_error;
 	return err == 0;
 }
 
@@ -277,7 +332,7 @@ bool OpenedResourceFile::Check(uint32 Type, int16 ID)
 {
 	Push();
 	bool result = has_1_resource(Type, ID);
-	err = result ? 0 : errno;
+	err = result ? 0 : ENOENT;
 	Pop();
 	return result;
 }
@@ -286,7 +341,7 @@ bool OpenedResourceFile::Get(uint32 Type, int16 ID, LoadedResource &Rsrc)
 {
 	Push();
 	bool success = get_1_resource(Type, ID, Rsrc);
-	err = success ? 0 : errno;
+	err = success ? 0 : ENOENT;
 	Pop();
 	return success;
 }
@@ -333,13 +388,9 @@ bool FileSpecifier::Create(Typecode Type)
 // Create directory
 bool FileSpecifier::CreateDirectory()
 {
-	err = 0;
-#if defined(__WIN32__)
-	if (mkdir(GetPath()) < 0)
-#else
-	if (mkdir(GetPath(), 0777) < 0)
-#endif
-		err = errno;
+	sys::error_code ec;
+	const bool created_dir = fs::create_directory(utf8_to_path(name), ec);
+	err = ec.value() == 0 ? (created_dir ? 0 : EEXIST) : to_posix_code_or_unknown(ec);
 	return err == 0;
 }
 
@@ -370,20 +421,21 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 #ifdef HAVE_ZZIP
 		if (!Writable)
 		{
-			f = OFile.f = SDL_RWFromZZIP(unix_path_separators(GetPath()).c_str(), "rb");
+			f = OFile.f = SDL_RWFromZZIP(unix_path_separators(GetPath()).c_str(), &utf8_zzip_io());
+			err = f ? 0 : errno;
 		} 
 		else {
 			f = OFile.f = SDL_RWFromFile(GetPath(), "wb+");
+			err = f ? 0 : unknown_filesystem_error;
 		}
 #else
 		f = OFile.f = SDL_RWFromFile(GetPath(), Writable ? "wb+" : "rb");
+		err = f ? 0 : unknown_filesystem_error;
 #endif
 
 	}
 
-	err = f ? 0 : errno;
 	if (f == NULL) {
-		set_game_error(systemError, err);
 		return false;
 	}
 	if (Writable)
@@ -408,15 +460,22 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 	return true;
 }
 
+bool FileSpecifier::OpenForWritingText(OpenedFile& OFile)
+{
+	OFile.Close();
+	OFile.f = SDL_RWFromFile(GetPath(), "w");
+	err = OFile.f ? 0 : unknown_filesystem_error;
+	return err == 0;
+}
+
 // Open resource file
 bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 {
 	OFile.Close();
 
 	OFile.f = open_res_file(*this);
-	err = OFile.f ? 0 : errno;
+	err = OFile.f ? 0 : unknown_filesystem_error;
 	if (OFile.f == NULL) {
-		set_game_error(systemError, err);
 		return false;
 	} else
 		return true;
@@ -427,14 +486,20 @@ bool FileSpecifier::Exists()
 {
 	// Check whether the file is readable
 	err = 0;
-	if (access(GetPath(), R_OK) < 0)
+#ifdef __WIN32__
+	const bool access_ok = _waccess(utf8_to_wide(name).c_str(), R_OK) == 0;
+#else
+	const bool access_ok = access(GetPath(), R_OK) == 0;
+#endif
+	if (!access_ok)
 		err = errno;
 	
 #ifdef HAVE_ZZIP
 	if (err)
 	{
 		// Check whether zzip can open the file (slow!)
-		ZZIP_FILE* file = zzip_open(unix_path_separators(GetPath()).c_str(), R_OK);
+		const auto n = unix_path_separators(name);
+		ZZIP_FILE* file = zzip_open_ext_io(n.c_str(), O_RDONLY|o_binary, ZZIP_ONLYZIP, nullptr, &utf8_zzip_io());
 		if (file)
 		{
 			zzip_close(file);
@@ -451,23 +516,19 @@ bool FileSpecifier::Exists()
 
 bool FileSpecifier::IsDir()
 {
-	struct stat st;
-	err = 0;
-	if (stat(GetPath(), &st) < 0)
-		return false;
-	return (S_ISDIR(st.st_mode));
+	sys::error_code ec;
+	const bool is_dir = fs::is_directory(utf8_to_path(name), ec);
+	err = to_posix_code_or_unknown(ec);
+	return err == 0 && is_dir;
 }
 
 // Get modification date
 TimeType FileSpecifier::GetDate()
 {
-	struct stat st;
-	err = 0;
-	if (stat(GetPath(), &st) < 0) {
-		err = errno;
-		return 0;
-	}
-	return st.st_mtime;
+	sys::error_code ec;
+	const auto mtime = fs::last_write_time(utf8_to_path(name), ec);
+	err = to_posix_code_or_unknown(ec);
+	return err == 0 ? mtime : 0;
 }
 
 static const char * alephone_extensions[] = {
@@ -638,22 +699,18 @@ bool FileSpecifier::GetFreeSpace(uint32 &FreeSpace)
 // Delete file
 bool FileSpecifier::Delete()
 {
-	err = 0;
-	if (remove(GetPath()) < 0)
-		err = errno;
+	sys::error_code ec;
+	const bool removed = fs::remove(utf8_to_path(name), ec);
+	err = ec.value() == 0 ? (removed ? 0 : ENOENT) : to_posix_code_or_unknown(ec);
 	return err == 0;
 }
 
 bool FileSpecifier::Rename(const FileSpecifier& Destination)
 {
-#ifdef WIN32
-	// Work around Windows' non-POSIX behavior on rename().
-	// If we fail, go ahead and try to rename anyway.
-	FileSpecifier d2 = Destination;
-	if (d2.Exists() && !d2.IsDir())
-		d2.Delete();
-#endif
-	return rename(GetPath(), Destination.GetPath()) == 0;
+	sys::error_code ec;
+	fs::rename(utf8_to_path(name), utf8_to_path(Destination.name), ec);
+	err = to_posix_code_or_unknown(ec);
+	return err == 0;
 }
 
 // Set to local (per-user) data directory
@@ -753,7 +810,7 @@ bool FileSpecifier::SetNameWithPath(const char* NameWithPath, const DirectorySpe
 
 void FileSpecifier::SetTempName(const FileSpecifier& other)
 {
-	name = boost::filesystem::unique_path(other.name + "%%%%%%").string();
+	name = other.name + fs::unique_path("%%%%%%").string();
 }
 
 // Get last element of path
@@ -831,28 +888,28 @@ void FileSpecifier::canonicalize_path(void)
 bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 {
 	vec.clear();
-
-	DIR *d = opendir(GetPath());
-
-	if (d == NULL) {
-		err = errno;
-		return false;
-	}
-	struct dirent *de = readdir(d);
-	while (de) {
-		FileSpecifier full_path = name;
-		full_path += de->d_name;
-		struct stat st;
-		if (stat(full_path.GetPath(), &st) == 0) {
-			// Ignore files starting with '.' and the directories '.' and '..'
-			if (de->d_name[0] != '.' || (S_ISDIR(st.st_mode) && !(de->d_name[1] == '\0' || de->d_name[1] == '.')))
-				vec.push_back(dir_entry(de->d_name, st.st_size, S_ISDIR(st.st_mode), false, st.st_mtime));
-		}
-		de = readdir(d);
-	}
-	closedir(d);
-	err = 0;
-	return true;
+	
+	sys::error_code ec;
+	for (fs::directory_iterator it(utf8_to_path(name), ec), end; it != end; it.increment(ec))
+	{
+		const auto& entry = *it;
+		sys::error_code ignored_ec;
+		const auto type = entry.status(ignored_ec).type();
+		const bool is_dir = type == fs::directory_file;
+		
+		if (!(is_dir || type == fs::regular_file))
+			continue; // skip special or failed-to-stat files
+		
+		const auto basename = entry.path().filename();
+		
+		if (!is_dir && basename.native()[0] == '.')
+			continue; // skip dot-prefixed regular files
+		
+		vec.emplace_back(path_to_utf8(basename), is_dir, fs::last_write_time(entry.path(), ignored_ec));
+	} 
+	
+	err = to_posix_code_or_unknown(ec);
+	return err == 0;
 }
 
 // Copy file contents
@@ -884,6 +941,31 @@ bool FileSpecifier::CopyContents(FileSpecifier &source_name)
 	if (err)
 		Delete();
 	return err == 0;
+}
+
+// Read ZIP file contents
+bool FileSpecifier::ReadZIP(vector<string> &vec)
+{
+	err = 0;
+	vec.clear();
+	
+#ifdef HAVE_ZZIP
+	const auto zip = zzip_dir_open_ext_io(unix_path_separators(name).c_str(), nullptr, nullptr, &utf8_zzip_io());
+	if (!zip)
+	{
+		err = errno;
+		return false;
+	}
+	
+	for (ZZIP_DIRENT entry; zzip_dir_read(zip, &entry); )
+		vec.emplace_back(entry.d_name);
+	
+	zzip_dir_close(zip);
+	return true;
+#else
+	err = ENOTSUP;
+	return false;
+#endif
 }
 
 // ZZZ: Filesystem browsing list that lets user actually navigate directories...
@@ -999,7 +1081,7 @@ public:
 
 	const FileSpecifier& get_file() { return current_directory; }
 	
-	boost::function<void(const std::string&)> file_selected;
+	std::function<void(const std::string&)> file_selected;
 	
 private:
 	vector<dir_entry>	entries;
@@ -1036,7 +1118,7 @@ private:
 
 	void select_entry(const string& inName, bool inIsDirectory)
 	{
-		dir_entry theEntryToFind(inName, NONE /* length - ignored for our purpose */, inIsDirectory);
+		dir_entry theEntryToFind(inName, inIsDirectory);
 		vector<dir_entry>::iterator theEntry = find(entries.begin(), entries.end(), theEntryToFind);
 		if(theEntry != entries.end())
 			set_selection(theEntry - entries.begin());
@@ -1078,8 +1160,8 @@ public:
 protected:
 	void Init(const FileSpecifier& dir, w_directory_browsing_list::SortOrder default_order, std::string filename) {
 		m_sort_by_w = new w_select(static_cast<size_t>(default_order), sort_by_labels);
-		m_sort_by_w->set_selection_changed_callback(boost::bind(&FileDialog::on_change_sort_order, this));
-		m_up_button_w = new w_button("UP", boost::bind(&FileDialog::on_up, this));
+		m_sort_by_w->set_selection_changed_callback(std::bind(&FileDialog::on_change_sort_order, this));
+		m_up_button_w = new w_button("UP", std::bind(&FileDialog::on_up, this));
 		if (filename.empty()) 
 		{
 			m_list_w = new w_directory_browsing_list(dir, &m_dialog);
@@ -1089,7 +1171,7 @@ protected:
 			m_list_w = new w_directory_browsing_list(dir, &m_dialog, filename);
 		}
 		m_list_w->sort_by(default_order);
-		m_list_w->set_directory_changed_callback(boost::bind(&FileDialog::on_directory_changed, this));
+		m_list_w->set_directory_changed_callback(std::bind(&FileDialog::on_directory_changed, this));
 
 		dir.GetName(temporary);
 		m_directory_name_w = new w_static_text(temporary);
@@ -1174,7 +1256,7 @@ public:
 
 		Init(dir, default_order, filename);
 
-		m_list_w->file_selected = boost::bind(&ReadFileDialog::on_file_selected, this);
+		m_list_w->file_selected = std::bind(&ReadFileDialog::on_file_selected, this);
 	}
 	virtual ~ReadFileDialog() = default;
 	void Layout() {
@@ -1228,18 +1310,110 @@ private:
 	std::string m_filename;
 };
 
+static std::map<Typecode, const char*> typecode_filters {
+    {_typecode_scenario, "sceA"},
+    {_typecode_savegame, "sgaA"},
+    {_typecode_film, "filA"},
+    {_typecode_physics, "phyA"},
+    {_typecode_shapes, "shpA"},
+    {_typecode_sounds, "sndA"},
+    {_typecode_patch, "ShPa"},
+    {_typecode_images, "imgA"},
+    {_typecode_music, "aif;wav;ogg"},
+    {_typecode_movie, "webm"}
+};
+
 bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 {
-	ReadFileDialog d(*this, type, prompt);
-	if (d.Run()) 
+#ifdef HAVE_NFD
+	if (environment_preferences->use_native_file_dialogs)
 	{
-		*this = d.GetFile();
-		return true;
-	} 
-	else 
-	{
-		return false;
+		// TODO: DRY (this is mostly copied from ReadFileDialog)
+		FileSpecifier dir = *this;
+		switch (type)
+		{
+		case _typecode_savegame:
+			dir.SetToSavedGamesDir();
+			break;
+		case _typecode_film:
+			dir.SetToRecordingsDir();
+			break;
+		case _typecode_scenario:
+		case _typecode_netscript:
+			// I think these should be in ReadFileDialog too, it's just never
+			// called on them
+		case _typecode_physics:
+		case _typecode_shapes:
+		case _typecode_sounds:
+		case _typecode_images:
+		case _typecode_unknown: // used for external resources
+		{
+			std::string filename;
+			DirectorySpecifier theDirectory;
+			dir.SplitPath(theDirectory, filename);
+			dir.FromDirectory(theDirectory);
+			if (!dir.Exists())
+			{
+				dir.SetToLocalDataDir();
+			}
+			break;
+		}
+		default:
+			dir.SetToLocalDataDir();
+			break;
+		}
+
+#if (defined(__APPLE__) && defined(__MACH__))
+		// NFD doesn't append a wildcard filter on mac, so if you set ANY
+		// filter here, anything without that extension gets grayed out. So, I
+		// guess just accept any files
+		const char* filters = nullptr;
+#else
+		auto filters = typecode_filters[type];
+#endif
+
+		nfdchar_t* outpath;
+#if defined(_WIN32)
+		auto fullscreen = get_screen_mode()->fullscreen;
+		if (fullscreen)
+		{
+			toggle_fullscreen(false);
+		}
+#endif		
+		auto result = NFD_OpenDialog(filters, dir.GetPath(), &outpath);
+#if defined(_WIN32)
+		if (fullscreen)
+		{
+			toggle_fullscreen(true);
+		}
+#endif
+		if (result == NFD_OKAY)
+		{
+			name = outpath;
+			free(outpath);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
+	else
+	{
+#endif
+    ReadFileDialog d(*this, type, prompt);
+    if (d.Run()) 
+    {
+        *this = d.GetFile();
+        return true;
+    } 
+    else 
+    {
+        return false;
+    }
+#ifdef HAVE_NFD
+	}
+#endif
 }
 
 class w_file_name : public w_text_entry {
@@ -1324,7 +1498,7 @@ public:
 
 		Init(dir, default_order, m_default_name);
 
-		m_list_w->file_selected = boost::bind(&WriteFileDialog::on_file_selected, this, _1);
+		m_list_w->file_selected = std::bind(&WriteFileDialog::on_file_selected, this, std::placeholders::_1);
 	}
 	virtual ~WriteFileDialog() = default;
 	void Layout() {
@@ -1423,6 +1597,62 @@ static bool confirm_save_choice(FileSpecifier & file);
 
 bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *default_name)
 {
+#ifdef HAVE_NFD
+	if (environment_preferences->use_native_file_dialogs)
+	{
+		// TODO: DRY (this is copied from WriteDialog)
+		DirectorySpecifier dir = *this;
+		switch (type)
+		{
+		case _typecode_savegame:
+		{
+			std::string base;
+			std::string part;
+			dir.SplitPath(base, part);
+			if (part != std::string())
+			{
+				dir = base;
+			}
+			break;
+		}
+		case _typecode_film:
+		case _typecode_movie:
+			dir.SetToRecordingsDir();
+			break;
+		default:
+			dir.SetToLocalDataDir();
+			break;
+		}
+		
+		nfdchar_t* outpath;
+#if defined(_WIN32)
+		auto fullscreen = get_screen_mode()->fullscreen;
+		if (fullscreen)
+		{
+			toggle_fullscreen(false);
+		}
+#endif
+		auto result = NFD_SaveDialog(typecode_filters[type], dir.GetPath(), &outpath);
+#if defined(_WIN32)
+		if (fullscreen)
+		{
+			toggle_fullscreen(true);
+		}
+#endif
+		if (result == NFD_OKAY)
+		{
+			name = outpath;
+			free(outpath);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+#endif
 again:
 	WriteFileDialog d(*this, type, prompt, default_name);
 	bool result = false;
@@ -1445,7 +1675,9 @@ again:
 	}
 		
 	return result;
-
+#ifdef HAVE_NFD
+	}
+#endif
 }
 
 bool FileSpecifier::WriteDialogAsync(Typecode type, char *prompt, char *default_name)
@@ -1487,12 +1719,14 @@ static bool confirm_save_choice(FileSpecifier & file)
 	return d.run() == 0;
 }
 
-ScopedSearchPath::ScopedSearchPath(const DirectorySpecifier& dir) 
+ScopedSearchPath::ScopedSearchPath(const DirectorySpecifier& dir) :
+	d{dir}
 {
 	data_search_path.insert(data_search_path.begin(), dir);
 }
 
 ScopedSearchPath::~ScopedSearchPath() 
 {
+	assert(data_search_path.size() && data_search_path.front() == d);
 	data_search_path.erase(data_search_path.begin());
 }

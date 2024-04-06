@@ -369,11 +369,21 @@ static _fixed SelfLuminosity;
 // Pointer to current fog data:
 OGL_FogData *CurrFog = NULL;
 
-inline bool FogActive()
+bool FogActive()
 {
 	if (!CurrFog) return false;
 	bool FogAllowed = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fog);
 	return CurrFog->IsPresent && FogAllowed;
+}
+
+OGL_FogData* OGL_GetCurrFogData()
+{
+	if (FogActive())
+	{
+		return CurrFog;
+	}
+
+	return nullptr;
 }
 
 // Current fog color; may be different from the fog color above because of infravision being on
@@ -845,11 +855,31 @@ bool OGL_StartMain()
 				FindInfravisionVersionRGBA(LoadedWallTexture,CurrFogColor);
 		}
 		glFogfv(GL_FOG_COLOR,CurrFogColor);
-		glFogf(GL_FOG_DENSITY,1.0F/MAX(1,WORLD_ONE*CurrFog->Depth));
+
+		if (CurrFog->Mode == OGL_Fog_Linear)
+		{
+			glFogf(GL_FOG_DENSITY, 0.0F);
+			glFogf(GL_FOG_START, WORLD_ONE*CurrFog->Start);
+			glFogf(GL_FOG_END, WORLD_ONE*(CurrFog->Start + CurrFog->Depth));
+		}
+		else if (CurrFog->Mode == OGL_Fog_Exp2)
+		{
+			glFogf(GL_FOG_DENSITY,1.0F/MAX(1,WORLD_ONE*CurrFog->Depth));
+			glFogf(GL_FOG_START, 0.0F);
+			glFogf(GL_FOG_END, 0.0F);
+		}
+		else
+		{
+			glFogf(GL_FOG_DENSITY,1.0F/MAX(1,WORLD_ONE*CurrFog->Depth));
+			glFogf(GL_FOG_START, 0.0F);
+			glFogf(GL_FOG_END, 0.0F);
+		}
 	}
 	else
 	{
 		glFogf(GL_FOG_DENSITY,0.0F);
+		glFogf(GL_FOG_START, 0.0F);
+		glFogf(GL_FOG_END, 0.0F);
 		glDisable(GL_FOG);
 	}
 	

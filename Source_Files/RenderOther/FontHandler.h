@@ -37,12 +37,8 @@ Jan 14, 2001 (Loren Petrich):
 
 
 #include "cseries.h"
-
 #include "sdl_fonts.h"
-
-#ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
-#endif
 
 #include <set>
 

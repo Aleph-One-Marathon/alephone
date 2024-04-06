@@ -24,11 +24,7 @@
 */
 
 #include "cseries.h"
-
-#ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
-#endif
-
 #include "OGL_Blitter.h"
 #include "ImageLoader.h"
 

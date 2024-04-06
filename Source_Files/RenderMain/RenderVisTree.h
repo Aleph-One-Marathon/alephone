@@ -69,7 +69,7 @@ enum /* next_polygon_along_line() states */
 
 /* ---------- clipping data */
 
-enum /* É_clip_data flags */
+enum /* â€¦_clip_data flags */
 {
 	_clip_left= 0x0001,
 	_clip_right= 0x0002,
@@ -107,6 +107,12 @@ struct endpoint_clip_data
 	
 	// LP change: made into a long vector for long views
 	long_vector2d vector;
+	
+	// The vector sans right-clip-negation
+	long_vector2d forward_vector() const
+	{
+		return flags & _clip_left ? vector : long_vector2d{-vector.i, -vector.j};
+	}
 };
 
 struct clipping_window_data

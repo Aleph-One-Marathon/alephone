@@ -56,7 +56,8 @@ struct SequenceMapEntry
 	}
 	bool operator<(const SequenceMapEntry& other) const
 	{
-		return (Sequence < other.Sequence || ModelSequence < other.ModelSequence);
+		if (Sequence != other.Sequence) return Sequence < other.Sequence;
+		return ModelSequence < other.ModelSequence;
 	}
 };
 
@@ -709,7 +710,7 @@ void parse_mml_opengl_model(const InfoTree& root)
 		def.ModelType.push_back('\0');
 	}
 	
-	BOOST_FOREACH(InfoTree seqmap, root.children_named("seq_map"))
+	for (const InfoTree &seqmap : root.children_named("seq_map"))
 	{
 		SequenceMapEntry e;
 		if (!seqmap.read_indexed("seq", e.Sequence, MAXIMUM_SHAPES_PER_COLLECTION))
@@ -719,7 +720,7 @@ void parse_mml_opengl_model(const InfoTree& root)
 		entry.SequenceMap.push_back(e);
 	}
 	
-	BOOST_FOREACH(InfoTree skin, root.children_named("skin"))
+	for (const InfoTree &skin : root.children_named("skin"))
 	{
 		int16 clut = ALL_CLUTS;
 		skin.read_attr_bounded<int16>("clut", clut, ALL_CLUTS, SILHOUETTE_BITMAP_SET);

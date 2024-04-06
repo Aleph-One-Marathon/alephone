@@ -104,7 +104,6 @@ bool set_platform_state(short platform_index, bool state, short parent_platform_
 static void set_adjacent_platform_states(short platform_index, bool state);
 
 static void take_out_the_garbage(short platform_index);
-static void adjust_platform_sides(short platform_index, world_distance old_ceiling_height, world_distance new_ceiling_height);
 static void calculate_platform_extrema(short platform_index, world_distance lowest_level,
 	world_distance highest_level);
 
@@ -132,8 +131,7 @@ platform_definition *get_platform_definition(const short type)
 
 short new_platform(
 	struct static_platform_data *data,
-	short polygon_index,
-	short version)
+	short polygon_index)
 {
 	short platform_index= NONE;
 	struct platform_data *platform;
@@ -151,7 +149,7 @@ short new_platform(
 		platform_index= dynamic_world->platform_count++;
 		platform= platforms+platform_index;
 
-		/* remember the platform_index in the polygonÕs .permutation field */
+		/* remember the platform_index in the polygonâ€™s .permutation field */
 		polygon->permutation= platform_index;
 		polygon->type= _polygon_is_platform;
 		
@@ -165,23 +163,6 @@ short new_platform(
 		platform->parent_platform_index= NONE;
 		calculate_platform_extrema(platform_index, data->minimum_height, data->maximum_height);
 		
-		if (version == MARATHON_ONE_DATA_VERSION)
-		{
-			switch (platform->type)
-			{
-			case 0: // marathon door
-			case 3: // pfhor door
-				SET_PLATFORM_IS_DOOR(platform, true);
-				break;
-			}
-			
-			if (PLATFORM_IS_LOCKED(platform))
-			{
-				SET_PLATFORM_IS_LOCKED(platform, false);
-				SET_PLATFORM_FLOODS_M1(platform, true);
-			}
-		}
-
 #if 0
 		switch (platform->type)
 		{
@@ -287,9 +268,9 @@ void update_platforms(
 				world_distance delta_height= PLATFORM_IS_EXTENDING(platform) ? platform->speed :
 					(PLATFORM_CONTRACTS_SLOWER(platform) ? (-(platform->speed>>2)) : -platform->speed);
 
-				/* adjust and pin heights: if we think weÕre fully contracted or expanded, make
-					sure our heights reflect that (we donÕt want a split platform to have blank
-					space between it because it didnÕt quite close all the way) */
+				/* adjust and pin heights: if we think weâ€™re fully contracted or expanded, make
+					sure our heights reflect that (we donâ€™t want a split platform to have blank
+					space between it because it didnâ€™t quite close all the way) */
 				CLEAR_PLATFORM_POSITIONING_FLAGS(platform);
 				if (PLATFORM_COMES_FROM_FLOOR(platform))
 				{
@@ -323,12 +304,12 @@ void update_platforms(
 				if (change_polygon_height(platform->polygon_index, new_floor_height, new_ceiling_height,
 					PLATFORM_CAUSES_DAMAGE(platform) ? &definition->damage : (struct damage_definition *) NULL))
 				{
-					/* if we werenÕt blocked, remember that we moved last time, change our current
-						level, adjust the textures if weÕre coming down from the ceiling,
+					/* if we werenâ€™t blocked, remember that we moved last time, change our current
+						level, adjust the textures if weâ€™re coming down from the ceiling,
 						and finally adjust the heights of all endpoints and lines which make
 						up our polygon to reflect the height change */
 					if (PLATFORM_COMES_FROM_CEILING(platform))
-						adjust_platform_sides(platform_index, platform->ceiling_height, new_ceiling_height);
+						adjust_platform_sides(platform, platform->ceiling_height, new_ceiling_height);
 					platform->ceiling_height= new_ceiling_height, platform->floor_height= new_floor_height;
 					SET_PLATFORM_WAS_MOVING(platform);
 					adjust_platform_endpoint_and_line_heights(platform_index);
@@ -336,8 +317,8 @@ void update_platforms(
 				}
 				else
 				{
-					/* if we were blocked, play a sound if we werenÕt blocked last time and reverse
-						directions if weÕre supposed to */
+					/* if we were blocked, play a sound if we werenâ€™t blocked last time and reverse
+						directions if weâ€™re supposed to */
 					if (PLATFORM_WAS_MOVING(platform)) sound_code= _obstructed_sound;
 					if (PLATFORM_REVERSES_DIRECTION_WHEN_OBSTRUCTED(platform))
 					{
@@ -445,7 +426,7 @@ short monster_can_enter_platform(
 	{
 		if (PLATFORM_IS_ACTIVE(platform) && PLATFORM_COMES_FROM_FLOOR(platform) && !PLATFORM_COMES_FROM_CEILING(platform))
 		{
-			/* if this platform doesnÕt go floor to ceiling and it stops at the source polygon, it might be ok */
+			/* if this platform doesnâ€™t go floor to ceiling and it stops at the source polygon, it might be ok */
 			if (platform->maximum_floor_height!=platform->minimum_ceiling_height &&
 				(platform->minimum_floor_height==source_polygon->floor_height ||
 				platform->maximum_floor_height==source_polygon->floor_height))
@@ -527,9 +508,9 @@ void player_touch_platform_state(
 	if (!definition) return;
 	short sound_code= NONE;
 	
-	/* if we canÕt control this platform, play the uncontrollable sound, if itÕs inactive activate
-		it and if itÕs active and moving reverse itÕs direction if thatÕs what it does when itÕs
-		obstructed, if itÕs active but not moving then zero the delay */
+	/* if we canâ€™t control this platform, play the uncontrollable sound, if itâ€™s inactive activate
+		it and if itâ€™s active and moving reverse itâ€™s direction if thatâ€™s what it does when itâ€™s
+		obstructed, if itâ€™s active but not moving then zero the delay */
 	if (PLATFORM_IS_PLAYER_CONTROLLABLE(platform))
 	{
 		if (PLATFORM_IS_ACTIVE(platform))
@@ -876,7 +857,7 @@ void adjust_platform_endpoint_and_line_heights(
 			line->highest_adjacent_floor= MAX(polygon->floor_height, adjacent_polygon->floor_height);
 			line->lowest_adjacent_ceiling= MIN(polygon->ceiling_height, adjacent_polygon->ceiling_height);
 
-			/* only worry about transparency and solidity if thereÕs a polygon on the other side */
+			/* only worry about transparency and solidity if thereâ€™s a polygon on the other side */
 			if (LINE_IS_VARIABLE_ELEVATION(line))
 			{
 				SET_LINE_TRANSPARENCY(line, line->highest_adjacent_floor<line->lowest_adjacent_ceiling);
@@ -949,9 +930,9 @@ static void play_platform_sound(
 	SoundManager::instance()->CauseAmbientSoundSourceUpdate();
 }
 
-/* rules for using native polygon heights: a) if this is a floor platform, then take the polygonÕs
+/* rules for using native polygon heights: a) if this is a floor platform, then take the polygonâ€™s
 	native floor height to be the maximum height if it is greater than the minimum height, otherwise
-	use it as the minimum height; b) if this is a ceiling platform, then take the polygonÕs native
+	use it as the minimum height; b) if this is a ceiling platform, then take the polygonâ€™s native
 	ceiling height to be the minimum height if it is less than the maximum height, otherwise use it
 	as the maximum height; c) native polygon height is not used for floor/ceiling platforms */
 static void calculate_platform_extrema(
@@ -1042,21 +1023,20 @@ static void calculate_platform_extrema(
 	}
 }
 
-static void adjust_platform_sides(
-	short platform_index, 
+void adjust_platform_sides(
+	platform_data* platform,
 	world_distance old_ceiling_height,
-	world_distance new_ceiling_height)
+	world_distance new_ceiling_height
+	)
 {
-	struct platform_data *platform= get_platform_data(platform_index);
 	struct polygon_data *polygon= get_polygon_data(platform->polygon_index);
 	world_distance delta_height= new_ceiling_height-old_ceiling_height;
-	short i;
 	
-	for (i= 0; i<polygon->vertex_count; ++i)
+	for (short i= 0; i<polygon->vertex_count; ++i)
 	{
 		short side_index;
 		struct side_data *side;
-		struct line_data *line= get_line_data(polygon->line_indexes[i]);
+		struct line_data *line = get_line_data(polygon->line_indexes[i]);
 		short adjacent_polygon_index= polygon->adjacent_polygon_indexes[i];
 		
 		/* adjust the platform side (i.e., the texture on the side of the platform) */
@@ -1081,21 +1061,11 @@ static void adjust_platform_sides(
 		side_index= polygon->side_indexes[i];
 		if (side_index!=NONE)
 		{
-			world_distance top_of_side_height;
-			
-			side= get_side_data(side_index);
+			side = get_side_data(side_index);
 			switch (side->type)
 			{
 				case _split_side: /* secondary */
-					top_of_side_height= MIN(line->highest_adjacent_floor,  polygon->ceiling_height);
-					side->primary_texture.y0-= (old_ceiling_height<top_of_side_height && new_ceiling_height<top_of_side_height) ?
-						delta_height : new_ceiling_height-top_of_side_height;
-					break;
 				case _high_side: /* primary */
-//					top_of_side_height= polygon->ceiling_height;
-					side->primary_texture.y0-= delta_height; //(old_ceiling_height<top_of_side_height && new_ceiling_height<top_of_side_height) ?
-//						delta_height : new_ceiling_height-top_of_side_height;
-					break;
 				case _full_side: /* primary */
 					side->primary_texture.y0-= delta_height;
 					break;
@@ -1116,7 +1086,7 @@ static void adjust_platform_sides(
 	}
 }
 
-uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data* Objects, size_t Count)
+uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data* Objects, size_t Count, short version) 
 {
 	uint8* S = Stream;
 	static_platform_data* ObjPtr = Objects;
@@ -1136,6 +1106,23 @@ uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data* Objects,
 		StreamToValue(S,ObjPtr->tag);
 		
 		S += 7*2;
+
+		if (version == MARATHON_ONE_DATA_VERSION)
+		{
+			switch (ObjPtr->type)
+			{
+			case 0: // marathon door
+			case 3: // pfhor door
+				SET_PLATFORM_IS_DOOR(ObjPtr, true);
+				break;
+			}
+			
+			if (PLATFORM_IS_LOCKED(ObjPtr))
+			{
+				SET_PLATFORM_IS_LOCKED(ObjPtr, false);
+				SET_PLATFORM_FLOODS_M1(ObjPtr, true);
+			}
+		}
 	}
 	
 	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_static_platform_data));
@@ -1280,7 +1267,7 @@ void parse_mml_platforms(const InfoTree& root)
 			original_platform_definitions[i] = platform_definitions[i];
 	}
 	
-	BOOST_FOREACH(InfoTree ptree, root.children_named("platform"))
+	for (const InfoTree &ptree : root.children_named("platform"))
 	{
 		int16 index;
 		if (!ptree.read_indexed("index", index, NUMBER_OF_PLATFORM_TYPES))
@@ -1296,7 +1283,7 @@ void parse_mml_platforms(const InfoTree& root)
 		ptree.read_indexed("moving", def.moving_sound, SHRT_MAX+1, true);
 		ptree.read_indexed("item", def.key_item_index, NUMBER_OF_DEFINED_ITEMS, true);
 		
-		BOOST_FOREACH(InfoTree dmg, ptree.children_named("damage"))
+		for (const InfoTree &dmg : ptree.children_named("damage"))
 		{
 			dmg.read_damage(def.damage);
 		}

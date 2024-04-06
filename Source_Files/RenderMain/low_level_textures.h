@@ -22,7 +22,7 @@ Friday, August 19, 1994 2:05:54 PM
 
 Monday, February 27, 1995 11:40:47 PM  (Jason')
 	rob suggests that the PPC might not write-allocate cache lines so we might be faster if we
-	read from a location weÕre about to write to.  he also suggested a rowbytes of 704 instead
+	read from a location weâ€™re about to write to.  he also suggested a rowbytes of 704 instead
 	of 640 off-screen for better cache performance.
 
 Jan 30, 2000 (Loren Petrich):
@@ -43,13 +43,38 @@ inline uint16 & texture_random_seed()
 	return seed;
 }
 
+template<const int TEXBITS> class texture_constants
+{
+public:
+	static const int WIDTH = 1<<TEXBITS;
+	static const int HEIGHT = 1<<TEXBITS;
+	static const int SHIFT = TEXBITS;
+	static const int FRACTIONAL_BITS = FIXED_FRACTIONAL_BITS-TEXBITS;
+	static const int FRACTIONAL_ONE = 1<<FRACTIONAL_BITS;
+	static const int FREE_BITS = 32-TRIG_SHIFT-WORLD_FRACTIONAL_BITS;
+	static const int DOWNSHIFT = 32-TEXBITS;
+};
+/* ugly, ugly, ugly! -SB */
+#define TEXBITS_DISPATCH(texture, function, params) (    \
+  texture->width != texture->height ? function<7> params \
+: texture->width == 256 ? function<8> params             \
+: texture->width == 512 ? function<9> params             \
+: texture->width == 1024 ? function<10> params           \
+: function<7> params)
+#define TEXBITS_DISPATCH_2(texture, function, extra1, extra2, params) ( \
+texture->width != texture->height ? function<extra1, extra2, 7> params  \
+: texture->width == 256 ? function<extra1, extra2, 8> params            \
+: texture->width == 512 ? function<extra1, extra2, 9> params            \
+: texture->width == 1024 ? function<extra1, extra2, 10> params          \
+: function<extra1, extra2, 7> params)
+
 /* ---------- texture horizontal polygon */
 
-#define HORIZONTAL_WIDTH_SHIFT 7 /* 128 (8 for 256) */
-#define HORIZONTAL_HEIGHT_SHIFT 7 /* 128 */
-#define HORIZONTAL_FREE_BITS (32-TRIG_SHIFT-WORLD_FRACTIONAL_BITS)
-#define HORIZONTAL_WIDTH_DOWNSHIFT (32-HORIZONTAL_WIDTH_SHIFT)
-#define HORIZONTAL_HEIGHT_DOWNSHIFT (32-HORIZONTAL_HEIGHT_SHIFT)
+#define HORIZONTAL_WIDTH_SHIFT texture_constants<TEXBITS>::WIDTH_SHIFT
+#define HORIZONTAL_HEIGHT_SHIFT texture_constants<TEXBITS>::HEIGHT_SHIFT
+#define HORIZONTAL_FREE_BITS texture_constants<TEXBITS>::FREE_BITS
+#define HORIZONTAL_WIDTH_DOWNSHIFT texture_constants<TEXBITS>::DOWNSHIFT
+#define HORIZONTAL_HEIGHT_DOWNSHIFT texture_constants<TEXBITS>::DOWNSHIFT
 
 struct _horizontal_polygon_line_header
 {
@@ -66,12 +91,12 @@ struct _horizontal_polygon_line_data
 
 /* ---------- texture vertical polygon */
 
-#define VERTICAL_TEXTURE_WIDTH 128
-#define VERTICAL_TEXTURE_WIDTH_BITS 7
-#define VERTICAL_TEXTURE_WIDTH_FRACTIONAL_BITS (FIXED_FRACTIONAL_BITS-VERTICAL_TEXTURE_WIDTH_BITS)
-#define VERTICAL_TEXTURE_ONE (1<<VERTICAL_TEXTURE_WIDTH_FRACTIONAL_BITS)
+#define VERTICAL_TEXTURE_WIDTH texture_constants<TEXBITS>::WIDTH
+#define VERTICAL_TEXTURE_WIDTH_BITS TEXBITS
+#define VERTICAL_TEXTURE_WIDTH_FRACTIONAL_BITS texture_constants<TEXBITS>::FRACTIONAL_BITS
+#define VERTICAL_TEXTURE_ONE texture_constants<TEXBITS>::FRACTIONAL_ONE
 #define VERTICAL_TEXTURE_FREE_BITS FIXED_FRACTIONAL_BITS
-#define VERTICAL_TEXTURE_DOWNSHIFT (32-VERTICAL_TEXTURE_WIDTH_BITS)
+#define VERTICAL_TEXTURE_DOWNSHIFT texture_constants<TEXBITS>::DOWNSHIFT
 
 struct _vertical_polygon_data
 {
@@ -149,7 +174,7 @@ void inline write_pixel(T *dst, pixel8 pixel, T *shading_table, uint8 *opacity_t
 	}	
 }
 
-template <typename T, int sw_alpha_blend>
+template <typename T, int sw_alpha_blend, int TEXBITS>
 void texture_horizontal_polygon_lines
 (
 	struct bitmap_definition *texture,
@@ -194,7 +219,7 @@ void texture_horizontal_polygon_lines
 		
 		while ((count-= 1)>=0)
 		{
-			write_pixel<T, sw_alpha_blend, false>(write++, base_address[((source_y>>(HORIZONTAL_HEIGHT_DOWNSHIFT-7))&(0x7f<<7))+(source_x>>HORIZONTAL_WIDTH_DOWNSHIFT)], shading_table, opacity_table, rmask, gmask, bmask);
+			write_pixel<T, sw_alpha_blend, false>(write++, base_address[((source_y>>(HORIZONTAL_HEIGHT_DOWNSHIFT-TEXBITS))&(((1<<TEXBITS)-1)<<TEXBITS))+(source_x>>HORIZONTAL_WIDTH_DOWNSHIFT)], shading_table, opacity_table, rmask, gmask, bmask);
 			
 			source_x+= source_dx, source_y+= source_dy;
 		}
@@ -297,7 +322,7 @@ void texture_vertical_polygon_lines(
 
 			shading_table= (T *)line->shading_table;
 			read= line->texture;
-			write= (T *)screen->row_addresses[y0] + x;
+			write = (T *)(screen->row_addresses[0] + bytes_per_row * y0) + x; // invalid but unread if y0 == screen->height
 
 			for (count= y1-y0; count>0; --count)
 			{
@@ -341,7 +366,6 @@ void texture_vertical_polygon_lines(
 				T *temp_write;
 				
 				ymax= MAX(y0, y1), ymax= MAX(ymax, y2), ymax= MAX(ymax, y3);
-				write= (T *)screen->row_addresses[ymax] + x;
 				
 				{
 					int ymin= MIN(y1_table[0], y1_table[1]);
@@ -356,6 +380,8 @@ void texture_vertical_polygon_lines(
 					}
 				}
 
+				write = (T *)screen->row_addresses[ymax] + x;
+				
 				for (count= ymax-y0, temp_write= (T *)screen->row_addresses[y0] + x; count>0; --count)
 				{
 					copy_check_transparent<T, check_transparent>(temp_write, read0[texture_y0>>downshift], shading_table0);

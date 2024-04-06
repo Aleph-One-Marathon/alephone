@@ -68,7 +68,7 @@ void parse_mml_scenario(const InfoTree& root)
 	if (root.read_attr("version", str))
 		Scenario::instance()->SetVersion(str);
 	
-	BOOST_FOREACH(InfoTree can_join, root.children_named("can_join"))
+	for (const InfoTree &can_join : root.children_named("can_join"))
 	{
 		std::string compat = can_join.get_value("");
 		if (compat.size())

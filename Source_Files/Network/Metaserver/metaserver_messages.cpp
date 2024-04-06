@@ -909,7 +909,7 @@ GameListMessage::reallyInflateFrom(AIStream& inStream)
 	{
 		GameListEntry entry;
 		inStream >> entry;
-		entry.m_ticks = SDL_GetTicks();
+		entry.m_ticks = machine_tick_count();
 
 		m_entries.push_back(entry);
 	}

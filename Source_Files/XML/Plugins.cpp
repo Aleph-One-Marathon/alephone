@@ -34,10 +34,6 @@
 #include "XML_ParseTreeRoot.h"
 #include "Scenario.h"
 
-#ifdef HAVE_ZZIP
-#include <zzip/lib.h>
-#endif
-
 #include <boost/algorithm/string/predicate.hpp>
 
 namespace algo = boost::algorithm;
@@ -86,6 +82,42 @@ bool Plugin::valid() const {
 	return !overridden;
 }
 
+bool Plugin::get_resource(uint32_t checksum, uint32_t type, int id, LoadedResource& rsrc) const
+{
+	for (auto it = map_patches.rbegin(); it != map_patches.rend(); ++it)
+	{
+		if (it->parent_checksums.count(checksum))
+		{
+			auto key = std::make_pair(type, id);
+			auto rsrc_it = it->resource_map.find(key);
+			if (rsrc_it != it->resource_map.end())
+			{
+				auto path = rsrc_it->second;
+				ScopedSearchPath ssp(directory);
+				FileSpecifier file;
+				if (file.SetNameWithPath(path.c_str()))
+				{
+					OpenedFile ofile;
+					if (file.Open(ofile))
+					{
+						int32 length;
+						if (ofile.GetLength(length))
+						{
+							void *data = malloc(length);
+							ofile.Read(length, data);
+							rsrc.SetData(data, length);
+							
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
 Plugins* Plugins::instance() {
 	static Plugins* m_instance = nullptr;
 	if (!m_instance) {
@@ -95,9 +127,9 @@ Plugins* Plugins::instance() {
 	return m_instance;
 }
 
-void Plugins::disable(const std::string& path) {
+void Plugins::disable(const boost::filesystem::path& path) { //std path is not supported before mac os 10.15 so we are using boost path instead
 	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it) {
-		if (it->directory == path) {
+		if (it->directory.GetPath() == path) {
 			it->enabled = false;
 			m_validated = false;
 			return;
@@ -235,6 +267,22 @@ static bool plugin_file_exists(const Plugin& Data, std::string Path)
 	return f.Exists();
 }
 
+static int utf8_to_int(const std::string& s)
+{
+	auto mac_roman = utf8_to_mac_roman(s);
+	if (mac_roman.size() == 4)
+	{
+		return FOUR_CHARS_TO_INT(mac_roman[0],
+								 mac_roman[1],
+								 mac_roman[2],
+								 mac_roman[3]);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 {
 	OpenedFile file;
@@ -282,7 +330,7 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 					!plugin_file_exists(Data, Data.theme + "/theme2.mml"))
 					Data.theme = "";
 				
-				BOOST_FOREACH(InfoTree tree, root.children_named("mml"))
+				for (const InfoTree &tree : root.children_named("mml"))
 				{
 					std::string mml_path;
 					if (tree.read_attr("file", mml_path) &&
@@ -290,7 +338,7 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 						Data.mmls.push_back(mml_path);
 				}
 
-				BOOST_FOREACH(InfoTree tree, root.children_named("shapes_patch"))
+				for (const InfoTree &tree : root.children_named("shapes_patch"))
 				{
 					ShapesPatch patch;
 					tree.read_attr("file", patch.path);
@@ -299,7 +347,7 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 						Data.shapes_patches.push_back(patch);
 				}
 
-				BOOST_FOREACH(InfoTree tree, root.children_named("scenario"))
+				for (const InfoTree &tree : root.children_named("scenario"))
 				{
 					ScenarioInfo info;
 					tree.read_attr("name", info.name);
@@ -317,6 +365,39 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 					if (info.name.size() || info.scenario_id.size())
 						Data.required_scenarios.push_back(info);
 				}
+
+				for (const InfoTree& tree : root.children_named("map_patch"))
+				{
+					MapPatch patch;
+					for (const InfoTree& cs_tree : tree.children_named("checksum"))
+					{
+						auto cs = cs_tree.get_value(static_cast<uint32_t>(0));
+						patch.parent_checksums.insert(cs);
+					}
+
+					for (const InfoTree& rsrc_tree : tree.children_named("resource"))
+					{
+						std::string path;
+						int id;
+						std::string type;
+						
+						rsrc_tree.read_attr("type", type);
+						rsrc_tree.read_attr("id", id);
+						rsrc_tree.read_attr("data", path);
+
+						auto key = std::make_pair(utf8_to_int(type), id);
+						if (key.first)
+						{
+							patch.resource_map.insert(std::make_pair(key, path));
+						}
+					}
+
+					if (patch.parent_checksums.size() &&
+						patch.resource_map.size())
+					{
+						Data.map_patches.push_back(patch);
+					}
+				}
 				
 				if (Data.name.length()) {
 					std::sort(Data.mmls.begin(), Data.mmls.end());
@@ -324,17 +405,18 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 						Data.hud_lua = "";
 						Data.solo_lua = "";
 						Data.shapes_patches.clear();
+						Data.map_patches.clear();
 					}
 					Plugins::instance()->add(Data);
 				}
 				
-			} catch (InfoTree::parse_error e) {
+			} catch (const InfoTree::parse_error& e) {
 				logError("There were parsing errors in %s Plugin.xml: %s", name, e.what());
-			} catch (InfoTree::path_error e) {
+			} catch (const InfoTree::path_error& e) {
 				logError("There were parsing errors in %s Plugin.xml: %s", name, e.what());
-			} catch (InfoTree::data_error e) {
+			} catch (const InfoTree::data_error& e) {
 				logError("There were parsing errors in %s Plugin.xml: %s", name, e.what());
-			} catch (InfoTree::unexpected_error e) {
+			} catch (const InfoTree::unexpected_error& e) {
 				logError("There were parsing errors in %s Plugin.xml: %s", name, e.what());
 			}
 		}
@@ -360,27 +442,19 @@ bool PluginLoader::ParseDirectory(FileSpecifier& dir)
 		{
 			ParseDirectory(file);
 		}
-#ifdef HAVE_ZZIP
 		else if (algo::ends_with(it->name, ".zip") || algo::ends_with(it->name, ".ZIP"))
 		{
 			// search it for a Plugin.xml file
-			ZZIP_DIR* zzipdir = zzip_dir_open(file.GetPath(), 0);
-			if (zzipdir)
+			for (const auto& zip_entry : file.ReadZIP())
 			{
-				ZZIP_DIRENT dirent;
-				while (zzip_dir_read(zzipdir, &dirent))
+				if (zip_entry == "Plugin.xml" || algo::ends_with(zip_entry, "/Plugin.xml"))
 				{
-					if (strcmp(dirent.d_name, "Plugin.xml") == 0 || algo::ends_with(dirent.d_name, "/Plugin.xml"))
-					{
-						std::string archive = file.GetPath();
-						FileSpecifier file_name = FileSpecifier(archive.substr(0, archive.find_last_of('.'))) + dirent.d_name;
-						ParsePlugin(file_name);
-					}
+					std::string archive = file.GetPath();
+					FileSpecifier file_name = FileSpecifier(archive.substr(0, archive.find_last_of('.'))) + zip_entry;
+					ParsePlugin(file_name);
 				}
-				zzip_dir_close(zzipdir);
 			}
 		}
-#endif
 	}
 
 	return true;
@@ -400,6 +474,53 @@ void Plugins::enumerate() {
 	std::sort(m_plugins.begin(), m_plugins.end());
 	clear_game_error();
 	m_validated = false;
+}
+
+bool Plugins::get_resource(uint32_t type, int id, LoadedResource& rsrc)
+{
+	for (auto it = m_plugins.rbegin(); it != m_plugins.rend(); ++it)
+	{
+		if (it->enabled &&
+			it->compatible() &&
+			it->get_resource(m_map_checksum, type, id, rsrc))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void Plugins::set_map_checksum(uint32_t checksum)
+{
+	m_map_checksum = checksum;
+
+	// Prepend any plugins with patches that use this checksum to the search
+	// path. This isn't the ideal solution: ideally, MML and Lua should use the
+	// search path from which each component is drawn. For example, if Plugin A
+	// replaces MML and Plugin B replaces Lua, then MML should use Plugin A
+	// search path and Lua should use Plugin B search path. That is very
+	// complicated, so let's try this simplified approach for now.
+
+	while (!m_search_paths.empty())
+	{
+		m_search_paths.pop();
+	}
+
+	for (auto& p : m_plugins)
+	{
+		if (p.enabled &&
+			p.compatible())
+		{
+			for (auto& patch : p.map_patches)
+			{
+				if (patch.parent_checksums.count(m_map_checksum))
+				{
+					m_search_paths.emplace(p.directory);
+				}
+			}
+		}
+	}
 }
 
 // enforce all-or-nothing loading of plugins which contain

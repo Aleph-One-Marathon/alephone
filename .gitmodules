@@ -1,9 +1,9 @@
 [submodule "data/Scenarios/Marathon"]
 	path = data/Scenarios/Marathon
-	url = https://github.com/Aleph-One-Marathon/data-marathon.git
+	url = ../data-marathon.git
 [submodule "data/Scenarios/Marathon 2"]
 	path = data/Scenarios/Marathon 2
-	url = https://github.com/Aleph-One-Marathon/data-marathon-2.git
+	url = ../data-marathon-2.git
 [submodule "data/Scenarios/Marathon Infinity"]
 	path = data/Scenarios/Marathon Infinity
-	url = https://github.com/Aleph-One-Marathon/data-marathon-infinity.git
+	url = ../data-marathon-infinity.git

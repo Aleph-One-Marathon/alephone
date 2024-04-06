@@ -82,10 +82,10 @@ void RenderSortPolyClass::initialize_sorted_render_tree()
 tree decomposition:
 
 pick a leaf polygon
-	make sure the polygon is everywhere a leaf (donÕt walk the tree, search it linearly) 
-		if itÕs not, pick the node which obstructed it to test next
-		if it is, pull it off the tree (destructively) and accumulate itÕs clipping information
-			pick the one of the nodeÕs siblings (or itÕs parent if it has none) to handle next
+	make sure the polygon is everywhere a leaf (donâ€™t walk the tree, search it linearly)
+		if itâ€™s not, pick the node which obstructed it to test next
+		if it is, pull it off the tree (destructively) and accumulate itâ€™s clipping information
+			pick the one of the nodeâ€™s siblings (or itâ€™s parent if it has none) to handle next
 */
 
 void RenderSortPolyClass::sort_render_tree()
@@ -103,10 +103,10 @@ void RenderSortPolyClass::sort_render_tree()
 	{
 		// LP change: no more growable list of aliases,
 		// due to the sorted-polygon-tree structure of the nodes.
-		bool leaf_has_children= false; /* i.e., itÕs not a leaf */
+		bool leaf_has_children= false; /* i.e., itâ€™s not a leaf */
 		node_data *node = NULL;
 
-		/* if we donÕt have a leaf, find one */
+		/* if we donâ€™t have a leaf, find one */
 		if (!leaf)
 			for (leaf= &Nodes.front(); leaf->children; leaf= leaf->children)
 				;
@@ -199,6 +199,11 @@ void RenderSortPolyClass::sort_render_tree()
 			sorted_node->polygon_index= leaf->polygon_index;
 			sorted_node->interior_objects= NULL;
 			sorted_node->exterior_objects= NULL;
+			
+			// Put SortedNodes in a valid state before we call build_clipping_windows()
+			// (build_clipping_windows() updates SortedNodes if the clipping windows are reallocated)
+			sorted_node->clipping_windows = nullptr;
+			
 			// LP change: using polygon-sorted node chain
 			sorted_node->clipping_windows= build_clipping_windows(FoundNode);
 			
@@ -206,14 +211,14 @@ void RenderSortPolyClass::sort_render_tree()
 				_polygon_is_visible) */
 			polygon_index_to_sorted_node[sorted_node->polygon_index]= sorted_node;
 			
-			/* walk this nodeÕs alias list, removing each from the tree */
+			/* walk this nodeâ€™s alias list, removing each from the tree */
 			// LP change: move down the chain of polygon-sharing nodes
 			for (node_data *Alias = FoundNode; Alias; Alias = Alias->PS_Shared)
 			{
 				// LP change: remember what the node was for when we break out
 				node = Alias;
 
-				/* remove this node and update the next nodeÕs reference (if there is a
+				/* remove this node and update the next nodeâ€™s reference (if there is a
 					reference and if there is a next node) */
 				if (node->reference)
 				{
@@ -222,7 +227,7 @@ void RenderSortPolyClass::sort_render_tree()
 				}
 			}
 
-			/* try to handle this nodeÕs siblings next (if there arenÕt any, then a ÔrandomÕ
+			/* try to handle this nodeâ€™s siblings next (if there arenâ€™t any, then a â€˜randomâ€™
 				node will be chosen) */
 			leaf= node ? node->siblings : NULL;
 		}
@@ -233,18 +238,16 @@ void RenderSortPolyClass::sort_render_tree()
 
 /* ---------- initializing and calculating clip data */
 
-/* be sure to examine all of a nodeÕs parents for clipping information (gak!) */
+/* be sure to examine all of a nodeâ€™s parents for clipping information (gak!) */
 clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	node_data *ChainBegin)
 {
 	// LP change: growable lists
 	AccumulatedLineClips.clear();
 	AccumulatedEndpointClips.clear();
-	clipping_window_data *first_clipping_window = NULL;
-	clipping_window_data *last_clipping_window = NULL;
 	endpoint_clip_data *endpoint;
 	line_clip_data *line;
-	short x0, x1; /* ignoring what clipping parameters weÕve gotten, this is the left and right borders of this node on the screen */
+	short x0, x1; /* ignoring what clipping parameters weâ€™ve gotten, this is the left and right borders of this node on the screen */
 	short i, j;
 
 	// LP: references to simplify the code
@@ -298,15 +301,20 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 			for (i= 0;i<node->clipping_endpoint_count;++i)
 			{
 				endpoint= &EndpointClips[node->clipping_endpoints[i]];
+				const auto forward_vec = endpoint->forward_vector();
 				
 				short size = AccumulatedEndpointClips.size();
-				for (j= 0;j<size;++j)
+				for (j = 1; j < size; ++j) // starting at 1 to skip the left screen edge
 				{
 					if (AccumulatedEndpointClips[j]==endpoint) { j= NONE; break; } /* found duplicate */
-					if ((AccumulatedEndpointClips[j]->x==endpoint->x&&endpoint->flags==_clip_left) ||
-						AccumulatedEndpointClips[j]->x>endpoint->x)
+					
+					const auto element_j_forward_vec = AccumulatedEndpointClips[j]->forward_vector();
+					const Sint64 cross_k = cross_product_k(forward_vec, element_j_forward_vec);
+					
+					// If the clip is left of element j (or collinear and the clip is a left-clip)...
+					if (cross_k > 0 || (cross_k == 0 && (endpoint->flags & _clip_left)))
 					{
-						break; /* found sorting position if x is greater or x is equal and this is a left clip */
+						break; // insert the clip before element j
 					}
 				}
 				
@@ -346,6 +354,8 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	EndpointClipPtr = &EndpointClips[indexRIGHT_SIDE_OF_SCREEN];
 	AccumulatedEndpointClips.push_back(EndpointClipPtr);
 
+	const auto initial_cw_count = ClippingWindows.size();
+	
 	/* build the clipping windows */
 	{
 		short state= _looking_for_left_clip;
@@ -420,15 +430,8 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 					clipping_window_data *window= &ClippingWindows[Length];
 					
 					/* handle maintaining the linked list of clipping windows */
-					if (!first_clipping_window)
-					{
-						first_clipping_window= last_clipping_window= window;
-					}
-					else
-					{
-						last_clipping_window->next_window= window;
-						last_clipping_window= window;
-					}
+					if (Length > initial_cw_count)
+						ClippingWindows[Length-1].next_window = window;
 					
 					window->x0= left_clip->x, window->x1= right_clip->x;
 					window->left= left_clip->vector;
@@ -443,7 +446,8 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 		}
 	}
 
-	return first_clipping_window;
+	// Return the front of the linked list we made (if any)
+	return ClippingWindows.size() > initial_cw_count ? &ClippingWindows[initial_cw_count] : nullptr;
 }
 
 /* does not care if the given line_clips are sorted or not */
@@ -454,7 +458,6 @@ void RenderSortPolyClass::calculate_vertical_clip_data(
 	short x0,
 	short x1)
 {
-	if (x0<x1)
 	{
 		short x;
 		line_clip_data *highest_line, *locally_highest_line, *line;

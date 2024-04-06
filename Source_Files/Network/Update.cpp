@@ -81,7 +81,8 @@ int Update::Thread()
 	}
 
 	boost::char_separator<char> sep("\r\n");
-	boost::tokenizer<boost::char_separator<char> > tokens(fetcher.Response(), sep);
+	std::string response = fetcher.Response();
+	boost::tokenizer<boost::char_separator<char> > tokens(response, sep);
 	for (boost::tokenizer<boost::char_separator<char> >::iterator it = tokens.begin();
 	     it != tokens.end();
 	     ++it)

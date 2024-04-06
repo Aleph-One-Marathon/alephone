@@ -123,6 +123,7 @@ static WindowedNthElementFinder<int32> sNthElementFinder(kDefaultTimingWindowSiz
 static bool sTimingMeasurementValid;
 static int32 sTimingMeasurement;
 static bool sHeardFromHub = false;
+static bool sWorldUpdate = false;
 
 static vector<int32> sDisplayLatencyBuffer; // stores the last 30 latency calculations, in ticks
 static uint32 sDisplayLatencyCount = 0;
@@ -252,6 +253,7 @@ spoke_initialize(const NetAddrBlock& inHubAddress, int32 inFirstTick, size_t inN
         sOutstandingTimingAdjustment = 0;
 
         sNetworkTicker = 0;
+		sWorldUpdate = false;
         sLastNetworkTickHeard = 0;
         sLastNetworkTickSent = 0;
         sConnected = true;
@@ -697,7 +699,7 @@ spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags)
 				if(theSmallestUnreadTick >= sSmallestRealGameTick)
 				{
 					WritableTickBasedActionQueue& theQueue = *(sNetworkPlayers[i].mQueue);
-					assert(theQueue.getWriteTick() == sSmallestUnreceivedTick);
+					assert(!sNetworkPlayers[i].mConnected || theQueue.getWriteTick() == sSmallestUnreceivedTick);
 					assert(theQueue.availableCapacity() > 0);
 					logTraceNMT("enqueueing flags %x for player %d tick %d", theFlags, i, theQueue.getWriteTick());
 					theQueue.enqueue(theFlags);
@@ -1014,11 +1016,22 @@ spoke_tick()
 
         check_send_packet_to_hub();
 
+		sWorldUpdate = true;
+
         // We want to run again.
         return true;
 }
 
+bool spoke_check_world_update()
+{
+	if (sWorldUpdate)
+	{
+		sWorldUpdate = false;
+		return true;
+	}
 
+	return false;
+}
 
 static void
 send_packet()

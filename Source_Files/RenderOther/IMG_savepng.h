@@ -24,7 +24,7 @@
 #ifndef __IMG_SAVETOPNG_H__
 #define __IMG_SAVETOPNG_H__
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #ifdef __cplusplus
 extern "C" {

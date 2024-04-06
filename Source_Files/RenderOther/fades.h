@@ -119,8 +119,6 @@ bool fade_finished(void);
 
 void set_fade_effect(short type);
 
-short get_fade_period(short type);
-
 void gamma_correct_color_table(struct color_table *uncorrected_color_table, struct color_table *corrected_color_table, short gamma_level);
 float get_actual_gamma_adjust(short gamma_level);
 

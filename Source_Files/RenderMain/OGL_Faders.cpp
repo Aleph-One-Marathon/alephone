@@ -31,6 +31,7 @@
 #include "OGL_Render.h"
 #include "OGL_Setup.h"
 #include "OGL_Faders.h"
+#include "OGL_Headers.h"
 
 #ifdef HAVE_OPENGL
 
@@ -40,11 +41,6 @@ static GM_Random FlatStaticRandom;
 // Alternative: partially-transparent instead of the logic-op effect
 static bool UseFlatStatic;
 static uint16 FlatStaticColor[4];
-
-
-#ifdef HAVE_OPENGL
-#include "OGL_Headers.h"
-#endif
 
 // Fader stuff
 bool OGL_FaderActive()

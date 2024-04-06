@@ -1,0 +1,89 @@
+name: CI-build
+
+on: [push, pull_request]
+
+jobs:
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        uses: ./.github/actions/configure-linux
+      - name: Build
+        run: make -j $(nproc)
+        
+  linux-without-ffmpeg:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        uses: ./.github/actions/configure-linux
+        with:
+          configure_options: --without-ffmpeg
+          
+      - name: Build
+        run: make -j $(nproc)
+        
+  linux-without-opengl:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        uses: ./.github/actions/configure-linux
+        with:
+          configure_options: --disable-opengl
+          
+      - name: Build
+        run: make -j $(nproc)
+      
+  mac-osx-x64:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/build-mac-osx
+        with:
+          vcpkg_installed_folder: installed-x64-osx
+          vcpkg_arch: x64
+          xcode_arch: x86_64
+          
+  mac-osx-arm:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/build-mac-osx
+        with:
+          vcpkg_installed_folder: installed-arm64-osx
+          vcpkg_arch: arm
+          xcode_arch: arm64
+          
+  windows-x64:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/build-windows
+        with:
+          platform: x64
+          configurations: Release
+          vcpkg_installed_folder: installed-x64-windows
+      - name: Run Tests
+        uses: ./.github/actions/run-tests
+        with:
+          test_application_path: VisualStudio/x64/Release/Tests.exe
+          
+  windows-x86:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        uses: ./.github/actions/build-windows
+        with:
+          platform: x86
+          configurations: Release
+          vcpkg_installed_folder: installed-x86-windows
+      - name: Run Tests
+        uses: ./.github/actions/run-tests
+        with:
+          test_application_path: VisualStudio/Release/Tests.exe

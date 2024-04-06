@@ -55,9 +55,9 @@ we should cut corners instead of blindly following map geometry (i.e., separate 
 	much as possible from the underlying polygon structure of the map), especially the final leg.
 
 //calculate_midpoint_of_shared_line should have some randomness (bad idea?)
-//it ocurrs to me that connecting midpoints of shared lines wonÕt always work (monsters will run through walls)
+//it ocurrs to me that connecting midpoints of shared lines wonâ€™t always work (monsters will run through walls)
 //shadow polygons screw us up (a specific case of the general "weird polygon geometry" problem)
-//random paths arenÕt really random, and (even worse) tend to be symmetric
+//random paths arenâ€™t really random, and (even worse) tend to be symmetric
 */
 
 /* ---------- constants */
@@ -102,7 +102,6 @@ void allocate_pathfinding_memory(
 	// Made reentrant because this is called every time MAXIMUM_PATHS is changed
 	if (paths) delete []paths;
 	paths= new path_definition[MAXIMUM_PATHS];
-	assert(paths);
 
 #ifdef VERIFY_PATH_SYNC
 	if (path_validation_area) delete []path_validation_area;
@@ -193,7 +192,7 @@ short new_path(
 				out from the source polygon until we run out of stack space or we reach a cost
 				of RANDOM_PATH_AREA, whichever comes first.  in fact, our destination_point, if
 				not NULL, is a 2d vector specifying a bias in the direction we want to travel
-				(usually this will be away from somewhere we donÕt want to be) */
+				(usually this will be away from somewhere we donâ€™t want to be) */
 			polygon_index= flood_map(source_polygon_index, INT32_MAX, cost, _breadth_first, data);
 			while (polygon_index!=NONE)
 			{
@@ -201,7 +200,7 @@ short new_path(
 			}
 			
 			choose_random_flood_node((world_vector2d *)destination_point); /* choose a random destination */
-			reached_destination= false; /* we didnÕt even have one */
+			reached_destination= false; /* we didnâ€™t even have one */
 		}
 
 		depth= flood_depth();
@@ -230,7 +229,7 @@ short new_path(
 			assert(path->step_count!=NONE); /* this would be bad */
 			path->current_step= 0;
 
-			/* if we reached our destination (and itÕs not out-of-range), add it */
+			/* if we reached our destination (and itâ€™s not out-of-range), add it */
 			if (reached_destination && --step_count<MAXIMUM_POINTS_PER_PATH) path->points[step_count]= *destination_point;
 			
 			/* add all the points up to but not including the source (if we have room) */
@@ -257,7 +256,7 @@ short new_path(
 			{
 				if (memcmp(path_validation_area+path_validation_area_index, path->points, sizeof(world_point2d)*path->step_count))
 				{
-					dprintf("path #%d at %p didnÕt match point list at %p", path_index, path, path_validation_area+path_validation_area_index);
+					dprintf("path #%d at %p didnâ€™t match point list at %p", path_index, path, path_validation_area+path_validation_area_index);
 				}
 				path_validation_area_index+= sizeof(world_point2d*)*path->step_count;
 			}

@@ -28,7 +28,7 @@
 
 #ifdef HAVE_FFMPEG
 
-class FFmpegDecoder : public Decoder
+class FFmpegDecoder : public StreamDecoder
 {
 public:
 	bool Open(FileSpecifier& File);
@@ -36,14 +36,11 @@ public:
 	void Rewind();
 	void Close();
 
-	bool IsSixteenBit() { return true; }
+	AudioFormat GetAudioFormat() { return AudioFormat::_32_float; }
 	bool IsStereo() { return (channels == 2); }
-	bool IsSigned() { return true; }
-	int BytesPerFrame() { return 2 * (IsStereo() ? 2 : 1); }
+	int BytesPerFrame() { return 4 * (IsStereo() ? 2 : 1); }
 	float Rate() { return rate; }
 	bool IsLittleEndian() { return PlatformIsLittleEndian(); }
-
-	int32 Frames();
 
 	FFmpegDecoder();
 	~FFmpegDecoder();

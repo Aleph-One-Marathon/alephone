@@ -639,14 +639,15 @@ LUALIB_API int luaL_loadfilex (lua_State *L, const char *filename,
   }
   else {
     lua_pushfstring(L, "@%s", filename);
-    lf.f = fopen(filename, "r");
+    lf.f = luai_fopen(filename, "r");
     if (lf.f == NULL) return errfile(L, "open", fnameindex);
   }
   if (skipcomment(&lf, &c))  /* read initial portion */
     lf.buff[lf.n++] = '\n';  /* add line to correct line numbers */
   if (c == LUA_SIGNATURE[0] && filename) {  /* binary file? */
-    lf.f = freopen(filename, "rb", lf.f);  /* reopen in binary mode */
-    if (lf.f == NULL) return errfile(L, "reopen", fnameindex);
+    fclose(lf.f);
+    lf.f = luai_fopen(filename, "rb");  /* reopen in binary mode */
+    if (lf.f == NULL) return errfile(L, "open", fnameindex);
     skipcomment(&lf, &c);  /* re-read initial portion */
   }
   if (c != EOF)
@@ -957,3 +958,90 @@ LUALIB_API void luaL_checkversion_ (lua_State *L, lua_Number ver) {
   lua_pop(L, 1);
 }
 
+
+/*
+** Private C/POSIX library wrappers that speak UTF-8 instead of ANSI on Windows
+*/
+
+#ifdef __WIN32__
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <wchar.h>
+
+static wchar_t* alloc_widened(const char* src) {
+  const int dest_n = MultiByteToWideChar(CP_UTF8, 0, src, -1, NULL, 0);
+  wchar_t* dest = dest_n > 0 ? malloc(dest_n * sizeof(wchar_t)) : NULL;
+  MultiByteToWideChar(CP_UTF8, 0, src, -1, dest, dest_n);
+  return dest;
+}
+
+static char* alloc_narrowed(const wchar_t* src) {
+  const int dest_n = WideCharToMultiByte(CP_UTF8, 0, src, -1, NULL, 0, NULL, NULL);
+  char* dest = dest_n > 0 ? malloc(dest_n) : NULL;
+  WideCharToMultiByte(CP_UTF8, 0, src, -1, dest, dest_n, NULL, NULL);
+  return dest;
+}
+
+FILE* luai_fopen(const char* path, const char* mode) {
+  wchar_t* wpath = alloc_widened(path);
+  wchar_t* wmode = alloc_widened(mode);
+  FILE* result = _wfopen(wpath, wmode);
+  free(wmode);
+  free(wpath);
+  return result;
+}
+
+FILE* luai_popen(const char* command, const char* mode) {
+  wchar_t* wcommand = alloc_widened(command);
+  wchar_t* wmode = alloc_widened(mode);
+  FILE* result = _wpopen(wcommand, wmode);
+  free(wmode);
+  free(wcommand);
+  return result;
+}
+
+int luai_system(const char* command) {
+  wchar_t* wcommand = alloc_widened(command);
+  const int result = _wsystem(wcommand);
+  free(wcommand);
+  return result;
+}
+
+int luai_remove(const char* path) {
+  wchar_t* wpath = alloc_widened(path);
+  const int result = _wremove(wpath);
+  free(wpath);
+  return result;
+}
+
+int luai_rename(const char* from, const char* to) {
+  wchar_t* wfrom = alloc_widened(from);
+  wchar_t* wto = alloc_widened(to);
+  const int result = _wrename(wfrom, wto);
+  free(wto);
+  free(wfrom);
+  return result;
+}
+
+char* luai_alloc_getenv(const char* name) {
+  wchar_t* wname = alloc_widened(name);
+  wchar_t* wenv = _wgetenv(wname);
+  free(wname);
+  return alloc_narrowed(wenv);
+}
+
+#else /* not __WIN32__ */
+
+FILE* luai_fopen(const char* path, const char* mode) { return fopen(path, mode); }
+FILE* luai_popen(const char* command, const char* mode) { return popen(command, mode); }
+int luai_system(const char* command) { return system(command); }
+int luai_remove(const char* path) { return remove(path); }
+int luai_rename(const char* from, const char* to) { return rename(from, to); }
+
+char* luai_alloc_getenv(const char* name) {
+  char* env = getenv(name);
+  return env ? strdup(env) : NULL;
+}
+
+#endif /* else not __WIN32__ */

@@ -25,7 +25,6 @@ LUA_TEMPLATES.H
 
 #include "cseries.h"
 
-#ifdef HAVE_LUA
 extern "C"
 {
 #include "lua.h"
@@ -33,12 +32,12 @@ extern "C"
 #include "lualib.h"
 }
 
-#include <boost/function.hpp>
 #include "lua_script.h"
 #include "lua_mnemonics.h" // for lang_def and mnemonics
 #include <sstream>
 #include <map>
 #include <new>
+#include <functional>
 
 static inline int luaL_typerror(lua_State* L, int narg, const char* tname)
 {
@@ -84,7 +83,7 @@ public:
 	static index_t Index(lua_State *L, int index);
 	static bool Is(lua_State *L, int index);
 	static void Invalidate(lua_State *L, index_t index);
-	static boost::function<bool (index_t)> Valid;
+	static std::function<bool (index_t)> Valid;
 	struct ValidRange
 	{
 		ValidRange(int32 max_index) : m_max(max_index) {}
@@ -135,7 +134,7 @@ struct always_valid
 };
 
 template<char *name, typename index_t>
-boost::function<bool (index_t)> L_Class<name, index_t>::Valid = always_valid();
+std::function<bool (index_t)> L_Class<name, index_t>::Valid = always_valid();
 
 template<char *name, typename index_t>
 void L_Class<name, index_t>::Register(lua_State *L, const luaL_Reg get[], const luaL_Reg set[], const luaL_Reg metatable[])
@@ -595,8 +594,11 @@ void L_Enum<name, index_t>::Register(lua_State *L, const luaL_Reg get[], const l
 	lua_pushcfunction(L, _equals);
 	lua_setfield(L, -2, "__eq");
 
-	lua_pushcfunction(L, _get_mnemonic);
-	lua_setfield(L, -2, "__tostring");
+	if (mnemonics)
+	{
+		lua_pushcfunction(L, _get_mnemonic);
+		lua_setfield(L, -2, "__tostring");
+	}
 
 	if (metatable)
 		luaL_setfuncs(L, metatable, 0);
@@ -773,7 +775,7 @@ template<char *name, class T>
 class L_Container : public L_Class<name> {
 public:
 	static void Register(lua_State *L, const luaL_Reg get[] = 0, const luaL_Reg set[] = 0, const luaL_Reg metatable[] = 0);
-	static boost::function<typename T::index_type (void)> Length;
+	static std::function<typename T::index_type (void)> Length;
 	struct ConstantLength
 	{
 		ConstantLength(int32 length) : m_length(length) {}
@@ -789,7 +791,7 @@ protected:
 };
 
 template<char *name, class T>
-boost::function<typename T::index_type (void)> L_Container<name, T>::Length = ConstantLength(1);
+std::function<typename T::index_type (void)> L_Container<name, T>::Length = ConstantLength(1);
 
 template<char *name, class T>
 void L_Container<name, T>::Register(lua_State *L, const luaL_Reg get[], const luaL_Reg set[], const luaL_Reg metatable[])
@@ -964,7 +966,7 @@ public:
 	static bool Is(lua_State *L, int index) {
 		return L_Class<name, index_t>::Is(L, index);
 	}
-	static boost::function<bool (index_t)> Valid;
+	static std::function<bool (index_t)> Valid;
 	
 	static std::map<index_t, object_t> _objects;
 };
@@ -982,7 +984,7 @@ struct object_valid
 };
 
 template<char *name, typename object_t, typename index_t>
-boost::function<bool (index_t)> L_ObjectClass<name, object_t, index_t>::Valid = object_valid<name, object_t, index_t>();
+std::function<bool (index_t)> L_ObjectClass<name, object_t, index_t>::Valid = object_valid<name, object_t, index_t>();
 
 
 template<char *name, typename object_t, typename index_t>
@@ -1023,7 +1025,5 @@ void L_ObjectClass<name, object_t, index_t>::Invalidate(lua_State *L, index_t in
 	_objects.erase(index);
 }
 
-
-#endif
 
 #endif

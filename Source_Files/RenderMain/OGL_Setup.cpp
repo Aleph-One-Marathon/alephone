@@ -155,7 +155,7 @@ void OGL_StartProgress(int total_progress)
 		open_progress_dialog(_loading, true);
 	}
 	show_ogl_progress = true;
-	last_update_tick = SDL_GetTicks();
+	last_update_tick = machine_tick_count();
 }
 
 void OGL_ProgressCallback(int delta_progress)
@@ -163,7 +163,7 @@ void OGL_ProgressCallback(int delta_progress)
 	if (!show_ogl_progress) return;
 	ogl_progress += delta_progress;
 	{
-		int32 current_ticks = SDL_GetTicks();
+		int32 current_ticks = machine_tick_count();
 		if (current_ticks > last_update_tick + 33)
 		{
 			if (OGL_LoadScreen::instance()->Use())
@@ -188,8 +188,8 @@ void OGL_StopProgress()
 // Sensible defaults for the fog:
 static OGL_FogData FogData[OGL_NUMBER_OF_FOG_TYPES] = 
 {
-	{{0x8000,0x8000,0x8000},8,false,true},
-	{{0x8000,0x8000,0x8000},8,false,true}
+	{{0x8000,0x8000,0x8000},8,0,false,true,OGL_Fog_Exp,1},
+	{{0x8000,0x8000,0x8000},8,0,false,true,OGL_Fog_Exp,1}
 };
 
 
@@ -240,7 +240,7 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 	// Reasonable default flags
 	Data.Flags = OGL_Flag_Fader | OGL_Flag_Map |
 		OGL_Flag_HUD | OGL_Flag_LiqSeeThru | OGL_Flag_3D_Models | OGL_Flag_ZBuffer |
-		OGL_Flag_Fog;
+		OGL_Flag_Fog | OGL_Flag_MimicSW;
 
         Data.AnisotropyLevel = 0.0; // off
 	Data.Multisamples = 0; // off
@@ -250,7 +250,6 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 		for (int ie=0; ie<2; ie++)
 			Data.LscpColors[il][ie] = DefaultLscpColors[il][ie];
 
-	Data.GeForceFix = false;
 	Data.WaitForVSync = true;
 	Data.Use_sRGB = false;
 	Data.Use_NPOT = false;
@@ -289,11 +288,6 @@ void OGL_TextureOptionsBase::Load()
 		flags |= ImageLoader_CanUseDXTC;
 	}
 
-	if (Get_OGL_ConfigureData().GeForceFix)
-	{
-		flags |= ImageLoader_LoadDXTC1AsDXTC3;
-	}
-	
 	// Load the normal image with alpha channel
 
 	// Check to see if loading needs to be done;
@@ -317,7 +311,7 @@ void OGL_TextureOptionsBase::Load()
 	}
 
 	// load a heightmap
-	if(OffsetMap != FileSpecifier() && OffsetMap.Exists()) {
+	if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap) && OffsetMap != FileSpecifier() && OffsetMap.Exists()) {
 		if(!OffsetImg.LoadFromFile(OffsetMap, ImageLoader_Colors, flags | (NormalIsPremultiplied ? ImageLoader_ImageIsAlreadyPremultiplied : 0), actual_width, actual_height, maxTextureSize)) {
 			return;
 		}
@@ -429,8 +423,7 @@ void OGL_LoadModelsImages(short Collection)
 	OGL_LoadTextures(Collection);
 	
 	// For models, skins
-	bool UseModels = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_3D_Models) ? true : false;
-	if (UseModels)
+	if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_3D_Models))
 		OGL_LoadModels(Collection);
 	else
 		OGL_UnloadModels(Collection);
@@ -471,6 +464,7 @@ OGL_FogData *OriginalFogData = NULL;
 
 void reset_mml_opengl()
 {
+#ifdef HAVE_OPENGL
 	reset_mml_opengl_texture();
 	reset_mml_opengl_model();
 	reset_mml_opengl_shader();
@@ -481,10 +475,12 @@ void reset_mml_opengl()
 		free(OriginalFogData);
 		OriginalFogData = NULL;
 	}
+#endif
 }
 
 void parse_mml_opengl(const InfoTree& root)
 {
+#ifdef HAVE_OPENGL
 	// back up old values first
 	if (!OriginalFogData) {
 		OriginalFogData = (OGL_FogData *) malloc(sizeof(OGL_FogData) * OGL_NUMBER_OF_FOG_TYPES);
@@ -494,7 +490,7 @@ void parse_mml_opengl(const InfoTree& root)
 	}
 
 	// texture options / clear, in order
-	BOOST_FOREACH(const InfoTree::value_type &v, root)
+	for (const InfoTree::value_type &v : root)
 	{
 		if (v.first == "texture")
 			parse_mml_opengl_texture(v.second);
@@ -503,7 +499,7 @@ void parse_mml_opengl(const InfoTree& root)
 	}
 	
 	// model data / clear, in order
-	BOOST_FOREACH(const InfoTree::value_type &v, root)
+	for (const InfoTree::value_type &v : root)
 	{
 		if (v.first == "model")
 			parse_mml_opengl_model(v.second);
@@ -511,12 +507,12 @@ void parse_mml_opengl(const InfoTree& root)
 			parse_mml_opengl_model_clear(v.second);
 	}
 	
-	BOOST_FOREACH(InfoTree shader, root.children_named("shader"))
+	for (const InfoTree &shader : root.children_named("shader"))
 	{
 		parse_mml_opengl_shader(shader);
 	}
 	
-	BOOST_FOREACH(InfoTree fog, root.children_named("fog"))
+	for (const InfoTree &fog : root.children_named("fog"))
 	{
 		int16 type = 0;
 		fog.read_indexed("type", type, OGL_NUMBER_OF_FOG_TYPES);
@@ -524,13 +520,17 @@ void parse_mml_opengl(const InfoTree& root)
 		
 		fog.read_attr("on", def.IsPresent);
 		fog.read_attr("depth", def.Depth);
+		fog.read_attr("start", def.Start);
 		fog.read_attr("landscapes", def.AffectsLandscapes);
+		fog.read_attr("mode", def.Mode);
+		fog.read_attr("landscape_mix", def.LandscapeMix);
 		
-		BOOST_FOREACH(InfoTree color, fog.children_named("color"))
+		for (const InfoTree &color : fog.children_named("color"))
 		{
 			color.read_color(def.Color);
 		}
 	}
+#endif
 }
 
 #ifdef HAVE_OPENGL

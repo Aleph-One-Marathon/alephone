@@ -228,7 +228,11 @@ InitializeLogging() {
     FileSpecifier fs = log_dir;
     fs += loggingFileName();
 
+#ifdef __WIN32__
+    sOutputFile = _wfopen(utf8_to_wide(fs.GetPath()).c_str(), L"a");
+#else
     sOutputFile = fopen(fs.GetPath(), "a");
+#endif
 
     sCurrentLogger = new TopLevelLogger;
     if(sOutputFile != NULL)
@@ -270,7 +274,7 @@ void reset_mml_logging()
 
 void parse_mml_logging(const InfoTree& root)
 {
-	BOOST_FOREACH(InfoTree dtree, root.children_named("logging_domain"))
+	for (const InfoTree &dtree : root.children_named("logging_domain"))
 	{
 		std::string domain;
 		if (!dtree.read_attr("domain", domain) || !domain.size())

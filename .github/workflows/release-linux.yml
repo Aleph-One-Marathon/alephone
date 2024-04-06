@@ -1,0 +1,35 @@
+name: release-linux
+
+on: [workflow_dispatch, workflow_call]
+
+jobs:
+  release:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+        
+    - name: Configure
+      uses: ./.github/actions/configure-linux
+        
+    - run: make dist
+          
+    - run: make datadist
+        
+    - name: Build flatpaks
+      run: | 
+        sudo apt-get install flatpak-builder
+        sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        sudo flatpak install flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08 -y
+        make flatpaks
+        
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: alephone-linux-release
+        if-no-files-found: error
+        path: |
+         *.tar.bz2
+         *.zip
+         *.flatpak

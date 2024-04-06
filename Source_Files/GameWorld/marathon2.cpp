@@ -122,6 +122,10 @@ Feb 8, 2003 (Woody Zenfell):
 #include "motion_sensor.h"
 
 #include <limits.h>
+#include <thread>
+
+#include "ephemera.h"
+#include "interpolated_world.h"
 
 /* ---------- constants */
 
@@ -384,6 +388,8 @@ enum {
         kUpdateChangeLevel
 };
 
+extern void update_world_view_camera();
+
 // ZZZ: split out from update_world()'s loop.
 static int
 update_world_elements_one_tick(bool& call_postidle)
@@ -395,6 +401,7 @@ update_world_elements_one_tick(bool& call_postidle)
 	} 
 	else
 	{
+		decode_hotkeys(*GameQueue);
 		L_Call_Idle();
 		call_postidle = true;
 		
@@ -411,6 +418,8 @@ update_world_elements_one_tick(bool& call_postidle)
 		
 		handle_random_sound_image();
 		animate_scenery();
+
+		update_ephemera();
 		
 		// LP additions:
 		if (film_profile.animate_items)
@@ -443,7 +452,7 @@ update_world_elements_one_tick(bool& call_postidle)
 
         dynamic_world->tick_count+= 1;
         dynamic_world->game_information.game_time_remaining-= 1;
-        
+
         return kUpdateNormalCompletion;
 }
 
@@ -460,9 +469,16 @@ update_world()
 
 #ifndef DISABLE_NETWORKING
 	if (game_is_networked)
+	{
 		NetProcessMessagesInGame();
+
+		if (!NetCheckWorldUpdate())
+		{
+			return std::pair<bool, int16_t>(false, 0);
+		}
+	}
 #endif
-        
+
         while(canUpdate)
         {
                 // If we have flags in the GameQueue, or can put a tick's-worth there, we're ok.
@@ -480,22 +496,24 @@ update_world()
 #else
 			int theMostRecentAllowedTick = get_heartbeat_count();
 #endif
-
+			
 			if(dynamic_world->tick_count >= theMostRecentAllowedTick)
 			{
 				canUpdate = false;
 			}
 		}
-                
-                // If we can't update, we can't update.  We're done for now.
-                if(!canUpdate)
-                {
-                        break;
-                }
+		
+		// If we can't update, we can't update.  We're done for now.
+		if(!canUpdate)
+		{
+			break;
+		}
+
+		exit_interpolated_world();
 
 		// Transition from predictive -> real update mode, if necessary.
 		exit_predictive_mode();
-
+		
 		// Capture the flags for each player for use in prediction
 		for(short i = 0; i < dynamic_world->player_count; i++)
 			sMostRecentFlagsForPlayer[i] = GameQueue->peekActionFlags(i, 0);
@@ -503,15 +521,17 @@ update_world()
 		bool call_postidle = true;
 		theUpdateResult = update_world_elements_one_tick(call_postidle);
 
-                theElapsedTime++;
+		theElapsedTime++;
+		
+		if (call_postidle)
+			L_Call_PostIdle();
+		if(theUpdateResult != kUpdateNormalCompletion || Movie::instance()->IsRecording())
+		{
+			canUpdate = false;
+		}
 
-                if (call_postidle)
-                        L_Call_PostIdle();
-                if(theUpdateResult != kUpdateNormalCompletion || Movie::instance()->IsRecording())
-                {
-                        canUpdate = false;
-                }
-	}
+		}
+
 
         // This and the following voodoo comes, effectively, from Bungie's code.
         if(theUpdateResult == kUpdateChangeLevel)
@@ -542,13 +562,15 @@ update_world()
 
 		// We use "2" to make sure there's always room for our one set of elements.
 		// (thePredictiveQueues should always hold only 0 or 1 element for each player.)
-		ActionQueues	thePredictiveQueues(dynamic_world->player_count, 2, true);
+		ModifiableActionQueues	thePredictiveQueues(dynamic_world->player_count, 2, true);
 
 		// Observe, since we don't use a speed-limiter in predictive mode, that there cannot be flags
 		// stranded in the GameQueue.  Unfortunately this approach will mispredict if a script is
 		// controlling the local player.  We could be smarter about it if that eventually becomes an issue.
 		for ( ; sPredictedTicks < NetGetUnconfirmedActionFlagsCount(); sPredictedTicks++)
 		{
+			exit_interpolated_world();
+			
 			// Real -> predictive transition, if necessary
 			enter_predictive_mode();
 
@@ -560,16 +582,22 @@ update_world()
 			}
 			
 			// update_players() will dequeue the elements we just put in there
+			decode_hotkeys(thePredictiveQueues);
 			update_players(&thePredictiveQueues, true);
 
 			didPredict = true;
-			
-		} // loop while local player has flags we haven't used for prediction
 
+		} // loop while local player has flags we haven't used for prediction
 	} // if we should predict
 
+	
+	if (didPredict || theElapsedTime)
+	{
+		enter_interpolated_world();
+	}
+	
 	// we return separately 1. "whether to redraw" and 2. "how many game-ticks elapsed"
-        return std::pair<bool, int16>(didPredict || theElapsedTime != 0, theElapsedTime);
+	return std::pair<bool, int16>(didPredict || theElapsedTime != 0, theElapsedTime);
 }
 
 /* call this function before leaving the old level, but DO NOT call it when saving the player.
@@ -616,8 +644,12 @@ void leaving_map(
 	// Hackish. Should probably be in stop_all_sounds(), but that just
 	// doesn't work out. 
 	Music::instance()->StopLevelMusic();
+	Music::instance()->Pause();
 	SoundManager::instance()->StopAllSounds();
 }
+
+extern bool first_frame_rendered;
+extern float last_heartbeat_fraction;
 
 /* call this function after the new level has been completely read into memory, after
 	player->location and player->facing have been updated, and as close to the end of
@@ -652,7 +684,7 @@ bool entering_map(bool restoring_saved)
 	if (game_is_networked) success= NetSync(); /* make sure everybody is ready */
 #endif // !defined(DISABLE_NETWORKING)
 
-	/* make sure nobodyÕs holding a weapon illegal in the new environment */
+	/* make sure nobodyâ€™s holding a weapon illegal in the new environment */
 	check_player_weapons_for_environment_change();
 
 #if !defined(DISABLE_NETWORKING)
@@ -660,11 +692,13 @@ bool entering_map(bool restoring_saved)
 #endif // !defined(DISABLE_NETWORKING)
 	randomize_scenery_shapes();
 
-//	reset_action_queues(); //¦¦
+//	reset_action_queues(); //Â¶Â¶
 //	sync_heartbeat_count();
 //	set_keyboard_controller_status(true);
 
 	L_Call_Init(restoring_saved);
+
+	init_interpolated_world();
 
 #if !defined(DISABLE_NETWORKING)
 	NetSetChatCallbacks(InGameChatCallbacks::instance());
@@ -675,6 +709,9 @@ bool entering_map(bool restoring_saved)
 	set_fade_effect(NONE);
 	
 	if (!success) leaving_map();
+
+	first_frame_rendered = false;
+	last_heartbeat_fraction = -1.f;
 
 	return success;
 }
@@ -757,13 +794,13 @@ short calculate_level_completion_state(
 {
 	short completion_state= _level_finished;
 	
-	/* if there are any monsters left on an extermination map, we havenÕt finished yet */
+	/* if there are any monsters left on an extermination map, we havenâ€™t finished yet */
 	if (static_world->mission_flags&_mission_extermination)
 	{
 		if (live_aliens_on_map()) completion_state= _level_unfinished;
 	}
 	
-	/* if there are any polygons which must be explored and have not been entered, weÕre not done */
+	/* if there are any polygons which must be explored and have not been entered, weâ€™re not done */
 	if ((static_world->mission_flags&_mission_exploration) ||
 	    (static_world->mission_flags&_mission_exploration_m1))
 	{
@@ -780,13 +817,13 @@ short calculate_level_completion_state(
 		}
 	}
 	
-	/* if there are any items left on this map, weÕre not done */
+	/* if there are any items left on this map, weâ€™re not done */
 	if (static_world->mission_flags&_mission_retrieval)
 	{
 		if (unretrieved_items_on_map()) completion_state= _level_unfinished;
 	}
 	
-	/* if there are any untoggled repair switches on this level then weÕre not there */
+	/* if there are any untoggled repair switches on this level then weâ€™re not there */
 	if ((static_world->mission_flags&_mission_repair) ||
 	    (static_world->mission_flags&_mission_repair_m1))
 	{
@@ -795,7 +832,7 @@ short calculate_level_completion_state(
 		if (untoggled_repair_switches_on_level(only_last_switch)) completion_state= _level_unfinished;
 	}
 
-	/* if weÕve finished the level, check failure conditions */
+	/* if weâ€™ve finished the level, check failure conditions */
 	if (completion_state==_level_finished)
 	{
 		/* if this is a rescue mission and more than half of the civilians died, the mission failed */

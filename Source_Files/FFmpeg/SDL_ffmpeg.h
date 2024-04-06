@@ -23,8 +23,8 @@
 #ifndef SDL_FFMPEG_INCLUDED
 #define SDL_FFMPEG_INCLUDED
 
-#include "SDL_thread.h"
-#include "SDL.h"
+#include <SDL2/SDL_thread.h>
+#include <SDL2/SDL.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -84,22 +84,12 @@ typedef struct
     int32_t channels;
     /** audio samplerate of output stream */
     int32_t sampleRate;
-    /** bitrate of audio stream in bytes */
-    int32_t audioBitrate;
-    /** when variable bitrate is desired, this holds the minimal audio bitrate */
-    int32_t audioMinRate;
-    /** when variable bitrate is desired, this holds the maximal audio bitrate */
-    int32_t audiooMaxRate;
+    const char* crf;
+    int32_t cpuCount;
+    int32_t audioQuality;
+    /** audio format of input stream */
+    enum AVSampleFormat audioFormat;
 } SDL_ffmpegCodec;
-
-/** predefined codec for PAL DVD */
-EXPORT extern const SDL_ffmpegCodec SDL_ffmpegCodecPALDVD;
-
-/** predefined codec for DV */
-EXPORT extern const SDL_ffmpegCodec SDL_ffmpegCodecPALDV;
-
-/** predefined codec based on extension of output file */
-EXPORT extern const SDL_ffmpegCodec SDL_ffmpegCodecAUTO;
 
 /** Struct to hold packet buffers */
 typedef struct SDL_ffmpegPacket {
@@ -114,6 +104,8 @@ typedef struct
     int64_t pts;
     /** Pointer to audio buffer, user adjustable. */
     uint8_t *buffer;
+    //Conversion buffer
+    uint8_t** conversionBuffer;
     /** Size of this audio frame. */
     uint32_t size;
     /** Size of the complete audio frame. */
@@ -144,9 +136,11 @@ typedef struct SDL_ffmpegStream
     /** Pointer to ffmpeg data, internal use only! */
     struct AVStream *_ffmpeg;
 
+    struct AVCodecContext* _ctx;
+
     /** Intermediate frame which will be used when decoding */
     struct AVFrame *decodeFrame;
-    /** Intermediate frame which will be used when encoding */
+    /** Intermediate frame which will be used when encoding or for conversion when decoding */
     struct AVFrame *encodeFrame;
     /** Store conversion context for this stream */
     struct SDL_ffmpegConversionContext *conversionContext;
@@ -163,8 +157,6 @@ typedef struct SDL_ffmpegStream
     int sampleBufferSize;
     /** position of data in samplebuffer */
     int sampleBufferOffset;
-    /** stride of planar data in samplebuffer */
-    int sampleBufferStride;
     /** timestamp which fits the data in samplebuffer */
     int64_t sampleBufferTime;
 
@@ -178,6 +170,12 @@ typedef struct SDL_ffmpegStream
     /** This holds the lastTimeStamp calculated, usefull when frames don't provide
         a usefull dts/pts, also used for determining at what point we are in the file */
     int64_t lastTimeStamp;
+
+    /** This is used for audio resampling */
+    struct SwrContext* swr_context;
+
+    /** The input audio format used before resampling */
+    enum AVSampleFormat audioFormat;
 
     /** pointer to the next stream, or NULL if current stream is the last one */
     struct SDL_ffmpegStream *next;
@@ -222,9 +220,7 @@ EXPORT void SDL_ffmpegClearError();
 /* SDL_ffmpegFile create / destroy */
 EXPORT SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename );
 
-#ifdef SDL_FF_WRITE
 EXPORT SDL_ffmpegFile* SDL_ffmpegCreate( const char* filename );
-#endif
 
 EXPORT void SDL_ffmpegFree( SDL_ffmpegFile* file );
 
@@ -240,9 +236,7 @@ EXPORT int64_t SDL_ffmpegGetPosition( SDL_ffmpegFile *file );
 EXPORT float SDL_ffmpegGetFrameRate( SDL_ffmpegStream *stream, int *numerator, int *denominator );
 
 /* video stream */
-#ifdef SDL_FF_WRITE
 EXPORT SDL_ffmpegStream* SDL_ffmpegAddVideoStream( SDL_ffmpegFile *file, SDL_ffmpegCodec );
-#endif
 
 EXPORT SDL_ffmpegStream* SDL_ffmpegGetVideoStream( SDL_ffmpegFile *file, uint32_t videoID );
 
@@ -251,9 +245,7 @@ EXPORT int SDL_ffmpegSelectVideoStream( SDL_ffmpegFile* file, int videoID);
 /* video frame */
 EXPORT SDL_ffmpegVideoFrame* SDL_ffmpegCreateVideoFrame();
 
-#ifdef SDL_FF_WRITE
-EXPORT int SDL_ffmpegAddVideoFrame( SDL_ffmpegFile *file, SDL_Surface *frame );
-#endif
+EXPORT int SDL_ffmpegAddVideoFrame( SDL_ffmpegFile *file, SDL_Surface *sdlFrame, int32_t frameNumber, int32_t lastFrame );
 
 EXPORT int SDL_ffmpegGetVideoFrame( SDL_ffmpegFile *file, SDL_ffmpegVideoFrame *frame );
 
@@ -269,9 +261,7 @@ EXPORT uint64_t SDL_ffmpegVideoDuration( SDL_ffmpegFile *file );
 
 
 /* audio stream */
-#ifdef SDL_FF_WRITE
 EXPORT SDL_ffmpegStream* SDL_ffmpegAddAudioStream( SDL_ffmpegFile *file, SDL_ffmpegCodec );
-#endif
 
 EXPORT SDL_ffmpegStream* SDL_ffmpegGetAudioStream( SDL_ffmpegFile *file, uint32_t audioID);
 
@@ -280,9 +270,7 @@ EXPORT int SDL_ffmpegSelectAudioStream( SDL_ffmpegFile* file, int audioID);
 /* audio frame */
 EXPORT SDL_ffmpegAudioFrame* SDL_ffmpegCreateAudioFrame( SDL_ffmpegFile *file, uint32_t bytes );
 
-#ifdef SDL_FF_WRITE
-EXPORT int SDL_ffmpegAddAudioFrame( SDL_ffmpegFile *file, SDL_ffmpegAudioFrame *frame );
-#endif
+EXPORT int SDL_ffmpegAddAudioFrame( SDL_ffmpegFile *file, SDL_ffmpegAudioFrame *frame, size_t* frameCounter, int32_t lastFrame );
 
 EXPORT int SDL_ffmpegGetAudioFrame( SDL_ffmpegFile *file, SDL_ffmpegAudioFrame *frame );
 
@@ -299,9 +287,7 @@ EXPORT uint64_t SDL_ffmpegAudioDuration( SDL_ffmpegFile *file );
 /** \cond */
 
 /* these functions are not public */
-#ifdef SDL_FF_WRITE
 EXPORT SDL_ffmpegFile* SDL_ffmpegCreateFile();
-#endif
 
 EXPORT int SDL_ffmpegFlush( SDL_ffmpegFile *file );
 

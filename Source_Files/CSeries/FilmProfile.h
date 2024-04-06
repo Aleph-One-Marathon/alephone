@@ -95,6 +95,23 @@ struct FilmProfile
 	bool m1_low_gravity_projectiles;
 	bool m1_buggy_repair_goal;
 	bool find_action_key_target_has_side_effects;
+
+	// Aleph One 1.3 fixes
+	bool m1_object_unused; // location.z and flags are unused in Marathon
+	bool m1_platform_flood; // checks more than just adjacent polygons
+	bool m1_teleport_without_delay; // Marathon terminals teleport immediately
+
+	// Aleph One 1.4 fixes
+	bool better_terminal_word_wrap; // fixes rare infinity films
+	bool lua_monster_killed_trigger_fix;
+
+	// Aleph One 1.7 fixes
+	bool chip_insertion_ignores_tag_state; // always toggle when using a chip
+	bool page_up_past_full_width_term_pict;
+	bool fix_destroy_scenery_random_frame;
+	bool m1_reload_sound;		// play the reload sound on the key frame
+	bool m1_landscape_effects;	// projectiles detonate on M1 landscapes
+	bool m1_bce_pickup;	 // you can pick up another BCE if you already have one
 };
 
 extern FilmProfile film_profile;
@@ -104,6 +121,9 @@ enum FilmProfileType {
 	FILM_PROFILE_MARATHON_2,
 	FILM_PROFILE_MARATHON_INFINITY,
 	FILM_PROFILE_ALEPH_ONE_1_1,
+	FILM_PROFILE_ALEPH_ONE_1_2,
+	FILM_PROFILE_ALEPH_ONE_1_3,
+	FILM_PROFILE_ALEPH_ONE_1_4,
 	FILM_PROFILE_DEFAULT,
 };
 

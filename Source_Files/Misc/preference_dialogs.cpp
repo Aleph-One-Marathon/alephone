@@ -25,6 +25,7 @@
 #include "OGL_Setup.h"
 #include "screen.h"
 
+#include <functional>
 #include <sstream>
 
 class TexQualityPref : public Bindable<int>
@@ -162,10 +163,8 @@ OpenGLDialog::~OpenGLDialog()
 	delete m_bumpWidget;
 	delete m_colourTheVoidWidget;
 	delete m_voidColourWidget;
-	delete m_fsaaWidget;
 	delete m_anisotropicWidget;
 	delete m_sRGBWidget;
-	delete m_geForceFixWidget;
 	delete m_useNPOTWidget;
 	delete m_vsyncWidget;
 	delete m_wallsFilterWidget;
@@ -174,16 +173,14 @@ OpenGLDialog::~OpenGLDialog()
 	for (int i=0; i<OGL_NUMBER_OF_TEXTURE_TYPES; ++i) {
 		delete m_textureQualityWidget [i];
 		delete m_nearFiltersWidget[i];
-		delete m_textureResolutionWidget [i];
-		delete m_textureDepthWidget[i];
 	}
 
 }
 
 void OpenGLDialog::OpenGLPrefsByRunning ()
 {
-	m_cancelWidget->set_callback (boost::bind (&OpenGLDialog::Stop, this, false));
-	m_okWidget->set_callback (boost::bind (&OpenGLDialog::Stop, this, true));
+	m_cancelWidget->set_callback (std::bind (&OpenGLDialog::Stop, this, false));
+	m_okWidget->set_callback (std::bind (&OpenGLDialog::Stop, this, true));
 	
 	BinderSet binders;
 	
@@ -207,23 +204,20 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	ColourPref voidColourPref (graphics_preferences->OGL_Configure.VoidColor);
 	binders.insert<RGBColor> (m_voidColourWidget, &voidColourPref);
 	
-	TimesTwoPref fsaaPref (graphics_preferences->OGL_Configure.Multisamples);
-	binders.insert<int> (m_fsaaWidget, &fsaaPref);
-	
 	AnisotropyPref anisotropyPref (graphics_preferences->OGL_Configure.AnisotropyLevel);
 	binders.insert<int> (m_anisotropicWidget, &anisotropyPref);
 
 	BoolPref sRGBPref (graphics_preferences->OGL_Configure.Use_sRGB);
 	binders.insert<bool> (m_sRGBWidget, &sRGBPref);
 	
-	BoolPref geForceFixPref (graphics_preferences->OGL_Configure.GeForceFix);
-	binders.insert<bool> (m_geForceFixWidget, &geForceFixPref);
-	
 	BoolPref useNPOTPref (graphics_preferences->OGL_Configure.Use_NPOT);
 	binders.insert<bool> (m_useNPOTWidget, &useNPOTPref);
 	
 	BoolPref vsyncPref (graphics_preferences->OGL_Configure.WaitForVSync);
 	binders.insert<bool> (m_vsyncWidget, &vsyncPref);
+
+	Int16Pref ephemeraQualityPref(graphics_preferences->ephemera_quality);
+	binders.insert<int>(m_ephemeraQualityWidget, &ephemeraQualityPref);
 	
 	FarFilterPref wallsFarFilterPref (graphics_preferences->OGL_Configure.TxtrConfigList [OGL_Txtr_Wall].FarFilter);
 	binders.insert<int> (m_wallsFilterWidget, &wallsFarFilterPref);
@@ -250,25 +244,6 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	TexQualityPref modelQualityPref (graphics_preferences->OGL_Configure.ModelConfig.MaxSize, 256);
 	binders.insert<int> (m_modelQualityWidget, &modelQualityPref);
 	
-	Int16Pref wallResoPref (graphics_preferences->OGL_Configure.TxtrConfigList [0].Resolution);
-	binders.insert<int> (m_textureResolutionWidget [0], &wallResoPref);
-	Int16Pref landscapeResoPref (graphics_preferences->OGL_Configure.TxtrConfigList [1].Resolution);
-	binders.insert<int> (m_textureResolutionWidget [1], &landscapeResoPref);
-	Int16Pref spriteResoPref (graphics_preferences->OGL_Configure.TxtrConfigList [2].Resolution);
-	binders.insert<int> (m_textureResolutionWidget [2], &spriteResoPref);
-	Int16Pref weaponResoPref (graphics_preferences->OGL_Configure.TxtrConfigList [3].Resolution);
-	binders.insert<int> (m_textureResolutionWidget [3], &weaponResoPref);
-
-	Int16Pref wallDepthPref(graphics_preferences->OGL_Configure.TxtrConfigList[0].ColorFormat);
-	binders.insert<int> (m_textureDepthWidget[0], &wallDepthPref);
-	Int16Pref landscapeDepthPref(graphics_preferences->OGL_Configure.TxtrConfigList[1].ColorFormat);
-	binders.insert<int> (m_textureDepthWidget[1], &landscapeDepthPref);
-	Int16Pref spriteDepthPref(graphics_preferences->OGL_Configure.TxtrConfigList[2].ColorFormat);
-	binders.insert<int> (m_textureDepthWidget[2], &spriteDepthPref);
-	Int16Pref weaponDepthPref(graphics_preferences->OGL_Configure.TxtrConfigList[3].ColorFormat);
-	binders.insert<int> (m_textureDepthWidget[3], &weaponDepthPref);
-	
-	
 	// Set initial values from prefs
 	binders.migrate_all_second_to_first ();
 	
@@ -287,6 +262,14 @@ static const char *far_filter_labels[5] = {
 
 static const char *near_filter_labels[3] = {
 	"None", "Linear", NULL
+};
+
+static std::vector<std::string> ephemera_quality_labels {
+	"Off",
+	"Low",
+	"Medium",
+	"High",
+	"Ultra"
 };
 
 class w_aniso_slider : public w_slider {
@@ -362,6 +345,11 @@ public:
 		w_toggle *bump_w = new w_toggle(false);
 		general_table->dual_add(bump_w->label("Bump Mapping"), m_dialog);
 		general_table->dual_add(bump_w, m_dialog);
+
+		w_select_popup* ephemera_w = new w_select_popup();
+		ephemera_w->set_labels(ephemera_quality_labels);
+		general_table->dual_add(ephemera_w->label("Scripted Effects Quality"), m_dialog);
+		general_table->dual_add(ephemera_w, m_dialog);
 		
 		general_table->add_row(new w_spacer(), true);
 
@@ -369,15 +357,6 @@ public:
 		general_table->dual_add(vsync_w->label("VSync"), m_dialog);
 		general_table->dual_add(vsync_w, m_dialog);
 
-		w_select_popup *fsaa_w = new w_select_popup ();
-		general_table->dual_add(fsaa_w->label("Full Scene Antialiasing"), m_dialog);
-		general_table->dual_add(fsaa_w, m_dialog);
-		vector<string> fsaa_strings;
-		fsaa_strings.push_back ("Off");
-		fsaa_strings.push_back ("2x");
-		fsaa_strings.push_back ("4x");
-		fsaa_w->set_labels (fsaa_strings);
-		
 		w_aniso_slider* aniso_w = new w_aniso_slider(6, 1);
 		general_table->dual_add(aniso_w->label("Anisotropic Filtering"),m_dialog);
 		general_table->dual_add(aniso_w, m_dialog);
@@ -433,10 +412,6 @@ public:
 		table_placer *advanced_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 		advanced_table->col_flags(0, placeable::kAlignRight);
 	
-		w_toggle *geforce_fix_w = new w_toggle(false);
-		advanced_table->dual_add(geforce_fix_w->label("GeForce 1-4 Texture Fix"), m_dialog);
-		advanced_table->dual_add(geforce_fix_w, m_dialog);
-		
 		w_toggle *use_npot_w = new w_toggle(false);
 		advanced_table->dual_add(use_npot_w->label("Non-Power-of-Two Textures"), m_dialog);
 		advanced_table->dual_add(use_npot_w, m_dialog);
@@ -509,47 +484,6 @@ public:
 		texture_labels[OGL_Txtr_Inhabitant] = new w_label("Sprites");
 		texture_labels[OGL_Txtr_WeaponsInHand] = new w_label("Weapons in Hand / HUD");
 
-		advanced_placer->dual_add(new w_static_text("Built-in Texture Size and Depth"), m_dialog);
-		advanced_placer->dual_add(new w_static_text("(reduce for machines with low VRAM)"), m_dialog);
-
-		vector<string> tex_reso_strings;
-		tex_reso_strings.push_back ("Full");
-		tex_reso_strings.push_back ("1/2");
-		tex_reso_strings.push_back ("1/4");
-
-		vector<string> tex_depth_strings;
-		tex_depth_strings.push_back ("32-bit");
-		tex_depth_strings.push_back ("16-bit");
-		tex_depth_strings.push_back ("8-bit");
-
-		table_placer *table = new table_placer(3, get_theme_space(ITEM_WIDGET));
-
-		table->col_flags(0, placeable::kAlignRight);
-		table->col_flags(1, placeable::kAlignLeft);
-		table->col_flags(2, placeable::kAlignLeft);
-
-		table->add(new w_spacer(), true);
-		table->dual_add(new w_label("Size"), m_dialog);
-		table->dual_add(new w_label("Depth"), m_dialog);
-
-		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++)
-		{
-			table->dual_add(texture_labels[i], m_dialog);
-			table->dual_add(texture_resolution_wa[i], m_dialog);
-			table->dual_add(texture_depth_wa[i], m_dialog);
-
-			texture_resolution_wa[i]->associate_label(texture_labels[i]);
-			texture_resolution_wa[i]->set_labels(tex_reso_strings);
-
-			texture_depth_wa[i]->associate_label(texture_labels[i]);
-			texture_depth_wa[i]->set_labels(tex_depth_strings);
-		}
-
-		table->col_min_width(1, (table->col_width(0) - get_theme_space(ITEM_WIDGET)) / 2);
-		table->col_min_width(2, (table->col_width(0) - get_theme_space(ITEM_WIDGET)) / 2);
-
-		advanced_placer->add(table, true);
-
 		m_tabs->add(general_table, true);
 		m_tabs->add(advanced_placer, true);
 		placer->add(m_tabs, false);
@@ -580,13 +514,12 @@ public:
 		m_colourTheVoidWidget = 0;
 		m_voidColourWidget = 0;
 
-		m_fsaaWidget = new PopupSelectorWidget (fsaa_w);
+		m_ephemeraQualityWidget = new PopupSelectorWidget(ephemera_w);
 
 		m_anisotropicWidget = new SliderSelectorWidget (aniso_w);
 
 		m_sRGBWidget = new ToggleWidget(srgb_w);
 
-		m_geForceFixWidget = new ToggleWidget (geforce_fix_w);
 		m_useNPOTWidget = new ToggleWidget (use_npot_w);
 		m_vsyncWidget = new ToggleWidget (vsync_w);
 		
@@ -596,8 +529,6 @@ public:
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; ++i) {
 			m_textureQualityWidget [i] = new PopupSelectorWidget (texture_quality_wa[i]);
 			m_nearFiltersWidget[i] = new SelectSelectorWidget(near_filter_wa[i]);
-			m_textureResolutionWidget [i] = new PopupSelectorWidget (texture_resolution_wa[i]);
-			m_textureDepthWidget [i] = new PopupSelectorWidget(texture_depth_wa[i]);
 		}
 		m_modelQualityWidget = new PopupSelectorWidget(model_quality_w);
 	}
@@ -647,5 +578,5 @@ void SdlOpenGLDialog::choose_advanced_tab(void *arg)
 std::unique_ptr<OpenGLDialog>
 OpenGLDialog::Create(int theSelectedRenderer)
 {
-	return std::unique_ptr<OpenGLDialog>(new SdlOpenGLDialog(theSelectedRenderer));
+	return std::make_unique<SdlOpenGLDialog>(theSelectedRenderer);
 }

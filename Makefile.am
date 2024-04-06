@@ -1,3 +1,4 @@
+
 ## Process this file with automake to produce Makefile.in
 
 SUBDIRS = Source_Files tools data
@@ -5,16 +6,15 @@ SUBDIRS = Source_Files tools data
 # Requires automake 1.5
 AUTOMAKE_OPTIONS = 1.5 foreign dist-bzip2 no-dist-gzip
 
-EXTRA_DIST = INSTALL.MacOSX INSTALL.Unix INSTALL.Windows	\
-  docs/MML.html docs/Lua.html docs/Lua_HUD.html		\
-  Resources/Windows/alephone.ico				\
+EXTRA_DIST = docs/MML.html docs/Lua.html docs/Lua_HUD.html		\
+  docs/README.txt Resources/Windows/alephone.ico		        \
   Resources/Windows/alephone.rc						\
   Resources/Windows/marathon.rc Resources/Windows/marathon.ico          \
   Resources/Windows/marathon2.rc Resources/Windows/marathon2.ico        \
   Resources/Windows/marathon-infinity.rc                                \
   Resources/Windows/marathon-infinity.ico                               \
   PBProjects/AlephOne.xcodeproj/project.pbxproj				\
-  PBProjects/English.lproj/InfoPlist.strings PBProjects/FilmIcon.icns	\
+  PBProjects/en.lproj/InfoPlist.strings PBProjects/FilmIcon.icns	\
   PBProjects/ImagesIcon.icns PBProjects/MapIcon.icns			\
   PBProjects/MMLIcon.icns PBProjects/MusakIcon.icns			\
   PBProjects/PhysIcon.icns			                        \
@@ -24,25 +24,34 @@ EXTRA_DIST = INSTALL.MacOSX INSTALL.Unix INSTALL.Windows	\
   PBProjects/config.h PBProjects/confpaths.h	\
   data/AlephSansMono-Bold.ttf data/AlephSansMonoLicense.txt		\
   data/ProFontAO.ttf data/ProFontAOLicense.txt		\
-  docs/alephone.6 examples/lua/Cheats.lua THANKS			\
+  docs/alephone.6 examples/lua/Cheats.lua THANKS README.md		\
   data/powered-by-alephone.svg						\
   PBProjects/Info-AlephOne-Xcode4.plist\
 	PBProjects/AppStore/Marathon/Info.plist \
 	PBProjects/AppStore/Marathon/Marathon.icns \
-	PBProjects/AppStore/Marathon/English.lproj/InfoPlist.strings
+	PBProjects/AppStore/Marathon/en.lproj/InfoPlist.strings \
+  flatpak/alephone.desktop flatpak/alephone.png flatpak/marathon2.desktop	  \
+  flatpak/marathon2.png flatpak/marathon.desktop							  \
+  flatpak/marathon-infinity.desktop flatpak/marathon-infinity.png			  \
+  flatpak/marathon.png flatpak/org.bungie.source.AlephOne.yml				  \
+  flatpak/org.bungie.source.Marathon2.yml									  \
+  flatpak/org.bungie.source.MarathonInfinity.yml							  \
+  flatpak/org.bungie.source.Marathon.yml flatpak/run-nodata.sh flatpak/run.sh \
+  flatpak/shared/alephone.yml flatpak/shared/boost.yml flatpak/shared/glu.yml \
+  flatpak/shared/miniupnpc.yml flatpak/shared/zzip.yml
 
 man_MANS = docs/alephone.6
 
 dist-hook: AlephOne.spec
 	cp AlephOne.spec $(distdir)
-	mkdir -p "$(distdir)/PBProjects/AppStore/Marathon 2/English.lproj"
+	mkdir -p "$(distdir)/PBProjects/AppStore/Marathon 2/en.lproj"
 	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/Info.plist" "$(distdir)/PBProjects/AppStore/Marathon 2/"
 	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/Marathon 2.icns" "$(distdir)/PBProjects/AppStore/Marathon 2/"
-	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/English.lproj/InfoPlist.strings" "$(distdir)/PBProjects/AppStore/Marathon 2/English.lproj/"
-	mkdir -p "$(distdir)/PBProjects/AppStore/Marathon Infinity/English.lproj"
+	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/en.lproj/InfoPlist.strings" "$(distdir)/PBProjects/AppStore/Marathon 2/en.lproj/"
+	mkdir -p "$(distdir)/PBProjects/AppStore/Marathon Infinity/en.lproj"
 	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/Info.plist" "$(distdir)/PBProjects/AppStore/Marathon Infinity/"
 	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/Marathon Infinity.icns" "$(distdir)/PBProjects/AppStore/Marathon Infinity/"
-	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/English.lproj/InfoPlist.strings" "$(distdir)/PBProjects/AppStore/Marathon Infinity/English.lproj/"
+	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/en.lproj/InfoPlist.strings" "$(distdir)/PBProjects/AppStore/Marathon Infinity/en.lproj/"
 
 
 release: dist windist
@@ -202,5 +211,33 @@ $(MINF_DATAZIP):
 	rm -f $(MINF_DATAZIP)
 	zip -r $(MINF_DATAZIP) "$(DATADISTDIR_MINF)"
 	rm -rf "$(DATADISTDIR_MINF)"
+
+# flatpaks
+M1_FLATPAK=Marathon-$(VERSION).flatpak
+m1-flatpak: $(M1_FLATPAK)
+M2_FLATPAK=Marathon2-$(VERSION).flatpak
+m2-flatpak: $(M2_FLATPAK)
+MINF_FLATPAK=MarathonInfinity-$(VERSION).flatpak
+minf-flatpak: $(MINF_FLATPAK)
+A1_FLATPAK=AlephOne-$(VERSION).flatpak
+a1-flatpak: $(A1_FLATPAK)
+
+flatpaks: m1-flatpak m2-flatpak minf-flatpak a1-flatpak
+
+$(M1_FLATPAK):
+	flatpak-builder --repo=flatpak/repo --force-clean flatpak/Marathon.build $(srcdir)/flatpak/org.bungie.source.Marathon.yml
+	flatpak build-bundle flatpak/repo $@ org.bungie.source.Marathon
+
+$(M2_FLATPAK):
+	flatpak-builder --repo=flatpak/repo --force-clean flatpak/Marathon2.build $(srcdir)/flatpak/org.bungie.source.Marathon2.yml
+	flatpak build-bundle flatpak/repo $@ org.bungie.source.Marathon2
+
+$(MINF_FLATPAK):
+	flatpak-builder --repo=flatpak/repo --force-clean flatpak/MarathonInfinity.build $(srcdir)/flatpak/org.bungie.source.MarathonInfinity.yml
+	flatpak build-bundle flatpak/repo $@ org.bungie.source.MarathonInfinity
+
+$(A1_FLATPAK):
+	flatpak-builder --repo=flatpak/repo --force-clean flatpak/AlephOne.build $(srcdir)/flatpak/org.bungie.source.AlephOne.yml
+	flatpak build-bundle flatpak/repo $@ org.bungie.source.AlephOne
 
 FORCE:

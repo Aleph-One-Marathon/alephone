@@ -37,11 +37,12 @@
 struct OGL_TextureOptions: public OGL_TextureOptionsBase
 {
 	bool VoidVisible;		// Can see the void through texture if semitransparent
+	short TileRatioExp;		// Tile replacement walls to 2^n x 2^n WU
 	
 	// Parameters for mapping substitute sprites (inhabitants, weapons in hand)
 	
 	OGL_TextureOptions():
-		VoidVisible(false) {}
+		VoidVisible(false),TileRatioExp{0} {}
 };
 
 

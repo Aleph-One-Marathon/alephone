@@ -101,11 +101,11 @@ struct view_data
 	angle half_cone; /* often ==field_of_view/2 (when screen_width==standard_screen_width) */
 	angle half_vertical_cone;
 
-	world_vector2d untransformed_left_edge, untransformed_right_edge;
-	world_vector2d left_edge, right_edge, top_edge, bottom_edge;
+	long_vector2d left_edge, right_edge; // view cone edges as world directions
 
 	short ticks_elapsed;
 	uint32 tick_count; /* for effects and transfer modes */
+	float heartbeat_fraction;
 	short origin_polygon_index;
 	angle yaw, pitch, roll;
 	fixed_angle virtual_yaw, virtual_pitch;
@@ -153,7 +153,7 @@ struct view_data
 enum /* render flags */
 {
 	_polygon_is_visible_bit, /* some part of this polygon is horizontally in the view cone */
-	_endpoint_has_been_visited_bit, /* weÕve already tried to cast a ray out at this endpoint */
+	_endpoint_has_been_visited_bit, /* weâ€™ve already tried to cast a ray out at this endpoint */
 	_endpoint_is_visible_bit, /* this endpoint is horizontally in the view cone */
 	_side_is_visible_bit, /* this side was crossed while building the tree and should be drawn */
 	_line_has_clip_data_bit, /* this line has a valid clip entry */
@@ -182,7 +182,7 @@ extern vector<uint16> RenderFlagList;
 void allocate_render_memory(void);
 
 void initialize_view_data(struct view_data *view, bool ignore_preferences = false);
-void render_view(struct view_data *view, struct bitmap_definition *destination);
+void render_view(struct view_data *view, struct bitmap_definition *software_render_dest /*ignored under OpenGL*/);
 
 void start_render_effect(struct view_data *view, short effect);
 

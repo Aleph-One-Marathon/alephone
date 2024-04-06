@@ -1,0 +1,56 @@
+name: release-windows
+
+on: [workflow_dispatch, workflow_call]
+
+jobs:
+  release-x64:
+    runs-on: windows-2022
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+        
+    - name: Build
+      uses: ./.github/actions/build-windows
+      with:
+        platform: x64
+        configurations: "Release, Marathon, Marathon 2, Marathon Infinity"
+        vcpkg_installed_folder: installed-x64-windows
+        
+    - name: Build archives
+      run: |
+        cd VisualStudio &&
+        ./dist-windows.ps1 -x64 $true -a1 $true -m1 $true -m2 $true -m3 $true -output_path windows-build-archives
+    
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: alephone-windows-release-x64
+        if-no-files-found: error
+        path: 'VisualStudio/windows-build-archives/*.zip'
+        
+  release-x86:
+    runs-on: windows-2022
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+        
+    - name: Build
+      uses: ./.github/actions/build-windows
+      with:
+        platform: x86
+        configurations: Release
+        vcpkg_installed_folder: installed-x86-windows
+        
+    - name: Build archives
+      run: |
+        cd VisualStudio &&
+        ./dist-windows.ps1 -x64 $false -a1 $true -m1 $false -m2 $false -m3 $false -output_path windows-build-archives
+    
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: alephone-windows-release-x86
+        if-no-files-found: error
+        path: 'VisualStudio/windows-build-archives/*.zip'

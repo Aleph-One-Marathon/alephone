@@ -29,7 +29,7 @@
 #include "InfoTree.h"
 
 #ifdef HAVE_SDL_IMAGE
-#include <SDL_image.h>
+#include <SDL2/SDL_image.h>
 #endif
 #ifdef HAVE_PNG
 #include "IMG_savepng.h"
@@ -249,7 +249,7 @@ void WadImageCache::remove_image(WadImageDescriptor& desc, int width, int height
 		// Partial key specified; walk the map to find all matches
 		for (std::map<cache_key_t, cache_iter_t>::iterator it = m_cacheinfo.begin(); it != m_cacheinfo.end(); )
 		{
-			if (boost::tuples::get<0>(it->first) == desc)
+			if (std::get<0>(it->first) == desc)
 			{
 				delete_storage_for_name(it->second->second.first);
 				m_used.erase(it->second);
@@ -324,7 +324,7 @@ void WadImageCache::initialize_cache()
 	InfoTree pt;
 	try {
 		pt = InfoTree::load_ini(info);
-	} catch (InfoTree::ini_error e) {
+	} catch (const InfoTree::ini_error& e) {
 		logError("Could not read image cache from %s (%s)", info.GetPath(), e.what());
 	}
 	
@@ -368,14 +368,14 @@ void WadImageCache::save_cache()
 	for (cache_iter_t it = m_used.begin(); it != m_used.end(); ++it)
 	{
 		std::string name = it->second.first;
-		WadImageDescriptor desc = boost::tuples::get<0>(it->first);
+		WadImageDescriptor desc = std::get<0>(it->first);
 		
 		pt.put(name + ".path", desc.file.GetPath());
 		pt.put(name + ".checksum", desc.checksum);
 		pt.put(name + ".index", desc.index);
 		pt.put(name + ".tag", desc.tag);
-		pt.put(name + ".width", boost::tuples::get<1>(it->first));
-		pt.put(name + ".height", boost::tuples::get<2>(it->first));
+		pt.put(name + ".width", std::get<1>(it->first));
+		pt.put(name + ".height", std::get<2>(it->first));
 		pt.put(name + ".filesize", it->second.second);
 	}
 	
@@ -385,7 +385,7 @@ void WadImageCache::save_cache()
 	try {
 		pt.save_ini(info);
 		m_cache_dirty = false;
-	} catch (InfoTree::ini_error e) {
+	} catch (const InfoTree::ini_error& e) {
 		logError("Could not save image cache to %s (%s)", info.GetPath(), e.what());
 		return;
 	}

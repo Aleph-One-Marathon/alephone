@@ -38,7 +38,6 @@
 #include	"cseries.h"		// Need ALEPHONE_LITTLE_ENDIAN, if appropriate.
 #include	"network.h"
 #include	"network_private.h"
-#include    "network_audio_shared.h"
 
 
 
@@ -114,14 +113,5 @@ struct IPaddress_NET {
 
 extern void netcpy(IPaddress_NET* dest, const IPaddress* src);
 extern void netcpy(IPaddress* dest, const IPaddress_NET* src);
-
-const int SIZEOF_network_audio_header = 8;
-
-struct network_audio_header_NET {
-    uint8 data[SIZEOF_network_audio_header];
-};
-
-extern void netcpy(network_audio_header_NET* dest, const network_audio_header* src);
-extern void netcpy(network_audio_header* dest, const network_audio_header_NET* src);
 
 #endif//NETWORK_DATA_FORMATS_H

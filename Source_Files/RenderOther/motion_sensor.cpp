@@ -161,8 +161,8 @@ struct motion_sensor_definition motion_sensor_settings = {
 
 /* ---------- structures */
 
-/* an entity canÕt just be jerked from the array, because his signal should fade out, so we
-	mark him as Ôbeing removedÕ and wait until his last signal fades away to actually remove
+/* an entity canâ€™t just be jerked from the array, because his signal should fade out, so we
+	mark him as â€˜being removedâ€™ and wait until his last signal fades away to actually remove
 	him */
 #define SLOT_IS_BEING_REMOVED_BIT 0x4000
 #define SLOT_IS_BEING_REMOVED(e) ((e)->flags&(uint16)SLOT_IS_BEING_REMOVED_BIT)
@@ -241,18 +241,16 @@ void initialize_motion_sensor(
 	compass_shapes= compasses;
 	
 	entities= new entity_data[MAXIMUM_MOTION_SENSOR_ENTITIES];
-	assert(entities);
 	for (int i = 0; i < MAXIMUM_MOTION_SENSOR_ENTITIES; i++) {
 	  entities[i].flags = 0;
 	}
 
 	sensor_region= new region_data[side_length];
-	assert(sensor_region);
 	
 	/* precalculate the sensor region */
 	precalculate_sensor_region(side_length);	
 
-	/* reset_motion_sensor() should be called before the motion sensor is used, but after itÕs
+	/* reset_motion_sensor() should be called before the motion sensor is used, but after itâ€™s
 		shapes are loaded (because it will do bitmap copying) */
 }
 
@@ -403,7 +401,7 @@ void erase_all_entity_blips(void)
 	short entity_index;
 
 	/* first erase all locations where the entity changed locations and then did not change
-		locations, and erase itÕs last location */
+		locations, and erase itâ€™s last location */
 	for (entity_index=0,entity=entities;entity_index<MAXIMUM_MOTION_SENSOR_ENTITIES;++entity_index,++entity)
 	{
 		if (SLOT_IS_USED(entity))
@@ -411,15 +409,15 @@ void erase_all_entity_blips(void)
 			motion_sensor_changed = true;
 //			dprintf("entity #%d (%p) valid", entity_index, entity);
 			/* see if our monster slot is free; if it is mark this entity as being removed; of
-				course this isnÕt wholly accurate and we might start tracking a new monster
-				which has been placed in our old monsterÕs slot, but we eat that chance
+				course this isnâ€™t wholly accurate and we might start tracking a new monster
+				which has been placed in our old monsterâ€™s slot, but we eat that chance
 				without remorse */
 			if (SLOT_IS_USED(monsters+entity->monster_index))
 			{
 				struct object_data *object= get_object_data(get_monster_data(entity->monster_index)->object_index);
 				world_distance distance= guess_distance2d((world_point2d *) &object->location, (world_point2d *) &owner_object->location);
 				
-				/* verify that weÕre still in range (and mark us as being removed if weÕre not */
+				/* verify that weâ€™re still in range (and mark us as being removed if weâ€™re not */
 				if (distance>MOTION_SENSOR_RANGE || !OBJECT_IS_VISIBLE_TO_MOTION_SENSOR(object))
 				{
 //					dprintf("removed2");
@@ -437,7 +435,7 @@ void erase_all_entity_blips(void)
 			memmove(entity->previous_points+1, entity->previous_points, (NUMBER_OF_PREVIOUS_LOCATIONS-1)*sizeof(point2d));
 			entity->visible_flags[0]= false;
 				
-			/* if weÕre not being removed, make room for a new location and calculate it */
+			/* if weâ€™re not being removed, make room for a new location and calculate it */
 			if (!SLOT_IS_BEING_REMOVED(entity))
 			{
 				struct monster_data *monster= get_monster_data(entity->monster_index);
@@ -867,7 +865,7 @@ void parse_mml_motion_sensor(const InfoTree& root)
 	root.read_attr("update_frequency", MOTION_SENSOR_UPDATE_FREQUENCY);
 	root.read_attr("rescan_frequency", MOTION_SENSOR_RESCAN_FREQUENCY);
 	
-	BOOST_FOREACH(InfoTree assign, root.children_named("assign"))
+	for (const InfoTree &assign : root.children_named("assign"))
 	{
 		int16 index;
 		if (!assign.read_indexed("monster", index, NUMBER_OF_MONSTER_TYPES))

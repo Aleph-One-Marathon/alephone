@@ -57,14 +57,14 @@ May 16, 2002 (Woody Zenfell):
 */
 
 /*
-running backwards shouldnÕt mean doom in a fistfight
+running backwards shouldnâ€™t mean doom in a fistfight
 
 //who decides on the physics model, anyway?  static_world-> or player->
 //falling through gridlines and crapping on elevators has to do with variables->flags being wrong after the player dies
 //absolute (or nearly-absolute) positioning information for yaw, pitch and velocity
 //the physics model is too soft (more noticable at high frame rates)
 //we can continually boot ourselves out of nearly-orthogonal walls by tiny amounts, resulting in a slide
-//itÕs fairly obvious that players can still end up in walls
+//itâ€™s fairly obvious that players can still end up in walls
 //the recenter key should work faster
 */
 
@@ -146,7 +146,7 @@ void initialize_player_physics_variables(
 //#ifdef DEBUG
 	obj_set(*variables, 0x80);
 //#endif
-	
+
 	variables->head_direction= 0;
 	variables->adjusted_yaw= variables->direction= INTEGER_TO_FIXED(object->facing);
 	variables->adjusted_pitch= variables->elevation= 0;
@@ -440,8 +440,8 @@ uint32 process_aim_input(uint32 action_flags, fixed_yaw_pitch delta)
 	new_location.z= FIXED_TO_WORLD(variables->position.z);
 
 	/* check for 2d collisions with walls and knock the player back out of the wall (because of
-		the way the physics updates work, we donÕt worry about collisions with the floor or
-		ceiling).  ONLY MODIFY THE PLAYERÕS FIXED_POINT3D POSITION IF WE HAD A COLLISION */
+		the way the physics updates work, we donâ€™t worry about collisions with the floor or
+		ceiling).  ONLY MODIFY THE PLAYERâ€™S FIXED_POINT3D POSITION IF WE HAD A COLLISION */
 	if (PLAYER_IS_DEAD(player)) new_location.z+= FIXED_TO_WORLD(DROP_DEAD_HEIGHT);
 	if (take_action && !first_time && player->last_supporting_polygon_index!=player->supporting_polygon_index) changed_polygon(player->last_supporting_polygon_index, player->supporting_polygon_index, player_index);
 	player->last_supporting_polygon_index= first_time ? NONE : player->supporting_polygon_index;
@@ -451,7 +451,7 @@ uint32 process_aim_input(uint32 action_flags, fixed_yaw_pitch delta)
 	if (PLAYER_IS_DEAD(player)) new_location.z-= FIXED_TO_WORLD(DROP_DEAD_HEIGHT);
 
 	/* check for 2d collisions with solid objects and knock the player back out of the object.
-		ONLY MODIFY THE PLAYERÕS FIXED_POINT3D POSITION IF WE HAD A COLLISION. */
+		ONLY MODIFY THE PLAYERâ€™S FIXED_POINT3D POSITION IF WE HAD A COLLISION. */
 	object_floor= INT16_MIN;
 	{
 		short obstruction_index= legal_player_move(player->monster_index, &new_location, &object_floor);
@@ -542,7 +542,7 @@ static void physics_update(
 	fixed_point3d new_position;
 	short sine, cosine;
 	_fixed delta_z;
-	_fixed delta; /* used as a scratch ÔchangeÕ variable */
+	_fixed delta; /* used as a scratch â€˜changeâ€™ variable */
 	
 	const bool player_is_local = (player == local_player);
 
@@ -588,7 +588,7 @@ static void physics_update(
 		action_flags&= ~_absolute_pitch_mode;
 	}
 
-	/* handle turning left or right; if weÕve exceeded our maximum velocity lock out user actions
+	/* handle turning left or right; if weâ€™ve exceeded our maximum velocity lock out user actions
 		until we return to a legal range */
 	if (action_flags&_absolute_yaw_mode)
 	{
@@ -653,10 +653,10 @@ static void physics_update(
 			action_flags|= variables->elevation<0 ? _looking_up : _looking_down;
 		}
 	
-		/* handle looking up and down; if weÕre moving at our terminal velocity forward or backward,
+		/* handle looking up and down; if weâ€™re moving at our terminal velocity forward or backward,
 			without any side-to-side motion, recenter our head vertically */
 
-		if (!(action_flags&FLAGS_WHICH_PREVENT_RECENTERING)) /* canÕt recenter if any of these are true */
+		if (!(action_flags&FLAGS_WHICH_PREVENT_RECENTERING)) /* canâ€™t recenter if any of these are true */
 		{
 			if (((action_flags&_moving_forward) && (variables->velocity==constants->maximum_forward_velocity)) ||
 				((action_flags&_moving_backward) && (variables->velocity==-constants->maximum_backward_velocity)))
@@ -699,8 +699,8 @@ static void physics_update(
 			vir_aim_delta.pitch = 0;
 	}
 
-	/* if weÕre on the ground (or rising up from it), allow movement; if weÕre flying through
-		the air, donÕt let the player adjust his velocity in any way */
+	/* if weâ€™re on the ground (or rising up from it), allow movement; if weâ€™re flying through
+		the air, donâ€™t let the player adjust his velocity in any way */
 	if (delta_z<=0 || (variables->flags&_HEAD_BELOW_MEDIA_BIT))
 	{
 		if (action_flags&_absolute_position_mode)
@@ -718,7 +718,7 @@ static void physics_update(
 		}
 		else
 		{
-			/* handle moving forward or backward; if weÕve exceeded our maximum velocity lock out user actions
+			/* handle moving forward or backward; if weâ€™ve exceeded our maximum velocity lock out user actions
 				until we return to a legal range */
 			if (variables->velocity<-constants->maximum_backward_velocity||variables->velocity>constants->maximum_forward_velocity) action_flags&= ~_moving;
 			switch (action_flags&_moving)
@@ -740,7 +740,7 @@ static void physics_update(
 			}
 		}
 		
-		/* handle sidestepping left or right; if weÕve exceeded our maximum velocity lock out user actions
+		/* handle sidestepping left or right; if weâ€™ve exceeded our maximum velocity lock out user actions
 			until we return to a legal range */
 		if (variables->perpendicular_velocity<-constants->maximum_perpendicular_velocity||variables->perpendicular_velocity>constants->maximum_perpendicular_velocity) action_flags&= ~_sidestepping;
 		switch (action_flags&_sidestepping)
@@ -820,13 +820,13 @@ static void physics_update(
 		}
 	}
 
-	/* change the playerÕs heading based on his angular velocities */
+	/* change the playerâ€™s heading based on his angular velocities */
 	variables->last_direction= variables->direction;
 	variables->direction+= variables->angular_velocity;
 	if (variables->direction<0) variables->direction+= INTEGER_TO_FIXED(FULL_CIRCLE);
 	if (variables->direction>=INTEGER_TO_FIXED(FULL_CIRCLE)) variables->direction-= INTEGER_TO_FIXED(FULL_CIRCLE);
 	
-	/* change the playerÕs x,y position based on his direction and velocities (parallel and perpendicular)  */
+	/* change the playerâ€™s x,y position based on his direction and velocities (parallel and perpendicular)  */
 	new_position= variables->position;
 	cosine= cosine_table[FIXED_INTEGERAL_PART(variables->direction)], sine= sine_table[FIXED_INTEGERAL_PART(variables->direction)];
 	new_position.x+= (variables->velocity*cosine-variables->perpendicular_velocity*sine)>>TRIG_SHIFT;
@@ -838,7 +838,7 @@ static void physics_update(
 	if (new_position.z>variables->floor_height) variables->flags|= _ABOVE_GROUND_BIT; else variables->flags&= (uint16)~_ABOVE_GROUND_BIT;
 
 	/* if we just landed on the ground, or we just came up through the ground, absorb some of
-		the playerÕs external_velocity.k (and in the case of hitting the ground, reflect it) */
+		the playerâ€™s external_velocity.k (and in the case of hitting the ground, reflect it) */
 	if (variables->external_velocity.k>0 && (variables->old_flags&_BELOW_GROUND_BIT) && !(variables->flags&_BELOW_GROUND_BIT))
 	{
 		variables->external_velocity.k/= 2*COEFFICIENT_OF_ABSORBTION; /* slow down */
@@ -864,14 +864,14 @@ static void physics_update(
 	{
 		small_enough_velocity = SMALL_ENOUGH_VELOCITY;
 	}
-	if (ABS(variables->external_velocity.k)<small_enough_velocity &&
-		ABS(variables->floor_height-new_position.z)<CLOSE_ENOUGH_TO_FLOOR)
+	if (std::abs(variables->external_velocity.k)<small_enough_velocity &&
+		std::abs(variables->floor_height-new_position.z)<CLOSE_ENOUGH_TO_FLOOR)
 	{
 		variables->external_velocity.k= 0, new_position.z= variables->floor_height;
 		variables->flags&= ~(_BELOW_GROUND_BIT|_ABOVE_GROUND_BIT);
 	}
 
-	/* change the playerÕs z position based on his vertical velocity (if we hit the ground coming down
+	/* change the playerâ€™s z position based on his vertical velocity (if we hit the ground coming down
 		then bounce and absorb most of the blow */
 	new_position.x+= variables->external_velocity.i;
 	new_position.y+= variables->external_velocity.j;
@@ -882,7 +882,7 @@ static void physics_update(
 		_fixed delta= (delta_z<=0) ? constants->external_deceleration : (constants->external_deceleration>>2);
 		int32 magnitude= isqrt(dx*dx + dy*dy);
 
-		if (magnitude && magnitude>ABS(delta))
+		if (magnitude && magnitude> std::abs(delta))
 		{
 			variables->external_velocity.i-= (dx*delta)/magnitude;
 			variables->external_velocity.j-= (dy*delta)/magnitude;
@@ -893,7 +893,7 @@ static void physics_update(
 		}
 	}
 
-	/* lower the playerÕs externally-induced angular velocity */
+	/* lower the playerâ€™s externally-induced angular velocity */
 	variables->external_angular_velocity= (variables->external_angular_velocity>=0) ?
 		FLOOR(variables->external_angular_velocity-constants->external_angular_deceleration, 0) :
 		CEILING(variables->external_angular_velocity+constants->external_angular_deceleration, 0);
@@ -902,14 +902,14 @@ static void physics_update(
 	variables->last_position= variables->position;
 	variables->position= new_position;
 
-	/* if the player is moving, adjust step_phase by step_delta (if the player isnÕt moving
-		continue to adjust step_phase until it is zero)  if the player is in the air, donÕt
+	/* if the player is moving, adjust step_phase by step_delta (if the player isnâ€™t moving
+		continue to adjust step_phase until it is zero)  if the player is in the air, donâ€™t
 		update phase until he lands. */
 	variables->flags&= (uint16)~_STEP_PERIOD_BIT;
 	if (constants->maximum_forward_velocity)
-		variables->step_amplitude= (MAX(ABS(variables->velocity), ABS(variables->perpendicular_velocity))*FIXED_ONE)/constants->maximum_forward_velocity;
+		variables->step_amplitude= (MAX(std::abs(variables->velocity), std::abs(variables->perpendicular_velocity))*FIXED_ONE)/constants->maximum_forward_velocity;
 	else	// CB: "Missed Island" physics would produce a division by 0
-		variables->step_amplitude= MAX(ABS(variables->velocity), ABS(variables->perpendicular_velocity))*FIXED_ONE;
+		variables->step_amplitude= MAX(std::abs(variables->velocity), std::abs(variables->perpendicular_velocity))*FIXED_ONE;
 	if (delta_z>=0)
 	{
 		if (variables->velocity||variables->perpendicular_velocity)

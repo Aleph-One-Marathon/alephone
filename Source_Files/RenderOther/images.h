@@ -38,6 +38,8 @@ Jul 31, 2002 (Loren Petrich)
 // LP: CodeWarrior complains unless I give the full definition of these classes
 #include "FileHandler.h"
 
+#include <memory>
+
 extern void initialize_images_manager(void);
 
 extern bool images_picture_exists(int base_resource);
@@ -74,7 +76,7 @@ extern bool get_sound_resource_from_scenario(int resource_number, LoadedResource
 extern bool get_text_resource_from_scenario(int resource_number, LoadedResource& TextRsrc);
 
 // Convert MacOS PICT resource to SDL surface
-extern SDL_Surface *picture_to_surface(LoadedResource &rsrc);
+extern std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)> picture_to_surface(LoadedResource &rsrc);
 
 // Rescale/tile surface
 extern SDL_Surface *rescale_surface(SDL_Surface *s, int width, int height);

@@ -115,6 +115,7 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 #include "preferences.h"
 #include "SoundManager.h"
 #include "Plugins.h"
+#include "ephemera.h"
 
 // LP change: added chase-cam init and render allocation
 #include "ChaseCam.h"
@@ -135,8 +136,8 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 FileSpecifier MapFileSpec;
 static bool file_is_set= false;
 
-// LP addition: was a physics model loaded from the previous level loaded?
-static bool PhysicsModelLoadedEarlier = false;
+static vector<polygon_data> PolygonListCopy;
+static vector<platform_data> PlatformListCopy;
 
 // The following local globals are for handling games that need to be restored.
 struct revert_game_info
@@ -165,7 +166,7 @@ static void load_sides(uint8 *sides, size_t count, short version);
 static void load_polygons(uint8 *polys, size_t count, short version);
 static void load_lights(uint8 *_lights, size_t count, short version);
 static void load_annotations(uint8 *annotations, size_t count);
-static void load_objects(uint8 *map_objects, size_t count);
+static void load_objects(uint8 *map_objects, size_t count, short version);
 static void load_media(uint8 *_medias, size_t count);
 static void load_map_info(uint8 *map_info);
 static void load_ambient_sound_images(uint8 *data, size_t count);
@@ -224,20 +225,22 @@ void *get_map_for_net_transfer(
 /* ---------------------- End Net Functions ----------- */
 
 /* This takes a cstring */
-void set_map_file(FileSpecifier& File)
+void set_map_file(FileSpecifier& File, bool loadScripts)
 {
 	// Do whatever parameter restoration is specified before changing the file
 	if (file_is_set) RunRestorationScript();
 
 	MapFileSpec = File;
 	set_scenario_images_file(File);
+	file_is_set = true;
+
+	Plugins::instance()->set_map_checksum(get_current_map_checksum());
+	
 	// Only need to do this here
-	LoadLevelScripts(File);
+	if(loadScripts) LoadLevelScripts(File);
 
 	// Don't care whether there was an error when checking on the file's scenario images
 	clear_game_error();
-
-	file_is_set= true;
 }
 
 /* Set to the default map.. (Only if no map doubleclicked upon on startup.. */
@@ -265,6 +268,30 @@ bool use_map_file(
 	}
 
 	return success;
+}
+
+dynamic_data get_dynamic_data_from_save(FileSpecifier& File)
+{
+	OpenedFile MapFile;
+	dynamic_data dynamic_data_return;
+
+	if (open_wad_file_for_reading(File, MapFile))
+	{
+		wad_header header;
+		if (read_wad_header(MapFile, &header))
+		{
+			auto wad = read_indexed_wad_from_file(MapFile, &header, 0, true);
+			if (wad)
+			{
+				get_dynamic_data_from_wad(wad, &dynamic_data_return);
+				free_wad(wad);
+			}
+		}
+
+		close_wad_file(MapFile);
+	}
+
+	return dynamic_data_return;
 }
 
 bool load_level_from_map(
@@ -377,7 +404,7 @@ void complete_loading_level(
 			{
 				side_data *side= get_side_data(loop);
 				if (side->flags&_side_is_control_panel)
-					side->flags |= _side_is_lighted_switch;
+					side->flags |= _side_is_m1_lighted_switch;
 			}
 		}
 	}
@@ -727,7 +754,7 @@ bool get_entry_points(vector<entry_point> &vec, int32 type)
 extern void LoadSoloLua();
 extern void LoadReplayNetLua();
 extern void LoadStatsLua();
-extern void RunLuaScript();
+extern bool RunLuaScript();
 
 /* This is called when the game level is changed somehow */
 /* The only thing that has to be valid in the entry point is the level_index */
@@ -747,6 +774,14 @@ bool goto_level(
 
 		// ghs: hack to get new MML-specified sounds loaded
 		SoundManager::instance()->UnloadAllSounds();
+	}
+
+	// LP: doing this here because level-specific MML may specify which level-specific
+	// textures to load.
+	ResetLevelScript();
+	if (!game_is_networked || use_map_file(((game_info*)NetGetGameData())->parent_checksum))
+	{
+		RunLevelScript(entry->level_number);
 	}
 
 #if !defined(DISABLE_NETWORKING)
@@ -769,19 +804,8 @@ bool goto_level(
 	
 	if (success)
 	{
-		// LP: doing this here because level-specific MML may specify which level-specific
-		// textures to load.
 		// Being careful to carry over errors so that Pfhortran errors can be ignored
 		short SavedType, SavedError = get_game_error(&SavedType);
-		if (!game_is_networked || use_map_file(((game_info *) NetGetGameData())->parent_checksum))
-		{
-			RunLevelScript(entry->level_number);
-		}
-		else
-		{
-			ResetLevelScript();
-		}
-		RunScriptChunks();
 		if (!game_is_networked && number_of_players == 1)
 		{
 			LoadSoloLua();
@@ -792,7 +816,6 @@ bool goto_level(
 		}
 		LoadStatsLua();
 
-		Music::instance()->PreloadLevelMusic();
 		set_game_error(SavedType,SavedError);
 		
 		if (!new_game)
@@ -936,20 +959,45 @@ void load_sides(
 	short version)
 {
 	size_t loop;
-	
+
 	// assert(count>=0 && count<=MAXIMUM_SIDES_PER_MAP);
 
 	unpack_side_data(sides,map_sides,count);
 
-	for(loop=0; loop<count; ++loop)
+	if (version == MARATHON_ONE_DATA_VERSION)
 	{
-		if(version==MARATHON_ONE_DATA_VERSION)
+		for (loop = 0; loop < count; ++loop)
 		{
+			// some editors set unused flags; clear them out
+			static constexpr int m1_side_flags_mask = 0x0007;
+			
 			map_sides[loop].transparent_texture.texture= UNONE;
 			map_sides[loop].ambient_delta= 0;
+			map_sides[loop].flags &= m1_side_flags_mask;
 			map_sides[loop].flags |= _side_item_is_optional;
 		}
-		++sides;
+	}
+	else
+	{
+		bool editor_set_unused_flags = false;
+		for (loop = 0; loop < count; ++loop)
+		{
+			// some editors set unused flags; clear them out
+			if (map_sides[loop].flags & _reserved_side_flag)
+			{
+				editor_set_unused_flags = true;
+				break;
+			}
+		}
+			
+		if (editor_set_unused_flags)
+		{
+			for (loop = 0; loop < count; ++loop)
+			{
+				static constexpr int m2_side_flags_mask = 0x007f;
+				map_sides[loop].flags &= m2_side_flags_mask;
+			}
+		}
 	}
 
 	assert(count == static_cast<size_t>(static_cast<int16>(count)));
@@ -1085,11 +1133,11 @@ void load_annotations(
 	dynamic_world->default_annotation_count= static_cast<int16>(count);
 }
 
-void load_objects(uint8 *map_objects, size_t count)
+void load_objects(uint8 *map_objects, size_t count, short version)
 {
 	// assert(count>=0 && count<=MAXIMUM_SAVED_OBJECTS);
 	SavedObjectList.resize(count);
-	unpack_map_object(map_objects,saved_objects,count);
+        unpack_map_object(map_objects,saved_objects,count, version);
 	assert(count == static_cast<size_t>(static_cast<int16>(count)));
 	assert(0 <= static_cast<int16>(count));
 	dynamic_world->initial_objects_count= static_cast<int16>(count);
@@ -1158,35 +1206,38 @@ void recalculate_redundant_map(
 	for(loop=0;loop<dynamic_world->endpoint_count;++loop) recalculate_redundant_endpoint_data(loop);
 }
 
-bool load_game_from_file(FileSpecifier& File, bool run_scripts, bool *was_map_found)
+bool load_game_from_file(FileSpecifier& File, bool run_scripts)
 {
 	bool success= false;
 
 	ResetPassedLua();
-	
+	ResetLevelScript();
+
 	/* Setup for a revert.. */
 	revert_game_data.game_is_from_disk = true;
 	revert_game_data.SavedGame = File;
 
+	uint32 parent_checksum = read_wad_file_parent_checksum(File);
+	bool found_map = use_map_file(parent_checksum); /* Find the original scenario this saved game was a part of.. */
+
+	FileSpecifier map_parent;
+	if (found_map) {
+		map_parent = get_map_file();
+		auto dynamic_data = get_dynamic_data_from_save(File);
+		RunLevelScript(dynamic_data.current_level_number);
+	}
+
 	/* Use the save game file.. */
-	set_map_file(File);
-	
+	set_map_file(File, false);
 	/* Load the level from the map */
 	success= load_level_from_map(NONE); /* Save games are ALWAYS index NONE */
 	if (success)
-	{
-		uint32 parent_checksum;
-	
-		/* Find the original scenario this saved game was a part of.. */
-		parent_checksum= read_wad_file_parent_checksum(File);
-		bool found_map = use_map_file(parent_checksum);
-		if (was_map_found)
+	{	
+		if(found_map)
+			set_map_file(map_parent, false);
+		else
 		{
-			*was_map_found = found_map;
-		}
-		if (!found_map)
-		{
-			/* Tell the user theyÕre screwed when they try to leave this level. */
+			/* Tell the user they’re screwed when they try to leave this level. */
 			alert_user(infoError, strERRORS, cantFindMap, 0);
 
 			// LP addition: makes the game look normal
@@ -1201,15 +1252,6 @@ bool load_game_from_file(FileSpecifier& File, bool run_scripts, bool *was_map_fo
 			// LP: getting the level scripting off of the map file
 			// Being careful to carry over errors so that Pfhortran errors can be ignored
 			short SavedType, SavedError = get_game_error(&SavedType);
-			if (found_map)
-			{
-				RunLevelScript(dynamic_world->current_level_number);
-			}
-			else
-			{
-				ResetLevelScript();
-			}
-			RunScriptChunks();
 			if (!game_is_networked)
 			{
 				LoadSoloLua();
@@ -1247,10 +1289,9 @@ bool revert_game(
 	if (revert_game_data.game_is_from_disk)
 	{
 		/* Reload their last saved game.. */
-		successful= load_game_from_file(revert_game_data.SavedGame, true, NULL);
+		successful= load_game_from_file(revert_game_data.SavedGame, true);
 		if (successful) 
 		{
-			Music::instance()->PreloadLevelMusic();
 			RunLuaScript();
 			
 			// LP: added for loading the textures if one had died on another level;
@@ -1486,7 +1527,7 @@ static void scan_and_add_platforms(
 	objlist_clear(platforms,count);
 
 	static_platforms.resize(count);
-	unpack_static_platform_data(platform_static_data, static_platforms.data(), count);
+	unpack_static_platform_data(platform_static_data, static_platforms.data(), count, version);
 
 	polygon= map_polygons;
 	for(loop=0; loop<dynamic_world->polygon_count; ++loop)
@@ -1501,7 +1542,7 @@ static void scan_and_add_platforms(
 			{
 				if (static_platforms[platform_static_data_index].polygon_index == loop)
 				{
-					new_platform(&static_platforms[platform_static_data_index], loop, version);
+					new_platform(&static_platforms[platform_static_data_index], loop);
 					break;
 				}
 			}
@@ -1510,7 +1551,7 @@ static void scan_and_add_platforms(
 			if(platform_static_data_index==count)
 			{
 				polygon->permutation= 1;
-				new_platform(get_defaults_for_platform_type(polygon->permutation), loop, version);
+				new_platform(get_defaults_for_platform_type(polygon->permutation), loop);
 			}	
 		}
 		++polygon;
@@ -1581,7 +1622,7 @@ bool process_map_wad(
 	count = data_length/SIZEOF_polygon_data;
 	assert(data_length == count*SIZEOF_polygon_data);
 	load_polygons(data, count, version);
-
+	
 	/* Extract the lightsources */
 	if(restoring_game)
 	{
@@ -1608,7 +1649,7 @@ bool process_map_wad(
 			load_lights(data, count, version);
 		}
 
-		//	HACK!!!!!!!!!!!!!!! vulcan doesnÕt NONE .first_object field after adding scenery
+		//	HACK!!!!!!!!!!!!!!! vulcan doesn’t NONE .first_object field after adding scenery
 		{
 			for (count= 0; count<static_cast<size_t>(dynamic_world->polygon_count); ++count)
 			{
@@ -1627,7 +1668,7 @@ bool process_map_wad(
 	data= (uint8 *)extract_type_from_wad(wad, OBJECT_TAG, &data_length);
 	count = data_length/SIZEOF_map_object;
 	assert(data_length == count*static_cast<size_t>(SIZEOF_map_object));
-	load_objects(data, count);
+	load_objects(data, count, version);
 
 	/* Extract the map info data */
 	data= (uint8 *)extract_type_from_wad(wad, MAP_INFO_TAG, &data_length);
@@ -1788,13 +1829,16 @@ bool process_map_wad(
 		unpack_weapon_definition(data,count);
 	}
 	
-	// LP addition: Reload the physics model if it had been loaded in the previous level,
-	// but not in the current level. This avoids the persistent-physics bug.
 	// ghs: always reload the physics model if there isn't one merged
-	if (PhysicsModelLoadedEarlier && !PhysicsModelLoaded && !game_is_networked)
+	if (!PhysicsModelLoaded && !game_is_networked)
 		import_definition_structures();
-	PhysicsModelLoadedEarlier = PhysicsModelLoaded;
 	
+	RunScriptChunks();
+
+	init_ephemera(dynamic_world->polygon_count);
+
+	PolygonListCopy = PolygonList; // must be done before polygons heights are modified below
+
 	/* If we are restoring the game, then we need to add the dynamic data */
 	if(restoring_game)
 	{
@@ -1811,9 +1855,7 @@ bool process_map_wad(
 		unpack_player_data(data,players,count);
 		team_damage_from_player_data();
 		
-		data= (uint8 *)extract_type_from_wad(wad, DYNAMIC_STRUCTURE_TAG, &data_length);
-		assert(data_length == SIZEOF_dynamic_data);
-		unpack_dynamic_data(data,dynamic_world,1);
+		get_dynamic_data_from_wad(wad, dynamic_world);
 		
 		data= (uint8 *)extract_type_from_wad(wad, OBJECT_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_object_data;
@@ -1898,9 +1940,19 @@ bool process_map_wad(
 			platform_structure_count, version);
 
 	}
-	
+
+	PlatformListCopy = PlatformList;
+
 	/* ... and bail */
 	return true;
+}
+
+void get_dynamic_data_from_wad(wad_data* wad, dynamic_data* dest)
+{
+	size_t data_length;
+	uint8* data = (uint8*)extract_type_from_wad(wad, DYNAMIC_STRUCTURE_TAG, &data_length);
+	assert(data_length == SIZEOF_dynamic_data);
+	unpack_dynamic_data(data, dest, 1);
 }
 
 static void allocate_map_structure_for_map(
@@ -2476,21 +2528,28 @@ static wad_data *build_export_wad(wad_header *header, int32 *length)
 		vector<platform_data> SavedPlatforms = PlatformList;
 		vector<polygon_data> SavedPolygons = PolygonList;
 		vector<line_data> SavedLines = LineList;
+		vector<side_data> SavedSides = SideList;
 
 		for (size_t loop = 0; loop < PlatformList.size(); ++loop)
 		{
-			platform_data *platform = &PlatformList[loop];
-			// reset the polygon heights
-			if (PLATFORM_COMES_FROM_FLOOR(platform))
-			{
-				platform->floor_height = platform->minimum_floor_height;
-				PolygonList[platform->polygon_index].floor_height = platform->floor_height;
-			}
+			platform_data* platform = &PlatformList[loop];
+			platform_data* original_platform = &PlatformListCopy[loop];
+
 			if (PLATFORM_COMES_FROM_CEILING(platform))
 			{
-				platform->ceiling_height = platform->maximum_ceiling_height;
-				PolygonList[platform->polygon_index].ceiling_height = platform->ceiling_height;
+				auto new_ceiling_height = PLATFORM_IS_INITIALLY_EXTENDED(platform) ? platform->minimum_ceiling_height : platform->maximum_ceiling_height;
+				adjust_platform_sides(platform, platform->ceiling_height, new_ceiling_height);
 			}
+
+			platform->floor_height = original_platform->floor_height;
+			platform->ceiling_height = original_platform->ceiling_height;
+			platform->maximum_ceiling_height = original_platform->maximum_ceiling_height;
+			platform->minimum_ceiling_height = original_platform->minimum_ceiling_height;
+			platform->maximum_floor_height = original_platform->maximum_floor_height;
+			platform->minimum_floor_height = original_platform->minimum_floor_height;
+
+			PolygonList[platform->polygon_index].floor_height = PolygonListCopy[platform->polygon_index].floor_height;
+			PolygonList[platform->polygon_index].ceiling_height = PolygonListCopy[platform->polygon_index].ceiling_height;
 		}
 
 		for (size_t loop = 0; loop < LineList.size(); ++loop)
@@ -2530,6 +2589,7 @@ static wad_data *build_export_wad(wad_header *header, int32 *length)
 		PlatformList = SavedPlatforms;
 		PolygonList = SavedPolygons;
 		LineList = SavedLines;
+		SideList = SavedSides;
 
 		if(wad) *length= calculate_wad_length(header, wad);
 	}

@@ -205,6 +205,12 @@ StarGameProtocol::UpdateUnconfirmedActionFlags()
 	}
 }
 
+bool
+StarGameProtocol::CheckWorldUpdate()
+{
+	return spoke_check_world_update();
+}
+
 /* ZZZ addition:
 ---------------------------
 	make_player_really_net_dead
@@ -237,9 +243,9 @@ call_distribution_response_function_if_available(byte* inBuffer, uint16 inBuffer
 void
 StarGameProtocol::ParsePreferencesTree(InfoTree prefs, std::string version)
 {
-	BOOST_FOREACH(InfoTree child, prefs.children_named("hub"))
+	for (const InfoTree &child : prefs.children_named("hub"))
 		HubParsePreferencesTree(child, version);
-	BOOST_FOREACH(InfoTree child, prefs.children_named("spoke"))
+	for (const InfoTree &child : prefs.children_named("spoke"))
 		SpokeParsePreferencesTree(child, version);
 }
 

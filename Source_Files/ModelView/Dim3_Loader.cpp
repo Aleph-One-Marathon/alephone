@@ -30,9 +30,6 @@
 #include "cseries.h"
 
 #ifdef HAVE_OPENGL
-#ifdef __WIN32__
-#include <windows.h>
-#endif
 
 #include <math.h>
 
@@ -120,17 +117,17 @@ static void parse_dim3(const InfoTree& root, Model3D& Model)
 {
 	// ignored: Creator Center Light Shading Shadow_Box Effects
 	
-	BOOST_FOREACH(InfoTree bound_box, root.children_named("Bound_Box"))
+	for (const InfoTree &bound_box : root.children_named("Bound_Box"))
 	{
 		parse_bounding_box(bound_box, Model);
 	}
-	BOOST_FOREACH(InfoTree view_box, root.children_named("View_Box"))
+	for (const InfoTree &view_box : root.children_named("View_Box"))
 	{
 		parse_bounding_box(view_box, Model);
 	}
-	BOOST_FOREACH(InfoTree vertexes, root.children_named("Vertexes"))
+	for (const InfoTree &vertexes : root.children_named("Vertexes"))
 	{
-		BOOST_FOREACH(InfoTree v, vertexes.children_named("v"))
+		for (const InfoTree &v : vertexes.children_named("v"))
 		{
 			Model3D_VertexSource data;
 			data.Position[0] = data.Position[1] = data.Position[2] = 0;
@@ -144,21 +141,21 @@ static void parse_dim3(const InfoTree& root, Model3D& Model)
 			bt.Tag0[0] = bt.Tag1[0] = '\0';
 			
 			std::string tempstr;
-			if (root.read_attr("c3", tempstr))
+			if (v.read_attr("c3", tempstr))
 				sscanf(tempstr.c_str(), "%f,%f,%f", &data.Position[0], &data.Position[1], &data.Position[2]);
-			if (root.read_attr("n3", tempstr))
+			if (v.read_attr("n3", tempstr))
 				sscanf(tempstr.c_str(), "%f,%f,%f", &norm[0], &norm[1], &norm[2]);
-			root.read_attr("x", data.Position[0]);
-			root.read_attr("y", data.Position[1]);
-			root.read_attr("z", data.Position[2]);
+			v.read_attr("x", data.Position[0]);
+			v.read_attr("y", data.Position[1]);
+			v.read_attr("z", data.Position[2]);
 			
-			if (root.read_attr("major", tempstr))
+			if (v.read_attr("major", tempstr))
 				strncpy(bt.Tag0, tempstr.c_str(), BoneTagSize);
-			if (root.read_attr("minor", tempstr))
+			if (v.read_attr("minor", tempstr))
 				strncpy(bt.Tag1, tempstr.c_str(), BoneTagSize);
 			
 			float factor;
-			if (root.read_attr("factor", factor))
+			if (v.read_attr("factor", factor))
 				data.Blend = 1 - factor/100;
 			
 			Model.VtxSources.push_back(data);
@@ -168,20 +165,20 @@ static void parse_dim3(const InfoTree& root, Model3D& Model)
 			VertexBoneTags.push_back(bt);
 		}
 	}
-	BOOST_FOREACH(InfoTree bones, root.children_named("Bones"))
+	for (const InfoTree &bones : root.children_named("Bones"))
 	{
-		BOOST_FOREACH(InfoTree bone, root.children_named("Bone"))
+		for (const InfoTree &bone : bones.children_named("Bone"))
 		{
 			Model3D_Bone data;
 			data.Position[0] = data.Position[1] = data.Position[2] = 0;
 			data.Flags = 0;
 			
 			std::string tempstr;
-			if (root.read_attr("c3", tempstr))
+			if (bone.read_attr("c3", tempstr))
 				sscanf(tempstr.c_str(), "%f,%f,%f", &data.Position[0], &data.Position[1], &data.Position[2]);
-			root.read_attr("x", data.Position[0]);
-			root.read_attr("y", data.Position[1]);
-			root.read_attr("z", data.Position[2]);
+			bone.read_attr("x", data.Position[0]);
+			bone.read_attr("y", data.Position[1]);
+			bone.read_attr("z", data.Position[2]);
 			
 			BoneTagWrapper bt;
 			bt.Tag0[0] = bt.Tag1[0] = '\0';
@@ -194,13 +191,13 @@ static void parse_dim3(const InfoTree& root, Model3D& Model)
 			BoneOwnTags.push_back(bt);
 		}
 	}
-	BOOST_FOREACH(InfoTree fills, root.children_named("Fills"))
+	for (const InfoTree &fills : root.children_named("Fills"))
 	{
-		BOOST_FOREACH(InfoTree fill, fills.children_named("Fill"))
+		for (const InfoTree &fill : fills.children_named("Fill"))
 		{
-			BOOST_FOREACH(InfoTree triangles, fill.children_named("Triangles"))
+			for (const InfoTree &triangles : fill.children_named("Triangles"))
 			{
-				BOOST_FOREACH(InfoTree v, triangles.children_named("v"))
+				for (const InfoTree &v : triangles.children_named("v"))
 				{
 					uint16 vid = static_cast<uint16>(NONE);
 					float txtr_x, txtr_y;
@@ -226,9 +223,9 @@ static void parse_dim3(const InfoTree& root, Model3D& Model)
 			}
 		}
 	}
-	BOOST_FOREACH(InfoTree poses, root.children_named("Poses"))
+	for (const InfoTree &poses : root.children_named("Poses"))
 	{
-		BOOST_FOREACH(InfoTree pose, poses.children_named("Pose"))
+		for (const InfoTree &pose : poses.children_named("Pose"))
 		{
 			vector<Model3D_Frame> read_frame;
 			size_t num_bones = Model.Bones.size();
@@ -241,9 +238,9 @@ static void parse_dim3(const InfoTree& root, Model3D& Model)
 			if (pose.read_attr("name", tempstr))
 				strncpy(nt.Tag, tempstr.c_str(), NameTagSize);
 			
-			BOOST_FOREACH(InfoTree bones, pose.children_named("Bones"))
+			for (const InfoTree &bones : pose.children_named("Bones"))
 			{
-				BOOST_FOREACH(InfoTree bone, bones.children_named("Bone"))
+				for (const InfoTree &bone : bones.children_named("Bone"))
 				{
 					Model3D_Frame data;
 					obj_clear(data);
@@ -291,13 +288,13 @@ static void parse_dim3(const InfoTree& root, Model3D& Model)
 			FrameTags.push_back(nt);
 		}
 	}
-	BOOST_FOREACH(InfoTree animations, root.children_named("Animations"))
+	for (const InfoTree &animations : root.children_named("Animations"))
 	{
-		BOOST_FOREACH(InfoTree animation, animations.children_named("Animation"))
+		for (const InfoTree &animation : animations.children_named("Animation"))
 		{
-			BOOST_FOREACH(InfoTree poses, animation.children_named("Poses"))
+			for (const InfoTree &poses : animation.children_named("Poses"))
 			{
-				BOOST_FOREACH(InfoTree pose, poses.children_named("Pose"))
+				for (const InfoTree &pose : poses.children_named("Pose"))
 				{
 					Model3D_SeqFrame data;
 					obj_clear(data);
@@ -368,20 +365,20 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 	bool parse_error = false;
 	try {
 		InfoTree fileroot = InfoTree::load_xml(Spec);
-		BOOST_FOREACH(InfoTree root, fileroot.children_named("Model"))
+		for (const InfoTree &root : fileroot.children_named("Model"))
 		{
 			parse_dim3(root, Model);
 		}
-	} catch (InfoTree::parse_error ex) {
+	} catch (const InfoTree::parse_error& ex) {
 		logError("Error parsing Dim3 file (%s): %s", Spec.GetPath(), ex.what());
 		parse_error = true;
-	} catch (InfoTree::path_error ep) {
+	} catch (const InfoTree::path_error& ep) {
 		logError("Path error parsing Dim3 file (%s): %s", Spec.GetPath(), ep.what());
 		parse_error = true;
-	} catch (InfoTree::data_error ed) {
+	} catch (const InfoTree::data_error& ed) {
 		logError("Data error parsing Dim3 file (%s): %s", Spec.GetPath(), ed.what());
 		parse_error = true;
-	} catch (InfoTree::unexpected_error ee) {
+	} catch (const InfoTree::unexpected_error& ee) {
 		logError("Unexpected error parsing Dim3 file (%s): %s", Spec.GetPath(), ee.what());
 		parse_error = true;
 	}

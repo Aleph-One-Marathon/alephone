@@ -35,7 +35,7 @@ enum {
 };
 
 // Integer types with specific bit size
-#include <SDL_types.h>
+#include <SDL2/SDL_types.h>
 #include <time.h>	// for time_t
 typedef Uint8 uint8;
 typedef Sint8 int8;

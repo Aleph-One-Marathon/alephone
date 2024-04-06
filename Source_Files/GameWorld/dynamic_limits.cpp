@@ -33,6 +33,7 @@ Feb 19, 2000 (Loren Petrich):
 #include "dynamic_limits.h"
 #include "map.h"
 #include "effects.h"
+#include "ephemera.h"
 #include "monsters.h"
 #include "projectiles.h"
 #include "flood_map.h"
@@ -49,7 +50,10 @@ static uint16 m2_dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
 	1024,	// Number of objects to render (was really 72, but
 		// doesn't affect film playback)
 	16,	// Local collision buffer (target visibility, NPC-NPC collisions, etc.)
-	64	// Global collision buffer (projectiles with other objects)
+	64,	// Global collision buffer (projectiles with other objects)
+	4096, // Ephemeral objects (render effects)
+	256,	// Garbage objects (corpses) across the whole map
+	10,	// Garbage objects (corpses) in a single polygon
 };
 
 // expanded defaults up to 1.0
@@ -62,7 +66,10 @@ static uint16 a1_1_0_dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
 	128,	// Currently-active effects (blood splatters, explosions, etc.)
 	1024,	// Number of objects to render
 	64,	// Local collision buffer (target visibility, NPC-NPC collisions, etc.)
-	256	// Global collision buffer (projectiles with other objects)
+	256,	// Global collision buffer (projectiles with other objects)
+	4096, // Ephemeral objects (render effects)
+	256,	// Garbage objects (corpses) across the whole map
+	10,	// Garbage objects (corpses) in a single polygon
 };
 
 // 1.1 reverts paths for classic scenario compatibility
@@ -75,7 +82,10 @@ static uint16 a1_1_1_dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
 	128,	// Currently-active effects (blood splatters, explosions, etc.)
 	1024,	// Number of objects to render
 	64,	// Local collision buffer (target visibility, NPC-NPC collisions, etc.)
-	256	// Global collision buffer (projectiles with other objects)
+	256,	// Global collision buffer (projectiles with other objects)
+	4096, // Ephemeral objects (render effects)
+	256,	// Garbage objects (corpses) across the whole map
+	10,	// Garbage objects (corpses) in a single polygon
 };
 
 static std::vector<uint16> dynamic_limits(NUMBER_OF_DYNAMIC_LIMITS);
@@ -107,7 +117,7 @@ void reset_mml_dynamic_limits()
 
 void parse_limit_value(const InfoTree& root, std::string child, int type)
 {
-	BOOST_FOREACH(InfoTree limit, root.children_named(child))
+	for (const InfoTree &limit : root.children_named(child))
 		limit.read_attr_bounded<uint16>("value", dynamic_limits[type], 0, 32767);
 }
 
@@ -121,6 +131,9 @@ void parse_mml_dynamic_limits(const InfoTree& root)
 	parse_limit_value(root, "rendered", _dynamic_limit_rendered);
 	parse_limit_value(root, "local_collision", _dynamic_limit_local_collision);
 	parse_limit_value(root, "global_collision", _dynamic_limit_global_collision);
+	parse_limit_value(root, "ephemera", _dynamic_limit_ephemera);
+	parse_limit_value(root, "garbage", _dynamic_limit_garbage);
+	parse_limit_value(root, "garbage_per_polygon", _dynamic_limit_garbage_per_polygon);
 
 	// Resize the arrays of objects, monsters, effects, and projectiles
 	EffectList.resize(MAXIMUM_EFFECTS_PER_MAP);
@@ -130,6 +143,8 @@ void parse_mml_dynamic_limits(const InfoTree& root)
 
 	// Resize the array of paths also
 	allocate_pathfinding_memory();
+
+	allocate_ephemera_storage(dynamic_limits[_dynamic_limit_ephemera]);
 }
 
 

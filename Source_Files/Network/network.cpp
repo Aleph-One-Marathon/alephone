@@ -125,7 +125,7 @@ clearly this is all broken until we have packet types
 
 #include "sdl_network.h"
 #include "network_lookup_sdl.h"
-#include "SDL_thread.h"
+#include <SDL2/SDL_thread.h>
 
 #include "game_errors.h"
 #include "CommunicationsChannel.h"
@@ -133,9 +133,11 @@ clearly this is all broken until we have packet types
 #include "MessageDispatcher.h"
 #include "MessageInflater.h"
 #include "MessageHandler.h"
+#include "PortForward.h"
 #include "progress.h"
 #include "extensions.h"
 
+#include <memory>
 #include <stdlib.h>
 #include <string.h>
 
@@ -159,13 +161,7 @@ clearly this is all broken until we have packet types
 
 #include "lua_script.h"
 
-#include "libnat.h"
-
-#include <boost/bind.hpp>
-
 #include "network_metaserver.h"
-
-#include "network_sound.h"
 
 #include "ConnectPool.h"
 
@@ -207,7 +203,10 @@ static Capabilities my_capabilities;
 static GatherCallbacks *gatherCallbacks = NULL;
 static ChatCallbacks *chatCallbacks = NULL;
 
-static UpnpController *controller = NULL;
+#ifdef HAVE_MINIUPNPC
+static std::unique_ptr<PortForward> port_forward;
+#endif
+
 extern MetaserverClient* gMetaserverClient;
 
 static std::vector<NetworkStats> sNetworkStats;
@@ -258,25 +257,6 @@ struct ignore_lua
 {
 	void operator()(const std::string&) const {
 		ToggleLuaMute();
-	}
-};
-
-struct ignore_mic
-{
-	void operator()(const std::string& s) const {
-		int player_index = atoi(s.c_str());
-		if (player_index == localPlayerIndex)
-		{
-			screen_printf("you can't ignore your own mic");
-		}
-		else if (player_index >= 0 && player_index < topology->player_count)
-		{
-			mute_player_mic(player_index);
-		}
-		else
-		{
-			screen_printf("invalid player %i", player_index);
-		}
 	}
 };
 
@@ -946,11 +926,7 @@ static void handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsChan
   if (netState == netJoining) {
     ScriptMessage replyToScriptMessage;
     if (scriptMessage->value() == _netscript_query_message) {
-#ifdef HAVE_LUA
       replyToScriptMessage.setValue(_netscript_yes_script_message);
-#else
-      replyToScriptMessage.setValue(_netscript_no_script_message);
-#endif
     } else {
       replyToScriptMessage.setValue(_netscript_no_script_message);
     }
@@ -1223,15 +1199,12 @@ bool NetEnter(void)
 	my_capabilities.clear();
 	my_capabilities[Capabilities::kGameworld] = Capabilities::kGameworldVersion;
 	my_capabilities[Capabilities::kGameworldM1] = Capabilities::kGameworldM1Version;
-	my_capabilities[Capabilities::kSpeex] = Capabilities::kSpeexVersion;
 	if (network_preferences->game_protocol == _network_game_protocol_star) {
 		my_capabilities[Capabilities::kStar] = Capabilities::kStarVersion;
 	} else {
 		my_capabilities[Capabilities::kRing] = Capabilities::kRingVersion;
 	}
-#ifdef HAVE_LUA
 	my_capabilities[Capabilities::kLua] = Capabilities::kLuaVersion;
-#endif
 	my_capabilities[Capabilities::kGatherable] = Capabilities::kGatherableVersion;
 	my_capabilities[Capabilities::kZippedData] = Capabilities::kZippedDataVersion;
 	my_capabilities[Capabilities::kNetworkStats] = Capabilities::kNetworkStatsVersion;
@@ -1241,9 +1214,6 @@ bool NetEnter(void)
 	sIgnoredPlayers.clear();
 	CommandParser IgnoreParser;
 	IgnoreParser.register_command("player", ignore_player());
-
-	clear_player_mic_mutes();
-	IgnoreParser.register_command("mic", ignore_mic());
 
 	ResetLuaMute();
 	IgnoreParser.register_command("lua", ignore_lua());
@@ -1331,16 +1301,6 @@ void NetExit(
 	delete gMetaserverClient;
 	gMetaserverClient = new MetaserverClient();
 	
-	if (controller)
-	{
-		open_progress_dialog(_closing_router_ports);
-		LNat_Upnp_Remove_Port_Mapping(controller, GAME_PORT, "TCP");
-		LNat_Upnp_Remove_Port_Mapping(controller, GAME_PORT, "UDP");
-		LNat_Upnp_Controller_Free(&controller);
-		controller = NULL;
-		close_progress_dialog();
-	}
-
 	Console::instance()->unregister_command("ignore");
   
 	NetDDPClose();
@@ -1488,39 +1448,36 @@ bool NetGather(
 	short game_data_size,
 	void *player_data,
 	short player_data_size,
-        bool resuming_game)
+	bool resuming_game,
+	bool attempt_upnp)
 {
         resuming_saved_game = resuming_game;
         
 	NetInitializeTopology(game_data, game_data_size, player_data, player_data_size);
 	NetInitializeSessionIdentifier();
-	
-	if (network_preferences->attempt_upnp)
+
+#ifdef HAVE_MINIUPNPC
+	if (!port_forward && attempt_upnp)
 	{
-		// open the port!
 		open_progress_dialog(_opening_router_ports);
-		char public_ip[32];
-		int ret = 0;
-		if ((ret = LNat_Upnp_Discover(&controller)) != 0)
-			logWarning("LibNAT: Failed to discover UPnP controller");
-		if (ret == 0) 
-			if ((ret = LNat_Upnp_Get_Public_Ip(controller, public_ip, 32)) != 0)
-				logWarning("LibNAT: Failed to acquire public IP");
-		if (ret == 0)
-			if ((ret = LNat_Upnp_Set_Port_Mapping(controller, NULL, GAME_PORT, "TCP")) != 0)
-				logWarning("LibNAT: Failed to map port %d (TCP)", GAME_PORT);
-		if (ret == 0)
-			if ((ret = LNat_Upnp_Set_Port_Mapping(controller, NULL, GAME_PORT, "UDP")) != 0)
-				logWarning("LibNAT: Failed to map port %d (UDP)", GAME_PORT);
-		close_progress_dialog();
-		
-		if (ret != 0)
+		try
 		{
-			controller = 0;
-			alert_user(infoError, strNETWORK_ERRORS, netWarnUPnPConfigureFailed, ret);
+			port_forward.reset(new PortForward(4226));
+			close_progress_dialog();
+		}
+		catch (const PortForwardException& e)
+		{
+			logWarning("miniupnpc: %s", e.what());
+			close_progress_dialog();
+			alert_user(infoError, strNETWORK_ERRORS, netWarnUPnPConfigureFailed, -1);
 		}
 	}
-	
+	else if (port_forward && !attempt_upnp)
+	{
+		port_forward.reset();
+	}
+#endif
+
 	// Start listening for joiners
 	server = new CommunicationsChannelFactory(GAME_PORT);
 	
@@ -1607,7 +1564,7 @@ NetCancelJoin
 
 	<--- error
 
-canÕt be called after the player has been gathered
+canâ€™t be called after the player has been gathered
 */
 
 bool NetGameJoin(
@@ -1885,7 +1842,7 @@ static void NetInitializeTopology(
 	assert(player_data_size>=0&&player_data_size<MAXIMUM_PLAYER_DATA_SIZE);
 	assert(game_data_size>=0&&game_data_size<MAXIMUM_GAME_DATA_SIZE);
 
-	/* initialize the local player (assume weÕre index zero, identifier zero) */
+	/* initialize the local player (assume weâ€™re index zero, identifier zero) */
 	localPlayerIndex= localPlayerIdentifier= 0;
 	local_player= topology->players + localPlayerIndex;
 	local_player->identifier= localPlayerIdentifier;
@@ -1897,7 +1854,7 @@ static void NetInitializeTopology(
 	if (player_data_size > 0)
 		memcpy(&local_player->player_data, player_data, player_data_size);
 	
-	/* initialize the network topology (assume weÕre the only player) */
+	/* initialize the network topology (assume weâ€™re the only player) */
 	topology->player_count= 1;
 	topology->nextIdentifier= 1;
 	if (game_data_size > 0)
@@ -1941,7 +1898,7 @@ static bool NetSetSelfSend(
 
 
 /* ------ this needs to let the gatherer keep going if there was an error.. */
-/* ¥¥¥ÊMarathon Specific Code ¥¥¥ */
+/* â€¢â€¢â€¢Â Marathon Specific Code â€¢â€¢â€¢ */
 /* Returns error code.. */
 // ZZZ annotation: this function doesn't seem to belong here - maybe more like interface.cpp?
 bool NetChangeMap(
@@ -2066,13 +2023,13 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 		{
 			ZippedPhysicsMessage zippedPhysicsMessage(physics_buffer, physics_length);
 			std::unique_ptr<UninflatedMessage> uninflatedMessage(zippedPhysicsMessage.deflate());
-			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, *uninflatedMessage));
+			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, *uninflatedMessage));
 		}
 
 		if (zipIncapableChannels.size())
 		{
 			PhysicsMessage physicsMessage(physics_buffer, physics_length);
-			std::for_each(zipIncapableChannels.begin(), zipIncapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, physicsMessage));
+			std::for_each(zipIncapableChannels.begin(), zipIncapableChannels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, physicsMessage));
 		}
 	}
 	
@@ -2085,13 +2042,13 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 			// since we may have to send this to multiple joiners,
 			// deflate it now so that compression only happens once
 			std::unique_ptr<UninflatedMessage> uninflatedMessage(zippedMapMessage.deflate());
-			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, *uninflatedMessage));
+			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, *uninflatedMessage));
 		}
 
 		if (zipIncapableChannels.size())
 		{
 			MapMessage mapMessage(wad_buffer, wad_length);
-			std::for_each(zipIncapableChannels.begin(), zipIncapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, mapMessage));
+			std::for_each(zipIncapableChannels.begin(), zipIncapableChannels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, mapMessage));
 		}
 	}
 
@@ -2101,19 +2058,19 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 		{
 			ZippedLuaMessage zippedLuaMessage(deferred_script_data, deferred_script_length);
 			std::unique_ptr<UninflatedMessage> uninflatedMessage(zippedLuaMessage.deflate());
-			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, *uninflatedMessage));
+			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, *uninflatedMessage));
 		}
 
 		if (zipIncapableChannels.size())
 		{
 			LuaMessage luaMessage(deferred_script_data, deferred_script_length);
-			std::for_each(zipIncapableChannels.begin(), zipIncapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, luaMessage));
+			std::for_each(zipIncapableChannels.begin(), zipIncapableChannels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, luaMessage));
 		}
 	}
 
 	{
 		EndGameDataMessage endGameDataMessage;
-		std::for_each(channels.begin(), channels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, endGameDataMessage));
+		std::for_each(channels.begin(), channels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, endGameDataMessage));
 	}
 
 	CommunicationsChannel::multipleFlushOutgoingMessages(channels, false, 30000, 30000);
@@ -2141,11 +2098,9 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 		
 		draw_progress_bar(total_length, total_length);
 		
-#ifdef HAVE_LUA
 		if (do_netscript) {
 			LoadLuaScript ((char*)deferred_script_data, deferred_script_length, _lua_netscript);
 		}
-#endif
 	}
 	
 	close_progress_dialog();
@@ -2178,9 +2133,7 @@ byte *NetReceiveGameData(bool do_physics)
     
     if (handlerLuaLength > 0) {
       do_netscript = true;
-#ifdef HAVE_LUA
       LoadLuaScript((char *) handlerLuaBuffer, handlerLuaLength, _lua_netscript);
-#endif
       handlerLuaBuffer = NULL;
       handlerLuaLength = 0;
     } else {
@@ -2227,6 +2180,12 @@ int32
 NetGetNetTime(void)
 {
         return sCurrentGameProtocol->GetNetTime();
+}
+
+bool
+NetCheckWorldUpdate()
+{
+	return sCurrentGameProtocol->CheckWorldUpdate();
 }
 
 extern const NetworkStats& hub_stats(int player_index);
@@ -2437,7 +2396,7 @@ short NetUpdateJoinState(
       break;
     }
   
-  /* return netPlayerAdded to tell the caller to refresh his topology, but donÕt change netState to that */
+  /* return netPlayerAdded to tell the caller to refresh his topology, but donâ€™t change netState to that */
   // ZZZ: similar behavior for netChatMessageReceived and netStartingResumeGame
   if (newState!=netPlayerAdded && newState!=netPlayerDropped && newState!=netPlayerChanged && newState != netChatMessageReceived && newState != netStartingResumeGame && newState != NONE)
     netState= newState;
@@ -2486,7 +2445,7 @@ NetDistributeTopology
 
 	<--- error
 
-connect to everyoneÕs dspAddress and give them the latest copy of the network topology.  this
+connect to everyoneâ€™s dspAddress and give them the latest copy of the network topology.  this
 used to be NetStart() and it used to connect all upring and downring ADSP connections.
 */
 static void NetDistributeTopology(

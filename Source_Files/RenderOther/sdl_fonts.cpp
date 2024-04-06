@@ -28,12 +28,11 @@
 #include "cseries.h"
 #include "sdl_fonts.h"
 #include "byte_swapping.h"
-#include "game_errors.h"
 #include "resource_manager.h"
 #include "FileHandler.h"
 #include "Logging.h"
 
-#include <SDL_endian.h>
+#include <SDL2/SDL_endian.h>
 #include <vector>
 #include <map>
 
@@ -46,7 +45,6 @@ using std::pair;
 using std::map;
 #endif
 
-#include <boost/tuple/tuple_comparison.hpp>
 #include "preferences.h" // smooth_font
 #include "AlephSansMono-Bold.h"
 #include "ProFontAO.h"
@@ -253,16 +251,12 @@ static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size
 	}
 	else
 	{
-		short SavedType, SavedError = get_game_error(&SavedType);
-
 		FileSpecifier fileSpec(path);
 		OpenedFile file;
 		if (fileSpec.Open(file))
 		{
 			font = TTF_OpenFontRW(file.TakeRWops(), 1, size);
 		}
-
-		set_game_error(SavedType, SavedError);
 	}
 
 	if (font)
@@ -321,6 +315,16 @@ font_info *load_font(const TextSpec &spec) {
 			info->m_adjust_height = spec.adjust_height;
 			info->m_styles[styleNormal] = font;
 			info->m_keys[styleNormal] = ttf_font_key_t(file, 0, spec.size);
+
+			// SDL_TTF doesn't do a great job determining the height of fonts...
+			int height;
+			TTF_SizeText(font, "Ag", nullptr, &height);
+			
+			info->m_line_height = std::max({
+					TTF_FontLineSkip(font),
+					TTF_FontHeight(font),
+					height
+				});							
 
 			// load bold face
 			file = locate_font(spec.bold);
@@ -570,7 +574,7 @@ char *ttf_font_info::process_printable(const char *src, int len) const
 	while (*src && len-- > 0)
 	{
 		if ((unsigned char) *src >= ' ') *p++ = *src;
-		src++;
+		if (len > 0) src++;
 	}
 
 	*p = '\0';
@@ -588,7 +592,7 @@ uint16 *ttf_font_info::process_macroman(const char *src, int len) const
 		else if ((unsigned char) *src == '\t')
 			*p++ = ' ';
 		
-		src++;
+		if (len > 0) src++;
 	}
 
 	*p = 0x0;

@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>Aleph One Lua Scripters' Guide</title>
+<title>Aleph One Lua Scripters’ Guide</title>
 <style type="text/css">
       <!-- 
       body {
@@ -51,6 +51,10 @@
       div.tables p {
 	  margin: 4px;
       }
+
+	  div.tables > p {
+	  margin-left: 0;
+	  }
 
       p.note {
 	  color: #666666;
@@ -111,7 +115,7 @@
 <li><a href="#what_is_this">What is This?</a></li>
 <li><a href="#running_a_script">Running a Script</a></li>
 <li><a href="#units">Units</a></li>
-<li><a href="#local_player">Local Player</a></li>
+<li><a href="#sync">Net Games and Films</a></li>
 <li><a href="#loading_collections">Loading Collections</a></li>
 <li><a href="#persistence">Persistence</a></li>
 </ol>
@@ -130,6 +134,7 @@
 <li><a href="#Cameras">Cameras</a></li>
 <li><a href="#Effects">Effects</a></li>
 <li><a href="#Endpoints">Endpoints</a></li>
+<li><a href="#Ephemera">Ephemera</a></li>
 <li><a href="#Game">Game</a></li>
 <li><a href="#Goals">Goals</a></li>
 <li><a href="#ItemStarts">ItemStarts</a></li>
@@ -163,9 +168,12 @@
 <li><a href="#DamageTypes">Damage</a></li>
 <li><a href="#DifficultyTypes">Difficulty</a></li>
 <li><a href="#EffectTypes">Effects</a></li>
+<li><a href="#EphemeraQualities">Ephemera Quality</a></li>
 <li><a href="#FadeTypes">Faders</a></li>
+<li><a href="#FogModes">Fog Modes</a></li>
 <li><a href="#GameTypes">Game Types</a></li>
-<li><a href="#ItemTypes">Items</a></li>
+<li><a href="#ItemKinds">Item Kinds</a></li>
+<li><a href="#ItemTypes">Item Types</a></li>
 <li><a href="#LightFunctions">Light Functions</a></li>
 <li><a href="#LightPresets">Light Presets</a></li>
 <li><a href="#LightStates">Light States</a></li>
@@ -194,58 +202,63 @@
 <a name="general"></a>General</h1>
 <h2>
 <a name="what_is_this"></a>What is This?</h2>
-	<p>This is a reference for writing Lua scripts to work in Aleph One. It lists every trigger and table available to Lua scripts. It is expected that Lua functionality will grow in Aleph One, and as it does, so will this document. Not everything here is completely documented, and any help fixing that would be appreciated.</p>
-	<p>This is not a reference for Lua itself - see lua.org for that.</p>
+		<p>This is a reference for writing Lua scripts to work in Aleph One. It lists every trigger and table available to Lua scripts. It is expected that Lua functionality will grow in Aleph One, and as it does, so will this document. Not everything here is completely documented, and any help fixing that would be appreciated.</p>
+		<p>This is not a reference for Lua itself - see lua.org for that.</p>
       <h2>
 <a name="running_a_script"></a>Running a Script</h2>
-	<p>There are three ways to get a script to run - by embedding it in a level, by selecting a solo script in the Environment Preferences, or by selecting a script at the gather network game dialog.</p>
-	<p>To embed a script in a level, use a tool such as Atque. Use embedded Lua scripts only for map specific features, not for modifying game types. For instance, it may be tempting to embed the latest version of the Lua CTF script in a map designed only for playing CTF; however, this would prevent the user from using a later version of CTF if it were to come out, or from using another net script that works on CTF maps. Some older scenarios use Lua scripts in TEXT resources, but this is no longer recommended since they are not transmitted in net games.</p>
-	<p>To use a solo script, check the "Use Solo Script" box in Environment Preferences, and choose the script file to use.</p>
-	<p>To use a script via the network game dialog, put then script in a text file with the extension .lua. Then, at the gather network game dialog, select "use script", then select your script file.</p>
+		<p>There are three ways to get a script to run - by embedding it in a level, by selecting a solo script in the Environment Preferences, or by selecting a script at the gather network game dialog.</p>
+		<p>To embed a script in a level, use a tool such as Atque. Use embedded Lua scripts only for map specific features, not for modifying game types. For instance, it may be tempting to embed the latest version of the Lua CTF script in a map designed only for playing CTF; however, this would prevent the user from using a later version of CTF if it were to come out, or from using another net script that works on CTF maps. Some older scenarios use Lua scripts in TEXT resources, but this is no longer recommended since they are not transmitted in net games.</p>
+		<p>To use a solo script, check the "Use Solo Script" box in Environment Preferences, and choose the script file to use.</p>
+		<p>To use a script via the network game dialog, put then script in a text file with the extension .lua. Then, at the gather network game dialog, select "use script", then select your script file.</p>
       <h2>
 <a name="units"></a>Units</h2>
-	<p>The unit for distance we use is World Units (WU) These are the same values you'd see in Forge or with F10 location display, and 1/1024 of what A1 uses internally and what you'd see in Pfhorte.</p>
-	<p>Units for speed are . . . well let's say they're messy. :) Lua speeds are expressed in World Units per tick (a tick is 1/30 of a second). Forge claims to use WU per sec, but it actually uses 0.87890625 WU per sec (which equals 30 internal units per tick). The following example illustrates the various conversions:</p>
-	<ul>
-	<li>
+		<p>The unit for distance we use is World Units (WU) These are the same values you’d see in Forge or with F10 location display, and 1/1024 of what A1 uses internally and what you’d see in Pfhorte.</p>
+		<p>Units for speed are . . . well let’s say they’re messy. :) Lua speeds are expressed in World Units per tick (a tick is 1/30 of a second). Forge claims to use WU per sec, but it actually uses 0.87890625 WU per sec (which equals 30 internal units per tick). The following example illustrates the various conversions:</p>
+		<ul>
+		  <li>
 <b style="display: inline-block; width: 10em; text-align: right">Actual:</b> 7.5 World Units per second</li>
-	<li>
+		  <li>
 <b style="display: inline-block; width: 10em; text-align: right">A1 internal:</b> 256 units per tick (7.5 * 1024 / 30)</li>
-	<li>
+		  <li>
 <b style="display: inline-block; width: 10em; text-align: right">Lua:</b> 0.25 WU per tick (7.5 / 30)</li>
-	<li>
+		  <li>
 <b style="display: inline-block; width: 10em; text-align: right">Forge:</b> 8.53 "WU per second" ((7.5 * 1024 / 30) / 30)</li>
-	</ul>
+		</ul>
       <h2>
-<a name="local_player"></a>Local Player</h2>
-	<p>A few variables are marked "local player." These variables will always do the right thing when written to, but when reading, will only return a useful result if the player they belong to is "local." In net games, there is a separate copy of each Lua script running on each player's computer, and the player is "local" only to his copy of the script.</p>
-	<p>So, the only local player variables the script running on player 4's machine will be able to read from are the ones in Players[4]. For his script, the value of Players[1].zoom_active, for example, will return nil. If this confuses you, it might be better to avoid reading from any variable marked "local player."</p>
-      <h2>
+<a name="sync"></a>Net Games and Films</h2>
+		<p>Aleph One net games distribute a set of player inputs, which are applied to each distributed game world or to the game world in the film being played back. There is a separate copy of the Lua script running on each player’s machine. This means that in order to prevent net games from going out of sync, or films from playing back incorrectly, each of the separately running Lua scripts needs to manipulate the world the exact same way.</p>
+		<p>For example, if one player’s Lua script creates a monster, that monsters actions in the game are controlled by the random seed established at the beginning of the game. So, the other players’ scripts must create the same monster the same way, or the net game will go out of sync.</p>
+		<p>Usually this is not a problem, as long as scripters avoid functions marked with the "local player" tag, and the two local random functions, which will return different results on different machines. The <code>global_random</code> and <code>random</code> functions will return the same number on different machines, as long as they are called the same number of times, so they are safe to use for net games.</p>
+		<p>These rules apply to film playback as well; films will only play back if scripts behave exactly the same way as when the film was recorded</p>
+		<p>A few accessors, such as Ephemera and Fog were designed to be used on a "local player" basis without breaking films or net. For instance, it would be safe to programmatically disable fog when a player zooms in by checking <code>Players.local_player.zoom_active</code>--because the mere presence of fog will not cause a net game or film to go out of sync. Likewise, Ephemera can be created based on the Ephemera.quality setting, which will vary from machine to machine. A script that only uses Ephemera can be turned on and off and film playback will be unaffected.</p>
+		<p>When using local-safe accessors like Ephemera and Fog, it is important to use the matching <code>random_local</code> function, because it will not affect the progression of the ordinary random functions.</p>
+		<p>If this is confusing to you, it would be safest simply to avoid using anything marked with the "local player" tag, as well as the two local random functions and Ephemera.</p>
+	  <h2>
 <a name="loading_collections"></a>Loading Collections</h2>
-	<p>A Lua script can ask for the engine to load collections it might otherwise not load; for instance, in order to be able to spawn defenders and compilers on a map that might not have them otherwise, add the indices for those collections to the global table CollectionsUsed:
-</p>
+		<p>A Lua script can ask for the engine to load collections it might otherwise not load; for instance, in order to be able to spawn defenders and compilers on a map that might not have them otherwise, add the indices for those collections to the global table CollectionsUsed:
+		</p>
 <pre>CollectionsUsed = { 10, 16 }</pre>
       <h2>
 <a name="persistence"></a>Persistence</h2>
-	<p>Lua scripts are only active during a single level. If the user jumps to a new level, or restores from a saved game, the script is restarted in a clean state.</p>
-	<p>It is now possible to pass data across level jumps, by using the Game.restore_passed() function. This function will restore any custom fields (see the "Custom Fields" section of "Using Tables" below) in the Players or Game tables that were set immediately prior to the last level jump. Note that in order for data to survive multiple level jumps, Game.restore_passed() must be called after each level jump. Game.restore_passed() will not restore data from saved games.</p>
-	<p>It is also possible to restore data from saved games. The Game.restore_saved() function will restore all custom fields in use at the time the game was saved.</p>
-	<p>Only numbers, strings, booleans, and tables (including Aleph One's built-in userdata tables) can be restored.</p>
+		<p>Lua scripts are only active during a single level. If the user jumps to a new level, or restores from a saved game, the script is restarted in a clean state.</p>
+		<p>It is now possible to pass data across level jumps, by using the Game.restore_passed() function. This function will restore any custom fields (see the "Custom Fields" section of "Using Tables" below) in the Players or Game tables that were set immediately prior to the last level jump. Note that in order for data to survive multiple level jumps, Game.restore_passed() must be called after each level jump. Game.restore_passed() will not restore data from saved games.</p>
+		<p>It is also possible to restore data from saved games. The Game.restore_saved() function will restore all custom fields in use at the time the game was saved.</p>
+		<p>Only numbers, strings, booleans, and tables (including Aleph One’s built-in userdata tables) can be restored.</p>
       <h1>
 <a name="triggers"></a>Triggers</h1>
 <div class="triggers">
 <p>These are functions scripts can define which Aleph One will call at specific times or events. For example, to regenerate health:
-<span class="pre">Triggers = {}
-function Triggers.idle()
-  for p in Players() do 
+	<span class="pre">Triggers = {}
+	function Triggers.idle()
+	for p in Players() do 
     if p.life &lt; 150 and not p.dead then 
-      p.life = p.life + 1
+    p.life = p.life + 1
     end
-  end
-end
-</span>
-Calling Triggers = {} at the beginning of the script removes the compatibility triggers installed for old Lua scripts, speeding up execution of new scripts.
-</p>
+	end
+	end
+	</span>
+	Calling Triggers = {} at the beginning of the script removes the compatibility triggers installed for old Lua scripts, speeding up execution of new scripts.
+	</p>
 <dl>
 <dt>Triggers</dt>
 <dd><dl>
@@ -323,24 +336,24 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dd>
 <dt>.player_damaged(victim, aggressor_player, aggressor_monster, damage_type, damage_amount, projectile)</dt>
 <dd>
-<p class="description">whenever a player has taken damage, but before he dies if applicable. The player's suit energy or oxygen may be negative when this trigger is called; if it still is when the trigger returns, it will be set to 0. The player's suit energy is tested again after this trigger returns, so a script may prevent a player's death
+<p class="description">whenever a player has taken damage, but before he dies if applicable. The player’s suit energy or oxygen may be negative when this trigger is called; if it still is when the trigger returns, it will be set to 0. The player’s suit energy is tested again after this trigger returns, so a script may prevent a player’s death
       </p>
 <ul class="args">
 <li>aggressor_player: player who got the kill (can be nil)</li>
 <li>aggressor_monster: monster that got the kill (can be nil)</li>
 <li>damage_type: e.g. "fists"</li>
-<li>damage_amount: the amount recently subtracted from the player. If "oxygen drain", damage_amount was assessed against player's oxygen; otherwise against player's suit energy</li>
+<li>damage_amount: the amount recently subtracted from the player. If "oxygen drain", damage_amount was assessed against player’s oxygen; otherwise against player’s suit energy</li>
 <li>projectile: the projectile that delivered the damage (can be nil)</li>
 </ul>
 </dd>
 <dt>.monster_damaged(monster, aggressor_monster, damage_type, damage_amount, projectile) <span class="version">20100118</span>
 </dt>
 <dd>
-<p class="description">whenever a monster is damaged, but before it dies if applicable. The monster's vitality may be negative when this trigger is called. Ther monster's vitality will be tested again after this trigger returns, so a script may prevent a monster's death</p>
+<p class="description">whenever a monster is damaged, but before it dies if applicable. The monster’s vitality may be negative when this trigger is called. Ther monster’s vitality will be tested again after this trigger returns, so a script may prevent a monster’s death</p>
 <ul class="args">
 <li>aggressor_monster: the monster that caused the damage (can be nil)</li>
 <li>damage_type: e.g. "fists"</li>
-<li>damage_amount: the amount recently subtracted from the monster's vitality</li>
+<li>damage_amount: the amount recently subtracted from the monster’s vitality</li>
 <li>projectile: the projectile that delivered the damage (can be nil)</li>
 </ul>
 </dd>
@@ -351,7 +364,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <li>aggressor_player: player who killed it (can be nil)</li>
 <li>projectile: projectile that delivered the final blow (can be nil)</li>
 </ul>
-<p class="note">called after a monster has taken lethal damage, but before it's removed from the monster list </p>
+<p class="note">called after a monster has taken lethal damage, but before it’s removed from the monster list </p>
 <p class="note">you can use this to find out when a monster created with new_monster dies, but a monster discovered by Polygons.monsters() may have already taken lethal damage, so you may need to check for that case when using Polygons.monsters() </p>
 </dd>
 <dt>.item_created(item)</dt>
@@ -362,8 +375,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>.projectile_created(projectile) <span class="version">20150619</span>
 </dt>
 <dd><p class="description">whenever a projectile is created</p></dd>
-<dt>.projectile_detonated(type, owner, polygon, x, y, z)</dt>
-<dd><p class="description">whenever a projectile detonates, after it has done any area of effect damage</p></dd>
+<dt>.projectile_detonated(type, owner, polygon, x, y, z, t <span class="version">20210408</span>)</dt>
+<dd>
+<p class="description">whenever a projectile detonates, after it has done any area of effect damage</p>
+<p class="note">t can be a side, polygon_floor, polygon_ceiling, monster, scenery, polygon; see Polygon:check_collision for info on how to decode. It can also be nil, in the rare case a projectile detonates without hitting something </p>
+</dd>
 </dl></dd>
 </dl>
 </div>
@@ -373,11 +389,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     <p>Unless otherwise specified, these tables are only valid inside the trigger calls listed above. Attempting to use them in the main body of a script may cause an error in this version or a future version of Aleph One.</p>
 <h2>
 <a name="custom"></a>Custom Fields</h2>
-<p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.</p>
+<p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One’s userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.</p>
 <pre>Players[0]._favorite_flavor = "chocolate"</pre>
 <h2>
 <a name="table_indices"></a>Index</h2>
-<p>Each table has a read-only .index variable, that corresponds to the engine's internal index.</p>
+<p>Each table has a read-only .index variable, that corresponds to the engine’s internal index.</p>
 <pre>=Players[0].index<br>0</pre>
 <h2>
 <a name="table_is"></a>is_ Functions</h2>
@@ -395,21 +411,17 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">returns a new annotation</p></dd>
 <dt>Annotations[index]</dt>
 <dd><dl>
-      <dt>
-    .polygon</dt>
+      <dt>.polygon</dt>
 <dd>
 <p class="description">polygon this annotation is associated with</p>
 <p class="note">can be nil </p>
 <p class="note">an annotation is only shown when its polygon is visible on the overhead map </p>
 </dd>
-      <dt>
-    .text</dt>
+      <dt>.text</dt>
 <dd><p class="description">annotation text (64 characters max)</p></dd>
-      <dt>
-    .x</dt>
+      <dt>.x</dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .y</dt>
+      <dt>.y</dt>
 <dd><p class="description"></p></dd>
     </dl></dd>
 </dl>
@@ -460,34 +472,28 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>:delete() <span class="version">20111201</span>
 </dt>
 <dd><p class="description">removes effect from map</p></dd>
-      <dt>
-    .facing <span class="version">20111201</span>
+      <dt>.facing <span class="version">20111201</span>
 </dt>
 <dd><p class="description">direction effect is facing</p></dd>
       <dt>:play_sound(sound) <span class="version">20111201</span>
 </dt>
 <dd><p class="description">play sound coming from this effect</p></dd>
-      <dt>
-    .polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">polygon the effect is in</p></dd>
       <dt>:position(x, y, z, polygon) <span class="version">20111201</span>
 </dt>
 <dd><p class="description">sets position of effect</p></dd>
-      <dt>
-    .type<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.type<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">type of effect</p></dd>
-      <dt>
-    .x<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.x<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .y<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.y<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .z<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.z<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
     </dl></dd>
@@ -501,74 +507,140 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">iterates through all endpoints in the level</p></dd>
 <dt>Endpoints[index]</dt>
 <dd><dl>
-      <dt>
-    .x<span class="access"> (read-only)</span>
+      <dt>.x<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .y<span class="access"> (read-only)</span>
+      <dt>.y<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
     </dl></dd>
+</dl>
+<h3>
+<a name="Ephemera"></a>Ephemera <span class="version">20210408</span>
+</h3>
+		<p>Ephemera are a render-only version of Effects. They were designed to be a lightweight way to add effects such as precipitation or decals. They do not use any global random functionality, and they don’t interact at all with other objects in the world, so they are safe to turn on and off without affecting net game sync and film playback (see <a href="#sync">"Net Games and Films"</a>).</p>
+		<p>Ephemera are not saved or restored in saved games, so it is up to the Lua script to serialize them and persist them if desired; and to recreate them upon resume. Likewise, ephemera custom fields are not saved/restored using <code>Level.restored_saved()</code></p>
+		<p><em>All</em> ephemera functions are "local player"</p>
+	  <dl>
+<dt># Ephemera</dt>
+<dd><p class="description">maximum number of ephemera</p></dd>
+<dt>Ephemera()</dt>
+<dd><p class="description">iterates through all valid ephemera</p></dd>
+<dt>Ephemera.new(x, y, z, polygon, collection, sequence, facing)</dt>
+<dd><p class="description">returns a new ephemera</p></dd>
+<dt>Ephemera.quality<span class="access"> (read-only)</span>
+</dt>
+<dd>
+<p class="description">user’s ephemera quality setting</p>
+<p class="note">it is up to the script’s discretion how many ephemera to create / maintain, based on this quality setting; if set to off, ephemera are not rendered regardless of how many the script creates </p>
+</dd>
+<dt>Ephemera[index]</dt>
+<dd><dl>
+	  <dt>.clut_index</dt>
+<dd><p class="description">color table of this ephemera</p></dd>
+	  <dt>.collection</dt>
+<dd><p class="description">shape collection of this ephemera</p></dd>
+	  <dt>.end_when_animation_loops</dt>
+<dd><p class="description">if set, ephemera is removed once animation finishes</p></dd>
+	  <dt>:delete()</dt>
+<dd><p class="description">removes ephemera from the level</p></dd>
+	  <dt>.enlarged</dt>
+<dd><p class="description">ephemera is rendered 25% bigger</p></dd>
+	  <dt>.facing</dt>
+<dd><p class="description">direction the ephemera is facing</p></dd>
+	  <dt>:position(x, y, z, polygon)</dt>
+<dd><p class="description">sets position of ephemera</p></dd>
+	  <dt>.polygon<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">polygon this ephemera is in</p></dd>
+	  <dt>.rendered<span class="access"> (read-only)</span>
+</dt>
+<dd>
+<p class="description">whether this ephemera was recently rendered</p>
+<p class="note">you can use this to skip updating ephemera that aren’t currently visible </p>
+</dd>
+	  <dt>.shape_index</dt>
+<dd>
+<p class="description">shape index of ephemera</p>
+<p class="note">Anvil calls this sequence </p>
+</dd>
+	  <dt>.tiny</dt>
+<dd><p class="description">ephemera is rendered 50% size</p></dd>
+	  <dt>.valid<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">whether ephemera is still valid</p></dd>
+	  <dt>.x<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description"></p></dd>
+	  <dt>.y<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description"></p></dd>
+	  <dt>.z<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description"></p></dd>
+	</dl></dd>
 </dl>
 <h3>
 <a name="Game"></a>Game</h3>
 <dl>
 <dt>Game</dt>
 <dd><dl>
-<dt>
-    .dead_players_drop_items <span class="version">20150619</span>
+<dt>.dead_players_drop_items <span class="version">20150619</span>
 </dt>
 <dd><p class="description">whether dead players drop items</p></dd>
-<dt>.deserialize(s) <span class="version">git</span>
+<dt>.deserialize(s) <span class="version">20200830</span>
 </dt>
 <dd>
 <p class="description">deserializes s and returns the original Lua value</p>
 <p class="note">see Game.serialize </p>
 </dd>
-<dt>
-    .difficulty<span class="access"> (read-only)</span>
+<dt>.difficulty<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">the difficulty level</p></dd>
 <dt>.global_random(n)</dt>
-<dd><p class="description">returns a random number between 0 and n-1 from Aleph One's original random number generator</p></dd>
-<dt>
-    .kill_limit<span class="access"> (read-only)</span>
+<dd><p class="description">returns a random number between 0 and n-1 from Aleph One’s original random number generator</p></dd>
+<dt>.kill_limit<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">the game kill limit, or 0 if there is none</p></dd>
-<dt>
-    .monsters_replenish <span class="version">20111201</span>
+<dt>.monsters_replenish <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">whether monsters spawn or not; in a net game, this corresponds to the "Aliens" checkbox</p>
 <p class="note">this can suppress initial monster placement, if set to false directly when the script is loaded </p>
 </dd>
-<dt>
-    .proper_item_accounting <span class="version">20100118</span>
+<dt>.proper_item_accounting <span class="version">20100118</span>
 </dt>
 <dd><p class="description">When true, the current item counts on the map are updated properly when Lua deletes map items and changes player inventories. This defaults to false to preserve film playback with older scripts. New scripts that manipulate items should always set this to true.</p></dd>
-<dt>
-    .nonlocal_overlays <span class="version">Git</span>
+<dt>.nonlocal_overlays <span class="version">20200830</span>
 </dt>
-<dd><p class="description">When false, only the local player's overlays are used, and only prints to the local player will be displayed. When true, the overlays and prints of whatever player is currently being viewed will apply. This defaults to false for compatibility with scripts that depend on the old behavior.</p></dd>
-<dt>
-    .time_remaining<span class="access"> (read-only)</span>
+<dd><p class="description">When false, only the local player’s overlays are used, and only prints to the local player will be displayed. When true, the overlays and prints of whatever player is currently being viewed will apply. This defaults to false for compatibility with scripts that depend on the old behavior.</p></dd>
+<dt>.time_remaining<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">the number of ticks until the game ends, or nil if there is no time limit</p></dd>
-<dt>
-    .scoring_mode</dt>
+<dt>.scoring_mode</dt>
 <dd><p class="description">the current scoring mode (if the gametype is "custom")</p></dd>
-<dt>
-    .over<span class="access"> (write-only)</span>
+<dt>.over<span class="access"> (write-only)</span>
 </dt>
-<dd><p class="description">Use this variable to override the game's default scoring behavior. If set to false, the game will not end due to a score limit. If set to true, the game ends immediately. If left unset or if set to nil, the game will end if a score limit is reached. (Note that you cannot prevent the game from ending due to a time limit.)</p></dd>
+<dd><p class="description">Use this variable to override the game’s default scoring behavior. If set to false, the game will not end due to a score limit. If set to true, the game ends immediately. If left unset or if set to nil, the game will end if a score limit is reached. (Note that you cannot prevent the game from ending due to a time limit.)</p></dd>
 <dt>.local_random(n)</dt>
 <dd>
-<p class="description">returns a random number between 0 and n-1 from Aleph One's original random number generator</p>
-<p class="note">this is a good way to put net games out of sync </p>
+<p class="description">returns a random number between 0 and n-1 from Aleph One’s original random number generator</p>
+<p class="note">use only for local player effects (see Net Games and Films) </p>
 </dd>
 <dt>.random(n)</dt>
 <dd><p class="description">returns a random number between 0 and n-1 using a good random number generator</p></dd>
+<dt>.random_local(n) <span class="version">20210408</span>
+</dt>
+<dd>
+<p class="description">returns a random number between 0 and n-1 using a good random number generator</p>
+<p class="note">use only for local player effects (see Net Games and Films) </p>
+</dd>
+<dt>.replay<span class="access"> (read-only)</span> <span class="version">20221126</span>
+</dt>
+<dd>
+<p class="description">is the script being run during a film replay</p>
+<p class="note">use sparingly; altering the world differently during a replay than during live playback will cause the replay go out of sync </p>
+</dd>
 <dt>.restore_passed() <span class="version">20090909</span>
 </dt>
 <dd>
@@ -586,25 +658,22 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <p class="description">saves the game (as if the user had activated a pattern buffer)</p>
 <p class="note">solo only </p>
 </dd>
-<dt>.serialize(v) <span class="version">git</span>
+<dt>.serialize(v) <span class="version">20200830</span>
 </dt>
 <dd>
 <p class="description">serializes v into a binary string</p>
-<p class="note">only numbers, strings, booleans, and tables (including Aleph One's built-in userdata tables) can be serialized </p>
+<p class="note">only numbers, strings, booleans, and tables (including Aleph One’s built-in userdata tables) can be serialized </p>
 </dd>
-<dt>
-    .ticks<span class="access"> (read-only)</span>
+<dt>.ticks<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">ticks since game started</p></dd>
-<dt>
-    .type<span class="access"> (read-only)</span>
+<dt>.type<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether the game is EMFH, KOTH, etc.</p></dd>
-<dt>
-    .version<span class="access"> (read-only)</span>
+<dt>.version<span class="access"> (read-only)</span>
 </dt>
 <dd>
-<p class="description">the date version of the local player's engine</p>
+<p class="description">the date version of the local player’s engine</p>
 <p class="note">for example, "20071103" </p>
 </dd>
 </dl></dd>
@@ -618,30 +687,27 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">iterates through all goals</p></dd>
 <dt>Goals[index]</dt>
 <dd><dl>
-      <dt>
-    .facing<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.facing<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">direction goal is facing</p></dd>
-      <dt>
-    .polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">polygon the goal is in</p></dd>
-      <dt>
-    .id<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.id<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">ID number of goal</p></dd>
-      <dt>
-    .x<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.x<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .y<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.y<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .z<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.z<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
-<dd><p class="description"></p></dd>
+<dd>
+<p class="description"></p>
+<p class="note">from floor or ceiling </p>
+</dd>
     </dl></dd>
 </dl>
 <h3>
@@ -653,38 +719,33 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">iterates through all item starting locations in the level</p></dd>
 <dt>ItemStarts[index]</dt>
 <dd><dl>
-      <dt>
-    .facing<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.facing<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">direction item is initially facing</p></dd>
-      <dt>
-    .from_ceiling<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.from_ceiling<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether item location z is from ceiling</p></dd>
-      <dt>
-    .invisible<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.invisible<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether item will teleport in</p></dd>
-      <dt>
-    .polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">item starting location polygon</p></dd>
-      <dt>
-    .type<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.type<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">type of item</p></dd>
-      <dt>
-    .x<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.x<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .y<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.y<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .z<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.z<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
-<dd><p class="description"></p></dd>
+<dd>
+<p class="description"></p>
+<p class="note">from floor or ceiling </p>
+</dd>
     </dl></dd>
 </dl>
 <h3>
@@ -700,32 +761,29 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><dl>
       <dt>:delete()</dt>
 <dd><p class="description">removes item from map</p></dd>
-      <dt>
-    .facing</dt>
+      <dt>.facing</dt>
 <dd><p class="description">direction item is facing</p></dd>
       <dt>:play_sound(sound)</dt>
 <dd><p class="description">play sound coming from this item</p></dd>
-      <dt>
-    .polygon<span class="access"> (read-only)</span>
+      <dt>.polygon<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">polygon the item is in</p></dd>
       <dt>:position(x, y, z, polygon) <span class="version">20090909</span>
 </dt>
 <dd><p class="description">sets position of item</p></dd>
-      <dt>
-    .type<span class="access"> (read-only)</span>
+      <dt>.type<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">type of item</p></dd>
-      <dt>
-    .x<span class="access"> (read-only)</span>
+      <dt>.visible<span class="access"> (read-only)</span> <span class="version">20220115</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .y<span class="access"> (read-only)</span>
+      <dt>.x<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .z<span class="access"> (read-only)</span>
+      <dt>.y<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description"></p></dd>
+      <dt>.z<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
     </dl></dd>
@@ -738,90 +796,85 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>.calculate_completion_state() <span class="version">20081213</span>
 </dt>
 <dd><p class="description">returns whether level is finished, unfinished, or failed</p></dd>
-<dt>
-    .completed<span class="access"> (read-only)</span> <span class="version">20111201</span>
+<dt>.completed<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">check this in Triggers.cleanup() to determine whether the player(s) teleported out</p></dd>
-<dt>
-    .extermination<span class="access"> (read-only)</span> <span class="version">20081213</span>
+<dt>.extermination<span class="access"> (read-only)</span> <span class="version">20081213</span>
 </dt>
 <dd><p class="description">whether level has extermination flag set</p></dd>
-<dt>
-    .exploration<span class="access"> (read-only)</span> <span class="version">20081213</span>
+<dt>.exploration<span class="access"> (read-only)</span> <span class="version">20081213</span>
 </dt>
 <dd><p class="description">whether level has exploration flag set</p></dd>
 <dt>.fog<br>.underwater_fog</dt>
 <dd><dl>
-<dt>
-    .active<br>.present</dt>
+<dt>.active<br>.present</dt>
 <dd><p class="description">whether fog is present</p></dd>
-<dt>
-    .affects_landscapes</dt>
+<dt>.affects_landscapes</dt>
 <dd><p class="description">whether fog affects landscapes</p></dd>
 <dt>.color</dt>
 <dd>
 <p class="note">values range from 0.0 to 1.0 </p>
 <dl>
-<dt>
-    .b</dt>
+<dt>.b</dt>
 <dd><p class="description">blue</p></dd>
-<dt>
-    .g</dt>
+<dt>.g</dt>
 <dd><p class="description">green</p></dd>
-<dt>
-    .r</dt>
+<dt>.r</dt>
 <dd><p class="description">red</p></dd>
 </dl>
 </dd>
-<dt>
-    .depth</dt>
+<dt>.depth</dt>
 <dd><p class="description">fog depth in WU</p></dd>
+<dt>.landscape_mix <span class="version">20231125</span>
+</dt>
+<dd>
+<p class="description">amount of fog to mix into landscape</p>
+<p class="note">values range from 0.0 to 1.0 </p>
+</dd>
+<dt>.mode <span class="version">20231125</span>
+</dt>
+<dd><p class="description">linear, exp, or exp2</p></dd>
+<dt>.start <span class="version">20231125</span>
+</dt>
+<dd>
+<p class="description">fog start in WU</p>
+<p class="note">only applies to linear fog </p>
+</dd>
 </dl></dd>
-<dt>
-    .low_gravity<span class="access"> (read-only)</span>
+<dt>.low_gravity<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether level is low gravity</p></dd>
-<dt>
-    .magnetic<span class="access"> (read-only)</span>
+<dt>.magnetic<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether level is magnetic</p></dd>
-<dt>
-    .name<span class="access"> (read-only)</span>
+<dt>.name<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">level name</p></dd>
-<dt>
-    .index<span class="access"> (read-only)</span> <span class="version">20150619</span>
+<dt>.index<span class="access"> (read-only)</span> <span class="version">20150619</span>
 </dt>
 <dd><p class="description">level index in the map file (starting from 0)</p></dd>
-<dt>
-    .map_checksum<span class="access"> (read-only)</span> <span class="version">20150619</span>
+<dt>.map_checksum<span class="access"> (read-only)</span> <span class="version">20150619</span>
 </dt>
 <dd><p class="description">checksum of map file</p></dd>
-<dt>
-    .rebellion<span class="access"> (read-only)</span>
+<dt>.rebellion<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether level is rebellion</p></dd>
-<dt>
-    .repair<span class="access"> (read-only)</span> <span class="version">20081213</span>
+<dt>.repair<span class="access"> (read-only)</span> <span class="version">20081213</span>
 </dt>
 <dd><p class="description">whether level has repair flag set</p></dd>
-<dt>
-    .rescue<span class="access"> (read-only)</span> <span class="version">20081213</span>
+<dt>.rescue<span class="access"> (read-only)</span> <span class="version">20081213</span>
 </dt>
 <dd><p class="description">whether level has rescue flag set</p></dd>
-<dt>
-    .retrieval<span class="access"> (read-only)</span> <span class="version">20081213</span>
+<dt>.retrieval<span class="access"> (read-only)</span> <span class="version">20081213</span>
 </dt>
 <dd><p class="description">whether level has retrieval flag set</p></dd>
-<dt>
-    .stash[key] <span class="version">git</span>
+<dt>.stash[key] <span class="version">20200830</span>
 </dt>
 <dd>
 <p class="description">reads/writes values to a stash shared between all running Lua scripts</p>
 <p class="note">keys/values must be strings </p>
 </dd>
-<dt>
-    .vacuum<span class="access"> (read-only)</span>
+<dt>.vacuum<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether level is vacuum</p></dd>
 </dl></dd>
@@ -837,47 +890,36 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">returns a new light</p></dd>
 <dt>Lights[index]</dt>
 <dd><dl>
-      <dt>
-    .active</dt>
+      <dt>.active</dt>
 <dd><p class="description">whether light is active</p></dd>
-      <dt>
-    .tag <span class="version">20100118</span>
+      <dt>.tag <span class="version">20100118</span>
 </dt>
 <dd><p class="description">tag of light</p></dd>
-      <dt>
-    .initial_phase <span class="version">20100118</span>
+      <dt>.initial_phase <span class="version">20100118</span>
 </dt>
 <dd><p class="description">phase the light starts with</p></dd>
-      <dt>
-    .initially_active <span class="version">20100118</span>
+      <dt>.initially_active <span class="version">20100118</span>
 </dt>
 <dd><p class="description">whether the light was initially active</p></dd>
-      <dt>
-    .intensity<span class="access"> (read-only)</span> <span class="version">20100118</span>
+      <dt>.intensity<span class="access"> (read-only)</span> <span class="version">20100118</span>
 </dt>
 <dd><p class="description">current intensity for this light (range: 0-1)</p></dd>
       <dt>
-    .states[light_type]
-  </dt>
+    .states[light_type]</dt>
 <dd><dl>
-<dt>
-    .delta_intensity <span class="version">20100118</span>
+<dt>.delta_intensity <span class="version">20100118</span>
 </dt>
 <dd><p class="description">random intensity change for this state</p></dd>
-<dt>
-    .delta_period <span class="version">20100118</span>
+<dt>.delta_period <span class="version">20100118</span>
 </dt>
 <dd><p class="description">random period change for this state</p></dd>
-<dt>
-    .intensity <span class="version">20100118</span>
+<dt>.intensity <span class="version">20100118</span>
 </dt>
 <dd><p class="description">intensity for this state</p></dd>
-<dt>
-    .light_function <span class="version">20100118</span>
+<dt>.light_function <span class="version">20100118</span>
 </dt>
 <dd><p class="description">light function for this state</p></dd>
-<dt>
-    .period <span class="version">20100118</span>
+<dt>.period <span class="version">20100118</span>
 </dt>
 <dd><p class="description">period for this state</p></dd>
 </dl></dd>
@@ -892,53 +934,45 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">iterates through all lines in the level</p></dd>
 <dt>Lines[index]</dt>
 <dd><dl>
-      <dt>
-    .clockwise_polygon<span class="access"> (read-only)</span><br>.cw_polygon<span class="access"> (read-only)</span>
+      <dt>.clockwise_polygon<span class="access"> (read-only)</span><br>.cw_polygon<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">polygon on clockwise side of line</p></dd>
-      <dt>
-    .clockwise_side<span class="access"> (read-only)</span><br>.cw_side<span class="access"> (read-only)</span>
+      <dt>.clockwise_side<span class="access"> (read-only)</span><br>.cw_side<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">clockwise side of line</p></dd>
-      <dt>
-    .counterclockwise_polygon<span class="access"> (read-only)</span><br>.ccw_polygon<span class="access"> (read-only)</span>
+      <dt>.counterclockwise_polygon<span class="access"> (read-only)</span><br>.ccw_polygon<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">polygon on counterclockwise side of line</p></dd>
-      <dt>
-    .counterclockwise_side<span class="access"> (read-only)</span><br>.ccw_side<span class="access"> (read-only)</span>
+      <dt>.counterclockwise_side<span class="access"> (read-only)</span><br>.ccw_side<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">counterclockwise side of line</p></dd>
-      <dt>
-    .endpoints[n]
-  </dt>
-<dd><p class="description">returns line endpoint n</p></dd>
-      <dt>
-    .has_transparent_side<span class="access"> (read-only)</span> <span class="version">20080707</span>
+	  <dt>.decorative <span class="version">20210408</span>
 </dt>
-<dd><p class="description">whether one of the line's sides has a transparent texture</p></dd>
+<dd><p class="description">projectiles always pass the transparent sides of decorative lines</p></dd>
       <dt>
-    .highest_adjacent_floor<span class="access"> (read-only)</span> <span class="version">20080707</span>
+    .endpoints[n]</dt>
+<dd><p class="description">returns line endpoint n</p></dd>
+      <dt>.has_transparent_side<span class="access"> (read-only)</span> <span class="version">20080707</span>
+</dt>
+<dd><p class="description">whether one of the line’s sides has a transparent texture</p></dd>
+      <dt>.highest_adjacent_floor<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
 <dd><p class="description">height of higher adjacent polygon floor</p></dd>
-      <dt>
-    .length<span class="access"> (read-only)</span>
+      <dt>.length<span class="access"> (read-only)</span>
 </dt>
 <dd>
 <p class="description">the length of this line</p>
-<p class="note">this might not be accurate, if someone used Chisel's stretch plugin </p>
+<p class="note">this might not be accurate, if someone used Chisel’s stretch plugin </p>
 </dd>
-      <dt>
-    .lowest_adjacent_ceiling<span class="access"> (read-only)</span> <span class="version">20080707</span>
+      <dt>.lowest_adjacent_ceiling<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
 <dd><p class="description">height of lower adjacent polygon ceiling</p></dd>
-      <dt>
-    .solid<span class="access"> (read-only)</span> <span class="version">20080707</span>
+      <dt>.solid<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
 <dd><p class="description">whether line is solid</p></dd>
-      <dt>
-    .visible_on_automap <span class="version">20150619</span>
+      <dt>.visible_on_automap <span class="version">20150619</span>
 </dt>
-<dd><p class="description">whether line is revealed on local player's automap</p></dd>
+<dd><p class="description">whether line is revealed on local player’s automap</p></dd>
     </dl></dd>
 </dl>
 <h3>
@@ -948,38 +982,33 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">number of media (liquids) on the level</p></dd>
 <dt>Media()</dt>
 <dd><p class="description">iterates through all media on the level</p></dd>
+<dt>Media.new() <span class="version">20210408</span>
+</dt>
+<dd><p class="description">returns a new liquid</p></dd>
 <dt>Media[index]</dt>
 <dd><dl>
-      <dt>
-    .direction <span class="version">20100118</span>
+      <dt>.direction <span class="version">20100118</span>
 </dt>
 <dd><p class="description">direction of media</p></dd>
-      <dt>
-    .height<span class="access"> (read-only)</span> <span class="version">20100118</span>
+      <dt>.height<span class="access"> (read-only)</span> <span class="version">20100118</span>
 </dt>
 <dd><p class="description">height of media</p></dd>
-      <dt>
-    .high <span class="version">20100118</span>
+      <dt>.high <span class="version">20100118</span>
 </dt>
 <dd><p class="description">high tide of media</p></dd>
-      <dt>
-    .light <span class="version">20100118</span>
+      <dt>.light <span class="version">20100118</span>
 </dt>
-<dd><p class="description">light that controls this media's tide</p></dd>
-      <dt>
-    .low <span class="version">20100118</span>
+<dd><p class="description">light that controls this media’s tide</p></dd>
+      <dt>.low <span class="version">20100118</span>
 </dt>
 <dd><p class="description">low tide of media</p></dd>
-      <dt>
-    .speed <span class="version">20100118</span>
+      <dt>.speed <span class="version">20100118</span>
 </dt>
 <dd><p class="description">speed of media</p></dd>
-      <dt>
-    .type<span class="access"> (read-only)</span>
+      <dt>.type<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">type of media</p></dd>
-      <dt>
-    .type <span class="version">20100118</span>
+      <dt>.type <span class="version">20100118</span>
 </dt>
 <dd><p class="description">type of media</p></dd>
     </dl></dd>
@@ -993,46 +1022,39 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">iterates through all monster starting locations in the level</p></dd>
 <dt>MonsterStarts[index]</dt>
 <dd><dl>
-      <dt>
-    .blind<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.blind<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether monster is activated by sight</p></dd>
-      <dt>
-    .deaf<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.deaf<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether monster is activated by sound</p></dd>
-      <dt>
-    .facing<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.facing<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">direction monster is initially facing</p></dd>
-      <dt>
-    .from_ceiling<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.from_ceiling<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether monster location z is from ceiling</p></dd>
-      <dt>
-    .invisible<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.invisible<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether monster will teleport in when activated</p></dd>
-      <dt>
-    .polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">monster starting location polygon</p></dd>
-      <dt>
-    .type<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.type<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">type of monster</p></dd>
-      <dt>
-    .x<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.x<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .y<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.y<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .z<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.z<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
-<dd><p class="description"></p></dd>
+<dd>
+<p class="description"></p>
+<p class="note">from floor or ceiling </p>
+</dd>
     </dl></dd>
 </dl>
 <h3>
@@ -1049,84 +1071,87 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>:accelerate(direction, velocity, vertical_velocity) <span class="version">20081213</span>
 </dt>
 <dd><p class="description">accelerates monster</p></dd>
-      <dt>
-    .action<span class="access"> (read-only)</span>
+      <dt>.action<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">current AI action of the monster</p></dd>
-      <dt>
-    .active</dt>
+      <dt>.active</dt>
 <dd><p class="description">whether monster has been activated</p></dd>
       <dt>:attack(target)</dt>
 <dd><p class="description">instructs monster to attack target</p></dd>
+	  <dt>.blind <span class="version">20210408</span>
+</dt>
+<dd>
+<p class="description">monster is blind</p>
+<p class="note">only valid before monster activates </p>
+</dd>
       <dt>:damage(amount [, type])</dt>
 <dd>
 <p class="description">damages monster</p>
 <p class="note">if no type is specified, fist damage is dealt </p>
 </dd>
-      <dt>
-    .external_velocity <span class="version">20090909</span>
+	  <dt>.deaf <span class="version">20210408</span>
 </dt>
-<dd><p class="description">monster's current external velocity (always in the opposite direction of facing)</p></dd>
-      <dt>
-    .facing<br>.yaw</dt>
-<dd><p class="description">direction the monster is facing</p></dd>
-      <dt>
-    .life<br>.vitality</dt>
 <dd>
-<p class="description">the monster's vitality</p>
-<p class="note">monsters that haven't spawned or teleported in yet don't have vitality </p>
+<p class="description">monster is deaf</p>
+<p class="note">only valid before monster activates </p>
 </dd>
-      <dt>
-    .mode<span class="access"> (read-only)</span>
+	  <dt>:delete() <span class="version">20210408</span>
+</dt>
+<dd><p class="description">deletes monster</p></dd>
+      <dt>.external_velocity <span class="version">20090909</span>
+</dt>
+<dd><p class="description">monster’s current external velocity (always in the opposite direction of facing)</p></dd>
+      <dt>.facing<br>.yaw</dt>
+<dd><p class="description">direction the monster is facing</p></dd>
+      <dt>.life<br>.vitality</dt>
+<dd>
+<p class="description">the monster’s vitality</p>
+<p class="note">monsters that haven’t spawned or teleported in yet don’t have vitality </p>
+</dd>
+      <dt>.mode<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">current AI mode of the monster</p></dd>
       <dt>:move_by_path(polygon)</dt>
 <dd>
 <p class="description">instructs monster to move to polygon</p>
 <p class="note">monsters get distracted easily en route </p>
-<p class="note">once it gets there, it probably won't choose to stay </p>
+<p class="note">once it gets there, it probably won’t choose to stay </p>
 </dd>
-      <dt>
-    .player<span class="access"> (read-only)</span>
+      <dt>.player<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">if monster is a player monster, the player; otherwise, nil</p></dd>
       <dt>:play_sound(sound)</dt>
 <dd><p class="description">plays sound coming from this monster</p></dd>
-      <dt>
-    .polygon<span class="access"> (read-only)</span>
+      <dt>.polygon<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">polygon this monster is in</p></dd>
       <dt>:position(x, y, z, polygon)</dt>
 <dd><p class="description">sets position of monster</p></dd>
-      <dt>
-    .type<span class="access"> (read-only)</span>
+	  <dt>.teleports_out <span class="version">20210408</span>
+</dt>
+<dd><p class="description">monster teleports out when deactivated</p></dd>
+      <dt>.type<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">type of monster</p></dd>
-      <dt>
-    .valid<span class="access"> (read-only)</span>
+      <dt>.valid<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether monster is still valid</p></dd>
-      <dt>
-    .vertical_velocity <span class="version">20090909</span>
+      <dt>.vertical_velocity <span class="version">20090909</span>
 </dt>
-<dd><p class="description">monster's current vertical external velocity</p></dd>
-      <dt>
-    .visible</dt>
+<dd><p class="description">monster’s current vertical external velocity</p></dd>
+      <dt>.visible</dt>
 <dd>
 <p class="description">whether monster is visible (e.g. has teleported in)</p>
-<p class="note">this has nothing to do with whether monsters are cloaked (like invisible S'pht) or not </p>
+<p class="note">this has nothing to do with whether monsters are cloaked (like invisible S’pht) or not </p>
 <p class="note">only writable before the monster is activated </p>
 </dd>
-      <dt>
-    .x<span class="access"> (read-only)</span>
+      <dt>.x<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .y<span class="access"> (read-only)</span>
+      <dt>.y<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .z<span class="access"> (read-only)</span>
+      <dt>.z<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
     </dl></dd>
@@ -1134,19 +1159,56 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <h3>
 <a name="Music"></a>Music</h3>
 <dl>
-<dt>Music</dt>
-<dd><dl>
-<dt>.clear()</dt>
+<dt># Music</dt>
+<dd><p class="description">maximum number of music channels active simultaneously</p></dd>
+<dt>Music()</dt>
+<dd><p class="description">iterates through all the music channels</p></dd>
+<dt>Music.new(track [, volume] [, loop]) <span class="version">20231125</span>
+</dt>
+<dd>
+<p class="description">returns a new music channel</p>
+<p class="note">volume is decimal [0 - 1] and is 1 if not specified </p>
+<p class="note">loop is enabled by default </p>
+</dd>
+<dt>Music.clear()</dt>
 <dd><p class="description">clears the level playlist</p></dd>
-<dt>.fade(duration)</dt>
+<dt>Music.fade(duration)</dt>
 <dd><p class="description">fades out the currently playing track and clears the playlist</p></dd>
-<dt>.play(track1 [, track2] [, ...])</dt>
+<dt>Music.play(track1 [, track2] [, ...])</dt>
 <dd><p class="description">appends all of the specified tracks to the end of the playlist</p></dd>
-<dt>.stop()</dt>
+<dt>Music.stop()</dt>
 <dd><p class="description">stops level music and clears the playlist</p></dd>
-<dt>.valid(track1 [, track2] [, ...])</dt>
+<dt>Music.valid(track1 [, track2] [, ...])</dt>
 <dd><p class="description">for every track passed, return true if it exists and is playable and false otherwise</p></dd>
-</dl></dd>
+<dt>Music[index]</dt>
+<dd><dl>
+	  <dt>:play() <span class="version">20231125</span>
+</dt>
+<dd>
+<p class="description">plays the music</p>
+<p class="note">if the music was stopped, restarts it </p>
+</dd>
+	  <dt>:stop() <span class="version">20231125</span>
+</dt>
+<dd><p class="description">stops the music</p></dd>
+	  <dt>:fade(volume [, duration] [, stop_after_fade]) <span class="version">20231125</span>
+</dt>
+<dd>
+<p class="description">fades the music</p>
+<p class="note">it will fade in until volume is reached. volume is decimal [0 - 1] </p>
+<p class="note">duration unit is seconds and is 1 if not specified </p>
+<p class="note">stop_after_fade is disabled by default, if set to true if the volume reaches 0 while fading the music will automatically stop </p>
+</dd>
+	  <dt>.volume <span class="version">20231125</span>
+</dt>
+<dd>
+<p class="description">the volume of the music</p>
+<p class="note">volume is decimal [0 - 1] </p>
+</dd>
+	  <dt>.active<span class="access"> (read-only)</span> <span class="version">20231125</span>
+</dt>
+<dd><p class="description">returns true if the music is still playing</p></dd>
+    </dl></dd>
 </dl>
 <h3>
 <a name="Platforms"></a>Platforms</h3>
@@ -1157,59 +1219,127 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">iterates through all platforms in the level</p></dd>
 <dt>Platforms[index]</dt>
 <dd><dl>
-      <dt>
-    .active</dt>
+	  <dt>.activates_adjacent_platforms_at_each_level <span class="version">20210408</span>
+</dt>
+<dd><p class="description">platform will activate adjacent platforms at each elevation it comes to (ie.,at floor level and ceiling level)</p></dd>
+	  <dt>.activates_adjacent_platforms_when_activating <span class="version">20210408</span>
+</dt>
+<dd><p class="description">when activating, this platform activates adjacent platforms</p></dd>
+	   <dt>.activates_adjacent_platforms_when_deactivating <span class="version">20210408</span>
+</dt>
+<dd><p class="description">when deactivating, this platform activates adjacent platforms</p></dd>
+	  <dt>.activates_light <span class="version">20210408</span>
+</dt>
+<dd><p class="description">activates floor and ceiling lightsources while activating</p></dd>
+	  <dt>.activates_only_once <span class="version">20210408</span>
+</dt>
+<dd><p class="description">cannot be activated a second time</p></dd>
+      <dt>.active</dt>
 <dd><p class="description">whether platform is currently active</p></dd>
-      <dt>
-    .ceiling_height</dt>
+	  <dt>.cannot_be_externally_deactivated <span class="version">20210408</span>
+</dt>
+<dd><p class="description">when active, can only be deactivated by itself</p></dd>
+      <dt>.ceiling_height</dt>
 <dd><p class="description">current ceiling height of platform</p></dd>
-      <dt>
-    .contracting</dt>
+	  <dt>.comes_from_ceiling<span class="access"> (read-only)</span> <span class="version">20210408</span>
+</dt>
+<dd><p class="description">platform lowers from ceiling</p></dd>
+	  <dt>.comes_from_floor<span class="access"> (read-only)</span> <span class="version">20210408</span>
+</dt>
+<dd><p class="description">platform rises from floor</p></dd>
+      <dt>.contracting</dt>
 <dd><p class="description">direction platform is moving or will move when active</p></dd>
-      <dt>
-    .door <span class="version">20100118</span>
+	  <dt>.contracts_slower <span class="version">20210408</span>
+</dt>
+<dd><p class="description">will move slower when contracting than when extending</p></dd>
+	  <dt>.deactivates_adjacent_platforms_when_activating <span class="version">20210408</span>
+</dt>
+<dd><p class="description">when activating, this platform deactivates adjacent platforms</p></dd>
+	  <dt>.deactivates_adjacent_platforms_when_deactivating <span class="version">20210408</span>
+</dt>
+<dd><p class="description">when deactivating, this platform deactivates adjacent platforms</p></dd>
+	  <dt>.deactivates_at_each_level <span class="version">20210408</span>
+</dt>
+<dd><p class="description">this platform will deactivate each time it reaches a discrete level</p></dd>
+	  <dt>.deactivates_at_initial_level <span class="version">20210408</span>
+</dt>
+<dd><p class="description">this platform will deactivate upon returning to its initial position</p></dd>
+	  <dt>.deactivates_light <span class="version">20210408</span>
+</dt>
+<dd><p class="description">deactivates floor and ceiling lightsources while deactivating</p></dd>
+	  <dt>.delays_before_activation <span class="version">20210408</span>
+</dt>
+<dd><p class="description">whether or not the platform begins with the maximum delay before moving</p></dd>
+	  <dt>.does_not_activate_parent <span class="version">20210408</span>
+</dt>
+<dd><p class="description">does not reactive its parent (the platform which activated it)</p></dd>
+      <dt>.door <span class="version">20100118</span>
 </dt>
 <dd><p class="description">platform is a door</p></dd>
-      <dt>
-    .extending</dt>
+      <dt>.extending</dt>
 <dd><p class="description">direction platform is moving or will move when active</p></dd>
-      <dt>
-    .floor_height</dt>
+	  <dt>.extends_floor_to_ceiling<span class="access"> (read-only)</span> <span class="version">20210408</span>
+</dt>
+<dd><p class="description">there is no empty space when the platform is fully extended</p></dd>
+      <dt>.floor_height</dt>
 <dd><p class="description">current floor height of platform</p></dd>
-      <dt>
-    .locked <span class="version">20100118</span>
+	  <dt>.initially_active<span class="access"> (read-only)</span> <span class="version">20210408</span>
+</dt>
+<dd><p class="description">otherwise inactive</p></dd>
+	  <dt>.has_been_activated <span class="version">20210408</span>
+</dt>
+<dd><p class="description">in case platform can only be activated once</p></dd>
+	  <dt>.initially_extended<span class="access"> (read-only)</span> <span class="version">20210408</span>
+</dt>
+<dd><p class="description">high for floor platforms, low for ceiling platforms, closed for two-way platforms</p></dd>
+      <dt>.locked <span class="version">20100118</span>
 </dt>
 <dd>
 <p class="description">platform is locked</p>
-<p class="note">this flag doesn't actually do anything </p>
+<p class="note">this flag doesn’t actually do anything </p>
 </dd>
-      <dt>
-    .monster_controllable</dt>
+      <dt>.maximum_ceiling_height<span class="access"> (read-only)</span> <span class="version">20220115</span>
+</dt>
+<dd><p class="description">greatest height a platform's ceiling can ever rise</p></dd>
+      <dt>.maximum_floor_height<span class="access"> (read-only)</span> <span class="version">20220115</span>
+</dt>
+<dd><p class="description">greatest height a platform's floor can ever rise</p></dd>
+      <dt>.minimum_ceiling_height<span class="access"> (read-only)</span> <span class="version">20220115</span>
+</dt>
+<dd><p class="description">least height a platform's ceiling must rise</p></dd>
+      <dt>.minimum_floor_height<span class="access"> (read-only)</span> <span class="version">20220115</span>
+</dt>
+<dd><p class="description">least height a platform's floor must rise</p></dd>
+      <dt>.monster_controllable</dt>
 <dd><p class="description">whether platform can be controlled by monsters</p></dd>
-      <dt>
-    .player_controllable</dt>
+      <dt>.player_controllable</dt>
 <dd><p class="description">whether platform can be controlled by players</p></dd>
-      <dt>
-    .polygon<span class="access"> (read-only)</span>
+      <dt>.polygon<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">polygon of this platform</p></dd>
-      <dt>
-    .secret <span class="version">20100118</span>
+	  <dt>.reverses_direction_when_obstructed <span class="version">20210408</span>
+</dt>
+<dd><p class="description">platform reverses direction when obstructed</p></dd>
+      <dt>.secret <span class="version">20100118</span>
 </dt>
 <dd>
 <p class="description">platform is secret</p>
-<p class="note">secret platforms aren't shown on the overhead map </p>
+<p class="note">secret platforms aren’t shown on the overhead map </p>
 </dd>
-      <dt>
-    .speed</dt>
+      <dt>.speed</dt>
 <dd><p class="description">platform speed</p></dd>
-      <dt>
-    .type <span class="version">20100118</span>
+	  <dt>.tag <span class="version">20221126</span>
+</dt>
+<dd><p class="description">tag of platform</p></dd>
+      <dt>.type <span class="version">20100118</span>
 </dt>
 <dd>
 <p class="description">type of this platform</p>
-<p class="note">the only thing the engine uses type for is the platform's sound </p>
+<p class="note">the only thing the engine uses type for is the platform’s sound </p>
 </dd>
+	  <dt>.uses_native_polygon_heights<span class="access"> (read-only)</span> <span class="version">20210408</span>
+</dt>
+<dd><p class="description">uses native polygon heights during automatic min,max calculation</p></dd>
     </dl></dd>
 </dl>
 <h3>
@@ -1221,34 +1351,30 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">iterates through all player starting locations in the level</p></dd>
 <dt>PlayerStarts[index]</dt>
 <dd><dl>
-      <dt>
-    .facing<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.facing<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">player starting location facing</p></dd>
-      <dt>
-    .from_ceiling<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.from_ceiling<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether player starting location z is from ceiling</p></dd>
-      <dt>
-    .polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">polygon player starting location is in</p></dd>
-      <dt>
-    .team<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.team<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">which team starts at this player starting location</p></dd>
-      <dt>
-    .x<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.x<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .y<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.y<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .z<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.z<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
-<dd><p class="description"></p></dd>
+<dd>
+<p class="description"></p>
+<p class="note">from floor or ceiling </p>
+</dd>
     </dl></dd>
 </dl>
 <h3>
@@ -1259,13 +1385,12 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Players()</dt>
 <dd><p class="description">iterates through all players in the game</p></dd>
 <dt>Players.print(message)</dt>
-<dd><p class="description">prints message to all players' screens</p></dd>
-<dt>
-    .local_player<span class="access"> (read-only)</span> <span class="version">Git</span>
+<dd><p class="description">prints message to all players’ screens</p></dd>
+<dt>Players.local_player<span class="access"> (read-only)</span> <span class="version">20200830</span>
 </dt>
 <dd>
 <p class="description">the local player</p>
-<p class="note">normally, you shouldn't need this--you'll just make the game go out of sync </p>
+<p class="note">normally, you shouldn’t need this--you’ll just make the game go out of sync </p>
 </dd>
 <dt>Players[index]</dt>
 <dd><dl>
@@ -1277,38 +1402,29 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <p class="note">disabled when the player is viewing a terminal </p>
 <p class="note">latched action flags are only true the first tick the key is held down </p>
 <dl>
-<dt>
-    .action_trigger</dt>
+<dt>.action_trigger</dt>
 <dd>
 <p class="description">respawns, or activates platforms/doors/control panels</p>
 <p class="note">latched </p>
 </dd>
-<dt>
-    .cycle_weapons_backward</dt>
+<dt>.aux_trigger <span class="version">20231125</span>
+</dt>
+<dd><p class="description">formerly microphone button; now dedicated to Lua scripts</p></dd>
+<dt>.cycle_weapons_backward</dt>
 <dd>
 <p class="description">switches to previous weapon</p>
 <p class="note">latched </p>
 </dd>
-<dt>
-    .cycle_weapons_forward</dt>
+<dt>.cycle_weapons_forward</dt>
 <dd>
 <p class="description">switches to next weapon</p>
 <p class="note">latched </p>
 </dd>
-<dt>
-    .left_trigger</dt>
+<dt>.left_trigger</dt>
 <dd><p class="description">fires primary trigger</p></dd>
-<dt>
-    .microphone_button</dt>
-<dd>
-<p class="description">activates the net mic</p>
-<p class="note">can not be set to true; can be set to false </p>
-</dd>
-<dt>
-    .right_trigger</dt>
+<dt>.right_trigger</dt>
 <dd><p class="description">fires secondary trigger</p></dd>
-<dt>
-    .toggle_map</dt>
+<dt>.toggle_map</dt>
 <dd>
 <p class="description">toggles the overhead map</p>
 <p class="note">latched </p>
@@ -1317,8 +1433,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dd>
       <dt>:activate_terminal(terminal)</dt>
 <dd><p class="description">activates terminal</p></dd>
-      <dt>
-    .color</dt>
+      <dt>.color</dt>
 <dd><p class="description">color of player (shirt color, if teams are enabled)</p></dd>
       <dt>.compass</dt>
 <dd><dl>
@@ -1326,35 +1441,26 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">turns all compass quadrants off, disables beacon</p></dd>
 <dt>:all_on()</dt>
 <dd><p class="description">turns all compass quadrants on, disables beacon</p></dd>
-<dt>
-    .beacon</dt>
+<dt>.beacon</dt>
 <dd><p class="description">whether to use the beacon</p></dd>
-<dt>
-    .lua</dt>
+<dt>.lua</dt>
 <dd><p class="description">whether Lua is controlling the compass</p></dd>
-<dt>
-    .ne<br>.northeast</dt>
+<dt>.ne<br>.northeast</dt>
 <dd><p class="description">whether north east compass quadrant is active</p></dd>
-<dt>
-    .nw<br>.northwest</dt>
+<dt>.nw<br>.northwest</dt>
 <dd><p class="description">whether north west compass quadrant is active</p></dd>
-<dt>
-    .se<br>.southeast</dt>
+<dt>.se<br>.southeast</dt>
 <dd><p class="description">whether south east compass quadrant is active</p></dd>
-<dt>
-    .sw<br>.southwest</dt>
+<dt>.sw<br>.southwest</dt>
 <dd><p class="description">whether south west compass quadrant is active</p></dd>
-<dt>
-    .x</dt>
+<dt>.x</dt>
 <dd><p class="description">beacon location</p></dd>
-<dt>
-    .y</dt>
+<dt>.y</dt>
 <dd><p class="description">beacon location</p></dd>
 </dl></dd>
       <dt>.crosshairs</dt>
 <dd><dl>
-<dt>
-    .active<span class="access"> (local player)</span>
+<dt>.active<span class="access"> (local player)</span>
 </dt>
 <dd>
 <p class="description">whether crosshairs are visible</p>
@@ -1366,89 +1472,101 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <p class="description">inflicts damage on player</p>
 <ul class="args"><li>type: if unspecified, crush damage is delt</li></ul>
 </dd>
-      <dt>
-    .dead<span class="access"> (read-only)</span>
+      <dt>.dead<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether player is dead</p></dd>
-      <dt>
-    .deaths</dt>
+      <dt>.deaths</dt>
 <dd><p class="description">deaths not caused by players</p></dd>
-      <dt>
-    .direction<br>.yaw</dt>
+      <dt>.direction<br>.yaw</dt>
 <dd>
 <p class="description">direction player is facing</p>
 <p class="note">this is the direction in which this player will run; for their aim, use .head_direction </p>
 </dd>
-      <dt>
-    .disconnected</dt>
+      <dt>.disconnected</dt>
 <dd><p class="description">whether player dropped out of the game</p></dd>
-      <dt>
-    .energy<br>.life</dt>
+      <dt>.energy<br>.life</dt>
 <dd><p class="description">amount of suit energy player has (150 is normal red health)</p></dd>
-      <dt>
-    .elevation<br>.pitch</dt>
+      <dt>.elevation<br>.pitch</dt>
 <dd><p class="description">angle player is looking up or down</p></dd>
       <dt>.external_velocity</dt>
 <dd><dl>
-<dt>
-    .i<br>.x</dt>
+<dt>.i<br>.x</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .j<br>.y</dt>
+<dt>.j<br>.y</dt>
 <dd><p class="description"></p></dd>
-<dt>
-    .k<br>.z</dt>
+<dt>.k<br>.z</dt>
 <dd><p class="description"></p></dd>
 </dl></dd>
-      <dt>
-    .extravision_duration</dt>
+      <dt>.extravision_duration</dt>
 <dd><p class="description">extravision time remaining</p></dd>
-      <dt>
-    .feet_below_media<span class="access"> (read-only)</span>
+      <dt>.feet_below_media<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether player is standing in liquid</p></dd>
       <dt>:fade_screen(type)</dt>
-<dd><p class="description">fades player's screen</p></dd>
+<dd><p class="description">fades player’s screen</p></dd>
       <dt>:find_action_key_target()</dt>
 <dd>
 <p class="description">if player is in range of a platform or control panel, returns a platform or side; otherwise returns nil</p>
 <p class="note">you can check the type of the return with is_polygon() and is_side() </p>
 </dd>
-      <dt>:find_target()</dt>
+      <dt>:find_target( [penetrate_media] <span class="version">20220115</span>)</dt>
 <dd>
-<p class="description">returns t, x, y, z, polygon, where t is the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the target is the surface of a liquid) the player is looking at; and x, y, z, and polygon are the point the player is looking at</p>
+<p class="description">returns t, x, y, z, polygon, where t is the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the target is the surface of a liquid, and penetrate_media is false) the player is looking at; and x, y, z, and polygon are the point the player is looking at</p>
 <p class="note">you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon() </p>
+<p class="note">this function will not work under liquid unless penetrate_media is true </p>
 </dd>
-      <dt>
-    .head_below_media<span class="access"> (read-only)</span>
+	  <dt>.has_map_open<span class="access"> (read-only)</span> <span class="version">20220115</span>
+</dt>
+<dd><p class="description">whether player has overhead map open</p></dd>
+      <dt>.head_below_media<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether player is completely below liquid</p></dd>
-      <dt>
-    .head_direction <span class="version">Git</span>
+      <dt>.head_direction <span class="version">20200830</span>
 </dt>
 <dd>
 <p class="description">direction in which player is looking</p>
 <p class="note">while glancing, this differs from .direction </p>
 </dd>
-      <dt>
-    .infravision_duration</dt>
+	  <dt>.hotkey <span class="version">20210408</span>
+</dt>
+<dd>
+<p class="description">pressed hotkey, from 1-12, or 0 for no hotkey</p>
+<p class="note">only valid when read/written in idle() </p>
+<p class="note">hotkeys aren’t latched, and can only be transmitted every 3 ticks </p>
+<p class="note">to check for a continously pressed hotkey, or to implement your own latch, count down from 2 before checking it again </p>
+<p class="note">hotkeys override cycle weapon backward/forward; these flags will be false for 3 ticks after a hotkey is pressed </p>
+</dd>
+	  <dt>
+    .hotkey_bindings[n] <span class="version">20210408</span><span class="access"> (local player)</span>
+</dt>
+<dd>
+<p class="description">keys or buttons the player has bound to hotkeys 1-12</p>
+<dl>
+<dt>.joystick<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">joystick button binding</p></dd>
+<dt>.key<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">key binding</p></dd>
+<dt>.mouse<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">mouse button binding</p></dd>
+</dl>
+</dd>
+      <dt>.infravision_duration</dt>
 <dd><p class="description">infravision time remaining</p></dd>
       <dt>.internal_velocity</dt>
 <dd><dl>
-<dt>
-    .forward<span class="access"> (read-only)</span>
+<dt>.forward<span class="access"> (read-only)</span>
 </dt>
-<dd><p class="description">player's forward velocity</p></dd>
-<dt>
-    .perpendicular<span class="access"> (read-only)</span>
+<dd><p class="description">player’s forward velocity</p></dd>
+<dt>.perpendicular<span class="access"> (read-only)</span>
 </dt>
-<dd><p class="description">player's perpendicular (sidestep) velocity</p></dd>
+<dd><p class="description">player’s perpendicular (sidestep) velocity</p></dd>
 </dl></dd>
-      <dt>
-    .invincibility_duration</dt>
+      <dt>.invincibility_duration</dt>
 <dd><p class="description">invincibility time remaining</p></dd>
-      <dt>
-    .invisibility_duration</dt>
+      <dt>.invisibility_duration</dt>
 <dd>
 <p class="description">invisibility time remaining</p>
 <p class="note">player will become subtly invisible if this is set higher than the standard invisibility duration (70 seconds) </p>
@@ -1457,55 +1575,46 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .items[item_type]
   </dt>
 <dd><p class="description">how many of item the player is carrying</p></dd>
-      <dt>
-    .local_<span class="access"> (read-only)</span>
+      <dt>.local_<span class="access"> (read-only)</span>
 </dt>
 <dd>
 <p class="description">true if this player is the local player</p>
-<p class="note">normally, you shouldn't need this--you'll just make the game go out of sync </p>
+<p class="note">normally, you shouldn’t need this--you’ll just make the game go out of sync </p>
 </dd>
       <dt>
     .kills[slain_player]
   </dt>
 <dd><p class="description">kill count against slain_player</p></dd>
-      <dt>
-    .monster<span class="access"> (read-only)</span>
+      <dt>.monster<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">monster that corresponds to player</p></dd>
-      <dt>
-    .motion_sensor_active<span class="access"> (local player)</span>
+      <dt>.motion_sensor_active<span class="access"> (local player)</span>
 </dt>
 <dd>
 <p class="description">whether player can view his motion sensor</p>
 <p class="note">currently, this also controls compass visibility </p>
 </dd>
-      <dt>
-    .name<span class="access"> (read-only)</span>
+      <dt>.name<span class="access"> (read-only)</span>
 </dt>
-<dd><p class="description">player's name</p></dd>
-      <dt>
-    .oxygen</dt>
+<dd><p class="description">player’s name</p></dd>
+      <dt>.oxygen</dt>
 <dd><p class="description">amount of oxygen player has (max is 10800)</p></dd>
       <dt>
-    .overlays[n]
-  </dt>
+    .overlays[n]</dt>
 <dd>
 <p class="description">there are 6 overlays, numbered 0 through 5</p>
 <dl>
 <dt>:clear()</dt>
 <dd><p class="description">turns off overlay</p></dd>
-<dt>
-    .color<span class="access"> (write-only)</span>
+<dt>.color<span class="access"> (write-only)</span>
 </dt>
 <dd><p class="description">text color</p></dd>
 <dt>:fill_icon(color)</dt>
 <dd><p class="description">fills icon with solid color</p></dd>
-<dt>
-    .icon<span class="access"> (write-only)</span>
+<dt>.icon<span class="access"> (write-only)</span>
 </dt>
 <dd><p class="description">icon</p></dd>
-<dt>
-    .text<span class="access"> (write-only)</span>
+<dt>.text<span class="access"> (write-only)</span>
 </dt>
 <dd><p class="description">text</p></dd>
 </dl>
@@ -1515,11 +1624,9 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <p class="description">plays sound that only player can hear</p>
 <p class="note">if you want all players to hear the sound as if it is coming from this player, use .monster:play_sound() instead </p>
 </dd>
-      <dt>
-    .points</dt>
+      <dt>.points</dt>
 <dd><p class="description">how many points player has</p></dd>
-      <dt>
-    .polygon<span class="access"> (read-only)</span>
+      <dt>.polygon<span class="access"> (read-only)</span>
 </dt>
 <dd>
 <p class="description">polygon the player is standing on</p>
@@ -1528,77 +1635,78 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>:position(x, y, z, polygon)</dt>
 <dd><p class="description">set player position</p></dd>
       <dt>:print(message)</dt>
-<dd><p class="description">prints message to player's screen</p></dd>
-      <dt>
-    .team</dt>
-<dd><p class="description">player's team (pants color)</p></dd>
+<dd><p class="description">prints message to player’s screen</p></dd>
+	  <dt>:revive() <span class="version">20210408</span>
+</dt>
+<dd>
+<p class="description">revives player</p>
+<p class="note">player must be totally dead </p>
+</dd>
+      <dt>.team</dt>
+<dd><p class="description">player’s team (pants color)</p></dd>
       <dt>:teleport(polygon)</dt>
 <dd><p class="description">teleports player to polygon</p></dd>
       <dt>:teleport_to_level(level)</dt>
 <dd><p class="description">teleports player to level (of course, all the other players will also go to that level)</p></dd>
+	  <dt>.teleporting<span class="access"> (read-only)</span> <span class="version">20220115</span>
+</dt>
+<dd><p class="description">whether player is teleporting</p></dd>
       <dt>.texture_palette</dt>
 <dd>
 <p class="description">displays a texture palette instead of the classic HUD</p>
 <dl>
-<dt>
-    .highlight<span class="access"> (local player)</span>
+<dt>.highlight<span class="access"> (local player)</span>
 </dt>
 <dd>
 <p class="description">number of slot to highlight</p>
 <p class="note">can be nil </p>
 </dd>
-<dt>
-    .size<span class="access"> (local player)</span>
+<dt>.size<span class="access"> (local player)</span>
 </dt>
 <dd>
 <p class="description">how many slots the palette has</p>
 <p class="note">there is a maximum of 256 slots </p>
 <p class="note">the texture palette is visible whenever the size is greater than 0 </p>
-<p class="note">rows/columns may change in the future based on the user's screen layout prefs </p>
+<p class="note">rows/columns may change in the future based on the user’s screen layout prefs </p>
 </dd>
 <dt>
-    .slots[n]
-  </dt>
+    .slots[n]</dt>
 <dd><dl>
 <dt>:clear()</dt>
 <dd><p class="description">makes this slot empty</p></dd>
-<dt>
-    .collection<span class="access"> (local player)</span>
+<dt>.collection<span class="access"> (local player)</span>
 </dt>
 <dd><p class="description">collection of this slot</p></dd>
-<dt>
-    .texture_index<span class="access"> (local player)</span>
+<dt>.texture_index<span class="access"> (local player)</span>
 </dt>
 <dd><p class="description">texture index of this slot</p></dd>
-<dt>
-    .type<span class="access"> (local player)</span> <span class="version">20090909</span>
+<dt>.type<span class="access"> (local player)</span> <span class="version">20090909</span>
 </dt>
 <dd><p class="description">texture type of this slot such as wall or sprite; see "Texture Types"</p></dd>
 </dl></dd>
 </dl>
 </dd>
+	  <dt>.totally_dead<span class="access"> (read-only)</span> <span class="version">20210408</span>
+</dt>
+<dd><p class="description">the player is dead and the death animation has finished</p></dd>
       <dt>:view_player(player) <span class="version">20080707</span>
 </dt>
-<dd><p class="description">switch to another player's view</p></dd>
-      <dt>
-    .viewed_player<span class="access"> (read-only) (local player)</span> <span class="version">Git</span>
+<dd><p class="description">switch to another player’s view</p></dd>
+      <dt>.viewed_player<span class="access"> (read-only) (local player)</span> <span class="version">20200830</span>
 </dt>
 <dd><p class="description">the player currently being viewed by the local player</p></dd>
       <dt>.weapons</dt>
 <dd><dl>
-<dt>
-    .active <span class="version">20080707</span>
+<dt>.active <span class="version">20080707</span>
 </dt>
-<dd><p class="description">when a player's weapons are not active, he does not see weapons in hand, and can not fire</p></dd>
-<dt>
-    .current<span class="access"> (read-only)</span>
+<dd><p class="description">when a player’s weapons are not active, he does not see weapons in hand, and can not fire</p></dd>
+<dt>.current<span class="access"> (read-only)</span>
 </dt>
 <dd>
 <p class="description">weapon the player is currently wielding</p>
 <p class="note">can be nil </p>
 </dd>
-<dt>
-    .desired<span class="access"> (read-only)</span> <span class="version">20090909</span>
+<dt>.desired<span class="access"> (read-only)</span> <span class="version">20090909</span>
 </dt>
 <dd>
 <p class="description">weapon the player wants to switch to</p>
@@ -1606,42 +1714,32 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dd>
 </dl></dd>
       <dt>
-    .weapons[weapon_type]
-  </dt>
+    .weapons[weapon_type]</dt>
 <dd><dl>
 <dt>.primary<br>.secondary</dt>
 <dd><dl>
-<dt>
-    .rounds<span class="access"> (read-only)</span>
+<dt>.rounds<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">how many rounds are currently loaded into the weapon</p></dd>
 </dl></dd>
 <dt>:select()</dt>
 <dd><p class="description">attempts to force player to ready weapon</p></dd>
+<dt>.type<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">type of this weapon</p></dd>
 </dl></dd>
-      <dt>
-    .weapons.current<span class="access"> (read-only)</span>
-</dt>
-<dd>
-<p class="description">weapon the player is currently wielding</p>
-<p class="note">can be nil </p>
-</dd>
-      <dt>
-    .x<span class="access"> (read-only)</span>
+      <dt>.x<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .y<span class="access"> (read-only)</span>
+      <dt>.y<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .z<span class="access"> (read-only)</span>
+      <dt>.z<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .zoom_active<span class="access"> (local player)</span>
+      <dt>.zoom_active<span class="access"> (local player)</span>
 </dt>
-<dd><p class="description">whether player's sniper zoom is active</p></dd>
+<dd><p class="description">whether player’s sniper zoom is active</p></dd>
     </dl></dd>
 </dl>
 <h3>
@@ -1654,97 +1752,101 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Polygons[index]</dt>
 <dd><dl>
       <dt>
-    .adjacent_polygons[n]
-  </dt>
+    .adjacent_polygons[n]</dt>
 <dd><p class="description">returns adjacent polygon n (across from line n), if one exists, or nil</p></dd>
       <dt>:adjacent_polygons()</dt>
 <dd><p class="description">iterates through all polygons directly adjacent to this polygon</p></dd>
-      <dt>
-    .area<span class="access"> (read-only)</span>
+      <dt>.area<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">the area of this polygon</p></dd>
       <dt>.ceiling<br>.floor</dt>
 <dd><dl>
-<dt>
-    .collection</dt>
+<dt>.collection</dt>
 <dd><p class="description">texture collection</p></dd>
-<dt>
-    .height<br>.z</dt>
+<dt>.height<br>.z</dt>
 <dd><p class="description">height</p></dd>
-<dt>
-    .light</dt>
+<dt>.light</dt>
 <dd><p class="description">texture light</p></dd>
-<dt>
-    .texture_index</dt>
+<dt>.texture_index</dt>
 <dd><p class="description">texture bitmap index</p></dd>
-<dt>
-    .texture_x</dt>
+<dt>.texture_x</dt>
 <dd><p class="description">texture x offset</p></dd>
-<dt>
-    .texture_y</dt>
+<dt>.texture_y</dt>
 <dd><p class="description">texture y offset</p></dd>
-<dt>
-    .transfer_mode</dt>
+<dt>.transfer_mode</dt>
 <dd><p class="description">texture transfer mode</p></dd>
 </dl></dd>
+	  <dt>:change_height(floor, ceiling) <span class="version">20210408</span>
+</dt>
+<dd>
+<p class="description">changes polygon floor and ceiling heights, if possible</p>
+<p class="note">won’t squish monsters; returns false instead </p>
+<p class="note">this is much less optimized than moving a platform </p>
+<p class="note">you may need to create sides if you are raising/lowering what used to be a flat floor/ceiling </p>
+</dd>
+	  <dt>:check_collision(x0, y0, z0, owner, x1, y1, z1 [, include_objects] [, include_media]) <span class="version">20210408</span>
+</dt>
+<dd>
+<p class="description">returns t, x, y, z, polygon, where t is nil (if there was no collision), or the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the collision is with the surface of a liquid) where the line segment collided with the map (or object or media); and x, y, z, polygon is the location of the collision, or the end point if there was no collision</p>
+<p class="note">the owner is a monster or player to ignore, or nil </p>
+<p class="note">you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon() </p>
+<p class="note">in order of descending speed: find_polygon(), check_collision() without objects, check_collision() including objects </p>
+</dd>
       <dt>:contains(x, y [, z])</dt>
 <dd><p class="description">whether the point is in this polygon</p></dd>
       <dt>
-    .endpoints[n]
-  </dt>
+    .endpoints[n]</dt>
 <dd><p class="description">returns endpoint n</p></dd>
       <dt>:endpoints()</dt>
-<dd><p class="description">iterates through all of this polygon's endpoints</p></dd>
+<dd><p class="description">iterates through all of this polygon’s endpoints</p></dd>
+	  <dt>:find_polygon(x1, y1, x2, y2) <span class="version">20210408</span>
+</dt>
+<dd>
+<p class="description">traverses map from (x1, y1) and returns polygon containing (x2, y2)</p>
+<p class="note">can be nil if there is no direct route between the two points, or the destination point is not in any polygon </p>
+<p class="note">ignores floor/ceiling height </p>
+</dd>
       <dt>:find_line_crossed_leaving(x1, y1, x2, y2) <span class="version">20080707</span>
 </dt>
 <dd>
 <p class="description">returns the polygon line crossed by line segment (x1, y1) (x2, y2)</p>
-<p class="note">can be nil if the line segment doesn't intersect a polygon line </p>
+<p class="note">can be nil if the line segment doesn’t intersect a polygon line </p>
 </dd>
       <dt>
-    .lines[n]
-  </dt>
+    .lines[n]</dt>
 <dd><p class="description">returns polygon line n</p></dd>
       <dt>:lines()</dt>
-<dd><p class="description">iterates through all of this polygon's lines</p></dd>
-      <dt>
-    .media</dt>
+<dd><p class="description">iterates through all of this polygon’s lines</p></dd>
+      <dt>.media</dt>
 <dd><p class="description">polygon media (liquid)</p></dd>
       <dt>:monsters()</dt>
 <dd><p class="description">iterates through all monsters in this polygon (including player monsters)</p></dd>
-      <dt>
-    .permutation</dt>
+      <dt>.permutation</dt>
 <dd><p class="description">raw permutation index of this polygon</p></dd>
       <dt>:play_sound(sound)</dt>
 <dd><p class="description">plays sound in center of polygon on floor</p></dd>
       <dt>:play_sound(x, y, z, sound [, pitch])</dt>
 <dd>
 <p class="description">plays sound at location</p>
-<p class="note">if you want to play a sound at an object location, use that object's play_sound function instead </p>
+<p class="note">if you want to play a sound at an object location, use that object’s play_sound function instead </p>
 </dd>
       <dt>
-    .sides[n]
-  </dt>
+    .sides[n]</dt>
 <dd><p class="description">returns polygon side n if it exists</p></dd>
       <dt>:sides()</dt>
-<dd><p class="description">iterates through all of this polygon's sides</p></dd>
-      <dt>
-    .type</dt>
+<dd><p class="description">iterates through all of this polygon’s sides</p></dd>
+      <dt>.type</dt>
 <dd><p class="description">polygon type</p></dd>
-      <dt>
-    .visible_on_automap <span class="version">20150619</span>
+      <dt>.visible_on_automap <span class="version">20150619</span>
 </dt>
-<dd><p class="description">whether polygon is revealed on local player's automap</p></dd>
-      <dt>
-    .x<span class="access"> (read-only)</span>
+<dd><p class="description">whether polygon is revealed on local player’s automap</p></dd>
+      <dt>.x<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">center of polygon</p></dd>
-      <dt>
-    .y<span class="access"> (read-only)</span>
+      <dt>.y<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">center of polygon</p></dd>
-      <dt>
-    .z<span class="access"> (read-only)</span>
+      <dt>.z<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">shortcut for .floor.height</p></dd>
     </dl></dd>
@@ -1759,53 +1861,42 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Projectiles.new(x, y, z, polygon, type)</dt>
 <dd>
 <p class="description">returns a new projectile</p>
-<p class="note">remember to set the projectile's elevation, facing and owner immediately after you've created it </p>
+<p class="note">remember to set the projectile’s elevation, facing and owner immediately after you’ve created it </p>
 </dd>
 <dt>Projectiles[index]</dt>
 <dd><dl>
       <dt>:delete() <span class="version">20111201</span>
 </dt>
 <dd><p class="description">removes projectile from the map</p></dd>
-      <dt>
-    .damage_scale</dt>
-<dd><p class="description">amount to scale projectile's normal damage by upon detonating</p></dd>
-      <dt>
-    .dz</dt>
+      <dt>.damage_scale</dt>
+<dd><p class="description">amount to scale projectile’s normal damage by upon detonating</p></dd>
+      <dt>.dz</dt>
 <dd><p class="description">instantaneous downward velocity</p></dd>
-      <dt>
-    .elevation<br>.pitch</dt>
+      <dt>.elevation<br>.pitch</dt>
 <dd><p class="description">vertical angle</p></dd>
-      <dt>
-    .facing<br>.yaw</dt>
+      <dt>.facing<br>.yaw</dt>
 <dd><p class="description">direction</p></dd>
       <dt>:play_sound(sound)</dt>
 <dd><p class="description">plays sound coming from this projectile</p></dd>
       <dt>:position(x, y, z, polygon)</dt>
 <dd><p class="description">sets projectile position</p></dd>
-      <dt>
-    .owner</dt>
+      <dt>.owner</dt>
 <dd><p class="description">monster that fired projectile, or nil</p></dd>
-      <dt>
-    .polygon<span class="access"> (read-only)</span>
+      <dt>.polygon<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">polygon the projectile is in</p></dd>
-      <dt>
-    .target</dt>
+      <dt>.target</dt>
 <dd><p class="description">target of guided projectile, or nil</p></dd>
-      <dt>
-    .type<span class="access"> (read-only)</span>
+      <dt>.type<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">type of projectile</p></dd>
-      <dt>
-    .x<span class="access"> (read-only)</span>
+      <dt>.x<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .y<span class="access"> (read-only)</span>
+      <dt>.y<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .z<span class="access"> (read-only)</span>
+      <dt>.z<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
     </dl></dd>
@@ -1823,41 +1914,33 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><dl>
       <dt>:damage()</dt>
 <dd><p class="description">damages scenery</p></dd>
-      <dt>
-    .damaged<span class="access"> (read-only)</span>
+      <dt>.damaged<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether this scenery has been damaged</p></dd>
       <dt>:delete()</dt>
 <dd><p class="description">removes scenery from the map</p></dd>
-      <dt>
-    .facing</dt>
+      <dt>.facing</dt>
 <dd><p class="description">direction scenery is facing</p></dd>
       <dt>:play_sound(sound)</dt>
 <dd><p class="description">play sound coming from this scenery</p></dd>
-      <dt>
-    .polygon<span class="access"> (read-only)</span>
+      <dt>.polygon<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">polygon the scenery is in</p></dd>
       <dt>:position(x, y, z, polygon) <span class="version">20090909</span>
 </dt>
 <dd><p class="description">sets position of scenery</p></dd>
-      <dt>
-    .solid</dt>
+      <dt>.solid</dt>
 <dd><p class="description">whether this scenery is solid</p></dd>
-      <dt>
-    .type<span class="access"> (read-only)</span>
+      <dt>.type<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">type of scenery</p></dd>
-      <dt>
-    .x<span class="access"> (read-only)</span>
+      <dt>.x<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .y<span class="access"> (read-only)</span>
+      <dt>.y<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .z<span class="access"> (read-only)</span>
+      <dt>.z<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
     </dl></dd>
@@ -1877,87 +1960,72 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dd>
 <dt>Sides[index]</dt>
 <dd><dl>
+	  <dt>.ambient_delta <span class="version">20210408</span>
+</dt>
+<dd><p class="description">constant offset from calculated light intensity</p></dd>
       <dt>.control_panel</dt>
 <dd>
 <p class="note">nil if the side is not a control panel </p>
 <p class="note">set to true or false to create/destroy a control panel <span class="version">20080707</span></p>
 <dl>
-<dt>
-    .can_be_destroyed <span class="version">20080707</span>
+<dt>.can_be_destroyed <span class="version">20080707</span>
 </dt>
 <dd><p class="description">whether projectiles destroy this switch</p></dd>
-<dt>
-    .light_dependent <span class="version">20080707</span>
+<dt>.light_dependent <span class="version">20080707</span>
 </dt>
 <dd><p class="description">switch can only be activated if light &gt; 75%</p></dd>
-<dt>
-    .only_toggled_by_weapons <span class="version">20080707</span>
+<dt>.only_toggled_by_weapons <span class="version">20080707</span>
 </dt>
 <dd><p class="description">switch can only be toggled by weapons</p></dd>
-<dt>
-    .permutation</dt>
+<dt>.permutation</dt>
 <dd><p class="description">permutation of control panel</p></dd>
-<dt>
-    .repair <span class="version">20080707</span>
+<dt>.repair <span class="version">20080707</span>
 </dt>
 <dd><p class="description">switch is a repair switch</p></dd>
-<dt>
-    .status <span class="version">20080707</span>
+<dt>.status <span class="version">20080707</span>
 </dt>
 <dd><p class="description">switch is active</p></dd>
-<dt>
-    .type <span class="version">20080707</span>
+<dt>.type <span class="version">20080707</span>
 </dt>
 <dd><p class="description">type of control panel</p></dd>
-<dt>
-    .uses_item<span class="access"> (read-only)</span> <span class="version">20111201</span>
+<dt>.uses_item<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">i.e. chip insertion</p></dd>
 </dl>
 </dd>
       <dt>.primary<br>.secondary<br>.transparent</dt>
 <dd><dl>
-<dt>
-    .collection</dt>
+<dt>.collection</dt>
 <dd><p class="description">texture collection</p></dd>
-<dt>
-    .empty</dt>
+<dt>.empty</dt>
 <dd>
 <p class="description">whether transparent side is empty</p>
 <p class="note">transparent side only </p>
 <p class="note">setting empty to false is a no-op; set collection and texture_index instead </p>
 </dd>
-<dt>
-    .light</dt>
+<dt>.light</dt>
 <dd><p class="description">texture light</p></dd>
-<dt>
-    .texture_index</dt>
+<dt>.texture_index</dt>
 <dd><p class="description">texture bitmap index</p></dd>
-<dt>
-    .texture_x</dt>
+<dt>.texture_x</dt>
 <dd><p class="description">texture x offset</p></dd>
-<dt>
-    .texture_y</dt>
+<dt>.texture_y</dt>
 <dd><p class="description">texture y offset</p></dd>
-<dt>
-    .transfer_mode</dt>
+<dt>.transfer_mode</dt>
 <dd><p class="description">texture transfer mode</p></dd>
 </dl></dd>
       <dt>:play_sound(sound [, pitch])</dt>
 <dd><p class="description">play sound coming from this side</p></dd>
-      <dt>
-    .line<span class="access"> (read-only)</span>
+      <dt>.line<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">line this side is attached to</p></dd>
-      <dt>
-    .polygon<span class="access"> (read-only)</span>
+      <dt>.polygon<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">polygon this side is attached to</p></dd>
       <dt>:recalculate_type() <span class="version">20081213</span>
 </dt>
 <dd><p class="description">correct the side type (Forge can generate incorrect side types)</p></dd>
-      <dt>
-    .type<span class="access"> (read-only)</span> <span class="version">20080707</span>
+      <dt>.type<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
 <dd><p class="description">type of side</p></dd>
     </dl></dd>
@@ -1971,48 +2039,42 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">iterates through all sound objects in the level</p></dd>
 <dt>SoundObjects[index]</dt>
 <dd><dl>
-      <dt>
-    .from_ceiling<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.from_ceiling<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether sound object location z is from ceiling</p></dd>
-      <dt>
-    .light<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.light<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">if sound object uses a light for volume, the light it uses</p>
-<p class="note">can be nil if sound object doesn't use light for volume </p>
+<p class="note">can be nil if sound object doesn’t use light for volume </p>
 </dd>
-      <dt>
-    .on_platform<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.on_platform<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether sound object is a platform sound</p></dd>
-      <dt>
-    .polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">sound object polygon</p></dd>
-      <dt>
-    .type<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.type<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">type of sound object</p></dd>
-      <dt>
-    .volume<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.volume<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">volume of sound object from 0.0 to 1.0</p>
 <p class="note">can be nil if sound object uses light for volume </p>
 </dd>
-      <dt>
-    .x<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.x<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .y<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.y<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>
-    .z<span class="access"> (read-only)</span> <span class="version">20111201</span>
+      <dt>.z<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
-<dd><p class="description"></p></dd>
+<dd>
+<p class="description"></p>
+<p class="note">from floor or ceiling </p>
+</dd>
     </dl></dd>
 </dl>
 <h3>
@@ -2020,8 +2082,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dl>
 <dt>Tags[index]</dt>
 <dd><dl>
-      <dt>
-    .active</dt>
+      <dt>.active</dt>
 <dd><p class="description">tag is active</p></dd>
     </dl></dd>
 </dl>
@@ -2039,7 +2100,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <h1>
 <a name="types"></a>Types and Mnemonics</h1>
 <div class="tables">
-<p>The string mnemonics listed below can be used for assignment and as arguments to functions. Additionally, Aleph One's Lua interpreter has been modified so that equality comparisons between userdata types and strings are possible.</p>
+<p>The string mnemonics listed below can be used for assignment and as arguments to functions. Additionally, Aleph One’s Lua interpreter has been modified so that equality comparisons between userdata types and strings are possible.</p>
 <p>For example, this script would move all players on the blue team to the red team:
 <span class="pre">for p in Players() do
   if p.team == "blue" then
@@ -2052,7 +2113,7 @@ And this one would damage all major compilers with 10 points of fusion damage:
     m:damage(10, "fusion")
   end
 end</span>
-Each type has a read-only .index field, which represents the game's internal index:
+Each type has a read-only .index field, which represents the game’s internal index:
 <span class="pre">&gt; =ItemTypes["pistol"].index
 1
 </span>
@@ -2118,42 +2179,41 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>Collections()</dt>
 <dt>Collections[collection]</dt>
 <dd><dl>
-      <dt>
-    .bitmap_count</dt>
+      <dt>.bitmap_count</dt>
 <dd><p class="description">number of bitmaps in collection</p></dd>
       
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
       
     </dl></dd>
 </dl>
@@ -2239,20 +2299,16 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>ControlPanelTypes()</dt>
 <dt>ControlPanelTypes[control_panel_type]</dt>
 <dd><dl>
-      <dt>
-    .active_texture_index<span class="access"> (read-only)</span> <span class="version">20080707</span>
+      <dt>.active_texture_index<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
 <dd><p class="description">bitmap index when control panel is active</p></dd>
-      <dt>
-    .class<span class="access"> (read-only)</span>
+      <dt>.class<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">class of this control panel type</p></dd>
-      <dt>
-    .collection<span class="access"> (read-only)</span> <span class="version">20080707</span>
+      <dt>.collection<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
 <dd><p class="description">collection this control panel belongs to</p></dd>
-      <dt>
-    .inactive_texture_index<span class="access"> (read-only)</span> <span class="version">20080707</span>
+      <dt>.inactive_texture_index<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
 <dd><p class="description">bitmap index when control panel is inactive/destroyed</p></dd>
     </dl></dd>
@@ -2397,6 +2453,20 @@ If you do this, you should customize them all at the beginning of the script. Ch
 </ul></div>
 <div class="end-mnemonics"></div>
 <h3>
+<a name="EphemeraQualities"></a>Ephemera Quality</h3>
+<dl>
+<dt># EphemeraQualities</dt>
+<dt>EphemeraQualities()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"off"</li>
+<li>"low"</li>
+<li>"medium"</li>
+<li>"high"</li>
+<li>"ultra"</li>
+</ul>
+<h3>
 <a name="FadeTypes"></a>Faders</h3>
 <dl>
 <dt># FadeTypes</dt>
@@ -2444,6 +2514,18 @@ If you do this, you should customize them all at the beginning of the script. Ch
 </ul></div>
 <div class="end-mnemonics"></div>
 <h3>
+<a name="FogModes"></a>Fog Modes</h3>
+<dl>
+<dt># FogModes</dt>
+<dt>FogModes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"linear"</li>
+<li>"exp"</li>
+<li>"exp2"</li>
+</ul>
+<h3>
 <a name="GameTypes"></a>Game Types</h3>
 <dl>
 <dt># GameTypes</dt>
@@ -2467,34 +2549,49 @@ If you do this, you should customize them all at the beginning of the script. Ch
 </ul></div>
 <div class="end-mnemonics"></div>
 <h3>
-<a name="ItemTypes"></a>Items</h3>
+<a name="ItemKinds"></a>Item Kinds</h3>
+<dl>
+<dt># ItemKinds</dt>
+<dt>ItemKinds()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"weapon"</li>
+<li>"ammunition"</li>
+<li>"powerup"</li>
+<li>"item"</li>
+<li>"weapon powerup"</li>
+<li>"ball"</li>
+</ul>
+<h3>
+<a name="ItemTypes"></a>Item Types</h3>
 <dl>
 <dt># ItemTypes</dt>
 <dt>ItemTypes()</dt>
 <dt>ItemTypes[item_type]</dt>
 <dd><dl>
-      <dt>
-    .initial_count <span class="version">20111201</span>
+      <dt>.initial_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">how many items of this type are placed in the level during initial placement</p></dd>
-      <dt>
-    .maximum_count <span class="version">20111201</span>
+	  <dt>.kind<span class="access"> (read-only)</span> <span class="version">20210408</span>
+</dt>
+<dd><p class="description">kind of item this is</p></dd>
+      <dt>.maximum_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">maximum number of this type of item in the level and in player inventories</p></dd>
-      <dt>
-    .minimum_count <span class="version">20111201</span>
+	  <dt>.maximum_inventory <span class="version">20210408</span>
+</dt>
+<dd><p class="description">maximum number of this type of item players can carry</p></dd>
+      <dt>.minimum_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">minimum number of this type of item in the level and in player inventories</p></dd>
-      <dt>
-    .random_chance <span class="version">20111201</span>
+      <dt>.random_chance <span class="version">20111201</span>
 </dt>
 <dd><p class="description">chance from 0 to 1.0 this item will appear in a respawn period</p></dd>
-      <dt>
-    .random_location <span class="version">20111201</span>
+      <dt>.random_location <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether items of this type spawn in random locations</p></dd>
-      <dt>
-    .total_available <span class="version">20111201</span>
+      <dt>.total_available <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">total number of items of this type that can be spawned in this level</p>
@@ -2502,42 +2599,42 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <p class="note">setting this to anything but -1 will only be effective if changed immediately when the script runs, before item placement is done </p>
 </dd>
       
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
       
     </dl></dd>
 </dl>
@@ -2716,140 +2813,204 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>MonsterTypes()</dt>
 <dt>MonsterTypes[monster_type]</dt>
 <dd><dl>
-      <dt>
-    .attacks_immediately <span class="version">20120128</span>
+	  <dt>.alien <span class="version">20220115</span>
+</dt>
+<dd><p class="description">moves slower on slower levels, etc.</p></dd>
+      <dt>.attacks_immediately <span class="version">20120128</span>
 </dt>
 <dd><p class="description">monster will try an attack immediately</p></dd>
-      <dt>
-    .cannot_be_dropped <span class="version">20120128</span>
+	  <dt>.berserker <span class="version">20220115</span>
+</dt>
+<dd><p class="description">below 1/4 vitality, this monster goes berserk</p></dd>
+	  <dt>.can_die_in_flames <span class="version">20220115</span>
+</dt>
+<dd><p class="description">uses humanoid dying shape</p></dd>
+	  <dt>.can_teleport_under_media <span class="version">20220115</span>
+</dt>
+<dd><p class="description"></p></dd>
+	  <dt>.cannot_attack <span class="version">20220115</span>
+</dt>
+<dd><p class="description">monster has no weapons and cannot attack (runs constantly to safety)</p></dd>
+      <dt>.cannot_be_dropped <span class="version">20120128</span>
 </dt>
 <dd><p class="description">monster cannot be skipped during placement</p></dd>
-      <dt>
-    .class</dt>
+	  <dt>.cannot_fire_backward <span class="version">20220115</span>
+</dt>
+<dd><p class="description">monster can’t turn more than 135 degrees</p></dd>
+	  <dt>.chooses_weapons_randomly <span class="version">20220115</span>
+</dt>
+<dd><p class="description"></p></dd>
+      <dt>.class</dt>
 <dd><p class="description">class of monster type</p></dd>
+	  <dt>.collection<span class="access"> (read-only)</span> <span class="version">20210408</span>
+</dt>
+<dd><p class="description">collection of monster type</p></dd>
+	  <dt>.clut_index<span class="access"> (read-only)</span> <span class="version">20210408</span>
+</dt>
+<dd><p class="description">color table of monster type</p></dd>
       <dt>
     .enemies[monster_class]
   </dt>
 <dd><p class="description">whether monster class is an enemy</p></dd>
+	  <dt>.enlarged <span class="version">20220115</span>
+</dt>
+<dd><p class="description">monster is 1.25 times normal height</p></dd>
+	  <dt>.fires_symmetrically <span class="version">20220115</span>
+</dt>
+<dd><p class="description">fires at +/- dy, simultaneously</p></dd>
+	  <dt>.flies <span class="version">20220115</span>
+</dt>
+<dd><p class="description"></p></dd>
+	  <dt>.floats <span class="version">20220115</span>
+</dt>
+<dd><p class="description">exclusive from flies; forces the monster to take delta-h gradually</p></dd>
       <dt>
     .friends[monster_class]
   </dt>
 <dd><p class="description">whether monster class is a friend</p></dd>
-      <dt>
-    .impact_effect<span class="access"> (read-only)</span>
+	  <dt>.has_delayed_hard_death <span class="version">20220115</span>
+</dt>
+<dd><p class="description">always dies soft, then switches to hard</p></dd>
+	  <dt>.has_nuclear_hard_death <span class="version">20220115</span>
+</dt>
+<dd><p class="description">player’s screen whites out and slowly recovers</p></dd>
+      <dt>.impact_effect<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">type of effect generated when monster gets hit by a bleeding projectile</p></dd>
-      <dt>
+      <dt>.height<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">height of monster</p></dd>
+	  <dt>
     .immunities[damage_type]
   </dt>
 <dd><p class="description">whether monster type is immune to damage type</p></dd>
-      <dt>
-    .initial_count <span class="version">20111201</span>
+	  <dt>.impact_effect<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description"></p></dd>
+      <dt>.initial_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">how many monsters of this type are placed in the level during initial placement</p></dd>
-      <dt>
-    .height<span class="access"> (read-only)</span>
+	  <dt>.invisible <span class="version">20220115</span>
 </dt>
-<dd><p class="description">height of monster</p></dd>
-      <dt>
-    .item</dt>
+<dd><p class="description">this monster uses _xfer_invisibility</p></dd>
+      <dt>.item</dt>
 <dd><p class="description">type of item the monster drops when it dies</p></dd>
-      <dt>
-    .major <span class="version">20120128</span>
+	  <dt>.kamikaze <span class="version">20220115</span>
+</dt>
+<dd><p class="description">monster does shrapnel damage and will suicide if close enough to target</p></dd>
+      <dt>.major <span class="version">20120128</span>
 </dt>
 <dd><p class="description">monster is major</p></dd>
-      <dt>
-    .maximum_count <span class="version">20111201</span>
+      <dt>.maximum_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">maximum number of this type of monster in the level</p></dd>
-      <dt>
-    .minimum_count <span class="version">20111201</span>
-</dt>
-<dd><p class="description">minimum number of this type of monster in the level</p></dd>
-      <dt>
-    .minor <span class="version">20120128</span>
-</dt>
-<dd><p class="description">monster is minor</p></dd>
-      <dt>
-    .melee_impact_effect<span class="access"> (read-only)</span>
+      <dt>.melee_impact_effect<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">type of effect generated when monster gets hit by a melee projectile</p></dd>
-      <dt>
-    .radius<span class="access"> (read-only)</span>
+      <dt>.minimum_count <span class="version">20111201</span>
+</dt>
+<dd><p class="description">minimum number of this type of monster in the level</p></dd>
+      <dt>.minor <span class="version">20120128</span>
+</dt>
+<dd><p class="description">monster is minor</p></dd>
+	  <dt>.not_afraid_of_goo <span class="version">20220115</span>
+</dt>
+<dd><p class="description"></p></dd>
+	  <dt>.not_afraid_of_lava <span class="version">20220115</span>
+</dt>
+<dd><p class="description"></p></dd>
+	  <dt>.not_afraid_of_sewage <span class="version">20220115</span>
+</dt>
+<dd><p class="description"></p></dd>
+	  <dt>.not_afraid_of_water <span class="version">20220115</span>
+</dt>
+<dd><p class="description"></p></dd>
+	  <dt>.omniscient <span class="version">20220115</span>
+</dt>
+<dd><p class="description">ignores line-of-sight during find_closest_appropriate_target()</p></dd>
+      <dt>.radius<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">radius of monster</p></dd>
-      <dt>
-    .random_chance <span class="version">20111201</span>
+      <dt>.random_chance <span class="version">20111201</span>
 </dt>
 <dd><p class="description">chance from 0 to 1.0 this monster will appear in a respawn period</p></dd>
-      <dt>
-    .random_location <span class="version">20111201</span>
+      <dt>.random_location <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether monsters of this type spawn in random locations</p></dd>
-      <dt>
-    .total_available <span class="version">20111201</span>
+	  <dt>.subtly_invisible <span class="version">20220115</span>
+</dt>
+<dd><p class="description">this monster uses _xfer_subtle_invisibility</p></dd>
+	  <dt>.tiny <span class="version">20220115</span>
+</dt>
+<dd><p class="description">0.25-size normal height</p></dd>
+      <dt>.total_available <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">total number of monsters of this type that can be spawned in this level</p>
 <p class="note">-1 means infinite monsters are available </p>
 <p class="note">setting this to anything but -1 will only be effective if changed immediately when the script runs, before monster placement is done </p>
 </dd>
+	  <dt>.uses_sniper_ledges <span class="version">20220115</span>
+</dt>
+<dd><p class="description">sit on ledges and hurl shit at the player (ranged attack monsters only</p></dd>
+	  <dt>.vitality<span class="access"> (read-only)</span> <span class="version">20220115</span>
+</dt>
+<dd><p class="description">monster’s initial vitality</p></dd>
       <dt>
     .weaknesses[damage type]
   </dt>
 <dd><p class="description">whether monster type has a weakness to damage type</p></dd>
-      <dt>
-    .waits_with_clear_shot <span class="version">20120128</span>
+      <dt>.waits_with_clear_shot <span class="version">20120128</span>
 </dt>
 <dd><p class="description">monster will sit and fire if he has a clear shot</p></dd>
       
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
       
     </dl></dd>
 </dl>
@@ -3412,18 +3573,30 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"pulsate"</li>
 <li>"wobble"</li>
 <li>"fast wobble"</li>
-</ul></div>
-<div class="mnemonics-column"><ul class="mnemonics">
 <li>"static"</li>
 <li>"landscape"</li>
-<li>"horizontal slide"</li>
-<li>"fast horizontal slide"</li>
 </ul></div>
 <div class="mnemonics-column"><ul class="mnemonics">
+<li>"horizontal slide"</li>
+<li>"fast horizontal slide"</li>
 <li>"vertical slide"</li>
 <li>"fast vertical slide"</li>
 <li>"wander"</li>
 <li>"fast wander"</li>
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
+<li>"reverse horizontal slide" <span class="version">20231125</span>
+</li>
+<li>"reverse fast horizontal slide" <span class="version">20231125</span>
+</li>
+<li>"reverse vertical slide" <span class="version">20231125</span>
+</li>
+<li>"reverse fast vertical slide" <span class="version">20231125</span>
+</li>
+<li>"2x" <span class="version">20231125</span>
+</li>
+<li>"4x" <span class="version">20231125</span>
+</li>
 </ul></div>
 <div class="end-mnemonics"></div>
 <h3>
@@ -3455,10 +3628,10 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <a name="example_icon"></a>Example Icon</h1>
       <pre>
 --[[
-This is  an example  of an  icon  in  the format  used by  Aleph One's  overlay
+This is  an example  of an  icon  in  the format  used by  Aleph One’s  overlay
 functions.
 The first characters  are a digit string  describing the number of  colors. (in
-this example, it's 7.
+this example, it’s 7.
 The first character that  is not a digit is ignored,  as are all the characters
 following it  that are the same  character. (i.e. I  could use a q instead of a
 newline here.

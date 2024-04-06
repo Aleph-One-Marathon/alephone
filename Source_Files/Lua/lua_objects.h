@@ -25,7 +25,6 @@ LUA_OBJECTS.H
 
 #include "cseries.h"
 
-#ifdef HAVE_LUA
 extern "C"
 {
 #include "lua.h"
@@ -74,7 +73,5 @@ extern char Lua_Sounds_Name[]; // "Sounds"
 typedef L_EnumContainer<Lua_Sounds_Name, Lua_Sound> Lua_Sounds;
 
 int Lua_Objects_register(lua_State *L);
-
-#endif
 
 #endif

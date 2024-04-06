@@ -23,7 +23,7 @@
 
 	Friday, July 8, 1994 2:32:44 PM (alain)
 		All old code in here is obsolete. This now has interface for the top-level
-		interface (Begin Game, etc…)
+		interface (Begin Game, etc‚Ä¶)
 	Saturday, September 10, 1994 12:45:48 AM  (alain)
 		the interface gutted again. just the stuff that handles the menu though, the rest stayed
 		the same.
@@ -134,7 +134,6 @@ extern TP2PerfGlobals perf_globals;
 #include "fades.h"
 #include "game_window.h"
 #include "game_errors.h"
-#include "Mixer.h"
 #include "Music.h"
 #include "images.h"
 #include "screen.h"
@@ -151,10 +150,9 @@ extern TP2PerfGlobals perf_globals;
 #include "QuickSave.h"
 #include "Plugins.h"
 #include "Statistics.h"
+#include "shell_options.h"
+#include "OpenALManager.h"
 
-#ifdef HAVE_SMPEG
-#include <smpeg/smpeg.h>
-#endif
 #ifdef HAVE_FFMPEG
 #include "SDL_ffmpeg.h"
 #endif
@@ -174,10 +172,13 @@ enum recording_version {
 	RECORDING_VERSION_ALEPH_ONE_PRE_PIN = 6,
 	RECORDING_VERSION_ALEPH_ONE_1_0 = 7,
 	RECORDING_VERSION_ALEPH_ONE_1_1 = 8,
-	RECORDING_VERSION_ALEPH_ONE_1_2 = 9
+	RECORDING_VERSION_ALEPH_ONE_1_2 = 9,
+	RECORDING_VERSION_ALEPH_ONE_1_3 = 10,
+	RECORDING_VERSION_ALEPH_ONE_1_4 = 11,
+	RECORDING_VERSION_ALEPH_ONE_1_7 = 12
 };
-const short default_recording_version = RECORDING_VERSION_ALEPH_ONE_1_2;
-const short max_handled_recording= RECORDING_VERSION_ALEPH_ONE_1_2;
+const short default_recording_version = RECORDING_VERSION_ALEPH_ONE_1_7;
+const short max_handled_recording= RECORDING_VERSION_ALEPH_ONE_1_7;
 
 #include "screen_definitions.h"
 #include "interface_menus.h"
@@ -191,10 +192,6 @@ const short max_handled_recording= RECORDING_VERSION_ALEPH_ONE_1_2;
 // To tell it to stop playing,
 // and also to run the end-game script
 #include "XML_LevelScript.h"
-
-// Network microphone/speaker
-#include "network_sound.h"
-#include "network_distribution_types.h"
 
 // ZZZ: should the function that uses these (join_networked_resume_game()) go elsewhere?
 #include "wad.h"
@@ -297,9 +294,9 @@ struct screen_data m1_display_screens[]= {
 
 /* -------------- local globals */
 static struct game_state game_state;
+static std::shared_ptr<SoundPlayer> introduction_sound = nullptr;
 static FileSpecifier DraggedReplayFile;
 static bool interface_fade_in_progress= false;
-static short interface_fade_type;
 static short current_picture_clut_depth;
 static struct color_table *animated_color_table= NULL;
 static struct color_table *current_picture_clut= NULL;
@@ -307,11 +304,10 @@ static struct color_table *current_picture_clut= NULL;
 /* -------------- externs */
 extern short interface_bit_depth;
 extern short bit_depth;
-extern bool insecure_lua;
 extern bool shapes_file_is_m1();
 
 /* ----------- prototypes/PREPROCESS_MAP_MAC.C */
-extern bool load_game_from_file(FileSpecifier& File, bool run_scripts, bool *was_map_found);
+extern bool load_game_from_file(FileSpecifier& File, bool run_scripts);
 extern bool choose_saved_game_to_load(FileSpecifier& File);
 
 /* ---------------------- prototypes */
@@ -346,7 +342,7 @@ static void update_interface_fades(void);
 static void interface_fade_out(short pict_resource_number, bool fade_music);
 static bool can_interface_fade_out(void);
 static void transfer_to_new_level(short level_number);
-static void try_and_display_chapter_screen(short level, bool interface_table_is_valid, bool text_block);
+static void try_and_display_chapter_screen(short level, bool interface_table_is_valid, bool text_block, bool epilogue_screen);
 
 static screen_data *get_screen_data(
 	short index);
@@ -374,11 +370,21 @@ void initialize_game_state(
 
 	toggle_menus(false);
 
-	if(insecure_lua) {
+	if(shell_options.insecure_lua) {
 	  alert_user(expand_app_variables("Insecure Lua has been manually enabled. Malicious Lua scripts can use Insecure Lua to take over your computer. Unless you specifically trust every single Lua script that will be running, you should quit $appName$ IMMEDIATELY.").c_str());
 	}
 
-	display_introduction();
+	if (!shell_options.editor && shell_options.replay_directory.empty())
+	{
+		if (shell_options.skip_intro)
+		{
+			display_main_menu();
+		}
+		else
+		{
+			display_introduction();
+		}
+	}
 }
 
 void force_game_state_change(
@@ -728,14 +734,6 @@ static bool make_restored_game_relevant(bool inNetgame, const player_start_data*
                 dynamic_world->game_information.difficulty_level= network_game_info->difficulty_level;
                 dynamic_world->game_information.cheat_flags= network_game_info->cheat_flags;
 
-                if (network_game_info->allow_mic)
-                {
-                        install_network_microphone();
-                        game_state.current_netgame_allows_microphone= true;
-                } else {
-                        game_state.current_netgame_allows_microphone= false;
-                }
-
                 // ZZZ: until players specify their behavior modifiers over the network,
                 // to avoid out-of-sync we must force them all the same.
                 standardize_player_behavior_modifiers();
@@ -791,12 +789,23 @@ bool join_networked_resume_game()
                         free(theSavedGameFlatData);
                 }
                 
+				bool found_map = false;
                 if(success)
                 {
-                        success = process_map_wad(theWad, true /* resuming */, theWadHeader.data_version);
-                        free_wad(theWad); /* Note that the flat data points into the wad. */
-                        // ZZZ: maybe this is what the Bungie comment meant, but apparently
-                        // free_wad() somehow (voodoo) frees theSavedGameFlatData as well.
+					ResetLevelScript();
+					uint32 theParentChecksum = theWadHeader.parent_checksum;
+					found_map = use_map_file(theParentChecksum);
+
+					if (found_map) {
+						dynamic_data dynamic_data_wad;
+						get_dynamic_data_from_wad(theWad, &dynamic_data_wad);
+						RunLevelScript(dynamic_data_wad.current_level_number);
+					}
+
+                    success = process_map_wad(theWad, true /* resuming */, theWadHeader.data_version);
+                    free_wad(theWad); /* Note that the flat data points into the wad. */
+                    // ZZZ: maybe this is what the Bungie comment meant, but apparently
+                    // free_wad() somehow (voodoo) frees theSavedGameFlatData as well.
                 }
                 
                 if(success)
@@ -809,20 +818,18 @@ bool join_networked_resume_game()
                         // try to locate the Map file for the saved-game, so that (1) we have a crack
                         // at continuing the game if the original gatherer disappears, and (2) we can
                         // save the game on our own machine and continue it properly (as part of a bigger scenario) later.
-                        uint32 theParentChecksum = theWadHeader.parent_checksum;
-                        if(use_map_file(theParentChecksum))
+                        
+                        if(found_map)
                         {
                                 // LP: getting the level scripting off of the map file
                                 // Being careful to carry over errors so that Pfhortran errors can be ignored
                                 short SavedType, SavedError = get_game_error(&SavedType);
-                                RunLevelScript(dynamic_world->current_level_number);
-				RunScriptChunks();
-				LoadStatsLua();
+								LoadStatsLua();
                                 set_game_error(SavedType,SavedError);
                         }
                         else
                         {
-                                /* Tell the user they’re screwed when they try to leave this level. */
+                                /* Tell the user they‚Äôre screwed when they try to leave this level. */
                                 // ZZZ: should really issue a different warning since the ramifications are different
                                 alert_user(infoError, strERRORS, cantFindMap, 0);
         
@@ -832,8 +839,6 @@ bool join_networked_resume_game()
                                 /* Set to the default map. */
                                 set_to_default_map();
 				
-				ResetLevelScript();
-				RunScriptChunks();
 				LoadStatsLua();
                         }
                         
@@ -851,7 +856,6 @@ bool join_networked_resume_game()
         
         if(success)
 	{
-		Music::instance()->PreloadLevelMusic();
 		start_game(_network_player, false /*changing level?*/);
 	}
         
@@ -873,9 +877,9 @@ bool load_and_start_game(FileSpecifier& File)
 		interface_fade_out(MAIN_MENU_BASE, true);
 	}
 
-	// run scripts after we decide single vs. multiplayer
-	bool found_map;
-	success= load_game_from_file(File, false, &found_map);
+	auto pluginMode = saved_game_was_networked(File) == 1 ? Plugins::kMode_Net : Plugins::kMode_Solo;
+	Plugins::instance()->set_mode(pluginMode);
+	success= load_game_from_file(File, false);
 
 	if (!success)
 	{
@@ -915,23 +919,13 @@ bool load_and_start_game(FileSpecifier& File)
                 
 		if (success)
 		{
-			Plugins::instance()->set_mode(userWantsMultiplayer ? Plugins::kMode_Net : Plugins::kMode_Solo);
 			Crosshairs_SetActive(player_preferences->crosshairs_active);
 			LoadHUDLua();
 			RunLuaHUDScript();
 			
 			// load the scripts we put off before
 			short SavedType, SavedError = get_game_error(&SavedType);
-			if (found_map)
-			{
-				RunLevelScript(dynamic_world->current_level_number);
-			}
-			else
-			{
-				ResetLevelScript();
-			}
-			RunScriptChunks();
-			if (!userWantsMultiplayer)
+			if(!userWantsMultiplayer)
 			{
 				LoadSoloLua();
 			}
@@ -987,7 +981,6 @@ bool load_and_start_game(FileSpecifier& File)
 				success = make_restored_game_relevant(userWantsMultiplayer, theStarts, theNumberOfStarts);
 				if (success)
 				{
-					Music::instance()->PreloadLevelMusic();
 					start_game(userWantsMultiplayer ? _network_player : _single_player, false);
 				}
 			}
@@ -1014,6 +1007,16 @@ bool handle_open_replay(FileSpecifier& File)
 	force_system_colors(true);
 	success= begin_game(_replay_from_file, false);
 	if(!success) display_main_menu();
+	return success;
+}
+
+bool handle_edit_map()
+{
+	bool success;
+
+	force_system_colors();
+	success = begin_game(_single_player, false);
+	if (!success) display_main_menu();
 	return success;
 }
 
@@ -1049,8 +1052,10 @@ void resume_game(
 	hide_cursor();
 	if (!OGL_IsActive() || !(TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fader)))
 		SetFadeEffectDelay(TICKS_PER_SECOND/2);
+#ifdef HAVE_OPENGL
 	if (OGL_IsActive())
 		OGL_Blitter::BoundScreen(true);
+#endif
 	validate_world_window();
 	set_keyboard_controller_status(true);
 }
@@ -1064,7 +1069,7 @@ void draw_menu_button_for_command(
 	
 	/* Draw it initially depressed.. */
 	draw_button(rectangle_index, true);
-	SDL_Delay(1000 / 12);
+	sleep_for_machine_ticks(MACHINE_TICKS_PER_SECOND / 12);
 	draw_button(rectangle_index, false);
 }
 
@@ -1087,6 +1092,9 @@ void update_interface_display(
 		}
 	}
 }
+
+extern bool first_frame_rendered;
+float last_heartbeat_fraction = -1.f;
 
 bool idle_game_state(uint32 time)
 {
@@ -1161,6 +1169,7 @@ bool idle_game_state(uint32 time)
 						game_state.state= _game_in_progress;
 						game_state.phase = 15 * MACHINE_TICKS_PER_SECOND;
 						game_state.last_ticks_on_idle= machine_tick_count();
+						SoundManager::instance()->UpdateListener();
 						update_interface(NONE);
 					} else {
 						/* Give them the error... */
@@ -1193,7 +1202,7 @@ bool idle_game_state(uint32 time)
 		game_state.last_ticks_on_idle= machine_tick_count();
 	}
 
-	/* if we’re not paused and there’s something to draw (i.e., anything different from
+	/* if we‚Äôre not paused and there‚Äôs something to draw (i.e., anything different from
 		last time), render a frame */
 	if(game_state.state==_game_in_progress)
 	{
@@ -1207,8 +1216,12 @@ bool idle_game_state(uint32 time)
 			// ZZZ: I don't know for sure that render_screen works best with the number of _real_
 			// ticks elapsed rather than the number of (potentially predictive) ticks elapsed.
 			// This is a guess.
-			if (theUpdateResult.first)
+			auto heartbeat_fraction = get_heartbeat_fraction();
+			if (theUpdateResult.first || (last_heartbeat_fraction != -1 && last_heartbeat_fraction != heartbeat_fraction)) {
+				last_heartbeat_fraction = heartbeat_fraction;
 				render_screen(ticks_elapsed);
+				first_frame_rendered = ticks_elapsed > 0;
+			}
 		}
 		
 		return theUpdateResult.first;
@@ -1361,7 +1374,7 @@ void do_menu_item_command(
 						{
 							case _single_player:
 								if(PLAYER_IS_DEAD(local_player) || 
-									dynamic_world->tick_count-local_player->ticks_at_last_successful_save<CLOSE_WITHOUT_WARNING_DELAY)
+								   dynamic_world->tick_count-local_player->ticks_at_last_successful_save<CLOSE_WITHOUT_WARNING_DELAY || shell_options.output.size())
 								{
 									really_wants_to_quit= true;
 								} else {
@@ -1627,11 +1640,15 @@ static void display_introduction(
 		game_state.last_ticks_on_idle= machine_tick_count();
 		display_screen(screen_data->screen_base);
 
-		Mixer::instance()->StopSoundResource();
+		if (introduction_sound) {
+			introduction_sound->AskStop();
+			introduction_sound.reset();
+		}
 		SoundRsrc.Unload();
 		if (get_sound_resource_from_images(screen_data->screen_base, SoundRsrc))
 		{
-			Mixer::instance()->PlaySoundResource(SoundRsrc);
+			SoundParameters parameters;
+			introduction_sound = SoundManager::instance()->PlaySound(SoundRsrc, parameters);
 		}
 	}
 	else
@@ -1688,7 +1705,7 @@ static void display_epilogue(
 		end_count = 2;
 	}
 	for (int i=0; i<end_count; i++)
-		try_and_display_chapter_screen(end_offset+i, true, true);
+		try_and_display_chapter_screen(end_offset+i, true, true, true);
 	show_cursor();
 }
 
@@ -1769,6 +1786,8 @@ static void display_about_dialog()
 	authors.push_back("Will Dyson");
 	authors.push_back("Carl Gherardi");
 	authors.push_back("Thomas Herzog");
+	authors.push_back("Chris Hallock (LidMop)");
+	authors.push_back(utf8_to_mac_roman("Beno√Æt Hauquier (Kolfering)"));
 	authors.push_back("Peter Hessler");
 	authors.push_back("Matthew Hielscher");
 	authors.push_back("Rhys Hill");
@@ -1801,6 +1820,7 @@ static void display_about_dialog()
 	authors.push_back("Alexander Strange (mrvacbob)");
 	authors.push_back("Alexei Svitkine");
 	authors.push_back("Ben Thompson");
+	authors.push_back("TrajansRow");
 	authors.push_back("Clemens Unterkofler (hogdotmac)");
 	authors.push_back("James Willson");
 	authors.push_back("Woody Zenfell III");
@@ -1893,7 +1913,6 @@ static void transfer_to_new_level(
 	{
 		stop_fade();
 		set_fade_effect(NONE);
-		Music::instance()->StopLevelMusic();
 //		if(OGL_IsActive())
 		{
 			exit_screen();
@@ -1909,12 +1928,16 @@ static void transfer_to_new_level(
 		if (level_number == (shapes_file_is_m1() ? 100 : EPILOGUE_LEVEL_NUMBER)) {
 			finish_game(false);
 			show_cursor(); // for some reason, cursor stays hidden otherwise
-			set_game_state(_begin_display_of_epilogue);
+
+			if (shell_options.replay_directory.empty()) {
+				set_game_state(_begin_display_of_epilogue);
+			}
+
 			force_game_state_change();
 			return;
 		}
 
-		if (!game_is_networked) try_and_display_chapter_screen(level_number, true, false);
+		if (!game_is_networked) try_and_display_chapter_screen(level_number, true, false, false);
 		success= goto_level(&entry, false, dynamic_world->player_count);
 		set_keyboard_controller_status(true);
 	}
@@ -1993,13 +2016,6 @@ static bool begin_game(
 				entry.level_number = network_game_info->level_number;
 				entry.level_name[0] = 0;
 	
-				if (network_game_info->allow_mic)
-				{
-					install_network_microphone();
-					game_state.current_netgame_allows_microphone= true;
-				} else {
-					game_state.current_netgame_allows_microphone= false;
-				}
 				game_information.cheat_flags = network_game_info->cheat_flags;
 				std::fill_n(game_information.parameters, 2, 0);
 
@@ -2024,8 +2040,13 @@ static bool begin_game(
 						
 						bool prompt_to_export = false;
 #ifndef MAC_APP_STORE
+						
 						SDL_Keymod m = SDL_GetModState();
+#if defined(__APPLE__) && defined(__MACH__)
+						if (m & KMOD_ALT) prompt_to_export = true;
+#else
 						if ((m & KMOD_ALT) || (m & KMOD_GUI)) prompt_to_export = true;
+#endif
 #endif
 						
 						success= find_replay_to_use(cheat, ReplayFile);
@@ -2096,6 +2117,15 @@ static bool begin_game(
 						load_film_profile(FILM_PROFILE_ALEPH_ONE_1_1);
 						break;
 					case RECORDING_VERSION_ALEPH_ONE_1_2:
+						load_film_profile(FILM_PROFILE_ALEPH_ONE_1_2);
+						break;
+					case RECORDING_VERSION_ALEPH_ONE_1_3:
+						load_film_profile(FILM_PROFILE_ALEPH_ONE_1_3);
+						break;
+					case RECORDING_VERSION_ALEPH_ONE_1_4:
+						load_film_profile(FILM_PROFILE_ALEPH_ONE_1_4);
+						break;
+					case RECORDING_VERSION_ALEPH_ONE_1_7:
 						load_film_profile(FILM_PROFILE_DEFAULT);
 						break;
 					default:
@@ -2183,7 +2213,7 @@ static bool begin_game(
 		{
 			FindLevelMovie(entry.level_number);
 			show_movie(entry.level_number);
-			try_and_display_chapter_screen(entry.level_number, false, false);
+			try_and_display_chapter_screen(entry.level_number, false, false, false);
 		}
 
 		Plugins::instance()->set_mode(number_of_players > 1 ? Plugins::kMode_Net : Plugins::kMode_Solo);
@@ -2254,7 +2284,9 @@ static void start_game(
 	if(!changing_level)
 	{
 		set_keyboard_controller_status(true);
-	} 
+	}
+
+	SoundManager::instance()->UpdateListener();
 }
 
 // LP: "static" removed
@@ -2320,9 +2352,23 @@ static void finish_game(
 	}
 	Movie::instance()->StopRecording();
 
+	if (shell_options.editor && shell_options.output.size())
+	{
+		L_Call_Cleanup();
+		FileSpecifier file(shell_options.output);
+		if (export_level(file))
+		{
+			exit(0);
+		}
+		else
+		{
+			exit(-1);
+		}
+	}
+
 	/* Fade out! (Pray) */ // should be interface_color_table for valkyrie, but doesn't work.
 	Music::instance()->ClearLevelMusic();
-	Music::instance()->FadeOut(MACHINE_TICKS_PER_SECOND / 2);
+	Music::instance()->Fade(0, MACHINE_TICKS_PER_SECOND / 2);
 	full_fade(_cinematic_fade_out, interface_color_table);
 	paint_window_black();
 	full_fade(_end_cinematic_fade_out, interface_color_table);
@@ -2332,21 +2378,13 @@ static void finish_game(
 	leaving_map();
 	CloseLuaHUDScript();
 	
-	// LP: stop playing the background music if it was present
-	Music::instance()->StopLevelMusic();
-	
 	/* Get as much memory back as we can. */
-	free_and_unlock_memory(); // this could call free_map.. 
 	unload_all_collections();
 	SoundManager::instance()->UnloadAllSounds();
 	
 #if !defined(DISABLE_NETWORKING)
 	if (game_state.user==_network_player)
 	{
-		if(game_state.current_netgame_allows_microphone)
-		{
-			remove_network_microphone();
-		}
 		NetUnSync(); // gracefully exit from the game
 
 		/* Don't update the screen, etc.. */
@@ -2359,24 +2397,33 @@ static void finish_game(
 	} 
 	else
 #endif // !defined(DISABLE_NETWORKING)
-	if (game_state.user == _replay && !(dynamic_world->game_information.game_type == _game_of_kill_monsters && dynamic_world->player_count == 1))
-	{
-		game_state.state = _displaying_network_game_dialogs;
 
-		force_system_colors(false);
-		display_net_game_stats();
+	if (game_state.user == _replay)
+	{
+		if (!shell_options.replay_directory.empty())
+		{
+			game_state.state = _quit_game;
+			return_to_main_menu = false;
+		}
+		else if (!(dynamic_world->game_information.game_type == _game_of_kill_monsters && dynamic_world->player_count == 1))
+		{
+			game_state.state = _displaying_network_game_dialogs;
+
+			force_system_colors(false);
+			display_net_game_stats();
+		}
 	}
 	
 	set_local_player_index(NONE);
 	set_current_player_index(NONE);
 	
 	load_environment_from_preferences();
-	if (game_state.user == _replay || game_state.user == _demo)
+	if ((game_state.user == _replay && shell_options.replay_directory.empty()) || game_state.user == _demo)
 	{
 		Plugins::instance()->set_mode(Plugins::kMode_Menu);
 		load_film_profile(FILM_PROFILE_DEFAULT);
 	}
-	if(return_to_main_menu) display_main_menu();
+	if (return_to_main_menu) display_main_menu();
 }
 
 static void clean_up_after_failed_game(bool inNetgame, bool inRecording, bool inFullCleanup)
@@ -2399,10 +2446,6 @@ static void clean_up_after_failed_game(bool inNetgame, bool inRecording, bool in
                 if (inNetgame)
                 {
 #if !defined(DISABLE_NETWORKING)
-                        if(game_state.current_netgame_allows_microphone)
-                        {
-                                remove_network_microphone();
-                        }
                         exit_networking();
 #endif // !defined(DISABLE_NETWORKING)
                 } else {
@@ -2510,12 +2553,17 @@ static void next_game_screen(
 			display_screen(data->screen_base);
 			if (game_state.state == _display_intro_screens)
 			{
-				Mixer::instance()->StopSoundResource();
+				if (introduction_sound) {
+					introduction_sound->AskStop();
+					introduction_sound.reset();
+				}
 				SoundRsrc.Unload();
 				if (get_sound_resource_from_images(pict_resource_number, SoundRsrc))
 				{
 					_fixed pitch = (shapes_file_is_m1() && game_state.state==_display_intro_screens) ? _m1_high_frequency : _normal_frequency;
-					Mixer::instance()->PlaySoundResource(SoundRsrc, pitch);
+					SoundParameters parameters;
+					parameters.pitch = pitch * 1.f / _normal_frequency;
+					introduction_sound = SoundManager::instance()->PlaySound(SoundRsrc, parameters);
 				}
 			}
 		}
@@ -2728,9 +2776,10 @@ static void handle_interface_menu_screen_click(
 static void try_and_display_chapter_screen(
 	short level,
 	bool interface_table_is_valid,
-	bool text_block)
+	bool text_block,
+	bool epilogue_screen)
 {
-	if (Movie::instance()->IsRecording())
+	if (Movie::instance()->IsRecording() || !shell_options.replay_directory.empty())
 		return;
 	
 	short pict_resource_number = get_screen_data(_display_chapter_heading)->screen_base + level;
@@ -2739,7 +2788,8 @@ static void try_and_display_chapter_screen(
 	{
 		short existing_state= game_state.state;
 		game_state.state= _display_chapter_heading;
-		free_and_unlock_memory();
+
+		if (!epilogue_screen) SoundManager::instance()->StopAllSounds(); //don't stop the music if intro restarted for epilogue
 		
 		/* This will NOT work if the initial level entered has a chapter screen, which is why */
 		/*  we perform this check. (The interface_color_table is not valid...) */
@@ -2770,10 +2820,13 @@ static void try_and_display_chapter_screen(
 			/* Draw the picture */
 			draw_full_screen_pict_resource_from_scenario(pict_resource_number);
 
+			std::shared_ptr<SoundPlayer> soundPlayer;
 			if (get_sound_resource_from_scenario(pict_resource_number,SoundRsrc))
 			{
 				_fixed pitch = (shapes_file_is_m1() && level == 101) ? _m1_high_frequency : _normal_frequency;
-				Mixer::instance()->PlaySoundResource(SoundRsrc, pitch);
+				SoundParameters parameters;
+				parameters.pitch = pitch * 1.f / _normal_frequency;
+				soundPlayer = SoundManager::instance()->PlaySound(SoundRsrc, parameters);
 			}
 			
 			/* Fade in.... */
@@ -2787,35 +2840,11 @@ static void try_and_display_chapter_screen(
 			/* Fade out! (Pray) */
 			interface_fade_out(pict_resource_number, false);
 			
-			Mixer::instance()->StopSoundResource();
+			if (soundPlayer) soundPlayer->AskStop();
 		}
 		game_state.state= existing_state;
 	}
 }
-
-
-#if !defined(DISABLE_NETWORKING)
-/*
- *  Network microphone handling
- */
-
-void install_network_microphone(
-	void)
-{
-	open_network_speaker();
-	NetAddDistributionFunction(kNewNetworkAudioDistributionTypeID, received_network_audio_proc, true);
-	open_network_microphone();
-}
-
-void remove_network_microphone(
-	void)
-{
-	close_network_microphone();
-	NetRemoveDistributionFunction(kNewNetworkAudioDistributionTypeID);
-	close_network_speaker();
-}
-#endif // !defined(DISABLE_NETWORKING)
-
 
 /* ------------ interface fade code */
 /* Be aware that we could try to change bit depths before a fade is completed. */
@@ -2831,7 +2860,6 @@ static void start_interface_fade(
 	if(animated_color_table)
 	{
 		interface_fade_in_progress= true;
-		interface_fade_type= type;
 
 		explicit_start_fade(type, original_color_table, animated_color_table);
 	}
@@ -2884,8 +2912,6 @@ void interface_fade_out(
 	assert(current_picture_clut);
 	if(current_picture_clut)
 	{
-		struct color_table *fadeout_animated_color_table;
-
 		/* We have to check this because they could go into preferences and change on us, */
 		/*  the evil swine. */
 		if(current_picture_clut_depth != interface_bit_depth)
@@ -2896,25 +2922,14 @@ void interface_fade_out(
 		}
 		
 		hide_cursor();
-			
-		fadeout_animated_color_table= new color_table;
-		obj_copy(*fadeout_animated_color_table, *current_picture_clut);
 
 		if(fade_music) 
-			Music::instance()->FadeOut(MACHINE_TICKS_PER_SECOND/2);
-		if (fadeout_animated_color_table)
-		{
-			explicit_start_fade(_cinematic_fade_out, current_picture_clut, fadeout_animated_color_table);
-			while (update_fades()) 
-				Music::instance()->Idle();
+			Music::instance()->Fade(0, MACHINE_TICKS_PER_SECOND/2);
 
-			/* Oops.  Founda  memory leak.. */
-			delete fadeout_animated_color_table;
-		}
+		full_fade(_cinematic_fade_out, current_picture_clut);
 		
 		if(fade_music) 
 		{
-			Mixer::instance()->StopSoundResource();
 			while(Music::instance()->Playing()) 
 				Music::instance()->Idle();
 
@@ -3016,38 +3031,18 @@ void exit_networking(void)
  *  Show movie
  */
 
+#ifdef HAVE_FFMPEG
 #ifdef HAVE_OPENGL
-#if defined(HAVE_FFMPEG) || defined(HAVE_SMPEG)
 static OGL_Blitter show_movie_blitter;
 #endif
-#ifdef HAVE_SMPEG
-static SDL_mutex *show_movie_mutex = NULL;
-
-// SMPEG callback for use under OpenGL
-static void show_movie_frame(SDL_Surface* frame, int x, int y, unsigned int w, unsigned int h)
-{
-	if (show_movie_mutex && SDL_LockMutex(show_movie_mutex) != -1)
-	{
-		if (!show_movie_blitter.Loaded())
-		{
-			show_movie_blitter.Load(*frame);
-			// let main thread know there's a frame ready
-			SDL_Event ev;
-			ev.type = SDL_USEREVENT;
-			SDL_PushEvent(&ev);
-		}
-		SDL_UnlockMutex(show_movie_mutex);
-	}
-}
-#endif
-#endif
-#ifdef HAVE_FFMPEG
 static SDL_mutex *movie_audio_mutex = NULL;
 static const int AUDIO_BUF_SIZE = 10;
 static SDL_ffmpegAudioFrame *aframes[AUDIO_BUF_SIZE];
 static uint64_t movie_sync = 0;
-void movie_audio_callback(void *data, Uint8 *stream, int length)
+static SDL_AudioSpec specs;
+int movie_audio_callback(uint8* stream, int length)
 {
+	int returnLength = 0;
 	if (movie_audio_mutex && SDL_LockMutex(movie_audio_mutex) != -1)
 	{
 		if (aframes[0]->size == length)
@@ -3055,18 +3050,18 @@ void movie_audio_callback(void *data, Uint8 *stream, int length)
 			movie_sync = aframes[0]->pts;
 			memcpy(stream, aframes[0]->buffer, aframes[0]->size);
 			aframes[0]->size = 0;
-			
-			SDL_ffmpegAudioFrame *f = aframes[0];
+
+			SDL_ffmpegAudioFrame* f = aframes[0];
 			for (int i = 1; i < AUDIO_BUF_SIZE; i++)
 				aframes[i - 1] = aframes[i];
 			aframes[AUDIO_BUF_SIZE - 1] = f;
+			returnLength = length;
 		}
-		else
-		{
-			memset(stream, 0, length);
-		}
+
 		SDL_UnlockMutex(movie_audio_mutex);
 	}
+
+	return returnLength;
 }
 #endif
 
@@ -3074,10 +3069,10 @@ extern bool option_nosound;
 
 void show_movie(short index)
 {
-	if (Movie::instance()->IsRecording())
+	if (Movie::instance()->IsRecording() || !shell_options.replay_directory.empty())
 		return;
 	
-#if defined(HAVE_FFMPEG) || defined(HAVE_SMPEG)
+#if defined(HAVE_FFMPEG)
 	float PlaybackSize = 2;
 	
 	FileSpecifier IntroMovie;
@@ -3090,216 +3085,152 @@ void show_movie(short index)
 	}
 
 	if (!File) return;
+	if (!OpenALManager::Get()) return;
 
 	change_screen_mode(_screentype_chapter);
 
-	{
-		SoundManager::Pause pauseSoundManager;
-		SDL_Rect dst_rect = { 0, 0, 640, 480 };
+	SoundManager::Pause pauseSoundManager;
+	SDL_Rect dst_rect = { 0, 0, 640, 480 };
 
-#ifdef HAVE_FFMPEG
-		SDL_ffmpegFile *sffile = SDL_ffmpegOpen(File->GetPath());
-		if (!sffile)
-			return;
+	SDL_ffmpegFile *sffile = SDL_ffmpegOpen(File->GetPath());
+	if (!sffile)
+		return;
 		
-		SDL_ffmpegSelectVideoStream(sffile, 0);
-		SDL_ffmpegStream *vstream = SDL_ffmpegGetVideoStream(sffile, 0);
+	SDL_ffmpegSelectVideoStream(sffile, 0);
+	SDL_ffmpegStream *vstream = SDL_ffmpegGetVideoStream(sffile, 0);
 		
-		SDL_ffmpegSelectAudioStream(sffile, 0);
-		SDL_ffmpegStream *astream = SDL_ffmpegGetAudioStream(sffile, 0);
+	SDL_ffmpegSelectAudioStream(sffile, 0);
+	SDL_ffmpegStream *astream = SDL_ffmpegGetAudioStream(sffile, 0);
 		
-		SDL_ffmpegVideoFrame *vframe = vstream ? SDL_ffmpegCreateVideoFrame() : NULL;
+	SDL_ffmpegVideoFrame *vframe = vstream ? SDL_ffmpegCreateVideoFrame() : NULL;
 		
-		if (vframe)
+	if (vframe)
+	{
+		vframe->surface = SDL_CreateRGBSurface(SDL_SWSURFACE, dst_rect.w, dst_rect.h, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000);
+		if (!vframe->surface)
 		{
-			vframe->surface = SDL_CreateRGBSurface(SDL_SWSURFACE, dst_rect.w, dst_rect.h, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000);
-			if (!vframe->surface)
-			{
-				SDL_ffmpegFreeVideoFrame(vframe);
-				vframe = NULL;
+			SDL_ffmpegFreeVideoFrame(vframe);
+			vframe = NULL;
+		}
+	}
+		
+		
+	if (astream)
+	{
+		movie_audio_mutex = SDL_CreateMutex();
+		specs = SDL_ffmpegGetAudioSpec(sffile, 512, NULL);
+		int frameSize = specs.channels * specs.samples * 2;
+		for (int i = 0; i < AUDIO_BUF_SIZE; i++)
+		{
+			aframes[i] = SDL_ffmpegCreateAudioFrame(sffile, frameSize);
+			SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
+		}
+	}
+				
+#ifdef HAVE_OPENGL
+	if (OGL_IsActive())
+		OGL_ClearScreen();
+#endif
+	OpenALManager::Get()->Start();
+	bool done = false;
+	int64_t movie_waudio_sync = 0;
+	std::shared_ptr<StreamPlayer> movie_audio_player;
+	while (!done)
+	{
+		SDL_Event event;
+		while (SDL_PollEvent(&event) )
+		{
+			switch (event.type) {
+			case SDL_KEYDOWN:
+			case SDL_MOUSEBUTTONDOWN:
+			case SDL_CONTROLLERBUTTONDOWN:
+				done = true;
+				break;
+			default:
+				break;
 			}
 		}
-		
-		
+			
 		if (astream)
 		{
-			movie_audio_mutex = SDL_CreateMutex();
-			SDL_AudioSpec specs = SDL_ffmpegGetAudioSpec(sffile, 512, movie_audio_callback);
-			if (SDL_OpenAudio(&specs, 0) >= 0)
+			SDL_LockMutex(movie_audio_mutex);
+			for (int i = 0; i < AUDIO_BUF_SIZE; i++)
 			{
-				int frameSize = specs.channels * specs.samples * 2;
-				for (int i = 0; i < AUDIO_BUF_SIZE; i++)
+				if (!aframes[i]->size)
 				{
-					aframes[i] = SDL_ffmpegCreateAudioFrame(sffile, frameSize);
 					SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
 				}
 			}
+			if (!aframes[AUDIO_BUF_SIZE - 1]->size && aframes[AUDIO_BUF_SIZE - 1]->last)
+				done = true;
+			SDL_UnlockMutex(movie_audio_mutex);
 		}
-				
-#ifdef HAVE_OPENGL
-		if (OGL_IsActive())
-			OGL_ClearScreen();
-#endif
-		
-		SDL_PauseAudio(false);
-		bool done = false;
-		while (!done)
-		{
-			SDL_Event event;
-			while (SDL_PollEvent(&event) )
-			{
-				switch (event.type) {
-				case SDL_KEYDOWN:
-				case SDL_MOUSEBUTTONDOWN:
-				case SDL_CONTROLLERBUTTONDOWN:
-					done = true;
-					break;
-				default:
-					break;
-				}
-			}
 			
-			if (astream)
-			{
-				SDL_LockMutex(movie_audio_mutex);
-				for (int i = 0; i < AUDIO_BUF_SIZE; i++)
-				{
-					if (!aframes[i]->size)
-					{
-						SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
-					}
-				}
-				if (!aframes[AUDIO_BUF_SIZE - 1]->size && aframes[AUDIO_BUF_SIZE - 1]->last)
-					done = true;
-				SDL_UnlockMutex(movie_audio_mutex);
-			}
-			
-			if (vframe)
-			{
-				if (!vframe->ready)
-				{
-					SDL_ffmpegGetVideoFrame(sffile, vframe);
-				}
-				else if (vframe->pts <= movie_sync)
-				{
-#ifdef HAVE_OPENGL
-					if (OGL_IsActive())
-					{
-						OGL_Blitter::BoundScreen();
-						show_movie_blitter.Load(*(vframe->surface));
-						show_movie_blitter.Draw(dst_rect);
-						show_movie_blitter.Unload();
-						MainScreenSwap();
-					}
-					else
-#endif
-					{
-						SDL_BlitSurface(vframe->surface, 0, MainScreenSurface(), &dst_rect);
-						MainScreenUpdateRects(1, &dst_rect);
-					}
-					vframe->ready = 0;
-					if (vframe->last)
-						done = true;
-				}
-				else 
-				{
-					SDL_Delay(MIN(30, vframe->pts - movie_sync));
-				}
-			}
+		if (!movie_audio_player || !movie_audio_player->IsActive()) {
+			movie_audio_player = OpenALManager::Get()->PlayStream(movie_audio_callback, specs.channels * specs.samples * 2, specs.freq, specs.channels == 2, AudioFormat::_32_float);
 		}
-		
-		SDL_PauseAudio(true);
-		if (astream)
-		{
-			for (int i = 0; i < AUDIO_BUF_SIZE; i++)
-			{
-				SDL_ffmpegFreeAudioFrame(aframes[i]);
-			}
-			SDL_DestroyMutex(movie_audio_mutex);
-			movie_audio_mutex = NULL;
-		}
-				
 		if (vframe)
-			SDL_ffmpegFreeVideoFrame(vframe);
-		SDL_ffmpegFree(sffile);
-		SDL_CloseAudio();
-
-#elif defined(HAVE_SMPEG) // end HAVE_FFMPEG
-		
-		SMPEG_Info info;
-		SMPEG *movie;
-
-		movie = SMPEG_new(File->GetPath(), &info, option_nosound ? 0 : 1);
-		if (!movie) return;
-		if (!info.has_video) {
-			SMPEG_delete(movie);
-			return;
-		}
-		
-#ifdef HAVE_OPENGL
-		SDL_Surface *gl_surface = NULL;
-		if (OGL_IsActive())
 		{
-			if (PlatformIsLittleEndian()) {
-				gl_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, dst_rect.w, dst_rect.h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0x00000000);
-			} else {
-				gl_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, dst_rect.w, dst_rect.h, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x00000000);
-			}
-			SMPEG_setdisplay(movie, gl_surface, NULL, show_movie_frame);
-			SMPEG_scaleXY(movie, dst_rect.w, dst_rect.h);
-			show_movie_mutex = SDL_CreateMutex();
-			OGL_ClearScreen();
-		}
-		else
-#endif
-		{
-			SMPEG_setdisplay(movie, MainScreenSurface(), NULL, NULL);
-			SMPEG_scaleXY(movie, dst_rect.w, dst_rect.h);
-			SMPEG_move(movie, dst_rect.x, dst_rect.y);
-		}
-		
-		bool done = false;
-		SMPEG_play(movie);
-		while (!done && SMPEG_status(movie) == SMPEG_PLAYING)
-		{
-			SDL_Event event;
-			while (SDL_PollEvent(&event) )
+			if (!astream) 
 			{
-				switch (event.type) {
-				case SDL_KEYDOWN:
-				case SDL_MOUSEBUTTONDOWN:
-				case SDL_CONTROLLERBUTTONDOWN:
-					done = true;
-					break;
-#ifdef HAVE_OPENGL
-				case SDL_USEREVENT:
-					if (SDL_LockMutex(show_movie_mutex) != -1)
-					{
-						OGL_Blitter::BoundScreen();
-						show_movie_blitter.Draw(dst_rect);
-						show_movie_blitter.Unload();
-						SDL_UnlockMutex(show_movie_mutex);
-						MainScreenSwap();
-					}
-					break;
-#endif
-				default:
-					break;
-				}
+				movie_sync = machine_tick_count() - movie_waudio_sync;
 			}
-			
-			SDL_Delay(100);
-		}
-		SMPEG_delete(movie);
+			if (!vframe->ready)
+			{
+				SDL_ffmpegGetVideoFrame(sffile, vframe);
+			}
+			else if (vframe->pts <= movie_sync)
+			{
 #ifdef HAVE_OPENGL
-		SDL_FreeSurface(gl_surface);
-		SDL_DestroyMutex(show_movie_mutex);
-		show_movie_mutex = NULL;
-		show_movie_blitter.Unload();
+				if (OGL_IsActive())
+				{
+					OGL_Blitter::BoundScreen();
+					show_movie_blitter.Load(*(vframe->surface));
+					show_movie_blitter.Draw(dst_rect);
+					show_movie_blitter.Unload();
+					MainScreenSwap();
+				}
+				else
 #endif
-#endif // HAVE_SMPEG
+				{
+					SDL_BlitSurface(vframe->surface, 0, MainScreenSurface(), &dst_rect);
+					MainScreenUpdateRects(1, &dst_rect);
+				}
+				vframe->ready = 0;
+				if (vframe->last)
+					done = true;
+
+				movie_waudio_sync = machine_tick_count() - vframe->pts;
+			}
+			else 
+			{
+				sleep_for_machine_ticks(MIN(30, vframe->pts - movie_sync));
+			}
+		}
 	}
-#endif // HAVE_FFMPEG || HAVE_SMPEG
+
+	while (movie_audio_player->IsActive()) {
+		sleep_for_machine_ticks(MACHINE_TICKS_PER_SECOND / 100);
+	}
+
+	OpenALManager::Get()->Stop();
+	movie_audio_player.reset();
+
+	if (astream)
+	{
+		for (int i = 0; i < AUDIO_BUF_SIZE; i++)
+		{
+			SDL_ffmpegFreeAudioFrame(aframes[i]);
+		}
+		SDL_DestroyMutex(movie_audio_mutex);
+		movie_audio_mutex = NULL;
+	}
+				
+	if (vframe)
+		SDL_ffmpegFreeVideoFrame(vframe);
+	SDL_ffmpegFree(sffile);
+
+#endif // HAVE_FFMPEG
 }
 
 
@@ -3346,16 +3277,4 @@ size_t should_restore_game_networked(FileSpecifier& file)
         }
 
         return theResult;
-}
-
-OpenedResourceFile ExternalResources;
-
-void set_external_resources_file(FileSpecifier& f)
-{
-	f.Open(ExternalResources);
-}
-
-void close_external_resources()
-{
-	ExternalResources.Close();
 }

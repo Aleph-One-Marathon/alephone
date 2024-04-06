@@ -4,7 +4,7 @@ SRCROOT="$1/PBProjects"
 TARGET_BUILD_DIR="$2"
 SIGNATURE="$3"
 
-if [[ ! -d "$SRCROOT" || ! -d "$TARGET_BUILD_DIR" || "$SIGNATURE" == "" ]]; then
+if [[ ! -d "$SRCROOT" || ! -d "$TARGET_BUILD_DIR" ]]; then
   echo "Usage: $0 <source-directory> <binary-directory> <signature>"
   exit 1
 fi
@@ -25,15 +25,18 @@ END
 
 make_dmg()
 {
-    appname="$1"
-    codesign --timestamp --deep --force -o runtime --sign "$SIGNATURE" "$TARGET_BUILD_DIR/$appname.app"
-    spctl -a -t execute -v "$TARGET_BUILD_DIR/$appname.app"
-   
+    imgname="$1"
+    appname="$2"
+    if [ "$SIGNATURE" != "" ]; then
+        codesign --timestamp --deep --force -o runtime --sign "$SIGNATURE" "$TARGET_BUILD_DIR/$appname.app"
+        spctl -a -t execute -v "$TARGET_BUILD_DIR/$appname.app"
+    fi
     diskdir=`mktemp -d -t Aleph`
     rsync -a "$TARGET_BUILD_DIR/$appname.app" "$diskdir"
     ln -s /Applications "$diskdir"
     create_webloc "https://alephone.lhowon.org/" "$diskdir/Aleph One home page"
     cp "$SRCROOT/../COPYING" "$diskdir/COPYING.txt"
+    cp "$SRCROOT/../docs/README.txt" "$diskdir/README.txt"
 
     docdir="$diskdir/Documentation"
     mkdir "$docdir"
@@ -45,7 +48,7 @@ make_dmg()
     mkdir "$licdir"
     cp "$SRCROOT/../Resources/Library Licenses/"*.* "$licdir"
     
-    if [ "$2" != "" ]; then
+    if [ "$3" != "" ]; then
         extdir="$diskdir/Extras"
         mkdir "$extdir"
         cp "$SRCROOT/../data/Transparent_Liquids.mml" "$extdir"
@@ -56,16 +59,17 @@ make_dmg()
     fi
     
     version=`grep '^#define A1_DATE_VERSION' "$SRCROOT/../Source_Files/Misc/alephversion.h" | sed -e 's/\(.*\"\)\(.*\)\(\"\)/\2/g'`
-    imgname="${appname// }"
     imgfile="$TARGET_BUILD_DIR/$imgname-$version-Mac.dmg"
-    hdiutil create -ov -fs HFS+ -format UDBZ -layout GPTSPUD -srcfolder "$diskdir" -volname "$appname" "$imgfile"
-    codesign -s "$SIGNATURE" "$imgfile"
-    spctl -a -t open --context context:primary-signature -v "$imgfile"
+    hdiutil create -ov -fs HFS+ -format ULFO -layout GPTSPUD -srcfolder "$diskdir" -volname "$appname" "$imgfile"
+    if [ "$SIGNATURE" != "" ]; then
+        codesign -s "$SIGNATURE" "$imgfile"
+        spctl -a -t open --context context:primary-signature -v "$imgfile"
+    fi
     
     rm -rf "$diskdir"
 }
 
-make_dmg "Aleph One" "extras"
-make_dmg "Marathon"
-make_dmg "Marathon 2"
-make_dmg "Marathon Infinity"
+make_dmg "AlephOne" "Aleph One" "extras"
+make_dmg "Marathon" "Classic Marathon"
+make_dmg "Marathon2" "Classic Marathon 2"
+make_dmg "MarathonInfinity" "Classic Marathon Infinity"

@@ -57,14 +57,33 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "OGL_Setup.h"
 #include "ChaseCam.h"
 #include "player.h"
+#include "ephemera.h"
+#include "preferences.h"
 
 #include <string.h>
 #include <limits.h>
+#include <algorithm>
+#include <boost/container/small_vector.hpp>
 
 
 // LP: "recommended" sizes of stuff in growable lists
 #define MAXIMUM_RENDER_OBJECTS 72
-#define MAXIMUM_OBJECT_BASE_NODES 6
+
+// The base nodes of an object (contiguous nodes it crosses and should draw over), the crossover points, and total span
+struct RenderPlaceObjsClass::span_data
+{
+	struct base_node_data
+	{
+		sorted_node_data* node;
+		long_point2d right_pt; // right edge of object's span in this node, or span_data::right_pt if rightmost node
+	};	                       // (even if that point lies outside)
+	
+	boost::container::small_vector<base_node_data, 6> base_nodes; // left-to-right
+	
+	// Total span (can be off-map: coords are within +/- 2^16 instead of 2^15)
+	long_point2d left_pt;
+	long_point2d right_pt;
+};
 
 // For finding the 2D projection of the bounding box;
 // also finds other useful info
@@ -98,7 +117,6 @@ void RenderPlaceObjsClass::initialize_render_object_list()
 	RenderObjects.clear();
 }
 
-
 /* walk our sorted polygon lists, adding every object in every polygon to the render_object list,
 	in depth order */
 void RenderPlaceObjsClass::build_render_object_list()
@@ -124,37 +142,34 @@ void RenderPlaceObjsClass::build_render_object_list()
 		
 		while (object_index!=NONE)
 		{
-			short base_node_count;
-			sorted_node_data *base_nodes[MAXIMUM_OBJECT_BASE_NODES];
-			
 			float Opacity = (object_index == self_index) ? GetChaseCamData().Opacity : 1;
-			render_object_data *render_object= build_render_object(NULL, floor_intensity, ceiling_intensity,
-				base_nodes, &base_node_count, object_index, Opacity, NULL);
-			
-			if (render_object)
-			{
-				build_aggregate_render_object_clipping_window(render_object, base_nodes, base_node_count);
-				sort_render_object_into_tree(render_object, base_nodes, base_node_count);
-			}
-			
+			add_object_to_sorted_nodes(get_object_data(object_index), floor_intensity, ceiling_intensity, Opacity);
 			object_index= get_object_data(object_index)->next_object;
+		}
+
+		if (graphics_preferences->ephemera_quality != _ephemera_off)
+		{
+			auto ephemera_index = get_polygon_ephemera(sorted_node->polygon_index);
+			while (ephemera_index != NONE)
+			{
+				add_object_to_sorted_nodes(get_ephemera_data(ephemera_index), floor_intensity, ceiling_intensity, 1);
+				ephemera_index = get_ephemera_data(ephemera_index)->next_object;
+			}
 		}
 	}
 }
 
-
-// LP change: make it better able to do long-distance views
+// Return a linked list of new render objects (or null) for an object and any parasites, in draw order (back-to-front),
+// without clipping windows, and unattached to any sorted node
 render_object_data *RenderPlaceObjsClass::build_render_object(
-	long_point3d *origin, // world_point3d *origin,
+	object_data* object,
 	_fixed floor_intensity,
 	_fixed ceiling_intensity,
-	sorted_node_data **base_nodes,
-	short *base_node_count,
-	short object_index, float Opacity,
-	long_point3d *rel_origin)
+	float Opacity,
+	long_point3d* origin,
+	long_point3d* rel_origin)
 {
 	render_object_data *render_object= NULL;
-	object_data *object= get_object_data(object_index);
 	// LP: reference to simplify the code
 	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 	
@@ -205,16 +220,20 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			// For the convenience of the 3D-model renderer
 			int LightDepth = transformed_origin.x;
 			GLfloat LightDirection[3];
-			
-			get_object_shape_and_transfer_mode(&view->origin, object_index, &data);
+
+			get_object_shape_and_transfer_mode(&view->origin, object, &data);
 			// Nonexistent shape: skip
 			if (data.collection_code == NONE) return NULL;
+			
+			OGL_ModelData* ModelPtr = nullptr;
 			
 #ifdef HAVE_OPENGL
 			// Find which 3D model will take the place of this sprite, if any
 			short ModelSequence;
-			OGL_ModelData *ModelPtr =
-				OGL_GetModelData(GET_COLLECTION(data.collection_code),GET_DESCRIPTOR_SHAPE(object->shape),ModelSequence);
+			ModelPtr = OGL_GetModelData(
+				GET_COLLECTION(data.collection_code),
+				GET_DESCRIPTOR_SHAPE(object->shape),
+				ModelSequence);
 #endif
 			shape_information= rescale_shape_information(
 				extended_get_shape_information(data.collection_code, data.low_level_shape_index),
@@ -243,35 +262,18 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				shape_information = &model_shape_information;
 			}
 #endif
-			
 			// Too close?
 			if (Farthest < MINIMUM_OBJECT_DISTANCE) return NULL;
 			
-			/* if the caller wants it, give him the left and right extents of this shape */
-			if (base_nodes)
-			{
-				*base_node_count= build_base_node_list(object->polygon, &object->location,
-					shape_information->world_left, shape_information->world_right, base_nodes);
-			}
+			assert(DistanceRef > 0);
 			
-			if (ProjDistance == 0)
-			{
-				x0 = view->half_screen_width;
-				x1 = x0 + 1;
-				y0 = view->half_screen_height;
-				y1 = y0 + 1;
-			}
-			else
 			{
 				// Doing this with full-integer arithmetic to avoid mis-clipping;
-				x0= view->half_screen_width + (int(transformed_origin.y+shape_information->world_left)*view->world_to_screen_x)/ProjDistance;
-				x1= view->half_screen_width + (int(transformed_origin.y+shape_information->world_right)*view->world_to_screen_x)/ProjDistance;
-				y0=	view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_top))/ProjDistance + view->dtanpitch;
-				y1= view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_bottom))/ProjDistance + view->dtanpitch;
-			}
-			if (x0<x1 && y0<y1)
-			{
-				// LP Change:
+				x0= view->half_screen_width + (int(transformed_origin.y+shape_information->world_left)*view->world_to_screen_x)/DistanceRef;
+				x1= view->half_screen_width + (int(transformed_origin.y+shape_information->world_right)*view->world_to_screen_x)/DistanceRef;
+				y0=	view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_top))/DistanceRef + view->dtanpitch;
+				y1= view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_bottom))/DistanceRef + view->dtanpitch;
+			
 				size_t Length = RenderObjects.size();
 				POINTER_DATA OldROPointer = POINTER_CAST(RenderObjects.data());
 				
@@ -301,6 +303,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				}
 				render_object= &RenderObjects[Length];
 				
+				render_object->clipping_windows = nullptr;
 				render_object->rectangle.flags= 0;
 				
 				// Clamp to short values
@@ -340,8 +343,8 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				render_object->rectangle.Opacity = Opacity;
 				render_object->rectangle.ShapeDesc = BUILD_DESCRIPTOR(data.collection_code,0);
 				render_object->rectangle.LowLevelShape = data.low_level_shape_index;
-#ifdef HAVE_OPENGL
 				render_object->rectangle.ModelPtr = ModelPtr;
+#ifdef HAVE_OPENGL
 				if (ModelPtr)
 				{
 					render_object->rectangle.ModelSequence = ModelSequence;
@@ -353,6 +356,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					render_object->rectangle.LightDepth = LightDepth;
 					objlist_copy(render_object->rectangle.LightDirection,LightDirection,3);
 				}
+#endif
 				// need this for new rendering pipeline
 				render_object->rectangle.WorldLeft = shape_information->world_left;
 				render_object->rectangle.WorldBottom = shape_information->world_bottom;
@@ -366,7 +370,6 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					render_object->rectangle.WorldBottom += rel_origin->z; 
 				}
 				render_object->rectangle.Scale = Scale;
-#endif
 					
 				render_object->rectangle.flip_vertical= (shape_information->flags&_Y_MIRRORED_BIT) ? true : false;
 				render_object->rectangle.flip_horizontal= (shape_information->flags&_X_MIRRORED_BIT) ? true : false;
@@ -400,8 +403,19 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					parasitic_rel_origin.x = shape_information->world_x0;
 					parasitic_origin.z+= shape_information->world_y0;
 					parasitic_origin.y+= shape_information->world_x0;
-					parasitic_render_object= build_render_object(&parasitic_origin, floor_intensity, ceiling_intensity,
-						NULL, NULL, object->parasitic_object, Opacity, &parasitic_rel_origin);
+					
+					const auto render_object_index = render_object - RenderObjects.data();
+					
+					parasitic_render_object = build_render_object(
+						get_object_data(object->parasitic_object),
+						floor_intensity,
+						ceiling_intensity,
+						Opacity,
+						&parasitic_origin,
+						&parasitic_rel_origin);
+					
+					// Recover our pointer after build_render_object() potentially invalidated it
+					render_object = &RenderObjects[render_object_index];
 					
 					if (parasitic_render_object)
 					{
@@ -418,11 +432,11 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 							MAX(parasitic_render_object->rectangle.ceiling_light, render_object->rectangle.ceiling_light);
 						*/
 						
-						if (shape_information->flags&_KEYPOINT_OBSCURED_BIT) /* host obscures parasite */
+						if (shape_information->flags&_KEYPOINT_OBSCURED_BIT) /* host obscured by parasite */
 						{
 							render_object->next_object= parasitic_render_object;
 						}
-						else /* parasite obscures host; does not properly handle multiple parasites */
+						else /* parasite obscured by host; does not properly handle multiple parasites */
 						{
 							parasitic_render_object->next_object= render_object;
 							render_object= parasitic_render_object;
@@ -438,16 +452,11 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 
 void RenderPlaceObjsClass::sort_render_object_into_tree(
 	render_object_data *new_render_object, /* null-terminated linked list */
-	sorted_node_data **base_nodes,
-	short base_node_count)
+	const span_data& span)
 {
 	render_object_data *render_object, *last_new_render_object;
 	render_object_data *deep_render_object= NULL;
 	render_object_data *shallow_render_object= NULL;
-	sorted_node_data *desired_node;
-	short i;
-	// LP: reference to simplify the code
-	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 
 	/* find the last render_object in the given list of new objects */
 	for (last_new_render_object= new_render_object;
@@ -483,11 +492,11 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 		}
 	}
 
-	/* find the node we’d like to be in (that is, the node closest to the viewer of all the nodes
+	/* find the node we‚Äôd like to be in (that is, the node closest to the viewer of all the nodes
 		we cross and therefore the latest one in the sorted node list) */
-	desired_node= base_nodes[0];
-	for (i= 1; i<base_node_count; ++i) if (base_nodes[i]>desired_node) desired_node= base_nodes[i];
-	assert((desired_node >= &SortedNodes.front()) && (desired_node <= &SortedNodes.back()));
+	sorted_node_data* desired_node = span.base_nodes[0].node;
+	for (int i = 1; i < span.base_nodes.size(); ++i)
+		desired_node = std::max(desired_node, span.base_nodes[i].node);
 	
 	/* adjust desired node based on the nodes of the deep and shallow render object; only
 		one of deep_render_object and shallow_render_object will be non-null after this if
@@ -513,7 +522,7 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 		}
 	}
 	
-	/* update the .node fields of all the objects we’re about to add to reflect their new
+	/* update the .node fields of all the objects we‚Äôre about to add to reflect their new
 		location in the sorted node list */
 	for (render_object= new_render_object; render_object; render_object= render_object->next_object)
 	{
@@ -559,72 +568,39 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 	}
 }
 
-enum /* build_base_node_list() states */
+// Return span and base node info for a render object (or list of such)
+auto RenderPlaceObjsClass::build_base_node_list(
+	const render_object_data* render_object,
+	short origin_polygon_index) -> span_data
 {
-	_casting_left,
-	_casting_right
-};
-
-/* we once thought it would be a clever idea to use the transformed endpoints, but, not.  we
-	now bail if we can’t find a way out of the polygon we are given; usually this happens
-	when we’re moving along gridlines */
-short RenderPlaceObjsClass::build_base_node_list(
-	short origin_polygon_index,
-	world_point3d *origin,
-	world_distance left_distance,
-	world_distance right_distance,
-	sorted_node_data **base_nodes)
-{
-	short cast_state;
-	short base_node_count;
+	assert(render_object);
+	
+	span_data result;
+	const auto origin = render_object->rectangle.Position;
 	world_distance origin_polygon_floor_height= get_polygon_data(origin_polygon_index)->floor_height;
 	// LP: reference to simplify the code
 	vector<sorted_node_data *>& polygon_index_to_sorted_node = RSPtr->polygon_index_to_sorted_node;
 	
-	base_node_count= 1;
-	base_nodes[0]= polygon_index_to_sorted_node[origin_polygon_index];
-
-	cast_state= _casting_left;
-	do
+	// Add nodes to result.base_nodes in order found (updating the previous node's .right_pt if scanning rightward)
+	auto scan_toward = [&](long_point2d destination, bool scanning_rightward)
 	{
-		world_point2d destination= *((world_point2d *)origin);
 		short polygon_index= origin_polygon_index;
-		world_vector2d vector;
-		
-		switch (cast_state)
-		{
-			case _casting_left:
-				translate_point2d(&destination, right_distance, NORMALIZE_ANGLE(view->yaw-QUARTER_CIRCLE));
-//				dprintf("%s: (#%d,#%d)==>(#%d,#%d) (by #%d)", cast_state==_casting_left ? "left" : "right", origin->x, origin->y, destination.x, destination.y, cast_state==_casting_left ? left_distance : right_distance);
-				cast_state= _casting_right;
-				break;
-			case _casting_right:
-				translate_point2d(&destination, left_distance, NORMALIZE_ANGLE(view->yaw-QUARTER_CIRCLE));
-//				dprintf("%s: (#%d,#%d)==>(#%d,#%d) (by #%d)", cast_state==_casting_left ? "left" : "right", origin->x, origin->y, destination.x, destination.y, cast_state==_casting_left ? left_distance : right_distance);
-				cast_state= NONE;
-				break;
-			
-			default:
-				assert(false);
-				break;
-		}
-
-		vector.i= destination.x - origin->x;
-		vector.j= destination.y - origin->y;
+		auto scan_vector = destination - origin.xy();
 		
 		/* move toward the given destination accumulating polygon indexes */
 		do
 		{
 			polygon_data *polygon= get_polygon_data(polygon_index);
-			short state= _looking_for_first_nonzero_vertex; /* really: testing first vertex state (we don’t have zero vertices) */
+			short state= _looking_for_first_nonzero_vertex; /* really: testing first vertex state (we don‚Äôt have zero vertices) */
 			short vertex_index= 0, vertex_delta= 1; /* start searching clockwise from vertex zero */
-			world_point2d *vertex, *next_vertex;
+			world_point2d vertex_a, vertex_b; // the vertices (in clockwise order) of the line we cross, if any
 			
+			world_point2d prev_vertex;
 			do
 			{
-				vertex= &get_endpoint_data(polygon->endpoint_indexes[vertex_index])->vertex;
-		
-				if ((vertex->x-origin->x)*vector.j - (vertex->y-origin->y)*vector.i >= 0)
+				const auto vertex = get_endpoint_data(polygon->endpoint_indexes[vertex_index])->vertex;
+				
+				if (cross_product_k(vertex - origin.xy(), scan_vector) >= 0)
 				{
 					/* endpoint is on the left side of our vector */
 					switch (state)
@@ -635,7 +611,8 @@ short RenderPlaceObjsClass::build_base_node_list(
 							break;
 						
 						case _looking_counterclockwise_for_left_vertex: /* found the transition we were looking for */
-							next_vertex= &get_endpoint_data(polygon->endpoint_indexes[WRAP_HIGH(vertex_index, polygon->vertex_count-1)])->vertex;
+							vertex_a = vertex;
+							vertex_b = prev_vertex;
 							polygon_index= polygon->adjacent_polygon_indexes[vertex_index];
 							state= NONE;
 							break;
@@ -653,8 +630,8 @@ short RenderPlaceObjsClass::build_base_node_list(
 							break;
 						
 						case _looking_clockwise_for_right_vertex: /* found the transition we were looking for */
-							next_vertex= vertex;
-							vertex= &get_endpoint_data(polygon->endpoint_indexes[WRAP_LOW(vertex_index, polygon->vertex_count-1)])->vertex;
+							vertex_a = prev_vertex;
+							vertex_b = vertex;
 							polygon_index= polygon->adjacent_polygon_indexes[WRAP_LOW(vertex_index, polygon->vertex_count-1)];
 							state= NONE;
 							break;
@@ -664,7 +641,9 @@ short RenderPlaceObjsClass::build_base_node_list(
 				/* adjust vertex_index (clockwise or counterclockwise, depending on vertex_delta) */
 				vertex_index= (vertex_delta<0) ? WRAP_LOW(vertex_index, polygon->vertex_count-1) :
 					WRAP_HIGH(vertex_index, polygon->vertex_count-1);
-				if (state!=NONE&&!vertex_index) polygon_index= state= NONE; /* we can’t find a way out; give up */
+				if (state!=NONE&&!vertex_index) polygon_index= state= NONE; /* we can‚Äôt find a way out; give up */
+				
+				prev_vertex = vertex;
 			}
 			while (state!=NONE);
 			
@@ -672,145 +651,156 @@ short RenderPlaceObjsClass::build_base_node_list(
 			{
 				polygon= get_polygon_data(polygon_index);
 				
-				/* can’t do above clipping (see note in change history) */
-				if ((view->origin.z<origin->z && polygon->floor_height<origin_polygon_floor_height) ||
-					(view->origin.z>origin->z && origin->z+WORLD_ONE_HALF<polygon->floor_height && polygon->floor_height>origin_polygon_floor_height))
+				/* can‚Äôt do above clipping (see note in change history) */
+				if ((view->origin.z < origin.z && polygon->floor_height < origin_polygon_floor_height) ||
+					(view->origin.z > origin.z && origin.z + WORLD_ONE_HALF < polygon->floor_height && polygon->floor_height > origin_polygon_floor_height))
 				{
-					/* if we’re above the viewer and going into a lower polygon or below the viewer and going
-						into a higher polygon, don’t */
-//					dprintf("discarding polygon #%d by height", polygon_index);
+					/* if we‚Äôre above the viewer and going into a lower polygon or below the viewer and going
+						into a higher polygon, don‚Äôt */
 					polygon_index= NONE;
 				}
 				else
 				{
-//					dprintf("  into polygon #%d", polygon_index);
-					if (!TEST_RENDER_FLAG(polygon_index, _polygon_is_visible)) polygon_index= NONE; /* don’t have transformed data, don’t even try! */
-					if ((destination.x-vertex->x)*(next_vertex->y-vertex->y) - (destination.y-vertex->y)*(next_vertex->x-vertex->x) <= 0) polygon_index= NONE;
-					if (polygon_index!=NONE && base_node_count<MAXIMUM_OBJECT_BASE_NODES) base_nodes[base_node_count++]= polygon_index_to_sorted_node[polygon_index];
+					if (!TEST_RENDER_FLAG(polygon_index, _polygon_is_visible)) polygon_index= NONE; /* don‚Äôt have transformed data, don‚Äôt even try! */
+					
+					const auto line_vec = vertex_b - vertex_a;
+					
+					if (cross_product_k(destination - vertex_a, line_vec) <= 0)
+						polygon_index = NONE; // reached destination without entering polygon_index
+					
+					if (polygon_index != NONE)
+					{
+						result.base_nodes.push_back({polygon_index_to_sorted_node[polygon_index], {}});
+						
+						// Update the relevant .right_pt (the previous node if scanning rightward, else the new node)
+						const auto cpk_vl = cross_product_k(scan_vector, line_vec); // > 0
+						const float u = 1.f*cross_product_k(vertex_a - origin.xy(), scan_vector) / cpk_vl; // [0, 1]
+						const auto right_pt = vertex_a + u*line_vec;
+						const int new_index = result.base_nodes.size() - 1;
+						result.base_nodes[new_index - (scanning_rightward ? 1 : 0)].right_pt = right_pt;
+					}
 				}
 			}
 		}
 		while (polygon_index!=NONE);
-	}
-	while (cast_state!=NONE);
-
-//	dprintf("found #%d polygons @ %p;dm %x %d;", base_polygon_count, base_polygon_indexes, base_polygon_indexes, base_polygon_count*sizeof(short));
+	};
 	
-	return base_node_count;
+	world_distance left_distance = INT16_MAX;
+	world_distance right_distance = INT16_MIN;
+	for (const auto* ro = render_object; ro; ro = ro->next_object)
+	{
+		left_distance = std::min(left_distance, ro->rectangle.WorldLeft);
+		right_distance = std::max(right_distance, ro->rectangle.WorldRight);
+	}
+	
+	auto pt_along_object_rect = [&](world_distance offset_from_origin) -> long_point2d // can be off-map
+	{
+		const angle right = normalize_angle(view->yaw + QUARTER_CIRCLE);
+		const auto v = (1.f*offset_from_origin/TRIG_MAGNITUDE) * long_vector2d{cosine_table[right], sine_table[right]};
+		return origin.xy() + v;
+	};
+	
+	result.left_pt = pt_along_object_rect(left_distance);
+	result.right_pt = pt_along_object_rect(right_distance);
+	
+	const auto eye_pt = view->origin.xy();
+	const bool left_pt_is_left_of_origin = cross_product_k(result.left_pt - eye_pt, origin.xy() - eye_pt) > 0;
+	const bool right_pt_is_right_of_origin = cross_product_k(result.right_pt - eye_pt, origin.xy() - eye_pt) < 0;
+	
+	if (left_pt_is_left_of_origin)
+		scan_toward(result.left_pt, /*scanning_rightward:*/ false);
+	
+	std::reverse(result.base_nodes.begin(), result.base_nodes.end()); // re-order left-to-right
+	result.base_nodes.push_back({polygon_index_to_sorted_node[origin_polygon_index], {}});
+	
+	if (right_pt_is_right_of_origin)
+		scan_toward(result.right_pt, /*scanning_rightward:*/ true);
+	
+	result.base_nodes.back().right_pt = result.right_pt; // even if the point is outside the node
+	
+	return result;
 }
 
 /* ---------- initializing and calculating clip data */
 
-/* find the lowest bottom clip and the highest top clip of all nodes this object crosses.  then
-	locate all left and right sides and compile them into one (or several) aggregate windows with
-	the same top and bottom */
+// Assign to a render object (or list of such) clipping windows aggregated from its base nodes
+//  - any newly created windows don't overlap and are linked left-to-right like node windows
 void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 	render_object_data *render_object,
-	sorted_node_data **base_nodes,
-	short base_node_count)
+	const span_data& span)
 {
 	clipping_window_data *first_window= NULL;
 	// LP: references to simplify the code
 	vector<clipping_window_data>& ClippingWindows = RVPtr->ClippingWindows;
 	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 	
-	if (base_node_count==1)
+	if (span.base_nodes.size() == 1)
 	{
-		/* trivial case of one source window */
-		first_window= base_nodes[0]->clipping_windows;
+		/* trivial case of one base node */
+		first_window = span.base_nodes[0].node->clipping_windows;
 	}
 	else
 	{
-		short i;
-		short y0, y1;
-		short left, right, left_count, right_count;
-		short x0[MAXIMUM_OBJECT_BASE_NODES], x1[MAXIMUM_OBJECT_BASE_NODES]; /* sorted, left to right */
-		long_vector2d lvec[MAXIMUM_OBJECT_BASE_NODES], rvec[MAXIMUM_OBJECT_BASE_NODES];
-		clipping_window_data *window;
-		/* Make sure object depth fits in at least one clipping window */
-		int32 win_depth = SHRT_MAX;
-		for (i= 0; i<base_node_count; ++i)
-		{
-			window= base_nodes[i]->clipping_windows;
-			if (window)
-			{
-				win_depth = MIN(win_depth, ABS(window->left.i)+1);
-				win_depth = MIN(win_depth, ABS(window->right.i)+1);
-			}
-		}
-		int32 depth= MAX(render_object->rectangle.depth, win_depth);
-		
-		/* find the upper and lower bounds of the windows; we could do a better job than this by
-			doing the same thing we do when the windows are originally built (i.e., calculating a
-			new top/bottom for every window.  but screw that.  */
-		left_count= right_count= 0;
-		y0= SHRT_MAX, y1= SHRT_MIN;
-		for (i= 0; i<base_node_count; ++i)
-		{
-			short j, k;
-			
-			window= base_nodes[i]->clipping_windows;
-
-			// CB: sometimes, the window pointer seems to be NULL
-			if (window == NULL)
-				continue;
-			
-			/* update the top and bottom clipping bounds */
-			if (window->y0<y0) y0= window->y0;
-			if (window->y1>y1) y1= window->y1;
- 			
-			/* sort in the left side of this window */
-			if (ABS(window->left.i)<depth)
-			{
-				for (j= 0; j<left_count && window->x0>=x0[j]; ++j)
-					;
-				for (k= j; k<left_count; ++k)
+		// Add new windows with x-extents that are the union of every overlap between a node window and the span of the
+		// object in that node, but without clipping the outermost extents of the outermost contributing windows
+	
+		auto eye_vec_toward = [&](long_point2d pt) -> long_vector2d // == 1024*(eye vec _to_ the pt)
+		{ 
+			const auto v = pt - view->origin.xy();
+			const int16 c = cosine_table[view->yaw];
+			const int16 s = sine_table[view->yaw];
+			return {c*v.i + s*v.j, c*v.j - s*v.i};
+		};
+	
+		int32 head = NONE; // index of first window in result list, if non-empty, else NONE
+		int32 top; // index of contributing node window with highest top-clip
+		int32 bottom; // index of contributing node window with lowest bottom-clip
+		auto base_left = eye_vec_toward(span.left_pt);
+	
+		for (int i = 0, n = span.base_nodes.size(); i < n; ++i)
+		{ 
+			// base_left and base_right delimit the span of the object within node i
+			// (we pretend the outermost nodes contain the object ends even if they don't)
+			const auto base_right = eye_vec_toward(span.base_nodes[i].right_pt);
+	
+			for (auto* win = span.base_nodes[i].node->clipping_windows; win; win = win->next_window)
+			{ 
+				if (cross_product_k(base_right, win->left) > 0)
+					break; // this and remaining windows of this node are fully right of the node span
+				
+				if (cross_product_k(-win->right, base_left) > 0)
+					continue; // window is fully left of the node span
+				
+				const int32 win_index = win - ClippingWindows.data();
+				
+				if (head == NONE || cross_product_k(ClippingWindows[top].top, win->top) > 0)
+					top = win_index; // found higher top-clip
+				
+				if (head == NONE || cross_product_k(ClippingWindows[bottom].bottom, win->bottom) < 0)
+					bottom = win_index; // found lower bottom-clip
+				
+				if (head != NONE && cross_product_k(win->left, -ClippingWindows.back().right) >= 0)
+				{ 
+					// Window overlaps or abuts last-added window from a prior node (both windows overlap base_left);
+					// tentatively use its right-clip
+					ClippingWindows.back().right = win->right;
+					ClippingWindows.back().x1 = win->x1;
+				} 
+				else
 				{
-					x0[k+1]= x0[k];
-					lvec[k+1]= lvec[k];
-				}
-				x0[j]= window->x0;
-				lvec[j]= window->left;
-				left_count+= 1;
-			}
-			
-			/* sort in the right side of this window */
-			if (ABS(window->right.i)<depth)
-			{
-				for (j= 0; j<right_count && window->x1>=x1[j]; ++j)
-					;
-				for (k= j; k<right_count; ++k)
-				{
-					x1[k+1]= x1[k];
-					rvec[k+1]= rvec[k];
-				}
-				x1[j]= window->x1;
-				rvec[j]= window->right;
-				right_count+= 1;
-			}
-		}
-		
-		/* build the windows, left to right */
-		for (left= 0, right= 0; left<left_count && right<right_count; )
-		{
-			if (left==left_count-1 || x0[left+1]>x1[right])
-			{
-				if (x0[left]<x1[right]) /* found one between x0[left] and x1[right] */
-				{
-					/* allocate it */
+					// Copy the window into the result list (right-clip is tentative; y-clips will be set later)
+					
 					size_t Length = ClippingWindows.size();
 					POINTER_DATA OldCWPointer = POINTER_CAST(ClippingWindows.data());
 					
-					// Add a dummy object and check if the pointer got changed
-					clipping_window_data Dummy;
-					Dummy.next_window = NULL;			// Fake initialization to shut up CW
-					ClippingWindows.push_back(Dummy);
+					ClippingWindows.push_back(*win);
+					ClippingWindows.back().next_window = nullptr;
+					
+					// Restore any clipping window pointers invalidated by reallocation
 					POINTER_DATA NewCWPointer = POINTER_CAST(ClippingWindows.data());
-				
 					if (NewCWPointer != OldCWPointer)
 					{
-						// Get the sorted nodes into sync
-						// Also, the render objects and the parent window
+						win = &ClippingWindows[win_index];
 						for (size_t k=0; k<Length; k++)
 						{
 							clipping_window_data &ClippingWindow = ClippingWindows[k];
@@ -829,33 +819,54 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 							if (RenderObject.clipping_windows != NULL)
 								RenderObject.clipping_windows = (clipping_window_data *)(NewCWPointer + (POINTER_CAST(RenderObject.clipping_windows) - OldCWPointer));
 						}
-						if (first_window != NULL)
-							first_window = (clipping_window_data *)(NewCWPointer + (POINTER_CAST(first_window) - OldCWPointer));
 					}
-					window= &ClippingWindows[Length];
-					
-					/* build it */
-					window->x0= x0[left], window->x1= x1[right];
-					window->left= lvec[left], window->right= rvec[right];
-					window->y0= y0, window->y1= y1;
-					
-					/* link it */
-					window->next_window= first_window;
-					first_window= window;
+
+					// Link into the result list
+					const int32 new_index = ClippingWindows.size() - 1;
+					if (head == NONE)
+						head = new_index;
+					else
+						ClippingWindows[new_index - 1].next_window = &ClippingWindows.back();
 				}
-				
-				/* advance left by one, then advance right until it’s greater than left */
-				if (++left<left_count) while (x0[left]>x1[right] && right<right_count) ++right;
-			}
-			else
-			{
-				left+= 1;
-			}
+			} // window loop
+			
+			base_left = base_right;
+		} // node loop
+		
+		if (head != NONE)
+			first_window = &ClippingWindows[head];
+		
+		// Assign bounding y-clips
+		// (using bounding y avoids overclipping in some cases when the object intersects a floor/ceiling)
+		for (auto* win = first_window; win; win = win->next_window)
+		{
+			win->top = ClippingWindows[top].top;
+			win->bottom = ClippingWindows[bottom].bottom;
+			win->y0 = ClippingWindows[top].y0;
+			win->y1 = ClippingWindows[bottom].y1;
 		}
 	}
 	
 	/* stuff our windows in all objects hanging off our first object (i.e., all parasites) */	
 	for (; render_object; render_object= render_object->next_object) render_object->clipping_windows= first_window;
+}
+
+bool RenderPlaceObjsClass::add_object_to_sorted_nodes(
+	object_data* object,
+	_fixed floor_intensity,
+	_fixed ceiling_intensity,
+	float Opacity)
+{
+	const auto render_object = build_render_object(object, floor_intensity, ceiling_intensity, Opacity, nullptr, nullptr);
+	if (!render_object)
+		return false;
+	
+	const auto span = build_base_node_list(render_object, object->polygon);
+	
+	build_aggregate_render_object_clipping_window(render_object, span);
+	sort_render_object_into_tree(render_object, span); // consumes the render_object list
+	
+	return true;
 }
 
 #define NUMBER_OF_SCALED_VALUES 6
@@ -905,6 +916,8 @@ shape_information_data *RenderPlaceObjsClass::rescale_shape_information(
 
 
 // Creates a fake sprite rectangle from a model's bounding box;
+// models behind the view get a degenerate rectangle (and thus just 1 base node)
+//
 // also finds:
 //
 // Distance of farthest part of the bounding box
@@ -1042,10 +1055,10 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	Proj_ZMax -= Z0;
 	
 	// Plug back into the sprite
-	ShapeInfo.world_left = int(PIN(Proj_YMin,SHRT_MIN,SHRT_MAX));
-	ShapeInfo.world_right = int(PIN(Proj_YMax,SHRT_MIN,SHRT_MAX));
-	ShapeInfo.world_bottom = int(PIN(Proj_ZMin,SHRT_MIN,SHRT_MAX));
-	ShapeInfo.world_top = int(PIN(Proj_ZMax,SHRT_MIN,SHRT_MAX));
+	ShapeInfo.world_left = int16(std::clamp<float>(Proj_YMin, INT16_MIN, 0));
+	ShapeInfo.world_right = int16(std::clamp<float>(Proj_YMax, 0, INT16_MAX));
+	ShapeInfo.world_bottom = int16(std::clamp<float>(Proj_ZMin, INT16_MIN, 0));
+	ShapeInfo.world_top = int16(std::clamp<float>(Proj_ZMax, 0, INT16_MAX));
 	
 	// Set X0, Y0, Z0 to location of center of bounding box
 	X0 += (ExpandedBB[0][0] + ExpandedBB[7][0])/2;

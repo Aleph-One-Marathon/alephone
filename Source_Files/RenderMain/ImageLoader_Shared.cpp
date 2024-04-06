@@ -28,12 +28,17 @@
  *          adapted from DevIL (openil.sourceforge.net)
  */
 
+#if defined(_MSC_VER)
+#define NOMINMAX
+#include <algorithm>
+#endif
+
 #include "AStream.h"
 #include "cstypes.h"
 #include "DDS.h"
 #include "ImageLoader.h"
-#include "SDL.h"
-#include "SDL_endian.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_endian.h>
 #include "Logging.h"
 
 
@@ -401,7 +406,7 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 		inputStream.ignore(8);
 
 		inputStream.ignore(4);
-	} catch (AStream::failure f) {
+	} catch (const AStream::failure& f) {
 		fprintf(stderr, "exception %s, returning false\n", f.what());
 		return false;
 	}

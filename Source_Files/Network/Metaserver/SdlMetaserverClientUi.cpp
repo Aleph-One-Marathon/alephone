@@ -39,16 +39,13 @@
 #include "metaserver_dialogs.h"
 
 #include <algorithm>
-#include <boost/function.hpp>
-#include <boost/bind.hpp>
 
 #include "TextStrings.h"
 
 #include <sstream>
+#include <functional>
 
 using namespace std;
-using boost::bind;
-using boost::ref;
 
 extern MetaserverClient* gMetaserverClient;
 
@@ -70,7 +67,7 @@ public:
 		players_games_placer->dual_add(players_in_room_w, d);
 
 		games_in_room_w = new w_games_in_room(
-			bind(&SdlMetaserverClientUi::GameSelected, this, _1),
+			std::bind(&SdlMetaserverClientUi::GameSelected, this, std::placeholders::_1),
 			320,
 			get_theme_space(METASERVER_GAMES, w_games_in_room::GAME_ENTRIES)
 		);
@@ -145,7 +142,7 @@ public:
 
 	int Run()
 	{
-		d.set_processing_function(bind(&SdlMetaserverClientUi::pump, this, _1));
+		d.set_processing_function(std::bind(&SdlMetaserverClientUi::pump, this, std::placeholders::_1));
 		int result = d.run();
 
 		if(result == -1)
@@ -322,7 +319,7 @@ public:
 			placer->add(button_placer, true);
 			
 			info_dialog.set_widget_placer(placer);
-			info_dialog.set_processing_function(bind(&SdlMetaserverClientUi::pump, this, _1));
+			info_dialog.set_processing_function(std::bind(&SdlMetaserverClientUi::pump, this, std::placeholders::_1));
 			if (info_dialog.run() == 0 && gMetaserverClient->find_game(gMetaserverClient->game_target()))
 			{
 				JoinGame(*game);
@@ -344,7 +341,7 @@ private:
 	pump(dialog* d)
 	{
 		static uint32 last_update = 0;
-		uint32 ticks = SDL_GetTicks();
+		uint32 ticks = machine_tick_count();
 		if (ticks > last_update + 5000)
 		{
 			last_update = ticks;
@@ -372,7 +369,7 @@ private:
 std::unique_ptr<MetaserverClientUi>
 MetaserverClientUi::Create()
 {
-	return std::unique_ptr<MetaserverClientUi>(new SdlMetaserverClientUi);
+	return std::make_unique<SdlMetaserverClientUi>();
 }
 
 #endif // !defined(DISABLE_NETWORKING)

@@ -23,10 +23,13 @@
  *  Created by Woody Zenfell, III on Mon Sep 24 2001.
  */
 
+#include "SDL_netx.h"
+
 #include <sys/types.h>
 
 #if defined(WIN32)
-# include <winsock.h>
+# define WIN32_LEAN_AND_MEAN
+# include <winsock2.h>
 #else
 # include <unistd.h>
 # include <sys/socket.h>
@@ -37,8 +40,6 @@
 # endif
 # include <sys/ioctl.h>
 #endif
-
-#include	"SDL_netx.h"
 
 // PREPROCESSOR MACROS
 // VC++6 chokes if I don't explicitly cast int* to const char* in setsockopt().

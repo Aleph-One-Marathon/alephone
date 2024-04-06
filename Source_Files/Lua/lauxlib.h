@@ -207,6 +207,19 @@ LUALIB_API void (luaL_openlib) (lua_State *L, const char *libname,
 #endif
 
 
+
+/*
+** Private C/POSIX library wrappers that speak UTF-8 instead of ANSI on Windows
+*/
+#ifdef LUA_LIB
+LUAI_FUNC FILE* luai_fopen(const char* path, const char* mode);
+LUAI_FUNC FILE* luai_popen(const char* command, const char* mode);
+LUAI_FUNC int luai_system(const char* command);
+LUAI_FUNC int luai_remove(const char* path);
+LUAI_FUNC int luai_rename(const char* from, const char* to);
+LUAI_FUNC char* luai_alloc_getenv(const char* name); /* deallocate with free() */
+#endif
+
 #endif
 
 

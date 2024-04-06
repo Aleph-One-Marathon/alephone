@@ -55,7 +55,6 @@
 #include "WindowedNthElementFinder.h"
 #include "CircularByteBuffer.h"
 #include "InfoTree.h"
-#include "SDL_timer.h" // SDL_Delay()
 
 #include <vector>
 #include <map>
@@ -63,11 +62,22 @@
 #include <deque>
 #include <numeric>
 #include <cmath>
-#include <fstream>
-#include <iomanip>
 
 #include "crc.h"
 #include "player.h" // for masking out action flags triggers :(
+
+#define DEBUG_TIMING_ADJUSTMENTS
+
+#ifdef DEBUG_TIMING_ADJUSTMENTS
+#include "FileHandler.h"
+#include <ctime>
+#include <sstream>
+#include <iomanip>
+#include <boost/iostreams/stream.hpp>
+static OpenedFile dout_file;
+static boost::iostreams::stream<opened_file_device> dout;
+static bool debug_timing_adjustments = false;
+#endif
 
 // Synchronization:
 // hub_received_network_packet() is not reentrant
@@ -412,16 +422,6 @@ check_send_packet_to_spoke()
 #define INT32_MAX 0x7fffffff
 #endif
 
-#define DEBUG_TIMING_ADJUSTMENTS
-
-#ifdef DEBUG_TIMING_ADJUSTMENTS
-#include "FileHandler.h"
-#include <ctime>
-#include <sstream>
-std::ofstream dout;
-bool debug_timing_adjustments = false;
-#endif
-
 void
 hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* const* inPlayerAddresses, size_t inLocalPlayerIndex)
 {
@@ -448,10 +448,14 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
 		ss << buffer << "_" << inNumPlayers << "P.txt";
 
 		fs.AddPart(ss.str());
-		dout.open(fs.GetPath());
-		dout << "Players: " << inNumPlayers << std::endl;
-		dout << "Latency Tolerance: " << sHubPreferences.mMinimumSendPeriod << std::endl;
-		debug_timing_adjustments = true;
+		
+		if (fs.OpenForWritingText(dout_file))
+		{
+			dout.open(dout_file);
+			dout << "Players: " << inNumPlayers << std::endl;
+			dout << "Latency Tolerance: " << sHubPreferences.mMinimumSendPeriod << std::endl;
+			debug_timing_adjustments = true;
+		}
 	}
 	else
 	{
@@ -578,7 +582,8 @@ hub_cleanup(bool inGraceful, int32 inSmallestPostGameTick)
 			while(sHubActive)
 			{
 // Here we try to isolate the "Classic" Mac OS (we can only sleep on the others)
-				SDL_Delay(10);
+				// TODO: replace with a cond?
+				yield();
 			}
 		}
 		else
@@ -613,6 +618,7 @@ hub_cleanup(bool inGraceful, int32 inSmallestPostGameTick)
 		if (debug_timing_adjustments)
 		{
 			dout.close();
+			dout_file.Close();
 		}
 #endif
 	}

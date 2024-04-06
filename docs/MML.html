@@ -16,10 +16,9 @@ MML scripts are stored in the "Scripts" subdirectory of the local data directory
 override their settings).
 <p>
 
-For more on XML, check out these links:
+Most modern IDEs or text editors can modify XML files. For more information on XML, check out this link:
 <ul>
 <li><a href="http://www.xml.com">xml.com; has lots of XML-related stuff</a>
-<li><a href="http://www.trafficstudio.com/sixpack">Sixpack, a MacOS-native XML editor</a>
 </ul>
 
 One feature that I've attempted to maintain is that any set of values
@@ -166,8 +165,9 @@ The interface colors have the meanings listed below.
 <li>&lt;font&gt;, for all interface fonts; it is indexed.
 For more on specifying fonts, go <a href="#font">here</a>.
 The interface fonts have the meanings listed below.
-<li>&lt;vidmaster&gt;, for customizing the vidmaster level-selection dialog; it contains the attribute:
-<ul><li>stringset_index: this is the index of a stringset containing the dialog text. Here's an example:<br>
+<li>&lt;vidmaster&gt;, for customizing the vidmaster level-selection dialog; it contains the attributes:
+<ul><li>level_offset: where to start numbering levels. Marathon started counting at 0; Marathon 2 and Infinity stared counting at 1 (the default)</li>
+<li>stringset_index: this is the index of a stringset containing the dialog text. Here's an example:<br>
 <pre>
 &lt;interface&gt;
 &nbsp;&nbsp;&nbsp;&nbsp;...
@@ -1261,6 +1261,11 @@ environment types:
 The item shape can be specified with a <a href="#shape">shape</a>
 child element, which can be blank (&lt;shape/&gt;).
 <p>
+The maximum numbers of items can be overridden per difficulty level with &lt;difficulty&gt; child elements, containing these attributes:
+<ul>
+<li>index: difficulty level (0 is kindergarten, 4 is total carnage)</li>
+<li>maximum: maximum number that a player may possess for this difficulty level (0–32767)</li>
+</ul>
 
 <hr>
 
@@ -1487,7 +1492,7 @@ Currently, both texture-rendering modification and fog are supported;
 texture-rendering modification modifies the rendering of each bitmap.
 
 This element has these kinds of child elements, &lt;txtr_clear&gt;, &lt;texture&gt;,
-&lt;model_clear&gt;, &lt;model&gt;, &lt;shader&gt;, and &lt;fog&gt;.
+&lt;model_clear&gt;, &lt;model&gt;, and &lt;fog&gt;.
 <p>
 
 
@@ -1542,6 +1547,7 @@ It must be used with a glow_image file.
 <li>glow_bloom_scale: when rendering bloom effects in the shader renderer, scale the glow image's light level by this amount. (default: 1 -- full intensity during bloom effect)
 <li>glow_bloom_shift: when rendering bloom effects in the shader renderer, add this value to the glow image's light level after scaling. (default: 0)
 <li>landscape_bloom: when rendering bloom effects in the shader renderer, AND when the texture is used as a landscape, scale the image's light level by this amount. Note that glow images are not currently supported for landscapes. (default: 0.5)
+<li>tile_ratio_exp: when applied to walls, scale replacement image up to cover 2^n x 2^n tiles. (default: 0, cover 1x1 tiles)
 </ul>
 <p>
 Note: all resulting values will be pegged to the range 0 to 1.
@@ -1735,32 +1741,6 @@ It must be used with a glow_image file.
 </ul>
 <p>
 
-The next one, &lt;shader&gt;, specifies custom shader definitions used by the shader-capable renderer.
-It takes these attributes:
-<ul>
-<li>name: which shader to specify (mandatory). The following shaders are used:
-<ul>
-<li>sprite
-<li>invincible
-<li>invisible
-<li>landscape
-<li>wall
-<li>bump
-<li>sprite_bloom
-<li>invincible_bloom
-<li>invisible_bloom
-<li>landscape_bloom
-<li>wall_bloom
-<li>bump_bloom
-<li>blur
-<li>bloom
-</ul>
-<li>vert: the path to a file containing the vertex shader program.
-<li>frag: the path to a file containing the fragment shader program.
-<li>passes: number of passes to use when rendering. Currently only the "bloom" shader supports multiple passes. (default: -1 -- use shader default, which is 3 for bloom)
-</ul>
-<p>
-
 The final one, &lt;fog&gt;, has these attributes:
 <ul>
 <li>type: which type of fog:
@@ -1770,13 +1750,23 @@ The final one, &lt;fog&gt;, has these attributes:
 </ol>
 The default is 0 (above liquid).
 <li>on: (<a href="#boolean">boolean</a>; default: false)
+<li>landscape_mix: how much fog to mix in to landscapes from 0 to 1 (default: 1.0)
+<li>mode: the equation used to calculate the fog (default: 1)
 <li>depth: the fog depth in World Units (default: 8)
+<li>start: the start of fog in World Units (default: 0); only applies to linear fog
 <li>landscapes: whether this fog affects landscape textures (default: true)
 </ul>
 <p>
 
 and a <a href="#color">color</a> subelement, which indicates the fog color
 (default: gray [red = green = blue = 0.5]).
+<p>
+Here are the fog modes:
+<ol type=1 start="0">
+<li>linear from start to (start + depth)
+<li>exp with density = 1/depth
+<li>exp2 with density = 1/depth
+</ol>
 <p>
 
 <hr>
@@ -1823,6 +1813,9 @@ Here they are:
 <li> &lt;rendered&gt; (default: 1024) How many inhabitants to render at any one time.
 <li> &lt;local_collision&gt; (default: 64) Target visibility, NPC-NPC collisions, etc.
 <li> &lt;global_collision&gt; (default: 256) Projectiles with other objects
+<li> &lt;ephemera&gt; (default: 4096) Lua-controlled effects
+<li> &lt;garbage&gt; (default: 256) Corpses
+<li> &lt;garbage_per_polygon&gt; (default: 10) Corpses in a single polygon
 </ul>
 
 <hr>
@@ -2731,6 +2724,12 @@ The texture-mapping transfer modes:
 <li>Wander
 <li>Fast Wander
 <li>Big Landscape
+<li>Reverse Horizontal Slide
+<li>Reverse Fast Horizontal Slide
+<li>Reverse Vertical Slide
+<li>Reverse Fast Vertical Slide
+<li>2x
+<li>4x
 </ol>
 <p>
 

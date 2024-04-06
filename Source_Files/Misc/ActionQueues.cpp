@@ -53,9 +53,7 @@ ActionQueues::ActionQueues(unsigned int inNumPlayers, unsigned int inQueueSize, 
     /* allocate space for our action queue headers and the queues themselves */
     mQueueHeaders	= new action_queue[mNumPlayers];
     mFlagsBuffer	= new uint32[mNumPlayers * mQueueSize];
-    
-    assert(mQueueHeaders && mFlagsBuffer);
-    
+        
     /* tell the queues where their buffers are */
     for (unsigned i = 0; i < mNumPlayers; ++i)
     {
@@ -98,7 +96,7 @@ ActionQueues::resetQueue(int inPlayerIndex)
 
 
 // Lifted from player.cpp::queue_action_flags()
-/* queue an action flag on the given playerÕs queue (no zombies allowed) */
+/* queue an action flag on the given playerâ€™s queue (no zombies allowed) */
 void
 ActionQueues::enqueueActionFlags(
 	int player_index,
@@ -125,7 +123,7 @@ ActionQueues::enqueueActionFlags(
 
 
 // Lifted from player.cpp::dequeue_action_flags()
-/* dequeueÕs a single action flag from the given queue (zombies always return zero) */
+/* dequeueâ€™s a single action flag from the given queue (zombies always return zero) */
 uint32
 ActionQueues::dequeueActionFlags(
 	int player_index)

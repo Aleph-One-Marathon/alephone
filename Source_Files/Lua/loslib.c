@@ -79,7 +79,7 @@
 
 static int os_execute (lua_State *L) {
   const char *cmd = luaL_optstring(L, 1, NULL);
-  int stat = system(cmd);
+  int stat = luai_system(cmd);
   if (cmd != NULL)
     return luaL_execresult(L, stat);
   else {
@@ -91,14 +91,14 @@ static int os_execute (lua_State *L) {
 
 static int os_remove (lua_State *L) {
   const char *filename = luaL_checkstring(L, 1);
-  return luaL_fileresult(L, remove(filename) == 0, filename);
+  return luaL_fileresult(L, luai_remove(filename) == 0, filename);
 }
 
 
 static int os_rename (lua_State *L) {
   const char *fromname = luaL_checkstring(L, 1);
   const char *toname = luaL_checkstring(L, 2);
-  return luaL_fileresult(L, rename(fromname, toname) == 0, NULL);
+  return luaL_fileresult(L, luai_rename(fromname, toname) == 0, NULL);
 }
 
 
@@ -114,7 +114,9 @@ static int os_tmpname (lua_State *L) {
 
 
 static int os_getenv (lua_State *L) {
-  lua_pushstring(L, getenv(luaL_checkstring(L, 1)));  /* if NULL push nil */
+  char* env = luai_alloc_getenv(luaL_checkstring(L, 1));
+  lua_pushstring(L, env);  /* if NULL push nil */
+  free(env);
   return 1;
 }
 

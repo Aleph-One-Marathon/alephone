@@ -66,9 +66,7 @@ struct LevelScriptCommand
 		MML,
 		Music,
 		Movie,
-#ifdef HAVE_LUA
 		Lua,
-#endif /* HAVE_LUA */
 #ifdef HAVE_OPENGL
 		LoadScreen
 #endif
@@ -136,14 +134,6 @@ static std::map<int, LevelScriptHeader> LevelScripts;
 // Current script for adding commands to and for running
 static LevelScriptHeader *CurrScriptPtr = NULL;
 
-// Map-file parent directory (where all map-related files are supposed to live)
-static DirectorySpecifier MapParentDir;
-
-#ifdef HAVE_LUA
-// Same for Lua
-static bool LuaFound = false;
-#endif /* HAVE_LUA */
-
 // Movie filespec and whether it points to a real file
 static FileSpecifier MovieFile;
 static bool MovieFileExists = false;
@@ -175,9 +165,6 @@ extern bool get_text_resource_from_scenario(int resource_number, LoadedResource&
 // Loads all those in resource 128 in a map file (or some appropriate equivalent)
 void LoadLevelScripts(FileSpecifier& MapFile)
 {
-	// Because all the files are to live in the map file's parent directory
-	MapFile.ToDirectory(MapParentDir);
-	
 	// Get rid of the previous level script
 	// ghs: unless it's the first time, in which case we would be clearing
 	// any external level scripts, so don't
@@ -206,13 +193,13 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 	try {
 		InfoTree root = InfoTree::load_xml(strm).get_child("marathon_levels");
 		parse_levels_xml(root);
-	} catch (InfoTree::parse_error e) {
+	} catch (const InfoTree::parse_error& e) {
 		logError("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
-	} catch (InfoTree::path_error e) {
+	} catch (const InfoTree::path_error& e) {
 		logError("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
-	} catch (InfoTree::data_error e) {
+	} catch (const InfoTree::data_error& e) {
 		logError("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
-	} catch (InfoTree::unexpected_error e) {
+	} catch (const InfoTree::unexpected_error& e) {
 		logError("Error parsing map script in %s: %s", MapFile.GetPath(), e.what());
 	}
 }
@@ -220,7 +207,7 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 void ResetLevelScript()
 {
 	// For whatever previous music had been playing...
-	Music::instance()->FadeOut(MACHINE_TICKS_PER_SECOND/2);
+	Music::instance()->Fade(0, MACHINE_TICKS_PER_SECOND/2);
 	
 	// If no scripts were loaded or none of them had music specified,
 	// then don't play any music
@@ -243,18 +230,9 @@ void ResetLevelScript()
 // runs level-specific MML...
 void RunLevelScript(int LevelIndex)
 {
-	// None found just yet...
-#ifdef HAVE_LUA
-	LuaFound = false;
-#endif /* HAVE_LUA */
-	
-	ResetLevelScript();
-
 	GeneralRunScript(LevelScriptHeader::Default);
 	GeneralRunScript(LevelIndex);
-	
 	Music::instance()->SeedLevelMusic();
-
 }
 
 std::vector<uint8> mmls_chunk;
@@ -356,9 +334,7 @@ void GeneralRunScript(int LevelIndex)
 		switch(Cmd.Type)
 		{
 		case LevelScriptCommand::MML:
-#ifdef HAVE_LUA
 		case LevelScriptCommand::Lua:
-#endif /* HAVE_LUA */
 			// if (Cmd.RsrcPresent() && OFile.Get('T','E','X','T',Cmd.RsrcID,ScriptRsrc))
 			if (Cmd.RsrcPresent() && get_text_resource_from_scenario(Cmd.RsrcID,ScriptRsrc))
 			{
@@ -380,20 +356,15 @@ void GeneralRunScript(int LevelIndex)
 				ParseMMLFromData(Data, DataLen);
 			}
 			break;
-		
-#ifdef HAVE_LUA
-                        
-			case LevelScriptCommand::Lua:
-			{
-				// Skip if not loaded
-				if (Data == NULL || DataLen <= 0) break;
+
+		case LevelScriptCommand::Lua:
+		{
+			// Skip if not loaded
+			if (Data == NULL || DataLen <= 0) break;
 				
-				// Load and indicate whether loading was successful
-				if (LoadLuaScript(Data, DataLen, _embedded_lua_script))
-					LuaFound = true;
-			}
-			break;
-#endif /* HAVE_LUA */
+			LoadLuaScript(Data, DataLen, _embedded_lua_script);
+		}
+		break;
 		
 		case LevelScriptCommand::Music:
 			{
@@ -527,7 +498,7 @@ void parse_mml_default_levels(const InfoTree& root)
 {
 	LevelScriptHeader *ls_ptr = &(LevelScripts[LevelScriptHeader::Default]);
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("music"))
+	for (const InfoTree &child : root.children_named("music"))
 	{
 		LevelScriptCommand cmd;
 		cmd.Type = LevelScriptCommand::Music;
@@ -538,13 +509,13 @@ void parse_mml_default_levels(const InfoTree& root)
 		ls_ptr->Commands.push_back(cmd);
 	}
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("random_order"))
+	for (const InfoTree &child : root.children_named("random_order"))
 	{
 		child.read_attr("on", ls_ptr->RandomOrder);
 	}
 	
 #ifdef HAVE_OPENGL
-	BOOST_FOREACH(InfoTree child, root.children_named("load_screen"))
+	for (const InfoTree &child : root.children_named("load_screen"))
 	{
 		LevelScriptCommand cmd;
 		cmd.Type = LevelScriptCommand::LoadScreen;
@@ -568,7 +539,7 @@ void parse_mml_default_levels(const InfoTree& root)
 		child.read_attr("progress_left", cmd.L);
 		child.read_attr("progress_right", cmd.R);
 		
-		BOOST_FOREACH(InfoTree color, child.children_named("color"))
+		for (const InfoTree &color : child.children_named("color"))
 		{
 			int index = -1;
 			if (color.read_attr_bounded("index", index, 0, 1))
@@ -587,7 +558,7 @@ void parse_level_commands(InfoTree root, int index)
 	// Find or create command list for this level
 	LevelScriptHeader *ls_ptr = &(LevelScripts[index]);
 
-	BOOST_FOREACH(InfoTree child, root.children_named("mml"))
+	for (const InfoTree &child : root.children_named("mml"))
 	{
 		LevelScriptCommand cmd;
 		cmd.Type = LevelScriptCommand::MML;
@@ -598,8 +569,7 @@ void parse_level_commands(InfoTree root, int index)
 		ls_ptr->Commands.push_back(cmd);
 	}
 
-#ifdef HAVE_LUA
-	BOOST_FOREACH(InfoTree child, root.children_named("lua"))
+	for (const InfoTree &child : root.children_named("lua"))
 	{
 		LevelScriptCommand cmd;
 		cmd.Type = LevelScriptCommand::Lua;
@@ -609,9 +579,8 @@ void parse_level_commands(InfoTree root, int index)
 		
 		ls_ptr->Commands.push_back(cmd);
 	}
-#endif
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("music"))
+	for (const InfoTree &child : root.children_named("music"))
 	{
 		LevelScriptCommand cmd;
 		cmd.Type = LevelScriptCommand::Music;
@@ -622,12 +591,12 @@ void parse_level_commands(InfoTree root, int index)
 		ls_ptr->Commands.push_back(cmd);
 	}
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("random_order"))
+	for (const InfoTree &child : root.children_named("random_order"))
 	{
 		child.read_attr("on", ls_ptr->RandomOrder);
 	}
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("movie"))
+	for (const InfoTree &child : root.children_named("movie"))
 	{
 		LevelScriptCommand cmd;
 		cmd.Type = LevelScriptCommand::Movie;
@@ -641,7 +610,7 @@ void parse_level_commands(InfoTree root, int index)
 	}
 	
 #ifdef HAVE_OPENGL
-	BOOST_FOREACH(InfoTree child, root.children_named("load_screen"))
+	for (const InfoTree &child : root.children_named("load_screen"))
 	{
 		LevelScriptCommand cmd;
 		cmd.Type = LevelScriptCommand::LoadScreen;
@@ -656,7 +625,7 @@ void parse_level_commands(InfoTree root, int index)
 		child.read_attr("progress_left", cmd.L);
 		child.read_attr("progress_right", cmd.R);
 		
-		BOOST_FOREACH(InfoTree color, child.children_named("color"))
+		for (const InfoTree &color : child.children_named("color"))
 		{
 			int16 index;
 			if (color.read_indexed("index", index, 2))
@@ -672,7 +641,7 @@ void parse_level_commands(InfoTree root, int index)
 
 void parse_levels_xml(InfoTree root)
 {
-	BOOST_FOREACH(InfoTree lev, root.children_named("level"))
+	for (const InfoTree &lev : root.children_named("level"))
 	{
 		int16 index;
 		if (lev.read_indexed("index", index, SHRT_MAX+1))
@@ -681,20 +650,20 @@ void parse_levels_xml(InfoTree root)
 		}
 	}
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("end"))
+	for (const InfoTree &child : root.children_named("end"))
 	{
 		parse_level_commands(child, LevelScriptHeader::End);
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("default"))
+	for (const InfoTree &child : root.children_named("default"))
 	{
 		parse_level_commands(child, LevelScriptHeader::Default);
 	}
-	BOOST_FOREACH(InfoTree child, root.children_named("restore"))
+	for (const InfoTree &child : root.children_named("restore"))
 	{
 		parse_level_commands(child, LevelScriptHeader::Restore);
 	}
 	
-	BOOST_FOREACH(InfoTree child, root.children_named("end_screens"))
+	for (const InfoTree &child : root.children_named("end_screens"))
 	{
 		child.read_attr("index", EndScreenIndex);
 		child.read_indexed("count", NumEndScreens, SHRT_MAX+1);

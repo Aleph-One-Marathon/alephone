@@ -8,22 +8,27 @@ else
 OPENGL_SOURCES = 
 endif
 
-librendermain_a_SOURCES = AnimatedTextures.h collection_definition.h	\
-  Crosshairs.h DDS.h ImageLoader.h low_level_textures.h OGL_Faders.h	\
-  OGL_Headers.h OGL_Model_Def.h OGL_Render.h OGL_Setup.h OGL_FBO.h	\
-  OGL_Subst_Texture_Def.h OGL_Texture_Def.h OGL_Textures.h		\
-  Rasterizer.h Rasterizer_OGL.h Rasterizer_Shader.h Rasterizer_SW.h	\
-  render.h RenderPlaceObjs.h RenderRasterize.h				\
-  RenderRasterize_Shader.h RenderSortPoly.h RenderVisTree.h		\
-  scottish_textures.h shape_definitions.h shape_descriptors.h		\
-  SW_Texture_Extras.h textures.h OGL_Shader.h vec3.h			\
-									\
-  AnimatedTextures.cpp Crosshairs_SDL.cpp ImageLoader_Shared.cpp	\
-  ImageLoader_SDL.cpp OGL_Faders.cpp OGL_Model_Def.cpp OGL_Render.cpp	\
-  OGL_Setup.cpp OGL_Subst_Texture_Def.cpp OGL_Textures.cpp render.cpp	\
-  RenderPlaceObjs.cpp $(OPENGL_SOURCES) RenderRasterize.cpp		\
-  RenderSortPoly.cpp RenderVisTree.cpp scottish_textures.cpp		\
-  shapes.cpp SW_Texture_Extras.cpp textures.cpp OGL_Shader.cpp OGL_FBO.cpp
+librendermain_a_SOURCES = AnimatedTextures.h collection_definition.h		   \
+  Crosshairs.h DDS.h ImageLoader.h low_level_textures.h OGL_Faders.h		   \
+  OGL_Headers.h OGL_Model_Def.h OGL_Render.h OGL_Setup.h OGL_FBO.h			   \
+  OGL_Subst_Texture_Def.h OGL_Texture_Def.h OGL_Textures.h Rasterizer.h		   \
+  Rasterizer_OGL.h Rasterizer_Shader.h Rasterizer_SW.h render.h				   \
+  RenderPlaceObjs.h RenderRasterize.h RenderRasterize_Shader.h				   \
+  RenderSortPoly.h RenderVisTree.h scottish_textures.h shape_definitions.h	   \
+  shape_descriptors.h SW_Texture_Extras.h textures.h OGL_Shader.h vec3.h	   \
+  Shaders/bump_bloom.frag Shaders/bump.frag Shaders/invincible_bloom.frag	   \
+  Shaders/invincible.frag Shaders/invisible_bloom.frag Shaders/invisible.frag  \
+  Shaders/landscape_bloom.frag Shaders/landscape.frag						   \
+  Shaders/landscape_infravision.frag Shaders/landscape.vert					   \
+  Shaders/sprite_bloom.frag Shaders/sprite.frag								   \
+  Shaders/sprite_infravision.frag Shaders/sprite.vert Shaders/wall_bloom.frag  \
+  Shaders/wall.frag Shaders/wall_infravision.frag Shaders/wall.vert			   \
+  AnimatedTextures.cpp Crosshairs_SDL.cpp ImageLoader_Shared.cpp			   \
+  ImageLoader_SDL.cpp OGL_Faders.cpp OGL_Model_Def.cpp OGL_Render.cpp		   \
+  OGL_Setup.cpp OGL_Subst_Texture_Def.cpp OGL_Textures.cpp render.cpp		   \
+  RenderPlaceObjs.cpp $(OPENGL_SOURCES) RenderRasterize.cpp RenderSortPoly.cpp \
+  RenderVisTree.cpp scottish_textures.cpp shapes.cpp SW_Texture_Extras.cpp	   \
+  textures.cpp OGL_Shader.cpp OGL_FBO.cpp
 
 EXTRA_librendermain_a_SOURCES = Rasterizer_Shader.cpp	\
 RenderRasterize_Shader.cpp

@@ -24,7 +24,7 @@ SHELL.H
 Saturday, August 22, 1992 2:18:48 PM
 
 Saturday, January 2, 1993 10:22:46 PM
-	thank god c doesnÕt choke on incomplete structure references.
+	thank god c doesnâ€™t choke on incomplete structure references.
 
 Jul 5, 2000 (Loren Petrich):
 	Added XML support for controlling the cheats
@@ -40,6 +40,7 @@ Dec 29, 2000 (Loren Petrich):
 */
 
 #include "cstypes.h"
+#include <string>
 
 class FileSpecifier;
 struct RGBColor;
@@ -56,6 +57,13 @@ enum {
 	_save_replay_prompt,
 	_select_replay_prompt,
 	_default_prompt
+};
+
+enum class BobbingType
+{
+	none,
+	camera_and_weapon,
+	weapon_only
 };
 
 /* ---------- structures */
@@ -80,8 +88,9 @@ struct screen_mode_data
 	short term_scale_level;
 	bool fix_h_not_v;
 	bool translucent_map;
-	bool camera_bob;
-	
+	BobbingType bobbing_type;
+
+	int fov; // 0 = use default (or MML/plugin)
 };
 
 #define NUMBER_OF_KEYS 21
@@ -150,5 +159,9 @@ void load_environment_from_preferences(void);
 // Implemented in the "screen" routines
 void screen_printf(const char *format, ...);
 
+void main_event_loop(void);
+void initialize_application(void);
+void shutdown_application(void);
+bool handle_open_document(const std::string& filename);
 
 #endif

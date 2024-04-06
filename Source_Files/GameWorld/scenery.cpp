@@ -23,7 +23,7 @@ Thursday, December 1, 1994 11:56:43 AM  (Jason)
 Friday, June 16, 1995 11:48:23 AM  (Jason)
 	animated scenery; audible scenery.
 Tuesday, October 10, 1995 10:30:58 AM  (Jason)
-	destroyable scenery; new_scenery doesnÕt bail on out-of-range scenery.
+	destroyable scenery; new_scenery doesnâ€™t bail on out-of-range scenery.
 
 Jan 30, 2000 (Loren Petrich):
 	Added some typecasts
@@ -197,6 +197,13 @@ void damage_scenery(
 	if (definition->flags&_scenery_can_be_destroyed)
 	{
 		object->shape= definition->destroyed_shape;
+		object->sequence = 0;
+
+		if (film_profile.fix_destroy_scenery_random_frame)
+		{
+			randomize_object_sequence(object_index, object->shape);
+		}
+
 		// LP addition: don't create a destruction effect if the effect type is NONE
 		if (definition->destroyed_effect != NONE)
 			new_effect(&object->location, object->polygon, definition->destroyed_effect, object->facing);
@@ -277,7 +284,7 @@ void parse_mml_scenery(const InfoTree& root)
 			original_scenery_definitions[i] = scenery_definitions[i];
 	}
 	
-	BOOST_FOREACH(InfoTree object, root.children_named("object"))
+	for (const InfoTree &object : root.children_named("object"))
 	{
 		int16 index;
 		if (!object.read_indexed("index", index, NUMBER_OF_SCENERY_DEFINITIONS))
@@ -289,11 +296,11 @@ void parse_mml_scenery(const InfoTree& root)
 		object.read_attr("height", def.height);
 		object.read_indexed("destruction", def.destroyed_effect, NUMBER_OF_EFFECT_TYPES, true);
 		
-		BOOST_FOREACH(InfoTree child, object.children_named("normal"))
-			BOOST_FOREACH(InfoTree shape, child.children_named("shape"))
+		for (const InfoTree &child : object.children_named("normal"))
+			for (const InfoTree &shape : child.children_named("shape"))
 				shape.read_shape(def.shape);
-		BOOST_FOREACH(InfoTree child, object.children_named("destroyed"))
-			BOOST_FOREACH(InfoTree shape, child.children_named("shape"))
+		for (const InfoTree &child : object.children_named("destroyed"))
+			for (const InfoTree &shape : child.children_named("shape"))
 				shape.read_shape(def.destroyed_shape);
 	}
 	

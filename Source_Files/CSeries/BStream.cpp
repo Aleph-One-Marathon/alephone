@@ -20,7 +20,7 @@
 */
 
 #include "BStream.h"
-#include <SDL_endian.h>
+#include <SDL2/SDL_endian.h>
 
 std::streampos BIStream::tellg() const
 {
@@ -49,7 +49,7 @@ BIStream& BIStream::ignore(std::streamsize n)
 {
 	if (rdbuf()->pubseekoff(n, std::ios_base::cur, std::ios_base::in) < 0)
 	{
-		throw failure("serialization bounc check failed");
+		throw failure("serialization bound check failed");
 	}
 
 	return *this;

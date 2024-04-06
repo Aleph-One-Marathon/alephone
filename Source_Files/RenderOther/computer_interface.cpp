@@ -301,7 +301,7 @@ static void _draw_computer_text(char *base_text, short start_index, Rect *bounds
 	terminal_text_t *terminal_text, short current_line);
 static short find_group_type(terminal_text_t *data, 
 	short group_type);
-static void teleport_to_level(short level_number);
+static void teleport_to_level(short level_number, int16 delay_before_teleport);
 static void teleport_to_polygon(short player_index, short polygon_index);
 static struct terminal_groupings *get_indexed_grouping(
 	terminal_text_t *data, short index);
@@ -416,6 +416,27 @@ static void	set_text_face(struct text_face_data *text_face)
 	current_pixel = SDL_MapRGB(/*world_pixels*/draw_surface->format, color.r, color.g, color.b);
 }
 
+static bool can_break_after(char c)
+{
+	// determined empirically on my PowerBook
+	switch (c)
+	{
+	case '&':
+	case '*':
+	case '+':
+	case '-':
+	case '\\':
+	case '<':
+	case '=':
+	case '>':
+	case '/':
+	case '^':
+	case '|':
+		return true;
+	default:
+		return false;
+	}
+}
 
 static bool calculate_line(char *base_text, short width, short start_index, short text_end_index, short *end_index)
 {
@@ -431,21 +452,44 @@ static bool calculate_line(char *base_text, short width, short start_index, shor
 			running_width += char_width(base_text[index], terminal_font, current_style);
 			index++;
 		}
-		
-		// Now go backwards, looking for whitespace to split on
+
+		// Now go backwards, looking for a place to split
 		if (base_text[index] == MAC_LINE_END)
 			index++;
 		else if (base_text[index]) {
-			int break_point = index;
+			if (film_profile.better_terminal_word_wrap)
+			{
+				int break_point = index - 1;
+				while (break_point > start_index)
+				{
+					if (base_text[break_point] == ' ')
+					{
+						index = break_point + 1; // eat the space
+						break;
+					}
+					else if (break_point > start_index + 1 &&
+							 can_break_after(base_text[break_point - 1]))
+					{
+						index = break_point;
+						break;
+					}
 
-			while (break_point>start_index) {
-				if (base_text[break_point] == ' ')
-					break; 	// Non printing
-				break_point--;	// this needs to be in front of the test
+					--break_point;
+				}
 			}
-			
-			if (break_point != start_index)
-				index = break_point+1;	// Space at the end of the line
+			else
+			{
+				int break_point = index;
+				
+				while (break_point>start_index) {
+					if (base_text[break_point] == ' ')
+						break; 	// Non printing
+					break_point--;	// this needs to be in front of the test
+				}
+				
+				if (break_point != start_index)
+					index = break_point+1;	// Space at the end of the line
+			}
 		}
 		
 		*end_index= index;
@@ -471,7 +515,6 @@ void initialize_terminal_manager(
 	void)
 {
 	player_terminals= new player_terminal_data[MAXIMUM_NUMBER_OF_PLAYERS];
-	assert(player_terminals);
 	objlist_clear(player_terminals, MAXIMUM_NUMBER_OF_PLAYERS);
 
 /*
@@ -550,7 +593,7 @@ void enter_computer_interface(
 	next_terminal_group(player_index, terminal_text);
 }
 
-/*  Assumes ¶t==1 tick */
+/*  Assumes âˆ‚t==1 tick */
 void update_player_for_terminal_mode(
 	short player_index)
 {
@@ -1054,14 +1097,14 @@ static short find_group_type(
 }
 
 static void teleport_to_level(
-	short level_number)
+	short level_number, int16_t delay_before_teleport)
 {
 	/* It doesn't matter which player we get. */
 	struct player_data *player= get_player_data(0);
 	
 	// LP change: moved down by 1 so that level 0 will be valid
 	player->teleporting_destination= -level_number - 1;
-	player->delay_before_teleport= TICKS_PER_SECOND/2; // delay before we teleport.
+	player->delay_before_teleport = delay_before_teleport;
 }
 			
 static void teleport_to_polygon(
@@ -1150,12 +1193,11 @@ static void display_picture(
 	short flags)
 {
 	LoadedResource PictRsrc;
-	SDL_Surface *s = NULL;
 
-	if (get_picture_resource_from_scenario(picture_id, PictRsrc))
-	{
-		s = picture_to_surface(PictRsrc);
-	}
+	auto s = get_picture_resource_from_scenario(picture_id, PictRsrc) ? 
+			 picture_to_surface(PictRsrc) :
+			 std::shared_ptr<SDL_Surface>(nullptr, SDL_FreeSurface);
+
 	if (s)
 	{
 		Rect bounds;
@@ -1167,7 +1209,7 @@ static void display_picture(
 
 		int pict_header_width = get_pict_header_width(PictRsrc);
 		bool cinemascopeHack = false;
-		if (bounds.right != pict_header_width)
+		if (bounds.right != pict_header_width && bounds.right == 614)
 		{
 			cinemascopeHack = true;
 			bounds.right = pict_header_width;
@@ -1207,16 +1249,15 @@ static void display_picture(
 
 		SDL_Rect r = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
 		if ((s->w == r.w && s->h == r.h) || cinemascopeHack)
-			SDL_BlitSurface(s, NULL, /*world_pixels*/draw_surface, &r);
+			SDL_BlitSurface(s.get(), NULL, /*world_pixels*/draw_surface, &r);
 		else {
 			// Rescale picture
-			SDL_Surface *s2 = rescale_surface(s, r.w, r.h);
+			SDL_Surface *s2 = rescale_surface(s.get(), r.w, r.h);
 			if (s2) {
 				SDL_BlitSurface(s2, NULL, /*world_pixels*/draw_surface, &r);
 				SDL_FreeSurface(s2);
 			}
 		}
-		SDL_FreeSurface(s);
 		/* And let the caller know where we drew the picture */
 		*frame= bounds;
 	} else {
@@ -1293,7 +1334,7 @@ static void fill_terminal_with_static(
 
 // LP addition: will return NULL if no terminal data was found for this terminal number
 
-static boost::scoped_ptr<terminal_text_t> resource_terminal;
+static std::unique_ptr<terminal_text_t> resource_terminal;
 static int resource_terminal_id = NONE;
 
 void clear_compiled_terminal_cache()
@@ -1301,6 +1342,9 @@ void clear_compiled_terminal_cache()
 	resource_terminal.reset();
 	resource_terminal_id = NONE;
 }
+
+extern OpenedResourceFile M1ShapesFile;
+extern OpenedResourceFile ExternalResources;
 
 static terminal_text_t* compile_marathon_terminal(char*, short);
 
@@ -1314,10 +1358,20 @@ static terminal_text_t *get_indexed_terminal_data(
 		{
 			return resource_terminal.get();
 		}
-		else if (ExternalResources.IsOpen())
+		else
 		{
 			LoadedResource rsrc;
-			if (ExternalResources.Get('t', 'e', 'r', 'm', id, rsrc))
+			if (ExternalResources.IsOpen())
+			{
+				ExternalResources.Get('t', 'e', 'r', 'm', id, rsrc);
+			}
+
+			if (!rsrc.IsLoaded() && M1ShapesFile.IsOpen())
+			{
+				M1ShapesFile.Get('t', 'e', 'r', 'm', id, rsrc);
+			}
+
+			if (rsrc.IsLoaded())
 			{
 				resource_terminal.reset(compile_marathon_terminal(reinterpret_cast<char*>(rsrc.GetPointer()), rsrc.GetLength()));
 				
@@ -1664,6 +1718,12 @@ static void goto_terminal_group(
 				terminal_data->maximum_line= count_total_lines(get_text_base(terminal_text),
 					RECTANGLE_WIDTH(&text_bounds), current_group->start_index, 
 					current_group->start_index+current_group->length);
+
+				if (film_profile.page_up_past_full_width_term_pict &&
+					terminal_data->maximum_line == 0)
+				{
+					terminal_data->maximum_line = 1;
+				}
 			}
 			break;
 			
@@ -1725,10 +1785,10 @@ static void get_date_string(
 	}
 	else
 	{
-		seconds = 800070137;
+		seconds = 800070137; // Wednesday, May 10, 1995 1:42:17
 		seconds += game_time_passed / TICKS_PER_SECOND;
 	}
-	game_time = *localtime(&seconds);
+	game_time = *gmtime(&seconds);
 	game_time.tm_year= 437;
 	game_time.tm_yday= 0;
 	game_time.tm_isdst= 0;
@@ -1911,7 +1971,14 @@ static void handle_reading_terminal_keys(
 			break;
 		
 		case _interlevel_teleport_group: // permutation is level to go to
-			teleport_to_level(current_group->permutation);
+			if (film_profile.m1_teleport_without_delay && (current_group->flags & _group_is_marathon_1))
+			{
+				teleport_to_level(current_group->permutation, 0);
+			}
+			else
+			{
+				teleport_to_level(current_group->permutation, TICKS_PER_SECOND / 2);
+			}
 			initialize_player_terminal_info(player_index);
 			aborted= true;
 			break;
@@ -2017,7 +2084,8 @@ static void calculate_maximum_lines_for_groups(struct terminal_groupings *groups
 class MarathonTerminalCompiler
 {
 public:
-	MarathonTerminalCompiler(char* text, short length) : terminal(new terminal_text_t), in_buffer(text, length), in(&in_buffer) { 
+	MarathonTerminalCompiler(char* text, short length) : terminal(new terminal_text_t), in_buffer(text, length), in(&in_buffer) {
+		information_group.type = 0;
 		briefing_group.type = 0;
 		success_group.type = 0;
 		failure_group.type = 0;
@@ -2045,11 +2113,16 @@ private:
 	terminal_groupings group;
 
 	terminal_groupings logon_group;
+	terminal_groupings information_group;
 	terminal_groupings briefing_group;
 	terminal_groupings unfinished_group;
 	terminal_groupings failure_group;
 	terminal_groupings success_group;
-	std::vector<terminal_groupings> other_groups;
+
+	std::vector<terminal_groupings> information_checkpoints;
+	std::vector<terminal_groupings> unfinished_checkpoints;
+	// does Marathon allow #checkpoints inside success/failure/briefing?
+	std::vector<terminal_groupings>* checkpoints;
 };
 
 terminal_text_t* MarathonTerminalCompiler::Compile()
@@ -2140,23 +2213,36 @@ void MarathonTerminalCompiler::FinishGroup()
 	switch (group.type)
 	{
 	case _logon_group:
+		checkpoints = nullptr;
 		logon_group = group;
 		break;
 	case _information_group:
+		information_group = group;
+		information_checkpoints.clear();
+		checkpoints = &information_checkpoints;
+		break;
 	case _checkpoint_group:
-		other_groups.push_back(group);
+		if (checkpoints)
+		{
+			checkpoints->push_back(group);
+		}
 		break;
 	case _interlevel_teleport_group:
+		checkpoints = nullptr;
 		briefing_group = group;
 		break;
 	case _success_group:
+		checkpoints = nullptr;
 		success_group = group;
 		break;
 	case _failure_group:
+		checkpoints = nullptr;
 		failure_group = group;
 		break;
 	case _unfinished_group:
 		unfinished_group = group;
+		unfinished_checkpoints.clear();
+		checkpoints = &unfinished_checkpoints;
 		break;
 	}
 }
@@ -2273,26 +2359,28 @@ void MarathonTerminalCompiler::BuildUnfinishedGroup()
 
 	terminal->groupings.push_back(logon_group);
 
-	// if there's an unfinished group, push it as unfinished
-	// otherwise, this must not be an end-of-level term, use all the other groups
+	if (information_group.type)
+	{
+		terminal->groupings.push_back(information_group);
+		terminal->groupings.insert(terminal->groupings.end(),
+								   information_checkpoints.begin(),
+								   information_checkpoints.end());
+	}
+
 	if (unfinished_group.type)
 	{
 		group = unfinished_group;
 		group.type = _information_group;
 		terminal->groupings.push_back(group);
 
-		group = logon_group;
-		group.type = _logoff_group;
-		terminal->groupings.push_back(group);
+		terminal->groupings.insert(terminal->groupings.end(),
+								   unfinished_checkpoints.begin(),
+								   unfinished_checkpoints.end());
 	}
-	else
-	{
-		terminal->groupings.insert(terminal->groupings.end(), other_groups.begin(), other_groups.end());
 
-		group = logon_group;
-		group.type = _logoff_group;
-		terminal->groupings.push_back(group);
-	}
+	group = logon_group;
+	group.type = _logoff_group;
+	terminal->groupings.push_back(group);
 
 	group.type = _end_group;
 	group.flags = 0;

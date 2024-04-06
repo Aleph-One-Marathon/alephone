@@ -47,10 +47,11 @@ FBO::FBO(GLuint w, GLuint h, bool srgb) : _h(h), _w(w), _srgb(srgb) {
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
 
-void FBO::activate(bool clear) {
+void FBO::activate(bool clear, GLuint fboTarget) {
 	if (!active_chain.size() || active_chain.back() != this) {
 		active_chain.push_back(this);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _fbo);
+		_fboTarget = fboTarget;
+		glBindFramebufferEXT(fboTarget, _fbo);
 		glPushAttrib(GL_VIEWPORT_BIT);
 		glViewport(0, 0, _w, _h);
 		if (_srgb)
@@ -73,7 +74,7 @@ void FBO::deactivate() {
 			prev_fbo = active_chain.back()->_fbo;
 			prev_srgb = active_chain.back()->_srgb;
 		}
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prev_fbo);
+		glBindFramebufferEXT(_fboTarget, prev_fbo);
 		if (prev_srgb)
 			glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 		else
@@ -107,9 +108,9 @@ void FBO::prepare_drawing_mode(bool blend) {
 void FBO::reset_drawing_mode() {
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 }
 

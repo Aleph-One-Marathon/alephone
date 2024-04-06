@@ -355,7 +355,7 @@ short get_network_compass_state(
 	{
                 switch (GET_GAME_TYPE())
                 {
-                        case _game_of_king_of_the_hill: // whereÕs the hill
+                        case _game_of_king_of_the_hill: // whereâ€™s the hill
                         // Benad
                         case _game_of_defense:
                                 if (get_polygon_data(get_player_data(player_index)->supporting_polygon_index)->type==_polygon_is_hill)
@@ -368,7 +368,7 @@ short get_network_compass_state(
                                 }
                                 break;
 			
-                        case _game_of_tag: // whereÕs it
+                        case _game_of_tag: // whereâ€™s it
                                 if (dynamic_world->game_player_index==player_index)
                                 {
                                         state= _network_compass_all_on;
@@ -396,7 +396,7 @@ short get_network_compass_state(
                                 }
                                 break;
                         //END Benad
-                        case _game_of_kill_man_with_ball: // whereÕs the ball
+                        case _game_of_kill_man_with_ball: // whereâ€™s the ball
                                 if (player_has_ball(player_index, SINGLE_BALL_COLOR))
                                 {
                                         state= _network_compass_all_on;
@@ -427,7 +427,7 @@ short get_network_compass_state(
 	return state;
 }
 
-// if false is returned, donÕt attribute kill
+// if false is returned, donâ€™t attribute kill
 bool player_killed_player(
 	short dead_player_index,
 	short aggressor_player_index)
@@ -445,7 +445,7 @@ bool player_killed_player(
 				{
 					if (dynamic_world->game_player_index!=dead_player_index)
 					{
-						// change of ÔitÕ
+						// change of â€˜itâ€™
 						player_data* player = get_player_data(dead_player_index);
 						play_object_sound(player->object_index, _snd_you_are_it);
 						dynamic_world->game_player_index= dead_player_index;
@@ -576,7 +576,7 @@ bool update_net_game(
 							/*if(player->netgame_parameters[_offender_time_in_base]>GET_GAME_PARAMETER(_maximum_offender_time_in_base))
 							{
 								dprintf("Game is over. Offender won.");
-								//¥¥
+								//â€¢â€¢
 								dynamic_world->game_information.parameters[_winning_team]= player->team;
 								net_game_over= true;
 							}*/
@@ -702,7 +702,7 @@ void calculate_ranking_text(
 	    break;
 	  case _game_of_most_time:
 	  case _game_of_least_time:
-	    seconds= ABS(ranking)/TICKS_PER_SECOND;
+	    seconds= std::abs(ranking)/TICKS_PER_SECOND;
 	    sprintf(buffer, "%ld:%02ld", seconds/60, seconds%60);
 	    break;
 	  }
@@ -716,7 +716,7 @@ void calculate_ranking_text(
 		case _game_of_kill_man_with_ball:
 		case _game_of_tag:
 		case _game_of_defense:
-			seconds= ABS(ranking)/TICKS_PER_SECOND;
+			seconds= std::abs(ranking)/TICKS_PER_SECOND;
 			sprintf(buffer, "%ld:%02ld", seconds/60, seconds%60);
 			break;
 		// END Benad
@@ -769,7 +769,7 @@ void calculate_ranking_text_for_post_game(
 	    break;
 	  case _game_of_most_time:
 	  case _game_of_least_time:
-	    seconds= ABS(ranking)/TICKS_PER_SECOND;
+	    seconds= std::abs(ranking)/TICKS_PER_SECOND;
 	    getcstr(format, strNETWORK_GAME_STRINGS, minutesPossessedFormatString);
 	    sprintf(buffer, format, seconds/60, seconds%60);
 	    break;
@@ -790,7 +790,7 @@ void calculate_ranking_text_for_post_game(
 		case _game_of_kill_man_with_ball:
 		case _game_of_tag:
 		case _game_of_defense:
-			seconds= ABS(ranking)/TICKS_PER_SECOND;
+			seconds= std::abs(ranking)/TICKS_PER_SECOND;
 			getcstr(format, strNETWORK_GAME_STRINGS, minutesPossessedFormatString);
 			sprintf(buffer, format, seconds/60, seconds%60);
 			break;

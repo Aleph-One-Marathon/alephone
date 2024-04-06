@@ -270,7 +270,7 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>Marathon Infinity</string>
+	<string>Classic Marathon Infinity</string>
 	<key>CFBundleIconFile</key>
 	<string>Marathon Infinity.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -295,7 +295,7 @@
 		<string>1</string>
 	</dict>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.7.0</string>
+	<string>10.13</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSMainNibFile</key>

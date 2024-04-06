@@ -31,10 +31,6 @@
 #include "shell.h" // get_shape_surface!?
 #include "Shape_Blitter.h"
 
-#if defined(__WIN32__) || defined(__MINGW32__)
-#undef DrawText
-#endif
-
 extern bool MotionSensorActive;
 
 
@@ -140,6 +136,10 @@ void HUD_SW_Class::DrawText(const char *text, screen_rectangle *dest, short flag
 	_draw_screen_text(text, dest, flags, font_id, text_color);
 }
 
+int HUD_SW_Class::TextWidth(const char* text, short font_id)
+{
+	return _text_width(text, font_id);
+}
 
 /*
  *  Fill rectangle

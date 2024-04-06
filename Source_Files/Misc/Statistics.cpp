@@ -27,8 +27,8 @@
 #include "preferences.h"
 #include "sdl_network.h"
 
+#include <functional>
 #include <sstream>
-#include <boost/bind.hpp>
 
 class ScopedMutex
 {
@@ -44,7 +44,7 @@ private:
 	SDL_mutex* mutex_;
 };
 
-StatsManager::StatsManager() : thread_(0), run_(true)
+StatsManager::StatsManager() : thread_(0), run_(true), busy_(false)
 {
 	entry_mutex_ = SDL_CreateMutex();
 
@@ -87,7 +87,7 @@ void StatsManager::Finish()
 		d.set_widget_placer(placer);
 		d.activate_widget(button);
 		
-		d.set_processing_function(boost::bind(&StatsManager::CheckForDone, this, _1));
+		d.set_processing_function(std::bind(&StatsManager::CheckForDone, this, std::placeholders::_1));
 		d.run();
 	}
 	else
@@ -125,7 +125,7 @@ int StatsManager::Run(void *pv)
 			}
 			else
 			{
-				entry.reset(new Entry(sm->entries_.front()));
+				entry = std::make_unique<Entry>(sm->entries_.front());
 				sm->entries_.pop();
 			}
 		}
@@ -154,7 +154,7 @@ int StatsManager::Run(void *pv)
 		}
 		else
 		{
-			SDL_Delay(200);
+			sleep_for_machine_ticks(MACHINE_TICKS_PER_SECOND / 5);
 		}
 		
 	}

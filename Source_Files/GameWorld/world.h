@@ -41,6 +41,7 @@ Jul 1, 2000 (Loren Petrich):
 #define _WORLD_H
 
 #include "cstypes.h"
+#include <tuple>
 
 /* ---------- constants */
 
@@ -86,75 +87,127 @@ typedef int16 world_distance;
 /* arguments must be positive (!) or use guess_hypotenuse() */
 #define GUESS_HYPOTENUSE(x, y) ((x)>(y) ? ((x)+((y)>>1)) : ((y)+((x)>>1)))
 
-/* -360¡<t<720¡ (!) or use normalize_angle() */
+/* -360Â°<t<720Â° (!) or use normalize_angle() */
 //#define NORMALIZE_ANGLE(t) ((t)<(angle)0?(t)+NUMBER_OF_ANGLES:((t)>=NUMBER_OF_ANGLES?(t)-NUMBER_OF_ANGLES:(t)))
 #define NORMALIZE_ANGLE(t) ((t)&(angle)(NUMBER_OF_ANGLES-1))
 
-/* ---------- point structures */
+/* ---------- int32 (long_...) and int16 (world_...) vectors and points */
 
-struct world_point2d
+// Conversions:
+//     world_ to long_:  implicit
+//     long_ to world_:  use to_world() (truncates)
+//     3D to 2D:         use .ij() or .xy()
+//     2D to 3D:         no shortcut currently
+//     vector to point:  write long_pointNd{} + vec
+//     point to vector:  write pt - long_pointNd{}
+// Math ops:
+//                 -vector  ->  long_vector
+//     vector {+,-} vector  ->  long_vector
+//         scalar * vector  ->  long_vector
+//           point - point  ->  long_vector
+//      point {+,-} vector  ->  long_point
+//          vector + point  ->  unsupported (other way around is clearer)
+//     long_ types support compound assignment
+//     no guards against int32 overflow
+
+struct long_vector2d
 {
-	world_distance x, y;
+	int32 i, j;
+	constexpr auto& operator+=(long_vector2d b) { i += b.i; j += b.j; return *this; }
+	constexpr auto& operator-=(long_vector2d b) { i -= b.i; j -= b.j; return *this; }
+	template <class S> constexpr auto& operator*=(S s) { return (*this = {int32(s*i), int32(s*j)}); }
 };
-typedef struct world_point2d world_point2d;
 
-struct world_point3d
+struct long_vector3d
 {
-	world_distance x, y, z;
+	int32 i, j, k;
+	constexpr auto& operator+=(long_vector3d b) { i += b.i; j += b.j; k += b.k; return *this; }
+	constexpr auto& operator-=(long_vector3d b) { i -= b.i; j -= b.j; k -= b.k; return *this; }
+	template <class S> constexpr auto& operator*=(S s) { return (*this = {int32(s*i), int32(s*j), int32(s*k)}); }
+	constexpr auto ij() const { return long_vector2d{i, j}; }
 };
-typedef struct world_point3d world_point3d;
 
-struct fixed_point3d
+struct long_point2d
 {
-	_fixed x, y, z;
+	int32 x, y;
+	constexpr auto& operator+=(long_vector2d v) { x += v.i; y += v.j; return *this; }
+	constexpr auto& operator-=(long_vector2d v) { x -= v.i; y -= v.j; return *this; }
 };
-typedef struct fixed_point3d fixed_point3d;
 
-/* ---------- vector structures */
+struct long_point3d
+{
+	int32 x, y, z;
+	constexpr auto& operator+=(long_vector3d v) { x += v.i; y += v.j; z += v.k; return *this; }
+	constexpr auto& operator-=(long_vector3d v) { x -= v.i; y -= v.j; z -= v.k; return *this; }
+	constexpr auto xy() const { return long_point2d{x, y}; }
+};
 
 struct world_vector2d
 {
 	world_distance i, j;
+	/*implicit*/ constexpr operator long_vector2d() const { return {i, j}; }
 };
-typedef struct world_vector2d world_vector2d;
 
 struct world_vector3d
 {
 	world_distance i, j, k;
+	/*implicit*/ constexpr operator long_vector3d() const { return {i, j, k}; }
+	constexpr auto ij() const { return world_vector2d{i, j}; }
 };
-typedef struct world_vector3d world_vector3d;
+
+struct world_point2d
+{
+	world_distance x, y;
+	/*implicit*/ constexpr operator long_point2d() const { return {x, y}; }
+};
+
+struct world_point3d
+{
+	world_distance x, y, z;
+	/*implicit*/ constexpr operator long_point3d() const { return {x, y, z}; }
+	constexpr auto xy() const { return world_point2d{x, y}; }
+};
+
+// world_ operands promote
+constexpr bool operator==(long_vector2d a, long_vector2d b) { return a.i == b.i && a.j == b.j; }
+constexpr bool operator==(long_vector3d a, long_vector3d b) { return a.i == b.i && a.j == b.j && a.k == b.k; }
+constexpr bool operator==(long_point2d a, long_point2d b) { return a.x == b.x && a.y == b.y; }
+constexpr bool operator==(long_point3d a, long_point3d b) { return a.x == b.x && a.y == b.y && a.z == b.z; }
+constexpr bool operator!=(long_vector2d a, long_vector2d b) { return !(a == b); }
+constexpr bool operator!=(long_vector3d a, long_vector3d b) { return !(a == b); }
+constexpr bool operator!=(long_point2d a, long_point2d b) { return !(a == b); }
+constexpr bool operator!=(long_point3d a, long_point3d b) { return !(a == b); }
+constexpr auto operator+(long_vector2d a, long_vector2d b) { return a += b; }
+constexpr auto operator+(long_vector3d a, long_vector3d b) { return a += b; }
+constexpr auto operator-(long_vector2d a, long_vector2d b) { return a -= b; }
+constexpr auto operator-(long_vector3d a, long_vector3d b) { return a -= b; }
+constexpr auto operator-(long_vector2d v) { return long_vector2d{} - v; }
+constexpr auto operator-(long_vector3d v) { return long_vector3d{} - v; }
+template <class S> constexpr auto operator*(S s, long_vector2d v) { return v *= s; }
+template <class S> constexpr auto operator*(S s, long_vector3d v) { return v *= s; }
+constexpr auto operator-(long_point2d a, long_point2d b) { return long_vector2d{a.x - b.x, a.y - b.y}; }
+constexpr auto operator-(long_point3d a, long_point3d b) { return long_vector3d{a.x - b.x, a.y - b.y, a.z - b.z}; }
+constexpr auto operator+(long_point2d p, long_vector2d v) { return p += v; }
+constexpr auto operator+(long_point3d p, long_vector3d v) { return p += v; }
+constexpr auto operator-(long_point2d p, long_vector2d v) { return p -= v; }
+constexpr auto operator-(long_point3d p, long_vector3d v) { return p -= v; }
+
+constexpr auto to_world(long_vector2d v) { return world_vector2d{int16(v.i), int16(v.j)}; }
+constexpr auto to_world(long_vector3d v) { return world_vector3d{int16(v.i), int16(v.j), int16(v.k)}; }
+constexpr auto to_world(long_point2d p) { return world_point2d{int16(p.x), int16(p.y)}; }
+constexpr auto to_world(long_point3d p) { return world_point3d{int16(p.x), int16(p.y), int16(p.z)}; }
+
+/* ---------- fixed-point vectors and points */
 
 struct fixed_vector3d
 {
 	_fixed i, j, k;
 };
-typedef struct fixed_vector3d fixed_vector3d;
 
-// LP addition: long-integer intermediate values for better long-distance calculation
-
-struct long_point2d
+struct fixed_point3d
 {
-	int32 x, y;
+	_fixed x, y, z;
 };
-typedef struct long_point2d long_point2d;
-
-struct long_point3d
-{
-	int32 x, y, z;
-};
-typedef struct long_point3d long_point3d;
-
-struct long_vector2d
-{
-	int32 i, j;
-};
-typedef struct long_vector2d long_vector2d;
-
-struct long_vector3d
-{
-	int32 i, j, k;
-};
-typedef struct long_vector3d long_vector3d;
 
 /* ---------- angle structures */
 
@@ -171,6 +224,14 @@ struct world_location3d
 	angle yaw, pitch;
 
 	world_vector3d velocity;
+
+	bool operator==(const world_location3d& other) const {
+		return std::tie(pitch, yaw, polygon_index, point, velocity) == std::tie(other.pitch, other.yaw, other.polygon_index, other.point, other.velocity);
+	}
+
+	bool operator!=(const world_location3d& other) const {
+		return !(*(this) == other);
+	}
 };
 typedef struct world_location3d world_location3d;
 
@@ -190,6 +251,9 @@ static inline angle normalize_angle(angle theta)
 	return NORMALIZE_ANGLE(theta);
 }
 
+// Return (a cross b).k
+inline Sint64 cross_product_k(long_vector2d a, long_vector2d b) { return 1LL*a.i*b.j - 1LL*a.j*b.i; }
+
 world_point2d *rotate_point2d(world_point2d *point, world_point2d *origin, angle theta);
 world_point3d *rotate_point3d(world_point3d *point, world_point3d *origin, angle theta, angle phi);
 
@@ -199,7 +263,7 @@ world_point3d *translate_point3d(world_point3d *point, world_distance distance, 
 world_point2d *transform_point2d(world_point2d *point, world_point2d *origin, angle theta);
 world_point3d *transform_point3d(world_point3d *point, world_point3d *origin, angle theta, angle phi);
 
-/* angle is in [0,NUMBER_OF_ANGLES), or, [0,2¹) */
+/* angle is in [0,NUMBER_OF_ANGLES), or, [0,2Ï€) */
 // LP change: made this long-distance friendly
 angle arctangent(int32 x, int32 y);
 
@@ -224,17 +288,5 @@ void overflow_short_to_long_2d(world_point2d& WVec, uint16& flags, long_vector2d
 
 // Transform that produces a result with this kludge
 world_point2d *transform_overflow_point2d(world_point2d *point, world_point2d *origin, angle theta, uint16 *flags);
-
-// Simple copy-overs
-static inline void long_to_short_2d(long_vector2d& LVec, world_vector2d&WVec)
-{
-	WVec.i = static_cast<short>(LVec.i);
-	WVec.j = static_cast<short>(LVec.j);
-}
-static inline void short_to_long_2d(world_vector2d&WVec, long_vector2d& LVec)
-{
-	LVec.i = WVec.i;
-	LVec.j = WVec.j;
-}
 
 #endif

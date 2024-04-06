@@ -31,3 +31,5 @@ lib*.a
 /Source_Files/*.exe
 /*.zip
 /*.tar.bz2
+
+.vscode/

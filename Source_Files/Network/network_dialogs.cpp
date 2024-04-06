@@ -81,6 +81,7 @@ Apr 10, 2003 (Woody Zenfell):
 #include "game_wad.h" // get_map_file
 
 #include <map>
+#include <functional>
 
 // For LAN netgame location services
 #include	<sstream>
@@ -190,9 +191,10 @@ bool network_gather(bool inResumingGame)
 	game_info myGameInfo;
 	player_info myPlayerInfo;
 	bool advertiseOnMetaserver = false;
+	bool outUpnpPortForward = false;
 
 	show_cursor(); // JTP: Hidden one way or another
-	if (network_game_setup(&myPlayerInfo, &myGameInfo, inResumingGame, advertiseOnMetaserver))
+	if (network_game_setup(&myPlayerInfo, &myGameInfo, inResumingGame, advertiseOnMetaserver, outUpnpPortForward))
 	{
 		myPlayerInfo.desired_color= myPlayerInfo.color;
 		memset(myPlayerInfo.long_serial_number, 0, LONG_SERIAL_NUMBER_LENGTH);
@@ -203,7 +205,7 @@ bool network_gather(bool inResumingGame)
 			bool gather_dialog_result;
 		
 			if(NetGather(&myGameInfo, sizeof(game_info), (void*) &myPlayerInfo, 
-				sizeof(myPlayerInfo), inResumingGame))
+				sizeof(myPlayerInfo), inResumingGame, outUpnpPortForward))
 			{
 				GathererAvailableAnnouncer announcer;
 				
@@ -307,16 +309,16 @@ bool GatherDialog::GatherNetworkGameByRunning ()
 	chat_choice_labels.push_back ("with Internet players");
 	m_chatChoiceWidget->set_labels (chat_choice_labels);
 
-	m_cancelWidget->set_callback(boost::bind(&GatherDialog::Stop, this, false));
-	m_startWidget->set_callback(boost::bind(&GatherDialog::StartGameHit, this));
-	m_ungatheredWidget->SetItemSelectedCallback(boost::bind(&GatherDialog::gathered_player, this, _1));
+	m_cancelWidget->set_callback(std::bind(&GatherDialog::Stop, this, false));
+	m_startWidget->set_callback(std::bind(&GatherDialog::StartGameHit, this));
+	m_ungatheredWidget->SetItemSelectedCallback(std::bind(&GatherDialog::gathered_player, this, std::placeholders::_1));
 
 	m_startWidget->deactivate ();
 	
 	NetSetGatherCallbacks(this);
 	
-	m_chatChoiceWidget->set_callback(boost::bind(&GatherDialog::chatChoiceHit, this));
-	m_chatEntryWidget->set_callback(boost::bind(&GatherDialog::chatTextEntered, this, _1));
+	m_chatChoiceWidget->set_callback(std::bind(&GatherDialog::chatChoiceHit, this));
+	m_chatEntryWidget->set_callback(std::bind(&GatherDialog::chatTextEntered, this, std::placeholders::_1));
 	
 	gPregameChatHistory.clear ();
 	NetSetChatCallbacks(this);
@@ -568,15 +570,15 @@ const int JoinDialog::JoinNetworkGameByRunning ()
 	m_colourWidget->set_labels (kTeamColorsStringSetID);
 	m_teamWidget->set_labels (kTeamColorsStringSetID);
 	
-	m_cancelWidget->set_callback(boost::bind(&JoinDialog::Stop, this));
-	m_joinWidget->set_callback(boost::bind(&JoinDialog::attemptJoin, this));
-	m_joinMetaserverWidget->set_callback(boost::bind(&JoinDialog::getJoinAddressFromMetaserver, this));
+	m_cancelWidget->set_callback(std::bind(&JoinDialog::Stop, this));
+	m_joinWidget->set_callback(std::bind(&JoinDialog::attemptJoin, this));
+	m_joinMetaserverWidget->set_callback(std::bind(&JoinDialog::getJoinAddressFromMetaserver, this));
 	
 	m_chatChoiceWidget->set_value (kPregameChat);
 	m_chatChoiceWidget->deactivate ();
 	m_chatEntryWidget->deactivate ();
-	m_chatChoiceWidget->set_callback(boost::bind(&JoinDialog::chatChoiceHit, this));
-	m_chatEntryWidget->set_callback(boost::bind(&JoinDialog::chatTextEntered, this, _1));
+	m_chatChoiceWidget->set_callback(std::bind(&JoinDialog::chatChoiceHit, this));
+	m_chatEntryWidget->set_callback(std::bind(&JoinDialog::chatTextEntered, this, std::placeholders::_1));
 	
 	getcstr(temporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string);
 	m_messagesWidget->set_text(temporary);
@@ -717,8 +719,8 @@ void JoinDialog::gathererSearch ()
 					m_teamWidget->activate ();
 				}
 				m_colourWidget->activate ();
-				m_colourWidget->set_callback(boost::bind(&JoinDialog::changeColours, this));
-				m_teamWidget->set_callback(boost::bind(&JoinDialog::changeColours, this));
+				m_colourWidget->set_callback(std::bind(&JoinDialog::changeColours, this));
+				m_teamWidget->set_callback(std::bind(&JoinDialog::changeColours, this));
 			}
 			m_pigWidget->redraw ();
 			join_result = kNetworkJoinFailedJoined;
@@ -853,9 +855,10 @@ bool network_game_setup(
 	player_info *player_information,
 	game_info *game_information,
 	bool ResumingGame,
-	bool& outAdvertiseGameOnMetaserver)
+	bool& outAdvertiseGameOnMetaserver,
+	bool& outUpnpPortForward)
 {
-	if (SetupNetgameDialog::Create ()->SetupNetworkGameByRunning (player_information, game_information, ResumingGame, outAdvertiseGameOnMetaserver)) {
+	if (SetupNetgameDialog::Create ()->SetupNetworkGameByRunning (player_information, game_information, ResumingGame, outAdvertiseGameOnMetaserver, outUpnpPortForward)) {
 		write_preferences ();
 		return true;
 	} else {
@@ -1024,8 +1027,6 @@ SetupNetgameDialog::~SetupNetgameDialog ()
 	delete m_useScriptWidget;
 	delete m_scriptWidget;
 	
-	delete m_allowMicWidget;
-	
 	delete m_liveCarnageWidget;
 	delete m_motionSensorWidget;
 	
@@ -1044,7 +1045,8 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	player_info *player_information,
 	game_info *game_information,
 	bool resuming_game,
-	bool& outAdvertiseGameOnMetaserver)
+	bool& outAdvertiseGameOnMetaserver,
+	bool& outUpnpPortForward)
 {
 	int32 entry_flags;
 
@@ -1154,9 +1156,6 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	BoolPref useMetaserverPref (active_network_preferences->advertise_on_metaserver);
 	binders.insert<bool> (m_useMetaserverWidget, &useMetaserverPref);
 	
-	BoolPref allowMicPref (active_network_preferences->allow_microphone);
-	binders.insert<bool> (m_allowMicWidget, &allowMicPref);
-	
 	BitPref liveCarnagePref (active_network_preferences->game_options, _live_network_stats);
 	binders.insert<bool> (m_liveCarnageWidget, &liveCarnagePref);
 	BitPref motionSensorPref (active_network_preferences->game_options, _motion_sensor_does_not_work);
@@ -1179,21 +1178,23 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	binders.insert<bool> (m_useScriptWidget, &useScriptPref);
 	FilePref scriptPref (active_network_preferences->netscript_file);
 	binders.insert<FileSpecifier> (m_scriptWidget, &scriptPref);
-	
+
+#ifdef HAVE_MINIUPNPC
 	BoolPref useUpnpPref (active_network_preferences->attempt_upnp);
 	binders.insert<bool> (m_useUpnpWidget, &useUpnpPref);
+#endif
 
 	LatencyTolerancePref latencyTolerancePref (hub_get_minimum_send_period());
 	binders.insert<int> (m_latencyToleranceWidget, &latencyTolerancePref);
 
 	binders.migrate_all_second_to_first ();
 	
-	m_cancelWidget->set_callback (boost::bind (&SetupNetgameDialog::Stop, this, false));
-	m_okWidget->set_callback (boost::bind (&SetupNetgameDialog::okHit, this));
-	m_limitTypeWidget->set_callback (boost::bind (&SetupNetgameDialog::limitTypeHit, this));
-	m_allowTeamsWidget->set_callback (boost::bind (&SetupNetgameDialog::teamsHit, this));
-	m_gameTypeWidget->set_callback (boost::bind (&SetupNetgameDialog::gameTypeHit, this));
-	m_mapWidget->set_callback (boost::bind (&SetupNetgameDialog::chooseMapHit, this));
+	m_cancelWidget->set_callback (std::bind (&SetupNetgameDialog::Stop, this, false));
+	m_okWidget->set_callback (std::bind (&SetupNetgameDialog::okHit, this));
+	m_limitTypeWidget->set_callback (std::bind (&SetupNetgameDialog::limitTypeHit, this));
+	m_allowTeamsWidget->set_callback (std::bind (&SetupNetgameDialog::teamsHit, this));
+	m_gameTypeWidget->set_callback (std::bind (&SetupNetgameDialog::gameTypeHit, this));
+	m_mapWidget->set_callback (std::bind (&SetupNetgameDialog::chooseMapHit, this));
 
 	setupForGameType ();
 
@@ -1245,7 +1246,7 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 		strncpy (game_information->level_name, entry.level_name, MAX_LEVEL_NAME_LENGTH+1);
 		game_information->parent_checksum = read_wad_file_checksum(get_map_file());
 		game_information->difficulty_level = active_network_preferences->difficulty_level;
-		game_information->allow_mic = active_network_preferences->allow_microphone;
+		game_information->allow_mic = false;
 
 		int updates_per_packet = 1;
 		int update_latency = 0;
@@ -1295,6 +1296,7 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 		game_information->cheat_flags = active_network_preferences->cheat_flags;
 
 		outAdvertiseGameOnMetaserver = active_network_preferences->advertise_on_metaserver;
+		outUpnpPortForward = active_network_preferences->attempt_upnp;
 
 		//if(shouldUseNetscript)
 		//{
@@ -2482,7 +2484,7 @@ public:
 	
 	virtual bool Run ()
 	{
-		m_dialog.set_processing_function (boost::bind(&SdlGatherDialog::idle, this));
+		m_dialog.set_processing_function (std::bind(&SdlGatherDialog::idle, this));
 		return (m_dialog.run() == 0);
 	}
 	
@@ -2637,7 +2639,7 @@ public:
 
 	virtual void Run ()
 	{
-		m_dialog.set_processing_function (boost::bind(&SdlJoinDialog::gathererSearch, this));
+		m_dialog.set_processing_function (std::bind(&SdlJoinDialog::gathererSearch, this));
 		m_dialog.run();
 	}
 	
@@ -2715,13 +2717,16 @@ public:
 		network_table->dual_add(advertise_on_metaserver_w, m_dialog);
 		network_table->dual_add(advertise_on_metaserver_w->label("Advertise Game on Internet"), m_dialog);
 
+#ifdef HAVE_MINIUPNPC
 		w_toggle *use_upnp_w = new w_toggle (true);
+#else
+		w_toggle *use_upnp_w = new w_toggle(false);
+#endif
 		network_table->dual_add(use_upnp_w, m_dialog);
 		network_table->dual_add(use_upnp_w->label("Configure UPnP Router"), m_dialog);
-
-		w_toggle* realtime_audio_w = new w_toggle(network_preferences->allow_microphone);
-		network_table->dual_add(realtime_audio_w, m_dialog);
-		network_table->dual_add(realtime_audio_w->label("Allow Microphone"), m_dialog);
+#ifndef HAVE_MINIUPNPC
+		use_upnp_w->set_enabled(false);
+#endif
 
 		w_select_popup *latency_tolerance_w = new w_select_popup();
 		horizontal_placer *latency_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET));
@@ -2901,8 +2906,6 @@ public:
 		m_useScriptWidget = new ToggleWidget (use_netscript_w);
 		m_scriptWidget = new FileChooserWidget (choose_script_w);
 	
-		m_allowMicWidget = new ToggleWidget (realtime_audio_w);
-
 		m_liveCarnageWidget = new ToggleWidget (live_w);
 		m_motionSensorWidget = new ToggleWidget (sensor_w);
 	

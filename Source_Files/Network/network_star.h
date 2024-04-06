@@ -87,6 +87,7 @@ extern int32 spoke_latency(); // in ms, kNetLatencyInvalid if not yet valid
 extern int32 hub_latency(int player_index); // in ms, kNetLatencyInvalid if not valid, kNetLatencyDisconnected if d/c
 extern TickBasedActionQueue* spoke_get_unconfirmed_flags_queue();
 extern int32 spoke_get_smallest_unconfirmed_tick();
+extern bool spoke_check_world_update();
 extern void DefaultSpokePreferences();
 extern InfoTree SpokePreferencesTree();
 extern void SpokeParsePreferencesTree(InfoTree prefs, std::string version);

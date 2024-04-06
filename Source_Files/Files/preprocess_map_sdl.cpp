@@ -130,13 +130,11 @@ bool choose_saved_game_to_load(FileSpecifier &saved_game)
 
 bool save_game(void)
 {
-	pause_game();
     bool success = create_quick_save();
     if (success)
         screen_printf("Game saved");
     else
         screen_printf("Save failed");
-	resume_game();
 
 	return success;
 }

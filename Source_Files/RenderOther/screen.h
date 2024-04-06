@@ -61,7 +61,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 #include <utility>
 #include <vector>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 struct Rect;
 
@@ -106,7 +106,8 @@ namespace alephone
 		SDL_Rect map_rect();
 		SDL_Rect term_rect();
 		SDL_Rect hud_rect();
-		
+		SDL_Rect OpenGLViewPort();
+
 		void bound_screen(bool in_game = true);
 		void bound_screen_to_rect(SDL_Rect &r, bool in_game = true);
 		void scissor_screen_to_rect(SDL_Rect &r);
@@ -116,6 +117,9 @@ namespace alephone
 		SDL_Rect lua_view_rect;
 		SDL_Rect lua_map_rect;
 		SDL_Rect lua_term_rect;
+
+		// TODO: the HUD should really draw messages / fps / input line itself
+		Rect lua_text_margins;
 
 	private:
 		Screen() : m_initialized(false) { }
@@ -207,7 +211,7 @@ screen_mode_data *get_screen_mode(void);
 
 // LP: when initing, ask whether to show the monitor-frequency dialog
 //void initialize_screen(struct screen_mode_data *mode, bool ShowFreqDialog);
-void change_screen_mode(struct screen_mode_data *mode, bool redraw);
+void change_screen_mode(struct screen_mode_data *mode, bool redraw, bool resize_hud = false);
 void change_screen_mode(short screentype);
 
 void toggle_fullscreen(bool fs);

@@ -189,10 +189,6 @@ extern weapon_interface_data weapon_interface_definitions[10];
 
 struct point2d;
 
-#if defined(__WIN32__) || defined(__MINGW32__)
-#undef DrawText
-#endif
-
 // Base class for HUD renderer
 class HUD_Class
 {
@@ -239,6 +235,8 @@ protected:
 
 	virtual void SetClipPlane(int x, int y, int c_x, int c_y, int radius) = 0;
 	virtual void DisableClipPlane(void) = 0;
+
+	virtual int TextWidth(const char* text, short font_id) = 0;
 
 protected:
 	bool ForceUpdate;

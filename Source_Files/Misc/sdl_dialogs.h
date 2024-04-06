@@ -31,8 +31,8 @@
 #include "cstypes.h"
 #include <vector>
 #include <memory>
-#include <boost/function.hpp>
-#include <SDL.h>
+#include <functional>
+#include <SDL2/SDL.h>
 
 #ifndef NO_STD_NAMESPACE
 using std::vector;
@@ -191,7 +191,7 @@ private:
 // Dialog structure
 class dialog {
 public:
-	typedef boost::function<void (dialog* d)> Callback;
+	typedef std::function<void (dialog* d)> Callback;
 
 	dialog();
 	~dialog();
@@ -277,6 +277,7 @@ private:
 	bool layout_for_fullscreen; // is the current layout for fullscreen?
 
 	Uint32 last_redraw;
+	bool initial_text_input;
 };
 
 // Pointer to top-level dialog, NULL = no dialog active
@@ -301,6 +302,7 @@ enum {
  */
 
 extern void initialize_dialogs();
+extern void shutdown_dialogs();
 
 extern bool load_dialog_theme(bool force_reload = false);
 

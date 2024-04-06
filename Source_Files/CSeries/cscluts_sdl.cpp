@@ -26,7 +26,7 @@
 
 #include "cseries.h"
 #include "FileHandler.h"
-#include "SDL_endian.h"
+#include <SDL2/SDL_endian.h>
 
 
 // Global variables
@@ -52,19 +52,11 @@ void build_color_table(color_table *table, LoadedResource &clut)
 
 	// Check number of colors
 	SDL_RWseek(p, 6, SEEK_CUR);
-	int n = SDL_ReadBE16(p) + 1;
-	// SDL_ReadBE16 returns a Uint16 and thus can never be negative. At least,
-	// that is what it seems.
-	// TODO Eliminate the n < 0 check as it will always evaluate to false
-	if (n < 0)
-		n = 0;
-	else if (n > 256)
-		n = 256;
-	table->color_count = n;
+	table->color_count = std::min(SDL_ReadBE16(p) + 1, 256);
 
 	// Convert color data
 	rgb_color *dst = table->colors;
-	for (int i=0; i<n; i++) {
+	for (int i=0; i< table->color_count; i++) {
 		SDL_RWseek(p, 2, SEEK_CUR);
 		dst->red = SDL_ReadBE16(p);
 		dst->green = SDL_ReadBE16(p);

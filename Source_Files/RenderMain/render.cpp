@@ -26,15 +26,15 @@ Sunday, September 11, 1994 7:32:49 PM  (Jason')
 	the clock on the 540 was wrong, yesterday was Saturday (not Friday).  on quads again, but
 	back home now.  something will draw before i go to bed tonight.  dinner at the nile?
 Tuesday, September 13, 1994 2:54:56 AM  (Jason')
-	no fair!ÑÑ itÕs still monday, really.  with the aid of some graphical debugging the clipping
-	all works now and iÕm trying to have the entire floor/ceiling thing going tonight (the nile
+	no fair!â€”â€” itâ€™s still monday, really.  with the aid of some graphical debugging the clipping
+	all works now and iâ€™m trying to have the entire floor/ceiling thing going tonight (the nile
 	was closed by the time i got around to taking a shower and heading out).
 Friday, September 16, 1994 4:06:17 AM  (Jason')
 	walls, floors and ceilings texture, wobble, etc.  contemplating objects ... maybe this will
 	work after all.
 Monday, September 19, 1994 11:03:49 AM  (Jason')
 	unified xz_clip_vertical_polygon() and z_clip_horizontal_polygon() to get rid of the last
-	known whitespace problem.  canÕt wait to see what others i have.  objects now respect the
+	known whitespace problem.  canâ€™t wait to see what others i have.  objects now respect the
 	clipping windows of all nodes they cross.
 Monday, October 24, 1994 4:35:38 PM (Jason)
 	fixed render sorting problem with objects of equal depth (i.e., parasitic objects). 
@@ -47,7 +47,7 @@ Wednesday, October 26, 1994 3:18:59 PM (Jason)
 Wednesday, November 2, 1994 3:49:57 PM (Jason)
 	the bottom panel of short split sides sometimes takes on the ceiling lightsource.
 Tuesday, November 8, 1994 5:29:12 PM  (Jason')
-	implemented new transfer modes: _slide, _wander.  _render_effect_earthquake doesnÕt work
+	implemented new transfer modes: _slide, _wander.  _render_effect_earthquake doesnâ€™t work
 	yet because the player can shake behind his own shape.
 Thursday, December 15, 1994 12:15:55 AM  (Jason)
 	the object depth sort order problem ocurrs with multiple objects in the same polygon,
@@ -256,15 +256,15 @@ extern WindowPtr screen_window;
 there exists a problem where an object can overlap into a polygon which is clipped by something
 	behind the object but that will clip the object because clip windows are subtractive; how
 	is this solved?
-itÕs still possible to get ambiguous clip flags, usually in very narrow (e.g., 1 pixel) windows
+itâ€™s still possible to get ambiguous clip flags, usually in very narrow (e.g., 1 pixel) windows
 the renderer has a maximum range beyond which it shits bricks yet which it allows to be exceeded
-itÕs still possible, especially in high-res full-screen, for points to end up (slightly) off
+itâ€™s still possible, especially in high-res full-screen, for points to end up (slightly) off
 	the screen (usually discarding these has no noticable effect on the scene)
 whitespace results when two adjacent polygons are clipped to different vertical windows.  this
 	is not trivially solved with the current implementation, and may be acceptable (?)
 
 //build_base_polygon_index_list() should discard lower polygons for objects above the viewer and
-//	higher polygons for objects below the viewer because we certainly donÕt sort objects
+//	higher polygons for objects below the viewer because we certainly donâ€™t sort objects
 //	correctly in these cases
 //in strange cases, objects are sorted out of order.  this seems to involve players in some way
 //	(i.e., parasitic objects).
@@ -348,6 +348,8 @@ void allocate_render_memory(
 	RenderVisTree.Resize(MAXIMUM_ENDPOINTS_PER_MAP,MAXIMUM_LINES_PER_MAP);
 	RenderSortPoly.Resize(MAXIMUM_POLYGONS_PER_MAP);
 	
+	// Reset to have the tree correctly resized if m1 exploration level
+	explore_tree.view = nullptr;
 	// LP change: set up pointers
 	RenderSortPoly.RVPtr = &RenderVisTree;
 	RenderPlaceObjs.RVPtr = &RenderVisTree;
@@ -385,8 +387,8 @@ void initialize_view_data(
 	view->half_screen_width= view->screen_width/2;
 	view->half_screen_height= view->screen_height/2;
 	
-	/* if thereÕs a round-off error in half_cone, we want to make the cone too big (so when we clip
-		lines Ôto the edge of the screenÕ theyÕre actually off the screen, thus +1.0) */
+	/* if thereâ€™s a round-off error in half_cone, we want to make the cone too big (so when we clip
+		lines â€˜to the edge of the screenâ€™ theyâ€™re actually off the screen, thus +1.0) */
 	view->half_cone= (angle) (adjusted_half_cone*((double)NUMBER_OF_ANGLES)/two_pi+1.0);
 	
 	// LP change: find the adjusted yaw for the landscapes;
@@ -403,14 +405,6 @@ void initialize_view_data(
 	/* calculate the vertical cone angle; again, overflow instead of underflow when rounding */
 	view->half_vertical_cone= (angle) (NUMBER_OF_ANGLES*atan(((double)view->half_screen_height*view->vertical_scale)/world_to_screen)/two_pi+1.0);
 
-	/* calculate left edge vector */
-	view->untransformed_left_edge.i= view->world_to_screen_x;
-	view->untransformed_left_edge.j= - view->half_screen_width;
-
-	/* calculate right edge vector (negative, so it clips in the right direction) */
-	view->untransformed_right_edge.i= - view->world_to_screen_x;
-	view->untransformed_right_edge.j= - view->half_screen_width;
-
 	/* view needs to know if OpenGL renderer should mimic software's pitch */
 	if (!ignore_preferences && graphics_preferences->screen_mode.acceleration == _opengl_acceleration)
 		view->mimic_sw_perspective = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_MimicSW);
@@ -422,7 +416,7 @@ void initialize_view_data(
 /* origin,origin_polygon_index,yaw,pitch,roll,etc. have probably changed since last call */
 void render_view(
 	struct view_data *view,
-	struct bitmap_definition *destination)
+	struct bitmap_definition *software_render_dest)
 {
 	update_view_data(view);
 
@@ -474,8 +468,8 @@ void render_view(
 			else
 			{
 #endif
-				// The software renderer needs this but the OpenGL one doesn't...
-				Rasterizer_SW.screen = destination;
+				assert(software_render_dest);
+				Rasterizer_SW.screen = software_render_dest;
 				RasPtr = &Rasterizer_SW;
 #ifdef HAVE_OPENGL
 			}
@@ -500,7 +494,7 @@ void render_view(
 			RenPtr->render_tree();
 			
 			// LP: won't put this into a separate class
-			/* render the playerÕs weapons, etc. */
+			/* render the playerâ€™s weapons, etc. */
                         if (!RenPtr->renders_viewer_sprites_in_tree()) {
                             render_viewer_sprite_layer(view, RasPtr);
                         }
@@ -588,9 +582,14 @@ void check_m1_exploration(void)
 		explore_view.origin_polygon_index = explore_player->camera_polygon_index;
 
 		update_view_data(&explore_view);
+		
+		std::vector<uint16_t> saved_render_flags{RenderFlagList};
 		objlist_clear(render_flags, RENDER_FLAGS_BUFFER_SIZE);
+		
         // build_render_tree() actually marks the polygons
 		explore_tree.build_render_tree();
+
+		RenderFlagList = std::move(saved_render_flags);
 	}
 }
 
@@ -615,9 +614,6 @@ static void update_view_data(
 		update_render_effect(view);
 	}
 	
-	view->untransformed_left_edge.i= view->world_to_screen_x;
-	view->untransformed_right_edge.i= - view->world_to_screen_x;
-	
 	/* calculate world_to_screen_y*tan(pitch) */
 	view->dtanpitch= (view->world_to_screen_y*sine_table[view->pitch])/cosine_table[view->pitch];
 
@@ -629,16 +625,8 @@ static void update_view_data(
 	theta= NORMALIZE_ANGLE(view->yaw+view->half_cone);
 	view->right_edge.i= cosine_table[theta], view->right_edge.j= sine_table[theta];
 	
-	/* calculate top cone vector (negative to clip the right direction) */
-	view->top_edge.i= - view->world_to_screen_y;
-	view->top_edge.j= - (view->half_screen_height + view->dtanpitch); /* ==k */
-
-	/* calculate bottom cone vector */
-	view->bottom_edge.i= view->world_to_screen_y;
-	view->bottom_edge.j= - view->half_screen_height + view->dtanpitch; /* ==k */
-
-	/* if weÕre sitting on one of the endpoints in our origin polygon, move us back slightly (±1) into
-		that polygon.  when we split rays weÕre assuming that weÕll never pass through a given
+	/* if weâ€™re sitting on one of the endpoints in our origin polygon, move us back slightly (Â±1) into
+		that polygon.  when we split rays weâ€™re assuming that weâ€™ll never pass through a given
 		vertex in different directions (because if we do the tree becomes a graph) but when
 		we start on a vertex this can happen.  this is a destructive modification of the origin. */
 	{
@@ -649,7 +637,7 @@ static void update_view_data(
 		{
 			struct world_point2d *vertex= &get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
 			
-			if (vertex->x==view->origin.x && vertex->y==view->origin.y)
+			if (vertex->x == view->origin.x && vertex->y == view->origin.y)
 			{
 				world_point2d *ccw_vertex= &get_endpoint_data(polygon->endpoint_indexes[WRAP_LOW(i, polygon->vertex_count-1)])->vertex;
 				world_point2d *cw_vertex= &get_endpoint_data(polygon->endpoint_indexes[WRAP_HIGH(i, polygon->vertex_count-1)])->vertex;
@@ -657,10 +645,53 @@ static void update_view_data(
 				
 				inset_vector.i= (ccw_vertex->x-vertex->x) + (cw_vertex->x-vertex->x);
 				inset_vector.j= (ccw_vertex->y-vertex->y) + (cw_vertex->y-vertex->y);
+				
+				if (inset_vector.i == 0 && inset_vector.j == 0)
+				{
+					// This happens when the CW and CCW vertices are equidistant from and collinear with the origin;
+					// we switch tactics and just move directly toward one of them
+					inset_vector.i = cw_vertex->x - vertex->x;
+					inset_vector.j = cw_vertex->y - vertex->y;
+				}
+				
 				view->origin.x+= SGN(inset_vector.i);
 				view->origin.y+= SGN(inset_vector.j);
 				
 				break;
+			}
+		}
+		
+		// Also check adjacent polygons' vertices in case a degenerate polygon has a vertex under us (on a side)
+		{
+			// Local index of the first side that connects to such a polygon, or else NONE
+			// (if non-NONE, we're on this side or one collinear with it)
+			const int side_to_poly_with_vertex_on_origin = [&]() -> int
+			{
+				for (int i = 0; i < polygon->vertex_count; ++i)
+				{
+					const int16 adj_poly_index = polygon->adjacent_polygon_indexes[i];
+					if (adj_poly_index != NONE)
+					{
+						const auto& adj_poly = *get_polygon_data(adj_poly_index);
+						for (int k = 0; k < adj_poly.vertex_count; ++k)
+						{
+							const auto v = get_endpoint_data(adj_poly.endpoint_indexes[k])->vertex;
+							if (v.x == view->origin.x && v.y == view->origin.y)
+								return i;
+						}
+					}
+				}
+				return NONE;
+			}();
+			
+			if (side_to_poly_with_vertex_on_origin != NONE)
+			{
+				// Scoot inward or along the side we're on (we're not on a corner because we handled that case already)
+				const int vertex0_index = side_to_poly_with_vertex_on_origin;
+				const int vertex1_index = WRAP_HIGH(side_to_poly_with_vertex_on_origin, polygon->vertex_count - 1);
+				const world_distance vertex0_x = get_endpoint_data(polygon->endpoint_indexes[vertex0_index])->vertex.x;
+				const world_distance vertex1_x = get_endpoint_data(polygon->endpoint_indexes[vertex1_index])->vertex.x;
+				view->origin.y += (vertex1_x - vertex0_x >= 0) ? 1 : -1;
 			}
 		}
 		
@@ -711,18 +742,19 @@ static void update_render_effect(
 	}
 	else
 	{
+		float interpolated_phase = MAX(0, phase - 1 + view->heartbeat_fraction);
 		switch (effect)
 		{
 			case _render_effect_explosion:
-				shake_view_origin(view, EXPLOSION_EFFECT_RANGE - ((EXPLOSION_EFFECT_RANGE/2)*phase)/period);
+				shake_view_origin(view, EXPLOSION_EFFECT_RANGE - ((EXPLOSION_EFFECT_RANGE/2)*interpolated_phase)/period);
 				break;
 			
 			case _render_effect_fold_in:
-				phase= period-phase;
+				interpolated_phase= period-interpolated_phase;
 			case _render_effect_fold_out:
 				/* calculate world_to_screen based on phase */
-				view->world_to_screen_x= view->real_world_to_screen_x + (4*view->real_world_to_screen_x*phase)/period;
-				view->world_to_screen_y= view->real_world_to_screen_y - (view->real_world_to_screen_y*phase)/(period+period/4);
+				view->world_to_screen_x= view->real_world_to_screen_x + (4*view->real_world_to_screen_x*interpolated_phase)/period;
+				view->world_to_screen_y= view->real_world_to_screen_y - (view->real_world_to_screen_y*interpolated_phase)/(period+period/4);
 				break;
 		}
 	}
@@ -842,6 +874,10 @@ void instantiate_polygon_transfer_mode(
 		case _xfer_fast_vertical_slide:
 		case _xfer_wander:
 		case _xfer_fast_wander:
+		case _xfer_reverse_horizontal_slide:
+		case _xfer_reverse_fast_horizontal_slide:
+		case _xfer_reverse_vertical_slide:
+		case _xfer_reverse_fast_vertical_slide:
 			x0= y0= 0;
 			switch (transfer_mode)
 			{
@@ -850,7 +886,13 @@ void instantiate_polygon_transfer_mode(
 				
 				case _xfer_fast_vertical_slide: transfer_phase<<= 1;
 				case _xfer_vertical_slide: y0= (transfer_phase<<2)&(WORLD_ONE-1); break;
-				
+					
+				case _xfer_reverse_fast_horizontal_slide: transfer_phase<<= 1;
+				case _xfer_reverse_horizontal_slide: x0 = WORLD_ONE - (transfer_phase<<2)&(WORLD_ONE-1); break;
+					
+		        case _xfer_reverse_fast_vertical_slide: transfer_phase<<= 1;
+				case _xfer_reverse_vertical_slide: y0 = WORLD_ONE - (transfer_phase<<2)&(WORLD_ONE-1); break;
+					
 				case _xfer_fast_wander: transfer_phase<<= 1;
 				case _xfer_wander:
 					alternate_transfer_phase= transfer_phase%(10*FULL_CIRCLE);
@@ -953,7 +995,7 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 	textured_rectangle.Opacity = 1;
 
 	/* get_weapon_display_information() returns true if there is a weapon to be drawn.  it
-		should initially be passed a count of zero.  it returns the weaponÕs texture and
+		should initially be passed a count of zero.  it returns the weaponâ€™s texture and
 		enough information to draw it correctly. */
 	count= 0;
 	while (get_weapon_display_information(&count, &display_data))
@@ -1020,7 +1062,7 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 		textured_rectangle.flip_horizontal= display_data.flip_horizontal;
 		textured_rectangle.flip_vertical= display_data.flip_vertical;
 		
-		/* lighting: depth of zero in the cameraÕs polygon index */
+		/* lighting: depth of zero in the cameraâ€™s polygon index */
 		textured_rectangle.depth= 0;
 		textured_rectangle.ambient_shade= get_light_intensity(get_polygon_data(view->origin_polygon_index)->floor_lightsource_index);
 		textured_rectangle.ambient_shade= MAX(shape_information->minimum_light_intensity, textured_rectangle.ambient_shade);
@@ -1030,7 +1072,7 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 		// for the convenience of doing teleport-in/teleport-out
 		textured_rectangle.xc = (textured_rectangle.x0 + textured_rectangle.x1) >> 1;
 		
-		/* make the weapon reflect the ownerÕs transfer mode */
+		/* make the weapon reflect the ownerâ€™s transfer mode */
 		instantiate_rectangle_transfer_mode(view, &textured_rectangle, display_data.transfer_mode, display_data.transfer_phase);
 		
 		/* and draw it */
@@ -1109,7 +1151,7 @@ static void shake_view_origin(
 	new_origin.y+= half_delta - ((delta*sine_table[NORMALIZE_ANGLE(((view->tick_count+5*TICKS_PER_SECOND)&~3)*(7*FULL_CIRCLE))])>>TRIG_SHIFT);
 	new_origin.z+= half_delta - ((delta*sine_table[NORMALIZE_ANGLE(((view->tick_count+7*TICKS_PER_SECOND)&~3)*(7*FULL_CIRCLE))])>>TRIG_SHIFT);
 
-	/* only use the new origin if we didnÕt cross a polygon boundary */
+	/* only use the new origin if we didnâ€™t cross a polygon boundary */
 	if (find_line_crossed_leaving_polygon(view->origin_polygon_index, (world_point2d *) &view->origin,
 		(world_point2d *) &new_origin)==NONE)
 	{
