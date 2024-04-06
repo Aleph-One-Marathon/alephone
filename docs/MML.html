@@ -165,8 +165,9 @@ The interface colors have the meanings listed below.
 <li>&lt;font&gt;, for all interface fonts; it is indexed.
 For more on specifying fonts, go <a href="#font">here</a>.
 The interface fonts have the meanings listed below.
-<li>&lt;vidmaster&gt;, for customizing the vidmaster level-selection dialog; it contains the attribute:
-<ul><li>stringset_index: this is the index of a stringset containing the dialog text. Here's an example:<br>
+<li>&lt;vidmaster&gt;, for customizing the vidmaster level-selection dialog; it contains the attributes:
+<ul><li>level_offset: where to start numbering levels. Marathon started counting at 0; Marathon 2 and Infinity stared counting at 1 (the default)</li>
+<li>stringset_index: this is the index of a stringset containing the dialog text. Here's an example:<br>
 <pre>
 &lt;interface&gt;
 &nbsp;&nbsp;&nbsp;&nbsp;...

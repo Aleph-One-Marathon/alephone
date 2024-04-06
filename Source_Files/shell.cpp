@@ -170,6 +170,7 @@ static void process_event(const SDL_Event &event);
 
 // cross-platform static variables
 short vidmasterStringSetID = -1; // can be set with MML
+short vidmasterLevelOffset = 1; // can be set with MML
 
 static bool IsCompositingWindowManagerEnabled() // double buffering
 {
@@ -588,6 +589,7 @@ short get_level_number_from_user(void)
 	placer->dual_add(new w_static_text("Start at level:"), d);
 
 	w_levels *level_w = new w_levels(levels, &d);
+	level_w->set_offset(vidmasterLevelOffset);
 	placer->dual_add(level_w, d);
 	placer->add(new w_spacer(), true);
 	placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);

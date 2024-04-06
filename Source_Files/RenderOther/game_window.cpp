@@ -517,6 +517,7 @@ void draw_panels(void)
 }
 
 extern short vidmasterStringSetID; // shell.cpp
+extern short vidmasterLevelOffset;
 struct weapon_interface_data *original_weapon_interface_definitions = NULL;
 
 void reset_mml_interface()
@@ -580,6 +581,7 @@ void parse_mml_interface(const InfoTree& root)
 	{
 		vidmasterStringSetID = -1;
 		vid.read_attr_bounded<int16>("stringset_index", vidmasterStringSetID, -1, SHRT_MAX);
+		vid.read_attr_bounded<int16>("level_offset", vidmasterLevelOffset, 0, 1);
 	}
 	
 	for (const InfoTree &weapon : root.children_named("weapon"))

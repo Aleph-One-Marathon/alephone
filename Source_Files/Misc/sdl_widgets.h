@@ -807,9 +807,12 @@ public:
 
 	void draw_item(vector<entry_point>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const;
 
+	void set_offset(int offset) { this->offset = offset; }
+
 private:
 	dialog *parent;
 	bool    show_level_numbers;
+	int offset;
 };
 
 
