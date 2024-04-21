@@ -122,6 +122,10 @@
 
 #include "shell_options.h"
 
+#ifdef HAVE_STEAM
+#include "steamshim_child.h"
+#endif
+
 // LP addition: whether or not the cheats are active
 // Defined in shell_misc.cpp
 extern bool CheatsActive;
@@ -465,6 +469,10 @@ void initialize_application(void)
 	
 	HTTPClient::Init();
 
+#ifdef HAVE_STEAM
+	STEAMSHIM_init();
+#endif
+
 	// Initialize everything
 	mytm_initialize();
 //	initialize_fonts();
@@ -499,6 +507,10 @@ void shutdown_application(void)
 #endif
 	TTF_Quit();
 	SDL_Quit();
+
+#ifdef HAVE_STEAM
+	STEAMSHIM_deinit();
+#endif
 }
 
 bool networking_available(void)
@@ -624,7 +636,7 @@ void main_event_loop(void)
 		switch (game_state) {
 			case _game_in_progress:
 			case _change_level:
-				if (get_fps_target() == 0 || Console::instance()->input_active() || cur_time - last_event_poll >= TICKS_BETWEEN_EVENT_POLL) {
+				if ((get_fps_target() == 0 && get_keyboard_controller_status()) || Console::instance()->input_active() || cur_time - last_event_poll >= TICKS_BETWEEN_EVENT_POLL) {
 					poll_event = true;
 					last_event_poll = cur_time;
 			  } else {				  
@@ -671,20 +683,50 @@ void main_event_loop(void)
 			{
 				process_event(event);
 			}
+
+#ifdef HAVE_STEAM
+			while (auto steam_event = STEAMSHIM_pump()) {
+				switch (steam_event->type) {
+					case SHIMEVENT_ISOVERLAYACTIVATED:
+						if (steam_event->okay && get_game_state() == _game_in_progress && !game_is_networked)
+						{
+							pause_game();
+						}
+						break;
+
+					default:
+						break;
+				}
+			}
+#endif
 		}
 
 		execute_timer_tasks(machine_tick_count());
 		idle_game_state(machine_tick_count());
 
-		if (game_state == _game_in_progress &&
-			get_fps_target() != 0)
+		auto fps_target = get_fps_target();
+		if (!get_keyboard_controller_status())
+		{
+			fps_target = 30;
+		}
+	
+		if (game_state == _game_in_progress && fps_target != 0)
 		{
 			int elapsed_machine_ticks = machine_tick_count() - cur_time;
-			int desired_elapsed_machine_ticks = MACHINE_TICKS_PER_SECOND / get_fps_target();
+			int desired_elapsed_machine_ticks = MACHINE_TICKS_PER_SECOND / fps_target;
 
 			if (desired_elapsed_machine_ticks - elapsed_machine_ticks > desired_elapsed_machine_ticks / 3)
 			{
 				sleep_for_machine_ticks(1);
+			}
+		}
+		else if (game_state != _game_in_progress)
+		{
+			static auto last_redraw = 0;
+			if (machine_tick_count() > last_redraw + TICKS_PER_SECOND / 30)
+			{
+				update_game_window();
+				last_redraw = machine_tick_count();
 			}
 		}
 	}
@@ -1262,13 +1304,25 @@ static void process_event(const SDL_Event &event)
 		break;
 	
 	case SDL_CONTROLLERBUTTONDOWN:
-		joystick_button_pressed(event.cbutton.which, event.cbutton.button, true);
-		SDL_Event e2;
-		memset(&e2, 0, sizeof(SDL_Event));
-		e2.type = SDL_KEYDOWN;
-		e2.key.keysym.sym = SDLK_UNKNOWN;
-		e2.key.keysym.scancode = (SDL_Scancode)(AO_SCANCODE_BASE_JOYSTICK_BUTTON + event.cbutton.button);
-		process_game_key(e2);
+		if (get_game_state() == _game_in_progress)
+		{
+			if (!get_keyboard_controller_status())
+			{
+				hide_cursor();
+				validate_world_window();
+				set_keyboard_controller_status(true);
+			}
+			else
+			{
+				joystick_button_pressed(event.cbutton.which, event.cbutton.button, true);
+				SDL_Event e2;
+				memset(&e2, 0, sizeof(SDL_Event));
+				e2.type = SDL_KEYDOWN;
+				e2.key.keysym.sym = SDLK_UNKNOWN;
+				e2.key.keysym.scancode = (SDL_Scancode)(AO_SCANCODE_BASE_JOYSTICK_BUTTON + event.cbutton.button);
+				process_game_key(e2);
+			}
+		}
 		break;
 		
 	case SDL_CONTROLLERBUTTONUP:
@@ -1284,7 +1338,8 @@ static void process_event(const SDL_Event &event)
 		break;
 			
 	case SDL_JOYDEVICEREMOVED:
-		joystick_removed(event.jdevice.which);
+		if (joystick_removed(event.jdevice.which) && get_game_state() == _game_in_progress);
+			pause_game();
 		break;
 			
 	case SDL_KEYDOWN:
@@ -1308,7 +1363,7 @@ static void process_event(const SDL_Event &event)
 		switch (event.window.event) {
 			case SDL_WINDOWEVENT_FOCUS_LOST:
 				if (get_game_state() == _game_in_progress && get_keyboard_controller_status() && !Movie::instance()->IsRecording() && shell_options.replay_directory.empty()) {
-					darken_world_window();
+//					darken_world_window();
 					set_keyboard_controller_status(false);
 					show_cursor();
 				}
@@ -1339,7 +1394,7 @@ static void process_event(const SDL_Event &event)
 					// leave it alone
 					break;
 				}
-	
+/*	
 			if (!IsCompositingWindowManagerEnabled()) {
 #ifdef HAVE_OPENGL
 				if (MainScreenIsOpenGL())
@@ -1347,7 +1402,8 @@ static void process_event(const SDL_Event &event)
 				else
 #endif
 					update_game_window();
-				}
+		}
+		*/
 				break;
 		}
 		break;

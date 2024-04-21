@@ -310,7 +310,7 @@ extern bool choose_saved_game_to_load(FileSpecifier& File);
 /* ---------------------- prototypes */
 static void display_credits(void);
 static void draw_button(short index, bool pressed);
-static void draw_powered_by_aleph_one();
+static void draw_powered_by_aleph_one(bool pressed);
 static void handle_replay(bool last_replay);
 static bool begin_game(short user, bool cheat);
 static void start_game(short user, bool changing_level);
@@ -821,6 +821,7 @@ bool join_networked_resume_game()
                                 // LP: getting the level scripting off of the map file
                                 // Being careful to carry over errors so that Pfhortran errors can be ignored
                                 short SavedType, SavedError = get_game_error(&SavedType);
+								LoadAchievementsLua();
 								LoadStatsLua();
                                 set_game_error(SavedType,SavedError);
                         }
@@ -835,8 +836,9 @@ bool join_networked_resume_game()
                         
                                 /* Set to the default map. */
                                 set_to_default_map();
-				
-				LoadStatsLua();
+
+								LoadAchievementsLua();
+								LoadStatsLua();
                         }
                         
                         // set the revert-game info to defaults (for full-auto saving on the local machine)
@@ -926,6 +928,7 @@ bool load_and_start_game(FileSpecifier& File)
 			{
 				LoadSoloLua();
 			}
+			LoadAchievementsLua();
 			LoadStatsLua();
 			set_game_error(SavedType,SavedError);
 			
@@ -1038,7 +1041,6 @@ void pause_game(
 	stop_fade();
 	if (!OGL_IsActive() || !(TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fader)))
 		set_fade_effect(NONE);
-	darken_world_window();
 	set_keyboard_controller_status(false);
 	show_cursor();
 }
@@ -1066,8 +1068,10 @@ void draw_menu_button_for_command(
 	
 	/* Draw it initially depressed.. */
 	draw_button(rectangle_index, true);
+	draw_intro_screen();
 	sleep_for_machine_ticks(MACHINE_TICKS_PER_SECOND / 12);
 	draw_button(rectangle_index, false);
+	draw_intro_screen();
 }
 
 void update_interface_display(
@@ -1082,12 +1086,14 @@ void update_interface_display(
 
 	if (game_state.state == _display_main_menu)
 	{
-		draw_powered_by_aleph_one();
 		if (game_state.highlighted_main_menu_item >= 0)
 		{
 			draw_button(game_state.highlighted_main_menu_item + START_OF_MENU_INTERFACE_RECTS - 1, true);
 		}
+		draw_powered_by_aleph_one(game_state.highlighted_main_menu_item == iAbout);
 	}
+
+	draw_intro_screen();
 }
 
 extern bool first_frame_rendered;
@@ -1220,6 +1226,15 @@ bool idle_game_state(uint32 time)
 				first_frame_rendered = ticks_elapsed > 0;
 			}
 		}
+		else
+		{
+			static auto last_redraw = 0;
+			if (current_player && machine_tick_count() > last_redraw + MACHINE_TICKS_PER_SECOND / 30)
+			{
+				last_redraw = machine_tick_count();
+				render_screen(ticks_elapsed);
+			}
+		}
 		
 		return theUpdateResult.first;
 	} else {
@@ -1232,34 +1247,38 @@ bool idle_game_state(uint32 time)
 extern SDL_Surface *draw_surface;	// from screen_drawing.cpp
 //void draw_intro_screen(void);		// from screen.cpp
 
-static SDL_Surface *powered_by_alephone_surface = 0;
+static SDL_Surface *powered_by_alephone_surface[] = {nullptr, nullptr};
 #include "powered_by_alephone.h"
+#include "powered_by_alephone_h.h"
 
 extern void set_about_alephone_rect(int width, int height);
 
-static void draw_powered_by_aleph_one()
+static void draw_powered_by_aleph_one(bool pressed)
 {
-	if (!powered_by_alephone_surface)
+	if (!powered_by_alephone_surface[0])
 	{
 		SDL_RWops *rw = SDL_RWFromConstMem(powered_by_alephone_bmp, sizeof(powered_by_alephone_bmp));
-		powered_by_alephone_surface = SDL_LoadBMP_RW(rw, 0);
-		SDL_FreeRW(rw);
+		powered_by_alephone_surface[0] = SDL_LoadBMP_RW(rw, 0);
+		SDL_RWclose(rw);
 
-		set_about_alephone_rect(powered_by_alephone_surface->w, powered_by_alephone_surface->h);
+		set_about_alephone_rect(powered_by_alephone_surface[0]->w, powered_by_alephone_surface[0]->h);
+
+		rw = SDL_RWFromConstMem(powered_by_alephone_h_bmp, sizeof(powered_by_alephone_h_bmp));
+		powered_by_alephone_surface[1] = SDL_LoadBMP_RW(rw, 0);
+		SDL_RWclose(rw);
 	}
 
-	SDL_Rect rect;
-	rect.x = 640 - powered_by_alephone_surface->w;
-	rect.y = 480 - powered_by_alephone_surface->h;
-	rect.w = powered_by_alephone_surface->w;
-	rect.h = powered_by_alephone_surface->h;
-	
-	_set_port_to_intro();
-	SDL_BlitSurface(powered_by_alephone_surface, NULL, draw_surface, &rect);
-	_restore_port();
+	auto i = pressed ? 1 : 0;
 
-	// have to reblit :(
-	draw_intro_screen();
+	SDL_Rect rect;
+	rect.x = 640 - powered_by_alephone_surface[i]->w;
+	rect.y = 480 - powered_by_alephone_surface[i]->h;
+	rect.w = powered_by_alephone_surface[i]->w;
+	rect.h = powered_by_alephone_surface[i]->h;
+
+	_set_port_to_intro();
+	SDL_BlitSurface(powered_by_alephone_surface[i], NULL, draw_surface, &rect);
+	_restore_port();
 }
 
 void display_main_menu(
@@ -1283,7 +1302,7 @@ void display_main_menu(
 		Music::instance()->RestartIntroMusic();
 	}
 
-	draw_powered_by_aleph_one();
+	draw_powered_by_aleph_one(false);
 
 	game_state.main_menu_display_count++;
 }
@@ -1397,8 +1416,8 @@ void do_menu_item_command(
 						if(really_wants_to_quit)
 						{
 							// Rhys Hill fix for crash when quitting OpenGL
-							if (!OGL_IsActive())
-								render_screen(0); /* Get rid of hole.. */
+// 							if (!OGL_IsActive())
+//								render_screen(0); /* Get rid of hole.. */
 							set_game_state(_close_game);
 						}
 					}
@@ -1741,7 +1760,11 @@ static void display_about_dialog()
 	{
 		about_placer->dual_add(new w_static_text(expand_app_variables("$appName$ is powered by").c_str()), d);
 	}
+#ifdef HAVE_STEAM
+	about_placer->dual_add(new w_static_text(expand_app_variables("Aleph One $appVersion$ Steam ($appDate$)").c_str()), d);
+#else
 	about_placer->dual_add(new w_static_text(expand_app_variables("Aleph One $appVersion$ ($appDate$)").c_str()), d);
+#endif
 
 	about_placer->add(new w_spacer, true);
 
@@ -1953,7 +1976,11 @@ static void draw_button(
 	short index, 
 	bool pressed)
 {
-	if (index == _about_alephone_rect) return;
+	if (index == _about_alephone_rect)
+	{
+		draw_powered_by_aleph_one(pressed);
+		return;
+	}
 
 	screen_rectangle *screen_rect= get_interface_rectangle(index);
 	short pict_resource_number= MAIN_MENU_BASE + pressed;
@@ -2656,6 +2683,7 @@ static void display_screen(
 			full_fade(_start_cinematic_fade_in, current_picture_clut);
 
 			draw_full_screen_pict_resource_from_images(pict_resource_number);
+			draw_intro_screen();
 			picture_drawn= true;
 
 			assert(current_picture_clut);	
@@ -2716,6 +2744,7 @@ static void handle_interface_menu_screen_click(
 
 			/* Draw it initially depressed.. */
 			draw_button(index, last_state);
+			draw_intro_screen();
 		
 			bool mouse_down = true;
 			while (mouse_down)
@@ -2752,13 +2781,24 @@ static void handle_interface_menu_screen_click(
 					if (state != last_state)
 					{
 						draw_button(index, state);
+						draw_intro_screen();
 						last_state = state;
+					}
+				}
+				else
+				{
+					static auto last_redraw = 0;
+					if (machine_tick_count() > last_redraw + TICKS_PER_SECOND / 30)
+					{
+						draw_intro_screen();
+						last_redraw = machine_tick_count();
 					}
 				}
 			}
 
 			/* Draw it unpressed.. */
 			draw_button(index, false);
+			draw_intro_screen();
 			
 			if(last_state)
 			{
@@ -2815,6 +2855,7 @@ static void try_and_display_chapter_screen(
 
 			/* Draw the picture */
 			draw_full_screen_pict_resource_from_scenario(pict_resource_number);
+			draw_intro_screen();
 
 			std::shared_ptr<SoundPlayer> soundPlayer;
 			if (get_sound_resource_from_scenario(pict_resource_number,SoundRsrc))

@@ -8,17 +8,17 @@ else
 THREAD_PRIORITY = thread_priority_sdl_posix.cpp
 endif
 
-libmisc_a_SOURCES = ActionQueues.h alephversion.h binders.h CircularByteBuffer.h \
+libmisc_a_SOURCES = achievements.h ActionQueues.h alephversion.h binders.h CircularByteBuffer.h \
   CircularQueue.h Console.h DefaultStringSets.h game_errors.h \
   interface.h interface_menus.h key_definitions.h Logging.h \
   PlayerImage_sdl.h \
   PlayerName.h preference_dialogs.h preferences.h \
   preferences_widgets_sdl.h progress.h Random.h Scenario.h sdl_dialogs.h sdl_network.h \
   sdl_widgets.h shared_widgets.h thread_priority_sdl.h vbl_definitions.h vbl.h VecOps.h \
-  WindowedNthElementFinder.h AlephSansMono-Bold.h powered_by_alephone.h \
+  WindowedNthElementFinder.h AlephSansMono-Bold.h powered_by_alephone.h powered_by_alephone_h.h \
   Statistics.h \
   \
-  ActionQueues.cpp CircularByteBuffer.cpp Console.cpp DefaultStringSets.cpp game_errors.cpp \
+  achievements.cpp ActionQueues.cpp CircularByteBuffer.cpp Console.cpp DefaultStringSets.cpp game_errors.cpp \
   interface.cpp \
   Logging.cpp PlayerImage_sdl.cpp PlayerName.cpp preferences.cpp \
   preference_dialogs.cpp preferences_widgets_sdl.cpp Scenario.cpp sdl_dialogs.cpp $(THREAD_PRIORITY) \
@@ -26,7 +26,7 @@ libmisc_a_SOURCES = ActionQueues.h alephversion.h binders.h CircularByteBuffer.h
   Statistics.cpp \
   ProFontAO.h CourierPrime.h CourierPrimeBold.h CourierPrimeItalic.h CourierPrimeBoldItalic.h
 
-EXTRA_libmisc_a_SOURCES = alephone.xpm alephone32.xpm thread_priority_sdl_posix.cpp thread_priority_sdl_dummy.cpp thread_priority_sdl_win32.cpp thread_priority_sdl_macosx.cpp
+EXTRA_libmisc_a_SOURCES = alephone.xpm alephone32.xpm thread_priority_sdl_posix.cpp thread_priority_sdl_dummy.cpp thread_priority_sdl_win32.cpp thread_priority_sdl_macosx.cpp m1_achievements.lua steamshim_child.h steamshim_child.cpp
 
 AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \

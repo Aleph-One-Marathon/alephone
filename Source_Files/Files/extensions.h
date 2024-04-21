@@ -47,4 +47,5 @@ void import_definition_structures(void);
 void *get_network_physics_buffer(int32 *physics_length);
 void process_network_physics_model(void *data);
 
+uint32_t get_physics_file_checksum();
 #endif

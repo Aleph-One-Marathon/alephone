@@ -10,35 +10,10 @@ jobs:
       with:
         submodules: true
         
-    - name: Install Tools
-      run: brew install nasm
-      
-    - name: Vcpkg Integration
-      run: $VCPKG_INSTALLATION_ROOT/vcpkg integrate install
-      
-    - name: Get Vcpkg current hash
-      run: echo "vcpkg_current_hash=$(git -C $VCPKG_INSTALLATION_ROOT rev-parse --short HEAD)" >> $GITHUB_ENV
-        
-    - name: Restore vcpkg cache for x64
-      uses: actions/cache@v4
-      with:
-        path: vcpkg/installed-x64-osx
-        key: ${{runner.os}}-installed-x64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
-        
-    - name: Restore vcpkg cache for arm64
-      uses: actions/cache@v4
-      with:
-        path: vcpkg/installed-arm64-osx
-        key: ${{runner.os}}-installed-arm64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
-        
-    - name: Switch to Xcode 14.3.1
-      run: sudo xcode-select --switch /Applications/Xcode_14.3.1.app
-      
-    - name: Install Dependencies
-      run: cd vcpkg && ./install-x64-osx.sh && ./install-arm-osx.sh
-      
     - name: Build
-      run: cd PBProjects && xcodebuild -target "Aleph One" -target "Marathon" -target "Marathon 2" -target "Marathon Infinity" DEVELOPMENT_TEAM='' CODE_SIGN_IDENTITY='-' CODE_SIGN_STYLE='Automatic' build
+      uses: ./.github/actions/build-mac-osx
+      with:
+        xcode_targets: "Aleph One, Marathon, Marathon 2, Marathon Infinity"
 
     - name: Codesign app bundle
       # Extract the secrets we defined earlier as environment variables

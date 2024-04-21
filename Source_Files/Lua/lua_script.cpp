@@ -75,6 +75,7 @@ extern "C"
 #include <set>
 #include <unordered_map>
 
+#include "achievements.h"
 #include "alephversion.h"
 #include "screen.h"
 #include "tags.h"
@@ -311,6 +312,22 @@ public:
 		LuaState::Initialize();
 		luaL_requiref(State(), LUA_IOLIBNAME, luaopen_io, 1);
 		lua_pop(State(), 1);
+	}
+};
+
+class AchievementsLuaState : public LuaState
+{
+public:
+	AchievementsLuaState() : LuaState() { }
+
+	void Initialize() {
+		LuaState::Initialize();
+		lua_register(State(), "set_achievement", [](lua_State* L) {
+			assert(lua_isstring(L, 1));
+
+			Achievements::instance()->set(lua_tostring(L, 1));
+			return 0;
+		});
 	}
 };
 
@@ -1775,13 +1792,15 @@ static std::unique_ptr<LuaState> LuaStateFactory(ScriptType script_type)
         return std::make_unique<SoloScriptState>();
 	case _stats_lua_script:
         return std::make_unique<StatsLuaState>();
+	case _achievements_lua_script:
+		return std::make_unique<AchievementsLuaState>();
 	}
     return nullptr;
 }
 
 bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
 {
-	assert(script_type >= _embedded_lua_script && script_type <= _stats_lua_script);
+	assert(script_type >= _embedded_lua_script && script_type <= _achievements_lua_script);
 	if (states.find(script_type) == states.end())
 	{
 		states.insert({ script_type, LuaStateFactory(script_type) });
@@ -1801,7 +1820,11 @@ bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
 		case _stats_lua_script:
 			desc = "Stats Lua";
 			break;
+		case _achievements_lua_script:
+			desc = "Achievements Lua";
+			break;
 	}
+
 	return states[script_type]->Load(buffer, len, desc);
 }
 
@@ -1872,6 +1895,7 @@ void ExecuteLuaString(const std::string& line)
 	}
 
 	exit_interpolated_world();
+	InvalidateAchievements();
 	states[_solo_lua_script]->ExecuteCommand(line);
 	enter_interpolated_world();
 }
@@ -1920,6 +1944,33 @@ void LoadSoloLua()
 			}
 		}
 	}
+}
+
+void LoadAchievementsLua()
+{
+	if (states.count(_embedded_lua_script) ||
+		states.count(_lua_netscript) ||
+		states.count(_solo_lua_script))
+		{
+			logNote("achievements: invalidating due to other Lua (%i %i %i)",
+					states.count(_embedded_lua_script),
+					states.count(_lua_netscript),
+					states.count(_solo_lua_script));
+		return;
+	}
+	
+	auto lua = Achievements::instance()->get_lua();
+
+	if (lua.size())
+	{
+		LoadLuaScript(lua.data(), lua.size(), _achievements_lua_script);
+	}
+}
+
+void InvalidateAchievements()
+{
+	logNote("achievements: invalidating due to Lua command");
+	states.erase(_achievements_lua_script);
 }
 
 void LoadStatsLua()

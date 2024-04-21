@@ -7,33 +7,11 @@ jobs:
     runs-on: macos-13
     steps:
     - uses: actions/checkout@v4
-        
-    - name: Install Tools
-      run: brew install nasm
-      
-    - name: Vcpkg Integration
-      run: $VCPKG_INSTALLATION_ROOT/vcpkg integrate install
-      
-    - name: Get Vcpkg current hash
-      run: echo "vcpkg_current_hash=$(git -C $VCPKG_INSTALLATION_ROOT rev-parse --short HEAD)" >> $GITHUB_ENV
-        
-    - name: Restore vcpkg cache for x64
-      uses: actions/cache@v4
+    
+    - name: Build Steam Marathon
+      uses: ./.github/actions/build-mac-osx
       with:
-        path: vcpkg/installed-x64-osx
-        key: ${{runner.os}}-installed-x64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
-        
-    - name: Restore vcpkg cache for arm64
-      uses: actions/cache@v4
-      with:
-        path: vcpkg/installed-arm64-osx
-        key: ${{runner.os}}-installed-arm64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
-        
-    - name: Switch to Xcode 14.3.1
-      run: sudo xcode-select --switch /Applications/Xcode_14.3.1.app
-      
-    - name: Install Dependencies
-      run: cd vcpkg && ./install-x64-osx.sh && ./install-arm-osx.sh
+        xcode_targets: "Marathon Steam, Classic Marathon Launcher"
       
     - name: Bootstrap Steamcmd
       continue-on-error: true #Steamcmd may throw error exit code while bootstrapping that we can ignore, we will see on upload if everything is working fine
@@ -48,9 +26,6 @@ jobs:
       env: 
         CONFIG_VDF: ${{ secrets.CONFIG_VDF }}
       run: echo $CONFIG_VDF | base64 --decode > ~/"Library/Application Support/Steam/config/config.vdf"
-        
-    - name: Build Steam Marathon
-      run: cd PBProjects && xcodebuild -target "Marathon Steam" -target "Classic Marathon Launcher" DEVELOPMENT_TEAM='' CODE_SIGN_IDENTITY='-' CODE_SIGN_STYLE='Automatic' build
       
     - name: Codesign apps bundle
       # Extract the secrets we defined earlier as environment variables
@@ -75,7 +50,7 @@ jobs:
         security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
 
         # We finally codesign our app bundle, specifying the Hardened runtime option
-        /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Launcher" -v
+        /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --entitlements "$GITHUB_WORKSPACE/PBProjects/Steamshim.entitlements" --options runtime "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Launcher" -v
         /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Steam.app" -v
 
     - name: "Notarize app bundle"
@@ -114,8 +89,6 @@ jobs:
 
         echo "Notarize Classic Marathon Launcher"
         xcrun notarytool submit "launcher.zip" --keychain-profile "notarytool-profile" --wait
-        echo "Attach staple"
-        xcrun stapler staple "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Launcher"
 
     - name: Deploy to Steam
       run: ./Steam/steamcmd/steamcmd.sh +login alephone_upload +run_app_build ../m1_mac.vdf +quit

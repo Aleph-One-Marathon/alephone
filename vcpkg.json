@@ -13,13 +13,16 @@
       },
       {
          "name":"boost-iostreams",
-         "default-features": false
+         "default-features":false
       },
       {
          "name":"boost-filesystem"
       },
       {
          "name":"boost-lockfree"
+      },
+      {
+         "name":"boost-dll"
       },
       {
          "name":"sdl2"
@@ -68,6 +71,9 @@
       },
       {
          "name":"catch2"
+      },
+      {
+         "name":"steamworks-sdk"
       }
    ],
    "overrides":[
@@ -76,6 +82,5 @@
          "version":"5.0.2",
          "port-version":3
       }
-   ],
-   "builtin-baseline":"0e47c1985273129e4d0ee52ff73bed9125555de8"
+   ]
 }

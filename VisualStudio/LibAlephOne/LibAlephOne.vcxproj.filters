@@ -718,6 +718,12 @@
     <ClCompile Include="..\..\Source_Files\Lua\lua_music.cpp">
       <Filter>Lua\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source_Files\Misc\steamshim_child.c">
+      <Filter>Misc\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source_Files\Misc\achievements.cpp">
+      <Filter>Misc\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source_Files\CSeries\BStream.h">
@@ -1406,6 +1412,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Lua\lua_music.h">
       <Filter>Lua\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source_Files\Misc\steamshim_child.h">
+      <Filter>Misc\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source_Files\Misc\achievements.h">
+      <Filter>Misc\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -43,9 +43,8 @@ jobs:
       - name: Build
         uses: ./.github/actions/build-mac-osx
         with:
-          vcpkg_installed_folder: installed-x64-osx
-          vcpkg_arch: x64
           xcode_arch: x86_64
+          xcode_targets: "Aleph One"
           
   mac-osx-arm:
     runs-on: macos-13
@@ -54,9 +53,8 @@ jobs:
       - name: Build
         uses: ./.github/actions/build-mac-osx
         with:
-          vcpkg_installed_folder: installed-arm64-osx
-          vcpkg_arch: arm
           xcode_arch: arm64
+          xcode_targets: "Aleph One"
           
   windows-x64:
     runs-on: windows-2022

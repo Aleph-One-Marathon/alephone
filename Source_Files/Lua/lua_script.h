@@ -68,7 +68,8 @@ enum ScriptType {
 	_embedded_lua_script,
 	_lua_netscript,
 	_solo_lua_script,
-	_stats_lua_script
+	_stats_lua_script,
+	_achievements_lua_script
 };
 
 void *L_Persistent_Table_Key();
@@ -81,6 +82,9 @@ void ResetPassedLua();
 void ExecuteLuaString(const std::string&);
 void LoadSoloLua();
 void LoadReplayNetLua();
+
+void LoadAchievementsLua();
+void InvalidateAchievements();
 
 void LoadStatsLua();
 bool CollectLuaStats(std::map<std::string, std::string>& table, std::map<std::string, std::string>& parameters);

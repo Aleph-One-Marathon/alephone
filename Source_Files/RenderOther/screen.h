@@ -196,7 +196,6 @@ bool map_is_translucent(void);
 void enter_screen(void);
 void exit_screen(void);
 
-void darken_world_window(void);
 void validate_world_window(void);
 
 void change_gamma_level(short gamma_level);

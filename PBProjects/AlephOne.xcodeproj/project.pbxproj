@@ -229,6 +229,459 @@
 		AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
 		AE005FD40EE2D6DE007FE7C6 /* screen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE005FD30EE2D6DE007FE7C6 /* screen.cpp */; };
 		AE0E4EC2141D148F00AAA02F /* Marathon.icns in Resources */ = {isa = PBXBuildFile; fileRef = AE0E4EC1141D148F00AAA02F /* Marathon.icns */; };
+		AE120B992BC77645001873DD /* PlayerName.h in Headers */ = {isa = PBXBuildFile; fileRef = F522120C0136A6FD01000001 /* PlayerName.h */; };
+		AE120B9A2BC77645001873DD /* Random.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212190136A6FD01000001 /* Random.h */; };
+		AE120B9B2BC77645001873DD /* game_errors.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211AE0136A6FD01000001 /* game_errors.h */; };
+		AE120B9C2BC77645001873DD /* interface.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211C50136A6FD01000001 /* interface.h */; };
+		AE120B9D2BC77645001873DD /* interface_menus.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211C20136A6FD01000001 /* interface_menus.h */; };
+		AE120B9E2BC77645001873DD /* Decoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F100B927C51009F881C /* Decoder.h */; };
+		AE120B9F2BC77645001873DD /* key_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211CB0136A6FD01000001 /* key_definitions.h */; };
+		AE120BA02BC77645001873DD /* preferences.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212100136A6FD01000001 /* preferences.h */; };
+		AE120BA12BC77645001873DD /* progress.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212140136A6FD01000001 /* progress.h */; };
+		AE120BA22BC77645001873DD /* sdl_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F522123B0136A6FD01000001 /* sdl_dialogs.h */; };
+		AE120BA32BC77645001873DD /* sdl_network.h in Headers */ = {isa = PBXBuildFile; fileRef = F522123E0136A6FD01000001 /* sdl_network.h */; };
+		AE120BA42BC77645001873DD /* sdl_widgets.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212400136A6FD01000001 /* sdl_widgets.h */; };
+		AE120BA52BC77645001873DD /* shell.h in Headers */ = {isa = PBXBuildFile; fileRef = F522124C0136A6FD01000001 /* shell.h */; };
+		AE120BA62BC77645001873DD /* vbl_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212560136A6FD01000001 /* vbl_definitions.h */; };
+		AE120BA72BC77645001873DD /* vbl.h in Headers */ = {isa = PBXBuildFile; fileRef = F522125A0136A6FD01000001 /* vbl.h */; };
+		AE120BA82BC77645001873DD /* byte_swapping.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111D0136A4DD01000001 /* byte_swapping.h */; };
+		AE120BA92BC77645001873DD /* csalerts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111E0136A4DD01000001 /* csalerts.h */; };
+		AE120BAA2BC77645001873DD /* cscluts.h in Headers */ = {isa = PBXBuildFile; fileRef = F522111F0136A4DD01000001 /* cscluts.h */; };
+		AE120BAB2BC77645001873DD /* csdialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211200136A4DD01000001 /* csdialogs.h */; };
+		AE120BAC2BC77645001873DD /* cseries.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211210136A4DD01000001 /* cseries.h */; };
+		AE120BAD2BC77645001873DD /* Scenario.h in Headers */ = {isa = PBXBuildFile; fileRef = AE2A50CF09C6727C007681A4 /* Scenario.h */; };
+		AE120BAE2BC77645001873DD /* csfonts.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211230136A4DD01000001 /* csfonts.h */; };
+		AE120BAF2BC77645001873DD /* csmacros.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211250136A4DD01000001 /* csmacros.h */; };
+		AE120BB02BC77645001873DD /* csmisc.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211260136A4DD01000001 /* csmisc.h */; };
+		AE120BB12BC77645001873DD /* CourierPrimeBold.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED001A846FD900AE52F4 /* CourierPrimeBold.h */; };
+		AE120BB22BC77645001873DD /* cspixels.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211270136A4DD01000001 /* cspixels.h */; };
+		AE120BB32BC77645001873DD /* csstrings.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211280136A4DD01000001 /* csstrings.h */; };
+		AE120BB42BC77645001873DD /* cstypes.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211290136A4DD01000001 /* cstypes.h */; };
+		AE120BB52BC77645001873DD /* network.h in Headers */ = {isa = PBXBuildFile; fileRef = F52213900136ABAE01000001 /* network.h */; };
+		AE120BB62BC77645001873DD /* network_games.h in Headers */ = {isa = PBXBuildFile; fileRef = F52213800136ABAE01000001 /* network_games.h */; };
+		AE120BB72BC77645001873DD /* IMG_savepng.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF1AC1410E05826007EE0D5 /* IMG_savepng.h */; };
+		AE120BB82BC77645001873DD /* Model3D.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4401E77D5701BA387C /* Model3D.h */; };
+		AE120BB92BC77645001873DD /* ModelRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4601E77D5701BA387C /* ModelRenderer.h */; };
+		AE120BBA2BC77645001873DD /* StudioLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4B01E77D5701BA387C /* StudioLoader.h */; };
+		AE120BBB2BC77645001873DD /* WavefrontLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4D01E77D5701BA387C /* WavefrontLoader.h */; };
+		AE120BBC2BC77645001873DD /* network_dialog_widgets_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BECF91A846D2000AE52F4 /* network_dialog_widgets_sdl.h */; };
+		AE120BBD2BC77645001873DD /* Dim3_Loader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CFAD3A0200F9D201D80110 /* Dim3_Loader.h */; };
+		AE120BBE2BC77645001873DD /* FFmpegDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E878F2173202F80010F485 /* FFmpegDecoder.h */; };
+		AE120BBF2BC77645001873DD /* SW_Texture_Extras.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BECF41A846CC800AE52F4 /* SW_Texture_Extras.h */; };
+		AE120BC02BC77645001873DD /* network_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC61D022179A801A80001 /* network_dialogs.h */; };
+		AE120BC12BC77645001873DD /* network_lookup_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC62002219A3D01A80001 /* network_lookup_sdl.h */; };
+		AE120BC22BC77645001873DD /* ActionQueues.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00027023FDA6101A80001 /* ActionQueues.h */; };
+		AE120BC32BC77645001873DD /* CircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00029023FDA7601A80001 /* CircularQueue.h */; };
+		AE120BC42BC77645001873DD /* preferences_widgets_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A0002B023FDAD101A80001 /* preferences_widgets_sdl.h */; };
+		AE120BC52BC77645001873DD /* network_distribution_types.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00033023FDBBD01A80001 /* network_distribution_types.h */; };
+		AE120BC62BC77645001873DD /* OGL_LoadScreen.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */; };
+		AE120BC72BC77645001873DD /* crc.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92000240D09B01A80001 /* crc.h */; };
+		AE120BC82BC77645001873DD /* extensions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92010240D09B01A80001 /* extensions.h */; };
+		AE120BC92BC77645001873DD /* FileHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92020240D09B01A80001 /* FileHandler.h */; };
+		AE120BCA2BC77645001873DD /* find_files.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92030240D09B01A80001 /* find_files.h */; };
+		AE120BCB2BC77645001873DD /* game_wad.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92040240D09B01A80001 /* game_wad.h */; };
+		AE120BCC2BC77645001873DD /* Packing.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92050240D09B01A80001 /* Packing.h */; };
+		AE120BCD2BC77645001873DD /* resource_manager.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92060240D09B01A80001 /* resource_manager.h */; };
+		AE120BCE2BC77645001873DD /* preference_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = AE2FDED109E9352B00A18ABC /* preference_dialogs.h */; };
+		AE120BCF2BC77645001873DD /* tags.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92070240D09B01A80001 /* tags.h */; };
+		AE120BD02BC77645001873DD /* wad.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92080240D09B01A80001 /* wad.h */; };
+		AE120BD12BC77645001873DD /* wad_prefs.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92090240D09B01A80001 /* wad_prefs.h */; };
+		AE120BD22BC77645001873DD /* dynamic_limits.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92510240D28201A80001 /* dynamic_limits.h */; };
+		AE120BD32BC77645001873DD /* editor.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92520240D28201A80001 /* editor.h */; };
+		AE120BD42BC77645001873DD /* effect_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92530240D28201A80001 /* effect_definitions.h */; };
+		AE120BD52BC77645001873DD /* effects.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92550240D28201A80001 /* effects.h */; };
+		AE120BD62BC77645001873DD /* flood_map.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92570240D28201A80001 /* flood_map.h */; };
+		AE120BD72BC77645001873DD /* item_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92580240D28201A80001 /* item_definitions.h */; };
+		AE120BD82BC77645001873DD /* items.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC925A0240D28201A80001 /* items.h */; };
+		AE120BD92BC77645001873DD /* SDL_rwops_ostream.h in Headers */ = {isa = PBXBuildFile; fileRef = 278E0C7C1AA4012600FA93B7 /* SDL_rwops_ostream.h */; };
+		AE120BDA2BC77645001873DD /* lightsource.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC925C0240D28201A80001 /* lightsource.h */; };
+		AE120BDB2BC77645001873DD /* map.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC925E0240D28201A80001 /* map.h */; };
+		AE120BDC2BC77645001873DD /* CourierPrimeBoldItalic.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED011A846FD900AE52F4 /* CourierPrimeBoldItalic.h */; };
+		AE120BDD2BC77645001873DD /* confpaths.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A6DB4F1B9CED1E003DA766 /* confpaths.h */; };
+		AE120BDE2BC77645001873DD /* media.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92620240D28201A80001 /* media.h */; };
+		AE120BDF2BC77645001873DD /* media_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92630240D28201A80001 /* media_definitions.h */; };
+		AE120BE02BC77645001873DD /* monster_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92640240D28201A80001 /* monster_definitions.h */; };
+		AE120BE12BC77645001873DD /* monsters.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92660240D28201A80001 /* monsters.h */; };
+		AE120BE22BC77645001873DD /* physics_models.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92690240D28201A80001 /* physics_models.h */; };
+		AE120BE32BC77645001873DD /* platform_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC926B0240D28201A80001 /* platform_definitions.h */; };
+		AE120BE42BC77645001873DD /* mytm.h in Headers */ = {isa = PBXBuildFile; fileRef = F522112D0136A4DD01000001 /* mytm.h */; };
+		AE120BE52BC77645001873DD /* CourierPrime.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BECFF1A846FD900AE52F4 /* CourierPrime.h */; };
+		AE120BE62BC77645001873DD /* InfoTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 27FF26591B6F169200DA0A19 /* InfoTree.h */; };
+		AE120BE72BC77645001873DD /* platforms.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC926D0240D28201A80001 /* platforms.h */; };
+		AE120BE82BC77645001873DD /* player.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC926F0240D28201A80001 /* player.h */; };
+		AE120BE92BC77645001873DD /* projectile_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92700240D28201A80001 /* projectile_definitions.h */; };
+		AE120BEA2BC77645001873DD /* config.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A6DB471B9CED02003DA766 /* config.h */; };
+		AE120BEB2BC77645001873DD /* projectiles.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92720240D28201A80001 /* projectiles.h */; };
+		AE120BEC2BC77645001873DD /* scenery.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92740240D28201A80001 /* scenery.h */; };
+		AE120BED2BC77645001873DD /* scenery_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92750240D28201A80001 /* scenery_definitions.h */; };
+		AE120BEE2BC77645001873DD /* weapon_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92760240D28201A80001 /* weapon_definitions.h */; };
+		AE120BEF2BC77645001873DD /* weapons.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92780240D28201A80001 /* weapons.h */; };
+		AE120BF02BC77645001873DD /* world.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC927A0240D28201A80001 /* world.h */; };
+		AE120BF12BC77645001873DD /* mouse.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92D90240D54401A80001 /* mouse.h */; };
+		AE120BF22BC77645001873DD /* AnimatedTextures.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92E50240D56101A80001 /* AnimatedTextures.h */; };
+		AE120BF32BC77645001873DD /* collection_definition.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92E60240D56101A80001 /* collection_definition.h */; };
+		AE120BF42BC77645001873DD /* Crosshairs.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92E80240D56101A80001 /* Crosshairs.h */; };
+		AE120BF52BC77645001873DD /* low_level_textures.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92ED0240D56101A80001 /* low_level_textures.h */; };
+		AE120BF62BC77645001873DD /* OGL_Faders.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92EF0240D56101A80001 /* OGL_Faders.h */; };
+		AE120BF72BC77645001873DD /* OGL_Render.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92F10240D56101A80001 /* OGL_Render.h */; };
+		AE120BF82BC77645001873DD /* OGL_Setup.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92F30240D56101A80001 /* OGL_Setup.h */; };
+		AE120BF92BC77645001873DD /* OGL_Textures.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92F50240D56101A80001 /* OGL_Textures.h */; };
+		AE120BFA2BC77645001873DD /* Rasterizer.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92F90240D56101A80001 /* Rasterizer.h */; };
+		AE120BFB2BC77645001873DD /* Rasterizer_OGL.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92FA0240D56101A80001 /* Rasterizer_OGL.h */; };
+		AE120BFC2BC77645001873DD /* Rasterizer_SW.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92FB0240D56101A80001 /* Rasterizer_SW.h */; };
+		AE120BFD2BC77645001873DD /* render.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92FD0240D56101A80001 /* render.h */; };
+		AE120BFE2BC77645001873DD /* RenderPlaceObjs.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92FF0240D56101A80001 /* RenderPlaceObjs.h */; };
+		AE120BFF2BC77645001873DD /* RenderRasterize.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93010240D56101A80001 /* RenderRasterize.h */; };
+		AE120C002BC77645001873DD /* RenderSortPoly.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93030240D56101A80001 /* RenderSortPoly.h */; };
+		AE120C012BC77645001873DD /* ProFontAO.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED031A846FD900AE52F4 /* ProFontAO.h */; };
+		AE120C022BC77645001873DD /* RenderVisTree.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93050240D56101A80001 /* RenderVisTree.h */; };
+		AE120C032BC77645001873DD /* scottish_textures.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93080240D56101A80001 /* scottish_textures.h */; };
+		AE120C042BC77645001873DD /* shape_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC930A0240D56101A80001 /* shape_definitions.h */; };
+		AE120C052BC77645001873DD /* achievements.h in Headers */ = {isa = PBXBuildFile; fileRef = AED959B12BC23591008EFCA2 /* achievements.h */; };
+		AE120C062BC77645001873DD /* WadImageCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 278E0C721AA3CD4500FA93B7 /* WadImageCache.h */; };
+		AE120C072BC77645001873DD /* shape_descriptors.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC930B0240D56101A80001 /* shape_descriptors.h */; };
+		AE120C082BC77645001873DD /* textures.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93100240D56101A80001 /* textures.h */; };
+		AE120C092BC77645001873DD /* ChaseCam.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93700240D85D01A80001 /* ChaseCam.h */; };
+		AE120C0A2BC77645001873DD /* sdl_resize.h in Headers */ = {isa = PBXBuildFile; fileRef = 27EFC4BD1A7D8CBF00A95592 /* sdl_resize.h */; };
+		AE120C0B2BC77645001873DD /* computer_interface.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93710240D85D01A80001 /* computer_interface.h */; };
+		AE120C0C2BC77645001873DD /* PlayerImage_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED2C1A8470A900AE52F4 /* PlayerImage_sdl.h */; };
+		AE120C0D2BC77645001873DD /* fades.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93720240D85D01A80001 /* fades.h */; };
+		AE120C0E2BC77645001873DD /* FontHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93730240D85D01A80001 /* FontHandler.h */; };
+		AE120C0F2BC77645001873DD /* game_window.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93740240D85D01A80001 /* game_window.h */; };
+		AE120C102BC77645001873DD /* HUDRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93750240D85D01A80001 /* HUDRenderer.h */; };
+		AE120C112BC77645001873DD /* HUDRenderer_OGL.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93760240D85D01A80001 /* HUDRenderer_OGL.h */; };
+		AE120C122BC77645001873DD /* HUDRenderer_SW.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93770240D85D01A80001 /* HUDRenderer_SW.h */; };
+		AE120C132BC77645001873DD /* powered_by_alephone_h.h in Headers */ = {isa = PBXBuildFile; fileRef = AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */; };
+		AE120C142BC77645001873DD /* OGL_FBO.h in Headers */ = {isa = PBXBuildFile; fileRef = 2710CC601B8F94FC00CE2EAE /* OGL_FBO.h */; };
+		AE120C152BC77645001873DD /* images.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93780240D85D01A80001 /* images.h */; };
+		AE120C162BC77645001873DD /* motion_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93790240D85D01A80001 /* motion_sensor.h */; };
+		AE120C172BC77645001873DD /* powered_by_alephone.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED211A84701E00AE52F4 /* powered_by_alephone.h */; };
+		AE120C182BC77645001873DD /* overhead_map.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC937A0240D85D01A80001 /* overhead_map.h */; };
+		AE120C192BC77645001873DD /* OverheadMap_OGL.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC937B0240D85D01A80001 /* OverheadMap_OGL.h */; };
+		AE120C1A2BC77645001873DD /* OverheadMap_SDL.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC938B0240D85D01A80001 /* OverheadMap_SDL.h */; };
+		AE120C1B2BC77645001873DD /* OverheadMapRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC937C0240D85D01A80001 /* OverheadMapRenderer.h */; };
+		AE120C1C2BC77645001873DD /* screen.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC937D0240D85D01A80001 /* screen.h */; };
+		AE120C1D2BC77645001873DD /* screen_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC937E0240D85D01A80001 /* screen_definitions.h */; };
+		AE120C1E2BC77645001873DD /* screen_drawing.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC937F0240D85D01A80001 /* screen_drawing.h */; };
+		AE120C1F2BC77645001873DD /* screen_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC939E0240D85D01A80001 /* screen_shared.h */; };
+		AE120C202BC77645001873DD /* sdl_fonts.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93A00240D85D01A80001 /* sdl_fonts.h */; };
+		AE120C212BC77645001873DD /* CourierPrimeItalic.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED021A846FD900AE52F4 /* CourierPrimeItalic.h */; };
+		AE120C222BC77645001873DD /* TextLayoutHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93A20240D85D01A80001 /* TextLayoutHelper.h */; };
+		AE120C232BC77645001873DD /* TextStrings.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93A40240D85D01A80001 /* TextStrings.h */; };
+		AE120C242BC77645001873DD /* ViewControl.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93A60240D85D01A80001 /* ViewControl.h */; };
+		AE120C252BC77645001873DD /* song_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94140240DA4301A80001 /* song_definitions.h */; };
+		AE120C262BC77645001873DD /* OGL_Headers.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF8C4F210AEFEB500ED84AD /* OGL_Headers.h */; };
+		AE120C272BC77645001873DD /* SndfileDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F120B927C51009F881C /* SndfileDecoder.h */; };
+		AE120C282BC77645001873DD /* sound_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94150240DA4301A80001 /* sound_definitions.h */; };
+		AE120C292BC77645001873DD /* DefaultStringSets.h in Headers */ = {isa = PBXBuildFile; fileRef = C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */; };
+		AE120C2A2BC77645001873DD /* XML_LevelScript.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94320240DE0E01A80001 /* XML_LevelScript.h */; };
+		AE120C2B2BC77645001873DD /* XML_ParseTreeRoot.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94330240DE0E01A80001 /* XML_ParseTreeRoot.h */; };
+		AE120C2C2BC77645001873DD /* alephversion.h in Headers */ = {isa = PBXBuildFile; fileRef = F5D11AE40326A93E01000105 /* alephversion.h */; };
+		AE120C2D2BC77645001873DD /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DAC27A703DC9D1C00000104 /* Logging.h */; };
+		AE120C2E2BC77645001873DD /* OGL_Model_Def.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF290E6046F5BA900000104 /* OGL_Model_Def.h */; };
+		AE120C2F2BC77645001873DD /* OGL_Subst_Texture_Def.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF290E8046F5BED00000104 /* OGL_Subst_Texture_Def.h */; };
+		AE120C302BC77645001873DD /* OGL_Texture_Def.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */; };
+		AE120C312BC77645001873DD /* network_star.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CA04819BD700A8000D /* network_star.h */; };
+		AE120C322BC77645001873DD /* NetworkGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CC04819BD700A8000D /* NetworkGameProtocol.h */; };
+		AE120C332BC77645001873DD /* RingGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CE04819BD700A8000D /* RingGameProtocol.h */; };
+		AE120C342BC77645001873DD /* StarGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5D004819BD700A8000D /* StarGameProtocol.h */; };
+		AE120C352BC77645001873DD /* AStream.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E404819EBF00A8000D /* AStream.h */; };
+		AE120C362BC77645001873DD /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
+		AE120C372BC77645001873DD /* WindowedNthElementFinder.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */; };
+		AE120C382BC77645001873DD /* thread_priority_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */; };
+		AE120C392BC77645001873DD /* network_data_formats.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0140485BEA500A8000D /* network_data_formats.h */; };
+		AE120C3A2BC77645001873DD /* QuickSave.h in Headers */ = {isa = PBXBuildFile; fileRef = 276D4E751A2E710F00C16CF5 /* QuickSave.h */; };
+		AE120C3B2BC77645001873DD /* SDL_netx.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0170485BEA500A8000D /* SDL_netx.h */; };
+		AE120C3C2BC77645001873DD /* SSLP_API.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0180485BEA500A8000D /* SSLP_API.h */; };
+		AE120C3D2BC77645001873DD /* SSLP_Protocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */; };
+		AE120C3E2BC77645001873DD /* CircularByteBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = EFEF1AC404AF552D00C3A19D /* CircularByteBuffer.h */; };
+		AE120C3F2BC77645001873DD /* metaserver_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = 3D87957E07D11E120078D26B /* metaserver_dialogs.h */; };
+		AE120C402BC77645001873DD /* metaserver_messages.h in Headers */ = {isa = PBXBuildFile; fileRef = 3D87958007D11E120078D26B /* metaserver_messages.h */; };
+		AE120C412BC77645001873DD /* network_metaserver.h in Headers */ = {isa = PBXBuildFile; fileRef = 3D87958207D11E120078D26B /* network_metaserver.h */; };
+		AE120C422BC77645001873DD /* CommunicationsChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DC152410711123100836977 /* CommunicationsChannel.h */; };
+		AE120C432BC77645001873DD /* Message.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DC152440711123200836977 /* Message.h */; };
+		AE120C442BC77645001873DD /* MessageDispatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DC152460711123200836977 /* MessageDispatcher.h */; };
+		AE120C452BC77645001873DD /* MessageHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DC152480711123200836977 /* MessageHandler.h */; };
+		AE120C462BC77645001873DD /* AlephSansMono-Bold.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BECFE1A846FD900AE52F4 /* AlephSansMono-Bold.h */; };
+		AE120C472BC77645001873DD /* MessageInflater.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DC1524A0711123200836977 /* MessageInflater.h */; };
+		AE120C482BC77645001873DD /* network_capabilities.h in Headers */ = {isa = PBXBuildFile; fileRef = AE5604E0086F6E0D00D9797C /* network_capabilities.h */; };
+		AE120C492BC77645001873DD /* shared_widgets.h in Headers */ = {isa = PBXBuildFile; fileRef = AE437C8B08779BC900038E30 /* shared_widgets.h */; };
+		AE120C4A2BC77645001873DD /* Console.h in Headers */ = {isa = PBXBuildFile; fileRef = AEC6C89E0879A6020055EC57 /* Console.h */; };
+		AE120C4B2BC77645001873DD /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
+		AE120C4C2BC77645001873DD /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
+		AE120C4D2BC77645001873DD /* Music.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E660B878534009CFF2D /* Music.h */; };
+		AE120C4E2BC77645001873DD /* cspaths.h in Headers */ = {isa = PBXBuildFile; fileRef = 272BA59E1E622438008C5335 /* cspaths.h */; };
+		AE120C4F2BC77645001873DD /* SoundFile.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E680B878534009CFF2D /* SoundFile.h */; };
+		AE120C502BC77645001873DD /* SoundManager.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6A0B878534009CFF2D /* SoundManager.h */; };
+		AE120C512BC77645001873DD /* binders.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED2B1A8470A900AE52F4 /* binders.h */; };
+		AE120C522BC77645001873DD /* SoundManagerEnums.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6B0B878534009CFF2D /* SoundManagerEnums.h */; };
+		AE120C532BC77645001873DD /* joystick.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE12FD0FC9AB4900EDA5A6 /* joystick.h */; };
+		AE120C542BC77645001873DD /* lua_serialize.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE13200FC9C38400EDA5A6 /* lua_serialize.h */; };
+		AE120C552BC77645001873DD /* BStream.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE132D0FC9C3C800EDA5A6 /* BStream.h */; };
+		AE120C562BC77645001873DD /* OGL_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 270D534B0FCB417500482ED4 /* OGL_Blitter.h */; };
+		AE120C572BC77645001873DD /* HUDRenderer_Lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 27911B23100073460063ACB6 /* HUDRenderer_Lua.h */; };
+		AE120C582BC77645001873DD /* Image_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 27CE0842100ECDBC00F59FD1 /* Image_Blitter.h */; };
+		AE120C592BC77645001873DD /* Shape_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 2739B491101B862A00CC8098 /* Shape_Blitter.h */; };
+		AE120C5A2BC77645001873DD /* OGL_Shader.h in Headers */ = {isa = PBXBuildFile; fileRef = 27DC606F10917F690062003A /* OGL_Shader.h */; };
+		AE120C5B2BC77645001873DD /* vec3.h in Headers */ = {isa = PBXBuildFile; fileRef = 27DC60C4109218800062003A /* vec3.h */; };
+		AE120C5C2BC77645001873DD /* Plugins.h in Headers */ = {isa = PBXBuildFile; fileRef = 277AB98010A26B020003402A /* Plugins.h */; };
+		AE120C5D2BC77645001873DD /* Rasterizer_Shader.h in Headers */ = {isa = PBXBuildFile; fileRef = 277AB6BD109CE2570003402A /* Rasterizer_Shader.h */; };
+		AE120C5E2BC77645001873DD /* RenderRasterize_Shader.h in Headers */ = {isa = PBXBuildFile; fileRef = 277AB6BF109CE2570003402A /* RenderRasterize_Shader.h */; };
+		AE120C5F2BC77645001873DD /* SDL_rwops_zzip.h in Headers */ = {isa = PBXBuildFile; fileRef = 2759F31A10D5BC9C000204DD /* SDL_rwops_zzip.h */; };
+		AE120C602BC77645001873DD /* ReplacementSounds.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BECEF1A846BC500AE52F4 /* ReplacementSounds.h */; };
+		AE120C612BC77645001873DD /* FilmProfile.h in Headers */ = {isa = PBXBuildFile; fileRef = 27D1A4F212FDF3630085E79C /* FilmProfile.h */; };
+		AE120C622BC77645001873DD /* VecOps.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BED1C1A846FF600AE52F4 /* VecOps.h */; };
+		AE120C632BC77645001873DD /* HTTP.h in Headers */ = {isa = PBXBuildFile; fileRef = AEDF1A121416FE2200183689 /* HTTP.h */; };
+		AE120C642BC77645001873DD /* Statistics.h in Headers */ = {isa = PBXBuildFile; fileRef = AE48F3551421900900051D61 /* Statistics.h */; };
+		AE120C652BC77645001873DD /* Movie.h in Headers */ = {isa = PBXBuildFile; fileRef = 27ECF2921698DD7700BE9C35 /* Movie.h */; };
+		AE120C662BC77645001873DD /* SDL_ffmpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 27ECF2941698DD7700BE9C35 /* SDL_ffmpeg.h */; };
+		AE120C672BC77645001873DD /* lctype.h in Headers */ = {isa = PBXBuildFile; fileRef = 2792861A170F92DD0005CD56 /* lctype.h */; };
+		AE120C692BC77645001873DD /* ImagesIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F56AEB6B01F8AA1201780311 /* ImagesIcon.icns */; };
+		AE120C6A2BC77645001873DD /* ShapesIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F56AEB6C01F8AA1201780311 /* ShapesIcon.icns */; };
+		AE120C6B2BC77645001873DD /* SoundsIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F56AEB6D01F8AA1201780311 /* SoundsIcon.icns */; };
+		AE120C6C2BC77645001873DD /* FilmIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD3D0200FA6B01D80110 /* FilmIcon.icns */; };
+		AE120C6D2BC77645001873DD /* m1_achievements.lua in Resources */ = {isa = PBXBuildFile; fileRef = AED959B02BC23591008EFCA2 /* m1_achievements.lua */; };
+		AE120C6E2BC77645001873DD /* MapIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD3E0200FA6B01D80110 /* MapIcon.icns */; };
+		AE120C6F2BC77645001873DD /* MMLIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD3F0200FA6B01D80110 /* MMLIcon.icns */; };
+		AE120C702BC77645001873DD /* MusakIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD400200FA6B01D80110 /* MusakIcon.icns */; };
+		AE120C712BC77645001873DD /* PhysIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD420200FA6B01D80110 /* PhysIcon.icns */; };
+		AE120C722BC77645001873DD /* SaveIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD430200FA6B01D80110 /* SaveIcon.icns */; };
+		AE120C732BC77645001873DD /* Marathon.icns in Resources */ = {isa = PBXBuildFile; fileRef = AE0E4EC1141D148F00AAA02F /* Marathon.icns */; };
+		AE120C742BC77645001873DD /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AE7A143A141D16D000834C2D /* InfoPlist.strings */; };
+		AE120C762BC77645001873DD /* byte_swapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211410136A66601000001 /* byte_swapping.cpp */; };
+		AE120C772BC77645001873DD /* csalerts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211430136A66601000001 /* csalerts_sdl.cpp */; };
+		AE120C782BC77645001873DD /* PortForward.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE72AA8F269A7E7B001F7675 /* PortForward.cpp */; };
+		AE120C792BC77645001873DD /* cscluts_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211450136A66601000001 /* cscluts_sdl.cpp */; };
+		AE120C7A2BC77645001873DD /* csmisc_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114B0136A66601000001 /* csmisc_sdl.cpp */; };
+		AE120C7B2BC77645001873DD /* achievements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AED959BE2BC235B2008EFCA2 /* achievements.cpp */; };
+		AE120C7C2BC77645001873DD /* game_errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211970136A6FD01000001 /* game_errors.cpp */; };
+		AE120C7D2BC77645001873DD /* interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211C40136A6FD01000001 /* interface.cpp */; };
+		AE120C7E2BC77645001873DD /* PlayerName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120B0136A6FD01000001 /* PlayerName.cpp */; };
+		AE120C7F2BC77645001873DD /* preferences.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120F0136A6FD01000001 /* preferences.cpp */; };
+		AE120C802BC77645001873DD /* sdl_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522123A0136A6FD01000001 /* sdl_dialogs.cpp */; };
+		AE120C812BC77645001873DD /* sdl_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522123F0136A6FD01000001 /* sdl_widgets.cpp */; };
+		AE120C822BC77645001873DD /* shell_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212490136A6FD01000001 /* shell_misc.cpp */; };
+		AE120C832BC77645001873DD /* shell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522124B0136A6FD01000001 /* shell.cpp */; };
+		AE120C842BC77645001873DD /* vbl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212590136A6FD01000001 /* vbl.cpp */; };
+		AE120C852BC77645001873DD /* network_lookup_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52213810136ABAE01000001 /* network_lookup_sdl.cpp */; };
+		AE120C862BC77645001873DD /* network_udp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138E0136ABAE01000001 /* network_udp.cpp */; };
+		AE120C872BC77645001873DD /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138F0136ABAE01000001 /* network.cpp */; };
+		AE120C882BC77645001873DD /* AudioPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16628615A22003128EE /* AudioPlayer.cpp */; };
+		AE120C892BC77645001873DD /* cspaths_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 272BA5A21E628212008C5335 /* cspaths_sdl.cpp */; };
+		AE120C8A2BC77645001873DD /* network_games.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137F0136ABAE01000001 /* network_games.cpp */; };
+		AE120C8B2BC77645001873DD /* Model3D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5830B4301E77D5701BA387C /* Model3D.cpp */; };
+		AE120C8C2BC77645001873DD /* ModelRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5830B4501E77D5701BA387C /* ModelRenderer.cpp */; };
+		AE120C8D2BC77645001873DD /* StudioLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5830B4A01E77D5701BA387C /* StudioLoader.cpp */; };
+		AE120C8E2BC77645001873DD /* WavefrontLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5830B4C01E77D5701BA387C /* WavefrontLoader.cpp */; };
+		AE120C8F2BC77645001873DD /* csdialogs_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EEE01F4EB1E01FEABBD /* csdialogs_sdl.cpp */; };
+		AE120C902BC77645001873DD /* SDL_rwops_ostream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 278E0C7B1AA4012600FA93B7 /* SDL_rwops_ostream.cpp */; };
+		AE120C912BC77645001873DD /* mytm_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EEF01F4EB1E01FEABBD /* mytm_sdl.cpp */; };
+		AE120C922BC77645001873DD /* PlayerImage_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */; };
+		AE120C932BC77645001873DD /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
+		AE120C942BC77645001873DD /* network_data_formats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF801F4ECD701FEABBD /* network_data_formats.cpp */; };
+		AE120C952BC77645001873DD /* network_dialog_widgets_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */; };
+		AE120C962BC77645001873DD /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
+		AE120C972BC77645001873DD /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
+		AE120C982BC77645001873DD /* network_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137D0136ABAE01000001 /* network_dialogs.cpp */; };
+		AE120C992BC77645001873DD /* Dim3_Loader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CFAD390200F9D201D80110 /* Dim3_Loader.cpp */; };
+		AE120C9A2BC77645001873DD /* preferences_widgets_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A00023023FDA1601A80001 /* preferences_widgets_sdl.cpp */; };
+		AE120C9B2BC77645001873DD /* ActionQueues.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A00022023FDA1601A80001 /* ActionQueues.cpp */; };
+		AE120C9C2BC77645001873DD /* crc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920A0240D09B01A80001 /* crc.cpp */; };
+		AE120C9D2BC77645001873DD /* FileHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920C0240D09B01A80001 /* FileHandler.cpp */; };
+		AE120C9E2BC77645001873DD /* find_files_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920F0240D09B01A80001 /* find_files_sdl.cpp */; };
+		AE120C9F2BC77645001873DD /* game_wad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92100240D09B01A80001 /* game_wad.cpp */; };
+		AE120CA02BC77645001873DD /* import_definitions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92110240D09B01A80001 /* import_definitions.cpp */; };
+		AE120CA12BC77645001873DD /* preprocess_map_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92130240D09B01A80001 /* preprocess_map_sdl.cpp */; };
+		AE120CA22BC77645001873DD /* resource_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92140240D09B01A80001 /* resource_manager.cpp */; };
+		AE120CA32BC77645001873DD /* wad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92150240D09B01A80001 /* wad.cpp */; };
+		AE120CA42BC77645001873DD /* wad_prefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92170240D09B01A80001 /* wad_prefs.cpp */; };
+		AE120CA52BC77645001873DD /* MusicPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16528615A22003128EE /* MusicPlayer.cpp */; };
+		AE120CA62BC77645001873DD /* wad_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92190240D09B01A80001 /* wad_sdl.cpp */; };
+		AE120CA72BC77645001873DD /* devices.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC924F0240D28201A80001 /* devices.cpp */; };
+		AE120CA82BC77645001873DD /* dynamic_limits.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92500240D28201A80001 /* dynamic_limits.cpp */; };
+		AE120CA92BC77645001873DD /* effects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92540240D28201A80001 /* effects.cpp */; };
+		AE120CAA2BC77645001873DD /* flood_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92560240D28201A80001 /* flood_map.cpp */; };
+		AE120CAB2BC77645001873DD /* items.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92590240D28201A80001 /* items.cpp */; };
+		AE120CAC2BC77645001873DD /* lightsource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC925B0240D28201A80001 /* lightsource.cpp */; };
+		AE120CAD2BC77645001873DD /* map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC925D0240D28201A80001 /* map.cpp */; };
+		AE120CAE2BC77645001873DD /* map_constructors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC925F0240D28201A80001 /* map_constructors.cpp */; };
+		AE120CAF2BC77645001873DD /* marathon2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92600240D28201A80001 /* marathon2.cpp */; };
+		AE120CB02BC77645001873DD /* media.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92610240D28201A80001 /* media.cpp */; };
+		AE120CB12BC77645001873DD /* monsters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92650240D28201A80001 /* monsters.cpp */; };
+		AE120CB22BC77645001873DD /* pathfinding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92670240D28201A80001 /* pathfinding.cpp */; };
+		AE120CB32BC77645001873DD /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E878F1173202F80010F485 /* FFmpegDecoder.cpp */; };
+		AE120CB42BC77645001873DD /* physics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92680240D28201A80001 /* physics.cpp */; };
+		AE120CB52BC77645001873DD /* placement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC926A0240D28201A80001 /* placement.cpp */; };
+		AE120CB62BC77645001873DD /* lua_ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */; };
+		AE120CB72BC77645001873DD /* OpenALManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16428615A21003128EE /* OpenALManager.cpp */; };
+		AE120CB82BC77645001873DD /* platforms.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC926C0240D28201A80001 /* platforms.cpp */; };
+		AE120CB92BC77645001873DD /* player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC926E0240D28201A80001 /* player.cpp */; };
+		AE120CBA2BC77645001873DD /* projectiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92710240D28201A80001 /* projectiles.cpp */; };
+		AE120CBB2BC77645001873DD /* scenery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92730240D28201A80001 /* scenery.cpp */; };
+		AE120CBC2BC77645001873DD /* weapons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92770240D28201A80001 /* weapons.cpp */; };
+		AE120CBD2BC77645001873DD /* world.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92790240D28201A80001 /* world.cpp */; };
+		AE120CBE2BC77645001873DD /* mouse_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92DC0240D54401A80001 /* mouse_sdl.cpp */; };
+		AE120CBF2BC77645001873DD /* interpolated_world.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEA26AD225E3364A008895CC /* interpolated_world.cpp */; };
+		AE120CC02BC77645001873DD /* AnimatedTextures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92E40240D56101A80001 /* AnimatedTextures.cpp */; };
+		AE120CC12BC77645001873DD /* StreamPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16828615A22003128EE /* StreamPlayer.cpp */; };
+		AE120CC22BC77645001873DD /* Crosshairs_SDL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92E90240D56101A80001 /* Crosshairs_SDL.cpp */; };
+		AE120CC32BC77645001873DD /* ImageLoader_SDL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92EC0240D56101A80001 /* ImageLoader_SDL.cpp */; };
+		AE120CC42BC77645001873DD /* WadImageCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 278E0C711AA3CD4500FA93B7 /* WadImageCache.cpp */; };
+		AE120CC52BC77645001873DD /* OGL_Faders.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92EE0240D56101A80001 /* OGL_Faders.cpp */; };
+		AE120CC62BC77645001873DD /* OGL_Render.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92F00240D56101A80001 /* OGL_Render.cpp */; };
+		AE120CC72BC77645001873DD /* OGL_Setup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92F20240D56101A80001 /* OGL_Setup.cpp */; };
+		AE120CC82BC77645001873DD /* OGL_Textures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92F40240D56101A80001 /* OGL_Textures.cpp */; };
+		AE120CC92BC77645001873DD /* render.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92FC0240D56101A80001 /* render.cpp */; };
+		AE120CCA2BC77645001873DD /* RenderPlaceObjs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92FE0240D56101A80001 /* RenderPlaceObjs.cpp */; };
+		AE120CCB2BC77645001873DD /* RenderRasterize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93000240D56101A80001 /* RenderRasterize.cpp */; };
+		AE120CCC2BC77645001873DD /* RenderSortPoly.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93020240D56101A80001 /* RenderSortPoly.cpp */; };
+		AE120CCD2BC77645001873DD /* RenderVisTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93040240D56101A80001 /* RenderVisTree.cpp */; };
+		AE120CCE2BC77645001873DD /* scottish_textures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93070240D56101A80001 /* scottish_textures.cpp */; };
+		AE120CCF2BC77645001873DD /* shapes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC930C0240D56101A80001 /* shapes.cpp */; };
+		AE120CD02BC77645001873DD /* textures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC930F0240D56101A80001 /* textures.cpp */; };
+		AE120CD12BC77645001873DD /* ChaseCam.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC938C0240D85D01A80001 /* ChaseCam.cpp */; };
+		AE120CD22BC77645001873DD /* computer_interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC938D0240D85D01A80001 /* computer_interface.cpp */; };
+		AE120CD32BC77645001873DD /* fades.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC938E0240D85D01A80001 /* fades.cpp */; };
+		AE120CD42BC77645001873DD /* FontHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC938F0240D85D01A80001 /* FontHandler.cpp */; };
+		AE120CD52BC77645001873DD /* game_window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93900240D85D01A80001 /* game_window.cpp */; };
+		AE120CD62BC77645001873DD /* HUDRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93910240D85D01A80001 /* HUDRenderer.cpp */; };
+		AE120CD72BC77645001873DD /* HUDRenderer_OGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93920240D85D01A80001 /* HUDRenderer_OGL.cpp */; };
+		AE120CD82BC77645001873DD /* HUDRenderer_SW.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93930240D85D01A80001 /* HUDRenderer_SW.cpp */; };
+		AE120CD92BC77645001873DD /* images.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93940240D85D01A80001 /* images.cpp */; };
+		AE120CDA2BC77645001873DD /* motion_sensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93950240D85D01A80001 /* motion_sensor.cpp */; };
+		AE120CDB2BC77645001873DD /* overhead_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93960240D85D01A80001 /* overhead_map.cpp */; };
+		AE120CDC2BC77645001873DD /* OverheadMap_OGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93970240D85D01A80001 /* OverheadMap_OGL.cpp */; };
+		AE120CDD2BC77645001873DD /* OverheadMap_SDL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC938A0240D85D01A80001 /* OverheadMap_SDL.cpp */; };
+		AE120CDE2BC77645001873DD /* OverheadMapRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93980240D85D01A80001 /* OverheadMapRenderer.cpp */; };
+		AE120CDF2BC77645001873DD /* screen_drawing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC939A0240D85D01A80001 /* screen_drawing.cpp */; };
+		AE120CE02BC77645001873DD /* sdl_fonts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC939F0240D85D01A80001 /* sdl_fonts.cpp */; };
+		AE120CE12BC77645001873DD /* TextLayoutHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A10240D85D01A80001 /* TextLayoutHelper.cpp */; };
+		AE120CE22BC77645001873DD /* TextStrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A30240D85D01A80001 /* TextStrings.cpp */; };
+		AE120CE32BC77645001873DD /* ViewControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A50240D85D01A80001 /* ViewControl.cpp */; };
+		AE120CE42BC77645001873DD /* XML_LevelScript.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94400240DE0E01A80001 /* XML_LevelScript.cpp */; };
+		AE120CE52BC77645001873DD /* QuickSave.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276D4E761A2E734E00C16CF5 /* QuickSave.cpp */; };
+		AE120CE62BC77645001873DD /* XML_MakeRoot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94410240DE0E01A80001 /* XML_MakeRoot.cpp */; };
+		AE120CE72BC77645001873DD /* sdl_resize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27EFC4BC1A7D8CBF00A95592 /* sdl_resize.cpp */; };
+		AE120CE82BC77645001873DD /* Packing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5837191031EEE0201000105 /* Packing.cpp */; };
+		AE120CE92BC77645001873DD /* DefaultStringSets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC27A503DC9D1C00000104 /* DefaultStringSets.cpp */; };
+		AE120CEA2BC77645001873DD /* Logging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC27A603DC9D1C00000104 /* Logging.cpp */; };
+		AE120CEB2BC77645001873DD /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE171BCC2A59F6EE00A4D3FC /* main.cpp */; };
+		AE120CEC2BC77645001873DD /* preprocess_map_shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D5F21430403230F00000104 /* preprocess_map_shared.cpp */; };
+		AE120CED2BC77645001873DD /* OGL_Model_Def.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */; };
+		AE120CEE2BC77645001873DD /* OGL_Subst_Texture_Def.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */; };
+		AE120CEF2BC77645001873DD /* network_star_hub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C804819BD700A8000D /* network_star_hub.cpp */; };
+		AE120CF02BC77645001873DD /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
+		AE120CF12BC77645001873DD /* network_star_spoke.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */; };
+		AE120CF22BC77645001873DD /* RingGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CD04819BD700A8000D /* RingGameProtocol.cpp */; };
+		AE120CF32BC77645001873DD /* StarGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CF04819BD700A8000D /* StarGameProtocol.cpp */; };
+		AE120CF42BC77645001873DD /* lua_music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE96370B2A39578600DE43FF /* lua_music.cpp */; };
+		AE120CF52BC77645001873DD /* AStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5E304819EBF00A8000D /* AStream.cpp */; };
+		AE120CF62BC77645001873DD /* CircularByteBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EFEF1AC504AF552D00C3A19D /* CircularByteBuffer.cpp */; };
+		AE120CF72BC77645001873DD /* lua_script.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F51B058B047AC6DA01C5C930 /* lua_script.cpp */; };
+		AE120CF82BC77645001873DD /* metaserver_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D87957D07D11E120078D26B /* metaserver_dialogs.cpp */; };
+		AE120CF92BC77645001873DD /* metaserver_messages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D87957F07D11E120078D26B /* metaserver_messages.cpp */; };
+		AE120CFA2BC77645001873DD /* network_metaserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D87958107D11E120078D26B /* network_metaserver.cpp */; };
+		AE120CFB2BC77645001873DD /* CommunicationsChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152400711123100836977 /* CommunicationsChannel.cpp */; };
+		AE120CFC2BC77645001873DD /* Message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152430711123200836977 /* Message.cpp */; };
+		AE120CFD2BC77645001873DD /* MessageDispatcher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152450711123200836977 /* MessageDispatcher.cpp */; };
+		AE120CFE2BC77645001873DD /* MessageHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152470711123200836977 /* MessageHandler.cpp */; };
+		AE120CFF2BC77645001873DD /* MessageInflater.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152490711123200836977 /* MessageInflater.cpp */; };
+		AE120D002BC77645001873DD /* network_messages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF154D6080376E100BC3C09 /* network_messages.cpp */; };
+		AE120D012BC77645001873DD /* csstrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114C0136A66601000001 /* csstrings.cpp */; };
+		AE120D022BC77645001873DD /* SdlMetaserverClientUi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */; };
+		AE120D032BC77645001873DD /* network_capabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE5604DD086F6DF100D9797C /* network_capabilities.cpp */; };
+		AE120D042BC77645001873DD /* shared_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE437C8E08779BE500038E30 /* shared_widgets.cpp */; };
+		AE120D052BC77645001873DD /* Console.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEC6C89B0879A5DE0055EC57 /* Console.cpp */; };
+		AE120D062BC77645001873DD /* ImageLoader_Shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */; };
+		AE120D072BC77645001873DD /* OGL_LoadScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */; };
+		AE120D082BC77645001873DD /* ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E142533A4D8002184B5 /* ephemera.cpp */; };
+		AE120D092BC77645001873DD /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
+		AE120D0A2BC77645001873DD /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
+		AE120D0B2BC77645001873DD /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
+		AE120D0C2BC77645001873DD /* SW_Texture_Extras.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */; };
+		AE120D0D2BC77645001873DD /* Music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E650B878534009CFF2D /* Music.cpp */; };
+		AE120D0E2BC77645001873DD /* shell_options.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEEA4E7E2544B50B0031363A /* shell_options.cpp */; };
+		AE120D0F2BC77645001873DD /* SoundFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E670B878534009CFF2D /* SoundFile.cpp */; };
+		AE120D102BC77645001873DD /* SoundManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E690B878534009CFF2D /* SoundManager.cpp */; };
+		AE120D112BC77645001873DD /* Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F060B927C25009F881C /* Decoder.cpp */; };
+		AE120D122BC77645001873DD /* SndfileDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F080B927C25009F881C /* SndfileDecoder.cpp */; };
+		AE120D132BC77645001873DD /* ReplacementSounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */; };
+		AE120D142BC77645001873DD /* lapi.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21800BFF67B700CE63EC /* lapi.c */; };
+		AE120D152BC77645001873DD /* lauxlib.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21810BFF67B700CE63EC /* lauxlib.c */; };
+		AE120D162BC77645001873DD /* lbaselib.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21820BFF67B700CE63EC /* lbaselib.c */; };
+		AE120D172BC77645001873DD /* lcode.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21830BFF67B700CE63EC /* lcode.c */; };
+		AE120D182BC77645001873DD /* ldblib.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21840BFF67B700CE63EC /* ldblib.c */; };
+		AE120D192BC77645001873DD /* ldebug.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21850BFF67B700CE63EC /* ldebug.c */; };
+		AE120D1A2BC77645001873DD /* ldo.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21860BFF67B700CE63EC /* ldo.c */; };
+		AE120D1B2BC77645001873DD /* ldump.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21870BFF67B700CE63EC /* ldump.c */; };
+		AE120D1C2BC77645001873DD /* lfunc.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21880BFF67B700CE63EC /* lfunc.c */; };
+		AE120D1D2BC77645001873DD /* lgc.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21890BFF67B700CE63EC /* lgc.c */; };
+		AE120D1E2BC77645001873DD /* linit.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C218A0BFF67B700CE63EC /* linit.c */; };
+		AE120D1F2BC77645001873DD /* liolib.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C218B0BFF67B700CE63EC /* liolib.c */; };
+		AE120D202BC77645001873DD /* llex.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C218C0BFF67B700CE63EC /* llex.c */; };
+		AE120D212BC77645001873DD /* lmathlib.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C218D0BFF67B700CE63EC /* lmathlib.c */; };
+		AE120D222BC77645001873DD /* lmem.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C218E0BFF67B700CE63EC /* lmem.c */; };
+		AE120D232BC77645001873DD /* lobject.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C218F0BFF67B700CE63EC /* lobject.c */; };
+		AE120D242BC77645001873DD /* lopcodes.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21900BFF67B700CE63EC /* lopcodes.c */; };
+		AE120D252BC77645001873DD /* loslib.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21910BFF67B700CE63EC /* loslib.c */; };
+		AE120D262BC77645001873DD /* lparser.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21920BFF67B700CE63EC /* lparser.c */; };
+		AE120D272BC77645001873DD /* lstate.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21930BFF67B700CE63EC /* lstate.c */; };
+		AE120D282BC77645001873DD /* lstring.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21940BFF67B700CE63EC /* lstring.c */; };
+		AE120D292BC77645001873DD /* lstrlib.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21950BFF67B700CE63EC /* lstrlib.c */; };
+		AE120D2A2BC77645001873DD /* ltable.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21960BFF67B700CE63EC /* ltable.c */; };
+		AE120D2B2BC77645001873DD /* Statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FC2E091A7DF51E0057BF42 /* Statistics.cpp */; };
+		AE120D2C2BC77645001873DD /* ltablib.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21970BFF67B700CE63EC /* ltablib.c */; };
+		AE120D2D2BC77645001873DD /* ltm.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21980BFF67B700CE63EC /* ltm.c */; };
+		AE120D2E2BC77645001873DD /* lundump.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21990BFF67B700CE63EC /* lundump.c */; };
+		AE120D2F2BC77645001873DD /* lvm.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C219A0BFF67B700CE63EC /* lvm.c */; };
+		AE120D302BC77645001873DD /* lzio.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C219B0BFF67B700CE63EC /* lzio.c */; };
+		AE120D312BC77645001873DD /* Update.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21D50BFF688000CE63EC /* Update.cpp */; };
+		AE120D322BC77645001873DD /* ConnectPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */; };
+		AE120D332BC77645001873DD /* lua_player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE69B5DB0D404F0400C42C11 /* lua_player.cpp */; };
+		AE120D342BC77645001873DD /* HTTP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 275A7BD71A60E9B9002EE952 /* HTTP.cpp */; };
+		AE120D352BC77645001873DD /* lua_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE51545D0D46E84A00506B58 /* lua_map.cpp */; };
+		AE120D362BC77645001873DD /* lua_monsters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDCB5CB0D4ADB86004CB40E /* lua_monsters.cpp */; };
+		AE120D372BC77645001873DD /* lua_projectiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDCB5DA0D4AEC4D004CB40E /* lua_projectiles.cpp */; };
+		AE120D382BC77645001873DD /* lua_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE38D10C0D555A3100FC2082 /* lua_objects.cpp */; };
+		AE120D392BC77645001873DD /* screen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE005FD30EE2D6DE007FE7C6 /* screen.cpp */; };
+		AE120D3A2BC77645001873DD /* joystick_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEAE12FE0FC9AB4900EDA5A6 /* joystick_sdl.cpp */; };
+		AE120D3B2BC77645001873DD /* lua_serialize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEAE131F0FC9C38400EDA5A6 /* lua_serialize.cpp */; };
+		AE120D3C2BC77645001873DD /* BStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEAE132C0FC9C3C800EDA5A6 /* BStream.cpp */; };
+		AE120D3D2BC77645001873DD /* lua_hud_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2784979B0FF5C308008DECC8 /* lua_hud_objects.cpp */; };
+		AE120D3E2BC77645001873DD /* lua_hud_script.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2784979D0FF5C308008DECC8 /* lua_hud_script.cpp */; };
+		AE120D3F2BC77645001873DD /* HUDRenderer_Lua.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27911B22100073460063ACB6 /* HUDRenderer_Lua.cpp */; };
+		AE120D402BC77645001873DD /* Image_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27CE0841100ECDBC00F59FD1 /* Image_Blitter.cpp */; };
+		AE120D412BC77645001873DD /* Shape_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2739B490101B862A00CC8098 /* Shape_Blitter.cpp */; };
+		AE120D422BC77645001873DD /* OGL_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27DC606E10917F690062003A /* OGL_Shader.cpp */; };
+		AE120D432BC77645001873DD /* Plugins.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB97E10A26AF40003402A /* Plugins.cpp */; };
+		AE120D442BC77645001873DD /* Rasterizer_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */; };
+		AE120D452BC77645001873DD /* RenderRasterize_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */; };
+		AE120D462BC77645001873DD /* SDL_rwops_zzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */; };
+		AE120D472BC77645001873DD /* IMG_savepng.c in Sources */ = {isa = PBXBuildFile; fileRef = AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */; };
+		AE120D482BC77645001873DD /* SoundPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16728615A22003128EE /* SoundPlayer.cpp */; };
+		AE120D492BC77645001873DD /* csalerts.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEA31D2B113C9DF700266621 /* csalerts.mm */; };
+		AE120D4A2BC77645001873DD /* OGL_FBO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2710CC5F1B8F94FC00CE2EAE /* OGL_FBO.cpp */; };
+		AE120D4B2BC77645001873DD /* lua_saved_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */; };
+		AE120D4C2BC77645001873DD /* cspaths.mm in Sources */ = {isa = PBXBuildFile; fileRef = 272BA5A01E6242F8008C5335 /* cspaths.mm */; };
+		AE120D4D2BC77645001873DD /* FilmProfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D1A4F112FDF3630085E79C /* FilmProfile.cpp */; };
+		AE120D4E2BC77645001873DD /* Movie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27ECF2911698DD7700BE9C35 /* Movie.cpp */; };
+		AE120D4F2BC77645001873DD /* SDL_ffmpeg.c in Sources */ = {isa = PBXBuildFile; fileRef = 27ECF2931698DD7700BE9C35 /* SDL_ffmpeg.c */; };
+		AE120D502BC77645001873DD /* lbitlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 27928610170F92D20005CD56 /* lbitlib.c */; };
+		AE120D512BC77645001873DD /* lctype.c in Sources */ = {isa = PBXBuildFile; fileRef = 27928611170F92D20005CD56 /* lctype.c */; };
+		AE120D532BC77645001873DD /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9975032661D63700DDD370 /* CoreMedia.framework */; };
+		AE120D542BC77645001873DD /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AE99750F2661D81600DDD370 /* libz.tbd */; };
+		AE120D552BC77645001873DD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9975122661D85000DDD370 /* Cocoa.framework */; };
+		AE120D562BC77645001873DD /* libcurl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = AE99750C2661D71000DDD370 /* libcurl.tbd */; };
+		AE120D572BC77645001873DD /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9974FD2661D49E00DDD370 /* AudioToolbox.framework */; };
+		AE120D582BC77645001873DD /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9975052661D66600DDD370 /* Security.framework */; };
+		AE120D592BC77645001873DD /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9975102661D82700DDD370 /* OpenGL.framework */; };
+		AE120D5A2BC77645001873DD /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE99750D2661D7F200DDD370 /* IOKit.framework */; };
+		AE120D5B2BC77645001873DD /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9974FF2661D4DD00DDD370 /* Carbon.framework */; };
+		AE120D5C2BC77645001873DD /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9975072661D6E300DDD370 /* CoreAudio.framework */; };
+		AE120D5D2BC77645001873DD /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9975012661D50F00DDD370 /* ForceFeedback.framework */; };
+		AE120D5E2BC77645001873DD /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9975092661D6F400DDD370 /* AudioUnit.framework */; };
+		AE120D672BC776CE001873DD /* steamshim_child.c in Sources */ = {isa = PBXBuildFile; fileRef = AE120D662BC776CE001873DD /* steamshim_child.c */; };
+		AE120D692BC776E7001873DD /* steamshim_child.h in Headers */ = {isa = PBXBuildFile; fileRef = AE120D682BC776E7001873DD /* steamshim_child.h */; };
 		AE171BCD2A59F6EE00A4D3FC /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE171BCC2A59F6EE00A4D3FC /* main.cpp */; };
 		AE171BCE2A59F6EE00A4D3FC /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE171BCC2A59F6EE00A4D3FC /* main.cpp */; };
 		AE171BCF2A59F6EE00A4D3FC /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE171BCC2A59F6EE00A4D3FC /* main.cpp */; };
@@ -721,6 +1174,9 @@
 		AE7C21B60BFF67B700CE63EC /* lvm.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C219A0BFF67B700CE63EC /* lvm.c */; };
 		AE7C21B70BFF67B700CE63EC /* lzio.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C219B0BFF67B700CE63EC /* lzio.c */; };
 		AE7C21D60BFF688000CE63EC /* Update.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21D50BFF688000CE63EC /* Update.cpp */; };
+		AE8729C82BD1FBF700426095 /* steamshim_parent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE120B8F2BC76745001873DD /* steamshim_parent.cpp */; };
+		AE8729C92BD1FBFA00426095 /* libsteam_api.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AE120B942BC77447001873DD /* libsteam_api.dylib */; };
+		AE8729CD2BD1FDAC00426095 /* libsteam_api.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE120B942BC77447001873DD /* libsteam_api.dylib */; };
 		AE96370C2A39578600DE43FF /* lua_music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE96370B2A39578600DE43FF /* lua_music.cpp */; };
 		AE96370D2A39578600DE43FF /* lua_music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE96370B2A39578600DE43FF /* lua_music.cpp */; };
 		AE96370E2A39578600DE43FF /* lua_music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE96370B2A39578600DE43FF /* lua_music.cpp */; };
@@ -1413,6 +1869,22 @@
 		AEC3C86C09AD68AC003258E4 /* Console.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEC6C89B0879A5DE0055EC57 /* Console.cpp */; };
 		AEC3C86D09AD68AC003258E4 /* ImageLoader_Shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */; };
 		AEC3C86E09AD68AC003258E4 /* OGL_LoadScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */; };
+		AED959B22BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */ = {isa = PBXBuildFile; fileRef = AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */; };
+		AED959B32BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */ = {isa = PBXBuildFile; fileRef = AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */; };
+		AED959B42BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */ = {isa = PBXBuildFile; fileRef = AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */; };
+		AED959B52BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */ = {isa = PBXBuildFile; fileRef = AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */; };
+		AED959B62BC23591008EFCA2 /* m1_achievements.lua in Resources */ = {isa = PBXBuildFile; fileRef = AED959B02BC23591008EFCA2 /* m1_achievements.lua */; };
+		AED959B72BC23591008EFCA2 /* m1_achievements.lua in Resources */ = {isa = PBXBuildFile; fileRef = AED959B02BC23591008EFCA2 /* m1_achievements.lua */; };
+		AED959B82BC23591008EFCA2 /* m1_achievements.lua in Resources */ = {isa = PBXBuildFile; fileRef = AED959B02BC23591008EFCA2 /* m1_achievements.lua */; };
+		AED959B92BC23591008EFCA2 /* m1_achievements.lua in Resources */ = {isa = PBXBuildFile; fileRef = AED959B02BC23591008EFCA2 /* m1_achievements.lua */; };
+		AED959BA2BC23591008EFCA2 /* achievements.h in Headers */ = {isa = PBXBuildFile; fileRef = AED959B12BC23591008EFCA2 /* achievements.h */; };
+		AED959BB2BC23591008EFCA2 /* achievements.h in Headers */ = {isa = PBXBuildFile; fileRef = AED959B12BC23591008EFCA2 /* achievements.h */; };
+		AED959BC2BC23591008EFCA2 /* achievements.h in Headers */ = {isa = PBXBuildFile; fileRef = AED959B12BC23591008EFCA2 /* achievements.h */; };
+		AED959BD2BC23591008EFCA2 /* achievements.h in Headers */ = {isa = PBXBuildFile; fileRef = AED959B12BC23591008EFCA2 /* achievements.h */; };
+		AED959BF2BC235B2008EFCA2 /* achievements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AED959BE2BC235B2008EFCA2 /* achievements.cpp */; };
+		AED959C02BC235B2008EFCA2 /* achievements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AED959BE2BC235B2008EFCA2 /* achievements.cpp */; };
+		AED959C12BC235B2008EFCA2 /* achievements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AED959BE2BC235B2008EFCA2 /* achievements.cpp */; };
+		AED959C22BC235B2008EFCA2 /* achievements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AED959BE2BC235B2008EFCA2 /* achievements.cpp */; };
 		AEDCB5CD0D4ADB86004CB40E /* lua_monsters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDCB5CB0D4ADB86004CB40E /* lua_monsters.cpp */; };
 		AEDCB5DC0D4AEC4D004CB40E /* lua_projectiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDCB5DA0D4AEC4D004CB40E /* lua_projectiles.cpp */; };
 		AEDF1A151416FE2200183689 /* HTTP.h in Headers */ = {isa = PBXBuildFile; fileRef = AEDF1A121416FE2200183689 /* HTTP.h */; };
@@ -1797,6 +2269,19 @@
 		C13C71EA1B3FB4C500F1188D /* DefaultStringSets.h in Headers */ = {isa = PBXBuildFile; fileRef = C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		AE8729BF2BD1FBEA00426095 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				AE8729CD2BD1FDAC00426095 /* libsteam_api.dylib in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SdlMetaserverClientUi.cpp; path = ../Source_Files/Network/Metaserver/SdlMetaserverClientUi.cpp; sourceTree = SOURCE_ROOT; };
 		270D534B0FCB417500482ED4 /* OGL_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Blitter.h; sourceTree = "<group>"; };
@@ -1903,6 +2388,11 @@
 		AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Blitter.cpp; sourceTree = "<group>"; };
 		AE005FD30EE2D6DE007FE7C6 /* screen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = screen.cpp; sourceTree = "<group>"; };
 		AE0E4EC1141D148F00AAA02F /* Marathon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Marathon.icns; path = AppStore/Marathon/Marathon.icns; sourceTree = "<group>"; };
+		AE120B8F2BC76745001873DD /* steamshim_parent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = steamshim_parent.cpp; path = ../../Steam/steamshim_parent.cpp; sourceTree = "<group>"; };
+		AE120B942BC77447001873DD /* libsteam_api.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsteam_api.dylib; path = "../vcpkg/installed-x64-osx/x64-osx/lib/libsteam_api.dylib"; sourceTree = SOURCE_ROOT; };
+		AE120D642BC77645001873DD /* Classic Marathon Steam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Classic Marathon Steam.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE120D662BC776CE001873DD /* steamshim_child.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = steamshim_child.c; path = ../Source_Files/Misc/steamshim_child.c; sourceTree = "<group>"; };
+		AE120D682BC776E7001873DD /* steamshim_child.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = steamshim_child.h; path = ../Source_Files/Misc/steamshim_child.h; sourceTree = "<group>"; };
 		AE171BCC2A59F6EE00A4D3FC /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../Source_Files/main.cpp; sourceTree = "<group>"; };
 		AE1F1B912662C5A500E6390E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AE1F1B922662C5A500E6390E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = AppStore/Marathon/en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -1926,6 +2416,7 @@
 		AE51545F0D46E84A00506B58 /* lua_templates.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_templates.h; sourceTree = "<group>"; };
 		AE5604DD086F6DF100D9797C /* network_capabilities.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network_capabilities.cpp; path = ../Source_Files/Network/network_capabilities.cpp; sourceTree = SOURCE_ROOT; };
 		AE5604E0086F6E0D00D9797C /* network_capabilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = network_capabilities.h; path = ../Source_Files/Network/network_capabilities.h; sourceTree = SOURCE_ROOT; };
+		AE5A16B42BCF634900931FEE /* Steamshim.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Steamshim.entitlements; sourceTree = "<group>"; };
 		AE601F060B927C25009F881C /* Decoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Decoder.cpp; sourceTree = "<group>"; };
 		AE601F080B927C25009F881C /* SndfileDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SndfileDecoder.cpp; sourceTree = "<group>"; };
 		AE601F100B927C51009F881C /* Decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Decoder.h; sourceTree = "<group>"; };
@@ -2012,6 +2503,7 @@
 		AE7C21D00BFF67FD00CE63EC /* language_definition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = language_definition.h; sourceTree = "<group>"; };
 		AE7C21D40BFF686200CE63EC /* Update.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Update.h; path = ../Source_Files/Network/Update.h; sourceTree = "<group>"; };
 		AE7C21D50BFF688000CE63EC /* Update.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Update.cpp; path = ../Source_Files/Network/Update.cpp; sourceTree = "<group>"; };
+		AE8729C12BD1FBEA00426095 /* Classic Marathon Launcher */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Classic Marathon Launcher"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE941DE713E783F30077218A /* Info-AlephOne-Xcode4.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-AlephOne-Xcode4.plist"; sourceTree = "<group>"; };
 		AE96370A2A39577800DE43FF /* lua_music.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = lua_music.h; sourceTree = "<group>"; };
 		AE96370B2A39578600DE43FF /* lua_music.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_music.cpp; sourceTree = "<group>"; };
@@ -2049,6 +2541,10 @@
 		AEC3C89609AD68AE003258E4 /* Aleph One.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Aleph One.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
+		AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = powered_by_alephone_h.h; path = ../Source_Files/Misc/powered_by_alephone_h.h; sourceTree = "<group>"; };
+		AED959B02BC23591008EFCA2 /* m1_achievements.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = m1_achievements.lua; path = ../Source_Files/Misc/m1_achievements.lua; sourceTree = "<group>"; };
+		AED959B12BC23591008EFCA2 /* achievements.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = achievements.h; path = ../Source_Files/Misc/achievements.h; sourceTree = "<group>"; };
+		AED959BE2BC235B2008EFCA2 /* achievements.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = achievements.cpp; path = ../Source_Files/Misc/achievements.cpp; sourceTree = "<group>"; };
 		AEDCB5CB0D4ADB86004CB40E /* lua_monsters.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_monsters.cpp; sourceTree = "<group>"; };
 		AEDCB5CC0D4ADB86004CB40E /* lua_monsters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_monsters.h; sourceTree = "<group>"; };
 		AEDCB5DA0D4AEC4D004CB40E /* lua_projectiles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_projectiles.cpp; sourceTree = "<group>"; };
@@ -2324,6 +2820,25 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		AE120D522BC77645001873DD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE120D532BC77645001873DD /* CoreMedia.framework in Frameworks */,
+				AE120D542BC77645001873DD /* libz.tbd in Frameworks */,
+				AE120D552BC77645001873DD /* Cocoa.framework in Frameworks */,
+				AE120D562BC77645001873DD /* libcurl.tbd in Frameworks */,
+				AE120D572BC77645001873DD /* AudioToolbox.framework in Frameworks */,
+				AE120D582BC77645001873DD /* Security.framework in Frameworks */,
+				AE120D592BC77645001873DD /* OpenGL.framework in Frameworks */,
+				AE120D5A2BC77645001873DD /* IOKit.framework in Frameworks */,
+				AE120D5B2BC77645001873DD /* Carbon.framework in Frameworks */,
+				AE120D5C2BC77645001873DD /* CoreAudio.framework in Frameworks */,
+				AE120D5D2BC77645001873DD /* ForceFeedback.framework in Frameworks */,
+				AE120D5E2BC77645001873DD /* AudioUnit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AE505CEE141D45E600915344 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -2340,6 +2855,14 @@
 				AE1F1BA22662C6A300E6390E /* CoreAudio.framework in Frameworks */,
 				AE1F1BA82662C6AB00E6390E /* ForceFeedback.framework in Frameworks */,
 				AE1F1B992662C69A00E6390E /* AudioUnit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AE8729BE2BD1FBEA00426095 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE8729C92BD1FBFA00426095 /* libsteam_api.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2410,6 +2933,8 @@
 				AEFD87C313EB84CF00C1E687 /* Classic Marathon.app */,
 				AE505D0B141D45E600915344 /* Classic Marathon 2.app */,
 				AEB4A2AD14296CAE00537AE7 /* Classic Marathon Infinity.app */,
+				AE120D642BC77645001873DD /* Classic Marathon Steam.app */,
+				AE8729C12BD1FBEA00426095 /* Classic Marathon Launcher */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2440,8 +2965,10 @@
 				AEA85F5524DF276600BB7827 /* Marathon 2.entitlements */,
 				AEA85F5424DF275300BB7827 /* Marathon.entitlements */,
 				AEA85F5324DF26F800BB7827 /* Aleph One.entitlements */,
+				AE5A16B42BCF634900931FEE /* Steamshim.entitlements */,
 				F52214490136C0C401000001 /* Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
+				AE120B892BC76720001873DD /* Steamshim */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 				AE9974FC2661D49E00DDD370 /* Frameworks */,
 			);
@@ -2522,6 +3049,15 @@
 				27EFC4C81A7D9A2F00A95592 /* Marathon.entitlements */,
 			);
 			name = Marathon;
+			sourceTree = "<group>";
+		};
+		AE120B892BC76720001873DD /* Steamshim */ = {
+			isa = PBXGroup;
+			children = (
+				AE120B942BC77447001873DD /* libsteam_api.dylib */,
+				AE120B8F2BC76745001873DD /* steamshim_parent.cpp */,
+			);
+			path = Steamshim;
 			sourceTree = "<group>";
 		};
 		AE505D0F141D466F00915344 /* Marathon 2 */ = {
@@ -2741,6 +3277,7 @@
 			children = (
 				F522144F0136C0C401000001 /* Headers */,
 				F5CC94290240DB8801A80001 /* SDL */,
+				AED959BE2BC235B2008EFCA2 /* achievements.cpp */,
 				F5A00022023FDA1601A80001 /* ActionQueues.cpp */,
 				EFEF1AC504AF552D00C3A19D /* CircularByteBuffer.cpp */,
 				AEC6C89B0879A5DE0055EC57 /* Console.cpp */,
@@ -2756,6 +3293,7 @@
 				27FC2E091A7DF51E0057BF42 /* Statistics.cpp */,
 				F52212590136A6FD01000001 /* vbl.cpp */,
 				F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */,
+				AE120D662BC776CE001873DD /* steamshim_child.c */,
 			);
 			name = Misc;
 			sourceTree = "<group>";
@@ -2763,6 +3301,7 @@
 		F522144F0136C0C401000001 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				AED959B12BC23591008EFCA2 /* achievements.h */,
 				C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */,
 				276BECFE1A846FD900AE52F4 /* AlephSansMono-Bold.h */,
 				276BED2B1A8470A900AE52F4 /* binders.h */,
@@ -2770,8 +3309,10 @@
 				276BED001A846FD900AE52F4 /* CourierPrimeBold.h */,
 				276BED011A846FD900AE52F4 /* CourierPrimeBoldItalic.h */,
 				276BED021A846FD900AE52F4 /* CourierPrimeItalic.h */,
+				AED959B02BC23591008EFCA2 /* m1_achievements.lua */,
 				276BED2C1A8470A900AE52F4 /* PlayerImage_sdl.h */,
 				276BED211A84701E00AE52F4 /* powered_by_alephone.h */,
+				AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */,
 				276BED031A846FD900AE52F4 /* ProFontAO.h */,
 				276BED1C1A846FF600AE52F4 /* VecOps.h */,
 				AE48F3551421900900051D61 /* Statistics.h */,
@@ -2797,6 +3338,7 @@
 				F522125A0136A6FD01000001 /* vbl.h */,
 				EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */,
 				F5D11AE40326A93E01000105 /* alephversion.h */,
+				AE120D682BC776E7001873DD /* steamshim_child.h */,
 			);
 			name = Headers;
 			sourceTree = "<group>";
@@ -3267,6 +3809,221 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		AE120B982BC77645001873DD /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE120B992BC77645001873DD /* PlayerName.h in Headers */,
+				AE120B9A2BC77645001873DD /* Random.h in Headers */,
+				AE120B9B2BC77645001873DD /* game_errors.h in Headers */,
+				AE120B9C2BC77645001873DD /* interface.h in Headers */,
+				AE120B9D2BC77645001873DD /* interface_menus.h in Headers */,
+				AE120B9E2BC77645001873DD /* Decoder.h in Headers */,
+				AE120B9F2BC77645001873DD /* key_definitions.h in Headers */,
+				AE120BA02BC77645001873DD /* preferences.h in Headers */,
+				AE120BA12BC77645001873DD /* progress.h in Headers */,
+				AE120BA22BC77645001873DD /* sdl_dialogs.h in Headers */,
+				AE120BA32BC77645001873DD /* sdl_network.h in Headers */,
+				AE120BA42BC77645001873DD /* sdl_widgets.h in Headers */,
+				AE120BA52BC77645001873DD /* shell.h in Headers */,
+				AE120BA62BC77645001873DD /* vbl_definitions.h in Headers */,
+				AE120BA72BC77645001873DD /* vbl.h in Headers */,
+				AE120BA82BC77645001873DD /* byte_swapping.h in Headers */,
+				AE120BA92BC77645001873DD /* csalerts.h in Headers */,
+				AE120BAA2BC77645001873DD /* cscluts.h in Headers */,
+				AE120BAB2BC77645001873DD /* csdialogs.h in Headers */,
+				AE120BAC2BC77645001873DD /* cseries.h in Headers */,
+				AE120BAD2BC77645001873DD /* Scenario.h in Headers */,
+				AE120BAE2BC77645001873DD /* csfonts.h in Headers */,
+				AE120BAF2BC77645001873DD /* csmacros.h in Headers */,
+				AE120BB02BC77645001873DD /* csmisc.h in Headers */,
+				AE120BB12BC77645001873DD /* CourierPrimeBold.h in Headers */,
+				AE120BB22BC77645001873DD /* cspixels.h in Headers */,
+				AE120BB32BC77645001873DD /* csstrings.h in Headers */,
+				AE120BB42BC77645001873DD /* cstypes.h in Headers */,
+				AE120BB52BC77645001873DD /* network.h in Headers */,
+				AE120BB62BC77645001873DD /* network_games.h in Headers */,
+				AE120BB72BC77645001873DD /* IMG_savepng.h in Headers */,
+				AE120BB82BC77645001873DD /* Model3D.h in Headers */,
+				AE120BB92BC77645001873DD /* ModelRenderer.h in Headers */,
+				AE120BBA2BC77645001873DD /* StudioLoader.h in Headers */,
+				AE120BBB2BC77645001873DD /* WavefrontLoader.h in Headers */,
+				AE120BBC2BC77645001873DD /* network_dialog_widgets_sdl.h in Headers */,
+				AE120BBD2BC77645001873DD /* Dim3_Loader.h in Headers */,
+				AE120BBE2BC77645001873DD /* FFmpegDecoder.h in Headers */,
+				AE120BBF2BC77645001873DD /* SW_Texture_Extras.h in Headers */,
+				AE120BC02BC77645001873DD /* network_dialogs.h in Headers */,
+				AE120BC12BC77645001873DD /* network_lookup_sdl.h in Headers */,
+				AE120BC22BC77645001873DD /* ActionQueues.h in Headers */,
+				AE120BC32BC77645001873DD /* CircularQueue.h in Headers */,
+				AE120BC42BC77645001873DD /* preferences_widgets_sdl.h in Headers */,
+				AE120BC52BC77645001873DD /* network_distribution_types.h in Headers */,
+				AE120BC62BC77645001873DD /* OGL_LoadScreen.h in Headers */,
+				AE120BC72BC77645001873DD /* crc.h in Headers */,
+				AE120BC82BC77645001873DD /* extensions.h in Headers */,
+				AE120BC92BC77645001873DD /* FileHandler.h in Headers */,
+				AE120BCA2BC77645001873DD /* find_files.h in Headers */,
+				AE120BCB2BC77645001873DD /* game_wad.h in Headers */,
+				AE120BCC2BC77645001873DD /* Packing.h in Headers */,
+				AE120BCD2BC77645001873DD /* resource_manager.h in Headers */,
+				AE120BCE2BC77645001873DD /* preference_dialogs.h in Headers */,
+				AE120BCF2BC77645001873DD /* tags.h in Headers */,
+				AE120BD02BC77645001873DD /* wad.h in Headers */,
+				AE120BD12BC77645001873DD /* wad_prefs.h in Headers */,
+				AE120BD22BC77645001873DD /* dynamic_limits.h in Headers */,
+				AE120BD32BC77645001873DD /* editor.h in Headers */,
+				AE120BD42BC77645001873DD /* effect_definitions.h in Headers */,
+				AE120BD52BC77645001873DD /* effects.h in Headers */,
+				AE120BD62BC77645001873DD /* flood_map.h in Headers */,
+				AE120BD72BC77645001873DD /* item_definitions.h in Headers */,
+				AE120BD82BC77645001873DD /* items.h in Headers */,
+				AE120BD92BC77645001873DD /* SDL_rwops_ostream.h in Headers */,
+				AE120BDA2BC77645001873DD /* lightsource.h in Headers */,
+				AE120BDB2BC77645001873DD /* map.h in Headers */,
+				AE120BDC2BC77645001873DD /* CourierPrimeBoldItalic.h in Headers */,
+				AE120BDD2BC77645001873DD /* confpaths.h in Headers */,
+				AE120BDE2BC77645001873DD /* media.h in Headers */,
+				AE120BDF2BC77645001873DD /* media_definitions.h in Headers */,
+				AE120BE02BC77645001873DD /* monster_definitions.h in Headers */,
+				AE120BE12BC77645001873DD /* monsters.h in Headers */,
+				AE120BE22BC77645001873DD /* physics_models.h in Headers */,
+				AE120BE32BC77645001873DD /* platform_definitions.h in Headers */,
+				AE120BE42BC77645001873DD /* mytm.h in Headers */,
+				AE120BE52BC77645001873DD /* CourierPrime.h in Headers */,
+				AE120BE62BC77645001873DD /* InfoTree.h in Headers */,
+				AE120BE72BC77645001873DD /* platforms.h in Headers */,
+				AE120BE82BC77645001873DD /* player.h in Headers */,
+				AE120BE92BC77645001873DD /* projectile_definitions.h in Headers */,
+				AE120BEA2BC77645001873DD /* config.h in Headers */,
+				AE120BEB2BC77645001873DD /* projectiles.h in Headers */,
+				AE120BEC2BC77645001873DD /* scenery.h in Headers */,
+				AE120BED2BC77645001873DD /* scenery_definitions.h in Headers */,
+				AE120BEE2BC77645001873DD /* weapon_definitions.h in Headers */,
+				AE120BEF2BC77645001873DD /* weapons.h in Headers */,
+				AE120BF02BC77645001873DD /* world.h in Headers */,
+				AE120BF12BC77645001873DD /* mouse.h in Headers */,
+				AE120BF22BC77645001873DD /* AnimatedTextures.h in Headers */,
+				AE120BF32BC77645001873DD /* collection_definition.h in Headers */,
+				AE120BF42BC77645001873DD /* Crosshairs.h in Headers */,
+				AE120BF52BC77645001873DD /* low_level_textures.h in Headers */,
+				AE120BF62BC77645001873DD /* OGL_Faders.h in Headers */,
+				AE120BF72BC77645001873DD /* OGL_Render.h in Headers */,
+				AE120BF82BC77645001873DD /* OGL_Setup.h in Headers */,
+				AE120BF92BC77645001873DD /* OGL_Textures.h in Headers */,
+				AE120BFA2BC77645001873DD /* Rasterizer.h in Headers */,
+				AE120BFB2BC77645001873DD /* Rasterizer_OGL.h in Headers */,
+				AE120BFC2BC77645001873DD /* Rasterizer_SW.h in Headers */,
+				AE120BFD2BC77645001873DD /* render.h in Headers */,
+				AE120BFE2BC77645001873DD /* RenderPlaceObjs.h in Headers */,
+				AE120BFF2BC77645001873DD /* RenderRasterize.h in Headers */,
+				AE120C002BC77645001873DD /* RenderSortPoly.h in Headers */,
+				AE120C012BC77645001873DD /* ProFontAO.h in Headers */,
+				AE120C022BC77645001873DD /* RenderVisTree.h in Headers */,
+				AE120C032BC77645001873DD /* scottish_textures.h in Headers */,
+				AE120C042BC77645001873DD /* shape_definitions.h in Headers */,
+				AE120C052BC77645001873DD /* achievements.h in Headers */,
+				AE120C062BC77645001873DD /* WadImageCache.h in Headers */,
+				AE120C072BC77645001873DD /* shape_descriptors.h in Headers */,
+				AE120C082BC77645001873DD /* textures.h in Headers */,
+				AE120C092BC77645001873DD /* ChaseCam.h in Headers */,
+				AE120C0A2BC77645001873DD /* sdl_resize.h in Headers */,
+				AE120C0B2BC77645001873DD /* computer_interface.h in Headers */,
+				AE120C0C2BC77645001873DD /* PlayerImage_sdl.h in Headers */,
+				AE120C0D2BC77645001873DD /* fades.h in Headers */,
+				AE120C0E2BC77645001873DD /* FontHandler.h in Headers */,
+				AE120C0F2BC77645001873DD /* game_window.h in Headers */,
+				AE120C102BC77645001873DD /* HUDRenderer.h in Headers */,
+				AE120C112BC77645001873DD /* HUDRenderer_OGL.h in Headers */,
+				AE120C122BC77645001873DD /* HUDRenderer_SW.h in Headers */,
+				AE120C132BC77645001873DD /* powered_by_alephone_h.h in Headers */,
+				AE120C142BC77645001873DD /* OGL_FBO.h in Headers */,
+				AE120C152BC77645001873DD /* images.h in Headers */,
+				AE120C162BC77645001873DD /* motion_sensor.h in Headers */,
+				AE120C172BC77645001873DD /* powered_by_alephone.h in Headers */,
+				AE120C182BC77645001873DD /* overhead_map.h in Headers */,
+				AE120C192BC77645001873DD /* OverheadMap_OGL.h in Headers */,
+				AE120C1A2BC77645001873DD /* OverheadMap_SDL.h in Headers */,
+				AE120C1B2BC77645001873DD /* OverheadMapRenderer.h in Headers */,
+				AE120C1C2BC77645001873DD /* screen.h in Headers */,
+				AE120C1D2BC77645001873DD /* screen_definitions.h in Headers */,
+				AE120C1E2BC77645001873DD /* screen_drawing.h in Headers */,
+				AE120C1F2BC77645001873DD /* screen_shared.h in Headers */,
+				AE120C202BC77645001873DD /* sdl_fonts.h in Headers */,
+				AE120C212BC77645001873DD /* CourierPrimeItalic.h in Headers */,
+				AE120C222BC77645001873DD /* TextLayoutHelper.h in Headers */,
+				AE120C232BC77645001873DD /* TextStrings.h in Headers */,
+				AE120C242BC77645001873DD /* ViewControl.h in Headers */,
+				AE120C252BC77645001873DD /* song_definitions.h in Headers */,
+				AE120C262BC77645001873DD /* OGL_Headers.h in Headers */,
+				AE120C272BC77645001873DD /* SndfileDecoder.h in Headers */,
+				AE120C282BC77645001873DD /* sound_definitions.h in Headers */,
+				AE120C292BC77645001873DD /* DefaultStringSets.h in Headers */,
+				AE120C2A2BC77645001873DD /* XML_LevelScript.h in Headers */,
+				AE120C2B2BC77645001873DD /* XML_ParseTreeRoot.h in Headers */,
+				AE120C2C2BC77645001873DD /* alephversion.h in Headers */,
+				AE120C2D2BC77645001873DD /* Logging.h in Headers */,
+				AE120D692BC776E7001873DD /* steamshim_child.h in Headers */,
+				AE120C2E2BC77645001873DD /* OGL_Model_Def.h in Headers */,
+				AE120C2F2BC77645001873DD /* OGL_Subst_Texture_Def.h in Headers */,
+				AE120C302BC77645001873DD /* OGL_Texture_Def.h in Headers */,
+				AE120C312BC77645001873DD /* network_star.h in Headers */,
+				AE120C322BC77645001873DD /* NetworkGameProtocol.h in Headers */,
+				AE120C332BC77645001873DD /* RingGameProtocol.h in Headers */,
+				AE120C342BC77645001873DD /* StarGameProtocol.h in Headers */,
+				AE120C352BC77645001873DD /* AStream.h in Headers */,
+				AE120C362BC77645001873DD /* TickBasedCircularQueue.h in Headers */,
+				AE120C372BC77645001873DD /* WindowedNthElementFinder.h in Headers */,
+				AE120C382BC77645001873DD /* thread_priority_sdl.h in Headers */,
+				AE120C392BC77645001873DD /* network_data_formats.h in Headers */,
+				AE120C3A2BC77645001873DD /* QuickSave.h in Headers */,
+				AE120C3B2BC77645001873DD /* SDL_netx.h in Headers */,
+				AE120C3C2BC77645001873DD /* SSLP_API.h in Headers */,
+				AE120C3D2BC77645001873DD /* SSLP_Protocol.h in Headers */,
+				AE120C3E2BC77645001873DD /* CircularByteBuffer.h in Headers */,
+				AE120C3F2BC77645001873DD /* metaserver_dialogs.h in Headers */,
+				AE120C402BC77645001873DD /* metaserver_messages.h in Headers */,
+				AE120C412BC77645001873DD /* network_metaserver.h in Headers */,
+				AE120C422BC77645001873DD /* CommunicationsChannel.h in Headers */,
+				AE120C432BC77645001873DD /* Message.h in Headers */,
+				AE120C442BC77645001873DD /* MessageDispatcher.h in Headers */,
+				AE120C452BC77645001873DD /* MessageHandler.h in Headers */,
+				AE120C462BC77645001873DD /* AlephSansMono-Bold.h in Headers */,
+				AE120C472BC77645001873DD /* MessageInflater.h in Headers */,
+				AE120C482BC77645001873DD /* network_capabilities.h in Headers */,
+				AE120C492BC77645001873DD /* shared_widgets.h in Headers */,
+				AE120C4A2BC77645001873DD /* Console.h in Headers */,
+				AE120C4B2BC77645001873DD /* ImageLoader.h in Headers */,
+				AE120C4C2BC77645001873DD /* DDS.h in Headers */,
+				AE120C4D2BC77645001873DD /* Music.h in Headers */,
+				AE120C4E2BC77645001873DD /* cspaths.h in Headers */,
+				AE120C4F2BC77645001873DD /* SoundFile.h in Headers */,
+				AE120C502BC77645001873DD /* SoundManager.h in Headers */,
+				AE120C512BC77645001873DD /* binders.h in Headers */,
+				AE120C522BC77645001873DD /* SoundManagerEnums.h in Headers */,
+				AE120C532BC77645001873DD /* joystick.h in Headers */,
+				AE120C542BC77645001873DD /* lua_serialize.h in Headers */,
+				AE120C552BC77645001873DD /* BStream.h in Headers */,
+				AE120C562BC77645001873DD /* OGL_Blitter.h in Headers */,
+				AE120C572BC77645001873DD /* HUDRenderer_Lua.h in Headers */,
+				AE120C582BC77645001873DD /* Image_Blitter.h in Headers */,
+				AE120C592BC77645001873DD /* Shape_Blitter.h in Headers */,
+				AE120C5A2BC77645001873DD /* OGL_Shader.h in Headers */,
+				AE120C5B2BC77645001873DD /* vec3.h in Headers */,
+				AE120C5C2BC77645001873DD /* Plugins.h in Headers */,
+				AE120C5D2BC77645001873DD /* Rasterizer_Shader.h in Headers */,
+				AE120C5E2BC77645001873DD /* RenderRasterize_Shader.h in Headers */,
+				AE120C5F2BC77645001873DD /* SDL_rwops_zzip.h in Headers */,
+				AE120C602BC77645001873DD /* ReplacementSounds.h in Headers */,
+				AE120C612BC77645001873DD /* FilmProfile.h in Headers */,
+				AE120C622BC77645001873DD /* VecOps.h in Headers */,
+				AE120C632BC77645001873DD /* HTTP.h in Headers */,
+				AE120C642BC77645001873DD /* Statistics.h in Headers */,
+				AE120C652BC77645001873DD /* Movie.h in Headers */,
+				AE120C662BC77645001873DD /* SDL_ffmpeg.h in Headers */,
+				AE120C672BC77645001873DD /* lctype.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AE505B3B141D45E600915344 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -3379,6 +4136,7 @@
 				AE505B9E141D45E600915344 /* RenderVisTree.h in Headers */,
 				AE505B9F141D45E600915344 /* scottish_textures.h in Headers */,
 				AE505BA0141D45E600915344 /* shape_definitions.h in Headers */,
+				AED959BC2BC23591008EFCA2 /* achievements.h in Headers */,
 				278E0C791AA3CD4500FA93B7 /* WadImageCache.h in Headers */,
 				AE505BA1141D45E600915344 /* shape_descriptors.h in Headers */,
 				AE505BA2141D45E600915344 /* textures.h in Headers */,
@@ -3392,6 +4150,7 @@
 				AE505BA8141D45E600915344 /* HUDRenderer.h in Headers */,
 				AE505BA9141D45E600915344 /* HUDRenderer_OGL.h in Headers */,
 				AE505BAA141D45E600915344 /* HUDRenderer_SW.h in Headers */,
+				AED959B42BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */,
 				2710CC671B8F94FC00CE2EAE /* OGL_FBO.h in Headers */,
 				AE505BAB141D45E600915344 /* images.h in Headers */,
 				AE505BAC141D45E600915344 /* motion_sensor.h in Headers */,
@@ -3591,6 +4350,7 @@
 				AEB4A13E14296CAE00537AE7 /* RenderVisTree.h in Headers */,
 				AEB4A13F14296CAE00537AE7 /* scottish_textures.h in Headers */,
 				AEB4A14014296CAE00537AE7 /* shape_definitions.h in Headers */,
+				AED959BD2BC23591008EFCA2 /* achievements.h in Headers */,
 				278E0C7A1AA3CD4500FA93B7 /* WadImageCache.h in Headers */,
 				AEB4A14114296CAE00537AE7 /* shape_descriptors.h in Headers */,
 				AEB4A14214296CAE00537AE7 /* textures.h in Headers */,
@@ -3604,6 +4364,7 @@
 				AEB4A14814296CAE00537AE7 /* HUDRenderer.h in Headers */,
 				AEB4A14914296CAE00537AE7 /* HUDRenderer_OGL.h in Headers */,
 				AEB4A14A14296CAE00537AE7 /* HUDRenderer_SW.h in Headers */,
+				AED959B52BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */,
 				2710CC681B8F94FC00CE2EAE /* OGL_FBO.h in Headers */,
 				AEB4A14B14296CAE00537AE7 /* images.h in Headers */,
 				AEB4A14C14296CAE00537AE7 /* motion_sensor.h in Headers */,
@@ -3803,6 +4564,7 @@
 				AEC3C77209AD68AC003258E4 /* scottish_textures.h in Headers */,
 				AEC3C77309AD68AC003258E4 /* shape_definitions.h in Headers */,
 				276BED141A846FD900AE52F4 /* CourierPrimeItalic.h in Headers */,
+				AED959BA2BC23591008EFCA2 /* achievements.h in Headers */,
 				AEC3C77409AD68AC003258E4 /* shape_descriptors.h in Headers */,
 				AEC3C77609AD68AC003258E4 /* textures.h in Headers */,
 				AEC3C77709AD68AC003258E4 /* ChaseCam.h in Headers */,
@@ -3816,6 +4578,7 @@
 				276BED0C1A846FD900AE52F4 /* CourierPrimeBold.h in Headers */,
 				AEC3C77E09AD68AC003258E4 /* HUDRenderer_OGL.h in Headers */,
 				AEC3C77F09AD68AC003258E4 /* HUDRenderer_SW.h in Headers */,
+				AED959B22BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */,
 				AEC3C78009AD68AC003258E4 /* images.h in Headers */,
 				AEC3C78209AD68AC003258E4 /* motion_sensor.h in Headers */,
 				AEC3C78309AD68AC003258E4 /* overhead_map.h in Headers */,
@@ -4015,6 +4778,7 @@
 				AEFD864C13EB84CF00C1E687 /* RenderVisTree.h in Headers */,
 				AEFD864D13EB84CF00C1E687 /* scottish_textures.h in Headers */,
 				AEFD864E13EB84CF00C1E687 /* shape_definitions.h in Headers */,
+				AED959BB2BC23591008EFCA2 /* achievements.h in Headers */,
 				278E0C781AA3CD4500FA93B7 /* WadImageCache.h in Headers */,
 				AEFD864F13EB84CF00C1E687 /* shape_descriptors.h in Headers */,
 				AEFD865013EB84CF00C1E687 /* textures.h in Headers */,
@@ -4028,6 +4792,7 @@
 				AEFD865613EB84CF00C1E687 /* HUDRenderer.h in Headers */,
 				AEFD865713EB84CF00C1E687 /* HUDRenderer_OGL.h in Headers */,
 				AEFD865813EB84CF00C1E687 /* HUDRenderer_SW.h in Headers */,
+				AED959B32BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */,
 				2710CC661B8F94FC00CE2EAE /* OGL_FBO.h in Headers */,
 				AEFD865913EB84CF00C1E687 /* images.h in Headers */,
 				AEFD865A13EB84CF00C1E687 /* motion_sensor.h in Headers */,
@@ -4118,6 +4883,25 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		AE120B972BC77645001873DD /* Marathon Steam */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AE120D612BC77645001873DD /* Build configuration list for PBXNativeTarget "Marathon Steam" */;
+			buildPhases = (
+				AE120B982BC77645001873DD /* Headers */,
+				AE120C682BC77645001873DD /* Resources */,
+				AE120C752BC77645001873DD /* Sources */,
+				AE120D522BC77645001873DD /* Frameworks */,
+				AE120D602BC77645001873DD /* Insert Version */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Marathon Steam";
+			productName = "SDL Application";
+			productReference = AE120D642BC77645001873DD /* Classic Marathon Steam.app */;
+			productType = "com.apple.product-type.application";
+		};
 		AE505B3A141D45E600915344 /* Marathon 2 */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = AE505D07141D45E600915344 /* Build configuration list for PBXNativeTarget "Marathon 2" */;
@@ -4137,6 +4921,23 @@
 			productName = "SDL Application";
 			productReference = AE505D0B141D45E600915344 /* Classic Marathon 2.app */;
 			productType = "com.apple.product-type.application";
+		};
+		AE8729C02BD1FBEA00426095 /* Classic Marathon Launcher */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AE8729C52BD1FBEA00426095 /* Build configuration list for PBXNativeTarget "Classic Marathon Launcher" */;
+			buildPhases = (
+				AE8729BF2BD1FBEA00426095 /* CopyFiles */,
+				AE8729BD2BD1FBEA00426095 /* Sources */,
+				AE8729BE2BD1FBEA00426095 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Classic Marathon Launcher";
+			productName = "Classic Marathon Launcher";
+			productReference = AE8729C12BD1FBEA00426095 /* Classic Marathon Launcher */;
+			productType = "com.apple.product-type.tool";
 		};
 		AEB4A0DA14296CAE00537AE7 /* Marathon Infinity */ = {
 			isa = PBXNativeTarget;
@@ -4213,6 +5014,9 @@
 							};
 						};
 					};
+					AE8729C02BD1FBEA00426095 = {
+						CreatedOnToolsVersion = 15.3;
+					};
 					AEB4A0DA14296CAE00537AE7 = {
 						SystemCapabilities = {
 							com.apple.Sandbox = {
@@ -4245,11 +5049,32 @@
 				AEFD85E813EB84CF00C1E687 /* Marathon */,
 				AE505B3A141D45E600915344 /* Marathon 2 */,
 				AEB4A0DA14296CAE00537AE7 /* Marathon Infinity */,
+				AE120B972BC77645001873DD /* Marathon Steam */,
+				AE8729C02BD1FBEA00426095 /* Classic Marathon Launcher */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		AE120C682BC77645001873DD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE120C692BC77645001873DD /* ImagesIcon.icns in Resources */,
+				AE120C6A2BC77645001873DD /* ShapesIcon.icns in Resources */,
+				AE120C6B2BC77645001873DD /* SoundsIcon.icns in Resources */,
+				AE120C6C2BC77645001873DD /* FilmIcon.icns in Resources */,
+				AE120C6D2BC77645001873DD /* m1_achievements.lua in Resources */,
+				AE120C6E2BC77645001873DD /* MapIcon.icns in Resources */,
+				AE120C6F2BC77645001873DD /* MMLIcon.icns in Resources */,
+				AE120C702BC77645001873DD /* MusakIcon.icns in Resources */,
+				AE120C712BC77645001873DD /* PhysIcon.icns in Resources */,
+				AE120C722BC77645001873DD /* SaveIcon.icns in Resources */,
+				AE120C732BC77645001873DD /* Marathon.icns in Resources */,
+				AE120C742BC77645001873DD /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AE505C01141D45E600915344 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -4258,6 +5083,7 @@
 				AE505C03141D45E600915344 /* ShapesIcon.icns in Resources */,
 				AE505C04141D45E600915344 /* SoundsIcon.icns in Resources */,
 				AE505C05141D45E600915344 /* FilmIcon.icns in Resources */,
+				AED959B82BC23591008EFCA2 /* m1_achievements.lua in Resources */,
 				AE505C06141D45E600915344 /* MapIcon.icns in Resources */,
 				AE505C07141D45E600915344 /* MMLIcon.icns in Resources */,
 				AE505C08141D45E600915344 /* MusakIcon.icns in Resources */,
@@ -4276,6 +5102,7 @@
 				AEB4A1A414296CAE00537AE7 /* ShapesIcon.icns in Resources */,
 				AEB4A1A514296CAE00537AE7 /* SoundsIcon.icns in Resources */,
 				AEB4A1A614296CAE00537AE7 /* FilmIcon.icns in Resources */,
+				AED959B92BC23591008EFCA2 /* m1_achievements.lua in Resources */,
 				AEB4A1A714296CAE00537AE7 /* MapIcon.icns in Resources */,
 				AEB4A1A814296CAE00537AE7 /* MMLIcon.icns in Resources */,
 				AEB4A1A914296CAE00537AE7 /* MusakIcon.icns in Resources */,
@@ -4294,6 +5121,7 @@
 				AEC3C7C409AD68AC003258E4 /* AlephOne.icns in Resources */,
 				AEC3C7C509AD68AC003258E4 /* ImagesIcon.icns in Resources */,
 				AEC3C7C609AD68AC003258E4 /* ShapesIcon.icns in Resources */,
+				AED959B62BC23591008EFCA2 /* m1_achievements.lua in Resources */,
 				AEC3C7C709AD68AC003258E4 /* SoundsIcon.icns in Resources */,
 				AEC3C7C809AD68AC003258E4 /* FilmIcon.icns in Resources */,
 				AEC3C7C909AD68AC003258E4 /* MapIcon.icns in Resources */,
@@ -4312,6 +5140,7 @@
 				AEFD86B213EB84CF00C1E687 /* ShapesIcon.icns in Resources */,
 				AEFD86B313EB84CF00C1E687 /* SoundsIcon.icns in Resources */,
 				AEFD86B413EB84CF00C1E687 /* FilmIcon.icns in Resources */,
+				AED959B72BC23591008EFCA2 /* m1_achievements.lua in Resources */,
 				AEFD86B513EB84CF00C1E687 /* MapIcon.icns in Resources */,
 				AEFD86B613EB84CF00C1E687 /* MMLIcon.icns in Resources */,
 				AEFD86B713EB84CF00C1E687 /* MusakIcon.icns in Resources */,
@@ -4339,6 +5168,18 @@
 			);
 			outputPaths = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "DISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\n";
+		};
+		AE120D602BC77645001873DD /* Insert Version */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 12;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Insert Version";
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "DISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\n";
@@ -4437,6 +5278,234 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		AE120C752BC77645001873DD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE120C762BC77645001873DD /* byte_swapping.cpp in Sources */,
+				AE120C772BC77645001873DD /* csalerts_sdl.cpp in Sources */,
+				AE120C782BC77645001873DD /* PortForward.cpp in Sources */,
+				AE120C792BC77645001873DD /* cscluts_sdl.cpp in Sources */,
+				AE120C7A2BC77645001873DD /* csmisc_sdl.cpp in Sources */,
+				AE120C7B2BC77645001873DD /* achievements.cpp in Sources */,
+				AE120C7C2BC77645001873DD /* game_errors.cpp in Sources */,
+				AE120C7D2BC77645001873DD /* interface.cpp in Sources */,
+				AE120C7E2BC77645001873DD /* PlayerName.cpp in Sources */,
+				AE120C7F2BC77645001873DD /* preferences.cpp in Sources */,
+				AE120C802BC77645001873DD /* sdl_dialogs.cpp in Sources */,
+				AE120C812BC77645001873DD /* sdl_widgets.cpp in Sources */,
+				AE120C822BC77645001873DD /* shell_misc.cpp in Sources */,
+				AE120C832BC77645001873DD /* shell.cpp in Sources */,
+				AE120C842BC77645001873DD /* vbl.cpp in Sources */,
+				AE120C852BC77645001873DD /* network_lookup_sdl.cpp in Sources */,
+				AE120C862BC77645001873DD /* network_udp.cpp in Sources */,
+				AE120C872BC77645001873DD /* network.cpp in Sources */,
+				AE120C882BC77645001873DD /* AudioPlayer.cpp in Sources */,
+				AE120C892BC77645001873DD /* cspaths_sdl.cpp in Sources */,
+				AE120C8A2BC77645001873DD /* network_games.cpp in Sources */,
+				AE120C8B2BC77645001873DD /* Model3D.cpp in Sources */,
+				AE120C8C2BC77645001873DD /* ModelRenderer.cpp in Sources */,
+				AE120C8D2BC77645001873DD /* StudioLoader.cpp in Sources */,
+				AE120C8E2BC77645001873DD /* WavefrontLoader.cpp in Sources */,
+				AE120C8F2BC77645001873DD /* csdialogs_sdl.cpp in Sources */,
+				AE120C902BC77645001873DD /* SDL_rwops_ostream.cpp in Sources */,
+				AE120C912BC77645001873DD /* mytm_sdl.cpp in Sources */,
+				AE120C922BC77645001873DD /* PlayerImage_sdl.cpp in Sources */,
+				AE120C932BC77645001873DD /* thread_priority_sdl_macosx.cpp in Sources */,
+				AE120C942BC77645001873DD /* network_data_formats.cpp in Sources */,
+				AE120C952BC77645001873DD /* network_dialog_widgets_sdl.cpp in Sources */,
+				AE120C962BC77645001873DD /* SDL_netx.cpp in Sources */,
+				AE120C972BC77645001873DD /* SSLP_limited.cpp in Sources */,
+				AE120C982BC77645001873DD /* network_dialogs.cpp in Sources */,
+				AE120C992BC77645001873DD /* Dim3_Loader.cpp in Sources */,
+				AE120C9A2BC77645001873DD /* preferences_widgets_sdl.cpp in Sources */,
+				AE120C9B2BC77645001873DD /* ActionQueues.cpp in Sources */,
+				AE120C9C2BC77645001873DD /* crc.cpp in Sources */,
+				AE120C9D2BC77645001873DD /* FileHandler.cpp in Sources */,
+				AE120C9E2BC77645001873DD /* find_files_sdl.cpp in Sources */,
+				AE120C9F2BC77645001873DD /* game_wad.cpp in Sources */,
+				AE120CA02BC77645001873DD /* import_definitions.cpp in Sources */,
+				AE120CA12BC77645001873DD /* preprocess_map_sdl.cpp in Sources */,
+				AE120CA22BC77645001873DD /* resource_manager.cpp in Sources */,
+				AE120CA32BC77645001873DD /* wad.cpp in Sources */,
+				AE120CA42BC77645001873DD /* wad_prefs.cpp in Sources */,
+				AE120CA52BC77645001873DD /* MusicPlayer.cpp in Sources */,
+				AE120CA62BC77645001873DD /* wad_sdl.cpp in Sources */,
+				AE120CA72BC77645001873DD /* devices.cpp in Sources */,
+				AE120CA82BC77645001873DD /* dynamic_limits.cpp in Sources */,
+				AE120CA92BC77645001873DD /* effects.cpp in Sources */,
+				AE120CAA2BC77645001873DD /* flood_map.cpp in Sources */,
+				AE120CAB2BC77645001873DD /* items.cpp in Sources */,
+				AE120CAC2BC77645001873DD /* lightsource.cpp in Sources */,
+				AE120CAD2BC77645001873DD /* map.cpp in Sources */,
+				AE120CAE2BC77645001873DD /* map_constructors.cpp in Sources */,
+				AE120CAF2BC77645001873DD /* marathon2.cpp in Sources */,
+				AE120CB02BC77645001873DD /* media.cpp in Sources */,
+				AE120CB12BC77645001873DD /* monsters.cpp in Sources */,
+				AE120CB22BC77645001873DD /* pathfinding.cpp in Sources */,
+				AE120CB32BC77645001873DD /* FFmpegDecoder.cpp in Sources */,
+				AE120CB42BC77645001873DD /* physics.cpp in Sources */,
+				AE120CB52BC77645001873DD /* placement.cpp in Sources */,
+				AE120CB62BC77645001873DD /* lua_ephemera.cpp in Sources */,
+				AE120CB72BC77645001873DD /* OpenALManager.cpp in Sources */,
+				AE120CB82BC77645001873DD /* platforms.cpp in Sources */,
+				AE120CB92BC77645001873DD /* player.cpp in Sources */,
+				AE120CBA2BC77645001873DD /* projectiles.cpp in Sources */,
+				AE120CBB2BC77645001873DD /* scenery.cpp in Sources */,
+				AE120CBC2BC77645001873DD /* weapons.cpp in Sources */,
+				AE120CBD2BC77645001873DD /* world.cpp in Sources */,
+				AE120CBE2BC77645001873DD /* mouse_sdl.cpp in Sources */,
+				AE120CBF2BC77645001873DD /* interpolated_world.cpp in Sources */,
+				AE120CC02BC77645001873DD /* AnimatedTextures.cpp in Sources */,
+				AE120CC12BC77645001873DD /* StreamPlayer.cpp in Sources */,
+				AE120CC22BC77645001873DD /* Crosshairs_SDL.cpp in Sources */,
+				AE120CC32BC77645001873DD /* ImageLoader_SDL.cpp in Sources */,
+				AE120CC42BC77645001873DD /* WadImageCache.cpp in Sources */,
+				AE120CC52BC77645001873DD /* OGL_Faders.cpp in Sources */,
+				AE120CC62BC77645001873DD /* OGL_Render.cpp in Sources */,
+				AE120CC72BC77645001873DD /* OGL_Setup.cpp in Sources */,
+				AE120CC82BC77645001873DD /* OGL_Textures.cpp in Sources */,
+				AE120CC92BC77645001873DD /* render.cpp in Sources */,
+				AE120CCA2BC77645001873DD /* RenderPlaceObjs.cpp in Sources */,
+				AE120CCB2BC77645001873DD /* RenderRasterize.cpp in Sources */,
+				AE120CCC2BC77645001873DD /* RenderSortPoly.cpp in Sources */,
+				AE120CCD2BC77645001873DD /* RenderVisTree.cpp in Sources */,
+				AE120CCE2BC77645001873DD /* scottish_textures.cpp in Sources */,
+				AE120CCF2BC77645001873DD /* shapes.cpp in Sources */,
+				AE120CD02BC77645001873DD /* textures.cpp in Sources */,
+				AE120CD12BC77645001873DD /* ChaseCam.cpp in Sources */,
+				AE120CD22BC77645001873DD /* computer_interface.cpp in Sources */,
+				AE120CD32BC77645001873DD /* fades.cpp in Sources */,
+				AE120CD42BC77645001873DD /* FontHandler.cpp in Sources */,
+				AE120CD52BC77645001873DD /* game_window.cpp in Sources */,
+				AE120CD62BC77645001873DD /* HUDRenderer.cpp in Sources */,
+				AE120CD72BC77645001873DD /* HUDRenderer_OGL.cpp in Sources */,
+				AE120CD82BC77645001873DD /* HUDRenderer_SW.cpp in Sources */,
+				AE120CD92BC77645001873DD /* images.cpp in Sources */,
+				AE120CDA2BC77645001873DD /* motion_sensor.cpp in Sources */,
+				AE120CDB2BC77645001873DD /* overhead_map.cpp in Sources */,
+				AE120CDC2BC77645001873DD /* OverheadMap_OGL.cpp in Sources */,
+				AE120CDD2BC77645001873DD /* OverheadMap_SDL.cpp in Sources */,
+				AE120CDE2BC77645001873DD /* OverheadMapRenderer.cpp in Sources */,
+				AE120CDF2BC77645001873DD /* screen_drawing.cpp in Sources */,
+				AE120CE02BC77645001873DD /* sdl_fonts.cpp in Sources */,
+				AE120CE12BC77645001873DD /* TextLayoutHelper.cpp in Sources */,
+				AE120CE22BC77645001873DD /* TextStrings.cpp in Sources */,
+				AE120CE32BC77645001873DD /* ViewControl.cpp in Sources */,
+				AE120CE42BC77645001873DD /* XML_LevelScript.cpp in Sources */,
+				AE120CE52BC77645001873DD /* QuickSave.cpp in Sources */,
+				AE120CE62BC77645001873DD /* XML_MakeRoot.cpp in Sources */,
+				AE120CE72BC77645001873DD /* sdl_resize.cpp in Sources */,
+				AE120D672BC776CE001873DD /* steamshim_child.c in Sources */,
+				AE120CE82BC77645001873DD /* Packing.cpp in Sources */,
+				AE120CE92BC77645001873DD /* DefaultStringSets.cpp in Sources */,
+				AE120CEA2BC77645001873DD /* Logging.cpp in Sources */,
+				AE120CEB2BC77645001873DD /* main.cpp in Sources */,
+				AE120CEC2BC77645001873DD /* preprocess_map_shared.cpp in Sources */,
+				AE120CED2BC77645001873DD /* OGL_Model_Def.cpp in Sources */,
+				AE120CEE2BC77645001873DD /* OGL_Subst_Texture_Def.cpp in Sources */,
+				AE120CEF2BC77645001873DD /* network_star_hub.cpp in Sources */,
+				AE120CF02BC77645001873DD /* InfoTree.cpp in Sources */,
+				AE120CF12BC77645001873DD /* network_star_spoke.cpp in Sources */,
+				AE120CF22BC77645001873DD /* RingGameProtocol.cpp in Sources */,
+				AE120CF32BC77645001873DD /* StarGameProtocol.cpp in Sources */,
+				AE120CF42BC77645001873DD /* lua_music.cpp in Sources */,
+				AE120CF52BC77645001873DD /* AStream.cpp in Sources */,
+				AE120CF62BC77645001873DD /* CircularByteBuffer.cpp in Sources */,
+				AE120CF72BC77645001873DD /* lua_script.cpp in Sources */,
+				AE120CF82BC77645001873DD /* metaserver_dialogs.cpp in Sources */,
+				AE120CF92BC77645001873DD /* metaserver_messages.cpp in Sources */,
+				AE120CFA2BC77645001873DD /* network_metaserver.cpp in Sources */,
+				AE120CFB2BC77645001873DD /* CommunicationsChannel.cpp in Sources */,
+				AE120CFC2BC77645001873DD /* Message.cpp in Sources */,
+				AE120CFD2BC77645001873DD /* MessageDispatcher.cpp in Sources */,
+				AE120CFE2BC77645001873DD /* MessageHandler.cpp in Sources */,
+				AE120CFF2BC77645001873DD /* MessageInflater.cpp in Sources */,
+				AE120D002BC77645001873DD /* network_messages.cpp in Sources */,
+				AE120D012BC77645001873DD /* csstrings.cpp in Sources */,
+				AE120D022BC77645001873DD /* SdlMetaserverClientUi.cpp in Sources */,
+				AE120D032BC77645001873DD /* network_capabilities.cpp in Sources */,
+				AE120D042BC77645001873DD /* shared_widgets.cpp in Sources */,
+				AE120D052BC77645001873DD /* Console.cpp in Sources */,
+				AE120D062BC77645001873DD /* ImageLoader_Shared.cpp in Sources */,
+				AE120D072BC77645001873DD /* OGL_LoadScreen.cpp in Sources */,
+				AE120D082BC77645001873DD /* ephemera.cpp in Sources */,
+				AE120D092BC77645001873DD /* Scenario.cpp in Sources */,
+				AE120D0A2BC77645001873DD /* preference_dialogs.cpp in Sources */,
+				AE120D0B2BC77645001873DD /* OGL_Blitter.cpp in Sources */,
+				AE120D0C2BC77645001873DD /* SW_Texture_Extras.cpp in Sources */,
+				AE120D0D2BC77645001873DD /* Music.cpp in Sources */,
+				AE120D0E2BC77645001873DD /* shell_options.cpp in Sources */,
+				AE120D0F2BC77645001873DD /* SoundFile.cpp in Sources */,
+				AE120D102BC77645001873DD /* SoundManager.cpp in Sources */,
+				AE120D112BC77645001873DD /* Decoder.cpp in Sources */,
+				AE120D122BC77645001873DD /* SndfileDecoder.cpp in Sources */,
+				AE120D132BC77645001873DD /* ReplacementSounds.cpp in Sources */,
+				AE120D142BC77645001873DD /* lapi.c in Sources */,
+				AE120D152BC77645001873DD /* lauxlib.c in Sources */,
+				AE120D162BC77645001873DD /* lbaselib.c in Sources */,
+				AE120D172BC77645001873DD /* lcode.c in Sources */,
+				AE120D182BC77645001873DD /* ldblib.c in Sources */,
+				AE120D192BC77645001873DD /* ldebug.c in Sources */,
+				AE120D1A2BC77645001873DD /* ldo.c in Sources */,
+				AE120D1B2BC77645001873DD /* ldump.c in Sources */,
+				AE120D1C2BC77645001873DD /* lfunc.c in Sources */,
+				AE120D1D2BC77645001873DD /* lgc.c in Sources */,
+				AE120D1E2BC77645001873DD /* linit.c in Sources */,
+				AE120D1F2BC77645001873DD /* liolib.c in Sources */,
+				AE120D202BC77645001873DD /* llex.c in Sources */,
+				AE120D212BC77645001873DD /* lmathlib.c in Sources */,
+				AE120D222BC77645001873DD /* lmem.c in Sources */,
+				AE120D232BC77645001873DD /* lobject.c in Sources */,
+				AE120D242BC77645001873DD /* lopcodes.c in Sources */,
+				AE120D252BC77645001873DD /* loslib.c in Sources */,
+				AE120D262BC77645001873DD /* lparser.c in Sources */,
+				AE120D272BC77645001873DD /* lstate.c in Sources */,
+				AE120D282BC77645001873DD /* lstring.c in Sources */,
+				AE120D292BC77645001873DD /* lstrlib.c in Sources */,
+				AE120D2A2BC77645001873DD /* ltable.c in Sources */,
+				AE120D2B2BC77645001873DD /* Statistics.cpp in Sources */,
+				AE120D2C2BC77645001873DD /* ltablib.c in Sources */,
+				AE120D2D2BC77645001873DD /* ltm.c in Sources */,
+				AE120D2E2BC77645001873DD /* lundump.c in Sources */,
+				AE120D2F2BC77645001873DD /* lvm.c in Sources */,
+				AE120D302BC77645001873DD /* lzio.c in Sources */,
+				AE120D312BC77645001873DD /* Update.cpp in Sources */,
+				AE120D322BC77645001873DD /* ConnectPool.cpp in Sources */,
+				AE120D332BC77645001873DD /* lua_player.cpp in Sources */,
+				AE120D342BC77645001873DD /* HTTP.cpp in Sources */,
+				AE120D352BC77645001873DD /* lua_map.cpp in Sources */,
+				AE120D362BC77645001873DD /* lua_monsters.cpp in Sources */,
+				AE120D372BC77645001873DD /* lua_projectiles.cpp in Sources */,
+				AE120D382BC77645001873DD /* lua_objects.cpp in Sources */,
+				AE120D392BC77645001873DD /* screen.cpp in Sources */,
+				AE120D3A2BC77645001873DD /* joystick_sdl.cpp in Sources */,
+				AE120D3B2BC77645001873DD /* lua_serialize.cpp in Sources */,
+				AE120D3C2BC77645001873DD /* BStream.cpp in Sources */,
+				AE120D3D2BC77645001873DD /* lua_hud_objects.cpp in Sources */,
+				AE120D3E2BC77645001873DD /* lua_hud_script.cpp in Sources */,
+				AE120D3F2BC77645001873DD /* HUDRenderer_Lua.cpp in Sources */,
+				AE120D402BC77645001873DD /* Image_Blitter.cpp in Sources */,
+				AE120D412BC77645001873DD /* Shape_Blitter.cpp in Sources */,
+				AE120D422BC77645001873DD /* OGL_Shader.cpp in Sources */,
+				AE120D432BC77645001873DD /* Plugins.cpp in Sources */,
+				AE120D442BC77645001873DD /* Rasterizer_Shader.cpp in Sources */,
+				AE120D452BC77645001873DD /* RenderRasterize_Shader.cpp in Sources */,
+				AE120D462BC77645001873DD /* SDL_rwops_zzip.c in Sources */,
+				AE120D472BC77645001873DD /* IMG_savepng.c in Sources */,
+				AE120D482BC77645001873DD /* SoundPlayer.cpp in Sources */,
+				AE120D492BC77645001873DD /* csalerts.mm in Sources */,
+				AE120D4A2BC77645001873DD /* OGL_FBO.cpp in Sources */,
+				AE120D4B2BC77645001873DD /* lua_saved_objects.cpp in Sources */,
+				AE120D4C2BC77645001873DD /* cspaths.mm in Sources */,
+				AE120D4D2BC77645001873DD /* FilmProfile.cpp in Sources */,
+				AE120D4E2BC77645001873DD /* Movie.cpp in Sources */,
+				AE120D4F2BC77645001873DD /* SDL_ffmpeg.c in Sources */,
+				AE120D502BC77645001873DD /* lbitlib.c in Sources */,
+				AE120D512BC77645001873DD /* lctype.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AE505C0E141D45E600915344 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -4446,6 +5515,7 @@
 				AE72AA92269A7E7B001F7675 /* PortForward.cpp in Sources */,
 				AE505C12141D45E600915344 /* cscluts_sdl.cpp in Sources */,
 				AE505C13141D45E600915344 /* csmisc_sdl.cpp in Sources */,
+				AED959C12BC235B2008EFCA2 /* achievements.cpp in Sources */,
 				AE505C17141D45E600915344 /* game_errors.cpp in Sources */,
 				AE505C18141D45E600915344 /* interface.cpp in Sources */,
 				AE505C19141D45E600915344 /* PlayerName.cpp in Sources */,
@@ -4663,6 +5733,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AE8729BD2BD1FBEA00426095 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE8729C82BD1FBF700426095 /* steamshim_parent.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AEB4A1AF14296CAE00537AE7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -4672,6 +5750,7 @@
 				AE72AA93269A7E7B001F7675 /* PortForward.cpp in Sources */,
 				AEB4A1B314296CAE00537AE7 /* cscluts_sdl.cpp in Sources */,
 				AEB4A1B414296CAE00537AE7 /* csmisc_sdl.cpp in Sources */,
+				AED959C22BC235B2008EFCA2 /* achievements.cpp in Sources */,
 				AEB4A1B814296CAE00537AE7 /* game_errors.cpp in Sources */,
 				AEB4A1B914296CAE00537AE7 /* interface.cpp in Sources */,
 				AEB4A1BA14296CAE00537AE7 /* PlayerName.cpp in Sources */,
@@ -4898,6 +5977,7 @@
 				AE72AA90269A7E7B001F7675 /* PortForward.cpp in Sources */,
 				AEC3C7D309AD68AC003258E4 /* cscluts_sdl.cpp in Sources */,
 				AEC3C7D409AD68AC003258E4 /* csmisc_sdl.cpp in Sources */,
+				AED959BF2BC235B2008EFCA2 /* achievements.cpp in Sources */,
 				AEC3C7D909AD68AC003258E4 /* game_errors.cpp in Sources */,
 				AEC3C7DB09AD68AC003258E4 /* interface.cpp in Sources */,
 				AEC3C7DC09AD68AC003258E4 /* PlayerName.cpp in Sources */,
@@ -5124,6 +6204,7 @@
 				AE72AA91269A7E7B001F7675 /* PortForward.cpp in Sources */,
 				AEFD86BF13EB84CF00C1E687 /* cscluts_sdl.cpp in Sources */,
 				AEFD86C013EB84CF00C1E687 /* csmisc_sdl.cpp in Sources */,
+				AED959C02BC235B2008EFCA2 /* achievements.cpp in Sources */,
 				AEFD86C413EB84CF00C1E687 /* game_errors.cpp in Sources */,
 				AEFD86C513EB84CF00C1E687 /* interface.cpp in Sources */,
 				AEFD86C613EB84CF00C1E687 /* PlayerName.cpp in Sources */,
@@ -5379,6 +6460,60 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		AE120D622BC77645001873DD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Marathon.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = E8K89CXZE7;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					SDL,
+					HAVE_BUNDLE_NAME,
+					HAVE_CONFIG_H,
+					HAVE_STEAM,
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info-Steam.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
+				PRODUCT_NAME = "Classic Marathon Steam";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		AE120D632BC77645001873DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Marathon.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = E8K89CXZE7;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					SDL,
+					HAVE_BUNDLE_NAME,
+					HAVE_CONFIG_H,
+					HAVE_STEAM,
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info-Steam.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.Marathon;
+				PRODUCT_NAME = "Classic Marathon Steam";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
 		AE2A41530B5EFC1F00C567E6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -5728,6 +6863,80 @@
 			};
 			name = Debug;
 		};
+		AE8729C62BD1FBEA00426095 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = Steamshim.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = E8K89CXZE7;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		AE8729C72BD1FBEA00426095 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = Steamshim.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = E8K89CXZE7;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
 		AEB4A2AB14296CAE00537AE7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -5848,11 +7057,29 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		AE120D612BC77645001873DD /* Build configuration list for PBXNativeTarget "Marathon Steam" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AE120D622BC77645001873DD /* Release */,
+				AE120D632BC77645001873DD /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		AE505D07141D45E600915344 /* Build configuration list for PBXNativeTarget "Marathon 2" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AE505D09141D45E600915344 /* Release */,
 				AE505D0A141D45E600915344 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AE8729C52BD1FBEA00426095 /* Build configuration list for PBXNativeTarget "Classic Marathon Launcher" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AE8729C62BD1FBEA00426095 /* Release */,
+				AE8729C72BD1FBEA00426095 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

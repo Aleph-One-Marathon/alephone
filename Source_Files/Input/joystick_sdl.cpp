@@ -73,12 +73,14 @@ void joystick_added(int device_index) {
 	active_instances[instance_id] = controller;
 }
 
-void joystick_removed(int instance_id) {
+bool joystick_removed(int instance_id) {
 	SDL_GameController *controller = active_instances[instance_id];
 	if (controller) {
 		SDL_GameControllerClose(controller);
 		active_instances.erase(instance_id);
+		return true;
 	}
+	return false;
 }
 
 void joystick_axis_moved(int instance_id, int axis, int value) {

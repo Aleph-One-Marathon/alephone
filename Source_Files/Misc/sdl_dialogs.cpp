@@ -59,7 +59,7 @@
 
 #include "InfoTree.h"
 #include "Logging.h"
-
+#include "joystick.h"
 #include <map>
 #include <string>
 
@@ -2061,6 +2061,14 @@ void dialog::event(SDL_Event &e)
   bool handled = false;
   // handle events we do not want widgets to see or modify
   switch (e.type) {
+  case SDL_JOYDEVICEADDED:
+	  joystick_added(e.jdevice.which);
+	  break;
+
+  case SDL_JOYDEVICEREMOVED:
+	  joystick_removed(e.jdevice.which);
+	  break;
+
   case SDL_KEYDOWN:
     
     if (e.key.keysym.sym == SDLK_RETURN
@@ -2224,6 +2232,8 @@ int dialog::run(bool intro_exit_sounds)
 		if (machine_tick_count() > last_redraw + TICKS_PER_SECOND / 30)
 		{
 			draw_dirty_widgets();
+			SDL_Rect r{0, 0, rect.w, rect.h};
+			update(r);
 			last_redraw = machine_tick_count();
 		}
         

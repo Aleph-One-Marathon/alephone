@@ -14,7 +14,7 @@ jobs:
       uses: ./.github/actions/build-windows
       with:
         platform: x64
-        configuration: "Steam Marathon"
+        configurations: "Steam Marathon"
         vcpkg_installed_folder: installed-x64-windows
         
     - name: Bootstrap Steamcmd

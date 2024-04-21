@@ -1,0 +1,14 @@
+{
+  "default-registry": {
+    "kind": "builtin",
+    "baseline": "0e47c1985273129e4d0ee52ff73bed9125555de8"
+  },
+  "registries": [
+    {
+      "kind": "git",
+      "repository": "https://github.com/Kolfering/steamworks-vcpkg",
+      "baseline": "1e3dc0fb74e33ce0d5359df043cd048a27c17837",
+      "packages": [ "steamworks-sdk" ]
+    }
+  ]
+}
