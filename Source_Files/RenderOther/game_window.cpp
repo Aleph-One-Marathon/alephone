@@ -60,6 +60,8 @@ Mar 08, 2002 (Woody Zenfell):
 
 #include "cseries.h"
 
+#include <array>
+
 #include "OGL_Headers.h"
 
 #include "HUDRenderer_SW.h"
@@ -75,6 +77,7 @@ Mar 08, 2002 (Woody Zenfell):
 #include "screen_definitions.h"
 #include "images.h"
 #include "InfoTree.h"
+#include "interface_menus.h"
 
 extern void draw_panels(void);
 extern void validate_world_window(void);
@@ -520,6 +523,9 @@ extern short vidmasterStringSetID; // shell.cpp
 extern short vidmasterLevelOffset;
 struct weapon_interface_data *original_weapon_interface_definitions = NULL;
 
+extern std::array<int, iAbout> menu_item_order;
+std::vector<int> original_menu_item_order;
+
 void reset_mml_interface()
 {
 	if (original_weapon_interface_definitions) {
@@ -527,6 +533,15 @@ void reset_mml_interface()
 			weapon_interface_definitions[i] = original_weapon_interface_definitions[i];
 		free(original_weapon_interface_definitions);
 		original_weapon_interface_definitions = NULL;
+	}
+	
+	if (original_menu_item_order.size())
+	{
+		std::copy(original_menu_item_order.begin(),
+				  original_menu_item_order.end(),
+				  menu_item_order.begin());
+
+		original_menu_item_order.clear();
 	}
 }
 
@@ -538,6 +553,11 @@ void parse_mml_interface(const InfoTree& root)
 		assert(original_weapon_interface_definitions);
 		for (unsigned i = 0; i < NUMBER_OF_WEAPON_INTERFACE_DEFINITIONS; i++)
 			original_weapon_interface_definitions[i] = weapon_interface_definitions[i];
+	}
+
+	if (!original_menu_item_order.size())
+	{
+		original_menu_item_order.assign(menu_item_order.begin(), menu_item_order.end());
 	}
 	
 	root.read_attr("motion_sensor", MotionSensorActive);
@@ -559,6 +579,19 @@ void parse_mml_interface(const InfoTree& root)
 			r->left = left;
 			r->bottom = bottom;
 			r->right = right;
+		}
+	}
+
+	for (const InfoTree& menu_item : root.children_named("menu_item"))
+	{
+		int16_t index;
+		if (!menu_item.read_indexed("index", index, menu_item_order.size()))
+			continue;
+
+		int16_t item;
+		if (menu_item.read_indexed("item", item, iAbout + 1))
+		{
+			menu_item_order[index] = item;
 		}
 	}
 	

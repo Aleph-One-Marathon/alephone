@@ -159,6 +159,14 @@ it contains the attributes
 </ul>
 All of them are mandatory.
 The interface rectangles have the meanings listed below.
+<li>&lt;menu_item&gt;, with all main menu items; it contains the attributes
+	<ul>
+		<li>index — the order items are highlighted when selected by controller or keyboard (0-12)</li>
+		<li>item — use -1 for unused entries up to index 12</li>
+	</ul>
+</li>
+All of them are mandatory.
+The menu items have the meanings listed below.
 <li>&lt;color&gt;, for all interface colors; it is indexed.
 For more on specifying colors, go <a href="#color">here</a>.
 The interface colors have the meanings listed below.
@@ -263,6 +271,25 @@ Here is a list of all the interface rectangles:
 <li>Player Respawn Indicator [Marathon only]
 <li>Blinking HUD Light [Marathon only]
 </ol>
+<p>
+
+Here is a list of all the menu items:
+<ol type=1 start="1">
+<li>New Game
+<li>Load Game
+<li>Gather Network Game
+<li>Join Network Game
+<li>Preferences
+<li>Replay Last Film
+<li>Save Last Film
+<li>Replay Saved Film
+<li>Credits
+<li>Quit
+<li>Center Button
+<li>Play Singleton Level (unused)
+<li>About
+</ol>
+			
 <p>
 
 Here is a list of all the interface colors:

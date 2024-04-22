@@ -109,6 +109,7 @@ Feb 13, 2003 (Woody Zenfell):
 */
 
 #include "cseries.h" // sorry ryan, nov. 4
+#include <array>
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -1539,34 +1540,80 @@ void portable_process_screen_click(
 	}
 }
 
+std::array<int, iAbout> menu_item_order = {
+	iNewGame,
+	iLoadGame,
+	iGatherGame,
+	iJoinGame,
+	iReplaySavedFilm,
+	iReplayLastFilm,
+	iSaveLastFilm,
+	iPreferences,
+	iQuit,
+	iCredits,
+	iAbout,
+	-1,
+	-1
+};
+
 void process_main_menu_highlight_advance(bool reverse)
 {
 	if (get_game_state() != _display_main_menu)
 		return;
 	
 	int old_button = game_state.highlighted_main_menu_item;
-	
-	// iterate through M2/Moo order
-	int item_order[] = {
-		iNewGame, iLoadGame, iGatherGame, iJoinGame,
-		iReplaySavedFilm, iReplayLastFilm, iSaveLastFilm,
-		iPreferences, iQuit, iCredits, iAbout };
-	int num_items = sizeof(item_order)/sizeof(int);
-	
-	if (game_state.highlighted_main_menu_item == -1) {
-		game_state.highlighted_main_menu_item = reverse ? item_order[0] : item_order[num_items - 1];
+
+	const auto last_index = []() {
+		return std::distance(std::find_if(menu_item_order.rbegin(),
+										  menu_item_order.rend(),
+										  [](int i) { return i != -1; }),
+							 menu_item_order.rend()) - 1;
+	};
+
+	if (game_state.highlighted_main_menu_item == -1)
+	{
+		if (reverse)
+		{
+			game_state.highlighted_main_menu_item = menu_item_order[0];
+		}
+		else
+		{
+			game_state.highlighted_main_menu_item = menu_item_order[last_index()];
+		}
 	}
-	do {
-		int cur_idx = 0;
-		for (int i = 0; i < num_items; ++i) {
-			if (item_order[i] == game_state.highlighted_main_menu_item) {
-				cur_idx = i;
+
+	do
+	{
+		auto index = -1;
+		for (auto i = 0; i < menu_item_order.size(); ++i)
+		{
+			if (menu_item_order[i] == game_state.highlighted_main_menu_item)
+			{
+				index = i;
 				break;
 			}
 		}
-		int next_idx = (cur_idx + num_items + (reverse ? -1 : 1)) % num_items;
-		game_state.highlighted_main_menu_item = item_order[next_idx];
-	} while (!enabled_item(game_state.highlighted_main_menu_item));
+
+		if (reverse)
+		{
+			--index;
+			if (index < 0)
+			{
+				index = last_index();
+			}
+		}
+		else
+		{
+			++index;
+			if (menu_item_order[index] == -1)
+			{
+				index = 0;
+			}
+		}
+			
+		game_state.highlighted_main_menu_item = menu_item_order[index];
+	}
+	while (!enabled_item(game_state.highlighted_main_menu_item));
 	
 	if (old_button != -1)
 		draw_button(old_button + START_OF_MENU_INTERFACE_RECTS - 1, false);
