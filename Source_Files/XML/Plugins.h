@@ -25,8 +25,8 @@
 
 #include <list>
 #include <map>
-#include <queue>
 #include <set>
+#include <stack>
 #include <string>
 #include <vector>
 
@@ -118,7 +118,7 @@ private:
 	bool m_validated = false;
 	GameMode m_mode = kMode_Menu;
 
-	std::queue<ScopedSearchPath, std::list<ScopedSearchPath>> m_search_paths;
+	std::stack<ScopedSearchPath, std::list<ScopedSearchPath>> m_search_paths;
 
 	uint32_t m_map_checksum;
 };
