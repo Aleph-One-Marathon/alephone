@@ -28,7 +28,7 @@ ALEPHVERSION.H
 #define A1_DISPLAY_DATE_VERSION "2024-01-19"
 #define A1_DATE_VERSION "20240119"
 
-#ifdef WIN32
+#ifdef _WIN32
 #define WIN_VERSION_STRING 0,2024,1,19 // <-- don't forget to update that for windows releases
 #define A1_DISPLAY_PLATFORM "Windows"
 #define A1_UPDATE_PLATFORM "windows"
