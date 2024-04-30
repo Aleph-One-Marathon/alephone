@@ -137,7 +137,6 @@
     <LinkIncremental>false</LinkIncremental>
     <TargetName>Classic Marathon Steam</TargetName>
     <OutDir>$(SolutionDir)Release\Steam\</OutDir>
-    <IntDir>Release\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon 2|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -169,7 +168,6 @@
     <LinkIncremental>false</LinkIncremental>
     <TargetName>Classic Marathon Steam</TargetName>
     <OutDir>$(SolutionDir)$(Platform)\Release\Steam\</OutDir>
-    <IntDir>$(Platform)\Release\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Marathon 2|x64'">
     <LinkIncremental>false</LinkIncremental>
