@@ -58,6 +58,9 @@ on very small maps, choose_random_flood_node() may not terminate
 #define NODE_IS_UNEXPANDED(n) (!NODE_IS_EXPANDED(n))
 #define MARK_NODE_AS_EXPANDED(n) ((n)->flags|=(uint16)0x8000)
 
+namespace alephone {
+namespace flood_map {
+
 struct node_data /* 16 bytes */
 {
 	uint16 flags;
@@ -70,6 +73,11 @@ struct node_data /* 16 bytes */
 
 	int32 user_flags;
 };
+
+}
+}
+
+using namespace alephone::flood_map;
 
 /* ---------- globals */
 

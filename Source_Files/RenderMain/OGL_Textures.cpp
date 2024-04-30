@@ -282,7 +282,7 @@ void OGL_StartTextures()
 			short NumberOfBitmaps =
 				CollectionPresent ? get_number_of_collection_bitmaps(ic) : 0;
 			TextureStateSets[it][ic] =
-				(CollectionPresent && NumberOfBitmaps) ?
+				(CollectionPresent && NumberOfBitmaps > 0) ?
 					(new CollBitmapTextureState[NumberOfBitmaps]) : 0;
 		}
 	
