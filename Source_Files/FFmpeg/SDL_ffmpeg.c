@@ -1747,7 +1747,7 @@ SDL_ffmpegStream* SDL_ffmpegAddAudioStream( SDL_ffmpegFile *file, SDL_ffmpegCode
 
         str->sampleBufferSize = av_samples_get_buffer_size(0, stream->codecpar->channels, stream->codecpar->frame_size, AV_SAMPLE_FMT_FLT, 0);
 
-        if (av_samples_alloc(&str->sampleBuffer, 0, stream->codecpar->channels, stream->codecpar->frame_size, AV_SAMPLE_FMT_FLT, 0) < 0)
+        if (av_samples_alloc((uint8_t**)(&str->sampleBuffer), 0, stream->codecpar->channels, stream->codecpar->frame_size, AV_SAMPLE_FMT_FLT, 0) < 0)
         {
             SDL_ffmpegSetError("could not allocate samples for audio buffer");
             return 0;
