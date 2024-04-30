@@ -470,7 +470,11 @@ void initialize_application(void)
 	HTTPClient::Init();
 
 #ifdef HAVE_STEAM
-	STEAMSHIM_init();
+	if (!STEAMSHIM_init())
+	{
+		alert_user("You must launch the Steam version of Classic Marathon using the Classic Marathon Launcher.", fatalError);
+		exit(1);
+	}
 #endif
 
 	// Initialize everything
