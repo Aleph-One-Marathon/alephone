@@ -184,6 +184,7 @@ short new_light(
 			light->intensity= light->final_intensity;
 			change_light_state(light_index, LIGHT_IS_INITIALLY_ACTIVE(data) ? _light_primary_active : _light_primary_inactive);
 					light->phase= data->phase;
+			sanity_check_light(light_index);
 			rephase_light(light_index);		
 			
 			light->intensity= lighting_function_dispatch(get_lighting_function_specification(&light->static_data, light->state)->function,
@@ -310,6 +311,23 @@ bool set_tagged_light_statuses(
 	}
 	
 	return changed;
+}
+
+void sanity_check_light(size_t light_index) 
+{
+	auto& light = LightList[light_index];
+	int total_active_period = 0;
+	total_active_period += light.static_data.primary_active.period;
+	total_active_period += light.static_data.primary_active.delta_period;
+	total_active_period += light.static_data.secondary_active.period;
+	total_active_period += light.static_data.secondary_active.delta_period;
+	assert(total_active_period > 0);
+	int total_inactive_period = 0;
+	total_inactive_period += light.static_data.primary_inactive.period;
+	total_inactive_period += light.static_data.primary_inactive.delta_period;
+	total_inactive_period += light.static_data.secondary_inactive.period;
+	total_inactive_period += light.static_data.secondary_inactive.delta_period;
+	assert(total_inactive_period > 0);
 }
 
 _fixed get_light_intensity(

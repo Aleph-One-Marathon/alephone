@@ -187,6 +187,7 @@ void update_lights(void);
 bool get_light_status(size_t light_index);
 bool set_light_status(size_t light_index, bool active);
 bool set_tagged_light_statuses(short tag, bool new_status);
+void sanity_check_light(size_t light_index);
 
 _fixed get_light_intensity(size_t light_index);
 
