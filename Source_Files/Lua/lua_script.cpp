@@ -1867,8 +1867,12 @@ static void RestorePreLuaSettings()
 	MotionSensorActive = MotionSensorWasActive;
 }
 
+extern void reset_messages();
+
 bool RunLuaScript()
 {
+	reset_messages();
+	
 	InitializeLuaVariables();
 	PreservePreLuaSettings();
 

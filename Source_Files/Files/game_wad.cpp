@@ -1278,8 +1278,6 @@ void setup_revert_game_info(
 	obj_copy(revert_game_data.entry_point, *entry);
 }
 
-extern void reset_messages();
-
 bool revert_game(
 	void)
 {
@@ -1320,7 +1318,6 @@ bool revert_game(
 		update_interface(NONE);
 		ChaseCam_Reset();
 		ResetFieldOfView();
-		reset_messages();
 		ReloadViewContext();
 	}
 	

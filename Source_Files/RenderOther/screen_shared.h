@@ -382,8 +382,6 @@ void reset_screen()
 	
 	// LP change:
 	ResetFieldOfView();
-
-	reset_messages();
 }
 
 // LP change: resets field of view to whatever the player had had when reviving
