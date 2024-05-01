@@ -2076,11 +2076,13 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 	CommunicationsChannel::multipleFlushOutgoingMessages(channels, false, 30000, 30000);
 	
 	for (playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
-		if (playerIndex != localPlayerIndex) {
+
+		NetPlayer player = topology->players[playerIndex];
+
+		if (playerIndex != localPlayerIndex && !player.net_dead && player.identifier != NONE) {
 			connections_to_clients[topology->players[playerIndex].stream_id]->state = Client::_ingame;
 		}
 	}
-
 	
     
 	if (error) { // ghs: nothing above returns an error at the moment,

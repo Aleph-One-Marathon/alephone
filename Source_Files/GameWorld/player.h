@@ -304,12 +304,12 @@ enum { /* Player flags */
 	_player_is_teleporting_flag= 0x0400,	
 	_player_has_map_open_flag= 0x0800,	
 	_player_is_totally_dead_flag= 0x1000,
-	_player_is_zombie_flag= 0x2000, // IS THIS USED??
+	_player_is_zombie_flag= 0x2000,
 	_player_is_dead_flag= 0x4000,
 	_player_is_pfhortran_controlled_flag= 0x8000
 };
 
-#define PLAYER_PERSISTANT_FLAGS (_player_has_cheated_flag | _player_doesnt_auto_switch_weapons_flag)
+#define PLAYER_PERSISTANT_FLAGS (_player_has_cheated_flag | _player_doesnt_auto_switch_weapons_flag | _player_is_zombie_flag)
 
 #define PLAYER_IS_DEAD(p) ((p)->flags&_player_is_dead_flag)
 #define SET_PLAYER_DEAD_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_is_dead_flag):((p)->flags&=(uint16)~_player_is_dead_flag)))
