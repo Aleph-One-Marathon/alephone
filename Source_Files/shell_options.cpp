@@ -68,35 +68,14 @@ static std::ostream& operator<<(std::ostream& s, const ShellOptionsOption& o) {
 }
 
 struct ShellOptionsCommand : public ShellOptionsOption {
-	// once we switch to C++17 this can go away and we can use aggregate
-	// initializers
-	ShellOptionsCommand(std::string short_name, std::string long_name, std::string help, std::function<void()> command_) :
-		ShellOptionsOption{short_name, long_name, help},
-		command{command_}
-		{ }
-	
 	std::function<void()> command;
 };
 
 struct ShellOptionsFlag : public ShellOptionsOption {
-	// once we switch to C++17 this can go away and we can use aggregate
-	// initializers
-	ShellOptionsFlag(std::string short_name, std::string long_name, std::string help, bool& flag_) :
-		ShellOptionsOption{short_name, long_name, help},
-		flag{flag_}
-		{ }
-	
 	bool& flag;
 };
 
 struct ShellOptionsString : public ShellOptionsOption {
-	// once we switch to C++17 this can go away and we can use aggregate
-	// initializers
-	ShellOptionsString(std::string short_name, std::string long_name, std::string help, std::string& string_) :
-		ShellOptionsOption{short_name, long_name, help},
-		string{string_}
-		{ }
-
 	std::string& string;
 };
 
