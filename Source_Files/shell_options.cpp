@@ -100,6 +100,8 @@ struct ShellOptionsString : public ShellOptionsOption {
 	std::string& string;
 };
 
+static std::string ignore;
+
 static const std::vector<ShellOptionsCommand> shell_options_commands {
 	{"h", "help", "Display this help message", print_usage},
 	{"v", "version", "Display the game version", print_version}
@@ -120,7 +122,8 @@ static const std::vector<ShellOptionsFlag> shell_options_flags {
 
 static const std::vector<ShellOptionsString> shell_options_strings {
 	{"o", "output", "With -e, output to [file] and exit on quit", shell_options.output},
-	{"l", "replay-directory", "Directory with replays to load", shell_options.replay_directory}
+	{"l", "replay-directory", "Directory with replays to load", shell_options.replay_directory},
+	{"NSDocumentRevisionsDebugMode", "", "", ignore} // annoying Xcode argument
 };
 
 std::unordered_map<int, bool> ShellOptions::parse(int argc, char** argv, bool ignore_unknown_args)
