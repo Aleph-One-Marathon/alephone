@@ -86,8 +86,6 @@ void ResetAllMMLValues()
 	reset_mml_dynamic_limits();
 	reset_mml_player_name();
 	reset_mml_scenario();
-	reset_mml_keyboard();
-	reset_mml_cheats();
 	reset_mml_logging();
 	reset_mml_console();
 	reset_mml_default_levels();
@@ -152,10 +150,6 @@ static void _ParseAllMML(const InfoTree& fileroot, bool load_menu_mml_only)
 			parse_mml_software(child);
 		for (const InfoTree &child : root.children_named("dynamic_limits"))
 			parse_mml_dynamic_limits(child);
-		for (const InfoTree &child : root.children_named("keyboard"))
-			parse_mml_keyboard(child);
-		for (const InfoTree &child : root.children_named("cheats"))
-			parse_mml_cheats(child);
 		for (const InfoTree &child : root.children_named("console"))
 			parse_mml_console(child);
 		for (const InfoTree &child : root.children_named("default_levels"))

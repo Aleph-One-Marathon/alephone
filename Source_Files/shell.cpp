@@ -126,10 +126,6 @@
 #include "steamshim_child.h"
 #endif
 
-// LP addition: whether or not the cheats are active
-// Defined in shell_misc.cpp
-extern bool CheatsActive;
-
 // Data directories
 vector <DirectorySpecifier> data_search_path; // List of directories in which data files are searched for
 DirectorySpecifier local_data_dir;    // Local (per-user) data file directory
@@ -154,10 +150,6 @@ bool insecure_lua = false;
 static bool force_fullscreen = false; // Force fullscreen mode
 static bool force_windowed = false;   // Force windowed mode
 */
-
-// Prototypes
-extern int process_keyword_key(char key);
-extern void handle_keyword(int type_of_cheat);
 
 void PlayInterfaceButtonSound(short SoundID);
 
@@ -771,11 +763,6 @@ static void handle_game_key(const SDL_Event &event)
 	bool changed_prefs = false;
 	bool changed_resolution = false;
 
-	if (!game_is_networked && (event.key.keysym.mod & KMOD_CTRL) && CheatsActive) {
-		int type_of_cheat = process_keyword_key(key);
-		if (type_of_cheat != NONE)
-			handle_keyword(type_of_cheat);
-	}
 	if (Console::instance()->input_active()) {
 		switch(key) {
 			case SDLK_RETURN:

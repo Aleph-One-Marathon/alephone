@@ -71,9 +71,4 @@ static void debug_stream_of_flags(uint32 action_flag, short player_index);
 static void close_stream_file(void);
 #endif
 
-
-class InfoTree;
-void parse_mml_keyboard(const InfoTree& root);
-void reset_mml_keyboard();
-
 #endif
