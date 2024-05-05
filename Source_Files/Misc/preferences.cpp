@@ -1012,10 +1012,18 @@ static const char* mouse_accel_labels[] = {
 };
 
 static const char* max_saves_labels[] = {
+#ifdef HAVE_STEAM
+	"20", "100", "500", NULL
+#else
 	"20", "100", "500", "Unlimited", NULL
+#endif
 };
 static const uint32 max_saves_values[] = {
+#ifdef HAVE_STEAM
+	20, 100, 500
+#else
 	20, 100, 500, 0
+#endif
 };
 
 static const std::unordered_map<ChannelType, int> mapping_channel_index = {
@@ -4157,7 +4165,11 @@ static void default_environment_preferences(environment_preferences_data *prefer
 	preferences->use_replay_net_lua = false;
 	preferences->hide_extensions = true;
 	preferences->film_profile = FILM_PROFILE_DEFAULT;
+#ifdef HAVE_STEAM
+	preferences->maximum_quick_saves = 500;
+#else
 	preferences->maximum_quick_saves = 0;
+#endif
 #ifdef HAVE_NFD
 	preferences->use_native_file_dialogs = false;
 #endif
