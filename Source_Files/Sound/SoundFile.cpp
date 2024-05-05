@@ -355,6 +355,11 @@ std::shared_ptr<SoundData> SoundDefinition::LoadData(OpenedFile& SoundFile, shor
 		return p;
 	}
 
+	if (permutation >= sounds.size())
+	{
+		return p;
+	}
+	
 	return sounds[permutation].LoadData(SoundFile);
 }
 
