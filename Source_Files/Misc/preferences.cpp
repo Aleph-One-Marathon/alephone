@@ -1686,7 +1686,7 @@ static void sound_dialog(void *arg)
  *  Controls dialog
  */
 
-const float kMinSensitivityLog = -3.0f;
+const float kMinSensitivityLog = -7.0f;
 const float kMaxSensitivityLog = 3.0f;
 const float kSensitivityLogRange = kMaxSensitivityLog - kMinSensitivityLog;
 
@@ -1699,15 +1699,12 @@ public:
 	virtual std::string formatted_value(void) {
 		std::ostringstream ss;
 		float val = std::exp(selection * kSensitivityLogRange / 1000.0f + kMinSensitivityLog);
-		if (val >= 1.f)
-			ss.precision(4);
-		else if (val >= 0.1f)
-			ss.precision(3);
-		else if (val >= 0.01f)
+		if (val >= 10.f)
 			ss.precision(2);
 		else
-			ss.precision(1);
-		ss << std::showpoint << val;
+			ss.precision(3);
+
+		ss << std::fixed << std::showpoint << val;
 		return ss.str();
 	}
 };
