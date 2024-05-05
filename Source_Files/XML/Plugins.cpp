@@ -137,6 +137,19 @@ void Plugins::disable(const boost::filesystem::path& path) { //std path is not s
 	}
 }
 
+void Plugins::enable(const boost::filesystem::path& path)
+{
+	for (auto& p : m_plugins)
+	{
+		if (p.directory.GetPath() == path)
+		{
+			p.enabled = true;
+			m_validated = false;
+			return;
+		}
+	}
+}
+
 static void load_mmls(const Plugin& plugin) 
 {
 	ScopedSearchPath ssp(plugin.directory);
@@ -308,7 +321,11 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 				Plugin Data = Plugin();
 				Data.directory = current_plugin_directory;
 				Data.enabled = true;
-				
+
+				Data.auto_enable = true;
+				root.read_attr("auto_enable", Data.auto_enable);
+				Data.enabled = Data.auto_enable;
+
 				root.read_attr("name", Data.name);
 				root.read_attr("version", Data.version);
 				root.read_attr("description", Data.description);

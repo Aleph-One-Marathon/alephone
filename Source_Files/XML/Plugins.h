@@ -66,6 +66,7 @@ struct Plugin {
 	std::vector<ScenarioInfo> required_scenarios;
 	std::vector<MapPatch> map_patches;
 
+	bool auto_enable;
 	bool enabled;
 	bool overridden;
 	bool overridden_solo;
@@ -97,6 +98,7 @@ public:
 	void load_shapes_patches(bool opengl);
 
 	void disable(const boost::filesystem::path& path);
+	void enable(const boost::filesystem::path& path);
 
 	iterator begin() { return m_plugins.begin(); }
 	iterator end() { return m_plugins.end(); }

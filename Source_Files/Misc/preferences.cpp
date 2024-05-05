@@ -3924,11 +3924,22 @@ InfoTree environment_preferences_tree()
 	root.put_attr("use_native_file_dialogs", environment_preferences->use_native_file_dialogs);
 #endif
 
-	for (Plugins::iterator it = Plugins::instance()->begin(); it != Plugins::instance()->end(); ++it) {
-		if (it->compatible() && !it->enabled) {
-			InfoTree disable;
-			disable.put_attr_path("path", it->directory.GetPath());
-			root.add_child("disable_plugin", disable);
+	for (Plugins::iterator it = Plugins::instance()->begin(); it != Plugins::instance()->end(); ++it)
+	{
+		if (it->compatible())
+		{
+			if (it->auto_enable && !it->enabled)
+			{
+				InfoTree disable;
+				disable.put_attr_path("path", it->directory.GetPath());
+				root.add_child("disable_plugin", disable);
+			}
+			else if (!it->auto_enable && it->enabled)
+			{
+				InfoTree enable;
+				enable.put_attr_path("path", it->directory.GetPath());
+				root.add_child("enable_plugin", enable);
+			}
 		}
 	}
 	
@@ -4939,6 +4950,15 @@ void parse_environment_preferences(InfoTree root, std::string version)
 		if (plugin.read_path("path", tempstr))
 		{
 			Plugins::instance()->disable(tempstr);
+		}
+	}
+
+	for (const InfoTree& plugin : root.children_named("enable_plugin"))
+	{
+		char tempstr[256];
+		if (plugin.read_path("path", tempstr))
+		{
+			Plugins::instance()->enable(tempstr);
 		}
 	}
 }
