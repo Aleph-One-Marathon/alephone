@@ -12,6 +12,9 @@ To download ready-to-run versions of all three _Marathon_ games for macOS,
 Windows, and Linux Flatpak, visit
 [alephone.lhowon.org](https://alephone.lhowon.org)
 
+You can also download The _Maraton_ Games on Steam
+[https://store.steampowered.com/search/?publisher=Aleph%20One%20Developers]([url](https://store.steampowered.com/search/?publisher=Aleph%20One%20Developers))
+
 # Build from source
 
 ## CI status
