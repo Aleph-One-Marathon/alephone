@@ -30,6 +30,11 @@ public:
 
 	std::string get_lua();
 	void set(const std::string& key);
+	void set_disabled_reason(const std::string& reason) { disabled_reason = reason; }
+	const std::string& get_disabled_reason() const { return disabled_reason; }
+
+private:
+	std::string disabled_reason;
 };
 
 #endif

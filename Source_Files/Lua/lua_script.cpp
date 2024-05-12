@@ -1882,6 +1882,11 @@ bool RunLuaScript()
 	InitializeLuaVariables();
 	PreservePreLuaSettings();
 
+	if (Achievements::instance()->get_disabled_reason().size())
+	{
+		screen_printf(Achievements::instance()->get_disabled_reason().c_str());
+	}
+
 	lua_random_local_generator.z = (static_cast<uint32>(local_random()) << 16) + static_cast<uint32>(local_random());
 	lua_random_local_generator.w = (static_cast<uint32>(local_random()) << 16) + static_cast<uint32>(local_random());
 	lua_random_local_generator.jsr = (static_cast<uint32>(local_random()) << 16) + static_cast<uint32>(local_random());
@@ -1959,22 +1964,23 @@ void LoadSoloLua()
 
 void LoadAchievementsLua()
 {
-	if (states.count(_embedded_lua_script) ||
-		states.count(_lua_netscript) ||
-		states.count(_solo_lua_script))
-	{
-		screen_printf("Achievements disabled (third party scripts)");
-		logNote("achievements: invalidating due to other Lua (%i %i %i)",
-				states.count(_embedded_lua_script),
-				states.count(_lua_netscript),
-				states.count(_solo_lua_script));
-		return;
-	}
-	
+	Achievements::instance()->set_disabled_reason("");
 	auto lua = Achievements::instance()->get_lua();
 
 	if (lua.size())
 	{
+		if (states.count(_embedded_lua_script) ||
+			states.count(_lua_netscript) ||
+			states.count(_solo_lua_script))
+		{
+			Achievements::instance()->set_disabled_reason("Achievements disabled (third party scripts)");
+			logNote("achievements: invalidating due to other Lua (%i %i %i)",
+				states.count(_embedded_lua_script),
+				states.count(_lua_netscript),
+				states.count(_solo_lua_script));
+			return;
+		}
+
 		LoadLuaScript(lua.data(), lua.size(), _achievements_lua_script);
 	}
 }
