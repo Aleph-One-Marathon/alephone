@@ -1,4 +1,4 @@
-R"(
+R"LUA(
 Triggers = {}
 
 -- M1 mnemonics
@@ -186,4 +186,4 @@ function pfhoraphobia_monster_killed(monster, _, _)
    end
 end
 
-)"
+)LUA"
