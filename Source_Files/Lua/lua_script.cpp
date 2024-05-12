@@ -1963,7 +1963,7 @@ void LoadAchievementsLua()
 		states.count(_lua_netscript) ||
 		states.count(_solo_lua_script))
 	{
-		screen_printf("Achievements disabled");
+		screen_printf("Achievements disabled (third party scripts)");
 		logNote("achievements: invalidating due to other Lua (%i %i %i)",
 				states.count(_embedded_lua_script),
 				states.count(_lua_netscript),
@@ -1983,7 +1983,7 @@ void InvalidateAchievements()
 {
 	if (states.count(_achievements_lua_script))
 	{
-		screen_printf("Achievements disabled");
+		screen_printf("Achievements disabled (console command)");
 		logNote("achievements: invalidating due to Lua command");
 		states.erase(_achievements_lua_script);
 	}

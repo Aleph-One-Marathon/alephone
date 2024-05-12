@@ -21,12 +21,17 @@ function Triggers.init(restored)
       Game._initial_level = Level.index
       Game._min_difficulty = Game.difficulty
    elseif restored then
-      if not Game.restore_saved() then
+      if not Game.restore_saved() or
+		 Game._initial_level == nil or
+		 Game._min_difficulty == nil
+	  then
+		 Players.print("Achievements disabled (missing saved game data)")
 		 Triggers = {}
 		 return
 	  end
    else
       if not Game.restore_passed() then
+		 Players.print("Achievements disabled (level transfer failure)")
 		 Triggers = {}
 		 return
 	  end
