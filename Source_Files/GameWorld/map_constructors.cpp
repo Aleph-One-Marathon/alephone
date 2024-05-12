@@ -464,6 +464,12 @@ void guess_side_lightsource_indexes(
 	short side_index)
 {
 	struct side_data *side= get_side_data(side_index);
+	if (side->line_index == -1 || side->polygon_index == -1)
+	{
+		// apparently some M1 net maps have orphan sides
+		return;
+	}
+	
 	struct line_data *line= get_line_data(side->line_index);
 	struct polygon_data *polygon= get_polygon_data(side->polygon_index);
     
