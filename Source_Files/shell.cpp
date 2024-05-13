@@ -427,6 +427,8 @@ void initialize_application(void)
 #ifndef HAVE_OPENGL
 	graphics_preferences->screen_mode.acceleration = _no_acceleration;
 #endif
+	if (shell_options.nogl)
+		graphics_preferences->screen_mode.acceleration = _no_acceleration;
 	if (shell_options.force_fullscreen)
 		graphics_preferences->screen_mode.fullscreen = true;
 	if (shell_options.force_windowed)		// takes precedence over fullscreen because windowed is safer
