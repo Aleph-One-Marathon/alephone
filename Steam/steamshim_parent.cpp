@@ -51,6 +51,9 @@ static fs::path findExe(const boost::regex& regex);
 static fs::path findApp(const boost::regex& regex);
 
 #ifdef _WIN32
+
+static LPWSTR LpCmdLine = NULL;
+
 static void fail(const char *err)
 {
     MessageBoxA(NULL, err, "ERROR", MB_ICONERROR | MB_OK);
@@ -110,9 +113,11 @@ static bool launchChild(ProcessType *pid)
     STARTUPINFOW si;
     memset(&si, 0, sizeof(si));
     auto exe = findExe(boost::regex("Classic Marathon.*\\.exe"));
-    
+
+    std::wstring args = L"\"" + exe.wstring() + L"\" " + (LpCmdLine ? LpCmdLine : L""); //should never be null but just in case
+
     return (CreateProcessW(exe.wstring().c_str(),
-        NULL, NULL, NULL, TRUE, 0, NULL,
+        args.data(), NULL, NULL, TRUE, 0, NULL,
         NULL, &si, pid) != 0);
 } // launchChild
 
@@ -123,9 +128,9 @@ static int closeProcess(ProcessType *pid)
     return 0;
 } // closeProcess
 
-int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                     LPSTR lpCmdLine, int nCmdShow)
+int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
+    LpCmdLine = lpCmdLine;
     mainline();
     ExitProcess(0);
     return 0;  // just in case.
