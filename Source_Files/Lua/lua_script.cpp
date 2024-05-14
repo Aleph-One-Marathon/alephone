@@ -912,6 +912,10 @@ bool LuaState::Run()
 
 bool LuaState::ExecuteCommand(const std::string& line)
 {
+	if (line.size() == 0) {
+		return false;
+	}
+	
 	auto success = true;
 	
 	std::string buffer;
