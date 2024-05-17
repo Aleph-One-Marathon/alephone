@@ -1644,8 +1644,8 @@ char *contract_symbolic_paths(char *dest, const char *src, int maxlen)
 #if defined(HAVE_BUNDLE_NAME)
 		contract_symbolic_paths_helper(dest, src, maxlen, "$bundle$", bundle_data_dir) ||
 #endif
-		contract_symbolic_paths_helper(dest, src, maxlen, "$local$", local_data_dir) ||
-		contract_symbolic_paths_helper(dest, src, maxlen, "$default$", default_data_dir);
+		contract_symbolic_paths_helper(dest, src, maxlen, "$default$", default_data_dir) || //default first in case user installed his game in his local data dir
+		contract_symbolic_paths_helper(dest, src, maxlen, "$local$", local_data_dir);
 	if (!contracted)
 	{
 		strncpy(dest, src, maxlen);
