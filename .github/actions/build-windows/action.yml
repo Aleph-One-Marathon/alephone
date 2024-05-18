@@ -16,10 +16,6 @@ inputs:
 runs:
     using: "composite"
     steps:
-    
-    - name: Temp hack to delete broken VC tools
-      run: Remove-Item -Path "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\Microsoft.VCToolsVersion.v143.default.*" -Recurse
-      shell: pwsh
      
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
@@ -40,7 +36,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: vcpkg/${{inputs.vcpkg_installed_folder}}
-        key: ${{runner.os}}-${{inputs.vcpkg_installed_folder}}-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
+        key: ${{runner.os}}-${{inputs.vcpkg_installed_folder}}-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}
         
     - name: Build
       run: foreach ($configuration in "${{inputs.configurations}}".Split(",").Trim()) { msbuild /m /p:Platform=${{inputs.platform}} /p:Configuration="$configuration" ./VisualStudio/AlephOne.sln }

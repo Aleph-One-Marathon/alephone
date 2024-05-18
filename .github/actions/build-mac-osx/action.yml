@@ -32,14 +32,14 @@ runs:
       uses: actions/cache@v4
       with:
         path: vcpkg/installed-x64-osx
-        key: ${{runner.os}}-installed-x64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
+        key: ${{runner.os}}-installed-x64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}
         
     - name: Restore Vcpkg cache for arm64
       if: inputs.xcode_arch == 'arm64' || inputs.xcode_arch == ''
       uses: actions/cache@v4
       with:
         path: vcpkg/installed-arm64-osx
-        key: ${{runner.os}}-installed-arm64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
+        key: ${{runner.os}}-installed-arm64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}
       
     - name: Switch to Xcode 14.3.1
       run: sudo xcode-select --switch /Applications/Xcode_14.3.1.app
