@@ -2390,6 +2390,10 @@ static void controller_details_dialog(void *arg)
 	w_deadzone_slider* dead_joy_w = new w_deadzone_slider(11, joyDeadzone);
 	table->dual_add(dead_joy_w->label("Analog Dead Zone"), d);
 	table->dual_add(dead_joy_w, d);
+
+	w_toggle* controller_inverted = new w_toggle(input_preferences->controller_aim_inverted);
+	table->dual_add(controller_inverted->label("Invert Vertical Aim"), d);
+	table->dual_add(controller_inverted, d);
 	
 	table->add_row(new w_spacer(), true);
 	placer->add(table, true);
@@ -2417,6 +2421,12 @@ static void controller_details_dialog(void *arg)
 		int deadNorm = deadPos * 655.36f;
 		if (deadNorm != input_preferences->controller_deadzone) {
 			input_preferences->controller_deadzone = deadNorm;
+			changed = true;
+		}
+
+		bool inverted_controls = controller_inverted->get_selection();
+		if (input_preferences->controller_aim_inverted != inverted_controls) {
+			input_preferences->controller_aim_inverted = inverted_controls;
 			changed = true;
 		}
 
@@ -3799,6 +3809,7 @@ InfoTree input_preferences_tree()
 	root.put_attr("extra_mouse_precision", input_preferences->extra_mouse_precision);
 	
 	root.put_attr("controller_analog", input_preferences->controller_analog);
+	root.put_attr("controller_aim_inverted", input_preferences->controller_aim_inverted);
 	root.put_attr("controller_sensitivity", input_preferences->controller_sensitivity);
 	root.put_attr("controller_deadzone", input_preferences->controller_deadzone);
 	
@@ -4127,6 +4138,7 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->classic_vertical_aim = false;
 	preferences->classic_aim_speed_limits = false;
 
+	preferences->controller_aim_inverted = false;
 	preferences->controller_analog = true;
 	preferences->controller_sensitivity = FIXED_ONE;
 	preferences->controller_deadzone = 3276;
@@ -4732,6 +4744,7 @@ void parse_input_preferences(InfoTree root, std::string version)
 		input_preferences->extra_mouse_precision = false;
 	root.read_attr("extra_mouse_precision", input_preferences->extra_mouse_precision);
 	root.read_attr("controller_analog", input_preferences->controller_analog);
+	root.read_attr("controller_aim_inverted", input_preferences->controller_aim_inverted);
 	root.read_attr("controller_sensitivity", input_preferences->controller_sensitivity);
 	root.read_attr("controller_deadzone", input_preferences->controller_deadzone);
 

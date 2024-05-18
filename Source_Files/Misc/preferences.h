@@ -216,6 +216,7 @@ struct input_preferences_data
 	bool classic_aim_speed_limits;
 	
 	bool controller_analog;
+	bool controller_aim_inverted;
 	_fixed controller_sensitivity;
 
 	// if an axis reading is taken below this number in absolute

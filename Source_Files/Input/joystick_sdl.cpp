@@ -198,7 +198,8 @@ int process_joystick_axes(int flags, int tick) {
 	
 	// return this tick's action flags augmented with movement data
 	const fixed_angle dyaw = static_cast<fixed_angle>(angular_deltas[_flags_yaw] * FIXED_ONE);
-	const fixed_angle dpitch = static_cast<fixed_angle>(angular_deltas[_flags_pitch] * FIXED_ONE);
+	const fixed_angle dpitch = static_cast<fixed_angle>(angular_deltas[_flags_pitch] * FIXED_ONE) * (input_preferences->controller_aim_inverted ? -1 : 1);
+
 	if (dyaw != 0 || dpitch != 0)
 		flags = process_aim_input(flags, {dyaw, dpitch});
 	return flags;
