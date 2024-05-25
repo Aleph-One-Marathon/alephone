@@ -261,7 +261,11 @@ bool use_map_file(
 	FileSpecifier File;
 	bool success= false;
 
-	if(find_wad_file_that_has_checksum(File, _typecode_scenario, strPATHS, checksum))
+	if (file_is_set && get_current_map_checksum() == checksum)
+	{
+		success = true;
+	}
+	else if(find_wad_file_that_has_checksum(File, _typecode_scenario, strPATHS, checksum))
 	{
 		set_map_file(File);
 		success= true;
