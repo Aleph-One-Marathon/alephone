@@ -1,20 +1,8 @@
 #!/bin/bash
 set -e
-
-cat <<EOL >/dev/null
-sudo apt install --no-install-recommends \
-  build-essential autoconf autoconf-archive nasm wget git fuse3 \
-  libboost-all-dev libsdl2-dev libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev \
-  libzzip-dev zlib1g-dev libpng-dev libvpx-dev libvorbis-dev \
-  libcurl4-gnutls-dev libminiupnpc-dev libopenal-dev libsndfile1-dev \
-  libglu1-mesa-dev
-EOL
-
 set -x
 
 cd "$(dirname "$0")"
-
-#ffmpeg_tag="n6.0"
 
 export LD_LIBRARY_PATH="$PWD/ffmpeg/usr/lib:$LD_LIBRARY_PATH"
 export PKG_CONFIG_PATH="$PWD/ffmpeg/usr/lib/pkgconfig"
@@ -22,12 +10,6 @@ export PKG_CONFIG_PATH="$PWD/ffmpeg/usr/lib/pkgconfig"
 # build FFmpeg from source to avoid unneeded dependencies
 # https://github.com/Aleph-One-Marathon/mac-frameworks/blob/master/ffmpeg/ffmpeg.mk
 
-#if [ ! -d ffmpeg ]; then
-#    git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
-#    cd ffmpeg
-#    git checkout $ffmpeg_tag
-#    cd ..
-#fi
 if [ ! -f ffmpeg/usr/lib/pkgconfig/libavcodec.pc ]; then
     cd ffmpeg
     ./configure --prefix="$PWD/usr" \
@@ -99,8 +81,6 @@ if [ ! -f build/Source_Files/alephone ]; then
     test -f ../../configure || autoreconf -if ../..
     CFLAGS=-O2 CXXFLAGS=-O2 LDFLAGS=-s ../../configure --without-smpeg
     make -j$(nproc) V=0
-    #wget -q -O linuxdeploy.AppImage -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-    #chmod a+x linuxdeploy.AppImage
     cd ..
 fi
 
@@ -120,7 +100,22 @@ cp -r ../data/Scenarios/"Marathon Infinity" out/marathon-infinity.appdir/usr/sha
 
 # create AppImages
 cd out
-../linuxdeploy.AppImage -oappimage --appdir=alephone.appdir          -d../alephone.desktop          -i../alephone.png
-../linuxdeploy.AppImage -oappimage --appdir=marathon.appdir          -d../marathon.desktop          -i../marathon.png          --custom-apprun=../apprun-marathon.sh
-../linuxdeploy.AppImage -oappimage --appdir=marathon2.appdir         -d../marathon2.desktop         -i../marathon2.png         --custom-apprun=../apprun-marathon2.sh
-../linuxdeploy.AppImage -oappimage --appdir=marathon-infinity.appdir -d../marathon-infinity.desktop -i../marathon-infinity.png --custom-apprun=../apprun-marathon-infinity.sh
+
+../linuxdeploy.AppImage -oappimage --appdir=alephone.appdir \
+    --desktop-file=../data/alephone.desktop \
+    --icon-file=../data/alephone.png
+
+../linuxdeploy.AppImage -oappimage --appdir=marathon.appdir \
+    --desktop-file=../data/marathon.desktop \
+    --icon-file=../data/marathon.png \
+    --custom-apprun=../data/apprun-marathon.sh
+
+../linuxdeploy.AppImage -oappimage --appdir=marathon2.appdir \
+    --desktop-file=../data/marathon2.desktop \
+    --icon-file=../data/marathon2.png \
+    --custom-apprun=../data/apprun-marathon2.sh
+
+../linuxdeploy.AppImage -oappimage --appdir=marathon-infinity.appdir \
+    --desktop-file=../data/marathon-infinity.desktop \
+    --icon-file=../data/marathon-infinity.png \
+    --custom-apprun=../data/apprun-marathon-infinity.sh
