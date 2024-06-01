@@ -1542,7 +1542,11 @@ GetSDLKeyName(SDL_Scancode inKey) {
 	else if (w_key::event_type_for_key(inKey) == w_key::JoystickButton)
 	    return get_joystick_button_key_name(inKey - AO_SCANCODE_BASE_JOYSTICK_BUTTON);
     else
-		return SDL_GetKeyName(SDL_GetKeyFromScancode(inKey));
+	{
+		static std::string s;
+		s = utf8_to_mac_roman(SDL_GetKeyName(SDL_GetKeyFromScancode(inKey)));
+		return s.c_str();
+	}
 }
 
 void w_key::draw(SDL_Surface *s) const
