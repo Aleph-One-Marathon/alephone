@@ -35,7 +35,7 @@ Jul 5, 2000 (Loren Petrich):
 
 /* ------------ prototypes/VBL.C */
 bool setup_for_replay_from_file(FileSpecifier& File, uint32 map_checksum, bool prompt_to_export = false);
-bool setup_replay_from_random_resource(uint32 map_checksum);
+bool setup_replay_from_random_resource();
 
 void start_recording(void);
 

@@ -80,6 +80,8 @@ Feb 20, 2002 (Woody Zenfell):
 #include <string.h>
 #include <stdlib.h>
 
+#include <boost/algorithm/string/predicate.hpp>
+
 #include "map.h"
 #include "interface.h"
 #include "shell.h"
@@ -1271,13 +1273,53 @@ uint32 parse_keymap(void)
   return flags;
 }
 
-
+extern std::vector<DirectorySpecifier> data_search_path;
 /*
  *  Get random demo replay from map
  */
 
-bool setup_replay_from_random_resource(uint32 map_checksum)
+bool setup_replay_from_random_resource()
 {
+	std::vector<FileSpecifier> demos;
+	
+	// search the Demos/ folder for *.filA files
+	for (auto& dir : data_search_path)
+	{
+		DirectorySpecifier scripts = dir + "Demos";
+
+		auto entries = scripts.ReadDirectory();
+		for (auto& entry : entries)
+		{
+			if (entry.is_directory)
+			{
+				continue;
+			}
+
+			if (boost::algorithm::ends_with(entry.name, ".filA"))
+			{
+				FileSpecifier demo = scripts + entry.name;
+				demos.push_back(demo);
+			}
+		}
+	}
+
+	if (demos.size())
+	{
+		static auto last_played_index = -1;
+		auto index = 0;
+		if (demos.size() > 1)
+		{
+			do
+			{
+				index = local_random() % demos.size();
+			}
+			while (index == last_played_index);
+		}
+		
+		last_played_index = index;
+		return setup_for_replay_from_file(demos[index], 0, false);
+	}
+	
 	// not supported in SDL version
 	return false;
 }

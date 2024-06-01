@@ -2140,10 +2140,7 @@ static bool begin_game(
 					break;
 					
 				case _demo:
-					// setup_replay_from_random_resource always returns false,
-					// so don't bother to checksum the map
-					success= false;
-					// success= setup_replay_from_random_resource(get_current_map_checksum());
+					success = setup_replay_from_random_resource();
 					break;
 
 				case _replay_from_file:
