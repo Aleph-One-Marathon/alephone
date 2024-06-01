@@ -499,7 +499,15 @@ static short DisplayTextStyle = 0;
 /*static*/ void DisplayTextCursor(SDL_Surface *s, short BaseX, short BaseY, const char *Text, short Offset, unsigned char r = 0xff, unsigned char g = 0xff, unsigned char b = 0xff)
 {
 	SDL_Rect cursor_rect;
-	cursor_rect.x = BaseX + text_width(Text, Offset, DisplayTextFont, DisplayTextStyle);
+	int w;
+#ifdef HAVE_OPENGL
+    if (!OGL_TextWidth(Text, Offset, w))
+#endif
+	{
+		w = text_width(Text, Offset, DisplayTextFont, DisplayTextStyle);
+	}
+
+	cursor_rect.x = BaseX + w;
 	cursor_rect.w = 1;
 	cursor_rect.y = BaseY - DisplayTextFont->get_ascent();
 	cursor_rect.h = DisplayTextFont->get_height();
