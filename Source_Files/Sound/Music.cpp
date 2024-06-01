@@ -197,7 +197,11 @@ void Music::SeedLevelMusic()
 
 void Music::SetClassicLevelMusic(short song_index)
 {
-    ClearLevelMusic();
+	if (playlist.size())
+	{
+		return;
+	}
+	
     if (song_index < 0)
         return;
     
