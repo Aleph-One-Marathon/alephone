@@ -274,6 +274,9 @@ void stop_interface_fade(void);
 bool enabled_item(short item);
 void paint_window_black(void);
 
+void set_game_focus_lost();
+void set_game_focus_gained();
+
 /* ---------- prototypes/INTERFACE_MACINTOSH.C */
 void do_preferences(void);
 short get_level_number_from_user(void);

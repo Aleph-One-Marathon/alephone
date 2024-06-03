@@ -1357,10 +1357,12 @@ static void process_event(const SDL_Event &event)
 					set_keyboard_controller_status(false);
 					show_cursor();
 				}
+
+				set_game_focus_lost();
 				break;
-#if (defined(__APPLE__) && defined(__MACH__))
-			// work around Mojave issue
 			case SDL_WINDOWEVENT_FOCUS_GAINED:
+#if (defined(__APPLE__) && defined(__MACH__))
+    			// work around Mojave issue
 				static bool gFirstWindow = true;
 				if (gFirstWindow) {
 					gFirstWindow = false;
@@ -1375,8 +1377,9 @@ static void process_event(const SDL_Event &event)
 						SDL_DestroyWindow(w2);
 					}
 				}
-				break;
 #endif
+				set_game_focus_gained();
+				break;
 			case SDL_WINDOWEVENT_EXPOSED:
 				if (Movie::instance()->IsRecording())
 				{
