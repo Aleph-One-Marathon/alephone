@@ -3132,6 +3132,10 @@ static void environment_dialog(void *arg)
 	table->dual_add(replay_net_lua_w, d);
 	use_replay_net_lua_w->add_dependent_widget(replay_net_lua_w);
 #endif
+
+	w_toggle* auto_play_demos_w = new w_toggle(environment_preferences->auto_play_demos);
+	table->dual_add(auto_play_demos_w->label("Play Demos When Idle"), d);
+	table->dual_add(auto_play_demos_w, d);
 	
 	table->add_row(new w_spacer, true);
 	table->dual_add_row(new w_static_text("Options"), d);
@@ -3291,6 +3295,13 @@ static void environment_dialog(void *arg)
 		}
 #endif
 
+		auto auto_play_demos = auto_play_demos_w->get_selection() != 0;
+		if (auto_play_demos != environment_preferences->auto_play_demos)
+		{
+			environment_preferences->auto_play_demos = auto_play_demos;
+			changed = true;
+		}
+		
 		if (changed)
 			load_environment_from_preferences();
 
@@ -3941,6 +3952,7 @@ InfoTree environment_preferences_tree()
 #ifdef HAVE_NFD
 	root.put_attr("use_native_file_dialogs", environment_preferences->use_native_file_dialogs);
 #endif
+	root.put_attr("auto_play_demos", environment_preferences->auto_play_demos);
 
 	for (Plugins::iterator it = Plugins::instance()->begin(); it != Plugins::instance()->end(); ++it)
 	{
@@ -4196,6 +4208,7 @@ static void default_environment_preferences(environment_preferences_data *prefer
 #ifdef HAVE_NFD
 	preferences->use_native_file_dialogs = false;
 #endif
+	preferences->auto_play_demos = true;
 }
 
 
@@ -4979,6 +4992,7 @@ void parse_environment_preferences(InfoTree root, std::string version)
 #ifdef HAVE_NFD
 	root.read_attr("use_native_file_dialogs", environment_preferences->use_native_file_dialogs);
 #endif
+	root.read_attr("auto_play_demos", environment_preferences->auto_play_demos);
 	
 	orphan_disabled_plugins.clear();
 	for (const InfoTree &plugin : root.children_named("disable_plugin"))

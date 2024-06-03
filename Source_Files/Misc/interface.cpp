@@ -1127,7 +1127,8 @@ bool idle_game_state(uint32 time)
 				case _display_intro_screens_for_demo:
 				case _display_main_menu:
 					/* Start the demo.. */
-					if(!begin_game(_demo, false))
+					if(!environment_preferences->auto_play_demos ||
+					   !begin_game(_demo, false))
 					{
 						/* This means that there was not a valid demo to play */
 						game_state.phase= TICKS_UNTIL_DEMO_STARTS;

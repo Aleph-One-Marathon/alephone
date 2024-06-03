@@ -268,6 +268,8 @@ struct environment_preferences_data
 #ifdef HAVE_NFD
 	bool use_native_file_dialogs;
 #endif
+
+	bool auto_play_demos;
 };
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */
