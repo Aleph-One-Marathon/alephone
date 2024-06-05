@@ -2518,7 +2518,7 @@ static int Lua_Screen_FOV_Get_Horizontal(lua_State *L)
 	float factor = 1.0f;
 	if (get_screen_mode()->acceleration == _opengl_acceleration)
 		factor = 1.3f;
-    lua_pushnumber(L, world_view->half_cone * 2.0f / factor);
+    lua_pushnumber(L, world_view->half_cone * 360.f / NUMBER_OF_ANGLES * 2.0f / factor);
     return 1;
 }
 
@@ -2527,7 +2527,7 @@ static int Lua_Screen_FOV_Get_Vertical(lua_State *L)
 	float factor = 1.0f;
 	if (get_screen_mode()->acceleration == _opengl_acceleration)
 		factor = 1.3f;
-    lua_pushnumber(L, world_view->half_vertical_cone * 2.0f / factor);
+    lua_pushnumber(L, world_view->half_vertical_cone * 360.f / NUMBER_OF_ANGLES * 2.0f / factor);
     return 1;
 }
 
