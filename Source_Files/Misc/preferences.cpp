@@ -4352,49 +4352,37 @@ void load_environment_from_preferences(
 	}
 
 	File = prefs->physics_file;
-	if (File.Exists()) {
-		set_physics_file(File);
-		import_definition_structures();
-	} else {
-		if(find_wad_file_that_has_checksum(File,
-			_typecode_physics, strPATHS, prefs->physics_checksum)) {
-			set_physics_file(File);
-			import_definition_structures();
-		} else {
-			/* Didn't find it.  Don't change them.. */
-		}
+	if (!File.Exists() && !find_wad_file_that_has_checksum(File,
+		_typecode_physics, strPATHS, prefs->physics_checksum)) {
+		get_default_physics_spec(File);
 	}
+
+	set_physics_file(File);
+	import_definition_structures();
 	
 	File = prefs->shapes_file;
-	if (File.Exists()) {
-		open_shapes_file(File);
-	} else {
-		if(find_file_with_modification_date(File,
-			_typecode_shapes, strPATHS, prefs->shapes_mod_date))
-		{
-			open_shapes_file(File);
-		} else {
-			/* What should I do? */
-		}
+	if (!File.Exists() && !find_file_with_modification_date(File,
+		_typecode_shapes, strPATHS, prefs->shapes_mod_date)) {
+		get_default_shapes_spec(File);
 	}
+
+	open_shapes_file(File);
 
 	File = prefs->sounds_file;
-	if (File.Exists()) {
-		SoundManager::instance()->OpenSoundFile(File);
-	} else {
-		if(find_file_with_modification_date(File,
-			_typecode_sounds, strPATHS, prefs->sounds_mod_date)) {
-			SoundManager::instance()->OpenSoundFile(File);
-		} else {
-			/* What should I do? */
-		}
+	if (!File.Exists() && !find_file_with_modification_date(File,
+		_typecode_sounds, strPATHS, prefs->sounds_mod_date)) {
+		get_default_sounds_spec(File);
 	}
 
+	SoundManager::instance()->OpenSoundFile(File);
+
 	File = prefs->resources_file;
-	if (File.Exists())
+	if (!File.Exists())
 	{
-		set_external_resources_file(File);
+		get_default_external_resources_spec(File);
 	}
+
+	set_external_resources_file(File);
 	set_external_resources_images_file(File);
 }
 
