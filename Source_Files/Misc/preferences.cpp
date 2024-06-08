@@ -486,6 +486,13 @@ enum {
 	NAME_W
 };
 
+
+static const char* solo_profile_labels[] = {
+	"Aleph One Fixes",
+	"Classic Marathon 2",
+	"Classic Marathon Infinity"
+};
+
 static void player_dialog(void *arg)
 {
 	// Create dialog
@@ -503,6 +510,21 @@ static void player_dialog(void *arg)
 	table->dual_add(level_w->label("Difficulty"), d);
 	table->dual_add(level_w, d);
 
+	w_select* solo_profile_w;
+	if (Scenario::instance()->AllowsClassicGameplay())
+	{
+		table->add_row(new w_spacer(), true);
+
+		auto profile = player_preferences->solo_profile;
+		if (profile >= 1) --profile;
+		
+		solo_profile_w = new w_select(profile, solo_profile_labels);
+		table->dual_add(solo_profile_w->label("Solo Gameplay"), d);
+		table->dual_add(solo_profile_w, d);
+
+		table->dual_add_row(new w_static_text("Note: net games always use Aleph One fixes"), d);
+	}
+	
 	table->add_row(new w_spacer(), true);
 
 	table->dual_add_row(new w_static_text("Appearance"), d);
@@ -568,6 +590,18 @@ static void player_dialog(void *arg)
 		if (level != player_preferences->difficulty_level) {
 			player_preferences->difficulty_level = level;
 			changed = true;
+		}
+
+		if (Scenario::instance()->AllowsClassicGameplay())
+		{
+			auto profile = solo_profile_w->get_selection();
+			if (profile >= 1) ++profile;
+
+			if (profile != player_preferences->solo_profile)
+			{
+				player_preferences->solo_profile = profile;
+				changed = true;
+			}
 		}
 
 		int16 color = static_cast<int16>(pcolor_w->get_selection());
@@ -3058,7 +3092,7 @@ static void plugins_dialog(void *)
  */
 
 static const char* film_profile_labels[] = {
-	"Aleph One",
+	"Aleph One 1.0",
 	"Marathon 2",
 	"Marathon Infinity",
 	0
@@ -3116,9 +3150,9 @@ static void environment_dialog(void *arg)
 
 	table->add_row(new w_spacer, true);
 	table->dual_add_row(new w_static_text("Film Playback"), d);
-	
+
 	w_select* film_profile_w = new w_select(environment_preferences->film_profile, film_profile_labels);
-	table->dual_add(film_profile_w->label("Default Playback Profile"), d);
+	table->dual_add(film_profile_w->label("Unversioned Film Profile"), d);
 	table->dual_add(film_profile_w, d);
 	
 #ifndef MAC_APP_STORE
@@ -3613,6 +3647,8 @@ InfoTree player_preferences_tree()
 	cross.put_attr("opacity", Crosshairs.Opacity);
 	cross.add_color("color", Crosshairs.Color);
 	root.put_child("crosshairs", cross);
+
+	root.put_attr("solo_profile", player_preferences->solo_profile);
 
 	return root;
 }
@@ -4130,6 +4166,8 @@ static void default_player_preferences(player_preferences_data *preferences)
 	preferences->Crosshairs.Color = rgb_white;
 	preferences->Crosshairs.Opacity = 0.5;
 	preferences->Crosshairs.PreCalced = false;
+
+	preferences->solo_profile = _solo_profile_aleph_one;
 }
 
 static void default_input_preferences(input_preferences_data *preferences)
@@ -4603,6 +4641,11 @@ void parse_player_preferences(InfoTree root, std::string version)
 		
 		for (const InfoTree &color : child.children_named("color"))
 			color.read_color(player_preferences->Crosshairs.Color);
+	}
+
+	if (Scenario::instance()->AllowsClassicGameplay())
+	{
+		root.read_attr("solo_profile", player_preferences->solo_profile);
 	}
 }
 

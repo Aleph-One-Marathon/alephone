@@ -2088,6 +2088,7 @@ static bool begin_game(
 	bool is_networked= false;
 	bool clean_up_on_failure= true;
 	bool record_game= false;
+	short record_game_version = default_recording_version;
 	uint32 parent_checksum = 0;
 
 	clear_game_error();
@@ -2120,6 +2121,8 @@ static bool begin_game(
 				// ZZZ: until players specify their behavior modifiers over the network,
 				// to avoid out-of-sync we must force them all the same.
 				standardize_player_behavior_modifiers();
+
+				load_film_profile(FILM_PROFILE_DEFAULT);
 			}
 #endif // !defined(DISABLE_NETWORKING)
 			break;
@@ -2266,6 +2269,21 @@ static bool begin_game(
                         // ZZZ: until film files store player behavior flags, we must require
                         // that all films recorded be made with standard behavior.
 			record_game= is_player_behavior_standard();
+
+			switch (player_preferences->solo_profile)
+			{
+				case _solo_profile_aleph_one:
+					load_film_profile(FILM_PROFILE_DEFAULT);
+					break;
+				case _solo_profile_marathon_2:
+					load_film_profile(FILM_PROFILE_MARATHON_2);
+					record_game_version = RECORDING_VERSION_MARATHON_2;
+					break;
+				case _solo_profile_marathon_infinity:
+					load_film_profile(FILM_PROFILE_MARATHON_INFINITY);
+					record_game_version = RECORDING_VERSION_MARATHON_INFINITY;
+					break;
+			}
 			
             break;
 			
@@ -2287,7 +2305,7 @@ static bool begin_game(
 			else
 			{
 				set_recording_header_data(number_of_players, entry.level_number, (user == _network_player) ? parent_checksum : get_current_map_checksum(), 
-					default_recording_version, starts, &game_information);
+					record_game_version, starts, &game_information);
 				start_recording();
 			}
 		}
@@ -2514,7 +2532,6 @@ static void finish_game(
 	if ((game_state.user == _replay && shell_options.replay_directory.empty()) || game_state.user == _demo)
 	{
 		Plugins::instance()->set_mode(Plugins::kMode_Menu);
-		load_film_profile(FILM_PROFILE_DEFAULT);
 	}
 	if (return_to_main_menu) display_main_menu();
 }
