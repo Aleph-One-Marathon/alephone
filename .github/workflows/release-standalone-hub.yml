@@ -1,0 +1,19 @@
+name: release-standalone-hub
+
+on: [workflow_dispatch, workflow_call]
+
+jobs:
+  release-standalone-hub:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build Standalone Hub Docker image
+      run: docker buildx build -t alephone-standalone-hub . -f Dockerfile.hub --output type=tar,dest=alephone-standalone-hub.tar
+        
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: alephone-standalone-hub
+        if-no-files-found: error
+        path: alephone-standalone-hub.tar
