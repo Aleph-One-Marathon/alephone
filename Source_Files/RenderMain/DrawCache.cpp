@@ -25,15 +25,14 @@ bool lastTextureIsLandscape;
 	//Main list of dynamic lights
 	//Some lights (like spot lights) take two slots, so actual number of lights may be as few as half of this.
 int numLightsInScene;
+dynamicLight dynamicLights[LIGHTS_MAX];
+int	lightAreaIndices[(LIGHTS_MAX+1) * 4]; //Sparse array holding indices to the start of geometry in the lightAreas buffer.
+int nextAvailableLightAreaIndex;	//Index of the next available area light slot.
 
-	//Allocate LIGHTS_MAX + 1 because some lights (like spot lights) require an extra slot.
-GLfloat lightPositions[(LIGHTS_MAX+1) * 4]; //Format: x, y, z (world space location), w (size in world units).
-GLfloat lightColors[(LIGHTS_MAX+1) * 4]; //Format: r, g, b, mode
-
-	//The actual data fed into the shader.
-	//Same format as above, but position list must be terminated with a {0,0,0,0} light.
-GLfloat activeLightPositions[(ACTIVE_LIGHTS_MAX+1) * 4];
-GLfloat activeLightColors[ACTIVE_LIGHTS_MAX * 4];
+	//The actual data fed into the shader. See format for these in the header.
+GLfloat activePointLights[MAX_POINT_LIGHT_ELEMENTS];
+GLfloat activeSpotLights[MAX_SPOT_LIGHT_ELEMENTS];
+GLfloat activeAreaLights[MAX_AREA_LIGHT_ELEMENTS];
 
 enum //One ENUM for each buffer for easy reference.
 {
@@ -73,7 +72,7 @@ void DrawCache::growGeometryList() {
 		current_geometry_list_size *= 2;
 	}
 	
-	geometry = (GeometryProperties*)malloc(sizeof(GeometryProperties) * current_geometry_list_size);
+	geometry = (geometryProperties*)malloc(sizeof(geometryProperties) * current_geometry_list_size);
 	geometryFilled = 0;
 }
 
@@ -116,6 +115,7 @@ void DrawCache::growVertexLists() {
 
 void DrawCache::startGatheringLights() {
     numLightsInScene = 0;
+	nextAvailableLightAreaIndex = 0;
     gatheringLights = 1;
 }
 
@@ -251,56 +251,118 @@ void DrawCache::addDefaultLight(GLfloat x, GLfloat y, GLfloat z, short objectTyp
     
 }
 
-void DrawCache::addPointLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size, GLfloat red, GLfloat green, GLfloat blue, bool negative) {
-    if(!gatheringLights) return;
-    
+bool DrawCache::addPointLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size, GLfloat red, GLfloat green, GLfloat blue, bool negative) {
+    if(!gatheringLights) return 0;
+    	
 	if (size < 1) { size = 1; } //A size of zero signals the shader to stop processing, so disallow that input.
 	
     if(numLightsInScene < LIGHTS_MAX) {
-        lightPositions[numLightsInScene*4 + 0] = x;
-        lightPositions[numLightsInScene*4 + 1] = y;
-        lightPositions[numLightsInScene*4 + 2] = z;
-        lightPositions[numLightsInScene*4 + 3] = size; //Size in world units. 0 means no light. 1000ish would be typical
-        
-        lightColors[numLightsInScene*4 + 0] = red; //Red
-        lightColors[numLightsInScene*4 + 1] = green; //Green
-        lightColors[numLightsInScene*4 + 2] = blue; //Blue
-        lightColors[numLightsInScene*4 + 3] = negative ? POINT_LIGHT_NEGATIVE : POINT_LIGHT; //Light mode
+		
+		dynamicLights[numLightsInScene].type = POINT_LIGHT;
+		
+		dynamicLights[numLightsInScene].position[0] = x;
+		dynamicLights[numLightsInScene].position[1] = y;
+		dynamicLights[numLightsInScene].position[2] = z;
+		
+		dynamicLights[numLightsInScene].color[0] = red;
+		dynamicLights[numLightsInScene].color[1] = green;
+		dynamicLights[numLightsInScene].color[2] = blue;
+		
+		dynamicLights[numLightsInScene].size = size;
+		
+		dynamicLights[numLightsInScene].AABB[BB_LOW_X] = x-size;
+		dynamicLights[numLightsInScene].AABB[BB_HIGH_X] = x+size;
+		dynamicLights[numLightsInScene].AABB[BB_LOW_Y] = y-size;
+		dynamicLights[numLightsInScene].AABB[BB_HIGH_Y] = y+size;
+		dynamicLights[numLightsInScene].AABB[BB_LOW_Z] = z-size;
+		dynamicLights[numLightsInScene].AABB[BB_HIGH_Z] = z+size;
+		
+		dynamicLights[numLightsInScene].negative = negative;
 
         numLightsInScene++;
+		return 1;
     }
+	
+	return 0;
 }
 
-void DrawCache::addSpotLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size,  GLfloat dirX, GLfloat dirY, GLfloat dirZ, GLfloat outerAngle, GLfloat innerAngle,  GLfloat red, GLfloat green, GLfloat blue, bool negative) {
-	if(!gatheringLights) return;
+bool DrawCache::addSpotLight(GLfloat x, GLfloat y, GLfloat z, GLfloat size,  GLfloat dirX, GLfloat dirY, GLfloat dirZ, GLfloat outerAngle, GLfloat innerAngle,  GLfloat red, GLfloat green, GLfloat blue, bool negative) {
+	if(!gatheringLights) return 0;
 	
 	if (size < 1) { size = 1; } //A size of zero signals the shader to stop processing, so disallow that input.
 	
-		//Spot lights take up two lighting slots.
-	if(numLightsInScene + 1 < LIGHTS_MAX) {
+	if(numLightsInScene < LIGHTS_MAX) {
 		int baseIndex = numLightsInScene*4;
 		
-		lightPositions[baseIndex + 0] = x;
-		lightPositions[baseIndex + 1] = y;
-		lightPositions[baseIndex + 2] = z;
-		lightPositions[baseIndex + 3] = size; //Size in world units. 0 means no light.
-		lightPositions[baseIndex + 4] = dirX;
-		lightPositions[baseIndex + 5] = dirY;
-		lightPositions[baseIndex + 6] = dirZ;
-		lightPositions[baseIndex + 7] = 0; //Unused
+		dynamicLights[numLightsInScene].type = SPOT_LIGHT;
 		
-		lightColors[baseIndex + 0] = red; //Red
-		lightColors[baseIndex + 1] = green; //Green
-		lightColors[baseIndex + 2] = blue; //Blue
-		lightColors[baseIndex + 3] = negative ? SPOT_LIGHT_NEGATIVE : SPOT_LIGHT; //Light mode
-		lightColors[baseIndex + 4] = outerAngle;
-		lightColors[baseIndex + 5] = innerAngle;
-		lightColors[baseIndex + 6] = 0; //Unused
-		lightColors[baseIndex + 7] = 0; //Unused
+		dynamicLights[numLightsInScene].position[0] = x;
+		dynamicLights[numLightsInScene].position[1] = y;
+		dynamicLights[numLightsInScene].position[2] = z;
+		
+		dynamicLights[numLightsInScene].direction[0] = dirX;
+		dynamicLights[numLightsInScene].direction[1] = dirY;
+		dynamicLights[numLightsInScene].direction[2] = dirZ;
+		
+		dynamicLights[numLightsInScene].innerAngle = innerAngle;
+		dynamicLights[numLightsInScene].outerAngle = outerAngle;
+		
+		dynamicLights[numLightsInScene].color[0] = red;
+		dynamicLights[numLightsInScene].color[1] = green;
+		dynamicLights[numLightsInScene].color[2] = blue;
+		
+		dynamicLights[numLightsInScene].size = size;
+		
+		dynamicLights[numLightsInScene].AABB[BB_LOW_X] = x-size;
+		dynamicLights[numLightsInScene].AABB[BB_HIGH_X] = x+size;
+		dynamicLights[numLightsInScene].AABB[BB_LOW_Y] = y-size;
+		dynamicLights[numLightsInScene].AABB[BB_HIGH_Y] = y+size;
+		dynamicLights[numLightsInScene].AABB[BB_LOW_Z] = z-size;
+		dynamicLights[numLightsInScene].AABB[BB_HIGH_Z] = z+size;
 
-		numLightsInScene += 2;
+		dynamicLights[numLightsInScene].negative = negative;
+
+		numLightsInScene ++;
+		return 1;
 	}
+	return 0;
 }
+
+bool DrawCache::addAreaLightFan(GLfloat *vertex_array, int vertex_count, GLfloat size,  GLfloat dirX, GLfloat dirY, GLfloat dirZ, GLfloat outerAngle, GLfloat innerAngle,  GLfloat red, GLfloat green, GLfloat blue, bool negative) {
+	if(!gatheringLights) return 0;
+	
+		//Allowing a single-vertex area would be silly, but I think we can have a 2 vertex "line" light.
+	if (vertex_count < 2)
+		return 0;
+	
+	//Verify that there are enough elements available to hold all of the vertices.
+	if(nextAvailableLightAreaIndex + (vertex_count * 4) >= AREA_LIGHT_VERTICES_MAX * 4)
+		return 0;
+	
+	int baseIndex = numLightsInScene*4; //Capture base now, because addSpotlight will increment numLightsInScene.
+	
+	//An area light starts as a spotlight, except that it also has an index to a vertices. (The location fed in is meaningless)
+	/*if( addSpotLight(vertex_array[0], vertex_array[1], vertex_array[2], size,  dirX, dirY, dirZ, outerAngle, innerAngle,  red, green, blue, negative) )
+	{
+		lightColors[baseIndex + 3] = negative ? AREA_LIGHT_NEGATIVE : AREA_LIGHT; //Set light type/mode
+		lightAreaIndices[baseIndex] = nextAvailableLightAreaIndex; //Establish relation between this light and the slots in the area vertex array.
+		
+		int i, n = 0;
+		for(i = nextAvailableLightAreaIndex; i < vertex_count*4; i += 4) {
+			lightAreas[i + 0] = vertex_array[n + 0];
+			lightAreas[i + 1] = vertex_array[n + 1];
+			lightAreas[i + 2] = vertex_array[n + 2];
+			n++;
+			lightAreas[i + 3] = n == vertex_count ? 0 : 1; //Set whether this is the end of the list or not.
+		}
+		nextAvailableLightAreaIndex = i;
+		
+		return 1;
+	}*/
+	return 0;
+}
+
+
 
 void DrawCache::finishGatheringLights() {
     gatheringLights = 0;
@@ -386,7 +448,6 @@ void DrawCache::addTriangleFan(int vertex_count, GLfloat *vertex_array, GLfloat 
 
 void DrawCache::addModel(rectangle_definition& RenderRectangle)
 {
-	// TODO: support normals. looks like ATTRIB_TEXCOORDS4 were originally tangents?
 	// TODO: support glEnable(GL_CULL_FACE);
 	// TODO: support glFrontFace
 	
@@ -519,21 +580,21 @@ void DrawCache::captureState(int g)
 }
 
 void DrawCache::primeBoundingBox(int g, GLfloat x, GLfloat y, GLfloat z) {
-	geometry[g].bb_high_x=x;
-	geometry[g].bb_low_x=x;
-	geometry[g].bb_high_y=y;
-	geometry[g].bb_low_y=y;
-	geometry[g].bb_high_z=z;
-	geometry[g].bb_low_z=z;
+	geometry[g].AABB[BB_HIGH_X]=x;
+	geometry[g].AABB[BB_LOW_X]=x;
+	geometry[g].AABB[BB_HIGH_Y]=y;
+	geometry[g].AABB[BB_LOW_Y]=y;
+	geometry[g].AABB[BB_HIGH_Z]=z;
+	geometry[g].AABB[BB_LOW_Z]=z;
 }
 
 void DrawCache::growBoundingBox(int g, GLfloat x, GLfloat y, GLfloat z){
-	if(x >= geometry[g].bb_high_x) geometry[g].bb_high_x = x;
-	if(x <= geometry[g].bb_low_x) geometry[g].bb_low_x = x;
-	if(y >= geometry[g].bb_high_y) geometry[g].bb_high_y = y;
-	if(y <= geometry[g].bb_low_y) geometry[g].bb_low_y = y;
-	if(z >= geometry[g].bb_high_z) geometry[g].bb_high_z = z;
-	if(z <= geometry[g].bb_low_z) geometry[g].bb_low_z = z;
+	if(x >= geometry[g].AABB[BB_HIGH_X]) geometry[g].AABB[BB_HIGH_X] = x;
+	if(x <= geometry[g].AABB[BB_LOW_X]) geometry[g].AABB[BB_LOW_X] = x;
+	if(y >= geometry[g].AABB[BB_HIGH_Y]) geometry[g].AABB[BB_HIGH_Y] = y;
+	if(y <= geometry[g].AABB[BB_LOW_Y]) geometry[g].AABB[BB_LOW_Y] = y;
+	if(z >= geometry[g].AABB[BB_HIGH_Z]) geometry[g].AABB[BB_HIGH_Z] = z;
+	if(z <= geometry[g].AABB[BB_LOW_Z]) geometry[g].AABB[BB_LOW_Z] = z;
 }
 
 
@@ -655,103 +716,14 @@ void DrawCache::drawAll() {
 			glDepthFunc(geometry[g].depthFunction);
 			
 			//Attach Lights
-			int lightsAttached = 0;
-			for(int n = 0; n < ACTIVE_LIGHTS_MAX*4; n++) {
-				activeLightPositions[n]=0;
-				activeLightColors[n]=0;
-			}
-			GLfloat x,y,z,size, dirX,dirY,dirZ, outerLimitCos,innerLimitCos, red,green,blue, mode;
-			if (!gatheringLights && !geometry[g].landscapeTexture) {
-				for(int l = 0; l < numLightsInScene; l++) {
-					x = lightPositions[l*4 + 0];
-					y = lightPositions[l*4 + 1];
-					z = lightPositions[l*4 + 2];
-					size = lightPositions[l*4 + 3];
-					
-					red = lightColors[l*4];
-					green = lightColors[l*4 + 1];
-					blue = lightColors[l*4 + 2];
-					mode = lightColors[l*4 + 3];
-					
-						//Is this a spot light
-					if(mode >= SPOT_LIGHT_PACK_MIN && mode <= SPOT_LIGHT_PACK_MAX) {
-						dirX = lightPositions[l*4 + 4];
-						dirY = lightPositions[l*4 + 5];
-						dirZ = lightPositions[l*4 + 6];
-						outerLimitCos = cos(lightColors[l*4 + 4] * 0.0174533); //Convert to cos(radians)
-						innerLimitCos = cos(lightColors[l*4 + 5] * 0.0174533); //Convert to cos(radians)
-					}
-					
-					//Is the light inside the bounding box (plus the light size)?
-					if( size > 0
-					   && x >= (geometry[g].bb_low_x-size)
-					   && x <= (geometry[g].bb_high_x+size)
-					   && y >= (geometry[g].bb_low_y-size)
-					   && y <= (geometry[g].bb_high_y+size)
-					   && z >= (geometry[g].bb_low_z-size)
-					   && z <= (geometry[g].bb_high_z+size)
-					   ) {
-						
-						//We can only attach up to ACTIVE_LIGHTS_MAX lights.
-						if(lightsAttached < ACTIVE_LIGHTS_MAX){
-							
-							//Light positions must now be in eye space
-							MSI()->transformVertexToEyespace(x,y,z);
-							
-							activeLightPositions[lightsAttached*4 +0] = x;
-							activeLightPositions[lightsAttached*4 +1] = y;
-							activeLightPositions[lightsAttached*4 +2] = z;
-							activeLightPositions[lightsAttached*4 +3] = size;
-							
-							activeLightColors[lightsAttached*4 +0] = red;
-							activeLightColors[lightsAttached*4 +1] = green;
-							activeLightColors[lightsAttached*4 +2] = blue;
-							activeLightColors[lightsAttached*4 +3] = mode;
-							
-								//Spot lights also take up the second slot.
-							if(mode >= SPOT_LIGHT_PACK_MIN && mode <= SPOT_LIGHT_PACK_MAX) {
-								//CONSIDER THAT 3D models have their own MVP matrix, which is usually different than the active one in MSI.
-								MSI()->transformVectorToEyespace(dirX, dirY, dirZ); //Direction vector, if any, also needs to be in eyespace.
-								
-								activeLightPositions[lightsAttached*4 +4] = dirX;
-								activeLightPositions[lightsAttached*4 +5] = dirY;
-								activeLightPositions[lightsAttached*4 +6] = dirZ;
-								
-								activeLightColors[lightsAttached*4 +4] = outerLimitCos;
-								activeLightColors[lightsAttached*4 +5] = innerLimitCos;
-								lightsAttached++;
-								l++; //Skip over processing of this slot on next loop, since it's not a whole light.
-							}
-							
-							lightsAttached++;
-						}
-						
-					}
-					
-				}
-				
-				//Terminate active light list.
-				/*activeLightPositions[lightsAttached*4] = 0;
-				 activeLightPositions[lightsAttached*4 +1] = 0;
-				 activeLightPositions[lightsAttached*4 +2] = 0;
-				 activeLightPositions[lightsAttached*4 +3] = 0;*/
-			}
-			
-			geometry[g].shader->setVec4v(Shader::U_LightColors, ACTIVE_LIGHTS_MAX, activeLightColors);
-			geometry[g].shader->setVec4v(Shader::U_LightPositions, ACTIVE_LIGHTS_MAX, activeLightPositions);
+			setAttachedLightsForGeometry(g);
+			geometry[g].shader->setFloatv(Shader::U_PointLights, MAX_POINT_LIGHT_ELEMENTS, activePointLights);
+			geometry[g].shader->setFloatv(Shader::U_SpotLights, MAX_SPOT_LIGHT_ELEMENTS, activeSpotLights);
+			geometry[g].shader->setFloatv(Shader::U_AreaLights, MAX_AREA_LIGHT_ELEMENTS, activeAreaLights);
 			
 			glDrawElements(GL_TRIANGLES, geometry[g].numIndices, GL_UNSIGNED_INT, indices + currentIndex);
 			
 			currentIndex += geometry[g].numIndices;
-						
-			//Reset lights in the shader so later draws don't see them accidentially.
-			lightsAttached = 0;
-			for(int n = 0; n < ACTIVE_LIGHTS_MAX*4; n++) {
-				activeLightPositions[n]=0;
-				activeLightColors[n]=0;
-			}
-			geometry[g].shader->setVec4v(Shader::U_LightPositions, ACTIVE_LIGHTS_MAX, activeLightPositions);
-			geometry[g].shader->setVec4v(Shader::U_LightColors, ACTIVE_LIGHTS_MAX, activeLightColors);
 		}
 	}
 	
@@ -765,9 +737,173 @@ void DrawCache::drawAll() {
 	glDeleteBuffers(NUM_VBOS, vboIDs);
 	
     if(originalShader) {
-        originalShader->enable(); //We need to restore whatever shader was active, so we don't pollute outside state.
+        originalShader->enable(); //We need to restore whatever shader was active, to avoid polluting outside state.
     }
 	glDepthMask(GL_TRUE);
+}
+
+void DrawCache::setAttachedLightsForGeometry(int g) {
+
+		//Blank out the buffers, so we don't have garbage data in the unfilled portion.
+	clearAttachedLights();
+	
+		//Early exit, if lights do not apply.
+	if(gatheringLights || geometry[g].landscapeTexture) {
+		return;
+	}
+	
+	int pointLightsAttached = 0;
+	int spotLightsAttached = 0;
+	int nextAreaLightIndex = 0;
+	
+	//Iterate through every light in the entire world, and add it to it's respective shader data buffer (if there is room in the buffer, and if the geometry and light bounding boxes intersect).
+	for(int l = 0; l < numLightsInScene; l++) {
+		//Format of point light data: position, color, size (7 elements per light).
+		if(dynamicLights[l].type == POINT_LIGHT && (pointLightsAttached+1) * POINT_LIGHT_DATA_SIZE < MAX_POINT_LIGHT_ELEMENTS && lightAndGeometryIntersect(dynamicLights[l], geometry[g])) {
+			int pi = pointLightsAttached * POINT_LIGHT_DATA_SIZE; //Index into active array
+			activePointLights[pi + 0] = dynamicLights[l].position[0];
+			activePointLights[pi + 1] = dynamicLights[l].position[1];
+			activePointLights[pi + 2] = dynamicLights[l].position[2];
+			
+			//Light positions must now be in eye space
+			MSI()->transformVertexToEyespace(activePointLights[pi + 0],activePointLights[pi + 1],activePointLights[pi + 2]);
+			
+			activePointLights[pi + 3] = dynamicLights[l].color[0];
+			activePointLights[pi + 4] = dynamicLights[l].color[1];
+			activePointLights[pi + 5] = dynamicLights[l].color[2];
+			
+			activePointLights[pi + 6] = dynamicLights[l].size;
+			
+			pointLightsAttached ++;
+		}
+		
+		//Format of spot light data: position, direction, innerAngleRadiansCos, outerAngleRadiansCos, color, size (12 elements per light).
+		if(dynamicLights[l].type == SPOT_LIGHT && (spotLightsAttached+1) * SPOT_LIGHT_DATA_SIZE < MAX_SPOT_LIGHT_ELEMENTS && lightAndGeometryIntersect(dynamicLights[l], geometry[g])) {
+			int si = spotLightsAttached * SPOT_LIGHT_DATA_SIZE; //Index into active array
+			activeSpotLights[si + 0] = dynamicLights[l].position[0];
+			activeSpotLights[si + 1] = dynamicLights[l].position[1];
+			activeSpotLights[si + 2] = dynamicLights[l].position[2];
+			MSI()->transformVertexToEyespace(activeSpotLights[si + 0],activeSpotLights[si + 1],activeSpotLights[si + 2]); //Light positions must now be in eye space
+			
+			activeSpotLights[si + 3] = dynamicLights[l].direction[0];
+			activeSpotLights[si + 4] = dynamicLights[l].direction[1];
+			activeSpotLights[si + 5] = dynamicLights[l].direction[2];
+			MSI()->transformVectorToEyespace(activeSpotLights[si + 3], activeSpotLights[si + 4], activeSpotLights[si + 5]); //Direction vector, also needs to be in eyespace.
+			
+			activeSpotLights[si + 6] = cos(dynamicLights[l].innerAngle * 0.0174533); //Convert to cos(radians)
+			activeSpotLights[si + 7] = cos(dynamicLights[l].outerAngle * 0.0174533); //Convert to cos(radians)
+			
+			activeSpotLights[si + 8] = dynamicLights[l].color[0];
+			activeSpotLights[si + 9] = dynamicLights[l].color[1];
+			activeSpotLights[si + 10] = dynamicLights[l].color[2];
+			
+			activeSpotLights[si + 11] = dynamicLights[l].size;
+			
+			spotLightsAttached ++;
+		}
+	}
+		/*
+		x = lightPositions[l*4 + 0];
+		y = lightPositions[l*4 + 1];
+		z = lightPositions[l*4 + 2];
+		size = lightPositions[l*4 + 3];
+		
+		red = lightColors[l*4];
+		green = lightColors[l*4 + 1];
+		blue = lightColors[l*4 + 2];
+		mode = lightColors[l*4 + 3];
+		
+		//Is this a spot light
+		if(mode >= SPOT_LIGHT_PACK_MIN && mode <= SPOT_LIGHT_PACK_MAX) {
+			dirX = lightPositions[l*4 + 4];
+			dirY = lightPositions[l*4 + 5];
+			dirZ = lightPositions[l*4 + 6];
+			outerLimitCos = cos(lightColors[l*4 + 4] * 0.0174533); //Convert to cos(radians)
+			innerLimitCos = cos(lightColors[l*4 + 5] * 0.0174533); //Convert to cos(radians)
+		}
+		
+		//Is the light inside the bounding box (plus the light size)?
+		if( size > 0
+		   && x >= (geometry[g].AABB[BB_LOW_X]-size)
+		   && x <= (geometry[g].AABB[BB_HIGH_X]+size)
+		   && y >= (geometry[g].AABB[BB_LOW_Y]-size)
+		   && y <= (geometry[g].AABB[BB_HIGH_Y]+size)
+		   && z >= (geometry[g].AABB[BB_LOW_Z]-size)
+		   && z <= (geometry[g].AABB[BB_HIGH_Z]+size)
+		   ) {
+			
+			//We can only attach up to ACTIVE_LIGHTS_MAX lights.
+			if(lightsAttached < ACTIVE_LIGHTS_MAX){
+				
+				//Light positions must now be in eye space
+				MSI()->transformVertexToEyespace(x,y,z);
+				
+				activeLightPositions[lightsAttached*4 +0] = x;
+				activeLightPositions[lightsAttached*4 +1] = y;
+				activeLightPositions[lightsAttached*4 +2] = z;
+				activeLightPositions[lightsAttached*4 +3] = size;
+				
+				activeLightColors[lightsAttached*4 +0] = red;
+				activeLightColors[lightsAttached*4 +1] = green;
+				activeLightColors[lightsAttached*4 +2] = blue;
+				activeLightColors[lightsAttached*4 +3] = mode;
+				
+				//Spot lights also take up the second slot.
+				if(mode >= SPOT_LIGHT_PACK_MIN && mode <= SPOT_LIGHT_PACK_MAX) {
+					//CONSIDER THAT 3D models have their own MVP matrix, which is usually different than the active one in MSI.
+					MSI()->transformVectorToEyespace(dirX, dirY, dirZ); //Direction vector, if any, also needs to be in eyespace.
+					
+					activeLightPositions[lightsAttached*4 +4] = dirX;
+					activeLightPositions[lightsAttached*4 +5] = dirY;
+					activeLightPositions[lightsAttached*4 +6] = dirZ;
+					
+					activeLightColors[lightsAttached*4 +4] = outerLimitCos;
+					activeLightColors[lightsAttached*4 +5] = innerLimitCos;
+					lightsAttached++;
+					l++; //Skip over processing of this slot on next loop, since it's not a whole light.
+				}
+				
+				lightsAttached++;
+			}
+			
+		}
+		
+	}
+	*/
+}
+
+void DrawCache::clearAttachedLights() {
+	for(int i = 0; i < MAX_POINT_LIGHT_ELEMENTS; i++) {
+		activePointLights[i]=0;
+	}
+	
+	for(int i = 0; i < MAX_SPOT_LIGHT_ELEMENTS; i++) {
+		activeSpotLights[i]=0;
+	}
+	
+	for(int i = 0; i < MAX_AREA_LIGHT_ELEMENTS; i++) {
+		activeAreaLights[i]=0;
+	}
+}
+
+bool DrawCache::lightAndGeometryIntersect(dynamicLight l, geometryProperties g) {
+	
+	float x = l.position[0];
+	float y = l.position[1];
+	float z = l.position[2];
+	
+	if( l.size > 0
+		   && x >= (g.AABB[BB_LOW_X]	-l.size)
+		   && x <= (g.AABB[BB_HIGH_X]	+l.size)
+		   && y >= (g.AABB[BB_LOW_Y]	-l.size)
+		   && y <= (g.AABB[BB_HIGH_Y]	+l.size)
+		   && z >= (g.AABB[BB_LOW_Z]	-l.size)
+		   && z <= (g.AABB[BB_HIGH_Z]	+l.size)
+	   ) {
+		return TRUE;
+	}
+	
+	return FALSE;
 }
 
 void DrawCache::cacheLandscapeTextureStatus(bool isLand) {lastTextureIsLandscape = isLand;}

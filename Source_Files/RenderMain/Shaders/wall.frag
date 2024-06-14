@@ -1,10 +1,17 @@
 R"(
 
+const int MAX_POINT_LIGHT_ELEMENTS = 448; //Must match MAX_POINT_LIGHT_ELEMENTS defined elsewhere
+const int POINT_LIGHT_DATA_SIZE = 7; //Each point light needs 7 elements
+
+const int MAX_SPOT_LIGHT_ELEMENTS = 72; //Must match MAX_SPOT_LIGHT_ELEMENTS defined elsewhere
+const int SPOT_LIGHT_DATA_SIZE = 12; //Each spot light needs 12 elements
+
 precision highp float;
 varying vec2 textureUV;
 uniform sampler2D texture0;
-uniform vec4 lightPositions[32];
-uniform vec4 lightColors[32];
+uniform float pointLights[MAX_POINT_LIGHT_ELEMENTS];
+uniform float spotLights[MAX_SPOT_LIGHT_ELEMENTS];
+uniform float areaLights[84];	//Must match MAX_AREA_LIGHT_ELEMENTS
 uniform float fogMode;
 uniform float fogStart;
 uniform float fogEnd;
@@ -39,6 +46,63 @@ float getFogFactor(float distance) {
 	}
 }
 
+vec4 pointLighting(vec4 baseColor) {
+	
+	vec4 lightAddition = vec4(0.0, 0.0, 0.0, 1.0);
+	for(int i = 0; i < MAX_POINT_LIGHT_ELEMENTS; i += POINT_LIGHT_DATA_SIZE) {
+		//Format of point light data: position, color, size (7 elements per light).
+		//Unpack the data, and abort if size goes to near nothing (indicating end-of-list).
+		float size = pointLights[i+6];
+		if( size < .1) { break; } //End of light list
+		vec3 lightPosition = vec3(pointLights[i], pointLights[i+1], pointLights[i+2]);
+		vec4 lightColor = vec4(pointLights[i+3], pointLights[i+4], pointLights[i+5], 1.0);
+		
+		float distance = length(lightPosition - vPosition_eyespace.xyz);
+		vec3 lightVector = normalize(lightPosition - vPosition_eyespace.xyz);
+		float diffuse = max(dot(eyespaceNormal, lightVector), 0.0);
+		diffuse = diffuse * max((size*size - distance*distance)/(size*size), 0.0 ); //Attenuation
+		
+		lightAddition = lightAddition + baseColor * diffuse * lightColor;
+	}
+	
+	return lightAddition;
+}
+
+vec4 spotLighting(vec4 baseColor) {
+	
+	vec4 lightAddition = vec4(0.0, 0.0, 0.0, 1.0);
+	for(int i = 0; i < MAX_SPOT_LIGHT_ELEMENTS; i += SPOT_LIGHT_DATA_SIZE) {
+		
+		//Format of spot light data: position, direction, innerAngleRadiansCos, outerAngleRadiansCos, color, size (12 elements per light).
+		//Unpack the data, and abort if size goes to near nothing (indicating end-of-list).
+		float size = spotLights[i+11];
+		if( size < .1) { break; } //End of light list
+		vec3 lightPosition = vec3(spotLights[i], spotLights[i+1], spotLights[i+2]);
+		vec3 spotlightDirection = normalize(vec3(spotLights[i+3], spotLights[i+4], spotLights[i+5])); //Input should be an eyespace vector.
+		float innerLimitCos = spotLights[i+6]; //Cosine of inside angle (in radians). Light is at 100% inside of this angle.
+		float outerLimitCos = spotLights[i+7]; //Cosine of outside angle (in radians). There is no light beyond this angle.
+		vec4 lightColor = vec4(spotLights[i+8], spotLights[i+9], spotLights[i+10], 1.0);
+		
+		float distance = length(lightPosition - vPosition_eyespace.xyz);
+		vec3 lightVector = normalize(lightPosition - vPosition_eyespace.xyz);
+		float diffuse = max(dot(eyespaceNormal, lightVector), 0.0);
+		diffuse = diffuse * max((size*size - distance*distance)/(size*size), 0.0 ); //Attenuation
+		
+		float dotFromDirection = dot(-lightVector, spotlightDirection);
+		float inLight = smoothstep(outerLimitCos, innerLimitCos, dotFromDirection);
+		
+		if(dot(-lightVector, spotlightDirection) > outerLimitCos) {
+			diffuse *= inLight; // apply the spotlight effect to the diffuse component
+		} else {
+			diffuse = 0.0; // light is outside of the spotlight cone
+		}
+		
+		lightAddition = lightAddition + baseColor * diffuse * lightColor;
+	}
+	
+	return lightAddition;
+}
+
 void main (void) {
 	if( dot( vPosition_eyespace, clipPlane0) < 0.0 ) {discard;}
 	if( dot( vPosition_eyespace, clipPlane1) < 0.0 ) {discard;}
@@ -62,39 +126,9 @@ void main (void) {
 	vec4 color = texture2D(texture0, texCoords.xy);
 	float fogFactor = getFogFactor(length(viewDir));
 
-	//Calculate light
-	vec4 lightAddition = vec4(0.0, 0.0, 0.0, 1.0);
-	for(int i = 0; i < 32; ++i) {
-		float size = lightPositions[i].w;
-		if( size < .1) { break; } //End of light list
-		vec3 lightPosition = lightPositions[i].xyz;
-		vec4 lightColor = vec4(lightColors[i].rgb, 1.0);
-		float mode = lightColors[i].a;
-		float distance = length(lightPosition - vPosition_eyespace.xyz);
-		vec3 lightVector = normalize(lightPosition - vPosition_eyespace.xyz);
-		float diffuse = max(dot(eyespaceNormal, lightVector), 0.0);
-		diffuse = diffuse * max((size*size - distance*distance)/(size*size), 0.0 ); //Attenuation
-
-		// Spotlight attenuation
-		if(mode >= 0.33 && mode <= 0.66) {
-			vec3 spotlightDirection = normalize(vec3(lightPositions[i+1].xyz)); //Input should be an eyespace vector.
-			
-			float outerLimitCos = lightColors[i+1].x; //Cosine of outside angle (in radians). There is no light beyond this angle.
-			float innerLimitCos = lightColors[i+1].y; //Cosine of inside angle (in radians). Light is at 100% inside of this angle.
-			float dotFromDirection = dot(-lightVector, spotlightDirection);
-			float inLight = smoothstep(outerLimitCos, innerLimitCos, dotFromDirection);
-			
-			if(dot(-lightVector, spotlightDirection) > outerLimitCos) {
-				diffuse *= inLight; // apply the spotlight effect to the diffuse component
-			} else {
-				diffuse = 0.0; // light is outside of the spotlight cone
-			}
-			
-			i++; //Remember, spot lights take up two slots.
-		}
-
-		lightAddition = lightAddition + color * diffuse * lightColor;
-    }
+	vec4 lightAddition = pointLighting(color);
+	lightAddition += spotLighting(color);
+	//lightAddition += areaLighting(color);
 	
     gl_FragColor = vec4(mix(fogColor.rgb, lightAddition.rgb + color.rgb * intensity, fogFactor), color.a);
 }

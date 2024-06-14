@@ -111,8 +111,9 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
     "clipPlane4",
     "clipPlane5",
     "clipPlane6",
-    "lightPositions",
-    "lightColors"
+    "pointLights",
+    "spotLights",
+	"areaLights"
 };
 
 const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] =
@@ -400,6 +401,10 @@ void Shader::setFloat(UniformName name, float f) {
         _cached_floats[name] = f;
         glUniform1f(getUniformLocation(name), f);
     }
+}
+
+void Shader::setFloatv(UniformName name, int count, float *f) {
+	glUniform1fv(getUniformLocation(name), count, f);
 }
 
 void Shader::setMatrix4(UniformName name, float *f) {

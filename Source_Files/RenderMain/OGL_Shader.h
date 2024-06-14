@@ -85,8 +85,9 @@ public:
         U_ClipPlane4,
         U_ClipPlane5,
         U_ClipPlane6,
-        U_LightPositions,
-        U_LightColors,
+        U_PointLights,
+        U_SpotLights,
+		U_AreaLights,
 		NUMBER_OF_UNIFORM_LOCATIONS
 	};
 
@@ -125,9 +126,6 @@ public:
         ATTRIB_CLIPPLANE0,
         ATTRIB_CLIPPLANE1,
         ATTRIB_CLIPPLANE5,
-        ATTRIB_SxOxSyOy, //Pack in scaleX, offsetX, scaleY, offsetY
-        ATTRIB_BsBtFlSl, //Pack in bloomScale, bloomShift, flare, selfLuminosity
-        ATTRIB_PuWoDeGl, //Pack in pulsate, wobble, depth, glow
         NUM_ATTRIBUTES
     };
     
@@ -171,6 +169,7 @@ public:
 	void unload();
     void enableAndSetStandardUniforms();
 	void setFloat(UniformName name, float); // shader must be enabled
+	void setFloatv(UniformName name, int count, float *f);
 	void setMatrix4(UniformName name, float *f);
     void setVec4(UniformName name, float *f);
     void setVec4v(UniformName name, int count, float *f);
