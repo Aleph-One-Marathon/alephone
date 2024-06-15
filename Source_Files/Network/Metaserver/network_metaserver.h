@@ -258,7 +258,7 @@ public:
 		ServerConnectException(const std::string& arg) : std::runtime_error(arg) { }
 	};
 
-        void connect(const std::string& serverName, uint16 port, const std::string& userName, const std::string& userPassword);
+        void connect(const std::string& serverName, uint16 port, const std::string& userName, const std::string& userPassword, bool use_remote_hub);
 	void disconnect();
 	bool isConnected() const;
 
@@ -281,7 +281,7 @@ public:
 
 	void sendChatMessage(const std::string& message);
 	void sendPrivateMessage(MetaserverPlayerInfo::IDType destination, const std::string& message);
-	void announceGame(uint16 gamePort, const GameDescription& description);
+	void announceGame(uint16 gamePort, const GameDescription& description, uint16 remoteHubId);
 	void announcePlayersInGame(uint8 players);
 	void announceGameStarted(int32 gameTimeInSeconds);
 	void announceGameReset();
@@ -290,6 +290,8 @@ public:
 	void ignore(MetaserverPlayerInfo::IDType id);
 	bool is_ignored(MetaserverPlayerInfo::IDType id);
 	void syncGames();
+	
+	const std::vector<RemoteHubServerDescription>& get_remoteHubServers() const;
 
 	void player_target(MetaserverPlayerInfo::IDType id) { m_playersInRoom.target(id); };
 	MetaserverPlayerInfo::IDType player_target() { return m_playersInRoom.target(); };
@@ -306,9 +308,10 @@ private:
 	void handlePrivateMessage(PrivateMessage* inMessage, CommunicationsChannel* inChannel);
 	void handleKeepAliveMessage(Message* inMessage, CommunicationsChannel* inChannel);
 	void handleBroadcastMessage(BroadcastMessage* inMessage, CommunicationsChannel* inChannel);
-        void handlePlayerListMessage(PlayerListMessage* inMessage, CommunicationsChannel* inChannel);
-        void handleRoomListMessage(RoomListMessage* inMessage, CommunicationsChannel* inChannel);
-        void handleGameListMessage(GameListMessage* inMessage, CommunicationsChannel* inChannel);
+	void handlePlayerListMessage(PlayerListMessage* inMessage, CommunicationsChannel* inChannel);
+	void handleRoomListMessage(RoomListMessage* inMessage, CommunicationsChannel* inChannel);
+	void handleRemoteHubListMessage(RemoteHubListMessage* inMessage, CommunicationsChannel* inChannel);
+	void handleGameListMessage(GameListMessage* inMessage, CommunicationsChannel* inChannel);
 	void handleSetPlayerDataMessage(SetPlayerDataMessage*, CommunicationsChannel *) { }
 
 	std::unique_ptr<CommunicationsChannel>    m_channel;
@@ -321,11 +324,13 @@ private:
 	std::unique_ptr<MessageHandler>           m_broadcastMessageHandler;
 	std::unique_ptr<MessageHandler>           m_playerListMessageHandler;
 	std::unique_ptr<MessageHandler>           m_roomListMessageHandler;
+	std::unique_ptr<MessageHandler>           m_remoteHubListMessageHandler;
 	std::unique_ptr<MessageHandler>           m_gameListMessageHandler;
 	std::unique_ptr<MessageHandler>           m_privateMessageHandler;
 	std::unique_ptr<MessageHandler>           m_setPlayerDataMessageHandler;
 	Rooms					m_rooms;
 	RoomDescription				m_room;
+	std::vector<RemoteHubServerDescription> m_remoteHubServers;
         PlayersInRoom				m_playersInRoom;
         GamesInRoom				m_gamesInRoom;
 	std::string				m_playerName;
@@ -338,6 +343,7 @@ private:
 
 	GameDescription                         m_gameDescription;
 	uint16                                  m_gamePort;
+	uint16                                  m_remoteHubId;
 
 	MetaserverPlayerInfo::IDType            m_player_target;
 	bool                                    m_player_target_exists;

@@ -46,7 +46,6 @@
 #include "crc.h"
 #include "player.h"
 #include "InfoTree.h"
-
 #include <map>
 
 extern void make_player_really_net_dead(size_t inPlayerIndex);
@@ -211,6 +210,7 @@ check_send_packet_to_hub()
 void
 spoke_initialize(const NetAddrBlock& inHubAddress, int32 inFirstTick, size_t inNumberOfPlayers, WritableTickBasedActionQueue* const inPlayerQueues[], bool inPlayerConnected[], size_t inLocalPlayerIndex, bool inHubIsLocal)
 {
+        assert(inLocalPlayerIndex != NONE);
         assert(inNumberOfPlayers >= 1);
         assert(inLocalPlayerIndex < inNumberOfPlayers);
         assert(inPlayerQueues[inLocalPlayerIndex] != NULL);
@@ -354,7 +354,7 @@ spoke_distribute_lossy_streaming_bytes_to_everyone(int16 inDistributionType, byt
 			if (onlySendToTeam)
 			{
 				player_info* player = (player_info *)NetGetPlayerData(i);
-				if (player->team == local_team) 
+				if (player->team == local_team)
 					theDestinations |= (((uint32)1) << i);
 				
 			}
@@ -783,10 +783,11 @@ spoke_received_ping_response(AIStream& ps, NetAddrBlock address)
 {
 	uint16 pingIdentifier;
 	ps >> pingIdentifier;
-	
-	// we don't send ping requests, so we don't expect to get one
-	logWarningNMT("Received unexpected ping response packet");
-	
+
+	if (auto pinger = NetGetPinger().lock())
+		pinger->StoreResponse(pingIdentifier);
+	else
+		logWarningNMT("Received unexpected ping response packet");
 } // spoke_received_ping_response()
 
 

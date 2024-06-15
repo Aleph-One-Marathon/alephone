@@ -62,7 +62,6 @@ static void deflateNetPlayer(AOStream& outputStream, const NetPlayer &player) {
   outputStream << player.stream_id;
   outputStream << player.net_dead;
 
-
   write_string(outputStream, player.player_data.name);
   outputStream << player.player_data.desired_color;
   outputStream << player.player_data.team;
@@ -306,8 +305,6 @@ void TopologyMessage::reallyDeflateTo(AOStream& outputStream) const {
   outputStream << mTopology.game_data.kill_limit;
   outputStream << mTopology.game_data.game_options;
   outputStream << mTopology.game_data.difficulty_level;
-  outputStream << mTopology.game_data.server_is_playing;
-  outputStream << mTopology.game_data.allow_mic;
   outputStream << mTopology.game_data.cheat_flags;
   outputStream << mTopology.game_data.level_number;
   write_string(outputStream, mTopology.game_data.level_name);
@@ -318,6 +315,11 @@ void TopologyMessage::reallyDeflateTo(AOStream& outputStream) const {
   for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++) {
     deflateNetPlayer(outputStream, mTopology.players[i]);
   }
+
+  outputStream.write((byte*)&mTopology.server.dspAddress.host, 4);
+  outputStream.write((byte*)&mTopology.server.dspAddress.port, 2);
+  outputStream.write((byte*)&mTopology.server.ddpAddress.host, 4);
+  outputStream.write((byte*)&mTopology.server.ddpAddress.port, 2);
 }
 
 bool TopologyMessage::reallyInflateFrom(AIStream& inputStream) {
@@ -331,8 +333,6 @@ bool TopologyMessage::reallyInflateFrom(AIStream& inputStream) {
   inputStream >> mTopology.game_data.kill_limit;
   inputStream >> mTopology.game_data.game_options;
   inputStream >> mTopology.game_data.difficulty_level;
-  inputStream >> mTopology.game_data.server_is_playing;
-  inputStream >> mTopology.game_data.allow_mic;
   inputStream >> mTopology.game_data.cheat_flags;
   inputStream >> mTopology.game_data.level_number;
   read_string(inputStream, mTopology.game_data.level_name, MAX_LEVEL_NAME_LENGTH - 1);
@@ -344,7 +344,35 @@ bool TopologyMessage::reallyInflateFrom(AIStream& inputStream) {
     inflateNetPlayer(inputStream, mTopology.players[i]);
   }
 
+  inputStream.read((byte*)&mTopology.server.dspAddress.host, 4);
+  inputStream.read((byte*)&mTopology.server.dspAddress.port, 2);
+  inputStream.read((byte*)&mTopology.server.ddpAddress.host, 4);
+  inputStream.read((byte*)&mTopology.server.ddpAddress.port, 2);
+
   return true;
+}
+
+void RemoteHubCommandMessage::reallyDeflateTo(AOStream& outputStream) const {
+
+	outputStream << (short)mCommand;
+	outputStream << mData;
+}
+
+bool RemoteHubCommandMessage::reallyInflateFrom(AIStream& inputStream) {
+	short command;
+	inputStream >> command;
+	mCommand = static_cast<RemoteHubCommand>(command);
+	inputStream >> mData;
+	return true;
+}
+
+void RemoteHubHostResponseMessage::reallyDeflateTo(AOStream& outputStream) const {
+	outputStream << (Uint8)mAccepted;
+}
+
+bool RemoteHubHostResponseMessage::reallyInflateFrom(AIStream& inputStream) {
+	inputStream >> (Uint8&)mAccepted;
+	return true;
 }
 
 #endif // !defined(DISABLE_NETWORKING)

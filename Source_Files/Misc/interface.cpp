@@ -528,115 +528,6 @@ static void construct_single_player_start(player_start_data* outStartArray, shor
         set_player_start_doesnt_auto_switch_weapons_status(&outStartArray[0], dont_switch_to_new_weapon());
 }
 
-#if !defined(DISABLE_NETWORKING)
-static void construct_multiplayer_starts(player_start_data* outStartArray, short* outStartCount)
-{
-        int number_of_players = NetGetNumberOfPlayers();
-        
-        if(outStartCount != NULL)
-        {
-                *outStartCount = number_of_players;
-        }
-    
-        for(int player_index= 0; player_index<number_of_players; ++player_index)
-        {
-                player_info *player_information = (player_info *)NetGetPlayerData(player_index);
-                outStartArray[player_index].team = player_information->team;
-                outStartArray[player_index].color= player_information->color;
-                outStartArray[player_index].identifier = NetGetPlayerIdentifier(player_index);
-                strncpy(outStartArray[player_index].name, player_information->name, MAXIMUM_PLAYER_START_NAME_LENGTH+1);
-        }
-}
-#endif // !defined(DISABLE_NETWORKING)
-
-// This should be safe to use whether starting or resuming and whether single-player or multiplayer.
-void match_starts_with_existing_players(player_start_data* ioStartArray, short* ioStartCount)
-{
-        // This code could be smarter, but it doesn't run very often, doesn't get big data sets, etc.
-        // so I'm not going to worry about it.
-        
-        bool startAssigned[MAXIMUM_NUMBER_OF_PLAYERS];
-        int8 startAssignedToPlayer[MAXIMUM_NUMBER_OF_PLAYERS];
-        for(int i = 0; i < MAXIMUM_NUMBER_OF_PLAYERS; i++)
-        {
-                startAssigned[i] = false;
-                startAssignedToPlayer[i] = NONE;
-        }
-        
-        // First, match starts to players by name.
-        for(int s = 0; s < *ioStartCount; s++)
-        {
-                for(int p = 0; p < dynamic_world->player_count; p++)
-                {
-                        if(startAssignedToPlayer[p] == NONE)
-                        {
-                                if(strcmp(ioStartArray[s].name, get_player_data(p)->name) == 0)
-                                {
-                                        startAssignedToPlayer[p] = s;
-                                        startAssigned[s] = true;
-                                        break;
-                                }
-                        }
-                }
-        }
-        
-        // Match remaining starts to remaining players arbitrarily.
-        for(int s = 0; s < *ioStartCount; s++)
-        {
-                if(!startAssigned[s])
-                {
-                        for(int p = 0; p < dynamic_world->player_count; p++)
-                        {
-                                if(startAssignedToPlayer[p] == NONE)
-                                {
-                                        startAssignedToPlayer[p] = s;
-                                        startAssigned[s] = true;
-                                        break;
-                                }
-                        }
-                }
-        }
-        
-        // Create new starts for any players not covered.
-        int p = 0;        
-        while(*ioStartCount < dynamic_world->player_count)
-        {
-                if(startAssignedToPlayer[p] == NONE)
-                {
-                        player_data* thePlayer = get_player_data(p);
-                        ioStartArray[*ioStartCount].team = thePlayer->team;
-                        ioStartArray[*ioStartCount].color = thePlayer->color;
-                        ioStartArray[*ioStartCount].identifier = NONE;
-                        strncpy(ioStartArray[*ioStartCount].name, thePlayer->name, MAXIMUM_PLAYER_START_NAME_LENGTH+1);
-                        startAssignedToPlayer[p] = *ioStartCount;
-                        startAssigned[*ioStartCount] = true;
-                        (*ioStartCount)++;
-                }
-                
-                p++;
-        }
-        
-        // Assign remaining starts to players that don't exist yet
-        p = dynamic_world->player_count;
-        for(int s = 0; s < *ioStartCount; s++)
-        {
-                if(!startAssigned[s])
-                {
-                        startAssignedToPlayer[p] = s;
-                        startAssigned[s] = true;
-                        p++;
-                }
-        }
-        
-        // Reorder starts to match players - this is particularly unclever
-        player_start_data theOriginalStarts[MAXIMUM_NUMBER_OF_PLAYERS];
-        memcpy(theOriginalStarts, ioStartArray, sizeof(theOriginalStarts));
-        for(p = 0; p < *ioStartCount; p++)
-        {
-                ioStartArray[p] = theOriginalStarts[startAssignedToPlayer[p]];
-        }
-}
-
 // This should be safe to use whether starting or resuming, and whether single- or multiplayer.
 static void synchronize_players_with_starts(const player_start_data* inStartArray, short inStartCount, short inLocalPlayerIndex)
 {
@@ -796,7 +687,8 @@ bool join_networked_resume_game()
 
 					if (found_map) {
 						dynamic_data dynamic_data_wad;
-						get_dynamic_data_from_wad(theWad, &dynamic_data_wad);
+						bool result = get_dynamic_data_from_wad(theWad, &dynamic_data_wad);
+						assert(result);
 						RunLevelScript(dynamic_data_wad.current_level_number);
 					}
 
@@ -906,36 +798,52 @@ bool load_and_start_game(FileSpecifier& File)
 	{
 		userWantsMultiplayer = (theResult != 0);
 	}
-        
+
 	if (success)
 	{
+		int theSavedGameFlatDataLength = 0;
+		auto theSavedGameFlatData = std::unique_ptr<byte, decltype(&free)>(nullptr, free);
+
 #if !defined(DISABLE_NETWORKING)
 		if (userWantsMultiplayer)
 		{
-			set_game_state(_displaying_network_game_dialogs);
-			success = network_gather(true /*resuming*/);
+			theSavedGameFlatData.reset((byte*)get_flat_data(File, false /* union wad? */, 0 /* level # */));
+			success = theSavedGameFlatData != nullptr;
+
+			if (success)
+			{
+				theSavedGameFlatDataLength = get_flat_data_length(theSavedGameFlatData.get());
+				set_game_state(_displaying_network_game_dialogs);
+
+				//we don't know at this point if we are going to use a remote hub but this must be set if we do
+				NetSetResumedGameWadForRemoteHub(theSavedGameFlatData.get(), theSavedGameFlatDataLength);
+
+				bool use_remote_hub;
+				success = network_gather(true /*resuming*/, use_remote_hub);
+				if (success && use_remote_hub) return join_networked_resume_game();
+			}
 		}
 #endif // !defined(DISABLE_NETWORKING)
-                
+
 		if (success)
 		{
 			Crosshairs_SetActive(player_preferences->crosshairs_active);
 			LoadHUDLua();
 			RunLuaHUDScript();
-			
+
 			// load the scripts we put off before
 			short SavedType, SavedError = get_game_error(&SavedType);
-			if(!userWantsMultiplayer)
+			if (!userWantsMultiplayer)
 			{
 				LoadSoloLua();
 			}
 			LoadAchievementsLua();
 			LoadStatsLua();
-			set_game_error(SavedType,SavedError);
-			
+			set_game_error(SavedType, SavedError);
+
 			player_start_data theStarts[MAXIMUM_NUMBER_OF_PLAYERS];
 			short theNumberOfStarts;
-        
+
 #if !defined(DISABLE_NETWORKING)
 			if (userWantsMultiplayer)
 			{
@@ -946,9 +854,9 @@ bool load_and_start_game(FileSpecifier& File)
 			{
 				construct_single_player_start(theStarts, &theNumberOfStarts);
 			}
-                        
+
 			match_starts_with_existing_players(theStarts, &theNumberOfStarts);
-                        
+
 #if !defined(DISABLE_NETWORKING)
 			if (userWantsMultiplayer)
 			{
@@ -956,26 +864,15 @@ bool load_and_start_game(FileSpecifier& File)
 				success = NetStart();
 				if (success)
 				{
-					byte* theSavedGameFlatData = (byte*)get_flat_data(File, false /* union wad? */, 0 /* level # */);
-					if (theSavedGameFlatData == NULL)
+					OSErr theError = NetDistributeGameDataToAllPlayers(theSavedGameFlatData.get(), theSavedGameFlatDataLength, false /* do_physics? */);
+					if (theError != noErr)
 					{
 						success = false;
-					}
-
-					if (success)
-					{
-						int32 theSavedGameFlatDataLength = get_flat_data_length(theSavedGameFlatData);
-						OSErr theError = NetDistributeGameDataToAllPlayers(theSavedGameFlatData, theSavedGameFlatDataLength, false /* do_physics? */);
-						if (theError != noErr)
-						{
-							success = false;
-						}
-						free(theSavedGameFlatData);
 					}
 				}
 			}
 #endif // !defined(DISABLE_NETWORKING)
-                        
+
 			if (success)
 			{
 				RunLuaScript();
@@ -2587,8 +2484,9 @@ static void handle_network_game(
 	
 	if(gatherer)
 	{
-		successful_gather= network_gather(false);
-		if (successful_gather) successful_gather= NetStart();
+		bool use_remote_hub;
+		successful_gather= network_gather(false, use_remote_hub);
+		if (successful_gather && !use_remote_hub) successful_gather = NetStart();
 	} else {
 		int theNetworkJoinResult= network_join();
 		if (theNetworkJoinResult == kNetworkJoinedNewGame || theNetworkJoinResult == kNetworkJoinedResumeGame) successful_gather= true;

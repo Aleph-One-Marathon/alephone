@@ -33,7 +33,7 @@
 const IPaddress run_network_metaserver_ui();
 
 // This doesn't go here
-void setupAndConnectClient(MetaserverClient& client);
+void setupAndConnectClient(MetaserverClient& client, bool use_remote_hub);
 
 
 
@@ -42,7 +42,7 @@ struct game_info;
 class GameAvailableMetaserverAnnouncer
 {
 public:
-	GameAvailableMetaserverAnnouncer(const game_info& info);
+	GameAvailableMetaserverAnnouncer(const game_info& info, uint16 remote_hub_id = 0);
 	void Start(int32 time_limit);
 
 private:

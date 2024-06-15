@@ -3,10 +3,14 @@
 SUBDIRS = CSeries Files FFmpeg GameWorld Input Lua Misc	\
    ModelView Network RenderMain RenderOther Sound TCPMess XML
 
+if STANDALONE_HUB
+bin_PROGRAMS = standalone_hub
+else
 if MAKE_WINDOWS
 bin_PROGRAMS = AlephOne Marathon Marathon2 MarathonInfinity
 else
 bin_PROGRAMS = alephone
+endif
 endif
 
 alephone_SOURCES = shell.h \
@@ -25,6 +29,10 @@ alephone_LDADD = \
   ModelView/libmodelview.a Network/libnetwork.a Network/Metaserver/libmetaserver.a \
   RenderMain/librendermain.a RenderOther/librenderother.a Sound/libsound.a \
   TCPMess/libtcpmess.a XML/libxml.a
+
+standalone_hub_SOURCES = shell.h shell.cpp shell_misc.cpp shell_options.h shell_options.cpp Network/StandaloneHub/standalone_hub_main.cpp
+
+standalone_hub_LDADD = $(alephone_LDADD) Network/StandaloneHub/libstandalonehub.a
 
 AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \

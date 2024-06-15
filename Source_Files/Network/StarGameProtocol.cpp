@@ -55,14 +55,23 @@ protected:
 
 
 static WritableTickBasedActionQueue* sStarQueues[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
-static bool		sHubIsLocal;
 static NetTopology*	sTopology = NULL;
 static short*		sNetStatePtr = NULL;
+
+#ifdef A1_NETWORK_STANDALONE_HUB
+static constexpr bool sHubIsLocal = true;
+#else
+static bool sHubIsLocal;
+#endif
+
 
 
 bool
 StarGameProtocol::Enter(short* inNetStatePtr)
 {
+#ifndef A1_NETWORK_STANDALONE_HUB
+	sHubIsLocal = false;
+#endif
 	sNetStatePtr = inNetStatePtr;
 	return true;
 }
@@ -107,9 +116,13 @@ StarGameProtocol::PacketHandler(DDPPacketBufferPtr packet)
 
 
 bool
-StarGameProtocol::Sync(NetTopology* inTopology, int32 inSmallestGameTick, size_t inLocalPlayerIndex, size_t inServerPlayerIndex)
+StarGameProtocol::Sync(NetTopology* inTopology, int32 inSmallestGameTick, int inLocalPlayerIndex, int inServerPlayerIndex)
 {
 	assert(inTopology != NULL);
+
+#ifdef A1_NETWORK_STANDALONE_HUB
+	assert(inLocalPlayerIndex == inServerPlayerIndex && inLocalPlayerIndex == NONE);
+#endif
 	
 	sTopology = inTopology;
 	
@@ -127,7 +140,9 @@ StarGameProtocol::Sync(NetTopology* inTopology, int32 inSmallestGameTick, size_t
 
         if(inLocalPlayerIndex == inServerPlayerIndex)
         {
+#ifndef A1_NETWORK_STANDALONE_HUB
 		sHubIsLocal = true;
+#endif
 		
                 NetAddrBlock* theAddresses[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 
@@ -136,11 +151,14 @@ StarGameProtocol::Sync(NetTopology* inTopology, int32 inSmallestGameTick, size_t
 
                 hub_initialize(inSmallestGameTick, sTopology->player_count, theAddresses, inLocalPlayerIndex);
         }
+#ifndef A1_NETWORK_STANDALONE_HUB
 	else
 		sHubIsLocal = false;
 
-        spoke_initialize(sTopology->players[inServerPlayerIndex].ddpAddress, inSmallestGameTick, sTopology->player_count,
+
+        spoke_initialize(sTopology->server.ddpAddress, inSmallestGameTick, sTopology->player_count,
                          sStarQueues, theConnectedPlayerStatus, inLocalPlayerIndex, sHubIsLocal);
+#endif
 
         *sNetStatePtr = netActive;
 
@@ -154,7 +172,9 @@ StarGameProtocol::UnSync(bool inGraceful, int32 inSmallestPostgameTick)
 {
         if(*sNetStatePtr == netStartingUp || *sNetStatePtr == netActive)
         {
+#ifndef A1_NETWORK_STANDALONE_HUB
                 spoke_cleanup(inGraceful);
+#endif
                 if(sHubIsLocal)
                         hub_cleanup(inGraceful, inSmallestPostgameTick);
 

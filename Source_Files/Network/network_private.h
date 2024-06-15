@@ -81,7 +81,8 @@ enum /* error string for user */
 	netWarnJoinerNoLua,
 	netErrMetaserverConnectionFailure,
 	netWarnCouldNotAdvertiseOnMetaserver,
-	netWarnUPnPConfigureFailed
+	netWarnUPnPConfigureFailed,
+	netWarnRemoteHubServerNotAvailable
 };
 
 // (ZZZ:) Moved here from network.cpp
@@ -200,6 +201,11 @@ struct NetPlayer
 };
 typedef struct NetPlayer NetPlayer, *NetPlayerPtr;
 
+struct NetServer
+{
+	NetAddrBlock dspAddress, ddpAddress;
+};
+
 struct NetTopology
 {
 	int16 tag;
@@ -208,9 +214,10 @@ struct NetTopology
 	int16 nextIdentifier;
 	
   //uint8 game_data[MAXIMUM_GAME_DATA_SIZE];
-  game_info game_data;
+	game_info game_data;
 	
 	struct NetPlayer players[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+	struct NetServer server;
 };
 typedef struct NetTopology NetTopology, *NetTopologyPtr;
 

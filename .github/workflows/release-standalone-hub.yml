@@ -8,12 +8,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Build Standalone Hub Docker image
-      run: docker buildx build -t alephone-standalone-hub . -f Dockerfile.hub --output type=tar,dest=alephone-standalone-hub.tar
+    - name: Get Standalone Hub Version
+      run: echo "standalone_hub_version=$(awk -F'"' '/#define STANDALONE_HUB_VERSION/ {print $2}' Source_Files/Network/StandaloneHub/StandaloneHub.h)" >> $GITHUB_ENV
+    
+    - name: Build Docker image
+      run: docker buildx build -t alephone/standalone-hub:${{env.standalone_hub_version}} . -f Dockerfile.hub --load
+      
+    - name: Save Docker image
+      run: docker save -o alephone-standalone-hub-${{env.standalone_hub_version}}.tar alephone/standalone-hub:${{env.standalone_hub_version}}
         
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: alephone-standalone-hub
         if-no-files-found: error
-        path: alephone-standalone-hub.tar
+        path: alephone-standalone-hub-${{env.standalone_hub_version}}.tar

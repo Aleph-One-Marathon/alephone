@@ -32,5 +32,8 @@
     <ClCompile Include="..\..\Source_Files\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source_Files\Network\StandaloneHub\standalone_hub_main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

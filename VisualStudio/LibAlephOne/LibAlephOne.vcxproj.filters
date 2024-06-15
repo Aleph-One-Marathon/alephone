@@ -149,6 +149,15 @@
     <Filter Include="Main\Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Network\StandaloneHub">
+      <UniqueIdentifier>{09225455-bc3b-4dea-9c01-a4c78336161d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network\StandaloneHub\Header Files">
+      <UniqueIdentifier>{95a5bfc1-c6fb-484d-ad79-5d61f35d00b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network\StandaloneHub\Source Files">
+      <UniqueIdentifier>{6242ea60-66d3-4e2c-b10d-6ff171d0dacc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source_Files\CSeries\mytm_sdl.cpp">
@@ -723,6 +732,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Source_Files\Misc\achievements.cpp">
       <Filter>Misc\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source_Files\Network\Pinger.cpp">
+      <Filter>Network\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source_Files\Network\StandaloneHub\standalone_hub_main.cpp">
+      <Filter>Network\StandaloneHub\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source_Files\Network\StandaloneHub\StandaloneHub.cpp">
+      <Filter>Network\StandaloneHub\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1418,6 +1436,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Misc\achievements.h">
       <Filter>Misc\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source_Files\Network\Pinger.h">
+      <Filter>Network\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source_Files\Network\StandaloneHub\StandaloneHub.h">
+      <Filter>Network\StandaloneHub\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

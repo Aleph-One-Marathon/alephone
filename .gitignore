@@ -28,6 +28,7 @@ lib*.a
 /Source_Files/CSeries/confpaths.h
 
 /Source_Files/alephone
+/Source_Files/standalone_hub
 /Source_Files/*.exe
 /*.zip
 /*.tar.bz2
