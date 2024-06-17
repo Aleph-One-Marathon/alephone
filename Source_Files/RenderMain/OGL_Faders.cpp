@@ -34,19 +34,16 @@
 
 #ifdef HAVE_OPENGL
 
+#include "OGL_Headers.h"
+#include "MatrixStack.hpp"
+#include "OGL_Shader.h"
+
 // The randomizer for the flat-static color
 static GM_Random FlatStaticRandom;
 
 // Alternative: partially-transparent instead of the logic-op effect
 static bool UseFlatStatic;
 static uint16 FlatStaticColor[4];
-
-
-#ifdef HAVE_OPENGL
-#include "OGL_Headers.h"
-#include "MatrixStack.hpp"
-#include "OGL_Shader.h"
-#endif
 
 // Fader stuff
 bool OGL_FaderActive()

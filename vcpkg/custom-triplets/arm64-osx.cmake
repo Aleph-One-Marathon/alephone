@@ -10,7 +10,5 @@ set(VCPKG_CXX_FLAGS -mmacosx-version-min=11.0)
 
 if(PORT STREQUAL "angle")
     set(VCPKG_LIBRARY_LINKAGE dynamic)
-    set(NDEBUG 1)
-    set(PORT_DEBUG OFF)
-    set(IS_DEBUG 0)
+	set(VCPKG_CMAKE_CONFIGURE_OPTIONS -DUSE_METAL=FALSE)
 endif()

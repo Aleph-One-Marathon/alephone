@@ -979,10 +979,10 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	}
 
 #endif
-#ifdef HAVE_OPENGL
+
 	bool context_created = false;
     
-    
+#ifdef HAVE_OPENGL
 	if (main_screen == NULL && !nogl && screen_mode.acceleration != _no_acceleration && Get_OGL_ConfigureData().Multisamples > 0) {
 		// retry with multisampling off
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
@@ -1211,8 +1211,6 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	{
 		L_Call_HUDResize();
 	}
-    
-    //refreshAccelerationContext(main_screen);
 }
 
 bool get_auto_resolution_size(short *w, short *h, struct screen_mode_data *mode)
@@ -1316,6 +1314,7 @@ void toggle_fullscreen()
  */
 
 static bool clear_next_screen = false;
+static void darken_world_window(void);
 
 void update_world_view_camera()
 {
@@ -1324,7 +1323,7 @@ void update_world_view_camera()
 	world_view->maximum_depth_intensity = current_player->weapon_intensity;
 
 	world_view->origin = current_player->camera_location;
-	if (!graphics_preferences->screen_mode.camera_bob)
+	if (graphics_preferences->screen_mode.bobbing_type != BobbingType::camera_and_weapon)
 		world_view->origin.z -= current_player->step_height;
 	world_view->origin_polygon_index = current_player->camera_polygon_index;
 
@@ -1569,7 +1568,7 @@ void render_screen(short ticks_elapsed)
 #ifdef HAVE_OPENGL
 		if (Screen::instance()->hud()) {
 			if (Screen::instance()->lua_hud())
-				HUD_Lua_Class::Lua_DrawHUD(ticks_elapsed);
+				Lua_DrawHUD(ticks_elapsed);
 			else {
 				Rect dr = MakeRect(HUD_DestRect);
 				OGL_DrawHUD(dr, ticks_elapsed);
@@ -1603,7 +1602,7 @@ void render_screen(short ticks_elapsed)
 		// Update HUD
 		if (Screen::instance()->lua_hud())
 		{
-			HUD_Lua_Class::Lua_DrawHUD(ticks_elapsed);
+			Lua_DrawHUD(ticks_elapsed);
 		}
 		else if (HUD_RenderRequest) {
 			SDL_Rect src_rect = { 0, 320, 640, 160 };
@@ -1620,6 +1619,11 @@ void render_screen(short ticks_elapsed)
 			}
 		}
 
+		if (!get_keyboard_controller_status())
+		{
+			darken_world_window();
+		}
+
 		if (update_full_screen || Screen::instance()->lua_hud())
 		{
 			MainScreenUpdateRect(0, 0, 0, 0);
@@ -1634,7 +1638,14 @@ void render_screen(short ticks_elapsed)
 #ifdef HAVE_OPENGL
 	// Swap OpenGL double-buffers
 	if (screen_mode.acceleration != _no_acceleration)
+	{
+		if (!get_keyboard_controller_status())
+		{
+			darken_world_window();
+		}
+
 		OGL_SwapBuffers();
+	}
 #endif
 	
 	Movie::instance()->AddFrame(Movie::FRAME_NORMAL);

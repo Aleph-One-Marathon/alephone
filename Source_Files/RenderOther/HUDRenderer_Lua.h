@@ -52,8 +52,6 @@ public:
 	HUD_Lua_Class() : m_drawing(false) {}
 	~HUD_Lua_Class() {}
 
-	static void Lua_DrawHUD(short time_elapsed);
-
 	void update_motion_sensor(short time_elapsed);
 	void clear_entity_blips(void);
 	void add_entity_blip(short mtype, short intensity, short x, short y);
@@ -116,5 +114,6 @@ protected:
 };
 
 HUD_Lua_Class *Lua_HUDInstance();
+void Lua_DrawHUD(short time_elapsed);
 
 #endif
