@@ -42,7 +42,6 @@ class Capabilities : public capabilities_t
   static const int kStarVersion = 6;
   static const int kRingVersion = 2;
   static const int kLuaVersion = 2;
-  static const int kSpeexVersion = 1;
   static const int kGatherableVersion = 1;
   static const int kZippedDataVersion = 1; // map, lua, physics
   static const int kNetworkStatsVersion = 1; // latency, jitter, errors
@@ -53,7 +52,6 @@ class Capabilities : public capabilities_t
   static const string kStar;         // the star network protocol
   static const string kRing;         // the ring network protocol
   static const string kLua;          // Lua script support
-  static const string kSpeex;        // Speex net-mic
   static const string kGatherable;   // joiner's response indicating he can be
                                      // gathered
   static const string kZippedData;   // can receive zipped data

@@ -375,9 +375,18 @@ enum class AudioFormat
 	_32_float
 };
 
+enum class ChannelType
+{
+	_mono = 1,
+	_stereo = 2,
+	_quad = 4,
+	_5_1 = 6,
+	_6_1 = 7,
+	_7_1 = 8
+};
+
 enum // initialization flags (some of these are used by the prefs, which fixes them)
 {
-	_stereo_flag= 0x0001, /* play sounds in stereo [prefs] */
 	_dynamic_tracking_flag = 0x0002, /* tracks sound sources during idle_proc [prefs] */
 	_doppler_shift_flag= 0x0004, /* adjusts sound pitch during idle_proc */
 	_ambient_sound_flag= 0x0008, /* plays and tracks ambient sounds [prefs] */

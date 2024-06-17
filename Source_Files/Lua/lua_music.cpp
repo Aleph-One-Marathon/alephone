@@ -138,13 +138,19 @@ static int Lua_MusicManager_Valid(lua_State* L) {
 		if (!lua_isstring(L, n))
 			return luaL_error(L, "valid: invalid file specifier");
 		FileSpecifier path;
-		if (path.SetNameWithPath(lua_tostring(L, n))) {
-			if (StreamDecoder::Get(path)) {
-				lua_pushboolean(L, true);
-			}
-			else lua_pushboolean(L, false);
+
+		bool found;
+		auto search_path = L_Get_Search_Path(L);
+		if (search_path.size())
+		{
+			found = path.SetNameWithPath(lua_tostring(L, n), search_path);
 		}
-		else lua_pushboolean(L, false);
+		else
+		{
+			found = path.SetNameWithPath(lua_tostring(L, n));
+		}
+
+		lua_pushboolean(L, found && StreamDecoder::Get(path));
 	}
 	return top;
 }

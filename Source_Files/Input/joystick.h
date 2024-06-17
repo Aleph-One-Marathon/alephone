@@ -45,6 +45,6 @@ int process_joystick_axes(int flags, int tick);
 void joystick_axis_moved(int instance_id, int axis, int value);
 void joystick_button_pressed(int instance_id, int button, bool down);
 void joystick_added(int device_index);
-void joystick_removed(int instance_id);
+bool joystick_removed(int instance_id);
 
 #endif // JOYSTICK_H

@@ -1,0 +1,26 @@
+#include "alephversion.h"
+
+1 VERSIONINFO
+FILEVERSION WIN_VERSION_STRING
+PRODUCTVERSION WIN_VERSION_STRING
+FILEFLAGSMASK 0
+FILEOS 0x40000
+FILETYPE 1
+{
+ BLOCK "StringFileInfo"
+ {
+  BLOCK "040904E4"
+  {
+   VALUE "FileVersion", WIN_VERSION_STRING "\0"
+   VALUE "FileDescription", "Classic Marathon Launcher"
+   VALUE "ProductName", "Classic Marathon Launcher"
+   VALUE "OriginalFilename", "Classic Marathon Launcher.exe"
+  }
+ }
+ BLOCK "VarFileInfo"
+ {
+  VALUE "Translation", 0x0409, 1252
+ }
+}
+
+AppIcon ICON "alephone.ico"

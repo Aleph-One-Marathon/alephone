@@ -3,44 +3,54 @@ name: release-windows
 on: [workflow_dispatch, workflow_call]
 
 jobs:
-  release:
+  release-x64:
     runs-on: windows-2022
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: true
         
-    - name: Get Vcpkg current hash
-      run: | 
-        $vcpkg_commit_id = git -C ${env:VCPKG_INSTALLATION_ROOT} rev-parse --short HEAD
-        echo vcpkg_current_hash=$vcpkg_commit_id >> $env:GITHUB_ENV
-        
-    - name: Restore vcpkg cache for x64
-      uses: actions/cache@v3
+    - name: Build
+      uses: ./.github/actions/build-windows
       with:
-        path: vcpkg/installed-x64-windows
-        key: ${{runner.os}}-installed-x64-windows-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
-        
-    - name: Restore vcpkg cache for x86
-      uses: actions/cache@v3
-      with:
-        path: vcpkg/installed-x86-windows
-        key: ${{runner.os}}-installed-x86-windows-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
-        
-    - name: Vcpkg Integration
-      run: |
-        $vcpkg_path = (Join-Path ${env:VCPKG_INSTALLATION_ROOT} vcpkg.exe)
-        &$vcpkg_path integrate install
+        platform: x64
+        configurations: "Release, Marathon, Marathon 2, Marathon Infinity"
+        vcpkg_installed_folder: installed-x64-windows
         
     - name: Build archives
       run: |
         cd VisualStudio &&
-        ./autobuild-windows.ps1 -x64 $true -a1 $true -m1 $true -m2 $true -m3 $true -output_path windows-build-archives &&
-        ./autobuild-windows.ps1 -x64 $false -a1 $true -m1 $false -m2 $false -m3 $false -output_path windows-build-archives
+        ./dist-windows.ps1 -x64 $true -a1 $true -m1 $true -m2 $true -m3 $true -output_path windows-build-archives
     
     - name: Upload
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: alephone-release
+        name: alephone-windows-release-x64
+        if-no-files-found: error
+        path: 'VisualStudio/windows-build-archives/*.zip'
+        
+  release-x86:
+    runs-on: windows-2022
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+        
+    - name: Build
+      uses: ./.github/actions/build-windows
+      with:
+        platform: x86
+        configurations: Release
+        vcpkg_installed_folder: installed-x86-windows
+        
+    - name: Build archives
+      run: |
+        cd VisualStudio &&
+        ./dist-windows.ps1 -x64 $false -a1 $true -m1 $false -m2 $false -m3 $false -output_path windows-build-archives
+    
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: alephone-windows-release-x86
         if-no-files-found: error
         path: 'VisualStudio/windows-build-archives/*.zip'

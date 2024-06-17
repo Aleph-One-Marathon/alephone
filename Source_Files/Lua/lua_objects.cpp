@@ -37,8 +37,6 @@ LUA_OBJECTS.CPP
 
 #include "SoundManager.h"
 
-#ifdef HAVE_LUA
-
 const float AngleConvert = 360/float(FULL_CIRCLE);
 
 template<class T>
@@ -891,5 +889,3 @@ static void compatibility(lua_State *L)
 	luaL_loadbuffer(L, compatibility_script, strlen(compatibility_script), "items_compatibility");
 	lua_pcall(L, 0, 0, 0);
 }
-
-#endif

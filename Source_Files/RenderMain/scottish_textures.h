@@ -117,7 +117,7 @@ struct rectangle_definition
 	
 	struct bitmap_definition *texture;
 	
-	/* screen coordinates; x0<x1, y0<y1 */
+	/* screen coordinates; x0 <= x1, y0 <= y1 */
 	int16 x0, y0;
 	int16 x1, y1;
 

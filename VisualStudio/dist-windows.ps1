@@ -1,29 +1,16 @@
-#The purpose of this script is to be able to build and release Alephone and the marathon trilogy easily for windows with msbuild#
+#The purpose of this script is to be able to package and release Alephone and the marathon trilogy easily for windows, executables must already exist before calling this and be sure your git status is clean on data directories
 
 #Our optional parameters
 param(
-[bool]$x64=$true, #Build 64 or 32 bits
-[bool]$a1=$true, #Build AlephOne
-[bool]$m1=$false, #Build Marathon
-[bool]$m2=$false, #Build Marathon 2
-[bool]$m3=$false, #Build Marathon Infinity
+[bool]$x64=$true, #Package 64 or 32 bits version
+[bool]$a1=$true, #Package AlephOne
+[bool]$m1=$false, #Package Marathon
+[bool]$m2=$false, #Package Marathon 2
+[bool]$m3=$false, #Package Marathon Infinity
 [int]$data=0, #0 or whatever is for building packages with data and without, 1 is build only with data (except for A1), 2 is build only without data
-[string]$input_path="./AlephOne.sln", #Path to the solution to build (must include the solution file in the path)
-[string]$output_path="./" #Path to the directory where save build packages
-) 
-
-function MsBuild {
-	Param (
-        [string]$configuration
-    )
-	
-	if(Test-Path -Path $exe_path) {
-		Remove-Item -Path $exe_path
-	}
-	&$msbuild_path $input_path /t:"Build" /p:Configuration=$configuration /p:Platform=$platform | Out-Host
-	([bool]$success = Test-Path -Path $exe_path) | Out-Null
-	return $success
-}
+[string]$input_path="./AlephOne.sln", #Path to the AlephOne solution (must include the solution file in the path)
+[string]$output_path="./" #Path to the directory where save built packages
+)
 
 function GetCommonFiles() {
 	Copy-Item $exe_path -Destination $output_package_folder
@@ -44,7 +31,7 @@ function GetCommonFiles() {
 
 function Package {
 	Param (
-        [string]$build
+		[string]$package_name
     )
 	
 	#path to the executable
@@ -56,11 +43,6 @@ function Package {
 	$package_version_month = '{0:d2}' -f $package_version.Build
 	$package_version_day = '{0:d2}' -f $package_version.Revision
 	$package_version_string = "${package_version_year}${package_version_month}${package_version_day}"
-	
-	#get the name of the executable without the extension and without spaces
-	$package_name = (Get-Item $exe_path).BaseName
-	$package_name = $package_name.replace(' ','')
-	
 	$package_fullname = "${package_name}-${package_version_string}"
 	
 	$output_package_folder = Join-Path -Path $output_path -ChildPath $package_fullname
@@ -71,7 +53,7 @@ function Package {
 	
 	GetCommonFiles -ErrorAction Stop
 	
-	if($build -eq "Release") {
+	if($package_name -eq "Release") {
 		Copy-Item (Join-Path -Path $root_directory -ChildPath "/data/Transparent_Sprites.mml") -Destination (Join-Path -Path $output_package_folder -ChildPath "/Extras")
 		Copy-Item (Join-Path -Path $root_directory -ChildPath "/data/Transparent_Liquids.mml") -Destination (Join-Path -Path $output_package_folder -ChildPath "/Extras")
 		Copy-Item (Join-Path -Path $root_directory -ChildPath "/data/default_theme") -Destination (Join-Path -Path $output_package_folder -ChildPath "/Plugins/Default_Theme") -Recurse -Exclude $array_exclude_copy
@@ -81,22 +63,22 @@ function Package {
 	
 	$os_target = if($x64) {""} else {"32"}
 	#we can already pack what we have if we wanna pack without data
-	if(($data -ne 1) -and ($build -ne "Release")) {		
+	if(($data -ne 1) -and ($package_name -ne "AlephOne")) {		
 		$zip_name = "${package_fullname}-Exe-Win${os_target}.zip"
 		Compress-Archive -Path $output_package_folder -DestinationPath (Join-Path -Path $output_path -ChildPath $zip_name) -Force
 	}
 	
-	if(($data -ne 2) -or ($build -eq "Release")) {
-		switch($build) {
+	if(($data -ne 2) -or ($package_name -eq "AlephOne")) {
+		switch($package_name) {
 		"Marathon" {
 			Copy-Item (Join-Path -Path $root_directory -ChildPath "/data/Scenarios/Marathon/*") -Destination $output_package_folder -Recurse -Exclude $array_exclude_copy
 			break
 		}
-		"Marathon 2" {
+		"Marathon2" {
 			Copy-Item (Join-Path -Path $root_directory -ChildPath "/data/Scenarios/Marathon 2/*") -Destination $output_package_folder -Recurse -Exclude $array_exclude_copy
 			break
 		}
-		"Marathon Infinity" {
+		"MarathonInfinity" {
 			Copy-Item (Join-Path -Path $root_directory -ChildPath "/data/Scenarios/Marathon Infinity/*") -Destination $output_package_folder -Recurse -Exclude $array_exclude_copy
 			break
 		}
@@ -124,19 +106,7 @@ if(!(Test-Path -Path $output_path)) {
 }
 
 if(!(Test-Path -Path $output_path -PathType Container)) {
-	Write-Error "The path to the output directory is uncorrect or can't be created: ${output_path}" -ErrorAction Stop
-}
-
-[string]$vswhere_path = if ([Environment]::Is64BitOperatingSystem) {"${Env:Programfiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"} else {"${Env:Programfiles}\Microsoft Visual Studio\Installer\vswhere.exe"}
-
-if(!(Test-Path -Path $vswhere_path)) {
-	Write-Error "Can't find vswhere.exe that should be located to ${vswhere_path}" -ErrorAction Stop
-}
-
-[string]$msbuild_path = &$vswhere_path -latest -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe"
-
-if(!(Test-Path -Path $msbuild_path)) {	
-	Write-Error "Can't find msbuild.exe that should be located to ${msbuild_path}" -ErrorAction Stop
+	Write-Error "The path to the output directory is uncorrect or the directory can't be created: ${output_path}" -ErrorAction Stop
 }
 
 # --- We should be good to go ---
@@ -147,25 +117,22 @@ if(!(Test-Path -Path $msbuild_path)) {
 [string]$exe_path_only = Join-Path -Path $solution_directory -ChildPath $exe_path_only
 
 $array_exclude_copy = @('Makefile','Makefile.*','*.svn','*.git')
-$array_build = @()
 $array_exe_name = @()
-if($a1) {$array_build += "Release"; $array_exe_name += "Aleph One.exe"}
-if($m1) {$array_build += "Marathon"; $array_exe_name += "Marathon.exe"}
-if($m2) {$array_build += "Marathon 2"; $array_exe_name += "Marathon 2.exe"}
-if($m3) {$array_build += "Marathon Infinity"; $array_exe_name += "Marathon Infinity.exe"}
+$array_package_name = @()
+if($a1) {$array_exe_name += "Aleph One.exe"; $array_package_name += "AlephOne"}
+if($m1) {$array_exe_name += "Classic Marathon.exe"; $array_package_name += "Marathon"}
+if($m2) {$array_exe_name += "Classic Marathon 2.exe"; $array_package_name += "Marathon2"}
+if($m3) {$array_exe_name += "Classic Marathon Infinity.exe"; $array_package_name += "MarathonInfinity"}
 
-for (($i = 0); $i -lt $array_build.Count; $i++) {
-	$build = $array_build[$i]
-	Write-Host "Building ${build} ${platform}" -ForegroundColor green
+for (($i = 0); $i -lt $array_exe_name.Count; $i++) {
+	$package_name = $array_package_name[$i]
 	[string]$exe_path = Join-Path -Path $exe_path_only -ChildPath $array_exe_name[$i]
-	[bool]$success = &MsBuild -configuration $build
-	if(!($success)) {
-		Write-Error "${build} build failed" -ErrorAction Stop
-	} 
-	else {
-		Write-Host "${build} build succeeded" -ForegroundColor green
-		Write-Host "Starting packaging ${build}" -ForegroundColor green
-		Package -build $build
-		Write-Host "Packaging for ${build} done" -ForegroundColor green
-	}
+	
+	if(!(Test-Path -Path $exe_path)) {
+		Write-Error "Can't find the executable to package in the path ${exe_path}" -ErrorAction Stop
+    }
+	
+	Write-Host "Starting packaging ${package_name}" -ForegroundColor green
+	Package -package_name $package_name
+	Write-Host "Packaging for ${package_name} done" -ForegroundColor green
 }

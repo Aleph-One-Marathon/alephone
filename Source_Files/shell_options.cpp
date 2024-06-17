@@ -68,37 +68,18 @@ static std::ostream& operator<<(std::ostream& s, const ShellOptionsOption& o) {
 }
 
 struct ShellOptionsCommand : public ShellOptionsOption {
-	// once we switch to C++17 this can go away and we can use aggregate
-	// initializers
-	ShellOptionsCommand(std::string short_name, std::string long_name, std::string help, std::function<void()> command_) :
-		ShellOptionsOption{short_name, long_name, help},
-		command{command_}
-		{ }
-	
 	std::function<void()> command;
 };
 
 struct ShellOptionsFlag : public ShellOptionsOption {
-	// once we switch to C++17 this can go away and we can use aggregate
-	// initializers
-	ShellOptionsFlag(std::string short_name, std::string long_name, std::string help, bool& flag_) :
-		ShellOptionsOption{short_name, long_name, help},
-		flag{flag_}
-		{ }
-	
 	bool& flag;
 };
 
 struct ShellOptionsString : public ShellOptionsOption {
-	// once we switch to C++17 this can go away and we can use aggregate
-	// initializers
-	ShellOptionsString(std::string short_name, std::string long_name, std::string help, std::string& string_) :
-		ShellOptionsOption{short_name, long_name, help},
-		string{string_}
-		{ }
-
 	std::string& string;
 };
+
+static std::string ignore;
 
 static const std::vector<ShellOptionsCommand> shell_options_commands {
 	{"h", "help", "Display this help message", print_usage},
@@ -120,7 +101,8 @@ static const std::vector<ShellOptionsFlag> shell_options_flags {
 
 static const std::vector<ShellOptionsString> shell_options_strings {
 	{"o", "output", "With -e, output to [file] and exit on quit", shell_options.output},
-	{"l", "replay-directory", "Directory with replays to load", shell_options.replay_directory}
+	{"l", "replay-directory", "Directory with replays to load", shell_options.replay_directory},
+	{"NSDocumentRevisionsDebugMode", "", "", ignore} // annoying Xcode argument
 };
 
 std::unordered_map<int, bool> ShellOptions::parse(int argc, char** argv, bool ignore_unknown_args)

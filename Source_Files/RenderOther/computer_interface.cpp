@@ -516,7 +516,10 @@ void initialize_terminal_manager(
 {
 	player_terminals= new player_terminal_data[MAXIMUM_NUMBER_OF_PLAYERS];
 	objlist_clear(player_terminals, MAXIMUM_NUMBER_OF_PLAYERS);
-
+	for (auto i = 0; i < MAXIMUM_NUMBER_OF_PLAYERS; ++i)
+	{
+		player_terminals[i].state = _no_terminal_state;
+	}
 /*
 	terminal_font = load_font(*_get_font_spec(_computer_interface_font));
 */
@@ -1344,6 +1347,7 @@ void clear_compiled_terminal_cache()
 }
 
 extern OpenedResourceFile M1ShapesFile;
+extern OpenedResourceFile ExternalResources;
 
 static terminal_text_t* compile_marathon_terminal(char*, short);
 

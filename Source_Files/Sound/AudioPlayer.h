@@ -82,6 +82,9 @@ private:
         {{AudioFormat::_32_float, true}, AL_FORMAT_STEREO_FLOAT32}
     };
 
+    int queued_rate = 0;
+    ALenum queued_format = 0; //Mono 8-16-32f or stereo 8-16-32f
+
     friend class OpenALManager;
 
 public:
@@ -95,6 +98,7 @@ protected:
     void Init(int rate, bool stereo, AudioFormat audioFormat);
     virtual int GetNextData(uint8* data, int length) = 0;
     virtual bool LoadParametersUpdates() { return false; }
+    bool IsPlaying() const;
     std::atomic_bool rewind_signal = { false };
     std::atomic_bool stop_signal = { false };
     std::atomic_bool is_active = { true };

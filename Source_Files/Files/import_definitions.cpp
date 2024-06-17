@@ -30,6 +30,7 @@ Aug 31, 2000 (Loren Petrich):
 #include "cseries.h"
 #include <string.h>
 
+#include "crc.h"
 #include "tags.h"
 #include "map.h"
 #include "interface.h"
@@ -220,6 +221,11 @@ void process_network_physics_model(
 			free_wad(wad); /* Note that the flat data points into the wad. */
 		}
 	}
+}
+
+uint32_t get_physics_file_checksum()
+{
+	return calculate_crc_for_file(PhysicsFileSpec);
 }
 
 /* --------- local code */

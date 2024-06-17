@@ -28,6 +28,8 @@
 #include "InfoTree.h"
 #include "Logging.h"
 
+#ifdef HAVE_OPENGL
+
 // gl_clipvertex puts Radeons into software mode on Mac
 #if (defined(__APPLE__) && defined(__MACH__))
 static bool DisableClipVertex()
@@ -764,3 +766,4 @@ void initDefaultPrograms() {
 
 }
 
+#endif

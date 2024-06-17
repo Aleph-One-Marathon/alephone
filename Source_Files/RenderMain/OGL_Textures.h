@@ -38,6 +38,8 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "OGL_Subst_Texture_Def.h"
 #include "scottish_textures.h"
 
+#ifdef HAVE_OPENGL
+
 // Initialize the texture accounting
 void OGL_StartTextures();
 
@@ -359,5 +361,7 @@ struct OGL_TexturesStats {
 };
 
 extern OGL_TexturesStats gGLTxStats;
+
+#endif
 
 #endif

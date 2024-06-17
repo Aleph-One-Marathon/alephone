@@ -59,6 +59,13 @@ enum {
 	_default_prompt
 };
 
+enum class BobbingType
+{
+	none,
+	camera_and_weapon,
+	weapon_only
+};
+
 /* ---------- structures */
 
 struct screen_mode_data
@@ -81,7 +88,7 @@ struct screen_mode_data
 	short term_scale_level;
 	bool fix_h_not_v;
 	bool translucent_map;
-	bool camera_bob;
+	BobbingType bobbing_type;
 
 	int fov; // 0 = use default (or MML/plugin)
 };
@@ -101,12 +108,8 @@ enum // input devices
 
 void global_idle_proc(void);
 
-class InfoTree;
-void parse_mml_cheats(const InfoTree& root);
-void reset_mml_cheats();
-
 // Load the base MML scripts:
-void LoadBaseMMLScripts();
+void LoadBaseMMLScripts(bool load_menu_mml_only);
 
 // Application and directory info:
 char *expand_symbolic_paths(char *dest, const char *src, int maxlen);

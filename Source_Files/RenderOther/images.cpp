@@ -873,7 +873,6 @@ static void draw_picture_surface(std::shared_ptr<SDL_Surface> s)
 	
 	SDL_BlitSurface(s.get(), &src_rect, video, &dst_rect);
 	_restore_port();
-	draw_intro_screen();
 }
 
 static void draw_picture(LoadedResource &rsrc)

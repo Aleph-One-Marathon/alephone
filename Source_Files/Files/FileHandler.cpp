@@ -57,7 +57,6 @@
 #endif
 
 #ifdef HAVE_ZZIP
-#include <zzip/lib.h>
 #include "SDL_rwops_zzip.h"
 #endif
 

@@ -127,17 +127,34 @@ Plugins* Plugins::instance() {
 	return m_instance;
 }
 
-void Plugins::disable(const boost::filesystem::path& path) { //std path is not supported before mac os 10.15 so we are using boost path instead
+bool Plugins::disable(const boost::filesystem::path& path) { //std path is not supported before mac os 10.15 so we are using boost path instead
 	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it) {
 		if (it->directory.GetPath() == path) {
 			it->enabled = false;
 			m_validated = false;
-			return;
+			return true;
 		}
 	}
+
+	return false;
 }
 
-static void load_mmls(const Plugin& plugin) 
+bool Plugins::enable(const boost::filesystem::path& path)
+{
+	for (auto& p : m_plugins)
+	{
+		if (p.directory.GetPath() == path)
+		{
+			p.enabled = true;
+			m_validated = false;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+static void load_mmls(const Plugin& plugin, bool load_menu_mml_only)
 {
 	ScopedSearchPath ssp(plugin.directory);
 	for (std::vector<std::string>::const_iterator it = plugin.mmls.begin(); it != plugin.mmls.end(); ++it) 
@@ -145,7 +162,7 @@ static void load_mmls(const Plugin& plugin)
 		FileSpecifier file;
 		if (file.SetNameWithPath(it->c_str()))
 		{
-			ParseMMLFromFile(file);
+			ParseMMLFromFile(file, load_menu_mml_only);
 		}
 		else
 		{
@@ -154,14 +171,14 @@ static void load_mmls(const Plugin& plugin)
 	}
 }
 
-void Plugins::load_mml() {
+void Plugins::load_mml(bool load_menu_mml_only) {
 	validate();
 
 	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it) 
 	{
 		if (it->valid())
 		{
-			load_mmls(*it);
+			load_mmls(*it, load_menu_mml_only);
 		}
 	}
 }
@@ -308,7 +325,11 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 				Plugin Data = Plugin();
 				Data.directory = current_plugin_directory;
 				Data.enabled = true;
-				
+
+				Data.auto_enable = true;
+				root.read_attr("auto_enable", Data.auto_enable);
+				Data.enabled = Data.auto_enable;
+
 				root.read_attr("name", Data.name);
 				root.read_attr("version", Data.version);
 				root.read_attr("description", Data.description);

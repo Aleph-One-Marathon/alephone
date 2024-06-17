@@ -102,7 +102,7 @@ May 22, 2003 (Woody Zenfell):
 
 #include "shell_options.h"
 #include "OpenALManager.h"
-
+#include "resource_manager.h"
 #include "XML_LevelScript.h"
 
 #ifdef HAVE_UNISTD_H
@@ -134,6 +134,8 @@ static const size_t NUMBER_OF_NETWORK_GAME_PROTOCOL_NAMES = sizeof(sNetworkGameP
 // Have the prefs been inited?
 static bool PrefsInited = false;
 
+static std::vector<boost::filesystem::path> orphan_disabled_plugins;
+static std::vector<boost::filesystem::path> orphan_enabled_plugins;
 
 // Global preferences data
 struct graphics_preferences_data *graphics_preferences = NULL;
@@ -484,6 +486,13 @@ enum {
 	NAME_W
 };
 
+
+static const char* solo_profile_labels[] = {
+	"Aleph One Fixes",
+	"Classic Marathon 2",
+	"Classic Marathon Infinity"
+};
+
 static void player_dialog(void *arg)
 {
 	// Create dialog
@@ -501,6 +510,21 @@ static void player_dialog(void *arg)
 	table->dual_add(level_w->label("Difficulty"), d);
 	table->dual_add(level_w, d);
 
+	w_select* solo_profile_w;
+	if (Scenario::instance()->AllowsClassicGameplay())
+	{
+		table->add_row(new w_spacer(), true);
+
+		auto profile = player_preferences->solo_profile;
+		if (profile >= 1) --profile;
+		
+		solo_profile_w = new w_select(profile, solo_profile_labels);
+		table->dual_add(solo_profile_w->label("Solo Gameplay"), d);
+		table->dual_add(solo_profile_w, d);
+
+		table->dual_add_row(new w_static_text("Note: net games always use Aleph One fixes"), d);
+	}
+	
 	table->add_row(new w_spacer(), true);
 
 	table->dual_add_row(new w_static_text("Appearance"), d);
@@ -566,6 +590,18 @@ static void player_dialog(void *arg)
 		if (level != player_preferences->difficulty_level) {
 			player_preferences->difficulty_level = level;
 			changed = true;
+		}
+
+		if (Scenario::instance()->AllowsClassicGameplay())
+		{
+			auto profile = solo_profile_w->get_selection();
+			if (profile >= 1) ++profile;
+
+			if (profile != player_preferences->solo_profile)
+			{
+				player_preferences->solo_profile = profile;
+				changed = true;
+			}
 		}
 
 		int16 color = static_cast<int16>(pcolor_w->get_selection());
@@ -995,6 +1031,10 @@ static const char* renderer_labels[] = {
 	"Software", "OpenGL", NULL
 };
 
+static const char *bobbing_view_labels[] = {
+	"None", "Default", "Weapon Only", NULL
+};
+
 static const char* hud_scale_labels[] = {
 "Normal", "Double", "Largest", NULL
 };
@@ -1008,10 +1048,36 @@ static const char* mouse_accel_labels[] = {
 };
 
 static const char* max_saves_labels[] = {
+#ifdef HAVE_STEAM
+	"20", "100", "500", NULL
+#else
 	"20", "100", "500", "Unlimited", NULL
+#endif
 };
 static const uint32 max_saves_values[] = {
+#ifdef HAVE_STEAM
+	20, 100, 500
+#else
 	20, 100, 500, 0
+#endif
+};
+
+static const std::unordered_map<ChannelType, int> mapping_channel_index = {
+	{ChannelType::_mono, 0},
+	{ChannelType::_stereo, 1},
+	{ChannelType::_quad, 2},
+	{ChannelType::_5_1, 3},
+	{ChannelType::_6_1, 4},
+	{ChannelType::_7_1, 5}
+};
+
+static const std::unordered_map<int, ChannelType> mapping_index_channel = {
+	{0, ChannelType::_mono},
+	{1, ChannelType::_stereo},
+	{2, ChannelType::_quad},
+	{3, ChannelType::_5_1},
+	{4, ChannelType::_6_1},
+	{5, ChannelType::_7_1}
 };
 
 
@@ -1274,10 +1340,12 @@ static void graphics_dialog(void *arg)
 	table->dual_add_row(new w_static_text("*may interfere with third-party scenario effects"), d);
 
 	table->add_row(new w_spacer(), true);
-	
-	w_toggle *bob_w = new w_toggle(graphics_preferences->screen_mode.camera_bob);
-	table->dual_add(bob_w->label("Camera Bobbing"), d);
-	table->dual_add(bob_w, d);
+
+	w_select *bobbing_type_w = new w_select(0, bobbing_view_labels);
+	bobbing_type_w->set_selection(static_cast<int>(graphics_preferences->screen_mode.bobbing_type));
+
+	table->dual_add(bobbing_type_w->label("View Bobbing"), d);
+	table->dual_add(bobbing_type_w, d);
 
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("Heads-Up Display"), d);
@@ -1452,10 +1520,10 @@ static void graphics_dialog(void *arg)
 			graphics_preferences->screen_mode.translucent_map = translucent_map;
 			changed = true;
 		}
-	    
-		bool camera_bob = bob_w->get_selection() != 0;
-		if (camera_bob != graphics_preferences->screen_mode.camera_bob) {
-			graphics_preferences->screen_mode.camera_bob = camera_bob;
+
+		auto bobbing_type = static_cast<BobbingType>(bobbing_type_w->get_selection());
+		if (bobbing_type != graphics_preferences->screen_mode.bobbing_type) {
+			graphics_preferences->screen_mode.bobbing_type = bobbing_type;
 			changed = true;
 		}
 
@@ -1471,8 +1539,8 @@ static void graphics_dialog(void *arg)
 		    write_preferences();
 
 			ResetAllMMLValues();
-			LoadBaseMMLScripts();
-			Plugins::instance()->load_mml();
+			LoadBaseMMLScripts(true);
+			Plugins::instance()->load_mml(true);
 
 		    change_screen_mode(&graphics_preferences->screen_mode, true);
 		    clear_screen(true);
@@ -1485,34 +1553,6 @@ static void graphics_dialog(void *arg)
 /*
  *  Sound dialog
  */
-
-class w_toggle* stereo_w, * dynamic_w;
-
-class w_stereo_toggle : public w_toggle {
-public:
-	w_stereo_toggle(bool selection) : w_toggle(selection) {}
-
-	void selection_changed(void)
-	{
-		// Turning off stereo turns off dynamic tracking
-		w_toggle::selection_changed();
-		if (selection == false)
-			dynamic_w->set_selection(false);
-	}
-};
-
-class w_dynamic_toggle : public w_toggle {
-public:
-	w_dynamic_toggle(bool selection) : w_toggle(selection) {}
-
-	void selection_changed(void)
-	{
-		// Turning on dynamic tracking turns on stereo
-		w_toggle::selection_changed();
-		if (selection == true)
-			stereo_w->set_selection(true);
-	}
-};
 
 class w_volume_slider : public w_percentage_slider {
 public:
@@ -1549,12 +1589,14 @@ static void sound_dialog(void *arg)
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 
+	static const std::vector<std::string> channel_labels = { "Mono", "Stereo", "Quad", "5.1", "6.1", "7.1" };
+	w_select_popup* channel_w = new w_select_popup();
+	channel_w->set_labels(channel_labels);
+	channel_w->set_selection(mapping_channel_index.at(sound_preferences->channel_type));
+	table->dual_add(channel_w->label("Channels"), d);
+	table->dual_add(channel_w, d);
 
-	stereo_w = new w_stereo_toggle(sound_preferences->flags & _stereo_flag);
-	table->dual_add(stereo_w->label("Stereo"), d);
-	table->dual_add(stereo_w, d);
-
-	dynamic_w = new w_dynamic_toggle(TEST_FLAG(sound_preferences->flags, _dynamic_tracking_flag));
+	w_toggle* dynamic_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _dynamic_tracking_flag));
 	table->dual_add(dynamic_w->label("Active Panning"), d);
 	table->dual_add(dynamic_w, d);
 
@@ -1631,7 +1673,6 @@ static void sound_dialog(void *arg)
 		if (quality_w->get_selection()) flags |= _16bit_sound_flag;
 		if (sounds3d_w->get_selection()) flags |= _3d_sounds_flag;
 		if (hrtf_w->get_selection()) flags |= _hrtf_flag;
-		if (stereo_w->get_selection()) flags |= _stereo_flag;
 		if (dynamic_w->get_selection()) flags |= _dynamic_tracking_flag;
 		if (ambient_w->get_selection()) flags |= _ambient_sound_flag;
 		if (more_w->get_selection()) flags |= _more_sounds_flag;
@@ -1662,6 +1703,12 @@ static void sound_dialog(void *arg)
 			changed = true;
 		}
 
+		auto channel = mapping_index_channel.at(channel_w->get_selection());
+		if (channel != sound_preferences->channel_type) {
+			sound_preferences->channel_type = channel;
+			changed = true;
+		}
+
 		if (changed) {
 //			set_sound_manager_parameters(sound_preferences);
 			SoundManager::instance()->SetParameters(*sound_preferences);
@@ -1675,7 +1722,7 @@ static void sound_dialog(void *arg)
  *  Controls dialog
  */
 
-const float kMinSensitivityLog = -3.0f;
+const float kMinSensitivityLog = -7.0f;
 const float kMaxSensitivityLog = 3.0f;
 const float kSensitivityLogRange = kMaxSensitivityLog - kMinSensitivityLog;
 
@@ -1688,15 +1735,12 @@ public:
 	virtual std::string formatted_value(void) {
 		std::ostringstream ss;
 		float val = std::exp(selection * kSensitivityLogRange / 1000.0f + kMinSensitivityLog);
-		if (val >= 1.f)
-			ss.precision(4);
-		else if (val >= 0.1f)
-			ss.precision(3);
-		else if (val >= 0.01f)
+		if (val >= 10.f)
 			ss.precision(2);
 		else
-			ss.precision(1);
-		ss << std::showpoint << val;
+			ss.precision(3);
+
+		ss << std::fixed << std::showpoint << val;
 		return ss.str();
 	}
 };
@@ -2380,6 +2424,10 @@ static void controller_details_dialog(void *arg)
 	w_deadzone_slider* dead_joy_w = new w_deadzone_slider(11, joyDeadzone);
 	table->dual_add(dead_joy_w->label("Analog Dead Zone"), d);
 	table->dual_add(dead_joy_w, d);
+
+	w_toggle* controller_inverted = new w_toggle(input_preferences->controller_aim_inverted);
+	table->dual_add(controller_inverted->label("Invert Vertical Aim"), d);
+	table->dual_add(controller_inverted, d);
 	
 	table->add_row(new w_spacer(), true);
 	placer->add(table, true);
@@ -2407,6 +2455,12 @@ static void controller_details_dialog(void *arg)
 		int deadNorm = deadPos * 655.36f;
 		if (deadNorm != input_preferences->controller_deadzone) {
 			input_preferences->controller_deadzone = deadNorm;
+			changed = true;
+		}
+
+		bool inverted_controls = controller_inverted->get_selection();
+		if (input_preferences->controller_aim_inverted != inverted_controls) {
+			input_preferences->controller_aim_inverted = inverted_controls;
 			changed = true;
 		}
 
@@ -2553,7 +2607,7 @@ static void controls_dialog(void *arg)
 		nullptr
 	};
 
-	w_select *run_w = new w_select(input_preferences->modifiers & _inputmod_run_key_toggle ? 2 : input_preferences->modifiers & _inputmod_interchange_swim_sink ? 1 : 0, run_option_labels);
+	w_select *run_w = new w_select(input_preferences->modifiers & _inputmod_run_key_toggle ? 2 : input_preferences->modifiers & _inputmod_interchange_run_walk ? 1 : 0, run_option_labels);
 	move_options->dual_add(run_w->label("Run/Swim Behavior"), d);
 	move_options->dual_add(run_w, d);
 
@@ -3023,8 +3077,8 @@ static void plugins_dialog(void *)
 			write_preferences();
 
 			ResetAllMMLValues();
-			LoadBaseMMLScripts();
-			Plugins::instance()->load_mml();
+			LoadBaseMMLScripts(true);
+			Plugins::instance()->load_mml(true);
 
 			Plugins::instance()->set_map_checksum(get_current_map_checksum());
 			LoadLevelScripts(get_map_file());
@@ -3038,7 +3092,7 @@ static void plugins_dialog(void *)
  */
 
 static const char* film_profile_labels[] = {
-	"Aleph One",
+	"Aleph One 1.0",
 	"Marathon 2",
 	"Marathon Infinity",
 	0
@@ -3096,9 +3150,9 @@ static void environment_dialog(void *arg)
 
 	table->add_row(new w_spacer, true);
 	table->dual_add_row(new w_static_text("Film Playback"), d);
-	
+
 	w_select* film_profile_w = new w_select(environment_preferences->film_profile, film_profile_labels);
-	table->dual_add(film_profile_w->label("Default Playback Profile"), d);
+	table->dual_add(film_profile_w->label("Unversioned Film Profile"), d);
 	table->dual_add(film_profile_w, d);
 	
 #ifndef MAC_APP_STORE
@@ -3112,6 +3166,10 @@ static void environment_dialog(void *arg)
 	table->dual_add(replay_net_lua_w, d);
 	use_replay_net_lua_w->add_dependent_widget(replay_net_lua_w);
 #endif
+
+	w_toggle* auto_play_demos_w = new w_toggle(environment_preferences->auto_play_demos);
+	table->dual_add(auto_play_demos_w->label("Play Demos When Idle"), d);
+	table->dual_add(auto_play_demos_w, d);
 	
 	table->add_row(new w_spacer, true);
 	table->dual_add_row(new w_static_text("Options"), d);
@@ -3271,6 +3329,13 @@ static void environment_dialog(void *arg)
 		}
 #endif
 
+		auto auto_play_demos = auto_play_demos_w->get_selection() != 0;
+		if (auto_play_demos != environment_preferences->auto_play_demos)
+		{
+			environment_preferences->auto_play_demos = auto_play_demos;
+			changed = true;
+		}
+		
 		if (changed)
 			load_environment_from_preferences();
 
@@ -3507,7 +3572,7 @@ InfoTree graphics_preferences_tree()
 	root.put_attr("scmode_hud_scale", graphics_preferences->screen_mode.hud_scale_level);
 	root.put_attr("scmode_term_scale", graphics_preferences->screen_mode.term_scale_level);
 	root.put_attr("scmode_translucent_map", graphics_preferences->screen_mode.translucent_map);
-	root.put_attr("scmode_camera_bob", graphics_preferences->screen_mode.camera_bob);
+	root.put_attr("scmode_camera_bob", static_cast<int>(graphics_preferences->screen_mode.bobbing_type));
 	root.put_attr("scmode_accel", graphics_preferences->screen_mode.acceleration);
 	root.put_attr("scmode_highres", graphics_preferences->screen_mode.high_resolution);
 	root.put_attr("scmode_draw_every_other_line", graphics_preferences->screen_mode.draw_every_other_line);
@@ -3582,6 +3647,8 @@ InfoTree player_preferences_tree()
 	cross.put_attr("opacity", Crosshairs.Opacity);
 	cross.add_color("color", Crosshairs.Color);
 	root.put_child("crosshairs", cross);
+
+	root.put_attr("solo_profile", player_preferences->solo_profile);
 
 	return root;
 }
@@ -3789,6 +3856,7 @@ InfoTree input_preferences_tree()
 	root.put_attr("extra_mouse_precision", input_preferences->extra_mouse_precision);
 	
 	root.put_attr("controller_analog", input_preferences->controller_analog);
+	root.put_attr("controller_aim_inverted", input_preferences->controller_aim_inverted);
 	root.put_attr("controller_sensitivity", input_preferences->controller_sensitivity);
 	root.put_attr("controller_deadzone", input_preferences->controller_deadzone);
 	
@@ -3844,6 +3912,7 @@ InfoTree sound_preferences_tree()
 	root.put_attr("rate", sound_preferences->rate);
 	root.put_attr("samples", sound_preferences->samples);
 	root.put_attr("video_export_volume_db", sound_preferences->video_export_volume_db);
+	root.put_attr("channel", static_cast<int>(sound_preferences->channel_type));
 
 	return root;
 }
@@ -3865,7 +3934,6 @@ InfoTree network_preferences_tree()
 	root.put_attr("join_address", network_preferences->join_address);
 	root.put_attr("local_game_port", network_preferences->game_port);
 	root.put_attr("game_protocol", sNetworkGameProtocolNames[network_preferences->game_protocol]);
-	root.put_attr("use_speex_netmic_encoder", network_preferences->use_speex_encoder);
 	root.put_attr("use_netscript", network_preferences->use_netscript);
 	root.put_attr_path("netscript_file", network_preferences->netscript_file);
 	root.put_attr("cheat_flags", network_preferences->cheat_flags);
@@ -3920,13 +3988,37 @@ InfoTree environment_preferences_tree()
 #ifdef HAVE_NFD
 	root.put_attr("use_native_file_dialogs", environment_preferences->use_native_file_dialogs);
 #endif
+	root.put_attr("auto_play_demos", environment_preferences->auto_play_demos);
 
-	for (Plugins::iterator it = Plugins::instance()->begin(); it != Plugins::instance()->end(); ++it) {
-		if (it->compatible() && !it->enabled) {
-			InfoTree disable;
-			disable.put_attr_path("path", it->directory.GetPath());
-			root.add_child("disable_plugin", disable);
+	for (Plugins::iterator it = Plugins::instance()->begin(); it != Plugins::instance()->end(); ++it)
+	{
+		if (it->compatible())
+		{
+			if (it->auto_enable && !it->enabled)
+			{
+				InfoTree disable;
+				disable.put_attr_path("path", it->directory.GetPath());
+				root.add_child("disable_plugin", disable);
+			}
+			else if (!it->auto_enable && it->enabled)
+			{
+				InfoTree enable;
+				enable.put_attr_path("path", it->directory.GetPath());
+				root.add_child("enable_plugin", enable);
+			}
 		}
+	}
+
+	for (const auto& plugin : orphan_disabled_plugins) {
+		InfoTree disable;
+		disable.put_attr_path("path", plugin.string());
+		root.add_child("disable_plugin", disable);
+	}
+
+	for (const auto& plugin : orphan_enabled_plugins) {
+		InfoTree enable;
+		enable.put_attr_path("path", plugin.string());
+		root.add_child("enable_plugin", enable);
 	}
 	
 	return root;
@@ -3990,7 +4082,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.high_resolution = true;
 	preferences->screen_mode.fullscreen = true;
 	preferences->screen_mode.fix_h_not_v = true;
-	preferences->screen_mode.camera_bob = true;
+	preferences->screen_mode.bobbing_type = BobbingType::camera_and_weapon;
 	preferences->screen_mode.bit_depth = 32;
 	
 	preferences->screen_mode.draw_every_other_line= false;
@@ -4032,7 +4124,6 @@ static void default_network_preferences(network_preferences_data *preferences)
 	DefaultStarPreferences();
 	DefaultRingPreferences();
 #endif // !defined(DISABLE_NETWORKING)
-	preferences->use_speex_encoder = true;
 	preferences->use_netscript = false;
 	preferences->netscript_file[0] = '\0';
 	preferences->cheat_flags = _allow_tunnel_vision | _allow_crosshair | _allow_behindview | _allow_overlay_map;
@@ -4075,6 +4166,8 @@ static void default_player_preferences(player_preferences_data *preferences)
 	preferences->Crosshairs.Color = rgb_white;
 	preferences->Crosshairs.Opacity = 0.5;
 	preferences->Crosshairs.PreCalced = false;
+
+	preferences->solo_profile = _solo_profile_aleph_one;
 }
 
 static void default_input_preferences(input_preferences_data *preferences)
@@ -4095,6 +4188,7 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->classic_vertical_aim = false;
 	preferences->classic_aim_speed_limits = false;
 
+	preferences->controller_aim_inverted = false;
 	preferences->controller_analog = true;
 	preferences->controller_sensitivity = FIXED_ONE;
 	preferences->controller_deadzone = 3276;
@@ -4144,10 +4238,15 @@ static void default_environment_preferences(environment_preferences_data *prefer
 	preferences->use_replay_net_lua = false;
 	preferences->hide_extensions = true;
 	preferences->film_profile = FILM_PROFILE_DEFAULT;
+#ifdef HAVE_STEAM
+	preferences->maximum_quick_saves = 500;
+#else
 	preferences->maximum_quick_saves = 0;
+#endif
 #ifdef HAVE_NFD
 	preferences->use_native_file_dialogs = false;
 #endif
+	preferences->auto_play_demos = true;
 }
 
 
@@ -4291,49 +4390,37 @@ void load_environment_from_preferences(
 	}
 
 	File = prefs->physics_file;
-	if (File.Exists()) {
-		set_physics_file(File);
-		import_definition_structures();
-	} else {
-		if(find_wad_file_that_has_checksum(File,
-			_typecode_physics, strPATHS, prefs->physics_checksum)) {
-			set_physics_file(File);
-			import_definition_structures();
-		} else {
-			/* Didn't find it.  Don't change them.. */
-		}
+	if (!File.Exists() && !find_wad_file_that_has_checksum(File,
+		_typecode_physics, strPATHS, prefs->physics_checksum)) {
+		get_default_physics_spec(File);
 	}
+
+	set_physics_file(File);
+	import_definition_structures();
 	
 	File = prefs->shapes_file;
-	if (File.Exists()) {
-		open_shapes_file(File);
-	} else {
-		if(find_file_with_modification_date(File,
-			_typecode_shapes, strPATHS, prefs->shapes_mod_date))
-		{
-			open_shapes_file(File);
-		} else {
-			/* What should I do? */
-		}
+	if (!File.Exists() && !find_file_with_modification_date(File,
+		_typecode_shapes, strPATHS, prefs->shapes_mod_date)) {
+		get_default_shapes_spec(File);
 	}
+
+	open_shapes_file(File);
 
 	File = prefs->sounds_file;
-	if (File.Exists()) {
-		SoundManager::instance()->OpenSoundFile(File);
-	} else {
-		if(find_file_with_modification_date(File,
-			_typecode_sounds, strPATHS, prefs->sounds_mod_date)) {
-			SoundManager::instance()->OpenSoundFile(File);
-		} else {
-			/* What should I do? */
-		}
+	if (!File.Exists() && !find_file_with_modification_date(File,
+		_typecode_sounds, strPATHS, prefs->sounds_mod_date)) {
+		get_default_sounds_spec(File);
 	}
 
+	SoundManager::instance()->OpenSoundFile(File);
+
 	File = prefs->resources_file;
-	if (File.Exists())
+	if (!File.Exists())
 	{
-		set_external_resources_file(File);
+		get_default_external_resources_spec(File);
 	}
+
+	set_external_resources_file(File);
 	set_external_resources_images_file(File);
 }
 
@@ -4458,7 +4545,15 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr("scmode_hud_scale", graphics_preferences->screen_mode.hud_scale_level);
 	root.read_attr("scmode_term_scale", graphics_preferences->screen_mode.term_scale_level);
 	root.read_attr("scmode_translucent_map", graphics_preferences->screen_mode.translucent_map);
-	root.read_attr("scmode_camera_bob", graphics_preferences->screen_mode.camera_bob);
+
+	int bobbing_type = -1;
+	root.read_attr("scmode_camera_bob", bobbing_type);
+
+	if (bobbing_type != -1)
+	{
+		graphics_preferences->screen_mode.bobbing_type = static_cast<BobbingType>(bobbing_type);
+	}
+
 	root.read_attr("scmode_accel", graphics_preferences->screen_mode.acceleration);
 	root.read_attr("scmode_highres", graphics_preferences->screen_mode.high_resolution);
 	root.read_attr("scmode_draw_every_other_line", graphics_preferences->screen_mode.draw_every_other_line);
@@ -4546,6 +4641,11 @@ void parse_player_preferences(InfoTree root, std::string version)
 		
 		for (const InfoTree &color : child.children_named("color"))
 			color.read_color(player_preferences->Crosshairs.Color);
+	}
+
+	if (Scenario::instance()->AllowsClassicGameplay())
+	{
+		root.read_attr("solo_profile", player_preferences->solo_profile);
 	}
 }
 
@@ -4688,6 +4788,7 @@ void parse_input_preferences(InfoTree root, std::string version)
 		input_preferences->extra_mouse_precision = false;
 	root.read_attr("extra_mouse_precision", input_preferences->extra_mouse_precision);
 	root.read_attr("controller_analog", input_preferences->controller_analog);
+	root.read_attr("controller_aim_inverted", input_preferences->controller_aim_inverted);
 	root.read_attr("controller_sensitivity", input_preferences->controller_sensitivity);
 	root.read_attr("controller_deadzone", input_preferences->controller_deadzone);
 
@@ -4814,6 +4915,14 @@ void parse_sound_preferences(InfoTree root, std::string version)
 	root.read_attr("rate", sound_preferences->rate);
 	root.read_attr("samples", sound_preferences->samples);
 	root.read_attr("video_export_volume_db", sound_preferences->video_export_volume_db);
+
+	int channel_type = 0;
+	root.read_attr("channel", channel_type);
+
+	if (channel_type) 
+	{
+		sound_preferences->channel_type = static_cast<ChannelType>(channel_type);
+	}
 }
 
 
@@ -4846,7 +4955,6 @@ void parse_network_preferences(InfoTree root, std::string version)
 		}
 	}
 	
-	root.read_attr("use_speex_netmic_encoder", network_preferences->use_speex_encoder);
 	root.read_attr("use_netscript", network_preferences->use_netscript);
 	root.read_path("netscript_file", network_preferences->netscript_file);
 	root.read_attr("cheat_flags", network_preferences->cheat_flags);
@@ -4915,13 +5023,31 @@ void parse_environment_preferences(InfoTree root, std::string version)
 #ifdef HAVE_NFD
 	root.read_attr("use_native_file_dialogs", environment_preferences->use_native_file_dialogs);
 #endif
+	root.read_attr("auto_play_demos", environment_preferences->auto_play_demos);
 	
+	orphan_disabled_plugins.clear();
 	for (const InfoTree &plugin : root.children_named("disable_plugin"))
 	{
 		char tempstr[256];
 		if (plugin.read_path("path", tempstr))
 		{
-			Plugins::instance()->disable(tempstr);
+			if (!Plugins::instance()->disable(tempstr))
+			{
+				orphan_disabled_plugins.push_back(tempstr);
+			}
+		}
+	}
+
+	orphan_enabled_plugins.clear();
+	for (const InfoTree& plugin : root.children_named("enable_plugin"))
+	{
+		char tempstr[256];
+		if (plugin.read_path("path", tempstr))
+		{
+			if (!Plugins::instance()->enable(tempstr))
+			{
+				orphan_enabled_plugins.push_back(tempstr);
+			}
 		}
 	}
 }

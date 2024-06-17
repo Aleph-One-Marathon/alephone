@@ -24,7 +24,6 @@ LUA_PROJECTILES.H
 
 #include "cseries.h"
 
-#ifdef HAVE_LUA
 extern "C"
 {
 #include "lua.h"
@@ -47,7 +46,5 @@ extern char Lua_ProjectileTypes_Name[]; // "ProjectileTypes"
 typedef L_EnumContainer<Lua_ProjectileTypes_Name, Lua_ProjectileType> Lua_ProjectileTypes;
 
 int Lua_Projectiles_register(lua_State *L);
-
-#endif
 
 #endif

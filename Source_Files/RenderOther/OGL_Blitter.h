@@ -26,10 +26,7 @@
 #include "cseries.h"
 #include "ImageLoader.h"
 #include "Image_Blitter.h"
-
-#ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
-#endif
 
 #include <vector>
 #include <set>

@@ -3028,6 +3028,16 @@ bool OGL_RenderCrosshairs()
 	return true;
 }
 
+bool OGL_TextWidth(const char* Text, int count, int& width)
+{
+	if (!OGL_IsActive()) return false;
+
+	std::string s(Text, count);
+
+	width = GetOnScreenFont().TextWidth(s.c_str());
+	return true;
+}
+
 // Rendering text
 bool OGL_RenderText(short BaseX, short BaseY, const char *Text, unsigned char r, unsigned char g, unsigned char b)
 {

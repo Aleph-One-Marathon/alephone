@@ -575,6 +575,7 @@
       </variable>
       <variable name="z" access="read-only" version="20111201">
 		<type>WU</type>
+		<note>from floor or ceiling</note>
       </variable>
     </table>
     <table name="item">
@@ -647,6 +648,7 @@
       </variable>
       <variable name="z" access="read-only" version="20111201">
 		<type>WU</type>
+		<note>from floor or ceiling</note>
       </variable>
     </table>
 
@@ -697,16 +699,16 @@
 		  <description>fog depth in WU</description>
 		  <type>number</type>
 		</variable>
-		<variable name="landscape_mix" version="git">
+		<variable name="landscape_mix" version="20231125">
 		  <description>amount of fog to mix into landscape</description>
 		  <type>number</type>
 		  <note>values range from 0.0 to 1.0</note>
 		</variable>
-		<variable name="mode" version="git">
+		<variable name="mode" version="20231125">
 		  <description>linear, exp, or exp2</description>
 		  <type>fog_mode</type>
 		</variable>
-		<variable name="start" version="git">
+		<variable name="start" version="20231125">
 		  <description>fog start in WU</description>
 		  <type>number</type>
 		  <note>only applies to linear fog</note>
@@ -1104,17 +1106,18 @@
       </variable>
       <variable name="z" access="read-only" version="20111201">
 		<type>WU</type>
+		<note>from floor or ceiling</note>
       </variable>
     </table>
     <table name="music">
-	  <function name="play" version="git">
+	  <function name="play" version="20231125">
 		<description>plays the music</description>
 		<note>if the music was stopped, restarts it</note>
 	  </function>
-	  <function name="stop" version="git">
+	  <function name="stop" version="20231125">
 		<description>stops the music</description>
 	  </function>
-	  <function name="fade" version="git">
+	  <function name="fade" version="20231125">
 		<description>fades the music</description>
 		<argument name="volume"><type>number</type></argument>
 		<argument name="duration" required="false"><type>seconds</type></argument>
@@ -1123,12 +1126,12 @@
 		<note>duration unit is seconds and is 1 if not specified</note>
 		<note>stop_after_fade is disabled by default, if set to true if the volume reaches 0 while fading the music will automatically stop</note>
 	  </function>
-	  <variable name="volume" version="git">
+	  <variable name="volume" version="20231125">
 		<description>the volume of the music</description>
 		<type>number</type>
 		<note>volume is decimal [0 - 1]</note>
 	  </variable>
-	  <variable name="active" access="read-only" version="git">
+	  <variable name="active" access="read-only" version="20231125">
 		<description>returns true if the music is still playing</description>
 		<type>boolean</type>
 	  </variable>
@@ -1314,7 +1317,7 @@
 		  <type>boolean</type>
 		  <note>latched</note>
 		</variable>
-		<variable name="aux_trigger" version="git">
+		<variable name="aux_trigger" version="20231125">
 		  <description>formerly microphone button; now dedicated to Lua scripts</description>
 		  <type>boolean</type>
 		</variable>
@@ -1748,6 +1751,7 @@
       </variable>
       <variable name="z" access="read-only" version="20111201">
 		<type>WU</type>
+		<note>from floor or ceiling</note>
       </variable>
     </table>
     <table name="polygon">
@@ -2145,6 +2149,7 @@
       </variable>
       <variable name="z" access="read-only" version="20111201">
 		<type>WU</type>
+		<note>from floor or ceiling</note>
       </variable>
     </table>
     <table name="tag">
@@ -2349,7 +2354,7 @@
       <call>
 		<description>iterates through all the music channels</description>
       </call>
-	  <function name="new" version="git">
+	  <function name="new" version="20231125">
 		<description>returns a new music channel</description>
 		<argument name="track"><type>string</type></argument>
 		<argument name="volume" required="false"><type>number</type></argument>
@@ -2372,7 +2377,7 @@
 		<argument name="..." required="false"><type>string</type></argument>
       </function>
       <function name="stop">
-		<description>stops level music and clears the playlist; also invalidates all music channels</description>
+		<description>stops level music and clears the playlist</description>
       </function>
       <function name="valid">
 		<description>for every track passed, return true if it exists and is playable and false otherwise</description>
@@ -3627,12 +3632,12 @@
 		<mnemonic name="fast vertical slide"/>
 		<mnemonic name="wander"/>
 		<mnemonic name="fast wander"/>
-		<mnemonic name="reverse horizontal slide" version="git"/>
-		<mnemonic name="reverse fast horizontal slide" version="git"/>
-		<mnemonic name="reverse vertical slide" version="git"/>
-		<mnemonic name="reverse fast vertical slide" version="git"/>
-		<mnemonic name="2x" version="git"/>
-		<mnemonic name="4x" version="git"/>
+		<mnemonic name="reverse horizontal slide" version="20231125"/>
+		<mnemonic name="reverse fast horizontal slide" version="20231125"/>
+		<mnemonic name="reverse vertical slide" version="20231125"/>
+		<mnemonic name="reverse fast vertical slide" version="20231125"/>
+		<mnemonic name="2x" version="20231125"/>
+		<mnemonic name="4x" version="20231125"/>
       </mnemonics>
     </enum>
     <enum name="weapon_type">

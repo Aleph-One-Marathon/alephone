@@ -1,0 +1,33 @@
+name: release-steam-windows
+
+on: [workflow_dispatch, workflow_call]
+
+jobs:
+  release-steam-windows:
+    runs-on: windows-2022
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true  
+        
+    - name: Build Steam Marathon
+      uses: ./.github/actions/build-windows
+      with:
+        platform: x64
+        configurations: "Steam Marathon"
+        vcpkg_installed_folder: installed-x64-windows
+        
+    - name: Bootstrap Steamcmd
+      continue-on-error: true #Steamcmd may throw error exit code while bootstrapping that we can ignore, we will see on upload if everything is working fine
+      run: |
+        Copy-Item -Path "vcpkg/installed-x64-windows/x64-windows-static/tools/steamworks-sdk" -Destination "Steam/steamcmd" -Recurse &&
+        ./Steam/steamcmd/steamcmd.exe +quit
+
+    - name: Restore config.vdf
+      env: 
+        CONFIG_VDF: ${{ secrets.CONFIG_VDF }}
+      run: echo $CONFIG_VDF | base64 --decode > Steam/steamcmd/config/config.vdf
+      shell: bash
+      
+    - name: Deploy to Steam
+      run: ./Steam/steamcmd/steamcmd.exe +login alephone_upload +run_app_build ../m1_build.vdf +quit

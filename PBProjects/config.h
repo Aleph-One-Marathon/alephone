@@ -40,14 +40,8 @@
 /* Define to 1 if you have the `SDL_ttf' library (-lSDL_ttf). */
 #define HAVE_LIBSDL_TTF 1
 
-/* Define to 1 if you have the `smpeg' library (-lsmpeg). */
-/* #undef HAVE_LIBSMPEG */
-
 /* Define to 1 if you have the `z' library (-lz). */
 #define HAVE_LIBZ 1
-
-/* Lua support enabled */
-#define HAVE_LUA 1
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
@@ -84,12 +78,6 @@
 
 /* Define to 1 if you have the <SDL_ttf.h> header file. */
 #define HAVE_SDL_TTF_H 1
-
-/* ${desc_smpeg} enabled */
-/* #undef HAVE_SMPEG */
-
-/* Define to 1 if you have the <smpeg/smpeg.h> header file. */
-/* #undef HAVE_SMPEG_SMPEG_H */
 
 /* Define to 1 if you have the `snprintf' function. */
 #define HAVE_SNPRINTF 1

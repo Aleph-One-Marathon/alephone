@@ -63,4 +63,7 @@ extern bool get_ind_resource(uint32 type, int index, LoadedResource &rsrc);
 extern bool has_1_resource(uint32 type, int id);
 extern bool has_resource(uint32 type, int id);
 
+extern void set_external_resources_file(FileSpecifier&);
+extern void close_external_resources();
+
 #endif

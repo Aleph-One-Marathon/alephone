@@ -34,10 +34,7 @@
 #include "cseries.h"
 
 #ifdef HAVE_OPENGL
-
-#ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
-#endif
 
 #include <vector>
 #include "vec3.h"

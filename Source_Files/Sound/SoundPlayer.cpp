@@ -69,17 +69,13 @@ bool SoundPlayer::CanFastRewind(const SoundParameters& soundParameters) const {
 
 void SoundPlayer::AskRewind(const SoundParameters& soundParameters, const Sound& newSound) {
 	UpdateRewindParameters(soundParameters);
-
-	if (parameters.Get().permutation != soundParameters.permutation) {
-		sound.Store(newSound);
-	}
-
+	sound.Store(newSound);
 	AudioPlayer::AskRewind();
 }
 
 void SoundPlayer::Rewind() {
 
-	if (!CanRewind(start_tick)) {
+	if (!CanRewind(start_tick) && (current_index_data > 0 || IsPlaying())) { //if a sound hasn't started playing yet, it's ok to replace it
 		rewind_signal = false;
 		return;
 	}

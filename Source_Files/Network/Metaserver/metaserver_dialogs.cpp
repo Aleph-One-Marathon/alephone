@@ -61,6 +61,7 @@ setupAndConnectClient(MetaserverClient& client)
 	
 	static bool user_informed = false;
 
+#ifndef HAVE_STEAM
 	if (network_preferences->check_for_updates && !user_informed)
 	{
 		static bool first_check = true;
@@ -105,6 +106,7 @@ setupAndConnectClient(MetaserverClient& client)
 		
 		if (status != Update::CheckingForUpdate) user_informed = true;
 	}
+#endif
 
 	client.setPlayerTeamName("");
 	client.connect(A1_METASERVER_HOST, 6321, network_preferences->metaserver_login, network_preferences->metaserver_password);

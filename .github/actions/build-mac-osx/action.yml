@@ -2,22 +2,20 @@ name: mac-osx
 description: template used to build for mac osx
 
 inputs:
- vcpkg_installed_folder:
-    required: true
-    type: string
- vcpkg_arch:
+ xcode_targets:
+    description: "comma separated list of Xcode targets we want to build"
     required: true
     type: string
  xcode_arch:
-    required: true
+    description: "x86_64 or arm64 or empty for both"
+    required: false
     type: string
 
 runs:
     using: "composite"
     steps:
-    - uses: actions/checkout@v4
     
-    - name: Install Tools
+    - name: Install tools
       run: brew install nasm
       shell: bash
       
@@ -29,20 +27,42 @@ runs:
       run: echo "vcpkg_current_hash=$(git -C $VCPKG_INSTALLATION_ROOT rev-parse --short HEAD)" >> $GITHUB_ENV
       shell: bash
       
-    - name: Cache Vcpkg
-      uses: actions/cache@v3
+    - name: Restore Vcpkg cache for x64
+      if: inputs.xcode_arch == 'x86_64' || inputs.xcode_arch == ''
+      uses: actions/cache@v4
       with:
-        path: vcpkg/${{inputs.vcpkg_installed_folder}}
-        key: ${{runner.os}}-${{inputs.vcpkg_installed_folder}}-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json')}}
+        path: vcpkg/installed-x64-osx
+        key: ${{runner.os}}-installed-x64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}
+        
+    - name: Restore Vcpkg cache for arm64
+      if: inputs.xcode_arch == 'arm64' || inputs.xcode_arch == ''
+      uses: actions/cache@v4
+      with:
+        path: vcpkg/installed-arm64-osx
+        key: ${{runner.os}}-installed-arm64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}
       
-    - name: Switch to Xcode 13.4.1
-      run: sudo xcode-select --switch /Applications/Xcode_13.4.1.app
+    - name: Switch to Xcode 14.3.1
+      run: sudo xcode-select --switch /Applications/Xcode_14.3.1.app
       shell: bash
       
-    - name: Install Dependencies
-      run: cd vcpkg && ./install-${{inputs.vcpkg_arch}}-osx.sh
+    - name: Install x64 dependencies
+      if: inputs.xcode_arch == 'x86_64' || inputs.xcode_arch == ''
+      run: cd vcpkg && ./install-x64-osx.sh
       shell: bash
+      
+    - name: Install arm64 dependencies
+      if: inputs.xcode_arch == 'arm64' || inputs.xcode_arch == ''
+      run: cd vcpkg && ./install-arm-osx.sh
+      shell: bash
+      
+    - name: Set Xcode arguments
+      run: | 
+        $arch_arg=("${{inputs.xcode_arch}}") ? "-arch ${{inputs.xcode_arch}}" : ""
+        $targets_arg = foreach ($target in "${{inputs.xcode_targets}}".Split(",").Trim()) { $targets_arg + "-target " + """" + $target + """" }
+        echo xcode_arch=$arch_arg >> $env:GITHUB_ENV
+        echo xcode_targets=$targets_arg >> $env:GITHUB_ENV
+      shell: pwsh
       
     - name: Build
-      run: cd PBProjects && xcodebuild -arch ${{inputs.xcode_arch}} -target "Aleph One" DEVELOPMENT_TEAM='' CODE_SIGN_IDENTITY='-' CODE_SIGN_STYLE='Automatic' build
+      run: cd PBProjects && xcodebuild ${{env.xcode_arch}} ${{env.xcode_targets}} DEVELOPMENT_TEAM='' CODE_SIGN_IDENTITY='-' CODE_SIGN_STYLE='Automatic' build
       shell: bash

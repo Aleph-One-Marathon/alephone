@@ -27,7 +27,6 @@ LUA_SERIALIZE.H
 
 #include <streambuf>
 
-#ifdef HAVE_LUA
 extern "C"
 {
 #include "lua.h"
@@ -40,7 +39,5 @@ bool lua_save(lua_State *L, std::streambuf* sb);
 
 // restores object in s to top of the stack
 bool lua_restore(lua_State *L, std::streambuf* sb);
-
-#endif
 
 #endif

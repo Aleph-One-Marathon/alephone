@@ -67,7 +67,11 @@ void parse_mml_scenario(const InfoTree& root)
 		Scenario::instance()->SetID(str);
 	if (root.read_attr("version", str))
 		Scenario::instance()->SetVersion(str);
-	
+
+	bool allows_classic_gameplay;
+	if (root.read_attr("allow_classic_gameplay", allows_classic_gameplay))
+		Scenario::instance()->SetAllowsClassicGameplay(allows_classic_gameplay);
+
 	for (const InfoTree &can_join : root.children_named("can_join"))
 	{
 		std::string compat = can_join.get_value("");

@@ -644,6 +644,7 @@ void leaving_map(
 	// Hackish. Should probably be in stop_all_sounds(), but that just
 	// doesn't work out. 
 	Music::instance()->StopLevelMusic();
+	Music::instance()->Pause();
 	SoundManager::instance()->StopAllSounds();
 }
 

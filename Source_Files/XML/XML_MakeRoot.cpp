@@ -86,14 +86,12 @@ void ResetAllMMLValues()
 	reset_mml_dynamic_limits();
 	reset_mml_player_name();
 	reset_mml_scenario();
-	reset_mml_keyboard();
-	reset_mml_cheats();
 	reset_mml_logging();
 	reset_mml_console();
 	reset_mml_default_levels();
 }
 
-void _ParseAllMML(const InfoTree& fileroot)
+static void _ParseAllMML(const InfoTree& fileroot, bool load_menu_mml_only)
 {
 	for (const InfoTree &root : fileroot.children_named("marathon"))
 	{
@@ -101,6 +99,19 @@ void _ParseAllMML(const InfoTree& fileroot)
 			parse_mml_stringset(child);
 		for (const InfoTree &child : root.children_named("interface"))
 			parse_mml_interface(child);
+		for (const InfoTree& child : root.children_named("player_name"))
+			parse_mml_player_name(child);
+		for (const InfoTree& child : root.children_named("scenario"))
+			parse_mml_scenario(child);
+		for (const InfoTree& child : root.children_named("logging"))
+			parse_mml_logging(child);
+		for (const InfoTree& child : root.children_named("sounds"))
+			parse_mml_sounds(child);
+		for (const InfoTree& child : root.children_named("faders"))
+			parse_mml_faders(child);
+
+		if (load_menu_mml_only) continue;
+
 		for (const InfoTree &child : root.children_named("motion_sensor"))
 			parse_mml_motion_sensor(child);
 		for (const InfoTree &child : root.children_named("overhead_map"))
@@ -115,10 +126,6 @@ void _ParseAllMML(const InfoTree& fileroot)
 			parse_mml_platforms(child);
 		for (const InfoTree &child : root.children_named("liquids"))
 			parse_mml_liquids(child);
-		for (const InfoTree &child : root.children_named("sounds"))
-			parse_mml_sounds(child);
-		for (const InfoTree &child : root.children_named("faders"))
-			parse_mml_faders(child);
 		for (const InfoTree &child : root.children_named("player"))
 			parse_mml_player(child);
 		for (const InfoTree &child : root.children_named("view"))
@@ -143,16 +150,6 @@ void _ParseAllMML(const InfoTree& fileroot)
 			parse_mml_software(child);
 		for (const InfoTree &child : root.children_named("dynamic_limits"))
 			parse_mml_dynamic_limits(child);
-		for (const InfoTree &child : root.children_named("player_name"))
-			parse_mml_player_name(child);
-		for (const InfoTree &child : root.children_named("scenario"))
-			parse_mml_scenario(child);
-		for (const InfoTree &child : root.children_named("keyboard"))
-			parse_mml_keyboard(child);
-		for (const InfoTree &child : root.children_named("cheats"))
-			parse_mml_cheats(child);
-		for (const InfoTree &child : root.children_named("logging"))
-			parse_mml_logging(child);
 		for (const InfoTree &child : root.children_named("console"))
 			parse_mml_console(child);
 		for (const InfoTree &child : root.children_named("default_levels"))
@@ -160,12 +157,12 @@ void _ParseAllMML(const InfoTree& fileroot)
 	}
 }
 
-bool ParseMMLFromFile(const FileSpecifier& FileSpec)
+bool ParseMMLFromFile(const FileSpecifier& FileSpec, bool load_menu_mml_only)
 {
 	bool parse_error = false;
 	try {
 		InfoTree fileroot = InfoTree::load_xml(FileSpec);
-		_ParseAllMML(fileroot);
+		_ParseAllMML(fileroot, load_menu_mml_only);
 	} catch (const InfoTree::parse_error& ex) {
 		logError("Error parsing MML file (%s): %s", FileSpec.GetPath(), ex.what());
 		parse_error = true;
@@ -188,7 +185,7 @@ bool ParseMMLFromData(const char *buffer, size_t buflen)
 	try {
 		std::istringstream strm(std::string(buffer, buflen));
 		InfoTree fileroot = InfoTree::load_xml(strm);
-		_ParseAllMML(fileroot);
+		_ParseAllMML(fileroot, false);
 	} catch (const InfoTree::parse_error& ex) {
 		logError("Error parsing MML data: %s", ex.what());
 		parse_error = true;

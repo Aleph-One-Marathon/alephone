@@ -80,6 +80,8 @@ Feb 20, 2002 (Woody Zenfell):
 #include <string.h>
 #include <stdlib.h>
 
+#include <boost/algorithm/string/predicate.hpp>
+
 #include "map.h"
 #include "interface.h"
 #include "shell.h"
@@ -172,8 +174,6 @@ void initialize_keyboard_controller(
 	
 //	vassert(NUMBER_OF_KEYS == NUMBER_OF_STANDARD_KEY_DEFINITIONS,
 //		csprintf(temporary, "NUMBER_OF_KEYS == %d, NUMBER_OF_KEY_DEFS = %d. Not Equal!", NUMBER_OF_KEYS, NUMBER_OF_STANDARD_KEY_DEFINITIONS));
-	assert(NUMBER_OF_STANDARD_KEY_DEFINITIONS==NUMBER_OF_LEFT_HANDED_KEY_DEFINITIONS);
-	assert(NUMBER_OF_LEFT_HANDED_KEY_DEFINITIONS==NUMBER_OF_POWERBOOK_KEY_DEFINITIONS);
 	
 	// get globals initialized
 	heartbeat_count= 0;
@@ -951,33 +951,6 @@ static void remove_input_controller(
 	replay.valid= false;
 }
 
-
-void reset_mml_keyboard()
-{
-	// no reset
-}
-
-void parse_mml_keyboard(const InfoTree& root)
-{
-	int16 which_set;
-	if (!root.read_indexed("set", which_set, NUMBER_OF_KEY_SETUPS))
-		return;
-	
-	for (const InfoTree &ktree : root.children_named("key"))
-	{
-		int16 index;
-		if (!ktree.read_indexed("index", index, NUMBER_OF_STANDARD_KEY_DEFINITIONS))
-			continue;
-		
-		int16 keycode;
-		if (!ktree.read_attr("sdl", keycode))
-			continue;
-		
-		all_key_definitions[which_set][index].offset = static_cast<SDL_Scancode>(keycode);
-	}
-}
-
-
 static void StreamToPlayerStart(uint8* &S, player_start_data& Object)
 {
 	StreamToValue(S,Object.team);
@@ -1300,13 +1273,53 @@ uint32 parse_keymap(void)
   return flags;
 }
 
-
+extern std::vector<DirectorySpecifier> data_search_path;
 /*
  *  Get random demo replay from map
  */
 
-bool setup_replay_from_random_resource(uint32 map_checksum)
+bool setup_replay_from_random_resource()
 {
+	std::vector<FileSpecifier> demos;
+	
+	// search the Demos/ folder for *.filA files
+	for (auto& dir : data_search_path)
+	{
+		DirectorySpecifier scripts = dir + "Demos";
+
+		auto entries = scripts.ReadDirectory();
+		for (auto& entry : entries)
+		{
+			if (entry.is_directory)
+			{
+				continue;
+			}
+
+			if (boost::algorithm::ends_with(entry.name, ".filA"))
+			{
+				FileSpecifier demo = scripts + entry.name;
+				demos.push_back(demo);
+			}
+		}
+	}
+
+	if (demos.size())
+	{
+		static auto last_played_index = -1;
+		auto index = 0;
+		if (demos.size() > 1)
+		{
+			do
+			{
+				index = local_random() % demos.size();
+			}
+			while (index == last_played_index);
+		}
+		
+		last_played_index = index;
+		return setup_for_replay_from_file(demos[index], 0, false);
+	}
+	
 	// not supported in SDL version
 	return false;
 }

@@ -1,0 +1,94 @@
+name: release-steam-mac-os
+
+on: [workflow_dispatch, workflow_call]
+
+jobs:
+  release-steam-mac-os:
+    runs-on: macos-13
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build Steam Marathon
+      uses: ./.github/actions/build-mac-osx
+      with:
+        xcode_targets: "Marathon Steam, Classic Marathon Launcher"
+      
+    - name: Bootstrap Steamcmd
+      continue-on-error: true #Steamcmd may throw error exit code while bootstrapping that we can ignore, we will see on upload if everything is working fine
+      run: |
+        cp -r "vcpkg/installed-x64-osx/x64-osx/tools/steamworks-sdk" "Steam/steamcmd" &&
+        cd Steam/steamcmd &&
+        chmod +x steamcmd.sh &&
+        chmod +x steamcmd &&
+        ./steamcmd.sh +quit
+
+    - name: Restore config.vdf
+      env: 
+        CONFIG_VDF: ${{ secrets.CONFIG_VDF }}
+      run: echo $CONFIG_VDF | base64 --decode > ~/"Library/Application Support/Steam/config/config.vdf"
+      
+    - name: Codesign apps bundle
+      # Extract the secrets we defined earlier as environment variables
+      env: 
+        MACOS_CERTIFICATE: ${{ secrets.PROD_MACOS_CERTIFICATE }}
+        MACOS_CERTIFICATE_PWD: ${{ secrets.PROD_MACOS_CERTIFICATE_PWD }}
+        MACOS_CERTIFICATE_NAME: ${{ secrets.PROD_MACOS_CERTIFICATE_NAME }}
+        MACOS_CI_KEYCHAIN_PWD: ${{ secrets.PROD_MACOS_CI_KEYCHAIN_PWD }}
+      run: |
+        # Turn our base64-encoded certificate back to a regular .p12 file
+    
+        echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+
+        # We need to create a new keychain, otherwise using the certificate will prompt
+        # with a UI dialog asking for the certificate password, which we can't
+        # use in a headless CI environment
+    
+        security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain 
+        security default-keychain -s build.keychain
+        security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+        security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+
+        # We finally codesign our app bundle, specifying the Hardened runtime option
+        /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --entitlements "$GITHUB_WORKSPACE/PBProjects/Steamshim.entitlements" --options runtime "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Launcher" -v
+        /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Steam.app" -v
+
+    - name: "Notarize app bundle"
+      # Extract the secrets we defined earlier as environment variables
+      env:
+        PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_APPLE_ID }}
+        PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.PROD_MACOS_NOTARIZATION_TEAM_ID }}
+        PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.PROD_MACOS_NOTARIZATION_PWD }}
+      run: |
+        # Store the notarization credentials so that we can prevent a UI password dialog
+        # from blocking the CI
+
+        echo "Create keychain profile"
+        xcrun notarytool store-credentials "notarytool-profile" --apple-id "$PROD_MACOS_NOTARIZATION_APPLE_ID" --team-id "$PROD_MACOS_NOTARIZATION_TEAM_ID" --password "$PROD_MACOS_NOTARIZATION_PWD"
+
+        # We can't notarize an app bundle directly, but we need to compress it as an archive.
+        # Therefore, we create a zip file containing our app bundle, so that we can send it to the
+        # notarization service
+
+        echo "Creating temp notarization archives"
+        ditto -c -k --keepParent "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Steam.app" "marathon.zip"
+        ditto -c -k --keepParent "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Launcher" "launcher.zip"       
+
+        # Here we send the notarization request to the Apple's Notarization service, waiting for the result.
+        # This typically takes a few seconds inside a CI environment, but it might take more depending on the App
+        # characteristics. Visit the Notarization docs for more information and strategies on how to optimize it if
+        # you're curious
+
+        echo "Notarize Classic Marathon Steam"
+        xcrun notarytool submit "marathon.zip" --keychain-profile "notarytool-profile" --wait
+
+        # Finally, we need to "attach the staple" to our executable, which will allow our app to be
+        # validated by macOS even when an internet connection is not available.
+        echo "Attach staple"
+        xcrun stapler staple "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Steam.app"
+
+        echo "Notarize Classic Marathon Launcher"
+        xcrun notarytool submit "launcher.zip" --keychain-profile "notarytool-profile" --wait
+
+    - name: Deploy to Steam
+      run: ./Steam/steamcmd/steamcmd.sh +login alephone_upload +run_app_build ../m1_mac.vdf +quit

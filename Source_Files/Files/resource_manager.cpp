@@ -164,6 +164,18 @@ static list<res_file_t *>::iterator find_res_file_t(SDL_RWops *f)
 	return res_file_list.end();
 }
 
+// external resources: terminals for Marathon 1
+OpenedResourceFile ExternalResources;
+
+void set_external_resources_file(FileSpecifier& f)
+{
+	f.Open(ExternalResources);
+}
+
+void close_external_resources()
+{
+	ExternalResources.Close();
+}
 
 /*
  *  Initialize resource management
@@ -171,7 +183,7 @@ static list<res_file_t *>::iterator find_res_file_t(SDL_RWops *f)
 
 void initialize_resources(void)
 {
-	// nothing to do
+	atexit(close_external_resources);
 }
 
 

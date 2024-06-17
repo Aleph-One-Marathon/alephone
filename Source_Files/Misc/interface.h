@@ -274,6 +274,9 @@ void stop_interface_fade(void);
 bool enabled_item(short item);
 void paint_window_black(void);
 
+void set_game_focus_lost();
+void set_game_focus_gained();
+
 /* ---------- prototypes/INTERFACE_MACINTOSH.C */
 void do_preferences(void);
 short get_level_number_from_user(void);
@@ -427,11 +430,6 @@ bool get_default_theme_spec(FileSpecifier& File);
 // ZZZ addition: since Mac versions now search for any candidate files instead of picking
 // by name, new interface to search for all simultaneously instead of duplicating effort.
 void get_default_file_specs(FileSpecifier* outMapSpec, FileSpecifier* outShapesSpec, FileSpecifier* outSoundsSpec, FileSpecifier* outPhysicsSpec);
-
-// external resources: terminals for Marathon 1
-void set_external_resources_file(FileSpecifier&);
-void close_external_resources();
-extern OpenedResourceFile ExternalResources;
 
 // LP change: resets field of view to whatever the player had had when reviving
 void ResetFieldOfView();

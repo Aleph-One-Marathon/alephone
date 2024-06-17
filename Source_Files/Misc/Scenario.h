@@ -48,15 +48,20 @@ public:
 	
 	bool IsCompatible(const string);
 	void AddCompatible(const string);
+
+	void SetAllowsClassicGameplay(bool allow) { m_allows_classic_gameplay = allow; }
+	bool AllowsClassicGameplay() { return m_allows_classic_gameplay; }
 	
 private:
-	Scenario() { }
+	Scenario() : m_allows_classic_gameplay{false} { }
 	
 	string m_name;
 	string m_version;
 	string m_id;
 	
 	vector<string> m_compatibleVersions;
+
+	bool m_allows_classic_gameplay;
 };
 
 class InfoTree;

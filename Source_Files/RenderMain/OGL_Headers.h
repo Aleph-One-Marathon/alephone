@@ -23,6 +23,12 @@
 	Uniform header for all Aleph One OpenGL users
 */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef HAVE_OPENGL
+
 #ifdef __WIN32__
 #include <glad/glad.h>
 #else
@@ -47,6 +53,8 @@
 
 #ifndef __APPLE__
 #include <SDL2/SDL_opengles2.h>
+#endif
+
 #endif
 
 #endif

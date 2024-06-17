@@ -10,7 +10,7 @@ jobs:
       - name: Configure
         uses: ./.github/actions/configure-linux
       - name: Build
-        run: make -j 2
+        run: make -j $(nproc)
         
   linux-without-ffmpeg:
     runs-on: ubuntu-22.04
@@ -22,29 +22,39 @@ jobs:
           configure_options: --without-ffmpeg
           
       - name: Build
-        run: make -j 2
+        run: make -j $(nproc)
+        
+  linux-without-opengl:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        uses: ./.github/actions/configure-linux
+        with:
+          configure_options: --disable-opengl
+          
+      - name: Build
+        run: make -j $(nproc)
       
   mac-osx-x64:
-    runs-on: macos-12
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
       - name: Build
         uses: ./.github/actions/build-mac-osx
         with:
-          vcpkg_installed_folder: installed-x64-osx
-          vcpkg_arch: x64
           xcode_arch: x86_64
+          xcode_targets: "Aleph One"
           
   mac-osx-arm:
-    runs-on: macos-12
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
       - name: Build
         uses: ./.github/actions/build-mac-osx
         with:
-          vcpkg_installed_folder: installed-arm64-osx
-          vcpkg_arch: arm
           xcode_arch: arm64
+          xcode_targets: "Aleph One"
           
   windows-x64:
     runs-on: windows-2022
@@ -54,6 +64,7 @@ jobs:
         uses: ./.github/actions/build-windows
         with:
           platform: x64
+          configurations: Release
           vcpkg_installed_folder: installed-x64-windows
       - name: Run Tests
         uses: ./.github/actions/run-tests
@@ -68,6 +79,7 @@ jobs:
         uses: ./.github/actions/build-windows
         with:
           platform: x86
+          configurations: Release
           vcpkg_installed_folder: installed-x86-windows
       - name: Run Tests
         uses: ./.github/actions/run-tests

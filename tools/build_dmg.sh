@@ -25,7 +25,8 @@ END
 
 make_dmg()
 {
-    appname="$1"
+    imgname="$1"
+    appname="$2"
     if [ "$SIGNATURE" != "" ]; then
         codesign --timestamp --deep --force -o runtime --sign "$SIGNATURE" "$TARGET_BUILD_DIR/$appname.app"
         spctl -a -t execute -v "$TARGET_BUILD_DIR/$appname.app"
@@ -47,7 +48,7 @@ make_dmg()
     mkdir "$licdir"
     cp "$SRCROOT/../Resources/Library Licenses/"*.* "$licdir"
     
-    if [ "$2" != "" ]; then
+    if [ "$3" != "" ]; then
         extdir="$diskdir/Extras"
         mkdir "$extdir"
         cp "$SRCROOT/../data/Transparent_Liquids.mml" "$extdir"
@@ -58,7 +59,6 @@ make_dmg()
     fi
     
     version=`grep '^#define A1_DATE_VERSION' "$SRCROOT/../Source_Files/Misc/alephversion.h" | sed -e 's/\(.*\"\)\(.*\)\(\"\)/\2/g'`
-    imgname="${appname// }"
     imgfile="$TARGET_BUILD_DIR/$imgname-$version-Mac.dmg"
     hdiutil create -ov -fs HFS+ -format ULFO -layout GPTSPUD -srcfolder "$diskdir" -volname "$appname" "$imgfile"
     if [ "$SIGNATURE" != "" ]; then
@@ -69,7 +69,7 @@ make_dmg()
     rm -rf "$diskdir"
 }
 
-make_dmg "Aleph One" "extras"
-make_dmg "Marathon"
-make_dmg "Marathon 2"
-make_dmg "Marathon Infinity"
+make_dmg "AlephOne" "Aleph One" "extras"
+make_dmg "Marathon" "Classic Marathon"
+make_dmg "Marathon2" "Classic Marathon 2"
+make_dmg "MarathonInfinity" "Classic Marathon Infinity"

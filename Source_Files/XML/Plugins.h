@@ -25,8 +25,8 @@
 
 #include <list>
 #include <map>
-#include <queue>
 #include <set>
+#include <stack>
 #include <string>
 #include <vector>
 
@@ -66,6 +66,7 @@ struct Plugin {
 	std::vector<ScenarioInfo> required_scenarios;
 	std::vector<MapPatch> map_patches;
 
+	bool auto_enable;
 	bool enabled;
 	bool overridden;
 	bool overridden_solo;
@@ -92,11 +93,12 @@ public:
 	void invalidate() { m_validated = false; }
 	void set_mode(GameMode mode) { m_mode = mode; }
 	GameMode mode() { return m_mode; }
-	void load_mml();
+	void load_mml(bool load_menu_mml_only);
 
 	void load_shapes_patches(bool opengl);
 
-	void disable(const boost::filesystem::path& path);
+	bool disable(const boost::filesystem::path& path);
+	bool enable(const boost::filesystem::path& path);
 
 	iterator begin() { return m_plugins.begin(); }
 	iterator end() { return m_plugins.end(); }
@@ -118,7 +120,7 @@ private:
 	bool m_validated = false;
 	GameMode m_mode = kMode_Menu;
 
-	std::queue<ScopedSearchPath, std::list<ScopedSearchPath>> m_search_paths;
+	std::stack<ScopedSearchPath, std::list<ScopedSearchPath>> m_search_paths;
 
 	uint32_t m_map_checksum;
 };

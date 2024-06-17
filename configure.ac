@@ -26,11 +26,9 @@ AC_DEFUN([AX_ARG_WITH],
            AC_ARG_WITH([$1], AS_HELP_STRING([--without-$1], [do not use $2])) ])
 
 AX_ARG_ENABLE([opengl], [OpenGL rendering])
-AX_ARG_ENABLE([lua], [built-in Lua scripting])
 
 AX_ARG_WITH([sdl_image], [SDL2_image support])
 AX_ARG_WITH([ffmpeg], [FFmpeg playback and film export])
-AX_ARG_WITH([smpeg], [SMPEG movie playback])
 AX_ARG_WITH([curl], [cURL for HTTP communication])
 AX_ARG_WITH([zzip], [zziplib support])
 AX_ARG_WITH([png], [libpng PNG screenshot support])
@@ -190,11 +188,6 @@ AS_IF([test "x$enable_opengl" != "xno"],
                       [AC_MSG_WARN([OpenGL not available])]) ]) ])
 AM_CONDITIONAL([MAKE_OPENGL], [test "x$have_opengl" = "xtrue" ])
 
-dnl Enable Lua.
-AS_IF([test "x$enable_lua" != "xno"],
-      [ have_lua=true
-        AC_DEFINE([HAVE_LUA], [1], [Lua support enabled]) ])
-
 
 dnl Check optional packages.
 
@@ -231,9 +224,6 @@ AX_CHECK_FEATURE_PKG([ffmpeg], [FFMPEG],
 dnl Remove SDL 1 inclusions from ffmpeg (https://trac.ffmpeg.org/ticket/2009)
 FFMPEG_LIBS=`echo "$FFMPEG_LIBS" | sed 's|-lSDL ||' | sed 's|-lSDLmain ||'`
 LIBS=`echo "$LIBS" | sed 's|-lSDL ||' | sed 's|-lSDLmain ||'`
-
-AX_CHECK_FEATURE_LIB([smpeg], [SMPEG],
-                     [smpeg/smpeg.h], [smpeg], [SMPEG_new])
 
 AX_CHECK_FEATURE_PKG([curl], [CURL],
                      [CURL], [libcurl >= 7.31.0])
@@ -308,10 +298,8 @@ AS_ECHO([""])
 AS_ECHO(["Summary of optional features:"])
 AS_ECHO([""])
 AX_PRINT_SUMMARY([opengl])
-AX_PRINT_SUMMARY([lua])
 AX_PRINT_SUMMARY([sdl_image])
 AX_PRINT_SUMMARY([ffmpeg])
-AX_PRINT_SUMMARY([smpeg])
 AX_PRINT_SUMMARY([curl])
 AX_PRINT_SUMMARY([zzip])
 AX_PRINT_SUMMARY([png])

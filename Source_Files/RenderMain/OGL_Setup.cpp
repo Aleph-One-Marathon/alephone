@@ -308,7 +308,7 @@ void OGL_TextureOptionsBase::Load()
 	}
 
 	// load a heightmap
-	if(OffsetMap != FileSpecifier() && OffsetMap.Exists()) {
+	if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap) && OffsetMap != FileSpecifier() && OffsetMap.Exists()) {
 		if(!OffsetImg.LoadFromFile(OffsetMap, ImageLoader_Colors, flags | (NormalIsPremultiplied ? ImageLoader_ImageIsAlreadyPremultiplied : 0), actual_width, actual_height, maxTextureSize)) {
 			return;
 		}
@@ -420,8 +420,7 @@ void OGL_LoadModelsImages(short Collection)
 	OGL_LoadTextures(Collection);
 	
 	// For models, skins
-	bool UseModels = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_3D_Models) ? true : false;
-	if (UseModels)
+	if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_3D_Models))
 		OGL_LoadModels(Collection);
 	else
 		OGL_UnloadModels(Collection);
@@ -462,6 +461,7 @@ OGL_FogData *OriginalFogData = NULL;
 
 void reset_mml_opengl()
 {
+#ifdef HAVE_OPENGL
 	reset_mml_opengl_texture();
 	reset_mml_opengl_model();
 	reset_mml_opengl_shader();
@@ -472,10 +472,12 @@ void reset_mml_opengl()
 		free(OriginalFogData);
 		OriginalFogData = NULL;
 	}
+#endif
 }
 
 void parse_mml_opengl(const InfoTree& root)
 {
+#ifdef HAVE_OPENGL
 	// back up old values first
 	if (!OriginalFogData) {
 		OriginalFogData = (OGL_FogData *) malloc(sizeof(OGL_FogData) * OGL_NUMBER_OF_FOG_TYPES);
@@ -525,6 +527,7 @@ void parse_mml_opengl(const InfoTree& root)
 			color.read_color(def.Color);
 		}
 	}
+#endif
 }
 
 #ifdef HAVE_OPENGL

@@ -27,6 +27,8 @@
 #include "screen.h"
 #include "MatrixStack.hpp"
 
+#ifdef HAVE_OPENGL
+
 #define MAXIMUM_VERTICES_PER_WORLD_POLYGON (MAXIMUM_VERTICES_PER_POLYGON+4)
 
 const float FixedAngleToDegrees = 360.0/(float(FIXED_ONE)*float(FULL_CIRCLE));
@@ -177,3 +179,4 @@ void Rasterizer_Shader_Class::End()
 	Rasterizer_OGL_Class::End();
 }
 
+#endif

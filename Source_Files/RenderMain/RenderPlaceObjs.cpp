@@ -79,12 +79,14 @@ struct RenderPlaceObjsClass::span_data
 	struct base_node_data
 	{
 		sorted_node_data* node;
-		world_point2d right_pt; // right edge of object's span in this node, or span_data::right_pt if rightmost node
-	};	                        // (even if that point lies outside)
+		long_point2d right_pt; // right edge of object's span in this node, or span_data::right_pt if rightmost node
+	};	                       // (even if that point lies outside)
 	
 	boost::container::small_vector<base_node_data, 6> base_nodes; // left-to-right
-	world_point2d left_pt;
-	world_point2d right_pt;
+	
+	// Total span (can be off-map: coords are within +/- 2^16 instead of 2^15)
+	long_point2d left_pt;
+	long_point2d right_pt;
 };
 
 // For finding the 2D projection of the bounding box;
@@ -245,6 +247,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			
 			// Create a fake sprite rectangle using the model's bounding box
 			float Scale = 1;
+#ifdef HAVE_OPENGL
 			if (ModelPtr)
 			{
 				// Copy over
@@ -262,28 +265,19 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				// Set pointer back
 				shape_information = &model_shape_information;
 			}
-			
+#endif
 			// Too close?
 			if (Farthest < MINIMUM_OBJECT_DISTANCE) return NULL;
 			
-			if (ProjDistance == 0)
-			{
-				x0 = view->half_screen_width;
-				x1 = x0 + 1;
-				y0 = view->half_screen_height;
-				y1 = y0 + 1;
-			}
-			else
+			assert(DistanceRef > 0);
+			
 			{
 				// Doing this with full-integer arithmetic to avoid mis-clipping;
-				x0= view->half_screen_width + (int(transformed_origin.y+shape_information->world_left)*view->world_to_screen_x)/ProjDistance;
-				x1= view->half_screen_width + (int(transformed_origin.y+shape_information->world_right)*view->world_to_screen_x)/ProjDistance;
-				y0=	view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_top))/ProjDistance + view->dtanpitch;
-				y1= view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_bottom))/ProjDistance + view->dtanpitch;
-			}
-			if (x0<x1 && y0<y1)
-			{
-				// LP Change:
+				x0= view->half_screen_width + (int(transformed_origin.y+shape_information->world_left)*view->world_to_screen_x)/DistanceRef;
+				x1= view->half_screen_width + (int(transformed_origin.y+shape_information->world_right)*view->world_to_screen_x)/DistanceRef;
+				y0=	view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_top))/DistanceRef + view->dtanpitch;
+				y1= view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_bottom))/DistanceRef + view->dtanpitch;
+			
 				size_t Length = RenderObjects.size();
 				POINTER_DATA OldROPointer = POINTER_CAST(RenderObjects.data());
 				
@@ -354,6 +348,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				render_object->rectangle.ShapeDesc = BUILD_DESCRIPTOR(data.collection_code,0);
 				render_object->rectangle.LowLevelShape = data.low_level_shape_index;
 				render_object->rectangle.ModelPtr = ModelPtr;
+#ifdef HAVE_OPENGL
 				if (ModelPtr)
 				{
 					render_object->rectangle.ModelSequence = ModelSequence;
@@ -365,6 +360,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					render_object->rectangle.LightDepth = LightDepth;
 					objlist_copy(render_object->rectangle.LightDirection,LightDirection,3);
 				}
+#endif
 				// need this for new rendering pipeline
 				render_object->rectangle.WorldLeft = shape_information->world_left;
 				render_object->rectangle.WorldBottom = shape_information->world_bottom;
@@ -590,7 +586,7 @@ auto RenderPlaceObjsClass::build_base_node_list(
 	vector<sorted_node_data *>& polygon_index_to_sorted_node = RSPtr->polygon_index_to_sorted_node;
 	
 	// Add nodes to result.base_nodes in order found (updating the previous node's .right_pt if scanning rightward)
-	auto scan_toward = [&](world_point2d destination, bool scanning_rightward)
+	auto scan_toward = [&](long_point2d destination, bool scanning_rightward)
 	{
 		short polygon_index= origin_polygon_index;
 		auto scan_vector = destination - origin.xy();
@@ -683,7 +679,7 @@ auto RenderPlaceObjsClass::build_base_node_list(
 						// Update the relevant .right_pt (the previous node if scanning rightward, else the new node)
 						const auto cpk_vl = cross_product_k(scan_vector, line_vec); // > 0
 						const float u = 1.f*cross_product_k(vertex_a - origin.xy(), scan_vector) / cpk_vl; // [0, 1]
-						const world_point2d right_pt = to_world(vertex_a + u*line_vec);
+						const auto right_pt = vertex_a + u*line_vec;
 						const int new_index = result.base_nodes.size() - 1;
 						result.base_nodes[new_index - (scanning_rightward ? 1 : 0)].right_pt = right_pt;
 					}
@@ -701,10 +697,11 @@ auto RenderPlaceObjsClass::build_base_node_list(
 		right_distance = std::max(right_distance, ro->rectangle.WorldRight);
 	}
 	
-	auto pt_along_object_rect = [&](world_distance offset_from_origin) -> world_point2d
+	auto pt_along_object_rect = [&](world_distance offset_from_origin) -> long_point2d // can be off-map
 	{
-		world_point2d pt = origin.xy();
-		return *translate_point2d(&pt, offset_from_origin, view->yaw + QUARTER_CIRCLE);
+		const angle right = normalize_angle(view->yaw + QUARTER_CIRCLE);
+		const auto v = (1.f*offset_from_origin/TRIG_MAGNITUDE) * long_vector2d{cosine_table[right], sine_table[right]};
+		return origin.xy() + v;
 	};
 	
 	result.left_pt = pt_along_object_rect(left_distance);
@@ -751,7 +748,7 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 		// Add new windows with x-extents that are the union of every overlap between a node window and the span of the
 		// object in that node, but without clipping the outermost extents of the outermost contributing windows
 	
-		auto eye_vec_toward = [&](world_point2d pt) -> long_vector2d // == 1024*(eye vec _to_ the pt)
+		auto eye_vec_toward = [&](long_point2d pt) -> long_vector2d // == 1024*(eye vec _to_ the pt)
 		{ 
 			const auto v = pt - view->origin.xy();
 			const int16 c = cosine_table[view->yaw];
@@ -941,6 +938,8 @@ shape_information_data *RenderPlaceObjsClass::rescale_shape_information(
 
 
 // Creates a fake sprite rectangle from a model's bounding box;
+// models behind the view get a degenerate rectangle (and thus just 1 base node)
+//
 // also finds:
 //
 // Distance of farthest part of the bounding box
@@ -1078,10 +1077,10 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	Proj_ZMax -= Z0;
 	
 	// Plug back into the sprite
-	ShapeInfo.world_left = int(PIN(Proj_YMin,SHRT_MIN,SHRT_MAX));
-	ShapeInfo.world_right = int(PIN(Proj_YMax,SHRT_MIN,SHRT_MAX));
-	ShapeInfo.world_bottom = int(PIN(Proj_ZMin,SHRT_MIN,SHRT_MAX));
-	ShapeInfo.world_top = int(PIN(Proj_ZMax,SHRT_MIN,SHRT_MAX));
+	ShapeInfo.world_left = int16(std::clamp<float>(Proj_YMin, INT16_MIN, 0));
+	ShapeInfo.world_right = int16(std::clamp<float>(Proj_YMax, 0, INT16_MAX));
+	ShapeInfo.world_bottom = int16(std::clamp<float>(Proj_ZMin, INT16_MIN, 0));
+	ShapeInfo.world_top = int16(std::clamp<float>(Proj_ZMax, 0, INT16_MAX));
 	
 	// Set X0, Y0, Z0 to location of center of bounding box
 	X0 += (ExpandedBB[0][0] + ExpandedBB[7][0])/2;

@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Marathon Infinity
+Name=Classic Marathon Infinity
 Exec=run.sh
 Icon=org.bungie.source.MarathonInfinity
 Categories=Game

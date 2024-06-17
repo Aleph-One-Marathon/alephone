@@ -270,7 +270,7 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>Marathon Infinity</string>
+	<string>Classic Marathon Infinity</string>
 	<key>CFBundleIconFile</key>
 	<string>Marathon Infinity.icns</string>
 	<key>CFBundleIdentifier</key>

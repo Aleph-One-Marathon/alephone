@@ -261,7 +261,11 @@ bool use_map_file(
 	FileSpecifier File;
 	bool success= false;
 
-	if(find_wad_file_that_has_checksum(File, _typecode_scenario, strPATHS, checksum))
+	if (file_is_set && get_current_map_checksum() == checksum)
+	{
+		success = true;
+	}
+	else if(find_wad_file_that_has_checksum(File, _typecode_scenario, strPATHS, checksum))
 	{
 		set_map_file(File);
 		success= true;
@@ -754,6 +758,7 @@ bool get_entry_points(vector<entry_point> &vec, int32 type)
 extern void LoadSoloLua();
 extern void LoadReplayNetLua();
 extern void LoadStatsLua();
+extern void LoadAchievementsLua();
 extern bool RunLuaScript();
 
 /* This is called when the game level is changed somehow */
@@ -814,6 +819,7 @@ bool goto_level(
 		{
 			LoadReplayNetLua();
 		}
+		LoadAchievementsLua();
 		LoadStatsLua();
 
 		set_game_error(SavedType,SavedError);
@@ -1256,6 +1262,7 @@ bool load_game_from_file(FileSpecifier& File, bool run_scripts)
 			{
 				LoadSoloLua();
 			}
+			LoadAchievementsLua();
 			LoadStatsLua();
 			set_game_error(SavedType,SavedError);
 		}
@@ -1274,8 +1281,6 @@ void setup_revert_game_info(
 	obj_copy(revert_game_data.player_start, *start);
 	obj_copy(revert_game_data.entry_point, *entry);
 }
-
-extern void reset_messages();
 
 bool revert_game(
 	void)
@@ -1317,7 +1322,6 @@ bool revert_game(
 		update_interface(NONE);
 		ChaseCam_Reset();
 		ResetFieldOfView();
-		reset_messages();
 		ReloadViewContext();
 	}
 	

@@ -926,11 +926,7 @@ static void handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsChan
   if (netState == netJoining) {
     ScriptMessage replyToScriptMessage;
     if (scriptMessage->value() == _netscript_query_message) {
-#ifdef HAVE_LUA
       replyToScriptMessage.setValue(_netscript_yes_script_message);
-#else
-      replyToScriptMessage.setValue(_netscript_no_script_message);
-#endif
     } else {
       replyToScriptMessage.setValue(_netscript_no_script_message);
     }
@@ -1203,15 +1199,12 @@ bool NetEnter(void)
 	my_capabilities.clear();
 	my_capabilities[Capabilities::kGameworld] = Capabilities::kGameworldVersion;
 	my_capabilities[Capabilities::kGameworldM1] = Capabilities::kGameworldM1Version;
-	my_capabilities[Capabilities::kSpeex] = Capabilities::kSpeexVersion;
 	if (network_preferences->game_protocol == _network_game_protocol_star) {
 		my_capabilities[Capabilities::kStar] = Capabilities::kStarVersion;
 	} else {
 		my_capabilities[Capabilities::kRing] = Capabilities::kRingVersion;
 	}
-#ifdef HAVE_LUA
 	my_capabilities[Capabilities::kLua] = Capabilities::kLuaVersion;
-#endif
 	my_capabilities[Capabilities::kGatherable] = Capabilities::kGatherableVersion;
 	my_capabilities[Capabilities::kZippedData] = Capabilities::kZippedDataVersion;
 	my_capabilities[Capabilities::kNetworkStats] = Capabilities::kNetworkStatsVersion;
@@ -2083,11 +2076,13 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 	CommunicationsChannel::multipleFlushOutgoingMessages(channels, false, 30000, 30000);
 	
 	for (playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
-		if (playerIndex != localPlayerIndex) {
+
+		NetPlayer player = topology->players[playerIndex];
+
+		if (playerIndex != localPlayerIndex && !player.net_dead && player.identifier != NONE) {
 			connections_to_clients[topology->players[playerIndex].stream_id]->state = Client::_ingame;
 		}
 	}
-
 	
     
 	if (error) { // ghs: nothing above returns an error at the moment,
@@ -2105,11 +2100,9 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 		
 		draw_progress_bar(total_length, total_length);
 		
-#ifdef HAVE_LUA
 		if (do_netscript) {
 			LoadLuaScript ((char*)deferred_script_data, deferred_script_length, _lua_netscript);
 		}
-#endif
 	}
 	
 	close_progress_dialog();
@@ -2142,9 +2135,7 @@ byte *NetReceiveGameData(bool do_physics)
     
     if (handlerLuaLength > 0) {
       do_netscript = true;
-#ifdef HAVE_LUA
       LoadLuaScript((char *) handlerLuaBuffer, handlerLuaLength, _lua_netscript);
-#endif
       handlerLuaBuffer = NULL;
       handlerLuaLength = 0;
     } else {

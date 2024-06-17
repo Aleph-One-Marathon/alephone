@@ -25,7 +25,6 @@ LUA_TEMPLATES.H
 
 #include "cseries.h"
 
-#ifdef HAVE_LUA
 extern "C"
 {
 #include "lua.h"
@@ -1026,7 +1025,5 @@ void L_ObjectClass<name, object_t, index_t>::Invalidate(lua_State *L, index_t in
 	_objects.erase(index);
 }
 
-
-#endif
 
 #endif

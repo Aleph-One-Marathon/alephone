@@ -1542,7 +1542,11 @@ GetSDLKeyName(SDL_Scancode inKey) {
 	else if (w_key::event_type_for_key(inKey) == w_key::JoystickButton)
 	    return get_joystick_button_key_name(inKey - AO_SCANCODE_BASE_JOYSTICK_BUTTON);
     else
-        return SDL_GetScancodeName(inKey);
+	{
+		static std::string s;
+		s = utf8_to_mac_roman(SDL_GetKeyName(SDL_GetKeyFromScancode(inKey)));
+		return s.c_str();
+	}
 }
 
 void w_key::draw(SDL_Surface *s) const
@@ -2238,12 +2242,12 @@ void w_list_base::set_top_item(size_t i)
  */
 
 w_levels::w_levels(const vector<entry_point> &items, dialog *d)
-	  : w_list<entry_point>(items, 400, 8, 0), parent(d), show_level_numbers(true) {}
+	: w_list<entry_point>(items, 400, 8, 0), parent(d), show_level_numbers(true), offset{1} {}
 
 // ZZZ: new constructor gives more control over widget's appearance.
 w_levels::w_levels(const vector<entry_point>& items, dialog* d, uint16 inWidth,
         size_t inNumLines, size_t inSelectedItem, bool in_show_level_numbers)
-	  : w_list<entry_point>(items, inWidth, inNumLines, inSelectedItem), parent(d), show_level_numbers(in_show_level_numbers) {}
+	: w_list<entry_point>(items, inWidth, inNumLines, inSelectedItem), parent(d), show_level_numbers(in_show_level_numbers), offset{1} {}
 
 void
 w_levels::item_selected(void)
@@ -2258,7 +2262,7 @@ w_levels::draw_item(vector<entry_point>::const_iterator i, SDL_Surface *s, int16
 	char str[256];
 
     if(show_level_numbers)
-    	sprintf(str, "%d - %s", i->level_number + 1, i->level_name);
+    	sprintf(str, "%d - %s", i->level_number + offset, i->level_name);
     else
         sprintf(str, "%s", i->level_name);
 

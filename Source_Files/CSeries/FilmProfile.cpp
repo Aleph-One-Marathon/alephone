@@ -349,7 +349,7 @@ static FilmProfile marathon_infinity = {
 
 FilmProfile film_profile = alephone1_7;
 
-extern void LoadBaseMMLScripts();
+extern void LoadBaseMMLScripts(bool load_menu_mml_only);
 extern void ResetAllMMLValues();
 
 void load_film_profile(FilmProfileType type, bool reload_mml)
@@ -385,8 +385,8 @@ void load_film_profile(FilmProfileType type, bool reload_mml)
 	if (reload_mml)
 	{
 		ResetAllMMLValues();
-		LoadBaseMMLScripts();
-		Plugins::instance()->load_mml();
+		LoadBaseMMLScripts(false);
+		Plugins::instance()->load_mml(false);
 	}
 }
 
