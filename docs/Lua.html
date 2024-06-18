@@ -771,10 +771,22 @@
       <dt>:position(x, y, z, polygon) <span class="version">20090909</span>
 </dt>
 <dd><p class="description">sets position of item</p></dd>
+	  <dt>:teleport_in() <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">teleports item in</p>
+<p class="note">can fail silently if there are not enough effects slots </p>
+</dd>
+	  <dt>:teleport_out() <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">teleports item out</p>
+<p class="note">can fail silently if there are not enough effects slots </p>
+</dd>
       <dt>.type<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">type of item</p></dd>
-      <dt>.visible<span class="access"> (read-only)</span> <span class="version">20220115</span>
+      <dt>.visible <span class="version">git</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>.x<span class="access"> (read-only)</span>
@@ -1931,9 +1943,24 @@
 <dd><p class="description">sets position of scenery</p></dd>
       <dt>.solid</dt>
 <dd><p class="description">whether this scenery is solid</p></dd>
+	  <dt>:teleport_in() <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">teleports scenery in</p>
+<p class="note">can fail silently if there are not enough effects slots </p>
+</dd>
+	  <dt>:teleport_out() <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">teleports scenery out</p>
+<p class="note">can fail silently if there are not enough effects slots </p>
+</dd>
       <dt>.type<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">type of scenery</p></dd>
+	  <dt>.visible <span class="version">git</span>
+</dt>
+<dd><p class="description">whether this scenery is visible</p></dd>
       <dt>.x<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>

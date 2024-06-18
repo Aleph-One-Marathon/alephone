@@ -64,6 +64,20 @@ int lua_play_object_sound(lua_State *L)
 }
 
 template<class T>
+int lua_teleport_object_in(lua_State* L)
+{
+	teleport_object_in(T::Index(L, 1));
+	return 0;
+}
+
+template<class T>
+int lua_teleport_object_out(lua_State* L)
+{
+	teleport_object_out(T::Index(L, 1));
+	return 0;
+}
+
+template<class T>
 static int get_object_facing(lua_State *L)
 {
 	object_data *object = get_object_data(T::Index(L, 1));
@@ -84,6 +98,14 @@ static int get_object_type(lua_State *L)
 {
 	object_data *object = get_object_data(T::Index(L, 1));
 	TT::Push(L, object->permutation);
+	return 1;
+}
+
+template<class T>
+static int get_object_visible(lua_State* L)
+{
+	auto object = get_object_data(T::Index(L, 1));
+	lua_pushboolean(L, OBJECT_IS_VISIBLE(object));
 	return 1;
 }
 
@@ -119,6 +141,14 @@ static int set_object_facing(lua_State *L)
 
 	object_data *object = get_object_data(T::Index(L, 1));
 	object->facing = static_cast<int>(lua_tonumber(L, 2) / AngleConvert);
+	return 0;
+}
+
+template<class T>
+static int set_object_visible(lua_State* L)
+{
+	auto object = get_object_data(T::Index(L, 1));
+	SET_OBJECT_INVISIBILITY(object, !lua_toboolean(L, 2));
 	return 0;
 }
 
@@ -373,21 +403,16 @@ int Lua_Item_Delete(lua_State* L)
 	return 0;
 }
 
-static int Lua_Item_Get_Visible(lua_State *L)
-{
-	object_data *object = get_object_data(Lua_Item::Index(L, 1));
-	lua_pushboolean(L, OBJECT_IS_VISIBLE(object));
-	return 1;
-}
-
 const luaL_Reg Lua_Item_Get[] = {
 	{"delete", L_TableFunction<Lua_Item_Delete>},
 	{"facing", get_object_facing<Lua_Item>},
 	{"play_sound", L_TableFunction<lua_play_object_sound<Lua_Item> >},
 	{"polygon", get_object_polygon<Lua_Item>},
 	{"position", L_TableFunction<lua_object_position<Lua_Item> >},
+	{"teleport_in", L_TableFunction<lua_teleport_object_in<Lua_Item>>},
+	{"teleport_out", L_TableFunction<lua_teleport_object_out<Lua_Item>>},
 	{"type", get_object_type<Lua_Item, Lua_ItemType>},
-	{"visible", Lua_Item_Get_Visible},
+	{"visible", get_object_visible<Lua_Item>},
 	{"x", get_object_x<Lua_Item>},
 	{"y", get_object_y<Lua_Item>},
 	{"z", get_object_z<Lua_Item>},
@@ -396,6 +421,7 @@ const luaL_Reg Lua_Item_Get[] = {
 
 const luaL_Reg Lua_Item_Set[] = {
 	{"facing", set_object_facing<Lua_Item>},
+	{"visible", set_object_visible<Lua_Item>},
 	{0, 0}
 };
 
@@ -702,7 +728,10 @@ const luaL_Reg Lua_Scenery_Get[] = {
 	{"polygon", get_object_polygon<Lua_Scenery>},
 	{"position", L_TableFunction<lua_object_position<Lua_Scenery> >},
 	{"solid", Lua_Scenery_Get_Solid},
+	{"teleport_in", L_TableFunction<lua_teleport_object_in<Lua_Scenery>>},
+	{"teleport_out", L_TableFunction<lua_teleport_object_out<Lua_Scenery>>},
 	{"type", get_object_type<Lua_Scenery, Lua_SceneryType>},
+	{"visible", get_object_visible<Lua_Scenery>},
 	{"x", get_object_x<Lua_Scenery>},
 	{"y", get_object_y<Lua_Scenery>},
 	{"z", get_object_z<Lua_Scenery>},
@@ -722,6 +751,7 @@ static int Lua_Scenery_Set_Solid(lua_State *L)
 const luaL_Reg Lua_Scenery_Set[] = {
 	{"facing", set_object_facing<Lua_Scenery>},
 	{"solid", Lua_Scenery_Set_Solid},
+	{"visible", set_object_visible<Lua_Scenery>},
 	{0, 0}
 };
 
