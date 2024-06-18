@@ -25,6 +25,8 @@ Global
 		Marathon|x86 = Marathon|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
+		Steam Marathon 2|x64 = Steam Marathon 2|x64
+		Steam Marathon 2|x86 = Steam Marathon 2|x86
 		Steam Marathon|x64 = Steam Marathon|x64
 		Steam Marathon|x86 = Steam Marathon|x86
 	EndGlobalSection
@@ -49,6 +51,10 @@ Global
 		{9AF0CA66-A621-4FE5-B986-F0CAB7647C24}.Release|x64.Build.0 = Release|x64
 		{9AF0CA66-A621-4FE5-B986-F0CAB7647C24}.Release|x86.ActiveCfg = Release|Win32
 		{9AF0CA66-A621-4FE5-B986-F0CAB7647C24}.Release|x86.Build.0 = Release|Win32
+		{9AF0CA66-A621-4FE5-B986-F0CAB7647C24}.Steam Marathon 2|x64.ActiveCfg = Steam Marathon 2|x64
+		{9AF0CA66-A621-4FE5-B986-F0CAB7647C24}.Steam Marathon 2|x64.Build.0 = Steam Marathon 2|x64
+		{9AF0CA66-A621-4FE5-B986-F0CAB7647C24}.Steam Marathon 2|x86.ActiveCfg = Steam Marathon|Win32
+		{9AF0CA66-A621-4FE5-B986-F0CAB7647C24}.Steam Marathon 2|x86.Build.0 = Steam Marathon|Win32
 		{9AF0CA66-A621-4FE5-B986-F0CAB7647C24}.Steam Marathon|x64.ActiveCfg = Steam Marathon|x64
 		{9AF0CA66-A621-4FE5-B986-F0CAB7647C24}.Steam Marathon|x64.Build.0 = Steam Marathon|x64
 		{9AF0CA66-A621-4FE5-B986-F0CAB7647C24}.Steam Marathon|x86.ActiveCfg = Steam Marathon|Win32
@@ -73,6 +79,10 @@ Global
 		{D1A548FF-F15F-43CA-8891-F4B367122282}.Release|x64.Build.0 = Release|x64
 		{D1A548FF-F15F-43CA-8891-F4B367122282}.Release|x86.ActiveCfg = Release|Win32
 		{D1A548FF-F15F-43CA-8891-F4B367122282}.Release|x86.Build.0 = Release|Win32
+		{D1A548FF-F15F-43CA-8891-F4B367122282}.Steam Marathon 2|x64.ActiveCfg = Steam Marathon 2|x64
+		{D1A548FF-F15F-43CA-8891-F4B367122282}.Steam Marathon 2|x64.Build.0 = Steam Marathon 2|x64
+		{D1A548FF-F15F-43CA-8891-F4B367122282}.Steam Marathon 2|x86.ActiveCfg = Steam Marathon|Win32
+		{D1A548FF-F15F-43CA-8891-F4B367122282}.Steam Marathon 2|x86.Build.0 = Steam Marathon|Win32
 		{D1A548FF-F15F-43CA-8891-F4B367122282}.Steam Marathon|x64.ActiveCfg = Steam Marathon|x64
 		{D1A548FF-F15F-43CA-8891-F4B367122282}.Steam Marathon|x64.Build.0 = Steam Marathon|x64
 		{D1A548FF-F15F-43CA-8891-F4B367122282}.Steam Marathon|x86.ActiveCfg = Steam Marathon|Win32
@@ -97,6 +107,10 @@ Global
 		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Release|x64.Build.0 = Release|x64
 		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Release|x86.ActiveCfg = Release|Win32
 		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Release|x86.Build.0 = Release|Win32
+		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Steam Marathon 2|x64.ActiveCfg = Release|x64
+		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Steam Marathon 2|x64.Build.0 = Release|x64
+		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Steam Marathon 2|x86.ActiveCfg = Release|Win32
+		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Steam Marathon 2|x86.Build.0 = Release|Win32
 		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Steam Marathon|x64.ActiveCfg = Release|x64
 		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Steam Marathon|x64.Build.0 = Release|x64
 		{272161CB-F5DF-4F91-9C2F-D08E23FF1FDC}.Steam Marathon|x86.ActiveCfg = Release|Win32
@@ -121,6 +135,10 @@ Global
 		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Release|x64.Build.0 = Release|x64
 		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Release|x86.ActiveCfg = Release|Win32
 		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Release|x86.Build.0 = Release|Win32
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Steam Marathon 2|x64.ActiveCfg = Release|x64
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Steam Marathon 2|x64.Build.0 = Release|x64
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Steam Marathon 2|x86.ActiveCfg = Release|Win32
+		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Steam Marathon 2|x86.Build.0 = Release|Win32
 		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Steam Marathon|x64.ActiveCfg = Release|x64
 		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Steam Marathon|x64.Build.0 = Release|x64
 		{7FA2F95C-F6E9-4A89-BBD2-AF1D5B09B0B2}.Steam Marathon|x86.ActiveCfg = Release|Win32
@@ -145,6 +163,10 @@ Global
 		{242043EF-8A1F-4BB3-82B1-B848B8AE6BE6}.Release|x64.Build.0 = Release|x64
 		{242043EF-8A1F-4BB3-82B1-B848B8AE6BE6}.Release|x86.ActiveCfg = Release|Win32
 		{242043EF-8A1F-4BB3-82B1-B848B8AE6BE6}.Release|x86.Build.0 = Release|Win32
+		{242043EF-8A1F-4BB3-82B1-B848B8AE6BE6}.Steam Marathon 2|x64.ActiveCfg = Release|x64
+		{242043EF-8A1F-4BB3-82B1-B848B8AE6BE6}.Steam Marathon 2|x64.Build.0 = Release|x64
+		{242043EF-8A1F-4BB3-82B1-B848B8AE6BE6}.Steam Marathon 2|x86.ActiveCfg = Release|Win32
+		{242043EF-8A1F-4BB3-82B1-B848B8AE6BE6}.Steam Marathon 2|x86.Build.0 = Release|Win32
 		{242043EF-8A1F-4BB3-82B1-B848B8AE6BE6}.Steam Marathon|x64.ActiveCfg = Release|x64
 		{242043EF-8A1F-4BB3-82B1-B848B8AE6BE6}.Steam Marathon|x64.Build.0 = Release|x64
 		{242043EF-8A1F-4BB3-82B1-B848B8AE6BE6}.Steam Marathon|x86.ActiveCfg = Release|Win32

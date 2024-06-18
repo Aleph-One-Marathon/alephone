@@ -1,0 +1,33 @@
+"AppBuild"
+{
+    "AppID" "2398490"
+    "Desc" "Classic Marathon 2 macOS build script"
+
+    "ContentRoot" ".."
+    "BuildOutput" "output\"
+
+    "Depots"
+    {
+        "2398493"
+        {
+            "FileMapping"
+            {
+                "LocalPath" "PBProjects/build/Release/Classic Marathon Launcher"
+                "DepotPath" "."
+            }
+			
+            "FileMapping"
+            {
+                "LocalPath" "PBProjects/build/Release/libsteam_api.dylib"
+                "DepotPath" "."
+            }
+			
+            "FileMapping"
+            {
+                "LocalPath" "PBProjects/build/Release/Classic Marathon 2 Steam.app/*"
+                "DepotPath" "Classic Marathon 2 Steam.app"
+                "recursive" "1"
+            }
+        }
+    }
+}
