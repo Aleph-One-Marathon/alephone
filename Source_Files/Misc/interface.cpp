@@ -2093,6 +2093,8 @@ static bool begin_game(
 
 	clear_game_error();
 	objlist_clear(starts, MAXIMUM_NUMBER_OF_PLAYERS);
+
+	game_state.user = user;
 	
 	switch(user)
 	{
@@ -2581,6 +2583,8 @@ static void handle_network_game(
 
 	/* Don't update the screen, etc.. */
 	game_state.state= _displaying_network_game_dialogs;
+	game_state.user = _network_player;
+	
 	if(gatherer)
 	{
 		successful_gather= network_gather(false);
