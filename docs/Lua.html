@@ -380,6 +380,9 @@
 <p class="description">whenever a projectile detonates, after it has done any area of effect damage</p>
 <p class="note">t can be a side, polygon_floor, polygon_ceiling, monster, scenery, polygon; see Polygon:check_collision for info on how to decode. It can also be nil, in the rare case a projectile detonates without hitting something </p>
 </dd>
+<dt>.calculate_level_completion_state() <span class="version">git</span>
+</dt>
+<dd><p class="description">replaces the classic completion state calculation</p></dd>
 </dl></dd>
 </dl>
 </div>
@@ -807,7 +810,10 @@
 <dd><dl>
 <dt>.calculate_completion_state() <span class="version">20081213</span>
 </dt>
-<dd><p class="description">returns whether level is finished, unfinished, or failed</p></dd>
+<dd>
+<p class="description">returns whether level is finished, unfinished, or failed</p>
+<p class="note">does not call the trigger, so it can be used in the trigger </p>
+</dd>
 <dt>.completed<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">check this in Triggers.cleanup() to determine whether the player(s) teleported out</p></dd>

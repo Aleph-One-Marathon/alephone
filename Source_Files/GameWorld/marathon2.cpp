@@ -787,9 +787,23 @@ void changed_polygon(
 	}
 }
 
+// Lua scripts can now override completion state
+short calculate_level_completion_state()
+{
+	short completion_state;
+	if (L_Calculate_Completion_State(completion_state))
+	{
+		return completion_state;
+	}
+	else
+	{
+		return calculate_classic_level_completion_state();
+	}
+}
+
 /* _level_failed is the same as _level_finished but indicates a non-fatal failure condition (e.g.,
 	too many civilians died during _mission_rescue) */
-short calculate_level_completion_state(
+short calculate_classic_level_completion_state(
 	void)
 {
 	short completion_state= _level_finished;

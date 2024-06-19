@@ -145,6 +145,9 @@ typedef L_Class<Lua_Media_Name> Lua_Media;
 extern char Lua_Medias_Name[]; // "Media"
 typedef L_Container<Lua_Medias_Name, Lua_Media> Lua_Medias;
 
+extern char Lua_CompletionState_Name[];
+typedef L_Enum<Lua_CompletionState_Name> Lua_CompletionState;
+
 int Lua_Map_register (lua_State *L);
 
 #endif

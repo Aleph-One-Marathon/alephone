@@ -341,6 +341,10 @@
 	  <argument name="t" version="20210408"><type>variant</type></argument>
 	  <note>t can be a side, polygon_floor, polygon_ceiling, monster, scenery, polygon; see Polygon:check_collision for info on how to decode. It can also be nil, in the rare case a projectile detonates without hitting something</note>
     </function>
+	<function name="calculate_level_completion_state" version="git">
+	  <description>replaces the classic completion state calculation</description>
+	  <return><type>CompletionState</type></return>
+	</function>
   </triggers>
   <section id="using_tables" name="Using Tables">
     <description><p>There are numerous tables (technically, userdata) defined in Aleph One which scripts can use to access objects in the game. A complete list is below.</p>
@@ -664,6 +668,7 @@
       <function name="calculate_completion_state" version="20081213">
 		<description>returns whether level is finished, unfinished, or failed</description>
 		<return><type>completion_state</type></return>
+		<note>does not call the trigger, so it can be used in the trigger</note>
       </function>
       <variable name="completed" access="read-only" version="20111201">
 		<description>check this in Triggers.cleanup() to determine whether the player(s) teleported out</description>
