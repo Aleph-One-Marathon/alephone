@@ -14,7 +14,7 @@ jobs:
       uses: ./.github/actions/build-windows
       with:
         platform: x64
-        configurations: "Steam Marathon"
+        configurations: "Steam Marathon, Steam Marathon 2"
         vcpkg_installed_folder: installed-x64-windows
         
     - name: Bootstrap Steamcmd
@@ -30,4 +30,4 @@ jobs:
       shell: bash
       
     - name: Deploy to Steam
-      run: ./Steam/steamcmd/steamcmd.exe +login alephone_upload +run_app_build ../m1_build.vdf +quit
+      run: ./Steam/steamcmd/steamcmd.exe +login alephone_upload +run_app_build ../m1_build.vdf +run_app_build ../m2_build.vdf +quit
