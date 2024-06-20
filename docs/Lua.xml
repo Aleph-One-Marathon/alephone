@@ -345,6 +345,10 @@
 	  <description>replaces the classic completion state calculation</description>
 	  <return><type>CompletionState</type></return>
 	</function>
+	<function name="monster_kamikazed" version="git">
+	  <description>whenever a monster kamikazes</description>
+	  <argument name="monster"><type>monster</type></argument>
+	</function>
   </triggers>
   <section id="using_tables" name="Using Tables">
     <description><p>There are numerous tables (technically, userdata) defined in Aleph One which scripts can use to access objects in the game. A complete list is below.</p>

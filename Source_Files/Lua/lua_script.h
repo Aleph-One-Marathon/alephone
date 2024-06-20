@@ -58,6 +58,7 @@ void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, w
 void L_Call_Projectile_Created(short projectile_index);
 void L_Call_Item_Created(short item_index);
 bool L_Calculate_Completion_State(short& completion_state);
+void L_Call_Monster_Kamikazed(short monster_index);
 
 void L_Invalidate_Effect(short effect_index);
 void L_Invalidate_Monster(short monster_index);

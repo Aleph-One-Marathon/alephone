@@ -286,6 +286,7 @@ public:
 	void ItemCreated(short item_index);
 
 	bool CalculateCompletionState(short& completion_state);
+	void MonsterKamikazed(short monster_index);
 
 	void InvalidateEffect(short effect_index);
 	void InvalidateMonster(short monster_index);
@@ -709,6 +710,16 @@ bool LuaState::CalculateCompletionState(short& completion_state)
 	}
 
 	return false;
+}
+
+void LuaState::MonsterKamikazed(short monster_index)
+{
+	if (GetTrigger("monster_kamikazed"))
+	{
+		Lua_Monster::Push(State(), monster_index);
+
+		CallTrigger(1);
+	}
 }
 
 void LuaState::InvalidateEffect(short effect_index)
@@ -1393,6 +1404,11 @@ bool L_Calculate_Completion_State(short& completion_state)
 	}
 
 	return found;
+}
+
+void L_Call_Monster_Kamikazed(short monster_index)
+{
+	L_Dispatch(std::bind(&LuaState::MonsterKamikazed, std::placeholders::_1, monster_index));
 }
 
 void L_Invalidate_Effect(short effect_index)

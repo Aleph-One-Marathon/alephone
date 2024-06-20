@@ -2885,6 +2885,7 @@ static bool translate_monster(
 					{
 						set_monster_action(monster_index, _monster_is_dying_hard);
 						monster_died(monster_index);
+						L_Call_Monster_Kamikazed(monster_index);
 					}
 				}
 				
