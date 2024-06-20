@@ -7,8 +7,7 @@
       <!-- 
       body {
 	  font-family: Verdana, Helvetica, sans-serif;
-	  font-size: 9pt;
-	  width: 800px;
+	  width: 60rem;
       }
       a:link {
 	  color: #006600;
@@ -85,6 +84,7 @@
       }
       
       span.pre {
+	  font-family: monospace;
 	  display: block;
 	  margin: 4px 0;
 	  white-space: pre-wrap;
@@ -104,6 +104,22 @@
 	  color: #006600;
       }
 
+	  details > summary {
+	  list-style: none;
+	  }
+
+	  summary::after {
+	  content: '▶';
+	  font-size: 0.75em;
+	  margin-left: 0.5rem;
+	  }
+	  
+	  details[open] summary:after {
+	  content: '▼';
+	  margin-left: 0.25rem;
+	  font-size: 1em;
+	  }
+
 -->
       </style>
 </head>
@@ -120,7 +136,34 @@
 <li><a href="#persistence">Persistence</a></li>
 </ol>
 </li>
-<li><a href="#triggers">Triggers</a></li>
+<li><details><summary><a href="#triggers">Triggers</a></summary><ol>
+<li><a href="#calculate_level_completion_state">calculate_level_completion_state</a></li>
+<li><a href="#cleanup">cleanup</a></li>
+<li><a href="#end_refuel">end_refuel</a></li>
+<li><a href="#got_item">got_item</a></li>
+<li><a href="#idle">idle</a></li>
+<li><a href="#init">init</a></li>
+<li><a href="#item_created">item_created</a></li>
+<li><a href="#light_activated">light_activated</a></li>
+<li><a href="#light_switch">light_switch</a></li>
+<li><a href="#monster_damaged">monster_damaged</a></li>
+<li><a href="#monster_kamikazed">monster_kamikazed</a></li>
+<li><a href="#monster_killed">monster_killed</a></li>
+<li><a href="#pattern_buffer">pattern_buffer</a></li>
+<li><a href="#platform_activated">platform_activated</a></li>
+<li><a href="#platform_switch">platform_switch</a></li>
+<li><a href="#player_damaged">player_damaged</a></li>
+<li><a href="#player_killed">player_killed</a></li>
+<li><a href="#player_revived">player_revived</a></li>
+<li><a href="#postidle">postidle</a></li>
+<li><a href="#projectile_created">projectile_created</a></li>
+<li><a href="#projectile_detonated">projectile_detonated</a></li>
+<li><a href="#projectile_switch">projectile_switch</a></li>
+<li><a href="#start_refuel">start_refuel</a></li>
+<li><a href="#tag_switch">tag_switch</a></li>
+<li><a href="#terminal_enter">terminal_enter</a></li>
+<li><a href="#terminal_exit">terminal_exit</a></li>
+</ol></details></li>
 <li>
 <a href="#using_tables">Using Tables</a><ol>
 <li><a href="#custom">Custom Fields</a></li>
@@ -128,8 +171,7 @@
 <li><a href="#table_is">is_ Functions</a></li>
 </ol>
 </li>
-<li>
-<a href="#tables">Tables</a><ol>
+<li><details><summary><a href="#tables">Tables</a></summary><ol>
 <li><a href="#Annotations">Annotations</a></li>
 <li><a href="#Cameras">Cameras</a></li>
 <li><a href="#Effects">Effects</a></li>
@@ -156,10 +198,8 @@
 <li><a href="#SoundObjects">SoundObjects</a></li>
 <li><a href="#Tags">Tags</a></li>
 <li><a href="#Terminals">Terminals</a></li>
-</ol>
-</li>
-<li>
-<a href="#types">Types and Mnemonics</a><ol>
+</ol></details></li>
+<li><details><summary><a href="#types">Types and Mnemonics</a></summary><ol>
 <li><a href="#AmbientSounds">Ambient Sounds</a></li>
 <li><a href="#Collections">Collections</a></li>
 <li><a href="#CompletionStates">Completion States</a></li>
@@ -194,8 +234,7 @@
 <li><a href="#TextureTypes">Texture Types</a></li>
 <li><a href="#TransferModes">Transfer Modes</a></li>
 <li><a href="#WeaponTypes">Weapons</a></li>
-</ol>
-</li>
+</ol></details></li>
 <li><a href="#example_icon">Example Icon</a></li>
 </ol>
 <h1>
@@ -249,92 +288,106 @@
 <div class="triggers">
 <p>These are functions scripts can define which Aleph One will call at specific times or events. For example, to regenerate health:
 	<span class="pre">Triggers = {}
-	function Triggers.idle()
-	for p in Players() do 
+function Triggers.idle()
+  for p in Players() do 
     if p.life &lt; 150 and not p.dead then 
-    p.life = p.life + 1
+      p.life = p.life + 1
     end
-	end
-	end
+  end
+end
 	</span>
 	Calling Triggers = {} at the beginning of the script removes the compatibility triggers installed for old Lua scripts, speeding up execution of new scripts.
 	</p>
 <dl>
 <dt>Triggers</dt>
 <dd><dl>
-<dt>.init(restoring_game)</dt>
-<dd>
-<p class="description">at beginning of level</p>
-<ul class="args"><li>restoring_game: true if restoring from a saved game</li></ul>
-</dd>
-<dt>.cleanup()</dt>
+<dt>
+<a name="calculate_level_completion_state"></a>.calculate_level_completion_state() <span class="version">git</span>
+</dt>
+<dd><p class="description">replaces the classic completion state calculation</p></dd>
+<dt>
+<a name="cleanup"></a>.cleanup()</dt>
 <dd>
 <p class="description">at end of the level</p>
 <p class="note">primarily this is intended as a last chance for changing netgame scores before the postgame carnage report. </p>
 </dd>
-<dt>.idle()</dt>
-<dd><p class="description">at each tick, before physics and such</p></dd>
-<dt>.postidle()</dt>
-<dd><p class="description">at each tick, after physics and such, but before rendering</p></dd>
-<dt>.start_refuel(class, player, side)</dt>
-<dd><p class="description">whenever a player starts to use a refuel panel</p></dd>
-<dt>.end_refuel(class, player, side)</dt>
+<dt>
+<a name="end_refuel"></a>.end_refuel(class, player, side)</dt>
 <dd><p class="description">whenever a player stops using a refuel panel</p></dd>
-<dt>.tag_switch(tag, player, side)</dt>
+<dt>
+<a name="got_item"></a>.got_item(type, player)</dt>
 <dd>
-<p class="description">whenever a player uses a tag switch</p>
-<p class="note">not called when a projectile (e.g., fists) toggles a tag switch </p>
-<p class="note">side is only valid in version 20111201 and newer </p>
+<p class="description">whenever a player picks up an item</p>
+<p class="note">also whenever a player gets an item when a script calls .items.add() </p>
 </dd>
-<dt>.light_switch(light, player, side)</dt>
+<dt>
+<a name="idle"></a>.idle()</dt>
+<dd><p class="description">at each tick, before physics and such</p></dd>
+<dt>
+<a name="init"></a>.init(restoring_game)</dt>
+<dd>
+<p class="description">at beginning of level</p>
+<ul class="args"><li>restoring_game: true if restoring from a saved game</li></ul>
+</dd>
+<dt>
+<a name="item_created"></a>.item_created(item)</dt>
+<dd>
+<p class="description">whenever an item is created and placed on the ground (or floating) somewhere</p>
+<p class="note">does not trigger on initial item placement because the initial item placement is done before Lua becomes initialised. </p>
+</dd>
+<dt>
+<a name="light_activated"></a>.light_activated(light)</dt>
+<dd><p class="description">whenever a light is activated or deactivated</p></dd>
+<dt>
+<a name="light_switch"></a>.light_switch(light, player, side)</dt>
 <dd>
 <p class="description">whenever a player uses a light switch</p>
 <p class="note">not called when a projectile (e.g., fists) toggles a light switch </p>
 <p class="note">side is only valid in version 20111201 and newer </p>
 </dd>
-<dt>.platform_switch(polygon, player, side)</dt>
+<dt>
+<a name="monster_damaged"></a>.monster_damaged(monster, aggressor_monster, damage_type, damage_amount, projectile) <span class="version">20100118</span>
+</dt>
+<dd>
+<p class="description">whenever a monster is damaged, but before it dies if applicable. The monster’s vitality may be negative when this trigger is called. Ther monster’s vitality will be tested again after this trigger returns, so a script may prevent a monster’s death</p>
+<ul class="args">
+<li>aggressor_monster: the monster that caused the damage (can be nil)</li>
+<li>damage_type: e.g. "fists"</li>
+<li>damage_amount: the amount recently subtracted from the monster’s vitality</li>
+<li>projectile: the projectile that delivered the damage (can be nil)</li>
+</ul>
+</dd>
+<dt>
+<a name="monster_kamikazed"></a>.monster_kamikazed(monster) <span class="version">git</span>
+</dt>
+<dd><p class="description">whenever a monster kamikazes</p></dd>
+<dt>
+<a name="monster_killed"></a>.monster_killed(monster, aggressor_player, projectile)</dt>
+<dd>
+<p class="description">whenever a monster dies</p>
+<ul class="args">
+<li>aggressor_player: player who killed it (can be nil)</li>
+<li>projectile: projectile that delivered the final blow (can be nil)</li>
+</ul>
+<p class="note">called after a monster has taken lethal damage, but before it’s removed from the monster list </p>
+<p class="note">you can use this to find out when a monster created with new_monster dies, but a monster discovered by Polygons.monsters() may have already taken lethal damage, so you may need to check for that case when using Polygons.monsters() </p>
+</dd>
+<dt>
+<a name="pattern_buffer"></a>.pattern_buffer(side, player)</dt>
+<dd><p class="description">whenever a player uses a pattern buffer</p></dd>
+<dt>
+<a name="platform_activated"></a>.platform_activated(polygon)</dt>
+<dd><p class="description">whenever a platform is activated or deactivated</p></dd>
+<dt>
+<a name="platform_switch"></a>.platform_switch(polygon, player, side)</dt>
 <dd>
 <p class="description">whenever a player uses a platform switch</p>
 <ul class="args"><li>polygon: polygon of the platform being toggled</li></ul>
 <p class="note">not called when a projectile (e.g., fists) toggles a platform switch </p>
 <p class="note">side is only valid in version 20111201 and newer </p>
 </dd>
-<dt>.projectile_switch(projectile, side) <span class="version">20111201</span>
-</dt>
-<dd>
-<p class="description">whenever a projectile toggles a switch</p>
-<ul class="args">
-<li>projectile: projectile that toggled the switch</li>
-<li>side: side containing switch being toggled</li>
-</ul>
-</dd>
-<dt>.terminal_enter(terminal, player)</dt>
-<dd><p class="description">whenever a player starts using a terminal</p></dd>
-<dt>.terminal_exit(terminal, player)</dt>
-<dd><p class="description">whenever a player stops using a terminal</p></dd>
-<dt>.pattern_buffer(side, player)</dt>
-<dd><p class="description">whenever a player uses a pattern buffer</p></dd>
-<dt>.got_item(type, player)</dt>
-<dd>
-<p class="description">whenever a player picks up an item</p>
-<p class="note">also whenever a player gets an item when a script calls .items.add() </p>
-</dd>
-<dt>.light_activated(light)</dt>
-<dd><p class="description">whenever a light is activated or deactivated</p></dd>
-<dt>.platform_activated(polygon)</dt>
-<dd><p class="description">whenever a platform is activated or deactivated</p></dd>
-<dt>.player_revived(player)</dt>
-<dd><p class="description">whenever a player revives (presumably only happens in a netgame)</p></dd>
-<dt>.player_killed(player, aggressor_player, action, projectile)</dt>
-<dd>
-<p class="description">whenever a player dies</p>
-<ul class="args">
-<li>aggressor_player: the player who killed player, possibly himself (suicide) (can be nil)</li>
-<li>action: dying soft, dying hard, or dying flaming</li>
-<li>projectile: the projectile that delivered the final blow (can be nil)</li>
-</ul>
-</dd>
-<dt>.player_damaged(victim, aggressor_player, aggressor_monster, damage_type, damage_amount, projectile)</dt>
+<dt>
+<a name="player_damaged"></a>.player_damaged(victim, aggressor_player, aggressor_monster, damage_type, damage_amount, projectile)</dt>
 <dd>
 <p class="description">whenever a player has taken damage, but before he dies if applicable. The player’s suit energy or oxygen may be negative when this trigger is called; if it still is when the trigger returns, it will be set to 0. The player’s suit energy is tested again after this trigger returns, so a script may prevent a player’s death
       </p>
@@ -346,46 +399,58 @@
 <li>projectile: the projectile that delivered the damage (can be nil)</li>
 </ul>
 </dd>
-<dt>.monster_damaged(monster, aggressor_monster, damage_type, damage_amount, projectile) <span class="version">20100118</span>
-</dt>
+<dt>
+<a name="player_killed"></a>.player_killed(player, aggressor_player, action, projectile)</dt>
 <dd>
-<p class="description">whenever a monster is damaged, but before it dies if applicable. The monster’s vitality may be negative when this trigger is called. Ther monster’s vitality will be tested again after this trigger returns, so a script may prevent a monster’s death</p>
+<p class="description">whenever a player dies</p>
 <ul class="args">
-<li>aggressor_monster: the monster that caused the damage (can be nil)</li>
-<li>damage_type: e.g. "fists"</li>
-<li>damage_amount: the amount recently subtracted from the monster’s vitality</li>
-<li>projectile: the projectile that delivered the damage (can be nil)</li>
+<li>aggressor_player: the player who killed player, possibly himself (suicide) (can be nil)</li>
+<li>action: dying soft, dying hard, or dying flaming</li>
+<li>projectile: the projectile that delivered the final blow (can be nil)</li>
 </ul>
 </dd>
-<dt>.monster_killed(monster, aggressor_player, projectile)</dt>
-<dd>
-<p class="description">whenever a monster dies</p>
-<ul class="args">
-<li>aggressor_player: player who killed it (can be nil)</li>
-<li>projectile: projectile that delivered the final blow (can be nil)</li>
-</ul>
-<p class="note">called after a monster has taken lethal damage, but before it’s removed from the monster list </p>
-<p class="note">you can use this to find out when a monster created with new_monster dies, but a monster discovered by Polygons.monsters() may have already taken lethal damage, so you may need to check for that case when using Polygons.monsters() </p>
-</dd>
-<dt>.item_created(item)</dt>
-<dd>
-<p class="description">whenever an item is created and placed on the ground (or floating) somewhere</p>
-<p class="note">does not trigger on initial item placement because the initial item placement is done before Lua becomes initialised. </p>
-</dd>
-<dt>.projectile_created(projectile) <span class="version">20150619</span>
+<dt>
+<a name="player_revived"></a>.player_revived(player)</dt>
+<dd><p class="description">whenever a player revives (presumably only happens in a netgame)</p></dd>
+<dt>
+<a name="postidle"></a>.postidle()</dt>
+<dd><p class="description">at each tick, after physics and such, but before rendering</p></dd>
+<dt>
+<a name="projectile_created"></a>.projectile_created(projectile) <span class="version">20150619</span>
 </dt>
 <dd><p class="description">whenever a projectile is created</p></dd>
-<dt>.projectile_detonated(type, owner, polygon, x, y, z, t <span class="version">20210408</span>)</dt>
+<dt>
+<a name="projectile_detonated"></a>.projectile_detonated(type, owner, polygon, x, y, z, t <span class="version">20210408</span>)</dt>
 <dd>
 <p class="description">whenever a projectile detonates, after it has done any area of effect damage</p>
 <p class="note">t can be a side, polygon_floor, polygon_ceiling, monster, scenery, polygon; see Polygon:check_collision for info on how to decode. It can also be nil, in the rare case a projectile detonates without hitting something </p>
 </dd>
-<dt>.calculate_level_completion_state() <span class="version">git</span>
+<dt>
+<a name="projectile_switch"></a>.projectile_switch(projectile, side) <span class="version">20111201</span>
 </dt>
-<dd><p class="description">replaces the classic completion state calculation</p></dd>
-<dt>.monster_kamikazed(monster) <span class="version">git</span>
-</dt>
-<dd><p class="description">whenever a monster kamikazes</p></dd>
+<dd>
+<p class="description">whenever a projectile toggles a switch</p>
+<ul class="args">
+<li>projectile: projectile that toggled the switch</li>
+<li>side: side containing switch being toggled</li>
+</ul>
+</dd>
+<dt>
+<a name="start_refuel"></a>.start_refuel(class, player, side)</dt>
+<dd><p class="description">whenever a player starts to use a refuel panel</p></dd>
+<dt>
+<a name="tag_switch"></a>.tag_switch(tag, player, side)</dt>
+<dd>
+<p class="description">whenever a player uses a tag switch</p>
+<p class="note">not called when a projectile (e.g., fists) toggles a tag switch </p>
+<p class="note">side is only valid in version 20111201 and newer </p>
+</dd>
+<dt>
+<a name="terminal_enter"></a>.terminal_enter(terminal, player)</dt>
+<dd><p class="description">whenever a player starts using a terminal</p></dd>
+<dt>
+<a name="terminal_exit"></a>.terminal_exit(terminal, player)</dt>
+<dd><p class="description">whenever a player stops using a terminal</p></dd>
 </dl></dd>
 </dl>
 </div>

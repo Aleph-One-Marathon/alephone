@@ -135,13 +135,13 @@
   <triggers id="triggers">
     <description>These are functions scripts can define which Aleph One will call at specific times or events. For example, to regenerate health:
 	<span class="pre">Triggers = {}
-	function Triggers.idle()
-	for p in Players() do 
+function Triggers.idle()
+  for p in Players() do 
     if p.life &lt; 150 and not p.dead then 
-    p.life = p.life + 1
+      p.life = p.life + 1
     end
-	end
-	end
+  end
+end
 	</span>
 	Calling Triggers = {} at the beginning of the script removes the compatibility triggers installed for old Lua scripts, speeding up execution of new scripts.
 	</description>
