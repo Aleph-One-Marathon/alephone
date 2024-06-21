@@ -2488,9 +2488,9 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 			time_or_ping << "Untimed";
 		}
 	}
-	else
+	else if (item.m_description.m_latency != UINT16_MAX)
 	{
-		// draw ping
+		time_or_ping << item.m_description.m_latency << " ms";
 	}
 
 	right_text_width = text_width(time_or_ping.str().c_str(), font, game_style);

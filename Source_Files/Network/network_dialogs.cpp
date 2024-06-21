@@ -201,7 +201,7 @@ static uint16 network_gather_remote_hub()
 			remote_hubs_pings.insert({ identifier, remote_hub });
 		}
 
-		pinger->Ping(4);
+		pinger->Ping(2);
 		auto latency_remote_hubs = pinger->GetResponseTime(2000);
 
 		std::multimap<uint16_t, RemoteHubServerDescription> ordered_remote_hubs;

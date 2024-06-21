@@ -154,6 +154,61 @@ MetaserverClient::handlePlayerListMessage(PlayerListMessage* inMessage, Communic
 	}
 }
 
+const std::vector<GameListMessage::GameListEntry> MetaserverClient::gamesInRoomUpdate(bool reset_ping)
+{
+	if (reset_ping)
+	{
+		NetRemovePinger();
+		NetCreatePinger();
+	}
+
+	std::vector<GameListMessage::GameListEntry> games_to_update;
+
+	if (auto pinger = NetGetPinger().lock())
+	{
+		auto games = gamesInRoom();
+
+		for (auto& game : games)
+		{
+			if (game.running()) continue;
+			if (!reset_ping && ping_games.find(game.id()) != ping_games.end()) continue;
+
+			IPaddress address = {};
+			memcpy(&address.host, &game.m_ipAddress, sizeof(address.host));
+			address.port = SDL_SwapBE16(game.m_port);
+			ping_games[game.id()] = pinger->Register(address);
+		}
+
+		pinger->Ping(1, !reset_ping);
+
+		auto ping_responses = pinger->GetResponseTime();
+
+		for (auto& game : games)
+		{
+			if (game.running()) continue;
+
+			if (ping_games.find(game.id()) != ping_games.end() && ping_responses.find(ping_games[game.id()]) != ping_responses.end())
+			{
+				auto& description = game.m_description;
+				auto new_latency = ping_responses[ping_games[game.id()]];
+
+				if (new_latency != description.m_latency)
+				{
+					game.m_verb = 2; //kRefresh
+					description.m_latency = new_latency;
+					games_to_update.push_back(game);
+				}
+			}
+		}
+
+		if (games_to_update.size())
+		{
+			m_gamesInRoom.processUpdates(games_to_update);
+		}
+	}
+
+	return games_to_update;
+}
 
 void
 MetaserverClient::handleRoomListMessage(RoomListMessage* inMessage, CommunicationsChannel* inChannel)
@@ -716,6 +771,7 @@ MetaserverClient::~MetaserverClient()
 {
 	disconnect();
 	s_instances.erase(this);
+	NetRemovePinger();
 }
 
 #endif // !defined(DISABLE_NETWORKING)

@@ -1,3 +1,21 @@
+/*
+	Copyright (C) 2024 Benoit Hauquier and the "Aleph One" developers.
+
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 3 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	This license is contained in the file "COPYING",
+	which is included with this source code; it is available online at
+	http://www.gnu.org/licenses/gpl.html
+*/
+
 #if !defined(DISABLE_NETWORKING)
 
 #include "Pinger.h"
@@ -13,12 +31,14 @@ uint16_t Pinger::Register(const IPaddress& ipv4)
 	return _ping_identifier_counter;
 }
 
-void Pinger::Ping(uint8_t number_of_tries)
+void Pinger::Ping(uint8_t number_of_tries, bool unpinged_addresses_only)
 {
 	number_of_tries = std::max(number_of_tries, (uint8_t)1);
 
 	for (auto& [identifier, address] : _registered_ipv4s)
 	{
+		if (address.ping_sent_tick && unpinged_addresses_only) continue;
+
 		address.ping_sent_tick = 0;
 		address.pong_received_tick = 0;
 
@@ -67,7 +87,7 @@ std::unordered_map<uint16_t, uint16_t> Pinger::GetResponseTime(uint16_t timeout_
 
 	auto start_time = machine_tick_count();
 
-	while (machine_tick_count() - start_time < timeout_ms)
+	while (!timeout_ms || machine_tick_count() - start_time < timeout_ms)
 	{
 		for (auto& [identifier, address] : _registered_ipv4s)
 		{
@@ -85,7 +105,7 @@ std::unordered_map<uint16_t, uint16_t> Pinger::GetResponseTime(uint16_t timeout_
 			}
 		}
 
-		if (results.size() == _registered_ipv4s.size()) return results; //got response for each registered address
+		if (!timeout_ms || results.size() == _registered_ipv4s.size()) return results; //got response for each registered address
 
 		sleep_for_machine_ticks(1);
 	}

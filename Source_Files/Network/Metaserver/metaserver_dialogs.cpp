@@ -459,6 +459,7 @@ void MetaserverClientUi::gamesInRoomChanged(const std::vector<GameListMessage::G
 		if (gameChanges[i].verb() == MetaserverClient::GamesInRoom::kAdd && !gameChanges[i].running())
 		{
 			PlayInterfaceButtonSound(_snd_got_ball);
+			gMetaserverClient->gamesInRoomUpdate(false);
 			break;
 		}
 	}

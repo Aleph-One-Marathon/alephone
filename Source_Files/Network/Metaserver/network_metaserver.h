@@ -279,6 +279,7 @@ public:
 	void pump();
 	static void pumpAll();
 
+	const std::vector<GameListMessage::GameListEntry> gamesInRoomUpdate(bool reset_ping);
 	void sendChatMessage(const std::string& message);
 	void sendPrivateMessage(MetaserverPlayerInfo::IDType destination, const std::string& message);
 	void announceGame(uint16 gamePort, const GameDescription& description, uint16 remoteHubId);
@@ -350,6 +351,7 @@ private:
 
 	bool                                    m_notifiedOfDisconnected;
 	bool                                    m_gameAnnounced;
+	std::unordered_map<GameListMessage::GameListEntry::IDType, uint16_t> ping_games;
 };
 
 #endif // NETWORK_METASERVER_H
