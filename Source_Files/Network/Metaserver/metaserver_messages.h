@@ -121,6 +121,7 @@ struct GameDescription
 	int16 m_killLimit;
 	std::string m_mapFileName;
 	std::string m_physicsName;
+	uint16 m_latency;
 	
 	GameDescription()
 		: m_type(0)
@@ -142,6 +143,7 @@ struct GameDescription
 		, m_gameOptions(0)
 		, m_cheatFlags(0)
 		, m_killLimit(0)
+		, m_latency(UINT16_MAX)
 	{}
 
 };

@@ -342,13 +342,19 @@ private:
 	{
 		static uint32 last_update = 0;
 		uint32 ticks = machine_tick_count();
-		if (ticks > last_update + 5000)
+		bool refresh = ticks > last_update + 5000;
+
+		if (refresh)
 		{
 			last_update = ticks;
 			games_in_room_w->refresh();
 		}
 		if (gMetaserverClient->isConnected())
+		{
 			MetaserverClient::pumpAll();
+			auto updates = gMetaserverClient->gamesInRoomUpdate(refresh);
+			if (updates.size()) gamesInRoomChanged(updates);
+		}
 		else if (!m_disconnected)
 		{ 
 			alert_user("Connection to room lost.", 0);

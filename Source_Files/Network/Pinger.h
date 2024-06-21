@@ -12,7 +12,7 @@ class Pinger
 public:
 	uint16_t Register(const IPaddress& ipv4);
 	void Ping(uint8_t number_of_tries = 1);
-	std::unordered_map<uint16_t, uint16_t> GetResponseTime(uint16_t timeout_ms);
+	std::unordered_map<uint16_t, uint16_t> GetResponseTime(uint16_t timeout_ms = 0);
 	void StoreResponse(uint16_t identifier);
 private:
 

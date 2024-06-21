@@ -67,7 +67,7 @@ std::unordered_map<uint16_t, uint16_t> Pinger::GetResponseTime(uint16_t timeout_
 
 	auto start_time = machine_tick_count();
 
-	while (machine_tick_count() - start_time < timeout_ms)
+	while (!timeout_ms || machine_tick_count() - start_time < timeout_ms)
 	{
 		for (auto& [identifier, address] : _registered_ipv4s)
 		{
@@ -85,7 +85,7 @@ std::unordered_map<uint16_t, uint16_t> Pinger::GetResponseTime(uint16_t timeout_
 			}
 		}
 
-		if (results.size() == _registered_ipv4s.size()) return results; //got response for each registered address
+		if (!timeout_ms || results.size() == _registered_ipv4s.size()) return results; //got response for each registered address
 
 		sleep_for_machine_ticks(1);
 	}
