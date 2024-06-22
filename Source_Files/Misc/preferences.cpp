@@ -490,7 +490,8 @@ enum {
 static const char* solo_profile_labels[] = {
 	"Aleph One Fixes",
 	"Classic Marathon 2",
-	"Classic Marathon Infinity"
+	"Classic Marathon Infinity",
+	nullptr
 };
 
 static void player_dialog(void *arg)
