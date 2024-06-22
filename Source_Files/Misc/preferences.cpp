@@ -3039,8 +3039,10 @@ static void controls_dialog(void *arg)
 	exit_joystick();
 }
 
-static void plugins_dialog(void *)
+static void plugins_dialog(void* arg)
 {
+	dialog* parent = (dialog*)arg;
+
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
 	w_title *w_header = new w_title("PLUGINS");
@@ -3064,6 +3066,14 @@ static void plugins_dialog(void *)
 	d.set_widget_placer(placer);
 	d.activate_widget(plugins_w);
 
+	bool theme_changed = false;
+	FileSpecifier old_theme;
+	const Plugin* theme_plugin = Plugins::instance()->find_theme();
+	if (theme_plugin)
+	{
+		old_theme = theme_plugin->directory + theme_plugin->theme;
+	}
+
 	if (d.run() == 0) {
 		bool changed = false;
 		Plugins::iterator plugin = Plugins::instance()->begin();
@@ -3082,6 +3092,20 @@ static void plugins_dialog(void *)
 
 			Plugins::instance()->set_map_checksum(get_current_map_checksum());
 			LoadLevelScripts(get_map_file());
+
+			FileSpecifier new_theme;
+			theme_plugin = Plugins::instance()->find_theme();
+			if (theme_plugin)
+			{
+				new_theme = theme_plugin->directory + theme_plugin->theme;
+			}
+
+			// Redraw parent dialog
+			if (new_theme != old_theme)
+			{
+				load_dialog_theme();
+				parent->quit(0); // Quit the parent dialog so it won't draw in the old theme
+			}
 		}
 	}
 }
@@ -3100,8 +3124,6 @@ static const char* film_profile_labels[] = {
 
 static void environment_dialog(void *arg)
 {
-	dialog *parent = (dialog *)arg;
-
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
@@ -3211,13 +3233,6 @@ static void environment_dialog(void *arg)
 	clear_screen();
 
 	// Run dialog
-	bool theme_changed = false;
-	FileSpecifier old_theme;
-	const Plugin* theme_plugin = Plugins::instance()->find_theme();
-	if (theme_plugin)
-	{
-		old_theme = theme_plugin->directory + theme_plugin->theme;
-	}
 
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
@@ -3284,18 +3299,6 @@ static void environment_dialog(void *arg)
 			changed = true;
 		}
 #endif
-		
-		FileSpecifier new_theme;
-		theme_plugin = Plugins::instance()->find_theme();
-		if (theme_plugin)
-		{
-			new_theme = theme_plugin->directory + theme_plugin->theme;
-		}
-
-		if (new_theme != old_theme)
-		{
-			theme_changed = true;
-		}
 
 #ifndef MAC_APP_STORE
 		bool hide_extensions = hide_extensions_w->get_selection() != 0;
@@ -3339,17 +3342,9 @@ static void environment_dialog(void *arg)
 		if (changed)
 			load_environment_from_preferences();
 
-		if (theme_changed) {
-			load_dialog_theme();
-		}
-
-		if (changed || theme_changed || saves_changed)
+		if (changed || saves_changed)
 			write_preferences();
 	}
-
-	// Redraw parent dialog
-	if (theme_changed)
-		parent->quit(0);	// Quit the parent dialog so it won't draw in the old theme
 }
 
 
