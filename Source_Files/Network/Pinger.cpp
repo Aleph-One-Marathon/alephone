@@ -13,12 +13,14 @@ uint16_t Pinger::Register(const IPaddress& ipv4)
 	return _ping_identifier_counter;
 }
 
-void Pinger::Ping(uint8_t number_of_tries)
+void Pinger::Ping(uint8_t number_of_tries, bool unpinged_addresses_only)
 {
 	number_of_tries = std::max(number_of_tries, (uint8_t)1);
 
 	for (auto& [identifier, address] : _registered_ipv4s)
 	{
+		if (address.ping_sent_tick && unpinged_addresses_only) continue;
+
 		address.ping_sent_tick = 0;
 		address.pong_received_tick = 0;
 

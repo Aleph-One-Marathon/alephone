@@ -168,20 +168,18 @@ const std::vector<GameListMessage::GameListEntry> MetaserverClient::gamesInRoomU
 	{
 		auto games = gamesInRoom();
 
-		if (reset_ping)
+		for (auto& game : games)
 		{
-			for (auto& game : games)
-			{
-				if (game.running()) continue;
+			if (game.running()) continue;
+			if (!reset_ping && ping_games.find(game.id()) != ping_games.end()) continue;
 
-				IPaddress address = {};
-				memcpy(&address.host, &game.m_ipAddress, sizeof(address.host));
-				address.port = SDL_SwapBE16(game.m_port);
-				ping_games[game.id()] = pinger->Register(address);
-			}
-
-			pinger->Ping();
+			IPaddress address = {};
+			memcpy(&address.host, &game.m_ipAddress, sizeof(address.host));
+			address.port = SDL_SwapBE16(game.m_port);
+			ping_games[game.id()] = pinger->Register(address);
 		}
+
+		pinger->Ping(1, !reset_ping);
 
 		auto ping_responses = pinger->GetResponseTime();
 
