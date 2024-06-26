@@ -20,6 +20,8 @@ librendermain_a_SOURCES = AnimatedTextures.h collection_definition.h		   \
   Shaders/invincible.frag Shaders/invisible_bloom.frag Shaders/invisible.frag  \
   Shaders/landscape_bloom.frag Shaders/landscape.frag						   \
   Shaders/landscape_infravision.frag Shaders/landscape.vert					   \
+  Shaders/landscape_sphere.frag Shaders/landscape_sphere.vert				   \
+  Shaders/landscape_sphere_bloom.frag Shaders/landscape_bloom_infravision.frag \
   Shaders/sprite_bloom.frag Shaders/sprite.frag								   \
   Shaders/sprite_infravision.frag Shaders/sprite.vert Shaders/wall_bloom.frag  \
   Shaders/wall.frag Shaders/wall_infravision.frag Shaders/wall.vert			   \

@@ -177,7 +177,10 @@ void RenderRasterize_Shader::render_tree() {
 	Shader* landscape_shaders[] = {
 		Shader::get(Shader::S_Landscape),
 		Shader::get(Shader::S_LandscapeBloom),
-		Shader::get(Shader::S_LandscapeInfravision)
+		Shader::get(Shader::S_LandscapeInfravision),
+		Shader::get(Shader::S_LandscapeSphere),
+		Shader::get(Shader::S_LandscapeSphereBloom),
+		Shader::get(Shader::S_LandscapeSphereInfravision)
 	};
 
 	for (auto s : landscape_shaders) {
@@ -432,12 +435,33 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 				GLfloat color[3] {1, 1, 1};
 				FindInfravisionVersionRGBA(GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(Texture)), color);
 				glColor4f(color[0], color[1], color[2], 1);
-				s = Shader::get(Shader::S_LandscapeInfravision);
+				if (opts->SphereMap)
+				{
+					s = Shader::get(Shader::S_LandscapeSphereInfravision);
+				}
+				else
+				{
+					s = Shader::get(Shader::S_LandscapeInfravision);
+				}
 			} else {
-				if (renderStep == kDiffuse) {
-					s = Shader::get(Shader::S_Landscape);
-				} else {
-					s = Shader::get(Shader::S_LandscapeBloom);
+				if (opts->SphereMap)
+				{
+					if (renderStep == kDiffuse)
+					{
+						s = Shader::get(Shader::S_LandscapeSphere);
+					}
+					else
+					{
+						s = Shader::get(Shader::S_LandscapeSphereBloom);
+					}
+				}
+				else
+				{
+					if (renderStep == kDiffuse) {
+						s = Shader::get(Shader::S_Landscape);
+					} else {
+						s = Shader::get(Shader::S_LandscapeBloom);
+					}
 				}
 			}
 			s->enable();
@@ -483,16 +507,23 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 	TMgr->SetupTextureMatrix();
 	
 	if (TMgr->TextureType == OGL_Txtr_Landscape && opts) {
-		double TexScale = std::abs(TMgr->U_Scale);
-		double HorizScale = double(1 << opts->HorizExp);
-		s->setFloat(Shader::U_ScaleX, HorizScale * (npotTextures ? 1.0 : TexScale) * Radian2Circle);
-		s->setFloat(Shader::U_OffsetX, HorizScale * (0.25 + opts->Azimuth * FullCircleReciprocal));
-		
-		short AdjustedVertExp = opts->VertExp + opts->OGL_AspRatExp;
-		double VertScale = (AdjustedVertExp >= 0) ? double(1 << AdjustedVertExp)
-		                                          : 1/double(1 << (-AdjustedVertExp));
-		s->setFloat(Shader::U_ScaleY, VertScale * TexScale * Radian2Circle);
-		s->setFloat(Shader::U_OffsetY, (0.5 + TMgr->U_Offset) * TexScale);
+		if (opts->SphereMap)
+		{
+			s->setFloat(Shader::U_OffsetX, opts->Azimuth * TWO_PI * FullCircleReciprocal);
+		}
+		else
+		{
+			double TexScale = std::abs(TMgr->U_Scale);
+			double HorizScale = double(1 << opts->HorizExp);
+			s->setFloat(Shader::U_ScaleX, HorizScale * (npotTextures ? 1.0 : TexScale) * Radian2Circle);
+			s->setFloat(Shader::U_OffsetX, HorizScale * (0.25 + opts->Azimuth * FullCircleReciprocal));
+			
+			short AdjustedVertExp = opts->VertExp + opts->OGL_AspRatExp;
+			double VertScale = (AdjustedVertExp >= 0) ? double(1 << AdjustedVertExp)
+		                       : 1/double(1 << (-AdjustedVertExp));
+			s->setFloat(Shader::U_ScaleY, VertScale * TexScale * Radian2Circle);
+			s->setFloat(Shader::U_OffsetY, (0.5 + TMgr->U_Offset) * TexScale);
+		}
 	}
 
 	if (renderStep == kGlow) {

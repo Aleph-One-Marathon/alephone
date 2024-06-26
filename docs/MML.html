@@ -1463,10 +1463,16 @@ or will not include the top and bottom parts. (default: 1 -- height is 1/2 width
 <li>vert_repeat: whether texture repeats in the vertical direction
 (default: false -- mirrored or clamped in the vertical direction, depending on video card support)
 <li>azimuth: angle in degrees to rotate the texture leftward relative to the map.
-This could be useful for aligning landscape features with map ones. (default: 0)
+	This could be useful for aligning landscape features with map ones. (default: 0)
+<li>projection: projection to use (default: 0 -- cylinder)
 </ul>
 <p>
-
+Here are the projections:
+<ol type=1 start="0">
+<li>Cylinder
+<li>Sphere map (hardware acceleration only; ignores all exp and repeat settings for now, and instead always uses a 2:1 ratio 360°x180° sphere map texture)
+</ol>
+<p>
 <hr>
 
 <h3><a name="textureloading">Texture-Loading Element: &lt;texture_loading&gt;</a></h3>

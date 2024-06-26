@@ -90,6 +90,9 @@ public:
 		S_Bump,
 		S_BumpBloom,
 		S_Gamma,
+		S_LandscapeSphere,
+		S_LandscapeSphereBloom,
+		S_LandscapeSphereInfravision,
 		NUMBER_OF_SHADER_TYPES
 	};
 private:
