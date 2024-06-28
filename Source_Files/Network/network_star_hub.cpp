@@ -1294,21 +1294,21 @@ make_player_netdead(int inPlayerIndex)
 		thePlayer.mConnected = false;
 		sConnectedPlayersBitmask &= ~(((uint32)1) << inPlayerIndex);
 		sAddressToPlayerIndex.erase(thePlayer.mAddress);
-	}
 
 #ifdef A1_NETWORK_STANDALONE_HUB
-	if (sReferencePlayerIndex == inPlayerIndex) //fallback to someone else to be the player of reference
-	{
-		for (size_t i = 0; i < sNetworkPlayers.size(); i++)
+		if (sReferencePlayerIndex == inPlayerIndex) //fallback to someone else to be the player of reference
 		{
-			if (sNetworkPlayers[i].mConnected)
+			for (size_t i = 0; i < sNetworkPlayers.size(); i++)
 			{
-				sReferencePlayerIndex = i;
-				break;
+				if (sNetworkPlayers[i].mConnected)
+				{
+					sReferencePlayerIndex = i;
+					break;
+				}
 			}
 		}
-	}
 #endif
+	}
 
 	// We save this off because player_provided... call below may change it.
 	int32 theSavedIncompleteTick = sSmallestIncompleteTick;
