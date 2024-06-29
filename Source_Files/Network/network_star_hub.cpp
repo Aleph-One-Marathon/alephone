@@ -1287,6 +1287,10 @@ make_player_netdead(int inPlayerIndex)
 	
         NetworkPlayer_hub& thePlayer = getNetworkPlayer(inPlayerIndex);
 
+#ifdef A1_NETWORK_STANDALONE_HUB
+		int nbRemainingPlayers = 0, remainingPlayerIndex = 0;
+#endif
+
 	// make sure we're not processing a packet
 	{
 		MyTMMutexTaker mutex;
@@ -1296,19 +1300,24 @@ make_player_netdead(int inPlayerIndex)
 		sAddressToPlayerIndex.erase(thePlayer.mAddress);
 
 #ifdef A1_NETWORK_STANDALONE_HUB
-		if (sReferencePlayerIndex == inPlayerIndex) //fallback to someone else to be the player of reference
+		for (size_t i = 0; i < sNetworkPlayers.size(); i++)
 		{
-			for (size_t i = 0; i < sNetworkPlayers.size(); i++)
+			if (sNetworkPlayers[i].mConnected)
 			{
-				if (sNetworkPlayers[i].mConnected)
-				{
-					sReferencePlayerIndex = i;
-					break;
-				}
+				nbRemainingPlayers++;
+				remainingPlayerIndex = i;
 			}
 		}
+
+		if (sReferencePlayerIndex == inPlayerIndex) //fallback to someone else to be the player of reference
+			sReferencePlayerIndex = remainingPlayerIndex;
 #endif
 	}
+
+#ifdef A1_NETWORK_STANDALONE_HUB
+	if (nbRemainingPlayers == 1)
+		make_player_netdead(remainingPlayerIndex);
+#endif
 
 	// We save this off because player_provided... call below may change it.
 	int32 theSavedIncompleteTick = sSmallestIncompleteTick;
