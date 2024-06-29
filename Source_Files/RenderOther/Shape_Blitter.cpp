@@ -125,7 +125,7 @@ void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
             TMgr.TextureType = OGL_Txtr_Landscape;
             LandscapeOptions *LandOpts = View_GetLandscapeOptions(TMgr.ShapeDesc);	
             TMgr.LandscapeVertRepeat = LandOpts->VertRepeat;
-            TMgr.Landscape_AspRatExp = LandOpts->OGL_AspRatExp;
+            TMgr.Landscape_AspRatExp = LandOpts->SphereMap ? 1 : LandOpts->OGL_AspRatExp;
 	  }
             break;
         case Shape_Texture_Sprite:

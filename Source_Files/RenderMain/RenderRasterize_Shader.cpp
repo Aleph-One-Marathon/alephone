@@ -430,7 +430,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 			TMgr->TransferMode = _big_landscaped_transfer;
 			opts = View_GetLandscapeOptions(Texture);
 			TMgr->LandscapeVertRepeat = opts->VertRepeat;
-			TMgr->Landscape_AspRatExp = opts->OGL_AspRatExp;
+			TMgr->Landscape_AspRatExp = opts->SphereMap ? 1 : opts->OGL_AspRatExp;
 			if (current_player->infravision_duration) {
 				GLfloat color[3] {1, 1, 1};
 				FindInfravisionVersionRGBA(GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(Texture)), color);
