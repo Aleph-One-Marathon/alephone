@@ -168,9 +168,8 @@ static const char* sStringSetNumber132[] = {
 	
 	"$appName$ failed to configure the firewall/router. You may be unable to gather.",
 
-    "Impossible to establish a connection with a remote server. "
-    "Maybe there is no server available for now. "
-	"Please try again later or try to gather yourself."
+    "Impossible to establish a connection with an available remote server. "
+	"Please try again later, or try to increase your latency tolerance, or try to gather yourself."
 };
 
 // STR# Resource: "Key Codes To Names"
