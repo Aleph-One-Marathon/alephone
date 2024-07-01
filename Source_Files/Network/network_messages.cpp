@@ -253,6 +253,7 @@ void NetworkStatsMessage::reallyDeflateTo(AOStream& outputStream) const {
 		outputStream << it->latency;
 		outputStream << it->jitter;
 		outputStream << it->errors;
+		outputStream << it->pregame_state;
 	}
 }
 
@@ -263,6 +264,7 @@ bool NetworkStatsMessage::reallyInflateFrom(AIStream& inputStream) {
 		inputStream >> stats.latency;
 		inputStream >> stats.jitter;
 		inputStream >> stats.errors;
+		inputStream >> stats.pregame_state;
 
 		mStats.push_back(stats);
 	}

@@ -996,6 +996,7 @@ void update_interface_display(
 
 extern bool first_frame_rendered;
 float last_heartbeat_fraction = -1.f;
+bool is_network_pregame = false;
 
 bool idle_game_state(uint32 time)
 {
@@ -1112,6 +1113,7 @@ bool idle_game_state(uint32 time)
 		// This way we won't fill up queues and stall netgames if one player switches out for a bit.
 		std::pair<bool, int16> theUpdateResult= update_world();
 		short ticks_elapsed= theUpdateResult.second;
+		bool redraw = false;
 
 		if (get_keyboard_controller_status())
 		{
@@ -1123,15 +1125,22 @@ bool idle_game_state(uint32 time)
 				last_heartbeat_fraction = heartbeat_fraction;
 				render_screen(ticks_elapsed);
 				first_frame_rendered = ticks_elapsed > 0;
+				is_network_pregame = false;
 			}
+			else
+				redraw = game_is_networked && is_network_pregame;
 		}
 		else
+			redraw = true;
+
+		if (redraw)
 		{
 			static auto last_redraw = 0;
 			if (current_player && machine_tick_count() > last_redraw + MACHINE_TICKS_PER_SECOND / 30)
 			{
 				last_redraw = machine_tick_count();
 				render_screen(ticks_elapsed);
+				if (ticks_elapsed) is_network_pregame = false;
 			}
 		}
 		

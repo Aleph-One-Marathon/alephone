@@ -1268,6 +1268,8 @@ void update_world_view_camera()
 	}
 }
 
+extern bool is_network_pregame;
+
 void render_screen(short ticks_elapsed)
 {
 	// Make whatever changes are necessary to the world_view structure based on whichever player is frontmost
@@ -1392,7 +1394,7 @@ void render_screen(short ticks_elapsed)
 		if (!OGL_IsActive() && DrawEveryOtherLine)
 			clear_screen();
 		update_full_screen = true;
-		if (Screen::instance()->hud() && !Screen::instance()->lua_hud())
+		if (Screen::instance()->hud() && !Screen::instance()->lua_hud() && !is_network_pregame)
 			draw_interface();
 
 		// Reallocate the drawing buffer
@@ -1407,7 +1409,7 @@ void render_screen(short ticks_elapsed)
 	{
 		clear_screen(false);
 		update_full_screen = true;
-		if (Screen::instance()->hud() && !Screen::instance()->lua_hud())
+		if (Screen::instance()->hud() && !Screen::instance()->lua_hud() && !is_network_pregame)
 			draw_interface();
 
 		clear_next_screen = false;
@@ -1449,6 +1451,24 @@ void render_screen(short ticks_elapsed)
     if (screen_mode.acceleration == _no_acceleration &&
 		(MapIsTranslucent || Screen::instance()->lua_hud()))
         clear_screen_margin();
+
+	if (game_is_networked && is_network_pregame)
+	{
+		clear_screen(false);
+		SDL_FillRect(world_pixels, NULL, SDL_MapRGB(world_pixels->format, 0, 0, 0));
+		DisplayNetLoadingScreen(world_pixels);
+
+#ifdef HAVE_OPENGL
+		if (screen_mode.acceleration != _no_acceleration)
+		{
+			OGL_SwapBuffers();
+			return;
+		}
+#endif
+		update_screen(BufferRect, ViewRect, HighResolution, false);
+		MainScreenUpdateRect(0, 0, 0, 0);
+		return;
+	}
     
 	// Render crosshairs
 	if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
