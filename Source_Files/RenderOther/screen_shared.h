@@ -925,9 +925,8 @@ static void DisplayNetLoadingScreen(SDL_Surface* s)
 	int H = Font.LineSpacing * (dynamic_world->player_count + 1);
 	int W = WName + WStatus;
 
-	auto text_margins = alephone::Screen::instance()->lua_text_margins;
-	int X = text_margins.left + (s->w - text_margins.right - W) / 2;
-	int Y = std::max(text_margins.top + (s->h - text_margins.bottom - H) / 2, Font.LineSpacing * NumScreenMessages) + Font.LineSpacing;
+	int X = (s->w - W) / 2;
+	int Y = std::max((s->h - H) / 2, Font.LineSpacing * NumScreenMessages) + Font.LineSpacing;
 
 	int XName = X;
 	int XStatus = XName + WName + CWidth;

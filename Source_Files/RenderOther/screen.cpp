@@ -1375,7 +1375,7 @@ void render_screen(short ticks_elapsed)
 		PrevDrawEveryOtherLine = DrawEveryOtherLine;
 	}
 
-	SDL_Rect BufferRect = {0, 0, ViewRect.w, ViewRect.h};
+	SDL_Rect BufferRect = {0, 0, is_network_pregame ? Screen::instance()->width() : ViewRect.w, is_network_pregame ? Screen::instance()->height() : ViewRect.h};
 	// Now the buffer rectangle; be sure to shrink it as appropriate
 	if (!HighResolution && screen_mode.acceleration == _no_acceleration) {
 		BufferRect.w >>= 1;
@@ -1454,18 +1454,20 @@ void render_screen(short ticks_elapsed)
 
 	if (game_is_networked && is_network_pregame)
 	{
-		clear_screen(false);
-		SDL_FillRect(world_pixels, NULL, SDL_MapRGB(world_pixels->format, 0, 0, 0));
-		DisplayNetLoadingScreen(world_pixels);
-
 #ifdef HAVE_OPENGL
-		if (screen_mode.acceleration != _no_acceleration)
+		if (OGL_IsActive())
 		{
+			clear_screen(false);
+			Screen::instance()->bound_screen();
+			OGL_SetWindow(sr, sr, true);
+			DisplayNetLoadingScreen(MainScreenSurface());
 			OGL_SwapBuffers();
 			return;
 		}
 #endif
-		update_screen(BufferRect, ViewRect, HighResolution, false);
+		SDL_FillRect(world_pixels, NULL, SDL_MapRGB(world_pixels->format, 0, 0, 0));
+		DisplayNetLoadingScreen(world_pixels);
+		update_screen(BufferRect, BufferRect, true, false);
 		MainScreenUpdateRect(0, 0, 0, 0);
 		return;
 	}
