@@ -232,6 +232,8 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	binders.insert<int> (m_nearFiltersWidget[2], &spriteNearFilterPref);
 	Int16Pref weaponNearFilterPref (graphics_preferences->OGL_Configure.TxtrConfigList[OGL_Txtr_WeaponsInHand].NearFilter);
 	binders.insert<int> (m_nearFiltersWidget[3], &weaponNearFilterPref);
+	Int16Pref hudNearFilterPref(graphics_preferences->OGL_Configure.TxtrConfigList[OGL_Txtr_HUD].NearFilter);
+	binders.insert<int> (m_nearFiltersWidget[4], &hudNearFilterPref);
 	
 	TexQualityPref wallQualityPref (graphics_preferences->OGL_Configure.TxtrConfigList [0].MaxSize, 128);
 	binders.insert<int> (m_textureQualityWidget [0], &wallQualityPref);
@@ -241,6 +243,8 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	binders.insert<int> (m_textureQualityWidget [2], &spriteQualityPref);
 	TexQualityPref weaponQualityPref (graphics_preferences->OGL_Configure.TxtrConfigList [3].MaxSize, 256);
 	binders.insert<int> (m_textureQualityWidget [3], &weaponQualityPref);
+	TexQualityPref hudQualityPref(graphics_preferences->OGL_Configure.TxtrConfigList[4].MaxSize, 256);
+	binders.insert<int>(m_textureQualityWidget[4], &hudQualityPref);
 	TexQualityPref modelQualityPref (graphics_preferences->OGL_Configure.ModelConfig.MaxSize, 256);
 	binders.insert<int> (m_modelQualityWidget, &modelQualityPref);
 	
@@ -389,6 +393,10 @@ public:
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_WeaponsInHand]->label("Weapons in Hand"), m_dialog);
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_WeaponsInHand], m_dialog);
 
+		texture_quality_wa[OGL_Txtr_HUD] = new w_select_popup();
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_HUD]->label("HUD / Terminals"), m_dialog);
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_HUD], m_dialog);
+
 		w_select_popup *model_quality_w = new w_select_popup();
 		general_table->dual_add(model_quality_w->label("3D Model Skins"), m_dialog);
 		general_table->dual_add(model_quality_w, m_dialog);
@@ -437,7 +445,8 @@ public:
 		near_filter_labels[OGL_Txtr_Wall] = new w_label("Walls");
 		near_filter_labels[OGL_Txtr_Inhabitant] = new w_label("Sprites");
 		near_filter_labels[OGL_Txtr_Landscape] = new w_label("Landscapes");
-		near_filter_labels[OGL_Txtr_WeaponsInHand] = new w_label("Weapons in Hand / HUD");
+		near_filter_labels[OGL_Txtr_WeaponsInHand] = new w_label("Weapons in Hand");
+		near_filter_labels[OGL_Txtr_HUD] = new w_label("HUD / Terminals");
 	
 		table_placer *ftable = new table_placer(3, get_theme_space(ITEM_WIDGET));
 		
@@ -482,7 +491,8 @@ public:
 		texture_labels[OGL_Txtr_Wall] = new w_label("Walls");
 		texture_labels[OGL_Txtr_Landscape] = new w_label("Landscapes");
 		texture_labels[OGL_Txtr_Inhabitant] = new w_label("Sprites");
-		texture_labels[OGL_Txtr_WeaponsInHand] = new w_label("Weapons in Hand / HUD");
+		texture_labels[OGL_Txtr_WeaponsInHand] = new w_label("Weapons in Hand");
+		texture_labels[OGL_Txtr_HUD] = new w_label("HUD / Terminals");
 
 		m_tabs->add(general_table, true);
 		m_tabs->add(advanced_placer, true);
