@@ -218,6 +218,7 @@ static std::vector<NetworkStats> sNetworkStats;
 const static NetworkStats sInvalidStats = {
 	NetworkStats::invalid,
 	NetworkStats::invalid,
+	NetworkStats::invalid,
 	0
 };
 uint32 last_network_stats_send = 0;

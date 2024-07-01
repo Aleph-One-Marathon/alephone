@@ -762,7 +762,6 @@ static void DisplayMessages(SDL_Surface *s)
 }
 
 extern short local_player_index;
-extern bool game_is_networked;
 
 static const SDL_Color Green = { 0x0, 0xff, 0x0, 0xff };
 static const SDL_Color Yellow = { 0xff, 0xff, 0x0, 0xff };
@@ -905,6 +904,79 @@ static void DisplayScores(SDL_Surface *s)
 		Y += Font.LineSpacing;
 	}
 }
+
+static void DisplayNetLoadingScreen(SDL_Surface* s)
+{
+	// assume a proportional font
+	int CWidth = DisplayTextWidth("W");
+
+	// field widths
+	static const int kNameWidth = 20;
+	int WName = CWidth * kNameWidth;
+	static const int kStatusWidth = 20;
+	int WStatus = CWidth * kStatusWidth;
+
+	FontSpecifier& Font = GetOnScreenFont();
+
+	DisplayTextDest = s;
+	DisplayTextFont = Font.Info;
+	DisplayTextStyle = Font.Style;
+
+	int H = Font.LineSpacing * (dynamic_world->player_count + 1);
+	int W = WName + WStatus;
+
+	int X = (s->w - W) / 2;
+	int Y = std::max((s->h - H) / 2, Font.LineSpacing * NumScreenMessages) + Font.LineSpacing;
+
+	int XName = X;
+	int XStatus = XName + WName + CWidth;
+
+	// draw headers
+	DisplayText(XName, Y, "Name", 0xbf, 0xbf, 0xbf);
+	DisplayText(XStatus + WStatus - DisplayTextWidth("Status"), Y, "Status", 0xbf, 0xbf, 0xbf);
+
+	Y += Font.LineSpacing;
+
+	int nb_loading_dots = ((int)(machine_tick_count() / (2000.f / 3)) % 4);
+
+	for (int i = 0; i < dynamic_world->player_count; ++i)
+	{
+		const auto& player = get_player_data(i);
+		const auto& stats = NetGetStats(i);
+
+		SDL_Color color;
+		_get_interface_color(PLAYER_COLOR_BASE_INDEX + player->color, &color);
+
+		strncpy(temporary, player->name, 256);
+		temporary[kNameWidth + 1] = '\0';
+		DisplayText(XName, Y, temporary, color.r, color.g, color.b);
+
+		std::string player_status;
+
+		switch (stats.pregame_state)
+		{
+			case NetworkStats::valid:
+				color = Green;
+				player_status = "Ready";
+				break;
+			case NetworkStats::disconnected:
+				color = Red;
+				player_status = "Disconnected";
+				break;
+			case NetworkStats::invalid:
+			default:
+				color = Yellow;
+				player_status = "Loading" + std::string(nb_loading_dots, '.') + std::string(3 - nb_loading_dots, ' ');
+				break;
+		}
+
+		sprintf(temporary, "%s", player_status.c_str());
+		DisplayText(XStatus + WStatus - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);
+
+		Y += Font.LineSpacing;
+	}
+}
+
 
 static void set_overhead_map_status( /* it has changed, this is the new status */
 	bool status)

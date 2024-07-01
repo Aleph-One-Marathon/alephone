@@ -308,10 +308,11 @@ void NetUpdateUnconfirmedActionFlags();
 struct NetworkStats
 {
 	enum {
+		valid = 0,
 		invalid = -1,
 		disconnected = -2,
 	};
-
+	int16 pregame_state;
 	int16 latency;
 	int16 jitter;
 	uint16 errors;

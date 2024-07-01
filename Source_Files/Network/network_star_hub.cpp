@@ -344,6 +344,7 @@ static void player_acknowledged_up_to_tick(size_t inPlayerIndex, int32 inSmalles
 static bool player_provided_flags_from_tick_to_tick(size_t inPlayerIndex, int32 inFirstNewTick, int32 inSmallestUnreceivedTick);
 static void hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex);
 static void hub_received_identification_packet(AIStream& ps, NetAddrBlock address);
+static void hub_update_player_pregame_state(int inPlayerIndex, int16 state);
 static void hub_received_ping_request(AIStream& ps, NetAddrBlock address);
 static void hub_received_ping_response(AIStream& ps, NetAddrBlock address);
 static void process_messages(AIStream& ps, int inSenderIndex);
@@ -538,6 +539,7 @@ hub_initialize(int32 inStartingTick, int inNumPlayers, const NetAddrBlock* const
 		thePlayer.mLatencyTicks = 0;
 		thePlayer.mStats.latency = NetworkStats::invalid;
 		thePlayer.mStats.jitter = NetworkStats::invalid;
+		thePlayer.mStats.pregame_state = thePlayer.mConnected ? NetworkStats::invalid : NetworkStats::disconnected;
 		thePlayer.mStats.errors = 0;
 
                 sFlagsQueues[i].reset(theFirstTick);
@@ -711,6 +713,7 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
 				
 				if (getNetworkPlayer(theSenderIndex).mConnected)
 				{
+					hub_update_player_pregame_state(theSenderIndex, NetworkStats::valid);
 					hub_received_game_data_packet_v1(ps, theSenderIndex);
 				}
 				else
@@ -745,6 +748,14 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
         check_send_packet_to_spoke();
 }
 
+static void 
+hub_update_player_pregame_state(int inPlayerIndex, int16 state)
+{
+	if (sNetworkPlayers[inPlayerIndex].mStats.pregame_state == NetworkStats::invalid && sSmallestUnsentTick < sSmallestRealGameTick)
+	{
+		sNetworkPlayers[inPlayerIndex].mStats.pregame_state = state;
+	}
+}
 
 static void
 hub_received_identification_packet(AIStream& ps, NetAddrBlock address)
@@ -1298,6 +1309,7 @@ make_player_netdead(int inPlayerIndex)
 		thePlayer.mConnected = false;
 		sConnectedPlayersBitmask &= ~(((uint32)1) << inPlayerIndex);
 		sAddressToPlayerIndex.erase(thePlayer.mAddress);
+		hub_update_player_pregame_state(inPlayerIndex, NetworkStats::disconnected);
 
 #ifdef A1_NETWORK_STANDALONE_HUB
 		for (size_t i = 0; i < sNetworkPlayers.size(); i++)
