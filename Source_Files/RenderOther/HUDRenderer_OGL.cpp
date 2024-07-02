@@ -62,11 +62,12 @@ static bool hud_pict_not_found = false;	// HUD backdrop picture not found, don't
 extern int LuaTexturePaletteSize();
 
 void OGL_DrawHUD(Rect &dest, short time_elapsed)
-{	
+{
 	// Load static HUD picture if necessary
 	if (!HUD_Blitter.Loaded() && !hud_pict_not_found) {
-        if (!HUD_Blitter.Load(INTERFACE_PANEL_BASE))
-            hud_pict_not_found = true;
+		if (!HUD_Blitter.Load(INTERFACE_PANEL_BASE)) {
+			hud_pict_not_found = true;
+		}
 	}
 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -83,6 +84,7 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 	if (HUD_Blitter.Loaded() && !LuaTexturePaletteSize())
 	{
 		SDL_Rect hud_dest = { dest.left, dest.top, dest.right - dest.left, dest.bottom - dest.top };
+		HUD_Blitter.nearFilter = TxtrTypeInfoList[OGL_Txtr_HUD].NearFilter;
 		HUD_Blitter.Draw(hud_dest);
 	}
 	else
@@ -135,7 +137,7 @@ void HUD_OGL_Class::DrawShape(shape_descriptor shape, screen_rectangle *dest, sc
 	get_shape_bitmap_and_shading_table(shape, &TMgr.Texture, &TMgr.ShadingTables, _shading_normal);
 	TMgr.IsShadeless = true;
 	TMgr.TransferMode = _shadeless_transfer;
-	TMgr.TextureType = OGL_Txtr_WeaponsInHand;
+	TMgr.TextureType = OGL_Txtr_HUD;
 	if (!TMgr.Setup())
 		return;
 
@@ -170,7 +172,7 @@ void HUD_OGL_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y, bool
 	get_shape_bitmap_and_shading_table(shape, &TMgr.Texture, &TMgr.ShadingTables, _shading_normal);
 	TMgr.IsShadeless = true;
 	TMgr.TransferMode = _shadeless_transfer;
-	TMgr.TextureType = OGL_Txtr_WeaponsInHand;
+	TMgr.TextureType = OGL_Txtr_HUD;
 	if (!TMgr.Setup())
 		return;
 
@@ -236,6 +238,8 @@ void HUD_OGL_Class::DrawText(const char *text, screen_rectangle *dest, short fla
 
 	// Get font information
 	FontSpecifier &FontData = get_interface_font(font_id);
+
+	FontData.NearFilter = TxtrTypeInfoList[OGL_Txtr_HUD].NearFilter;
 
 	// Draw text
 	FontData.OGL_DrawText(text, *dest, flags);

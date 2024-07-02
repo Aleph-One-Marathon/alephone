@@ -37,6 +37,7 @@
 #include "OGL_Headers.h"
 #include "OGL_Blitter.h"
 #include "OGL_Faders.h"
+#include "OGL_Textures.h"
 #endif
 
 #include "world.h"
@@ -1503,6 +1504,7 @@ void render_screen(short ticks_elapsed)
 				Term_Blitter.Load(*Term_Buffer);
 				Term_RenderRequest = false;
 			}
+			Term_Blitter.nearFilter = TxtrTypeInfoList[OGL_Txtr_HUD].NearFilter;
 			Term_Blitter.Draw(TermRect);
 		}
 
