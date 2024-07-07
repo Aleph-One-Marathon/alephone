@@ -801,6 +801,7 @@ bool load_and_start_game(FileSpecifier& File)
 
 	if (success)
 	{
+		game_state.user = userWantsMultiplayer ? _network_player : _single_player;
 		int theSavedGameFlatDataLength = 0;
 		auto theSavedGameFlatData = std::unique_ptr<byte, decltype(&free)>(nullptr, free);
 
@@ -879,7 +880,7 @@ bool load_and_start_game(FileSpecifier& File)
 				success = make_restored_game_relevant(userWantsMultiplayer, theStarts, theNumberOfStarts);
 				if (success)
 				{
-					start_game(userWantsMultiplayer ? _network_player : _single_player, false);
+					start_game(game_state.user, false);
 				}
 			}
 		}
