@@ -25,9 +25,11 @@
 #include "mytm.h"
 #include <AStream.h>
 
+uint16_t Pinger::_ping_identifier_counter = 0;
+
 uint16_t Pinger::Register(const IPaddress& ipv4)
 {
-	_registered_ipv4s.emplace( ++_ping_identifier_counter, ipv4 );
+	_registered_ipv4s.emplace(++_ping_identifier_counter, ipv4);
 	return _ping_identifier_counter;
 }
 

@@ -42,7 +42,7 @@ private:
 		PingAddress(const IPaddress& address) : ipv4(address) {}
 	};
 
-    uint16_t _ping_identifier_counter = 0;
+	static uint16_t _ping_identifier_counter;
 	std::unordered_map<uint16_t, PingAddress> _registered_ipv4s;
 };
 
