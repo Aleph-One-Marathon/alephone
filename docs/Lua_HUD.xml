@@ -519,6 +519,10 @@ end
         <description>ticks since game started</description>
         <type>time</type>
       </variable>
+      <variable name="interpolated_ticks" version="git">
+        <description>ticks since game started, including fractional ticks if running at greater than 30 fps</description>
+        <type>number</type>
+      </variable>
       <variable name="type">
         <description>whether the game is EMFH, KOTH, etc.</description>
         <type>game_type</type>

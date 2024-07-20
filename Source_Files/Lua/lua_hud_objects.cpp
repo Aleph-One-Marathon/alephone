@@ -2895,6 +2895,13 @@ static int Lua_HUDGame_Get_Ticks(lua_State *L)
 	return 1;
 }
 
+extern float last_heartbeat_fraction;
+static int Lua_HUDGame_Get_Interpolated_Ticks(lua_State *L)
+{
+	lua_pushnumber(L, last_heartbeat_fraction + static_cast<float>(dynamic_world->tick_count));
+	return 1;
+}
+
 static int Lua_HUDGame_Get_Type(lua_State *L)
 {
 	Lua_GameType::Push(L, GET_GAME_TYPE());
@@ -2923,6 +2930,7 @@ const luaL_Reg Lua_HUDGame_Get[] = {
 {"time_remaining", Lua_HUDGame_Get_Time_Remaining},
 {"scoring_mode", Lua_HUDGame_Get_Scoring_Mode},
 {"ticks", Lua_HUDGame_Get_Ticks},
+{"interpolated_ticks", Lua_HUDGame_Get_Interpolated_Ticks},
 {"type", Lua_HUDGame_Get_Type},
 {"version", Lua_HUDGame_Get_Version},
 {"players", Lua_HUDGame_Get_Players},
