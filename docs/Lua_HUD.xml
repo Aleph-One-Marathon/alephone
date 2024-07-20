@@ -721,7 +721,7 @@ end
         <note>nil until player is completely dead</note>
         <type>number</type>
       </variable>
-	  <variable name="run_key" version="git">
+	  <variable name="run_key" version="20231125">
 		<description>whether the run key is down</description>
 	  </variable>
       <variable name="team">

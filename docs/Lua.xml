@@ -341,11 +341,11 @@ end
 	  <argument name="t" version="20210408"><type>variant</type></argument>
 	  <note>t can be a side, polygon_floor, polygon_ceiling, monster, scenery, polygon; see Polygon:check_collision for info on how to decode. It can also be nil, in the rare case a projectile detonates without hitting something</note>
     </function>
-	<function name="calculate_level_completion_state" version="git">
+	<function name="calculate_level_completion_state" version="20240712">
 	  <description>replaces the classic completion state calculation</description>
 	  <return><type>CompletionState</type></return>
 	</function>
-	<function name="monster_kamikazed" version="git">
+	<function name="monster_kamikazed" version="20240712">
 	  <description>whenever a monster kamikazes</description>
 	  <argument name="monster"><type>monster</type></argument>
 	</function>
@@ -610,11 +610,11 @@ end
 		<argument name="z"><type>WU</type></argument>
 		<argument name="polygon"><type>polygon</type></argument>
       </function>
-	  <function name="teleport_in" version="git">
+	  <function name="teleport_in" version="20240712">
 		<description>teleports item in</description>
 		<note>can fail silently if there are not enough effects slots</note>
 	  </function>
-	  <function name="teleport_out" version="git">
+	  <function name="teleport_out" version="20240712">
 		<description>teleports item out</description>
 		<note>can fail silently if there are not enough effects slots</note>
 	  </function>
@@ -622,7 +622,7 @@ end
 		<description>type of item</description>
 		<type>item_type</type>
       </variable>
-      <variable name="visible" version="git">
+      <variable name="visible" version="20240712">
     <type>boolean</type>
       </variable>
       <variable name="x" access="read-only">
@@ -2023,11 +2023,11 @@ end
 		<description>whether this scenery is solid</description>
 		<type>boolean</type>
       </variable>
-	  <function name="teleport_in" version="git">
+	  <function name="teleport_in" version="20240712">
 		<description>teleports scenery in</description>
 		<note>can fail silently if there are not enough effects slots</note>
 	  </function>
-	  <function name="teleport_out" version="git">
+	  <function name="teleport_out" version="20240712">
 		<description>teleports scenery out</description>
 		<note>can fail silently if there are not enough effects slots</note>
 	  </function>
@@ -2035,7 +2035,7 @@ end
 		<description>type of scenery</description>
 		<type>scenery_type</type>
       </variable>
-	  <variable name="visible" version="git">
+	  <variable name="visible" version="20240712">
 		<description>whether this scenery is visible</description>
 		<type>boolean</type>
 	  </variable>
