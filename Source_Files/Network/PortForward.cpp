@@ -24,7 +24,11 @@ PortForward::PortForward(uint16_t port) :
 
 	char lanaddr[64];
 
+#if MINIUPNPC_API_VERSION >= 18
+	auto igd_found = UPNP_GetValidIGD(devlist.get(), &urls_, &data_, lanaddr, sizeof(lanaddr), nullptr, 0);
+#else
 	auto igd_found = UPNP_GetValidIGD(devlist.get(), &urls_, &data_, lanaddr, sizeof(lanaddr));
+#endif
 	if (!igd_found)
 	{
 		throw PortForwardException("Failed to discover IGD");
