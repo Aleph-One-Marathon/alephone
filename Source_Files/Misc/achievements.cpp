@@ -36,6 +36,8 @@ std::string Achievements::get_lua()
 		static constexpr uint32_t m2_map_checksum = 0x2d71ccb4;
 		static constexpr uint32_t m2_win95_map_checksum = 0x5e0ba590;
 		static constexpr uint32_t m2_physics_checksum = 0x91d72dab;
+
+		static constexpr uint32_t inf_map_checksum = 0xA80E94B1;
 		
 		switch (map_checksum) {
 			case m1_map_checksum:
@@ -62,6 +64,11 @@ std::string Achievements::get_lua()
 				{
 					set_disabled_reason("Achievements disabled (third party physics)");					
 				}
+				break;
+			case infinity_map_checksum:
+				lua =
+					#include "inf_achievements.lua"
+			;
 				break;
 		}
 
