@@ -99,7 +99,7 @@ jobs:
         echo "Attach staple"
         xcrun stapler staple "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon 2 Steam.app"
 
-		echo "Notarize Classic Marathon Infinity Steam"
+        echo "Notarize Classic Marathon Infinity Steam"
         xcrun notarytool submit "infinity.zip" --keychain-profile "notarytool-profile" --wait
         echo "Attach staple"
         xcrun stapler staple "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Infinity Steam.app"
