@@ -65,7 +65,7 @@ std::string Achievements::get_lua()
 					set_disabled_reason("Achievements disabled (third party physics)");					
 				}
 				break;
-			case infinity_map_checksum:
+			case inf_map_checksum:
 				lua =
 					#include "inf_achievements.lua"
 			;
