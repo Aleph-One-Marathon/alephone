@@ -1,0 +1,33 @@
+"AppBuild"
+{
+    "AppID" "2398520"
+    "Desc" "Classic Marathon Infinity macOS build script"
+
+    "ContentRoot" ".."
+    "BuildOutput" "output\"
+
+    "Depots"
+    {
+        "2398523"
+        {
+            "FileMapping"
+            {
+                "LocalPath" "PBProjects/build/Release/Classic Marathon Launcher"
+                "DepotPath" "."
+            }
+			
+            "FileMapping"
+            {
+                "LocalPath" "PBProjects/build/Release/libsteam_api.dylib"
+                "DepotPath" "."
+            }
+			
+            "FileMapping"
+            {
+                "LocalPath" "PBProjects/build/Release/Classic Marathon Infinity Steam.app/*"
+                "DepotPath" "Classic Marathon Infinity Steam.app"
+                "recursive" "1"
+            }
+        }
+    }
+}

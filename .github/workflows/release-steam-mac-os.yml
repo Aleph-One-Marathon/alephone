@@ -11,7 +11,7 @@ jobs:
     - name: Build Steam Marathon
       uses: ./.github/actions/build-mac-osx
       with:
-        xcode_targets: "Marathon Steam, Marathon 2 Steam, Classic Marathon Launcher"
+        xcode_targets: "Marathon Steam, Marathon 2 Steam, Marathon Infinity Steam, Classic Marathon Launcher"
       
     - name: Bootstrap Steamcmd
       continue-on-error: true #Steamcmd may throw error exit code while bootstrapping that we can ignore, we will see on upload if everything is working fine
@@ -53,6 +53,7 @@ jobs:
         /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --entitlements "$GITHUB_WORKSPACE/PBProjects/Steamshim.entitlements" --options runtime "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Launcher" -v
         /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Steam.app" -v
         /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon 2 Steam.app" -v
+        /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Infinity Steam.app" -v
 
     - name: "Notarize app bundle"
       # Extract the secrets we defined earlier as environment variables
@@ -74,6 +75,7 @@ jobs:
         echo "Creating temp notarization archives"
         ditto -c -k --keepParent "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Steam.app" "marathon.zip"
         ditto -c -k --keepParent "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon 2 Steam.app" "marathon2.zip"
+        ditto -c -k --keepParent "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Infinity Steam.app" "infinity.zip"
         ditto -c -k --keepParent "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Launcher" "launcher.zip"       
 
         # Here we send the notarization request to the Apple's Notarization service, waiting for the result.
@@ -97,5 +99,10 @@ jobs:
         echo "Attach staple"
         xcrun stapler staple "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon 2 Steam.app"
 
+		echo "Notarize Classic Marathon Infinity Steam"
+        xcrun notarytool submit "infinity.zip" --keychain-profile "notarytool-profile" --wait
+        echo "Attach staple"
+        xcrun stapler staple "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Infinity Steam.app"
+
     - name: Deploy to Steam
-      run: ./Steam/steamcmd/steamcmd.sh +login alephone_upload +run_app_build ../m1_mac.vdf +run_app_build ../m2_mac.vdf +quit
+      run: ./Steam/steamcmd/steamcmd.sh +login alephone_upload +run_app_build ../m1_mac.vdf +run_app_build ../m2_mac.vdf +run_app_build ../inf_mac.vdf +quit
