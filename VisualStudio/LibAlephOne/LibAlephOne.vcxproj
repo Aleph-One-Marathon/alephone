@@ -491,7 +491,7 @@
     <ClCompile Include="..\..\Source_Files\Misc\sdl_widgets.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\shared_widgets.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\Statistics.cpp" />
-    <ClCompile Include="..\..\Source_Files\Misc\steamshim_child.c" />
+    <ClCompile Include="..\..\Source_Files\Misc\steamshim_child.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\thread_priority_sdl_dummy.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Standalone Hub|Win32'">true</ExcludedFromBuild>

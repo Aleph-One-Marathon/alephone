@@ -724,7 +724,7 @@
     <ClCompile Include="..\..\Source_Files\Lua\lua_music.cpp">
       <Filter>Lua\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source_Files\Misc\steamshim_child.c">
+    <ClCompile Include="..\..\Source_Files\Misc\steamshim_child.cpp">
       <Filter>Misc\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source_Files\Misc\achievements.cpp">

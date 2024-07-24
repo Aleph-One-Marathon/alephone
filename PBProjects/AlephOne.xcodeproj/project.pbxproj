@@ -678,7 +678,6 @@
 		AE120D5C2BC77645001873DD /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9975072661D6E300DDD370 /* CoreAudio.framework */; };
 		AE120D5D2BC77645001873DD /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9975012661D50F00DDD370 /* ForceFeedback.framework */; };
 		AE120D5E2BC77645001873DD /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9975092661D6F400DDD370 /* AudioUnit.framework */; };
-		AE120D672BC776CE001873DD /* steamshim_child.c in Sources */ = {isa = PBXBuildFile; fileRef = AE120D662BC776CE001873DD /* steamshim_child.c */; };
 		AE120D692BC776E7001873DD /* steamshim_child.h in Headers */ = {isa = PBXBuildFile; fileRef = AE120D682BC776E7001873DD /* steamshim_child.h */; };
 		AE1320312C1CB4D2009D34AA /* PlayerName.h in Headers */ = {isa = PBXBuildFile; fileRef = F522120C0136A6FD01000001 /* PlayerName.h */; };
 		AE1320322C1CB4D2009D34AA /* Random.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212190136A6FD01000001 /* Random.h */; };
@@ -1012,7 +1011,6 @@
 		AE13217E2C1CB4D2009D34AA /* QuickSave.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276D4E761A2E734E00C16CF5 /* QuickSave.cpp */; };
 		AE13217F2C1CB4D2009D34AA /* XML_MakeRoot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94410240DE0E01A80001 /* XML_MakeRoot.cpp */; };
 		AE1321802C1CB4D2009D34AA /* sdl_resize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27EFC4BC1A7D8CBF00A95592 /* sdl_resize.cpp */; };
-		AE1321812C1CB4D2009D34AA /* steamshim_child.c in Sources */ = {isa = PBXBuildFile; fileRef = AE120D662BC776CE001873DD /* steamshim_child.c */; };
 		AE1321822C1CB4D2009D34AA /* Packing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5837191031EEE0201000105 /* Packing.cpp */; };
 		AE1321832C1CB4D2009D34AA /* DefaultStringSets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC27A503DC9D1C00000104 /* DefaultStringSets.cpp */; };
 		AE1321842C1CB4D2009D34AA /* Logging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC27A603DC9D1C00000104 /* Logging.cpp */; };
@@ -1134,6 +1132,10 @@
 		AE171BCE2A59F6EE00A4D3FC /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE171BCC2A59F6EE00A4D3FC /* main.cpp */; };
 		AE171BCF2A59F6EE00A4D3FC /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE171BCC2A59F6EE00A4D3FC /* main.cpp */; };
 		AE171BD02A59F6EE00A4D3FC /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE171BCC2A59F6EE00A4D3FC /* main.cpp */; };
+		AE1D0DEA2C6198500083010F /* steamshim_child.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE1D0DE92C6198500083010F /* steamshim_child.cpp */; };
+		AE1D0DEB2C6198500083010F /* steamshim_child.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE1D0DE92C6198500083010F /* steamshim_child.cpp */; };
+		AE1D0DEC2C6198500083010F /* steamshim_child.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE1D0DE92C6198500083010F /* steamshim_child.cpp */; };
+		AE1D0DED2C6198AE0083010F /* ScenarioChooser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE83423F2C5B22EA00A4A530 /* ScenarioChooser.cpp */; };
 		AE1F1B952662C69500E6390E /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9974FD2661D49E00DDD370 /* AudioToolbox.framework */; };
 		AE1F1B962662C69600E6390E /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9974FD2661D49E00DDD370 /* AudioToolbox.framework */; };
 		AE1F1B972662C69600E6390E /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9974FD2661D49E00DDD370 /* AudioToolbox.framework */; };
@@ -2371,7 +2373,6 @@
 		AEBDC65B2C4DF0780026DFF1 /* XML_MakeRoot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94410240DE0E01A80001 /* XML_MakeRoot.cpp */; };
 		AEBDC65C2C4DF0780026DFF1 /* sdl_resize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27EFC4BC1A7D8CBF00A95592 /* sdl_resize.cpp */; };
 		AEBDC65D2C4DF0780026DFF1 /* Pinger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */; };
-		AEBDC65E2C4DF0780026DFF1 /* steamshim_child.c in Sources */ = {isa = PBXBuildFile; fileRef = AE120D662BC776CE001873DD /* steamshim_child.c */; };
 		AEBDC65F2C4DF0780026DFF1 /* Packing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5837191031EEE0201000105 /* Packing.cpp */; };
 		AEBDC6602C4DF0780026DFF1 /* DefaultStringSets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC27A503DC9D1C00000104 /* DefaultStringSets.cpp */; };
 		AEBDC6612C4DF0780026DFF1 /* Logging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC27A603DC9D1C00000104 /* Logging.cpp */; };
@@ -3297,10 +3298,10 @@
 		AE120B8F2BC76745001873DD /* steamshim_parent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = steamshim_parent.cpp; path = ../../Steam/steamshim_parent.cpp; sourceTree = "<group>"; };
 		AE120B942BC77447001873DD /* libsteam_api.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsteam_api.dylib; path = "../vcpkg/installed-x64-osx/x64-osx/lib/libsteam_api.dylib"; sourceTree = SOURCE_ROOT; };
 		AE120D642BC77645001873DD /* Classic Marathon Steam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Classic Marathon Steam.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		AE120D662BC776CE001873DD /* steamshim_child.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = steamshim_child.c; path = ../Source_Files/Misc/steamshim_child.c; sourceTree = "<group>"; };
 		AE120D682BC776E7001873DD /* steamshim_child.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = steamshim_child.h; path = ../Source_Files/Misc/steamshim_child.h; sourceTree = "<group>"; };
 		AE1321FD2C1CB4D2009D34AA /* Classic Marathon 2 Steam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Classic Marathon 2 Steam.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE171BCC2A59F6EE00A4D3FC /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../Source_Files/main.cpp; sourceTree = "<group>"; };
+		AE1D0DE92C6198500083010F /* steamshim_child.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = steamshim_child.cpp; path = ../Source_Files/Misc/steamshim_child.cpp; sourceTree = "<group>"; };
 		AE1F1B912662C5A500E6390E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AE1F1B922662C5A500E6390E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = AppStore/Marathon/en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AE1F1B932662C5A600E6390E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = "AppStore/Marathon 2/en.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
@@ -4242,7 +4243,7 @@
 				F5CC94290240DB8801A80001 /* SDL */,
 				AE437C8E08779BE500038E30 /* shared_widgets.cpp */,
 				27FC2E091A7DF51E0057BF42 /* Statistics.cpp */,
-				AE120D662BC776CE001873DD /* steamshim_child.c */,
+				AE1D0DE92C6198500083010F /* steamshim_child.cpp */,
 				F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */,
 				F52212590136A6FD01000001 /* vbl.cpp */,
 			);
@@ -6827,6 +6828,7 @@
 				AE120CB72BC77645001873DD /* OpenALManager.cpp in Sources */,
 				AE120CB82BC77645001873DD /* platforms.cpp in Sources */,
 				AE120CB92BC77645001873DD /* player.cpp in Sources */,
+				AE1D0DEA2C6198500083010F /* steamshim_child.cpp in Sources */,
 				AE120CBA2BC77645001873DD /* projectiles.cpp in Sources */,
 				AE120CBB2BC77645001873DD /* scenery.cpp in Sources */,
 				AE120CBC2BC77645001873DD /* weapons.cpp in Sources */,
@@ -6874,7 +6876,6 @@
 				AE120CE62BC77645001873DD /* XML_MakeRoot.cpp in Sources */,
 				AE120CE72BC77645001873DD /* sdl_resize.cpp in Sources */,
 				AE3C01A82C13DB8B002A3EB2 /* Pinger.cpp in Sources */,
-				AE120D672BC776CE001873DD /* steamshim_child.c in Sources */,
 				AE120CE82BC77645001873DD /* Packing.cpp in Sources */,
 				AE120CE92BC77645001873DD /* DefaultStringSets.cpp in Sources */,
 				AE120CEA2BC77645001873DD /* Logging.cpp in Sources */,
@@ -7056,6 +7057,7 @@
 				AE1321502C1CB4D2009D34AA /* OpenALManager.cpp in Sources */,
 				AE1321512C1CB4D2009D34AA /* platforms.cpp in Sources */,
 				AE1321522C1CB4D2009D34AA /* player.cpp in Sources */,
+				AE1D0DEB2C6198500083010F /* steamshim_child.cpp in Sources */,
 				AE1321532C1CB4D2009D34AA /* projectiles.cpp in Sources */,
 				AE1321542C1CB4D2009D34AA /* scenery.cpp in Sources */,
 				AE1321552C1CB4D2009D34AA /* weapons.cpp in Sources */,
@@ -7103,7 +7105,6 @@
 				AE13217F2C1CB4D2009D34AA /* XML_MakeRoot.cpp in Sources */,
 				AE1321802C1CB4D2009D34AA /* sdl_resize.cpp in Sources */,
 				AE235A4A2C261FEE0085BF9C /* Pinger.cpp in Sources */,
-				AE1321812C1CB4D2009D34AA /* steamshim_child.c in Sources */,
 				AE1321822C1CB4D2009D34AA /* Packing.cpp in Sources */,
 				AE1321832C1CB4D2009D34AA /* DefaultStringSets.cpp in Sources */,
 				AE1321842C1CB4D2009D34AA /* Logging.cpp in Sources */,
@@ -7796,7 +7797,6 @@
 				AEBDC65B2C4DF0780026DFF1 /* XML_MakeRoot.cpp in Sources */,
 				AEBDC65C2C4DF0780026DFF1 /* sdl_resize.cpp in Sources */,
 				AEBDC65D2C4DF0780026DFF1 /* Pinger.cpp in Sources */,
-				AEBDC65E2C4DF0780026DFF1 /* steamshim_child.c in Sources */,
 				AEBDC65F2C4DF0780026DFF1 /* Packing.cpp in Sources */,
 				AEBDC6602C4DF0780026DFF1 /* DefaultStringSets.cpp in Sources */,
 				AEBDC6612C4DF0780026DFF1 /* Logging.cpp in Sources */,
@@ -7815,12 +7815,13 @@
 				AEBDC66F2C4DF0780026DFF1 /* metaserver_dialogs.cpp in Sources */,
 				AEBDC6702C4DF0780026DFF1 /* metaserver_messages.cpp in Sources */,
 				AEBDC6712C4DF0780026DFF1 /* network_metaserver.cpp in Sources */,
+				AE1D0DEC2C6198500083010F /* steamshim_child.cpp in Sources */,
 				AEBDC6722C4DF0780026DFF1 /* CommunicationsChannel.cpp in Sources */,
 				AEBDC6732C4DF0780026DFF1 /* Message.cpp in Sources */,
 				AEBDC6742C4DF0780026DFF1 /* MessageDispatcher.cpp in Sources */,
 				AEBDC6752C4DF0780026DFF1 /* MessageHandler.cpp in Sources */,
 				AEBDC6762C4DF0780026DFF1 /* MessageInflater.cpp in Sources */,
-				AE3AF3962C6ED7200066F090 /* ScenarioChooser.cpp in Sources */,
+				AE1D0DED2C6198AE0083010F /* ScenarioChooser.cpp in Sources */,
 				AEBDC6772C4DF0780026DFF1 /* network_messages.cpp in Sources */,
 				AEBDC6782C4DF0780026DFF1 /* csstrings.cpp in Sources */,
 				AEBDC6792C4DF0780026DFF1 /* SdlMetaserverClientUi.cpp in Sources */,

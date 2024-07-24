@@ -888,6 +888,28 @@ private:
 	ControlHitCallback m_callback;
 };
 
+class w_directory_chooser : public w_select_button
+{
+public:
+	w_directory_chooser();
+
+	void click(int x, int y);
+
+	void set_directory(const FileSpecifier& inFile);
+	const FileSpecifier& get_directory() { return directory; }
+
+	// we also have void set_callback(action_proc, void*)
+	// as inherited from w_select_button
+	void set_callback(ControlHitCallback callback) { m_callback = callback; }
+
+private:
+	void update_directoryname();
+
+	FileSpecifier	directory;
+	char		directory_name[256];
+	ControlHitCallback m_callback;
+};
+
 
 /*
  *	Lists for metaserver dialog; moved from SdlMetaserverClientUi.cpp

@@ -313,6 +313,36 @@ void initialize_application(void)
 	ScenarioChooser chooser;
 	chooser.add_scenario(scenario_dir.GetPath());
 
+#ifdef HAVE_STEAM
+	if (!STEAMSHIM_init())
+	{
+		alert_user("You must launch the Steam version of Classic Marathon using the Classic Marathon Launcher.", fatalError);
+		exit(1);
+	}
+
+	STEAMSHIM_queryWorkshopItemScenario();
+
+	while (STEAMSHIM_alive())
+	{
+		auto result = STEAMSHIM_pump();
+
+		if (result && result->type == SHIMEVENT_WORKSHOP_QUERY_ITEM_SUBSCRIBED_RESULT)
+		{
+			if (result->items_subscribed.result_code == 1)
+			{
+				for (const auto& steam_scenario : result->items_subscribed.items)
+				{
+					chooser.add_scenario(steam_scenario.install_folder_path);
+				}
+			}
+
+			break;
+		}
+
+		sleep_for_machine_ticks(30);
+	}
+#endif // HAVE_STEAM
+
 	if (chooser.num_scenarios() == 0)
 	{
 		chooser.add_directory(scenario_dir.GetPath());
@@ -497,14 +527,6 @@ void initialize_application(void)
 	}
 	
 	HTTPClient::Init();
-
-#ifdef HAVE_STEAM
-	if (!STEAMSHIM_init())
-	{
-		alert_user("You must launch the Steam version of Classic Marathon using the Classic Marathon Launcher.", fatalError);
-		exit(1);
-	}
-#endif
 
 	// Initialize everything
 	mytm_initialize();
@@ -719,7 +741,7 @@ void main_event_loop(void)
 #ifdef HAVE_STEAM
 			while (auto steam_event = STEAMSHIM_pump()) {
 				switch (steam_event->type) {
-					case SHIMEVENT_ISOVERLAYACTIVATED:
+					case SHIMEVENT_IS_OVERLAY_ACTIVATED:
 						if (steam_event->okay && get_game_state() == _game_in_progress && !game_is_networked)
 						{
 							pause_game();

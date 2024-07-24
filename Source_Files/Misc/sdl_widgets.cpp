@@ -2400,6 +2400,49 @@ w_file_chooser::update_filename()
 		set_selection(sFileChooserInvalidFileString);
 }
 
+w_directory_chooser::w_directory_chooser()
+	: w_select_button("", NULL, NULL, true)
+{
+	set_selection(sFileChooserInvalidFileString);
+}
+
+
+
+void
+w_directory_chooser::set_directory(const FileSpecifier& inDirectory)
+{
+	directory = inDirectory;
+	update_directoryname();
+}
+
+
+
+void
+w_directory_chooser::click(int, int)
+{
+	if (enabled)
+	{
+		if (directory.ReadDirectoryDialog())
+		{
+			update_directoryname();
+			if (m_callback)
+				m_callback();
+		}
+	}
+}
+
+
+void
+w_directory_chooser::update_directoryname()
+{
+	if (directory.Exists())
+	{
+		directory.GetName(directory_name);
+		set_selection(directory_name);
+	}
+	else
+		set_selection(sFileChooserInvalidFileString);
+}
 
 const string w_items_in_room_get_name_of_item (GameListMessage::GameListEntry item)
 {

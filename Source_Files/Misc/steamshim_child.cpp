@@ -23,6 +23,7 @@ typedef int PipeType;
 #define NULLPIPE -1
 #endif
 
+#include <sstream>
 #include "steamshim_child.h"
 
 #define DEBUGPIPE 1
@@ -120,7 +121,7 @@ static char *getEnvVar(const char *key, char *buf, const size_t buflen)
 static PipeType GPipeRead = NULLPIPE;
 static PipeType GPipeWrite = NULLPIPE;
 
-typedef enum ShimCmd
+enum ShimCmd
 {
     SHIMCMD_BYE,
     SHIMCMD_PUMP,
@@ -133,17 +134,25 @@ typedef enum ShimCmd
     SHIMCMD_GETSTATI,
     SHIMCMD_SETSTATF,
     SHIMCMD_GETSTATF,
-} ShimCmd;
+    SHIMCMD_WORKSHOP_UPLOAD,
+    SHIMCMD_WORKSHOP_QUERY_ITEM_OWNED,
+    SHIMCMD_WORKSHOP_QUERY_ITEM_MOD,
+    SHIMCMD_WORKSHOP_QUERY_ITEM_SCENARIO
+};
 
 static int write1ByteCmd(const uint8 b1)
 {
-    const uint8 buf[] = { 1, b1 };
+    uint16_t length = 1;
+    uint8* length_bytes = (uint8*)&length;
+    const uint8 buf[] = { length_bytes[0], length_bytes[1], b1};
     return writePipe(GPipeWrite, buf, sizeof (buf));
 } /* write1ByteCmd */
 
 static int write2ByteCmd(const uint8 b1, const uint8 b2)
 {
-    const uint8 buf[] = { 2, b1, b2 };
+    uint16_t length = 2;
+    uint8* length_bytes = (uint8*)&length;
+    const uint8 buf[] = { length_bytes[0], length_bytes[1], b1, b2};
     return writePipe(GPipeWrite, buf, sizeof (buf));
 } /* write2ByteCmd */
 
@@ -246,7 +255,11 @@ static const STEAMSHIM_Event *processEvent(const uint8 *buf, size_t buflen)
     PRINTGOTEVENT(SHIMEVENT_GETSTATI);
     PRINTGOTEVENT(SHIMEVENT_SETSTATF);
     PRINTGOTEVENT(SHIMEVENT_GETSTATF);
-    PRINTGOTEVENT(SHIMEVENT_ISOVERLAYACTIVATED);
+    PRINTGOTEVENT(SHIMEVENT_IS_OVERLAY_ACTIVATED);
+    PRINTGOTEVENT(SHIMEVENT_WORKSHOP_UPLOAD_RESULT);
+    PRINTGOTEVENT(SHIMEVENT_WORKSHOP_UPLOAD_PROGRESS);
+    PRINTGOTEVENT(SHIMEVENT_WORKSHOP_QUERY_ITEM_OWNED_RESULT);
+    PRINTGOTEVENT(SHIMEVENT_WORKSHOP_QUERY_ITEM_SUBSCRIBED_RESULT);
     #undef PRINTGOTEVENT
     else printf("Child got unknown shimevent %d.\n", (int) type);
     #endif
@@ -258,7 +271,7 @@ static const STEAMSHIM_Event *processEvent(const uint8 *buf, size_t buflen)
 
         case SHIMEVENT_STATSRECEIVED:
         case SHIMEVENT_STATSSTORED:
-        case SHIMEVENT_ISOVERLAYACTIVATED:
+        case SHIMEVENT_IS_OVERLAY_ACTIVATED:
             if (!buflen) return NULL;
             event.okay = *(buf++) ? 1 : 0;
             break;
@@ -302,6 +315,32 @@ static const STEAMSHIM_Event *processEvent(const uint8 *buf, size_t buflen)
             strcpy(event.name, (const char *) buf);
             break;
 
+        case SHIMEVENT_WORKSHOP_UPLOAD_RESULT:
+            event.ivalue = (int)*(buf++);
+            event.okay = event.ivalue == 1;
+            break;
+
+        case SHIMEVENT_WORKSHOP_UPLOAD_PROGRESS:
+            event.okay = (int)*(buf++);
+            event.ivalue = (int)*(buf++);
+            break;
+
+        case SHIMEVENT_WORKSHOP_QUERY_ITEM_OWNED_RESULT:
+        {
+            event.items_owned = {};
+            event.items_owned.shim_deserialize(buf, buflen);
+            event.okay = event.items_owned.result_code == 1;
+            break;
+        }
+
+        case SHIMEVENT_WORKSHOP_QUERY_ITEM_SUBSCRIBED_RESULT:
+        {
+            event.items_subscribed = {};
+            event.items_subscribed.shim_deserialize(buf, buflen);
+            event.okay = event.items_owned.result_code == 1;
+            break;
+        }
+
         default:  /* uh oh */
             return NULL;
     } /* switch */
@@ -311,14 +350,14 @@ static const STEAMSHIM_Event *processEvent(const uint8 *buf, size_t buflen)
 
 const STEAMSHIM_Event *STEAMSHIM_pump(void)
 {
-    static uint8 buf[256];
+    static uint8 buf[65536];
     static int br = 0;
-    int evlen = (br > 0) ? ((int) buf[0]) : 0;
+    int evlen = (br > 1) ? *reinterpret_cast<uint16_t*>(buf) : 0;
 
     if (isDead())
         return NULL;
 
-    if (br <= evlen)  /* we have an incomplete commmand. Try to read more. */
+    if (br - 2 < evlen)  /* we have an incomplete commmand. Try to read more. */
     {
         if (pipeReady(GPipeRead))
         {
@@ -333,12 +372,12 @@ const STEAMSHIM_Event *STEAMSHIM_pump(void)
         } /* if */
     } /* if */
 
-    if (evlen && (br > evlen))
+    if (evlen && (br - 2 >= evlen))
     {
-        const STEAMSHIM_Event *retval = processEvent(buf+1, evlen);
-        br -= evlen + 1;
+        const STEAMSHIM_Event *retval = processEvent(buf+2, evlen);
+        br -= evlen + 2;
         if (br > 0)
-            memmove(buf, buf+evlen+1, br);
+            memmove(buf, buf+evlen+2, br);
         return retval;
     } /* if */
 
@@ -369,29 +408,98 @@ void STEAMSHIM_storeStats(void)
 void STEAMSHIM_setAchievement(const char *name, const int enable)
 {
     uint8 buf[256];
-    uint8 *ptr = buf+1;
+    uint8 *ptr = buf+2;
     if (isDead()) return;
     dbgpipe("Child sending SHIMCMD_SETACHIEVEMENT('%s', %senable).\n", name, enable ? "" : "!");
     *(ptr++) = (uint8) SHIMCMD_SETACHIEVEMENT;
     *(ptr++) = enable ? 1 : 0;
     strcpy((char *) ptr, name);
     ptr += strlen(name) + 1;
-    buf[0] = (uint8) ((ptr-1) - buf);
-    writePipe(GPipeWrite, buf, buf[0] + 1);
+    uint16_t length = ((ptr - 1) - buf);
+    uint8* length_bytes = (uint8*)&length;
+    buf[0] = length_bytes[0];
+    buf[1] = length_bytes[1];
+    writePipe(GPipeWrite, buf, length + 2);
 } /* STEAMSHIM_setAchievement */
 
 void STEAMSHIM_getAchievement(const char *name)
 {
     uint8 buf[256];
-    uint8 *ptr = buf+1;
+    uint8 *ptr = buf+2;
     if (isDead()) return;
     dbgpipe("Child sending SHIMCMD_GETACHIEVEMENT('%s').\n", name);
     *(ptr++) = (uint8) SHIMCMD_GETACHIEVEMENT;
     strcpy((char *) ptr, name);
     ptr += strlen(name) + 1;
-    buf[0] = (uint8) ((ptr-1) - buf);
-    writePipe(GPipeWrite, buf, buf[0] + 1);
+    uint16_t length = ((ptr - 1) - buf);
+    uint8* length_bytes = (uint8*)&length;
+    buf[0] = length_bytes[0];
+    buf[1] = length_bytes[1];
+    writePipe(GPipeWrite, buf, length + 2);
 } /* STEAMSHIM_getAchievement */
+
+void STEAMSHIM_uploadWorkshopItem(const item_upload_data& item)
+{
+    if (isDead()) return;
+    dbgpipe("Child sending SHIMCMD_UPLOADWORKSHOP.\n");
+
+    auto data_stream = item.shim_serialize();
+    data_stream = std::ostringstream() << (uint8)SHIMCMD_WORKSHOP_UPLOAD << data_stream.str();
+    
+    std::ostringstream data_stream_shim;
+
+    uint16_t length = data_stream.str().length();
+    data_stream_shim.write(reinterpret_cast<const char*>(&length), sizeof(length));
+    data_stream_shim << data_stream.str();
+
+    auto buffer = data_stream_shim.str();
+    writePipe(GPipeWrite, buffer.data(), buffer.length());
+}
+
+void STEAMSHIM_queryWorkshopItemOwned(const std::string& scenario_name)
+{
+    if (isDead()) return;
+
+    dbgpipe("Child sending SHIMCMD_WORKSHOP_QUERY_ITEM_OWNED.\n");
+
+    std::ostringstream data_stream;
+    data_stream << (uint8)SHIMCMD_WORKSHOP_QUERY_ITEM_OWNED << scenario_name << '\0';
+
+    std::ostringstream data_stream_shim;
+
+    uint16_t length = data_stream.str().length();
+    data_stream_shim.write(reinterpret_cast<const char*>(&length), sizeof(length));
+    data_stream_shim << data_stream.str();
+
+    auto buffer = data_stream_shim.str();
+    writePipe(GPipeWrite, buffer.data(), buffer.length());
+}
+
+void STEAMSHIM_queryWorkshopItemMod(const std::string& scenario_name)
+{
+    if (isDead()) return;
+
+    dbgpipe("Child sending SHIMCMD_WORKSHOP_QUERY_ITEM_MOD.\n");
+
+    std::ostringstream data_stream;
+    data_stream << (uint8)SHIMCMD_WORKSHOP_QUERY_ITEM_MOD << scenario_name << '\0';
+
+    std::ostringstream data_stream_shim;
+
+    uint16_t length = data_stream.str().length();
+    data_stream_shim.write(reinterpret_cast<const char*>(&length), sizeof(length));
+    data_stream_shim << data_stream.str();
+
+    auto buffer = data_stream_shim.str();
+    writePipe(GPipeWrite, buffer.data(), buffer.length());
+}
+
+void STEAMSHIM_queryWorkshopItemScenario()
+{
+    if (isDead()) return;
+    dbgpipe("Child sending SHIMCMD_WORKSHOP_QUERY_ITEM_SCENARIO.\n");
+    write1ByteCmd(SHIMCMD_WORKSHOP_QUERY_ITEM_SCENARIO);
+}
 
 void STEAMSHIM_resetStats(const int bAlsoAchievements)
 {
@@ -403,7 +511,7 @@ void STEAMSHIM_resetStats(const int bAlsoAchievements)
 static void writeStatThing(const ShimCmd cmd, const char *name, const void *val, const size_t vallen)
 {
     uint8 buf[256];
-    uint8 *ptr = buf+1;
+    uint8 *ptr = buf+2;
     if (isDead()) return;
     *(ptr++) = (uint8) cmd;
     if (vallen)
@@ -413,8 +521,11 @@ static void writeStatThing(const ShimCmd cmd, const char *name, const void *val,
     } /* if */
     strcpy((char *) ptr, name);
     ptr += strlen(name) + 1;
-    buf[0] = (uint8) ((ptr-1) - buf);
-    writePipe(GPipeWrite, buf, buf[0] + 1);
+    uint16_t length = ((ptr - 1) - buf);
+    uint8* length_bytes = (uint8*)&length;
+    buf[0] = length_bytes[0];
+    buf[1] = length_bytes[1];
+    writePipe(GPipeWrite, buf, length + 2);
 } /* writeStatThing */
 
 void STEAMSHIM_setStatI(const char *name, const int _val)
@@ -442,5 +553,5 @@ void STEAMSHIM_getStatF(const char *name)
     writeStatThing(SHIMCMD_GETSTATF, name, NULL, 0);
 } /* STEAMSHIM_getStatF */
 
-/* end of steamshim_child.c ... */
+/* end of steamshim_child.cpp ... */
 

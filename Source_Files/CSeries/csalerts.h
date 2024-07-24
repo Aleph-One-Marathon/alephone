@@ -33,7 +33,8 @@
 
 enum {
 	infoError,
-	fatalError
+	fatalError,
+	infoNoError
 };
 
 extern void alert_user(const char *message, short severity = infoError);

@@ -26,7 +26,7 @@ libmisc_a_SOURCES = achievements.h ActionQueues.h alephversion.h binders.h Circu
   Statistics.cpp ScenarioChooser.cpp \
   ProFontAO.h CourierPrime.h CourierPrimeBold.h CourierPrimeItalic.h CourierPrimeBoldItalic.h
 
-EXTRA_libmisc_a_SOURCES = alephone.xpm alephone32.xpm thread_priority_sdl_posix.cpp thread_priority_sdl_dummy.cpp thread_priority_sdl_win32.cpp thread_priority_sdl_macosx.cpp m1_achievements.lua m2_achievements.lua inf_achievements.lua steamshim_child.h steamshim_child.c
+EXTRA_libmisc_a_SOURCES = alephone.xpm alephone32.xpm thread_priority_sdl_posix.cpp thread_priority_sdl_dummy.cpp thread_priority_sdl_win32.cpp thread_priority_sdl_macosx.cpp m1_achievements.lua m2_achievements.lua inf_achievements.lua steamshim_child.h steamshim_child.cpp
 
 AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \

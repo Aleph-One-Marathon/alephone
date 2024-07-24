@@ -3050,6 +3050,12 @@ void reset_progress_bar(void)
 	sProgressDialog->draw();
 }
 
+void progress_dialog_event()
+{
+	assert(sProgressDialog != NULL);
+	sProgressDialog->process_events();
+}
+
 
 #ifdef NETWORK_TEST_POSTGAME_DIALOG
 static const char*    sTestingNames[] = {
