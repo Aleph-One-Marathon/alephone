@@ -58,6 +58,7 @@
 #include "FileHandler.h"
 #include "Plugins.h"
 #include "FilmProfile.h"
+#include "ScenarioChooser.h"
 
 #include "mytm.h"	// mytm_initialize(), for platform-specific shell_*.h
 
@@ -294,6 +295,39 @@ void initialize_application(void)
 		SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
 	}
 
+	const string default_data_env = a1_getenv("ALEPHONE_DEFAULT_DATA");
+#ifndef SCENARIO_IS_BUNDLED
+	// see if there are scenarios to choose from
+	DirectorySpecifier scenario_dir(get_data_path(kPathDefaultData));
+	if (!shell_options.directory.empty())
+	{
+		scenario_dir = shell_options.directory;
+	}
+	else if (!default_data_env.empty())
+	{
+		scenario_dir = default_data_env;
+	}
+
+	ScenarioChooser chooser;
+	chooser.add_scenario(scenario_dir.GetPath());
+
+	if (chooser.num_scenarios() == 0)
+	{
+		chooser.add_directory(scenario_dir.GetPath());
+	}
+	else if (chooser.num_scenarios() == 1)
+	{
+		chooser.add_directory((scenario_dir + "Scenarios").GetPath());
+	}
+
+	if (chooser.num_scenarios() > 1)
+	{
+		auto chosen_path = chooser.run();
+		// ugh
+		shell_options.directory = chosen_path;
+	}
+#endif
+
 	// Find data directories, construct search path
 	InitDefaultStringSets();
 
@@ -320,7 +354,6 @@ void initialize_application(void)
 	size_t dsp_insert_pos = data_search_path.size();
 	size_t dsp_delete_pos = (size_t)-1;
 	
-	const string default_data_env = a1_getenv("ALEPHONE_DEFAULT_DATA");
 	if (shell_options.directory != "")
 	{
 		default_data_dir = shell_options.directory;
