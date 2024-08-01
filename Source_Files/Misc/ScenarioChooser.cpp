@@ -26,7 +26,7 @@ using WindowPtr = std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)>;
 class Scenario
 {
 public:
-	bool operator<(const Scenario& other);
+	bool operator<(const Scenario& other) const;
 	
 	std::string path;
 	
@@ -72,7 +72,7 @@ private:
 	Scenario& scenario_;
 };
 
-bool Scenario::operator<(const Scenario& other)
+bool Scenario::operator<(const Scenario& other) const
 {
 	return std::lexicographical_compare(name.begin(),
 										name.end(),
