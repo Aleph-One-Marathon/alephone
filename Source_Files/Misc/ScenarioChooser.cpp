@@ -311,6 +311,20 @@ void ScenarioChooser::handle_event(SDL_Event& e)
 				case SDLK_LEFT:
 					move_selection(-1, 0);
 					break;
+				case SDLK_PAGEDOWN:
+					scroll_ += window_height_;
+					if (scroll_ > max_scroll_)
+					{
+						scroll_ = max_scroll_;
+					}
+					break;
+				case SDLK_PAGEUP:
+					scroll_ -= window_height_;
+					if (scroll_ < 0)
+					{
+						scroll_ = 0;
+					}
+					break;
 				case SDLK_RETURN:
 					done_ = true;
 					break;
