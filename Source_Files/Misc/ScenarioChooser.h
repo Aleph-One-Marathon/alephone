@@ -48,7 +48,6 @@ public:
 	std::string run();
 
 private:
-	SDL_Window* window_;
 	bool done_;
 
 	int window_width_;
@@ -72,8 +71,8 @@ private:
 	void ensure_selection_visible();
 	void handle_event(SDL_Event& e);
 	void move_selection(int col_delta, int row_delta);
-	void optimize_image(Scenario& scenario);
-	void redraw();
+	void optimize_image(Scenario& scenario, SDL_Window* window);
+	void redraw(SDL_Window* window);
 };
 
 #endif

@@ -21,6 +21,7 @@
 #include "sdl_fonts.h"
 
 using SurfacePtr = std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)>;
+using WindowPtr = std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)>;
 
 class Scenario
 {
@@ -189,19 +190,20 @@ std::string ScenarioChooser::run()
 	window_height_ = mode.h;
 
 	determine_cols_rows();
-	window_ = SDL_CreateWindow("Choose a Scenario",
-							   SDL_WINDOWPOS_CENTERED,
-							   SDL_WINDOWPOS_CENTERED,
-							   window_width_,
-							   window_height_,
-							   SDL_WINDOW_FULLSCREEN_DESKTOP);
+	WindowPtr window(SDL_CreateWindow("Choose a Scenario",
+									  SDL_WINDOWPOS_CENTERED,
+									  SDL_WINDOWPOS_CENTERED,
+									  window_width_,
+									  window_height_,
+									  SDL_WINDOW_FULLSCREEN_DESKTOP),
+					 SDL_DestroyWindow);
 
 	for (auto& scenario : scenarios_)
 	{
-		optimize_image(scenario);
+		optimize_image(scenario, window.get());
 	}
 
-	SDL_ShowWindow(window_);
+	SDL_ShowWindow(window.get());
 
 	done_ = false;
 	while (!done_)
@@ -212,7 +214,7 @@ std::string ScenarioChooser::run()
 			handle_event(e);
 		}
 
-		redraw();
+		redraw(window.get());
 		SDL_Delay(30);
 	}
 
@@ -437,9 +439,9 @@ void ScenarioChooser::move_selection(int col_delta, int row_delta)
 	}
 }
 
-void ScenarioChooser::optimize_image(Scenario& scenario)
+void ScenarioChooser::optimize_image(Scenario& scenario, SDL_Window* window)
 {
-	auto format = SDL_GetWindowSurface(window_)->format;
+	auto format = SDL_GetWindowSurface(window)->format;
 	SurfacePtr optimized(SDL_ConvertSurface(scenario.image.get(), format, 0), SDL_FreeSurface);
 
 	SDL_Rect src_rect{0, 0, optimized->w, optimized->h};
@@ -450,9 +452,9 @@ void ScenarioChooser::optimize_image(Scenario& scenario)
 	SDL_SoftStretchLinear(optimized.get(), &src_rect, scenario.image.get(), &dst_rect);
 }
 
-void ScenarioChooser::redraw()
+void ScenarioChooser::redraw(SDL_Window* window)
 {
-	auto surface = SDL_GetWindowSurface(window_);
+	auto surface = SDL_GetWindowSurface(window);
 
 	SDL_FillRect(surface, nullptr, SDL_MapRGB(surface->format, 23, 23, 23));
 
@@ -481,6 +483,6 @@ void ScenarioChooser::redraw()
 		SDL_BlitSurface(scenarios_[i].image.get(), &src_rect, surface, &dst_rect);
 	}
 	
-	SDL_UpdateWindowSurface(window_);
+	SDL_UpdateWindowSurface(window);
 }
 
