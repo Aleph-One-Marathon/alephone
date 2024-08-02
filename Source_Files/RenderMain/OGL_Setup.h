@@ -166,6 +166,7 @@ enum
 	OGL_Txtr_Landscape,
 	OGL_Txtr_Inhabitant,
 	OGL_Txtr_WeaponsInHand,
+	OGL_Txtr_HUD,
 	OGL_NUMBER_OF_TEXTURE_TYPES
 };
 

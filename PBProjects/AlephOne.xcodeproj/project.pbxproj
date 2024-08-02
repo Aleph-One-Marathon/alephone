@@ -1206,10 +1206,16 @@
 		AE1F1BB92662C6BF00E6390E /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9975052661D66600DDD370 /* Security.framework */; };
 		AE1F1BBA2662C6C000E6390E /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9975052661D66600DDD370 /* Security.framework */; };
 		AE1F1BBB2662C6C000E6390E /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE9975052661D66600DDD370 /* Security.framework */; };
+		AE235A4A2C261FEE0085BF9C /* Pinger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */; };
 		AE23F59A0BDAC23E00C11385 /* ReplacementSounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */; };
 		AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
 		AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
 		AE38D10E0D555A3100FC2082 /* lua_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE38D10C0D555A3100FC2082 /* lua_objects.cpp */; };
+		AE3C01A42C13DB8B002A3EB2 /* Pinger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */; };
+		AE3C01A52C13DB8B002A3EB2 /* Pinger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */; };
+		AE3C01A62C13DB8B002A3EB2 /* Pinger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */; };
+		AE3C01A72C13DB8B002A3EB2 /* Pinger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */; };
+		AE3C01A82C13DB8B002A3EB2 /* Pinger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */; };
 		AE48F3591421900900051D61 /* Statistics.h in Headers */ = {isa = PBXBuildFile; fileRef = AE48F3551421900900051D61 /* Statistics.h */; };
 		AE48F35A1421900900051D61 /* Statistics.h in Headers */ = {isa = PBXBuildFile; fileRef = AE48F3551421900900051D61 /* Statistics.h */; };
 		AE48F35B1421900900051D61 /* Statistics.h in Headers */ = {isa = PBXBuildFile; fileRef = AE48F3551421900900051D61 /* Statistics.h */; };
@@ -1660,7 +1666,7 @@
 		AE7C21D60BFF688000CE63EC /* Update.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21D50BFF688000CE63EC /* Update.cpp */; };
 		AE8729C82BD1FBF700426095 /* steamshim_parent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE120B8F2BC76745001873DD /* steamshim_parent.cpp */; };
 		AE8729C92BD1FBFA00426095 /* libsteam_api.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AE120B942BC77447001873DD /* libsteam_api.dylib */; };
-		AE8729CD2BD1FDAC00426095 /* libsteam_api.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE120B942BC77447001873DD /* libsteam_api.dylib */; };
+		AE8729CD2BD1FDAC00426095 /* libsteam_api.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE120B942BC77447001873DD /* libsteam_api.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		AE92786A2C1CD24B0066A326 /* Marathon 2.icns in Resources */ = {isa = PBXBuildFile; fileRef = AE505D20141D47BF00915344 /* Marathon 2.icns */; };
 		AE96370C2A39578600DE43FF /* lua_music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE96370B2A39578600DE43FF /* lua_music.cpp */; };
 		AE96370D2A39578600DE43FF /* lua_music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE96370B2A39578600DE43FF /* lua_music.cpp */; };
@@ -2909,6 +2915,8 @@
 		AE2FDED109E9352B00A18ABC /* preference_dialogs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = preference_dialogs.h; path = ../Source_Files/Misc/preference_dialogs.h; sourceTree = "<group>"; };
 		AE38D10C0D555A3100FC2082 /* lua_objects.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_objects.cpp; sourceTree = "<group>"; };
 		AE38D10D0D555A3100FC2082 /* lua_objects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_objects.h; sourceTree = "<group>"; };
+		AE3C01A22C13DB7B002A3EB2 /* Pinger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Pinger.h; path = ../Source_Files/Network/Pinger.h; sourceTree = "<group>"; };
+		AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Pinger.cpp; path = ../Source_Files/Network/Pinger.cpp; sourceTree = "<group>"; };
 		AE437C8B08779BC900038E30 /* shared_widgets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = shared_widgets.h; path = ../Source_Files/Misc/shared_widgets.h; sourceTree = SOURCE_ROOT; };
 		AE437C8E08779BE500038E30 /* shared_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = shared_widgets.cpp; path = ../Source_Files/Misc/shared_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE48F3551421900900051D61 /* Statistics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Statistics.h; path = ../Source_Files/Misc/Statistics.h; sourceTree = "<group>"; };
@@ -3910,6 +3918,7 @@
 				EF2EF5C804819BD700A8000D /* network_star_hub.cpp */,
 				EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */,
 				F522138E0136ABAE01000001 /* network_udp.cpp */,
+				AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */,
 				AE72AA8F269A7E7B001F7675 /* PortForward.cpp */,
 				AE7C21D50BFF688000CE63EC /* Update.cpp */,
 			);
@@ -3939,6 +3948,7 @@
 				3DF154D8080376FD00BC3C09 /* network_messages.h */,
 				F5D37B6D022D1C2C01A80001 /* network_private.h */,
 				EF2EF5CA04819BD700A8000D /* network_star.h */,
+				AE3C01A22C13DB7B002A3EB2 /* Pinger.h */,
 				AE72AA94269A7E9F001F7675 /* PortForward.h */,
 			);
 			name = Headers;
@@ -6222,6 +6232,7 @@
 				AE120CE52BC77645001873DD /* QuickSave.cpp in Sources */,
 				AE120CE62BC77645001873DD /* XML_MakeRoot.cpp in Sources */,
 				AE120CE72BC77645001873DD /* sdl_resize.cpp in Sources */,
+				AE3C01A82C13DB8B002A3EB2 /* Pinger.cpp in Sources */,
 				AE120D672BC776CE001873DD /* steamshim_child.c in Sources */,
 				AE120CE82BC77645001873DD /* Packing.cpp in Sources */,
 				AE120CE92BC77645001873DD /* DefaultStringSets.cpp in Sources */,
@@ -6452,6 +6463,7 @@
 				AE13217E2C1CB4D2009D34AA /* QuickSave.cpp in Sources */,
 				AE13217F2C1CB4D2009D34AA /* XML_MakeRoot.cpp in Sources */,
 				AE1321802C1CB4D2009D34AA /* sdl_resize.cpp in Sources */,
+				AE235A4A2C261FEE0085BF9C /* Pinger.cpp in Sources */,
 				AE1321812C1CB4D2009D34AA /* steamshim_child.c in Sources */,
 				AE1321822C1CB4D2009D34AA /* Packing.cpp in Sources */,
 				AE1321832C1CB4D2009D34AA /* DefaultStringSets.cpp in Sources */,
@@ -6711,6 +6723,7 @@
 				AE505C9C141D45E600915344 /* network_capabilities.cpp in Sources */,
 				AE505C9D141D45E600915344 /* shared_widgets.cpp in Sources */,
 				AE505C9E141D45E600915344 /* Console.cpp in Sources */,
+				AE3C01A62C13DB8B002A3EB2 /* Pinger.cpp in Sources */,
 				AE505C9F141D45E600915344 /* ImageLoader_Shared.cpp in Sources */,
 				AE505CA0141D45E600915344 /* OGL_LoadScreen.cpp in Sources */,
 				AE780E172533A4D8002184B5 /* ephemera.cpp in Sources */,
@@ -6948,6 +6961,7 @@
 				AEB4A23D14296CAE00537AE7 /* network_capabilities.cpp in Sources */,
 				AEB4A23E14296CAE00537AE7 /* shared_widgets.cpp in Sources */,
 				AEB4A23F14296CAE00537AE7 /* Console.cpp in Sources */,
+				AE3C01A72C13DB8B002A3EB2 /* Pinger.cpp in Sources */,
 				AEB4A24014296CAE00537AE7 /* ImageLoader_Shared.cpp in Sources */,
 				AEB4A24114296CAE00537AE7 /* OGL_LoadScreen.cpp in Sources */,
 				AE780E182533A4D8002184B5 /* ephemera.cpp in Sources */,
@@ -7177,6 +7191,7 @@
 				AEC3C86A09AD68AC003258E4 /* network_capabilities.cpp in Sources */,
 				AEC3C86B09AD68AC003258E4 /* shared_widgets.cpp in Sources */,
 				AEC3C86C09AD68AC003258E4 /* Console.cpp in Sources */,
+				AE3C01A42C13DB8B002A3EB2 /* Pinger.cpp in Sources */,
 				AEC3C86D09AD68AC003258E4 /* ImageLoader_Shared.cpp in Sources */,
 				AEC3C86E09AD68AC003258E4 /* OGL_LoadScreen.cpp in Sources */,
 				AE780E152533A4D8002184B5 /* ephemera.cpp in Sources */,
@@ -7406,6 +7421,7 @@
 				AEFD874913EB84CF00C1E687 /* network_capabilities.cpp in Sources */,
 				AEFD874A13EB84CF00C1E687 /* shared_widgets.cpp in Sources */,
 				AEFD874B13EB84CF00C1E687 /* Console.cpp in Sources */,
+				AE3C01A52C13DB8B002A3EB2 /* Pinger.cpp in Sources */,
 				AEFD874C13EB84CF00C1E687 /* ImageLoader_Shared.cpp in Sources */,
 				AEFD874D13EB84CF00C1E687 /* OGL_LoadScreen.cpp in Sources */,
 				AE780E162533A4D8002184B5 /* ephemera.cpp in Sources */,
@@ -8030,6 +8046,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = Steamshim.plist;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -8070,6 +8087,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = Steamshim.plist;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;

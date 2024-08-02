@@ -1,6 +1,7 @@
 Debug/
 Release/
 Steam Marathon/
+Standalone Hub/
 .vs/
 *.vcxproj.user
 *.aps

@@ -36,7 +36,7 @@
 const int OGL_Blitter::tile_size;
 std::set<OGL_Blitter*> *OGL_Blitter::m_blitter_registry = NULL;
 
-OGL_Blitter::OGL_Blitter() : m_textures_loaded(false)
+OGL_Blitter::OGL_Blitter(GLuint nearFilter) : m_textures_loaded(false), nearFilter(nearFilter)
 {
 	m_src.x = m_src.y = m_src.w = m_src.h = 0;
 	m_scaled_src.x = m_scaled_src.y = m_scaled_src.w = m_scaled_src.h = 0;
@@ -123,7 +123,7 @@ void OGL_Blitter::_LoadTextures()
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, nearFilter);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_tile_width, m_tile_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->pixels);

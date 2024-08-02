@@ -50,7 +50,7 @@ public:
 	void AddCompatible(const string);
 
 	void SetAllowsClassicGameplay(bool allow) { m_allows_classic_gameplay = allow; }
-	bool AllowsClassicGameplay() { return m_allows_classic_gameplay; }
+	bool AllowsClassicGameplay() const { return m_allows_classic_gameplay; }
 	
 private:
 	Scenario() : m_allows_classic_gameplay{false} { }

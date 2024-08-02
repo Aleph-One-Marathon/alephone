@@ -53,8 +53,6 @@
 using std::min;
 using std::max;
 
-static inline float log2(int x) { return std::log((float) x) / std::log(2.0); }
-
 int ImageDescriptor::GetMipMapSize(int level) const
 {
 
@@ -465,8 +463,8 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 	if (ddsd.ddsCaps.dwCaps1 & DDSCAPS_MIPMAP) {
 		
 		int OriginalMipMapCount = ddsd.dwMipMapCount;
-		
-		int ExpectedMipMapCount = 1 + floor(log2(max(OriginalWidth, OriginalHeight)));
+
+		int ExpectedMipMapCount = 1 + floor(std::log2(max(OriginalWidth, OriginalHeight)));
 		// we don't handle incomplete mip map chains
 		// if we're only missing one, that's OK; XBLA textures do that
 		if (!(OriginalMipMapCount == ExpectedMipMapCount || OriginalMipMapCount == (ExpectedMipMapCount - 1))) {
@@ -476,7 +474,7 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 
 		// hehe, resizing to the next power of two could have
 		// introduced another mipmap
-		MipMapCount = static_cast<int>(1 + floor(log2(max(Width, Height))));
+		MipMapCount = static_cast<int>(1 + floor(std::log2(max(Width, Height))));
 		
 		int skip  = 0;
 		if (maxSize) {

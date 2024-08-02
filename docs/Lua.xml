@@ -135,13 +135,13 @@
   <triggers id="triggers">
     <description>These are functions scripts can define which Aleph One will call at specific times or events. For example, to regenerate health:
 	<span class="pre">Triggers = {}
-	function Triggers.idle()
-	for p in Players() do 
+function Triggers.idle()
+  for p in Players() do 
     if p.life &lt; 150 and not p.dead then 
-    p.life = p.life + 1
+      p.life = p.life + 1
     end
-	end
-	end
+  end
+end
 	</span>
 	Calling Triggers = {} at the beginning of the script removes the compatibility triggers installed for old Lua scripts, speeding up execution of new scripts.
 	</description>
@@ -341,6 +341,14 @@
 	  <argument name="t" version="20210408"><type>variant</type></argument>
 	  <note>t can be a side, polygon_floor, polygon_ceiling, monster, scenery, polygon; see Polygon:check_collision for info on how to decode. It can also be nil, in the rare case a projectile detonates without hitting something</note>
     </function>
+	<function name="calculate_level_completion_state" version="20240712">
+	  <description>replaces the classic completion state calculation</description>
+	  <return><type>CompletionState</type></return>
+	</function>
+	<function name="monster_kamikazed" version="20240712">
+	  <description>whenever a monster kamikazes</description>
+	  <argument name="monster"><type>monster</type></argument>
+	</function>
   </triggers>
   <section id="using_tables" name="Using Tables">
     <description><p>There are numerous tables (technically, userdata) defined in Aleph One which scripts can use to access objects in the game. A complete list is below.</p>
@@ -602,11 +610,11 @@
 		<argument name="z"><type>WU</type></argument>
 		<argument name="polygon"><type>polygon</type></argument>
       </function>
-	  <function name="teleport_in" version="git">
+	  <function name="teleport_in" version="20240712">
 		<description>teleports item in</description>
 		<note>can fail silently if there are not enough effects slots</note>
 	  </function>
-	  <function name="teleport_out" version="git">
+	  <function name="teleport_out" version="20240712">
 		<description>teleports item out</description>
 		<note>can fail silently if there are not enough effects slots</note>
 	  </function>
@@ -614,7 +622,7 @@
 		<description>type of item</description>
 		<type>item_type</type>
       </variable>
-      <variable name="visible" version="git">
+      <variable name="visible" version="20240712">
     <type>boolean</type>
       </variable>
       <variable name="x" access="read-only">
@@ -664,6 +672,7 @@
       <function name="calculate_completion_state" version="20081213">
 		<description>returns whether level is finished, unfinished, or failed</description>
 		<return><type>completion_state</type></return>
+		<note>does not call the trigger, so it can be used in the trigger</note>
       </function>
       <variable name="completed" access="read-only" version="20111201">
 		<description>check this in Triggers.cleanup() to determine whether the player(s) teleported out</description>
@@ -2014,11 +2023,11 @@
 		<description>whether this scenery is solid</description>
 		<type>boolean</type>
       </variable>
-	  <function name="teleport_in" version="git">
+	  <function name="teleport_in" version="20240712">
 		<description>teleports scenery in</description>
 		<note>can fail silently if there are not enough effects slots</note>
 	  </function>
-	  <function name="teleport_out" version="git">
+	  <function name="teleport_out" version="20240712">
 		<description>teleports scenery out</description>
 		<note>can fail silently if there are not enough effects slots</note>
 	  </function>
@@ -2026,7 +2035,7 @@
 		<description>type of scenery</description>
 		<type>scenery_type</type>
       </variable>
-	  <variable name="visible" version="git">
+	  <variable name="visible" version="20240712">
 		<description>whether this scenery is visible</description>
 		<type>boolean</type>
 	  </variable>

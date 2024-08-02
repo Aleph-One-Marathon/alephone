@@ -97,11 +97,13 @@ struct LandscapeOptions
 	// This is the azimuth or yaw (full circle = 512);
 	// the texture is shifted leftward, relative to view direction, by this amount.
 	angle Azimuth;
+
+	bool SphereMap; // currently ignores all scaling and repeat settings
 	
 	// Constructor: sets everything to defaults appropriate for standard textures
 	// Same scale for horizontal and vertical, 2^1 = 2 repeats,
 	// OpenGL hight is half width, and the azimuth is zero
-	LandscapeOptions(): HorizExp(1), VertExp(1), OGL_AspRatExp(0), VertRepeat(false), Azimuth(0) {}
+	LandscapeOptions(): HorizExp(1), VertExp(1), OGL_AspRatExp(0), VertRepeat(false), Azimuth(0), SphereMap{false} {}
 };
 
 LandscapeOptions *View_GetLandscapeOptions(shape_descriptor Desc);

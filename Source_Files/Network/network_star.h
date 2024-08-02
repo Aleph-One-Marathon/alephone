@@ -67,9 +67,10 @@ typedef WritableTickBasedCircularQueue<action_flags_t> WritableTickBasedActionQu
 
 class InfoTree;
 
-extern void hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* const* inPlayerAddresses, size_t inLocalPlayerIndex);
+extern void hub_initialize(int32 inStartingTick, int inNumPlayers, const NetAddrBlock* const* inPlayerAddresses, int inLocalPlayerIndex);
 extern void hub_cleanup(bool inGraceful, int32 inSmallestPostGameTick);
 extern void hub_received_network_packet(DDPPacketBufferPtr inPacket);
+extern bool hub_is_active();
 extern void DefaultHubPreferences();
 extern InfoTree HubPreferencesTree();
 extern void HubParsePreferencesTree(InfoTree prefs, std::string version);

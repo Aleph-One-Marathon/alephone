@@ -1114,7 +1114,8 @@ void changed_polygon(short original_polygon_index, short new_polygon_index, shor
 short calculate_damage(struct damage_definition *damage);
 void cause_polygon_damage(short polygon_index, short monster_index);
 
-short calculate_level_completion_state(void);
+short calculate_level_completion_state();
+short calculate_classic_level_completion_state(void);
 
 /* ---------- prototypes/MAP.C */
 

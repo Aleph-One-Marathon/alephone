@@ -49,6 +49,8 @@ LUA_HUD_OBJECTS.CPP
 #include "collection_definition.h"
 #include "FileHandler.h"
 #include "Crosshairs.h"
+#include "OGL_Textures.h"
+#include "OGL_Setup.h"
 
 #include <algorithm>
 #include <cmath>
@@ -408,12 +410,15 @@ int Lua_Images_New(lua_State *L)
     {
         int resource_id = lua_tointeger(L, -1);
 
-        // blitter from image
-#ifdef HAVE_OPENGL	
-        Image_Blitter *blitter = (get_screen_mode()->acceleration != _no_acceleration) ? new OGL_Blitter() : new Image_Blitter();
+		// blitter from image
+#ifdef HAVE_OPENGL
+		Image_Blitter *blitter = (get_screen_mode()->acceleration != _no_acceleration)
+			? new OGL_Blitter()
+			: new Image_Blitter();
 #else
-        Image_Blitter *blitter = new Image_Blitter();
+		Image_Blitter *blitter = new Image_Blitter();
 #endif
+
         if (!blitter->Load(resource_id))
         {
             lua_pushnil(L);
@@ -501,11 +506,13 @@ int Lua_Images_New(lua_State *L)
 	}
 	
 	// blitter from image
-#ifdef HAVE_OPENGL	
-        Image_Blitter *blitter = (get_screen_mode()->acceleration != _no_acceleration) ? new OGL_Blitter() : new Image_Blitter();
+#ifdef HAVE_OPENGL
+	Image_Blitter *blitter = (get_screen_mode()->acceleration != _no_acceleration)
+		? new OGL_Blitter()
+		: new Image_Blitter();
 #else
-        Image_Blitter *blitter = new Image_Blitter();
-#endif	
+	Image_Blitter *blitter = new Image_Blitter();
+#endif
 	if (!blitter->Load(image))
 	{
 		lua_pushnil(L);
@@ -963,8 +970,10 @@ int Lua_Fonts_New(lua_State *L)
 	FontSpecifier *ff = new FontSpecifier(f);
 	ff->Init();
 #ifdef HAVE_OPENGL	
-	if (alephone::Screen::instance()->openGL())
+	if (alephone::Screen::instance()->openGL()) {
+		ff->NearFilter = TxtrTypeInfoList[OGL_Txtr_HUD].NearFilter;
 		ff->OGL_Reset(true);
+	}
 #endif	
 	if (ff->LineSpacing <= 0)
 	{
@@ -2886,6 +2895,13 @@ static int Lua_HUDGame_Get_Ticks(lua_State *L)
 	return 1;
 }
 
+extern float last_heartbeat_fraction;
+static int Lua_HUDGame_Get_Interpolated_Ticks(lua_State *L)
+{
+	lua_pushnumber(L, last_heartbeat_fraction + static_cast<float>(dynamic_world->tick_count));
+	return 1;
+}
+
 static int Lua_HUDGame_Get_Type(lua_State *L)
 {
 	Lua_GameType::Push(L, GET_GAME_TYPE());
@@ -2914,6 +2930,7 @@ const luaL_Reg Lua_HUDGame_Get[] = {
 {"time_remaining", Lua_HUDGame_Get_Time_Remaining},
 {"scoring_mode", Lua_HUDGame_Get_Scoring_Mode},
 {"ticks", Lua_HUDGame_Get_Ticks},
+{"interpolated_ticks", Lua_HUDGame_Get_Interpolated_Ticks},
 {"type", Lua_HUDGame_Get_Type},
 {"version", Lua_HUDGame_Get_Version},
 {"players", Lua_HUDGame_Get_Players},

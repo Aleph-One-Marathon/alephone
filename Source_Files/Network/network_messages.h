@@ -52,7 +52,11 @@ enum {
   kZIPPED_PHYSICS_MESSAGE,
   kZIPPED_LUA_MESSAGE,
   kNETWORK_STATS_MESSAGE,
-  kGAME_SESSION_MESSAGE
+  kGAME_SESSION_MESSAGE,
+  kREMOTE_HUB_COMMAND_MESSAGE,
+  kREMOTE_HUB_READY_MESSAGE,
+  kREMOTE_HUB_RESPONSE_MESSAGE,
+  kREMOTE_HUB_REQUEST_MESSAGE,
 };
 
 template <MessageTypeID tMessageType, typename tValueType>
@@ -88,7 +92,7 @@ class AcceptJoinMessage : public SmallMessageHelper
     return new AcceptJoinMessage(*this);
   }
 
-  bool accepted() { return mAccepted; }
+  bool accepted() const { return mAccepted; }
   void accepted(bool isAccepted) { mAccepted = isAccepted; }
   NetPlayer *player() { return &mPlayer; }
   void player(const NetPlayer *thePlayer) { mPlayer = *thePlayer; }
@@ -192,6 +196,19 @@ private:
 	int16 mAction = kAdd;
 	int16 mStreamID = 0;
 };
+
+class RemoteHubReadyMessage : public SmallMessageHelper
+{
+public:
+	enum { kType = kREMOTE_HUB_READY_MESSAGE };
+	RemoteHubReadyMessage() : SmallMessageHelper() { }
+	RemoteHubReadyMessage* clone() const { return new RemoteHubReadyMessage(*this); }
+	MessageTypeID type() const { return kType; }
+
+protected:
+	void reallyDeflateTo(AOStream& outputStream) const {}
+	bool reallyInflateFrom(AIStream& inputStream) { return true; }
+};
   
 
 typedef DatalessMessage<kEND_GAME_DATA_MESSAGE> EndGameDataMessage;
@@ -222,6 +239,36 @@ protected:
 private:
   
   std::string mVersion;
+};
+
+class RemoteHubHostResponseMessage : public SmallMessageHelper
+{
+public:
+	enum { kType = kREMOTE_HUB_RESPONSE_MESSAGE };
+	RemoteHubHostResponseMessage() { }
+	RemoteHubHostResponseMessage(bool isAccepted) : mAccepted(isAccepted) { }
+	RemoteHubHostResponseMessage* clone() const { return new RemoteHubHostResponseMessage(*this); }
+	MessageTypeID type() const { return kType; }
+
+	bool accepted() const { return mAccepted; }
+	void accepted(bool accepted) { mAccepted = accepted; }
+
+private:
+	bool mAccepted = false;
+
+protected:
+	void reallyDeflateTo(AOStream& outputStream) const;
+	bool reallyInflateFrom(AIStream& inputStream);
+};
+
+class RemoteHubHostConnectMessage : public HelloMessage
+{
+public:
+	enum { kType = kREMOTE_HUB_REQUEST_MESSAGE };
+	RemoteHubHostConnectMessage() { }
+	RemoteHubHostConnectMessage(const std::string& version) : HelloMessage(version) { }
+	RemoteHubHostConnectMessage* clone() const { return new RemoteHubHostConnectMessage(*this); }
+	MessageTypeID type() const { return kType; }
 };
 
 typedef TemplatizedSimpleMessage<kJOIN_PLAYER_MESSAGE, int16> JoinPlayerMessage;
@@ -426,8 +473,39 @@ class TopologyMessage : public SmallMessageHelper
   NetTopology mTopology = {};
 };
 
+class RemoteHubCommandMessage : public SmallMessageHelper
+{
+public:
+	enum { kType = kREMOTE_HUB_COMMAND_MESSAGE };
+
+	RemoteHubCommandMessage() : SmallMessageHelper() {}
+
+	//data is either streamId for accept command or tick_count for end game command
+	RemoteHubCommandMessage(RemoteHubCommand command, int data = NONE) : SmallMessageHelper() {
+		mCommand = command;
+		mData = data;
+	}
+
+	RemoteHubCommandMessage* clone() const {
+		return new RemoteHubCommandMessage(*this);
+	}
+
+	RemoteHubCommand command() const { return mCommand; }
+	int data() const { return mData; }
+
+	MessageTypeID type() const { return kType; }
+
+protected:
+	void reallyDeflateTo(AOStream& outputStream) const;
+	bool reallyInflateFrom(AIStream& inputStream);
+
+private:
+	RemoteHubCommand mCommand;
+	int mData = NONE;
+};
+
 struct Client {
-	Client(CommunicationsChannel *);
+	Client(std::shared_ptr<CommunicationsChannel>);
 	enum {
 		_connecting,
 		_connected_but_not_yet_shown,
@@ -441,15 +519,13 @@ struct Client {
 		_disconnect
 	};
 
-	CommunicationsChannel *channel;
+	std::shared_ptr<CommunicationsChannel> channel;
 	short state;
 	uint16 network_version;
 	Capabilities capabilities;
 	char name[MAX_NET_PLAYER_NAME_LENGTH];
 
 	static CheckPlayerProcPtr check_player;
-
-	~Client();
 
 	void drop();
 
@@ -465,11 +541,15 @@ struct Client {
 	void handleCapabilitiesMessage(CapabilitiesMessage*,CommunicationsChannel*);
 	void handleAcceptJoinMessage(AcceptJoinMessage*, CommunicationsChannel*);
 	void handleChatMessage(NetworkChatMessage*, CommunicationsChannel*);
+	void handleRemoteHubCommandMessage(RemoteHubCommandMessage*, CommunicationsChannel*);
+	void handleRemoteHubHostConnectMessage(RemoteHubHostConnectMessage*, CommunicationsChannel*);
 	void handleChangeColorsMessage(ChangeColorsMessage*, CommunicationsChannel*);
 
 	std::unique_ptr<MessageDispatcher> mDispatcher;
 	std::unique_ptr<MessageHandler> mJoinerInfoMessageHandler;
 	std::unique_ptr<MessageHandler> mUnexpectedMessageHandler;
+	std::unique_ptr<MessageHandler> mRemoteHubCommandMessageHandler;
+	std::unique_ptr<MessageHandler> mRemoteHubHostRequestMessageHandler;
 	std::unique_ptr<MessageHandler> mCapabilitiesMessageHandler;
 	std::unique_ptr<MessageHandler> mAcceptJoinMessageHandler;
 	std::unique_ptr<MessageHandler> mChatMessageHandler;

@@ -75,14 +75,12 @@ Apr 10, 2003 (Woody Zenfell):
 #include	"network.h"
 #include	"network_dialogs.h"
 #include	"network_games.h"
-#include	"player.h" // ZZZ: for MAXIMUM_NUMBER_OF_PLAYERS, for reassign_player_colors
 #include	"metaserver_dialogs.h" // GameAvailableMetaserverAnnouncer
 #include	"wad.h" // jkvw: for read_wad_file_checksum 
 #include "game_wad.h" // get_map_file
-
 #include <map>
 #include <functional>
-
+#include "network_messages.h"
 // For LAN netgame location services
 #include	<sstream>
 #include	"network_private.h" // actually just need "network_dialogs_private.h"
@@ -96,7 +94,6 @@ Apr 10, 2003 (Woody Zenfell):
 #include "screen.h"
 #include "SoundManager.h"
 #include "progress.h"
-
 
 extern void NetRetargetJoinAttempts(const IPaddress* inAddress);
 
@@ -184,8 +181,61 @@ JoinerSeekingGathererAnnouncer::lost_gatherer_callback(const SSLP_ServiceInstanc
  *	Shared Network Gather Dialog Code
  *
  ****************************************************/
+extern int32& hub_get_minimum_send_period();
 
-bool network_gather(bool inResumingGame)
+static uint16 network_gather_remote_hub()
+{
+	uint16 remote_hub_id = 0;
+	open_progress_dialog(_connecting_to_remote_hub);
+
+	const auto& remote_hubs = gMetaserverClient->get_remoteHubServers();
+	std::unordered_map<uint16_t, RemoteHubServerDescription> remote_hubs_pings;
+
+	NetCreatePinger();
+
+	if (auto pinger = NetGetPinger().lock()) //there is a problem if it fails
+	{
+		for (const auto& remote_hub : remote_hubs)
+		{
+			auto identifier = pinger->Register(remote_hub.address());
+			remote_hubs_pings.insert({ identifier, remote_hub });
+		}
+
+		pinger->Ping(2);
+		auto latency_remote_hubs = pinger->GetResponseTime(2000);
+
+		std::multimap<uint16_t, RemoteHubServerDescription> ordered_remote_hubs;
+		for (const auto& [identifier, response_time] : latency_remote_hubs)
+		{
+			ordered_remote_hubs.insert({ response_time, remote_hubs_pings[identifier] });
+		}
+
+		for (const auto& remote_hub_latency : ordered_remote_hubs)
+		{
+			const auto& remote_hub = remote_hub_latency.second;
+			const auto latency = remote_hub_latency.first;
+
+			if (hub_get_minimum_send_period() && latency > hub_get_minimum_send_period() * 33) continue;
+
+			if (NetConnectRemoteHub(remote_hub.address()))
+			{
+				remote_hub_id = remote_hub.id();
+				break;
+			}
+		}
+	}
+
+	if (!remote_hub_id)
+	{
+		alert_user(infoError, strNETWORK_ERRORS, netWarnRemoteHubServerNotAvailable, -1);
+	}
+
+	NetRemovePinger();
+	close_progress_dialog();
+	return remote_hub_id;
+}
+
+bool network_gather(bool inResumingGame, bool& outUseRemoteHub)
 {
 	bool successful= false;
 	game_info myGameInfo;
@@ -194,28 +244,31 @@ bool network_gather(bool inResumingGame)
 	bool outUpnpPortForward = false;
 
 	show_cursor(); // JTP: Hidden one way or another
-	if (network_game_setup(&myPlayerInfo, &myGameInfo, inResumingGame, advertiseOnMetaserver, outUpnpPortForward))
+	if (network_game_setup(&myPlayerInfo, &myGameInfo, inResumingGame, advertiseOnMetaserver, outUpnpPortForward, outUseRemoteHub))
 	{
 		myPlayerInfo.desired_color= myPlayerInfo.color;
 		memset(myPlayerInfo.long_serial_number, 0, LONG_SERIAL_NUMBER_LENGTH);
-		
 		std::unique_ptr<GameAvailableMetaserverAnnouncer> metaserverAnnouncer;
-		if(NetEnter())
+
+		if (NetEnter(outUseRemoteHub))
 		{
-			bool gather_dialog_result;
-		
-			if(NetGather(&myGameInfo, sizeof(game_info), (void*) &myPlayerInfo, 
+			bool gather_success = true;
+
+			if (NetGather(&myGameInfo, sizeof(game_info), (void*)&myPlayerInfo,
 				sizeof(myPlayerInfo), inResumingGame, outUpnpPortForward))
 			{
 				GathererAvailableAnnouncer announcer;
-				
-				if (!gMetaserverClient) gMetaserverClient = new MetaserverClient ();
 
-				if(advertiseOnMetaserver)
+				if (!gMetaserverClient) gMetaserverClient = new MetaserverClient();
+
+				if (advertiseOnMetaserver)
 				{
 					try
 					{
-						metaserverAnnouncer.reset(new GameAvailableMetaserverAnnouncer(myGameInfo));
+						setupAndConnectClient(*gMetaserverClient, outUseRemoteHub);
+						uint16 remote_hub_id = outUseRemoteHub ? network_gather_remote_hub() : 0;
+						gather_success = !outUseRemoteHub || remote_hub_id;
+						if (gather_success) metaserverAnnouncer.reset(new GameAvailableMetaserverAnnouncer(myGameInfo, remote_hub_id));
 					}
 					catch (const MetaserverClient::LoginDeniedException& e)
 					{
@@ -245,38 +298,42 @@ bool network_gather(bool inResumingGame)
 							sprintf(message, "There was a problem connecting to the server that tracks Internet games (%s). Please try again later.", e.what());
 						}
 
+						gather_success = false;
 						alert_user(message, 0);
 					}
 					catch (const MetaserverClient::ServerConnectException&)
 					{
+						gather_success = false;
 						alert_user(infoError, strNETWORK_ERRORS, netWarnCouldNotAdvertiseOnMetaserver, 0);
 					}
 				}
 
-				gather_dialog_result = GatherDialog::Create()->GatherNetworkGameByRunning();
-				
-			} else {
-				gather_dialog_result = false;
+				gather_success = gather_success && (!outUseRemoteHub || NetGameJoin(&myPlayerInfo, sizeof(myPlayerInfo), nullptr)) && GatherDialog::Create(outUseRemoteHub)->GatherNetworkGameByRunning();
+
 			}
-			
-			if (gather_dialog_result) {
+			else {
+				gather_success = false;
+			}
+
+			if (gather_success) {
 				NetDoneGathering();
-				if (advertiseOnMetaserver) 
+				if (advertiseOnMetaserver)
 				{
 					metaserverAnnouncer->Start(myGameInfo.time_limit);
 					gMetaserverClient->setMode(1, NetSessionIdentifier());
 					gMetaserverClient->pump();
 				}
-				successful= true;
+				successful = true;
 			}
 			else
 			{
 				delete gMetaserverClient;
 				gMetaserverClient = new MetaserverClient();
-				NetCancelGather();
+				if (!outUseRemoteHub) NetCancelGather();
 				NetExit();
 			}
-		} else {
+		}
+		else {
 			/* error correction handled in the network code now.. */
 		}
 	}
@@ -284,8 +341,6 @@ bool network_gather(bool inResumingGame)
 	hide_cursor();
 	return successful;
 }
-
-GatherDialog::GatherDialog() {  }
 
 GatherDialog::~GatherDialog()
 {
@@ -352,18 +407,41 @@ bool GatherDialog::GatherNetworkGameByRunning ()
 void GatherDialog::idle ()
 {
 	MetaserverClient::pumpAll();
-	
-	prospective_joiner_info info;
-	if (player_search(info)) {
-		m_ungathered_players[info.stream_id] = info;
-		update_ungathered_widget ();
+
+	if (remote_hub_mode)
+	{
+		switch (NetUpdateJoinState())
+		{
+			case netPlayerDropped:
+			case netPlayerChanged:
+				m_pigWidget->redraw();
+				break;
+
+			case netStartingUp:
+			case netStartingResumeGame:
+				Stop(true);
+				return;
+			
+			case netCancelled:
+			case netJoinErrorOccurred:
+				Stop(false);
+				return;
+		}
 	}
-	
-	if (m_autogatherWidget->get_value ()) {
+	else
+	{
+		prospective_joiner_info info;
+		if (player_search(info)) {
+			m_ungathered_players[info.stream_id] = info;
+			update_ungathered_widget();
+		}
+	}
+
+	if (m_autogatherWidget->get_value()) {
 		std::map<int, prospective_joiner_info>::iterator it;
-		it = m_ungathered_players.begin ();
-		while (it != m_ungathered_players.end () && NetGetNumberOfPlayers() < MAXIMUM_NUMBER_OF_PLAYERS) {
-			gathered_player ((it++)->second);
+		it = m_ungathered_players.begin();
+		while (it != m_ungathered_players.end() && NetGetNumberOfPlayers() < MAXIMUM_NUMBER_OF_PLAYERS) {
+			gathered_player((it++)->second);
 		}
 	}
 }
@@ -392,23 +470,52 @@ bool GatherDialog::player_search (prospective_joiner_info& player)
 
 bool GatherDialog::gathered_player (const prospective_joiner_info& player)
 {
-	if (NetGetNumberOfPlayers() >= MAXIMUM_NUMBER_OF_PLAYERS) return false;
-	int theGatherPlayerResult = NetGatherPlayer(player, reassign_player_colors);
-	
-	if (theGatherPlayerResult != kGatherPlayerFailed) {
-		m_ungathered_players.erase (m_ungathered_players.find (player.stream_id));
-		update_ungathered_widget ();
+	if (remote_hub_mode) {
+
+		NetRemoteHubSendCommand(RemoteHubCommand::kAcceptJoiner_Command, player.stream_id);
+		auto it = m_ungathered_players.find(player.stream_id);
+
+		if (it != m_ungathered_players.end())
+		{
+			m_ungathered_players.erase(m_ungathered_players.find(player.stream_id));
+			update_ungathered_widget();
+		}
+
 		return true;
-	} else
-		return false;
+	}
+	else
+	{
+		if (NetGetNumberOfPlayers() >= MAXIMUM_NUMBER_OF_PLAYERS) return false;
+		int theGatherPlayerResult = NetGatherPlayer(player, reassign_player_colors);
+
+		if (theGatherPlayerResult != kGatherPlayerFailed) {
+			m_ungathered_players.erase(m_ungathered_players.find(player.stream_id));
+			update_ungathered_widget();
+			return true;
+		}
+		else
+			return false;
+	}
 }
 
 void GatherDialog::StartGameHit ()
 {
-	for (std::map<int, prospective_joiner_info>::iterator it = m_ungathered_players.begin (); it != m_ungathered_players.end (); ++it)
-		NetHandleUngatheredPlayer ((*it).second);
-	
-	Stop (true);
+	if (!remote_hub_mode) {
+		for (std::map<int, prospective_joiner_info>::iterator it = m_ungathered_players.begin(); it != m_ungathered_players.end(); ++it)
+			NetHandleUngatheredPlayer((*it).second);
+
+		Stop(true);
+	}
+	else
+	{
+		NetRemoteHubSendCommand(RemoteHubCommand::kStartGame_Command);
+	}
+}
+
+void GatherDialog::JoiningPlayerArrived(const prospective_joiner_info* player)
+{
+	m_ungathered_players[player->stream_id] = *player;
+	update_ungathered_widget();
 }
 
 void GatherDialog::JoinSucceeded(const prospective_joiner_info* player)
@@ -417,33 +524,28 @@ void GatherDialog::JoinSucceeded(const prospective_joiner_info* player)
 		m_startWidget->activate ();
 	
 	m_pigWidget->redraw ();
-
-	if (gMetaserverClient->isConnected())
-	{
-		gMetaserverClient->announcePlayersInGame(NetGetNumberOfPlayers());
-	}
 }
 
-void GatherDialog::JoiningPlayerDropped(const prospective_joiner_info* player)
+bool GatherDialog::JoiningPlayerDropped(const prospective_joiner_info* player)
 {
+	bool found = false;
 	std::map<int, prospective_joiner_info>::iterator it = m_ungathered_players.find (player->stream_id);
-	if (it != m_ungathered_players.end ())
-		m_ungathered_players.erase (it);
+	if (it != m_ungathered_players.end()) {
+		m_ungathered_players.erase(it);
+		found = true;
+	}
 	
 	update_ungathered_widget ();
+	return found;
 }
 
-void GatherDialog::JoinedPlayerDropped(const prospective_joiner_info* player)
+bool GatherDialog::JoinedPlayerDropped(const prospective_joiner_info* player)
 {
 	if (NetGetNumberOfPlayers () < 2)
 		m_startWidget->deactivate ();
 
 	m_pigWidget->redraw ();
-
-	if (gMetaserverClient->isConnected())
-	{
-		gMetaserverClient->announcePlayersInGame(NetGetNumberOfPlayers());
-	}
+	return true;
 }
 
 void GatherDialog::JoinedPlayerChanged(const prospective_joiner_info* player)
@@ -502,7 +604,7 @@ int network_join(void)
 	show_cursor(); // Hidden one way or another
 	
 	/* If we can enter the network... */
-	if(NetEnter())
+	if(NetEnter(false))
 	{
 
 		join_dialog_result = JoinDialog::Create()->JoinNetworkGameByRunning();
@@ -856,9 +958,10 @@ bool network_game_setup(
 	game_info *game_information,
 	bool ResumingGame,
 	bool& outAdvertiseGameOnMetaserver,
-	bool& outUpnpPortForward)
+	bool& outUpnpPortForward,
+	bool& outUseRemoteHub)
 {
-	if (SetupNetgameDialog::Create ()->SetupNetworkGameByRunning (player_information, game_information, ResumingGame, outAdvertiseGameOnMetaserver, outUpnpPortForward)) {
+	if (SetupNetgameDialog::Create ()->SetupNetworkGameByRunning (player_information, game_information, ResumingGame, outAdvertiseGameOnMetaserver, outUpnpPortForward, outUseRemoteHub)) {
 		write_preferences ();
 		return true;
 	} else {
@@ -1037,16 +1140,16 @@ SetupNetgameDialog::~SetupNetgameDialog ()
 	delete m_carnageMessagesWidget;
 	
 	delete m_useUpnpWidget;
+	delete m_useRemoteHub;
 }
-
-extern int32& hub_get_minimum_send_period();
 
 bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	player_info *player_information,
 	game_info *game_information,
 	bool resuming_game,
 	bool& outAdvertiseGameOnMetaserver,
-	bool& outUpnpPortForward)
+	bool& outUpnpPortForward,
+	bool& outUseRemoteHub)
 {
 	int32 entry_flags;
 
@@ -1152,7 +1255,8 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	binders.insert<bool> (m_penalizeDeathWidget, &penalizeDeathPref);
 	BitPref penalizeSuicidePref (active_network_preferences->game_options, _suicide_is_penalized);
 	binders.insert<bool> (m_penalizeSuicideWidget, &penalizeSuicidePref);
-				
+	
+	active_network_preferences->advertise_on_metaserver |= active_network_preferences->use_remote_hub;
 	BoolPref useMetaserverPref (active_network_preferences->advertise_on_metaserver);
 	binders.insert<bool> (m_useMetaserverWidget, &useMetaserverPref);
 	
@@ -1179,7 +1283,11 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	FilePref scriptPref (active_network_preferences->netscript_file);
 	binders.insert<FileSpecifier> (m_scriptWidget, &scriptPref);
 
+	BoolPref useRemoteHubPref(active_network_preferences->use_remote_hub);
+	binders.insert<bool>(m_useRemoteHub, &useRemoteHubPref);
+
 #ifdef HAVE_MINIUPNPC
+	active_network_preferences->attempt_upnp &= !active_network_preferences->use_remote_hub;
 	BoolPref useUpnpPref (active_network_preferences->attempt_upnp);
 	binders.insert<bool> (m_useUpnpWidget, &useUpnpPref);
 #endif
@@ -1218,7 +1326,6 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 		player_information->color = player_preferences->color;
 		player_information->team = player_preferences->team;
 
-		game_information->server_is_playing = true;
 		game_information->net_game_type = active_network_preferences->game_type;
 		
 		game_information->game_options = active_network_preferences->game_options;
@@ -1246,7 +1353,6 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 		strncpy (game_information->level_name, entry.level_name, MAX_LEVEL_NAME_LENGTH+1);
 		game_information->parent_checksum = read_wad_file_checksum(get_map_file());
 		game_information->difficulty_level = active_network_preferences->difficulty_level;
-		game_information->allow_mic = false;
 
 		int updates_per_packet = 1;
 		int update_latency = 0;
@@ -1297,6 +1403,7 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 
 		outAdvertiseGameOnMetaserver = active_network_preferences->advertise_on_metaserver;
 		outUpnpPortForward = active_network_preferences->attempt_upnp;
+		outUseRemoteHub = active_network_preferences->use_remote_hub;
 
 		//if(shouldUseNetscript)
 		//{
@@ -1524,120 +1631,6 @@ int level_index_to_menu_index (int level_index, int32 entry_flags)
 	
 	return 0;
 }
-
-/*************************************************************************************************
- *
- * Function: reassign_player_colors
- * Purpose:  This function used to reassign a player's color if it conflicted with another
- *           player's color. Now it reassigns everyone's colors. for the old function, see the
- *           obsoleted version (called check_player_info) at the end of this file.
- *           (Woody note: check_player_info can be found in network_dialogs_macintosh.cpp.)
- *
- *************************************************************************************************/
-/* Note that we now only force unique colors across teams. */
-
-// ZZZ: moved here (from network_dialogs_macintosh.cpp) so it can be shared with SDL version
-
-void reassign_player_colors(
-	short player_index,
-	short num_players)
-{
-	short actual_colors[MAXIMUM_NUMBER_OF_PLAYERS];  // indexed by player
-	bool colors_taken[NUMBER_OF_TEAM_COLORS];   // as opposed to desired team. indexed by team
-	game_info *game;
-	
-	(void)(player_index);
-
-	assert(num_players<=MAXIMUM_NUMBER_OF_PLAYERS);
-	game= (game_info *)NetGetGameData();
-
-	objlist_set(colors_taken, false, NUMBER_OF_TEAM_COLORS);
-	objlist_set(actual_colors, NONE, MAXIMUM_NUMBER_OF_PLAYERS);
-
-	if(game->game_options & _force_unique_teams)
-	{
-		short index;
-		
-		for(index= 0; index<num_players; ++index)
-		{
-			player_info *player= (player_info *)NetGetPlayerData(index);
-			if(!colors_taken[player->desired_color])
-			{
-				player->color= player->desired_color;
-				player->team= player->color;
-				colors_taken[player->color]= true;
-				actual_colors[index]= player->color;
-			}
-		}
-		
-		/* Now give them a random color.. */
-		for (index= 0; index<num_players; index++)
-		{
-			player_info *player= (player_info *)NetGetPlayerData(index);
-
-			if (actual_colors[index]==NONE) // This player needs a team
-			{
-				short remap_index;
-				
-				for (remap_index= 0; remap_index<num_players; remap_index++)
-				{
-					if (!colors_taken[remap_index])
-					{
-						player->color= remap_index;
-						player->team= remap_index;
-						colors_taken[remap_index] = true;
-						break;
-					}
-				}
-				assert(remap_index<num_players);
-			}
-		}	
-	} else {
-		short index;
-		short team_color;
-		
-		/* Allow teams.. */
-		for(team_color= 0; team_color<NUMBER_OF_TEAM_COLORS; ++team_color)
-		{
-			// let's mark everybody down for the teams that they can get without conflicts.
-			for (index = 0; index < num_players; index++)
-			{
-				player_info *player= (player_info *)NetGetPlayerData(index);
-		
-				if (player->team==team_color && !colors_taken[player->desired_color])
-				{
-					player->color= player->desired_color;
-					colors_taken[player->color] = true;
-					actual_colors[index]= player->color;
-				}
-			}
-			
-			// ok, everyone remaining gets a team that we pick for them.
-			for (index = 0; index < num_players; index++)
-			{
-				player_info *player= (player_info *)NetGetPlayerData(index);
-	
-				if (player->team==team_color && actual_colors[index]==NONE) // This player needs a team
-				{
-					short j;
-					
-					for (j = 0; j < num_players; j++)
-					{
-						if (!colors_taken[j])
-						{
-							player->color= j;
-							colors_taken[j] = true;
-							break;
-						}
-					}
-					assert(j < num_players);
-				}
-			}
-		}
-	}
-}
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Postgame Carnage Report stuff
@@ -2414,7 +2407,7 @@ void display_net_game_stats(void)
 class SdlGatherDialog : public GatherDialog
 {
 public:
-	SdlGatherDialog()
+	SdlGatherDialog(bool remote_hub_mode) : GatherDialog(remote_hub_mode)
 	{
 		vertical_placer *placer = new vertical_placer;
 		placer->dual_add(new w_title("GATHER NETWORK GAME"), m_dialog);
@@ -2501,9 +2494,9 @@ private:
 };
 
 std::unique_ptr<GatherDialog>
-GatherDialog::Create()
+GatherDialog::Create(bool remote_hub_mode)
 {
-	return std::unique_ptr<GatherDialog>(new SdlGatherDialog);
+	return std::make_unique<SdlGatherDialog>(remote_hub_mode);
 }
 
 extern struct color_table *build_8bit_system_color_table(void);
@@ -2714,11 +2707,18 @@ public:
 		network_table->col_flags(1, placeable::kAlignLeft);
 
 		w_toggle *advertise_on_metaserver_w = new w_toggle (sAdvertiseGameOnMetaserver);
+		advertise_on_metaserver_w->set_enabled(!network_preferences->use_remote_hub);
 		network_table->dual_add(advertise_on_metaserver_w, m_dialog);
 		network_table->dual_add(advertise_on_metaserver_w->label("Advertise Game on Internet"), m_dialog);
 
+		w_toggle* use_remote_hub_w = new w_toggle(true);
+
+		network_table->dual_add(use_remote_hub_w, m_dialog);
+		network_table->dual_add(use_remote_hub_w->label("Use Dedicated Server"), m_dialog);
+
 #ifdef HAVE_MINIUPNPC
 		w_toggle *use_upnp_w = new w_toggle (true);
+		use_upnp_w->set_enabled(!network_preferences->use_remote_hub);
 #else
 		w_toggle *use_upnp_w = new w_toggle(false);
 #endif
@@ -2918,6 +2918,26 @@ public:
 		
 		m_useUpnpWidget = new ToggleWidget (use_upnp_w);
 		m_latencyToleranceWidget = new PopupSelectorWidget(latency_tolerance_w);
+
+		m_useRemoteHub = new ToggleWidget(use_remote_hub_w);
+
+		m_useRemoteHub->set_callback([&]()
+		{
+			if (m_useRemoteHub->get_value())
+			{
+				m_useMetaserverWidget->set_value(true);
+				m_useMetaserverWidget->deactivate();
+				m_useUpnpWidget->set_value(false);
+				m_useUpnpWidget->deactivate();
+			}
+			else
+			{
+				m_useMetaserverWidget->activate();
+#ifdef HAVE_MINIUPNPC
+				m_useUpnpWidget->activate();
+#endif
+			}
+		});
 	}
 	
 	virtual bool Run ()

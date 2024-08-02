@@ -285,6 +285,9 @@ public:
 	void ProjectileCreated(short projectile_index);
 	void ItemCreated(short item_index);
 
+	bool CalculateCompletionState(short& completion_state);
+	void MonsterKamikazed(short monster_index);
+
 	void InvalidateEffect(short effect_index);
 	void InvalidateMonster(short monster_index);
 	void InvalidateProjectile(short projectile_index);
@@ -674,6 +677,47 @@ void LuaState::ItemCreated (short item_index)
 	if (GetTrigger("item_created"))
 	{
 		Lua_Item::Push(State(), item_index);
+		CallTrigger(1);
+	}
+}
+
+bool LuaState::CalculateCompletionState(short& completion_state)
+{
+	if (GetTrigger("calculate_level_completion_state"))
+	{
+		if (lua_pcall(State(), 0, 1, 0) == LUA_ERRRUN)
+		{
+			L_Error(lua_tostring(State(), -1));
+		}
+
+		lua_pushcfunction(State(), [](lua_State* L) {
+			auto n = Lua_CompletionState::ToIndex(L, 1);
+			lua_pushnumber(L, n);
+			return 1;
+		});
+
+		lua_insert(State(), -2);
+
+		if (lua_pcall(State(), 1, 1, 0) == LUA_ERRRUN)
+		{
+			L_Error(lua_tostring(State(), -1));
+		}
+
+		completion_state = lua_tonumber(State(), -1);
+		lua_pop(State(), 1);
+		
+		return true;
+	}
+
+	return false;
+}
+
+void LuaState::MonsterKamikazed(short monster_index)
+{
+	if (GetTrigger("monster_kamikazed"))
+	{
+		Lua_Monster::Push(State(), monster_index);
+
 		CallTrigger(1);
 	}
 }
@@ -1344,6 +1388,27 @@ void L_Call_Projectile_Created (short projectile_index)
 void L_Call_Item_Created (short item_index)
 {
 	L_Dispatch(std::bind(&LuaState::ItemCreated, std::placeholders::_1, item_index));
+}
+
+bool L_Calculate_Completion_State(short& completion_state)
+{
+	auto found = false;
+	for (auto it = states.begin(); it != states.end(); ++it)
+	{
+		short state;
+		if (it->second->CalculateCompletionState(state))
+		{
+			found = true;
+			completion_state = state;
+		}
+	}
+
+	return found;
+}
+
+void L_Call_Monster_Kamikazed(short monster_index)
+{
+	L_Dispatch(std::bind(&LuaState::MonsterKamikazed, std::placeholders::_1, monster_index));
 }
 
 void L_Invalidate_Effect(short effect_index)

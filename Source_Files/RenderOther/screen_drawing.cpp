@@ -586,6 +586,18 @@ int ttf_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, i
 	else
 		SDL_BlitSurface(text_surface, NULL, s, &dst_rect);
 
+	if (style & styleUnderline)
+	{
+		SDL_Rect r = {x, y + 1, text_surface->w, 1};
+		if (draw_clip_rect_active)
+		{
+			r.x = MAX(x, clip_left);
+			r.w = MAX(0, MIN(x + text_surface->w, clip_right) - r.x);
+			r.y = MAX(y + 1, clip_top);
+			r.h = MAX(0, MIN(y + 2, clip_bottom) - r.y);
+		}
+		SDL_FillRect(s, &r, pixel);
+	}
 	if (s == MainScreenSurface())
 		MainScreenUpdateRect(x, y - TTF_FontAscent(get_ttf(style)), text_width(text, style, utf8), TTF_FontHeight(get_ttf(style)));
 

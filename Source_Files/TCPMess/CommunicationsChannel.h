@@ -177,7 +177,7 @@ public:
 	void		connect(const IPaddress& inAddress);
 	
 	void		disconnect();
-
+	void		pumpSendingSide();
 	IPaddress	peerAddress() const;
 
 	// Callers can use these (compared with machine_tick_count()) to gauge activity on the Channel:
@@ -204,7 +204,6 @@ private:
 	bool		receiveHeader();
 	bool		_receiveMessage();
 	
-	void		pumpSendingSide();
 	bool		sendHeader();
 	bool		sendMessage();
 

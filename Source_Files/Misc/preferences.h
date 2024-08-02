@@ -130,6 +130,7 @@ struct network_preferences_data
 	uint16 cheat_flags;
 	bool advertise_on_metaserver;
 	bool attempt_upnp;
+	bool use_remote_hub;
 	bool check_for_updates;
 	bool verify_https;
 

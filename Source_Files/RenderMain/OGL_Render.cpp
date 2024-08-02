@@ -761,7 +761,7 @@ void PreloadWallTexture(const TextureWithTransferMode& inTexture)
 		// Get the landscape-texturing options
 		LandscapeOptions *LandOpts = View_GetLandscapeOptions(TMgr.ShapeDesc);	
 		TMgr.LandscapeVertRepeat = LandOpts->VertRepeat;
-		TMgr.Landscape_AspRatExp = LandOpts->OGL_AspRatExp;
+		TMgr.Landscape_AspRatExp = LandOpts->SphereMap ? 1 : LandOpts->OGL_AspRatExp;
 	}
 	
 	// After all this setting up, now use it!
@@ -1892,7 +1892,7 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	// Vertical requires adjustment for aspect ratio;
 	// the texcoords must be stretched in the vertical direction
 	// if the texture is shrunken in the vertical direction
-	short AdjustedVertExp = LandOpts->VertExp + LandOpts->OGL_AspRatExp;
+	short AdjustedVertExp = LandOpts->VertExp + LandOpts->SphereMap ? 1 : LandOpts->OGL_AspRatExp;
 	double VertScale = (AdjustedVertExp >= 0) ?
 		double(1 << AdjustedVertExp) :
 			1/double(1 << (-AdjustedVertExp));
@@ -1912,7 +1912,7 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	TMgr.TransferData = RenderPolygon.transfer_data;
 	TMgr.IsShadeless = (RenderPolygon.flags&_SHADELESS_BIT) != 0;
 	TMgr.LandscapeVertRepeat = LandOpts->VertRepeat;
-	TMgr.Landscape_AspRatExp = LandOpts->OGL_AspRatExp;
+	TMgr.Landscape_AspRatExp = LandOpts->SphereMap ? 1 : LandOpts->OGL_AspRatExp;
 	TMgr.TextureType = OGL_Txtr_Landscape;
 	
 	// Use that texture

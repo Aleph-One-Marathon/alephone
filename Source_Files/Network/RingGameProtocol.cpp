@@ -631,7 +631,7 @@ RingGameProtocol::Exit2()
  */
 
 bool
-RingGameProtocol::Sync(NetTopology* inTopology, int32 inSmallestGameTick, size_t inLocalPlayerIndex, size_t inServerPlayerIndex)
+RingGameProtocol::Sync(NetTopology* inTopology, int32 inSmallestGameTick, int inLocalPlayerIndex, int inServerPlayerIndex)
 {
 	uint32 ticks;
 	bool success= true;

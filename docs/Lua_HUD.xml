@@ -519,6 +519,10 @@ end
         <description>ticks since game started</description>
         <type>time</type>
       </variable>
+      <variable name="interpolated_ticks" version="git">
+        <description>ticks since game started, including fractional ticks if running at greater than 30 fps</description>
+        <type>number</type>
+      </variable>
       <variable name="type">
         <description>whether the game is EMFH, KOTH, etc.</description>
         <type>game_type</type>
@@ -721,7 +725,7 @@ end
         <note>nil until player is completely dead</note>
         <type>number</type>
       </variable>
-	  <variable name="run_key" version="git">
+	  <variable name="run_key" version="20231125">
 		<description>whether the run key is down</description>
 	  </variable>
       <variable name="team">

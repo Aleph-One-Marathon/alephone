@@ -62,7 +62,7 @@
 #include <deque>
 #include <numeric>
 #include <cmath>
-
+#include <atomic>
 #include "crc.h"
 #include "player.h" // for masking out action flags triggers :(
 
@@ -303,8 +303,8 @@ typedef std::vector<NetworkPlayer_hub>	NetworkPlayerCollection;
 static NetworkPlayerCollection	sNetworkPlayers;
 
 // Local player index is used to decide how to send a packet; ref is used for timing.
-static size_t			sLocalPlayerIndex;
-static size_t			sReferencePlayerIndex;
+static int			sLocalPlayerIndex;
+static int			sReferencePlayerIndex;
 
 static DDPFramePtr	sOutgoingFrame = NULL;
 
@@ -334,7 +334,7 @@ static byte sScratchBuffer[kLossyByteStreamDataBufferSize];
 
 
 static myTMTaskPtr	sHubTickTask = NULL;
-static bool		sHubActive = false;	// used to enable the packet handler
+static std::atomic_bool	sHubActive = { false };	// used to enable the packet handler
 static bool		sHubInitialized = false;
 
 
@@ -344,6 +344,7 @@ static void player_acknowledged_up_to_tick(size_t inPlayerIndex, int32 inSmalles
 static bool player_provided_flags_from_tick_to_tick(size_t inPlayerIndex, int32 inFirstNewTick, int32 inSmallestUnreceivedTick);
 static void hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex);
 static void hub_received_identification_packet(AIStream& ps, NetAddrBlock address);
+static void hub_update_player_pregame_state(int inPlayerIndex, int16 state);
 static void hub_received_ping_request(AIStream& ps, NetAddrBlock address);
 static void hub_received_ping_response(AIStream& ps, NetAddrBlock address);
 static void process_messages(AIStream& ps, int inSenderIndex);
@@ -423,7 +424,7 @@ check_send_packet_to_spoke()
 #endif
 
 void
-hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* const* inPlayerAddresses, size_t inLocalPlayerIndex)
+hub_initialize(int32 inStartingTick, int inNumPlayers, const NetAddrBlock* const* inPlayerAddresses, int inLocalPlayerIndex)
 {
 //        assert(sNetworkState == eNetworkDown);
 
@@ -463,14 +464,15 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
 	}
 #endif
 
-        assert(inLocalPlayerIndex < inNumPlayers);
-        sLocalPlayerIndex = inLocalPlayerIndex;
-	sReferencePlayerIndex = sLocalPlayerIndex;
-
 #ifdef A1_NETWORK_STANDALONE_HUB
-	// There is no local player on standalone hub.
-	sLocalPlayerIndex = (size_t)NONE;
+	assert(inLocalPlayerIndex == NONE);
+	sReferencePlayerIndex = NONE;
+#else
+	assert(inLocalPlayerIndex < inNumPlayers);
+	sReferencePlayerIndex = inLocalPlayerIndex;
 #endif
+
+        sLocalPlayerIndex = inLocalPlayerIndex;
 
 	sSmallestPostGameTick = INT32_MAX;
         sSmallestRealGameTick = inStartingTick;
@@ -502,6 +504,9 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
 
                 if(inPlayerAddresses[i] != NULL)
                 {
+#ifdef A1_NETWORK_STANDALONE_HUB
+					if (sReferencePlayerIndex == NONE) sReferencePlayerIndex = i;
+#endif
                         thePlayer.mConnected = true;
                         sConnectedPlayersBitmask |= (((uint32)1) << i);
 			thePlayer.mAddressKnown = false;
@@ -534,11 +539,16 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
 		thePlayer.mLatencyTicks = 0;
 		thePlayer.mStats.latency = NetworkStats::invalid;
 		thePlayer.mStats.jitter = NetworkStats::invalid;
+		thePlayer.mStats.pregame_state = thePlayer.mConnected ? NetworkStats::invalid : NetworkStats::disconnected;
 		thePlayer.mStats.errors = 0;
 
                 sFlagsQueues[i].reset(theFirstTick);
 		sLateFlagsQueues[i].reset(theFirstTick);
         }
+
+#ifdef A1_NETWORK_STANDALONE_HUB
+		if (sReferencePlayerIndex == NONE) sReferencePlayerIndex = 0; //we have no connected players at this point, but just in case
+#endif
         
         sPlayerDataDisposition.reset(theFirstTick);
 	sPlayerReflectedFlags.reset(theFirstTick);
@@ -558,7 +568,10 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
 	sHubInitialized = true;
 }
 
-
+bool hub_is_active()
+{
+	return sHubActive.load();
+}
 
 void
 hub_cleanup(bool inGraceful, int32 inSmallestPostGameTick)
@@ -643,7 +656,7 @@ hub_check_for_completion()
 		}
 	}
 
-	if(!someoneStillActive)
+	if (!someoneStillActive) 
 		sHubActive = false;
 }
 		
@@ -700,6 +713,7 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
 				
 				if (getNetworkPlayer(theSenderIndex).mConnected)
 				{
+					hub_update_player_pregame_state(theSenderIndex, NetworkStats::valid);
 					hub_received_game_data_packet_v1(ps, theSenderIndex);
 				}
 				else
@@ -734,6 +748,14 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
         check_send_packet_to_spoke();
 }
 
+static void 
+hub_update_player_pregame_state(int inPlayerIndex, int16 state)
+{
+	if (sNetworkPlayers[inPlayerIndex].mStats.pregame_state == NetworkStats::invalid && sSmallestUnsentTick < sSmallestRealGameTick)
+	{
+		sNetworkPlayers[inPlayerIndex].mStats.pregame_state = state;
+	}
+}
 
 static void
 hub_received_identification_packet(AIStream& ps, NetAddrBlock address)
@@ -1070,8 +1092,10 @@ static bool make_up_flags_for_first_incomplete_tick()
 		return false;
 
 	// never make up flags for ourself
+#ifndef A1_NETWORK_STANDALONE_HUB
 	if (getFlagsQueue(sLocalPlayerIndex).getWriteTick() == sSmallestIncompleteTick)
 		return false;
+#endif
 
 	// check to make sure everyone we want to make up flags for is in the lagging players bitmask
 	for (int i = 0; i < sNetworkPlayers.size(); i++)
@@ -1274,6 +1298,10 @@ make_player_netdead(int inPlayerIndex)
 	
         NetworkPlayer_hub& thePlayer = getNetworkPlayer(inPlayerIndex);
 
+#ifdef A1_NETWORK_STANDALONE_HUB
+		int nbRemainingPlayers = 0, remainingPlayerIndex = 0;
+#endif
+
 	// make sure we're not processing a packet
 	{
 		MyTMMutexTaker mutex;
@@ -1281,7 +1309,27 @@ make_player_netdead(int inPlayerIndex)
 		thePlayer.mConnected = false;
 		sConnectedPlayersBitmask &= ~(((uint32)1) << inPlayerIndex);
 		sAddressToPlayerIndex.erase(thePlayer.mAddress);
+		hub_update_player_pregame_state(inPlayerIndex, NetworkStats::disconnected);
+
+#ifdef A1_NETWORK_STANDALONE_HUB
+		for (size_t i = 0; i < sNetworkPlayers.size(); i++)
+		{
+			if (sNetworkPlayers[i].mConnected)
+			{
+				nbRemainingPlayers++;
+				remainingPlayerIndex = i;
+			}
+		}
+
+		if (sReferencePlayerIndex == inPlayerIndex) //fallback to someone else to be the player of reference
+			sReferencePlayerIndex = remainingPlayerIndex;
+#endif
 	}
+
+#ifdef A1_NETWORK_STANDALONE_HUB
+	if (nbRemainingPlayers == 1)
+		make_player_netdead(remainingPlayerIndex);
+#endif
 
 	// We save this off because player_provided... call below may change it.
 	int32 theSavedIncompleteTick = sSmallestIncompleteTick;

@@ -74,25 +74,20 @@ receive_thread_function(void*) {
         if(!sKeepListening)
             break;
         
-        if(theResult > 0) {
-            theResult = SDLNet_UDP_Recv(sSocket, sUDPPacketBuffer);
-            if(theResult > 0) {
-                if(take_mytm_mutex()) {
-                    ddpPacketBuffer.protocolType	= kPROTOCOL_TYPE;
-                    ddpPacketBuffer.sourceAddress	= sUDPPacketBuffer->address;
-                    ddpPacketBuffer.datagramSize	= sUDPPacketBuffer->len;
+        if(theResult > 0 && take_mytm_mutex()) {
+                theResult = SDLNet_UDP_Recv(sSocket, sUDPPacketBuffer);
+                if(theResult > 0) {
+                        ddpPacketBuffer.protocolType	= kPROTOCOL_TYPE;
+                        ddpPacketBuffer.sourceAddress	= sUDPPacketBuffer->address;
+                        ddpPacketBuffer.datagramSize	= sUDPPacketBuffer->len;
                     
-                    // Hope the other guy is done using whatever's in there!
-                    // (As I recall, all uses happen in sPacketHandler and its progeny, so we should be fine.)
-                    memcpy(ddpPacketBuffer.datagramData, sUDPPacketBuffer->data, sUDPPacketBuffer->len);
+                        // Hope the other guy is done using whatever's in there!
+                        // (As I recall, all uses happen in sPacketHandler and its progeny, so we should be fine.)
+                        memcpy(ddpPacketBuffer.datagramData, sUDPPacketBuffer->data, sUDPPacketBuffer->len);
                     
-                    sPacketHandler(&ddpPacketBuffer);
-                    
-                    release_mytm_mutex();
-                }
-                else
-                    fdprintf("could not take mytm mutex - incoming packet dropped");
-            }
+                        sPacketHandler(&ddpPacketBuffer);
+                    }
+           release_mytm_mutex();
         }
     }
     
@@ -231,7 +226,7 @@ void NetDDPDisposeFrame(DDPFramePtr frame)
  *  Send frame to remote machine
  */
 
-OSErr NetDDPSendFrame(DDPFramePtr frame, NetAddrBlock *address, short protocolType, short port)
+OSErr NetDDPSendFrame(DDPFramePtr frame, const NetAddrBlock *address, short protocolType, short port)
 {
 //fdprintf("NetDDPSendFrame\n");
 	assert(frame->data_size <= ddpMaxData);

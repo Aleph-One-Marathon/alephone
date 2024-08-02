@@ -65,6 +65,15 @@ AS_CASE([$target],
 AM_CONDITIONAL([MAKE_WINDOWS], [test "x$make_windows" = "xtrue"])
 AM_CONDITIONAL([INSTALL_MIME], [test "x$install_mime" = "xtrue"])
 
+dnl The standalone hub option
+AC_ARG_ENABLE([standalone_hub],
+              AS_HELP_STRING([--enable-standalone-hub],
+			                 [Build standalone hub instead of Aleph One]))
+
+AM_CONDITIONAL([STANDALONE_HUB], [test x"$enable_standalone_hub" = x"yes"])
+AS_IF([test x"$enable_standalone_hub" = x"yes"],
+      [ AC_DEFINE([A1_NETWORK_STANDALONE_HUB], [1], [Use the standalone hub])])
+
 dnl Set target system name.
 AC_DEFINE_UNQUOTED([TARGET_PLATFORM], ["$target_os $target_cpu"], [Target platform name])
 
@@ -255,6 +264,7 @@ Source_Files/Misc/Makefile
 Source_Files/ModelView/Makefile
 Source_Files/Network/Makefile
 Source_Files/Network/Metaserver/Makefile
+Source_Files/Network/StandaloneHub/Makefile
 Source_Files/RenderMain/Makefile
 Source_Files/RenderOther/Makefile
 Source_Files/Sound/Makefile

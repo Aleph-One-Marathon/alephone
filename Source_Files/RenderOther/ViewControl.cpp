@@ -339,6 +339,19 @@ void parse_mml_landscapes(const InfoTree& root)
 			child.read_attr("vert_repeat", data.VertRepeat);
 			child.read_attr("ogl_asprat_exp", data.OGL_AspRatExp);
 			child.read_angle("azimuth", data.Azimuth);
+
+			int16 projection;
+			if (child.read_attr("projection", projection))
+			{
+				if (projection == 1)
+				{
+					data.SphereMap = true;
+				}
+				else
+				{
+					data.SphereMap = false;
+				}
+			}
 			
 			// Check to see if a frame is already accounted for
 			bool found = false;

@@ -118,7 +118,7 @@ OSErr NetDDPCloseSocket(short ignored);
 DDPFramePtr NetDDPNewFrame(void);
 void NetDDPDisposeFrame(DDPFramePtr frame);
 
-OSErr NetDDPSendFrame(DDPFramePtr frame, NetAddrBlock *address, short protocolType, short socket);
+OSErr NetDDPSendFrame(DDPFramePtr frame, const NetAddrBlock *address, short protocolType, short socket);
 
 /* ---------- prototypes/NETWORK_ADSP.C */
 

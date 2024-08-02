@@ -7,8 +7,7 @@
       <!-- 
       body {
 	  font-family: Verdana, Helvetica, sans-serif;
-	  font-size: 9pt;
-	  width: 800px;
+	  width: 60rem;
       }
       a:link {
 	  color: #006600;
@@ -85,6 +84,7 @@
       }
       
       span.pre {
+	  font-family: monospace;
 	  display: block;
 	  margin: 4px 0;
 	  white-space: pre-wrap;
@@ -104,6 +104,22 @@
 	  color: #006600;
       }
 
+	  details > summary {
+	  list-style: none;
+	  }
+
+	  summary::after {
+	  content: '▶';
+	  font-size: 0.75em;
+	  margin-left: 0.5rem;
+	  }
+	  
+	  details[open] summary:after {
+	  content: '▼';
+	  margin-left: 0.25rem;
+	  font-size: 1em;
+	  }
+
 -->
       </style>
 </head>
@@ -116,15 +132,19 @@
 <li><a href="#loading_collections">Loading Collections</a></li>
 </ol>
 </li>
-<li><a href="#triggers">Triggers</a></li>
+<li><details><summary><a href="#triggers">Triggers</a></summary><ol>
+<li><a href="#cleanup">cleanup</a></li>
+<li><a href="#draw">draw</a></li>
+<li><a href="#init">init</a></li>
+<li><a href="#resize">resize</a></li>
+</ol></details></li>
 <li>
 <a href="#using_tables">Using Tables</a><ol>
 <li><a href="#custom">Custom Fields</a></li>
 <li><a href="#table_is">is_ Functions</a></li>
 </ol>
 </li>
-<li>
-<a href="#tables">Tables</a><ol>
+<li><details><summary><a href="#tables">Tables</a></summary><ol>
 <li><a href="#Colors">Colors</a></li>
 <li><a href="#Fonts">Fonts</a></li>
 <li><a href="#Game">Game</a></li>
@@ -134,10 +154,8 @@
 <li><a href="#Player">Player</a></li>
 <li><a href="#Screen">Screen</a></li>
 <li><a href="#Shapes">Shapes</a></li>
-</ol>
-</li>
-<li>
-<a href="#types">Types and Mnemonics</a><ol>
+</ol></details></li>
+<li><details><summary><a href="#types">Types and Mnemonics</a></summary><ol>
 <li><a href="#Collections">Collections</a></li>
 <li><a href="#DifficultyTypes">Difficulty</a></li>
 <li><a href="#FadeEffectTypes">Fade Effect Types</a></li>
@@ -155,8 +173,7 @@
 <li><a href="#SizePreferences">Size Preferences</a></li>
 <li><a href="#TextureTypes">Texture Types</a></li>
 <li><a href="#WeaponTypes">Weapons</a></li>
-</ol>
-</li>
+</ol></details></li>
 </ol>
 <h1>
 <a name="general"></a>General</h1>
@@ -185,18 +202,22 @@ end
 <dl>
 <dt>Triggers</dt>
 <dd><dl>
-<dt>.init()</dt>
-<dd><p class="description">when a game session is started (after leaving the main menu)</p></dd>
-<dt>.cleanup()</dt>
+<dt>
+<a name="cleanup"></a>.cleanup()</dt>
 <dd><p class="description">when a game session is completed (before returning to the main menu)</p></dd>
-<dt>.resize()</dt>
-<dd><p class="description">when the window size changes in the middle of a game (with the F1/F2 keys)</p></dd>
-<dt>.draw()</dt>
+<dt>
+<a name="draw"></a>.draw()</dt>
 <dd>
 <p class="description">at each game frame</p>
 <p class="note">all screen drawing must be called from this trigger </p>
 <p class="note">the screen is cleared before each frame </p>
 </dd>
+<dt>
+<a name="init"></a>.init()</dt>
+<dd><p class="description">when a game session is started (after leaving the main menu)</p></dd>
+<dt>
+<a name="resize"></a>.resize()</dt>
+<dd><p class="description">when the window size changes in the middle of a game (with the F1/F2 keys)</p></dd>
 </dl></dd>
 </dl>
 </div>
@@ -318,6 +339,9 @@ end
 <dd><p class="description">the current scoring mode (if the gametype is "custom")</p></dd>
 <dt>.ticks</dt>
 <dd><p class="description">ticks since game started</p></dd>
+<dt>.interpolated_ticks <span class="version">git</span>
+</dt>
+<dd><p class="description">ticks since game started, including fractional ticks if running at greater than 30 fps</p></dd>
 <dt>.type</dt>
 <dd><p class="description">whether the game is EMFH, KOTH, etc.</p></dd>
 <dt>.version</dt>
@@ -585,7 +609,7 @@ end
 <p class="description">ticks remaining before dead player can revive</p>
 <p class="note">nil until player is completely dead </p>
 </dd>
-<dt>.run_key <span class="version">git</span>
+<dt>.run_key <span class="version">20231125</span>
 </dt>
 <dd><p class="description">whether the run key is down</p></dd>
 <dt>.team</dt>

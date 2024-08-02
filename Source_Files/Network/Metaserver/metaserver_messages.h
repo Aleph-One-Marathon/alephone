@@ -41,18 +41,19 @@ using boost::algorithm::to_lower_copy;
 enum
 {
 	// Message types sent from servers to clients
-	kSERVER_ROOMLIST	= 0,
-	kSERVER_PLAYERLIST	= 1,
-	kSERVER_GAMELIST	= 2,
-	kSERVER_DENY		= 3,
-	kSERVER_SALT		= 6,
-	kSERVER_LOGINSUCCESS	= 7,
-	kSERVER_SETPLAYERDATA	= 8,
-	kSERVER_LIMIT		= 9,
-	kSERVER_BROADCAST	= 10,
-	kSERVER_ACCEPT		= 12,
-	kSERVER_FIND		= 14,
-	kSERVER_STATS		= 17,
+	kSERVER_ROOMLIST = 0,
+	kSERVER_PLAYERLIST = 1,
+	kSERVER_GAMELIST = 2,
+	kSERVER_DENY = 3,
+	kSERVER_SALT = 6,
+	kSERVER_LOGINSUCCESS = 7,
+	kSERVER_SETPLAYERDATA = 8,
+	kSERVER_LIMIT = 9,
+	kSERVER_BROADCAST = 10,
+	kSERVER_ACCEPT = 12,
+	kSERVER_FIND = 14,
+	kSERVER_STATS = 17,
+	KSERVER_REMOTEHUBLIST = 18,
 
 	// Messages sent from clients to servers
 	kCLIENT_LOGIN		= 100,
@@ -71,6 +72,7 @@ enum
 	kCLIENT_LOCALIZE	= 115,
 	kCLIENT_FIND		= 117,
 	kCLIENT_STATS		= 121,
+	kCLIENT_REMOTEHUBLIST = 122,
 	
 	// Message types sent in both directions
 	kBOTH_CHAT		= 200,
@@ -119,6 +121,7 @@ struct GameDescription
 	int16 m_killLimit;
 	std::string m_mapFileName;
 	std::string m_physicsName;
+	uint16 m_latency;
 	
 	GameDescription()
 		: m_type(0)
@@ -140,6 +143,7 @@ struct GameDescription
 		, m_gameOptions(0)
 		, m_cheatFlags(0)
 		, m_killLimit(0)
+		, m_latency(UINT16_MAX)
 	{}
 
 };
@@ -265,7 +269,24 @@ protected:
 	}
 };
 
+class RemoteHubServerDescription
+{
+public:
+	uint16 id() const { return m_id; }
+	IPaddress address() const { return m_address; }
+	void id(uint16 id) { m_id = id; }
 
+	void read(AIStream& inStream)
+	{
+		inStream >> m_id;
+		inStream.read((char*)&(m_address.host), sizeof(m_address.host));
+		inStream.read((char*)&(m_address.port), sizeof(m_address.port));
+	}
+
+private:
+	uint16 m_id;
+	IPaddress m_address;
+};
 
 class RoomDescription
 {
@@ -322,6 +343,60 @@ private:
 
 std::ostream& operator <<(std::ostream& out, const RoomListMessage& message);
 
+class RemoteHubListMessage : public SmallMessageHelper
+{
+public:
+	enum { kType = KSERVER_REMOTEHUBLIST };
+
+	MessageTypeID type() const { return kType; }
+
+	RemoteHubListMessage* clone() const
+	{
+		return new RemoteHubListMessage(*this);
+	}
+
+	const std::vector<RemoteHubServerDescription>& servers() const { return m_servers; }
+
+protected:
+	void reallyDeflateTo(AOStream& thePacket) const
+	{
+		// no need for deflation
+		assert(false);
+	}
+
+	bool reallyInflateFrom(AIStream& inStream);
+
+private:
+	std::vector<RemoteHubServerDescription> m_servers;
+};
+
+class RemoteHubRequestMessage : public SmallMessageHelper
+{
+public:
+	enum { kType = kCLIENT_REMOTEHUBLIST };
+
+	MessageTypeID type() const { return kType; }
+	RemoteHubRequestMessage(const std::string& version) : SmallMessageHelper(), mVersion(version) {}
+
+	RemoteHubRequestMessage* clone() const
+	{
+		return new RemoteHubRequestMessage(*this);
+	}
+
+	std::string version() { return mVersion; }
+
+protected:
+	void reallyDeflateTo(AOStream& out) const;
+
+	bool reallyInflateFrom(AIStream&)
+	{
+		// don't need to be able to receive these
+		return false;
+	}
+
+private:
+	std::string mVersion;
+};
 
 
 class RoomLoginMessage : public SmallMessageHelper
@@ -640,9 +715,10 @@ public:
 
 	MessageTypeID type() const { return kType; }
 
-	CreateGameMessage(uint16 gamePort, const GameDescription& description)
+	CreateGameMessage(uint16 gamePort, const GameDescription& description, uint16 remoteHubId)
 		: m_gamePort(gamePort)
 		, m_description(description)
+		, m_remoteHubId(remoteHubId)
 	{}
 
 	CreateGameMessage* clone() const
@@ -663,6 +739,7 @@ protected:
 private:
 	uint16		m_gamePort;
 	GameDescription	m_description;
+	uint16 m_remoteHubId;
 };
 
 

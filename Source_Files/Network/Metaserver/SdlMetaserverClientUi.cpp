@@ -336,19 +336,25 @@ public:
 private:
 
 	w_games_in_room* games_in_room_w;
+	uint32 last_pump_update = 0;
 
 	void
 	pump(dialog* d)
 	{
-		static uint32 last_update = 0;
 		uint32 ticks = machine_tick_count();
-		if (ticks > last_update + 5000)
+		bool refresh = ticks > last_pump_update + 5000;
+
+		if (refresh)
 		{
-			last_update = ticks;
+			last_pump_update = ticks;
 			games_in_room_w->refresh();
 		}
 		if (gMetaserverClient->isConnected())
+		{
 			MetaserverClient::pumpAll();
+			auto updates = gMetaserverClient->gamesInRoomUpdate(refresh || !last_pump_update);
+			if (updates.size()) gamesInRoomChanged(updates);
+		}
 		else if (!m_disconnected)
 		{ 
 			alert_user("Connection to room lost.", 0);

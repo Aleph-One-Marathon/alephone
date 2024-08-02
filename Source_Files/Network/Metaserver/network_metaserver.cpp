@@ -154,11 +154,72 @@ MetaserverClient::handlePlayerListMessage(PlayerListMessage* inMessage, Communic
 	}
 }
 
+const std::vector<GameListMessage::GameListEntry> MetaserverClient::gamesInRoomUpdate(bool reset_ping)
+{
+	if (reset_ping)
+	{
+		NetRemovePinger();
+		NetCreatePinger();
+	}
+
+	std::vector<GameListMessage::GameListEntry> games_to_update;
+
+	if (auto pinger = NetGetPinger().lock())
+	{
+		auto games = gamesInRoom();
+
+		for (auto& game : games)
+		{
+			if (game.running()) continue;
+			if (!reset_ping && ping_games.find(game.id()) != ping_games.end()) continue;
+
+			IPaddress address = {};
+			memcpy(&address.host, &game.m_ipAddress, sizeof(address.host));
+			address.port = SDL_SwapBE16(game.m_port);
+			ping_games[game.id()] = pinger->Register(address);
+		}
+
+		pinger->Ping(1, !reset_ping);
+
+		auto ping_responses = pinger->GetResponseTime();
+
+		for (auto& game : games)
+		{
+			if (game.running()) continue;
+
+			if (ping_games.find(game.id()) != ping_games.end() && ping_responses.find(ping_games[game.id()]) != ping_responses.end())
+			{
+				auto& description = game.m_description;
+				auto new_latency = ping_responses[ping_games[game.id()]];
+
+				if (new_latency != description.m_latency)
+				{
+					game.m_verb = 2; //kRefresh
+					description.m_latency = new_latency;
+					games_to_update.push_back(game);
+				}
+			}
+		}
+
+		if (games_to_update.size())
+		{
+			m_gamesInRoom.processUpdates(games_to_update);
+		}
+	}
+
+	return games_to_update;
+}
 
 void
 MetaserverClient::handleRoomListMessage(RoomListMessage* inMessage, CommunicationsChannel* inChannel)
 {
 	m_rooms = inMessage->rooms();
+}
+
+void
+MetaserverClient::handleRemoteHubListMessage(RemoteHubListMessage* inMessage, CommunicationsChannel* inChannel)
+{
+	m_remoteHubServers = inMessage->servers();
 }
 
 void
@@ -198,12 +259,14 @@ MetaserverClient::MetaserverClient()
 	m_keepAliveMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleKeepAliveMessage));
 	m_playerListMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handlePlayerListMessage));
 	m_roomListMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleRoomListMessage));
+	m_remoteHubListMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleRemoteHubListMessage));
 	m_gameListMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleGameListMessage));
 	m_setPlayerDataMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleSetPlayerDataMessage));
 
 	m_inflater->learnPrototype(SaltMessage());
 	m_inflater->learnPrototype(AcceptMessage());
 	m_inflater->learnPrototype(RoomListMessage());
+	m_inflater->learnPrototype(RemoteHubListMessage());
 	m_inflater->learnPrototype(IDAndLimitMessage());
 	m_inflater->learnPrototype(DenialMessage());
 	m_inflater->learnPrototype(BroadcastMessage());
@@ -224,6 +287,7 @@ MetaserverClient::MetaserverClient()
 	m_dispatcher->setHandlerForType(m_keepAliveMessageHandler.get(), KeepAliveMessage::kType);
 	m_dispatcher->setHandlerForType(m_playerListMessageHandler.get(), PlayerListMessage::kType);
 	m_dispatcher->setHandlerForType(m_roomListMessageHandler.get(), RoomListMessage::kType);
+	m_dispatcher->setHandlerForType(m_remoteHubListMessageHandler.get(), RemoteHubListMessage::kType);
 	m_dispatcher->setHandlerForType(m_gameListMessageHandler.get(), GameListMessage::kType);
 	m_dispatcher->setHandlerForType(m_setPlayerDataMessageHandler.get(), SetPlayerDataMessage::kType);
 
@@ -236,7 +300,7 @@ MetaserverClient::MetaserverClient()
 }
 
 void
-MetaserverClient::connect(const std::string& serverName, uint16 port, const std::string& userName, const std::string& userPassword)
+MetaserverClient::connect(const std::string& serverName, uint16 port, const std::string& userName, const std::string& userPassword, bool use_remote_hub)
 {
 	try 
 	{
@@ -349,6 +413,13 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 
 		std::unique_ptr<RoomListMessage> theRoomListMessage(m_channel->receiveSpecificMessageOrThrow<RoomListMessage>());
 		m_dispatcher.get()->handle(theRoomListMessage.get(), m_channel.get());
+
+		if (use_remote_hub)
+		{
+			m_channel->enqueueOutgoingMessage(RemoteHubRequestMessage(kNetworkSetupProtocolID));
+			std::unique_ptr<RemoteHubListMessage> theRemoteHubListMessage(m_channel->receiveSpecificMessageOrThrow<RemoteHubListMessage>());
+			m_dispatcher.get()->handle(theRemoteHubListMessage.get(), m_channel.get());
+		}
 
 		m_channel->disconnect();
 
@@ -534,11 +605,12 @@ MetaserverClient::sendPrivateMessage(MetaserverPlayerInfo::IDType id, const std:
 }
 
 void
-MetaserverClient::announceGame(uint16 gamePort, const GameDescription& description)
+MetaserverClient::announceGame(uint16 gamePort, const GameDescription& description, uint16 remoteHubId)
 {
-	m_channel->enqueueOutgoingMessage(CreateGameMessage(gamePort, description));
+	m_channel->enqueueOutgoingMessage(CreateGameMessage(gamePort, description, remoteHubId));
 	m_gameDescription = description;
 	m_gamePort = gamePort;
+	m_remoteHubId = remoteHubId;
 	m_gameAnnounced = true;
 }
 
@@ -546,7 +618,7 @@ void
 MetaserverClient::announcePlayersInGame(uint8 players)
 {
 	m_gameDescription.m_numPlayers = players;
-	m_channel->enqueueOutgoingMessage(CreateGameMessage(m_gamePort, m_gameDescription));
+	m_channel->enqueueOutgoingMessage(CreateGameMessage(m_gamePort, m_gameDescription, m_remoteHubId));
 }
 
 void
@@ -554,7 +626,7 @@ MetaserverClient::announceGameStarted(int32 gameTimeInSeconds)
 {
 	m_gameDescription.m_closed = true;
 	m_gameDescription.m_running = true;
-	m_channel->enqueueOutgoingMessage(CreateGameMessage(m_gamePort, m_gameDescription));
+	m_channel->enqueueOutgoingMessage(CreateGameMessage(m_gamePort, m_gameDescription, m_remoteHubId));
 	m_channel->enqueueOutgoingMessage(StartGameMessage(gameTimeInSeconds == INT32_MAX ? INT32_MIN : gameTimeInSeconds));
 }
 
@@ -656,6 +728,11 @@ bool MetaserverClient::is_ignored(MetaserverPlayerInfo::IDType id)
 	}
 }
 
+const std::vector<RemoteHubServerDescription>& MetaserverClient::get_remoteHubServers() const
+{
+	return m_remoteHubServers;
+}
+
 
 void
 MetaserverClient::syncGames()
@@ -694,6 +771,7 @@ MetaserverClient::~MetaserverClient()
 {
 	disconnect();
 	s_instances.erase(this);
+	NetRemovePinger();
 }
 
 #endif // !defined(DISABLE_NETWORKING)
