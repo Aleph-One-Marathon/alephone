@@ -97,8 +97,8 @@ void FBO::setup(GLuint w, GLuint h, bool srgb) {
   
   if( glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE ) { printf("FBO framebuffer not complete\n"); }
     
-  glBindFramebuffer(GL_FRAMEBUFFER, 1);
-  glBindRenderbuffer(GL_RENDERBUFFER, 1);
+  glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+  glBindRenderbuffer(GL_RENDERBUFFER, _fbo);
   
   //glPopGroupMarkerEXT();
 }
