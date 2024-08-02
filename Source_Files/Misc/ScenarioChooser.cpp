@@ -326,7 +326,10 @@ void ScenarioChooser::handle_event(SDL_Event& e)
 					}
 					break;
 				case SDLK_RETURN:
-					done_ = true;
+					if (selection_ >= 0)
+					{
+						done_ = true;
+					}
 					break;
 				case SDLK_RIGHT:
 					move_selection(1, 0);
