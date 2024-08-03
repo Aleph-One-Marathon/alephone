@@ -83,7 +83,7 @@ function Triggers.init(restored)
 
    if Level.index == 19 then
       if not Players[0]._accivi_over then
-         Triggers.platform_activated = accivi_platform_activated
+		 Triggers.idle = accivi_idle
          Triggers.platform_switch = accivi_platform_switch
          Triggers.projectile_switch = accivi_projectile_switch
          Triggers.tag_switch = accivi_tag_switch
@@ -170,15 +170,15 @@ end
 function accivi_over()
    Players[0]._accivi_over = true
    
-   Triggers.platform_activated = nil
+   Triggers.idle = nil
    Triggers.platform_switch = nil
    Triggers.projectile_switch = nil
    Triggers.tag_switch = nil
 end   
 
-function accivi_platform_activated(polygon)
-   if polygon.index == 638 then
-      accivi_over()
+function accivi_idle()
+   if Players[0].monster.polygon.index == 639 then
+	  accivi_over()
    end
 end
 
