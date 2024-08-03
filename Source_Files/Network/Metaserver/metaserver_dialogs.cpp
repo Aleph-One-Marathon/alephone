@@ -468,6 +468,7 @@ void MetaserverClientUi::gamesInRoomChanged(const std::vector<GameListMessage::G
 void MetaserverClientUi::sendChat()
 {
 	string message = m_chatEntryWidget->get_text();
+	if (message.empty()) return;
 	if (gMetaserverClient->player_target() != MetaserverPlayerInfo::IdNone)
 	{
 		gMetaserverClient->sendPrivateMessage(gMetaserverClient->player_target(), message);
