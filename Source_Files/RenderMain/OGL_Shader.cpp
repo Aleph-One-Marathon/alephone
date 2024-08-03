@@ -141,7 +141,10 @@ const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] =
     "gamma",
     "rect",
     "plain_rect",
-    "solid_color"
+    "solid_color",
+	"landscape_sphere",
+	"landscape_sphere_bloom",
+	"landscape_sphere_infravision"
 };
 
 
@@ -764,6 +767,23 @@ void initDefaultPrograms() {
 		#include "Shaders/bump_bloom.frag"
 		;
 
+	defaultVertexPrograms["landscape_sphere"] =
+		#include "Shaders/landscape_sphere.vert"
+		;
+
+	defaultFragmentPrograms["landscape_sphere"] =
+		#include "Shaders/landscape_sphere.frag"
+		;
+
+	defaultVertexPrograms["landscape_sphere_bloom"] = defaultVertexPrograms["landscape_sphere"];
+	defaultFragmentPrograms["landscape_sphere_bloom"] =
+		#include "Shaders/landscape_sphere_bloom.frag"
+		;
+
+	defaultVertexPrograms["landscape_sphere_infravision"] = defaultVertexPrograms["landscape_sphere"];
+	defaultFragmentPrograms["landscape_sphere_infravision"] =
+		#include "Shaders/landscape_sphere_infravision.frag"
+		;
 }
 
 #endif

@@ -116,6 +116,9 @@ public:
         S_Rect,
         S_PlainRect,
         S_SolidColor,
+		S_LandscapeSphere,
+		S_LandscapeSphereBloom,
+		S_LandscapeSphereInfravision,
 		NUMBER_OF_SHADER_TYPES
 	};
     

@@ -72,6 +72,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 #include "OGL_Headers.h"
 #include "OGL_Render.h"
+#include "OGL_Textures.h"
 #include "MatrixStack.hpp"
 #include "OGL_Shader.h"
 
@@ -416,7 +417,8 @@ void OverheadMap_OGL_Class::draw_text(
 	MSI()->matrixMode(MS_MODELVIEW);
 	MSI()->pushMatrix();
 	MSI()->loadIdentity();
-	MSI()->translatef(left_location.x,left_location.y,0);	
+	MSI()->translatef(left_location.x,left_location.y,0);
+	FontData.NearFilter = TxtrTypeInfoList[OGL_Txtr_HUD].NearFilter;
 	FontData.OGL_Render(text);
 	MSI()->popMatrix();
 }
