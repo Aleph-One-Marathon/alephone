@@ -1632,6 +1632,12 @@
 		AE7C21B60BFF67B700CE63EC /* lvm.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C219A0BFF67B700CE63EC /* lvm.c */; };
 		AE7C21B70BFF67B700CE63EC /* lzio.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C219B0BFF67B700CE63EC /* lzio.c */; };
 		AE7C21D60BFF688000CE63EC /* Update.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21D50BFF688000CE63EC /* Update.cpp */; };
+		AE8342402C5B22EA00A4A530 /* ScenarioChooser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE83423F2C5B22EA00A4A530 /* ScenarioChooser.cpp */; };
+		AE8342412C5B22EA00A4A530 /* ScenarioChooser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE83423F2C5B22EA00A4A530 /* ScenarioChooser.cpp */; };
+		AE8342422C5B22EA00A4A530 /* ScenarioChooser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE83423F2C5B22EA00A4A530 /* ScenarioChooser.cpp */; };
+		AE8342432C5B22EA00A4A530 /* ScenarioChooser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE83423F2C5B22EA00A4A530 /* ScenarioChooser.cpp */; };
+		AE8342442C5B22EA00A4A530 /* ScenarioChooser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE83423F2C5B22EA00A4A530 /* ScenarioChooser.cpp */; };
+		AE8342452C5B22EA00A4A530 /* ScenarioChooser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE83423F2C5B22EA00A4A530 /* ScenarioChooser.cpp */; };
 		AE8729C82BD1FBF700426095 /* steamshim_parent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE120B8F2BC76745001873DD /* steamshim_parent.cpp */; };
 		AE8729C92BD1FBFA00426095 /* libsteam_api.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AE120B942BC77447001873DD /* libsteam_api.dylib */; };
 		AE8729CD2BD1FDAC00426095 /* libsteam_api.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE120B942BC77447001873DD /* libsteam_api.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -3419,6 +3425,8 @@
 		AE7C21D00BFF67FD00CE63EC /* language_definition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = language_definition.h; sourceTree = "<group>"; };
 		AE7C21D40BFF686200CE63EC /* Update.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Update.h; path = ../Source_Files/Network/Update.h; sourceTree = "<group>"; };
 		AE7C21D50BFF688000CE63EC /* Update.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Update.cpp; path = ../Source_Files/Network/Update.cpp; sourceTree = "<group>"; };
+		AE83423E2C5B22BE00A4A530 /* ScenarioChooser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ScenarioChooser.h; path = ../Source_Files/Misc/ScenarioChooser.h; sourceTree = "<group>"; };
+		AE83423F2C5B22EA00A4A530 /* ScenarioChooser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ScenarioChooser.cpp; path = ../Source_Files/Misc/ScenarioChooser.cpp; sourceTree = "<group>"; };
 		AE8729C12BD1FBEA00426095 /* Classic Marathon Launcher */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Classic Marathon Launcher"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE941DE713E783F30077218A /* Info-AlephOne-Xcode4.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-AlephOne-Xcode4.plist"; sourceTree = "<group>"; };
 		AE96370A2A39577800DE43FF /* lua_music.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = lua_music.h; sourceTree = "<group>"; };
@@ -4232,25 +4240,26 @@
 		F522144E0136C0C401000001 /* Misc */ = {
 			isa = PBXGroup;
 			children = (
-				F522144F0136C0C401000001 /* Headers */,
-				F5CC94290240DB8801A80001 /* SDL */,
 				AED959BE2BC235B2008EFCA2 /* achievements.cpp */,
 				F5A00022023FDA1601A80001 /* ActionQueues.cpp */,
 				EFEF1AC504AF552D00C3A19D /* CircularByteBuffer.cpp */,
 				AEC6C89B0879A5DE0055EC57 /* Console.cpp */,
 				3DAC27A503DC9D1C00000104 /* DefaultStringSets.cpp */,
-				3DAC27A603DC9D1C00000104 /* Logging.cpp */,
-				AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */,
-				F522120B0136A6FD01000001 /* PlayerName.cpp */,
 				F52211970136A6FD01000001 /* game_errors.cpp */,
+				F522144F0136C0C401000001 /* Headers */,
 				F52211C40136A6FD01000001 /* interface.cpp */,
+				3DAC27A603DC9D1C00000104 /* Logging.cpp */,
+				F522120B0136A6FD01000001 /* PlayerName.cpp */,
+				AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */,
 				F522120F0136A6FD01000001 /* preferences.cpp */,
 				AE2A50CC09C67253007681A4 /* Scenario.cpp */,
+				AE83423F2C5B22EA00A4A530 /* ScenarioChooser.cpp */,
+				F5CC94290240DB8801A80001 /* SDL */,
 				AE437C8E08779BE500038E30 /* shared_widgets.cpp */,
 				27FC2E091A7DF51E0057BF42 /* Statistics.cpp */,
-				F52212590136A6FD01000001 /* vbl.cpp */,
-				F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */,
 				AE120D662BC776CE001873DD /* steamshim_child.c */,
+				F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */,
+				F52212590136A6FD01000001 /* vbl.cpp */,
 			);
 			name = Misc;
 			sourceTree = "<group>";
@@ -4259,43 +4268,44 @@
 			isa = PBXGroup;
 			children = (
 				AED959B12BC23591008EFCA2 /* achievements.h */,
-				C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */,
+				F5A00027023FDA6101A80001 /* ActionQueues.h */,
 				276BECFE1A846FD900AE52F4 /* AlephSansMono-Bold.h */,
+				F5D11AE40326A93E01000105 /* alephversion.h */,
 				276BED2B1A8470A900AE52F4 /* binders.h */,
+				EFEF1AC404AF552D00C3A19D /* CircularByteBuffer.h */,
+				F5A00029023FDA7601A80001 /* CircularQueue.h */,
+				AEC6C89E0879A6020055EC57 /* Console.h */,
 				276BECFF1A846FD900AE52F4 /* CourierPrime.h */,
 				276BED001A846FD900AE52F4 /* CourierPrimeBold.h */,
 				276BED011A846FD900AE52F4 /* CourierPrimeBoldItalic.h */,
 				276BED021A846FD900AE52F4 /* CourierPrimeItalic.h */,
-				AED959B02BC23591008EFCA2 /* m1_achievements.lua */,
-				276BED2C1A8470A900AE52F4 /* PlayerImage_sdl.h */,
-				276BED211A84701E00AE52F4 /* powered_by_alephone.h */,
-				AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */,
-				276BED031A846FD900AE52F4 /* ProFontAO.h */,
-				276BED1C1A846FF600AE52F4 /* VecOps.h */,
-				AE48F3551421900900051D61 /* Statistics.h */,
-				AE2FDED109E9352B00A18ABC /* preference_dialogs.h */,
-				AE2A50CF09C6727C007681A4 /* Scenario.h */,
-				AE437C8B08779BC900038E30 /* shared_widgets.h */,
-				F5A00027023FDA6101A80001 /* ActionQueues.h */,
-				EFEF1AC404AF552D00C3A19D /* CircularByteBuffer.h */,
-				F5A00029023FDA7601A80001 /* CircularQueue.h */,
-				AEC6C89E0879A6020055EC57 /* Console.h */,
-				3DAC27A703DC9D1C00000104 /* Logging.h */,
-				F522120C0136A6FD01000001 /* PlayerName.h */,
-				F52212190136A6FD01000001 /* Random.h */,
+				C13C71E61B3FB4C500F1188D /* DefaultStringSets.h */,
 				F52211AE0136A6FD01000001 /* game_errors.h */,
 				F52211C20136A6FD01000001 /* interface_menus.h */,
 				F52211C50136A6FD01000001 /* interface.h */,
 				F52211CB0136A6FD01000001 /* key_definitions.h */,
+				3DAC27A703DC9D1C00000104 /* Logging.h */,
+				AED959B02BC23591008EFCA2 /* m1_achievements.lua */,
+				276BED2C1A8470A900AE52F4 /* PlayerImage_sdl.h */,
+				F522120C0136A6FD01000001 /* PlayerName.h */,
+				AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */,
+				276BED211A84701E00AE52F4 /* powered_by_alephone.h */,
+				AE2FDED109E9352B00A18ABC /* preference_dialogs.h */,
 				F52212100136A6FD01000001 /* preferences.h */,
+				276BED031A846FD900AE52F4 /* ProFontAO.h */,
 				F52212140136A6FD01000001 /* progress.h */,
+				F52212190136A6FD01000001 /* Random.h */,
+				AE2A50CF09C6727C007681A4 /* Scenario.h */,
+				AE83423E2C5B22BE00A4A530 /* ScenarioChooser.h */,
 				F522123E0136A6FD01000001 /* sdl_network.h */,
+				AE437C8B08779BC900038E30 /* shared_widgets.h */,
+				AE48F3551421900900051D61 /* Statistics.h */,
+				AE120D682BC776E7001873DD /* steamshim_child.h */,
 				EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */,
 				F52212560136A6FD01000001 /* vbl_definitions.h */,
 				F522125A0136A6FD01000001 /* vbl.h */,
+				276BED1C1A846FF600AE52F4 /* VecOps.h */,
 				EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */,
-				F5D11AE40326A93E01000105 /* alephversion.h */,
-				AE120D682BC776E7001873DD /* steamshim_child.h */,
 			);
 			name = Headers;
 			sourceTree = "<group>";
@@ -6913,6 +6923,7 @@
 				AE120CFD2BC77645001873DD /* MessageDispatcher.cpp in Sources */,
 				AE120CFE2BC77645001873DD /* MessageHandler.cpp in Sources */,
 				AE120CFF2BC77645001873DD /* MessageInflater.cpp in Sources */,
+				AE8342442C5B22EA00A4A530 /* ScenarioChooser.cpp in Sources */,
 				AE120D002BC77645001873DD /* network_messages.cpp in Sources */,
 				AE120D012BC77645001873DD /* csstrings.cpp in Sources */,
 				AE120D022BC77645001873DD /* SdlMetaserverClientUi.cpp in Sources */,
@@ -7142,6 +7153,7 @@
 				AE1321972C1CB4D2009D34AA /* MessageDispatcher.cpp in Sources */,
 				AE1321982C1CB4D2009D34AA /* MessageHandler.cpp in Sources */,
 				AE1321992C1CB4D2009D34AA /* MessageInflater.cpp in Sources */,
+				AE8342452C5B22EA00A4A530 /* ScenarioChooser.cpp in Sources */,
 				AE13219A2C1CB4D2009D34AA /* network_messages.cpp in Sources */,
 				AE13219B2C1CB4D2009D34AA /* csstrings.cpp in Sources */,
 				AE13219C2C1CB4D2009D34AA /* SdlMetaserverClientUi.cpp in Sources */,
@@ -7316,6 +7328,7 @@
 				AE505C5B141D45E600915344 /* OGL_Textures.cpp in Sources */,
 				AE505C5C141D45E600915344 /* render.cpp in Sources */,
 				AE505C5D141D45E600915344 /* RenderPlaceObjs.cpp in Sources */,
+				AE8342422C5B22EA00A4A530 /* ScenarioChooser.cpp in Sources */,
 				AE505C5E141D45E600915344 /* RenderRasterize.cpp in Sources */,
 				AE505C5F141D45E600915344 /* RenderSortPoly.cpp in Sources */,
 				AE505C60141D45E600915344 /* RenderVisTree.cpp in Sources */,
@@ -7552,6 +7565,7 @@
 				AEB4A1FC14296CAE00537AE7 /* OGL_Textures.cpp in Sources */,
 				AEB4A1FD14296CAE00537AE7 /* render.cpp in Sources */,
 				AEB4A1FE14296CAE00537AE7 /* RenderPlaceObjs.cpp in Sources */,
+				AE8342432C5B22EA00A4A530 /* ScenarioChooser.cpp in Sources */,
 				AEB4A1FF14296CAE00537AE7 /* RenderRasterize.cpp in Sources */,
 				AEB4A20014296CAE00537AE7 /* RenderSortPoly.cpp in Sources */,
 				AEB4A20114296CAE00537AE7 /* RenderVisTree.cpp in Sources */,
@@ -8009,6 +8023,7 @@
 				AEC3C82509AD68AC003258E4 /* OGL_Textures.cpp in Sources */,
 				AEC3C82609AD68AC003258E4 /* render.cpp in Sources */,
 				AEC3C82709AD68AC003258E4 /* RenderPlaceObjs.cpp in Sources */,
+				AE8342402C5B22EA00A4A530 /* ScenarioChooser.cpp in Sources */,
 				AEC3C82809AD68AC003258E4 /* RenderRasterize.cpp in Sources */,
 				AEC3C82909AD68AC003258E4 /* RenderSortPoly.cpp in Sources */,
 				275A7BD81A60E9B9002EE952 /* HTTP.cpp in Sources */,
@@ -8237,6 +8252,7 @@
 				AEFD870813EB84CF00C1E687 /* OGL_Textures.cpp in Sources */,
 				AEFD870913EB84CF00C1E687 /* render.cpp in Sources */,
 				AEFD870A13EB84CF00C1E687 /* RenderPlaceObjs.cpp in Sources */,
+				AE8342412C5B22EA00A4A530 /* ScenarioChooser.cpp in Sources */,
 				AEFD870B13EB84CF00C1E687 /* RenderRasterize.cpp in Sources */,
 				AEFD870C13EB84CF00C1E687 /* RenderSortPoly.cpp in Sources */,
 				AEFD870D13EB84CF00C1E687 /* RenderVisTree.cpp in Sources */,

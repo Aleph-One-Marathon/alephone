@@ -742,6 +742,9 @@
     <ClCompile Include="..\..\Source_Files\Network\StandaloneHub\StandaloneHub.cpp">
       <Filter>Network\StandaloneHub\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source_Files\Misc\ScenarioChooser.cpp">
+      <Filter>Misc\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source_Files\CSeries\BStream.h">
@@ -1442,6 +1445,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Network\StandaloneHub\StandaloneHub.h">
       <Filter>Network\StandaloneHub\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source_Files\Misc\ScenarioChooser.h">
+      <Filter>Misc\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

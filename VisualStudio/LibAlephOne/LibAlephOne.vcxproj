@@ -486,6 +486,7 @@
     <ClCompile Include="..\..\Source_Files\Misc\preferences_widgets_sdl.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\preference_dialogs.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\Scenario.cpp" />
+    <ClCompile Include="..\..\Source_Files\Misc\ScenarioChooser.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\sdl_dialogs.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\sdl_widgets.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\shared_widgets.cpp" />
@@ -746,6 +747,7 @@
     <ClInclude Include="..\..\Source_Files\Misc\progress.h" />
     <ClInclude Include="..\..\Source_Files\Misc\Random.h" />
     <ClInclude Include="..\..\Source_Files\Misc\Scenario.h" />
+    <ClInclude Include="..\..\Source_Files\Misc\ScenarioChooser.h" />
     <ClInclude Include="..\..\Source_Files\Misc\sdl_dialogs.h" />
     <ClInclude Include="..\..\Source_Files\Misc\sdl_network.h" />
     <ClInclude Include="..\..\Source_Files\Misc\sdl_widgets.h" />
