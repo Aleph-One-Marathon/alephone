@@ -464,6 +464,13 @@ void ScenarioChooser::optimize_image(Scenario& scenario, SDL_Window* window)
 	SDL_Rect src_rect{0, 0, optimized->w, optimized->h};
 	SDL_Rect dst_rect{0, 0, scenario_width, scenario_height};
 
+	// the 32-bit title screens in M2 / Inf are 640x480; crop to the middle
+	if (optimized->h > scenario_height * 2)
+	{
+		src_rect.h = scenario_height * 2;
+		src_rect.y = (optimized->h - scenario_height * 2) / 2;
+	}
+
 	scenario.image.reset(SDL_CreateRGBSurface(0, scenario_width, scenario_height, format->BitsPerPixel, format->Rmask, format->Gmask, format->Bmask, format->Amask));
 
 	SDL_SoftStretchLinear(optimized.get(), &src_rect, scenario.image.get(), &dst_rect);

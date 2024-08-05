@@ -30,10 +30,8 @@ class font_info;
 class ScenarioChooser
 {
 public:
-//	static constexpr auto scenario_width = 300;
-	//	static constexpr auto scenario_height= 450;
 	static constexpr auto scenario_width = 320;
-	static constexpr auto scenario_height = 200;
+	static constexpr auto scenario_height = 193;
 
 	static constexpr auto margin = 10;
 	
