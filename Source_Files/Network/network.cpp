@@ -747,11 +747,7 @@ void Client::handleRemoteHubCommandMessage(RemoteHubCommandMessage* message, Com
 		{
 			case RemoteHubCommand::kAcceptJoiner_Command:
 			{
-				if (NetGetNumberOfPlayers() >= MAXIMUM_NUMBER_OF_PLAYERS)
-				{
-					state = Client::_disconnect;
-				}
-				else
+				if (NetGetNumberOfPlayers() < MAXIMUM_NUMBER_OF_PLAYERS)
 				{
 					prospective_joiner_info info = {};
 					info.stream_id = message->data();
