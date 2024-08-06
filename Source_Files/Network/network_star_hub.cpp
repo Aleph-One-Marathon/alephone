@@ -148,7 +148,7 @@ enum {
         kDefaultInGameTicksBeforeNetDeath = 5 * TICKS_PER_SECOND,
 	kDefaultSendPeriod = 1,
         kDefaultRecoverySendPeriod = TICKS_PER_SECOND / 2,
-	kDefaultMinimumSendPeriod = 5,
+	kDefaultMinimumSendPeriod = 3,
 	kLossyByteStreamDataBufferSize = 1280,
 	kTypicalLossyByteStreamChunkSize = 56,
 	kLossyByteStreamDescriptorCount = kLossyByteStreamDataBufferSize / kTypicalLossyByteStreamChunkSize,
