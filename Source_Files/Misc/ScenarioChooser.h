@@ -31,7 +31,7 @@ class ScenarioChooser
 {
 public:
 	static constexpr auto scenario_width = 320;
-	static constexpr auto scenario_height = 193;
+	static constexpr auto scenario_height = 240;
 
 	static constexpr auto margin = 10;
 	
