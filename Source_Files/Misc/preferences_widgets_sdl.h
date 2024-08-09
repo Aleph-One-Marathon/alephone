@@ -109,7 +109,7 @@ private:
 // Environment selection button
 // ZZZ: added callback stuff - callback is made if user clicks on an entry in the selection dialog.
 class w_env_select;
-typedef void (*selection_made_callback_t)(w_env_select* inWidget);
+using selection_made_callback_t = std::function<void(w_env_select*)>;
 
 class w_env_select : public w_select_button {
 public:
@@ -122,7 +122,7 @@ w_env_select(const char *path, const char *m, Typecode t, dialog *d)
 	}
 	~w_env_select() {}
 
-    void    set_selection_made_callback(selection_made_callback_t inCallback) {
+    void set_selection_made_callback(selection_made_callback_t inCallback) {
         mCallback = inCallback;
     }
 
@@ -157,6 +157,26 @@ private:
 	char item_name[256];	// File name (excluding directory part)
 
     selection_made_callback_t mCallback;
+};
+
+class EnvSelectWidget : public SDLWidgetWidget, public Bindable<FileSpecifier>
+{
+public:
+	EnvSelectWidget(w_env_select* env_select) :
+		SDLWidgetWidget(env_select),
+		m_env_select(env_select)
+	{
+	}
+
+	void set_callback(ControlHitCallback callback) { m_env_select->set_selection_made_callback([=](w_env_select*) { callback(); }); }
+	void set_file(const FileSpecifier& file) { m_env_select->set_path(file.GetPath()); }
+	FileSpecifier get_file() { return m_env_select->get_file_specifier(); }
+
+	virtual FileSpecifier bind_export() { return get_file(); }
+	virtual void bind_import(FileSpecifier f) { set_file(f); }
+
+private:
+	w_env_select* m_env_select;
 };
 
 class w_crosshair_display : public widget {

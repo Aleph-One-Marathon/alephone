@@ -3152,7 +3152,7 @@ static void environment_dialog(void *arg)
 	table->dual_add(sounds_w->label("Sounds"), d);
 	table->dual_add(sounds_w, d);
 
-	w_env_select* resources_w = new w_env_select(environment_preferences->resources_file, "AVAILABLE FILES", _typecode_unknown, &d);
+	w_env_select* resources_w = new w_env_select(environment_preferences->resources_file, "AVAILABLE FILES", _typecode_application, &d);
 	table->dual_add(resources_w->label("External Resources"), d);
 	table->dual_add(resources_w, d);
 #endif
@@ -3164,8 +3164,7 @@ static void environment_dialog(void *arg)
 	table->dual_add(use_solo_lua_w->label("Use Solo Script"), d);
 	table->dual_add(use_solo_lua_w, d);
 
-	w_file_chooser *solo_lua_w = new w_file_chooser("Choose Script", _typecode_netscript);
-	solo_lua_w->set_file(environment_preferences->solo_lua_file);
+	w_env_select *solo_lua_w = new w_env_select(environment_preferences->solo_lua_file, "AVAILABLE SOLO SCRIPTS", _typecode_netscript, &d);
 	table->dual_add(solo_lua_w->label("Script File"), d);
 	table->dual_add(solo_lua_w, d);
 	use_solo_lua_w->add_dependent_widget(solo_lua_w);
@@ -3183,8 +3182,7 @@ static void environment_dialog(void *arg)
 	table->dual_add(use_replay_net_lua_w->label("Use Netscript in Films"), d);
 	table->dual_add(use_replay_net_lua_w, d);
 	
-	w_file_chooser *replay_net_lua_w = new w_file_chooser("Choose Script", _typecode_netscript);
-	replay_net_lua_w->set_file(network_preferences->netscript_file);
+	w_env_select *replay_net_lua_w = new w_env_select(network_preferences->netscript_file, "AVAILABLE NETSCRIPTS", _typecode_netscript, &d);
 	table->dual_add(replay_net_lua_w->label("Netscript File"), d);
 	table->dual_add(replay_net_lua_w, d);
 	use_replay_net_lua_w->add_dependent_widget(replay_net_lua_w);
@@ -3281,7 +3279,7 @@ static void environment_dialog(void *arg)
 			changed = true;
 		}
 		
-		path = solo_lua_w->get_file().GetPath();
+		path = solo_lua_w->get_path();
 		if (strcmp(path, environment_preferences->solo_lua_file)) {
 			strncpy(environment_preferences->solo_lua_file, path, 256);
 			changed = true;
@@ -3294,7 +3292,7 @@ static void environment_dialog(void *arg)
 			changed = true;
 		}
 		
-		path = replay_net_lua_w->get_file().GetPath();
+		path = replay_net_lua_w->get_path();
 		if (strcmp(path, network_preferences->netscript_file)) {
 			strncpy(network_preferences->netscript_file, path, 256);
 			changed = true;

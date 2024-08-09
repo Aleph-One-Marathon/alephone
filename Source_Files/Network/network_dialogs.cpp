@@ -2743,7 +2743,7 @@ public:
 
 		// Could eventually store this path in network_preferences somewhere, so to have separate map file
 		// prefs for single- and multi-player.
-		w_file_chooser* map_w = new w_file_chooser ("Choose Map", _typecode_scenario);
+		w_env_select* map_w = new w_env_select ("", "AVAILABLE MAPS", _typecode_scenario, &m_dialog);
 #ifndef MAC_APP_STORE
 		player_table->dual_add(map_w->label("Map"), m_dialog);
 		player_table->dual_add(map_w, m_dialog);
@@ -2773,7 +2773,7 @@ public:
 		network_table->dual_add(use_netscript_w->label("Use Netscript"), m_dialog);
 #endif
 
-		w_file_chooser* choose_script_w = new w_file_chooser ("Choose Script", _typecode_netscript);
+		w_env_select* choose_script_w = new w_env_select ("", "AVAILABLE NETSCRIPTS", _typecode_netscript, &m_dialog);
 #ifndef MAC_APP_STORE
 		network_table->add(new w_spacer(), true);
 		network_table->dual_add(choose_script_w, m_dialog);
@@ -2885,7 +2885,7 @@ public:
 		m_colourWidget = new ColourSelectorWidget (pcolor_w);
 		m_teamWidget = new ColourSelectorWidget (tcolor_w);
 	
-		m_mapWidget = new FileChooserWidget (map_w);
+		m_mapWidget = new EnvSelectWidget (map_w);
 		
 		m_levelWidget = new PopupSelectorWidget (entry_point_w);
 		m_gameTypeWidget = new PopupSelectorWidget (game_type_w);
@@ -2904,7 +2904,7 @@ public:
 		m_useMetaserverWidget = new ToggleWidget (advertise_on_metaserver_w);
 	
 		m_useScriptWidget = new ToggleWidget (use_netscript_w);
-		m_scriptWidget = new FileChooserWidget (choose_script_w);
+		m_scriptWidget = new EnvSelectWidget (choose_script_w);
 	
 		m_liveCarnageWidget = new ToggleWidget (live_w);
 		m_motionSensorWidget = new ToggleWidget (sensor_w);

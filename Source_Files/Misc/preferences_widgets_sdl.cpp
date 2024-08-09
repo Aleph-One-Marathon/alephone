@@ -46,22 +46,6 @@ void w_env_select::select_item_callback(void* arg) {
 
 void w_env_select::select_item(dialog *parent)
 {
-#ifdef HAVE_NFD
-	if (environment_preferences->use_native_file_dialogs)
-	{
-		auto spec = item;
-        if (spec.ReadDialog(type, nullptr))
-		{
-			set_path(spec.GetPath());
-			if (mCallback)
-			{
-				mCallback(this);
-			}
-		}
-	}
-	else
-	{
-#endif
 	// Find available files
 	vector<FileSpecifier> files;
 	if (type != _typecode_theme) {
@@ -105,7 +89,15 @@ void w_env_select::select_item(dialog *parent)
 	w_env_list *list_w = new w_env_list(items, item.GetPath(), &d);
 	placer->dual_add(list_w, d);
 	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+
+	auto load_other = false;
+	horizontal_placer* button_placer = new horizontal_placer;
+#ifndef MAC_APP_STORE
+	w_button* other_w = new w_button("LOAD OTHER", [&](void* p) { load_other = true; dialog_cancel(p); }, &d);
+	button_placer->dual_add(other_w, d);
+#endif
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	placer->add(button_placer, true);
 
 	d.activate_widget(list_w);
 	d.set_widget_placer(placer);
@@ -121,9 +113,19 @@ void w_env_select::select_item(dialog *parent)
         if(mCallback)
             mCallback(this);
 	}
-#ifdef HAVE_NFD
+	else if (load_other)
+	{
+		FileSpecifier spec(get_path());
+		if (spec.ReadDialog(type))
+		{
+			set_path(spec.GetPath());
+			
+			if (mCallback)
+			{
+				mCallback(this);
+			}
+		}
 	}
-#endif
 }
 
 w_crosshair_display::w_crosshair_display() : surface(0)

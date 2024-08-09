@@ -594,6 +594,8 @@ static extension_mapping extensions[] =
 
 	{ "mpg", false, _typecode_movie },
 
+	{ "appl", false, _typecode_application },
+
 	{0, false, _typecode_unknown}
 };
 

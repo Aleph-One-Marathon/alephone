@@ -45,6 +45,7 @@ Mar 1, 2002 (Woody Zenfell):
 #include    "metaserver_dialogs.h"
 
 #include    "shared_widgets.h"
+#include    "preferences_widgets_sdl.h"
 
 #include    <string>
 
@@ -404,7 +405,7 @@ protected:
 	SelectorWidget*		m_colourWidget;
 	SelectorWidget*		m_teamWidget;
 	
-	FileChooserWidget*	m_mapWidget;
+	EnvSelectWidget*	m_mapWidget;
 	SelectorWidget*		m_levelWidget;
 	SelectorWidget*		m_gameTypeWidget;
 	SelectorWidget*		m_difficultyWidget;
@@ -422,7 +423,7 @@ protected:
 	ToggleWidget*		m_useMetaserverWidget;
 	
 	ToggleWidget*		m_useScriptWidget;
-	FileChooserWidget*	m_scriptWidget;
+	EnvSelectWidget*	m_scriptWidget;
 	
 	ToggleWidget*		m_liveCarnageWidget;
 	ToggleWidget*		m_motionSensorWidget;
