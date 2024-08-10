@@ -282,6 +282,7 @@ static ISteamUserStats *GSteamStats = NULL;
 static ISteamUtils *GSteamUtils = NULL;
 static ISteamUser *GSteamUser = NULL;
 static ISteamUGC *GSteamUGC = NULL;
+static ISteamFriends* GSteamFriends = NULL;
 static AppId_t GAppID = 0;
 static uint64 GUserID = 0;
 static SteamBridge *GSteamBridge = NULL;
@@ -755,6 +756,14 @@ void SteamBridge::OnItemUpdated(SubmitItemUpdateResult_t* pCallback, bool bIOFai
             GSteamUGC->DeleteItem(pCallback->m_nPublishedFileId); //won't care about callback and return value here
         }
     }
+    else
+    {
+        if (!m_upload_item_data.id)
+        {
+            std::string url = "https://steamcommunity.com/sharedfiles/filedetails/?id=" + std::to_string(pCallback->m_nPublishedFileId);
+            GSteamFriends->ActivateGameOverlayToWebPage(url.c_str());
+        }
+    }
 
     m_update_handle = 0xffffffffffffffffull;
     writeWorkshopUploadResult(fd, pCallback->m_eResult, pCallback->m_bUserNeedsToAcceptWorkshopLegalAgreement);
@@ -1167,6 +1176,7 @@ static bool initSteamworks(PipeType fd, ESteamAPIInitResult* resultCode, SteamEr
     GSteamUtils = SteamUtils();
     GSteamUser = SteamUser();
     GSteamUGC = SteamUGC();
+    GSteamFriends = SteamFriends();
 
     GAppID = GSteamUtils ? GSteamUtils->GetAppID() : 0;
 	GUserID = GSteamUser ? GSteamUser->GetSteamID().ConvertToUint64() : 0;
@@ -1184,6 +1194,7 @@ static void deinitSteamworks(void)
     GSteamUtils= NULL;
     GSteamUser = NULL;
     GSteamUGC = NULL;
+    GSteamFriends = NULL;
 } // deinitSteamworks
 
 static int mainline(void)
