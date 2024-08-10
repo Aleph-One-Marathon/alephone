@@ -1919,8 +1919,6 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 	table->dual_add(items_popup->label("Upload For"), d);
 	table->dual_add(items_popup, d);
 
-	table->add_row(new w_spacer(), true);
-
 	static const std::vector<std::string> item_types = { "Scenario", "Plugin", "Other"};
 	auto types_popup = new w_select_popup();
 	types_popup->set_labels(item_types);
@@ -1929,19 +1927,18 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 	table->dual_add(types_popup->label("Item Type"), d);
 	table->dual_add(types_popup, d);
 
-	table->add_row(new w_spacer(), true);
-
-	auto custom_scenarios = new w_toggle(true);
-	table->dual_add(custom_scenarios->label("Scenarios Compatible"), d);
+	char label_off[128];
+	const char* labels[] = { label_off, "Any Scenario", "", nullptr };
+	snprintf(label_off, 128, "%s Only", Scenario::instance()->GetName().c_str());
+	
+	auto custom_scenarios = new w_toggle(true, labels);
+	table->dual_add(custom_scenarios->label("Compatible With"), d);
 	table->dual_add(custom_scenarios, d);
-	table->dual_add_row(new w_static_text("Uncheck if the item is only compatible with this scenario"), d);
 	table->add_row(new w_spacer(), true);
 
 	auto thumbnail_path = new w_file_chooser("Choose Preview Image", _typecode_unknown);
 	table->dual_add(thumbnail_path->label("Preview Image"), d);
 	table->dual_add(thumbnail_path, d);
-
-	table->add_row(new w_spacer(), true);
 
 	auto directory_path = new w_directory_chooser();
 	table->dual_add(directory_path->label("Item Directory"), d);
@@ -1988,7 +1985,7 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 		ui_data.item_type = types_popup->get_selection();
 		bool is_scenario = static_cast<ItemType>(ui_data.item_type) == ItemType::Scenario;
 		custom_scenarios->set_enabled(!is_scenario);
-		custom_scenarios->set_selection(!is_scenario);
+		custom_scenarios->set_selection(is_scenario ? 2 : 1);
 
 	}, nullptr);
 
