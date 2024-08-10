@@ -29,9 +29,15 @@
  */
 
 #include    "preferences_widgets_sdl.h"
+
+#include <cstring>
+
 #include "Crosshairs.h"
 
 #include "preferences.h"
+#ifdef HAVE_STEAM
+#include "steamshim_child.h"
+#endif
 
 extern bool use_lua_hud_crosshairs;
 
@@ -44,8 +50,58 @@ void w_env_select::select_item_callback(void* arg) {
     obj->select_item(obj->parent);
 }
 
+#ifdef HAVE_STEAM
+extern std::vector<item_subscribed_query_result::item> subscribed_workshop_items;
+
+static void add_workshop_items(Typecode type, std::vector<env_item>& items)
+{
+	std::vector<FileSpecifier> files;
+	FindAllFiles finder(files);
+
+	for (auto& item : subscribed_workshop_items)
+	{
+		FileSpecifier dir = item.install_folder_path;
+		finder.Find(dir, type);
+	}
+
+	if (files.size() == 0)
+	{
+		return;
+	}
+
+	env_item title;
+	strcpy(title.name, "Steam Workshop");
+	items.push_back(title);
+
+	std::sort(files.begin(), files.end(), [](const FileSpecifier& a, const FileSpecifier& b) {
+		std::string tmp, a_name, b_name;
+		a.SplitPath(tmp, a_name);
+		b.SplitPath(tmp, b_name);
+
+		return std::lexicographical_compare(a_name.begin(),
+											a_name.end(),
+											b_name.begin(),
+											b_name.end(),
+											[](const char& a, const char& b) {
+												return tolower(a) < tolower(b);
+											});
+	});
+
+	for (auto& file : files)
+	{
+		items.push_back(env_item(file, 1, true));
+	}
+}
+#endif
+
 void w_env_select::select_item(dialog *parent)
 {
+	vector<env_item> items;
+
+#ifdef HAVE_STEAM
+	add_workshop_items(type, items);
+#endif	
+
 	// Find available files
 	vector<FileSpecifier> files;
 	if (type != _typecode_theme) {
@@ -61,7 +117,6 @@ void w_env_select::select_item(dialog *parent)
 	}
 
 	// Create structured list of files
-	vector<env_item> items;
 	vector<FileSpecifier>::const_iterator i = files.begin(), end = files.end();
 	string last_base;
 	int indent_level = 0;

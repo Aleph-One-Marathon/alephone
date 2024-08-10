@@ -140,6 +140,10 @@ DirectorySpecifier recordings_dir;    // Directory for recordings (except film b
 DirectorySpecifier screenshots_dir;   // Directory for screenshots
 DirectorySpecifier log_dir;           // Directory for Aleph One Log.txt
 
+#ifdef HAVE_STEAM
+std::vector<item_subscribed_query_result::item> subscribed_workshop_items;
+#endif
+
 /*
 // Command-line options
 bool option_nogl = false;             // Disable OpenGL
@@ -460,6 +464,30 @@ void initialize_application(void)
 			LoadBaseMMLScripts(true);
 		}
 	}
+
+#ifdef HAVE_STEAM
+	STEAMSHIM_queryWorkshopItemMod(Scenario::instance()->GetName());
+	while (STEAMSHIM_alive())
+	{
+		auto result = STEAMSHIM_pump();
+
+		if (result && result->type == SHIMEVENT_WORKSHOP_QUERY_ITEM_SUBSCRIBED_RESULT)
+		{
+			if (result->items_subscribed.result_code == 1)
+			{
+				for (const auto& item : result->items_subscribed.items)
+				{
+					if (item.type == ItemType::Other)
+					{
+						subscribed_workshop_items.push_back(item);
+					}
+				}
+
+				break;
+			}
+		}
+	}
+#endif
 
 	initialize_fonts(true);
 	Plugins::instance()->enumerate();			
