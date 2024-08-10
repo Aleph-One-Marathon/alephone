@@ -1832,7 +1832,9 @@ static void steam_workshop_upload_item_callback(void* arg)
 	{
 		if (result->okay)
 		{
-			alert_user("Your item was correctly uploaded on Steam", infoNoError);
+			std::string message = "Your item was correctly uploaded on Steam.";
+			message += result->needs_to_accept_workshop_agreement ? " However, your item will remain hidden until you accept the Steam workshop legal agreement." : "";
+			alert_user(message.c_str(), infoNoError);
 			dialog->quit(0);
 		}
 		else
@@ -1945,6 +1947,11 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 	table->dual_add(directory_path, d);
 
 	placer->add(table, true);
+
+	placer->add(new w_spacer, true);
+
+	placer->dual_add(new w_hyperlink("https://steamcommunity.com/sharedfiles/workshoplegalagreement",
+		"By submitting this item, you agree to the workshop terms of service"), d);
 
 	placer->add(new w_spacer, true);
 

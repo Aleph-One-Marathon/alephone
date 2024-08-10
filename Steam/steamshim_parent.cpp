@@ -513,10 +513,10 @@ static inline bool writeOverlayActivated(PipeType fd, const bool okay)
     return write2ByteCmd(fd, SHIMEVENT_IS_OVERLAY_ACTIVATED, okay ? 1 : 0);
 } // writeOverlayActivated
 
-static inline bool writeWorkshopUploadResult(PipeType fd, const EResult result)
+static inline bool writeWorkshopUploadResult(PipeType fd, const EResult result, bool needs_accept_workshop_agreement)
 {
-    dbgpipe("Parent sending SHIMEVENT_WORKSHOP_UPLOAD_RESULT(%d result).\n", result);
-    return write2ByteCmd(fd, SHIMEVENT_WORKSHOP_UPLOAD_RESULT, result);
+    dbgpipe("Parent sending SHIMEVENT_WORKSHOP_UPLOAD_RESULT(%d result %d workshop agreement).\n", result, needs_accept_workshop_agreement);
+    return write3ByteCmd(fd, SHIMEVENT_WORKSHOP_UPLOAD_RESULT, result, needs_accept_workshop_agreement);
 } // writeOverlayActivated
 
 static bool writeWorkshopItemOwnedQueriedResult(PipeType fd, const item_owned_query_result& query_result)
@@ -635,7 +635,7 @@ static inline bool writeGetStatF(PipeType fd, const char *name, const float val,
     return writeStatThing(fd, SHIMEVENT_GETSTATF, name, &val, sizeof (val), okay);
 } // writeGetStatF
 
-static void UpdateItem(PublishedFileId_t item_id, item_upload_data& item_data)
+static void UpdateItem(PublishedFileId_t item_id, const item_upload_data& item_data)
 {
     UGCUpdateHandle_t updateHandle = GSteamUGC->StartItemUpdate(GAppID, item_id);
 
@@ -741,7 +741,7 @@ void SteamBridge::idle()
 void SteamBridge::OnItemCreated(CreateItemResult_t* pCallback, bool bIOFailure)
 {
     if (bIOFailure || pCallback->m_eResult != k_EResultOK)
-        writeWorkshopUploadResult(fd, pCallback->m_eResult);
+        writeWorkshopUploadResult(fd, pCallback->m_eResult, pCallback->m_bUserNeedsToAcceptWorkshopLegalAgreement);
     else
         UpdateItem(pCallback->m_nPublishedFileId, m_upload_item_data);
 }
@@ -757,7 +757,7 @@ void SteamBridge::OnItemUpdated(SubmitItemUpdateResult_t* pCallback, bool bIOFai
     }
 
     m_update_handle = 0xffffffffffffffffull;
-    writeWorkshopUploadResult(fd, pCallback->m_eResult);
+    writeWorkshopUploadResult(fd, pCallback->m_eResult, pCallback->m_bUserNeedsToAcceptWorkshopLegalAgreement);
 }
 
 void SteamBridge::OnItemOwnedQueried(SteamUGCQueryCompleted_t* pCallback, bool bIOFailure)

@@ -318,6 +318,7 @@ static const STEAMSHIM_Event *processEvent(const uint8 *buf, size_t buflen)
         case SHIMEVENT_WORKSHOP_UPLOAD_RESULT:
             event.ivalue = (int)*(buf++);
             event.okay = event.ivalue == 1;
+            event.needs_to_accept_workshop_agreement = (bool)*(buf++);
             break;
 
         case SHIMEVENT_WORKSHOP_UPLOAD_PROGRESS:

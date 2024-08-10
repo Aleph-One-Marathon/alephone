@@ -164,6 +164,7 @@ struct STEAMSHIM_Event
     float fvalue;
     unsigned long long epochsecs;
     char name[256];
+    bool needs_to_accept_workshop_agreement;
     item_owned_query_result items_owned;
     item_subscribed_query_result items_subscribed;
 };
