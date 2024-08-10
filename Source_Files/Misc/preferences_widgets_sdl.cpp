@@ -60,8 +60,11 @@ static void add_workshop_items(Typecode type, std::vector<env_item>& items)
 
 	for (auto& item : subscribed_workshop_items)
 	{
-		FileSpecifier dir = item.install_folder_path;
-		finder.Find(dir, type);
+		if (item.type == ItemType::Other)
+		{
+			FileSpecifier dir = item.install_folder_path;
+			finder.Find(dir, type);
+		}
 	}
 
 	if (files.size() == 0)

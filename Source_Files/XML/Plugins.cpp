@@ -33,6 +33,9 @@
 #include "InfoTree.h"
 #include "XML_ParseTreeRoot.h"
 #include "Scenario.h"
+#ifdef HAVE_STEAM
+#include "steamshim_child.h"
+#endif
 
 #include <boost/algorithm/string/predicate.hpp>
 
@@ -483,10 +486,25 @@ bool PluginLoader::ParseDirectory(FileSpecifier& dir)
 
 extern std::vector<DirectorySpecifier> data_search_path;
 
+#ifdef HAVE_STEAM
+extern std::vector<item_subscribed_query_result::item> subscribed_workshop_items;
+#endif
+
 void Plugins::enumerate() {
 
 	logContext("parsing plugins");
 	PluginLoader loader;
+
+#ifdef HAVE_STEAM
+	for (const auto& item : subscribed_workshop_items)
+	{
+		if (item.type == ItemType::Plugin)
+		{
+			FileSpecifier dir(item.install_folder_path);
+			loader.ParseDirectory(dir);
+		}
+	}
+#endif
 	
 	for (std::vector<DirectorySpecifier>::const_iterator it = data_search_path.begin(); it != data_search_path.end(); ++it) {
 		DirectorySpecifier path = *it + "Plugins";

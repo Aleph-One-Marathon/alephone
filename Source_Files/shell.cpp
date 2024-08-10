@@ -477,10 +477,7 @@ void initialize_application(void)
 			{
 				for (const auto& item : result->items_subscribed.items)
 				{
-					if (item.type == ItemType::Other)
-					{
-						subscribed_workshop_items.push_back(item);
-					}
+					subscribed_workshop_items.push_back(item);
 				}
 
 				break;
