@@ -1929,12 +1929,11 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 	table->dual_add(types_popup->label("Item Type"), d);
 	table->dual_add(types_popup, d);
 
-	char label_off[128];
-	const char* labels[] = { label_off, "Any Scenario", "", nullptr };
-	snprintf(label_off, 128, "%s Only", Scenario::instance()->GetName().c_str());
+	char label[64];
+	snprintf(label, 64, "%s Only", Scenario::instance()->GetName().c_str());
 	
-	auto custom_scenarios = new w_toggle(true, labels);
-	table->dual_add(custom_scenarios->label("Compatible With"), d);
+	auto custom_scenarios = new w_toggle(false);
+	table->dual_add(custom_scenarios->label(label), d);
 	table->dual_add(custom_scenarios, d);
 	table->add_row(new w_spacer(), true);
 
@@ -1982,7 +1981,7 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 		directory_path->set_directory(ui_data.directory_path);
 		thumbnail_path->set_file(ui_data.thumbnail_path);
 
-		custom_scenarios->set_selection(ui_data.is_scenarios_compatible);
+		custom_scenarios->set_selection(!ui_data.is_scenarios_compatible);
 		custom_scenarios->set_enabled(static_cast<ItemType>(ui_data.item_type) != ItemType::Scenario);
 
 	}, nullptr);
@@ -1992,13 +1991,13 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 		ui_data.item_type = types_popup->get_selection();
 		bool is_scenario = static_cast<ItemType>(ui_data.item_type) == ItemType::Scenario;
 		custom_scenarios->set_enabled(!is_scenario);
-		custom_scenarios->set_selection(is_scenario ? 2 : 1);
+		custom_scenarios->set_selection(false);
 
 	}, nullptr);
 
 	custom_scenarios->set_selection_changed_callback([&](void*)
 	{
-		ui_data.is_scenarios_compatible = custom_scenarios->get_selection();
+		ui_data.is_scenarios_compatible = !custom_scenarios->get_selection();
 	});
 
 	directory_path->set_callback([&]()
