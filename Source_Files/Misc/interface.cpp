@@ -270,6 +270,7 @@ struct screen_data {
 struct steam_workshop_uploader_ui_data {
 	uint64_t item_id;
 	int item_type;
+	int content_type;
 	FileSpecifier directory_path;
 	FileSpecifier thumbnail_path;
 	bool is_scenarios_compatible;
@@ -1743,7 +1744,8 @@ static item_upload_data steam_workshop_prepare_upload(steam_workshop_uploader_ui
 	}
 
 	workshop_item.id = data.item_id;
-	workshop_item.type = (ItemType)data.item_type;
+	workshop_item.item_type = static_cast<ItemType>(data.item_type);
+	workshop_item.content_type = static_cast<ContentType>(data.content_type);
 	workshop_item.directory_path = data.directory_path.GetPath();
 	workshop_item.thumbnail_path = data.thumbnail_path.GetPath();
 	return workshop_item;
@@ -1883,7 +1885,8 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 	item_owned_query_result::item new_item;
 	new_item.id = 0;
 	new_item.title = "New Item";
-	new_item.type = ItemType::Plugin;
+	new_item.item_type = ItemType::Plugin;
+	new_item.content_type = ContentType::Graphics;
 	new_item.is_scenarios_compatible = true;
 	item_list.items.insert(item_list.items.begin(), new_item);
 
@@ -1901,7 +1904,7 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 	}
 
 	steam_workshop_uploader_ui_data ui_data;
-	ui_data.item_type = static_cast<int>(new_item.type);
+	ui_data.item_type = static_cast<int>(new_item.item_type);
 	ui_data.is_scenarios_compatible = new_item.is_scenarios_compatible;
 	ui_data.item_id = new_item.id;
 
@@ -1921,13 +1924,39 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 	table->dual_add(items_popup->label("Upload For"), d);
 	table->dual_add(items_popup, d);
 
-	static const std::vector<std::string> item_types = { "Scenario", "Plugin", "Other"};
-	auto types_popup = new w_select_popup();
-	types_popup->set_labels(item_types);
-	types_popup->set_selection(static_cast<int>(new_item.type));
+	auto get_content_types_tags = [&](ItemType item_type) -> std::vector<std::string>
+	{
+		static const std::vector<std::string> content_types_tags[] = {
+			{ },
+			{ "Graphics", "HUD", "Music", "Script", "Theme" },
+			{ "Solo & Net", "Solo Only", "Net Only" }
+		};
 
-	table->dual_add(types_popup->label("Item Type"), d);
-	table->dual_add(types_popup, d);
+		switch (item_type)
+		{
+			case ItemType::Scenario:
+				return content_types_tags[0];
+			case ItemType::Plugin:
+				return content_types_tags[1];
+			default:
+				return content_types_tags[2];
+		}
+	};
+
+	static const std::vector<std::string> item_types = { "Scenario", "Plugin", "Map", "Physics", "Script", "Sounds", "Shapes" };
+	auto item_types_popup = new w_select_popup();
+	item_types_popup->set_labels(item_types);
+	item_types_popup->set_selection(static_cast<int>(new_item.item_type));
+
+	table->dual_add(item_types_popup->label("Item Type"), d);
+	table->dual_add(item_types_popup, d);
+
+	auto content_types_popup = new w_select_popup();
+	content_types_popup->set_labels(get_content_types_tags(new_item.item_type));
+	content_types_popup->set_selection(0);
+
+	table->dual_add(content_types_popup->label("Content Type"), d);
+	table->dual_add(content_types_popup, d);
 
 	char label[64];
 	snprintf(label, 64, "%s Only", Scenario::instance()->GetName().c_str());
@@ -1964,34 +1993,97 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 
 	d.set_widget_placer(placer);
 
+	auto can_update_content_type = [&]() -> bool
+	{
+		switch (static_cast<ItemType>(ui_data.item_type))
+		{
+			case ItemType::Plugin:
+				return !ui_data.item_id;
+			case ItemType::Map:
+			case ItemType::Script:
+				return true;
+			default:
+				return false;
+		}
+	};
+
+	auto update_content_type_value = [&]()
+	{
+		int start_enum_index;
+		switch (static_cast<ItemType>(ui_data.item_type))
+		{
+			case ItemType::Scenario:
+				start_enum_index = static_cast<int>(ContentType::START_SCENARIO);
+				break;
+			case ItemType::Plugin:
+				start_enum_index = static_cast<int>(ContentType::START_PLUGIN);
+				break;
+			default:
+				start_enum_index = static_cast<int>(ContentType::START_OTHER);
+				break;
+		}
+
+		ui_data.content_type = start_enum_index + std::max(content_types_popup->get_selection(), 0);
+	};
+
+	auto get_selection_for_content_type = [&]() -> int
+	{
+		switch (static_cast<ItemType>(ui_data.item_type))
+		{
+			case ItemType::Scenario:
+				return ui_data.content_type - static_cast<int>(ContentType::START_SCENARIO);
+			case ItemType::Plugin:
+				return ui_data.content_type - static_cast<int>(ContentType::START_PLUGIN);
+			default:
+				return ui_data.content_type - static_cast<int>(ContentType::START_OTHER);
+		}
+	};
+
+	auto update_common_widgets = [&]()
+	{
+		bool is_scenario = static_cast<ItemType>(ui_data.item_type) == ItemType::Scenario;
+		custom_scenarios->set_enabled(!is_scenario);
+		custom_scenarios->set_selection(!ui_data.is_scenarios_compatible);
+
+		content_types_popup->set_labels(get_content_types_tags(static_cast<ItemType>(ui_data.item_type)));
+		content_types_popup->set_enabled(can_update_content_type());
+	};
+
 	items_popup->set_popup_callback([&](void*)
 	{
 		auto item_index = items_popup->get_selection();
 		auto& item = item_list.items.at(item_index);
 
 		ui_data.item_id = item.id;
-		ui_data.item_type = static_cast<int>(item.type);
+		ui_data.item_type = static_cast<int>(item.item_type);
+		ui_data.content_type = static_cast<int>(item.content_type);
 		ui_data.directory_path = "";
 		ui_data.thumbnail_path = "";
 		ui_data.is_scenarios_compatible = item.is_scenarios_compatible;
 
-		types_popup->set_selection(ui_data.item_type);
-		types_popup->set_enabled(!ui_data.item_id);
+		item_types_popup->set_selection(ui_data.item_type);
+		item_types_popup->set_enabled(!ui_data.item_id);
 
 		directory_path->set_directory(ui_data.directory_path);
 		thumbnail_path->set_file(ui_data.thumbnail_path);
 
-		custom_scenarios->set_selection(!ui_data.is_scenarios_compatible);
-		custom_scenarios->set_enabled(static_cast<ItemType>(ui_data.item_type) != ItemType::Scenario);
+		update_common_widgets();
+		content_types_popup->set_selection(get_selection_for_content_type());
 
 	}, nullptr);
 
-	types_popup->set_popup_callback([&](void*)
+	item_types_popup->set_popup_callback([&](void*)
 	{
-		ui_data.item_type = types_popup->get_selection();
-		bool is_scenario = static_cast<ItemType>(ui_data.item_type) == ItemType::Scenario;
-		custom_scenarios->set_enabled(!is_scenario);
-		custom_scenarios->set_selection(false);
+		ui_data.item_type = item_types_popup->get_selection();
+		update_common_widgets();
+		content_types_popup->set_selection(0);
+		update_content_type_value();
+
+	}, nullptr);
+
+	content_types_popup->set_popup_callback([&](void*)
+	{
+		update_content_type_value();
 
 	}, nullptr);
 

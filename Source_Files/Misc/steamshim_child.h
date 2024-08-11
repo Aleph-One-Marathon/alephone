@@ -7,34 +7,49 @@
 enum class ItemType {
     Scenario,
     Plugin,
-    Other
+    Map,
+    Physics,
+    Script,
+    Sounds,
+    Shapes
+};
+
+enum class ContentType {
+    START_SCENARIO = 0,
+    None = 0,
+
+    START_PLUGIN = 16,
+    Graphics = 16,
+    HUD,
+    Music,
+    Script,
+    Theme,
+
+    START_OTHER = 64,
+    SoloAndNet = 64,
+    Solo,
+    Net
 };
 
 struct item_upload_data {
 
     uint64_t id;
-    ItemType type;
+    ItemType item_type;
+    ContentType content_type;
     std::string directory_path;
     std::string thumbnail_path;
     std::string required_scenario;
-    std::vector<std::string> tags;
 
     std::ostringstream shim_serialize() const
     {
         std::ostringstream data_stream;
         data_stream.write(reinterpret_cast<const char*>(&id), sizeof(id));
-        data_stream.write(reinterpret_cast<const char*>(&type), sizeof(type));
+        data_stream.write(reinterpret_cast<const char*>(&item_type), sizeof(item_type));
+        data_stream.write(reinterpret_cast<const char*>(&content_type), sizeof(content_type));
 
         data_stream << directory_path << '\0';
         data_stream << thumbnail_path << '\0';
         data_stream << required_scenario << '\0';
-
-        for (const auto& tag : tags)
-        {
-            data_stream << tag << '\0';
-        }
-
-        data_stream << '\0';
 
         return data_stream;
     }
@@ -45,10 +60,10 @@ struct item_owned_query_result
     struct item
     {
         uint64_t id;
-        ItemType type;
+        ItemType item_type;
+        ContentType content_type;
         bool is_scenarios_compatible;
         std::string title;
-        std::vector<std::string> tags;
     };
 
     int result_code; //steam code (EResult) where 1 is success
@@ -69,20 +84,16 @@ struct item_owned_query_result
             
             iss.read(reinterpret_cast<char*>(&deserialized_item.id), sizeof(deserialized_item.id));
 
-            int type;
-            iss.read(reinterpret_cast<char*>(&type), sizeof(type));
-            deserialized_item.type = (ItemType)type;
+            int item_type;
+            iss.read(reinterpret_cast<char*>(&item_type), sizeof(item_type));
+            deserialized_item.item_type = static_cast<ItemType>(item_type);
+
+            int content_type;
+            iss.read(reinterpret_cast<char*>(&content_type), sizeof(content_type));
+            deserialized_item.content_type = static_cast<ContentType>(content_type);
 
             iss.read(reinterpret_cast<char*>(&deserialized_item.is_scenarios_compatible), sizeof(deserialized_item.is_scenarios_compatible));
             std::getline(iss, deserialized_item.title, '\0');
-
-            while (true)
-            {
-                std::string tag;
-                std::getline(iss, tag, '\0');
-                if (tag.empty()) break;
-                deserialized_item.tags.push_back(tag);
-            }
 
             items.push_back(deserialized_item);
         }
@@ -94,7 +105,8 @@ struct item_subscribed_query_result
     struct item
     {
         uint64_t id;
-        ItemType type;
+        ItemType item_type;
+        ContentType content_type;
         std::string install_folder_path;
     };
 
@@ -115,9 +127,13 @@ struct item_subscribed_query_result
             item deserialized_item = {};
             iss.read(reinterpret_cast<char*>(&deserialized_item.id), sizeof(deserialized_item.id));
 
-            int type;
-            iss.read(reinterpret_cast<char*>(&type), sizeof(type));
-            deserialized_item.type = (ItemType)type;
+            int item_type;
+            iss.read(reinterpret_cast<char*>(&item_type), sizeof(item_type));
+            deserialized_item.item_type = static_cast<ItemType>(item_type);
+
+            int content_type;
+            iss.read(reinterpret_cast<char*>(&content_type), sizeof(content_type));
+            deserialized_item.content_type = static_cast<ContentType>(content_type);
 
             std::getline(iss, deserialized_item.install_folder_path, '\0');
 

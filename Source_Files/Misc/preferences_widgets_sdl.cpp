@@ -60,7 +60,7 @@ static void add_workshop_items(Typecode type, std::vector<env_item>& items)
 
 	for (auto& item : subscribed_workshop_items)
 	{
-		if (item.type == ItemType::Other)
+		if (item.item_type != ItemType::Plugin)
 		{
 			FileSpecifier dir = item.install_folder_path;
 			finder.Find(dir, type);

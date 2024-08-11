@@ -290,13 +290,35 @@ static SteamBridge *GSteamBridge = NULL;
 namespace SteamItemTags
 {
     constexpr const char* ItemType = "ItemType";
+    constexpr const char* ContentType = "ContentType";
     constexpr const char* RequiredScenario = "RequiredScenario";
 }
 
-typedef enum ItemType {
+enum class ItemType {
     Scenario,
     Plugin,
-    Other
+    Map,
+    Physics,
+    Script,
+    Sounds,
+    Shapes
+};
+
+enum class ContentType {
+    START_SCENARIO = 0,
+    None = 0,
+
+    START_PLUGIN = 16,
+    Graphics = 16,
+    HUD,
+    Music,
+    Script,
+    Theme,
+
+    START_OTHER = 64,
+    SoloAndNet = 64,
+    Solo,
+    Net
 };
 
 struct item_subscribed_query_result
@@ -304,7 +326,8 @@ struct item_subscribed_query_result
     struct item
     {
         uint64_t id;
-        ItemType type;
+        ItemType item_type;
+        ContentType content_type;
         std::string install_folder_path;
     };
 
@@ -322,7 +345,8 @@ struct item_subscribed_query_result
         for (const auto& item : items)
         {
             data_stream.write(reinterpret_cast<const char*>(&item.id), sizeof(item.id));
-            data_stream.write(reinterpret_cast<const char*>(&item.type), sizeof(item.type));
+            data_stream.write(reinterpret_cast<const char*>(&item.item_type), sizeof(item.item_type));
+            data_stream.write(reinterpret_cast<const char*>(&item.content_type), sizeof(item.content_type));
             data_stream << item.install_folder_path << '\0';
         }
 
@@ -335,10 +359,10 @@ struct item_owned_query_result
     struct item
     {
         uint64_t id;
-        ItemType type;
+        ItemType item_type;
+        ContentType content_type;
         bool is_scenarios_compatible;
         std::string title;
-        std::vector<std::string> tags;
     };
 
     EResult result_code;
@@ -355,16 +379,10 @@ struct item_owned_query_result
         for (const auto& item : items)
         {
             data_stream.write(reinterpret_cast<const char*>(&item.id), sizeof(item.id));
-            data_stream.write(reinterpret_cast<const char*>(&item.type), sizeof(item.type));
+            data_stream.write(reinterpret_cast<const char*>(&item.item_type), sizeof(item.item_type));
+            data_stream.write(reinterpret_cast<const char*>(&item.content_type), sizeof(item.content_type));
             data_stream.write(reinterpret_cast<const char*>(&item.is_scenarios_compatible), sizeof(item.is_scenarios_compatible));
             data_stream << item.title << '\0';
-
-            for (const auto& tag : item.tags)
-            {
-                data_stream << tag << '\0';
-            }
-
-            data_stream << '\0';
         }
 
         return data_stream;
@@ -374,28 +392,21 @@ struct item_owned_query_result
 struct item_upload_data {
 
     uint64_t id;
-    ItemType type;
+    ItemType item_type;
+    ContentType content_type;
     std::string directory_path;
     std::string thumbnail_path;
     std::string required_scenario;
-    std::vector<std::string> tags;
 
     void shim_deserialize(const uint8* buf, unsigned int buflen)
     {
         std::istringstream iss(std::string((const char*)buf, buflen));
         iss.read(reinterpret_cast<char*>(&id), sizeof(id));
-        iss.read(reinterpret_cast<char*>(&type), sizeof(type));
+        iss.read(reinterpret_cast<char*>(&item_type), sizeof(item_type));
+        iss.read(reinterpret_cast<char*>(&content_type), sizeof(content_type));
         std::getline(iss, directory_path, '\0');
         std::getline(iss, thumbnail_path, '\0');
         std::getline(iss, required_scenario, '\0');
-
-        while (true)
-        {
-            std::string tag;
-            std::getline(iss, tag, '\0');
-            if (tag.empty()) break;
-            tags.push_back(tag);
-        }
     }
 };
 
@@ -407,7 +418,7 @@ public:
 	STEAM_CALLBACK(SteamBridge, OnUserStatsStored, UserStatsStored_t, m_CallbackUserStatsStored);
     STEAM_CALLBACK(SteamBridge, OnOverlayActivated, GameOverlayActivated_t, m_CallbackOverlayActivated);
     void set_item_created_callback(SteamAPICall_t api_call, const item_upload_data& item_data);
-    void set_item_updated_callback(SteamAPICall_t api_call, UGCUpdateHandle_t handle);
+    void set_item_updated_callback(SteamAPICall_t api_call, UGCUpdateHandle_t handle, const item_upload_data& item_data);
     void set_item_owned_queried_callback(SteamAPICall_t api_call, const std::string& scenario_name);
     void set_item_mod_queried_callback(SteamAPICall_t api_call, const std::string& scenario_name);
     void set_item_scenario_queried_callback(SteamAPICall_t api_call);
@@ -636,20 +647,113 @@ static inline bool writeGetStatF(PipeType fd, const char *name, const float val,
     return writeStatThing(fd, SHIMEVENT_GETSTATF, name, &val, sizeof (val), okay);
 } // writeGetStatF
 
+static std::vector<std::string> GetTagsForItemType(ItemType item_type, ContentType content_type)
+{
+    std::vector<std::string> tags;
+
+    switch (item_type)
+    {
+        case ItemType::Scenario:
+            tags.push_back("Scenario");
+            break;
+        case ItemType::Plugin:
+            tags.push_back("Plugin");
+            switch (content_type)
+            {
+                case ContentType::Graphics:
+                    tags.push_back("Graphics");
+                    break;
+                case ContentType::HUD:
+                    tags.push_back("HUD");
+                    break;
+                case ContentType::Music:
+                    tags.push_back("Music");
+                    break;
+                case ContentType::Script:
+                    tags.push_back("Script");
+                    break;
+                case ContentType::Theme:
+                    tags.push_back("Theme");
+                    break;
+            }
+            break;
+        case ItemType::Map:
+            switch (content_type)
+            {
+                case ContentType::Solo:
+                    tags.push_back("Solo Map");
+                    break;
+                case ContentType::Net:
+                    tags.push_back("Net Map");
+                    break;
+                case ContentType::SoloAndNet:
+                    tags.push_back("Solo Map");
+                    tags.push_back("Net Map");
+                    break;
+            }
+            break;
+        case ItemType::Physics:
+            tags.push_back("Physics");
+            break;
+        case ItemType::Script:
+            switch (content_type)
+            {
+                case ContentType::Solo:
+                    tags.push_back("Solo Script");
+                    break;
+                case ContentType::Net:
+                    tags.push_back("Net Script");
+                    break;
+                case ContentType::SoloAndNet:
+                    tags.push_back("Solo Script");
+                    tags.push_back("Net Script");
+                    break;
+            }
+            break;
+        case ItemType::Sounds:
+            tags.push_back("Sounds");
+            break;
+        case ItemType::Shapes:
+            tags.push_back("Shapes");
+            break;
+        default:
+            break;
+    }
+
+    return tags;
+}
+
 static void UpdateItem(PublishedFileId_t item_id, const item_upload_data& item_data)
 {
     UGCUpdateHandle_t updateHandle = GSteamUGC->StartItemUpdate(GAppID, item_id);
 
     if (item_data.id) //existing item
+    {
         GSteamUGC->RemoveItemKeyValueTags(updateHandle, SteamItemTags::RequiredScenario);
+        GSteamUGC->RemoveItemKeyValueTags(updateHandle, SteamItemTags::ContentType); //let at least users change solo/net stuff
+    }
     else //new item
     {
         std::string title = "New Item " + std::to_string(item_id);
-        std::string type = std::to_string(item_data.type);
+        std::string item_type = std::to_string(static_cast<int>(item_data.item_type));
         GSteamUGC->SetItemTitle(updateHandle, title.c_str());
-        GSteamUGC->AddItemKeyValueTag(updateHandle, SteamItemTags::ItemType, type.c_str());
+        GSteamUGC->AddItemKeyValueTag(updateHandle, SteamItemTags::ItemType, item_type.c_str());
         GSteamUGC->SetItemVisibility(updateHandle, k_ERemoteStoragePublishedFileVisibilityPrivate);
     }
+
+    std::string content_type = std::to_string(static_cast<int>(item_data.content_type));
+    GSteamUGC->AddItemKeyValueTag(updateHandle, SteamItemTags::ContentType, content_type.c_str());
+
+    auto tags = GetTagsForItemType(item_data.item_type, item_data.content_type);
+    const char* tag_array[16];
+
+    for (auto i = 0; i < tags.size(); i++)
+    {
+        tag_array[i] = tags[i].c_str();
+    }
+
+    SteamParamStringArray_t steam_tags = { tag_array, tags.size() };
+    GSteamUGC->SetItemTags(updateHandle, &steam_tags);
 
     if (!item_data.directory_path.empty())
     {
@@ -667,7 +771,7 @@ static void UpdateItem(PublishedFileId_t item_id, const item_upload_data& item_d
     }
 
     auto steam_api_call = GSteamUGC->SubmitItemUpdate(updateHandle, nullptr);
-    GSteamBridge->set_item_updated_callback(steam_api_call, updateHandle);
+    GSteamBridge->set_item_updated_callback(steam_api_call, updateHandle, item_data);
 }
 
 SteamBridge::SteamBridge(PipeType _fd)
@@ -703,8 +807,9 @@ void SteamBridge::set_item_created_callback(SteamAPICall_t api_call, const item_
     m_CallbackItemCreatedResult.Set(api_call, this, &SteamBridge::OnItemCreated);
 }
 
-void SteamBridge::set_item_updated_callback(SteamAPICall_t api_call, UGCUpdateHandle_t handle)
+void SteamBridge::set_item_updated_callback(SteamAPICall_t api_call, UGCUpdateHandle_t handle, const item_upload_data& item_data)
 {
+    m_upload_item_data = item_data;
     m_update_handle = handle;
     m_CallbackItemUpdatedResult.Set(api_call, this, &SteamBridge::OnItemUpdated);
 }
@@ -791,10 +896,17 @@ void SteamBridge::OnItemOwnedQueried(SteamUGCQueryCompleted_t* pCallback, bool b
 
             if (!GSteamUGC->GetQueryUGCKeyValueTag(pCallback->m_handle, i, SteamItemTags::ItemType, item_kv_tag, sizeof(item_kv_tag)))
             {
-                continue; //ignore item if we can't retrieve its type tag
+                continue; //ignore item if we can't retrieve its item type tag
             }
 
-            item.type = (ItemType)std::stoi(item_kv_tag); //we should probably check better here
+            item.item_type = static_cast<ItemType>(std::stoi(item_kv_tag)); //we should probably check better here
+
+            if (!GSteamUGC->GetQueryUGCKeyValueTag(pCallback->m_handle, i, SteamItemTags::ContentType, item_kv_tag, sizeof(item_kv_tag)))
+            {
+                continue; //ignore item if we can't retrieve its content type tag
+            }
+
+            item.content_type = static_cast<ContentType>(std::stoi(item_kv_tag)); //we should probably check better here
 
             char item_scenario_tag[256];
             if (GSteamUGC->GetQueryUGCKeyValueTag(pCallback->m_handle, i, SteamItemTags::RequiredScenario, item_scenario_tag, sizeof(item_scenario_tag)))
@@ -805,16 +917,6 @@ void SteamBridge::OnItemOwnedQueried(SteamUGCQueryCompleted_t* pCallback, bool b
                 }
 
                 item.is_scenarios_compatible = false;
-            }
-
-            auto number_tags = GSteamUGC->GetQueryUGCNumTags(pCallback->m_handle, i);
-            for (int k = 0; k < number_tags; k++)
-            {
-                char tag[256];
-                if (GSteamUGC->GetQueryUGCTag(pCallback->m_handle, i, k, tag, sizeof(tag)))
-                {
-                    item.tags.push_back(tag);
-                }
             }
 
             item.title = item_details.m_rgchTitle;
@@ -849,13 +951,15 @@ void SteamBridge::OnItemModQueried(SteamUGCQueryCompleted_t* pCallback, bool bIO
                 continue; //ignore item if we can't retrieve its type tag
             }
 
-            item_subscribed_query_result::item item;
-            item.type = (ItemType)std::stoi(item_type_tag); //we should probably check better here
-
-            if (item.type == ItemType::Scenario)
+            char content_type_tag[256];
+            if (!GSteamUGC->GetQueryUGCKeyValueTag(pCallback->m_handle, i, SteamItemTags::ContentType, content_type_tag, sizeof(content_type_tag)))
             {
-                continue;
+                continue; //ignore item if we can't retrieve its content type tag
             }
+
+            item_subscribed_query_result::item item;
+            item.item_type = static_cast<ItemType>(std::stoi(item_type_tag)); //we should probably check better here
+            item.content_type = static_cast<ContentType>(std::stoi(content_type_tag)); //we should probably check better here
 
             char item_scenario_tag[256];
             if (GSteamUGC->GetQueryUGCKeyValueTag(pCallback->m_handle, i, SteamItemTags::RequiredScenario, item_scenario_tag, sizeof(item_scenario_tag)))
@@ -912,7 +1016,8 @@ void SteamBridge::OnItemScenarioQueried(SteamUGCQueryCompleted_t* pCallback, boo
 
             item_subscribed_query_result::item item;
             item.id = item_details.m_nPublishedFileId;
-            item.type = ItemType::Scenario;
+            item.item_type = ItemType::Scenario;
+            item.content_type = ContentType::None;
             item.install_folder_path = folder_path;
             items_result.items.push_back(item);
         }
@@ -1089,6 +1194,7 @@ static bool processCommand(const uint8 *buf, unsigned int buflen, PipeType fd)
                 auto scenario = std::string((const char*)buf);
                 auto handle = GSteamUGC->CreateQueryUserUGCRequest(GUserID, k_EUserUGCList_Subscribed, k_EUGCMatchingUGCType_Items, k_EUserUGCListSortOrder_CreationOrderDesc, 0, GAppID, 1);
                 GSteamUGC->SetReturnKeyValueTags(handle, true);
+                GSteamUGC->AddExcludedTag(handle, "Scenario");
                 auto steam_api_call = GSteamUGC->SendQueryUGCRequest(handle);
                 GSteamBridge->set_item_mod_queried_callback(steam_api_call, scenario);
             }
@@ -1096,7 +1202,7 @@ static bool processCommand(const uint8 *buf, unsigned int buflen, PipeType fd)
 
         case SHIMCMD_WORKSHOP_QUERY_ITEM_SCENARIO:
         {
-            auto scenario_tag = std::to_string(ItemType::Scenario);
+            auto scenario_tag = std::to_string(static_cast<int>(ItemType::Scenario));
             auto handle = GSteamUGC->CreateQueryUserUGCRequest(GUserID, k_EUserUGCList_Subscribed, k_EUGCMatchingUGCType_Items, k_EUserUGCListSortOrder_CreationOrderDesc, 0, GAppID, 1);
             GSteamUGC->SetReturnOnlyIDs(handle, true);
             GSteamUGC->AddRequiredKeyValueTag(handle, SteamItemTags::ItemType, scenario_tag.c_str());

@@ -498,7 +498,7 @@ void Plugins::enumerate() {
 #ifdef HAVE_STEAM
 	for (const auto& item : subscribed_workshop_items)
 	{
-		if (item.type == ItemType::Plugin)
+		if (item.item_type == ItemType::Plugin)
 		{
 			FileSpecifier dir(item.install_folder_path);
 			loader.ParseDirectory(dir);
