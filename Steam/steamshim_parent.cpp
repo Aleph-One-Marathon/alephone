@@ -752,7 +752,7 @@ static void UpdateItem(PublishedFileId_t item_id, const item_upload_data& item_d
         tag_array[i] = tags[i].c_str();
     }
 
-    SteamParamStringArray_t steam_tags = { tag_array, tags.size() };
+    SteamParamStringArray_t steam_tags = { tag_array, static_cast<int>(tags.size()) };
     GSteamUGC->SetItemTags(updateHandle, &steam_tags);
 
     if (!item_data.directory_path.empty())
