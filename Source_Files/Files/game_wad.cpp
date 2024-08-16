@@ -1427,6 +1427,8 @@ bool save_game_file(FileSpecifier& File, const std::string& metadata, const std:
 	struct directory_entry entries[2];
 	struct wad_data *wad, *meta_wad;
 
+	clear_game_error();
+
 	/* Save off the random seed. */
 	dynamic_world->random_seed= get_random_seed();
 
