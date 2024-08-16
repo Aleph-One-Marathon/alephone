@@ -154,7 +154,6 @@ clearly this is all broken until we have packet types
 
 #include "NetworkGameProtocol.h"
 
-#include "RingGameProtocol.h"
 #include "StarGameProtocol.h"
 
 #include "lua_script.h"
@@ -178,7 +177,6 @@ static std::string gameSessionIdentifier;
 static NetTopologyPtr topology;
 static short sServerPlayerIndex;
 static bool sOldSelfSendStatus;
-static RingGameProtocol sRingGameProtocol;
 static StarGameProtocol sStarGameProtocol;
 static NetworkGameProtocol* sCurrentGameProtocol = NULL;
 
@@ -461,14 +459,6 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 		} else if (capabilities[Capabilities::kStar] < Capabilities::kStarVersion) {
 			if (warn_joiner) {
 				ServerWarningMessage serverWarningMessage(expand_app_variables("The gatherer is using a newer version of $appName$. You will not appear in the list of available players."), ServerWarningMessage::kJoinerUngatherable);
-				channel->enqueueOutgoingMessage(serverWarningMessage);
-			}
-			return false;
-		}
-	} else {
-		if (capabilities[Capabilities::kRing] == 0) {
-			if (warn_joiner) {
-				ServerWarningMessage serverWarningMessage(getcstr(s, strNETWORK_ERRORS, netWarnJoinerHasNoRing), ServerWarningMessage::kJoinerUngatherable);
 				channel->enqueueOutgoingMessage(serverWarningMessage);
 			}
 			return false;
@@ -1280,9 +1270,7 @@ bool NetEnter(bool use_remote_hub)
 		added_exit_procedure= true;
 	}
   
-	sCurrentGameProtocol = (network_preferences->game_protocol == _network_game_protocol_star) ?
-		static_cast<NetworkGameProtocol*>(&sStarGameProtocol) :
-		static_cast<NetworkGameProtocol*>(&sRingGameProtocol);
+	sCurrentGameProtocol = static_cast<NetworkGameProtocol*>(&sStarGameProtocol);
   
 	error= NetDDPOpen();
 	if (!error) {
@@ -1373,8 +1361,6 @@ bool NetEnter(bool use_remote_hub)
 	my_capabilities[Capabilities::kGameworldM1] = Capabilities::kGameworldM1Version;
 	if (network_preferences->game_protocol == _network_game_protocol_star) {
 		my_capabilities[Capabilities::kStar] = Capabilities::kStarVersion;
-	} else {
-		my_capabilities[Capabilities::kRing] = Capabilities::kRingVersion;
 	}
 	my_capabilities[Capabilities::kLua] = Capabilities::kLuaVersion;
 	my_capabilities[Capabilities::kGatherable] = Capabilities::kGatherableVersion;

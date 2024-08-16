@@ -75,7 +75,6 @@ May 22, 2003 (Woody Zenfell):
 
 #include "InfoTree.h"
 #include "StarGameProtocol.h"
-#include "RingGameProtocol.h"
 
 #include "tags.h"
 #include "Logging.h"
@@ -123,8 +122,7 @@ using namespace alephone;
 static const char sPasswordMask[] = "reverof nohtaram";
 
 static const char* sNetworkGameProtocolNames[] =
-{	// These should match up with _network_game_protocol_ring, etc.
-	"ring",
+{	// These should match up with _network_game_protocol_star, etc.
 	"star"
 };
 
@@ -3958,7 +3956,6 @@ InfoTree network_preferences_tree()
 		root.add_color("color", network_preferences->metaserver_colors[i], i);
 
 	root.put_child("star_protocol", StarPreferencesTree());
-	root.put_child("ring_protocol", RingPreferencesTree());
 	
 	return root;
 }
@@ -4122,7 +4119,6 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->game_protocol= _network_game_protocol_default;
 #if !defined(DISABLE_NETWORKING)
 	DefaultStarPreferences();
-	DefaultRingPreferences();
 #endif // !defined(DISABLE_NETWORKING)
 	preferences->use_netscript = false;
 	preferences->netscript_file[0] = '\0';
@@ -4993,8 +4989,6 @@ void parse_network_preferences(InfoTree root, std::string version)
 	
 	for (const InfoTree &child : root.children_named("star_protocol"))
 		StarGameProtocol::ParsePreferencesTree(child, version);
-	for (const InfoTree &child : root.children_named("ring_protocol"))
-		RingGameProtocol::ParsePreferencesTree(child, version);
 }
 
 void parse_environment_preferences(InfoTree root, std::string version)

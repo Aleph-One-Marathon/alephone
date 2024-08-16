@@ -383,7 +383,6 @@
 		AE120C302BC77645001873DD /* OGL_Texture_Def.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */; };
 		AE120C312BC77645001873DD /* network_star.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CA04819BD700A8000D /* network_star.h */; };
 		AE120C322BC77645001873DD /* NetworkGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CC04819BD700A8000D /* NetworkGameProtocol.h */; };
-		AE120C332BC77645001873DD /* RingGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CE04819BD700A8000D /* RingGameProtocol.h */; };
 		AE120C342BC77645001873DD /* StarGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5D004819BD700A8000D /* StarGameProtocol.h */; };
 		AE120C352BC77645001873DD /* AStream.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E404819EBF00A8000D /* AStream.h */; };
 		AE120C362BC77645001873DD /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
@@ -572,7 +571,6 @@
 		AE120CEF2BC77645001873DD /* network_star_hub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C804819BD700A8000D /* network_star_hub.cpp */; };
 		AE120CF02BC77645001873DD /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
 		AE120CF12BC77645001873DD /* network_star_spoke.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */; };
-		AE120CF22BC77645001873DD /* RingGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CD04819BD700A8000D /* RingGameProtocol.cpp */; };
 		AE120CF32BC77645001873DD /* StarGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CF04819BD700A8000D /* StarGameProtocol.cpp */; };
 		AE120CF42BC77645001873DD /* lua_music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE96370B2A39578600DE43FF /* lua_music.cpp */; };
 		AE120CF52BC77645001873DD /* AStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5E304819EBF00A8000D /* AStream.cpp */; };
@@ -837,7 +835,6 @@
 		AE1320C92C1CB4D2009D34AA /* OGL_Texture_Def.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */; };
 		AE1320CA2C1CB4D2009D34AA /* network_star.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CA04819BD700A8000D /* network_star.h */; };
 		AE1320CB2C1CB4D2009D34AA /* NetworkGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CC04819BD700A8000D /* NetworkGameProtocol.h */; };
-		AE1320CC2C1CB4D2009D34AA /* RingGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CE04819BD700A8000D /* RingGameProtocol.h */; };
 		AE1320CD2C1CB4D2009D34AA /* StarGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5D004819BD700A8000D /* StarGameProtocol.h */; };
 		AE1320CE2C1CB4D2009D34AA /* AStream.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E404819EBF00A8000D /* AStream.h */; };
 		AE1320CF2C1CB4D2009D34AA /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
@@ -1026,7 +1023,6 @@
 		AE1321892C1CB4D2009D34AA /* network_star_hub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C804819BD700A8000D /* network_star_hub.cpp */; };
 		AE13218A2C1CB4D2009D34AA /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
 		AE13218B2C1CB4D2009D34AA /* network_star_spoke.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */; };
-		AE13218C2C1CB4D2009D34AA /* RingGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CD04819BD700A8000D /* RingGameProtocol.cpp */; };
 		AE13218D2C1CB4D2009D34AA /* StarGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CF04819BD700A8000D /* StarGameProtocol.cpp */; };
 		AE13218E2C1CB4D2009D34AA /* lua_music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE96370B2A39578600DE43FF /* lua_music.cpp */; };
 		AE13218F2C1CB4D2009D34AA /* AStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5E304819EBF00A8000D /* AStream.cpp */; };
@@ -1314,7 +1310,6 @@
 		AE505BCB141D45E600915344 /* OGL_Texture_Def.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */; };
 		AE505BCC141D45E600915344 /* network_star.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CA04819BD700A8000D /* network_star.h */; };
 		AE505BCD141D45E600915344 /* NetworkGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CC04819BD700A8000D /* NetworkGameProtocol.h */; };
-		AE505BCE141D45E600915344 /* RingGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CE04819BD700A8000D /* RingGameProtocol.h */; };
 		AE505BCF141D45E600915344 /* StarGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5D004819BD700A8000D /* StarGameProtocol.h */; };
 		AE505BD0141D45E600915344 /* AStream.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E404819EBF00A8000D /* AStream.h */; };
 		AE505BD1141D45E600915344 /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
@@ -1474,7 +1469,6 @@
 		AE505C87141D45E600915344 /* OGL_Subst_Texture_Def.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */; };
 		AE505C88141D45E600915344 /* network_star_hub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C804819BD700A8000D /* network_star_hub.cpp */; };
 		AE505C89141D45E600915344 /* network_star_spoke.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */; };
-		AE505C8B141D45E600915344 /* RingGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CD04819BD700A8000D /* RingGameProtocol.cpp */; };
 		AE505C8C141D45E600915344 /* StarGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CF04819BD700A8000D /* StarGameProtocol.cpp */; };
 		AE505C8D141D45E600915344 /* AStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5E304819EBF00A8000D /* AStream.cpp */; };
 		AE505C8F141D45E600915344 /* CircularByteBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EFEF1AC504AF552D00C3A19D /* CircularByteBuffer.cpp */; };
@@ -1799,7 +1793,6 @@
 		AEB4A16B14296CAE00537AE7 /* OGL_Texture_Def.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */; };
 		AEB4A16C14296CAE00537AE7 /* network_star.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CA04819BD700A8000D /* network_star.h */; };
 		AEB4A16D14296CAE00537AE7 /* NetworkGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CC04819BD700A8000D /* NetworkGameProtocol.h */; };
-		AEB4A16E14296CAE00537AE7 /* RingGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CE04819BD700A8000D /* RingGameProtocol.h */; };
 		AEB4A16F14296CAE00537AE7 /* StarGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5D004819BD700A8000D /* StarGameProtocol.h */; };
 		AEB4A17014296CAE00537AE7 /* AStream.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E404819EBF00A8000D /* AStream.h */; };
 		AEB4A17114296CAE00537AE7 /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
@@ -1960,7 +1953,6 @@
 		AEB4A22814296CAE00537AE7 /* OGL_Subst_Texture_Def.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */; };
 		AEB4A22914296CAE00537AE7 /* network_star_hub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C804819BD700A8000D /* network_star_hub.cpp */; };
 		AEB4A22A14296CAE00537AE7 /* network_star_spoke.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */; };
-		AEB4A22C14296CAE00537AE7 /* RingGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CD04819BD700A8000D /* RingGameProtocol.cpp */; };
 		AEB4A22D14296CAE00537AE7 /* StarGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CF04819BD700A8000D /* StarGameProtocol.cpp */; };
 		AEB4A22E14296CAE00537AE7 /* AStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5E304819EBF00A8000D /* AStream.cpp */; };
 		AEB4A23014296CAE00537AE7 /* CircularByteBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EFEF1AC504AF552D00C3A19D /* CircularByteBuffer.cpp */; };
@@ -2201,7 +2193,6 @@
 		AEBDC5A52C4DF0780026DFF1 /* OGL_Texture_Def.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */; };
 		AEBDC5A62C4DF0780026DFF1 /* network_star.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CA04819BD700A8000D /* network_star.h */; };
 		AEBDC5A72C4DF0780026DFF1 /* NetworkGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CC04819BD700A8000D /* NetworkGameProtocol.h */; };
-		AEBDC5A82C4DF0780026DFF1 /* RingGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CE04819BD700A8000D /* RingGameProtocol.h */; };
 		AEBDC5A92C4DF0780026DFF1 /* StarGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5D004819BD700A8000D /* StarGameProtocol.h */; };
 		AEBDC5AA2C4DF0780026DFF1 /* AStream.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E404819EBF00A8000D /* AStream.h */; };
 		AEBDC5AB2C4DF0780026DFF1 /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
@@ -2391,7 +2382,6 @@
 		AEBDC6662C4DF0780026DFF1 /* network_star_hub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C804819BD700A8000D /* network_star_hub.cpp */; };
 		AEBDC6672C4DF0780026DFF1 /* InfoTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FF265E1B6F170600DA0A19 /* InfoTree.cpp */; };
 		AEBDC6682C4DF0780026DFF1 /* network_star_spoke.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */; };
-		AEBDC6692C4DF0780026DFF1 /* RingGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CD04819BD700A8000D /* RingGameProtocol.cpp */; };
 		AEBDC66A2C4DF0780026DFF1 /* StarGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CF04819BD700A8000D /* StarGameProtocol.cpp */; };
 		AEBDC66B2C4DF0780026DFF1 /* lua_music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE96370B2A39578600DE43FF /* lua_music.cpp */; };
 		AEBDC66C2C4DF0780026DFF1 /* AStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5E304819EBF00A8000D /* AStream.cpp */; };
@@ -2627,7 +2617,6 @@
 		AEC3C7A509AD68AC003258E4 /* OGL_Texture_Def.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */; };
 		AEC3C7A609AD68AC003258E4 /* network_star.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CA04819BD700A8000D /* network_star.h */; };
 		AEC3C7A709AD68AC003258E4 /* NetworkGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CC04819BD700A8000D /* NetworkGameProtocol.h */; };
-		AEC3C7A809AD68AC003258E4 /* RingGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CE04819BD700A8000D /* RingGameProtocol.h */; };
 		AEC3C7A909AD68AC003258E4 /* StarGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5D004819BD700A8000D /* StarGameProtocol.h */; };
 		AEC3C7AA09AD68AC003258E4 /* AStream.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E404819EBF00A8000D /* AStream.h */; };
 		AEC3C7AB09AD68AC003258E4 /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
@@ -2768,7 +2757,6 @@
 		AEC3C85509AD68AC003258E4 /* OGL_Subst_Texture_Def.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */; };
 		AEC3C85609AD68AC003258E4 /* network_star_hub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C804819BD700A8000D /* network_star_hub.cpp */; };
 		AEC3C85709AD68AC003258E4 /* network_star_spoke.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */; };
-		AEC3C85909AD68AC003258E4 /* RingGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CD04819BD700A8000D /* RingGameProtocol.cpp */; };
 		AEC3C85A09AD68AC003258E4 /* StarGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CF04819BD700A8000D /* StarGameProtocol.cpp */; };
 		AEC3C85B09AD68AC003258E4 /* AStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5E304819EBF00A8000D /* AStream.cpp */; };
 		AEC3C85D09AD68AC003258E4 /* CircularByteBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EFEF1AC504AF552D00C3A19D /* CircularByteBuffer.cpp */; };
@@ -2940,7 +2928,6 @@
 		AEFD867913EB84CF00C1E687 /* OGL_Texture_Def.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */; };
 		AEFD867A13EB84CF00C1E687 /* network_star.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CA04819BD700A8000D /* network_star.h */; };
 		AEFD867B13EB84CF00C1E687 /* NetworkGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CC04819BD700A8000D /* NetworkGameProtocol.h */; };
-		AEFD867C13EB84CF00C1E687 /* RingGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5CE04819BD700A8000D /* RingGameProtocol.h */; };
 		AEFD867D13EB84CF00C1E687 /* StarGameProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5D004819BD700A8000D /* StarGameProtocol.h */; };
 		AEFD867E13EB84CF00C1E687 /* AStream.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E404819EBF00A8000D /* AStream.h */; };
 		AEFD867F13EB84CF00C1E687 /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
@@ -3099,7 +3086,6 @@
 		AEFD873413EB84CF00C1E687 /* OGL_Subst_Texture_Def.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */; };
 		AEFD873513EB84CF00C1E687 /* network_star_hub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C804819BD700A8000D /* network_star_hub.cpp */; };
 		AEFD873613EB84CF00C1E687 /* network_star_spoke.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */; };
-		AEFD873813EB84CF00C1E687 /* RingGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CD04819BD700A8000D /* RingGameProtocol.cpp */; };
 		AEFD873913EB84CF00C1E687 /* StarGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CF04819BD700A8000D /* StarGameProtocol.cpp */; };
 		AEFD873A13EB84CF00C1E687 /* AStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5E304819EBF00A8000D /* AStream.cpp */; };
 		AEFD873C13EB84CF00C1E687 /* CircularByteBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EFEF1AC504AF552D00C3A19D /* CircularByteBuffer.cpp */; };
@@ -3489,8 +3475,6 @@
 		EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network_star_spoke.cpp; path = ../Source_Files/Network/network_star_spoke.cpp; sourceTree = "<group>"; };
 		EF2EF5CA04819BD700A8000D /* network_star.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = network_star.h; path = ../Source_Files/Network/network_star.h; sourceTree = "<group>"; };
 		EF2EF5CC04819BD700A8000D /* NetworkGameProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NetworkGameProtocol.h; path = ../Source_Files/Network/NetworkGameProtocol.h; sourceTree = "<group>"; };
-		EF2EF5CD04819BD700A8000D /* RingGameProtocol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RingGameProtocol.cpp; path = ../Source_Files/Network/RingGameProtocol.cpp; sourceTree = "<group>"; };
-		EF2EF5CE04819BD700A8000D /* RingGameProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RingGameProtocol.h; path = ../Source_Files/Network/RingGameProtocol.h; sourceTree = "<group>"; };
 		EF2EF5CF04819BD700A8000D /* StarGameProtocol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StarGameProtocol.cpp; path = ../Source_Files/Network/StarGameProtocol.cpp; sourceTree = "<group>"; };
 		EF2EF5D004819BD700A8000D /* StarGameProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StarGameProtocol.h; path = ../Source_Files/Network/StarGameProtocol.h; sourceTree = "<group>"; };
 		EF2EF5E304819EBF00A8000D /* AStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AStream.cpp; sourceTree = "<group>"; };
@@ -4318,7 +4302,6 @@
 				F52214520136C0C401000001 /* Headers */,
 				AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */,
 				275A7BD71A60E9B9002EE952 /* HTTP.cpp */,
-				EF2EF5CD04819BD700A8000D /* RingGameProtocol.cpp */,
 				F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */,
 				F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */,
 				EF2EF5CF04819BD700A8000D /* StarGameProtocol.cpp */,
@@ -4348,7 +4331,6 @@
 				AEDF1A121416FE2200183689 /* HTTP.h */,
 				AE7C21D40BFF686200CE63EC /* Update.h */,
 				EF2EF5CC04819BD700A8000D /* NetworkGameProtocol.h */,
-				EF2EF5CE04819BD700A8000D /* RingGameProtocol.h */,
 				EFBAF0170485BEA500A8000D /* SDL_netx.h */,
 				EFBAF0180485BEA500A8000D /* SSLP_API.h */,
 				EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */,
@@ -4938,7 +4920,6 @@
 				AE120C302BC77645001873DD /* OGL_Texture_Def.h in Headers */,
 				AE120C312BC77645001873DD /* network_star.h in Headers */,
 				AE120C322BC77645001873DD /* NetworkGameProtocol.h in Headers */,
-				AE120C332BC77645001873DD /* RingGameProtocol.h in Headers */,
 				AE120C342BC77645001873DD /* StarGameProtocol.h in Headers */,
 				AE120C352BC77645001873DD /* AStream.h in Headers */,
 				AE120C362BC77645001873DD /* TickBasedCircularQueue.h in Headers */,
@@ -5153,7 +5134,6 @@
 				AE1320C92C1CB4D2009D34AA /* OGL_Texture_Def.h in Headers */,
 				AE1320CA2C1CB4D2009D34AA /* network_star.h in Headers */,
 				AE1320CB2C1CB4D2009D34AA /* NetworkGameProtocol.h in Headers */,
-				AE1320CC2C1CB4D2009D34AA /* RingGameProtocol.h in Headers */,
 				AE1320CD2C1CB4D2009D34AA /* StarGameProtocol.h in Headers */,
 				AE1320CE2C1CB4D2009D34AA /* AStream.h in Headers */,
 				AE1320CF2C1CB4D2009D34AA /* TickBasedCircularQueue.h in Headers */,
@@ -5367,7 +5347,6 @@
 				AE505BCB141D45E600915344 /* OGL_Texture_Def.h in Headers */,
 				AE505BCC141D45E600915344 /* network_star.h in Headers */,
 				AE505BCD141D45E600915344 /* NetworkGameProtocol.h in Headers */,
-				AE505BCE141D45E600915344 /* RingGameProtocol.h in Headers */,
 				AE505BCF141D45E600915344 /* StarGameProtocol.h in Headers */,
 				AE505BD0141D45E600915344 /* AStream.h in Headers */,
 				AE505BD1141D45E600915344 /* TickBasedCircularQueue.h in Headers */,
@@ -5581,7 +5560,6 @@
 				AEB4A16B14296CAE00537AE7 /* OGL_Texture_Def.h in Headers */,
 				AEB4A16C14296CAE00537AE7 /* network_star.h in Headers */,
 				AEB4A16D14296CAE00537AE7 /* NetworkGameProtocol.h in Headers */,
-				AEB4A16E14296CAE00537AE7 /* RingGameProtocol.h in Headers */,
 				AEB4A16F14296CAE00537AE7 /* StarGameProtocol.h in Headers */,
 				AEB4A17014296CAE00537AE7 /* AStream.h in Headers */,
 				AEB4A17114296CAE00537AE7 /* TickBasedCircularQueue.h in Headers */,
@@ -5796,7 +5774,6 @@
 				AEBDC5A52C4DF0780026DFF1 /* OGL_Texture_Def.h in Headers */,
 				AEBDC5A62C4DF0780026DFF1 /* network_star.h in Headers */,
 				AEBDC5A72C4DF0780026DFF1 /* NetworkGameProtocol.h in Headers */,
-				AEBDC5A82C4DF0780026DFF1 /* RingGameProtocol.h in Headers */,
 				AEBDC5A92C4DF0780026DFF1 /* StarGameProtocol.h in Headers */,
 				AEBDC5AA2C4DF0780026DFF1 /* AStream.h in Headers */,
 				AEBDC5AB2C4DF0780026DFF1 /* TickBasedCircularQueue.h in Headers */,
@@ -6010,7 +5987,6 @@
 				AEC3C7A509AD68AC003258E4 /* OGL_Texture_Def.h in Headers */,
 				AEC3C7A609AD68AC003258E4 /* network_star.h in Headers */,
 				AEC3C7A709AD68AC003258E4 /* NetworkGameProtocol.h in Headers */,
-				AEC3C7A809AD68AC003258E4 /* RingGameProtocol.h in Headers */,
 				AEC3C7A909AD68AC003258E4 /* StarGameProtocol.h in Headers */,
 				AEC3C7AA09AD68AC003258E4 /* AStream.h in Headers */,
 				AEC3C7AB09AD68AC003258E4 /* TickBasedCircularQueue.h in Headers */,
@@ -6224,7 +6200,6 @@
 				AEFD867913EB84CF00C1E687 /* OGL_Texture_Def.h in Headers */,
 				AEFD867A13EB84CF00C1E687 /* network_star.h in Headers */,
 				AEFD867B13EB84CF00C1E687 /* NetworkGameProtocol.h in Headers */,
-				AEFD867C13EB84CF00C1E687 /* RingGameProtocol.h in Headers */,
 				AEFD867D13EB84CF00C1E687 /* StarGameProtocol.h in Headers */,
 				AEFD867E13EB84CF00C1E687 /* AStream.h in Headers */,
 				AEFD867F13EB84CF00C1E687 /* TickBasedCircularQueue.h in Headers */,
@@ -6910,7 +6885,6 @@
 				AE120CEF2BC77645001873DD /* network_star_hub.cpp in Sources */,
 				AE120CF02BC77645001873DD /* InfoTree.cpp in Sources */,
 				AE120CF12BC77645001873DD /* network_star_spoke.cpp in Sources */,
-				AE120CF22BC77645001873DD /* RingGameProtocol.cpp in Sources */,
 				AE120CF32BC77645001873DD /* StarGameProtocol.cpp in Sources */,
 				AE120CF42BC77645001873DD /* lua_music.cpp in Sources */,
 				AE120CF52BC77645001873DD /* AStream.cpp in Sources */,
@@ -7140,7 +7114,6 @@
 				AE1321892C1CB4D2009D34AA /* network_star_hub.cpp in Sources */,
 				AE13218A2C1CB4D2009D34AA /* InfoTree.cpp in Sources */,
 				AE13218B2C1CB4D2009D34AA /* network_star_spoke.cpp in Sources */,
-				AE13218C2C1CB4D2009D34AA /* RingGameProtocol.cpp in Sources */,
 				AE13218D2C1CB4D2009D34AA /* StarGameProtocol.cpp in Sources */,
 				AE13218E2C1CB4D2009D34AA /* lua_music.cpp in Sources */,
 				AE13218F2C1CB4D2009D34AA /* AStream.cpp in Sources */,
@@ -7369,7 +7342,6 @@
 				AE505C88141D45E600915344 /* network_star_hub.cpp in Sources */,
 				27FF26611B6F170600DA0A19 /* InfoTree.cpp in Sources */,
 				AE505C89141D45E600915344 /* network_star_spoke.cpp in Sources */,
-				AE505C8B141D45E600915344 /* RingGameProtocol.cpp in Sources */,
 				AE505C8C141D45E600915344 /* StarGameProtocol.cpp in Sources */,
 				AE96370E2A39578600DE43FF /* lua_music.cpp in Sources */,
 				AE505C8D141D45E600915344 /* AStream.cpp in Sources */,
@@ -7606,7 +7578,6 @@
 				AEB4A22914296CAE00537AE7 /* network_star_hub.cpp in Sources */,
 				27FF26621B6F170600DA0A19 /* InfoTree.cpp in Sources */,
 				AEB4A22A14296CAE00537AE7 /* network_star_spoke.cpp in Sources */,
-				AEB4A22C14296CAE00537AE7 /* RingGameProtocol.cpp in Sources */,
 				AEB4A22D14296CAE00537AE7 /* StarGameProtocol.cpp in Sources */,
 				AE96370F2A39578600DE43FF /* lua_music.cpp in Sources */,
 				AEB4A22E14296CAE00537AE7 /* AStream.cpp in Sources */,
@@ -7836,7 +7807,6 @@
 				AEBDC6662C4DF0780026DFF1 /* network_star_hub.cpp in Sources */,
 				AEBDC6672C4DF0780026DFF1 /* InfoTree.cpp in Sources */,
 				AEBDC6682C4DF0780026DFF1 /* network_star_spoke.cpp in Sources */,
-				AEBDC6692C4DF0780026DFF1 /* RingGameProtocol.cpp in Sources */,
 				AEBDC66A2C4DF0780026DFF1 /* StarGameProtocol.cpp in Sources */,
 				AEBDC66B2C4DF0780026DFF1 /* lua_music.cpp in Sources */,
 				AEBDC66C2C4DF0780026DFF1 /* AStream.cpp in Sources */,
@@ -8065,7 +8035,6 @@
 				AEC3C85609AD68AC003258E4 /* network_star_hub.cpp in Sources */,
 				27FF26631B6F1E0700DA0A19 /* InfoTree.cpp in Sources */,
 				AEC3C85709AD68AC003258E4 /* network_star_spoke.cpp in Sources */,
-				AEC3C85909AD68AC003258E4 /* RingGameProtocol.cpp in Sources */,
 				AEC3C85A09AD68AC003258E4 /* StarGameProtocol.cpp in Sources */,
 				AE96370C2A39578600DE43FF /* lua_music.cpp in Sources */,
 				AEC3C85B09AD68AC003258E4 /* AStream.cpp in Sources */,
@@ -8294,7 +8263,6 @@
 				AEFD873513EB84CF00C1E687 /* network_star_hub.cpp in Sources */,
 				27FF26601B6F170600DA0A19 /* InfoTree.cpp in Sources */,
 				AEFD873613EB84CF00C1E687 /* network_star_spoke.cpp in Sources */,
-				AEFD873813EB84CF00C1E687 /* RingGameProtocol.cpp in Sources */,
 				AEFD873913EB84CF00C1E687 /* StarGameProtocol.cpp in Sources */,
 				AE96370D2A39578600DE43FF /* lua_music.cpp in Sources */,
 				AEFD873A13EB84CF00C1E687 /* AStream.cpp in Sources */,

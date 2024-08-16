@@ -460,9 +460,6 @@
     <ClCompile Include="..\..\Source_Files\Network\network_udp.cpp">
       <Filter>Network\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source_Files\Network\RingGameProtocol.cpp">
-      <Filter>Network\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source_Files\Network\SDL_netx.cpp">
       <Filter>Network\Source Files</Filter>
     </ClCompile>
@@ -1126,9 +1123,6 @@
       <Filter>Network\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Network\NetworkGameProtocol.h">
-      <Filter>Network\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source_Files\Network\RingGameProtocol.h">
       <Filter>Network\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Network\SDL_netx.h">

@@ -8,14 +8,14 @@ libnetwork_a_SOURCES = ConnectPool.h network.h network_capabilities.h		  \
   network_data_formats.h network_dialog_widgets_sdl.h network_dialogs.h		  \
   network_distribution_types.h network_games.h network_lookup_sdl.h			  \
   network_messages.h network_private.h network_star.h NetworkGameProtocol.h	  \
-  RingGameProtocol.h SDL_netx.h SSLP_API.h SSLP_Protocol.h StarGameProtocol.h \
+  SDL_netx.h SSLP_API.h SSLP_Protocol.h StarGameProtocol.h \
   Update.h HTTP.h PortForward.h Pinger.h \
   \
   ConnectPool.cpp network.cpp network_capabilities.cpp						  \
   network_data_formats.cpp network_dialogs.cpp network_dialog_widgets_sdl.cpp \
   network_games.cpp network_lookup_sdl.cpp network_messages.cpp				  \
   network_star_hub.cpp network_star_spoke.cpp network_udp.cpp				  \
-  RingGameProtocol.cpp SDL_netx.cpp SSLP_limited.cpp StarGameProtocol.cpp	  \
+  SDL_netx.cpp SSLP_limited.cpp StarGameProtocol.cpp	  \
   Update.cpp HTTP.cpp PortForward.cpp Pinger.cpp
 
 EXTRA_libnetwork_a_SOURCES = network_dummy.cpp
