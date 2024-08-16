@@ -23,10 +23,10 @@
 using SurfacePtr = std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)>;
 using WindowPtr = std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)>;
 
-class Scenario
+class ScenarioChooserScenario
 {
 public:
-	bool operator<(const Scenario& other) const;
+	bool operator<(const ScenarioChooserScenario& other) const;
 	
 	std::string path;
 	
@@ -40,7 +40,7 @@ public:
 class TitleScreenFinder : public FileFinder
 {
 public:
-	TitleScreenFinder(Scenario& scenario) : FileFinder(), scenario_{scenario} { }
+	TitleScreenFinder(ScenarioChooserScenario& scenario) : FileFinder(), scenario_{scenario} { }
 	virtual bool found(FileSpecifier& file)
 	{
 		if (boost::algorithm::ends_with(file.GetPath(), ".imgA"))
@@ -66,10 +66,10 @@ public:
 	}
 	
 private:
-	Scenario& scenario_;
+	ScenarioChooserScenario& scenario_;
 };
 
-bool Scenario::operator<(const Scenario& other) const
+bool ScenarioChooserScenario::operator<(const ScenarioChooserScenario& other) const
 {
 	return std::lexicographical_compare(name.begin(),
 										name.end(),
@@ -80,7 +80,7 @@ bool Scenario::operator<(const Scenario& other) const
 										});
 }
 
-bool Scenario::load(const std::string& path)
+bool ScenarioChooserScenario::load(const std::string& path)
 {
 	DirectorySpecifier directory(path);
 	DirectorySpecifier scripts = directory + "Scripts";
@@ -154,7 +154,7 @@ bool Scenario::load(const std::string& path)
 	return image.get();
 }
 
-void Scenario::find_image()
+void ScenarioChooserScenario::find_image()
 {
 	TitleScreenFinder finder(*this);
 	FileSpecifier f(path);
@@ -174,7 +174,7 @@ ScenarioChooser::~ScenarioChooser()
 
 void ScenarioChooser::add_scenario(const std::string& path)
 {
-	Scenario scenario;
+	ScenarioChooserScenario scenario;
 	if (scenario.load(path))
 	{
 		scenarios_.push_back(scenario);
@@ -197,6 +197,11 @@ void ScenarioChooser::add_directory(const std::string& path)
 			}
 		}
 	}
+}
+
+int ScenarioChooser::num_scenarios() const
+{
+	return static_cast<int>(scenarios_.size());
 }
 
 std::string ScenarioChooser::run()
@@ -476,7 +481,7 @@ void ScenarioChooser::move_selection(int col_delta, int row_delta)
 	}
 }
 
-void ScenarioChooser::optimize_image(Scenario& scenario, SDL_Window* window)
+void ScenarioChooser::optimize_image(ScenarioChooserScenario& scenario, SDL_Window* window)
 {
 	auto format = SDL_GetWindowSurface(window)->format;
 	SurfacePtr optimized(SDL_ConvertSurface(scenario.image.get(), format, 0), SDL_FreeSurface);

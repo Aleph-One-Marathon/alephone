@@ -24,7 +24,7 @@
 
 #include <SDL2/SDL.h>
 
-class Scenario;
+class ScenarioChooserScenario;
 class font_info;
 
 class ScenarioChooser
@@ -41,7 +41,7 @@ public:
 	void add_scenario(const std::string& path);
 	void add_directory(const std::string& path);
 
-	int num_scenarios() const { return static_cast<int>(scenarios_.size()); }
+	int num_scenarios() const;
 
 	std::string run();
 
@@ -63,13 +63,13 @@ private:
 
 	int selection_;
 
-	std::vector<Scenario> scenarios_;
+	std::vector<ScenarioChooserScenario> scenarios_;
 
 	void determine_cols_rows();
 	void ensure_selection_visible();
 	void handle_event(SDL_Event& e);
 	void move_selection(int col_delta, int row_delta);
-	void optimize_image(Scenario& scenario, SDL_Window* window);
+	void optimize_image(ScenarioChooserScenario& scenario, SDL_Window* window);
 	void redraw(SDL_Window* window);
 };
 
