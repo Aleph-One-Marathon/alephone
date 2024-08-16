@@ -1874,10 +1874,6 @@ void draw_team_totals_graph(
 	objlist_clear(ranks, MAXIMUM_NUMBER_OF_PLAYERS);
 	for (team_index = 0, num_teams = 0; team_index < NUMBER_OF_TEAM_COLORS; team_index++) {
 	  found_team_of_current_color = false;
-	  if (team_damage_given[team_index].kills ||
-	      (team_damage_taken[team_index].kills + team_monster_damage_taken[team_index].kills)) {
-	    found_team_of_current_color = true;
-	  } else {
 	    for (player_index = 0; player_index < dynamic_world->player_count; player_index++) {
 	      struct player_data *player = get_player_data(player_index);
 	      if (player->team == team_index) {
@@ -1885,7 +1881,6 @@ void draw_team_totals_graph(
 		break;
 	      }
 	    }
-	  }
 	  if (found_team_of_current_color) {
 	    ranks[num_teams].player_index = NONE;
 	    ranks[num_teams].color = team_index;
