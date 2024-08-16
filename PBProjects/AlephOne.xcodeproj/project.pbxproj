@@ -1179,6 +1179,7 @@
 		AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
 		AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
 		AE38D10E0D555A3100FC2082 /* lua_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE38D10C0D555A3100FC2082 /* lua_objects.cpp */; };
+		AE3AF3962C6ED7200066F090 /* ScenarioChooser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE83423F2C5B22EA00A4A530 /* ScenarioChooser.cpp */; };
 		AE3C01A42C13DB8B002A3EB2 /* Pinger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */; };
 		AE3C01A52C13DB8B002A3EB2 /* Pinger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */; };
 		AE3C01A62C13DB8B002A3EB2 /* Pinger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */; };
@@ -7849,6 +7850,7 @@
 				AEBDC6742C4DF0780026DFF1 /* MessageDispatcher.cpp in Sources */,
 				AEBDC6752C4DF0780026DFF1 /* MessageHandler.cpp in Sources */,
 				AEBDC6762C4DF0780026DFF1 /* MessageInflater.cpp in Sources */,
+				AE3AF3962C6ED7200066F090 /* ScenarioChooser.cpp in Sources */,
 				AEBDC6772C4DF0780026DFF1 /* network_messages.cpp in Sources */,
 				AEBDC6782C4DF0780026DFF1 /* csstrings.cpp in Sources */,
 				AEBDC6792C4DF0780026DFF1 /* SdlMetaserverClientUi.cpp in Sources */,
