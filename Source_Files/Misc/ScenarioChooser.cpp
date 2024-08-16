@@ -19,6 +19,7 @@
 #include "find_files.h"
 #include "images.h"
 #include "sdl_fonts.h"
+#include "joystick.h"
 
 using SurfacePtr = std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)>;
 using WindowPtr = std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)>;
@@ -306,6 +307,14 @@ void ScenarioChooser::handle_event(SDL_Event& e)
 {
 	switch (e.type)
 	{
+		case SDL_JOYDEVICEADDED:
+			joystick_added(e.jdevice.which);
+			break;
+
+		case SDL_JOYDEVICEREMOVED:
+			joystick_removed(e.jdevice.which);
+			break;
+
 		case SDL_CONTROLLERBUTTONDOWN:
 			switch (e.cbutton.button)
 			{

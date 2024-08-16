@@ -295,6 +295,8 @@ void initialize_application(void)
 		SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
 	}
 
+	initialize_joystick();
+
 	const string default_data_env = a1_getenv("ALEPHONE_DEFAULT_DATA");
 #ifndef SCENARIO_IS_BUNDLED
 	// see if there are scenarios to choose from
@@ -510,7 +512,6 @@ void initialize_application(void)
 	SoundManager::instance()->Initialize(*sound_preferences);
 	initialize_marathon_music_handler();
 	initialize_keyboard_controller();
-	initialize_joystick();
 	initialize_gamma();
 	alephone::Screen::instance()->Initialize(&graphics_preferences->screen_mode);
 	initialize_marathon();
