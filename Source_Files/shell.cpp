@@ -1090,7 +1090,11 @@ static void handle_game_key(const SDL_Event &event)
 				ShowPosition = !ShowPosition;
 			}
 		}
-		else if (sc == SDL_SCANCODE_F11) // Decrease gamma level
+		else if (sc == SDL_SCANCODE_F11
+#ifdef HAVE_STEAM
+				 && (event.key.keysym.mod & KMOD_SHIFT)
+#endif
+				 ) // Decrease gamma level
 		{
 			if (graphics_preferences->screen_mode.gamma_level) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
@@ -1100,7 +1104,11 @@ static void handle_game_key(const SDL_Event &event)
 			} else
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
 		}
-		else if (sc == SDL_SCANCODE_F12) // Increase gamma level
+		else if (sc == SDL_SCANCODE_F12
+#ifdef HAVE_STEAM
+				 && (event.key.keysym.mod & KMOD_SHIFT)
+#endif
+				 ) // Increase gamma level
 		{
 			if (graphics_preferences->screen_mode.gamma_level < NUMBER_OF_GAMMA_LEVELS - 1) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());

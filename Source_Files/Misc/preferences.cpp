@@ -2909,8 +2909,13 @@ static void controls_dialog(void *arg)
 		"F8", "Crosshairs",
 		"F9", "Screenshot",
 		"F10", "Debug info",
+#ifdef HAVE_STEAM
+		"Shift+F11", "Decrease brightness",
+		"Shift+F12", "Increase brightness",
+#else
 		"F11", "Decrease brightness",
 		"F12", "Increase brightness",
+#endif
 #if (defined(__APPLE__) && defined(__MACH__))
 		"Cmd-Return", "Toggle fullscreen",
 #else
