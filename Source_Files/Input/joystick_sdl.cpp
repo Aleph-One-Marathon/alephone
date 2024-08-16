@@ -29,7 +29,6 @@ May 18, 2009 (Eric Peterson):
 #include "preferences.h"
 #include "joystick.h"
 #include "Logging.h"
-#include "FileHandler.h"
 
 // internal handles
 int joystick_active = true;
@@ -38,12 +37,6 @@ int axis_values[SDL_CONTROLLER_AXIS_MAX] = {};
 bool button_values[NUM_SDL_JOYSTICK_BUTTONS] = {};
 
 void initialize_joystick(void) {
-	// Look for "gamecontrollerdb.txt" in default search path
-	FileSpecifier fs;
-	if (fs.SetNameWithPath("gamecontrollerdb.txt")) {
-		SDL_GameControllerAddMappingsFromFile(fs.GetPath());
-	}
-	
 	SDL_GameControllerEventState(SDL_ENABLE);
 	for (int i = 0; i < SDL_NumJoysticks(); ++i)
 		joystick_added(i);
