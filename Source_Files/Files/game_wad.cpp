@@ -1854,13 +1854,10 @@ bool process_map_wad(
 		MapIndexList.resize(count);
 		StreamToList(data,map_indexes,count);
 		
-		data= (uint8 *)extract_type_from_wad(wad, PLAYER_STRUCTURE_TAG, &data_length);
-		count= data_length/SIZEOF_player_data;
-		assert(count*SIZEOF_player_data==data_length);
-		unpack_player_data(data,players,count);
-		team_damage_from_player_data();
+		bool result = get_player_data_from_wad(wad);
+		assert(result);
 		
-		bool result = get_dynamic_data_from_wad(wad, dynamic_world);
+		result = get_dynamic_data_from_wad(wad, dynamic_world);
 		assert(result);
 		
 		data= (uint8 *)extract_type_from_wad(wad, OBJECT_STRUCTURE_TAG, &data_length);
@@ -1958,6 +1955,16 @@ bool get_dynamic_data_from_wad(wad_data* wad, dynamic_data* dest)
 	size_t data_length;
 	uint8* data = (uint8*)extract_type_from_wad(wad, DYNAMIC_STRUCTURE_TAG, &data_length);
 	return data && data_length == SIZEOF_dynamic_data ? (bool)unpack_dynamic_data(data, dest, 1) : false;
+}
+
+bool get_player_data_from_wad(wad_data* wad)
+{
+	size_t data_length;
+	auto data = (uint8*)extract_type_from_wad(wad, PLAYER_STRUCTURE_TAG, &data_length);
+	auto count = data_length / SIZEOF_player_data;
+	bool success = count * SIZEOF_player_data == data_length ? (bool)unpack_player_data(data, players, count) : false;
+	if (success) team_damage_from_player_data();
+	return success;
 }
 
 static void allocate_map_structure_for_map(
