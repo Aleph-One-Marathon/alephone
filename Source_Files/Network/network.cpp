@@ -175,7 +175,6 @@ static short localPlayerIndex;
 static short localPlayerIdentifier;
 static std::string gameSessionIdentifier;
 static NetTopologyPtr topology;
-static short sServerPlayerIndex;
 static bool sOldSelfSendStatus;
 static StarGameProtocol sStarGameProtocol;
 static NetworkGameProtocol* sCurrentGameProtocol = NULL;
@@ -225,9 +224,14 @@ const static int network_stats_send_period = MACHINE_TICKS_PER_SECOND;
 // ignore list
 static std::set<int> sIgnoredPlayers;
 
-bool player_is_ignored(int player_index)
+static bool player_is_ignored(int player_index)
 {
 	return (sIgnoredPlayers.find(player_index) != sIgnoredPlayers.end());
+}
+
+static bool local_is_server()
+{
+	return !connection_to_server;
 }
 
 struct ignore_player {
@@ -1278,12 +1282,6 @@ bool NetEnter(bool use_remote_hub)
 		assert(topology);
 		memset(topology, 0, sizeof(NetTopology));
 
-#ifdef A1_NETWORK_STANDALONE_HUB
-		NetSetServerIdentifier(NONE);
-#else
-		NetSetServerIdentifier(use_remote_hub ? NONE : 0);
-#endif
-
 		// ZZZ: Sorry, if this swapping is not supported on all current A1
 		// platforms, feel free to rewrite it in a way that is.
 		ddpSocket = SDL_SwapBE16(GAME_PORT);
@@ -1472,7 +1470,7 @@ void NetExit(
 bool
 NetSync()
 {
-	return sCurrentGameProtocol->Sync(topology, dynamic_world->tick_count, localPlayerIndex, sServerPlayerIndex);
+	return sCurrentGameProtocol->Sync(topology, dynamic_world->tick_count, localPlayerIndex, local_is_server());
 }
 
 
@@ -1916,18 +1914,6 @@ void NetChangeColors(int16 color, int16 team) {
   }
 }
 
-/* 
-	Externally, this is only called before a new game.  It removes the reliance that 
-	localPlayerIndex of zero is the server, which is not necessarily true if we are
-	resyncing for another cooperative level.
-*/
-void NetSetServerIdentifier(
-	short identifier)
-{
-	sServerPlayerIndex= identifier;
-}
-
-
 /*
 net accessor functions
 */
@@ -2308,12 +2294,8 @@ bool NetChangeMap(
 	/* If the guy that was the server died, and we are trying to change levels, we lose */
         // ZZZ: if we used the parent_wad_checksum stuff to locate the containing Map file,
         // this would be the case somewhat less frequently, probably...
-	if(localPlayerIndex==sServerPlayerIndex && localPlayerIndex > 0) {
-	  logError("server died while trying to get another level");
-	  success= false;
-	} else {
 	  // being the server, we must send out the map to everyone.	
-	  if(localPlayerIndex==sServerPlayerIndex) {
+	  if (local_is_server()) {
 
 #ifdef A1_NETWORK_STANDALONE_HUB
 
@@ -2357,7 +2339,6 @@ bool NetChangeMap(
 	      process_net_map_data(wad);
 	    }
 #endif
-	}
 	
 	return success;
 }
@@ -3082,7 +3063,7 @@ bool NetAllowCarnageMessages() {
 
 bool NetAllowSavingLevel() {
 	return (dynamic_world->player_count == 1 ||
-		localPlayerIndex == sServerPlayerIndex ||
+		local_is_server() || use_remote_hub ||
 		!(dynamic_world->game_information.cheat_flags & _disable_saving_level));
 
 }

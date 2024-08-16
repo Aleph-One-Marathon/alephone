@@ -89,8 +89,6 @@ typedef void (*PacketHandlerProcPtr)(DDPPacketBufferPtr packet);
 short NetState(void);
 std::string NetSessionIdentifier(void);
 
-void NetSetServerIdentifier(short identifier);
-
 /* for giving to NetLookupOpen() as a filter procedure */
 bool NetEntityNotInGame(NetEntityName *entity, NetAddrBlock *address);
 

@@ -36,7 +36,7 @@ public:
 	virtual void	Exit1() = 0;
 	virtual void	Exit2() = 0;
 	virtual void	DistributeInformation(short type, void *buffer, short buffer_size, bool send_to_self, bool only_send_to_team) = 0;
-	virtual bool	Sync(NetTopology* inTopology, int32 inSmallestGameTick, int inLocalPlayerIndex, int inServerPlayerIndex) = 0;
+	virtual bool	Sync(NetTopology* inTopology, int32 inSmallestGameTick, int inLocalPlayerIndex, bool isServer) = 0;
 	virtual bool	UnSync(bool inGraceful, int32 inSmallestPostgameTick) = 0;
 	virtual int32	GetNetTime() = 0;
 	virtual void	PacketHandler(DDPPacketBuffer* inPacket) = 0;
