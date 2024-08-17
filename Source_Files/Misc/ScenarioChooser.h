@@ -30,6 +30,9 @@ class font_info;
 class ScenarioChooser
 {
 public:
+	static constexpr auto title_screen_width = 640;	 // nominal
+	static constexpr auto title_screen_height = 480; // nominal
+	
 	static constexpr auto scenario_width = 320;
 	static constexpr auto scenario_height = 240;
 

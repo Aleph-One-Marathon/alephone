@@ -496,7 +496,12 @@ void ScenarioChooser::optimize_image(ScenarioChooserScenario& scenario, SDL_Wind
 	SurfacePtr optimized(SDL_ConvertSurface(scenario.image.get(), format, 0), SDL_FreeSurface);
 
 	SDL_Rect src_rect{0, 0, optimized->w, optimized->h};
-	SDL_Rect dst_rect{0, (scenario_height - optimized->h / 2) / 2, scenario_width, optimized->h / 2};
+	SDL_Rect dst_rect;
+
+	dst_rect.w = optimized->w * scenario_width / title_screen_width;
+	dst_rect.h = optimized->h * scenario_height / title_screen_height;
+	dst_rect.x = (scenario_width - dst_rect.w) / 2;
+	dst_rect.y = (scenario_height - dst_rect.h) / 2;
 
 	scenario.image.reset(SDL_CreateRGBSurface(0, scenario_width, scenario_height, format->BitsPerPixel, format->Rmask, format->Gmask, format->Bmask, format->Amask));
 
