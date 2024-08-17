@@ -505,6 +505,8 @@ void ScenarioChooser::optimize_image(ScenarioChooserScenario& scenario, SDL_Wind
 
 	scenario.image.reset(SDL_CreateRGBSurface(0, scenario_width, scenario_height, format->BitsPerPixel, format->Rmask, format->Gmask, format->Bmask, format->Amask));
 
+	SDL_FillRect(scenario.image.get(), nullptr, SDL_MapRGB(scenario.image->format, 0, 0, 0));
+
 	SDL_SoftStretchLinear(optimized.get(), &src_rect, scenario.image.get(), &dst_rect);
 }
 
