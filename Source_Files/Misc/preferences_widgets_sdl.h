@@ -115,7 +115,7 @@ class w_env_select : public w_select_button {
 public:
 w_env_select(const char *path, const char *m, Typecode t, dialog *d)
 	: w_select_button(item_name, select_item_callback, NULL, true),
-		parent(d), menu_title(m), type(t), mCallback(NULL)
+    	parent(d), menu_title(m), type(t), mCallback(NULL), prefer_net{false}
 	{
 		set_arg(this);
 		set_path(path);
@@ -145,6 +145,11 @@ w_env_select(const char *path, const char *m, Typecode t, dialog *d)
 		return item;
 	}
 
+	void set_prefer_net(bool prefer_net)
+	{
+		this->prefer_net = prefer_net;
+	}
+
 private:
 	void select_item(dialog *parent);
 	static void select_item_callback(void *arg);
@@ -157,6 +162,8 @@ private:
 	char item_name[256];	// File name (excluding directory part)
 
     selection_made_callback_t mCallback;
+
+	bool prefer_net;
 };
 
 class EnvSelectWidget : public SDLWidgetWidget, public Bindable<FileSpecifier>
@@ -174,6 +181,8 @@ public:
 
 	virtual FileSpecifier bind_export() { return get_file(); }
 	virtual void bind_import(FileSpecifier f) { set_file(f); }
+
+	void set_prefer_net(bool prefer_net) { m_env_select->set_prefer_net(prefer_net); }
 
 private:
 	w_env_select* m_env_select;

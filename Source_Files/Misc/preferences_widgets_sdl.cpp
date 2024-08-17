@@ -31,6 +31,7 @@
 #include    "preferences_widgets_sdl.h"
 
 #include <cstring>
+#include <optional>
 
 #include "Crosshairs.h"
 
@@ -53,14 +54,20 @@ void w_env_select::select_item_callback(void* arg) {
 #ifdef HAVE_STEAM
 extern std::vector<item_subscribed_query_result::item> subscribed_workshop_items;
 
-static void add_workshop_items(Typecode type, std::vector<env_item>& items)
+static void add_workshop_items(std::vector<env_item>& items, Typecode type,
+							   ItemType item_type,
+							   std::optional<ContentType> content_type,
+							   const std::string& header)
 {
 	std::vector<FileSpecifier> files;
 	FindAllFiles finder(files);
-
-	for (auto& item : subscribed_workshop_items)
+	
+	for (const auto& item : subscribed_workshop_items)
 	{
-		if (item.item_type != ItemType::Plugin)
+		if (item.item_type == item_type &&
+			(!content_type.has_value() ||
+			 item.content_type == content_type.value() ||
+			 item.content_type == ContentType::SoloAndNet))
 		{
 			FileSpecifier dir = item.install_folder_path;
 			finder.Find(dir, type);
@@ -73,7 +80,7 @@ static void add_workshop_items(Typecode type, std::vector<env_item>& items)
 	}
 
 	env_item title;
-	strcpy(title.name, "Steam Workshop");
+	strcpy(title.name, header.c_str());
 	items.push_back(title);
 
 	std::sort(files.begin(), files.end(), [](const FileSpecifier& a, const FileSpecifier& b) {
@@ -95,6 +102,51 @@ static void add_workshop_items(Typecode type, std::vector<env_item>& items)
 		items.push_back(env_item(file, 1, true));
 	}
 }
+
+static void add_workshop_items(std::vector<env_item>& items, Typecode type, bool prefer_net)
+{
+	static const char* solo = "Steam Workshop (Solo)";
+	static const char* net = "Steam Workshop (Net)";
+	static const char* both = "Steam Workshop";
+	switch (type)
+	{
+		case _typecode_scenario:
+			if (prefer_net)
+			{
+				add_workshop_items(items, type, ItemType::Map, ContentType::Net, net);
+				add_workshop_items(items, type, ItemType::Map, ContentType::Solo, solo);
+			}
+			else
+			{
+				add_workshop_items(items, type, ItemType::Map, ContentType::Solo, solo);
+				add_workshop_items(items, type, ItemType::Map, ContentType::Net, net);
+			}
+			break;
+		case _typecode_physics:
+			add_workshop_items(items, type, ItemType::Physics, std::nullopt, both);
+			break;
+		case _typecode_netscript:
+			if (prefer_net)
+			{
+				add_workshop_items(items, type, ItemType::Script, ContentType::Net, net);
+				add_workshop_items(items, type, ItemType::Script, ContentType::Solo, solo);
+			}
+			else
+			{
+				add_workshop_items(items, type, ItemType::Script, ContentType::Solo, solo);
+				add_workshop_items(items, type, ItemType::Script, ContentType::Net, net);				
+			}
+			break;
+		case _typecode_sounds:
+			add_workshop_items(items, type, ItemType::Sounds, std::nullopt, both);
+			break;
+		case _typecode_shapes:
+			add_workshop_items(items, type, ItemType::Shapes, std::nullopt, both);
+			break;
+		default:
+			break;
+	}
+}
 #endif
 
 void w_env_select::select_item(dialog *parent)
@@ -102,7 +154,7 @@ void w_env_select::select_item(dialog *parent)
 	vector<env_item> items;
 
 #ifdef HAVE_STEAM
-	add_workshop_items(type, items);
+	add_workshop_items(items, type, prefer_net);
 #endif	
 
 	// Find available files

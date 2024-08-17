@@ -3186,6 +3186,7 @@ static void environment_dialog(void *arg)
 	table->dual_add(use_replay_net_lua_w, d);
 	
 	w_env_select *replay_net_lua_w = new w_env_select(network_preferences->netscript_file, "AVAILABLE NETSCRIPTS", _typecode_netscript, &d);
+	replay_net_lua_w->set_prefer_net(true);
 	table->dual_add(replay_net_lua_w->label("Netscript File"), d);
 	table->dual_add(replay_net_lua_w, d);
 	use_replay_net_lua_w->add_dependent_widget(replay_net_lua_w);

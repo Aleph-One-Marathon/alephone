@@ -1474,16 +1474,20 @@ void SetupNetgameDialog::setupForGameType ()
 			
 			m_deadPlayersDropItemsWidget->set_value (true);
 			m_aliensWidget->set_value (true);
+
+			m_mapWidget->set_prefer_net(false);
 			break;
 			
 		case _game_of_kill_monsters:
 		case _game_of_king_of_the_hill:
 		case _game_of_kill_man_with_ball:
 		case _game_of_tag:
-	case _game_of_custom:
+		case _game_of_custom:
 			m_allowTeamsWidget->activate ();
 			m_deadPlayersDropItemsWidget->activate ();
 			m_aliensWidget->activate ();
+
+			m_mapWidget->set_prefer_net(true);
 			break;
 
 		case _game_of_capture_the_flag:
@@ -1493,6 +1497,8 @@ void SetupNetgameDialog::setupForGameType ()
 			
 			m_allowTeamsWidget->set_value (true);
 			m_teamWidget->activate ();
+
+			m_mapWidget->set_prefer_net(true);
 			break;
 			
 		case _game_of_rugby:
@@ -1502,6 +1508,8 @@ void SetupNetgameDialog::setupForGameType ()
 			
 			m_allowTeamsWidget->set_value (true);
 			m_teamWidget->activate ();
+
+			m_mapWidget->set_prefer_net(true);
 			break;
 			
 		default:
@@ -2739,6 +2747,7 @@ public:
 		// Could eventually store this path in network_preferences somewhere, so to have separate map file
 		// prefs for single- and multi-player.
 		w_env_select* map_w = new w_env_select ("", "AVAILABLE MAPS", _typecode_scenario, &m_dialog);
+		map_w->set_prefer_net(true);
 #ifndef MAC_APP_STORE
 		player_table->dual_add(map_w->label("Map"), m_dialog);
 		player_table->dual_add(map_w, m_dialog);
@@ -2769,6 +2778,7 @@ public:
 #endif
 
 		w_env_select* choose_script_w = new w_env_select ("", "AVAILABLE NETSCRIPTS", _typecode_netscript, &m_dialog);
+		choose_script_w->set_prefer_net(true);
 #ifndef MAC_APP_STORE
 		network_table->add(new w_spacer(), true);
 		network_table->dual_add(choose_script_w, m_dialog);
