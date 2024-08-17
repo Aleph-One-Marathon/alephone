@@ -299,6 +299,7 @@ void initialize_application(void)
 		SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
 	}
 
+	log_dir = get_data_path(kPathLogs);
 	initialize_joystick();
 
 	const string default_data_env = a1_getenv("ALEPHONE_DEFAULT_DATA");
@@ -372,7 +373,6 @@ void initialize_application(void)
 #endif
 	
 	local_data_dir = get_data_path(kPathLocalData);
-	log_dir = get_data_path(kPathLogs);
 	preferences_dir = get_data_path(kPathPreferences);
 	saved_games_dir = get_data_path(kPathSavedGames);
 	quick_saves_dir = get_data_path(kPathQuickSaves);
