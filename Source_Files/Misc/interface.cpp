@@ -1912,6 +1912,7 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 
 	steam_workshop_uploader_ui_data ui_data;
 	ui_data.item_type = static_cast<int>(new_item.item_type);
+	ui_data.content_type = static_cast<int>(new_item.content_type);
 	ui_data.is_scenarios_compatible = new_item.is_scenarios_compatible;
 	ui_data.item_id = new_item.id;
 
