@@ -1950,7 +1950,7 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 		}
 	};
 
-	static std::vector<std::string> item_types = { "Plugin", "Map", "Physics", "Script", "Sounds", "Shapes" };
+	std::vector<std::string> item_types = { "Plugin", "Map", "Physics", "Script", "Sounds", "Shapes" };
 
 	if (steam_game_info.support_workshop_item_scenario)
 	{
