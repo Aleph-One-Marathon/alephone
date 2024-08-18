@@ -436,9 +436,9 @@ public:
     STEAM_CALLBACK(SteamBridge, OnOverlayActivated, GameOverlayActivated_t, m_CallbackOverlayActivated);
     void set_item_created_callback(SteamAPICall_t api_call, const item_upload_data& item_data);
     void set_item_updated_callback(SteamAPICall_t api_call, UGCUpdateHandle_t handle, const item_upload_data& item_data);
-    void set_item_owned_queried_callback(SteamAPICall_t api_call, const std::string& scenario_name);
-    void set_item_mod_queried_callback(SteamAPICall_t api_call, const std::string& scenario_name);
-    void set_item_scenario_queried_callback(SteamAPICall_t api_call);
+    void set_item_owned_queried_callback(SteamAPICall_t api_call, const std::string& scenario_name, int page_number);
+    void set_item_mod_queried_callback(SteamAPICall_t api_call, const std::string& scenario_name, int page_number);
+    void set_item_scenario_queried_callback(SteamAPICall_t api_call, int page_number);
     void idle();
 private:
     PipeType fd;
@@ -453,6 +453,9 @@ private:
     item_upload_data m_upload_item_data;
     UGCUpdateHandle_t m_update_handle = 0xffffffffffffffffull;
     std::string m_scenario_name;
+    item_subscribed_query_result m_items_subscribed_result_set = {};
+    item_owned_query_result m_items_owned_result_set = {};
+    int m_items_query_page_number;
 };
 
 typedef enum ShimCmd
@@ -810,6 +813,33 @@ static void UpdateItem(PublishedFileId_t item_id, const item_upload_data& item_d
     GSteamBridge->set_item_updated_callback(steam_api_call, updateHandle, item_data);
 }
 
+static void workshopQueryItemScenario(int page_number)
+{
+    auto scenario_tag = std::to_string(static_cast<int>(ItemType::Scenario));
+    auto handle = GSteamUGC->CreateQueryUserUGCRequest(GUserID, k_EUserUGCList_Subscribed, k_EUGCMatchingUGCType_Items, k_EUserUGCListSortOrder_CreationOrderDesc, 0, GAppID, page_number);
+    GSteamUGC->SetReturnOnlyIDs(handle, true);
+    GSteamUGC->AddRequiredKeyValueTag(handle, SteamItemTags::ItemType, scenario_tag.c_str());
+    auto steam_api_call = GSteamUGC->SendQueryUGCRequest(handle);
+    GSteamBridge->set_item_scenario_queried_callback(steam_api_call, page_number);
+}
+
+static void workshopQueryItemMod(const std::string& scenario, int page_number)
+{
+    auto handle = GSteamUGC->CreateQueryUserUGCRequest(GUserID, k_EUserUGCList_Subscribed, k_EUGCMatchingUGCType_Items, k_EUserUGCListSortOrder_CreationOrderDesc, 0, GAppID, page_number);
+    GSteamUGC->SetReturnKeyValueTags(handle, true);
+    GSteamUGC->AddExcludedTag(handle, "Scenario");
+    auto steam_api_call = GSteamUGC->SendQueryUGCRequest(handle);
+    GSteamBridge->set_item_mod_queried_callback(steam_api_call, scenario, page_number);
+}
+
+static void workshopQueryItemOwned(const std::string& scenario, int page_number)
+{
+    auto handle = GSteamUGC->CreateQueryUserUGCRequest(GUserID, k_EUserUGCList_Published, k_EUGCMatchingUGCType_Items, k_EUserUGCListSortOrder_TitleAsc, GAppID, 0, page_number);
+    GSteamUGC->SetReturnKeyValueTags(handle, true);
+    auto steam_api_call = GSteamUGC->SendQueryUGCRequest(handle);
+    GSteamBridge->set_item_owned_queried_callback(steam_api_call, scenario, page_number);
+}
+
 SteamBridge::SteamBridge(PipeType _fd)
     : m_CallbackUserStatsReceived( this, &SteamBridge::OnUserStatsReceived )
 	, m_CallbackUserStatsStored( this, &SteamBridge::OnUserStatsStored )
@@ -850,19 +880,22 @@ void SteamBridge::set_item_updated_callback(SteamAPICall_t api_call, UGCUpdateHa
     m_CallbackItemUpdatedResult.Set(api_call, this, &SteamBridge::OnItemUpdated);
 }
 
-void SteamBridge::set_item_owned_queried_callback(SteamAPICall_t api_call, const std::string& scenario_name)
+void SteamBridge::set_item_owned_queried_callback(SteamAPICall_t api_call, const std::string& scenario_name, int page_number)
 {
+    m_items_query_page_number = page_number;
     m_scenario_name = scenario_name;
     m_CallbackItemQueryCompleted.Set(api_call, this, &SteamBridge::OnItemOwnedQueried);
 }
 
-void SteamBridge::set_item_scenario_queried_callback(SteamAPICall_t api_call)
+void SteamBridge::set_item_scenario_queried_callback(SteamAPICall_t api_call, int page_number)
 {
+    m_items_query_page_number = page_number;
     m_CallbackItemQueryCompleted.Set(api_call, this, &SteamBridge::OnItemScenarioQueried);
 }
 
-void SteamBridge::set_item_mod_queried_callback(SteamAPICall_t api_call, const std::string& scenario_name)
+void SteamBridge::set_item_mod_queried_callback(SteamAPICall_t api_call, const std::string& scenario_name, int page_number)
 {
+    m_items_query_page_number = page_number;
     m_scenario_name = scenario_name;
     m_CallbackItemQueryCompleted.Set(api_call, this, &SteamBridge::OnItemModQueried);
 }
@@ -912,8 +945,6 @@ void SteamBridge::OnItemUpdated(SubmitItemUpdateResult_t* pCallback, bool bIOFai
 
 void SteamBridge::OnItemOwnedQueried(SteamUGCQueryCompleted_t* pCallback, bool bIOFailure)
 {
-    item_owned_query_result items_result;
-
     if (!bIOFailure && pCallback->m_eResult == k_EResultOK)
     {
         for (int i = 0; i < pCallback->m_unNumResultsReturned; i++)
@@ -957,19 +988,24 @@ void SteamBridge::OnItemOwnedQueried(SteamUGCQueryCompleted_t* pCallback, bool b
 
             item.title = item_details.m_rgchTitle;
             item.id = item_details.m_nPublishedFileId;
-            items_result.items.push_back(item);
+            m_items_owned_result_set.items.push_back(item);
         }
     }
 
-    items_result.result_code = pCallback->m_eResult;
+    m_items_owned_result_set.result_code = pCallback->m_eResult;
     GSteamUGC->ReleaseQueryUGCRequest(pCallback->m_handle);
-    writeWorkshopItemOwnedQueriedResult(fd, items_result);
+
+    if (pCallback->m_unNumResultsReturned >= kNumUGCResultsPerPage && pCallback->m_eResult == k_EResultOK)
+        workshopQueryItemOwned(m_scenario_name, m_items_query_page_number + 1);
+    else
+    {
+        writeWorkshopItemOwnedQueriedResult(fd, m_items_owned_result_set);
+        m_items_owned_result_set = {};
+    }
 }
 
 void SteamBridge::OnItemModQueried(SteamUGCQueryCompleted_t* pCallback, bool bIOFailure)
 {
-    item_subscribed_query_result items_result;
-
     if (!bIOFailure && pCallback->m_eResult == k_EResultOK)
     {
         for (int i = 0; i < pCallback->m_unNumResultsReturned; i++)
@@ -1017,19 +1053,24 @@ void SteamBridge::OnItemModQueried(SteamUGCQueryCompleted_t* pCallback, bool bIO
 
             item.id = item_details.m_nPublishedFileId;
             item.install_folder_path = folder_path;
-            items_result.items.push_back(item);
+            m_items_subscribed_result_set.items.push_back(item);
         }
     }
 
-    items_result.result_code = pCallback->m_eResult;
+    m_items_subscribed_result_set.result_code = pCallback->m_eResult;
     GSteamUGC->ReleaseQueryUGCRequest(pCallback->m_handle);
-    writeWorkshopItemQueriedResult(fd, items_result);
+
+    if (pCallback->m_unNumResultsReturned >= kNumUGCResultsPerPage && pCallback->m_eResult == k_EResultOK)
+        workshopQueryItemMod(m_scenario_name, m_items_query_page_number + 1);
+    else
+    {
+        writeWorkshopItemQueriedResult(fd, m_items_subscribed_result_set);
+        m_items_subscribed_result_set = {};
+    }
 }
 
 void SteamBridge::OnItemScenarioQueried(SteamUGCQueryCompleted_t* pCallback, bool bIOFailure)
 {
-    item_subscribed_query_result items_result;
-
     if (!bIOFailure && pCallback->m_eResult == k_EResultOK)
     {
         for (int i = 0; i < pCallback->m_unNumResultsReturned; i++)
@@ -1055,13 +1096,20 @@ void SteamBridge::OnItemScenarioQueried(SteamUGCQueryCompleted_t* pCallback, boo
             item.item_type = ItemType::Scenario;
             item.content_type = ContentType::None;
             item.install_folder_path = folder_path;
-            items_result.items.push_back(item);
+            m_items_subscribed_result_set.items.push_back(item);
         }
     }
 
-    items_result.result_code = pCallback->m_eResult;
+    m_items_subscribed_result_set.result_code = pCallback->m_eResult;
     GSteamUGC->ReleaseQueryUGCRequest(pCallback->m_handle);
-    writeWorkshopItemQueriedResult(fd, items_result);
+
+    if (pCallback->m_unNumResultsReturned >= kNumUGCResultsPerPage && pCallback->m_eResult == k_EResultOK)
+        workshopQueryItemScenario(m_items_query_page_number + 1);
+    else
+    {
+        writeWorkshopItemQueriedResult(fd, m_items_subscribed_result_set);
+        m_items_subscribed_result_set = {};
+    }
 }
 
 static bool processCommand(const uint8 *buf, unsigned int buflen, PipeType fd)
@@ -1224,10 +1272,7 @@ static bool processCommand(const uint8 *buf, unsigned int buflen, PipeType fd)
             if (buflen)
             {
                 auto scenario = std::string((const char*)buf);
-                auto handle = GSteamUGC->CreateQueryUserUGCRequest(GUserID, k_EUserUGCList_Published, k_EUGCMatchingUGCType_Items, k_EUserUGCListSortOrder_TitleAsc, GAppID, 0, 1);
-                GSteamUGC->SetReturnKeyValueTags(handle, true);
-                auto steam_api_call = GSteamUGC->SendQueryUGCRequest(handle);
-                GSteamBridge->set_item_owned_queried_callback(steam_api_call, scenario);
+                workshopQueryItemOwned(scenario, 1);
             }
             break;
 
@@ -1235,22 +1280,13 @@ static bool processCommand(const uint8 *buf, unsigned int buflen, PipeType fd)
             if (buflen)
             {
                 auto scenario = std::string((const char*)buf);
-                auto handle = GSteamUGC->CreateQueryUserUGCRequest(GUserID, k_EUserUGCList_Subscribed, k_EUGCMatchingUGCType_Items, k_EUserUGCListSortOrder_CreationOrderDesc, 0, GAppID, 1);
-                GSteamUGC->SetReturnKeyValueTags(handle, true);
-                GSteamUGC->AddExcludedTag(handle, "Scenario");
-                auto steam_api_call = GSteamUGC->SendQueryUGCRequest(handle);
-                GSteamBridge->set_item_mod_queried_callback(steam_api_call, scenario);
+                workshopQueryItemMod(scenario, 1);
             }
             break;
 
         case SHIMCMD_WORKSHOP_QUERY_ITEM_SCENARIO:
         {
-            auto scenario_tag = std::to_string(static_cast<int>(ItemType::Scenario));
-            auto handle = GSteamUGC->CreateQueryUserUGCRequest(GUserID, k_EUserUGCList_Subscribed, k_EUGCMatchingUGCType_Items, k_EUserUGCListSortOrder_CreationOrderDesc, 0, GAppID, 1);
-            GSteamUGC->SetReturnOnlyIDs(handle, true);
-            GSteamUGC->AddRequiredKeyValueTag(handle, SteamItemTags::ItemType, scenario_tag.c_str());
-            auto steam_api_call = GSteamUGC->SendQueryUGCRequest(handle);
-            GSteamBridge->set_item_scenario_queried_callback(steam_api_call);
+            workshopQueryItemScenario(1);
         }
         break;
 
