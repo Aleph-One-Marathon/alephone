@@ -142,6 +142,7 @@ DirectorySpecifier log_dir;           // Directory for Aleph One Log.txt
 
 #ifdef HAVE_STEAM
 std::vector<item_subscribed_query_result::item> subscribed_workshop_items;
+steam_game_information steam_game_info;
 #endif
 
 /*
@@ -466,22 +467,36 @@ void initialize_application(void)
 	}
 
 #ifdef HAVE_STEAM
+	STEAMSHIM_getGameInfo();
 	STEAMSHIM_queryWorkshopItemMod(Scenario::instance()->GetName());
-	while (STEAMSHIM_alive())
+
+	bool got_info = false, got_items = false;
+	while (STEAMSHIM_alive() && (!got_info || !got_items))
 	{
 		auto result = STEAMSHIM_pump();
 
-		if (result && result->type == SHIMEVENT_WORKSHOP_QUERY_ITEM_SUBSCRIBED_RESULT)
+		if (!result)
 		{
-			if (result->items_subscribed.result_code == 1)
-			{
-				for (const auto& item : result->items_subscribed.items)
-				{
-					subscribed_workshop_items.push_back(item);
-				}
+			sleep_for_machine_ticks(30);
+			continue;
+		}
 
+		switch (result->type)
+		{
+			case SHIMEVENT_GET_GAME_INFO:
+				steam_game_info = result->game_info;
+				got_info = true;
 				break;
-			}
+			case SHIMEVENT_WORKSHOP_QUERY_ITEM_SUBSCRIBED_RESULT:
+				if (result->items_subscribed.result_code == 1)
+				{
+					for (const auto& item : result->items_subscribed.items)
+					{
+						subscribed_workshop_items.push_back(item);
+					}
+				}
+				got_items = true;
+				break;
 		}
 	}
 #endif

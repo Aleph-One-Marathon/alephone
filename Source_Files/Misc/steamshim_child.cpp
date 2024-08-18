@@ -137,7 +137,8 @@ enum ShimCmd
     SHIMCMD_WORKSHOP_UPLOAD,
     SHIMCMD_WORKSHOP_QUERY_ITEM_OWNED,
     SHIMCMD_WORKSHOP_QUERY_ITEM_MOD,
-    SHIMCMD_WORKSHOP_QUERY_ITEM_SCENARIO
+    SHIMCMD_WORKSHOP_QUERY_ITEM_SCENARIO,
+    SHIMCMD_GET_GAME_INFO
 };
 
 static int write1ByteCmd(const uint8 b1)
@@ -260,6 +261,7 @@ static const STEAMSHIM_Event *processEvent(const uint8 *buf, size_t buflen)
     PRINTGOTEVENT(SHIMEVENT_WORKSHOP_UPLOAD_PROGRESS);
     PRINTGOTEVENT(SHIMEVENT_WORKSHOP_QUERY_ITEM_OWNED_RESULT);
     PRINTGOTEVENT(SHIMEVENT_WORKSHOP_QUERY_ITEM_SUBSCRIBED_RESULT);
+    PRINTGOTEVENT(SHIMEVENT_GET_GAME_INFO);
     #undef PRINTGOTEVENT
     else printf("Child got unknown shimevent %d.\n", (int) type);
     #endif
@@ -339,6 +341,14 @@ static const STEAMSHIM_Event *processEvent(const uint8 *buf, size_t buflen)
             event.items_subscribed = {};
             event.items_subscribed.shim_deserialize(buf, buflen);
             event.okay = event.items_owned.result_code == 1;
+            break;
+        }
+
+        case SHIMEVENT_GET_GAME_INFO:
+        {
+            event.game_info = {};
+            event.game_info.shim_deserialize(buf, buflen);
+            event.okay = true;
             break;
         }
 
@@ -493,6 +503,13 @@ void STEAMSHIM_queryWorkshopItemMod(const std::string& scenario_name)
 
     auto buffer = data_stream_shim.str();
     writePipe(GPipeWrite, buffer.data(), buffer.length());
+}
+
+void STEAMSHIM_getGameInfo()
+{
+    if (isDead()) return;
+    dbgpipe("Child sending SHIMCMD_GET_GAME_INFO.\n");
+    write1ByteCmd(SHIMCMD_GET_GAME_INFO);
 }
 
 void STEAMSHIM_queryWorkshopItemScenario()

@@ -267,6 +267,10 @@ struct screen_data {
 	int32 duration;
 };
 
+#ifdef HAVE_STEAM
+
+#include <steamshim_child.h>
+
 struct steam_workshop_uploader_ui_data {
 	uint64_t item_id;
 	int item_type;
@@ -275,6 +279,10 @@ struct steam_workshop_uploader_ui_data {
 	FileSpecifier thumbnail_path;
 	bool is_scenarios_compatible;
 };
+
+extern steam_game_information steam_game_info;
+
+#endif
 
 /* -------------- constants */
 struct screen_data display_screens[]= {
@@ -342,7 +350,6 @@ static void	display_screen(short base_pict_id);
 static void display_introduction_screen_for_demo(void);
 static void display_epilogue(void);
 static void display_about_dialog();
-static void display_steam_workshop_uploader_dialog(void *arg);
 
 static void force_system_colors(void);
 static bool point_in_rectangle(short x, short y, screen_rectangle *rect);
@@ -1725,13 +1732,13 @@ public:
 	void item_selected(void) { }
 };
 
-#include <steamshim_child.h>
+#ifdef HAVE_STEAM
 
 static item_upload_data steam_workshop_prepare_upload(steam_workshop_uploader_ui_data& data)
 {
 	item_upload_data workshop_item;
 
-	if (!data.is_scenarios_compatible)
+	if (steam_game_info.support_workshop_item_scenario && !data.is_scenarios_compatible)
 	{
 		const auto scenario_name = Scenario::instance()->GetName();
 
@@ -1943,10 +1950,16 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 		}
 	};
 
-	static const std::vector<std::string> item_types = { "Scenario", "Plugin", "Map", "Physics", "Script", "Sounds", "Shapes" };
+	static std::vector<std::string> item_types = { "Plugin", "Map", "Physics", "Script", "Sounds", "Shapes" };
+
+	if (steam_game_info.support_workshop_item_scenario)
+	{
+		item_types.insert(item_types.begin(), "Scenario");
+	}
+
 	auto item_types_popup = new w_select_popup();
 	item_types_popup->set_labels(item_types);
-	item_types_popup->set_selection(static_cast<int>(new_item.item_type));
+	item_types_popup->set_selection(steam_game_info.support_workshop_item_scenario ? static_cast<int>(new_item.item_type) : static_cast<int>(new_item.item_type) - 1);
 
 	table->dual_add(item_types_popup->label("Item Type"), d);
 	table->dual_add(item_types_popup, d);
@@ -1960,11 +1973,19 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 
 	char label[64];
 	snprintf(label, 64, "%s Only", Scenario::instance()->GetName().c_str());
-	
+	auto custom_scenarios_label = new w_label(label);
 	auto custom_scenarios = new w_toggle(false);
-	table->dual_add(custom_scenarios->label(label), d);
+	custom_scenarios->associate_label(custom_scenarios_label);
+	custom_scenarios->visible(steam_game_info.support_workshop_item_scenario);
+	custom_scenarios_label->visible(steam_game_info.support_workshop_item_scenario);
+
+	table->dual_add(custom_scenarios_label, d);
 	table->dual_add(custom_scenarios, d);
-	table->add_row(new w_spacer(), true);
+
+	if (steam_game_info.support_workshop_item_scenario)
+	{
+		table->add_row(new w_spacer(), true);
+	}
 
 	auto thumbnail_path = new w_file_chooser("Choose Preview Image", _typecode_unknown);
 	table->dual_add(thumbnail_path->label("Preview Image"), d);
@@ -2061,7 +2082,7 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 		ui_data.thumbnail_path = "";
 		ui_data.is_scenarios_compatible = item.is_scenarios_compatible;
 
-		item_types_popup->set_selection(ui_data.item_type);
+		item_types_popup->set_selection(steam_game_info.support_workshop_item_scenario ? ui_data.item_type : ui_data.item_type - 1);
 		item_types_popup->set_enabled(!ui_data.item_id);
 
 		directory_path->set_directory(ui_data.directory_path);
@@ -2074,7 +2095,7 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 
 	item_types_popup->set_popup_callback([&](void*)
 	{
-		ui_data.item_type = item_types_popup->get_selection();
+		ui_data.item_type = steam_game_info.support_workshop_item_scenario ? item_types_popup->get_selection() : item_types_popup->get_selection() + 1;
 		update_common_widgets();
 		content_types_popup->set_selection(0);
 		update_content_type_value();
@@ -2106,6 +2127,8 @@ static void display_steam_workshop_uploader_dialog(void* arg)
 
 	d.run();
 }
+
+#endif
 
 static void display_about_dialog()
 {

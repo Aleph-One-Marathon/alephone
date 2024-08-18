@@ -31,6 +31,19 @@ enum class ContentType {
     Net
 };
 
+struct steam_game_information
+{
+    std::string install_folder_path;
+    bool support_workshop_item_scenario;
+
+    void shim_deserialize(const uint8* buf, unsigned int buflen)
+    {
+        std::istringstream iss(std::string((const char*)buf, buflen));
+        std::getline(iss, install_folder_path, '\0');
+        iss.read(reinterpret_cast<char*>(&support_workshop_item_scenario), sizeof(support_workshop_item_scenario));
+    }
+};
+
 struct item_upload_data {
 
     uint64_t id;
@@ -158,7 +171,8 @@ enum STEAMSHIM_EventType
     SHIMEVENT_WORKSHOP_UPLOAD_RESULT,
     SHIMEVENT_WORKSHOP_UPLOAD_PROGRESS,
     SHIMEVENT_WORKSHOP_QUERY_ITEM_OWNED_RESULT,
-    SHIMEVENT_WORKSHOP_QUERY_ITEM_SUBSCRIBED_RESULT
+    SHIMEVENT_WORKSHOP_QUERY_ITEM_SUBSCRIBED_RESULT,
+    SHIMEVENT_GET_GAME_INFO
 };
 
 enum STEAM_EItemUpdateStatus //from steam API
@@ -183,6 +197,7 @@ struct STEAMSHIM_Event
     bool needs_to_accept_workshop_agreement;
     item_owned_query_result items_owned;
     item_subscribed_query_result items_subscribed;
+    steam_game_information game_info;
 };
 
 int STEAMSHIM_init(void);  /* non-zero on success, zero on failure. */
@@ -202,6 +217,7 @@ void STEAMSHIM_getStatF(const char *name);
 void STEAMSHIM_queryWorkshopItemOwned(const std::string& scenario_name);
 void STEAMSHIM_queryWorkshopItemMod(const std::string& scenario_name);
 void STEAMSHIM_queryWorkshopItemScenario();
+void STEAMSHIM_getGameInfo();
 #endif  /* include-once blocker */
 
 /* end of steamshim_child.h ... */

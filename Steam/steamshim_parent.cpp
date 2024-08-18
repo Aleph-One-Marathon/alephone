@@ -321,6 +321,23 @@ enum class ContentType {
     Net
 };
 
+struct steam_game_information
+{
+    std::string install_folder_path;
+    bool support_workshop_item_scenario;
+
+    std::ostringstream shim_serialize() const
+    {
+        std::ostringstream data_stream;
+        data_stream << install_folder_path << '\0';
+        data_stream.write(reinterpret_cast<const char*>(&support_workshop_item_scenario), sizeof(support_workshop_item_scenario));
+        return data_stream;
+    }
+};
+
+static constexpr AppId_t MarathonInfinityAppId = 2398520;
+static steam_game_information game_info;
+
 struct item_subscribed_query_result
 {
     struct item
@@ -454,7 +471,8 @@ typedef enum ShimCmd
     SHIMCMD_WORKSHOP_UPLOAD,
     SHIMCMD_WORKSHOP_QUERY_ITEM_OWNED,
     SHIMCMD_WORKSHOP_QUERY_ITEM_MOD,
-    SHIMCMD_WORKSHOP_QUERY_ITEM_SCENARIO
+    SHIMCMD_WORKSHOP_QUERY_ITEM_SCENARIO,
+    SHIMCMD_GET_GAME_INFO
 } ShimCmd;
 
 typedef enum ShimEvent
@@ -473,7 +491,8 @@ typedef enum ShimEvent
     SHIMEVENT_WORKSHOP_UPLOAD_RESULT,
     SHIMEVENT_WORKSHOP_UPLOAD_PROGRESS,
     SHIMEVENT_WORKSHOP_QUERY_OWNED_ITEM_RESULT,
-    SHIMEVENT_WORKSHOP_QUERY_SUBSCRIBED_ITEM_RESULT
+    SHIMEVENT_WORKSHOP_QUERY_SUBSCRIBED_ITEM_RESULT,
+    SHIMEVENT_GET_GAME_INFO
 } ShimEvent;
 
 static bool write1ByteCmd(PipeType fd, const uint8 b1)
@@ -529,7 +548,7 @@ static inline bool writeWorkshopUploadResult(PipeType fd, const EResult result, 
 {
     dbgpipe("Parent sending SHIMEVENT_WORKSHOP_UPLOAD_RESULT(%d result %d workshop agreement).\n", result, needs_accept_workshop_agreement);
     return write3ByteCmd(fd, SHIMEVENT_WORKSHOP_UPLOAD_RESULT, result, needs_accept_workshop_agreement);
-} // writeOverlayActivated
+}
 
 static bool writeWorkshopItemOwnedQueriedResult(PipeType fd, const item_owned_query_result& query_result)
 {
@@ -546,7 +565,7 @@ static bool writeWorkshopItemOwnedQueriedResult(PipeType fd, const item_owned_qu
 
     auto buffer = data_stream_shim.str();
     return writePipe(fd, buffer.data(), buffer.length());
-} // writeOverlayActivated
+}
 
 static bool writeWorkshopItemQueriedResult(PipeType fd, const item_subscribed_query_result& query_result)
 {
@@ -563,7 +582,24 @@ static bool writeWorkshopItemQueriedResult(PipeType fd, const item_subscribed_qu
 
     auto buffer = data_stream_shim.str();
     return writePipe(fd, buffer.data(), buffer.length());
-} // writeOverlayActivated
+}
+
+static bool writeGameInfo(PipeType fd, const steam_game_information& game_info)
+{
+    dbgpipe("Parent sending SHIMEVENT_GET_GAME_INFO.\n");
+    auto data_stream = game_info.shim_serialize();
+
+    data_stream = std::ostringstream() << (uint8)SHIMEVENT_GET_GAME_INFO << data_stream.str();
+
+    std::ostringstream data_stream_shim;
+
+    uint16_t length = data_stream.str().length();
+    data_stream_shim.write(reinterpret_cast<const char*>(&length), sizeof(length));
+    data_stream_shim << data_stream.str();
+
+    auto buffer = data_stream_shim.str();
+    return writePipe(fd, buffer.data(), buffer.length());
+}
 
 static bool writeAchievementSet(PipeType fd, const char *name, const bool enable, const bool okay)
 {
@@ -765,7 +801,7 @@ static void UpdateItem(PublishedFileId_t item_id, const item_upload_data& item_d
         GSteamUGC->SetItemPreview(updateHandle, item_data.thumbnail_path.c_str());
     }
 
-    if (!item_data.required_scenario.empty())
+    if (game_info.support_workshop_item_scenario && !item_data.required_scenario.empty())
     {
         GSteamUGC->AddItemKeyValueTag(updateHandle, SteamItemTags::RequiredScenario, item_data.required_scenario.c_str());
     }
@@ -1053,6 +1089,7 @@ static bool processCommand(const uint8 *buf, unsigned int buflen, PipeType fd)
     PRINTGOTCMD(SHIMCMD_WORKSHOP_UPLOAD);
     PRINTGOTCMD(SHIMCMD_WORKSHOP_QUERY_ITEM_OWNED);
     PRINTGOTCMD(SHIMCMD_WORKSHOP_QUERY_ITEM_SCENARIO);
+    PRINTGOTCMD(SHIMCMD_GET_GAME_INFO);
     #undef PRINTGOTCMD
     else printf("Parent got unknown shimcmd %d.\n", (int) cmd);
     #endif
@@ -1171,6 +1208,12 @@ static bool processCommand(const uint8 *buf, unsigned int buflen, PipeType fd)
                     UpdateItem(item.id, item);
                 else
                 {
+                    if (item.item_type == ItemType::Scenario && !game_info.support_workshop_item_scenario) //double check
+                    {
+                        writeWorkshopUploadResult(fd, EResult::k_EResultFail, false);
+                        break;
+                    }
+
                     auto steam_api_call = GSteamUGC->CreateItem(GAppID, k_EWorkshopFileTypeCommunity);
                     GSteamBridge->set_item_created_callback(steam_api_call, item);
                 }
@@ -1208,6 +1251,12 @@ static bool processCommand(const uint8 *buf, unsigned int buflen, PipeType fd)
             GSteamUGC->AddRequiredKeyValueTag(handle, SteamItemTags::ItemType, scenario_tag.c_str());
             auto steam_api_call = GSteamUGC->SendQueryUGCRequest(handle);
             GSteamBridge->set_item_scenario_queried_callback(steam_api_call);
+        }
+        break;
+
+        case SHIMCMD_GET_GAME_INFO:
+        {
+            writeGameInfo(fd, game_info);
         }
         break;
     } // switch
@@ -1287,6 +1336,12 @@ static bool initSteamworks(PipeType fd, ESteamAPIInitResult* resultCode, SteamEr
     GAppID = GSteamUtils ? GSteamUtils->GetAppID() : 0;
 	GUserID = GSteamUser ? GSteamUser->GetSteamID().ConvertToUint64() : 0;
     GSteamBridge = new SteamBridge(fd);
+
+    char folder_path[256];
+    SteamApps()->GetAppInstallDir(GAppID, folder_path, sizeof(folder_path));
+    game_info = {};
+    game_info.install_folder_path = folder_path;
+    game_info.support_workshop_item_scenario = GAppID == MarathonInfinityAppId;
 
     return 1;
 } // initSteamworks
