@@ -327,6 +327,12 @@ void ScenarioChooser::handle_event(SDL_Event& e)
 		case SDL_CONTROLLERBUTTONDOWN:
 			switch (e.cbutton.button)
 			{
+				case SDL_CONTROLLER_BUTTON_A:
+					if (selection_ >= 0)
+					{
+						done_ = true;
+					}
+					break;				
 				case SDL_CONTROLLER_BUTTON_B:
 					exit(0);
 				case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
