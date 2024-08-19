@@ -74,6 +74,11 @@ private:
 
 bool ScenarioChooserScenario::operator<(const ScenarioChooserScenario& other) const
 {
+	if (is_primary != other.is_primary)
+	{
+		return is_primary;
+	}
+	
 	return std::lexicographical_compare(name.begin(),
 										name.end(),
 										other.name.begin(),
