@@ -31,6 +31,10 @@
 
 #include <SDL2/SDL_endian.h>
 
+#ifdef HAVE_STEAM
+#include "steamshim_child.h"
+#endif
+
 
 // From shell_sdl.cpp
 extern vector<DirectorySpecifier> data_search_path;
@@ -66,9 +70,47 @@ private:
 	uint32 look_for_checksum;
 };
 
+#ifdef HAVE_STEAM
+extern std::vector<item_subscribed_query_result::item> subscribed_workshop_items;
+
+ItemType typecode_to_item_type(Typecode file_type)
+{
+	switch (file_type)
+	{
+		case _typecode_scenario:
+			return ItemType::Map;
+		case _typecode_physics:
+			return ItemType::Physics;
+		case _typecode_shapes:
+			return ItemType::Shapes;
+		case _typecode_sounds:
+			return ItemType::Sounds;
+		default:
+			assert(false);
+	}
+}
+#endif
+
 bool find_wad_file_that_has_checksum(FileSpecifier &matching_file, Typecode file_type, short path_resource_id, uint32 checksum)
 {
 	FindByChecksum finder(checksum);
+
+#ifdef HAVE_STEAM
+	auto item_type = typecode_to_item_type(file_type);
+	for (const auto& item : subscribed_workshop_items)
+	{
+		if (item_type == item.item_type)
+		{
+			FileSpecifier dir(item.install_folder_path);
+			if (finder.Find(dir, file_type))
+			{
+				matching_file = finder.found_what;
+				return true;
+			}
+		}
+	}
+#endif
+	
 	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
 	while (i != end) {
 		FileSpecifier dir = *i;
@@ -109,6 +151,23 @@ private:
 bool find_file_with_modification_date(FileSpecifier &matching_file, Typecode file_type, short path_resource_id, TimeType modification_date)
 {
 	FindByDate finder(modification_date);
+
+#ifdef HAVE_STEAM
+	auto item_type = typecode_to_item_type(file_type);
+	for (const auto& item : subscribed_workshop_items)
+	{
+		if (item_type == item.item_type)
+		{
+			FileSpecifier dir(item.install_folder_path);
+			if (finder.Find(dir, file_type))
+			{
+				matching_file = finder.found_what;
+				return true;
+			}
+		}
+	}
+#endif
+	
 	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
 	while (i != end) {
 		FileSpecifier dir = *i;
