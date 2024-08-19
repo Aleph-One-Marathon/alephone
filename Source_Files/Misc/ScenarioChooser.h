@@ -20,6 +20,7 @@
  */
 
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include <SDL2/SDL.h>
@@ -41,12 +42,14 @@ public:
 	ScenarioChooser();
 	~ScenarioChooser();
 
-	void add_scenario(const std::string& path);
+	void add_primary_scenario(const std::string& path) { add_scenario(path, true, false); }
+	void add_workshop_scenario(const std::string& path) { add_scenario(path, false, true); }
 	void add_directory(const std::string& path);
 
 	int num_scenarios() const;
 
-	std::string run();
+	// returns path to scenario, is_workshop
+	std::pair<std::string, bool> run();
 
 private:
 	bool done_;
@@ -68,6 +71,7 @@ private:
 
 	std::vector<ScenarioChooserScenario> scenarios_;
 
+	void add_scenario(const std::string& path, bool is_primary, bool is_workshop);
 	void determine_cols_rows();
 	void ensure_selection_visible();
 	void handle_event(SDL_Event& e);

@@ -317,7 +317,7 @@ void initialize_application(void)
 	}
 
 	ScenarioChooser chooser;
-	chooser.add_scenario(scenario_dir.GetPath());
+	chooser.add_primary_scenario(scenario_dir.GetPath());
 
 #ifdef HAVE_STEAM
 	if (!STEAMSHIM_init())
@@ -326,26 +326,39 @@ void initialize_application(void)
 		exit(1);
 	}
 
+	STEAMSHIM_getGameInfo();
 	STEAMSHIM_queryWorkshopItemScenario();
-
-	while (STEAMSHIM_alive())
+	
+	bool got_info = false, got_items = false;
+	while (STEAMSHIM_alive() && (!got_info || !got_items))
 	{
 		auto result = STEAMSHIM_pump();
 
-		if (result && result->type == SHIMEVENT_WORKSHOP_QUERY_ITEM_SUBSCRIBED_RESULT)
+		if (!result)
 		{
-			if (result->items_subscribed.result_code == 1)
-			{
-				for (const auto& steam_scenario : result->items_subscribed.items)
-				{
-					chooser.add_scenario(steam_scenario.install_folder_path);
-				}
-			}
-
-			break;
+			sleep_for_machine_ticks(30);
+			continue;
 		}
 
-		sleep_for_machine_ticks(30);
+		switch (result->type)
+		{
+			case SHIMEVENT_GET_GAME_INFO:
+				steam_game_info = result->game_info;
+				got_info = true;
+				break;
+			case SHIMEVENT_WORKSHOP_QUERY_ITEM_SUBSCRIBED_RESULT:
+				if (result->items_subscribed.result_code == 1)
+				{
+					for (const auto& steam_scenario : result->items_subscribed.items)
+					{
+						chooser.add_workshop_scenario(steam_scenario.install_folder_path);
+					}
+				}
+				got_items = true;
+				break;
+			default:
+				break;
+		}
 	}
 #endif // HAVE_STEAM
 
@@ -358,9 +371,12 @@ void initialize_application(void)
 		chooser.add_directory((scenario_dir + "Scenarios").GetPath());
 	}
 
+	auto is_workshop_scenario = false;
 	if (chooser.num_scenarios() > 1)
 	{
-		auto chosen_path = chooser.run();
+		std::string chosen_path;
+		std::tie(chosen_path, is_workshop_scenario) = chooser.run();
+
 		// ugh
 		shell_options.directory = chosen_path;
 	}
@@ -368,7 +384,7 @@ void initialize_application(void)
 
 	// Find data directories, construct search path
 	InitDefaultStringSets();
-
+	
 #ifndef SCENARIO_IS_BUNDLED
 	default_data_dir = get_data_path(kPathDefaultData);
 #endif
@@ -377,6 +393,17 @@ void initialize_application(void)
 	preferences_dir = get_data_path(kPathPreferences);
 	saved_games_dir = get_data_path(kPathSavedGames);
 	quick_saves_dir = get_data_path(kPathQuickSaves);
+
+#ifdef HAVE_STEAM
+	if (is_workshop_scenario)
+	{
+		quick_saves_dir += "Marathon Infinity";
+		quick_saves_dir.CreateDirectory();
+		quick_saves_dir += "Workshop";
+		quick_saves_dir.CreateDirectory();
+	}
+#endif
+	
 	image_cache_dir = get_data_path(kPathImageCache);
 	recordings_dir = get_data_path(kPathRecordings);
 	screenshots_dir = get_data_path(kPathScreenshots);
@@ -467,11 +494,9 @@ void initialize_application(void)
 	}
 
 #ifdef HAVE_STEAM
-	STEAMSHIM_getGameInfo();
 	STEAMSHIM_queryWorkshopItemMod(Scenario::instance()->GetName());
 
-	bool got_info = false, got_items = false;
-	while (STEAMSHIM_alive() && (!got_info || !got_items))
+	while (STEAMSHIM_alive())
 	{
 		auto result = STEAMSHIM_pump();
 
@@ -481,22 +506,16 @@ void initialize_application(void)
 			continue;
 		}
 
-		switch (result->type)
+		if (result->type == SHIMEVENT_WORKSHOP_QUERY_ITEM_SUBSCRIBED_RESULT)
 		{
-			case SHIMEVENT_GET_GAME_INFO:
-				steam_game_info = result->game_info;
-				got_info = true;
-				break;
-			case SHIMEVENT_WORKSHOP_QUERY_ITEM_SUBSCRIBED_RESULT:
-				if (result->items_subscribed.result_code == 1)
-				{
-					for (const auto& item : result->items_subscribed.items)
+			if (result->items_subscribed.result_code == 1)
+			{
+				for (const auto& item : result->items_subscribed.items)
 					{
 						subscribed_workshop_items.push_back(item);
 					}
-				}
-				got_items = true;
-				break;
+			}
+			break;
 		}
 	}
 #endif

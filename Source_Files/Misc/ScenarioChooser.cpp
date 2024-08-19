@@ -33,6 +33,8 @@ public:
 	
 	std::string name;
 	std::shared_ptr<SDL_Surface> image;
+	bool is_workshop;
+	bool is_primary;
 
 	bool load(const std::string& path);
 	void find_image();
@@ -173,11 +175,13 @@ ScenarioChooser::~ScenarioChooser()
 
 }
 
-void ScenarioChooser::add_scenario(const std::string& path)
+void ScenarioChooser::add_scenario(const std::string& path, bool is_primary, bool is_workshop)
 {
 	ScenarioChooserScenario scenario;
 	if (scenario.load(path))
 	{
+		scenario.is_primary = is_primary;
+		scenario.is_workshop = is_workshop;
 		scenarios_.push_back(scenario);
 	}
 }
@@ -194,7 +198,7 @@ void ScenarioChooser::add_directory(const std::string& path)
 		{
 			if (entry.is_directory)
 			{
-				add_scenario((d + entry.name).GetPath());
+				add_scenario((d + entry.name).GetPath(), false, false);
 			}
 		}
 	}
@@ -205,7 +209,7 @@ int ScenarioChooser::num_scenarios() const
 	return static_cast<int>(scenarios_.size());
 }
 
-std::string ScenarioChooser::run()
+std::pair<std::string, bool> ScenarioChooser::run()
 {
 	std::sort(scenarios_.begin(), scenarios_.end());
 
@@ -244,7 +248,7 @@ std::string ScenarioChooser::run()
 		SDL_Delay(30);
 	}
 
-	return scenarios_[selection_].path;
+	return std::make_pair(scenarios_[selection_].path, scenarios_[selection_].is_workshop);
 }
 
 void ScenarioChooser::determine_cols_rows()
