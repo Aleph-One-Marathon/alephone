@@ -58,9 +58,13 @@ function Triggers.init(restored)
    end
 
    if Level.index == 13 then
-      Triggers.idle = iiharl_idle
-      Triggers.platform_activated = iiharl_platform_activated
-      Triggers.projectile_created = iiharl_projectile_created
+      if not Level._surfs_up_over then
+         Triggers.idle = iiharl_idle
+         Triggers.platform_activated = iiharl_platform_activated
+         Triggers.projectile_created = iiharl_projectile_created
+      end
+   else
+      Level._surfs_up_over = nil
    end
 
    if Level.index == 16 then
@@ -170,6 +174,7 @@ function iiharl_projectile_created(projectile)
       projectile.owner.player and
       projectile.type ~= "fist"
    then
+      Level._surfs_up_over = true
       Triggers.idle = nil
       Triggers.projectile_created = nil
       Triggers.platform_activated = nil
@@ -181,6 +186,7 @@ function iiharl_platform_activated(polygon)
       polygon.index == 33 or
       polygon.index == 64
    then
+      Level._surfs_up_over = true
       Triggers.idle = nil
       Triggers.projectile_created = nil
       Triggers.platform_activated = nil
