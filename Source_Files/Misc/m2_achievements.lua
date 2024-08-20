@@ -44,8 +44,13 @@ function Triggers.init(restored)
    end
 
    if Level.index == 5 then
+      if Players[0]._fusion_pistols == nil then
+         Players[0]._fusion_pistols = Players[0].items["fusion pistol"]
+      end
       Triggers.terminal_enter = we_terminal_enter
       Triggers.idle = we_idle
+   else
+      Players[0]._fusion_pistols = nil
    end
 
    if Level.index == 9 then
@@ -103,7 +108,7 @@ function catym_terminal_enter(terminal)
 end
 
 function we_terminal_enter()
-   if Players[0].items["fusion pistol"] == 0 then
+   if Players[0].items["fusion pistol"] == Players[0]._fusion_pistols then
       got_achievement("ACH_VID_BUOY")
       Triggers.terminal_enter = nil
    end
