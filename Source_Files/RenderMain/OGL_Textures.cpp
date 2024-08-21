@@ -1293,7 +1293,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 		   Image->GetFormat() == ImageDescriptor::DXTC3 ||
 		   Image->GetFormat() == ImageDescriptor::DXTC5)
 	{
-#if defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
+#if ( defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT) ) || ( defined(GL_ANGLE_texture_compression_dxt3) && defined(GL_ANGLE_texture_compression_dxt5) )
 		if (Image->GetFormat() == ImageDescriptor::DXTC1)
 		  internalFormat = (load_as_sRGB) ? GL_COMPRESSED_SRGB_S3TC_DXT1_EXT : GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 		else if (Image->GetFormat() == ImageDescriptor::DXTC3)
@@ -1691,7 +1691,7 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 		 Image.get()->GetFormat() == ImageDescriptor::DXTC3 ||
 		 Image.get()->GetFormat() == ImageDescriptor::DXTC5)
 	{
-#if defined (GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
+#if ( defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT) ) || ( defined(GL_ANGLE_texture_compression_dxt3) && defined(GL_ANGLE_texture_compression_dxt5) )
 		if (Image.get()->GetFormat() == ImageDescriptor::DXTC1)
 			internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 		else if (Image.get()->GetFormat() == ImageDescriptor::DXTC3)

@@ -118,7 +118,7 @@ bool OGL_CheckExtension(const std::string extension) {
 #ifdef HAVE_OPENGL
 	char *extensions = (char *) glGetString(GL_EXTENSIONS);
 	if (!extensions) return false;
-
+	
 	while (*extensions)
 	{
 		unsigned int length = strcspn(extensions, " ");
@@ -414,7 +414,8 @@ void OGL_LoadModelsImages(short Collection)
 	assert(Collection >= 0 && Collection < MAXIMUM_COLLECTIONS);
 
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &glMaxTextureSize);
-	hasS3TC = OGL_CheckExtension("GL_ARB_texture_compression") && OGL_CheckExtension("GL_EXT_texture_compression_s3tc");
+	hasS3TC = (OGL_CheckExtension("GL_ARB_texture_compression") && OGL_CheckExtension("GL_EXT_texture_compression_s3tc")) ||
+			  (OGL_CheckExtension("GL_ANGLE_texture_compression_dxt3") && OGL_CheckExtension("GL_ANGLE_texture_compression_dxt5"));
 	
 	// For wall/sprite images
 	OGL_LoadTextures(Collection);
