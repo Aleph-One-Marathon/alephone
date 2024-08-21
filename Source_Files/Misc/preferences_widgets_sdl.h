@@ -142,7 +142,7 @@ w_env_select(const char *path, const char *m, Typecode t, dialog *d)
 			}
 			else
 			{
-				snprintf(item_name, 256, "[?%s]", FileSpecifier::HideExtension(filename).c_str(), 256);
+				snprintf(item_name, 256, "[?%s]", FileSpecifier::HideExtension(filename).c_str());
 			}
 			
 			set_selection(item_name);
