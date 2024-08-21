@@ -72,6 +72,14 @@ int ImageDescriptor::GetMipMapSize(int level) const
 	case ImageDescriptor::DXTC5:
 		return (max(1, (((Width >> level) + 3) / 4)) * max(1, (((Height >> level)  + 3) / 4)) * 16);
 		break;
+	case ImageDescriptor::PVRTC2:
+	case ImageDescriptor::PVRTC4:
+		if (level == 0) {
+			return ContentLength;
+		}
+		fprintf(stderr, "PVRTC not yet implemented for mipmap level %d!\n", level);
+		return 0;
+		break;
 	default:
 		fprintf(stderr, "invalid format!\n");
 		assert(false);
@@ -350,6 +358,122 @@ bool ImageDescriptor::SkipMipMapFromFile(OpenedFile& File, int flags, int level,
 	}
     
     return false;
+}
+
+//PVR format from: http://powervr-graphics.github.io/WebGL_SDK/WebGL_SDK/Documentation/Specifications/PVR%20File%20Format.Specification.pdf
+//and more recently: https://imagination-technologies-cloudfront-assets.s3.eu-west-1.amazonaws.com/website-files/documents/PVR+File+Format.Specification.pdf
+typedef struct _PVRTexHeader
+{
+		//52-byte Header
+	uint32_t version;
+	uint32_t flags;
+	uint32_t pixelFormat;
+	uint32_t pixelFormat0; //Should always be 0
+	uint32_t colorSpace;
+	uint32_t channelType;
+	uint32_t height;
+	uint32_t width;
+	uint32_t depth;
+	uint32_t numSurfs;
+	uint32_t numFaces;
+	uint32_t numMipmaps;
+	uint32_t metadataLength;
+	
+		//Metadata
+	uint32_t fourCC;
+	uint32_t key;
+	uint32_t dataLength;
+} PVRTexHeader;
+
+static char gPVRTexIdentifier[5] = "PVR";
+
+bool ImageDescriptor::LoadPVTCFromFile (FileSpecifier& File, int flags, int actual_width, int actual_height, int maxSize) {
+  PVRTexHeader *header = NULL;
+  uint32_t pvrflags, pvrTag;
+
+  std::string fn ( File.GetPath() );
+  
+  if ( fn.find ( ".pvr" ) != std::string::npos ) {
+	 //printf ( "LoadPVRTCFromFile: %s\n", File.GetPath() );
+  } else {
+	return false;
+  }
+#if defined(A1DEBUG)
+  /*
+  if ( fn.find ( "SpriteTextures" ) != std::string::npos ) {
+	// printf ( "Loading Sprite Textures!!!!: %s\n", File.GetPath() );
+  }
+  if ( fn.find ( "StandardText" ) != std::string::npos ) {
+	printf ( "Loading Standard Textures!!!!: %s\n", File.GetPath() );
+  }
+  if ( fn.find ( "TTEP" ) != std::string::npos ) {
+	printf ( "Loading TTEP Textures!!!!: %s\n", File.GetPath() );
+  }
+   */
+#endif
+  OpenedFile pvtcFile;
+  if (!File.Open(pvtcFile)) {
+	return false;
+  }
+  
+  
+  // Slurp the entire file in
+  int32 length;
+  pvtcFile.GetLength ( length );
+  uint8_t *contents = new uint8_t[length];
+
+  pvtcFile.Read ( length, contents );
+
+  header = (PVRTexHeader *)contents;
+  pvrTag = SDL_SwapLE32(header->version);
+	if (gPVRTexIdentifier[0] != ((pvrTag >>  0) & 0xff) ||
+	  gPVRTexIdentifier[1] != ((pvrTag >>  8) & 0xff) ||
+	  gPVRTexIdentifier[2] != ((pvrTag >> 16) & 0xff)) {
+	delete[] contents;
+	return false;
+  }
+  
+	pvrflags = SDL_SwapLE32(header->flags); //Should only change the value from native on big-endian machines.
+	
+	uint32_t pixelFormat = SDL_SwapLE32(header->pixelFormat);
+	
+	if (pixelFormat == 1) { 		//PVRTC 2bpp RGBA
+		Format = PVRTC2;
+	} else if (pixelFormat == 3) { 	//PVRTC 4bpp RGBA
+		Format = PVRTC4;
+	}
+		
+  if (Format == PVRTC2 || Format == PVRTC4) {
+	
+	Width = SDL_SwapLE32(header->width);
+	Height = SDL_SwapLE32(header->height);
+
+		uint32_t metadataLength = SDL_SwapLE32(header->metadataLength);
+		uint32_t header_and_metadata_size = 52 + metadataLength; //Header is always 52 bytes
+		uint32_t dataLength = length - header_and_metadata_size;
+	ContentLength = dataLength;
+	uint8_t *bytes = ((uint8_t *)contents) + header_and_metadata_size;
+
+	// How many 4-byte ints do we need (padded by 2)?
+	int numberOfPixels = ( dataLength / 4 ) + 2;
+	Pixels = new uint32[numberOfPixels];
+		
+	//printf ("Ingesting PVR H:%d, W:%d Format: %d metadataLength: %d, header_and_metadata_size: %d dataLength: %d\n", Height, Width, pixelFormat, metadataLength, header_and_metadata_size, dataLength);
+		
+	memcpy ( Pixels, bytes, dataLength );
+	/*
+	for ( int i = 0; i < 16; i++ ) {
+	  uint8_t *tmp = (uint8_t*) Pixels;
+	  printf ( "pixels[%d] = %d, (0x%x)\n", i, tmp[i], tmp[i] );
+	}
+	*/
+
+	MipMapCount = SDL_SwapLE32 ( header->numMipmaps );
+	delete[] contents;
+	return true;
+  }
+  delete[] contents;
+  return false;
 }
 
 bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual_width, int actual_height, int maxSize)

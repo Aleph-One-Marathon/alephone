@@ -48,6 +48,7 @@ class ImageDescriptor
 	int MipMapCount;
 	
 public:
+	int ContentLength; //Might be needed for PVR support. If so, create appropriate accessors
 	
 	bool IsPresent() const {return (Pixels != NULL); }
 	bool IsPremultiplied() const { return (IsPresent() ? PremultipliedAlpha : false); }
@@ -107,6 +108,8 @@ ImageDescriptor(): Width(0), Height(0), VScale(1.0), UScale(1.0), Pixels(NULL), 
 		DXTC1,
 		DXTC3,
 		DXTC5,
+		PVRTC2,
+		PVRTC4,
 		Unknown
 	};
 
@@ -117,6 +120,7 @@ ImageDescriptor(): Width(0), Height(0), VScale(1.0), UScale(1.0), Pixels(NULL), 
 	}
 			
 private:
+	bool LoadPVTCFromFile(FileSpecifier& File, int flags, int actual_width = 0, int actual_height = 0, int maxSize = 0);
 	bool LoadDDSFromFile(FileSpecifier& File, int flags, int actual_width = 0, int actual_height = 0, int maxSize = 0);
 	bool LoadMipMapFromFile(OpenedFile &File, int flags, int level, DDSURFACEDESC2 &ddsd, int skip);
 	bool SkipMipMapFromFile(OpenedFile &File, int flags, int level, DDSURFACEDESC2 &ddsd);

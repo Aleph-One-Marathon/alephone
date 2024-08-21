@@ -47,6 +47,7 @@ bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, 
 	switch(ImgMode) {
 		case ImageLoader_Colors:
 			if (LoadDDSFromFile(File, flags, actual_width, actual_height, maxSize)) return true;
+			if (LoadPVTCFromFile(File, flags, actual_width, actual_height, maxSize)) return true;
 			break;
 		
 		case ImageLoader_Opacity:

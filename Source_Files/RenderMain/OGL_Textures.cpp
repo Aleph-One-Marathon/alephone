@@ -1291,15 +1291,23 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 		}
 	} else if (Image->GetFormat() == ImageDescriptor::DXTC1 ||
 		   Image->GetFormat() == ImageDescriptor::DXTC3 ||
-		   Image->GetFormat() == ImageDescriptor::DXTC5)
+		   Image->GetFormat() == ImageDescriptor::DXTC5 ||
+		   Image->GetFormat() == ImageDescriptor::PVRTC2 ||
+		   Image->GetFormat() == ImageDescriptor::PVRTC4)
 	{
-#if ( defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT) ) || ( defined(GL_ANGLE_texture_compression_dxt3) && defined(GL_ANGLE_texture_compression_dxt5) )
+#if ( defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT) ) || ( defined(GL_ANGLE_texture_compression_dxt3) && defined(GL_ANGLE_texture_compression_dxt5)) || defined(GL_IMG_texture_compression_pvrtc)
 		if (Image->GetFormat() == ImageDescriptor::DXTC1)
 		  internalFormat = (load_as_sRGB) ? GL_COMPRESSED_SRGB_S3TC_DXT1_EXT : GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 		else if (Image->GetFormat() == ImageDescriptor::DXTC3)
 		  internalFormat = (load_as_sRGB) ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT : GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 		else if (Image->GetFormat() == ImageDescriptor::DXTC5)
 		  internalFormat = (load_as_sRGB) ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT : GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+#if defined GL_IMG_texture_compression_pvrtc
+		else if (Image->GetFormat() == ImageDescriptor::PVRTC2)
+		  internalFormat = (load_as_sRGB) ? 0 : GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG; //sRGB not supported in glext.h
+		else if (Image->GetFormat() == ImageDescriptor::PVRTC4)
+		  internalFormat = (load_as_sRGB) ? 0 : GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG; //sRGB not supported in glext.h
+#endif
 		
 		switch(TxtrTypeInfo.FarFilter)
 		{
@@ -1691,13 +1699,19 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 		 Image.get()->GetFormat() == ImageDescriptor::DXTC3 ||
 		 Image.get()->GetFormat() == ImageDescriptor::DXTC5)
 	{
-#if ( defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT) ) || ( defined(GL_ANGLE_texture_compression_dxt3) && defined(GL_ANGLE_texture_compression_dxt5) )
+#if ( defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT) ) || ( defined(GL_ANGLE_texture_compression_dxt3) && defined(GL_ANGLE_texture_compression_dxt5)) || defined(GL_IMG_texture_compression_pvrtc)
 		if (Image.get()->GetFormat() == ImageDescriptor::DXTC1)
 			internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 		else if (Image.get()->GetFormat() == ImageDescriptor::DXTC3)
 			internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 		else if (Image.get()->GetFormat() == ImageDescriptor::DXTC5)
 			internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+#if defined GL_IMG_texture_compression_pvrtc
+		else if (Image.get()->GetFormat() == ImageDescriptor::PVRTC2)
+		  internalFormat = GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+		else if (Image.get()->GetFormat() == ImageDescriptor::PVRTC4)
+		  internalFormat = GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+#endif
 
 		switch (TxtrTypeInfo.FarFilter)
 		{
