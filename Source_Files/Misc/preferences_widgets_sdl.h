@@ -111,6 +111,8 @@ private:
 class w_env_select;
 using selection_made_callback_t = std::function<void(w_env_select*)>;
 
+extern const char* const sFileChooserInvalidFileString;
+
 class w_env_select : public w_select_button {
 public:
 w_env_select(const char *path, const char *m, Typecode t, dialog *d)
@@ -131,8 +133,24 @@ w_env_select(const char *path, const char *m, Typecode t, dialog *d)
 		item = p;
 		item.GetName(item_name);
 		std::string filename = item_name;
-		strncpy(item_name, FileSpecifier::HideExtension(filename).c_str(), 256);
-		set_selection(item_name);
+		
+		if (*p)
+		{
+			if (item.Exists())
+			{
+				strncpy(item_name, FileSpecifier::HideExtension(filename).c_str(), 256);
+			}
+			else
+			{
+				snprintf(item_name, 256, "[?%s]", FileSpecifier::HideExtension(filename).c_str(), 256);
+			}
+			
+			set_selection(item_name);
+		}
+		else
+		{
+			set_selection(sFileChooserInvalidFileString);
+		}
 	}
 
 	const char *get_path(void) const
