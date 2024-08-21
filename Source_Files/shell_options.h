@@ -23,6 +23,8 @@ struct ShellOptions {
 	bool skip_intro;
 	bool editor;
 
+	bool no_chooser;
+
 	std::string replay_directory;
 
 	std::string directory;

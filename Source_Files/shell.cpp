@@ -326,10 +326,17 @@ void initialize_application(void)
 		exit(1);
 	}
 
-	STEAMSHIM_getGameInfo();
-	STEAMSHIM_queryWorkshopItemScenario();
-	
 	bool got_info = false, got_items = false;
+	STEAMSHIM_getGameInfo();
+	if (shell_options.editor || shell_options.no_chooser)
+	{
+		got_items = true;
+	}
+	else
+	{
+		STEAMSHIM_queryWorkshopItemScenario();
+	}
+
 	while (STEAMSHIM_alive() && (!got_info || !got_items))
 	{
 		auto result = STEAMSHIM_pump();
@@ -362,23 +369,26 @@ void initialize_application(void)
 	}
 #endif // HAVE_STEAM
 
-	if (chooser.num_scenarios() == 0)
-	{
-		chooser.add_directory(scenario_dir.GetPath());
-	}
-	else if (chooser.num_scenarios() == 1)
-	{
-		chooser.add_directory((scenario_dir + "Scenarios").GetPath());
-	}
-
 	auto is_workshop_scenario = false;
-	if (chooser.num_scenarios() > 1)
+	if (!shell_options.editor && !shell_options.no_chooser)
 	{
-		std::string chosen_path;
-		std::tie(chosen_path, is_workshop_scenario) = chooser.run();
-
-		// ugh
-		shell_options.directory = chosen_path;
+		if (chooser.num_scenarios() == 0)
+		{
+			chooser.add_directory(scenario_dir.GetPath());
+		}
+		else if (chooser.num_scenarios() == 1)
+		{
+			chooser.add_directory((scenario_dir + "Scenarios").GetPath());
+		}
+		
+		if (chooser.num_scenarios() > 1)
+		{
+			std::string chosen_path;
+			std::tie(chosen_path, is_workshop_scenario) = chooser.run();
+			
+			// ugh
+			shell_options.directory = chosen_path;
+		}
 	}
 #endif
 
