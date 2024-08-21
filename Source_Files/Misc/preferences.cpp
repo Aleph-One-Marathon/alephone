@@ -2588,14 +2588,14 @@ static void controls_dialog(void *arg)
 
 	static const char* run_option_labels[] = {
 		"Hold to Run",
-		"Hold to Walk",
-		"Tap to Toggle",
+		"Always Run",
+		"Toggle",
 		nullptr
 	};
 
 	static const char* swim_option_labels[] = {
 		"Hold to Swim",
-		"Hold to Sink",
+		"Always Swim",
 		nullptr
 	};
 
