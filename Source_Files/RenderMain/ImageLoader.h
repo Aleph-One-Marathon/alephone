@@ -48,8 +48,6 @@ class ImageDescriptor
 	int MipMapCount;
 	
 public:
-	int ContentLength; //Might be needed for PVR support. If so, create appropriate accessors
-	
 	bool IsPresent() const {return (Pixels != NULL); }
 	bool IsPremultiplied() const { return (IsPresent() ? PremultipliedAlpha : false); }
 

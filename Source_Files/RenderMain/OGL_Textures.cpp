@@ -1697,7 +1697,9 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 	}
 	else if (Image.get()->GetFormat() == ImageDescriptor::DXTC1 ||
 		 Image.get()->GetFormat() == ImageDescriptor::DXTC3 ||
-		 Image.get()->GetFormat() == ImageDescriptor::DXTC5)
+		 Image.get()->GetFormat() == ImageDescriptor::DXTC5||
+		 Image.get()->GetFormat() == ImageDescriptor::PVRTC2 ||
+		 Image.get()->GetFormat() == ImageDescriptor::PVRTC4)
 	{
 #if ( defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT) ) || ( defined(GL_ANGLE_texture_compression_dxt3) && defined(GL_ANGLE_texture_compression_dxt5)) || defined(GL_IMG_texture_compression_pvrtc)
 		if (Image.get()->GetFormat() == ImageDescriptor::DXTC1)
@@ -1864,7 +1866,11 @@ void FindSilhouetteVersion(ImageDescriptorManager &imageManager)
 	else if (imageManager.get()->GetFormat() == ImageDescriptor::DXTC3 || imageManager.get()->GetFormat() == ImageDescriptor::DXTC5) 
 	{
 		FindSilhouetteVersionDXTC35(imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
+	} else if (imageManager.get()->GetFormat() == ImageDescriptor::PVRTC2 || imageManager.get()->GetFormat() == ImageDescriptor::PVRTC2)
+	{
+		printf("FindSilhouetteVersion not implemented for PVRTC of size %d\n", imageManager.edit()->GetBufferSize());
 	}
+	
 	imageManager.edit()->PremultipliedAlpha = false;
 }
 

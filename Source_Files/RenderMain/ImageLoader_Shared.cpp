@@ -75,7 +75,7 @@ int ImageDescriptor::GetMipMapSize(int level) const
 	case ImageDescriptor::PVRTC2:
 	case ImageDescriptor::PVRTC4:
 		if (level == 0) {
-			return ContentLength;
+			return Size;
 		}
 		fprintf(stderr, "PVRTC not yet implemented for mipmap level %d!\n", level);
 		return 0;
@@ -313,6 +313,9 @@ bool ImageDescriptor::LoadMipMapFromFile(OpenedFile& file, int flags, int level,
 				return false;
 			}
 		}
+	} else if (Format == PVRTC2 || Format == PVRTC2)
+	{
+		fprintf(stderr, "PVRTC LoadMipMapFromFile not yet supported\n");
 	}
 
 	return true;
@@ -451,7 +454,10 @@ bool ImageDescriptor::LoadPVTCFromFile (FileSpecifier& File, int flags, int actu
 		uint32_t metadataLength = SDL_SwapLE32(header->metadataLength);
 		uint32_t header_and_metadata_size = 52 + metadataLength; //Header is always 52 bytes
 		uint32_t dataLength = length - header_and_metadata_size;
-	ContentLength = dataLength;
+
+	//ContentLength = dataLength; //Maybe don't need this as a seperate public value in the ImageDescriptor, expecially if always mipmap 0
+	Size = dataLength;
+	
 	uint8_t *bytes = ((uint8_t *)contents) + header_and_metadata_size;
 
 	// How many 4-byte ints do we need (padded by 2)?
@@ -731,6 +737,8 @@ bool ImageDescriptor::MakeRGBA()
 			if (!DecompressDXTC3(RGBADesc.GetMipMapPtr(i), MAX(1, Width >> i), MAX(1, Height >> i), GetMipMapPtr(i))) return false;
 		} else if (Format == DXTC5) {
 			if (!DecompressDXTC5(RGBADesc.GetMipMapPtr(i), MAX(1, Width >> i), MAX(1, Height >> i), GetMipMapPtr(i))) return false;
+		} else if (Format == PVRTC2 || Format == PVRTC4) {
+				fprintf(stderr, "PVRTC not yet supported by MakeRGBA\n");
 		} else {
 			return false;
 		}
