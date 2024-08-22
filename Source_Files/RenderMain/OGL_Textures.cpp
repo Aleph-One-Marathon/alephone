@@ -1868,7 +1868,7 @@ void FindSilhouetteVersion(ImageDescriptorManager &imageManager)
 		FindSilhouetteVersionDXTC35(imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
 	} else if (imageManager.get()->GetFormat() == ImageDescriptor::PVRTC2 || imageManager.get()->GetFormat() == ImageDescriptor::PVRTC2)
 	{
-		printf("FindSilhouetteVersion not implemented for PVRTC of size %d\n", imageManager.edit()->GetBufferSize());
+		fprintf(stderr, "FindSilhouetteVersion not implemented for PVRTC of size %d\n", imageManager.edit()->GetBufferSize());
 	}
 	
 	imageManager.edit()->PremultipliedAlpha = false;
