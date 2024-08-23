@@ -4,22 +4,33 @@ on: [workflow_dispatch, workflow_call]
 
 jobs:
   release-standalone-hub:
+    permissions:
+      packages: write
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
     
     - name: Get Standalone Hub Version
       run: echo "standalone_hub_version=$(awk -F'"' '/#define STANDALONE_HUB_VERSION/ {print $2}' Source_Files/Network/StandaloneHub/StandaloneHub.h)" >> $GITHUB_ENV
-    
+      
+    - name: Get Repository Owner 
+      run: echo "repository_owner=${GITHUB_REPOSITORY_OWNER@L}" >> "${GITHUB_ENV}"
+      
     - name: Build Docker image
       run: docker buildx build -t alephone/standalone-hub:${{env.standalone_hub_version}} . -f Dockerfile.hub --load
       
     - name: Save Docker image
       run: docker save -o alephone-standalone-hub-${{env.standalone_hub_version}}.tar alephone/standalone-hub:${{env.standalone_hub_version}}
-        
+      
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: alephone-standalone-hub
         if-no-files-found: error
         path: alephone-standalone-hub-${{env.standalone_hub_version}}.tar
+        
+    - name: Push to Github Container Registry
+      run: |
+        echo ${{ github.token }} | docker login --username ${{ github.actor }} --password-stdin ghcr.io
+        docker tag alephone/standalone-hub:${{env.standalone_hub_version}} ghcr.io/${{env.repository_owner}}/standalone-hub:${{env.standalone_hub_version}}
+        docker push ghcr.io/${{env.repository_owner}}/standalone-hub:${{env.standalone_hub_version}}
