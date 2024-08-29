@@ -1892,6 +1892,12 @@ static int Lua_Primary_Side_Get_Collection(lua_State *L)
 	return 1;
 }
 
+static int Lua_Primary_Side_Get_Empty(lua_State *L)
+{
+	lua_pushboolean(L, get_side_data(Lua_Primary_Side::Index(L, 1))->primary_texture.texture == UNONE);
+	return 1;
+}
+
 static int Lua_Primary_Side_Get_Light(lua_State *L)
 {
 	Lua_Light::Push(L, get_side_data(Lua_Primary_Side::Index(L, 1))->primary_lightsource_index);
@@ -1966,6 +1972,21 @@ static int Lua_Primary_Side_Set_Collection(lua_State *L)
 	return 0;
 }
 
+static int Lua_Primary_Side_Set_Empty(lua_State *L)
+{
+	short side_index = Lua_Primary_Side::Index(L, 1);
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "empty: incorrect argument type");
+
+	if (lua_toboolean(L, 2))
+	{
+		side_data *side = get_side_data(side_index);
+		side->primary_texture.texture = UNONE;
+		update_line_redundancy(side->line_index);
+	}
+	return 0;
+}
+
 static int Lua_Primary_Side_Set_Light(lua_State *L)
 {
 	short light_index;
@@ -2026,6 +2047,7 @@ static int Lua_Primary_Side_Set_Transfer_Mode(lua_State *L)
 }
 const luaL_Reg Lua_Primary_Side_Get[] = {
 	{"collection", Lua_Primary_Side_Get_Collection},
+	{"empty", Lua_Primary_Side_Get_Empty},
 	{"light", Lua_Primary_Side_Get_Light},
 	{"texture_index", Lua_Primary_Side_Get_Texture_Index},
 	{"texture_x", Lua_Primary_Side_Get_Texture_X},
@@ -2036,6 +2058,7 @@ const luaL_Reg Lua_Primary_Side_Get[] = {
 
 const luaL_Reg Lua_Primary_Side_Set[] = {
 	{"collection", Lua_Primary_Side_Set_Collection},
+	{"empty", Lua_Primary_Side_Set_Empty},
 	{"light", Lua_Primary_Side_Set_Light},
 	{"texture_index", Lua_Primary_Side_Set_Texture_Index},
 	{"texture_x", Lua_Primary_Side_Set_Texture_X},
@@ -2050,6 +2073,12 @@ typedef L_Class<Lua_Secondary_Side_Name> Lua_Secondary_Side;
 static int Lua_Secondary_Side_Get_Collection(lua_State *L)
 {
 	Lua_Collection::Push(L, GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(get_side_data(Lua_Secondary_Side::Index(L, 1))->secondary_texture.texture)));
+	return 1;
+}
+
+static int Lua_Secondary_Side_Get_Empty(lua_State *L)
+{
+	lua_pushboolean(L, get_side_data(Lua_Secondary_Side::Index(L, 1))->secondary_texture.texture == UNONE);
 	return 1;
 }
 
@@ -2091,6 +2120,21 @@ static int Lua_Secondary_Side_Set_Collection(lua_State *L)
 	side_data *side = get_side_data(side_index);
 	side->secondary_texture.texture = BUILD_DESCRIPTOR(collection_index, GET_DESCRIPTOR_SHAPE(side->secondary_texture.texture));
 	update_line_redundancy(side->line_index);
+	return 0;
+}
+
+static int Lua_Secondary_Side_Set_Empty(lua_State *L)
+{
+	short side_index = Lua_Secondary_Side::Index(L, 1);
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "empty: incorrect argument type");
+
+	if (lua_toboolean(L, 2))
+	{
+		side_data *side = get_side_data(side_index);
+		side->secondary_texture.texture = UNONE;
+		update_line_redundancy(side->line_index);
+	}
 	return 0;
 }
 
@@ -2154,6 +2198,7 @@ static int Lua_Secondary_Side_Set_Transfer_Mode(lua_State *L)
 }
 const luaL_Reg Lua_Secondary_Side_Get[] = {
 	{"collection", Lua_Secondary_Side_Get_Collection},
+	{"empty", Lua_Secondary_Side_Get_Empty},
 	{"light", Lua_Secondary_Side_Get_Light},
 	{"texture_index", Lua_Secondary_Side_Get_Texture_Index},
 	{"texture_x", Lua_Secondary_Side_Get_Texture_X},
@@ -2164,6 +2209,7 @@ const luaL_Reg Lua_Secondary_Side_Get[] = {
 
 const luaL_Reg Lua_Secondary_Side_Set[] = {
 	{"collection", Lua_Secondary_Side_Set_Collection},
+	{"empty", Lua_Secondary_Side_Set_Empty},
 	{"light", Lua_Secondary_Side_Set_Light},
 	{"texture_index", Lua_Secondary_Side_Set_Texture_Index},
 	{"texture_x", Lua_Secondary_Side_Set_Texture_X},

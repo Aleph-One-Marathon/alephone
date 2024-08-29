@@ -2097,9 +2097,9 @@ end
 		  <type>collection</type>
 		</variable>
 		<variable name="empty">
-		  <description>whether transparent side is empty</description>
+		  <description>whether side is empty</description>
 		  <type>boolean</type>
-		  <note>transparent side only</note>
+		  <note version="Git">transparent sides only in earlier versions</note>
 		  <note>setting empty to false is a no-op; set collection and texture_index instead</note>
 		</variable>
 		<variable name="light">
