@@ -1292,8 +1292,8 @@ void precalculate_map_indexes(void);
 
 void touch_polygon(short polygon_index);
 void recalculate_redundant_polygon_data(short polygon_index);
-void recalculate_redundant_endpoint_data(short endpoint_index);
-void recalculate_redundant_line_data(short line_index);
+void recalculate_redundant_endpoint_data(short endpoint_index, bool only_for_heights = false);
+void recalculate_redundant_line_data(short line_index, bool only_for_heights = false);
 void recalculate_redundant_side_data(short side_index, short line_index);
 
 void calculate_endpoint_polygon_owners(short endpoint_index, short *first_index, short *index_count);

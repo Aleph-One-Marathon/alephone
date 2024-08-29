@@ -739,8 +739,8 @@ static int Lua_Polygon_Floor_Set_Height(lua_State *L)
 	polygon->floor_height = static_cast<world_distance>(lua_tonumber(L,2)*WORLD_ONE);
 	for (short i = 0; i < polygon->vertex_count; ++i)
 	{
-		recalculate_redundant_endpoint_data(polygon->endpoint_indexes[i]);
-		recalculate_redundant_line_data(polygon->line_indexes[i]);
+		recalculate_redundant_endpoint_data(polygon->endpoint_indexes[i], true);
+		recalculate_redundant_line_data(polygon->line_indexes[i], true);
 	}
 	return 0;
 }
@@ -893,8 +893,8 @@ static int Lua_Polygon_Ceiling_Set_Height(lua_State *L)
 	polygon->ceiling_height = static_cast<world_distance>(lua_tonumber(L,2)*WORLD_ONE);
 	for (short i = 0; i < polygon->vertex_count; ++i)
 	{
-		recalculate_redundant_endpoint_data(polygon->endpoint_indexes[i]);
-		recalculate_redundant_line_data(polygon->line_indexes[i]);
+		recalculate_redundant_endpoint_data(polygon->endpoint_indexes[i], true);
+		recalculate_redundant_line_data(polygon->line_indexes[i], true);
 	}
 	return 0;
 }
@@ -1270,6 +1270,7 @@ const luaL_Reg Lua_Polygon_Sides_Metatable[] = {
 	{0, 0}
 };
 
+static void update_line_redundancy(short line_index);
 int Lua_Polygon_Change_Height(lua_State* L)
 {
 	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3))
@@ -1287,8 +1288,8 @@ int Lua_Polygon_Change_Height(lua_State* L)
 		auto polygon = get_polygon_data(polygon_index);
 		for (auto i = 0; i < polygon->vertex_count; ++i)
 		{
-			recalculate_redundant_line_data(polygon->line_indexes[i]);
-			recalculate_redundant_endpoint_data(polygon->endpoint_indexes[i]);
+			recalculate_redundant_line_data(polygon->line_indexes[i], true);
+			recalculate_redundant_endpoint_data(polygon->endpoint_indexes[i], true);
 		}
 	}
 

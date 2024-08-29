@@ -227,7 +227,8 @@ void recalculate_redundant_polygon_data(
 /* calculates solidity, highest adjacent floor and lowest adjacent ceiling; not to be called
 	at runtime. */
 void recalculate_redundant_endpoint_data(
-	short endpoint_index)
+	short endpoint_index,
+	bool only_for_heights)
 {
 	struct endpoint_data *endpoint= get_endpoint_data(endpoint_index);
 	world_distance highest_adjacent_floor_height= INT16_MIN;
@@ -278,9 +279,12 @@ void recalculate_redundant_endpoint_data(
 		}
 	}
 
-	SET_ENDPOINT_SOLIDITY(endpoint, solid);
-	SET_ENDPOINT_TRANSPARENCY(endpoint, transparent);
-	SET_ENDPOINT_ELEVATION(endpoint, elevation);
+	if (!only_for_heights)
+	{
+		SET_ENDPOINT_SOLIDITY(endpoint, solid);
+		SET_ENDPOINT_TRANSPARENCY(endpoint, transparent);
+		SET_ENDPOINT_ELEVATION(endpoint, elevation);
+	}
 	endpoint->highest_adjacent_floor_height= highest_adjacent_floor_height;
 	endpoint->lowest_adjacent_ceiling_height= lowest_adjacent_ceiling_height;
 	endpoint->supporting_polygon_index= supporting_polygon_index;
@@ -289,7 +293,8 @@ void recalculate_redundant_endpoint_data(
 /* calculates line length, highest adjacent floor and lowest adjacent ceiling and calls
 	recalculate_redundant_side_data() on the line’s sides */
 void recalculate_redundant_line_data(
-	short line_index)
+	short line_index,
+	bool only_for_heights)
 {
 	struct line_data *line= get_line_data(line_index);
 	struct side_data *clockwise_side= NULL, *counterclockwise_side= NULL;
@@ -299,8 +304,9 @@ void recalculate_redundant_line_data(
 	bool transparent_texture= false;
 	
 	/* recalculate line length */
-	line->length= distance2d(&(get_endpoint_data(line->endpoint_indexes[0])->vertex),
-		&(get_endpoint_data(line->endpoint_indexes[1])->vertex));
+	if (only_for_heights)
+		line->length= distance2d(&(get_endpoint_data(line->endpoint_indexes[0])->vertex),
+			&(get_endpoint_data(line->endpoint_indexes[1])->vertex));
 
 	/* find highest adjacent floor and lowest adjacent ceiling */
 	{
@@ -341,6 +347,9 @@ void recalculate_redundant_line_data(
 		}
 	}
 	
+	if (only_for_heights)
+		return;
+
 	if (line->clockwise_polygon_side_index!=NONE)
 	{
 		recalculate_redundant_side_data(line->clockwise_polygon_side_index, line_index);
