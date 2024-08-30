@@ -515,6 +515,7 @@ MetaserverClient::pumpAll()
 void
 MetaserverClient::sendChatMessage(const std::string& message)
 {
+	if (message.empty()) return;
 	if (message == ".available" || message == ".avail") {
 		if(m_notificationAdapter) {
 			string players = "Available Players: ";
