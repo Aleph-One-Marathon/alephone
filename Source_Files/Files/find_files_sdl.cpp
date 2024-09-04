@@ -31,48 +31,57 @@
 
 #include <vector>
 #include <algorithm>
+#include <queue>
 
-
-/*
- *  File finder base class
- */
-
-bool FileFinder::_Find(DirectorySpecifier &dir, Typecode type, bool recursive, int depth)
+bool FileFinder::Find(DirectorySpecifier& dir, Typecode type, bool recursive)
 {
-	// Get list of entries in directory
-	vector<dir_entry> entries;
-	if (!dir.ReadDirectory(entries))
-		return false;
-	sort(entries.begin(), entries.end());
+	std::queue<std::pair<int, FileSpecifier>> directories;
+	directories.push(std::make_pair(0, dir));
 
-	// Iterate through entries
-	vector<dir_entry>::const_iterator i, end = entries.end();
-	for (i = entries.begin(); i != end; i++) {
+	while (!directories.empty())
+	{
+		auto [depth, directory] = directories.front();
+		directories.pop();
 
-		// Construct full specifier of file/dir
-		FileSpecifier file = dir + i->name;
+		std::vector<dir_entry> entries;
+		if (!directory.ReadDirectory(entries))
+		{
+			return false;
+		}
 
-		if (i->is_directory) {
+		std::sort(entries.begin(), entries.end());
 
-			if (depth == 0 && i->name == "Plugins")
-				continue;
-
-			// Recurse into directory
-			if (recursive)
-				if (_Find(file, type, recursive, depth + 1))
-					return true;
-
-		} else {
-
-			// Check file type and call found() function
-			if (type == WILDCARD_TYPE || type == file.GetType())
-				if (found(file))
-					return true;
+		for (const auto& entry : entries)
+		{
+			FileSpecifier file = directory + entry.name;
+			if (entry.is_directory)
+			{
+				if (depth == 0 &&
+					(entry.name == "Plugins" || entry.name == "Scenarios"))
+				{
+					continue;
+				}
+				
+				if (recursive)
+				{
+					directories.push(std::make_pair(depth + 1, file));
+				}
+			}
+			else
+			{
+				if (type == WILDCARD_TYPE || type == file.GetType())
+				{
+					if (found(file))
+					{
+						return true;
+					}
+				}
+			}
 		}
 	}
+
 	return false;
 }
-
 
 /*
  *  Find all files of given type

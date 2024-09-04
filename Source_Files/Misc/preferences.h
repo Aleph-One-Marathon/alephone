@@ -103,7 +103,6 @@ struct graphics_preferences_data
 };
 
 enum {
-	_network_game_protocol_ring,
 	_network_game_protocol_star,
 	NUMBER_OF_NETWORK_GAME_PROTOCOLS,
 

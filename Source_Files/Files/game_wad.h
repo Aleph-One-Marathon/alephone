@@ -59,6 +59,7 @@ bool match_checksum_with_map(short vRefNum, long dirID, uint32 checksum,
 void set_map_file(FileSpecifier& File, bool runScript = true);
 dynamic_data get_dynamic_data_from_save(FileSpecifier& File);
 bool get_dynamic_data_from_wad(wad_data* wad, dynamic_data* dest);
+bool get_player_data_from_wad(wad_data* wad);
 //CP Addition: get_map_file returns the FileDesc pointer to the current map
 FileSpecifier& get_map_file(void);
 

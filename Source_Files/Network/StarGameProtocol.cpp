@@ -116,12 +116,12 @@ StarGameProtocol::PacketHandler(DDPPacketBufferPtr packet)
 
 
 bool
-StarGameProtocol::Sync(NetTopology* inTopology, int32 inSmallestGameTick, int inLocalPlayerIndex, int inServerPlayerIndex)
+StarGameProtocol::Sync(NetTopology* inTopology, int32 inSmallestGameTick, int inLocalPlayerIndex, bool isServer)
 {
 	assert(inTopology != NULL);
 
 #ifdef A1_NETWORK_STANDALONE_HUB
-	assert(inLocalPlayerIndex == inServerPlayerIndex && inLocalPlayerIndex == NONE);
+	assert(isServer && inLocalPlayerIndex == NONE);
 #endif
 	
 	sTopology = inTopology;
@@ -138,7 +138,7 @@ StarGameProtocol::Sync(NetTopology* inTopology, int32 inSmallestGameTick, int in
                 theConnectedPlayerStatus[i] = ((sTopology->players[i].identifier != NONE) && !sTopology->players[i].net_dead);
         }
 
-        if(inLocalPlayerIndex == inServerPlayerIndex)
+        if(isServer)
         {
 #ifndef A1_NETWORK_STANDALONE_HUB
 		sHubIsLocal = true;

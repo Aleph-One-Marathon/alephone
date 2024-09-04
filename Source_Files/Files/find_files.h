@@ -41,12 +41,9 @@ public:
 	FileFinder() {}
 	virtual ~FileFinder() {}
 
-	bool Find(DirectorySpecifier &dir, Typecode type, bool recursive = true) {
-		return _Find(dir, type, recursive, 0);
-	}
+	bool Find(DirectorySpecifier &dir, Typecode type, bool recursive = true);
 
 protected:
-	bool _Find(DirectorySpecifier& dir, Typecode type, bool recursive, int depth);
 	// Gets called for each found file, returns true if search is to be aborted
 	virtual bool found(FileSpecifier &file) = 0;
 };

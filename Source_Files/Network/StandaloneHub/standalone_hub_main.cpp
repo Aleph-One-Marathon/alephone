@@ -81,9 +81,9 @@ static bool hub_init_game(void)
 
 	wad_header header;
 	auto wad_data = inflate_flat_data(wad_copy, &header);
-	if (!wad_data) return false;
+	if (!wad_data) { delete[] wad_copy; return false; }
 
-	bool success = get_dynamic_data_from_wad(wad_data, dynamic_world);
+	bool success = get_dynamic_data_from_wad(wad_data, dynamic_world) && get_player_data_from_wad(wad_data);
 	free_wad(wad_data);
 
 	return success;

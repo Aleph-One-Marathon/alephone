@@ -33,6 +33,14 @@
       <Configuration>Standalone Hub</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Steam Marathon Infinity|Win32">
+      <Configuration>Steam Marathon Infinity</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Steam Marathon Infinity|x64">
+      <Configuration>Steam Marathon Infinity</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Steam Marathon|Win32">
       <Configuration>Steam Marathon</Configuration>
       <Platform>Win32</Platform>
@@ -85,6 +93,9 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon 2|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -98,6 +109,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon 2|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -115,6 +129,11 @@
     <OutDir>$(SolutionDir)Release\Steam\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon 2|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Release\Steam\</OutDir>
+    <IntDir>Steam Marathon\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Release\Steam\</OutDir>
     <IntDir>Steam Marathon\</IntDir>
@@ -138,6 +157,11 @@
     <OutDir>$(SolutionDir)$(Platform)\Release\Steam\</OutDir>
     <IntDir>$(Platform)\Steam Marathon\</IntDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\Release\Steam\</OutDir>
+    <IntDir>$(Platform)\Steam Marathon\</IntDir>
+  </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <VcpkgInstalledDir>..\..\vcpkg\installed-x86-windows</VcpkgInstalledDir>
   </PropertyGroup>
@@ -148,6 +172,9 @@
     <VcpkgInstalledDir>..\..\vcpkg\installed-x86-windows</VcpkgInstalledDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon 2|Win32'" Label="Vcpkg">
+    <VcpkgInstalledDir>..\..\vcpkg\installed-x86-windows</VcpkgInstalledDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|Win32'" Label="Vcpkg">
     <VcpkgInstalledDir>..\..\vcpkg\installed-x86-windows</VcpkgInstalledDir>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -166,6 +193,9 @@
     <VcpkgInstalledDir>..\..\vcpkg\installed-x64-windows</VcpkgInstalledDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon 2|x64'" Label="Vcpkg">
+    <VcpkgInstalledDir>..\..\vcpkg\installed-x64-windows</VcpkgInstalledDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|x64'" Label="Vcpkg">
     <VcpkgInstalledDir>..\..\vcpkg\installed-x64-windows</VcpkgInstalledDir>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
@@ -243,6 +273,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon 2|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;HAVE_STEAM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Source_Files\;$(ProjectDir)..\..\Source_Files\XML;$(ProjectDir)..\..\Source_Files\TCPMess;$(ProjectDir)..\..\Source_Files\Sound;$(ProjectDir)..\..\Source_Files\RenderOther;$(ProjectDir)..\..\Source_Files\RenderMain;$(ProjectDir)..\..\Source_Files\Network\Metaserver;$(ProjectDir)..\..\Source_Files\Network;$(ProjectDir)..\..\Source_Files\ModelView;$(ProjectDir)..\..\Source_Files\Misc;$(ProjectDir)..\..\Source_Files\Lua;$(ProjectDir)..\..\Source_Files\Input;$(ProjectDir)..\..\Source_Files\GameWorld;$(ProjectDir)..\..\Source_Files\Files;$(ProjectDir)..\..\Source_Files\FFmpeg;$(ProjectDir)..\..\Source_Files\CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;HAVE_STEAM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -342,6 +390,23 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Source_Files\;$(ProjectDir)..\..\Source_Files\XML;$(ProjectDir)..\..\Source_Files\TCPMess;$(ProjectDir)..\..\Source_Files\Sound;$(ProjectDir)..\..\Source_Files\RenderOther;$(ProjectDir)..\..\Source_Files\RenderMain;$(ProjectDir)..\..\Source_Files\Network\Metaserver;$(ProjectDir)..\..\Source_Files\Network;$(ProjectDir)..\..\Source_Files\ModelView;$(ProjectDir)..\..\Source_Files\Misc;$(ProjectDir)..\..\Source_Files\Lua;$(ProjectDir)..\..\Source_Files\Input;$(ProjectDir)..\..\Source_Files\GameWorld;$(ProjectDir)..\..\Source_Files\Files;$(ProjectDir)..\..\Source_Files\FFmpeg;$(ProjectDir)..\..\Source_Files\CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_FFMPEG;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;HAVE_STEAM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source_Files\CSeries\BStream.cpp" />
     <ClCompile Include="..\..\Source_Files\CSeries\byte_swapping.cpp" />
@@ -421,46 +486,53 @@
     <ClCompile Include="..\..\Source_Files\Misc\preferences_widgets_sdl.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\preference_dialogs.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\Scenario.cpp" />
+    <ClCompile Include="..\..\Source_Files\Misc\ScenarioChooser.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\sdl_dialogs.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\sdl_widgets.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\shared_widgets.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\Statistics.cpp" />
-    <ClCompile Include="..\..\Source_Files\Misc\steamshim_child.c" />
+    <ClCompile Include="..\..\Source_Files\Misc\steamshim_child.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\thread_priority_sdl_dummy.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Standalone Hub|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon 2|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Standalone Hub|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon 2|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\Source_Files\Misc\thread_priority_sdl_macosx.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Standalone Hub|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon 2|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Standalone Hub|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon 2|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\Source_Files\Misc\thread_priority_sdl_posix.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Standalone Hub|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon 2|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Standalone Hub|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon 2|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\Source_Files\Misc\thread_priority_sdl_win32.cpp" />
     <ClCompile Include="..\..\Source_Files\Misc\vbl.cpp" />
@@ -488,7 +560,6 @@
     <ClCompile Include="..\..\Source_Files\Network\network_udp.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\Pinger.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\PortForward.cpp" />
-    <ClCompile Include="..\..\Source_Files\Network\RingGameProtocol.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\SDL_netx.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\SSLP_limited.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\StandaloneHub\StandaloneHub.cpp" />
@@ -675,6 +746,7 @@
     <ClInclude Include="..\..\Source_Files\Misc\progress.h" />
     <ClInclude Include="..\..\Source_Files\Misc\Random.h" />
     <ClInclude Include="..\..\Source_Files\Misc\Scenario.h" />
+    <ClInclude Include="..\..\Source_Files\Misc\ScenarioChooser.h" />
     <ClInclude Include="..\..\Source_Files\Misc\sdl_dialogs.h" />
     <ClInclude Include="..\..\Source_Files\Misc\sdl_network.h" />
     <ClInclude Include="..\..\Source_Files\Misc\sdl_widgets.h" />
@@ -710,7 +782,6 @@
     <ClInclude Include="..\..\Source_Files\Network\network_star.h" />
     <ClInclude Include="..\..\Source_Files\Network\Pinger.h" />
     <ClInclude Include="..\..\Source_Files\Network\PortForward.h" />
-    <ClInclude Include="..\..\Source_Files\Network\RingGameProtocol.h" />
     <ClInclude Include="..\..\Source_Files\Network\SDL_netx.h" />
     <ClInclude Include="..\..\Source_Files\Network\SSLP_API.h" />
     <ClInclude Include="..\..\Source_Files\Network\SSLP_Protocol.h" />

@@ -1474,16 +1474,20 @@ void SetupNetgameDialog::setupForGameType ()
 			
 			m_deadPlayersDropItemsWidget->set_value (true);
 			m_aliensWidget->set_value (true);
+
+			m_mapWidget->set_prefer_net(false);
 			break;
 			
 		case _game_of_kill_monsters:
 		case _game_of_king_of_the_hill:
 		case _game_of_kill_man_with_ball:
 		case _game_of_tag:
-	case _game_of_custom:
+		case _game_of_custom:
 			m_allowTeamsWidget->activate ();
 			m_deadPlayersDropItemsWidget->activate ();
 			m_aliensWidget->activate ();
+
+			m_mapWidget->set_prefer_net(true);
 			break;
 
 		case _game_of_capture_the_flag:
@@ -1493,6 +1497,8 @@ void SetupNetgameDialog::setupForGameType ()
 			
 			m_allowTeamsWidget->set_value (true);
 			m_teamWidget->activate ();
+
+			m_mapWidget->set_prefer_net(true);
 			break;
 			
 		case _game_of_rugby:
@@ -1502,6 +1508,8 @@ void SetupNetgameDialog::setupForGameType ()
 			
 			m_allowTeamsWidget->set_value (true);
 			m_teamWidget->activate ();
+
+			m_mapWidget->set_prefer_net(true);
 			break;
 			
 		default:
@@ -1874,10 +1882,6 @@ void draw_team_totals_graph(
 	objlist_clear(ranks, MAXIMUM_NUMBER_OF_PLAYERS);
 	for (team_index = 0, num_teams = 0; team_index < NUMBER_OF_TEAM_COLORS; team_index++) {
 	  found_team_of_current_color = false;
-	  if (team_damage_given[team_index].kills ||
-	      (team_damage_taken[team_index].kills + team_monster_damage_taken[team_index].kills)) {
-	    found_team_of_current_color = true;
-	  } else {
 	    for (player_index = 0; player_index < dynamic_world->player_count; player_index++) {
 	      struct player_data *player = get_player_data(player_index);
 	      if (player->team == team_index) {
@@ -1885,7 +1889,6 @@ void draw_team_totals_graph(
 		break;
 	      }
 	    }
-	  }
 	  if (found_team_of_current_color) {
 	    ranks[num_teams].player_index = NONE;
 	    ranks[num_teams].color = team_index;
@@ -2743,7 +2746,8 @@ public:
 
 		// Could eventually store this path in network_preferences somewhere, so to have separate map file
 		// prefs for single- and multi-player.
-		w_file_chooser* map_w = new w_file_chooser ("Choose Map", _typecode_scenario);
+		w_env_select* map_w = new w_env_select ("", "AVAILABLE MAPS", _typecode_scenario, &m_dialog);
+		map_w->set_prefer_net(true);
 #ifndef MAC_APP_STORE
 		player_table->dual_add(map_w->label("Map"), m_dialog);
 		player_table->dual_add(map_w, m_dialog);
@@ -2773,7 +2777,8 @@ public:
 		network_table->dual_add(use_netscript_w->label("Use Netscript"), m_dialog);
 #endif
 
-		w_file_chooser* choose_script_w = new w_file_chooser ("Choose Script", _typecode_netscript);
+		w_env_select* choose_script_w = new w_env_select ("", "AVAILABLE NETSCRIPTS", _typecode_netscript, &m_dialog);
+		choose_script_w->set_prefer_net(true);
 #ifndef MAC_APP_STORE
 		network_table->add(new w_spacer(), true);
 		network_table->dual_add(choose_script_w, m_dialog);
@@ -2885,7 +2890,7 @@ public:
 		m_colourWidget = new ColourSelectorWidget (pcolor_w);
 		m_teamWidget = new ColourSelectorWidget (tcolor_w);
 	
-		m_mapWidget = new FileChooserWidget (map_w);
+		m_mapWidget = new EnvSelectWidget (map_w);
 		
 		m_levelWidget = new PopupSelectorWidget (entry_point_w);
 		m_gameTypeWidget = new PopupSelectorWidget (game_type_w);
@@ -2904,7 +2909,7 @@ public:
 		m_useMetaserverWidget = new ToggleWidget (advertise_on_metaserver_w);
 	
 		m_useScriptWidget = new ToggleWidget (use_netscript_w);
-		m_scriptWidget = new FileChooserWidget (choose_script_w);
+		m_scriptWidget = new EnvSelectWidget (choose_script_w);
 	
 		m_liveCarnageWidget = new ToggleWidget (live_w);
 		m_motionSensorWidget = new ToggleWidget (sensor_w);
@@ -3053,6 +3058,12 @@ void reset_progress_bar(void)
 	if (!sProgressBar) return;
 	sProgressBar->set_progress(0, 1);
 	sProgressDialog->draw();
+}
+
+void progress_dialog_event()
+{
+	assert(sProgressDialog != NULL);
+	sProgressDialog->process_events();
 }
 
 

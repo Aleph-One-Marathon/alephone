@@ -154,7 +154,6 @@ clearly this is all broken until we have packet types
 
 #include "NetworkGameProtocol.h"
 
-#include "RingGameProtocol.h"
 #include "StarGameProtocol.h"
 
 #include "lua_script.h"
@@ -176,9 +175,7 @@ static short localPlayerIndex;
 static short localPlayerIdentifier;
 static std::string gameSessionIdentifier;
 static NetTopologyPtr topology;
-static short sServerPlayerIndex;
 static bool sOldSelfSendStatus;
-static RingGameProtocol sRingGameProtocol;
 static StarGameProtocol sStarGameProtocol;
 static NetworkGameProtocol* sCurrentGameProtocol = NULL;
 
@@ -227,9 +224,14 @@ const static int network_stats_send_period = MACHINE_TICKS_PER_SECOND;
 // ignore list
 static std::set<int> sIgnoredPlayers;
 
-bool player_is_ignored(int player_index)
+static bool player_is_ignored(int player_index)
 {
 	return (sIgnoredPlayers.find(player_index) != sIgnoredPlayers.end());
+}
+
+static bool local_is_server()
+{
+	return !connection_to_server;
 }
 
 struct ignore_player {
@@ -461,14 +463,6 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 		} else if (capabilities[Capabilities::kStar] < Capabilities::kStarVersion) {
 			if (warn_joiner) {
 				ServerWarningMessage serverWarningMessage(expand_app_variables("The gatherer is using a newer version of $appName$. You will not appear in the list of available players."), ServerWarningMessage::kJoinerUngatherable);
-				channel->enqueueOutgoingMessage(serverWarningMessage);
-			}
-			return false;
-		}
-	} else {
-		if (capabilities[Capabilities::kRing] == 0) {
-			if (warn_joiner) {
-				ServerWarningMessage serverWarningMessage(getcstr(s, strNETWORK_ERRORS, netWarnJoinerHasNoRing), ServerWarningMessage::kJoinerUngatherable);
 				channel->enqueueOutgoingMessage(serverWarningMessage);
 			}
 			return false;
@@ -747,11 +741,7 @@ void Client::handleRemoteHubCommandMessage(RemoteHubCommandMessage* message, Com
 		{
 			case RemoteHubCommand::kAcceptJoiner_Command:
 			{
-				if (NetGetNumberOfPlayers() >= MAXIMUM_NUMBER_OF_PLAYERS)
-				{
-					state = Client::_disconnect;
-				}
-				else
+				if (NetGetNumberOfPlayers() < MAXIMUM_NUMBER_OF_PLAYERS)
 				{
 					prospective_joiner_info info = {};
 					info.stream_id = message->data();
@@ -1284,21 +1274,13 @@ bool NetEnter(bool use_remote_hub)
 		added_exit_procedure= true;
 	}
   
-	sCurrentGameProtocol = (network_preferences->game_protocol == _network_game_protocol_star) ?
-		static_cast<NetworkGameProtocol*>(&sStarGameProtocol) :
-		static_cast<NetworkGameProtocol*>(&sRingGameProtocol);
+	sCurrentGameProtocol = static_cast<NetworkGameProtocol*>(&sStarGameProtocol);
   
 	error= NetDDPOpen();
 	if (!error) {
 		topology = (NetTopologyPtr)malloc(sizeof(NetTopology));
 		assert(topology);
 		memset(topology, 0, sizeof(NetTopology));
-
-#ifdef A1_NETWORK_STANDALONE_HUB
-		NetSetServerIdentifier(NONE);
-#else
-		NetSetServerIdentifier(use_remote_hub ? NONE : 0);
-#endif
 
 		// ZZZ: Sorry, if this swapping is not supported on all current A1
 		// platforms, feel free to rewrite it in a way that is.
@@ -1377,8 +1359,6 @@ bool NetEnter(bool use_remote_hub)
 	my_capabilities[Capabilities::kGameworldM1] = Capabilities::kGameworldM1Version;
 	if (network_preferences->game_protocol == _network_game_protocol_star) {
 		my_capabilities[Capabilities::kStar] = Capabilities::kStarVersion;
-	} else {
-		my_capabilities[Capabilities::kRing] = Capabilities::kRingVersion;
 	}
 	my_capabilities[Capabilities::kLua] = Capabilities::kLuaVersion;
 	my_capabilities[Capabilities::kGatherable] = Capabilities::kGatherableVersion;
@@ -1490,7 +1470,7 @@ void NetExit(
 bool
 NetSync()
 {
-	return sCurrentGameProtocol->Sync(topology, dynamic_world->tick_count, localPlayerIndex, sServerPlayerIndex);
+	return sCurrentGameProtocol->Sync(topology, dynamic_world->tick_count, localPlayerIndex, local_is_server());
 }
 
 
@@ -1934,18 +1914,6 @@ void NetChangeColors(int16 color, int16 team) {
   }
 }
 
-/* 
-	Externally, this is only called before a new game.  It removes the reliance that 
-	localPlayerIndex of zero is the server, which is not necessarily true if we are
-	resyncing for another cooperative level.
-*/
-void NetSetServerIdentifier(
-	short identifier)
-{
-	sServerPlayerIndex= identifier;
-}
-
-
 /*
 net accessor functions
 */
@@ -2326,12 +2294,8 @@ bool NetChangeMap(
 	/* If the guy that was the server died, and we are trying to change levels, we lose */
         // ZZZ: if we used the parent_wad_checksum stuff to locate the containing Map file,
         // this would be the case somewhat less frequently, probably...
-	if(localPlayerIndex==sServerPlayerIndex && localPlayerIndex > 0) {
-	  logError("server died while trying to get another level");
-	  success= false;
-	} else {
 	  // being the server, we must send out the map to everyone.	
-	  if(localPlayerIndex==sServerPlayerIndex) {
+	  if (local_is_server()) {
 
 #ifdef A1_NETWORK_STANDALONE_HUB
 
@@ -2375,7 +2339,6 @@ bool NetChangeMap(
 	      process_net_map_data(wad);
 	    }
 #endif
-	}
 	
 	return success;
 }
@@ -3100,7 +3063,7 @@ bool NetAllowCarnageMessages() {
 
 bool NetAllowSavingLevel() {
 	return (dynamic_world->player_count == 1 ||
-		localPlayerIndex == sServerPlayerIndex ||
+		local_is_server() || use_remote_hub ||
 		!(dynamic_world->game_information.cheat_flags & _disable_saving_level));
 
 }

@@ -24,7 +24,6 @@
 const string Capabilities::kGameworld = "Gameworld";
 const string Capabilities::kGameworldM1 = "GameworldM1";
 const string Capabilities::kStar = "Star";
-const string Capabilities::kRing = "Ring";
 const string Capabilities::kLua = "Lua";
 const string Capabilities::kGatherable = "Gatherable";
 const string Capabilities::kZippedData = "ZippedData";

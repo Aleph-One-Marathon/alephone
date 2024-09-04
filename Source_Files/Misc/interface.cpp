@@ -199,6 +199,8 @@ const short max_handled_recording= RECORDING_VERSION_ALEPH_ONE_1_7;
 
 #include "lua_hud_script.h"
 
+#include <progress.h>
+
 using alephone::Screen;
 
 /* ------------- enums */
@@ -264,6 +266,23 @@ struct screen_data {
 	short screen_count;
 	int32 duration;
 };
+
+#ifdef HAVE_STEAM
+
+#include <steamshim_child.h>
+
+struct steam_workshop_uploader_ui_data {
+	uint64_t item_id;
+	int item_type;
+	int content_type;
+	FileSpecifier directory_path;
+	FileSpecifier thumbnail_path;
+	bool is_scenarios_compatible;
+};
+
+extern steam_game_information steam_game_info;
+
+#endif
 
 /* -------------- constants */
 struct screen_data display_screens[]= {
@@ -1578,7 +1597,7 @@ bool enabled_item(
 		case iReplaySavedFilm:
 		case iCredits:
 		case iQuit:
-	        case iAbout:
+		case iAbout:
 		case iCenterButton:
 			break;
 			
@@ -1713,6 +1732,405 @@ public:
 	void item_selected(void) { }
 };
 
+#ifdef HAVE_STEAM
+
+static item_upload_data steam_workshop_prepare_upload(steam_workshop_uploader_ui_data& data)
+{
+	item_upload_data workshop_item;
+
+	if (steam_game_info.support_workshop_item_scenario && !data.is_scenarios_compatible)
+	{
+		const auto scenario_name = Scenario::instance()->GetName();
+
+		if (scenario_name.empty())
+		{
+			throw std::runtime_error("The scenario for this item couldn't be deduced");
+		}
+
+		workshop_item.required_scenario = scenario_name;
+	}
+
+	workshop_item.id = data.item_id;
+	workshop_item.item_type = static_cast<ItemType>(data.item_type);
+	workshop_item.content_type = static_cast<ContentType>(data.content_type);
+	workshop_item.directory_path = data.directory_path.GetPath();
+	workshop_item.thumbnail_path = data.thumbnail_path.GetPath();
+	return workshop_item;
+}
+
+static const STEAMSHIM_Event* steam_workshop_upload_result()
+{
+	const STEAMSHIM_Event* result = nullptr;
+	bool end_of_upload = false;
+	int progress_value = 0, upload_status = 0;
+
+	std::unordered_map<int, int> upload_messages =
+	{
+		{STEAM_EItemUpdateStatus::k_EItemUpdateStatusPreparingConfig, _uploading_steam_workshop_prepare},
+		{STEAM_EItemUpdateStatus::k_EItemUpdateStatusPreparingContent, _uploading_steam_workshop_prepare},
+		{STEAM_EItemUpdateStatus::k_EItemUpdateStatusUploadingContent, _uploading_steam_workshop_upload},
+		{STEAM_EItemUpdateStatus::k_EItemUpdateStatusUploadingPreviewFile, _uploading_steam_workshop_upload},
+		{STEAM_EItemUpdateStatus::k_EItemUpdateStatusCommittingChanges, _uploading_steam_workshop_upload}
+	};
+
+	open_progress_dialog(_uploading_steam_workshop_default, true);
+
+	while (STEAMSHIM_alive() && !end_of_upload)
+	{
+		progress_dialog_event();
+
+		result = STEAMSHIM_pump();
+
+		if (result)
+		{
+			switch (result->type)
+			{
+			case SHIMEVENT_WORKSHOP_UPLOAD_PROGRESS:
+				if (upload_status != result->okay)
+				{
+					upload_status = result->okay;
+					auto message_id = upload_messages.find(upload_status);
+					set_progress_dialog_message(message_id != upload_messages.end() ? message_id->second : _uploading_steam_workshop_default);
+				}
+				progress_value = result->ivalue;
+				break;
+			case SHIMEVENT_WORKSHOP_UPLOAD_RESULT:
+				progress_value = 100;
+				end_of_upload = true;
+				break;
+			default:
+				break;
+			}
+		}
+
+		draw_progress_bar(progress_value, 100);
+	}
+
+	close_progress_dialog();
+	return result;
+}
+
+static void steam_workshop_upload_item_callback(void* arg)
+{
+	auto params = reinterpret_cast<std::pair<steam_workshop_uploader_ui_data*, dialog*>*>(arg);
+	auto item = params->first;
+	auto dialog = params->second;
+
+	if (!item->item_id && (!item->directory_path.IsDir() || !item->directory_path.Exists()))
+	{
+		alert_user("The item directory is not valid.");
+		return;
+	}
+
+	item_upload_data steam_upload_data;
+
+	try
+	{
+		steam_upload_data = steam_workshop_prepare_upload(*item);
+	}
+	catch (std::exception& ex)
+	{
+		alert_user(ex.what());
+		return;
+	}
+
+	STEAMSHIM_uploadWorkshopItem(steam_upload_data);
+	auto result = steam_workshop_upload_result();
+
+	if (result && result->type == SHIMEVENT_WORKSHOP_UPLOAD_RESULT)
+	{
+		if (result->okay)
+		{
+			std::string message = "Your item was correctly uploaded on Steam.";
+			message += result->needs_to_accept_workshop_agreement ? " However, your item will remain hidden until you accept the Steam workshop legal agreement." : "";
+			alert_user(message.c_str(), infoNoError);
+			dialog->quit(0);
+		}
+		else
+		{
+			std::string error_code = std::to_string(result->ivalue);
+			std::string message = "Your item couldn't be uploaded on Steam. Steam error code was: " + error_code;
+			alert_user(message.c_str());
+		}
+	}
+	else
+		alert_user("Something went wrong while uploading to Steam. Restart the game and try again.");
+}
+
+static item_owned_query_result steam_get_owned_items(const std::string& scenario_name)
+{
+	open_progress_dialog(_loading);
+
+	STEAMSHIM_queryWorkshopItemOwned(scenario_name);
+
+	const STEAMSHIM_Event* result = nullptr;
+	while (STEAMSHIM_alive())
+	{
+		progress_dialog_event();
+
+		result = STEAMSHIM_pump();
+
+		if (result && result->type == SHIMEVENT_WORKSHOP_QUERY_ITEM_OWNED_RESULT)
+		{
+			break;
+		}
+	}
+
+	close_progress_dialog();
+	return result ? result->items_owned : item_owned_query_result { 0 };
+}
+
+static void display_steam_workshop_uploader_dialog(void* arg)
+{
+	force_system_colors();
+
+	const auto scenario_name = Scenario::instance()->GetName();
+
+	auto item_list = steam_get_owned_items(scenario_name);
+	std::vector<std::string> item_labels;
+
+	item_owned_query_result::item new_item;
+	new_item.id = 0;
+	new_item.title = "New Item";
+	new_item.item_type = ItemType::Plugin;
+	new_item.content_type = ContentType::Graphics;
+	new_item.is_scenarios_compatible = true;
+	item_list.items.insert(item_list.items.begin(), new_item);
+
+	if (item_list.result_code != 1)
+	{
+		std::string error_code = std::to_string(item_list.result_code);
+		std::string message = "Your workshop items couldn't be retrieved from Steam. Steam error code was: " + error_code;
+		alert_user(message.c_str());
+	}
+
+	for (const auto& item : item_list.items)
+	{
+		auto label = item.title.size() > 28 ? item.title.substr(0, 25) + "..." : item.title;
+		item_labels.push_back(label);
+	}
+
+	steam_workshop_uploader_ui_data ui_data;
+	ui_data.item_type = static_cast<int>(new_item.item_type);
+	ui_data.content_type = static_cast<int>(new_item.content_type);
+	ui_data.is_scenarios_compatible = new_item.is_scenarios_compatible;
+	ui_data.item_id = new_item.id;
+
+	dialog d;
+
+	auto placer = new vertical_placer;
+
+	placer->dual_add(new w_title("STEAM WORKSHOP UPLOADER"), d);
+	placer->add(new w_spacer, true);
+
+	auto table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	table->col_flags(0, placeable::kAlignRight);
+
+	auto items_popup = new w_select_popup();
+	items_popup->set_labels(item_labels);
+	items_popup->set_selection(0);
+	table->dual_add(items_popup->label("Upload For"), d);
+	table->dual_add(items_popup, d);
+
+	auto get_content_types_tags = [&](ItemType item_type) -> std::vector<std::string>
+	{
+		static const std::vector<std::string> content_types_tags[] = {
+			{ },
+			{ "Graphics", "HUD", "Music", "Script", "Theme" },
+			{ "Solo & Net", "Solo Only", "Net Only" }
+		};
+
+		switch (item_type)
+		{
+			case ItemType::Scenario:
+				return content_types_tags[0];
+			case ItemType::Plugin:
+				return content_types_tags[1];
+			default:
+				return content_types_tags[2];
+		}
+	};
+
+	std::vector<std::string> item_types = { "Plugin", "Map", "Physics", "Script", "Sounds", "Shapes" };
+
+	if (steam_game_info.support_workshop_item_scenario)
+	{
+		item_types.insert(item_types.begin(), "Scenario");
+	}
+
+	auto item_types_popup = new w_select_popup();
+	item_types_popup->set_labels(item_types);
+	item_types_popup->set_selection(steam_game_info.support_workshop_item_scenario ? static_cast<int>(new_item.item_type) : static_cast<int>(new_item.item_type) - 1);
+
+	table->dual_add(item_types_popup->label("Item Type"), d);
+	table->dual_add(item_types_popup, d);
+
+	auto content_types_popup = new w_select_popup();
+	content_types_popup->set_labels(get_content_types_tags(new_item.item_type));
+	content_types_popup->set_selection(0);
+
+	table->dual_add(content_types_popup->label("Content Type"), d);
+	table->dual_add(content_types_popup, d);
+
+	char label[64];
+	snprintf(label, 64, "%s Only", Scenario::instance()->GetName().c_str());
+	auto custom_scenarios_label = new w_label(label);
+	auto custom_scenarios = new w_toggle(false);
+	custom_scenarios->associate_label(custom_scenarios_label);
+	custom_scenarios->visible(steam_game_info.support_workshop_item_scenario);
+	custom_scenarios_label->visible(steam_game_info.support_workshop_item_scenario);
+
+	table->dual_add(custom_scenarios_label, d);
+	table->dual_add(custom_scenarios, d);
+
+	if (steam_game_info.support_workshop_item_scenario)
+	{
+		table->add_row(new w_spacer(), true);
+	}
+
+	auto thumbnail_path = new w_file_chooser("Choose Preview Image", _typecode_unknown);
+	table->dual_add(thumbnail_path->label("Preview Image"), d);
+	table->dual_add(thumbnail_path, d);
+
+	auto directory_path = new w_directory_chooser();
+	table->dual_add(directory_path->label("Item Directory"), d);
+	table->dual_add(directory_path, d);
+
+	placer->add(table, true);
+
+	placer->add(new w_spacer, true);
+
+	placer->dual_add(new w_hyperlink("https://steamcommunity.com/sharedfiles/workshoplegalagreement",
+		"By submitting this item, you agree to the workshop terms of service"), d);
+
+	placer->add(new w_spacer, true);
+
+	auto button_placer = new horizontal_placer;
+
+	auto callback_params = std::make_pair<steam_workshop_uploader_ui_data*, dialog*>(&ui_data, &d);
+	button_placer->dual_add(new w_button("UPLOAD", steam_workshop_upload_item_callback, &callback_params), d);
+	button_placer->dual_add(new w_button("RETURN", dialog_cancel, &d), d);
+
+	placer->add(button_placer, true);
+
+	d.set_widget_placer(placer);
+
+	auto can_update_content_type = [&]() -> bool
+	{
+		switch (static_cast<ItemType>(ui_data.item_type))
+		{
+			case ItemType::Plugin:
+				return !ui_data.item_id;
+			case ItemType::Map:
+			case ItemType::Script:
+				return true;
+			default:
+				return false;
+		}
+	};
+
+	auto update_content_type_value = [&]()
+	{
+		int start_enum_index;
+		switch (static_cast<ItemType>(ui_data.item_type))
+		{
+			case ItemType::Scenario:
+				start_enum_index = static_cast<int>(ContentType::START_SCENARIO);
+				break;
+			case ItemType::Plugin:
+				start_enum_index = static_cast<int>(ContentType::START_PLUGIN);
+				break;
+			default:
+				start_enum_index = static_cast<int>(ContentType::START_OTHER);
+				break;
+		}
+
+		ui_data.content_type = start_enum_index + std::max(content_types_popup->get_selection(), 0);
+	};
+
+	auto get_selection_for_content_type = [&]() -> int
+	{
+		switch (static_cast<ItemType>(ui_data.item_type))
+		{
+			case ItemType::Scenario:
+				return ui_data.content_type - static_cast<int>(ContentType::START_SCENARIO);
+			case ItemType::Plugin:
+				return ui_data.content_type - static_cast<int>(ContentType::START_PLUGIN);
+			default:
+				return ui_data.content_type - static_cast<int>(ContentType::START_OTHER);
+		}
+	};
+
+	auto update_common_widgets = [&]()
+	{
+		bool is_scenario = static_cast<ItemType>(ui_data.item_type) == ItemType::Scenario;
+		custom_scenarios->set_enabled(!is_scenario);
+		custom_scenarios->set_selection(!ui_data.is_scenarios_compatible);
+
+		content_types_popup->set_labels(get_content_types_tags(static_cast<ItemType>(ui_data.item_type)));
+		content_types_popup->set_enabled(can_update_content_type());
+	};
+
+	items_popup->set_popup_callback([&](void*)
+	{
+		auto item_index = items_popup->get_selection();
+		auto& item = item_list.items.at(item_index);
+
+		ui_data.item_id = item.id;
+		ui_data.item_type = static_cast<int>(item.item_type);
+		ui_data.content_type = static_cast<int>(item.content_type);
+		ui_data.directory_path = "";
+		ui_data.thumbnail_path = "";
+		ui_data.is_scenarios_compatible = item.is_scenarios_compatible;
+
+		item_types_popup->set_selection(steam_game_info.support_workshop_item_scenario ? ui_data.item_type : ui_data.item_type - 1);
+		item_types_popup->set_enabled(!ui_data.item_id);
+
+		directory_path->set_directory(ui_data.directory_path);
+		thumbnail_path->set_file(ui_data.thumbnail_path);
+
+		update_common_widgets();
+		content_types_popup->set_selection(get_selection_for_content_type());
+
+	}, nullptr);
+
+	item_types_popup->set_popup_callback([&](void*)
+	{
+		ui_data.item_type = steam_game_info.support_workshop_item_scenario ? item_types_popup->get_selection() : item_types_popup->get_selection() + 1;
+		update_common_widgets();
+		content_types_popup->set_selection(0);
+		update_content_type_value();
+
+	}, nullptr);
+
+	content_types_popup->set_popup_callback([&](void*)
+	{
+		update_content_type_value();
+
+	}, nullptr);
+
+	custom_scenarios->set_selection_changed_callback([&](void*)
+	{
+		ui_data.is_scenarios_compatible = !custom_scenarios->get_selection();
+	});
+
+	directory_path->set_callback([&]()
+	{
+		ui_data.directory_path = directory_path->get_directory().GetPath();
+	});
+
+	thumbnail_path->set_callback([&]()
+	{
+		ui_data.thumbnail_path = thumbnail_path->get_file().GetPath();
+	});
+
+	clear_screen();
+
+	d.run();
+}
+
+#endif
+
 static void display_about_dialog()
 {
 	force_system_colors();
@@ -1762,6 +2180,11 @@ static void display_about_dialog()
 	about_placer->add(new w_spacer, true);
 
 	about_placer->dual_add(new w_static_text(expand_app_variables("Scenario loaded: $scenarioName$ $scenarioVersion$").c_str()), d);
+
+#ifdef HAVE_STEAM
+	about_placer->add(new w_spacer, true);
+	about_placer->dual_add(new w_button("STEAM WORKSHOP UPLOADER", display_steam_workshop_uploader_dialog, &d), d);
+#endif
 
 	vertical_placer *authors_placer = new vertical_placer();
 	

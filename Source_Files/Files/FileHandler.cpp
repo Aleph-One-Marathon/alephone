@@ -594,6 +594,8 @@ static extension_mapping extensions[] =
 
 	{ "mpg", false, _typecode_movie },
 
+	{ "appl", false, _typecode_application },
+
 	{0, false, _typecode_unknown}
 };
 
@@ -1321,6 +1323,37 @@ static std::map<Typecode, const char*> typecode_filters {
     {_typecode_music, "aif;wav;ogg"},
     {_typecode_movie, "webm"}
 };
+
+bool FileSpecifier::ReadDirectoryDialog() //needs native file dialog to work
+{
+#ifdef HAVE_NFD
+#if defined(_WIN32)
+	auto fullscreen = get_screen_mode()->fullscreen;
+	if (fullscreen)
+	{
+		toggle_fullscreen(false);
+	}
+#endif
+	nfdchar_t* outpath;
+	auto result = NFD_PickFolder(nullptr, &outpath);
+#if defined(_WIN32)
+	if (fullscreen)
+	{
+		toggle_fullscreen(true);
+	}
+#endif
+
+	if (result == NFD_OKAY)
+	{
+		name = outpath;
+		free(outpath);
+		return true;
+	}
+	
+#endif
+	return false;
+}
+
 
 bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 {

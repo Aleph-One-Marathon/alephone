@@ -16,17 +16,17 @@ libmisc_a_SOURCES = achievements.h ActionQueues.h alephversion.h binders.h Circu
   preferences_widgets_sdl.h progress.h Random.h Scenario.h sdl_dialogs.h sdl_network.h \
   sdl_widgets.h shared_widgets.h thread_priority_sdl.h vbl_definitions.h vbl.h VecOps.h \
   WindowedNthElementFinder.h AlephSansMono-Bold.h powered_by_alephone.h powered_by_alephone_h.h \
-  Statistics.h \
+  Statistics.h ScenarioChooser.h \
   \
   achievements.cpp ActionQueues.cpp CircularByteBuffer.cpp Console.cpp DefaultStringSets.cpp game_errors.cpp \
   interface.cpp \
   Logging.cpp PlayerImage_sdl.cpp PlayerName.cpp preferences.cpp \
   preference_dialogs.cpp preferences_widgets_sdl.cpp Scenario.cpp sdl_dialogs.cpp $(THREAD_PRIORITY) \
   sdl_widgets.cpp shared_widgets.cpp vbl.cpp \
-  Statistics.cpp \
+  Statistics.cpp ScenarioChooser.cpp \
   ProFontAO.h CourierPrime.h CourierPrimeBold.h CourierPrimeItalic.h CourierPrimeBoldItalic.h
 
-EXTRA_libmisc_a_SOURCES = alephone.xpm alephone32.xpm thread_priority_sdl_posix.cpp thread_priority_sdl_dummy.cpp thread_priority_sdl_win32.cpp thread_priority_sdl_macosx.cpp m1_achievements.lua m2_achievements.lua steamshim_child.h steamshim_child.c
+EXTRA_libmisc_a_SOURCES = alephone.xpm alephone32.xpm thread_priority_sdl_posix.cpp thread_priority_sdl_dummy.cpp thread_priority_sdl_win32.cpp thread_priority_sdl_macosx.cpp m1_achievements.lua m2_achievements.lua inf_achievements.lua steamshim_child.h steamshim_child.cpp
 
 AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \

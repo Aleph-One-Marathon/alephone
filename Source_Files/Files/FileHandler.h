@@ -273,6 +273,7 @@ public:
 	
 	// These calls are for creating dialog boxes to set the filespec
 	// A null pointer means an empty string
+	bool ReadDirectoryDialog();
 	bool ReadDialog(Typecode Type, const char *Prompt=NULL);
 	bool WriteDialog(Typecode Type, const char *Prompt=NULL, const char *DefaultName=NULL);
 	

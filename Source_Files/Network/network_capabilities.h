@@ -40,7 +40,6 @@ class Capabilities : public capabilities_t
   static const int kGameworldVersion = 5;
   static const int kGameworldM1Version = 4;
   static const int kStarVersion = 6;
-  static const int kRingVersion = 2;
   static const int kLuaVersion = 2;
   static const int kGatherableVersion = 1;
   static const int kZippedDataVersion = 1; // map, lua, physics
@@ -50,7 +49,6 @@ class Capabilities : public capabilities_t
   static const string kGameworld;    // the PRNG, physics, etc.
   static const string kGameworldM1;  // like gameworld, but for Marathon 1 compatibility
   static const string kStar;         // the star network protocol
-  static const string kRing;         // the ring network protocol
   static const string kLua;          // Lua script support
   static const string kGatherable;   // joiner's response indicating he can be
                                      // gathered

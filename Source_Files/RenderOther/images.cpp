@@ -1763,3 +1763,46 @@ bool image_file_t::make_rsrc_from_clut(void *data, size_t length, LoadedResource
 	rsrc.SetData(clut_rsrc, output_length);
 	return true;
 }
+
+std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)> find_title_screen(FileSpecifier& file)
+{
+	image_file_t image_file;
+	if (image_file.open_file(file))
+	{
+		for (auto i = 2; i >= 0; --i)
+		{
+			LoadedResource title_screen;
+			if (image_file.get_pict(INTRO_SCREEN_BASE + i + _images_file_delta32, title_screen))
+			{
+				return picture_to_surface(title_screen);
+			}
+			
+			if (image_file.get_pict(INTRO_SCREEN_BASE + i + _images_file_delta16, title_screen))
+			{
+				return picture_to_surface(title_screen);
+			}
+			
+			if (image_file.get_pict(INTRO_SCREEN_BASE + i, title_screen))
+			{
+				return picture_to_surface(title_screen);
+			}
+		}
+	}
+
+	return std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)>(nullptr, SDL_FreeSurface);
+}
+
+std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)> find_m1_title_screen(FileSpecifier& file)
+{
+	image_file_t shapes_file;
+	if (shapes_file.open_file(file))
+	{
+		LoadedResource title_screen;
+		if (shapes_file.get_pict(1114, title_screen))
+		{
+			return picture_to_surface(title_screen);
+		}
+	}
+
+	return std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)>(nullptr, SDL_FreeSurface);
+}

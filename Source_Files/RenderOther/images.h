@@ -82,5 +82,8 @@ extern std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)> picture_to_surfa
 extern SDL_Surface *rescale_surface(SDL_Surface *s, int width, int height);
 extern SDL_Surface *tile_surface(SDL_Surface *s, int width, int height);
 
+std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)> find_title_screen(FileSpecifier& file);
+std::unique_ptr<SDL_Surface, decltype(&SDL_FreeSurface)> find_m1_title_screen(FileSpecifier& file);
+
 #endif
 

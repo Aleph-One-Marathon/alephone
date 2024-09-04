@@ -460,9 +460,6 @@
     <ClCompile Include="..\..\Source_Files\Network\network_udp.cpp">
       <Filter>Network\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source_Files\Network\RingGameProtocol.cpp">
-      <Filter>Network\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source_Files\Network\SDL_netx.cpp">
       <Filter>Network\Source Files</Filter>
     </ClCompile>
@@ -727,7 +724,7 @@
     <ClCompile Include="..\..\Source_Files\Lua\lua_music.cpp">
       <Filter>Lua\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source_Files\Misc\steamshim_child.c">
+    <ClCompile Include="..\..\Source_Files\Misc\steamshim_child.cpp">
       <Filter>Misc\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source_Files\Misc\achievements.cpp">
@@ -741,6 +738,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source_Files\Network\StandaloneHub\StandaloneHub.cpp">
       <Filter>Network\StandaloneHub\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source_Files\Misc\ScenarioChooser.cpp">
+      <Filter>Misc\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1125,9 +1125,6 @@
     <ClInclude Include="..\..\Source_Files\Network\NetworkGameProtocol.h">
       <Filter>Network\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source_Files\Network\RingGameProtocol.h">
-      <Filter>Network\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source_Files\Network\SDL_netx.h">
       <Filter>Network\Header Files</Filter>
     </ClInclude>
@@ -1442,6 +1439,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Network\StandaloneHub\StandaloneHub.h">
       <Filter>Network\StandaloneHub\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source_Files\Misc\ScenarioChooser.h">
+      <Filter>Misc\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

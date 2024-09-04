@@ -146,12 +146,48 @@ void alert_user(const char *message, short severity)
 {
 #ifndef A1_NETWORK_STANDALONE_HUB
 
-  if (!MainScreenVisible()) {
-	SDL_ShowSimpleMessageBox(severity == infoError ? SDL_MESSAGEBOX_WARNING : SDL_MESSAGEBOX_ERROR, severity == infoError ? "Warning" : "Error", message, NULL);
+	if (!MainScreenVisible()) {
+		std::string title;
+		uint32 box_type;
+		switch (severity) {
+			case fatalError:
+				title = "Error";
+				box_type = SDL_MESSAGEBOX_ERROR;
+				break;
+			case infoNoError:
+				title = "Information";
+				box_type = SDL_MESSAGEBOX_INFORMATION;
+				break;
+			case infoError:
+			default:
+				title = "Warning";
+				box_type = SDL_MESSAGEBOX_WARNING;
+				break;
+		}
+	SDL_ShowSimpleMessageBox(box_type, title.c_str(), message, NULL);
   } else {
+
+	std::string title;
+	std::string box_button;
+	switch (severity) {
+		case fatalError:
+			title = "ERROR";
+			box_button = "QUIT";
+			break;
+		case infoNoError:
+			title = "INFORMATION";
+			box_button = "OK";
+			break;
+		case infoError:
+		default:
+			title = "WARNING";
+			box_button = "OK";
+			break;
+	}
+
     dialog d;
     vertical_placer *placer = new vertical_placer;
-    placer->dual_add(new w_title(severity == infoError ? "WARNING" : "ERROR"), d);
+    placer->dual_add(new w_title(title.c_str()), d);
     placer->add(new w_spacer, true);
     
     // Wrap lines
@@ -179,20 +215,20 @@ void alert_user(const char *message, short severity)
     }
     free(p);
     placer->add(new w_spacer, true);
-    w_button *button = new w_button(severity == infoError ? "OK" : "QUIT", dialog_ok, &d);
+    w_button *button = new w_button(box_button.c_str(), dialog_ok, &d);
     placer->dual_add (button, d);
     d.set_widget_placer(placer);
 
     d.activate_widget(button);
 
     d.run();
-    if (severity == infoError && top_dialog == NULL)
+    if (severity != fatalError && top_dialog == NULL)
       update_game_window();
   }
 
 #endif
 
-  if (severity != infoError) exit(1);
+  if (severity == fatalError) exit(1);
 }
 
 void alert_user(short severity, short resid, short item, int error)
