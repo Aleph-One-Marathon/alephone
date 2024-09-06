@@ -926,7 +926,12 @@ void update_player_weapons(
 
 	if (player->hotkey && player->hotkey < NUMBER_OF_WEAPONS)
 	{
-		ready_weapon(player_index, weapon_ordering_array[player->hotkey - 1]);
+		const auto player_weapons = get_player_weapon_data(player_index);
+		if (player_weapons->desired_weapon != _weapon_ball &&
+			player_weapons->current_weapon != _weapon_ball)
+		{
+			ready_weapon(player_index, weapon_ordering_array[player->hotkey - 1]);
+		}
 	}
 
 	/* And switch the weapon.. */

@@ -616,7 +616,10 @@ void decode_hotkeys(ModifiableActionQueues& action_queues)
 			player->hotkey_sequence <<= 2;
 			player->hotkey_sequence |= (action_flags >> _cycle_weapons_forward_bit) & 0x03;
 
-			player->hotkey = 1 + (player->hotkey_sequence & 0x03) + 4 * (((player->hotkey_sequence >> 2) & 0x03) - 1);
+			if (!PLAYER_IS_DEAD(player))
+			{
+				player->hotkey = 1 + (player->hotkey_sequence & 0x03) + 4 * (((player->hotkey_sequence >> 2) & 0x03) - 1);
+			}
 			player->hotkey_sequence = 0;
 		}
 		else if ((action_flags & hotkey_mask) == hotkey_mask)
