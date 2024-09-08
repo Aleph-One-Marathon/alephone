@@ -68,10 +68,6 @@ static bool hub_init_game(void)
 {
 	initialize_map_for_new_game();
 
-	byte* physics = nullptr;
-	int physics_length = StandaloneHub::Instance()->GetPhysicsData(&physics);
-	if (physics) return true; //don't need to init further
-
 	byte* wad = nullptr;
 	int wad_length = StandaloneHub::Instance()->GetMapData(&wad);
 	if (!wad) return false; //something is wrong
@@ -83,10 +79,12 @@ static bool hub_init_game(void)
 	auto wad_data = inflate_flat_data(wad_copy, &header);
 	if (!wad_data) { delete[] wad_copy; return false; }
 
-	bool success = get_dynamic_data_from_wad(wad_data, dynamic_world) && get_player_data_from_wad(wad_data);
+	bool saved_game = get_dynamic_data_from_wad(wad_data, dynamic_world) && get_player_data_from_wad(wad_data);
 	free_wad(wad_data);
 
-	return success;
+	StandaloneHub::Instance()->SetSavedGame(saved_game);
+
+	return true;
 }
 
 static bool hub_game_in_progress(bool& game_is_done)
