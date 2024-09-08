@@ -54,7 +54,7 @@ bool StandaloneHub::SetupGathererGame(bool& gathering_done)
 
 	_start_check_timeout_ms = machine_tick_count();
 
-	if (!NetGather(&_topology_message->topology()->game_data, sizeof(game_info), &_topology_message->topology()->players->player_data, sizeof(player_info), !_physics_message, false))
+	if (!NetGather(&_topology_message->topology()->game_data, sizeof(game_info), &_topology_message->topology()->players->player_data, sizeof(player_info), _saved_game, false))
 	{
 		return Reset();
 	}
