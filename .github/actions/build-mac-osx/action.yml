@@ -14,17 +14,13 @@ inputs:
 runs:
     using: "composite"
     steps:
-    
+    - name: Setup Vcpkg
+      uses: ./.github/actions/setup-vcpkg
+      with:
+        vcpkg_bootstrap_file: bootstrap-vcpkg.sh
+        
     - name: Install tools
       run: brew install nasm
-      shell: bash
-      
-    - name: Vcpkg Integration
-      run: $VCPKG_INSTALLATION_ROOT/vcpkg integrate install
-      shell: bash
-      
-    - name: Get Vcpkg current hash
-      run: echo "vcpkg_current_hash=$(git -C $VCPKG_INSTALLATION_ROOT rev-parse --short HEAD)" >> $GITHUB_ENV
       shell: bash
       
     - name: Restore Vcpkg cache for x64
@@ -41,8 +37,8 @@ runs:
         path: vcpkg/installed-arm64-osx
         key: ${{runner.os}}-installed-arm64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}
       
-    - name: Switch to Xcode 14.3.1
-      run: sudo xcode-select --switch /Applications/Xcode_14.3.1.app
+    - name: Switch to Xcode 15.4
+      run: sudo xcode-select --switch /Applications/Xcode_15.4.app
       shell: bash
       
     - name: Install x64 dependencies
