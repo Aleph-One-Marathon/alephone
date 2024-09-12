@@ -165,7 +165,7 @@ void joystick_buttons_become_keypresses(Uint8* ioKeyMap) {
     return;
 }
 
-int process_joystick_axes(int flags, int tick) {
+int process_joystick_axes(int flags) {
     if (!joystick_active)
         return flags;
 	if (active_instances.empty())

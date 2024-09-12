@@ -1206,14 +1206,11 @@ uint32 parse_keymap(void)
 		  hotkey_sequence[2] = 0;
 	  }
 
+	  flags = process_joystick_axes(flags);
+
       // Handle the selected input controller
       if (input_preferences->input_device == _mouse_yaw_pitch) {
           flags = process_aim_input(flags, pull_mouselook_delta());
-      }
-      
-      int joyflags = process_joystick_axes(flags, heartbeat_count);
-      if (joyflags != flags) {
-          flags = joyflags;
       }
 
       // if the user prefers to toggle run/swim, the flag becomes latched
