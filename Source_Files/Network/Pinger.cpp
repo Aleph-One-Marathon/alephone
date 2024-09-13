@@ -23,7 +23,7 @@
 #include "network_star.h"
 #include "crc.h"
 #include "mytm.h"
-#include <AStream.h>
+#include "AStream.h"
 
 uint16_t Pinger::_ping_identifier_counter = 0;
 
