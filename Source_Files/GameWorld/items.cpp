@@ -227,7 +227,7 @@ void trigger_nearby_items(
 			switch (GET_OBJECT_OWNER(object))
 			{
 				case _object_is_item:
-					if (OBJECT_IS_INVISIBLE(object) && object->permutation!=NONE)
+					if (OBJECT_IS_INVISIBLE(object) && object->permutation!=NONE && get_item_shape(object->permutation) != NONE)
 					{
 						teleport_object_in(object_index);
 					}
