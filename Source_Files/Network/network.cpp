@@ -2286,9 +2286,8 @@ void match_starts_with_existing_players(player_start_data* ioStartArray, short* 
 bool NetChangeMap(
 	struct entry_point *entry)
 {
-	byte   *wad= NULL;
-	int32   length;
-	bool success= true;
+	byte *wad = NULL;
+	int32 length;
 	bool do_physics = true;
 
 	/* If the guy that was the server died, and we are trying to change levels, we lose */
@@ -2298,51 +2297,42 @@ bool NetChangeMap(
 	  if (local_is_server()) {
 
 #ifdef A1_NETWORK_STANDALONE_HUB
-
 		length = StandaloneHub::Instance()->GetMapData(&wad);
-		assert(wad);
 		byte* physics = nullptr;
 		do_physics = StandaloneHub::Instance()->GetPhysicsData(&physics);
-
 #else
-		  wad = (unsigned char*)get_map_for_net_transfer(entry);
-		  assert(wad);
-		  length = get_net_map_data_length(wad);
-		  do_physics = true;
+		wad = (unsigned char*)get_map_for_net_transfer(entry);
+		length = wad ? get_net_map_data_length(wad) : 0;
+		do_physics = true;
 #endif
-		  if (success) NetDistributeGameDataToAllPlayers(wad, length, do_physics);
+		if (wad) NetDistributeGameDataToAllPlayers(wad, length, do_physics);
 
 	  } else { // wait for de damn map.
 
 		  if (use_remote_hub && get_game_state() == _change_level) //if the gatherer is using a remote hub, it has to send it to the hub first
 		  {
 			  wad = (unsigned char*)get_map_for_net_transfer(entry);
-			  assert(wad);
-			  length = get_net_map_data_length(wad);
-			  NetDistributeGameDataToAllPlayers(wad, length, true, connection_to_server.get());
-			  free(wad);
+			  length = wad ? get_net_map_data_length(wad) : 0;
+
+			  if (wad)
+			  {
+				  NetDistributeGameDataToAllPlayers(wad, length, true, connection_to_server.get());
+				  free(wad);
+			  }
 		  }
 
 	      wad = NetReceiveGameData(true);
-	      if(!wad) {
-		alert_user(infoError, strNETWORK_ERRORS, netErrCouldntReceiveMap, 0);
-		success= false;
-		
-	      }
+	      if (!wad) alert_user(infoError, strNETWORK_ERRORS, netErrCouldntReceiveMap, 0);
 	  }
 	  
 #ifndef A1_NETWORK_STANDALONE_HUB
 	  sNetworkStats.clear(); //reset the pregame state
 
 	  /* Now load the level.. */
-	  if (wad)
-	    {
-	      /* Note that this frees the wad as well!! */
-	      process_net_map_data(wad);
-	    }
+	  if (wad) process_net_map_data(wad); //Note that this frees the wad as well!!
 #endif
 	
-	return success;
+	return wad;
 }
 
 void DeferredScriptSend (byte* data, size_t length)
