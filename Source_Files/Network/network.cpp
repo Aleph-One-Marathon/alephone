@@ -2798,12 +2798,11 @@ short NetUpdateJoinState(
 			    }
 			    else if (server_nbc->status() == NonblockingConnect::ConnectFailed)
 			    {
-				    assert(host_address_specified);
 				    if (nbc_is_resolving)
 					    host_address = server_nbc->address();
 				    nbc_is_resolving = false;
 				    ConnectPool::instance()->abandon(server_nbc);
-				    server_nbc = ConnectPool::instance()->connect(host_address);
+				    server_nbc = host_address_specified ? ConnectPool::instance()->connect(host_address) : nullptr;
 			    }
 		    }
 
