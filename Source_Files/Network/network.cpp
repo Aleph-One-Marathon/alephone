@@ -2332,6 +2332,8 @@ bool NetChangeMap(
 	  }
 	  
 #ifndef A1_NETWORK_STANDALONE_HUB
+	  sNetworkStats.clear(); //reset the pregame state
+
 	  /* Now load the level.. */
 	  if (wad)
 	    {
