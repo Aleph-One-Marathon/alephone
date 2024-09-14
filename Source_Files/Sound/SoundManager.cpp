@@ -1056,7 +1056,7 @@ void SoundManager::UpdateAmbientSoundSources()
 
 		auto soundPlayer = GetSoundPlayer(ambient_sounds[i].sound_index, NONE);
 
-		if (soundPlayer && soundPlayer->HasRewind())
+		if (soundPlayer && soundPlayer->HasActiveRewind())
 		{
 			auto parameters = soundPlayer->GetParameters();
 			auto stereo_parameters = parameters.stereo_parameters;

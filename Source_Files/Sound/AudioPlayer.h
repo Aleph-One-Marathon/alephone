@@ -90,7 +90,6 @@ private:
 public:
     void AskStop() { stop_signal = true; }
     bool IsActive() const { return is_active.load(); }
-    bool HasRewind() const { return rewind_signal.load(); }
     void AskRewind() { rewind_signal = true; }
     virtual float GetPriority() const = 0;
 protected:

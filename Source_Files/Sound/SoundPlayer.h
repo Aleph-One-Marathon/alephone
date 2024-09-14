@@ -72,6 +72,7 @@ public:
 	void AskRewind(const SoundParameters& soundParameters, const Sound& sound);
 	bool CanRewind(int baseTick) const;
 	bool CanFastRewind(const SoundParameters& soundParameters) const;
+	bool HasActiveRewind() const { return rewind_signal.load() && !soft_stop_signal.load(); }
 private:
 
 	struct SoundTransition {

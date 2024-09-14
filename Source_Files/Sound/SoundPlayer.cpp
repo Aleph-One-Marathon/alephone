@@ -68,6 +68,7 @@ bool SoundPlayer::CanFastRewind(const SoundParameters& soundParameters) const {
 }
 
 void SoundPlayer::AskRewind(const SoundParameters& soundParameters, const Sound& newSound) {
+	soft_stop_signal = false;
 	UpdateRewindParameters(soundParameters);
 	sound.Store(newSound);
 	AudioPlayer::AskRewind();
