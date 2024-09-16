@@ -744,7 +744,11 @@ static void	change_panel_state(
 			player->control_panel_side_index= player->control_panel_side_index==panel_side_index ? NONE : panel_side_index;
 			state= get_recharge_status(panel_side_index);
 			SET_CONTROL_PANEL_STATUS(side, state);
-			if (!state) set_control_panel_texture(side);
+			if (!state)
+			{
+				set_control_panel_texture(side);
+				SoundManager::instance()->StopSound(NONE, definition->sounds[_activating_sound]);
+			}
                                 // Lua script hook
                                 if (player -> control_panel_side_index == panel_side_index)
                                     L_Call_Start_Refuel (definition->_class, player_index, panel_side_index);
