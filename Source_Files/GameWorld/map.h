@@ -1409,9 +1409,6 @@ bool select_map_to_use(void);
 short get_player_starting_location_and_facing(short team, short index, 
 	struct object_location *location);
 
-void pause_game(void);
-void resume_game(void);
-
 bool get_indexed_entry_point(struct entry_point *entry_point, short *index, int32 type);
 bool get_entry_points(vector<entry_point> &vec, int32 type);
 

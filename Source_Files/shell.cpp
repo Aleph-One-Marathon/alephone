@@ -1411,9 +1411,7 @@ static void process_event(const SDL_Event &event)
 		{
 			if (!get_keyboard_controller_status())
 			{
-				hide_cursor();
-				validate_world_window();
-				set_keyboard_controller_status(true);
+				resume_game();
 			}
 			else
 			{
@@ -1432,9 +1430,7 @@ static void process_event(const SDL_Event &event)
 	case SDL_CONTROLLERBUTTONDOWN:
 		if (get_game_state() == _game_in_progress && !get_keyboard_controller_status())
 		{
-			hide_cursor();
-			validate_world_window();
-			set_keyboard_controller_status(true);
+			resume_game();
 		}
 		else
 		{
@@ -1486,9 +1482,7 @@ static void process_event(const SDL_Event &event)
 		switch (event.window.event) {
 			case SDL_WINDOWEVENT_FOCUS_LOST:
 				if (get_game_state() == _game_in_progress && get_keyboard_controller_status() && !Movie::instance()->IsRecording() && shell_options.replay_directory.empty()) {
-//					darken_world_window();
-					set_keyboard_controller_status(false);
-					show_cursor();
+					pause_game();
 				}
 
 				set_game_focus_lost();

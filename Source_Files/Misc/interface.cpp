@@ -956,9 +956,6 @@ bool check_level_change(
 void pause_game(
 	void)
 {
-	stop_fade();
-	if (!OGL_IsActive() || !(TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fader)))
-		set_fade_effect(NONE);
 	set_keyboard_controller_status(false);
 	show_cursor();
 }
@@ -967,8 +964,6 @@ void resume_game(
 	void)
 {
 	hide_cursor();
-	if (!OGL_IsActive() || !(TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fader)))
-		SetFadeEffectDelay(TICKS_PER_SECOND/2);
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive())
 		OGL_Blitter::BoundScreen(true);
@@ -1284,7 +1279,7 @@ void do_menu_item_command(
 						case _replay:
 							if (get_keyboard_controller_status())
 							{
-							  pause_game();
+								pause_game();
 							}
 							else
 							{	
