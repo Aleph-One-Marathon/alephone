@@ -2385,7 +2385,7 @@ int Lua_Side_Play_Sound(lua_State *L)
 		pitch = static_cast<_fixed>(lua_tonumber(L, 3) * FIXED_ONE);
 	}
 
-	_play_side_sound(Lua_Side::Index(L, 1), sound_code, pitch);
+	play_side_sound(Lua_Side::Index(L, 1), sound_code, pitch);
 	return 0;
 }
 
