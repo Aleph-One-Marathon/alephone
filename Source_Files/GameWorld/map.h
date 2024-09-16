@@ -1183,10 +1183,8 @@ bool randomize_object_sequence(short object_index, shape_descriptor shape);
 world_location3d* get_object_sound_location(short object_index);
 void play_object_sound(short object_index, short sound_code, bool local_sound = false);
 void play_polygon_sound(short polygon_index, short sound_code);
-void _play_side_sound(short side_index, short sound_code, _fixed pitch);
+void play_side_sound(short side_index, short sound_code, _fixed pitch, bool soft_rewind = false);
 void play_world_sound(short polygon_index, world_point3d *origin, short sound_code);
-
-#define play_side_sound(side_index, sound_code) _play_side_sound(side_index, sound_code, FIXED_ONE)
 
 void handle_random_sound_image(void);
 

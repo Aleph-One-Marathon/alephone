@@ -2510,10 +2510,11 @@ void play_polygon_sound(
 	SoundManager::instance()->PlaySound(sound_code, &source, NONE);
 }
 
-void _play_side_sound(
+void play_side_sound(
 	short side_index,
 	short sound_code,
-	_fixed pitch)
+	_fixed pitch,
+	bool soft_rewind)
 {
 	struct side_data *side= get_side_data(side_index);
 	world_location3d source;
@@ -2521,7 +2522,7 @@ void _play_side_sound(
 	calculate_line_midpoint(side->line_index, &source.point);
 	source.polygon_index= side->polygon_index;
 
-	SoundManager::instance()->PlaySound(sound_code, &source, NONE, pitch);
+	SoundManager::instance()->PlaySound(sound_code, &source, NONE, pitch, soft_rewind);
 }
 
 void play_world_sound(

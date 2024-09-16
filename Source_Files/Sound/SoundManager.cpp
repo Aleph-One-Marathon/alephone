@@ -390,7 +390,8 @@ std::shared_ptr<SoundPlayer> SoundManager::PlaySound(LoadedResource& rsrc, const
 std::shared_ptr<SoundPlayer> SoundManager::PlaySound(short sound_index, 
 			     world_location3d *source,
 			     short identifier, // NONE is no identifier and the sound is immediately orphaned
-			     _fixed pitch)
+			     _fixed pitch,
+			     bool soft_rewind)
 {
 	if (sound_index == NONE || !active || OpenALManager::Get()->GetMasterVolume() <= 0 || !LoadSound(sound_index))
 		return std::shared_ptr<SoundPlayer>();
@@ -398,6 +399,7 @@ std::shared_ptr<SoundPlayer> SoundManager::PlaySound(short sound_index,
 	SoundParameters parameters;
 	parameters.identifier = sound_index;
 	parameters.pitch = pitch;
+	parameters.soft_rewind = soft_rewind;
 	parameters.is_2d = !source;
 	parameters.source_identifier = identifier;
 
