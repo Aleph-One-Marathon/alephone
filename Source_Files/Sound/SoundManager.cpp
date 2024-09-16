@@ -453,13 +453,15 @@ void SoundManager::StopAllSounds() {
 }
 
 int SoundManager::GetCurrentAudioTick() {
-	return Movie::instance()->IsRecording() ? Movie::instance()->GetCurrentAudioTimeStamp() : machine_tick_count();
+
+	if (Movie::instance()->IsRecording())
+		return Movie::instance()->GetCurrentAudioTimeStamp();
+
+	return machine_tick_count() - (OpenALManager::Get() ? OpenALManager::Get()->GetElapsedPauseTime() : 0);
 }
 
 //if we want to manage things with our sound players, it's here
 void SoundManager::ManagePlayers() {
-
-	if (!active) return;
 
 	CleanInactivePlayers(sound_players);
 
@@ -498,13 +500,15 @@ void SoundManager::ManagePlayers() {
 }
 
 void SoundManager::UpdateListener() {
-	if (!active || !(parameters.flags & _3d_sounds_flag)) return;
+	if (!(parameters.flags & _3d_sounds_flag)) return;
 	auto listener = _sound_listener_proc();
 	if (listener && *listener != OpenALManager::Get()->GetListener()) OpenALManager::Get()->UpdateListener(*listener);
 }
 
 void SoundManager::Idle()
 {
+	if (!active || OpenALManager::Get()->IsPaused()) return;
+
 	UpdateListener();
 	CauseAmbientSoundSourceUpdate();
 	ManagePlayers();
@@ -512,7 +516,7 @@ void SoundManager::Idle()
 
 void SoundManager::CauseAmbientSoundSourceUpdate()
 {
-	if (active && parameters.volume_db > MINIMUM_VOLUME_DB && (parameters.flags & _ambient_sound_flag))
+	if (parameters.volume_db > MINIMUM_VOLUME_DB && (parameters.flags & _ambient_sound_flag))
 	{
 		UpdateAmbientSoundSources();
 	}
@@ -787,7 +791,7 @@ void SoundManager::SetStatus(bool active)
 	}
 	else
 	{
-		OpenALManager::Get()->Stop();
+		if (OpenALManager::Get()) OpenALManager::Get()->Stop();
 	}
 
 	this->active = active;

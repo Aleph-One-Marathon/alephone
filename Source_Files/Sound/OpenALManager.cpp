@@ -118,6 +118,14 @@ void OpenALManager::Start() {
 	process_audio_active = SDL_GetAudioStatus() != SDL_AUDIO_STOPPED;
 }
 
+void OpenALManager::Pause(bool paused) {
+	if (!process_audio_active || paused_audio == paused) return;
+
+	paused_audio = paused;
+	SDL_PauseAudio(paused_audio);
+	elapsed_pause_time = machine_tick_count() - elapsed_pause_time;
+}
+
 void OpenALManager::Stop() {
 	SDL_PauseAudio(true);
 	StopAllPlayers();

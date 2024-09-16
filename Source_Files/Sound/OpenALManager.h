@@ -50,6 +50,7 @@ public:
 	static OpenALManager* Get() { return instance; }
 	static bool Init(const AudioParameters& parameters);
 	static void Shutdown();
+	void Pause(bool paused);
 	void Start();
 	void Stop();
 	void StopAllPlayers();
@@ -63,10 +64,12 @@ public:
 	float GetMasterVolume() const { return master_volume.load(); }
 	void ToggleDeviceMode(bool recording_device);
 	int GetFrequency() const { return audio_parameters.rate; }
+	uint32_t GetElapsedPauseTime() const { return elapsed_pause_time; }
 	void GetPlayBackAudio(uint8* data, int length);
 	bool Support_HRTF_Toggling() const;
 	bool Is_HRTF_Enabled() const;
 	bool IsBalanceRewindSound() const { return audio_parameters.balance_rewind; }
+	bool IsPaused() const { return paused_audio; }
 	ALCint GetRenderingFormat() const { return openal_rendering_format; }
 	ALuint GetLowPassFilter(float highFrequencyGain) const;
 private:
@@ -77,6 +80,8 @@ private:
 	~OpenALManager();
 	std::atomic<float> master_volume;
 	bool process_audio_active = false;
+	bool paused_audio = false;
+	uint32_t elapsed_pause_time = 0;
 	AtomicStructure<world_location3d> listener_location = {};
 	void UpdateParameters(const AudioParameters& parameters);
 	void UpdateListener();

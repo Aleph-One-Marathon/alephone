@@ -958,6 +958,7 @@ void pause_game(
 {
 	set_keyboard_controller_status(false);
 	show_cursor();
+	if (!game_is_networked && OpenALManager::Get()) OpenALManager::Get()->Pause(true);
 }
 
 void resume_game(
@@ -970,6 +971,7 @@ void resume_game(
 #endif
 	validate_world_window();
 	set_keyboard_controller_status(true);
+	if (OpenALManager::Get()) OpenALManager::Get()->Pause(false);
 }
 
 void draw_menu_button_for_command(
