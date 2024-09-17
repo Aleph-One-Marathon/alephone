@@ -1482,7 +1482,7 @@ static void update_player_teleport(
 					
 							/* Tell everyone else to use the teleporting junk... */
 							SET_PLAYER_INTERLEVEL_TELEPORTING_STATUS(player, true);
-							player->interlevel_teleport_phase= 0;
+							player->interlevel_teleport_phase= other_player_index < player_index ? 0 : -1;
 						
 							monster->action= _monster_is_teleporting;
 						}
