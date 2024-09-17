@@ -1957,9 +1957,9 @@ static void get_player_transfer_mode(
 	} 
 	else if (PLAYER_IS_INTERLEVEL_TELEPORTING(player))
 	{
-		if (player->teleporting_destination >= 0 || (player->teleporting_phase < PLAYER_TELEPORTING_MIDPOINT && View_DoInterlevelTeleportOutEffects()) || (player->teleporting_phase >= PLAYER_TELEPORTING_MIDPOINT && View_DoInterlevelTeleportInEffects()))
+		if (player->teleporting_destination >= 0 || (player->interlevel_teleport_phase < PLAYER_TELEPORTING_MIDPOINT && View_DoInterlevelTeleportOutEffects()) || (player->interlevel_teleport_phase >= PLAYER_TELEPORTING_MIDPOINT && View_DoInterlevelTeleportInEffects()))
 		{
-			*transfer_mode= player->teleporting_phase<PLAYER_TELEPORTING_MIDPOINT ? _xfer_fold_out : _xfer_fold_in;
+			*transfer_mode= player->interlevel_teleport_phase <PLAYER_TELEPORTING_MIDPOINT ? _xfer_fold_out : _xfer_fold_in;
 			*transfer_period= PLAYER_TELEPORTING_MIDPOINT+1;
 		}
 	}
