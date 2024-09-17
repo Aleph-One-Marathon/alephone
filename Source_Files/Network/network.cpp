@@ -977,12 +977,12 @@ static size_t handlerMapLength = 0;
 static void handleMapMessage(BigChunkOfDataMessage *mapMessage, CommunicationsChannel *) {
 	if (netState == netStartingUp || netState == netDown) {
 		if (handlerMapBuffer) { // assume the last map the server sent is right
-			free(handlerMapBuffer);
+			delete[] handlerMapBuffer;
 			handlerMapBuffer = NULL;
 		}
 		handlerMapLength = mapMessage->length();
 		if (handlerMapLength > 0) {
-			handlerMapBuffer = reinterpret_cast<byte*>(malloc(handlerMapLength));
+			handlerMapBuffer = new byte[handlerMapLength];
 			memcpy(handlerMapBuffer, mapMessage->buffer(), handlerMapLength);
 		}
 	} else {
@@ -1039,12 +1039,12 @@ static size_t handlerPhysicsLength = 0;
 static void handlePhysicsMessage(BigChunkOfDataMessage *physicsMessage, CommunicationsChannel *) {
 	if (netState == netStartingUp || netState == netDown) {
 		if (handlerPhysicsBuffer) {
-			free(handlerPhysicsBuffer);
+			delete[] handlerPhysicsBuffer;
 			handlerPhysicsBuffer = NULL;
 		}
 		handlerPhysicsLength = physicsMessage->length();
 		if (handlerPhysicsLength > 0) {
-			handlerPhysicsBuffer = reinterpret_cast<byte*>(malloc(handlerPhysicsLength));
+			handlerPhysicsBuffer = new byte[handlerPhysicsLength];
 			memcpy(handlerPhysicsBuffer, physicsMessage->buffer(), handlerPhysicsLength);
 		}
 	} else {
