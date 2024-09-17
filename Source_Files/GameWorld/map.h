@@ -1414,7 +1414,7 @@ bool new_game(short number_of_players, bool network,
 	struct game_data *game_information,
 	struct player_start_data *player_start_information, 
 	struct entry_point *entry_point);
-bool goto_level(struct entry_point *entry, bool new_game, short number_of_players);
+bool goto_level(struct entry_point *entry, short number_of_players, player_start_data* player_start_information);
 
 class InfoTree;
 void parse_mml_texture_loading(const InfoTree& root);

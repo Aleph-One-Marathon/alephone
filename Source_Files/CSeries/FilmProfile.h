@@ -112,6 +112,8 @@ struct FilmProfile
 	bool m1_reload_sound;		// play the reload sound on the key frame
 	bool m1_landscape_effects;	// projectiles detonate on M1 landscapes
 	bool m1_bce_pickup;	 // you can pick up another BCE if you already have one
+
+	bool network_items; // early creation of players on new games to fix network items spawn
 };
 
 extern FilmProfile film_profile;
