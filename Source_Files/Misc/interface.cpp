@@ -439,11 +439,6 @@ void set_game_state(
 		case _game_in_progress:
 			switch(new_state)
 			{
-				case _display_epilogue:
-					game_state.state= _begin_display_of_epilogue;
-					game_state.phase= 0;
-					break;
-					
 				case _close_game:
 					finish_game(true);
 					break;
@@ -1101,7 +1096,6 @@ bool idle_game_state(uint32 time)
 					break;
 					
 				case _begin_display_of_epilogue:
-					finish_game(false);
 					display_epilogue();
 					break;
 
