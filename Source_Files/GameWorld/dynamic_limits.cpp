@@ -92,7 +92,7 @@ static std::vector<uint16> dynamic_limits(NUMBER_OF_DYNAMIC_LIMITS);
 
 static bool dynamic_limits_loaded = false;
 
-void reset_dynamic_limits()
+static void reset_dynamic_limits()
 {
 	if (film_profile.increased_dynamic_limits_1_1)
 	{
@@ -110,15 +110,30 @@ void reset_dynamic_limits()
 	dynamic_limits_loaded = true;
 }
 
+static void reallocate_dynamic_limits()
+{
+	// Resize the arrays of objects, monsters, effects, and projectiles
+	EffectList.resize(MAXIMUM_EFFECTS_PER_MAP);
+	ObjectList.resize(MAXIMUM_OBJECTS_PER_MAP);
+	MonsterList.resize(MAXIMUM_MONSTERS_PER_MAP);
+	ProjectileList.resize(MAXIMUM_PROJECTILES_PER_MAP);
+
+	// Resize the array of paths also
+	allocate_pathfinding_memory();
+
+	allocate_ephemera_storage(dynamic_limits[_dynamic_limit_ephemera]);
+}
+
+static void parse_limit_value(const InfoTree& root, std::string child, int type)
+{
+	for (const InfoTree& limit : root.children_named(child))
+		limit.read_attr_bounded<uint16>("value", dynamic_limits[type], 0, 32767);
+}
+
 void reset_mml_dynamic_limits()
 {
 	reset_dynamic_limits();
-}
-
-void parse_limit_value(const InfoTree& root, std::string child, int type)
-{
-	for (const InfoTree &limit : root.children_named(child))
-		limit.read_attr_bounded<uint16>("value", dynamic_limits[type], 0, 32767);
+	reallocate_dynamic_limits();
 }
 
 void parse_mml_dynamic_limits(const InfoTree& root)
@@ -135,16 +150,7 @@ void parse_mml_dynamic_limits(const InfoTree& root)
 	parse_limit_value(root, "garbage", _dynamic_limit_garbage);
 	parse_limit_value(root, "garbage_per_polygon", _dynamic_limit_garbage_per_polygon);
 
-	// Resize the arrays of objects, monsters, effects, and projectiles
-	EffectList.resize(MAXIMUM_EFFECTS_PER_MAP);
-	ObjectList.resize(MAXIMUM_OBJECTS_PER_MAP);
-	MonsterList.resize(MAXIMUM_MONSTERS_PER_MAP);
-	ProjectileList.resize(MAXIMUM_PROJECTILES_PER_MAP);
-
-	// Resize the array of paths also
-	allocate_pathfinding_memory();
-
-	allocate_ephemera_storage(dynamic_limits[_dynamic_limit_ephemera]);
+	reallocate_dynamic_limits();
 }
 
 

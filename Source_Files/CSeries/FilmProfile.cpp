@@ -1,7 +1,5 @@
 #include "FilmProfile.h"
 
-#include "Plugins.h"
-
 static FilmProfile alephone1_7 = {
 	true,  // keyframe_fix
 	false, // damage_aggressor_last_in_tag
@@ -357,10 +355,7 @@ static FilmProfile marathon_infinity = {
 
 FilmProfile film_profile = alephone1_7;
 
-extern void LoadBaseMMLScripts(bool load_menu_mml_only);
-extern void ResetAllMMLValues();
-
-void load_film_profile(FilmProfileType type, bool reload_mml)
+void load_film_profile(FilmProfileType type)
 {
 	switch (type)
 	{
@@ -388,13 +383,6 @@ void load_film_profile(FilmProfileType type, bool reload_mml)
 	case FILM_PROFILE_ALEPH_ONE_1_4:
 		film_profile = alephone1_4;
 		break;
-	}
-
-	if (reload_mml)
-	{
-		ResetAllMMLValues();
-		LoadBaseMMLScripts(false);
-		Plugins::instance()->load_mml(false);
 	}
 }
 

@@ -475,7 +475,7 @@ void initialize_application(void)
 	init_physics_wad_data();
 	initialize_fonts(false);
 
-	load_film_profile(FILM_PROFILE_DEFAULT, false);
+	load_film_profile(FILM_PROFILE_DEFAULT);
 
 	// Parse MML files
 	LoadBaseMMLScripts(true);

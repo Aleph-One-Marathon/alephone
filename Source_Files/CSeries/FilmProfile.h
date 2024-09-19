@@ -129,6 +129,6 @@ enum FilmProfileType {
 	FILM_PROFILE_DEFAULT,
 };
 
-void load_film_profile(FilmProfileType type, bool reload_mml = true);
+void load_film_profile(FilmProfileType type);
 
 #endif
