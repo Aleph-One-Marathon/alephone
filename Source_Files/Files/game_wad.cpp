@@ -793,12 +793,7 @@ bool goto_level(
 	// LP: doing this here because level-specific MML may specify which level-specific
 	// textures to load.
 	ResetLevelScript();
-	if (!game_is_networked || use_map_file(((game_info*)NetGetGameData())->parent_checksum))
-	{
-		RunLevelScript(entry->level_number);
-	}
 
-#if !defined(DISABLE_NETWORKING)
 	/* If the game is networked, then I must call the network code to do the right */
 	/* thing with the map.. */
 	if(game_is_networked)
@@ -807,10 +802,13 @@ bool goto_level(
 		/* then calls process_map_wad on it. Non-server receives the map and then */
 		/* calls process_map_wad on it. */
 		success= NetChangeMap(entry);
+
+		if (use_map_file(((game_info*)NetGetGameData())->parent_checksum))
+			RunLevelScript(entry->level_number);
 	} 
-	else 
-#endif // !defined(DISABLE_NETWORKING)
+	else
 	{
+		RunLevelScript(entry->level_number);
 		/* Load it and then rock.. */
 		load_level_from_map(entry->level_number);
 		if(error_pending()) success= false;

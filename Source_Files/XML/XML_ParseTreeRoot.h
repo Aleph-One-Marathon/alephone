@@ -29,11 +29,20 @@
 */
 
 #include <stddef.h>
+#include <vector>
+
+enum class mml_loading_mode
+{
+	all,
+	menu_only,
+	net_sync_only
+};
 
 extern void ResetAllMMLValues(); // reset everything that's been changed to hard-coded defaults
 
 class FileSpecifier;
-extern bool ParseMMLFromFile(const FileSpecifier& filespec, bool load_menu_mml_only);
+extern bool ParseMMLFromFile(const FileSpecifier& filespec, mml_loading_mode loading_mode);
 extern bool ParseMMLFromData(const char *buffer, size_t buflen);
+extern std::vector<byte> GenerateMMLForNet();
 
 #endif

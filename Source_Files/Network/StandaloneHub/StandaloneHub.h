@@ -34,6 +34,7 @@ private:
 	std::unique_ptr<LuaMessage> _lua_message;
 	std::unique_ptr<MapMessage> _map_message;
 	std::unique_ptr<PhysicsMessage> _physics_message;
+	std::unique_ptr<ZippedMMLMessage> _mml_message;
 	int _port;
 	bool _start_game_signal = false;
 	bool _end_game_signal = false;
@@ -62,6 +63,7 @@ public:
 	int GetMapData(uint8** data);
 	int GetPhysicsData(uint8** data);
 	int GetLuaData(uint8** data);
+	int GetMMLData(uint8** data);
 };
 
 #endif

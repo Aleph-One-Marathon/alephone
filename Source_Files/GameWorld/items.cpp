@@ -884,3 +884,30 @@ void parse_mml_items(const InfoTree& root)
 			shape.read_shape(def.base_shape);
 	}
 }
+
+
+void write_net_mml_items(InfoTree& root)
+{
+	InfoTree items_root;
+	for (int i = 0; i < NUMBER_OF_DEFINED_ITEMS; i++)
+	{
+		const auto& item = item_definitions[i];
+		InfoTree item_node;
+		item_node.put_attr("index", i);
+		item_node.put_attr("maximum", item.maximum_count_per_player);
+		item_node.put_attr("invalid", item.invalid_environments);
+		item_node.put_attr("type", item.item_kind);
+
+		for (int j = 0; j < NUMBER_OF_GAME_DIFFICULTY_LEVELS; j++)
+		{
+			InfoTree difficulty_node;
+			difficulty_node.put_attr("index", j);
+			difficulty_node.put_attr("maximum", item.extended_maximum_count[j]);
+			item_node.add_child("difficulty", difficulty_node);
+		}
+
+		items_root.add_child("item", item_node);
+	}
+
+	root.add_child("items", items_root);
+}

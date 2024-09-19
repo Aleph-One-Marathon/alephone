@@ -188,6 +188,11 @@ static uint16 network_gather_remote_hub()
 	uint16 remote_hub_id = 0;
 	open_progress_dialog(_connecting_to_remote_hub);
 
+	load_film_profile(FILM_PROFILE_DEFAULT);
+	reset_mml_dynamic_limits();
+	LoadBaseMMLScripts(mml_loading_mode::net_sync_only);
+	Plugins::instance()->load_mml(mml_loading_mode::net_sync_only);
+
 	const auto& remote_hubs = gMetaserverClient->get_remoteHubServers();
 	std::unordered_map<uint16_t, RemoteHubServerDescription> remote_hubs_pings;
 
@@ -368,7 +373,7 @@ bool GatherDialog::GatherNetworkGameByRunning ()
 	m_startWidget->set_callback(std::bind(&GatherDialog::StartGameHit, this));
 	m_ungatheredWidget->SetItemSelectedCallback(std::bind(&GatherDialog::gathered_player, this, std::placeholders::_1));
 
-	m_startWidget->deactivate ();
+	m_startWidget->activate ();
 	
 	NetSetGatherCallbacks(this);
 	

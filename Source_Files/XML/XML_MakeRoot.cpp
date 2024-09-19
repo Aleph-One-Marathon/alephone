@@ -91,78 +91,112 @@ void ResetAllMMLValues()
 	reset_mml_default_levels();
 }
 
-static void _ParseAllMML(const InfoTree& fileroot, bool load_menu_mml_only)
+static void _ParseAllMML(const InfoTree& fileroot, mml_loading_mode loading_mode)
 {
 	for (const InfoTree &root : fileroot.children_named("marathon"))
 	{
-		for (const InfoTree &child : root.children_named("stringset"))
-			parse_mml_stringset(child);
-		for (const InfoTree &child : root.children_named("interface"))
-			parse_mml_interface(child);
-		for (const InfoTree& child : root.children_named("player_name"))
-			parse_mml_player_name(child);
-		for (const InfoTree& child : root.children_named("scenario"))
-			parse_mml_scenario(child);
-		for (const InfoTree& child : root.children_named("logging"))
-			parse_mml_logging(child);
-		for (const InfoTree& child : root.children_named("sounds"))
-			parse_mml_sounds(child);
-		for (const InfoTree& child : root.children_named("faders"))
-			parse_mml_faders(child);
+		if (loading_mode != mml_loading_mode::net_sync_only)
+		{
+			for (const InfoTree& child : root.children_named("stringset"))
+				parse_mml_stringset(child);
+			for (const InfoTree& child : root.children_named("interface"))
+				parse_mml_interface(child);
+			for (const InfoTree& child : root.children_named("player_name"))
+				parse_mml_player_name(child);
+			for (const InfoTree& child : root.children_named("scenario"))
+				parse_mml_scenario(child);
+			for (const InfoTree& child : root.children_named("logging"))
+				parse_mml_logging(child);
+			for (const InfoTree& child : root.children_named("sounds"))
+				parse_mml_sounds(child);
+			for (const InfoTree& child : root.children_named("faders"))
+				parse_mml_faders(child);
+		}
 
-		if (load_menu_mml_only) continue;
+		if (loading_mode == mml_loading_mode::all)
+		{
+			for (const InfoTree& child : root.children_named("motion_sensor"))
+				parse_mml_motion_sensor(child);
+			for (const InfoTree& child : root.children_named("overhead_map"))
+				parse_mml_overhead_map(child);
+			for (const InfoTree& child : root.children_named("infravision"))
+				parse_mml_infravision(child);
+			for (const InfoTree& child : root.children_named("animated_textures"))
+				parse_mml_animated_textures(child);
+			for (const InfoTree& child : root.children_named("view"))
+				parse_mml_view(child);
+			for (const InfoTree& child : root.children_named("landscapes"))
+				parse_mml_landscapes(child);
+			for (const InfoTree& child : root.children_named("texture_loading"))
+				parse_mml_texture_loading(child);
+			for (const InfoTree& child : root.children_named("opengl"))
+				parse_mml_opengl(child);
+			for (const InfoTree& child : root.children_named("software"))
+				parse_mml_software(child);
+			for (const InfoTree& child : root.children_named("console"))
+				parse_mml_console(child);
+			for (const InfoTree& child : root.children_named("default_levels"))
+				parse_mml_default_levels(child);
+		}
 
-		for (const InfoTree &child : root.children_named("motion_sensor"))
-			parse_mml_motion_sensor(child);
-		for (const InfoTree &child : root.children_named("overhead_map"))
-			parse_mml_overhead_map(child);
-		for (const InfoTree &child : root.children_named("infravision"))
-			parse_mml_infravision(child);
-		for (const InfoTree &child : root.children_named("animated_textures"))
-			parse_mml_animated_textures(child);
-		for (const InfoTree &child : root.children_named("control_panels"))
-			parse_mml_control_panels(child);
-		for (const InfoTree &child : root.children_named("platforms"))
-			parse_mml_platforms(child);
-		for (const InfoTree &child : root.children_named("liquids"))
-			parse_mml_liquids(child);
-		for (const InfoTree &child : root.children_named("player"))
-			parse_mml_player(child);
-		for (const InfoTree &child : root.children_named("view"))
-			parse_mml_view(child);
-		for (const InfoTree &child : root.children_named("weapons"))
-			parse_mml_weapons(child);
-		for (const InfoTree &child : root.children_named("items"))
-			parse_mml_items(child);
-		for (const InfoTree &child : root.children_named("damage_kicks"))
-			parse_mml_damage_kicks(child);
-		for (const InfoTree &child : root.children_named("monsters"))
-			parse_mml_monsters(child);
-		for (const InfoTree &child : root.children_named("scenery"))
-			parse_mml_scenery(child);
-		for (const InfoTree &child : root.children_named("landscapes"))
-			parse_mml_landscapes(child);
-		for (const InfoTree &child : root.children_named("texture_loading"))
-			parse_mml_texture_loading(child);
-		for (const InfoTree &child : root.children_named("opengl"))
-			parse_mml_opengl(child);
-		for (const InfoTree &child : root.children_named("software"))
-			parse_mml_software(child);
-		for (const InfoTree &child : root.children_named("dynamic_limits"))
-			parse_mml_dynamic_limits(child);
-		for (const InfoTree &child : root.children_named("console"))
-			parse_mml_console(child);
-		for (const InfoTree &child : root.children_named("default_levels"))
-			parse_mml_default_levels(child);
+		if (loading_mode != mml_loading_mode::menu_only)
+		{
+			for (const InfoTree& child : root.children_named("control_panels"))
+				parse_mml_control_panels(child);
+			for (const InfoTree& child : root.children_named("platforms"))
+				parse_mml_platforms(child);
+			for (const InfoTree& child : root.children_named("liquids"))
+				parse_mml_liquids(child);
+			for (const InfoTree& child : root.children_named("player"))
+				parse_mml_player(child);
+			for (const InfoTree& child : root.children_named("weapons"))
+				parse_mml_weapons(child);
+			for (const InfoTree& child : root.children_named("items"))
+				parse_mml_items(child);
+			for (const InfoTree& child : root.children_named("damage_kicks"))
+				parse_mml_damage_kicks(child);
+			for (const InfoTree& child : root.children_named("monsters"))
+				parse_mml_monsters(child);
+			for (const InfoTree& child : root.children_named("scenery"))
+				parse_mml_scenery(child);
+			for (const InfoTree& child : root.children_named("dynamic_limits"))
+				parse_mml_dynamic_limits(child);
+		}
 	}
 }
 
-bool ParseMMLFromFile(const FileSpecifier& FileSpec, bool load_menu_mml_only)
+std::vector<byte> GenerateMMLForNet()
+{
+	InfoTree root;
+	InfoTree marathon_root;
+
+	write_net_mml_player(marathon_root);
+	write_net_mml_weapons(marathon_root);
+	write_net_mml_monsters(marathon_root);
+	write_net_mml_platforms(marathon_root);
+	write_net_mml_panels(marathon_root);
+	write_net_mml_items(marathon_root);
+	write_net_mml_damage_kicks(marathon_root);
+	write_net_mml_scenery(marathon_root);
+	write_net_mml_liquids(marathon_root);
+	write_net_mml_dynamic_limits(marathon_root);
+
+	root.add_child("marathon", marathon_root);
+
+	std::ostringstream oss;
+	root.save_xml(oss);
+
+	auto mml = oss.str();
+	std::vector<byte> mml_data(mml.begin(), mml.end());
+	return mml_data;
+}
+
+bool ParseMMLFromFile(const FileSpecifier& FileSpec, mml_loading_mode loading_mode)
 {
 	bool parse_error = false;
 	try {
 		InfoTree fileroot = InfoTree::load_xml(FileSpec);
-		_ParseAllMML(fileroot, load_menu_mml_only);
+		_ParseAllMML(fileroot, loading_mode);
 	} catch (const InfoTree::parse_error& ex) {
 		logError("Error parsing MML file (%s): %s", FileSpec.GetPath(), ex.what());
 		parse_error = true;
@@ -185,7 +219,7 @@ bool ParseMMLFromData(const char *buffer, size_t buflen)
 	try {
 		std::istringstream strm(std::string(buffer, buflen));
 		InfoTree fileroot = InfoTree::load_xml(strm);
-		_ParseAllMML(fileroot, false);
+		_ParseAllMML(fileroot, mml_loading_mode::all);
 	} catch (const InfoTree::parse_error& ex) {
 		logError("Error parsing MML data: %s", ex.what());
 		parse_error = true;

@@ -4580,3 +4580,17 @@ void parse_mml_weapons(const InfoTree& root)
 		order.read_indexed("weapon", weapon_ordering_array[index], NUMBER_OF_WEAPONS);
 	}
 }
+
+void write_net_mml_weapons(InfoTree& root)
+{
+	InfoTree weapons_root;
+	for (int i = 0; i < NUMBER_OF_WEAPONS; i++)
+	{
+		InfoTree weapon_node;
+		weapon_node.put_attr("index", i);
+		weapon_node.put_attr("weapon", weapon_ordering_array[i]);
+		weapons_root.add_child("order", weapon_node);
+	}
+
+	root.add_child("weapons", weapons_root);
+}

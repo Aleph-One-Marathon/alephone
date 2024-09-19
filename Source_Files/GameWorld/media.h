@@ -172,6 +172,7 @@ uint8 *pack_media_data(uint8 *Stream, media_data* Objects, size_t Count);
 class InfoTree;
 void parse_mml_liquids(const InfoTree& root);
 void reset_mml_liquids();
+void write_net_mml_liquids(InfoTree& root);
 
 #endif
 

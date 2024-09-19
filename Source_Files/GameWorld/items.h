@@ -130,6 +130,7 @@ void animate_items(void);
 
 class InfoTree;
 void parse_mml_items(const InfoTree& root);
+void write_net_mml_items(InfoTree& root);
 void reset_mml_items();
 
 #endif

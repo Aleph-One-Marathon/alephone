@@ -580,6 +580,7 @@ int get_ticks_since_local_player_in_terminal();
 
 class InfoTree;
 void parse_mml_player(const InfoTree& root);
+void write_net_mml_player(InfoTree& root);
 void reset_mml_player();
 
 #endif

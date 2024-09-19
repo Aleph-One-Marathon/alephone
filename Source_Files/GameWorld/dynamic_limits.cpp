@@ -153,6 +153,30 @@ void parse_mml_dynamic_limits(const InfoTree& root)
 	reallocate_dynamic_limits();
 }
 
+void write_net_mml_dynamic_limits(InfoTree& root)
+{
+	InfoTree dynamic_limit_root;
+
+	std::vector<std::pair<std::string, int>> dynamic_limits_list = 
+	{
+		{"objects", _dynamic_limit_objects},
+		{"monsters", _dynamic_limit_monsters},
+		{"paths", _dynamic_limit_paths},
+		{"projectiles", _dynamic_limit_projectiles},
+		{"effects", _dynamic_limit_effects},
+		{"local_collision", _dynamic_limit_local_collision},
+		{"global_collision", _dynamic_limit_global_collision}
+	};
+
+	for (const auto& dynamic_limits_item : dynamic_limits_list)
+	{
+		InfoTree dynamic_item_node;
+		dynamic_item_node.put_attr("value", get_dynamic_limit(dynamic_limits_item.second));
+		dynamic_limit_root.add_child(dynamic_limits_item.first, dynamic_item_node);
+	}
+
+	root.add_child("dynamic_limits", dynamic_limit_root);
+}
 
 // Accessor
 uint16 get_dynamic_limit(int which) {

@@ -220,6 +220,7 @@ size_t get_number_of_weapon_types();
 
 class InfoTree;
 void parse_mml_weapons(const InfoTree& root);
+void write_net_mml_weapons(InfoTree& root);
 void reset_mml_weapons();
 
 #endif

@@ -2551,3 +2551,51 @@ void parse_mml_player(const InfoTree& root)
 	}
 }
 
+void write_net_mml_player(InfoTree& root)
+{
+	InfoTree player_root;
+	player_root.put_attr("energy", player_settings.InitialEnergy);
+	player_root.put_attr("oxygen", player_settings.InitialOxygen);
+	player_root.put_attr("stripped", player_settings.StrippedEnergy);
+	player_root.put_attr("oxygen_deplete", player_settings.OxygenDepletion);
+	player_root.put_attr("oxygen_replenish", player_settings.OxygenReplenishment);
+	player_root.put_attr("vulnerability", player_settings.Vulnerability);
+	player_root.put_attr("guided", player_settings.PlayerShotsGuided);
+	player_root.put_attr("half_visual_arc", player_settings.PlayerHalfVisualArc);
+	player_root.put_attr("half_vertical_visual_arc", player_settings.PlayerHalfVertVisualArc);
+	player_root.put_attr("visual_range", player_settings.PlayerHalfVisualArc);
+	player_root.put_attr("dark_visual_range", player_settings.PlayerHalfVertVisualArc);
+	player_root.put_attr("single_energy", player_settings.SingleEnergy);
+	player_root.put_attr("double_energy", player_settings.DoubleEnergy);
+	player_root.put_attr("triple_energy", player_settings.TripleEnergy);
+	player_root.put_attr("can_swim", player_settings.CanSwim);
+
+	for (int i = 0; i < NUMBER_OF_PLAYER_INITIAL_ITEMS; i++)
+	{
+		InfoTree item_node;
+		item_node.put_attr("index", i);
+		item_node.put_attr("type", player_initial_items[i]);
+		player_root.add_child("item", item_node);
+	}
+
+	InfoTree powerup_assign_node;
+	powerup_assign_node.put_attr("invincibility", player_powerups.Powerup_Invincibility);
+	powerup_assign_node.put_attr("invisibility", player_powerups.Powerup_Invisibility);
+	powerup_assign_node.put_attr("infravision", player_powerups.Powerup_Infravision);
+	powerup_assign_node.put_attr("extravision", player_powerups.Powerup_Extravision);
+	powerup_assign_node.put_attr("triple_energy", player_powerups.Powerup_TripleEnergy);
+	powerup_assign_node.put_attr("double_energy", player_powerups.Powerup_DoubleEnergy);
+	powerup_assign_node.put_attr("energy", player_powerups.Powerup_Energy);
+	powerup_assign_node.put_attr("oxygen", player_powerups.Powerup_Oxygen);
+	player_root.add_child("powerup_assign", powerup_assign_node);
+
+	InfoTree powerup_node;
+	powerup_node.put_attr("invincibility", kINVINCIBILITY_DURATION);
+	powerup_node.put_attr("invisibility", kINVISIBILITY_DURATION);
+	powerup_node.put_attr("infravision", kINFRAVISION_DURATION);
+	powerup_node.put_attr("extravision", kEXTRAVISION_DURATION);
+	player_root.add_child("powerup", powerup_node);
+
+	root.add_child("player", player_root);
+}
+

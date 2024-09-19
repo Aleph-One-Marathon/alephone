@@ -318,6 +318,7 @@ uint8 *pack_platform_data(uint8 *Stream, platform_data *Objects, size_t Count);
 
 class InfoTree;
 void parse_mml_platforms(const InfoTree& root);
+void write_net_mml_platforms(InfoTree& root);
 void reset_mml_platforms();
 
 #endif

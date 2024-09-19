@@ -57,6 +57,7 @@ enum {
   kREMOTE_HUB_READY_MESSAGE,
   kREMOTE_HUB_RESPONSE_MESSAGE,
   kREMOTE_HUB_REQUEST_MESSAGE,
+  kZIPPED_MML_MESSAGE
 };
 
 template <MessageTypeID tMessageType, typename tValueType>
@@ -343,6 +344,8 @@ typedef TemplatizedDataMessage<kZIPPED_PHYSICS_MESSAGE, BigChunkOfZippedDataMess
 
 typedef TemplatizedDataMessage<kLUA_MESSAGE, BigChunkOfDataMessage> LuaMessage;
 typedef TemplatizedDataMessage<kZIPPED_LUA_MESSAGE, BigChunkOfZippedDataMessage> ZippedLuaMessage;
+
+typedef TemplatizedDataMessage<kZIPPED_MML_MESSAGE, BigChunkOfZippedDataMessage> ZippedMMLMessage;
 
 
 class NetworkChatMessage : public SmallMessageHelper

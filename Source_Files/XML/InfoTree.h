@@ -98,6 +98,7 @@ public:
 	bool read_color(rgb_color& color) const;
 	bool read_shape(shape_descriptor& descriptor, bool allow_empty = true) const;
 	bool read_damage(damage_definition& definition) const;
+	void write_damage(const damage_definition& def);
 	bool read_font(FontSpecifier& font) const;
 	
 	bool read_path(std::string key, FileSpecifier& file) const;

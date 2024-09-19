@@ -409,3 +409,29 @@ void parse_mml_liquids(const InfoTree& root)
 		}
 	}
 }
+
+void write_net_mml_liquids(InfoTree& root)
+{
+	InfoTree liquid_root;
+	for (int i = 0; i < NUMBER_OF_MEDIA_TYPES; i++)
+	{
+		const auto& media = media_definitions[i];
+		InfoTree liquid_node;
+		liquid_node.put_attr("index", i);
+		liquid_node.put_attr("damage_freq", media.damage_frequency);
+		liquid_node.write_damage(media.damage);
+
+		for (int j = 0; j < NUMBER_OF_MEDIA_DETONATION_TYPES; j++)
+		{
+			const auto& effect = media.detonation_effects[j];
+			InfoTree effect_node;
+			effect_node.put_attr("type", j);
+			effect_node.put_attr("which", effect);
+			liquid_node.add_child("effect", effect_node);
+		}
+
+		liquid_root.add_child("liquid", liquid_node);
+	}
+
+	root.add_child("liquids", liquid_root);
+}

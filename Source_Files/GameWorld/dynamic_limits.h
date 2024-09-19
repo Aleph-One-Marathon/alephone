@@ -53,6 +53,7 @@ enum {
 
 class InfoTree;
 void parse_mml_dynamic_limits(const InfoTree& root);
+void write_net_mml_dynamic_limits(InfoTree& root);
 void reset_mml_dynamic_limits();
 
 // Accessor

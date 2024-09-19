@@ -3923,6 +3923,24 @@ void reset_mml_damage_kicks()
 	}
 }
 
+void write_net_mml_damage_kicks(InfoTree& root)
+{
+	InfoTree damage_root;
+	for (int i = 0; i < NUMBER_OF_DAMAGE_TYPES; i++)
+	{
+		const auto& damage = damage_kick_definitions[i];
+		InfoTree damage_node;
+		damage_node.put_attr("index", i);
+		damage_node.put_attr("base", damage.base_value);
+		damage_node.put_attr("mult", damage.delta_vitality_multiplier);
+		damage_node.put_attr("vertical", damage.is_also_vertical);
+		damage_node.put_attr("death_action", damage.death_action);
+		damage_root.add_child("kick", damage_node);
+	}
+
+	root.add_child("damage_kicks", damage_root);
+}
+
 void parse_mml_damage_kicks(const InfoTree& root)
 {
 	// back up old values first
@@ -3964,4 +3982,18 @@ void parse_mml_monsters(const InfoTree& root)
 		if (monster.read_attr("must_be_exterminated", exterminate))
 			monster_must_be_exterminated[index] = exterminate;
 	}
+}
+
+void write_net_mml_monsters(InfoTree& root)
+{
+	InfoTree monster_root;
+	for (int i = 0; i < NUMBER_OF_MONSTER_TYPES; i++)
+	{
+		InfoTree monster_node;
+		monster_node.put_attr("index", i);
+		monster_node.put_attr("must_be_exterminated", monster_must_be_exterminated[i]);
+		monster_root.add_child("monster", monster_node);
+	}
+
+	root.add_child("monsters", monster_root);
 }

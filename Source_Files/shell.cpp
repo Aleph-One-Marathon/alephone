@@ -478,7 +478,7 @@ void initialize_application(void)
 	load_film_profile(FILM_PROFILE_DEFAULT);
 
 	// Parse MML files
-	LoadBaseMMLScripts(true);
+	LoadBaseMMLScripts(mml_loading_mode::menu_only);
 
 	// Check for presence of strings
 	if (!TS_IsPresent(strERRORS) || !TS_IsPresent(strFILENAMES)) {
@@ -499,7 +499,7 @@ void initialize_application(void)
 			
 			// Parse MML files again, now that we have a new dir to search
 			initialize_fonts(false);
-			LoadBaseMMLScripts(true);
+			LoadBaseMMLScripts(mml_loading_mode::menu_only);
 		}
 	}
 
@@ -569,7 +569,7 @@ void initialize_application(void)
 		graphics_preferences->screen_mode.fullscreen = false;
 	write_preferences();
 
-	Plugins::instance()->load_mml(true);
+	Plugins::instance()->load_mml(mml_loading_mode::menu_only);
 
 //	SDL_WM_SetCaption(application_name, application_name);
 
@@ -1684,7 +1684,7 @@ void dump_screen(void)
 #endif
 }
 
-static bool _ParseMMLDirectory(DirectorySpecifier& dir, bool load_menu_mml_only)
+static bool _ParseMMLDirectory(DirectorySpecifier& dir, mml_loading_mode loading_mode)
 {
 	// Get sorted list of files in directory
 	vector<dir_entry> de;
@@ -1707,20 +1707,20 @@ static bool _ParseMMLDirectory(DirectorySpecifier& dir, bool load_menu_mml_only)
 		FileSpecifier file_name = dir + i->name;
 		
 		// Parse file
-		ParseMMLFromFile(file_name, load_menu_mml_only);
+		ParseMMLFromFile(file_name, loading_mode);
 	}
 	
 	return true;
 }
 
-void LoadBaseMMLScripts(bool load_menu_mml_only)
+void LoadBaseMMLScripts(mml_loading_mode loading_mode)
 {
 	vector <DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
 	while (i != end) {
 		DirectorySpecifier path = *i + "MML";
-		_ParseMMLDirectory(path, load_menu_mml_only);
+		_ParseMMLDirectory(path, loading_mode);
 		path = *i + "Scripts";
-		_ParseMMLDirectory(path, load_menu_mml_only);
+		_ParseMMLDirectory(path, loading_mode);
 		i++;
 	}
 }

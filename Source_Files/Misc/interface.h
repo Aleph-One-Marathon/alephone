@@ -455,6 +455,7 @@ class InfoTree;
 void parse_mml_infravision(const InfoTree& root);
 void reset_mml_infravision();
 void parse_mml_control_panels(const InfoTree& root);
+void write_net_mml_panels(InfoTree& root);
 void reset_mml_control_panels();
 
 #endif

@@ -971,6 +971,26 @@ static void handleLuaMessage(BigChunkOfDataMessage *luaMessage, CommunicationsCh
   }
 }
 
+static byte* handlerMMLBuffer = NULL;
+static size_t handlerMMLLength = 0;
+
+static void handleMMLMessage(BigChunkOfDataMessage* mmlMessage, CommunicationsChannel*) {
+	if (netState == netStartingUp || netState == netDown) {
+		if (handlerMMLBuffer) {
+			delete[] handlerMMLBuffer;
+			handlerMMLBuffer = NULL;
+		}
+		handlerMMLLength = mmlMessage->length();
+		if (handlerMMLLength > 0) {
+			handlerMMLBuffer = new byte[handlerMMLLength];
+			memcpy(handlerMMLBuffer, mmlMessage->buffer(), handlerMMLLength);
+		}
+	}
+	else {
+		logAnomaly("unexpected MML message received (netState is %i)", netState);
+	}
+}
+
 static byte *handlerMapBuffer = NULL;
 static size_t handlerMapLength = 0;
 
@@ -1179,6 +1199,7 @@ static void handleUnexpectedMessage(Message *inMessage, CommunicationsChannel *)
 static TypedMessageHandlerFunction<HelloMessage> helloMessageHandler(&handleHelloMessage);
 static TypedMessageHandlerFunction<JoinPlayerMessage> joinPlayerMessageHandler(&handleJoinPlayerMessage);
 static TypedMessageHandlerFunction<BigChunkOfDataMessage> luaMessageHandler(&handleLuaMessage);
+static TypedMessageHandlerFunction<BigChunkOfDataMessage> mmlMessageHandler(&handleMMLMessage);
 static TypedMessageHandlerFunction<BigChunkOfDataMessage> mapMessageHandler(&handleMapMessage);
 static TypedMessageHandlerFunction<NetworkChatMessage> networkChatMessageHandler(&handleNetworkChatMessage);
 static TypedMessageHandlerFunction<BigChunkOfDataMessage> physicsMessageHandler(&handlePhysicsMessage);
@@ -1313,6 +1334,7 @@ bool NetEnter(bool use_remote_hub)
 		inflater->learnPrototype(JoinPlayerMessage());
 		inflater->learnPrototype(LuaMessage());
 		inflater->learnPrototype(ZippedLuaMessage());
+		inflater->learnPrototype(ZippedMMLMessage());
 		inflater->learnPrototype(MapMessage());
 		inflater->learnPrototype(ZippedMapMessage());
 		inflater->learnPrototype(NetworkChatMessage());
@@ -1339,6 +1361,7 @@ bool NetEnter(bool use_remote_hub)
 		joinDispatcher->setHandlerForType(&joinPlayerMessageHandler, JoinPlayerMessage::kType);
 		joinDispatcher->setHandlerForType(&luaMessageHandler, LuaMessage::kType);
 		joinDispatcher->setHandlerForType(&luaMessageHandler, ZippedLuaMessage::kType);
+		joinDispatcher->setHandlerForType(&mmlMessageHandler, ZippedMMLMessage::kType);
 		joinDispatcher->setHandlerForType(&mapMessageHandler, MapMessage::kType);
 		joinDispatcher->setHandlerForType(&mapMessageHandler, ZippedMapMessage::kType);
 		joinDispatcher->setHandlerForType(&networkChatMessageHandler, NetworkChatMessage::kType);
@@ -2470,6 +2493,21 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 		}
 	}
 
+	byte* mml_buffer = NULL;
+	size_t mml_length;
+
+#ifdef A1_NETWORK_STANDALONE_HUB
+	mml_length = StandaloneHub::Instance()->GetMMLData(&mml_buffer);
+#else
+	auto mml_data = GenerateMMLForNet();
+	mml_length = mml_data.size();
+	mml_buffer = mml_data.data();
+#endif
+
+	ZippedMMLMessage zippedMMLMessage(mml_buffer, mml_length);
+	std::unique_ptr<UninflatedMessage> uninflatedMessage(zippedMMLMessage.deflate());
+	std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, *uninflatedMessage));
+
 #ifdef A1_NETWORK_STANDALONE_HUB
 	lua_length = StandaloneHub::Instance()->GetLuaData(&lua_buffer);
 	SetNetscriptStatus(lua_length);
@@ -2572,6 +2610,12 @@ byte *NetReceiveGameData(bool do_physics)
     } else {
       do_netscript = false;
     }
+
+	if (handlerMMLLength > 0) {
+		ParseMMLFromData((char*)handlerMMLBuffer, handlerMMLLength);
+		handlerMMLBuffer = NULL;
+		handlerMMLLength = 0;
+	}
     
     draw_progress_bar(10, 10);
     close_progress_dialog();
@@ -2594,6 +2638,11 @@ byte *NetReceiveGameData(bool do_physics)
       handlerLuaBuffer = NULL;
       handlerLuaLength = 0;
     }
+	if (handlerMMLLength > 0) {
+		delete[] handlerMMLBuffer;
+		handlerMMLBuffer = NULL;
+		handlerMMLLength = 0;
+	}
     
     alert_user(infoError, strNETWORK_ERRORS, netErrMapDistribFailed, 1);
   }

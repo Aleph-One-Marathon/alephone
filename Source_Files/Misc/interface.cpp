@@ -670,6 +670,7 @@ static bool make_restored_game_relevant(bool inNetgame, const player_start_data*
 // ZZZ: this will get called (eventually) shortly after NetUpdateJoinState() returns netStartingResumeGame
 bool join_networked_resume_game()
 {
+        ResetLevelScript();
         bool success = true;
         
         // Get the saved-game data
@@ -695,7 +696,6 @@ bool join_networked_resume_game()
 				bool found_map = false;
                 if(success)
                 {
-					ResetLevelScript();
 					uint32 theParentChecksum = theWadHeader.parent_checksum;
 					found_map = use_map_file(theParentChecksum);
 

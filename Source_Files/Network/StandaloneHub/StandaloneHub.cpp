@@ -152,6 +152,7 @@ bool StandaloneHub::GetGameDataFromGatherer()
 	_map_message.reset();
 	_physics_message.reset();
 	_lua_message.reset();
+	_mml_message.reset();
 
 	if (auto client = _gatherer ? _gatherer : _gatherer_client.lock())
 	{
@@ -175,9 +176,12 @@ bool StandaloneHub::GetGameDataFromGatherer()
 				case kZIPPED_MAP_MESSAGE:
 					_map_message = std::unique_ptr<MapMessage>(static_cast<MapMessage*>(message));
 					break;
+				case kZIPPED_MML_MESSAGE:
+					_mml_message = std::unique_ptr<ZippedMMLMessage>(static_cast<ZippedMMLMessage*>(message));
+					break;
 				case kEND_GAME_DATA_MESSAGE:
 					delete message;
-					return _map_message && _topology_message;
+					return _map_message && _topology_message && _mml_message;
 				default:
 					delete message;
 					break;
@@ -210,4 +214,12 @@ int StandaloneHub::GetLuaData(uint8** data)
 
 	*data = _lua_message->buffer();
 	return _lua_message->length();
+}
+
+int StandaloneHub::GetMMLData(uint8** data)
+{
+	if (!_mml_message) return 0;
+
+	*data = _mml_message->buffer();
+	return _mml_message->length();
 }

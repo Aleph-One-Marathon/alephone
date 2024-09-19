@@ -40,6 +40,7 @@ Dec 29, 2000 (Loren Petrich):
 */
 
 #include "cstypes.h"
+#include "XML_ParseTreeRoot.h"
 #include <string>
 
 class FileSpecifier;
@@ -109,7 +110,7 @@ enum // input devices
 void global_idle_proc(void);
 
 // Load the base MML scripts:
-void LoadBaseMMLScripts(bool load_menu_mml_only);
+void LoadBaseMMLScripts(mml_loading_mode load_menu_mml_only);
 
 // Application and directory info:
 char *expand_symbolic_paths(char *dest, const char *src, int maxlen);

@@ -1289,3 +1289,19 @@ void parse_mml_platforms(const InfoTree& root)
 		}
 	}
 }
+
+void write_net_mml_platforms(InfoTree& root)
+{
+	InfoTree platforms_root;
+	for (int i = 0; i < NUMBER_OF_PLATFORM_TYPES; i++)
+	{
+		const auto& platform = platform_definitions[i];
+		InfoTree platform_node;
+		platform_node.put_attr("index", i);
+		platform_node.put_attr("item", platform.key_item_index);
+		platform_node.write_damage(platform.damage);
+		platforms_root.add_child("platform", platform_node);
+	}
+
+	root.add_child("platforms", platforms_root);
+}

@@ -157,7 +157,7 @@ bool Plugins::enable(const boost::filesystem::path& path)
 	return false;
 }
 
-static void load_mmls(const Plugin& plugin, bool load_menu_mml_only)
+static void load_mmls(const Plugin& plugin, mml_loading_mode loading_mode)
 {
 	ScopedSearchPath ssp(plugin.directory);
 	for (std::vector<std::string>::const_iterator it = plugin.mmls.begin(); it != plugin.mmls.end(); ++it) 
@@ -165,7 +165,7 @@ static void load_mmls(const Plugin& plugin, bool load_menu_mml_only)
 		FileSpecifier file;
 		if (file.SetNameWithPath(it->c_str()))
 		{
-			ParseMMLFromFile(file, load_menu_mml_only);
+			ParseMMLFromFile(file, loading_mode);
 		}
 		else
 		{
@@ -174,14 +174,14 @@ static void load_mmls(const Plugin& plugin, bool load_menu_mml_only)
 	}
 }
 
-void Plugins::load_mml(bool load_menu_mml_only) {
+void Plugins::load_mml(mml_loading_mode loading_mode) {
 	validate();
 
 	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it) 
 	{
 		if (it->valid())
 		{
-			load_mmls(*it, load_menu_mml_only);
+			load_mmls(*it, loading_mode);
 		}
 	}
 }

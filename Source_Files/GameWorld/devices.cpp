@@ -993,3 +993,28 @@ void parse_mml_control_panels(const InfoTree& root)
 		}
 	}
 }
+
+void write_net_mml_panels(InfoTree& root)
+{
+	InfoTree panel_root;
+	panel_root.put_attr("reach", control_panel_settings.ReachDistance);
+	panel_root.put_attr("horiz", control_panel_settings.ReachHorizontal);
+	panel_root.put_attr("single_energy", control_panel_settings.SingleEnergy);
+	panel_root.put_attr("single_energy_rate", control_panel_settings.SingleEnergyRate);
+	panel_root.put_attr("double_energy", control_panel_settings.DoubleEnergy);
+	panel_root.put_attr("double_energy_rate", control_panel_settings.DoubleEnergyRate);
+	panel_root.put_attr("triple_energy", control_panel_settings.TripleEnergy);
+	panel_root.put_attr("triple_energy_rate", control_panel_settings.TripleEnergyRate);
+
+	for (int i = 0; i < NUMBER_OF_CONTROL_PANELS; i++)
+	{
+		const auto& panel = control_panel_definitions[i];
+		InfoTree panel_node;
+		panel_node.put_attr("index", i);
+		panel_node.put_attr("type", panel._class);
+		panel_node.put_attr("item", panel.item);
+		panel_root.add_child("panel", panel_node);
+	}
+
+	root.add_child("control_panels", panel_root);
+}

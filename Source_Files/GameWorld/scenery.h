@@ -51,6 +51,7 @@ bool get_damaged_scenery_collection(short scenery_type, short& collection);
 
 class InfoTree;
 void parse_mml_scenery(const InfoTree& root);
+void write_net_mml_scenery(InfoTree& root);
 void reset_mml_scenery();
 
 #endif

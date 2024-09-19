@@ -345,8 +345,10 @@ void init_monster_definitions();
 
 class InfoTree;
 void parse_mml_damage_kicks(const InfoTree& root);
+void write_net_mml_damage_kicks(InfoTree& root);
 void reset_mml_damage_kicks();
 void parse_mml_monsters(const InfoTree& root);
+void write_net_mml_monsters(InfoTree& root);
 void reset_mml_monsters();
 
 #endif

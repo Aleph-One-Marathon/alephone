@@ -316,6 +316,17 @@ bool InfoTree::read_damage(damage_definition& def) const
 	return status;
 }
 
+void InfoTree::write_damage(const damage_definition& def)
+{
+	InfoTree damage_node;
+	damage_node.put_attr("type", def.type);
+	damage_node.put_attr("flags", def.flags);
+	damage_node.put_attr("base", def.base);
+	damage_node.put_attr("random", def.random);
+	damage_node.put_attr("scale", def.scale);
+	add_child("damage", damage_node);
+}
+
 bool InfoTree::read_font(FontSpecifier& font) const
 {
 	bool status = false;

@@ -306,3 +306,19 @@ void parse_mml_scenery(const InfoTree& root)
 	
 	reset_scenery_solidity();
 }
+
+void write_net_mml_scenery(InfoTree& root)
+{
+	InfoTree scenery_root;
+	for (int i = 0; i < NUMBER_OF_SCENERY_DEFINITIONS; i++)
+	{
+		const auto& scenery = scenery_definitions[i];
+		InfoTree scenery_node;
+		scenery_node.put_attr("index", i);
+		scenery_node.put_attr("flags", scenery.flags);
+		scenery_node.put_attr("destruction", scenery.destroyed_effect);
+		scenery_root.add_child("object", scenery_node);
+	}
+
+	root.add_child("scenery", scenery_root);
+}
