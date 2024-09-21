@@ -1578,7 +1578,7 @@ public:
 	{
 		if (OpenALManager::Get())
 		{
-			OpenALManager::Get()->SetMusicVolume(SoundManager::From_db((selection - 20) * 2, true));
+			OpenALManager::Get()->SetMusicVolume(SoundManager::From_db((selection - 20), true));
 		}
 	}
 
