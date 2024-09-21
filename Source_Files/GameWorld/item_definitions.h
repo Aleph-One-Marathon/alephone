@@ -43,8 +43,7 @@ struct item_definition
 	int16 invalid_environments;
 
 	// extension to support per-difficulty maximums
-	bool has_extended_maximum_count[NUMBER_OF_GAME_DIFFICULTY_LEVELS];
-	int16 extended_maximum_count[NUMBER_OF_GAME_DIFFICULTY_LEVELS];
+	int16 extended_maximum_count[NUMBER_OF_GAME_DIFFICULTY_LEVELS] = { NONE, NONE, NONE, NONE, NONE };
 
 	int16 get_maximum_count_per_player(bool is_m1, int difficulty_level) const;
 };

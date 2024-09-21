@@ -582,7 +582,6 @@ static int Lua_ItemType_Set_Maximum_Inventory(lua_State* L)
 		auto definition = get_item_definition_external(Lua_ItemType::Index(L, 1));
 		const auto difficulty_level = dynamic_world->game_information.difficulty_level;
 		definition->extended_maximum_count[difficulty_level] = static_cast<int16_t>(lua_tonumber(L, 2));
-		definition->has_extended_maximum_count[difficulty_level] = true;
 	}
 	else
 	{
