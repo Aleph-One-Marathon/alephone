@@ -1578,7 +1578,7 @@ public:
 	{
 		if (OpenALManager::Get())
 		{
-			OpenALManager::Get()->SetMusicVolume(SoundManager::From_db((selection - 20) * 2));
+			OpenALManager::Get()->SetMusicVolume(SoundManager::From_db((selection - 20) * 2, true));
 		}
 	}
 
@@ -1730,7 +1730,7 @@ static void sound_dialog(void *arg)
 	else if (OpenALManager::Get())
 	{
 		OpenALManager::Get()->SetMasterVolume(SoundManager::From_db(sound_preferences->volume_db));
-		OpenALManager::Get()->SetMusicVolume(SoundManager::From_db(sound_preferences->music_db));
+		OpenALManager::Get()->SetMusicVolume(SoundManager::From_db(sound_preferences->music_db, true));
 	}
 }
 

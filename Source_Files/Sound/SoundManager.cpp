@@ -757,7 +757,7 @@ void SoundManager::SetStatus(bool active)
             static_cast<bool>(parameters.flags & _hrtf_flag),
             static_cast<bool>(parameters.flags & _3d_sounds_flag),
 			From_db(parameters.volume_db),
-			From_db(parameters.music_db)
+			From_db(parameters.music_db, true)
 		};
 
 		bool success = OpenALManager::Init(audio_parameters);
