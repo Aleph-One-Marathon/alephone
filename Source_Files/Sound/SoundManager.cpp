@@ -159,7 +159,6 @@ void SoundManager::Initialize(const Parameters& new_parameters)
 		initialized = true;
 		active = false;
 		SetParameters(new_parameters);
-		SetStatus(true);
 	}
 }
 
@@ -167,22 +166,10 @@ void SoundManager::SetParameters(const Parameters& parameters)
 {
 	if (!initialized) return;
 
-	bool initial_state = active;
-
-	// If it was initially on, turn off the sound manager
-	if (initial_state)
-		SetStatus(false);
-
-	// We need to get rid of the sounds we have in memory
-	UnloadAllSounds();
-
 	// Stuff in our new parameters
 	this->parameters = parameters;
 	this->parameters.Verify();
-
-	// If it was initially on, turn the sound manager back on
-	if (initial_state)
-		SetStatus(true);
+	SetStatus(true);
 }
 
 void SoundManager::Shutdown()
@@ -249,18 +236,6 @@ bool SoundManager::AdjustVolumeDown(short sound_index)
 		return true;
 	}
 	return false;
-}
-
-void SoundManager::TestVolume(float db, short sound_index)
-{
-	if (active)
-	{
-		OpenALManager::Get()->SetMasterVolume(From_db(db));
-		auto sound = PlaySound(sound_index, 0, NONE);
-		while (sound && sound->IsActive())
-		yield();
-		OpenALManager::Get()->SetMasterVolume(From_db(parameters.volume_db));
-	}	
 }
 
 bool SoundManager::LoadSound(short sound_index)
@@ -748,7 +723,7 @@ SoundManager::SoundManager() : active(false), initialized(false), sounds(new Sou
 
 void SoundManager::SetStatus(bool active)
 {
-	if (!initialized || active == this->active) return;
+	if (!initialized) return;
 
 	if (active) 
 	{
@@ -781,14 +756,14 @@ void SoundManager::SetStatus(bool active)
 			!(parameters.flags & _lower_restart_delay),
             static_cast<bool>(parameters.flags & _hrtf_flag),
             static_cast<bool>(parameters.flags & _3d_sounds_flag),
-			From_db(parameters.volume_db)
+			From_db(parameters.volume_db),
+			From_db(parameters.music_db)
 		};
 
 		bool success = OpenALManager::Init(audio_parameters);
 
 		if (!success) return;
 
-		MusicPlayer::SetDefaultVolume(From_db(parameters.music_db, true));
 		OpenALManager::Get()->Start();
 	}
 	else

@@ -11,7 +11,6 @@ struct MusicParameters {
 class MusicPlayer : public AudioPlayer {
 public:
 	MusicPlayer(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters); //Must not be used outside OpenALManager (public for make_shared)
-	static void SetDefaultVolume(float volume) { default_volume = volume; } //Since we can only change global music volume in settings, we don't have to care about AL sync here
 	float GetPriority() const override { return 5; } //Doesn't really matter, just be above maximum volume (1) to be prioritized over sounds
 	void UpdateParameters(MusicParameters musicParameters) { parameters.Store(musicParameters); }
 	MusicParameters GetParameters() const { return parameters.Get(); }

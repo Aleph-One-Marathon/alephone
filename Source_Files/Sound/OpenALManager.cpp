@@ -107,9 +107,24 @@ void OpenALManager::SetMasterVolume(float volume) {
 	ResyncPlayers();
 }
 
-void OpenALManager::ResyncPlayers() {
+void OpenALManager::SetMusicVolume(float volume) {
+	volume = std::min(2.f, std::max(volume, 0.f));
+	if (music_volume == volume) return;
+	music_volume = volume;
+	ResyncPlayers(true);
+}
+
+void OpenALManager::ResyncPlayers(bool music_players_only) {
 	SDL_LockAudio();
-	for (auto& player : audio_players_queue) player->is_sync_with_al_parameters = false;
+
+	for (auto& player : audio_players_queue) 
+	{
+		if (!music_players_only || std::dynamic_pointer_cast<MusicPlayer>(player) != nullptr)
+		{
+			player->is_sync_with_al_parameters = false;
+		}
+	}
+
 	SDL_UnlockAudio();
 }
 
@@ -424,7 +439,8 @@ int OpenALManager::GetBestOpenALSupportedFormat() {
 
 void OpenALManager::UpdateParameters(const AudioParameters& parameters) {
 	audio_parameters = parameters;
-	master_volume = parameters.volume;
+	SetMasterVolume(parameters.master_volume);
+	SetMusicVolume(parameters.music_volume);
 }
 
 void OpenALManager::Shutdown() {

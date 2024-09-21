@@ -60,7 +60,6 @@ public:
 
 	bool AdjustVolumeUp(short sound_index = NONE);
 	bool AdjustVolumeDown(short sound_index = NONE);
-	void TestVolume(float db, short sound_index);
 
 	bool LoadSound(short sound);
 	void LoadSounds(short *sounds, short count);

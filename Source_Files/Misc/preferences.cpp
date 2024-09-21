@@ -1560,7 +1560,11 @@ public:
 
 	void item_selected(void)
 	{
-		SoundManager::instance()->TestVolume((selection - 20) * 2, _snd_adjust_volume);
+		if (SoundManager::instance()->IsActive())
+		{
+			OpenALManager::Get()->SetMasterVolume(SoundManager::From_db((selection - 20) * 2));
+			SoundManager::instance()->PlaySound(_snd_adjust_volume, 0, NONE);
+		}
 	}
 };
 
@@ -1568,6 +1572,14 @@ class w_music_slider : public w_slider {
 public:
 	w_music_slider(int sel) : w_slider(41, sel) {
 		init_formatted_value();
+	}
+
+	void item_selected(void)
+	{
+		if (OpenALManager::Get())
+		{
+			OpenALManager::Get()->SetMusicVolume(SoundManager::From_db((selection - 20) * 2));
+		}
 	}
 
 	virtual std::string formatted_value() {
@@ -1709,10 +1721,16 @@ static void sound_dialog(void *arg)
 		}
 
 		if (changed) {
-//			set_sound_manager_parameters(sound_preferences);
+			bool is_music_playing = Music::instance()->Playing(Music::MusicSlot::Intro);
 			SoundManager::instance()->SetParameters(*sound_preferences);
 			write_preferences();
+			if (is_music_playing) Music::instance()->RestartIntroMusic();
 		}
+	}
+	else if (OpenALManager::Get())
+	{
+		OpenALManager::Get()->SetMasterVolume(SoundManager::From_db(sound_preferences->volume_db));
+		OpenALManager::Get()->SetMusicVolume(SoundManager::From_db(sound_preferences->music_db));
 	}
 }
 

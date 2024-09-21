@@ -42,7 +42,8 @@ struct AudioParameters {
 	bool balance_rewind;
 	bool hrtf;
 	bool sounds_3d;
-	float volume;
+	float master_volume;
+	float music_volume;
 };
 
 class OpenALManager {
@@ -61,7 +62,9 @@ public:
 	void UpdateListener(world_location3d listener) { listener_location.Set(listener); }
 	const world_location3d& GetListener() const { return listener_location.Get(); }
 	void SetMasterVolume(float volume);
+	void SetMusicVolume(float volume);
 	float GetMasterVolume() const { return master_volume.load(); }
+	float GetMusicVolume() const { return music_volume.load(); }
 	void ToggleDeviceMode(bool recording_device);
 	int GetFrequency() const { return audio_parameters.rate; }
 	uint32_t GetElapsedPauseTime() const { return elapsed_pause_time; }
@@ -79,6 +82,7 @@ private:
 	OpenALManager(const AudioParameters& parameters);
 	~OpenALManager();
 	std::atomic<float> master_volume;
+	std::atomic<float> music_volume;
 	bool process_audio_active = false;
 	bool paused_audio = false;
 	uint32_t elapsed_pause_time = 0;
@@ -91,7 +95,7 @@ private:
 	bool OpenDevice();
 	bool CloseDevice();
 	void ProcessAudioQueue();
-	void ResyncPlayers();
+	void ResyncPlayers(bool music_players_only = false);
 	bool is_using_recording_device = false;
 	std::queue<std::unique_ptr<AudioPlayer::AudioSource>> sources_pool;
 	std::deque<std::shared_ptr<AudioPlayer>> audio_players_queue; //for audio thread only

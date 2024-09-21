@@ -16,7 +16,7 @@ int MusicPlayer::GetNextData(uint8* data, int length) {
 }
 
 SetupALResult MusicPlayer::SetUpALSourceIdle() {
-	float default_music_volume = default_volume * OpenALManager::Get()->GetMasterVolume();
+	float default_music_volume = OpenALManager::Get()->GetMusicVolume() * OpenALManager::Get()->GetMasterVolume();
 	alSourcef(audio_source->source_id, AL_MAX_GAIN, default_music_volume);
 	alSourcef(audio_source->source_id, AL_GAIN, default_music_volume * parameters.Get().volume);
 	return SetupALResult(alGetError() == AL_NO_ERROR, true);
