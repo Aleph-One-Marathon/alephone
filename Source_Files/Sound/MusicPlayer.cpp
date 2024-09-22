@@ -1,7 +1,6 @@
 #include "MusicPlayer.h"
 #include "OpenALManager.h"
 
-std::atomic<float> MusicPlayer::default_volume = { 1 };
 MusicPlayer::MusicPlayer(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters) : AudioPlayer(decoder->Rate(), decoder->IsStereo(), decoder->GetAudioFormat()) {
 	this->decoder = decoder;
 	this->parameters = parameters;

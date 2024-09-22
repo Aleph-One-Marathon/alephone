@@ -108,7 +108,7 @@ void OpenALManager::SetMasterVolume(float volume) {
 }
 
 void OpenALManager::SetMusicVolume(float volume) {
-	volume = std::min(2.f, std::max(volume, 0.f));
+	volume = std::min(10.f, std::max(volume, 0.f));
 	if (music_volume == volume) return;
 	music_volume = volume;
 	ResyncPlayers(true);

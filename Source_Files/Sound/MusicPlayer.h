@@ -20,7 +20,6 @@ private:
 	int GetNextData(uint8* data, int length) override;
 	SetupALResult SetUpALSourceIdle() override;
 	bool LoadParametersUpdates() override { return parameters.Update(); }
-	static std::atomic<float> default_volume;
 
 	friend class OpenALManager;
 };
