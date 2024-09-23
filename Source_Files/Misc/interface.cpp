@@ -2814,6 +2814,7 @@ static void finish_game(
 	
 	/* Get as much memory back as we can. */
 	unload_all_collections();
+	SoundManager::instance()->StopAllSounds();
 	SoundManager::instance()->UnloadAllSounds();
 	
 #if !defined(DISABLE_NETWORKING)

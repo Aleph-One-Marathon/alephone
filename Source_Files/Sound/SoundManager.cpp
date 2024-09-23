@@ -319,7 +319,6 @@ void SoundManager::UnloadAllSounds()
 {
 	if (active)
 	{
-		StopAllSounds();
 		sounds->Clear();
 	}
 }

@@ -787,6 +787,7 @@ bool goto_level(
 		leaving_map();
 
 		// ghs: hack to get new MML-specified sounds loaded
+		SoundManager::instance()->StopAllSounds();
 		SoundManager::instance()->UnloadAllSounds();
 	}
 
