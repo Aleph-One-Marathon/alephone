@@ -3,7 +3,6 @@ dnl Written by Christian Bauer and the Aleph One developers.
 
 AC_INIT([Aleph One],m4_esyscmd([grep '^#define A1_DATE_VERSION' Source_Files/Misc/alephversion.h | sed -e 's/\(.*\"\)\(.*\)\(\"\)/\2/g' | tr -d '\n']),[https://github.com/Aleph-One-Marathon/alephone/issues],[AlephOne],[https://alephone.lhowon.org/])
 AC_CONFIG_SRCDIR([Source_Files/shell.cpp])
-AC_CONFIG_MACRO_DIR([m4])
 AC_PREREQ([2.69])
 
 dnl Detect the canonical host and target build environment.
@@ -147,10 +146,7 @@ AC_DEFUN([AX_REQUIRE_PKG],
                              [ AC_MSG_ERROR([You need $1 to run Aleph One.]) ]) ])
 
 dnl Check for required SDL dependencies.
-AM_PATH_SDL2(2.0.2, , AC_MSG_ERROR([You need SDL 2 to run Aleph One.]))
-CPPFLAGS="$CPPFLAGS $SDL_CFLAGS -DSDL"
-LIBS="$LIBS $SDL_LIBS"
-
+AX_REQUIRE_PKG([SDL2], [SDL], [sdl2 >= 2.0.16])
 AX_REQUIRE_PKG([SDL2_ttf], [SDL_TTF], [SDL2_ttf])
 AX_REQUIRE_PKG([SDL2_net], [SDL_NET], [SDL2_net])
 
