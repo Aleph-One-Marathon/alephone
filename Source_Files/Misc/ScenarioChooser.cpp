@@ -522,7 +522,11 @@ void ScenarioChooser::optimize_image(ScenarioChooserScenario& scenario, SDL_Wind
 
 	SDL_FillRect(scenario.image.get(), nullptr, SDL_MapRGB(scenario.image->format, 0, 0, 0));
 
+#if SDL_VERSION_ATLEAST(2, 0, 16)
 	SDL_SoftStretchLinear(optimized.get(), &src_rect, scenario.image.get(), &dst_rect);
+#else
+	SDL_BlitScaled(optimized.get(), &src_rect, scenario.image.get(), &dst_rect);
+#endif
 }
 
 void ScenarioChooser::redraw(SDL_Window* window)
