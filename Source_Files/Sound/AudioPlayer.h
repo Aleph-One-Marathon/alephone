@@ -82,8 +82,8 @@ private:
         {{AudioFormat::_32_float, true}, AL_FORMAT_STEREO_FLOAT32}
     };
 
-    int queued_rate = 0;
-    ALenum queued_format = 0; //Mono 8-16-32f or stereo 8-16-32f
+    int queued_rate;
+    ALenum queued_format; //Mono 8-16-32f or stereo 8-16-32f
 
     friend class OpenALManager;
 

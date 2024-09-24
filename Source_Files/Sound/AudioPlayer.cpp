@@ -4,6 +4,8 @@
 
 AudioPlayer::AudioPlayer(int rate, bool stereo, AudioFormat audioFormat) {
 	Init(rate, stereo, audioFormat);
+	queued_rate = rate;
+	queued_format = format;
 }
 
 void AudioPlayer::Init(int rate, bool stereo, AudioFormat audioFormat) {
@@ -56,6 +58,8 @@ void AudioPlayer::FillBuffers() {
 		ALint nbBuffersQueued;
 		alGetSourcei(audio_source->source_id, AL_BUFFERS_QUEUED, &nbBuffersQueued);
 		if (nbBuffersQueued > 0) return;
+		queued_rate = rate;
+		queued_format = format;
 	}
 
 	for (auto& buffer : audio_source->buffers) { //now we process our buffers that are ready
@@ -75,9 +79,6 @@ void AudioPlayer::FillBuffers() {
 		alBufferData(buffer.first, format, data.data(), bufferOffset, rate);
 		alSourceQueueBuffers(audio_source->source_id, 1, &buffer.first);
 		buffer.second = true;
-
-		queued_rate = rate;
-		queued_format = format;
 	}
 }
 
