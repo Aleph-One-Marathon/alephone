@@ -359,7 +359,7 @@ static void update_interface_fades(void);
 static void interface_fade_out(short pict_resource_number, bool fade_music);
 static bool can_interface_fade_out(void);
 static void transfer_to_new_level(short level_number);
-static void try_and_display_chapter_screen(short level, bool interface_table_is_valid, bool text_block, bool epilogue_screen);
+static void try_and_display_chapter_screen(short level, bool interface_table_is_valid, bool text_block);
 
 static screen_data *get_screen_data(
 	short index);
@@ -1710,7 +1710,7 @@ static void display_epilogue(
 		end_count = 2;
 	}
 	for (int i=0; i<end_count; i++)
-		try_and_display_chapter_screen(end_offset+i, true, true, true);
+		try_and_display_chapter_screen(end_offset+i, true, true);
 	show_cursor();
 }
 
@@ -2350,7 +2350,7 @@ static void transfer_to_new_level(
 			return;
 		}
 
-		if (!game_is_networked) try_and_display_chapter_screen(level_number, true, false, false);
+		if (!game_is_networked) try_and_display_chapter_screen(level_number, true, false);
 		success= goto_level(&entry, dynamic_world->player_count, nullptr);
 		set_keyboard_controller_status(true);
 	}
@@ -2647,7 +2647,7 @@ static bool begin_game(
 		{
 			FindLevelMovie(entry.level_number);
 			show_movie(entry.level_number);
-			try_and_display_chapter_screen(entry.level_number, false, false, false);
+			try_and_display_chapter_screen(entry.level_number, false, false);
 		}
 
 		Plugins::instance()->set_mode(number_of_players > 1 ? Plugins::kMode_Net : Plugins::kMode_Solo);
@@ -3225,8 +3225,7 @@ static void handle_interface_menu_screen_click(
 static void try_and_display_chapter_screen(
 	short level,
 	bool interface_table_is_valid,
-	bool text_block,
-	bool epilogue_screen)
+	bool text_block)
 {
 	if (Movie::instance()->IsRecording() || !shell_options.replay_directory.empty())
 		return;
@@ -3238,7 +3237,7 @@ static void try_and_display_chapter_screen(
 		short existing_state= game_state.state;
 		game_state.state= _display_chapter_heading;
 
-		if (!epilogue_screen) SoundManager::instance()->StopAllSounds(); //don't stop the music if intro restarted for epilogue
+		SoundManager::instance()->StopAllSounds();
 		
 		/* This will NOT work if the initial level entered has a chapter screen, which is why */
 		/*  we perform this check. (The interface_color_table is not valid...) */

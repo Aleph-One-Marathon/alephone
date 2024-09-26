@@ -424,8 +424,8 @@ std::shared_ptr<SoundPlayer> SoundManager::DirectPlaySound(short sound_index, an
 }
 
 void SoundManager::StopAllSounds() {
-	 auto manager = OpenALManager::Get();
-	 if (manager) manager->StopAllPlayers();
+	for (auto& soundPlayer : sound_players)
+		soundPlayer->AskStop();
 }
 
 int SoundManager::GetCurrentAudioTick() {

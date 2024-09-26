@@ -54,7 +54,6 @@ public:
 	void Pause(bool paused);
 	void Start();
 	void Stop();
-	void StopAllPlayers();
 	std::shared_ptr<SoundPlayer> PlaySound(const Sound& sound, const SoundParameters& parameters);
 	std::shared_ptr<MusicPlayer> PlayMusic(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters);
 	std::shared_ptr<StreamPlayer> PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, AudioFormat audioFormat);
@@ -87,6 +86,7 @@ private:
 	bool paused_audio = false;
 	uint32_t elapsed_pause_time = 0;
 	AtomicStructure<world_location3d> listener_location = {};
+	void StopAllPlayers();
 	void UpdateParameters(const AudioParameters& parameters);
 	void UpdateListener();
 	void CleanEverything();
