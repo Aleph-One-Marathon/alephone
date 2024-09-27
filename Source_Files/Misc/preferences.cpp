@@ -3211,7 +3211,7 @@ static void environment_dialog(void *arg)
 	table->dual_add(use_native_file_dialogs_w, d);
 #endif
 
-	w_select *max_saves_w = new w_select(0, max_saves_labels);
+	w_select *max_saves_w = new w_select(2, max_saves_labels);
 	for (int i = 0; max_saves_labels[i] != NULL; ++i) {
 		if (max_saves_values[i] == environment_preferences->maximum_quick_saves)
 			max_saves_w->set_selection(i);
