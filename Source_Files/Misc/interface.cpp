@@ -1873,7 +1873,7 @@ static item_owned_query_result steam_get_owned_items(const std::string& scenario
 
 static void display_steam_workshop_uploader_dialog(void* arg)
 {
-	force_system_colors();
+	force_system_colors(false);
 
 	const auto scenario_name = Scenario::instance()->GetName();
 
