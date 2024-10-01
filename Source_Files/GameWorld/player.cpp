@@ -1508,7 +1508,10 @@ static void update_player_media(
 		{
 			bool under_media= (player->variables.flags&_HEAD_BELOW_MEDIA_BIT);
 			short media_index= polygon->media_index;
-						
+			
+			if(graphics_preferences->screen_mode.acceleration == _shader_acceleration)
+				under_media = (player->variables.flags&_FEET_BELOW_MEDIA_BIT);
+			
 			world_point3d cam_pos;
 			short cam_poly;
 			angle cam_yaw;
