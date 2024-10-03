@@ -116,9 +116,8 @@
 
 #ifdef __WIN32__
 #define WIN32_LEAN_AND_MEAN
-#include <dwmapi.h>
+#include <windows.h>
 #undef CreateDirectory
-#undef PlaySound
 #endif
 
 #include "shell_options.h"
@@ -173,21 +172,6 @@ static void process_event(const SDL_Event &event);
 // cross-platform static variables
 short vidmasterStringSetID = -1; // can be set with MML
 short vidmasterLevelOffset = 1; // can be set with MML
-
-static bool IsCompositingWindowManagerEnabled() // double buffering
-{
-#if defined(__APPLE__) || defined(__MACH__)
-	return true;
-#endif
-
-#if defined __WIN32__
-	BOOL result;
-	if (DwmIsCompositionEnabled(&result) != S_OK) return false;
-	return result;
-#endif
-
-	return false;
-}
 
 static std::string a1_getenv(const char* name)
 {
@@ -1506,24 +1490,6 @@ static void process_event(const SDL_Event &event)
 				}
 #endif
 				set_game_focus_gained();
-				break;
-			case SDL_WINDOWEVENT_EXPOSED:
-				if (Movie::instance()->IsRecording())
-				{
-					// movie recording reads back from the frame buffer so
-					// leave it alone
-					break;
-				}
-/*	
-			if (!IsCompositingWindowManagerEnabled()) {
-#ifdef HAVE_OPENGL
-				if (MainScreenIsOpenGL())
-					MainScreenSwap();
-				else
-#endif
-					update_game_window();
-		}
-		*/
 				break;
 		}
 		break;

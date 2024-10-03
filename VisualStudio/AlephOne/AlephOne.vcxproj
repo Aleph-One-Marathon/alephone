@@ -339,7 +339,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2maind.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2maind.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -361,7 +361,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Standalone Hub|Win32'">
@@ -383,7 +383,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>SDL2main.lib;bcrypt.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;bcrypt.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon Infinity|Win32'">
@@ -405,7 +405,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon|Win32'">
@@ -427,7 +427,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon|Win32'">
@@ -449,7 +449,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon 2|Win32'">
@@ -471,7 +471,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|Win32'">
@@ -493,7 +493,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon 2|Win32'">
@@ -515,7 +515,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -531,7 +531,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2maind.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2maind.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -553,7 +553,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Standalone Hub|x64'">
@@ -575,7 +575,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>SDL2main.lib;bcrypt.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;bcrypt.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon Infinity|x64'">
@@ -597,7 +597,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon|x64'">
@@ -619,7 +619,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon|x64'">
@@ -641,7 +641,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon 2|x64'">
@@ -663,7 +663,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|x64'">
@@ -685,7 +685,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Marathon 2|x64'">
@@ -707,7 +707,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;dwmapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;shlwapi.lib;ws2_32.lib;Strmiids.lib;mfuuid.lib;mfplat.lib;imm32.lib;Setupapi.lib;Iphlpapi.lib;Version.lib;winmm.lib;crypt32.lib;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
