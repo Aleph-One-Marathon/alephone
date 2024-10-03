@@ -24,12 +24,16 @@ runs:
       uses: ./.github/actions/setup-vcpkg
       with:
         vcpkg_bootstrap_file: bootstrap-vcpkg.bat
+        
+    - name: Set Image Version
+      run: echo "runner_image_version=$Env:ImageVersion" >> $Env:GITHUB_ENV
+      shell: pwsh
       
     - name: Cache Vcpkg
       uses: actions/cache@v4
       with:
         path: vcpkg/${{inputs.vcpkg_installed_folder}}
-        key: ${{runner.os}}-${{inputs.vcpkg_installed_folder}}-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}
+        key: ${{runner.os}}-${{env.runner_image_version}}-${{inputs.vcpkg_installed_folder}}-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}
         
     - name: Build
       run: foreach ($configuration in "${{inputs.configurations}}".Split(",").Trim()) { msbuild /m /p:Platform=${{inputs.platform}} /p:Configuration="$configuration" ./VisualStudio/AlephOne.sln }

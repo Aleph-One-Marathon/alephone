@@ -23,19 +23,23 @@ runs:
       run: brew install nasm
       shell: bash
       
+    - name: Set Image Version
+      run: echo "runner_image_version=$ImageVersion" >> $GITHUB_ENV
+      shell: bash
+      
     - name: Restore Vcpkg cache for x64
       if: inputs.xcode_arch == 'x86_64' || inputs.xcode_arch == ''
       uses: actions/cache@v4
       with:
         path: vcpkg/installed-x64-osx
-        key: ${{runner.os}}-installed-x64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}
+        key: ${{runner.os}}-${{env.runner_image_version}}-installed-x64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}
         
     - name: Restore Vcpkg cache for arm64
       if: inputs.xcode_arch == 'arm64' || inputs.xcode_arch == ''
       uses: actions/cache@v4
       with:
         path: vcpkg/installed-arm64-osx
-        key: ${{runner.os}}-installed-arm64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}
+        key: ${{runner.os}}-${{env.runner_image_version}}-installed-arm64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}
       
     - name: Switch to Xcode 15.4
       run: sudo xcode-select --switch /Applications/Xcode_15.4.app
