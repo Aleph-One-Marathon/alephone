@@ -234,10 +234,7 @@ void RenderVisTreeClass::cast_render_ray(
 				// Cast the pointers to whatever size of integer the system uses.
 				size_t Length = Nodes.size();
 				
-				node_data Dummy;
-				Dummy.flags = 0;				// Fake initialization to shut up CW
-				Nodes.push_back(Dummy);
-				node = &Nodes[Length];		// The length here is the "old" length
+				node = &Nodes.emplace_back();
 				
 				*node_reference= node;
 				INITIALIZE_NODE(node, polygon_index, 0, parent, node_reference);
@@ -597,17 +594,14 @@ void RenderVisTreeClass::initialize_render_tree()
 {
 	// LP change: using growable list
 	Nodes.clear();
-	node_data Dummy;
-	Dummy.flags = 0;				// Fake initialization to shut up CW
-	Nodes.push_back(Dummy);
-	INITIALIZE_NODE(&Nodes[0], view->origin_polygon_index, 0, NULL, NULL);
+	INITIALIZE_NODE(&Nodes.emplace_back(), view->origin_polygon_index, 0, NULL, NULL);
 }
 
 /* ---------- initializing and calculating clip data */
 
 void RenderVisTreeClass::initialize_clip_data()
 {
-	ResetEndpointClips();
+	EndpointClips.resize(NUMBER_OF_INITIAL_ENDPOINT_CLIPS);
 	
 	/* set two default endpoint clips (left and right sides of screen) */
 	{
@@ -625,7 +619,7 @@ void RenderVisTreeClass::initialize_clip_data()
 		endpoint->x= view->screen_width;
 	}
 	
-	ResetLineClips();
+	LineClips.resize(NUMBER_OF_INITIAL_LINE_CLIPS);
 
 	/* set default line clip (top and bottom of screen) */
 	{
@@ -650,9 +644,7 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 	uint16 clip_flags)
 {
 	// LP addition: extend the line-clip list
-	line_clip_data Dummy;
-	Dummy.flags = 0;			// Fake initialization to shut up CW
-	LineClips.push_back(Dummy);
+	line_clip_data* data = &LineClips.emplace_back();
 	size_t Length = LineClips.size();
 	assert(Length <= 32767);
 	assert(Length >= 1);
@@ -662,8 +654,6 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 	// LP change: relabeling p0 and p1 so as not to conflict with later use
 	world_point2d p0_orig= get_endpoint_data(line->endpoint_indexes[0])->vertex;
 	world_point2d p1_orig= get_endpoint_data(line->endpoint_indexes[1])->vertex;
-	// LP addition: place for new line data
-	line_clip_data *data= &LineClips[LastIndex];
 
 	/* it’s possible (in fact, likely) that this line’s endpoints have not been transformed yet,
 		so we have to do it ourselves */
@@ -774,16 +764,13 @@ short RenderVisTreeClass::calculate_endpoint_clipping_information(
 		return NONE;
 	
 	// LP addition: extend the endpoint-clip list
-	endpoint_clip_data Dummy;
-	Dummy.flags = 0;			// Fake initialization to shut up CW
-	EndpointClips.push_back(Dummy);
+	endpoint_clip_data* data = &EndpointClips.emplace_back();
 	size_t Length = EndpointClips.size();
 	assert(Length <= 32767);
 	assert(Length >= 1);
 	size_t LastIndex = Length-1;
 
 	endpoint_data *endpoint= get_endpoint_data(endpoint_index);
-	endpoint_clip_data *data= &EndpointClips[LastIndex];
 	int32 x;
 
 	assert((clip_flags&(_clip_left|_clip_right))); /* must have a clip flag */
@@ -815,23 +802,4 @@ short RenderVisTreeClass::calculate_endpoint_clipping_information(
 	data->x= (short)PIN(x, 0, view->screen_width);
 	
 	return (short)LastIndex;
-}
-
-// LP addition: resetters for some of the lists:
-void RenderVisTreeClass::ResetEndpointClips(void)
-{
-	EndpointClips.clear();
-	endpoint_clip_data Dummy;
-	Dummy.flags = 0;			// Fake initialization to shut up CW
-	for (int k=0; k<NUMBER_OF_INITIAL_ENDPOINT_CLIPS; k++)
-		EndpointClips.push_back(Dummy);
-}
-
-void RenderVisTreeClass::ResetLineClips(void)
-{
-	LineClips.clear();
-	line_clip_data Dummy;
-	Dummy.flags = 0;			// Fake initialization to shut up CW
-	for (int k=0; k<NUMBER_OF_INITIAL_LINE_CLIPS; k++)
-		LineClips.push_back(Dummy);
 }

@@ -278,9 +278,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				POINTER_DATA OldROPointer = POINTER_CAST(RenderObjects.data());
 				
 				// Add a dummy object and check if the pointer got changed
-				render_object_data Dummy;
-				Dummy.node = NULL;				// Fake initialization to shut up CW
-				RenderObjects.push_back(Dummy);
+				render_object = &RenderObjects.emplace_back();
 				POINTER_DATA NewROPointer = POINTER_CAST(RenderObjects.data());
 				
 				if (NewROPointer != OldROPointer)
@@ -301,7 +299,6 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 							SortedNode.exterior_objects = (render_object_data *)(NewROPointer + (POINTER_CAST(SortedNode.exterior_objects) - OldROPointer));
 					}
 				}
-				render_object= &RenderObjects[Length];
 				
 				render_object->clipping_windows = nullptr;
 				render_object->rectangle.flags= 0;
