@@ -700,6 +700,8 @@ static std::vector<std::string> GetTagsForItemType(ItemType item_type, ContentTy
                 case ContentType::Theme:
                     tags.push_back("Theme");
                     break;
+                default:
+                    break;
             }
             break;
         case ItemType::Map:
@@ -714,6 +716,8 @@ static std::vector<std::string> GetTagsForItemType(ItemType item_type, ContentTy
                 case ContentType::SoloAndNet:
                     tags.push_back("Solo Map");
                     tags.push_back("Net Map");
+                    break;
+                default:
                     break;
             }
             break;
@@ -732,6 +736,8 @@ static std::vector<std::string> GetTagsForItemType(ItemType item_type, ContentTy
                 case ContentType::SoloAndNet:
                     tags.push_back("Solo Script");
                     tags.push_back("Net Script");
+                    break;
+                default:
                     break;
             }
             break;
