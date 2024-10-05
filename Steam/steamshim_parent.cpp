@@ -128,7 +128,7 @@ static int closeProcess(ProcessType *pid)
     return 0;
 } // closeProcess
 
-int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
+int CALLBACK wWinMain(_In_ HINSTANCE /*hInstance*/, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR lpCmdLine, _In_ int /*nCmdShow*/)
 {
     LpCmdLine = lpCmdLine;
     mainline();
