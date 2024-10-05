@@ -49,7 +49,6 @@ static bool launchChild(ProcessType *pid);
 static int closeProcess(ProcessType *pid);
 
 static fs::path findExe(const boost::regex& regex);
-static fs::path findApp(const boost::regex& regex);
 
 #ifdef _WIN32
 
@@ -208,7 +207,7 @@ static bool launchChild(ProcessType *pid)
 
     // we're the child.
 #ifdef __APPLE__
-    auto app = findApp(boost::regex("Classic Marathon.*\\.app"));
+    auto app = findExe(boost::regex("Classic Marathon.*\\.app"));
     auto macos = app / "Contents" / "MacOS";
     auto bin = boost::filesystem::directory_iterator(macos)->path().string();
 #else
@@ -246,10 +245,11 @@ fs::path findExe(const boost::regex& regex)
 
     fs::directory_iterator end;
     for (fs::directory_iterator it(this_exe.parent_path()); it != end; ++it) {
+#ifndef __APPLE__
         if (it->path() == this_exe) {
             continue;
         }
-
+#endif
         auto filename = it->path().filename().string();
         if (boost::regex_match(filename, regex)) {
             return it->path();
@@ -259,20 +259,6 @@ fs::path findExe(const boost::regex& regex)
     return fs::path();
 }
 
-fs::path findApp(const boost::regex& regex)
-{
-    auto this_exe = boost::dll::program_location();
-
-    fs::directory_iterator end;
-    for (fs::directory_iterator it(this_exe.parent_path()); it != end; ++it) {
-        auto filename = it->path().filename().string();
-        if (boost::regex_match(filename, regex)) {
-            return it->path();
-        }
-    }
-
-    return fs::path();
-}
 
 // THE ACTUAL PROGRAM.
 
