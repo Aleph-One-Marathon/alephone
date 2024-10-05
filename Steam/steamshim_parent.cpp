@@ -772,7 +772,7 @@ static void UpdateItem(PublishedFileId_t item_id, const item_upload_data& item_d
     auto tags = GetTagsForItemType(item_data.item_type, item_data.content_type);
     const char* tag_array[16];
 
-    for (auto i = 0; i < tags.size(); i++)
+    for (size_t i = 0; i < tags.size(); i++)
     {
         tag_array[i] = tags[i].c_str();
     }
@@ -933,7 +933,7 @@ void SteamBridge::OnItemOwnedQueried(SteamUGCQueryCompleted_t* pCallback, bool b
 {
     if (!bIOFailure && pCallback->m_eResult == k_EResultOK)
     {
-        for (int i = 0; i < pCallback->m_unNumResultsReturned; i++)
+        for (uint32 i = 0; i < pCallback->m_unNumResultsReturned; i++)
         {
             SteamUGCDetails_t item_details;
 
@@ -994,7 +994,7 @@ void SteamBridge::OnItemModQueried(SteamUGCQueryCompleted_t* pCallback, bool bIO
 {
     if (!bIOFailure && pCallback->m_eResult == k_EResultOK)
     {
-        for (int i = 0; i < pCallback->m_unNumResultsReturned; i++)
+        for (uint32 i = 0; i < pCallback->m_unNumResultsReturned; i++)
         {
             SteamUGCDetails_t item_details;
 
@@ -1059,7 +1059,7 @@ void SteamBridge::OnItemScenarioQueried(SteamUGCQueryCompleted_t* pCallback, boo
 {
     if (!bIOFailure && pCallback->m_eResult == k_EResultOK)
     {
-        for (int i = 0; i < pCallback->m_unNumResultsReturned; i++)
+        for (uint32 i = 0; i < pCallback->m_unNumResultsReturned; i++)
         {
             SteamUGCDetails_t item_details;
 
