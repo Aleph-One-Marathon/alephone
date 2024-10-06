@@ -175,7 +175,6 @@ static short localPlayerIndex;
 static short localPlayerIdentifier;
 static std::string gameSessionIdentifier;
 static NetTopologyPtr topology;
-static bool sOldSelfSendStatus;
 static StarGameProtocol sStarGameProtocol;
 static NetworkGameProtocol* sCurrentGameProtocol = NULL;
 
@@ -280,13 +279,6 @@ static short netState= netUninitialized;
 typedef std::map<int16, NetDistributionInfo> distribution_info_map_t;
 static  distribution_info_map_t distribution_info_map;
 
-
-#ifdef NETWORK_CHAT
-static	NetChatMessage	incoming_chat_message_buffer;
-static bool		new_incoming_chat_message = false;
-#endif
-
-
 // ZZZ: are we trying to start a new game or resume a saved-game?
 // This is only valid on the gatherer after NetGather() is called;
 // only valid on a joiner once he receives the final topology (tagRESUME_GAME)
@@ -295,7 +287,6 @@ static bool resuming_saved_game = false;
 
 
 /* ---------- private prototypes */
-void NetPrintInfo(void);
 void NetInitializeSessionIdentifier(void);
 
 // ZZZ: cmon, we're not fooling anyone... game_data is a game_info*; player_data is a player_info*
@@ -310,8 +301,6 @@ static int net_compare(void const *p1, void const *p2);
 
 static void NetUpdateTopology(void);
 static void NetDistributeTopology(short tag);
-
-static bool NetSetSelfSend(bool on);
 
 static void NetDDPPacketHandler(DDPPacketBufferPtr inPacket);
 
@@ -1287,9 +1276,7 @@ bool NetEnter(bool use_remote_hub)
 		ddpSocket = SDL_SwapBE16(GAME_PORT);
 		error = NetDDPOpenSocket(&ddpSocket, NetDDPPacketHandler);
 		if (!error) {
-			sOldSelfSendStatus = NetSetSelfSend(true);
 			sCurrentGameProtocol->Enter(&netState);
-
 			netState = netDown;
 			handlerState = netDown;
 		}
@@ -1417,8 +1404,6 @@ void NetExit(
 	if (netState!=netUninitialized) {
 		error= NetDDPCloseSocket(ddpSocket);
 		if (!error) {
-			NetSetSelfSend(sOldSelfSendStatus);
-      
 			free(topology);
 			topology= NULL;
       
@@ -2035,45 +2020,6 @@ void NetSetupTopologyFromStarts(const player_start_data* inStartArray, short inS
         NetUpdateTopology();
 }
 
-/*
-------------------
-NetEntityNotInGame
-------------------
-
-	---> entity
-	---> address
-	
-	<--- true if the entity is not in the game, false otherwise
-
-used to filter entities which have been added to a game out of the lookup list
-*/
-
-/* if the given address is already added to our game, filter it out of the gather dialog */
-bool NetEntityNotInGame(
-	NetEntityName *entity,
-	NetAddrBlock *address)
-{
-	short player_index;
-	bool valid= true;
-	
-	(void) (entity);
-	
-	for (player_index=0;player_index<topology->player_count;++player_index)
-	{
-		NetAddrBlock *player_address= &topology->players[player_index].dspAddress;
-		
-		if (address->host == player_address->host && address->port == player_address->port)
-		{
-			valid= false;
-			break;
-		}
-	}
-	
-	return valid;
-}
-
-
-
 
 /* ---------- private code */
 
@@ -2163,13 +2109,6 @@ static void NetUpdateTopology(
 #endif
 }
 
-
-
-static bool NetSetSelfSend(
-	bool on)
-{
-	return false;
-}
 
 void construct_multiplayer_starts(player_start_data* outStartArray, short* outStartCount)
 {

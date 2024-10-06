@@ -221,17 +221,6 @@ struct NetTopology
 };
 typedef struct NetTopology NetTopology, *NetTopologyPtr;
 
-#ifdef NETWORK_CHAT
-// (ZZZ addition)
-enum { CHAT_MESSAGE_TEXT_BUFFER_SIZE = 250 };
-
-struct NetChatMessage {
-    int16   sender_identifier;
-    char    text[CHAT_MESSAGE_TEXT_BUFFER_SIZE];
-};
-#endif
-
-
 // ZZZ: same here (should be safe to alter)
 struct NetDistributionInfo
 {

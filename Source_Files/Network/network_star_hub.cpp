@@ -426,10 +426,6 @@ check_send_packet_to_spoke()
 void
 hub_initialize(int32 inStartingTick, int inNumPlayers, const NetAddrBlock* const* inPlayerAddresses, int inLocalPlayerIndex)
 {
-//        assert(sNetworkState == eNetworkDown);
-
-//        sNetworkState = eNetworkJustStartingUp;
-
 #ifdef DEBUG_TIMING_ADJUSTMENTS
 	FileSpecifier fs;
 	fs.SetToLocalDataDir();
@@ -991,10 +987,8 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 				}
 				dout << std::endl;
 			}
-
-		}
-		
 #endif
+		}
 	}
 	
         // Do any needed post-processing
