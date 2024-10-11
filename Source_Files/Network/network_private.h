@@ -55,9 +55,8 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 
 /* ---------- constants */
 
-#define asyncUncompleted 1	/* ioResult value */
-
 #define strNETWORK_ERRORS 132
+
 enum /* error string for user */
 {
 	netErrCantAddPlayer,
@@ -89,31 +88,12 @@ enum /* error string for user */
 
 /* ---------- constants */
 
-#define NET_DEAD_ACTION_FLAG_COUNT (-1)
 #define NET_DEAD_ACTION_FLAG (NONE)
 
 #define MAXIMUM_GAME_DATA_SIZE       256
 #define MAXIMUM_PLAYER_DATA_SIZE     128
-#define MAXIMUM_UPDATES_PER_PACKET    16 // how many action flags per player can be sent in each ring packet
-#define UPDATES_PER_PACKET             1  // defines action flags per packet and period of the ring
-#define UPDATE_LATENCY                 1
 
-#define NET_QUEUE_SIZE (MAXIMUM_UPDATES_PER_PACKET+1)
-
-#define UNSYNC_TIMEOUT (3*MACHINE_TICKS_PER_SECOND) // 3 seconds
-
-#define STREAM_TRANSFER_CHUNK_SIZE (10000)
 #define MAP_TRANSFER_TIME_OUT   (MACHINE_TICKS_PER_SECOND*70) // 70 seconds to wait for map.
-#define NET_SYNC_TIME_OUT       (MACHINE_TICKS_PER_SECOND*50) // 50 seconds to time out of syncing. 
-
-#define kACK_TIMEOUT 40
-#define kRETRIES     50  // how many timeouts allowed before dropping the next player
-                         // kRETRIES * kACK_TIMEOUT / 1000 = timeout in seconds
-
-#define NUM_DISTRIBUTION_TYPES    3
-
-// Altering constants below should make you alter get_network_version().  - Woody
-#define kPROTOCOL_TYPE           69
 
 enum /* tag */
 {	// ZZZ annotation: these (in NetPacketHeader) indicate the rest of the datagram is a NetPacket (i.e. a ring packet).
@@ -136,54 +116,12 @@ enum /* tag */
         tagRESUME_GAME	// ZZZ addition: trying to resume a saved-game rather than start a new netgame.
 };
 
-enum
-{
-	typeSYNC_RING_PACKET,    // first packet of the game, gets everyone in the game
-	typeTIME_RING_PACKET,    // second packet of the game, sets everyone's clock
-	typeNORMAL_RING_PACKET,   // all the other packets of the game
-	
-	typeUNSYNC_RING_PACKET,	// last packet of the game, get everyone unsynced properly.
-	typeDEAD_PACKET	// This is simply a convenience for a switch. This packet never leaves the server.
-};
-
 /* ---------- structures */
 
 
-// (ZZZ:) Note ye well!!: if you alter these network-related structures, you are probably going to need to modify
-// the corresponding _NET structures in network_data_formats.h AND *both* corresponding netcpy() functions in
-// network_data_formats.cpp.  AND, you'll probably need to alter get_network_version() while you're at it,
+// (ZZZ:) Note ye well!!: if you alter these network-related structures, 
+// you'll probably need to alter get_network_version() while you're at it,
 // since you've made an incompatible change to the network communication protocol.
-
-// (ZZZ:) Information passed in datagrams (note: the _NET version is ALWAYS the one sent/received on the wire.
-// If not, it's a BUG.  These are used to setup/extract data.)
-struct NetPacketHeader
-{
-	int16 tag;
-	int32 sequence;
-	
-	/* data */
-};
-typedef struct NetPacketHeader NetPacketHeader, *NetPacketHeaderPtr;
-
-struct NetPacket
-{
-	uint8 ring_packet_type;         // typeSYNC_RING_PACKET, etc...
-	uint8 server_player_index;
-	int32 server_net_time;
-	int16 required_action_flags;                         // handed down from on high (the server)
-	int16 action_flag_count[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];  // how many each player actually has.
-	uint32 action_flags[1];
-};
-typedef struct NetPacket NetPacket, *NetPacketPtr;
-
-struct NetDistributionPacket
-{
-	int16 distribution_type;  // type of information
-	int16 first_player_index; // who sent the information
-	int16 data_size;          // how much they're sending.
-	uint8  data[2];            // the chunk ’o shit to send
-};
-typedef struct NetDistributionPacket NetDistributionPacket, *NetDistributionPacketPtr;
 
 // Information passed in streams
 struct NetPlayer
@@ -230,40 +168,7 @@ struct NetDistributionInfo
 
 typedef struct NetDistributionInfo NetDistributionInfo, *NetDistributionInfoPtr;
 
-#define errInvalidMapPacket (42)
-// ZZZ: taking a cue... used when trying to gather a player whose A1 doesn't support all the features we need.
-#define errPlayerTooNaive (43)
-
 /* ===== application specific data structures/enums */
-
-// Information sent via streaming protocol - warning above still applies!
-struct gather_player_data {
-	int16 new_local_player_identifier;
-};
-
-// used in accept_gather_data::accepted - this is a sneaky way of detecting whether
-// we're playing with a resume netgame-capable player or not.  (Old code always sent
-// 1 on accept, never 2; old code interprets any nonzero 'accepted' as an accept.)
-enum {
-        kNaiveJoinerAccepted = 1,
-        kResumeNetgameSavvyJoinerAccepted = 2,	// build knows how to resume saved games as netgames
-        kFixedTagAndBallJoinerAccepted = 3,	// build lacks multiple-ball-drop bug and tag-suicide bug
-
-        // this should always be updated to match the current best (unless our build isn't up to spec)
-        kStateOfTheArtJoinerAccepted = kFixedTagAndBallJoinerAccepted
-};
-
-struct accept_gather_data {
-	uint8 accepted;
-	NetPlayer player;
-};
-
-enum {
-	_netscript_query_message,
-        _netscript_no_script_message,
-        _netscript_yes_script_message,
-        _netscript_script_intent_message
-};
 
 // Altering these constants requires changes to get_network_version().  - Woody
 enum {

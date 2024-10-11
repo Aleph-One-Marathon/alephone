@@ -43,7 +43,6 @@
 // Note that the SDL network microphone code is the one sending "big" packets these days.
 #define ddpMaxData 1500
 
-typedef char NetEntityName[32];
 typedef IPaddress NetAddrBlock;
 
 /* ---------- DDPFrame and PacketBuffer (DDP) */
@@ -58,30 +57,14 @@ typedef struct DDPFrame DDPFrame, *DDPFramePtr;
 
 struct DDPPacketBuffer
 {
-	byte protocolType;
 	NetAddrBlock sourceAddress;
-	
 	uint16 datagramSize;
 	byte datagramData[ddpMaxData];
 };
 typedef struct DDPPacketBuffer DDPPacketBuffer, *DDPPacketBufferPtr;
 
-/* ---------- ConnectionEnd (ADSP) */
-
-struct ConnectionEnd
-{
-	TCPsocket		socket;
-        TCPsocket		server_socket;
-        SDLNet_SocketSet	server_socket_set;
-};
-typedef struct ConnectionEnd ConnectionEnd, *ConnectionEndPtr;
-
 /* ---------- types */
 
-typedef NetEntityName *NetEntityNamePtr;
-
-typedef void (*lookupUpdateProcPtr)(short message, short index);
-typedef bool (*lookupFilterProcPtr)(NetEntityName *entity, NetAddrBlock *address);
 typedef void (*PacketHandlerProcPtr)(DDPPacketBufferPtr packet);
 
 /* ---------- prototypes/NETWORK.C */
@@ -99,9 +82,6 @@ std::string NetSessionIdentifier(void);
 
 /* ---------- prototypes/NETWORK_DDP.C */
 
-OSErr NetDDPOpen(void);
-OSErr NetDDPClose(void);
-
 // ZZZ: this is a bit confusing; in the original AppleTalk DDP code, the socket routines
 // took and returned a socket number, which is a bit like the file descriptor one gets for
 // a UNIX socket.  Now with NETWORK_IP, that portion of the API is used to pass an IP port number.
@@ -113,7 +93,7 @@ OSErr NetDDPCloseSocket(short ignored);
 DDPFramePtr NetDDPNewFrame(void);
 void NetDDPDisposeFrame(DDPFramePtr frame);
 
-OSErr NetDDPSendFrame(DDPFramePtr frame, const NetAddrBlock *address, short protocolType, short socket);
+OSErr NetDDPSendFrame(DDPFramePtr frame, const NetAddrBlock *address);
 
 /* ---------- prototypes/NETWORK_ADSP.C */
 

@@ -62,7 +62,6 @@
 #define	SSLPINT_NONE		0x00
 #define	SSLPINT_LOCATING	0x01
 #define	SSLPINT_RESPONDING	0x02
-#define	SSLPINT_HINTING		0x04
 
 // found service instances expire after not hearing from them for this many milliseconds
 #define SSLPINT_INSTANCE_TIMEOUT 20000
@@ -603,7 +602,7 @@ SSLP_Allow_Service_Discovery(const struct SSLP_ServiceInstance* inServiceInstanc
 
     assert(inServiceInstance != NULL);
     
-    assert(!(sBehaviorsDesired & (SSLPINT_RESPONDING | SSLPINT_HINTING)));
+    assert(!(sBehaviorsDesired & SSLPINT_RESPONDING));
     
     if(sBehaviorsDesired == SSLPINT_NONE)
         if(!SSLPint_Enter())
@@ -642,55 +641,6 @@ SSLP_Allow_Service_Discovery(const struct SSLP_ServiceInstance* inServiceInstanc
 
 
 void
-SSLP_Hint_Service_Discovery(const struct SSLP_ServiceInstance* inServiceInstance, const IPaddress* inAddress) {
-    logContext("starting to hint SSLP service discovery");
-
-    // If we're not already allowing discovery, start doing it
-    if(!(sBehaviorsDesired & SSLPINT_RESPONDING))
-        SSLP_Allow_Service_Discovery(inServiceInstance);
-    
-    
-    // If we are not already hinting, get a packet to work with.
-    if(!(sBehaviorsDesired & SSLPINT_HINTING))
-        sHintPacket	= SDLNet_AllocPacket(SIZEOF_SSLP_Packet);
-
-    
-    // We hint the service passed to the address passed - if we are already responding with a service instance
-    // (thanks to Allow_Service_Discovery called separately) they may be different services!  This behavior should
-    // be considered odd (in the current one-service-instance implementation) and ought to be avoided.
-    
-    
-    assert(sHintPacket != NULL);
-    
-    // set up the "HAVE" packet
-    sHintPacket->len		= sizeof(struct SSLP_Packet);
-    sHintPacket->channel	= -1;				// channel is ignored
-    sHintPacket->address.host	= inAddress->host;
-    sHintPacket->address.port	= inAddress->port;
-    if(sHintPacket->address.port == 0)
-        sHintPacket->address.port = SDL_SwapBE16(SSLP_PORT);
-
-    SSLP_Packet UnpackedPacket;
-    SSLP_Packet *theHintPacket = &UnpackedPacket;
-    
-    theHintPacket->sslpp_magic		= SDL_SwapBE32(SSLPP_MAGIC);
-    theHintPacket->sslpp_version	= SDL_SwapBE32(SSLPP_VERSION);
-    theHintPacket->sslpp_message	= SDL_SwapBE32(SSLPP_MESSAGE_HAVE);
-    theHintPacket->sslpp_service_port	= inServiceInstance->sslps_address.port;
-    theHintPacket->sslpp_reserved	= 0;				// unused - set to 0
-    // note: my strncpy states it fills remaining buffer with 0.  If yours doesn't, fill it yourself.
-    strncpy(theHintPacket->sslpp_service_type, inServiceInstance->sslps_type, SSLP_MAX_TYPE_LENGTH);
-    strncpy(theHintPacket->sslpp_service_name, inServiceInstance->sslps_name, SSLP_MAX_NAME_LENGTH);
-    
-    // Start up the hinting behavior, in case we weren't already.
-    sBehaviorsDesired	|= SSLPINT_HINTING;
-    
-    // Load into the "real" packet
-    PackPacket(sHintPacket->data,theHintPacket);
-}
-
-
-void
 SSLP_Disallow_Service_Discovery(const struct SSLP_ServiceInstance* inInstance) {
     // Officially, we would walk through a list to find the right one to disallow (or, if NULL is passed in,
     // we'd walk through to disallow all).  For now, since we're cheating, we assume they want to disallow
@@ -699,28 +649,6 @@ SSLP_Disallow_Service_Discovery(const struct SSLP_ServiceInstance* inInstance) {
     logContext("disallowing SSLP service discovery");
 
     assert(sBehaviorsDesired & SSLPINT_RESPONDING);
-
-
-    // If we're hinting, cut it out
-    if(sBehaviorsDesired & SSLPINT_HINTING) {
-        // Unicast a LOST packet, as a courtesy
-            
-		struct SSLP_Packet UnpackedHintPacket;
-		struct SSLP_Packet*	theHintPacket = &UnpackedHintPacket;
-    	UnpackPacket(sHintPacket->data,theHintPacket);
-    		
-        theHintPacket->sslpp_message = SDL_SwapBE32(SSLPP_MESSAGE_LOST);
-   		PackPacket(sHintPacket->data,theHintPacket);
-        SDLNet_UDP_Send(sSocketDescriptor, -1, sHintPacket);
-        
-        // Clean up the hinting packet
-        SDLNet_FreePacket(sHintPacket);
-        sHintPacket		= NULL;
-        
-        // No longer hinting
-        sBehaviorsDesired &= ~SSLPINT_HINTING;
-    }
-
 
     // Indicate we no longer want to allow discovery
     sBehaviorsDesired &= ~SSLPINT_RESPONDING;
@@ -760,20 +688,14 @@ SSLP_Pump() {
     
     Uint32		theCurrentTime = machine_tick_count();
     
-    if(sBehaviorsDesired & (SSLPINT_LOCATING | SSLPINT_HINTING)) {
+    if(sBehaviorsDesired & SSLPINT_LOCATING) {
 
         // Do some work only once every five seconds
         if(theCurrentTime - theTimeLastWorked >= 5000) {
 
             // Do broadcasting work
-            if(sBehaviorsDesired & SSLPINT_LOCATING) {
-                SDLNetx_UDP_Broadcast(sSocketDescriptor, sFindPacket);
-                SSLPint_RemoveTimedOutInstances();
-            }
-            
-            // Do hinting work
-            if(sBehaviorsDesired & SSLPINT_HINTING)
-                SDLNet_UDP_Send(sSocketDescriptor, -1, sHintPacket);
+            SDLNetx_UDP_Broadcast(sSocketDescriptor, sFindPacket);
+            SSLPint_RemoveTimedOutInstances();
 
             theTimeLastWorked = theCurrentTime;
         }

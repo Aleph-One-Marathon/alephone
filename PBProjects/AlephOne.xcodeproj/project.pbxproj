@@ -269,11 +269,9 @@
 		AE120BBE2BC77645001873DD /* FFmpegDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E878F2173202F80010F485 /* FFmpegDecoder.h */; };
 		AE120BBF2BC77645001873DD /* SW_Texture_Extras.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BECF41A846CC800AE52F4 /* SW_Texture_Extras.h */; };
 		AE120BC02BC77645001873DD /* network_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC61D022179A801A80001 /* network_dialogs.h */; };
-		AE120BC12BC77645001873DD /* network_lookup_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC62002219A3D01A80001 /* network_lookup_sdl.h */; };
 		AE120BC22BC77645001873DD /* ActionQueues.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00027023FDA6101A80001 /* ActionQueues.h */; };
 		AE120BC32BC77645001873DD /* CircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00029023FDA7601A80001 /* CircularQueue.h */; };
 		AE120BC42BC77645001873DD /* preferences_widgets_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A0002B023FDAD101A80001 /* preferences_widgets_sdl.h */; };
-		AE120BC52BC77645001873DD /* network_distribution_types.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00033023FDBBD01A80001 /* network_distribution_types.h */; };
 		AE120BC62BC77645001873DD /* OGL_LoadScreen.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */; };
 		AE120BC72BC77645001873DD /* crc.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92000240D09B01A80001 /* crc.h */; };
 		AE120BC82BC77645001873DD /* extensions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92010240D09B01A80001 /* extensions.h */; };
@@ -388,7 +386,6 @@
 		AE120C362BC77645001873DD /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
 		AE120C372BC77645001873DD /* WindowedNthElementFinder.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */; };
 		AE120C382BC77645001873DD /* thread_priority_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */; };
-		AE120C392BC77645001873DD /* network_data_formats.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0140485BEA500A8000D /* network_data_formats.h */; };
 		AE120C3A2BC77645001873DD /* QuickSave.h in Headers */ = {isa = PBXBuildFile; fileRef = 276D4E751A2E710F00C16CF5 /* QuickSave.h */; };
 		AE120C3B2BC77645001873DD /* SDL_netx.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0170485BEA500A8000D /* SDL_netx.h */; };
 		AE120C3C2BC77645001873DD /* SSLP_API.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0180485BEA500A8000D /* SSLP_API.h */; };
@@ -462,7 +459,6 @@
 		AE120C822BC77645001873DD /* shell_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212490136A6FD01000001 /* shell_misc.cpp */; };
 		AE120C832BC77645001873DD /* shell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522124B0136A6FD01000001 /* shell.cpp */; };
 		AE120C842BC77645001873DD /* vbl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212590136A6FD01000001 /* vbl.cpp */; };
-		AE120C852BC77645001873DD /* network_lookup_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52213810136ABAE01000001 /* network_lookup_sdl.cpp */; };
 		AE120C862BC77645001873DD /* network_udp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138E0136ABAE01000001 /* network_udp.cpp */; };
 		AE120C872BC77645001873DD /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138F0136ABAE01000001 /* network.cpp */; };
 		AE120C882BC77645001873DD /* AudioPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16628615A22003128EE /* AudioPlayer.cpp */; };
@@ -477,7 +473,6 @@
 		AE120C912BC77645001873DD /* mytm_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EEF01F4EB1E01FEABBD /* mytm_sdl.cpp */; };
 		AE120C922BC77645001873DD /* PlayerImage_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */; };
 		AE120C932BC77645001873DD /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
-		AE120C942BC77645001873DD /* network_data_formats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF801F4ECD701FEABBD /* network_data_formats.cpp */; };
 		AE120C952BC77645001873DD /* network_dialog_widgets_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */; };
 		AE120C962BC77645001873DD /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
 		AE120C972BC77645001873DD /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
@@ -719,11 +714,9 @@
 		AE1320562C1CB4D2009D34AA /* FFmpegDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E878F2173202F80010F485 /* FFmpegDecoder.h */; };
 		AE1320572C1CB4D2009D34AA /* SW_Texture_Extras.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BECF41A846CC800AE52F4 /* SW_Texture_Extras.h */; };
 		AE1320582C1CB4D2009D34AA /* network_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC61D022179A801A80001 /* network_dialogs.h */; };
-		AE1320592C1CB4D2009D34AA /* network_lookup_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC62002219A3D01A80001 /* network_lookup_sdl.h */; };
 		AE13205A2C1CB4D2009D34AA /* ActionQueues.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00027023FDA6101A80001 /* ActionQueues.h */; };
 		AE13205B2C1CB4D2009D34AA /* CircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00029023FDA7601A80001 /* CircularQueue.h */; };
 		AE13205C2C1CB4D2009D34AA /* preferences_widgets_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A0002B023FDAD101A80001 /* preferences_widgets_sdl.h */; };
-		AE13205D2C1CB4D2009D34AA /* network_distribution_types.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00033023FDBBD01A80001 /* network_distribution_types.h */; };
 		AE13205E2C1CB4D2009D34AA /* OGL_LoadScreen.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */; };
 		AE13205F2C1CB4D2009D34AA /* crc.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92000240D09B01A80001 /* crc.h */; };
 		AE1320602C1CB4D2009D34AA /* extensions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92010240D09B01A80001 /* extensions.h */; };
@@ -839,7 +832,6 @@
 		AE1320CF2C1CB4D2009D34AA /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
 		AE1320D02C1CB4D2009D34AA /* WindowedNthElementFinder.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */; };
 		AE1320D12C1CB4D2009D34AA /* thread_priority_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */; };
-		AE1320D22C1CB4D2009D34AA /* network_data_formats.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0140485BEA500A8000D /* network_data_formats.h */; };
 		AE1320D32C1CB4D2009D34AA /* QuickSave.h in Headers */ = {isa = PBXBuildFile; fileRef = 276D4E751A2E710F00C16CF5 /* QuickSave.h */; };
 		AE1320D42C1CB4D2009D34AA /* SDL_netx.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0170485BEA500A8000D /* SDL_netx.h */; };
 		AE1320D52C1CB4D2009D34AA /* SSLP_API.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0180485BEA500A8000D /* SSLP_API.h */; };
@@ -912,7 +904,6 @@
 		AE13211B2C1CB4D2009D34AA /* shell_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212490136A6FD01000001 /* shell_misc.cpp */; };
 		AE13211C2C1CB4D2009D34AA /* shell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522124B0136A6FD01000001 /* shell.cpp */; };
 		AE13211D2C1CB4D2009D34AA /* vbl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212590136A6FD01000001 /* vbl.cpp */; };
-		AE13211E2C1CB4D2009D34AA /* network_lookup_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52213810136ABAE01000001 /* network_lookup_sdl.cpp */; };
 		AE13211F2C1CB4D2009D34AA /* network_udp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138E0136ABAE01000001 /* network_udp.cpp */; };
 		AE1321202C1CB4D2009D34AA /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138F0136ABAE01000001 /* network.cpp */; };
 		AE1321212C1CB4D2009D34AA /* AudioPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16628615A22003128EE /* AudioPlayer.cpp */; };
@@ -927,7 +918,6 @@
 		AE13212A2C1CB4D2009D34AA /* mytm_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EEF01F4EB1E01FEABBD /* mytm_sdl.cpp */; };
 		AE13212B2C1CB4D2009D34AA /* PlayerImage_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */; };
 		AE13212C2C1CB4D2009D34AA /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
-		AE13212D2C1CB4D2009D34AA /* network_data_formats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF801F4ECD701FEABBD /* network_data_formats.cpp */; };
 		AE13212E2C1CB4D2009D34AA /* network_dialog_widgets_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */; };
 		AE13212F2C1CB4D2009D34AA /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
 		AE1321302C1CB4D2009D34AA /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
@@ -1219,11 +1209,9 @@
 		AE505B63141D45E600915344 /* WavefrontLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4D01E77D5701BA387C /* WavefrontLoader.h */; };
 		AE505B64141D45E600915344 /* Dim3_Loader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CFAD3A0200F9D201D80110 /* Dim3_Loader.h */; };
 		AE505B65141D45E600915344 /* network_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC61D022179A801A80001 /* network_dialogs.h */; };
-		AE505B66141D45E600915344 /* network_lookup_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC62002219A3D01A80001 /* network_lookup_sdl.h */; };
 		AE505B67141D45E600915344 /* ActionQueues.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00027023FDA6101A80001 /* ActionQueues.h */; };
 		AE505B68141D45E600915344 /* CircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00029023FDA7601A80001 /* CircularQueue.h */; };
 		AE505B69141D45E600915344 /* preferences_widgets_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A0002B023FDAD101A80001 /* preferences_widgets_sdl.h */; };
-		AE505B6A141D45E600915344 /* network_distribution_types.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00033023FDBBD01A80001 /* network_distribution_types.h */; };
 		AE505B6C141D45E600915344 /* crc.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92000240D09B01A80001 /* crc.h */; };
 		AE505B6D141D45E600915344 /* extensions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92010240D09B01A80001 /* extensions.h */; };
 		AE505B6E141D45E600915344 /* FileHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92020240D09B01A80001 /* FileHandler.h */; };
@@ -1317,7 +1305,6 @@
 		AE505BD1141D45E600915344 /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
 		AE505BD2141D45E600915344 /* WindowedNthElementFinder.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */; };
 		AE505BD4141D45E600915344 /* thread_priority_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */; };
-		AE505BD6141D45E600915344 /* network_data_formats.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0140485BEA500A8000D /* network_data_formats.h */; };
 		AE505BD8141D45E600915344 /* SDL_netx.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0170485BEA500A8000D /* SDL_netx.h */; };
 		AE505BD9141D45E600915344 /* SSLP_API.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0180485BEA500A8000D /* SSLP_API.h */; };
 		AE505BDA141D45E600915344 /* SSLP_Protocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */; };
@@ -1376,7 +1363,6 @@
 		AE505C1D141D45E600915344 /* shell_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212490136A6FD01000001 /* shell_misc.cpp */; };
 		AE505C1E141D45E600915344 /* shell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522124B0136A6FD01000001 /* shell.cpp */; };
 		AE505C1F141D45E600915344 /* vbl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212590136A6FD01000001 /* vbl.cpp */; };
-		AE505C20141D45E600915344 /* network_lookup_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52213810136ABAE01000001 /* network_lookup_sdl.cpp */; };
 		AE505C21141D45E600915344 /* network_udp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138E0136ABAE01000001 /* network_udp.cpp */; };
 		AE505C22141D45E600915344 /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138F0136ABAE01000001 /* network.cpp */; };
 		AE505C23141D45E600915344 /* network_games.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137F0136ABAE01000001 /* network_games.cpp */; };
@@ -1388,7 +1374,6 @@
 		AE505C29141D45E600915344 /* mytm_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EEF01F4EB1E01FEABBD /* mytm_sdl.cpp */; };
 		AE505C2A141D45E600915344 /* PlayerImage_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */; };
 		AE505C2B141D45E600915344 /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
-		AE505C2C141D45E600915344 /* network_data_formats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF801F4ECD701FEABBD /* network_data_formats.cpp */; };
 		AE505C2D141D45E600915344 /* network_dialog_widgets_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */; };
 		AE505C2E141D45E600915344 /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
 		AE505C2F141D45E600915344 /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
@@ -1702,11 +1687,9 @@
 		AEB4A10314296CAE00537AE7 /* WavefrontLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4D01E77D5701BA387C /* WavefrontLoader.h */; };
 		AEB4A10414296CAE00537AE7 /* Dim3_Loader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CFAD3A0200F9D201D80110 /* Dim3_Loader.h */; };
 		AEB4A10514296CAE00537AE7 /* network_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC61D022179A801A80001 /* network_dialogs.h */; };
-		AEB4A10614296CAE00537AE7 /* network_lookup_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC62002219A3D01A80001 /* network_lookup_sdl.h */; };
 		AEB4A10714296CAE00537AE7 /* ActionQueues.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00027023FDA6101A80001 /* ActionQueues.h */; };
 		AEB4A10814296CAE00537AE7 /* CircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00029023FDA7601A80001 /* CircularQueue.h */; };
 		AEB4A10914296CAE00537AE7 /* preferences_widgets_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A0002B023FDAD101A80001 /* preferences_widgets_sdl.h */; };
-		AEB4A10A14296CAE00537AE7 /* network_distribution_types.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00033023FDBBD01A80001 /* network_distribution_types.h */; };
 		AEB4A10C14296CAE00537AE7 /* crc.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92000240D09B01A80001 /* crc.h */; };
 		AEB4A10D14296CAE00537AE7 /* extensions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92010240D09B01A80001 /* extensions.h */; };
 		AEB4A10E14296CAE00537AE7 /* FileHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92020240D09B01A80001 /* FileHandler.h */; };
@@ -1800,7 +1783,6 @@
 		AEB4A17114296CAE00537AE7 /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
 		AEB4A17214296CAE00537AE7 /* WindowedNthElementFinder.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */; };
 		AEB4A17414296CAE00537AE7 /* thread_priority_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */; };
-		AEB4A17614296CAE00537AE7 /* network_data_formats.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0140485BEA500A8000D /* network_data_formats.h */; };
 		AEB4A17814296CAE00537AE7 /* SDL_netx.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0170485BEA500A8000D /* SDL_netx.h */; };
 		AEB4A17914296CAE00537AE7 /* SSLP_API.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0180485BEA500A8000D /* SSLP_API.h */; };
 		AEB4A17A14296CAE00537AE7 /* SSLP_Protocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */; };
@@ -1860,7 +1842,6 @@
 		AEB4A1BE14296CAE00537AE7 /* shell_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212490136A6FD01000001 /* shell_misc.cpp */; };
 		AEB4A1BF14296CAE00537AE7 /* shell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522124B0136A6FD01000001 /* shell.cpp */; };
 		AEB4A1C014296CAE00537AE7 /* vbl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212590136A6FD01000001 /* vbl.cpp */; };
-		AEB4A1C114296CAE00537AE7 /* network_lookup_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52213810136ABAE01000001 /* network_lookup_sdl.cpp */; };
 		AEB4A1C214296CAE00537AE7 /* network_udp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138E0136ABAE01000001 /* network_udp.cpp */; };
 		AEB4A1C314296CAE00537AE7 /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138F0136ABAE01000001 /* network.cpp */; };
 		AEB4A1C414296CAE00537AE7 /* network_games.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137F0136ABAE01000001 /* network_games.cpp */; };
@@ -1872,7 +1853,6 @@
 		AEB4A1CA14296CAE00537AE7 /* mytm_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EEF01F4EB1E01FEABBD /* mytm_sdl.cpp */; };
 		AEB4A1CB14296CAE00537AE7 /* PlayerImage_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */; };
 		AEB4A1CC14296CAE00537AE7 /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
-		AEB4A1CD14296CAE00537AE7 /* network_data_formats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF801F4ECD701FEABBD /* network_data_formats.cpp */; };
 		AEB4A1CE14296CAE00537AE7 /* network_dialog_widgets_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */; };
 		AEB4A1CF14296CAE00537AE7 /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
 		AEB4A1D014296CAE00537AE7 /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
@@ -2080,11 +2060,9 @@
 		AEBDC5322C4DF0780026DFF1 /* FFmpegDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E878F2173202F80010F485 /* FFmpegDecoder.h */; };
 		AEBDC5332C4DF0780026DFF1 /* SW_Texture_Extras.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BECF41A846CC800AE52F4 /* SW_Texture_Extras.h */; };
 		AEBDC5342C4DF0780026DFF1 /* network_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC61D022179A801A80001 /* network_dialogs.h */; };
-		AEBDC5352C4DF0780026DFF1 /* network_lookup_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC62002219A3D01A80001 /* network_lookup_sdl.h */; };
 		AEBDC5362C4DF0780026DFF1 /* ActionQueues.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00027023FDA6101A80001 /* ActionQueues.h */; };
 		AEBDC5372C4DF0780026DFF1 /* CircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00029023FDA7601A80001 /* CircularQueue.h */; };
 		AEBDC5382C4DF0780026DFF1 /* preferences_widgets_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A0002B023FDAD101A80001 /* preferences_widgets_sdl.h */; };
-		AEBDC5392C4DF0780026DFF1 /* network_distribution_types.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00033023FDBBD01A80001 /* network_distribution_types.h */; };
 		AEBDC53A2C4DF0780026DFF1 /* OGL_LoadScreen.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */; };
 		AEBDC53B2C4DF0780026DFF1 /* crc.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92000240D09B01A80001 /* crc.h */; };
 		AEBDC53C2C4DF0780026DFF1 /* extensions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92010240D09B01A80001 /* extensions.h */; };
@@ -2200,7 +2178,6 @@
 		AEBDC5AB2C4DF0780026DFF1 /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
 		AEBDC5AC2C4DF0780026DFF1 /* WindowedNthElementFinder.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */; };
 		AEBDC5AD2C4DF0780026DFF1 /* thread_priority_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */; };
-		AEBDC5AE2C4DF0780026DFF1 /* network_data_formats.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0140485BEA500A8000D /* network_data_formats.h */; };
 		AEBDC5AF2C4DF0780026DFF1 /* QuickSave.h in Headers */ = {isa = PBXBuildFile; fileRef = 276D4E751A2E710F00C16CF5 /* QuickSave.h */; };
 		AEBDC5B02C4DF0780026DFF1 /* SDL_netx.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0170485BEA500A8000D /* SDL_netx.h */; };
 		AEBDC5B12C4DF0780026DFF1 /* SSLP_API.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0180485BEA500A8000D /* SSLP_API.h */; };
@@ -2273,7 +2250,6 @@
 		AEBDC5F72C4DF0780026DFF1 /* shell_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212490136A6FD01000001 /* shell_misc.cpp */; };
 		AEBDC5F82C4DF0780026DFF1 /* shell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522124B0136A6FD01000001 /* shell.cpp */; };
 		AEBDC5F92C4DF0780026DFF1 /* vbl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212590136A6FD01000001 /* vbl.cpp */; };
-		AEBDC5FA2C4DF0780026DFF1 /* network_lookup_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52213810136ABAE01000001 /* network_lookup_sdl.cpp */; };
 		AEBDC5FB2C4DF0780026DFF1 /* network_udp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138E0136ABAE01000001 /* network_udp.cpp */; };
 		AEBDC5FC2C4DF0780026DFF1 /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138F0136ABAE01000001 /* network.cpp */; };
 		AEBDC5FD2C4DF0780026DFF1 /* AudioPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16628615A22003128EE /* AudioPlayer.cpp */; };
@@ -2288,7 +2264,6 @@
 		AEBDC6062C4DF0780026DFF1 /* mytm_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EEF01F4EB1E01FEABBD /* mytm_sdl.cpp */; };
 		AEBDC6072C4DF0780026DFF1 /* PlayerImage_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */; };
 		AEBDC6082C4DF0780026DFF1 /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
-		AEBDC6092C4DF0780026DFF1 /* network_data_formats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF801F4ECD701FEABBD /* network_data_formats.cpp */; };
 		AEBDC60A2C4DF0780026DFF1 /* network_dialog_widgets_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */; };
 		AEBDC60B2C4DF0780026DFF1 /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
 		AEBDC60C2C4DF0780026DFF1 /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
@@ -2525,11 +2500,9 @@
 		AEC3C73309AD68AC003258E4 /* WavefrontLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4D01E77D5701BA387C /* WavefrontLoader.h */; };
 		AEC3C73409AD68AC003258E4 /* Dim3_Loader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CFAD3A0200F9D201D80110 /* Dim3_Loader.h */; };
 		AEC3C73709AD68AC003258E4 /* network_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC61D022179A801A80001 /* network_dialogs.h */; };
-		AEC3C73809AD68AC003258E4 /* network_lookup_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC62002219A3D01A80001 /* network_lookup_sdl.h */; };
 		AEC3C73909AD68AC003258E4 /* ActionQueues.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00027023FDA6101A80001 /* ActionQueues.h */; };
 		AEC3C73A09AD68AC003258E4 /* CircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00029023FDA7601A80001 /* CircularQueue.h */; };
 		AEC3C73B09AD68AC003258E4 /* preferences_widgets_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A0002B023FDAD101A80001 /* preferences_widgets_sdl.h */; };
-		AEC3C73C09AD68AC003258E4 /* network_distribution_types.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00033023FDBBD01A80001 /* network_distribution_types.h */; };
 		AEC3C73E09AD68AC003258E4 /* crc.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92000240D09B01A80001 /* crc.h */; };
 		AEC3C73F09AD68AC003258E4 /* extensions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92010240D09B01A80001 /* extensions.h */; };
 		AEC3C74009AD68AC003258E4 /* FileHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92020240D09B01A80001 /* FileHandler.h */; };
@@ -2623,7 +2596,6 @@
 		AEC3C7AB09AD68AC003258E4 /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
 		AEC3C7AC09AD68AC003258E4 /* WindowedNthElementFinder.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */; };
 		AEC3C7AE09AD68AC003258E4 /* thread_priority_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */; };
-		AEC3C7B009AD68AC003258E4 /* network_data_formats.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0140485BEA500A8000D /* network_data_formats.h */; };
 		AEC3C7B209AD68AC003258E4 /* SDL_netx.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0170485BEA500A8000D /* SDL_netx.h */; };
 		AEC3C7B309AD68AC003258E4 /* SSLP_API.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0180485BEA500A8000D /* SSLP_API.h */; };
 		AEC3C7B409AD68AC003258E4 /* SSLP_Protocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */; };
@@ -2663,7 +2635,6 @@
 		AEC3C7E009AD68AC003258E4 /* shell_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212490136A6FD01000001 /* shell_misc.cpp */; };
 		AEC3C7E109AD68AC003258E4 /* shell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522124B0136A6FD01000001 /* shell.cpp */; };
 		AEC3C7E309AD68AC003258E4 /* vbl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212590136A6FD01000001 /* vbl.cpp */; };
-		AEC3C7E409AD68AC003258E4 /* network_lookup_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52213810136ABAE01000001 /* network_lookup_sdl.cpp */; };
 		AEC3C7E509AD68AC003258E4 /* network_udp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138E0136ABAE01000001 /* network_udp.cpp */; };
 		AEC3C7E609AD68AC003258E4 /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138F0136ABAE01000001 /* network.cpp */; };
 		AEC3C7EA09AD68AC003258E4 /* network_games.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137F0136ABAE01000001 /* network_games.cpp */; };
@@ -2675,7 +2646,6 @@
 		AEC3C7F009AD68AC003258E4 /* mytm_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EEF01F4EB1E01FEABBD /* mytm_sdl.cpp */; };
 		AEC3C7F109AD68AC003258E4 /* PlayerImage_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */; };
 		AEC3C7F209AD68AC003258E4 /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
-		AEC3C7F309AD68AC003258E4 /* network_data_formats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF801F4ECD701FEABBD /* network_data_formats.cpp */; };
 		AEC3C7F409AD68AC003258E4 /* network_dialog_widgets_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */; };
 		AEC3C7F509AD68AC003258E4 /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
 		AEC3C7F609AD68AC003258E4 /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
@@ -2836,11 +2806,9 @@
 		AEFD861113EB84CF00C1E687 /* WavefrontLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4D01E77D5701BA387C /* WavefrontLoader.h */; };
 		AEFD861213EB84CF00C1E687 /* Dim3_Loader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CFAD3A0200F9D201D80110 /* Dim3_Loader.h */; };
 		AEFD861313EB84CF00C1E687 /* network_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC61D022179A801A80001 /* network_dialogs.h */; };
-		AEFD861413EB84CF00C1E687 /* network_lookup_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC62002219A3D01A80001 /* network_lookup_sdl.h */; };
 		AEFD861513EB84CF00C1E687 /* ActionQueues.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00027023FDA6101A80001 /* ActionQueues.h */; };
 		AEFD861613EB84CF00C1E687 /* CircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00029023FDA7601A80001 /* CircularQueue.h */; };
 		AEFD861713EB84CF00C1E687 /* preferences_widgets_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A0002B023FDAD101A80001 /* preferences_widgets_sdl.h */; };
-		AEFD861813EB84CF00C1E687 /* network_distribution_types.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A00033023FDBBD01A80001 /* network_distribution_types.h */; };
 		AEFD861A13EB84CF00C1E687 /* crc.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92000240D09B01A80001 /* crc.h */; };
 		AEFD861B13EB84CF00C1E687 /* extensions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92010240D09B01A80001 /* extensions.h */; };
 		AEFD861C13EB84CF00C1E687 /* FileHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92020240D09B01A80001 /* FileHandler.h */; };
@@ -2934,7 +2902,6 @@
 		AEFD867F13EB84CF00C1E687 /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
 		AEFD868013EB84CF00C1E687 /* WindowedNthElementFinder.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */; };
 		AEFD868213EB84CF00C1E687 /* thread_priority_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */; };
-		AEFD868413EB84CF00C1E687 /* network_data_formats.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0140485BEA500A8000D /* network_data_formats.h */; };
 		AEFD868613EB84CF00C1E687 /* SDL_netx.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0170485BEA500A8000D /* SDL_netx.h */; };
 		AEFD868713EB84CF00C1E687 /* SSLP_API.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0180485BEA500A8000D /* SSLP_API.h */; };
 		AEFD868813EB84CF00C1E687 /* SSLP_Protocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */; };
@@ -2992,7 +2959,6 @@
 		AEFD86CA13EB84CF00C1E687 /* shell_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212490136A6FD01000001 /* shell_misc.cpp */; };
 		AEFD86CB13EB84CF00C1E687 /* shell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522124B0136A6FD01000001 /* shell.cpp */; };
 		AEFD86CC13EB84CF00C1E687 /* vbl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212590136A6FD01000001 /* vbl.cpp */; };
-		AEFD86CD13EB84CF00C1E687 /* network_lookup_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52213810136ABAE01000001 /* network_lookup_sdl.cpp */; };
 		AEFD86CE13EB84CF00C1E687 /* network_udp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138E0136ABAE01000001 /* network_udp.cpp */; };
 		AEFD86CF13EB84CF00C1E687 /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138F0136ABAE01000001 /* network.cpp */; };
 		AEFD86D013EB84CF00C1E687 /* network_games.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137F0136ABAE01000001 /* network_games.cpp */; };
@@ -3004,7 +2970,6 @@
 		AEFD86D613EB84CF00C1E687 /* mytm_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EEF01F4EB1E01FEABBD /* mytm_sdl.cpp */; };
 		AEFD86D713EB84CF00C1E687 /* PlayerImage_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */; };
 		AEFD86D813EB84CF00C1E687 /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
-		AEFD86D913EB84CF00C1E687 /* network_data_formats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF801F4ECD701FEABBD /* network_data_formats.cpp */; };
 		AEFD86DA13EB84CF00C1E687 /* network_dialog_widgets_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */; };
 		AEFD86DB13EB84CF00C1E687 /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
 		AEFD86DC13EB84CF00C1E687 /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
@@ -3483,7 +3448,6 @@
 		EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TickBasedCircularQueue.h; sourceTree = "<group>"; };
 		EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WindowedNthElementFinder.h; path = ../Source_Files/Misc/WindowedNthElementFinder.h; sourceTree = "<group>"; };
 		EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = thread_priority_sdl.h; path = ../Source_Files/Misc/thread_priority_sdl.h; sourceTree = "<group>"; };
-		EFBAF0140485BEA500A8000D /* network_data_formats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = network_data_formats.h; path = ../Source_Files/Network/network_data_formats.h; sourceTree = "<group>"; };
 		EFBAF0170485BEA500A8000D /* SDL_netx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_netx.h; path = ../Source_Files/Network/SDL_netx.h; sourceTree = "<group>"; };
 		EFBAF0180485BEA500A8000D /* SSLP_API.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSLP_API.h; path = ../Source_Files/Network/SSLP_API.h; sourceTree = "<group>"; };
 		EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSLP_Protocol.h; path = ../Source_Files/Network/SSLP_Protocol.h; sourceTree = "<group>"; };
@@ -3535,18 +3499,15 @@
 		F522137E0136ABAE01000001 /* network_dummy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network_dummy.cpp; path = ../Source_Files/Network/network_dummy.cpp; sourceTree = SOURCE_ROOT; };
 		F522137F0136ABAE01000001 /* network_games.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network_games.cpp; path = ../Source_Files/Network/network_games.cpp; sourceTree = SOURCE_ROOT; };
 		F52213800136ABAE01000001 /* network_games.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = network_games.h; path = ../Source_Files/Network/network_games.h; sourceTree = SOURCE_ROOT; };
-		F52213810136ABAE01000001 /* network_lookup_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network_lookup_sdl.cpp; path = ../Source_Files/Network/network_lookup_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		F522138E0136ABAE01000001 /* network_udp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network_udp.cpp; path = ../Source_Files/Network/network_udp.cpp; sourceTree = SOURCE_ROOT; };
 		F522138F0136ABAE01000001 /* network.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network.cpp; path = ../Source_Files/Network/network.cpp; sourceTree = SOURCE_ROOT; };
 		F52213900136ABAE01000001 /* network.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = network.h; path = ../Source_Files/Network/network.h; sourceTree = SOURCE_ROOT; };
 		F53AB44B01F3CB1D01EF2901 /* AlephOne.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AlephOne.icns; sourceTree = "<group>"; };
 		F53DC61D022179A801A80001 /* network_dialogs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = network_dialogs.h; path = ../Source_Files/Network/network_dialogs.h; sourceTree = SOURCE_ROOT; };
-		F53DC62002219A3D01A80001 /* network_lookup_sdl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = network_lookup_sdl.h; path = ../Source_Files/Network/network_lookup_sdl.h; sourceTree = SOURCE_ROOT; };
 		F5574EEE01F4EB1E01FEABBD /* csdialogs_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = csdialogs_sdl.cpp; path = ../Source_Files/CSeries/csdialogs_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		F5574EEF01F4EB1E01FEABBD /* mytm_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = mytm_sdl.cpp; path = ../Source_Files/CSeries/mytm_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PlayerImage_sdl.cpp; path = ../Source_Files/Misc/PlayerImage_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = thread_priority_sdl_macosx.cpp; path = ../Source_Files/Misc/thread_priority_sdl_macosx.cpp; sourceTree = SOURCE_ROOT; };
-		F5574EF801F4ECD701FEABBD /* network_data_formats.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network_data_formats.cpp; path = ../Source_Files/Network/network_data_formats.cpp; sourceTree = SOURCE_ROOT; };
 		F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network_dialog_widgets_sdl.cpp; path = ../Source_Files/Network/network_dialog_widgets_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SDL_netx.cpp; path = ../Source_Files/Network/SDL_netx.cpp; sourceTree = SOURCE_ROOT; };
 		F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SSLP_limited.cpp; path = ../Source_Files/Network/SSLP_limited.cpp; sourceTree = SOURCE_ROOT; };
@@ -3567,7 +3528,6 @@
 		F5A00027023FDA6101A80001 /* ActionQueues.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ActionQueues.h; path = ../Source_Files/Misc/ActionQueues.h; sourceTree = SOURCE_ROOT; };
 		F5A00029023FDA7601A80001 /* CircularQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CircularQueue.h; path = ../Source_Files/Misc/CircularQueue.h; sourceTree = SOURCE_ROOT; };
 		F5A0002B023FDAD101A80001 /* preferences_widgets_sdl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = preferences_widgets_sdl.h; path = ../Source_Files/Misc/preferences_widgets_sdl.h; sourceTree = SOURCE_ROOT; };
-		F5A00033023FDBBD01A80001 /* network_distribution_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = network_distribution_types.h; path = ../Source_Files/Network/network_distribution_types.h; sourceTree = SOURCE_ROOT; };
 		F5CC92000240D09B01A80001 /* crc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crc.h; sourceTree = "<group>"; };
 		F5CC92010240D09B01A80001 /* extensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = extensions.h; sourceTree = "<group>"; };
 		F5CC92020240D09B01A80001 /* FileHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileHandler.h; sourceTree = "<group>"; };
@@ -4308,12 +4268,10 @@
 				EF2EF5CF04819BD700A8000D /* StarGameProtocol.cpp */,
 				F522138F0136ABAE01000001 /* network.cpp */,
 				AE5604DD086F6DF100D9797C /* network_capabilities.cpp */,
-				F5574EF801F4ECD701FEABBD /* network_data_formats.cpp */,
 				F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */,
 				F522137D0136ABAE01000001 /* network_dialogs.cpp */,
 				F522137E0136ABAE01000001 /* network_dummy.cpp */,
 				F522137F0136ABAE01000001 /* network_games.cpp */,
-				F52213810136ABAE01000001 /* network_lookup_sdl.cpp */,
 				3DF154D6080376E100BC3C09 /* network_messages.cpp */,
 				EF2EF5C804819BD700A8000D /* network_star_hub.cpp */,
 				EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */,
@@ -4338,12 +4296,9 @@
 				EF2EF5D004819BD700A8000D /* StarGameProtocol.h */,
 				F52213900136ABAE01000001 /* network.h */,
 				AE5604E0086F6E0D00D9797C /* network_capabilities.h */,
-				EFBAF0140485BEA500A8000D /* network_data_formats.h */,
 				F53DC61D022179A801A80001 /* network_dialogs.h */,
 				276BECF91A846D2000AE52F4 /* network_dialog_widgets_sdl.h */,
-				F5A00033023FDBBD01A80001 /* network_distribution_types.h */,
 				F52213800136ABAE01000001 /* network_games.h */,
-				F53DC62002219A3D01A80001 /* network_lookup_sdl.h */,
 				3DF154D8080376FD00BC3C09 /* network_messages.h */,
 				F5D37B6D022D1C2C01A80001 /* network_private.h */,
 				EF2EF5CA04819BD700A8000D /* network_star.h */,
@@ -4806,11 +4761,9 @@
 				AE120BBE2BC77645001873DD /* FFmpegDecoder.h in Headers */,
 				AE120BBF2BC77645001873DD /* SW_Texture_Extras.h in Headers */,
 				AE120BC02BC77645001873DD /* network_dialogs.h in Headers */,
-				AE120BC12BC77645001873DD /* network_lookup_sdl.h in Headers */,
 				AE120BC22BC77645001873DD /* ActionQueues.h in Headers */,
 				AE120BC32BC77645001873DD /* CircularQueue.h in Headers */,
 				AE120BC42BC77645001873DD /* preferences_widgets_sdl.h in Headers */,
-				AE120BC52BC77645001873DD /* network_distribution_types.h in Headers */,
 				AE120BC62BC77645001873DD /* OGL_LoadScreen.h in Headers */,
 				AE120BC72BC77645001873DD /* crc.h in Headers */,
 				AE120BC82BC77645001873DD /* extensions.h in Headers */,
@@ -4926,7 +4879,6 @@
 				AE120C362BC77645001873DD /* TickBasedCircularQueue.h in Headers */,
 				AE120C372BC77645001873DD /* WindowedNthElementFinder.h in Headers */,
 				AE120C382BC77645001873DD /* thread_priority_sdl.h in Headers */,
-				AE120C392BC77645001873DD /* network_data_formats.h in Headers */,
 				AE120C3A2BC77645001873DD /* QuickSave.h in Headers */,
 				AE120C3B2BC77645001873DD /* SDL_netx.h in Headers */,
 				AE120C3C2BC77645001873DD /* SSLP_API.h in Headers */,
@@ -5020,11 +4972,9 @@
 				AE1320562C1CB4D2009D34AA /* FFmpegDecoder.h in Headers */,
 				AE1320572C1CB4D2009D34AA /* SW_Texture_Extras.h in Headers */,
 				AE1320582C1CB4D2009D34AA /* network_dialogs.h in Headers */,
-				AE1320592C1CB4D2009D34AA /* network_lookup_sdl.h in Headers */,
 				AE13205A2C1CB4D2009D34AA /* ActionQueues.h in Headers */,
 				AE13205B2C1CB4D2009D34AA /* CircularQueue.h in Headers */,
 				AE13205C2C1CB4D2009D34AA /* preferences_widgets_sdl.h in Headers */,
-				AE13205D2C1CB4D2009D34AA /* network_distribution_types.h in Headers */,
 				AE13205E2C1CB4D2009D34AA /* OGL_LoadScreen.h in Headers */,
 				AE13205F2C1CB4D2009D34AA /* crc.h in Headers */,
 				AE1320602C1CB4D2009D34AA /* extensions.h in Headers */,
@@ -5140,7 +5090,6 @@
 				AE1320CF2C1CB4D2009D34AA /* TickBasedCircularQueue.h in Headers */,
 				AE1320D02C1CB4D2009D34AA /* WindowedNthElementFinder.h in Headers */,
 				AE1320D12C1CB4D2009D34AA /* thread_priority_sdl.h in Headers */,
-				AE1320D22C1CB4D2009D34AA /* network_data_formats.h in Headers */,
 				AE1320D32C1CB4D2009D34AA /* QuickSave.h in Headers */,
 				AE1320D42C1CB4D2009D34AA /* SDL_netx.h in Headers */,
 				AE1320D52C1CB4D2009D34AA /* SSLP_API.h in Headers */,
@@ -5234,11 +5183,9 @@
 				27A6DB0A1B9CEA51003DA766 /* FFmpegDecoder.h in Headers */,
 				276BECF71A846CC800AE52F4 /* SW_Texture_Extras.h in Headers */,
 				AE505B65141D45E600915344 /* network_dialogs.h in Headers */,
-				AE505B66141D45E600915344 /* network_lookup_sdl.h in Headers */,
 				AE505B67141D45E600915344 /* ActionQueues.h in Headers */,
 				AE505B68141D45E600915344 /* CircularQueue.h in Headers */,
 				AE505B69141D45E600915344 /* preferences_widgets_sdl.h in Headers */,
-				AE505B6A141D45E600915344 /* network_distribution_types.h in Headers */,
 				27A6DB3B1B9CEAAB003DA766 /* OGL_LoadScreen.h in Headers */,
 				AE505B6C141D45E600915344 /* crc.h in Headers */,
 				AE505B6D141D45E600915344 /* extensions.h in Headers */,
@@ -5353,7 +5300,6 @@
 				AE505BD1141D45E600915344 /* TickBasedCircularQueue.h in Headers */,
 				AE505BD2141D45E600915344 /* WindowedNthElementFinder.h in Headers */,
 				AE505BD4141D45E600915344 /* thread_priority_sdl.h in Headers */,
-				AE505BD6141D45E600915344 /* network_data_formats.h in Headers */,
 				27EFC4BA1A7C935500A95592 /* QuickSave.h in Headers */,
 				AE505BD8141D45E600915344 /* SDL_netx.h in Headers */,
 				AE505BD9141D45E600915344 /* SSLP_API.h in Headers */,
@@ -5447,11 +5393,9 @@
 				27A6DB0B1B9CEA51003DA766 /* FFmpegDecoder.h in Headers */,
 				276BECF81A846CC800AE52F4 /* SW_Texture_Extras.h in Headers */,
 				AEB4A10514296CAE00537AE7 /* network_dialogs.h in Headers */,
-				AEB4A10614296CAE00537AE7 /* network_lookup_sdl.h in Headers */,
 				AEB4A10714296CAE00537AE7 /* ActionQueues.h in Headers */,
 				AEB4A10814296CAE00537AE7 /* CircularQueue.h in Headers */,
 				AEB4A10914296CAE00537AE7 /* preferences_widgets_sdl.h in Headers */,
-				AEB4A10A14296CAE00537AE7 /* network_distribution_types.h in Headers */,
 				27A6DB3C1B9CEAAB003DA766 /* OGL_LoadScreen.h in Headers */,
 				AEB4A10C14296CAE00537AE7 /* crc.h in Headers */,
 				AEB4A10D14296CAE00537AE7 /* extensions.h in Headers */,
@@ -5566,7 +5510,6 @@
 				AEB4A17114296CAE00537AE7 /* TickBasedCircularQueue.h in Headers */,
 				AEB4A17214296CAE00537AE7 /* WindowedNthElementFinder.h in Headers */,
 				AEB4A17414296CAE00537AE7 /* thread_priority_sdl.h in Headers */,
-				AEB4A17614296CAE00537AE7 /* network_data_formats.h in Headers */,
 				27EFC4BB1A7C935600A95592 /* QuickSave.h in Headers */,
 				AEB4A17814296CAE00537AE7 /* SDL_netx.h in Headers */,
 				AEB4A17914296CAE00537AE7 /* SSLP_API.h in Headers */,
@@ -5660,11 +5603,9 @@
 				AEBDC5322C4DF0780026DFF1 /* FFmpegDecoder.h in Headers */,
 				AEBDC5332C4DF0780026DFF1 /* SW_Texture_Extras.h in Headers */,
 				AEBDC5342C4DF0780026DFF1 /* network_dialogs.h in Headers */,
-				AEBDC5352C4DF0780026DFF1 /* network_lookup_sdl.h in Headers */,
 				AEBDC5362C4DF0780026DFF1 /* ActionQueues.h in Headers */,
 				AEBDC5372C4DF0780026DFF1 /* CircularQueue.h in Headers */,
 				AEBDC5382C4DF0780026DFF1 /* preferences_widgets_sdl.h in Headers */,
-				AEBDC5392C4DF0780026DFF1 /* network_distribution_types.h in Headers */,
 				AEBDC53A2C4DF0780026DFF1 /* OGL_LoadScreen.h in Headers */,
 				AEBDC53B2C4DF0780026DFF1 /* crc.h in Headers */,
 				AEBDC53C2C4DF0780026DFF1 /* extensions.h in Headers */,
@@ -5780,7 +5721,6 @@
 				AEBDC5AB2C4DF0780026DFF1 /* TickBasedCircularQueue.h in Headers */,
 				AEBDC5AC2C4DF0780026DFF1 /* WindowedNthElementFinder.h in Headers */,
 				AEBDC5AD2C4DF0780026DFF1 /* thread_priority_sdl.h in Headers */,
-				AEBDC5AE2C4DF0780026DFF1 /* network_data_formats.h in Headers */,
 				AEBDC5AF2C4DF0780026DFF1 /* QuickSave.h in Headers */,
 				AEBDC5B02C4DF0780026DFF1 /* SDL_netx.h in Headers */,
 				AEBDC5B12C4DF0780026DFF1 /* SSLP_API.h in Headers */,
@@ -5875,12 +5815,10 @@
 				AEC3C73309AD68AC003258E4 /* WavefrontLoader.h in Headers */,
 				AEC3C73409AD68AC003258E4 /* Dim3_Loader.h in Headers */,
 				AEC3C73709AD68AC003258E4 /* network_dialogs.h in Headers */,
-				AEC3C73809AD68AC003258E4 /* network_lookup_sdl.h in Headers */,
 				AEC3C73909AD68AC003258E4 /* ActionQueues.h in Headers */,
 				AEC3C73A09AD68AC003258E4 /* CircularQueue.h in Headers */,
 				AEC3C73B09AD68AC003258E4 /* preferences_widgets_sdl.h in Headers */,
 				27A6DB391B9CEAAA003DA766 /* OGL_LoadScreen.h in Headers */,
-				AEC3C73C09AD68AC003258E4 /* network_distribution_types.h in Headers */,
 				278E0C811AA4012600FA93B7 /* SDL_rwops_ostream.h in Headers */,
 				AEC3C73E09AD68AC003258E4 /* crc.h in Headers */,
 				AEC3C73F09AD68AC003258E4 /* extensions.h in Headers */,
@@ -5993,7 +5931,6 @@
 				AEC3C7AB09AD68AC003258E4 /* TickBasedCircularQueue.h in Headers */,
 				AEC3C7AC09AD68AC003258E4 /* WindowedNthElementFinder.h in Headers */,
 				AEC3C7AE09AD68AC003258E4 /* thread_priority_sdl.h in Headers */,
-				AEC3C7B009AD68AC003258E4 /* network_data_formats.h in Headers */,
 				276BED311A8470A900AE52F4 /* PlayerImage_sdl.h in Headers */,
 				276BECF01A846BC500AE52F4 /* ReplacementSounds.h in Headers */,
 				AEC3C7B209AD68AC003258E4 /* SDL_netx.h in Headers */,
@@ -6087,11 +6024,9 @@
 				27A6DB091B9CEA50003DA766 /* FFmpegDecoder.h in Headers */,
 				276BECF61A846CC800AE52F4 /* SW_Texture_Extras.h in Headers */,
 				AEFD861313EB84CF00C1E687 /* network_dialogs.h in Headers */,
-				AEFD861413EB84CF00C1E687 /* network_lookup_sdl.h in Headers */,
 				AEFD861513EB84CF00C1E687 /* ActionQueues.h in Headers */,
 				AEFD861613EB84CF00C1E687 /* CircularQueue.h in Headers */,
 				AEFD861713EB84CF00C1E687 /* preferences_widgets_sdl.h in Headers */,
-				AEFD861813EB84CF00C1E687 /* network_distribution_types.h in Headers */,
 				27A6DB3A1B9CEAAA003DA766 /* OGL_LoadScreen.h in Headers */,
 				AEFD861A13EB84CF00C1E687 /* crc.h in Headers */,
 				AEFD861B13EB84CF00C1E687 /* extensions.h in Headers */,
@@ -6206,7 +6141,6 @@
 				AEFD867F13EB84CF00C1E687 /* TickBasedCircularQueue.h in Headers */,
 				AEFD868013EB84CF00C1E687 /* WindowedNthElementFinder.h in Headers */,
 				AEFD868213EB84CF00C1E687 /* thread_priority_sdl.h in Headers */,
-				AEFD868413EB84CF00C1E687 /* network_data_formats.h in Headers */,
 				27EFC4B91A7C935500A95592 /* QuickSave.h in Headers */,
 				AEFD868613EB84CF00C1E687 /* SDL_netx.h in Headers */,
 				AEFD868713EB84CF00C1E687 /* SSLP_API.h in Headers */,
@@ -6775,7 +6709,6 @@
 				AE120C822BC77645001873DD /* shell_misc.cpp in Sources */,
 				AE120C832BC77645001873DD /* shell.cpp in Sources */,
 				AE120C842BC77645001873DD /* vbl.cpp in Sources */,
-				AE120C852BC77645001873DD /* network_lookup_sdl.cpp in Sources */,
 				AE120C862BC77645001873DD /* network_udp.cpp in Sources */,
 				AE120C872BC77645001873DD /* network.cpp in Sources */,
 				AE120C882BC77645001873DD /* AudioPlayer.cpp in Sources */,
@@ -6790,7 +6723,6 @@
 				AE120C912BC77645001873DD /* mytm_sdl.cpp in Sources */,
 				AE120C922BC77645001873DD /* PlayerImage_sdl.cpp in Sources */,
 				AE120C932BC77645001873DD /* thread_priority_sdl_macosx.cpp in Sources */,
-				AE120C942BC77645001873DD /* network_data_formats.cpp in Sources */,
 				AE120C952BC77645001873DD /* network_dialog_widgets_sdl.cpp in Sources */,
 				AE120C962BC77645001873DD /* SDL_netx.cpp in Sources */,
 				AE120C972BC77645001873DD /* SSLP_limited.cpp in Sources */,
@@ -7004,7 +6936,6 @@
 				AE13211B2C1CB4D2009D34AA /* shell_misc.cpp in Sources */,
 				AE13211C2C1CB4D2009D34AA /* shell.cpp in Sources */,
 				AE13211D2C1CB4D2009D34AA /* vbl.cpp in Sources */,
-				AE13211E2C1CB4D2009D34AA /* network_lookup_sdl.cpp in Sources */,
 				AE13211F2C1CB4D2009D34AA /* network_udp.cpp in Sources */,
 				AE1321202C1CB4D2009D34AA /* network.cpp in Sources */,
 				AE1321212C1CB4D2009D34AA /* AudioPlayer.cpp in Sources */,
@@ -7019,7 +6950,6 @@
 				AE13212A2C1CB4D2009D34AA /* mytm_sdl.cpp in Sources */,
 				AE13212B2C1CB4D2009D34AA /* PlayerImage_sdl.cpp in Sources */,
 				AE13212C2C1CB4D2009D34AA /* thread_priority_sdl_macosx.cpp in Sources */,
-				AE13212D2C1CB4D2009D34AA /* network_data_formats.cpp in Sources */,
 				AE13212E2C1CB4D2009D34AA /* network_dialog_widgets_sdl.cpp in Sources */,
 				AE13212F2C1CB4D2009D34AA /* SDL_netx.cpp in Sources */,
 				AE1321302C1CB4D2009D34AA /* SSLP_limited.cpp in Sources */,
@@ -7233,7 +7163,6 @@
 				AE505C1D141D45E600915344 /* shell_misc.cpp in Sources */,
 				AE505C1E141D45E600915344 /* shell.cpp in Sources */,
 				AE505C1F141D45E600915344 /* vbl.cpp in Sources */,
-				AE505C20141D45E600915344 /* network_lookup_sdl.cpp in Sources */,
 				AE505C21141D45E600915344 /* network_udp.cpp in Sources */,
 				AE505C22141D45E600915344 /* network.cpp in Sources */,
 				AE61F17328615A22003128EE /* AudioPlayer.cpp in Sources */,
@@ -7248,7 +7177,6 @@
 				AE505C29141D45E600915344 /* mytm_sdl.cpp in Sources */,
 				AE505C2A141D45E600915344 /* PlayerImage_sdl.cpp in Sources */,
 				AE505C2B141D45E600915344 /* thread_priority_sdl_macosx.cpp in Sources */,
-				AE505C2C141D45E600915344 /* network_data_formats.cpp in Sources */,
 				AE505C2D141D45E600915344 /* network_dialog_widgets_sdl.cpp in Sources */,
 				AE505C2E141D45E600915344 /* SDL_netx.cpp in Sources */,
 				AE505C2F141D45E600915344 /* SSLP_limited.cpp in Sources */,
@@ -7469,7 +7397,6 @@
 				AEB4A1BE14296CAE00537AE7 /* shell_misc.cpp in Sources */,
 				AEB4A1BF14296CAE00537AE7 /* shell.cpp in Sources */,
 				AEB4A1C014296CAE00537AE7 /* vbl.cpp in Sources */,
-				AEB4A1C114296CAE00537AE7 /* network_lookup_sdl.cpp in Sources */,
 				AEB4A1C214296CAE00537AE7 /* network_udp.cpp in Sources */,
 				AEB4A1C314296CAE00537AE7 /* network.cpp in Sources */,
 				AE61F17428615A22003128EE /* AudioPlayer.cpp in Sources */,
@@ -7484,7 +7411,6 @@
 				AEB4A1CA14296CAE00537AE7 /* mytm_sdl.cpp in Sources */,
 				AEB4A1CB14296CAE00537AE7 /* PlayerImage_sdl.cpp in Sources */,
 				AEB4A1CC14296CAE00537AE7 /* thread_priority_sdl_macosx.cpp in Sources */,
-				AEB4A1CD14296CAE00537AE7 /* network_data_formats.cpp in Sources */,
 				AEB4A1CE14296CAE00537AE7 /* network_dialog_widgets_sdl.cpp in Sources */,
 				AEB4A1CF14296CAE00537AE7 /* SDL_netx.cpp in Sources */,
 				AEB4A1D014296CAE00537AE7 /* SSLP_limited.cpp in Sources */,
@@ -7697,7 +7623,6 @@
 				AEBDC5F72C4DF0780026DFF1 /* shell_misc.cpp in Sources */,
 				AEBDC5F82C4DF0780026DFF1 /* shell.cpp in Sources */,
 				AEBDC5F92C4DF0780026DFF1 /* vbl.cpp in Sources */,
-				AEBDC5FA2C4DF0780026DFF1 /* network_lookup_sdl.cpp in Sources */,
 				AEBDC5FB2C4DF0780026DFF1 /* network_udp.cpp in Sources */,
 				AEBDC5FC2C4DF0780026DFF1 /* network.cpp in Sources */,
 				AEBDC5FD2C4DF0780026DFF1 /* AudioPlayer.cpp in Sources */,
@@ -7712,7 +7637,6 @@
 				AEBDC6062C4DF0780026DFF1 /* mytm_sdl.cpp in Sources */,
 				AEBDC6072C4DF0780026DFF1 /* PlayerImage_sdl.cpp in Sources */,
 				AEBDC6082C4DF0780026DFF1 /* thread_priority_sdl_macosx.cpp in Sources */,
-				AEBDC6092C4DF0780026DFF1 /* network_data_formats.cpp in Sources */,
 				AEBDC60A2C4DF0780026DFF1 /* network_dialog_widgets_sdl.cpp in Sources */,
 				AEBDC60B2C4DF0780026DFF1 /* SDL_netx.cpp in Sources */,
 				AEBDC60C2C4DF0780026DFF1 /* SSLP_limited.cpp in Sources */,
@@ -7926,7 +7850,6 @@
 				AEC3C7E009AD68AC003258E4 /* shell_misc.cpp in Sources */,
 				AEC3C7E109AD68AC003258E4 /* shell.cpp in Sources */,
 				AEC3C7E309AD68AC003258E4 /* vbl.cpp in Sources */,
-				AEC3C7E409AD68AC003258E4 /* network_lookup_sdl.cpp in Sources */,
 				AEC3C7E509AD68AC003258E4 /* network_udp.cpp in Sources */,
 				AEC3C7E609AD68AC003258E4 /* network.cpp in Sources */,
 				AE61F17128615A22003128EE /* AudioPlayer.cpp in Sources */,
@@ -7941,7 +7864,6 @@
 				AEC3C7F009AD68AC003258E4 /* mytm_sdl.cpp in Sources */,
 				AEC3C7F109AD68AC003258E4 /* PlayerImage_sdl.cpp in Sources */,
 				AEC3C7F209AD68AC003258E4 /* thread_priority_sdl_macosx.cpp in Sources */,
-				AEC3C7F309AD68AC003258E4 /* network_data_formats.cpp in Sources */,
 				276D4E771A2E734E00C16CF5 /* QuickSave.cpp in Sources */,
 				AEC3C7F409AD68AC003258E4 /* network_dialog_widgets_sdl.cpp in Sources */,
 				AEC3C7F509AD68AC003258E4 /* SDL_netx.cpp in Sources */,
@@ -8154,7 +8076,6 @@
 				AEFD86CA13EB84CF00C1E687 /* shell_misc.cpp in Sources */,
 				AEFD86CB13EB84CF00C1E687 /* shell.cpp in Sources */,
 				AEFD86CC13EB84CF00C1E687 /* vbl.cpp in Sources */,
-				AEFD86CD13EB84CF00C1E687 /* network_lookup_sdl.cpp in Sources */,
 				AEFD86CE13EB84CF00C1E687 /* network_udp.cpp in Sources */,
 				AEFD86CF13EB84CF00C1E687 /* network.cpp in Sources */,
 				AE61F17228615A22003128EE /* AudioPlayer.cpp in Sources */,
@@ -8169,7 +8090,6 @@
 				AEFD86D613EB84CF00C1E687 /* mytm_sdl.cpp in Sources */,
 				AEFD86D713EB84CF00C1E687 /* PlayerImage_sdl.cpp in Sources */,
 				AEFD86D813EB84CF00C1E687 /* thread_priority_sdl_macosx.cpp in Sources */,
-				AEFD86D913EB84CF00C1E687 /* network_data_formats.cpp in Sources */,
 				AEFD86DA13EB84CF00C1E687 /* network_dialog_widgets_sdl.cpp in Sources */,
 				AEFD86DB13EB84CF00C1E687 /* SDL_netx.cpp in Sources */,
 				AEFD86DC13EB84CF00C1E687 /* SSLP_limited.cpp in Sources */,

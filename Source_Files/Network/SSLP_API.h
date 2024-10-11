@@ -133,23 +133,6 @@ SSLP_Allow_Service_Discovery(const SSLP_ServiceInstance* inServiceInstance);
 
 
 
-// SSLP_Hint_Service_Discovery: start periodically announcing the presence of a service-instance to a named machine and port.
-// (this is useful if you need a way to connect machines in different broadcast domains, which ordinarily would not see
-// each other by SSLP.)
-// If remoteHost->port is 0, the default SSLP_PORT will be used.  This is almost certainly what you want.
-// Make sure the data in inRemoteHost are in network (big-endian) byte order!
-// If Allow_Service_Discovery was not already called for this service-instance, it's called by this function.
-// The data you provide are copied, so you may do whatever you like with your own storage afterwards.
-// NB!! in the current (limited) implementation, a call to this function with a service-instance that differs
-// from the one provided to Allow_Service_Discovery is an ERROR and may lead to odd results.
-// (calling this without having called Allow_Service_Discovery is ok, and makes the other call for you.) 
-// Calling this with a different serviceInstance or remote address will change the hinting behavior to reflect
-// your wishes.
-void
-SSLP_Hint_Service_Discovery(const SSLP_ServiceInstance* inServiceInstance, const IPaddress* inRemoteHost);
-
-
-
 // SSLP_Disallow_Service_Discovery: stop letting other machines know that the service-instance is available.
 // If NULL is provided, the effect is of calling Disallow_Service_Discovery on every currently-discoverable service instance.
 // Also stops hinting the applicable service-instance(s), if appropriate.

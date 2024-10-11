@@ -124,7 +124,6 @@ clearly this is all broken until we have packet types
 #include "preferences.h" // for network_preferences and environment_preferences
 
 #include "sdl_network.h"
-#include "network_lookup_sdl.h"
 #include <SDL2/SDL_thread.h>
 
 #include "game_errors.h"
@@ -145,10 +144,6 @@ clearly this is all broken until we have packet types
 
 // ZZZ: moved many struct definitions, constant #defines, etc. to header for (limited) sharing
 #include "network_private.h"
-
-// ZZZ: since network data format is now distinct from in-memory format.
-// (quite similar, admittedly, in this first effort... ;) )
-#include "network_data_formats.h"
 
 #include "network_messages.h"
 
@@ -583,25 +578,6 @@ void Client::handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage,
 		logAnomaly("unexpected capabilities message received (state is %i)", state);
 	}
 }
-
-/*
-void Client::handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsChannel *) 
-{
-  if (state == _awaiting_script_message) {
-    if (do_netscript &&
-	scriptMessage->value() != _netscript_yes_script_message) {
-      alert_user(infoError, strNETWORK_ERRORS, netErrUngatheredPlayerUnacceptable, 0);
-      state = _ungatherable;
-    } else {
-      JoinPlayerMessage joinPlayerMessage(topology->nextIdentifier);
-      channel->enqueueOutgoingMessage(joinPlayerMessage);
-      state = _awaiting_accept_join;
-    }
-  } else {
-    logAnomaly1("unexpected script message received (state is %i)", state);
-  }
-}
-*/
 
 void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
 				     CommunicationsChannel *)
@@ -1041,22 +1017,6 @@ static void handlePhysicsMessage(BigChunkOfDataMessage *physicsMessage, Communic
 	}
 }
 
-/*
-static void handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsChannel*) {
-  if (netState == netJoining) {
-    ScriptMessage replyToScriptMessage;
-    if (scriptMessage->value() == _netscript_query_message) {
-      replyToScriptMessage.setValue(_netscript_yes_script_message);
-    } else {
-      replyToScriptMessage.setValue(_netscript_no_script_message);
-    }
-    connection_to_server->enqueueOutgoingMessage(replyToScriptMessage);
-  } else {
-    logAnomaly1("unexpected script message received (netState is %i)", netState);
-  }
-}
-*/
-
 static void handleServerWarningMessage(ServerWarningMessage *serverWarningMessage, CommunicationsChannel *) {
   char *s = strdup(serverWarningMessage->string()->c_str());
   alert_user(s);
@@ -1251,7 +1211,6 @@ void InGameChatCallbacks::ReceivedMessageFromPlayer(const char *player_name, con
 
 bool NetEnter(bool use_remote_hub)
 {
-	OSErr error;
 	::use_remote_hub = use_remote_hub;
   
 	assert(netState==netUninitialized);
@@ -1265,24 +1224,21 @@ bool NetEnter(bool use_remote_hub)
   
 	sCurrentGameProtocol = static_cast<NetworkGameProtocol*>(&sStarGameProtocol);
   
-	error= NetDDPOpen();
-	if (!error) {
-		topology = (NetTopologyPtr)malloc(sizeof(NetTopology));
-		assert(topology);
-		memset(topology, 0, sizeof(NetTopology));
+	topology = (NetTopologyPtr)malloc(sizeof(NetTopology));
+	assert(topology);
+	memset(topology, 0, sizeof(NetTopology));
 
-		// ZZZ: Sorry, if this swapping is not supported on all current A1
-		// platforms, feel free to rewrite it in a way that is.
-		ddpSocket = SDL_SwapBE16(GAME_PORT);
-		error = NetDDPOpenSocket(&ddpSocket, NetDDPPacketHandler);
-		if (!error) {
-			sCurrentGameProtocol->Enter(&netState);
-			netState = netDown;
-			handlerState = netDown;
-		}
-		else {
-			logError("unable to open socket");
-		}
+	// ZZZ: Sorry, if this swapping is not supported on all current A1
+	// platforms, feel free to rewrite it in a way that is.
+	ddpSocket = SDL_SwapBE16(GAME_PORT);
+	auto error = NetDDPOpenSocket(&ddpSocket, NetDDPPacketHandler);
+	if (!error) {
+		sCurrentGameProtocol->Enter(&netState);
+		netState = netDown;
+		handlerState = netDown;
+	}
+	else {
+		logError("unable to open socket");
 	}
   
 	if (!inflater) {
@@ -1447,8 +1403,6 @@ void NetExit(
 	gMetaserverClient = new MetaserverClient();
 	
 	Console::instance()->unregister_command("ignore");
-  
-	NetDDPClose();
 
 }
 
@@ -1569,49 +1523,6 @@ void NetInitializeSessionIdentifier(void)
 	}
 	
 }
-
-
-/*
----------
-NetGather
----------
-
-	---> game data (pointer to typeless data no bigger than MAXIMUM_GAME_DATA_SIZE)
-	---> size of game data
-	---> player data of gathering player (no bigger than MAXIMUM_PLAYER_DATA_SIZE)
-	---> size of player data
-	---> lookupUpdateProc (we call NetLookupOpen() and NetLookupClose())
-	
-	<--- error
-
-start gathering players.
-
----------------
-NetGatherPlayer
----------------
-
-	---> player index (into the array of looked up names)
-	
-	<--- error
-
-bring the given player into our game.
-
----------------
-NetCancelGather
----------------
-
-	<--- error
-
-tells all players in the game that the game has been cancelled.
-
---------
-NetStart
---------
-
-	<--- error
-
-start the game with the existing topology (which all players should have)
-*/
 
 bool NetGather(
 	void *game_data,
@@ -1787,35 +1698,6 @@ static int net_compare(
 	uint32 p2_host = SDL_SwapBE32(((const NetPlayer *)p2)->ddpAddress.host);
 	return p2_host - p1_host;
 }
-
-/*
------------
-NetGameJoin
------------
-
-	---> player name (to register)
-	---> player type (to register)
-	---> player data (no larger than MAXIMUM_PLAYER_DATA_SIZE)
-	---> size of player data
-	---> version number of network protocol (used with player type to construct entity name)
-	---> host address
-	
-	<--- error
-
-------------------
-NetUpdateJoinState
-------------------
-
-	<--- new state (==netJoined,netWaiting,netStartingUp)
-
--------------
-NetCancelJoin
--------------
-
-	<--- error
-
-can’t be called after the player has been gathered
-*/
 
 bool NetGameJoin(
 	void *player_data,
@@ -2800,13 +2682,6 @@ int NetGatherPlayer(const prospective_joiner_info &player,
   JoinPlayerMessage joinPlayerMessage(topology->nextIdentifier++);
   connections_to_clients[player.stream_id]->channel->enqueueOutgoingMessage(joinPlayerMessage);
   connections_to_clients[player.stream_id]->state = Client::_awaiting_accept_join;
-
-  /*
-  // reject a player if he can't handle our script demands
-  ScriptMessage scriptMessage(_netscript_query_message);
-  connections_to_clients[player.stream_id]->channel->enqueueOutgoingMessage(scriptMessage);
-  connections_to_clients[player.stream_id]->state = Client::_awaiting_script_message;
-  */
 
   // lie to the network code and say we gathered successfully
   return kGatherPlayerSuccessful;

@@ -66,7 +66,7 @@ void Pinger::Ping(uint8_t number_of_tries, bool unpinged_addresses_only)
 			{
 				for (int i = 0; i < number_of_tries; i++)
 				{
-					if (NetDDPSendFrame(ping_packet, &address.ipv4, kPROTOCOL_TYPE, 0) == 0 && !address.ping_sent_tick)
+					if (NetDDPSendFrame(ping_packet, &address.ipv4) == 0 && !address.ping_sent_tick)
 					{
 						address.ping_sent_tick = machine_tick_count();
 					}

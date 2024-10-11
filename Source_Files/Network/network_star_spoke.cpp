@@ -180,11 +180,10 @@ operator !=(const NetAddrBlock& a, const NetAddrBlock& b)
 
 
 static OSErr
-send_frame_to_local_hub(DDPFramePtr frame, NetAddrBlock *address, short protocolType, short port)
+send_frame_to_local_hub(DDPFramePtr frame, NetAddrBlock *address)
 {
         sLocalOutgoingBuffer.datagramSize = frame->data_size;
         memcpy(sLocalOutgoingBuffer.datagramData, frame->data, frame->data_size);
-        sLocalOutgoingBuffer.protocolType = protocolType;
         // An all-0 sourceAddress is the cue for "local spoke" currently.
         obj_clear(sLocalOutgoingBuffer.sourceAddress);
         sNeedToSendLocalOutgoingBuffer = true;
@@ -765,7 +764,7 @@ spoke_received_ping_request(AIStream& ps, NetAddrBlock address)
 		
 		// Send the packet
 		sOutgoingFrame->data_size = ops.tellp();
-		NetDDPSendFrame(sOutgoingFrame, &address, kPROTOCOL_TYPE, 0 /* ignored */);
+		NetDDPSendFrame(sOutgoingFrame, &address);
 	} catch (...) {
 		logWarningNMT("Caught exception while constructing/sending ping response packet");
 	}
@@ -1100,9 +1099,9 @@ send_packet()
                 sOutgoingFrame->data_size = ps.tellp();
 
                 if(sHubIsLocal)
-                        send_frame_to_local_hub(sOutgoingFrame, &sHubAddress, kPROTOCOL_TYPE, 0 /* ignored */);
+                        send_frame_to_local_hub(sOutgoingFrame, &sHubAddress);
                 else
-                        NetDDPSendFrame(sOutgoingFrame, &sHubAddress, kPROTOCOL_TYPE, 0 /* ignored */);
+                        NetDDPSendFrame(sOutgoingFrame, &sHubAddress);
 
                 sLastNetworkTickSent = sNetworkTicker;
         }
@@ -1135,9 +1134,9 @@ send_identification_packet()
                 // Send the packet
                 sOutgoingFrame->data_size = ps.tellp();
                 if(sHubIsLocal)
-                        send_frame_to_local_hub(sOutgoingFrame, &sHubAddress, kPROTOCOL_TYPE, 0 /* ignored */);
+                        send_frame_to_local_hub(sOutgoingFrame, &sHubAddress);
                 else
-                        NetDDPSendFrame(sOutgoingFrame, &sHubAddress, kPROTOCOL_TYPE, 0 /* ignored */);
+                        NetDDPSendFrame(sOutgoingFrame, &sHubAddress);
         }
         catch (...) {
         }

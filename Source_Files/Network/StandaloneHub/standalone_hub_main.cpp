@@ -16,7 +16,6 @@
 	http://www.gnu.org/licenses/gpl.html
 */
 
-#include <SDL2/SDL_net.h>
 #include "Logging.h"
 #include "DefaultStringSets.h"
 #include "preferences.h"

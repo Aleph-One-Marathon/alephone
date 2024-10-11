@@ -433,9 +433,6 @@
     <ClCompile Include="..\..\Source_Files\Network\network_capabilities.cpp">
       <Filter>Network\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source_Files\Network\network_data_formats.cpp">
-      <Filter>Network\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source_Files\Network\network_dialog_widgets_sdl.cpp">
       <Filter>Network\Source Files</Filter>
     </ClCompile>
@@ -443,9 +440,6 @@
       <Filter>Network\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source_Files\Network\network_games.cpp">
-      <Filter>Network\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source_Files\Network\network_lookup_sdl.cpp">
       <Filter>Network\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source_Files\Network\network_messages.cpp">
@@ -1095,22 +1089,13 @@
     <ClInclude Include="..\..\Source_Files\Network\network_capabilities.h">
       <Filter>Network\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source_Files\Network\network_data_formats.h">
-      <Filter>Network\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source_Files\Network\network_dialog_widgets_sdl.h">
       <Filter>Network\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Network\network_dialogs.h">
       <Filter>Network\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source_Files\Network\network_distribution_types.h">
-      <Filter>Network\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source_Files\Network\network_games.h">
-      <Filter>Network\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source_Files\Network\network_lookup_sdl.h">
       <Filter>Network\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Network\network_messages.h">

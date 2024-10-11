@@ -27,7 +27,6 @@ NETWORK_MESSAGES.CPP
 #include "AStream.h"
 #include "network_messages.h"
 #include "network_private.h"
-#include "network_data_formats.h"
 #include "Logging.h"
 
 #include <zlib.h>

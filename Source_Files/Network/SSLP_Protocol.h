@@ -41,8 +41,6 @@
 #ifndef SSLP_PROTOCOL_H
 #define	SSLP_PROTOCOL_H
 
-#include	<SDL2/SDL_net.h>
-
 
 #ifndef SSLP_PORT
 #define	SSLP_PORT		15367		// I made this up, change if it sucks
@@ -113,13 +111,13 @@
 #endif
 
 struct SSLP_Packet {
-    Uint32	sslpp_magic;		// should always be SSLPP_MAGIC
-    Uint32	sslpp_version;		// set to SSLPP_VERSION, for catching version mismatch
-    Uint32	sslpp_message;		// set to SSLPP_MESSAGE_*
-    Uint16	sslpp_service_port;	// only valid in HAVE messages, states on which port the service can be contacted.
-    Uint16	sslpp_reserved;		// should always be 0
-    char	sslpp_service_type[SSLP_MAX_TYPE_LENGTH];	// type desired, for FIND; type provided or no longer provided on HAVE or LOST
-    char	sslpp_service_name[SSLP_MAX_NAME_LENGTH];	// name of the service instance.  meaningless in FIND.
+    uint32_t sslpp_magic;		// should always be SSLPP_MAGIC
+    uint32_t sslpp_version;		// set to SSLPP_VERSION, for catching version mismatch
+    uint32_t sslpp_message;		// set to SSLPP_MESSAGE_*
+    uint16_t sslpp_service_port;	// only valid in HAVE messages, states on which port the service can be contacted.
+    uint16_t sslpp_reserved;		// should always be 0
+    char sslpp_service_type[SSLP_MAX_TYPE_LENGTH];	// type desired, for FIND; type provided or no longer provided on HAVE or LOST
+    char sslpp_service_name[SSLP_MAX_NAME_LENGTH];	// name of the service instance.  meaningless in FIND.
 };
 
 // The packed size and packed-packet type

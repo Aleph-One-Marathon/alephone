@@ -387,12 +387,11 @@ operator <(const NetAddrBlock& a, const NetAddrBlock& b)
 
 
 static OSErr
-send_frame_to_local_spoke(DDPFramePtr frame, NetAddrBlock *address, short protocolType, short port)
+send_frame_to_local_spoke(DDPFramePtr frame, NetAddrBlock *address)
 {
 #ifndef A1_NETWORK_STANDALONE_HUB
         sLocalOutgoingBuffer.datagramSize = frame->data_size;
         memcpy(sLocalOutgoingBuffer.datagramData, frame->data, frame->data_size);
-        sLocalOutgoingBuffer.protocolType = protocolType;
         // We ignore the 'source address' because the spoke does too.
         sNeedToSendLocalOutgoingBuffer = true;
         return noErr;
@@ -798,7 +797,7 @@ hub_received_ping_request(AIStream& ps, NetAddrBlock address)
 		
 		// Send the packet
 		sOutgoingFrame->data_size = ops.tellp();
-		NetDDPSendFrame(sOutgoingFrame, &address, kPROTOCOL_TYPE, 0 /* ignored */);
+		NetDDPSendFrame(sOutgoingFrame, &address);
 	} catch (...) {
 		logWarningNMT("Caught exception while constructing/sending ping response packet");
 	}
@@ -1671,9 +1670,9 @@ send_packets()
                                 // Send the packet
                                 sOutgoingFrame->data_size = ps.tellp();
                                 if(i == sLocalPlayerIndex)
-                                        send_frame_to_local_spoke(sOutgoingFrame, &thePlayer.mAddress, kPROTOCOL_TYPE, 0 /* ignored */);
+                                        send_frame_to_local_spoke(sOutgoingFrame, &thePlayer.mAddress);
                                 else
-                                        NetDDPSendFrame(sOutgoingFrame, &thePlayer.mAddress, kPROTOCOL_TYPE, 0 /* ignored */);
+                                        NetDDPSendFrame(sOutgoingFrame, &thePlayer.mAddress);
                         } // try
                         catch (...)
                         {

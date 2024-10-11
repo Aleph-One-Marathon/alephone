@@ -549,11 +549,9 @@
     <ClCompile Include="..\..\Source_Files\Network\Metaserver\SdlMetaserverClientUi.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\network.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\network_capabilities.cpp" />
-    <ClCompile Include="..\..\Source_Files\Network\network_data_formats.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\network_dialogs.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\network_dialog_widgets_sdl.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\network_games.cpp" />
-    <ClCompile Include="..\..\Source_Files\Network\network_lookup_sdl.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\network_messages.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\network_star_hub.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\network_star_spoke.cpp" />
@@ -771,12 +769,9 @@
     <ClInclude Include="..\..\Source_Files\Network\network.h" />
     <ClInclude Include="..\..\Source_Files\Network\NetworkGameProtocol.h" />
     <ClInclude Include="..\..\Source_Files\Network\network_capabilities.h" />
-    <ClInclude Include="..\..\Source_Files\Network\network_data_formats.h" />
     <ClInclude Include="..\..\Source_Files\Network\network_dialogs.h" />
     <ClInclude Include="..\..\Source_Files\Network\network_dialog_widgets_sdl.h" />
-    <ClInclude Include="..\..\Source_Files\Network\network_distribution_types.h" />
     <ClInclude Include="..\..\Source_Files\Network\network_games.h" />
-    <ClInclude Include="..\..\Source_Files\Network\network_lookup_sdl.h" />
     <ClInclude Include="..\..\Source_Files\Network\network_messages.h" />
     <ClInclude Include="..\..\Source_Files\Network\network_private.h" />
     <ClInclude Include="..\..\Source_Files\Network\network_star.h" />
