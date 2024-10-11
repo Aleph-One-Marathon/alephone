@@ -76,34 +76,6 @@ StarGameProtocol::Enter(short* inNetStatePtr)
 	return true;
 }
 
-
-
-void
-StarGameProtocol::Exit1()
-{
-//	return true;
-}
-
-
-
-void
-StarGameProtocol::Exit2()
-{
-//	return true;
-}
-
-
-
-void
-StarGameProtocol::DistributeInformation(short type, void *buffer, short buffer_size, bool send_to_self, bool only_send_to_team)
-{
-	const NetDistributionInfo* theInfo = NetGetDistributionInfoForType(type);
-	if(theInfo != NULL && theInfo->lossy)
-		spoke_distribute_lossy_streaming_bytes_to_everyone(type, static_cast<byte*>(buffer), buffer_size, !send_to_self, only_send_to_team);
-}
-
-
-
 void
 StarGameProtocol::PacketHandler(DDPPacketBufferPtr packet)
 {
@@ -247,18 +219,6 @@ make_player_really_net_dead(size_t inPlayerIndex)
         assert(inPlayerIndex < static_cast<size_t>(sTopology->player_count));
         sTopology->players[inPlayerIndex].net_dead = true;
 }
-
-
-
-void
-call_distribution_response_function_if_available(byte* inBuffer, uint16 inBufferSize, int16 inDistributionType, uint8 inSendingPlayerIndex)
-{
-	const NetDistributionInfo* theInfo = NetGetDistributionInfoForType(inDistributionType);
-	if(theInfo != NULL)
-		theInfo->distribution_proc(inBuffer, inBufferSize, inSendingPlayerIndex);
-}
-
-
 
 void
 StarGameProtocol::ParsePreferencesTree(InfoTree prefs, std::string version)

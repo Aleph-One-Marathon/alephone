@@ -149,10 +149,6 @@ enum {
 	kDefaultSendPeriod = 1,
         kDefaultRecoverySendPeriod = TICKS_PER_SECOND / 2,
 	kDefaultMinimumSendPeriod = 3,
-	kLossyByteStreamDataBufferSize = 1280,
-	kTypicalLossyByteStreamChunkSize = 56,
-	kLossyByteStreamDescriptorCount = kLossyByteStreamDataBufferSize / kTypicalLossyByteStreamChunkSize,
-
 	kLatencyBufferSize = TICKS_PER_SECOND * 5, // store 5 seconds of ping counts
 	kDisplayLatencyWindow = TICKS_PER_SECOND * 1, // display last second's ping
 	kJitterUpdateInterval = TICKS_PER_SECOND * 1 / 2
@@ -313,30 +309,9 @@ static DDPPacketBuffer	sLocalOutgoingBuffer;
 static bool		sNeedToSendLocalOutgoingBuffer = false;
 #endif
 
-
-struct HubLossyByteStreamChunkDescriptor
-{
-	uint16	mLength;
-	int16	mType;
-	uint32	mDestinations;
-	uint8	mSender;
-};
-
-// This holds outgoing lossy byte stream data
-static CircularByteBuffer sOutgoingLossyByteStreamData(kLossyByteStreamDataBufferSize);
-
-// This holds a descriptor for each chunk of lossy byte stream data held in the above buffer
-static CircularQueue<HubLossyByteStreamChunkDescriptor> sOutgoingLossyByteStreamDescriptors(kLossyByteStreamDescriptorCount);
-
-// This is used to copy between AStream and CircularByteBuffer
-// It's used in both directions, but that's ok because the routines that do so are mutex.
-static byte sScratchBuffer[kLossyByteStreamDataBufferSize];
-
-
 static myTMTaskPtr	sHubTickTask = NULL;
 static std::atomic_bool	sHubActive = { false };	// used to enable the packet handler
-static bool		sHubInitialized = false;
-
+static bool sHubInitialized = false;
 
 
 static void hub_check_for_completion();
@@ -348,7 +323,6 @@ static void hub_update_player_pregame_state(int inPlayerIndex, int16 state);
 static void hub_received_ping_request(AIStream& ps, NetAddrBlock address);
 static void hub_received_ping_response(AIStream& ps, NetAddrBlock address);
 static void process_messages(AIStream& ps, int inSenderIndex);
-static void process_optional_message(AIStream& ps, int inSenderIndex, uint16 inMessageType);
 static void make_player_netdead(int inPlayerIndex);
 static bool hub_tick();
 static void send_packets();
@@ -489,9 +463,6 @@ hub_initialize(int32 inStartingTick, int inNumPlayers, const NetAddrBlock* const
 
         sAddressToPlayerIndex.clear();
         sConnectedPlayersBitmask = 0;
-
-	sOutgoingLossyByteStreamDescriptors.reset();
-	sOutgoingLossyByteStreamData.reset();
 
         for(size_t i = 0; i < inNumPlayers; i++)
         {
@@ -1204,85 +1175,10 @@ process_messages(AIStream& ps, int inSenderIndex)
                                 break;
 
                         default:
-                                process_optional_message(ps, inSenderIndex, theMessageType);
                                 break;
                 }
         }
 }
-
-
-
-static void
-process_lossy_byte_stream_message(AIStream& ps, int inSenderIndex, uint16 inLength)
-{
-	assert(inSenderIndex >= 0 && inSenderIndex < static_cast<int>(sNetworkPlayers.size()));
-
-	HubLossyByteStreamChunkDescriptor theDescriptor;
-
-	size_t theHeaderStreamPosition = ps.tellg();
-	ps >> theDescriptor.mType >> theDescriptor.mDestinations;
-	theDescriptor.mLength = inLength - (ps.tellg() - theHeaderStreamPosition);
-	theDescriptor.mSender = inSenderIndex;
-
-	logDumpNMT("got %d bytes of lossy stream type %d from player %d for destinations 0x%x", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
-
-	bool canEnqueue = true;
-	
-	if(sOutgoingLossyByteStreamDescriptors.getRemainingSpace() < 1)
-	{
-		logNoteNMT("no descriptor space remains; discarding (%uh) bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%lx", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
-		canEnqueue = false;
-	}
-
-	// We avoid enqueueing a partial chunk to make things easier on code that uses us
-	if(theDescriptor.mLength > sOutgoingLossyByteStreamData.getRemainingSpace())
-	{
-		logNoteNMT("insufficient buffer space for %uh bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%lx; discarded", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
-		canEnqueue = false;
-	}
-
-	if(canEnqueue)
-	{
-		if(theDescriptor.mLength > 0)
-		{
-			// This is an assert, not a test, because the data buffer should be no
-			// bigger than the scratch buffer (and if it didn't fit into the data buffer,
-			// canEnqueue would be false).
-			assert(theDescriptor.mLength <= sizeof(sScratchBuffer));
-
-			// XXX extraneous copy, needed given the current interfaces to these things
-			ps.read(sScratchBuffer, theDescriptor.mLength);
-	
-			sOutgoingLossyByteStreamData.enqueueBytes(sScratchBuffer, theDescriptor.mLength);
-			sOutgoingLossyByteStreamDescriptors.enqueue(theDescriptor);
-		}
-	}
-	else
-		// We still have to gobble up the entire message, even if we can't use it.
-		ps.ignore(theDescriptor.mLength);
-}
-
-
-
-static void
-process_optional_message(AIStream& ps, int inSenderIndex, uint16 inMessageType)
-{
-        // All optional messages are required to give their length in the two bytes
-        // immediately following their type.  (The message length value does not include
-        // the space required for the message type ID or the encoded message length.)
-        uint16 theMessageLength;
-        ps >> theMessageLength;
-
-	if(inMessageType == kSpokeToHubLossyByteStreamMessageType)
-		process_lossy_byte_stream_message(ps, inSenderIndex, theMessageLength);
-	else
-	{
-		// Currently we ignore (skip) all optional messages
-		ps.ignore(theMessageLength);
-	}
-}
-
-
 
 static void
 make_player_netdead(int inPlayerIndex)
@@ -1486,21 +1382,6 @@ hub_tick()
 static void
 send_packets()
 {
-	// Currently, at most one lossy data descriptor is used per trip through this function.  So,
-	// we do some processing here outside the loop since the results'd be the same every time.
-	HubLossyByteStreamChunkDescriptor theDescriptor = { 0, 0, 0, 0 };
-	bool haveLossyData = false;
-	if(sOutgoingLossyByteStreamDescriptors.getCountOfElements() > 0)
-	{
-		haveLossyData = true;
-		theDescriptor = sOutgoingLossyByteStreamDescriptors.peek();
-
-		// XXX extraneous copy due to limited interfaces
-		// We assert here; the real "test" happened when it was enqueued.
-		assert(theDescriptor.mLength <= sizeof(sScratchBuffer));
-		sOutgoingLossyByteStreamData.peekBytes(sScratchBuffer, theDescriptor.mLength);
-	}
-
 	// remember when we sent flags for the first time
 	for (int32 i = sFlagSendTimeQueue.getWriteTick(); i < sSmallestIncompleteTick; i++) 
 	{
@@ -1538,21 +1419,6 @@ send_packets()
                                                         << sNetworkPlayers[j].mNetDeadTick;
                                         }
                                 }
-
-				// Lossy streaming data?
-				if(haveLossyData && ((theDescriptor.mDestinations & (((uint32)1) << i)) != 0))
-				{
-					logDumpNMT("packet to player %d will contain %d bytes of lossy byte stream type %d from player %d", i, theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender);
-					// In AStreams, sizeof(packed scalar) == sizeof(unpacked scalar)
-					uint16 theMessageLength = sizeof(theDescriptor.mType) + sizeof(theDescriptor.mSender) + theDescriptor.mLength;
-					
-					ps << (uint16)kHubToSpokeLossyByteStreamMessageType
-						<< theMessageLength
-						<< theDescriptor.mType
-						<< theDescriptor.mSender;
-
-					ps.write(sScratchBuffer, theDescriptor.mLength);
-				}
         
                                 // End of messages
                                 ps << (uint16)kEndOfMessagesMessageType;
@@ -1685,12 +1551,6 @@ send_packets()
 
         sLastNetworkTickSent = sNetworkTicker;
 	sSmallestUnsentTick = sSmallestIncompleteTick;
-
-	if(haveLossyData)
-	{
-		sOutgoingLossyByteStreamData.dequeue(theDescriptor.mLength);
-		sOutgoingLossyByteStreamDescriptors.dequeue();
-	}
 	
 } // send_packets()
 

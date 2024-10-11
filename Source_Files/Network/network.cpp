@@ -270,10 +270,6 @@ struct ignore_lua
 // ZZZ note: read this externally with the NetState() function.
 static short netState= netUninitialized;
 
-// ZZZ change: now using an STL 'map' to, well, _map_ distribution types to info records.
-typedef std::map<int16, NetDistributionInfo> distribution_info_map_t;
-static  distribution_info_map_t distribution_info_map;
-
 // ZZZ: are we trying to start a new game or resume a saved-game?
 // This is only valid on the gatherer after NetGather() is called;
 // only valid on a joiner once he receives the final topology (tagRESUME_GAME)
@@ -1349,9 +1345,7 @@ void NetExit(
 	void)
 {
 	OSErr error = noErr;
-  
-	sCurrentGameProtocol->Exit1();
-  
+    
 	// ZZZ: clean up SDL Time Manager emulation.  
 	// true says wait for any late finishers to finish
 	// (but does NOT say to kill anyone not already removed.)
@@ -1362,9 +1356,6 @@ void NetExit(
 		if (!error) {
 			free(topology);
 			topology= NULL;
-      
-			sCurrentGameProtocol->Exit2();
-      
 			netState= netUninitialized;
 		} else {
 			logAnomaly("NetDDPCloseSocket returned %i", error);
@@ -1444,56 +1435,6 @@ void
 NetRemovePinger()
 {
 	pinger.reset();
-}
-
-
-/* Add a function for a distribution type. returns the type, or NONE if it can't be
- * installed. It's safe to call this function multiple times for the same proc. */
-// ZZZ: changed to take in the desired type, so a given machine can handle perhaps only some
-// of the distribution types.
-void
-NetAddDistributionFunction(int16 inDataTypeID, NetDistributionProc inProc, bool inLossy) {
-    // We don't support lossless distribution yet.
-    assert(inLossy);
-
-    // Prepare a NetDistributionInfo with the desired data.
-    NetDistributionInfo theInfo;
-    theInfo.lossy               = inLossy;
-    theInfo.distribution_proc   = inProc;
-
-    // Insert or update a map entry
-    distribution_info_map[inDataTypeID] = theInfo;
-}
-
-
-/* Remove a distribution proc that has been installed. */
-void
-NetRemoveDistributionFunction(int16 inDataTypeID) {
-    distribution_info_map.erase(inDataTypeID);
-}
-
-
-const NetDistributionInfo*
-NetGetDistributionInfoForType(int16 inType)
-{
-	distribution_info_map_t::const_iterator    theEntry = distribution_info_map.find(inType);
-	if(theEntry != distribution_info_map.end())
-		return &(theEntry->second);
-	else
-		return NULL;
-}
-
-	
-
-
-void NetDistributeInformation(
-                              short type,
-                              void *buffer,
-                              short buffer_size,
-                              bool send_to_self,
-	bool only_send_to_team)
-{
-	sCurrentGameProtocol->DistributeInformation(type, buffer, buffer_size, send_to_self, only_send_to_team);
 }
 
 

@@ -53,10 +53,6 @@ Tuesday, June 21, 1994 3:26:46 PM
 // change this if you make a major change to the way the setup messages work
 #define kNetworkSetupProtocolID "Aleph One WonderNAT V2"
 
-// ZZZ: there probably should be a published max size somewhere, but this isn't used anywhere; better
-// not to pretend it's real.
-//#define MAX_NET_DISTRIBUTION_BUFFER_SIZE 512
-
 enum // base network speeds
 {
 	_appletalk_remote, // ARA
@@ -187,8 +183,6 @@ enum /* states */
 };
 
 /* -------- typedefs */
-// player index is the index of the player that is sending the information
-typedef void (*NetDistributionProc)(void *buffer, short buffer_size, short player_index);
 typedef void (*CheckPlayerProcPtr)(short player_index, short num_players);
 
 /* --------- prototypes/NETWORK.C */
@@ -235,19 +229,6 @@ std::weak_ptr<Pinger> NetGetPinger();
 void NetCreatePinger();
 void NetRemovePinger();
 
-// ghs: these are obsolete, I'll get rid of them when I'm sure I won't want
-//      to refer back to them
-
-// ZZZ addition - pre-game/(eventually) postgame chat
-// Returns true if there was a pending message.
-// Returns pointer to chat text.
-// Returns pointer to sending player's data (does not copy player data).
-// Data returned in pointers is only good until the next call to NetUpdateJoinState or NetCheckForIncomingMessages.
-bool NetGetMostRecentChatMessage(player_info** outSendingPlayerData, char** outMessage);
-
-// Gatherer should use this to send out his messages or to broadcast a message received from a joiner
-OSErr NetDistributeChatMessage(short sender_identifier, const char* message);
-
 void NetProcessMessagesInGame();
 
 short NetGetLocalPlayerIndex(void);
@@ -283,13 +264,6 @@ void SetNetscriptStatus (bool status);
 void construct_multiplayer_starts(player_start_data* outStartArray, short* outStartCount);
 void match_starts_with_existing_players(player_start_data* ioStartArray, short* ioStartCount);
 void display_net_game_stats(void);
-
-// ZZZ change: caller specifies int16 ID for distribution type.  Unknown types (when received) are
-// passed along but ignored.  Uses an STL 'map' so ID's need not be consecutive or in any particular
-// sub-range.
-void NetAddDistributionFunction(int16 type, NetDistributionProc proc, bool lossy);
-void NetDistributeInformation(short type, void *buffer, short buffer_size, bool send_to_self, bool send_only_to_team = false);
-void NetRemoveDistributionFunction(short type);
 
 // disable "cheats"
 bool NetAllowCrosshair();

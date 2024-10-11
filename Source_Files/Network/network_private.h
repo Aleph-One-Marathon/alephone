@@ -96,10 +96,10 @@ enum /* error string for user */
 #define MAP_TRANSFER_TIME_OUT   (MACHINE_TICKS_PER_SECOND*70) // 70 seconds to wait for map.
 
 enum /* tag */
-{	// ZZZ annotation: these (in NetPacketHeader) indicate the rest of the datagram is a NetPacket (i.e. a ring packet).
-	tagRING_PACKET,
-	tagACKNOWLEDGEMENT,
-	tagCHANGE_RING_PACKET,  // to tell a player to change his downring address. also has action flags.
+{
+	tagRING_PACKET, //obsolete
+	tagACKNOWLEDGEMENT, //obsolete
+	tagCHANGE_RING_PACKET, //obsolete
 	
         // ZZZ annotation: these should only be found in streaming data (in a NetTopology).
 	tagNEW_PLAYER,
@@ -109,8 +109,8 @@ enum /* tag */
 	tagCHANGED_PLAYER,
 	
         // ZZZ annotation: these (in NetPacketHeader) indicate the rest of the datagram is a NetDistributionPacket.
-	tagLOSSY_DISTRIBUTION,     // for transfer data other than action flags
-	tagLOSSLESS_DISTRIBUTION,   // ditto, but currently unimplemented
+	tagLOSSY_DISTRIBUTION, //obsolete
+	tagLOSSLESS_DISTRIBUTION, //obsolete
         
         // ZZZ: more streaming data (topology) packet types
         tagRESUME_GAME	// ZZZ addition: trying to resume a saved-game rather than start a new netgame.
@@ -159,15 +159,6 @@ struct NetTopology
 };
 typedef struct NetTopology NetTopology, *NetTopologyPtr;
 
-// ZZZ: same here (should be safe to alter)
-struct NetDistributionInfo
-{
-	bool              lossy;
-	NetDistributionProc  distribution_proc;
-};
-
-typedef struct NetDistributionInfo NetDistributionInfo, *NetDistributionInfoPtr;
-
 /* ===== application specific data structures/enums */
 
 // Altering these constants requires changes to get_network_version().  - Woody
@@ -193,11 +184,7 @@ enum {
 class CommunicationsChannel;
 class MessageDispatcher;
 class MessageHandler;
-
 class Message;
-
-
-const NetDistributionInfo* NetGetDistributionInfoForType(int16 inType);
 
 struct ClientChatInfo
 {
