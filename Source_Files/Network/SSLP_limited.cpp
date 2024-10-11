@@ -97,9 +97,6 @@ static SSLP_Service_Instance_Status_Changed_Callback	sNameChangedCallback = NULL
 static struct 	SSLPint_FoundInstance*			sFoundInstances = NULL;
 
 
-////////// for services that may be discovered
-static UDPpacket*					sHintPacket = NULL;		// sHintPacket->data does not change
-
 // NB: currently, incoming FIND packets' service_types are compared against
 // the service_type in this packet to see if a response is warranted.
 // (the service_type in this packet is copied from the instance passed in to Allow_Service_Discovery().)
