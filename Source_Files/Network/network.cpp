@@ -1687,11 +1687,6 @@ void NetRetargetJoinAttempts(const IPaddress* inAddress)
 	if(host_address_specified)
 	{
 		host_address = *inAddress;
-		// Aleph One 1.1 and earlier didn't send the gather port
-		if(host_address.port == 0)
-		{
-			host_address.port = SDL_SwapBE16(DEFAULT_GAME_PORT);
-		}
 	}
 }
 
