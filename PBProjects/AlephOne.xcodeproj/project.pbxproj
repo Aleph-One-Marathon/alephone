@@ -576,8 +576,6 @@
 		AE120CFA2BC77645001873DD /* network_metaserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D87958107D11E120078D26B /* network_metaserver.cpp */; };
 		AE120CFB2BC77645001873DD /* CommunicationsChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152400711123100836977 /* CommunicationsChannel.cpp */; };
 		AE120CFC2BC77645001873DD /* Message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152430711123200836977 /* Message.cpp */; };
-		AE120CFD2BC77645001873DD /* MessageDispatcher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152450711123200836977 /* MessageDispatcher.cpp */; };
-		AE120CFE2BC77645001873DD /* MessageHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152470711123200836977 /* MessageHandler.cpp */; };
 		AE120CFF2BC77645001873DD /* MessageInflater.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152490711123200836977 /* MessageInflater.cpp */; };
 		AE120D002BC77645001873DD /* network_messages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF154D6080376E100BC3C09 /* network_messages.cpp */; };
 		AE120D012BC77645001873DD /* csstrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114C0136A66601000001 /* csstrings.cpp */; };
@@ -1021,8 +1019,6 @@
 		AE1321942C1CB4D2009D34AA /* network_metaserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D87958107D11E120078D26B /* network_metaserver.cpp */; };
 		AE1321952C1CB4D2009D34AA /* CommunicationsChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152400711123100836977 /* CommunicationsChannel.cpp */; };
 		AE1321962C1CB4D2009D34AA /* Message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152430711123200836977 /* Message.cpp */; };
-		AE1321972C1CB4D2009D34AA /* MessageDispatcher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152450711123200836977 /* MessageDispatcher.cpp */; };
-		AE1321982C1CB4D2009D34AA /* MessageHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152470711123200836977 /* MessageHandler.cpp */; };
 		AE1321992C1CB4D2009D34AA /* MessageInflater.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152490711123200836977 /* MessageInflater.cpp */; };
 		AE13219A2C1CB4D2009D34AA /* network_messages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF154D6080376E100BC3C09 /* network_messages.cpp */; };
 		AE13219B2C1CB4D2009D34AA /* csstrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114C0136A66601000001 /* csstrings.cpp */; };
@@ -1465,8 +1461,6 @@
 		AE505C93141D45E600915344 /* network_metaserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D87958107D11E120078D26B /* network_metaserver.cpp */; };
 		AE505C94141D45E600915344 /* CommunicationsChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152400711123100836977 /* CommunicationsChannel.cpp */; };
 		AE505C95141D45E600915344 /* Message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152430711123200836977 /* Message.cpp */; };
-		AE505C96141D45E600915344 /* MessageDispatcher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152450711123200836977 /* MessageDispatcher.cpp */; };
-		AE505C97141D45E600915344 /* MessageHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152470711123200836977 /* MessageHandler.cpp */; };
 		AE505C98141D45E600915344 /* MessageInflater.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152490711123200836977 /* MessageInflater.cpp */; };
 		AE505C99141D45E600915344 /* network_messages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF154D6080376E100BC3C09 /* network_messages.cpp */; };
 		AE505C9A141D45E600915344 /* csstrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114C0136A66601000001 /* csstrings.cpp */; };
@@ -1944,8 +1938,6 @@
 		AEB4A23414296CAE00537AE7 /* network_metaserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D87958107D11E120078D26B /* network_metaserver.cpp */; };
 		AEB4A23514296CAE00537AE7 /* CommunicationsChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152400711123100836977 /* CommunicationsChannel.cpp */; };
 		AEB4A23614296CAE00537AE7 /* Message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152430711123200836977 /* Message.cpp */; };
-		AEB4A23714296CAE00537AE7 /* MessageDispatcher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152450711123200836977 /* MessageDispatcher.cpp */; };
-		AEB4A23814296CAE00537AE7 /* MessageHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152470711123200836977 /* MessageHandler.cpp */; };
 		AEB4A23914296CAE00537AE7 /* MessageInflater.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152490711123200836977 /* MessageInflater.cpp */; };
 		AEB4A23A14296CAE00537AE7 /* network_messages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF154D6080376E100BC3C09 /* network_messages.cpp */; };
 		AEB4A23B14296CAE00537AE7 /* csstrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114C0136A66601000001 /* csstrings.cpp */; };
@@ -2368,8 +2360,6 @@
 		AEBDC6712C4DF0780026DFF1 /* network_metaserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D87958107D11E120078D26B /* network_metaserver.cpp */; };
 		AEBDC6722C4DF0780026DFF1 /* CommunicationsChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152400711123100836977 /* CommunicationsChannel.cpp */; };
 		AEBDC6732C4DF0780026DFF1 /* Message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152430711123200836977 /* Message.cpp */; };
-		AEBDC6742C4DF0780026DFF1 /* MessageDispatcher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152450711123200836977 /* MessageDispatcher.cpp */; };
-		AEBDC6752C4DF0780026DFF1 /* MessageHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152470711123200836977 /* MessageHandler.cpp */; };
 		AEBDC6762C4DF0780026DFF1 /* MessageInflater.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152490711123200836977 /* MessageInflater.cpp */; };
 		AEBDC6772C4DF0780026DFF1 /* network_messages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF154D6080376E100BC3C09 /* network_messages.cpp */; };
 		AEBDC6782C4DF0780026DFF1 /* csstrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114C0136A66601000001 /* csstrings.cpp */; };
@@ -2737,8 +2727,6 @@
 		AEC3C86109AD68AC003258E4 /* network_metaserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D87958107D11E120078D26B /* network_metaserver.cpp */; };
 		AEC3C86209AD68AC003258E4 /* CommunicationsChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152400711123100836977 /* CommunicationsChannel.cpp */; };
 		AEC3C86309AD68AC003258E4 /* Message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152430711123200836977 /* Message.cpp */; };
-		AEC3C86409AD68AC003258E4 /* MessageDispatcher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152450711123200836977 /* MessageDispatcher.cpp */; };
-		AEC3C86509AD68AC003258E4 /* MessageHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152470711123200836977 /* MessageHandler.cpp */; };
 		AEC3C86609AD68AC003258E4 /* MessageInflater.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152490711123200836977 /* MessageInflater.cpp */; };
 		AEC3C86709AD68AC003258E4 /* network_messages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF154D6080376E100BC3C09 /* network_messages.cpp */; };
 		AEC3C86809AD68AC003258E4 /* csstrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114C0136A66601000001 /* csstrings.cpp */; };
@@ -3061,8 +3049,6 @@
 		AEFD874013EB84CF00C1E687 /* network_metaserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D87958107D11E120078D26B /* network_metaserver.cpp */; };
 		AEFD874113EB84CF00C1E687 /* CommunicationsChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152400711123100836977 /* CommunicationsChannel.cpp */; };
 		AEFD874213EB84CF00C1E687 /* Message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152430711123200836977 /* Message.cpp */; };
-		AEFD874313EB84CF00C1E687 /* MessageDispatcher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152450711123200836977 /* MessageDispatcher.cpp */; };
-		AEFD874413EB84CF00C1E687 /* MessageHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152470711123200836977 /* MessageHandler.cpp */; };
 		AEFD874513EB84CF00C1E687 /* MessageInflater.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152490711123200836977 /* MessageInflater.cpp */; };
 		AEFD874613EB84CF00C1E687 /* network_messages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF154D6080376E100BC3C09 /* network_messages.cpp */; };
 		AEFD874713EB84CF00C1E687 /* csstrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114C0136A66601000001 /* csstrings.cpp */; };
@@ -3244,9 +3230,7 @@
 		3DC152410711123100836977 /* CommunicationsChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommunicationsChannel.h; sourceTree = "<group>"; };
 		3DC152430711123200836977 /* Message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Message.cpp; sourceTree = "<group>"; };
 		3DC152440711123200836977 /* Message.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Message.h; sourceTree = "<group>"; };
-		3DC152450711123200836977 /* MessageDispatcher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MessageDispatcher.cpp; sourceTree = "<group>"; };
 		3DC152460711123200836977 /* MessageDispatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MessageDispatcher.h; sourceTree = "<group>"; };
-		3DC152470711123200836977 /* MessageHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MessageHandler.cpp; sourceTree = "<group>"; };
 		3DC152480711123200836977 /* MessageHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MessageHandler.h; sourceTree = "<group>"; };
 		3DC152490711123200836977 /* MessageInflater.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MessageInflater.cpp; sourceTree = "<group>"; };
 		3DC1524A0711123200836977 /* MessageInflater.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MessageInflater.h; sourceTree = "<group>"; };
@@ -3939,9 +3923,7 @@
 				3DC152410711123100836977 /* CommunicationsChannel.h */,
 				3DC152430711123200836977 /* Message.cpp */,
 				3DC152440711123200836977 /* Message.h */,
-				3DC152450711123200836977 /* MessageDispatcher.cpp */,
 				3DC152460711123200836977 /* MessageDispatcher.h */,
-				3DC152470711123200836977 /* MessageHandler.cpp */,
 				3DC152480711123200836977 /* MessageHandler.h */,
 				3DC152490711123200836977 /* MessageInflater.cpp */,
 				3DC1524A0711123200836977 /* MessageInflater.h */,
@@ -6828,8 +6810,6 @@
 				AE120CFA2BC77645001873DD /* network_metaserver.cpp in Sources */,
 				AE120CFB2BC77645001873DD /* CommunicationsChannel.cpp in Sources */,
 				AE120CFC2BC77645001873DD /* Message.cpp in Sources */,
-				AE120CFD2BC77645001873DD /* MessageDispatcher.cpp in Sources */,
-				AE120CFE2BC77645001873DD /* MessageHandler.cpp in Sources */,
 				AE120CFF2BC77645001873DD /* MessageInflater.cpp in Sources */,
 				AE8342442C5B22EA00A4A530 /* ScenarioChooser.cpp in Sources */,
 				AE120D002BC77645001873DD /* network_messages.cpp in Sources */,
@@ -7055,8 +7035,6 @@
 				AE1321942C1CB4D2009D34AA /* network_metaserver.cpp in Sources */,
 				AE1321952C1CB4D2009D34AA /* CommunicationsChannel.cpp in Sources */,
 				AE1321962C1CB4D2009D34AA /* Message.cpp in Sources */,
-				AE1321972C1CB4D2009D34AA /* MessageDispatcher.cpp in Sources */,
-				AE1321982C1CB4D2009D34AA /* MessageHandler.cpp in Sources */,
 				AE1321992C1CB4D2009D34AA /* MessageInflater.cpp in Sources */,
 				AE8342452C5B22EA00A4A530 /* ScenarioChooser.cpp in Sources */,
 				AE13219A2C1CB4D2009D34AA /* network_messages.cpp in Sources */,
@@ -7281,8 +7259,6 @@
 				AE505C93141D45E600915344 /* network_metaserver.cpp in Sources */,
 				AE505C94141D45E600915344 /* CommunicationsChannel.cpp in Sources */,
 				AE505C95141D45E600915344 /* Message.cpp in Sources */,
-				AE505C96141D45E600915344 /* MessageDispatcher.cpp in Sources */,
-				AE505C97141D45E600915344 /* MessageHandler.cpp in Sources */,
 				AE505C98141D45E600915344 /* MessageInflater.cpp in Sources */,
 				AE505C99141D45E600915344 /* network_messages.cpp in Sources */,
 				AE505C9A141D45E600915344 /* csstrings.cpp in Sources */,
@@ -7515,8 +7491,6 @@
 				AEB4A23414296CAE00537AE7 /* network_metaserver.cpp in Sources */,
 				AEB4A23514296CAE00537AE7 /* CommunicationsChannel.cpp in Sources */,
 				AEB4A23614296CAE00537AE7 /* Message.cpp in Sources */,
-				AEB4A23714296CAE00537AE7 /* MessageDispatcher.cpp in Sources */,
-				AEB4A23814296CAE00537AE7 /* MessageHandler.cpp in Sources */,
 				AEB4A23914296CAE00537AE7 /* MessageInflater.cpp in Sources */,
 				AEB4A23A14296CAE00537AE7 /* network_messages.cpp in Sources */,
 				AEB4A23B14296CAE00537AE7 /* csstrings.cpp in Sources */,
@@ -7742,8 +7716,6 @@
 				AE1D0DEC2C6198500083010F /* steamshim_child.cpp in Sources */,
 				AEBDC6722C4DF0780026DFF1 /* CommunicationsChannel.cpp in Sources */,
 				AEBDC6732C4DF0780026DFF1 /* Message.cpp in Sources */,
-				AEBDC6742C4DF0780026DFF1 /* MessageDispatcher.cpp in Sources */,
-				AEBDC6752C4DF0780026DFF1 /* MessageHandler.cpp in Sources */,
 				AEBDC6762C4DF0780026DFF1 /* MessageInflater.cpp in Sources */,
 				AE1D0DED2C6198AE0083010F /* ScenarioChooser.cpp in Sources */,
 				AEBDC6772C4DF0780026DFF1 /* network_messages.cpp in Sources */,
@@ -7968,8 +7940,6 @@
 				AEC3C86109AD68AC003258E4 /* network_metaserver.cpp in Sources */,
 				AEC3C86209AD68AC003258E4 /* CommunicationsChannel.cpp in Sources */,
 				AEC3C86309AD68AC003258E4 /* Message.cpp in Sources */,
-				AEC3C86409AD68AC003258E4 /* MessageDispatcher.cpp in Sources */,
-				AEC3C86509AD68AC003258E4 /* MessageHandler.cpp in Sources */,
 				AEC3C86609AD68AC003258E4 /* MessageInflater.cpp in Sources */,
 				AEC3C86709AD68AC003258E4 /* network_messages.cpp in Sources */,
 				AEC3C86809AD68AC003258E4 /* csstrings.cpp in Sources */,
@@ -8194,8 +8164,6 @@
 				AEFD874013EB84CF00C1E687 /* network_metaserver.cpp in Sources */,
 				AEFD874113EB84CF00C1E687 /* CommunicationsChannel.cpp in Sources */,
 				AEFD874213EB84CF00C1E687 /* Message.cpp in Sources */,
-				AEFD874313EB84CF00C1E687 /* MessageDispatcher.cpp in Sources */,
-				AEFD874413EB84CF00C1E687 /* MessageHandler.cpp in Sources */,
 				AEFD874513EB84CF00C1E687 /* MessageInflater.cpp in Sources */,
 				AEFD874613EB84CF00C1E687 /* network_messages.cpp in Sources */,
 				AEFD874713EB84CF00C1E687 /* csstrings.cpp in Sources */,

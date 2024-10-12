@@ -655,12 +655,6 @@
     <ClCompile Include="..\..\Source_Files\TCPMess\Message.cpp">
       <Filter>TCPMess\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source_Files\TCPMess\MessageDispatcher.cpp">
-      <Filter>TCPMess\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source_Files\TCPMess\MessageHandler.cpp">
-      <Filter>TCPMess\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source_Files\TCPMess\MessageInflater.cpp">
       <Filter>TCPMess\Source Files</Filter>
     </ClCompile>

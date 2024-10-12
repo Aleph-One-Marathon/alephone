@@ -631,8 +631,6 @@
     <ClCompile Include="..\..\Source_Files\Sound\StreamPlayer.cpp" />
     <ClCompile Include="..\..\Source_Files\TCPMess\CommunicationsChannel.cpp" />
     <ClCompile Include="..\..\Source_Files\TCPMess\Message.cpp" />
-    <ClCompile Include="..\..\Source_Files\TCPMess\MessageDispatcher.cpp" />
-    <ClCompile Include="..\..\Source_Files\TCPMess\MessageHandler.cpp" />
     <ClCompile Include="..\..\Source_Files\TCPMess\MessageInflater.cpp" />
     <ClCompile Include="..\..\Source_Files\XML\InfoTree.cpp" />
     <ClCompile Include="..\..\Source_Files\XML\Plugins.cpp" />
