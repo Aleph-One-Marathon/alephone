@@ -288,8 +288,6 @@ void NetInitializeSessionIdentifier(void);
 static void NetInitializeTopology(void *game_data, short game_data_size, void *player_data, short player_data_size);
 static void NetLocalAddrBlock(NetAddrBlock *address, short socketNumber);
 
-static int net_compare(void const *p1, void const *p2);
-
 static void NetUpdateTopology(void);
 static void NetDistributeTopology(short tag);
 
@@ -1596,27 +1594,8 @@ bool NetStart(
 {
 	assert(netState==netGathering);
 
-	// how about we sort the players before we pass them out to everyone?
-	// This is an attempt to have a slightly more efficent ring in a multi-zone network.
-	// we should really do some sort of pinging to determine an optimal order (or perhaps
-	// sort on hop counts) but we'll just order them by their network numbers.
-	// however, we need to leave the server player index 0 because we assume that the person
-	// that starts out at index 0 is the server.
-        
-        // ZZZ: do that sorting in a new game only - in a resume game, the ordering is significant
-        // (it's how netplayers will line up with existing saved-game players).
-
-        if(!resuming_saved_game)
-        {
-                if (topology->player_count > 2)
-                {
-                        qsort(topology->players+1, topology->player_count-1, sizeof(struct NetPlayer), net_compare);
-                }
-        
-                NetUpdateTopology();
-        }
 #ifdef A1_NETWORK_STANDALONE_HUB
-		else
+		if (resuming_saved_game)
 		{
 			player_start_data theStarts[MAXIMUM_NUMBER_OF_PLAYERS];
 			short theNumberOfStarts;
@@ -1629,15 +1608,6 @@ bool NetStart(
 	NetDistributeTopology(resuming_saved_game ? tagRESUME_GAME : tagSTART_GAME);
 
 	return true;
-}
-
-static int net_compare(
-	void const *p1, 
-	void const *p2)
-{
-	uint32 p1_host = SDL_SwapBE32(((const NetPlayer *)p1)->ddpAddress.host);
-	uint32 p2_host = SDL_SwapBE32(((const NetPlayer *)p2)->ddpAddress.host);
-	return p2_host - p1_host;
 }
 
 bool NetGameJoin(
