@@ -82,8 +82,8 @@ typedef struct game_info
 	uint32 parent_checksum;
 	
 	// network parameters
-	int16  initial_updates_per_packet;
-	int16  initial_update_latency;
+	int16  initial_updates_per_packet; //obsolete
+	int16  initial_update_latency; //obsolete
 } game_info;
 
 #define MAX_NET_PLAYER_NAME_LENGTH  32
@@ -244,7 +244,6 @@ struct player_start_data;
 // Gatherer may call this once after all players are gathered but before NetStart()
 void NetSetupTopologyFromStarts(const player_start_data* inStartArray, short inStartCount);
 
-void NetSetInitialParameters(short updates_per_packet, short update_latency);
 void NetSetDefaultInflater(CommunicationsChannel* channel);
 bool NetSync(void);
 bool NetUnSync(void);

@@ -613,8 +613,6 @@ int network_join(void)
 		{
 			write_preferences ();
 		
-			game_info* myGameInfo= (game_info *)NetGetGameData();
-			NetSetInitialParameters(myGameInfo->initial_updates_per_packet, myGameInfo->initial_update_latency);
 			if (gMetaserverClient && gMetaserverClient->isConnected())
 			{
 				gMetaserverClient->setMode(1, NetSessionIdentifier());
@@ -1354,14 +1352,9 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 		game_information->parent_checksum = read_wad_file_checksum(get_map_file());
 		game_information->difficulty_level = active_network_preferences->difficulty_level;
 
-		int updates_per_packet = 1;
-		int update_latency = 0;
-		vassert(updates_per_packet > 0 && update_latency >= 0 && updates_per_packet < 16,
-			csprintf(temporary, "You idiot! updates_per_packet = %d, update_latency = %d", updates_per_packet, update_latency));
-		game_information->initial_updates_per_packet = updates_per_packet;
-		game_information->initial_update_latency = update_latency;
-		NetSetInitialParameters(updates_per_packet, update_latency);
-	
+		game_information->initial_updates_per_packet = 1;
+		game_information->initial_update_latency = 0;
+
 		game_information->initial_random_seed = resuming_game ? dynamic_world->random_seed : (uint16) machine_tick_count();
 
 #if mac

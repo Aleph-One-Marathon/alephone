@@ -170,8 +170,7 @@ static short localPlayerIndex;
 static short localPlayerIdentifier;
 static std::string gameSessionIdentifier;
 static NetTopologyPtr topology;
-static StarGameProtocol sStarGameProtocol;
-static NetworkGameProtocol* sCurrentGameProtocol = NULL;
+static StarGameProtocol sCurrentGameProtocol;
 
 static byte *deferred_script_data = NULL;
 static size_t deferred_script_length = 0;
@@ -1215,9 +1214,7 @@ bool NetEnter(bool use_remote_hub)
 		if (!added_exit_procedure) atexit(NetExit);
 		added_exit_procedure= true;
 	}
-  
-	sCurrentGameProtocol = static_cast<NetworkGameProtocol*>(&sStarGameProtocol);
-  
+    
 	topology = (NetTopologyPtr)malloc(sizeof(NetTopology));
 	assert(topology);
 	memset(topology, 0, sizeof(NetTopology));
@@ -1227,7 +1224,7 @@ bool NetEnter(bool use_remote_hub)
 	ddpSocket = SDL_SwapBE16(GAME_PORT);
 	auto error = NetDDPOpenSocket(&ddpSocket, NetDDPPacketHandler);
 	if (!error) {
-		sCurrentGameProtocol->Enter(&netState);
+		sCurrentGameProtocol.Enter(&netState);
 		netState = netDown;
 		handlerState = netDown;
 	}
@@ -1398,7 +1395,7 @@ void NetExit(
 bool
 NetSync()
 {
-	return sCurrentGameProtocol->Sync(topology, dynamic_world->tick_count, localPlayerIndex, local_is_server());
+	return sCurrentGameProtocol.Sync(topology, dynamic_world->tick_count, localPlayerIndex, local_is_server());
 }
 
 
@@ -1411,7 +1408,7 @@ NetUnSync()
 		NetRemoteHubSendCommand(RemoteHubCommand::kEndGame_Command, dynamic_world->tick_count);
 	}
 
-	return sCurrentGameProtocol->UnSync(true, dynamic_world->tick_count);
+	return sCurrentGameProtocol.UnSync(true, dynamic_world->tick_count);
 }
 
 std::weak_ptr<Pinger>
@@ -1814,7 +1811,7 @@ void NetSetupTopologyFromStarts(const player_start_data* inStartArray, short inS
 void
 NetDDPPacketHandler(DDPPacketBufferPtr packet)
 {
-	sCurrentGameProtocol->PacketHandler(packet);
+	sCurrentGameProtocol.PacketHandler(packet);
 }
 
 
@@ -2328,24 +2325,16 @@ byte *NetReceiveGameData(bool do_physics)
   return map_buffer;
 }
 
-void NetSetInitialParameters(
-	short updates_per_packet, 
-	short update_latency)
-{
-//	initial_updates_per_packet= updates_per_packet;
-//	initial_update_latency= update_latency;
-}
-
 int32
 NetGetNetTime(void)
 {
-        return sCurrentGameProtocol->GetNetTime();
+        return sCurrentGameProtocol.GetNetTime();
 }
 
 bool
 NetCheckWorldUpdate()
 {
-	return sCurrentGameProtocol->CheckWorldUpdate();
+	return sCurrentGameProtocol.CheckWorldUpdate();
 }
 
 extern const NetworkStats& hub_stats(int player_index);
@@ -2356,7 +2345,7 @@ void NetProcessMessagesInGame() {
 		connection_to_server->dispatchIncomingMessages();
 	} else {
 		// update stats
-		if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol) && last_network_stats_send + network_stats_send_period < machine_tick_count())
+		if (last_network_stats_send + network_stats_send_period < machine_tick_count())
 		{
 			std::vector<NetworkStats> stats(topology->player_count);
 			for (int playerIndex = 0; playerIndex < topology->player_count; ++playerIndex)
@@ -2787,56 +2776,34 @@ bool NetAllowOverlayMap() {
 
 extern int32 spoke_latency();
 
-int32 NetGetLatency() {
-	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol) && connection_to_server) {
-		return spoke_latency();
-	} else {
-		return NetworkStats::invalid;
-	}
+int32 NetGetLatency()
+{
+	return local_is_server() ? NetworkStats::invalid : spoke_latency();
 }
 
 const NetworkStats& NetGetStats(int player_index)
 {
-	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol))
+	if (local_is_server())
 	{
-		if (connection_to_server)
-		{
-			if (player_index < sNetworkStats.size())
-			{
-				return sNetworkStats[player_index];
-			}
-			else
-			{
-				return sInvalidStats;
-			}
-		}
-		else
-		{
-			return hub_stats(player_index);
-		}
+		return hub_stats(player_index);
 	}
-	else
-	{
-		return sInvalidStats;
-	}
+
+	return player_index < sNetworkStats.size() ? sNetworkStats[player_index] : sInvalidStats;
 }
 
 int32 NetGetUnconfirmedActionFlagsCount()
 {
-	assert (sCurrentGameProtocol);
-	return sCurrentGameProtocol->GetUnconfirmedActionFlagsCount();
+	return sCurrentGameProtocol.GetUnconfirmedActionFlagsCount();
 }
 
 uint32 NetGetUnconfirmedActionFlag(int32 offset)
 {
-	assert (sCurrentGameProtocol);
-	return sCurrentGameProtocol->PeekUnconfirmedActionFlag(offset);
+	return sCurrentGameProtocol.PeekUnconfirmedActionFlag(offset);
 }
 
 void NetUpdateUnconfirmedActionFlags()
 {
-	assert (sCurrentGameProtocol);
-	return sCurrentGameProtocol->UpdateUnconfirmedActionFlags();
+	return sCurrentGameProtocol.UpdateUnconfirmedActionFlags();
 }
 
 #endif // !defined(DISABLE_NETWORKING)
