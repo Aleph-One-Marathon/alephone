@@ -687,16 +687,6 @@ not_shapes: ;
 	return _typecode_unknown;
 }
 
-// Get free space on disk
-bool FileSpecifier::GetFreeSpace(uint32 &FreeSpace)
-{
-	// This is impossible to do in a platform-independant way, so we
-	// just return 16MB which should be enough for everything
-	FreeSpace = 16 * 1024 * 1024;
-	err = 0;
-	return true;
-}
-
 // Delete file
 bool FileSpecifier::Delete()
 {

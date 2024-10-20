@@ -291,9 +291,6 @@ public:
 	// Returns _typecode_unknown if the type could not be identified;
 	// the types returned are the _typecode_stuff in tags.h
 	Typecode GetType();
-
-	// How many bytes are free in the disk that the file lives in?
-	bool GetFreeSpace(uint32& FreeSpace);
 	
 	// Copy file contents
 	bool CopyContents(FileSpecifier& File);

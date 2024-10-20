@@ -691,19 +691,12 @@ void check_recording_replaying(
 		
 		if(enough_data_to_save)
 		{
-			bool success;
-			uint32 freespace = 0;
 			FileSpecifier FilmFile_Check;
-			
 			get_recording_filedesc(FilmFile_Check);
 
-			success= FilmFile_Check.GetFreeSpace(freespace);
-			if (success && freespace>(RECORD_CHUNK_SIZE*sizeof(int16)*sizeof(uint32)*dynamic_world->player_count))
+			for (player_index= 0; player_index<dynamic_world->player_count; player_index++)
 			{
-				for (player_index= 0; player_index<dynamic_world->player_count; player_index++)
-				{
-					save_recording_queue_chunk(player_index);
-				}
+				save_recording_queue_chunk(player_index);
 			}
 		}
 	}
