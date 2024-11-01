@@ -180,11 +180,25 @@ int process_joystick_axes(int flags) {
 		int axis = axis_mapped_to_action(info.key_binding_index, &negative);
 		if (axis < 0)
 			continue;
+
+		short controller_deadzone = 0;
+		_fixed controller_sensitivity = 0;
+		switch (info.abs_pos_index)
+		{
+			case _flags_yaw:
+				controller_sensitivity = input_preferences->controller_sensitivity_horizontal;
+				controller_deadzone = input_preferences->controller_deadzone_horizontal;
+				break;
+			case _flags_pitch:
+				controller_sensitivity = input_preferences->controller_sensitivity_vertical;
+				controller_deadzone = input_preferences->controller_deadzone_vertical;
+				break;
+		}
 		
 		int val = axis_values[axis] * (negative ? -1 : 1);
-		if (val > input_preferences->controller_deadzone) {
-			float norm = val/32767.f * (static_cast<float>(input_preferences->controller_sensitivity) / FIXED_ONE);
-			const float angle_per_norm = 768/63.f;
+		if (val > controller_deadzone) {
+			float norm = val/32767.f * (static_cast<float>(controller_sensitivity) / FIXED_ONE);
+			constexpr float angle_per_norm = 768/63.f;
 			angular_deltas[info.abs_pos_index] += norm * (info.negative ? -1.0 : 1.0) * angle_per_norm;
 		}
 	}

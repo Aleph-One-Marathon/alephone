@@ -2427,20 +2427,33 @@ static void controller_details_dialog(void *arg)
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 	
-	float joySensitivity = ((float) input_preferences->controller_sensitivity) / FIXED_ONE;
-	if (joySensitivity <= 0.0f) joySensitivity = 1.0f;
-	float joySensitivityLog = std::log(joySensitivity);
-	int joySliderPosition =
-	(int) ((joySensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
+	float joySensitivityX = ((float) input_preferences->controller_sensitivity_horizontal) / FIXED_ONE;
+	if (joySensitivityX <= 0.0f) joySensitivityX = 1.0f;
+	float joySensitivityLogX = std::log(joySensitivityX);
+	int joySliderPositionX = (int) ((joySensitivityLogX - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
 
-	w_sens_slider* sens_joy_w = new w_sens_slider(1000, joySliderPosition);
-	table->dual_add(sens_joy_w->label("Aiming Sensitivity"), d);
-	table->dual_add(sens_joy_w, d);
+	w_sens_slider* sens_joy_w_x = new w_sens_slider(1000, joySliderPositionX);
+	table->dual_add(sens_joy_w_x->label("Aiming Horizontal Sensitivity"), d);
+	table->dual_add(sens_joy_w_x, d);
 	
-	int joyDeadzone = (int)((input_preferences->controller_deadzone / 655.36f) + 0.5f);
-	w_deadzone_slider* dead_joy_w = new w_deadzone_slider(11, joyDeadzone);
-	table->dual_add(dead_joy_w->label("Analog Dead Zone"), d);
-	table->dual_add(dead_joy_w, d);
+	int joyDeadzoneX = (int)((input_preferences->controller_deadzone_horizontal / 655.36f) + 0.5f);
+	w_deadzone_slider* dead_joy_w_x = new w_deadzone_slider(11, joyDeadzoneX);
+	table->dual_add(dead_joy_w_x->label("Analog Horizontal Dead Zone"), d);
+	table->dual_add(dead_joy_w_x, d);
+
+	float joySensitivityY = ((float)input_preferences->controller_sensitivity_vertical) / FIXED_ONE;
+	if (joySensitivityY <= 0.0f) joySensitivityY = 1.0f;
+	float joySensitivityLogY = std::log(joySensitivityY);
+	int joySliderPositionY = (int)((joySensitivityLogY - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
+
+	w_sens_slider* sens_joy_w_y = new w_sens_slider(1000, joySliderPositionY);
+	table->dual_add(sens_joy_w_y->label("Aiming Vertical Sensitivity"), d);
+	table->dual_add(sens_joy_w_y, d);
+
+	int joyDeadzoneY = (int)((input_preferences->controller_deadzone_vertical / 655.36f) + 0.5f);
+	w_deadzone_slider* dead_joy_w_y = new w_deadzone_slider(11, joyDeadzoneY);
+	table->dual_add(dead_joy_w_y->label("Analog Vertical Dead Zone"), d);
+	table->dual_add(dead_joy_w_y, d);
 
 	w_toggle* controller_inverted = new w_toggle(input_preferences->controller_aim_inverted);
 	table->dual_add(controller_inverted->label("Invert Vertical Aim"), d);
@@ -2460,18 +2473,33 @@ static void controller_details_dialog(void *arg)
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
 
-		int sensPos = sens_joy_w->get_selection();
-		float sensLog = kMinSensitivityLog + ((float) sensPos) * (kSensitivityLogRange / 1000.0f);
-		_fixed sensNorm = _fixed(std::exp(sensLog) * FIXED_ONE);
-		if (sensNorm != input_preferences->controller_sensitivity) {
-			input_preferences->controller_sensitivity = sensNorm;
+		int sensPosX = sens_joy_w_x->get_selection();
+		float sensLogX = kMinSensitivityLog + ((float)sensPosX) * (kSensitivityLogRange / 1000.0f);
+		_fixed sensNormX = _fixed(std::exp(sensLogX) * FIXED_ONE);
+		if (sensNormX != input_preferences->controller_sensitivity_horizontal) {
+			input_preferences->controller_sensitivity_horizontal = sensNormX;
 			changed = true;
 		}
 		
-		int deadPos = dead_joy_w->get_selection();
-		int deadNorm = deadPos * 655.36f;
-		if (deadNorm != input_preferences->controller_deadzone) {
-			input_preferences->controller_deadzone = deadNorm;
+		int deadPosX = dead_joy_w_x->get_selection();
+		int deadNormX = deadPosX * 655.36f;
+		if (deadNormX != input_preferences->controller_deadzone_horizontal) {
+			input_preferences->controller_deadzone_horizontal = deadNormX;
+			changed = true;
+		}
+
+		int sensPosY = sens_joy_w_y->get_selection();
+		float sensLogY = kMinSensitivityLog + ((float)sensPosY) * (kSensitivityLogRange / 1000.0f);
+		_fixed sensNormY = _fixed(std::exp(sensLogY) * FIXED_ONE);
+		if (sensNormY != input_preferences->controller_sensitivity_vertical) {
+			input_preferences->controller_sensitivity_vertical = sensNormY;
+			changed = true;
+		}
+
+		int deadPosY = dead_joy_w_y->get_selection();
+		int deadNormY = deadPosY * 655.36f;
+		if (deadNormY != input_preferences->controller_deadzone_vertical) {
+			input_preferences->controller_deadzone_vertical = deadNormY;
 			changed = true;
 		}
 
@@ -3873,8 +3901,10 @@ InfoTree input_preferences_tree()
 	
 	root.put_attr("controller_analog", input_preferences->controller_analog);
 	root.put_attr("controller_aim_inverted", input_preferences->controller_aim_inverted);
-	root.put_attr("controller_sensitivity", input_preferences->controller_sensitivity);
-	root.put_attr("controller_deadzone", input_preferences->controller_deadzone);
+	root.put_attr("controller_sensitivity_horizontal", input_preferences->controller_sensitivity_horizontal);
+	root.put_attr("controller_deadzone_horizontal", input_preferences->controller_deadzone_horizontal);
+	root.put_attr("controller_sensitivity_vertical", input_preferences->controller_sensitivity_vertical);
+	root.put_attr("controller_deadzone_vertical", input_preferences->controller_deadzone_vertical);
 	
 	for (int i = 0; i < (NUMBER_OF_KEYS + NUMBER_OF_SHELL_KEYS); ++i)
 	{
@@ -4206,8 +4236,10 @@ static void default_input_preferences(input_preferences_data *preferences)
 
 	preferences->controller_aim_inverted = false;
 	preferences->controller_analog = true;
-	preferences->controller_sensitivity = FIXED_ONE;
-	preferences->controller_deadzone = 3276;
+	preferences->controller_sensitivity_horizontal = FIXED_ONE;
+	preferences->controller_deadzone_horizontal = 3276;
+	preferences->controller_sensitivity_vertical = FIXED_ONE;
+	preferences->controller_deadzone_vertical = 3276;
 }
 
 static void default_environment_preferences(environment_preferences_data *preferences)
@@ -4805,8 +4837,25 @@ void parse_input_preferences(InfoTree root, std::string version)
 	root.read_attr("extra_mouse_precision", input_preferences->extra_mouse_precision);
 	root.read_attr("controller_analog", input_preferences->controller_analog);
 	root.read_attr("controller_aim_inverted", input_preferences->controller_aim_inverted);
-	root.read_attr("controller_sensitivity", input_preferences->controller_sensitivity);
-	root.read_attr("controller_deadzone", input_preferences->controller_deadzone);
+
+	_fixed old_controller_sensitivity_pref;
+	if (root.read_attr("controller_sensitivity", old_controller_sensitivity_pref))
+	{
+		input_preferences->controller_sensitivity_vertical =
+			input_preferences->controller_sensitivity_horizontal = old_controller_sensitivity_pref;
+	}
+
+	short old_controller_deadzone_pref;
+	if (root.read_attr("controller_deadzone", old_controller_deadzone_pref))
+	{
+		input_preferences->controller_deadzone_vertical =
+			input_preferences->controller_deadzone_horizontal = old_controller_deadzone_pref;
+	}
+
+	root.read_attr("controller_sensitivity_horizontal", input_preferences->controller_sensitivity_horizontal);
+	root.read_attr("controller_deadzone_horizontal", input_preferences->controller_deadzone_horizontal);
+	root.read_attr("controller_sensitivity_vertical", input_preferences->controller_sensitivity_vertical);
+	root.read_attr("controller_deadzone_vertical", input_preferences->controller_deadzone_vertical);
 
 	// remove default key bindings the first time we see one from these prefs
 	std::set<std::pair<BindingType, int>> seen_key;

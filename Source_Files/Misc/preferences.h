@@ -227,13 +227,14 @@ struct input_preferences_data
 	
 	bool controller_analog;
 	bool controller_aim_inverted;
-	_fixed controller_sensitivity;
-
+	_fixed controller_sensitivity_horizontal;
+	_fixed controller_sensitivity_vertical;
 	// if an axis reading is taken below this number in absolute
 	// value, then we clip it to 0.  this lets people use
 	// inaccurate zero points.
-	int16 controller_deadzone;
-	
+	int16 controller_deadzone_horizontal;
+	int16 controller_deadzone_vertical;
+
 	key_binding_map key_bindings;
 	key_binding_map shell_key_bindings;
 	key_binding_map hotkey_bindings;
