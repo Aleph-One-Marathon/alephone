@@ -1344,7 +1344,7 @@ void NetExit(
 	// ZZZ: clean up SDL Time Manager emulation.  
 	// true says wait for any late finishers to finish
 	// (but does NOT say to kill anyone not already removed.)
-	myTMCleanup(true);
+	myTMCleanup();
   
 	if (netState!=netUninitialized) {
 		error= NetDDPCloseSocket(ddpSocket);

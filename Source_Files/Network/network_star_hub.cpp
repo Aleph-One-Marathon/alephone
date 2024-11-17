@@ -583,7 +583,7 @@ hub_cleanup(bool inGraceful, int32 inSmallestPostGameTick)
 	
 		// This waits for the tick task to actually finish - so we know the tick task isn't in
 		// the middle of processing when we do the rest of the cleanup below.
-		myTMCleanup(true);
+		myTMCleanup();
 		
 		sNetworkPlayers.clear();
 		sFlagsQueues.clear();

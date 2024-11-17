@@ -275,7 +275,7 @@ spoke_cleanup(bool inGraceful)
         }
 
         // This waits for the tick task to actually finish
-        myTMCleanup(true);
+        myTMCleanup();
         
         sMessageTypeToMessageHandler.clear();
         sNetworkPlayers.clear();

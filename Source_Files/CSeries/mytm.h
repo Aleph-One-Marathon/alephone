@@ -30,10 +30,6 @@
 
 typedef struct myTMTask myTMTask,*myTMTaskPtr;
 
-extern myTMTaskPtr myTMSetup(
-	int32 time,
-	bool (*func)(void));
-
 extern myTMTaskPtr myXTMSetup(
 	int32 time,
 	bool (*func)(void));
@@ -41,12 +37,9 @@ extern myTMTaskPtr myXTMSetup(
 extern myTMTaskPtr myTMRemove(
 	myTMTaskPtr task);
 
-extern void myTMReset(
-	myTMTaskPtr task);
-
 // ZZZ: call this from time to time to collect leftover zombie threads and reclaim a little storage.
 // Pass false for fairly quick operation.  Pass true to make sure that we wait for folks to finish.
-extern void myTMCleanup(bool waitForFinishers);
+extern void myTMCleanup();
 
 // ZZZ: Use these for mutually exclusive operation with any emulated TMTasks
 extern bool take_mytm_mutex();

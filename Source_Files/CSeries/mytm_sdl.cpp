@@ -43,7 +43,7 @@
 #include "cseries.h"
 #include "thread_priority_sdl.h"
 #include "mytm.h"
-
+#include <atomic>
 #include <vector>
 
 #include <SDL2/SDL_thread.h>
@@ -75,9 +75,7 @@ struct myTMTask {
     SDL_Thread*		mThread;
     uint32		mPeriod;
     bool 		(*mFunction)(void);
-    volatile bool	mKeepRunning;	// set true by myTMSetup; set false by thread or by myTMRemove.
-    volatile bool	mIsRunning;	// set true by myTMSetup; set false by thread when about to exit.
-    volatile uint32	mResetTime;	// set positive by myTMReset; set to 0 by myTMSetup or by thread.
+    std::atomic_bool mKeepRunning;	// set true by myTMSetup; set false by thread or by myTMRemove.
 #ifdef DEBUG
     myTMTask_profile	mProfilingData;
 #endif
@@ -151,45 +149,7 @@ thread_loop(void* inData) {
             theTMTask->mProfilingData.mNumLateCalls++;
 #endif                
         }
-        
-        // If a reset was requested, pretend we were last called at the reset time, clear the reset,
-        // and delay some more if needed.
-        // Note: this is a "while" so, in case another reset comes while we are in the Delay() inside
-        // this block, we wait longer.
-        while(theTMTask->mResetTime > 0) {
-            theLastRunTime	= theTMTask->mResetTime;
-            theTMTask->mResetTime = 0;
-            
-#ifdef DEBUG
-            theTMTask->mProfilingData.mNumWarmResets++;
-            theTMTask->mProfilingData.mStartTime		= theLastRunTime;
-            theTMTask->mProfilingData.mNumCallsThisReset	= 0;
-#endif
 
-            theCurrentRunTime	= machine_tick_count();
-            theDrift		+= theCurrentRunTime - theLastRunTime - theTMTask->mPeriod;
-            theLastRunTime	= theCurrentRunTime;
-
-#ifdef DEBUG
-            if(theDrift < theTMTask->mProfilingData.mDriftMin)
-                theTMTask->mProfilingData.mDriftMin	= theDrift;
-
-            if(theDrift > theTMTask->mProfilingData.mDriftMax)
-                theTMTask->mProfilingData.mDriftMax	= theDrift;
-#endif
-            
-            theDelay = theTMTask->mPeriod - theDrift;
-            
-            if(theDelay > 0)
-                sleep_for_machine_ticks(theDelay);
-            else {
-                // We did miss a deadline!
-#ifdef DEBUG
-                theTMTask->mProfilingData.mNumLateCalls++;
-#endif                
-            }
-        }
-    
 	theCurrentRunTime	= machine_tick_count();
 	theDrift		+= theCurrentRunTime - theLastRunTime - theTMTask->mPeriod;
         theLastRunTime		= theCurrentRunTime;
@@ -232,8 +192,6 @@ thread_loop(void* inData) {
             break;
     }
     
-    theTMTask->mIsRunning = false;
-    
 #ifdef DEBUG
     theTMTask->mProfilingData.mFinishTime	= machine_tick_count();
 #endif
@@ -244,14 +202,6 @@ thread_loop(void* inData) {
 
 static vector<myTMTaskPtr> sOutstandingTasks;
 
-
-// Set up a periodic callout with no anti-drift mechanisms.  (We don't support that,
-// but it's unlikely that anyone is counting on NOT having drift-correction?)
-myTMTaskPtr
-myTMSetup(int32 time, bool (*func)(void)) {
-    return myXTMSetup(time, func);
-}
-
 // Set up a periodic callout, with what tries to be a fairly drift-free period.
 myTMTaskPtr
 myXTMSetup(int32 time, bool (*func)(void)) {
@@ -260,9 +210,7 @@ myXTMSetup(int32 time, bool (*func)(void)) {
     theTask->mPeriod		= time;
     theTask->mFunction		= func;
     theTask->mKeepRunning	= true;
-    theTask->mIsRunning		= true;
-    theTask->mResetTime		= 0;
-    
+
 #ifdef DEBUG
     obj_clear(theTask->mProfilingData);
 #endif
@@ -284,40 +232,6 @@ myTMRemove(myTMTaskPtr task) {
         task->mKeepRunning	= false;
     
     return NULL;
-}
-
-// Reset an existing callout's delay to the original value.
-// This is similar to myTMRemove() followed by another myTMSetup() with the same task and period.
-void
-myTMReset(myTMTaskPtr task) {
-    if(task != NULL) {
-        // If the thread has not exited, we can message it.  NOTE: there is a small possibility
-        // that the thread has already broken its loop, but got preempted before it could set
-        // mIsRunning to false.  I'm going to take the easy lazy evil way out and just hope that
-        // doesn't happen.
-        if(task->mIsRunning)
-            task->mResetTime	= machine_tick_count();
-        
-        // Otherwise, we need to start a new thread for the task.
-        else {
-            // This is our only chance to clean up that zombie thread.  This should not block.
-            SDL_WaitThread(task->mThread, NULL);
-            
-            task->mKeepRunning	= true;
-            task->mIsRunning	= true;
-            task->mResetTime	= 0;
-            
-#ifdef DEBUG
-            task->mProfilingData.mNumResuscitations++;
-            task->mProfilingData.mNumCallsThisReset = 0;
-#endif
-            
-            task->mThread	= SDL_CreateThread(thread_loop, "myTMReset_taskThread", task);
-
-            // Set thread priority a little higher
-            BoostThreadPriority(task->mThread);
-        }
-    }
 }
 
 #ifdef DEBUG
@@ -348,10 +262,10 @@ myTMDumpProfile(myTMTask* inTask) {
 // but why bother?  It's only used occasionally at non-time-critical moments, and we're only dealing with
 // a small handful of (small) elements anyway.
 void
-myTMCleanup(bool inWaitForFinishers) {
+myTMCleanup() {
     auto i = sOutstandingTasks.begin();
     while (i != sOutstandingTasks.end()) {
-        if((*i)->mKeepRunning == false && (inWaitForFinishers || (*i)->mIsRunning == false)) {
+        if((*i)->mKeepRunning == false) {
             myTMTaskPtr	theDeadTask = *i;
             auto next_i = sOutstandingTasks.erase(i);
             i = next_i;
