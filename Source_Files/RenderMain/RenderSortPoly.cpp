@@ -186,8 +186,8 @@ void RenderSortPolyClass::sort_render_tree()
 			{
 				// Update what uses the sorted-node pointers
 				for (size_t k=0; k<Length; k++) {
-					sorted_node = &SortedNodes[k];
-					polygon_index_to_sorted_node[sorted_node->polygon_index]= sorted_node;
+					auto node = &SortedNodes[k];
+					polygon_index_to_sorted_node[node->polygon_index] = node;
 				}
 			}
 			
