@@ -360,7 +360,7 @@ void initialize_application(void)
 		{
 			chooser.add_directory(scenario_dir.GetPath());
 		}
-		else if (chooser.num_scenarios() == 1)
+		else
 		{
 			chooser.add_directory((scenario_dir + "Scenarios").GetPath());
 		}
