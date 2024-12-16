@@ -16,10 +16,7 @@
   This license is contained in the file "COPYING",
   which is included with this source code; it is available online at
   http://www.gnu.org/licenses/gpl.html
-  
-  Movie export using libav/ffmpeg
-  Thanks to https://sourceforge.net/p/libavexample/ by Arash Shafiei
- 
+   
  */
 
 
@@ -27,6 +24,7 @@
 #include "csalerts.h"
 #include "Logging.h"
 #include "OpenALManager.h"
+#include "alephversion.h"
 
 #include <algorithm>
 
@@ -73,55 +71,37 @@ Movie::Movie() {}
 
 #else
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-#include "libavformat/avformat.h"
-#include "libavcodec/avcodec.h"
-#include "libavutil/mathematics.h"
-#include "libavutil/opt.h"
-#include "libavutil/imgutils.h"
-#include "libavutil/fifo.h"
-#include "libswscale/swscale.h"
-#include "libswresample/swresample.h"
-#include "SDL_ffmpeg.h"
-#ifdef __cplusplus
-}
-#endif
+#include <libwebm/mkvmuxer/mkvmuxer.h>
+#include <libwebm/mkvmuxer/mkvwriter.h>
+#include <vorbis/vorbisenc.h>
+#include <libyuv/convert.h>
+#include <vpx/vpx_encoder.h>
+#include <vpx/vp8cx.h>
 
-// shamelessly stolen from SDL 2.0
-static int get_cpu_count(void)
-{
-    static int cpu_count = 0;
-    if (cpu_count == 0) {
-#if defined(HAVE_SYSCONF) && defined(_SC_NPROCESSORS_ONLN)
-        cpu_count = (int)sysconf(_SC_NPROCESSORS_ONLN);
-#endif
-#ifdef HAVE_SYSCTLBYNAME
-        size_t size = sizeof(cpu_count);
-        sysctlbyname("hw.ncpu", &cpu_count, &size, NULL, 0);
-#endif
-#ifdef __WIN32__
-        SYSTEM_INFO info;
-        GetSystemInfo(&info);
-        cpu_count = info.dwNumberOfProcessors;
-#endif
-        /* There has to be at least 1, right? :) */
-        if (cpu_count <= 0)
-            cpu_count = 1;
-    }
-    return cpu_count;
-}
 
 struct libav_vars {
     bool inited;
     
-    AVFifoBuffer *audio_fifo;
-    
-    SDL_ffmpegFile* ffmpeg_file;
-    SDL_ffmpegAudioFrame* audio_frame;
+	// libwebm data
+	mkvmuxer::MkvWriter *writer;
+	mkvmuxer::Segment *segment;
+	mkvmuxer::VideoTrack *vtrack;
+	mkvmuxer::AudioTrack *atrack;
 
+	// libvorbis data
+	ogg_packet       op; /* one raw packet of data for decode */
+	vorbis_info      vi; /* struct that stores all the static vorbis bitstream settings */
+	vorbis_comment   vc; /* struct that stores all the user comments */
+	vorbis_dsp_state vd; /* central working state for the packet->PCM decoder */
+	vorbis_block     vb; /* local working space for packet->PCM decode */
+	
+	// libvpx data
+	vpx_image_t *yuv;
+	vpx_codec_ctx_t codec;
+	unsigned long deadline;
+		
+
+	int fps;
     size_t video_counter;
     size_t audio_counter;
 };
@@ -203,7 +183,7 @@ bool Movie::Setup()
         return false;
     if (!OpenALManager::Get())
         return false;
-
+	
     alephone::Screen* scr = alephone::Screen::instance();
     view_rect = scr->window_rect();
 
@@ -214,16 +194,26 @@ bool Movie::Setup()
     view_rect.w *= pixel_scale;
 
     const auto fps = std::max(get_fps_target(), static_cast<int16_t>(30));
+	av->fps = fps;
+	last_written_timestamp = 0;
 
     temp_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, view_rect.w, view_rect.h, 32,
         0x00ff0000, 0x0000ff00, 0x000000ff,
         0);
 
     if (temp_surface == NULL) { ThrowUserError("Could not create SDL surface"); return false; }
-
-    av->ffmpeg_file = SDL_ffmpegCreate(moviefile.c_str());
-
-    if (!av->ffmpeg_file) { ThrowUserError("Could not create ffmpeg file: " + std::string(SDL_ffmpegGetError())); return false; }
+	
+	av->writer = new mkvmuxer::MkvWriter();
+	if (!av->writer || !av->writer->Open(moviefile.c_str())) { ThrowUserError("Could not create webm file at " + moviefile); return false; }
+	
+	av->segment = new mkvmuxer::Segment();
+	if (!av->segment || !av->segment->Init(av->writer)) { ThrowUserError("Could not start webm file"); return false; }
+	av->segment->set_mode(mkvmuxer::Segment::kFile);
+	av->segment->OutputCues(true);
+	
+	mkvmuxer::SegmentInfo* const info = av->segment->GetSegmentInfo();
+	info->set_timecode_scale(1000000);
+	info->set_writing_app(A1_DISPLAY_NAME " " A1_VERSION_STRING);
 
     int bitrate = graphics_preferences->movie_export_video_bitrate;
 
@@ -244,47 +234,100 @@ bool Movie::Setup()
 
     int vq = graphics_preferences->movie_export_video_quality;
     int aq = graphics_preferences->movie_export_audio_quality;
-    std::string crf = std::to_string(ScaleQuality(vq, 63, 10, 4));
+	
+	// video setup
+	// set up video track
+	uint64_t vtracknum = av->segment->AddVideoTrack(view_rect.w, view_rect.h, mkvmuxer::Tracks::kVideo);
+	if (!vtracknum) { ThrowUserError("Could not add video track"); return false; }
+	av->vtrack = static_cast<mkvmuxer::VideoTrack*>(av->segment->GetTrackByNumber(vtracknum));
+	if (!av->vtrack) { ThrowUserError("Could not find video track"); return false; }
+	av->vtrack->set_codec_id(mkvmuxer::Tracks::kVp8CodecId);
+	av->vtrack->set_frame_rate(fps);
+	
+	// set up vpx
+	vpx_codec_enc_cfg_t cfg;
+	vpx_codec_iface_t *cif = vpx_codec_vp8_cx();
+	if (vpx_codec_enc_config_default(cif, &cfg, 0)) { ThrowUserError("Failed to get default codec config"); return false; }
+	cfg.g_w = view_rect.w;
+	cfg.g_h = view_rect.h;
+	cfg.g_timebase.num = 1;
+	cfg.g_timebase.den = fps;
+	cfg.rc_end_usage = vq == 100 ? VPX_VBR : VPX_CQ;
+	cfg.rc_target_bitrate = bitrate;
+	cfg.rc_max_quantizer = ScaleQuality(vq, 63, 63, 50);
+	cfg.rc_min_quantizer = ScaleQuality(vq, 10, 4, 0);
+	if (vpx_codec_enc_init(&(av->codec), cif, &cfg, 0)) { ThrowUserError("Failed to initialize vpx encoder"); return false; }
+	vpx_codec_control(&(av->codec), VP8E_SET_CQ_LEVEL, ScaleQuality(vq, 63, 10, 4));
+	av->deadline = ScaleQuality(vq, VPX_DL_REALTIME, VPX_DL_GOOD_QUALITY, VPX_DL_GOOD_QUALITY * 2);
+	if (vq == 100) { av->deadline = VPX_DL_BEST_QUALITY; }
+	
+	// audio setup
+	// set in_bps from rendering format
+	switch (OpenALManager::Get()->GetRenderingFormat()) {
+		case ALC_SHORT_SOFT:
+			in_bps = 16;
+			break;
+		case ALC_FLOAT_SOFT:
+			in_bps = 32;
+			break;
+		case ALC_INT_SOFT:
+			in_bps = 32;
+			break;
+		case ALC_UNSIGNED_BYTE_SOFT:
+			in_bps = 8;
+			break;
+	}
+	
+	// set up audio track
+	uint64_t atracknum = av->segment->AddAudioTrack(OpenALManager::Get()->GetFrequency(), 2, mkvmuxer::Tracks::kAudio);
+	if (!atracknum) { ThrowUserError("Could not add audio track"); return false; }
+	av->atrack = static_cast<mkvmuxer::AudioTrack*>(av->segment->GetTrackByNumber(atracknum));
+	if (!av->atrack) { ThrowUserError("Could not find audio track"); return false; }
+	av->atrack->set_codec_id(mkvmuxer::Tracks::kVorbisCodecId);
+	
+	// set up vorbis
+	float vorbisq = (aq == 0) ? -.1f : aq/100.f;
+	vorbis_info_init(&(av->vi));
+	if (vorbis_encode_init_vbr(&(av->vi), 2, OpenALManager::Get()->GetFrequency(), vorbisq)) { ThrowUserError("Could not init vorbis vbr"); return false; }
+	vorbis_analysis_init(&(av->vd), &(av->vi));
 
-    SDL_ffmpegCodec codec = {};
-    codec.videoCodecID = AV_CODEC_ID_VP8;
-    codec.audioCodecID = AV_CODEC_ID_VORBIS;
-    codec.sampleRate = OpenALManager::Get()->GetFrequency();
-    codec.channels = 2;
-    codec.width = view_rect.w;
-    codec.height = view_rect.h;
-    codec.videoBitrate = bitrate;
-    codec.cpuCount = get_cpu_count();
-    codec.videoMaxRate = ScaleQuality(vq, 63, 63, 50);
-    codec.videoMinRate = ScaleQuality(vq, 10, 4, 0);
-    codec.audioQuality = aq;
-    codec.crf = crf.c_str();
-    codec.framerateNum = 1;
-    codec.framerateDen = fps;
-    codec.audioFormat = mapping_openal_ffmpeg.at(OpenALManager::Get()->GetRenderingFormat());
+	// encode vorbis headers
+	vorbis_comment_init(&(av->vc));
+	vorbis_comment_add_tag(&(av->vc), "ENCODER", A1_DISPLAY_NAME " " A1_VERSION_STRING);
+	ogg_packet header_iden;
+	ogg_packet header_comm;
+	ogg_packet header_code;
+	vorbis_analysis_headerout(&(av->vd), &(av->vc), &header_iden, &header_comm, &header_code);
+	long header_iden_lace = header_iden.bytes / 255;
+	long header_iden_last = header_iden.bytes % 255;
+	long header_comm_lace = header_comm.bytes / 255;
+	long header_comm_last = header_comm.bytes % 255;
+	std::vector<uint8> aprivatebuf;
+	aprivatebuf.reserve(3 + header_iden_lace + header_comm_lace + header_iden.bytes + header_comm.bytes + header_code.bytes);
+	aprivatebuf.push_back(2);
+	aprivatebuf.insert(aprivatebuf.end(), header_iden_lace, 255);
+	aprivatebuf.push_back(header_iden_last);
+	aprivatebuf.insert(aprivatebuf.end(), header_comm_lace, 255);
+	aprivatebuf.push_back(header_comm_last);
+	aprivatebuf.insert(aprivatebuf.end(), header_iden.packet, header_iden.packet + header_iden.bytes);
+	aprivatebuf.insert(aprivatebuf.end(), header_comm.packet, header_comm.packet + header_comm.bytes);
+	aprivatebuf.insert(aprivatebuf.end(), header_code.packet, header_code.packet + header_code.bytes);
+	av->atrack->SetCodecPrivate(aprivatebuf.data(), aprivatebuf.size());
 
-    in_bps = av_get_bytes_per_sample(codec.audioFormat);
+	vorbis_block_init(&(av->vd), &(av->vb));
 
-    auto video_stream = SDL_ffmpegAddVideoStream(av->ffmpeg_file, codec);
-    if (!video_stream) { ThrowUserError("Could not add video stream: " + std::string(SDL_ffmpegGetError())); return false; }
-
-    auto audio_stream = SDL_ffmpegAddAudioStream(av->ffmpeg_file, codec);
-    if (!audio_stream) { ThrowUserError("Could not add audio stream: " + std::string(SDL_ffmpegGetError())); return false; }
-
-    if (SDL_ffmpegSelectVideoStream(av->ffmpeg_file, video_stream->id) == -1) { ThrowUserError("Could not select video stream: " + std::string(SDL_ffmpegGetError())); return false; }
-    if (SDL_ffmpegSelectAudioStream(av->ffmpeg_file, audio_stream->id) == -1) { ThrowUserError("Could not select audio stream: " + std::string(SDL_ffmpegGetError())); return false; }
-
-    av->audio_frame = SDL_ffmpegCreateAudioFrame(av->ffmpeg_file, 0);
-    if (!av->audio_frame) { ThrowUserError("Could not create audio frame"); return false; }
-
-    if (avformat_write_header(av->ffmpeg_file->_ffmpeg, 0) < 0) { ThrowUserError("Could not write header"); return false; }
-
-    av->audio_fifo = av_fifo_alloc(262144);
-    if (!av->audio_fifo) { ThrowUserError("Could not allocate audio fifo"); return false; }
-
+	// set up webm cues
+	mkvmuxer::Cues* const cues = av->segment->GetCues();
+	cues->set_output_block_number(true);
+	av->segment->CuesTrack(vtracknum);
+	
     // set up our threads and intermediate storage
     videobuf.resize(view_rect.w * view_rect.h * 4 + 10000);
+	av->yuv = vpx_img_alloc(av->yuv, VPX_IMG_FMT_I420, view_rect.w, view_rect.h, 1);
+	if (!av->yuv) { ThrowUserError("VPX image could not be allocated"); return false; }
     audiobuf.resize(2 * in_bps * OpenALManager::Get()->GetFrequency() / fps);
+	last_written_timestamp = 0;
+	current_audio_timestamp = 0;
 
     // TODO: fixme!
     if (OpenALManager::Get()->GetFrequency() % fps != 0) { ThrowUserError("Audio buffer size is non-integer; try lowering FPS target"); return false; }
@@ -319,7 +362,7 @@ void Movie::ThrowUserError(std::string error_msg)
 
 long Movie::GetCurrentAudioTimeStamp()
 {
-    return IsRecording() && av->inited && av->ffmpeg_file->audioStream ? av->ffmpeg_file->audioStream->lastTimeStamp : 0;
+	return IsRecording() && av->inited ? current_audio_timestamp : 0;
 }
 
 int Movie::Movie_EncodeThread(void *arg)
@@ -330,25 +373,133 @@ int Movie::Movie_EncodeThread(void *arg)
 
 void Movie::EncodeVideo(bool last)
 {
-    SDL_ffmpegAddVideoFrame(av->ffmpeg_file, temp_surface, av->video_counter++, last);
+	if (av->yuv)
+	{
+		int flags = 0;
+		if (!(av->video_counter % (7 * av->fps)))
+		{
+			flags |= VPX_EFLAG_FORCE_KF;
+		}
+		if (vpx_codec_encode(&(av->codec), av->yuv, av->video_counter++, 1, flags, av->deadline))
+		{
+			fprintf(stderr, "vpx encode failed at %zu\n", av->video_counter);
+		}
+	}
+	
+	if (last)
+	{
+		if (vpx_codec_encode(&(av->codec), nullptr, av->video_counter++, 1, 0, 0))
+		{
+			fprintf(stderr, "vpx encode failed at last\n");
+		}
+	}
+	
+	vpx_codec_iter_t iter = nullptr;
+	const vpx_codec_cx_pkt_t *pkt = nullptr;
+	while ((pkt = vpx_codec_get_cx_data(&(av->codec), &iter)) != nullptr)
+	{
+		if (pkt->kind == VPX_CODEC_CX_FRAME_PKT)
+		{
+			const uint64_t frameTime = pkt->data.frame.pts * 1000000000ll / av->fps;
+			// fprintf(stderr, "video pts = %lld, frameTime = %lld, key = %d\n", pkt->data.frame.pts, frameTime, (pkt->data.frame.flags & VPX_FRAME_IS_KEY));
+			if (frameTime < last_written_timestamp)
+			{
+				// if this happens often, increase min_queue_time in DequeueFrames
+				fprintf(stderr, "Video packet delivered too late (%lld > %lld)\n", last_written_timestamp, frameTime);
+			}
+			else if (video_queue.find(frameTime) != video_queue.end())
+			{
+				fprintf(stderr, "Video packet has duplicate timestamp (%lld)\n", frameTime);
+			}
+			else
+			{
+				video_queue[frameTime] = std::make_unique<StoredFrame>(static_cast<const uint8 *>(pkt->data.frame.buf), pkt->data.frame.sz, frameTime, pkt->data.frame.flags & VPX_FRAME_IS_KEY);
+			}
+		}
+	}
 }
 
 void Movie::EncodeAudio(bool last)
 {
-    av_fifo_generic_write(av->audio_fifo, &audiobuf[0], audiobuf.size(), NULL);
-    auto acodec = av->ffmpeg_file->audioStream->_ctx;
-    
-    // bps: bytes per sample
-    int channels = acodec->channels;
-    
-    int max_read = acodec->frame_size * in_bps * channels;
-    int min_read = last ? in_bps * channels : max_read;
-    while (av_fifo_size(av->audio_fifo) >= min_read)
-    {
-        int read_bytes = av->audio_frame->size = MIN(av_fifo_size(av->audio_fifo), max_read);
-        av_fifo_generic_read(av->audio_fifo, av->audio_frame->buffer, read_bytes, NULL);
-        SDL_ffmpegAddAudioFrame(av->ffmpeg_file, av->audio_frame, &av->audio_counter, last);
-    }
+	// feed data into vorbis
+	if (audiobuf.size() >= in_bps * 2)
+	{
+		size_t samples = audiobuf.size() / (in_bps * 2);
+		float **buffer = vorbis_analysis_buffer(&(av->vd), samples);
+		
+		ALCint fmt = OpenALManager::Get()->GetRenderingFormat();
+		if (fmt == ALC_SHORT_SOFT)
+		{
+			int16_t *shortData = reinterpret_cast<int16_t *>(audiobuf.data());
+			for (size_t i = 0; i < samples; ++i)
+			{
+				buffer[0][i] = shortData[i*2] / 32768.f;
+				buffer[1][i] = shortData[i*2+1] / 32768.f;
+			}
+		}
+		else if (fmt == ALC_FLOAT_SOFT)
+		{
+			float *floatData = reinterpret_cast<float *>(audiobuf.data());
+			for (size_t i = 0; i < samples; ++i)
+			{
+				buffer[0][i] = floatData[i*2];
+				buffer[1][i] = floatData[i*2+1];
+			}
+		}
+		else if (fmt == ALC_INT_SOFT)
+		{
+			int32_t *intData = reinterpret_cast<int32_t *>(audiobuf.data());
+			for (size_t i = 0; i < samples; ++i)
+			{
+				buffer[0][i] = intData[i*2] / 2147483647.f;
+				buffer[1][i] = intData[i*2+1] / 2147483647.f;
+			}
+		}
+		else if (fmt == ALC_UNSIGNED_BYTE_SOFT)
+		{
+			uint8_t *ubyteData = reinterpret_cast<uint8_t *>(audiobuf.data());
+			for (size_t i = 0; i < samples; ++i)
+			{
+				buffer[0][i] = (ubyteData[i*2] / 128.f) - 1.f;
+				buffer[1][i] = (ubyteData[i*2+1] / 128.f) - 1.f;
+			}
+		}
+		vorbis_analysis_wrote(&(av->vd), samples);
+	}
+	
+	if (last)
+	{
+		// signal end of data
+		vorbis_analysis_wrote(&(av->vd), 0);
+	}
+	
+	// feed vorbis packets into webm
+	while (vorbis_analysis_blockout(&(av->vd), &(av->vb)) == 1)
+	{
+		vorbis_analysis(&(av->vb), NULL);
+		vorbis_bitrate_addblock(&(av->vb));
+		while (vorbis_bitrate_flushpacket(&(av->vd), &(av->op)))
+		{
+			// vorbis_granule_time provides seconds, mkv wants nanoseconds
+			double packetTime = vorbis_granule_time(&(av->vd), av->op.granulepos);
+			uint64_t frameTime = packetTime * 1000000000ll;
+//			fprintf(stderr, "audio packetTime = %.6f, frameTime = %lld\n", packetTime, frameTime);
+			if (frameTime < last_written_timestamp)
+			{
+				// if this happens often, increase min_queue_time in DequeueFrames
+				fprintf(stderr, "Audio packet delivered too late (%lld > %lld)\n", last_written_timestamp, frameTime);
+			}
+			else if (audio_queue.find(frameTime) != audio_queue.end())
+			{
+				fprintf(stderr, "Audio packet has duplicate timestamp (%lld)\n", frameTime);
+			}
+			else
+			{
+				current_audio_timestamp = frameTime;
+				audio_queue[frameTime] = std::make_unique<StoredFrame>(av->op.packet, av->op.bytes, frameTime, false);
+			}
+		}
+	}
 }
 
 void Movie::EncodeThread()
@@ -366,10 +517,64 @@ void Movie::EncodeThread()
 		}
         
         // add video and audio
-        EncodeVideo(false);
-        EncodeAudio(false);
+		EncodeVideo(false);
+		EncodeAudio(false);
+		DequeueFrames(false);
 		
 		SDL_SemPost(fillReady);
+	}
+}
+
+void Movie::DequeueFrame(FrameMap &queue, uint64_t tracknum)
+{
+	auto it = queue.begin();
+	if (!av->segment->AddFrame(it->second->buf.data(), it->second->buf.size(), tracknum, it->second->timestamp, it->second->keyframe))
+	{
+		fprintf(stderr, "Frame rejected (track %lld, ts %lld)\n", tracknum, it->second->timestamp);
+	}
+	else
+	{
+		last_written_timestamp = it->second->timestamp;
+	}
+	queue.erase(it);
+}
+
+void Movie::DequeueFrames(bool last)
+{
+	// Rules for frame ordering:
+	// - frame timecodes must monotonically increase
+	// - audio should come before video when both have the same timecode
+	// Clustering rules should be handled by libwebm.
+	
+	// Increase min_queue_size if an encoder needs more flexibility
+	// to deliver frames out of order.
+	size_t min_queue_size = last ? 1 : 2;
+	while (video_queue.size() >= min_queue_size && audio_queue.size() >= min_queue_size)
+	{
+		uint64_t next_video_ts = video_queue.begin()->first;
+		uint64_t next_audio_ts = audio_queue.begin()->first;
+		assert(next_video_ts >= last_written_timestamp);
+		assert(next_audio_ts >= last_written_timestamp);
+		if (next_video_ts < next_audio_ts)
+		{
+			DequeueFrame(video_queue, av->vtrack->number());
+		}
+		else
+		{
+			DequeueFrame(audio_queue, av->atrack->number());
+		}
+	}
+	if (last)
+	{
+		// flush whichever queue was not already emptied
+		while (audio_queue.size())
+		{
+			DequeueFrame(audio_queue, av->atrack->number());
+		}
+		while (video_queue.size())
+		{
+			DequeueFrame(video_queue, av->vtrack->number());
+		}
 	}
 }
 
@@ -392,8 +597,23 @@ void Movie::AddFrame(FrameType ftype)
   	
 	if (!MainScreenIsOpenGL())
 	{
+		int yuvRet = 0;
 		SDL_Surface *video = MainScreenSurface();
-		SDL_BlitSurface(video, &view_rect, temp_surface, NULL);
+		if (video->format == temp_surface->format)
+		{
+			// skip copy and read straight from main surface
+			yuvRet = libyuv::ARGBToI420(static_cast<const uint8_t *>(video->pixels) + view_rect.x*4 + view_rect.y*video->pitch, video->pitch, av->yuv->planes[0], av->yuv->stride[0], av->yuv->planes[1], av->yuv->stride[1], av->yuv->planes[2], av->yuv->stride[2], view_rect.w, view_rect.h);
+		}
+		else
+		{
+			SDL_BlitSurface(video, &view_rect, temp_surface, NULL);
+			yuvRet = libyuv::ARGBToI420(static_cast<const uint8_t *>(temp_surface->pixels), temp_surface->pitch, av->yuv->planes[0], av->yuv->stride[0], av->yuv->planes[1], av->yuv->stride[1], av->yuv->planes[2], av->yuv->stride[2], view_rect.w, view_rect.h);
+		}
+		if (yuvRet)
+		{
+			fprintf(stderr, "libyuv error %d in Movie::AddFrame (SDL)\n", yuvRet);
+		}
+
 	}
 #ifdef HAVE_OPENGL
 	else
@@ -411,9 +631,12 @@ void Movie::AddFrame(FrameType ftype)
         glReadPixels(view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, &videobuf.front());
         frameBufferObject->deactivate();
 
-		// Copy pixel buffer (which is upside-down) to surface
-		for (int y = 0; y < view_rect.h; y++)
-			memcpy((uint8 *)temp_surface->pixels + temp_surface->pitch * y, &videobuf.front() + view_rect.w * 4 * (view_rect.h - y - 1), view_rect.w * 4);
+		// Convert pixel buffer (which is upside-down) to YUV
+		int yuvRet = libyuv::ARGBToI420(videobuf.data(), view_rect.w * 4, av->yuv->planes[0], av->yuv->stride[0], av->yuv->planes[1], av->yuv->stride[1], av->yuv->planes[2], av->yuv->stride[2], view_rect.w, -view_rect.h);
+		if (yuvRet)
+		{
+			fprintf(stderr, "libyuv error %d in Movie::AddFrame (OpenGL)\n", yuvRet);
+		}
 	}
 #endif
 	
@@ -451,24 +674,39 @@ void Movie::StopRecording()
 		SDL_FreeSurface(temp_surface);
 		temp_surface = NULL;
 	}
+	if (av->yuv)
+	{
+		vpx_img_free(av->yuv);
+		av->yuv = nullptr;
+	}
     if (av->inited)
     {
         // flush video and audio
         EncodeVideo(true);
         EncodeAudio(true);
-        SDL_ffmpegFree(av->ffmpeg_file);
+		DequeueFrames(true);
+		
+		av->segment->Finalize();
+		vorbis_block_clear(&(av->vb));
+		vorbis_dsp_clear(&(av->vd));
+		vorbis_comment_clear(&(av->vc));
+		vorbis_info_clear(&(av->vi));
+		vpx_codec_destroy(&(av->codec));
         av->inited = false;
     }
-    if (av->audio_frame)
-    {
-        SDL_ffmpegFreeAudioFrame(av->audio_frame);
-        av->audio_frame = NULL;
-    }
-    if (av->audio_fifo)
-    {
-        av_fifo_free(av->audio_fifo);
-        av->audio_fifo = NULL;
-    }
+	av->atrack = nullptr;
+	av->vtrack = nullptr;
+	if (av->segment)
+	{
+		delete av->segment;	
+		av->segment = nullptr;
+	}
+	if (av->writer)
+	{
+		av->writer->Close();
+		delete av->writer;
+		av->writer = nullptr;
+	}
 
 	moviefile = "";
     if (OpenALManager::Get()) {

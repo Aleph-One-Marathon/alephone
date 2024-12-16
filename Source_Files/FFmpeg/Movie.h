@@ -29,6 +29,7 @@
 #include <memory>
 #include <string.h>
 #include <vector>
+#include <map>
 #include <SDL2/SDL_thread.h>
 
 class Movie
@@ -75,12 +76,40 @@ private:
   std::unique_ptr<FBO> frameBufferObject;
 #endif
   
+	class StoredFrame
+	{
+	public:
+		std::vector<uint8> buf;
+		uint64_t timestamp;
+		bool keyframe;
+		
+		StoredFrame(const uint8 *data, size_t bytes, uint64_t ts, bool key) :
+			timestamp(ts),
+			keyframe(key)
+		{
+			AddData(data, bytes);
+		}
+		void AddData(const uint8 *data, size_t bytes)
+		{
+			buf.resize(bytes);
+			memcpy(buf.data(), data, bytes);
+		}
+	};
+
+	typedef std::map<uint64_t, std::unique_ptr<StoredFrame>> FrameMap;
+	FrameMap video_queue;
+	FrameMap audio_queue;
+	uint64_t last_written_timestamp;
+	uint64_t current_audio_timestamp;
+
   Movie();  
   bool Setup();
   static int Movie_EncodeThread(void *arg);
   void EncodeThread();
   void EncodeVideo(bool last);
   void EncodeAudio(bool last);
+  void DequeueFrames(bool last);
+  void DequeueFrame(FrameMap &queue, uint64_t tracknum);
   void ThrowUserError(std::string error_msg);
 };
 	
