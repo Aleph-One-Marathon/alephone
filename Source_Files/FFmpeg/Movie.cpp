@@ -78,6 +78,29 @@ Movie::Movie() {}
 #include <vpx/vpx_encoder.h>
 #include <vpx/vp8cx.h>
 
+// shamelessly stolen from SDL 2.0
+static int get_cpu_count(void)
+{
+	static int cpu_count = 0;
+	if (cpu_count == 0) {
+#if defined(HAVE_SYSCONF) && defined(_SC_NPROCESSORS_ONLN)
+		cpu_count = (int)sysconf(_SC_NPROCESSORS_ONLN);
+#endif
+#ifdef HAVE_SYSCTLBYNAME
+		size_t size = sizeof(cpu_count);
+		sysctlbyname("hw.ncpu", &cpu_count, &size, NULL, 0);
+#endif
+#ifdef __WIN32__
+		SYSTEM_INFO info;
+		GetSystemInfo(&info);
+		cpu_count = info.dwNumberOfProcessors;
+#endif
+		/* There has to be at least 1, right? :) */
+		if (cpu_count <= 0)
+			cpu_count = 1;
+	}
+	return cpu_count;
+}
 
 struct libav_vars {
     bool inited;
@@ -250,6 +273,7 @@ bool Movie::Setup()
 	if (vpx_codec_enc_config_default(cif, &cfg, 0)) { ThrowUserError("Failed to get default codec config"); return false; }
 	cfg.g_w = view_rect.w;
 	cfg.g_h = view_rect.h;
+	cfg.g_threads = get_cpu_count();
 	cfg.g_timebase.num = 1;
 	cfg.g_timebase.den = fps;
 	cfg.rc_end_usage = vq == 100 ? VPX_VBR : VPX_CQ;
