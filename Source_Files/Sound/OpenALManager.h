@@ -51,7 +51,8 @@ public:
 
 	enum class OptionalExtension
 	{
-		Spatialization
+		Spatialization,
+		DirectChannelRemix
 	};
 
 	static OpenALManager* Get() { return instance; }
@@ -176,7 +177,8 @@ private:
 	};
 
 	const std::unordered_map<OptionalExtension, std::string> mapping_extensions_names = {
-		{OptionalExtension::Spatialization, "AL_SOFT_source_spatialize"}
+		{OptionalExtension::Spatialization, "AL_SOFT_source_spatialize"},
+		{OptionalExtension::DirectChannelRemix, "AL_SOFT_direct_channels_remix"}
 	};
 };
 

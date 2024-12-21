@@ -146,5 +146,10 @@ bool AudioPlayer::SetUpALSourceInit() {
 		alSourcei(audio_source->source_id, AL_SOURCE_SPATIALIZE_SOFT, AL_AUTO_SOFT);
 #endif
 
+#ifdef AL_SOFT_direct_channels_remix
+	if (OpenALManager::Get()->IsExtensionSupported(OpenALManager::OptionalExtension::DirectChannelRemix))
+		alSourcei(audio_source->source_id, AL_DIRECT_CHANNELS_SOFT, AL_REMIX_UNMATCHED_SOFT);
+#endif
+
 	return alGetError() == AL_NO_ERROR;
 }
