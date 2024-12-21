@@ -616,7 +616,7 @@ void decode_hotkeys(ModifiableActionQueues& action_queues)
 			player->hotkey_sequence <<= 2;
 			player->hotkey_sequence |= (action_flags >> _cycle_weapons_forward_bit) & 0x03;
 
-			if (!PLAYER_IS_DEAD(player))
+			if (!film_profile.hotkey_fix || !PLAYER_IS_DEAD(player))
 			{
 				player->hotkey = 1 + (player->hotkey_sequence & 0x03) + 4 * (((player->hotkey_sequence >> 2) & 0x03) - 1);
 			}

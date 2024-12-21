@@ -114,6 +114,7 @@ struct FilmProfile
 	bool m1_bce_pickup;	 // you can pick up another BCE if you already have one
 
 	bool network_items; // early creation of players on new games to fix network items spawn
+	bool hotkey_fix; // hotkeys no longer work when player is dead or carrying the ball
 };
 
 extern FilmProfile film_profile;

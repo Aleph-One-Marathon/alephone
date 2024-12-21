@@ -42,6 +42,7 @@ static FilmProfile alephone1_7 = {
 	true,  // m1_landscape_effects
 	true,  // m1_bce_pickup
 	false, // network_items
+	false, // hotkey_fix
 };
 
 static FilmProfile alephone1_4 = {
@@ -86,6 +87,7 @@ static FilmProfile alephone1_4 = {
 	false, // m1_landscape_effects
 	false, // m1_bce_pickup
 	false, // network_items
+	false, // hotkey_fix
 };
 
 
@@ -131,6 +133,7 @@ static FilmProfile alephone1_3 = {
 	false, // m1_landscape_effects
 	false, // m1_bce_pickup
 	false, // network_items
+	false, // hotkey_fix
 };
 
 static FilmProfile alephone1_2 = {
@@ -175,6 +178,7 @@ static FilmProfile alephone1_2 = {
 	false, // m1_landscape_effects
 	false, // m1_bce_pickup
 	false, // network_items
+	false, // hotkey_fix
 };
 
 static FilmProfile alephone1_1 = {
@@ -219,6 +223,7 @@ static FilmProfile alephone1_1 = {
 	false, // m1_landscape_effects
 	false, // m1_bce_pickup
 	false, // network_items
+	false, // hotkey_fix
 };
 
 static FilmProfile alephone1_0 = {
@@ -263,6 +268,7 @@ static FilmProfile alephone1_0 = {
 	false, // m1_landscape_effects
 	false, // m1_bce_pickup
 	false, // network_items
+	false, // hotkey_fix
 };
 
 static FilmProfile marathon2 = {
@@ -307,6 +313,7 @@ static FilmProfile marathon2 = {
 	false, // m1_landscape_effects
 	false, // m1_bce_pickup
 	false, // network_items
+	false, // hotkey_fix
 };
 
 static FilmProfile marathon_infinity = {
@@ -351,6 +358,7 @@ static FilmProfile marathon_infinity = {
 	false, // m1_landscape_effects
 	false, // m1_bce_pickup
 	false, // network_items
+	false, // hotkey_fix
 };
 
 FilmProfile film_profile = alephone1_7;

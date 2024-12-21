@@ -927,8 +927,9 @@ void update_player_weapons(
 	if (player->hotkey && player->hotkey < NUMBER_OF_WEAPONS)
 	{
 		const auto player_weapons = get_player_weapon_data(player_index);
-		if (player_weapons->desired_weapon != _weapon_ball &&
-			player_weapons->current_weapon != _weapon_ball)
+		if (!film_profile.hotkey_fix ||
+			(player_weapons->desired_weapon != _weapon_ball &&
+			 player_weapons->current_weapon != _weapon_ball))
 		{
 			ready_weapon(player_index, weapon_ordering_array[player->hotkey - 1]);
 		}
