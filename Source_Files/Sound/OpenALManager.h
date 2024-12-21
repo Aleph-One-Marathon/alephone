@@ -48,6 +48,12 @@ struct AudioParameters {
 
 class OpenALManager {
 public:
+
+	enum class OptionalExtension
+	{
+		Spatialization
+	};
+
 	static OpenALManager* Get() { return instance; }
 	static bool Init(const AudioParameters& parameters);
 	static void Shutdown();
@@ -74,6 +80,7 @@ public:
 	bool IsPaused() const { return paused_audio; }
 	ALCint GetRenderingFormat() const { return openal_rendering_format; }
 	ALuint GetLowPassFilter(float highFrequencyGain) const;
+	bool IsExtensionSupported(OptionalExtension extension) const { return extension_support.at(extension); }
 private:
 	static OpenALManager* instance;
 	ALCdevice* p_ALCDevice = nullptr;
@@ -115,6 +122,9 @@ private:
 	static LPALDELETEFILTERS alDeleteFilters;
 	static LPALFILTERI alFilteri;
 	static LPALFILTERF alFilterf;
+
+	std::unordered_map<OptionalExtension, bool> extension_support;
+	bool LoadOptionalExtensions();
 
 	static void MixerCallback(void* usr, uint8* stream, int len);
 	SDL_AudioSpec sdl_audio_specs_obtained;
@@ -163,6 +173,10 @@ private:
 		{ALC_5POINT1_SOFT, ChannelType::_5_1},
 		{ALC_6POINT1_SOFT, ChannelType::_6_1},
 		{ALC_7POINT1_SOFT, ChannelType::_7_1}
+	};
+
+	const std::unordered_map<OptionalExtension, std::string> mapping_extensions_names = {
+		{OptionalExtension::Spatialization, "AL_SOFT_source_spatialize"}
 	};
 };
 

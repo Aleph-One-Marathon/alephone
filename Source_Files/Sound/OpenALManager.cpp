@@ -43,7 +43,15 @@ bool OpenALManager::Init(const AudioParameters& parameters) {
 	}
 
 	instance = new OpenALManager(parameters);
-	return instance->OpenDevice() && instance->GenerateSources() && instance->GenerateEffects();
+	return instance->OpenDevice() && instance->LoadOptionalExtensions() && instance->GenerateSources() && instance->GenerateEffects();
+}
+
+bool OpenALManager::LoadOptionalExtensions() {
+
+	for (auto& extension : mapping_extensions_names)
+		extension_support[extension.first] = alIsExtensionPresent(extension.second.c_str());
+
+	return true;
 }
 
 void OpenALManager::ProcessAudioQueue() {

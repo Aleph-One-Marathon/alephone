@@ -140,5 +140,11 @@ bool AudioPlayer::SetUpALSourceInit() {
 	alSourcei(audio_source->source_id, AL_REFERENCE_DISTANCE, 0);
 	alSourcei(audio_source->source_id, AL_MAX_DISTANCE, 0);
 	alSourcei(audio_source->source_id, AL_DIRECT_FILTER, AL_FILTER_NULL);
+
+#ifdef AL_SOFT_source_spatialize
+	if (OpenALManager::Get()->IsExtensionSupported(OpenALManager::OptionalExtension::Spatialization))
+		alSourcei(audio_source->source_id, AL_SOURCE_SPATIALIZE_SOFT, AL_AUTO_SOFT);
+#endif
+
 	return alGetError() == AL_NO_ERROR;
 }

@@ -231,10 +231,20 @@ bool SoundPlayer::SetUpALSourceInit() {
 		alSource3i(audio_source->source_id, AL_DIRECTION, 0, 0, 0);
 		alSourcei(audio_source->source_id, AL_REFERENCE_DISTANCE, 0);
 		alSourcei(audio_source->source_id, AL_MAX_DISTANCE, 0);
+
+#ifdef AL_SOFT_source_spatialize
+		if (OpenALManager::Get()->IsExtensionSupported(OpenALManager::OptionalExtension::Spatialization))
+			alSourcei(audio_source->source_id, AL_SOURCE_SPATIALIZE_SOFT, AL_AUTO_SOFT);
+#endif
 	}
 	else {
 		alSourcei(audio_source->source_id, AL_DISTANCE_MODEL, AL_INVERSE_DISTANCE_CLAMPED);
 		alSourcei(audio_source->source_id, AL_SOURCE_RELATIVE, AL_FALSE);
+
+#ifdef AL_SOFT_source_spatialize
+		if (OpenALManager::Get()->IsExtensionSupported(OpenALManager::OptionalExtension::Spatialization))
+			alSourcei(audio_source->source_id, AL_SOURCE_SPATIALIZE_SOFT, AL_TRUE);
+#endif
 	}
 
 	return alGetError() == AL_NO_ERROR;
