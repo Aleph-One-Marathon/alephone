@@ -277,7 +277,7 @@ bool Movie::Setup()
 	cfg.g_timebase.num = 1;
 	cfg.g_timebase.den = fps;
 	cfg.rc_end_usage = vq == 100 ? VPX_VBR : VPX_CQ;
-	cfg.rc_target_bitrate = bitrate;
+	cfg.rc_target_bitrate = bitrate / 1000;
 	cfg.rc_max_quantizer = ScaleQuality(vq, 63, 63, 50);
 	cfg.rc_min_quantizer = ScaleQuality(vq, 10, 4, 0);
 	if (vpx_codec_enc_init(&(av->codec), cif, &cfg, 0)) { ThrowUserError("Failed to initialize vpx encoder"); return false; }
