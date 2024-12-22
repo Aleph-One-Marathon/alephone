@@ -399,12 +399,7 @@ void Movie::EncodeVideo(bool last)
 {
 	if (av->yuv)
 	{
-		int flags = 0;
-		if (!(av->video_counter % (7 * av->fps)))
-		{
-			flags |= VPX_EFLAG_FORCE_KF;
-		}
-		if (vpx_codec_encode(&(av->codec), av->yuv, av->video_counter++, 1, flags, av->deadline))
+		if (vpx_codec_encode(&(av->codec), av->yuv, av->video_counter++, 1, 0, av->deadline))
 		{
 			fprintf(stderr, "vpx encode failed at %zu\n", av->video_counter);
 		}
