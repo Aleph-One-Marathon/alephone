@@ -29,7 +29,7 @@
 #include <memory>
 #include <string.h>
 #include <vector>
-#include <map>
+#include <queue>
 #include <SDL2/SDL_thread.h>
 
 class Movie
@@ -81,10 +81,12 @@ private:
 	public:
 		std::vector<uint8> buf;
 		uint64_t timestamp;
+		uint64_t duration;
 		bool keyframe;
 		
-		StoredFrame(const uint8 *data, size_t bytes, uint64_t ts, bool key) :
+		StoredFrame(const uint8 *data, size_t bytes, uint64_t ts, uint64_t dur, bool key) :
 			timestamp(ts),
+			duration(dur),
 			keyframe(key)
 		{
 			AddData(data, bytes);
@@ -96,9 +98,9 @@ private:
 		}
 	};
 
-	typedef std::map<uint64_t, std::unique_ptr<StoredFrame>> FrameMap;
-	FrameMap video_queue;
-	FrameMap audio_queue;
+	typedef std::queue<std::unique_ptr<StoredFrame>> FrameQueue;
+	FrameQueue video_queue;
+	FrameQueue audio_queue;
 	uint64_t last_written_timestamp;
 	uint64_t current_audio_timestamp;
 
@@ -109,7 +111,7 @@ private:
   void EncodeVideo(bool last);
   void EncodeAudio(bool last);
   void DequeueFrames(bool last);
-  void DequeueFrame(FrameMap &queue, uint64_t tracknum);
+  void DequeueFrame(FrameQueue &queue, uint64_t tracknum);
   void ThrowUserError(std::string error_msg);
 };
 	

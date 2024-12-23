@@ -126,7 +126,9 @@ struct libav_vars {
 
 	int fps;
     size_t video_counter;
+	int64_t prev_video_pts;
     size_t audio_counter;
+	int64_t prev_audio_packetno;
 };
 typedef struct libav_vars libav_vars_t;
 
@@ -280,6 +282,12 @@ bool Movie::Setup()
 	cfg.rc_target_bitrate = bitrate / 1000;
 	cfg.rc_max_quantizer = ScaleQuality(vq, 63, 63, 50);
 	cfg.rc_min_quantizer = ScaleQuality(vq, 10, 4, 0);
+	cfg.g_lag_in_frames = 0;	// deliver encoded frames in order
+	if (cfg.kf_mode != VPX_KF_AUTO) {	// ensure key frames are created
+		cfg.kf_mode = VPX_KF_AUTO;
+		cfg.kf_min_dist = 0;
+		cfg.kf_max_dist = 128;
+	}
 	if (vpx_codec_enc_init(&(av->codec), cif, &cfg, 0)) { ThrowUserError("Failed to initialize vpx encoder"); return false; }
 	vpx_codec_control(&(av->codec), VP8E_SET_CQ_LEVEL, ScaleQuality(vq, 63, 10, 4));
 	av->deadline = ScaleQuality(vq, VPX_DL_REALTIME, VPX_DL_GOOD_QUALITY, VPX_DL_GOOD_QUALITY * 2);
@@ -419,21 +427,14 @@ void Movie::EncodeVideo(bool last)
 	{
 		if (pkt->kind == VPX_CODEC_CX_FRAME_PKT)
 		{
+			if (pkt->data.frame.pts < av->prev_video_pts) {
+				fprintf(stderr, "Dropping out-of-order video packet: %lld < %lld\n", pkt->data.frame.pts, av->prev_video_pts);
+				continue;
+			}
 			const uint64_t frameTime = pkt->data.frame.pts * 1000000000ll / av->fps;
 			// fprintf(stderr, "video pts = %lld, frameTime = %lld, key = %d\n", pkt->data.frame.pts, frameTime, (pkt->data.frame.flags & VPX_FRAME_IS_KEY));
-			if (frameTime < last_written_timestamp)
-			{
-				// if this happens often, increase min_queue_time in DequeueFrames
-				fprintf(stderr, "Video packet delivered too late (%lld > %lld)\n", last_written_timestamp, frameTime);
-			}
-			else if (video_queue.find(frameTime) != video_queue.end())
-			{
-				fprintf(stderr, "Video packet has duplicate timestamp (%lld)\n", frameTime);
-			}
-			else
-			{
-				video_queue[frameTime] = std::make_unique<StoredFrame>(static_cast<const uint8 *>(pkt->data.frame.buf), pkt->data.frame.sz, frameTime, pkt->data.frame.flags & VPX_FRAME_IS_KEY);
-			}
+			video_queue.push(std::make_unique<StoredFrame>(static_cast<const uint8 *>(pkt->data.frame.buf), pkt->data.frame.sz, frameTime, 1000000000ll / av->fps, pkt->data.frame.flags & VPX_FRAME_IS_KEY));
+			av->prev_video_pts = pkt->data.frame.pts;
 		}
 	}
 }
@@ -499,24 +500,17 @@ void Movie::EncodeAudio(bool last)
 		vorbis_bitrate_addblock(&(av->vb));
 		while (vorbis_bitrate_flushpacket(&(av->vd), &(av->op)))
 		{
+			if (av->op.packetno < av->prev_audio_packetno) {
+				fprintf(stderr, "Dropping out-of-order audio packet: %lld < %lld\n", av->op.packetno, av->prev_audio_packetno);
+				continue;
+			}
 			// vorbis_granule_time provides seconds, mkv wants nanoseconds
 			double packetTime = vorbis_granule_time(&(av->vd), av->op.granulepos);
 			uint64_t frameTime = packetTime * 1000000000ll;
-//			fprintf(stderr, "audio packetTime = %.6f, frameTime = %lld\n", packetTime, frameTime);
-			if (frameTime < last_written_timestamp)
-			{
-				// if this happens often, increase min_queue_time in DequeueFrames
-				fprintf(stderr, "Audio packet delivered too late (%lld > %lld)\n", last_written_timestamp, frameTime);
-			}
-			else if (audio_queue.find(frameTime) != audio_queue.end())
-			{
-				fprintf(stderr, "Audio packet has duplicate timestamp (%lld)\n", frameTime);
-			}
-			else
-			{
-				current_audio_timestamp = frameTime;
-				audio_queue[frameTime] = std::make_unique<StoredFrame>(av->op.packet, av->op.bytes, frameTime, false);
-			}
+			// fprintf(stderr, "audio packetno = %lld, packetTime = %.6f, frameTime = %lld\n", av->op.packetno, packetTime, frameTime);
+			audio_queue.push(std::make_unique<StoredFrame>(av->op.packet, av->op.bytes, current_audio_timestamp, frameTime - current_audio_timestamp, false));
+			av->prev_audio_packetno = av->op.packetno;
+			current_audio_timestamp = frameTime;
 		}
 	}
 }
@@ -524,7 +518,9 @@ void Movie::EncodeAudio(bool last)
 void Movie::EncodeThread()
 {
 	av->video_counter = 0;
+	av->prev_video_pts = 0;
 	av->audio_counter = 0;
+	av->prev_audio_packetno = 0;
 	while (true)
 	{
 		SDL_SemWait(encodeReady);
@@ -544,18 +540,17 @@ void Movie::EncodeThread()
 	}
 }
 
-void Movie::DequeueFrame(FrameMap &queue, uint64_t tracknum)
+void Movie::DequeueFrame(FrameQueue &queue, uint64_t tracknum)
 {
-	auto it = queue.begin();
-	if (!av->segment->AddFrame(it->second->buf.data(), it->second->buf.size(), tracknum, it->second->timestamp, it->second->keyframe))
+	if (!av->segment->AddFrame(queue.front()->buf.data(), queue.front()->buf.size(), tracknum, queue.front()->timestamp, queue.front()->keyframe))
 	{
-		fprintf(stderr, "Frame rejected (track %lld, ts %lld)\n", tracknum, it->second->timestamp);
+		fprintf(stderr, "Frame rejected (track %lld, ts %lld)\n", tracknum, queue.front()->timestamp);
 	}
 	else
 	{
-		last_written_timestamp = it->second->timestamp;
+		last_written_timestamp = queue.front()->timestamp;
 	}
-	queue.erase(it);
+	queue.pop();
 }
 
 void Movie::DequeueFrames(bool last)
@@ -564,14 +559,10 @@ void Movie::DequeueFrames(bool last)
 	// - frame timecodes must monotonically increase
 	// - audio should come before video when both have the same timecode
 	// Clustering rules should be handled by libwebm.
-	
-	// Increase min_queue_size if an encoder needs more flexibility
-	// to deliver frames out of order.
-	size_t min_queue_size = last ? 1 : 2;
-	while (video_queue.size() >= min_queue_size && audio_queue.size() >= min_queue_size)
+	while (video_queue.size() >= 1 && audio_queue.size() >= 1)
 	{
-		uint64_t next_video_ts = video_queue.begin()->first;
-		uint64_t next_audio_ts = audio_queue.begin()->first;
+		uint64_t next_video_ts = video_queue.front()->timestamp;
+		uint64_t next_audio_ts = audio_queue.front()->timestamp;
 		assert(next_video_ts >= last_written_timestamp);
 		assert(next_audio_ts >= last_written_timestamp);
 		if (next_video_ts < next_audio_ts)
