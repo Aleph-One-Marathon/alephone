@@ -8518,11 +8518,12 @@
 					"-lsndfile",
 					"-lopenal",
 					"-ljpeg",
-					"-lwebm",
 					"-lyuv",
+					"-lebml",
+					"-lmatroska",
 				);
 				STRIP_INSTALLED_PRODUCT = NO;
-				"USER_HEADER_SEARCH_PATHS[arch=arm64]" = (
+				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)",
 					"$(SRCROOT)/../Source_Files",
 					"$(SRCROOT)/../Source_Files/CSeries",
@@ -8540,27 +8541,6 @@
 					"$(SRCROOT)/../Source_Files/Sound",
 					"$(SRCROOT)/../Source_Files/TCPMess",
 					"$(SRCROOT)/../Source_Files/XML",
-					"$(SRCROOT)/../vcpkg/installed-arm64-osx/arm64-osx/include/libwebm",
-				);
-				"USER_HEADER_SEARCH_PATHS[arch=x86_64]" = (
-					"$(SRCROOT)",
-					"$(SRCROOT)/../Source_Files",
-					"$(SRCROOT)/../Source_Files/CSeries",
-					"$(SRCROOT)/../Source_Files/Files",
-					"$(SRCROOT)/../Source_Files/FFmpeg",
-					"$(SRCROOT)/../Source_Files/GameWorld",
-					"$(SRCROOT)/../Source_Files/Input",
-					"$(SRCROOT)/../Source_Files/Lua",
-					"$(SRCROOT)/../Source_Files/Misc",
-					"$(SRCROOT)/../Source_Files/ModelView",
-					"$(SRCROOT)/../Source_Files/Network",
-					"$(SRCROOT)/../Source_Files/Network/Metaserver",
-					"$(SRCROOT)/../Source_Files/RenderMain",
-					"$(SRCROOT)/../Source_Files/RenderOther",
-					"$(SRCROOT)/../Source_Files/Sound",
-					"$(SRCROOT)/../Source_Files/TCPMess",
-					"$(SRCROOT)/../Source_Files/XML",
-					"$(SRCROOT)/../vcpkg/installed-x64-osx/x64-osx/include/libwebm",
 				);
 				WARNING_CFLAGS = "-Wno-tautological-compare";
 			};
@@ -8688,11 +8668,12 @@
 					"-lsndfile",
 					"-lopenal",
 					"-ljpeg",
-					"-lwebm",
 					"-lyuv",
+					"-lebml",
+					"-lmatroska",
 				);
 				STRIP_INSTALLED_PRODUCT = NO;
-				"USER_HEADER_SEARCH_PATHS[arch=arm64]" = (
+				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)",
 					"$(SRCROOT)/../Source_Files",
 					"$(SRCROOT)/../Source_Files/CSeries",
@@ -8710,27 +8691,6 @@
 					"$(SRCROOT)/../Source_Files/Sound",
 					"$(SRCROOT)/../Source_Files/TCPMess",
 					"$(SRCROOT)/../Source_Files/XML",
-					"$(SRCROOT)/../vcpkg/installed-arm64-osx/arm64-osx/include/libwebm",
-				);
-				"USER_HEADER_SEARCH_PATHS[arch=x86_64]" = (
-					"$(SRCROOT)",
-					"$(SRCROOT)/../Source_Files",
-					"$(SRCROOT)/../Source_Files/CSeries",
-					"$(SRCROOT)/../Source_Files/Files",
-					"$(SRCROOT)/../Source_Files/FFmpeg",
-					"$(SRCROOT)/../Source_Files/GameWorld",
-					"$(SRCROOT)/../Source_Files/Input",
-					"$(SRCROOT)/../Source_Files/Lua",
-					"$(SRCROOT)/../Source_Files/Misc",
-					"$(SRCROOT)/../Source_Files/ModelView",
-					"$(SRCROOT)/../Source_Files/Network",
-					"$(SRCROOT)/../Source_Files/Network/Metaserver",
-					"$(SRCROOT)/../Source_Files/RenderMain",
-					"$(SRCROOT)/../Source_Files/RenderOther",
-					"$(SRCROOT)/../Source_Files/Sound",
-					"$(SRCROOT)/../Source_Files/TCPMess",
-					"$(SRCROOT)/../Source_Files/XML",
-					"$(SRCROOT)/../vcpkg/installed-x64-osx/x64-osx/include/libwebm",
 				);
 				WARNING_CFLAGS = "-Wno-tautological-compare";
 			};

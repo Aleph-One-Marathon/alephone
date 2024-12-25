@@ -101,6 +101,7 @@ private:
 	typedef std::queue<std::unique_ptr<StoredFrame>> FrameQueue;
 	FrameQueue video_queue;
 	FrameQueue audio_queue;
+	FrameQueue cached_frames;
 	uint64_t last_written_timestamp;
 	uint64_t current_audio_timestamp;
 
@@ -111,7 +112,7 @@ private:
   void EncodeVideo(bool last);
   void EncodeAudio(bool last);
   void DequeueFrames(bool last);
-  void DequeueFrame(FrameQueue &queue, uint64_t tracknum);
+  void DequeueFrame(FrameQueue &queue, uint64_t tracknum, bool start_cluster);
   void ThrowUserError(std::string error_msg);
 };
 	

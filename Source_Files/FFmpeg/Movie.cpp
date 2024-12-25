@@ -71,12 +71,31 @@ Movie::Movie() {}
 
 #else
 
-#include <libwebm/mkvmuxer/mkvmuxer.h>
-#include <libwebm/mkvmuxer/mkvwriter.h>
 #include <vorbis/vorbisenc.h>
 #include <libyuv/convert.h>
 #include <vpx/vpx_encoder.h>
 #include <vpx/vp8cx.h>
+
+#include <ebml/EbmlTypes.h>
+#include <ebml/EbmlHead.h>
+#include <ebml/EbmlVoid.h>
+#include <ebml/EbmlSubHead.h>
+#include <matroska/KaxBlock.h>
+#include <matroska/KaxSegment.h>
+#include <matroska/KaxSeekHead.h>
+#include <matroska/KaxTracks.h>
+#include <matroska/KaxInfo.h>
+#include <matroska/KaxCluster.h>
+#include <matroska/KaxTrackAudio.h>
+#include <matroska/KaxTrackVideo.h>
+#include <matroska/KaxCues.h>
+
+using namespace libmatroska;
+
+#define NANOS_PER_SECOND 1000000000ll
+#define WEBM_TIMECODE_SCALE 1000000ll
+#define VIDEO_TRACK_NUMBER 1
+#define AUDIO_TRACK_NUMBER 2
 
 // shamelessly stolen from SDL 2.0
 static int get_cpu_count(void)
@@ -102,15 +121,56 @@ static int get_cpu_count(void)
 	return cpu_count;
 }
 
+class MovieFileWrapper : public IOCallback
+{
+public:
+	~MovieFileWrapper() {
+		this->close();
+	}
+	bool _open(const char *filename) {
+		fp = SDL_RWFromFile(filename, "wb");
+		return !!fp;
+	}
+	uint32 read(void *Buffer, size_t Size) {
+		return SDL_RWread(fp, Buffer, 1, Size);
+	}
+	void setFilePointer(int64 Offset, seek_mode Mode=seek_beginning) {
+		SDL_RWseek(fp, Offset, Mode);
+	}
+	size_t write(const void *Buffer, size_t Size) {
+		return SDL_RWwrite(fp, Buffer, 1, Size);
+	}
+	uint64 getFilePointer() {
+		return SDL_RWtell(fp);
+	}
+	void close() {
+		if (fp) {
+			SDL_RWclose(fp);
+			fp = nullptr;
+		}
+	}
+private:
+	SDL_RWops *fp;
+};
+
 struct libav_vars {
     bool inited;
     
-	// libwebm data
-	mkvmuxer::MkvWriter *writer;
-	mkvmuxer::Segment *segment;
-	mkvmuxer::VideoTrack *vtrack;
-	mkvmuxer::AudioTrack *atrack;
-
+	// libmatroska data
+	MovieFileWrapper *fileio;
+	KaxSegment *k_segment;
+	KaxInfo *k_info;
+	KaxDuration *k_duration;
+	KaxSeekHead *k_seek_head;
+	EbmlVoid *k_void;
+	KaxCues *k_cues;
+	KaxTracks *k_tracks;
+	KaxTrackEntry *k_vtrack;
+	KaxTrackEntry *k_atrack;
+	KaxCluster *k_cluster;
+	uint64_t total_duration;
+	KaxBlockGroup *k_block_group;
+	
 	// libvorbis data
 	ogg_packet       op; /* one raw packet of data for decode */
 	vorbis_info      vi; /* struct that stores all the static vorbis bitstream settings */
@@ -228,17 +288,45 @@ bool Movie::Setup()
 
     if (temp_surface == NULL) { ThrowUserError("Could not create SDL surface"); return false; }
 	
-	av->writer = new mkvmuxer::MkvWriter();
-	if (!av->writer || !av->writer->Open(moviefile.c_str())) { ThrowUserError("Could not create webm file at " + moviefile); return false; }
+	// set up matroska headers
+	av->fileio = new MovieFileWrapper();
+	if (!(av->fileio) || !(av->fileio->_open(moviefile.c_str()))) { ThrowUserError("Could not create webm file at " + moviefile); return false; }
+	av->k_segment = new KaxSegment();
 	
-	av->segment = new mkvmuxer::Segment();
-	if (!av->segment || !av->segment->Init(av->writer)) { ThrowUserError("Could not start webm file"); return false; }
-	av->segment->set_mode(mkvmuxer::Segment::kFile);
-	av->segment->OutputCues(true);
+	EbmlHead FileHead;
+	GetChild<EDocType>(FileHead).SetValue("webm");
+	GetChild<EDocTypeVersion>(FileHead).SetValue(4);
+	GetChild<EDocTypeReadVersion>(FileHead).SetValue(2);
+	FileHead.Render(*(av->fileio));
+	av->k_segment->WriteHead(*(av->fileio), 8);
 	
-	mkvmuxer::SegmentInfo* const info = av->segment->GetSegmentInfo();
-	info->set_timecode_scale(1000000);
-	info->set_writing_app(A1_DISPLAY_NAME " " A1_VERSION_STRING);
+	av->k_seek_head = new KaxSeekHead();
+	av->k_void = new EbmlVoid();
+	av->k_void->SetSize(4096);
+	av->k_void->Render(*(av->fileio));
+
+	av->k_info = &GetChild<KaxInfo>(*(av->k_segment));
+	UTFstring verustr;
+	verustr.SetUTF8(std::string(A1_DISPLAY_NAME " " A1_VERSION_STRING));
+	GetChild<KaxWritingApp>(*(av->k_info)).SetValue(verustr);
+	GetChild<KaxMuxingApp>(*(av->k_info)).SetValue(verustr);
+	GetChild<KaxDateUTC>(*(av->k_info)).SetEpochDate(time(NULL));
+	GetChild<KaxTimecodeScale>(*(av->k_info)).SetValue(WEBM_TIMECODE_SCALE);
+
+	// we will set the actual duration at the end
+	av->k_duration = &GetChild<KaxDuration>(*(av->k_info));
+	av->k_duration->SetPrecision(EbmlFloat::FLOAT_64);
+	av->k_duration->SetValue(0.0);
+	
+	av->k_info->Render(*(av->fileio));
+	av->k_seek_head->IndexThis(*(av->k_info), *(av->k_segment));
+	av->k_cues = &GetChild<KaxCues>(*(av->k_segment));
+	av->k_cues->SetGlobalTimecodeScale(WEBM_TIMECODE_SCALE);
+	
+	av->k_tracks = &GetChild<KaxTracks>(*(av->k_segment));
+	av->k_cluster = nullptr;
+	av->total_duration = 0;
+	// end matroska headers	
 
     int bitrate = graphics_preferences->movie_export_video_bitrate;
 
@@ -262,12 +350,17 @@ bool Movie::Setup()
 	
 	// video setup
 	// set up video track
-	uint64_t vtracknum = av->segment->AddVideoTrack(view_rect.w, view_rect.h, mkvmuxer::Tracks::kVideo);
-	if (!vtracknum) { ThrowUserError("Could not add video track"); return false; }
-	av->vtrack = static_cast<mkvmuxer::VideoTrack*>(av->segment->GetTrackByNumber(vtracknum));
-	if (!av->vtrack) { ThrowUserError("Could not find video track"); return false; }
-	av->vtrack->set_codec_id(mkvmuxer::Tracks::kVp8CodecId);
-	av->vtrack->set_frame_rate(fps);
+	av->k_vtrack = &GetChild<KaxTrackEntry>(*(av->k_tracks));
+	GetChild<KaxTrackNumber>(*(av->k_vtrack)).SetValue(VIDEO_TRACK_NUMBER);
+	GetChild<KaxTrackUID>(*(av->k_vtrack)).SetValue(rand());
+	av->k_vtrack->SetGlobalTimecodeScale(WEBM_TIMECODE_SCALE);
+	GetChild<KaxCodecID>(*(av->k_vtrack)).SetValue("V_VP8");
+	GetChild<KaxTrackType>(*(av->k_vtrack)).SetValue(track_video);
+	KaxTrackVideo *vtinfo = &GetChild<KaxTrackVideo>(*(av->k_vtrack));
+	GetChild<KaxVideoPixelWidth>(*vtinfo).SetValue(view_rect.w);
+	GetChild<KaxVideoPixelHeight>(*vtinfo).SetValue(view_rect.h);
+	GetChild<KaxVideoDisplayWidth>(*vtinfo).SetValue(view_rect.w);
+	GetChild<KaxVideoDisplayHeight>(*vtinfo).SetValue(view_rect.h);
 	
 	// set up vpx
 	vpx_codec_enc_cfg_t cfg;
@@ -311,11 +404,15 @@ bool Movie::Setup()
 	}
 	
 	// set up audio track
-	uint64_t atracknum = av->segment->AddAudioTrack(OpenALManager::Get()->GetFrequency(), 2, mkvmuxer::Tracks::kAudio);
-	if (!atracknum) { ThrowUserError("Could not add audio track"); return false; }
-	av->atrack = static_cast<mkvmuxer::AudioTrack*>(av->segment->GetTrackByNumber(atracknum));
-	if (!av->atrack) { ThrowUserError("Could not find audio track"); return false; }
-	av->atrack->set_codec_id(mkvmuxer::Tracks::kVorbisCodecId);
+	av->k_atrack = &GetNextChild<KaxTrackEntry>(*(av->k_tracks), *(av->k_vtrack));
+	GetChild<KaxTrackNumber>(*(av->k_atrack)).SetValue(AUDIO_TRACK_NUMBER);
+	GetChild<KaxTrackUID>(*(av->k_atrack)).SetValue(rand());
+	av->k_atrack->SetGlobalTimecodeScale(WEBM_TIMECODE_SCALE);
+	GetChild<KaxCodecID>(*(av->k_atrack)).SetValue("A_VORBIS");
+	GetChild<KaxTrackType>(*(av->k_atrack)).SetValue(track_audio);
+	KaxTrackAudio *atinfo = &GetChild<KaxTrackAudio>(*(av->k_atrack));
+	GetChild<KaxAudioChannels>(*atinfo).SetValue(2);
+	GetChild<KaxAudioSamplingFreq>(*atinfo).SetValue(OpenALManager::Get()->GetFrequency());
 	
 	// set up vorbis
 	float vorbisq = (aq == 0) ? -.1f : aq/100.f;
@@ -344,15 +441,14 @@ bool Movie::Setup()
 	aprivatebuf.insert(aprivatebuf.end(), header_iden.packet, header_iden.packet + header_iden.bytes);
 	aprivatebuf.insert(aprivatebuf.end(), header_comm.packet, header_comm.packet + header_comm.bytes);
 	aprivatebuf.insert(aprivatebuf.end(), header_code.packet, header_code.packet + header_code.bytes);
-	av->atrack->SetCodecPrivate(aprivatebuf.data(), aprivatebuf.size());
+	GetChild<KaxCodecPrivate>(*(av->k_atrack)).CopyBuffer(aprivatebuf.data(), aprivatebuf.size());
 
 	vorbis_block_init(&(av->vd), &(av->vb));
 
-	// set up webm cues
-	mkvmuxer::Cues* const cues = av->segment->GetCues();
-	cues->set_output_block_number(true);
-	av->segment->CuesTrack(vtracknum);
-	
+	// write matroska track headers
+	av->k_tracks->Render(*(av->fileio));
+	av->k_seek_head->IndexThis(*(av->k_tracks), *(av->k_segment));
+		
     // set up our threads and intermediate storage
     videobuf.resize(view_rect.w * view_rect.h * 4 + 10000);
 	av->yuv = vpx_img_alloc(av->yuv, VPX_IMG_FMT_I420, view_rect.w, view_rect.h, 1);
@@ -431,9 +527,8 @@ void Movie::EncodeVideo(bool last)
 				fprintf(stderr, "Dropping out-of-order video packet: %lld < %lld\n", pkt->data.frame.pts, av->prev_video_pts);
 				continue;
 			}
-			const uint64_t frameTime = pkt->data.frame.pts * 1000000000ll / av->fps;
-			// fprintf(stderr, "video pts = %lld, frameTime = %lld, key = %d\n", pkt->data.frame.pts, frameTime, (pkt->data.frame.flags & VPX_FRAME_IS_KEY));
-			video_queue.push(std::make_unique<StoredFrame>(static_cast<const uint8 *>(pkt->data.frame.buf), pkt->data.frame.sz, frameTime, 1000000000ll / av->fps, pkt->data.frame.flags & VPX_FRAME_IS_KEY));
+			const uint64_t frameTime = pkt->data.frame.pts * NANOS_PER_SECOND / av->fps;
+			video_queue.push(std::make_unique<StoredFrame>(static_cast<const uint8 *>(pkt->data.frame.buf), pkt->data.frame.sz, frameTime, NANOS_PER_SECOND / av->fps, pkt->data.frame.flags & VPX_FRAME_IS_KEY));
 			av->prev_video_pts = pkt->data.frame.pts;
 		}
 	}
@@ -506,8 +601,7 @@ void Movie::EncodeAudio(bool last)
 			}
 			// vorbis_granule_time provides seconds, mkv wants nanoseconds
 			double packetTime = vorbis_granule_time(&(av->vd), av->op.granulepos);
-			uint64_t frameTime = packetTime * 1000000000ll;
-			// fprintf(stderr, "audio packetno = %lld, packetTime = %.6f, frameTime = %lld\n", av->op.packetno, packetTime, frameTime);
+			uint64_t frameTime = packetTime * NANOS_PER_SECOND;
 			audio_queue.push(std::make_unique<StoredFrame>(av->op.packet, av->op.bytes, current_audio_timestamp, frameTime - current_audio_timestamp, false));
 			av->prev_audio_packetno = av->op.packetno;
 			current_audio_timestamp = frameTime;
@@ -540,38 +634,102 @@ void Movie::EncodeThread()
 	}
 }
 
-void Movie::DequeueFrame(FrameQueue &queue, uint64_t tracknum)
+void Movie::DequeueFrame(FrameQueue &queue, uint64_t tracknum, bool start_cluster)
 {
-	if (!av->segment->AddFrame(queue.front()->buf.data(), queue.front()->buf.size(), tracknum, queue.front()->timestamp, queue.front()->keyframe))
-	{
-		fprintf(stderr, "Frame rejected (track %lld, ts %lld)\n", tracknum, queue.front()->timestamp);
-	}
-	else
-	{
-		last_written_timestamp = queue.front()->timestamp;
-	}
+	std::unique_ptr<StoredFrame> frame = std::move(queue.front());
 	queue.pop();
+	
+	if (start_cluster)
+	{
+		// end the current cluster
+		if (av->k_cluster)
+		{
+			av->k_cluster->UpdateSize();
+			av->k_cluster->Render(*(av->fileio), *(av->k_cues));
+			av->k_seek_head->IndexThis(*(av->k_cluster), *(av->k_segment));
+			av->k_cluster->ReleaseFrames();
+			while (cached_frames.size())
+			{
+				cached_frames.pop();
+			}
+			av->k_cluster = nullptr;
+		}
+	}
+	if (!av->k_cluster)
+	{
+		av->k_cluster = new KaxCluster();
+		av->k_cluster->SetParent(*(av->k_segment));
+		av->k_cluster->SetPreviousTimecode(av->total_duration, WEBM_TIMECODE_SCALE);
+		GetChild<KaxClusterTimecode>(*(av->k_cluster)).SetValue(frame->timestamp);
+	}
+	
+	KaxBlockBlob *blob = new KaxBlockBlob(BLOCK_BLOB_ALWAYS_SIMPLE);
+	av->k_cluster->AddBlockBlob(blob);
+	blob->SetParent(*(av->k_cluster));
+	if (frame->keyframe)
+	{
+		av->k_cues->AddBlockBlob(*blob);
+	}
+	KaxTrackEntry *track = (tracknum == VIDEO_TRACK_NUMBER) ? av->k_vtrack : av->k_atrack;
+	
+	SimpleDataBuffer *buf = new SimpleDataBuffer(frame->buf.data(), frame->buf.size(), 0);
+	blob->AddFrameAuto(*track, frame->timestamp, *buf, LACING_NONE);
+	av->total_duration = std::max(av->total_duration, frame->timestamp + frame->duration);
+	last_written_timestamp = frame->timestamp;
+	cached_frames.push(std::move(frame));
 }
 
 void Movie::DequeueFrames(bool last)
 {
-	// Rules for frame ordering:
+	// Rules for frame ordering and clustering:
 	// - frame timecodes must monotonically increase
 	// - audio should come before video when both have the same timecode
-	// Clustering rules should be handled by libwebm.
+	// - each key frame should be the first video frame of a cluster
+	// - audio during key frame should be in the key frame's cluster
 	while (video_queue.size() >= 1 && audio_queue.size() >= 1)
 	{
-		uint64_t next_video_ts = video_queue.front()->timestamp;
-		uint64_t next_audio_ts = audio_queue.front()->timestamp;
-		assert(next_video_ts >= last_written_timestamp);
-		assert(next_audio_ts >= last_written_timestamp);
-		if (next_video_ts < next_audio_ts)
+		uint64_t next_video_start = video_queue.front()->timestamp;
+		uint64_t next_video_end = next_video_start + video_queue.front()->duration;
+		uint64_t next_audio_start = audio_queue.front()->timestamp;
+		uint64_t next_audio_end = next_audio_start + audio_queue.front()->duration;
+		assert(next_video_start >= last_written_timestamp);
+		assert(next_audio_start >= last_written_timestamp);
+		if (next_video_start < next_audio_start)
 		{
-			DequeueFrame(video_queue, av->vtrack->number());
+			// We never start a cluster on a video frame, since
+			// we should have started one when the timecode's
+			// corresponding audio packet was added.
+			DequeueFrame(video_queue, VIDEO_TRACK_NUMBER, false);
+		}
+		else if (next_audio_start < next_video_start && next_audio_end <= next_video_start)
+		{
+			// This audio does not overlap with the next video
+			// frame, so it belongs in the existing cluster.
+			DequeueFrame(audio_queue, AUDIO_TRACK_NUMBER, false);
+		}
+		else if (video_queue.front()->keyframe)
+		{
+			// We are heading into a new cluster. Wait until we
+			// have all audio for the keyframe before draining
+			// the queue, unless we're at the end.
+			if (!last && (audio_queue.back()->timestamp + audio_queue.back()->duration) < next_video_end)
+			{
+				break;
+			}
+			DequeueFrame(audio_queue, AUDIO_TRACK_NUMBER, true);
+			while (audio_queue.size() > 0 && audio_queue.front()->timestamp <= next_video_start)
+			{
+				DequeueFrame(audio_queue, AUDIO_TRACK_NUMBER, false);
+			}
+			DequeueFrame(video_queue, VIDEO_TRACK_NUMBER, false);
 		}
 		else
 		{
-			DequeueFrame(audio_queue, av->atrack->number());
+			// Next video frame is not key, and we have audio
+			// extending into the frame. Both belong in the
+			// existing cluster.
+			DequeueFrame(audio_queue, AUDIO_TRACK_NUMBER, false);
+			DequeueFrame(video_queue, VIDEO_TRACK_NUMBER, false);
 		}
 	}
 	if (last)
@@ -579,11 +737,24 @@ void Movie::DequeueFrames(bool last)
 		// flush whichever queue was not already emptied
 		while (audio_queue.size())
 		{
-			DequeueFrame(audio_queue, av->atrack->number());
+			DequeueFrame(audio_queue, AUDIO_TRACK_NUMBER, false);
 		}
 		while (video_queue.size())
 		{
-			DequeueFrame(video_queue, av->vtrack->number());
+			DequeueFrame(video_queue, VIDEO_TRACK_NUMBER, video_queue.front()->keyframe);
+		}
+		// close final cluster
+		if (av->k_cluster)
+		{
+			av->k_cluster->Render(*(av->fileio), *(av->k_cues));
+			av->k_seek_head->IndexThis(*(av->k_cluster), *(av->k_segment));
+			av->k_seek_head->UpdateSize();
+			av->k_cluster->ReleaseFrames();
+			while (cached_frames.size())
+			{
+				cached_frames.pop();
+			}
+			av->k_cluster = nullptr;
 		}
 	}
 }
@@ -696,7 +867,48 @@ void Movie::StopRecording()
         EncodeAudio(true);
 		DequeueFrames(true);
 		
-		av->segment->Finalize();
+		if (av->k_cues->ListSize() > 0)
+		{
+			av->k_cues->Render(*(av->fileio));
+			av->k_seek_head->IndexThis(*(av->k_cues), *(av->k_segment));
+			av->k_seek_head->UpdateSize();
+		}
+		
+		av->k_duration->SetValue(av->total_duration / static_cast<double>(WEBM_TIMECODE_SCALE));
+		av->k_info->UpdateSize();
+		uint64_t oldPos = av->fileio->getFilePointer();
+		av->fileio->setFilePointer(av->k_info->GetElementPosition());
+		av->k_info->Render(*(av->fileio));
+		av->fileio->setFilePointer(oldPos);
+
+		if (av->k_seek_head->GetSize() > av->k_void->GetSize())
+		{
+			fprintf(stderr, "Seek head size (%lld) can't fit in reserved size (%lld), skipping\n", av->k_seek_head->GetSize(), av->k_void->GetSize());
+		}
+		else
+		{
+			av->k_void->ReplaceWith(*(av->k_seek_head), *(av->fileio));
+		}
+		
+		av->k_segment->ForceSize(av->fileio->getFilePointer() - av->k_segment->GetElementPosition() - av->k_segment->HeadSize());
+		av->k_segment->OverwriteHead(*(av->fileio));
+		
+		av->fileio->close();
+		delete av->fileio;
+		av->fileio = nullptr;
+		av->k_cues = nullptr;
+		av->k_atrack = nullptr;
+		av->k_tracks = nullptr;
+		av->k_vtrack = nullptr;
+		av->k_duration = nullptr;
+
+		delete av->k_seek_head;
+		av->k_seek_head = nullptr;
+		delete av->k_void;
+		av->k_void = nullptr;
+		delete av->k_segment;
+		av->k_segment = nullptr;
+		
 		vorbis_block_clear(&(av->vb));
 		vorbis_dsp_clear(&(av->vd));
 		vorbis_comment_clear(&(av->vc));
@@ -704,19 +916,6 @@ void Movie::StopRecording()
 		vpx_codec_destroy(&(av->codec));
         av->inited = false;
     }
-	av->atrack = nullptr;
-	av->vtrack = nullptr;
-	if (av->segment)
-	{
-		delete av->segment;	
-		av->segment = nullptr;
-	}
-	if (av->writer)
-	{
-		av->writer->Close();
-		delete av->writer;
-		av->writer = nullptr;
-	}
 
 	moviefile = "";
     if (OpenALManager::Get()) {
