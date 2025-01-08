@@ -757,7 +757,17 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 				/* do things dead players do (sit around and check for self-reincarnation) */
 				if (PLAYER_HAS_MAP_OPEN(player))
 					SET_PLAYER_MAP_STATUS(player, false);
-				if (PLAYER_IS_TOTALLY_DEAD(player) && (action_flags&_action_trigger_state) && (player->variables.action==_player_stationary||dynamic_world->player_count==1))
+
+				auto player_is_stationary =
+					(player->variables.action == _player_stationary) ||
+					(dynamic_world->player_count == 1) ||
+					(film_profile.finally_respawn &&
+					 dynamic_world->tick_count >
+					 player->ticks_at_death + 15 * TICKS_PER_SECOND);
+
+				if (PLAYER_IS_TOTALLY_DEAD(player) &&
+					(action_flags&_action_trigger_state) &&
+					player_is_stationary)
 				{
 					// ZZZ: let the player know why he's not respawning
 					if(player->reincarnation_delay)
@@ -1817,6 +1827,8 @@ static void kill_player(
 	if (aggressor_player_index==player_index && (GET_GAME_OPTIONS()&_suicide_is_penalized)) player->reincarnation_delay+= SUICIDE_REINCARNATION_DELAY;
 
 	kill_player_physics_variables(player_index);
+
+	player->ticks_at_death = dynamic_world->tick_count;
 }
 
 static void give_player_initial_items(

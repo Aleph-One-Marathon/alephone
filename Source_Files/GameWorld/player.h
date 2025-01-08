@@ -421,6 +421,8 @@ struct player_data
 
 	bool run_key;				// not serialized, used by HUD
 
+	int32_t ticks_at_death;		// not serialized
+
 	// ZZZ: since we don't put this structure directly into files or network communications,
 	// there ought? to be no reason for the padding
 //	int16 unused[256];
