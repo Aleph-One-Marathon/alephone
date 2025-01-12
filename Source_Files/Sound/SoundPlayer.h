@@ -76,10 +76,10 @@ public:
 private:
 
 	struct SoundTransition {
-		uint32_t start_transition_tick;
+		uint32_t start_transition_tick = 0;
 		float current_volume = 0;
 		SoundBehavior current_sound_behavior;
-		bool allow_transition;
+		bool allow_transition = false;
 	};
 
 	void Rewind() override;
@@ -90,6 +90,7 @@ private:
 	SetupALResult SetUpALSource3D();
 	bool SetUpALSourceInit() override;
 	bool LoadParametersUpdates() override;
+	void ResetTransition();
 	float ComputeParameterForTransition(float targetParameter, float currentParameter, int currentTick) const;
 	float ComputeVolumeForTransition(float targetVolume);
 	SoundBehavior ComputeVolumeForTransition(const SoundBehavior& targetSoundBehavior);

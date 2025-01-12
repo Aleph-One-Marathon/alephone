@@ -19,8 +19,6 @@ void SoundPlayer::Init(const SoundParameters& parameters) {
 	this->parameters.Set(soundParameters);
 	data_length = sound.header.length;
 	start_tick = SoundManager::GetCurrentAudioTick();
-	sound_transition.allow_transition = false;
-	sound_transition.start_transition_tick = 0;
 	current_index_data = 0;
 }
 
@@ -94,8 +92,12 @@ void SoundPlayer::Rewind() {
 			rewind_signal = false;
 	}
 
+	const auto& oldParameters = parameters.Get();
+
 	sound.Update();
 	Init(rewindParameters);
+
+	if (oldParameters.source_identifier != rewindParameters.source_identifier) ResetTransition();
 	if (!rewindParameters.soft_rewind) SetUpALSourceInit();
 }
 
@@ -148,7 +150,6 @@ bool SoundPlayer::LoadParametersUpdates() {
 
 		bestRewindParameters = soundParameters;
 		rewindLastPriority = priority;
-
 	}
 
 	if (rewindLastPriority > 0) rewind_parameters.Set(bestRewindParameters);
@@ -248,6 +249,11 @@ bool SoundPlayer::SetUpALSourceInit() {
 #endif
 
 	return alGetError() == AL_NO_ERROR;
+}
+
+void SoundPlayer::ResetTransition() {
+	sound_transition.allow_transition = false;
+	sound_transition.start_transition_tick = 0;
 }
 
 float SoundPlayer::ComputeParameterForTransition(float targetParameter, float currentParameter, int currentTick) const {
