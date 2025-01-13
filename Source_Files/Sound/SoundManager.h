@@ -127,7 +127,7 @@ private:
 	SoundManager();
 	void SetStatus(bool active);
 	SoundDefinition* GetSoundDefinition(short sound_index);
-	std::shared_ptr<SoundPlayer> BufferSound(SoundParameters parameters);
+	std::shared_ptr<SoundPlayer> BufferSound(SoundParameters& parameters);
 	float CalculatePitchModifier(short sound_index, _fixed pitch_modifier);
 	void AngleAndVolumeToStereoVolume(angle delta, short volume, short *right_volume, short *left_volume);
 	short GetRandomSoundPermutation(short sound_index);

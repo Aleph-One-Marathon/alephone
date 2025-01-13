@@ -814,7 +814,7 @@ std::shared_ptr<SoundPlayer> SoundManager::ManageSound(const Sound& sound, const
 	return returnedPlayer;
 }
 
-std::shared_ptr<SoundPlayer> SoundManager::BufferSound(SoundParameters parameters)
+std::shared_ptr<SoundPlayer> SoundManager::BufferSound(SoundParameters& parameters)
 {
 	auto returnedPlayer = std::shared_ptr<SoundPlayer>();
 	SoundDefinition* definition = GetSoundDefinition(parameters.identifier);
@@ -1053,6 +1053,7 @@ void SoundManager::UpdateAmbientSoundSources()
 			SoundParameters parameters;
 			parameters.identifier = ambient_sounds[i].sound_index;
 			parameters.soft_rewind = true;
+			parameters.soft_start = true;
 			parameters.pitch = FIXED_ONE;
 			parameters.flags = ambient_sounds[i].flags;
 			parameters.stereo_parameters.is_panning = true;

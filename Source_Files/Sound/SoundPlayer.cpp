@@ -185,8 +185,9 @@ SetupALResult SoundPlayer::SetUpALSourceIdle() {
 
 	if (soundParameters.is_2d) {
 
-		bool softStopSignal = soft_stop_signal.load();
-		float volume = softStopSignal ? 0 : 1;
+		const bool softStopSignal = soft_stop_signal.load();
+		const bool softStartBegin = !sound_transition.allow_transition && soundParameters.soft_start;
+		float volume = softStopSignal || softStartBegin ? 0 : 1;
 
 		if (soundParameters.stereo_parameters.is_panning) {
 			auto pan = (acosf(std::min(soundParameters.stereo_parameters.gain_left, 1.f)) + asinf(std::min(soundParameters.stereo_parameters.gain_right, 1.f))) / ((float)M_PI); // average angle in [0,1]
@@ -200,7 +201,7 @@ SetupALResult SoundPlayer::SetUpALSourceIdle() {
 		}
 
 		float finalVolume = ComputeVolumeForTransition(volume);
-		result.second = finalVolume == volume;
+		result.second = finalVolume == volume && !softStartBegin;
 
 		if (softStopSignal && finalVolume == 0) softStopDone = true;
 
