@@ -445,7 +445,7 @@ void SoundManager::ManagePlayers() {
 
 		auto parameters = soundPlayer->GetParameters();
 
-		if (parameters.loop && SoundPlayer::Simulate(parameters) <= 0) {
+		if (soundPlayer->IsLooping() && SoundPlayer::Simulate(parameters) <= 0) {
 			soundPlayer->AskSoftStop();
 		}
 		else {

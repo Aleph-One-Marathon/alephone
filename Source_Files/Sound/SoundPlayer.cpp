@@ -32,9 +32,7 @@ SoundPlayer::SoundPlayer(const Sound& sound, const SoundParameters& parameters)
 void SoundPlayer::Init(const SoundParameters& parameters) {
 	auto& sound = this->sound.Get();
 	AudioPlayer::Init(sound.header.rate >> 16, sound.header.stereo, sound.header.audio_format);
-	auto soundParameters = parameters;
-	soundParameters.loop = parameters.loop || sound.header.loop_end - sound.header.loop_start >= 4;
-	this->parameters.Set(soundParameters);
+	this->parameters.Set(parameters);
 	data_length = sound.header.length;
 	start_tick = SoundManager::GetCurrentAudioTick();
 	current_index_data = 0;
@@ -119,25 +117,17 @@ void SoundPlayer::Rewind() {
 	if (!rewindParameters.soft_rewind) SetUpALSourceInit();
 }
 
+bool SoundPlayer::IsLooping() const {
+	const auto& header = sound.Get().header;
+	return header.loop_end - header.loop_end >= 4;
+}
+
 int SoundPlayer::LoopManager(uint8* data, int length) {
-
-	if (parameters.Get().loop) {
-
-		auto header = sound.Get().header;
-		int loopLength = header.loop_end - header.loop_start;
-
-		if (loopLength >= 4) {
-			data_length = loopLength;
-			current_index_data = header.loop_start;
-		}
-		else {
-			current_index_data = 0;
-		}
-
-		return GetNextData(data, length);
-	}
-
-	return 0;
+	if (!IsLooping()) return 0;
+	const auto& header = sound.Get().header;
+	data_length = header.loop_end - header.loop_start;
+	current_index_data = header.loop_start;
+	return GetNextData(data, length);
 }
 
 bool SoundPlayer::LoadParametersUpdates() {
@@ -383,6 +373,6 @@ int SoundPlayer::GetNextData(uint8* data, int length) {
 	auto& sound_data = sound.Get().data;
 	std::copy(sound_data->data() + current_index_data, sound_data->data() + current_index_data + returnedDataLength, data);
 	current_index_data += returnedDataLength;
-	if (returnedDataLength < length && parameters.Get().loop) return returnedDataLength + LoopManager(data + returnedDataLength, length - returnedDataLength);
+	if (returnedDataLength < length) return returnedDataLength + LoopManager(data + returnedDataLength, length - returnedDataLength);
 	return returnedDataLength;
 }

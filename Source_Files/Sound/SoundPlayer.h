@@ -43,7 +43,6 @@ struct SoundParameters {
 	short identifier = NONE; //Identifier of the sound
 	short source_identifier = NONE; //Identifier of the source emitting the sound
 	float pitch = 1;
-	bool loop = false;
 	bool is_2d = true; //if false it will use source_location3d to position sound (3D sounds)
 	bool soft_rewind = false; //if true the sound can only rewind after it's done playing
 	bool soft_start = false; //if true the sound will use transitions to fade in from silence to proper computed volume
@@ -92,6 +91,7 @@ public:
 	bool CanRewind(int baseTick) const;
 	bool CanFastRewind(const SoundParameters& soundParameters) const;
 	bool HasActiveRewind() const { return rewind_signal.load() && !soft_stop_signal.load(); }
+	bool IsLooping() const;
 private:
 
 	struct SoundTransition {
