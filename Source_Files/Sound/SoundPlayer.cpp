@@ -349,13 +349,13 @@ SetupALResult SoundPlayer::SetUpALSource3D() {
 	if (muffled) volume /= 2;
 
 	//Exception to the rule
-	if (sound_parameters.behavior == _sound_is_quiet && obstruction) {
+	if (soundParameters.behavior == _sound_is_quiet && obstruction) {
 		alSourcef(audio_source->source_id, AL_GAIN, 0);
 		return;
 	}
 
 	//One more rule for this case
-	if (sound_parameters.behavior == _sound_is_loud && !obstruction) {
+	if (soundParameters.behavior == _sound_is_loud && !obstruction) {
 		alSourcef(audio_source->source_id, AL_MIN_GAIN, volume / 8);
 	}
 
