@@ -1084,6 +1084,9 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
     if (!object->clipping_windows)
         return;
 
+	if (renderStep == kGlow && (object->rectangle.flags & rectangle_definition::shader_skip_glow_step))
+		return;
+
 	clipping_window_data *win;
 
 	// To properly handle sprites in media, we render above and below
@@ -1158,6 +1161,9 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 
 	auto TMgr = setupSpriteTexture(rect, OGL_Txtr_Inhabitant, offset, renderStep);
 	if (TMgr->ShapeDesc == UNONE) { glPopMatrix(); return; }
+	if (!TMgr->IsGlowMapped()) {
+		rect.flags |= rectangle_definition::shader_skip_glow_step;
+	}
 
 	float texCoords[2][2];
 
