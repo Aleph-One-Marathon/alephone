@@ -113,11 +113,6 @@ class OGL_ModelData;
 
 struct rectangle_definition
 {
-	enum {
-		/* shortcut glow pass if we know this isn't glowing */
-		shader_skip_glow_step = 0x4000
-	};
-	
 	uint16 flags;
 	
 	struct bitmap_definition *texture;
