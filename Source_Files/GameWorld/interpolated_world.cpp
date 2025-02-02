@@ -650,7 +650,8 @@ void update_interpolated_world(float heartbeat_fraction)
 			continue;
 		}
 
-		if (!should_interpolate(prev->location, next->location))
+		if (!should_interpolate(prev->location, next->location) ||
+			std::abs(prev->location.z - next->location.z) > default_speed_limit)
 		{
 			continue;
 		}
