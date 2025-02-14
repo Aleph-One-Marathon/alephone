@@ -475,8 +475,9 @@ void SoundManager::ManagePlayers() {
 	}
 }
 
-void SoundManager::UpdateListener() {
-	if (!(parameters.flags & _3d_sounds_flag)) return;
+void SoundManager::UpdateListener()
+{
+	if (!active || !(parameters.flags & _3d_sounds_flag)) return;
 	auto listener = _sound_listener_proc();
 	if (listener && *listener != OpenALManager::Get()->GetListener()) OpenALManager::Get()->UpdateListener(*listener);
 }
@@ -748,7 +749,7 @@ void SoundManager::SetStatus(bool active)
 
 		if (shell_options.nosound) return;
 
-		AudioParameters audio_parameters = {
+		const AudioParameters audio_parameters = {
 			parameters.rate,
 			parameters.samples,
             parameters.channel_type,
@@ -759,9 +760,7 @@ void SoundManager::SetStatus(bool active)
 			From_db(parameters.music_db, true)
 		};
 
-		bool success = OpenALManager::Init(audio_parameters);
-
-		if (!success) return;
+		if (!OpenALManager::Init(audio_parameters)) return;
 
 		OpenALManager::Get()->Start();
 	}
