@@ -459,6 +459,10 @@ end
       </variable>
     </table>
     <table name="game" singleton="true">
+      <function name="autosave" version="git">
+		<description>saves the game without prompting the user, if possible</description>
+		<note>solo only</note>
+      </function>
       <variable name="dead_players_drop_items" version="20150619">
         <description>whether dead players drop items</description>
         <type>boolean</type>
