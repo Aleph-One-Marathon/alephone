@@ -49,11 +49,10 @@ static bool launchChild(ProcessType *pid);
 static int closeProcess(ProcessType *pid);
 
 static fs::path findExe(const boost::regex& regex);
-static fs::path findApp(const boost::regex& regex);
 
 #ifdef _WIN32
 
-static LPWSTR LpCmdLine = NULL;
+static LPWSTR GlpCmdLine = NULL;
 
 static void fail(const char *err)
 {
@@ -115,7 +114,7 @@ static bool launchChild(ProcessType *pid)
     memset(&si, 0, sizeof(si));
     auto exe = findExe(boost::regex("Classic Marathon.*\\.exe"));
 
-    std::wstring args = L"\"" + exe.wstring() + L"\" " + (LpCmdLine ? LpCmdLine : L""); //should never be null but just in case
+    std::wstring args = L"\"" + exe.wstring() + L"\" " + (GlpCmdLine ? GlpCmdLine : L""); //should never be null but just in case
 
     return (CreateProcessW(exe.wstring().c_str(),
         args.data(), NULL, NULL, TRUE, 0, NULL,
@@ -129,9 +128,9 @@ static int closeProcess(ProcessType *pid)
     return 0;
 } // closeProcess
 
-int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
+int CALLBACK wWinMain(_In_ HINSTANCE /*hInstance*/, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR lpCmdLine, _In_ int /*nCmdShow*/)
 {
-    LpCmdLine = lpCmdLine;
+    GlpCmdLine = lpCmdLine;
     mainline();
     ExitProcess(0);
     return 0;  // just in case.
@@ -208,7 +207,7 @@ static bool launchChild(ProcessType *pid)
 
     // we're the child.
 #ifdef __APPLE__
-    auto app = findApp(boost::regex("Classic Marathon.*\\.app"));
+    auto app = findExe(boost::regex("Classic Marathon.*\\.app"));
     auto macos = app / "Contents" / "MacOS";
     auto bin = boost::filesystem::directory_iterator(macos)->path().string();
 #else
@@ -246,10 +245,11 @@ fs::path findExe(const boost::regex& regex)
 
     fs::directory_iterator end;
     for (fs::directory_iterator it(this_exe.parent_path()); it != end; ++it) {
+#ifndef __APPLE__
         if (it->path() == this_exe) {
             continue;
         }
-
+#endif
         auto filename = it->path().filename().string();
         if (boost::regex_match(filename, regex)) {
             return it->path();
@@ -259,20 +259,6 @@ fs::path findExe(const boost::regex& regex)
     return fs::path();
 }
 
-fs::path findApp(const boost::regex& regex)
-{
-    auto this_exe = boost::dll::program_location();
-
-    fs::directory_iterator end;
-    for (fs::directory_iterator it(this_exe.parent_path()); it != end; ++it) {
-        auto filename = it->path().filename().string();
-        if (boost::regex_match(filename, regex)) {
-            return it->path();
-        }
-    }
-
-    return fs::path();
-}
 
 // THE ACTUAL PROGRAM.
 
@@ -714,6 +700,8 @@ static std::vector<std::string> GetTagsForItemType(ItemType item_type, ContentTy
                 case ContentType::Theme:
                     tags.push_back("Theme");
                     break;
+                default:
+                    break;
             }
             break;
         case ItemType::Map:
@@ -728,6 +716,8 @@ static std::vector<std::string> GetTagsForItemType(ItemType item_type, ContentTy
                 case ContentType::SoloAndNet:
                     tags.push_back("Solo Map");
                     tags.push_back("Net Map");
+                    break;
+                default:
                     break;
             }
             break;
@@ -746,6 +736,8 @@ static std::vector<std::string> GetTagsForItemType(ItemType item_type, ContentTy
                 case ContentType::SoloAndNet:
                     tags.push_back("Solo Script");
                     tags.push_back("Net Script");
+                    break;
+                default:
                     break;
             }
             break;
@@ -786,7 +778,7 @@ static void UpdateItem(PublishedFileId_t item_id, const item_upload_data& item_d
     auto tags = GetTagsForItemType(item_data.item_type, item_data.content_type);
     const char* tag_array[16];
 
-    for (auto i = 0; i < tags.size(); i++)
+    for (size_t i = 0; i < tags.size(); i++)
     {
         tag_array[i] = tags[i].c_str();
     }
@@ -947,7 +939,7 @@ void SteamBridge::OnItemOwnedQueried(SteamUGCQueryCompleted_t* pCallback, bool b
 {
     if (!bIOFailure && pCallback->m_eResult == k_EResultOK)
     {
-        for (int i = 0; i < pCallback->m_unNumResultsReturned; i++)
+        for (uint32 i = 0; i < pCallback->m_unNumResultsReturned; i++)
         {
             SteamUGCDetails_t item_details;
 
@@ -1008,7 +1000,7 @@ void SteamBridge::OnItemModQueried(SteamUGCQueryCompleted_t* pCallback, bool bIO
 {
     if (!bIOFailure && pCallback->m_eResult == k_EResultOK)
     {
-        for (int i = 0; i < pCallback->m_unNumResultsReturned; i++)
+        for (uint32 i = 0; i < pCallback->m_unNumResultsReturned; i++)
         {
             SteamUGCDetails_t item_details;
 
@@ -1073,7 +1065,7 @@ void SteamBridge::OnItemScenarioQueried(SteamUGCQueryCompleted_t* pCallback, boo
 {
     if (!bIOFailure && pCallback->m_eResult == k_EResultOK)
     {
-        for (int i = 0; i < pCallback->m_unNumResultsReturned; i++)
+        for (uint32 i = 0; i < pCallback->m_unNumResultsReturned; i++)
         {
             SteamUGCDetails_t item_details;
 
