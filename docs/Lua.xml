@@ -459,7 +459,7 @@ end
       </variable>
     </table>
     <table name="game" singleton="true">
-      <function name="autosave" version="git">
+      <function name="autosave" version="20250302">
 		<description>saves the game without prompting the user, if possible</description>
 		<note>solo only</note>
       </function>
