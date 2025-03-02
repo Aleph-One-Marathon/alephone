@@ -2763,6 +2763,7 @@ extern int L_Restore_Passed(lua_State *);
 extern int L_Restore_Saved(lua_State *);
 
 const luaL_Reg Lua_Game_Get[] = {
+	{"autosave", L_TableFunction<Lua_Game_Save>},
 	{"dead_players_drop_items", Lua_Game_Get_Dead_Players_Drop_Items},
 	{"deserialize", L_TableFunction<Lua_Game_Deserialize>},
 	{"difficulty", Lua_Game_Get_Difficulty},
