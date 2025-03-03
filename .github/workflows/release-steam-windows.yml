@@ -26,7 +26,7 @@ jobs:
     - name: Restore config.vdf
       env: 
         CONFIG_VDF: ${{ secrets.CONFIG_VDF }}
-      run: echo $CONFIG_VDF | base64 --decode > Steam/steamcmd/config/config.vdf
+      run: echo $CONFIG_VDF | base64 -di > Steam/steamcmd/config/config.vdf
       shell: bash
       
     - name: Deploy to Steam
