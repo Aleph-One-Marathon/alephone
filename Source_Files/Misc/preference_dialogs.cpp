@@ -159,6 +159,8 @@ OpenGLDialog::~OpenGLDialog()
 	delete m_colourEffectsWidget;
 	delete m_transparentLiquidsWidget;
 	delete m_3DmodelsWidget;
+	delete m_perspectiveWidget;
+	delete m_parallaxWidget;
 	delete m_blurWidget;
 	delete m_bumpWidget;
 	delete m_colourTheVoidWidget;
@@ -198,6 +200,9 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	binders.insert<bool> (m_bumpWidget, &bumpPref);
 	BitPref perspectivePref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_MimicSW, true);
 	binders.insert<bool> (m_perspectiveWidget, &perspectivePref);
+
+	BoolPref parallaxPref (graphics_preferences->OGL_Configure.CorrectSpriteParallax);
+	binders.insert<bool> (m_parallaxWidget, &parallaxPref);
 	
 	BitPref colourTheVoidPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_VoidColor);
 	binders.insert<bool> (m_colourTheVoidWidget, &colourTheVoidPref);
@@ -321,6 +326,7 @@ public:
 
 		table_placer *general_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 		general_table->col_flags(0, placeable::kAlignRight);
+		general_table->col_flags(1, placeable::kAlignLeft);
 		
 		w_toggle *fog_w = new w_toggle(false);
 		general_table->dual_add(fog_w->label("Fog"), m_dialog);
@@ -338,10 +344,24 @@ public:
 		general_table->dual_add(models_w->label("3D Models"), m_dialog);
 		general_table->dual_add(models_w, m_dialog);
 
-		w_toggle *perspective_w = new w_toggle(false);
+		w_enabling_toggle *perspective_w = new w_enabling_toggle(false);
 		general_table->dual_add(perspective_w->label("3D Perspective"), m_dialog);
-		general_table->dual_add(perspective_w, m_dialog);
-		
+
+		auto parallax_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET));
+
+		w_toggle* parallax_w = new w_toggle(false);
+		parallax_placer->add_flags(placeable::kAlignLeft);
+		parallax_placer->dual_add(perspective_w, m_dialog);
+		parallax_placer->add_flags(placeable::kFill);
+		parallax_placer->add(new w_spacer(), true);
+		parallax_placer->dual_add(parallax_w->label("Fix Sprite Parallax"), m_dialog);
+		parallax_placer->dual_add(parallax_w, m_dialog);
+
+		perspective_w->add_dependent_widget(parallax_w);
+		parallax_w->set_enabled(!(graphics_preferences->OGL_Configure.Flags & OGL_Flag_MimicSW));
+
+		general_table->add(parallax_placer, true);
+
 		w_toggle *blur_w = new w_toggle(false);
 		general_table->dual_add(blur_w->label("Bloom Effects"), m_dialog);
 		general_table->dual_add(blur_w, m_dialog);
@@ -520,6 +540,7 @@ public:
 		m_blurWidget = new ToggleWidget (blur_w);
 		m_bumpWidget = new ToggleWidget (bump_w);
 		m_perspectiveWidget = new ToggleWidget (perspective_w);
+		m_parallaxWidget = new ToggleWidget (parallax_w);
 
 		m_colourTheVoidWidget = 0;
 		m_voidColourWidget = 0;

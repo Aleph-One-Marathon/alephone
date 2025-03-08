@@ -1140,7 +1140,11 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 
 	double yaw = view->virtual_yaw * FixedAngleToDegrees;
 	glRotated(yaw, 0.0, 0.0, 1.0);
-
+	if (!view->mimic_sw_perspective && view->correct_sprite_parallax)
+	{
+		glRotated(view->virtual_pitch * FixedAngleToDegrees, 0.0, -1.0, 0.0);
+	}
+			
 	float offset = 0;
 	if (OGL_ForceSpriteDepth()) {
 		// look for parasitic objects based on y position,

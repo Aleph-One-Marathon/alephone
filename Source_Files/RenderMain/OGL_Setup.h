@@ -253,8 +253,10 @@ struct OGL_ConfigureData
 
 	bool GeForceFix;
 	bool WaitForVSync;
-  bool Use_sRGB;
+	bool Use_sRGB;
 	bool Use_NPOT;
+
+	bool CorrectSpriteParallax; // for when MimicSW is off
 };
 
 OGL_ConfigureData& Get_OGL_ConfigureData();
