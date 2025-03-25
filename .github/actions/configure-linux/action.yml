@@ -14,7 +14,7 @@ runs:
       shell: bash
       
     - name: Install Dependencies 
-      run: sudo apt-get install autoconf-archive libboost-all-dev libsdl2-dev libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev libzzip-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev libpng-dev libcurl4-gnutls-dev libminiupnpc-dev libsndfile-dev libopenal-dev
+      run: sudo apt-get install autoconf-archive libboost-all-dev libsdl2-dev libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev libzzip-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev libpng-dev libcurl4-gnutls-dev libminiupnpc-dev libsndfile-dev libopenal-dev libglu1-mesa-dev catch2
       shell: bash
       
     - name: Configure

@@ -33,6 +33,7 @@ AX_ARG_WITH([curl], [cURL for HTTP communication])
 AX_ARG_WITH([zzip], [zziplib support])
 AX_ARG_WITH([png], [libpng PNG screenshot support])
 AX_ARG_WITH([miniupnpc], [miniupnpc support])
+AX_ARG_WITH([catch2], [Catch2 replay and unit tests support])
 
 dnl Check for programs.
 AC_PROG_CC
@@ -210,9 +211,9 @@ AC_DEFUN([AX_CHECK_FEATURE_LIB],
                          [AS_IF([test "x${with_$1}" = "xyes"],
                                 [AC_MSG_ERROR([${desc_$1} requested but not found])])])
                  ]) ])
-dnl AX_CHECK_FEATURE_PKG(option, define, package, lib)
+dnl AX_CHECK_FEATURE_PKG(option, define, package, lib, disabled_by_default)
 AC_DEFUN([AX_CHECK_FEATURE_PKG],
-         [ AS_IF([test "x${with_$1}" != "xno"],
+         [ AS_IF([test "x${with_$1}" != "xno" && (test "x${with_$1}" = "xyes" || test "x$5" != "xtrue" )],
                  [ PKG_CHECK_MODULES([$3], [$4],
                                      [ CPPFLAGS="${[$3]_CFLAGS} $CPPFLAGS"
                                        LIBS="${[$3]_LIBS} $LIBS"
@@ -222,7 +223,7 @@ AC_DEFUN([AX_CHECK_FEATURE_PKG],
                                             [AC_MSG_ERROR([${desc_$1} requested but not available])])])
            
                  ])
-            AM_CONDITIONAL([HAVE_$2], [test "x${have_$1}" = "xtrue"])
+            AM_CONDITIONAL([HAVE_$2], [test "x${have_$1}" = "xtrue" && test "x$5" != "xtrue"])
           ])
 
 AX_CHECK_FEATURE_PKG([sdl_image], [SDL_IMAGE],
@@ -246,6 +247,9 @@ LIBS=`echo "$LIBS" | sed -E 's|-specs=@<:@^ @:>@+||'`
 
 AX_CHECK_FEATURE_PKG([png], [PNG],
                      [PNG], [libpng])
+
+AX_CHECK_FEATURE_PKG([catch2], [CATCH2], [CATCH2], [catch2 >= 3.0.0], true)
+AM_CONDITIONAL([BUILD_ALEPHONE_TESTS], [test "x$have_catch2" = "xtrue"])
 
 AX_CHECK_FEATURE_LIB([miniupnpc], [MINIUPNPC], [miniupnpc/miniupnpc.h], [miniupnpc], [upnpDiscover])
 
@@ -299,7 +303,8 @@ AC_DEFUN([AX_PRINT_SUMMARY],
          [ AS_IF([test "x${have_$1}" = "xtrue"],
                  [AS_ECHO(["    Enabled: ${desc_$1}"])],
                  [test "x${enable_$1}" = "xno" ||
-                  test "x${with_$1}" = "xno"],
+                  test "x${with_$1}" = "xno" ||
+                  (test "x$2" = "xtrue" && test "x${with_$1}" != "xyes")],
                  [AS_ECHO(["   Disabled: ${desc_$1}"])],
                  [AS_ECHO(["  Not found: ${desc_$1}"])])
          ])
@@ -314,5 +319,6 @@ AX_PRINT_SUMMARY([curl])
 AX_PRINT_SUMMARY([zzip])
 AX_PRINT_SUMMARY([png])
 AX_PRINT_SUMMARY([miniupnpc])
+AX_PRINT_SUMMARY([catch2], true)
 AS_ECHO([""])
 AS_ECHO(["Configuration done. Now type \"make\"."])
