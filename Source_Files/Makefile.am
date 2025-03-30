@@ -10,6 +10,9 @@ if MAKE_WINDOWS
 bin_PROGRAMS = AlephOne Marathon Marathon2 MarathonInfinity
 else
 bin_PROGRAMS = alephone
+if BUILD_ALEPHONE_TESTS
+bin_PROGRAMS += alephone_tests
+endif
 endif
 endif
 
@@ -33,6 +36,9 @@ alephone_LDADD = \
 standalone_hub_SOURCES = shell.h shell.cpp shell_misc.cpp shell_options.h shell_options.cpp Network/StandaloneHub/standalone_hub_main.cpp
 
 standalone_hub_LDADD = $(alephone_LDADD) Network/StandaloneHub/libstandalonehub.a
+
+alephone_tests_SOURCES = shell.h shell.cpp shell_misc.cpp shell_options.h shell_options.cpp $(top_srcdir)/tests/replay_film_test.cpp $(top_srcdir)/tests/main.cpp
+alephone_tests_LDADD = $(alephone_LDADD)
 
 AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \
