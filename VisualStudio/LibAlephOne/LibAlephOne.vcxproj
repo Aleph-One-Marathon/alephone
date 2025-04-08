@@ -598,7 +598,6 @@
     <ClCompile Include="..\..\Source_Files\RenderOther\HUDRenderer_SW.cpp" />
     <ClCompile Include="..\..\Source_Files\RenderOther\images.cpp" />
     <ClCompile Include="..\..\Source_Files\RenderOther\Image_Blitter.cpp" />
-    <ClCompile Include="..\..\Source_Files\RenderOther\IMG_savepng.c" />
     <ClCompile Include="..\..\Source_Files\RenderOther\motion_sensor.cpp" />
     <ClCompile Include="..\..\Source_Files\RenderOther\OGL_Blitter.cpp" />
     <ClCompile Include="..\..\Source_Files\RenderOther\OGL_LoadScreen.cpp" />
@@ -824,7 +823,6 @@
     <ClInclude Include="..\..\Source_Files\RenderOther\HUDRenderer_SW.h" />
     <ClInclude Include="..\..\Source_Files\RenderOther\images.h" />
     <ClInclude Include="..\..\Source_Files\RenderOther\Image_Blitter.h" />
-    <ClInclude Include="..\..\Source_Files\RenderOther\IMG_savepng.h" />
     <ClInclude Include="..\..\Source_Files\RenderOther\motion_sensor.h" />
     <ClInclude Include="..\..\Source_Files\RenderOther\OGL_Blitter.h" />
     <ClInclude Include="..\..\Source_Files\RenderOther\OGL_LoadScreen.h" />

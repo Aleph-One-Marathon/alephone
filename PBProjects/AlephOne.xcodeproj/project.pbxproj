@@ -154,10 +154,6 @@
 		27A6DB251B9CEA71003DA766 /* SndfileDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F120B927C51009F881C /* SndfileDecoder.h */; };
 		27A6DB261B9CEA72003DA766 /* SndfileDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F120B927C51009F881C /* SndfileDecoder.h */; };
 		27A6DB271B9CEA72003DA766 /* SndfileDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = AE601F120B927C51009F881C /* SndfileDecoder.h */; };
-		27A6DB321B9CEAA3003DA766 /* IMG_savepng.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF1AC1410E05826007EE0D5 /* IMG_savepng.h */; };
-		27A6DB331B9CEAA4003DA766 /* IMG_savepng.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF1AC1410E05826007EE0D5 /* IMG_savepng.h */; };
-		27A6DB341B9CEAA4003DA766 /* IMG_savepng.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF1AC1410E05826007EE0D5 /* IMG_savepng.h */; };
-		27A6DB351B9CEAA5003DA766 /* IMG_savepng.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF1AC1410E05826007EE0D5 /* IMG_savepng.h */; };
 		27A6DB391B9CEAAA003DA766 /* OGL_LoadScreen.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */; };
 		27A6DB3A1B9CEAAA003DA766 /* OGL_LoadScreen.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */; };
 		27A6DB3B1B9CEAAB003DA766 /* OGL_LoadScreen.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */; };
@@ -259,7 +255,6 @@
 		AE120BB42BC77645001873DD /* cstypes.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211290136A4DD01000001 /* cstypes.h */; };
 		AE120BB52BC77645001873DD /* network.h in Headers */ = {isa = PBXBuildFile; fileRef = F52213900136ABAE01000001 /* network.h */; };
 		AE120BB62BC77645001873DD /* network_games.h in Headers */ = {isa = PBXBuildFile; fileRef = F52213800136ABAE01000001 /* network_games.h */; };
-		AE120BB72BC77645001873DD /* IMG_savepng.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF1AC1410E05826007EE0D5 /* IMG_savepng.h */; };
 		AE120BB82BC77645001873DD /* Model3D.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4401E77D5701BA387C /* Model3D.h */; };
 		AE120BB92BC77645001873DD /* ModelRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4601E77D5701BA387C /* ModelRenderer.h */; };
 		AE120BBA2BC77645001873DD /* StudioLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4B01E77D5701BA387C /* StudioLoader.h */; };
@@ -648,7 +643,6 @@
 		AE120D442BC77645001873DD /* Rasterizer_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */; };
 		AE120D452BC77645001873DD /* RenderRasterize_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */; };
 		AE120D462BC77645001873DD /* SDL_rwops_zzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */; };
-		AE120D472BC77645001873DD /* IMG_savepng.c in Sources */ = {isa = PBXBuildFile; fileRef = AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */; };
 		AE120D482BC77645001873DD /* SoundPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16728615A22003128EE /* SoundPlayer.cpp */; };
 		AE120D492BC77645001873DD /* csalerts.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEA31D2B113C9DF700266621 /* csalerts.mm */; };
 		AE120D4A2BC77645001873DD /* OGL_FBO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2710CC5F1B8F94FC00CE2EAE /* OGL_FBO.cpp */; };
@@ -702,7 +696,6 @@
 		AE13204C2C1CB4D2009D34AA /* cstypes.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211290136A4DD01000001 /* cstypes.h */; };
 		AE13204D2C1CB4D2009D34AA /* network.h in Headers */ = {isa = PBXBuildFile; fileRef = F52213900136ABAE01000001 /* network.h */; };
 		AE13204E2C1CB4D2009D34AA /* network_games.h in Headers */ = {isa = PBXBuildFile; fileRef = F52213800136ABAE01000001 /* network_games.h */; };
-		AE13204F2C1CB4D2009D34AA /* IMG_savepng.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF1AC1410E05826007EE0D5 /* IMG_savepng.h */; };
 		AE1320502C1CB4D2009D34AA /* Model3D.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4401E77D5701BA387C /* Model3D.h */; };
 		AE1320512C1CB4D2009D34AA /* ModelRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4601E77D5701BA387C /* ModelRenderer.h */; };
 		AE1320522C1CB4D2009D34AA /* StudioLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4B01E77D5701BA387C /* StudioLoader.h */; };
@@ -1091,7 +1084,6 @@
 		AE1321DE2C1CB4D2009D34AA /* Rasterizer_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */; };
 		AE1321DF2C1CB4D2009D34AA /* RenderRasterize_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */; };
 		AE1321E02C1CB4D2009D34AA /* SDL_rwops_zzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */; };
-		AE1321E12C1CB4D2009D34AA /* IMG_savepng.c in Sources */ = {isa = PBXBuildFile; fileRef = AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */; };
 		AE1321E22C1CB4D2009D34AA /* SoundPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16728615A22003128EE /* SoundPlayer.cpp */; };
 		AE1321E32C1CB4D2009D34AA /* csalerts.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEA31D2B113C9DF700266621 /* csalerts.mm */; };
 		AE1321E42C1CB4D2009D34AA /* OGL_FBO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2710CC5F1B8F94FC00CE2EAE /* OGL_FBO.cpp */; };
@@ -1529,7 +1521,6 @@
 		AE505CE6141D45E600915344 /* Rasterizer_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */; };
 		AE505CE7141D45E600915344 /* RenderRasterize_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */; };
 		AE505CE8141D45E600915344 /* SDL_rwops_zzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */; };
-		AE505CE9141D45E600915344 /* IMG_savepng.c in Sources */ = {isa = PBXBuildFile; fileRef = AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */; };
 		AE505CEA141D45E600915344 /* csalerts.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEA31D2B113C9DF700266621 /* csalerts.mm */; };
 		AE505CEB141D45E600915344 /* lua_saved_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */; };
 		AE505CEC141D45E600915344 /* FilmProfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D1A4F112FDF3630085E79C /* FilmProfile.cpp */; };
@@ -2006,7 +1997,6 @@
 		AEB4A28714296CAE00537AE7 /* Rasterizer_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */; };
 		AEB4A28814296CAE00537AE7 /* RenderRasterize_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */; };
 		AEB4A28914296CAE00537AE7 /* SDL_rwops_zzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */; };
-		AEB4A28A14296CAE00537AE7 /* IMG_savepng.c in Sources */ = {isa = PBXBuildFile; fileRef = AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */; };
 		AEB4A28B14296CAE00537AE7 /* csalerts.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEA31D2B113C9DF700266621 /* csalerts.mm */; };
 		AEB4A28C14296CAE00537AE7 /* lua_saved_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */; };
 		AEB4A28D14296CAE00537AE7 /* FilmProfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D1A4F112FDF3630085E79C /* FilmProfile.cpp */; };
@@ -2042,7 +2032,6 @@
 		AEBDC5282C4DF0780026DFF1 /* cstypes.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211290136A4DD01000001 /* cstypes.h */; };
 		AEBDC5292C4DF0780026DFF1 /* network.h in Headers */ = {isa = PBXBuildFile; fileRef = F52213900136ABAE01000001 /* network.h */; };
 		AEBDC52A2C4DF0780026DFF1 /* network_games.h in Headers */ = {isa = PBXBuildFile; fileRef = F52213800136ABAE01000001 /* network_games.h */; };
-		AEBDC52B2C4DF0780026DFF1 /* IMG_savepng.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF1AC1410E05826007EE0D5 /* IMG_savepng.h */; };
 		AEBDC52C2C4DF0780026DFF1 /* Model3D.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4401E77D5701BA387C /* Model3D.h */; };
 		AEBDC52D2C4DF0780026DFF1 /* ModelRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4601E77D5701BA387C /* ModelRenderer.h */; };
 		AEBDC52E2C4DF0780026DFF1 /* StudioLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4B01E77D5701BA387C /* StudioLoader.h */; };
@@ -2432,7 +2421,6 @@
 		AEBDC6BB2C4DF0780026DFF1 /* Rasterizer_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */; };
 		AEBDC6BC2C4DF0780026DFF1 /* RenderRasterize_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */; };
 		AEBDC6BD2C4DF0780026DFF1 /* SDL_rwops_zzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */; };
-		AEBDC6BE2C4DF0780026DFF1 /* IMG_savepng.c in Sources */ = {isa = PBXBuildFile; fileRef = AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */; };
 		AEBDC6BF2C4DF0780026DFF1 /* SoundPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE61F16728615A22003128EE /* SoundPlayer.cpp */; };
 		AEBDC6C02C4DF0780026DFF1 /* csalerts.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEA31D2B113C9DF700266621 /* csalerts.mm */; };
 		AEBDC6C12C4DF0780026DFF1 /* OGL_FBO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2710CC5F1B8F94FC00CE2EAE /* OGL_FBO.cpp */; };
@@ -2760,7 +2748,6 @@
 		AEEA4E802544B50B0031363A /* shell_options.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEEA4E7E2544B50B0031363A /* shell_options.cpp */; };
 		AEEA4E812544B50B0031363A /* shell_options.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEEA4E7E2544B50B0031363A /* shell_options.cpp */; };
 		AEEA4E822544B50B0031363A /* shell_options.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEEA4E7E2544B50B0031363A /* shell_options.cpp */; };
-		AEF1AC1610E05835007EE0D5 /* IMG_savepng.c in Sources */ = {isa = PBXBuildFile; fileRef = AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */; };
 		AEFD85EA13EB84CF00C1E687 /* PlayerName.h in Headers */ = {isa = PBXBuildFile; fileRef = F522120C0136A6FD01000001 /* PlayerName.h */; };
 		AEFD85EB13EB84CF00C1E687 /* Random.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212190136A6FD01000001 /* Random.h */; };
 		AEFD85EC13EB84CF00C1E687 /* game_errors.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211AE0136A6FD01000001 /* game_errors.h */; };
@@ -3117,7 +3104,6 @@
 		AEFD879313EB84CF00C1E687 /* Rasterizer_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */; };
 		AEFD879413EB84CF00C1E687 /* RenderRasterize_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */; };
 		AEFD879513EB84CF00C1E687 /* SDL_rwops_zzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */; };
-		AEFD879613EB84CF00C1E687 /* IMG_savepng.c in Sources */ = {isa = PBXBuildFile; fileRef = AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */; };
 		AEFD879713EB84CF00C1E687 /* csalerts.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEA31D2B113C9DF700266621 /* csalerts.mm */; };
 		AEFD879813EB84CF00C1E687 /* lua_saved_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */; };
 		AEFD879913EB84CF00C1E687 /* FilmProfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D1A4F112FDF3630085E79C /* FilmProfile.cpp */; };
@@ -3414,8 +3400,6 @@
 		AEDF1A121416FE2200183689 /* HTTP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HTTP.h; path = ../Source_Files/Network/HTTP.h; sourceTree = "<group>"; };
 		AEEA4E7E2544B50B0031363A /* shell_options.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = shell_options.cpp; path = ../Source_Files/shell_options.cpp; sourceTree = "<group>"; };
 		AEEA4E832544B51D0031363A /* shell_options.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = shell_options.h; path = ../Source_Files/shell_options.h; sourceTree = "<group>"; };
-		AEF1AC1410E05826007EE0D5 /* IMG_savepng.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IMG_savepng.h; sourceTree = "<group>"; };
-		AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = IMG_savepng.c; sourceTree = "<group>"; };
 		AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_LoadScreen.h; sourceTree = "<group>"; };
 		AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_LoadScreen.cpp; sourceTree = "<group>"; };
 		AEF8C4F210AEFEB500ED84AD /* OGL_Headers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Headers.h; sourceTree = "<group>"; };
@@ -4521,7 +4505,6 @@
 		F5CC936E0240D85D01A80001 /* RenderOther */ = {
 			isa = PBXGroup;
 			children = (
-				AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */,
 				2739B490101B862A00CC8098 /* Shape_Blitter.cpp */,
 				2739B491101B862A00CC8098 /* Shape_Blitter.h */,
 				27CE0841100ECDBC00F59FD1 /* Image_Blitter.cpp */,
@@ -4558,7 +4541,6 @@
 		F5CC936F0240D85D01A80001 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
-				AEF1AC1410E05826007EE0D5 /* IMG_savepng.h */,
 				270D534B0FCB417500482ED4 /* OGL_Blitter.h */,
 				AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */,
 				F5CC93700240D85D01A80001 /* ChaseCam.h */,
@@ -4733,7 +4715,6 @@
 				AE120BB42BC77645001873DD /* cstypes.h in Headers */,
 				AE120BB52BC77645001873DD /* network.h in Headers */,
 				AE120BB62BC77645001873DD /* network_games.h in Headers */,
-				AE120BB72BC77645001873DD /* IMG_savepng.h in Headers */,
 				AE120BB82BC77645001873DD /* Model3D.h in Headers */,
 				AE120BB92BC77645001873DD /* ModelRenderer.h in Headers */,
 				AE120BBA2BC77645001873DD /* StudioLoader.h in Headers */,
@@ -4944,7 +4925,6 @@
 				AE13204C2C1CB4D2009D34AA /* cstypes.h in Headers */,
 				AE13204D2C1CB4D2009D34AA /* network.h in Headers */,
 				AE13204E2C1CB4D2009D34AA /* network_games.h in Headers */,
-				AE13204F2C1CB4D2009D34AA /* IMG_savepng.h in Headers */,
 				AE1320502C1CB4D2009D34AA /* Model3D.h in Headers */,
 				AE1320512C1CB4D2009D34AA /* ModelRenderer.h in Headers */,
 				AE1320522C1CB4D2009D34AA /* StudioLoader.h in Headers */,
@@ -5155,7 +5135,6 @@
 				AE505B5D141D45E600915344 /* cstypes.h in Headers */,
 				AE505B5E141D45E600915344 /* network.h in Headers */,
 				AE505B5F141D45E600915344 /* network_games.h in Headers */,
-				27A6DB341B9CEAA4003DA766 /* IMG_savepng.h in Headers */,
 				AE505B60141D45E600915344 /* Model3D.h in Headers */,
 				AE505B61141D45E600915344 /* ModelRenderer.h in Headers */,
 				AE505B62141D45E600915344 /* StudioLoader.h in Headers */,
@@ -5365,7 +5344,6 @@
 				AEB4A0FD14296CAE00537AE7 /* cstypes.h in Headers */,
 				AEB4A0FE14296CAE00537AE7 /* network.h in Headers */,
 				AEB4A0FF14296CAE00537AE7 /* network_games.h in Headers */,
-				27A6DB351B9CEAA5003DA766 /* IMG_savepng.h in Headers */,
 				AEB4A10014296CAE00537AE7 /* Model3D.h in Headers */,
 				AEB4A10114296CAE00537AE7 /* ModelRenderer.h in Headers */,
 				AEB4A10214296CAE00537AE7 /* StudioLoader.h in Headers */,
@@ -5575,7 +5553,6 @@
 				AEBDC5282C4DF0780026DFF1 /* cstypes.h in Headers */,
 				AEBDC5292C4DF0780026DFF1 /* network.h in Headers */,
 				AEBDC52A2C4DF0780026DFF1 /* network_games.h in Headers */,
-				AEBDC52B2C4DF0780026DFF1 /* IMG_savepng.h in Headers */,
 				AEBDC52C2C4DF0780026DFF1 /* Model3D.h in Headers */,
 				AEBDC52D2C4DF0780026DFF1 /* ModelRenderer.h in Headers */,
 				AEBDC52E2C4DF0780026DFF1 /* StudioLoader.h in Headers */,
@@ -5785,7 +5762,6 @@
 				AEC3C72309AD68AC003258E4 /* csmisc.h in Headers */,
 				AEC3C72409AD68AC003258E4 /* cspixels.h in Headers */,
 				AEC3C72509AD68AC003258E4 /* csstrings.h in Headers */,
-				27A6DB321B9CEAA3003DA766 /* IMG_savepng.h in Headers */,
 				AEC3C72609AD68AC003258E4 /* cstypes.h in Headers */,
 				AEC3C72C09AD68AC003258E4 /* network.h in Headers */,
 				276BED181A846FD900AE52F4 /* ProFontAO.h in Headers */,
@@ -5996,7 +5972,6 @@
 				AEFD860B13EB84CF00C1E687 /* cstypes.h in Headers */,
 				AEFD860C13EB84CF00C1E687 /* network.h in Headers */,
 				AEFD860D13EB84CF00C1E687 /* network_games.h in Headers */,
-				27A6DB331B9CEAA4003DA766 /* IMG_savepng.h in Headers */,
 				AEFD860E13EB84CF00C1E687 /* Model3D.h in Headers */,
 				AEFD860F13EB84CF00C1E687 /* ModelRenderer.h in Headers */,
 				AEFD861013EB84CF00C1E687 /* StudioLoader.h in Headers */,
@@ -6883,7 +6858,6 @@
 				AE120D442BC77645001873DD /* Rasterizer_Shader.cpp in Sources */,
 				AE120D452BC77645001873DD /* RenderRasterize_Shader.cpp in Sources */,
 				AE120D462BC77645001873DD /* SDL_rwops_zzip.c in Sources */,
-				AE120D472BC77645001873DD /* IMG_savepng.c in Sources */,
 				AE120D482BC77645001873DD /* SoundPlayer.cpp in Sources */,
 				AE120D492BC77645001873DD /* csalerts.mm in Sources */,
 				AE120D4A2BC77645001873DD /* OGL_FBO.cpp in Sources */,
@@ -7108,7 +7082,6 @@
 				AE1321DE2C1CB4D2009D34AA /* Rasterizer_Shader.cpp in Sources */,
 				AE1321DF2C1CB4D2009D34AA /* RenderRasterize_Shader.cpp in Sources */,
 				AE1321E02C1CB4D2009D34AA /* SDL_rwops_zzip.c in Sources */,
-				AE1321E12C1CB4D2009D34AA /* IMG_savepng.c in Sources */,
 				AE1321E22C1CB4D2009D34AA /* SoundPlayer.cpp in Sources */,
 				AE1321E32C1CB4D2009D34AA /* csalerts.mm in Sources */,
 				AE1321E42C1CB4D2009D34AA /* OGL_FBO.cpp in Sources */,
@@ -7332,7 +7305,6 @@
 				AE505CE6141D45E600915344 /* Rasterizer_Shader.cpp in Sources */,
 				AE505CE7141D45E600915344 /* RenderRasterize_Shader.cpp in Sources */,
 				AE505CE8141D45E600915344 /* SDL_rwops_zzip.c in Sources */,
-				AE505CE9141D45E600915344 /* IMG_savepng.c in Sources */,
 				AE61F17728615A22003128EE /* SoundPlayer.cpp in Sources */,
 				AE505CEA141D45E600915344 /* csalerts.mm in Sources */,
 				2710CC631B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */,
@@ -7564,7 +7536,6 @@
 				AEB4A28714296CAE00537AE7 /* Rasterizer_Shader.cpp in Sources */,
 				AEB4A28814296CAE00537AE7 /* RenderRasterize_Shader.cpp in Sources */,
 				AEB4A28914296CAE00537AE7 /* SDL_rwops_zzip.c in Sources */,
-				AEB4A28A14296CAE00537AE7 /* IMG_savepng.c in Sources */,
 				AE61F17828615A22003128EE /* SoundPlayer.cpp in Sources */,
 				AEB4A28B14296CAE00537AE7 /* csalerts.mm in Sources */,
 				2710CC641B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */,
@@ -7789,7 +7760,6 @@
 				AEBDC6BB2C4DF0780026DFF1 /* Rasterizer_Shader.cpp in Sources */,
 				AEBDC6BC2C4DF0780026DFF1 /* RenderRasterize_Shader.cpp in Sources */,
 				AEBDC6BD2C4DF0780026DFF1 /* SDL_rwops_zzip.c in Sources */,
-				AEBDC6BE2C4DF0780026DFF1 /* IMG_savepng.c in Sources */,
 				AEBDC6BF2C4DF0780026DFF1 /* SoundPlayer.cpp in Sources */,
 				AEBDC6C02C4DF0780026DFF1 /* csalerts.mm in Sources */,
 				AEBDC6C12C4DF0780026DFF1 /* OGL_FBO.cpp in Sources */,
@@ -8012,7 +7982,6 @@
 				277AB6C0109CE2570003402A /* Rasterizer_Shader.cpp in Sources */,
 				277AB6C2109CE2570003402A /* RenderRasterize_Shader.cpp in Sources */,
 				2759F31B10D5BC9C000204DD /* SDL_rwops_zzip.c in Sources */,
-				AEF1AC1610E05835007EE0D5 /* IMG_savepng.c in Sources */,
 				AEA31D2C113C9DF700266621 /* csalerts.mm in Sources */,
 				AE61F17528615A22003128EE /* SoundPlayer.cpp in Sources */,
 				276589F8119DF1DD0096F75B /* lua_saved_objects.cpp in Sources */,
@@ -8237,7 +8206,6 @@
 				AEFD879313EB84CF00C1E687 /* Rasterizer_Shader.cpp in Sources */,
 				AEFD879413EB84CF00C1E687 /* RenderRasterize_Shader.cpp in Sources */,
 				AEFD879513EB84CF00C1E687 /* SDL_rwops_zzip.c in Sources */,
-				AEFD879613EB84CF00C1E687 /* IMG_savepng.c in Sources */,
 				AE61F17628615A22003128EE /* SoundPlayer.cpp in Sources */,
 				AEFD879713EB84CF00C1E687 /* csalerts.mm in Sources */,
 				2710CC621B8F94FC00CE2EAE /* OGL_FBO.cpp in Sources */,

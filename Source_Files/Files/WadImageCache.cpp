@@ -31,9 +31,6 @@
 #ifdef HAVE_SDL_IMAGE
 #include <SDL2/SDL_image.h>
 #endif
-#ifdef HAVE_PNG
-#include "IMG_savepng.h"
-#endif
 
 #include "game_errors.h"
 #include "sdl_resize.h"
@@ -133,9 +130,7 @@ std::string WadImageCache::image_to_new_name(SDL_Surface *image, int32 *filesize
 	TempFile.SetTempName(File);
 	
 	int ret;
-//#if defined(HAVE_PNG) && defined(HAVE_SDL_IMAGE)
-//	ret = aoIMG_SavePNG(TempFile.GetPath(), image, IMG_COMPRESS_DEFAULT, NULL, 0);
-#ifdef HAVE_SDL_IMAGE
+#if defined (HAVE_SDL_IMAGE) && defined (HAVE_PNG)
 	ret = IMG_SavePNG(image, TempFile.GetPath());
 #else
 	ret = SDL_SaveBMP(image, TempFile.GetPath());

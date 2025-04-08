@@ -92,10 +92,6 @@
 #include <SDL2/SDL_net.h>
 #endif
 
-#ifdef HAVE_PNG
-#include "IMG_savepng.h"
-#endif
-
 #ifdef HAVE_SDL_IMAGE
 #include <SDL2/SDL_image.h>
 #if defined(__WIN32__)
@@ -1497,10 +1493,6 @@ static void process_event(const SDL_Event &event)
 	
 }
 
-#ifdef HAVE_PNG
-extern view_data *world_view;
-#endif
-
 std::string to_alnum(const std::string& input)
 {
 	std::string output;
@@ -1523,7 +1515,7 @@ void dump_screen(void)
 	do {
 		char name[256];
 		const char* suffix;
-#ifdef HAVE_PNG
+#if defined (HAVE_SDL_IMAGE) && defined (HAVE_PNG)
 		suffix = "png";
 #else
 		suffix = "bmp";
@@ -1541,65 +1533,9 @@ void dump_screen(void)
 		i++;
 	} while (file.Exists());
 
-#ifdef HAVE_PNG
-	// build some nice metadata
-	std::vector<IMG_PNG_text> texts;
-	std::map<std::string, std::string> metadata;
-
-	metadata["Source"] = expand_app_variables("$appName$ $appVersion$ ($appPlatform$)");
-
-	time_t rawtime;
-	time(&rawtime);
-	
-	char time_string[32];
-	strftime(time_string, 32,"%d %b %Y %H:%M:%S +0000", gmtime(&rawtime));
-	metadata["Creation Time"] = time_string;
-
-	if (get_game_state() == _game_in_progress)
-	{
-		const float FLOAT_WORLD_ONE = float(WORLD_ONE);
-		const float AngleConvert = 360/float(FULL_CIRCLE);
-
-		metadata["Level"] = static_world->level_name;
-
-		char map_file_name[256];
-		FileSpecifier fs = environment_preferences->map_file;
-		fs.GetName(map_file_name);
-		metadata["Map File"] = map_file_name;
-
-		if (Scenario::instance()->GetName().size())
-		{
-			metadata["Scenario"] = Scenario::instance()->GetName();
-		}
-
-		metadata["Polygon"] = std::to_string(world_view->origin_polygon_index);
-		metadata["X"] = std::to_string(world_view->origin.x / FLOAT_WORLD_ONE);
-		metadata["Y"] = std::to_string(world_view->origin.y / FLOAT_WORLD_ONE);
-		metadata["Z"] = std::to_string(world_view->origin.z / FLOAT_WORLD_ONE);
-		metadata["Yaw"] = std::to_string(world_view->yaw * AngleConvert);
-
-
-		short pitch = world_view->pitch;
-		if (pitch > HALF_CIRCLE) pitch -= HALF_CIRCLE;
-		metadata["Pitch"] = std::to_string(pitch * AngleConvert);
-	}
-
-	for (std::map<std::string, std::string>::const_iterator it = metadata.begin(); it != metadata.end(); ++it)
-	{
-		IMG_PNG_text text;
-		text.key = const_cast<char*>(it->first.c_str());
-		text.value = const_cast<char*>(it->second.c_str());
-		texts.push_back(text);
-	}
-
-	IMG_PNG_text* textp = texts.size() ? &texts[0] : 0;
-#endif
-
 	// Without OpenGL, dumping the screen is easy
 	if (!MainScreenIsOpenGL()) {
-//#ifdef HAVE_PNG
-//		aoIMG_SavePNG(file.GetPath(), MainScreenSurface(), IMG_COMPRESS_DEFAULT, textp, texts.size());
-#ifdef HAVE_SDL_IMAGE
+#if defined (HAVE_SDL_IMAGE) && defined (HAVE_PNG)
 		IMG_SavePNG(MainScreenSurface(), file.GetPath());
 #else
 		SDL_SaveBMP(MainScreenSurface(), file.GetPath());
@@ -1639,9 +1575,7 @@ void dump_screen(void)
 	free(pixels);
 
 	// Save surface
-//#ifdef HAVE_PNG
-//        aoIMG_SavePNG(file.GetPath(), t, IMG_COMPRESS_DEFAULT, textp, texts.size());
-#ifdef HAVE_SDL_IMAGE
+#if defined (HAVE_SDL_IMAGE) && defined (HAVE_PNG)
 	IMG_SavePNG(t, file.GetPath());
 #else
 	SDL_SaveBMP(t, file.GetPath());

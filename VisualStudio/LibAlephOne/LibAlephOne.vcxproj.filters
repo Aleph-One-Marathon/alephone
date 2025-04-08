@@ -547,9 +547,6 @@
     <ClCompile Include="..\..\Source_Files\RenderMain\AnimatedTextures.cpp">
       <Filter>RenderMain\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source_Files\RenderOther\IMG_savepng.c">
-      <Filter>RenderOther\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source_Files\RenderOther\ChaseCam.cpp">
       <Filter>RenderOther\Source Files</Filter>
     </ClCompile>
@@ -1255,9 +1252,6 @@
       <Filter>RenderOther\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\RenderOther\images.h">
-      <Filter>RenderOther\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source_Files\RenderOther\IMG_savepng.h">
       <Filter>RenderOther\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\RenderOther\motion_sensor.h">

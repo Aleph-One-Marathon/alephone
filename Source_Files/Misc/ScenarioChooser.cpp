@@ -135,7 +135,7 @@ bool ScenarioChooserScenario::load(const std::string& path)
 		}
 	}
 
-#ifdef HAVE_SDL_IMAGE
+#if defined (HAVE_SDL_IMAGE) && defined (HAVE_PNG)
 	FileSpecifier image_file = directory + "chooser.png";
 	OpenedFile of;
 	if (image_file.Open(of))
