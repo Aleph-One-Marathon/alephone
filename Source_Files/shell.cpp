@@ -606,7 +606,7 @@ void shutdown_application(void)
 
 	shutdown_dialogs();
         
-#if defined(HAVE_SDL_IMAGE) && (SDL_IMAGE_PATCHLEVEL >= 8)
+#if defined(HAVE_SDL_IMAGE)
 	IMG_Quit();
 #endif
 #if !defined(DISABLE_NETWORKING)
