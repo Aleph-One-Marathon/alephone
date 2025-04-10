@@ -103,6 +103,7 @@ private:
 	int err;		// Error code
 	bool is_forked;
 	int32 fork_offset, fork_length;
+	int fixed_offset;
 };
 
 class opened_file_device {
@@ -267,6 +268,7 @@ public:
 	// Opens a file:
 	bool Open(OpenedFile& OFile, bool Writable=false);
 	bool OpenForWritingText(OpenedFile& OFile); // converts LF to CRLF on Windows
+	void SetOffset(int offset);
 	
 	// Opens either a MacOS resource fork or some imitation of it:
 	bool Open(OpenedResourceFile& OFile, bool Writable=false);
@@ -350,6 +352,7 @@ public:
 private:
 	void canonicalize_path(void);
 
+	int fixed_offset = 0;
 	string name;	// Path name
 	int err;
 };

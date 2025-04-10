@@ -138,7 +138,7 @@ static const zzip_plugin_io_handlers& utf8_zzip_io() { return *zzip_get_default_
  *  Opened file
  */
 
-OpenedFile::OpenedFile() : f(NULL), err(0), is_forked(false), fork_offset(0), fork_length(0) {}
+OpenedFile::OpenedFile() : f(NULL), err(0), is_forked(false), fork_offset(0), fork_length(0), fixed_offset(0) {}
 
 bool OpenedFile::IsOpen()
 {
@@ -155,6 +155,7 @@ bool OpenedFile::Close()
 	is_forked = false;
 	fork_offset = 0;
 	fork_length = 0;
+	fixed_offset = 0;
 	return true;
 }
 
@@ -164,7 +165,7 @@ bool OpenedFile::GetPosition(int32 &Position)
 		return false;
 
 	err = 0;
-	Position = SDL_RWtell(f) - fork_offset;
+	Position = SDL_RWtell(f) - fork_offset - fixed_offset;
 	return true;
 }
 
@@ -174,7 +175,7 @@ bool OpenedFile::SetPosition(int32 Position)
 		return false;
 
 	err = 0;
-	if (SDL_RWseek(f, Position + fork_offset, SEEK_SET) < 0)
+	if (SDL_RWseek(f, fixed_offset + Position + fork_offset, SEEK_SET) < 0)
 		err = unknown_filesystem_error;
 	return err == 0;
 }
@@ -188,7 +189,7 @@ bool OpenedFile::GetLength(int32 &Length)
 		Length = fork_length;
 	else {
 		int32 pos = SDL_RWtell(f);
-		SDL_RWseek(f, 0, SEEK_END);
+		SDL_RWseek(f, fixed_offset, SEEK_END);
 		Length = SDL_RWtell(f);
 		SDL_RWseek(f, pos, SEEK_SET);
 	}
@@ -370,6 +371,7 @@ const FileSpecifier &FileSpecifier::operator=(const FileSpecifier &other)
 {
 	if (this != &other) {
 		name = other.name;
+		fixed_offset = other.fixed_offset;
 		err = other.err;
 	}
 	return *this;
@@ -414,6 +416,7 @@ static std::string unix_path_separators(const std::string& input)
 bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 {
 	OFile.Close();
+	OFile.fixed_offset = fixed_offset;
 
 	SDL_RWops *f;
 	{
@@ -455,7 +458,7 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 		SDL_RWseek(f, 128, SEEK_SET);
 		return true;
 	}
-	SDL_RWseek(f, 0, SEEK_SET);
+	SDL_RWseek(f, fixed_offset, SEEK_SET);
 	return true;
 }
 
@@ -463,6 +466,7 @@ bool FileSpecifier::OpenForWritingText(OpenedFile& OFile)
 {
 	OFile.Close();
 	OFile.f = SDL_RWFromFile(GetPath(), "w");
+	OFile.fixed_offset = fixed_offset;
 	err = OFile.f ? 0 : unknown_filesystem_error;
 	return err == 0;
 }
@@ -802,6 +806,11 @@ bool FileSpecifier::SetNameWithPath(const char* NameWithPath, const DirectorySpe
 void FileSpecifier::SetTempName(const FileSpecifier& other)
 {
 	name = other.name + fs::unique_path("%%%%%%").string();
+}
+
+void FileSpecifier::SetOffset(int offset)
+{
+	fixed_offset = offset;
 }
 
 // Get last element of path

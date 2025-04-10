@@ -613,6 +613,7 @@ static short find_start_for_identifier(const player_start_data* inStartArray, sh
 // cues from the "extras" that load_game_from_file() does.
 static bool make_restored_game_relevant(bool inNetgame, const player_start_data* inStartArray, short inStartCount)
 {
+        RunLuaScript();
         game_is_networked = inNetgame;
         
         // set_random_seed() needs to happen before synchronize_players_with_starts()
@@ -754,8 +755,6 @@ bool join_networked_resume_game()
                         player_start_data theStarts[MAXIMUM_NUMBER_OF_PLAYERS];
                         short theStartCount;
                         construct_multiplayer_starts(theStarts, &theStartCount);
-                        
-			RunLuaScript();
                         success = make_restored_game_relevant(true /* multiplayer */, theStarts, theStartCount);
                 }
         }
@@ -890,11 +889,26 @@ bool load_and_start_game(FileSpecifier& File)
 
 			if (success)
 			{
-				RunLuaScript();
 				success = make_restored_game_relevant(userWantsMultiplayer, theStarts, theNumberOfStarts);
+
 				if (success)
 				{
-					start_game(game_state.user, false);
+					set_recording_header_data(theNumberOfStarts, dynamic_world->current_level_number, userWantsMultiplayer ? ((game_info*)NetGetGameData())->parent_checksum : get_current_map_checksum(),
+						default_recording_version, theStarts, &dynamic_world->game_information);
+
+					OpenedFile save_file;
+					if (File.Open(save_file))
+					{
+						int save_file_length;
+						save_file.GetLength(save_file_length);
+
+						std::vector<byte> save_file_data(save_file_length);
+						save_file.Read(save_file_length, save_file_data.data());
+
+						start_recording();
+						set_recording_saved_game_data(save_file_data);
+						start_game(game_state.user, false);
+					}
 				}
 			}
 		}
@@ -2396,6 +2410,8 @@ static void handle_replay( /* This is gross. */
 	if(!success) display_main_menu();
 }
 
+extern bool is_saved_game_replay();
+
 // ZZZ: some modifications to use generalized game-startup
 static bool begin_game(
 	short user,
@@ -2643,7 +2659,7 @@ static bool begin_game(
 		}
 
 		/* Try to display the first chapter screen.. */
-		if (user != _network_player && user != _demo)
+		if (user != _network_player && user != _demo && !is_saved_game_replay())
 		{
 			FindLevelMovie(entry.level_number);
 			show_movie(entry.level_number);
@@ -2655,8 +2671,9 @@ static bool begin_game(
 		LoadHUDLua();
 		RunLuaHUDScript();
 		
-		/* Begin the game! */
-		success= new_game(number_of_players, is_networked, &game_information, starts, &entry);
+		success = is_saved_game_replay() ? make_restored_game_relevant(false, starts, number_of_players) :
+			new_game(number_of_players, is_networked, &game_information, starts, &entry);
+
 		if(success)
 		{
 			start_game(user, false);

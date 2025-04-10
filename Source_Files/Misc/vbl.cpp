@@ -266,6 +266,11 @@ bool game_is_being_replayed()
 	return replay.game_is_being_replayed;
 }
 
+bool is_saved_game_replay()
+{
+	return game_is_being_replayed() && replay.is_saved_game_replay;
+}
+
 void increment_heartbeat_count(int value)
 {
 	heartbeat_count+=value;
@@ -533,6 +538,7 @@ void get_recording_header_data(
 }
 
 extern int movie_export_phase;
+extern bool load_game_from_file(FileSpecifier& File, bool run_scripts);
 
 bool setup_for_replay_from_file(
 	FileSpecifier& File,
@@ -559,9 +565,22 @@ bool setup_for_replay_from_file(
 		FilmFile.Read(SIZEOF_recording_header,Header);
 		unpack_recording_header(Header,&replay.header,1);
 		replay.header.game_information.cheat_flags = _allow_crosshair | _allow_tunnel_vision | _allow_behindview | _allow_overlay_map;
+
+		int file_length;
+		FilmFile.GetLength(file_length);
+		bool saved_game_replay = file_length > replay.header.length;
+
+		if (saved_game_replay)
+		{
+			FileSpecifier saved_game_file = File;
+			saved_game_file.SetOffset(replay.header.length);
+			saved_game_replay = load_game_from_file(saved_game_file, true);
+		}
+
+		replay.is_saved_game_replay = saved_game_replay;
 	
 		/* Set to the mapfile this replay came from.. */
-		if(use_map_file(replay.header.map_checksum))
+		if (saved_game_replay || use_map_file(replay.header.map_checksum))
 		{
 			replay.fsread_buffer= new char[DISK_CACHE_SIZE];
 			replay.location_in_cache= NULL;
@@ -584,6 +603,11 @@ bool setup_for_replay_from_file(
 	}
 	
 	return successful;
+}
+
+void set_recording_saved_game_data(std::vector<byte>& saved_game_data)
+{
+	replay.saved_game = saved_game_data;
 }
 
 /* Note that we _must_ set the header information before we start recording!! */
@@ -637,13 +661,21 @@ void stop_recording(
 		// in 'normal operation' too, not just when we screwed something up in writing the program?
 		bool successfulWrite = FilmFile.Write(SIZEOF_recording_header,Header);
 		assert(successfulWrite);
+
+		if (replay.saved_game.size())
+		{
+			FilmFile.SetPosition(replay.header.length);
+			successfulWrite = FilmFile.Write(replay.saved_game.size(), replay.saved_game.data());
+			assert(successfulWrite);
+		}
 		
 		FilmFile.GetLength(total_length);
-		assert(total_length==replay.header.length);
+		assert(total_length==replay.header.length + replay.saved_game.size());
 		
 		FilmFile.Close();
 	}
 
+	replay.saved_game.clear();
 	replay.valid= false;
 }
 
