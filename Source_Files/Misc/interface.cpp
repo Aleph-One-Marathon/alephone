@@ -3237,6 +3237,7 @@ static void try_and_display_chapter_screen(
 		short existing_state= game_state.state;
 		game_state.state= _display_chapter_heading;
 
+		Music::instance()->StopInGameMusic();
 		SoundManager::instance()->StopAllSounds();
 		
 		/* This will NOT work if the initial level entered has a chapter screen, which is why */

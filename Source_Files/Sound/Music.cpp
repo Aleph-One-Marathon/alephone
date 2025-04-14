@@ -227,6 +227,14 @@ void Music::ClearLevelMusic()
 	music_slots[MusicSlot::Level].SetParameters(true, 1);
 }
 
+void Music::StopInGameMusic()
+{
+	for (int i = MusicSlot::Level; i < music_slots.size(); i++)
+	{
+		music_slots[i].Close();
+	}
+}
+
 void Music::PushBackLevelMusic(const FileSpecifier& file)
 {
 	playlist.push_back(file);

@@ -61,6 +61,7 @@ public:
 	float GetVolume(int index) const { return music_slots[index].GetVolume(); }
 	void SetVolume(int index, float volume) { music_slots[index].SetVolume(volume); }
 	void StopLevelMusic() { music_slots[MusicSlot::Level].Close(); }
+	void StopInGameMusic();
 	void ClearLevelMusic();
 	void PushBackLevelMusic(const FileSpecifier& file);
 	void LevelMusicRandom(bool fRandom) { random_order = fRandom; }
