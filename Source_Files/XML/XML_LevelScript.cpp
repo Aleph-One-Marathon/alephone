@@ -208,6 +208,9 @@ void ResetLevelScript()
 {
 	// For whatever previous music had been playing...
 	Music::instance()->Fade(0, MACHINE_TICKS_PER_SECOND/2);
+
+	while (Music::instance()->Playing())
+		Music::instance()->Idle();
 	
 	// If no scripts were loaded or none of them had music specified,
 	// then don't play any music
