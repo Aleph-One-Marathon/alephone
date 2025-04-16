@@ -68,6 +68,8 @@ struct replay_private_data {
 	int32 film_resource_offset;
 	char *resource_data;
 	int32 resource_data_size;
+	std::vector<byte> saved_wad_data;
+	bool is_saved_game_replay;
 };
 
 /* ----- globals */
