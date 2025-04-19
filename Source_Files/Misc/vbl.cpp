@@ -606,7 +606,7 @@ bool setup_for_replay_from_file(
 	return successful;
 }
 
-void set_recording_saved_wad_data(std::vector<byte>& saved_wad_data)
+void set_recording_saved_wad_data(const std::vector<byte>& saved_wad_data)
 {
 	replay.saved_wad_data = saved_wad_data;
 }
