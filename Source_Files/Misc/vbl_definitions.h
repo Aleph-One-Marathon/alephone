@@ -51,6 +51,19 @@ struct recording_header
 };
 const int SIZEOF_recording_header = 352;
 
+enum class recording_extension_type
+{
+	none = 0,
+	saved_game_wad = 1
+};
+
+struct recording_extension_header
+{
+	recording_extension_type extension_type;
+	uint32 length;
+};
+const int SIZEOF_recording_extension_header = 8;
+
 struct replay_private_data {
 	bool valid;
 	struct recording_header header;
@@ -68,8 +81,8 @@ struct replay_private_data {
 	int32 film_resource_offset;
 	char *resource_data;
 	int32 resource_data_size;
+	struct recording_extension_header extension_header;
 	std::vector<byte> saved_wad_data;
-	bool is_saved_game_replay;
 };
 
 /* ----- globals */
