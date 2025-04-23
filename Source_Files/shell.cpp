@@ -159,7 +159,7 @@ extern bool get_default_music_spec(FileSpecifier &file);
 extern bool get_default_theme_spec(FileSpecifier& file);
 
 // From vbl_sdl.cpp
-void execute_timer_tasks(uint32 time);
+void execute_timer_tasks(uint64 time);
 
 // Prototypes
 static void initialize_marathon_music_handler(void);
@@ -725,14 +725,14 @@ short get_level_number_from_user(void)
 	return level;
 }
 
-const uint32 TICKS_BETWEEN_EVENT_POLL = 16; // 60 Hz
+const uint64 TICKS_BETWEEN_EVENT_POLL = 16; // 60 Hz
 void main_event_loop(void)
 {
-	uint32 last_event_poll = 0;
+	uint64 last_event_poll = 0;
 	short game_state;
 
 	while ((game_state = get_game_state()) != _quit_game) {
-		uint32 cur_time = machine_tick_count();
+		uint64 cur_time = machine_tick_count();
 		bool yield_time = false;
 		bool poll_event = false;
 
