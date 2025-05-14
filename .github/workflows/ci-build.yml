@@ -25,6 +25,24 @@ jobs:
         uses: ./.github/actions/run-tests
         with:
           test_application_path: /usr/local/bin/alephone_tests
+          
+  linux-standalone-hub:
+    if: github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name !=
+      github.event.pull_request.base.repo.full_name
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        uses: ./.github/actions/configure-linux
+        with:
+          configure_options: --enable-standalone-hub --disable-opengl
+          
+      - name: Build
+        run: make -j $(nproc)
+        
+      - name: Install
+        run: sudo make install
         
   linux-without-ffmpeg:
     if: github.event_name != 'pull_request' ||
