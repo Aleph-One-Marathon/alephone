@@ -92,7 +92,7 @@ public:
 	// random sounds
 	short RandomSoundIndexToSoundIndex(short random_sound_index);
 
-	static int GetCurrentAudioTick();
+	static uint64_t GetCurrentAudioTick();
 	static float From_db(float db, bool music = false) { return db <= (SoundManager::MINIMUM_VOLUME_DB / (music ? 2 : 1)) ? 0 : std::pow(10.f, db / 20.f); }
 
 	struct Parameters

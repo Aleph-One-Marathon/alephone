@@ -143,7 +143,7 @@ void Music::Idle()
 std::pair<bool, float> Music::Slot::ComputeFadingVolume() const
 {
 	bool fadeIn = music_fade_limit_volume > music_fade_start_volume;
-	uint32 elapsed = SoundManager::GetCurrentAudioTick() - music_fade_start;
+	auto elapsed = SoundManager::GetCurrentAudioTick() - music_fade_start;
 	float volume = ((float)elapsed / music_fade_duration) * (fadeIn ? music_fade_limit_volume : 1 - music_fade_limit_volume);
 	volume = fadeIn ? volume + music_fade_start_volume : music_fade_start_volume - volume;
 	return { fadeIn, volume };

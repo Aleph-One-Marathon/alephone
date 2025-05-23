@@ -46,7 +46,7 @@ public:
 	void StartRecording(std::string path);
 	bool IsRecording();
 	void StopRecording();
-	long GetCurrentAudioTimeStamp();
+	uint64_t GetCurrentAudioTimeStamp();
 	
 	enum FrameType {
 	  FRAME_NORMAL,

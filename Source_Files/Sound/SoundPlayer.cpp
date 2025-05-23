@@ -55,7 +55,7 @@ float SoundPlayer::Simulate(const SoundParameters& soundParameters) {
 	return volume;
 }
 
-bool SoundPlayer::CanRewind(int baseTick) const {
+bool SoundPlayer::CanRewind(uint64_t baseTick) const {
 	const auto& rewindParameters = rewind_parameters.Get();
 	if (rewindParameters.soft_rewind) return true;
 	auto rewindTime = OpenALManager::Get()->IsBalanceRewindSound() || !CanFastRewind(rewindParameters) ? rewind_time : fast_rewind_time;
@@ -240,7 +240,7 @@ bool SoundPlayer::SetUpALSourceInit() {
 	return alGetError() == AL_NO_ERROR;
 }
 
-float SoundPlayer::ComputeParameterForTransition(float targetParameter, float currentParameter, int currentTick) const {
+float SoundPlayer::ComputeParameterForTransition(float targetParameter, float currentParameter, uint64_t currentTick) const {
 	float computedParameter = std::max((targetParameter - currentParameter) * std::min((currentTick - sound_transition.start_transition_tick) / (float)smooth_volume_transition_time_ms, 1.f) + currentParameter, 0.f);
 	return targetParameter > currentParameter ? std::min(targetParameter, computedParameter) : std::max(targetParameter, computedParameter);
 }

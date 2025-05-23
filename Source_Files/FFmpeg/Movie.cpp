@@ -66,7 +66,7 @@ int Movie::Movie_EncodeThread(void *arg) { return 0; }
 void Movie::EncodeThread() {}
 void Movie::EncodeVideo(bool last) {}
 void Movie::EncodeAudio(bool last) {}
-long Movie::GetCurrentAudioTimeStamp() { return 0; }
+uint64_t Movie::GetCurrentAudioTimeStamp() { return 0; }
 Movie::Movie() {}
 
 #else
@@ -488,7 +488,7 @@ void Movie::ThrowUserError(std::string error_msg)
     alert_user(full_msg.c_str());
 }
 
-long Movie::GetCurrentAudioTimeStamp()
+uint64_t Movie::GetCurrentAudioTimeStamp()
 {
 	return IsRecording() && av->inited ? current_audio_timestamp : 0;
 }
