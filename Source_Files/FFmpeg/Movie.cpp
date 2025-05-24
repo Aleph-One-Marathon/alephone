@@ -659,7 +659,7 @@ void Movie::DequeueFrame(FrameQueue &queue, uint64_t tracknum, bool start_cluste
 	{
 		av->k_cluster = new KaxCluster();
 		av->k_cluster->SetParent(*(av->k_segment));
-		av->k_cluster->InitTimecode(av->total_duration, 1);
+		av->k_cluster->InitTimecode(frame->timestamp, 1);
 		av->k_cluster->SetPreviousTimecode(av->total_duration, WEBM_TIMECODE_SCALE);
 		GetChild<KaxClusterTimecode>(*(av->k_cluster)).SetValue(frame->timestamp);
 	}
