@@ -44,7 +44,7 @@ static constexpr int TIME_SKEW = 1;
  *  Return tick counter
  */
 
-uint32 machine_tick_count(void)
+uint64 machine_tick_count(void)
 {
   auto now = std::chrono::high_resolution_clock::now();
   if(now < epoch) {
@@ -59,7 +59,7 @@ uint32 machine_tick_count(void)
  *  Delay a certain number of ticks
  */
 
-void sleep_for_machine_ticks(uint32 ticks)
+void sleep_for_machine_ticks(uint64 ticks)
 {
 	std::this_thread::sleep_for(std::chrono::milliseconds(ticks*TIME_SKEW));
 }
@@ -68,7 +68,7 @@ void sleep_for_machine_ticks(uint32 ticks)
  *  Delay until a certain tick count
  */
 
-void sleep_until_machine_tick_count(uint32 ticks)
+void sleep_until_machine_tick_count(uint64 ticks)
 {
 	std::this_thread::sleep_until(std::chrono::high_resolution_clock::time_point(std::chrono::milliseconds(ticks*TIME_SKEW)));
 }
@@ -85,9 +85,9 @@ void yield(void)
  *  Wait for mouse click or keypress
  */
 
-bool wait_for_click_or_keypress(uint32 ticks)
+bool wait_for_click_or_keypress(uint64 ticks)
 {
-	uint32 start = machine_tick_count();
+	uint64 start = machine_tick_count();
 	SDL_Event event;
 	while (machine_tick_count() - start < ticks) {
 		SDL_WaitEventTimeout(&event, ticks);

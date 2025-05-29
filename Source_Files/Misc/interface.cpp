@@ -253,7 +253,7 @@ struct game_state {
 	short flags;
 	short user;
 	int32 phase;
-	int32 last_ticks_on_idle;
+	uint64 last_ticks_on_idle;
 	short current_screen;
 	bool suppress_background_tasks;
 	bool current_netgame_allows_microphone;
@@ -1010,7 +1010,7 @@ extern bool first_frame_rendered;
 float last_heartbeat_fraction = -1.f;
 bool is_network_pregame = false;
 
-bool idle_game_state(uint32 time)
+bool idle_game_state(uint64 time)
 {
 	int machine_ticks_elapsed = time - game_state.last_ticks_on_idle;
 
