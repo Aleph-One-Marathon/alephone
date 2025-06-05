@@ -444,6 +444,19 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
                 }
                 else
                 {
+                                       int rv = 0;
+#if USE_NEW_AV_FIFO_API
+                    int channel_layout = stream->_ffmpeg->codecpar->ch_layout.u.mask ? stream->_ffmpeg->codecpar->ch_layout.u.mask : 
+                        (stream->_ffmpeg->codecpar->ch_layout.nb_channels == 2 ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO);
+                                       AVChannelLayout in_layout, out_layout;
+
+                    in_layout = out_layout = stream->_ffmpeg->codecpar->ch_layout;
+                    in_layout.u.mask = out_layout.u.mask = channel_layout;
+                    rv = swr_alloc_set_opts2(&stream->swr_context, &out_layout, AV_SAMPLE_FMT_FLT,
+                             stream->_ffmpeg->codecpar->sample_rate, &in_layout,
+                             stream->_ffmpeg->codecpar->format, stream->_ffmpeg->codecpar->sample_rate,
+                             0, NULL);
+#else
                     int channel_layout = stream->_ffmpeg->codecpar->channel_layout ? stream->_ffmpeg->codecpar->channel_layout : 
                         (stream->_ffmpeg->codecpar->channels == 2 ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO);
 
@@ -451,8 +464,9 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
                         stream->_ffmpeg->codecpar->sample_rate, channel_layout,
                         stream->_ffmpeg->codecpar->format, stream->_ffmpeg->codecpar->sample_rate,
                         0, NULL);
+#endif
 
-                    if (!stream->swr_context || swr_init(stream->swr_context) < 0) {
+                    if (rv < 0 || !stream->swr_context || swr_init(stream->swr_context) < 0) {
                         free(stream);
                         SDL_ffmpegSetError("could not initialize resampler");
                         continue;
@@ -648,7 +662,11 @@ int SDL_ffmpegAddAudioFrame( SDL_ffmpegFile *file, SDL_ffmpegAudioFrame *frame, 
 
     // convert
     int32_t write_bps = av_get_bytes_per_sample(acodec->sample_fmt);
+#if USE_NEW_AV_FIFO_API
+    int32_t read_samples = frame->size / (av_get_bytes_per_sample(file->audioStream->audioFormat) * acodec->ch_layout.nb_channels);
+#else
     int32_t read_samples = frame->size / (av_get_bytes_per_sample(file->audioStream->audioFormat) * acodec->channels);
+#endif
     int32_t write_samples = read_samples;
     if (read_samples < acodec->frame_size)
     {
@@ -665,9 +683,14 @@ int SDL_ffmpegAddAudioFrame( SDL_ffmpegFile *file, SDL_ffmpegAudioFrame *frame, 
     av_frame_unref(audio_frame);
 
     //Needed since ffmpeg 4.4
+#if USE_NEW_AV_FIFO_API
+    audio_frame->ch_layout.nb_channels = acodec->ch_layout.nb_channels;
+    audio_frame->ch_layout.u.mask = acodec->ch_layout.u.mask;
+#else
     audio_frame->channels = acodec->channels;
-    audio_frame->format = acodec->sample_fmt;
     audio_frame->channel_layout = acodec->channel_layout;
+#endif
+    audio_frame->format = acodec->sample_fmt;
     audio_frame->sample_rate = acodec->sample_rate;
     audio_frame->nb_samples = write_samples;
 
@@ -675,10 +698,17 @@ int SDL_ffmpegAddAudioFrame( SDL_ffmpegFile *file, SDL_ffmpegAudioFrame *frame, 
     audio_frame->pts = av_rescale_q(*frameCounter, avSampleRate, acodec->time_base);
 
     *frameCounter += write_samples;
+#if USE_NEW_AV_FIFO_API
+    int asize = avcodec_fill_audio_frame(audio_frame, acodec->ch_layout.nb_channels,
+        acodec->sample_fmt,
+        frame->conversionBuffer[0],
+        write_samples * write_bps * acodec->ch_layout.nb_channels, 1);
+#else
     int asize = avcodec_fill_audio_frame(audio_frame, acodec->channels,
         acodec->sample_fmt,
         frame->conversionBuffer[0],
         write_samples * write_bps * acodec->channels, 1);
+#endif
 
     if (asize >= 0)
     {
@@ -762,10 +792,18 @@ SDL_ffmpegAudioFrame* SDL_ffmpegCreateAudioFrame( SDL_ffmpegFile *file, uint32_t
 
     if ( file->type == SDL_ffmpegOutputStream )
     {
+#if USE_NEW_AV_FIFO_API
+        bytes = file->audioStream->encodeAudioInputSize * av_get_bytes_per_sample(file->audioStream->audioFormat) * file->audioStream->_ctx->ch_layout.nb_channels;
+#else
         bytes = file->audioStream->encodeAudioInputSize * av_get_bytes_per_sample(file->audioStream->audioFormat) * file->audioStream->_ctx->channels;
+#endif
 
         // allocate conversion buffer only when output, input does it differently
+#if USE_NEW_AV_FIFO_API
+        if (av_samples_alloc_array_and_samples(&frame->conversionBuffer, NULL, file->audioStream->_ctx->ch_layout.nb_channels, file->audioStream->encodeAudioInputSize, file->audioStream->_ctx->sample_fmt, 0) < 0)
+#else
         if (av_samples_alloc_array_and_samples(&frame->conversionBuffer, NULL, file->audioStream->_ctx->channels, file->audioStream->encodeAudioInputSize, file->audioStream->_ctx->sample_fmt, 0) < 0)
+#endif
         {
             return 0;
         }
@@ -1355,7 +1393,11 @@ SDL_AudioSpec SDL_ffmpegGetAudioSpec( SDL_ffmpegFile *file, uint16_t samples, SD
         spec.userdata = file;
         spec.callback = callback;
         spec.freq = file->audioStream->_ctx->sample_rate;
+#if USE_NEW_AV_FIFO_API
+        spec.channels = ( uint8_t )file->audioStream->_ctx->ch_layout.nb_channels;
+#else
         spec.channels = ( uint8_t )file->audioStream->_ctx->channels;
+#endif
     }
     else
     {
@@ -1687,8 +1729,13 @@ SDL_ffmpegStream* SDL_ffmpegAddAudioStream( SDL_ffmpegFile *file, SDL_ffmpegCode
     stream->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     stream->codecpar->sample_rate = codec.sampleRate;
     stream->codecpar->format = AV_SAMPLE_FMT_FLTP;
+#if USE_NEW_AV_FIFO_API
+    stream->codecpar->ch_layout.nb_channels = codec.channels;
+    stream->codecpar->ch_layout.u.mask = codec.channels == 2 ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO;
+#else
     stream->codecpar->channels = codec.channels;
     stream->codecpar->channel_layout = codec.channels == 2 ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO;
+#endif
 
     if (avcodec_parameters_to_context(context, stream->codecpar) < 0)
     {
@@ -1721,6 +1768,11 @@ SDL_ffmpegStream* SDL_ffmpegAddAudioStream( SDL_ffmpegFile *file, SDL_ffmpegCode
 
     if ( str )
     {
+#if USE_NEW_AV_FIFO_API
+        AVChannelLayout in_layout, out_layout;
+#endif
+               int rv = 0;
+
         /* we set our stream to zero */
         memset( str, 0, sizeof( SDL_ffmpegStream ) );
 
@@ -1734,10 +1786,16 @@ SDL_ffmpegStream* SDL_ffmpegAddAudioStream( SDL_ffmpegFile *file, SDL_ffmpegCode
         str->audioFormat = codec.audioFormat;
 
         // init resampler
+#if USE_NEW_AV_FIFO_API
+        in_layout = out_layout = context->ch_layout;
+        rv = swr_alloc_set_opts2(&str->swr_context, &out_layout, context->sample_fmt, context->sample_rate,
+                 &in_layout, str->audioFormat, context->sample_rate, 0, NULL);
+#else
         str->swr_context = swr_alloc_set_opts(str->swr_context, context->channel_layout, context->sample_fmt, context->sample_rate,
             context->channel_layout, str->audioFormat, context->sample_rate, 0, NULL);
+#endif
 
-        if (!str->swr_context || swr_init(str->swr_context) < 0)
+        if (rv < 0 || !str->swr_context || swr_init(str->swr_context) < 0)
         {
             SDL_ffmpegSetError("could not initialize resampler");
             return 0;
@@ -1745,9 +1803,15 @@ SDL_ffmpegStream* SDL_ffmpegAddAudioStream( SDL_ffmpegFile *file, SDL_ffmpegCode
 
         str->mutex = SDL_CreateMutex();
 
+#if USE_NEW_AV_FIFO_API
+        str->sampleBufferSize = av_samples_get_buffer_size(0, stream->codecpar->ch_layout.nb_channels, stream->codecpar->frame_size, AV_SAMPLE_FMT_FLT, 0);
+
+        if (av_samples_alloc((uint8_t**)(&str->sampleBuffer), 0, stream->codecpar->ch_layout.nb_channels, stream->codecpar->frame_size, AV_SAMPLE_FMT_FLT, 0) < 0)
+#else
         str->sampleBufferSize = av_samples_get_buffer_size(0, stream->codecpar->channels, stream->codecpar->frame_size, AV_SAMPLE_FMT_FLT, 0);
 
         if (av_samples_alloc((uint8_t**)(&str->sampleBuffer), 0, stream->codecpar->channels, stream->codecpar->frame_size, AV_SAMPLE_FMT_FLT, 0) < 0)
+#endif
         {
             SDL_ffmpegSetError("could not allocate samples for audio buffer");
             return 0;
@@ -1757,7 +1821,11 @@ SDL_ffmpegStream* SDL_ffmpegAddAudioStream( SDL_ffmpegFile *file, SDL_ffmpegCode
            support to compute the input frame size in samples */
         if ( stream->codecpar->frame_size <= 1 )
         {
+#if USE_NEW_AV_FIFO_API
+            str->encodeAudioInputSize = str->sampleBufferSize / stream->codecpar->ch_layout.nb_channels;
+#else
             str->encodeAudioInputSize = str->sampleBufferSize / stream->codecpar->channels;
+#endif
 
             switch ( stream->codecpar->codec_id )
             {
@@ -1946,7 +2014,11 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
 {
     int audioSize = AVCODEC_MAX_AUDIO_FRAME_SIZE * sizeof( float );
 
+#if USE_NEW_AV_FIFO_API
+    int channels = file->audioStream->_ctx->ch_layout.nb_channels;
+#else
     int channels = file->audioStream->_ctx->channels;
+#endif
     enum AVSampleFormat format = AV_SAMPLE_FMT_FLT;
     int bps = av_get_bytes_per_sample(format);
 
@@ -2020,10 +2092,14 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
     AVFrame* convertedFrame = file->audioStream->encodeFrame;
 
     while (avcodec_receive_frame(avctx, dframe) == 0) {
-
+#if USE_NEW_AV_FIFO_API
+        dframe->ch_layout.u.mask |= dframe->ch_layout.nb_channels == 2 ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO; 
+        convertedFrame->ch_layout.u.mask = dframe->ch_layout.u.mask;
+#else
         dframe->channel_layout |= dframe->channels == 2 ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO; 
-        convertedFrame->nb_samples = dframe->nb_samples;
         convertedFrame->channel_layout = dframe->channel_layout;
+#endif
+        convertedFrame->nb_samples = dframe->nb_samples;
         convertedFrame->sample_rate = dframe->sample_rate;
         convertedFrame->format = AV_SAMPLE_FMT_FLT;
 
@@ -2036,15 +2112,27 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
         int planar = av_sample_fmt_is_planar(convertedFrame->format);
         int plane_size;
 
+#if USE_NEW_AV_FIFO_API
+        int data_size = av_samples_get_buffer_size(&plane_size, convertedFrame->ch_layout.nb_channels, convertedFrame->nb_samples, convertedFrame->format, 1);
+#else
         int data_size = av_samples_get_buffer_size(&plane_size, convertedFrame->channels, convertedFrame->nb_samples, convertedFrame->format, 1);
+#endif
 
         memcpy(file->audioStream->sampleBuffer, convertedFrame->extended_data[0], plane_size);
         audioSize = plane_size;
+#if USE_NEW_AV_FIFO_API
+        if (planar && convertedFrame->ch_layout.nb_channels > 1)
+#else
         if (planar && convertedFrame->channels > 1)
+#endif
         {
             int8_t* out = file->audioStream->sampleBuffer + plane_size;
             int ch;
+#if USE_NEW_AV_FIFO_API
+            for (ch = 1; ch < convertedFrame->ch_layout.nb_channels; ch++)
+#else
             for (ch = 1; ch < convertedFrame->channels; ch++)
+#endif
             {
                 memcpy(out, convertedFrame->extended_data[ch], plane_size);
                 out += plane_size;

@@ -40,6 +40,14 @@ extern "C" {
     #define EXPORT
 // #endif
 
+// The avutil FIFO API underwent major changes in version 57.20.100
+// (cf.  https://git.videolan.org/?p=ffmpeg.git;a=blob_plain;f=doc/APIchanges;hb=n7.0 )
+#include <libavutil/version.h>
+#if LIBAVUTIL_VERSION_MAJOR > 57 || LIBAVUTIL_VERSION_MAJOR == 57 && LIBAVUTIL_VERSION_MINOR >= 20
+  #define USE_NEW_AV_FIFO_API     1
+  #define AV_FIFO_CHUNK_SIZE      4
+#endif
+
 enum SDL_ffmpegStreamType
 {
     SDL_ffmpegUninitialized = 0,
