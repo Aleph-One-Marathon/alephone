@@ -42,7 +42,7 @@ static const world_distance default_speed_limit = WORLD_ONE_HALF;
 static const world_distance projectile_speed_limit = WORLD_ONE;
 
 bool world_is_interpolated;
-static uint32_t start_machine_tick;
+static uint64_t start_machine_tick;
 
 extern struct view_data* world_view;
 

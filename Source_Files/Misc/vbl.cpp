@@ -1324,7 +1324,8 @@ typedef bool (*timer_func)(void);
 
 static timer_func tm_func = NULL;	// The installed timer task
 static uint32 tm_period;			// Ticks between two calls of the timer task
-static uint32 tm_last = 0, tm_accum = 0;
+static uint32 tm_accum = 0;
+static uint64 tm_last = 0;
 
 timer_task_proc install_timer_task(short tasks_per_second, timer_func func)
 {
