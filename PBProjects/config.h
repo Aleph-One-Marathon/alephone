@@ -22,6 +22,9 @@
 /* ${desc_ffmpeg} enabled */
 #define HAVE_FFMPEG 1
 
+/* define if you have all film export libraries */
+#define FILM_EXPORT 1
+
 /* Define to 1 if you have the <GL/glext.h> header file. */
 #define HAVE_GL_GLEXT_H 1
 
