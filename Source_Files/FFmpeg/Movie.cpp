@@ -114,10 +114,27 @@ static int get_cpu_count(void)
     return cpu_count;
 }
 
+#define AV_FIFO_BUFFER_SIZE    (1<<18)
+#if USE_NEW_AV_FIFO_API
+  #define AV_FIFO_POLL_DELAY_MS        1
+  #define AV_FIFO_MAX_WAIT_MS  10
+
+  #ifdef __WIN32__
+    #define SleepForMlliseconds  Sleep
+  #else
+    #include <unistd.h>
+    #define SleepForMilliseconds(X)  usleep(1000 * (X))
+  #endif
+#endif
+
 struct libav_vars {
     bool inited;
     
+#if USE_NEW_AV_FIFO_API
+    AVFifo *audio_fifo;
+#else
     AVFifoBuffer *audio_fifo;
+#endif
     
     SDL_ffmpegFile* ffmpeg_file;
     SDL_ffmpegAudioFrame* audio_frame;
@@ -279,7 +296,11 @@ bool Movie::Setup()
 
     if (avformat_write_header(av->ffmpeg_file->_ffmpeg, 0) < 0) { ThrowUserError("Could not write header"); return false; }
 
-    av->audio_fifo = av_fifo_alloc(262144);
+#if USE_NEW_AV_FIFO_API
+    av->audio_fifo = av_fifo_alloc2(AV_FIFO_BUFFER_SIZE / AV_FIFO_CHUNK_SIZE, AV_FIFO_CHUNK_SIZE, 0);
+#else
+    av->audio_fifo = av_fifo_alloc(AV_FIFO_BUFFER_SIZE);
+#endif
     if (!av->audio_fifo) { ThrowUserError("Could not allocate audio fifo"); return false; }
 
     // set up our threads and intermediate storage
@@ -335,18 +356,56 @@ void Movie::EncodeVideo(bool last)
 
 void Movie::EncodeAudio(bool last)
 {
-    av_fifo_generic_write(av->audio_fifo, &audiobuf[0], audiobuf.size(), NULL);
+#if USE_NEW_AV_FIFO_API
+    size_t max_write = audiobuf.size();
+    size_t written_so_far = 0, sleep_counter = 0;
+
+    while (written_so_far < max_write) {
+        int writable = MAX(av_fifo_can_write(av->audio_fifo) * AV_FIFO_CHUNK_SIZE, max_write - written_so_far);
+
+        if (!writable) {
+            if (sleep_counter * AV_FIFO_POLL_DELAY_MS >= AV_FIFO_MAX_WAIT_MS)
+                break;
+            SleepForMilliseconds(AV_FIFO_POLL_DELAY_MS);
+            sleep_counter++;
+        } else {
+            if (av_fifo_write(av->audio_fifo, &audiobuf[0], writable) < 0)
+                break;
+            written_so_far += writable;
+            sleep_counter = 0;
+        }
+    }
+#else
+       av_fifo_generic_write(av->audio_fifo, &audiobuf[0], audiobuf.size(), NULL);
+#endif
+
     auto acodec = av->ffmpeg_file->audioStream->_ctx;
     
     // bps: bytes per sample
+#if USE_NEW_AV_FIFO_API
+    int channels = acodec->ch_layout.nb_channels;
+#else
     int channels = acodec->channels;
+#endif
     
-    int max_read = acodec->frame_size * in_bps * channels;
-    int min_read = last ? in_bps * channels : max_read;
+    size_t max_read = acodec->frame_size * in_bps * channels;
+    size_t min_read = last ? in_bps * channels : max_read;
+
+#if USE_NEW_AV_FIFO_API
+    size_t read_so_far = 0;
+    while (read_so_far < max_read && av_fifo_can_read(av->audio_fifo) >= min_read)
+    {
+        int read_bytes = av->audio_frame->size = MIN(AV_FIFO_CHUNK_SIZE * av_fifo_can_read(av->audio_fifo), max_read);
+
+        if (av_fifo_read(av->audio_fifo, av->audio_frame->buffer, read_bytes) < 0)
+            break;
+        read_so_far += read_bytes;
+#else
     while (av_fifo_size(av->audio_fifo) >= min_read)
     {
         int read_bytes = av->audio_frame->size = MIN(av_fifo_size(av->audio_fifo), max_read);
         av_fifo_generic_read(av->audio_fifo, av->audio_frame->buffer, read_bytes, NULL);
+#endif
         SDL_ffmpegAddAudioFrame(av->ffmpeg_file, av->audio_frame, &av->audio_counter, last);
     }
 }
@@ -466,8 +525,12 @@ void Movie::StopRecording()
     }
     if (av->audio_fifo)
     {
+#if USE_NEW_AV_FIFO_API
+        av_fifo_freep2(&av->audio_fifo);
+#else
         av_fifo_free(av->audio_fifo);
-        av->audio_fifo = NULL;
+               av->audio_fifo = NULL;
+#endif
     }
 
 	moviefile = "";
