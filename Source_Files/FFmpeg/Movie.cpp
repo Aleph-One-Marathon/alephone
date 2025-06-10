@@ -49,7 +49,7 @@
 #include <windows.h>
 #endif
 
-#ifndef HAVE_FFMPEG
+#ifndef FILM_EXPORT
 
 struct libav_vars {
     bool inited;
