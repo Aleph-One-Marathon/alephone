@@ -3480,41 +3480,40 @@ void exit_networking(void)
  *  Show movie
  */
 
-static SDL_mutex *movie_audio_mutex = NULL;
-static std::vector<float> audio_buffer;
-
-static void audio_samples_decoder_callback(plm_t* mpeg, plm_samples_t* samples, void* user)
+static void audio_samples_decoder_callback(plm_t* mpeg, plm_samples_t* samples, void* userdata)
 {
-	if (SDL_LockMutex(movie_audio_mutex) == 0)
+	auto& [mutex, audio_buffer] = *static_cast<std::tuple<SDL_mutex*, std::deque<float>*>*>(userdata);
+
+	if (SDL_LockMutex(mutex) == 0)
 	{
-		auto current_size = audio_buffer.size();
-		auto buffer_size = samples->count * 2; //always work on stereo in interleaved mode
-		audio_buffer.resize(current_size + buffer_size);
-		std::copy(samples->interleaved, samples->interleaved + buffer_size, audio_buffer.data() + current_size);
-		SDL_UnlockMutex(movie_audio_mutex);
+		audio_buffer->insert(audio_buffer->end(), samples->interleaved, samples->interleaved + samples->count * 2); //always work on stereo in interleaved mode
+		SDL_UnlockMutex(mutex);
 	}
 }
 
-static int audio_player_callback(uint8_t* data, int length)
+static int audio_player_callback(uint8_t* data, int length, void* userdata)
 {
-	if (audio_buffer.size() && SDL_LockMutex(movie_audio_mutex) == 0)
+	auto& [mutex, audio_buffer] = *static_cast<std::tuple<SDL_mutex*, std::deque<float>*>*>(userdata);
+
+	if (audio_buffer->size() && SDL_LockMutex(mutex) == 0)
 	{
-		auto actual_length = std::min(audio_buffer.size() * sizeof(float), (size_t)length);
-		std::memcpy(data, audio_buffer.data(), actual_length);
-		audio_buffer.erase(audio_buffer.begin(), audio_buffer.begin() + actual_length / sizeof(float));
-		SDL_UnlockMutex(movie_audio_mutex);
-		return actual_length;
+		const auto samples_length = std::min(audio_buffer->size(), (size_t)length / sizeof(float));
+		auto data_out = reinterpret_cast<float*>(data);
+
+		for (auto i = 0; i < samples_length; i++) 
+			data_out[i] = (*audio_buffer)[i];
+
+		audio_buffer->erase(audio_buffer->begin(), audio_buffer->begin() + samples_length);
+		SDL_UnlockMutex(mutex);
+		return samples_length * sizeof(float);
 	}
 
 	return 0;
 }
 
-static void video_frame_decoder_callback(plm_t* mpeg, plm_frame_t* frame, void* data) 
+static void video_frame_decoder_callback(plm_t* mpeg, plm_frame_t* frame, void* userdata) 
 {
-	const auto userdata = (std::tuple<SDL_Rect, SDL_Surface*, std::vector<uint8>*>*)data;
-	const auto& dimensions = std::get<SDL_Rect>(*userdata);
-	auto buffer = std::get<std::vector<uint8>*>(*userdata);
-	auto surface = std::get<SDL_Surface*>(*userdata);
+	auto& [dimensions, surface, buffer, out_new_frame] = *static_cast<std::tuple<SDL_Rect, SDL_Surface*, std::vector<uint8>*, bool*>*>(userdata);
 
 	libyuv::I420Scale(frame->y.data, frame->y.width, frame->cb.data, frame->cb.width, frame->cr.data, frame->cr.width, frame->width, frame->height,
 		buffer[0].data(), dimensions.w, buffer[1].data(), dimensions.w / 2, buffer[2].data(), dimensions.w / 2, dimensions.w, dimensions.h, libyuv::FilterMode::kFilterNone);
@@ -3523,6 +3522,8 @@ static void video_frame_decoder_callback(plm_t* mpeg, plm_frame_t* frame, void* 
 		libyuv::I420ToABGR(buffer[0].data(), dimensions.w, buffer[1].data(), dimensions.w / 2, buffer[2].data(), dimensions.w / 2, (uint8_t*)surface->pixels, surface->pitch, dimensions.w, dimensions.h);
 	else
 		libyuv::I420ToRGBA(buffer[0].data(), dimensions.w, buffer[1].data(), dimensions.w / 2, buffer[2].data(), dimensions.w / 2, (uint8_t*)surface->pixels, surface->pitch, dimensions.w, dimensions.h);
+
+	(*out_new_frame) = true;
 }
 
 void show_movie(short index)
@@ -3561,14 +3562,18 @@ void show_movie(short index)
 		return;
 	}
 
+	bool got_new_frame = false;
 	std::vector<uint8> frame_buffers[3];
 	frame_buffers[0].resize(dst_rect.w * dst_rect.h);
 	frame_buffers[1].resize(dst_rect.w * dst_rect.h / 2);
 	frame_buffers[2].resize(dst_rect.w * dst_rect.h / 2);
 
-	auto callback_userdata = std::make_tuple(dst_rect, vframe, frame_buffers);
-	plm_set_video_decode_callback(plm_context, video_frame_decoder_callback, &callback_userdata);
+	auto callback_video_userdata = std::make_tuple(dst_rect, vframe, frame_buffers, &got_new_frame);
+	plm_set_video_decode_callback(plm_context, video_frame_decoder_callback, &callback_video_userdata);
 
+	SDL_mutex* audio_mutex = nullptr;
+	std::deque<float> shared_audio_buffer;
+	std::tuple<SDL_mutex*, std::deque<float>*> callback_audio_userdata;
 	bool audio_playback = OpenALManager::Get();
 
 	if (audio_playback)
@@ -3581,9 +3586,10 @@ void show_movie(short index)
 
 		if (audio_playback)
 		{
-			movie_audio_mutex = SDL_CreateMutex();
-			plm_set_audio_lead_time(plm_context, (double)OpenALManager::Get()->GetSamplesFrameSize() / OpenALManager::Get()->GetFrequency());
-			plm_set_audio_decode_callback(plm_context, audio_samples_decoder_callback, nullptr);
+			audio_mutex = SDL_CreateMutex();
+			callback_audio_userdata = std::make_tuple(audio_mutex, &shared_audio_buffer);
+			plm_set_audio_lead_time(plm_context, 0.1); // we don't set as (sample size / sample rate) as recommended but set a fixed value to give a little bit more time to be sure audio does not underrun
+			plm_set_audio_decode_callback(plm_context, audio_samples_decoder_callback, &callback_audio_userdata);
 		}
 	}
 
@@ -3626,27 +3632,33 @@ void show_movie(short index)
 			
 		if (audio_playback && (!movie_audio_player || !movie_audio_player->IsActive()))
 		{
-			movie_audio_player = OpenALManager::Get()->PlayStream(audio_player_callback, plm_get_samplerate(plm_context), true, AudioFormat::_32_float);
+			movie_audio_player = OpenALManager::Get()->PlayStream(audio_player_callback, plm_get_samplerate(plm_context), true, AudioFormat::_32_float, &callback_audio_userdata);
 		}
 
+		if (got_new_frame)
+		{
 #ifdef HAVE_OPENGL
-		if (OGL_IsActive())
-		{
-			OGL_Blitter::BoundScreen();
-			show_movie_blitter.Load(*(vframe));
-			show_movie_blitter.Draw(dst_rect);
-			show_movie_blitter.Unload();
-			MainScreenSwap();
-		}
-		else
+			if (OGL_IsActive())
+			{
+				OGL_Blitter::BoundScreen();
+				show_movie_blitter.Load(*(vframe));
+				show_movie_blitter.Draw(dst_rect);
+				show_movie_blitter.Unload();
+				MainScreenSwap();
+			}
+			else
 #endif
-		{
-			SDL_BlitSurface(vframe, 0, MainScreenSurface(), &dst_rect);
-			MainScreenUpdateRects(1, &dst_rect);
-		}
+			{
+				SDL_BlitSurface(vframe, 0, MainScreenSurface(), &dst_rect);
+				MainScreenUpdateRects(1, &dst_rect);
+			}
 
-		if (plm_has_ended(plm_context))
+			got_new_frame = false;
+		}
+		else if (plm_has_ended(plm_context))
 			done = true;
+		else
+			sleep_for_machine_ticks(1);
 	}
 
 	if (audio_playback)
@@ -3656,9 +3668,7 @@ void show_movie(short index)
 		}
 
 		OpenALManager::Get()->Stop();
-		movie_audio_player.reset();
-		audio_buffer.clear();
-		SDL_DestroyMutex(movie_audio_mutex);
+		SDL_DestroyMutex(audio_mutex);
 	}
 
 	SDL_FreeSurface(vframe);
