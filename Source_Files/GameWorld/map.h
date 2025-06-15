@@ -944,7 +944,7 @@ struct game_data
 struct dynamic_data
 {
 	/* ticks since the beginning of the game */
-	int64 tick_count;
+	int32 tick_count;
 	
 	/* the real seed is static in WORLD.C; must call set_random_seed() */
 	uint16 random_seed;

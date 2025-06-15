@@ -387,7 +387,7 @@ void initialize_map_for_new_level(
 	void)
 {
 	short total_civilians, total_causalties;
-	uint64 tick_count;
+	uint32 tick_count;
 	uint16 random_seed;
 	short player_count;
 	struct game_data game_information;

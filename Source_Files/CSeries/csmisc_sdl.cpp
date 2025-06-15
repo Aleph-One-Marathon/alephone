@@ -32,7 +32,6 @@
 
 /* by using static variable initialization time as the epoch, we ensure that
    Aleph One can run for ~49 days without timing issues cropping up */
-/* TODO: Every single place machine tick counts are used, switch to uint64 */
 static auto epoch = std::chrono::high_resolution_clock::now();
 
 /* a knob to play the game in "slow motion" to debug timing sensitive features.
