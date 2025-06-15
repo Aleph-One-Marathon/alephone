@@ -1,4 +1,4 @@
-dnl Process this file with autoconf to produce a configure script.
+shecdnl Process this file with autoconf to produce a configure script.
 dnl Written by Christian Bauer and the Aleph One developers.
 
 AC_INIT([Aleph One],m4_esyscmd([grep '^#define A1_DATE_VERSION' Source_Files/Misc/alephversion.h | sed -e 's/\(.*\"\)\(.*\)\(\"\)/\2/g' | tr -d '\n']),[https://github.com/Aleph-One-Marathon/alephone/issues],[AlephOne],[https://alephone.lhowon.org/])
@@ -28,12 +28,19 @@ AC_DEFUN([AX_ARG_WITH],
 AX_ARG_ENABLE([opengl], [OpenGL rendering])
 
 AX_ARG_WITH([sdl_image], [SDL2_image support])
-AX_ARG_WITH([ffmpeg], [FFmpeg playback and film export])
+AX_ARG_WITH([ffmpeg], [FFmpeg playback])
 AX_ARG_WITH([curl], [cURL for HTTP communication])
 AX_ARG_WITH([zzip], [zziplib support])
 AX_ARG_WITH([png], [libpng PNG screenshot support])
 AX_ARG_WITH([miniupnpc], [miniupnpc support])
 AX_ARG_WITH([catch2], [Catch2 replay and unit tests support])
+
+AX_ARG_WITH([vpx], [libvpx support for film export])
+AX_ARG_WITH([matroska], [libmatroska support for film export])
+AX_ARG_WITH([ebml], [libebml support for film export])
+AX_ARG_WITH([vorbis], [vorbis support for film export])
+AX_ARG_WITH([vorbisenc], [vorbisenc support for film export])
+AX_ARG_WITH([libyuv], [libyuv support for film export])
 
 dnl Check for programs.
 AC_PROG_CC
@@ -253,6 +260,20 @@ AM_CONDITIONAL([BUILD_ALEPHONE_TESTS], [test "x$have_catch2" = "xtrue"])
 
 AX_CHECK_FEATURE_LIB([miniupnpc], [MINIUPNPC], [miniupnpc/miniupnpc.h], [miniupnpc], [upnpDiscover])
 
+dnl six libraries required for film export now
+AX_CHECK_FEATURE_PKG([matroska], [MATROSKA], [matroska], [libmatroska])
+AX_CHECK_FEATURE_PKG([vpx], [VPX], [vpx], [vpx])
+AX_CHECK_FEATURE_PKG([ebml], [EBML], [ebml], [libebml])
+AX_CHECK_FEATURE_PKG([vorbis], [VORBIS], [vorbis], [vorbis])
+AX_CHECK_FEATURE_PKG([vorbisenc], [VORBISENC], [vorbisenc], [vorbisenc])
+AX_CHECK_FEATURE_LIB([libyuv], [LIBYUV], [libyuv/convert.h], [yuv], [ARGBToI420])
+
+if test -n "$have_matroska" && test -n "$have_ebml" && test -n "$have_vpx" && \
+   test -n "$have_vorbis" && test -n "$have_vorbisenc" && \
+   test -n "$have_libyuv"; then
+   AC_DEFINE([FILM_EXPORT], [1], [have all film export libraries])
+fi
+
 dnl Generate Makefiles.
 AC_CONFIG_FILES([
 Makefile
@@ -319,6 +340,12 @@ AX_PRINT_SUMMARY([curl])
 AX_PRINT_SUMMARY([zzip])
 AX_PRINT_SUMMARY([png])
 AX_PRINT_SUMMARY([miniupnpc])
+AX_PRINT_SUMMARY([vpx])
+AX_PRINT_SUMMARY([matroska])
+AX_PRINT_SUMMARY([ebml])
+AX_PRINT_SUMMARY([vorbis])
+AX_PRINT_SUMMARY([vorbisenc])
+AX_PRINT_SUMMARY([libyuv])
 AX_PRINT_SUMMARY([catch2], true)
 AS_ECHO([""])
 AS_ECHO(["Configuration done. Now type \"make\"."])

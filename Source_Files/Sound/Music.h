@@ -74,7 +74,7 @@ private:
 		std::shared_ptr<MusicPlayer> musicPlayer;
 		std::shared_ptr<StreamDecoder> decoder;
 		FileSpecifier music_file;
-		uint32 music_fade_start = 0;
+		uint64_t music_fade_start = 0;
 		uint32 music_fade_duration = 0;
 		float music_fade_limit_volume;
 		float music_fade_start_volume;

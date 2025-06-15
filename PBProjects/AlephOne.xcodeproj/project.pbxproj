@@ -8486,6 +8486,9 @@
 					"-lsndfile",
 					"-lopenal",
 					"-ljpeg",
+					"-lyuv",
+					"-lebml",
+					"-lmatroska",
 				);
 				STRIP_INSTALLED_PRODUCT = NO;
 				USER_HEADER_SEARCH_PATHS = (
@@ -8633,6 +8636,9 @@
 					"-lsndfile",
 					"-lopenal",
 					"-ljpeg",
+					"-lyuv",
+					"-lebml",
+					"-lmatroska",
 				);
 				STRIP_INSTALLED_PRODUCT = NO;
 				USER_HEADER_SEARCH_PATHS = (

@@ -82,9 +82,14 @@ Aleph One requires a C++17 compiler and the following libraries:
 These libraries are recommended for full features and third-party scenario compatibility:
 
 + `curl` _for stats upload to lhowon.org_
-+ `ffmpeg` _for music playback and film video export_
++ `ffmpeg` _for music playback_
 + `miniupnpc` _for opening router ports_
 + `zziplib` _for using zipped plugins_
++ `vpx` _for film export_
++ `matroska` _for film export_
++ `ebml` _for film export_
++ `vorbis` _for film export_
++ `libyuv` _for film export_
 
 #### Fedora
 
@@ -105,8 +110,9 @@ Run this command to install the necessary prerequisites for building Aleph One:
     sudo apt install build-essential libboost-all-dev libsdl2-dev \
       libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev \
       libzzip-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev \
-      libpng-dev libcurl4-gnutls-dev libminiupnpc-dev libopenal-dev \ 
-	  libsndfile1-dev libglu1-dev
+      libpng-dev libcurl4-gnutls-dev libminiupnpc-dev libopenal-dev \
+	  libsndfile1-dev libglu1-dev libvpx-dev libmatroska-dev libebml-dev \
+	  libvorbis-dev libvorbisenc2 libyuv-dev
 
 ### Compile
 

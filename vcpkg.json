@@ -74,6 +74,12 @@
       },
       {
          "name":"steamworks-sdk"
+      },
+      {
+          "name":"matroska"
+      },
+      {
+          "name":"libyuv"
       }
    ],
    "overrides":[

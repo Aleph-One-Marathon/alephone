@@ -428,7 +428,7 @@ void SoundManager::StopAllSounds() {
 		soundPlayer->AskStop();
 }
 
-int SoundManager::GetCurrentAudioTick() {
+uint64_t SoundManager::GetCurrentAudioTick() {
 
 	if (Movie::instance()->IsRecording())
 		return Movie::instance()->GetCurrentAudioTimeStamp();

@@ -88,14 +88,14 @@ public:
 	float GetPriority() const override { return Simulate(parameters.Get()); }
 	void AskSoftStop() { soft_stop_signal = true; } //not supported by 3d sounds because no need to
 	void AskRewind(const SoundParameters& soundParameters, const Sound& sound);
-	bool CanRewind(int baseTick) const;
+	bool CanRewind(uint64_t baseTick) const;
 	bool CanFastRewind(const SoundParameters& soundParameters) const;
 	bool HasActiveRewind() const { return rewind_signal.load() && !soft_stop_signal.load(); }
 	bool IsLooping() const;
 private:
 
 	struct SoundTransition {
-		uint32_t start_transition_tick = 0;
+		uint64_t start_transition_tick = 0;
 		float current_volume = 0;
 		SoundBehavior current_sound_behavior;
 		bool allow_transition = false;
@@ -110,7 +110,7 @@ private:
 	bool SetUpALSourceInit() override;
 	bool LoadParametersUpdates() override;
 	void ResetTransition();
-	float ComputeParameterForTransition(float targetParameter, float currentParameter, int currentTick) const;
+	float ComputeParameterForTransition(float targetParameter, float currentParameter, uint64_t currentTick) const;
 	float ComputeVolumeForTransition(float targetVolume);
 	SoundBehavior ComputeVolumeForTransition(const SoundBehavior& targetSoundBehavior);
 	AtomicStructure<Sound> sound;
@@ -119,7 +119,7 @@ private:
 	SoundTransition sound_transition;
 	uint32_t data_length;
 	uint32_t current_index_data;
-	uint32_t start_tick;
+	uint64_t start_tick;
 
 	std::atomic_bool soft_stop_signal = { false };
 

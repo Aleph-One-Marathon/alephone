@@ -152,6 +152,14 @@ extern TP2PerfGlobals perf_globals;
 #include "OpenALManager.h"
 
 #ifdef HAVE_FFMPEG
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#include "libavformat/avformat.h"
+#ifdef __cplusplus
+}
+#endif
 #include "SDL_ffmpeg.h"
 #endif
 
