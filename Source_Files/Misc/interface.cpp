@@ -115,7 +115,10 @@ Feb 13, 2003 (Woody Zenfell):
 #include <limits.h>
 #include <algorithm>
 #include <sstream>
+
+#ifdef HAVE_LIBYUV
 #include <libyuv/convert.h>
+#endif
 
 #ifdef PERFORMANCE
 #include <perf.h>
@@ -136,15 +139,12 @@ extern TP2PerfGlobals perf_globals;
 #include "Music.h"
 #include "images.h"
 #include "screen.h"
-#include "network.h"
 #include "vbl.h"
-#include "shell.h"
 #include "preferences.h"
 #include "FileHandler.h"
 #include "lua_script.h" // PostIdle
 #include "interface_menus.h"
 #include "XML_LevelScript.h"
-#include "Music.h"
 #include "Movie.h"
 #include "QuickSave.h"
 #include "Plugins.h"
@@ -3516,6 +3516,7 @@ static void video_frame_decoder_callback(plm_t* mpeg, plm_frame_t* frame, void* 
 {
 	auto& [dimensions, surface, buffer, out_new_frame] = *static_cast<std::tuple<SDL_Rect, SDL_Surface*, std::vector<uint8>*, bool*>*>(userdata);
 
+#ifdef HAVE_LIBYUV
 	libyuv::I420Scale(frame->y.data, frame->y.width, frame->cb.data, frame->cb.width, frame->cr.data, frame->cr.width, frame->width, frame->height,
 		buffer[0].data(), dimensions.w, buffer[1].data(), dimensions.w / 2, buffer[2].data(), dimensions.w / 2, dimensions.w, dimensions.h, libyuv::FilterMode::kFilterNone);
 
@@ -3523,6 +3524,9 @@ static void video_frame_decoder_callback(plm_t* mpeg, plm_frame_t* frame, void* 
 		libyuv::I420ToABGR(buffer[0].data(), dimensions.w, buffer[1].data(), dimensions.w / 2, buffer[2].data(), dimensions.w / 2, (uint8_t*)surface->pixels, surface->pitch, dimensions.w, dimensions.h);
 	else
 		libyuv::I420ToRGBA(buffer[0].data(), dimensions.w, buffer[1].data(), dimensions.w / 2, buffer[2].data(), dimensions.w / 2, (uint8_t*)surface->pixels, surface->pitch, dimensions.w, dimensions.h);
+#else
+	plm_frame_to_rgba(frame, (uint8_t*)surface->pixels, surface->pitch);
+#endif
 
 	(*out_new_frame) = true;
 }
@@ -3548,10 +3552,15 @@ void show_movie(short index)
 	change_screen_mode(_screentype_chapter);
 
 	SoundManager::Pause pauseSoundManager;
-	SDL_Rect dst_rect = { 0, 0, 640, 480 };
 
 	auto plm_context = plm_create_with_filename(File->GetPath());
 	if (!plm_context) return;
+
+#ifdef HAVE_LIBYUV
+	SDL_Rect dst_rect = { 0, 0, 640, 480 };
+#else
+	SDL_Rect dst_rect = { 0, 0, plm_context->video_decoder->width, plm_context->video_decoder->height };
+#endif
 
 	auto vframe = PlatformIsLittleEndian() ? 
 		SDL_CreateRGBSurface(SDL_SWSURFACE, dst_rect.w, dst_rect.h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0) :

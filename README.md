@@ -89,7 +89,7 @@ These libraries are recommended for full features and third-party scenario compa
 + `matroska` _for film export_
 + `ebml` _for film export_
 + `vorbis` _for film export_
-+ `libyuv` _for film export_
++ `libyuv` _for film export and video playback_
 
 #### Fedora
 
