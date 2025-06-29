@@ -28,7 +28,6 @@ AC_DEFUN([AX_ARG_WITH],
 AX_ARG_ENABLE([opengl], [OpenGL rendering])
 
 AX_ARG_WITH([sdl_image], [SDL2_image support])
-AX_ARG_WITH([ffmpeg], [FFmpeg playback])
 AX_ARG_WITH([curl], [cURL for HTTP communication])
 AX_ARG_WITH([zzip], [zziplib support])
 AX_ARG_WITH([png], [libpng PNG screenshot support])
@@ -40,7 +39,7 @@ AX_ARG_WITH([matroska], [libmatroska support for film export])
 AX_ARG_WITH([ebml], [libebml support for film export])
 AX_ARG_WITH([vorbis], [vorbis support for film export])
 AX_ARG_WITH([vorbisenc], [vorbisenc support for film export])
-AX_ARG_WITH([libyuv], [libyuv support for film export])
+AX_ARG_WITH([libyuv], [libyuv support for film export and video playback])
 
 dnl Check for programs.
 AC_PROG_CC
@@ -236,10 +235,6 @@ AC_DEFUN([AX_CHECK_FEATURE_PKG],
 AX_CHECK_FEATURE_PKG([sdl_image], [SDL_IMAGE],
                      [SDL_IMAGE], [SDL2_image])
 
-AX_CHECK_FEATURE_PKG([ffmpeg], [FFMPEG],
-                     [FFMPEG], [libavcodec >= 54.35.0 libavformat >= 54.20.0 libavutil >= 52.3.0 libswscale >= 2.1.1 libswresample >= 3.0.0 ])
-dnl Remove SDL 1 inclusions from ffmpeg (https://trac.ffmpeg.org/ticket/2009)
-FFMPEG_LIBS=`echo "$FFMPEG_LIBS" | sed 's|-lSDL ||' | sed 's|-lSDLmain ||'`
 LIBS=`echo "$LIBS" | sed 's|-lSDL ||' | sed 's|-lSDLmain ||'`
 
 AX_CHECK_FEATURE_PKG([curl], [CURL],
@@ -280,7 +275,7 @@ Makefile
 AlephOne.spec
 Source_Files/Makefile
 Source_Files/CSeries/Makefile
-Source_Files/FFmpeg/Makefile
+Source_Files/Videos/Makefile
 Source_Files/Files/Makefile
 Source_Files/GameWorld/Makefile
 Source_Files/Input/Makefile
@@ -335,7 +330,6 @@ AS_ECHO(["Summary of optional features:"])
 AS_ECHO([""])
 AX_PRINT_SUMMARY([opengl])
 AX_PRINT_SUMMARY([sdl_image])
-AX_PRINT_SUMMARY([ffmpeg])
 AX_PRINT_SUMMARY([curl])
 AX_PRINT_SUMMARY([zzip])
 AX_PRINT_SUMMARY([png])

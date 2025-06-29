@@ -118,6 +118,7 @@ Feb 13, 2003 (Woody Zenfell):
 
 #ifdef HAVE_LIBYUV
 #include <libyuv/convert.h>
+#include <libyuv/scale.h>
 #endif
 
 #ifdef PERFORMANCE

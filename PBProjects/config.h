@@ -19,9 +19,6 @@
 /* ${desc_curl} enabled */
 #define HAVE_CURL 1
 
-/* ${desc_ffmpeg} enabled */
-#define HAVE_FFMPEG 1
-
 /* define if you have all film export libraries */
 #define FILM_EXPORT 1
 

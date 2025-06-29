@@ -34,25 +34,6 @@ constexpr float abortAmplitudeThreshold = MAXIMUM_SOUND_VOLUME / 6.f / 256;
 constexpr float angleConvert = 360 / float(FULL_CIRCLE);
 constexpr float degreToRadian = M_PI / 180.f;
 
-#ifdef  HAVE_FFMPEG
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-#include "libavutil/samplefmt.h"
-#ifdef __cplusplus
-}
-#endif
-
-const inline std::unordered_map<ALCint, AVSampleFormat> mapping_openal_ffmpeg = {
-	{ALC_FLOAT_SOFT, AV_SAMPLE_FMT_FLT},
-	{ALC_INT_SOFT, AV_SAMPLE_FMT_S32},
-	{ALC_SHORT_SOFT, AV_SAMPLE_FMT_S16},
-	{ALC_UNSIGNED_BYTE_SOFT, AV_SAMPLE_FMT_U8}
-};
-
-#endif //  HAVE_FFMPEG
-
 struct AudioParameters {
 	int rate;
 	int sample_frame_size;
