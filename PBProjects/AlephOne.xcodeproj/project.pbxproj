@@ -1155,7 +1155,6 @@
 		AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
 		AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
 		AE38D10E0D555A3100FC2082 /* lua_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE38D10C0D555A3100FC2082 /* lua_objects.cpp */; };
-		AE3AF3962C6ED7200066F090 /* ScenarioChooser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE83423F2C5B22EA00A4A530 /* ScenarioChooser.cpp */; };
 		AE3C01A42C13DB8B002A3EB2 /* Pinger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */; };
 		AE3C01A52C13DB8B002A3EB2 /* Pinger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */; };
 		AE3C01A62C13DB8B002A3EB2 /* Pinger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */; };
@@ -1164,6 +1163,13 @@
 		AE48F3591421900900051D61 /* Statistics.h in Headers */ = {isa = PBXBuildFile; fileRef = AE48F3551421900900051D61 /* Statistics.h */; };
 		AE48F35A1421900900051D61 /* Statistics.h in Headers */ = {isa = PBXBuildFile; fileRef = AE48F3551421900900051D61 /* Statistics.h */; };
 		AE48F35B1421900900051D61 /* Statistics.h in Headers */ = {isa = PBXBuildFile; fileRef = AE48F3551421900900051D61 /* Statistics.h */; };
+		AE4D64902E116FE5002749EE /* pl_mpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = AE4D648F2E116FE5002749EE /* pl_mpeg.h */; };
+		AE4D64912E116FE5002749EE /* pl_mpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = AE4D648F2E116FE5002749EE /* pl_mpeg.h */; };
+		AE4D64922E116FE5002749EE /* pl_mpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = AE4D648F2E116FE5002749EE /* pl_mpeg.h */; };
+		AE4D64932E116FE5002749EE /* pl_mpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = AE4D648F2E116FE5002749EE /* pl_mpeg.h */; };
+		AE4D64942E116FE5002749EE /* pl_mpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = AE4D648F2E116FE5002749EE /* pl_mpeg.h */; };
+		AE4D64952E116FE5002749EE /* pl_mpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = AE4D648F2E116FE5002749EE /* pl_mpeg.h */; };
+		AE4D64962E116FE5002749EE /* pl_mpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = AE4D648F2E116FE5002749EE /* pl_mpeg.h */; };
 		AE505B3C141D45E600915344 /* PlayerName.h in Headers */ = {isa = PBXBuildFile; fileRef = F522120C0136A6FD01000001 /* PlayerName.h */; };
 		AE505B3D141D45E600915344 /* Random.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212190136A6FD01000001 /* Random.h */; };
 		AE505B3E141D45E600915344 /* game_errors.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211AE0136A6FD01000001 /* game_errors.h */; };
@@ -3253,6 +3259,7 @@
 		AE437C8B08779BC900038E30 /* shared_widgets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = shared_widgets.h; path = ../Source_Files/Misc/shared_widgets.h; sourceTree = SOURCE_ROOT; };
 		AE437C8E08779BE500038E30 /* shared_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = shared_widgets.cpp; path = ../Source_Files/Misc/shared_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE48F3551421900900051D61 /* Statistics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Statistics.h; path = ../Source_Files/Misc/Statistics.h; sourceTree = "<group>"; };
+		AE4D648F2E116FE5002749EE /* pl_mpeg.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pl_mpeg.h; path = ../Source_Files/FFmpeg/pl_mpeg.h; sourceTree = SOURCE_ROOT; };
 		AE505D0B141D45E600915344 /* Classic Marathon 2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Classic Marathon 2.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE505D12141D46A900915344 /* Info-MAS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Info-MAS.plist"; path = "AppStore/Marathon 2/Info-MAS.plist"; sourceTree = "<group>"; };
 		AE505D20141D47BF00915344 /* Marathon 2.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = "Marathon 2.icns"; path = "AppStore/Marathon 2/Marathon 2.icns"; sourceTree = "<group>"; };
@@ -3831,6 +3838,7 @@
 		27ECF2AB1698DD9700BE9C35 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				AE4D648F2E116FE5002749EE /* pl_mpeg.h */,
 				27ECF2921698DD7700BE9C35 /* Movie.h */,
 				27ECF2941698DD7700BE9C35 /* SDL_ffmpeg.h */,
 			);
@@ -4870,6 +4878,7 @@
 				AE120C532BC77645001873DD /* joystick.h in Headers */,
 				AE120C542BC77645001873DD /* lua_serialize.h in Headers */,
 				AE120C552BC77645001873DD /* BStream.h in Headers */,
+				AE4D64932E116FE5002749EE /* pl_mpeg.h in Headers */,
 				AE120C562BC77645001873DD /* OGL_Blitter.h in Headers */,
 				AE120C572BC77645001873DD /* HUDRenderer_Lua.h in Headers */,
 				AE120C582BC77645001873DD /* Image_Blitter.h in Headers */,
@@ -5080,6 +5089,7 @@
 				AE1320EC2C1CB4D2009D34AA /* joystick.h in Headers */,
 				AE1320ED2C1CB4D2009D34AA /* lua_serialize.h in Headers */,
 				AE1320EE2C1CB4D2009D34AA /* BStream.h in Headers */,
+				AE4D64942E116FE5002749EE /* pl_mpeg.h in Headers */,
 				AE1320EF2C1CB4D2009D34AA /* OGL_Blitter.h in Headers */,
 				AE1320F02C1CB4D2009D34AA /* HUDRenderer_Lua.h in Headers */,
 				AE1320F12C1CB4D2009D34AA /* Image_Blitter.h in Headers */,
@@ -5223,6 +5233,7 @@
 				AE505BA7141D45E600915344 /* game_window.h in Headers */,
 				AE505BA8141D45E600915344 /* HUDRenderer.h in Headers */,
 				AE505BA9141D45E600915344 /* HUDRenderer_OGL.h in Headers */,
+				AE4D64912E116FE5002749EE /* pl_mpeg.h in Headers */,
 				AE505BAA141D45E600915344 /* HUDRenderer_SW.h in Headers */,
 				AED959B42BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */,
 				2710CC671B8F94FC00CE2EAE /* OGL_FBO.h in Headers */,
@@ -5432,6 +5443,7 @@
 				AEB4A14714296CAE00537AE7 /* game_window.h in Headers */,
 				AEB4A14814296CAE00537AE7 /* HUDRenderer.h in Headers */,
 				AEB4A14914296CAE00537AE7 /* HUDRenderer_OGL.h in Headers */,
+				AE4D64902E116FE5002749EE /* pl_mpeg.h in Headers */,
 				AEB4A14A14296CAE00537AE7 /* HUDRenderer_SW.h in Headers */,
 				AED959B52BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */,
 				2710CC681B8F94FC00CE2EAE /* OGL_FBO.h in Headers */,
@@ -5708,6 +5720,7 @@
 				AEBDC5C82C4DF0780026DFF1 /* joystick.h in Headers */,
 				AEBDC5C92C4DF0780026DFF1 /* lua_serialize.h in Headers */,
 				AEBDC5CA2C4DF0780026DFF1 /* BStream.h in Headers */,
+				AE4D64952E116FE5002749EE /* pl_mpeg.h in Headers */,
 				AEBDC5CB2C4DF0780026DFF1 /* OGL_Blitter.h in Headers */,
 				AEBDC5CC2C4DF0780026DFF1 /* HUDRenderer_Lua.h in Headers */,
 				AEBDC5CD2C4DF0780026DFF1 /* Image_Blitter.h in Headers */,
@@ -5851,6 +5864,7 @@
 				AEC3C77D09AD68AC003258E4 /* HUDRenderer.h in Headers */,
 				276BED0C1A846FD900AE52F4 /* CourierPrimeBold.h in Headers */,
 				AEC3C77E09AD68AC003258E4 /* HUDRenderer_OGL.h in Headers */,
+				AE4D64962E116FE5002749EE /* pl_mpeg.h in Headers */,
 				AEC3C77F09AD68AC003258E4 /* HUDRenderer_SW.h in Headers */,
 				AED959B22BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */,
 				AEC3C78009AD68AC003258E4 /* images.h in Headers */,
@@ -6060,6 +6074,7 @@
 				AEFD865513EB84CF00C1E687 /* game_window.h in Headers */,
 				AEFD865613EB84CF00C1E687 /* HUDRenderer.h in Headers */,
 				AEFD865713EB84CF00C1E687 /* HUDRenderer_OGL.h in Headers */,
+				AE4D64922E116FE5002749EE /* pl_mpeg.h in Headers */,
 				AEFD865813EB84CF00C1E687 /* HUDRenderer_SW.h in Headers */,
 				AED959B32BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */,
 				2710CC661B8F94FC00CE2EAE /* OGL_FBO.h in Headers */,
@@ -6525,6 +6540,8 @@
 			inputPaths = (
 			);
 			name = "Insert Version";
+			outputPaths = (
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "DISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\n";
@@ -6537,6 +6554,8 @@
 			inputPaths = (
 			);
 			name = "Insert Version";
+			outputPaths = (
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "DISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\n";
@@ -6549,6 +6568,8 @@
 			inputPaths = (
 			);
 			name = "Insert Version";
+			outputPaths = (
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "DISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\n";
@@ -6575,6 +6596,8 @@
 			inputPaths = (
 			);
 			name = "Insert Version";
+			outputPaths = (
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "DISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\n";
@@ -6601,6 +6624,8 @@
 			inputPaths = (
 			);
 			name = "Insert Version";
+			outputPaths = (
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "DISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\n";
@@ -6613,6 +6638,8 @@
 			inputPaths = (
 			);
 			name = "Copy Default Theme";
+			outputPaths = (
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "mkdir -p \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Themes/Default\"\nrsync -aC \"$SRCROOT/../data/default_theme/resources/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Themes/Default\"\n";
@@ -6626,6 +6653,8 @@
 			inputPaths = (
 			);
 			name = "Insert Version";
+			outputPaths = (
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "DISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\n";

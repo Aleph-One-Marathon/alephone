@@ -1416,5 +1416,8 @@
     <ClInclude Include="..\..\Source_Files\Misc\ScenarioChooser.h">
       <Filter>Misc\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source_Files\FFmpeg\pl_mpeg.h">
+      <Filter>FFmpeg\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -25,6 +25,9 @@
 /* define if you have all film export libraries */
 #define FILM_EXPORT 1
 
+/* define to 1 if you have the `libyuv' library (-lyuv). */
+#define HAVE_LIBYUV 1
+
 /* Define to 1 if you have the <GL/glext.h> header file. */
 #define HAVE_GL_GLEXT_H 1
 
@@ -84,12 +87,6 @@
 
 /* Define to 1 if you have the `snprintf' function. */
 #define HAVE_SNPRINTF 1
-
-/* ${desc_speex} enabled */
-#define HAVE_SPEEX 1
-
-/* Define to 1 if you have the <speex/speex.h> header file. */
-#define HAVE_SPEEX_SPEEX_H 1
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1

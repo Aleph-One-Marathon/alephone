@@ -73,6 +73,9 @@
          "name":"catch2"
       },
       {
+         "name":"libyuv"
+      },
+      {
          "name":"steamworks-sdk"
       },
       {
