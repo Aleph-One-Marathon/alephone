@@ -42,7 +42,7 @@ struct SoundStereo {
 struct SoundParameters {
 	short identifier = NONE; //Identifier of the sound
 	short source_identifier = NONE; //Identifier of the source emitting the sound
-	float pitch = 1;
+	float pitch = 1.f;
 	bool is_2d = true; //if false it will use source_location3d to position sound (3D sounds)
 	bool soft_rewind = false; //if true the sound can only rewind after it's done playing
 	bool soft_start = false; //if true the sound will use transitions to fade in from silence to proper computed volume
@@ -96,15 +96,15 @@ private:
 
 	struct SoundTransition {
 		uint64_t start_transition_tick = 0;
-		float current_volume = 0;
+		float current_volume = 0.f;
 		SoundBehavior current_sound_behavior;
 		bool allow_transition = false;
 	};
 
 	void Rewind() override;
 	void Init(const SoundParameters& parameters);
-	int GetNextData(uint8* data, int length) override;
-	int LoopManager(uint8* data, int length);
+	uint32_t GetNextData(uint8* data, uint32_t length) override;
+	uint32_t LoopManager(uint8* data, uint32_t length);
 	SetupALResult SetUpALSourceIdle() override;
 	SetupALResult SetUpALSource3D();
 	bool SetUpALSourceInit() override;
@@ -123,10 +123,10 @@ private:
 
 	std::atomic_bool soft_stop_signal = { false };
 
-	static constexpr int rewind_time = 83;
-	static constexpr int fast_rewind_time = 35;
+	static constexpr uint32_t rewind_time = 83;
+	static constexpr uint32_t fast_rewind_time = 35;
 	static constexpr float smooth_volume_transition_threshold = 0.1f;
-	static constexpr int smooth_volume_transition_time_ms = 300;
+	static constexpr uint32_t smooth_volume_transition_time_ms = 300;
 
 	static constexpr SoundBehavior sound_behavior_parameters[] = {
 		{0.5f, 5.f, 1.f, 1.f, 1.f},

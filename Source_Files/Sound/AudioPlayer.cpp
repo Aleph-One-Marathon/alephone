@@ -20,13 +20,13 @@
 #include "OpenALManager.h"
 #include <array>
 
-AudioPlayer::AudioPlayer(int rate, bool stereo, AudioFormat audioFormat) {
+AudioPlayer::AudioPlayer(uint32_t rate, bool stereo, AudioFormat audioFormat) {
 	Init(rate, stereo, audioFormat);
 	queued_rate = rate;
 	queued_format = format;
 }
 
-void AudioPlayer::Init(int rate, bool stereo, AudioFormat audioFormat) {
+void AudioPlayer::Init(uint32_t rate, bool stereo, AudioFormat audioFormat) {
 	this->rate = rate;
 	format = mapping_audio_format_openal.at({ audioFormat, stereo });
 }
@@ -85,15 +85,15 @@ void AudioPlayer::FillBuffers() {
 		if (buffer.second) continue;
 
 		std::array<uint8, buffer_samples> data = {};
-		size_t bufferOffset = 0;
+		uint32_t bufferOffset = 0;
 
 		while (buffer_samples > bufferOffset) {
-			int actualDataLength = GetNextData(data.data() + bufferOffset, buffer_samples - bufferOffset);
-			if (actualDataLength <= 0) break;
+			auto actualDataLength = GetNextData(data.data() + bufferOffset, buffer_samples - bufferOffset);
+			if (!actualDataLength) break;
 			bufferOffset += actualDataLength;
 		}
 
-		if (bufferOffset <= 0) return;
+		if (!bufferOffset) return;
 		alBufferData(buffer.first, format, data.data(), bufferOffset, rate);
 		alSourceQueueBuffers(audio_source->source_id, 1, &buffer.first);
 		buffer.second = true;

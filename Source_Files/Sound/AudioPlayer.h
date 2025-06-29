@@ -34,7 +34,7 @@ using SetupALResult = std::pair<bool, bool>; //first is source configuration suc
 template <typename T>
 struct AtomicStructure {
 private:
-    static constexpr int queue_size = 5;
+    static constexpr uint32_t queue_size = 5;
     boost::lockfree::spsc_queue<T, boost::lockfree::capacity<queue_size>> shared_queue;
     std::atomic_int index = { 0 };
     T structure[2];
@@ -68,8 +68,8 @@ public:
     }
 };
 
-static constexpr int num_buffers = 4;
-static constexpr int buffer_samples = 8192;
+static constexpr uint32_t num_buffers = 4;
+static constexpr uint32_t buffer_samples = 8192;
 
 class AudioPlayer {
 private:
@@ -100,7 +100,7 @@ private:
         {{AudioFormat::_32_float, true}, AL_FORMAT_STEREO_FLOAT32}
     };
 
-    int queued_rate;
+    uint32_t queued_rate;
     ALenum queued_format; //Mono 8-16-32f or stereo 8-16-32f
 
     friend class OpenALManager;
@@ -111,16 +111,16 @@ public:
     void AskRewind() { rewind_signal = true; }
     virtual float GetPriority() const = 0;
 protected:
-    AudioPlayer(int rate, bool stereo, AudioFormat audioFormat);
-    void Init(int rate, bool stereo, AudioFormat audioFormat);
-    virtual int GetNextData(uint8* data, int length) = 0;
+    AudioPlayer(uint32_t rate, bool stereo, AudioFormat audioFormat);
+    void Init(uint32_t rate, bool stereo, AudioFormat audioFormat);
+    virtual uint32_t GetNextData(uint8* data, uint32_t length) = 0;
     virtual bool LoadParametersUpdates() { return false; }
     bool IsPlaying() const;
     std::atomic_bool rewind_signal = { false };
     std::atomic_bool stop_signal = { false };
     std::atomic_bool is_active = { true };
     bool is_sync_with_al_parameters = false; //uses locks
-    int rate = 0;
+    uint32_t rate = 0;
     ALenum format = 0; //Mono 8-16-32f or stereo 8-16-32f
     std::unique_ptr<AudioSource> audio_source;
     virtual void Rewind();

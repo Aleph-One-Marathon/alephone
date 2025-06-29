@@ -35,8 +35,8 @@ constexpr float angleConvert = 360 / float(FULL_CIRCLE);
 constexpr float degreToRadian = M_PI / 180.f;
 
 struct AudioParameters {
-	int rate;
-	int sample_frame_size;
+	uint32_t rate;
+	uint32_t sample_frame_size;
 	ChannelType channel_type;
 	bool balance_rewind;
 	bool hrtf;
@@ -62,7 +62,7 @@ public:
 	void Stop();
 	std::shared_ptr<SoundPlayer> PlaySound(const Sound& sound, const SoundParameters& parameters);
 	std::shared_ptr<MusicPlayer> PlayMusic(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters);
-	std::shared_ptr<StreamPlayer> PlayStream(CallBackStreamPlayer callback, int rate, bool stereo, AudioFormat audioFormat, void* userdata);
+	std::shared_ptr<StreamPlayer> PlayStream(CallBackStreamPlayer callback, uint32_t rate, bool stereo, AudioFormat audioFormat, void* userdata);
 	std::unique_ptr<AudioPlayer::AudioSource> PickAvailableSource(const AudioPlayer& audioPlayer);
 	void UpdateListener(world_location3d listener) { listener_location.Set(listener); }
 	const world_location3d& GetListener() const { return listener_location.Get(); }
@@ -71,8 +71,7 @@ public:
 	float GetMasterVolume() const { return master_volume.load(); }
 	float GetMusicVolume() const { return music_volume.load(); }
 	void ToggleDeviceMode(bool recording_device);
-	int GetFrequency() const { return audio_parameters.rate; }
-	int GetSamplesFrameSize() const { return sdl_audio_specs_obtained.samples; }
+	uint32_t GetFrequency() const { return audio_parameters.rate; }
 	uint32_t GetElapsedPauseTime() const { return elapsed_pause_time; }
 	void GetPlayBackAudio(uint8* data, int length);
 	bool Support_HRTF_Toggling() const;

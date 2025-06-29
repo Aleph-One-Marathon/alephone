@@ -3493,7 +3493,7 @@ static void audio_samples_decoder_callback(plm_t* mpeg, plm_samples_t* samples, 
 	}
 }
 
-static int audio_player_callback(uint8_t* data, int length, void* userdata)
+static int audio_player_callback(uint8_t* data, uint32_t length, void* userdata)
 {
 	auto& [mutex, audio_buffer] = *static_cast<std::tuple<SDL_mutex*, std::deque<float>*>*>(userdata);
 

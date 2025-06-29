@@ -30,7 +30,7 @@ SoundPlayer::SoundPlayer(const Sound& sound, const SoundParameters& parameters)
 }
 
 void SoundPlayer::Init(const SoundParameters& parameters) {
-	auto& sound = this->sound.Get();
+	const auto& sound = this->sound.Get();
 	AudioPlayer::Init(sound.header.rate >> 16, sound.header.stereo, sound.header.audio_format);
 	this->parameters.Set(parameters);
 	data_length = sound.header.length;
@@ -64,7 +64,7 @@ float SoundPlayer::Simulate(const SoundParameters& soundParameters) {
 
 	//This is the AL_INVERSE_DISTANCE_CLAMPED function we simulate
 	distance = std::max(distance, behaviorParameters.distance_reference);
-	float volume = behaviorParameters.distance_reference / (behaviorParameters.distance_reference + behaviorParameters.rolloff_factor * (distance - behaviorParameters.distance_reference));
+	const float volume = behaviorParameters.distance_reference / (behaviorParameters.distance_reference + behaviorParameters.rolloff_factor * (distance - behaviorParameters.distance_reference));
 
 	return volume;
 }
@@ -72,7 +72,7 @@ float SoundPlayer::Simulate(const SoundParameters& soundParameters) {
 bool SoundPlayer::CanRewind(uint64_t baseTick) const {
 	const auto& rewindParameters = rewind_parameters.Get();
 	if (rewindParameters.soft_rewind) return true;
-	auto rewindTime = OpenALManager::Get()->IsBalanceRewindSound() || !CanFastRewind(rewindParameters) ? rewind_time : fast_rewind_time;
+	const auto rewindTime = OpenALManager::Get()->IsBalanceRewindSound() || !CanFastRewind(rewindParameters) ? rewind_time : fast_rewind_time;
 	return baseTick + rewindTime < SoundManager::GetCurrentAudioTick();
 }
 
@@ -122,7 +122,7 @@ bool SoundPlayer::IsLooping() const {
 	return header.loop_end - header.loop_end >= 4;
 }
 
-int SoundPlayer::LoopManager(uint8* data, int length) {
+uint32_t SoundPlayer::LoopManager(uint8* data, uint32_t length) {
 	if (!IsLooping()) return 0;
 	const auto& header = sound.Get().header;
 	data_length = header.loop_end - header.loop_start;
@@ -132,15 +132,15 @@ int SoundPlayer::LoopManager(uint8* data, int length) {
 
 bool SoundPlayer::LoadParametersUpdates() {
 
-	bool softStop = soft_stop_signal.load();
+	const bool softStop = soft_stop_signal.load();
 	SoundParameters soundParameters, bestParameters, bestRewindParameters;
-	float lastPriority = 0, rewindLastPriority = 0;
+	float lastPriority = 0.f, rewindLastPriority = 0.f;
 
 	if (softStop && sound_transition.allow_transition) return true;
 
 	while (parameters.Consume(soundParameters)) {
 
-		float priority = Simulate(soundParameters);
+		const float priority = Simulate(soundParameters);
 
 		if (priority <= lastPriority) continue;
 
@@ -152,7 +152,7 @@ bool SoundPlayer::LoadParametersUpdates() {
 
 	while (rewind_parameters.Consume(soundParameters)) {
 
-		float priority = Simulate(soundParameters);
+		const float priority = Simulate(soundParameters);
 
 		if (priority <= rewindLastPriority) continue;
 
@@ -177,7 +177,7 @@ SetupALResult SoundPlayer::SetUpALSourceIdle() {
 
 		const bool softStopSignal = soft_stop_signal.load();
 		const bool softStartBegin = !sound_transition.allow_transition && soundParameters.soft_start;
-		float volume = softStopSignal || softStartBegin ? 0 : 1;
+		float volume = softStopSignal || softStartBegin ? 0.f : 1.f;
 
 		if (soundParameters.stereo_parameters.is_panning) {
 			auto pan = (acosf(std::min(soundParameters.stereo_parameters.gain_left, 1.f)) + asinf(std::min(soundParameters.stereo_parameters.gain_right, 1.f))) / ((float)M_PI); // average angle in [0,1]
@@ -200,20 +200,20 @@ SetupALResult SoundPlayer::SetUpALSourceIdle() {
 		alSourcef(audio_source->source_id, AL_MAX_GAIN, finalVolume);
 	}
 	else { //3d sounds
-		auto positionX = (float)(soundParameters.source_location3d.point.x) / WORLD_ONE;
-		auto positionY = (float)(soundParameters.source_location3d.point.y) / WORLD_ONE;
-		auto positionZ = (float)(soundParameters.source_location3d.point.z) / WORLD_ONE;
+		const auto positionX = (float)(soundParameters.source_location3d.point.x) / WORLD_ONE;
+		const auto positionY = (float)(soundParameters.source_location3d.point.y) / WORLD_ONE;
+		const auto positionZ = (float)(soundParameters.source_location3d.point.z) / WORLD_ONE;
 
 		/*This part is valid when we have yaw and pitch of the source (it seems we don't)
 		* This would allow to play with OpenAL cone attenuation. For instance, a sound of a monster firing in
 		* our direction would have more gain than if it's firing while facing back to us */
 #if 0
-		auto yaw = soundParameters.source_location3d.yaw * angleConvert;
-		auto pitch = soundParameters.source_location3d.pitch * angleConvert;
+		const auto yaw = soundParameters.source_location3d.yaw * angleConvert;
+		const auto pitch = soundParameters.source_location3d.pitch * angleConvert;
 
-		ALfloat u = std::cos(degreToRadian * yaw) * std::cos(degreToRadian * pitch);
-		ALfloat	v = std::sin(degreToRadian * yaw) * std::cos(degreToRadian * pitch);
-		ALfloat	w = std::sin(degreToRadian * pitch);
+		const ALfloat u = std::cos(degreToRadian * yaw) * std::cos(degreToRadian * pitch);
+		const ALfloat v = std::sin(degreToRadian * yaw) * std::cos(degreToRadian * pitch);
+		const ALfloat w = std::sin(degreToRadian * pitch);
 
 		alSource3f(audio_source->source_id, AL_DIRECTION, u, w, v);
 #endif
@@ -266,7 +266,7 @@ void SoundPlayer::ResetTransition() {
 }
 
 float SoundPlayer::ComputeParameterForTransition(float targetParameter, float currentParameter, uint64_t currentTick) const {
-	float computedParameter = std::max((targetParameter - currentParameter) * std::min((currentTick - sound_transition.start_transition_tick) / (float)smooth_volume_transition_time_ms, 1.f) + currentParameter, 0.f);
+	const float computedParameter = std::max((targetParameter - currentParameter) * std::min((currentTick - sound_transition.start_transition_tick) / (float)smooth_volume_transition_time_ms, 1.f) + currentParameter, 0.f);
 	return targetParameter > currentParameter ? std::min(targetParameter, computedParameter) : std::max(targetParameter, computedParameter);
 }
 
@@ -366,11 +366,11 @@ SetupALResult SoundPlayer::SetUpALSource3D() {
 	return SetupALResult(alGetError() == AL_NO_ERROR, finalBehaviorParameters == behaviorParameters);
 }
 
-int SoundPlayer::GetNextData(uint8* data, int length) {
-	int remainingDataLength = data_length - current_index_data;
-	if (remainingDataLength <= 0) return LoopManager(data, length);
-	int returnedDataLength = std::min(remainingDataLength, length);
-	auto& sound_data = sound.Get().data;
+uint32_t SoundPlayer::GetNextData(uint8* data, uint32_t length) {
+	const auto remainingDataLength = data_length - current_index_data;
+	if (!remainingDataLength) return LoopManager(data, length);
+	const auto returnedDataLength = std::min(remainingDataLength, length);
+	const auto& sound_data = sound.Get().data;
 	std::copy(sound_data->data() + current_index_data, sound_data->data() + current_index_data + returnedDataLength, data);
 	current_index_data += returnedDataLength;
 	if (returnedDataLength < length) return returnedDataLength + LoopManager(data + returnedDataLength, length - returnedDataLength);

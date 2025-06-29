@@ -66,7 +66,7 @@ bool OpenALManager::Init(const AudioParameters& parameters) {
 
 bool OpenALManager::LoadOptionalExtensions() {
 
-	for (auto& extension : mapping_extensions_names)
+	for (const auto& extension : mapping_extensions_names)
 		extension_support[extension.first] = alIsExtensionPresent(extension.second.c_str());
 
 	return true;
@@ -83,7 +83,7 @@ void OpenALManager::ProcessAudioQueue() {
 	for (int i = 0; i < audio_players_queue.size(); i++) {
 
 		auto audio = audio_players_queue.front();
-		bool mustStillPlay = !audio->stop_signal && audio->AssignSource() && audio->Update() && audio->Play();
+		const bool mustStillPlay = !audio->stop_signal && audio->AssignSource() && audio->Update() && audio->Play();
 
 		audio_players_queue.pop_front();
 
@@ -103,8 +103,8 @@ void OpenALManager::UpdateListener() {
 
 	const auto& listener = listener_location.Get();
 
-	auto yaw = listener.yaw * angleConvert;
-	auto pitch = listener.pitch * angleConvert;
+	const auto yaw = listener.yaw * angleConvert;
+	const auto pitch = listener.pitch * angleConvert;
 
 	ALfloat u = std::cos(degreToRadian * yaw) * std::cos(degreToRadian * pitch);
 	ALfloat	v = std::sin(degreToRadian * yaw) * std::cos(degreToRadian * pitch);
@@ -193,7 +193,7 @@ std::shared_ptr<MusicPlayer> OpenALManager::PlayMusic(std::shared_ptr<StreamDeco
 }
 
 //Used for video playback
-std::shared_ptr<StreamPlayer> OpenALManager::PlayStream(CallBackStreamPlayer callback, int rate, bool stereo, AudioFormat audioFormat, void* userdata) {
+std::shared_ptr<StreamPlayer> OpenALManager::PlayStream(CallBackStreamPlayer callback, uint32_t rate, bool stereo, AudioFormat audioFormat, void* userdata) {
 	if (!process_audio_active) return std::shared_ptr<StreamPlayer>();
 	auto streamPlayer = std::make_shared<StreamPlayer>(callback, rate, stereo, audioFormat, userdata);
 	audio_players_shared.push(streamPlayer);

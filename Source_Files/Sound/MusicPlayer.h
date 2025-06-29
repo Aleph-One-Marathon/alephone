@@ -22,20 +22,20 @@
 #include "AudioPlayer.h"
 
 struct MusicParameters {
-	float volume = 1;
+	float volume = 1.f;
 	bool loop = true;
 };
 
 class MusicPlayer : public AudioPlayer {
 public:
 	MusicPlayer(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters); //Must not be used outside OpenALManager (public for make_shared)
-	float GetPriority() const override { return 5; } //Doesn't really matter, just be above maximum volume (1) to be prioritized over sounds
+	float GetPriority() const override { return 5.f; } //Doesn't really matter, just be above maximum volume (1) to be prioritized over sounds
 	void UpdateParameters(MusicParameters musicParameters) { parameters.Store(musicParameters); }
 	MusicParameters GetParameters() const { return parameters.Get(); }
 private:
 	std::shared_ptr<StreamDecoder> decoder;
 	AtomicStructure<MusicParameters> parameters;
-	int GetNextData(uint8* data, int length) override;
+	uint32_t GetNextData(uint8* data, uint32_t length) override;
 	SetupALResult SetUpALSourceIdle() override;
 	bool LoadParametersUpdates() override { return parameters.Update(); }
 
