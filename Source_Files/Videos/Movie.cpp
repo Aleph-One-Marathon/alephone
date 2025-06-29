@@ -46,6 +46,9 @@
 
 #ifdef __WIN32__
 #define WIN32_LEAN_AND_MEAN
+#if defined(_MSC_VER)
+#define NOMINMAX
+#endif
 #include <windows.h>
 #endif
 

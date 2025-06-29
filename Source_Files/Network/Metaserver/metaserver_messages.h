@@ -28,7 +28,6 @@
 #include "Message.h"
 
 #include "AStream.h"
-#include <SDL2/SDL_net.h>
 #include "Scenario.h" // for scenario name and ID
 #include "network.h" // for network protocol ID
 
@@ -279,8 +278,14 @@ public:
 	void read(AIStream& inStream)
 	{
 		inStream >> m_id;
-		inStream.read((char*)&(m_address.host), sizeof(m_address.host));
-		inStream.read((char*)&(m_address.port), sizeof(m_address.port));
+
+		uint16_t port;
+		uint8_t host[4];
+
+		inStream.read(host, sizeof(host));
+		m_address.set_address(host);
+		inStream >> port;
+		m_address.set_port(port);
 	}
 
 private:

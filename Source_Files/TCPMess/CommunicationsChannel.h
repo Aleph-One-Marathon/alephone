@@ -38,7 +38,7 @@
 #include <memory>
 #include <stdexcept>
 #include <vector>
-#include <SDL2/SDL_net.h>
+#include "NetworkInterface.h"
 
 #include "Message.h"
 #include "csmisc.h"
@@ -73,7 +73,7 @@ public:
 	};
 	
 	CommunicationsChannel();
-	CommunicationsChannel(TCPsocket inSocket);
+	CommunicationsChannel(std::unique_ptr<TCPsocket> inSocket);
 	virtual ~CommunicationsChannel();  // allow subclassing (for extension purposes only - no overriding)
 
 	// Each of these is an association - no ownership (for disposal purposes) is implied
@@ -197,8 +197,8 @@ private:
 		kError
 	};
 
-	CommunicationResult receive_some(TCPsocket inSocket, Uint8* inBuffer, size_t& ioBufferPosition, size_t inBufferLength);
-	CommunicationResult send_some(TCPsocket inSocket, Uint8* inBuffer, size_t& ioBufferPosition, size_t inBufferLength);
+	CommunicationResult receive_some(Uint8* inBuffer, size_t& ioBufferPosition, size_t inBufferLength);
+	CommunicationResult send_some(Uint8* inBuffer, size_t& ioBufferPosition, size_t inBufferLength);
 
 	void		pumpReceivingSide();
 	bool		receiveHeader();
@@ -209,7 +209,7 @@ private:
 
 
 	bool		mConnected;
-	TCPsocket	mSocket;
+	std::unique_ptr<TCPsocket>	mSocket;
 	MessageInflater* mMessageInflater;
 	MessageHandler*	mMessageHandler;
 	Memento*	mMemento;
@@ -249,12 +249,9 @@ class CommunicationsChannelFactory
 {
 public:
 	CommunicationsChannelFactory(Uint16 inPort);
-	bool	isFunctional() const { return mSocket != NULL; }
 	CommunicationsChannel* newIncomingConnection();
-	~CommunicationsChannelFactory();
-	
 private:
-	TCPsocket	mSocket;
+	std::unique_ptr<TCPlistener> mSocketListener;
 };
 
 #endif // COMMUNICATIONSCHANNEL_H

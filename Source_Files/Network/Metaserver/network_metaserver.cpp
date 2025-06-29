@@ -25,26 +25,19 @@
 #if !defined(DISABLE_NETWORKING)
 
 #include "cseries.h"
-
 #include "network_metaserver.h"
-
-#include "metaserver_messages.h"
-
 #include "Message.h"
 #include "MessageHandler.h"
 #include "MessageDispatcher.h"
 #include "MessageInflater.h"
-#include "CommunicationsChannel.h"
 #include "preferences.h"
 #include "alephversion.h"
 #include "HTTP.h"
-
 #include <string>
 #include <iostream>
 #include <iterator> // ostream_iterator
 #include <algorithm>
 #include "Logging.h"
-
 #include <boost/algorithm/string/predicate.hpp>
 
 
@@ -173,9 +166,7 @@ const std::vector<GameListMessage::GameListEntry> MetaserverClient::gamesInRoomU
 			if (game.running()) continue;
 			if (!reset_ping && ping_games.find(game.id()) != ping_games.end()) continue;
 
-			IPaddress address = {};
-			memcpy(&address.host, &game.m_ipAddress, sizeof(address.host));
-			address.port = SDL_SwapBE16(game.m_port);
+			IPaddress address(game.m_ipAddress, game.m_port);
 			ping_games[game.id()] = pinger->Register(address);
 		}
 

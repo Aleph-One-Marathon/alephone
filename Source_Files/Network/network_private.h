@@ -39,9 +39,6 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 #define	NETWORK_PRIVATE_H
 
 #include	"cstypes.h"
-
-#include	"sdl_network.h"
-
 #include	"network.h"
 
 // "network_dialogs_private.h"
@@ -126,7 +123,7 @@ enum /* tag */
 // Information passed in streams
 struct NetPlayer
 {
-	NetAddrBlock dspAddress, ddpAddress;
+	IPaddress dspAddress, ddpAddress;
 	
 	int16 identifier;
 
@@ -141,7 +138,7 @@ typedef struct NetPlayer NetPlayer, *NetPlayerPtr;
 
 struct NetServer
 {
-	NetAddrBlock dspAddress, ddpAddress;
+	IPaddress dspAddress, ddpAddress;
 };
 
 struct NetTopology

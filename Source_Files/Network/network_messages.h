@@ -27,8 +27,6 @@
 #include "AStream.h"
 #include "Message.h"
 
-#include <SDL2/SDL_net.h>
-
 #include "network_capabilities.h"
 #include "network_private.h"
 

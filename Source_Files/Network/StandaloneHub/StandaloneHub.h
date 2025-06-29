@@ -26,7 +26,7 @@
 
 class StandaloneHub {
 private:
-	static StandaloneHub* _instance;
+	static std::unique_ptr<StandaloneHub> _instance;
 	std::unique_ptr<CommunicationsChannelFactory> _server;
 	std::shared_ptr<CommunicationsChannel> _gatherer;
 	std::weak_ptr<CommunicationsChannel> _gatherer_client;
@@ -42,7 +42,6 @@ private:
 	int _start_check_timeout_ms = 0;
 	static constexpr int _gathering_timeout_ms = 5 * 60 * 1000;
 	StandaloneHub(uint16 port);
-	~StandaloneHub();
 	bool GatherJoiners();
 	bool CheckGathererCapabilities(const Capabilities* capabilities);
 public:
@@ -50,7 +49,7 @@ public:
 	bool SetupGathererGame(bool& gathering_done);
 	bool WaitForGatherer();
 	static bool Init(uint16 port);
-	static StandaloneHub* Instance() { return _instance; }
+	static StandaloneHub* Instance() { return _instance.get(); }
 	static bool Reset();
 	CommunicationsChannel* GetGathererChannel() const { return _gatherer ? _gatherer.get() : _gatherer_client.lock().get(); }
 	void SendMessageToGatherer(const Message& message);

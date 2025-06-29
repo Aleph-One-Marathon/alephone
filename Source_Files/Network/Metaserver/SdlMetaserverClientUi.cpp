@@ -143,17 +143,17 @@ public:
 	int Run()
 	{
 		d.set_processing_function(std::bind(&SdlMetaserverClientUi::pump, this, std::placeholders::_1));
-		int result = d.run();
-
-		if(result == -1)
-			obj_clear(m_joinAddress);
-
-		return result;
+		return d.run();
 	}
 	
 	void Stop()
 	{
 		dialog_ok(&d);
+	}
+
+	void Cancel()
+	{
+		dialog_cancel(&d);
 	}
 
 	void InfoClicked()

@@ -124,7 +124,7 @@ GathererAvailableAnnouncer::GathererAvailableAnnouncer()
 	strncpy(mServiceInstance.sslps_type, get_sslp_service_type().c_str(), SSLP_MAX_TYPE_LENGTH);
 	strncpy(mServiceInstance.sslps_name, "Boomer", SSLP_MAX_NAME_LENGTH);
 	memset(&(mServiceInstance.sslps_address), '\0', sizeof(mServiceInstance.sslps_address));
-	mServiceInstance.sslps_address.port = SDL_SwapBE16(GAME_PORT);
+	mServiceInstance.sslps_address.set_port(GAME_PORT);
 	SSLP_Allow_Service_Discovery(&mServiceInstance);
 }
 
@@ -259,10 +259,10 @@ bool network_gather(bool inResumingGame, bool& outUseRemoteHub)
 			{
 				GathererAvailableAnnouncer announcer;
 
-				if (!gMetaserverClient) gMetaserverClient = new MetaserverClient();
-
 				if (advertiseOnMetaserver)
 				{
+					if (!gMetaserverClient) gMetaserverClient = new MetaserverClient();
+
 					try
 					{
 						setupAndConnectClient(*gMetaserverClient, outUseRemoteHub);
@@ -327,8 +327,12 @@ bool network_gather(bool inResumingGame, bool& outUseRemoteHub)
 			}
 			else
 			{
-				delete gMetaserverClient;
-				gMetaserverClient = new MetaserverClient();
+				if (gMetaserverClient)
+				{
+					delete gMetaserverClient;
+					gMetaserverClient = nullptr;
+				}
+
 				if (!outUseRemoteHub) NetCancelGather();
 				NetExit();
 			}
@@ -353,8 +357,8 @@ GatherDialog::~GatherDialog()
 	delete m_chatWidget;
 	delete m_chatChoiceWidget;
 
-	gMetaserverClient->associateNotificationAdapter(0);
-
+	if (gMetaserverClient)
+		gMetaserverClient->associateNotificationAdapter(0);
 }
 
 bool GatherDialog::GatherNetworkGameByRunning ()
@@ -382,7 +386,7 @@ bool GatherDialog::GatherNetworkGameByRunning ()
 	Binder<bool> binder (m_autogatherWidget, &autoGatherPref);
 	binder.migrate_second_to_first ();
 	
-	if (gMetaserverClient->isConnected ()) {
+	if (gMetaserverClient && gMetaserverClient->isConnected ()) {
 		gMetaserverClient->associateNotificationAdapter(this);
 		m_chatChoiceWidget->set_value (kMetaserverChat);
 		gMetaserverChatHistory.clear ();
@@ -855,18 +859,19 @@ void JoinDialog::getJoinAddressFromMetaserver ()
 
 	try
 	{
-		IPaddress result = run_network_metaserver_ui();
-		if(result.host != 0)
+		auto result = run_network_metaserver_ui();
+		if (result.has_value())
 		{
-			uint8* hostBytes = reinterpret_cast<uint8*>(&(result.host));
+			const auto& address = result.value();
+			const auto hostBytes = address.address_bytes();
 			std::ostringstream s;
 			s << (uint16)hostBytes[0] << '.'
 			  << (uint16)hostBytes[1] << '.'
 			  << (uint16)hostBytes[2] << '.'
 			  << (uint16)hostBytes[3];
-			if (result.port != DEFAULT_GAME_PORT)
+			if (address.port() != DEFAULT_GAME_PORT)
 			{
-				s << ':' << result.port;
+				s << ':' << address.port();
 			}
 			m_joinByAddressWidget->set_value (true);
 			m_joinAddressWidget->set_text (s.str());

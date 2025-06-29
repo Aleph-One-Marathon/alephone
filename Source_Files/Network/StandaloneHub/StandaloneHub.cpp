@@ -18,25 +18,19 @@
 
 #include "StandaloneHub.h"
 
-StandaloneHub* StandaloneHub::_instance = nullptr;
+std::unique_ptr<StandaloneHub> StandaloneHub::_instance;
 
 bool StandaloneHub::Init(uint16 port)
 {
 	if (_instance) return true;
 	if (!port) return false;
-	_instance = new StandaloneHub(port);
-	return NetEnter(false);
+	return NetEnter(false) && (_instance = std::unique_ptr<StandaloneHub>(new StandaloneHub(port)));
 }
 
 StandaloneHub::StandaloneHub(uint16 port)
 {
 	_port = port;
 	_server = std::make_unique<CommunicationsChannelFactory>(port);
-}
-
-StandaloneHub::~StandaloneHub()
-{
-	NetExit();
 }
 
 bool StandaloneHub::SetupGathererGame(bool& gathering_done)
@@ -100,7 +94,7 @@ bool StandaloneHub::WaitForGatherer()
 	}
 
 	_gatherer->enqueueOutgoingMessage(RemoteHubHostResponseMessage(can_use_hub));
-	_gatherer->pumpSendingSide();
+	_gatherer->flushOutgoingMessages(false);
 
 	if (!can_use_hub) _gatherer.reset();
 
@@ -121,8 +115,8 @@ bool StandaloneHub::CheckGathererCapabilities(const Capabilities* capabilities)
 bool StandaloneHub::Reset()
 {
 	auto port = _instance->_port;
-	delete _instance;
-	_instance = nullptr;
+	_instance.reset();
+	NetExit(); //must be called after instance was cleaned
 	return Init(port);
 }
 
@@ -143,7 +137,7 @@ void StandaloneHub::SendMessageToGatherer(const Message& message)
 	if (auto gatherer = _gatherer_client.lock()) 
 	{
 		gatherer->enqueueOutgoingMessage(message);
-		gatherer->pumpSendingSide();
+		gatherer->flushOutgoingMessages(false);
 	}
 }
 
@@ -162,7 +156,7 @@ bool StandaloneHub::GetGameDataFromGatherer()
 				case kTOPOLOGY_MESSAGE:
 					if (_topology_message) delete message; //we don't expect to get a topology message while transiting to another level
 					else _topology_message = std::unique_ptr<TopologyMessage>(static_cast<TopologyMessage*>(message));
-				break;
+					break;
 				case kLUA_MESSAGE:
 				case kZIPPED_LUA_MESSAGE:
 					_lua_message = std::unique_ptr<LuaMessage>(static_cast<LuaMessage*>(message));

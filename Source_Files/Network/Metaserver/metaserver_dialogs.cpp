@@ -43,7 +43,7 @@
 extern ChatHistory gMetaserverChatHistory;
 extern MetaserverClient* gMetaserverClient;
 
-const IPaddress
+std::optional<IPaddress>
 run_network_metaserver_ui()
 {
 	return MetaserverClientUi::Create()->GetJoinAddressByRunning();
@@ -292,14 +292,12 @@ void MetaserverClientUi::delete_widgets ()
 	delete m_gameInfoWidget;
 }
 
-const IPaddress MetaserverClientUi::GetJoinAddressByRunning()
+std::optional<IPaddress> MetaserverClientUi::GetJoinAddressByRunning()
 {
 	// This was designed with one-shot-ness in mind
 	assert(!m_used);
 	m_used = true;
 	
-	obj_clear(m_joinAddress);
-
 	setupAndConnectClient(*gMetaserverClient, false);
 	gMetaserverClient->associateNotificationAdapter(this);
 
@@ -316,6 +314,7 @@ const IPaddress MetaserverClientUi::GetJoinAddressByRunning()
 
 	if (Run() < 0) {
 		handleCancel();
+		return std::nullopt;
 	}
 	
 	return m_joinAddress;
@@ -431,8 +430,8 @@ void MetaserverClientUi::JoinClicked()
 
 void MetaserverClientUi::JoinGame(const GameListMessage::GameListEntry& game)
 {
-	memcpy(&m_joinAddress.host, &game.m_ipAddress, sizeof(m_joinAddress.host));
-	m_joinAddress.port = game.m_port;
+	m_joinAddress.set_address(game.m_ipAddress);
+	m_joinAddress.set_port(game.m_port);
 	Stop();
 }
 
@@ -493,10 +492,9 @@ void MetaserverClientUi::ChatTextEntered (char character)
 
 void MetaserverClientUi::handleCancel ()
 {
-	// gMetaserverClient->disconnect ();
 	delete gMetaserverClient;
-	gMetaserverClient = new MetaserverClient ();
-	Stop ();
+	gMetaserverClient = new MetaserverClient();
+	Cancel();
 }
 
 #endif // !defined(DISABLE_NETWORKING)

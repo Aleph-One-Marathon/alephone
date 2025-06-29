@@ -106,11 +106,11 @@ static int32 sLastNetworkTickSent;
 static bool sConnected = false;
 static bool sSpokeActive = false;
 static myTMTaskPtr sSpokeTickTask = NULL;
-static DDPFramePtr sOutgoingFrame = NULL;
-static DDPPacketBuffer sLocalOutgoingBuffer;
+static UDPpacket sOutgoingFrame;
+static UDPpacket sLocalOutgoingBuffer;
 static bool sNeedToSendLocalOutgoingBuffer = false;
 static bool sHubIsLocal = false;
-static NetAddrBlock sHubAddress;
+static IPaddress sHubAddress;
 static size_t sLocalPlayerIndex;
 static int32 sSmallestUnreceivedTick;
 static WindowedNthElementFinder<int32> sNthElementFinder(kDefaultTimingWindowSize);
@@ -127,8 +127,8 @@ static int32 sSmallestUnconfirmedTick;
 
 static void spoke_became_disconnected();
 static void spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags);
-static void spoke_received_ping_request(AIStream& ps, NetAddrBlock address);
-static void spoke_received_ping_response(AIStream& ps, NetAddrBlock address);
+static void spoke_received_ping_request(AIStream& ps, const IPaddress& address);
+static void spoke_received_ping_response(AIStream& ps, const IPaddress& address);
 static void process_messages(AIStream& ps, IncomingGameDataPacketProcessingContext& context);
 static void handle_end_of_messages_message(AIStream& ps, IncomingGameDataPacketProcessingContext& context);
 static void handle_player_net_dead_message(AIStream& ps, IncomingGameDataPacketProcessingContext& context);
@@ -146,44 +146,30 @@ getNetworkPlayer(size_t inIndex)
 }
 
 
-
-static inline bool
-operator !=(const NetAddrBlock& a, const NetAddrBlock& b)
+static void
+send_frame_to_local_hub(const UDPpacket& frame)
 {
-        return memcmp(&a, &b, sizeof(a)) != 0;
+	sLocalOutgoingBuffer = frame;
+	sNeedToSendLocalOutgoingBuffer = true;
 }
-
-
-
-static OSErr
-send_frame_to_local_hub(DDPFramePtr frame, NetAddrBlock *address)
-{
-        sLocalOutgoingBuffer.datagramSize = frame->data_size;
-        memcpy(sLocalOutgoingBuffer.datagramData, frame->data, frame->data_size);
-        // An all-0 sourceAddress is the cue for "local spoke" currently.
-        obj_clear(sLocalOutgoingBuffer.sourceAddress);
-        sNeedToSendLocalOutgoingBuffer = true;
-        return noErr;
-}
-
 
 
 static inline void
 check_send_packet_to_hub()
 {
-        if(sNeedToSendLocalOutgoingBuffer)
+	if(sNeedToSendLocalOutgoingBuffer)
 	{
 		logContextNMT("delivering stored packet to local hub");
-                hub_received_network_packet(&sLocalOutgoingBuffer);
+		hub_received_network_packet(sLocalOutgoingBuffer, true);
 	}
 
-        sNeedToSendLocalOutgoingBuffer = false;
+	sNeedToSendLocalOutgoingBuffer = false;
 }
 
 
 
 void
-spoke_initialize(const NetAddrBlock& inHubAddress, int32 inFirstTick, size_t inNumberOfPlayers, WritableTickBasedActionQueue* const inPlayerQueues[], bool inPlayerConnected[], size_t inLocalPlayerIndex, bool inHubIsLocal)
+spoke_initialize(const IPaddress& inHubAddress, int32 inFirstTick, size_t inNumberOfPlayers, WritableTickBasedActionQueue* const inPlayerQueues[], bool inPlayerConnected[], size_t inLocalPlayerIndex, bool inHubIsLocal)
 {
         assert(inLocalPlayerIndex != NONE);
         assert(inNumberOfPlayers >= 1);
@@ -195,8 +181,6 @@ spoke_initialize(const NetAddrBlock& inHubAddress, int32 inFirstTick, size_t inN
         sHubAddress = inHubAddress;
 
         sLocalPlayerIndex = inLocalPlayerIndex;
-
-        sOutgoingFrame = NetDDPNewFrame();
 
         sSmallestRealGameTick = inFirstTick;
         int32 theFirstPregameTick = inFirstTick - kPregameTicks;
@@ -281,8 +265,6 @@ spoke_cleanup(bool inGraceful)
         sNetworkPlayers.clear();
         sLocallyGeneratedFlags.children().clear();
 	sDisplayLatencyBuffer.clear();
-        NetDDPDisposeFrame(sOutgoingFrame);
-        sOutgoingFrame = NULL;
 }
 
 
@@ -317,7 +299,7 @@ spoke_became_disconnected()
 
 
 void
-spoke_received_network_packet(DDPPacketBufferPtr inPacket)
+spoke_received_network_packet(UDPpacket& inPacket)
 {
 	logContextNMT("spoke processing a received packet");
 	
@@ -326,7 +308,7 @@ spoke_received_network_packet(DDPPacketBufferPtr inPacket)
 //                return;
 
         try {
-                AIStreamBE ps(inPacket->datagramData, inPacket->datagramSize);
+                AIStreamBE ps(inPacket.buffer.data(), inPacket.data_size);
 
 		uint16 thePacketMagic;
 		ps >> thePacketMagic;
@@ -341,10 +323,10 @@ spoke_received_network_packet(DDPPacketBufferPtr inPacket)
 		ps >> thePacketCRC;
 
 		// blank out the CRC field before calculating
-		inPacket->datagramData[2] = 0;
-		inPacket->datagramData[3] = 0;
+		inPacket.buffer[2] = 0;
+		inPacket.buffer[3] = 0;
 
-		if (thePacketCRC != calculate_data_crc_ccitt(inPacket->datagramData, inPacket->datagramSize))
+		if (thePacketCRC != calculate_data_crc_ccitt(inPacket.buffer.data(), inPacket.data_size))
 		{
 			logWarningNMT("CRC failure; discarding packet type %i", thePacketMagic);
 			return;
@@ -361,11 +343,11 @@ spoke_received_network_packet(DDPPacketBufferPtr inPacket)
 			break;
 		
 		case kPingRequestPacket:
-			spoke_received_ping_request(ps, inPacket->sourceAddress);
+			spoke_received_ping_request(ps, inPacket.address);
 			break;
 		
 		case kPingResponsePacket:
-			spoke_received_ping_response(ps, inPacket->sourceAddress);
+			spoke_received_ping_response(ps, inPacket.address);
 			break;
 		
 		default:
@@ -641,56 +623,44 @@ spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags)
 
 
 static void
-spoke_received_ping_request(AIStream& ps, NetAddrBlock address)
+spoke_received_ping_request(AIStream& ps, const IPaddress& address)
 {
 	uint16 pingIdentifier;
 	ps >> pingIdentifier;
 	
 	// respond back to requestor
-	bool initedFrame = false;
-	if (!sOutgoingFrame)
-	{
-		sOutgoingFrame = NetDDPNewFrame();
-		initedFrame = true;
-	}
 	
-	AOStreamBE hdr(sOutgoingFrame->data, kStarPacketHeaderSize);
-	AOStreamBE ops(sOutgoingFrame->data, ddpMaxData, kStarPacketHeaderSize);
+	AOStreamBE hdr(sOutgoingFrame.buffer.data(), kStarPacketHeaderSize);
+	AOStreamBE ops(sOutgoingFrame.buffer.data(), ddpMaxData, kStarPacketHeaderSize);
 	
 	try {
 		hdr << (uint16)kPingResponsePacket;
 		ops << pingIdentifier;
 		
 		// blank out the CRC field before calculating
-		sOutgoingFrame->data[2] = 0;
-		sOutgoingFrame->data[3] = 0;
+		sOutgoingFrame.buffer[2] = 0;
+		sOutgoingFrame.buffer[3] = 0;
 		
-		uint16 crc = calculate_data_crc_ccitt(sOutgoingFrame->data, ops.tellp());
+		uint16 crc = calculate_data_crc_ccitt(sOutgoingFrame.buffer.data(), ops.tellp());
 		hdr << crc;
 		
 		// Send the packet
-		sOutgoingFrame->data_size = ops.tellp();
-		NetDDPSendFrame(sOutgoingFrame, &address);
+		sOutgoingFrame.data_size = ops.tellp();
+		NetDDPSendFrame(sOutgoingFrame, address);
 	} catch (...) {
 		logWarningNMT("Caught exception while constructing/sending ping response packet");
-	}
-	
-	if (initedFrame)
-	{
-		NetDDPDisposeFrame(sOutgoingFrame);
-		sOutgoingFrame = NULL;
 	}
 } // spoke_received_ping_request()
 
 
 static void
-spoke_received_ping_response(AIStream& ps, NetAddrBlock address)
+spoke_received_ping_response(AIStream& ps, const IPaddress& address)
 {
 	uint16 pingIdentifier;
 	ps >> pingIdentifier;
 
 	if (auto pinger = NetGetPinger().lock())
-		pinger->StoreResponse(pingIdentifier);
+		pinger->StoreResponse(pingIdentifier, address);
 	else
 		logWarningNMT("Received unexpected ping response packet");
 } // spoke_received_ping_response()
@@ -891,8 +861,8 @@ static void
 send_packet()
 {
         try {
-		AOStreamBE hdr(sOutgoingFrame->data, kStarPacketHeaderSize);
-                AOStreamBE ps(sOutgoingFrame->data, ddpMaxData, kStarPacketHeaderSize);
+		AOStreamBE hdr(sOutgoingFrame.buffer.data(), kStarPacketHeaderSize);
+                AOStreamBE ps(sOutgoingFrame.buffer.data(), ddpMaxData, kStarPacketHeaderSize);
         
                 // Packet type
                 hdr << (uint16)kSpokeToHubGameDataPacketV1Magic;
@@ -914,19 +884,19 @@ send_packet()
 		logDumpNMT("preparing to send packet: ACK %d, flags [%d,%d)", sSmallestUnreceivedTick, sOutgoingFlags.getReadTick(), sOutgoingFlags.getWriteTick());
 
 		// blank out the CRC before calculating it
-		sOutgoingFrame->data[2] = 0;
-		sOutgoingFrame->data[3] = 0;
+		sOutgoingFrame.buffer[2] = 0;
+		sOutgoingFrame.buffer[3] = 0;
 
-		uint16 crc = calculate_data_crc_ccitt(sOutgoingFrame->data, ps.tellp());
+		uint16 crc = calculate_data_crc_ccitt(sOutgoingFrame.buffer.data(), ps.tellp());
 		hdr << crc;
 
                 // Send the packet
-                sOutgoingFrame->data_size = ps.tellp();
+                sOutgoingFrame.data_size = ps.tellp();
 
                 if(sHubIsLocal)
-                        send_frame_to_local_hub(sOutgoingFrame, &sHubAddress);
+                        send_frame_to_local_hub(sOutgoingFrame);
                 else
-                        NetDDPSendFrame(sOutgoingFrame, &sHubAddress);
+                        NetDDPSendFrame(sOutgoingFrame, sHubAddress);
 
                 sLastNetworkTickSent = sNetworkTicker;
         }
@@ -940,8 +910,8 @@ static void
 send_identification_packet()
 {
         try {
-		AOStreamBE hdr(sOutgoingFrame->data, kStarPacketHeaderSize);
-                AOStreamBE ps(sOutgoingFrame->data, ddpMaxData, kStarPacketHeaderSize);
+		AOStreamBE hdr(sOutgoingFrame.buffer.data(), kStarPacketHeaderSize);
+                AOStreamBE ps(sOutgoingFrame.buffer.data(), ddpMaxData, kStarPacketHeaderSize);
         
 		// Message type
 		hdr << (uint16) kSpokeToHubIdentification;
@@ -950,18 +920,18 @@ send_identification_packet()
                 ps << (uint16)sLocalPlayerIndex;
 
 		// blank out the CRC field before calculating
-		sOutgoingFrame->data[2] = 0;
-		sOutgoingFrame->data[3] = 0;
+		sOutgoingFrame.buffer[2] = 0;
+		sOutgoingFrame.buffer[3] = 0;
 
-		uint16 crc = calculate_data_crc_ccitt(sOutgoingFrame->data, ps.tellp());
+		uint16 crc = calculate_data_crc_ccitt(sOutgoingFrame.buffer.data(), ps.tellp());
 		hdr << crc;
 
                 // Send the packet
-                sOutgoingFrame->data_size = ps.tellp();
+                sOutgoingFrame.data_size = ps.tellp();
                 if(sHubIsLocal)
-                        send_frame_to_local_hub(sOutgoingFrame, &sHubAddress);
+                        send_frame_to_local_hub(sOutgoingFrame);
                 else
-                        NetDDPSendFrame(sOutgoingFrame, &sHubAddress);
+                        NetDDPSendFrame(sOutgoingFrame, sHubAddress);
         }
         catch (...) {
         }

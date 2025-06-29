@@ -23,10 +23,6 @@
  *	Someone smart has surely done this better somewhere and has probably proven various characteristics,
  *	but I decided to hack out my own anyway.  Tough.
  *
- *	The current implementation (and a small amount of the interface) relies on the SDL_net cross-platform
- *	IP networking library.  The current implementation (and no part of the interface) relies on my own
- *	"SDL_netx" UDP broadcast companion to SDL_net, as well as some other features of SDL.
- *
  *	for the Aleph One project, to do NBP-ish player location on non-AppleTalk networks.  The current
  *	implementation is a (significant) simplification of what this could or perhaps ought to be, but
  *	it's sufficient for Aleph One's needs, which is all that matters right now.  Besides, like I said,

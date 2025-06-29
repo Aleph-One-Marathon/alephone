@@ -159,7 +159,6 @@ CPPFLAGS="$CPPFLAGS $SDL_CFLAGS -DSDL"
 LIBS="$LIBS $SDL_LIBS"
 
 AX_REQUIRE_PKG([SDL2_ttf], [SDL_TTF], [SDL2_ttf])
-AX_REQUIRE_PKG([SDL2_net], [SDL_NET], [SDL2_net])
 
 dnl Check for zlib.
 AX_REQUIRE_PKG([zlib], [ZLIB], [zlib])

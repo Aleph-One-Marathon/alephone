@@ -26,8 +26,7 @@
 
 #include "TickBasedCircularQueue.h"
 #include "ActionQueues.h"
-
-#include "sdl_network.h"
+#include "NetworkInterface.h"
 
 // We avoid including half the world just to get TICKS_PER_SECOND for standalone hub...
 #ifndef A1_NETWORK_STANDALONE_HUB
@@ -65,17 +64,17 @@ typedef WritableTickBasedCircularQueue<action_flags_t> WritableTickBasedActionQu
 
 class InfoTree;
 
-extern void hub_initialize(int32 inStartingTick, int inNumPlayers, const NetAddrBlock* const* inPlayerAddresses, int inLocalPlayerIndex);
+extern void hub_initialize(int32 inStartingTick, int inNumPlayers, const IPaddress* const* inPlayerAddresses, int inLocalPlayerIndex);
 extern void hub_cleanup(bool inGraceful, int32 inSmallestPostGameTick);
-extern void hub_received_network_packet(DDPPacketBufferPtr inPacket);
+extern void hub_received_network_packet(UDPpacket& inPacket, bool from_local_spoke = false);
 extern bool hub_is_active();
 extern void DefaultHubPreferences();
 extern InfoTree HubPreferencesTree();
 extern void HubParsePreferencesTree(InfoTree prefs, std::string version);
 
-extern void spoke_initialize(const NetAddrBlock& inHubAddress, int32 inFirstTick, size_t inNumberOfPlayers, WritableTickBasedActionQueue* const inPlayerQueues[], bool inPlayerConnectedStatus[], size_t inLocalPlayerIndex, bool inHubIsLocal);
+extern void spoke_initialize(const IPaddress& inHubAddress, int32 inFirstTick, size_t inNumberOfPlayers, WritableTickBasedActionQueue* const inPlayerQueues[], bool inPlayerConnectedStatus[], size_t inLocalPlayerIndex, bool inHubIsLocal);
 extern void spoke_cleanup(bool inGraceful);
-extern void spoke_received_network_packet(DDPPacketBufferPtr inPacket);
+extern void spoke_received_network_packet(UDPpacket& inPacket);
 extern int32 spoke_get_net_time();
 extern int32 spoke_latency(); // in ms, kNetLatencyInvalid if not yet valid
 extern TickBasedActionQueue* spoke_get_unconfirmed_flags_queue();

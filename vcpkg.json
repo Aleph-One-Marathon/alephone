@@ -34,7 +34,7 @@
          ]
       },
       {
-         "name":"sdl2-net"
+         "name":"asio"
       },
       {
          "name":"sdl2-ttf"

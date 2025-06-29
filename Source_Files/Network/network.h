@@ -184,6 +184,7 @@ enum /* states */
 
 /* -------- typedefs */
 typedef void (*CheckPlayerProcPtr)(short player_index, short num_players);
+typedef void (*PacketHandlerProcPtr)(UDPpacket& packet);
 
 /* --------- prototypes/NETWORK.C */
 void NetSetGatherCallbacks(GatherCallbacks *gc);
@@ -195,6 +196,11 @@ void NetRemoteHubSendCommand(RemoteHubCommand command, int data = NONE);
 void NetSetCapabilities(const Capabilities* capabilities);
 bool NetGather(void *game_data, short game_data_size, void *player_data, 
 	short player_data_size, bool resuming_game, bool attempt_upnp);
+short NetState(void);
+std::string NetSessionIdentifier(void);
+bool NetDDPOpenSocket(uint16_t ioPortNumber, PacketHandlerProcPtr packetHandler);
+bool NetDDPCloseSocket();
+bool NetDDPSendFrame(UDPpacket& frame, const IPaddress& address);
 
 struct SSLP_ServiceInstance;
 
@@ -225,7 +231,9 @@ void NetCancelJoin(void);
 void NetChangeColors(int16 color, int16 team);
 void reassign_player_colors(short player_index, short num_players);
 
+#if !defined(DISABLE_NETWORKING)
 std::weak_ptr<Pinger> NetGetPinger();
+#endif
 void NetCreatePinger();
 void NetRemovePinger();
 
@@ -252,6 +260,7 @@ void NetCancelGather(void);
 bool NetConnectRemoteHub(const IPaddress& remote_hub_address);
 void NetSetResumedGameWadForRemoteHub(byte* wad, int length);
 int32 NetGetNetTime(void);
+NetworkInterface* NetGetNetworkInterface();
 
 bool NetChangeMap(struct entry_point *entry);
 OSErr NetDistributeGameDataToAllPlayers(byte* wad_buffer, int32 wad_length, bool do_physics, CommunicationsChannel* remote_hub = nullptr);
