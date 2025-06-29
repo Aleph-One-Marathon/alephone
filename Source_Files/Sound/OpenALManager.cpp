@@ -286,8 +286,8 @@ bool OpenALManager::OpenDevice() {
 		ALCint attrs[] = {
 			ALC_FORMAT_TYPE_SOFT,     openal_rendering_format,
 			ALC_FORMAT_CHANNELS_SOFT, mapping_sdl_openal_channel.at(audio_parameters.channel_type),
-			ALC_FREQUENCY,            audio_parameters.rate,
-			ALC_HRTF_SOFT,			  audio_parameters.hrtf,
+			ALC_FREQUENCY,            static_cast<ALCint>(audio_parameters.rate),
+			ALC_HRTF_SOFT,            audio_parameters.hrtf,
 			0,
 		};
 
@@ -444,7 +444,7 @@ int OpenALManager::GetBestOpenALSupportedFormat() {
 		ALCint attrs[] = {
 			ALC_FORMAT_TYPE_SOFT,     format_type[i],
 			ALC_FORMAT_CHANNELS_SOFT, mapping_sdl_openal_channel.at(audio_parameters.channel_type),
-			ALC_FREQUENCY,            audio_parameters.rate
+			ALC_FREQUENCY,            static_cast<ALCint>(audio_parameters.rate)
 		};
 
 		if (alcIsRenderFormatSupportedSOFT(device, attrs[5], attrs[3], attrs[1]) == AL_TRUE) {
