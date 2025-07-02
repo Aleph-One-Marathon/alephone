@@ -536,9 +536,9 @@ Message*
 CommunicationsChannel::receiveMessage(Uint32 inOverallTimeout, Uint32 inInactivityTimeout)
 {
 	// Here we give a backstop for our inactivity timeout
-	Uint32 theTicksAtStart = machine_tick_count();
+	Uint64 theTicksAtStart = machine_tick_count();
 	
-	Uint32 theDeadline = machine_tick_count() + inOverallTimeout;
+	Uint64 theDeadline = machine_tick_count() + inOverallTimeout;
 
 	pump();
 
@@ -569,11 +569,11 @@ CommunicationsChannel::receiveMessage(Uint32 inOverallTimeout, Uint32 inInactivi
 Message*
 CommunicationsChannel::receiveSpecificMessage(
 	MessageTypeID inType,
-	Uint32 inOverallTimeout,
-	Uint32 inInactivityTimeout)
+	Uint64 inOverallTimeout,
+	Uint64 inInactivityTimeout)
 {
 	Message* theMessage = NULL;
-	Uint32 theDeadline = machine_tick_count() + inOverallTimeout;
+	Uint64 theDeadline = machine_tick_count() + inOverallTimeout;
 
 	while(machine_tick_count() < theDeadline)
 	{
