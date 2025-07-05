@@ -2684,6 +2684,13 @@
 		AEC3C86C09AD68AC003258E4 /* Console.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEC6C89B0879A5DE0055EC57 /* Console.cpp */; };
 		AEC3C86D09AD68AC003258E4 /* ImageLoader_Shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */; };
 		AEC3C86E09AD68AC003258E4 /* OGL_LoadScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */; };
+		AECD778B2E19D16500C9917C /* NetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AECD778A2E19D16500C9917C /* NetworkInterface.cpp */; };
+		AECD778C2E19D16500C9917C /* NetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AECD778A2E19D16500C9917C /* NetworkInterface.cpp */; };
+		AECD778D2E19D16500C9917C /* NetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AECD778A2E19D16500C9917C /* NetworkInterface.cpp */; };
+		AECD778E2E19D16500C9917C /* NetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AECD778A2E19D16500C9917C /* NetworkInterface.cpp */; };
+		AECD778F2E19D16500C9917C /* NetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AECD778A2E19D16500C9917C /* NetworkInterface.cpp */; };
+		AECD77902E19D16500C9917C /* NetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AECD778A2E19D16500C9917C /* NetworkInterface.cpp */; };
+		AECD77912E19D16500C9917C /* NetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AECD778A2E19D16500C9917C /* NetworkInterface.cpp */; };
 		AED959B22BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */ = {isa = PBXBuildFile; fileRef = AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */; };
 		AED959B32BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */ = {isa = PBXBuildFile; fileRef = AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */; };
 		AED959B42BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */ = {isa = PBXBuildFile; fileRef = AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */; };
@@ -3343,6 +3350,8 @@
 		AEC3C89609AD68AE003258E4 /* Aleph One.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Aleph One.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
+		AECD778A2E19D16500C9917C /* NetworkInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkInterface.cpp; sourceTree = "<group>"; };
+		AECD77922E19D18C00C9917C /* NetworkInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NetworkInterface.h; sourceTree = "<group>"; };
 		AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = powered_by_alephone_h.h; path = ../Source_Files/Misc/powered_by_alephone_h.h; sourceTree = "<group>"; };
 		AED959B02BC23591008EFCA2 /* m1_achievements.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = m1_achievements.lua; path = ../Source_Files/Misc/m1_achievements.lua; sourceTree = "<group>"; };
 		AED959B12BC23591008EFCA2 /* achievements.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = achievements.h; path = ../Source_Files/Misc/achievements.h; sourceTree = "<group>"; };
@@ -4181,6 +4190,7 @@
 				F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */,
 				EF2EF5CF04819BD700A8000D /* StarGameProtocol.cpp */,
 				F522138F0136ABAE01000001 /* network.cpp */,
+				AECD778A2E19D16500C9917C /* NetworkInterface.cpp */,
 				AE5604DD086F6DF100D9797C /* network_capabilities.cpp */,
 				F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */,
 				F522137D0136ABAE01000001 /* network_dialogs.cpp */,
@@ -4204,6 +4214,7 @@
 				AEDF1A121416FE2200183689 /* HTTP.h */,
 				AE7C21D40BFF686200CE63EC /* Update.h */,
 				EF2EF5CC04819BD700A8000D /* NetworkGameProtocol.h */,
+				AECD77922E19D18C00C9917C /* NetworkInterface.h */,
 				EFBAF0180485BEA500A8000D /* SSLP_API.h */,
 				EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */,
 				EF2EF5D004819BD700A8000D /* StarGameProtocol.h */,
@@ -6798,6 +6809,7 @@
 				AE120D492BC77645001873DD /* csalerts.mm in Sources */,
 				AE120D4A2BC77645001873DD /* OGL_FBO.cpp in Sources */,
 				AE120D4B2BC77645001873DD /* lua_saved_objects.cpp in Sources */,
+				AECD77912E19D16500C9917C /* NetworkInterface.cpp in Sources */,
 				AE120D4C2BC77645001873DD /* cspaths.mm in Sources */,
 				AE120D4D2BC77645001873DD /* FilmProfile.cpp in Sources */,
 				AE120D4E2BC77645001873DD /* Movie.cpp in Sources */,
@@ -7019,6 +7031,7 @@
 				AE1321E32C1CB4D2009D34AA /* csalerts.mm in Sources */,
 				AE1321E42C1CB4D2009D34AA /* OGL_FBO.cpp in Sources */,
 				AE1321E52C1CB4D2009D34AA /* lua_saved_objects.cpp in Sources */,
+				AECD778E2E19D16500C9917C /* NetworkInterface.cpp in Sources */,
 				AE1321E62C1CB4D2009D34AA /* cspaths.mm in Sources */,
 				AE1321E72C1CB4D2009D34AA /* FilmProfile.cpp in Sources */,
 				AE1321E82C1CB4D2009D34AA /* Movie.cpp in Sources */,
@@ -7155,6 +7168,7 @@
 				AE505C8C141D45E600915344 /* StarGameProtocol.cpp in Sources */,
 				AE96370E2A39578600DE43FF /* lua_music.cpp in Sources */,
 				AE505C8D141D45E600915344 /* AStream.cpp in Sources */,
+				AECD778B2E19D16500C9917C /* NetworkInterface.cpp in Sources */,
 				AE505C8F141D45E600915344 /* CircularByteBuffer.cpp in Sources */,
 				AE505C90141D45E600915344 /* lua_script.cpp in Sources */,
 				AE505C91141D45E600915344 /* metaserver_dialogs.cpp in Sources */,
@@ -7383,6 +7397,7 @@
 				AEB4A22D14296CAE00537AE7 /* StarGameProtocol.cpp in Sources */,
 				AE96370F2A39578600DE43FF /* lua_music.cpp in Sources */,
 				AEB4A22E14296CAE00537AE7 /* AStream.cpp in Sources */,
+				AECD778C2E19D16500C9917C /* NetworkInterface.cpp in Sources */,
 				AEB4A23014296CAE00537AE7 /* CircularByteBuffer.cpp in Sources */,
 				AEB4A23114296CAE00537AE7 /* lua_script.cpp in Sources */,
 				AEB4A23214296CAE00537AE7 /* metaserver_dialogs.cpp in Sources */,
@@ -7688,6 +7703,7 @@
 				AEBDC6C02C4DF0780026DFF1 /* csalerts.mm in Sources */,
 				AEBDC6C12C4DF0780026DFF1 /* OGL_FBO.cpp in Sources */,
 				AEBDC6C22C4DF0780026DFF1 /* lua_saved_objects.cpp in Sources */,
+				AECD778D2E19D16500C9917C /* NetworkInterface.cpp in Sources */,
 				AEBDC6C32C4DF0780026DFF1 /* cspaths.mm in Sources */,
 				AEBDC6C42C4DF0780026DFF1 /* FilmProfile.cpp in Sources */,
 				AEBDC6C52C4DF0780026DFF1 /* Movie.cpp in Sources */,
@@ -7824,6 +7840,7 @@
 				AEC3C85709AD68AC003258E4 /* network_star_spoke.cpp in Sources */,
 				AEC3C85A09AD68AC003258E4 /* StarGameProtocol.cpp in Sources */,
 				AE96370C2A39578600DE43FF /* lua_music.cpp in Sources */,
+				AECD77902E19D16500C9917C /* NetworkInterface.cpp in Sources */,
 				AEC3C85B09AD68AC003258E4 /* AStream.cpp in Sources */,
 				AEC3C85D09AD68AC003258E4 /* CircularByteBuffer.cpp in Sources */,
 				AEC3C85E09AD68AC003258E4 /* lua_script.cpp in Sources */,
@@ -8044,6 +8061,7 @@
 				AEFD873913EB84CF00C1E687 /* StarGameProtocol.cpp in Sources */,
 				AE96370D2A39578600DE43FF /* lua_music.cpp in Sources */,
 				AEFD873A13EB84CF00C1E687 /* AStream.cpp in Sources */,
+				AECD778F2E19D16500C9917C /* NetworkInterface.cpp in Sources */,
 				AEFD873C13EB84CF00C1E687 /* CircularByteBuffer.cpp in Sources */,
 				AEFD873D13EB84CF00C1E687 /* lua_script.cpp in Sources */,
 				AEFD873E13EB84CF00C1E687 /* metaserver_dialogs.cpp in Sources */,
@@ -8370,7 +8388,6 @@
 					"-Wl,-compatibility_version,1.0.0",
 					"-Wl,-undefined,error",
 					"-lSDL2_image",
-					"-lSDL2_net",
 					"-lSDL2_ttf",
 					"-lfreetype",
 					"-lboost_filesystem",
@@ -8513,7 +8530,6 @@
 					"-Wl,-compatibility_version,1.0.0",
 					"-Wl,-undefined,error",
 					"-lSDL2_image",
-					"-lSDL2_net",
 					"-lSDL2_ttf",
 					"-lfreetype",
 					"-lboost_filesystem",

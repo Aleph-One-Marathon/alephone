@@ -140,7 +140,7 @@ template<class T> void PacketCopyOutList(unsigned char* &Ptr, T *List, int Count
 static struct SSLP_ServiceInstance*
 SSLPint_FoundAnInstance(struct SSLP_ServiceInstance* inInstance) {
     logTrace("Found an instance!  %s, %s, %s:%d", inInstance->sslps_type, inInstance->sslps_name,
-            inInstance->sslps_address.address(), inInstance->sslps_address.port());
+            inInstance->sslps_address.address().c_str(), inInstance->sslps_address.port());
     // this should (but doesn't) force string termination to appropriate lengths for type and name.
     
     struct SSLPint_FoundInstance*	theCurrentFoundInstance = sFoundInstances;
@@ -226,7 +226,7 @@ SSLPint_RemoveTimedOutInstances() {
 static struct SSLP_ServiceInstance*
 SSLPint_LostAnInstance(struct SSLP_ServiceInstance* inInstance) {
     logTrace("Lost an instance...  %s, %s, %s:%d\n", inInstance->sslps_type, inInstance->sslps_name,
-            inInstance->sslps_address.address(), inInstance->sslps_address.port());
+            inInstance->sslps_address.address().c_str(), inInstance->sslps_address.port());
     // this should (but doesn't) force string termination to appropriate lengths for type and name.
 
     struct SSLPint_FoundInstance* 	theCurrentInstance = sFoundInstances;
