@@ -3350,8 +3350,8 @@
 		AEC3C89609AD68AE003258E4 /* Aleph One.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Aleph One.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
-		AECD778A2E19D16500C9917C /* NetworkInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NetworkInterface.cpp; sourceTree = "<group>"; };
-		AECD77922E19D18C00C9917C /* NetworkInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NetworkInterface.h; sourceTree = "<group>"; };
+		AECD778A2E19D16500C9917C /* NetworkInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = NetworkInterface.cpp; path = ../Source_Files/Network/NetworkInterface.cpp; sourceTree = "<group>"; };
+		AECD77922E19D18C00C9917C /* NetworkInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = NetworkInterface.h; path = ../Source_Files/Network/NetworkInterface.h; sourceTree = "<group>"; };
 		AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = powered_by_alephone_h.h; path = ../Source_Files/Misc/powered_by_alephone_h.h; sourceTree = "<group>"; };
 		AED959B02BC23591008EFCA2 /* m1_achievements.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = m1_achievements.lua; path = ../Source_Files/Misc/m1_achievements.lua; sourceTree = "<group>"; };
 		AED959B12BC23591008EFCA2 /* achievements.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = achievements.h; path = ../Source_Files/Misc/achievements.h; sourceTree = "<group>"; };
