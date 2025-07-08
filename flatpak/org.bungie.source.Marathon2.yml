@@ -8,6 +8,7 @@ modules:
   - shared/glu.yml
   - shared/zzip.yml
   - shared/miniupnpc.yml
+  - shared/asio.yml
   - shared/alephone.yml
   - name: game-data
     buildsystem: simple

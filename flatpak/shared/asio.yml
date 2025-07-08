@@ -1,0 +1,10 @@
+name: asio
+buildsystem: simple
+build-commands:
+  - ./configure --prefix=/app
+  - make -C include install
+sources:
+  - type: archive
+    url: https://sourceforge.net/projects/asio/files/asio/1.30.2%20%28Stable%29/asio-1.30.2.tar.bz2
+    sha256: 9f12cef05c0477eace9c68ccabd19f9e3a04b875d4768c323714cbd3a5fa3c2b
+cleanup: [/include]
