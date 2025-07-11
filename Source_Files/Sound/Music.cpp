@@ -97,11 +97,11 @@ void Music::Slot::Fade(float limitVolume, short duration, bool stopOnNoVolume)
 
 std::optional<uint32_t> Music::Add(const MusicParameters& parameters, FileSpecifier* file)
 {
-	music_slots.resize(music_slots.size() + 1);
-	int index = music_slots.size() - 1;
-	auto& slot = music_slots[index];
+	Slot slot;
 	bool success = (!file || slot.Open(file)) && slot.SetParameters(parameters);
-	return success ? std::make_optional(music_slots.size() - 1) : std::nullopt;
+	if (!success) return std::nullopt;
+	music_slots.push_back(std::move(slot));
+	return music_slots.size() - 1;
 }
 
 bool Music::Playing(int index)
