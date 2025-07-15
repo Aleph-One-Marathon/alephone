@@ -41,7 +41,7 @@ void SoundPlayer::Init(const SoundParameters& parameters) {
 //Simulate what the volume of our sound would be if we play it
 //If the volume is 0 then we just don't play the sound and drop it
 float SoundPlayer::Simulate(const SoundParameters& soundParameters) {
-	if (soundParameters.is_2d && !soundParameters.stereo_parameters.is_panning) return 1; //ofc we play all 2d sounds without stereo panning
+	if (soundParameters.is_2d && !soundParameters.stereo_parameters.is_panning) return 1.f; //ofc we play all 2d sounds without stereo panning
 	if (soundParameters.stereo_parameters.is_panning) return soundParameters.stereo_parameters.gain_global;
 
 	const auto& listener = OpenALManager::Get()->GetListener(); //if we don't have a listener on a 3d sound, there is a problem
@@ -254,7 +254,7 @@ bool SoundPlayer::SetUpALSourceInit() {
 
 #ifdef AL_SOFT_direct_channels_remix
 	if (OpenALManager::Get()->IsExtensionSupported(OpenALManager::OptionalExtension::DirectChannelRemix))
-		alSourcei(audio_source->source_id, AL_DIRECT_CHANNELS_SOFT, AL_FALSE);
+		alSourcei(audio_source->source_id, AL_DIRECT_CHANNELS_SOFT, MustDisableHrtf() ? AL_REMIX_UNMATCHED_SOFT : AL_FALSE);
 #endif
 
 	return alGetError() == AL_NO_ERROR;
@@ -263,6 +263,10 @@ bool SoundPlayer::SetUpALSourceInit() {
 void SoundPlayer::ResetTransition() {
 	sound_transition.allow_transition = false;
 	sound_transition.start_transition_tick = 0;
+}
+
+bool SoundPlayer::MustDisableHrtf() const {
+	return OpenALManager::Get()->IsHrtfEnabled() && parameters.Get().is_2d && OpenALManager::Get()->IsExtensionSupported(OpenALManager::OptionalExtension::DirectChannelRemix);
 }
 
 float SoundPlayer::ComputeParameterForTransition(float targetParameter, float currentParameter, uint64_t currentTick) const {
@@ -366,13 +370,75 @@ SetupALResult SoundPlayer::SetUpALSource3D() {
 	return SetupALResult(alGetError() == AL_NO_ERROR, finalBehaviorParameters == behaviorParameters);
 }
 
+uint32_t SoundPlayer::ProcessData(uint8_t* outputData, uint32_t remainingSoundDataLength, uint32_t remainingBufferLength) {
+
+	const auto& sound = this->sound.Get();
+
+	if (sound.header.stereo || !MustDisableHrtf())
+	{
+		const auto length = std::min(remainingSoundDataLength, remainingBufferLength);
+		std::copy(sound.data->data() + current_index_data, sound.data->data() + current_index_data + length, outputData);
+		current_index_data += length;
+		return length;
+	}
+
+	//all of this is just for hrtf
+	const auto input = (sound.data->data() + current_index_data);
+
+	switch (sound.header.audio_format) {
+	case AudioFormat::_8_bit:
+	{
+		int index = 0;
+		while (index < remainingSoundDataLength && index < remainingBufferLength / 2)
+		{
+			auto byte = input[index];
+			auto centered = static_cast<int8_t>(byte - 128);
+			int8_t attenuated = static_cast<uint8_t>(centered / 2 + 128);
+			outputData[2 * index] = attenuated;
+			outputData[2 * index + 1] = attenuated;
+			index++;
+		}
+
+		current_index_data += index;
+		return index * 2;
+	}
+	case AudioFormat::_16_bit:
+	{
+		int index = 0;
+		int16_t* output = reinterpret_cast<int16_t*>(outputData);
+
+		while (index < remainingSoundDataLength / 2 && index < remainingBufferLength / 4)
+		{
+			int16_t sample;
+			std::memcpy(&sample, input + index * 2, sizeof(int16_t));
+			int16_t attenuated = sample / 2;
+			output[2 * index] = attenuated;
+			output[2 * index + 1] = attenuated;
+			index++;
+		}
+
+		current_index_data += index * 2;
+		return index * 4;
+	}
+	case AudioFormat::_32_float: //we don't support this format for sounds
+	default:
+		assert(false);
+		return 0;
+	}
+}
+
 uint32_t SoundPlayer::GetNextData(uint8* data, uint32_t length) {
 	const auto remainingDataLength = data_length - current_index_data;
 	if (!remainingDataLength) return LoopManager(data, length);
-	const auto returnedDataLength = std::min(remainingDataLength, length);
-	const auto& sound_data = sound.Get().data;
-	std::copy(sound_data->data() + current_index_data, sound_data->data() + current_index_data + returnedDataLength, data);
-	current_index_data += returnedDataLength;
+	const auto returnedDataLength = ProcessData(data, remainingDataLength, length);
 	if (returnedDataLength < length) return returnedDataLength + LoopManager(data + returnedDataLength, length - returnedDataLength);
 	return returnedDataLength;
+}
+
+std::tuple<AudioFormat, uint32_t, bool> SoundPlayer::GetAudioFormat() const {
+
+	if (sound.Get().header.stereo || !MustDisableHrtf())
+		return AudioPlayer::GetAudioFormat();
+
+	return std::make_tuple(format, rate, true);
 }

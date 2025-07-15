@@ -101,7 +101,8 @@ private:
     };
 
     uint32_t queued_rate;
-    ALenum queued_format; //Mono 8-16-32f or stereo 8-16-32f
+    AudioFormat queued_format;
+    bool queued_stereo;
 
     friend class OpenALManager;
 
@@ -116,13 +117,15 @@ protected:
     virtual uint32_t GetNextData(uint8* data, uint32_t length) = 0;
     virtual bool LoadParametersUpdates() { return false; }
     bool IsPlaying() const;
-    bool HasBufferFormatChanged() const { return queued_rate != rate || queued_format != format; }
+    virtual std::tuple<AudioFormat, uint32_t, bool> GetAudioFormat() const { return std::make_tuple(format, rate, stereo); }
+    bool HasBufferFormatChanged() const;
     std::atomic_bool rewind_signal = { false };
     std::atomic_bool stop_signal = { false };
     std::atomic_bool is_active = { true };
     bool is_sync_with_al_parameters = false; //uses locks
-    uint32_t rate = 0;
-    ALenum format = 0; //Mono 8-16-32f or stereo 8-16-32f
+    uint32_t rate;
+    AudioFormat format;
+    bool stereo;
     std::unique_ptr<AudioSource> audio_source;
     virtual void Rewind();
 };

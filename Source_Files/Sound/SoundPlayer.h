@@ -112,6 +112,9 @@ private:
 	void ResetTransition();
 	float ComputeParameterForTransition(float targetParameter, float currentParameter, uint64_t currentTick) const;
 	float ComputeVolumeForTransition(float targetVolume);
+	bool MustDisableHrtf() const;
+	std::tuple<AudioFormat, uint32_t, bool> GetAudioFormat() const override;
+	uint32_t ProcessData(uint8_t* outputData, uint32_t remainingSoundDataLength, uint32_t remainingBufferLength);
 	SoundBehavior ComputeVolumeForTransition(const SoundBehavior& targetSoundBehavior);
 	AtomicStructure<Sound> sound;
 	AtomicStructure<SoundParameters> parameters;

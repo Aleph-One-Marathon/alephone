@@ -20,15 +20,14 @@
 #include "OpenALManager.h"
 #include <array>
 
-AudioPlayer::AudioPlayer(uint32_t rate, bool stereo, AudioFormat audioFormat) {
+AudioPlayer::AudioPlayer(uint32_t rate, bool stereo, AudioFormat audioFormat) : queued_rate(rate), queued_format(audioFormat), queued_stereo(stereo) {
 	Init(rate, stereo, audioFormat);
-	queued_rate = rate;
-	queued_format = format;
 }
 
 void AudioPlayer::Init(uint32_t rate, bool stereo, AudioFormat audioFormat) {
 	this->rate = rate;
-	format = mapping_audio_format_openal.at({ audioFormat, stereo });
+	this->stereo = stereo;
+	this->format = audioFormat;
 }
 
 bool AudioPlayer::AssignSource() {
@@ -76,16 +75,16 @@ void AudioPlayer::FillBuffers() {
 		ALint nbBuffersQueued;
 		alGetSourcei(audio_source->source_id, AL_BUFFERS_QUEUED, &nbBuffersQueued);
 		if (nbBuffersQueued > 0) return;
-		queued_rate = rate;
-		queued_format = format;
+
+		auto [wantedFormat, wantedRate, wantedStereo] = GetAudioFormat();
+		queued_format = wantedFormat;
+		queued_rate = wantedRate;
+		queued_stereo = wantedStereo;
 	}
 
 	for (auto& buffer : audio_source->buffers) { //now we process our buffers that are ready
 
 		if (buffer.second) continue;
-		
-		auto buffer_rate = rate;
-		auto buffer_format = format;
 
 		std::array<uint8, buffer_samples> data = {};
 		uint32_t bufferOffset = 0;
@@ -97,10 +96,15 @@ void AudioPlayer::FillBuffers() {
 		}
 
 		if (!bufferOffset) return;
-		alBufferData(buffer.first, buffer_format, data.data(), bufferOffset, buffer_rate);
+		alBufferData(buffer.first, mapping_audio_format_openal.at({ queued_format, queued_stereo }), data.data(), bufferOffset, queued_rate);
 		alSourceQueueBuffers(audio_source->source_id, 1, &buffer.first);
 		buffer.second = true;
 	}
+}
+
+bool AudioPlayer::HasBufferFormatChanged() const { 
+	auto [wantedFormat, wantedRate, wantedStereo] = GetAudioFormat();
+	return queued_rate != wantedRate || queued_format != wantedFormat || queued_stereo != wantedStereo;
 }
 
 //we stop the source to get rid of the playing sounds
