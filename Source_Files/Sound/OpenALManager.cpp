@@ -248,22 +248,22 @@ void OpenALManager::GetPlayBackAudio(uint8* data, int length) {
 	alcRenderSamplesSOFT(p_ALCDevice, data, length);
 }
 
-//This return true if the device supports switching from hrtf enabled <-> hrtf disabled
-bool OpenALManager::Support_HRTF_Toggling() const {
+OpenALManager::HrtfSupport OpenALManager::GetHrtfSupport() const {
 	ALCint hrtfStatus;
 	alcGetIntegerv(p_ALCDevice, ALC_HRTF_STATUS_SOFT, 1, &hrtfStatus);
 
 	switch (hrtfStatus) {
 		case ALC_HRTF_DENIED_SOFT:
 		case ALC_HRTF_UNSUPPORTED_FORMAT_SOFT:
+			return HrtfSupport::Unsupported;
 		case ALC_HRTF_REQUIRED_SOFT:
-			return false;
+			return HrtfSupport::Required;
 		default:
-			return true;
+			return HrtfSupport::Supported;
 	}
 }
 
-bool OpenALManager::Is_HRTF_Enabled() const {
+bool OpenALManager::IsHrtfEnabled() const {
 	ALCint hrtfStatus;
 	alcGetIntegerv(p_ALCDevice, ALC_HRTF_SOFT, 1, &hrtfStatus);
 	return hrtfStatus;

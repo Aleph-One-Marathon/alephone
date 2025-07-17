@@ -54,6 +54,13 @@ public:
 		DirectChannelRemix
 	};
 
+	enum class HrtfSupport
+	{
+		Supported,
+		Unsupported,
+		Required
+	};
+
 	static OpenALManager* Get() { return instance; }
 	static bool Init(const AudioParameters& parameters);
 	static void Shutdown();
@@ -74,8 +81,8 @@ public:
 	uint32_t GetFrequency() const { return audio_parameters.rate; }
 	uint32_t GetElapsedPauseTime() const { return elapsed_pause_time; }
 	void GetPlayBackAudio(uint8* data, int length);
-	bool Support_HRTF_Toggling() const;
-	bool Is_HRTF_Enabled() const;
+	HrtfSupport GetHrtfSupport() const;
+	bool IsHrtfEnabled() const;
 	bool IsBalanceRewindSound() const { return audio_parameters.balance_rewind; }
 	bool IsPaused() const { return paused_audio; }
 	ALCint GetRenderingFormat() const { return openal_rendering_format; }
