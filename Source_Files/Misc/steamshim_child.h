@@ -159,7 +159,6 @@ struct item_subscribed_query_result
 enum STEAMSHIM_EventType
 {
     SHIMEVENT_BYE,
-    SHIMEVENT_STATSRECEIVED,
     SHIMEVENT_STATSSTORED,
     SHIMEVENT_SETACHIEVEMENT,
     SHIMEVENT_GETACHIEVEMENT,
@@ -205,7 +204,6 @@ int STEAMSHIM_init(void);  /* non-zero on success, zero on failure. */
 void STEAMSHIM_deinit(void);
 int STEAMSHIM_alive(void);
 const STEAMSHIM_Event *STEAMSHIM_pump(void);
-void STEAMSHIM_requestStats(void);
 void STEAMSHIM_storeStats(void);
 void STEAMSHIM_setAchievement(const char *name, const int enable);
 void STEAMSHIM_getAchievement(const char *name);

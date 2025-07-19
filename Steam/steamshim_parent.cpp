@@ -419,7 +419,6 @@ class SteamBridge
 {
 public:
     SteamBridge(PipeType _fd);
-	STEAM_CALLBACK(SteamBridge, OnUserStatsReceived, UserStatsReceived_t, m_CallbackUserStatsReceived);
 	STEAM_CALLBACK(SteamBridge, OnUserStatsStored, UserStatsStored_t, m_CallbackUserStatsStored);
     STEAM_CALLBACK(SteamBridge, OnOverlayActivated, GameOverlayActivated_t, m_CallbackOverlayActivated);
     void set_item_created_callback(SteamAPICall_t api_call, const item_upload_data& item_data);
@@ -450,7 +449,6 @@ typedef enum ShimCmd
 {
     SHIMCMD_BYE,
     SHIMCMD_PUMP,
-    SHIMCMD_REQUESTSTATS,
     SHIMCMD_STORESTATS,
     SHIMCMD_SETACHIEVEMENT,
     SHIMCMD_GETACHIEVEMENT,
@@ -469,7 +467,6 @@ typedef enum ShimCmd
 typedef enum ShimEvent
 {
     SHIMEVENT_BYE,
-    SHIMEVENT_STATSRECEIVED,
     SHIMEVENT_STATSSTORED,
     SHIMEVENT_SETACHIEVEMENT,
     SHIMEVENT_GETACHIEVEMENT,
@@ -516,12 +513,6 @@ static inline bool writeBye(PipeType fd)
     dbgpipe("Parent sending SHIMEVENT_BYE().\n");
     return write1ByteCmd(fd, SHIMEVENT_BYE);
 } // writeBye
-
-static inline bool writeStatsReceived(PipeType fd, const bool okay)
-{
-    dbgpipe("Parent sending SHIMEVENT_STATSRECEIVED(%sokay).\n", okay ? "" : "!");
-    return write2ByteCmd(fd, SHIMEVENT_STATSRECEIVED, okay ? 1 : 0);
-} // writeStatsReceived
 
 static inline bool writeStatsStored(PipeType fd, const bool okay)
 {
@@ -835,19 +826,11 @@ static void workshopQueryItemOwned(const std::string& scenario, int page_number)
 }
 
 SteamBridge::SteamBridge(PipeType _fd)
-    : m_CallbackUserStatsReceived( this, &SteamBridge::OnUserStatsReceived )
-	, m_CallbackUserStatsStored( this, &SteamBridge::OnUserStatsStored )
+    : m_CallbackUserStatsStored( this, &SteamBridge::OnUserStatsStored )
     , m_CallbackOverlayActivated( this, &SteamBridge::OnOverlayActivated )
 	, fd(_fd)
 {
 } // SteamBridge::SteamBridge
-
-void SteamBridge::OnUserStatsReceived(UserStatsReceived_t *pCallback)
-{
-	if (GAppID != pCallback->m_nGameID) return;
-	if (GUserID != pCallback->m_steamIDUser.ConvertToUint64()) return;
-    writeStatsReceived(fd, pCallback->m_eResult == k_EResultOK);
-} // SteamBridge::OnUserStatsReceived
 
 void SteamBridge::OnUserStatsStored(UserStatsStored_t *pCallback)
 {
@@ -1119,7 +1102,6 @@ static bool processCommand(const uint8 *buf, unsigned int buflen, PipeType fd)
     #define PRINTGOTCMD(x) else if (cmd == x) printf("Parent got " #x ".\n")
     PRINTGOTCMD(SHIMCMD_BYE);
     PRINTGOTCMD(SHIMCMD_PUMP);
-    PRINTGOTCMD(SHIMCMD_REQUESTSTATS);
     PRINTGOTCMD(SHIMCMD_STORESTATS);
     PRINTGOTCMD(SHIMCMD_SETACHIEVEMENT);
     PRINTGOTCMD(SHIMCMD_GETACHIEVEMENT);
@@ -1146,12 +1128,6 @@ static bool processCommand(const uint8 *buf, unsigned int buflen, PipeType fd)
         case SHIMCMD_BYE:
             writeBye(fd);
             return false;
-
-        case SHIMCMD_REQUESTSTATS:
-            if ((!GSteamStats) || (!GSteamStats->RequestCurrentStats()))
-                writeStatsReceived(fd, false);
-            // callback later.
-            break;
 
         case SHIMCMD_STORESTATS:
             if ((!GSteamStats) || (!GSteamStats->StoreStats()))

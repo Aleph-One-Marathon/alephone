@@ -125,7 +125,6 @@ enum ShimCmd
 {
     SHIMCMD_BYE,
     SHIMCMD_PUMP,
-    SHIMCMD_REQUESTSTATS,
     SHIMCMD_STORESTATS,
     SHIMCMD_SETACHIEVEMENT,
     SHIMCMD_GETACHIEVEMENT,
@@ -246,7 +245,6 @@ static const STEAMSHIM_Event *processEvent(const uint8 *buf, size_t buflen)
     if (0) {}
     #define PRINTGOTEVENT(x) else if (type == x) printf("Child got " #x ".\n")
     PRINTGOTEVENT(SHIMEVENT_BYE);
-    PRINTGOTEVENT(SHIMEVENT_STATSRECEIVED);
     PRINTGOTEVENT(SHIMEVENT_STATSSTORED);
     PRINTGOTEVENT(SHIMEVENT_SETACHIEVEMENT);
     PRINTGOTEVENT(SHIMEVENT_GETACHIEVEMENT);
@@ -270,7 +268,6 @@ static const STEAMSHIM_Event *processEvent(const uint8 *buf, size_t buflen)
         case SHIMEVENT_BYE:
             break;
 
-        case SHIMEVENT_STATSRECEIVED:
         case SHIMEVENT_STATSSTORED:
         case SHIMEVENT_IS_OVERLAY_ACTIVATED:
             if (!buflen) return NULL;
@@ -400,13 +397,6 @@ const STEAMSHIM_Event *STEAMSHIM_pump(void)
 
     return NULL;
 } /* STEAMSHIM_pump */
-
-void STEAMSHIM_requestStats(void)
-{
-    if (isDead()) return;
-    dbgpipe("Child sending SHIMCMD_REQUESTSTATS().\n");
-    write1ByteCmd(SHIMCMD_REQUESTSTATS);
-} /* STEAMSHIM_requestStats */
 
 void STEAMSHIM_storeStats(void)
 {
