@@ -25,19 +25,23 @@
          "name":"boost-dll"
       },
       {
-         "name":"sdl2"
+         "name":"sdl2",
+         "platform": "!linux"
       },
       {
          "name":"sdl2-image",
          "features":[
             "libjpeg-turbo"
-         ]
+         ],
+         "platform": "!linux"
       },
       {
-         "name":"sdl2-net"
+         "name":"sdl2-net",
+         "platform": "!linux"
       },
       {
-         "name":"sdl2-ttf"
+         "name":"sdl2-ttf",
+         "platform": "!linux"
       },
       {
          "name":"curl",
@@ -54,16 +58,20 @@
          "name":"miniupnpc"
       },
       {
-         "name":"nativefiledialog"
+         "name":"nativefiledialog",
+         "platform": "!linux"
       },
       {
-         "name":"libsndfile"
+         "name":"libsndfile",
+         "platform": "!linux"
       },
       {
-         "name":"openal-soft"
+         "name":"openal-soft",
+         "platform": "!linux"
       },
       {
-         "name":"catch2"
+         "name":"catch2",
+         "platform": "!linux"
       },
       {
          "name":"libyuv"

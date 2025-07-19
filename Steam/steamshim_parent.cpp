@@ -210,8 +210,10 @@ static bool launchChild(ProcessType *pid)
     auto app = findExe(boost::regex("Classic Marathon.*\\.app"));
     auto macos = app / "Contents" / "MacOS";
     auto bin = boost::filesystem::directory_iterator(macos)->path().string();
-#else
+#elseif defined(_WIN32)
     auto bin = findExe(boost::regex("Classic Marathon.*"));
+#else
+    auto bin = findExe(boost::regex("alephone"));
 #endif
 
     GArgv[0] = strdup(bin.c_str());
@@ -542,9 +544,9 @@ static inline bool writeWorkshopUploadResult(PipeType fd, const EResult result, 
 static bool writeWorkshopItemOwnedQueriedResult(PipeType fd, const item_owned_query_result& query_result)
 {
     dbgpipe("Parent sending SHIMEVENT_WORKSHOP_QUERY_OWNED_ITEM_RESULT(%d result).\n", query_result.result_code);
-    auto data_stream = query_result.shim_serialize();
 
-    data_stream = std::ostringstream() << (uint8)SHIMEVENT_WORKSHOP_QUERY_OWNED_ITEM_RESULT << data_stream.str();
+    std::ostringstream data_stream;
+    data_stream << (uint8)SHIMEVENT_WORKSHOP_QUERY_OWNED_ITEM_RESULT << query_result.shim_serialize().str();
     
     std::ostringstream data_stream_shim;
 
@@ -559,9 +561,9 @@ static bool writeWorkshopItemOwnedQueriedResult(PipeType fd, const item_owned_qu
 static bool writeWorkshopItemQueriedResult(PipeType fd, const item_subscribed_query_result& query_result)
 {
     dbgpipe("Parent sending SHIMEVENT_WORKSHOP_QUERY_SUBSCRIBED_ITEM_RESULT(%d result).\n", query_result.result_code);
-    auto data_stream = query_result.shim_serialize();
 
-    data_stream = std::ostringstream() << (uint8)SHIMEVENT_WORKSHOP_QUERY_SUBSCRIBED_ITEM_RESULT << data_stream.str();
+    std::ostringstream data_stream;
+    data_stream << (uint8)SHIMEVENT_WORKSHOP_QUERY_SUBSCRIBED_ITEM_RESULT << query_result.shim_serialize().str();
 
     std::ostringstream data_stream_shim;
 
@@ -576,9 +578,9 @@ static bool writeWorkshopItemQueriedResult(PipeType fd, const item_subscribed_qu
 static bool writeGameInfo(PipeType fd, const steam_game_information& game_info)
 {
     dbgpipe("Parent sending SHIMEVENT_GET_GAME_INFO.\n");
-    auto data_stream = game_info.shim_serialize();
 
-    data_stream = std::ostringstream() << (uint8)SHIMEVENT_GET_GAME_INFO << data_stream.str();
+    std::ostringstream data_stream;
+    data_stream << (uint8)SHIMEVENT_GET_GAME_INFO << game_info.shim_serialize().str();
 
     std::ostringstream data_stream_shim;
 

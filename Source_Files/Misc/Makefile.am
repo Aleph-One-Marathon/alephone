@@ -8,6 +8,12 @@ else
 THREAD_PRIORITY = thread_priority_sdl_posix.cpp
 endif
 
+if STEAM
+STEAMSHIM_CHILD = steamshim_child.cpp 
+else
+STEAMSHIM_CHILD =
+endif
+
 libmisc_a_SOURCES = achievements.h ActionQueues.h alephversion.h binders.h CircularByteBuffer.h \
   CircularQueue.h Console.h DefaultStringSets.h game_errors.h \
   interface.h interface_menus.h key_definitions.h Logging.h \
@@ -24,7 +30,8 @@ libmisc_a_SOURCES = achievements.h ActionQueues.h alephversion.h binders.h Circu
   preference_dialogs.cpp preferences_widgets_sdl.cpp Scenario.cpp sdl_dialogs.cpp $(THREAD_PRIORITY) \
   sdl_widgets.cpp shared_widgets.cpp vbl.cpp \
   Statistics.cpp ScenarioChooser.cpp \
-  ProFontAO.h CourierPrime.h CourierPrimeBold.h CourierPrimeItalic.h CourierPrimeBoldItalic.h
+  ProFontAO.h CourierPrime.h CourierPrimeBold.h CourierPrimeItalic.h CourierPrimeBoldItalic.h \
+  $(STEAMSHIM_CHILD)
 
 EXTRA_libmisc_a_SOURCES = alephone.xpm alephone32.xpm thread_priority_sdl_posix.cpp thread_priority_sdl_dummy.cpp thread_priority_sdl_win32.cpp thread_priority_sdl_macosx.cpp m1_achievements.lua m2_achievements.lua inf_achievements.lua steamshim_child.h steamshim_child.cpp
 

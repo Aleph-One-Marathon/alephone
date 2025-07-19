@@ -1,7 +1,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = Source_Files tools data
+SUBDIRS = Source_Files Steam tools data
 
 # Requires automake 1.5
 AUTOMAKE_OPTIONS = 1.5 foreign dist-bzip2 no-dist-gzip

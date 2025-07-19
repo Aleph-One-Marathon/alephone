@@ -1,0 +1,32 @@
+"AppBuild"
+{
+        "AppID" "2398490"
+        "Desc" "Classic Marathon 2 Linux build script"
+
+        "ContentRoot" ".."
+        "BuildOutput" "output\"
+
+        "Depots"
+        {
+                "2398494"
+                {
+                        "FileMapping"
+                        {
+                                "LocalPath" "Steam/classic_marathon_launcher"
+                                "DepotPath" "."
+                        }
+
+                        "FileMapping"
+                        {
+                                "LocalPath" "vcpkg/installed-x64-linux/x64-linux/lib/libsteam_api.so"
+                                "DepotPath" "."
+                        }
+
+                        "FileMapping"
+                        {
+                                "LocalPath" "Source_Files/alephone"
+                                "DepotPath" "."
+                        }
+                 }
+        }
+}

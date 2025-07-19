@@ -4,7 +4,9 @@ description: used to setup the environment before using make
 inputs:
  configure_options:
     required: false
-    type: string
+ use_vcpkg:
+    required: false
+    default: false
 
 runs:
     using: "composite"
@@ -13,8 +15,45 @@ runs:
     - run: sudo apt-get update -y 
       shell: bash
       
-    - name: Install Dependencies 
-      run: sudo apt-get install autoconf-archive libboost-all-dev libsdl2-dev libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev libzzip-dev libpng-dev libcurl4-gnutls-dev libminiupnpc-dev libsndfile-dev libopenal-dev libglu1-mesa-dev catch2 libvpx-dev libmatroska-dev libebml-dev libvorbis-dev libvorbisenc2 libyuv-dev
+    - name: Define the list of dependencies to install with the distribution package manager even if Vcpkg is used
+      run: echo "apt_dependencies=autoconf-archive libsdl2-dev libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev libpng-dev libcurl4-gnutls-dev libsndfile-dev libopenal-dev libglu1-mesa-dev libvorbis-dev libvorbisenc2" >> $GITHUB_ENV
+      shell: bash
+      
+    - name: Update the list of dependencies with missing dependencies since Vcpkg won't be used
+      if: inputs.use_vcpkg == 'false'
+      run: echo "apt_dependencies=${{env.apt_dependencies}} catch2 libboost-all-dev libmatroska-dev libebml-dev libyuv-dev libzzip-dev libvpx-dev libminiupnpc-dev" >> $GITHUB_ENV
+      shell: bash
+      
+    - name: Update the list of dependencies with tools for Vcpkg
+      if: inputs.use_vcpkg == 'true'
+      run: echo "apt_dependencies=${{env.apt_dependencies}} nasm" >> $GITHUB_ENV
+      shell: bash
+      
+    - name: Install dependencies with the distribution package manager
+      run: sudo apt-get install -y ${{env.apt_dependencies}}
+      shell: bash
+      
+    - name: Setup Vcpkg
+      if: inputs.use_vcpkg == 'true'
+      uses: ./.github/actions/setup-vcpkg
+      with:
+        vcpkg_bootstrap_file: bootstrap-vcpkg.sh
+        
+    - name: Set vcpkg environment variables
+      if: inputs.use_vcpkg == 'true'
+      run: echo "PKG_CONFIG_PATH=$GITHUB_WORKSPACE/vcpkg/installed-x64-linux/x64-linux/lib/pkgconfig:$GITHUB_WORKSPACE/vcpkg/installed-x64-linux/x64-linux/share/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
+      shell: bash
+      
+    - name: Restore Vcpkg cache
+      if: inputs.use_vcpkg == 'true'
+      uses: actions/cache@v4
+      with:
+        path: vcpkg/installed-x64-linux
+        key: ${{runner.os}}-installed-x64-linux-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}
+        
+    - name: Install Vcpkg dependencies
+      if: inputs.use_vcpkg == 'true'
+      run: cd vcpkg && chmod +x ./install-x64-linux.sh && ./install-x64-linux.sh
       shell: bash
       
     - name: Configure

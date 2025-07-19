@@ -239,7 +239,6 @@ static const STEAMSHIM_Event *processEvent(const uint8 *buf, size_t buflen)
     const STEAMSHIM_EventType type = (STEAMSHIM_EventType) *(buf++);
     buflen--;
 
-    memset(&event, '\0', sizeof (event));
     event.type = type;
     event.okay = 1;
 
@@ -454,8 +453,8 @@ void STEAMSHIM_uploadWorkshopItem(const item_upload_data& item)
     if (isDead()) return;
     dbgpipe("Child sending SHIMCMD_UPLOADWORKSHOP.\n");
 
-    auto data_stream = item.shim_serialize();
-    data_stream = std::ostringstream() << (uint8)SHIMCMD_WORKSHOP_UPLOAD << data_stream.str();
+    std::ostringstream data_stream;
+    data_stream << (uint8)SHIMCMD_WORKSHOP_UPLOAD << item.shim_serialize().str();
     
     std::ostringstream data_stream_shim;
 

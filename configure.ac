@@ -81,6 +81,15 @@ AM_CONDITIONAL([STANDALONE_HUB], [test x"$enable_standalone_hub" = x"yes"])
 AS_IF([test x"$enable_standalone_hub" = x"yes"],
       [ AC_DEFINE([A1_NETWORK_STANDALONE_HUB], [1], [Use the standalone hub])])
 
+dnl Steam option
+AC_ARG_ENABLE([steam],
+			  AS_HELP_STRING([--enable-steam],
+							 [Build with Steam support]))
+
+AM_CONDITIONAL([STEAM], [test x"$enable_steam" = x"yes"])
+AS_IF([test x"$enable_steam" = x"yes"],
+      [ AC_DEFINE([HAVE_STEAM], [1], [Use Steam])])
+
 dnl Set target system name.
 AC_DEFINE_UNQUOTED([TARGET_PLATFORM], ["$target_os $target_cpu"], [Target platform name])
 
@@ -290,6 +299,7 @@ Source_Files/RenderOther/Makefile
 Source_Files/Sound/Makefile
 Source_Files/TCPMess/Makefile
 Source_Files/XML/Makefile
+Steam/Makefile
 tools/Makefile
 tools/headertest/GNUmakefile
 data/Makefile
