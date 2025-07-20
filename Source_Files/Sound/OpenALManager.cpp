@@ -185,9 +185,9 @@ std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(const Sound& sound, const 
 	return soundPlayer;
 }
 
-std::shared_ptr<MusicPlayer> OpenALManager::PlayMusic(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters) {
+std::shared_ptr<MusicPlayer> OpenALManager::PlayMusic(std::vector<MusicPlayer::Preset>& presets, uint32_t starting_preset_index, uint32_t starting_segment_index, const MusicParameters& parameters) {
 	if (!process_audio_active) return std::shared_ptr<MusicPlayer>();
-	auto musicPlayer = std::make_shared<MusicPlayer>(decoder, parameters);
+	auto musicPlayer = std::make_shared<MusicPlayer>(presets, starting_preset_index, starting_segment_index, parameters);
 	audio_players_shared.push(musicPlayer);
 	return musicPlayer;
 }

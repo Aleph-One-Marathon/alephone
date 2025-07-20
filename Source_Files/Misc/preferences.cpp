@@ -1734,7 +1734,8 @@ static void sound_dialog(void *arg)
 		}
 
 		if (changed) {
-			bool is_music_playing = Music::instance()->Playing(Music::MusicSlot::Intro);
+			auto slot = Music::instance()->GetSlot(Music::MusicSlot::Intro);
+			bool is_music_playing = slot && slot->Playing();
 			SoundManager::instance()->SetParameters(*sound_preferences);
 			write_preferences();
 			if (is_music_playing) Music::instance()->RestartIntroMusic();

@@ -72,7 +72,7 @@ void AudioPlayer::FillBuffers() {
 	UnqueueBuffers(); //First we unqueue buffers that can be
 
 	//OpenAL does not support queueing multiple buffers with different format for a same source so we wait
-	if (queued_format != format || queued_rate != rate) {
+	if (HasBufferFormatChanged()) {
 		ALint nbBuffersQueued;
 		alGetSourcei(audio_source->source_id, AL_BUFFERS_QUEUED, &nbBuffersQueued);
 		if (nbBuffersQueued > 0) return;
@@ -83,18 +83,21 @@ void AudioPlayer::FillBuffers() {
 	for (auto& buffer : audio_source->buffers) { //now we process our buffers that are ready
 
 		if (buffer.second) continue;
+		
+		auto buffer_rate = rate;
+		auto buffer_format = format;
 
 		std::array<uint8, buffer_samples> data = {};
 		uint32_t bufferOffset = 0;
 
-		while (buffer_samples > bufferOffset) {
+		while (buffer_samples > bufferOffset && !HasBufferFormatChanged()) {
 			auto actualDataLength = GetNextData(data.data() + bufferOffset, buffer_samples - bufferOffset);
 			if (!actualDataLength) break;
 			bufferOffset += actualDataLength;
 		}
 
 		if (!bufferOffset) return;
-		alBufferData(buffer.first, format, data.data(), bufferOffset, rate);
+		alBufferData(buffer.first, buffer_format, data.data(), bufferOffset, buffer_rate);
 		alSourceQueueBuffers(audio_source->source_id, 1, &buffer.first);
 		buffer.second = true;
 	}

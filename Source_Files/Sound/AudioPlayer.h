@@ -116,6 +116,7 @@ protected:
     virtual uint32_t GetNextData(uint8* data, uint32_t length) = 0;
     virtual bool LoadParametersUpdates() { return false; }
     bool IsPlaying() const;
+    bool HasBufferFormatChanged() const { return queued_rate != rate || queued_format != format; }
     std::atomic_bool rewind_signal = { false };
     std::atomic_bool stop_signal = { false };
     std::atomic_bool is_active = { true };
