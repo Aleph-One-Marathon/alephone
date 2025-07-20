@@ -45,22 +45,9 @@ static void initialize_hub(short port)
 	network_preferences->game_port = port;
 	network_preferences->game_protocol = _network_game_protocol_star;
 	DefaultHubPreferences();
-
-	if (SDLNet_Init() < 0)
-	{
-		std::ostringstream oss;
-		oss << "Couldn't initialize SDL_net (" << SDLNet_GetError() << ")";
-		throw std::runtime_error(oss.str());
-	}
-
 	mytm_initialize();
 	initialize_keyboard_controller();
 	initialize_marathon();
-}
-
-static void shutdown_hub()
-{
-	SDLNet_Quit();
 }
 
 static bool hub_init_game(void)
@@ -254,15 +241,6 @@ int main(int argc, char** argv)
 		{
 		}
 		code = 1;
-	}
-
-	try
-	{
-		shutdown_hub();
-	}
-	catch (...)
-	{
-
 	}
 
 	return code;

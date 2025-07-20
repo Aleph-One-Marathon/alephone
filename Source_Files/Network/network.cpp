@@ -123,7 +123,6 @@ clearly this is all broken until we have packet types
 #include "mytm.h"	// ZZZ: both versions use mytm now
 #include "preferences.h" // for network_preferences and environment_preferences
 
-#include "sdl_network.h"
 #include <SDL2/SDL_thread.h>
 
 #include "game_errors.h"
@@ -164,18 +163,15 @@ clearly this is all broken until we have packet types
 
 /* ---------- globals */
 
-static short ddpSocket; /* our ddp socket number */
-
 static short localPlayerIndex;
 static short localPlayerIdentifier;
 static std::string gameSessionIdentifier;
 static NetTopologyPtr topology;
 static StarGameProtocol sCurrentGameProtocol;
-
+static std::unique_ptr<NetworkInterface> network_interface;
 static byte *deferred_script_data = NULL;
 static size_t deferred_script_length = 0;
 static bool do_netscript;
-
 static CommunicationsChannelFactory *server = NULL;
 static bool use_remote_hub = false;
 static byte* resumed_wad_data_for_remote_hub = NULL;
@@ -285,12 +281,11 @@ void NetInitializeSessionIdentifier(void);
 // reason to try to keep that... and I suspect Jason abandoned this separation long ago anyway.
 // For now, the only effect I see is a reduction in type-safety.  :)
 static void NetInitializeTopology(void *game_data, short game_data_size, void *player_data, short player_data_size);
-static void NetLocalAddrBlock(NetAddrBlock *address, short socketNumber);
 
 static void NetUpdateTopology(void);
 static void NetDistributeTopology(short tag);
 
-static void NetDDPPacketHandler(DDPPacketBufferPtr inPacket);
+static void NetDDPPacketHandler(UDPpacket& inPacket);
 
 int getStreamIdFromChannel(CommunicationsChannel *channel) {
   client_map_t::iterator it;
@@ -572,6 +567,11 @@ void Client::handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage,
 	}
 }
 
+NetworkInterface* NetGetNetworkInterface()
+{
+	return network_interface.get();
+}
+
 void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
 				     CommunicationsChannel *)
 {
@@ -583,7 +583,7 @@ void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
       prospective_joiner_info player;
       player.stream_id = topology->players[topology->player_count].stream_id;
       topology->players[topology->player_count].dspAddress = channel->peerAddress();
-      topology->players[topology->player_count].ddpAddress.host = channel->peerAddress().host;
+	  topology->players[topology->player_count].ddpAddress.set_address(channel->peerAddress().address());
       
       topology->player_count += 1;
       if (check_player) check_player(topology->player_count - 1, topology->player_count);
@@ -1021,10 +1021,10 @@ static void handleTopologyMessage(TopologyMessage* topologyMessage, Communicatio
   if (netState == netWaiting) {
     *topology = *(topologyMessage->topology());
 
-     auto address = connection_to_server->peerAddress();
+     auto peer_address = connection_to_server->peerAddress();
 
-      topology->server.dspAddress = address;
-      topology->server.ddpAddress.host = address.host;
+      topology->server.dspAddress = peer_address;
+	  topology->server.ddpAddress.set_address(peer_address.address());
       
       NetUpdateTopology();
     
@@ -1205,6 +1205,7 @@ void InGameChatCallbacks::ReceivedMessageFromPlayer(const char *player_name, con
 bool NetEnter(bool use_remote_hub)
 {
 	::use_remote_hub = use_remote_hub;
+	network_interface = std::make_unique<NetworkInterface>();
   
 	assert(netState==netUninitialized);
   
@@ -1219,11 +1220,8 @@ bool NetEnter(bool use_remote_hub)
 	assert(topology);
 	memset(topology, 0, sizeof(NetTopology));
 
-	// ZZZ: Sorry, if this swapping is not supported on all current A1
-	// platforms, feel free to rewrite it in a way that is.
-	ddpSocket = SDL_SwapBE16(GAME_PORT);
-	auto error = NetDDPOpenSocket(&ddpSocket, NetDDPPacketHandler);
-	if (!error) {
+	bool success = NetDDPOpenSocket(GAME_PORT, NetDDPPacketHandler);
+	if (success) {
 		sCurrentGameProtocol.Enter(&netState);
 		netState = netDown;
 		handlerState = netDown;
@@ -1312,9 +1310,9 @@ bool NetEnter(bool use_remote_hub)
 
 	next_join_attempt = last_network_stats_send = machine_tick_count();
   
-	if (error) {
+	if (!success) {
 #ifndef A1_NETWORK_STANDALONE_HUB
-		alert_user(infoError, strNETWORK_ERRORS, netErrCantContinue, error);
+		alert_user(infoError, strNETWORK_ERRORS, netErrCantContinue, -1);
 #endif
 		NetExit();
 		return false;
@@ -1338,22 +1336,19 @@ void NetDoneGathering(void)
 
 void NetExit(
 	void)
-{
-	OSErr error = noErr;
-    
+{    
 	// ZZZ: clean up SDL Time Manager emulation.  
 	// true says wait for any late finishers to finish
 	// (but does NOT say to kill anyone not already removed.)
 	myTMCleanup();
   
 	if (netState!=netUninitialized) {
-		error= NetDDPCloseSocket(ddpSocket);
-		if (!error) {
+		if (NetDDPCloseSocket()) {
 			free(topology);
 			topology= NULL;
 			netState= netUninitialized;
 		} else {
-			logAnomaly("NetDDPCloseSocket returned %i", error);
+			logAnomaly("NetDDPCloseSocket failed");
 		}
 	}
   
@@ -1385,11 +1380,15 @@ void NetExit(
 		server = NULL;
 	}
 
-	delete gMetaserverClient;
-	gMetaserverClient = new MetaserverClient();
+	if (gMetaserverClient)
+	{
+		delete gMetaserverClient;
+		gMetaserverClient = nullptr;
+	}
+
+	network_interface.reset();
 	
 	Console::instance()->unregister_command("ignore");
-
 }
 
 bool
@@ -1397,8 +1396,6 @@ NetSync()
 {
 	return sCurrentGameProtocol.Sync(topology, dynamic_world->tick_count, localPlayerIndex, local_is_server());
 }
-
-
 
 bool
 NetUnSync()
@@ -1809,7 +1806,7 @@ void NetSetupTopologyFromStarts(const player_start_data* inStartArray, short inS
 /* ---------- private code */
 
 void
-NetDDPPacketHandler(DDPPacketBufferPtr packet)
+NetDDPPacketHandler(UDPpacket& packet)
 {
 	sCurrentGameProtocol.PacketHandler(packet);
 }
@@ -1835,8 +1832,8 @@ static void NetInitializeTopology(
 	localPlayerIndex = localPlayerIdentifier = NONE;
 	topology->player_count = 0;
 	topology->nextIdentifier = 0;
-	NetLocalAddrBlock(&topology->server.dspAddress, GAME_PORT);
-	NetLocalAddrBlock(&topology->server.ddpAddress, ddpSocket);
+	topology->server.dspAddress.set_port(GAME_PORT);
+	topology->server.ddpAddress.set_port(GAME_PORT);
 #else
 	topology->player_count = 1;
 	localPlayerIndex = localPlayerIdentifier = 0;
@@ -1849,8 +1846,8 @@ static void NetInitializeTopology(
 	local_player->net_dead = false;
 	local_player->stream_id = 0;
 
-	NetLocalAddrBlock(&local_player->dspAddress, GAME_PORT);
-	NetLocalAddrBlock(&local_player->ddpAddress, ddpSocket);
+	local_player->dspAddress.set_port(GAME_PORT);
+	local_player->ddpAddress.set_port(GAME_PORT);
 
 	topology->server.dspAddress = local_player->dspAddress;
 	topology->server.ddpAddress = local_player->ddpAddress;
@@ -1866,18 +1863,6 @@ static void NetInitializeTopology(
 		memcpy(&topology->game_data, game_data, game_data_size);
 	gameSessionIdentifier.clear();
 }
-
-static void NetLocalAddrBlock(
-	NetAddrBlock *address,
-	short socketNumber)
-{
-	
-	address->host = 0x7f000001;	//!! XXX (ZZZ) yeah, that's really bad.
-	address->port = socketNumber;	// OTOH, I guess others are set up to "stuff" the address they actually saw for us instead of
-					// this, anyway... right??  So maybe it's not that big a deal.......
-}
-
-
 
 static void NetUpdateTopology(
 	void)
@@ -2595,7 +2580,7 @@ void NetRemoteHubSendCommand(RemoteHubCommand command, int data)
 	{
 		auto message = RemoteHubCommandMessage(command, data);
 		connection_to_server->enqueueOutgoingMessage(message);
-		connection_to_server->pumpSendingSide();
+		connection_to_server->flushOutgoingMessages(false);
 	}
 }
 

@@ -204,7 +204,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;__WIN32__;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0601;HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;__WIN32__;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -220,7 +220,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0601;HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -238,7 +238,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Standalone Hub|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>A1_NETWORK_STANDALONE_HUB;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;HAVE_ZZIP;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0601;A1_NETWORK_STANDALONE_HUB;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;HAVE_ZZIP;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -256,7 +256,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;HAVE_STEAM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0601;HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;HAVE_STEAM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -274,7 +274,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon 2|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;HAVE_STEAM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0601;HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;HAVE_STEAM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -292,7 +292,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;HAVE_STEAM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0601;HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;__WIN32__;NDEBUG;_WINDOWS;HAVE_STEAM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -311,7 +311,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\Source_Files\;$(ProjectDir)..\..\Source_Files\XML;$(ProjectDir)..\..\Source_Files\TCPMess;$(ProjectDir)..\..\Source_Files\Sound;$(ProjectDir)..\..\Source_Files\RenderOther;$(ProjectDir)..\..\Source_Files\RenderMain;$(ProjectDir)..\..\Source_Files\Network\Metaserver;$(ProjectDir)..\..\Source_Files\Network;$(ProjectDir)..\..\Source_Files\ModelView;$(ProjectDir)..\..\Source_Files\Misc;$(ProjectDir)..\..\Source_Files\Lua;$(ProjectDir)..\..\Source_Files\Input;$(ProjectDir)..\..\Source_Files\GameWorld;$(ProjectDir)..\..\Source_Files\Files;$(ProjectDir)..\..\Source_Files\Videos;$(ProjectDir)..\..\Source_Files\CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0601;HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -325,7 +325,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\Source_Files\;$(ProjectDir)..\..\Source_Files\XML;$(ProjectDir)..\..\Source_Files\TCPMess;$(ProjectDir)..\..\Source_Files\Sound;$(ProjectDir)..\..\Source_Files\RenderOther;$(ProjectDir)..\..\Source_Files\RenderMain;$(ProjectDir)..\..\Source_Files\Network\Metaserver;$(ProjectDir)..\..\Source_Files\Network;$(ProjectDir)..\..\Source_Files\ModelView;$(ProjectDir)..\..\Source_Files\Misc;$(ProjectDir)..\..\Source_Files\Lua;$(ProjectDir)..\..\Source_Files\Input;$(ProjectDir)..\..\Source_Files\GameWorld;$(ProjectDir)..\..\Source_Files\Files;$(ProjectDir)..\..\Source_Files\Videos;$(ProjectDir)..\..\Source_Files\CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0601;HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -342,7 +342,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Standalone Hub|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\Source_Files\Network\StandaloneHub;$(ProjectDir)..\..\Source_Files\;$(ProjectDir)..\..\Source_Files\XML;$(ProjectDir)..\..\Source_Files\TCPMess;$(ProjectDir)..\..\Source_Files\Sound;$(ProjectDir)..\..\Source_Files\RenderOther;$(ProjectDir)..\..\Source_Files\RenderMain;$(ProjectDir)..\..\Source_Files\Network\Metaserver;$(ProjectDir)..\..\Source_Files\Network;$(ProjectDir)..\..\Source_Files\ModelView;$(ProjectDir)..\..\Source_Files\Misc;$(ProjectDir)..\..\Source_Files\Lua;$(ProjectDir)..\..\Source_Files\Input;$(ProjectDir)..\..\Source_Files\GameWorld;$(ProjectDir)..\..\Source_Files\Files;$(ProjectDir)..\..\Source_Files\Videos;$(ProjectDir)..\..\Source_Files\CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>A1_NETWORK_STANDALONE_HUB;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;HAVE_ZZIP;SDL;WIN32;WIN64;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0601;A1_NETWORK_STANDALONE_HUB;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;HAVE_ZZIP;SDL;WIN32;WIN64;__WIN32__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -359,7 +359,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\Source_Files\;$(ProjectDir)..\..\Source_Files\XML;$(ProjectDir)..\..\Source_Files\TCPMess;$(ProjectDir)..\..\Source_Files\Sound;$(ProjectDir)..\..\Source_Files\RenderOther;$(ProjectDir)..\..\Source_Files\RenderMain;$(ProjectDir)..\..\Source_Files\Network\Metaserver;$(ProjectDir)..\..\Source_Files\Network;$(ProjectDir)..\..\Source_Files\ModelView;$(ProjectDir)..\..\Source_Files\Misc;$(ProjectDir)..\..\Source_Files\Lua;$(ProjectDir)..\..\Source_Files\Input;$(ProjectDir)..\..\Source_Files\GameWorld;$(ProjectDir)..\..\Source_Files\Files;$(ProjectDir)..\..\Source_Files\Videos;$(ProjectDir)..\..\Source_Files\CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;HAVE_STEAM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0601;HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;HAVE_STEAM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -376,7 +376,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon 2|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\Source_Files\;$(ProjectDir)..\..\Source_Files\XML;$(ProjectDir)..\..\Source_Files\TCPMess;$(ProjectDir)..\..\Source_Files\Sound;$(ProjectDir)..\..\Source_Files\RenderOther;$(ProjectDir)..\..\Source_Files\RenderMain;$(ProjectDir)..\..\Source_Files\Network\Metaserver;$(ProjectDir)..\..\Source_Files\Network;$(ProjectDir)..\..\Source_Files\ModelView;$(ProjectDir)..\..\Source_Files\Misc;$(ProjectDir)..\..\Source_Files\Lua;$(ProjectDir)..\..\Source_Files\Input;$(ProjectDir)..\..\Source_Files\GameWorld;$(ProjectDir)..\..\Source_Files\Files;$(ProjectDir)..\..\Source_Files\Videos;$(ProjectDir)..\..\Source_Files\CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;HAVE_STEAM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0601;HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;HAVE_STEAM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -393,7 +393,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steam Marathon Infinity|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\Source_Files\;$(ProjectDir)..\..\Source_Files\XML;$(ProjectDir)..\..\Source_Files\TCPMess;$(ProjectDir)..\..\Source_Files\Sound;$(ProjectDir)..\..\Source_Files\RenderOther;$(ProjectDir)..\..\Source_Files\RenderMain;$(ProjectDir)..\..\Source_Files\Network\Metaserver;$(ProjectDir)..\..\Source_Files\Network;$(ProjectDir)..\..\Source_Files\ModelView;$(ProjectDir)..\..\Source_Files\Misc;$(ProjectDir)..\..\Source_Files\Lua;$(ProjectDir)..\..\Source_Files\Input;$(ProjectDir)..\..\Source_Files\GameWorld;$(ProjectDir)..\..\Source_Files\Files;$(ProjectDir)..\..\Source_Files\Videos;$(ProjectDir)..\..\Source_Files\CSeries;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;HAVE_STEAM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0601;HAVE_LIBYUV;FILM_EXPORT;HAVE_NFD;HAVE_MINIUPNPC;MINIUPNP_STATICLIB;CURL_STATICLIB;HAVE_SDL_IMAGE;HAVE_CURL;HAVE_PNG;HAVE_ZZIP;HAVE_OPENGL;SDL;WIN32;WIN64;__WIN32__;HAVE_STEAM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -547,6 +547,7 @@
     <ClCompile Include="..\..\Source_Files\Network\Metaserver\network_metaserver.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\Metaserver\SdlMetaserverClientUi.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\network.cpp" />
+    <ClCompile Include="..\..\Source_Files\Network\NetworkInterface.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\network_capabilities.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\network_dialogs.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\network_dialog_widgets_sdl.cpp" />
@@ -557,7 +558,6 @@
     <ClCompile Include="..\..\Source_Files\Network\network_udp.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\Pinger.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\PortForward.cpp" />
-    <ClCompile Include="..\..\Source_Files\Network\SDL_netx.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\SSLP_limited.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\StandaloneHub\StandaloneHub.cpp" />
     <ClCompile Include="..\..\Source_Files\Network\StandaloneHub\standalone_hub_main.cpp" />
@@ -741,7 +741,6 @@
     <ClInclude Include="..\..\Source_Files\Misc\Scenario.h" />
     <ClInclude Include="..\..\Source_Files\Misc\ScenarioChooser.h" />
     <ClInclude Include="..\..\Source_Files\Misc\sdl_dialogs.h" />
-    <ClInclude Include="..\..\Source_Files\Misc\sdl_network.h" />
     <ClInclude Include="..\..\Source_Files\Misc\sdl_widgets.h" />
     <ClInclude Include="..\..\Source_Files\Misc\shared_widgets.h" />
     <ClInclude Include="..\..\Source_Files\Misc\Statistics.h" />
@@ -763,6 +762,7 @@
     <ClInclude Include="..\..\Source_Files\Network\Metaserver\network_metaserver.h" />
     <ClInclude Include="..\..\Source_Files\Network\network.h" />
     <ClInclude Include="..\..\Source_Files\Network\NetworkGameProtocol.h" />
+    <ClInclude Include="..\..\Source_Files\Network\NetworkInterface.h" />
     <ClInclude Include="..\..\Source_Files\Network\network_capabilities.h" />
     <ClInclude Include="..\..\Source_Files\Network\network_dialogs.h" />
     <ClInclude Include="..\..\Source_Files\Network\network_dialog_widgets_sdl.h" />
@@ -772,7 +772,6 @@
     <ClInclude Include="..\..\Source_Files\Network\network_star.h" />
     <ClInclude Include="..\..\Source_Files\Network\Pinger.h" />
     <ClInclude Include="..\..\Source_Files\Network\PortForward.h" />
-    <ClInclude Include="..\..\Source_Files\Network\SDL_netx.h" />
     <ClInclude Include="..\..\Source_Files\Network\SSLP_API.h" />
     <ClInclude Include="..\..\Source_Files\Network\SSLP_Protocol.h" />
     <ClInclude Include="..\..\Source_Files\Network\StandaloneHub\StandaloneHub.h" />

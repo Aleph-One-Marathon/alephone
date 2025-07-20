@@ -219,7 +219,6 @@
 		AE120BA02BC77645001873DD /* preferences.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212100136A6FD01000001 /* preferences.h */; };
 		AE120BA12BC77645001873DD /* progress.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212140136A6FD01000001 /* progress.h */; };
 		AE120BA22BC77645001873DD /* sdl_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F522123B0136A6FD01000001 /* sdl_dialogs.h */; };
-		AE120BA32BC77645001873DD /* sdl_network.h in Headers */ = {isa = PBXBuildFile; fileRef = F522123E0136A6FD01000001 /* sdl_network.h */; };
 		AE120BA42BC77645001873DD /* sdl_widgets.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212400136A6FD01000001 /* sdl_widgets.h */; };
 		AE120BA52BC77645001873DD /* shell.h in Headers */ = {isa = PBXBuildFile; fileRef = F522124C0136A6FD01000001 /* shell.h */; };
 		AE120BA62BC77645001873DD /* vbl_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212560136A6FD01000001 /* vbl_definitions.h */; };
@@ -365,7 +364,6 @@
 		AE120C372BC77645001873DD /* WindowedNthElementFinder.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */; };
 		AE120C382BC77645001873DD /* thread_priority_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */; };
 		AE120C3A2BC77645001873DD /* QuickSave.h in Headers */ = {isa = PBXBuildFile; fileRef = 276D4E751A2E710F00C16CF5 /* QuickSave.h */; };
-		AE120C3B2BC77645001873DD /* SDL_netx.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0170485BEA500A8000D /* SDL_netx.h */; };
 		AE120C3C2BC77645001873DD /* SSLP_API.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0180485BEA500A8000D /* SSLP_API.h */; };
 		AE120C3D2BC77645001873DD /* SSLP_Protocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */; };
 		AE120C3E2BC77645001873DD /* CircularByteBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = EFEF1AC404AF552D00C3A19D /* CircularByteBuffer.h */; };
@@ -451,7 +449,6 @@
 		AE120C922BC77645001873DD /* PlayerImage_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */; };
 		AE120C932BC77645001873DD /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
 		AE120C952BC77645001873DD /* network_dialog_widgets_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */; };
-		AE120C962BC77645001873DD /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
 		AE120C972BC77645001873DD /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
 		AE120C982BC77645001873DD /* network_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137D0136ABAE01000001 /* network_dialogs.cpp */; };
 		AE120C992BC77645001873DD /* Dim3_Loader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CFAD390200F9D201D80110 /* Dim3_Loader.cpp */; };
@@ -656,7 +653,6 @@
 		AE1320382C1CB4D2009D34AA /* preferences.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212100136A6FD01000001 /* preferences.h */; };
 		AE1320392C1CB4D2009D34AA /* progress.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212140136A6FD01000001 /* progress.h */; };
 		AE13203A2C1CB4D2009D34AA /* sdl_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F522123B0136A6FD01000001 /* sdl_dialogs.h */; };
-		AE13203B2C1CB4D2009D34AA /* sdl_network.h in Headers */ = {isa = PBXBuildFile; fileRef = F522123E0136A6FD01000001 /* sdl_network.h */; };
 		AE13203C2C1CB4D2009D34AA /* sdl_widgets.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212400136A6FD01000001 /* sdl_widgets.h */; };
 		AE13203D2C1CB4D2009D34AA /* shell.h in Headers */ = {isa = PBXBuildFile; fileRef = F522124C0136A6FD01000001 /* shell.h */; };
 		AE13203E2C1CB4D2009D34AA /* vbl_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212560136A6FD01000001 /* vbl_definitions.h */; };
@@ -803,7 +799,6 @@
 		AE1320D02C1CB4D2009D34AA /* WindowedNthElementFinder.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */; };
 		AE1320D12C1CB4D2009D34AA /* thread_priority_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */; };
 		AE1320D32C1CB4D2009D34AA /* QuickSave.h in Headers */ = {isa = PBXBuildFile; fileRef = 276D4E751A2E710F00C16CF5 /* QuickSave.h */; };
-		AE1320D42C1CB4D2009D34AA /* SDL_netx.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0170485BEA500A8000D /* SDL_netx.h */; };
 		AE1320D52C1CB4D2009D34AA /* SSLP_API.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0180485BEA500A8000D /* SSLP_API.h */; };
 		AE1320D62C1CB4D2009D34AA /* SSLP_Protocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */; };
 		AE1320D72C1CB4D2009D34AA /* CircularByteBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = EFEF1AC404AF552D00C3A19D /* CircularByteBuffer.h */; };
@@ -888,7 +883,6 @@
 		AE13212B2C1CB4D2009D34AA /* PlayerImage_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */; };
 		AE13212C2C1CB4D2009D34AA /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
 		AE13212E2C1CB4D2009D34AA /* network_dialog_widgets_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */; };
-		AE13212F2C1CB4D2009D34AA /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
 		AE1321302C1CB4D2009D34AA /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
 		AE1321312C1CB4D2009D34AA /* network_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137D0136ABAE01000001 /* network_dialogs.cpp */; };
 		AE1321322C1CB4D2009D34AA /* Dim3_Loader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CFAD390200F9D201D80110 /* Dim3_Loader.cpp */; };
@@ -1155,7 +1149,6 @@
 		AE505B42141D45E600915344 /* preferences.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212100136A6FD01000001 /* preferences.h */; };
 		AE505B43141D45E600915344 /* progress.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212140136A6FD01000001 /* progress.h */; };
 		AE505B44141D45E600915344 /* sdl_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F522123B0136A6FD01000001 /* sdl_dialogs.h */; };
-		AE505B45141D45E600915344 /* sdl_network.h in Headers */ = {isa = PBXBuildFile; fileRef = F522123E0136A6FD01000001 /* sdl_network.h */; };
 		AE505B46141D45E600915344 /* sdl_widgets.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212400136A6FD01000001 /* sdl_widgets.h */; };
 		AE505B47141D45E600915344 /* shell.h in Headers */ = {isa = PBXBuildFile; fileRef = F522124C0136A6FD01000001 /* shell.h */; };
 		AE505B48141D45E600915344 /* vbl_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212560136A6FD01000001 /* vbl_definitions.h */; };
@@ -1275,7 +1268,6 @@
 		AE505BD1141D45E600915344 /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
 		AE505BD2141D45E600915344 /* WindowedNthElementFinder.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */; };
 		AE505BD4141D45E600915344 /* thread_priority_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */; };
-		AE505BD8141D45E600915344 /* SDL_netx.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0170485BEA500A8000D /* SDL_netx.h */; };
 		AE505BD9141D45E600915344 /* SSLP_API.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0180485BEA500A8000D /* SSLP_API.h */; };
 		AE505BDA141D45E600915344 /* SSLP_Protocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */; };
 		AE505BDB141D45E600915344 /* CircularByteBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = EFEF1AC404AF552D00C3A19D /* CircularByteBuffer.h */; };
@@ -1345,7 +1337,6 @@
 		AE505C2A141D45E600915344 /* PlayerImage_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */; };
 		AE505C2B141D45E600915344 /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
 		AE505C2D141D45E600915344 /* network_dialog_widgets_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */; };
-		AE505C2E141D45E600915344 /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
 		AE505C2F141D45E600915344 /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
 		AE505C30141D45E600915344 /* network_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137D0136ABAE01000001 /* network_dialogs.cpp */; };
 		AE505C31141D45E600915344 /* Dim3_Loader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CFAD390200F9D201D80110 /* Dim3_Loader.cpp */; };
@@ -1630,7 +1621,6 @@
 		AEB4A0E214296CAE00537AE7 /* preferences.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212100136A6FD01000001 /* preferences.h */; };
 		AEB4A0E314296CAE00537AE7 /* progress.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212140136A6FD01000001 /* progress.h */; };
 		AEB4A0E414296CAE00537AE7 /* sdl_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F522123B0136A6FD01000001 /* sdl_dialogs.h */; };
-		AEB4A0E514296CAE00537AE7 /* sdl_network.h in Headers */ = {isa = PBXBuildFile; fileRef = F522123E0136A6FD01000001 /* sdl_network.h */; };
 		AEB4A0E614296CAE00537AE7 /* sdl_widgets.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212400136A6FD01000001 /* sdl_widgets.h */; };
 		AEB4A0E714296CAE00537AE7 /* shell.h in Headers */ = {isa = PBXBuildFile; fileRef = F522124C0136A6FD01000001 /* shell.h */; };
 		AEB4A0E814296CAE00537AE7 /* vbl_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212560136A6FD01000001 /* vbl_definitions.h */; };
@@ -1750,7 +1740,6 @@
 		AEB4A17114296CAE00537AE7 /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
 		AEB4A17214296CAE00537AE7 /* WindowedNthElementFinder.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */; };
 		AEB4A17414296CAE00537AE7 /* thread_priority_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */; };
-		AEB4A17814296CAE00537AE7 /* SDL_netx.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0170485BEA500A8000D /* SDL_netx.h */; };
 		AEB4A17914296CAE00537AE7 /* SSLP_API.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0180485BEA500A8000D /* SSLP_API.h */; };
 		AEB4A17A14296CAE00537AE7 /* SSLP_Protocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */; };
 		AEB4A17B14296CAE00537AE7 /* CircularByteBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = EFEF1AC404AF552D00C3A19D /* CircularByteBuffer.h */; };
@@ -1821,7 +1810,6 @@
 		AEB4A1CB14296CAE00537AE7 /* PlayerImage_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */; };
 		AEB4A1CC14296CAE00537AE7 /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
 		AEB4A1CE14296CAE00537AE7 /* network_dialog_widgets_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */; };
-		AEB4A1CF14296CAE00537AE7 /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
 		AEB4A1D014296CAE00537AE7 /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
 		AEB4A1D114296CAE00537AE7 /* network_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137D0136ABAE01000001 /* network_dialogs.cpp */; };
 		AEB4A1D214296CAE00537AE7 /* Dim3_Loader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CFAD390200F9D201D80110 /* Dim3_Loader.cpp */; };
@@ -1994,7 +1982,6 @@
 		AEBDC5142C4DF0780026DFF1 /* preferences.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212100136A6FD01000001 /* preferences.h */; };
 		AEBDC5152C4DF0780026DFF1 /* progress.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212140136A6FD01000001 /* progress.h */; };
 		AEBDC5162C4DF0780026DFF1 /* sdl_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F522123B0136A6FD01000001 /* sdl_dialogs.h */; };
-		AEBDC5172C4DF0780026DFF1 /* sdl_network.h in Headers */ = {isa = PBXBuildFile; fileRef = F522123E0136A6FD01000001 /* sdl_network.h */; };
 		AEBDC5182C4DF0780026DFF1 /* sdl_widgets.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212400136A6FD01000001 /* sdl_widgets.h */; };
 		AEBDC5192C4DF0780026DFF1 /* shell.h in Headers */ = {isa = PBXBuildFile; fileRef = F522124C0136A6FD01000001 /* shell.h */; };
 		AEBDC51A2C4DF0780026DFF1 /* vbl_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212560136A6FD01000001 /* vbl_definitions.h */; };
@@ -2141,7 +2128,6 @@
 		AEBDC5AC2C4DF0780026DFF1 /* WindowedNthElementFinder.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */; };
 		AEBDC5AD2C4DF0780026DFF1 /* thread_priority_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */; };
 		AEBDC5AF2C4DF0780026DFF1 /* QuickSave.h in Headers */ = {isa = PBXBuildFile; fileRef = 276D4E751A2E710F00C16CF5 /* QuickSave.h */; };
-		AEBDC5B02C4DF0780026DFF1 /* SDL_netx.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0170485BEA500A8000D /* SDL_netx.h */; };
 		AEBDC5B12C4DF0780026DFF1 /* SSLP_API.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0180485BEA500A8000D /* SSLP_API.h */; };
 		AEBDC5B22C4DF0780026DFF1 /* SSLP_Protocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */; };
 		AEBDC5B32C4DF0780026DFF1 /* CircularByteBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = EFEF1AC404AF552D00C3A19D /* CircularByteBuffer.h */; };
@@ -2226,7 +2212,6 @@
 		AEBDC6072C4DF0780026DFF1 /* PlayerImage_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */; };
 		AEBDC6082C4DF0780026DFF1 /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
 		AEBDC60A2C4DF0780026DFF1 /* network_dialog_widgets_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */; };
-		AEBDC60B2C4DF0780026DFF1 /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
 		AEBDC60C2C4DF0780026DFF1 /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
 		AEBDC60D2C4DF0780026DFF1 /* network_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137D0136ABAE01000001 /* network_dialogs.cpp */; };
 		AEBDC60E2C4DF0780026DFF1 /* Dim3_Loader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CFAD390200F9D201D80110 /* Dim3_Loader.cpp */; };
@@ -2432,7 +2417,6 @@
 		AEC3C70709AD68AC003258E4 /* preferences.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212100136A6FD01000001 /* preferences.h */; };
 		AEC3C70809AD68AC003258E4 /* progress.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212140136A6FD01000001 /* progress.h */; };
 		AEC3C70909AD68AC003258E4 /* sdl_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F522123B0136A6FD01000001 /* sdl_dialogs.h */; };
-		AEC3C70A09AD68AC003258E4 /* sdl_network.h in Headers */ = {isa = PBXBuildFile; fileRef = F522123E0136A6FD01000001 /* sdl_network.h */; };
 		AEC3C70B09AD68AC003258E4 /* sdl_widgets.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212400136A6FD01000001 /* sdl_widgets.h */; };
 		AEC3C70C09AD68AC003258E4 /* shell.h in Headers */ = {isa = PBXBuildFile; fileRef = F522124C0136A6FD01000001 /* shell.h */; };
 		AEC3C70D09AD68AC003258E4 /* vbl_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212560136A6FD01000001 /* vbl_definitions.h */; };
@@ -2552,7 +2536,6 @@
 		AEC3C7AB09AD68AC003258E4 /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
 		AEC3C7AC09AD68AC003258E4 /* WindowedNthElementFinder.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */; };
 		AEC3C7AE09AD68AC003258E4 /* thread_priority_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */; };
-		AEC3C7B209AD68AC003258E4 /* SDL_netx.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0170485BEA500A8000D /* SDL_netx.h */; };
 		AEC3C7B309AD68AC003258E4 /* SSLP_API.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0180485BEA500A8000D /* SSLP_API.h */; };
 		AEC3C7B409AD68AC003258E4 /* SSLP_Protocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */; };
 		AEC3C7B509AD68AC003258E4 /* CircularByteBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = EFEF1AC404AF552D00C3A19D /* CircularByteBuffer.h */; };
@@ -2603,7 +2586,6 @@
 		AEC3C7F109AD68AC003258E4 /* PlayerImage_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */; };
 		AEC3C7F209AD68AC003258E4 /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
 		AEC3C7F409AD68AC003258E4 /* network_dialog_widgets_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */; };
-		AEC3C7F509AD68AC003258E4 /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
 		AEC3C7F609AD68AC003258E4 /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
 		AEC3C7F709AD68AC003258E4 /* network_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137D0136ABAE01000001 /* network_dialogs.cpp */; };
 		AEC3C7F809AD68AC003258E4 /* Dim3_Loader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CFAD390200F9D201D80110 /* Dim3_Loader.cpp */; };
@@ -2702,6 +2684,13 @@
 		AEC3C86C09AD68AC003258E4 /* Console.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEC6C89B0879A5DE0055EC57 /* Console.cpp */; };
 		AEC3C86D09AD68AC003258E4 /* ImageLoader_Shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */; };
 		AEC3C86E09AD68AC003258E4 /* OGL_LoadScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */; };
+		AECD778B2E19D16500C9917C /* NetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AECD778A2E19D16500C9917C /* NetworkInterface.cpp */; };
+		AECD778C2E19D16500C9917C /* NetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AECD778A2E19D16500C9917C /* NetworkInterface.cpp */; };
+		AECD778D2E19D16500C9917C /* NetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AECD778A2E19D16500C9917C /* NetworkInterface.cpp */; };
+		AECD778E2E19D16500C9917C /* NetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AECD778A2E19D16500C9917C /* NetworkInterface.cpp */; };
+		AECD778F2E19D16500C9917C /* NetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AECD778A2E19D16500C9917C /* NetworkInterface.cpp */; };
+		AECD77902E19D16500C9917C /* NetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AECD778A2E19D16500C9917C /* NetworkInterface.cpp */; };
+		AECD77912E19D16500C9917C /* NetworkInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AECD778A2E19D16500C9917C /* NetworkInterface.cpp */; };
 		AED959B22BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */ = {isa = PBXBuildFile; fileRef = AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */; };
 		AED959B32BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */ = {isa = PBXBuildFile; fileRef = AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */; };
 		AED959B42BC23591008EFCA2 /* powered_by_alephone_h.h in Headers */ = {isa = PBXBuildFile; fileRef = AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */; };
@@ -2735,7 +2724,6 @@
 		AEFD85F013EB84CF00C1E687 /* preferences.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212100136A6FD01000001 /* preferences.h */; };
 		AEFD85F113EB84CF00C1E687 /* progress.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212140136A6FD01000001 /* progress.h */; };
 		AEFD85F213EB84CF00C1E687 /* sdl_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F522123B0136A6FD01000001 /* sdl_dialogs.h */; };
-		AEFD85F313EB84CF00C1E687 /* sdl_network.h in Headers */ = {isa = PBXBuildFile; fileRef = F522123E0136A6FD01000001 /* sdl_network.h */; };
 		AEFD85F413EB84CF00C1E687 /* sdl_widgets.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212400136A6FD01000001 /* sdl_widgets.h */; };
 		AEFD85F513EB84CF00C1E687 /* shell.h in Headers */ = {isa = PBXBuildFile; fileRef = F522124C0136A6FD01000001 /* shell.h */; };
 		AEFD85F613EB84CF00C1E687 /* vbl_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212560136A6FD01000001 /* vbl_definitions.h */; };
@@ -2855,7 +2843,6 @@
 		AEFD867F13EB84CF00C1E687 /* TickBasedCircularQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */; };
 		AEFD868013EB84CF00C1E687 /* WindowedNthElementFinder.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */; };
 		AEFD868213EB84CF00C1E687 /* thread_priority_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */; };
-		AEFD868613EB84CF00C1E687 /* SDL_netx.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0170485BEA500A8000D /* SDL_netx.h */; };
 		AEFD868713EB84CF00C1E687 /* SSLP_API.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0180485BEA500A8000D /* SSLP_API.h */; };
 		AEFD868813EB84CF00C1E687 /* SSLP_Protocol.h in Headers */ = {isa = PBXBuildFile; fileRef = EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */; };
 		AEFD868913EB84CF00C1E687 /* CircularByteBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = EFEF1AC404AF552D00C3A19D /* CircularByteBuffer.h */; };
@@ -2924,7 +2911,6 @@
 		AEFD86D713EB84CF00C1E687 /* PlayerImage_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */; };
 		AEFD86D813EB84CF00C1E687 /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
 		AEFD86DA13EB84CF00C1E687 /* network_dialog_widgets_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */; };
-		AEFD86DB13EB84CF00C1E687 /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
 		AEFD86DC13EB84CF00C1E687 /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
 		AEFD86DD13EB84CF00C1E687 /* network_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137D0136ABAE01000001 /* network_dialogs.cpp */; };
 		AEFD86DE13EB84CF00C1E687 /* Dim3_Loader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CFAD390200F9D201D80110 /* Dim3_Loader.cpp */; };
@@ -3364,6 +3350,8 @@
 		AEC3C89609AD68AE003258E4 /* Aleph One.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Aleph One.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
+		AECD778A2E19D16500C9917C /* NetworkInterface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = NetworkInterface.cpp; path = ../Source_Files/Network/NetworkInterface.cpp; sourceTree = "<group>"; };
+		AECD77922E19D18C00C9917C /* NetworkInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = NetworkInterface.h; path = ../Source_Files/Network/NetworkInterface.h; sourceTree = "<group>"; };
 		AED959AF2BC23591008EFCA2 /* powered_by_alephone_h.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = powered_by_alephone_h.h; path = ../Source_Files/Misc/powered_by_alephone_h.h; sourceTree = "<group>"; };
 		AED959B02BC23591008EFCA2 /* m1_achievements.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = m1_achievements.lua; path = ../Source_Files/Misc/m1_achievements.lua; sourceTree = "<group>"; };
 		AED959B12BC23591008EFCA2 /* achievements.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = achievements.h; path = ../Source_Files/Misc/achievements.h; sourceTree = "<group>"; };
@@ -3391,7 +3379,6 @@
 		EF2EF5E904819F2300A8000D /* TickBasedCircularQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TickBasedCircularQueue.h; sourceTree = "<group>"; };
 		EF2EF5EC04819F8400A8000D /* WindowedNthElementFinder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WindowedNthElementFinder.h; path = ../Source_Files/Misc/WindowedNthElementFinder.h; sourceTree = "<group>"; };
 		EF2EF5F00481A07000A8000D /* thread_priority_sdl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = thread_priority_sdl.h; path = ../Source_Files/Misc/thread_priority_sdl.h; sourceTree = "<group>"; };
-		EFBAF0170485BEA500A8000D /* SDL_netx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_netx.h; path = ../Source_Files/Network/SDL_netx.h; sourceTree = "<group>"; };
 		EFBAF0180485BEA500A8000D /* SSLP_API.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSLP_API.h; path = ../Source_Files/Network/SSLP_API.h; sourceTree = "<group>"; };
 		EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSLP_Protocol.h; path = ../Source_Files/Network/SSLP_Protocol.h; sourceTree = "<group>"; };
 		EFEF1AC404AF552D00C3A19D /* CircularByteBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CircularByteBuffer.h; path = ../Source_Files/Misc/CircularByteBuffer.h; sourceTree = "<group>"; };
@@ -3429,7 +3416,6 @@
 		F52212190136A6FD01000001 /* Random.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Random.h; path = ../Source_Files/Misc/Random.h; sourceTree = SOURCE_ROOT; };
 		F522123A0136A6FD01000001 /* sdl_dialogs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sdl_dialogs.cpp; path = ../Source_Files/Misc/sdl_dialogs.cpp; sourceTree = SOURCE_ROOT; };
 		F522123B0136A6FD01000001 /* sdl_dialogs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sdl_dialogs.h; path = ../Source_Files/Misc/sdl_dialogs.h; sourceTree = SOURCE_ROOT; };
-		F522123E0136A6FD01000001 /* sdl_network.h */ = {isa = PBXFileReference; comments = "JTP: No, this isn't a typo or misplacement. Both Carbon and SDL versions use this."; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sdl_network.h; path = ../Source_Files/Misc/sdl_network.h; sourceTree = SOURCE_ROOT; };
 		F522123F0136A6FD01000001 /* sdl_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sdl_widgets.cpp; path = ../Source_Files/Misc/sdl_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		F52212400136A6FD01000001 /* sdl_widgets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sdl_widgets.h; path = ../Source_Files/Misc/sdl_widgets.h; sourceTree = SOURCE_ROOT; };
 		F52212490136A6FD01000001 /* shell_misc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = shell_misc.cpp; path = ../Source_Files/shell_misc.cpp; sourceTree = SOURCE_ROOT; };
@@ -3452,7 +3438,6 @@
 		F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PlayerImage_sdl.cpp; path = ../Source_Files/Misc/PlayerImage_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = thread_priority_sdl_macosx.cpp; path = ../Source_Files/Misc/thread_priority_sdl_macosx.cpp; sourceTree = SOURCE_ROOT; };
 		F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network_dialog_widgets_sdl.cpp; path = ../Source_Files/Network/network_dialog_widgets_sdl.cpp; sourceTree = SOURCE_ROOT; };
-		F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SDL_netx.cpp; path = ../Source_Files/Network/SDL_netx.cpp; sourceTree = SOURCE_ROOT; };
 		F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SSLP_limited.cpp; path = ../Source_Files/Network/SSLP_limited.cpp; sourceTree = SOURCE_ROOT; };
 		F56AEB6B01F8AA1201780311 /* ImagesIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = ImagesIcon.icns; sourceTree = "<group>"; };
 		F56AEB6C01F8AA1201780311 /* ShapesIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = ShapesIcon.icns; sourceTree = "<group>"; };
@@ -4183,7 +4168,6 @@
 				F52212190136A6FD01000001 /* Random.h */,
 				AE2A50CF09C6727C007681A4 /* Scenario.h */,
 				AE83423E2C5B22BE00A4A530 /* ScenarioChooser.h */,
-				F522123E0136A6FD01000001 /* sdl_network.h */,
 				AE437C8B08779BC900038E30 /* shared_widgets.h */,
 				AE48F3551421900900051D61 /* Statistics.h */,
 				AE120D682BC776E7001873DD /* steamshim_child.h */,
@@ -4203,10 +4187,10 @@
 				F52214520136C0C401000001 /* Headers */,
 				AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */,
 				275A7BD71A60E9B9002EE952 /* HTTP.cpp */,
-				F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */,
 				F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */,
 				EF2EF5CF04819BD700A8000D /* StarGameProtocol.cpp */,
 				F522138F0136ABAE01000001 /* network.cpp */,
+				AECD778A2E19D16500C9917C /* NetworkInterface.cpp */,
 				AE5604DD086F6DF100D9797C /* network_capabilities.cpp */,
 				F5574EFA01F4ED0A01FEABBD /* network_dialog_widgets_sdl.cpp */,
 				F522137D0136ABAE01000001 /* network_dialogs.cpp */,
@@ -4230,7 +4214,7 @@
 				AEDF1A121416FE2200183689 /* HTTP.h */,
 				AE7C21D40BFF686200CE63EC /* Update.h */,
 				EF2EF5CC04819BD700A8000D /* NetworkGameProtocol.h */,
-				EFBAF0170485BEA500A8000D /* SDL_netx.h */,
+				AECD77922E19D18C00C9917C /* NetworkInterface.h */,
 				EFBAF0180485BEA500A8000D /* SSLP_API.h */,
 				EFBAF0190485BEA500A8000D /* SSLP_Protocol.h */,
 				EF2EF5D004819BD700A8000D /* StarGameProtocol.h */,
@@ -4667,7 +4651,6 @@
 				AE120BA02BC77645001873DD /* preferences.h in Headers */,
 				AE120BA12BC77645001873DD /* progress.h in Headers */,
 				AE120BA22BC77645001873DD /* sdl_dialogs.h in Headers */,
-				AE120BA32BC77645001873DD /* sdl_network.h in Headers */,
 				AE120BA42BC77645001873DD /* sdl_widgets.h in Headers */,
 				AE120BA52BC77645001873DD /* shell.h in Headers */,
 				AE120BA62BC77645001873DD /* vbl_definitions.h in Headers */,
@@ -4814,7 +4797,6 @@
 				AE120C372BC77645001873DD /* WindowedNthElementFinder.h in Headers */,
 				AE120C382BC77645001873DD /* thread_priority_sdl.h in Headers */,
 				AE120C3A2BC77645001873DD /* QuickSave.h in Headers */,
-				AE120C3B2BC77645001873DD /* SDL_netx.h in Headers */,
 				AE120C3C2BC77645001873DD /* SSLP_API.h in Headers */,
 				AE120C3D2BC77645001873DD /* SSLP_Protocol.h in Headers */,
 				AE120C3E2BC77645001873DD /* CircularByteBuffer.h in Headers */,
@@ -4876,7 +4858,6 @@
 				AE1320382C1CB4D2009D34AA /* preferences.h in Headers */,
 				AE1320392C1CB4D2009D34AA /* progress.h in Headers */,
 				AE13203A2C1CB4D2009D34AA /* sdl_dialogs.h in Headers */,
-				AE13203B2C1CB4D2009D34AA /* sdl_network.h in Headers */,
 				AE13203C2C1CB4D2009D34AA /* sdl_widgets.h in Headers */,
 				AE13203D2C1CB4D2009D34AA /* shell.h in Headers */,
 				AE13203E2C1CB4D2009D34AA /* vbl_definitions.h in Headers */,
@@ -5023,7 +5004,6 @@
 				AE1320D02C1CB4D2009D34AA /* WindowedNthElementFinder.h in Headers */,
 				AE1320D12C1CB4D2009D34AA /* thread_priority_sdl.h in Headers */,
 				AE1320D32C1CB4D2009D34AA /* QuickSave.h in Headers */,
-				AE1320D42C1CB4D2009D34AA /* SDL_netx.h in Headers */,
 				AE1320D52C1CB4D2009D34AA /* SSLP_API.h in Headers */,
 				AE1320D62C1CB4D2009D34AA /* SSLP_Protocol.h in Headers */,
 				AE1320D72C1CB4D2009D34AA /* CircularByteBuffer.h in Headers */,
@@ -5085,7 +5065,6 @@
 				AE505B42141D45E600915344 /* preferences.h in Headers */,
 				AE505B43141D45E600915344 /* progress.h in Headers */,
 				AE505B44141D45E600915344 /* sdl_dialogs.h in Headers */,
-				AE505B45141D45E600915344 /* sdl_network.h in Headers */,
 				AE505B46141D45E600915344 /* sdl_widgets.h in Headers */,
 				AE505B47141D45E600915344 /* shell.h in Headers */,
 				AE505B48141D45E600915344 /* vbl_definitions.h in Headers */,
@@ -5232,7 +5211,6 @@
 				AE505BD2141D45E600915344 /* WindowedNthElementFinder.h in Headers */,
 				AE505BD4141D45E600915344 /* thread_priority_sdl.h in Headers */,
 				27EFC4BA1A7C935500A95592 /* QuickSave.h in Headers */,
-				AE505BD8141D45E600915344 /* SDL_netx.h in Headers */,
 				AE505BD9141D45E600915344 /* SSLP_API.h in Headers */,
 				AE505BDA141D45E600915344 /* SSLP_Protocol.h in Headers */,
 				AE505BDB141D45E600915344 /* CircularByteBuffer.h in Headers */,
@@ -5293,7 +5271,6 @@
 				AEB4A0E214296CAE00537AE7 /* preferences.h in Headers */,
 				AEB4A0E314296CAE00537AE7 /* progress.h in Headers */,
 				AEB4A0E414296CAE00537AE7 /* sdl_dialogs.h in Headers */,
-				AEB4A0E514296CAE00537AE7 /* sdl_network.h in Headers */,
 				AEB4A0E614296CAE00537AE7 /* sdl_widgets.h in Headers */,
 				AEB4A0E714296CAE00537AE7 /* shell.h in Headers */,
 				AEB4A0E814296CAE00537AE7 /* vbl_definitions.h in Headers */,
@@ -5440,7 +5417,6 @@
 				AEB4A17214296CAE00537AE7 /* WindowedNthElementFinder.h in Headers */,
 				AEB4A17414296CAE00537AE7 /* thread_priority_sdl.h in Headers */,
 				27EFC4BB1A7C935600A95592 /* QuickSave.h in Headers */,
-				AEB4A17814296CAE00537AE7 /* SDL_netx.h in Headers */,
 				AEB4A17914296CAE00537AE7 /* SSLP_API.h in Headers */,
 				AEB4A17A14296CAE00537AE7 /* SSLP_Protocol.h in Headers */,
 				AEB4A17B14296CAE00537AE7 /* CircularByteBuffer.h in Headers */,
@@ -5501,7 +5477,6 @@
 				AEBDC5142C4DF0780026DFF1 /* preferences.h in Headers */,
 				AEBDC5152C4DF0780026DFF1 /* progress.h in Headers */,
 				AEBDC5162C4DF0780026DFF1 /* sdl_dialogs.h in Headers */,
-				AEBDC5172C4DF0780026DFF1 /* sdl_network.h in Headers */,
 				AEBDC5182C4DF0780026DFF1 /* sdl_widgets.h in Headers */,
 				AEBDC5192C4DF0780026DFF1 /* shell.h in Headers */,
 				AEBDC51A2C4DF0780026DFF1 /* vbl_definitions.h in Headers */,
@@ -5648,7 +5623,6 @@
 				AEBDC5AC2C4DF0780026DFF1 /* WindowedNthElementFinder.h in Headers */,
 				AEBDC5AD2C4DF0780026DFF1 /* thread_priority_sdl.h in Headers */,
 				AEBDC5AF2C4DF0780026DFF1 /* QuickSave.h in Headers */,
-				AEBDC5B02C4DF0780026DFF1 /* SDL_netx.h in Headers */,
 				AEBDC5B12C4DF0780026DFF1 /* SSLP_API.h in Headers */,
 				AEBDC5B22C4DF0780026DFF1 /* SSLP_Protocol.h in Headers */,
 				AEBDC5B32C4DF0780026DFF1 /* CircularByteBuffer.h in Headers */,
@@ -5711,7 +5685,6 @@
 				AEC3C70709AD68AC003258E4 /* preferences.h in Headers */,
 				AEC3C70809AD68AC003258E4 /* progress.h in Headers */,
 				AEC3C70909AD68AC003258E4 /* sdl_dialogs.h in Headers */,
-				AEC3C70A09AD68AC003258E4 /* sdl_network.h in Headers */,
 				AEC3C70B09AD68AC003258E4 /* sdl_widgets.h in Headers */,
 				AEC3C70C09AD68AC003258E4 /* shell.h in Headers */,
 				AEC3C70D09AD68AC003258E4 /* vbl_definitions.h in Headers */,
@@ -5859,7 +5832,6 @@
 				AEC3C7AE09AD68AC003258E4 /* thread_priority_sdl.h in Headers */,
 				276BED311A8470A900AE52F4 /* PlayerImage_sdl.h in Headers */,
 				276BECF01A846BC500AE52F4 /* ReplacementSounds.h in Headers */,
-				AEC3C7B209AD68AC003258E4 /* SDL_netx.h in Headers */,
 				AEC3C7B309AD68AC003258E4 /* SSLP_API.h in Headers */,
 				AEC3C7B409AD68AC003258E4 /* SSLP_Protocol.h in Headers */,
 				AEC3C7B509AD68AC003258E4 /* CircularByteBuffer.h in Headers */,
@@ -5918,7 +5890,6 @@
 				AEFD85F013EB84CF00C1E687 /* preferences.h in Headers */,
 				AEFD85F113EB84CF00C1E687 /* progress.h in Headers */,
 				AEFD85F213EB84CF00C1E687 /* sdl_dialogs.h in Headers */,
-				AEFD85F313EB84CF00C1E687 /* sdl_network.h in Headers */,
 				AEFD85F413EB84CF00C1E687 /* sdl_widgets.h in Headers */,
 				AEFD85F513EB84CF00C1E687 /* shell.h in Headers */,
 				AEFD85F613EB84CF00C1E687 /* vbl_definitions.h in Headers */,
@@ -6065,7 +6036,6 @@
 				AEFD868013EB84CF00C1E687 /* WindowedNthElementFinder.h in Headers */,
 				AEFD868213EB84CF00C1E687 /* thread_priority_sdl.h in Headers */,
 				27EFC4B91A7C935500A95592 /* QuickSave.h in Headers */,
-				AEFD868613EB84CF00C1E687 /* SDL_netx.h in Headers */,
 				AEFD868713EB84CF00C1E687 /* SSLP_API.h in Headers */,
 				AEFD868813EB84CF00C1E687 /* SSLP_Protocol.h in Headers */,
 				AEFD868913EB84CF00C1E687 /* CircularByteBuffer.h in Headers */,
@@ -6660,7 +6630,6 @@
 				AE120C922BC77645001873DD /* PlayerImage_sdl.cpp in Sources */,
 				AE120C932BC77645001873DD /* thread_priority_sdl_macosx.cpp in Sources */,
 				AE120C952BC77645001873DD /* network_dialog_widgets_sdl.cpp in Sources */,
-				AE120C962BC77645001873DD /* SDL_netx.cpp in Sources */,
 				AE120C972BC77645001873DD /* SSLP_limited.cpp in Sources */,
 				AE120C982BC77645001873DD /* network_dialogs.cpp in Sources */,
 				AE120C992BC77645001873DD /* Dim3_Loader.cpp in Sources */,
@@ -6840,6 +6809,7 @@
 				AE120D492BC77645001873DD /* csalerts.mm in Sources */,
 				AE120D4A2BC77645001873DD /* OGL_FBO.cpp in Sources */,
 				AE120D4B2BC77645001873DD /* lua_saved_objects.cpp in Sources */,
+				AECD77912E19D16500C9917C /* NetworkInterface.cpp in Sources */,
 				AE120D4C2BC77645001873DD /* cspaths.mm in Sources */,
 				AE120D4D2BC77645001873DD /* FilmProfile.cpp in Sources */,
 				AE120D4E2BC77645001873DD /* Movie.cpp in Sources */,
@@ -6882,7 +6852,6 @@
 				AE13212B2C1CB4D2009D34AA /* PlayerImage_sdl.cpp in Sources */,
 				AE13212C2C1CB4D2009D34AA /* thread_priority_sdl_macosx.cpp in Sources */,
 				AE13212E2C1CB4D2009D34AA /* network_dialog_widgets_sdl.cpp in Sources */,
-				AE13212F2C1CB4D2009D34AA /* SDL_netx.cpp in Sources */,
 				AE1321302C1CB4D2009D34AA /* SSLP_limited.cpp in Sources */,
 				AE1321312C1CB4D2009D34AA /* network_dialogs.cpp in Sources */,
 				AE1321322C1CB4D2009D34AA /* Dim3_Loader.cpp in Sources */,
@@ -7062,6 +7031,7 @@
 				AE1321E32C1CB4D2009D34AA /* csalerts.mm in Sources */,
 				AE1321E42C1CB4D2009D34AA /* OGL_FBO.cpp in Sources */,
 				AE1321E52C1CB4D2009D34AA /* lua_saved_objects.cpp in Sources */,
+				AECD778E2E19D16500C9917C /* NetworkInterface.cpp in Sources */,
 				AE1321E62C1CB4D2009D34AA /* cspaths.mm in Sources */,
 				AE1321E72C1CB4D2009D34AA /* FilmProfile.cpp in Sources */,
 				AE1321E82C1CB4D2009D34AA /* Movie.cpp in Sources */,
@@ -7104,7 +7074,6 @@
 				AE505C2A141D45E600915344 /* PlayerImage_sdl.cpp in Sources */,
 				AE505C2B141D45E600915344 /* thread_priority_sdl_macosx.cpp in Sources */,
 				AE505C2D141D45E600915344 /* network_dialog_widgets_sdl.cpp in Sources */,
-				AE505C2E141D45E600915344 /* SDL_netx.cpp in Sources */,
 				AE505C2F141D45E600915344 /* SSLP_limited.cpp in Sources */,
 				AE505C30141D45E600915344 /* network_dialogs.cpp in Sources */,
 				AE505C31141D45E600915344 /* Dim3_Loader.cpp in Sources */,
@@ -7199,6 +7168,7 @@
 				AE505C8C141D45E600915344 /* StarGameProtocol.cpp in Sources */,
 				AE96370E2A39578600DE43FF /* lua_music.cpp in Sources */,
 				AE505C8D141D45E600915344 /* AStream.cpp in Sources */,
+				AECD778B2E19D16500C9917C /* NetworkInterface.cpp in Sources */,
 				AE505C8F141D45E600915344 /* CircularByteBuffer.cpp in Sources */,
 				AE505C90141D45E600915344 /* lua_script.cpp in Sources */,
 				AE505C91141D45E600915344 /* metaserver_dialogs.cpp in Sources */,
@@ -7333,7 +7303,6 @@
 				AEB4A1CB14296CAE00537AE7 /* PlayerImage_sdl.cpp in Sources */,
 				AEB4A1CC14296CAE00537AE7 /* thread_priority_sdl_macosx.cpp in Sources */,
 				AEB4A1CE14296CAE00537AE7 /* network_dialog_widgets_sdl.cpp in Sources */,
-				AEB4A1CF14296CAE00537AE7 /* SDL_netx.cpp in Sources */,
 				AEB4A1D014296CAE00537AE7 /* SSLP_limited.cpp in Sources */,
 				AEB4A1D114296CAE00537AE7 /* network_dialogs.cpp in Sources */,
 				AEB4A1D214296CAE00537AE7 /* Dim3_Loader.cpp in Sources */,
@@ -7428,6 +7397,7 @@
 				AEB4A22D14296CAE00537AE7 /* StarGameProtocol.cpp in Sources */,
 				AE96370F2A39578600DE43FF /* lua_music.cpp in Sources */,
 				AEB4A22E14296CAE00537AE7 /* AStream.cpp in Sources */,
+				AECD778C2E19D16500C9917C /* NetworkInterface.cpp in Sources */,
 				AEB4A23014296CAE00537AE7 /* CircularByteBuffer.cpp in Sources */,
 				AEB4A23114296CAE00537AE7 /* lua_script.cpp in Sources */,
 				AEB4A23214296CAE00537AE7 /* metaserver_dialogs.cpp in Sources */,
@@ -7554,7 +7524,6 @@
 				AEBDC6072C4DF0780026DFF1 /* PlayerImage_sdl.cpp in Sources */,
 				AEBDC6082C4DF0780026DFF1 /* thread_priority_sdl_macosx.cpp in Sources */,
 				AEBDC60A2C4DF0780026DFF1 /* network_dialog_widgets_sdl.cpp in Sources */,
-				AEBDC60B2C4DF0780026DFF1 /* SDL_netx.cpp in Sources */,
 				AEBDC60C2C4DF0780026DFF1 /* SSLP_limited.cpp in Sources */,
 				AEBDC60D2C4DF0780026DFF1 /* network_dialogs.cpp in Sources */,
 				AEBDC60E2C4DF0780026DFF1 /* Dim3_Loader.cpp in Sources */,
@@ -7734,6 +7703,7 @@
 				AEBDC6C02C4DF0780026DFF1 /* csalerts.mm in Sources */,
 				AEBDC6C12C4DF0780026DFF1 /* OGL_FBO.cpp in Sources */,
 				AEBDC6C22C4DF0780026DFF1 /* lua_saved_objects.cpp in Sources */,
+				AECD778D2E19D16500C9917C /* NetworkInterface.cpp in Sources */,
 				AEBDC6C32C4DF0780026DFF1 /* cspaths.mm in Sources */,
 				AEBDC6C42C4DF0780026DFF1 /* FilmProfile.cpp in Sources */,
 				AEBDC6C52C4DF0780026DFF1 /* Movie.cpp in Sources */,
@@ -7777,7 +7747,6 @@
 				AEC3C7F209AD68AC003258E4 /* thread_priority_sdl_macosx.cpp in Sources */,
 				276D4E771A2E734E00C16CF5 /* QuickSave.cpp in Sources */,
 				AEC3C7F409AD68AC003258E4 /* network_dialog_widgets_sdl.cpp in Sources */,
-				AEC3C7F509AD68AC003258E4 /* SDL_netx.cpp in Sources */,
 				AEC3C7F609AD68AC003258E4 /* SSLP_limited.cpp in Sources */,
 				AEC3C7F709AD68AC003258E4 /* network_dialogs.cpp in Sources */,
 				AEC3C7F809AD68AC003258E4 /* Dim3_Loader.cpp in Sources */,
@@ -7871,6 +7840,7 @@
 				AEC3C85709AD68AC003258E4 /* network_star_spoke.cpp in Sources */,
 				AEC3C85A09AD68AC003258E4 /* StarGameProtocol.cpp in Sources */,
 				AE96370C2A39578600DE43FF /* lua_music.cpp in Sources */,
+				AECD77902E19D16500C9917C /* NetworkInterface.cpp in Sources */,
 				AEC3C85B09AD68AC003258E4 /* AStream.cpp in Sources */,
 				AEC3C85D09AD68AC003258E4 /* CircularByteBuffer.cpp in Sources */,
 				AEC3C85E09AD68AC003258E4 /* lua_script.cpp in Sources */,
@@ -7997,7 +7967,6 @@
 				AEFD86D713EB84CF00C1E687 /* PlayerImage_sdl.cpp in Sources */,
 				AEFD86D813EB84CF00C1E687 /* thread_priority_sdl_macosx.cpp in Sources */,
 				AEFD86DA13EB84CF00C1E687 /* network_dialog_widgets_sdl.cpp in Sources */,
-				AEFD86DB13EB84CF00C1E687 /* SDL_netx.cpp in Sources */,
 				AEFD86DC13EB84CF00C1E687 /* SSLP_limited.cpp in Sources */,
 				AEFD86DD13EB84CF00C1E687 /* network_dialogs.cpp in Sources */,
 				AEFD86DE13EB84CF00C1E687 /* Dim3_Loader.cpp in Sources */,
@@ -8092,6 +8061,7 @@
 				AEFD873913EB84CF00C1E687 /* StarGameProtocol.cpp in Sources */,
 				AE96370D2A39578600DE43FF /* lua_music.cpp in Sources */,
 				AEFD873A13EB84CF00C1E687 /* AStream.cpp in Sources */,
+				AECD778F2E19D16500C9917C /* NetworkInterface.cpp in Sources */,
 				AEFD873C13EB84CF00C1E687 /* CircularByteBuffer.cpp in Sources */,
 				AEFD873D13EB84CF00C1E687 /* lua_script.cpp in Sources */,
 				AEFD873E13EB84CF00C1E687 /* metaserver_dialogs.cpp in Sources */,
@@ -8418,7 +8388,6 @@
 					"-Wl,-compatibility_version,1.0.0",
 					"-Wl,-undefined,error",
 					"-lSDL2_image",
-					"-lSDL2_net",
 					"-lSDL2_ttf",
 					"-lfreetype",
 					"-lboost_filesystem",
@@ -8561,7 +8530,6 @@
 					"-Wl,-compatibility_version,1.0.0",
 					"-Wl,-undefined,error",
 					"-lSDL2_image",
-					"-lSDL2_net",
 					"-lSDL2_ttf",
 					"-lfreetype",
 					"-lboost_filesystem",

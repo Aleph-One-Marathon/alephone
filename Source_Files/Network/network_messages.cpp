@@ -53,10 +53,10 @@ static void read_string(AIStream& inputStream, char *s, size_t length) {
 
 static void deflateNetPlayer(AOStream& outputStream, const NetPlayer &player) {
 
-  outputStream.write((byte *) &player.dspAddress.host, 4);
-  outputStream.write((byte *) &player.dspAddress.port, 2);
-  outputStream.write((byte *) &player.ddpAddress.host, 4);
-  outputStream.write((byte *) &player.ddpAddress.port, 2);
+  outputStream.write(player.dspAddress.address_bytes().data(), 4);
+  outputStream << player.dspAddress.port();
+  outputStream.write(player.ddpAddress.address_bytes().data(), 4);
+  outputStream << player.ddpAddress.port();
   outputStream << player.identifier;
   outputStream << player.stream_id;
   outputStream << player.net_dead;
@@ -71,10 +71,19 @@ static void deflateNetPlayer(AOStream& outputStream, const NetPlayer &player) {
 
 static void inflateNetPlayer(AIStream& inputStream, NetPlayer &player) {
 
-  inputStream.read((byte *) &player.dspAddress.host, 4);
-  inputStream.read((byte *) &player.dspAddress.port, 2);
-  inputStream.read((byte *) &player.ddpAddress.host, 4);
-  inputStream.read((byte *) &player.ddpAddress.port, 2);
+  uint16_t port;
+  uint8_t host[4];
+
+  inputStream.read(host, sizeof(host));
+  player.dspAddress.set_address(host);
+  inputStream >> port;
+  player.dspAddress.set_port(port);
+
+  inputStream.read(host, sizeof(host));
+  player.ddpAddress.set_address(host);
+  inputStream >> port;
+  player.ddpAddress.set_port(port);
+
   inputStream >> player.identifier;
   inputStream >> player.stream_id;
   inputStream >> player.net_dead;
@@ -317,10 +326,10 @@ void TopologyMessage::reallyDeflateTo(AOStream& outputStream) const {
     deflateNetPlayer(outputStream, mTopology.players[i]);
   }
 
-  outputStream.write((byte*)&mTopology.server.dspAddress.host, 4);
-  outputStream.write((byte*)&mTopology.server.dspAddress.port, 2);
-  outputStream.write((byte*)&mTopology.server.ddpAddress.host, 4);
-  outputStream.write((byte*)&mTopology.server.ddpAddress.port, 2);
+  outputStream.write(mTopology.server.dspAddress.address_bytes().data(), 4);
+  outputStream << mTopology.server.dspAddress.port();
+  outputStream.write(mTopology.server.ddpAddress.address_bytes().data(), 4);
+  outputStream << mTopology.server.ddpAddress.port();
 }
 
 bool TopologyMessage::reallyInflateFrom(AIStream& inputStream) {
@@ -345,10 +354,18 @@ bool TopologyMessage::reallyInflateFrom(AIStream& inputStream) {
     inflateNetPlayer(inputStream, mTopology.players[i]);
   }
 
-  inputStream.read((byte*)&mTopology.server.dspAddress.host, 4);
-  inputStream.read((byte*)&mTopology.server.dspAddress.port, 2);
-  inputStream.read((byte*)&mTopology.server.ddpAddress.host, 4);
-  inputStream.read((byte*)&mTopology.server.ddpAddress.port, 2);
+  uint16_t port;
+  uint8_t host[4];
+
+  inputStream.read(host, sizeof(host));
+  mTopology.server.dspAddress.set_address(host);
+  inputStream >> port;
+  mTopology.server.dspAddress.set_port(port);
+
+  inputStream.read(host, sizeof(host));
+  mTopology.server.ddpAddress.set_address(host);
+  inputStream >> port;
+  mTopology.server.ddpAddress.set_port(port);
 
   return true;
 }

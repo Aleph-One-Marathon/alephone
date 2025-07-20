@@ -77,7 +77,7 @@ StarGameProtocol::Enter(short* inNetStatePtr)
 }
 
 void
-StarGameProtocol::PacketHandler(DDPPacketBufferPtr packet)
+StarGameProtocol::PacketHandler(UDPpacket& packet)
 {
         if(sHubIsLocal)
                 hub_received_network_packet(packet);
@@ -116,7 +116,7 @@ StarGameProtocol::Sync(NetTopology* inTopology, int32 inSmallestGameTick, int in
 		sHubIsLocal = true;
 #endif
 		
-                NetAddrBlock* theAddresses[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+                IPaddress* theAddresses[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 
                 for(int i = 0; i < sTopology->player_count; i++)
                         theAddresses[i] = (theConnectedPlayerStatus[i] ? &(sTopology->players[i].ddpAddress) : NULL);

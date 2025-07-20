@@ -16,7 +16,7 @@ runs:
       shell: bash
       
     - name: Define the list of dependencies to install with the distribution package manager even if Vcpkg is used
-      run: echo "apt_dependencies=autoconf-archive libsdl2-dev libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev libpng-dev libcurl4-gnutls-dev libsndfile-dev libopenal-dev libglu1-mesa-dev libvorbis-dev libvorbisenc2" >> $GITHUB_ENV
+      run: echo "apt_dependencies=autoconf-archive libsdl2-dev libsdl2-image-dev libasio-dev libsdl2-ttf-dev libpng-dev libcurl4-gnutls-dev libsndfile-dev libopenal-dev libglu1-mesa-dev libvorbis-dev libvorbisenc2" >> $GITHUB_ENV
       shell: bash
       
     - name: Update the list of dependencies with missing dependencies since Vcpkg won't be used
