@@ -192,7 +192,7 @@ static IPaddress host_address;
 static bool host_address_specified = false;
 static MessageInflater *inflater = NULL;
 static MessageDispatcher *joinDispatcher = NULL;
-static uint64 next_join_attempt;
+static uint32 next_join_attempt;
 static Capabilities my_capabilities;
 static std::shared_ptr<Pinger> pinger = nullptr; //multithread safety
 static GatherCallbacks *gatherCallbacks = NULL;
@@ -211,7 +211,7 @@ const static NetworkStats sInvalidStats = {
 	NetworkStats::invalid,
 	0
 };
-uint64 last_network_stats_send = 0;
+uint32 last_network_stats_send = 0;
 const static int network_stats_send_period = MACHINE_TICKS_PER_SECOND;
 
 // ignore list
@@ -2086,7 +2086,7 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 	short playerIndex, message_id;
 	OSErr error= noErr;
 	int32 total_length;
-	uint64 initial_ticks= machine_tick_count();
+	uint32 initial_ticks= machine_tick_count();
 	short physics_message_id;
 	byte *physics_buffer = NULL;
 	int32 physics_length;

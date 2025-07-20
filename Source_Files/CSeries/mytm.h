@@ -31,7 +31,7 @@
 typedef struct myTMTask myTMTask,*myTMTaskPtr;
 
 extern myTMTaskPtr myXTMSetup(
-	int64 time,
+	int32 time,
 	bool (*func)(void));
 
 extern myTMTaskPtr myTMRemove(

@@ -25,12 +25,12 @@
 
 #define MACHINE_TICKS_PER_SECOND 1000
 
-extern uint64 machine_tick_count(void);
-extern void sleep_for_machine_ticks(uint64 ticks);
-extern void sleep_until_machine_tick_count(uint64 ticks);
+extern uint32 machine_tick_count(void);
+extern void sleep_for_machine_ticks(uint32 ticks);
+extern void sleep_until_machine_tick_count(uint32 ticks);
 extern void yield(void);
 extern bool wait_for_click_or_keypress(
-	uint64 ticks);
+	uint32 ticks);
 
 extern void kill_screen_saver(void);
 
