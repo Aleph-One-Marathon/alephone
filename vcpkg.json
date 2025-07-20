@@ -58,7 +58,7 @@
          "name":"miniupnpc"
       },
       {
-         "name":"nativefiledialog",
+         "name":"nativefiledialog-extended",
          "platform": "!linux"
       },
       {
