@@ -8417,7 +8417,6 @@
 					"-lyuv",
 					"-lebml",
 					"-lmatroska",
-					"-lfmt",
 				);
 				STRIP_INSTALLED_PRODUCT = NO;
 				USER_HEADER_SEARCH_PATHS = (
@@ -8561,7 +8560,6 @@
 					"-lyuv",
 					"-lebml",
 					"-lmatroska",
-					"-lfmt",
 				);
 				STRIP_INSTALLED_PRODUCT = NO;
 				USER_HEADER_SEARCH_PATHS = (

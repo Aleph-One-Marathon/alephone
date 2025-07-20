@@ -85,5 +85,12 @@
       {
           "name":"libvpx"
       }
+   ],
+   "overrides":[
+      {
+         "name":"openal-soft",
+         "version":"1.23.1",
+         "port-version":2
+      }
    ]
 }
