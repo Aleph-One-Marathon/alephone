@@ -39,7 +39,7 @@ private:
 	bool _end_game_signal = false;
 	bool _gatherer_joined_as_client = false;
 	bool _saved_game = false;
-	int _start_check_timeout_ms = 0;
+	uint64_t _start_check_timeout_ms = 0;
 	static constexpr int _gathering_timeout_ms = 5 * 60 * 1000;
 	StandaloneHub(uint16 port);
 	bool GatherJoiners();

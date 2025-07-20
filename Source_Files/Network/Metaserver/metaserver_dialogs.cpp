@@ -68,7 +68,7 @@ setupAndConnectClient(MetaserverClient& client, bool use_remote_hub)
 		
 		if (first_check)
 		{
-			uint32 ticks = machine_tick_count();
+			uint64_t ticks = machine_tick_count();
 
 			// if we get an update in a short amount of time, don't display progress
 			while (Update::instance()->GetStatus() == Update::CheckingForUpdate && machine_tick_count() - ticks < 500);

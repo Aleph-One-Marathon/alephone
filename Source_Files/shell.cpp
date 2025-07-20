@@ -716,7 +716,7 @@ void main_event_loop(void)
 	short game_state;
 
 	while ((game_state = get_game_state()) != _quit_game) {
-		uint32 cur_time = machine_tick_count();
+		uint64_t cur_time = machine_tick_count();
 		bool yield_time = false;
 		bool poll_event = false;
 
@@ -809,7 +809,7 @@ void main_event_loop(void)
 		}
 		else if (game_state != _game_in_progress)
 		{
-			static auto last_redraw = 0;
+			static uint64_t last_redraw = 0U;
 			if (machine_tick_count() > last_redraw + TICKS_PER_SECOND / 30)
 			{
 				update_game_window();

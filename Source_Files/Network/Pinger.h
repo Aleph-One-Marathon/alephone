@@ -37,7 +37,7 @@ private:
 	struct PingAddress
 	{
 		IPaddress ipv4;
-		uint32_t ping_sent_tick = 0;
+		uint64_t ping_sent_tick = 0;
 		std::atomic_uint32_t pong_received_tick = 0;
 		PingAddress(const IPaddress& address) : ipv4(address) {}
 	};

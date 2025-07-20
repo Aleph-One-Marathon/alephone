@@ -98,7 +98,7 @@ private:
 	std::atomic<float> music_volume;
 	bool process_audio_active = false;
 	bool paused_audio = false;
-	uint32_t elapsed_pause_time = 0;
+	uint64_t elapsed_pause_time = 0;
 	AtomicStructure<world_location3d> listener_location = {};
 	void StopAllPlayers();
 	void UpdateParameters(const AudioParameters& parameters);

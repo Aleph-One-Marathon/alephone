@@ -107,7 +107,7 @@ protected:
 	ButtonWidget*                                   m_joinWidget;
 	ButtonWidget*                                   m_gameInfoWidget;
 
-	Uint32 m_lastGameSelected;
+	uint64_t m_lastGameSelected;
 	bool m_stay_selected; // doesn't deselect after PM
 };
 

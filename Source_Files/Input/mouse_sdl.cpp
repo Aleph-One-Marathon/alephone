@@ -100,8 +100,8 @@ static inline float MIX(float start, float end, float factor)
 void mouse_idle(short type)
 {
 	if (mouse_active) {
-		static uint32 last_tick_count = 0;
-		uint32 tick_count = machine_tick_count();
+		static uint64_t last_tick_count = 0;
+		uint64_t tick_count = machine_tick_count();
 		int32 ticks_elapsed = tick_count - last_tick_count;
 
 		if (ticks_elapsed < 1)

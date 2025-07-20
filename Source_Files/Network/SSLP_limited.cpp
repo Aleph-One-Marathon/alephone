@@ -68,7 +68,7 @@
 // FILE-LOCAL TYPES
 struct SSLPint_FoundInstance {
     struct SSLP_ServiceInstance*	mInstance;
-    Uint32				mTimestamp;
+    uint64_t				mTimestamp;
     struct SSLPint_FoundInstance*	mNext;
 };
 
@@ -188,7 +188,7 @@ SSLPint_RemoveTimedOutInstances() {
     struct SSLPint_FoundInstance* theCurrentInstance = sFoundInstances;
     struct SSLPint_FoundInstance* thePreviousInstance = NULL;
     
-    Uint32 theCurrentTickCount = machine_tick_count();
+    uint64_t theCurrentTickCount = machine_tick_count();
     
     while(theCurrentInstance != NULL) {
         if(theCurrentTickCount - theCurrentInstance->mTimestamp > SSLPINT_INSTANCE_TIMEOUT) {
@@ -619,9 +619,9 @@ SSLP_Pump() {
         
     logContext("pumping SSLP protocol activity");
     
-    static Uint32	theTimeLastWorked = 0;
+    static uint64_t	theTimeLastWorked = 0;
     
-    Uint32		theCurrentTime = machine_tick_count();
+    uint64_t		theCurrentTime = machine_tick_count();
     
     if(sBehaviorsDesired & SSLPINT_LOCATING) {
 

@@ -871,7 +871,7 @@ public:
 		uint16		m_len;
 		GameDescription	m_description;
 
-		uint32          m_ticks; // SDL ticks at last update
+		uint64_t        m_ticks; // SDL ticks at last update
 		std::string     m_hostPlayerName;
 
 	GameListEntry() : m_target(false) { }

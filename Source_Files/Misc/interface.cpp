@@ -254,7 +254,7 @@ struct game_state {
 	short flags;
 	short user;
 	int32 phase;
-	int32 last_ticks_on_idle;
+	uint64_t last_ticks_on_idle;
 	short current_screen;
 	bool suppress_background_tasks;
 	bool current_netgame_allows_microphone;

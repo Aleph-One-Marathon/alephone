@@ -130,8 +130,8 @@ struct fade_data
 	short type;
 	short fade_effect_type;
 	
-	uint32 last_update_tick;
-	uint32 last_update_game_tick;
+	uint64_t last_update_tick;
+	uint64_t last_update_game_tick;
 	
 	struct color_table *original_color_table;
 	struct color_table *animated_color_table;
@@ -365,7 +365,7 @@ void explicit_start_fade(
 	// LP change: idiot-proofing
 	if (!definition) return;
 		
-	uint32 machine_ticks= machine_tick_count();
+	uint64_t machine_ticks= machine_tick_count();
 	bool do_fade= true;
 
 	if (FADE_IS_ACTIVE(fade))

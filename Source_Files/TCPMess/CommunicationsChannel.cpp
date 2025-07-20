@@ -445,9 +445,9 @@ Message*
 CommunicationsChannel::receiveMessage(Uint32 inOverallTimeout, Uint32 inInactivityTimeout)
 {
 	// Here we give a backstop for our inactivity timeout
-	Uint32 theTicksAtStart = machine_tick_count();
+	uint64_t theTicksAtStart = machine_tick_count();
 	
-	Uint32 theDeadline = machine_tick_count() + inOverallTimeout;
+	uint64_t theDeadline = machine_tick_count() + inOverallTimeout;
 
 	pump();
 
@@ -482,7 +482,7 @@ CommunicationsChannel::receiveSpecificMessage(
 	Uint32 inInactivityTimeout)
 {
 	Message* theMessage = NULL;
-	Uint32 theDeadline = machine_tick_count() + inOverallTimeout;
+	uint64_t theDeadline = machine_tick_count() + inOverallTimeout;
 
 	while(machine_tick_count() < theDeadline)
 	{
@@ -519,8 +519,8 @@ CommunicationsChannel::flushOutgoingMessages(bool shouldDispatchIncomingMessages
 			    Uint32 inOverallTimeout,
 			    Uint32 inInactivityTimeout)
 {
-	Uint32	theDeadline = machine_tick_count() + inOverallTimeout;
-	Uint32	theTicksAtStart = machine_tick_count();
+	uint64_t	theDeadline = machine_tick_count() + inOverallTimeout;
+	uint64_t	theTicksAtStart = machine_tick_count();
 
 	while(isConnected()
 		&& !mOutgoingMessages.empty()
@@ -541,8 +541,8 @@ void CommunicationsChannel::multipleFlushOutgoingMessages(
 	Uint32 inOverallTimeout,
 	Uint32 inInactivityTimeout)
 {
-	Uint32 theDeadline = machine_tick_count() + inOverallTimeout;
-	Uint32 theTicksAtStart = machine_tick_count();
+	uint64_t theDeadline = machine_tick_count() + inOverallTimeout;
+	uint64_t theTicksAtStart = machine_tick_count();
 
 	bool someoneIsStillActive = true;
 
