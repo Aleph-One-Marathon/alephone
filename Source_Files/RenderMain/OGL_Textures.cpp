@@ -102,6 +102,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "screen.h"
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #include <GL/GLU.h>
 #endif

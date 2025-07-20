@@ -1304,7 +1304,7 @@ private:
 #ifdef HAVE_NFD
 static std::map<Typecode, std::vector<nfdu8filteritem_t>> typecode_filters {
 	{_typecode_scenario, { {"Map file", "sceA"} }},
-	{_typecode_savegame, { {"Save file", "sgaA"} }},
+	{_typecode_savegame, { {"Saved game file", "sgaA"} }},
 	{_typecode_film,     { {"Recording file", "filA"} }},
 	{_typecode_physics,  { {"Physics file", "phyA"} }},
 	{_typecode_shapes,   { {"Shapes file", "shpA"} }},
@@ -1387,7 +1387,14 @@ bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 			break;
 		}
 
+#if (defined(__APPLE__) && defined(__MACH__))
+		// NFD doesn't append a wildcard filter on mac, so if you set ANY
+		// filter here, anything without that extension gets grayed out. So, I
+		// guess just accept any files
+		std::vector<nfdu8filteritem_t> filters = {};
+#else
 		auto& filters = typecode_filters[type];
+#endif
 
 		nfdchar_t* outpath;
 #if defined(_WIN32)
