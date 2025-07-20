@@ -156,6 +156,9 @@ static short get_recording_queue_size(short which_queue);
 
 static uint8 *unpack_recording_header(uint8 *Stream, recording_header *Objects, size_t Count);
 static uint8 *pack_recording_header(uint8 *Stream, recording_header *Objects, size_t Count);
+static uint8* unpack_recording_extension_header(uint8* Stream, recording_extension_header* Objects, size_t Count);
+static uint8* pack_recording_extension_header(uint8* Stream, recording_extension_header* Objects, size_t Count);
+static bool handle_replay_extension();
 
 // #define DEBUG_REPLAY
 
@@ -264,6 +267,12 @@ int get_replay_speed()
 bool game_is_being_replayed()
 {
 	return replay.game_is_being_replayed;
+}
+
+bool is_saved_game_replay()
+{
+	return game_is_being_replayed() && 
+		replay.extension_header.extension_type == recording_extension_type::saved_game_wad;
 }
 
 void increment_heartbeat_count(int value)
@@ -533,6 +542,7 @@ void get_recording_header_data(
 }
 
 extern int movie_export_phase;
+extern bool load_saved_game_from_flat_data(byte* saved_flat_data);
 
 bool setup_for_replay_from_file(
 	FileSpecifier& File,
@@ -559,9 +569,17 @@ bool setup_for_replay_from_file(
 		FilmFile.Read(SIZEOF_recording_header,Header);
 		unpack_recording_header(Header,&replay.header,1);
 		replay.header.game_information.cheat_flags = _allow_crosshair | _allow_tunnel_vision | _allow_behindview | _allow_overlay_map;
+
+		replay.extension_header.extension_type = recording_extension_type::none;
+		replay.extension_header.length = 0;
+
+		int file_length;
+		FilmFile.GetLength(file_length);
+
+		successful = file_length > replay.header.length ? handle_replay_extension() : use_map_file(replay.header.map_checksum);
 	
 		/* Set to the mapfile this replay came from.. */
-		if(use_map_file(replay.header.map_checksum))
+		if (successful)
 		{
 			replay.fsread_buffer= new char[DISK_CACHE_SIZE];
 			replay.location_in_cache= NULL;
@@ -573,7 +591,6 @@ bool setup_for_replay_from_file(
 #endif
 			if (prompt_to_export)
 				Movie::instance()->PromptForRecording();
-			successful= true;
 		} else {
 			/* Tell them that this map wasn't found.  They lose. */
 			alert_user(infoError, strERRORS, cantFindReplayMap, 0);
@@ -584,6 +601,11 @@ bool setup_for_replay_from_file(
 	}
 	
 	return successful;
+}
+
+void set_recording_saved_wad_data(const std::vector<byte>& saved_wad_data)
+{
+	replay.saved_wad_data = saved_wad_data;
 }
 
 /* Note that we _must_ set the header information before we start recording!! */
@@ -637,14 +659,72 @@ void stop_recording(
 		// in 'normal operation' too, not just when we screwed something up in writing the program?
 		bool successfulWrite = FilmFile.Write(SIZEOF_recording_header,Header);
 		assert(successfulWrite);
+
+		bool has_extension_header = false;
+		replay.extension_header.length = 0;
+		replay.extension_header.extension_type = recording_extension_type::none;
+
+		int extension_data_length = 0;
+		byte* extension_data = nullptr;
+
+		if (replay.saved_wad_data.size())
+		{
+			extension_data_length = replay.saved_wad_data.size();
+			extension_data = replay.saved_wad_data.data();
+			replay.extension_header.extension_type = recording_extension_type::saved_game_wad;
+			replay.extension_header.length = SIZEOF_recording_extension_header + replay.saved_wad_data.size();
+			has_extension_header = true;
+		}
+
+		if (has_extension_header)
+		{
+			FilmFile.SetPosition(replay.header.length);
+			byte extension_header[SIZEOF_recording_extension_header];
+			pack_recording_extension_header(extension_header, &replay.extension_header, 1);
+
+			successfulWrite = FilmFile.Write(SIZEOF_recording_extension_header, extension_header);
+			assert(successfulWrite);
+
+			FilmFile.SetPosition(replay.header.length + SIZEOF_recording_extension_header);
+			successfulWrite = FilmFile.Write(extension_data_length, extension_data);
+			assert(successfulWrite);
+		}
 		
 		FilmFile.GetLength(total_length);
-		assert(total_length==replay.header.length);
+		assert(total_length==replay.header.length + replay.extension_header.length);
 		
 		FilmFile.Close();
 	}
 
+	replay.saved_wad_data.clear();
 	replay.valid= false;
+}
+
+bool handle_replay_extension()
+{
+	bool successful = false;
+	FilmFile.SetPosition(replay.header.length);
+	byte extension_header[SIZEOF_recording_extension_header];
+	FilmFile.Read(SIZEOF_recording_extension_header, extension_header);
+	unpack_recording_extension_header(extension_header, &replay.extension_header, 1);
+
+	switch (replay.extension_header.extension_type)
+	{
+		case recording_extension_type::saved_game_wad:
+		{
+			auto saved_wad = (byte*)malloc(replay.extension_header.length);
+			FilmFile.Read(replay.extension_header.length, saved_wad);
+			successful = load_saved_game_from_flat_data(saved_wad);
+			break;
+		}
+
+		default:
+			assert(false);
+			break;
+	}
+
+	FilmFile.SetPosition(SIZEOF_recording_header);
+	return successful;
 }
 
 void rewind_recording(
@@ -983,6 +1063,37 @@ static void GameDataToStream(uint8* &S, game_data& Object)
 	ListToStream(S,Object.parameters,2);
 }
 
+uint8* pack_recording_extension_header(uint8* Stream, recording_extension_header* Objects, size_t Count)
+{
+	uint8* S = Stream;
+	recording_extension_header* ObjPtr = Objects;
+
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S, ObjPtr->length);
+		ValueToStream(S, static_cast<int>(ObjPtr->extension_type));
+	}
+
+	assert(static_cast<size_t>(S - Stream) == (Count * SIZEOF_recording_extension_header));
+	return S;
+}
+
+uint8* unpack_recording_extension_header(uint8* Stream, recording_extension_header* Objects, size_t Count)
+{
+	uint8* S = Stream;
+	recording_extension_header* ObjPtr = Objects;
+
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S, ObjPtr->length);
+		int extension_type;
+		StreamToValue(S, extension_type);
+		ObjPtr->extension_type = static_cast<recording_extension_type>(extension_type);
+	}
+
+	assert(static_cast<size_t>(S - Stream) == (Count * SIZEOF_recording_extension_header));
+	return S;
+}
 
 uint8 *unpack_recording_header(uint8 *Stream, recording_header *Objects, size_t Count)
 {

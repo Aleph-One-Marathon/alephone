@@ -614,6 +614,7 @@ static short find_start_for_identifier(const player_start_data* inStartArray, sh
 // cues from the "extras" that load_game_from_file() does.
 static bool make_restored_game_relevant(bool inNetgame, const player_start_data* inStartArray, short inStartCount)
 {
+        RunLuaScript();
         game_is_networked = inNetgame;
         
         // set_random_seed() needs to happen before synchronize_players_with_starts()
@@ -665,108 +666,116 @@ static bool make_restored_game_relevant(bool inNetgame, const player_start_data*
         return success;
 }
 
+bool load_saved_game_from_flat_data(byte* saved_flat_data)
+{
+	if (!saved_flat_data) return false;
+
+	wad_header theWadHeader;
+	wad_data* theWad;
+
+	theWad = inflate_flat_data(saved_flat_data, &theWadHeader);
+	if (!theWad)
+	{
+		free(saved_flat_data);
+		return false;
+	}
+
+	dynamic_data dynamic_data_wad;
+	bool result = get_dynamic_data_from_wad(theWad, &dynamic_data_wad);
+	assert(result);
+
+	Plugins::instance()->set_mode(dynamic_data_wad.player_count > 1 ? Plugins::kMode_Net : Plugins::kMode_Solo);
+
+	ResetLevelScript();
+	uint32 theParentChecksum = theWadHeader.parent_checksum;
+
+	bool found_map = use_map_file(theParentChecksum);
+	if (found_map) RunLevelScript(dynamic_data_wad.current_level_number);
+
+	bool success = process_map_wad(theWad, true /* resuming */, theWadHeader.data_version);
+	free_wad(theWad); /* Note that the flat data points into the wad. */
+	// ZZZ: maybe this is what the Bungie comment meant, but apparently
+	// free_wad() somehow (voodoo) frees theSavedGameFlatData as well.
+
+	// try to locate the Map file for the saved-game, so that (1) we have a crack
+	// at continuing the game if the original gatherer disappears, and (2) we can
+	// save the game on our own machine and continue it properly (as part of a bigger scenario) later.
+	if (found_map)
+	{
+		// LP: getting the level scripting off of the map file
+		// Being careful to carry over errors so that Pfhortran errors can be ignored
+		short SavedType, SavedError = get_game_error(&SavedType);
+		LoadAchievementsLua();
+		LoadStatsLua();
+		set_game_error(SavedType, SavedError);
+	}
+	else
+	{
+		/* Tell the user they’re screwed when they try to leave this level. */
+		// ZZZ: should really issue a different warning since the ramifications are different
+		alert_user(infoError, strERRORS, cantFindMap, 0);
+
+		// LP addition: makes the game look normal
+		hide_cursor();
+
+		/* Set to the default map. */
+		set_to_default_map();
+
+		LoadAchievementsLua();
+		LoadStatsLua();
+	}
+
+	if (!game_is_networked)
+	{
+		if (dynamic_world->player_count == 1)
+			LoadSoloLua();
+		else
+			LoadReplayNetLua();
+	}
+
+	return success;
+}
+
 // ZZZ end generalized game startup support -----
 
 #if !defined(DISABLE_NETWORKING)
 // ZZZ: this will get called (eventually) shortly after NetUpdateJoinState() returns netStartingResumeGame
 bool join_networked_resume_game()
 {
-        bool success = true;
-        
-        // Get the saved-game data
-        byte* theSavedGameFlatData = NetReceiveGameData(false /* do_physics */);
-        if(theSavedGameFlatData == NULL)
-        {
-                success = false;
-        }
-        
-        if(success)
-        {
-                // Use the saved-game data
-                wad_header theWadHeader;
-                wad_data* theWad;
-                
-                theWad = inflate_flat_data(theSavedGameFlatData, &theWadHeader);
-                if(theWad == NULL)
-                {
-                        success = false;
-                        free(theSavedGameFlatData);
-                }
-                
-				bool found_map = false;
-                if(success)
-                {
-					ResetLevelScript();
-					uint32 theParentChecksum = theWadHeader.parent_checksum;
-					found_map = use_map_file(theParentChecksum);
+    player_start_data theStarts[MAXIMUM_NUMBER_OF_PLAYERS];
+    short theStartCount;
 
-					if (found_map) {
-						dynamic_data dynamic_data_wad;
-						bool result = get_dynamic_data_from_wad(theWad, &dynamic_data_wad);
-						assert(result);
-						RunLevelScript(dynamic_data_wad.current_level_number);
-					}
+    // Get the saved-game data
+    byte* theSavedGameFlatData = NetReceiveGameData(false /* do_physics */);
+    auto saved_wad_length = theSavedGameFlatData ? get_flat_data_length(theSavedGameFlatData) : 0;
+	std::vector<byte> saved_wad_data(theSavedGameFlatData, theSavedGameFlatData + saved_wad_length);
 
-                    success = process_map_wad(theWad, true /* resuming */, theWadHeader.data_version);
-                    free_wad(theWad); /* Note that the flat data points into the wad. */
-                    // ZZZ: maybe this is what the Bungie comment meant, but apparently
-                    // free_wad() somehow (voodoo) frees theSavedGameFlatData as well.
-                }
-                
-                if(success)
-                {
-                        Plugins::instance()->set_mode(Plugins::kMode_Net);
-                        Crosshairs_SetActive(player_preferences->crosshairs_active);
-                        LoadHUDLua();
-                        RunLuaHUDScript();
+    bool success = load_saved_game_from_flat_data(theSavedGameFlatData);
+    if(success)
+    {
+        Crosshairs_SetActive(player_preferences->crosshairs_active);
+        LoadHUDLua();
+        RunLuaHUDScript();
+                        
+        // set the revert-game info to defaults (for full-auto saving on the local machine)
+        set_saved_game_name_to_default();
+                        
+        construct_multiplayer_starts(theStarts, &theStartCount);
+        success = make_restored_game_relevant(true /* multiplayer */, theStarts, theStartCount);
+    }
 
-                        // try to locate the Map file for the saved-game, so that (1) we have a crack
-                        // at continuing the game if the original gatherer disappears, and (2) we can
-                        // save the game on our own machine and continue it properly (as part of a bigger scenario) later.
-                        
-                        if(found_map)
-                        {
-                                // LP: getting the level scripting off of the map file
-                                // Being careful to carry over errors so that Pfhortran errors can be ignored
-                                short SavedType, SavedError = get_game_error(&SavedType);
-								LoadAchievementsLua();
-								LoadStatsLua();
-                                set_game_error(SavedType,SavedError);
-                        }
-                        else
-                        {
-                                /* Tell the user they’re screwed when they try to leave this level. */
-                                // ZZZ: should really issue a different warning since the ramifications are different
-                                alert_user(infoError, strERRORS, cantFindMap, 0);
-        
-                                // LP addition: makes the game look normal
-                                hide_cursor();
-                        
-                                /* Set to the default map. */
-                                set_to_default_map();
+    if(success)
+    {
+        set_recording_header_data(theStartCount, dynamic_world->current_level_number, ((game_info*)NetGetGameData())->parent_checksum,
+            default_recording_version, theStarts, &dynamic_world->game_information);
 
-								LoadAchievementsLua();
-								LoadStatsLua();
-                        }
-                        
-                        // set the revert-game info to defaults (for full-auto saving on the local machine)
-                        set_saved_game_name_to_default();
-                        
-                        player_start_data theStarts[MAXIMUM_NUMBER_OF_PLAYERS];
-                        short theStartCount;
-                        construct_multiplayer_starts(theStarts, &theStartCount);
-                        
-			RunLuaScript();
-                        success = make_restored_game_relevant(true /* multiplayer */, theStarts, theStartCount);
-                }
-        }
+        set_recording_saved_wad_data(saved_wad_data);
+        start_recording();
+
+        start_game(_network_player, false /*changing level?*/);
+    }
         
-        if(success)
-	{
-		start_game(_network_player, false /*changing level?*/);
-	}
-        
-        return success;
+    return success;
 }
 #endif // !defined(DISABLE_NETWORKING)
 
@@ -817,18 +826,15 @@ bool load_and_start_game(FileSpecifier& File)
 	if (success)
 	{
 		game_state.user = userWantsMultiplayer ? _network_player : _single_player;
-		int theSavedGameFlatDataLength = 0;
-		auto theSavedGameFlatData = std::unique_ptr<byte, decltype(&free)>(nullptr, free);
+		auto theSavedGameFlatData = std::unique_ptr<byte, decltype(&free)>((byte*)get_flat_data(File, false /* union wad? */, 0 /* level # */), free);
+		int theSavedGameFlatDataLength = theSavedGameFlatData ? get_flat_data_length(theSavedGameFlatData.get()) : 0;
+		success = theSavedGameFlatDataLength > 0;
 
 #if !defined(DISABLE_NETWORKING)
 		if (userWantsMultiplayer)
 		{
-			theSavedGameFlatData.reset((byte*)get_flat_data(File, false /* union wad? */, 0 /* level # */));
-			success = theSavedGameFlatData != nullptr;
-
 			if (success)
 			{
-				theSavedGameFlatDataLength = get_flat_data_length(theSavedGameFlatData.get());
 				set_game_state(_displaying_network_game_dialogs);
 
 				//we don't know at this point if we are going to use a remote hub but this must be set if we do
@@ -891,10 +897,17 @@ bool load_and_start_game(FileSpecifier& File)
 
 			if (success)
 			{
-				RunLuaScript();
 				success = make_restored_game_relevant(userWantsMultiplayer, theStarts, theNumberOfStarts);
+
 				if (success)
 				{
+					set_recording_header_data(theNumberOfStarts, dynamic_world->current_level_number, userWantsMultiplayer ? ((game_info*)NetGetGameData())->parent_checksum : get_current_map_checksum(),
+						default_recording_version, theStarts, &dynamic_world->game_information);
+
+					std::vector<byte> saved_wad_data(theSavedGameFlatData.get(), theSavedGameFlatData.get() + theSavedGameFlatDataLength);
+					set_recording_saved_wad_data(saved_wad_data);
+					start_recording();
+					
 					start_game(game_state.user, false);
 				}
 			}
@@ -2397,6 +2410,8 @@ static void handle_replay( /* This is gross. */
 	if(!success) display_main_menu();
 }
 
+extern bool is_saved_game_replay();
+
 // ZZZ: some modifications to use generalized game-startup
 static bool begin_game(
 	short user,
@@ -2644,7 +2659,7 @@ static bool begin_game(
 		}
 
 		/* Try to display the first chapter screen.. */
-		if (user != _network_player && user != _demo)
+		if (user != _network_player && user != _demo && !is_saved_game_replay())
 		{
 			FindLevelMovie(entry.level_number);
 			show_movie(entry.level_number);
@@ -2656,8 +2671,9 @@ static bool begin_game(
 		LoadHUDLua();
 		RunLuaHUDScript();
 		
-		/* Begin the game! */
-		success= new_game(number_of_players, is_networked, &game_information, starts, &entry);
+		success = is_saved_game_replay() ? make_restored_game_relevant(false, starts, number_of_players) :
+			new_game(number_of_players, is_networked, &game_information, starts, &entry);
+
 		if(success)
 		{
 			start_game(user, false);
