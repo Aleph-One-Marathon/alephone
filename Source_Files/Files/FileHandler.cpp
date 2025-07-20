@@ -1311,7 +1311,7 @@ static std::map<Typecode, std::vector<nfdu8filteritem_t>> typecode_filters {
 	{_typecode_sounds,   { {"Sounds file", "sndA"} }},
 	{_typecode_patch,    { {"Patch file", "ShPa"} }},
 	{_typecode_images,   { {"Images file", "imgA"} }},
-	{_typecode_music,    { {"Music file", "aif"}, {"Music file", "wav"}, {"Music file", "ogg"} }},
+	{_typecode_music,    { {"Music file", "aif,ogg,wav"} }},
 	{_typecode_movie,    { {"Video file", "webm"} }} 
 };
 #endif
