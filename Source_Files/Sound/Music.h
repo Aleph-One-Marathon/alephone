@@ -24,13 +24,8 @@
 
 */
 
-#include "cseries.h"
-#include "Decoder.h"
-#include "FileHandler.h"
 #include "Random.h"
-#include "SoundManager.h"
 #include "MusicPlayer.h"
-#include <vector>
 
 class Music
 {
@@ -71,8 +66,9 @@ public:
 		bool IsFading() const { return music_fade_start; }
 		bool StopPlayerAfterFadeOut() const { return music_fade_stop_no_volume; }
 		void StopFade() { music_fade_start = 0; }
-		void SetVolume(float volume);
-		float GetVolume() const { return parameters.volume; }
+		bool SetVolume(float volume) { return SetParameters({ volume, parameters.loop }); }
+		bool SetLoop(bool loop) { return SetParameters({ parameters.volume, loop }); }
+		const MusicParameters& GetParameters() const { return parameters; }
 		std::pair<bool, float> ComputeFadingVolume() const;
 		std::optional<uint32_t> LoadTrack(FileSpecifier* file);
 		std::optional<uint32_t> AddPreset();
@@ -90,11 +86,11 @@ public:
 	bool Playing();
 	std::optional<uint32_t> Add(const MusicParameters& parameters, FileSpecifier* file = nullptr);
 	void Idle();
-	void StopLevelMusic() { music_slots[MusicSlot::Level].Close(); }
+	void StopLevelMusic();
 	void StopInGameMusic();
-	void ClearLevelMusic();
+	void ClearLevelPlaylist();
 	void PushBackLevelMusic(const FileSpecifier& file);
-	void LevelMusicRandom(bool fRandom) { random_order = fRandom; }
+	void SetPlaylistParameters(bool randomOrder);
 	void SeedLevelMusic();
 	void SetClassicLevelMusic(short song_index);
 private:

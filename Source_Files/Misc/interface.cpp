@@ -2818,7 +2818,7 @@ static void finish_game(
 	}
 
 	/* Fade out! (Pray) */ // should be interface_color_table for valkyrie, but doesn't work.
-	Music::instance()->ClearLevelMusic();
+	Music::instance()->ClearLevelPlaylist();
 	Music::instance()->Fade(0, MACHINE_TICKS_PER_SECOND / 2);
 	full_fade(_cinematic_fade_out, interface_color_table);
 	paint_window_black();

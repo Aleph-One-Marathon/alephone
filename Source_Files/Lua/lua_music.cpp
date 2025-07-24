@@ -3,7 +3,7 @@
 
 static int Lua_MusicManager_Clear(lua_State* L)
 {
-	Music::instance()->ClearLevelMusic();
+	Music::instance()->ClearLevelPlaylist();
 	return 0;
 }
 
@@ -11,7 +11,7 @@ static int Lua_MusicManager_Fade(lua_State* L)
 {
 	int duration = lua_isnumber(L, 1) ? static_cast<int>(lua_tonumber(L, 1) * 1000) : 1000;
 	Music::instance()->Fade(0, duration);
-	Music::instance()->ClearLevelMusic();
+	Music::instance()->ClearLevelPlaylist();
 	return 0;
 }
 
@@ -68,7 +68,7 @@ static int Lua_Music_Volume_Get(lua_State* L)
 	auto slot = Music::instance()->GetSlot(index);
 	if (!slot) return luaL_error(L, "index: out of bounds");
 
-	lua_pushnumber(L, static_cast<double>(slot->GetVolume()));
+	lua_pushnumber(L, static_cast<double>(slot->GetParameters().volume));
 	return 1;
 }
 
@@ -147,7 +147,7 @@ static int Lua_MusicManager_Play(lua_State* L)
 
 static int Lua_MusicManager_Stop(lua_State* L)
 {
-	Music::instance()->ClearLevelMusic();
+	Music::instance()->ClearLevelPlaylist();
 	Music::instance()->StopLevelMusic();
 
 	return 0;

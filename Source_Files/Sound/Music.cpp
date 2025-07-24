@@ -20,6 +20,7 @@
 */
 
 #include "Music.h"
+#include "SoundManager.h"
 #include "interface.h"
 #include "OpenALManager.h"
 
@@ -49,7 +50,7 @@ bool Music::Slot::Open(FileSpecifier* file)
 void Music::RestartIntroMusic()
 {
 	auto& introSlot = music_slots[MusicSlot::Intro];
-	if (!introSlot.Playing() && introSlot.SetParameters({ 1.f, true }))
+	if (!introSlot.Playing() && introSlot.SetParameters({}))
 	{
 		introSlot.Play();
 	}
@@ -141,11 +142,6 @@ std::pair<bool, float> Music::Slot::ComputeFadingVolume() const
 	return { fadeIn, volume };
 }
 
-void Music::Slot::SetVolume(float volume)
-{
-	SetParameters({ volume, parameters.loop });
-}
-
 void Music::Slot::Pause()
 {
 	if (Playing())
@@ -231,6 +227,11 @@ bool Music::LoadLevelMusic()
 	return slot.Open(level_song_file) && slot.SetParameters({ 1.f, playlist.size() == 1 });
 }
 
+void Music::SetPlaylistParameters(bool randomOrder)
+{
+	random_order = randomOrder;
+}
+
 void Music::SeedLevelMusic()
 {
 	song_number = 0;
@@ -258,11 +259,10 @@ void Music::SetClassicLevelMusic(short song_index)
 	marathon_1_song_index = song_index;
 }
 
-void Music::ClearLevelMusic()
+void Music::ClearLevelPlaylist()
 {
 	playlist.clear();
 	marathon_1_song_index = NONE;
-	music_slots[MusicSlot::Level].SetParameters({ 1.f, true });
 }
 
 void Music::StopInGameMusic()
@@ -273,13 +273,23 @@ void Music::StopInGameMusic()
 	}
 }
 
+void Music::StopLevelMusic()
+{
+	music_slots[MusicSlot::Level].Close();
+}
+
 void Music::PushBackLevelMusic(const FileSpecifier& file)
 {
+	if (std::find(playlist.begin(), playlist.end(), file) != playlist.end())
+	{
+		return;
+	}
+
 	playlist.push_back(file);
 
 	if (playlist.size() > 1)
 	{
-		music_slots[MusicSlot::Level].SetParameters({ 1.f, false });
+		music_slots[MusicSlot::Level].SetLoop(false);
 	}
 }
 
