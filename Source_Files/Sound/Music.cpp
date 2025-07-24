@@ -280,9 +280,10 @@ bool Music::LoadLevelMusic()
 	return slot.Open(level_song_file) && slot.SetParameters({ 1.f, playlist.size() == 1, slot.GetParameters().persist_on_revert });
 }
 
-void Music::SetPlaylistParameters(bool randomOrder)
+void Music::SetPlaylistParameters(bool randomOrder, bool persistOnRevert)
 {
 	random_order = randomOrder;
+	music_slots[MusicSlot::Level].SetPersistOnRevert(persistOnRevert);
 }
 
 void Music::SeedLevelMusic()

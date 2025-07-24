@@ -2012,6 +2012,9 @@ that they are specified in, the first in the list played first, etc.
 <li>&lt;random_order&gt; has the <a href="#boolean">boolean</a> attribute "on", which indicates whether
 the music files are to be played in random order;
 if not (the default), they are played in looping sequence.
+<li>&lt;persist_on_revert&gt; has the <a href="#boolean">boolean</a> attribute "on", which indicates whether
+the music channel should keep playing during the process of reverting a level after the player's death, and continue seamlessly once the same level has reloaded;
+if not (the default), the music stops when the reverting process begins and restarts from beginning once the level has reloaded.
 <li>&lt;movie&gt; plays at the beginning of a level the movie file
 specified in the value of the attribute "file".
 It has an optional attribute, "size" (default: 2),

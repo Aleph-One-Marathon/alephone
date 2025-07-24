@@ -97,7 +97,7 @@ public:
 	void StopInGameMusic();
 	void ClearLevelPlaylist();
 	void PushBackLevelMusic(const FileSpecifier& file);
-	void SetPlaylistParameters(bool randomOrder);
+	void SetPlaylistParameters(bool randomOrder, bool persistOnRevert);
 	void SeedLevelMusic();
 	void SetClassicLevelMusic(short song_index);
 	void SetContext(MusicContext context);
