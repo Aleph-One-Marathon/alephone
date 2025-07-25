@@ -1250,6 +1250,9 @@ bool load_game_from_file(FileSpecifier& File, bool run_scripts)
 	set_map_file(File, false);
 	/* Load the level from the map */
 	success= load_level_from_map(NONE); /* Save games are ALWAYS index NONE */
+
+	revert_game_data.entry_point.level_number = dynamic_world->current_level_number;
+
 	if (success)
 	{	
 		if(found_map)
@@ -1302,6 +1305,11 @@ bool revert_game(
 	
 	assert(dynamic_world->player_count==1);
 
+	if (dynamic_world->current_level_number == revert_game_data.entry_point.level_number)
+	{
+		Music::instance()->SetContext(Music::MusicContext::RevertSameLevel);
+	}
+
 	leaving_map();
 	
 	if (revert_game_data.game_is_from_disk)
@@ -1334,6 +1342,8 @@ bool revert_game(
 		ResetFieldOfView();
 		ReloadViewContext();
 	}
+
+	Music::instance()->SetContext(Music::MusicContext::Default);
 	
 	return successful;
 }
@@ -1444,6 +1454,7 @@ bool save_game_file(FileSpecifier& File, const std::string& metadata, const std:
 	/* Setup to revert the game properly */
 	revert_game_data.game_is_from_disk= true;
 	revert_game_data.SavedGame = File;
+	revert_game_data.entry_point.level_number = dynamic_world->current_level_number;
 
 	// LP: add a file here; use temporary file for a safe save.
 	// Write into the temporary file first

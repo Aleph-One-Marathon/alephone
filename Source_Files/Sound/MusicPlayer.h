@@ -24,6 +24,7 @@
 struct MusicParameters {
 	float volume = 1.f;
 	bool loop = true;
+	bool persist_on_revert = false;
 };
 
 class MusicPlayer : public AudioPlayer {

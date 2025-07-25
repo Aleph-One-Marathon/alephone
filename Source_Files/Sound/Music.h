@@ -43,6 +43,11 @@ public:
 		Level = 1
 	};
 
+	enum class MusicContext {
+		Default,
+		RevertSameLevel
+	};
+
 	class Slot {
 	private:
 		std::shared_ptr<MusicPlayer> musicPlayer;
@@ -66,9 +71,11 @@ public:
 		bool IsFading() const { return music_fade_start; }
 		bool StopPlayerAfterFadeOut() const { return music_fade_stop_no_volume; }
 		void StopFade() { music_fade_start = 0; }
-		bool SetVolume(float volume) { return SetParameters({ volume, parameters.loop }); }
-		bool SetLoop(bool loop) { return SetParameters({ parameters.volume, loop }); }
+		bool SetVolume(float volume) { return SetParameters({ volume, parameters.loop, parameters.persist_on_revert }); }
+		bool SetLoop(bool loop) { return SetParameters({ parameters.volume, loop, parameters.persist_on_revert }); }
+		bool SetPersistOnRevert(bool persist_on_revert) { return SetParameters({ parameters.volume, parameters.loop, persist_on_revert }); }
 		const MusicParameters& GetParameters() const { return parameters; }
+		bool CanStop() const;
 		std::pair<bool, float> ComputeFadingVolume() const;
 		std::optional<uint32_t> LoadTrack(FileSpecifier* file);
 		std::optional<uint32_t> AddPreset();
@@ -93,8 +100,11 @@ public:
 	void SetPlaylistParameters(bool randomOrder);
 	void SeedLevelMusic();
 	void SetClassicLevelMusic(short song_index);
+	void SetContext(MusicContext context);
+	MusicContext GetContext() const { return music_context; }
 private:
 	std::vector<Slot> music_slots;
+	MusicContext music_context;
 
 	Music();
 	FileSpecifier* GetLevelMusic();
