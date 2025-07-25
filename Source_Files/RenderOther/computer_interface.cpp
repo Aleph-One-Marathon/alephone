@@ -528,14 +528,10 @@ void initialize_terminal_manager(
 void initialize_player_terminal_info(
 	short player_index)
 {
-	struct player_terminal_data *terminal= get_player_terminal_data(player_index);
-
 	//CP Addition: trap for logout!
-	if (terminal->state != _no_terminal_state)
-        {
-                L_Call_Terminal_Exit(terminal->terminal_id, player_index);
-        }
+	abort_terminal_mode(player_index);
 
+	struct player_terminal_data* terminal = get_player_terminal_data(player_index);
 	terminal->flags= 0;
 	terminal->phase = NONE; // not using a control panel.
 	terminal->state= _no_terminal_state; // And there is no line..
@@ -812,6 +808,14 @@ void abort_terminal_mode(
 	{
 		terminal->state= _no_terminal_state;
 		L_Call_Terminal_Exit(terminal->terminal_id, player_index);
+
+		if (film_profile.overhead_map_terminal)
+		{
+			auto player = get_player_data(player_index);
+			bool map_was_active = PLAYER_HAD_OVERHEAD_MAP_ACTIVE(player);
+			SET_PLAYER_MAP_STATUS(player, map_was_active);
+			SET_PLAYER_HAD_OVERHEAD_MAP_STATUS(player, false);
+		}
 	}
 }
 
