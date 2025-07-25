@@ -1310,13 +1310,11 @@ uint32 parse_keymap(void)
 		  hotkey_sequence[2] = 0;
 	  }
 
-	  auto before_processing_flags = flags;
-	  flags = process_joystick_axes(flags);
-
-	  // Handle the selected input controller
-	  if (before_processing_flags == flags && input_preferences->input_device == _mouse_yaw_pitch) {
+	  if (input_preferences->input_device == _mouse_yaw_pitch) {
 		  flags = process_aim_input(flags, pull_mouselook_delta());
 	  }
+
+	  flags = process_joystick_axes(flags);
 
       // if the user prefers to toggle run/swim, the flag becomes latched
       if (input_preferences->modifiers & _inputmod_run_key_toggle)
