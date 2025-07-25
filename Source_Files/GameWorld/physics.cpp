@@ -363,8 +363,9 @@ uint32 process_aim_input(uint32 action_flags, fixed_yaw_pitch delta)
 			action_flags = SET_ABSOLUTE_YAW(action_flags, encode(payload, ABSOLUTE_YAW_BITS)) | _absolute_yaw_mode;
 		
 		// Update virtual yaw
-		vir_aim_delta.yaw = classic_precision ? 0 : target - payload*FIXED_ONE;
-		assert(std::abs(vir_aim_delta.yaw) <= FIXED_ONE/2);
+		auto residual_limit = (FIXED_ONE / 2) - 1;
+		vir_aim_delta.yaw = classic_precision ? 0 : std::clamp(target - payload * FIXED_ONE, -residual_limit, residual_limit);
+		assert(std::abs(vir_aim_delta.yaw) <= residual_limit);
 	}
 	
 	// Explicit and automatic recentering do not occur under absolute pitch mode; therefore we
@@ -384,8 +385,9 @@ uint32 process_aim_input(uint32 action_flags, fixed_yaw_pitch delta)
 			action_flags = SET_ABSOLUTE_PITCH(action_flags, encode(payload, ABSOLUTE_PITCH_BITS)) | _absolute_pitch_mode;
 		
 		// Update virtual pitch
-		vir_aim_delta.pitch = classic_precision ? 0 : target - payload*FIXED_ONE;
-		assert(std::abs(vir_aim_delta.pitch) <= FIXED_ONE/2);
+		auto residual_limit = (FIXED_ONE / 2) - 1;
+		vir_aim_delta.pitch = classic_precision ? 0 : std::clamp(target - payload * FIXED_ONE, -residual_limit, residual_limit);
+		assert(std::abs(vir_aim_delta.pitch) <= residual_limit);
 	}
 	
 	return action_flags;
