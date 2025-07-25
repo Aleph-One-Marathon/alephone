@@ -2548,7 +2548,8 @@ world_location3d *_sound_listener_proc(
 
 // stuff floating on top of media is above it
 uint16 _sound_obstructed_proc(
-	world_location3d *source)
+	world_location3d *source,
+	bool distinguish_obstruction_types)
 {
 	world_location3d *listener= _sound_listener_proc();
 	uint16 flags= 0;
@@ -2560,7 +2561,10 @@ uint16 _sound_obstructed_proc(
 		{
 			flags|= _sound_was_obstructed;
 		}
-		else
+
+		bool check_media_obstruction = distinguish_obstruction_types || !(flags & _sound_was_obstructed);
+
+		if (check_media_obstruction)
 		{
 			struct polygon_data *source_polygon= get_polygon_data(source->polygon_index);
 			struct polygon_data *listener_polygon= get_polygon_data(listener->polygon_index);

@@ -191,7 +191,7 @@ typedef void (*add_ambient_sound_source_proc_ptr)(ambient_sound_data *ambient_so
 world_location3d *_sound_listener_proc(void);
 
 /* _sound_obstructed_proc() tells whether the given sound is obstructed or not */
-uint16 _sound_obstructed_proc(world_location3d *source);
+uint16 _sound_obstructed_proc(world_location3d *source, bool distinguish_obstruction_types = false);
 
 void _sound_add_ambient_sources_proc(void *data, add_ambient_sound_source_proc_ptr add_one_ambient_sound_source);
 

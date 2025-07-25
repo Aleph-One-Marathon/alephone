@@ -52,9 +52,10 @@ float SoundPlayer::Simulate(const SoundParameters& soundParameters) {
 	);
 
 	const bool obstruction = (soundParameters.obstruction_flags & _sound_was_obstructed) || (soundParameters.obstruction_flags & _sound_was_media_obstructed);
+	const bool double_obstruction = (soundParameters.obstruction_flags & _sound_was_obstructed) && (soundParameters.obstruction_flags & _sound_was_media_obstructed);
 	const bool muffled = soundParameters.obstruction_flags & _sound_was_media_muffled;
 
-	const auto& behaviorParameters = obstruction && muffled ? sound_obstructed_and_muffled_behavior_parameters[soundParameters.behavior] :
+	const auto& behaviorParameters = double_obstruction || (obstruction && muffled) ? sound_obstructed_and_muffled_behavior_parameters[soundParameters.behavior] :
 		obstruction || muffled ? sound_obstructed_or_muffled_behavior_parameters[soundParameters.behavior] :
 		sound_behavior_parameters[soundParameters.behavior];
 
@@ -335,6 +336,7 @@ SetupALResult SoundPlayer::SetUpALSource3D() {
 
 	const auto& soundParameters = parameters.Get();
 	const bool obstruction = (soundParameters.obstruction_flags & _sound_was_obstructed) || (soundParameters.obstruction_flags & _sound_was_media_obstructed);
+	const bool double_obstruction = (soundParameters.obstruction_flags & _sound_was_obstructed) && (soundParameters.obstruction_flags & _sound_was_media_obstructed);
 	const bool muffled = soundParameters.obstruction_flags & _sound_was_media_muffled;
 	float volume = OpenALManager::Get()->GetMasterVolume();
 
@@ -355,7 +357,7 @@ SetupALResult SoundPlayer::SetUpALSource3D() {
 
 #endif // 0
 
-	const auto& behaviorParameters = obstruction && muffled ? sound_obstructed_and_muffled_behavior_parameters[soundParameters.behavior] :
+	const auto& behaviorParameters = double_obstruction || (obstruction && muffled) ? sound_obstructed_and_muffled_behavior_parameters[soundParameters.behavior] :
 										obstruction || muffled ? sound_obstructed_or_muffled_behavior_parameters[soundParameters.behavior] :
 																sound_behavior_parameters[soundParameters.behavior];
 

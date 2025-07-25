@@ -525,7 +525,7 @@ uint16 SoundManager::GetSoundObstructionFlags(short sound_index, world_location3
 	// LP change: idiot-proofing
 	if (!behavior) return returnedFlags;
 	
-	auto flags = _sound_obstructed_proc(source);
+	auto flags = _sound_obstructed_proc(source, static_cast<bool>(parameters.flags & _3d_sounds_flag));
 
 	if ((flags&_sound_was_obstructed) && !(definition->flags&_sound_cannot_be_obstructed))
 	{
