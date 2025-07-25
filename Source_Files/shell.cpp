@@ -1421,7 +1421,7 @@ static void process_event(const SDL_Event &event)
 		break;
 			
 	case SDL_JOYDEVICEREMOVED:
-		if (joystick_removed(event.jdevice.which) && get_game_state() == _game_in_progress);
+		if (joystick_removed(event.jdevice.which) && get_game_state() == _game_in_progress)
 			pause_game();
 		break;
 			
