@@ -756,7 +756,7 @@ static void	change_panel_state(
                                     L_Call_End_Refuel (definition->_class, player_index, panel_side_index);
 			break;
 		case _panel_is_computer_terminal:
-			if (get_game_state()==_game_in_progress && !PLAYER_HAS_CHEATED(player) && !PLAYER_HAS_MAP_OPEN(player))
+			if (get_game_state()==_game_in_progress && !PLAYER_HAS_MAP_OPEN(player))
 			{
                                 //MH: Lua script hook
                                 L_Call_Terminal_Enter(side->control_panel_permutation,player_index);
@@ -800,7 +800,7 @@ static void	change_panel_state(
 			
 			break;
 		case _panel_is_pattern_buffer:
-                        if (player_controlling_game() && !PLAYER_HAS_CHEATED(local_player))
+                        if (player_controlling_game())
                         {
                                 if(game_is_networked)
                                 {

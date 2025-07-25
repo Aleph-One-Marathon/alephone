@@ -300,25 +300,20 @@ struct physics_variables
 enum { /* Player flags */
 	_player_doesnt_auto_switch_weapons_flag= 0x0080,
 	_player_is_interlevel_teleporting_flag= 0x0100,
-	_player_has_cheated_flag= 0x0200,
 	_player_is_teleporting_flag= 0x0400,	
 	_player_has_map_open_flag= 0x0800,	
 	_player_is_totally_dead_flag= 0x1000,
 	_player_is_zombie_flag= 0x2000,
-	_player_is_dead_flag= 0x4000,
-	_player_is_pfhortran_controlled_flag= 0x8000
+	_player_is_dead_flag= 0x4000
 };
 
-#define PLAYER_PERSISTANT_FLAGS (_player_has_cheated_flag | _player_doesnt_auto_switch_weapons_flag | _player_is_zombie_flag)
+#define PLAYER_PERSISTANT_FLAGS (_player_doesnt_auto_switch_weapons_flag | _player_is_zombie_flag)
 
 #define PLAYER_IS_DEAD(p) ((p)->flags&_player_is_dead_flag)
 #define SET_PLAYER_DEAD_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_is_dead_flag):((p)->flags&=(uint16)~_player_is_dead_flag)))
 
 #define PLAYER_IS_ZOMBIE(p) ((p)->flags&_player_is_zombie_flag)
 #define SET_PLAYER_ZOMBIE_STATUS(p,v) ((v)?((p)->flags|=(uint16)_player_is_zombie_flag):((p)->flags&=(uint16)~_player_is_zombie_flag))
-
-#define PLAYER_IS_PFHORTRAN_CONTROLLED(p) ( ( p )->flags & _player_is_pfhortran_controlled_flag )
-#define SET_PLAYER_IS_PFHORTRAN_CONTROLLED_STATUS(p,v) ((v)?((p)->flags|=(uint16)_player_is_pfhortran_controlled_flag):((p)->flags&=(uint16)~_player_is_pfhortran_controlled_flag))
 
 /* i.e., our animation has stopped */
 #define PLAYER_IS_TOTALLY_DEAD(p) ((p)->flags&_player_is_totally_dead_flag)
@@ -332,9 +327,6 @@ enum { /* Player flags */
 
 #define PLAYER_IS_INTERLEVEL_TELEPORTING(p) ((p)->flags&_player_is_interlevel_teleporting_flag)
 #define SET_PLAYER_INTERLEVEL_TELEPORTING_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_is_interlevel_teleporting_flag):((p)->flags&=(uint16)~_player_is_interlevel_teleporting_flag)))
-
-#define PLAYER_HAS_CHEATED(p) ((p)->flags&_player_has_cheated_flag)
-#define SET_PLAYER_HAS_CHEATED(p) ((p)->flags|=(uint16)_player_has_cheated_flag)
 
 #define PLAYER_DOESNT_AUTO_SWITCH_WEAPONS(p) ((p)->flags&_player_doesnt_auto_switch_weapons_flag)
 #define SET_PLAYER_DOESNT_AUTO_SWITCH_WEAPONS_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_doesnt_auto_switch_weapons_flag):((p)->flags&=(uint16)~_player_doesnt_auto_switch_weapons_flag)))
@@ -555,8 +547,6 @@ _fixed get_player_forward_velocity_scale(short player_index);
 // Delta from the low-precision physical aim to the virtual "true" aim implied by high-precision aiming input;
 // |<yaw or pitch delta>| <= FIXED_ONE/2
 fixed_yaw_pitch virtual_aim_delta();
-
-fixed_yaw_pitch prev_virtual_aim_delta(); // for interpolation
 
 // Resync the virtual aim to the current physical aim
 void resync_virtual_aim();
