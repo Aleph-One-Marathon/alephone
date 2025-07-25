@@ -34,6 +34,18 @@ Music::Music() :
 
 void Music::SetContext(MusicContext context)
 {
+	if (context == music_context) return;
+
+	if (context == MusicContext::Default && music_context == MusicContext::RevertSameLevel)
+	{
+		StopAutoIdle();
+	}
+
+	else if (context == MusicContext::RevertSameLevel && music_context == MusicContext::Default)
+	{
+		StartAutoIdle();
+	}
+
 	music_context = context;
 }
 
@@ -148,6 +160,25 @@ void Music::Idle()
 			if (vol <= 0 && slot.StopPlayerAfterFadeOut()) slot.Pause();
 		}
 	}
+}
+
+Uint32 Music::AutoIdle(Uint32 interval, void* param)
+{
+	Music::instance()->Idle(); 
+	return auto_idle_timer_interval_ms;
+}
+
+void Music::StartAutoIdle()
+{
+	if (auto_idle_timer_id) return;
+	auto_idle_timer_id = SDL_AddTimer(auto_idle_timer_interval_ms, AutoIdle, this);
+}
+
+void Music::StopAutoIdle()
+{
+	if (!auto_idle_timer_id) return;
+	SDL_RemoveTimer(auto_idle_timer_id);
+	auto_idle_timer_id = 0;
 }
 
 std::pair<bool, float> Music::Slot::ComputeFadingVolume() const

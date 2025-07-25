@@ -109,6 +109,9 @@ private:
 	Music();
 	FileSpecifier* GetLevelMusic();
 	bool LoadLevelMusic();
+	static Uint32 AutoIdle(Uint32 interval, void* param);
+	void StartAutoIdle();
+	void StopAutoIdle();
 
 	// level music
 	short marathon_1_song_index;
@@ -116,6 +119,8 @@ private:
 	size_t song_number;
 	bool random_order;
 	GM_Random randomizer;
+	SDL_TimerID auto_idle_timer_id = 0;
+	static constexpr uint32_t auto_idle_timer_interval_ms = MACHINE_TICKS_PER_SECOND / 30;
 };
 
 #endif

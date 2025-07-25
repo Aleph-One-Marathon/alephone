@@ -234,7 +234,7 @@ void initialize_application(void)
 #endif
 
 	// Initialize SDL
-	int retval = SDL_Init(SDL_INIT_VIDEO |
+	int retval = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER |
 						  (shell_options.nosound ? 0 : SDL_INIT_AUDIO) |
 						  (shell_options.nojoystick ? 0 : SDL_INIT_JOYSTICK|SDL_INIT_GAMECONTROLLER) |
 						  (shell_options.debug ? SDL_INIT_NOPARACHUTE : 0));
