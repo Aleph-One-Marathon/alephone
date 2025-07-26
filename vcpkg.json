@@ -62,8 +62,7 @@
          "platform": "!linux"
       },
       {
-         "name":"libsndfile",
-         "platform": "!linux"
+         "name":"libsndfile"
       },
       {
          "name":"openal-soft",
