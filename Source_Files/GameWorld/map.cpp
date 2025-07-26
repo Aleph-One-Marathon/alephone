@@ -1610,7 +1610,7 @@ _fixed find_line_intersection(
 		left there) */
 	numerator= line_dx*(e0->y-p0->y) + line_dy*(p0->x-e0->x);
 	denominator= line_dx*dy - line_dy*dx;
-	while (numerator>=(1<<24)||numerator<=((-1)<<24)) numerator>>= 1, denominator>>= 1;
+	while (numerator>=(1<<24)||numerator<=-(1<<24)) numerator>>= 1, denominator>>= 1;
 	assert(numerator<(1<<24));
 	numerator<<= 8;
 	if (!(denominator>>= 8)) denominator= 1;
@@ -1643,7 +1643,7 @@ _fixed closest_point_on_line(
 	/* same comment as above for calculating t; this is not wholly accurate */
 	numerator= line_dx*dx + line_dy*dy;
 	denominator= line_dx*line_dx + line_dy*line_dy;
-	while (numerator>=(1<<23)||numerator<=(-1<<23)) numerator>>= 1, denominator>>= 1;
+	while (numerator>=(1<<23)||numerator<=-(1<<23)) numerator>>= 1, denominator>>= 1;
 	numerator<<= 8;
 	if (!(denominator>>= 8)) denominator= 1;
 	t= numerator/denominator;
