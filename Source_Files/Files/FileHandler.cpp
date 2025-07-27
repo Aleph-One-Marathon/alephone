@@ -1447,7 +1447,7 @@ bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 			toggle_fullscreen(false);
 		}
 #endif
-		nfdopendialogu8args_t params = { filters.data(), filters.size(), dir.GetPath() };
+		nfdopendialogu8args_t params = { filters.data(), static_cast<nfdfiltersize_t>(filters.size()), dir.GetPath() };
 		if (GetNativeWindowFromSDLWindowForNFD(MainScreenWindow(), &params.parentWindow))
 		{
 			// we ignore the "window focus lost + gained" events to prevent pausing the game on "focus lost"
@@ -1708,7 +1708,7 @@ bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *d
 			toggle_fullscreen(false);
 		}
 #endif
-		nfdsavedialogu8args_t params = { typecode_filters[type].data(), typecode_filters[type].size(), dir.GetPath(), default_name };
+		nfdsavedialogu8args_t params = { typecode_filters[type].data(), static_cast<nfdfiltersize_t>(typecode_filters[type].size()), dir.GetPath(), default_name };
 		if (GetNativeWindowFromSDLWindowForNFD(MainScreenWindow(), &params.parentWindow))
 		{
 			// we ignore the "window focus lost + gained" events to prevent pausing the game on "focus lost"
