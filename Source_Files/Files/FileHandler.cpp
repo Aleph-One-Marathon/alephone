@@ -386,7 +386,7 @@ bool FileSpecifier::Create(Typecode Type)
 }
 
 // Create directory
-bool FileSpecifier::CreateDirectory()
+bool FileSpecifier::MakeDirectory()
 {
 	sys::error_code ec;
 	const bool created_dir = fs::create_directory(utf8_to_path(name), ec);

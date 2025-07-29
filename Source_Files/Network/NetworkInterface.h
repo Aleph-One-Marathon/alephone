@@ -20,9 +20,6 @@
 #define NETWORK_INTERFACE_H
 
 #include <asio.hpp>
-#ifdef __WIN32__
-#undef CreateDirectory
-#endif
 #include <string>
 #include <optional>
 
