@@ -304,7 +304,8 @@ enum { /* Player flags */
 	_player_has_map_open_flag= 0x0800,	
 	_player_is_totally_dead_flag= 0x1000,
 	_player_is_zombie_flag= 0x2000,
-	_player_is_dead_flag= 0x4000
+	_player_is_dead_flag= 0x4000,
+	_player_had_overhead_map_active_flag= 0x8000
 };
 
 #define PLAYER_PERSISTANT_FLAGS (_player_doesnt_auto_switch_weapons_flag | _player_is_zombie_flag)
@@ -321,6 +322,9 @@ enum { /* Player flags */
 
 #define PLAYER_HAS_MAP_OPEN(p) ( (p)->flags & _player_has_map_open_flag )
 #define SET_PLAYER_MAP_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_has_map_open_flag):((p)->flags&=(uint16)~_player_has_map_open_flag)))
+
+#define PLAYER_HAD_OVERHEAD_MAP_ACTIVE(p) ((p)->flags&_player_had_overhead_map_active_flag)
+#define SET_PLAYER_HAD_OVERHEAD_MAP_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_had_overhead_map_active_flag):((p)->flags&=(uint16)~_player_had_overhead_map_active_flag)))
 
 #define PLAYER_IS_TELEPORTING(p) ((p)->flags&_player_is_teleporting_flag)
 #define SET_PLAYER_TELEPORTING_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_is_teleporting_flag):((p)->flags&=(uint16)~_player_is_teleporting_flag)))
