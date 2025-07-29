@@ -68,7 +68,7 @@ bool IPaddress::operator!=(const IPaddress& other) const
     return !(*(this) == other);
 }
 
-UDPsocket::UDPsocket(asio::io_service& io_context, asio::ip::udp::socket&& socket) : _io_context(io_context), _socket(std::move(socket)) {}
+UDPsocket::UDPsocket(asio::io_context& io_context, asio::ip::udp::socket&& socket) : _io_context(io_context), _socket(std::move(socket)) {}
 
 int64_t UDPsocket::send(const UDPpacket& packet)
 {
@@ -129,7 +129,7 @@ bool UDPsocket::broadcast(bool enable)
     return !error_code;
 }
 
-TCPsocket::TCPsocket(asio::io_service& io_context, asio::ip::tcp::socket&& socket) : _io_context(io_context), _socket(std::move(socket)) {}
+TCPsocket::TCPsocket(asio::io_context& io_context, asio::ip::tcp::socket&& socket) : _io_context(io_context), _socket(std::move(socket)) {}
 
 int64_t TCPsocket::send(uint8_t* buffer, size_t size)
 {
@@ -152,7 +152,7 @@ bool TCPsocket::set_non_blocking(bool enable)
     return !error_code;
 }
 
-TCPlistener::TCPlistener(asio::io_service& io_context, const asio::ip::tcp::endpoint& endpoint) : _io_context(io_context), _socket(io_context), _acceptor(io_context, endpoint) {}
+TCPlistener::TCPlistener(asio::io_context& io_context, const asio::ip::tcp::endpoint& endpoint) : _io_context(io_context), _socket(io_context), _acceptor(io_context, endpoint) {}
 
 std::unique_ptr<TCPsocket> TCPlistener::accept_connection()
 {
