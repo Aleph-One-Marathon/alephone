@@ -112,6 +112,14 @@ public:
     void AskRewind() { rewind_signal = true; }
     virtual float GetPriority() const = 0;
 protected:
+
+    // we can modify the format / resample during the mixing phase before sending it to OpenAL
+    enum class FormatType
+    {
+        Original,
+        Actual
+    };
+
     AudioPlayer(uint32_t rate, bool stereo, AudioFormat audioFormat);
     void Init(uint32_t rate, bool stereo, AudioFormat audioFormat);
     virtual uint32_t GetNextData(uint8* data, uint32_t length) = 0;
@@ -119,6 +127,8 @@ protected:
     bool IsPlaying() const;
     virtual std::tuple<AudioFormat, uint32_t, bool> GetAudioFormat() const { return std::make_tuple(format, rate, stereo); }
     bool HasBufferFormatChanged() const;
+    uint32_t GetBytesPerSample(FormatType type) const;
+    uint32_t GetNumberOfChannels(FormatType type) const;
     std::atomic_bool rewind_signal = { false };
     std::atomic_bool stop_signal = { false };
     std::atomic_bool is_active = { true };
