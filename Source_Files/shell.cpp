@@ -109,7 +109,6 @@
 #ifdef __WIN32__
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#undef CreateDirectory
 #endif
 
 #include "shell_options.h"
@@ -384,9 +383,9 @@ void initialize_application(void)
 	if (is_workshop_scenario)
 	{
 		quick_saves_dir += "Marathon Infinity";
-		quick_saves_dir.CreateDirectory();
+		quick_saves_dir.MakeDirectory();
 		quick_saves_dir += "Workshop";
-		quick_saves_dir.CreateDirectory();
+		quick_saves_dir.MakeDirectory();
 	}
 #endif
 	
@@ -509,16 +508,16 @@ void initialize_application(void)
 	initialize_fonts(true);
 	Plugins::instance()->enumerate();			
 	
-	preferences_dir.CreateDirectory();
+	preferences_dir.MakeDirectory();
 	if (!get_data_path(kPathLegacyPreferences).empty())
 		transition_preferences(DirectorySpecifier(get_data_path(kPathLegacyPreferences)));
 
 	// Load preferences
 	initialize_preferences();
 
-	local_data_dir.CreateDirectory();
-	saved_games_dir.CreateDirectory();
-	quick_saves_dir.CreateDirectory();
+	local_data_dir.MakeDirectory();
+	saved_games_dir.MakeDirectory();
+	quick_saves_dir.MakeDirectory();
 	{
 		std::string scen = Scenario::instance()->GetName();
 		if (scen.length())
@@ -526,11 +525,11 @@ void initialize_application(void)
 		if (!scen.length())
 			scen = "Unknown";
 		quick_saves_dir += scen;
-		quick_saves_dir.CreateDirectory();
+		quick_saves_dir.MakeDirectory();
 	}
-	image_cache_dir.CreateDirectory();
-	recordings_dir.CreateDirectory();
-	screenshots_dir.CreateDirectory();
+	image_cache_dir.MakeDirectory();
+	recordings_dir.MakeDirectory();
+	screenshots_dir.MakeDirectory();
 	
 	WadImageCache::instance()->initialize_cache();
 

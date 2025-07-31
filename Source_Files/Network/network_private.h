@@ -154,7 +154,6 @@ struct NetTopology
 	struct NetPlayer players[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 	struct NetServer server;
 };
-typedef struct NetTopology NetTopology, *NetTopologyPtr;
 
 /* ===== application specific data structures/enums */
 

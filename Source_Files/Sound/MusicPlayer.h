@@ -46,7 +46,7 @@ public:
 		std::vector<Segment> segments;
 	public:
 		void AddSegment(const Segment& segment) { segments.push_back(segment); }
-		Segment* GetSegment(uint32_t index) { return index >= 0 && index < segments.size() ? &segments[index] : nullptr; }
+		Segment* GetSegment(uint32_t index) { return index < segments.size() ? &segments[index] : nullptr; }
 		const std::vector<Segment>& GetSegments() const { return segments; }
 	};
 

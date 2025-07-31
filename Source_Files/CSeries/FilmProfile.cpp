@@ -44,6 +44,7 @@ static FilmProfile alephone1_7 = {
 	false, // network_items
 	false, // hotkey_fix
 	false, // finally_respawn
+	false, // overhead_map_terminal
 };
 
 static FilmProfile alephone1_4 = {
@@ -90,6 +91,7 @@ static FilmProfile alephone1_4 = {
 	false, // network_items
 	false, // hotkey_fix
 	false, // finally_respawn
+	false, // overhead_map_terminal
 };
 
 
@@ -137,6 +139,7 @@ static FilmProfile alephone1_3 = {
 	false, // network_items
 	false, // hotkey_fix
 	false, // finally respawn
+	false, // overhead_map_terminal
 };
 
 static FilmProfile alephone1_2 = {
@@ -183,6 +186,7 @@ static FilmProfile alephone1_2 = {
 	false, // network_items
 	false, // hotkey_fix
 	false, // finally respawn
+	false, // overhead_map_terminal
 };
 
 static FilmProfile alephone1_1 = {
@@ -229,6 +233,7 @@ static FilmProfile alephone1_1 = {
 	false, // network_items
 	false, // hotkey_fix
 	false, // finally_respawn
+	false, // overhead_map_terminal
 };
 
 static FilmProfile alephone1_0 = {
@@ -275,6 +280,7 @@ static FilmProfile alephone1_0 = {
 	false, // network_items
 	false, // hotkey_fix
 	false, // finally_respawn
+	false, // overhead_map_terminal
 };
 
 static FilmProfile marathon2 = {
@@ -321,6 +327,7 @@ static FilmProfile marathon2 = {
 	false, // network_items
 	false, // hotkey_fix
 	false, // finally_respawn
+	false, // overhead_map_terminal
 };
 
 static FilmProfile marathon_infinity = {
@@ -367,6 +374,7 @@ static FilmProfile marathon_infinity = {
 	false, // network_items
 	false, // hotkey_fix
 	false, // finally_respawn
+	false, // overhead_map_terminal
 };
 
 FilmProfile film_profile = alephone1_7;

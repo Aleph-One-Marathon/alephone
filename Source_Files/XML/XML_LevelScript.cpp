@@ -211,7 +211,7 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 void ResetLevelScript()
 {
 	// For whatever previous music had been playing...
-	Music::instance()->Fade(0, MACHINE_TICKS_PER_SECOND/2);
+	Music::instance()->Fade(0, MACHINE_TICKS_PER_SECOND/2, Music::FadeType::Sinusoidal);
 
 	while (Music::instance()->Playing())
 		Music::instance()->Idle();

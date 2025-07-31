@@ -20,9 +20,6 @@
 #define NETWORK_INTERFACE_H
 
 #include <asio.hpp>
-#ifdef __WIN32__
-#undef CreateDirectory
-#endif
 #include <string>
 #include <optional>
 
@@ -69,11 +66,11 @@ struct UDPpacket
 
 class UDPsocket {
 private:
-    asio::io_service& _io_context;
+    asio::io_context& _io_context;
     asio::ip::udp::socket _socket;
     asio::ip::udp::endpoint _receive_async_endpoint;
     int64_t _receive_async_return_value = 0;
-    UDPsocket(asio::io_service& io_context, asio::ip::udp::socket&& socket);
+    UDPsocket(asio::io_context& io_context, asio::ip::udp::socket&& socket);
     friend class NetworkInterface;
 public:
     int64_t broadcast_send(const UDPpacket& packet);
@@ -87,9 +84,9 @@ public:
 
 class TCPsocket {
 private:
-    asio::io_service& _io_context;
+    asio::io_context& _io_context;
     asio::ip::tcp::socket _socket;
-    TCPsocket(asio::io_service& io_context, asio::ip::tcp::socket&& socket);
+    TCPsocket(asio::io_context& io_context, asio::ip::tcp::socket&& socket);
     friend class NetworkInterface;
     friend class TCPlistener;
 public:
@@ -101,10 +98,10 @@ public:
 
 class TCPlistener {
 private:
-    asio::io_service& _io_context;
+    asio::io_context& _io_context;
     asio::ip::tcp::acceptor _acceptor;
     asio::ip::tcp::socket _socket;
-    TCPlistener(asio::io_service& io_context, const asio::ip::tcp::endpoint& endpoint);
+    TCPlistener(asio::io_context& io_context, const asio::ip::tcp::endpoint& endpoint);
     friend class NetworkInterface;
 public:
     std::unique_ptr<TCPsocket> accept_connection();
@@ -113,7 +110,7 @@ public:
 
 class NetworkInterface {
 private:
-    asio::io_service _io_context;
+    asio::io_context _io_context;
     asio::ip::tcp::resolver _resolver;
 public:
     NetworkInterface();

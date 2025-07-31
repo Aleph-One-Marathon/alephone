@@ -16,12 +16,12 @@ runs:
       shell: bash
       
     - name: Define the list of dependencies to install with the distribution package manager even if Vcpkg is used
-      run: echo "apt_dependencies=autoconf-archive libsdl2-dev libsdl2-image-dev libasio-dev libsdl2-ttf-dev libpng-dev libcurl4-gnutls-dev libsndfile-dev libopenal-dev libglu1-mesa-dev libvorbis-dev libvorbisenc2" >> $GITHUB_ENV
+      run: echo "apt_dependencies=autoconf-archive libsdl2-dev libsdl2-image-dev libasio-dev libsdl2-ttf-dev libpng-dev libcurl4-gnutls-dev libopenal-dev libglu1-mesa-dev" >> $GITHUB_ENV
       shell: bash
       
     - name: Update the list of dependencies with missing dependencies since Vcpkg won't be used
       if: inputs.use_vcpkg == 'false'
-      run: echo "apt_dependencies=${{env.apt_dependencies}} catch2 libboost-all-dev libmatroska-dev libebml-dev libyuv-dev libzzip-dev libvpx-dev libminiupnpc-dev" >> $GITHUB_ENV
+      run: echo "apt_dependencies=${{env.apt_dependencies}} catch2 libboost-all-dev libmatroska-dev libebml-dev libyuv-dev libsndfile-dev libvorbis-dev libvorbisenc2 libzzip-dev libvpx-dev libminiupnpc-dev" >> $GITHUB_ENV
       shell: bash
       
     - name: Update the list of dependencies with tools for Vcpkg
@@ -31,6 +31,11 @@ runs:
       
     - name: Install dependencies with the distribution package manager
       run: sudo apt-get install -y ${{env.apt_dependencies}}
+      shell: bash
+
+    - name: Remove preinstalled and undesired dependencies from the distribution
+      if: inputs.use_vcpkg == 'true'
+      run: sudo apt-get remove -y libsndfile1-dev
       shell: bash
       
     - name: Setup Vcpkg

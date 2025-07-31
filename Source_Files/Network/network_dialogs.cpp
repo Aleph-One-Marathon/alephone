@@ -73,7 +73,6 @@ Apr 10, 2003 (Woody Zenfell):
 #include	"shell.h"
 #include	"preferences.h"
 #include	"network.h"
-#include	"network_dialogs.h"
 #include	"network_games.h"
 #include	"metaserver_dialogs.h" // GameAvailableMetaserverAnnouncer
 #include	"wad.h" // jkvw: for read_wad_file_checksum 
@@ -123,7 +122,6 @@ GathererAvailableAnnouncer::GathererAvailableAnnouncer()
 {
 	strncpy(mServiceInstance.sslps_type, get_sslp_service_type().c_str(), SSLP_MAX_TYPE_LENGTH);
 	strncpy(mServiceInstance.sslps_name, "Boomer", SSLP_MAX_NAME_LENGTH);
-	memset(&(mServiceInstance.sslps_address), '\0', sizeof(mServiceInstance.sslps_address));
 	mServiceInstance.sslps_address.set_port(GAME_PORT);
 	SSLP_Allow_Service_Discovery(&mServiceInstance);
 }

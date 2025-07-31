@@ -16,12 +16,8 @@ jobs:
         use_vcpkg: true
         configure_options: >
             --enable-steam --with-boost=$GITHUB_WORKSPACE/vcpkg/installed-x64-linux/x64-linux
-            CXXFLAGS=-I$GITHUB_WORKSPACE/vcpkg/installed-x64-linux/x64-linux/include 
-            LDFLAGS=-L$GITHUB_WORKSPACE/vcpkg/installed-x64-linux/x64-linux/lib 
-            matroska_CFLAGS=-I$GITHUB_WORKSPACE/vcpkg/installed-x64-linux/x64-linux/include 
-            matroska_LIBS="-L$GITHUB_WORKSPACE/vcpkg/installed-x64-linux/x64-linux/lib -lmatroska -lebml" 
-            ebml_CFLAGS=-I$GITHUB_WORKSPACE/vcpkg/installed-x64-linux/x64-linux/include 
-            ebml_LIBS="-L$GITHUB_WORKSPACE/vcpkg/installed-x64-linux/x64-linux/lib -lebml"
+            CXXFLAGS=-I$GITHUB_WORKSPACE/vcpkg/installed-x64-linux/x64-linux/include
+            LDFLAGS=-L$GITHUB_WORKSPACE/vcpkg/installed-x64-linux/x64-linux/lib
         
     - name: Build
       run: make -j $(nproc)

@@ -166,7 +166,7 @@ clearly this is all broken until we have packet types
 static short localPlayerIndex;
 static short localPlayerIdentifier;
 static std::string gameSessionIdentifier;
-static NetTopologyPtr topology;
+static NetTopology* topology;
 static StarGameProtocol sCurrentGameProtocol;
 static std::unique_ptr<NetworkInterface> network_interface;
 static byte *deferred_script_data = NULL;
@@ -1215,10 +1215,8 @@ bool NetEnter(bool use_remote_hub)
 		if (!added_exit_procedure) atexit(NetExit);
 		added_exit_procedure= true;
 	}
-    
-	topology = (NetTopologyPtr)malloc(sizeof(NetTopology));
-	assert(topology);
-	memset(topology, 0, sizeof(NetTopology));
+
+	topology = new NetTopology();
 
 	bool success = NetDDPOpenSocket(GAME_PORT, NetDDPPacketHandler);
 	if (success) {
@@ -1344,8 +1342,8 @@ void NetExit(
   
 	if (netState!=netUninitialized) {
 		if (NetDDPCloseSocket()) {
-			free(topology);
-			topology= NULL;
+			delete topology;
+			topology = nullptr;
 			netState= netUninitialized;
 		} else {
 			logAnomaly("NetDDPCloseSocket failed");

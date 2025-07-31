@@ -116,6 +116,7 @@ struct FilmProfile
 	bool network_items; // early creation of players on new games to fix network items spawn
 	bool hotkey_fix; // hotkeys no longer work when player is dead or carrying the ball
 	bool finally_respawn; // the player can respawn after 15 seconds regardless of being stationary
+	bool overhead_map_terminal; // allow to enter terminals with the overhead map active
 };
 
 extern FilmProfile film_profile;
