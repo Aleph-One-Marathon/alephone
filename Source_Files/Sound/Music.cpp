@@ -66,21 +66,22 @@ void Music::Pause()
 	music_slots.resize(reserved_music_slots);
 }
 
-void Music::Fade(float limitVolume, short duration, bool stopOnNoVolume)
+void Music::Fade(float limitVolume, short duration, FadeType fadeType, bool stopOnNoVolume)
 {
 	for (auto& slot : music_slots)
 	{
-		slot.Fade(limitVolume, duration, stopOnNoVolume);
+		slot.Fade(limitVolume, duration, fadeType, stopOnNoVolume);
 	}
 }
 
-void Music::Slot::Fade(float limitVolume, short duration, bool stopOnNoVolume)
+void Music::Slot::Fade(float limitVolume, short duration, FadeType fadeType, bool stopOnNoVolume)
 {
 	if (!Playing()) return;
 
 	auto currentVolume = musicPlayer->GetParameters().volume;
 	if (currentVolume == limitVolume) return;
 
+	music_fade_type = fadeType;
 	music_fade_start_volume = currentVolume;
 	music_fade_limit_volume = limitVolume;
 	music_fade_start = SoundManager::GetCurrentAudioTick();
@@ -94,7 +95,7 @@ std::optional<uint32_t> Music::Add(const MusicParameters& parameters, FileSpecif
 	bool success = (!file || slot.Open(file)) && slot.SetParameters(parameters);
 	if (!success) return std::nullopt;
 	music_slots.push_back(std::move(slot));
-	return music_slots.size() - 1;
+	return static_cast<uint32_t>(music_slots.size() - 1);
 }
 
 bool Music::Playing()
@@ -135,10 +136,27 @@ void Music::Idle()
 
 std::pair<bool, float> Music::Slot::ComputeFadingVolume() const
 {
-	bool fadeIn = music_fade_limit_volume > music_fade_start_volume;
-	auto elapsed = SoundManager::GetCurrentAudioTick() - music_fade_start;
-	float volume = ((float)elapsed / music_fade_duration) * (fadeIn ? music_fade_limit_volume : 1.f - music_fade_limit_volume);
-	volume = fadeIn ? volume + music_fade_start_volume : music_fade_start_volume - volume;
+	const bool fadeIn = music_fade_limit_volume > music_fade_start_volume;
+	const auto elapsed = SoundManager::GetCurrentAudioTick() - music_fade_start;
+	const float factor = std::clamp(elapsed / (float)music_fade_duration, 0.f, 1.f);
+
+	float volume = music_fade_start_volume;
+	switch (music_fade_type) {
+	case FadeType::Linear:
+	{
+		volume += (music_fade_limit_volume - music_fade_start_volume) * factor;
+		break;
+	}
+	case FadeType::Sinusoidal:
+	{
+		volume += (music_fade_limit_volume - music_fade_start_volume) * std::sin(factor * M_PI_2);
+		break;
+	}
+	default:
+		assert(false);
+		break;
+	}
+
 	return { fadeIn, volume };
 }
 
@@ -179,13 +197,13 @@ std::optional<uint32_t> Music::Slot::LoadTrack(FileSpecifier* file)
 	std::shared_ptr<StreamDecoder> segment_decoder = file ? StreamDecoder::Get(*file) : nullptr;
 	if (!segment_decoder) return std::nullopt;
 	dynamic_music_tracks.emplace_back(segment_decoder);
-	return dynamic_music_tracks.size() - 1;
+	return static_cast<uint32_t>(dynamic_music_tracks.size() - 1);
 }
 
 std::optional<uint32_t> Music::Slot::AddPreset()
 {
 	dynamic_music_presets.emplace_back();
-	return dynamic_music_presets.size() - 1;
+	return static_cast<uint32_t>(dynamic_music_presets.size() - 1);
 }
 
 std::optional<uint32_t> Music::Slot::AddSegmentToPreset(uint32_t preset_index, uint32_t track_index)
@@ -194,7 +212,7 @@ std::optional<uint32_t> Music::Slot::AddSegmentToPreset(uint32_t preset_index, u
 		return std::nullopt;
 
 	dynamic_music_presets[preset_index].AddSegment(dynamic_music_tracks[track_index]);
-	return dynamic_music_presets[preset_index].GetSegments().size() - 1;
+	return static_cast<uint32_t>(dynamic_music_presets[preset_index].GetSegments().size() - 1);
 }
 
 bool Music::Slot::SetNextSegment(uint32_t preset_index, uint32_t segment_index, uint32_t transition_preset_index, uint32_t transition_segment_index)

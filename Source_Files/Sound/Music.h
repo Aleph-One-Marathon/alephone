@@ -43,19 +43,25 @@ public:
 		Level = 1
 	};
 
+	enum FadeType {
+		Linear,
+		Sinusoidal
+	};
+
 	class Slot {
 	private:
 		std::shared_ptr<MusicPlayer> musicPlayer;
 		std::vector<MusicPlayer::Segment> dynamic_music_tracks;
 		std::vector<MusicPlayer::Preset> dynamic_music_presets;
 		uint64_t music_fade_start = 0;
-		uint32 music_fade_duration = 0;
+		uint32_t music_fade_duration = 0;
 		float music_fade_limit_volume;
 		float music_fade_start_volume;
 		bool music_fade_stop_no_volume;
+		FadeType music_fade_type;
 		MusicParameters parameters;
 	public:
-		void Fade(float limitVolume, short duration, bool stopOnNoVolume = true);
+		void Fade(float limitVolume, short duration, FadeType fadeType, bool stopOnNoVolume = true);
 		bool Playing() const { return musicPlayer && musicPlayer->IsActive(); }
 		void Pause();
 		void Close();
@@ -81,7 +87,7 @@ public:
 	bool SetupIntroMusic(FileSpecifier& file) { return music_slots[MusicSlot::Intro].Open(&file); }
 	void RestartIntroMusic();
 	Slot* GetSlot(uint32_t index) { return index < music_slots.size() ? &music_slots[index] : nullptr; }
-	void Fade(float limitVolume, short duration, bool stopOnNoVolume = true);
+	void Fade(float limitVolume, short duration, FadeType fadeType, bool stopOnNoVolume = true);
 	void Pause();
 	bool Playing();
 	std::optional<uint32_t> Add(const MusicParameters& parameters, FileSpecifier* file = nullptr);
