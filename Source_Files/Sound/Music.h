@@ -43,7 +43,7 @@ public:
 		Level = 1
 	};
 
-	enum FadeType {
+	enum class FadeType {
 		Linear,
 		Sinusoidal
 	};
