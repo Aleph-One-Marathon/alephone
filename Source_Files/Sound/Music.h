@@ -43,6 +43,11 @@ public:
 		Level = 1
 	};
 
+	enum class MusicContext {
+		Default,
+		RevertSameLevel
+	};
+
 	enum class FadeType {
 		Linear,
 		Sinusoidal
@@ -72,9 +77,11 @@ public:
 		bool IsFading() const { return music_fade_start; }
 		bool StopPlayerAfterFadeOut() const { return music_fade_stop_no_volume; }
 		void StopFade() { music_fade_start = 0; }
-		bool SetVolume(float volume) { return SetParameters({ volume, parameters.loop }); }
-		bool SetLoop(bool loop) { return SetParameters({ parameters.volume, loop }); }
+		bool SetVolume(float volume) { return SetParameters({ volume, parameters.loop, parameters.persist_on_revert }); }
+		bool SetLoop(bool loop) { return SetParameters({ parameters.volume, loop, parameters.persist_on_revert }); }
+		bool SetPersistOnRevert(bool persist_on_revert) { return SetParameters({ parameters.volume, parameters.loop, persist_on_revert }); }
 		const MusicParameters& GetParameters() const { return parameters; }
+		bool CanStop() const;
 		std::pair<bool, float> ComputeFadingVolume() const;
 		std::optional<uint32_t> LoadTrack(FileSpecifier* file);
 		std::optional<uint32_t> AddPreset();
@@ -96,15 +103,21 @@ public:
 	void StopInGameMusic();
 	void ClearLevelPlaylist();
 	void PushBackLevelMusic(const FileSpecifier& file);
-	void SetPlaylistParameters(bool randomOrder);
+	void SetPlaylistParameters(bool randomOrder, bool persistOnRevert);
 	void SeedLevelMusic();
 	void SetClassicLevelMusic(short song_index);
+	void SetContext(MusicContext context);
+	MusicContext GetContext() const { return music_context; }
 private:
 	std::vector<Slot> music_slots;
+	MusicContext music_context;
 
 	Music();
 	FileSpecifier* GetLevelMusic();
 	bool LoadLevelMusic();
+	static Uint32 AutoIdle(Uint32 interval, void* param);
+	void StartAutoIdle();
+	void StopAutoIdle();
 
 	// level music
 	short marathon_1_song_index;
@@ -112,6 +125,8 @@ private:
 	size_t song_number;
 	bool random_order;
 	GM_Random randomizer;
+	SDL_TimerID auto_idle_timer_id = 0;
+	static constexpr uint32_t auto_idle_timer_interval_ms = MACHINE_TICKS_PER_SECOND / 30;
 };
 
 #endif

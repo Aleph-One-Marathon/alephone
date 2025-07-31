@@ -124,8 +124,12 @@ struct LevelScriptHeader
 	// Whether the music files are to be played in random order;
 	// it defaults to false (sequential order)
 	bool RandomOrder;
+
+	// Whether the music has to continue when reverting a game;
+	// it defaults to false
+	bool PersistOnRevert;
 	
-	LevelScriptHeader(): RandomOrder(false) {}
+	LevelScriptHeader(): RandomOrder(false), PersistOnRevert(false) {}
 };
 
 // Scripts for current map file
@@ -317,7 +321,7 @@ void GeneralRunScript(int LevelIndex)
 	CurrScriptPtr = &(LevelScripts[LevelIndex]);
 	
 	// Insures that this order is the last order set
-	Music::instance()->SetPlaylistParameters(CurrScriptPtr->RandomOrder);
+	Music::instance()->SetPlaylistParameters(CurrScriptPtr->RandomOrder, CurrScriptPtr->PersistOnRevert);
 	
 	// OpenedResourceFile OFile;
 	// FileSpecifier& MapFile = get_map_file();
@@ -515,6 +519,11 @@ void parse_mml_default_levels(const InfoTree& root)
 	{
 		child.read_attr("on", ls_ptr->RandomOrder);
 	}
+
+	for (const InfoTree& child : root.children_named("persist_on_revert"))
+	{
+		child.read_attr("on", ls_ptr->PersistOnRevert);
+	}
 	
 #ifdef HAVE_OPENGL
 	for (const InfoTree &child : root.children_named("load_screen"))
@@ -596,6 +605,11 @@ void parse_level_commands(InfoTree root, int index)
 	for (const InfoTree &child : root.children_named("random_order"))
 	{
 		child.read_attr("on", ls_ptr->RandomOrder);
+	}
+
+	for (const InfoTree& child : root.children_named("persist_on_revert"))
+	{
+		child.read_attr("on", ls_ptr->PersistOnRevert);
 	}
 	
 	for (const InfoTree &child : root.children_named("movie"))

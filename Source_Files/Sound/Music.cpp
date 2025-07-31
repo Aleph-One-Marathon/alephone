@@ -28,8 +28,26 @@ Music::Music() :
 	marathon_1_song_index(NONE),
 	song_number(0),
 	random_order(false),
-	music_slots(reserved_music_slots)
+	music_slots(reserved_music_slots),
+	music_context(MusicContext::Default)
 {}
+
+void Music::SetContext(MusicContext context)
+{
+	if (context == music_context) return;
+
+	if (context == MusicContext::Default && music_context == MusicContext::RevertSameLevel)
+	{
+		StopAutoIdle();
+	}
+
+	else if (context == MusicContext::RevertSameLevel && music_context == MusicContext::Default)
+	{
+		StartAutoIdle();
+	}
+
+	music_context = context;
+}
 
 bool Music::Slot::Open(FileSpecifier* file)
 {
@@ -58,12 +76,21 @@ void Music::RestartIntroMusic()
 
 void Music::Pause()
 {
-	for (auto& slot : music_slots)
+	std::vector<Music::Slot> new_slots;
+	new_slots.reserve(music_slots.size());
+
+	for (auto i = 0; i < music_slots.size(); ++i)
 	{
-		slot.Pause();
+		Music::Slot& slot = music_slots[i];
+
+		if (slot.CanStop())
+			slot.Pause();
+
+		if (i < reserved_music_slots || !slot.CanStop())
+			new_slots.push_back(std::move(slot)); //indexes won't be preserved on reload for lua but order will
 	}
 
-	music_slots.resize(reserved_music_slots);
+	music_slots = std::move(new_slots);
 }
 
 void Music::Fade(float limitVolume, short duration, FadeType fadeType, bool stopOnNoVolume)
@@ -77,6 +104,7 @@ void Music::Fade(float limitVolume, short duration, FadeType fadeType, bool stop
 void Music::Slot::Fade(float limitVolume, short duration, FadeType fadeType, bool stopOnNoVolume)
 {
 	if (!Playing()) return;
+	if (stopOnNoVolume && limitVolume <= 0.f && !CanStop()) return;
 
 	auto currentVolume = musicPlayer->GetParameters().volume;
 	if (currentVolume == limitVolume) return;
@@ -102,7 +130,7 @@ bool Music::Playing()
 {
 	for (auto& slot : music_slots)
 	{
-		if (slot.Playing())
+		if (slot.CanStop() && slot.Playing())
 			return true;
 	}
 
@@ -113,6 +141,7 @@ void Music::Idle()
 {
 	if (!SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive() || OpenALManager::Get()->IsPaused()) return;
 
+	//TODO: Replace me with music context and remove interface.h include
 	if (get_game_state() == _game_in_progress && !music_slots[MusicSlot::Level].Playing() && LoadLevelMusic()) 
 	{
 		music_slots[MusicSlot::Level].Play();
@@ -132,6 +161,25 @@ void Music::Idle()
 			if (vol <= 0 && slot.StopPlayerAfterFadeOut()) slot.Pause();
 		}
 	}
+}
+
+Uint32 Music::AutoIdle(Uint32 interval, void* param)
+{
+	Music::instance()->Idle(); 
+	return auto_idle_timer_interval_ms;
+}
+
+void Music::StartAutoIdle()
+{
+	if (auto_idle_timer_id) return;
+	auto_idle_timer_id = SDL_AddTimer(auto_idle_timer_interval_ms, AutoIdle, this);
+}
+
+void Music::StopAutoIdle()
+{
+	if (!auto_idle_timer_id) return;
+	SDL_RemoveTimer(auto_idle_timer_id);
+	auto_idle_timer_id = 0;
 }
 
 std::pair<bool, float> Music::Slot::ComputeFadingVolume() const
@@ -238,16 +286,22 @@ bool Music::Slot::SetPresetTransition(uint32_t preset_index)
 	return musicPlayer->RequestPresetTransition(preset_index);
 }
 
+bool Music::Slot::CanStop() const
+{
+	return !parameters.persist_on_revert || Music::instance()->GetContext() != MusicContext::RevertSameLevel;
+}
+
 bool Music::LoadLevelMusic()
 {
 	FileSpecifier* level_song_file = GetLevelMusic();
 	auto& slot = music_slots[MusicSlot::Level];
-	return slot.Open(level_song_file) && slot.SetParameters({ 1.f, playlist.size() == 1 });
+	return slot.Open(level_song_file) && slot.SetParameters({ 1.f, playlist.size() == 1, slot.GetParameters().persist_on_revert });
 }
 
-void Music::SetPlaylistParameters(bool randomOrder)
+void Music::SetPlaylistParameters(bool randomOrder, bool persistOnRevert)
 {
 	random_order = randomOrder;
+	music_slots[MusicSlot::Level].SetPersistOnRevert(persistOnRevert);
 }
 
 void Music::SeedLevelMusic()
@@ -287,13 +341,15 @@ void Music::StopInGameMusic()
 {
 	for (int i = MusicSlot::Level; i < music_slots.size(); i++)
 	{
-		music_slots[i].Close();
+		auto& slot = music_slots[i];
+		if (slot.CanStop()) slot.Close();
 	}
 }
 
 void Music::StopLevelMusic()
 {
-	music_slots[MusicSlot::Level].Close();
+	auto& slot = music_slots[MusicSlot::Level];
+	if (slot.CanStop()) slot.Close();
 }
 
 void Music::PushBackLevelMusic(const FileSpecifier& file)
