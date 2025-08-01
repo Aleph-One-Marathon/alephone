@@ -138,52 +138,6 @@ bool AudioPlayer::Play() {
 	return alGetError() == AL_NO_ERROR; //still has to play some data
 }
 
-uint32_t AudioPlayer::GetNumberOfChannels(FormatType type) const {
-
-	bool stereoToUse;
-
-	switch (type) {
-	case AudioPlayer::FormatType::Original:
-		stereoToUse = stereo;
-		break;
-	case AudioPlayer::FormatType::Actual:
-		stereoToUse = std::get<bool>(GetAudioFormat());
-		break;
-	default:
-		assert(false);
-		break;
-	}
-
-	return stereoToUse ? 2 : 1;
-}
-
-uint32_t AudioPlayer::GetBytesPerSample(FormatType type) const {
-
-	AudioFormat formatToUse;
-
-	switch (type) {
-	case AudioPlayer::FormatType::Original:
-		formatToUse = format;
-		break;
-	case AudioPlayer::FormatType::Actual:
-		formatToUse = std::get<AudioFormat>(GetAudioFormat());
-		break;
-	default:
-		assert(false);
-		break;
-	}
-
-	switch (formatToUse) {
-	case AudioFormat::_8_bit:
-		return 1;
-	case AudioFormat::_16_bit:
-		return 2;
-	case AudioFormat::_32_float:
-	default:
-		return 4;
-	}
-}
-
 bool AudioPlayer::Update() {
 	bool needsUpdate = LoadParametersUpdates() || !is_sync_with_al_parameters;
 	if (rewind_signal) Rewind();

@@ -372,139 +372,61 @@ SetupALResult SoundPlayer::SetUpALSource3D() {
 	return SetupALResult(alGetError() == AL_NO_ERROR, finalBehaviorParameters == behaviorParameters);
 }
 
-void SoundPlayer::ApplyFade(uint8_t* outputData, bool fadeIn, uint32_t startSampleIndex, uint32_t endSampleIndex) {
-
-	const auto nbChannels = GetNumberOfChannels(FormatType::Actual);
-	const auto bytesPerSample = GetBytesPerSample(FormatType::Actual);
-	const auto nbSamples = endSampleIndex - startSampleIndex;
-
-	for (uint32_t i = startSampleIndex; i < endSampleIndex; i++)
-	{
-		const auto fadeValue = (i - startSampleIndex) / (nbSamples - 1.f);
-		const auto factor = fadeIn ? 0.0f + fadeValue : 1.0f - fadeValue;
-
-		for (auto channelIndex = 0; channelIndex < nbChannels; channelIndex++)
-		{
-			auto byteIndex = (i * nbChannels + channelIndex) * bytesPerSample;
-
-			switch (bytesPerSample) {
-			case 1:
-			{
-				auto centered = static_cast<int8_t>(outputData[byteIndex] - 128);
-				auto faded = static_cast<uint8_t>(centered * factor + 128);
-				outputData[byteIndex] = faded;
-				break;
-			}
-			case 2:
-			{
-				int16_t* output = reinterpret_cast<int16_t*>(outputData + byteIndex);
-				*output = static_cast<int16_t>(*output * factor);
-				break;
-			}
-			default:
-				assert(false);
-				break;
-			}
-		}
-	}
-}
-
-void SoundPlayer::ProcessSmoothLoopingTransition(uint8_t* outputData, uint32_t dataLength) {
-
-	if (!parameters.Get().soft_rewind) return;
-
-	const auto duration = GetDuration();
-	const auto dataFrames = dataLength / (GetBytesPerSample(FormatType::Actual) * GetNumberOfChannels(FormatType::Actual));
-	const auto currentFrameIndex = current_index_data / (GetBytesPerSample(FormatType::Original) * GetNumberOfChannels(FormatType::Original));
-
-	const auto globalStartFrameIndex = (duration - smooth_looping_transition_crossfade_time_ms) * rate / 1000;
-
-	if (currentFrameIndex >= globalStartFrameIndex) // fade out
-	{
-		const auto startFrameIndex = std::min(globalStartFrameIndex - (currentFrameIndex - dataFrames), dataFrames);
-		ApplyFade(outputData, false, startFrameIndex, dataFrames);
-		return;
-	}
-
-	const auto globalEndFrameIndex = (smooth_looping_transition_crossfade_time_ms * rate) / 1000;
-
-	if (currentFrameIndex - dataFrames < globalEndFrameIndex) // fade in
-	{
-		const auto endFrameIndex = std::min(globalEndFrameIndex - (currentFrameIndex - dataFrames), dataFrames);
-		ApplyFade(outputData, true, 0U, endFrameIndex);
-		return;
-	}
-}
-
 uint32_t SoundPlayer::ProcessData(uint8_t* outputData, uint32_t remainingSoundDataLength, uint32_t remainingBufferLength) {
 
 	const auto& sound = this->sound.Get();
-	uint32_t outputLength;
 
 	if (sound.header.stereo || !MustDisableHrtf())
 	{
-		outputLength = std::min(remainingSoundDataLength, remainingBufferLength);
-		std::copy(sound.data->data() + current_index_data, sound.data->data() + current_index_data + outputLength, outputData);
-		current_index_data += outputLength;
+		const auto length = std::min(remainingSoundDataLength, remainingBufferLength);
+		std::copy(sound.data->data() + current_index_data, sound.data->data() + current_index_data + length, outputData);
+		current_index_data += length;
+		return length;
 	}
-	else
+
+	//all of this is just for hrtf
+	const auto input = (sound.data->data() + current_index_data);
+
+	switch (sound.header.audio_format) {
+	case AudioFormat::_8_bit:
 	{
-		//all of this is just for hrtf
-		const auto input = (sound.data->data() + current_index_data);
-
-		switch (sound.header.audio_format) {
-		case AudioFormat::_8_bit:
+		int index = 0;
+		while (index < remainingSoundDataLength && index < remainingBufferLength / 2)
 		{
-			int index = 0;
-			while (index < remainingSoundDataLength && index < remainingBufferLength / 2)
-			{
-				auto byte = input[index];
-				auto centered = static_cast<int8_t>(byte - 128);
-				auto attenuated = static_cast<uint8_t>(centered / 2 + 128);
-				outputData[2 * index] = attenuated;
-				outputData[2 * index + 1] = attenuated;
-				index++;
-			}
-
-			current_index_data += index;
-			outputLength = index * 2;
-			break;
+			auto byte = input[index];
+			auto centered = static_cast<int8_t>(byte - 128);
+			int8_t attenuated = static_cast<uint8_t>(centered / 2 + 128);
+			outputData[2 * index] = attenuated;
+			outputData[2 * index + 1] = attenuated;
+			index++;
 		}
-		case AudioFormat::_16_bit:
-		{
-			int index = 0;
-			int16_t* output = reinterpret_cast<int16_t*>(outputData);
 
-			while (index < remainingSoundDataLength / 2 && index < remainingBufferLength / 4)
-			{
-				int16_t sample;
-				std::memcpy(&sample, input + index * 2, sizeof(int16_t));
-				int16_t attenuated = sample / 2;
-				output[2 * index] = attenuated;
-				output[2 * index + 1] = attenuated;
-				index++;
-			}
-
-			current_index_data += index * 2;
-			outputLength = index * 4;
-			break;
-		}
-		case AudioFormat::_32_float: //we don't support this format for sounds
-		default:
-			assert(false);
-			break;
-		}
+		current_index_data += index;
+		return index * 2;
 	}
+	case AudioFormat::_16_bit:
+	{
+		int index = 0;
+		int16_t* output = reinterpret_cast<int16_t*>(outputData);
 
-	ProcessSmoothLoopingTransition(outputData, outputLength);
-	return outputLength;
-}
+		while (index < remainingSoundDataLength / 2 && index < remainingBufferLength / 4)
+		{
+			int16_t sample;
+			std::memcpy(&sample, input + index * 2, sizeof(int16_t));
+			int16_t attenuated = sample / 2;
+			output[2 * index] = attenuated;
+			output[2 * index + 1] = attenuated;
+			index++;
+		}
 
-uint32_t SoundPlayer::GetDuration() const
-{
-	const auto frames = data_length / (GetBytesPerSample(FormatType::Original) * GetNumberOfChannels(FormatType::Original));
-	const auto duration = frames * 1000.0 / rate;
-	return duration;
+		current_index_data += index * 2;
+		return index * 4;
+	}
+	case AudioFormat::_32_float: //we don't support this format for sounds
+	default:
+		assert(false);
+		return 0;
+	}
 }
 
 uint32_t SoundPlayer::GetNextData(uint8* data, uint32_t length) {

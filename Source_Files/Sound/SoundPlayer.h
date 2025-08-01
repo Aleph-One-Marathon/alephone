@@ -113,11 +113,8 @@ private:
 	float ComputeParameterForTransition(float targetParameter, float currentParameter, uint64_t currentTick) const;
 	float ComputeVolumeForTransition(float targetVolume);
 	bool MustDisableHrtf() const;
-	uint32_t GetDuration() const;
 	std::tuple<AudioFormat, uint32_t, bool> GetAudioFormat() const override;
 	uint32_t ProcessData(uint8_t* outputData, uint32_t remainingSoundDataLength, uint32_t remainingBufferLength);
-	void ApplyFade(uint8_t* outputData, bool fadeIn, uint32_t startSampleIndex, uint32_t endSampleIndex);
-	void ProcessSmoothLoopingTransition(uint8_t* outputData, uint32_t dataLength);
 	SoundBehavior ComputeVolumeForTransition(const SoundBehavior& targetSoundBehavior);
 	AtomicStructure<Sound> sound;
 	AtomicStructure<SoundParameters> parameters;
@@ -130,7 +127,6 @@ private:
 	std::atomic_bool soft_stop_signal = { false };
 
 	static constexpr uint32_t rewind_time = 83U;
-	static constexpr uint32_t smooth_looping_transition_crossfade_time_ms = 5U;
 	static constexpr uint32_t fast_rewind_time = 35U;
 	static constexpr float smooth_volume_transition_threshold = 0.1f;
 	static constexpr uint32_t smooth_volume_transition_time_ms = 300U;
