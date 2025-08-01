@@ -6,7 +6,6 @@ config-opts:
   - SDL_NET_CFLAGS=-I/usr/include/x86_64-linux-gnu/SDL2 -D_REENTRANT
   - --with-boost-libdir=/app/lib
   - --with-sdl_image
-  - --with-ffmpeg
   - --with-curl
   - --with-zzip
   - --with-png

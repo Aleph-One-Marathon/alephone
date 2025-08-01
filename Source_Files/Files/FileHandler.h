@@ -335,7 +335,7 @@ public:
 	void SplitPath(string &base, string &part) const;
 	void SplitPath(DirectorySpecifier &base, string &part) const {string b; SplitPath(b, part); base = b;}
 
-	bool CreateDirectory();
+	bool MakeDirectory();
 	
 	// Return directory contents (following symlinks), excluding dot-prefixed files
 	bool ReadDirectory(vector<dir_entry> &vec);

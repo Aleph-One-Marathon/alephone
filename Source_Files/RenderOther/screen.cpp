@@ -2277,6 +2277,10 @@ SDL_Surface *MainScreenSurface()
 {
 	return main_surface;
 }
+SDL_Window* MainScreenWindow()
+{
+	return main_screen;
+}
 void MainScreenUpdateRect(int x, int y, int w, int h)
 {
 	SDL_Rect r;

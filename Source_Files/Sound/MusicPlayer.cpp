@@ -19,22 +19,50 @@
 #include "MusicPlayer.h"
 #include "OpenALManager.h"
 
-MusicPlayer::MusicPlayer(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters) : AudioPlayer(decoder->Rate(), decoder->IsStereo(), decoder->GetAudioFormat()) {
-	this->decoder = decoder;
-	this->parameters = parameters;
-	this->decoder->Rewind();
-}
+MusicPlayer::MusicPlayer(std::vector<Preset>& presets, uint32_t starting_preset_index, uint32_t starting_segment_index, const MusicParameters& parameters)
+	: AudioPlayer(presets[starting_preset_index].GetSegment(starting_segment_index)->GetDecoder()->Rate(),
+		presets[starting_preset_index].GetSegment(starting_segment_index)->GetDecoder()->IsStereo(),
+		presets[starting_preset_index].GetSegment(starting_segment_index)->GetDecoder()->GetAudioFormat()) {
 
-int MusicPlayer::GetNextData(uint8* data, int length) {
-	int dataSize = decoder->Decode(data, length);
-	if (dataSize == length || !parameters.Get().loop) return dataSize;
-	decoder->Rewind();
-	return dataSize + GetNextData(data + dataSize, length - dataSize);
+	this->parameters = parameters;
+	current_decoder = presets[starting_preset_index].GetSegment(starting_segment_index)->GetDecoder();
+	current_decoder->Rewind();
+	music_presets = presets;
+	current_preset_index = starting_preset_index;
+	current_segment_index = starting_segment_index;
+	requested_preset_index = starting_preset_index;
 }
 
 SetupALResult MusicPlayer::SetUpALSourceIdle() {
-	float default_music_volume = OpenALManager::Get()->GetMusicVolume() * OpenALManager::Get()->GetMasterVolume();
+	const float default_music_volume = OpenALManager::Get()->GetMusicVolume() * OpenALManager::Get()->GetMasterVolume();
 	alSourcef(audio_source->source_id, AL_MAX_GAIN, default_music_volume);
 	alSourcef(audio_source->source_id, AL_GAIN, default_music_volume * parameters.Get().volume);
 	return SetupALResult(alGetError() == AL_NO_ERROR, true);
+}
+
+uint32_t MusicPlayer::GetNextData(uint8* data, uint32_t length) {
+	const auto dataSize = current_decoder->Decode(data, length);
+	if (dataSize == length) return dataSize;
+
+	const auto nextPresetIndex = requested_preset_index.load();
+	const auto nextSegmentIndex = music_presets[current_preset_index].GetSegment(current_segment_index)->GetNextSegmentIndex(nextPresetIndex);
+
+	if (nextSegmentIndex.has_value()) {
+		current_segment_index = nextSegmentIndex.value();
+		current_preset_index = nextPresetIndex;
+	}
+	else if (!parameters.Get().loop) {
+		return dataSize;
+	}
+
+	current_decoder->Rewind();
+	current_decoder = music_presets[current_preset_index].GetSegment(current_segment_index)->GetDecoder();
+	Init(current_decoder->Rate(), current_decoder->IsStereo(), current_decoder->GetAudioFormat());
+	return HasBufferFormatChanged() ? dataSize : dataSize + GetNextData(data + dataSize, length - dataSize);
+}
+
+bool MusicPlayer::RequestPresetTransition(uint32_t preset_index) {
+	if (preset_index >= music_presets.size()) return false;
+	requested_preset_index.store(preset_index);
+	return true;
 }

@@ -1610,7 +1610,7 @@ _fixed find_line_intersection(
 		left there) */
 	numerator= line_dx*(e0->y-p0->y) + line_dy*(p0->x-e0->x);
 	denominator= line_dx*dy - line_dy*dx;
-	while (numerator>=(1<<24)||numerator<=((-1)<<24)) numerator>>= 1, denominator>>= 1;
+	while (numerator>=(1<<24)||numerator<=-(1<<24)) numerator>>= 1, denominator>>= 1;
 	assert(numerator<(1<<24));
 	numerator<<= 8;
 	if (!(denominator>>= 8)) denominator= 1;
@@ -1643,7 +1643,7 @@ _fixed closest_point_on_line(
 	/* same comment as above for calculating t; this is not wholly accurate */
 	numerator= line_dx*dx + line_dy*dy;
 	denominator= line_dx*line_dx + line_dy*line_dy;
-	while (numerator>=(1<<23)||numerator<=(-1<<23)) numerator>>= 1, denominator>>= 1;
+	while (numerator>=(1<<23)||numerator<=-(1<<23)) numerator>>= 1, denominator>>= 1;
 	numerator<<= 8;
 	if (!(denominator>>= 8)) denominator= 1;
 	t= numerator/denominator;
@@ -2548,7 +2548,8 @@ world_location3d *_sound_listener_proc(
 
 // stuff floating on top of media is above it
 uint16 _sound_obstructed_proc(
-	world_location3d *source)
+	world_location3d *source,
+	bool distinguish_obstruction_types)
 {
 	world_location3d *listener= _sound_listener_proc();
 	uint16 flags= 0;
@@ -2560,7 +2561,10 @@ uint16 _sound_obstructed_proc(
 		{
 			flags|= _sound_was_obstructed;
 		}
-		else
+
+		bool check_media_obstruction = distinguish_obstruction_types || !(flags & _sound_was_obstructed);
+
+		if (check_media_obstruction)
 		{
 			struct polygon_data *source_polygon= get_polygon_data(source->polygon_index);
 			struct polygon_data *listener_polygon= get_polygon_data(listener->polygon_index);

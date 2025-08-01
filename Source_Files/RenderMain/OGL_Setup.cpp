@@ -140,7 +140,7 @@ bool OGL_CheckExtension(const std::string extension) {
 static int ogl_progress;
 static int total_ogl_progress;
 static bool show_ogl_progress = false;
-static int32 last_update_tick;
+static uint64_t last_update_tick;
 
 extern bool OGL_ClearScreen();
 
@@ -163,7 +163,7 @@ void OGL_ProgressCallback(int delta_progress)
 	if (!show_ogl_progress) return;
 	ogl_progress += delta_progress;
 	{
-		int32 current_ticks = machine_tick_count();
+		uint64_t current_ticks = machine_tick_count();
 		if (current_ticks > last_update_tick + 33)
 		{
 			if (OGL_LoadScreen::instance()->Use())

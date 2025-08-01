@@ -38,7 +38,7 @@
 #include <memory>
 #include <stdexcept>
 #include <vector>
-#include <SDL2/SDL_net.h>
+#include "NetworkInterface.h"
 
 #include "Message.h"
 #include "csmisc.h"
@@ -73,7 +73,7 @@ public:
 	};
 	
 	CommunicationsChannel();
-	CommunicationsChannel(TCPsocket inSocket);
+	CommunicationsChannel(std::unique_ptr<TCPsocket> inSocket);
 	virtual ~CommunicationsChannel();  // allow subclassing (for extension purposes only - no overriding)
 
 	// Each of these is an association - no ownership (for disposal purposes) is implied
@@ -182,12 +182,12 @@ public:
 
 	// Callers can use these (compared with machine_tick_count()) to gauge activity on the Channel:
 	// each time pump() receives/sends new data, value is set to machine_tick_count() at that time.
-	Uint32		ticksAtLastReceive() const { return mTicksAtLastReceive; }
-	Uint32		ticksAtLastSend() const { return mTicksAtLastSend; }
+	uint64_t	ticksAtLastReceive() const { return mTicksAtLastReceive; }
+	uint64_t	ticksAtLastSend() const { return mTicksAtLastSend; }
 
 	// Or callers can just use these.
-	Uint32		millisecondsSinceLastReceive() const { return machine_tick_count() - mTicksAtLastReceive; }
-	Uint32		millisecondsSinceLastSend() const { return machine_tick_count() - mTicksAtLastSend; }
+	uint64_t	millisecondsSinceLastReceive() const { return machine_tick_count() - mTicksAtLastReceive; }
+	uint64_t	millisecondsSinceLastSend() const { return machine_tick_count() - mTicksAtLastSend; }
 
 private:
 	enum CommunicationResult
@@ -197,8 +197,8 @@ private:
 		kError
 	};
 
-	CommunicationResult receive_some(TCPsocket inSocket, Uint8* inBuffer, size_t& ioBufferPosition, size_t inBufferLength);
-	CommunicationResult send_some(TCPsocket inSocket, Uint8* inBuffer, size_t& ioBufferPosition, size_t inBufferLength);
+	CommunicationResult receive_some(Uint8* inBuffer, size_t& ioBufferPosition, size_t inBufferLength);
+	CommunicationResult send_some(Uint8* inBuffer, size_t& ioBufferPosition, size_t inBufferLength);
 
 	void		pumpReceivingSide();
 	bool		receiveHeader();
@@ -209,7 +209,7 @@ private:
 
 
 	bool		mConnected;
-	TCPsocket	mSocket;
+	std::unique_ptr<TCPsocket>	mSocket;
 	MessageInflater* mMessageInflater;
 	MessageHandler*	mMessageHandler;
 	Memento*	mMemento;
@@ -227,7 +227,7 @@ private:
 	UninflatedMessage* mIncomingMessage;
 	size_t		mIncomingMessagePosition;
 
-	Uint32		mTicksAtLastReceive;
+	uint64_t	mTicksAtLastReceive;
 
 	typedef std::list<Message*>	MessageQueue;
 	MessageQueue	mIncomingMessages;
@@ -236,7 +236,7 @@ private:
 	Uint8		mOutgoingHeader[kHeaderPackedSize];
 	size_t		mOutgoingHeaderPosition;
 
-	Uint32		mTicksAtLastSend;
+	uint64_t	mTicksAtLastSend;
 
 	typedef std::list<UninflatedMessage*>	UninflatedMessageQueue;
 	UninflatedMessageQueue	mOutgoingMessages;
@@ -249,12 +249,9 @@ class CommunicationsChannelFactory
 {
 public:
 	CommunicationsChannelFactory(Uint16 inPort);
-	bool	isFunctional() const { return mSocket != NULL; }
 	CommunicationsChannel* newIncomingConnection();
-	~CommunicationsChannelFactory();
-	
 private:
-	TCPsocket	mSocket;
+	std::unique_ptr<TCPlistener> mSocketListener;
 };
 
 #endif // COMMUNICATIONSCHANNEL_H

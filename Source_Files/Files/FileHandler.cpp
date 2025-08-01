@@ -81,6 +81,7 @@
 
 #ifdef HAVE_NFD
 #include "nfd.h"
+#include <SDL2/SDL_syswm.h>
 #endif
 
 namespace io = boost::iostreams;
@@ -385,7 +386,7 @@ bool FileSpecifier::Create(Typecode Type)
 }
 
 // Create directory
-bool FileSpecifier::CreateDirectory()
+bool FileSpecifier::MakeDirectory()
 {
 	sys::error_code ec;
 	const bool created_dir = fs::create_directory(utf8_to_path(name), ec);
@@ -1301,18 +1302,53 @@ private:
 	std::string m_filename;
 };
 
-static std::map<Typecode, const char*> typecode_filters {
-    {_typecode_scenario, "sceA"},
-    {_typecode_savegame, "sgaA"},
-    {_typecode_film, "filA"},
-    {_typecode_physics, "phyA"},
-    {_typecode_shapes, "shpA"},
-    {_typecode_sounds, "sndA"},
-    {_typecode_patch, "ShPa"},
-    {_typecode_images, "imgA"},
-    {_typecode_music, "aif;wav;ogg"},
-    {_typecode_movie, "webm"}
+#ifdef HAVE_NFD
+static std::map<Typecode, std::vector<nfdu8filteritem_t>> typecode_filters {
+	{_typecode_scenario, { {"Map file", "sceA"} }},
+	{_typecode_savegame, { {"Saved game file", "sgaA"} }},
+	{_typecode_film,     { {"Recording file", "filA"} }},
+	{_typecode_physics,  { {"Physics file", "phyA"} }},
+	{_typecode_shapes,   { {"Shapes file", "shpA"} }},
+	{_typecode_sounds,   { {"Sounds file", "sndA"} }},
+	{_typecode_patch,    { {"Patch file", "ShPa"} }},
+	{_typecode_images,   { {"Images file", "imgA"} }},
+	{_typecode_music,    { {"Music file", "aif,ogg,wav"} }},
+	{_typecode_movie,    { {"Video file", "webm"} }} 
 };
+
+// from nativefiledialog-extended nfd_sdl2.h
+// we copied it because nfd_sdl2.h is including SDL2 headers directly and we would have to adjust the include paths
+static bool GetNativeWindowFromSDLWindowForNFD(SDL_Window* sdlWindow, nfdwindowhandle_t* nativeWindow)
+{
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	if (!SDL_GetWindowWMInfo(sdlWindow, &info)) {
+		return false;
+	}
+	switch (info.subsystem) {
+#if defined(SDL_VIDEO_DRIVER_WINDOWS)
+	case SDL_SYSWM_WINDOWS:
+		nativeWindow->type = NFD_WINDOW_HANDLE_TYPE_WINDOWS;
+		nativeWindow->handle = (void*)info.info.win.window;
+		return true;
+#endif
+#if defined(SDL_VIDEO_DRIVER_COCOA)
+	case SDL_SYSWM_COCOA:
+		nativeWindow->type = NFD_WINDOW_HANDLE_TYPE_COCOA;
+		nativeWindow->handle = (void*)info.info.cocoa.window;
+		return true;
+#endif
+#if defined(SDL_VIDEO_DRIVER_X11)
+	case SDL_SYSWM_X11:
+		nativeWindow->type = NFD_WINDOW_HANDLE_TYPE_X11;
+		nativeWindow->handle = (void*)info.info.x11.window;
+		return true;
+#endif
+	default:
+		return false;
+	}
+}
+#endif
 
 bool FileSpecifier::ReadDirectoryDialog() //needs native file dialog to work
 {
@@ -1325,7 +1361,16 @@ bool FileSpecifier::ReadDirectoryDialog() //needs native file dialog to work
 	}
 #endif
 	nfdchar_t* outpath;
-	auto result = NFD_PickFolder(nullptr, &outpath);
+	nfdpickfolderu8args_t params = {};
+	if (GetNativeWindowFromSDLWindowForNFD(MainScreenWindow(), &params.parentWindow))
+	{
+		// we ignore the "window focus lost + gained" events to prevent pausing the game on "focus lost"
+		// otherwise, a user input would be necessary to resume the game
+		SDL_EventState(SDL_WINDOWEVENT, SDL_DISABLE);
+	}
+
+	auto result = NFD_PickFolderU8_With(&outpath, nullptr);
+	SDL_EventState(SDL_WINDOWEVENT, SDL_ENABLE);
 #if defined(_WIN32)
 	if (fullscreen)
 	{
@@ -1336,7 +1381,7 @@ bool FileSpecifier::ReadDirectoryDialog() //needs native file dialog to work
 	if (result == NFD_OKAY)
 	{
 		name = outpath;
-		free(outpath);
+		NFD_FreePathU8(outpath);
 		return true;
 	}
 	
@@ -1389,9 +1434,9 @@ bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 		// NFD doesn't append a wildcard filter on mac, so if you set ANY
 		// filter here, anything without that extension gets grayed out. So, I
 		// guess just accept any files
-		const char* filters = nullptr;
+		std::vector<nfdu8filteritem_t> filters = {};
 #else
-		auto filters = typecode_filters[type];
+		auto& filters = typecode_filters[type];
 #endif
 
 		nfdchar_t* outpath;
@@ -1401,8 +1446,17 @@ bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 		{
 			toggle_fullscreen(false);
 		}
-#endif		
-		auto result = NFD_OpenDialog(filters, dir.GetPath(), &outpath);
+#endif
+		nfdopendialogu8args_t params = { filters.data(), static_cast<nfdfiltersize_t>(filters.size()), dir.GetPath() };
+		if (GetNativeWindowFromSDLWindowForNFD(MainScreenWindow(), &params.parentWindow))
+		{
+			// we ignore the "window focus lost + gained" events to prevent pausing the game on "focus lost"
+			// otherwise, a user input would be necessary to resume the game
+			SDL_EventState(SDL_WINDOWEVENT, SDL_DISABLE);
+		}
+
+		auto result = NFD_OpenDialogU8_With(&outpath, &params);
+		SDL_EventState(SDL_WINDOWEVENT, SDL_ENABLE);
 #if defined(_WIN32)
 		if (fullscreen)
 		{
@@ -1412,7 +1466,7 @@ bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 		if (result == NFD_OKAY)
 		{
 			name = outpath;
-			free(outpath);
+			NFD_FreePathU8(outpath);
 			return true;
 		}
 		else
@@ -1654,7 +1708,16 @@ bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *d
 			toggle_fullscreen(false);
 		}
 #endif
-		auto result = NFD_SaveDialog(typecode_filters[type], dir.GetPath(), &outpath);
+		nfdsavedialogu8args_t params = { typecode_filters[type].data(), static_cast<nfdfiltersize_t>(typecode_filters[type].size()), dir.GetPath(), default_name };
+		if (GetNativeWindowFromSDLWindowForNFD(MainScreenWindow(), &params.parentWindow))
+		{
+			// we ignore the "window focus lost + gained" events to prevent pausing the game on "focus lost"
+			// otherwise, a user input would be necessary to resume the game
+			SDL_EventState(SDL_WINDOWEVENT, SDL_DISABLE);
+		}
+
+		auto result = NFD_SaveDialogU8_With(&outpath, &params);
+		SDL_EventState(SDL_WINDOWEVENT, SDL_ENABLE);
 #if defined(_WIN32)
 		if (fullscreen)
 		{
@@ -1664,7 +1727,7 @@ bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *d
 		if (result == NFD_OKAY)
 		{
 			name = outpath;
-			free(outpath);
+			NFD_FreePathU8(outpath);
 			return true;
 		}
 		else

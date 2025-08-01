@@ -1,9 +1,8 @@
-dnl Process this file with autoconf to produce a configure script.
+shecdnl Process this file with autoconf to produce a configure script.
 dnl Written by Christian Bauer and the Aleph One developers.
 
 AC_INIT([Aleph One],m4_esyscmd([grep '^#define A1_DATE_VERSION' Source_Files/Misc/alephversion.h | sed -e 's/\(.*\"\)\(.*\)\(\"\)/\2/g' | tr -d '\n']),[https://github.com/Aleph-One-Marathon/alephone/issues],[AlephOne],[https://alephone.lhowon.org/])
 AC_CONFIG_SRCDIR([Source_Files/shell.cpp])
-AC_CONFIG_MACRO_DIR([m4])
 AC_PREREQ([2.69])
 
 dnl Detect the canonical host and target build environment.
@@ -28,11 +27,18 @@ AC_DEFUN([AX_ARG_WITH],
 AX_ARG_ENABLE([opengl], [OpenGL rendering])
 
 AX_ARG_WITH([sdl_image], [SDL2_image support])
-AX_ARG_WITH([ffmpeg], [FFmpeg playback and film export])
 AX_ARG_WITH([curl], [cURL for HTTP communication])
 AX_ARG_WITH([zzip], [zziplib support])
 AX_ARG_WITH([png], [libpng PNG screenshot support])
 AX_ARG_WITH([miniupnpc], [miniupnpc support])
+AX_ARG_WITH([catch2], [Catch2 replay and unit tests support])
+
+AX_ARG_WITH([vpx], [libvpx support for film export])
+AX_ARG_WITH([matroska], [libmatroska support for film export])
+AX_ARG_WITH([ebml], [libebml support for film export])
+AX_ARG_WITH([vorbis], [vorbis support for film export])
+AX_ARG_WITH([vorbisenc], [vorbisenc support for film export])
+AX_ARG_WITH([libyuv], [libyuv support for film export and video playback])
 
 dnl Check for programs.
 AC_PROG_CC
@@ -73,6 +79,15 @@ AC_ARG_ENABLE([standalone_hub],
 AM_CONDITIONAL([STANDALONE_HUB], [test x"$enable_standalone_hub" = x"yes"])
 AS_IF([test x"$enable_standalone_hub" = x"yes"],
       [ AC_DEFINE([A1_NETWORK_STANDALONE_HUB], [1], [Use the standalone hub])])
+
+dnl Steam option
+AC_ARG_ENABLE([steam],
+			  AS_HELP_STRING([--enable-steam],
+							 [Build with Steam support]))
+
+AM_CONDITIONAL([STEAM], [test x"$enable_steam" = x"yes"])
+AS_IF([test x"$enable_steam" = x"yes"],
+      [ AC_DEFINE([HAVE_STEAM], [1], [Use Steam])])
 
 dnl Set target system name.
 AC_DEFINE_UNQUOTED([TARGET_PLATFORM], ["$target_os $target_cpu"], [Target platform name])
@@ -120,6 +135,10 @@ AX_CHECK_BOOST_HEADER([boost/uuid/uuid.hpp])
 dnl AX_CHECK_BOOST_HEADER([boost/uuid/uuid_generators.hpp])
 dnl AX_CHECK_BOOST_HEADER([boost/uuid/uuid_io.hpp])
 
+AC_LANG_PUSH(C++)
+AC_CHECK_HEADER([asio.hpp], , [AC_MSG_ERROR([You need asio to build Aleph One.])])
+AC_LANG_POP(C++)
+
 dnl Check for library functions.
 AC_CHECK_FUNCS([snprintf vsnprintf], , AC_MSG_ERROR([You need snprintf and vsnprintf to run Aleph One.]))     
 AC_CHECK_FUNCS([sysconf sysctlbyname])
@@ -147,12 +166,8 @@ AC_DEFUN([AX_REQUIRE_PKG],
                              [ AC_MSG_ERROR([You need $1 to run Aleph One.]) ]) ])
 
 dnl Check for required SDL dependencies.
-AM_PATH_SDL2(2.0.2, , AC_MSG_ERROR([You need SDL 2 to run Aleph One.]))
-CPPFLAGS="$CPPFLAGS $SDL_CFLAGS -DSDL"
-LIBS="$LIBS $SDL_LIBS"
-
+AX_REQUIRE_PKG([SDL2], [SDL], [sdl2 >= 2.0.16])
 AX_REQUIRE_PKG([SDL2_ttf], [SDL_TTF], [SDL2_ttf])
-AX_REQUIRE_PKG([SDL2_net], [SDL_NET], [SDL2_net])
 
 dnl Check for zlib.
 AX_REQUIRE_PKG([zlib], [ZLIB], [zlib])
@@ -210,9 +225,9 @@ AC_DEFUN([AX_CHECK_FEATURE_LIB],
                          [AS_IF([test "x${with_$1}" = "xyes"],
                                 [AC_MSG_ERROR([${desc_$1} requested but not found])])])
                  ]) ])
-dnl AX_CHECK_FEATURE_PKG(option, define, package, lib)
+dnl AX_CHECK_FEATURE_PKG(option, define, package, lib, disabled_by_default)
 AC_DEFUN([AX_CHECK_FEATURE_PKG],
-         [ AS_IF([test "x${with_$1}" != "xno"],
+         [ AS_IF([test "x${with_$1}" != "xno" && (test "x${with_$1}" = "xyes" || test "x$5" != "xtrue" )],
                  [ PKG_CHECK_MODULES([$3], [$4],
                                      [ CPPFLAGS="${[$3]_CFLAGS} $CPPFLAGS"
                                        LIBS="${[$3]_LIBS} $LIBS"
@@ -222,16 +237,12 @@ AC_DEFUN([AX_CHECK_FEATURE_PKG],
                                             [AC_MSG_ERROR([${desc_$1} requested but not available])])])
            
                  ])
-            AM_CONDITIONAL([HAVE_$2], [test "x${have_$1}" = "xtrue"])
+            AM_CONDITIONAL([HAVE_$2], [test "x${have_$1}" = "xtrue" && test "x$5" != "xtrue"])
           ])
 
 AX_CHECK_FEATURE_PKG([sdl_image], [SDL_IMAGE],
                      [SDL_IMAGE], [SDL2_image])
 
-AX_CHECK_FEATURE_PKG([ffmpeg], [FFMPEG],
-                     [FFMPEG], [libavcodec >= 54.35.0 libavformat >= 54.20.0 libavutil >= 52.3.0 libswscale >= 2.1.1 libswresample >= 3.0.0 ])
-dnl Remove SDL 1 inclusions from ffmpeg (https://trac.ffmpeg.org/ticket/2009)
-FFMPEG_LIBS=`echo "$FFMPEG_LIBS" | sed 's|-lSDL ||' | sed 's|-lSDLmain ||'`
 LIBS=`echo "$LIBS" | sed 's|-lSDL ||' | sed 's|-lSDLmain ||'`
 
 AX_CHECK_FEATURE_PKG([curl], [CURL],
@@ -247,7 +258,24 @@ LIBS=`echo "$LIBS" | sed -E 's|-specs=@<:@^ @:>@+||'`
 AX_CHECK_FEATURE_PKG([png], [PNG],
                      [PNG], [libpng])
 
+AX_CHECK_FEATURE_PKG([catch2], [CATCH2], [CATCH2], [catch2 >= 3.0.0], true)
+AM_CONDITIONAL([BUILD_ALEPHONE_TESTS], [test "x$have_catch2" = "xtrue"])
+
 AX_CHECK_FEATURE_LIB([miniupnpc], [MINIUPNPC], [miniupnpc/miniupnpc.h], [miniupnpc], [upnpDiscover])
+
+dnl six libraries required for film export now
+AX_CHECK_FEATURE_PKG([matroska], [MATROSKA], [matroska], [libmatroska])
+AX_CHECK_FEATURE_PKG([vpx], [VPX], [vpx], [vpx])
+AX_CHECK_FEATURE_PKG([ebml], [EBML], [ebml], [libebml])
+AX_CHECK_FEATURE_PKG([vorbis], [VORBIS], [vorbis], [vorbis])
+AX_CHECK_FEATURE_PKG([vorbisenc], [VORBISENC], [vorbisenc], [vorbisenc])
+AX_CHECK_FEATURE_LIB([libyuv], [LIBYUV], [libyuv/convert.h], [yuv], [ARGBToI420])
+
+if test -n "$have_matroska" && test -n "$have_ebml" && test -n "$have_vpx" && \
+   test -n "$have_vorbis" && test -n "$have_vorbisenc" && \
+   test -n "$have_libyuv"; then
+   AC_DEFINE([FILM_EXPORT], [1], [have all film export libraries])
+fi
 
 dnl Generate Makefiles.
 AC_CONFIG_FILES([
@@ -255,7 +283,7 @@ Makefile
 AlephOne.spec
 Source_Files/Makefile
 Source_Files/CSeries/Makefile
-Source_Files/FFmpeg/Makefile
+Source_Files/Videos/Makefile
 Source_Files/Files/Makefile
 Source_Files/GameWorld/Makefile
 Source_Files/Input/Makefile
@@ -270,6 +298,7 @@ Source_Files/RenderOther/Makefile
 Source_Files/Sound/Makefile
 Source_Files/TCPMess/Makefile
 Source_Files/XML/Makefile
+Steam/Makefile
 tools/Makefile
 tools/headertest/GNUmakefile
 data/Makefile
@@ -299,7 +328,8 @@ AC_DEFUN([AX_PRINT_SUMMARY],
          [ AS_IF([test "x${have_$1}" = "xtrue"],
                  [AS_ECHO(["    Enabled: ${desc_$1}"])],
                  [test "x${enable_$1}" = "xno" ||
-                  test "x${with_$1}" = "xno"],
+                  test "x${with_$1}" = "xno" ||
+                  (test "x$2" = "xtrue" && test "x${with_$1}" != "xyes")],
                  [AS_ECHO(["   Disabled: ${desc_$1}"])],
                  [AS_ECHO(["  Not found: ${desc_$1}"])])
          ])
@@ -309,10 +339,16 @@ AS_ECHO(["Summary of optional features:"])
 AS_ECHO([""])
 AX_PRINT_SUMMARY([opengl])
 AX_PRINT_SUMMARY([sdl_image])
-AX_PRINT_SUMMARY([ffmpeg])
 AX_PRINT_SUMMARY([curl])
 AX_PRINT_SUMMARY([zzip])
 AX_PRINT_SUMMARY([png])
 AX_PRINT_SUMMARY([miniupnpc])
+AX_PRINT_SUMMARY([vpx])
+AX_PRINT_SUMMARY([matroska])
+AX_PRINT_SUMMARY([ebml])
+AX_PRINT_SUMMARY([vorbis])
+AX_PRINT_SUMMARY([vorbisenc])
+AX_PRINT_SUMMARY([libyuv])
+AX_PRINT_SUMMARY([catch2], true)
 AS_ECHO([""])
 AS_ECHO(["Configuration done. Now type \"make\"."])

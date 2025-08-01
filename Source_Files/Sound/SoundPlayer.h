@@ -42,7 +42,7 @@ struct SoundStereo {
 struct SoundParameters {
 	short identifier = NONE; //Identifier of the sound
 	short source_identifier = NONE; //Identifier of the source emitting the sound
-	float pitch = 1;
+	float pitch = 1.f;
 	bool is_2d = true; //if false it will use source_location3d to position sound (3D sounds)
 	bool soft_rewind = false; //if true the sound can only rewind after it's done playing
 	bool soft_start = false; //if true the sound will use transitions to fade in from silence to proper computed volume
@@ -88,30 +88,36 @@ public:
 	float GetPriority() const override { return Simulate(parameters.Get()); }
 	void AskSoftStop() { soft_stop_signal = true; } //not supported by 3d sounds because no need to
 	void AskRewind(const SoundParameters& soundParameters, const Sound& sound);
-	bool CanRewind(int baseTick) const;
+	bool CanRewind(uint64_t baseTick) const;
 	bool CanFastRewind(const SoundParameters& soundParameters) const;
 	bool HasActiveRewind() const { return rewind_signal.load() && !soft_stop_signal.load(); }
 	bool IsLooping() const;
 private:
 
 	struct SoundTransition {
-		uint32_t start_transition_tick = 0;
-		float current_volume = 0;
+		uint64_t start_transition_tick = 0;
+		float current_volume = 0.f;
 		SoundBehavior current_sound_behavior;
 		bool allow_transition = false;
 	};
 
 	void Rewind() override;
 	void Init(const SoundParameters& parameters);
-	int GetNextData(uint8* data, int length) override;
-	int LoopManager(uint8* data, int length);
+	uint32_t GetNextData(uint8* data, uint32_t length) override;
+	uint32_t LoopManager(uint8* data, uint32_t length);
 	SetupALResult SetUpALSourceIdle() override;
 	SetupALResult SetUpALSource3D();
 	bool SetUpALSourceInit() override;
 	bool LoadParametersUpdates() override;
 	void ResetTransition();
-	float ComputeParameterForTransition(float targetParameter, float currentParameter, int currentTick) const;
+	float ComputeParameterForTransition(float targetParameter, float currentParameter, uint64_t currentTick) const;
 	float ComputeVolumeForTransition(float targetVolume);
+	bool MustDisableHrtf() const;
+	uint32_t GetDuration() const;
+	std::tuple<AudioFormat, uint32_t, bool> GetAudioFormat() const override;
+	uint32_t ProcessData(uint8_t* outputData, uint32_t remainingSoundDataLength, uint32_t remainingBufferLength);
+	void ApplyFade(uint8_t* outputData, bool fadeIn, uint32_t startSampleIndex, uint32_t endSampleIndex);
+	void ProcessSmoothLoopingTransition(uint8_t* outputData, uint32_t dataLength);
 	SoundBehavior ComputeVolumeForTransition(const SoundBehavior& targetSoundBehavior);
 	AtomicStructure<Sound> sound;
 	AtomicStructure<SoundParameters> parameters;
@@ -119,14 +125,15 @@ private:
 	SoundTransition sound_transition;
 	uint32_t data_length;
 	uint32_t current_index_data;
-	uint32_t start_tick;
+	uint64_t start_tick;
 
 	std::atomic_bool soft_stop_signal = { false };
 
-	static constexpr int rewind_time = 83;
-	static constexpr int fast_rewind_time = 35;
+	static constexpr uint32_t rewind_time = 83U;
+	static constexpr uint32_t smooth_looping_transition_crossfade_time_ms = 5U;
+	static constexpr uint32_t fast_rewind_time = 35U;
 	static constexpr float smooth_volume_transition_threshold = 0.1f;
-	static constexpr int smooth_volume_transition_time_ms = 300;
+	static constexpr uint32_t smooth_volume_transition_time_ms = 300U;
 
 	static constexpr SoundBehavior sound_behavior_parameters[] = {
 		{0.5f, 5.f, 1.f, 1.f, 1.f},

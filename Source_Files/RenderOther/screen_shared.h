@@ -160,7 +160,7 @@ struct ScreenMessage
 		Len = 256
 	};
 
-	uint32_t ExpirationTime; // machine ticks the screen message expires at
+	uint64_t ExpirationTime; // machine ticks the screen message expires at
 	char Text[Len];		// Text to display
 	
 	ScreenMessage(): ExpirationTime(machine_tick_count()) {Text[0] = 0;}

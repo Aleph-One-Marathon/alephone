@@ -24,6 +24,9 @@
 -- qwe()		Jump
 -- shit()		Everything (almost)
 -- yourmom()		Save at this spot
+-- sesame()		Activate what's currently pointed at
+-- wtf()		Show the level completion state
+-- kyt()		Trigger-based invincibility
 
 function nrg()
    if Players[0].life < 150 then 
@@ -126,10 +129,27 @@ function qwe()
    Players[0]:accelerate(0, 0, 0.1)
 end
 
+function sesame()
+   Players[0]:find_action_key_target().active = true
+end
+
+function wtf()
+   Players[0]:print(Level.calculate_completion_state())
+end
+
+kyt_enabled = false
+function kyt()
+   kyt_enabled = not kyt_enabled
+   if kyt_enabled then
+      Players.print("Invincibility enabled")
+   else
+      Players.print("Invincibility disabled")
+   end
+end
+
 Triggers = {}
 
 function Triggers.idle()
-
    if Game.ticks == 0 then
       Players.print("Cheats enabled")
    end
@@ -137,14 +157,21 @@ function Triggers.idle()
    -- handle jumping
    for p in Players() do
       if p.action_flags.microphone_button then
-	 if not p._latched then
-	    p._latched = true
-	    p:accelerate(0, 0, 0.1)
-	 end
-	 p.action_flags.microphone_button = false
+         if not p._latched then
+            p._latched = true
+            p:accelerate(0, 0, 0.1)
+         end
+         p.action_flags.microphone_button = false
       else
-	 p._latched = false
+         p._latched = false
       end
    end
+end
 
+function Triggers.player_damaged(victim, aggressor_player, aggressor_monster, damage_type, damage_amount, projectile)
+   if victim.index == 0 and kyt_enabled then
+      if Players[0].life < 0 then
+         Players[0].life = 1
+      end
+   end
 end

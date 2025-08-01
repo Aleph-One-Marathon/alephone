@@ -276,7 +276,7 @@ private:
 	widget_placer *placer;
 	bool layout_for_fullscreen; // is the current layout for fullscreen?
 
-	Uint32 last_redraw;
+	uint64_t last_redraw;
 	bool initial_text_input;
 };
 

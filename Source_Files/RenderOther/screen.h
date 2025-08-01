@@ -270,6 +270,7 @@ float MainScreenPixelScale();
 bool MainScreenIsOpenGL();
 void MainScreenSwap();
 void MainScreenCenterMouse();
+SDL_Window* MainScreenWindow();
 SDL_Surface *MainScreenSurface();
 void MainScreenUpdateRect(int x, int y, int w, int h);
 void MainScreenUpdateRects(size_t count, const SDL_Rect *rects);

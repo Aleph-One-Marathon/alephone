@@ -36,7 +36,7 @@ public:
 	virtual bool	Sync(NetTopology* inTopology, int32 inSmallestGameTick, int inLocalPlayerIndex, bool isServer) = 0;
 	virtual bool	UnSync(bool inGraceful, int32 inSmallestPostgameTick) = 0;
 	virtual int32	GetNetTime() = 0;
-	virtual void	PacketHandler(DDPPacketBuffer* inPacket) = 0;
+	virtual void	PacketHandler(UDPpacket& inPacket) = 0;
 	virtual		~NetworkGameProtocol() {}
 
 	// action flags we can use for prediction, but aren't authoritative yet

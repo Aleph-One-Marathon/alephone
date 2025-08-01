@@ -1,0 +1,42 @@
+name: release-steam-linux
+
+on: [workflow_dispatch, workflow_call]
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    container: registry.gitlab.steamos.cloud/steamrt/sniper/sdk
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure
+      uses: ./.github/actions/configure-linux
+      with:
+        use_vcpkg: true
+        configure_options: >
+            --enable-steam --with-boost=$GITHUB_WORKSPACE/vcpkg/installed-x64-linux/x64-linux
+            CXXFLAGS=-I$GITHUB_WORKSPACE/vcpkg/installed-x64-linux/x64-linux/include
+            LDFLAGS=-L$GITHUB_WORKSPACE/vcpkg/installed-x64-linux/x64-linux/lib
+        
+    - name: Build
+      run: make -j $(nproc)
+
+    - name: Bootstrap Steamcmd
+      continue-on-error: true #Steamcmd may throw error exit code while bootstrapping that we can ignore, we will see on upload if everything is working fine
+      run: |
+        cp -r "vcpkg/installed-x64-linux/x64-linux/tools/steamworks-sdk" "Steam/steamcmd" &&
+        cd Steam/steamcmd &&
+        chmod +x steamcmd.sh &&
+        chmod +x linux32/steamcmd &&
+        ./steamcmd.sh +quit
+
+    - name: Restore config.vdf
+      env:
+        CONFIG_VDF: ${{ secrets.CONFIG_VDF }}
+      run:
+        echo $CONFIG_VDF | base64 --decode > ~/Steam/config/config.vdf
+
+    - name: Deploy to Steam
+      run: ./Steam/steamcmd/steamcmd.sh +login alephone_upload +run_app_build ../m1_linux.vdf +run_app_build ../m2_linux.vdf +run_app_build ../inf_linux.vdf +quit
+

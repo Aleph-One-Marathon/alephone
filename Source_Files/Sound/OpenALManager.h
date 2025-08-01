@@ -34,28 +34,9 @@ constexpr float abortAmplitudeThreshold = MAXIMUM_SOUND_VOLUME / 6.f / 256;
 constexpr float angleConvert = 360 / float(FULL_CIRCLE);
 constexpr float degreToRadian = M_PI / 180.f;
 
-#ifdef  HAVE_FFMPEG
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-#include "libavutil/samplefmt.h"
-#ifdef __cplusplus
-}
-#endif
-
-const inline std::unordered_map<ALCint, AVSampleFormat> mapping_openal_ffmpeg = {
-	{ALC_FLOAT_SOFT, AV_SAMPLE_FMT_FLT},
-	{ALC_INT_SOFT, AV_SAMPLE_FMT_S32},
-	{ALC_SHORT_SOFT, AV_SAMPLE_FMT_S16},
-	{ALC_UNSIGNED_BYTE_SOFT, AV_SAMPLE_FMT_U8}
-};
-
-#endif //  HAVE_FFMPEG
-
 struct AudioParameters {
-	int rate;
-	int sample_frame_size;
+	uint32_t rate;
+	uint32_t sample_frame_size;
 	ChannelType channel_type;
 	bool balance_rewind;
 	bool hrtf;
@@ -73,6 +54,13 @@ public:
 		DirectChannelRemix
 	};
 
+	enum class HrtfSupport
+	{
+		Supported,
+		Unsupported,
+		Required
+	};
+
 	static OpenALManager* Get() { return instance; }
 	static bool Init(const AudioParameters& parameters);
 	static void Shutdown();
@@ -80,8 +68,8 @@ public:
 	void Start();
 	void Stop();
 	std::shared_ptr<SoundPlayer> PlaySound(const Sound& sound, const SoundParameters& parameters);
-	std::shared_ptr<MusicPlayer> PlayMusic(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters);
-	std::shared_ptr<StreamPlayer> PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, AudioFormat audioFormat);
+	std::shared_ptr<MusicPlayer> PlayMusic(std::vector<MusicPlayer::Preset>& presets, uint32_t starting_preset_index, uint32_t starting_segment_index, const MusicParameters& parameters);
+	std::shared_ptr<StreamPlayer> PlayStream(CallBackStreamPlayer callback, uint32_t rate, bool stereo, AudioFormat audioFormat, void* userdata);
 	std::unique_ptr<AudioPlayer::AudioSource> PickAvailableSource(const AudioPlayer& audioPlayer);
 	void UpdateListener(world_location3d listener) { listener_location.Set(listener); }
 	const world_location3d& GetListener() const { return listener_location.Get(); }
@@ -90,11 +78,11 @@ public:
 	float GetMasterVolume() const { return master_volume.load(); }
 	float GetMusicVolume() const { return music_volume.load(); }
 	void ToggleDeviceMode(bool recording_device);
-	int GetFrequency() const { return audio_parameters.rate; }
+	uint32_t GetFrequency() const { return audio_parameters.rate; }
 	uint32_t GetElapsedPauseTime() const { return elapsed_pause_time; }
 	void GetPlayBackAudio(uint8* data, int length);
-	bool Support_HRTF_Toggling() const;
-	bool Is_HRTF_Enabled() const;
+	HrtfSupport GetHrtfSupport() const;
+	bool IsHrtfEnabled() const;
 	bool IsBalanceRewindSound() const { return audio_parameters.balance_rewind; }
 	bool IsPaused() const { return paused_audio; }
 	ALCint GetRenderingFormat() const { return openal_rendering_format; }
@@ -110,7 +98,7 @@ private:
 	std::atomic<float> music_volume;
 	bool process_audio_active = false;
 	bool paused_audio = false;
-	uint32_t elapsed_pause_time = 0;
+	uint64_t elapsed_pause_time = 0;
 	AtomicStructure<world_location3d> listener_location = {};
 	void StopAllPlayers();
 	void UpdateParameters(const AudioParameters& parameters);

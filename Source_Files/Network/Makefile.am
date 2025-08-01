@@ -4,17 +4,17 @@ noinst_LIBRARIES = libnetwork.a
 
 SUBDIRS = Metaserver StandaloneHub
 
-libnetwork_a_SOURCES = ConnectPool.h network.h network_capabilities.h		  \
+libnetwork_a_SOURCES = NetworkInterface.h ConnectPool.h network.h network_capabilities.h \
   network_dialog_widgets_sdl.h network_dialogs.h network_games.h \
   network_messages.h network_private.h network_star.h NetworkGameProtocol.h	  \
-  SDL_netx.h SSLP_API.h SSLP_Protocol.h StarGameProtocol.h \
+  SSLP_API.h SSLP_Protocol.h StarGameProtocol.h \
   Update.h HTTP.h PortForward.h Pinger.h \
   \
-  ConnectPool.cpp network.cpp network_capabilities.cpp						  \
+  NetworkInterface.cpp ConnectPool.cpp network.cpp network_capabilities.cpp \
   network_dialogs.cpp network_dialog_widgets_sdl.cpp \
   network_games.cpp network_messages.cpp				  \
-  network_star_hub.cpp network_star_spoke.cpp network_udp.cpp				  \
-  SDL_netx.cpp SSLP_limited.cpp StarGameProtocol.cpp	  \
+  network_star_hub.cpp network_star_spoke.cpp network_udp.cpp \
+  SSLP_limited.cpp StarGameProtocol.cpp	  \
   Update.cpp HTTP.cpp PortForward.cpp Pinger.cpp
 
 EXTRA_libnetwork_a_SOURCES = network_dummy.cpp

@@ -1,13 +1,13 @@
 {
   "default-registry": {
     "kind": "builtin",
-    "baseline": "ad25766aefb5313b6bc4e2a4b78a2946f84fbf66"
+    "baseline": "49d19a16f0c6a637ba4c649e3ad6d0639cde466b"
   },
   "registries": [
     {
       "kind": "git",
       "repository": "https://github.com/Aleph-One-Marathon/vcpkg-registry",
-      "baseline": "136888395ab723ece5ff1acbf08ff0ed58b04fd5",
+      "baseline": "2ac80009e3c0d12b40ee65b0752b3bc71539c74f",
       "packages": [ "steamworks-sdk" ]
     }
   ]

@@ -1,6 +1,6 @@
 {
    "name":"alephone",
-   "version-date":"2024-08-22",
+   "version-date":"2025-03-02",
    "dependencies":[
       {
          "name":"boost-algorithm"
@@ -25,19 +25,23 @@
          "name":"boost-dll"
       },
       {
-         "name":"sdl2"
+         "name":"sdl2",
+         "platform": "!linux"
       },
       {
          "name":"sdl2-image",
          "features":[
             "libjpeg-turbo"
-         ]
+         ],
+         "platform": "!linux"
       },
       {
-         "name":"sdl2-net"
+         "name":"asio",
+         "platform": "!linux"
       },
       {
-         "name":"sdl2-ttf"
+         "name":"sdl2-ttf",
+         "platform": "!linux"
       },
       {
          "name":"curl",
@@ -51,36 +55,41 @@
          "name":"zziplib"
       },
       {
-         "name":"ffmpeg",
-         "features":[
-            "vorbis",
-            "vpx"
-         ]
-      },
-      {
          "name":"miniupnpc"
       },
       {
-         "name":"nativefiledialog"
+         "name":"nativefiledialog-extended",
+         "platform": "!linux"
       },
       {
          "name":"libsndfile"
       },
       {
-         "name":"openal-soft"
+         "name":"openal-soft",
+         "platform": "!linux"
       },
       {
-         "name":"catch2"
+         "name":"catch2",
+         "platform": "!linux"
+      },
+      {
+         "name":"libyuv"
       },
       {
          "name":"steamworks-sdk"
+      },
+      {
+          "name":"matroska"
+      },
+      {
+          "name":"libvpx"
       }
    ],
    "overrides":[
       {
-         "name":"ffmpeg",
-         "version":"5.0.2",
-         "port-version":3
+         "name":"openal-soft",
+         "version":"1.23.1",
+         "port-version":2
       }
    ]
 }

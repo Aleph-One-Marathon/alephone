@@ -58,8 +58,8 @@ using std::vector;
 
 #ifdef DEBUG
 struct myTMTask_profile {
-    uint32		mStartTime;
-    uint32		mFinishTime;
+    uint64_t	mStartTime;
+    uint64_t	mFinishTime;
     uint32		mNumCallsThisReset;
     uint32		mNumCallsTotal;
     int32		mDriftMin;
@@ -128,8 +128,8 @@ static int
 thread_loop(void* inData) {
     myTMTask*	theTMTask	= (myTMTask*) inData;
     
-    uint32	theLastRunTime	= machine_tick_count();
-    uint32	theCurrentRunTime;
+	uint64_t theLastRunTime	= machine_tick_count();
+    uint64_t theCurrentRunTime;
     int32	theDrift	= 0;
 
 #ifdef DEBUG

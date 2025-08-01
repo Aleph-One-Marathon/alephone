@@ -66,7 +66,7 @@ bool OpenALManager::Init(const AudioParameters& parameters) {
 
 bool OpenALManager::LoadOptionalExtensions() {
 
-	for (auto& extension : mapping_extensions_names)
+	for (const auto& extension : mapping_extensions_names)
 		extension_support[extension.first] = alIsExtensionPresent(extension.second.c_str());
 
 	return true;
@@ -83,7 +83,7 @@ void OpenALManager::ProcessAudioQueue() {
 	for (int i = 0; i < audio_players_queue.size(); i++) {
 
 		auto audio = audio_players_queue.front();
-		bool mustStillPlay = !audio->stop_signal && audio->AssignSource() && audio->Update() && audio->Play();
+		const bool mustStillPlay = !audio->stop_signal && audio->AssignSource() && audio->Update() && audio->Play();
 
 		audio_players_queue.pop_front();
 
@@ -103,8 +103,8 @@ void OpenALManager::UpdateListener() {
 
 	const auto& listener = listener_location.Get();
 
-	auto yaw = listener.yaw * angleConvert;
-	auto pitch = listener.pitch * angleConvert;
+	const auto yaw = listener.yaw * angleConvert;
+	const auto pitch = listener.pitch * angleConvert;
 
 	ALfloat u = std::cos(degreToRadian * yaw) * std::cos(degreToRadian * pitch);
 	ALfloat	v = std::sin(degreToRadian * yaw) * std::cos(degreToRadian * pitch);
@@ -185,17 +185,17 @@ std::shared_ptr<SoundPlayer> OpenALManager::PlaySound(const Sound& sound, const 
 	return soundPlayer;
 }
 
-std::shared_ptr<MusicPlayer> OpenALManager::PlayMusic(std::shared_ptr<StreamDecoder> decoder, MusicParameters parameters) {
+std::shared_ptr<MusicPlayer> OpenALManager::PlayMusic(std::vector<MusicPlayer::Preset>& presets, uint32_t starting_preset_index, uint32_t starting_segment_index, const MusicParameters& parameters) {
 	if (!process_audio_active) return std::shared_ptr<MusicPlayer>();
-	auto musicPlayer = std::make_shared<MusicPlayer>(decoder, parameters);
+	auto musicPlayer = std::make_shared<MusicPlayer>(presets, starting_preset_index, starting_segment_index, parameters);
 	audio_players_shared.push(musicPlayer);
 	return musicPlayer;
 }
 
 //Used for video playback
-std::shared_ptr<StreamPlayer> OpenALManager::PlayStream(CallBackStreamPlayer callback, int length, int rate, bool stereo, AudioFormat audioFormat) {
+std::shared_ptr<StreamPlayer> OpenALManager::PlayStream(CallBackStreamPlayer callback, uint32_t rate, bool stereo, AudioFormat audioFormat, void* userdata) {
 	if (!process_audio_active) return std::shared_ptr<StreamPlayer>();
-	auto streamPlayer = std::make_shared<StreamPlayer>(callback, length, rate, stereo, audioFormat);
+	auto streamPlayer = std::make_shared<StreamPlayer>(callback, rate, stereo, audioFormat, userdata);
 	audio_players_shared.push(streamPlayer);
 	return streamPlayer;
 }
@@ -248,22 +248,22 @@ void OpenALManager::GetPlayBackAudio(uint8* data, int length) {
 	alcRenderSamplesSOFT(p_ALCDevice, data, length);
 }
 
-//This return true if the device supports switching from hrtf enabled <-> hrtf disabled
-bool OpenALManager::Support_HRTF_Toggling() const {
+OpenALManager::HrtfSupport OpenALManager::GetHrtfSupport() const {
 	ALCint hrtfStatus;
 	alcGetIntegerv(p_ALCDevice, ALC_HRTF_STATUS_SOFT, 1, &hrtfStatus);
 
 	switch (hrtfStatus) {
 		case ALC_HRTF_DENIED_SOFT:
 		case ALC_HRTF_UNSUPPORTED_FORMAT_SOFT:
+			return HrtfSupport::Unsupported;
 		case ALC_HRTF_REQUIRED_SOFT:
-			return false;
+			return HrtfSupport::Required;
 		default:
-			return true;
+			return HrtfSupport::Supported;
 	}
 }
 
-bool OpenALManager::Is_HRTF_Enabled() const {
+bool OpenALManager::IsHrtfEnabled() const {
 	ALCint hrtfStatus;
 	alcGetIntegerv(p_ALCDevice, ALC_HRTF_SOFT, 1, &hrtfStatus);
 	return hrtfStatus;
@@ -286,8 +286,8 @@ bool OpenALManager::OpenDevice() {
 		ALCint attrs[] = {
 			ALC_FORMAT_TYPE_SOFT,     openal_rendering_format,
 			ALC_FORMAT_CHANNELS_SOFT, mapping_sdl_openal_channel.at(audio_parameters.channel_type),
-			ALC_FREQUENCY,            audio_parameters.rate,
-			ALC_HRTF_SOFT,			  audio_parameters.hrtf,
+			ALC_FREQUENCY,            static_cast<ALCint>(audio_parameters.rate),
+			ALC_HRTF_SOFT,            audio_parameters.hrtf,
 			0,
 		};
 
@@ -444,7 +444,7 @@ int OpenALManager::GetBestOpenALSupportedFormat() {
 		ALCint attrs[] = {
 			ALC_FORMAT_TYPE_SOFT,     format_type[i],
 			ALC_FORMAT_CHANNELS_SOFT, mapping_sdl_openal_channel.at(audio_parameters.channel_type),
-			ALC_FREQUENCY,            audio_parameters.rate
+			ALC_FREQUENCY,            static_cast<ALCint>(audio_parameters.rate)
 		};
 
 		if (alcIsRenderFormatSupportedSOFT(device, attrs[5], attrs[3], attrs[1]) == AL_TRUE) {

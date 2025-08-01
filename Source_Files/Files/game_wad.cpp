@@ -1316,19 +1316,16 @@ bool revert_game(
 			// this gets around WZ's moving of this line into make_restored_game_relevant()
 			successful = entering_map(true /*restoring game*/);
 		}
-
-		/* And they don't get to continue. */
-		stop_recording();
 	}
 	else
 	{
 		/* This was the totally evil line discussed above. */
 		successful= new_game(1, false, &revert_game_data.game_information, &revert_game_data.player_start, 
 			&revert_game_data.entry_point);
-			
-		/* And rewind so that the last player is used. */
-		rewind_recording();
 	}
+
+	/* And rewind so that the last player is used. */
+	rewind_recording();
 
 	if(successful)
 	{

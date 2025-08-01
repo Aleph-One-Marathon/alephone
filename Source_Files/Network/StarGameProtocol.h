@@ -39,7 +39,7 @@ public:
 	bool	Sync(NetTopology* inTopology, int32 inSmallestGameTick, int inLocalPlayerIndex, bool isServer);
 	bool	UnSync(bool inGraceful, int32 inSmallestPostgameTick);
 	int32	GetNetTime();
-	void	PacketHandler(DDPPacketBuffer* inPacket);
+	void	PacketHandler(UDPpacket& inPacket);
 
 	static void ParsePreferencesTree(InfoTree prefs, std::string version);
 

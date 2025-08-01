@@ -109,6 +109,8 @@ static void _ParseAllMML(const InfoTree& fileroot, bool load_menu_mml_only)
 			parse_mml_sounds(child);
 		for (const InfoTree& child : root.children_named("faders"))
 			parse_mml_faders(child);
+		for (const InfoTree& child : root.children_named("player"))
+			parse_mml_player(child);
 
 		if (load_menu_mml_only) continue;
 
@@ -126,8 +128,6 @@ static void _ParseAllMML(const InfoTree& fileroot, bool load_menu_mml_only)
 			parse_mml_platforms(child);
 		for (const InfoTree &child : root.children_named("liquids"))
 			parse_mml_liquids(child);
-		for (const InfoTree &child : root.children_named("player"))
-			parse_mml_player(child);
 		for (const InfoTree &child : root.children_named("view"))
 			parse_mml_view(child);
 		for (const InfoTree &child : root.children_named("weapons"))

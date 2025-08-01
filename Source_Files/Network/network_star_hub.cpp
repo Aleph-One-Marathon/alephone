@@ -46,7 +46,6 @@
 
 #include "network_star.h"
 
-//#include "sdl_network.h"
 #include "TickBasedCircularQueue.h"
 #include "network_private.h"
 #include "mytm.h"
@@ -204,7 +203,7 @@ static ConcreteTickBasedCircularQueue<int32> sFlagSendTimeQueue(kFlagsQueueSize)
 static int32 sLastRealUpdate;
 
 struct NetworkPlayer_hub {
-        NetAddrBlock	mAddress;		// network address of player
+	IPaddress	mAddress;		// network address of player
 	bool		mAddressKnown;		// did player tell us his address yet?
         bool		mConnected;		// is player still connected?
         int32		mLastNetworkTickHeard;	// our sNetworkTicker last time we got a packet from them
@@ -283,16 +282,16 @@ static int32 sSmallestUnsentTick;
 struct NetAddrBlockCompare
 {
 
-  bool operator()(const NetAddrBlock& a, const NetAddrBlock& b) const
+  bool operator()(const IPaddress& a, const IPaddress& b) const
   {
-    if (a.host == b.host)
-      return a.port < b.port;
+    if (a.address() == b.address())
+      return a.port() < b.port();
     else
-      return a.host < b.host;
+      return a.address() < b.address();
   }
 };
 
-  typedef std::map<NetAddrBlock, int, NetAddrBlockCompare>	AddressToPlayerIndexType;
+  typedef std::map<IPaddress, int, NetAddrBlockCompare>	AddressToPlayerIndexType;
 static AddressToPlayerIndexType	sAddressToPlayerIndex;
 
 typedef std::vector<NetworkPlayer_hub>	NetworkPlayerCollection;
@@ -302,11 +301,11 @@ static NetworkPlayerCollection	sNetworkPlayers;
 static int			sLocalPlayerIndex;
 static int			sReferencePlayerIndex;
 
-static DDPFramePtr	sOutgoingFrame = NULL;
+static UDPpacket sOutgoingFrame;
 
 #ifndef A1_NETWORK_STANDALONE_HUB
-static DDPPacketBuffer	sLocalOutgoingBuffer;
-static bool		sNeedToSendLocalOutgoingBuffer = false;
+static UDPpacket sLocalOutgoingBuffer;
+static bool	sNeedToSendLocalOutgoingBuffer = false;
 #endif
 
 static myTMTaskPtr	sHubTickTask = NULL;
@@ -318,10 +317,10 @@ static void hub_check_for_completion();
 static void player_acknowledged_up_to_tick(size_t inPlayerIndex, int32 inSmallestUnacknowledgedTick);
 static bool player_provided_flags_from_tick_to_tick(size_t inPlayerIndex, int32 inFirstNewTick, int32 inSmallestUnreceivedTick);
 static void hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex);
-static void hub_received_identification_packet(AIStream& ps, NetAddrBlock address);
+static void hub_received_identification_packet(AIStream& ps, const IPaddress& address);
 static void hub_update_player_pregame_state(int inPlayerIndex, int16 state);
-static void hub_received_ping_request(AIStream& ps, NetAddrBlock address);
-static void hub_received_ping_response(AIStream& ps, NetAddrBlock address);
+static void hub_received_ping_request(AIStream& ps, const IPaddress& address);
+static void hub_received_ping_response(AIStream& ps, const IPaddress& address);
 static void process_messages(AIStream& ps, int inSenderIndex);
 static void make_player_netdead(int inPlayerIndex);
 static bool hub_tick();
@@ -353,26 +352,15 @@ getLateFlagsQueue(size_t inIndex)
 }
 
 
-static inline bool
-operator <(const NetAddrBlock& a, const NetAddrBlock& b)
-{
-        return memcmp(&a, &b, sizeof(a)) < 0;
-}
-
-
-static OSErr
-send_frame_to_local_spoke(DDPFramePtr frame, NetAddrBlock *address)
+static void
+send_frame_to_local_spoke(UDPpacket& frame)
 {
 #ifndef A1_NETWORK_STANDALONE_HUB
-        sLocalOutgoingBuffer.datagramSize = frame->data_size;
-        memcpy(sLocalOutgoingBuffer.datagramData, frame->data, frame->data_size);
-        // We ignore the 'source address' because the spoke does too.
+        sLocalOutgoingBuffer = frame;
         sNeedToSendLocalOutgoingBuffer = true;
-        return noErr;
 #else
 	// Standalone hub should never call this routine
 	assert(false);
-	return noErr;
 #endif // A1_NETWORK_STANDALONE_HUB
 }
 
@@ -384,12 +372,17 @@ check_send_packet_to_spoke()
 	// Routine exists but has no implementation on standalone hub.
 #ifndef A1_NETWORK_STANDALONE_HUB
         if(sNeedToSendLocalOutgoingBuffer)
-                spoke_received_network_packet(&sLocalOutgoingBuffer);
+                spoke_received_network_packet(sLocalOutgoingBuffer);
 
         sNeedToSendLocalOutgoingBuffer = false;
 #endif // A1_NETWORK_STANDALONE_HUB
 }
 
+static int get_player_index_from_address(const IPaddress& address)
+{
+	auto it = sAddressToPlayerIndex.find(address);
+	return it != sAddressToPlayerIndex.end() ? it->second : NONE;
+}
 
 
 #ifndef INT32_MAX
@@ -397,7 +390,7 @@ check_send_packet_to_spoke()
 #endif
 
 void
-hub_initialize(int32 inStartingTick, int inNumPlayers, const NetAddrBlock* const* inPlayerAddresses, int inLocalPlayerIndex)
+hub_initialize(int32 inStartingTick, int inNumPlayers, const IPaddress* const* inPlayerAddresses, int inLocalPlayerIndex)
 {
 #ifdef DEBUG_TIMING_ADJUSTMENTS
 	FileSpecifier fs;
@@ -447,9 +440,6 @@ hub_initialize(int32 inStartingTick, int inNumPlayers, const NetAddrBlock* const
         sSmallestRealGameTick = inStartingTick;
         int32 theFirstTick = inStartingTick - kPregameTicks;
 
-        if(sOutgoingFrame == NULL)
-                sOutgoingFrame = NetDDPNewFrame();
-
 #ifndef A1_NETWORK_STANDALONE_HUB
         sNeedToSendLocalOutgoingBuffer = false;
 #endif
@@ -475,16 +465,9 @@ hub_initialize(int32 inStartingTick, int inNumPlayers, const NetAddrBlock* const
 #endif
                         thePlayer.mConnected = true;
                         sConnectedPlayersBitmask |= (((uint32)1) << i);
-			thePlayer.mAddressKnown = false;
-                        // thePlayer.mAddress = *(inPlayerAddresses[i]); (jkvw: see note below)
-                        // Currently, all-0 address is cue for local spoke.
-			// jkvw: The "real" addresses for spokes won't be known unti we get some UDP traffic
-			//	 from them - we'll update as they become known.
-                        if(i == sLocalPlayerIndex) { // jkvw: I don't need this, do I?
-                                obj_clear(thePlayer.mAddress);
-				sAddressToPlayerIndex[thePlayer.mAddress] = i;
-				thePlayer.mAddressKnown = true;
-			}
+						thePlayer.mAddressKnown = i == sLocalPlayerIndex;
+						// jkvw: The "real" addresses for spokes won't be known unti we get some UDP traffic
+						//	 from them - we'll update as they become known.
                 }
                 else
                 {
@@ -590,8 +573,6 @@ hub_cleanup(bool inGraceful, int32 inSmallestPostGameTick)
 		sLateFlagsQueues.clear();
 
 		sAddressToPlayerIndex.clear();
-		NetDDPDisposeFrame(sOutgoingFrame);
-		sOutgoingFrame = NULL;
 
 #ifdef DEBUG_TIMING_ADJUSTMENTS
 		if (debug_timing_adjustments)
@@ -629,11 +610,11 @@ hub_check_for_completion()
 
 
 void
-hub_received_network_packet(DDPPacketBufferPtr inPacket)
+hub_received_network_packet(UDPpacket& inPacket, bool from_local_spoke)
 {
 	logContextNMT("hub processing a received packet");
 	
-        AIStreamBE ps(inPacket->datagramData, inPacket->datagramSize);
+        AIStreamBE ps(inPacket.buffer.data(), inPacket.data_size);
 
 	try {
 		uint16	thePacketMagic;
@@ -649,17 +630,17 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
 		ps >> thePacketCRC;
 
 		// blank out the CRC field before calculating
-		inPacket->datagramData[2] = 0;
-		inPacket->datagramData[3] = 0;
+		inPacket.buffer[2] = 0;
+		inPacket.buffer[3] = 0;
 
-		if (thePacketCRC != calculate_data_crc_ccitt(inPacket->datagramData, inPacket->datagramSize))
+		if (thePacketCRC != calculate_data_crc_ccitt(inPacket.buffer.data(), inPacket.data_size))
 		{
 			if (thePacketMagic == kSpokeToHubGameDataPacketV1Magic)
 			{
-				AddressToPlayerIndexType::iterator theEntry = sAddressToPlayerIndex.find(inPacket->sourceAddress);
-				if (theEntry != sAddressToPlayerIndex.end())
+				int theSenderIndex = from_local_spoke ? sLocalPlayerIndex : get_player_index_from_address(inPacket.address);
+
+				if (theSenderIndex != NONE)
 				{
-					int theSenderIndex = theEntry->second;
 					getNetworkPlayer(theSenderIndex).mStats.errors++;
 				}
 			}
@@ -670,12 +651,8 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
                 {
                         case kSpokeToHubGameDataPacketV1Magic:
 			{
-				// Find sender
-				AddressToPlayerIndexType::iterator theEntry = sAddressToPlayerIndex.find(inPacket->sourceAddress);
-				if(theEntry == sAddressToPlayerIndex.end())
-					return;
-				
-				int theSenderIndex = theEntry->second;
+				int theSenderIndex = from_local_spoke ? sLocalPlayerIndex : get_player_index_from_address(inPacket.address);
+				if (theSenderIndex == NONE) return;
 				
 				if (getNetworkPlayer(theSenderIndex).mConnected)
 				{
@@ -691,15 +668,15 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
 			break;
 
 			case kSpokeToHubIdentification:
-				hub_received_identification_packet(ps, inPacket->sourceAddress);
+				hub_received_identification_packet(ps, inPacket.address);
 			break;
 
 					case kPingRequestPacket:
-						hub_received_ping_request(ps, inPacket->sourceAddress);
+						hub_received_ping_request(ps, inPacket.address);
 						break;
 						
 					case kPingResponsePacket:
-						hub_received_ping_response(ps, inPacket->sourceAddress);
+						hub_received_ping_response(ps, inPacket.address);
 						break;
 						
                         default:
@@ -724,7 +701,7 @@ hub_update_player_pregame_state(int inPlayerIndex, int16 state)
 }
 
 static void
-hub_received_identification_packet(AIStream& ps, NetAddrBlock address)
+hub_received_identification_packet(AIStream& ps, const IPaddress& address)
 {
 	int16 theSenderIndex;
 	ps >> theSenderIndex;
@@ -739,50 +716,38 @@ hub_received_identification_packet(AIStream& ps, NetAddrBlock address)
 
 
 static void
-hub_received_ping_request(AIStream& ps, NetAddrBlock address)
+hub_received_ping_request(AIStream& ps, const IPaddress& address)
 {
 	uint16 pingIdentifier;
 	ps >> pingIdentifier;
 	
 	// respond back to requestor
-	bool initedFrame = false;
-	if (!sOutgoingFrame)
-	{
-		sOutgoingFrame = NetDDPNewFrame();
-		initedFrame = true;
-	}
 	
-	AOStreamBE hdr(sOutgoingFrame->data, kStarPacketHeaderSize);
-	AOStreamBE ops(sOutgoingFrame->data, ddpMaxData, kStarPacketHeaderSize);
+	AOStreamBE hdr(sOutgoingFrame.buffer.data(), kStarPacketHeaderSize);
+	AOStreamBE ops(sOutgoingFrame.buffer.data(), ddpMaxData, kStarPacketHeaderSize);
 	
 	try {
 		hdr << (uint16)kPingResponsePacket;
 		ops << pingIdentifier;
 		
 		// blank out the CRC field before calculating
-		sOutgoingFrame->data[2] = 0;
-		sOutgoingFrame->data[3] = 0;
+		sOutgoingFrame.buffer[2] = 0;
+		sOutgoingFrame.buffer[3] = 0;
 		
-		uint16 crc = calculate_data_crc_ccitt(sOutgoingFrame->data, ops.tellp());
+		uint16 crc = calculate_data_crc_ccitt(sOutgoingFrame.buffer.data(), ops.tellp());
 		hdr << crc;
 		
 		// Send the packet
-		sOutgoingFrame->data_size = ops.tellp();
-		NetDDPSendFrame(sOutgoingFrame, &address);
+		sOutgoingFrame.data_size = ops.tellp();
+		NetDDPSendFrame(sOutgoingFrame, address);
 	} catch (...) {
 		logWarningNMT("Caught exception while constructing/sending ping response packet");
-	}
-	
-	if (initedFrame)
-	{
-		NetDDPDisposeFrame(sOutgoingFrame);
-		sOutgoingFrame = NULL;
 	}
 } // hub_received_ping_request()
 
 
 static void
-hub_received_ping_response(AIStream& ps, NetAddrBlock address)
+hub_received_ping_response(AIStream& ps, const IPaddress& address)
 {
 	uint16 pingIdentifier;
 	ps >> pingIdentifier;
@@ -1393,8 +1358,8 @@ send_packets()
                 NetworkPlayer_hub& thePlayer = sNetworkPlayers[i];
                 if(thePlayer.mConnected && thePlayer.mAddressKnown)
                 {
-			AOStreamBE hdr(sOutgoingFrame->data, kStarPacketHeaderSize);
-                        AOStreamBE ps(sOutgoingFrame->data, ddpMaxData, kStarPacketHeaderSize);
+			AOStreamBE hdr(sOutgoingFrame.buffer.data(), kStarPacketHeaderSize);
+                        AOStreamBE ps(sOutgoingFrame.buffer.data(), ddpMaxData, kStarPacketHeaderSize);
 
                         try {
                                 // acknowledgement
@@ -1527,18 +1492,18 @@ send_packets()
 				hdr << (uint16) (reflectFlags ? kHubToSpokeGameDataPacketWithSpokeFlagsV1Magic : kHubToSpokeGameDataPacketV1Magic);
 
 				// blank out the CRC field before calculating
-				sOutgoingFrame->data[2] = 0;
-				sOutgoingFrame->data[3] = 0;
+				sOutgoingFrame.buffer[2] = 0;
+				sOutgoingFrame.buffer[3] = 0;
 
-				uint16 crc = calculate_data_crc_ccitt(sOutgoingFrame->data, ps.tellp());
+				uint16 crc = calculate_data_crc_ccitt(sOutgoingFrame.buffer.data(), ps.tellp());
 				hdr << crc;
         
                                 // Send the packet
-                                sOutgoingFrame->data_size = ps.tellp();
+                                sOutgoingFrame.data_size = ps.tellp();
                                 if(i == sLocalPlayerIndex)
-                                        send_frame_to_local_spoke(sOutgoingFrame, &thePlayer.mAddress);
+                                        send_frame_to_local_spoke(sOutgoingFrame);
                                 else
-                                        NetDDPSendFrame(sOutgoingFrame, &thePlayer.mAddress);
+                                        NetDDPSendFrame(sOutgoingFrame, thePlayer.mAddress);
                         } // try
                         catch (...)
                         {

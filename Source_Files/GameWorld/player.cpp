@@ -1748,7 +1748,7 @@ static void recreate_player(
 		player_teleported_dead= true;
 	}
 
-	/* Clear the transient flags, leave the persistant flags, like Player has cheated */
+	/* Clear the transient flags, leave the persistant flags */
 	player->flags &= (_player_is_teleporting_flag | _player_is_interlevel_teleporting_flag | PLAYER_PERSISTANT_FLAGS );
 	player->monster_index= monster_index;
 	player->object_index= monster->object_index;
