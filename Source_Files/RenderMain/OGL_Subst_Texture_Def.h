@@ -32,17 +32,26 @@
 
 #ifdef HAVE_OPENGL
 
+enum class BillboardType
+{
+	User = -1,
+	Y,
+	XY
+};
 
 // Options for wall textures and sprites
 struct OGL_TextureOptions: public OGL_TextureOptionsBase
 {
 	bool VoidVisible;		// Can see the void through texture if semitransparent
 	short TileRatioExp;		// Tile replacement walls to 2^n x 2^n WU
+
+	// only for sprites
+	BillboardType Billboard;
 	
 	// Parameters for mapping substitute sprites (inhabitants, weapons in hand)
 	
 	OGL_TextureOptions():
-		VoidVisible(false),TileRatioExp{0} {}
+		VoidVisible(false),TileRatioExp{0},Billboard{BillboardType::User} {}
 };
 
 

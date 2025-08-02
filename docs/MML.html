@@ -1579,6 +1579,7 @@ It must be used with a glow_image file.
 <li>glow_bloom_shift: when rendering bloom effects in the shader renderer, add this value to the glow image's light level after scaling. (default: 0)
 <li>landscape_bloom: when rendering bloom effects in the shader renderer, AND when the texture is used as a landscape, scale the image's light level by this amount. Note that glow images are not currently supported for landscapes. (default: 0.5)
 <li>tile_ratio_exp: when applied to walls, scale replacement image up to cover 2^n x 2^n tiles. (default: 0, cover 1x1 tiles)
+<li>billboard: when 3D perspective is enabled, choose axes to billboard sprites (default: -1, user preference)
 </ul>
 <p>
 Note: all resulting values will be pegged to the range 0 to 1.
@@ -1611,6 +1612,12 @@ Here are the texture types:
 <li>Landscape Textures
 <li>Inhabitants
 <li>Weapons in hand
+</ol>
+<p>
+Here are the billboard axes:
+<ol type="1" start="0">
+<li>Y: rotate with camera yaw, perpendicular to floor
+<li>XY: rotate with camera yaw, tilt with camera pitch
 </ol>
 <p>
 The following texture attributes are deprecated, may not work properly, and should no longer be used:
