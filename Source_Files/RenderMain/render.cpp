@@ -407,7 +407,10 @@ void initialize_view_data(
 
 	/* view needs to know if OpenGL renderer should mimic software's pitch */
 	if (!ignore_preferences && graphics_preferences->screen_mode.acceleration == _opengl_acceleration)
+	{
 		view->mimic_sw_perspective = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_MimicSW);
+		view->billboard_xy = Get_OGL_ConfigureData().BillboardXY;
+	}
 
 	/* reset any active effects */
 	// LP: this is now called in render_screen(), so we need to disable the initializing

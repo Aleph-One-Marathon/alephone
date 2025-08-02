@@ -252,6 +252,9 @@ public:
 	float GlowBloomShift() {return (TxtrOptsPtr->GlowBloomShift);}
 	float LandscapeBloom() {return (TxtrOptsPtr->LandscapeBloom);}
 	int TileRatio() { return (1 << TxtrOptsPtr->TileRatioExp); }
+
+	bool ForceYBillboard() const { return TxtrOptsPtr->Billboard == BillboardType::Y; }
+	bool ForceXYBillboard() const { return TxtrOptsPtr->Billboard == BillboardType::XY; }
 	
 	// Scaling and offset of the current texture;
 	// important for sprites, which will be padded to make them OpenGL-friendly.

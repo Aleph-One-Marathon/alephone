@@ -51,6 +51,7 @@ protected:
 	ToggleWidget*		m_blurWidget;
 	ToggleWidget*		m_bumpWidget;
 	ToggleWidget*		m_perspectiveWidget;
+	ToggleWidget*       m_billboardWidget;
 	
 	ToggleWidget*		m_colourTheVoidWidget;
 	ColourPickerWidget*	m_voidColourWidget;
