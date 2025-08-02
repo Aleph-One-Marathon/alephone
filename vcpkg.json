@@ -58,8 +58,7 @@
          "name":"miniupnpc"
       },
       {
-         "name":"nativefiledialog-extended",
-         "platform": "!linux"
+         "name":"nativefiledialog-extended"
       },
       {
          "name":"libsndfile"

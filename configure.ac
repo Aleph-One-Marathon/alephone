@@ -39,6 +39,7 @@ AX_ARG_WITH([ebml], [libebml support for film export])
 AX_ARG_WITH([vorbis], [vorbis support for film export])
 AX_ARG_WITH([vorbisenc], [vorbisenc support for film export])
 AX_ARG_WITH([libyuv], [libyuv support for film export and video playback])
+AX_ARG_WITH([nfd], [Native file dialog support])
 
 dnl Check for programs.
 AC_PROG_CC
@@ -277,6 +278,18 @@ if test -n "$have_matroska" && test -n "$have_ebml" && test -n "$have_vpx" && \
    AC_DEFINE([FILM_EXPORT], [1], [have all film export libraries])
 fi
 
+AS_IF([test "x{with_nfd}" != "xno"],
+    [AC_CHECK_HEADERS([nfd.h],
+        [AC_CHECK_LIB([nfd], [NFD_Quit], , , [-ldbus-1])])
+               AS_IF([test "x${ac_cv_lib_nfd_NFD_Quit}" = "xyes"],
+                         [ have_nfd=true LIBS="$LIBS -ldbus-1"
+                           AC_DEFINE([HAVE_NFD], [1], [${desc_nfd} enabled]) ],
+                         [AS_IF([test "x${with_nfd}" = "xyes"],
+                                [AC_MSG_ERROR([${desc_nfd} requested but not found])])])
+       ])
+
+dnl AX_CHECK_FEATURE_LIB([nfd], [NFD], [nfd.h], [nfd], [NFD_Quit])
+
 dnl Generate Makefiles.
 AC_CONFIG_FILES([
 Makefile
@@ -350,5 +363,6 @@ AX_PRINT_SUMMARY([vorbis])
 AX_PRINT_SUMMARY([vorbisenc])
 AX_PRINT_SUMMARY([libyuv])
 AX_PRINT_SUMMARY([catch2], true)
+AX_PRINT_SUMMARY([nfd])
 AS_ECHO([""])
 AS_ECHO(["Configuration done. Now type \"make\"."])

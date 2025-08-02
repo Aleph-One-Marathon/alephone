@@ -26,7 +26,7 @@ runs:
       
     - name: Update the list of dependencies with tools for Vcpkg
       if: inputs.use_vcpkg == 'true'
-      run: echo "apt_dependencies=${{env.apt_dependencies}} nasm" >> $GITHUB_ENV
+      run: echo "apt_dependencies=${{env.apt_dependencies}} nasm libltdl-dev python3-jinja2" >> $GITHUB_ENV
       shell: bash
       
     - name: Install dependencies with the distribution package manager

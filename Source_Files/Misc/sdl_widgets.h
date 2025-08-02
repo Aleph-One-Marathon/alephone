@@ -197,14 +197,17 @@ class w_label : public w_static_text {
 	friend class dialog;
 	friend class w_slider;
 public:
-	w_label(const char *text) : w_static_text(text, LABEL_WIDGET), associated_widget(0) {}
+	w_label(const char *text) : w_static_text(text, LABEL_WIDGET), associated_widget(0), down(false) {}
 
 	void associate_widget(widget *w) { associated_widget = w; }
 	void draw(SDL_Surface *s) const;
 	void click(int, int);
+	void mouse_down(int, int);
+	void mouse_up(int, int);
 	bool is_selectable(void) const { if (associated_widget) return associated_widget->is_selectable(); else return false; }
 private:
 	widget *associated_widget;
+	bool down;
 };
 
 class w_title : public w_static_text {
@@ -320,7 +323,8 @@ public:
 
 	void draw(SDL_Surface *s) const;
 	void click(int x, int y);
-
+	void mouse_down(int x, int y);
+	void mouse_up(int x, int y);
 	void set_selection(const char *selection);
 	void set_callback(action_proc p, void* a) { proc = p; arg = a; }
 
@@ -333,7 +337,7 @@ private:
 	const char *selection;
 	action_proc proc;
 	void *arg;
-
+	bool down;
 	int16 selection_x;			// X offset of selection display
 	bool utf8; // render utf8 text instead of roman
 };
@@ -868,9 +872,7 @@ class w_file_chooser : public w_select_button
 {
 public:
 	w_file_chooser(const char* inDialogPrompt, Typecode inTypecode);
-
-	void click(int x, int y);
-
+	void proc();
 	void set_file(const FileSpecifier& inFile);
 	const FileSpecifier& get_file() { return file; }
 
@@ -892,9 +894,7 @@ class w_directory_chooser : public w_select_button
 {
 public:
 	w_directory_chooser();
-
-	void click(int x, int y);
-
+	void proc();
 	void set_directory(const FileSpecifier& inFile);
 	const FileSpecifier& get_directory() { return directory; }
 

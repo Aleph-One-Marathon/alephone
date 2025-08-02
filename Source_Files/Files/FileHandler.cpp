@@ -1369,7 +1369,7 @@ bool FileSpecifier::ReadDirectoryDialog() //needs native file dialog to work
 		SDL_EventState(SDL_WINDOWEVENT, SDL_DISABLE);
 	}
 
-	auto result = NFD_PickFolderU8_With(&outpath, nullptr);
+	auto result = NFD_PickFolderU8_With(&outpath, &params);
 	SDL_EventState(SDL_WINDOWEVENT, SDL_ENABLE);
 #if defined(_WIN32)
 	if (fullscreen)
