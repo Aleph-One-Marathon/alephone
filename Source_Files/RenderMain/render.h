@@ -140,7 +140,7 @@ struct view_data
 	bool mimic_sw_perspective;
 
 	// whether to correct sprite parallax when not mimicking software
-	bool correct_sprite_parallax;
+	bool billboard_xy;
 };
 
 /* ---------- render flags */

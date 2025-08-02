@@ -256,7 +256,7 @@ struct OGL_ConfigureData
 	bool Use_sRGB;
 	bool Use_NPOT;
 
-	bool CorrectSpriteParallax; // for when MimicSW is off
+	bool BillboardXY; // for when MimicSW is off
 };
 
 OGL_ConfigureData& Get_OGL_ConfigureData();

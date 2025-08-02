@@ -409,7 +409,7 @@ void initialize_view_data(
 	if (!ignore_preferences && graphics_preferences->screen_mode.acceleration == _opengl_acceleration)
 	{
 		view->mimic_sw_perspective = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_MimicSW);
-		view->correct_sprite_parallax = Get_OGL_ConfigureData().CorrectSpriteParallax;
+		view->billboard_xy = Get_OGL_ConfigureData().BillboardXY;
 	}
 
 	/* reset any active effects */

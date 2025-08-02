@@ -1163,7 +1163,7 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 	if (!view->mimic_sw_perspective)
 	{
 		if (TMgr->ForceXYBillboard() ||
-			(view->correct_sprite_parallax && !TMgr->ForceYBillboard()))
+			(view->billboard_xy && !TMgr->ForceYBillboard()))
 		{
 			glRotated(view->virtual_pitch * FixedAngleToDegrees, 0.0, -1.0, 0.0);
 		}
