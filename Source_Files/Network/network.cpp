@@ -415,7 +415,7 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 		return false;
 	}
 
-	if (capabilities[Capabilities::kGameworld] < Capabilities::kGameworldVersion || (shapes_file_is_m1() && capabilities[Capabilities::kGameworldM1] < Capabilities::kGameworldM1Version))
+	if (capabilities[Capabilities::kGameworld] < my_capabilities[Capabilities::kGameworld] || (shapes_file_is_m1() && capabilities[Capabilities::kGameworldM1] < my_capabilities[Capabilities::kGameworldM1]))
 	{
 		if (warn_joiner)
 		{
@@ -432,7 +432,7 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 				channel->enqueueOutgoingMessage(serverWarningMessage);
 			}
 			return false;
-		} else if (capabilities[Capabilities::kStar] < Capabilities::kStarVersion) {
+		} else if (capabilities[Capabilities::kStar] < my_capabilities[Capabilities::kStar]) {
 			if (warn_joiner) {
 				ServerWarningMessage serverWarningMessage(expand_app_variables("The gatherer is using a newer version of $appName$. You will not appear in the list of available players."), ServerWarningMessage::kJoinerUngatherable);
 				channel->enqueueOutgoingMessage(serverWarningMessage);
@@ -450,7 +450,7 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 				channel->enqueueOutgoingMessage(serverWarningMessage);
 			}
 			return false;
-		} else if (capabilities[Capabilities::kLua] < Capabilities::kLuaVersion)
+		} else if (capabilities[Capabilities::kLua] < my_capabilities[Capabilities::kLua])
 		{
 			if (warn_joiner)
 			{
@@ -813,7 +813,7 @@ static void handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage,
 {
 	if (handlerState == netJoining) {
 		Capabilities capabilities = *capabilitiesMessage->capabilities();
-		if (capabilities[Capabilities::kGameworld] < Capabilities::kGameworldVersion || (shapes_file_is_m1() && capabilities[Capabilities::kGameworldM1] < Capabilities::kGameworldM1Version) || (network_preferences->game_protocol == _network_game_protocol_star && capabilities[Capabilities::kStar] < Capabilities::kStarVersion))
+		if (capabilities[Capabilities::kGameworld] < my_capabilities[Capabilities::kGameworld] || (shapes_file_is_m1() && capabilities[Capabilities::kGameworldM1] < my_capabilities[Capabilities::kGameworldM1]) || (network_preferences->game_protocol == _network_game_protocol_star && capabilities[Capabilities::kStar] < my_capabilities[Capabilities::kStar]))
 		{
 			// I'm not gatherable
 			my_capabilities[Capabilities::kGatherable] = 0;
