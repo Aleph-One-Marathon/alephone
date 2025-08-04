@@ -1528,7 +1528,6 @@ bool NetConnectRemoteHub(const IPaddress& remote_hub_address)
 	}
 
 	connection_to_server->enqueueOutgoingMessage(TopologyMessage(topology));
-	connection_to_server->flushOutgoingMessages(false);
 
 	byte* wad = nullptr;
 	int wad_length;
