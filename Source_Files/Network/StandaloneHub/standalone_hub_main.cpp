@@ -41,6 +41,7 @@ static void initialize_hub(short port)
 {
 	InitDefaultStringSets();
 	log_dir = get_data_path(kPathLogs);
+	log_dir.MakeDirectory();
 	network_preferences = new network_preferences_data;
 	network_preferences->game_port = port;
 	network_preferences->game_protocol = _network_game_protocol_star;
