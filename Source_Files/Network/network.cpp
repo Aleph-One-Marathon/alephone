@@ -1492,18 +1492,18 @@ bool NetGather(
 
 	netState = netGathering;
 
+#ifndef A1_NETWORK_STANDALONE_HUB
 	// Start listening for joiners
 	if (!use_remote_hub)
 	{
 		server = new CommunicationsChannelFactory(GAME_PORT);
 
-#ifndef A1_NETWORK_STANDALONE_HUB
 		client_chat_info[0] = new ClientChatInfo;
 		client_chat_info[0]->name = player_preferences->name;
 		client_chat_info[0]->color = player_preferences->color;
 		client_chat_info[0]->team = player_preferences->team;
-#endif
 	}
+#endif
 	
 	return true;
 }
@@ -1528,6 +1528,7 @@ bool NetConnectRemoteHub(const IPaddress& remote_hub_address)
 	}
 
 	connection_to_server->enqueueOutgoingMessage(TopologyMessage(topology));
+	connection_to_server->flushOutgoingMessages(false);
 
 	byte* wad = nullptr;
 	int wad_length;
