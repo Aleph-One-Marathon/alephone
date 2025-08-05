@@ -1255,6 +1255,7 @@ void L_Call_Init(bool fRestoringSaved)
 {
 	if (LuaRunning())
 	{
+		Reset_Music_InternalIndexes();
 		// jkvw: Seeding our better random number
 		// generator from the lousy one is clearly not
 		// ideal, but it should be good enough for our

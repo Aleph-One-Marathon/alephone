@@ -54,16 +54,15 @@ public:
 	void UpdateParameters(const MusicParameters& musicParameters) { parameters.Store(musicParameters); }
 	MusicParameters GetParameters() const { return parameters.Get(); }
 	bool RequestPresetTransition(uint32_t preset_index);
-
+	std::pair<uint32_t, uint32_t> GetCurrentPresetSegmentIndex() const { return current_preset_segment_index.Get(); }
 private:
 	uint32_t GetNextData(uint8* data, uint32_t length) override;
 	SetupALResult SetUpALSourceIdle() override;
 	bool LoadParametersUpdates() override { return parameters.Update(); }
 	AtomicStructure<MusicParameters> parameters;
+	AtomicStructure<std::pair<uint32_t, uint32_t>> current_preset_segment_index;
 	std::shared_ptr<StreamDecoder> current_decoder;
 	std::vector<Preset> music_presets;
-	uint32_t current_preset_index;
-	uint32_t current_segment_index;
 	std::atomic_uint32_t requested_preset_index;
 
 	friend class OpenALManager;

@@ -1149,9 +1149,27 @@ end
 		<argument name="volume"><type>number</type></argument>
 		<argument name="duration" required="false"><type>seconds</type></argument>
 		<argument name="stop_after_fade" required="false"><type>boolean</type></argument>
+		<argument name="fade_type" required="false"><type>music_fade_type</type></argument>
 		<note>it will fade in until volume is reached. volume is decimal [0 - 1]</note>
 		<note>duration unit is seconds and is 1 if not specified</note>
 		<note>stop_after_fade is disabled by default, if set to true if the volume reaches 0 while fading the music will automatically stop</note>
+		<note>fade_type is the fading function, see MusicFadeTypes for values, default is linear</note>
+	  </function>
+	  <function name="load_track" version="20250808">
+		<description>loads a track file to create segments for a segmented music</description>
+		<argument name="track" required="false"><type>string</type></argument>
+		<return><type>number</type></return>
+		<note>returns a unique identifier to use with add_segment from MusicPresets</note>
+	  </function>
+	  <function name="add_preset" version="20250808">
+		<description>create a new empty preset for the music channel and returns the preset</description>
+		<return><type>music_preset</type></return>
+		<note>presets can be seen as a set of segments configured to play in a specific order to compose a track</note>
+		<note>presets must be created and configured before the music channel starts playing. Otherwise, they won’t be taken into account unless the music is stopped and restarted</note>
+	  </function>
+	  <function name="request_transition" version="20250808">
+		<description>request a seamless transition from the current playing preset to the specified one</description>
+		<argument name="preset" required="true"><type>music_preset</type></argument>
 	  </function>
 	  <variable name="volume" version="20231125">
 		<description>the volume of the music</description>
@@ -1162,6 +1180,32 @@ end
 		<description>returns true if the music is still playing</description>
 		<type>boolean</type>
 	  </variable>
+	  <variable name="current_segment" access="read-only" version="20250808">
+		<description>returns the currently playing segment of the music channel, or nil if the music is stopped or inactive</description>
+		<type>music_segment</type>
+	  </variable>
+    </table>
+	<table name="music_preset">
+	  <function name="add_segment">
+		<description>add a new music segment to the preset and returns the new segment</description>
+		<argument name="track_identifier"><type>number</type></argument>
+		<return><type>music_segment</type></return>
+		<note>track_identifier is the unique identifier returned by the music load_track function</note>
+		<note>this function can be called multiple times with the same track identifier if multiple segments of the same track file are needed</note>
+		<note>there is no concept of segments ordering at this stage</note>
+      </function>
+    </table>
+	<table name="music_segment">
+	  <function name="map_segment_transition">
+		<description>specifies the next segment to play once the current one has finished. Segments across different presets should also be mapped to allow preset transitions</description>
+		<argument name="segment"><type>music_segment</type></argument>
+		<note>the entire segments ordering system is done through this function, if the full track must loop, the last segment of a preset must be mapped to the first one of the same preset</note>
+		<note>the mapping configuration must be set before the music channel starts playing. Otherwise, it will not be applied unless the music is stopped and restarted</note>
+      </function>
+	  <variable name="preset" access="read-only">
+		<description>the preset to which this segment belongs</description>
+		<type>music_preset</type>
+      </variable>
     </table>
     <table name="platform">
 	  <variable name="activates_adjacent_platforms_at_each_level" version="20210408">
@@ -2395,10 +2439,11 @@ end
       </call>
 	  <function name="new" version="20231125">
 		<description>returns a new music channel</description>
-		<argument name="track"><type>string</type></argument>
+		<argument name="track" required="false"><type>string</type></argument>
 		<argument name="volume" required="false"><type>number</type></argument>
 		<argument name="loop" required="false"><type>boolean</type></argument>
 		<return><type>music</type></return>
+		<note>track file should be omitted for segmented music and load_track should be used instead</note>
 		<note>volume is decimal [0 - 1] and is 1 if not specified</note>
 		<note>loop is enabled by default</note>
 	  </function>
@@ -2408,6 +2453,8 @@ end
       <function name="fade">
 		<description>fades out the currently playing track and clears the playlist</description>
 		<argument name="duration"><type>seconds</type></argument>
+		<argument name="fade_type" required="false"><type>music_fade_type</type></argument>
+		<note>fade_type is the fading function, see MusicFadeTypes for values, default is linear</note>
       </function>
       <function name="play">
 		<description>appends all of the specified tracks to the end of the playlist</description>
@@ -2424,6 +2471,24 @@ end
 		<argument name="track2" required="false"><type>string</type></argument>
 		<argument name="..." required="false"><type>string</type></argument>
       </function>
+    </accessor>
+	<accessor name="MusicPresets" contains="music_preset" version="20250808">
+      <length>
+		<description>number of music presets, across all music channels</description>
+      </length>
+      <index/>
+      <call>
+		<description>iterates through all the music presets</description>
+      </call>
+    </accessor>
+	<accessor name="MusicSegments" contains="music_segment" version="20250808">
+      <length>
+		<description>number of music segments, across all music channels and presets</description>
+      </length>
+      <index/>
+      <call>
+		<description>iterates through all the music segments</description>
+      </call>
     </accessor>
     <accessor name="Platforms" contains="platform">
       <length>
@@ -3429,6 +3494,12 @@ end
 		<mnemonic name="split"/>
       </mnemonics>
     </enum>
+	<enum name="music_fade_type">
+      <mnemonics>
+		<mnemonic name="linear"/>
+		<mnemonic name="sinusoidal"/>
+      </mnemonics>
+    </enum>
     <enum name="sound">
       <mnemonics>
 		<mnemonic name="startup"/>
@@ -3723,6 +3794,7 @@ end
     <enum-accessor name="SceneryTypes" contains="scenery_type" nice-name="Scenery"/>
     <enum-accessor name="ScoringModes" contains="scoring_mode" nice-name="Scoring Modes"/>
     <enum-accessor name="SideTypes" contains="side_type" nice-name="Side Types"/>
+	<enum-accessor name="MusicFadeTypes" contains="music_fade_type" nice-name="Music Fade Types"/>
     <enum-accessor name="Sounds" contains="sound" nice-name="Sounds"/>
     <enum-accessor name="TextureTypes" contains="texture_type" nice-name="Texture Types"/>
     <enum-accessor name="TransferModes" contains="transfer_mode" nice-name="Transfer Modes"/>

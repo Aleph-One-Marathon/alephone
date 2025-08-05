@@ -238,6 +238,12 @@ bool Music::Slot::SetPresetTransition(uint32_t preset_index)
 	return musicPlayer->RequestPresetTransition(preset_index);
 }
 
+std::optional<std::pair<uint32_t, uint32_t>> Music::Slot::GetCurrentPresetSegmentIndex() const
+{
+	if (!musicPlayer || !musicPlayer->IsActive()) return std::nullopt;
+	return musicPlayer->GetCurrentPresetSegmentIndex();
+}
+
 bool Music::LoadLevelMusic()
 {
 	FileSpecifier* level_song_file = GetLevelMusic();

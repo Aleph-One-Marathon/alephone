@@ -28,9 +28,8 @@ MusicPlayer::MusicPlayer(std::vector<Preset>& presets, uint32_t starting_preset_
 	current_decoder = presets[starting_preset_index].GetSegment(starting_segment_index)->GetDecoder();
 	current_decoder->Rewind();
 	music_presets = presets;
-	current_preset_index = starting_preset_index;
-	current_segment_index = starting_segment_index;
 	requested_preset_index = starting_preset_index;
+	current_preset_segment_index.Set(std::make_pair(starting_preset_index, starting_segment_index));
 }
 
 SetupALResult MusicPlayer::SetUpALSourceIdle() {
@@ -44,19 +43,21 @@ uint32_t MusicPlayer::GetNextData(uint8* data, uint32_t length) {
 	const auto dataSize = current_decoder->Decode(data, length);
 	if (dataSize == length) return dataSize;
 
+	auto [currentPresetIndex, currentSegmentIndex] = GetCurrentPresetSegmentIndex();
 	const auto nextPresetIndex = requested_preset_index.load();
-	const auto nextSegmentIndex = music_presets[current_preset_index].GetSegment(current_segment_index)->GetNextSegmentIndex(nextPresetIndex);
+	const auto nextSegmentIndex = music_presets[currentPresetIndex].GetSegment(currentSegmentIndex)->GetNextSegmentIndex(nextPresetIndex);
 
 	if (nextSegmentIndex.has_value()) {
-		current_segment_index = nextSegmentIndex.value();
-		current_preset_index = nextPresetIndex;
+		currentPresetIndex = nextPresetIndex;
+		currentSegmentIndex = nextSegmentIndex.value();
+		current_preset_segment_index.Set(std::make_pair(currentPresetIndex, currentSegmentIndex));
 	}
 	else if (!parameters.Get().loop) {
 		return dataSize;
 	}
 
 	current_decoder->Rewind();
-	current_decoder = music_presets[current_preset_index].GetSegment(current_segment_index)->GetDecoder();
+	current_decoder = music_presets[currentPresetIndex].GetSegment(currentSegmentIndex)->GetDecoder();
 	Init(current_decoder->Rate(), current_decoder->IsStereo(), current_decoder->GetAudioFormat());
 	return HasBufferFormatChanged() ? dataSize : dataSize + GetNextData(data + dataSize, length - dataSize);
 }

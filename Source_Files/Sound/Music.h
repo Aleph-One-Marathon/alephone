@@ -82,6 +82,7 @@ public:
 		bool IsSegmentIndexValid(uint32_t preset_index, uint32_t segment_index) const;
 		bool SetNextSegment(uint32_t preset_index, uint32_t segment_index, uint32_t transition_preset_index, uint32_t transition_segment_index);
 		bool SetPresetTransition(uint32_t preset_index);
+		std::optional<std::pair<uint32_t, uint32_t>> GetCurrentPresetSegmentIndex() const;
 	};
 
 	bool SetupIntroMusic(FileSpecifier& file) { return music_slots[MusicSlot::Intro].Open(&file); }
