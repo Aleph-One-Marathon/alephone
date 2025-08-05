@@ -1042,10 +1042,6 @@ static const char* term_scale_labels[] = {
 "Normal", "Double", "Largest", NULL
 };
 
-static const char* mouse_accel_labels[] = {
-	"Off", "Classic", NULL
-};
-
 static const char* max_saves_labels[] = {
 #ifdef HAVE_STEAM
 	"20", "100", "500", NULL
@@ -3130,7 +3126,6 @@ static void plugins_dialog(void* arg)
 	d.set_widget_placer(placer);
 	d.activate_widget(plugins_w);
 
-	bool theme_changed = false;
 	FileSpecifier old_theme;
 	const Plugin* theme_plugin = Plugins::instance()->find_theme();
 	if (theme_plugin)

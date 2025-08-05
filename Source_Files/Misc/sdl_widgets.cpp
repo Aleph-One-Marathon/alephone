@@ -1068,7 +1068,6 @@ w_player_color::w_player_color(int selection) : w_select(selection, NULL)
 
 void w_player_color::draw(SDL_Surface *s) const
 {
-	int y = rect.y + font->get_ascent();
 	uint32 pixel = get_dialog_player_color(selection);
 	SDL_Rect r = {rect.x, rect.y + 1, 48, rect.h - 2};
 	SDL_FillRect(s, &r, pixel);

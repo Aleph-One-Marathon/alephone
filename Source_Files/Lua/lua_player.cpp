@@ -2567,32 +2567,6 @@ static int Lua_Game_Get_Version(lua_State *L)
 	return 1;
 }
 
-static int Lua_Game_Set_View_Player(lua_State *L)
-{
-
-	int view_player_index;
-	if (lua_isnumber(L, 2))
-	{
-		view_player_index = static_cast<int>(lua_tonumber(L, 2));
-		if (view_player_index < 0 || view_player_index >= dynamic_world->player_count)
-			return luaL_error(L, "view_player: invalid player index");
-	}
-	else if (Lua_Player::Is(L, 2))
-		view_player_index = Lua_Player::Index(L, 2);
-	else
-		return luaL_error(L, "view_player: incorrect argument type");
-	
-	if (view_player_index != current_player_index)
-	{
-		set_current_player_index(view_player_index);
-		update_interface(NONE);
-		dirty_terminal_view(local_player_index);
-	}
-
-	return 0;
-		
-}
-
 static int Lua_Game_Set_Proper_Item_Accounting(lua_State* L)
 {
 	if (!lua_isboolean(L, 2))

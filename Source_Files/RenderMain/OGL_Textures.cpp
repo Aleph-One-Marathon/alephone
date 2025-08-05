@@ -1603,7 +1603,6 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 	int TxtrWidth = Image.get()->GetWidth();
 	int TxtrHeight = Image.get()->GetHeight();
 
-	bool IsInfravision = IsInfravisionTable(CLUT);
 	bool IsSilhouette = IsSilhouetteTable(CLUT);
 	
 	if (IsSilhouette)
