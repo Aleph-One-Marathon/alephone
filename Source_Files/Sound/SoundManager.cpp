@@ -929,8 +929,6 @@ short SoundManager::GetRandomSoundPermutation(short sound_index)
 		permutation = 0;
 	}
 
-	definition->last_played = machine_tick_count();
-
 	return permutation;
 }
 

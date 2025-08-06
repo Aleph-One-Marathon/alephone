@@ -268,8 +268,7 @@ SoundDefinition::SoundDefinition() :
 	high_pitch(0),
 	permutations(1),
 	permutations_played(0),
-	group_offset(0), single_length(0), total_length(0),
-	last_played(0)
+	group_offset(0), single_length(0), total_length(0)
 {
 }
 
@@ -305,8 +304,7 @@ bool SoundDefinition::Unpack(OpenedFile &SoundFile)
 		header >> sound_offsets[i];
 	}
 
-	header >> last_played;
-	
+	header.ignore(4); //uint32 last_played
 	header.ignore(4 * 2);
 
 	return true;
