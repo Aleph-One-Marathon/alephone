@@ -2205,7 +2205,8 @@ bool line_is_obstructed(
 	short polygon_index1,
 	world_point2d *p1,
 	short polygon_index2,
-	world_point2d *p2)
+	world_point2d *p2,
+	bool for_sounds)
 {
 	short polygon_index= polygon_index1;
 	bool obstructed= false;
@@ -2226,10 +2227,13 @@ bool line_is_obstructed(
 		if (line_index!=NONE)
 		{
 			if (last_line && polygon_index==polygon_index2) break;
-			if (!LINE_IS_SOLID(get_line_data(line_index)))
+
+			const auto line_data = get_line_data(line_index);
+			if (!LINE_IS_SOLID(line_data) || (for_sounds && LINE_HAS_TRANSPARENT_SIDE(line_data)))
 			{
 				/* transparent line, find adjacent polygon */
 				polygon_index= find_adjacent_polygon(polygon_index, line_index);
+				if (for_sounds && polygon_index == NONE) break;
 				assert(polygon_index!=NONE);
 			}
 			else
@@ -2557,7 +2561,7 @@ uint16 _sound_obstructed_proc(
 	if (listener)
 	{
 		if (line_is_obstructed(source->polygon_index, (world_point2d *)&source->point,
-			listener->polygon_index, (world_point2d *)&listener->point))
+			listener->polygon_index, (world_point2d *)&listener->point, true))
 		{
 			flags|= _sound_was_obstructed;
 		}

@@ -1229,7 +1229,7 @@ void recalculate_map_counts(void);
 bool change_polygon_height(short polygon_index, world_distance new_floor_height,
 	world_distance new_ceiling_height, struct damage_definition *damage);
 
-bool line_is_obstructed(short polygon_index1, world_point2d *p1, short polygon_index2, world_point2d *p2);
+bool line_is_obstructed(short polygon_index1, world_point2d* p1, short polygon_index2, world_point2d* p2, bool for_sounds = false);
 bool point_is_player_visible(short max_players, short polygon_index, world_point2d *p, int32 *distance);
 bool point_is_monster_visible(short polygon_index, world_point2d *p, int32 *distance);
 
