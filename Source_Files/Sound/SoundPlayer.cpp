@@ -118,19 +118,6 @@ void SoundPlayer::Rewind() {
 	if (!rewindParameters.soft_rewind) SetUpALSourceInit();
 }
 
-bool SoundPlayer::IsLooping() const {
-	const auto& header = sound.Get().header;
-	return header.loop_end - header.loop_end >= 4;
-}
-
-uint32_t SoundPlayer::LoopManager(uint8* data, uint32_t length) {
-	if (!IsLooping()) return 0;
-	const auto& header = sound.Get().header;
-	data_length = header.loop_end - header.loop_start;
-	current_index_data = header.loop_start;
-	return GetNextData(data, length);
-}
-
 bool SoundPlayer::LoadParametersUpdates() {
 
 	const bool softStop = soft_stop_signal.load();
@@ -431,10 +418,7 @@ uint32_t SoundPlayer::ProcessData(uint8_t* outputData, uint32_t remainingSoundDa
 
 uint32_t SoundPlayer::GetNextData(uint8* data, uint32_t length) {
 	const auto remainingDataLength = data_length - current_index_data;
-	if (!remainingDataLength) return LoopManager(data, length);
-	const auto returnedDataLength = ProcessData(data, remainingDataLength, length);
-	if (returnedDataLength < length) return returnedDataLength + LoopManager(data + returnedDataLength, length - returnedDataLength);
-	return returnedDataLength;
+	return ProcessData(data, remainingDataLength, length);
 }
 
 std::tuple<AudioFormat, uint32_t, bool> SoundPlayer::GetAudioFormat() const {

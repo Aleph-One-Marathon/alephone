@@ -91,7 +91,6 @@ public:
 	bool CanRewind(uint64_t baseTick) const;
 	bool CanFastRewind(const SoundParameters& soundParameters) const;
 	bool HasActiveRewind() const { return rewind_signal.load() && !soft_stop_signal.load(); }
-	bool IsLooping() const;
 private:
 
 	struct SoundTransition {
@@ -104,7 +103,6 @@ private:
 	void Rewind() override;
 	void Init(const SoundParameters& parameters);
 	uint32_t GetNextData(uint8* data, uint32_t length) override;
-	uint32_t LoopManager(uint8* data, uint32_t length);
 	SetupALResult SetUpALSourceIdle() override;
 	SetupALResult SetUpALSource3D();
 	bool SetUpALSourceInit() override;

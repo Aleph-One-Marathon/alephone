@@ -103,13 +103,6 @@ bool SoundHeader::UnpackExtendedSystem7Header(BIStreamBE &header)
 
 		length = num_frames * bytes_per_frame;
 		little_endian = false;
-
-		if ((loop_end - loop_start >= 4) && ((loop_start % bytes_per_frame) || (loop_end % bytes_per_frame)))
-		{
-			logWarning("loop_start=%i and loop_end=%i but bytes_per_frame=%i; interpreting as frame offsets", loop_start, loop_end, bytes_per_frame);
-			loop_start *= bytes_per_frame;
-			loop_end *= bytes_per_frame;
-		}
 		
 		return true;
 	} catch (const basic_bstream::failure& e) {

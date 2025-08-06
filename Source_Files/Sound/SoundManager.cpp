@@ -444,34 +444,28 @@ void SoundManager::ManagePlayers() {
 	for (auto& soundPlayer : sound_players) {
 
 		auto parameters = soundPlayer->GetParameters();
+		bool updateParameters = false;
 
-		if (soundPlayer->IsLooping() && SoundPlayer::Simulate(parameters) <= 0) {
-			soundPlayer->AskSoftStop();
+		if (parameters.dynamic_source_location3d) {
+			auto source_location3d = parameters.source_location3d;
+			parameters.source_location3d = *parameters.dynamic_source_location3d;
+			updateParameters = source_location3d != parameters.source_location3d;
 		}
-		else {
-
-			bool updateParameters = false;
-			if (parameters.dynamic_source_location3d) {
-				auto source_location3d = parameters.source_location3d;
-				parameters.source_location3d = *parameters.dynamic_source_location3d;
-				updateParameters = source_location3d != parameters.source_location3d;
-			}
-			if (!parameters.is_2d) {
-				auto obstruction_flags = parameters.obstruction_flags;
-				parameters.obstruction_flags = GetSoundObstructionFlags(parameters.identifier, &parameters.source_location3d);
-				updateParameters = updateParameters || obstruction_flags != parameters.obstruction_flags;
-			} else if (parameters.stereo_parameters.is_panning && parameters.source_identifier != NONE) { //only occurs when 3D sounds is disabled
-				auto stereo_parameters = parameters.stereo_parameters;
-				SoundVolumes variables;
-				CalculateInitialSoundVariables(parameters.identifier, &parameters.source_location3d, variables);
-				parameters.stereo_parameters.gain_global = variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
-				parameters.stereo_parameters.gain_left = variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
-				parameters.stereo_parameters.gain_right = variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
-				updateParameters = updateParameters || stereo_parameters != parameters.stereo_parameters;
-			}
-
-			if (updateParameters) soundPlayer->UpdateParameters(parameters);
+		if (!parameters.is_2d) {
+			auto obstruction_flags = parameters.obstruction_flags;
+			parameters.obstruction_flags = GetSoundObstructionFlags(parameters.identifier, &parameters.source_location3d);
+			updateParameters = updateParameters || obstruction_flags != parameters.obstruction_flags;
+		} else if (parameters.stereo_parameters.is_panning && parameters.source_identifier != NONE) { //only occurs when 3D sounds is disabled
+			auto stereo_parameters = parameters.stereo_parameters;
+			SoundVolumes variables;
+			CalculateInitialSoundVariables(parameters.identifier, &parameters.source_location3d, variables);
+			parameters.stereo_parameters.gain_global = variables.volume * 1.f / MAXIMUM_SOUND_VOLUME;
+			parameters.stereo_parameters.gain_left = variables.left_volume * 1.f / MAXIMUM_SOUND_VOLUME;
+			parameters.stereo_parameters.gain_right = variables.right_volume * 1.f / MAXIMUM_SOUND_VOLUME;
+			updateParameters = updateParameters || stereo_parameters != parameters.stereo_parameters;
 		}
+
+		if (updateParameters) soundPlayer->UpdateParameters(parameters);
 	}
 }
 
