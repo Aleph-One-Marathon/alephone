@@ -833,13 +833,18 @@ static void interpolate_weapon_display_information(
 	{
 		return;
 	}
+
+	if (index >= previous_tick_weapon_display.size())
+	{
+		return;
+	}
 	
 	static constexpr int _shell_casing_type = 1; // from weapons.cpp
 
 	weapon_display_information* next;
 	weapon_display_information* prev;
 
-	if (data->interpolation_data & 0x3 == _shell_casing_type)
+	if ((data->interpolation_data & 0x3) == _shell_casing_type)
 	{
 		next = &current_tick_weapon_display[index];
 		prev = &previous_tick_weapon_display[index];
@@ -859,11 +864,6 @@ static void interpolate_weapon_display_information(
 	}
 	else
 	{
-		if (index >= previous_tick_weapon_display.size())
-		{
-			return;
-		}
-
 		next = &current_tick_weapon_display[index];
 		prev = &previous_tick_weapon_display[index];
 	}
