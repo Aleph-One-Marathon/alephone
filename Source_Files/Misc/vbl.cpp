@@ -1432,8 +1432,8 @@ bool setup_replay_from_random_resource()
 typedef bool (*timer_func)(void);
 
 static timer_func tm_func = NULL;	// The installed timer task
-static uint32 tm_period;			// Ticks between two calls of the timer task
-static uint32 tm_last = 0, tm_accum = 0;
+static uint64_t tm_period;			// Ticks between two calls of the timer task
+static uint64_t tm_last = 0, tm_accum = 0;
 
 timer_task_proc install_timer_task(short tasks_per_second, timer_func func)
 {
@@ -1450,7 +1450,7 @@ void remove_timer_task(timer_task_proc proc)
 	tm_func = NULL;
 }
 
-void execute_timer_tasks(uint32 time)
+void execute_timer_tasks(uint64_t time)
 {
 	if (tm_func) {
 		if (Movie::instance()->IsRecording()) {
@@ -1462,7 +1462,7 @@ void execute_timer_tasks(uint32 time)
 			return;
 		}
 		
-		uint32 now = time;
+		auto now = time;
 		tm_accum += now - tm_last;
 		tm_last = now;
 		bool first_time = true;

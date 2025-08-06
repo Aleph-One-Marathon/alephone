@@ -1024,9 +1024,9 @@ extern bool first_frame_rendered;
 float last_heartbeat_fraction = -1.f;
 bool is_network_pregame = false;
 
-bool idle_game_state(uint32 time)
+bool idle_game_state(uint64_t time)
 {
-	int machine_ticks_elapsed = time - game_state.last_ticks_on_idle;
+	auto machine_ticks_elapsed = time - game_state.last_ticks_on_idle;
 
 	if(machine_ticks_elapsed || game_state.phase==0)
 	{
@@ -1160,7 +1160,7 @@ bool idle_game_state(uint32 time)
 
 		if (redraw)
 		{
-			static auto last_redraw = 0;
+			static uint64_t last_redraw = 0;
 			if (current_player && machine_tick_count() > last_redraw + MACHINE_TICKS_PER_SECOND / 30)
 			{
 				last_redraw = machine_tick_count();
@@ -1699,7 +1699,7 @@ static void display_epilogue(
 	Music::instance()->RestartIntroMusic();
 	
 	{
-		int32 ticks= machine_tick_count();
+		auto ticks= machine_tick_count();
 		
 		do
 		{
@@ -3217,7 +3217,7 @@ static void handle_interface_menu_screen_click(
 				}
 				else
 				{
-					static auto last_redraw = 0;
+					static uint64_t last_redraw = 0;
 					if (machine_tick_count() > last_redraw + TICKS_PER_SECOND / 30)
 					{
 						draw_intro_screen();

@@ -336,12 +336,12 @@ public:
 private:
 
 	w_games_in_room* games_in_room_w;
-	uint32 last_pump_update = 0;
+	uint64_t last_pump_update = 0;
 
 	void
 	pump(dialog* d)
 	{
-		uint32 ticks = machine_tick_count();
+		auto ticks = machine_tick_count();
 		bool refresh = ticks > last_pump_update + 5000;
 
 		if (refresh)

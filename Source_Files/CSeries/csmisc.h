@@ -29,13 +29,6 @@ extern uint64_t machine_tick_count(void);
 extern void sleep_for_machine_ticks(uint32 ticks);
 extern void sleep_until_machine_tick_count(uint64_t ticks);
 extern void yield(void);
-extern bool wait_for_click_or_keypress(
-	uint32 ticks);
-
-extern void kill_screen_saver(void);
-
-#ifdef DEBUG
-extern void initialize_debugger(bool on);
-#endif
+extern bool wait_for_click_or_keypress(uint64_t ticks);
 
 #endif

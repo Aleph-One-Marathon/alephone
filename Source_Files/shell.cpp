@@ -154,7 +154,7 @@ extern bool get_default_music_spec(FileSpecifier &file);
 extern bool get_default_theme_spec(FileSpecifier& file);
 
 // From vbl_sdl.cpp
-void execute_timer_tasks(uint32 time);
+void execute_timer_tasks(uint64_t time);
 
 // Prototypes
 static void initialize_marathon_music_handler(void);

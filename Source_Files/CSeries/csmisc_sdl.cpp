@@ -74,9 +74,9 @@ void yield(void)
  *  Wait for mouse click or keypress
  */
 
-bool wait_for_click_or_keypress(uint32 ticks)
+bool wait_for_click_or_keypress(uint64_t ticks)
 {
-	uint32 start = machine_tick_count();
+	auto start = machine_tick_count();
 	SDL_Event event;
 	while (machine_tick_count() - start < ticks) {
 		SDL_WaitEventTimeout(&event, ticks);

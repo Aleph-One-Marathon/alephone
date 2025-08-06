@@ -64,7 +64,7 @@ private:
 	struct Entry {
 		Entry() : data(5), last_played(0) { }
 		std::vector<std::shared_ptr<SoundData> > data;
-		uint32 last_played;
+		uint64_t last_played;
 
 		std::size_t size() {
 			std::size_t n = 0;
