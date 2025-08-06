@@ -30,6 +30,8 @@
 #include <thread>
 #include "Logging.h"
 
+static const auto epoch = std::chrono::steady_clock::now();
+
 /* a knob to play the game in "slow motion" to debug timing sensitive features.
    this is not a preferences option because of the cheating potential, and
    because of the awesome breakage that will occur at very large values */
@@ -41,7 +43,8 @@ static constexpr int TIME_SKEW = 1;
 
 uint64_t machine_tick_count(void)
 {
-	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count() / TIME_SKEW;
+	const auto now = std::chrono::steady_clock::now();
+	return std::chrono::duration_cast<std::chrono::milliseconds>(now - epoch).count() / TIME_SKEW;
 }
 
 /*
@@ -74,7 +77,7 @@ void yield(void)
  *  Wait for mouse click or keypress
  */
 
-bool wait_for_click_or_keypress(uint64_t ticks)
+bool wait_for_click_or_keypress(uint32 ticks)
 {
 	auto start = machine_tick_count();
 	SDL_Event event;
