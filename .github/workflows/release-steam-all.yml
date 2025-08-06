@@ -1,0 +1,14 @@
+name: release-steam-all
+
+on: workflow_dispatch
+
+jobs:
+  linux:
+    uses: ./.github/workflows/release-steam-linux.yml
+  
+  windows:
+    uses: ./.github/workflows/release-steam-windows.yml
+    
+  mac-osx:
+    uses: ./.github/workflows/release-steam-mac-os.yml
+    secrets: inherit

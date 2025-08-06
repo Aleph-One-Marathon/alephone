@@ -3,7 +3,7 @@ name: release-steam-linux
 on: [workflow_dispatch, workflow_call]
 
 jobs:
-  release:
+  release-steam-linux:
     runs-on: ubuntu-24.04
     container: registry.gitlab.steamos.cloud/steamrt/sniper/sdk
     steps:
