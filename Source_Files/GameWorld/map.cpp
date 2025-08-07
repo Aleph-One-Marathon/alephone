@@ -2557,6 +2557,7 @@ uint16 _sound_obstructed_proc(
 {
 	world_location3d *listener= _sound_listener_proc();
 	uint16 flags= 0;
+	constexpr int under_media_source_threshold = WORLD_ONE_FOURTH; //we don't obstruct sources not that deep in media
 	
 	if (listener)
 	{
@@ -2580,7 +2581,7 @@ uint16 _sound_obstructed_proc(
 				media_data *media = get_media_data(source_polygon->media_index);
 				if (media)
 				{
-					if (source->point.z<media->height)
+					if (source->point.z + under_media_source_threshold < media->height)
 					{
 						source_under_media= true;
 					}
