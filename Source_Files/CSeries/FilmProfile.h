@@ -132,6 +132,7 @@ enum FilmProfileType {
 	FILM_PROFILE_ALEPH_ONE_1_4,
 	FILM_PROFILE_ALEPH_ONE_1_7,
 	FILM_PROFILE_DEFAULT,
+	//!\\ if you add a film profile, make sure to connect it in interface.cpp!
 };
 
 void load_film_profile(FilmProfileType type);
