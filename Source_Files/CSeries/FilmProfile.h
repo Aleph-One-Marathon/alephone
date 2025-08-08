@@ -113,6 +113,7 @@ struct FilmProfile
 	bool m1_landscape_effects;	// projectiles detonate on M1 landscapes
 	bool m1_bce_pickup;	 // you can pick up another BCE if you already have one
 
+	// Aleph One 1.11 fixes
 	bool network_items; // early creation of players on new games to fix network items spawn
 	bool hotkey_fix; // hotkeys no longer work when player is dead or carrying the ball
 	bool finally_respawn; // the player can respawn after 15 seconds regardless of being stationary
@@ -129,6 +130,7 @@ enum FilmProfileType {
 	FILM_PROFILE_ALEPH_ONE_1_2,
 	FILM_PROFILE_ALEPH_ONE_1_3,
 	FILM_PROFILE_ALEPH_ONE_1_4,
+	FILM_PROFILE_ALEPH_ONE_1_7,
 	FILM_PROFILE_DEFAULT,
 };
 
