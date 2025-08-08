@@ -2511,6 +2511,20 @@ static int Lua_Game_Get_Monsters_Replenish(lua_State* L)
 	return 1;
 }
 
+static int Lua_Game_Get_Player(lua_State* L)
+{
+	if (dynamic_world->game_player_index == NONE)
+	{
+		lua_pushnil(L);
+	}
+	else
+	{
+		Lua_Player::Push(L, dynamic_world->game_player_index);
+	}
+
+	return 1;
+}
+
 static int Lua_Game_Get_Proper_Item_Accounting(lua_State* L)
 {
 	lua_pushboolean(L, L_Get_Proper_Item_Accounting(L));
@@ -2565,6 +2579,22 @@ static int Lua_Game_Get_Version(lua_State *L)
 {
 	lua_pushstring(L, A1_DATE_VERSION);
 	return 1;
+}
+
+static int Lua_Game_Set_Player(lua_State* L)
+{
+	int player_index;
+	if (lua_isnil(L, 2))
+	{
+		player_index = NONE;
+	}
+	else
+	{
+		player_index = Lua_Player::Index(L, 2);
+	}
+
+	dynamic_world->game_player_index = player_index;
+	return 0;
 }
 
 static int Lua_Game_Set_Proper_Item_Accounting(lua_State* L)
@@ -2746,6 +2776,7 @@ const luaL_Reg Lua_Game_Get[] = {
 	{"time_remaining", Lua_Game_Get_Time_Remaining},
 	{"local_random", L_TableFunction<Lua_Game_Local_Random>},
 	{"monsters_replenish", Lua_Game_Get_Monsters_Replenish},
+	{"player", Lua_Game_Get_Player},
 	{"proper_item_accounting", Lua_Game_Get_Proper_Item_Accounting},
 	{"nonlocal_overlays", Lua_Game_Get_Nonlocal_Overlays},
 	{"random", L_TableFunction<Lua_Game_Better_Random>},
@@ -2765,6 +2796,7 @@ const luaL_Reg Lua_Game_Get[] = {
 const luaL_Reg Lua_Game_Set[] = {
 	{"dead_players_drop_items", Lua_Game_Set_Dead_Players_Drop_Items},
 	{"monsters_replenish", Lua_Game_Set_Monsters_Replenish},
+	{"player", Lua_Game_Set_Player},
 	{"proper_item_accounting", Lua_Game_Set_Proper_Item_Accounting},
 	{"nonlocal_overlays", Lua_Game_Set_Nonlocal_Overlays},
 	{"scoring_mode", Lua_Game_Set_Scoring_Mode},
