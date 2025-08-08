@@ -1,6 +1,6 @@
 {
    "name":"alephone",
-   "version-date":"2025-03-02",
+   "version-date":"2025-08-08",
    "dependencies":[
       {
          "name":"boost-algorithm"
