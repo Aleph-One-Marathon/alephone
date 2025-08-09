@@ -181,9 +181,14 @@ SetupALResult SoundPlayer::SetUpALSourceIdle() {
 		float finalVolume = ComputeVolumeForTransition(volume);
 		result.second = finalVolume == volume && !softStartBegin;
 
-		if (softStopSignal && finalVolume == 0) softStopDone = true;
+		if (softStopSignal && finalVolume == 0)
+			softStopDone = true;
+		else {
+			const bool actualStereo = std::get<bool>(GetAudioFormat());
+			if (actualStereo && !stereo) finalVolume *= 0.5f;
+			finalVolume *= OpenALManager::Get()->GetMasterVolume();
+		}
 
-		finalVolume *= OpenALManager::Get()->GetMasterVolume();
 		alSourcef(audio_source->source_id, AL_GAIN, finalVolume);
 		alSourcef(audio_source->source_id, AL_MAX_GAIN, finalVolume);
 	}
@@ -381,10 +386,8 @@ uint32_t SoundPlayer::ProcessData(uint8_t* outputData, uint32_t remainingSoundDa
 		while (index < remainingSoundDataLength && index < remainingBufferLength / 2)
 		{
 			auto byte = input[index];
-			auto centered = static_cast<int8_t>(byte - 128);
-			int8_t attenuated = static_cast<uint8_t>(centered / 2 + 128);
-			outputData[2 * index] = attenuated;
-			outputData[2 * index + 1] = attenuated;
+			outputData[2 * index] = byte;
+			outputData[2 * index + 1] = byte;
 			index++;
 		}
 
@@ -400,9 +403,8 @@ uint32_t SoundPlayer::ProcessData(uint8_t* outputData, uint32_t remainingSoundDa
 		{
 			int16_t sample;
 			std::memcpy(&sample, input + index * 2, sizeof(int16_t));
-			int16_t attenuated = sample / 2;
-			output[2 * index] = attenuated;
-			output[2 * index + 1] = attenuated;
+			output[2 * index] = sample;
+			output[2 * index + 1] = sample;
 			index++;
 		}
 
