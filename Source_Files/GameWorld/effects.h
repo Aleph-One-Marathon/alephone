@@ -150,13 +150,7 @@ const int SIZEOF_effect_definition = 14;
 
 /* ---------- globals */
 
-// Turned the list of active effects into a variable array
-
-// extern std::vector<effect_data> EffectList;
-
-// extern struct effect_data *effects;
-
-/* ---------- prototypes/EFFECTS.C */
+/* ---------- prototypes/effects.cpp */
 
 short new_effect(world_point3d *origin, short polygon_index, short type, angle facing);
 void update_effects(void); /* assumes ∂t==1 tick */
