@@ -152,7 +152,7 @@ const int SIZEOF_effect_definition = 14;
 
 // Turned the list of active effects into a variable array
 
-extern std::vector<effect_data> EffectList;
+// extern std::vector<effect_data> EffectList;
 
 // extern struct effect_data *effects;
 
@@ -171,6 +171,8 @@ void teleport_object_out(short object_index);
 
 effect_data *get_effect_data(
 	const short effect_index);
+
+std::vector<effect_data> & get_effects_list();
 
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world

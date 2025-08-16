@@ -64,7 +64,7 @@ ryan reports get_object_data() failing on effect->data after a teleport effect t
 // struct effect_data *effects = NULL;
 
 static effect_definition *get_effect_definition(const short type);
-
+static std::vector<effect_data> EffectList;
 /* ---------- code */
 
 effect_data *get_effect_data(
@@ -111,7 +111,7 @@ short new_effect(
 		}
 		else
 		{
-			for (effect_index= 0,effect = EffectList.data(); effect_index<MAXIMUM_EFFECTS_PER_MAP; ++effect_index, ++effect)
+			for (effect_index= 0,effect = get_effects_list().data(); effect_index<MAXIMUM_EFFECTS_PER_MAP; ++effect_index, ++effect)
 			{
 				if (SLOT_IS_FREE(effect))
 				{
@@ -156,7 +156,7 @@ void update_effects(
 	struct effect_data *effect;
 	short effect_index;
 	
-	for (effect_index= 0, effect = EffectList.data(); effect_index<MAXIMUM_EFFECTS_PER_MAP; ++effect_index, ++effect)
+	for (effect_index= 0, effect = get_effects_list().data(); effect_index<MAXIMUM_EFFECTS_PER_MAP; ++effect_index, ++effect)
 	{
 		if (SLOT_IS_USED(effect))
 		{
@@ -284,7 +284,7 @@ void teleport_object_in(
 	struct effect_data *effect;
 	short effect_index;
 
-	for (effect_index= 0, effect = EffectList.data(); effect_index<MAXIMUM_EFFECTS_PER_MAP; ++effect_index, ++effect)
+	for (effect_index= 0, effect = get_effects_list().data(); effect_index<MAXIMUM_EFFECTS_PER_MAP; ++effect_index, ++effect)
 	{
 		if (SLOT_IS_USED(effect))
 		{
@@ -441,4 +441,8 @@ uint8 *pack_effect_definition(uint8 *Stream, effect_definition *Objects, size_t 
 void init_effect_definitions()
 {
 	memcpy(effect_definitions, original_effect_definitions, sizeof(effect_definitions));
+}
+
+std::vector<effect_data> & get_effects_list(){
+	return EffectList;
 }
