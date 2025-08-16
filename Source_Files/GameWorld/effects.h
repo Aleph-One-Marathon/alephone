@@ -171,11 +171,11 @@ std::vector<effect_data> & get_effects_list();
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world
 
-uint8 *unpack_effect_data(uint8 *Stream, effect_data *Objects, size_t Count);
-uint8 *pack_effect_data(uint8 *Stream, effect_data *Objects, size_t Count);
-uint8 *unpack_effect_definition(uint8 *Stream, size_t Count);
-uint8 *pack_effect_definition(uint8 *Stream, size_t Count);
-uint8* unpack_m1_effect_definition(uint8* Stream, size_t Count);
+void unpack_effect_data(uint8 *Stream, effect_data *Objects, size_t Count);
+void pack_effect_data(uint8 *Stream, effect_data *Objects, size_t Count);
+void unpack_effect_definition(uint8 *Stream, size_t Count);
+void pack_effect_definition(uint8 *Stream, size_t Count);
+void unpack_m1_effect_definition(uint8* Stream, size_t Count);
 void init_effect_definitions();
 
 #endif
