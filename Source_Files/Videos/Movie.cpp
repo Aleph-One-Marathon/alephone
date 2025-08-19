@@ -807,13 +807,13 @@ void Movie::AddFrame(FrameType ftype)
         GLint fbx = viewportDimensions.x, fby = viewportDimensions.y, fbWidth = viewportDimensions.w, fbHeight = viewportDimensions.h;
 
         // Copy default frame buffer to another one with correct viewport resized/pixels rescaled
-        frameBufferObject->activate(true, GL_DRAW_FRAMEBUFFER_EXT);
-        glBlitFramebufferEXT(fbx, fby, fbWidth + fbx, fbHeight + fby, view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        frameBufferObject->activate(true, GL_DRAW_FRAMEBUFFER);
+        glBlitFramebuffer(fbx, fby, fbWidth + fbx, fbHeight + fby, view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
         frameBufferObject->deactivate();
 
         // Read our new frame buffer with rescaled pixels
-        frameBufferObject->activate(true, GL_READ_FRAMEBUFFER_EXT);
-        glReadPixels(view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, &videobuf.front());
+        frameBufferObject->activate(true, GL_READ_FRAMEBUFFER);
+        glReadPixels(view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_RGBA, GL_UNSIGNED_BYTE, &videobuf.front());
         frameBufferObject->deactivate();
 
 		// Convert pixel buffer (which is upside-down) to YUV

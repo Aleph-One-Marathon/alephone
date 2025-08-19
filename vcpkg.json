@@ -47,10 +47,26 @@
          "name":"curl",
          "platform":"windows"
       },
-      {
-         "name":"glew",
-         "platform":"windows"
-      },
+	  {
+		 "name":"glm"
+	  },
+	  {
+		 "name":"angle",
+		 "platform":"osx"
+	  },
+	  {
+		 "name":"angle",
+		 "platform":"windows"
+	  },
+	  {
+		 "name":"glad",
+		 "platform":"windows",
+		 "features":[
+			 "gles2-api-20",
+			 "extensions",
+			 "loader"
+		   ]
+	  },
       {
          "name":"zziplib"
       },

@@ -1401,7 +1401,7 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 		if (TMgr->ForceXYBillboard() ||
 			(view->billboard_xy && !TMgr->ForceYBillboard()))
 		{
-			glRotated(view->virtual_pitch * FixedAngleToDegrees, 0.0, -1.0, 0.0);
+			MSI()->rotatef(view->virtual_pitch * FixedAngleToDegrees, 0.0, -1.0, 0.0);
 		}
 	}
 

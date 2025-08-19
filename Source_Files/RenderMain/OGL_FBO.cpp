@@ -90,14 +90,14 @@ void FBO::setup(GLuint w, GLuint h, bool srgb) {
     while ((err = glGetError())) { printf("FBO glGenRenderbuffers: OpenGL Error %d\n",err);}
   glBindRenderbuffer(GL_RENDERBUFFER, _depthBuffer);
     while ((err = glGetError())) { printf("FBO glBindRenderbuffer: OpenGL Error %d\n",err);}
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, _w, _h);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, _w, _h);
     while ((err = glGetError())) { printf("FBO glRenderbufferStorage: OpenGL Error %d\n",err);}
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthBuffer);
     while ((err = glGetError())) { printf("FBO glFramebufferRenderbuffer: OpenGL Error %d\n",err);}
   
   if( glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE ) { printf("FBO framebuffer not complete\n"); }
     
-  glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+  //glBindFramebuffer(GL_FRAMEBUFFER, _fbo); //This may not be correct; commenting out for now.
   glBindRenderbuffer(GL_RENDERBUFFER, _fbo);
   
   //glPopGroupMarkerEXT();
