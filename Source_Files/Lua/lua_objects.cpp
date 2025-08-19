@@ -321,7 +321,7 @@ bool Lua_Effect_Valid(int32 index)
 	if (index < 0 || index >= MAXIMUM_EFFECTS_PER_MAP)
 		return false;
 
-	effect_data *effect = GetMemberWithBounds(effects, index, MAXIMUM_EFFECTS_PER_MAP);
+	effect_data *effect = GetMemberWithBounds(EffectList.data(), index, MAXIMUM_EFFECTS_PER_MAP);
 	return SLOT_IS_USED(effect);
 }
 
@@ -384,7 +384,7 @@ int Lua_Item_Delete(lua_State* L)
 	{
 		for (auto i = 0; i < MAXIMUM_EFFECTS_PER_MAP; ++i)
 		{
-			auto effect = &effects[i];
+			auto effect = &EffectList.data()[i];
 			if (SLOT_IS_USED(effect) &&
 				effect->type == _effect_teleport_object_in &&
 				effect->data == object_index)
@@ -582,7 +582,6 @@ static int Lua_ItemType_Set_Maximum_Inventory(lua_State* L)
 		auto definition = get_item_definition_external(Lua_ItemType::Index(L, 1));
 		const auto difficulty_level = dynamic_world->game_information.difficulty_level;
 		definition->extended_maximum_count[difficulty_level] = static_cast<int16_t>(lua_tonumber(L, 2));
-		definition->has_extended_maximum_count[difficulty_level] = true;
 	}
 	else
 	{

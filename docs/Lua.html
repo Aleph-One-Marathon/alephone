@@ -656,6 +656,12 @@ end
 <dl>
 <dt>Game</dt>
 <dd><dl>
+<dt>.autosave() <span class="version">20250302</span>
+</dt>
+<dd>
+<p class="description">saves the game without prompting the user, if possible</p>
+<p class="note">solo only </p>
+</dd>
 <dt>.dead_players_drop_items <span class="version">20150619</span>
 </dt>
 <dd><p class="description">whether dead players drop items</p></dd>
@@ -673,31 +679,32 @@ end
 <dt>.kill_limit<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">the game kill limit, or 0 if there is none</p></dd>
+<dt>.local_random(n)</dt>
+<dd>
+<p class="description">returns a random number between 0 and n-1 from Aleph One’s original random number generator</p>
+<p class="note">use only for local player effects (see Net Games and Films) </p>
+</dd>
 <dt>.monsters_replenish <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">whether monsters spawn or not; in a net game, this corresponds to the "Aliens" checkbox</p>
 <p class="note">this can suppress initial monster placement, if set to false directly when the script is loaded </p>
 </dd>
-<dt>.proper_item_accounting <span class="version">20100118</span>
-</dt>
-<dd><p class="description">When true, the current item counts on the map are updated properly when Lua deletes map items and changes player inventories. This defaults to false to preserve film playback with older scripts. New scripts that manipulate items should always set this to true.</p></dd>
 <dt>.nonlocal_overlays <span class="version">20200830</span>
 </dt>
 <dd><p class="description">When false, only the local player’s overlays are used, and only prints to the local player will be displayed. When true, the overlays and prints of whatever player is currently being viewed will apply. This defaults to false for compatibility with scripts that depend on the old behavior.</p></dd>
-<dt>.time_remaining<span class="access"> (read-only)</span>
-</dt>
-<dd><p class="description">the number of ticks until the game ends, or nil if there is no time limit</p></dd>
-<dt>.scoring_mode</dt>
-<dd><p class="description">the current scoring mode (if the gametype is "custom")</p></dd>
 <dt>.over<span class="access"> (write-only)</span>
 </dt>
 <dd><p class="description">Use this variable to override the game’s default scoring behavior. If set to false, the game will not end due to a score limit. If set to true, the game ends immediately. If left unset or if set to nil, the game will end if a score limit is reached. (Note that you cannot prevent the game from ending due to a time limit.)</p></dd>
-<dt>.local_random(n)</dt>
+<dt>.player <span class="version">git</span>
+</dt>
 <dd>
-<p class="description">returns a random number between 0 and n-1 from Aleph One’s original random number generator</p>
-<p class="note">use only for local player effects (see Net Games and Films) </p>
+<p class="description">In Tag games, the player who is It. In Kill the Man With the Ball or Rugby games, the player who is carrying the ball</p>
+<p class="note">writing to this will only work in Tag games </p>
 </dd>
+<dt>.proper_item_accounting <span class="version">20100118</span>
+</dt>
+<dd><p class="description">When true, the current item counts on the map are updated properly when Lua deletes map items and changes player inventories. This defaults to false to preserve film playback with older scripts. New scripts that manipulate items should always set this to true.</p></dd>
 <dt>.random(n)</dt>
 <dd><p class="description">returns a random number between 0 and n-1 using a good random number generator</p></dd>
 <dt>.random_local(n) <span class="version">20210408</span>
@@ -729,6 +736,8 @@ end
 <p class="description">saves the game (as if the user had activated a pattern buffer)</p>
 <p class="note">solo only </p>
 </dd>
+<dt>.scoring_mode</dt>
+<dd><p class="description">the current scoring mode (if the gametype is "custom")</p></dd>
 <dt>.serialize(v) <span class="version">20200830</span>
 </dt>
 <dd>
@@ -738,6 +747,9 @@ end
 <dt>.ticks<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">ticks since game started</p></dd>
+<dt>.time_remaining<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">the number of ticks until the game ends, or nil if there is no time limit</p></dd>
 <dt>.type<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether the game is EMFH, KOTH, etc.</p></dd>

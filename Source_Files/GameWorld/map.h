@@ -1183,10 +1183,8 @@ bool randomize_object_sequence(short object_index, shape_descriptor shape);
 world_location3d* get_object_sound_location(short object_index);
 void play_object_sound(short object_index, short sound_code, bool local_sound = false);
 void play_polygon_sound(short polygon_index, short sound_code);
-void _play_side_sound(short side_index, short sound_code, _fixed pitch);
+void play_side_sound(short side_index, short sound_code, _fixed pitch, bool soft_rewind = false);
 void play_world_sound(short polygon_index, world_point3d *origin, short sound_code);
-
-#define play_side_sound(side_index, sound_code) _play_side_sound(side_index, sound_code, FIXED_ONE)
 
 void handle_random_sound_image(void);
 
@@ -1231,7 +1229,7 @@ void recalculate_map_counts(void);
 bool change_polygon_height(short polygon_index, world_distance new_floor_height,
 	world_distance new_ceiling_height, struct damage_definition *damage);
 
-bool line_is_obstructed(short polygon_index1, world_point2d *p1, short polygon_index2, world_point2d *p2);
+bool line_is_obstructed(short polygon_index1, world_point2d* p1, short polygon_index2, world_point2d* p2, bool for_sounds = false);
 bool point_is_player_visible(short max_players, short polygon_index, world_point2d *p, int32 *distance);
 bool point_is_monster_visible(short polygon_index, world_point2d *p, int32 *distance);
 
@@ -1409,9 +1407,6 @@ bool select_map_to_use(void);
 short get_player_starting_location_and_facing(short team, short index, 
 	struct object_location *location);
 
-void pause_game(void);
-void resume_game(void);
-
 bool get_indexed_entry_point(struct entry_point *entry_point, short *index, int32 type);
 bool get_entry_points(vector<entry_point> &vec, int32 type);
 
@@ -1419,7 +1414,7 @@ bool new_game(short number_of_players, bool network,
 	struct game_data *game_information,
 	struct player_start_data *player_start_information, 
 	struct entry_point *entry_point);
-bool goto_level(struct entry_point *entry, bool new_game, short number_of_players);
+bool goto_level(struct entry_point *entry, short number_of_players, player_start_data* player_start_information);
 
 class InfoTree;
 void parse_mml_texture_loading(const InfoTree& root);

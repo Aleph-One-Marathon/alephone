@@ -103,13 +103,6 @@ bool SoundHeader::UnpackExtendedSystem7Header(BIStreamBE &header)
 
 		length = num_frames * bytes_per_frame;
 		little_endian = false;
-
-		if ((loop_end - loop_start >= 4) && ((loop_start % bytes_per_frame) || (loop_end % bytes_per_frame)))
-		{
-			logWarning("loop_start=%i and loop_end=%i but bytes_per_frame=%i; interpreting as frame offsets", loop_start, loop_end, bytes_per_frame);
-			loop_start *= bytes_per_frame;
-			loop_end *= bytes_per_frame;
-		}
 		
 		return true;
 	} catch (const basic_bstream::failure& e) {
@@ -275,8 +268,7 @@ SoundDefinition::SoundDefinition() :
 	high_pitch(0),
 	permutations(1),
 	permutations_played(0),
-	group_offset(0), single_length(0), total_length(0),
-	last_played(0)
+	group_offset(0), single_length(0), total_length(0)
 {
 }
 
@@ -312,8 +304,7 @@ bool SoundDefinition::Unpack(OpenedFile &SoundFile)
 		header >> sound_offsets[i];
 	}
 
-	header >> last_played;
-	
+	header.ignore(4); //uint32 last_played
 	header.ignore(4 * 2);
 
 	return true;

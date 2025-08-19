@@ -29,6 +29,12 @@ jobs:
         if-no-files-found: error
         path: 'VisualStudio/windows-build-archives/*.zip'
         
+    - name: Upload debugging symbols
+      uses: actions/upload-artifact@v4
+      with:
+        name: alephone-windows-symbols-x64
+        path: 'VisualStudio/x64/Release/*.pdb'
+        
   release-x86:
     runs-on: windows-2022
     steps:
@@ -54,3 +60,9 @@ jobs:
         name: alephone-windows-release-x86
         if-no-files-found: error
         path: 'VisualStudio/windows-build-archives/*.zip'
+        
+    - name: Upload debugging symbols
+      uses: actions/upload-artifact@v4
+      with:
+        name: alephone-windows-symbols-x86
+        path: 'VisualStudio/Release/*.pdb'

@@ -14,13 +14,13 @@
     <Filter Include="CSeries\Source Files">
       <UniqueIdentifier>{d25c2442-c75c-4292-8bb0-41bb95cfd734}</UniqueIdentifier>
     </Filter>
-    <Filter Include="FFmpeg">
+    <Filter Include="Videos">
       <UniqueIdentifier>{872d4672-759c-454d-b646-d9d292047b03}</UniqueIdentifier>
     </Filter>
-    <Filter Include="FFmpeg\Header Files">
+    <Filter Include="Videos\Header Files">
       <UniqueIdentifier>{af8a2035-0807-4f6c-9239-f7a77dd28588}</UniqueIdentifier>
     </Filter>
-    <Filter Include="FFmpeg\Source Files">
+    <Filter Include="Videos\Source Files">
       <UniqueIdentifier>{ba7b8fcb-86b1-4901-9491-b6ffbd70f0a7}</UniqueIdentifier>
     </Filter>
     <Filter Include="Files">
@@ -190,11 +190,8 @@
     <ClCompile Include="..\..\Source_Files\CSeries\BStream.cpp">
       <Filter>CSeries\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source_Files\FFmpeg\Movie.cpp">
-      <Filter>FFmpeg\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source_Files\FFmpeg\SDL_ffmpeg.c">
-      <Filter>FFmpeg\Source Files</Filter>
+    <ClCompile Include="..\..\Source_Files\Videos\Movie.cpp">
+      <Filter>Videos\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source_Files\Files\SDL_rwops_zzip.c">
       <Filter>Files\Source Files</Filter>
@@ -433,9 +430,6 @@
     <ClCompile Include="..\..\Source_Files\Network\network_capabilities.cpp">
       <Filter>Network\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source_Files\Network\network_data_formats.cpp">
-      <Filter>Network\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source_Files\Network\network_dialog_widgets_sdl.cpp">
       <Filter>Network\Source Files</Filter>
     </ClCompile>
@@ -443,9 +437,6 @@
       <Filter>Network\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source_Files\Network\network_games.cpp">
-      <Filter>Network\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source_Files\Network\network_lookup_sdl.cpp">
       <Filter>Network\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source_Files\Network\network_messages.cpp">
@@ -458,9 +449,6 @@
       <Filter>Network\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source_Files\Network\network_udp.cpp">
-      <Filter>Network\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source_Files\Network\SDL_netx.cpp">
       <Filter>Network\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source_Files\Network\SSLP_limited.cpp">
@@ -553,9 +541,6 @@
     <ClCompile Include="..\..\Source_Files\RenderMain\AnimatedTextures.cpp">
       <Filter>RenderMain\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source_Files\RenderOther\IMG_savepng.c">
-      <Filter>RenderOther\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source_Files\RenderOther\ChaseCam.cpp">
       <Filter>RenderOther\Source Files</Filter>
     </ClCompile>
@@ -637,9 +622,6 @@
     <ClCompile Include="..\..\Source_Files\Sound\Decoder.cpp">
       <Filter>Sound\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source_Files\Sound\FFmpegDecoder.cpp">
-      <Filter>Sound\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source_Files\Sound\Music.cpp">
       <Filter>Sound\Source Files</Filter>
     </ClCompile>
@@ -659,12 +641,6 @@
       <Filter>TCPMess\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source_Files\TCPMess\Message.cpp">
-      <Filter>TCPMess\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source_Files\TCPMess\MessageDispatcher.cpp">
-      <Filter>TCPMess\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source_Files\TCPMess\MessageHandler.cpp">
       <Filter>TCPMess\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source_Files\TCPMess\MessageInflater.cpp">
@@ -742,6 +718,9 @@
     <ClCompile Include="..\..\Source_Files\Misc\ScenarioChooser.cpp">
       <Filter>Misc\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source_Files\Network\NetworkInterface.cpp">
+      <Filter>Network\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source_Files\CSeries\BStream.h">
@@ -789,11 +768,8 @@
     <ClInclude Include="..\..\Source_Files\CSeries\mytm.h">
       <Filter>CSeries\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source_Files\FFmpeg\Movie.h">
-      <Filter>FFmpeg\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source_Files\FFmpeg\SDL_ffmpeg.h">
-      <Filter>FFmpeg\Header Files</Filter>
+    <ClInclude Include="..\..\Source_Files\Videos\Movie.h">
+      <Filter>Videos\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Files\AStream.h">
       <Filter>Files\Header Files</Filter>
@@ -1041,9 +1017,6 @@
     <ClInclude Include="..\..\Source_Files\Misc\sdl_dialogs.h">
       <Filter>Misc\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source_Files\Misc\sdl_network.h">
-      <Filter>Misc\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source_Files\Misc\sdl_widgets.h">
       <Filter>Misc\Header Files</Filter>
     </ClInclude>
@@ -1095,22 +1068,13 @@
     <ClInclude Include="..\..\Source_Files\Network\network_capabilities.h">
       <Filter>Network\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source_Files\Network\network_data_formats.h">
-      <Filter>Network\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source_Files\Network\network_dialog_widgets_sdl.h">
       <Filter>Network\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Network\network_dialogs.h">
       <Filter>Network\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source_Files\Network\network_distribution_types.h">
-      <Filter>Network\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source_Files\Network\network_games.h">
-      <Filter>Network\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source_Files\Network\network_lookup_sdl.h">
       <Filter>Network\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Network\network_messages.h">
@@ -1123,9 +1087,6 @@
       <Filter>Network\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Network\NetworkGameProtocol.h">
-      <Filter>Network\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source_Files\Network\SDL_netx.h">
       <Filter>Network\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Network\SSLP_API.h">
@@ -1278,9 +1239,6 @@
     <ClInclude Include="..\..\Source_Files\RenderOther\images.h">
       <Filter>RenderOther\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source_Files\RenderOther\IMG_savepng.h">
-      <Filter>RenderOther\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source_Files\RenderOther\motion_sensor.h">
       <Filter>RenderOther\Header Files</Filter>
     </ClInclude>
@@ -1333,9 +1291,6 @@
       <Filter>RenderOther\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Sound\Decoder.h">
-      <Filter>Sound\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source_Files\Sound\FFmpegDecoder.h">
       <Filter>Sound\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Sound\Music.h">
@@ -1442,6 +1397,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Misc\ScenarioChooser.h">
       <Filter>Misc\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source_Files\Videos\pl_mpeg.h">
+      <Filter>Videos\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source_Files\Network\NetworkInterface.h">
+      <Filter>Network\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

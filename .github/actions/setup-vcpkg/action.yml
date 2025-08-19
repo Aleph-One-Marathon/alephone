@@ -1,0 +1,54 @@
+name: setup-vcpkg
+description: |
+    cross-platform action for manual installation and setup of vcpkg
+    set vcpkg_installation_root and vcpkg_current_hash as environment variables for global workflow
+
+inputs:
+ vcpkg_bootstrap_file:
+    description: Bootstrap vcpkg file which is different for windows and unix systems
+    required: true
+    type: string
+
+runs:
+    using: "composite"
+    steps:
+    - name: Set Vcpkg install directory
+      run: echo "vcpkg_installation_root=vcpkg_binary" >> $GITHUB_ENV
+      shell: bash
+      
+    - name: Download Vcpkg
+      run: git clone https://github.com/microsoft/vcpkg ${{env.vcpkg_installation_root}}
+      shell: bash
+      
+    - name: Restore Vcpkg cached hash
+      id: vcpkg-cache-hash
+      uses: actions/cache@v4
+      with:
+        path: ${{env.vcpkg_installation_root}}/vcpkg-cached-hash
+        key: vcpkg-cached-hash
+        enableCrossOsArchive: true
+        
+    - name: Update Vcpkg
+      if: steps.vcpkg-cache-hash.outputs.cache-hit == 'true'
+      run: |
+        vcpkg_cached_hash=$(< ${{env.vcpkg_installation_root}}/vcpkg-cached-hash)
+        cd ${{env.vcpkg_installation_root}}
+        git reset --hard $vcpkg_cached_hash
+      shell: bash
+      
+    - name: Bootstrap Vcpkg
+      run: ${{env.vcpkg_installation_root}}/${{inputs.vcpkg_bootstrap_file}}
+      shell: bash
+      
+    - name: Get Vcpkg current hash
+      run: echo "vcpkg_current_hash=$(git -C ${{env.vcpkg_installation_root}} rev-parse --short HEAD)" >> $GITHUB_ENV
+      shell: bash
+      
+    - name: Set Vcpkg cached hash
+      if: steps.vcpkg-cache-hash.outputs.cache-hit != 'true'
+      run: echo "${{env.vcpkg_current_hash}}" > ${{env.vcpkg_installation_root}}/vcpkg-cached-hash
+      shell: bash
+      
+    - name: Vcpkg Integration
+      run: ${{env.vcpkg_installation_root}}/vcpkg integrate install
+      shell: bash

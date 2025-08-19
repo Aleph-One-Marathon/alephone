@@ -185,9 +185,25 @@ void w_static_text::draw(SDL_Surface *s) const
 
 void w_label::click(int x, int y)
 {
-	if (associated_widget)
-		associated_widget->click(0, 0);
+	// simulate a mouse press
+	mouse_down(0, 0);
+	sleep_for_machine_ticks(MACHINE_TICKS_PER_SECOND / 12);
+	mouse_up(0, 0);
+}
 
+void w_label::mouse_down(int, int)
+{
+	if (!associated_widget) return;
+	down = true;
+}
+
+void w_label::mouse_up(int x, int y)
+{
+	if (!associated_widget || !down) return;
+	down = false;
+
+	if (x >= 0 && x <= rect.w && y >= 0 && y <= rect.h)
+		associated_widget->click(0, 0);
 }
 
 void w_label::draw(SDL_Surface *s) const
@@ -663,7 +679,7 @@ const uint16 MAX_TEXT_WIDTH = 200;
 // Anyway, this fixes the "crash when clicking in the Environment menu" bug we've seen
 // in the Windows version all this time.
 w_select_button::w_select_button(const char *s, action_proc p, void *a, bool u)
-	: widget(LABEL_WIDGET), selection(s), proc(p), arg(a), utf8(u), p_flags(placeable::kDefault)
+	: widget(LABEL_WIDGET), selection(s), proc(p), arg(a), utf8(u), p_flags(placeable::kDefault), down(false)
 {
 	uint16 max_selection_width = MAX_TEXT_WIDTH;
 
@@ -671,6 +687,28 @@ w_select_button::w_select_button(const char *s, action_proc p, void *a, bool u)
 	saved_min_height = font->get_line_height();
 }
 
+void w_select_button::mouse_down(int, int)
+{
+	if (!enabled) return;
+	down = true;
+}
+
+void w_select_button::mouse_up(int x, int y)
+{
+	if (!enabled || !down) return;
+	down = false;
+
+	if (proc && x >= 0 && x <= rect.w && y >= 0 && y <= rect.h)
+		proc(arg);
+}
+
+void w_select_button::click(int /*x*/, int /*y*/)
+{
+	// simulate a mouse press
+	mouse_down(0, 0);
+	sleep_for_machine_ticks(MACHINE_TICKS_PER_SECOND / 12);
+	mouse_up(0, 0);
+}
 
 
 void w_select_button::draw(SDL_Surface *s) const
@@ -689,12 +727,6 @@ void w_select_button::draw(SDL_Surface *s) const
 	if (active) {
 		//!!
 	}
-}
-
-void w_select_button::click(int /*x*/, int /*y*/)
-{
-    if(enabled)
-	    proc(arg);
 }
 
 void w_select_button::set_selection(const char *s)
@@ -1036,7 +1068,6 @@ w_player_color::w_player_color(int selection) : w_select(selection, NULL)
 
 void w_player_color::draw(SDL_Surface *s) const
 {
-	int y = rect.y + font->get_ascent();
 	uint32 pixel = get_dialog_player_color(selection);
 	SDL_Rect r = {rect.x, rect.y + 1, 48, rect.h - 2};
 	SDL_FillRect(s, &r, pixel);
@@ -2353,7 +2384,7 @@ void w_select_popup::gotSelected ()
 const char* const sFileChooserInvalidFileString = "(no valid selection)";
 
 w_file_chooser::w_file_chooser(const char* inDialogPrompt, Typecode inTypecode)
-	: w_select_button("", NULL, NULL, true), typecode(inTypecode)
+	: w_select_button("", std::bind(&w_file_chooser::proc, this), nullptr, true), typecode(inTypecode)
 {
 	strncpy(dialog_prompt, inDialogPrompt, sizeof(dialog_prompt));
 	set_selection(sFileChooserInvalidFileString);
@@ -2371,7 +2402,7 @@ w_file_chooser::set_file(const FileSpecifier& inFile)
 
 
 void
-w_file_chooser::click(int, int)
+w_file_chooser::proc()
 {
 	if(enabled)
 	{
@@ -2401,7 +2432,7 @@ w_file_chooser::update_filename()
 }
 
 w_directory_chooser::w_directory_chooser()
-	: w_select_button("", NULL, NULL, true)
+	: w_select_button("", std::bind(&w_directory_chooser::proc, this), nullptr, true)
 {
 	set_selection(sFileChooserInvalidFileString);
 }
@@ -2418,7 +2449,7 @@ w_directory_chooser::set_directory(const FileSpecifier& inDirectory)
 
 
 void
-w_directory_chooser::click(int, int)
+w_directory_chooser::proc()
 {
 	if (enabled)
 	{

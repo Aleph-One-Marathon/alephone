@@ -3,6 +3,7 @@
 #include "FileHandler.h"
 #include "shell_options.h"
 #include "interface.h"
+#include "preferences.h"
 #include <catch2/catch_test_macros.hpp>
 
 extern ShellOptions shell_options;
@@ -48,6 +49,10 @@ static std::vector<Replay> get_replays(std::string& directory_path) {
 	return results;
 }
 
+static void set_replay_preferences() {
+	graphics_preferences->fps_target = 60;
+}
+
 TEST_CASE("Film replay", "[Replay]") {
 
 	REQUIRE(!shell_options.directory.empty());
@@ -56,6 +61,7 @@ TEST_CASE("Film replay", "[Replay]") {
 	const auto replays = get_replays(shell_options.replay_directory);
 
 	initialize_application();
+	set_replay_preferences();
 
 	for (const auto& replay : replays) {
 		INFO(replay.first);

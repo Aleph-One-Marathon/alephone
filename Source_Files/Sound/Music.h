@@ -24,12 +24,7 @@
 
 */
 
-#include "cseries.h"
-#include "Decoder.h"
-#include "FileHandler.h"
 #include "Random.h"
-#include "SoundManager.h"
-#include <vector>
 #include "MusicPlayer.h"
 
 class Music
@@ -48,55 +43,63 @@ public:
 		Level = 1
 	};
 
-	bool SetupIntroMusic(FileSpecifier &file) { return music_slots[MusicSlot::Intro].Open(&file); }
-	void RestartIntroMusic();
+	enum class FadeType {
+		Linear,
+		Sinusoidal
+	};
 
-	void Fade(float limitVolume, short duration, bool stopOnNoVolume = true, int index = NONE);
-	void Pause(int index = NONE);
-	bool Playing(int index = NONE);
-	int Load(FileSpecifier& file, bool loop, float volume);
-	void Play(int index) { music_slots[index].Play(); }
-	void Idle();
-	bool IsInit(int index) const { return music_slots.size() > index && music_slots[index].IsInit(); }
-	float GetVolume(int index) const { return music_slots[index].GetVolume(); }
-	void SetVolume(int index, float volume) { music_slots[index].SetVolume(volume); }
-	void StopLevelMusic() { music_slots[MusicSlot::Level].Close(); }
-	void ClearLevelMusic();
-	void PushBackLevelMusic(const FileSpecifier& file);
-	void LevelMusicRandom(bool fRandom) { random_order = fRandom; }
-	void SeedLevelMusic();
-	void SetClassicLevelMusic(short song_index);
-	bool HasClassicLevelMusic() const { return marathon_1_song_index >= 0; }
-private:
 	class Slot {
 	private:
 		std::shared_ptr<MusicPlayer> musicPlayer;
-		std::shared_ptr<StreamDecoder> decoder;
-		FileSpecifier music_file;
-		uint32 music_fade_start = 0;
-		uint32 music_fade_duration = 0;
+		std::vector<MusicPlayer::Segment> dynamic_music_tracks;
+		std::vector<MusicPlayer::Preset> dynamic_music_presets;
+		uint64_t music_fade_start = 0;
+		uint32_t music_fade_duration = 0;
 		float music_fade_limit_volume;
 		float music_fade_start_volume;
 		bool music_fade_stop_no_volume;
+		FadeType music_fade_type;
 		MusicParameters parameters;
 	public:
-		void Fade(float limitVolume, short duration, bool stopOnNoVolume = true);
-		bool Playing() const { return IsInit() && musicPlayer && musicPlayer->IsActive(); }
-		bool Open(FileSpecifier* file);
+		void Fade(float limitVolume, short duration, FadeType fadeType, bool stopOnNoVolume = true);
+		bool Playing() const { return musicPlayer && musicPlayer->IsActive(); }
 		void Pause();
 		void Close();
-		bool SetParameters(bool loop, float volume);
-		void Play();
+		bool Open(FileSpecifier* file);
+		void Play(uint32_t preset_index = 0, uint32_t segment_index = 0);
+		bool SetParameters(const MusicParameters& parameters);
 		float GetLimitFadeVolume() const { return music_fade_limit_volume; }
-		bool IsInit() const { return decoder != nullptr; }
 		bool IsFading() const { return music_fade_start; }
 		bool StopPlayerAfterFadeOut() const { return music_fade_stop_no_volume; }
 		void StopFade() { music_fade_start = 0; }
-		void SetVolume(float volume);
-		float GetVolume() const { return parameters.volume; }
+		bool SetVolume(float volume) { return SetParameters({ volume, parameters.loop }); }
+		bool SetLoop(bool loop) { return SetParameters({ parameters.volume, loop }); }
+		const MusicParameters& GetParameters() const { return parameters; }
 		std::pair<bool, float> ComputeFadingVolume() const;
+		std::optional<uint32_t> LoadTrack(FileSpecifier* file);
+		std::optional<uint32_t> AddPreset();
+		std::optional<uint32_t> AddSegmentToPreset(uint32_t preset_index, uint32_t track_index);
+		bool IsSegmentIndexValid(uint32_t preset_index, uint32_t segment_index) const;
+		bool SetNextSegment(uint32_t preset_index, uint32_t segment_index, uint32_t transition_preset_index, uint32_t transition_segment_index);
+		bool SetPresetTransition(uint32_t preset_index);
 	};
 
+	bool SetupIntroMusic(FileSpecifier& file) { return music_slots[MusicSlot::Intro].Open(&file); }
+	void RestartIntroMusic();
+	Slot* GetSlot(uint32_t index) { return index < music_slots.size() ? &music_slots[index] : nullptr; }
+	void Fade(float limitVolume, short duration, FadeType fadeType, bool stopOnNoVolume = true);
+	void Pause();
+	bool Playing();
+	std::optional<uint32_t> Add(const MusicParameters& parameters, FileSpecifier* file = nullptr);
+	void Idle();
+	void StopLevelMusic();
+	void StopInGameMusic();
+	void ClearLevelPlaylist();
+	void PushBackLevelMusic(const FileSpecifier& file);
+	void SetPlaylistParameters(bool randomOrder);
+	void SeedLevelMusic();
+	void SetClassicLevelMusic(short song_index);
+private:
 	std::vector<Slot> music_slots;
 
 	Music();

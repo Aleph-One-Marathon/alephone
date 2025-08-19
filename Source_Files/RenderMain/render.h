@@ -138,6 +138,9 @@ struct view_data
 	
 	// whether to mimic software renderer when looking up/down
 	bool mimic_sw_perspective;
+
+	// whether to correct sprite parallax when not mimicking software
+	bool billboard_xy;
 };
 
 /* ---------- render flags */

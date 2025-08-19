@@ -416,7 +416,7 @@ void initialize_map_for_new_level(
 	// Clear all these out -- supposed to be none of the contents of these when starting a level.
 	objlist_clear(automap_lines, AutomapLineList.size());
 	objlist_clear(automap_polygons, AutomapPolygonList.size());
-	objlist_clear(effects, EffectList.size());
+	objlist_clear(EffectList.data(), EffectList.size());
 	objlist_clear(projectiles,  ProjectileList.size());
 	objlist_clear(monsters,  MonsterList.size());
 	objlist_clear(objects,  ObjectList.size());
@@ -1610,7 +1610,7 @@ _fixed find_line_intersection(
 		left there) */
 	numerator= line_dx*(e0->y-p0->y) + line_dy*(p0->x-e0->x);
 	denominator= line_dx*dy - line_dy*dx;
-	while (numerator>=(1<<24)||numerator<=((-1)<<24)) numerator>>= 1, denominator>>= 1;
+	while (numerator>=(1<<24)||numerator<=-(1<<24)) numerator>>= 1, denominator>>= 1;
 	assert(numerator<(1<<24));
 	numerator<<= 8;
 	if (!(denominator>>= 8)) denominator= 1;
@@ -1643,7 +1643,7 @@ _fixed closest_point_on_line(
 	/* same comment as above for calculating t; this is not wholly accurate */
 	numerator= line_dx*dx + line_dy*dy;
 	denominator= line_dx*line_dx + line_dy*line_dy;
-	while (numerator>=(1<<23)||numerator<=(-1<<23)) numerator>>= 1, denominator>>= 1;
+	while (numerator>=(1<<23)||numerator<=-(1<<23)) numerator>>= 1, denominator>>= 1;
 	numerator<<= 8;
 	if (!(denominator>>= 8)) denominator= 1;
 	t= numerator/denominator;
@@ -2072,7 +2072,7 @@ void recalculate_map_counts(
 		;
 	dynamic_world->projectile_count= static_cast<int16>(count);
 	
-	for (count=MAXIMUM_EFFECTS_PER_MAP,effect=effects+MAXIMUM_EFFECTS_PER_MAP-1;
+	for (count=MAXIMUM_EFFECTS_PER_MAP,effect=EffectList.data()+MAXIMUM_EFFECTS_PER_MAP-1;
 			count>0&&(!SLOT_IS_USED(effect));
 			--count,--effect)
 		;
@@ -2205,7 +2205,8 @@ bool line_is_obstructed(
 	short polygon_index1,
 	world_point2d *p1,
 	short polygon_index2,
-	world_point2d *p2)
+	world_point2d *p2,
+	bool for_sounds)
 {
 	short polygon_index= polygon_index1;
 	bool obstructed= false;
@@ -2226,10 +2227,13 @@ bool line_is_obstructed(
 		if (line_index!=NONE)
 		{
 			if (last_line && polygon_index==polygon_index2) break;
-			if (!LINE_IS_SOLID(get_line_data(line_index)))
+
+			const auto line_data = get_line_data(line_index);
+			if (!LINE_IS_SOLID(line_data) || (for_sounds && LINE_HAS_TRANSPARENT_SIDE(line_data)))
 			{
 				/* transparent line, find adjacent polygon */
 				polygon_index= find_adjacent_polygon(polygon_index, line_index);
+				if (for_sounds && polygon_index == NONE) break;
 				assert(polygon_index!=NONE);
 			}
 			else
@@ -2510,10 +2514,11 @@ void play_polygon_sound(
 	SoundManager::instance()->PlaySound(sound_code, &source, NONE);
 }
 
-void _play_side_sound(
+void play_side_sound(
 	short side_index,
 	short sound_code,
-	_fixed pitch)
+	_fixed pitch,
+	bool soft_rewind)
 {
 	struct side_data *side= get_side_data(side_index);
 	world_location3d source;
@@ -2521,7 +2526,7 @@ void _play_side_sound(
 	calculate_line_midpoint(side->line_index, &source.point);
 	source.polygon_index= side->polygon_index;
 
-	SoundManager::instance()->PlaySound(sound_code, &source, NONE, pitch);
+	SoundManager::instance()->PlaySound(sound_code, &source, NONE, pitch, soft_rewind);
 }
 
 void play_world_sound(
@@ -2547,19 +2552,24 @@ world_location3d *_sound_listener_proc(
 
 // stuff floating on top of media is above it
 uint16 _sound_obstructed_proc(
-	world_location3d *source)
+	world_location3d *source,
+	bool distinguish_obstruction_types)
 {
 	world_location3d *listener= _sound_listener_proc();
 	uint16 flags= 0;
+	constexpr int under_media_source_threshold = WORLD_ONE_FOURTH; //we don't obstruct sources not that deep in media
 	
 	if (listener)
 	{
 		if (line_is_obstructed(source->polygon_index, (world_point2d *)&source->point,
-			listener->polygon_index, (world_point2d *)&listener->point))
+			listener->polygon_index, (world_point2d *)&listener->point, true))
 		{
 			flags|= _sound_was_obstructed;
 		}
-		else
+
+		bool check_media_obstruction = distinguish_obstruction_types || !(flags & _sound_was_obstructed);
+
+		if (check_media_obstruction)
 		{
 			struct polygon_data *source_polygon= get_polygon_data(source->polygon_index);
 			struct polygon_data *listener_polygon= get_polygon_data(listener->polygon_index);
@@ -2571,7 +2581,7 @@ uint16 _sound_obstructed_proc(
 				media_data *media = get_media_data(source_polygon->media_index);
 				if (media)
 				{
-					if (source->point.z<media->height)
+					if (source->point.z + under_media_source_threshold < media->height)
 					{
 						source_under_media= true;
 					}

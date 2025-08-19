@@ -25,7 +25,6 @@
 #include "sdl_widgets.h"
 #include "alephversion.h"
 #include "preferences.h"
-#include "sdl_network.h"
 
 #include <functional>
 #include <sstream>

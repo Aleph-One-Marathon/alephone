@@ -616,7 +616,10 @@ void decode_hotkeys(ModifiableActionQueues& action_queues)
 			player->hotkey_sequence <<= 2;
 			player->hotkey_sequence |= (action_flags >> _cycle_weapons_forward_bit) & 0x03;
 
-			player->hotkey = 1 + (player->hotkey_sequence & 0x03) + 4 * (((player->hotkey_sequence >> 2) & 0x03) - 1);
+			if (!film_profile.hotkey_fix || !PLAYER_IS_DEAD(player))
+			{
+				player->hotkey = 1 + (player->hotkey_sequence & 0x03) + 4 * (((player->hotkey_sequence >> 2) & 0x03) - 1);
+			}
 			player->hotkey_sequence = 0;
 		}
 		else if ((action_flags & hotkey_mask) == hotkey_mask)
@@ -754,7 +757,17 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 				/* do things dead players do (sit around and check for self-reincarnation) */
 				if (PLAYER_HAS_MAP_OPEN(player))
 					SET_PLAYER_MAP_STATUS(player, false);
-				if (PLAYER_IS_TOTALLY_DEAD(player) && (action_flags&_action_trigger_state) && (player->variables.action==_player_stationary||dynamic_world->player_count==1))
+
+				auto player_is_stationary =
+					(player->variables.action == _player_stationary) ||
+					(dynamic_world->player_count == 1) ||
+					(film_profile.finally_respawn &&
+					 dynamic_world->tick_count >
+					 player->ticks_at_death + 15 * TICKS_PER_SECOND);
+
+				if (PLAYER_IS_TOTALLY_DEAD(player) &&
+					(action_flags&_action_trigger_state) &&
+					player_is_stationary)
 				{
 					// ZZZ: let the player know why he's not respawning
 					if(player->reincarnation_delay)
@@ -1479,7 +1492,7 @@ static void update_player_teleport(
 					
 							/* Tell everyone else to use the teleporting junk... */
 							SET_PLAYER_INTERLEVEL_TELEPORTING_STATUS(player, true);
-							player->interlevel_teleport_phase= 0;
+							player->interlevel_teleport_phase= other_player_index < player_index ? 0 : -1;
 						
 							monster->action= _monster_is_teleporting;
 						}
@@ -1735,7 +1748,7 @@ static void recreate_player(
 		player_teleported_dead= true;
 	}
 
-	/* Clear the transient flags, leave the persistant flags, like Player has cheated */
+	/* Clear the transient flags, leave the persistant flags */
 	player->flags &= (_player_is_teleporting_flag | _player_is_interlevel_teleporting_flag | PLAYER_PERSISTANT_FLAGS );
 	player->monster_index= monster_index;
 	player->object_index= monster->object_index;
@@ -1814,6 +1827,8 @@ static void kill_player(
 	if (aggressor_player_index==player_index && (GET_GAME_OPTIONS()&_suicide_is_penalized)) player->reincarnation_delay+= SUICIDE_REINCARNATION_DELAY;
 
 	kill_player_physics_variables(player_index);
+
+	player->ticks_at_death = dynamic_world->tick_count;
 }
 
 static void give_player_initial_items(
@@ -1954,9 +1969,9 @@ static void get_player_transfer_mode(
 	} 
 	else if (PLAYER_IS_INTERLEVEL_TELEPORTING(player))
 	{
-		if (player->teleporting_destination >= 0 || (player->teleporting_phase < PLAYER_TELEPORTING_MIDPOINT && View_DoInterlevelTeleportOutEffects()) || (player->teleporting_phase >= PLAYER_TELEPORTING_MIDPOINT && View_DoInterlevelTeleportInEffects()))
+		if (player->teleporting_destination >= 0 || (player->interlevel_teleport_phase < PLAYER_TELEPORTING_MIDPOINT && View_DoInterlevelTeleportOutEffects()) || (player->interlevel_teleport_phase >= PLAYER_TELEPORTING_MIDPOINT && View_DoInterlevelTeleportInEffects()))
 		{
-			*transfer_mode= player->teleporting_phase<PLAYER_TELEPORTING_MIDPOINT ? _xfer_fold_out : _xfer_fold_in;
+			*transfer_mode= player->interlevel_teleport_phase <PLAYER_TELEPORTING_MIDPOINT ? _xfer_fold_out : _xfer_fold_in;
 			*transfer_period= PLAYER_TELEPORTING_MIDPOINT+1;
 		}
 	}

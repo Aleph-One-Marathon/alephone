@@ -291,9 +291,6 @@ public:
 	// Returns _typecode_unknown if the type could not be identified;
 	// the types returned are the _typecode_stuff in tags.h
 	Typecode GetType();
-
-	// How many bytes are free in the disk that the file lives in?
-	bool GetFreeSpace(uint32& FreeSpace);
 	
 	// Copy file contents
 	bool CopyContents(FileSpecifier& File);
@@ -338,7 +335,7 @@ public:
 	void SplitPath(string &base, string &part) const;
 	void SplitPath(DirectorySpecifier &base, string &part) const {string b; SplitPath(b, part); base = b;}
 
-	bool CreateDirectory();
+	bool MakeDirectory();
 	
 	// Return directory contents (following symlinks), excluding dot-prefixed files
 	bool ReadDirectory(vector<dir_entry> &vec);

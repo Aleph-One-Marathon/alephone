@@ -160,7 +160,7 @@ struct ScreenMessage
 		Len = 256
 	};
 
-	uint32_t ExpirationTime; // machine ticks the screen message expires at
+	uint64_t ExpirationTime; // machine ticks the screen message expires at
 	char Text[Len];		// Text to display
 	
 	ScreenMessage(): ExpirationTime(machine_tick_count()) {Text[0] = 0;}
@@ -937,7 +937,7 @@ static void DisplayNetLoadingScreen(SDL_Surface* s)
 
 	Y += Font.LineSpacing;
 
-	int nb_loading_dots = ((int)(machine_tick_count() / (2000.f / 3)) % 4);
+	auto nb_loading_dots = ((uint64_t)(machine_tick_count() / (2000.f / 3)) % 4);
 
 	for (int i = 0; i < dynamic_world->player_count; ++i)
 	{

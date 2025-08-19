@@ -207,11 +207,14 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 void ResetLevelScript()
 {
 	// For whatever previous music had been playing...
-	Music::instance()->Fade(0, MACHINE_TICKS_PER_SECOND/2);
+	Music::instance()->Fade(0, MACHINE_TICKS_PER_SECOND/2, Music::FadeType::Sinusoidal);
+
+	while (Music::instance()->Playing())
+		Music::instance()->Idle();
 	
 	// If no scripts were loaded or none of them had music specified,
 	// then don't play any music
-	Music::instance()->ClearLevelMusic();
+	Music::instance()->ClearLevelPlaylist();
 
 #ifdef HAVE_OPENGL	
 	OGL_LoadScreen::instance()->Clear();
@@ -314,7 +317,7 @@ void GeneralRunScript(int LevelIndex)
 	CurrScriptPtr = &(LevelScripts[LevelIndex]);
 	
 	// Insures that this order is the last order set
-	Music::instance()->LevelMusicRandom(CurrScriptPtr->RandomOrder);
+	Music::instance()->SetPlaylistParameters(CurrScriptPtr->RandomOrder);
 	
 	// OpenedResourceFile OFile;
 	// FileSpecifier& MapFile = get_map_file();

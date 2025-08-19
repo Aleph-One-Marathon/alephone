@@ -186,7 +186,7 @@ void OGL_Blitter::BoundScreen(bool in_game)
 	alephone::Screen::instance()->bound_screen(in_game);
 }
 
-void OGL_Blitter::WindowToScreen(int& x, int& y, bool in_game)
+void OGL_Blitter::WindowToScreen(int& x, int& y)
 {
 	alephone::Screen::instance()->window_to_screen(x, y);
 }

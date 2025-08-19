@@ -57,6 +57,10 @@
 #include "OGL_Render.h"
 #endif
 
+#ifdef HAVE_NFD
+#include "nfd.h"
+#endif
+
 #include "InfoTree.h"
 #include "Logging.h"
 #include "joystick.h"
@@ -109,6 +113,10 @@ static void set_theme_defaults(void);
 
 void initialize_dialogs()
 {
+#ifdef HAVE_NFD
+	NFD_Init();
+#endif
+
 	// Allocate surface for dialogs (this surface is needed because when
 	// OpenGL is active, we can't write directly to the screen)
 	dialog_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 16, 0x7c00, 0x03e0, 0x001f, 0);
@@ -133,6 +141,10 @@ void initialize_dialogs()
 void shutdown_dialogs(void)
 {
 	unload_theme();
+
+#ifdef HAVE_NFD
+	NFD_Quit();
+#endif
 }
 
 

@@ -143,17 +143,17 @@ public:
 	int Run()
 	{
 		d.set_processing_function(std::bind(&SdlMetaserverClientUi::pump, this, std::placeholders::_1));
-		int result = d.run();
-
-		if(result == -1)
-			obj_clear(m_joinAddress);
-
-		return result;
+		return d.run();
 	}
 	
 	void Stop()
 	{
 		dialog_ok(&d);
+	}
+
+	void Cancel()
+	{
+		dialog_cancel(&d);
 	}
 
 	void InfoClicked()
@@ -336,12 +336,12 @@ public:
 private:
 
 	w_games_in_room* games_in_room_w;
-	uint32 last_pump_update = 0;
+	uint64_t last_pump_update = 0;
 
 	void
 	pump(dialog* d)
 	{
-		uint32 ticks = machine_tick_count();
+		auto ticks = machine_tick_count();
 		bool refresh = ticks > last_pump_update + 5000;
 
 		if (refresh)

@@ -49,11 +49,10 @@ static bool launchChild(ProcessType *pid);
 static int closeProcess(ProcessType *pid);
 
 static fs::path findExe(const boost::regex& regex);
-static fs::path findApp(const boost::regex& regex);
 
 #ifdef _WIN32
 
-static LPWSTR LpCmdLine = NULL;
+static LPWSTR GlpCmdLine = NULL;
 
 static void fail(const char *err)
 {
@@ -115,7 +114,7 @@ static bool launchChild(ProcessType *pid)
     memset(&si, 0, sizeof(si));
     auto exe = findExe(boost::regex("Classic Marathon.*\\.exe"));
 
-    std::wstring args = L"\"" + exe.wstring() + L"\" " + (LpCmdLine ? LpCmdLine : L""); //should never be null but just in case
+    std::wstring args = L"\"" + exe.wstring() + L"\" " + (GlpCmdLine ? GlpCmdLine : L""); //should never be null but just in case
 
     return (CreateProcessW(exe.wstring().c_str(),
         args.data(), NULL, NULL, TRUE, 0, NULL,
@@ -129,9 +128,9 @@ static int closeProcess(ProcessType *pid)
     return 0;
 } // closeProcess
 
-int CALLBACK wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
+int CALLBACK wWinMain(_In_ HINSTANCE /*hInstance*/, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR lpCmdLine, _In_ int /*nCmdShow*/)
 {
-    LpCmdLine = lpCmdLine;
+    GlpCmdLine = lpCmdLine;
     mainline();
     ExitProcess(0);
     return 0;  // just in case.
@@ -208,11 +207,11 @@ static bool launchChild(ProcessType *pid)
 
     // we're the child.
 #ifdef __APPLE__
-    auto app = findApp(boost::regex("Classic Marathon.*\\.app"));
+    auto app = findExe(boost::regex("Classic Marathon.*\\.app"));
     auto macos = app / "Contents" / "MacOS";
     auto bin = boost::filesystem::directory_iterator(macos)->path().string();
 #else
-    auto bin = findExe(boost::regex("Classic Marathon.*"));
+    auto bin = findExe(boost::regex("alephone"));
 #endif
 
     GArgv[0] = strdup(bin.c_str());
@@ -246,10 +245,11 @@ fs::path findExe(const boost::regex& regex)
 
     fs::directory_iterator end;
     for (fs::directory_iterator it(this_exe.parent_path()); it != end; ++it) {
+#ifndef __APPLE__
         if (it->path() == this_exe) {
             continue;
         }
-
+#endif
         auto filename = it->path().filename().string();
         if (boost::regex_match(filename, regex)) {
             return it->path();
@@ -259,20 +259,6 @@ fs::path findExe(const boost::regex& regex)
     return fs::path();
 }
 
-fs::path findApp(const boost::regex& regex)
-{
-    auto this_exe = boost::dll::program_location();
-
-    fs::directory_iterator end;
-    for (fs::directory_iterator it(this_exe.parent_path()); it != end; ++it) {
-        auto filename = it->path().filename().string();
-        if (boost::regex_match(filename, regex)) {
-            return it->path();
-        }
-    }
-
-    return fs::path();
-}
 
 // THE ACTUAL PROGRAM.
 
@@ -431,7 +417,6 @@ class SteamBridge
 {
 public:
     SteamBridge(PipeType _fd);
-	STEAM_CALLBACK(SteamBridge, OnUserStatsReceived, UserStatsReceived_t, m_CallbackUserStatsReceived);
 	STEAM_CALLBACK(SteamBridge, OnUserStatsStored, UserStatsStored_t, m_CallbackUserStatsStored);
     STEAM_CALLBACK(SteamBridge, OnOverlayActivated, GameOverlayActivated_t, m_CallbackOverlayActivated);
     void set_item_created_callback(SteamAPICall_t api_call, const item_upload_data& item_data);
@@ -462,7 +447,6 @@ typedef enum ShimCmd
 {
     SHIMCMD_BYE,
     SHIMCMD_PUMP,
-    SHIMCMD_REQUESTSTATS,
     SHIMCMD_STORESTATS,
     SHIMCMD_SETACHIEVEMENT,
     SHIMCMD_GETACHIEVEMENT,
@@ -481,7 +465,6 @@ typedef enum ShimCmd
 typedef enum ShimEvent
 {
     SHIMEVENT_BYE,
-    SHIMEVENT_STATSRECEIVED,
     SHIMEVENT_STATSSTORED,
     SHIMEVENT_SETACHIEVEMENT,
     SHIMEVENT_GETACHIEVEMENT,
@@ -529,12 +512,6 @@ static inline bool writeBye(PipeType fd)
     return write1ByteCmd(fd, SHIMEVENT_BYE);
 } // writeBye
 
-static inline bool writeStatsReceived(PipeType fd, const bool okay)
-{
-    dbgpipe("Parent sending SHIMEVENT_STATSRECEIVED(%sokay).\n", okay ? "" : "!");
-    return write2ByteCmd(fd, SHIMEVENT_STATSRECEIVED, okay ? 1 : 0);
-} // writeStatsReceived
-
 static inline bool writeStatsStored(PipeType fd, const bool okay)
 {
     dbgpipe("Parent sending SHIMEVENT_STATSSTORED(%sokay).\n", okay ? "" : "!");
@@ -556,9 +533,9 @@ static inline bool writeWorkshopUploadResult(PipeType fd, const EResult result, 
 static bool writeWorkshopItemOwnedQueriedResult(PipeType fd, const item_owned_query_result& query_result)
 {
     dbgpipe("Parent sending SHIMEVENT_WORKSHOP_QUERY_OWNED_ITEM_RESULT(%d result).\n", query_result.result_code);
-    auto data_stream = query_result.shim_serialize();
 
-    data_stream = std::ostringstream() << (uint8)SHIMEVENT_WORKSHOP_QUERY_OWNED_ITEM_RESULT << data_stream.str();
+    std::ostringstream data_stream;
+    data_stream << (uint8)SHIMEVENT_WORKSHOP_QUERY_OWNED_ITEM_RESULT << query_result.shim_serialize().str();
     
     std::ostringstream data_stream_shim;
 
@@ -573,9 +550,9 @@ static bool writeWorkshopItemOwnedQueriedResult(PipeType fd, const item_owned_qu
 static bool writeWorkshopItemQueriedResult(PipeType fd, const item_subscribed_query_result& query_result)
 {
     dbgpipe("Parent sending SHIMEVENT_WORKSHOP_QUERY_SUBSCRIBED_ITEM_RESULT(%d result).\n", query_result.result_code);
-    auto data_stream = query_result.shim_serialize();
 
-    data_stream = std::ostringstream() << (uint8)SHIMEVENT_WORKSHOP_QUERY_SUBSCRIBED_ITEM_RESULT << data_stream.str();
+    std::ostringstream data_stream;
+    data_stream << (uint8)SHIMEVENT_WORKSHOP_QUERY_SUBSCRIBED_ITEM_RESULT << query_result.shim_serialize().str();
 
     std::ostringstream data_stream_shim;
 
@@ -590,9 +567,9 @@ static bool writeWorkshopItemQueriedResult(PipeType fd, const item_subscribed_qu
 static bool writeGameInfo(PipeType fd, const steam_game_information& game_info)
 {
     dbgpipe("Parent sending SHIMEVENT_GET_GAME_INFO.\n");
-    auto data_stream = game_info.shim_serialize();
 
-    data_stream = std::ostringstream() << (uint8)SHIMEVENT_GET_GAME_INFO << data_stream.str();
+    std::ostringstream data_stream;
+    data_stream << (uint8)SHIMEVENT_GET_GAME_INFO << game_info.shim_serialize().str();
 
     std::ostringstream data_stream_shim;
 
@@ -714,6 +691,8 @@ static std::vector<std::string> GetTagsForItemType(ItemType item_type, ContentTy
                 case ContentType::Theme:
                     tags.push_back("Theme");
                     break;
+                default:
+                    break;
             }
             break;
         case ItemType::Map:
@@ -728,6 +707,8 @@ static std::vector<std::string> GetTagsForItemType(ItemType item_type, ContentTy
                 case ContentType::SoloAndNet:
                     tags.push_back("Solo Map");
                     tags.push_back("Net Map");
+                    break;
+                default:
                     break;
             }
             break;
@@ -746,6 +727,8 @@ static std::vector<std::string> GetTagsForItemType(ItemType item_type, ContentTy
                 case ContentType::SoloAndNet:
                     tags.push_back("Solo Script");
                     tags.push_back("Net Script");
+                    break;
+                default:
                     break;
             }
             break;
@@ -786,7 +769,7 @@ static void UpdateItem(PublishedFileId_t item_id, const item_upload_data& item_d
     auto tags = GetTagsForItemType(item_data.item_type, item_data.content_type);
     const char* tag_array[16];
 
-    for (auto i = 0; i < tags.size(); i++)
+    for (size_t i = 0; i < tags.size(); i++)
     {
         tag_array[i] = tags[i].c_str();
     }
@@ -841,19 +824,11 @@ static void workshopQueryItemOwned(const std::string& scenario, int page_number)
 }
 
 SteamBridge::SteamBridge(PipeType _fd)
-    : m_CallbackUserStatsReceived( this, &SteamBridge::OnUserStatsReceived )
-	, m_CallbackUserStatsStored( this, &SteamBridge::OnUserStatsStored )
+    : m_CallbackUserStatsStored( this, &SteamBridge::OnUserStatsStored )
     , m_CallbackOverlayActivated( this, &SteamBridge::OnOverlayActivated )
 	, fd(_fd)
 {
 } // SteamBridge::SteamBridge
-
-void SteamBridge::OnUserStatsReceived(UserStatsReceived_t *pCallback)
-{
-	if (GAppID != pCallback->m_nGameID) return;
-	if (GUserID != pCallback->m_steamIDUser.ConvertToUint64()) return;
-    writeStatsReceived(fd, pCallback->m_eResult == k_EResultOK);
-} // SteamBridge::OnUserStatsReceived
 
 void SteamBridge::OnUserStatsStored(UserStatsStored_t *pCallback)
 {
@@ -947,7 +922,7 @@ void SteamBridge::OnItemOwnedQueried(SteamUGCQueryCompleted_t* pCallback, bool b
 {
     if (!bIOFailure && pCallback->m_eResult == k_EResultOK)
     {
-        for (int i = 0; i < pCallback->m_unNumResultsReturned; i++)
+        for (uint32 i = 0; i < pCallback->m_unNumResultsReturned; i++)
         {
             SteamUGCDetails_t item_details;
 
@@ -1008,7 +983,7 @@ void SteamBridge::OnItemModQueried(SteamUGCQueryCompleted_t* pCallback, bool bIO
 {
     if (!bIOFailure && pCallback->m_eResult == k_EResultOK)
     {
-        for (int i = 0; i < pCallback->m_unNumResultsReturned; i++)
+        for (uint32 i = 0; i < pCallback->m_unNumResultsReturned; i++)
         {
             SteamUGCDetails_t item_details;
 
@@ -1073,7 +1048,7 @@ void SteamBridge::OnItemScenarioQueried(SteamUGCQueryCompleted_t* pCallback, boo
 {
     if (!bIOFailure && pCallback->m_eResult == k_EResultOK)
     {
-        for (int i = 0; i < pCallback->m_unNumResultsReturned; i++)
+        for (uint32 i = 0; i < pCallback->m_unNumResultsReturned; i++)
         {
             SteamUGCDetails_t item_details;
 
@@ -1125,7 +1100,6 @@ static bool processCommand(const uint8 *buf, unsigned int buflen, PipeType fd)
     #define PRINTGOTCMD(x) else if (cmd == x) printf("Parent got " #x ".\n")
     PRINTGOTCMD(SHIMCMD_BYE);
     PRINTGOTCMD(SHIMCMD_PUMP);
-    PRINTGOTCMD(SHIMCMD_REQUESTSTATS);
     PRINTGOTCMD(SHIMCMD_STORESTATS);
     PRINTGOTCMD(SHIMCMD_SETACHIEVEMENT);
     PRINTGOTCMD(SHIMCMD_GETACHIEVEMENT);
@@ -1152,12 +1126,6 @@ static bool processCommand(const uint8 *buf, unsigned int buflen, PipeType fd)
         case SHIMCMD_BYE:
             writeBye(fd);
             return false;
-
-        case SHIMCMD_REQUESTSTATS:
-            if ((!GSteamStats) || (!GSteamStats->RequestCurrentStats()))
-                writeStatsReceived(fd, false);
-            // callback later.
-            break;
 
         case SHIMCMD_STORESTATS:
             if ((!GSteamStats) || (!GSteamStats->StoreStats()))

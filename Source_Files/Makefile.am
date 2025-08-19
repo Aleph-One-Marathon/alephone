@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in 
 
-SUBDIRS = CSeries Files FFmpeg GameWorld Input Lua Misc	\
+SUBDIRS = CSeries Files Videos GameWorld Input Lua Misc	\
    ModelView Network RenderMain RenderOther Sound TCPMess XML
 
 if STANDALONE_HUB
@@ -10,6 +10,9 @@ if MAKE_WINDOWS
 bin_PROGRAMS = AlephOne Marathon Marathon2 MarathonInfinity
 else
 bin_PROGRAMS = alephone
+if BUILD_ALEPHONE_TESTS
+bin_PROGRAMS += alephone_tests
+endif
 endif
 endif
 
@@ -18,13 +21,13 @@ alephone_SOURCES = shell.h \
   shell.cpp shell_misc.cpp shell_options.h shell_options.cpp main.cpp
 
 alephone_LDADD = \
-  CSeries/libcseries.a Files/libfiles.a FFmpeg/libffmpeg.a \
+  CSeries/libcseries.a Files/libfiles.a Videos/libvideos.a \
   GameWorld/libgameworld.a Input/libinput.a Lua/liba1lua.a Misc/libmisc.a \
   ModelView/libmodelview.a Network/libnetwork.a Network/Metaserver/libmetaserver.a \
   RenderMain/librendermain.a RenderOther/librenderother.a Sound/libsound.a \
   XML/libxml.a \
   \
-  CSeries/libcseries.a Files/libfiles.a FFmpeg/libffmpeg.a \
+  CSeries/libcseries.a Files/libfiles.a Videos/libvideos.a \
   GameWorld/libgameworld.a Input/libinput.a Lua/liba1lua.a Misc/libmisc.a \
   ModelView/libmodelview.a Network/libnetwork.a Network/Metaserver/libmetaserver.a \
   RenderMain/librendermain.a RenderOther/librenderother.a Sound/libsound.a \
@@ -34,12 +37,15 @@ standalone_hub_SOURCES = shell.h shell.cpp shell_misc.cpp shell_options.h shell_
 
 standalone_hub_LDADD = $(alephone_LDADD) Network/StandaloneHub/libstandalonehub.a
 
+alephone_tests_SOURCES = shell.h shell.cpp shell_misc.cpp shell_options.h shell_options.cpp $(top_srcdir)/tests/replay_film_test.cpp $(top_srcdir)/tests/main.cpp
+alephone_tests_LDADD = $(alephone_LDADD)
+
 AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \
   -I$(top_srcdir)/Source_Files/Lua -I$(top_srcdir)/Source_Files/Misc \
   -I$(top_srcdir)/Source_Files/ModelView -I$(top_srcdir)/Source_Files/Network \
   -I$(top_srcdir)/Source_Files/Network/Metaserver \
-  -I$(top_srcdir)/Source_Files/FFmpeg -I$(top_srcdir)/Source_Files/RenderMain \
+  -I$(top_srcdir)/Source_Files/Videos -I$(top_srcdir)/Source_Files/RenderMain \
   -I$(top_srcdir)/Source_Files/RenderOther -I$(top_srcdir)/Source_Files/Sound \
   -I$(top_srcdir)/Source_Files/XML -I$(top_srcdir)/Source_Files/TCPMess
 

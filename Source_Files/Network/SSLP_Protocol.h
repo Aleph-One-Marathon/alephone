@@ -23,10 +23,6 @@
  *	Someone smart has surely done this better somewhere and has probably proven various characteristics,
  *	but I decided to hack out my own anyway.  Tough.
  *
- *	The current implementation (and a small amount of the interface) relies on the SDL_net cross-platform
- *	IP networking library.  The current implementation (and no part of the interface) relies on my own
- *	"SDL_netx" UDP broadcast companion to SDL_net, as well as some other features of SDL.
- *
  *	for the Aleph One project, to do NBP-ish player location on non-AppleTalk networks.  The current
  *	implementation is a (significant) simplification of what this could or perhaps ought to be, but
  *	it's sufficient for Aleph One's needs, which is all that matters right now.  Besides, like I said,
@@ -40,8 +36,6 @@
 
 #ifndef SSLP_PROTOCOL_H
 #define	SSLP_PROTOCOL_H
-
-#include	<SDL2/SDL_net.h>
 
 
 #ifndef SSLP_PORT
@@ -113,13 +107,13 @@
 #endif
 
 struct SSLP_Packet {
-    Uint32	sslpp_magic;		// should always be SSLPP_MAGIC
-    Uint32	sslpp_version;		// set to SSLPP_VERSION, for catching version mismatch
-    Uint32	sslpp_message;		// set to SSLPP_MESSAGE_*
-    Uint16	sslpp_service_port;	// only valid in HAVE messages, states on which port the service can be contacted.
-    Uint16	sslpp_reserved;		// should always be 0
-    char	sslpp_service_type[SSLP_MAX_TYPE_LENGTH];	// type desired, for FIND; type provided or no longer provided on HAVE or LOST
-    char	sslpp_service_name[SSLP_MAX_NAME_LENGTH];	// name of the service instance.  meaningless in FIND.
+    uint32_t sslpp_magic;		// should always be SSLPP_MAGIC
+    uint32_t sslpp_version;		// set to SSLPP_VERSION, for catching version mismatch
+    uint32_t sslpp_message;		// set to SSLPP_MESSAGE_*
+    uint16_t sslpp_service_port;	// only valid in HAVE messages, states on which port the service can be contacted.
+    uint16_t sslpp_reserved;		// should always be 0
+    char sslpp_service_type[SSLP_MAX_TYPE_LENGTH];	// type desired, for FIND; type provided or no longer provided on HAVE or LOST
+    char sslpp_service_name[SSLP_MAX_NAME_LENGTH];	// name of the service instance.  meaningless in FIND.
 };
 
 // The packed size and packed-packet type

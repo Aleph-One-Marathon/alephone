@@ -23,10 +23,6 @@
  *	Someone smart has surely done this better somewhere and has probably proven various characteristics,
  *	but I decided to hack out my own anyway.  Tough.
  *
- *	The current implementation (and a small amount of the interface) relies on the SDL_net cross-platform
- *	IP networking library.  The current implementation (and no part of the interface) relies on my own
- *	"SDL_netx" UDP broadcast companion to SDL_net, as well as some other features of SDL.
- *
  *	for the Aleph One project, to do NBP-ish player location on non-AppleTalk networks.  The current
  *	implementation is a (significant) simplification of what this could or perhaps ought to be, but
  *	it's sufficient for Aleph One's needs, which is all that matters right now.  Besides, like I said,
@@ -38,7 +34,7 @@
 #ifndef SSLP_API_H
 #define	SSLP_API_H
 
-#include	<SDL2/SDL_net.h>
+#include "NetworkInterface.h"
 
 // SSLP does not "guarantee" anything about its findings - it's intended merely as an aid.  This means (in particular)
 // a host that found a service via SSLP cannot assume that the service definitely exists at the host and port provided...
@@ -130,23 +126,6 @@ SSLP_Stop_Locating_Service_Instances(const char* inServiceType);
 // may abort the entire application!
 void
 SSLP_Allow_Service_Discovery(const SSLP_ServiceInstance* inServiceInstance);
-
-
-
-// SSLP_Hint_Service_Discovery: start periodically announcing the presence of a service-instance to a named machine and port.
-// (this is useful if you need a way to connect machines in different broadcast domains, which ordinarily would not see
-// each other by SSLP.)
-// If remoteHost->port is 0, the default SSLP_PORT will be used.  This is almost certainly what you want.
-// Make sure the data in inRemoteHost are in network (big-endian) byte order!
-// If Allow_Service_Discovery was not already called for this service-instance, it's called by this function.
-// The data you provide are copied, so you may do whatever you like with your own storage afterwards.
-// NB!! in the current (limited) implementation, a call to this function with a service-instance that differs
-// from the one provided to Allow_Service_Discovery is an ERROR and may lead to odd results.
-// (calling this without having called Allow_Service_Discovery is ok, and makes the other call for you.) 
-// Calling this with a different serviceInstance or remote address will change the hinting behavior to reflect
-// your wishes.
-void
-SSLP_Hint_Service_Discovery(const SSLP_ServiceInstance* inServiceInstance, const IPaddress* inRemoteHost);
 
 
 

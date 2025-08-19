@@ -117,9 +117,6 @@ bool using_default_gamma = true;
 static bool PrevFullscreen = false;
 static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable size) display
 
-static int desktop_width;
-static int desktop_height;
-
 static int failed_multisamples = 0;		// remember when GL multisample setting didn't succeed
 static bool passed_shader = false;      // remember when we passed Shader tests
 
@@ -601,8 +598,7 @@ static void reallocate_world_pixels(int width, int height)
 		SDL_FreeSurface(world_pixels_corrected);
 		world_pixels_corrected = NULL;
 	}
-	SDL_PixelFormat *f = main_surface->format;
-//	world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, f->BitsPerPixel, f->Rmask, f->Gmask, f->Bmask, f->Amask);
+
 	switch (bit_depth)
 	{
 	case 8:
@@ -2382,6 +2378,10 @@ void MainScreenCenterMouse()
 SDL_Surface *MainScreenSurface()
 {
 	return main_surface;
+}
+SDL_Window* MainScreenWindow()
+{
+	return main_screen;
 }
 void MainScreenUpdateRect(int x, int y, int w, int h)
 {

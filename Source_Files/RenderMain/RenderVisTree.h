@@ -190,10 +190,6 @@ class RenderVisTreeClass
 	
 	short calculate_endpoint_clipping_information(short endpoint_index, uint16 clip_flags);
 	
-	void ResetEndpointClips(void);
-	
-	void ResetLineClips();
-	
 public:
 
 	/* gives screen x-coordinates for a map endpoint (only valid if _endpoint_is_visible) */

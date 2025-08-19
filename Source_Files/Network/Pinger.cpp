@@ -23,7 +23,7 @@
 #include "network_star.h"
 #include "crc.h"
 #include "mytm.h"
-#include <AStream.h>
+#include "AStream.h"
 
 uint16_t Pinger::_ping_identifier_counter = 0;
 
@@ -44,29 +44,28 @@ void Pinger::Ping(uint8_t number_of_tries, bool unpinged_addresses_only)
 		address.ping_sent_tick = 0;
 		address.pong_received_tick = 0;
 
-		auto ping_packet = NetDDPNewFrame();
-
 		try
 		{
-			AOStreamBE hdr(ping_packet->data, kStarPacketHeaderSize);
-			AOStreamBE ops(ping_packet->data, ddpMaxData, kStarPacketHeaderSize);
+			UDPpacket ping_packet;
+			AOStreamBE hdr(ping_packet.buffer.data(), kStarPacketHeaderSize);
+			AOStreamBE ops(ping_packet.buffer.data(), ddpMaxData, kStarPacketHeaderSize);
 
 			hdr << (uint16_t)kPingRequestPacket;
 			ops << identifier;
 
-			ping_packet->data[2] = 0;
-			ping_packet->data[3] = 0;
+			ping_packet.buffer[2] = 0;
+			ping_packet.buffer[3] = 0;
 
-			auto crc = calculate_data_crc_ccitt(ping_packet->data, ops.tellp());
+			auto crc = calculate_data_crc_ccitt(ping_packet.buffer.data(), ops.tellp());
 			hdr << crc;
 
-			ping_packet->data_size = ops.tellp();
+			ping_packet.data_size = ops.tellp();
 
 			if (take_mytm_mutex())
 			{
 				for (int i = 0; i < number_of_tries; i++)
 				{
-					if (NetDDPSendFrame(ping_packet, &address.ipv4, kPROTOCOL_TYPE, 0) == 0 && !address.ping_sent_tick)
+					if (NetDDPSendFrame(ping_packet, address.ipv4) && !address.ping_sent_tick)
 					{
 						address.ping_sent_tick = machine_tick_count();
 					}
@@ -77,8 +76,6 @@ void Pinger::Ping(uint8_t number_of_tries, bool unpinged_addresses_only)
 
 		}
 		catch (...) {}
-
-		NetDDPDisposeFrame(ping_packet);
 	}
 }
 
@@ -123,11 +120,11 @@ std::unordered_map<uint16_t, uint16_t> Pinger::GetResponseTime(uint16_t timeout_
 	return results;
 }
 
-void Pinger::StoreResponse(uint16_t identifier)
+void Pinger::StoreResponse(uint16_t identifier, const IPaddress& address)
 {
 	auto ping_request = _registered_ipv4s.find(identifier);
 
-	if (ping_request != _registered_ipv4s.end() && !ping_request->second.pong_received_tick)
+	if (ping_request != _registered_ipv4s.end() && ping_request->second.ipv4 == address && !ping_request->second.pong_received_tick)
 	{
 		ping_request->second.pong_received_tick = machine_tick_count();
 	}

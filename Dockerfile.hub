@@ -5,7 +5,7 @@ WORKDIR /alephone-hub
 COPY . /alephone-hub
 
 RUN apk add --no-cache alpine-sdk automake autoconf-archive \
-           boost-dev sdl2-dev sdl2_net-dev sdl2_ttf-dev \
+           boost-dev sdl2-dev asio-dev sdl2_ttf-dev \
            openal-soft-dev libsndfile-dev \
          && autoreconf -i \
          && ./configure --enable-standalone-hub --disable-opengl \
@@ -16,7 +16,7 @@ FROM alpine:latest
 
 RUN apk add --no-cache \
            boost-filesystem sdl2 \
-           sdl2_net sdl2_ttf \
+           asio sdl2_ttf \
            openal-soft libsndfile
 
 COPY --from=0 /usr/local/bin/standalone_hub .

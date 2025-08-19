@@ -1,7 +1,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = Source_Files tools data
+SUBDIRS = Source_Files Steam tools data
 
 # Requires automake 1.5
 AUTOMAKE_OPTIONS = 1.5 foreign dist-bzip2 no-dist-gzip
@@ -38,7 +38,9 @@ EXTRA_DIST = docs/MML.html docs/Lua.html docs/Lua_HUD.html		\
   flatpak/org.bungie.source.MarathonInfinity.yml							  \
   flatpak/org.bungie.source.Marathon.yml flatpak/run-nodata.sh flatpak/run.sh \
   flatpak/shared/alephone.yml flatpak/shared/boost.yml flatpak/shared/glu.yml \
-  flatpak/shared/miniupnpc.yml flatpak/shared/zzip.yml
+  flatpak/shared/miniupnpc.yml flatpak/shared/zzip.yml						  \
+  flatpak/shared/asio.yml flatpak/shared/ebml.yml flatpak/shared/matroska.yml \
+  flatpak/shared/libyuv.yml
 
 man_MANS = docs/alephone.6
 

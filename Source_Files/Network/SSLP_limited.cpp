@@ -23,7 +23,6 @@
 
  *  This version does things the easy way, which should support current Aleph One needs, but which means
  *	there are several limitations.
- *  This version is built on top of SDL_net and my so-called "SDL_netx", broadcast extensions to SDL_net.
  *  This version is designed to receive processing time from the application's main thread by the
  *      main thread calling SSLP_Pump().  This way, there are no threading issues to worry about.  Of
  *      course, proper operation depends on receiving the processor from time to time while a lookup or
@@ -44,17 +43,16 @@
 #include	<string.h>
 #include	<stdlib.h>
 
-// We depend on SDL, SDL_net, and SDL_netx (my broadcast stuff that works with SDL_net)
+// We depend on SDL
 #include	<SDL2/SDL.h>
 #include	<SDL2/SDL_thread.h>
 #include	<SDL2/SDL_endian.h>
 #include	"SSLP_API.h"
 #include	"SSLP_Protocol.h"
-#include	"SDL_netx.h"
 
 // We use the A1 logging facilities
 #include	"Logging.h"
-
+#include	"network.h"
 #include	"csmisc.h"
 
 // FILE-LOCAL CONSTANTS
@@ -62,18 +60,15 @@
 #define	SSLPINT_NONE		0x00
 #define	SSLPINT_LOCATING	0x01
 #define	SSLPINT_RESPONDING	0x02
-#define	SSLPINT_HINTING		0x04
 
 // found service instances expire after not hearing from them for this many milliseconds
 #define SSLPINT_INSTANCE_TIMEOUT 20000
 
 
-
-
 // FILE-LOCAL TYPES
 struct SSLPint_FoundInstance {
     struct SSLP_ServiceInstance*	mInstance;
-    Uint32				mTimestamp;
+    uint64_t				mTimestamp;
     struct SSLPint_FoundInstance*	mNext;
 };
 
@@ -83,28 +78,24 @@ struct SSLPint_FoundInstance {
 // FILE-LOCAL (STATIC) STORAGE
 ////////// used all around
 static int						sBehaviorsDesired = 0;
-static UDPsocket					sSocketDescriptor;
-
+static std::unique_ptr<UDPsocket> sSocketDescriptor;
 
 ////////// used by packet receiver
-static UDPpacket*					sReceivingPacket = NULL;
+static UDPpacket sReceivingPacket;
 
 
 ////////// for discovering services
-static UDPpacket*					sFindPacket = NULL;		// sFindPacket->data does not change
+static UDPpacket sFindPacket;		// sFindPacket->data does not change
 static SSLP_Service_Instance_Status_Changed_Callback	sFoundCallback = NULL;
 static SSLP_Service_Instance_Status_Changed_Callback	sLostCallback = NULL;
 static SSLP_Service_Instance_Status_Changed_Callback	sNameChangedCallback = NULL;
 static struct 	SSLPint_FoundInstance*			sFoundInstances = NULL;
 
 
-////////// for services that may be discovered
-static UDPpacket*					sHintPacket = NULL;		// sHintPacket->data does not change
-
 // NB: currently, incoming FIND packets' service_types are compared against
 // the service_type in this packet to see if a response is warranted.
 // (the service_type in this packet is copied from the instance passed in to Allow_Service_Discovery().)
-static UDPpacket*					sResponsePacket = NULL;	// sResponsePacket->data does not change
+static UDPpacket sResponsePacket;	// sResponsePacket->data does not change
 
 
 // Packing and unpacking:
@@ -148,27 +139,25 @@ template<class T> void PacketCopyOutList(unsigned char* &Ptr, T *List, int Count
 // the ServiceInstance it passed us (but NOT any we return - that one's ours :) )
 static struct SSLP_ServiceInstance*
 SSLPint_FoundAnInstance(struct SSLP_ServiceInstance* inInstance) {
-    logTrace("Found an instance!  %s, %s, %x:%d", inInstance->sslps_type, inInstance->sslps_name,
-            SDL_SwapBE32(inInstance->sslps_address.host), SDL_SwapBE16(inInstance->sslps_address.port));
+    logTrace("Found an instance!  %s, %s, %s:%d", inInstance->sslps_type, inInstance->sslps_name,
+            inInstance->sslps_address.address().c_str(), inInstance->sslps_address.port());
     // this should (but doesn't) force string termination to appropriate lengths for type and name.
     
     struct SSLPint_FoundInstance*	theCurrentFoundInstance = sFoundInstances;
     
     while(theCurrentFoundInstance != NULL) {
-        if(inInstance->sslps_address.host == theCurrentFoundInstance->mInstance->sslps_address.host) {
-            if(inInstance->sslps_address.port == theCurrentFoundInstance->mInstance->sslps_address.port) {
-                // Found a match (would have to check service_type if we handled multiple types, but ok here)
-                if(strncmp(theCurrentFoundInstance->mInstance->sslps_name, inInstance->sslps_name, SSLP_MAX_NAME_LENGTH) != 0) {
-                    // name changed - copy new name and notify
-                    strncpy(theCurrentFoundInstance->mInstance->sslps_name, inInstance->sslps_name, SSLP_MAX_NAME_LENGTH);
-                    if(sNameChangedCallback != NULL)
-                        sNameChangedCallback(theCurrentFoundInstance->mInstance);
-                }
-                
-                // found a match - update timestamp and break the loop
-                theCurrentFoundInstance->mTimestamp = machine_tick_count();
-                break;
+        if(inInstance->sslps_address == theCurrentFoundInstance->mInstance->sslps_address) {
+            // Found a match (would have to check service_type if we handled multiple types, but ok here)
+            if(strncmp(theCurrentFoundInstance->mInstance->sslps_name, inInstance->sslps_name, SSLP_MAX_NAME_LENGTH) != 0) {
+                // name changed - copy new name and notify
+                strncpy(theCurrentFoundInstance->mInstance->sslps_name, inInstance->sslps_name, SSLP_MAX_NAME_LENGTH);
+                if(sNameChangedCallback != NULL)
+                    sNameChangedCallback(theCurrentFoundInstance->mInstance);
             }
+                
+            // found a match - update timestamp and break the loop
+            theCurrentFoundInstance->mTimestamp = machine_tick_count();
+            break;
         }
         theCurrentFoundInstance = theCurrentFoundInstance->mNext;
     }
@@ -199,7 +188,7 @@ SSLPint_RemoveTimedOutInstances() {
     struct SSLPint_FoundInstance* theCurrentInstance = sFoundInstances;
     struct SSLPint_FoundInstance* thePreviousInstance = NULL;
     
-    Uint32 theCurrentTickCount = machine_tick_count();
+    uint64_t theCurrentTickCount = machine_tick_count();
     
     while(theCurrentInstance != NULL) {
         if(theCurrentTickCount - theCurrentInstance->mTimestamp > SSLPINT_INSTANCE_TIMEOUT) {
@@ -236,8 +225,8 @@ SSLPint_RemoveTimedOutInstances() {
 // they passed us.
 static struct SSLP_ServiceInstance*
 SSLPint_LostAnInstance(struct SSLP_ServiceInstance* inInstance) {
-    logTrace("Lost an instance...  %s, %s, %x:%d\n", inInstance->sslps_type, inInstance->sslps_name,
-            SDL_SwapBE32(inInstance->sslps_address.host), SDL_SwapBE16(inInstance->sslps_address.port));
+    logTrace("Lost an instance...  %s, %s, %s:%d\n", inInstance->sslps_type, inInstance->sslps_name,
+            inInstance->sslps_address.address().c_str(), inInstance->sslps_address.port());
     // this should (but doesn't) force string termination to appropriate lengths for type and name.
 
     struct SSLPint_FoundInstance* 	theCurrentInstance = sFoundInstances;
@@ -246,21 +235,19 @@ SSLPint_LostAnInstance(struct SSLP_ServiceInstance* inInstance) {
     struct SSLP_ServiceInstance*	theDoomedInstance = NULL;
     
     while(theCurrentInstance != NULL) {
-        if(theCurrentInstance->mInstance->sslps_address.host == inInstance->sslps_address.host) {
-            if(theCurrentInstance->mInstance->sslps_address.port == inInstance->sslps_address.port) {
-                theDoomedInstance = theCurrentInstance->mInstance;
+        if(theCurrentInstance->mInstance->sslps_address == inInstance->sslps_address) {
+            theDoomedInstance = theCurrentInstance->mInstance;
                 
-                theCurrentInstance->mInstance = NULL;
+            theCurrentInstance->mInstance = NULL;
 
-                if(thePreviousInstance != NULL)
-                    thePreviousInstance->mNext = theCurrentInstance->mNext;
-                else
-                    sFoundInstances = theCurrentInstance->mNext;
+            if(thePreviousInstance != NULL)
+                thePreviousInstance->mNext = theCurrentInstance->mNext;
+            else
+                sFoundInstances = theCurrentInstance->mNext;
             
-                free(theCurrentInstance);
+            free(theCurrentInstance);
 
-                return	theDoomedInstance;
-            }
+            return	theDoomedInstance;
         }
         
         thePreviousInstance = theCurrentInstance;
@@ -294,20 +281,15 @@ SSLPint_FlushAllFoundInstances() {
 static void
 SSLPint_ReceivedPacket() {
     logContext("processing a received SSLP packet");
-
-    if(sReceivingPacket == NULL) {
-        logAnomaly("sReceivingPacket is NULL");
-        return;
-    }
     
-    if(sReceivingPacket->len != SIZEOF_SSLP_Packet) {
-        logNote("packet has wrong len (%d)", sReceivingPacket->len);
+    if(sReceivingPacket.data_size != SIZEOF_SSLP_Packet) {
+        logNote("packet has wrong len (%d)", sReceivingPacket.data_size);
         return;
     }
     
     struct SSLP_Packet UnpackedReceivedPacket;
     struct SSLP_Packet*	theReceivedPacket = &UnpackedReceivedPacket;
-    UnpackPacket(sReceivingPacket->data,theReceivedPacket);
+    UnpackPacket(sReceivingPacket.buffer.data(), theReceivedPacket);
     
     if(theReceivedPacket->sslpp_magic != SDL_SwapBE32(SSLPP_MAGIC)) {
         logNote("wrong magic (%x)", SDL_SwapBE32(theReceivedPacket->sslpp_magic));
@@ -328,7 +310,7 @@ SSLPint_ReceivedPacket() {
             if(sBehaviorsDesired & SSLPINT_RESPONDING) {
                     struct SSLP_Packet UnpackedResponsePacket;
                             struct SSLP_Packet*	theResponsePacket = &UnpackedResponsePacket;
-                    UnpackPacket(sResponsePacket->data,theResponsePacket);
+                    UnpackPacket(sResponsePacket.buffer.data(), theResponsePacket);
                 
                 // We have a service we want discovered...
                 if(strncmp(theReceivedPacket->sslpp_service_type,
@@ -337,11 +319,8 @@ SSLPint_ReceivedPacket() {
                     
                     // We have a service of the same type they are looking for.  Let's tell them about us.
                     // Fortunately, we have a packet all ready to go just for this very purpose!  ;)
-                    sResponsePacket->address.host = sReceivingPacket->address.host;
-                    sResponsePacket->address.port = sReceivingPacket->address.port;
-                    
-                    SDLNet_UDP_Send(sSocketDescriptor, -1, sResponsePacket);
-                    
+                    sResponsePacket.address = sReceivingPacket.address;
+                    sSocketDescriptor->send(sResponsePacket);                    
                     logTrace("tried to send response");
                 }
                 else
@@ -366,7 +345,7 @@ SSLPint_ReceivedPacket() {
                 
                     struct SSLP_Packet UnpackedFindPacket;
                             struct SSLP_Packet*	theFindPacket = &UnpackedFindPacket;
-                    UnpackPacket(sFindPacket->data,theFindPacket);
+                    UnpackPacket(sFindPacket.buffer.data(), theFindPacket);
                     
             if(strncmp(theReceivedPacket->sslpp_service_type, theFindPacket->sslpp_service_type,
                     SSLP_MAX_TYPE_LENGTH) == 0) {
@@ -375,8 +354,8 @@ SSLPint_ReceivedPacket() {
                     struct SSLP_ServiceInstance	theReceivedInstance;
                     strncpy(theReceivedInstance.sslps_type, theReceivedPacket->sslpp_service_type, SSLP_MAX_TYPE_LENGTH);
                     strncpy(theReceivedInstance.sslps_name, theReceivedPacket->sslpp_service_name, SSLP_MAX_NAME_LENGTH);
-                    theReceivedInstance.sslps_address.host = sReceivingPacket->address.host;
-                    theReceivedInstance.sslps_address.port = theReceivedPacket->sslpp_service_port;
+                    theReceivedInstance.sslps_address.set_address(sReceivingPacket.address.address());
+                    theReceivedInstance.sslps_address.set_port(theReceivedPacket->sslpp_service_port);
                     
                     // Report our findings to the "instance librarian".
                     struct SSLP_ServiceInstance* theReturnedInstance = SSLPint_FoundAnInstance(&theReceivedInstance);
@@ -413,7 +392,7 @@ SSLPint_ReceivedPacket() {
                 
                     struct SSLP_Packet UnpackedFindPacket;
                             struct SSLP_Packet*	theFindPacket = &UnpackedFindPacket;
-                    UnpackPacket(sFindPacket->data,theFindPacket);
+                    UnpackPacket(sFindPacket.buffer.data(), theFindPacket);
                     
             if(strncmp(theReceivedPacket->sslpp_service_type, theFindPacket->sslpp_service_type,
                     SSLP_MAX_TYPE_LENGTH) == 0) {
@@ -422,8 +401,8 @@ SSLPint_ReceivedPacket() {
                     struct SSLP_ServiceInstance	theReceivedInstance;
                     strncpy(theReceivedInstance.sslps_type, theReceivedPacket->sslpp_service_type, SSLP_MAX_TYPE_LENGTH);
                     strncpy(theReceivedInstance.sslps_name, theReceivedPacket->sslpp_service_name, SSLP_MAX_NAME_LENGTH);
-                    theReceivedInstance.sslps_address.host = sReceivingPacket->address.host;
-                    theReceivedInstance.sslps_address.port = theReceivedPacket->sslpp_service_port;
+                    theReceivedInstance.sslps_address.set_address(sReceivingPacket.address.address());
+                    theReceivedInstance.sslps_address.set_port(theReceivedPacket->sslpp_service_port);
                     
                     // Report our findings to the "instance librarian".
                     struct SSLP_ServiceInstance*	theReturnedInstance = SSLPint_LostAnInstance(&theReceivedInstance);
@@ -460,33 +439,13 @@ static bool
 SSLPint_Enter() {
     logContext("setting up SSLP");
 
-    // Set up shared socket (note SDL_net wants port number here in machine order, not network order)
-    // Actually, looking at the behavior of the rest of SDL_net, this looks like a BUG (in SDL_net) to me.  Nowhere
-    // else in the code does it swap between host/network order for you, so it seems inconsistent to do
-    // so in SDLNet_UDP_Open.
-    // If SDL_net is eventually fixed to take network byte order port, this will break - you'll have to
-    // change SSLP_PORT to SDL_SwapBE16(SSLP_PORT).
-    sSocketDescriptor = SDLNet_UDP_Open(SSLP_PORT);
+    sSocketDescriptor = NetGetNetworkInterface()->udp_open_socket(SSLP_PORT);
+    if (!sSocketDescriptor) return false;
 
-    if(!sSocketDescriptor) {
-        sSocketDescriptor = SDLNet_UDP_Open(0);
-
-        if(!sSocketDescriptor)
-            return sSocketDescriptor != NULL;
-    }
-    
-    // Set up broadcast on that socket
-    SDLNetx_EnableBroadcast(sSocketDescriptor);
+    if (!sSocketDescriptor->broadcast(true))
+        return false;
     
     // (note: if EnableBroadcast failed, it's not the end of the world... but it will be harder to locate services)
-    
-    // Allocate packet storage for incoming packets
-    sReceivingPacket = SDLNet_AllocPacket(SIZEOF_SSLP_Packet);
-    if(sReceivingPacket == NULL) {
-        SDLNet_UDP_Close(sSocketDescriptor);
-        return false;
-    }
-
     assert(sBehaviorsDesired == SSLPINT_NONE);
     
     // Success
@@ -500,17 +459,8 @@ SSLPint_Enter() {
 static int
 SSLPint_Exit() {
     logContext("shutting down SSLP");
-
     assert(sBehaviorsDesired == SSLPINT_NONE);
-    
-    // OK, everyone is done.  Clean up...
-    SDLNet_UDP_Close(sSocketDescriptor);
-
-    SDLNet_FreePacket(sReceivingPacket);
-
-    sSocketDescriptor	= NULL;
-    sReceivingPacket	= NULL;
-
+    sSocketDescriptor.reset();
     return 0;
 }
 
@@ -538,15 +488,12 @@ SSLP_Locate_Service_Instances(const char* inServiceType, SSLP_Service_Instance_S
     sLostCallback		= inLostCallback;
     sNameChangedCallback	= inNameChangedCallback;
 
-    sFindPacket = SDLNet_AllocPacket(SIZEOF_SSLP_Packet);
     SSLP_Packet UnpackedPacket;
     SSLP_Packet *theFindPacket = &UnpackedPacket;
     
     // set up the "FIND" packet
-    sFindPacket->len		= sizeof(struct SSLP_Packet);
-    sFindPacket->channel	= -1;				// channel is ignored
-    sFindPacket->address.host	= 0xffffffff;			// UDP_Broadcast ignores host-part anyway
-    sFindPacket->address.port	= SDL_SwapBE16(SSLP_PORT);
+    sFindPacket.address.set_port(SSLP_PORT);
+    sFindPacket.data_size = sizeof(struct SSLP_Packet);
 
     theFindPacket->sslpp_magic		= SDL_SwapBE32(SSLPP_MAGIC);
     theFindPacket->sslpp_version	= SDL_SwapBE32(SSLPP_VERSION);
@@ -564,7 +511,7 @@ SSLP_Locate_Service_Instances(const char* inServiceType, SSLP_Service_Instance_S
     sBehaviorsDesired		|= SSLPINT_LOCATING;
     
     // Load into the "real" packet
-    PackPacket(sFindPacket->data,theFindPacket);
+    PackPacket(sFindPacket.buffer.data(), theFindPacket);
 }
 
 
@@ -580,13 +527,9 @@ SSLP_Stop_Locating_Service_Instances(const char* inServiceType) {
     // Indicate we no longer want finding code to run
     sBehaviorsDesired &= ~SSLPINT_LOCATING;
 
-    // Clean up.
-    SDLNet_FreePacket(sFindPacket);
-
     sFoundCallback		= NULL;
     sLostCallback		= NULL;
     sNameChangedCallback	= NULL;
-    sFindPacket			= NULL;
 
     SSLPint_FlushAllFoundInstances();
 
@@ -603,90 +546,36 @@ SSLP_Allow_Service_Discovery(const struct SSLP_ServiceInstance* inServiceInstanc
 
     assert(inServiceInstance != NULL);
     
-    assert(!(sBehaviorsDesired & (SSLPINT_RESPONDING | SSLPINT_HINTING)));
+    assert(!(sBehaviorsDesired & SSLPINT_RESPONDING));
     
     if(sBehaviorsDesired == SSLPINT_NONE)
         if(!SSLPint_Enter())
             return;
-    
-    sResponsePacket = SDLNet_AllocPacket(SIZEOF_SSLP_Packet);
-    assert(sResponsePacket != NULL);
-    
+
     SSLP_Packet UnpackedPacket;
     SSLP_Packet* theResponsePacket = &UnpackedPacket;
     
     // set up the "HAVE" packet
-    sResponsePacket->len		= sizeof(struct SSLP_Packet);
-    sResponsePacket->channel		= -1;				// channel is ignored
-    sResponsePacket->address.host	= 0;				// Address will be overwritten before sending
-    sResponsePacket->address.port	= SDL_SwapBE16(SSLP_PORT);	// port is used for initial broadcast, though.
+    sResponsePacket.address.set_port(SSLP_PORT); // port is used for initial broadcast, though.
+    sResponsePacket.data_size = sizeof(struct SSLP_Packet);
 
     theResponsePacket->sslpp_magic		= SDL_SwapBE32(SSLPP_MAGIC);
     theResponsePacket->sslpp_version		= SDL_SwapBE32(SSLPP_VERSION);
     theResponsePacket->sslpp_message		= SDL_SwapBE32(SSLPP_MESSAGE_HAVE);
-    theResponsePacket->sslpp_service_port	= inServiceInstance->sslps_address.port;
+    theResponsePacket->sslpp_service_port	= inServiceInstance->sslps_address.port();
     theResponsePacket->sslpp_reserved		= 0;				// unused - set to 0
     // note: my strncpy states it fills remaining buffer with 0.  If yours doesn't, fill it yourself.
     strncpy(theResponsePacket->sslpp_service_type, inServiceInstance->sslps_type, SSLP_MAX_TYPE_LENGTH);
     strncpy(theResponsePacket->sslpp_service_name, inServiceInstance->sslps_name, SSLP_MAX_NAME_LENGTH);
 
     // Load into the "real" packet
-    PackPacket(sResponsePacket->data,theResponsePacket);
+    PackPacket(sResponsePacket.buffer.data(), theResponsePacket);
     
     // Broadcast the HAVE once to speed things up, maybe
-    SDLNetx_UDP_Broadcast(sSocketDescriptor, sResponsePacket);
+    sSocketDescriptor->broadcast_send(sResponsePacket);
     
     // Allow receiving code to respond to incoming FIND messages
     sBehaviorsDesired		|= SSLPINT_RESPONDING;
-}
-
-
-void
-SSLP_Hint_Service_Discovery(const struct SSLP_ServiceInstance* inServiceInstance, const IPaddress* inAddress) {
-    logContext("starting to hint SSLP service discovery");
-
-    // If we're not already allowing discovery, start doing it
-    if(!(sBehaviorsDesired & SSLPINT_RESPONDING))
-        SSLP_Allow_Service_Discovery(inServiceInstance);
-    
-    
-    // If we are not already hinting, get a packet to work with.
-    if(!(sBehaviorsDesired & SSLPINT_HINTING))
-        sHintPacket	= SDLNet_AllocPacket(SIZEOF_SSLP_Packet);
-
-    
-    // We hint the service passed to the address passed - if we are already responding with a service instance
-    // (thanks to Allow_Service_Discovery called separately) they may be different services!  This behavior should
-    // be considered odd (in the current one-service-instance implementation) and ought to be avoided.
-    
-    
-    assert(sHintPacket != NULL);
-    
-    // set up the "HAVE" packet
-    sHintPacket->len		= sizeof(struct SSLP_Packet);
-    sHintPacket->channel	= -1;				// channel is ignored
-    sHintPacket->address.host	= inAddress->host;
-    sHintPacket->address.port	= inAddress->port;
-    if(sHintPacket->address.port == 0)
-        sHintPacket->address.port = SDL_SwapBE16(SSLP_PORT);
-
-    SSLP_Packet UnpackedPacket;
-    SSLP_Packet *theHintPacket = &UnpackedPacket;
-    
-    theHintPacket->sslpp_magic		= SDL_SwapBE32(SSLPP_MAGIC);
-    theHintPacket->sslpp_version	= SDL_SwapBE32(SSLPP_VERSION);
-    theHintPacket->sslpp_message	= SDL_SwapBE32(SSLPP_MESSAGE_HAVE);
-    theHintPacket->sslpp_service_port	= inServiceInstance->sslps_address.port;
-    theHintPacket->sslpp_reserved	= 0;				// unused - set to 0
-    // note: my strncpy states it fills remaining buffer with 0.  If yours doesn't, fill it yourself.
-    strncpy(theHintPacket->sslpp_service_type, inServiceInstance->sslps_type, SSLP_MAX_TYPE_LENGTH);
-    strncpy(theHintPacket->sslpp_service_name, inServiceInstance->sslps_name, SSLP_MAX_NAME_LENGTH);
-    
-    // Start up the hinting behavior, in case we weren't already.
-    sBehaviorsDesired	|= SSLPINT_HINTING;
-    
-    // Load into the "real" packet
-    PackPacket(sHintPacket->data,theHintPacket);
 }
 
 
@@ -700,45 +589,19 @@ SSLP_Disallow_Service_Discovery(const struct SSLP_ServiceInstance* inInstance) {
 
     assert(sBehaviorsDesired & SSLPINT_RESPONDING);
 
-
-    // If we're hinting, cut it out
-    if(sBehaviorsDesired & SSLPINT_HINTING) {
-        // Unicast a LOST packet, as a courtesy
-            
-		struct SSLP_Packet UnpackedHintPacket;
-		struct SSLP_Packet*	theHintPacket = &UnpackedHintPacket;
-    	UnpackPacket(sHintPacket->data,theHintPacket);
-    		
-        theHintPacket->sslpp_message = SDL_SwapBE32(SSLPP_MESSAGE_LOST);
-   		PackPacket(sHintPacket->data,theHintPacket);
-        SDLNet_UDP_Send(sSocketDescriptor, -1, sHintPacket);
-        
-        // Clean up the hinting packet
-        SDLNet_FreePacket(sHintPacket);
-        sHintPacket		= NULL;
-        
-        // No longer hinting
-        sBehaviorsDesired &= ~SSLPINT_HINTING;
-    }
-
-
     // Indicate we no longer want to allow discovery
     sBehaviorsDesired &= ~SSLPINT_RESPONDING;
 
     // Broadcast a LOST packet, as a courtesy
-            
 	struct SSLP_Packet UnpackedResponsePacket;
 	struct SSLP_Packet*	theResponsePacket = &UnpackedResponsePacket;
-    UnpackPacket(sResponsePacket->data,theResponsePacket);
+    UnpackPacket(sResponsePacket.buffer.data(), theResponsePacket);
     		
     theResponsePacket->sslpp_message = SDL_SwapBE32(SSLPP_MESSAGE_LOST);
-    PackPacket(sResponsePacket->data,theResponsePacket);
-    sResponsePacket->address.port = SDL_SwapBE16(SSLP_PORT);
-    SDLNetx_UDP_Broadcast(sSocketDescriptor, sResponsePacket);
-    
-    // Clean up response packet
-    SDLNet_FreePacket(sResponsePacket);
-    sResponsePacket 		= NULL;
+    PackPacket(sResponsePacket.buffer.data(), theResponsePacket);
+    sResponsePacket.address.set_port(SSLP_PORT);
+
+    sSocketDescriptor->broadcast_send(sResponsePacket);
 
     // If all SSLP services are done, clean up more...
     if(sBehaviorsDesired == SSLPINT_NONE)
@@ -756,24 +619,18 @@ SSLP_Pump() {
         
     logContext("pumping SSLP protocol activity");
     
-    static Uint32	theTimeLastWorked = 0;
+    static uint64_t	theTimeLastWorked = 0;
     
-    Uint32		theCurrentTime = machine_tick_count();
+    uint64_t		theCurrentTime = machine_tick_count();
     
-    if(sBehaviorsDesired & (SSLPINT_LOCATING | SSLPINT_HINTING)) {
+    if(sBehaviorsDesired & SSLPINT_LOCATING) {
 
         // Do some work only once every five seconds
         if(theCurrentTime - theTimeLastWorked >= 5000) {
 
             // Do broadcasting work
-            if(sBehaviorsDesired & SSLPINT_LOCATING) {
-                SDLNetx_UDP_Broadcast(sSocketDescriptor, sFindPacket);
-                SSLPint_RemoveTimedOutInstances();
-            }
-            
-            // Do hinting work
-            if(sBehaviorsDesired & SSLPINT_HINTING)
-                SDLNet_UDP_Send(sSocketDescriptor, -1, sHintPacket);
+            sSocketDescriptor->broadcast_send(sFindPacket);
+            SSLPint_RemoveTimedOutInstances();
 
             theTimeLastWorked = theCurrentTime;
         }
@@ -781,13 +638,8 @@ SSLP_Pump() {
     
     // Do receiving work every time
     if(sBehaviorsDesired & (SSLPINT_LOCATING | SSLPINT_RESPONDING)) {
-        int theResult;
-
-        theResult = SDLNet_UDP_Recv(sSocketDescriptor, sReceivingPacket);
-        
-        while(theResult > 0) {
+        while (sSocketDescriptor->check_receive() > 0 && sSocketDescriptor->receive(sReceivingPacket) > 0) {
             SSLPint_ReceivedPacket();
-            theResult = SDLNet_UDP_Recv(sSocketDescriptor, sReceivingPacket);
         }
     }
 }

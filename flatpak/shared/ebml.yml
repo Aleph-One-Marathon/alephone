@@ -1,0 +1,10 @@
+name: ebml
+buildsystem: cmake-ninja
+config-opts:
+  - -DCMAKE_BUILD_TYPE=Release
+  - -DBUILD_SHARED_LIBS=ON
+sources:
+  - type: archive
+    url: https://dl.matroska.org/downloads/libebml/libebml-1.4.5.tar.xz
+    sha256: 4971640b0592da29c2d426f303e137a9b0b3d07e1b81d069c1e56a2f49ab221b
+cleanup: [/include, /lib/cmake, /lib/pkgconfig]

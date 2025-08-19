@@ -121,8 +121,6 @@ public: // for now
 	int32 group_offset, single_length, total_length; // magic numbers necessary to load sounds
 	std::vector<int32> sound_offsets; // zero-based from group offset
 
-	uint32 last_played; // machine ticks
-
 	std::vector<SoundHeader> sounds;
 };
 

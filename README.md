@@ -70,10 +70,10 @@ Linux/FreeBSD/other builds are built using autoconf. If you downloaded a source 
 
 Aleph One requires a C++17 compiler and the following libraries:
 
++ `ASIO`
 + `Boost`
 + `SDL2`
 + `SDL2_image`
-+ `SDL2_net`
 + `SDL2_ttf`
 + `zlib`
 + `libsndfile`
@@ -82,10 +82,13 @@ Aleph One requires a C++17 compiler and the following libraries:
 These libraries are recommended for full features and third-party scenario compatibility:
 
 + `curl` _for stats upload to lhowon.org_
-+ `ffmpeg` _for music playback and film video export_
 + `miniupnpc` _for opening router ports_
 + `zziplib` _for using zipped plugins_
-+ `GLM` _for using accelerated graphics
++ `vpx` _for film export_
++ `matroska` _for film export_
++ `ebml` _for film export_
++ `vorbis` _for film export_
++ `libyuv` _for film export and video playback_
 
 #### Fedora
 
@@ -93,20 +96,19 @@ First, enable the [RPM Fusion Repository](http://rpmfusion.org/Configuration).
 
 Then, install the following packages.
 
-    sudo dnf install boost-devel curl-devel ffmpeg-devel gcc-c++ \
-      libpng-devel SDL2-devel SDL2_ttf-devel SDL2_image-devel SDL2_net-devel \
+    sudo dnf install boost-devel curl-devel gcc-c++ \
+      libpng-devel SDL2-devel SDL2_ttf-devel SDL2_image-devel asio-devel \
       zziplib-devel miniupnpc-devel openal-soft-devel libsndfile-devel
-
-If you don't compile with FFmpeg support, you won't be able to use WebM export in Aleph One.
 
 #### Ubuntu
 
 Run this command to install the necessary prerequisites for building Aleph One:
 
     sudo apt install build-essential libboost-all-dev libsdl2-dev \
-      libsdl2-image-dev libsdl2-net-dev libsdl2-ttf-dev \
-      libzzip-dev libavcodec-dev libavformat-dev libavutil-dev libswscale-dev \
-      libpng-dev libcurl4-gnutls-dev libminiupnpc-dev libopenal-dev libsndfile1-dev libglm-dev
+      libsdl2-image-dev libasio-dev libsdl2-ttf-dev libzzip-dev \
+      libpng-dev libcurl4-gnutls-dev libminiupnpc-dev libopenal-dev \
+      libsndfile1-dev libglu1-dev libvpx-dev libmatroska-dev libebml-dev \
+      libvorbis-dev libvorbisenc2 libyuv-dev
 
 ### Compile
 

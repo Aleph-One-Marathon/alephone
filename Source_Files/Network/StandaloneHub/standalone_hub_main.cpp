@@ -16,7 +16,6 @@
 	http://www.gnu.org/licenses/gpl.html
 */
 
-#include <SDL2/SDL_net.h>
 #include "Logging.h"
 #include "DefaultStringSets.h"
 #include "preferences.h"
@@ -42,35 +41,19 @@ static void initialize_hub(short port)
 {
 	InitDefaultStringSets();
 	log_dir = get_data_path(kPathLogs);
+	log_dir.MakeDirectory();
 	network_preferences = new network_preferences_data;
 	network_preferences->game_port = port;
 	network_preferences->game_protocol = _network_game_protocol_star;
 	DefaultHubPreferences();
-
-	if (SDLNet_Init() < 0)
-	{
-		std::ostringstream oss;
-		oss << "Couldn't initialize SDL_net (" << SDLNet_GetError() << ")";
-		throw std::runtime_error(oss.str());
-	}
-
 	mytm_initialize();
 	initialize_keyboard_controller();
 	initialize_marathon();
 }
 
-static void shutdown_hub()
-{
-	SDLNet_Quit();
-}
-
 static bool hub_init_game(void)
 {
 	initialize_map_for_new_game();
-
-	byte* physics = nullptr;
-	int physics_length = StandaloneHub::Instance()->GetPhysicsData(&physics);
-	if (physics) return true; //don't need to init further
 
 	byte* wad = nullptr;
 	int wad_length = StandaloneHub::Instance()->GetMapData(&wad);
@@ -83,10 +66,12 @@ static bool hub_init_game(void)
 	auto wad_data = inflate_flat_data(wad_copy, &header);
 	if (!wad_data) { delete[] wad_copy; return false; }
 
-	bool success = get_dynamic_data_from_wad(wad_data, dynamic_world) && get_player_data_from_wad(wad_data);
+	bool saved_game = get_dynamic_data_from_wad(wad_data, dynamic_world) && get_player_data_from_wad(wad_data);
 	free_wad(wad_data);
 
-	return success;
+	StandaloneHub::Instance()->SetSavedGame(saved_game);
+
+	return true;
 }
 
 static bool hub_game_in_progress(bool& game_is_done)
@@ -257,15 +242,6 @@ int main(int argc, char** argv)
 		{
 		}
 		code = 1;
-	}
-
-	try
-	{
-		shutdown_hub();
-	}
-	catch (...)
-	{
-
 	}
 
 	return code;

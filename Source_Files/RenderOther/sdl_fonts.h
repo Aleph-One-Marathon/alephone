@@ -25,11 +25,6 @@
  *  Written in 2000 by Christian Bauer
  */
 
-#if defined _MSC_VER
-#define NOMINMAX
-#include <algorithm>
-#endif
-
 #ifndef SDL_FONTS_H
 #define SDL_FONTS_H
 

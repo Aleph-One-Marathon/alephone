@@ -42,7 +42,7 @@ static const world_distance default_speed_limit = WORLD_ONE_HALF;
 static const world_distance projectile_speed_limit = WORLD_ONE;
 
 bool world_is_interpolated;
-static uint32_t start_machine_tick;
+static uint64_t start_machine_tick;
 
 extern struct view_data* world_view;
 
@@ -650,7 +650,8 @@ void update_interpolated_world(float heartbeat_fraction)
 			continue;
 		}
 
-		if (!should_interpolate(prev->location, next->location))
+		if (!should_interpolate(prev->location, next->location) ||
+			std::abs(prev->location.z - next->location.z) > default_speed_limit)
 		{
 			continue;
 		}
@@ -832,13 +833,18 @@ static void interpolate_weapon_display_information(
 	{
 		return;
 	}
+
+	if (index >= previous_tick_weapon_display.size())
+	{
+		return;
+	}
 	
 	static constexpr int _shell_casing_type = 1; // from weapons.cpp
 
 	weapon_display_information* next;
 	weapon_display_information* prev;
 
-	if (data->interpolation_data & 0x3 == _shell_casing_type)
+	if ((data->interpolation_data & 0x3) == _shell_casing_type)
 	{
 		next = &current_tick_weapon_display[index];
 		prev = &previous_tick_weapon_display[index];
@@ -858,11 +864,6 @@ static void interpolate_weapon_display_information(
 	}
 	else
 	{
-		if (index >= previous_tick_weapon_display.size())
-		{
-			return;
-		}
-
 		next = &current_tick_weapon_display[index];
 		prev = &previous_tick_weapon_display[index];
 	}

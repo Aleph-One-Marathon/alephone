@@ -1,3 +1,21 @@
+/*
+	Copyright (C) 2023 Benoit Hauquier and the "Aleph One" developers.
+
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 3 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	This license is contained in the file "COPYING",
+	which is included with this source code; it is available online at
+	http://www.gnu.org/licenses/gpl.html
+*/
+
 #ifndef __SOUND_PLAYER_H
 #define __SOUND_PLAYER_H
 
@@ -24,16 +42,16 @@ struct SoundStereo {
 struct SoundParameters {
 	short identifier = NONE; //Identifier of the sound
 	short source_identifier = NONE; //Identifier of the source emitting the sound
-	float pitch = 1;
-	bool loop = false;
+	float pitch = 1.f;
 	bool is_2d = true; //if false it will use source_location3d to position sound (3D sounds)
 	bool soft_rewind = false; //if true the sound can only rewind after it's done playing
+	bool soft_start = false; //if true the sound will use transitions to fade in from silence to proper computed volume
 	uint16_t obstruction_flags = 0;
+	uint16_t flags = 0;
 	sound_behavior behavior = _sound_is_normal;
 	world_location3d source_location3d = {};
 	world_location3d* dynamic_source_location3d = nullptr;
 	SoundStereo stereo_parameters = {}; //2D panning
-	uint16_t flags = 0;
 };
 
 struct SoundBehavior {
@@ -70,27 +88,31 @@ public:
 	float GetPriority() const override { return Simulate(parameters.Get()); }
 	void AskSoftStop() { soft_stop_signal = true; } //not supported by 3d sounds because no need to
 	void AskRewind(const SoundParameters& soundParameters, const Sound& sound);
-	bool CanRewind(int baseTick) const;
+	bool CanRewind(uint64_t baseTick) const;
 	bool CanFastRewind(const SoundParameters& soundParameters) const;
+	bool HasActiveRewind() const { return rewind_signal.load() && !soft_stop_signal.load(); }
 private:
 
 	struct SoundTransition {
-		uint32_t start_transition_tick;
-		float current_volume = 0;
+		uint64_t start_transition_tick = 0;
+		float current_volume = 0.f;
 		SoundBehavior current_sound_behavior;
-		bool allow_transition;
+		bool allow_transition = false;
 	};
 
 	void Rewind() override;
 	void Init(const SoundParameters& parameters);
-	int GetNextData(uint8* data, int length) override;
-	int LoopManager(uint8* data, int length);
+	uint32_t GetNextData(uint8* data, uint32_t length) override;
 	SetupALResult SetUpALSourceIdle() override;
 	SetupALResult SetUpALSource3D();
 	bool SetUpALSourceInit() override;
 	bool LoadParametersUpdates() override;
-	float ComputeParameterForTransition(float targetParameter, float currentParameter, int currentTick) const;
+	void ResetTransition();
+	float ComputeParameterForTransition(float targetParameter, float currentParameter, uint64_t currentTick) const;
 	float ComputeVolumeForTransition(float targetVolume);
+	bool MustDisableHrtf() const;
+	std::tuple<AudioFormat, uint32_t, bool> GetAudioFormat() const override;
+	uint32_t ProcessData(uint8_t* outputData, uint32_t remainingSoundDataLength, uint32_t remainingBufferLength);
 	SoundBehavior ComputeVolumeForTransition(const SoundBehavior& targetSoundBehavior);
 	AtomicStructure<Sound> sound;
 	AtomicStructure<SoundParameters> parameters;
@@ -98,14 +120,14 @@ private:
 	SoundTransition sound_transition;
 	uint32_t data_length;
 	uint32_t current_index_data;
-	uint32_t start_tick;
+	uint64_t start_tick;
 
 	std::atomic_bool soft_stop_signal = { false };
 
-	static constexpr int rewind_time = 83;
-	static constexpr int fast_rewind_time = 35;
+	static constexpr uint32_t rewind_time = 83U;
+	static constexpr uint32_t fast_rewind_time = 35U;
 	static constexpr float smooth_volume_transition_threshold = 0.1f;
-	static constexpr int smooth_volume_transition_time_ms = 300;
+	static constexpr uint32_t smooth_volume_transition_time_ms = 300U;
 
 	static constexpr SoundBehavior sound_behavior_parameters[] = {
 		{0.5f, 5.f, 1.f, 1.f, 1.f},

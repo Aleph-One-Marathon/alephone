@@ -8,6 +8,10 @@ modules:
   - shared/glu.yml
   - shared/zzip.yml
   - shared/miniupnpc.yml
+  - shared/asio.yml
+  - shared/ebml.yml
+  - shared/matroska.yml
+  - shared/libyuv.yml
   - shared/alephone.yml
   - name: app-data
     buildsystem: simple

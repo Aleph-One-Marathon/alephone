@@ -459,6 +459,10 @@ end
       </variable>
     </table>
     <table name="game" singleton="true">
+      <function name="autosave" version="20250302">
+		<description>saves the game without prompting the user, if possible</description>
+		<note>solo only</note>
+      </function>
       <variable name="dead_players_drop_items" version="20150619">
         <description>whether dead players drop items</description>
         <type>boolean</type>
@@ -482,37 +486,34 @@ end
 		<description>the game kill limit, or 0 if there is none</description>
 		<type>number</type>
       </variable>
-      <variable name="monsters_replenish" version="20111201">
-		<description>whether monsters spawn or not; in a net game, this corresponds to the "Aliens" checkbox</description>
-		<type>boolean</type>
-		<note>this can suppress initial monster placement, if set to false directly when the script is loaded</note>
-      </variable>
-      <variable name="proper_item_accounting" version="20100118">
-		<description>When true, the current item counts on the map are updated properly when Lua deletes map items and changes player inventories. This defaults to false to preserve film playback with older scripts. New scripts that manipulate items should always set this to true.</description>
-		<type>boolean</type>
-      </variable>
-      <variable name="nonlocal_overlays" version="20200830">
-		<description>When false, only the local player’s overlays are used, and only prints to the local player will be displayed. When true, the overlays and prints of whatever player is currently being viewed will apply. This defaults to false for compatibility with scripts that depend on the old behavior.</description>
-		<type>boolean</type>
-      </variable>
-      <variable name="time_remaining" access="read-only">
-		<description>the number of ticks until the game ends, or nil if there is no time limit</description>
-		<type>number</type>
-      </variable>
-      <variable name="scoring_mode">
-		<description>the current scoring mode (if the gametype is "custom")</description>
-		<type>scoring_mode_type</type>
-      </variable>
-      <variable name="over" access="write-only">
-		<description>Use this variable to override the game’s default scoring behavior. If set to false, the game will not end due to a score limit. If set to true, the game ends immediately. If left unset or if set to nil, the game will end if a score limit is reached. (Note that you cannot prevent the game from ending due to a time limit.)</description>
-		<type>boolean</type>
-      </variable>
-      <function name="local_random">
+	  <function name="local_random">
 		<description>returns a random number between 0 and n-1 from Aleph One’s original random number generator</description>
 		<argument name="n"><type>number</type></argument>
 		<return><type>number</type></return>
 		<note>use only for local player effects (see Net Games and Films)</note>
       </function>
+      <variable name="monsters_replenish" version="20111201">
+		<description>whether monsters spawn or not; in a net game, this corresponds to the "Aliens" checkbox</description>
+		<type>boolean</type>
+		<note>this can suppress initial monster placement, if set to false directly when the script is loaded</note>
+      </variable>
+      <variable name="nonlocal_overlays" version="20200830">
+		<description>When false, only the local player’s overlays are used, and only prints to the local player will be displayed. When true, the overlays and prints of whatever player is currently being viewed will apply. This defaults to false for compatibility with scripts that depend on the old behavior.</description>
+		<type>boolean</type>
+      </variable>
+      <variable name="over" access="write-only">
+		<description>Use this variable to override the game’s default scoring behavior. If set to false, the game will not end due to a score limit. If set to true, the game ends immediately. If left unset or if set to nil, the game will end if a score limit is reached. (Note that you cannot prevent the game from ending due to a time limit.)</description>
+		<type>boolean</type>
+      </variable>
+	  <variable name="player" version="git">
+		<description>In Tag games, the player who is It. In Kill the Man With the Ball or Rugby games, the player who is carrying the ball</description>
+		<type>Player</type>
+		<note>writing to this will only work in Tag games</note>
+	  </variable>
+      <variable name="proper_item_accounting" version="20100118">
+		<description>When true, the current item counts on the map are updated properly when Lua deletes map items and changes player inventories. This defaults to false to preserve film playback with older scripts. New scripts that manipulate items should always set this to true.</description>
+		<type>boolean</type>
+      </variable>
       <function name="random">
 		<description>returns a random number between 0 and n-1 using a good random number generator</description>
 		<argument name="n"><type>number</type></argument>
@@ -543,6 +544,10 @@ end
 		<description>saves the game (as if the user had activated a pattern buffer)</description>
 		<note>solo only</note>
       </function>
+	  <variable name="scoring_mode">
+		<description>the current scoring mode (if the gametype is "custom")</description>
+		<type>scoring_mode_type</type>
+      </variable>
       <function name="serialize" version="20200830">
         <description>serializes v into a binary string</description>
         <argument name="v"><type>value</type></argument>
@@ -553,6 +558,11 @@ end
 		<description>ticks since game started</description>
 		<type>time</type>
       </variable>
+	   <variable name="time_remaining" access="read-only">
+		<description>the number of ticks until the game ends, or nil if there is no time limit</description>
+		<type>number</type>
+      </variable>
+      
       <variable name="type" access="read-only">
 		<description>whether the game is EMFH, KOTH, etc.</description>
 		<type>game_type</type>

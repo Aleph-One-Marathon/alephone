@@ -60,7 +60,6 @@ public:
 
 	bool AdjustVolumeUp(short sound_index = NONE);
 	bool AdjustVolumeDown(short sound_index = NONE);
-	void TestVolume(float db, short sound_index);
 
 	bool LoadSound(short sound);
 	void LoadSounds(short *sounds, short count);
@@ -69,7 +68,7 @@ public:
 	void UnloadAllSounds();
 
 	std::shared_ptr<SoundPlayer> PlaySound(LoadedResource& rsrc, const SoundParameters& parameters);
-	std::shared_ptr<SoundPlayer> PlaySound(short sound_index, world_location3d *source, short identifier, _fixed pitch = _normal_frequency);
+	std::shared_ptr<SoundPlayer> PlaySound(short sound_index, world_location3d *source, short identifier, _fixed pitch = _normal_frequency, bool soft_rewind = false);
 	std::shared_ptr<SoundPlayer> DirectPlaySound(short sound_index, angle direction, short volume, _fixed pitch);
 
 	void StopSound(short identifier, short sound_index);
@@ -93,7 +92,7 @@ public:
 	// random sounds
 	short RandomSoundIndexToSoundIndex(short random_sound_index);
 
-	static int GetCurrentAudioTick();
+	static uint64_t GetCurrentAudioTick();
 	static float From_db(float db, bool music = false) { return db <= (SoundManager::MINIMUM_VOLUME_DB / (music ? 2 : 1)) ? 0 : std::pow(10.f, db / 20.f); }
 
 	struct Parameters
@@ -128,7 +127,7 @@ private:
 	SoundManager();
 	void SetStatus(bool active);
 	SoundDefinition* GetSoundDefinition(short sound_index);
-	std::shared_ptr<SoundPlayer> BufferSound(SoundParameters parameters);
+	std::shared_ptr<SoundPlayer> BufferSound(SoundParameters& parameters);
 	float CalculatePitchModifier(short sound_index, _fixed pitch_modifier);
 	void AngleAndVolumeToStereoVolume(angle delta, short volume, short *right_volume, short *left_volume);
 	short GetRandomSoundPermutation(short sound_index);
@@ -192,7 +191,7 @@ typedef void (*add_ambient_sound_source_proc_ptr)(ambient_sound_data *ambient_so
 world_location3d *_sound_listener_proc(void);
 
 /* _sound_obstructed_proc() tells whether the given sound is obstructed or not */
-uint16 _sound_obstructed_proc(world_location3d *source);
+uint16 _sound_obstructed_proc(world_location3d *source, bool distinguish_obstruction_types = false);
 
 void _sound_add_ambient_sources_proc(void *data, add_ambient_sound_source_proc_ptr add_one_ambient_sound_source);
 

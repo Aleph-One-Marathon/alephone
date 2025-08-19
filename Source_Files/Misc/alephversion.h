@@ -24,12 +24,12 @@ ALEPHVERSION.H
 
 
 #define A1_DISPLAY_NAME "Aleph One"
-#define A1_DISPLAY_VERSION "1.10"
-#define A1_DISPLAY_DATE_VERSION "2024-08-22"
-#define A1_DATE_VERSION "20240822"
+#define A1_DISPLAY_VERSION "1.11b"
+#define A1_DISPLAY_DATE_VERSION "2025-08-08"
+#define A1_DATE_VERSION "20250808"
 
 #ifdef _WIN32
-#define WIN_VERSION_STRING 0,2024,8,22 // <-- don't forget to update that for windows releases
+#define WIN_VERSION_STRING 0,2025,8,8 // <-- don't forget to update that for windows releases
 #define A1_DISPLAY_PLATFORM "Windows"
 #define A1_UPDATE_PLATFORM "windows"
 #elif defined (__APPLE__) && defined(__MACH__)

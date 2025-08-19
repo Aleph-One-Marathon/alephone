@@ -1,0 +1,8 @@
+name: libyuv
+buildsystem: cmake-ninja
+config-opts: [-DCMAKE_BUILD_TYPE=Release]
+sources:
+  - type: git
+    url: https://chromium.googlesource.com/libyuv/libyuv
+    commit: a37e6bc81b52d39cdcfd0f1428f5d6c2b2bc9861
+cleanup: [/include, /lib/*.a, /bin]

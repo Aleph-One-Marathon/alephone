@@ -129,7 +129,7 @@ item_definition *get_item_definition_external(
 
 int16 item_definition::get_maximum_count_per_player(bool is_m1, int difficulty_level) const
 {
-	if (has_extended_maximum_count[difficulty_level])
+	if (extended_maximum_count[difficulty_level] != NONE)
 	{
 		return extended_maximum_count[difficulty_level];
 	}
@@ -227,7 +227,7 @@ void trigger_nearby_items(
 			switch (GET_OBJECT_OWNER(object))
 			{
 				case _object_is_item:
-					if (OBJECT_IS_INVISIBLE(object) && object->permutation!=NONE)
+					if (OBJECT_IS_INVISIBLE(object) && object->permutation!=NONE && get_item_shape(object->permutation) != NONE)
 					{
 						teleport_object_in(object_index);
 					}
@@ -877,10 +877,7 @@ void parse_mml_items(const InfoTree& root)
 			if (!max.read_indexed("index", difficulty, NUMBER_OF_GAME_DIFFICULTY_LEVELS))
 				continue;
 
-			if (max.read_indexed("maximum", def.extended_maximum_count[difficulty], SHRT_MAX+1))
-			{
-				def.has_extended_maximum_count[difficulty] = true;
-			}
+			max.read_indexed("maximum", def.extended_maximum_count[difficulty], SHRT_MAX + 1);
 		}
 
 		for (const InfoTree &shape : itree.children_named("shape"))

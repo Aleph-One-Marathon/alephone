@@ -476,6 +476,25 @@ uint32 get_current_map_checksum(
 	return header.checksum;
 }
 
+static void create_players_for_new_game(short number_of_players, player_start_data* player_start_information)
+{
+	const short intended_local_player_index = game_is_networked ? NetGetLocalPlayerIndex() : 0;
+
+	/* Initialize the players-> note there may be more than one player in a */
+	/* non-network game, for playback.. */
+	for (int i = 0; i < number_of_players; ++i)
+	{
+		new_player_flags flags = (i == intended_local_player_index ? new_player_make_local_and_current : 0);
+		auto player_index = new_player(player_start_information[i].team,
+			player_start_information[i].color, player_start_information[i].identifier, flags);
+		assert(player_index == i);
+
+		/* Now copy in the name of the player.. */
+		assert(strlen(player_start_information[i].name) <= MAXIMUM_PLAYER_NAME_LENGTH);
+		strncpy(players[i].name, player_start_information[i].name, MAXIMUM_PLAYER_NAME_LENGTH + 1);
+	}
+}
+
 // ZZZ: split this out from new_game for sharing
 void set_saved_game_name_to_default()
 {
@@ -493,10 +512,7 @@ bool new_game(
 	struct entry_point *entry_point)
 {
 	assert(!network || number_of_players == NetGetNumberOfPlayers());
-	
-	const short intended_local_player_index = network ? NetGetLocalPlayerIndex() : 0;
-	
-	short player_index, i;
+		
 	bool success= true;
 
 	ResetPassedLua();
@@ -526,22 +542,13 @@ bool new_game(
 
 	/* Load the level */	
 	assert(file_is_set);
-	success= goto_level(entry_point, true, number_of_players);
+	success= goto_level(entry_point, number_of_players, player_start_information);
 	/* If we were able to load the map... */
 	if(success)
 	{
-		/* Initialize the players-> note there may be more than one player in a */
-		/* non-network game, for playback.. */
-		for (i=0;i<number_of_players;++i)
+		if (!film_profile.network_items)
 		{
-			new_player_flags flags = (i == intended_local_player_index ? new_player_make_local_and_current : 0);
-			player_index= new_player(player_start_information[i].team,
-				player_start_information[i].color, player_start_information[i].identifier, flags);
-			assert(player_index==i);
-
-			/* Now copy in the name of the player.. */
-			assert(strlen(player_start_information[i].name)<=MAXIMUM_PLAYER_NAME_LENGTH);
-			strncpy(players[i].name, player_start_information[i].name, MAXIMUM_PLAYER_NAME_LENGTH+1);
+			create_players_for_new_game(number_of_players, player_start_information);
 		}
 
 		/* we need to alert the function that reverts the game of the game setup so that
@@ -768,10 +775,11 @@ extern bool RunLuaScript();
 /* Returns a short that is an OSErr... */
 bool goto_level(
 	struct entry_point *entry, 
-	bool new_game,
-	short number_of_players)
+	short number_of_players,
+	player_start_data* player_start_information)
 {
 	bool success= true;
+	bool new_game = player_start_information;
 
 	if(!new_game)
 	{
@@ -828,6 +836,10 @@ bool goto_level(
 		if (!new_game)
 		{
 			recreate_players_for_new_level();
+		}
+		else if (film_profile.network_items)
+		{
+			create_players_for_new_game(number_of_players, player_start_information);
 		}
 		
 		/* Load the collections */
@@ -1304,19 +1316,16 @@ bool revert_game(
 			// this gets around WZ's moving of this line into make_restored_game_relevant()
 			successful = entering_map(true /*restoring game*/);
 		}
-
-		/* And they don't get to continue. */
-		stop_recording();
 	}
 	else
 	{
 		/* This was the totally evil line discussed above. */
 		successful= new_game(1, false, &revert_game_data.game_information, &revert_game_data.player_start, 
 			&revert_game_data.entry_point);
-			
-		/* And rewind so that the last player is used. */
-		rewind_recording();
 	}
+
+	/* And rewind so that the last player is used. */
+	rewind_recording();
 
 	if(successful)
 	{
@@ -1887,7 +1896,7 @@ bool process_map_wad(
 		assert(count*SIZEOF_effect_data==data_length);
 		vassert(count <= MAXIMUM_EFFECTS_PER_MAP,
 			csprintf(temporary,"Number of effects %zu > limit %u",count,MAXIMUM_EFFECTS_PER_MAP));
-		unpack_effect_data(data,effects,count);
+		unpack_effect_data(data,EffectList.data(),count);
 
 		data= (uint8 *)extract_type_from_wad(wad, PROJECTILES_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_projectile_data;
@@ -2463,7 +2472,7 @@ static uint8 *tag_to_global_array_and_size(
 			pack_monster_data(array,monsters,count);
 			break;
 		case EFFECTS_STRUCTURE_TAG:
-			pack_effect_data(array,effects,count);
+			pack_effect_data(array,EffectList.data(),count);
 			break;
 		case PROJECTILES_STRUCTURE_TAG:
 			pack_projectile_data(array,projectiles,count);

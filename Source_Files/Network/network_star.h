@@ -26,8 +26,7 @@
 
 #include "TickBasedCircularQueue.h"
 #include "ActionQueues.h"
-
-#include "sdl_network.h"
+#include "NetworkInterface.h"
 
 // We avoid including half the world just to get TICKS_PER_SECOND for standalone hub...
 #ifndef A1_NETWORK_STANDALONE_HUB
@@ -44,8 +43,6 @@ enum {
         kEndOfMessagesMessageType = 0x454d,	// 'EM'
         kTimingAdjustmentMessageType = 0x5441,	// 'TA'
         kPlayerNetDeadMessageType = 0x4e44,	// 'ND'
-	kSpokeToHubLossyByteStreamMessageType = 0x534c,	// 'SL'
-	kHubToSpokeLossyByteStreamMessageType = 0x484c, // 'HL'
 
 	kSpokeToHubIdentification = 0x4944,   // 'ID'
 	kSpokeToHubGameDataPacketV1Magic = 0x5331, // 'S1'
@@ -67,25 +64,19 @@ typedef WritableTickBasedCircularQueue<action_flags_t> WritableTickBasedActionQu
 
 class InfoTree;
 
-extern void hub_initialize(int32 inStartingTick, int inNumPlayers, const NetAddrBlock* const* inPlayerAddresses, int inLocalPlayerIndex);
+extern void hub_initialize(int32 inStartingTick, int inNumPlayers, const IPaddress* const* inPlayerAddresses, int inLocalPlayerIndex);
 extern void hub_cleanup(bool inGraceful, int32 inSmallestPostGameTick);
-extern void hub_received_network_packet(DDPPacketBufferPtr inPacket);
+extern void hub_received_network_packet(UDPpacket& inPacket, bool from_local_spoke = false);
 extern bool hub_is_active();
 extern void DefaultHubPreferences();
 extern InfoTree HubPreferencesTree();
 extern void HubParsePreferencesTree(InfoTree prefs, std::string version);
 
-extern void spoke_initialize(const NetAddrBlock& inHubAddress, int32 inFirstTick, size_t inNumberOfPlayers, WritableTickBasedActionQueue* const inPlayerQueues[], bool inPlayerConnectedStatus[], size_t inLocalPlayerIndex, bool inHubIsLocal);
+extern void spoke_initialize(const IPaddress& inHubAddress, int32 inFirstTick, size_t inNumberOfPlayers, WritableTickBasedActionQueue* const inPlayerQueues[], bool inPlayerConnectedStatus[], size_t inLocalPlayerIndex, bool inHubIsLocal);
 extern void spoke_cleanup(bool inGraceful);
-extern void spoke_received_network_packet(DDPPacketBufferPtr inPacket);
+extern void spoke_received_network_packet(UDPpacket& inPacket);
 extern int32 spoke_get_net_time();
-// "Distribute to everyone" helps to match the existing (legacy) interfaces etc.
-extern void spoke_distribute_lossy_streaming_bytes_to_everyone(int16 inDistributionType, byte* inBytes, uint16 inLength, bool inExcludeLocalPlayer, bool onlySendToTeam);
-// distribute_lossy_streaming_bytes offers a more direct interface (not yet used) to star's lossy
-//	distribution mechanism.  (e.g., can select certain recipients, send unregistered dist types, etc.)
-extern void spoke_distribute_lossy_streaming_bytes(int16 inDistributionType, uint32 inDestinationsBitmask, byte* inBytes, uint16 inLength);
 extern int32 spoke_latency(); // in ms, kNetLatencyInvalid if not yet valid
-extern int32 hub_latency(int player_index); // in ms, kNetLatencyInvalid if not valid, kNetLatencyDisconnected if d/c
 extern TickBasedActionQueue* spoke_get_unconfirmed_flags_queue();
 extern int32 spoke_get_smallest_unconfirmed_tick();
 extern bool spoke_check_world_update();

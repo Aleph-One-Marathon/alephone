@@ -942,7 +942,7 @@ void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, bo
 
 		// Scroll loop
 		bool done = false, aborted = false;
-		uint32 start_tick = machine_tick_count();
+		uint64_t start_tick = machine_tick_count();
 		do {
 
 			int32 delta = (machine_tick_count() - start_tick) / (text_block ? (2 * SCROLLING_SPEED) : SCROLLING_SPEED);

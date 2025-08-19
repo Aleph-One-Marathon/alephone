@@ -20,7 +20,7 @@
   which is included with this source code; it is available online at
   http://www.gnu.org/licenses/gpl.html
   
-  Movie export using libav/ffmpeg
+  Movie export
   
  */
 
@@ -29,6 +29,7 @@
 #include <memory>
 #include <string.h>
 #include <vector>
+#include <queue>
 #include <SDL2/SDL_thread.h>
 
 class Movie
@@ -45,7 +46,7 @@ public:
 	void StartRecording(std::string path);
 	bool IsRecording();
 	void StopRecording();
-	long GetCurrentAudioTimeStamp();
+	uint64_t GetCurrentAudioTimeStamp();
 	
 	enum FrameType {
 	  FRAME_NORMAL,
@@ -75,12 +76,43 @@ private:
   std::unique_ptr<FBO> frameBufferObject;
 #endif
   
+	class StoredFrame
+	{
+	public:
+		std::vector<uint8> buf;
+		uint64_t timestamp;
+		uint64_t duration;
+		bool keyframe;
+		
+		StoredFrame(const uint8 *data, size_t bytes, uint64_t ts, uint64_t dur, bool key) :
+			timestamp(ts),
+			duration(dur),
+			keyframe(key)
+		{
+			AddData(data, bytes);
+		}
+		void AddData(const uint8 *data, size_t bytes)
+		{
+			buf.resize(bytes);
+			memcpy(buf.data(), data, bytes);
+		}
+	};
+
+	typedef std::queue<std::unique_ptr<StoredFrame>> FrameQueue;
+	FrameQueue video_queue;
+	FrameQueue audio_queue;
+	FrameQueue cached_frames;
+	uint64_t last_written_timestamp;
+	uint64_t current_audio_timestamp;
+
   Movie();  
   bool Setup();
   static int Movie_EncodeThread(void *arg);
   void EncodeThread();
   void EncodeVideo(bool last);
   void EncodeAudio(bool last);
+  void DequeueFrames(bool last);
+  void DequeueFrame(FrameQueue &queue, uint64_t tracknum, bool start_cluster);
   void ThrowUserError(std::string error_msg);
 };
 	

@@ -135,7 +135,7 @@ bool ScenarioChooserScenario::load(const std::string& path)
 		}
 	}
 
-#ifdef HAVE_SDL_IMAGE
+#if defined (HAVE_SDL_IMAGE) && defined (HAVE_PNG)
 	FileSpecifier image_file = directory + "chooser.png";
 	OpenedFile of;
 	if (image_file.Open(of))
@@ -522,7 +522,11 @@ void ScenarioChooser::optimize_image(ScenarioChooserScenario& scenario, SDL_Wind
 
 	SDL_FillRect(scenario.image.get(), nullptr, SDL_MapRGB(scenario.image->format, 0, 0, 0));
 
+#if SDL_VERSION_ATLEAST(2, 0, 16)
 	SDL_SoftStretchLinear(optimized.get(), &src_rect, scenario.image.get(), &dst_rect);
+#else
+	SDL_BlitScaled(optimized.get(), &src_rect, scenario.image.get(), &dst_rect);
+#endif
 }
 
 void ScenarioChooser::redraw(SDL_Window* window)

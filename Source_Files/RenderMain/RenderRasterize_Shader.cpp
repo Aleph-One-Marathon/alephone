@@ -1377,6 +1377,7 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 	double yaw = view->virtual_yaw * FixedAngleToDegrees;
 	MSI()->rotatef(yaw, 0.0, 0.0, 1.0);
 
+			
 	float offset = 0;
 	if (OGL_ForceSpriteDepth()) {
 		// look for parasitic objects based on y position,
@@ -1394,6 +1395,15 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 
 	auto TMgr = setupSpriteTexture(rect, OGL_Txtr_Inhabitant, offset, renderStep);
 	if (TMgr->ShapeDesc == UNONE) { MSI()->popMatrix(); return; }
+
+	if (!view->mimic_sw_perspective)
+	{
+		if (TMgr->ForceXYBillboard() ||
+			(view->billboard_xy && !TMgr->ForceYBillboard()))
+		{
+			glRotated(view->virtual_pitch * FixedAngleToDegrees, 0.0, -1.0, 0.0);
+		}
+	}
 
 	float texCoords[2][2];
 

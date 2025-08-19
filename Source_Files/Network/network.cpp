@@ -123,8 +123,6 @@ clearly this is all broken until we have packet types
 #include "mytm.h"	// ZZZ: both versions use mytm now
 #include "preferences.h" // for network_preferences and environment_preferences
 
-#include "sdl_network.h"
-#include "network_lookup_sdl.h"
 #include <SDL2/SDL_thread.h>
 
 #include "game_errors.h"
@@ -146,10 +144,6 @@ clearly this is all broken until we have packet types
 // ZZZ: moved many struct definitions, constant #defines, etc. to header for (limited) sharing
 #include "network_private.h"
 
-// ZZZ: since network data format is now distinct from in-memory format.
-// (quite similar, admittedly, in this first effort... ;) )
-#include "network_data_formats.h"
-
 #include "network_messages.h"
 
 #include "NetworkGameProtocol.h"
@@ -169,20 +163,15 @@ clearly this is all broken until we have packet types
 
 /* ---------- globals */
 
-static short ddpSocket; /* our ddp socket number */
-
 static short localPlayerIndex;
 static short localPlayerIdentifier;
 static std::string gameSessionIdentifier;
-static NetTopologyPtr topology;
-static bool sOldSelfSendStatus;
-static StarGameProtocol sStarGameProtocol;
-static NetworkGameProtocol* sCurrentGameProtocol = NULL;
-
+static NetTopology* topology;
+static StarGameProtocol sCurrentGameProtocol;
+static std::unique_ptr<NetworkInterface> network_interface;
 static byte *deferred_script_data = NULL;
 static size_t deferred_script_length = 0;
 static bool do_netscript;
-
 static CommunicationsChannelFactory *server = NULL;
 static bool use_remote_hub = false;
 static byte* resumed_wad_data_for_remote_hub = NULL;
@@ -199,7 +188,7 @@ static IPaddress host_address;
 static bool host_address_specified = false;
 static MessageInflater *inflater = NULL;
 static MessageDispatcher *joinDispatcher = NULL;
-static uint32 next_join_attempt;
+static uint64_t next_join_attempt;
 static Capabilities my_capabilities;
 static std::shared_ptr<Pinger> pinger = nullptr; //multithread safety
 static GatherCallbacks *gatherCallbacks = NULL;
@@ -218,7 +207,7 @@ const static NetworkStats sInvalidStats = {
 	NetworkStats::invalid,
 	0
 };
-uint32 last_network_stats_send = 0;
+uint64_t last_network_stats_send = 0;
 const static int network_stats_send_period = MACHINE_TICKS_PER_SECOND;
 
 // ignore list
@@ -276,17 +265,6 @@ struct ignore_lua
 // ZZZ note: read this externally with the NetState() function.
 static short netState= netUninitialized;
 
-// ZZZ change: now using an STL 'map' to, well, _map_ distribution types to info records.
-typedef std::map<int16, NetDistributionInfo> distribution_info_map_t;
-static  distribution_info_map_t distribution_info_map;
-
-
-#ifdef NETWORK_CHAT
-static	NetChatMessage	incoming_chat_message_buffer;
-static bool		new_incoming_chat_message = false;
-#endif
-
-
 // ZZZ: are we trying to start a new game or resume a saved-game?
 // This is only valid on the gatherer after NetGather() is called;
 // only valid on a joiner once he receives the final topology (tagRESUME_GAME)
@@ -295,7 +273,6 @@ static bool resuming_saved_game = false;
 
 
 /* ---------- private prototypes */
-void NetPrintInfo(void);
 void NetInitializeSessionIdentifier(void);
 
 // ZZZ: cmon, we're not fooling anyone... game_data is a game_info*; player_data is a player_info*
@@ -304,16 +281,11 @@ void NetInitializeSessionIdentifier(void);
 // reason to try to keep that... and I suspect Jason abandoned this separation long ago anyway.
 // For now, the only effect I see is a reduction in type-safety.  :)
 static void NetInitializeTopology(void *game_data, short game_data_size, void *player_data, short player_data_size);
-static void NetLocalAddrBlock(NetAddrBlock *address, short socketNumber);
-
-static int net_compare(void const *p1, void const *p2);
 
 static void NetUpdateTopology(void);
 static void NetDistributeTopology(short tag);
 
-static bool NetSetSelfSend(bool on);
-
-static void NetDDPPacketHandler(DDPPacketBufferPtr inPacket);
+static void NetDDPPacketHandler(UDPpacket& inPacket);
 
 int getStreamIdFromChannel(CommunicationsChannel *channel) {
   client_map_t::iterator it;
@@ -443,7 +415,7 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 		return false;
 	}
 
-	if (capabilities[Capabilities::kGameworld] < Capabilities::kGameworldVersion || (shapes_file_is_m1() && capabilities[Capabilities::kGameworldM1] < Capabilities::kGameworldM1Version))
+	if (capabilities[Capabilities::kGameworld] < my_capabilities[Capabilities::kGameworld] || (shapes_file_is_m1() && capabilities[Capabilities::kGameworldM1] < my_capabilities[Capabilities::kGameworldM1]))
 	{
 		if (warn_joiner)
 		{
@@ -460,7 +432,7 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 				channel->enqueueOutgoingMessage(serverWarningMessage);
 			}
 			return false;
-		} else if (capabilities[Capabilities::kStar] < Capabilities::kStarVersion) {
+		} else if (capabilities[Capabilities::kStar] < my_capabilities[Capabilities::kStar]) {
 			if (warn_joiner) {
 				ServerWarningMessage serverWarningMessage(expand_app_variables("The gatherer is using a newer version of $appName$. You will not appear in the list of available players."), ServerWarningMessage::kJoinerUngatherable);
 				channel->enqueueOutgoingMessage(serverWarningMessage);
@@ -478,7 +450,7 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 				channel->enqueueOutgoingMessage(serverWarningMessage);
 			}
 			return false;
-		} else if (capabilities[Capabilities::kLua] < Capabilities::kLuaVersion)
+		} else if (capabilities[Capabilities::kLua] < my_capabilities[Capabilities::kLua])
 		{
 			if (warn_joiner)
 			{
@@ -595,24 +567,10 @@ void Client::handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage,
 	}
 }
 
-/*
-void Client::handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsChannel *) 
+NetworkInterface* NetGetNetworkInterface()
 {
-  if (state == _awaiting_script_message) {
-    if (do_netscript &&
-	scriptMessage->value() != _netscript_yes_script_message) {
-      alert_user(infoError, strNETWORK_ERRORS, netErrUngatheredPlayerUnacceptable, 0);
-      state = _ungatherable;
-    } else {
-      JoinPlayerMessage joinPlayerMessage(topology->nextIdentifier);
-      channel->enqueueOutgoingMessage(joinPlayerMessage);
-      state = _awaiting_accept_join;
-    }
-  } else {
-    logAnomaly1("unexpected script message received (state is %i)", state);
-  }
+	return network_interface.get();
 }
-*/
 
 void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
 				     CommunicationsChannel *)
@@ -625,7 +583,7 @@ void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
       prospective_joiner_info player;
       player.stream_id = topology->players[topology->player_count].stream_id;
       topology->players[topology->player_count].dspAddress = channel->peerAddress();
-      topology->players[topology->player_count].ddpAddress.host = channel->peerAddress().host;
+	  topology->players[topology->player_count].ddpAddress.set_address(channel->peerAddress().address());
       
       topology->player_count += 1;
       if (check_player) check_player(topology->player_count - 1, topology->player_count);
@@ -855,7 +813,7 @@ static void handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage,
 {
 	if (handlerState == netJoining) {
 		Capabilities capabilities = *capabilitiesMessage->capabilities();
-		if (capabilities[Capabilities::kGameworld] < Capabilities::kGameworldVersion || (shapes_file_is_m1() && capabilities[Capabilities::kGameworldM1] < Capabilities::kGameworldM1Version) || (network_preferences->game_protocol == _network_game_protocol_star && capabilities[Capabilities::kStar] < Capabilities::kStarVersion))
+		if (capabilities[Capabilities::kGameworld] < my_capabilities[Capabilities::kGameworld] || (shapes_file_is_m1() && capabilities[Capabilities::kGameworldM1] < my_capabilities[Capabilities::kGameworldM1]) || (network_preferences->game_protocol == _network_game_protocol_star && capabilities[Capabilities::kStar] < my_capabilities[Capabilities::kStar]))
 		{
 			// I'm not gatherable
 			my_capabilities[Capabilities::kGatherable] = 0;
@@ -977,12 +935,12 @@ static size_t handlerMapLength = 0;
 static void handleMapMessage(BigChunkOfDataMessage *mapMessage, CommunicationsChannel *) {
 	if (netState == netStartingUp || netState == netDown) {
 		if (handlerMapBuffer) { // assume the last map the server sent is right
-			free(handlerMapBuffer);
+			delete[] handlerMapBuffer;
 			handlerMapBuffer = NULL;
 		}
 		handlerMapLength = mapMessage->length();
 		if (handlerMapLength > 0) {
-			handlerMapBuffer = reinterpret_cast<byte*>(malloc(handlerMapLength));
+			handlerMapBuffer = new byte[handlerMapLength];
 			memcpy(handlerMapBuffer, mapMessage->buffer(), handlerMapLength);
 		}
 	} else {
@@ -1039,34 +997,18 @@ static size_t handlerPhysicsLength = 0;
 static void handlePhysicsMessage(BigChunkOfDataMessage *physicsMessage, CommunicationsChannel *) {
 	if (netState == netStartingUp || netState == netDown) {
 		if (handlerPhysicsBuffer) {
-			free(handlerPhysicsBuffer);
+			delete[] handlerPhysicsBuffer;
 			handlerPhysicsBuffer = NULL;
 		}
 		handlerPhysicsLength = physicsMessage->length();
 		if (handlerPhysicsLength > 0) {
-			handlerPhysicsBuffer = reinterpret_cast<byte*>(malloc(handlerPhysicsLength));
+			handlerPhysicsBuffer = new byte[handlerPhysicsLength];
 			memcpy(handlerPhysicsBuffer, physicsMessage->buffer(), handlerPhysicsLength);
 		}
 	} else {
 		logAnomaly("unexpected physics message received (netState is %i)", netState);
 	}
 }
-
-/*
-static void handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsChannel*) {
-  if (netState == netJoining) {
-    ScriptMessage replyToScriptMessage;
-    if (scriptMessage->value() == _netscript_query_message) {
-      replyToScriptMessage.setValue(_netscript_yes_script_message);
-    } else {
-      replyToScriptMessage.setValue(_netscript_no_script_message);
-    }
-    connection_to_server->enqueueOutgoingMessage(replyToScriptMessage);
-  } else {
-    logAnomaly1("unexpected script message received (netState is %i)", netState);
-  }
-}
-*/
 
 static void handleServerWarningMessage(ServerWarningMessage *serverWarningMessage, CommunicationsChannel *) {
   char *s = strdup(serverWarningMessage->string()->c_str());
@@ -1079,10 +1021,10 @@ static void handleTopologyMessage(TopologyMessage* topologyMessage, Communicatio
   if (netState == netWaiting) {
     *topology = *(topologyMessage->topology());
 
-     auto address = connection_to_server->peerAddress();
+     auto peer_address = connection_to_server->peerAddress();
 
-      topology->server.dspAddress = address;
-      topology->server.ddpAddress.host = address.host;
+      topology->server.dspAddress = peer_address;
+	  topology->server.ddpAddress.set_address(peer_address.address());
       
       NetUpdateTopology();
     
@@ -1262,8 +1204,8 @@ void InGameChatCallbacks::ReceivedMessageFromPlayer(const char *player_name, con
 
 bool NetEnter(bool use_remote_hub)
 {
-	OSErr error;
 	::use_remote_hub = use_remote_hub;
+	network_interface = std::make_unique<NetworkInterface>();
   
 	assert(netState==netUninitialized);
   
@@ -1273,29 +1215,17 @@ bool NetEnter(bool use_remote_hub)
 		if (!added_exit_procedure) atexit(NetExit);
 		added_exit_procedure= true;
 	}
-  
-	sCurrentGameProtocol = static_cast<NetworkGameProtocol*>(&sStarGameProtocol);
-  
-	error= NetDDPOpen();
-	if (!error) {
-		topology = (NetTopologyPtr)malloc(sizeof(NetTopology));
-		assert(topology);
-		memset(topology, 0, sizeof(NetTopology));
 
-		// ZZZ: Sorry, if this swapping is not supported on all current A1
-		// platforms, feel free to rewrite it in a way that is.
-		ddpSocket = SDL_SwapBE16(GAME_PORT);
-		error = NetDDPOpenSocket(&ddpSocket, NetDDPPacketHandler);
-		if (!error) {
-			sOldSelfSendStatus = NetSetSelfSend(true);
-			sCurrentGameProtocol->Enter(&netState);
+	topology = new NetTopology();
 
-			netState = netDown;
-			handlerState = netDown;
-		}
-		else {
-			logError("unable to open socket");
-		}
+	bool success = NetDDPOpenSocket(GAME_PORT, NetDDPPacketHandler);
+	if (success) {
+		sCurrentGameProtocol.Enter(&netState);
+		netState = netDown;
+		handlerState = netDown;
+	}
+	else {
+		logError("unable to open socket");
 	}
   
 	if (!inflater) {
@@ -1378,9 +1308,9 @@ bool NetEnter(bool use_remote_hub)
 
 	next_join_attempt = last_network_stats_send = machine_tick_count();
   
-	if (error) {
+	if (!success) {
 #ifndef A1_NETWORK_STANDALONE_HUB
-		alert_user(infoError, strNETWORK_ERRORS, netErrCantContinue, error);
+		alert_user(infoError, strNETWORK_ERRORS, netErrCantContinue, -1);
 #endif
 		NetExit();
 		return false;
@@ -1404,29 +1334,19 @@ void NetDoneGathering(void)
 
 void NetExit(
 	void)
-{
-	OSErr error = noErr;
-  
-	sCurrentGameProtocol->Exit1();
-  
+{    
 	// ZZZ: clean up SDL Time Manager emulation.  
 	// true says wait for any late finishers to finish
 	// (but does NOT say to kill anyone not already removed.)
-	myTMCleanup(true);
+	myTMCleanup();
   
 	if (netState!=netUninitialized) {
-		error= NetDDPCloseSocket(ddpSocket);
-		if (!error) {
-			NetSetSelfSend(sOldSelfSendStatus);
-      
-			free(topology);
-			topology= NULL;
-      
-			sCurrentGameProtocol->Exit2();
-      
+		if (NetDDPCloseSocket()) {
+			delete topology;
+			topology = nullptr;
 			netState= netUninitialized;
 		} else {
-			logAnomaly("NetDDPCloseSocket returned %i", error);
+			logAnomaly("NetDDPCloseSocket failed");
 		}
 	}
   
@@ -1458,22 +1378,22 @@ void NetExit(
 		server = NULL;
 	}
 
-	delete gMetaserverClient;
-	gMetaserverClient = new MetaserverClient();
+	if (gMetaserverClient)
+	{
+		delete gMetaserverClient;
+		gMetaserverClient = nullptr;
+	}
+
+	network_interface.reset();
 	
 	Console::instance()->unregister_command("ignore");
-  
-	NetDDPClose();
-
 }
 
 bool
 NetSync()
 {
-	return sCurrentGameProtocol->Sync(topology, dynamic_world->tick_count, localPlayerIndex, local_is_server());
+	return sCurrentGameProtocol.Sync(topology, dynamic_world->tick_count, localPlayerIndex, local_is_server());
 }
-
-
 
 bool
 NetUnSync()
@@ -1483,7 +1403,7 @@ NetUnSync()
 		NetRemoteHubSendCommand(RemoteHubCommand::kEndGame_Command, dynamic_world->tick_count);
 	}
 
-	return sCurrentGameProtocol->UnSync(true, dynamic_world->tick_count);
+	return sCurrentGameProtocol.UnSync(true, dynamic_world->tick_count);
 }
 
 std::weak_ptr<Pinger>
@@ -1505,56 +1425,6 @@ void
 NetRemovePinger()
 {
 	pinger.reset();
-}
-
-
-/* Add a function for a distribution type. returns the type, or NONE if it can't be
- * installed. It's safe to call this function multiple times for the same proc. */
-// ZZZ: changed to take in the desired type, so a given machine can handle perhaps only some
-// of the distribution types.
-void
-NetAddDistributionFunction(int16 inDataTypeID, NetDistributionProc inProc, bool inLossy) {
-    // We don't support lossless distribution yet.
-    assert(inLossy);
-
-    // Prepare a NetDistributionInfo with the desired data.
-    NetDistributionInfo theInfo;
-    theInfo.lossy               = inLossy;
-    theInfo.distribution_proc   = inProc;
-
-    // Insert or update a map entry
-    distribution_info_map[inDataTypeID] = theInfo;
-}
-
-
-/* Remove a distribution proc that has been installed. */
-void
-NetRemoveDistributionFunction(int16 inDataTypeID) {
-    distribution_info_map.erase(inDataTypeID);
-}
-
-
-const NetDistributionInfo*
-NetGetDistributionInfoForType(int16 inType)
-{
-	distribution_info_map_t::const_iterator    theEntry = distribution_info_map.find(inType);
-	if(theEntry != distribution_info_map.end())
-		return &(theEntry->second);
-	else
-		return NULL;
-}
-
-	
-
-
-void NetDistributeInformation(
-                              short type,
-                              void *buffer,
-                              short buffer_size,
-                              bool send_to_self,
-	bool only_send_to_team)
-{
-	sCurrentGameProtocol->DistributeInformation(type, buffer, buffer_size, send_to_self, only_send_to_team);
 }
 
 
@@ -1584,49 +1454,6 @@ void NetInitializeSessionIdentifier(void)
 	}
 	
 }
-
-
-/*
----------
-NetGather
----------
-
-	---> game data (pointer to typeless data no bigger than MAXIMUM_GAME_DATA_SIZE)
-	---> size of game data
-	---> player data of gathering player (no bigger than MAXIMUM_PLAYER_DATA_SIZE)
-	---> size of player data
-	---> lookupUpdateProc (we call NetLookupOpen() and NetLookupClose())
-	
-	<--- error
-
-start gathering players.
-
----------------
-NetGatherPlayer
----------------
-
-	---> player index (into the array of looked up names)
-	
-	<--- error
-
-bring the given player into our game.
-
----------------
-NetCancelGather
----------------
-
-	<--- error
-
-tells all players in the game that the game has been cancelled.
-
---------
-NetStart
---------
-
-	<--- error
-
-start the game with the existing topology (which all players should have)
-*/
 
 bool NetGather(
 	void *game_data,
@@ -1665,18 +1492,18 @@ bool NetGather(
 
 	netState = netGathering;
 
+#ifndef A1_NETWORK_STANDALONE_HUB
 	// Start listening for joiners
 	if (!use_remote_hub)
 	{
 		server = new CommunicationsChannelFactory(GAME_PORT);
 
-#ifndef A1_NETWORK_STANDALONE_HUB
 		client_chat_info[0] = new ClientChatInfo;
 		client_chat_info[0]->name = player_preferences->name;
 		client_chat_info[0]->color = player_preferences->color;
 		client_chat_info[0]->team = player_preferences->team;
-#endif
 	}
+#endif
 	
 	return true;
 }
@@ -1759,27 +1586,8 @@ bool NetStart(
 {
 	assert(netState==netGathering);
 
-	// how about we sort the players before we pass them out to everyone?
-	// This is an attempt to have a slightly more efficent ring in a multi-zone network.
-	// we should really do some sort of pinging to determine an optimal order (or perhaps
-	// sort on hop counts) but we'll just order them by their network numbers.
-	// however, we need to leave the server player index 0 because we assume that the person
-	// that starts out at index 0 is the server.
-        
-        // ZZZ: do that sorting in a new game only - in a resume game, the ordering is significant
-        // (it's how netplayers will line up with existing saved-game players).
-
-        if(!resuming_saved_game)
-        {
-                if (topology->player_count > 2)
-                {
-                        qsort(topology->players+1, topology->player_count-1, sizeof(struct NetPlayer), net_compare);
-                }
-        
-                NetUpdateTopology();
-        }
 #ifdef A1_NETWORK_STANDALONE_HUB
-		else
+		if (resuming_saved_game)
 		{
 			player_start_data theStarts[MAXIMUM_NUMBER_OF_PLAYERS];
 			short theNumberOfStarts;
@@ -1793,44 +1601,6 @@ bool NetStart(
 
 	return true;
 }
-
-static int net_compare(
-	void const *p1, 
-	void const *p2)
-{
-	uint32 p1_host = SDL_SwapBE32(((const NetPlayer *)p1)->ddpAddress.host);
-	uint32 p2_host = SDL_SwapBE32(((const NetPlayer *)p2)->ddpAddress.host);
-	return p2_host - p1_host;
-}
-
-/*
------------
-NetGameJoin
------------
-
-	---> player name (to register)
-	---> player type (to register)
-	---> player data (no larger than MAXIMUM_PLAYER_DATA_SIZE)
-	---> size of player data
-	---> version number of network protocol (used with player type to construct entity name)
-	---> host address
-	
-	<--- error
-
-------------------
-NetUpdateJoinState
-------------------
-
-	<--- new state (==netJoined,netWaiting,netStartingUp)
-
--------------
-NetCancelJoin
--------------
-
-	<--- error
-
-can’t be called after the player has been gathered
-*/
 
 bool NetGameJoin(
 	void *player_data,
@@ -1879,11 +1649,6 @@ void NetRetargetJoinAttempts(const IPaddress* inAddress)
 	if(host_address_specified)
 	{
 		host_address = *inAddress;
-		// Aleph One 1.1 and earlier didn't send the gather port
-		if(host_address.port == 0)
-		{
-			host_address.port = SDL_SwapBE16(DEFAULT_GAME_PORT);
-		}
 	}
 }
 
@@ -2035,52 +1800,13 @@ void NetSetupTopologyFromStarts(const player_start_data* inStartArray, short inS
         NetUpdateTopology();
 }
 
-/*
-------------------
-NetEntityNotInGame
-------------------
-
-	---> entity
-	---> address
-	
-	<--- true if the entity is not in the game, false otherwise
-
-used to filter entities which have been added to a game out of the lookup list
-*/
-
-/* if the given address is already added to our game, filter it out of the gather dialog */
-bool NetEntityNotInGame(
-	NetEntityName *entity,
-	NetAddrBlock *address)
-{
-	short player_index;
-	bool valid= true;
-	
-	(void) (entity);
-	
-	for (player_index=0;player_index<topology->player_count;++player_index)
-	{
-		NetAddrBlock *player_address= &topology->players[player_index].dspAddress;
-		
-		if (address->host == player_address->host && address->port == player_address->port)
-		{
-			valid= false;
-			break;
-		}
-	}
-	
-	return valid;
-}
-
-
-
 
 /* ---------- private code */
 
 void
-NetDDPPacketHandler(DDPPacketBufferPtr packet)
+NetDDPPacketHandler(UDPpacket& packet)
 {
-	sCurrentGameProtocol->PacketHandler(packet);
+	sCurrentGameProtocol.PacketHandler(packet);
 }
 
 
@@ -2104,8 +1830,8 @@ static void NetInitializeTopology(
 	localPlayerIndex = localPlayerIdentifier = NONE;
 	topology->player_count = 0;
 	topology->nextIdentifier = 0;
-	NetLocalAddrBlock(&topology->server.dspAddress, GAME_PORT);
-	NetLocalAddrBlock(&topology->server.ddpAddress, ddpSocket);
+	topology->server.dspAddress.set_port(GAME_PORT);
+	topology->server.ddpAddress.set_port(GAME_PORT);
 #else
 	topology->player_count = 1;
 	localPlayerIndex = localPlayerIdentifier = 0;
@@ -2118,8 +1844,8 @@ static void NetInitializeTopology(
 	local_player->net_dead = false;
 	local_player->stream_id = 0;
 
-	NetLocalAddrBlock(&local_player->dspAddress, GAME_PORT);
-	NetLocalAddrBlock(&local_player->ddpAddress, ddpSocket);
+	local_player->dspAddress.set_port(GAME_PORT);
+	local_player->ddpAddress.set_port(GAME_PORT);
 
 	topology->server.dspAddress = local_player->dspAddress;
 	topology->server.ddpAddress = local_player->ddpAddress;
@@ -2136,18 +1862,6 @@ static void NetInitializeTopology(
 	gameSessionIdentifier.clear();
 }
 
-static void NetLocalAddrBlock(
-	NetAddrBlock *address,
-	short socketNumber)
-{
-	
-	address->host = 0x7f000001;	//!! XXX (ZZZ) yeah, that's really bad.
-	address->port = socketNumber;	// OTOH, I guess others are set up to "stuff" the address they actually saw for us instead of
-					// this, anyway... right??  So maybe it's not that big a deal.......
-}
-
-
-
 static void NetUpdateTopology(
 	void)
 {
@@ -2163,13 +1877,6 @@ static void NetUpdateTopology(
 #endif
 }
 
-
-
-static bool NetSetSelfSend(
-	bool on)
-{
-	return false;
-}
 
 void construct_multiplayer_starts(player_start_data* outStartArray, short* outStartCount)
 {
@@ -2286,9 +1993,8 @@ void match_starts_with_existing_players(player_start_data* ioStartArray, short* 
 bool NetChangeMap(
 	struct entry_point *entry)
 {
-	byte   *wad= NULL;
-	int32   length;
-	bool success= true;
+	byte *wad = NULL;
+	int32 length;
 	bool do_physics = true;
 
 	/* If the guy that was the server died, and we are trying to change levels, we lose */
@@ -2298,49 +2004,42 @@ bool NetChangeMap(
 	  if (local_is_server()) {
 
 #ifdef A1_NETWORK_STANDALONE_HUB
-
 		length = StandaloneHub::Instance()->GetMapData(&wad);
-		assert(wad);
 		byte* physics = nullptr;
 		do_physics = StandaloneHub::Instance()->GetPhysicsData(&physics);
-
 #else
-		  wad = (unsigned char*)get_map_for_net_transfer(entry);
-		  assert(wad);
-		  length = get_net_map_data_length(wad);
-		  do_physics = true;
+		wad = (unsigned char*)get_map_for_net_transfer(entry);
+		length = wad ? get_net_map_data_length(wad) : 0;
+		do_physics = true;
 #endif
-		  if (success) NetDistributeGameDataToAllPlayers(wad, length, do_physics);
+		if (wad) NetDistributeGameDataToAllPlayers(wad, length, do_physics);
 
 	  } else { // wait for de damn map.
 
 		  if (use_remote_hub && get_game_state() == _change_level) //if the gatherer is using a remote hub, it has to send it to the hub first
 		  {
 			  wad = (unsigned char*)get_map_for_net_transfer(entry);
-			  assert(wad);
-			  length = get_net_map_data_length(wad);
-			  NetDistributeGameDataToAllPlayers(wad, length, true, connection_to_server.get());
-			  free(wad);
+			  length = wad ? get_net_map_data_length(wad) : 0;
+
+			  if (wad)
+			  {
+				  NetDistributeGameDataToAllPlayers(wad, length, true, connection_to_server.get());
+				  free(wad);
+			  }
 		  }
 
 	      wad = NetReceiveGameData(true);
-	      if(!wad) {
-		alert_user(infoError, strNETWORK_ERRORS, netErrCouldntReceiveMap, 0);
-		success= false;
-		
-	      }
+	      if (!wad) alert_user(infoError, strNETWORK_ERRORS, netErrCouldntReceiveMap, 0);
 	  }
 	  
 #ifndef A1_NETWORK_STANDALONE_HUB
+	  sNetworkStats.clear(); //reset the pregame state
+
 	  /* Now load the level.. */
-	  if (wad)
-	    {
-	      /* Note that this frees the wad as well!! */
-	      process_net_map_data(wad);
-	    }
+	  if (wad) process_net_map_data(wad); //Note that this frees the wad as well!!
 #endif
 	
-	return success;
+	return wad;
 }
 
 void DeferredScriptSend (byte* data, size_t length)
@@ -2370,7 +2069,7 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 	short playerIndex, message_id;
 	OSErr error= noErr;
 	int32 total_length;
-	uint32 initial_ticks= machine_tick_count();
+	uint64_t initial_ticks= machine_tick_count();
 	short physics_message_id;
 	byte *physics_buffer = NULL;
 	int32 physics_length;
@@ -2524,7 +2223,7 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 	if (error) { // ghs: nothing above returns an error at the moment,
 		// but I'll leave so you know what error could be displayed
 		alert_user(infoError, strNETWORK_ERRORS, netErrCouldntDistribute, error);
-	} else if  (machine_tick_count()-initial_ticks>uint32(topology->player_count*MAP_TRANSFER_TIME_OUT)) {
+	} else if  (machine_tick_count()-initial_ticks>static_cast<uint64_t>(topology->player_count*MAP_TRANSFER_TIME_OUT)) {
 		alert_user(infoError, strNETWORK_ERRORS, netErrWaitedTooLongForMap, error);
 		error= 1;
 	}
@@ -2609,24 +2308,16 @@ byte *NetReceiveGameData(bool do_physics)
   return map_buffer;
 }
 
-void NetSetInitialParameters(
-	short updates_per_packet, 
-	short update_latency)
-{
-//	initial_updates_per_packet= updates_per_packet;
-//	initial_update_latency= update_latency;
-}
-
 int32
 NetGetNetTime(void)
 {
-        return sCurrentGameProtocol->GetNetTime();
+        return sCurrentGameProtocol.GetNetTime();
 }
 
 bool
 NetCheckWorldUpdate()
 {
-	return sCurrentGameProtocol->CheckWorldUpdate();
+	return sCurrentGameProtocol.CheckWorldUpdate();
 }
 
 extern const NetworkStats& hub_stats(int player_index);
@@ -2637,7 +2328,7 @@ void NetProcessMessagesInGame() {
 		connection_to_server->dispatchIncomingMessages();
 	} else {
 		// update stats
-		if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol) && last_network_stats_send + network_stats_send_period < machine_tick_count())
+		if (last_network_stats_send + network_stats_send_period < machine_tick_count())
 		{
 			std::vector<NetworkStats> stats(topology->player_count);
 			for (int playerIndex = 0; playerIndex < topology->player_count; ++playerIndex)
@@ -2798,12 +2489,11 @@ short NetUpdateJoinState(
 			    }
 			    else if (server_nbc->status() == NonblockingConnect::ConnectFailed)
 			    {
-				    assert(host_address_specified);
 				    if (nbc_is_resolving)
 					    host_address = server_nbc->address();
 				    nbc_is_resolving = false;
 				    ConnectPool::instance()->abandon(server_nbc);
-				    server_nbc = ConnectPool::instance()->connect(host_address);
+				    server_nbc = host_address_specified ? ConnectPool::instance()->connect(host_address) : nullptr;
 			    }
 		    }
 
@@ -2871,13 +2561,6 @@ int NetGatherPlayer(const prospective_joiner_info &player,
   connections_to_clients[player.stream_id]->channel->enqueueOutgoingMessage(joinPlayerMessage);
   connections_to_clients[player.stream_id]->state = Client::_awaiting_accept_join;
 
-  /*
-  // reject a player if he can't handle our script demands
-  ScriptMessage scriptMessage(_netscript_query_message);
-  connections_to_clients[player.stream_id]->channel->enqueueOutgoingMessage(scriptMessage);
-  connections_to_clients[player.stream_id]->state = Client::_awaiting_script_message;
-  */
-
   // lie to the network code and say we gathered successfully
   return kGatherPlayerSuccessful;
 }
@@ -2895,7 +2578,7 @@ void NetRemoteHubSendCommand(RemoteHubCommand command, int data)
 	{
 		auto message = RemoteHubCommandMessage(command, data);
 		connection_to_server->enqueueOutgoingMessage(message);
-		connection_to_server->pumpSendingSide();
+		connection_to_server->flushOutgoingMessages(false);
 	}
 }
 
@@ -3076,56 +2759,34 @@ bool NetAllowOverlayMap() {
 
 extern int32 spoke_latency();
 
-int32 NetGetLatency() {
-	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol) && connection_to_server) {
-		return spoke_latency();
-	} else {
-		return NetworkStats::invalid;
-	}
+int32 NetGetLatency()
+{
+	return local_is_server() ? NetworkStats::invalid : spoke_latency();
 }
 
 const NetworkStats& NetGetStats(int player_index)
 {
-	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol))
+	if (local_is_server())
 	{
-		if (connection_to_server)
-		{
-			if (player_index < sNetworkStats.size())
-			{
-				return sNetworkStats[player_index];
-			}
-			else
-			{
-				return sInvalidStats;
-			}
-		}
-		else
-		{
-			return hub_stats(player_index);
-		}
+		return hub_stats(player_index);
 	}
-	else
-	{
-		return sInvalidStats;
-	}
+
+	return player_index < sNetworkStats.size() ? sNetworkStats[player_index] : sInvalidStats;
 }
 
 int32 NetGetUnconfirmedActionFlagsCount()
 {
-	assert (sCurrentGameProtocol);
-	return sCurrentGameProtocol->GetUnconfirmedActionFlagsCount();
+	return sCurrentGameProtocol.GetUnconfirmedActionFlagsCount();
 }
 
 uint32 NetGetUnconfirmedActionFlag(int32 offset)
 {
-	assert (sCurrentGameProtocol);
-	return sCurrentGameProtocol->PeekUnconfirmedActionFlag(offset);
+	return sCurrentGameProtocol.PeekUnconfirmedActionFlag(offset);
 }
 
 void NetUpdateUnconfirmedActionFlags()
 {
-	assert (sCurrentGameProtocol);
-	return sCurrentGameProtocol->UpdateUnconfirmedActionFlags();
+	return sCurrentGameProtocol.UpdateUnconfirmedActionFlags();
 }
 
 #endif // !defined(DISABLE_NETWORKING)

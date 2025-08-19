@@ -228,7 +228,7 @@ static bool line_is_within_range(short monster_index, short line_index, world_di
 
 static bool switch_can_be_toggled(short line_index, bool player_hit, bool *should_destroy_switch);
 
-static void play_control_panel_sound(short side_index, short sound_index);
+static void play_control_panel_sound(short side_index, short sound_index, bool soft_rewind = false);
 
 static bool get_recharge_status(short side_index);
 
@@ -372,7 +372,7 @@ void update_control_panels(
 				if (still_in_use)
 				{
 					set_control_panel_texture(side);
-					play_control_panel_sound(side_index, _activating_sound);
+					play_control_panel_sound(side_index, _activating_sound, true);
 				}
 				else
 				{
@@ -744,7 +744,11 @@ static void	change_panel_state(
 			player->control_panel_side_index= player->control_panel_side_index==panel_side_index ? NONE : panel_side_index;
 			state= get_recharge_status(panel_side_index);
 			SET_CONTROL_PANEL_STATUS(side, state);
-			if (!state) set_control_panel_texture(side);
+			if (!state)
+			{
+				set_control_panel_texture(side);
+				SoundManager::instance()->StopSound(NONE, definition->sounds[_activating_sound]);
+			}
                                 // Lua script hook
                                 if (player -> control_panel_side_index == panel_side_index)
                                     L_Call_Start_Refuel (definition->_class, player_index, panel_side_index);
@@ -752,8 +756,15 @@ static void	change_panel_state(
                                     L_Call_End_Refuel (definition->_class, player_index, panel_side_index);
 			break;
 		case _panel_is_computer_terminal:
-			if (get_game_state()==_game_in_progress && !PLAYER_HAS_CHEATED(player) && !PLAYER_HAS_MAP_OPEN(player))
+			if (get_game_state()==_game_in_progress)
 			{
+				bool is_overhead_map_active = PLAYER_HAS_MAP_OPEN(player);
+				if (is_overhead_map_active && !film_profile.overhead_map_terminal)
+					break;
+
+				SET_PLAYER_MAP_STATUS(player, false);
+				SET_PLAYER_HAD_OVERHEAD_MAP_STATUS(player, is_overhead_map_active);
+
                                 //MH: Lua script hook
                                 L_Call_Terminal_Enter(side->control_panel_permutation,player_index);
 				
@@ -796,7 +807,7 @@ static void	change_panel_state(
 			
 			break;
 		case _panel_is_pattern_buffer:
-                        if (player_controlling_game() && !PLAYER_HAS_CHEATED(local_player))
+                        if (player_controlling_game())
                         {
                                 if(game_is_networked)
                                 {
@@ -891,7 +902,8 @@ static bool switch_can_be_toggled(
 
 static void play_control_panel_sound(
 	short side_index,
-	short sound_index)
+	short sound_index,
+	bool soft_rewind)
 {
 	struct side_data *side= get_side_data(side_index);
 	struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);
@@ -901,7 +913,7 @@ static void play_control_panel_sound(
 
 	if (!(sound_index>=0 && sound_index<NUMBER_OF_CONTROL_PANEL_SOUNDS)) return;
 	
-	_play_side_sound(side_index, definition->sounds[sound_index], definition->sound_frequency);
+	play_side_sound(side_index, definition->sounds[sound_index], definition->sound_frequency, soft_rewind);
 }
 
 static bool get_recharge_status(

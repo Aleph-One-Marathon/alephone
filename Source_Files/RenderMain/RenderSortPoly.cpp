@@ -173,28 +173,23 @@ void RenderSortPolyClass::sort_render_tree()
 		}
 		else /* this is a leaf, and we can remove it from the tree */
 		{
-			sorted_node_data *sorted_node;
-			
 //			dprintf("removed polygon #%d (#%d aliases)", leaf->polygon_index, alias_count);
 			
 			size_t Length = SortedNodes.size();
 			POINTER_DATA OldSNPointer = POINTER_CAST(SortedNodes.data());
 				
 			// Add a dummy object and check if the pointer got changed
-			sorted_node_data Dummy;
-			Dummy.polygon_index = NONE;			// Fake initialization to shut up CW
-			SortedNodes.push_back(Dummy);
+			sorted_node_data* sorted_node = &SortedNodes.emplace_back();
 			POINTER_DATA NewSNPointer = POINTER_CAST(SortedNodes.data());
 				
 			if (NewSNPointer != OldSNPointer)
 			{
 				// Update what uses the sorted-node pointers
 				for (size_t k=0; k<Length; k++) {
-					sorted_node = &SortedNodes[k];
-					polygon_index_to_sorted_node[sorted_node->polygon_index]= sorted_node;
+					auto node = &SortedNodes[k];
+					polygon_index_to_sorted_node[node->polygon_index] = node;
 				}
 			}
-			sorted_node = &SortedNodes[Length];
 			
 			sorted_node->polygon_index= leaf->polygon_index;
 			sorted_node->interior_objects= NULL;
@@ -406,9 +401,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 					POINTER_DATA OldCWPointer = POINTER_CAST(ClippingWindows.data());
 					
 					// Add a dummy object and check if the pointer got changed
-					clipping_window_data Dummy;
-					Dummy.next_window = NULL;			// Fake initialization to shut up CW
-					ClippingWindows.push_back(Dummy);
+					clipping_window_data* window = &ClippingWindows.emplace_back();
 					POINTER_DATA NewCWPointer = POINTER_CAST(ClippingWindows.data());
 				
 					if (NewCWPointer != OldCWPointer)
@@ -427,8 +420,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 								SortedNode.clipping_windows = (clipping_window_data *)(NewCWPointer + (POINTER_CAST(SortedNode.clipping_windows) - OldCWPointer));
 						}
 					}
-					clipping_window_data *window= &ClippingWindows[Length];
-					
+
 					/* handle maintaining the linked list of clipping windows */
 					if (Length > initial_cw_count)
 						ClippingWindows[Length-1].next_window = window;

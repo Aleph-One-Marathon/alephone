@@ -45,6 +45,10 @@
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
 #include "OGL_Setup.h" // OGL_IsActive
+#ifdef _WIN32
+#include <windows.h>
+#include <GL/GLU.h>
+#endif
 #endif
 
 #include <cmath>

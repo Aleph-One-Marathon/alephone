@@ -73,7 +73,6 @@ Apr 10, 2003 (Woody Zenfell):
 #include	"shell.h"
 #include	"preferences.h"
 #include	"network.h"
-#include	"network_dialogs.h"
 #include	"network_games.h"
 #include	"metaserver_dialogs.h" // GameAvailableMetaserverAnnouncer
 #include	"wad.h" // jkvw: for read_wad_file_checksum 
@@ -123,8 +122,7 @@ GathererAvailableAnnouncer::GathererAvailableAnnouncer()
 {
 	strncpy(mServiceInstance.sslps_type, get_sslp_service_type().c_str(), SSLP_MAX_TYPE_LENGTH);
 	strncpy(mServiceInstance.sslps_name, "Boomer", SSLP_MAX_NAME_LENGTH);
-	memset(&(mServiceInstance.sslps_address), '\0', sizeof(mServiceInstance.sslps_address));
-	mServiceInstance.sslps_address.port = SDL_SwapBE16(GAME_PORT);
+	mServiceInstance.sslps_address.set_port(GAME_PORT);
 	SSLP_Allow_Service_Discovery(&mServiceInstance);
 }
 
@@ -259,10 +257,10 @@ bool network_gather(bool inResumingGame, bool& outUseRemoteHub)
 			{
 				GathererAvailableAnnouncer announcer;
 
-				if (!gMetaserverClient) gMetaserverClient = new MetaserverClient();
-
 				if (advertiseOnMetaserver)
 				{
+					if (!gMetaserverClient) gMetaserverClient = new MetaserverClient();
+
 					try
 					{
 						setupAndConnectClient(*gMetaserverClient, outUseRemoteHub);
@@ -327,8 +325,12 @@ bool network_gather(bool inResumingGame, bool& outUseRemoteHub)
 			}
 			else
 			{
-				delete gMetaserverClient;
-				gMetaserverClient = new MetaserverClient();
+				if (gMetaserverClient)
+				{
+					delete gMetaserverClient;
+					gMetaserverClient = nullptr;
+				}
+
 				if (!outUseRemoteHub) NetCancelGather();
 				NetExit();
 			}
@@ -353,8 +355,8 @@ GatherDialog::~GatherDialog()
 	delete m_chatWidget;
 	delete m_chatChoiceWidget;
 
-	gMetaserverClient->associateNotificationAdapter(0);
-
+	if (gMetaserverClient)
+		gMetaserverClient->associateNotificationAdapter(0);
 }
 
 bool GatherDialog::GatherNetworkGameByRunning ()
@@ -382,7 +384,7 @@ bool GatherDialog::GatherNetworkGameByRunning ()
 	Binder<bool> binder (m_autogatherWidget, &autoGatherPref);
 	binder.migrate_second_to_first ();
 	
-	if (gMetaserverClient->isConnected ()) {
+	if (gMetaserverClient && gMetaserverClient->isConnected ()) {
 		gMetaserverClient->associateNotificationAdapter(this);
 		m_chatChoiceWidget->set_value (kMetaserverChat);
 		gMetaserverChatHistory.clear ();
@@ -613,8 +615,6 @@ int network_join(void)
 		{
 			write_preferences ();
 		
-			game_info* myGameInfo= (game_info *)NetGetGameData();
-			NetSetInitialParameters(myGameInfo->initial_updates_per_packet, myGameInfo->initial_update_latency);
 			if (gMetaserverClient && gMetaserverClient->isConnected())
 			{
 				gMetaserverClient->setMode(1, NetSessionIdentifier());
@@ -857,18 +857,19 @@ void JoinDialog::getJoinAddressFromMetaserver ()
 
 	try
 	{
-		IPaddress result = run_network_metaserver_ui();
-		if(result.host != 0)
+		auto result = run_network_metaserver_ui();
+		if (result.has_value())
 		{
-			uint8* hostBytes = reinterpret_cast<uint8*>(&(result.host));
+			const auto& address = result.value();
+			const auto hostBytes = address.address_bytes();
 			std::ostringstream s;
 			s << (uint16)hostBytes[0] << '.'
 			  << (uint16)hostBytes[1] << '.'
 			  << (uint16)hostBytes[2] << '.'
 			  << (uint16)hostBytes[3];
-			if (result.port != DEFAULT_GAME_PORT)
+			if (address.port() != DEFAULT_GAME_PORT)
 			{
-				s << ':' << result.port;
+				s << ':' << address.port();
 			}
 			m_joinByAddressWidget->set_value (true);
 			m_joinAddressWidget->set_text (s.str());
@@ -1354,14 +1355,9 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 		game_information->parent_checksum = read_wad_file_checksum(get_map_file());
 		game_information->difficulty_level = active_network_preferences->difficulty_level;
 
-		int updates_per_packet = 1;
-		int update_latency = 0;
-		vassert(updates_per_packet > 0 && update_latency >= 0 && updates_per_packet < 16,
-			csprintf(temporary, "You idiot! updates_per_packet = %d, update_latency = %d", updates_per_packet, update_latency));
-		game_information->initial_updates_per_packet = updates_per_packet;
-		game_information->initial_update_latency = update_latency;
-		NetSetInitialParameters(updates_per_packet, update_latency);
-	
+		game_information->initial_updates_per_packet = 1;
+		game_information->initial_update_latency = 0;
+
 		game_information->initial_random_seed = resuming_game ? dynamic_world->random_seed : (uint16) machine_tick_count();
 
 #if mac

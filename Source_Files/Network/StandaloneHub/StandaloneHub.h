@@ -22,11 +22,11 @@
 #include "MessageInflater.h"
 #include "network_messages.h"
 
-#define STANDALONE_HUB_VERSION "01.01"
+#define STANDALONE_HUB_VERSION "01.02"
 
 class StandaloneHub {
 private:
-	static StandaloneHub* _instance;
+	static std::unique_ptr<StandaloneHub> _instance;
 	std::unique_ptr<CommunicationsChannelFactory> _server;
 	std::shared_ptr<CommunicationsChannel> _gatherer;
 	std::weak_ptr<CommunicationsChannel> _gatherer_client;
@@ -38,10 +38,10 @@ private:
 	bool _start_game_signal = false;
 	bool _end_game_signal = false;
 	bool _gatherer_joined_as_client = false;
-	int _start_check_timeout_ms = 0;
+	bool _saved_game = false;
+	uint64_t _start_check_timeout_ms = 0;
 	static constexpr int _gathering_timeout_ms = 5 * 60 * 1000;
 	StandaloneHub(uint16 port);
-	~StandaloneHub();
 	bool GatherJoiners();
 	bool CheckGathererCapabilities(const Capabilities* capabilities);
 public:
@@ -49,13 +49,14 @@ public:
 	bool SetupGathererGame(bool& gathering_done);
 	bool WaitForGatherer();
 	static bool Init(uint16 port);
-	static StandaloneHub* Instance() { return _instance; }
+	static StandaloneHub* Instance() { return _instance.get(); }
 	static bool Reset();
 	CommunicationsChannel* GetGathererChannel() const { return _gatherer ? _gatherer.get() : _gatherer_client.lock().get(); }
 	void SendMessageToGatherer(const Message& message);
 	void StartGame() { _start_game_signal = true; }
 	void SetGameEnded(bool game_ended) { _end_game_signal = game_ended; }
 	bool HasGameEnded() const { return _end_game_signal; }
+	void SetSavedGame(bool saved_game) { _saved_game = saved_game; }
 	void GathererJoinedAsClient() { _gatherer_joined_as_client = true; }
 	int GetMapData(uint8** data);
 	int GetPhysicsData(uint8** data);

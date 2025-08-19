@@ -26,8 +26,14 @@ jobs:
     - name: Restore config.vdf
       env: 
         CONFIG_VDF: ${{ secrets.CONFIG_VDF }}
-      run: echo $CONFIG_VDF | base64 --decode > Steam/steamcmd/config/config.vdf
+      run: echo $CONFIG_VDF | base64 -di > Steam/steamcmd/config/config.vdf
       shell: bash
       
     - name: Deploy to Steam
       run: ./Steam/steamcmd/steamcmd.exe +login alephone_upload +run_app_build ../m1_build.vdf +run_app_build ../m2_build.vdf +run_app_build ../inf_build.vdf +quit
+      
+    - name: Upload debugging symbols
+      uses: actions/upload-artifact@v4
+      with:
+        name: alephone-steam-windows-symbols-x64
+        path: 'VisualStudio/x64/Release/Steam/*.pdb'

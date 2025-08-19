@@ -30,10 +30,7 @@
 #include <thread>
 #include "Logging.h"
 
-/* by using static variable initialization time as the epoch, we ensure that
-   Aleph One can run for ~49 days without timing issues cropping up */
-/* TODO: Every single place machine tick counts are used, switch to uint64 */
-static auto epoch = std::chrono::high_resolution_clock::now();
+static const auto epoch = std::chrono::steady_clock::now();
 
 /* a knob to play the game in "slow motion" to debug timing sensitive features.
    this is not a preferences option because of the cheating potential, and
@@ -44,15 +41,10 @@ static constexpr int TIME_SKEW = 1;
  *  Return tick counter
  */
 
-uint32 machine_tick_count(void)
+uint64_t machine_tick_count(void)
 {
-  auto now = std::chrono::high_resolution_clock::now();
-  if(now < epoch) {
-    logWarning("Time went backwards!");
-    epoch = now;
-  }
-  return std::chrono::duration_cast<std::chrono::milliseconds>
-    (now - epoch).count()/TIME_SKEW;
+	const auto now = std::chrono::steady_clock::now();
+	return std::chrono::duration_cast<std::chrono::milliseconds>(now - epoch).count() / TIME_SKEW;
 }
 
 /*
@@ -68,9 +60,9 @@ void sleep_for_machine_ticks(uint32 ticks)
  *  Delay until a certain tick count
  */
 
-void sleep_until_machine_tick_count(uint32 ticks)
+void sleep_until_machine_tick_count(uint64_t ticks)
 {
-	std::this_thread::sleep_until(std::chrono::high_resolution_clock::time_point(std::chrono::milliseconds(ticks*TIME_SKEW)));
+	std::this_thread::sleep_until(std::chrono::steady_clock::time_point(std::chrono::milliseconds(ticks*TIME_SKEW)));
 }
 
 /*
@@ -87,7 +79,7 @@ void yield(void)
 
 bool wait_for_click_or_keypress(uint32 ticks)
 {
-	uint32 start = machine_tick_count();
+	auto start = machine_tick_count();
 	SDL_Event event;
 	while (machine_tick_count() - start < ticks) {
 		SDL_WaitEventTimeout(&event, ticks);
