@@ -1209,7 +1209,6 @@
 		AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
 		AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
 		AE38D10E0D555A3100FC2082 /* lua_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE38D10C0D555A3100FC2082 /* lua_objects.cpp */; };
-		AE3AF3962C6ED7200066F090 /* ScenarioChooser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE83423F2C5B22EA00A4A530 /* ScenarioChooser.cpp */; };
 		AE3C01A42C13DB8B002A3EB2 /* Pinger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */; };
 		AE3C01A52C13DB8B002A3EB2 /* Pinger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */; };
 		AE3C01A62C13DB8B002A3EB2 /* Pinger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE3C01A32C13DB8B002A3EB2 /* Pinger.cpp */; };
@@ -8504,7 +8503,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = E8K89CXZE7;
+				DEVELOPMENT_TEAM = L7CDV5AT79;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
@@ -8531,7 +8530,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = E8K89CXZE7;
+				DEVELOPMENT_TEAM = L7CDV5AT79;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
@@ -8768,6 +8767,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "Aleph One.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = TZ45ZW2588;
 				ENABLE_HARDENED_RUNTIME = YES;
