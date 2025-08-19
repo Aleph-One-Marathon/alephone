@@ -1178,7 +1178,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 			printf("GL_VERSION: %s\n", glGetString(GL_VERSION));
             printf("GL_SHADING_LANGUAGE_VERSION: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 			
-			GLint numExtensions;
+			//Remove comment to print extensions for debugging OGL implementation
+			/*GLint numExtensions;
 			glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
 
 			for (GLint i = 0; i < numExtensions; i++) {
@@ -1186,7 +1187,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 				if (extension) {
 					printf("%s\n", extension);
 				}
-			}
+			}*/
 			
 //		const char *gl_extensions = (const char *)glGetString(GL_EXTENSIONS);
 //		printf("GL_EXTENSIONS: %s\n", gl_extensions);
