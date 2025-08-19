@@ -151,7 +151,7 @@ private:
 	float _cached_floats[NUMBER_OF_UNIFORM_LOCATIONS];
 
 	GLint getUniformLocation(UniformName name) { 
-		if (_uniform_locations[name] == -1) {
+		if (_uniform_locations[name] == -2) {
 			_uniform_locations[name] = glGetUniformLocation(_programObj, _uniform_names[name]);
 		}
 		return _uniform_locations[name];
