@@ -97,13 +97,9 @@ dnl Check for headers.
 AC_CHECK_HEADERS([unistd.h pwd.h])
 
 dnl Check for boost functions and libraries.
-AX_BOOST_BASE([1.65.0],
+AX_BOOST_BASE([1.69.0],
               ,
-              [AC_MSG_ERROR([You need Boost 1.65.0 or higher to build Aleph One.])])
-AX_BOOST_SYSTEM
-AS_IF([ test "x$BOOST_SYSTEM_LIB" != "x" ],
-      [ LIBS="$BOOST_SYSTEM_LIB $LIBS" ],
-      [AC_MSG_ERROR([You need the Boost::System library to run Aleph One.])])
+              [AC_MSG_ERROR([You need Boost 1.69.0 or higher to build Aleph One.])])
 AX_BOOST_FILESYSTEM
 AS_IF([ test "x$BOOST_FILESYSTEM_LIB" != "x" ],
       [ LIBS="$BOOST_FILESYSTEM_LIB $LIBS" ],
@@ -131,6 +127,7 @@ dnl AX_CHECK_BOOST_HEADER([boost/iterator/transform_iterator.hpp])
 dnl AX_CHECK_BOOST_HEADER([boost/property_tree/ini_parser.hpp])
 dnl AX_CHECK_BOOST_HEADER([boost/property_tree/ptree.hpp])
 AX_CHECK_BOOST_HEADER([boost/property_tree/xml_parser.hpp])
+AX_CHECK_BOOST_HEADER([boost/system/system_error.hpp])
 dnl AX_CHECK_BOOST_HEADER([boost/range/any_range.hpp])
 AX_CHECK_BOOST_HEADER([boost/uuid/uuid.hpp])
 dnl AX_CHECK_BOOST_HEADER([boost/uuid/uuid_generators.hpp])
