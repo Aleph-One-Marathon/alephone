@@ -1072,6 +1072,12 @@ void load_polygons(
                         map_polygons[loop].type = _polygon_is_automatic_exit;
                         break;
                 }
+
+				// this is set on some m1 maps, but it's unknown what the flag
+				// does. Operating on the assumption that old m1 editors didn't
+				// clear out flags, just unset the flag. Otherwise the map will
+				// assert out later
+				map_polygons[loop].flags &= ~POLYGON_IS_DETACHED_BIT;
 			}
 			break;
 			
