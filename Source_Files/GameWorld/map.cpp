@@ -416,7 +416,7 @@ void initialize_map_for_new_level(
 	// Clear all these out -- supposed to be none of the contents of these when starting a level.
 	objlist_clear(automap_lines, AutomapLineList.size());
 	objlist_clear(automap_polygons, AutomapPolygonList.size());
-	objlist_clear(EffectList.data(), EffectList.size());
+	objlist_clear(get_effects_list().data(), get_effects_list().size());
 	objlist_clear(projectiles,  ProjectileList.size());
 	objlist_clear(monsters,  MonsterList.size());
 	objlist_clear(objects,  ObjectList.size());
