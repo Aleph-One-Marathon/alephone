@@ -78,11 +78,8 @@ void Music::Slot::Fade(float limitVolume, short duration, FadeType fadeType, boo
 {
 	if (!Playing()) return;
 
-	auto currentVolume = musicPlayer->GetParameters().volume;
-	if (currentVolume == limitVolume) return;
-
 	music_fade_type = fadeType;
-	music_fade_start_volume = currentVolume;
+	music_fade_start_volume = parameters.volume;
 	music_fade_limit_volume = limitVolume;
 	music_fade_start = SoundManager::GetCurrentAudioTick();
 	music_fade_duration = duration;
