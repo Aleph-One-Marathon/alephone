@@ -70,6 +70,7 @@ private:
     asio::ip::udp::socket _socket;
     asio::ip::udp::endpoint _receive_async_endpoint;
     int64_t _receive_async_return_value = 0;
+    const std::array<uint16_t, 2> _broadcast_subnet_prefixes = { 16, 24 };
     UDPsocket(asio::io_context& io_context, asio::ip::udp::socket&& socket);
     friend class NetworkInterface;
 public:
