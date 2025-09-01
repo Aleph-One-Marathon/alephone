@@ -17,6 +17,7 @@
 */
 
 #include "NetworkInterface.h"
+#include <set>
 
 IPaddress::IPaddress(const asio::ip::tcp::endpoint& endpoint)
 {
@@ -80,10 +81,35 @@ int64_t UDPsocket::send(const UDPpacket& packet)
 
 int64_t UDPsocket::broadcast_send(const UDPpacket& packet)
 {
-    asio::error_code error_code;
-    asio::ip::udp::endpoint broadcast_endpoint(asio::ip::address_v4::broadcast(), packet.address.port());
-    auto result = _socket.send_to(asio::buffer(packet.buffer, packet.data_size), broadcast_endpoint, 0, error_code);
-    return error_code ? -1 : result;
+    std::set<asio::ip::address_v4> broadcast_addresses = { asio::ip::address_v4::broadcast() };
+    asio::error_code resolve_error_code;
+    asio::ip::udp::resolver resolver(_io_context);
+    auto resolve_results = resolver.resolve(asio::ip::host_name(), std::to_string(_socket.local_endpoint().port()), resolve_error_code);
+
+    if (!resolve_error_code)
+    {
+        for (const auto& resolved_address : resolve_results)
+        {
+            auto address = resolved_address.endpoint().address();
+            if (!address.is_v4()) continue;
+
+            for (const auto broadcast_subnet_prefix : _broadcast_subnet_prefixes)
+            {
+                broadcast_addresses.emplace(asio::ip::make_network_v4(address.to_v4(), broadcast_subnet_prefix).broadcast());
+            }
+        }
+    }
+
+    int64_t result = -1;
+    for (const auto& broadcast_address : broadcast_addresses)
+    {
+        asio::error_code error_code;
+        asio::ip::udp::endpoint broadcast_endpoint(broadcast_address, packet.address.port());
+        auto broadcast_result = _socket.send_to(asio::buffer(packet.buffer, packet.data_size), broadcast_endpoint, 0, error_code);
+        if (!error_code) result = broadcast_result;
+    }
+
+    return result;
 }
 
 int64_t UDPsocket::receive(UDPpacket& packet)

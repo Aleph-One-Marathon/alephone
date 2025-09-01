@@ -66,6 +66,7 @@ struct UDPpacket
 
 class UDPsocket {
 private:
+    static constexpr std::array<uint16_t, 2> _broadcast_subnet_prefixes = { 16, 24 };
     asio::io_context& _io_context;
     asio::ip::udp::socket _socket;
     asio::ip::udp::endpoint _receive_async_endpoint;
