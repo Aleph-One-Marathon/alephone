@@ -137,6 +137,11 @@ std::pair<bool, float> Music::Slot::ComputeFadingVolume() const
 	const auto elapsed = SoundManager::GetCurrentAudioTick() - music_fade_start;
 	const float factor = std::clamp(elapsed / (float)music_fade_duration, 0.f, 1.f);
 
+	if (factor == 1.f) //Ensure fade completion despite float precision
+	{
+		return { fadeIn, music_fade_limit_volume };
+	}
+
 	float volume = music_fade_start_volume;
 	switch (music_fade_type) {
 	case FadeType::Linear:
@@ -146,7 +151,9 @@ std::pair<bool, float> Music::Slot::ComputeFadingVolume() const
 	}
 	case FadeType::Sinusoidal:
 	{
-		volume += (music_fade_limit_volume - music_fade_start_volume) * std::sin(factor * M_PI_2);
+		const auto t = factor * M_PI_2;
+		const auto shape = fadeIn ? std::sin(t) : 1.0 - std::cos(t);
+		volume += (music_fade_limit_volume - music_fade_start_volume) * shape;
 		break;
 	}
 	default:
