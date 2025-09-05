@@ -66,7 +66,7 @@ void Music::Pause()
 	music_slots.resize(reserved_music_slots);
 }
 
-void Music::Fade(float limitVolume, short duration, FadeType fadeType, bool stopOnNoVolume)
+void Music::Fade(float limitVolume, short duration, MusicPlayer::FadeType fadeType, bool stopOnNoVolume)
 {
 	for (auto& slot : music_slots)
 	{
@@ -74,7 +74,7 @@ void Music::Fade(float limitVolume, short duration, FadeType fadeType, bool stop
 	}
 }
 
-void Music::Slot::Fade(float limitVolume, short duration, FadeType fadeType, bool stopOnNoVolume)
+void Music::Slot::Fade(float limitVolume, short duration, MusicPlayer::FadeType fadeType, bool stopOnNoVolume)
 {
 	if (!Playing()) return;
 
@@ -144,16 +144,21 @@ std::pair<bool, float> Music::Slot::ComputeFadingVolume() const
 
 	float volume = music_fade_start_volume;
 	switch (music_fade_type) {
-	case FadeType::Linear:
+	case MusicPlayer::FadeType::Linear:
 	{
 		volume += (music_fade_limit_volume - music_fade_start_volume) * factor;
 		break;
 	}
-	case FadeType::Sinusoidal:
+	case MusicPlayer::FadeType::Sinusoidal:
 	{
 		const auto t = factor * M_PI_2;
 		const auto shape = fadeIn ? std::sin(t) : 1.0 - std::cos(t);
 		volume += (music_fade_limit_volume - music_fade_start_volume) * shape;
+		break;
+	}
+	case MusicPlayer::FadeType::None:
+	{
+		volume = music_fade_limit_volume;
 		break;
 	}
 	default:
@@ -219,15 +224,15 @@ std::optional<uint32_t> Music::Slot::AddSegmentToPreset(uint32_t preset_index, u
 	return static_cast<uint32_t>(dynamic_music_presets[preset_index].GetSegments().size() - 1);
 }
 
-bool Music::Slot::SetNextSegment(uint32_t preset_index, uint32_t segment_index, uint32_t transition_preset_index, uint32_t transition_segment_index)
+bool Music::Slot::SetSegmentMapping(uint32_t preset_index, uint32_t segment_index, uint32_t transition_preset_index, const MusicPlayer::Segment::Mapping& transition_segment_mapping)
 {
-	if (!IsSegmentIndexValid(preset_index, segment_index) || !IsSegmentIndexValid(transition_preset_index, transition_segment_index))
+	if (!IsSegmentIndexValid(preset_index, segment_index) || !IsSegmentIndexValid(transition_preset_index, transition_segment_mapping.segment_id))
 		return false;
 
 	auto segment = dynamic_music_presets[preset_index].GetSegment(segment_index);
 	if (!segment) return false;
 
-	segment->SetNextSegment(transition_preset_index, transition_segment_index);
+	segment->SetSegmentMapping(transition_preset_index, transition_segment_mapping);
 	return true;
 }
 

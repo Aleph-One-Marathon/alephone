@@ -38,8 +38,12 @@ public:
 	AudioFormat GetAudioFormat() { return AudioFormat::_32_float; }
 	bool IsStereo() { return (sfinfo.channels == 2); }
 	int BytesPerFrame() { return 4 * (IsStereo() ? 2 : 1); }
-	float Rate() { return (float) sfinfo.samplerate; }
+	uint32_t Rate() { return sfinfo.samplerate; }
 	bool IsLittleEndian() { return PlatformIsLittleEndian(); }
+	float Duration() { return Frames() / Rate(); }
+	uint32_t Position();
+	void Position(uint32_t position);
+	uint32_t Size() { return Frames() * BytesPerFrame(); }
 
 	int32 Frames() { return sfinfo.frames; }
 

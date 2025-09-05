@@ -94,14 +94,27 @@ int32 SndfileDecoder::Decode(uint8* buffer, int32 max_length)
 	if (!sndfile) return 0;
 
 	return sf_read_float(sndfile, (float*) buffer, max_length / 4) * 4;
-
 }
 
 void SndfileDecoder::Rewind()
 {
 	if (!sndfile) return;
 	sf_seek(sndfile, 0, SEEK_SET);
-}	
+}
+
+uint32_t SndfileDecoder::Position()
+{
+	if (!sndfile) return 0;
+
+	return sf_seek(sndfile, 0, SEEK_CUR) * BytesPerFrame();
+}
+
+void SndfileDecoder::Position(uint32_t position)
+{
+	if (!sndfile) return;
+
+	sf_seek(sndfile, position / BytesPerFrame(), SEEK_SET);
+}
 
 void SndfileDecoder::Close()
 {

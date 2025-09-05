@@ -29,22 +29,45 @@ struct MusicParameters {
 class MusicPlayer : public AudioPlayer {
 public:
 
+	enum class FadeType {
+		None,
+		Linear,
+		Sinusoidal
+	};
+
 	class Segment {
+	public:
+
+		struct Transition {
+			FadeType fade_type;
+			float time_seconds;
+		};
+
+		struct Mapping {
+			uint32_t segment_id;
+			Transition transition_out;
+			Transition transition_in;
+			bool crossfade;
+		
+			Mapping(uint32_t segment_id, Transition transition_out, Transition transition_in, bool crossfade) :
+				segment_id(segment_id), transition_out(transition_out), transition_in(transition_in), crossfade(crossfade) {}
+		};
+
+		Segment(std::shared_ptr<StreamDecoder> decoder) : decoder(decoder) {}
+		std::shared_ptr<StreamDecoder> GetDecoder() const { return decoder; }
+		std::optional<Mapping> GetNextSegmentMapping(uint32_t preset_index) const { return presets_mapping.find(preset_index) != presets_mapping.end() ? std::make_optional(presets_mapping.find(preset_index)->second) : std::nullopt; }
+		void SetSegmentMapping(uint32_t preset_index, const Mapping& segment_mapping) { presets_mapping.insert_or_assign(preset_index, segment_mapping); }
 	private:
 		std::shared_ptr<StreamDecoder> decoder;
-		std::unordered_map<uint32_t, uint32_t> presets_mapping; //preset index - next segment index
-	public:
-		Segment(std::shared_ptr<StreamDecoder> decoder) { this->decoder = decoder; }
-		std::shared_ptr<StreamDecoder> GetDecoder() const { return decoder; }
-		std::optional<uint32_t> GetNextSegmentIndex(uint32_t preset_index) const { return presets_mapping.find(preset_index) != presets_mapping.end() ? std::make_optional(presets_mapping.find(preset_index)->second) : std::nullopt; }
-		void SetNextSegment(uint32_t preset_index, uint32_t segment_index) { presets_mapping[preset_index] = segment_index; }
+		std::unordered_map<uint32_t, Mapping> presets_mapping; //preset index - next segment mapping
 	};
 
 	class Preset {
 	private:
 		std::vector<Segment> segments;
 	public:
-		void AddSegment(const Segment& segment) { segments.push_back(segment); }
+		void AddSegment(std::shared_ptr<StreamDecoder> decoder) { segments.emplace_back(decoder); }
+		const Segment* GetSegment(uint32_t index) const { return index < segments.size() ? &segments[index] : nullptr; }
 		Segment* GetSegment(uint32_t index) { return index < segments.size() ? &segments[index] : nullptr; }
 		const std::vector<Segment>& GetSegments() const { return segments; }
 	};
@@ -54,17 +77,30 @@ public:
 	void UpdateParameters(const MusicParameters& musicParameters) { parameters.Store(musicParameters); }
 	MusicParameters GetParameters() const { return parameters.Get(); }
 	bool RequestPresetTransition(uint32_t preset_index);
-
 private:
+
+	typedef std::pair<std::optional<uint32_t>, std::optional<uint32_t>> SegmentTransitionOffsets; //out-in
+
 	uint32_t GetNextData(uint8* data, uint32_t length) override;
+	bool ProcessTransition(uint8* data, uint32_t length, uint32_t next_preset_index, std::optional<Segment::Mapping> segment_mapping);
+	bool ProcessTransitionIn(uint8* data, uint32_t length, uint32_t next_preset_index, std::pair<Segment::Mapping, SegmentTransitionOffsets> segment_mapping_offsets);
+	void ApplyFade(FadeType fade_type, bool fade_in, uint32_t fade_length, uint32_t current_position, uint8* data, uint32_t faded_data_length);
+	void CrossFadeMix(uint8* data_out, uint8* data_in, uint32_t length);
+	void SwitchSegment(std::optional<Segment::Mapping> segment_mapping, std::optional<SegmentTransitionOffsets> transition_offsets);
+	uint32_t GetTransitionPresetIndex() const;
 	SetupALResult SetUpALSourceIdle() override;
 	bool LoadParametersUpdates() override { return parameters.Update(); }
+	SegmentTransitionOffsets ComputeTransitionOffsets(uint32_t preset_index, const Segment::Mapping& segment_mapping) const;
 	AtomicStructure<MusicParameters> parameters;
 	std::shared_ptr<StreamDecoder> current_decoder;
 	std::vector<Preset> music_presets;
 	uint32_t current_preset_index;
+	uint32_t transition_preset_index;
 	uint32_t current_segment_index;
+	std::pair<std::optional<Segment::Mapping>, std::optional<SegmentTransitionOffsets>> current_transition_mapping_offsets;
 	std::atomic_uint32_t requested_preset_index;
+	bool transition_is_active = false;
+	uint32_t crossfade_same_decoder_current_position = 0U;
 
 	friend class OpenALManager;
 };
