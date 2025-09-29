@@ -243,7 +243,7 @@ const luaL_Reg Lua_SoundObject_Get[] = {
 
 char Lua_SoundObjects_Name[] = "SoundObjects";
 
-int Lua_Saved_Objects_register(lua_State* L)
+int Lua_Saved_Objects_register(lua_State* L, const LuaCanMutateTokenInterface&)
 {
 	Lua_Goal::Register(L, Lua_Goal_Get);
 	Lua_Goal::Valid = saved_object_valid<_saved_goal>;

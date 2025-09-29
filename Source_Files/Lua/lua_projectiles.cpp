@@ -282,6 +282,24 @@ int Lua_Projectile_Position(lua_State *L)
 
 const luaL_Reg Lua_Projectile_Get[] = {
 	{"damage_scale", Lua_Projectile_Get_Damage_Scale},
+	{"dz", Lua_Projectile_Get_Gravity},
+	{"elevation", Lua_Projectile_Get_Elevation},
+	{"facing", Lua_Projectile_Get_Facing},
+	{"play_sound", L_TableFunction<Lua_Projectile_Play_Sound>},
+	{"owner", Lua_Projectile_Get_Owner},
+	{"pitch", Lua_Projectile_Get_Elevation},
+	{"polygon", Lua_Projectile_Get_Polygon},
+	{"target", Lua_Projectile_Get_Target},
+	{"type", Lua_Projectile_Get_Type},
+	{"x", Lua_Projectile_Get_X},
+	{"y", Lua_Projectile_Get_Y},
+	{"yaw", Lua_Projectile_Get_Facing},
+	{"z", Lua_Projectile_Get_Z},
+	{0, 0}
+};
+
+const luaL_Reg Lua_Projectile_Get_Mutable[] = {
+	{"damage_scale", Lua_Projectile_Get_Damage_Scale},
 	{"delete", L_TableFunction<Lua_Projectile_Delete>},
 	{"dz", Lua_Projectile_Get_Gravity},
 	{"elevation", Lua_Projectile_Get_Elevation},
@@ -406,12 +424,29 @@ static bool Lua_ProjectileType_Valid(int32 index)
 
 static void compatibility(lua_State *L);
 
-int Lua_Projectiles_register(lua_State *L)
+int Lua_Projectiles_register(lua_State *L,
+							 const LuaCanMutateTokenInterface& can_mutate)
 {
-	Lua_Projectile::Register(L, Lua_Projectile_Get, Lua_Projectile_Set);
+	if (can_mutate.world())
+	{
+		Lua_Projectile::Register(L, Lua_Projectile_Get_Mutable, Lua_Projectile_Set);
+	}
+	else
+	{
+		Lua_Projectile::Register(L, Lua_Projectile_Get);
+	}
+	
 	Lua_Projectile::Valid = Lua_Projectile_Valid;
 
-	Lua_Projectiles::Register(L, Lua_Projectiles_Methods);
+	if (can_mutate.world())
+	{
+		Lua_Projectiles::Register(L, Lua_Projectiles_Methods);
+	}
+	else
+	{
+		Lua_Projectiles::Register(L);
+	}
+
 	Lua_Projectiles::Length = std::bind(get_dynamic_limit, (int) _dynamic_limit_projectiles);
 
 	Lua_ProjectileType::Register(L, Lua_ProjectileType_Get, 0, 0, Lua_ProjectileType_Mnemonics);

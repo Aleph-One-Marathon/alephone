@@ -1752,6 +1752,31 @@ const luaL_Reg Lua_Polygon_Get[] = {
 	{"adjacent_polygons", Lua_Polygon_Get_Adjacent},
 	{"area", Lua_Polygon_Get_Area},
 	{"ceiling", Lua_Polygon_Get_Ceiling},
+	{"check_collision", L_TableFunction<Lua_Polygon_Check_Collision>},
+	{"contains", L_TableFunction<Lua_Polygon_Contains>},
+	{"endpoints", Lua_Polygon_Get_Endpoints},
+	{"find_polygon", L_TableFunction<Lua_Polygon_Find_Polygon>},
+	{"find_line_crossed_leaving", L_TableFunction<Lua_Polygon_Find_Line_Crossed_Leaving>},
+	{"floor", Lua_Polygon_Get_Floor},
+	{"lines", Lua_Polygon_Get_Lines},
+	{"media", Lua_Polygon_Get_Media},
+	{"monsters", L_TableFunction<Lua_Polygon_Monsters>},
+	{"permutation", Lua_Polygon_Get_Permutation},
+	{"platform", Lua_Polygon_Get_Platform},
+	{"play_sound", L_TableFunction<Lua_Polygon_Play_Sound>},
+	{"sides", Lua_Polygon_Get_Sides},
+	{"type", Lua_Polygon_Get_Type},
+	{"visible_on_automap", Lua_Polygon_Get_Visible_On_Automap},
+	{"x", Lua_Polygon_Get_X},
+	{"y", Lua_Polygon_Get_Y},
+	{"z", Lua_Polygon_Get_Z},
+	{0, 0}
+};
+
+const luaL_Reg Lua_Polygon_Get_Mutable[] = {
+	{"adjacent_polygons", Lua_Polygon_Get_Adjacent},
+	{"area", Lua_Polygon_Get_Area},
+	{"ceiling", Lua_Polygon_Get_Ceiling},
 	{"change_height", L_TableFunction<Lua_Polygon_Change_Height>},
 	{"check_collision", L_TableFunction<Lua_Polygon_Check_Collision>},
 	{"contains", L_TableFunction<Lua_Polygon_Contains>},
@@ -2455,6 +2480,19 @@ static int Lua_Side_Get_Type(lua_State *L)
 }
 
 const luaL_Reg Lua_Side_Get[] = {
+	{"ambient_delta", Lua_Side_Get_Ambient_Delta},
+	{"control_panel", Lua_Side_Get_Control_Panel},
+	{"line", Lua_Side_Get_Line},
+	{"play_sound", L_TableFunction<Lua_Side_Play_Sound>},
+	{"polygon", Lua_Side_Get_Polygon},
+	{"primary", Lua_Side_Get_Primary},
+	{"secondary", Lua_Side_Get_Secondary},
+	{"transparent", Lua_Side_Get_Transparent},
+	{"type", Lua_Side_Get_Type},
+	{0, 0}
+};
+
+const luaL_Reg Lua_Side_Get_Mutable[] = {
 	{"ambient_delta", Lua_Side_Get_Ambient_Delta},
 	{"control_panel", Lua_Side_Get_Control_Panel},
 	{"line", Lua_Side_Get_Line},
@@ -3680,7 +3718,7 @@ static void compatibility(lua_State *L);
 
 extern bool collection_loaded(short);
 
-int Lua_Map_register(lua_State *L)
+int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 {
 	Lua_AmbientSound::Register(L, 0, 0, 0, Lua_AmbientSound_Mnemonics);
 	Lua_AmbientSound::Valid = Lua_AmbientSound::ValidRange(NUMBER_OF_AMBIENT_SOUND_DEFINITIONS);
@@ -3730,7 +3768,15 @@ int Lua_Map_register(lua_State *L)
 	Lua_Lines::Register(L);
 	Lua_Lines::Length = Lua_Lines_Length;
 
-	Lua_Platform::Register(L, Lua_Platform_Get, Lua_Platform_Set);
+	if (can_mutate.world())
+	{
+		Lua_Platform::Register(L, Lua_Platform_Get, Lua_Platform_Set);
+	}
+	else
+	{
+		Lua_Platform::Register(L, Lua_Platform_Get);
+	}
+	
 	Lua_Platform::Valid = Lua_Platform_Valid;
 
 	Lua_Platforms::Register(L);
@@ -3742,10 +3788,24 @@ int Lua_Map_register(lua_State *L)
 	Lua_PlatformTypes::Register(L);
 	Lua_PlatformTypes::Length = Lua_PlatformTypes::ConstantLength(NUMBER_OF_PLATFORM_TYPES);
 
-	Lua_Polygon_Floor::Register(L, Lua_Polygon_Floor_Get, Lua_Polygon_Floor_Set);
+	if (can_mutate.world())
+	{
+		Lua_Polygon_Floor::Register(L, Lua_Polygon_Floor_Get, Lua_Polygon_Floor_Set);
+	}
+	else
+	{
+		Lua_Polygon_Floor::Register(L, Lua_Polygon_Floor_Get);
+	}
 	Lua_Polygon_Floor::Valid = Lua_Polygon_Valid;
 
-	Lua_Polygon_Ceiling::Register(L, Lua_Polygon_Ceiling_Get, Lua_Polygon_Ceiling_Set);
+	if (can_mutate.world())
+	{
+		Lua_Polygon_Ceiling::Register(L, Lua_Polygon_Ceiling_Get, Lua_Polygon_Ceiling_Set);
+	}
+	else
+	{
+		Lua_Polygon_Ceiling::Register(L, Lua_Polygon_Ceiling_Get);
+	}
 	Lua_Polygon_Ceiling::Valid = Lua_Polygon_Valid;
 
 	Lua_PolygonType::Register(L, 0, 0, 0, Lua_PolygonType_Mnemonics);
@@ -3759,22 +3819,59 @@ int Lua_Map_register(lua_State *L)
 	Lua_Polygon_Lines::Register(L, 0, 0, Lua_Polygon_Lines_Metatable);
 	Lua_Polygon_Sides::Register(L, 0, 0, Lua_Polygon_Sides_Metatable);
 
-	Lua_Polygon::Register(L, Lua_Polygon_Get, Lua_Polygon_Set);
+	if (can_mutate.world())
+	{
+		Lua_Polygon::Register(L, Lua_Polygon_Get_Mutable, Lua_Polygon_Set);
+	}
+	else
+	{
+		Lua_Polygon::Register(L, Lua_Polygon_Get);
+	}
 	Lua_Polygon::Valid = Lua_Polygon_Valid;
 
 	Lua_Polygons::Register(L);
 	Lua_Polygons::Length = Lua_Polygons_Length;
 
-	Lua_Side_ControlPanel::Register(L, Lua_Side_ControlPanel_Get, Lua_Side_ControlPanel_Set);
+	if (can_mutate.world())
+	{
+		Lua_Side_ControlPanel::Register(L, Lua_Side_ControlPanel_Get, Lua_Side_ControlPanel_Set);
+	}
+	else
+	{
+		Lua_Side_ControlPanel::Register(L, Lua_Side_ControlPanel_Get);
+	}
 
-	Lua_Primary_Side::Register(L, Lua_Primary_Side_Get, Lua_Primary_Side_Set);
-	Lua_Secondary_Side::Register(L, Lua_Secondary_Side_Get, Lua_Secondary_Side_Set);
-	Lua_Transparent_Side::Register(L, Lua_Transparent_Side_Get, Lua_Transparent_Side_Set);
+	if (can_mutate.world())
+	{
+		Lua_Primary_Side::Register(L, Lua_Primary_Side_Get, Lua_Primary_Side_Set);
+		Lua_Secondary_Side::Register(L, Lua_Secondary_Side_Get, Lua_Secondary_Side_Set);
+		Lua_Transparent_Side::Register(L, Lua_Transparent_Side_Get, Lua_Transparent_Side_Set);
+	}
+	else
+	{
+		Lua_Primary_Side::Register(L, Lua_Primary_Side_Get);
+		Lua_Secondary_Side::Register(L, Lua_Secondary_Side_Get);
+		Lua_Transparent_Side::Register(L, Lua_Transparent_Side_Get);
+	}
 
-	Lua_Side::Register(L, Lua_Side_Get, Lua_Side_Set);
+	if (can_mutate.world())
+	{
+		Lua_Side::Register(L, Lua_Side_Get_Mutable, Lua_Side_Set);
+	}
+	else
+	{
+		Lua_Side::Register(L, Lua_Side_Get);
+	}
 	Lua_Side::Valid = Lua_Side_Valid;
 
-	Lua_Sides::Register(L, Lua_Sides_Methods);
+	if (can_mutate.world())
+	{
+		Lua_Sides::Register(L, Lua_Sides_Methods);
+	}
+	else
+	{
+		Lua_Sides::Register(L);
+	}
 	Lua_Sides::Length = Lua_Sides_Length;
 
 	Lua_SideType::Register(L, 0, 0, 0, Lua_SideType_Mnemonics);
@@ -3782,7 +3879,14 @@ int Lua_Map_register(lua_State *L)
 	Lua_SideTypes::Register(L);
 	Lua_SideTypes::Length = Lua_SideTypes::ConstantLength(static_cast<int16>(_split_side) + 1);
 
-	Lua_Light_State::Register(L, Lua_Light_State_Get, Lua_Light_State_Set);
+	if (can_mutate.world())
+	{
+		Lua_Light_State::Register(L, Lua_Light_State_Get, Lua_Light_State_Set);
+	}
+	else
+	{
+		Lua_Light_State::Register(L, Lua_Light_State_Get);
+	}
 	Lua_Light_State::Valid = Lua_Light_State::ValidRange(static_cast<int16>(_light_secondary_inactive) + 1);
 
 	Lua_Light_States::Register(L, 0, 0, Lua_Light_States_Metatable);
@@ -3806,13 +3910,34 @@ int Lua_Map_register(lua_State *L)
 	Lua_LightStates::Register(L);
 	Lua_LightStates::Length = Lua_LightStates::ConstantLength(static_cast<int16>(_light_secondary_inactive) + 1);
 
-	Lua_Light::Register(L, Lua_Light_Get, Lua_Light_Set);
+	if (can_mutate.world())
+	{
+		Lua_Light::Register(L, Lua_Light_Get, Lua_Light_Set);
+	}
+	else
+	{
+		Lua_Light::Register(L, Lua_Light_Get);
+	}
 	Lua_Light::Valid = Lua_Light_Valid;
 
-	Lua_Lights::Register(L, Lua_Lights_Methods);
+	if (can_mutate.world())
+	{
+		Lua_Lights::Register(L, Lua_Lights_Methods);
+	}
+	else
+	{
+		Lua_Lights::Register(L);
+	}
 	Lua_Lights::Length = Lua_Lights_Length;
-		
-	Lua_Tag::Register(L, Lua_Tag_Get, Lua_Tag_Set);
+
+	if (can_mutate.world())
+	{
+		Lua_Tag::Register(L, Lua_Tag_Get, Lua_Tag_Set);
+	}
+	else
+	{
+		Lua_Tag::Register(L, Lua_Tag_Get);
+	}
 	Lua_Tag::Valid = Lua_Tag_Valid;
 
 	Lua_Tags::Register(L);
@@ -3836,23 +3961,58 @@ int Lua_Map_register(lua_State *L)
 	Lua_MediaTypes::Register(L);
 	Lua_MediaTypes::Length = Lua_MediaTypes::ConstantLength(NUMBER_OF_MEDIA_TYPES);
 
-	Lua_Media::Register(L, Lua_Media_Get, Lua_Media_Set);
+	if (can_mutate.world())
+	{
+		Lua_Media::Register(L, Lua_Media_Get, Lua_Media_Set);
+	}
+	else
+	{
+		Lua_Media::Register(L, Lua_Media_Get);
+	}
 	Lua_Media::Valid = Lua_Media_Valid;
 
-	Lua_Medias::Register(L, Lua_Medias_Methods);
+	if (can_mutate.world())
+	{
+		Lua_Medias::Register(L, Lua_Medias_Methods);
+	}
+	else
+	{
+		Lua_Medias::Register(L);
+	}
 	Lua_Medias::Length = Lua_Medias_Length;
 
-        Lua_Level_Stash::Register(L, 0, 0, Lua_Level_Stash_Metatable);
+    Lua_Level_Stash::Register(L, 0, 0, Lua_Level_Stash_Metatable);
 
 	Lua_Level::Register(L, Lua_Level_Get);
 
-	Lua_Annotation::Register(L, Lua_Annotation_Get, Lua_Annotation_Set);
+	if (can_mutate.world())
+	{
+		Lua_Annotation::Register(L, Lua_Annotation_Get, Lua_Annotation_Set);
+	}
+	else
+	{
+		Lua_Annotation::Register(L, Lua_Annotation_Get);
+	}
 	Lua_Annotation::Valid = Lua_Annotation_Valid;
 
-	Lua_Annotations::Register(L, Lua_Annotations_Methods);
+	if (can_mutate.world())
+	{
+		Lua_Annotations::Register(L, Lua_Annotations_Methods);
+	}
+	else
+	{
+		Lua_Annotations::Register(L);
+	}
 	Lua_Annotations::Length = Lua_Annotations_Length;
 
-	Lua_Fog::Register(L, Lua_Fog_Get, Lua_Fog_Set);
+	if (can_mutate.world())
+	{
+		Lua_Fog::Register(L, Lua_Fog_Get, Lua_Fog_Set);
+	}
+	else
+	{
+		Lua_Fog::Register(L, Lua_Fog_Get);
+	}
 
 	Lua_FogMode::Register(L, 0, 0, 0, Lua_FogMode_Mnemonics);
 	Lua_FogMode::Valid = Lua_FogMode::ValidRange(3);

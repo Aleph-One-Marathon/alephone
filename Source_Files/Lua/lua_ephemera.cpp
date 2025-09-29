@@ -185,6 +185,23 @@ static int Lua_Ephemera_Position(lua_State* L)
 const luaL_Reg Lua_Ephemera_Get[] = {
 	{"clut_index", Lua_Ephemera_Get_Clut_Index},
 	{"collection", Lua_Ephemera_Get_Collection},
+	{"end_when_animation_loops", Lua_Ephemera_Get_End_When_Animation_Loops},
+	{"enlarged", Lua_Ephemera_Get_Enlarged},
+	{"facing", Lua_Ephemera_Get_Facing},
+	{"polygon", Lua_Ephemera_Get_Polygon},
+	{"rendered", Lua_Ephemera_Get_Rendered},
+	{"shape_index", Lua_Ephemera_Get_Shape_Index},
+	{"tiny", Lua_Ephemera_Get_Tiny},
+	{"valid", Lua_Ephemera_Get_Valid},
+	{"x", Lua_Ephemera_Get_X},
+	{"y", Lua_Ephemera_Get_Y},
+	{"z", Lua_Ephemera_Get_Z},
+	{0, 0}
+};
+
+const luaL_Reg Lua_Ephemera_Get_Mutable[] = {
+	{"clut_index", Lua_Ephemera_Get_Clut_Index},
+	{"collection", Lua_Ephemera_Get_Collection},
 	{"delete", L_TableFunction<Lua_Ephemera_Delete>},
 	{"end_when_animation_loops", Lua_Ephemera_Get_End_When_Animation_Loops},
 	{"enlarged", Lua_Ephemera_Get_Enlarged},
@@ -372,6 +389,11 @@ static int Lua_Ephemeras_New(lua_State* L)
 }
 
 const luaL_Reg Lua_Ephemeras_Methods[] = {
+	{"quality", Lua_Ephemeras_Get_Quality},
+	{0, 0}
+};
+
+const luaL_Reg Lua_Ephemeras_Methods_Mutable[] = {
 	{"new", L_TableFunction<Lua_Ephemeras_New>},
 	{"quality", Lua_Ephemeras_Get_Quality},
 	{0, 0}
@@ -389,18 +411,33 @@ static bool Lua_Ephemera_Valid(int32 index)
 	}
 }
 
-int Lua_Ephemera_register(lua_State* L)
+int Lua_Ephemera_register(lua_State* L, const LuaCanMutateTokenInterface& can_mutate)
 {
+	
 	Lua_EphemeraQuality::Register(L, 0, 0, 0, Lua_EphemeraQuality_Mnemonics);
 	Lua_EphemeraQuality::Valid = Lua_EphemeraQuality::ValidRange(static_cast<int>(_ephemera_ultra) + 1);
 
 	Lua_EphemeraQualities::Register(L);
 	Lua_EphemeraQualities::Length = Lua_EphemeraQualities::ConstantLength(5);
-	
-	Lua_Ephemera::Register(L, Lua_Ephemera_Get, Lua_Ephemera_Set);
+
+	if (can_mutate.world())
+	{
+		Lua_Ephemera::Register(L, Lua_Ephemera_Get_Mutable, Lua_Ephemera_Set);
+	}
+	else
+	{
+		Lua_Ephemera::Register(L, Lua_Ephemera_Get);
+	}
 	Lua_Ephemera::Valid = Lua_Ephemera_Valid;
 
-	Lua_Ephemeras::Register(L, Lua_Ephemeras_Methods);
+	if (can_mutate.world())
+	{
+		Lua_Ephemeras::Register(L, Lua_Ephemeras_Methods_Mutable);
+	}
+	else
+	{
+		Lua_Ephemeras::Register(L, Lua_Ephemeras_Methods);
+	}
 	Lua_Ephemeras::Length = std::bind(get_dynamic_limit, (int) _dynamic_limit_ephemera);
 
 	return 0;

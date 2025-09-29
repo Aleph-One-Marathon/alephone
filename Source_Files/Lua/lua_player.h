@@ -47,6 +47,6 @@ typedef L_Enum<Lua_PlayerColor_Name> Lua_PlayerColor;
 extern char Lua_PlayerColors_Name[]; // "PlayerColors"
 typedef L_EnumContainer<Lua_PlayerColors_Name, Lua_PlayerColor> Lua_PlayerColors;
 
-int Lua_Player_register (lua_State *L);
+int Lua_Player_register (lua_State *L, const LuaCanMutateTokenInterface& can_mutate);
 
 #endif
