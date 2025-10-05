@@ -185,7 +185,7 @@ void* L_Persistent_Table_Key()
 std::map<int, std::string> PassedLuaState;
 std::map<int, std::string> SavedLuaState;
 
-class LuaState
+class LuaState : public LuaMutabilityInterface
 {
 	friend bool CollectLuaStats(std::map<std::string, std::string>&, std::map<std::string, std::string>&);
 public:
@@ -247,6 +247,9 @@ public:
 	virtual void SetSearchPath(const std::string& path) {
 		L_Set_Search_Path(State(), path);
 	}
+
+	bool music_mutable() const override { return true; }
+	bool world_mutable() const override { return true; }
 
 protected:
 	bool GetTrigger(const char *trigger);
@@ -834,13 +837,6 @@ static int L_Hide_Interface(lua_State*);
 static int L_Show_Interface(lua_State*);
 static int L_Player_Control(lua_State*);
 
-class LuaCanMutateToken : public LuaCanMutateTokenInterface
-{
-public:
-	bool world() const override { return true; }
-	bool music() const override { return true; }
-};
-
 void LuaState::RegisterFunctions()
 {
 	lua_register(State(), "enable_player", L_Enable_Player);
@@ -851,16 +847,14 @@ void LuaState::RegisterFunctions()
 	lua_register(State(), "player_control", L_Player_Control);
 	//	lua_register(state, "prompt", L_Prompt);
 
-	LuaCanMutateToken can_mutate;
-
-	Lua_Music_register(State(), can_mutate);
-	Lua_Ephemera_register(State(), can_mutate);
-	Lua_Map_register(State(), can_mutate);
-	Lua_Monsters_register(State(), can_mutate);
-	Lua_Objects_register(State(), can_mutate);
-	Lua_Player_register(State(), can_mutate);
-	Lua_Projectiles_register(State(), can_mutate);
-	Lua_Saved_Objects_register(State(), can_mutate);
+	Lua_Music_register(State(), *this);
+	Lua_Ephemera_register(State(), *this);
+	Lua_Map_register(State(), *this);
+	Lua_Monsters_register(State(), *this);
+	Lua_Objects_register(State(), *this);
+	Lua_Player_register(State(), *this);
+	Lua_Projectiles_register(State(), *this);
+	Lua_Saved_Objects_register(State(), *this);
 }
 
 static const char *compatibility_triggers = ""

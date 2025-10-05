@@ -19,6 +19,6 @@ typedef L_Class<Lua_Music_Name> Lua_Music;
 extern char Lua_MusicManager_Name[]; //Music
 typedef L_Container<Lua_MusicManager_Name, Lua_Music> Lua_MusicManager;
 
-int Lua_Music_register(lua_State* L, const LuaCanMutateTokenInterface& can_mutate);
+int Lua_Music_register(lua_State* L, const LuaMutabilityInterface& lmi);
 
 #endif

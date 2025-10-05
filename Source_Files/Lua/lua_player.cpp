@@ -2916,9 +2916,9 @@ const luaL_Reg Lua_Game_Set[] = {
 
 static void Lua_Player_load_compatibility(lua_State *L);
 
-int Lua_Player_register (lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
+int Lua_Player_register (lua_State *L, const LuaMutabilityInterface& m)
 {
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Action_Flags::Register(L, Lua_Action_Flags_Get, Lua_Action_Flags_Set);
 	}
@@ -2927,7 +2927,7 @@ int Lua_Player_register (lua_State *L, const LuaCanMutateTokenInterface& can_mut
 		Lua_Action_Flags::Register(L, Lua_Action_Flags_Get);
 	}
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Camera_Path_Angles::Register(L, Lua_Camera_Path_Angles_Get);
 		Lua_Camera_Path_Points::Register(L, Lua_Camera_Path_Points_Get);
@@ -2941,7 +2941,7 @@ int Lua_Player_register (lua_State *L, const LuaCanMutateTokenInterface& can_mut
 	}
 	Lua_Camera::Valid = Lua_Camera_Valid;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Cameras::Register(L, Lua_Cameras_Methods);
 	}
@@ -2951,7 +2951,7 @@ int Lua_Player_register (lua_State *L, const LuaCanMutateTokenInterface& can_mut
 	}
 	Lua_Cameras::Length = Lua_Cameras_Length;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Crosshairs::Register(L, Lua_Crosshairs_Get, Lua_Crosshairs_Set);
 	}
@@ -2969,7 +2969,7 @@ int Lua_Player_register (lua_State *L, const LuaCanMutateTokenInterface& can_mut
 
 	Lua_InternalVelocity::Register(L, Lua_InternalVelocity_Get);
 	
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_ExternalVelocity::Register(L, Lua_ExternalVelocity_Get, Lua_ExternalVelocity_Set);
 	}
@@ -2984,7 +2984,7 @@ int Lua_Player_register (lua_State *L, const LuaCanMutateTokenInterface& can_mut
 	Lua_FadeTypes::Register(L);
 	Lua_FadeTypes::Length = Lua_FadeTypes::ConstantLength((int16) NUMBER_OF_FADE_TYPES);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Texture_Palette_Slot::Register(L, Lua_Texture_Palette_Slot_Get_Mutable, Lua_Texture_Palette_Slot_Set);
 	}
@@ -2994,7 +2994,7 @@ int Lua_Player_register (lua_State *L, const LuaCanMutateTokenInterface& can_mut
 	}
 	Lua_Texture_Palette_Slots::Register(L, 0, 0, Lua_Texture_Palette_Slots_Metatable);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Texture_Palette::Register(L, Lua_Texture_Palette_Get, Lua_Texture_Palette_Set);
 	}
@@ -3009,7 +3009,7 @@ int Lua_Player_register (lua_State *L, const LuaCanMutateTokenInterface& can_mut
 	Lua_WeaponTypes::Register(L);
 	Lua_WeaponTypes::Length = Lua_WeaponTypes::ConstantLength((int16) MAXIMUM_NUMBER_OF_WEAPONS);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Player_Weapon::Register(L, Lua_Player_Weapon_Get_Mutable);
 	}
@@ -3019,7 +3019,7 @@ int Lua_Player_register (lua_State *L, const LuaCanMutateTokenInterface& can_mut
 	}
 	Lua_Player_Weapon::Valid = Lua_Player_Weapon::ValidRange(MAXIMUM_NUMBER_OF_WEAPONS);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Player_Weapons::Register(L, 0, 0, Lua_Player_Weapons_Metatable_Mutable);
 	}
@@ -3038,7 +3038,7 @@ int Lua_Player_register (lua_State *L, const LuaCanMutateTokenInterface& can_mut
 	Lua_Overlays::Register(L, 0, 0, Lua_Overlays_Metatable);
 	Lua_Overlays::Valid = Lua_Player_Valid;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Overlay::Register(L, Lua_Overlay_Get, Lua_Overlay_Set);
 	}
@@ -3054,7 +3054,7 @@ int Lua_Player_register (lua_State *L, const LuaCanMutateTokenInterface& can_mut
 	Lua_PlayerColors::Register(L);
 	Lua_PlayerColors::Length = Lua_PlayerColors::ConstantLength((int16) NUMBER_OF_TEAM_COLORS);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Player::Register(L, Lua_Player_Get_Mutable, Lua_Player_Set);
 	}
@@ -3064,7 +3064,7 @@ int Lua_Player_register (lua_State *L, const LuaCanMutateTokenInterface& can_mut
 	}
 	Lua_Player::Valid = Lua_Player_Valid;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Players::Register(L, Lua_Players_Get_Mutable);
 	}
@@ -3074,7 +3074,7 @@ int Lua_Player_register (lua_State *L, const LuaCanMutateTokenInterface& can_mut
 	}
 	Lua_Players::Length = Lua_Players_Length;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Game::Register(L, Lua_Game_Get_Mutable, Lua_Game_Set);
 	}

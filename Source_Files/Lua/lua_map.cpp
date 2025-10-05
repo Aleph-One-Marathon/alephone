@@ -3718,7 +3718,7 @@ static void compatibility(lua_State *L);
 
 extern bool collection_loaded(short);
 
-int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
+int Lua_Map_register(lua_State *L, const LuaMutabilityInterface& m)
 {
 	Lua_AmbientSound::Register(L, 0, 0, 0, Lua_AmbientSound_Mnemonics);
 	Lua_AmbientSound::Valid = Lua_AmbientSound::ValidRange(NUMBER_OF_AMBIENT_SOUND_DEFINITIONS);
@@ -3768,7 +3768,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 	Lua_Lines::Register(L);
 	Lua_Lines::Length = Lua_Lines_Length;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Platform::Register(L, Lua_Platform_Get, Lua_Platform_Set);
 	}
@@ -3788,7 +3788,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 	Lua_PlatformTypes::Register(L);
 	Lua_PlatformTypes::Length = Lua_PlatformTypes::ConstantLength(NUMBER_OF_PLATFORM_TYPES);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Polygon_Floor::Register(L, Lua_Polygon_Floor_Get, Lua_Polygon_Floor_Set);
 	}
@@ -3798,7 +3798,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 	}
 	Lua_Polygon_Floor::Valid = Lua_Polygon_Valid;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Polygon_Ceiling::Register(L, Lua_Polygon_Ceiling_Get, Lua_Polygon_Ceiling_Set);
 	}
@@ -3819,7 +3819,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 	Lua_Polygon_Lines::Register(L, 0, 0, Lua_Polygon_Lines_Metatable);
 	Lua_Polygon_Sides::Register(L, 0, 0, Lua_Polygon_Sides_Metatable);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Polygon::Register(L, Lua_Polygon_Get_Mutable, Lua_Polygon_Set);
 	}
@@ -3832,7 +3832,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 	Lua_Polygons::Register(L);
 	Lua_Polygons::Length = Lua_Polygons_Length;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Side_ControlPanel::Register(L, Lua_Side_ControlPanel_Get, Lua_Side_ControlPanel_Set);
 	}
@@ -3841,7 +3841,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 		Lua_Side_ControlPanel::Register(L, Lua_Side_ControlPanel_Get);
 	}
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Primary_Side::Register(L, Lua_Primary_Side_Get, Lua_Primary_Side_Set);
 		Lua_Secondary_Side::Register(L, Lua_Secondary_Side_Get, Lua_Secondary_Side_Set);
@@ -3854,7 +3854,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 		Lua_Transparent_Side::Register(L, Lua_Transparent_Side_Get);
 	}
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Side::Register(L, Lua_Side_Get_Mutable, Lua_Side_Set);
 	}
@@ -3864,7 +3864,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 	}
 	Lua_Side::Valid = Lua_Side_Valid;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Sides::Register(L, Lua_Sides_Methods);
 	}
@@ -3879,7 +3879,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 	Lua_SideTypes::Register(L);
 	Lua_SideTypes::Length = Lua_SideTypes::ConstantLength(static_cast<int16>(_split_side) + 1);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Light_State::Register(L, Lua_Light_State_Get, Lua_Light_State_Set);
 	}
@@ -3910,7 +3910,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 	Lua_LightStates::Register(L);
 	Lua_LightStates::Length = Lua_LightStates::ConstantLength(static_cast<int16>(_light_secondary_inactive) + 1);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Light::Register(L, Lua_Light_Get, Lua_Light_Set);
 	}
@@ -3920,7 +3920,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 	}
 	Lua_Light::Valid = Lua_Light_Valid;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Lights::Register(L, Lua_Lights_Methods);
 	}
@@ -3930,7 +3930,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 	}
 	Lua_Lights::Length = Lua_Lights_Length;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Tag::Register(L, Lua_Tag_Get, Lua_Tag_Set);
 	}
@@ -3961,7 +3961,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 	Lua_MediaTypes::Register(L);
 	Lua_MediaTypes::Length = Lua_MediaTypes::ConstantLength(NUMBER_OF_MEDIA_TYPES);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Media::Register(L, Lua_Media_Get, Lua_Media_Set);
 	}
@@ -3971,7 +3971,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 	}
 	Lua_Media::Valid = Lua_Media_Valid;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Medias::Register(L, Lua_Medias_Methods);
 	}
@@ -3985,7 +3985,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 
 	Lua_Level::Register(L, Lua_Level_Get);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Annotation::Register(L, Lua_Annotation_Get, Lua_Annotation_Set);
 	}
@@ -3995,7 +3995,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 	}
 	Lua_Annotation::Valid = Lua_Annotation_Valid;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Annotations::Register(L, Lua_Annotations_Methods);
 	}
@@ -4005,7 +4005,7 @@ int Lua_Map_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
 	}
 	Lua_Annotations::Length = Lua_Annotations_Length;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Fog::Register(L, Lua_Fog_Get, Lua_Fog_Set);
 	}

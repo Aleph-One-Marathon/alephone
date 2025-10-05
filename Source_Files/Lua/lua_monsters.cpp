@@ -1180,7 +1180,7 @@ const luaL_Reg Lua_Monsters_Methods[] = {
 
 static void compatibility(lua_State *L);
 
-int Lua_Monsters_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
+int Lua_Monsters_register(lua_State *L, const LuaMutabilityInterface& m)
 {
 	Lua_MonsterClass::Register(L, 0, 0, 0, Lua_MonsterClass_Mnemonics);
 	Lua_MonsterClass::Valid = Lua_MonsterClass_Valid;
@@ -1188,7 +1188,7 @@ int Lua_Monsters_register(lua_State *L, const LuaCanMutateTokenInterface& can_mu
 	Lua_MonsterClasses::Register(L);
 	Lua_MonsterClasses::Length = Lua_MonsterClasses::ConstantLength(_class_yeti_bit + 1);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_MonsterType_Enemies::Register(L, 0, 0, Lua_MonsterType_Enemies_Metatable_Mutable);
 		Lua_MonsterType_Friends::Register(L, 0, 0, Lua_MonsterType_Friends_Metatable_Mutable);
@@ -1213,7 +1213,7 @@ int Lua_Monsters_register(lua_State *L, const LuaCanMutateTokenInterface& can_mu
 	Lua_MonsterActions::Register(L);
 	Lua_MonsterActions::Length = Lua_MonsterActions::ConstantLength(NUMBER_OF_MONSTER_ACTIONS);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_MonsterType::Register(L, Lua_MonsterType_Get, Lua_MonsterType_Set, 0, Lua_MonsterType_Mnemonics);
 	}
@@ -1226,7 +1226,7 @@ int Lua_Monsters_register(lua_State *L, const LuaCanMutateTokenInterface& can_mu
 	Lua_MonsterTypes::Register(L);
 	Lua_MonsterTypes::Length = Lua_MonsterTypes::ConstantLength(NUMBER_OF_MONSTER_TYPES);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Monster::Register(L, Lua_Monster_Get_Mutable, Lua_Monster_Set);
 	}
@@ -1236,7 +1236,7 @@ int Lua_Monsters_register(lua_State *L, const LuaCanMutateTokenInterface& can_mu
 	}
 	Lua_Monster::Valid = Lua_Monster_Valid;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Monsters::Register(L, Lua_Monsters_Methods);
 	}

@@ -424,10 +424,9 @@ static bool Lua_ProjectileType_Valid(int32 index)
 
 static void compatibility(lua_State *L);
 
-int Lua_Projectiles_register(lua_State *L,
-							 const LuaCanMutateTokenInterface& can_mutate)
+int Lua_Projectiles_register(lua_State *L, const LuaMutabilityInterface& m)
 {
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Projectile::Register(L, Lua_Projectile_Get_Mutable, Lua_Projectile_Set);
 	}
@@ -438,7 +437,7 @@ int Lua_Projectiles_register(lua_State *L,
 	
 	Lua_Projectile::Valid = Lua_Projectile_Valid;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Projectiles::Register(L, Lua_Projectiles_Methods);
 	}

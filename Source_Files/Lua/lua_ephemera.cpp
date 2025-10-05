@@ -411,7 +411,7 @@ static bool Lua_Ephemera_Valid(int32 index)
 	}
 }
 
-int Lua_Ephemera_register(lua_State* L, const LuaCanMutateTokenInterface& can_mutate)
+int Lua_Ephemera_register(lua_State* L, const LuaMutabilityInterface& m)
 {
 	
 	Lua_EphemeraQuality::Register(L, 0, 0, 0, Lua_EphemeraQuality_Mnemonics);
@@ -420,7 +420,7 @@ int Lua_Ephemera_register(lua_State* L, const LuaCanMutateTokenInterface& can_mu
 	Lua_EphemeraQualities::Register(L);
 	Lua_EphemeraQualities::Length = Lua_EphemeraQualities::ConstantLength(5);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Ephemera::Register(L, Lua_Ephemera_Get_Mutable, Lua_Ephemera_Set);
 	}
@@ -430,7 +430,7 @@ int Lua_Ephemera_register(lua_State* L, const LuaCanMutateTokenInterface& can_mu
 	}
 	Lua_Ephemera::Valid = Lua_Ephemera_Valid;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Ephemeras::Register(L, Lua_Ephemeras_Methods_Mutable);
 	}

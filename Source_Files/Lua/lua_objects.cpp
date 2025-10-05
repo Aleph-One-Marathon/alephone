@@ -889,9 +889,9 @@ const luaL_Reg Lua_Sounds_Methods[] = {
 
 static void compatibility(lua_State *L);
 
-int Lua_Objects_register(lua_State *L, const LuaCanMutateTokenInterface& can_mutate)
+int Lua_Objects_register(lua_State *L, const LuaMutabilityInterface& m)
 {
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Effect::Register(L, Lua_Effect_Get_Mutable, Lua_Effect_Set);
 	}
@@ -901,7 +901,7 @@ int Lua_Objects_register(lua_State *L, const LuaCanMutateTokenInterface& can_mut
 	}
 	Lua_Effect::Valid = Lua_Effect_Valid;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Effects::Register(L, Lua_Effects_Methods);
 	}
@@ -911,7 +911,7 @@ int Lua_Objects_register(lua_State *L, const LuaCanMutateTokenInterface& can_mut
 	}
 	Lua_Effects::Length = std::bind(get_dynamic_limit, (int) _dynamic_limit_effects);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Item::Register(L, Lua_Item_Get_Mutable, Lua_Item_Set);
 	}
@@ -921,7 +921,7 @@ int Lua_Objects_register(lua_State *L, const LuaCanMutateTokenInterface& can_mut
 	}
 	Lua_Item::Valid = Lua_Item_Valid;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Items::Register(L, Lua_Items_Methods);
 	}
@@ -931,7 +931,7 @@ int Lua_Objects_register(lua_State *L, const LuaCanMutateTokenInterface& can_mut
 	}
 	Lua_Items::Length = std::bind(get_dynamic_limit, (int) _dynamic_limit_objects);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Scenery::Register(L, Lua_Scenery_Get_Mutable, Lua_Scenery_Set);
 	}
@@ -941,7 +941,7 @@ int Lua_Objects_register(lua_State *L, const LuaCanMutateTokenInterface& can_mut
 	}
 	Lua_Scenery::Valid = Lua_Scenery_Valid;
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_Sceneries::Register(L, Lua_Sceneries_Methods);
 	}
@@ -963,7 +963,7 @@ int Lua_Objects_register(lua_State *L, const LuaCanMutateTokenInterface& can_mut
 	Lua_ItemKinds::Register(L);
 	Lua_ItemKinds::Length = Lua_ItemKinds::ConstantLength(NUMBER_OF_ITEM_TYPES);
 
-	if (can_mutate.world())
+	if (m.world_mutable())
 	{
 		Lua_ItemType::Register(L, Lua_ItemType_Get, Lua_ItemType_Set, 0, Lua_ItemType_Mnemonics);
 	}

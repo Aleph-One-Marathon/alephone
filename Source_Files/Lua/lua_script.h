@@ -165,11 +165,12 @@ struct lua_camera //an expanded version of script_camera; uses Lua's path scheme
     int player_active;
 };
 
-class LuaCanMutateTokenInterface
+class LuaMutabilityInterface
 {
 public:
-	virtual bool music() const = 0;
-	virtual bool world() const = 0; // basically, anything that isn't any of the above
+	virtual bool music_mutable() const = 0;
+	virtual bool world_mutable() const = 0; // basically, anything that isn't
+											// any of the above
 };
 
 #endif
