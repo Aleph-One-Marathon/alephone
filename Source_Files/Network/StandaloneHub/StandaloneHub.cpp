@@ -142,7 +142,6 @@ void StandaloneHub::SendMessageToGatherer(const Message& message)
 bool StandaloneHub::GetGameDataFromGatherer()
 {
 	_map_message.reset();
-	_physics_message.reset();
 
 	if (auto client = _gatherer ? _gatherer : _gatherer_client.lock())
 	{
