@@ -31,7 +31,6 @@ private:
 	std::shared_ptr<CommunicationsChannel> _gatherer;
 	std::weak_ptr<CommunicationsChannel> _gatherer_client;
 	std::unique_ptr<TopologyMessage> _topology_message;
-	std::unique_ptr<LuaMessage> _lua_message;
 	std::unique_ptr<MapMessage> _map_message;
 	std::unique_ptr<PhysicsMessage> _physics_message;
 	int _port;
@@ -60,7 +59,6 @@ public:
 	void GathererJoinedAsClient() { _gatherer_joined_as_client = true; }
 	int GetMapData(uint8** data);
 	int GetPhysicsData(uint8** data);
-	int GetLuaData(uint8** data);
 };
 
 #endif
