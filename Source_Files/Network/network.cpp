@@ -2211,7 +2211,7 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 
 	if (remote_hub || error)
 	{
-		if (physics_buffer) free(physics_buffer);
+		free(physics_buffer);
 		if (!remote_hub) close_progress_dialog();
 		return error;
 	}
