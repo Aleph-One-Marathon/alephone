@@ -2205,23 +2205,29 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 		error= 1;
 	}
 
-#ifndef A1_NETWORK_STANDALONE_HUB
-	if (!error) {
-
-		/* Process the physics file & frees it!.. */
-		if (physics_buffer)
-			process_network_physics_model(physics_buffer);
-		
-		if (!remote_hub) draw_progress_bar(total_length, total_length);
-		
-		if (deferred_script.data()) {
-			LoadLuaScript ((char*)deferred_script.data(), deferred_script.size(), _lua_netscript);
-		}
-	}
-	
-	if (!remote_hub) close_progress_dialog();
+#ifdef A1_NETWORK_STANDALONE_HUB
+	return error;
 #endif
-	
+
+	if (remote_hub || error)
+	{
+		if (physics_buffer) free(physics_buffer);
+		if (!remote_hub) close_progress_dialog();
+		return error;
+	}
+
+	/* Process the physics file & frees it!.. */
+	if (physics_buffer)
+		process_network_physics_model(physics_buffer);
+
+	draw_progress_bar(total_length, total_length);
+
+	if (deferred_script.size()) {
+		LoadLuaScript((char*)deferred_script.data(), deferred_script.size(), _lua_netscript);
+	}
+
+	close_progress_dialog();
+
 	return error;
 }
 
