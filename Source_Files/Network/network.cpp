@@ -906,20 +906,11 @@ static void handleJoinPlayerMessage(JoinPlayerMessage* joinPlayerMessage, Commun
   }
 }
 
-static byte *handlerLuaBuffer = NULL;
-static size_t handlerLuaLength = 0;
+static std::vector<byte> handlerLuaBuffer;
 
 static void handleLuaMessage(BigChunkOfDataMessage *luaMessage, CommunicationsChannel *) {
   if (netState == netStartingUp || netState == netDown) {
-    if (handlerLuaBuffer) {
-      delete[] handlerLuaBuffer;
-      handlerLuaBuffer = NULL;
-    }
-    handlerLuaLength = luaMessage->length();
-    if (handlerLuaLength > 0) {
-      handlerLuaBuffer = new byte[handlerLuaLength];
-      memcpy(handlerLuaBuffer, luaMessage->buffer(), handlerLuaLength);
-    }
+	handlerLuaBuffer = std::vector<byte>(luaMessage->buffer(), luaMessage->buffer() + luaMessage->length());
   } else {
     logAnomaly("unexpected lua message received (netState is %i)", netState);
   }
@@ -1369,6 +1360,7 @@ void NetExit(
 
 	sNetworkStats.clear();
 	deferred_script.clear();
+	handlerLuaBuffer.clear();
   
 	if (server) {
 		delete server;
@@ -2254,10 +2246,8 @@ byte *NetReceiveGameData(bool do_physics)
       handlerMapLength = 0;
     }
     
-    if (handlerLuaLength > 0) {
-      LoadLuaScript((char *) handlerLuaBuffer, handlerLuaLength, _lua_netscript);
-      handlerLuaBuffer = NULL;
-      handlerLuaLength = 0;
+    if (handlerLuaBuffer.size() > 0) {
+      LoadLuaScript((char *)handlerLuaBuffer.data(), handlerLuaBuffer.size(), _lua_netscript);
     }
     
     draw_progress_bar(10, 10);
@@ -2275,11 +2265,6 @@ byte *NetReceiveGameData(bool do_physics)
       delete[] handlerMapBuffer;
       handlerMapBuffer = NULL;
       handlerMapLength = 0;
-    }
-    if (handlerLuaLength > 0) {
-      delete[] handlerLuaBuffer;
-      handlerLuaBuffer = NULL;
-      handlerLuaLength = 0;
     }
     
     alert_user(infoError, strNETWORK_ERRORS, netErrMapDistribFailed, 1);
