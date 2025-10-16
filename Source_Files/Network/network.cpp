@@ -978,20 +978,11 @@ static void handleNetworkStatsMessage(NetworkStatsMessage *statsMessage, Communi
 	}
 }
 
-static byte *handlerPhysicsBuffer = NULL;
-static size_t handlerPhysicsLength = 0;
+static std::vector<byte> handlerPhysicsBuffer;
 
 static void handlePhysicsMessage(BigChunkOfDataMessage *physicsMessage, CommunicationsChannel *) {
 	if (netState == netStartingUp || netState == netDown) {
-		if (handlerPhysicsBuffer) {
-			delete[] handlerPhysicsBuffer;
-			handlerPhysicsBuffer = NULL;
-		}
-		handlerPhysicsLength = physicsMessage->length();
-		if (handlerPhysicsLength > 0) {
-			handlerPhysicsBuffer = new byte[handlerPhysicsLength];
-			memcpy(handlerPhysicsBuffer, physicsMessage->buffer(), handlerPhysicsLength);
-		}
+		handlerPhysicsBuffer = std::vector<byte>(physicsMessage->buffer(), physicsMessage->buffer() + physicsMessage->length());
 	} else {
 		logAnomaly("unexpected physics message received (netState is %i)", netState);
 	}
@@ -1361,6 +1352,7 @@ void NetExit(
 	sNetworkStats.clear();
 	deferred_script.clear();
 	handlerLuaBuffer.clear();
+	handlerPhysicsBuffer.clear();
   
 	if (server) {
 		delete server;
@@ -2234,10 +2226,10 @@ byte *NetReceiveGameData(bool do_physics)
   std::unique_ptr<EndGameDataMessage> endGameDataMessage(connection_to_server->receiveSpecificMessage<EndGameDataMessage>((Uint32) 60000, (Uint32) 30000));
   if (endGameDataMessage.get()) {
     // game data was received OK
-	  if (do_physics) {
-      process_network_physics_model(handlerPhysicsBuffer);
-      handlerPhysicsLength = 0;
-      handlerPhysicsBuffer = NULL;
+	if (do_physics) {
+	  auto physics_buffer = handlerPhysicsBuffer.size() > 0 ? std::malloc(handlerPhysicsBuffer.size()) : nullptr;
+	  if (physics_buffer) std::memcpy(physics_buffer, handlerPhysicsBuffer.data(), handlerPhysicsBuffer.size());
+      process_network_physics_model(physics_buffer); //will free the buffer, that's why we need to allocate for a buffer copy here
     }
     
     if (handlerMapLength > 0) {
@@ -2256,11 +2248,6 @@ byte *NetReceiveGameData(bool do_physics)
     draw_progress_bar(10, 10);
     close_progress_dialog();
     
-    if (handlerPhysicsLength > 0) {
-      delete[] handlerPhysicsBuffer;
-      handlerPhysicsBuffer = NULL;
-      handlerPhysicsLength = 0;
-    }
     if (handlerMapLength > 0) {
       delete[] handlerMapBuffer;
       handlerMapBuffer = NULL;
