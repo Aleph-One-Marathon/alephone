@@ -2220,7 +2220,7 @@ static void display_about_dialog()
 	authors.push_back("Matthew Hielscher");
 	authors.push_back("Rhys Hill");
 	authors.push_back("Alan Jenkins");
-	authors.push_back("Richard Jenkins (Solra Bizna)");
+	authors.push_back("Solra Bizna");
 	authors.push_back("Jeremy, the MSVC guy");
 	authors.push_back("Mark Levin");
 	authors.push_back("Bo Lindbergh");
