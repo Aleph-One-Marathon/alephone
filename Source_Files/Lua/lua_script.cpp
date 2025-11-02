@@ -321,6 +321,12 @@ public:
 	}
 };
 
+class MusicLuaState : public LuaState
+{
+public:
+	bool world_mutable() const override { return false; }
+};
+
 class AchievementsLuaState : public LuaState
 {
 public:
@@ -1872,13 +1878,15 @@ static std::unique_ptr<LuaState> LuaStateFactory(ScriptType script_type)
         return std::make_unique<StatsLuaState>();
 	case _achievements_lua_script:
 		return std::make_unique<AchievementsLuaState>();
+	case _music_lua_script:
+		return std::make_unique<MusicLuaState>();
 	}
     return nullptr;
 }
 
 bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
 {
-	assert(script_type >= _embedded_lua_script && script_type <= _achievements_lua_script);
+	assert(script_type >= _embedded_lua_script && script_type <= _music_lua_script);
 	if (states.find(script_type) == states.end())
 	{
 		states.insert({ script_type, LuaStateFactory(script_type) });
@@ -1900,6 +1908,9 @@ bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
 			break;
 		case _achievements_lua_script:
 			desc = "Achievements Lua";
+			break;
+		case _music_lua_script:
+			desc = "Music Lua";
 			break;
 	}
 
@@ -2064,6 +2075,50 @@ void InvalidateAchievements()
 		screen_printf("Achievements disabled (console command)");
 		logNote("achievements: invalidating due to Lua command");
 		states.erase(_achievements_lua_script);
+	}
+}
+
+void LoadMusicLua(bool unless_solo)
+{
+	if (unless_solo && environment_preferences->use_solo_lua)
+	{
+		return;
+	}
+
+	std::string file;
+	std::string directory;
+
+	auto plugin = Plugins::instance()->find_music_lua();
+	if (plugin)
+	{
+		file = plugin->music_lua;
+		directory = plugin->directory.GetPath();
+		
+		if (file.size())
+		{
+			FileSpecifier fs(file.c_str());
+			if (directory.size())
+			{
+				fs.SetNameWithPath(file.c_str(), directory);
+			}
+
+			OpenedFile script_file;
+			if (fs.Open(script_file))
+			{
+				int32 script_length;
+				script_file.GetLength(script_length);
+
+				std::vector<char> script_buffer(script_length);
+				if (script_file.Read(script_length, script_buffer.data()))
+				{
+					LoadLuaScript(script_buffer.data(), script_buffer.size(), _music_lua_script);
+					if (directory.size())
+					{
+						states[_music_lua_script]->SetSearchPath(directory);
+					}
+				}
+			}
+		}
 	}
 }
 

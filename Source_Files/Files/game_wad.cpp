@@ -767,6 +767,7 @@ extern void LoadSoloLua();
 extern void LoadReplayNetLua();
 extern void LoadStatsLua();
 extern void LoadAchievementsLua();
+extern void LoadMusicLua(bool);
 extern bool RunLuaScript();
 
 /* This is called when the game level is changed somehow */
@@ -829,6 +830,7 @@ bool goto_level(
 			LoadReplayNetLua();
 		}
 		LoadAchievementsLua();
+		LoadMusicLua(!game_is_networked && number_of_players == 1);
 		LoadStatsLua();
 
 		set_game_error(SavedType,SavedError);
@@ -1282,6 +1284,7 @@ bool load_game_from_file(FileSpecifier& File, bool run_scripts)
 				LoadSoloLua();
 			}
 			LoadAchievementsLua();
+			LoadMusicLua(!game_is_networked);
 			LoadStatsLua();
 			set_game_error(SavedType,SavedError);
 		}
