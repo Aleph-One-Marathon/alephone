@@ -60,6 +60,7 @@ struct Plugin {
 	std::string hud_lua;
 	std::string solo_lua;
 	std::string stats_lua;
+	std::string music_lua;
 	std::string theme;
 	std::string required_version;
 	std::vector<ShapesPatch> shapes_patches;
@@ -107,6 +108,7 @@ public:
 	const Plugin* find_solo_lua();
 	const Plugin* find_stats_lua();
 	const Plugin* find_theme();
+	const Plugin* find_music_lua();
 
 	bool get_resource(uint32_t type, int id, LoadedResource& rsrc);
 	void set_map_checksum(uint32_t checksum);
