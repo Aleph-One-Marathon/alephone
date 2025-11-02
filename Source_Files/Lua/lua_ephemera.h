@@ -40,6 +40,6 @@ typedef L_Class<Lua_Ephemera_Name> Lua_Ephemera;
 extern char Lua_Ephemeras_Name[]; // "Ephemera"
 typedef L_Container<Lua_Ephemeras_Name, Lua_Ephemera> Lua_Ephemeras;
 
-int Lua_Ephemera_register(lua_State* L);
+int Lua_Ephemera_register(lua_State* L, const LuaMutabilityInterface& m);
 
 #endif

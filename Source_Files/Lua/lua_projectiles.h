@@ -45,6 +45,6 @@ typedef L_Enum<Lua_ProjectileType_Name> Lua_ProjectileType;
 extern char Lua_ProjectileTypes_Name[]; // "ProjectileTypes"
 typedef L_EnumContainer<Lua_ProjectileTypes_Name, Lua_ProjectileType> Lua_ProjectileTypes;
 
-int Lua_Projectiles_register(lua_State *L);
+int Lua_Projectiles_register(lua_State *L, const LuaMutabilityInterface& m);
 
 #endif

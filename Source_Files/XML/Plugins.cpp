@@ -236,6 +236,20 @@ const Plugin* Plugins::find_hud_lua()
 	return 0;
 }
 
+const Plugin* Plugins::find_music_lua()
+{
+	validate();
+	for (auto rit = std::as_const(m_plugins).rbegin(); rit != m_plugins.rend(); ++rit)
+	{
+		if (rit->music_lua.size() && rit->valid())
+		{
+			return &(*rit);
+		}
+	}
+
+	return nullptr;
+}
+
 const Plugin* Plugins::find_solo_lua()
 {
 	validate();
@@ -353,6 +367,10 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 				if (root.read_attr("theme_dir", Data.theme) &&
 					!plugin_file_exists(Data, Data.theme + "/theme2.mml"))
 					Data.theme = "";
+
+				if (root.read_attr("music_lua", Data.music_lua) &&
+					!plugin_file_exists(Data, Data.music_lua))
+					Data.music_lua = "";
 				
 				for (const InfoTree &tree : root.children_named("mml"))
 				{
@@ -575,11 +593,11 @@ void Plugins::validate()
 	bool found_hud_lua = false;
 	bool found_stats_lua = false;
 	bool found_theme = false;
-	for (std::vector<Plugin>::reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
+	for (auto rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
 	{
 		rit->overridden_solo = false;
 		if (!rit->enabled || !rit->compatible() || !rit->allowed() ||
-			(found_solo_lua && rit->solo_lua.size()) ||
+			(found_solo_lua && (rit->solo_lua.size() || rit->music_lua.size())) ||
 			(found_hud_lua && rit->hud_lua.size()) ||
 			(found_stats_lua && rit->stats_lua.size()) ||
 			(found_theme && rit->theme.size()))
@@ -588,7 +606,7 @@ void Plugins::validate()
 			continue;
 		}
 
-		if (rit->solo_lua.size())
+		if (rit->solo_lua.size() || rit->music_lua.size())
 			found_solo_lua = true;
 		if (rit->hud_lua.size())
 			found_hud_lua = true;
@@ -602,14 +620,16 @@ void Plugins::validate()
 	found_hud_lua = false;
 	found_stats_lua = false;
 	found_theme = false;
-	for (std::vector<Plugin>::reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
+	auto found_music_lua = false;
+	for (auto rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
 	{
 		rit->overridden = false;
 		if (!rit->enabled || !rit->compatible() || !rit->allowed() ||
 			(rit->solo_lua.size()) ||
 			(found_hud_lua && rit->hud_lua.size()) ||
 			(found_stats_lua && rit->stats_lua.size()) ||
-			(found_theme && rit->theme.size()))
+			(found_theme && rit->theme.size()) ||
+			(found_music_lua && rit->music_lua.size()))
 		{
 			rit->overridden = true;
 			continue;
@@ -621,5 +641,7 @@ void Plugins::validate()
 			found_stats_lua = true;
 		if (rit->theme.size())
 			found_theme = true;
+		if (rit->music_lua.size())
+			found_music_lua = true;
 	}
 }

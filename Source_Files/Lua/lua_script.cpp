@@ -185,7 +185,7 @@ void* L_Persistent_Table_Key()
 std::map<int, std::string> PassedLuaState;
 std::map<int, std::string> SavedLuaState;
 
-class LuaState
+class LuaState : public LuaMutabilityInterface
 {
 	friend bool CollectLuaStats(std::map<std::string, std::string>&, std::map<std::string, std::string>&);
 public:
@@ -247,6 +247,9 @@ public:
 	virtual void SetSearchPath(const std::string& path) {
 		L_Set_Search_Path(State(), path);
 	}
+
+	bool music_mutable() const override { return true; }
+	bool world_mutable() const override { return true; }
 
 protected:
 	bool GetTrigger(const char *trigger);
@@ -316,6 +319,12 @@ public:
 		luaL_requiref(State(), LUA_IOLIBNAME, luaopen_io, 1);
 		lua_pop(State(), 1);
 	}
+};
+
+class MusicLuaState : public LuaState
+{
+public:
+	bool world_mutable() const override { return false; }
 };
 
 class AchievementsLuaState : public LuaState
@@ -842,16 +851,16 @@ void LuaState::RegisterFunctions()
 	lua_register(State(), "hide_interface", L_Hide_Interface);
 	lua_register(State(), "show_interface", L_Show_Interface);
 	lua_register(State(), "player_control", L_Player_Control);
-//	lua_register(state, "prompt", L_Prompt);
+	//	lua_register(state, "prompt", L_Prompt);
 
-	Lua_Music_register(State());
-	Lua_Ephemera_register(State());
-	Lua_Map_register(State());
-	Lua_Monsters_register(State());
-	Lua_Objects_register(State());
-	Lua_Player_register(State());
-	Lua_Projectiles_register(State());
-	Lua_Saved_Objects_register(State());
+	Lua_Music_register(State(), *this);
+	Lua_Ephemera_register(State(), *this);
+	Lua_Map_register(State(), *this);
+	Lua_Monsters_register(State(), *this);
+	Lua_Objects_register(State(), *this);
+	Lua_Player_register(State(), *this);
+	Lua_Projectiles_register(State(), *this);
+	Lua_Saved_Objects_register(State(), *this);
 }
 
 static const char *compatibility_triggers = ""
@@ -1869,13 +1878,15 @@ static std::unique_ptr<LuaState> LuaStateFactory(ScriptType script_type)
         return std::make_unique<StatsLuaState>();
 	case _achievements_lua_script:
 		return std::make_unique<AchievementsLuaState>();
+	case _music_lua_script:
+		return std::make_unique<MusicLuaState>();
 	}
     return nullptr;
 }
 
 bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
 {
-	assert(script_type >= _embedded_lua_script && script_type <= _achievements_lua_script);
+	assert(script_type >= _embedded_lua_script && script_type <= _music_lua_script);
 	if (states.find(script_type) == states.end())
 	{
 		states.insert({ script_type, LuaStateFactory(script_type) });
@@ -1897,6 +1908,9 @@ bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
 			break;
 		case _achievements_lua_script:
 			desc = "Achievements Lua";
+			break;
+		case _music_lua_script:
+			desc = "Music Lua";
 			break;
 	}
 
@@ -2061,6 +2075,50 @@ void InvalidateAchievements()
 		screen_printf("Achievements disabled (console command)");
 		logNote("achievements: invalidating due to Lua command");
 		states.erase(_achievements_lua_script);
+	}
+}
+
+void LoadMusicLua(bool unless_solo)
+{
+	if (unless_solo && environment_preferences->use_solo_lua)
+	{
+		return;
+	}
+
+	std::string file;
+	std::string directory;
+
+	auto plugin = Plugins::instance()->find_music_lua();
+	if (plugin)
+	{
+		file = plugin->music_lua;
+		directory = plugin->directory.GetPath();
+		
+		if (file.size())
+		{
+			FileSpecifier fs(file.c_str());
+			if (directory.size())
+			{
+				fs.SetNameWithPath(file.c_str(), directory);
+			}
+
+			OpenedFile script_file;
+			if (fs.Open(script_file))
+			{
+				int32 script_length;
+				script_file.GetLength(script_length);
+
+				std::vector<char> script_buffer(script_length);
+				if (script_file.Read(script_length, script_buffer.data()))
+				{
+					LoadLuaScript(script_buffer.data(), script_buffer.size(), _music_lua_script);
+					if (directory.size())
+					{
+						states[_music_lua_script]->SetSearchPath(directory);
+					}
+				}
+			}
+		}
 	}
 }
 
