@@ -266,8 +266,7 @@ bool NetChangeMap(struct entry_point *entry);
 OSErr NetDistributeGameDataToAllPlayers(byte* wad_buffer, int32 wad_length, bool do_physics, CommunicationsChannel* remote_hub = nullptr);
 byte* NetReceiveGameData(bool do_physics);
 
-void DeferredScriptSend (byte* data, size_t length);
-void SetNetscriptStatus (bool status);
+void DeferredScriptSend (const std::vector<byte>& script_data);
 
 void construct_multiplayer_starts(player_start_data* outStartArray, short* outStartCount);
 void match_starts_with_existing_players(player_start_data* ioStartArray, short* ioStartCount);

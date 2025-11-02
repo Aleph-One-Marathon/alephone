@@ -1366,9 +1366,6 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 #else
 		FileSpecifier theNetscriptFile (active_network_preferences->netscript_file);
 #endif
-
-		// This will be set true below if appropriate
-		SetNetscriptStatus(false);
 	
 		if (active_network_preferences->use_netscript)
 		{
@@ -1379,13 +1376,11 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 				int32 script_length;
 				script_file.GetLength (script_length);
 
-				// DeferredScriptSend will delete this storage the *next time* we call it (!)
-				byte* script_buffer = new byte [script_length];
+				std::vector<byte> script_buffer(script_length);
 			
-				if (script_file.Read (script_length, script_buffer))
+				if (script_file.Read (script_length, script_buffer.data()))
 				{
-					DeferredScriptSend (script_buffer, script_length);
-					SetNetscriptStatus (true);
+					DeferredScriptSend (script_buffer);
 				}
 			
 				script_file.Close ();

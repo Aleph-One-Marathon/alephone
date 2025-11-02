@@ -169,9 +169,7 @@ static std::string gameSessionIdentifier;
 static NetTopology* topology;
 static StarGameProtocol sCurrentGameProtocol;
 static std::unique_ptr<NetworkInterface> network_interface;
-static byte *deferred_script_data = NULL;
-static size_t deferred_script_length = 0;
-static bool do_netscript;
+static std::vector<byte> deferred_script;
 static CommunicationsChannelFactory *server = NULL;
 static bool use_remote_hub = false;
 static byte* resumed_wad_data_for_remote_hub = NULL;
@@ -441,7 +439,7 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 		}
 	}
 
-	if (do_netscript)
+	if (deferred_script.size())
 	{
 		if (capabilities[Capabilities::kLua] == 0) {
 			if (warn_joiner) {
@@ -885,8 +883,6 @@ static void handleJoinPlayerMessage(JoinPlayerMessage* joinPlayerMessage, Commun
   if (handlerState == netJoining) {
     /* Note that we could set accepted to false if we wanted to for some */
     /*  reason- such as bad serial numbers.... */
-    
-	if (!use_remote_hub) SetNetscriptStatus (false); // Unless told otherwise, we don't expect a netscript
 
 	assert(localPlayerIndex != NONE);
     
@@ -910,20 +906,11 @@ static void handleJoinPlayerMessage(JoinPlayerMessage* joinPlayerMessage, Commun
   }
 }
 
-static byte *handlerLuaBuffer = NULL;
-static size_t handlerLuaLength = 0;
+static std::vector<byte> handlerLuaBuffer;
 
 static void handleLuaMessage(BigChunkOfDataMessage *luaMessage, CommunicationsChannel *) {
   if (netState == netStartingUp || netState == netDown) {
-    if (handlerLuaBuffer) {
-      delete[] handlerLuaBuffer;
-      handlerLuaBuffer = NULL;
-    }
-    handlerLuaLength = luaMessage->length();
-    if (handlerLuaLength > 0) {
-      handlerLuaBuffer = new byte[handlerLuaLength];
-      memcpy(handlerLuaBuffer, luaMessage->buffer(), handlerLuaLength);
-    }
+	handlerLuaBuffer = std::vector<byte>(luaMessage->buffer(), luaMessage->buffer() + luaMessage->length());
   } else {
     logAnomaly("unexpected lua message received (netState is %i)", netState);
   }
@@ -991,20 +978,11 @@ static void handleNetworkStatsMessage(NetworkStatsMessage *statsMessage, Communi
 	}
 }
 
-static byte *handlerPhysicsBuffer = NULL;
-static size_t handlerPhysicsLength = 0;
+static std::vector<byte> handlerPhysicsBuffer;
 
 static void handlePhysicsMessage(BigChunkOfDataMessage *physicsMessage, CommunicationsChannel *) {
 	if (netState == netStartingUp || netState == netDown) {
-		if (handlerPhysicsBuffer) {
-			delete[] handlerPhysicsBuffer;
-			handlerPhysicsBuffer = NULL;
-		}
-		handlerPhysicsLength = physicsMessage->length();
-		if (handlerPhysicsLength > 0) {
-			handlerPhysicsBuffer = new byte[handlerPhysicsLength];
-			memcpy(handlerPhysicsBuffer, physicsMessage->buffer(), handlerPhysicsLength);
-		}
+		handlerPhysicsBuffer = std::vector<byte>(physicsMessage->buffer(), physicsMessage->buffer() + physicsMessage->length());
 	} else {
 		logAnomaly("unexpected physics message received (netState is %i)", netState);
 	}
@@ -1372,6 +1350,9 @@ void NetExit(
 	}
 
 	sNetworkStats.clear();
+	deferred_script.clear();
+	handlerLuaBuffer.clear();
+	handlerPhysicsBuffer.clear();
   
 	if (server) {
 		delete server;
@@ -2042,19 +2023,9 @@ bool NetChangeMap(
 	return wad;
 }
 
-void DeferredScriptSend (byte* data, size_t length)
+void DeferredScriptSend(const std::vector<byte>& script_data)
 {
-        if (deferred_script_data != NULL) {
-            delete [] deferred_script_data;
-            deferred_script_data = NULL;
-        }
-        deferred_script_data = data;
-        deferred_script_length = length;
-}
-
-void SetNetscriptStatus (bool status)
-{
-        do_netscript = status;
+    deferred_script = script_data;
 }
 
 // ZZZ this "ought" to distribute to all players simultaneously (by interleaving send calls)
@@ -2073,8 +2044,6 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 	short physics_message_id;
 	byte *physics_buffer = NULL;
 	int32 physics_length;
-	size_t lua_length;
-	byte* lua_buffer = NULL;
 	
 	message_id = remote_hub ? _connecting_to_remote_hub : (topology->player_count==2) ? (_distribute_map_single) : (_distribute_map_multiple);
 	physics_message_id = remote_hub ? _connecting_to_remote_hub : (topology->player_count==2) ? (_distribute_physics_single) : (_distribute_physics_multiple);
@@ -2177,26 +2146,18 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 		}
 	}
 
-#ifdef A1_NETWORK_STANDALONE_HUB
-	lua_length = StandaloneHub::Instance()->GetLuaData(&lua_buffer);
-	SetNetscriptStatus(lua_length);
-#else
-	lua_length = deferred_script_length;
-	lua_buffer = deferred_script_data;
-#endif
-
-	if (do_netscript)
+	if (deferred_script.size())
 	{
 		if (zipCapableChannels.size())
 		{
-			ZippedLuaMessage zippedLuaMessage(lua_buffer, lua_length);
+			ZippedLuaMessage zippedLuaMessage(deferred_script.data(), deferred_script.size());
 			std::unique_ptr<UninflatedMessage> uninflatedMessage(zippedLuaMessage.deflate());
 			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, *uninflatedMessage));
 		}
 
 		if (zipIncapableChannels.size())
 		{
-			LuaMessage luaMessage(lua_buffer, lua_length);
+			LuaMessage luaMessage(deferred_script.data(), deferred_script.size());
 			std::for_each(zipIncapableChannels.begin(), zipIncapableChannels.end(), std::bind(&CommunicationsChannel::enqueueOutgoingMessage, std::placeholders::_1, luaMessage));
 		}
 	}
@@ -2228,23 +2189,29 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 		error= 1;
 	}
 
-#ifndef A1_NETWORK_STANDALONE_HUB
-	if (!error) {
-
-		/* Process the physics file & frees it!.. */
-		if (physics_buffer)
-			process_network_physics_model(physics_buffer);
-		
-		if (!remote_hub) draw_progress_bar(total_length, total_length);
-		
-		if (do_netscript) {
-			LoadLuaScript ((char*)deferred_script_data, deferred_script_length, _lua_netscript);
-		}
-	}
-	
-	if (!remote_hub) close_progress_dialog();
+#ifdef A1_NETWORK_STANDALONE_HUB
+	return error;
 #endif
-	
+
+	if (remote_hub || error)
+	{
+		free(physics_buffer);
+		if (!remote_hub) close_progress_dialog();
+		return error;
+	}
+
+	/* Process the physics file & frees it!.. */
+	if (physics_buffer)
+		process_network_physics_model(physics_buffer);
+
+	draw_progress_bar(total_length, total_length);
+
+	if (deferred_script.size()) {
+		LoadLuaScript((char*)deferred_script.data(), deferred_script.size(), _lua_netscript);
+	}
+
+	close_progress_dialog();
+
 	return error;
 }
 
@@ -2259,10 +2226,10 @@ byte *NetReceiveGameData(bool do_physics)
   std::unique_ptr<EndGameDataMessage> endGameDataMessage(connection_to_server->receiveSpecificMessage<EndGameDataMessage>((Uint32) 60000, (Uint32) 30000));
   if (endGameDataMessage.get()) {
     // game data was received OK
-	  if (do_physics) {
-      process_network_physics_model(handlerPhysicsBuffer);
-      handlerPhysicsLength = 0;
-      handlerPhysicsBuffer = NULL;
+	if (do_physics) {
+	  auto physics_buffer = handlerPhysicsBuffer.size() > 0 ? std::malloc(handlerPhysicsBuffer.size()) : nullptr;
+	  if (physics_buffer) std::memcpy(physics_buffer, handlerPhysicsBuffer.data(), handlerPhysicsBuffer.size());
+      process_network_physics_model(physics_buffer); //will free the buffer, that's why we need to allocate for a buffer copy here
     }
     
     if (handlerMapLength > 0) {
@@ -2271,13 +2238,8 @@ byte *NetReceiveGameData(bool do_physics)
       handlerMapLength = 0;
     }
     
-    if (handlerLuaLength > 0) {
-      do_netscript = true;
-      LoadLuaScript((char *) handlerLuaBuffer, handlerLuaLength, _lua_netscript);
-      handlerLuaBuffer = NULL;
-      handlerLuaLength = 0;
-    } else {
-      do_netscript = false;
+    if (handlerLuaBuffer.size() > 0) {
+      LoadLuaScript((char *)handlerLuaBuffer.data(), handlerLuaBuffer.size(), _lua_netscript);
     }
     
     draw_progress_bar(10, 10);
@@ -2286,20 +2248,10 @@ byte *NetReceiveGameData(bool do_physics)
     draw_progress_bar(10, 10);
     close_progress_dialog();
     
-    if (handlerPhysicsLength > 0) {
-      delete[] handlerPhysicsBuffer;
-      handlerPhysicsBuffer = NULL;
-      handlerPhysicsLength = 0;
-    }
     if (handlerMapLength > 0) {
       delete[] handlerMapBuffer;
       handlerMapBuffer = NULL;
       handlerMapLength = 0;
-    }
-    if (handlerLuaLength > 0) {
-      delete[] handlerLuaBuffer;
-      handlerLuaBuffer = NULL;
-      handlerLuaLength = 0;
     }
     
     alert_user(infoError, strNETWORK_ERRORS, netErrMapDistribFailed, 1);

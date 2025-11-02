@@ -37,8 +37,6 @@ bool StandaloneHub::SetupGathererGame(bool& gathering_done)
 {
 	gathering_done = false;
 
-	SetNetscriptStatus(_lua_message.get());
-
 	_gatherer->enqueueOutgoingMessage(RemoteHubReadyMessage());
 
 	if (!NetProcessNewJoiner(_gatherer)) return Reset();
@@ -144,8 +142,6 @@ void StandaloneHub::SendMessageToGatherer(const Message& message)
 bool StandaloneHub::GetGameDataFromGatherer()
 {
 	_map_message.reset();
-	_physics_message.reset();
-	_lua_message.reset();
 
 	if (auto client = _gatherer ? _gatherer : _gatherer_client.lock())
 	{
@@ -159,8 +155,13 @@ bool StandaloneHub::GetGameDataFromGatherer()
 					break;
 				case kLUA_MESSAGE:
 				case kZIPPED_LUA_MESSAGE:
-					_lua_message = std::unique_ptr<LuaMessage>(static_cast<LuaMessage*>(message));
+				{
+					const auto lua_message = static_cast<LuaMessage*>(message);
+					std::vector<byte> buffer(lua_message->buffer(), lua_message->buffer() + lua_message->length());
+					DeferredScriptSend(buffer);
+					delete lua_message;
 					break;
+				}
 				case kPHYSICS_MESSAGE:
 				case kZIPPED_PHYSICS_MESSAGE:
 					_physics_message = std::unique_ptr<PhysicsMessage>(static_cast<PhysicsMessage*>(message));
@@ -196,12 +197,4 @@ int StandaloneHub::GetPhysicsData(uint8** data)
 
 	*data = _physics_message->buffer();
 	return _physics_message->length();
-}
-
-int StandaloneHub::GetLuaData(uint8** data)
-{
-	if (!_lua_message) return 0;
-
-	*data = _lua_message->buffer();
-	return _lua_message->length();
 }
