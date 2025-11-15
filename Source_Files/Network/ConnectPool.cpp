@@ -24,6 +24,7 @@
 #include "ConnectPool.h"
 #include "network.h"
 #include <utility>
+#include "Logging.h"
 
 
 NonblockingConnect::NonblockingConnect(const std::string& address, uint16 port)
@@ -69,9 +70,23 @@ int NonblockingConnect::Thread()
 {
 	if (!m_ipSpecified)
 	{
-		auto address = NetGetNetworkInterface()->resolve_address(m_address.c_str(), m_port);
-		if (!address.has_value()) return 1;
-		m_ip = address.value();
+		auto resolve_address_result = NetGetNetworkInterface()->resolve_address(m_address.c_str(), m_port);
+		if (!resolve_address_result.has_value())
+		{
+			const auto& error = resolve_address_result.error();
+			logError("couldn't resolve ip address: error code [%d] message [%s]", error.code, error.message.c_str());
+			return 1;
+		}
+
+		auto resolved_address = resolve_address_result.value();
+
+		if (!resolved_address.has_value())
+		{
+			logError("no valid address could be resolved");
+			return 1;
+		}
+
+		m_ip = resolved_address.value();
 	}
 
 	auto channel = std::make_unique<CommunicationsChannel>();

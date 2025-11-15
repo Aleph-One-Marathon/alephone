@@ -135,6 +135,7 @@ dnl AX_CHECK_BOOST_HEADER([boost/uuid/uuid_io.hpp])
 
 AC_LANG_PUSH(C++)
 AC_CHECK_HEADER([asio.hpp], , [AC_MSG_ERROR([You need asio to build Aleph One.])])
+AC_CHECK_HEADER([tl/expected.hpp], , [AC_MSG_ERROR([You need tl-expected to build Aleph One.])])
 AC_LANG_POP(C++)
 
 dnl Check for library functions.

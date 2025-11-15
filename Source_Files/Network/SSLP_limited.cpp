@@ -439,11 +439,23 @@ static bool
 SSLPint_Enter() {
     logContext("setting up SSLP");
 
-    sSocketDescriptor = NetGetNetworkInterface()->udp_open_socket(SSLP_PORT);
-    if (!sSocketDescriptor) return false;
-
-    if (!sSocketDescriptor->broadcast(true))
+    auto open_socket_result = NetGetNetworkInterface()->udp_open_socket(SSLP_PORT);
+    if (!open_socket_result.has_value())
+    {
+        const auto& error = open_socket_result.error();
+        logError("couldn't open udp socket: error code [%d] message [%s]", error.code, error.message.c_str());
         return false;
+    }
+
+    sSocketDescriptor = std::move(open_socket_result.value());
+
+    auto broadcast_result = sSocketDescriptor->broadcast(true);
+    if (!broadcast_result.has_value())
+    {
+        const auto& error = broadcast_result.error();
+        logError("couldn't enable broadcast on udp socket: error code [%d] message [%s]", error.code, error.message.c_str());
+        return false;
+    }
     
     // (note: if EnableBroadcast failed, it's not the end of the world... but it will be harder to locate services)
     assert(sBehaviorsDesired == SSLPINT_NONE);
@@ -572,7 +584,13 @@ SSLP_Allow_Service_Discovery(const struct SSLP_ServiceInstance* inServiceInstanc
     PackPacket(sResponsePacket.buffer.data(), theResponsePacket);
     
     // Broadcast the HAVE once to speed things up, maybe
-    sSocketDescriptor->broadcast_send(sResponsePacket);
+    auto broadcast_result = sSocketDescriptor->broadcast_send(sResponsePacket);
+
+    if (!broadcast_result.has_value())
+    {
+        const auto& error = broadcast_result.error();
+        logError("couldn't broadcast send: error code [%d] message [%s]", error.code, error.message.c_str());
+    }
     
     // Allow receiving code to respond to incoming FIND messages
     sBehaviorsDesired		|= SSLPINT_RESPONDING;
@@ -601,7 +619,13 @@ SSLP_Disallow_Service_Discovery(const struct SSLP_ServiceInstance* inInstance) {
     PackPacket(sResponsePacket.buffer.data(), theResponsePacket);
     sResponsePacket.address.set_port(SSLP_PORT);
 
-    sSocketDescriptor->broadcast_send(sResponsePacket);
+    auto broadcast_result = sSocketDescriptor->broadcast_send(sResponsePacket);
+
+    if (!broadcast_result.has_value())
+    {
+        const auto& error = broadcast_result.error();
+        logError("couldn't broadcast send: error code [%d] message [%s]", error.code, error.message.c_str());
+    }
 
     // If all SSLP services are done, clean up more...
     if(sBehaviorsDesired == SSLPINT_NONE)
@@ -629,7 +653,14 @@ SSLP_Pump() {
         if(theCurrentTime - theTimeLastWorked >= 5000) {
 
             // Do broadcasting work
-            sSocketDescriptor->broadcast_send(sFindPacket);
+            auto broadcast_result = sSocketDescriptor->broadcast_send(sFindPacket);
+
+            if (!broadcast_result.has_value())
+            {
+                const auto& error = broadcast_result.error();
+                logError("couldn't broadcast send: error code [%d] message [%s]", error.code, error.message.c_str());
+            }
+
             SSLPint_RemoveTimedOutInstances();
 
             theTimeLastWorked = theCurrentTime;
@@ -637,8 +668,35 @@ SSLP_Pump() {
     }
     
     // Do receiving work every time
-    if(sBehaviorsDesired & (SSLPINT_LOCATING | SSLPINT_RESPONDING)) {
-        while (sSocketDescriptor->check_receive() > 0 && sSocketDescriptor->receive(sReceivingPacket) > 0) {
+    if(sBehaviorsDesired & (SSLPINT_LOCATING | SSLPINT_RESPONDING))
+    {
+        while (true)
+        {
+            auto check_receive_result = sSocketDescriptor->check_receive();
+            if (!check_receive_result.has_value())
+            {
+                const auto& error = check_receive_result.error();
+                logError("couldn't check if udp packets are available: error code [%d] message [%s]", error.code, error.message.c_str());
+                break;
+            }
+
+            if (!check_receive_result.value())
+                break;
+
+            auto receive_packet_result = sSocketDescriptor->receive(sReceivingPacket);
+            if (!receive_packet_result.has_value())
+            {
+                const auto& error = receive_packet_result.error();
+                logError("couldn't receive available udp packets: error code [%d] message [%s]", error.code, error.message.c_str());
+                break;
+            }
+
+            if (!receive_packet_result.value())
+            {
+                logError("couldn't receive udp packets marked as available");
+                break;
+            }
+
             SSLPint_ReceivedPacket();
         }
     }

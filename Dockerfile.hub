@@ -6,7 +6,7 @@ COPY . /alephone-hub
 
 RUN apk add --no-cache alpine-sdk automake autoconf-archive \
            boost-dev sdl2-dev asio-dev sdl2_ttf-dev \
-           openal-soft-dev libsndfile-dev \
+           openal-soft-dev libsndfile-dev tl-expected \
          && autoreconf -i \
          && ./configure --enable-standalone-hub --disable-opengl \
          && make -j$(nproc) \

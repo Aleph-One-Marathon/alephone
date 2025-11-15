@@ -21,7 +21,7 @@ runs:
       
     - name: Update the list of dependencies with missing dependencies since Vcpkg won't be used
       if: inputs.use_vcpkg == 'false'
-      run: echo "apt_dependencies=${{env.apt_dependencies}} catch2 libboost-all-dev libmatroska-dev libebml-dev libyuv-dev libsndfile-dev libvorbis-dev libvorbisenc2 libzzip-dev libvpx-dev libminiupnpc-dev" >> $GITHUB_ENV
+      run: echo "apt_dependencies=${{env.apt_dependencies}} catch2 libboost-all-dev libmatroska-dev libebml-dev libyuv-dev libsndfile-dev libvorbis-dev libvorbisenc2 libzzip-dev libvpx-dev libminiupnpc-dev libexpected-dev" >> $GITHUB_ENV
       shell: bash
       
     - name: Update the list of dependencies with tools for Vcpkg

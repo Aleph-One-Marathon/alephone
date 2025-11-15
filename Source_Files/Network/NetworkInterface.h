@@ -22,6 +22,14 @@
 #include <asio.hpp>
 #include <string>
 #include <optional>
+#include <tl/expected.hpp>
+
+struct NetworkError {
+    int code;
+    std::string message;
+
+    NetworkError(int code, std::string message) : code(code), message(message) {}
+};
 
 class IPaddress {
 private:
@@ -61,7 +69,7 @@ struct UDPpacket
 {
     IPaddress address;
     std::array<uint8_t, ddpMaxData> buffer;
-    int data_size;
+    uint32_t data_size = 0;
 };
 
 class UDPsocket {
@@ -69,17 +77,18 @@ private:
     asio::io_context& _io_context;
     asio::ip::udp::socket _socket;
     asio::ip::udp::endpoint _receive_async_endpoint;
-    int64_t _receive_async_return_value = 0;
+    asio::error_code _receive_async_error_code;
+    uint64_t _receive_async_return_value = 0;
     UDPsocket(asio::io_context& io_context, asio::ip::udp::socket&& socket);
     friend class NetworkInterface;
 public:
-    int64_t broadcast_send(const UDPpacket& packet);
-    int64_t send(const UDPpacket& packet);
-    int64_t receive(UDPpacket& packet);
-    void register_receive_async(UDPpacket& packet);
-    int64_t receive_async(int timeout_ms);
-    bool broadcast(bool enable);
-    int64_t check_receive() const;
+    tl::expected<uint64_t, NetworkError> broadcast_send(const UDPpacket& packet);
+    tl::expected<uint64_t, NetworkError> send(const UDPpacket& packet);
+    tl::expected<uint64_t, NetworkError> receive(UDPpacket& packet);
+    void register_receive_async(UDPpacket& packet); //no error management here, it's done in the callback
+    tl::expected<void, NetworkError> receive_async(int timeout_ms);
+    tl::expected<void, NetworkError> broadcast(bool enable);
+    tl::expected<uint64_t, NetworkError> check_receive() const;
 };
 
 class TCPsocket {
@@ -90,10 +99,10 @@ private:
     friend class NetworkInterface;
     friend class TCPlistener;
 public:
-    int64_t send(uint8_t* buffer, size_t size);
-    int64_t receive(uint8_t* buffer, size_t size);
+    tl::expected<uint64_t, NetworkError> send(uint8_t* buffer, size_t size);
+    tl::expected<uint64_t, NetworkError> receive(uint8_t* buffer, size_t size);
     IPaddress remote_address() const { return IPaddress(_socket.remote_endpoint()); }
-    bool set_non_blocking(bool enable);
+    tl::expected<void, NetworkError> set_non_blocking(bool enable);
 };
 
 class TCPlistener {
@@ -104,8 +113,8 @@ private:
     TCPlistener(asio::io_context& io_context, const asio::ip::tcp::endpoint& endpoint);
     friend class NetworkInterface;
 public:
-    std::unique_ptr<TCPsocket> accept_connection();
-    bool set_non_blocking(bool enable);
+    tl::expected<std::unique_ptr<TCPsocket>, NetworkError> accept_connection();
+    tl::expected<void, NetworkError> set_non_blocking(bool enable);
 };
 
 class NetworkInterface {
@@ -114,10 +123,10 @@ private:
     asio::ip::tcp::resolver _resolver;
 public:
     NetworkInterface();
-    std::unique_ptr<UDPsocket> udp_open_socket(uint16_t port);
-    std::unique_ptr<TCPsocket> tcp_connect_socket(const IPaddress& address);
-    std::unique_ptr<TCPlistener> tcp_open_listener(uint16_t port);
-    std::optional<IPaddress> resolve_address(const std::string& host, uint16_t port);
+    tl::expected<std::unique_ptr<UDPsocket>, NetworkError> udp_open_socket(uint16_t port);
+    tl::expected<std::unique_ptr<TCPsocket>, NetworkError> tcp_connect_socket(const IPaddress& address);
+    tl::expected<std::unique_ptr<TCPlistener>, NetworkError> tcp_open_listener(uint16_t port);
+    tl::expected<std::optional<IPaddress>, NetworkError> resolve_address(const std::string& host, uint16_t port);
 };
 
 #endif // NETWORK_INTERFACE_H

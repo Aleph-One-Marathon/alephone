@@ -35,6 +35,7 @@
 #include "cseries.h"
 #include "network_private.h"
 #include "mytm.h" // mytm_mutex stuff
+#include "Logging.h"
 
 // Keep track of our one sending/receiving socket
 static std::unique_ptr<UDPsocket> sSocket;
@@ -49,28 +50,27 @@ static SDL_Thread* sReceivingThread = NULL;
 static int
 receive_thread_function(void*) {
 
-	UDPpacket packet;
+	UDPpacket packet = {};
 	sSocket->register_receive_async(packet);
-
-	bool got_packet = false;
-	int receive_result = 0;
 
 	while (sKeepListening) {
 
-		if (!got_packet)
+		if (!packet.data_size)
 		{
-			receive_result = sSocket->receive_async(1000);
-			got_packet = receive_result > 0;
+			auto receive_result = sSocket->receive_async(1000);
+
+			if (!receive_result.has_value())
+			{
+				const auto& error = receive_result.error();
+				logError("couldn't receive udp packet: error code [%d] message [%s]", error.code, error.message.c_str());
+				sSocket->register_receive_async(packet);
+			}
 		}
 
-		if (got_packet && take_mytm_mutex()) {
+		if (packet.data_size > 0 && take_mytm_mutex()) {
 			sPacketHandler(packet);
 			release_mytm_mutex();
-			got_packet = false;
-		}
-
-		if (!got_packet && receive_result != 0)
-		{
+			packet = {};
 			sSocket->register_receive_async(packet);
 		}
 	}
@@ -86,8 +86,16 @@ receive_thread_function(void*) {
 bool NetDDPOpenSocket(uint16_t ioPortNumber, PacketHandlerProcPtr packetHandler)
 {
 	sPacketHandler = packetHandler;
-	sSocket = NetGetNetworkInterface()->udp_open_socket(ioPortNumber);
-	if (!sSocket) return false;
+	auto open_socket_result = NetGetNetworkInterface()->udp_open_socket(ioPortNumber);
+
+	if (!open_socket_result.has_value())
+	{
+		const auto& error = open_socket_result.error();
+		logError("couldn't open udp socket: error code [%d] message [%s]", error.code, error.message.c_str());
+		return false;
+	}
+
+	sSocket = std::move(open_socket_result.value());
 
 	// Set up receiver
 	sKeepListening = true;
@@ -127,7 +135,16 @@ bool NetDDPSendFrame(UDPpacket& frame, const IPaddress& address)
 {
 	assert(frame.data_size <= ddpMaxData);
 	frame.address = address;
-	return sSocket->send(frame) > 0;
+	auto send_result = sSocket->send(frame);
+
+	if (!send_result.has_value())
+	{
+		const auto& error = send_result.error();
+		logError("couldn't send udp frame: error code [%d] message [%s]", error.code, error.message.c_str());
+		return false;
+	}
+
+	return send_result.value() > 0;
 }
 
 #endif // !defined(DISABLE_NETWORKING)

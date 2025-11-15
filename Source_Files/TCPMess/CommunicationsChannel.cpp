@@ -37,6 +37,7 @@
 #include <cerrno>
 #include "cseries.h"
 #include <algorithm>
+#include "Logging.h"
 
 enum
 {
@@ -102,20 +103,24 @@ CommunicationsChannel::receive_some(byte* inBuffer, size_t& ioBufferPosition, si
 
 	if(theBytesLeft > 0)
 	{
-		int theResult = mSocket->receive(inBuffer + ioBufferPosition, theBytesLeft);
+		auto receive_result = mSocket->receive(inBuffer + ioBufferPosition, theBytesLeft);
 
-		if(theResult < 0)
+		if (!receive_result.has_value())
 		{
+			const auto& error = receive_result.error();
+			logError("couldn't receive udp packet: error code [%d] message [%s]", error.code, error.message.c_str());
 			disconnect();
 			return kError;
 		}
+
+		auto receive_value = receive_result.value();
 		
-		if(theResult > 0)
+		if (receive_value > 0)
 		{
 			mTicksAtLastReceive = machine_tick_count();
 		}
 	
-		ioBufferPosition += theResult;
+		ioBufferPosition += receive_value;
 	} // if we actually expect to receive something
 	
 	return (ioBufferPosition == inBufferLength) ? kComplete : kIncomplete;
@@ -128,19 +133,23 @@ CommunicationsChannel::send_some(byte* inBuffer, size_t& ioBufferPosition, size_
 {	
 	size_t theBytesLeft = inBufferLength - ioBufferPosition;
 
-	int theResult = mSocket->send(inBuffer + ioBufferPosition, theBytesLeft);
+	auto send_result = mSocket->send(inBuffer + ioBufferPosition, theBytesLeft);
 
-	if(theResult < 0)
+	if (!send_result.has_value())
 	{
+		const auto& error = send_result.error();
+		logError("couldn't send udp packet: error code [%d] message [%s]", error.code, error.message.c_str());
 		disconnect();
 		return kError;
 	}
 	else
 	{
-		if(theResult > 0)
+		auto send_value = send_result.value();
+
+		if (send_value > 0)
 			mTicksAtLastSend = machine_tick_count();
 		
-		ioBufferPosition += theResult;
+		ioBufferPosition += send_value;
 		return (ioBufferPosition == inBufferLength) ? kComplete : kIncomplete;
 	}
 }
@@ -389,14 +398,25 @@ CommunicationsChannel::connect(const IPaddress& inAddress)
 	
 	mIncomingMessages.clear();
 
-	mSocket = NetGetNetworkInterface()->tcp_connect_socket(inAddress);
-
-	if(mSocket)
+	auto connect_socket_result = NetGetNetworkInterface()->tcp_connect_socket(inAddress);
+	if (!connect_socket_result.has_value())
 	{
-		mSocket->set_non_blocking(true);
-		mConnected = true;
-		mTicksAtLastReceive = machine_tick_count();
-		mTicksAtLastSend = machine_tick_count();
+		const auto& error = connect_socket_result.error();
+		logError("couldn't connect socket: error code [%d] message [%s]", error.code, error.message.c_str());
+		return;
+	}
+
+	mSocket = std::move(connect_socket_result.value());
+	mConnected = true;
+	mTicksAtLastReceive = machine_tick_count();
+	mTicksAtLastSend = machine_tick_count();
+
+	auto non_blocking_result = mSocket->set_non_blocking(true);
+
+	if (!non_blocking_result.has_value())
+	{
+		const auto& error = non_blocking_result.error();
+		logError("couldn't set socket to non blocking mode: error code [%d] message [%s]", error.code, error.message.c_str());
 	}
 }
 
@@ -405,8 +425,24 @@ CommunicationsChannel::connect(const IPaddress& inAddress)
 void
 CommunicationsChannel::connect(const std::string& inAddressString, uint16 inPort)
 {
-	auto address = NetGetNetworkInterface()->resolve_address(inAddressString, inPort);
-	if (address.has_value()) connect(address.value());
+	auto resolve_address_result = NetGetNetworkInterface()->resolve_address(inAddressString, inPort);
+
+	if (!resolve_address_result.has_value()) 
+	{
+		const auto& error = resolve_address_result.error();
+		logError("couldn't resolve ip address: error code [%d] message [%s]", error.code, error.message.c_str());
+		return;
+	}
+
+	auto resolved_address = resolve_address_result.value();
+
+	if (!resolved_address.has_value())
+	{
+		logError("no valid/supported address could be resolved");
+		return;
+	}
+
+	connect(resolved_address.value());
 }
 
 
@@ -571,21 +607,50 @@ void CommunicationsChannel::multipleFlushOutgoingMessages(
 
 CommunicationsChannelFactory::CommunicationsChannelFactory(uint16 inPort)
 {
-	mSocketListener = NetGetNetworkInterface()->tcp_open_listener(inPort);
-	mSocketListener->set_non_blocking(true);
+	auto open_listener_result = NetGetNetworkInterface()->tcp_open_listener(inPort);
+
+	if (!open_listener_result.has_value())
+	{
+		const auto& error = open_listener_result.error();
+		logError("couldn't open tcp listener: error code [%d] message [%s]", error.code, error.message.c_str());
+		return;
+	}
+
+	mSocketListener = std::move(open_listener_result.value());
+
+	auto non_blocking_result = mSocketListener->set_non_blocking(true);
+
+	if (!non_blocking_result.has_value())
+	{
+		const auto& error = non_blocking_result.error();
+		logError("couldn't set tcp listener socket to non blocking mode: error code [%d] message [%s]", error.code, error.message.c_str());
+	}
 }
 
 
 CommunicationsChannel*
 CommunicationsChannelFactory::newIncomingConnection()
 {
-	if (auto connection = mSocketListener->accept_connection())
+	auto accept_connection_result = mSocketListener->accept_connection();
+	if (!accept_connection_result.has_value())
 	{
-		connection->set_non_blocking(true);
-		return new CommunicationsChannel(std::move(connection));
+		const auto& error = accept_connection_result.error();
+		logError("couldn't check for new incoming connection: error code [%d] message [%s]", error.code, error.message.c_str());
+		return nullptr;
 	}
 
-	return nullptr;
+	auto& connection = accept_connection_result.value();
+	if (!connection) return nullptr; //no incoming connection
+
+	auto non_blocking_result = connection->set_non_blocking(true);
+
+	if (!non_blocking_result.has_value())
+	{
+		const auto& error = non_blocking_result.error();
+		logError("couldn't set new incoming connection socket to non blocking mode: error code [%d] message [%s]", error.code, error.message.c_str());
+	}
+
+	return new CommunicationsChannel(std::move(connection));
 }
 
 #endif // !defined(DISABLE_NETWORKING)
