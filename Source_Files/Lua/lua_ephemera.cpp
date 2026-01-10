@@ -200,21 +200,8 @@ const luaL_Reg Lua_Ephemera_Get[] = {
 };
 
 const luaL_Reg Lua_Ephemera_Get_Mutable[] = {
-	{"clut_index", Lua_Ephemera_Get_Clut_Index},
-	{"collection", Lua_Ephemera_Get_Collection},
 	{"delete", L_TableFunction<Lua_Ephemera_Delete>},
-	{"end_when_animation_loops", Lua_Ephemera_Get_End_When_Animation_Loops},
-	{"enlarged", Lua_Ephemera_Get_Enlarged},
-	{"facing", Lua_Ephemera_Get_Facing},
 	{"position", L_TableFunction<Lua_Ephemera_Position>},
-	{"polygon", Lua_Ephemera_Get_Polygon},
-	{"rendered", Lua_Ephemera_Get_Rendered},
-	{"shape_index", Lua_Ephemera_Get_Shape_Index},
-	{"tiny", Lua_Ephemera_Get_Tiny},
-	{"valid", Lua_Ephemera_Get_Valid},
-	{"x", Lua_Ephemera_Get_X},
-	{"y", Lua_Ephemera_Get_Y},
-	{"z", Lua_Ephemera_Get_Z},
 	{0, 0}
 };
 
@@ -420,13 +407,10 @@ int Lua_Ephemera_register(lua_State* L, const LuaMutabilityInterface& m)
 	Lua_EphemeraQualities::Register(L);
 	Lua_EphemeraQualities::Length = Lua_EphemeraQualities::ConstantLength(5);
 
+	Lua_Ephemera::Register(L, Lua_Ephemera_Get);
 	if (m.world_mutable() || m.ephemera_mutable())
 	{
-		Lua_Ephemera::Register(L, Lua_Ephemera_Get_Mutable, Lua_Ephemera_Set);
-	}
-	else
-	{
-		Lua_Ephemera::Register(L, Lua_Ephemera_Get);
+		Lua_Ephemera::RegisterAdditional(L, Lua_Ephemera_Get_Mutable, Lua_Ephemera_Set);
 	}
 	Lua_Ephemera::Valid = Lua_Ephemera_Valid;
 
