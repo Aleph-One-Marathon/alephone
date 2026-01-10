@@ -2096,15 +2096,26 @@ void LoadAchievementsLua()
 
 	if (lua.size())
 	{
+		int world_mutable_count = 0;
+		auto range = states.equal_range(_solo_lua_script);
+		for (auto it = range.first; it != range.second; ++it)
+		{
+			if (it->second->world_mutable())
+			{
+				++world_mutable_count;
+				break;
+			}
+		}
+		
 		if (states.count(_embedded_lua_script) ||
 			states.count(_lua_netscript) ||
-			states.count(_solo_lua_script))
+			world_mutable_count)
 		{
 			Achievements::instance()->set_disabled_reason("Achievements disabled (third party scripts)");
 			logNote("achievements: invalidating due to other Lua (%i %i %i)",
 				states.count(_embedded_lua_script),
 				states.count(_lua_netscript),
-				states.count(_solo_lua_script));
+				world_mutable_count);
 			return;
 		}
 
