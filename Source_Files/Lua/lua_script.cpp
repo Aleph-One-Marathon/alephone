@@ -856,12 +856,16 @@ static int L_Player_Control(lua_State*);
 
 void LuaState::RegisterFunctions()
 {
-	lua_register(State(), "enable_player", L_Enable_Player);
-	lua_register(State(), "disable_player", L_Disable_Player);
+	if (world_mutable())
+	{
+		lua_register(State(), "enable_player", L_Enable_Player);
+		lua_register(State(), "disable_player", L_Disable_Player);
+		lua_register(State(), "hide_interface", L_Hide_Interface);
+		lua_register(State(), "show_interface", L_Show_Interface);
+		lua_register(State(), "player_control", L_Player_Control);
+	}
+	
 	lua_register(State(), "kill_script", L_Kill_Script);
-	lua_register(State(), "hide_interface", L_Hide_Interface);
-	lua_register(State(), "show_interface", L_Show_Interface);
-	lua_register(State(), "player_control", L_Player_Control);
 	//	lua_register(state, "prompt", L_Prompt);
 
 	Lua_Music_register(State(), *this);
