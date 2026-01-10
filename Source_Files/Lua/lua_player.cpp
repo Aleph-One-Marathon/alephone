@@ -295,8 +295,6 @@ const luaL_Reg Lua_Camera_Get_Mutable[] = {
 	{"activate", L_TableFunction<Lua_Camera_Activate>},
 	{"clear", L_TableFunction<Lua_Camera_Clear>},
 	{"deactivate", L_TableFunction<Lua_Camera_Deactivate>},
-	{"path_angles", Lua_Get_Path_Angles},
-	{"path_points", Lua_Get_Path_Points},
 	{0, 0}
 };
 
@@ -1032,9 +1030,6 @@ const luaL_Reg Lua_Texture_Palette_Slot_Get[] = {
 
 const luaL_Reg Lua_Texture_Palette_Slot_Get_Mutable[] = {
 	{"clear", L_TableFunction<Lua_Texture_Palette_Slot_Clear>},
-	{"collection", Lua_Texture_Palette_Slot_Get_Collection},
-	{"texture_index", Lua_Texture_Palette_Slot_Get_Texture},
-    {"type", Lua_Texture_Palette_Slot_Get_Type},
 	{0, 0}
 };
 
@@ -1306,10 +1301,7 @@ const luaL_Reg Lua_Player_Weapon_Get[] = {
 };
 
 const luaL_Reg Lua_Player_Weapon_Get_Mutable[] = { 
-	{"primary", get_weapon_trigger<_primary_weapon>},
-	{"secondary", get_weapon_trigger<_secondary_weapon>},
 	{"select", L_TableFunction<Lua_Player_Weapon_Select>},
-	{"type", Lua_Player_Weapon_Get_Type},
 	{0, 0} 
 };
 
@@ -2159,9 +2151,9 @@ const luaL_Reg Lua_Player_Get[] = {
 	{"overlays", Lua_Player_Get_Overlays},
 	{"oxygen", Lua_Player_Get_Oxygen},
 	{"pitch", Lua_Player_Get_Elevation},
-	{"play_sound", L_TableFunction<Lua_Player_Play_Sound>},
 	{"points", Lua_Player_Get_Points},
 	{"polygon", Lua_Player_Get_Polygon},
+	{"print", L_TableFunction<Lua_Player_Print>},
 	{"team", Lua_Player_Get_Team},
 	{"teleporting", Lua_Player_Get_Teleporting},
 	{"texture_palette", Lua_Player_Get_Texture_Palette},
@@ -2178,65 +2170,20 @@ const luaL_Reg Lua_Player_Get[] = {
 
 const luaL_Reg Lua_Player_Get_Mutable[] = {
 	{"accelerate", L_TableFunction<Lua_Player_Accelerate>},
-	{"action_flags", Lua_Player_Get_Action_Flags},
 	{"activate_terminal", L_TableFunction<Lua_Player_Activate_Terminal>},
-	{"color", Lua_Player_Get_Color},
-	{"compass", Lua_Player_Get_Compass},
-	{"crosshairs", Lua_Player_Get_Crosshairs},
 	{"damage", L_TableFunction<Lua_Player_Damage>},
-	{"dead", Lua_Player_Get_Dead},
-	{"deaths", Lua_Player_Get_Deaths},
-	{"direction", Lua_Player_Get_Direction},
-	{"disconnected", Lua_Player_Get_Netdead},
-	{"energy", Lua_Player_Get_Energy},
-	{"elevation", Lua_Player_Get_Elevation},
-	{"external_velocity", Lua_Player_Get_External_Velocity},
-	{"extravision_duration", Lua_Player_Get_Extravision_Duration},
-	{"feet_below_media", Lua_Player_Get_Flag<_FEET_BELOW_MEDIA_BIT>},
 	{"fade_screen", L_TableFunction<Lua_Player_Fade_Screen>},
-	{"find_action_key_target", L_TableFunction<Lua_Player_Find_Action_Key_Target>},
-	{"find_target", L_TableFunction<Lua_Player_Find_Target>},
-	{"has_map_open", Lua_Player_Get_Has_Map_Open},
-	{"head_below_media", Lua_Player_Get_Flag<_HEAD_BELOW_MEDIA_BIT>},
-	{"head_direction", Lua_Player_Get_Head_Direction},
-	{"hotkey", Lua_Player_Get_Hotkey},
-	{"hotkey_bindings", Lua_Player_Get_Hotkey_Bindings},
-	{"infravision_duration", Lua_Player_Get_Infravision_Duration},
-	{"internal_velocity", Lua_Player_Get_Internal_Velocity},
-	{"invincibility_duration", Lua_Player_Get_Invincibility_Duration},
-	{"invisibility_duration", Lua_Player_Get_Invisibility_Duration},
-	{"items", Lua_Player_Get_Items},
-	{"local_", Lua_Player_Get_Local},
-	{"juice", Lua_Player_Get_Energy},
-	{"kills", Lua_Player_Get_Kills},
-	{"life", Lua_Player_Get_Energy},
-	{"monster", Lua_Player_Get_Monster},
-	{"motion_sensor_active", Lua_Player_Get_Motion_Sensor},
-	{"name", Lua_Player_Get_Name},
-	{"overlays", Lua_Player_Get_Overlays},
-	{"oxygen", Lua_Player_Get_Oxygen},
-	{"pitch", Lua_Player_Get_Elevation},
-	{"print", L_TableFunction<Lua_Player_Print>},
-	{"play_sound", L_TableFunction<Lua_Player_Play_Sound>},
-	{"points", Lua_Player_Get_Points},
-	{"polygon", Lua_Player_Get_Polygon},
 	{"position", L_TableFunction<Lua_Player_Position>},
 	{"revive", L_TableFunction<Lua_Player_Revive>},
-	{"team", Lua_Player_Get_Team},
 	{"teleport", L_TableFunction<Lua_Player_Teleport>},
 	{"teleport_to_level", L_TableFunction<Lua_Player_Teleport_To_Level>},
-	{"teleporting", Lua_Player_Get_Teleporting},
-	{"texture_palette", Lua_Player_Get_Texture_Palette},
-	{"totally_dead", Lua_Player_Get_Totally_Dead},
 	{"view_player", L_TableFunction<Lua_Player_View_Player>},
-	{"viewed_player", Lua_Player_Get_Viewed_Player},
-	{"weapons", Lua_Player_Get_Weapons},
-	{"x", Lua_Player_Get_X},
-	{"y", Lua_Player_Get_Y},
-	{"yaw", Lua_Player_Get_Direction},
-	{"z", Lua_Player_Get_Z},
-	{"zoom_active", Lua_Player_Get_Zoom},
 	{0, 0}
+};
+
+const luaL_Reg Lua_Player_Get_Sound[] = {
+	{"play_sound", L_TableFunction<Lua_Player_Play_Sound>},
+	{0, }
 };
 
 extern void mark_shield_display_as_dirty();
@@ -2861,11 +2808,8 @@ const luaL_Reg Lua_Game_Get[] = {
 	{"player", Lua_Game_Get_Player},
 	{"proper_item_accounting", Lua_Game_Get_Proper_Item_Accounting},
 	{"nonlocal_overlays", Lua_Game_Get_Nonlocal_Overlays},
-	{"random", L_TableFunction<Lua_Game_Better_Random>},
 	{"random_local", L_TableFunction<Lua_Game_Random_Local>},
 	{"replay", Lua_Game_Get_Replay},
-	{"restore_passed", L_TableFunction<L_Restore_Passed>},
-	{"restore_saved", L_TableFunction<L_Restore_Saved>},
 	{"scoring_mode", Lua_Game_Get_Scoring_Mode},
 	{"serialize", L_TableFunction<Lua_Game_Serialize>},
 	{"ticks", Lua_Game_Get_Ticks},
@@ -2876,28 +2820,11 @@ const luaL_Reg Lua_Game_Get[] = {
 
 const luaL_Reg Lua_Game_Get_Mutable[] = {
 	{"autosave", L_TableFunction<Lua_Game_Save>},
-	{"dead_players_drop_items", Lua_Game_Get_Dead_Players_Drop_Items},
-	{"deserialize", L_TableFunction<Lua_Game_Deserialize>},
-	{"difficulty", Lua_Game_Get_Difficulty},
 	{"global_random", L_TableFunction<Lua_Game_Global_Random>},
-	{"kill_limit", Lua_Game_Get_Kill_Limit},
-	{"time_remaining", Lua_Game_Get_Time_Remaining},
-	{"local_random", L_TableFunction<Lua_Game_Local_Random>},
-	{"monsters_replenish", Lua_Game_Get_Monsters_Replenish},
-	{"player", Lua_Game_Get_Player},
-	{"proper_item_accounting", Lua_Game_Get_Proper_Item_Accounting},
-	{"nonlocal_overlays", Lua_Game_Get_Nonlocal_Overlays},
 	{"random", L_TableFunction<Lua_Game_Better_Random>},
-	{"random_local", L_TableFunction<Lua_Game_Random_Local>},
-	{"replay", Lua_Game_Get_Replay},
 	{"restore_passed", L_TableFunction<L_Restore_Passed>},
 	{"restore_saved", L_TableFunction<L_Restore_Saved>},
 	{"save", L_TableFunction<Lua_Game_Save>},
-	{"scoring_mode", Lua_Game_Get_Scoring_Mode},
-	{"serialize", L_TableFunction<Lua_Game_Serialize>},
-	{"ticks", Lua_Game_Get_Ticks},
-	{"type", Lua_Game_Get_Type},
-	{"version", Lua_Game_Get_Version},
 	{0, 0}
 };
 
@@ -2931,13 +2858,17 @@ int Lua_Player_register (lua_State *L, const LuaMutabilityInterface& m)
 	{
 		Lua_Camera_Path_Angles::Register(L, Lua_Camera_Path_Angles_Get);
 		Lua_Camera_Path_Points::Register(L, Lua_Camera_Path_Points_Get);
-		Lua_Camera::Register(L, Lua_Camera_Get_Mutable);
 	}
 	else
 	{
 		Lua_Camera_Path_Angles::Register(L);
 		Lua_Camera_Path_Points::Register(L);
-		Lua_Camera::Register(L, Lua_Camera_Get);
+	}
+	
+	Lua_Camera::Register(L, Lua_Camera_Get);
+	if (m.world_mutable())
+	{
+		Lua_Camera::RegisterAdditional(L, Lua_Camera_Get_Mutable);
 	}
 	Lua_Camera::Valid = Lua_Camera_Valid;
 
@@ -2984,13 +2915,10 @@ int Lua_Player_register (lua_State *L, const LuaMutabilityInterface& m)
 	Lua_FadeTypes::Register(L);
 	Lua_FadeTypes::Length = Lua_FadeTypes::ConstantLength((int16) NUMBER_OF_FADE_TYPES);
 
+	Lua_Texture_Palette_Slot::Register(L, Lua_Texture_Palette_Slot_Get);
 	if (m.world_mutable())
 	{
-		Lua_Texture_Palette_Slot::Register(L, Lua_Texture_Palette_Slot_Get_Mutable, Lua_Texture_Palette_Slot_Set);
-	}
-	else
-	{
-		Lua_Texture_Palette_Slot::Register(L, Lua_Texture_Palette_Slot_Get);
+		Lua_Texture_Palette_Slot::RegisterAdditional(L, Lua_Texture_Palette_Slot_Get_Mutable, Lua_Texture_Palette_Slot_Set);
 	}
 	Lua_Texture_Palette_Slots::Register(L, 0, 0, Lua_Texture_Palette_Slots_Metatable);
 
@@ -3009,14 +2937,12 @@ int Lua_Player_register (lua_State *L, const LuaMutabilityInterface& m)
 	Lua_WeaponTypes::Register(L);
 	Lua_WeaponTypes::Length = Lua_WeaponTypes::ConstantLength((int16) MAXIMUM_NUMBER_OF_WEAPONS);
 
+	Lua_Player_Weapon::Register(L, Lua_Player_Weapon_Get);
 	if (m.world_mutable())
 	{
-		Lua_Player_Weapon::Register(L, Lua_Player_Weapon_Get_Mutable);
+		Lua_Player_Weapon::RegisterAdditional(L, Lua_Player_Weapon_Get_Mutable);
 	}
-	else
-	{
-		Lua_Player_Weapon::Register(L, Lua_Player_Weapon_Get);
-	}
+
 	Lua_Player_Weapon::Valid = Lua_Player_Weapon::ValidRange(MAXIMUM_NUMBER_OF_WEAPONS);
 
 	if (m.world_mutable())
@@ -3054,14 +2980,17 @@ int Lua_Player_register (lua_State *L, const LuaMutabilityInterface& m)
 	Lua_PlayerColors::Register(L);
 	Lua_PlayerColors::Length = Lua_PlayerColors::ConstantLength((int16) NUMBER_OF_TEAM_COLORS);
 
+	Lua_Player::Register(L, Lua_Player_Get);
 	if (m.world_mutable())
 	{
-		Lua_Player::Register(L, Lua_Player_Get_Mutable, Lua_Player_Set);
+		Lua_Player::RegisterAdditional(L, Lua_Player_Get_Mutable, Lua_Player_Set);
 	}
-	else
+
+	if (m.world_mutable() || m.sound_mutable())
 	{
-		Lua_Player::Register(L, Lua_Player_Get);
+		Lua_Player::RegisterAdditional(L, Lua_Player_Get_Sound);
 	}
+
 	Lua_Player::Valid = Lua_Player_Valid;
 
 	if (m.world_mutable())
@@ -3074,13 +3003,10 @@ int Lua_Player_register (lua_State *L, const LuaMutabilityInterface& m)
 	}
 	Lua_Players::Length = Lua_Players_Length;
 
+	Lua_Game::Register(L, Lua_Game_Get);
 	if (m.world_mutable())
 	{
-		Lua_Game::Register(L, Lua_Game_Get_Mutable, Lua_Game_Set);
-	}
-	else
-	{
-		Lua_Game::Register(L, Lua_Game_Get);
+		Lua_Game::RegisterAdditional(L, Lua_Game_Get_Mutable, Lua_Game_Set);
 	}
 
 	Lua_GameType::Register(L, 0, 0, 0, Lua_GameType_Mnemonics);

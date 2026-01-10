@@ -55,13 +55,21 @@ SoloLuaWriteAccess::SoloLuaWriteAccess(const std::string& csv) :
 		boost::tokenizer<boost::char_separator<char>> tokenizer{csv, sep};
 		for (const auto& token : tokenizer)
 		{
-			if (token == "world")
+			if (token == "ephemera")
 			{
-				m_flags |= world;
+				m_flags |= ephemera;
 			}
 			else if (token == "music")
 			{
 				m_flags |= music;
+			}
+			else if (token == "sound")
+			{
+				m_flags |= sound;
+			}
+			else if (token == "world")
+			{
+				m_flags |= world;
 			}
 		}
 	}

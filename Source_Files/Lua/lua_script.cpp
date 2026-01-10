@@ -248,6 +248,8 @@ public:
 		L_Set_Search_Path(State(), path);
 	}
 
+	bool ephemera_mutable() const override { return true; }
+	bool sound_mutable() const override { return true; }
 	bool music_mutable() const override { return true; }
 	bool world_mutable() const override { return true; }
 
@@ -307,7 +309,7 @@ private:
 
 typedef LuaState EmbeddedLuaState;
 typedef LuaState NetscriptState;
-typedef LuaState StatsLuaState; // TODO: this doesn't need any mutability does it?
+typedef LuaState StatsLuaState;
 
 class SoloScriptState : public LuaState
 {
@@ -322,6 +324,14 @@ public:
 		LuaState::Initialize();
 		luaL_requiref(State(), LUA_IOLIBNAME, luaopen_io, 1);
 		lua_pop(State(), 1);
+	}
+
+	bool ephemera_mutable() const override {
+		return write_access_.get_flags() & SoloLuaWriteAccess::ephemera;
+	}
+
+	bool sound_mutable() const override {
+		return write_access_.get_flags() & SoloLuaWriteAccess::sound;
 	}
 
 	bool world_mutable() const override {
@@ -350,8 +360,6 @@ public:
 			return 0;
 		});
 	}
-
-	// TODO: this doesn't need any world mutability does it?
 };
 
 bool LuaState::GetTrigger(const char* trigger)
@@ -2256,7 +2264,10 @@ void CloseLuaScript()
 	PassedLuaState.clear();
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		PassedLuaState[it->first] = it->second->SavePassed();
+		if (it->second->world_mutable())
+		{
+			PassedLuaState[it->first] = it->second->SavePassed();
+		}
 	}
 	states.clear();
 
@@ -2425,11 +2436,14 @@ size_t save_lua_states()
 	SavedLuaState.clear();
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		SavedLuaState[it->first] = it->second->SaveAll();
-		if (SavedLuaState[it->first].size())
+		if (it->second->world_mutable())
 		{
-			length += 6; // id, length
-			length += SavedLuaState[it->first].size();
+			SavedLuaState[it->first] = it->second->SaveAll();
+			if (SavedLuaState[it->first].size())
+			{
+				length += 6; // id, length
+				length += SavedLuaState[it->first].size();
+			}
 		}
 	}
 

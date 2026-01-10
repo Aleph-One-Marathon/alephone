@@ -1070,7 +1070,6 @@ const luaL_Reg Lua_Monster_Get[] = {
 	{"life", Lua_Monster_Get_Vitality},
 	{"mode", Lua_Monster_Get_Mode},
 	{"player", Lua_Monster_Get_Player},
-	{"play_sound", L_TableFunction<Lua_Monster_Play_Sound>},
 	{"polygon", Lua_Monster_Get_Polygon},
 	{"teleports_out", Lua_Monster_Get_Flag<_monster_teleports_out_when_deactivated>},
 	{"type", Lua_Monster_Get_Type},
@@ -1087,32 +1086,16 @@ const luaL_Reg Lua_Monster_Get[] = {
 
 const luaL_Reg Lua_Monster_Get_Mutable[] = {
 	{"accelerate", L_TableFunction<Lua_Monster_Accelerate>},
-	{"action", Lua_Monster_Get_Action},
-	{"active", Lua_Monster_Get_Active},
 	{"attack", L_TableFunction<Lua_Monster_Attack>},
-	{"blind", Lua_Monster_Get_Flag<_monster_is_blind>},
 	{"damage", L_TableFunction<Lua_Monster_Damage>},
-	{"deaf", Lua_Monster_Get_Flag<_monster_is_deaf>},
 	{"delete", L_TableFunction<Lua_Monster_Delete>},
-	{"external_velocity", Lua_Monster_Get_External_Velocity},
-	{"facing", Lua_Monster_Get_Facing},
-	{"life", Lua_Monster_Get_Vitality},
-	{"mode", Lua_Monster_Get_Mode},
 	{"move_by_path", L_TableFunction<Lua_Monster_Move_By_Path>},
-	{"player", Lua_Monster_Get_Player},
-	{"play_sound", L_TableFunction<Lua_Monster_Play_Sound>},
-	{"polygon", Lua_Monster_Get_Polygon},
 	{"position", L_TableFunction<Lua_Monster_Position>},
-	{"teleports_out", Lua_Monster_Get_Flag<_monster_teleports_out_when_deactivated>},
-	{"type", Lua_Monster_Get_Type},
-	{"valid", Lua_Monster_Get_Valid},
-	{"vertical_velocity", Lua_Monster_Get_Vertical_Velocity},
-	{"visible", Lua_Monster_Get_Visible},
-	{"vitality", Lua_Monster_Get_Vitality},
-	{"x", Lua_Monster_Get_X},
-	{"y", Lua_Monster_Get_Y},
-	{"yaw", Lua_Monster_Get_Facing},
-	{"z", Lua_Monster_Get_Z},
+	{0, 0}
+};
+
+const luaL_Reg Lua_Monster_Get_Sound[] = {
+	{"play_sound", L_TableFunction<Lua_Monster_Play_Sound>},
 	{0, 0}
 };
 
@@ -1226,13 +1209,14 @@ int Lua_Monsters_register(lua_State *L, const LuaMutabilityInterface& m)
 	Lua_MonsterTypes::Register(L);
 	Lua_MonsterTypes::Length = Lua_MonsterTypes::ConstantLength(NUMBER_OF_MONSTER_TYPES);
 
+	Lua_Monster::Register(L, Lua_Monster_Get);
 	if (m.world_mutable())
 	{
-		Lua_Monster::Register(L, Lua_Monster_Get_Mutable, Lua_Monster_Set);
+		Lua_Monster::RegisterAdditional(L, Lua_Monster_Get_Mutable, Lua_Monster_Set);
 	}
-	else
+	if (m.world_mutable() || m.sound_mutable())
 	{
-		Lua_Monster::Register(L, Lua_Monster_Get);
+		Lua_Monster::RegisterAdditional(L, Lua_Monster_Get_Sound);
 	}
 	Lua_Monster::Valid = Lua_Monster_Valid;
 

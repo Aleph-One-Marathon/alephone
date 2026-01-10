@@ -285,7 +285,6 @@ const luaL_Reg Lua_Projectile_Get[] = {
 	{"dz", Lua_Projectile_Get_Gravity},
 	{"elevation", Lua_Projectile_Get_Elevation},
 	{"facing", Lua_Projectile_Get_Facing},
-	{"play_sound", L_TableFunction<Lua_Projectile_Play_Sound>},
 	{"owner", Lua_Projectile_Get_Owner},
 	{"pitch", Lua_Projectile_Get_Elevation},
 	{"polygon", Lua_Projectile_Get_Polygon},
@@ -299,22 +298,13 @@ const luaL_Reg Lua_Projectile_Get[] = {
 };
 
 const luaL_Reg Lua_Projectile_Get_Mutable[] = {
-	{"damage_scale", Lua_Projectile_Get_Damage_Scale},
 	{"delete", L_TableFunction<Lua_Projectile_Delete>},
-	{"dz", Lua_Projectile_Get_Gravity},
-	{"elevation", Lua_Projectile_Get_Elevation},
-	{"facing", Lua_Projectile_Get_Facing},
-	{"play_sound", L_TableFunction<Lua_Projectile_Play_Sound>},
 	{"position", L_TableFunction<Lua_Projectile_Position>},
-	{"owner", Lua_Projectile_Get_Owner},
-	{"pitch", Lua_Projectile_Get_Elevation},
-	{"polygon", Lua_Projectile_Get_Polygon},
-	{"target", Lua_Projectile_Get_Target},
-	{"type", Lua_Projectile_Get_Type},
-	{"x", Lua_Projectile_Get_X},
-	{"y", Lua_Projectile_Get_Y},
-	{"yaw", Lua_Projectile_Get_Facing},
-	{"z", Lua_Projectile_Get_Z},
+	{0, 0}
+};
+
+const luaL_Reg Lua_Projectile_Get_Sound[] ={
+	{"play_sound", L_TableFunction<Lua_Projectile_Play_Sound>},
 	{0, 0}
 };
 
@@ -426,13 +416,14 @@ static void compatibility(lua_State *L);
 
 int Lua_Projectiles_register(lua_State *L, const LuaMutabilityInterface& m)
 {
+	Lua_Projectile::Register(L, Lua_Projectile_Get);
 	if (m.world_mutable())
 	{
-		Lua_Projectile::Register(L, Lua_Projectile_Get_Mutable, Lua_Projectile_Set);
+		Lua_Projectile::RegisterAdditional(L, Lua_Projectile_Get_Mutable, Lua_Projectile_Set);
 	}
-	else
+	if (m.world_mutable() || m.sound_mutable())
 	{
-		Lua_Projectile::Register(L, Lua_Projectile_Get);
+		Lua_Projectile::RegisterAdditional(L, Lua_Projectile_Get_Sound);
 	}
 	
 	Lua_Projectile::Valid = Lua_Projectile_Valid;

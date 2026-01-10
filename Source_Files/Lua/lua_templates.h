@@ -75,6 +75,7 @@ public:
 	typedef index_t index_type;
 
 	static void Register(lua_State *L, const luaL_Reg get[] = 0, const luaL_Reg set[] = 0, const luaL_Reg metatable[] = 0);
+	static void RegisterAdditional(lua_State* L, const luaL_Reg get[] = 0, const luaL_Reg set[] = 0);
 
 	template<typename instance_t = L_Class /*or a derived class*/>
 	static instance_t *Push(lua_State *L, index_t index);
@@ -197,6 +198,26 @@ void L_Class<name, index_t>::Register(lua_State *L, const luaL_Reg get[], const 
 	lua_pushcfunction(L, _is);
 	std::string is_name = "is_" + std::string(name);
 	lua_setglobal(L, is_name.c_str());
+}
+
+template<char* name, typename index_t>
+void L_Class<name, index_t>::RegisterAdditional(lua_State* L, const luaL_Reg get[], const luaL_Reg set[])
+{
+	if (get)
+	{
+		_push_get_methods_key(L);
+		lua_gettable(L, LUA_REGISTRYINDEX);
+		luaL_setfuncs(L, get, 0);
+		lua_pop(L, 1);
+	}
+
+	if (set)
+	{
+		_push_set_methods_key(L);
+		lua_gettable(L, LUA_REGISTRYINDEX);
+		luaL_setfuncs(L, set, 0);
+		lua_pop(L, 1);
+	}
 }
 
 template<char *name, typename index_t>

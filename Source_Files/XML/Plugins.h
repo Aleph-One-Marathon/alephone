@@ -46,7 +46,7 @@ struct ShapesPatch {
 
 class SoloLuaWriteAccess {
 public:
-	// excludes all other "exclusive" Lua
+	// excludes all other Lua
 	static constexpr uint32_t world = 0x01;
 
 	// excludes all other "exclusive" Lua of this type
@@ -54,7 +54,9 @@ public:
 
 	static constexpr uint32_t exclusive_mask = world | music;
 
-	// in the future, there could be non-exclusive mutable Lua like ephemera
+	// allowed, and multiples allowed, with any types except world
+	static constexpr uint32_t ephemera = 0x04;
+	static constexpr uint32_t sound = 0x08;
 
 	SoloLuaWriteAccess() : m_flags{world} { };
 	SoloLuaWriteAccess(uint32_t flags) : m_flags{flags} { };
