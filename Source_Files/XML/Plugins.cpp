@@ -59,9 +59,17 @@ SoloLuaWriteAccess::SoloLuaWriteAccess(const std::string& csv) :
 			{
 				m_flags |= ephemera;
 			}
+			else if (token == "fog")
+			{
+				m_flags |= fog;
+			}
 			else if (token == "music")
 			{
 				m_flags |= music;
+			}
+			else if (token == "overlays")
+			{
+				m_flags |= overlays;
 			}
 			else if (token == "sound")
 			{

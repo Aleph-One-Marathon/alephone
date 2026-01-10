@@ -3986,7 +3986,7 @@ int Lua_Map_register(lua_State *L, const LuaMutabilityInterface& m)
 	}
 	Lua_Annotations::Length = Lua_Annotations_Length;
 
-	if (m.world_mutable())
+	if (m.world_mutable() || m.fog_mutable())
 	{
 		Lua_Fog::Register(L, Lua_Fog_Get, Lua_Fog_Set);
 	}

@@ -169,11 +169,11 @@ class LuaMutabilityInterface
 {
 public:
 	virtual bool ephemera_mutable() const = 0;
-	virtual bool sound_mutable() const = 0;
+	virtual bool fog_mutable() const = 0;
 	virtual bool music_mutable() const = 0;
-	
-	virtual bool world_mutable() const = 0; // basically, anything that affects
-											// gameplay
+	virtual bool overlays_mutable() const = 0;
+	virtual bool sound_mutable() const = 0;
+	virtual bool world_mutable() const = 0; // includes the others
 };
 
 #endif

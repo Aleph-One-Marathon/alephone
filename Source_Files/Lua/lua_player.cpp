@@ -2964,7 +2964,7 @@ int Lua_Player_register (lua_State *L, const LuaMutabilityInterface& m)
 	Lua_Overlays::Register(L, 0, 0, Lua_Overlays_Metatable);
 	Lua_Overlays::Valid = Lua_Player_Valid;
 
-	if (m.world_mutable())
+	if (m.world_mutable() || m.overlays_mutable())
 	{
 		Lua_Overlay::Register(L, Lua_Overlay_Get, Lua_Overlay_Set);
 	}

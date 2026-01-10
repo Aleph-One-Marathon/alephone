@@ -49,14 +49,16 @@ public:
 	// excludes all other Lua
 	static constexpr uint32_t world = 0x01;
 
-	// excludes all other "exclusive" Lua of this type
-	static constexpr uint32_t music = 0x02;
+	// excludes all other "exclusive" Lua of the same type
+	static constexpr uint32_t fog = 0x02;
+	static constexpr uint32_t music = 0x04;
+	static constexpr uint32_t overlays = 0x08;
 
-	static constexpr uint32_t exclusive_mask = world | music;
+	static constexpr uint32_t exclusive_mask = world | fog | music | overlays;
 
 	// allowed, and multiples allowed, with any types except world
-	static constexpr uint32_t ephemera = 0x04;
-	static constexpr uint32_t sound = 0x08;
+	static constexpr uint32_t ephemera = 0x10;
+	static constexpr uint32_t sound = 0x20;
 
 	SoloLuaWriteAccess() : m_flags{world} { };
 	SoloLuaWriteAccess(uint32_t flags) : m_flags{flags} { };

@@ -249,8 +249,10 @@ public:
 	}
 
 	bool ephemera_mutable() const override { return true; }
-	bool sound_mutable() const override { return true; }
+	bool fog_mutable() const override{ return true; }
 	bool music_mutable() const override { return true; }
+	bool overlays_mutable() const override { return true; }
+	bool sound_mutable() const override { return true; }
 	bool world_mutable() const override { return true; }
 
 protected:
@@ -330,16 +332,24 @@ public:
 		return write_access_.get_flags() & SoloLuaWriteAccess::ephemera;
 	}
 
+	bool fog_mutable() const override {
+		return write_access_.get_flags() & SoloLuaWriteAccess::fog;
+	}
+
+	bool music_mutable() const override {
+		return write_access_.get_flags() & SoloLuaWriteAccess::music;
+	}
+
+	bool overlays_mutable() const override {
+		return write_access_.get_flags() & SoloLuaWriteAccess::overlays;
+	}
+
 	bool sound_mutable() const override {
 		return write_access_.get_flags() & SoloLuaWriteAccess::sound;
 	}
 
 	bool world_mutable() const override {
 		return write_access_.get_flags() & SoloLuaWriteAccess::world;
-	}
-
-	bool music_mutable() const override {
-		return write_access_.get_flags() & SoloLuaWriteAccess::music;
 	}
 
 private:
