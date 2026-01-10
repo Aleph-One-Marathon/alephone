@@ -734,8 +734,6 @@ bool load_saved_game_from_flat_data(byte* saved_flat_data)
 			LoadReplayNetLua();
 	}
 
-	LoadMusicLua(!game_is_networked && dynamic_world->player_count == 1);
-
 	return success;
 }
 
@@ -863,7 +861,6 @@ bool load_and_start_game(FileSpecifier& File)
 				LoadSoloLua();
 			}
 			LoadAchievementsLua();
-			LoadMusicLua(!userWantsMultiplayer);
 			LoadStatsLua();
 			set_game_error(SavedType, SavedError);
 

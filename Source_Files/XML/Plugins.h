@@ -44,6 +44,31 @@ struct ShapesPatch {
 	std::string path;
 };
 
+class SoloLuaWriteAccess {
+public:
+	// excludes all other "exclusive" Lua
+	static constexpr uint32_t world = 0x01;
+
+	// excludes all other "exclusive" Lua of this type
+	static constexpr uint32_t music = 0x02;
+
+	static constexpr uint32_t exclusive_mask = world | music;
+
+	// in the future, there could be non-exclusive mutable Lua like ephemera
+
+	SoloLuaWriteAccess() : m_flags{world} { };
+	SoloLuaWriteAccess(uint32_t flags) : m_flags{flags} { };
+	SoloLuaWriteAccess(const std::string& csv);
+
+	bool is_excluded(uint32_t flags) const;
+
+	uint32_t get_flags() const { return m_flags; }
+	uint32_t get_exclusive_flags() const;
+	
+private:
+	uint32_t m_flags;
+};
+
 struct MapPatch
 {
 	std::set<uint32_t> parent_checksums;
@@ -59,8 +84,8 @@ struct Plugin {
 	std::vector<std::string> mmls;
 	std::string hud_lua;
 	std::string solo_lua;
+	SoloLuaWriteAccess solo_lua_write_access;
 	std::string stats_lua;
-	std::string music_lua;
 	std::string theme;
 	std::string required_version;
 	std::vector<ShapesPatch> shapes_patches;
@@ -105,10 +130,9 @@ public:
 	iterator end() { return m_plugins.end(); }
 
 	const Plugin* find_hud_lua();
-	const Plugin* find_solo_lua();
+	std::vector<const Plugin*> find_solo_lua();
 	const Plugin* find_stats_lua();
 	const Plugin* find_theme();
-	const Plugin* find_music_lua();
 
 	bool get_resource(uint32_t type, int id, LoadedResource& rsrc);
 	void set_map_checksum(uint32_t checksum);

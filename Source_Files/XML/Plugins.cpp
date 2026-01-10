@@ -38,8 +38,51 @@
 #endif
 
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/tokenizer.hpp>
 
 namespace algo = boost::algorithm;
+
+SoloLuaWriteAccess::SoloLuaWriteAccess(const std::string& csv) :
+	m_flags{0}
+{
+	if (csv == "")
+	{
+		m_flags = world;
+	}
+	else
+	{
+		boost::char_separator<char> sep{","};
+		boost::tokenizer<boost::char_separator<char>> tokenizer{csv, sep};
+		for (const auto& token : tokenizer)
+		{
+			if (token == "world")
+			{
+				m_flags |= world;
+			}
+			else if (token == "music")
+			{
+				m_flags |= music;
+			}
+		}
+	}
+}
+
+bool SoloLuaWriteAccess::is_excluded(uint32_t flags) const
+{
+	return flags & get_exclusive_flags();
+}
+
+uint32_t SoloLuaWriteAccess::get_exclusive_flags() const
+{
+	if (m_flags & world)
+	{
+		return exclusive_mask;
+	}
+	else
+	{
+		return m_flags & exclusive_mask;
+	}
+}
 
 class PluginLoader {
 public:
@@ -236,33 +279,19 @@ const Plugin* Plugins::find_hud_lua()
 	return 0;
 }
 
-const Plugin* Plugins::find_music_lua()
+std::vector<const Plugin*> Plugins::find_solo_lua()
 {
 	validate();
-	for (auto rit = std::as_const(m_plugins).rbegin(); rit != m_plugins.rend(); ++rit)
+	std::vector<const Plugin*> v;
+	for (const auto& plugin : m_plugins)
 	{
-		if (rit->music_lua.size() && rit->valid())
+		if (plugin.solo_lua.size() && plugin.valid())
 		{
-			return &(*rit);
+			v.push_back(&plugin);
 		}
 	}
 
-	return nullptr;
-}
-
-const Plugin* Plugins::find_solo_lua()
-{
-	validate();
-	std::vector<Plugin>::const_reverse_iterator rend = m_plugins.rend();
-	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != rend; ++rit)
-	{
-		if (rit->solo_lua.size() && rit->valid())
-		{
-			return &(*rit);
-		}
-	}
-
-	return 0;
+	return v;
 }
 
 const Plugin* Plugins::find_stats_lua()
@@ -359,6 +388,12 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 				if (root.read_attr("solo_lua", Data.solo_lua) &&
 					!plugin_file_exists(Data, Data.solo_lua))
 					Data.solo_lua = "";
+
+				std::string csv;
+				if (root.read_attr("solo_lua_write_access", csv))
+				{
+					Data.solo_lua_write_access = SoloLuaWriteAccess{csv};
+				}
 				
 				if (root.read_attr("stats_lua", Data.stats_lua) &&
 					!plugin_file_exists(Data, Data.stats_lua))
@@ -368,10 +403,6 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 					!plugin_file_exists(Data, Data.theme + "/theme2.mml"))
 					Data.theme = "";
 
-				if (root.read_attr("music_lua", Data.music_lua) &&
-					!plugin_file_exists(Data, Data.music_lua))
-					Data.music_lua = "";
-				
 				for (const InfoTree &tree : root.children_named("mml"))
 				{
 					std::string mml_path;
@@ -589,7 +620,7 @@ void Plugins::validate()
 	m_validated = true;
 	
 	// determine active plugins including solo Lua
-	bool found_solo_lua = false;
+	uint32_t solo_lua_flags = 0;
 	bool found_hud_lua = false;
 	bool found_stats_lua = false;
 	bool found_theme = false;
@@ -597,7 +628,8 @@ void Plugins::validate()
 	{
 		rit->overridden_solo = false;
 		if (!rit->enabled || !rit->compatible() || !rit->allowed() ||
-			(found_solo_lua && (rit->solo_lua.size() || rit->music_lua.size())) ||
+			(rit->solo_lua.size() &&
+			 rit->solo_lua_write_access.is_excluded(solo_lua_flags)) ||
 			(found_hud_lua && rit->hud_lua.size()) ||
 			(found_stats_lua && rit->stats_lua.size()) ||
 			(found_theme && rit->theme.size()))
@@ -606,8 +638,11 @@ void Plugins::validate()
 			continue;
 		}
 
-		if (rit->solo_lua.size() || rit->music_lua.size())
-			found_solo_lua = true;
+		if (rit->solo_lua.size())
+		{
+			solo_lua_flags |= rit->solo_lua_write_access.get_exclusive_flags();
+		}
+		
 		if (rit->hud_lua.size())
 			found_hud_lua = true;
 		if (rit->stats_lua.size())
@@ -620,7 +655,6 @@ void Plugins::validate()
 	found_hud_lua = false;
 	found_stats_lua = false;
 	found_theme = false;
-	auto found_music_lua = false;
 	for (auto rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
 	{
 		rit->overridden = false;
@@ -628,8 +662,7 @@ void Plugins::validate()
 			(rit->solo_lua.size()) ||
 			(found_hud_lua && rit->hud_lua.size()) ||
 			(found_stats_lua && rit->stats_lua.size()) ||
-			(found_theme && rit->theme.size()) ||
-			(found_music_lua && rit->music_lua.size()))
+			(found_theme && rit->theme.size()))
 		{
 			rit->overridden = true;
 			continue;
@@ -641,7 +674,5 @@ void Plugins::validate()
 			found_stats_lua = true;
 		if (rit->theme.size())
 			found_theme = true;
-		if (rit->music_lua.size())
-			found_music_lua = true;
 	}
 }

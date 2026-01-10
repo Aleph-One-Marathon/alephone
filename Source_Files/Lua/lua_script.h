@@ -72,12 +72,11 @@ enum ScriptType {
 	_solo_lua_script,
 	_stats_lua_script,
 	_achievements_lua_script,
-	_music_lua_script
 };
 
 void *L_Persistent_Table_Key();
 
-bool LoadLuaScript(const char *buffer, size_t len, ScriptType type);
+void LoadLuaScript(const char *buffer, size_t len, ScriptType type);
 bool RunLuaScript();
 void CloseLuaScript();
 void ResetPassedLua();
@@ -91,8 +90,6 @@ void InvalidateAchievements();
 
 void LoadStatsLua();
 bool CollectLuaStats(std::map<std::string, std::string>& table, std::map<std::string, std::string>& parameters);
-
-void LoadMusicLua(bool unless_solo);
 
 void ToggleLuaMute();
 void ResetLuaMute();

@@ -830,7 +830,6 @@ bool goto_level(
 			LoadReplayNetLua();
 		}
 		LoadAchievementsLua();
-		LoadMusicLua(!game_is_networked && number_of_players == 1);
 		LoadStatsLua();
 
 		set_game_error(SavedType,SavedError);
@@ -1284,7 +1283,6 @@ bool load_game_from_file(FileSpecifier& File, bool run_scripts)
 				LoadSoloLua();
 			}
 			LoadAchievementsLua();
-			LoadMusicLua(!game_is_networked);
 			LoadStatsLua();
 			set_game_error(SavedType,SavedError);
 		}
