@@ -62,7 +62,6 @@ public:
 
 	SoloLuaWriteAccess() : m_flags{world} { };
 	SoloLuaWriteAccess(uint32_t flags) : m_flags{flags} { };
-	SoloLuaWriteAccess(const std::string& csv);
 
 	bool is_excluded(uint32_t flags) const;
 

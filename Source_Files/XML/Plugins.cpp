@@ -42,47 +42,6 @@
 
 namespace algo = boost::algorithm;
 
-SoloLuaWriteAccess::SoloLuaWriteAccess(const std::string& csv) :
-	m_flags{0}
-{
-	if (csv == "")
-	{
-		m_flags = world;
-	}
-	else
-	{
-		boost::char_separator<char> sep{","};
-		boost::tokenizer<boost::char_separator<char>> tokenizer{csv, sep};
-		for (const auto& token : tokenizer)
-		{
-			if (token == "ephemera")
-			{
-				m_flags |= ephemera;
-			}
-			else if (token == "fog")
-			{
-				m_flags |= fog;
-			}
-			else if (token == "music")
-			{
-				m_flags |= music;
-			}
-			else if (token == "overlays")
-			{
-				m_flags |= overlays;
-			}
-			else if (token == "sound")
-			{
-				m_flags |= sound;
-			}
-			else if (token == "world")
-			{
-				m_flags |= world;
-			}
-		}
-	}
-}
-
 bool SoloLuaWriteAccess::is_excluded(uint32_t flags) const
 {
 	return flags & get_exclusive_flags();
@@ -401,16 +360,68 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 					!plugin_file_exists(Data, Data.hud_lua))
 					Data.hud_lua = "";
 				
-				if (root.read_attr("solo_lua", Data.solo_lua) &&
-					!plugin_file_exists(Data, Data.solo_lua))
-					Data.solo_lua = "";
-
-				std::string csv;
-				if (root.read_attr("solo_lua_write_access", csv))
+				const auto solo_luas = root.children_named("solo_lua");
+				auto solo_luas_size = boost::size(solo_luas);
+				if (solo_luas_size == 1)
 				{
-					Data.solo_lua_write_access = SoloLuaWriteAccess{csv};
+					for (const auto& solo_lua : solo_luas)
+					{
+						if (solo_lua.read_attr("file", Data.solo_lua) &&
+							!plugin_file_exists(Data, Data.solo_lua))
+						{
+							Data.solo_lua = "";
+						}
+
+						auto write_accesses = solo_lua.children_named("write_access");
+						if (!boost::empty(write_accesses))
+						{
+							uint32_t flags = 0;
+							for (const auto& write_access_tree : write_accesses)
+							{
+								auto write_access = write_access_tree.get_value(std::string(""));
+								if (write_access == "ephemera")
+								{
+									flags |= SoloLuaWriteAccess::ephemera;
+								}
+								else if (write_access == "fog")
+								{
+									flags |= SoloLuaWriteAccess::fog;
+								}
+								else if (write_access == "music")
+								{
+									flags |= SoloLuaWriteAccess::music;
+								}
+								else if (write_access == "overlays")
+								{
+									flags |= SoloLuaWriteAccess::overlays;
+								}
+								else if (write_access == "sound")
+								{
+									flags |= SoloLuaWriteAccess::sound;
+								}
+								else if (write_access == "world")
+								{
+									flags |= SoloLuaWriteAccess::world;
+								}
+							}
+							Data.solo_lua_write_access = SoloLuaWriteAccess{flags};
+						}
+					}
 				}
-				
+				else if (solo_luas_size == 0)
+				{
+					// check the legacy attribute
+					if (root.read_attr("solo_lua", Data.solo_lua) &&
+						!plugin_file_exists(Data, Data.solo_lua))
+					{
+						Data.solo_lua = "";
+					}					
+				}
+				else
+				{
+					logError("There were parsing errors in %s Plugin.xml: only one solo_lua tag is allowed", name);
+				}
+
 				if (root.read_attr("stats_lua", Data.stats_lua) &&
 					!plugin_file_exists(Data, Data.stats_lua))
 					Data.stats_lua = "";
