@@ -2082,9 +2082,6 @@ static void LoadOneSoloLua(std::string file, std::string directory = "", SoloLua
 
 void LoadSoloLua()
 {
-	std::string file;
-	std::string directory;
-
 	if (environment_preferences->use_solo_lua) 
 	{
 		LoadOneSoloLua(environment_preferences->solo_lua_file);
