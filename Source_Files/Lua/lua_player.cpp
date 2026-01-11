@@ -2484,11 +2484,6 @@ int Lua_Players_Get_Local_Player(lua_State *L)
 
 const luaL_Reg Lua_Players_Get[] = {
 	{"local_player", Lua_Players_Get_Local_Player},
-	{0, 0}
-};
-
-const luaL_Reg Lua_Players_Get_Mutable[] = {
-	{"local_player", Lua_Players_Get_Local_Player},
 	{"print", L_TableFunction<Lua_Players_Print>},
 	{0, 0}
 };
@@ -2993,14 +2988,7 @@ int Lua_Player_register (lua_State *L, const LuaMutabilityInterface& m)
 
 	Lua_Player::Valid = Lua_Player_Valid;
 
-	if (m.world_mutable())
-	{
-		Lua_Players::Register(L, Lua_Players_Get_Mutable);
-	}
-	else
-	{
-		Lua_Players::Register(L, Lua_Players_Get);
-	}
+	Lua_Players::Register(L, Lua_Players_Get);
 	Lua_Players::Length = Lua_Players_Length;
 
 	Lua_Game::Register(L, Lua_Game_Get);
