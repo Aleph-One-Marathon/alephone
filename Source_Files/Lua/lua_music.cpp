@@ -207,17 +207,17 @@ const luaL_Reg Lua_Music_Set[] = {
 char Lua_Music_Name[] = "music";
 char Lua_MusicManager_Name[] = "Music";
 
-int Lua_Music_register(lua_State* L, const LuaMutabilityInterface& state)
+int Lua_Music_register(lua_State* L, const LuaMutabilityInterface& m)
 {
 	Lua_Music::Register(L, Lua_Music_Get);
-	if (state.music_mutable())
+	if (m.music_mutable())
 	{
 		Lua_Music::RegisterAdditional(L, Lua_Music_Get_Mutable, Lua_Music_Set);
 	}
 
 	Lua_Music::Valid = Lua_Music_Valid;
 
-	if (state.music_mutable())
+	if (m.music_mutable())
 	{
 		Lua_MusicManager::Register(L, Lua_MusicManager_Methods);
 	}
