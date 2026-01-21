@@ -1623,7 +1623,10 @@ static void sound_dialog(void *arg)
 			&& OpenALManager::Get() && OpenALManager::Get()->GetHrtfSupport() == OpenALManager::HrtfSupport::Supported;
 
 		hrtf_w->set_enabled(can_enable_hrtf);
-		hrtf_w->set_selection(!can_enable_hrtf && OpenALManager::Get() && OpenALManager::Get()->GetHrtfSupport() == OpenALManager::HrtfSupport::Required);
+		hrtf_w->set_selection(
+			(can_enable_hrtf && hrtf_w->get_selection() == 1) ||
+			!can_enable_hrtf && OpenALManager::Get() && OpenALManager::Get()->GetHrtfSupport() == OpenALManager::HrtfSupport::Required
+		);
 	};
 
 	sounds3d_w->set_selection_changed_callback(hrtf_enable_callback);
