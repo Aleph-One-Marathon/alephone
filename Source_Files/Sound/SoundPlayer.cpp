@@ -365,7 +365,7 @@ SetupALResult SoundPlayer::SetUpALSource3D() {
 }
 
 template<typename T>
-static uint32_t SoundPlayer::ConvertMonoToStereo(const uint8_t* inputBytes, uint8_t* outputBytes, uint32_t remainingInputBytes, uint32_t remainingOutputBytes)
+uint32_t SoundPlayer::ConvertMonoToStereo(const uint8_t* inputBytes, uint8_t* outputBytes, uint32_t remainingInputBytes, uint32_t remainingOutputBytes)
 {
     static_assert(std::is_trivially_copyable_v<T>);
 
