@@ -364,6 +364,29 @@ SetupALResult SoundPlayer::SetUpALSource3D() {
 	return SetupALResult(alGetError() == AL_NO_ERROR, finalBehaviorParameters == behaviorParameters);
 }
 
+template<typename T>
+static uint32_t SoundPlayer::ConvertMonoToStereo(const uint8_t* inputBytes, uint8_t* outputBytes, uint32_t remainingInputBytes, uint32_t remainingOutputBytes)
+{
+    static_assert(std::is_trivially_copyable_v<T>);
+
+    constexpr uint32_t sampleSize = sizeof(T);
+    constexpr uint32_t stereoSampleSize = sampleSize * 2;
+
+    const uint32_t maxInputSamples  = remainingInputBytes  / sampleSize;
+    const uint32_t maxOutputSamples = remainingOutputBytes / stereoSampleSize;
+    const uint32_t sampleCount = std::min(maxInputSamples, maxOutputSamples);
+
+    for (uint32_t i = 0; i < sampleCount; i++)
+    {
+        T sample;
+        std::memcpy(&sample, inputBytes + i * sampleSize, sampleSize);
+        std::memcpy(outputBytes + (2 * i) * sampleSize, &sample, sampleSize);
+        std::memcpy(outputBytes + (2 * i + 1) * sampleSize, &sample, sampleSize);
+    }
+
+    return sampleCount * stereoSampleSize;
+}
+
 uint32_t SoundPlayer::ProcessData(uint8_t* outputData, uint32_t remainingSoundDataLength, uint32_t remainingBufferLength) {
 
 	const auto& sound = this->sound.Get();
@@ -378,44 +401,26 @@ uint32_t SoundPlayer::ProcessData(uint8_t* outputData, uint32_t remainingSoundDa
 
 	//all of this is just for hrtf
 	const auto input = (sound.data->data() + current_index_data);
+	uint32_t bytesWritten;
 
 	switch (sound.header.audio_format) {
 	case AudioFormat::_8_bit:
-	{
-		int index = 0;
-		while (index < remainingSoundDataLength && index < remainingBufferLength / 2)
-		{
-			auto byte = input[index];
-			outputData[2 * index] = byte;
-			outputData[2 * index + 1] = byte;
-			index++;
-		}
-
-		current_index_data += index;
-		return index * 2;
-	}
+		bytesWritten = ConvertMonoToStereo<uint8_t>(input, outputData, remainingSoundDataLength, remainingBufferLength);
+		break;
 	case AudioFormat::_16_bit:
-	{
-		int index = 0;
-		int16_t* output = reinterpret_cast<int16_t*>(outputData);
-
-		while (index < remainingSoundDataLength / 2 && index < remainingBufferLength / 4)
-		{
-			int16_t sample;
-			std::memcpy(&sample, input + index * 2, sizeof(int16_t));
-			output[2 * index] = sample;
-			output[2 * index + 1] = sample;
-			index++;
-		}
-
-		current_index_data += index * 2;
-		return index * 4;
-	}
-	case AudioFormat::_32_float: //we don't support this format for sounds
+		bytesWritten = ConvertMonoToStereo<int16_t>(input, outputData, remainingSoundDataLength, remainingBufferLength);
+		break;
+	case AudioFormat::_32_float:
+		bytesWritten = ConvertMonoToStereo<float>(input, outputData, remainingSoundDataLength, remainingBufferLength);
+		break;
 	default:
 		assert(false);
 		return 0;
 	}
+
+	const uint32_t monoBytesConsumed = bytesWritten / 2;
+	current_index_data += monoBytesConsumed;
+	return bytesWritten;
 }
 
 uint32_t SoundPlayer::GetNextData(uint8* data, uint32_t length) {
