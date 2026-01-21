@@ -122,6 +122,9 @@ private:
 	uint32_t current_index_data;
 	uint64_t start_tick;
 
+	template<typename T> 
+	static uint32_t ConvertMonoToStereo(const uint8_t* inputBytes, uint8_t* outputBytes, uint32_t remainingInputBytes, uint32_t remainingOutputBytes);
+
 	std::atomic_bool soft_stop_signal = { false };
 
 	static constexpr uint32_t rewind_time = 83U;
