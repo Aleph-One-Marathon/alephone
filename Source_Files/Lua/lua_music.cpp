@@ -210,14 +210,14 @@ char Lua_MusicManager_Name[] = "Music";
 int Lua_Music_register(lua_State* L, const LuaMutabilityInterface& m)
 {
 	Lua_Music::Register(L, Lua_Music_Get);
-	if (m.music_mutable())
+	if (m.world_mutable() || m.music_mutable())
 	{
 		Lua_Music::RegisterAdditional(L, Lua_Music_Get_Mutable, Lua_Music_Set);
 	}
 
 	Lua_Music::Valid = Lua_Music_Valid;
 
-	if (m.music_mutable())
+	if (m.world_mutable() || m.music_mutable())
 	{
 		Lua_MusicManager::Register(L, Lua_MusicManager_Methods);
 	}
