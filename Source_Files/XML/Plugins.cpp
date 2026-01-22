@@ -38,7 +38,6 @@
 #endif
 
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/tokenizer.hpp>
 
 namespace algo = boost::algorithm;
 

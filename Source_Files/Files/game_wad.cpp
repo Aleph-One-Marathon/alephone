@@ -767,7 +767,6 @@ extern void LoadSoloLua();
 extern void LoadReplayNetLua();
 extern void LoadStatsLua();
 extern void LoadAchievementsLua();
-extern void LoadMusicLua(bool);
 extern bool RunLuaScript();
 
 /* This is called when the game level is changed somehow */
