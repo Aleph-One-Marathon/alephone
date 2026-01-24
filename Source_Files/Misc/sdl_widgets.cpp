@@ -2422,9 +2422,8 @@ w_file_chooser::update_filename()
 {
 	if(file.Exists())
 	{
-		file.GetName(filename);
-		std::string filename_copy = filename;
-		strcpy(filename, FileSpecifier::HideExtension(filename_copy).c_str());
+		strncpy(filename, FileSpecifier::HideExtension(file.GetName()).c_str(), sizeof(filename));
+		filename[sizeof(filename) - 1] = '\0';
 		set_selection(filename);
 	}
 	else
@@ -2468,7 +2467,8 @@ w_directory_chooser::update_directoryname()
 {
 	if (directory.Exists())
 	{
-		directory.GetName(directory_name);
+		strncpy(directory_name, directory.GetName().c_str(), sizeof(directory_name));
+		directory_name[sizeof(directory_name) - 1] = '\0';
 		set_selection(directory_name);
 	}
 	else

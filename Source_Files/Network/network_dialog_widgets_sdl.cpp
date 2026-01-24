@@ -971,10 +971,7 @@ w_entry_point_selector::gotSelected() {
 	placer->add(new w_spacer(), true);
 
         FileSpecifier   theFile(environment_preferences->map_file);
-        char            theName[256];
-        theFile.GetName(theName);
-        sprintf(temporary, "%s", theName);
-        placer->dual_add(new w_static_text(temporary), theDialog);
+        placer->dual_add(new w_static_text(theFile.GetName().c_str()), theDialog);
 
         placer->add(new w_spacer(), true);
 

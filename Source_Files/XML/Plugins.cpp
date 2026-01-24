@@ -335,9 +335,6 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 			DirectorySpecifier current_plugin_directory;
 			file_name.ToDirectory(current_plugin_directory);
 
-			char name[256];
-			current_plugin_directory.GetName(name);
-			
 			std::istringstream strm(std::string(file_data.begin(), file_data.end()));
 			try {
 				InfoTree root = InfoTree::load_xml(strm).get_child("plugin");
@@ -418,7 +415,7 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 				}
 				else
 				{
-					logError("There were parsing errors in %s Plugin.xml: only one solo_lua tag is allowed", name);
+					logError("There were parsing errors in %s Plugin.xml: only one solo_lua tag is allowed", current_plugin_directory.GetName().c_str());
 				}
 
 				if (root.read_attr("stats_lua", Data.stats_lua) &&
@@ -510,13 +507,13 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 				}
 				
 			} catch (const InfoTree::parse_error& e) {
-				logError("There were parsing errors in %s Plugin.xml: %s", name, e.what());
+				logError("There were parsing errors in %s Plugin.xml: %s", current_plugin_directory.GetName().c_str(), e.what());
 			} catch (const InfoTree::path_error& e) {
-				logError("There were parsing errors in %s Plugin.xml: %s", name, e.what());
+				logError("There were parsing errors in %s Plugin.xml: %s", current_plugin_directory.GetName().c_str(), e.what());
 			} catch (const InfoTree::data_error& e) {
-				logError("There were parsing errors in %s Plugin.xml: %s", name, e.what());
+				logError("There were parsing errors in %s Plugin.xml: %s", current_plugin_directory.GetName().c_str(), e.what());
 			} catch (const InfoTree::unexpected_error& e) {
-				logError("There were parsing errors in %s Plugin.xml: %s", name, e.what());
+				logError("There were parsing errors in %s Plugin.xml: %s", current_plugin_directory.GetName().c_str(), e.what());
 			}
 		}
 

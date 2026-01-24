@@ -44,6 +44,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <functional>
 #include <map>
@@ -806,13 +807,13 @@ void FileSpecifier::SetTempName(const FileSpecifier& other)
 }
 
 // Get last element of path
-void FileSpecifier::GetName(char *part) const
+std::string FileSpecifier::GetName() const
 {
 	string::size_type pos = name.rfind(PATH_SEP);
 	if (pos == string::npos)
-		strcpy(part, name.c_str());
+		return name;
 	else
-		strcpy(part, name.substr(pos + 1).c_str());
+		return name.substr(pos + 1);
 }
 
 // Add part to path name
@@ -1165,8 +1166,7 @@ protected:
 		m_list_w->sort_by(default_order);
 		m_list_w->set_directory_changed_callback(std::bind(&FileDialog::on_directory_changed, this));
 
-		dir.GetName(temporary);
-		m_directory_name_w = new w_static_text(temporary);
+		m_directory_name_w = new w_static_text(dir.GetName().c_str());
 	}
 
 	dialog m_dialog;
@@ -1180,8 +1180,7 @@ private:
 
 
 	void on_directory_changed() {
-		m_list_w->get_file().GetName(temporary);
-		m_directory_name_w->set_text(temporary);
+		m_directory_name_w->set_text(m_list_w->get_file().GetName().c_str());
 
 		m_up_button_w->set_enabled(m_list_w->can_move_up_a_level());
 
@@ -1777,15 +1776,13 @@ static bool confirm_save_choice(FileSpecifier & file)
 		return true;
 
 	// Construct message
-	char name[256];
-	file.GetName(name);
-	char message[512];
-	sprintf(message, "'%s' already exists.", FileSpecifier::HideExtension(std::string(name)).c_str());
+	std::ostringstream oss;
+	oss << "'" << FileSpecifier::HideExtension(file.GetName()) << "' alredy exists.";
 
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_static_text(message), d);
+	placer->dual_add(new w_static_text(oss.str().c_str()), d);
 	placer->dual_add(new w_static_text("Ok to overwrite?"), d);
 	placer->add(new w_spacer(), true);
 

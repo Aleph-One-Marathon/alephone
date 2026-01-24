@@ -53,7 +53,8 @@ public:
 
 	env_item(const FileSpecifier &fs, int i, bool sel) : spec(fs), indent(i), selectable(sel)
 	{
-		spec.GetName(name);
+		strncpy(name, spec.GetName().c_str(), sizeof(name));
+		name[sizeof(name) - 1] = '\0';
 	}
 
 	FileSpecifier spec;	// Specifier of associated file
@@ -131,18 +132,17 @@ w_env_select(const char *path, const char *m, Typecode t, dialog *d)
 	void set_path(const char *p)
 	{
 		item = p;
-		item.GetName(item_name);
-		std::string filename = item_name;
 		
 		if (*p)
 		{
 			if (item.Exists())
 			{
-				strncpy(item_name, FileSpecifier::HideExtension(filename).c_str(), 256);
+				strncpy(item_name, FileSpecifier::HideExtension(item.GetName()).c_str(), sizeof(item_name));
+				item_name[sizeof(item_name) - 1] = '\0';
 			}
 			else
 			{
-				snprintf(item_name, 256, "[?%s]", FileSpecifier::HideExtension(filename).c_str());
+				snprintf(item_name, sizeof(item_name), "[?%s]", FileSpecifier::HideExtension(item.GetName()).c_str());
 			}
 			
 			set_selection(item_name);

@@ -239,9 +239,8 @@ class FileSpecifier
 public:
 	// The typecodes here are the symbolic constants defined in tags.h (_typecode_creator, etc.)
 	
-	// Get the name (final path element) as a C string:
-	// assumes enough space to hold it if getting (max. 256 bytes)
-	void GetName(char *Name) const;
+	// Get the name (final path element)
+	std::string GetName() const;
 	
 	//   Looks in all directories in the current data search
 	//   path for a file with the relative path "NameWithPath" and

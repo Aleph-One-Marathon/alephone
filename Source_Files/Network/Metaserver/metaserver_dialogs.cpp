@@ -135,10 +135,7 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 	if (network_preferences->use_netscript)
 	{
 		FileSpecifier netScript(network_preferences->netscript_file);
-		char netScriptName[256];
-		netScript.GetName(netScriptName);
-		netScriptName[32] = '\0';
-		description.m_netScript = netScriptName;
+		description.m_netScript = netScript.GetName();
 	}
 	else if (HasLua)
 	{
@@ -156,16 +153,13 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 	}
 	else
 	{
-		char name[256];
 		FileSpecifier fs = environment_preferences->map_file;
-		fs.GetName(name);
-		description.m_mapFileName = name;
+		description.m_mapFileName = fs.GetName();
 		
 		fs = environment_preferences->physics_file;
 		if (fs.Exists() && fs.GetType() == _typecode_physics)
 		{
-			fs.GetName(name);
-			description.m_physicsName = name;
+			description.m_physicsName = fs.GetName();
 		}
 	}
 	
