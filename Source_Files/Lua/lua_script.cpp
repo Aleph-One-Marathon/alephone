@@ -185,7 +185,7 @@ void* L_Persistent_Table_Key()
 std::map<int, std::string> PassedLuaState;
 std::map<int, std::string> SavedLuaState;
 
-class LuaState
+class LuaState : public LuaMutabilityInterface
 {
 	friend bool CollectLuaStats(std::map<std::string, std::string>&, std::map<std::string, std::string>&);
 public:
@@ -248,6 +248,13 @@ public:
 		L_Set_Search_Path(State(), path);
 	}
 
+	bool ephemera_mutable() const override { return true; }
+	bool fog_mutable() const override{ return true; }
+	bool music_mutable() const override { return true; }
+	bool overlays_mutable() const override { return true; }
+	bool sound_mutable() const override { return true; }
+	bool world_mutable() const override { return true; }
+
 protected:
 	bool GetTrigger(const char *trigger);
 	void CallTrigger(int numArgs = 0);
@@ -309,13 +316,44 @@ typedef LuaState StatsLuaState;
 class SoloScriptState : public LuaState
 {
 public:
-	SoloScriptState() : LuaState() { }
+	SoloScriptState() : LuaState(), write_access_{SoloLuaWriteAccess::world} { }
+	
+	SoloScriptState(SoloLuaWriteAccess write_access) : LuaState(),
+													   write_access_{write_access}
+	{ }
 
 	void Initialize() {
 		LuaState::Initialize();
 		luaL_requiref(State(), LUA_IOLIBNAME, luaopen_io, 1);
 		lua_pop(State(), 1);
 	}
+
+	bool ephemera_mutable() const override {
+		return write_access_.get_flags() & SoloLuaWriteAccess::ephemera;
+	}
+
+	bool fog_mutable() const override {
+		return write_access_.get_flags() & SoloLuaWriteAccess::fog;
+	}
+
+	bool music_mutable() const override {
+		return write_access_.get_flags() & SoloLuaWriteAccess::music;
+	}
+
+	bool overlays_mutable() const override {
+		return write_access_.get_flags() & SoloLuaWriteAccess::overlays;
+	}
+
+	bool sound_mutable() const override {
+		return write_access_.get_flags() & SoloLuaWriteAccess::sound;
+	}
+
+	bool world_mutable() const override {
+		return write_access_.get_flags() & SoloLuaWriteAccess::world;
+	}
+
+private:
+	SoloLuaWriteAccess write_access_;
 };
 
 class AchievementsLuaState : public LuaState
@@ -836,22 +874,26 @@ static int L_Player_Control(lua_State*);
 
 void LuaState::RegisterFunctions()
 {
-	lua_register(State(), "enable_player", L_Enable_Player);
-	lua_register(State(), "disable_player", L_Disable_Player);
+	if (world_mutable())
+	{
+		lua_register(State(), "enable_player", L_Enable_Player);
+		lua_register(State(), "disable_player", L_Disable_Player);
+		lua_register(State(), "hide_interface", L_Hide_Interface);
+		lua_register(State(), "show_interface", L_Show_Interface);
+		lua_register(State(), "player_control", L_Player_Control);
+	}
+	
 	lua_register(State(), "kill_script", L_Kill_Script);
-	lua_register(State(), "hide_interface", L_Hide_Interface);
-	lua_register(State(), "show_interface", L_Show_Interface);
-	lua_register(State(), "player_control", L_Player_Control);
-//	lua_register(state, "prompt", L_Prompt);
+	//	lua_register(state, "prompt", L_Prompt);
 
-	Lua_Music_register(State());
-	Lua_Ephemera_register(State());
-	Lua_Map_register(State());
-	Lua_Monsters_register(State());
-	Lua_Objects_register(State());
-	Lua_Player_register(State());
-	Lua_Projectiles_register(State());
-	Lua_Saved_Objects_register(State());
+	Lua_Music_register(State(), *this);
+	Lua_Ephemera_register(State(), *this);
+	Lua_Map_register(State(), *this);
+	Lua_Monsters_register(State(), *this);
+	Lua_Objects_register(State(), *this);
+	Lua_Player_register(State(), *this);
+	Lua_Projectiles_register(State(), *this);
+	Lua_Saved_Objects_register(State(), *this);
 }
 
 static const char *compatibility_triggers = ""
@@ -1167,7 +1209,7 @@ std::string LuaState::SavePassed()
 	}
 }
 
-typedef std::map<ScriptType, std::unique_ptr<LuaState>> state_map;
+typedef std::multimap<ScriptType, std::unique_ptr<LuaState>> state_map;
 state_map states;
 
 // globals
@@ -1856,7 +1898,8 @@ static int L_Prompt(lua_State *L)
 
 
 
-static std::unique_ptr<LuaState> LuaStateFactory(ScriptType script_type)
+static std::unique_ptr<LuaState> LuaStateFactory(ScriptType script_type,
+												 SoloLuaWriteAccess write_access)
 {
 	switch (script_type) {
 	case _embedded_lua_script:
@@ -1864,7 +1907,7 @@ static std::unique_ptr<LuaState> LuaStateFactory(ScriptType script_type)
 	case _lua_netscript:
         return std::make_unique<NetscriptState>();
 	case _solo_lua_script:
-        return std::make_unique<SoloScriptState>();
+        return std::make_unique<SoloScriptState>(write_access);
 	case _stats_lua_script:
         return std::make_unique<StatsLuaState>();
 	case _achievements_lua_script:
@@ -1873,14 +1916,15 @@ static std::unique_ptr<LuaState> LuaStateFactory(ScriptType script_type)
     return nullptr;
 }
 
-bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
+static state_map::iterator _LoadLuaScript(const char* buffer,
+										  size_t len,
+										  ScriptType script_type,
+										  SoloLuaWriteAccess write_access = SoloLuaWriteAccess::world)
 {
 	assert(script_type >= _embedded_lua_script && script_type <= _achievements_lua_script);
-	if (states.find(script_type) == states.end())
-	{
-		states.insert({ script_type, LuaStateFactory(script_type) });
-		states[script_type]->Initialize();
-	}
+
+	auto state = LuaStateFactory(script_type, write_access);
+	
 	const char *desc = "level_script";
 	switch (script_type) {
 		case _embedded_lua_script:
@@ -1900,7 +1944,14 @@ bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
 			break;
 	}
 
-	return states[script_type]->Load(buffer, len, desc);
+	state->Initialize();
+	state->Load(buffer, len, desc);
+	return states.emplace(std::make_pair(script_type, std::move(state)));
+}
+
+void LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
+{
+	_LoadLuaScript(buffer, len, script_type);
 }
 
 #ifdef HAVE_OPENGL
@@ -1972,41 +2023,39 @@ bool RunLuaScript()
 
 void ExecuteLuaString(const std::string& line)
 {
-	if (states.find(_solo_lua_script) == states.end())
+	// how do we know which solo lua state the user wants to examine? for now,
+	// find a world mutable state, or create one if it doesn't exist
+	auto world_mutable_it = states.end();
+	auto range = states.equal_range(_solo_lua_script);
+	for (auto it = range.first; it != range.second; ++it)
 	{
-		states.insert({ _solo_lua_script, LuaStateFactory(_solo_lua_script) });
-		states[_solo_lua_script]->Initialize();
+		if (it->second->world_mutable())
+		{
+			world_mutable_it = it;
+			break;
+		}
+	}
+
+	if (world_mutable_it == states.end())
+	{
+		auto state = LuaStateFactory(_solo_lua_script, SoloLuaWriteAccess::world);
+		state->Initialize();
+		world_mutable_it = states.emplace(std::make_pair(_solo_lua_script, std::move(state)));
 	}
 
 	exit_interpolated_world();
-	if (states[_solo_lua_script]->ExecuteCommand(line)) {
+	if (world_mutable_it->second->ExecuteCommand(line))
+	{
 		InvalidateAchievements();
 	}
 	enter_interpolated_world();
 }
 
-void LoadSoloLua()
+static void LoadOneSoloLua(std::string file, std::string directory = "", SoloLuaWriteAccess write_access = SoloLuaWriteAccess::world)
 {
-	std::string file;
-	std::string directory;
-
-	if (environment_preferences->use_solo_lua) 
-	{
-		file = environment_preferences->solo_lua_file;
-	}
-	else
-	{
-		const Plugin* solo_lua_plugin = Plugins::instance()->find_solo_lua();
-		if (solo_lua_plugin)
-		{
-			file = solo_lua_plugin->solo_lua;
-			directory = solo_lua_plugin->directory.GetPath();
-		}
-	}
-
 	if (file.size())
 	{
-		FileSpecifier fs (file.c_str());
+		FileSpecifier fs{file.c_str()};
 		if (directory.size())
 		{
 			fs.SetNameWithPath(file.c_str(), directory);
@@ -2015,18 +2064,34 @@ void LoadSoloLua()
 		OpenedFile script_file;
 		if (fs.Open(script_file))
 		{
-			int32 script_length;
+			int32_t script_length;
 			script_file.GetLength(script_length);
 
 			std::vector<char> script_buffer(script_length);
-			if (script_file.Read(script_length, &script_buffer[0]))
+			if (script_file.Read(script_length, script_buffer.data()))
 			{
-				LoadLuaScript(&script_buffer[0], script_length, _solo_lua_script);
-				if (directory.size())
+				auto it = _LoadLuaScript(script_buffer.data(), script_length, _solo_lua_script, write_access);
+				if (!directory.empty())
 				{
-					states[_solo_lua_script]->SetSearchPath(directory);
+					it->second->SetSearchPath(directory);
 				}
 			}
+		}
+	}
+}
+
+void LoadSoloLua()
+{
+	if (environment_preferences->use_solo_lua) 
+	{
+		LoadOneSoloLua(environment_preferences->solo_lua_file);
+	}
+	else
+	{
+		auto plugins = Plugins::instance()->find_solo_lua();
+		for (const auto& plugin : plugins)
+		{
+			LoadOneSoloLua(plugin->solo_lua, plugin->directory.GetPath(), plugin->solo_lua_write_access);
 		}
 	}
 }
@@ -2038,15 +2103,26 @@ void LoadAchievementsLua()
 
 	if (lua.size())
 	{
+		int world_mutable_count = 0;
+		auto range = states.equal_range(_solo_lua_script);
+		for (auto it = range.first; it != range.second; ++it)
+		{
+			if (it->second->world_mutable())
+			{
+				++world_mutable_count;
+				break;
+			}
+		}
+		
 		if (states.count(_embedded_lua_script) ||
 			states.count(_lua_netscript) ||
-			states.count(_solo_lua_script))
+			world_mutable_count)
 		{
 			Achievements::instance()->set_disabled_reason("Achievements disabled (third party scripts)");
 			logNote("achievements: invalidating due to other Lua (%i %i %i)",
 				states.count(_embedded_lua_script),
 				states.count(_lua_netscript),
-				states.count(_solo_lua_script));
+				world_mutable_count);
 			return;
 		}
 
@@ -2093,29 +2169,26 @@ void LoadStatsLua()
 			std::vector<char> script_buffer(script_length);
 			if (script_file.Read(script_length, &script_buffer[0]))
 			{
-				LoadLuaScript(&script_buffer[0], script_length, _stats_lua_script);
-				if (directory.size())
+				auto it = _LoadLuaScript(&script_buffer[0], script_length, _stats_lua_script);
+				if (!directory.empty())
 				{
-					states[_stats_lua_script]->SetSearchPath(directory);
+					it->second->SetSearchPath(directory);
 				}
 			}
-			
 		}
 	}
 }
 
 bool CollectLuaStats(std::map<std::string, std::string>& options, std::map<std::string, std::string>& parameters)
 {
-	if (states.find(_stats_lua_script) == states.end())
+	auto it = states.find(_stats_lua_script);
+	if (it == states.end() || !it->second->Running())
 	{
 		return false;
 	}
 
-	lua_State* L = states[_stats_lua_script]->State();
-	
-	if (!states[_stats_lua_script]->Running())
-		return false;
-	
+	auto L = it->second->State();
+
 	options.clear();
 	parameters.clear();
 	
@@ -2198,10 +2271,6 @@ void LoadReplayNetLua()
 			if (script_file.Read(script_length, &script_buffer[0]))
 			{
 				LoadLuaScript(&script_buffer[0], script_length, _lua_netscript);
-				if (directory.size())
-				{
-					states[_lua_netscript]->SetSearchPath(directory);
-				}
 			}
 		}
 	}
@@ -2213,7 +2282,10 @@ void CloseLuaScript()
 	PassedLuaState.clear();
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		PassedLuaState[it->first] = it->second->SavePassed();
+		if (it->second->world_mutable())
+		{
+			PassedLuaState[it->first] = it->second->SavePassed();
+		}
 	}
 	states.clear();
 
@@ -2382,11 +2454,14 @@ size_t save_lua_states()
 	SavedLuaState.clear();
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		SavedLuaState[it->first] = it->second->SaveAll();
-		if (SavedLuaState[it->first].size())
+		if (it->second->world_mutable())
 		{
-			length += 6; // id, length
-			length += SavedLuaState[it->first].size();
+			SavedLuaState[it->first] = it->second->SaveAll();
+			if (SavedLuaState[it->first].size())
+			{
+				length += 6; // id, length
+				length += SavedLuaState[it->first].size();
+			}
 		}
 	}
 

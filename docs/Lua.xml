@@ -131,6 +131,15 @@
 		<p>Only numbers, strings, booleans, and tables (including Aleph One’s built-in userdata tables) can be restored.</p>
       </description>
     </section>
+	<section name="Solo Plugin Write Access" id="write_access">
+	  <description>
+		<p>Plugins that specify solo Lua scripts can also specify write access to features (see the Plugins Guide). Legacy solo Lua plugins are automatically assigned the <code>world</code> write access feature. This means they can modify anything in the game using Lua, but only one <code>world</code> feature script can run at a time, and achievements will be disabled.</p>
+		<p>The write access features <code>music</code>, <code>fog</code>, and <code>overlays</code> can run with other non-<code>world</code> Lua plugins that do not access the same features. For example, only one <code>music</code> plugin can run at a time, but a <code>music</code> plugin and <code>fog</code> plugin could run at the same time.</p>
+		<p>The write access features <code>ephemera</code> and <code>sound</code> can run with any other non-<code>world</code> write access plugins. Remember when writing a <code>ephemera</code> plugin that other plugins (and embedded Lua) can also access ephemera, so manage accordingly.</p>
+		<p>Plugins can specify multiple non-<code>world</code> write access features, and compatibility with other plugins will be determined automatically.</p>
+		<p>All solo Lua scripts can use Players:print and print to the console.</p>
+	  </description>
+	</section>
   </section>
   <triggers id="triggers">
     <description>These are functions scripts can define which Aleph One will call at specific times or events. For example, to regenerate health:

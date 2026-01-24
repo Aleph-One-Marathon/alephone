@@ -48,6 +48,6 @@ typedef L_Enum<Lua_MonsterAction_Name> Lua_MonsterAction;
 extern char Lua_MonsterType_Name[]; // "monster_type"
 typedef L_Enum<Lua_MonsterType_Name> Lua_MonsterType;
 
-int Lua_Monsters_register(lua_State *L);
+int Lua_Monsters_register(lua_State *L, const LuaMutabilityInterface& m);
 
 #endif

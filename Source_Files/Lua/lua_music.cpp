@@ -187,9 +187,13 @@ const luaL_Reg Lua_MusicManager_Methods[] = {
 };
 
 const luaL_Reg Lua_Music_Get[] = {
-	{"fade", L_TableFunction<Lua_Music_Fade>},
 	{"volume", Lua_Music_Volume_Get},
 	{"active", Lua_Music_Active_Get},
+	{0, 0}
+};
+
+const luaL_Reg Lua_Music_Get_Mutable[] = {
+	{"fade", L_TableFunction<Lua_Music_Fade>},
 	{"play", L_TableFunction<Lua_Music_Play>},
 	{"stop", L_TableFunction<Lua_Music_Stop>},
 	{0, 0}
@@ -203,12 +207,25 @@ const luaL_Reg Lua_Music_Set[] = {
 char Lua_Music_Name[] = "music";
 char Lua_MusicManager_Name[] = "Music";
 
-int Lua_Music_register(lua_State* L)
+int Lua_Music_register(lua_State* L, const LuaMutabilityInterface& m)
 {
-	Lua_Music::Register(L, Lua_Music_Get, Lua_Music_Set);
+	Lua_Music::Register(L, Lua_Music_Get);
+	if (m.world_mutable() || m.music_mutable())
+	{
+		Lua_Music::RegisterAdditional(L, Lua_Music_Get_Mutable, Lua_Music_Set);
+	}
+
 	Lua_Music::Valid = Lua_Music_Valid;
 
-	Lua_MusicManager::Register(L, Lua_MusicManager_Methods);
+	if (m.world_mutable() || m.music_mutable())
+	{
+		Lua_MusicManager::Register(L, Lua_MusicManager_Methods);
+	}
+	else
+	{
+		Lua_MusicManager::Register(L);
+	}
+	
 	Lua_MusicManager::Length = Lua_MusicManager::ConstantLength(16); //whatever
 	return 0;
 }

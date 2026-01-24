@@ -134,6 +134,7 @@
 <li><a href="#sync">Net Games and Films</a></li>
 <li><a href="#loading_collections">Loading Collections</a></li>
 <li><a href="#persistence">Persistence</a></li>
+<li><a href="#write_access">Solo Plugin Write Access</a></li>
 </ol>
 </li>
 <li><details><summary><a href="#triggers">Triggers</a></summary><ol>
@@ -283,7 +284,14 @@
 		<p>It is now possible to pass data across level jumps, by using the Game.restore_passed() function. This function will restore any custom fields (see the "Custom Fields" section of "Using Tables" below) in the Players or Game tables that were set immediately prior to the last level jump. Note that in order for data to survive multiple level jumps, Game.restore_passed() must be called after each level jump. Game.restore_passed() will not restore data from saved games.</p>
 		<p>It is also possible to restore data from saved games. The Game.restore_saved() function will restore all custom fields in use at the time the game was saved.</p>
 		<p>Only numbers, strings, booleans, and tables (including Aleph One’s built-in userdata tables) can be restored.</p>
-      <h1>
+      <h2>
+<a name="write_access"></a>Solo Plugin Write Access</h2>
+		<p>Plugins that specify solo Lua scripts can also specify write access to features (see the Plugins Guide). Legacy solo Lua plugins are automatically assigned the <code>world</code> write access feature. This means they can modify anything in the game using Lua, but only one <code>world</code> feature script can run at a time, and achievements will be disabled.</p>
+		<p>The write access features <code>music</code>, <code>fog</code>, and <code>overlays</code> can run with other non-<code>world</code> Lua plugins that do not access the same features. For example, only one <code>music</code> plugin can run at a time, but a <code>music</code> plugin and <code>fog</code> plugin could run at the same time.</p>
+		<p>The write access features <code>ephemera</code> and <code>sound</code> can run with any other non-<code>world</code> write access plugins. Remember when writing a <code>ephemera</code> plugin that other plugins (and embedded Lua) can also access ephemera, so manage accordingly.</p>
+		<p>Plugins can specify multiple non-<code>world</code> write access features, and compatibility with other plugins will be determined automatically.</p>
+		<p>All solo Lua scripts can use Players:print and print to the console.</p>
+	  <h1>
 <a name="triggers"></a>Triggers</h1>
 <div class="triggers">
 <p>These are functions scripts can define which Aleph One will call at specific times or events. For example, to regenerate health:

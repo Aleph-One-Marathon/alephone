@@ -71,12 +71,12 @@ enum ScriptType {
 	_lua_netscript,
 	_solo_lua_script,
 	_stats_lua_script,
-	_achievements_lua_script
+	_achievements_lua_script,
 };
 
 void *L_Persistent_Table_Key();
 
-bool LoadLuaScript(const char *buffer, size_t len, ScriptType type);
+void LoadLuaScript(const char *buffer, size_t len, ScriptType type);
 bool RunLuaScript();
 void CloseLuaScript();
 void ResetPassedLua();
@@ -163,6 +163,17 @@ struct lua_camera //an expanded version of script_camera; uses Lua's path scheme
     lua_path path;
     int32 time_elapsed;
     int player_active;
+};
+
+class LuaMutabilityInterface
+{
+public:
+	virtual bool ephemera_mutable() const = 0;
+	virtual bool fog_mutable() const = 0;
+	virtual bool music_mutable() const = 0;
+	virtual bool overlays_mutable() const = 0;
+	virtual bool sound_mutable() const = 0;
+	virtual bool world_mutable() const = 0; // includes the others
 };
 
 #endif
