@@ -279,9 +279,14 @@ bool SoundDefinition::Unpack(OpenedFile &SoundFile)
 	vector<uint8> headerBuffer(HeaderSize());
 	if (!SoundFile.Read(headerBuffer.size(), &headerBuffer[0])) 
 		return false;
-	
-	AIStreamBE header(&headerBuffer[0], headerBuffer.size());
-	
+
+	io::stream_buffer<io::array_source> sb{reinterpret_cast<char*>(headerBuffer.data()), headerBuffer.size()};
+	BIStreamBE header{&sb};
+	return Unpack(header);
+}
+
+bool SoundDefinition::Unpack(BIStreamBE& header)
+{
 	header >> sound_code;
 
 	header >> behavior_index;

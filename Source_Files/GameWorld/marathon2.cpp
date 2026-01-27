@@ -127,6 +127,9 @@ Feb 8, 2003 (Woody Zenfell):
 #include "ephemera.h"
 #include "interpolated_world.h"
 
+#include "Plugins.h"
+#include "SoundsPatch.h"
+
 /* ---------- constants */
 
 /* ---------- globals */
@@ -677,6 +680,9 @@ bool entering_map(bool restoring_saved)
 
 	load_collections(true, get_screen_mode()->acceleration != _no_acceleration);
 
+	sounds_patches.clear();
+	Plugins::instance()->load_sounds_patches();
+	
 	load_all_monster_sounds();
 	load_all_game_sounds(static_world->environment_code);
 

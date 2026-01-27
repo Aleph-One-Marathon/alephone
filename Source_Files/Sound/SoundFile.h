@@ -95,6 +95,8 @@ class SoundDefinition
 public:
 	SoundDefinition();
 	bool Unpack(OpenedFile &SoundFile);
+	bool Unpack(BIStreamBE& s);
+	
 	bool Load(OpenedFile &SoundFile, bool LoadPermutations);
 	std::shared_ptr<SoundData> LoadData(OpenedFile& SoundFile, short permutation);
 	void Unload() { sounds.clear(); }

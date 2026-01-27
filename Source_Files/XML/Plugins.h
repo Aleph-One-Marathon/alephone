@@ -94,6 +94,7 @@ struct Plugin {
 	std::vector<ShapesPatch> shapes_patches;
 	std::vector<ScenarioInfo> required_scenarios;
 	std::vector<MapPatch> map_patches;
+	std::vector<std::string> sounds_patches;
 
 	bool auto_enable;
 	bool enabled;
@@ -125,6 +126,7 @@ public:
 	void load_mml(bool load_menu_mml_only);
 
 	void load_shapes_patches(bool opengl);
+	void load_sounds_patches();
 
 	bool disable(const boost::filesystem::path& path);
 	bool enable(const boost::filesystem::path& path);
