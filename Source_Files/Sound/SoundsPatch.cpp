@@ -24,6 +24,7 @@ SOUND_PATCH.CPP
 #include <boost/iostreams/stream_buffer.hpp>
 
 #include "FileHandler.h"
+#include "ReplacementSounds.h"
 #include "SoundFile.h"
 
 namespace io = boost::iostreams;
@@ -135,6 +136,15 @@ bool SoundsPatch::load(BIStreamBE& stream)
 
 void SoundsPatch::apply(std::map<std::pair<int, int>, SoundDefinitionPatch>& patches)
 {
+	auto replacements = SoundReplacements::instance();
+	
+	for (const auto& [key, value] : patches)
+	{
+		for (auto i = 0; i < value.definition.sounds.size(); ++i)
+		{
+			replacements->Remove(key.second, i);
+		}
+	}
 	definition_patches.merge(patches);
 	std::swap(definition_patches, patches);
 }
