@@ -31,6 +31,7 @@ SOUND.C
 #include "OpenALManager.h"
 #include "shell_options.h"
 #include "Movie.h"
+#include "SoundsPatch.h"
 
 #undef SLOT_IS_USED
 #undef SLOT_IS_FREE
@@ -258,7 +259,7 @@ bool SoundManager::LoadSound(short sound_index)
 	{
 		return false;
 	}
-			
+	
 	if (sounds->IsLoaded(sound_index))
 	{
 		sounds->Update(sound_index);
@@ -267,7 +268,11 @@ bool SoundManager::LoadSound(short sound_index)
 	{
 		for (int i = 0; i < NumSlots; ++i)
 		{
-			auto p = sound_file->GetSoundData(definition, i);
+			auto p = sounds_patches.get_sound_data(definition, i);
+			if (!p)
+			{
+				p = sound_file->GetSoundData(definition, i);
+			}
 
 			SoundOptions *SndOpts = SoundReplacements::instance()->GetSoundOptions(sound_index, i);
 			if (SndOpts)
@@ -786,10 +791,22 @@ std::shared_ptr<SoundPlayer> SoundManager::UpdateExistingPlayer(const Sound& sou
 
 SoundDefinition* SoundManager::GetSoundDefinition(short sound_index)
 {
-	SoundDefinition* sound_definition = sound_file->GetSoundDefinition(sound_source, sound_index);
-	if (sound_source == _16bit_22k_source && sound_definition && sound_definition->permutations == 0)
+	auto sound_definition = sounds_patches.get_definition(sound_source, sound_index);
+	if (!sound_definition)
 	{
-		sound_definition = sound_file->GetSoundDefinition(_8bit_22k_source, sound_index);
+		// if they included a patch, they most likely want to hear the patched sounds
+		sound_definition = sounds_patches.get_definition((sound_source + 1) % NUMBER_OF_SOUND_SOURCES, sound_index);
+	}
+
+	if (!sound_definition)
+	{
+		sound_definition = sound_file->GetSoundDefinition(sound_source, sound_index);
+		if (sound_source == _16bit_22k_source &&
+			sound_definition &&
+			sound_definition->permutations == 0)
+		{
+			sound_definition = sound_file->GetSoundDefinition(_8bit_22k_source, sound_index);
+		}
 	}
 
 	return sound_definition;

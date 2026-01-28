@@ -721,6 +721,9 @@
     <ClCompile Include="..\..\Source_Files\Network\NetworkInterface.cpp">
       <Filter>Network\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source_Files\Sound\SoundsPatch.cpp">
+      <Filter>Sound\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source_Files\CSeries\BStream.h">
@@ -1403,6 +1406,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\Network\NetworkInterface.h">
       <Filter>Network\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source_Files\Sound\SoundsPatch.h">
+      <Filter>Sound\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

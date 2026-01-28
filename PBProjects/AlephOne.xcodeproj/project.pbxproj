@@ -1534,6 +1534,20 @@
 		AE72AA91269A7E7B001F7675 /* PortForward.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE72AA8F269A7E7B001F7675 /* PortForward.cpp */; };
 		AE72AA92269A7E7B001F7675 /* PortForward.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE72AA8F269A7E7B001F7675 /* PortForward.cpp */; };
 		AE72AA93269A7E7B001F7675 /* PortForward.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE72AA8F269A7E7B001F7675 /* PortForward.cpp */; };
+		AE74A0032F29A75A00142E2E /* SoundsPatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE74A0022F29A75A00142E2E /* SoundsPatch.cpp */; };
+		AE74A0042F29A75A00142E2E /* SoundsPatch.h in Headers */ = {isa = PBXBuildFile; fileRef = AE74A0012F29A75A00142E2E /* SoundsPatch.h */; };
+		AE74A0052F29A75A00142E2E /* SoundsPatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE74A0022F29A75A00142E2E /* SoundsPatch.cpp */; };
+		AE74A0062F29A75A00142E2E /* SoundsPatch.h in Headers */ = {isa = PBXBuildFile; fileRef = AE74A0012F29A75A00142E2E /* SoundsPatch.h */; };
+		AE74A0072F29A75A00142E2E /* SoundsPatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE74A0022F29A75A00142E2E /* SoundsPatch.cpp */; };
+		AE74A0082F29A75A00142E2E /* SoundsPatch.h in Headers */ = {isa = PBXBuildFile; fileRef = AE74A0012F29A75A00142E2E /* SoundsPatch.h */; };
+		AE74A0092F29A75A00142E2E /* SoundsPatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE74A0022F29A75A00142E2E /* SoundsPatch.cpp */; };
+		AE74A00A2F29A75A00142E2E /* SoundsPatch.h in Headers */ = {isa = PBXBuildFile; fileRef = AE74A0012F29A75A00142E2E /* SoundsPatch.h */; };
+		AE74A00B2F29A75A00142E2E /* SoundsPatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE74A0022F29A75A00142E2E /* SoundsPatch.cpp */; };
+		AE74A00C2F29A75A00142E2E /* SoundsPatch.h in Headers */ = {isa = PBXBuildFile; fileRef = AE74A0012F29A75A00142E2E /* SoundsPatch.h */; };
+		AE74A00D2F29A75A00142E2E /* SoundsPatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE74A0022F29A75A00142E2E /* SoundsPatch.cpp */; };
+		AE74A00E2F29A75A00142E2E /* SoundsPatch.h in Headers */ = {isa = PBXBuildFile; fileRef = AE74A0012F29A75A00142E2E /* SoundsPatch.h */; };
+		AE74A00F2F29A75A00142E2E /* SoundsPatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE74A0022F29A75A00142E2E /* SoundsPatch.cpp */; };
+		AE74A0102F29A75A00142E2E /* SoundsPatch.h in Headers */ = {isa = PBXBuildFile; fileRef = AE74A0012F29A75A00142E2E /* SoundsPatch.h */; };
 		AE780E102533A4C7002184B5 /* lua_ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */; };
 		AE780E112533A4C7002184B5 /* lua_ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */; };
 		AE780E122533A4C7002184B5 /* lua_ephemera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */; };
@@ -3248,6 +3262,8 @@
 		AE69B5DC0D404F0400C42C11 /* lua_player.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_player.h; sourceTree = "<group>"; };
 		AE72AA8F269A7E7B001F7675 /* PortForward.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PortForward.cpp; path = ../Source_Files/Network/PortForward.cpp; sourceTree = "<group>"; };
 		AE72AA94269A7E9F001F7675 /* PortForward.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PortForward.h; path = ../Source_Files/Network/PortForward.h; sourceTree = "<group>"; };
+		AE74A0012F29A75A00142E2E /* SoundsPatch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SoundsPatch.h; sourceTree = "<group>"; };
+		AE74A0022F29A75A00142E2E /* SoundsPatch.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SoundsPatch.cpp; sourceTree = "<group>"; };
 		AE780E0F2533A4C7002184B5 /* lua_ephemera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_ephemera.cpp; sourceTree = "<group>"; };
 		AE780E142533A4D8002184B5 /* ephemera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ephemera.cpp; sourceTree = "<group>"; };
 		AE780E192533A4E9002184B5 /* ephemera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ephemera.h; sourceTree = "<group>"; };
@@ -4566,6 +4582,8 @@
 				AE626E6B0B878534009CFF2D /* SoundManagerEnums.h */,
 				F5CC94140240DA4301A80001 /* song_definitions.h */,
 				F5CC94150240DA4301A80001 /* sound_definitions.h */,
+				AE74A0012F29A75A00142E2E /* SoundsPatch.h */,
+				AE74A0022F29A75A00142E2E /* SoundsPatch.cpp */,
 			);
 			name = Sound;
 			path = ../Source_Files/Sound;
@@ -4751,6 +4769,7 @@
 				AE120C092BC77645001873DD /* ChaseCam.h in Headers */,
 				AE120C0A2BC77645001873DD /* sdl_resize.h in Headers */,
 				AE120C0B2BC77645001873DD /* computer_interface.h in Headers */,
+				AE74A0042F29A75A00142E2E /* SoundsPatch.h in Headers */,
 				AE120C0C2BC77645001873DD /* PlayerImage_sdl.h in Headers */,
 				AE120C0D2BC77645001873DD /* fades.h in Headers */,
 				AE120C0E2BC77645001873DD /* FontHandler.h in Headers */,
@@ -4958,6 +4977,7 @@
 				AE1320A12C1CB4D2009D34AA /* ChaseCam.h in Headers */,
 				AE1320A22C1CB4D2009D34AA /* sdl_resize.h in Headers */,
 				AE1320A32C1CB4D2009D34AA /* computer_interface.h in Headers */,
+				AE74A0062F29A75A00142E2E /* SoundsPatch.h in Headers */,
 				AE1320A42C1CB4D2009D34AA /* PlayerImage_sdl.h in Headers */,
 				AE1320A52C1CB4D2009D34AA /* fades.h in Headers */,
 				AE1320A62C1CB4D2009D34AA /* FontHandler.h in Headers */,
@@ -5158,6 +5178,7 @@
 				AE505B9E141D45E600915344 /* RenderVisTree.h in Headers */,
 				AE505B9F141D45E600915344 /* scottish_textures.h in Headers */,
 				AE505BA0141D45E600915344 /* shape_definitions.h in Headers */,
+				AE74A0102F29A75A00142E2E /* SoundsPatch.h in Headers */,
 				AED959BC2BC23591008EFCA2 /* achievements.h in Headers */,
 				278E0C791AA3CD4500FA93B7 /* WadImageCache.h in Headers */,
 				AE505BA1141D45E600915344 /* shape_descriptors.h in Headers */,
@@ -5364,6 +5385,7 @@
 				AEB4A13E14296CAE00537AE7 /* RenderVisTree.h in Headers */,
 				AEB4A13F14296CAE00537AE7 /* scottish_textures.h in Headers */,
 				AEB4A14014296CAE00537AE7 /* shape_definitions.h in Headers */,
+				AE74A0082F29A75A00142E2E /* SoundsPatch.h in Headers */,
 				AED959BD2BC23591008EFCA2 /* achievements.h in Headers */,
 				278E0C7A1AA3CD4500FA93B7 /* WadImageCache.h in Headers */,
 				AEB4A14114296CAE00537AE7 /* shape_descriptors.h in Headers */,
@@ -5577,6 +5599,7 @@
 				AEBDC57D2C4DF0780026DFF1 /* ChaseCam.h in Headers */,
 				AEBDC57E2C4DF0780026DFF1 /* sdl_resize.h in Headers */,
 				AEBDC57F2C4DF0780026DFF1 /* computer_interface.h in Headers */,
+				AE74A00E2F29A75A00142E2E /* SoundsPatch.h in Headers */,
 				AEBDC5802C4DF0780026DFF1 /* PlayerImage_sdl.h in Headers */,
 				AEBDC5812C4DF0780026DFF1 /* fades.h in Headers */,
 				AEBDC5822C4DF0780026DFF1 /* FontHandler.h in Headers */,
@@ -5777,6 +5800,7 @@
 				AEC3C77109AD68AC003258E4 /* RenderVisTree.h in Headers */,
 				AEC3C77209AD68AC003258E4 /* scottish_textures.h in Headers */,
 				AEC3C77309AD68AC003258E4 /* shape_definitions.h in Headers */,
+				AE74A00C2F29A75A00142E2E /* SoundsPatch.h in Headers */,
 				276BED141A846FD900AE52F4 /* CourierPrimeItalic.h in Headers */,
 				AED959BA2BC23591008EFCA2 /* achievements.h in Headers */,
 				AEC3C77409AD68AC003258E4 /* shape_descriptors.h in Headers */,
@@ -5983,6 +6007,7 @@
 				AEFD864C13EB84CF00C1E687 /* RenderVisTree.h in Headers */,
 				AEFD864D13EB84CF00C1E687 /* scottish_textures.h in Headers */,
 				AEFD864E13EB84CF00C1E687 /* shape_definitions.h in Headers */,
+				AE74A00A2F29A75A00142E2E /* SoundsPatch.h in Headers */,
 				AED959BB2BC23591008EFCA2 /* achievements.h in Headers */,
 				278E0C781AA3CD4500FA93B7 /* WadImageCache.h in Headers */,
 				AEFD864F13EB84CF00C1E687 /* shape_descriptors.h in Headers */,
@@ -6700,6 +6725,7 @@
 				AE120CDA2BC77645001873DD /* motion_sensor.cpp in Sources */,
 				AE120CDB2BC77645001873DD /* overhead_map.cpp in Sources */,
 				AE120CDC2BC77645001873DD /* OverheadMap_OGL.cpp in Sources */,
+				AE74A0032F29A75A00142E2E /* SoundsPatch.cpp in Sources */,
 				AE120CDD2BC77645001873DD /* OverheadMap_SDL.cpp in Sources */,
 				AE120CDE2BC77645001873DD /* OverheadMapRenderer.cpp in Sources */,
 				AE120CDF2BC77645001873DD /* screen_drawing.cpp in Sources */,
@@ -6922,6 +6948,7 @@
 				AE1321732C1CB4D2009D34AA /* motion_sensor.cpp in Sources */,
 				AE1321742C1CB4D2009D34AA /* overhead_map.cpp in Sources */,
 				AE1321752C1CB4D2009D34AA /* OverheadMap_OGL.cpp in Sources */,
+				AE74A0052F29A75A00142E2E /* SoundsPatch.cpp in Sources */,
 				AE1321762C1CB4D2009D34AA /* OverheadMap_SDL.cpp in Sources */,
 				AE1321772C1CB4D2009D34AA /* OverheadMapRenderer.cpp in Sources */,
 				AE1321782C1CB4D2009D34AA /* screen_drawing.cpp in Sources */,
@@ -7191,6 +7218,7 @@
 				AE505CAA141D45E600915344 /* preference_dialogs.cpp in Sources */,
 				AE505CAB141D45E600915344 /* OGL_Blitter.cpp in Sources */,
 				AE505CAC141D45E600915344 /* SW_Texture_Extras.cpp in Sources */,
+				AE74A00F2F29A75A00142E2E /* SoundsPatch.cpp in Sources */,
 				AE505CAE141D45E600915344 /* Music.cpp in Sources */,
 				AEEA4E812544B50B0031363A /* shell_options.cpp in Sources */,
 				AE505CAF141D45E600915344 /* SoundFile.cpp in Sources */,
@@ -7420,6 +7448,7 @@
 				AEB4A24B14296CAE00537AE7 /* preference_dialogs.cpp in Sources */,
 				AEB4A24C14296CAE00537AE7 /* OGL_Blitter.cpp in Sources */,
 				AEB4A24D14296CAE00537AE7 /* SW_Texture_Extras.cpp in Sources */,
+				AE74A0072F29A75A00142E2E /* SoundsPatch.cpp in Sources */,
 				AEB4A24F14296CAE00537AE7 /* Music.cpp in Sources */,
 				AEEA4E822544B50B0031363A /* shell_options.cpp in Sources */,
 				AEB4A25014296CAE00537AE7 /* SoundFile.cpp in Sources */,
@@ -7594,6 +7623,7 @@
 				AEBDC6502C4DF0780026DFF1 /* overhead_map.cpp in Sources */,
 				AEBDC6512C4DF0780026DFF1 /* OverheadMap_OGL.cpp in Sources */,
 				AEBDC6522C4DF0780026DFF1 /* OverheadMap_SDL.cpp in Sources */,
+				AE74A00D2F29A75A00142E2E /* SoundsPatch.cpp in Sources */,
 				AEBDC6532C4DF0780026DFF1 /* OverheadMapRenderer.cpp in Sources */,
 				AEBDC6542C4DF0780026DFF1 /* screen_drawing.cpp in Sources */,
 				AEBDC6552C4DF0780026DFF1 /* sdl_fonts.cpp in Sources */,
@@ -7863,6 +7893,7 @@
 				AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */,
 				AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */,
 				AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */,
+				AE74A00B2F29A75A00142E2E /* SoundsPatch.cpp in Sources */,
 				AEC02F910B6D8B310095E8C9 /* SW_Texture_Extras.cpp in Sources */,
 				AE626E6E0B878534009CFF2D /* Music.cpp in Sources */,
 				AEEA4E7F2544B50B0031363A /* shell_options.cpp in Sources */,
@@ -8084,6 +8115,7 @@
 				AEFD875713EB84CF00C1E687 /* preference_dialogs.cpp in Sources */,
 				AEFD875813EB84CF00C1E687 /* OGL_Blitter.cpp in Sources */,
 				AEFD875913EB84CF00C1E687 /* SW_Texture_Extras.cpp in Sources */,
+				AE74A0092F29A75A00142E2E /* SoundsPatch.cpp in Sources */,
 				AEFD875B13EB84CF00C1E687 /* Music.cpp in Sources */,
 				AEEA4E802544B50B0031363A /* shell_options.cpp in Sources */,
 				AEFD875C13EB84CF00C1E687 /* SoundFile.cpp in Sources */,

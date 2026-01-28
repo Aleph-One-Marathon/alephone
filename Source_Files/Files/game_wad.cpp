@@ -116,6 +116,7 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 #include "SoundManager.h"
 #include "Plugins.h"
 #include "ephemera.h"
+#include "SoundsPatch.h"
 
 // LP change: added chase-cam init and render allocation
 #include "ChaseCam.h"
@@ -1781,6 +1782,10 @@ bool process_map_wad(
 	data= (uint8 *)extract_type_from_wad(wad, SHAPE_PATCH_TAG, &data_length);
 	set_shapes_patch_data(data, data_length);
 
+	/* Extract embedded sounds */
+	data= (uint8 *)extract_type_from_wad(wad, SOUND_PATCH_TAG, &data_length);
+	set_sounds_patch_data(data, data_length);
+
 	/* Extract MMLS */
 	data= (uint8 *)extract_type_from_wad(wad, MMLS_TAG, &data_length);
 	SetMMLS(data, data_length);
@@ -2099,6 +2104,7 @@ save_game_data export_data[]=
 	{ AMBIENT_SOUND_TAG, SIZEOF_ambient_sound_image_data, true },
 	{ RANDOM_SOUND_TAG, SIZEOF_random_sound_image_data, true },
 	{ SHAPE_PATCH_TAG, sizeof(byte), true },
+	{ SOUND_PATCH_TAG, sizeof(byte), true },
 //	{ PLATFORM_STRUCTURE_TAG, SIZEOF_platform_data, true },
 };
 
@@ -2128,6 +2134,7 @@ struct save_game_data save_data[]=
 
 	// GHS: save the new embedded shapes
 	{ SHAPE_PATCH_TAG, sizeof(byte), true },
+	{ SOUND_PATCH_TAG, sizeof(byte), true },
 
 	{ MMLS_TAG, sizeof(byte), true },
 	{ LUAS_TAG, sizeof(byte), true },
@@ -2400,13 +2407,16 @@ static uint8 *tag_to_global_array_and_size(
 		case WEAPONS_PHYSICS_TAG:
 			count= get_number_of_weapon_types();
 			break;
-	        case SHAPE_PATCH_TAG:
+		case SHAPE_PATCH_TAG:
 			get_shapes_patch_data(count);
 			break;
-	        case MMLS_TAG:
+		case SOUND_PATCH_TAG:
+			get_sounds_patch_data(count);
+			break;
+	    case MMLS_TAG:
 			GetMMLS(count);
 			break;
-	        case LUAS_TAG:
+	    case LUAS_TAG:
 			GetLUAS(count);
 			break;
 		case LUA_STATE_TAG:
@@ -2522,13 +2532,16 @@ static uint8 *tag_to_global_array_and_size(
 		case WEAPONS_PHYSICS_TAG:
 			pack_weapon_definition(array,count);
 			break;
-	        case SHAPE_PATCH_TAG:
+		case SHAPE_PATCH_TAG:
 			memcpy(array, get_shapes_patch_data(count), count);
 			break;
-	        case MMLS_TAG:
+		case SOUND_PATCH_TAG:
+			memcpy(array, get_sounds_patch_data(count), count);
+			break;
+		case MMLS_TAG:
 			memcpy(array, GetMMLS(count), count);
 			break;
-	        case LUAS_TAG:
+		case LUAS_TAG:
 			memcpy(array, GetLUAS(count), count);
 			break;
 		case LUA_STATE_TAG:
