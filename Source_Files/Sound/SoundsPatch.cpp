@@ -21,6 +21,7 @@ SOUND_PATCH.CPP
 
 #include "SoundsPatch.h"
 
+#include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream_buffer.hpp>
 
 #include "FileHandler.h"
@@ -30,6 +31,26 @@ SOUND_PATCH.CPP
 namespace io = boost::iostreams;
 
 SoundsPatches sounds_patches;
+
+std::vector<uint8_t> sounds_patch;
+
+void set_sounds_patch_data(const uint8_t* data, size_t length)
+{
+	sounds_patch.assign(data, data + length);
+}
+
+uint8_t* get_sounds_patch_data(size_t& length)
+{
+	length = sounds_patch.size();
+	return length ? sounds_patch.data() : nullptr;
+}
+
+void load_sounds_patch_data()
+{
+	io::stream_buffer<io::array_source> sb{reinterpret_cast<char*>(sounds_patch.data()), sounds_patch.size()};
+	BIStreamBE stream{&sb};
+	sounds_patches.add(stream);
+}
 
 struct SoundDefinitionPatch {
 	bool load(BIStreamBE& stream);

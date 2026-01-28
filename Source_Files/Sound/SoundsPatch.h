@@ -31,6 +31,10 @@ SOUND_PATCH.H
 class FileHandler;
 class SoundDefinitionPatch;
 
+void set_sounds_patch_data(const uint8_t* data, size_t length);
+uint8_t* get_sounds_patch_data(size_t& length);
+void load_sounds_patch_data();
+
 class SoundsPatches {
 public:
 	bool add(FileSpecifier& file_specifier);

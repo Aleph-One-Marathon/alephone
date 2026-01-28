@@ -682,6 +682,8 @@ bool entering_map(bool restoring_saved)
 
 	sounds_patches.clear();
 	Plugins::instance()->load_sounds_patches();
+
+	load_sounds_patch_data();
 	
 	load_all_monster_sounds();
 	load_all_game_sounds(static_world->environment_code);
