@@ -1191,8 +1191,7 @@ All of them are in degrees, all of them are floating-point values
 <h3><a name="weapons">Weapons Element: &lt;weapons&gt;</a></h3>
 
 This kind of element specifies various features of the weapons,
-such as shell casings and weapon order (child elements &lt;shell_casings&gt;
-and &lt;order&gt;).
+such as shell casings, weapon order, and other constants not set in the physics file (child elements &lt;shell_casings&gt;, &lt;order&gt;, and &lt;weapon&gt;).
 <p>
 
 Shell-casing features one can specify
@@ -1247,6 +1246,17 @@ The default weapon order is
 <li>Ball
 </ol>
 <p>
+
+Weapon constants can be specified with the child element &lt;weapon&gt;, which has these elements:
+<ul>
+<li>index: which weapon index (note: not the same as weapon order above; see appendix 2)
+<li>angular_variance: angle to add/subtract for _weapon_secondary_has_angular_flipping (default: 22.5)
+<li>cost_per_charged_weapon_shot: ammo to use per charged shot (default: 4)
+<li>charged_weapon_overload: time (in ticks) until charged weapon overloads (default: 1800)
+<li>flailing_bonus: delta_theta to add when flailing wildly (charged weapon trigger release on death) (default: 21.09)
+<li>shorted_sound: sound index to play for trigger presses on weapons that can't fire underwater (default: -1)
+<li>pistol_separation_width: width to separate melee and two-fisted pistol class weapons on screen(default: 0.25)
+</ul>
 
 <hr>
 
