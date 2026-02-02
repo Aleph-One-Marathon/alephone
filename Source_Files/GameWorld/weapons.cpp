@@ -160,6 +160,18 @@ enum { /* For the flags */ /* [11.unused 1.horizontal 1.vertical 3.unused] */
 	_flip_shape_vertical= 0x10
 };
 
+// formerly hard coded constants
+struct WeaponConstant {
+	_fixed pistol_separation_width = FIXED_ONE / 4;
+	int16_t cost_per_charged_weapon_shot = 4;
+	angle angular_variance = 32;
+	int16_t charged_weapon_overload = 60 * TICKS_PER_SECOND;
+	int16_t shorted_sound = NONE;
+	angle flailing_bonus = 30; // when flailing wildly
+};
+
+std::array<WeaponConstant, MAXIMUM_NUMBER_OF_WEAPONS> weapon_constants{};
+
 #define PRIMARY_WEAPON_IS_VALID(wd) ((wd)->flags & _primary_weapon_is_up)
 #define SECONDARY_WEAPON_IS_VALID(wd) ((wd)->flags & _secondary_weapon_is_up)
 #define SET_PRIMARY_WEAPON_IS_VALID(wd, v)  ((void)((v) ? ((wd)->flags |= _primary_weapon_is_up) : ((wd)->flags &= ~_primary_weapon_is_up)))
@@ -174,11 +186,8 @@ enum { /* For the flags */ /* [11.unused 1.horizontal 1.vertical 3.unused] */
 #define GET_WEAPON_VARIANCE_SIGN(wd) (((wd)->flags & _flip_state) ? (1) : (-1))
 #define FLIP_WEAPON_VARIANCE_SIGN(wd) (((wd)->flags & _flip_state) ? ((wd)->flags &= ~_flip_state) : ((wd)->flags |= _flip_state))
 
-#define PISTOL_SEPARATION_WIDTH (FIXED_ONE/4)
 #define AUTOMATIC_STILL_FIRING_DURATION (4)
 #define FIRING_BEFORE_SHELL_CASING_SOUND_IS_PLAYED (TICKS_PER_SECOND/2)
-#define COST_PER_CHARGED_WEAPON_SHOT 4					
-#define ANGULAR_VARIANCE (32)
 
 #define M1_MISSILE_AMMO_SEQUENCE 20
 #define M1_MISSILE_AMMO_XOFFSET (FIXED_ONE/12)
@@ -611,9 +620,7 @@ void process_new_item_for_reloading(
 }
 
 #define IDLE_PHASE_COUNT 1000 // doesn't matter
-#define CHARGED_WEAPON_OVERLOAD (60*TICKS_PER_SECOND)
 #define WEAPON_FORWARD_DISPLACEMENT (WORLD_ONE_FOURTH/2)
-#define WEAPON_SHORTED_SOUND NONE
 
 /* Update the given player's weapons */
 void update_player_weapons(
@@ -627,6 +634,8 @@ void update_player_weapons(
 	{
 		struct weapon_data *weapon= get_player_current_weapon(player_index);
 		struct weapon_definition *definition= get_current_weapon_definition(player_index);
+		const auto weapon_constant = &weapon_constants[weapon->weapon_type];
+
 		short which_trigger, trigger_count, first_trigger;
 		bool triggers_down[NUMBER_OF_TRIGGERS];
 
@@ -819,7 +828,7 @@ void update_player_weapons(
 						break;
 						
 					case _weapon_charging:
-						trigger->phase= CHARGED_WEAPON_OVERLOAD;
+						trigger->phase= weapon_constant->charged_weapon_overload;
 						trigger->state= _weapon_charged;
 						break;
 						
@@ -835,7 +844,7 @@ void update_player_weapons(
 							blow_up_player(player_index);
 						} else {
 							/* Reenter the _weapon_charged state. */
-							trigger->phase= CHARGED_WEAPON_OVERLOAD;
+							trigger->phase= weapon_constant->charged_weapon_overload;
 							trigger->state= _weapon_charged;
 						}
 						break;
@@ -1179,6 +1188,7 @@ bool get_weapon_display_information(
 	{
 		struct weapon_data *weapon= get_player_current_weapon(player_index);
 		struct weapon_definition *definition= get_weapon_definition(weapon->weapon_type);
+		const auto weapon_constant = &weapon_constants[weapon->weapon_type];
 		_fixed width, height;
 		short frame, which_trigger, shape_index, type, flags;
 		struct shape_animation_data *high_level_data;
@@ -1238,7 +1248,7 @@ bool get_weapon_display_information(
 							_fixed flutter_base;
 						
 							/* 0-> FIXED ONE as it gets closer to nova.. */
-							flutter_base= (FIXED_ONE*(CHARGED_WEAPON_OVERLOAD-phase))/CHARGED_WEAPON_OVERLOAD;
+							flutter_base= (FIXED_ONE*(weapon_constant->charged_weapon_overload-phase))/weapon_constant->charged_weapon_overload;
 							add_random_flutter(flutter_base, &height, &width);
 						} else {
 							/* Calculate for idle, and then make it bounce */
@@ -1307,10 +1317,10 @@ bool get_weapon_display_information(
 							if(which_trigger==_primary_weapon)
 							{
 								width-= ((weapon->triggers[which_trigger].phase)
-									*(PISTOL_SEPARATION_WIDTH/2))/definition->ready_ticks;
+									*(weapon_constant->pistol_separation_width/2))/definition->ready_ticks;
 							} else {
 								width+= ((weapon->triggers[which_trigger].phase)
-									*(PISTOL_SEPARATION_WIDTH/2))/definition->ready_ticks;
+									*(weapon_constant->pistol_separation_width/2))/definition->ready_ticks;
 							}
 						} else {
 							/* Melee weapons stay where they were. */
@@ -1329,7 +1339,7 @@ bool get_weapon_display_information(
 							} else {
 								sign= 1;
 							}	
-							width+= sign*((definition->ready_ticks-weapon->triggers[which_trigger].phase)*(PISTOL_SEPARATION_WIDTH/2))/
+							width+= sign*((definition->ready_ticks-weapon->triggers[which_trigger].phase)*(weapon_constant->pistol_separation_width/2))/
 								definition->ready_ticks;
 						} else {
 							/* Melee weapons stay where they were. */
@@ -1760,6 +1770,8 @@ static void fire_weapon(
 {
 	struct player_data *player= get_player_data(player_index);
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
+	const auto weapon_data = get_player_current_weapon(player_index);
+	const auto weapon_constant = &weapon_constants[weapon_data->weapon_type];
 	struct weapon_definition *definition= get_weapon_definition(player_weapons->current_weapon);
 	struct trigger_definition *trigger_definition;
 	struct trigger_data	*trigger;
@@ -1770,12 +1782,12 @@ static void fire_weapon(
 	/* if they are under water, and it isn't a melee weapon, they lose */
 	if ((player->variables.flags&_HEAD_BELOW_MEDIA_BIT) && !(definition->flags&_weapon_fires_under_media))
 	{
-		play_weapon_sound(player_index, WEAPON_SHORTED_SOUND, FIXED_ONE);
+		play_weapon_sound(player_index, weapon_constant->shorted_sound, FIXED_ONE);
 		return;
 	}
 
 	/* Delta theta.. */
-	flailing_bonus= flail_wildly ? 30 : 0;
+	flailing_bonus= flail_wildly ? weapon_constant->flailing_bonus : 0;
 
 	/* Get the weapon they are using... */
 	trigger_definition= get_player_trigger_definition(player_index, which_trigger);
@@ -1822,7 +1834,7 @@ static void fire_weapon(
 		{
 			struct weapon_data *weapon= get_player_current_weapon(player_index);
 
-			delta_theta= ANGULAR_VARIANCE*GET_WEAPON_VARIANCE_SIGN(weapon);
+			delta_theta= weapon_constant->angular_variance*GET_WEAPON_VARIANCE_SIGN(weapon);
 			FLIP_WEAPON_VARIANCE_SIGN(weapon);
 		}
 	
@@ -1871,7 +1883,7 @@ static void fire_weapon(
 				{
 					short rounds_count;
 
-					rounds_count= MIN(COST_PER_CHARGED_WEAPON_SHOT-1, player_weapons->weapons[player_weapons->current_weapon].triggers[which_trigger].rounds_loaded);
+					rounds_count= MIN(weapon_constant->cost_per_charged_weapon_shot-1, player_weapons->weapons[player_weapons->current_weapon].triggers[which_trigger].rounds_loaded);
 
 					/* Decrement the ammo.. */					
 					player_weapons->weapons[player_weapons->current_weapon].triggers[which_trigger].rounds_loaded-= rounds_count;
@@ -2846,6 +2858,7 @@ static void modify_position_for_two_weapons(
 				}
 
 				struct weapon_data *weapon= get_player_current_weapon(player_index);
+				const auto weapon_constant = &weapon_constants[weapon->weapon_type];
 				struct trigger_definition *trigger_definition;
 				short total_delay, delay, breakpoint_delay, sign;
 				
@@ -2856,7 +2869,7 @@ static void modify_position_for_two_weapons(
 						case 0: 
 						case 1: 
 							sign= (count) ? -1 : 1;
-							*width+= (PISTOL_SEPARATION_WIDTH*sign); 
+							*width+= (weapon_constant->pistol_separation_width*sign); 
 							trigger_definition= get_player_trigger_definition(player_index, !count);
 							total_delay= trigger_definition->ticks_per_round+trigger_definition->recovery_ticks;
 							breakpoint_delay= (2*total_delay)/3;
@@ -2891,13 +2904,14 @@ static void modify_position_for_two_weapons(
 		case _twofisted_pistol_class:
 			{
 				struct weapon_data *weapon= get_player_current_weapon(player_index);
+				auto weapon_constant = &weapon_constants[weapon->weapon_type];
 				
 				if(PRIMARY_WEAPON_IS_VALID(weapon) && SECONDARY_WEAPON_IS_VALID(weapon))
 				{
 					switch(count)
 					{
-						case 0: *width += PISTOL_SEPARATION_WIDTH/2; break;
-						case 1: *width -= PISTOL_SEPARATION_WIDTH/2; break;
+						case 0: *width += weapon_constant->pistol_separation_width/2; break;
+						case 1: *width -= weapon_constant->pistol_separation_width/2; break;
 						default: break;
 					}
 				}
@@ -3307,6 +3321,8 @@ static void update_sequence(
 	short which_trigger)
 {
 	struct weapon_definition *definition= get_current_weapon_definition(player_index);
+	const auto weapon = get_player_current_weapon(player_index);
+	const auto weapon_constant = &weapon_constants[weapon->weapon_type];
 	struct trigger_data *trigger= get_player_trigger_data(player_index, which_trigger);
 	struct shape_animation_data *high_level_data= NULL;
 	bool prevent_wrap= false; /* GROSS! */
@@ -3352,7 +3368,7 @@ static void update_sequence(
 				/* If this weapon overloads, play with the pitch */
 				if(definition->flags & _weapon_overloads)
 				{
-					pitch= FIXED_ONE+(FIXED_ONE*(CHARGED_WEAPON_OVERLOAD-trigger->phase))/CHARGED_WEAPON_OVERLOAD;
+					pitch= FIXED_ONE+(FIXED_ONE*(weapon_constant->charged_weapon_overload-trigger->phase))/weapon_constant->charged_weapon_overload;
 				}
 			}
 			break;
@@ -4521,6 +4537,7 @@ size_t get_number_of_weapon_types() {return NUMBER_OF_WEAPONS;}
 
 struct shell_casing_definition *original_shell_casing_definitions = NULL;
 int16 *original_weapon_ordering_array = NULL;
+std::vector<WeaponConstant> original_weapon_constants;
 
 void reset_mml_weapons()
 {
@@ -4536,6 +4553,13 @@ void reset_mml_weapons()
 			weapon_ordering_array[i] = original_weapon_ordering_array[i];
 		free(original_weapon_ordering_array);
 		original_weapon_ordering_array = NULL;
+	}
+
+	if (original_weapon_constants.size())
+	{
+		std::copy(original_weapon_constants.begin(), original_weapon_constants.end(),
+				  weapon_constants.begin());
+		original_weapon_constants.clear();
 	}
 }
 
@@ -4554,6 +4578,11 @@ void parse_mml_weapons(const InfoTree& root)
 		assert(original_weapon_ordering_array);
 		for (unsigned i = 0; i < NUMBER_OF_WEAPONS; i++)
 			original_weapon_ordering_array[i] = weapon_ordering_array[i];
+	}
+
+	if (original_weapon_constants.empty())
+	{
+		original_weapon_constants.assign(weapon_constants.begin(), weapon_constants.end());
 	}
 	
 	for (const InfoTree &casing : root.children_named("shell_casings"))
@@ -4579,5 +4608,21 @@ void parse_mml_weapons(const InfoTree& root)
 		if (!order.read_indexed("index", index, NUMBER_OF_WEAPONS))
 			continue;
 		order.read_indexed("weapon", weapon_ordering_array[index], NUMBER_OF_WEAPONS);
+	}
+
+	for (const InfoTree& weapon : root.children_named("weapon"))
+	{
+		int16_t index;
+		if (!weapon.read_indexed("index", index, NUMBER_OF_WEAPONS))
+			continue;
+
+		auto& def = weapon_constants[index];
+		
+		weapon.read_fixed("pistol_separation_width", def.pistol_separation_width, 0.0, 1.0);
+		weapon.read_attr_bounded<int16>("cost_per_charged_weapon_shot", def.cost_per_charged_weapon_shot, 0, INT16_MAX);
+		weapon.read_angle("angular_variance", def.angular_variance);
+		weapon.read_attr_bounded<int16_t>("charged_weapon_overload", def.charged_weapon_overload, 0, INT16_MAX);
+		weapon.read_indexed("shorted_sound", def.shorted_sound, INT16_MAX + 1, true);
+		weapon.read_angle("flailing_bonus", def.flailing_bonus);
 	}
 }

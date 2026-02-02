@@ -18,7 +18,7 @@ static int Lua_MusicManager_Fade(lua_State* L)
 static int Lua_Music_Fade(lua_State* L)
 {
 	if (!lua_isnumber(L, 2))
-		return luaL_error(L, "volume: incorrect argument type");
+		return luaL_error(L, "fade: incorrect argument type");
 
 	float limitVolume = static_cast<float>(lua_tonumber(L, 2));
 	int duration = lua_isnumber(L, 3) ? static_cast<int>(lua_tonumber(L, 3) * 1000) : 1000;
@@ -26,7 +26,7 @@ static int Lua_Music_Fade(lua_State* L)
 
 	int index = Lua_Music::Index(L, 1) + Music::reserved_music_slots;
 	auto slot = Music::instance()->GetSlot(index);
-	if (!slot) return luaL_error(L, "index: out of bounds");
+	if (!slot) return luaL_error(L, "fade: index out of bounds");
 
 	slot->Fade(limitVolume, duration, MusicPlayer::FadeType::Linear, stopOnNoVolume);
 	return 0;
@@ -36,7 +36,7 @@ static int Lua_Music_Play(lua_State* L)
 {
 	int index = Lua_Music::Index(L, 1) + Music::reserved_music_slots;
 	auto slot = Music::instance()->GetSlot(index);
-	if (!slot) return luaL_error(L, "index: out of bounds");
+	if (!slot) return luaL_error(L, "play: index out of bounds");
 
 	slot->Play();
 	return 0;
@@ -46,7 +46,7 @@ static int Lua_Music_Stop(lua_State* L)
 {
 	int index = Lua_Music::Index(L, 1) + Music::reserved_music_slots;
 	auto slot = Music::instance()->GetSlot(index);
-	if (!slot) return luaL_error(L, "index: out of bounds");
+	if (!slot) return luaL_error(L, "stop: index out of bounds");
 
 	slot->Pause();
 	return 0;
@@ -56,7 +56,7 @@ static int Lua_Music_Active_Get(lua_State* L)
 {
 	int index = Lua_Music::Index(L, 1) + Music::reserved_music_slots;
 	auto slot = Music::instance()->GetSlot(index);
-	if (!slot) return luaL_error(L, "index: out of bounds");
+	if (!slot) return luaL_error(L, "active: index out of bounds");
 
 	lua_pushboolean(L, slot->Playing());
 	return 1;
@@ -66,7 +66,7 @@ static int Lua_Music_Volume_Get(lua_State* L)
 {
 	int index = Lua_Music::Index(L, 1) + Music::reserved_music_slots;
 	auto slot = Music::instance()->GetSlot(index);
-	if (!slot) return luaL_error(L, "index: out of bounds");
+	if (!slot) return luaL_error(L, "volume: index out of bounds");
 
 	lua_pushnumber(L, static_cast<double>(slot->GetParameters().volume));
 	return 1;
@@ -79,7 +79,7 @@ static int Lua_Music_Volume_Set(lua_State* L)
 
 	int index = Lua_Music::Index(L, 1) + Music::reserved_music_slots;
 	auto slot = Music::instance()->GetSlot(index);
-	if (!slot) return luaL_error(L, "index: out of bounds");
+	if (!slot) return luaL_error(L, "volume: index out of bounds");
 
 	slot->SetVolume(static_cast<float>(lua_tonumber(L, 2)));
 	return 0;
@@ -93,7 +93,7 @@ static bool Lua_Music_Valid(int16 index)
 static int Lua_MusicManager_New(lua_State* L)
 {
 	if (!lua_isstring(L, 1))
-		return luaL_error(L, "track: invalid file specifier");
+		return luaL_error(L, "new: invalid file specifier");
 
 	float volume = lua_isnumber(L, 2) ? static_cast<float>(lua_tonumber(L, 2)) : 1.f;
 	bool loop = lua_isboolean(L, 3) ? static_cast<bool>(lua_toboolean(L, 3)) : true;
@@ -104,17 +104,17 @@ static int Lua_MusicManager_New(lua_State* L)
 	if (search_path.size())
 	{
 		if (!file.SetNameWithPath(lua_tostring(L, 1), search_path)) 
-			return luaL_error(L, "track: file not found");
+			return luaL_error(L, "new: file not found");
 	}
 	else
 	{
 		if (!file.SetNameWithPath(lua_tostring(L, 1))) 
-			return luaL_error(L, "track: file not found");
+			return luaL_error(L, "new: file not found");
 	}
 
 	auto id = Music::instance()->Add({ volume, loop }, &file);
 	if (!id.has_value() || id.value() < Music::reserved_music_slots) 
-		return luaL_error(L, "track: error loading file");
+		return luaL_error(L, "new: error loading file");
 
 	Lua_Music::Push(L, id.value() - Music::reserved_music_slots);
 	return 1;
