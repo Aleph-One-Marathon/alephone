@@ -71,11 +71,11 @@ public:
 		bool SetLoop(bool loop) { return SetParameters({ parameters.volume, loop }); }
 		const MusicParameters& GetParameters() const { return parameters; }
 		std::pair<bool, float> ComputeFadingVolume() const;
-		std::optional<uint32_t> LoadTrack(FileSpecifier* file);
+		std::optional<uint32_t> AddTrack(FileSpecifier* file);
 		std::optional<uint32_t> AddSequence();
 		std::optional<uint32_t> AddSegmentToSequence(uint32_t sequence_index, uint32_t track_index);
 		bool IsSegmentIndexValid(uint32_t sequence_index, uint32_t segment_index) const;
-		bool SetSegmentMapping(uint32_t sequence_index, uint32_t segment_index, uint32_t transition_sequence_index, const MusicPlayer::Segment::Mapping& transition_segment_mapping);
+		bool SetSegmentEdge(uint32_t sequence_index, uint32_t segment_index, uint32_t transition_sequence_index, const MusicPlayer::Segment::Edge& transition_segment_edge);
 		bool SetSequenceTransition(uint32_t sequence_index);
 	};
 

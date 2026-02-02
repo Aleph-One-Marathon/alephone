@@ -38,7 +38,7 @@ bool Music::Slot::Open(FileSpecifier* file)
 	if (!file)
 		return false;
 
-	auto track_id = LoadTrack(file);
+	auto track_id = AddTrack(file);
 	if (!track_id.has_value()) return false;
 
 	auto sequence_id = AddSequence();
@@ -201,7 +201,7 @@ void Music::Slot::Play(uint32_t sequence_index, uint32_t segment_index)
 	musicPlayer = OpenALManager::Get()->PlayMusic(dynamic_music_sequences, sequence_index, segment_index, parameters);
 }
 
-std::optional<uint32_t> Music::Slot::LoadTrack(FileSpecifier* file)
+std::optional<uint32_t> Music::Slot::AddTrack(FileSpecifier* file)
 {
 	std::shared_ptr<StreamDecoder> segment_decoder = file ? StreamDecoder::Get(*file) : nullptr;
 	if (!segment_decoder) return std::nullopt;
@@ -224,15 +224,15 @@ std::optional<uint32_t> Music::Slot::AddSegmentToSequence(uint32_t sequence_inde
 	return static_cast<uint32_t>(dynamic_music_sequences[sequence_index].GetSegments().size() - 1);
 }
 
-bool Music::Slot::SetSegmentMapping(uint32_t sequence_index, uint32_t segment_index, uint32_t transition_sequence_index, const MusicPlayer::Segment::Mapping& transition_segment_mapping)
+bool Music::Slot::SetSegmentEdge(uint32_t sequence_index, uint32_t segment_index, uint32_t transition_sequence_index, const MusicPlayer::Segment::Edge& transition_segment_edge)
 {
-	if (!IsSegmentIndexValid(sequence_index, segment_index) || !IsSegmentIndexValid(transition_sequence_index, transition_segment_mapping.segment_id))
+	if (!IsSegmentIndexValid(sequence_index, segment_index) || !IsSegmentIndexValid(transition_sequence_index, transition_segment_edge.target_segment_id))
 		return false;
 
 	auto segment = dynamic_music_sequences[sequence_index].GetSegment(segment_index);
 	if (!segment) return false;
 
-	segment->SetSegmentMapping(transition_sequence_index, transition_segment_mapping);
+	segment->SetSegmentEdge(transition_sequence_index, transition_segment_edge);
 	return true;
 }
 

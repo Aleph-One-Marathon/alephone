@@ -41,23 +41,23 @@ SetupALResult MusicPlayer::SetUpALSourceIdle() {
 	return SetupALResult(alGetError() == AL_NO_ERROR, true);
 }
 
-bool MusicPlayer::ProcessTransitionIn(uint8* data, uint32_t length, uint32_t next_sequence_index, std::pair<Segment::Mapping, SegmentTransitionOffsets> segment_mapping_offsets) {
+bool MusicPlayer::ProcessTransitionIn(uint8* data, uint32_t length, uint32_t next_sequence_index, std::pair<Segment::Edge, SegmentTransitionOffsets> segment_edge_offsets) {
 
-	const auto mapping = segment_mapping_offsets.first;
-	const auto transitionOffsets = segment_mapping_offsets.second;
+	const auto edge = segment_edge_offsets.first;
+	const auto transitionOffsets = segment_edge_offsets.second;
 
-	const auto segment = music_sequences[next_sequence_index].GetSegment(mapping.segment_id);
+	const auto segment = music_sequences[next_sequence_index].GetSegment(edge.target_segment_id);
 	const auto decoder = segment->GetDecoder();
 	const auto currentPosition = decoder->Position();
 
-	if (mapping.transition_in.fade_type != FadeType::None && transitionOffsets.second.has_value()) {
+	if (edge.transition_in.fade_type != FadeType::None && transitionOffsets.second.has_value()) {
 
 		const auto fadeInTransitionOffset = transitionOffsets.second.value();
 
 		if (currentPosition < fadeInTransitionOffset) {
 			const auto startFadeOffset = currentPosition - length;
 			const auto fadedDataLength = std::min(length, fadeInTransitionOffset - startFadeOffset);
-			ApplyFade(mapping.transition_in.fade_type, true, fadeInTransitionOffset, startFadeOffset, data, fadedDataLength);
+			ApplyFade(edge.transition_in.fade_type, true, fadeInTransitionOffset, startFadeOffset, data, fadedDataLength);
 			return startFadeOffset + fadedDataLength < fadeInTransitionOffset;
 		}
 	}
@@ -65,16 +65,16 @@ bool MusicPlayer::ProcessTransitionIn(uint8* data, uint32_t length, uint32_t nex
 	return false;
 }
 
-bool MusicPlayer::ProcessTransition(uint8* data, uint32_t length, uint32_t next_sequence_index, std::optional<Segment::Mapping> segment_mapping) {
+bool MusicPlayer::ProcessTransition(uint8* data, uint32_t length, uint32_t next_sequence_index, std::optional<Segment::Edge> segment_edge) {
 
-	if (segment_mapping.has_value()) { 	//out
+	if (segment_edge.has_value()) { 	//out
 
-		const auto& mapping = segment_mapping.value();
-		const auto transitionOffsets = ComputeTransitionOffsets(next_sequence_index, mapping);
+		const auto& edge = segment_edge.value();
+		const auto transitionOffsets = ComputeTransitionOffsets(next_sequence_index, edge);
 		const auto currentPosition = current_decoder->Position();
 		const auto bufferStart = currentPosition - length;
 
-		if (mapping.transition_out.fade_type != FadeType::None && transitionOffsets.first.has_value()) {
+		if (edge.transition_out.fade_type != FadeType::None && transitionOffsets.first.has_value()) {
 
 			const auto fadeOutTransitionOffset = transitionOffsets.first.value();
 
@@ -85,12 +85,12 @@ bool MusicPlayer::ProcessTransition(uint8* data, uint32_t length, uint32_t next_
 				const auto startFadeOffset = (bufferStart + fadeOffsetInBuffer) - fadeOutTransitionOffset;
 				const auto fadedDataLength = currentPosition - (bufferStart + fadeOffsetInBuffer);
 
-				ApplyFade(mapping.transition_out.fade_type, false, fadeTotalLength, startFadeOffset, data + fadeOffsetInBuffer, fadedDataLength);
+				ApplyFade(edge.transition_out.fade_type, false, fadeTotalLength, startFadeOffset, data + fadeOffsetInBuffer, fadedDataLength);
 				bool transitionDone = startFadeOffset + fadedDataLength >= fadeTotalLength;
 
-				if (mapping.crossfade) {
+				if (edge.crossfade) {
 
-					const auto nextSegment = music_sequences[next_sequence_index].GetSegment(mapping.segment_id);
+					const auto nextSegment = music_sequences[next_sequence_index].GetSegment(edge.target_segment_id);
 					const auto nextDecoder = nextSegment->GetDecoder();
 					const bool useSameDecoder = current_decoder == nextDecoder;
 
@@ -100,7 +100,7 @@ bool MusicPlayer::ProcessTransition(uint8* data, uint32_t length, uint32_t next_
 
 					std::vector<uint8> crossfade_fadeInData(length);
 					nextDecoder->Decode(crossfade_fadeInData.data(), length); //we prevent crossfades if the fade in track is shorter than the fade out duration so we are always fine here
-					transitionDone &= !ProcessTransitionIn(crossfade_fadeInData.data(), length, next_sequence_index, { mapping, transitionOffsets });
+					transitionDone &= !ProcessTransitionIn(crossfade_fadeInData.data(), length, next_sequence_index, { edge, transitionOffsets });
 					CrossFadeMix(data, crossfade_fadeInData.data(), length);
 
 					if (useSameDecoder) {
@@ -114,8 +114,8 @@ bool MusicPlayer::ProcessTransition(uint8* data, uint32_t length, uint32_t next_
 		}
 	}
 
-	if (current_transition_mapping_offsets.first.has_value() && current_transition_mapping_offsets.second.has_value()) { //in
-		return ProcessTransitionIn(data, length, current_sequence_index, { current_transition_mapping_offsets.first.value(), current_transition_mapping_offsets.second.value() });
+	if (current_transition_edge_offsets.first.has_value() && current_transition_edge_offsets.second.has_value()) { //in
+		return ProcessTransitionIn(data, length, current_sequence_index, { current_transition_edge_offsets.first.value(), current_transition_edge_offsets.second.value() });
 	}
 
 	return false;
@@ -179,10 +179,10 @@ uint32_t MusicPlayer::GetTransitionSequenceIndex() const {
 	if (requestedSequenceIndex == current_sequence_index) return current_sequence_index;
 	if (requestedSequenceIndex == transition_sequence_index) return transition_sequence_index;
 
-	const auto segmentMapping = music_sequences[current_sequence_index].GetSegment(current_segment_index)->GetNextSegmentMapping(requestedSequenceIndex);
-	if (!segmentMapping.has_value()) return transition_sequence_index;
+	const auto segmentEdge = music_sequences[current_sequence_index].GetSegment(current_segment_index)->GetSegmentEdge(requestedSequenceIndex);
+	if (!segmentEdge.has_value()) return transition_sequence_index;
 
-	const auto transitionOffsets = ComputeTransitionOffsets(requestedSequenceIndex, segmentMapping.value());
+	const auto transitionOffsets = ComputeTransitionOffsets(requestedSequenceIndex, segmentEdge.value());
 	return !transitionOffsets.first.has_value() || transitionOffsets.first.value() > current_decoder->Position() ? requestedSequenceIndex : transition_sequence_index;
 }
 
@@ -191,61 +191,61 @@ uint32_t MusicPlayer::GetNextData(uint8* data, uint32_t length) {
 	if (!length) return 0;
 
 	transition_sequence_index = GetTransitionSequenceIndex();
-	const auto nextSegmentMapping = music_sequences[current_sequence_index].GetSegment(current_segment_index)->GetNextSegmentMapping(transition_sequence_index);
+	const auto segmentEdge = music_sequences[current_sequence_index].GetSegment(current_segment_index)->GetSegmentEdge(transition_sequence_index);
 	const auto dataSize = current_decoder->Decode(data, length);
-	transition_is_active = ProcessTransition(data, dataSize, transition_sequence_index, nextSegmentMapping);
+	transition_is_active = ProcessTransition(data, dataSize, transition_sequence_index, segmentEdge);
 
-	if (dataSize == length || (!nextSegmentMapping.has_value() && !parameters.Get().loop)) return dataSize;
+	if (dataSize == length || (!segmentEdge.has_value() && !parameters.Get().loop)) return dataSize;
 
-	SwitchSegment(nextSegmentMapping, nextSegmentMapping.has_value() ? std::make_optional(ComputeTransitionOffsets(transition_sequence_index, nextSegmentMapping.value())) : std::nullopt);
+	SwitchSegment(segmentEdge, segmentEdge.has_value() ? std::make_optional(ComputeTransitionOffsets(transition_sequence_index, segmentEdge.value())) : std::nullopt);
 	return HasBufferFormatChanged() ? dataSize : dataSize + GetNextData(data + dataSize, length - dataSize);
 }
 
-void MusicPlayer::SwitchSegment(std::optional<Segment::Mapping> segment_mapping, std::optional<SegmentTransitionOffsets> transition_offsets) {
+void MusicPlayer::SwitchSegment(std::optional<Segment::Edge> segment_edge, std::optional<SegmentTransitionOffsets> transition_offsets) {
 
 	current_decoder->Position(crossfade_same_decoder_current_position);
-	current_transition_mapping_offsets = { segment_mapping, transition_offsets };
+	current_transition_edge_offsets = { segment_edge, transition_offsets };
 	crossfade_same_decoder_current_position = 0U;
 
-	if (!segment_mapping.has_value()) return;
+	if (!segment_edge.has_value()) return;
 
-	current_segment_index = segment_mapping.value().segment_id;
+	current_segment_index = segment_edge.value().target_segment_id;
 	current_sequence_index = transition_sequence_index;
 	current_decoder = music_sequences[current_sequence_index].GetSegment(current_segment_index)->GetDecoder();
 	Init(current_decoder->Rate(), current_decoder->IsStereo(), current_decoder->GetAudioFormat());
 }
 
-MusicPlayer::SegmentTransitionOffsets MusicPlayer::ComputeTransitionOffsets(uint32_t sequence_index, const Segment::Mapping& segment_mapping) const {
+MusicPlayer::SegmentTransitionOffsets MusicPlayer::ComputeTransitionOffsets(uint32_t sequence_index, const Segment::Edge& segment_edge) const {
 
 	SegmentTransitionOffsets results;
 
-	const auto nextSegment = music_sequences[sequence_index].GetSegment(segment_mapping.segment_id);
+	const auto nextSegment = music_sequences[sequence_index].GetSegment(segment_edge.target_segment_id);
 	if (!nextSegment) return results;
 
 	const auto [currentFormat, currentRate, currentIsStereo] = GetAudioFormat();
 	const auto nextDecoder = nextSegment->GetDecoder();
 
-	if (segment_mapping.crossfade && (currentFormat != nextDecoder->GetAudioFormat() || currentRate != nextDecoder->Rate() || currentIsStereo != nextDecoder->IsStereo()))
+	if (segment_edge.crossfade && (currentFormat != nextDecoder->GetAudioFormat() || currentRate != nextDecoder->Rate() || currentIsStereo != nextDecoder->IsStereo()))
 		return results;
 
-	if (segment_mapping.transition_out.fade_type != FadeType::None && segment_mapping.transition_out.time_seconds) {
+	if (segment_edge.transition_out.fade_type != FadeType::None && segment_edge.transition_out.time_seconds) {
 
 		const auto currentSegmentDuration = current_decoder->Duration();
 		const auto nextSegmentDuration = nextDecoder->Duration();
 
-		if (currentSegmentDuration > segment_mapping.transition_out.time_seconds && (!segment_mapping.crossfade || nextSegmentDuration > segment_mapping.transition_out.time_seconds)) {
-			const auto startTransitionPositionSeconds = currentSegmentDuration - segment_mapping.transition_out.time_seconds;
+		if (currentSegmentDuration > segment_edge.transition_out.time_seconds && (!segment_edge.crossfade || nextSegmentDuration > segment_edge.transition_out.time_seconds)) {
+			const auto startTransitionPositionSeconds = currentSegmentDuration - segment_edge.transition_out.time_seconds;
 			const auto startTransitionPositionByte = static_cast<uint32_t>(startTransitionPositionSeconds * currentRate) * current_decoder->BytesPerFrame();
 			results.first = startTransitionPositionByte;
 		}
 	}
 
-	if (segment_mapping.transition_in.fade_type != FadeType::None && segment_mapping.transition_in.time_seconds) {
+	if (segment_edge.transition_in.fade_type != FadeType::None && segment_edge.transition_in.time_seconds) {
 
 		const auto nextSegmentDuration = nextDecoder->Duration();
 
-		if (nextSegmentDuration > segment_mapping.transition_in.time_seconds) {
-			const auto endTransitionPositionSeconds = segment_mapping.transition_in.time_seconds;
+		if (nextSegmentDuration > segment_edge.transition_in.time_seconds) {
+			const auto endTransitionPositionSeconds = segment_edge.transition_in.time_seconds;
 			const auto endTransitionPositionByte = static_cast<uint32_t>(endTransitionPositionSeconds * nextDecoder->Rate()) * nextDecoder->BytesPerFrame();
 			results.second = endTransitionPositionByte;
 		}
