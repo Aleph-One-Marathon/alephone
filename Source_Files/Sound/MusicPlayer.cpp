@@ -19,19 +19,19 @@
 #include "MusicPlayer.h"
 #include "OpenALManager.h"
 
-MusicPlayer::MusicPlayer(std::vector<Preset>& presets, uint32_t starting_preset_index, uint32_t starting_segment_index, const MusicParameters& parameters)
-	: AudioPlayer(presets[starting_preset_index].GetSegment(starting_segment_index)->GetDecoder()->Rate(),
-		presets[starting_preset_index].GetSegment(starting_segment_index)->GetDecoder()->IsStereo(),
-		presets[starting_preset_index].GetSegment(starting_segment_index)->GetDecoder()->GetAudioFormat()) {
+MusicPlayer::MusicPlayer(std::vector<Sequence>& sequences, uint32_t starting_sequence_index, uint32_t starting_segment_index, const MusicParameters& parameters)
+	: AudioPlayer(sequences[starting_sequence_index].GetSegment(starting_segment_index)->GetDecoder()->Rate(),
+		sequences[starting_sequence_index].GetSegment(starting_segment_index)->GetDecoder()->IsStereo(),
+		sequences[starting_sequence_index].GetSegment(starting_segment_index)->GetDecoder()->GetAudioFormat()) {
 
 	this->parameters = parameters;
-	current_decoder = presets[starting_preset_index].GetSegment(starting_segment_index)->GetDecoder();
+	current_decoder = sequences[starting_sequence_index].GetSegment(starting_segment_index)->GetDecoder();
 	current_decoder->Rewind();
-	music_presets = presets;
-	current_preset_index = starting_preset_index;
-	transition_preset_index = starting_preset_index;
+	music_sequences = sequences;
+	current_sequence_index = starting_sequence_index;
+	transition_sequence_index = starting_sequence_index;
 	current_segment_index = starting_segment_index;
-	requested_preset_index = starting_preset_index;
+	requested_sequence_index = starting_sequence_index;
 }
 
 SetupALResult MusicPlayer::SetUpALSourceIdle() {
@@ -41,12 +41,12 @@ SetupALResult MusicPlayer::SetUpALSourceIdle() {
 	return SetupALResult(alGetError() == AL_NO_ERROR, true);
 }
 
-bool MusicPlayer::ProcessTransitionIn(uint8* data, uint32_t length, uint32_t next_preset_index, std::pair<Segment::Mapping, SegmentTransitionOffsets> segment_mapping_offsets) {
+bool MusicPlayer::ProcessTransitionIn(uint8* data, uint32_t length, uint32_t next_sequence_index, std::pair<Segment::Mapping, SegmentTransitionOffsets> segment_mapping_offsets) {
 
 	const auto mapping = segment_mapping_offsets.first;
 	const auto transitionOffsets = segment_mapping_offsets.second;
 
-	const auto segment = music_presets[next_preset_index].GetSegment(mapping.segment_id);
+	const auto segment = music_sequences[next_sequence_index].GetSegment(mapping.segment_id);
 	const auto decoder = segment->GetDecoder();
 	const auto currentPosition = decoder->Position();
 
@@ -65,12 +65,12 @@ bool MusicPlayer::ProcessTransitionIn(uint8* data, uint32_t length, uint32_t nex
 	return false;
 }
 
-bool MusicPlayer::ProcessTransition(uint8* data, uint32_t length, uint32_t next_preset_index, std::optional<Segment::Mapping> segment_mapping) {
+bool MusicPlayer::ProcessTransition(uint8* data, uint32_t length, uint32_t next_sequence_index, std::optional<Segment::Mapping> segment_mapping) {
 
 	if (segment_mapping.has_value()) { 	//out
 
 		const auto& mapping = segment_mapping.value();
-		const auto transitionOffsets = ComputeTransitionOffsets(next_preset_index, mapping);
+		const auto transitionOffsets = ComputeTransitionOffsets(next_sequence_index, mapping);
 		const auto currentPosition = current_decoder->Position();
 		const auto bufferStart = currentPosition - length;
 
@@ -90,7 +90,7 @@ bool MusicPlayer::ProcessTransition(uint8* data, uint32_t length, uint32_t next_
 
 				if (mapping.crossfade) {
 
-					const auto nextSegment = music_presets[next_preset_index].GetSegment(mapping.segment_id);
+					const auto nextSegment = music_sequences[next_sequence_index].GetSegment(mapping.segment_id);
 					const auto nextDecoder = nextSegment->GetDecoder();
 					const bool useSameDecoder = current_decoder == nextDecoder;
 
@@ -100,7 +100,7 @@ bool MusicPlayer::ProcessTransition(uint8* data, uint32_t length, uint32_t next_
 
 					std::vector<uint8> crossfade_fadeInData(length);
 					nextDecoder->Decode(crossfade_fadeInData.data(), length); //we prevent crossfades if the fade in track is shorter than the fade out duration so we are always fine here
-					transitionDone &= !ProcessTransitionIn(crossfade_fadeInData.data(), length, next_preset_index, { mapping, transitionOffsets });
+					transitionDone &= !ProcessTransitionIn(crossfade_fadeInData.data(), length, next_sequence_index, { mapping, transitionOffsets });
 					CrossFadeMix(data, crossfade_fadeInData.data(), length);
 
 					if (useSameDecoder) {
@@ -115,7 +115,7 @@ bool MusicPlayer::ProcessTransition(uint8* data, uint32_t length, uint32_t next_
 	}
 
 	if (current_transition_mapping_offsets.first.has_value() && current_transition_mapping_offsets.second.has_value()) { //in
-		return ProcessTransitionIn(data, length, current_preset_index, { current_transition_mapping_offsets.first.value(), current_transition_mapping_offsets.second.value() });
+		return ProcessTransitionIn(data, length, current_sequence_index, { current_transition_mapping_offsets.first.value(), current_transition_mapping_offsets.second.value() });
 	}
 
 	return false;
@@ -171,33 +171,33 @@ void MusicPlayer::CrossFadeMix(uint8* data_out, uint8* data_in, uint32_t length)
 	}
 }
 
-uint32_t MusicPlayer::GetTransitionPresetIndex() const {
+uint32_t MusicPlayer::GetTransitionSequenceIndex() const {
 
-	if (music_presets.size() < 2 || transition_is_active) return transition_preset_index;
+	if (music_sequences.size() < 2 || transition_is_active) return transition_sequence_index;
 
-	const auto requestedPresetIndex = requested_preset_index.load();
-	if (requestedPresetIndex == current_preset_index) return current_preset_index;
-	if (requestedPresetIndex == transition_preset_index) return transition_preset_index;
+	const auto requestedSequenceIndex = requested_sequence_index.load();
+	if (requestedSequenceIndex == current_sequence_index) return current_sequence_index;
+	if (requestedSequenceIndex == transition_sequence_index) return transition_sequence_index;
 
-	const auto segmentMapping = music_presets[current_preset_index].GetSegment(current_segment_index)->GetNextSegmentMapping(requestedPresetIndex);
-	if (!segmentMapping.has_value()) return transition_preset_index;
+	const auto segmentMapping = music_sequences[current_sequence_index].GetSegment(current_segment_index)->GetNextSegmentMapping(requestedSequenceIndex);
+	if (!segmentMapping.has_value()) return transition_sequence_index;
 
-	const auto transitionOffsets = ComputeTransitionOffsets(requestedPresetIndex, segmentMapping.value());
-	return !transitionOffsets.first.has_value() || transitionOffsets.first.value() > current_decoder->Position() ? requestedPresetIndex : transition_preset_index;
+	const auto transitionOffsets = ComputeTransitionOffsets(requestedSequenceIndex, segmentMapping.value());
+	return !transitionOffsets.first.has_value() || transitionOffsets.first.value() > current_decoder->Position() ? requestedSequenceIndex : transition_sequence_index;
 }
 
 uint32_t MusicPlayer::GetNextData(uint8* data, uint32_t length) {
 
 	if (!length) return 0;
 
-	transition_preset_index = GetTransitionPresetIndex();
-	const auto nextSegmentMapping = music_presets[current_preset_index].GetSegment(current_segment_index)->GetNextSegmentMapping(transition_preset_index);
+	transition_sequence_index = GetTransitionSequenceIndex();
+	const auto nextSegmentMapping = music_sequences[current_sequence_index].GetSegment(current_segment_index)->GetNextSegmentMapping(transition_sequence_index);
 	const auto dataSize = current_decoder->Decode(data, length);
-	transition_is_active = ProcessTransition(data, dataSize, transition_preset_index, nextSegmentMapping);
+	transition_is_active = ProcessTransition(data, dataSize, transition_sequence_index, nextSegmentMapping);
 
 	if (dataSize == length || (!nextSegmentMapping.has_value() && !parameters.Get().loop)) return dataSize;
 
-	SwitchSegment(nextSegmentMapping, nextSegmentMapping.has_value() ? std::make_optional(ComputeTransitionOffsets(transition_preset_index, nextSegmentMapping.value())) : std::nullopt);
+	SwitchSegment(nextSegmentMapping, nextSegmentMapping.has_value() ? std::make_optional(ComputeTransitionOffsets(transition_sequence_index, nextSegmentMapping.value())) : std::nullopt);
 	return HasBufferFormatChanged() ? dataSize : dataSize + GetNextData(data + dataSize, length - dataSize);
 }
 
@@ -210,16 +210,16 @@ void MusicPlayer::SwitchSegment(std::optional<Segment::Mapping> segment_mapping,
 	if (!segment_mapping.has_value()) return;
 
 	current_segment_index = segment_mapping.value().segment_id;
-	current_preset_index = transition_preset_index;
-	current_decoder = music_presets[current_preset_index].GetSegment(current_segment_index)->GetDecoder();
+	current_sequence_index = transition_sequence_index;
+	current_decoder = music_sequences[current_sequence_index].GetSegment(current_segment_index)->GetDecoder();
 	Init(current_decoder->Rate(), current_decoder->IsStereo(), current_decoder->GetAudioFormat());
 }
 
-MusicPlayer::SegmentTransitionOffsets MusicPlayer::ComputeTransitionOffsets(uint32_t preset_index, const Segment::Mapping& segment_mapping) const {
+MusicPlayer::SegmentTransitionOffsets MusicPlayer::ComputeTransitionOffsets(uint32_t sequence_index, const Segment::Mapping& segment_mapping) const {
 
 	SegmentTransitionOffsets results;
 
-	const auto nextSegment = music_presets[preset_index].GetSegment(segment_mapping.segment_id);
+	const auto nextSegment = music_sequences[sequence_index].GetSegment(segment_mapping.segment_id);
 	if (!nextSegment) return results;
 
 	const auto [currentFormat, currentRate, currentIsStereo] = GetAudioFormat();
@@ -254,8 +254,8 @@ MusicPlayer::SegmentTransitionOffsets MusicPlayer::ComputeTransitionOffsets(uint
 	return results;
 }
 
-bool MusicPlayer::RequestPresetTransition(uint32_t preset_index) {
-	if (preset_index >= music_presets.size()) return false;
-	requested_preset_index.store(preset_index);
+bool MusicPlayer::RequestSequenceTransition(uint32_t sequence_index) {
+	if (sequence_index >= music_sequences.size()) return false;
+	requested_sequence_index.store(sequence_index);
 	return true;
 }

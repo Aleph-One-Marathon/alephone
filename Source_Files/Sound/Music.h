@@ -47,7 +47,7 @@ public:
 	private:
 		std::shared_ptr<MusicPlayer> musicPlayer;
 		std::vector<std::shared_ptr<StreamDecoder>> dynamic_music_tracks;
-		std::vector<MusicPlayer::Preset> dynamic_music_presets;
+		std::vector<MusicPlayer::Sequence> dynamic_music_sequences;
 		uint64_t music_fade_start = 0;
 		uint32_t music_fade_duration = 0;
 		float music_fade_limit_volume;
@@ -61,7 +61,7 @@ public:
 		void Pause();
 		void Close();
 		bool Open(FileSpecifier* file);
-		void Play(uint32_t preset_index = 0, uint32_t segment_index = 0);
+		void Play(uint32_t sequence_index = 0, uint32_t segment_index = 0);
 		bool SetParameters(const MusicParameters& parameters);
 		float GetLimitFadeVolume() const { return music_fade_limit_volume; }
 		bool IsFading() const { return music_fade_start; }
@@ -72,11 +72,11 @@ public:
 		const MusicParameters& GetParameters() const { return parameters; }
 		std::pair<bool, float> ComputeFadingVolume() const;
 		std::optional<uint32_t> LoadTrack(FileSpecifier* file);
-		std::optional<uint32_t> AddPreset();
-		std::optional<uint32_t> AddSegmentToPreset(uint32_t preset_index, uint32_t track_index);
-		bool IsSegmentIndexValid(uint32_t preset_index, uint32_t segment_index) const;
-		bool SetSegmentMapping(uint32_t preset_index, uint32_t segment_index, uint32_t transition_preset_index, const MusicPlayer::Segment::Mapping& transition_segment_mapping);
-		bool SetPresetTransition(uint32_t preset_index);
+		std::optional<uint32_t> AddSequence();
+		std::optional<uint32_t> AddSegmentToSequence(uint32_t sequence_index, uint32_t track_index);
+		bool IsSegmentIndexValid(uint32_t sequence_index, uint32_t segment_index) const;
+		bool SetSegmentMapping(uint32_t sequence_index, uint32_t segment_index, uint32_t transition_sequence_index, const MusicPlayer::Segment::Mapping& transition_segment_mapping);
+		bool SetSequenceTransition(uint32_t sequence_index);
 	};
 
 	bool SetupIntroMusic(FileSpecifier& file) { return music_slots[MusicSlot::Intro].Open(&file); }
