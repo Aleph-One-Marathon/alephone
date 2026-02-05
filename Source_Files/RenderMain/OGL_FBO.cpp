@@ -27,6 +27,7 @@
 
 #include "OGL_Setup.h"
 #include "OGL_Render.h"
+#include "OGL_Textures.h"
 
 std::vector<FBO *> FBO::active_chain;
 
@@ -42,6 +43,8 @@ FBO::FBO(GLuint w, GLuint h, bool srgb) : _h(h), _w(w), _srgb(srgb) {
 	glGenTextures(1, &texID);
 	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
 	glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, srgb ? GL_SRGB : GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, TxtrTypeInfoList[OGL_Txtr_HUD].NearFilter);
+	glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, TxtrTypeInfoList[OGL_Txtr_HUD].FarFilter);
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_RECTANGLE_ARB, texID, 0);
 	assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) == GL_FRAMEBUFFER_COMPLETE_EXT);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
