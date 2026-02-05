@@ -38,13 +38,13 @@ bool Music::Slot::Open(FileSpecifier* file)
 	if (!file)
 		return false;
 
-	auto track_id = LoadTrack(file);
+	auto track_id = AddTrack(file);
 	if (!track_id.has_value()) return false;
 
-	auto preset_id = AddPreset();
-	if (!preset_id.has_value()) return false;
+	auto sequence_id = AddSequence();
+	if (!sequence_id.has_value()) return false;
 
-	return AddSegmentToPreset(preset_id.value(), track_id.value()).has_value();
+	return AddSegmentToSequence(sequence_id.value(), track_id.value()).has_value();
 }
 
 void Music::RestartIntroMusic()
@@ -183,7 +183,7 @@ void Music::Slot::Close()
 {
 	Pause();
 	musicPlayer.reset();
-	dynamic_music_presets.clear();
+	dynamic_music_sequences.clear();
 	dynamic_music_tracks.clear();
 }
 
@@ -195,13 +195,13 @@ bool Music::Slot::SetParameters(const MusicParameters& parameters)
 	return true;
 }
 
-void Music::Slot::Play(uint32_t preset_index, uint32_t segment_index)
+void Music::Slot::Play(uint32_t sequence_index, uint32_t segment_index)
 {
-	if (!OpenALManager::Get() || Playing() || !IsSegmentIndexValid(preset_index, segment_index)) return;
-	musicPlayer = OpenALManager::Get()->PlayMusic(dynamic_music_presets, preset_index, segment_index, parameters);
+	if (!OpenALManager::Get() || Playing() || !IsSegmentIndexValid(sequence_index, segment_index)) return;
+	musicPlayer = OpenALManager::Get()->PlayMusic(dynamic_music_sequences, sequence_index, segment_index, parameters);
 }
 
-std::optional<uint32_t> Music::Slot::LoadTrack(FileSpecifier* file)
+std::optional<uint32_t> Music::Slot::AddTrack(FileSpecifier* file)
 {
 	std::shared_ptr<StreamDecoder> segment_decoder = file ? StreamDecoder::Get(*file) : nullptr;
 	if (!segment_decoder) return std::nullopt;
@@ -209,42 +209,42 @@ std::optional<uint32_t> Music::Slot::LoadTrack(FileSpecifier* file)
 	return static_cast<uint32_t>(dynamic_music_tracks.size() - 1);
 }
 
-std::optional<uint32_t> Music::Slot::AddPreset()
+std::optional<uint32_t> Music::Slot::AddSequence()
 {
-	dynamic_music_presets.emplace_back();
-	return static_cast<uint32_t>(dynamic_music_presets.size() - 1);
+	dynamic_music_sequences.emplace_back();
+	return static_cast<uint32_t>(dynamic_music_sequences.size() - 1);
 }
 
-std::optional<uint32_t> Music::Slot::AddSegmentToPreset(uint32_t preset_index, uint32_t track_index)
+std::optional<uint32_t> Music::Slot::AddSegmentToSequence(uint32_t sequence_index, uint32_t track_index)
 {
-	if (preset_index >= dynamic_music_presets.size() || track_index >= dynamic_music_tracks.size())
+	if (sequence_index >= dynamic_music_sequences.size() || track_index >= dynamic_music_tracks.size())
 		return std::nullopt;
 
-	dynamic_music_presets[preset_index].AddSegment(dynamic_music_tracks[track_index]);
-	return static_cast<uint32_t>(dynamic_music_presets[preset_index].GetSegments().size() - 1);
+	dynamic_music_sequences[sequence_index].AddSegment(dynamic_music_tracks[track_index]);
+	return static_cast<uint32_t>(dynamic_music_sequences[sequence_index].GetSegments().size() - 1);
 }
 
-bool Music::Slot::SetSegmentMapping(uint32_t preset_index, uint32_t segment_index, uint32_t transition_preset_index, const MusicPlayer::Segment::Mapping& transition_segment_mapping)
+bool Music::Slot::SetSegmentEdge(uint32_t sequence_index, uint32_t segment_index, uint32_t transition_sequence_index, const MusicPlayer::Segment::Edge& transition_segment_edge)
 {
-	if (!IsSegmentIndexValid(preset_index, segment_index) || !IsSegmentIndexValid(transition_preset_index, transition_segment_mapping.segment_id))
+	if (!IsSegmentIndexValid(sequence_index, segment_index) || !IsSegmentIndexValid(transition_sequence_index, transition_segment_edge.target_segment_id))
 		return false;
 
-	auto segment = dynamic_music_presets[preset_index].GetSegment(segment_index);
+	auto segment = dynamic_music_sequences[sequence_index].GetSegment(segment_index);
 	if (!segment) return false;
 
-	segment->SetSegmentMapping(transition_preset_index, transition_segment_mapping);
+	segment->SetSegmentEdge(transition_sequence_index, transition_segment_edge);
 	return true;
 }
 
-bool Music::Slot::IsSegmentIndexValid(uint32_t preset_index, uint32_t segment_index) const
+bool Music::Slot::IsSegmentIndexValid(uint32_t sequence_index, uint32_t segment_index) const
 {
-	return preset_index < dynamic_music_presets.size() && segment_index < dynamic_music_presets[preset_index].GetSegments().size();
+	return sequence_index < dynamic_music_sequences.size() && segment_index < dynamic_music_sequences[sequence_index].GetSegments().size();
 }
 
-bool Music::Slot::SetPresetTransition(uint32_t preset_index)
+bool Music::Slot::SetSequenceTransition(uint32_t sequence_index)
 {
 	if (!musicPlayer || !musicPlayer->IsActive()) return false;
-	return musicPlayer->RequestPresetTransition(preset_index);
+	return musicPlayer->RequestSequenceTransition(sequence_index);
 }
 
 bool Music::LoadLevelMusic()
