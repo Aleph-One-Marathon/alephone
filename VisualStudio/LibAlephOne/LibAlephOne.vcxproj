@@ -625,6 +625,7 @@
     <ClCompile Include="..\..\Source_Files\Sound\SoundFile.cpp" />
     <ClCompile Include="..\..\Source_Files\Sound\SoundManager.cpp" />
     <ClCompile Include="..\..\Source_Files\Sound\SoundPlayer.cpp" />
+    <ClCompile Include="..\..\Source_Files\Sound\SoundsPatch.cpp" />
     <ClCompile Include="..\..\Source_Files\Sound\StreamPlayer.cpp" />
     <ClCompile Include="..\..\Source_Files\TCPMess\CommunicationsChannel.cpp" />
     <ClCompile Include="..\..\Source_Files\TCPMess\Message.cpp" />
@@ -851,6 +852,7 @@
     <ClInclude Include="..\..\Source_Files\Sound\SoundManager.h" />
     <ClInclude Include="..\..\Source_Files\Sound\SoundManagerEnums.h" />
     <ClInclude Include="..\..\Source_Files\Sound\SoundPlayer.h" />
+    <ClInclude Include="..\..\Source_Files\Sound\SoundsPatch.h" />
     <ClInclude Include="..\..\Source_Files\Sound\sound_definitions.h" />
     <ClInclude Include="..\..\Source_Files\Sound\StreamPlayer.h" />
     <ClInclude Include="..\..\Source_Files\TCPMess\CommunicationsChannel.h" />

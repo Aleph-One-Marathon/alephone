@@ -79,3 +79,9 @@ void SoundReplacements::Reset()
 	}
 	m_hash.clear();
 }
+
+void SoundReplacements::Remove(short Index, short Slot)
+{
+	SoundManager::instance()->UnloadSound(Index);
+	m_hash.erase(key(Index, Slot));
+}

@@ -36,6 +36,7 @@
 #ifdef HAVE_STEAM
 #include "steamshim_child.h"
 #endif
+#include "SoundsPatch.h"
 
 #include <boost/algorithm/string/predicate.hpp>
 
@@ -232,6 +233,31 @@ void Plugins::load_shapes_patches(bool is_opengl)
 					{
 						logWarning("%s Plugin: %s not found; ignoring", it->name.c_str(), shapes_patch->path.c_str());
 					}
+				}
+			}
+		}
+	}
+}
+
+void Plugins::load_sounds_patches()
+{
+	validate();
+	for (auto& plugin : m_plugins)
+	{
+		if (plugin.valid())
+		{
+			ScopedSearchPath ssp(plugin.directory);
+
+			for (const auto& sound_patch : plugin.sounds_patches)
+			{
+				FileSpecifier file;
+				if (file.SetNameWithPath(sound_patch.c_str()))
+				{
+					sounds_patches.add(file);
+				}
+				else
+				{
+					logWarning("%s Plugin: %s not found; ignoring", plugin.name.c_str(), sound_patch.c_str());
 				}
 			}
 		}
@@ -443,6 +469,14 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 						Data.shapes_patches.push_back(patch);
 				}
 
+				for (const InfoTree& tree : root.children_named("sounds_patch"))
+				{
+					std::string sound_patch;
+					tree.read_attr("file", sound_patch);
+					if (plugin_file_exists(Data, sound_patch))
+						Data.sounds_patches.push_back(sound_patch);
+				}
+
 				for (const InfoTree &tree : root.children_named("scenario"))
 				{
 					ScenarioInfo info;
@@ -501,6 +535,7 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 						Data.hud_lua = "";
 						Data.solo_lua = "";
 						Data.shapes_patches.clear();
+						Data.sounds_patches.clear();
 						Data.map_patches.clear();
 					}
 					Plugins::instance()->add(Data);

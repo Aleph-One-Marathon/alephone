@@ -55,6 +55,7 @@ public:
 	SoundOptions *GetSoundOptions(short Index, short Slot);
 	void Reset();
 	void Add(const SoundOptions& Data, short Index, short Slot);
+	void Remove(short Index, short Slot);
 
 private:
 	SoundReplacements() { }
