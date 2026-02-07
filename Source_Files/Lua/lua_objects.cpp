@@ -329,7 +329,7 @@ bool Lua_Effect_Valid(int32 index)
 	if (index < 0 || index >= MAXIMUM_EFFECTS_PER_MAP)
 		return false;
 
-	effect_data *effect = GetMemberWithBounds(EffectList.data(), index, MAXIMUM_EFFECTS_PER_MAP);
+	effect_data *effect = GetMemberWithBounds(get_effects_list().data(), index, MAXIMUM_EFFECTS_PER_MAP);
 	return SLOT_IS_USED(effect);
 }
 
@@ -392,7 +392,7 @@ int Lua_Item_Delete(lua_State* L)
 	{
 		for (auto i = 0; i < MAXIMUM_EFFECTS_PER_MAP; ++i)
 		{
-			auto effect = &EffectList.data()[i];
+			auto effect = &get_effects_list().data()[i];
 			if (SLOT_IS_USED(effect) &&
 				effect->type == _effect_teleport_object_in &&
 				effect->data == object_index)
