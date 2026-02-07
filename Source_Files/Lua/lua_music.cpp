@@ -15,13 +15,6 @@ static std::pair<uint32_t, uint32_t> Get_MusicSequence(uint32_t sequence_index)
 	return music_sequence_indexes[sequence_index];
 }
 
-static uint32_t Get_LuaMusicSequence(uint32_t music_index, uint32_t sequence_index)
-{
-	auto target = std::make_pair(music_index, sequence_index);
-	auto result = std::find(music_sequence_indexes.begin(), music_sequence_indexes.end(), target);
-	return std::distance(music_sequence_indexes.begin(), result);
-}
-
 static uint32_t Add_MusicSequence(uint32_t music_index, uint32_t sequence_index)
 {
 	music_sequence_indexes.emplace_back(music_index, sequence_index);
@@ -31,14 +24,6 @@ static uint32_t Add_MusicSequence(uint32_t music_index, uint32_t sequence_index)
 static std::tuple<uint32_t, uint32_t, uint32_t> Get_MusicSegment(uint32_t segment_index)
 {
 	return music_segment_indexes[segment_index];
-}
-
-static std::optional<uint32_t> Get_LuaMusicSegment(uint32_t music_index, uint32_t sequence_index, uint32_t segment_index)
-{
-	auto target = std::make_tuple(music_index, sequence_index, segment_index);
-	auto result = std::find(music_segment_indexes.begin(), music_segment_indexes.end(), target);
-	if (result != music_segment_indexes.end()) return std::distance(music_segment_indexes.begin(), result);
-	return std::nullopt;
 }
 
 static uint32_t Add_MusicSegment(uint32_t music_index, uint32_t sequence_index, uint32_t segment_index)
@@ -278,11 +263,6 @@ static int Lua_MusicManager_Valid(lua_State* L) {
 	return top;
 }
 
-static bool Lua_MusicSequence_Valid(int16 index)
-{
-	return index >= 0 && index < music_sequence_indexes.size();
-}
-
 static int Lua_Get_MusicSequence(lua_State* L)
 {
 	Lua_MusicSequence::Push(L, Lua_Music::Index(L, 1));
@@ -309,7 +289,8 @@ static int Lua_Music_Set_Sequence_Transition(lua_State* L)
 	if (!slot) return luaL_error(L, "request_sequence_transition: index out of bounds");
 
 	auto [music_index, sequence_index] = Get_MusicSequence(static_cast<uint32_t>(Lua_MusicSequence::Index(L, 2)));
-	if (!slot->SetSequenceTransition(sequence_index))
+
+	if (music_index != index || !slot->SetSequenceTransition(sequence_index))
 		return luaL_error(L, "request_sequence_transition: invalid operation");
 
 	return 0;
@@ -326,16 +307,11 @@ static int Lua_MusicSegment_New(lua_State* L)
 	auto slot = Music::instance()->GetSlot(music_index);
 	if (!slot) return luaL_error(L, "new: index out of bounds");
 
-	auto segment_index = slot->AddSegmentToSequence(sequence_index, lua_tonumber(L, 2));
+	auto segment_index = slot->AddSegmentToSequence(sequence_index, static_cast<int>(lua_tonumber(L, 2)));
 	if (!segment_index.has_value()) return luaL_error(L, "new: index out of bounds");
 
 	Lua_MusicSegment::Push(L, Add_MusicSegment(music_index, sequence_index, segment_index.value()));
 	return 1;
-}
-
-static bool Lua_MusicSegment_Valid(int16 index)
-{
-	return index >= 0 && index < music_segment_indexes.size();
 }
 
 static int Lua_Get_MusicSegment(lua_State* L)
@@ -362,7 +338,7 @@ static int Lua_MusicSegment_Add_Segment_Transition(lua_State* L)
 	auto fadeTypeOutSeconds = lua_isnumber(L, 4) ? static_cast<float>(lua_tonumber(L, 4)) : 0;
 	auto fadeTypeIn = lua_gettop(L) >= 5 ? static_cast<MusicPlayer::FadeType>(Lua_MusicFadeType::ToIndex(L, 5)) : MusicPlayer::FadeType::None;
 	auto fadeTypeInSeconds = lua_isnumber(L, 6) ? static_cast<float>(lua_tonumber(L, 6)) : 0;
-	bool crossfade = lua_isboolean(L, 7) ? lua_toboolean(L, 7) : false;
+	bool crossfade = lua_isboolean(L, 7) ? static_cast<bool>(lua_toboolean(L, 7)) : false;
 
 	MusicPlayer::Segment::Edge edge(next_segment_index, { fadeTypeOut , fadeTypeOutSeconds }, { fadeTypeIn , fadeTypeInSeconds }, crossfade);
 
