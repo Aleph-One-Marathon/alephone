@@ -11,7 +11,7 @@ jobs:
     - name: Build Steam Marathon
       uses: ./.github/actions/build-mac-osx
       with:
-        xcode_targets: "Marathon 1 Steam, Marathon 2 Steam, Marathon 3 Steam, Classic Marathon Launcher"
+        xcode_targets: "Marathon 1 Steam, Marathon 2 Steam, Marathon 3 Steam, Steam Launcher"
       
     - name: Bootstrap Steamcmd
       continue-on-error: true #Steamcmd may throw error exit code while bootstrapping that we can ignore, we will see on upload if everything is working fine

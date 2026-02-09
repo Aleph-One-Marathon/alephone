@@ -39,4 +39,4 @@ tell application "Xcode"
 end tell
 
 set t to (current date) - d
-log "Finished in " & (t div 60) & "m" & (t mod 60) & "s with " & errorCount & " errors."
+log "Finished in " & (t div 60) & ":" & (t mod 60) & " with " & errorCount & " errors."
