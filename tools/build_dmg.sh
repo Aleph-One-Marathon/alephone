@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SRCROOT="$1/PBProjects"
+SRCROOT="$1/Xcode"
 TARGET_BUILD_DIR="$2"
 SIGNATURE="$3"
 

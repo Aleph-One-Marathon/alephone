@@ -12,19 +12,19 @@
         {
             "FileMapping"
             {
-                "LocalPath" "PBProjects/build/Release/Classic Marathon Launcher"
+                "LocalPath" "Xcode/build/Release/Classic Marathon Launcher"
                 "DepotPath" "."
             }
 			
             "FileMapping"
             {
-                "LocalPath" "PBProjects/build/Release/libsteam_api.dylib"
+                "LocalPath" "Xcode/build/Release/libsteam_api.dylib"
                 "DepotPath" "."
             }
 			
             "FileMapping"
             {
-                "LocalPath" "PBProjects/build/Release/Classic Marathon Infinity Steam.app/*"
+                "LocalPath" "Xcode/build/Release/Classic Marathon Infinity Steam.app/*"
                 "DepotPath" "Classic Marathon Infinity Steam.app"
                 "recursive" "1"
             }
