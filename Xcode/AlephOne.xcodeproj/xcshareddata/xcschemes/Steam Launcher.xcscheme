@@ -16,8 +16,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "AE8729C02BD1FBEA00426095"
-               BuildableName = "Marathon Steam Launcher"
-               BlueprintName = "Marathon Steam Launcher"
+               BuildableName = "Classic Marathon Launcher"
+               BlueprintName = "Steam Launcher"
                ReferencedContainer = "container:AlephOne.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -46,8 +46,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AE8729C02BD1FBEA00426095"
-            BuildableName = "Marathon Steam Launcher"
-            BlueprintName = "Marathon Steam Launcher"
+            BuildableName = "Classic Marathon Launcher"
+            BlueprintName = "Steam Launcher"
             ReferencedContainer = "container:AlephOne.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -63,8 +63,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AE8729C02BD1FBEA00426095"
-            BuildableName = "Marathon Steam Launcher"
-            BlueprintName = "Marathon Steam Launcher"
+            BuildableName = "Classic Marathon Launcher"
+            BlueprintName = "Steam Launcher"
             ReferencedContainer = "container:AlephOne.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

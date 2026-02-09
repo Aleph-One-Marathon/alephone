@@ -1250,7 +1250,6 @@
 		4F4280842F37828E000FB3DA /* Marathon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Marathon.icns; sourceTree = "<group>"; };
 		4F4280A22F3783BF000FB3DA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4F4280A72F3783BF000FB3DA /* Marathon Infinity.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Marathon Infinity.icns"; sourceTree = "<group>"; };
-		4F4280B52F378541000FB3DA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4F5566CB2F393FD700C9207C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = InfoPlist.strings; sourceTree = "<group>"; };
 		4F5566D02F393FF300C9207C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = InfoPlist.strings; sourceTree = "<group>"; };
 		4F5566D52F39400300C9207C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = InfoPlist.strings; sourceTree = "<group>"; };
@@ -1890,8 +1889,8 @@
 		AE120D642BC77645001873DD /* Classic Marathon Steam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Classic Marathon Steam.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE1321FD2C1CB4D2009D34AA /* Classic Marathon 2 Steam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Classic Marathon 2 Steam.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE505D0B141D45E600915344 /* Classic Marathon 2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Classic Marathon 2.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		AE5A16B42BCF634900931FEE /* MarathonSteamLauncher.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MarathonSteamLauncher.entitlements; sourceTree = "<group>"; };
-		AE8729C12BD1FBEA00426095 /* Marathon Steam Launcher */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Marathon Steam Launcher"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE5A16B42BCF634900931FEE /* SteamLauncher.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SteamLauncher.entitlements; sourceTree = "<group>"; };
+		AE8729C12BD1FBEA00426095 /* Classic Marathon Launcher */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Classic Marathon Launcher"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE941DE713E783F30077218A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AE9974FD2661D49E00DDD370 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		AE9974FF2661D4DD00DDD370 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
@@ -2145,7 +2144,7 @@
 				AE120D642BC77645001873DD /* Classic Marathon Steam.app */,
 				AE1321FD2C1CB4D2009D34AA /* Classic Marathon 2 Steam.app */,
 				AEBDC6DA2C4DF0780026DFF1 /* Classic Marathon Infinity Steam.app */,
-				AE8729C12BD1FBEA00426095 /* Marathon Steam Launcher */,
+				AE8729C12BD1FBEA00426095 /* Classic Marathon Launcher */,
 				4F427E0D2F3761EB000FB3DA /* Aleph One Test Replays.app */,
 			);
 			name = Products;
@@ -2171,12 +2170,12 @@
 				4F9CB15E2F39B30B00F91C02 /* Xcode Notes.md */,
 				AEA85F5324DF26F800BB7827 /* AlephOne.entitlements */,
 				AEA85F5424DF275300BB7827 /* AlephOneSteam.entitlements */,
+				AE5A16B42BCF634900931FEE /* SteamLauncher.entitlements */,
 				4F4280302F377F3F000FB3DA /* AlephOne */,
 				4F42806B2F37825F000FB3DA /* DataFileIcons */,
 				4F4280852F37828E000FB3DA /* Marathon1 */,
 				4F42804E2F3781F6000FB3DA /* Marathon2 */,
 				4F4280A92F3783BF000FB3DA /* Marathon3 */,
-				4F4280B42F3784C8000FB3DA /* MarathonSteamLauncher */,
 			);
 			path = App_Resources;
 			sourceTree = "<group>";
@@ -2238,15 +2237,6 @@
 				4F4280A72F3783BF000FB3DA /* Marathon Infinity.icns */,
 			);
 			path = Marathon3;
-			sourceTree = "<group>";
-		};
-		4F4280B42F3784C8000FB3DA /* MarathonSteamLauncher */ = {
-			isa = PBXGroup;
-			children = (
-				4F4280B52F378541000FB3DA /* Info.plist */,
-				AE5A16B42BCF634900931FEE /* MarathonSteamLauncher.entitlements */,
-			);
-			path = MarathonSteamLauncher;
 			sourceTree = "<group>";
 		};
 		4F5566CD2F393FD700C9207C /* en.lproj */ = {
@@ -3798,9 +3788,9 @@
 			productReference = AE505D0B141D45E600915344 /* Classic Marathon 2.app */;
 			productType = "com.apple.product-type.application";
 		};
-		AE8729C02BD1FBEA00426095 /* Marathon Steam Launcher */ = {
+		AE8729C02BD1FBEA00426095 /* Steam Launcher */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AE8729C52BD1FBEA00426095 /* Build configuration list for PBXNativeTarget "Marathon Steam Launcher" */;
+			buildConfigurationList = AE8729C52BD1FBEA00426095 /* Build configuration list for PBXNativeTarget "Steam Launcher" */;
 			buildPhases = (
 				AE8729BF2BD1FBEA00426095 /* CopyFiles */,
 				AE8729BD2BD1FBEA00426095 /* Sources */,
@@ -3810,9 +3800,9 @@
 			);
 			dependencies = (
 			);
-			name = "Marathon Steam Launcher";
+			name = "Steam Launcher";
 			productName = "Classic Marathon Launcher";
-			productReference = AE8729C12BD1FBEA00426095 /* Marathon Steam Launcher */;
+			productReference = AE8729C12BD1FBEA00426095 /* Classic Marathon Launcher */;
 			productType = "com.apple.product-type.tool";
 		};
 		AEB4A0DA14296CAE00537AE7 /* Marathon 3 */ = {
@@ -3953,7 +3943,7 @@
 				AE120B972BC77645001873DD /* Marathon 1 Steam */,
 				AE13202F2C1CB4D2009D34AA /* Marathon 2 Steam */,
 				AEBDC50B2C4DF0780026DFF1 /* Marathon 3 Steam */,
-				AE8729C02BD1FBEA00426095 /* Marathon Steam Launcher */,
+				AE8729C02BD1FBEA00426095 /* Steam Launcher */,
 				4F427DF42F3761EB000FB3DA /* Tests Replays */,
 			);
 		};
@@ -5540,7 +5530,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = App_Resources/MarathonSteamLauncher/MarathonSteamLauncher.entitlements;
+				CODE_SIGN_ENTITLEMENTS = App_Resources/SteamLauncher.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -5551,13 +5541,11 @@
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				INFOPLIST_FILE = "App_Resources/Marathon Steam Launcher/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.ClassicMarathonLauncher;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Classic Marathon Launcher";
 			};
 			name = Release;
 		};
@@ -5576,7 +5564,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = App_Resources/MarathonSteamLauncher/MarathonSteamLauncher.entitlements;
+				CODE_SIGN_ENTITLEMENTS = App_Resources/SteamLauncher.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
@@ -5591,13 +5579,11 @@
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				INFOPLIST_FILE = "App_Resources/Marathon Steam Launcher/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.ClassicMarathonLauncher;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Classic Marathon Launcher";
 			};
 			name = Debug;
 		};
@@ -5827,7 +5813,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AE8729C52BD1FBEA00426095 /* Build configuration list for PBXNativeTarget "Marathon Steam Launcher" */ = {
+		AE8729C52BD1FBEA00426095 /* Build configuration list for PBXNativeTarget "Steam Launcher" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AE8729C62BD1FBEA00426095 /* Release */,
