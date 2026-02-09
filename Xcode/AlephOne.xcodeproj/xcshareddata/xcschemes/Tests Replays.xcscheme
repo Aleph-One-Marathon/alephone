@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "4F427DF42F3761EB000FB3DA"
-               BuildableName = "Tests Replays.app"
+               BuildableName = "Aleph One Test Replays.app"
                BlueprintName = "Tests Replays"
                ReferencedContainer = "container:AlephOne.xcodeproj">
             </BuildableReference>
@@ -46,7 +46,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "4F427DF42F3761EB000FB3DA"
-            BuildableName = "Tests Replays.app"
+            BuildableName = "Aleph One Test Replays.app"
             BlueprintName = "Tests Replays"
             ReferencedContainer = "container:AlephOne.xcodeproj">
          </BuildableReference>
@@ -63,7 +63,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "4F427DF42F3761EB000FB3DA"
-            BuildableName = "Tests Replays.app"
+            BuildableName = "Aleph One Test Replays.app"
             BlueprintName = "Tests Replays"
             ReferencedContainer = "container:AlephOne.xcodeproj">
          </BuildableReference>
