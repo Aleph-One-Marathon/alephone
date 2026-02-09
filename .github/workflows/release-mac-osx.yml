@@ -13,7 +13,7 @@ jobs:
     - name: Build
       uses: ./.github/actions/build-mac-osx
       with:
-        xcode_targets: "Aleph One, Marathon, Marathon 2, Marathon Infinity"
+        xcode_targets: "Aleph One, Marathon 1, Marathon 2, Marathon 3"
 
     - name: Codesign app bundle
       # Extract the secrets we defined earlier as environment variables
@@ -38,10 +38,10 @@ jobs:
         security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
 
         # We finally codesign our app bundle, specifying the Hardened runtime option
-        /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime "$GITHUB_WORKSPACE/PBProjects/build/Release/Aleph One.app" -v
-        /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon.app" -v
-        /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon 2.app" -v        
-        /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Infinity.app" -v
+        /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime "$GITHUB_WORKSPACE/Xcode/build/Release/Aleph One.app" -v
+        /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime "$GITHUB_WORKSPACE/Xcode/build/Release/Classic Marathon.app" -v
+        /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime "$GITHUB_WORKSPACE/Xcode/build/Release/Classic Marathon 2.app" -v        
+        /usr/bin/codesign --force -s "$MACOS_CERTIFICATE_NAME" --options runtime "$GITHUB_WORKSPACE/Xcode/build/Release/Classic Marathon Infinity.app" -v
 
     - name: "Notarize app bundle"
       # Extract the secrets we defined earlier as environment variables
@@ -61,10 +61,10 @@ jobs:
         # notarization service
 
         echo "Creating temp notarization archives"
-        ditto -c -k --keepParent "$GITHUB_WORKSPACE/PBProjects/build/Release/Aleph One.app" "alephone.zip"
-        ditto -c -k --keepParent "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon.app" "marathon.zip"
-        ditto -c -k --keepParent "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon 2.app" "marathon2.zip"
-        ditto -c -k --keepParent "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Infinity.app" "infinity.zip"        
+        ditto -c -k --keepParent "$GITHUB_WORKSPACE/Xcode/build/Release/Aleph One.app" "alephone.zip"
+        ditto -c -k --keepParent "$GITHUB_WORKSPACE/Xcode/build/Release/Classic Marathon.app" "marathon.zip"
+        ditto -c -k --keepParent "$GITHUB_WORKSPACE/Xcode/build/Release/Classic Marathon 2.app" "marathon2.zip"
+        ditto -c -k --keepParent "$GITHUB_WORKSPACE/Xcode/build/Release/Classic Marathon Infinity.app" "infinity.zip"        
 
         # Here we send the notarization request to the Apple's Notarization service, waiting for the result.
         # This typically takes a few seconds inside a CI environment, but it might take more depending on the App
@@ -77,29 +77,29 @@ jobs:
         # Finally, we need to "attach the staple" to our executable, which will allow our app to be
         # validated by macOS even when an internet connection is not available.
         echo "Attach staple"
-        xcrun stapler staple "$GITHUB_WORKSPACE/PBProjects/build/Release/Aleph One.app"
+        xcrun stapler staple "$GITHUB_WORKSPACE/Xcode/build/Release/Aleph One.app"
 
         echo "Notarize Marathon"
         xcrun notarytool submit "marathon.zip" --keychain-profile "notarytool-profile" --wait
         echo "Attach staple"
-        xcrun stapler staple "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon.app"
+        xcrun stapler staple "$GITHUB_WORKSPACE/Xcode/build/Release/Classic Marathon.app"
 
         echo "Notarize Marathon 2"
         xcrun notarytool submit "marathon2.zip" --keychain-profile "notarytool-profile" --wait
         echo "Attach staple"
-        xcrun stapler staple "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon 2.app"
+        xcrun stapler staple "$GITHUB_WORKSPACE/Xcode/build/Release/Classic Marathon 2.app"
 
         echo "Notarize Marathon Infinity"
         xcrun notarytool submit "infinity.zip" --keychain-profile "notarytool-profile" --wait
         echo "Attach staple"
-        xcrun stapler staple "$GITHUB_WORKSPACE/PBProjects/build/Release/Classic Marathon Infinity.app"
+        xcrun stapler staple "$GITHUB_WORKSPACE/Xcode/build/Release/Classic Marathon Infinity.app"
 
     - name: Create DMGs
-      run: cd tools && ./build_dmg.sh $GITHUB_WORKSPACE $GITHUB_WORKSPACE/PBProjects/build/Release
+      run: cd tools && ./build_dmg.sh $GITHUB_WORKSPACE $GITHUB_WORKSPACE/Xcode/build/Release
       
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: alephone-macos-release
         if-no-files-found: error
-        path: 'PBProjects/build/Release/*.dmg'
+        path: 'Xcode/build/Release/*.dmg'

@@ -64,5 +64,5 @@ runs:
       shell: pwsh
       
     - name: Build
-      run: cd PBProjects && xcodebuild ${{env.xcode_arch}} ${{env.xcode_targets}} DEVELOPMENT_TEAM='' CODE_SIGN_IDENTITY='-' CODE_SIGN_STYLE='Automatic' build
+      run: cd Xcode && xcodebuild ${{env.xcode_arch}} ${{env.xcode_targets}} DEVELOPMENT_TEAM='' CODE_SIGN_IDENTITY='-' CODE_SIGN_STYLE='Automatic' build
       shell: bash
