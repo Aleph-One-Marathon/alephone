@@ -1060,6 +1060,10 @@
 		4F9CB1552F3951B100F91C02 /* libalephonesteam.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9CB1462F39442500F91C02 /* libalephonesteam.a */; };
 		4F9CB1562F3951BA00F91C02 /* libalephonesteam.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9CB1462F39442500F91C02 /* libalephonesteam.a */; };
 		4F9CB1572F3951C800F91C02 /* libalephonesteam.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9CB1462F39442500F91C02 /* libalephonesteam.a */; };
+		4F9CB16E2F3B7DF000F91C02 /* SoundsPatch.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F9CB16C2F3B7DF000F91C02 /* SoundsPatch.h */; };
+		4F9CB16F2F3B7DF000F91C02 /* SoundsPatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F9CB16D2F3B7DF000F91C02 /* SoundsPatch.cpp */; };
+		4F9CB1702F3B7DF000F91C02 /* SoundsPatch.h in Headers */ = {isa = PBXBuildFile; fileRef = 4F9CB16C2F3B7DF000F91C02 /* SoundsPatch.h */; };
+		4F9CB1712F3B7DF000F91C02 /* SoundsPatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F9CB16D2F3B7DF000F91C02 /* SoundsPatch.cpp */; };
 		4FADF1C82F37EBEE00643799 /* libalephone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FADF1C62F37EB8C00643799 /* libalephone.a */; };
 		4FADF1C92F37EBF400643799 /* libalephone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FADF1C62F37EB8C00643799 /* libalephone.a */; };
 		4FADF1CA2F37EBF800643799 /* libalephone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FADF1C62F37EB8C00643799 /* libalephone.a */; };
@@ -1243,7 +1247,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		4F427E0D2F3761EB000FB3DA /* Aleph One Test Replays.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Aleph One Test Replays.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F427E0D2F3761EB000FB3DA /* AlephOne Tests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AlephOne Tests.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F4280472F3781F6000FB3DA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4F42804D2F3781F6000FB3DA /* Marathon 2.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Marathon 2.icns"; sourceTree = "<group>"; };
 		4F42807E2F37828E000FB3DA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -1780,6 +1784,8 @@
 		4F9CB1492F39471900F91C02 /* Info-Steam.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-Steam.plist"; sourceTree = "<group>"; };
 		4F9CB14C2F394C2100F91C02 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4F9CB15E2F39B30B00F91C02 /* Xcode Notes.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "Xcode Notes.md"; sourceTree = SOURCE_ROOT; };
+		4F9CB16C2F3B7DF000F91C02 /* SoundsPatch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SoundsPatch.h; sourceTree = "<group>"; };
+		4F9CB16D2F3B7DF000F91C02 /* SoundsPatch.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SoundsPatch.cpp; sourceTree = "<group>"; };
 		4FADF1C62F37EB8C00643799 /* libalephone.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libalephone.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		4FD2BBB72F372F1600D4C540 /* M1 L1 Arrival.42903.filA */ = {isa = PBXFileReference; lastKnownFileType = file; path = "M1 L1 Arrival.42903.filA"; sourceTree = "<group>"; };
 		4FD2BBB82F372F1600D4C540 /* M1 L2 Bigger Guns Nearby.39468.filA */ = {isa = PBXFileReference; lastKnownFileType = file; path = "M1 L2 Bigger Guns Nearby.39468.filA"; sourceTree = "<group>"; };
@@ -2145,7 +2151,7 @@
 				AE1321FD2C1CB4D2009D34AA /* Classic Marathon 2 Steam.app */,
 				AEBDC6DA2C4DF0780026DFF1 /* Classic Marathon Infinity Steam.app */,
 				AE8729C12BD1FBEA00426095 /* Classic Marathon Launcher */,
-				4F427E0D2F3761EB000FB3DA /* Aleph One Test Replays.app */,
+				4F427E0D2F3761EB000FB3DA /* AlephOne Tests.app */,
 			);
 			name = Products;
 			path = ../Steam;
@@ -2853,6 +2859,8 @@
 				4F5568CE2F3940D400C9207C /* SoundManager.h */,
 				4F5568CF2F3940D400C9207C /* SoundManager.cpp */,
 				4F5568D02F3940D400C9207C /* SoundManagerEnums.h */,
+				4F9CB16C2F3B7DF000F91C02 /* SoundsPatch.h */,
+				4F9CB16D2F3B7DF000F91C02 /* SoundsPatch.cpp */,
 				4F5568D12F3940D400C9207C /* SoundPlayer.h */,
 				4F5568D22F3940D400C9207C /* SoundPlayer.cpp */,
 				4F5568D32F3940D400C9207C /* StreamPlayer.h */,
@@ -3277,6 +3285,7 @@
 				4F9CAFD92F39442500F91C02 /* SSLP_API.h in Headers */,
 				4F9CAFDA2F39442500F91C02 /* metaserver_dialogs.h in Headers */,
 				4F9CAFDB2F39442500F91C02 /* csfonts.h in Headers */,
+				4F9CB1702F3B7DF000F91C02 /* SoundsPatch.h in Headers */,
 				4F9CAFDC2F39442500F91C02 /* QuickSave.h in Headers */,
 				4F9CAFDD2F39442500F91C02 /* SoundManager.h in Headers */,
 				4F9CAFDE2F39442500F91C02 /* low_level_textures.h in Headers */,
@@ -3536,6 +3545,7 @@
 				4F556C262F3940D400C9207C /* SSLP_API.h in Headers */,
 				4F556C272F3940D400C9207C /* metaserver_dialogs.h in Headers */,
 				4F556C282F3940D400C9207C /* csfonts.h in Headers */,
+				4F9CB16E2F3B7DF000F91C02 /* SoundsPatch.h in Headers */,
 				4F556C292F3940D400C9207C /* QuickSave.h in Headers */,
 				4F556C2A2F3940D400C9207C /* SoundManager.h in Headers */,
 				4F556C2B2F3940D400C9207C /* low_level_textures.h in Headers */,
@@ -3672,9 +3682,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		4F427DF42F3761EB000FB3DA /* Tests Replays */ = {
+		4F427DF42F3761EB000FB3DA /* Aleph One Tests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4F427E0A2F3761EB000FB3DA /* Build configuration list for PBXNativeTarget "Tests Replays" */;
+			buildConfigurationList = 4F427E0A2F3761EB000FB3DA /* Build configuration list for PBXNativeTarget "Aleph One Tests" */;
 			buildPhases = (
 				4F427E042F3761EB000FB3DA /* Sources */,
 				4F427E062F3761EB000FB3DA /* Frameworks */,
@@ -3687,9 +3697,9 @@
 			dependencies = (
 				4F427DF52F3761EB000FB3DA /* PBXTargetDependency */,
 			);
-			name = "Tests Replays";
+			name = "Aleph One Tests";
 			productName = "SDL Application";
-			productReference = 4F427E0D2F3761EB000FB3DA /* Aleph One Test Replays.app */;
+			productReference = 4F427E0D2F3761EB000FB3DA /* AlephOne Tests.app */;
 			productType = "com.apple.product-type.application";
 		};
 		4F9CAF602F39442500F91C02 /* libalephonesteam */ = {
@@ -3849,10 +3859,10 @@
 			buildConfigurationList = AEC3C87B09AD68AC003258E4 /* Build configuration list for PBXNativeTarget "Aleph One" */;
 			buildPhases = (
 				AEC3C7CF09AD68AC003258E4 /* Sources */,
-				AEC3C86F09AD68AC003258E4 /* Frameworks */,
 				AEC3C7C209AD68AC003258E4 /* Resources */,
 				AEC3C87609AD68AC003258E4 /* Copy Default Theme */,
 				275F9A49217F7CBA00337B05 /* Add Version To Info.plist */,
+				AEC3C86F09AD68AC003258E4 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -3944,7 +3954,7 @@
 				AE13202F2C1CB4D2009D34AA /* Marathon 2 Steam */,
 				AEBDC50B2C4DF0780026DFF1 /* Marathon 3 Steam */,
 				AE8729C02BD1FBEA00426095 /* Steam Launcher */,
-				4F427DF42F3761EB000FB3DA /* Tests Replays */,
+				4F427DF42F3761EB000FB3DA /* Aleph One Tests */,
 			);
 		};
 /* End PBXProject section */
@@ -4444,6 +4454,7 @@
 				4F556B682F3940D400C9207C /* MusicPlayer.cpp in Sources */,
 				4F556B692F3940D400C9207C /* SndfileDecoder.cpp in Sources */,
 				4F556B6A2F3940D400C9207C /* items.cpp in Sources */,
+				4F9CB16F2F3B7DF000F91C02 /* SoundsPatch.cpp in Sources */,
 				4F556B6B2F3940D400C9207C /* sdl_widgets.cpp in Sources */,
 				4F556B6C2F3940D400C9207C /* Statistics.cpp in Sources */,
 				4F556B6D2F3940D400C9207C /* flood_map.cpp in Sources */,
@@ -4682,6 +4693,7 @@
 				4F9CB0F02F39442500F91C02 /* MusicPlayer.cpp in Sources */,
 				4F9CB0F12F39442500F91C02 /* SndfileDecoder.cpp in Sources */,
 				4F9CB0F22F39442500F91C02 /* items.cpp in Sources */,
+				4F9CB1712F3B7DF000F91C02 /* SoundsPatch.cpp in Sources */,
 				4F9CB0F32F39442500F91C02 /* sdl_widgets.cpp in Sources */,
 				4F9CB0F42F39442500F91C02 /* Statistics.cpp in Sources */,
 				4F9CB0F52F39442500F91C02 /* flood_map.cpp in Sources */,
@@ -4904,7 +4916,7 @@
 				);
 				INFOPLIST_FILE = ../tests/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.TestsReplays;
-				PRODUCT_NAME = "Aleph One Test Replays";
+				PRODUCT_NAME = "AlephOne Tests";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -4924,7 +4936,7 @@
 				);
 				INFOPLIST_FILE = ../tests/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.TestsReplays;
-				PRODUCT_NAME = "Aleph One Test Replays";
+				PRODUCT_NAME = "AlephOne Tests";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -5750,7 +5762,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		4F427E0A2F3761EB000FB3DA /* Build configuration list for PBXNativeTarget "Tests Replays" */ = {
+		4F427E0A2F3761EB000FB3DA /* Build configuration list for PBXNativeTarget "Aleph One Tests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4F427E0B2F3761EB000FB3DA /* Release */,

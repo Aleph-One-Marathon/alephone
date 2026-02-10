@@ -290,7 +290,7 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>Aleph One Test Replays</string>
+	<string>AlephOne Tests</string>
 	<key>CFBundleIconFile</key>
 	<string>AlephOne.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -298,7 +298,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Aleph One Test Replays</string>
+	<string>AlephOne Tests</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

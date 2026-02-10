@@ -1,11 +1,18 @@
 #!/usr/bin/osascript
 
--- Build all AlephOne macOS apps in Xcode. (The AlephOne.xcodeproj must be opened first.)
+(*
+Build all AlephOne macOS apps in Xcode. 
 
--- If the first word of a scheme's name is in this list, it will be built.
--- (This ignores libalephone* schemes which are automatically built when needed.)
-property schemePrefixes : {"Aleph", "Marathon", "Tests"}
+If the first word of a Scheme's name is in `schemePrefixes` below, build it.
 
+(This ignores `libalephone*`, which is automatically built when needed.)
+
+The `AlephOne.xcodeproj` must already be open in Xcode.app.
+*)
+
+property schemePrefixes : {"Aleph", "Marathon", "Steam"}
+
+--------------------------------------------------------------------------------
 -- main 
 
 set d to current date
@@ -27,9 +34,11 @@ tell application "Xcode"
 				repeat until actionResult's completed
 					delay 0.5
 				end repeat
-				if actionResult's error message is not missing value then
+				if actionResult's status is not succeeded then
 					set errorCount to errorCount + 1
-					tell me to log "FAIL: " & actionResult's error message
+					set errorMessage to actionResult's error message
+					if errorMessage is missing value then set errorMessage to ""
+					tell me to log "FAIL: " & actionResult's status as string & ". " & errorMessage
 				else
 					tell me to log "OK"
 				end if
@@ -39,4 +48,4 @@ tell application "Xcode"
 end tell
 
 set t to (current date) - d
-log "Finished in " & (t div 60) & ":" & (t mod 60) & " with " & errorCount & " errors."
+log "Finished in " & (t div 60) & ":" & (text -2 thru -1 of ("0" & (t mod 60))) & " with " & errorCount & " errors."
