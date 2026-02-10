@@ -4915,7 +4915,7 @@
 					HAVE_CONFIG_H,
 				);
 				INFOPLIST_FILE = ../tests/Info.plist;
-				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.TestsReplays;
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOneTests;
 				PRODUCT_NAME = "AlephOne Tests";
 				WRAPPER_EXTENSION = app;
 			};
@@ -4935,7 +4935,7 @@
 					HAVE_CONFIG_H,
 				);
 				INFOPLIST_FILE = ../tests/Info.plist;
-				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.TestsReplays;
+				PRODUCT_BUNDLE_IDENTIFIER = org.bungie.source.AlephOneTests;
 				PRODUCT_NAME = "AlephOne Tests";
 				WRAPPER_EXTENSION = app;
 			};
