@@ -1625,7 +1625,7 @@ static void sound_dialog(void *arg)
 		hrtf_w->set_enabled(can_enable_hrtf);
 		hrtf_w->set_selection(
 			(can_enable_hrtf && hrtf_w->get_selection() == 1) ||
-			!can_enable_hrtf && OpenALManager::Get() && OpenALManager::Get()->GetHrtfSupport() == OpenALManager::HrtfSupport::Required
+			(!can_enable_hrtf && OpenALManager::Get() && OpenALManager::Get()->GetHrtfSupport() == OpenALManager::HrtfSupport::Required)
 		);
 	};
 
