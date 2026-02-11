@@ -23,22 +23,26 @@
 #include "cstypes.h"
 #include "cspaths.h"
 
+#define A1_PREFER_APP_NAME_TO_BUNDLE_ID (@"A1_PREFER_APP_NAME_TO_BUNDLE_ID")
+
 static std::string _add_app_name(std::string parent)
 {
-#ifdef PREFER_APP_NAME_TO_BUNDLE_ID
-	return parent + "/" + get_application_name();
-#else
-	return parent + "/" + "AlephOne";
-#endif
+    static std::string path = "";
+    if (path.empty()) {
+        bool preferAppName = [[NSBundle.mainBundle.localizedInfoDictionary valueForKey: A1_PREFER_APP_NAME_TO_BUNDLE_ID] boolValue];
+        path = parent + "/" + (preferAppName ? get_application_name() : "AlephOne");
+    }
+    return path;
 }
 
 static std::string _add_app_id(std::string parent)
 {
-#ifdef PREFER_APP_NAME_TO_BUNDLE_ID
-	return parent + "/" + get_application_name();
-#else
-	return parent + "/" + get_application_identifier();
-#endif
+    static std::string path = "";
+    if (path.empty()) {
+        bool preferAppName = [[NSBundle.mainBundle.localizedInfoDictionary valueForKey: A1_PREFER_APP_NAME_TO_BUNDLE_ID] boolValue];
+        path = parent + "/" + (preferAppName ? get_application_name() : get_application_identifier());
+    }
+    return path;
 }
 
 static std::string _get_local_data_path()

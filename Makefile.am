@@ -6,54 +6,92 @@ SUBDIRS = Source_Files Steam tools data
 # Requires automake 1.5
 AUTOMAKE_OPTIONS = 1.5 foreign dist-bzip2 no-dist-gzip
 
-EXTRA_DIST = docs/MML.html docs/Lua.html docs/Lua_HUD.html		\
-  docs/README.txt Resources/Windows/alephone.ico		        \
-  Resources/Windows/alephone.rc						\
-  Resources/Windows/marathon.rc Resources/Windows/marathon.ico          \
-  Resources/Windows/marathon2.rc Resources/Windows/marathon2.ico        \
-  Resources/Windows/marathon-infinity.rc                                \
-  Resources/Windows/marathon-infinity.ico                               \
-  PBProjects/AlephOne.xcodeproj/project.pbxproj				\
-  PBProjects/en.lproj/InfoPlist.strings PBProjects/FilmIcon.icns	\
-  PBProjects/ImagesIcon.icns PBProjects/MapIcon.icns			\
-  PBProjects/MMLIcon.icns PBProjects/MusakIcon.icns			\
-  PBProjects/PhysIcon.icns			                        \
-  PBProjects/SaveIcon.icns PBProjects/ShapesIcon.icns			\
-  PBProjects/SoundsIcon.icns		\
-  PBProjects/AlephOne.icns				\
-  PBProjects/config.h PBProjects/confpaths.h	\
-  data/AlephSansMono-Bold.ttf data/AlephSansMonoLicense.txt		\
-  data/ProFontAO.ttf data/ProFontAOLicense.txt		\
-  docs/alephone.6 examples/lua/Cheats.lua THANKS README.md		\
-  data/powered-by-alephone.svg						\
-  PBProjects/Info-AlephOne-Xcode4.plist\
-	PBProjects/AppStore/Marathon/Info.plist \
-	PBProjects/AppStore/Marathon/Marathon.icns \
-	PBProjects/AppStore/Marathon/en.lproj/InfoPlist.strings \
-  flatpak/alephone.desktop flatpak/alephone.png flatpak/marathon2.desktop	  \
-  flatpak/marathon2.png flatpak/marathon.desktop							  \
-  flatpak/marathon-infinity.desktop flatpak/marathon-infinity.png			  \
-  flatpak/marathon.png flatpak/org.bungie.source.AlephOne.yml				  \
-  flatpak/org.bungie.source.Marathon2.yml									  \
-  flatpak/org.bungie.source.MarathonInfinity.yml							  \
-  flatpak/org.bungie.source.Marathon.yml flatpak/run-nodata.sh flatpak/run.sh \
-  flatpak/shared/alephone.yml flatpak/shared/boost.yml flatpak/shared/glu.yml \
-  flatpak/shared/miniupnpc.yml flatpak/shared/zzip.yml						  \
-  flatpak/shared/asio.yml flatpak/shared/ebml.yml flatpak/shared/matroska.yml \
-  flatpak/shared/libyuv.yml
+# EES: TODO: This is fragile. Better to use a list of known directories and
+# consistent file names so this manifest can be built automatically using grep:
+EXTRA_DIST = \
+	data/AlephSansMono-Bold.ttf                                                 \
+	data/AlephSansMonoLicense.txt                                               \
+	data/powered-by-alephone.svg                                                \
+	data/ProFontAO.ttf                                                          \
+	data/ProFontAOLicense.txt                                                   \
+	docs/alephone.6                                                             \
+	docs/Lua_HUD.html                                                           \
+	docs/Lua.html                                                               \
+	docs/MML.html                                                               \
+	docs/README.txt                                                             \
+	examples/lua/Cheats.lua                                                     \
+	flatpak/alephone.desktop                                                    \
+	flatpak/alephone.png                                                        \
+	flatpak/marathon-infinity.desktop                                           \
+	flatpak/marathon-infinity.png                                               \
+	flatpak/marathon.desktop                                                    \
+	flatpak/marathon.png                                                        \
+	flatpak/marathon2.desktop                                                   \
+	flatpak/marathon2.png                                                       \
+	flatpak/org.bungie.source.AlephOne.yml                                      \
+	flatpak/org.bungie.source.Marathon.yml                                      \
+	flatpak/org.bungie.source.Marathon2.yml                                     \
+	flatpak/org.bungie.source.MarathonInfinity.yml                              \
+	flatpak/run-nodata.sh                                                       \
+	flatpak/run.sh                                                              \
+	flatpak/shared/alephone.yml                                                 \
+	flatpak/shared/asio.yml                                                     \
+	flatpak/shared/boost.yml                                                    \
+	flatpak/shared/ebml.yml                                                     \
+	flatpak/shared/glu.yml                                                      \
+	flatpak/shared/libyuv.yml                                                   \
+	flatpak/shared/matroska.yml                                                 \
+	flatpak/shared/miniupnpc.yml                                                \
+	flatpak/shared/zzip.yml                                                     \
+	README.md                                                                   \
+	Resources/Windows/alephone.ico                                              \
+	Resources/Windows/alephone.rc                                               \
+	Resources/Windows/marathon-infinity.ico                                     \
+	Resources/Windows/marathon-infinity.rc                                      \
+	Resources/Windows/marathon.ico                                              \
+	Resources/Windows/marathon.rc                                               \
+	Resources/Windows/marathon2.ico                                             \
+	Resources/Windows/marathon2.rc                                              \
+	THANKS                                                                      \
+	Xcode/AlephOne.xcodeproj/project.pbxproj                                    \
+	Xcode/App_Resources/AlephOne/AlephOne.icns                                  \
+	Xcode/App_Resources/AlephOne/en.lproj/InfoPlist.strings                     \
+	Xcode/App_Resources/AlephOne/Info.plist                                     \
+	Xcode/App_Resources/Marathon1/en.lproj/InfoPlist.strings                    \
+	Xcode/App_Resources/Marathon1/Info.plist                                    \
+	Xcode/App_Resources/Marathon1/Marathon.icns                                 \
+	Xcode/App_Resources/DataFileIcons/FilmIcon.icns                             \
+	Xcode/App_Resources/DataFileIcons/ImagesIcon.icns                           \
+	Xcode/App_Resources/DataFileIcons/MapIcon.icns                              \
+	Xcode/App_Resources/DataFileIcons/MMLIcon.icns                              \
+	Xcode/App_Resources/DataFileIcons/MusakIcon.icns                            \
+	Xcode/App_Resources/DataFileIcons/PhysIcon.icns                             \
+	Xcode/App_Resources/DataFileIcons/SaveIcon.icns                             \
+	Xcode/App_Resources/DataFileIcons/ShapesIcon.icns                           \
+	Xcode/App_Resources/DataFileIcons/SoundsIcon.icns                           \
+	Xcode/build-macos-apps.sh                                                   \
+	Xcode/config.h                                                              \
+	Xcode/confpaths.h                                                   
 
 man_MANS = docs/alephone.6
 
+# EES: It's not clear why M2+M3 macOS assets are processed differently to M1:
+M2_RESOURCES_SRC="$(srcdir)/Xcode/App_Resources/Marathon2/"
+M2_RESOURCES_DIST="$(distdir)/Xcode/App_Resources/Marathon2/"
+
+M3_RESOURCES_SRC="$(srcdir)/Xcode/App_Resources/Marathon3/"
+M3_RESOURCES_DIST="$(distdir)/Xcode/App_Resources/Marathon3/"
+
 dist-hook: AlephOne.spec
 	cp AlephOne.spec $(distdir)
-	mkdir -p "$(distdir)/PBProjects/AppStore/Marathon 2/en.lproj"
-	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/Info.plist" "$(distdir)/PBProjects/AppStore/Marathon 2/"
-	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/Marathon 2.icns" "$(distdir)/PBProjects/AppStore/Marathon 2/"
-	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/en.lproj/InfoPlist.strings" "$(distdir)/PBProjects/AppStore/Marathon 2/en.lproj/"
-	mkdir -p "$(distdir)/PBProjects/AppStore/Marathon Infinity/en.lproj"
-	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/Info.plist" "$(distdir)/PBProjects/AppStore/Marathon Infinity/"
-	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/Marathon Infinity.icns" "$(distdir)/PBProjects/AppStore/Marathon Infinity/"
-	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/en.lproj/InfoPlist.strings" "$(distdir)/PBProjects/AppStore/Marathon Infinity/en.lproj/"
+	mkdir -p "$(M2_RESOURCES_DIST)/en.lproj"
+	cp "$(M2_RESOURCES_SRC)/Info.plist" "$(M2_RESOURCES_DIST)/"
+	cp "$(M2_RESOURCES_SRC)/Marathon 2.icns" "$(M2_RESOURCES_DIST)/"
+	cp "$(M2_RESOURCES_SRC)/en.lproj/InfoPlist.strings" "$(M2_RESOURCES_DIST)/en.lproj/"
+	mkdir -p "$(M3_RESOURCES_DIST)/en.lproj"
+	cp "$(M3_RESOURCES_SRC)/Info.plist" "$(M3_RESOURCES_DIST)/"
+	cp "$(M3_RESOURCES_SRC)/Marathon Infinity.icns" "$(M3_RESOURCES_DIST)/"
+	cp "$(M3_RESOURCES_SRC)/en.lproj/InfoPlist.strings" "$(M3_RESOURCES_DIST)/en.lproj/"
 
 
 release: dist windist

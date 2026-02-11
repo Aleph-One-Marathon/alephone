@@ -1,3 +1,5 @@
+//  A workaround for GPL software that wants to use the Steamworks SDK. See Steam/README.txt
+
 #ifndef _INCL_STEAMSHIM_CHILD_H_
 #define _INCL_STEAMSHIM_CHILD_H_
 

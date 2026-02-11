@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>A1_PREFER_APP_NAME_TO_BUNDLE_ID</key>
+	<true/>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>${PRODUCT_NAME} uses the local network to discover multiplayer games.</string>
 	<key>CFBundleDevelopmentRegion</key>
@@ -272,7 +274,7 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>Classic Marathon Infinity</string>
+	<string>Classic Marathon Infinity Steam</string>
 	<key>CFBundleIconFile</key>
 	<string>Marathon Infinity.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -280,7 +282,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Marathon Infinity</string>
+	<string>Classic Marathon Infinity Steam</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

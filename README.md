@@ -42,7 +42,7 @@ Download, bootstrap, and install vcpkg:
 
 `cd` into Aleph One's vcpkg subdirectory and use the `install-arm-osx.sh` and `install-x64-osx.sh` scripts to install macOS dependencies for arm64 and x64.
 
-You should now be able to open `PBProjects/AlephOne.xcodeproj` in Xcode and build Aleph One.
+You should now be able to open `Xcode/AlephOne.xcodeproj` in Xcode and build Aleph One.
 
 ## Windows
 

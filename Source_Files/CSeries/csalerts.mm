@@ -38,7 +38,6 @@ void system_alert_user(const char* message, short severity)
 	}
 	[alert setInformativeText: [NSString stringWithUTF8String: message]];
 	[alert runModal];
-	[alert release];
 }
 
 bool system_alert_choose_scenario(char *chosen_dir)
