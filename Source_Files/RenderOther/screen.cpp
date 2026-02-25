@@ -516,6 +516,11 @@ void Screen::bound_screen_to_rect(SDL_Rect &r, bool in_game)
 		int virh = in_game ? window_height() : 480;
 		
 		float vscale = MIN(pixw / static_cast<float>(virw), pixh / static_cast<float>(virh));
+		
+		if (!in_game && screen_mode.ui_scale_level == 1) {
+			vscale = MAX(floorf(vscale), 2.0f);
+		}
+		
 		int vpw = static_cast<int>(r.w * vscale + 0.5f);
 		int vph = static_cast<int>(r.h * vscale + 0.5f);
 		int vpx = static_cast<int>(pixw/2.0f - (virw * vscale)/2.0f + (r.x * vscale) + 0.5f);
@@ -564,7 +569,19 @@ void Screen::window_to_screen(int &x, int &y)
 		float wina = winw / static_cast<float>(winh);
 		float vira = virw / static_cast<float>(virh);
 
-		if (wina >= vira)
+		if (screen_mode.ui_scale_level == 1)
+		{
+			float scale = MAX(MIN(
+					floorf(winh / static_cast<float>(virh)),
+					floorf(winw / static_cast<float>(virw))
+				), 2.0f);
+
+			x -= (winw - (virw * scale))/2;
+			y -= (winh - (virh * scale))/2;
+			x /= scale;
+			y /= scale;
+		}
+		else if (wina >= vira)
 		{
 			float scale = winh / static_cast<float>(virh);
 			x -= (winw - (virw * scale))/2;
@@ -846,7 +863,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	
 	int sdl_width = (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) ? 0 : vmode_width;
 	int sdl_height = (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) ? 0 : vmode_height;
-	if (force_menu)
+	if (force_menu && screen_mode.ui_scale_level == 0)
 	{
 		vmode_width = 640;
 		vmode_height = 480;
@@ -1123,7 +1140,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 #endif
 	}
 #endif
-	
+
 	if (in_game && (screen_mode.hud && (prev_width != main_surface->w || prev_height != main_surface->h)) || force_resize_hud)
 	{
 		L_Call_HUDResize();
@@ -1167,7 +1184,7 @@ void change_screen_mode(struct screen_mode_data *mode, bool redraw, bool resize_
 	if (redraw) {
 		short w = std::max(mode->width, static_cast<short>(640));
 		short h = std::max(mode->height, static_cast<short>(480));
-		if (!in_game)
+		if (!in_game && mode->ui_scale_level == 0)
 		{
 			w = 640;
 			h = 480;
@@ -1188,7 +1205,7 @@ void change_screen_mode(short screentype)
 	
 	short w = std::max(mode->width, static_cast<short>(640));
 	short h = std::max(mode->height, static_cast<short>(480));
-	if (screentype == _screentype_menu)
+	if (screentype == _screentype_menu && mode->ui_scale_level == 0)
 	{
 		w = 640;
 		h = 480;
@@ -2103,6 +2120,9 @@ void draw_intro_screen(void)
 		}
 		OGL_Blitter::BoundScreen();
 		OGL_ClearScreen();
+		Intro_Blitter.nearFilter = (screen_mode.ui_scale_level == 1)
+			? GL_NEAREST
+			: GL_LINEAR;
 		Intro_Blitter.Draw(dst_rect);
 		
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
