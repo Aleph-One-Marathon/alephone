@@ -1034,6 +1034,10 @@ static const char *bobbing_view_labels[] = {
 	"None", "Default", "Weapon Only", NULL
 };
 
+static const char* ui_scale_labels[] = {
+"Normal", "Double", "Largest", NULL
+};
+
 static const char* hud_scale_labels[] = {
 "Normal", "Double", "Largest", NULL
 };
@@ -1279,6 +1283,12 @@ static void graphics_dialog(void *arg)
 	table->dual_add(fullscreen_w->label("Windowed Mode"), d);
 	table->dual_add(fullscreen_w, d);
 
+	w_select_popup *ui_scale_w = new w_select_popup();
+	ui_scale_w->set_labels(build_stringvector_from_cstring_array(ui_scale_labels));
+	ui_scale_w->set_selection(graphics_preferences->screen_mode.ui_scale_level);
+	table->dual_add(ui_scale_w->label("Interface Size"), d);
+	table->dual_add(ui_scale_w, d);
+
 	w_toggle *high_dpi_w = NULL;
 	high_dpi_w = new w_toggle(graphics_preferences->screen_mode.high_dpi);
 #if (defined(__APPLE__) && defined(__MACH__))
@@ -1495,7 +1505,14 @@ static void graphics_dialog(void *arg)
 			
 			changed = true;
 		}
-	    
+
+		short ui_scale = static_cast<short>(ui_scale_w->get_selection());
+		if (ui_scale != graphics_preferences->screen_mode.ui_scale_level)
+		{
+			graphics_preferences->screen_mode.ui_scale_level = ui_scale;
+			changed = true;
+    }
+
 	    short hud_scale = static_cast<short>(hud_scale_w->get_selection());
 	    if (hud_scale != graphics_preferences->screen_mode.hud_scale_level)
 	    {
@@ -3622,6 +3639,7 @@ InfoTree graphics_preferences_tree()
 	root.put_attr("scmode_auto_resolution", graphics_preferences->screen_mode.auto_resolution);
 	root.put_attr("scmode_high_dpi", graphics_preferences->screen_mode.high_dpi);
 	root.put_attr("scmode_hud", graphics_preferences->screen_mode.hud);
+	root.put_attr("scmode_ui_scale", graphics_preferences->screen_mode.ui_scale_level);
 	root.put_attr("scmode_hud_scale", graphics_preferences->screen_mode.hud_scale_level);
 	root.put_attr("scmode_term_scale", graphics_preferences->screen_mode.term_scale_level);
 	root.put_attr("scmode_translucent_map", graphics_preferences->screen_mode.translucent_map);
@@ -4131,6 +4149,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.auto_resolution = true;
 	preferences->screen_mode.high_dpi = true;
 	preferences->screen_mode.hud = true;
+	preferences->screen_mode.ui_scale_level = 0;
 	preferences->screen_mode.hud_scale_level = 0;
 	preferences->screen_mode.term_scale_level = 2;
 	preferences->screen_mode.translucent_map = false;
@@ -4600,6 +4619,7 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr("scmode_auto_resolution", graphics_preferences->screen_mode.auto_resolution);
 	root.read_attr("scmode_high_dpi", graphics_preferences->screen_mode.high_dpi);
 	root.read_attr("scmode_hud", graphics_preferences->screen_mode.hud);
+	root.read_attr("scmode_ui_scale", graphics_preferences->screen_mode.ui_scale_level);
 	root.read_attr("scmode_hud_scale", graphics_preferences->screen_mode.hud_scale_level);
 	root.read_attr("scmode_term_scale", graphics_preferences->screen_mode.term_scale_level);
 	root.read_attr("scmode_translucent_map", graphics_preferences->screen_mode.translucent_map);
