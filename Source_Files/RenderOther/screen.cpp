@@ -115,7 +115,6 @@ bool using_default_gamma = true;
 
 static bool PrevFullscreen = false;
 static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable size) display
-// static int prev_ui_scale = -1;
 
 static int failed_multisamples = 0;		// remember when GL multisample setting didn't succeed
 static bool passed_shader = false;      // remember when we passed Shader tests
@@ -802,7 +801,6 @@ static bool need_mode_change(int window_width, int window_height,
 	if (!screen_mode.fullscreen) {
 		int w, h;
 		SDL_GetWindowSize(main_screen, &w, &h);
-		// if (w != window_width || h != window_height || screen_mode.ui_scale_level != prev_ui_scale) {
 		if (w != window_width || h != window_height) {
 			SDL_SetWindowSize(main_screen, window_width, window_height);
 			SDL_SetWindowPosition(main_screen, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
@@ -1143,8 +1141,6 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	}
 #endif
 
-	// prev_ui_scale = screen_mode.ui_scale_level;
-	
 	if (in_game && (screen_mode.hud && (prev_width != main_surface->w || prev_height != main_surface->h)) || force_resize_hud)
 	{
 		L_Call_HUDResize();
