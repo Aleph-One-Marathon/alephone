@@ -1,3 +1,4 @@
+//  A workaround for GPL software that wants to use the Steamworks SDK. See Steam/README.txt
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN 1
