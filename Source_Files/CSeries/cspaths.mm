@@ -29,7 +29,7 @@ static std::string _add_app_name(std::string parent)
 {
     static std::string path = "";
     if (path.empty()) {
-        bool preferAppName = [[NSBundle.mainBundle.localizedInfoDictionary valueForKey: A1_PREFER_APP_NAME_TO_BUNDLE_ID] boolValue];
+        bool preferAppName = [[NSBundle.mainBundle.infoDictionary valueForKey: A1_PREFER_APP_NAME_TO_BUNDLE_ID] boolValue];
         path = parent + "/" + (preferAppName ? get_application_name() : "AlephOne");
     }
     return path;
@@ -39,7 +39,7 @@ static std::string _add_app_id(std::string parent)
 {
     static std::string path = "";
     if (path.empty()) {
-        bool preferAppName = [[NSBundle.mainBundle.localizedInfoDictionary valueForKey: A1_PREFER_APP_NAME_TO_BUNDLE_ID] boolValue];
+        bool preferAppName = [[NSBundle.mainBundle.infoDictionary valueForKey: A1_PREFER_APP_NAME_TO_BUNDLE_ID] boolValue];
         path = parent + "/" + (preferAppName ? get_application_name() : get_application_identifier());
     }
     return path;
