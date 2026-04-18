@@ -518,7 +518,7 @@ void Screen::bound_screen_to_rect(SDL_Rect &r, bool in_game)
 		float vscale = MIN(pixw / static_cast<float>(virw), pixh / static_cast<float>(virh));
 		
 		if (!in_game && screen_mode.ui_scale_level == 1) {
-			vscale = MAX(floorf(vscale), 2.0f);
+			vscale = MIN(floorf(vscale), 2.0f);
 		}
 		
 		int vpw = static_cast<int>(r.w * vscale + 0.5f);
@@ -571,7 +571,7 @@ void Screen::window_to_screen(int &x, int &y)
 
 		if (screen_mode.ui_scale_level == 1)
 		{
-			float scale = MAX(MIN(
+			float scale = MIN(MIN(
 					floorf(winh / static_cast<float>(virh)),
 					floorf(winw / static_cast<float>(virw))
 				), 2.0f);
