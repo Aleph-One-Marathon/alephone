@@ -118,18 +118,25 @@ bool SoundsPatch::load(BIStreamBE& stream)
 		{
 			return false;
 		}
-		
-		uint16_t source;
-		stream >> source;
+
+		// unknown what the next two bytes of zeroes are
+		stream.rdbuf()->pubseekoff(2, std::ios_base::cur);
 		
 		uint16_t index;
 		stream >> index;
 
+		uint16_t source = 0;
+		if (index >= 215)
+		{
+			source = 1;
+			index -= 215;
+		}
+
 		SoundDefinitionPatch patch;
 		if (patch.definition.Unpack(stream))
 		{
-			// Anvil shapes patches to have a redundant list of permutation
-			// sizes here
+			// Anvil shapes patches have a redundant list of permutation sizes
+			// here
 			for (auto i = 0; i < patch.definition.permutations; ++i)
 			{
 				uint32_t permutation_size;
