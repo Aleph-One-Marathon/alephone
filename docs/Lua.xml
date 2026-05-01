@@ -21,10 +21,12 @@
 
 	  <!ELEMENT subtable ((alias*),(description?),(length?),(index?),(call?),(function|subtable|variable|note)*)>
 	  <!ATTLIST subtable name CDATA #REQUIRED>
+	  <!ATTLIST subtable order CDATA #IMPLIED>
 	  <!ATTLIST subtable classname ID #REQUIRED>
 
 	  <!ELEMENT subtable-accessor ((alias?),(description?),(function|subtable|variable)*)>
 	  <!ATTLIST subtable-accessor name CDATA #REQUIRED>
+	  <!ATTLIST subtable-accessor order CDATA #IMPLIED>
 	  <!ATTLIST subtable-accessor classname ID #REQUIRED>
 	  <!ATTLIST subtable-accessor index CDATA #REQUIRED>
 
@@ -36,10 +38,12 @@
 	  <!ELEMENT function ((description?),(argument*),(return*),(note*))>
 	  <!ATTLIST function name CDATA #REQUIRED>
 	  <!ATTLIST function access (local-player|all) 'all'>
+	  <!ATTLIST function order CDATA #IMPLIED>
 	  <!ATTLIST function return (single|variant) 'single'>
 
 	  <!ELEMENT function-variable ((description?),(argument),(type))>
 	  <!ATTLIST function-variable name CDATA #REQUIRED>
+	  <!ATTLIST function-variable order CDATA #IMPLIED>
 	  <!ATTLIST function-variable classname CDATA #IMPLIED>
 
 	  <!ELEMENT argument (description?,type)>
@@ -50,15 +54,18 @@
 
 	  <!ELEMENT variable ((alias*), (description?),(type),(note*))>
 	  <!ATTLIST variable name CDATA #REQUIRED>
+	  <!ATTLIST variable order CDATA #IMPLIED>
 	  <!ATTLIST variable access (read-only|read-write|local-player|write-only) "read-write">
 	  <!ATTLIST variable version CDATA #IMPLIED>
 
 	  <!ELEMENT accessor ((description?),(length?),(index?),(call?),(function)*)>
 	  <!ATTLIST accessor name ID #REQUIRED>
+	  <!ATTLIST accessor order CDATA #IMPLIED>
 	  <!ATTLIST accessor contains IDREF #REQUIRED>
 
 	  <!ELEMENT enum-accessor ((description?),(length?),(index?),(call?))>
 	  <!ATTLIST enum-accessor name ID #REQUIRED>
+	  <!ATTLIST enum-accessor order CDATA #IMPLIED>
 	  <!ATTLIST enum-accessor contains IDREF #REQUIRED>
 	  <!ATTLIST enum-accessor nice-name CDATA #IMPLIED>
 	  
@@ -1148,6 +1155,8 @@ end
     <table name="music">
 	  <function name="play" version="20231125">
 		<description>plays the music</description>
+		<argument name="segment" required="false"><type>music_segment</type></argument>
+		<note>for tracks containing multiple segments, an optional starting segment can be provided</note>
 		<note>if the music was stopped, restarts it</note>
 	  </function>
 	  <function name="stop" version="20231125">
@@ -1158,9 +1167,22 @@ end
 		<argument name="volume"><type>number</type></argument>
 		<argument name="duration" required="false"><type>seconds</type></argument>
 		<argument name="stop_after_fade" required="false"><type>boolean</type></argument>
+		<argument name="fade_type" required="false"><type>music_fade_type</type></argument>
 		<note>it will fade in until volume is reached. volume is decimal [0 - 1]</note>
 		<note>duration unit is seconds and is 1 if not specified</note>
 		<note>stop_after_fade is disabled by default, if set to true if the volume reaches 0 while fading the music will automatically stop</note>
+		<note>fade_type is the fading function, see MusicFadeTypes for values, default is linear</note>
+	  </function>
+	  <function name="add_track" version="git">
+		<description>adds an audio track used to create music segments</description>
+		<argument name="track" required="true"><type>string</type></argument>
+		<return><type>number</type></return>
+		<note>returns a unique identifier for the track, usable to create segments</note>
+	  </function>
+	  <function name="request_sequence_transition" version="git">
+		<description>requests a transition from the currently playing sequence to the specified one</description>
+		<argument name="sequence" required="true"><type>music_sequence</type></argument>
+		<note>the transition will happen at the end of the currently playing segment and as long as a segment transition is configured between it and one from the requested sequence</note>
 	  </function>
 	  <variable name="volume" version="20231125">
 		<description>the volume of the music</description>
@@ -1171,6 +1193,39 @@ end
 		<description>returns true if the music is still playing</description>
 		<type>boolean</type>
 	  </variable>
+	  <subtable name="sequences" classname="music_sequences" version="git">
+		  <function name="new">
+			<description>creates a new empty sequence for the music channel and returns it</description>
+			<return><type>music_sequence</type></return>
+			<note>sequences can be seen as a set of segments configured to play in a specific order composing a track</note>
+			<note>sequences must be created and configured before the music channel starts playing otherwise they  will not be applied unless the music is stopped and restarted</note>
+		  </function>
+		  <subtable name="segments" classname="music_segments">
+		    <function name="new" order="1">
+				<description>creates a new music segment with the specified track, adds it to the sequence and returns it</description>
+				<argument name="track_identifier" required="true"><type>number</type></argument>
+				<return><type>music_segment</type></return>
+				<note>track_identifier is the unique identifier returned by the music add_track function</note>
+				<note>this function can be called multiple times with the same track identifier if multiple segments from the same track file are required</note>
+				<note>the order in which segments are created has no influence on the order in which they are played, see the add_transition function for that</note>
+		    </function>
+		    <function name="add_transition" order="2">
+				<description>specifies the next segment to play once the current one has finished and configures the transition</description>
+				<argument name="segment" required="true"><type>music_segment</type></argument>
+				<argument name="fade_out_type" required="false"><type>music_fade_type</type></argument>
+				<argument name="fade_out_duration" required="false"><type>seconds</type></argument>
+				<argument name="fade_in_type" required="false"><type>music_fade_type</type></argument>
+				<argument name="fade_in_duration" required="false"><type>seconds</type></argument>
+				<argument name="cross_fade" required="false"><type>boolean</type></argument>
+				<note>see MusicFadeTypes for the available fading functions, the default is none which means a seamless transition</note>
+				<note>the fades duration unit is seconds and is 0 if not specified</note>
+				<note>cross_fade is a boolean flag set to false if not specified</note>
+				<note>segment transitions across different sequences must also be configured to allow sequence transitions</note>
+				<note>the entire segment ordering system is handled through this function, if a full track must loop, the last segment of a sequence must transition to the first one of the same sequence</note>
+				<note>transition configuration must be completed before the music channel starts playing otherwise it will not be applied unless the music is stopped and restarted</note>
+		    </function>
+		</subtable>
+    </subtable>
     </table>
     <table name="platform">
 	  <variable name="activates_adjacent_platforms_at_each_level" version="20210408">
@@ -2404,10 +2459,11 @@ end
       </call>
 	  <function name="new" version="20231125">
 		<description>returns a new music channel</description>
-		<argument name="track"><type>string</type></argument>
+		<argument name="track" required="false"><type>string</type></argument>
 		<argument name="volume" required="false"><type>number</type></argument>
 		<argument name="loop" required="false"><type>boolean</type></argument>
 		<return><type>music</type></return>
+		<note>the track file parameter should be omitted for segmented music and add_track should be used instead</note>
 		<note>volume is decimal [0 - 1] and is 1 if not specified</note>
 		<note>loop is enabled by default</note>
 	  </function>
@@ -2417,6 +2473,8 @@ end
       <function name="fade">
 		<description>fades out the currently playing track and clears the playlist</description>
 		<argument name="duration"><type>seconds</type></argument>
+		<argument name="fade_type" required="false"><type>music_fade_type</type></argument>
+		<note>fade_type is the fading function, see MusicFadeTypes for values, default is linear</note>
       </function>
       <function name="play">
 		<description>appends all of the specified tracks to the end of the playlist</description>
@@ -3438,6 +3496,13 @@ end
 		<mnemonic name="split"/>
       </mnemonics>
     </enum>
+	<enum name="music_fade_type">
+      <mnemonics>
+	    <mnemonic name="none"/>
+		<mnemonic name="linear"/>
+		<mnemonic name="sinusoidal"/>
+      </mnemonics>
+    </enum>
     <enum name="sound">
       <mnemonics>
 		<mnemonic name="startup"/>
@@ -3732,6 +3797,7 @@ end
     <enum-accessor name="SceneryTypes" contains="scenery_type" nice-name="Scenery"/>
     <enum-accessor name="ScoringModes" contains="scoring_mode" nice-name="Scoring Modes"/>
     <enum-accessor name="SideTypes" contains="side_type" nice-name="Side Types"/>
+	<enum-accessor name="MusicFadeTypes" contains="music_fade_type" nice-name="Music Fade Types"/>
     <enum-accessor name="Sounds" contains="sound" nice-name="Sounds"/>
     <enum-accessor name="TextureTypes" contains="texture_type" nice-name="Texture Types"/>
     <enum-accessor name="TransferModes" contains="transfer_mode" nice-name="Transfer Modes"/>
