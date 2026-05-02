@@ -1923,8 +1923,20 @@ static state_map::iterator _LoadLuaScript(const char* buffer,
 {
 	assert(script_type >= _embedded_lua_script && script_type <= _achievements_lua_script);
 
-	auto state = LuaStateFactory(script_type, write_access);
-	
+	auto it = states.end();
+	if (script_type == _embedded_lua_script)
+	{
+		it = states.find(script_type);
+	}
+
+	if (it == states.end())
+	{
+		auto state = LuaStateFactory(script_type, write_access);
+		state->Initialize();
+
+		it = states.emplace(std::make_pair(script_type, std::move(state)));
+	}
+
 	const char *desc = "level_script";
 	switch (script_type) {
 		case _embedded_lua_script:
@@ -1944,9 +1956,8 @@ static state_map::iterator _LoadLuaScript(const char* buffer,
 			break;
 	}
 
-	state->Initialize();
-	state->Load(buffer, len, desc);
-	return states.emplace(std::make_pair(script_type, std::move(state)));
+	it->second->Load(buffer, len, desc);
+	return it;
 }
 
 void LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
