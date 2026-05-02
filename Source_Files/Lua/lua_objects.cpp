@@ -903,11 +903,11 @@ int Lua_Objects_register(lua_State *L, const LuaMutabilityInterface& m)
 	Lua_Item::Register(L, Lua_Item_Get);		
 	if (m.world_mutable())
 	{
-		Lua_Item::Register(L, Lua_Item_Get_Mutable, Lua_Item_Set);
+		Lua_Item::RegisterAdditional(L, Lua_Item_Get_Mutable, Lua_Item_Set);
 	}
 	if (m.world_mutable() || m.sound_mutable())
 	{
-		Lua_Item::Register(L, Lua_Item_Get_Sound);
+		Lua_Item::RegisterAdditional(L, Lua_Item_Get_Sound);
 	}
 	Lua_Item::Valid = Lua_Item_Valid;
 
