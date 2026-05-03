@@ -84,6 +84,7 @@ struct screen_mode_data
 	bool auto_resolution;
 	bool high_dpi;
 	bool hud;
+	short ui_scale_level;
 	short hud_scale_level;
 	short term_scale_level;
 	bool fix_h_not_v;
