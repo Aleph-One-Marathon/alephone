@@ -703,7 +703,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         // Try a transition to resumed state
         if (mNextNativeState == NativeState.RESUMED) {
-            if (mSurface.mIsSurfaceReady && mHasFocus && mIsResumedCalled) {
+            // Aleph One VR (Quest): an immersive OpenXR app gets no SurfaceView Surface and no
+            // stable window focus, so the stock gate (mIsSurfaceReady && mHasFocus) never opens and
+            // SDL_main never starts. The engine owns its own pbuffer EGL context and presents via
+            // OpenXR (not the SurfaceView), so start the engine thread as soon as the activity is
+            // resumed. (This vendored SDLActivity is VR-only for this app.)
+            if (mIsResumedCalled) {
                 if (mSDLThread == null) {
                     // This is the entry point to the C app.
                     // Start up the C app thread and enable sensor input for the first time

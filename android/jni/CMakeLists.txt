@@ -78,12 +78,20 @@ list(FILTER A1_SOURCES EXCLUDE REGEX "network_dummy")
 
 add_library(main SHARED ${A1_SOURCES})
 
+# ---- OpenXR (Phase 2 VR) ----
+# Current official Khronos OpenXR loader for Android, delivered as a Prefab module by the
+# org.khronos.openxr:openxr_loader_for_android AAR (see app/build.gradle). Supplies the loader .so
+# (auto-packaged) + headers via the imported target OpenXR::openxr_loader, and supports the current
+# Horizon OS runtime broker (the stale bundled loader did not). The VR backend is
+# Source_Files/RenderMain/vr_openxr.cpp.
+find_package(OpenXR REQUIRED CONFIG)   # prefab package is "OpenXR"; target OpenXR::openxr_loader
+
 target_include_directories(main PRIVATE
     ${SRC} ${SRC}/CSeries ${SRC}/Files ${SRC}/GameWorld ${SRC}/Input
     ${SRC}/Lua ${SRC}/Misc ${SRC}/ModelView ${SRC}/Network
     ${SRC}/Network/Metaserver ${SRC}/RenderMain ${SRC}/RenderOther
     ${SRC}/Sound ${SRC}/TCPMess ${SRC}/Videos ${SRC}/XML
-    ${A1_ROOT}/android   # for a generated Android config.h
+    ${A1_ROOT}/android            # for a generated Android config.h
 )
 
 # Static triplet: prefer the -static targets, fall back to the alias if present.
@@ -94,6 +102,7 @@ target_link_libraries(main PRIVATE
     $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>
     Boost::filesystem Boost::system
     SndFile::sndfile OpenAL::OpenAL ZLIB::ZLIB
+    OpenXR::openxr_loader
     GLESv3 EGL android log
 )
 

@@ -40,6 +40,7 @@
 #include "preferences.h"
 #include "tags.h" /* for scenario file type.. */
 #include "mouse.h"
+#include "vr_openxr.h"
 #include "joystick.h"
 #include "screen_drawing.h"
 #include "computer_interface.h"
@@ -248,6 +249,17 @@ void initialize_application(void)
 	}
 #if defined(HAVE_SDL_IMAGE)
 	IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
+#endif
+#if defined(__ANDROID__)
+	// Phase 2 VR: create our headless GLES context first (QuestZDoom/TBXR order EGL before OpenXR),
+	// then bring up OpenXR (instance + system), retrying briefly in case the runtime isn't ready the
+	// instant the immersive activity starts. VR_IsActive() must be true before change_screen_mode so
+	// the VR render path is chosen.
+	VR_InitEGL();
+	for (int i = 0; i < 60; ++i) {
+		if (VR_InitOpenXR()) break;
+		SDL_Delay(50);
+	}
 #endif
 	// We only want text input events at specific times
 	SDL_StopTextInput();

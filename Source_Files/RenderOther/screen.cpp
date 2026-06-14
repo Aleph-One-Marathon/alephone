@@ -68,6 +68,7 @@
 #include "lua_script.h"
 #include "lua_hud_script.h"
 #include "HUDRenderer_Lua.h"
+#include "vr_openxr.h"
 #include "Movie.h"
 #include "shell_options.h"
 
@@ -862,7 +863,26 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		vmode_width = 640;
 		vmode_height = 480;
 	}
-	
+
+#if defined(__ANDROID__)
+	// VR (Quest immersive): there is no SurfaceView Surface, so SDL can't make a window GL context.
+	// Own a headless (pbuffer) GLES3 context instead and present via OpenXR. We keep main_screen
+	// NULL and skip all SDL window/GL creation below; the engine renders with our context and the
+	// stereo frame loop (VR_RenderTestFrame, called from MainScreenSwap) presents to the headset.
+	const bool vr_mode = VR_IsActive();
+	if (vr_mode)
+	{
+		VR_InitEGL();
+		int ew = 0, eh = 0;
+		if (!VR_GetEyeResolution(&ew, &eh)) { ew = 1280; eh = 1024; }
+		vmode_width = ew;
+		vmode_height = eh;
+		screen_mode.acceleration = graphics_preferences->screen_mode.acceleration = _opengl_acceleration;
+	}
+#else
+	const bool vr_mode = false;
+#endif
+
 //#ifdef HAVE_OPENGL
 //	if (!context_created && !nogl && screen_mode.acceleration != _no_acceleration) {
 //		SDL_GL_CreateContext(main_screen);
@@ -896,7 +916,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		}
 	}
 	
-	if (need_mode_change(sdl_width, sdl_height, vmode_width, vmode_height, depth, nogl)) {
+	if (!vr_mode && need_mode_change(sdl_width, sdl_height, vmode_width, vmode_height, depth, nogl)) {
 #ifdef HAVE_OPENGL
 	if (!nogl && screen_mode.acceleration != _no_acceleration) {
 		passed_shader = false;
@@ -2241,18 +2261,27 @@ int MainScreenLogicalHeight()
 }
 int MainScreenWindowWidth()
 {
+#if defined(__ANDROID__)
+	if (!main_screen) return main_surface ? main_surface->w : 0;   // VR: no SDL window
+#endif
 	int w = 0;
 	SDL_GetWindowSize(main_screen, &w, NULL);
 	return w;
 }
 int MainScreenWindowHeight()
 {
+#if defined(__ANDROID__)
+	if (!main_screen) return main_surface ? main_surface->h : 0;   // VR: no SDL window
+#endif
 	int h = 0;
 	SDL_GetWindowSize(main_screen, NULL, &h);
 	return h;
 }
 int MainScreenPixelWidth()
 {
+#if defined(__ANDROID__)
+	if (!main_screen) return main_surface ? main_surface->w : 0;   // VR: 1:1, no SDL window
+#endif
 	int w = 0;
 	int dummy = 0;				// SDL 2.24/Win crashes if you pass nullptr
 #ifdef HAVE_OPENGL
@@ -2265,6 +2294,9 @@ int MainScreenPixelWidth()
 }
 int MainScreenPixelHeight()
 {
+#if defined(__ANDROID__)
+	if (!main_screen) return main_surface ? main_surface->h : 0;   // VR: 1:1, no SDL window
+#endif
 	int h = 0;
 	int dummy = 0;				// SDL 2.24/Win crashes if you pass nullptr
 #ifdef HAVE_OPENGL
@@ -2281,10 +2313,20 @@ float MainScreenPixelScale()
 }
 bool MainScreenIsOpenGL()
 {
+#if defined(__ANDROID__)
+	if (VR_IsActive()) return true;   // VR: headless GLES context, no SDL window/renderer
+#endif
 	return (main_screen && !main_render);
 }
 void MainScreenSwap()
 {
+#if defined(__ANDROID__)
+	// Phase 2 VR: when OpenXR is active, present the stereo frame to the headset instead of the
+	// (unused) flat window. VR_RenderTestFrame drives the OpenXR session/frame loop and returns
+	// true once it has submitted a frame.
+	if (VR_IsActive() && VR_RenderTestFrame())
+		return;
+#endif
 	SDL_GL_SwapWindow(main_screen);
 }
 void MainScreenCenterMouse()

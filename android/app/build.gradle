@@ -53,6 +53,11 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+
+    // Consume the OpenXR loader AAR's native module (loader .so + headers) via Prefab.
+    buildFeatures {
+        prefab true
+    }
 }
 
 dependencies {
@@ -61,4 +66,8 @@ dependencies {
     //   implementation 'org.libsdl:SDL2:2.30.+'
     // For now we vendor SDLActivity.java and build SDL2 via vcpkg/CMake.
     // TODO: pin SDL2 delivery (aar vs source) once the first build runs.
+
+    // Official Khronos OpenXR loader for Android (current; supports the Horizon OS runtime broker).
+    // Replaces the stale bundled libopenxr_loader.so. Provides the loader .so + headers via Prefab.
+    implementation 'org.khronos.openxr:openxr_loader_for_android:1.1.60'
 }

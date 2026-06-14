@@ -28,4 +28,15 @@ public class AlephOneActivity extends SDLActivity {
         // Command-line args passed to Aleph One's main(). Point at on-device data here later.
         return new String[] {};
     }
+
+    /**
+     * Immersive VR (Phase 2): the OpenXR compositor — not the 2D SurfaceView — owns the display, so
+     * the activity window never holds stable focus. SDLActivity gates starting SDL_main (and
+     * pauses) on {@code mHasFocus}, so without this the engine thread never launches. Force
+     * "focused" so SDL starts and keeps running while OpenXR drives presentation.
+     */
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(true);
+    }
 }

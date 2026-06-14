@@ -6,22 +6,38 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
+    <!-- OpenXR (Phase 2 VR): let the loader discover the Meta runtime via the broker (Android 11+),
+         and advertise OpenXR usage. The com.oculus.* metadata marks this as a Quest VR app so the
+         Meta runtime will serve it (a non-VR app gets XR_ERROR_RUNTIME_UNAVAILABLE). -->
+    <queries>
+        <provider android:authorities="org.khronos.openxr.runtime_broker;org.khronos.openxr.system_runtime_broker" />
+    </queries>
+    <uses-feature android:name="android.hardware.vr.headtracking" android:version="1" android:required="true" />
+
     <application
         android:label="Aleph One"
         android:allowBackup="true"
         android:hardwareAccelerated="true">
+
+        <meta-data android:name="com.oculus.supportedDevices" android:value="quest|quest2|questpro|quest3" />
+        <meta-data android:name="com.oculus.ossplash" android:value="true" />
 
         <!-- Phase 0: a normal SDL2 landscape activity rendering mono to the screen.
              Phase 2 will swap to an OpenXR/TBXR-hosted activity for VR. -->
         <activity
             android:name="org.alephone.AlephOneActivity"
             android:label="Aleph One"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+            android:launchMode="singleTask"
+            android:resizeableActivity="false"
             android:screenOrientation="landscape"
-            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:configChanges="density|keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|uiMode"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <!-- Launch immersively on Quest (required for the Meta OpenXR runtime to serve us). -->
+                <category android:name="com.oculus.intent.category.VR" />
             </intent-filter>
         </activity>
     </application>
