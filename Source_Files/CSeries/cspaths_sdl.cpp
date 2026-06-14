@@ -162,6 +162,71 @@ std::string get_application_identifier()
 	return std::string("org.bungie.source.AlephOne");
 }
 
+#elif defined(__ANDROID__)
+
+// Android: use SDL's app-specific storage. Internal storage (private, always writable) holds
+// prefs/saves/logs/etc.; external app storage holds the scenario data (Map/Shapes/Sounds/Images)
+// so it can be dropped in via adb or a file manager: /sdcard/Android/data/<app>/files
+#include <SDL2/SDL.h>
+
+char get_path_list_separator()
+{
+	return ':';
+}
+
+static std::string _android_internal_path()
+{
+	const char* p = SDL_AndroidGetInternalStoragePath();
+	return p ? std::string(p) : std::string(".");
+}
+
+static std::string _android_external_path()
+{
+	if (SDL_AndroidGetExternalStorageState() != 0)
+	{
+		const char* p = SDL_AndroidGetExternalStoragePath();
+		if (p) return std::string(p);
+	}
+	return _android_internal_path();
+}
+
+std::string get_data_path(CSPathType type)
+{
+	switch (type) {
+		case kPathLocalData:
+		case kPathLogs:
+		case kPathPreferences:
+			return _android_internal_path();
+		case kPathDefaultData:
+			return _android_external_path();   // <- scenario data goes here
+		case kPathLegacyData:
+		case kPathBundleData:
+		case kPathLegacyPreferences:
+			return "";
+		case kPathScreenshots:
+			return _android_internal_path() + "/Screenshots";
+		case kPathSavedGames:
+			return _android_internal_path() + "/Saved Games";
+		case kPathQuickSaves:
+			return _android_internal_path() + "/Quick Saves";
+		case kPathImageCache:
+			return _android_internal_path() + "/Image Cache";
+		case kPathRecordings:
+			return _android_internal_path() + "/Recordings";
+	}
+	return "";
+}
+
+std::string get_application_name()
+{
+	return std::string(A1_DISPLAY_NAME);
+}
+
+std::string get_application_identifier()
+{
+	return std::string("org.bungie.source.AlephOne");
+}
+
 #else
 
 // Linux and compatible

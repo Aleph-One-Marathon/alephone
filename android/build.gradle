@@ -1,0 +1,6 @@
+// Root build file. See docs/ANDROID_BUILD.md
+// AGP 8.7.x is the last stable line supporting compileSdk 35 + a recent NDK; your
+// bleeding-edge Android Studio may offer to upgrade this on first sync — that's fine.
+plugins {
+    id 'com.android.application' version '8.7.2' apply false
+}

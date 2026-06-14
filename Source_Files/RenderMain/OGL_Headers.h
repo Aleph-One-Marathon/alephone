@@ -29,7 +29,22 @@
 
 #ifdef HAVE_OPENGL
 
-#ifdef __WIN32__
+#if defined(__ANDROID__)
+
+// OpenGL ES 3.x on Android (Meta Quest). No GLEW (ES needs no extension loader)
+// and no GLU (it does not exist on ES). Mirrors the headers TBXR/OpenXR uses.
+// NOTE: legacy fixed-function symbols (glBegin, the matrix stack, ARB multitexture,
+// GL_CLIP_PLANE*, glAlphaFunc, GL_QUADS/GL_POLYGON) do NOT exist here -- the shader
+// renderer must be modernized to programmable-pipeline GLES before it will link.
+// See docs/VR_PORT_PLAN.md (Phase 1).
+#include <GLES3/gl3.h>
+#include <GLES3/gl3ext.h>
+#include <GLES2/gl2ext.h>
+
+// Map the legacy renderer's ARB/EXT/fixed-function GL usage onto core GLES3.
+#include "gl_es_compat.h"
+
+#elif defined(__WIN32__)
 
 #define GLEW_STATIC 1
 #include <GL/glew.h>

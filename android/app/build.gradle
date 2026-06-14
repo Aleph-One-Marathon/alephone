@@ -1,0 +1,64 @@
+// Aleph One app module. See docs/ANDROID_BUILD.md
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'org.alephone'
+    compileSdk 35                          // gradle auto-downloads android-35 if missing
+    ndkVersion '30.0.14904198'             // matches the installed NDK
+
+    defaultConfig {
+        applicationId 'org.alephone'
+        minSdk 29                // Quest 2/3 (Android 10 / 12L)
+        targetSdk 35
+        versionCode 1
+        versionName '0.1-phase0'
+
+        ndk {
+            abiFilters 'arm64-v8a'   // Quest is arm64 only
+        }
+
+        externalNativeBuild {
+            cmake {
+                def vcpkgRoot = project.properties['VCPKG_ROOT'] ?: 'C:/Projects/vcpkg'
+                arguments = [
+                    // Consume the same deps as the desktop build, but for android.
+                    "-DCMAKE_TOOLCHAIN_FILE=${vcpkgRoot}/scripts/buildsystems/vcpkg.cmake",
+                    "-DVCPKG_TARGET_TRIPLET=arm64-android",
+                    "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${android.ndkDirectory}/build/cmake/android.toolchain.cmake",
+                    // Reuse the prebuilt deps in android/jni/vcpkg_installed; don't reinstall at configure.
+                    "-DVCPKG_INSTALLED_DIR=${projectDir}/../jni/vcpkg_installed",
+                    "-DVCPKG_MANIFEST_INSTALL=OFF",
+                    "-DANDROID_STL=c++_shared",
+                    "-DA1_SMOKE_TEST=OFF",   // build the real engine, not the smoke app
+                ]
+                cppFlags '-std=c++17'
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path '../jni/CMakeLists.txt'
+            // Omit a version pin so AGP uses its bundled CMake (3.22.1, auto-fetched);
+            // avoids fighting the very new CMake 4.1.2 you have installed.
+        }
+    }
+
+    buildTypes {
+        release { minifyEnabled false }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    // SDL2 provides SDLActivity + the native libSDL2.so.
+    // Easiest: depend on the official SDL Android aar once pinned, e.g.
+    //   implementation 'org.libsdl:SDL2:2.30.+'
+    // For now we vendor SDLActivity.java and build SDL2 via vcpkg/CMake.
+    // TODO: pin SDL2 delivery (aar vs source) once the first build runs.
+}

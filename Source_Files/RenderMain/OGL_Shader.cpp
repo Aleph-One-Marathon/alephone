@@ -359,7 +359,13 @@ void Shader::disable() {
 
 void Shader::unload() {
 	if(_programObj) {
+#if defined(__ANDROID__)
+		glDeleteProgram(_programObj);   // _programObj is a program; the ARB->core compat
+		                                // shim maps glDeleteObjectARB to glDeleteShader,
+		                                // which would be wrong for a program object.
+#else
 		glDeleteObjectARB(_programObj);
+#endif
 		_programObj = 0;
 		_loaded = false;
 	}

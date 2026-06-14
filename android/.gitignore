@@ -1,0 +1,14 @@
+# Gradle build cache and downloaded distribution
+.gradle/
+.gradle-dist/
+
+# Android/CMake build outputs
+app/build/
+app/.cxx/
+build/
+
+# vcpkg installed packages for Android/ARM (generated)
+jni/vcpkg_installed/
+
+# Machine-specific local SDK/NDK paths
+local.properties

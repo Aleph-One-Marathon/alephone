@@ -96,10 +96,15 @@ struct vertex2 : public vec4 {
 struct mat4 {
 
 	GLfloat _d[4][4];
-	
+
+#if !defined(__ANDROID__)
+	// Fixed-function matrix-stack helpers — no equivalent in OpenGL ES, and currently
+	// unused anywhere in the codebase. The programmable-pipeline (GLES) path uploads
+	// matrices as shader uniforms instead. Guarded out for Android; see VR_PORT_PLAN.md.
 	mat4(GLenum em) {
 		glGetFloatv(em, &(_d[0][0]) );
 	}
+#endif
 
 	vec4 operator *(const vec4& v) const {
 		return vec4(_d[0][0]*v[0] + _d[0][1]*v[1] + _d[0][1]*v[2] + _d[0][1]*v[3],
@@ -108,6 +113,7 @@ struct mat4 {
 					_d[3][0]*v[0] + _d[3][1]*v[1] + _d[3][1]*v[2] + _d[3][1]*v[3] );
 	}
 
+#if !defined(__ANDROID__)
 	void glSet(GLenum em) {
 		GLenum old;
 		glGetIntegerv(GL_MATRIX_MODE, (GLint*)&old);
@@ -116,6 +122,7 @@ struct mat4 {
 		glLoadMatrixf(&(_d[0][0]));
 		glMatrixMode(old);
 	}
+#endif
 };
 
 #endif

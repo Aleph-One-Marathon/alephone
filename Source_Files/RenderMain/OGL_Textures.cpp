@@ -1230,6 +1230,12 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 						 Collection != _collection_weapons_in_hand);
 	
 	if(load_as_sRGB) {
+#if defined(__ANDROID__)
+	  // GLES3 uses sized sRGB internalformats. The desktop bit-depth variants all collapse to
+	  // GL_RGB8/GL_RGBA8 via gl_es_compat.h, so we only distinguish RGB vs RGBA here.
+	  internalFormat = (internalFormat == GL_RGBA || internalFormat == GL_RGBA8)
+	                   ? GL_SRGB8_ALPHA8 : GL_SRGB8;
+#else
 	  switch(internalFormat) {
 	  case GL_RGB:
 	  case GL_R3_G3_B2:
@@ -1267,6 +1273,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 	    break;
 #endif
 	  }
+#endif // __ANDROID__
 	}
 
 	if (Image->GetFormat() == ImageDescriptor::RGBA8) {

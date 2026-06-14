@@ -1,0 +1,21 @@
+{
+   "name": "alephone-android",
+   "version-date": "2025-08-29",
+   "builtin-baseline": "49d19a16f0c6a637ba4c649e3ad6d0639cde466b",
+   "$comment": "Phase-0 subset of the desktop vcpkg.json for the arm64-android target. Excludes glew (windows), steamworks-sdk, nativefiledialog-extended, curl, zziplib, miniupnpc, libyuv, catch2, matroska, libvpx. Add deps here as they come online. See docs/ANDROID_BUILD.md.",
+   "dependencies": [
+      "boost-algorithm",
+      "boost-uuid",
+      "boost-property-tree",
+      { "name": "boost-iostreams", "default-features": false },
+      "boost-filesystem",
+      "boost-lockfree",
+      "boost-dll",
+      "asio",
+      "sdl2",
+      { "name": "sdl2-image", "features": [ "libjpeg-turbo" ] },
+      "sdl2-ttf",
+      "libsndfile",
+      "openal-soft"
+   ]
+}

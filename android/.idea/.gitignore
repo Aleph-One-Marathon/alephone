@@ -1,0 +1,8 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# IDE-generated caches and run state
+/caches/
+/deploymentTargetSelector.xml
+/migrations.xml
+/runConfigurations.xml

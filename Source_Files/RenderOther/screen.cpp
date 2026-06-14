@@ -890,6 +890,13 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	if (!nogl && screen_mode.acceleration != _no_acceleration) {
 		passed_shader = false;
 		flags |= SDL_WINDOW_OPENGL;
+#if defined(__ANDROID__)
+		// Android/Quest needs an explicit OpenGL ES 3 context; without this, SDL cannot
+		// create an SDL_WINDOW_OPENGL window and every attempt below fails.
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#endif
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
@@ -970,6 +977,11 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 #if defined (__WIN32__) && (HAVE_OPENGL)
 		glewInit();
 #endif
+#if defined(__ANDROID__)
+		// OpenGL ES 3 provides shaders as core functionality; the desktop ARB extension
+		// strings (GL_ARB_vertex_shader, ...) are not present, so skip that probe.
+		passed_shader = true;
+#else
 		if (!OGL_CheckExtension("GL_ARB_vertex_shader") || !OGL_CheckExtension("GL_ARB_fragment_shader") || !OGL_CheckExtension("GL_ARB_shader_objects") || !OGL_CheckExtension("GL_ARB_shading_language_100"))
 		{
 			logWarning("OpenGL (Shader) renderer is not available");
@@ -986,6 +998,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		{
 			passed_shader = true;
 		}
+#endif
 	}
 //#endif
 
