@@ -188,6 +188,71 @@ GLhandleARB parseShader(const GLcharARB* str, GLenum shaderType) {
 
 	std::vector<const GLcharARB*> source;
 
+#if defined(__ANDROID__)
+	// GLES 3 compatibility preamble. The legacy shaders are GLSL 1.10 and use fixed-function
+	// built-ins (gl_ModelViewProjectionMatrix, gl_Vertex, gl_TexCoord[], gl_Fog, ...) that don't
+	// exist in GLES. Rather than fork every shader, map those names to explicit uniforms/attributes
+	// that the draw-flush (gl_es_compat.cpp) supplies. Attribute locations match the flush:
+	//   0=vertex 1=texcoord0 2=texcoord1(tangent) 3=color 4=normal.
+	// #version must be the very first token, so this is pushed before everything else.
+	static const char* kVertPreamble =
+		"#version 300 es\n"
+		"precision highp float;\n"
+		"#define DISABLE_CLIP_VERTEX\n"
+		"#define attribute in\n"
+		"#define varying out\n"
+		"layout(location=0) in vec4 a1_Vertex;\n"
+		"layout(location=1) in vec4 a1_MultiTexCoord0;\n"
+		"layout(location=2) in vec4 a1_MultiTexCoord1;\n"
+		"layout(location=3) in vec4 a1_Color;\n"
+		"layout(location=4) in vec3 a1_Normal;\n"
+		"#define gl_Vertex a1_Vertex\n"
+		"#define gl_MultiTexCoord0 a1_MultiTexCoord0\n"
+		"#define gl_MultiTexCoord1 a1_MultiTexCoord1\n"
+		"#define gl_Color a1_Color\n"
+		"#define gl_Normal a1_Normal\n"
+		"uniform mat4 a1_MVP;\n"
+		"uniform mat4 a1_MV;\n"
+		"uniform mat4 a1_MVInverse;\n"
+		"uniform mat3 a1_NormalMatrix;\n"
+		"uniform mat4 a1_TextureMatrix[2];\n"
+		"#define gl_ModelViewProjectionMatrix a1_MVP\n"
+		"#define gl_ModelViewMatrix a1_MV\n"
+		"#define gl_ModelViewMatrixInverse a1_MVInverse\n"
+		"#define gl_NormalMatrix a1_NormalMatrix\n"
+		"#define gl_TextureMatrix a1_TextureMatrix\n"
+		"out vec4 a1_TexCoordV[2];\n"
+		"#define gl_TexCoord a1_TexCoordV\n";
+	static const char* kFragPreamble =
+		"#version 300 es\n"
+		"precision highp float;\n"
+		"precision highp sampler2D;\n"
+		"#define DISABLE_CLIP_VERTEX\n"
+		"#define varying in\n"
+		"#define texture2D texture\n"
+		"#define texture2DRect texture\n"
+		"#define sampler2DRect sampler2D\n"
+		// Some shaders define their own round() (GLSL 1.10 had none); GLES 3 has it built-in and
+		// forbids redefining it. Rename their helper (definition + calls) to dodge the clash.
+		"#define round a1round\n"
+		"in vec4 a1_TexCoordV[2];\n"
+		"#define gl_TexCoord a1_TexCoordV\n"
+		"struct a1_FogParameters { vec4 color; float density; float start; float end; };\n"
+		"uniform a1_FogParameters a1_Fog;\n"
+		"#define gl_Fog a1_Fog\n"
+		// gl_FragColor becomes a plain global the shader writes; a wrapper main() copies it to the
+		// real output and performs the fixed-function alpha test (discard) the engine asked for.
+		"vec4 a1_FragValue;\n"
+		"#define gl_FragColor a1_FragValue\n"
+		"out vec4 a1_FragColor_out;\n"
+		"uniform bool a1_AlphaTest;\n"
+		"uniform float a1_AlphaRef;\n"
+		"void a1_user_main(void);\n"
+		"void main(void) { a1_user_main(); if (a1_AlphaTest && a1_FragValue.a < a1_AlphaRef) discard; a1_FragColor_out = a1_FragValue; }\n"
+		"#define main a1_user_main\n";
+	source.push_back(shaderType == GL_FRAGMENT_SHADER ? kFragPreamble : kVertPreamble);
+#endif
+
         if (DisableClipVertex()) {
             source.push_back("#define DISABLE_CLIP_VERTEX\n");
         }

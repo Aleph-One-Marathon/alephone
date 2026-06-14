@@ -179,24 +179,32 @@ static inline void a1es_noop_polygonstipple(const GLubyte*) {}
 #define GL_MODULATE         0x2100
 #endif
 
-static inline void a1es_noop_alphafunc(GLenum, GLclampf) {}
 static inline void a1es_noop_clipplane(GLenum, const GLdouble*) {}
-static inline void a1es_noop_fogf(GLenum, GLfloat) {}
-static inline void a1es_noop_fogi(GLenum, GLint) {}
-static inline void a1es_noop_fogfv(GLenum, const GLfloat*) {}
 static inline void a1es_noop_texenvi(GLenum, GLenum, GLint) {}
 static inline void a1es_noop_texenvf(GLenum, GLenum, GLfloat) {}
 static inline void a1es_noop_pushattrib(GLbitfield) {}
 static inline void a1es_noop_popattrib(void) {}
-#define glAlphaFunc   a1es_noop_alphafunc
+#define glAlphaFunc   a1ffAlphaFunc
 #define glClipPlane   a1es_noop_clipplane
-#define glFogf        a1es_noop_fogf
-#define glFogi        a1es_noop_fogi
-#define glFogfv       a1es_noop_fogfv
 #define glTexEnvi     a1es_noop_texenvi
 #define glTexEnvf     a1es_noop_texenvf
 #define glPushAttrib  a1es_noop_pushattrib
 #define glPopAttrib   a1es_noop_popattrib
+
+/* Fog parameters are recorded (not no-op'd): the rewritten GLES shaders read them as the a1_Fog
+ * uniform that the draw-flush uploads. */
+#ifdef __cplusplus
+extern "C" {
+#endif
+void a1ffFogf(GLenum pname, GLfloat param);
+void a1ffFogi(GLenum pname, GLint param);
+void a1ffFogfv(GLenum pname, const GLfloat* params);
+#ifdef __cplusplus
+}
+#endif
+#define glFogf        a1ffFogf
+#define glFogi        a1ffFogi
+#define glFogfv       a1ffFogfv
 
 /* GL_TEXTURE_2D is a fixed-function enable in desktop GL; in GLES texturing is decided by the
  * bound shader. Track its state in the shim (consumed by the draw-flush) and never forward it to
@@ -205,6 +213,8 @@ static inline void a1es_noop_popattrib(void) {}
 extern "C" {
 #endif
 void a1ffSetTexture2D(GLboolean enabled);
+void a1ffSetAlphaTest(GLboolean enabled);
+void a1ffAlphaFunc(GLenum func, GLclampf ref);
 #ifdef __cplusplus
 }
 #endif
@@ -213,7 +223,7 @@ void a1ffSetTexture2D(GLboolean enabled);
  * GLES capabilities (GL_BLEND, GL_DEPTH_TEST, GL_CULL_FACE, ...) pass through unchanged. */
 static inline bool a1es_is_ff_cap(GLenum cap) {
     switch (cap) {
-        case GL_ALPHA_TEST: case GL_COLOR_LOGIC_OP: case GL_FOG:
+        case GL_COLOR_LOGIC_OP: case GL_FOG:
         case GL_TEXTURE_ENV: case GL_FRAMEBUFFER_SRGB_EXT:
         case GL_CLIP_PLANE0: case GL_CLIP_PLANE1: case GL_CLIP_PLANE2:
         case GL_CLIP_PLANE3: case GL_CLIP_PLANE4: case GL_CLIP_PLANE5:
@@ -222,8 +232,16 @@ static inline bool a1es_is_ff_cap(GLenum cap) {
             return false;
     }
 }
-static inline void a1es_enable(GLenum cap)  { if (cap == GL_TEXTURE_2D) { a1ffSetTexture2D(GL_TRUE);  return; } if (!a1es_is_ff_cap(cap)) glEnable(cap); }
-static inline void a1es_disable(GLenum cap) { if (cap == GL_TEXTURE_2D) { a1ffSetTexture2D(GL_FALSE); return; } if (!a1es_is_ff_cap(cap)) glDisable(cap); }
+static inline void a1es_enable(GLenum cap)  {
+    if (cap == GL_TEXTURE_2D) { a1ffSetTexture2D(GL_TRUE);  return; }
+    if (cap == GL_ALPHA_TEST) { a1ffSetAlphaTest(GL_TRUE);  return; }
+    if (!a1es_is_ff_cap(cap)) glEnable(cap);
+}
+static inline void a1es_disable(GLenum cap) {
+    if (cap == GL_TEXTURE_2D) { a1ffSetTexture2D(GL_FALSE); return; }
+    if (cap == GL_ALPHA_TEST) { a1ffSetAlphaTest(GL_FALSE); return; }
+    if (!a1es_is_ff_cap(cap)) glDisable(cap);
+}
 #define glEnable   a1es_enable
 #define glDisable  a1es_disable
 

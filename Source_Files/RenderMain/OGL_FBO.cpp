@@ -37,14 +37,29 @@ FBO::FBO(GLuint w, GLuint h, bool srgb) : _h(h), _w(w), _srgb(srgb) {
 	
 	glGenRenderbuffersEXT(1, &_depthBuffer);
 	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _depthBuffer);
+#if defined(__ANDROID__)
+	// GLES3 requires a sized depth format for renderbuffer storage (unsized GL_DEPTH_COMPONENT
+	// is invalid). 24-bit is universally supported.
+	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, _w, _h);
+#else
 	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, _w, _h);
+#endif
 	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, _depthBuffer);
-	
+
 	glGenTextures(1, &texID);
 	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
 	glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, srgb ? GL_SRGB : GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+#if defined(__ANDROID__)
+	// The FBO texture has no mipmaps, so the MIN filter must not be a mipmap filter or the
+	// texture is incomplete (samples black). Plain linear is correct for a full-res blit.
+	glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+#else
 	glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, TxtrTypeInfoList[OGL_Txtr_HUD].NearFilter);
 	glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, TxtrTypeInfoList[OGL_Txtr_HUD].FarFilter);
+#endif
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_RECTANGLE_ARB, texID, 0);
 	assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) == GL_FRAMEBUFFER_COMPLETE_EXT);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
@@ -88,7 +103,13 @@ void FBO::deactivate() {
 void FBO::draw() {
 	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
 	glEnable(GL_TEXTURE_RECTANGLE_ARB);
+#if defined(__ANDROID__)
+	// Rectangle textures are emulated with GL_TEXTURE_2D, which samples in normalized [0,1]
+	// coordinates (not pixels). V is flipped so the FBO image isn't upside-down.
+	OGL_RenderTexturedRect(0, 0, _w, _h, 0, 1, 1, 0);
+#else
 	OGL_RenderTexturedRect(0, 0, _w, _h, 0, _h, _w, 0);
+#endif
 	glDisable(GL_TEXTURE_RECTANGLE_ARB);
 }
 
