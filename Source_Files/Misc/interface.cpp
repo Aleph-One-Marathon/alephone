@@ -2583,6 +2583,11 @@ static bool begin_game(
 			break;
 			
 		case _single_player:
+#if defined(__ANDROID__)
+			// TEMP: the Quest has no keyboard to hold the modifier that triggers the level
+			// selector, so always offer it on New Game to allow testing arbitrary levels.
+			cheat = true;
+#endif
 			if(cheat)
 			{
 				entry.level_number= get_level_number_from_user();

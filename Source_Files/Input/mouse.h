@@ -46,4 +46,18 @@ void mouse_moved(int delta_x, int delta_y);
 #define AO_SCANCODE_MOUSESCROLL_UP 405    // stored as mouse button 6
 #define AO_SCANCODE_MOUSESCROLL_DOWN 406  // stored as mouse button 7
 
+#if defined(__ANDROID__)
+// Flat-panel Quest stopgap: the only input is one pointer + the trigger (mouse button 1). The
+// trigger is multiplexed by gesture instead of firing the weapon: hold = walk forward (drag to
+// look), quick tap = action (use), quick tap in the top-left corner = map toggle. Real 6DoF
+// controller input arrives with the OpenXR/TBXR layer in Phase 2.
+void android_pointer_down(int x, int y);
+void android_pointer_up(void);
+void android_pointer_move(int x, int y);
+bool android_input_walking(void);      // trigger held (past a short threshold) -> walk
+bool android_input_take_fire(void);    // consume a pending fire tap (main area)
+bool android_input_take_action(void);  // consume a pending action tap (top-right corner)
+bool android_input_take_map(void);     // consume a pending map-toggle tap (top-left corner)
+#endif
+
 #endif

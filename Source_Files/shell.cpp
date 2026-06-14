@@ -1349,6 +1349,59 @@ static void process_game_key(const SDL_Event &event)
 	}
 }
 
+#if defined(__ANDROID__)
+// --- Flat-panel Quest pointer-gesture input (declared in mouse.h) ---
+// One pointer + the trigger is all the 2D panel exposes. Multiplex the trigger by gesture so the
+// weapon never fires while walking/looking: hold = walk, quick tap = action, tap in top-left = map.
+static bool   s_aptr_down = false;
+static Uint32 s_aptr_t0 = 0;
+static int    s_aptr_x0 = 0, s_aptr_y0 = 0;
+static int    s_aptr_maxmove = 0;
+static int    s_aptr_fire_pending = 0;
+static int    s_aptr_action_pending = 0;
+static int    s_aptr_map_pending = 0;
+static Uint32 s_last_tap_time = 0;
+static int    s_tap_streak = 0;
+
+void android_pointer_down(int x, int y)
+{
+	s_aptr_down = true;
+	s_aptr_t0 = SDL_GetTicks();
+	s_aptr_x0 = x; s_aptr_y0 = y;
+	s_aptr_maxmove = 0;
+}
+void android_pointer_move(int x, int y)
+{
+	if (!s_aptr_down) return;
+	int dx = x - s_aptr_x0; if (dx < 0) dx = -dx;
+	int dy = y - s_aptr_y0; if (dy < 0) dy = -dy;
+	if (dx + dy > s_aptr_maxmove) s_aptr_maxmove = dx + dy;
+}
+void android_pointer_up(void)
+{
+	if (!s_aptr_down) return;
+	s_aptr_down = false;
+	const Uint32 now = SDL_GetTicks();
+	const Uint32 dur = now - s_aptr_t0;
+	if (dur >= 350)               // a hold (walk/look) release, not a tap
+		return;
+	// Tap-count gestures (position-independent, so turning the view doesn't change them):
+	//   single = fire, double = action/use, triple = map. Fire happens on every tap so it stays
+	//   instant; the extra shots from a double/triple are harmless for testing.
+	s_tap_streak = (now - s_last_tap_time < 600) ? s_tap_streak + 1 : 1;
+	s_last_tap_time = now;
+	logWarning("A1TAP dur=%u streak=%d", (unsigned)dur, s_tap_streak);
+	s_aptr_fire_pending = 3;
+	if (s_tap_streak == 2) s_aptr_action_pending = 3;
+	if (s_tap_streak >= 3) { s_aptr_map_pending = 1; s_tap_streak = 0; }
+}
+// Walk only after a short hold so a quick tap (fire/action/map) doesn't nudge the player forward.
+bool android_input_walking(void) { return s_aptr_down && (SDL_GetTicks() - s_aptr_t0) > 200; }
+bool android_input_take_fire(void)   { if (s_aptr_fire_pending   > 0) { --s_aptr_fire_pending;   return true; } return false; }
+bool android_input_take_action(void) { if (s_aptr_action_pending > 0) { --s_aptr_action_pending; return true; } return false; }
+bool android_input_take_map(void)    { if (s_aptr_map_pending    > 0) { --s_aptr_map_pending;    return true; } return false; }
+#endif
+
 static void process_event(const SDL_Event &event)
 {
 	switch (event.type) {
@@ -1356,6 +1409,9 @@ static void process_event(const SDL_Event &event)
 		if (get_game_state() == _game_in_progress)
 		{
 			mouse_moved(event.motion.xrel, event.motion.yrel);
+#if defined(__ANDROID__)
+			android_pointer_move(event.motion.x, event.motion.y);
+#endif
 		}
 		break;
 	case SDL_MOUSEWHEEL:
@@ -1370,7 +1426,7 @@ static void process_event(const SDL_Event &event)
 		}
 		break;
 	case SDL_MOUSEBUTTONDOWN:
-		if (get_game_state() == _game_in_progress) 
+		if (get_game_state() == _game_in_progress)
 		{
 			if (!get_keyboard_controller_status())
 			{
@@ -1378,18 +1434,31 @@ static void process_event(const SDL_Event &event)
 			}
 			else
 			{
+#if defined(__ANDROID__)
+				// Flat-panel Quest: the trigger drives gesture input (walk/action/map),
+				// not weapon fire. See android_pointer_* in mouse.h.
+				android_pointer_down(event.button.x, event.button.y);
+#else
 				SDL_Event e2;
 				memset(&e2, 0, sizeof(SDL_Event));
 				e2.type = SDL_KEYDOWN;
 				e2.key.keysym.sym = SDLK_UNKNOWN;
 				e2.key.keysym.scancode = (SDL_Scancode)(AO_SCANCODE_BASE_MOUSE_BUTTON + event.button.button - 1);
 				process_game_key(e2);
+#endif
 			}
 		}
 		else
 			process_screen_click(event);
 		break;
-	
+
+#if defined(__ANDROID__)
+	case SDL_MOUSEBUTTONUP:
+		if (get_game_state() == _game_in_progress && get_keyboard_controller_status())
+			android_pointer_up();
+		break;
+#endif
+
 	case SDL_CONTROLLERBUTTONDOWN:
 		if (get_game_state() == _game_in_progress && !get_keyboard_controller_status())
 		{
@@ -1414,7 +1483,7 @@ static void process_event(const SDL_Event &event)
 	case SDL_CONTROLLERAXISMOTION:
 		joystick_axis_moved(event.caxis.which, event.caxis.axis, event.caxis.value);
 		break;
-	
+
 	case SDL_JOYDEVICEADDED:
 		joystick_added(event.jdevice.which);
 		break;

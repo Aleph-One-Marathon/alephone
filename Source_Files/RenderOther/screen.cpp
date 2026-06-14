@@ -1351,24 +1351,6 @@ void render_screen(short ticks_elapsed)
 	ViewRect = Screen::instance()->view_rect();
 	MapRect = Screen::instance()->map_rect();
 	TermRect = Screen::instance()->term_rect();
-
-#if defined(__ANDROID__)
-	{
-		static bool logged_layout = false;
-		if (!logged_layout) {
-			logged_layout = true;
-			SDL_Rect hr = Screen::instance()->hud_rect();
-			logWarning("A1LAYOUT logical=%dx%d window=%dx%d pixel=%dx%d hud=%d view=(%d,%d %dx%d) hudrect=(%d,%d %dx%d) hud=%d luahud=%d",
-				Screen::instance()->width(), Screen::instance()->height(),
-				Screen::instance()->window_width(), Screen::instance()->window_height(),
-				MainScreenPixelWidth(), MainScreenPixelHeight(),
-				screen_mode.hud,
-				ViewRect.x, ViewRect.y, ViewRect.w, ViewRect.h,
-				hr.x, hr.y, hr.w, hr.h,
-				Screen::instance()->hud(), Screen::instance()->lua_hud());
-		}
-	}
-#endif
 	
 	static SDL_Rect PrevViewRect = { 0, 0, 0, 0 };
 	if (memcmp(&PrevViewRect, &ViewRect, sizeof(SDL_Rect)))

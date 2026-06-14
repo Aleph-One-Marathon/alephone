@@ -1254,6 +1254,21 @@ uint32 parse_keymap(void)
 					flags |= standard_key_definitions[i].action_flag;
 			}
 		}
+
+#if defined(__ANDROID__)
+		// Flat-panel Quest stopgap input: the 2D-panel environment only exposes a pointer + the
+		// trigger (mouse button 1) -- no thumbsticks/buttons reach the app. The trigger is
+		// multiplexed by gesture (see shell.cpp android_pointer_*), and never fires the weapon:
+		//   hold  = walk forward (pointer drag steers/looks)
+		//   tap   = action / use (terminals, switches, doors)
+		//   tap in the top-left corner = toggle map
+		// Real 6DoF controller movement arrives with the OpenXR/TBXR layer in Phase 2.
+		flags &= ~(_left_trigger_state | _right_trigger_state);   // trigger never auto-fires
+		if (android_input_walking())     flags |= _moving_forward;
+		if (android_input_take_fire())   flags |= _left_trigger_state;
+		if (android_input_take_action()) flags |= _action_trigger_state;
+		if (android_input_take_map())    flags |= _toggle_map;
+#endif
 		
       // Post-process the keymap
 		struct special_flag_data *special = special_flags;

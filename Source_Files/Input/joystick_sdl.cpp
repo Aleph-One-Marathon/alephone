@@ -55,8 +55,11 @@ void joystick_added(int device_index) {
 		SDL_Joystick *joystick = SDL_JoystickOpen(device_index);
 		char guidStr[255] = "";
 		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick), guidStr, 255);
-		logWarning("No mapping found for controller \"%s\" (%s)",
-				   SDL_JoystickName(joystick), guidStr);
+		logWarning("No mapping found for controller \"%s\" (%s) axes=%d buttons=%d hats=%d",
+				   SDL_JoystickName(joystick), guidStr,
+				   joystick ? SDL_JoystickNumAxes(joystick) : -1,
+				   joystick ? SDL_JoystickNumButtons(joystick) : -1,
+				   joystick ? SDL_JoystickNumHats(joystick) : -1);
 		return;
 	}
 	SDL_GameController *controller = SDL_GameControllerOpen(device_index);
