@@ -198,6 +198,17 @@ static inline void a1es_noop_popattrib(void) {}
 #define glPushAttrib  a1es_noop_pushattrib
 #define glPopAttrib   a1es_noop_popattrib
 
+/* GL_TEXTURE_2D is a fixed-function enable in desktop GL; in GLES texturing is decided by the
+ * bound shader. Track its state in the shim (consumed by the draw-flush) and never forward it to
+ * the GLES driver (which would raise GL_INVALID_ENUM). */
+#ifdef __cplusplus
+extern "C" {
+#endif
+void a1ffSetTexture2D(GLboolean enabled);
+#ifdef __cplusplus
+}
+#endif
+
 /* Wrap glEnable/glDisable so the fixed-function tokens above are silently ignored while real
  * GLES capabilities (GL_BLEND, GL_DEPTH_TEST, GL_CULL_FACE, ...) pass through unchanged. */
 static inline bool a1es_is_ff_cap(GLenum cap) {
@@ -211,8 +222,8 @@ static inline bool a1es_is_ff_cap(GLenum cap) {
             return false;
     }
 }
-static inline void a1es_enable(GLenum cap)  { if (!a1es_is_ff_cap(cap)) glEnable(cap); }
-static inline void a1es_disable(GLenum cap) { if (!a1es_is_ff_cap(cap)) glDisable(cap); }
+static inline void a1es_enable(GLenum cap)  { if (cap == GL_TEXTURE_2D) { a1ffSetTexture2D(GL_TRUE);  return; } if (!a1es_is_ff_cap(cap)) glEnable(cap); }
+static inline void a1es_disable(GLenum cap) { if (cap == GL_TEXTURE_2D) { a1ffSetTexture2D(GL_FALSE); return; } if (!a1es_is_ff_cap(cap)) glDisable(cap); }
 #define glEnable   a1es_enable
 #define glDisable  a1es_disable
 
@@ -381,6 +392,24 @@ void a1ffGetDoublev(GLenum pname, GLdouble* params);
 #define glMultiTexCoord4f        a1ffMultiTexCoord4f
 #define glMultiTexCoord4fARB     a1ffMultiTexCoord4f
 #define glGetDoublev             a1ffGetDoublev
+
+/* ---- Draw flush ----
+ * glDrawArrays/glDrawElements are intercepted so the recorded matrix stack, immediate colour and
+ * client arrays are turned into real GLES draws. When no shader program is bound (the 2D
+ * interface/blitter path, which relied on fixed-function), a built-in GLES program emulates it.
+ * glUseProgram is tracked so the flush can tell the FF path from the engine's own shaders. */
+#ifdef __cplusplus
+extern "C" {
+#endif
+void a1ffUseProgram(GLuint program);
+void a1ffDrawArrays(GLenum mode, GLint first, GLsizei count);
+void a1ffDrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices);
+#ifdef __cplusplus
+}
+#endif
+#define glUseProgram   a1ffUseProgram
+#define glDrawArrays   a1ffDrawArrays
+#define glDrawElements a1ffDrawElements
 
 /* Display lists don't exist in GLES (FontHandler). No-op for now; fonts will be reworked to
  * render textured quads in Phase 1b. */

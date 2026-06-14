@@ -550,6 +550,13 @@ bool OGL_StartRun()
 	    npotTextures = true;
 	}
 
+#if defined(__ANDROID__)
+	// OpenGL ES 3 provides framebuffer objects and NPOT textures as core functionality;
+	// the desktop ARB/EXT extension strings are not advertised, so probing them would
+	// wrongly disable these features (and the FBO check would abort the whole 3D renderer).
+	FBO_Allowed = true;
+	npotTextures = true;
+#else
 	FBO_Allowed = false;
 	if (!OGL_CheckExtension("GL_EXT_framebuffer_object"))
 	{
@@ -560,6 +567,7 @@ bool OGL_StartRun()
 	{
 		FBO_Allowed = true;
 	}
+#endif
 
 	Bloom_sRGB = false;
 	if (TEST_FLAG(graphics_preferences->OGL_Configure.Flags, OGL_Flag_Blur))

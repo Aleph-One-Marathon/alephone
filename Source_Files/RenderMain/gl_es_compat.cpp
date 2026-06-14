@@ -11,6 +11,7 @@
 #if defined(__ANDROID__)
 
 #include <GLES3/gl3.h>
+#include <android/log.h>
 #include <array>
 #include <vector>
 #include <cstring>
@@ -21,6 +22,12 @@
 #define A1_HAS_GLDOUBLE
 typedef double GLdouble;
 typedef double GLclampd;
+#endif
+
+/* GL_DOUBLE is absent from the GLES headers but appears as a client-array type (the world
+ * renderer submits GLdouble vertex/texcoord arrays); needed by the flush's type handling. */
+#ifndef GL_DOUBLE
+#define GL_DOUBLE 0x140A
 #endif
 
 namespace {
@@ -246,5 +253,216 @@ namespace a1ff {
     }
     void getTexMatrix(float* out16) { std::memcpy(out16, g_texture.top().data(), 16 * sizeof(float)); }
 }
+
+// ============================================================================
+//  Draw flush: turn the recorded fixed-function state into real GLES draws.
+//  When no engine shader is bound (the 2D interface / OGL_Blitter path), a tiny
+//  built-in program reproduces fixed-function textured/coloured drawing.
+// ============================================================================
+namespace {
+
+GLboolean g_texture2DEnabled = GL_FALSE;
+GLuint    g_currentProgram   = 0;
+
+GLuint g_vao = 0, g_vbo = 0, g_ibo = 0;
+GLuint g_builtinProg = 0;
+GLint  u_mvp = -1, u_texmat = -1, u_useTex = -1, u_useVColor = -1, u_color = -1, u_tex = -1;
+
+GLuint compileSh(GLenum type, const char* src) {
+    GLuint s = glCreateShader(type);
+    glShaderSource(s, 1, &src, nullptr);
+    glCompileShader(s);
+    GLint ok = 0;
+    glGetShaderiv(s, GL_COMPILE_STATUS, &ok);
+    if (!ok) {
+        char log[1024];
+        glGetShaderInfoLog(s, sizeof log, nullptr, log);
+        __android_log_print(ANDROID_LOG_ERROR, "A1FF", "builtin shader compile failed: %s", log);
+    }
+    return s;
+}
+
+void ensureBuiltin() {
+    if (g_builtinProg) return;
+
+    static const char* kVert =
+        "#version 300 es\n"
+        "layout(location=0) in vec4 aPos;\n"
+        "layout(location=1) in vec2 aTex0;\n"
+        "layout(location=3) in vec4 aColor;\n"
+        "uniform mat4 uMVP;\n"
+        "uniform mat4 uTexMat;\n"
+        "uniform int  uUseVColor;\n"
+        "uniform vec4 uColor;\n"
+        "out vec2 vTex;\n"
+        "out vec4 vColor;\n"
+        "void main() {\n"
+        "  gl_Position = uMVP * aPos;\n"
+        "  vTex   = (uTexMat * vec4(aTex0, 0.0, 1.0)).xy;\n"
+        "  vColor = (uUseVColor != 0) ? aColor : uColor;\n"
+        "}\n";
+    static const char* kFrag =
+        "#version 300 es\n"
+        "precision mediump float;\n"
+        "in vec2 vTex;\n"
+        "in vec4 vColor;\n"
+        "uniform int uUseTex;\n"
+        "uniform sampler2D uTex;\n"
+        "out vec4 fragColor;\n"
+        "void main() {\n"
+        "  vec4 c = vColor;\n"
+        "  if (uUseTex != 0) c *= texture(uTex, vTex);\n"
+        "  fragColor = c;\n"
+        "}\n";
+
+    GLuint v = compileSh(GL_VERTEX_SHADER, kVert);
+    GLuint f = compileSh(GL_FRAGMENT_SHADER, kFrag);
+    g_builtinProg = glCreateProgram();
+    glAttachShader(g_builtinProg, v);
+    glAttachShader(g_builtinProg, f);
+    glLinkProgram(g_builtinProg);
+    GLint linked = 0;
+    glGetProgramiv(g_builtinProg, GL_LINK_STATUS, &linked);
+    if (!linked) {
+        char log[1024];
+        glGetProgramInfoLog(g_builtinProg, sizeof log, nullptr, log);
+        __android_log_print(ANDROID_LOG_ERROR, "A1FF", "builtin program link failed: %s", log);
+    }
+    glDeleteShader(v);
+    glDeleteShader(f);
+
+    u_mvp       = glGetUniformLocation(g_builtinProg, "uMVP");
+    u_texmat    = glGetUniformLocation(g_builtinProg, "uTexMat");
+    u_useTex    = glGetUniformLocation(g_builtinProg, "uUseTex");
+    u_useVColor = glGetUniformLocation(g_builtinProg, "uUseVColor");
+    u_color     = glGetUniformLocation(g_builtinProg, "uColor");
+    u_tex       = glGetUniformLocation(g_builtinProg, "uTex");
+
+    glGenVertexArrays(1, &g_vao);
+    glGenBuffers(1, &g_vbo);
+    glGenBuffers(1, &g_ibo);
+}
+
+size_t typeSize(GLenum t) {
+    switch (t) {
+        case GL_DOUBLE:                       return 8;
+        case GL_FLOAT: case GL_INT: case GL_UNSIGNED_INT: return 4;
+        case GL_SHORT: case GL_UNSIGNED_SHORT:return 2;
+        case GL_BYTE:  case GL_UNSIGNED_BYTE: return 1;
+        default:                              return 4;
+    }
+}
+
+float readComp(const void* base, GLenum type, int i, bool normalize) {
+    switch (type) {
+        case GL_FLOAT:          return ((const float*)base)[i];
+        case GL_DOUBLE:         return (float)((const double*)base)[i];
+        case GL_INT:            return (float)((const int*)base)[i];
+        case GL_UNSIGNED_INT:   return (float)((const unsigned int*)base)[i];
+        case GL_SHORT:          { float v = ((const short*)base)[i];          return normalize ? v / 32767.0f : v; }
+        case GL_UNSIGNED_SHORT: { float v = ((const unsigned short*)base)[i]; return normalize ? v / 65535.0f : v; }
+        case GL_BYTE:           { float v = ((const signed char*)base)[i];    return normalize ? v / 127.0f   : v; }
+        case GL_UNSIGNED_BYTE:  { float v = ((const unsigned char*)base)[i];  return normalize ? v / 255.0f   : v; }
+        default:                return 0.0f;
+    }
+}
+
+// Append the attribute for a single (absolute) vertex index to buf; returns component count.
+int appendVertex(std::vector<float>& buf, const ClientArray& a, int vertexIndex, bool normalize) {
+    size_t stride = a.stride ? (size_t)a.stride : (size_t)a.size * typeSize(a.type);
+    const char* vp = (const char*)a.ptr + (size_t)vertexIndex * stride;
+    for (int j = 0; j < a.size; ++j) buf.push_back(readComp(vp, a.type, j, normalize));
+    return a.size;
+}
+
+// Core flush: gather attributes for the given absolute vertex indices and draw.
+void flushIndexed(GLenum mode, const std::vector<int>& verts) {
+    if (!g_vertexArray.enabled || verts.empty()) return;
+    ensureBuiltin();
+
+    const bool useTex    = (g_texture2DEnabled && g_texCoordArray[0].enabled && g_texCoordArray[0].ptr);
+    const bool useVColor = (g_colorArray.enabled && g_colorArray.ptr);
+    const bool colNorm   = (g_colorArray.type != GL_FLOAT && g_colorArray.type != GL_DOUBLE);
+
+    std::vector<float> buf;
+    buf.reserve(verts.size() * 8);
+
+    int posComps = g_vertexArray.size;
+    size_t posOff = 0;
+    for (int v : verts) appendVertex(buf, g_vertexArray, v, false);
+
+    int texComps = 0;
+    size_t texOff = buf.size() * sizeof(float);
+    if (useTex) { texComps = g_texCoordArray[0].size; for (int v : verts) appendVertex(buf, g_texCoordArray[0], v, false); }
+
+    int colComps = 0;
+    size_t colOff = buf.size() * sizeof(float);
+    if (useVColor) { colComps = g_colorArray.size; for (int v : verts) appendVertex(buf, g_colorArray, v, colNorm); }
+
+    glBindVertexArray(g_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, g_vbo);
+    glBufferData(GL_ARRAY_BUFFER, buf.size() * sizeof(float), buf.data(), GL_STREAM_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, posComps, GL_FLOAT, GL_FALSE, 0, (const void*)posOff);
+
+    if (useTex) { glEnableVertexAttribArray(1); glVertexAttribPointer(1, texComps, GL_FLOAT, GL_FALSE, 0, (const void*)texOff); }
+    else        { glDisableVertexAttribArray(1); }
+
+    if (useVColor) { glEnableVertexAttribArray(3); glVertexAttribPointer(3, colComps, GL_FLOAT, GL_FALSE, 0, (const void*)colOff); }
+    else           { glDisableVertexAttribArray(3); }
+
+    // 2D / blitter path: no engine shader bound -> drive the built-in program.
+    if (g_currentProgram == 0) {
+        glUseProgram(g_builtinProg);
+        float mvp[16];
+        { Mat m = multiply(g_projection.top(), g_modelview.top()); std::memcpy(mvp, m.data(), sizeof mvp); }
+        glUniformMatrix4fv(u_mvp, 1, GL_FALSE, mvp);
+        glUniformMatrix4fv(u_texmat, 1, GL_FALSE, g_texture.top().data());
+        glUniform1i(u_useTex, useTex ? 1 : 0);
+        glUniform1i(u_useVColor, useVColor ? 1 : 0);
+        glUniform4fv(u_color, 1, g_color);
+        glUniform1i(u_tex, 0);
+    }
+
+    glDrawArrays(mode, 0, (GLsizei)verts.size());
+
+    if (g_currentProgram == 0) glUseProgram(0);
+}
+
+} // namespace
+
+extern "C" {
+
+void a1ffSetTexture2D(GLboolean enabled) { g_texture2DEnabled = enabled; }
+
+void a1ffUseProgram(GLuint program) { g_currentProgram = program; glUseProgram(program); }
+
+void a1ffDrawArrays(GLenum mode, GLint first, GLsizei count) {
+    if (count <= 0) return;
+    std::vector<int> verts;
+    verts.reserve(count);
+    for (GLsizei i = 0; i < count; ++i) verts.push_back(first + i);
+    flushIndexed(mode, verts);
+}
+
+void a1ffDrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices) {
+    if (count <= 0 || !indices) return;
+    std::vector<int> verts;
+    verts.reserve(count);
+    for (GLsizei i = 0; i < count; ++i) {
+        int idx = 0;
+        switch (type) {
+            case GL_UNSIGNED_BYTE:  idx = ((const unsigned char*)indices)[i];  break;
+            case GL_UNSIGNED_SHORT: idx = ((const unsigned short*)indices)[i]; break;
+            case GL_UNSIGNED_INT:   idx = (int)((const unsigned int*)indices)[i]; break;
+            default: return;
+        }
+        verts.push_back(idx);
+    }
+    flushIndexed(mode, verts);
+}
+
+} // extern "C"
 
 #endif /* __ANDROID__ */

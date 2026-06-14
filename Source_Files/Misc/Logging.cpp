@@ -48,7 +48,14 @@ static Logger*	sCurrentLogger	= NULL;
 static FILE*	sOutputFile	= NULL;
 static int	sLoggingThreshhold = logNoteLevel;	// log messages at or above this level will be squelched
 static bool	sShowLocations	= true;			// should filenames and line numbers be printed as well?
+#if defined(__ANDROID__)
+// On Android the process is routinely paused/killed (headset dismount, panel
+// backgrounding) without a clean shutdown, so buffered log output is lost. Flush
+// every write so the log on external storage is always current and observable.
+static bool	sFlushOutput	= true;
+#else
 static bool	sFlushOutput	= false;		// flush output after every log-write?  (good if crash expected)
+#endif
 const char*	logDomain	= "global";
 
 

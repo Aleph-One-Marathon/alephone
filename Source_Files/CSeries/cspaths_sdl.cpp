@@ -193,10 +193,14 @@ static std::string _android_external_path()
 std::string get_data_path(CSPathType type)
 {
 	switch (type) {
-		case kPathLocalData:
-		case kPathLogs:
 		case kPathPreferences:
 			return _android_internal_path();
+		// Logs/local data live on EXTERNAL app storage so they're reachable when the
+		// Quest is browsed as a USB disk: /sdcard/Android/data/org.alephone/files
+		// (internal storage is app-private and only reachable via `adb run-as`).
+		case kPathLocalData:
+		case kPathLogs:
+			return _android_external_path();
 		case kPathDefaultData:
 			return _android_external_path();   // <- scenario data goes here
 		case kPathLegacyData:
@@ -204,15 +208,15 @@ std::string get_data_path(CSPathType type)
 		case kPathLegacyPreferences:
 			return "";
 		case kPathScreenshots:
-			return _android_internal_path() + "/Screenshots";
+			return _android_external_path() + "/Screenshots";
 		case kPathSavedGames:
-			return _android_internal_path() + "/Saved Games";
+			return _android_external_path() + "/Saved Games";
 		case kPathQuickSaves:
-			return _android_internal_path() + "/Quick Saves";
+			return _android_external_path() + "/Quick Saves";
 		case kPathImageCache:
-			return _android_internal_path() + "/Image Cache";
+			return _android_external_path() + "/Image Cache";
 		case kPathRecordings:
-			return _android_internal_path() + "/Recordings";
+			return _android_external_path() + "/Recordings";
 	}
 	return "";
 }
