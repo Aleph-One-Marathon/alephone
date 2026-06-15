@@ -682,6 +682,16 @@ void enter_screen(void)
 	if (world_view->terminal_mode_active)
 		set_terminal_status(false);
 
+#if defined(__ANDROID__)
+	// VR: on entering a level, make the player face the level's intended start direction when the head
+	// is neutral (instead of wherever the headset happens to point), and zero the positional lean.
+	if (VR_IsActive())
+	{
+		VR_RequestYawRecenter(current_player->facing);
+		VR_RecenterHead();
+	}
+#endif
+
 	// Adding this view-effect resetting here since initialize_world_view() no longer resets it
 	world_view->effect = NONE;
 	
@@ -1307,22 +1317,38 @@ void update_world_view_camera()
 		VR_GetHeadOffset(&ox, &oy);
 		if (ox != 0.0f || oy != 0.0f)
 		{
-			world_point3d desired = world_view->origin;
-			desired.x += (world_distance)ox;
-			desired.y += (world_distance)oy;
+			world_point3d raw = world_view->origin;
+			raw.x += (world_distance)ox;
+			raw.y += (world_distance)oy;
+			// keep_line_segment_out_of_walls stops solid walls but clamps to the precomputed PLAYER-
+			// radius exclusion zones -> camera stops ~a full player radius from the wall (too far for a
+			// head peek). So clamp, then push the result back TOWARD the wall along the clamp direction
+			// so the camera sits ~half-player-radius from the wall instead of a full radius.
+			world_point3d clamped = raw;
 			world_distance fl, ce; short support = world_view->origin_polygon_index;
-			// slide the offset out of solid walls (keeps the camera ~1/8 WU from walls)
-			keep_line_segment_out_of_walls(world_view->origin_polygon_index, &world_view->origin, &desired,
-				WORLD_ONE, WORLD_ONE / 2, &fl, &ce, &support);
-			// track which polygon the clamped point lands in (through portals); NONE = blocked -> skip
-			short poly = find_new_object_polygon((world_point2d*)&world_view->origin,
-				(world_point2d*)&desired, world_view->origin_polygon_index);
-			if (poly != NONE)
+			keep_line_segment_out_of_walls(world_view->origin_polygon_index, &world_view->origin, &clamped,
+				WORLD_ONE, 0, &fl, &ce, &support);
+			world_point3d finalp = clamped;
+			const float px = (float)(raw.x - clamped.x), py = (float)(raw.y - clamped.y);
+			const float mag = std::sqrt(px * px + py * py);
+			if (mag > 1.0f)   // was clamped -> recover up to (playerRadius - cameraRadius) toward the wall
 			{
-				world_view->origin.x = desired.x;
-				world_view->origin.y = desired.y;
-				world_view->origin_polygon_index = poly;
+				const float reduce = (float)(WORLD_ONE / 4 - WORLD_ONE / 16); // camera ~1/16 WU from wall (closer)
+				const float mv = (mag < reduce) ? mag : reduce;
+				finalp.x += (world_distance)(px / mag * mv);
+				finalp.y += (world_distance)(py / mag * mv);
 			}
+			short poly = find_new_object_polygon((world_point2d*)&world_view->origin,
+				(world_point2d*)&finalp, world_view->origin_polygon_index);
+			if (poly == NONE)   // recovered point re-entered a wall (corner) -> fall back to safe clamp
+			{
+				finalp = clamped;
+				poly = find_new_object_polygon((world_point2d*)&world_view->origin,
+					(world_point2d*)&finalp, world_view->origin_polygon_index);
+			}
+			world_view->origin.x = finalp.x;
+			world_view->origin.y = finalp.y;
+			if (poly != NONE) world_view->origin_polygon_index = poly;
 		}
 	}
 #endif

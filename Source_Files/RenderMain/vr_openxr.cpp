@@ -484,6 +484,26 @@ namespace {
 	float s_yawOffset = 0.0f;
 	bool  s_turnArmed = true;   // snap-turn edge latch (re-armed when the stick recentres)
 	const float kAngleUnitsPerDeg = 512.0f / 360.0f;
+
+	// Yaw recenter request (set at level entry): make the player face `s_yawRecenterTarget` when the
+	// head is neutral, regardless of where the headset is pointing at spawn.
+	bool s_yawRecenterPending = false;
+	int  s_yawRecenterTarget  = 0;
+}
+
+extern "C" void VR_RequestYawRecenter(int facingAngleUnits)
+{
+	s_yawRecenterTarget = facingAngleUnits;
+	s_yawRecenterPending = true;
+}
+
+// If a yaw recenter is pending, return its target facing (angle units) and clear it; else false.
+extern "C" bool VR_TakeYawRecenter(int* targetAngleUnits)
+{
+	if (!s_yawRecenterPending) return false;
+	s_yawRecenterPending = false;
+	if (targetAngleUnits) *targetAngleUnits = s_yawRecenterTarget;
+	return true;
 }
 extern "C" vr_settings_t* VR_Settings(void) { return &s_settings; }
 
@@ -566,9 +586,12 @@ namespace {
 	XrActionSet s_actionSet  = XR_NULL_HANDLE;
 	XrAction    s_moveAction = XR_NULL_HANDLE, s_turnAction = XR_NULL_HANDLE;
 	XrAction    s_fireAction = XR_NULL_HANDLE, s_altFireAction = XR_NULL_HANDLE, s_actionAction = XR_NULL_HANDLE;
+	XrAction    s_bAction = XR_NULL_HANDLE, s_xAction = XR_NULL_HANDLE, s_yAction = XR_NULL_HANDLE;
 	bool        s_actionsReady = false;
 	float       s_moveX = 0, s_moveY = 0, s_turnX = 0;
 	bool        s_fire = false, s_altFire = false, s_action = false;
+	bool        s_bBtn = false, s_xBtn = false, s_yBtn = false;
+	bool        s_advancePrev = false;   // edge latch for cutscene-skip key injection
 
 	XrPath path(const char* s) { XrPath p = XR_NULL_PATH; xrStringToPath(s_instance, s, &p); return p; }
 
@@ -592,6 +615,9 @@ namespace {
 		mkAction("fire", XR_ACTION_TYPE_FLOAT_INPUT,    &s_fireAction);
 		mkAction("altfire", XR_ACTION_TYPE_FLOAT_INPUT, &s_altFireAction);
 		mkAction("use", XR_ACTION_TYPE_BOOLEAN_INPUT,   &s_actionAction);
+		mkAction("bbtn", XR_ACTION_TYPE_BOOLEAN_INPUT,  &s_bAction);
+		mkAction("xbtn", XR_ACTION_TYPE_BOOLEAN_INPUT,  &s_xAction);
+		mkAction("ybtn", XR_ACTION_TYPE_BOOLEAN_INPUT,  &s_yAction);
 
 		XrActionSuggestedBinding binds[] = {
 			{ s_moveAction,    path("/user/hand/left/input/thumbstick") },
@@ -599,6 +625,9 @@ namespace {
 			{ s_fireAction,    path("/user/hand/right/input/trigger/value") },
 			{ s_altFireAction, path("/user/hand/left/input/trigger/value") },
 			{ s_actionAction,  path("/user/hand/right/input/a/click") },
+			{ s_bAction,       path("/user/hand/right/input/b/click") },
+			{ s_xAction,       path("/user/hand/left/input/x/click") },
+			{ s_yAction,       path("/user/hand/left/input/y/click") },
 		};
 		XrInteractionProfileSuggestedBinding sb = { XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING };
 		sb.interactionProfile = path("/interaction_profiles/oculus/touch_controller");
@@ -634,6 +663,22 @@ namespace {
 		gi.action = s_altFireAction; xrGetActionStateFloat(s_session, &gi, &f); s_altFire = f.currentState > 0.5f;
 		XrActionStateBoolean b = { XR_TYPE_ACTION_STATE_BOOLEAN };
 		gi.action = s_actionAction;  xrGetActionStateBoolean(s_session, &gi, &b); s_action = b.currentState;
+		gi.action = s_bAction;       xrGetActionStateBoolean(s_session, &gi, &b); s_bBtn   = b.currentState;
+		gi.action = s_xAction;       xrGetActionStateBoolean(s_session, &gi, &b); s_xBtn   = b.currentState;
+		gi.action = s_yAction;       xrGetActionStateBoolean(s_session, &gi, &b); s_yBtn   = b.currentState;
+
+		// Cutscene/intro skip: A or X edge -> inject Enter so the chapter screens advance (terminals
+		// are handled via action flags in vbl.cpp). Lightweight stopgap until proper VR button mapping.
+		const bool advance = s_action || s_xBtn;
+		if (advance && !s_advancePrev) {
+			SDL_Event e{};
+			e.type = SDL_KEYDOWN; e.key.state = SDL_PRESSED;
+			e.key.keysym.sym = SDLK_RETURN; e.key.keysym.scancode = SDL_SCANCODE_RETURN;
+			SDL_PushEvent(&e);
+			e.type = SDL_KEYUP; e.key.state = SDL_RELEASED;
+			SDL_PushEvent(&e);
+		}
+		s_advancePrev = advance;
 	}
 }
 
@@ -886,6 +931,8 @@ extern "C" void VR_GetHeadOffset(float* wx, float* wy)
 extern "C" bool VR_GetFire(void)               { return s_fire; }
 extern "C" bool VR_GetSecondaryFire(void)      { return s_altFire; }
 extern "C" bool VR_GetAction(void)             { return s_action; }
+extern "C" bool VR_GetAdvance(void)            { return s_action || s_xBtn; }   // A or X
+extern "C" bool VR_GetBack(void)               { return s_yBtn || s_bBtn; }     // Y or B
 
 namespace { bool s_worldFramePresented = false; }
 extern "C" void VR_MarkWorldFramePresented(void) { s_worldFramePresented = true; }
@@ -1076,6 +1123,8 @@ extern "C" vr_settings_t* VR_Settings(void) {
 extern "C" float VR_GetYawOffset(void)   { return 0.0f; }
 extern "C" void  VR_UpdateTurn(float, float) {}
 extern "C" void  VR_SetYawOffset(float)  {}
+extern "C" void  VR_RequestYawRecenter(int) {}
+extern "C" bool  VR_TakeYawRecenter(int*) { return false; }
 extern "C" void  VR_DimCurrentEye(void)  {}
 extern "C" bool VR_RenderTestFrame(void){ return false; }
 extern "C" bool VR_InitEGL(void)        { return false; }
@@ -1091,6 +1140,8 @@ extern "C" void VR_GetHeadOffset(float* x, float* y) { if (x) *x = 0; if (y) *y 
 extern "C" bool VR_GetFire(void)               { return false; }
 extern "C" bool VR_GetSecondaryFire(void)      { return false; }
 extern "C" bool VR_GetAction(void)             { return false; }
+extern "C" bool VR_GetAdvance(void)            { return false; }
+extern "C" bool VR_GetBack(void)               { return false; }
 extern "C" bool VR_BeginFrame(void)     { return false; }
 extern "C" void VR_BeginEye(int)        {}
 extern "C" void VR_FinishEye(int)       {}

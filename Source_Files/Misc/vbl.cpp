@@ -1279,6 +1279,8 @@ uint32 parse_keymap(void)
 			if (VR_GetFire())          flags |= _left_trigger_state;
 			if (VR_GetSecondaryFire()) flags |= _right_trigger_state;
 			if (VR_GetAction())        flags |= _action_trigger_state;
+			// (terminal navigation is handled after build_terminal_action_flags below, since that
+			// call overwrites `flags` when in a terminal)
 		}
 #endif
 		
@@ -1346,8 +1348,14 @@ uint32 parse_keymap(void)
 		  // update_world_view_camera, so it stays smooth while the body catches up).
 		  float hmdYaw = 0, hmdPitch = 0;
 		  if (VR_GetHmdYawPitch(&hmdYaw, &hmdPitch)) {
+			  const int hy = (int)(hmdYaw >= 0 ? hmdYaw + 0.5f : hmdYaw - 0.5f);
+			  // Level-entry recenter: pin the yaw offset so desiredYaw == the level's start facing when
+			  // the head is at its current (neutral) orientation.
+			  int recenterTarget;
+			  if (VR_TakeYawRecenter(&recenterTarget))
+				  VR_SetYawOffset((float)((recenterTarget - hy) & 511));
 			  const int yawOffset = (int)(VR_GetYawOffset() + 0.5f);
-			  int desiredYaw = yawOffset + (int)(hmdYaw >= 0 ? hmdYaw + 0.5f : hmdYaw - 0.5f);
+			  int desiredYaw = yawOffset + hy;
 			  int desiredPitch = (int)(hmdPitch >= 0 ? hmdPitch + 0.5f : hmdPitch - 0.5f);
 			  if (desiredPitch >  112) desiredPitch =  112;
 			  else if (desiredPitch < -112) desiredPitch = -112;
@@ -1414,8 +1422,21 @@ uint32 parse_keymap(void)
       }
 		
       
-      if (player_in_terminal_mode(local_player_index))
+      if (player_in_terminal_mode(local_player_index)) {
 	flags = build_terminal_action_flags((char *)key_map);
+#if defined(__ANDROID__)
+	// VR face buttons drive terminals here (build_terminal_action_flags overwrote `flags` above, and
+	// it reads the keyboard STATE which our injected key events don't update). Edge-triggered so a
+	// hold = one action. A/X => _terminal_next_state (next screen); Y/B => _terminal_page_up (back).
+	if (VR_IsActive()) {
+		static bool advPrev = false, backPrev = false;
+		const bool adv = VR_GetAdvance(), bk = VR_GetBack();
+		if (adv && !advPrev) flags |= _left_trigger_state;   // == _terminal_next_state
+		if (bk  && !backPrev) flags |= _turning_left;        // == _terminal_page_up
+		advPrev = adv; backPrev = bk;
+	}
+#endif
+      }
     } // if(get_keyboard_controller_status())
   
   return flags;

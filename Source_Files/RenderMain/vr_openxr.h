@@ -46,6 +46,12 @@ float VR_GetYawOffset(void);                 // current locomotion yaw offset, a
 void  VR_UpdateTurn(float rightStickX, float dtSeconds);  // advance snap/smooth turn from the stick
 void  VR_SetYawOffset(float angleUnits);     // recenter: pin the offset (e.g. to face a start dir)
 
+// Request the player face `facingAngleUnits` when the head is neutral (called at level entry so the
+// start orientation is the level's, not wherever the headset points). Consumed once by the input
+// code, which sets the yaw offset accordingly.
+void VR_RequestYawRecenter(int facingAngleUnits);
+bool VR_TakeYawRecenter(int* targetAngleUnits);
+
 // Dim the currently-bound eye buffer by VR_Settings()->brightness (a fullscreen multiply pass). Call
 // after the world is rendered into the eye FBO. No-op at brightness >= 1.
 void VR_DimCurrentEye(void);
@@ -90,6 +96,8 @@ void VR_GetTurn(float* x);             // right thumbstick X: snap/smooth turn
 bool VR_GetFire(void);                 // right trigger
 bool VR_GetSecondaryFire(void);        // left trigger
 bool VR_GetAction(void);               // A button (use terminals/switches)
+bool VR_GetAdvance(void);              // A or X: advance terminal / skip cutscene
+bool VR_GetBack(void);                 // Y or B: terminal page back
 
 // Increment 1: render one head-tracked stereo test frame (a colored room) to the headset and
 // submit it. Drives the OpenXR session lifecycle internally. Returns true if a VR frame was

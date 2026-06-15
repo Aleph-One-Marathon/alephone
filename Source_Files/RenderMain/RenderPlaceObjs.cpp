@@ -57,6 +57,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "OGL_Setup.h"
 #include "ChaseCam.h"
 #include "player.h"
+#include "vr_openxr.h"
 #include "ephemera.h"
 #include "preferences.h"
 
@@ -142,6 +143,15 @@ void RenderPlaceObjsClass::build_render_object_list()
 		
 		while (object_index!=NONE)
 		{
+#if defined(__ANDROID__)
+			// In VR the camera leans away from the body, which would reveal the player's own sprite
+			// (normally hidden because it sits at your eye). Skip rendering the viewer's own object.
+			if (VR_IsActive() && object_index == self_index)
+			{
+				object_index = get_object_data(object_index)->next_object;
+				continue;
+			}
+#endif
 			float Opacity = (object_index == self_index) ? GetChaseCamData().Opacity : 1;
 			add_object_to_sorted_nodes(get_object_data(object_index), floor_intensity, ceiling_intensity, Opacity);
 			object_index= get_object_data(object_index)->next_object;
