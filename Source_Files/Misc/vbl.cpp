@@ -89,6 +89,7 @@ Feb 20, 2002 (Woody Zenfell):
 #include "Logging.h"
 #include "mouse.h"
 #include "player.h"
+#include "vr_openxr.h"
 #include "key_definitions.h"
 #include "tags.h"
 #include "vbl.h"
@@ -1256,18 +1257,29 @@ uint32 parse_keymap(void)
 		}
 
 #if defined(__ANDROID__)
-		// Flat-panel Quest stopgap input: the 2D-panel environment only exposes a pointer + the
-		// trigger (mouse button 1) -- no thumbsticks/buttons reach the app. The trigger is
-		// multiplexed by gesture (see shell.cpp android_pointer_*), and never fires the weapon:
-		//   hold  = walk forward (pointer drag steers/looks)
-		//   tap   = action / use (terminals, switches, doors)
-		//   tap in the top-left corner = toggle map
-		// Real 6DoF controller movement arrives with the OpenXR/TBXR layer in Phase 2.
-		flags &= ~(_left_trigger_state | _right_trigger_state);   // trigger never auto-fires
-		if (android_input_walking())     flags |= _moving_forward;
-		if (android_input_take_fire())   flags |= _left_trigger_state;
-		if (android_input_take_action()) flags |= _action_trigger_state;
-		if (android_input_take_map())    flags |= _toggle_map;
+		// VR controller input (OpenXR Touch), QuestZDoom model: the HMD yaw IS the player's facing
+		// (driven below via process_aim_input). Left stick = move/strafe RELATIVE TO THE HEAD (forward
+		// goes where you look, since the facing tracks the head). Right stick X = snap/smooth turn
+		// (an extra yaw offset, so you can turn without physically turning). Right trigger = fire,
+		// left trigger = secondary, A = action/use.
+		flags &= ~(_left_trigger_state | _right_trigger_state);
+		{
+			float mx = 0, my = 0, tx = 0;
+			VR_GetMove(&mx, &my);
+			VR_GetTurn(&tx);
+			// Flags drive the engine's "moving" state (footsteps/animation); the actual analog SPEED
+			// comes from VR_GetAnalogMove applied to the player velocity in physics.cpp. Match the
+			// analog deadzone so the two agree.
+			const float dead = 0.15f;
+			if (my >  dead) flags |= _moving_forward;
+			else if (my < -dead) flags |= _moving_backward;
+			if (mx < -dead) flags |= _sidestepping_left;
+			else if (mx >  dead) flags |= _sidestepping_right;
+			VR_UpdateTurn(tx, 1.0f / 30.0f);   // ~TICKS_PER_SECOND; no continuous _turning_* flags
+			if (VR_GetFire())          flags |= _left_trigger_state;
+			if (VR_GetSecondaryFire()) flags |= _right_trigger_state;
+			if (VR_GetAction())        flags |= _action_trigger_state;
+		}
 #endif
 		
       // Post-process the keymap
@@ -1325,6 +1337,27 @@ uint32 parse_keymap(void)
 		  hotkey_sequence[2] = 0;
 	  }
 
+#if defined(__ANDROID__)
+	  if (VR_IsActive()) {
+		  // QuestZDoom model: drive the player's simulation facing/elevation to the head orientation
+		  // (+ snap/smooth turn offset) so movement, shooting and AI all use where you're LOOKING, not
+		  // a separately-steered body. Feed the per-tick delta to the same absolute-aim path mouselook
+		  // uses; the physics turns the player toward it (the view itself is head-locked per-frame in
+		  // update_world_view_camera, so it stays smooth while the body catches up).
+		  float hmdYaw = 0, hmdPitch = 0;
+		  if (VR_GetHmdYawPitch(&hmdYaw, &hmdPitch)) {
+			  const int yawOffset = (int)(VR_GetYawOffset() + 0.5f);
+			  int desiredYaw = yawOffset + (int)(hmdYaw >= 0 ? hmdYaw + 0.5f : hmdYaw - 0.5f);
+			  int desiredPitch = (int)(hmdPitch >= 0 ? hmdPitch + 0.5f : hmdPitch - 0.5f);
+			  if (desiredPitch >  112) desiredPitch =  112;
+			  else if (desiredPitch < -112) desiredPitch = -112;
+			  // shortest signed angular differences (wrap to [-256, 255])
+			  int dyaw   = ((desiredYaw   - local_player->facing    + 256) & 511) - 256;
+			  int dpitch = ((desiredPitch - local_player->elevation + 256) & 511) - 256;
+			  flags = process_aim_input(flags, { (fixed_angle)(dyaw * FIXED_ONE), (fixed_angle)(dpitch * FIXED_ONE) });
+		  }
+	  } else
+#endif
 	  if (input_preferences->input_device == _mouse_yaw_pitch) {
 		  flags = process_aim_input(flags, pull_mouselook_delta());
 	  }

@@ -23,6 +23,7 @@
 #include "ChaseCam.h"
 #include "preferences.h"
 #include "screen.h"
+#include "vr_openxr.h"
 
 #ifdef HAVE_OPENGL
 
@@ -1139,6 +1140,12 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 	glTranslated(pos.x, pos.y, pos.z);
 
 	double yaw = view->virtual_yaw * FixedAngleToDegrees;
+#if defined(__ANDROID__)
+	// In VR virtual_yaw is only the locomotion offset (the head rides in via the per-eye pose), so
+	// billboard sprites toward the FULL camera azimuth (view->yaw = yawOffset + head yaw) instead --
+	// otherwise they face the body offset, not the player's head.
+	if (VR_IsActive()) yaw = view->yaw * (360.0 / double(FULL_CIRCLE));
+#endif
 	glRotated(yaw, 0.0, 0.0, 1.0);
 
 			
@@ -1162,6 +1169,15 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 
 	if (!view->mimic_sw_perspective)
 	{
+#if defined(__ANDROID__)
+		// VR: always pitch-billboard toward the head so sprites face the player when looking up/down
+		// (view->pitch = head elevation; virtual_pitch is forced to 0 in VR).
+		if (VR_IsActive())
+		{
+			glRotated(view->pitch * (360.0 / double(FULL_CIRCLE)), 0.0, -1.0, 0.0);
+		}
+		else
+#endif
 		if (TMgr->ForceXYBillboard() ||
 			(view->billboard_xy && !TMgr->ForceYBillboard()))
 		{

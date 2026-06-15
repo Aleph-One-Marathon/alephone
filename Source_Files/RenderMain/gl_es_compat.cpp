@@ -12,6 +12,7 @@
 
 #include <GLES3/gl3.h>
 #include <android/log.h>
+#include "vr_openxr.h"
 #include <array>
 #include <vector>
 #include <unordered_map>
@@ -285,6 +286,7 @@ struct EngineLocs {
     GLint mvp, mv, mvInv, normalMat, texMat0, texMat1;
     GLint fogColor, fogDensity, fogStart, fogEnd;
     GLint alphaTest, alphaRef;
+    GLint brightness;
 };
 std::unordered_map<GLuint, EngineLocs> g_engineLocs;
 
@@ -304,6 +306,7 @@ const EngineLocs& engineLocsFor(GLuint prog) {
     L.fogEnd     = glGetUniformLocation(prog, "a1_Fog.end");
     L.alphaTest  = glGetUniformLocation(prog, "a1_AlphaTest");
     L.alphaRef   = glGetUniformLocation(prog, "a1_AlphaRef");
+    L.brightness = glGetUniformLocation(prog, "a1_Brightness");
     return g_engineLocs.emplace(prog, L).first->second;
 }
 
@@ -576,6 +579,7 @@ void flushEngine(GLenum mode, const std::vector<int>& verts) {
     if (L.fogEnd     >= 0) glUniform1f(L.fogEnd, g_fogEnd);
     if (L.alphaTest  >= 0) glUniform1i(L.alphaTest, g_alphaTestEnabled ? 1 : 0);
     if (L.alphaRef   >= 0) glUniform1f(L.alphaRef, g_alphaTestRef);
+    if (L.brightness >= 0) glUniform1f(L.brightness, VR_IsActive() ? VR_Settings()->brightness : 1.0f);
 
     glDrawArrays(mode, 0, (GLsizei)verts.size());
 }
@@ -594,6 +598,12 @@ void a1ffSetTexture2D(GLboolean enabled) { g_texture2DEnabled = enabled; }
 
 void a1ffSetAlphaTest(GLboolean enabled) { g_alphaTestEnabled = enabled; }
 void a1ffAlphaFunc(GLenum /*func*/, GLclampf ref) { g_alphaTestRef = ref; }
+
+void a1ffFrontFace(GLenum mode) {
+	// The VR modelview now matches the engine's handedness (det=-1 remap), so pass the winding
+	// through unchanged.
+	glFrontFace(mode);
+}
 
 void a1ffUseProgram(GLuint program) { g_currentProgram = program; glUseProgram(program); }
 

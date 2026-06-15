@@ -247,8 +247,11 @@ GLhandleARB parseShader(const GLcharARB* str, GLenum shaderType) {
 		"out vec4 a1_FragColor_out;\n"
 		"uniform bool a1_AlphaTest;\n"
 		"uniform float a1_AlphaRef;\n"
+		// VR world-brightness multiply (the VR render is over-bright); 1.0 = unchanged. Set per-program
+		// by the shim (gl_es_compat) from VR_Settings()->brightness; 1.0 in flat mode.
+		"uniform float a1_Brightness;\n"
 		"void a1_user_main(void);\n"
-		"void main(void) { a1_user_main(); if (a1_AlphaTest && a1_FragValue.a < a1_AlphaRef) discard; a1_FragColor_out = a1_FragValue; }\n"
+		"void main(void) { a1_user_main(); if (a1_AlphaTest && a1_FragValue.a < a1_AlphaRef) discard; a1_FragColor_out = vec4(a1_FragValue.rgb * a1_Brightness, a1_FragValue.a); }\n"
 		"#define main a1_user_main\n";
 	source.push_back(shaderType == GL_FRAGMENT_SHADER ? kFragPreamble : kVertPreamble);
 #endif

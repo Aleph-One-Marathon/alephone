@@ -215,9 +215,14 @@ extern "C" {
 void a1ffSetTexture2D(GLboolean enabled);
 void a1ffSetAlphaTest(GLboolean enabled);
 void a1ffAlphaFunc(GLenum func, GLclampf ref);
+// The VR modelview is a correct (det=+1) axis remap, opposite handedness to the engine's det=-1
+// kViewBaseMatrix, so on-screen winding is reversed. Flip glFrontFace (CW<->CCW) so the engine's
+// back-face culling keeps the visible faces. (Harmless for the 2D path, which doesn't set it.)
+void a1ffFrontFace(GLenum mode);
 #ifdef __cplusplus
 }
 #endif
+#define glFrontFace a1ffFrontFace
 
 /* Wrap glEnable/glDisable so the fixed-function tokens above are silently ignored while real
  * GLES capabilities (GL_BLEND, GL_DEPTH_TEST, GL_CULL_FACE, ...) pass through unchanged. */

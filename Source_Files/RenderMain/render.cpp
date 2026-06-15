@@ -238,6 +238,7 @@ extern WindowPtr screen_window;
 #include "Rasterizer_OGL.h"
 #include "RenderRasterize_Shader.h"
 #include "Rasterizer_Shader.h"
+#include "vr_openxr.h"
 #endif
 #include "preferences.h"
 #include "screen.h"
@@ -423,6 +424,23 @@ void render_view(
 {
 	update_view_data(view);
 
+#if defined(__ANDROID__)
+	if (VR_IsActive())
+	{
+		// Widen the visibility/sort cone so it covers both eyes' frusta plus head-rotation leeway
+		// (each eye ~90 deg horizontal; stereo + parallax needs a generous cone). view->yaw/pitch were
+		// already aimed at the HMD direction in update_world_view_camera. Keep half_cone < 128 (90 deg)
+		// so the BSP cone walk stays well-defined, then rebuild the left/right edge vectors to match.
+		angle theta;
+		view->half_cone = 115;            // ~81 deg half-angle (162 deg total)
+		view->half_vertical_cone = 110;   // ~77 deg
+		theta = NORMALIZE_ANGLE(view->yaw - view->half_cone);
+		view->left_edge.i = cosine_table[theta]; view->left_edge.j = sine_table[theta];
+		theta = NORMALIZE_ANGLE(view->yaw + view->half_cone);
+		view->right_edge.i = cosine_table[theta]; view->right_edge.j = sine_table[theta];
+	}
+#endif
+
 	/* clear the render flags */
 	objlist_clear(render_flags, RENDER_FLAGS_BUFFER_SIZE);
 
@@ -478,32 +496,56 @@ void render_view(
 			}
 #endif
 			
-			// Set its view:
-			RasPtr->SetView(*view);
-			
-			// Start rendering main view
-			RasPtr->Begin();
-			
 			// LP: now from the clipping/rasterizer class
-#ifdef HAVE_OPENGL			
+#ifdef HAVE_OPENGL
 			RenderRasterizerClass *RenPtr = (graphics_preferences->screen_mode.acceleration == _opengl_acceleration) ? &Render_Shader : &Render_Classic;
 #else
 			RenderRasterizerClass *RenPtr = &Render_Classic;
 #endif
-			/* render the object list, back to front, doing clipping on each surface before passing
-				it to the texture-mapping code */
 			RenPtr->view = view;
 			RenPtr->RasPtr = RasPtr;
-			RenPtr->render_tree();
-			
-			// LP: won't put this into a separate class
-			/* render the player’s weapons, etc. */
-                        if (!RenPtr->renders_viewer_sprites_in_tree()) {
-                            render_viewer_sprite_layer(view, RasPtr);
-                        }
-			
-			// Finish rendering main view
-			RasPtr->End();
+
+#if defined(__ANDROID__)
+			// VR: the scene tree was built once above; render it twice (once per eye) with the
+			// OpenXR per-eye projection + head-pose view (SetView reads VR_CurrentEye()).
+			if (VR_IsActive())
+			{
+				const bool render = VR_BeginFrame();
+				if (render)
+				{
+					for (int eye = 0; eye < 2; ++eye)
+					{
+						VR_BeginEye(eye);
+						RasPtr->SetView(*view);
+						RasPtr->Begin();
+						RenPtr->render_tree();
+						if (!RenPtr->renders_viewer_sprites_in_tree())
+							render_viewer_sprite_layer(view, RasPtr);
+						RasPtr->End();
+						VR_FinishEye(eye);
+					}
+				}
+				VR_SubmitFrame();
+				VR_MarkWorldFramePresented();
+			}
+			else
+#endif
+			{
+				// Set its view:
+				RasPtr->SetView(*view);
+				// Start rendering main view
+				RasPtr->Begin();
+				/* render the object list, back to front, doing clipping on each surface before
+					passing it to the texture-mapping code */
+				RenPtr->render_tree();
+				// LP: won't put this into a separate class
+				/* render the player’s weapons, etc. */
+				if (!RenPtr->renders_viewer_sprites_in_tree()) {
+					render_viewer_sprite_layer(view, RasPtr);
+				}
+				// Finish rendering main view
+				RasPtr->End();
+			}
 		}
 
 		if (view->overhead_map_active)

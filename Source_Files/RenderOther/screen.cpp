@@ -873,11 +873,11 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	if (vr_mode)
 	{
 		VR_InitEGL();
-		int ew = 0, eh = 0;
-		if (!VR_GetEyeResolution(&ew, &eh)) { ew = 1280; eh = 1024; }
-		vmode_width = ew;
-		vmode_height = eh;
+		// The 2D UI renders into the screen-layer FBO (sized to this vmode) so it's visible in VR.
+		vmode_width = VR_ScreenLayerWidth();
+		vmode_height = VR_ScreenLayerHeight();
 		screen_mode.acceleration = graphics_preferences->screen_mode.acceleration = _opengl_acceleration;
+		glBindFramebuffer(GL_FRAMEBUFFER, VR_ScreenLayerFramebuffer());
 	}
 #else
 	const bool vr_mode = false;
@@ -1284,7 +1284,14 @@ void update_world_view_camera()
 	world_view->maximum_depth_intensity = current_player->weapon_intensity;
 
 	world_view->origin = current_player->camera_location;
-	if (graphics_preferences->screen_mode.bobbing_type != BobbingType::camera_and_weapon)
+	bool remove_camera_bob = graphics_preferences->screen_mode.bobbing_type != BobbingType::camera_and_weapon;
+#if defined(__ANDROID__)
+	// In VR the camera view-bob is nauseating; suppress it (the head IS the camera). Weapon bob is
+	// unaffected. Configurable via the VR preferences (VR_Settings()->disableBob).
+	if (VR_IsActive() && VR_Settings()->disableBob)
+		remove_camera_bob = true;
+#endif
+	if (remove_camera_bob)
 		world_view->origin.z -= current_player->step_height;
 	world_view->origin_polygon_index = current_player->camera_polygon_index;
 
@@ -1293,6 +1300,31 @@ void update_world_view_camera()
 
 	world_view->virtual_yaw = world_view->yaw * FIXED_ONE;
 	world_view->virtual_pitch = world_view->pitch * FIXED_ONE;
+
+#if defined(__ANDROID__)
+	if (VR_IsActive())
+	{
+		float hmdYaw = 0, hmdPitch = 0;
+		if (VR_GetHmdYawPitch(&hmdYaw, &hmdPitch))
+		{
+			// QuestZDoom locomotion model: the HMD yaw IS the player's facing. vbl.cpp drives the
+			// simulation facing to (yawOffset + headYaw) via process_aim_input (yawOffset = snap/smooth
+			// turn). The visibility tree, polygon sort and sprite billboarding read view->yaw/pitch, so
+			// set them to that same camera azimuth. The per-eye render rotates by yawOffset ONLY (head
+			// rides in via the OpenXR eye pose), so virtual_yaw = yawOffset (NOT the facing) -> no
+			// double-apply, and the render stays consistent with the simulation as the body catches up.
+			const int yawOffset = (int)(VR_GetYawOffset() + 0.5f);   // angle units, 0..511
+			int hy = (int)(hmdYaw   >= 0 ? hmdYaw   + 0.5f : hmdYaw   - 0.5f);
+			int hp = (int)(hmdPitch >= 0 ? hmdPitch + 0.5f : hmdPitch - 0.5f);
+			if (hp >  112) hp =  112;   // keep |pitch| < 128 (90 deg): cosine_table[pitch]!=0 in dtanpitch
+			else if (hp < -112) hp = -112;
+			world_view->yaw   = NORMALIZE_ANGLE(yawOffset + hy);
+			world_view->pitch = NORMALIZE_ANGLE(hp);
+			world_view->virtual_yaw = NORMALIZE_ANGLE(yawOffset) * FIXED_ONE;
+			world_view->virtual_pitch = 0;
+		}
+	}
+#endif
 
 	if (!use_cameras)
 	{
@@ -1303,8 +1335,15 @@ void update_world_view_camera()
 
 		if (current_player_index == local_player_index)
 		{
-			world_view->virtual_yaw += virtual_aim_delta().yaw;
-			world_view->virtual_pitch += virtual_aim_delta().pitch;
+#if defined(__ANDROID__)
+			// In VR virtual_yaw/pitch are already set (= yawOffset / 0); the head pose supplies the
+			// look, so don't add the mouselook residual on top.
+			if (!VR_IsActive())
+#endif
+			{
+				world_view->virtual_yaw += virtual_aim_delta().yaw;
+				world_view->virtual_pitch += virtual_aim_delta().pitch;
+			}
 		}
 	}
 }
@@ -2321,11 +2360,18 @@ bool MainScreenIsOpenGL()
 void MainScreenSwap()
 {
 #if defined(__ANDROID__)
-	// Phase 2 VR: when OpenXR is active, present the stereo frame to the headset instead of the
-	// (unused) flat window. VR_RenderTestFrame drives the OpenXR session/frame loop and returns
-	// true once it has submitted a frame.
-	if (VR_IsActive() && VR_RenderTestFrame())
+	// Phase 2 VR: present to the headset, not the (unused) flat window. If render_view already
+	// presented the stereo world frame this tick, we're done; otherwise (menus/loading, no 3D
+	// render) present the fallback test frame so the compositor keeps receiving frames.
+	if (VR_IsActive()) {
+		// If render_view already presented the stereo world this tick, we're done; otherwise present
+		// the 2D UI (menus/terminals/loading) from the screen-layer FBO as a flat panel.
+		if (!VR_TakeWorldFramePresented())
+			VR_PresentScreenLayer();
+		// Re-bind the screen-layer FBO so the next frame's 2D UI renders into it (not the pbuffer).
+		glBindFramebuffer(GL_FRAMEBUFFER, VR_ScreenLayerFramebuffer());
 		return;
+	}
 #endif
 	SDL_GL_SwapWindow(main_screen);
 }

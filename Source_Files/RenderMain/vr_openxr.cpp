@@ -32,6 +32,12 @@
 #define A1VR_LOG(...) __android_log_print(ANDROID_LOG_INFO, "A1VR", __VA_ARGS__)
 #define XR_CHECK(call) do { XrResult _r = (call); if (XR_FAILED(_r)) A1VR_LOG("%s -> %d", #call, _r); } while (0)
 
+// EXT_sRGB_write_control: lets us store our already-sRGB content verbatim into the sRGB eye swapchain
+// (without GL re-encoding linear->sRGB, which over-brightens the legacy renderer's output + the 2D UI).
+#ifndef GL_FRAMEBUFFER_SRGB_EXT
+#define GL_FRAMEBUFFER_SRGB_EXT 0x8DB9
+#endif
+
 namespace {
 
 constexpr int kEyes = 2;
@@ -63,12 +69,32 @@ EyeFB s_eye[kEyes];
 XrFrameState s_frameState = {};
 XrView       s_views[kEyes] = {};
 XrPosef      s_stageFromHead = {};
+bool         s_headPoseValid = false;   // s_stageFromHead orientation has been located at least once
+
+// Room-scale head tracking: s_lastHead* is the "absorbed" head origin (stage metres, horizontal) --
+// the point the player body has been moved up to. The render uses the head/eye position RELATIVE to
+// this (the residual), and each physics tick the residual is fed to the body and this advances to the
+// current head, so the body follows the head without the render double-counting the movement.
+float        s_lastHeadX = 0, s_lastHeadZ = 0;
+bool         s_headLatchInit = false;
+float        s_headMoveX = 0, s_headMoveY = 0;   // latched per-tick body delta, world units (map x,y)
 
 // Engine-owned headless EGL context (no window surface).
 EGLDisplay s_eglDpy  = EGL_NO_DISPLAY;
 EGLContext s_eglCtx  = EGL_NO_CONTEXT;
 EGLSurface s_eglSurf = EGL_NO_SURFACE;
 bool       s_eglReady = false;
+
+int        s_srgbWriteControl = -1;   // -1 unknown, 0 absent, 1 present (EXT_sRGB_write_control)
+
+bool hasGLExtension(const char* name) {
+	GLint n = 0; glGetIntegerv(GL_NUM_EXTENSIONS, &n);
+	for (GLint i = 0; i < n; ++i) {
+		const char* e = (const char*)glGetStringi(GL_EXTENSIONS, i);
+		if (e && std::strcmp(e, name) == 0) return true;
+	}
+	return false;
+}
 
 // --- test-scene GL objects ---
 GLuint s_prog = 0, s_vao = 0, s_vbo = 0;
@@ -239,13 +265,22 @@ bool createSwapchains() {
 	s_eyeH = s_viewConfig[0].recommendedImageRectHeight;
 	A1VR_LOG("eye resolution %dx%d", s_eyeW, s_eyeH);
 
-	// Pick a colour format (prefer plain RGBA8 to avoid sRGB conversions for now).
+	// Pick an sRGB colour format (GL_SRGB8_ALPHA8), matching TBXR/QuestZDoom. The Quest compositor
+	// interprets the swapchain in this colour space; handing it a linear RGBA8 made the world far too
+	// bright (the runtime applied an extra linear->sRGB brighten). With an sRGB swapchain the
+	// compositor samples correctly. Fall back to RGBA8 only if sRGB isn't offered.
 	uint32_t fmtCount = 0;
 	xrEnumerateSwapchainFormats(s_session, 0, &fmtCount, nullptr);
 	int64_t* fmts = new int64_t[fmtCount];
 	xrEnumerateSwapchainFormats(s_session, fmtCount, &fmtCount, fmts);
 	int64_t chosen = fmts[0];
-	for (uint32_t i = 0; i < fmtCount; ++i) if (fmts[i] == GL_RGBA8) { chosen = GL_RGBA8; break; }
+	bool haveSrgb = false, haveRgba8 = false;
+	for (uint32_t i = 0; i < fmtCount; ++i) {
+		if (fmts[i] == GL_SRGB8_ALPHA8) haveSrgb = true;
+		if (fmts[i] == GL_RGBA8)        haveRgba8 = true;
+	}
+	if (haveSrgb)       chosen = GL_SRGB8_ALPHA8;
+	else if (haveRgba8) chosen = GL_RGBA8;
 	delete[] fmts;
 
 	for (int e = 0; e < kEyes; ++e) {
@@ -281,6 +316,8 @@ bool createSwapchains() {
 	}
 	return true;
 }
+
+void initActions();   // defined below (input action set); attached once the session exists
 
 bool startSession() {
 	if (s_sessionCreated) return true;
@@ -326,6 +363,7 @@ bool startSession() {
 	}
 
 	if (!createSwapchains()) return false;
+	initActions();
 	s_sessionCreated = true;
 	A1VR_LOG("session + swapchains created");
 	return true;
@@ -424,6 +462,50 @@ extern "C" bool VR_InitOpenXR(void)
 
 extern "C" bool VR_IsActive(void) { return s_active; }
 
+namespace {
+	vr_settings_t s_settings = {
+		/* disableBob      */ 1,
+		/* screenDistanceM */ 2.5f,
+		/* screenHeightM   */ 2.0f,
+		/* worldScaleWUM   */ 512.0f,
+		/* eyeHeightM      */ 1.6f,
+		/* snapTurn        */ 1,
+		/* turnDegrees     */ 30.0f,
+		/* brightness      */ 1.0f,   // neutral; real fix is the sRGB write-control below
+		/* roomScale       */ 0,      // OFF until the head-delta feed is verified (was launching the player)
+	};
+
+	// Locomotion yaw offset (snap/smooth turn), in Marathon angle units (512 = full circle).
+	float s_yawOffset = 0.0f;
+	bool  s_turnArmed = true;   // snap-turn edge latch (re-armed when the stick recentres)
+	const float kAngleUnitsPerDeg = 512.0f / 360.0f;
+}
+extern "C" vr_settings_t* VR_Settings(void) { return &s_settings; }
+
+extern "C" float VR_GetYawOffset(void)        { return s_yawOffset; }
+extern "C" void  VR_SetYawOffset(float a)     { s_yawOffset = a; }
+
+extern "C" void VR_UpdateTurn(float stickX, float dt)
+{
+	// Right stick turns WITHOUT physically turning your body. Snap right (+X) = turn the view right,
+	// which in Marathon's CCW angle convention means DECREASING yaw. (Flip the sign here if turning
+	// goes the wrong way on device.)
+	if (s_settings.snapTurn) {
+		const float thresh = 0.6f, release = 0.3f;
+		if (s_turnArmed && stickX > thresh)  { s_yawOffset += s_settings.turnDegrees * kAngleUnitsPerDeg; s_turnArmed = false; }
+		else if (s_turnArmed && stickX < -thresh) { s_yawOffset -= s_settings.turnDegrees * kAngleUnitsPerDeg; s_turnArmed = false; }
+		else if (stickX > -release && stickX < release) s_turnArmed = true;
+	} else {
+		// Smooth turn: turnDegrees is deg/sec at full deflection, with a small deadzone.
+		const float dead = 0.2f;
+		if (stickX > dead || stickX < -dead)
+			s_yawOffset += stickX * s_settings.turnDegrees * kAngleUnitsPerDeg * dt;
+	}
+	// keep bounded to one turn for numeric tidiness
+	while (s_yawOffset >= 512.0f) s_yawOffset -= 512.0f;
+	while (s_yawOffset <  0.0f)   s_yawOffset += 512.0f;
+}
+
 extern "C" bool VR_GetEyeResolution(int* w, int* h)
 {
 	if (s_eyeW <= 0 || s_eyeH <= 0) return false;
@@ -466,30 +548,120 @@ extern "C" bool VR_InitEGL(void)
 	return true;
 }
 
-extern "C" bool VR_RenderTestFrame(void)
+// ---- frame-scoped state (between VR_BeginFrame and VR_SubmitFrame) ----
+namespace {
+	XrCompositionLayerProjectionView s_layerViews[kEyes] = {};
+	XrPosef  s_stageFromEye[kEyes] = {};
+	bool     s_frameBegun       = false;
+	bool     s_frameShouldRender = false;
+	uint32_t s_curEyeImageIdx   = 0;
+	int      s_curEye           = 0;
+
+	// ---- input (OpenXR action set, Touch controllers) ----
+	XrActionSet s_actionSet  = XR_NULL_HANDLE;
+	XrAction    s_moveAction = XR_NULL_HANDLE, s_turnAction = XR_NULL_HANDLE;
+	XrAction    s_fireAction = XR_NULL_HANDLE, s_altFireAction = XR_NULL_HANDLE, s_actionAction = XR_NULL_HANDLE;
+	bool        s_actionsReady = false;
+	float       s_moveX = 0, s_moveY = 0, s_turnX = 0;
+	bool        s_fire = false, s_altFire = false, s_action = false;
+
+	XrPath path(const char* s) { XrPath p = XR_NULL_PATH; xrStringToPath(s_instance, s, &p); return p; }
+
+	void initActions() {
+		if (s_actionsReady) return;
+
+		XrActionSetCreateInfo asci = { XR_TYPE_ACTION_SET_CREATE_INFO };
+		std::strcpy(asci.actionSetName, "gameplay");
+		std::strcpy(asci.localizedActionSetName, "Gameplay");
+		if (XR_FAILED(xrCreateActionSet(s_instance, &asci, &s_actionSet))) { A1VR_LOG("createActionSet failed"); return; }
+
+		auto mkAction = [&](const char* name, XrActionType type, XrAction* out) {
+			XrActionCreateInfo aci = { XR_TYPE_ACTION_CREATE_INFO };
+			std::strcpy(aci.actionName, name);
+			std::strcpy(aci.localizedActionName, name);
+			aci.actionType = type;
+			xrCreateAction(s_actionSet, &aci, out);
+		};
+		mkAction("move", XR_ACTION_TYPE_VECTOR2F_INPUT, &s_moveAction);
+		mkAction("turn", XR_ACTION_TYPE_VECTOR2F_INPUT, &s_turnAction);
+		mkAction("fire", XR_ACTION_TYPE_FLOAT_INPUT,    &s_fireAction);
+		mkAction("altfire", XR_ACTION_TYPE_FLOAT_INPUT, &s_altFireAction);
+		mkAction("use", XR_ACTION_TYPE_BOOLEAN_INPUT,   &s_actionAction);
+
+		XrActionSuggestedBinding binds[] = {
+			{ s_moveAction,    path("/user/hand/left/input/thumbstick") },
+			{ s_turnAction,    path("/user/hand/right/input/thumbstick") },
+			{ s_fireAction,    path("/user/hand/right/input/trigger/value") },
+			{ s_altFireAction, path("/user/hand/left/input/trigger/value") },
+			{ s_actionAction,  path("/user/hand/right/input/a/click") },
+		};
+		XrInteractionProfileSuggestedBinding sb = { XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING };
+		sb.interactionProfile = path("/interaction_profiles/oculus/touch_controller");
+		sb.countSuggestedBindings = sizeof(binds) / sizeof(binds[0]);
+		sb.suggestedBindings = binds;
+		if (XR_FAILED(xrSuggestInteractionProfileBindings(s_instance, &sb))) A1VR_LOG("suggestBindings failed");
+
+		XrSessionActionSetsAttachInfo ai = { XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO };
+		ai.countActionSets = 1;
+		ai.actionSets = &s_actionSet;
+		if (XR_FAILED(xrAttachSessionActionSets(s_session, &ai))) { A1VR_LOG("attachActionSets failed"); return; }
+
+		s_actionsReady = true;
+		A1VR_LOG("input actions attached");
+	}
+
+	void syncInput() {
+		if (!s_actionsReady || !s_sessionRunning) return;
+		XrActiveActionSet aas = { s_actionSet, XR_NULL_PATH };
+		XrActionsSyncInfo si = { XR_TYPE_ACTIONS_SYNC_INFO };
+		si.countActiveActionSets = 1;
+		si.activeActionSets = &aas;
+		xrSyncActions(s_session, &si);
+
+		XrActionStateGetInfo gi = { XR_TYPE_ACTION_STATE_GET_INFO };
+		XrActionStateVector2f v2 = { XR_TYPE_ACTION_STATE_VECTOR2F };
+		gi.action = s_moveAction; xrGetActionStateVector2f(s_session, &gi, &v2);
+		s_moveX = v2.currentState.x; s_moveY = v2.currentState.y;
+		gi.action = s_turnAction; xrGetActionStateVector2f(s_session, &gi, &v2);
+		s_turnX = v2.currentState.x;
+		XrActionStateFloat f = { XR_TYPE_ACTION_STATE_FLOAT };
+		gi.action = s_fireAction;    xrGetActionStateFloat(s_session, &gi, &f); s_fire = f.currentState > 0.5f;
+		gi.action = s_altFireAction; xrGetActionStateFloat(s_session, &gi, &f); s_altFire = f.currentState > 0.5f;
+		XrActionStateBoolean b = { XR_TYPE_ACTION_STATE_BOOLEAN };
+		gi.action = s_actionAction;  xrGetActionStateBoolean(s_session, &gi, &b); s_action = b.currentState;
+	}
+}
+
+extern "C" bool VR_BeginFrame(void)
 {
+	s_frameBegun = false;
+	s_frameShouldRender = false;
 	if (!s_active) return false;
 	if (!startSession()) return false;   // waits for the GL context
-
 	pollEvents();
-	if (!s_sessionRunning) return true;   // VR owns the frame; just don't present yet
+	if (!s_sessionRunning) return false; // session not running yet -> no frame begun
+	syncInput();
 
 	XrFrameWaitInfo wfi = { XR_TYPE_FRAME_WAIT_INFO };
 	s_frameState = XrFrameState{ XR_TYPE_FRAME_STATE };
 	XR_CHECK(xrWaitFrame(s_session, &wfi, &s_frameState));
-
 	XrFrameBeginInfo fbi = { XR_TYPE_FRAME_BEGIN_INFO };
 	XR_CHECK(xrBeginFrame(s_session, &fbi));
-
-	XrCompositionLayerProjectionView layerViews[kEyes] = {};
-	XrCompositionLayerProjection layer = { XR_TYPE_COMPOSITION_LAYER_PROJECTION };
-	bool haveLayer = false;
+	s_frameBegun = true;
 
 	if (s_frameState.shouldRender) {
-		// Head pose (for the layer) + per-eye views.
 		XrSpaceLocation hl = { XR_TYPE_SPACE_LOCATION };
 		xrLocateSpace(s_headSpace, s_stageSpace, s_frameState.predictedDisplayTime, &hl);
 		s_stageFromHead = hl.pose;
+		if (hl.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT)
+			s_headPoseValid = true;
+		// Seed the absorbed head origin on the first valid pose so the render starts at ~zero residual
+		// (avoids a one-tick position jump when the first VR_LatchHeadMove runs).
+		if (!s_headLatchInit && (hl.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT)) {
+			s_lastHeadX = s_stageFromHead.position.x;
+			s_lastHeadZ = s_stageFromHead.position.z;
+			s_headLatchInit = true;
+		}
 
 		XrViewLocateInfo vli = { XR_TYPE_VIEW_LOCATE_INFO };
 		vli.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
@@ -499,65 +671,408 @@ extern "C" bool VR_RenderTestFrame(void)
 		uint32_t got = 0;
 		for (int e = 0; e < kEyes; ++e) s_views[e].type = XR_TYPE_VIEW;
 		xrLocateViews(s_session, &vli, &vs, kEyes, &got, s_views);
-
-		for (int e = 0; e < kEyes; ++e) {
-			EyeFB& fb = s_eye[e];
-			uint32_t idx = 0;
-			XrSwapchainImageAcquireInfo ai = { XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO };
-			xrAcquireSwapchainImage(fb.swapchain, &ai, &idx);
-			XrSwapchainImageWaitInfo wi = { XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO };
-			wi.timeout = XR_INFINITE_DURATION;
-			xrWaitSwapchainImage(fb.swapchain, &wi);
-
-			glBindFramebuffer(GL_FRAMEBUFFER, fb.fbos[idx]);
-			glViewport(0, 0, s_eyeW, s_eyeH);
-			glClearColor(0.05f, 0.05f, 0.08f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			// view = inverse(stageFromEye); eye pose is in head space -> compose with head.
-			XrPosef stageFromEye = pose_mul(s_stageFromHead, s_views[e].pose);
-			float eyeM[16]; mat_from_pose(eyeM, stageFromEye);
-			float view[16];  mat_rigid_inverse(view, eyeM);
-			float proj[16];  proj_from_fov(proj, s_views[e].fov, 0.05f, 100.0f);
-			drawTestScene(proj, view);
-
-			const GLenum disc[1] = { GL_DEPTH_ATTACHMENT };
-			glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, disc);
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-			XrSwapchainImageReleaseInfo ri = { XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO };
-			xrReleaseSwapchainImage(fb.swapchain, &ri);
-
-			layerViews[e].type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW;
-			layerViews[e].pose = stageFromEye;
-			layerViews[e].fov  = s_views[e].fov;
-			layerViews[e].subImage.swapchain = fb.swapchain;
-			layerViews[e].subImage.imageRect.offset = { 0, 0 };
-			layerViews[e].subImage.imageRect.extent = { s_eyeW, s_eyeH };
-			layerViews[e].subImage.imageArrayIndex = 0;
-		}
-		layer.space = s_stageSpace;
-		layer.viewCount = kEyes;
-		layer.views = layerViews;
-		haveLayer = true;
+		for (int e = 0; e < kEyes; ++e)
+			s_stageFromEye[e] = pose_mul(s_stageFromHead, s_views[e].pose);
+		s_frameShouldRender = true;
 	}
+	return s_frameShouldRender;
+}
+
+extern "C" void VR_BeginEye(int eye)
+{
+	s_curEye = eye;
+	EyeFB& fb = s_eye[eye];
+	XrSwapchainImageAcquireInfo ai = { XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO };
+	xrAcquireSwapchainImage(fb.swapchain, &ai, &s_curEyeImageIdx);
+	XrSwapchainImageWaitInfo wi = { XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO };
+	wi.timeout = XR_INFINITE_DURATION;
+	xrWaitSwapchainImage(fb.swapchain, &wi);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, fb.fbos[s_curEyeImageIdx]);
+	glDisable(GL_SCISSOR_TEST);   // the engine's 2D view scissor must not clip the full-eye render
+
+	// The eye swapchain is sRGB so the compositor interprets it correctly, but the engine already
+	// outputs sRGB-encoded colour; disable the GL linear->sRGB write conversion so our bytes are
+	// stored verbatim (else the whole image -- world AND the 2D UI panel -- is over-brightened).
+	if (s_srgbWriteControl < 0) {
+		s_srgbWriteControl = hasGLExtension("GL_EXT_sRGB_write_control") ? 1 : 0;
+		A1VR_LOG("EXT_sRGB_write_control: %s", s_srgbWriteControl ? "present (disabling sRGB encode)" : "ABSENT");
+	}
+	if (s_srgbWriteControl == 1)
+		glDisable(GL_FRAMEBUFFER_SRGB_EXT);
+
+	glViewport(0, 0, s_eyeW, s_eyeH);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+extern "C" unsigned VR_CurrentEyeFramebuffer(void) { return s_eye[s_curEye].fbos[s_curEyeImageIdx]; }
+
+extern "C" void VR_GetEyeProjection(int eye, float* proj16, float zn, float zf)
+{
+	proj_from_fov(proj16, s_views[eye].fov, zn, zf);
+}
+
+extern "C" void VR_GetEyeViewMetres(int eye, float* view16)
+{
+	// Use the eye position RELATIVE to the absorbed head origin (horizontal only) so the render shows
+	// only the residual head movement since the last tick -- the body carries the rest. Without this
+	// the body-follows-head locomotion would double-count and movement would feel ~2x.
+	XrPosef p = s_stageFromEye[eye];
+	if (s_settings.roomScale && s_headLatchInit) { p.position.x -= s_lastHeadX; p.position.z -= s_lastHeadZ; }
+	float eyeM[16]; mat_from_pose(eyeM, p);
+	mat_rigid_inverse(view16, eyeM);
+}
+
+extern "C" void VR_FinishEye(int eye)
+{
+	EyeFB& fb = s_eye[eye];
+	glBindFramebuffer(GL_FRAMEBUFFER, fb.fbos[s_curEyeImageIdx]);
+	const GLenum disc[1] = { GL_DEPTH_ATTACHMENT };
+	glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, disc);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	XrSwapchainImageReleaseInfo ri = { XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO };
+	xrReleaseSwapchainImage(fb.swapchain, &ri);
+
+	s_layerViews[eye].type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW;
+	s_layerViews[eye].pose = s_stageFromEye[eye];
+	s_layerViews[eye].fov  = s_views[eye].fov;
+	s_layerViews[eye].subImage.swapchain = fb.swapchain;
+	s_layerViews[eye].subImage.imageRect.offset = { 0, 0 };
+	s_layerViews[eye].subImage.imageRect.extent = { s_eyeW, s_eyeH };
+	s_layerViews[eye].subImage.imageArrayIndex = 0;
+}
+
+extern "C" void VR_SubmitFrame(void)
+{
+	if (!s_frameBegun) return;
+	XrCompositionLayerProjection layer = { XR_TYPE_COMPOSITION_LAYER_PROJECTION };
+	layer.space = s_stageSpace;
+	layer.viewCount = kEyes;
+	layer.views = s_layerViews;
+	const XrCompositionLayerBaseHeader* layers[1] = { (XrCompositionLayerBaseHeader*)&layer };
 
 	XrFrameEndInfo fei = { XR_TYPE_FRAME_END_INFO };
 	fei.displayTime = s_frameState.predictedDisplayTime;
 	fei.environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
-	const XrCompositionLayerBaseHeader* layers[1] = { (XrCompositionLayerBaseHeader*)&layer };
-	fei.layerCount = haveLayer ? 1 : 0;
-	fei.layers = haveLayer ? layers : nullptr;
+	fei.layerCount = s_frameShouldRender ? 1 : 0;
+	fei.layers     = s_frameShouldRender ? layers : nullptr;
 	XR_CHECK(xrEndFrame(s_session, &fei));
+	s_frameBegun = false;
+}
+
+extern "C" int VR_EyeWidth(void)  { return s_eyeW; }
+extern "C" int VR_EyeHeight(void) { return s_eyeH; }
+extern "C" int VR_CurrentEye(void) { return s_curEye; }
+
+extern "C" bool VR_GetHmdYawPitch(float* yawAngleUnits, float* pitchAngleUnits)
+{
+	if (yawAngleUnits)   *yawAngleUnits   = 0;
+	if (pitchAngleUnits) *pitchAngleUnits = 0;
+	if (!s_headPoseValid) return false;
+
+	// Head-forward (head space -Z) rotated into stage space (Y-up, -Z forward) by the HMD quaternion.
+	const XrQuaternionf& q = s_stageFromHead.orientation;
+	const float fx = -2.0f * (q.x * q.z + q.w * q.y);
+	const float fy = -2.0f * (q.y * q.z - q.w * q.x);
+	const float fz = -(1.0f - 2.0f * (q.x * q.x + q.y * q.y));
+
+	const float kUnitsPerRad = 512.0f / (2.0f * 3.14159265358979f);   // NUMBER_OF_ANGLES / 2pi
+	// World-frame azimuth contribution to ADD to the body yaw, derived so view->yaw matches the
+	// per-eye modelview's camera direction exactly: modelview maps head-forward (fx,fy,fz) through
+	// M^-1 (zUpToYUp inverse: stage(sx,sy,sz)->world(-sx,-sz,sy)) giving world dir (-fx,-fz,fy), whose
+	// Marathon azimuth is atan2(j,i) = atan2(-fz,-fx). (Using atan2(fx,-fz) before put the visibility
+	// cone ~90 deg off the camera even at neutral -> the world looked back-to-front.)
+	const float yawRad   = std::atan2(-fz, -fx);
+	float s = fy; if (s > 1.0f) s = 1.0f; else if (s < -1.0f) s = -1.0f;
+	const float pitchRad = std::asin(s);                             // + = looking up (world elevation)
+
+	if (yawAngleUnits)   *yawAngleUnits   = yawRad   * kUnitsPerRad;
+	if (pitchAngleUnits) *pitchAngleUnits = pitchRad * kUnitsPerRad;
 	return true;
+}
+
+extern "C" void VR_GetMove(float* x, float* y) { if (x) *x = s_moveX; if (y) *y = s_moveY; }
+extern "C" void VR_GetTurn(float* x)           { if (x) *x = s_turnX; }
+
+// Deadzoned + rescaled thumbstick so partial deflection gives proportionally slower movement.
+extern "C" void VR_GetAnalogMove(float* strafe, float* forward)
+{
+	const float dead = 0.15f;
+	auto curve = [&](float v) -> float {
+		const float a = std::fabs(v);
+		if (a <= dead) return 0.0f;
+		const float t = (a - dead) / (1.0f - dead);   // just past deadzone -> ~0, full -> 1
+		return (v < 0 ? -t : t);
+	};
+	if (strafe)  *strafe  = curve(s_moveX);
+	if (forward) *forward = curve(s_moveY);
+}
+
+// Capture the head's physical movement since the last call as a world-space body delta (map x,y),
+// so the engine can move the player to follow the head (with collision). Call once per real tick.
+extern "C" void VR_LatchHeadMove(void)
+{
+	const float hx = s_stageFromHead.position.x;
+	const float hz = s_stageFromHead.position.z;
+	if (!s_headLatchInit || !s_headPoseValid) {
+		s_lastHeadX = hx; s_lastHeadZ = hz;
+		s_headLatchInit = s_headPoseValid;
+		s_headMoveX = s_headMoveY = 0;
+		return;
+	}
+	float dhx = hx - s_lastHeadX;
+	float dhz = hz - s_lastHeadZ;
+	s_lastHeadX = hx; s_lastHeadZ = hz;
+
+	// Diagnostic: log the raw per-tick head delta (throttled). A standing-still head should be ~0.
+	static int s_dbg = 0;
+	if ((s_dbg++ % 30) == 0)
+		A1VR_LOG("headmove: pos=(%.3f,%.3f) d=(%.4f,%.4f) m/tick", hx, hz, dhx, dhz);
+
+	// Safety clamp: a real head moves < ~0.1 m between ticks (30 Hz). Clamp so a tracking spike or
+	// bug can't launch the player at light speed.
+	const float kMax = 0.1f;
+	if (dhx >  kMax) dhx =  kMax; else if (dhx < -kMax) dhx = -kMax;
+	if (dhz >  kMax) dhz =  kMax; else if (dhz < -kMax) dhz = -kMax;
+
+	// World body delta = Rz(yawOffset) * (-dhx, -dhz) * worldScale (matches the render's head-offset:
+	// head_world = origin + Rz(yawOffset) * (-hx, -hz) * W). Stage deltas keep snap-turns from
+	// registering as movement (a snap rotates the play space, not the head's physical position).
+	const float W  = s_settings.worldScaleWUM;
+	const float yr = s_yawOffset * (2.0f * 3.14159265358979f / 512.0f);
+	const float c  = std::cos(yr), s = std::sin(yr);
+	s_headMoveX = W * (-c * dhx + s * dhz);
+	s_headMoveY = W * (-s * dhx - c * dhz);
+}
+
+extern "C" void VR_GetHeadMove(float* x, float* y) {
+	const bool on = s_settings.roomScale != 0;
+	if (x) *x = on ? s_headMoveX : 0.0f;
+	if (y) *y = on ? s_headMoveY : 0.0f;
+}
+extern "C" bool VR_GetFire(void)               { return s_fire; }
+extern "C" bool VR_GetSecondaryFire(void)      { return s_altFire; }
+extern "C" bool VR_GetAction(void)             { return s_action; }
+
+namespace { bool s_worldFramePresented = false; }
+extern "C" void VR_MarkWorldFramePresented(void) { s_worldFramePresented = true; }
+extern "C" bool VR_TakeWorldFramePresented(void) { bool v = s_worldFramePresented; s_worldFramePresented = false; return v; }
+
+// ---------------------------------------------------------- screen layer ----
+namespace {
+	constexpr int kScreenW = 1280, kScreenH = 1024;   // matches change_screen_mode's VR vmode default
+	GLuint s_screenFBO = 0, s_screenTex = 0, s_screenDepth = 0;
+	GLuint s_quadProg = 0, s_quadVAO = 0, s_quadVBO = 0;
+	GLint  s_quadTexLoc = -1, s_quadMVPLoc = -1;
+
+	void ensureScreenLayer() {
+		if (s_screenFBO) return;
+		glGenTextures(1, &s_screenTex);
+		glBindTexture(GL_TEXTURE_2D, s_screenTex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, kScreenW, kScreenH, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glGenRenderbuffers(1, &s_screenDepth);
+		glBindRenderbuffer(GL_RENDERBUFFER, s_screenDepth);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, kScreenW, kScreenH);
+		glGenFramebuffers(1, &s_screenFBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, s_screenFBO);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, s_screenTex, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, s_screenDepth);
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			A1VR_LOG("screen layer FBO incomplete");
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		static const char* vs =
+			"#version 300 es\n"
+			"layout(location=0) in vec2 aPos;\n"
+			"uniform mat4 uMVP;\n"
+			"out vec2 vUV;\n"
+			"void main(){ vUV = aPos*0.5+0.5; gl_Position = uMVP * vec4(aPos,0.0,1.0); }\n";
+		static const char* fs =
+			"#version 300 es\n"
+			"precision mediump float;\n"
+			"in vec2 vUV; out vec4 o; uniform sampler2D uTex;\n"
+			"void main(){ o = texture(uTex, vUV); }\n";
+		GLuint v = compile(GL_VERTEX_SHADER, vs), f = compile(GL_FRAGMENT_SHADER, fs);
+		s_quadProg = glCreateProgram();
+		glAttachShader(s_quadProg, v); glAttachShader(s_quadProg, f); glLinkProgram(s_quadProg);
+		glDeleteShader(v); glDeleteShader(f);
+		s_quadTexLoc = glGetUniformLocation(s_quadProg, "uTex");
+		s_quadMVPLoc = glGetUniformLocation(s_quadProg, "uMVP");
+		const float quad[] = { -1,-1,  1,-1,  1,1,  -1,-1,  1,1,  -1,1 };
+		glGenVertexArrays(1, &s_quadVAO);
+		glGenBuffers(1, &s_quadVBO);
+		glBindVertexArray(s_quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, s_quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof quad, quad, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+		glBindVertexArray(0);
+	}
+}
+
+// ----------------------------------------------------------- dim pass ----
+namespace {
+	GLuint s_dimProg = 0, s_dimVAO = 0, s_dimVBO = 0;
+	GLint  s_dimColorLoc = -1;
+
+	void ensureDim() {
+		if (s_dimProg) return;
+		static const char* vs =
+			"#version 300 es\n"
+			"layout(location=0) in vec2 aPos;\n"
+			"void main(){ gl_Position = vec4(aPos,0.0,1.0); }\n";
+		static const char* fs =
+			"#version 300 es\n"
+			"precision mediump float;\n"
+			"uniform vec4 uColor; out vec4 o;\n"
+			"void main(){ o = uColor; }\n";
+		GLuint v = compile(GL_VERTEX_SHADER, vs), f = compile(GL_FRAGMENT_SHADER, fs);
+		s_dimProg = glCreateProgram();
+		glAttachShader(s_dimProg, v); glAttachShader(s_dimProg, f); glLinkProgram(s_dimProg);
+		glDeleteShader(v); glDeleteShader(f);
+		s_dimColorLoc = glGetUniformLocation(s_dimProg, "uColor");
+		const float quad[] = { -1,-1,  1,-1,  1,1,  -1,-1,  1,1,  -1,1 };
+		glGenVertexArrays(1, &s_dimVAO);
+		glGenBuffers(1, &s_dimVBO);
+		glBindVertexArray(s_dimVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, s_dimVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof quad, quad, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+		glBindVertexArray(0);
+	}
+}
+
+extern "C" void VR_DimCurrentEye(void)
+{
+	const float b = s_settings.brightness;
+	if (b >= 0.999f) return;
+	ensureDim();
+	glBindFramebuffer(GL_FRAMEBUFFER, s_eye[s_curEye].fbos[s_curEyeImageIdx]);
+	glViewport(0, 0, s_eyeW, s_eyeH);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_SCISSOR_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ZERO, GL_SRC_COLOR);   // result = dst * srcColor  -> multiply the eye by (b,b,b)
+	glUseProgram(s_dimProg);
+	glUniform4f(s_dimColorLoc, b, b, b, 1.0f);
+	glBindVertexArray(s_dimVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+	glDisable(GL_BLEND);
+}
+
+extern "C" unsigned VR_ScreenLayerFramebuffer(void) { ensureScreenLayer(); return s_screenFBO; }
+extern "C" int VR_ScreenLayerWidth(void)  { return kScreenW; }
+extern "C" int VR_ScreenLayerHeight(void) { return kScreenH; }
+
+extern "C" void VR_PresentScreenLayer(void)
+{
+	if (!s_active) return;
+	ensureScreenLayer();
+	const bool render = VR_BeginFrame();
+	if (render) {
+		// Draw the 2D UI as a flat, head-locked panel floating in a black void (the eye buffer is
+		// cleared black by VR_BeginEye) rather than a fullscreen blit that fills the whole FOV and
+		// hurts the eyes. The panel sits screenDistanceM ahead at screenHeightM tall (width follows
+		// the texture's aspect), with proper per-eye projection so it has comfortable stereo depth.
+		const float D = s_settings.screenDistanceM;
+		const float halfH = 0.5f * s_settings.screenHeightM;
+		const float halfW = halfH * (float)kScreenW / (float)kScreenH;
+		float model[16] = { halfW,0,0,0,  0,halfH,0,0,  0,0,1,0,  0,0,-D,1 };
+
+		for (int e = 0; e < kEyes; ++e) {
+			VR_BeginEye(e);
+			float proj[16];
+			VR_GetEyeProjection(e, proj, 0.05f, 50.0f);
+			// Head-locked: place the panel in head space, then map head->eye (= inverse of the eye's
+			// pose in VIEW space, since xrLocateViews used the head reference space).
+			float headFromEye[16]; mat_from_pose(headFromEye, s_views[e].pose);
+			float eyeFromHead[16]; mat_rigid_inverse(eyeFromHead, headFromEye);
+			float mv[16];  mat_mul(mv, eyeFromHead, model);
+			float mvp[16]; mat_mul(mvp, proj, mv);
+
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_CULL_FACE);
+			glUseProgram(s_quadProg);
+			glUniformMatrix4fv(s_quadMVPLoc, 1, GL_FALSE, mvp);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, s_screenTex);
+			glUniform1i(s_quadTexLoc, 0);
+			glBindVertexArray(s_quadVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glBindVertexArray(0);
+			VR_FinishEye(e);
+		}
+	}
+	VR_SubmitFrame();
+}
+
+// Per-frame fallback for non-3D frames (menus/loading): render the test room to both eyes.
+extern "C" bool VR_RenderTestFrame(void)
+{
+	if (!s_active) return false;
+	const bool render = VR_BeginFrame();
+	if (render) {
+		for (int e = 0; e < kEyes; ++e) {
+			VR_BeginEye(e);
+			float proj[16], view[16];
+			VR_GetEyeProjection(e, proj, 0.05f, 100.0f);
+			VR_GetEyeViewMetres(e, view);
+			drawTestScene(proj, view);
+			VR_FinishEye(e);
+		}
+	}
+	VR_SubmitFrame();   // no-ops if no frame was begun (session not running)
+	return s_active;
 }
 
 #else // !__ANDROID__
 
 extern "C" bool VR_InitOpenXR(void)     { return false; }
 extern "C" bool VR_IsActive(void)       { return false; }
+extern "C" vr_settings_t* VR_Settings(void) {
+	static vr_settings_t s = { 1, 2.5f, 2.0f, 512.0f, 1.6f, 1, 30.0f, 1.0f, 0 };
+	return &s;
+}
+extern "C" float VR_GetYawOffset(void)   { return 0.0f; }
+extern "C" void  VR_UpdateTurn(float, float) {}
+extern "C" void  VR_SetYawOffset(float)  {}
+extern "C" void  VR_DimCurrentEye(void)  {}
 extern "C" bool VR_RenderTestFrame(void){ return false; }
 extern "C" bool VR_InitEGL(void)        { return false; }
 extern "C" bool VR_GetEyeResolution(int* w, int* h) { (void)w; (void)h; return false; }
+extern "C" bool VR_GetHmdYawPitch(float* y, float* p) { if (y) *y = 0; if (p) *p = 0; return false; }
+extern "C" void VR_GetMove(float* x, float* y) { if (x) *x = 0; if (y) *y = 0; }
+extern "C" void VR_GetTurn(float* x)           { if (x) *x = 0; }
+extern "C" void VR_GetAnalogMove(float* s, float* f) { if (s) *s = 0; if (f) *f = 0; }
+extern "C" void VR_LatchHeadMove(void) {}
+extern "C" void VR_GetHeadMove(float* x, float* y) { if (x) *x = 0; if (y) *y = 0; }
+extern "C" bool VR_GetFire(void)               { return false; }
+extern "C" bool VR_GetSecondaryFire(void)      { return false; }
+extern "C" bool VR_GetAction(void)             { return false; }
+extern "C" bool VR_BeginFrame(void)     { return false; }
+extern "C" void VR_BeginEye(int)        {}
+extern "C" void VR_FinishEye(int)       {}
+extern "C" void VR_GetEyeProjection(int, float*, float, float) {}
+extern "C" void VR_GetEyeViewMetres(int, float*) {}
+extern "C" void VR_SubmitFrame(void)    {}
+extern "C" int  VR_EyeWidth(void)       { return 0; }
+extern "C" int  VR_EyeHeight(void)      { return 0; }
+extern "C" unsigned VR_CurrentEyeFramebuffer(void) { return 0; }
+extern "C" int  VR_CurrentEye(void)     { return 0; }
+extern "C" void VR_MarkWorldFramePresented(void) {}
+extern "C" bool VR_TakeWorldFramePresented(void) { return false; }
+extern "C" unsigned VR_ScreenLayerFramebuffer(void) { return 0; }
+extern "C" void VR_PresentScreenLayer(void) {}
+extern "C" int  VR_ScreenLayerWidth(void)  { return 0; }
+extern "C" int  VR_ScreenLayerHeight(void) { return 0; }
 
 #endif

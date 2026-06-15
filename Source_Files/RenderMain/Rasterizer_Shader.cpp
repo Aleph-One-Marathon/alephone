@@ -19,6 +19,7 @@
 #include "AnimatedTextures.h"
 #include "OGL_Faders.h"
 #include "OGL_FBO.h"
+#include "vr_openxr.h"
 #include "OGL_Textures.h"
 #include "OGL_Shader.h"
 #include "ChaseCam.h"
@@ -125,6 +126,37 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 //	glRotated(roll, 1.0, 0.0, 0.0);
 	glRotated(-yaw, 0.0, 0.0, 1.0);
 	glTranslated(-view.origin.x, -view.origin.y, -view.origin.z);
+
+#if defined(__ANDROID__)
+	if (VR_IsActive())
+	{
+		// Override the engine camera with the OpenXR per-eye projection + head-pose view. The view
+		// is eyeFromStage (metres, Y-up) composed with the Marathon world transform (Z-up, world
+		// units): modelview = eyeFromStage * S(1/WUperMetre) * (Z-up->Y-up) * Rz(-bodyYaw) * T(-origin).
+		// bodyYaw = the engine's locomotion yaw; head yaw/pitch/roll ride in via eyeFromStage.
+		const int eye = VR_CurrentEye();
+		const float WUperMetre = VR_Settings()->worldScaleWUM;  // ~1 WORLD_ONE per 2 m; tune for comfort
+		const float eyeHeightM = VR_Settings()->eyeHeightM;     // align the standing HMD eye with the Marathon eye
+
+		float vrProj[16];
+		VR_GetEyeProjection(eye, vrProj, 0.05f, (128.0f * 1024.0f) / WUperMetre);
+		glMatrixMode(GL_PROJECTION);
+		glLoadMatrixf(vrProj);
+
+		float vrView[16];   // eyeFromStage, metres
+		VR_GetEyeViewMetres(eye, vrView);
+		// world(Marathon, Z-up, left-handed yaw) -> stage(Y-up): (x,y,z) -> (-x, z, -y). The negated
+		// X makes this det=-1 to match the engine's kViewBaseMatrix handedness (else the world is
+		// mirrored). With det=-1 the engine's glFrontFace(GL_CW) culling is correct (no shim flip).
+		static const float zUpToYUp[16] = { -1,0,0,0,  0,0,-1,0,  0,1,0,0,  0,0,0,1 };
+		glMatrixMode(GL_MODELVIEW);
+		glLoadMatrixf(vrView);
+		glScalef(1.0f / WUperMetre, 1.0f / WUperMetre, 1.0f / WUperMetre);
+		glMultMatrixf(zUpToYUp);
+		glRotated(-yaw, 0.0, 0.0, 1.0);
+		glTranslated(-view.origin.x, -view.origin.y, -(view.origin.z - eyeHeightM * WUperMetre));
+	}
+#endif
 }
 
 void Rasterizer_Shader_Class::setupGL()
@@ -142,6 +174,15 @@ void Rasterizer_Shader_Class::setupGL()
 void Rasterizer_Shader_Class::Begin()
 {
 	Rasterizer_OGL_Class::Begin();
+#if defined(__ANDROID__)
+	if (VR_IsActive()) {
+		// Render the world straight into the eye swapchain FBO (bound + cleared by VR_BeginEye) at
+		// eye resolution. Skip the FBOSwapper: its size/aspect differ from the eye (causing the
+		// stretch/smear) and it blits to the screen, not the eye buffer. (No gamma/bloom in VR yet.)
+		glViewport(0, 0, VR_EyeWidth(), VR_EyeHeight());
+		return;
+	}
+#endif
 	swapper->activate();
 	if (smear_the_void)
 		swapper->current_contents().draw_full();
@@ -149,6 +190,14 @@ void Rasterizer_Shader_Class::Begin()
 
 void Rasterizer_Shader_Class::End()
 {
+#if defined(__ANDROID__)
+	if (VR_IsActive()) {
+		// The world is already in the bound eye FBO; no swapper resolve / gamma / screen blit.
+		// (Brightness is applied per-fragment in the shader via a1_Brightness, set by the shim.)
+		Rasterizer_OGL_Class::End();
+		return;
+	}
+#endif
 	swapper->deactivate();
 	swapper->swap();
 	
@@ -158,6 +207,14 @@ void Rasterizer_Shader_Class::End()
 		s->enable();
 		s->setFloat(Shader::U_GammaAdjust, gamma_adj);
 	}
+#if defined(__ANDROID__)
+	// VR: the FBOSwapper's deactivate left the pbuffer/default FB bound; the final composite must
+	// target the bound eye swapchain framebuffer at eye resolution.
+	if (VR_IsActive()) {
+		glBindFramebuffer(GL_FRAMEBUFFER, VR_CurrentEyeFramebuffer());
+		glViewport(0, 0, VR_EyeWidth(), VR_EyeHeight());
+	}
+#endif
 	swapper->draw();
 	Shader::disable();
 	

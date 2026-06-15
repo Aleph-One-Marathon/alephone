@@ -1051,6 +1051,14 @@ bool idle_game_state(uint64_t time)
 
 				case _display_intro_screens_for_demo:
 				case _display_main_menu:
+#if defined(__ANDROID__)
+					// VR: the menu isn't navigable yet (no controller pointer wired up), so after the
+					// menu has shown briefly, auto-start a single-player game so we drop into a level.
+					// TEMP until OpenXR controller input + a VR menu cursor land (Phase 3).
+					if (!begin_game(_single_player, false))
+						game_state.phase = TICKS_UNTIL_DEMO_STARTS;
+					break;
+#endif
 					/* Start the demo.. */
 					if(!environment_preferences->auto_play_demos ||
 					   !begin_game(_demo, false))
@@ -1244,7 +1252,11 @@ void display_main_menu(
 {
 	game_state.state= _display_main_menu;
 	game_state.current_screen= 0;
+#if defined(__ANDROID__)
+	game_state.phase= MACHINE_TICKS_PER_SECOND;   // VR: drop into the level quickly (menu not navigable yet)
+#else
 	game_state.phase= TICKS_UNTIL_DEMO_STARTS;
+#endif
 	game_state.last_ticks_on_idle= machine_tick_count();
 	game_state.user= _single_player;
 	game_state.flags= 0;
@@ -2583,11 +2595,9 @@ static bool begin_game(
 			break;
 			
 		case _single_player:
-#if defined(__ANDROID__)
-			// TEMP: the Quest has no keyboard to hold the modifier that triggers the level
-			// selector, so always offer it on New Game to allow testing arbitrary levels.
-			cheat = true;
-#endif
+			// NOTE (Android/VR): the level selector (cheat) needs a pointer to use and the menu
+			// isn't navigable in VR yet, so we leave cheat as passed -- VR auto-starts level 0 (see
+			// idle_game_state). A VR level-select UI comes with controller input in Phase 3.
 			if(cheat)
 			{
 				entry.level_number= get_level_number_from_user();

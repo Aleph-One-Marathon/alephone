@@ -89,6 +89,8 @@ running backwards shouldn’t mean doom in a fistfight
 #include "ChaseCam.h"
 #include "Packing.h"
 
+#include "vr_openxr.h"   // VR analog movement + room-scale head tracking
+
 #include <string.h>
 #include <cstdlib>
 #include <algorithm>
@@ -195,6 +197,22 @@ void update_player_physics_variables(
 	struct physics_constants *constants= get_physics_constants_for_model(static_world->physics_model, action_flags);
 
 	physics_update(constants, variables, player, action_flags);
+
+#if defined(__ANDROID__)
+	// VR room-scale: move the player to follow the head's physical movement this tick (QuestZDoom
+	// model). Added to the integrated position BEFORE instantiate_physics_variables clips it against
+	// walls, so the body can't pass through them -- this is what stops your head going through walls
+	// and keeps the body under the head in corridors. Only on the real (non-predictive) update.
+	if (VR_IsActive() && !predictive && player == local_player)
+	{
+		VR_LatchHeadMove();
+		float wx = 0, wy = 0;
+		VR_GetHeadMove(&wx, &wy);
+		variables->position.x += (_fixed)(wx * FIXED_ONE);
+		variables->position.y += (_fixed)(wy * FIXED_ONE);
+	}
+#endif
+
 	instantiate_physics_variables(constants, variables, player_index, false, !predictive);
 
 #ifdef DIVERGENCE_CHECK
@@ -828,6 +846,20 @@ static void physics_update(
 	if (variables->direction<0) variables->direction+= INTEGER_TO_FIXED(FULL_CIRCLE);
 	if (variables->direction>=INTEGER_TO_FIXED(FULL_CIRCLE)) variables->direction-= INTEGER_TO_FIXED(FULL_CIRCLE);
 	
+#if defined(__ANDROID__)
+	// VR: drive the local player's velocity straight from the analog stick (partial deflection ->
+	// proportionally slower, like QuestZDoom) instead of the discrete accelerate-to-max flag logic.
+	// Forward is along facing, perpendicular is strafe. (Flip strafe sign here if it's reversed.)
+	if (VR_IsActive() && player == local_player)
+	{
+		float strafe = 0, forward = 0;
+		VR_GetAnalogMove(&strafe, &forward);
+		variables->velocity = (_fixed)(forward * (forward >= 0 ?
+			constants->maximum_forward_velocity : constants->maximum_backward_velocity));
+		variables->perpendicular_velocity = (_fixed)(strafe * constants->maximum_perpendicular_velocity);
+	}
+#endif
+
 	/* change the player’s x,y position based on his direction and velocities (parallel and perpendicular)  */
 	new_position= variables->position;
 	cosine= cosine_table[FIXED_INTEGERAL_PART(variables->direction)], sine= sine_table[FIXED_INTEGERAL_PART(variables->direction)];
