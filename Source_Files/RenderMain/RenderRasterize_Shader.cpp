@@ -1150,7 +1150,15 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 
 			
 	float offset = 0;
-	if (OGL_ForceSpriteDepth()) {
+	// In VR, keep depth-testing ON for sprites (like OGL_ForceSpriteDepth): the classic painter's-only
+	// path (depth test off) relies on the BSP back-to-front sort, which is computed for the mono body
+	// view and doesn't hold for each eye in stereo -> sprites punch through walls. Depth testing
+	// against the walls' depth buffer resolves occlusion correctly per-eye.
+	bool force_sprite_depth = OGL_ForceSpriteDepth();
+#if defined(__ANDROID__)
+	if (VR_IsActive()) force_sprite_depth = true;
+#endif
+	if (force_sprite_depth) {
 		// look for parasitic objects based on y position,
 		// and offset them to draw in proper depth order
 		if(pos.y == objectY) {

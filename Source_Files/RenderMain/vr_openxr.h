@@ -79,6 +79,13 @@ void VR_GetMove(float* x, float* y);   // left thumbstick: x=strafe, y=forward(+
 void VR_GetAnalogMove(float* strafe, float* forward);
 void VR_LatchHeadMove(void);
 void VR_GetHeadMove(float* x, float* y);
+
+// Head horizontal position relative to the recenter reference, in Marathon world units (map x,y).
+// The engine applies this to the VIEW ORIGIN (clamped against walls) so leaning/walking moves the
+// camera + visibility origin without touching the physics position (render-side -> can't fly).
+// VR_RecenterHead pins the reference to the current head (offset becomes 0 from there).
+void VR_GetHeadOffset(float* wx, float* wy);
+void VR_RecenterHead(void);
 void VR_GetTurn(float* x);             // right thumbstick X: snap/smooth turn
 bool VR_GetFire(void);                 // right trigger
 bool VR_GetSecondaryFire(void);        // left trigger

@@ -1295,6 +1295,38 @@ void update_world_view_camera()
 		world_view->origin.z -= current_player->step_height;
 	world_view->origin_polygon_index = current_player->camera_polygon_index;
 
+#if defined(__ANDROID__)
+	// VR head lean/walk: offset the VIEW ORIGIN (and thus the visibility-tree origin + camera) by the
+	// head's horizontal position, clamped against walls. This is RENDER-SIDE only -- it never touches
+	// current_player's physics position (which Marathon predicts and would fling if nudged) -- so it
+	// can't fly, and it makes the visibility tree originate at the head (fixes leaning-reveals-missing-
+	// walls) while stopping the view at solid walls (no head-through-walls).
+	if (VR_IsActive())
+	{
+		float ox = 0, oy = 0;
+		VR_GetHeadOffset(&ox, &oy);
+		if (ox != 0.0f || oy != 0.0f)
+		{
+			world_point3d desired = world_view->origin;
+			desired.x += (world_distance)ox;
+			desired.y += (world_distance)oy;
+			world_distance fl, ce; short support = world_view->origin_polygon_index;
+			// slide the offset out of solid walls (keeps the camera ~1/8 WU from walls)
+			keep_line_segment_out_of_walls(world_view->origin_polygon_index, &world_view->origin, &desired,
+				WORLD_ONE, WORLD_ONE / 2, &fl, &ce, &support);
+			// track which polygon the clamped point lands in (through portals); NONE = blocked -> skip
+			short poly = find_new_object_polygon((world_point2d*)&world_view->origin,
+				(world_point2d*)&desired, world_view->origin_polygon_index);
+			if (poly != NONE)
+			{
+				world_view->origin.x = desired.x;
+				world_view->origin.y = desired.y;
+				world_view->origin_polygon_index = poly;
+			}
+		}
+	}
+#endif
+
 	// Script-based camera control
 	auto use_cameras = UseLuaCameras();
 

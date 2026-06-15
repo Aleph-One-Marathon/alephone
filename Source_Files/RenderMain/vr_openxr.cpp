@@ -78,6 +78,10 @@ bool         s_headPoseValid = false;   // s_stageFromHead orientation has been 
 float        s_lastHeadX = 0, s_lastHeadZ = 0;
 bool         s_headLatchInit = false;
 float        s_headMoveX = 0, s_headMoveY = 0;   // latched per-tick body delta, world units (map x,y)
+// Recenter reference (stage metres, horizontal): the head's position is reported RELATIVE to this, so
+// the view lean/walk offset starts at 0 wherever the player is standing when recentered.
+float        s_headRefX = 0, s_headRefZ = 0;
+bool         s_headRefInit = false;
 
 // Engine-owned headless EGL context (no window surface).
 EGLDisplay s_eglDpy  = EGL_NO_DISPLAY;
@@ -472,7 +476,8 @@ namespace {
 		/* snapTurn        */ 1,
 		/* turnDegrees     */ 30.0f,
 		/* brightness      */ 1.0f,   // neutral; real fix is the sRGB write-control below
-		/* roomScale       */ 0,      // OFF until the head-delta feed is verified (was launching the player)
+		/* roomScale       */ 0,      // OFF: body-follows-head conflicts with Marathon's tick/interpolation
+		                            //      (camera lurches per tick). Stable 6DOF head view + stick for now.
 	};
 
 	// Locomotion yaw offset (snap/smooth turn), in Marathon angle units (512 = full circle).
@@ -718,8 +723,13 @@ extern "C" void VR_GetEyeViewMetres(int eye, float* view16)
 	// Use the eye position RELATIVE to the absorbed head origin (horizontal only) so the render shows
 	// only the residual head movement since the last tick -- the body carries the rest. Without this
 	// the body-follows-head locomotion would double-count and movement would feel ~2x.
+	// The head's HORIZONTAL position is applied to the VIEW ORIGIN engine-side (VR_GetHeadOffset,
+	// clamped against walls), so here the camera keeps only the per-eye IPD separation horizontally
+	// (eye relative to head). Keep full vertical (duck) + full orientation. This is render-side only
+	// (never the physics position), so it can't fly.
 	XrPosef p = s_stageFromEye[eye];
-	if (s_settings.roomScale && s_headLatchInit) { p.position.x -= s_lastHeadX; p.position.z -= s_lastHeadZ; }
+	p.position.x = s_stageFromEye[eye].position.x - s_stageFromHead.position.x;
+	p.position.z = s_stageFromEye[eye].position.z - s_stageFromHead.position.z;
 	float eyeM[16]; mat_from_pose(eyeM, p);
 	mat_rigid_inverse(view16, eyeM);
 }
@@ -826,14 +836,9 @@ extern "C" void VR_LatchHeadMove(void)
 	float dhz = hz - s_lastHeadZ;
 	s_lastHeadX = hx; s_lastHeadZ = hz;
 
-	// Diagnostic: log the raw per-tick head delta (throttled). A standing-still head should be ~0.
-	static int s_dbg = 0;
-	if ((s_dbg++ % 30) == 0)
-		A1VR_LOG("headmove: pos=(%.3f,%.3f) d=(%.4f,%.4f) m/tick", hx, hz, dhx, dhz);
-
-	// Safety clamp: a real head moves < ~0.1 m between ticks (30 Hz). Clamp so a tracking spike or
-	// bug can't launch the player at light speed.
-	const float kMax = 0.1f;
+	// Safety clamp (catastrophe guard only -- normal lean/walk is well under this; the old takeoff was
+	// the residual/rate bug, now removed, not large deltas). ~0.15 m/tick = ~4.5 m/s head speed.
+	const float kMax = 0.15f;
 	if (dhx >  kMax) dhx =  kMax; else if (dhx < -kMax) dhx = -kMax;
 	if (dhz >  kMax) dhz =  kMax; else if (dhz < -kMax) dhz = -kMax;
 
@@ -845,12 +850,38 @@ extern "C" void VR_LatchHeadMove(void)
 	const float c  = std::cos(yr), s = std::sin(yr);
 	s_headMoveX = W * (-c * dhx + s * dhz);
 	s_headMoveY = W * (-s * dhx - c * dhz);
+
+	// Diagnostic (throttled): raw head delta (m/tick, post-clamp) + resulting body delta (world units).
+	static int s_dbg = 0;
+	if ((s_dbg++ % 15) == 0)
+		A1VR_LOG("headmove: pos=(%.3f,%.3f) d=(%.4f,%.4f) -> body=(%.2f,%.2f) wu", hx, hz, dhx, dhz, s_headMoveX, s_headMoveY);
 }
 
-extern "C" void VR_GetHeadMove(float* x, float* y) {
-	const bool on = s_settings.roomScale != 0;
-	if (x) *x = on ? s_headMoveX : 0.0f;
-	if (y) *y = on ? s_headMoveY : 0.0f;
+extern "C" void VR_GetHeadMove(float* x, float* y) { if (x) *x = s_headMoveX; if (y) *y = s_headMoveY; }
+
+extern "C" void VR_RecenterHead(void)
+{
+	if (s_headPoseValid) { s_headRefX = s_stageFromHead.position.x; s_headRefZ = s_stageFromHead.position.z; s_headRefInit = true; }
+}
+
+// The head's HORIZONTAL position relative to the recenter reference, mapped to Marathon world units
+// (map x,y). The engine applies this to the VIEW ORIGIN (clamped against walls) so leaning/walking
+// moves the camera + visibility origin -- render-side only, never the physics position.
+extern "C" void VR_GetHeadOffset(float* wx, float* wy)
+{
+	if (wx) *wx = 0; if (wy) *wy = 0;
+	if (!s_headPoseValid) return;
+	if (!s_headRefInit) {   // auto-recenter on first valid pose -> offset starts at 0
+		s_headRefX = s_stageFromHead.position.x; s_headRefZ = s_stageFromHead.position.z;
+		s_headRefInit = true; return;
+	}
+	const float dhx = s_stageFromHead.position.x - s_headRefX;
+	const float dhz = s_stageFromHead.position.z - s_headRefZ;
+	const float W  = s_settings.worldScaleWUM;
+	const float yr = s_yawOffset * (2.0f * 3.14159265358979f / 512.0f);
+	const float c  = std::cos(yr), s = std::sin(yr);
+	if (wx) *wx = W * (-c * dhx + s * dhz);
+	if (wy) *wy = W * (-s * dhx - c * dhz);
 }
 extern "C" bool VR_GetFire(void)               { return s_fire; }
 extern "C" bool VR_GetSecondaryFire(void)      { return s_altFire; }
@@ -1055,6 +1086,8 @@ extern "C" void VR_GetTurn(float* x)           { if (x) *x = 0; }
 extern "C" void VR_GetAnalogMove(float* s, float* f) { if (s) *s = 0; if (f) *f = 0; }
 extern "C" void VR_LatchHeadMove(void) {}
 extern "C" void VR_GetHeadMove(float* x, float* y) { if (x) *x = 0; if (y) *y = 0; }
+extern "C" void VR_RecenterHead(void) {}
+extern "C" void VR_GetHeadOffset(float* x, float* y) { if (x) *x = 0; if (y) *y = 0; }
 extern "C" bool VR_GetFire(void)               { return false; }
 extern "C" bool VR_GetSecondaryFire(void)      { return false; }
 extern "C" bool VR_GetAction(void)             { return false; }
