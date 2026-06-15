@@ -1313,6 +1313,11 @@ void update_world_view_camera()
 	// walls) while stopping the view at solid walls (no head-through-walls).
 	if (VR_IsActive())
 	{
+		// Raise/lower the view (and thus the visibility-tree) Z to the true HMD eye height so floors
+		// (e.g. step tops) are clipped for where the eye actually is. The Rasterizer subtracts this
+		// back, so the rendered camera height is unchanged.
+		world_view->origin.z += (world_distance)VR_GetEyeZOffset();
+
 		float ox = 0, oy = 0;
 		VR_GetHeadOffset(&ox, &oy);
 		if (ox != 0.0f || oy != 0.0f)

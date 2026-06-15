@@ -904,6 +904,16 @@ extern "C" void VR_LatchHeadMove(void)
 
 extern "C" void VR_GetHeadMove(float* x, float* y) { if (x) *x = s_headMoveX; if (y) *y = s_headMoveY; }
 
+// Vertical offset of the actual HMD eye from the neutral standing eye height, in Marathon world
+// units (negative when seated/ducking). The engine adds this to view->origin.z so the visibility
+// tree clips floors/ceilings at the TRUE eye height (fixes step-top floors vanishing when seated);
+// the Rasterizer subtracts it back so the rendered camera is unchanged.
+extern "C" float VR_GetEyeZOffset(void)
+{
+	if (!s_headPoseValid) return 0.0f;
+	return (s_stageFromHead.position.y - s_settings.eyeHeightM) * s_settings.worldScaleWUM;
+}
+
 extern "C" void VR_RecenterHead(void)
 {
 	if (s_headPoseValid) { s_headRefX = s_stageFromHead.position.x; s_headRefZ = s_stageFromHead.position.z; s_headRefInit = true; }
@@ -1137,6 +1147,7 @@ extern "C" void VR_LatchHeadMove(void) {}
 extern "C" void VR_GetHeadMove(float* x, float* y) { if (x) *x = 0; if (y) *y = 0; }
 extern "C" void VR_RecenterHead(void) {}
 extern "C" void VR_GetHeadOffset(float* x, float* y) { if (x) *x = 0; if (y) *y = 0; }
+extern "C" float VR_GetEyeZOffset(void) { return 0.0f; }
 extern "C" bool VR_GetFire(void)               { return false; }
 extern "C" bool VR_GetSecondaryFire(void)      { return false; }
 extern "C" bool VR_GetAction(void)             { return false; }

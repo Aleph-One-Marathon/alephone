@@ -1178,11 +1178,10 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 	if (!view->mimic_sw_perspective)
 	{
 #if defined(__ANDROID__)
-		// VR: always pitch-billboard toward the head so sprites face the player when looking up/down
-		// (view->pitch = head elevation; virtual_pitch is forced to 0 in VR).
+		// VR: yaw-only billboard (no pitch tilt). A pitched sprite swings its base down into the floor
+		// and gets depth-clipped; keeping sprites upright (Doom-style) keeps the base on the floor.
 		if (VR_IsActive())
 		{
-			glRotated(view->pitch * (360.0 / double(FULL_CIRCLE)), 0.0, -1.0, 0.0);
 		}
 		else
 #endif
@@ -1251,12 +1250,24 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 	glVertexPointer(3, GL_FLOAT, 0, vertex_array);
 	glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
 
+#if defined(__ANDROID__)
+	// VR: pull the sprite slightly toward the camera in depth so the floor it stands on doesn't clip
+	// off its lower portion (sprites extend below their floor-level origin). Walls are far enough in
+	// depth that this small bias doesn't make sprites poke through them.
+	const bool vrSpriteOffset = VR_IsActive();
+	if (vrSpriteOffset) { glEnable(GL_POLYGON_OFFSET_FILL); glPolygonOffset(-2.0f, -4.0f); }
+#endif
+
 	glDrawArrays(GL_QUADS, 0, 4);
 
 	if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, offset, renderStep)) {
 		glDrawArrays(GL_QUADS, 0, 4);
 	}
-        
+
+#if defined(__ANDROID__)
+	if (vrSpriteOffset) glDisable(GL_POLYGON_OFFSET_FILL);
+#endif
+
 	glEnable(GL_DEPTH_TEST);
 	glPopMatrix();
 	Shader::disable();

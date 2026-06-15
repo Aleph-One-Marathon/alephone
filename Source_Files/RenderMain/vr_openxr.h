@@ -92,6 +92,11 @@ void VR_GetHeadMove(float* x, float* y);
 // VR_RecenterHead pins the reference to the current head (offset becomes 0 from there).
 void VR_GetHeadOffset(float* wx, float* wy);
 void VR_RecenterHead(void);
+
+// Vertical eye offset from neutral standing height, in Marathon world units (negative when seated).
+// Added to view->origin.z so the visibility tree uses the true eye height; subtracted in the
+// Rasterizer so the rendered camera is unchanged.
+float VR_GetEyeZOffset(void);
 void VR_GetTurn(float* x);             // right thumbstick X: snap/smooth turn
 bool VR_GetFire(void);                 // right trigger
 bool VR_GetSecondaryFire(void);        // left trigger

@@ -154,7 +154,10 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 		glScalef(1.0f / WUperMetre, 1.0f / WUperMetre, 1.0f / WUperMetre);
 		glMultMatrixf(zUpToYUp);
 		glRotated(-yaw, 0.0, 0.0, 1.0);
-		glTranslated(-view.origin.x, -view.origin.y, -(view.origin.z - eyeHeightM * WUperMetre));
+		// Subtract the eye-Z offset that update_world_view_camera added to origin.z for the visibility
+		// tree, so the rendered camera height is exactly as before (head height comes via vrView).
+		glTranslated(-view.origin.x, -view.origin.y,
+			-(view.origin.z - VR_GetEyeZOffset() - eyeHeightM * WUperMetre));
 	}
 #endif
 }
