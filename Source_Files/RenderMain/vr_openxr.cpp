@@ -480,6 +480,7 @@ namespace {
 		                            //      (camera lurches per tick). Stable 6DOF head view + stick for now.
 		/* dominantHand    */ 0,      // right-handed
 		/* switchSticks    */ 0,
+		/* aimPitchAdjust  */ -20.0f, // aim pose sits ~20deg above a held-gun barrel; tilt down
 	};
 
 	// Locomotion yaw offset (snap/smooth turn), in Marathon angle units (512 = full circle).
@@ -592,6 +593,7 @@ namespace {
 	XrAction    s_triggerAction[2] = { XR_NULL_HANDLE, XR_NULL_HANDLE };
 	XrAction    s_actionAction = XR_NULL_HANDLE;
 	XrAction    s_bAction = XR_NULL_HANDLE, s_xAction = XR_NULL_HANDLE, s_yAction = XR_NULL_HANDLE;
+	XrAction    s_menuAction = XR_NULL_HANDLE;   // left controller hamburger/menu button -> in-game quit
 	XrAction    s_aimAction[2] = { XR_NULL_HANDLE, XR_NULL_HANDLE };  // 0=left, 1=right, pointing pose
 	XrSpace     s_aimSpace[2]  = { XR_NULL_HANDLE, XR_NULL_HANDLE };
 	XrPosef     s_aimStage[2]  = {};   // aim pose in stage space, this frame
@@ -602,6 +604,8 @@ namespace {
 	bool        s_fire = false, s_altFire = false, s_action = false;
 	bool        s_bBtn = false, s_xBtn = false, s_yBtn = false;
 	bool        s_advancePrev = false;   // edge latch for cutscene-skip key injection
+	bool        s_menuBtn = false, s_menuPrev = false;   // menu button + edge latch
+	bool        s_menuLatch = false;     // set on menu-button press, consumed by VR_TakeMenuButton
 
 	XrPath path(const char* s) { XrPath p = XR_NULL_PATH; xrStringToPath(s_instance, s, &p); return p; }
 
@@ -628,6 +632,7 @@ namespace {
 		mkAction("bbtn", XR_ACTION_TYPE_BOOLEAN_INPUT,  &s_bAction);
 		mkAction("xbtn", XR_ACTION_TYPE_BOOLEAN_INPUT,  &s_xAction);
 		mkAction("ybtn", XR_ACTION_TYPE_BOOLEAN_INPUT,  &s_yAction);
+		mkAction("menu", XR_ACTION_TYPE_BOOLEAN_INPUT,  &s_menuAction);
 		mkAction("aimleft",  XR_ACTION_TYPE_POSE_INPUT, &s_aimAction[0]);
 		mkAction("aimright", XR_ACTION_TYPE_POSE_INPUT, &s_aimAction[1]);
 
@@ -640,6 +645,7 @@ namespace {
 			{ s_bAction,       path("/user/hand/right/input/b/click") },
 			{ s_xAction,       path("/user/hand/left/input/x/click") },
 			{ s_yAction,       path("/user/hand/left/input/y/click") },
+			{ s_menuAction,    path("/user/hand/left/input/menu/click") },
 			{ s_aimAction[0],  path("/user/hand/left/input/aim/pose") },
 			{ s_aimAction[1],  path("/user/hand/right/input/aim/pose") },
 		};
@@ -702,6 +708,12 @@ namespace {
 		gi.action = s_bAction;       xrGetActionStateBoolean(s_session, &gi, &b); s_bBtn   = b.currentState;
 		gi.action = s_xAction;       xrGetActionStateBoolean(s_session, &gi, &b); s_xBtn   = b.currentState;
 		gi.action = s_yAction;       xrGetActionStateBoolean(s_session, &gi, &b); s_yBtn   = b.currentState;
+		gi.action = s_menuAction;    xrGetActionStateBoolean(s_session, &gi, &b); s_menuBtn = b.currentState;
+
+		// Menu (hamburger) button edge -> request the in-game quit-with-confirmation (consumed in the
+		// main loop, which is where the modal confirmation dialog can run).
+		if (s_menuBtn && !s_menuPrev) s_menuLatch = true;
+		s_menuPrev = s_menuBtn;
 
 		// Cutscene/intro skip: A or X edge -> inject Enter so the chapter screens advance (terminals
 		// are handled via action flags in vbl.cpp). Lightweight stopgap until proper VR button mapping.
@@ -1194,6 +1206,40 @@ namespace {
 	}
 }
 
+extern "C" bool VR_GetAimPoseStage(int hand, float pos3[3], float fwd3[3])
+{
+	if (hand < 0 || hand > 1 || !s_aimValid[hand]) return false;
+	pos3[0] = s_aimStage[hand].position.x;
+	pos3[1] = s_aimStage[hand].position.y;
+	pos3[2] = s_aimStage[hand].position.z;
+	// Forward = the pose's -Z, pitched by aimPitchAdjust about the pose's local right axis (the OpenXR
+	// aim pose points higher than a held-gun barrel; negative tilts down). m: col0=right, col1=up,
+	// col2=back. fwd = sin(th)*up - cos(th)*back  (th=0 -> -back -> plain poseFwd).
+	float m[16]; mat_from_pose(m, s_aimStage[hand]);
+	const float th = s_settings.aimPitchAdjust * (3.14159265358979f / 180.0f);
+	const float st = std::sin(th), ct = std::cos(th);
+	fwd3[0] = st*m[4] - ct*m[8];
+	fwd3[1] = st*m[5] - ct*m[9];
+	fwd3[2] = st*m[6] - ct*m[10];
+	return true;
+}
+
+extern "C" bool VR_GetHeadPosStage(float pos3[3])
+{
+	if (!s_headPoseValid) return false;
+	pos3[0] = s_stageFromHead.position.x;
+	pos3[1] = s_stageFromHead.position.y;
+	pos3[2] = s_stageFromHead.position.z;
+	return true;
+}
+
+// Menu (hamburger) button press, consumed once. The main loop turns this into the in-game quit dialog.
+extern "C" bool VR_TakeMenuButton(void) { bool v = s_menuLatch; s_menuLatch = false; return v; }
+
+// True only while the OpenXR session is FOCUSED (the app is the active immersive app). Drops when the
+// user presses the Meta/home button and goes to the system overlay -> the engine pauses on that.
+extern "C" bool VR_HasFocus(void) { return s_sessionState == XR_SESSION_STATE_FOCUSED; }
+
 extern "C" void VR_PresentScreenLayer(void)
 {
 	if (!s_active) return;
@@ -1279,7 +1325,7 @@ extern "C" bool VR_RenderTestFrame(void)
 extern "C" bool VR_InitOpenXR(void)     { return false; }
 extern "C" bool VR_IsActive(void)       { return false; }
 extern "C" vr_settings_t* VR_Settings(void) {
-	static vr_settings_t s = { 1, 2.5f, 2.0f, 512.0f, 1.6f, 1, 30.0f, 1.0f, 0, 0, 0 };
+	static vr_settings_t s = { 1, 2.5f, 2.0f, 512.0f, 1.6f, 1, 30.0f, 1.0f, 0, 0, 0, -20.0f };
 	return &s;
 }
 extern "C" float VR_GetYawOffset(void)   { return 0.0f; }
@@ -1321,6 +1367,10 @@ extern "C" unsigned VR_ScreenLayerFramebuffer(void) { return 0; }
 extern "C" void VR_PresentScreenLayer(void) {}
 extern "C" bool VR_GetPointerScreen(int* x, int* y) { (void)x; (void)y; return false; }
 extern "C" bool VR_GetPointerClick(void) { return false; }
+extern "C" bool VR_GetAimPoseStage(int, float*, float*) { return false; }
+extern "C" bool VR_GetHeadPosStage(float*) { return false; }
+extern "C" bool VR_TakeMenuButton(void) { return false; }
+extern "C" bool VR_HasFocus(void) { return false; }
 extern "C" int  VR_ScreenLayerWidth(void)  { return 0; }
 extern "C" int  VR_ScreenLayerHeight(void) { return 0; }
 

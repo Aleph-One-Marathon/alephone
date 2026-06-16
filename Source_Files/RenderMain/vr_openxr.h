@@ -36,6 +36,8 @@ typedef struct {
 	int   dominantHand;     // 0 = right-handed, 1 = left-handed. The dominant hand MOVES (stick) + fires
 	                        //     the primary weapon (trigger); the off-hand TURNS (stick) + secondary-fires.
 	int   switchSticks;     // 1 = swap the move/turn thumbsticks (turn on the dominant hand instead)
+	float aimPitchAdjust;   // degrees added to the controller aim pitch (the OpenXR aim pose sits higher
+	                        //   than a held-gun barrel; negative tilts the ray DOWN). QZD's vr_weaponRotate.
 } vr_settings_t;
 
 vr_settings_t* VR_Settings(void);
@@ -157,6 +159,25 @@ bool VR_GetPointerScreen(int* x, int* y);
 bool VR_GetPointerClick(void);
 int      VR_ScreenLayerWidth(void);
 int      VR_ScreenLayerHeight(void);
+
+// Controller aim pose this frame, in STAGE space (metres, Y-up): origin (pos3) + unit forward (fwd3,
+// the controller's -Z). hand 0=left, 1=right. Returns false if the pose isn't tracked. Used to draw
+// the 3D-gun aim debug (controller marker + ray + hit dot) and, later, to aim weapons. The engine
+// maps stage->Marathon world with the same transform Rasterizer_Shader::SetView uses, anchoring at
+// the head (VR_GetHeadPosStage) so the player's absolute position in the play space cancels out.
+bool VR_GetAimPoseStage(int hand, float pos3[3], float fwd3[3]);
+
+// Head position this frame in STAGE space (metres, Y-up). The aim-debug uses controller-minus-head so
+// it doesn't double-count the head offset (which the renderer applies to view.origin, not the eye matrix).
+bool VR_GetHeadPosStage(float pos3[3]);
+
+// Left-controller menu (hamburger) button press, consumed once -> the main loop opens the in-game
+// quit-with-confirmation dialog.
+bool VR_TakeMenuButton(void);
+
+// True only while the OpenXR session is FOCUSED. Goes false when the user presses the Meta/home button
+// and drops to the system overlay -> the engine pauses the game while unfocused.
+bool VR_HasFocus(void);
 
 #ifdef __cplusplus
 }

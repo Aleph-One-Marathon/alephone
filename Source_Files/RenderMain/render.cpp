@@ -417,6 +417,186 @@ void initialize_view_data(
 	// LP: this is now called in render_screen(), so we need to disable the initializing
 }
 
+#if defined(__ANDROID__)
+#include <android/log.h>
+// ---- 3D virtual-gun aim debug (calibration) -------------------------------------------------
+// For each controller, draw a marker at the controller + a ray to the first world-geometry hit +
+// a dot at the hit. Dominant hand = red, off-hand = blue. Drawn per-eye while the world
+// projection/modelview from SetView are active, so vertices are in Marathon world units.
+
+// Raycast from `origin` (inside `poly`) along the unit direction (dx,dy,dz) up to maxDist; stop at the
+// first solid wall / floor / ceiling. Geometry only (ignores monsters). Returns the hit point.
+// MARCHED in short steps: find_line_crossed_leaving_polygon()'s cross-products are int32 and OVERFLOW
+// for far endpoints (giving wrong/inverted lines). It's built for short per-tick projectile moves, so
+// we feed it short segments. Wall/floor/ceiling intersections are still exact (find_*_intersection).
+static world_point3d vr_raycast_geometry(world_point3d origin, short poly, double dx, double dy, double dz, double maxDist)
+{
+	if (poly == NONE) return origin;
+	world_point3d cur = origin;
+	short curPoly = poly;
+	const double STEP = WORLD_ONE / 2;   // 512 WU: short enough that the cross-products stay << 2^31
+	const double maxDist2 = maxDist * maxDist;
+	for (int guard = 0; guard < 1000; ++guard) {
+		polygon_data* pd = get_polygon_data(curPoly);
+		world_point3d nxt;
+		nxt.x = (world_distance)(cur.x + dx*STEP);
+		nxt.y = (world_distance)(cur.y + dy*STEP);
+		nxt.z = (world_distance)(cur.z + dz*STEP);
+		short li = find_line_crossed_leaving_polygon(curPoly, (world_point2d*)&cur, (world_point2d*)&nxt);
+		if (li == NONE) {
+			world_point3d out;
+			if (nxt.z <= pd->floor_height)   { find_floor_or_ceiling_intersection(pd->floor_height,   &cur, &nxt, &out); return out; }
+			if (nxt.z >= pd->ceiling_height) { find_floor_or_ceiling_intersection(pd->ceiling_height, &cur, &nxt, &out); return out; }
+			cur = nxt;
+		} else {
+			line_data* line = get_line_data(li);
+			world_point3d ix;
+			find_line_intersection(&get_endpoint_data(line->endpoint_indexes[0])->vertex,
+								   &get_endpoint_data(line->endpoint_indexes[1])->vertex, &cur, &nxt, &ix);
+			short adj = find_adjacent_polygon(curPoly, li);
+			bool can_pass = (!LINE_IS_SOLID(line) || LINE_HAS_TRANSPARENT_SIDE(line)) && adj != NONE;
+			if (!can_pass) return ix;                                   // solid wall
+			polygon_data* ad = get_polygon_data(adj);
+			world_point3d out;
+			if (ix.z <= pd->floor_height)   { find_floor_or_ceiling_intersection(pd->floor_height,   &cur, &nxt, &out); return out; }
+			if (ix.z >= pd->ceiling_height) { find_floor_or_ceiling_intersection(pd->ceiling_height, &cur, &nxt, &out); return out; }
+			if (ix.z <= ad->floor_height || ix.z >= ad->ceiling_height) return ix;   // step wall
+			if (LINE_HAS_TRANSPARENT_SIDE(line)) return ix;             // treat transparent-solid as a hit
+			// pass through the portal: nudge a few WU past the boundary into the adjacent polygon so the
+			// next find_line_crossed_leaving_polygon doesn't start on the shared edge (degenerate).
+			curPoly = adj;
+			cur.x = (world_distance)(ix.x + dx*4.0);
+			cur.y = (world_distance)(ix.y + dy*4.0);
+			cur.z = (world_distance)(ix.z + dz*4.0);
+		}
+		const double ex = cur.x-origin.x, ey = cur.y-origin.y, ez = cur.z-origin.z;
+		if (ex*ex + ey*ey + ez*ez >= maxDist2) return cur;
+	}
+	return cur;
+}
+
+static void render_vr_aim_debug(view_data* view)
+{
+	if (!VR_IsActive()) return;
+
+	const double W = VR_Settings()->worldScaleWUM;
+	// Map controller poses RELATIVE TO THE HEAD into world units, then anchor at the camera world
+	// position. This cancels the player's absolute position in the play space and the head offset
+	// (which the renderer applies to view.origin, not the eye matrix) -- so no double-count. yaw is
+	// the same body yaw Rasterizer_Shader::SetView rotates by (view->virtual_yaw).
+	const double yaw = view->virtual_yaw * (360.0 / (double(FIXED_ONE) * double(FULL_CIRCLE))) * (8.0 * atan(1.0) / 360.0);
+	const double cy = cos(yaw), sy = sin(yaw);
+	// Camera (eye) world position: view.origin carries the horizontal head offset; eye-Z removes the
+	// vis-tree eye-Z bump so this sits at the rendered eye height.
+	const double camx = view->origin.x;
+	const double camy = view->origin.y;
+	const double camz = view->origin.z - VR_GetEyeZOffset();
+	const int domHand = VR_Settings()->dominantHand ? 0 : 1;   // 0=left,1=right
+
+	float hp[3];
+	if (!VR_GetHeadPosStage(hp)) return;
+
+	glUseProgram(0);                                  // shim built-in colored path (no engine shader)
+	glDisable(GL_TEXTURE_2D);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glDisable(GL_DEPTH_TEST);                         // overlay always visible during calibration
+	glLineWidth(2.0f);
+
+	for (int h = 0; h < 2; ++h) {
+		float ps[3], fs[3];
+		if (!VR_GetAimPoseStage(h, ps, fs)) continue;
+
+		// controller relative to head (stage metres) -> world (WU,Z-up): w = camWorld + Rz(yaw)*Z^T*(rel*W).
+		// Z^T maps stage->world pre-rotation: (sx,sy,sz) -> (-sx, -sz, sy).
+		const double qx = (ps[0]-hp[0])*W, qsy = (ps[1]-hp[1])*W, qz = (ps[2]-hp[2])*W;
+		const double rx = -qx, ry = -qz, rz = qsy;
+		world_point3d cw;
+		cw.x = (world_distance)(camx + rx*cy - ry*sy);
+		cw.y = (world_distance)(camy + rx*sy + ry*cy);
+		cw.z = (world_distance)(camz + rz);
+
+		// forward dir through the same rotation (W cancels under normalization)
+		double dx = -fs[0], dy = -fs[2], dz = fs[1];
+		double wx = dx*cy - dy*sy, wy = dx*sy + dy*cy, wz = dz;
+		double dl = sqrt(wx*wx + wy*wy + wz*wz); if (dl < 1e-6) dl = 1;
+		wx/=dl; wy/=dl; wz/=dl;
+
+		// world_distance is int16 (+-32767); a ray must be clamped to map bounds or the endpoint wraps
+		// to a garbage point. clampLen returns the largest t along dir that keeps (ox,oy,oz)+dir*t in bounds.
+		const double LIM = 30000.0;
+		auto clampLen = [&](double ox, double oy, double oz, double target)->double {
+			double t = target;
+			auto cl = [&](double c, double d){
+				if (fabs(d) > 1e-9) { double lim = ((d > 0 ? LIM : -LIM) - c) / d; if (lim > 0 && lim < t) t = lim; }
+			};
+			cl(ox, wx); cl(oy, wy); cl(oz, wz);
+			return t;
+		};
+
+		// DECOUPLED direction ray: a fixed-length segment from the controller along the aim direction,
+		// independent of the raycast. Shows pure controller orientation so we can separate an orientation
+		// problem from a hit-detection problem.
+		const double tfix = clampLen(cw.x, cw.y, cw.z, 6.0 * WORLD_ONE);
+		world_point3d rayEnd;
+		rayEnd.x = (world_distance)(cw.x + wx*tfix);
+		rayEnd.y = (world_distance)(cw.y + wy*tfix);
+		rayEnd.z = (world_distance)(cw.z + wz*tfix);
+
+		// Raycast hit (separate dot): cast from the EYE, not the controller. The controller floats in
+		// the air and can sit on the far side of a near wall, making the ray start past it ("hit beyond
+		// the closest wall"). The eye is always inside the current polygon, so the walk sees near walls.
+		world_point3d eyePt;
+		eyePt.x = (world_distance)camx; eyePt.y = (world_distance)camy; eyePt.z = (world_distance)camz;
+		world_point3d hit = vr_raycast_geometry(eyePt, view->origin_polygon_index, wx, wy, wz, 64.0 * WORLD_ONE);
+		short cpoly = view->origin_polygon_index;
+
+		// Diagnostic for the "mirror at far-left rotation" report: dump BOTH hands' stage forward +
+		// world dir + cw/hit, periodically AND whenever the world direction reverses >90deg between
+		// frames (a "FLIP" -- the mirror). grep the log for "FLIP". (logcat -s A1VR)
+		{
+			static double pw[2][3] = {{0,0,0},{0,0,0}};
+			static int dbgc[2] = {0,0};
+			const double dotp = wx*pw[h][0] + wy*pw[h][1] + wz*pw[h][2];
+			const bool seeded = pw[h][0] || pw[h][1] || pw[h][2];
+			const bool flip = seeded && dotp < 0.0;
+			if (flip || (dbgc[h]++ % 30) == 0)
+				__android_log_print(ANDROID_LOG_INFO, "A1VR",
+					"aim h=%d%s fs=(%.3f,%.3f,%.3f) wdir=(%.3f,%.3f,%.3f) cw=(%d,%d,%d) hit=(%d,%d,%d) cpoly=%d",
+					h, flip?" FLIP":"", fs[0],fs[1],fs[2], wx,wy,wz, cw.x,cw.y,cw.z, hit.x,hit.y,hit.z, cpoly);
+			pw[h][0]=wx; pw[h][1]=wy; pw[h][2]=wz;
+		}
+
+		const float h1 = (float)(0.04 * W);   // controller marker half-size (WU)
+		const float h2 = (float)(0.03 * W);   // hit dot half-size
+		GLfloat v[14*3]; int n = 0;
+		auto push = [&](double x, double y, double z){ v[n++]=(float)x; v[n++]=(float)y; v[n++]=(float)z; };
+		// marker cross at the controller
+		push(cw.x-h1,cw.y,cw.z); push(cw.x+h1,cw.y,cw.z);
+		push(cw.x,cw.y-h1,cw.z); push(cw.x,cw.y+h1,cw.z);
+		push(cw.x,cw.y,cw.z-h1); push(cw.x,cw.y,cw.z+h1);
+		// aim ray (DECOUPLED: fixed length along the aim direction, not the raycast hit)
+		push(cw.x,cw.y,cw.z);    push(rayEnd.x,rayEnd.y,rayEnd.z);
+		// dot cross at the raycast hit (separate -- compare against the fixed ray)
+		push(hit.x-h2,hit.y,hit.z); push(hit.x+h2,hit.y,hit.z);
+		push(hit.x,hit.y-h2,hit.z); push(hit.x,hit.y+h2,hit.z);
+		push(hit.x,hit.y,hit.z-h2); push(hit.x,hit.y,hit.z+h2);
+
+		if (h == domHand) glColor4f(1.0f, 0.0f, 0.0f, 1.0f);   // dominant = red
+		else              glColor4f(0.0f, 0.4f, 1.0f, 1.0f);   // off-hand = blue
+		glVertexPointer(3, GL_FLOAT, 0, v);
+		glDrawArrays(GL_LINES, 0, 14);
+	}
+
+	// restore the state the world/sprite passes expect
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_TEXTURE_2D);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+}
+#endif // __ANDROID__
+
 /* origin,origin_polygon_index,yaw,pitch,roll,etc. have probably changed since last call */
 void render_view(
 	struct view_data *view,
@@ -519,6 +699,7 @@ void render_view(
 						RasPtr->SetView(*view);
 						RasPtr->Begin();
 						RenPtr->render_tree();
+						render_vr_aim_debug(view);   // controller aim marker/ray/dot (world matrices still active)
 						if (!RenPtr->renders_viewer_sprites_in_tree())
 							render_viewer_sprite_layer(view, RasPtr);
 						RasPtr->End();

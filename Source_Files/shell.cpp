@@ -731,6 +731,25 @@ void main_event_loop(void)
 		bool yield_time = false;
 		bool poll_event = false;
 
+#if defined(__ANDROID__)
+		if (VR_IsActive()) {
+			// Pause the game when the headset loses focus (Meta/home button -> system overlay) and
+			// resume when it returns. Edge-triggered on the focus transition.
+			static bool wasFocused = true;
+			const bool focused = VR_HasFocus();
+			if (game_state == _game_in_progress && focused != wasFocused) {
+				if (!focused) pause_game(); else resume_game();
+			}
+			wasFocused = focused;
+
+			// Left-controller menu button -> in-game quit with confirmation (same as the desktop
+			// Quit menu item: pauses, shows the "quit without saving?" dialog, resumes or closes).
+			if (VR_TakeMenuButton() && game_state == _game_in_progress) {
+				do_menu_item_command(mGame, iQuitGame, false);
+			}
+		}
+#endif
+
 		switch (game_state) {
 			case _game_in_progress:
 			case _change_level:

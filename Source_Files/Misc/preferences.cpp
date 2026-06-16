@@ -1059,6 +1059,14 @@ static const char *vr_turn_style_labels[] = { "Smooth", "Snap", NULL };
 static const char *vr_turn_amount_labels[] = { "15\xb0", "30\xb0", "45\xb0", "60\xb0", "90\xb0", NULL };
 static const float vr_turn_amount_values[] = { 15.f, 30.f, 45.f, 60.f, 90.f };
 
+// Aim pitch calibration (degrees added to the controller aim; negative tilts the ray DOWN toward a
+// held-gun barrel angle). Labelled down-positive for the player ("20\xb0 down" = -20\xb0 stored).
+static const char *vr_aim_pitch_labels[] = {
+	"40\xb0 up", "30\xb0 up", "20\xb0 up", "10\xb0 up", "0\xb0",
+	"10\xb0 down", "20\xb0 down", "25\xb0 down", "30\xb0 down", "40\xb0 down", "50\xb0 down", NULL
+};
+static const float vr_aim_pitch_values[] = { 40.f, 30.f, 20.f, 10.f, 0.f, -10.f, -20.f, -25.f, -30.f, -40.f, -50.f };
+
 static const char *vr_screen_distance_labels[] = { "1.5 m", "2.0 m", "2.5 m", "3.0 m", "4.0 m", NULL };
 static const float vr_screen_distance_values[] = { 1.5f, 2.0f, 2.5f, 3.0f, 4.0f };
 
@@ -1626,6 +1634,11 @@ static void vr_dialog(void *arg)
 	table->dual_add(switch_sticks_w->label("Switch Thumbsticks"), d);
 	table->dual_add(switch_sticks_w, d);
 
+	w_select *aim_pitch_w = new w_select(
+		vr_closest_index(vr_aim_pitch_values, 11, vr->aimPitchAdjust), vr_aim_pitch_labels);
+	table->dual_add(aim_pitch_w->label("Aim Pitch"), d);
+	table->dual_add(aim_pitch_w, d);
+
 	table->add_row(new w_spacer(), true);
 
 	// Comfort
@@ -1689,6 +1702,7 @@ static void vr_dialog(void *arg)
 	if (d.run() == 0) {	// Accepted
 		vr->dominantHand    = hand_w->get_selection();
 		vr->switchSticks    = switch_sticks_w->get_selection() ? 1 : 0;
+		vr->aimPitchAdjust  = vr_aim_pitch_values[aim_pitch_w->get_selection()];
 		vr->disableBob      = bob_w->get_selection() ? 1 : 0;
 		vr->snapTurn        = turn_style_w->get_selection();
 		vr->turnDegrees     = vr_turn_amount_values[turn_amount_w->get_selection()];
@@ -4260,6 +4274,7 @@ InfoTree vr_preferences_tree()
 	root.put_attr("room_scale", vr->roomScale);
 	root.put_attr("dominant_hand", vr->dominantHand);
 	root.put_attr("switch_sticks", vr->switchSticks);
+	root.put_attr("aim_pitch_adjust", vr->aimPitchAdjust);
 	return root;
 }
 #endif
@@ -5329,6 +5344,7 @@ void parse_vr_preferences(InfoTree root, std::string version)
 	root.read_attr("room_scale", vr->roomScale);
 	root.read_attr("dominant_hand", vr->dominantHand);
 	root.read_attr("switch_sticks", vr->switchSticks);
+	root.read_attr("aim_pitch_adjust", vr->aimPitchAdjust);
 }
 #endif
 
