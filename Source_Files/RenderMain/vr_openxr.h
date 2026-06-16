@@ -33,6 +33,9 @@ typedef struct {
 	float brightness;       // world brightness multiply (1=unchanged; <1 dims the over-bright world)
 	int   roomScale;        // 1 = body follows the head's physical movement (room-scale); 0 = head is
 	                        //     a free 6DOF camera over a static body (no positional locomotion)
+	int   dominantHand;     // 0 = right-handed, 1 = left-handed. The dominant hand MOVES (stick) + fires
+	                        //     the primary weapon (trigger); the off-hand TURNS (stick) + secondary-fires.
+	int   switchSticks;     // 1 = swap the move/turn thumbsticks (turn on the dominant hand instead)
 } vr_settings_t;
 
 vr_settings_t* VR_Settings(void);
@@ -146,6 +149,12 @@ bool VR_TakeWorldFramePresented(void);     // returns + clears the mark
 // is how menus/UI become visible+navigable in VR (the real SurfaceView is gone).
 unsigned VR_ScreenLayerFramebuffer(void);
 void     VR_PresentScreenLayer(void);
+
+// Controller menu pointer: the screen-layer pixel an aiming controller is hitting on the (world-
+// locked) 2D panel, and whether to click. The engine injects SDL mouse motion/clicks from these so
+// the 2D menus/terminals become interactable. Computed during VR_PresentScreenLayer.
+bool VR_GetPointerScreen(int* x, int* y);
+bool VR_GetPointerClick(void);
 int      VR_ScreenLayerWidth(void);
 int      VR_ScreenLayerHeight(void);
 

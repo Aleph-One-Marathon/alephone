@@ -478,6 +478,8 @@ namespace {
 		/* brightness      */ 1.0f,   // neutral; real fix is the sRGB write-control below
 		/* roomScale       */ 0,      // OFF: body-follows-head conflicts with Marathon's tick/interpolation
 		                            //      (camera lurches per tick). Stable 6DOF head view + stick for now.
+		/* dominantHand    */ 0,      // right-handed
+		/* switchSticks    */ 0,
 	};
 
 	// Locomotion yaw offset (snap/smooth turn), in Marathon angle units (512 = full circle).
@@ -584,11 +586,19 @@ namespace {
 
 	// ---- input (OpenXR action set, Touch controllers) ----
 	XrActionSet s_actionSet  = XR_NULL_HANDLE;
-	XrAction    s_moveAction = XR_NULL_HANDLE, s_turnAction = XR_NULL_HANDLE;
-	XrAction    s_fireAction = XR_NULL_HANDLE, s_altFireAction = XR_NULL_HANDLE, s_actionAction = XR_NULL_HANDLE;
+	// Per-hand sticks/triggers (index 0=left, 1=right) so handedness/stick-switch can be routed in
+	// software each frame without re-attaching the action set when the setting changes.
+	XrAction    s_stickAction[2]   = { XR_NULL_HANDLE, XR_NULL_HANDLE };
+	XrAction    s_triggerAction[2] = { XR_NULL_HANDLE, XR_NULL_HANDLE };
+	XrAction    s_actionAction = XR_NULL_HANDLE;
 	XrAction    s_bAction = XR_NULL_HANDLE, s_xAction = XR_NULL_HANDLE, s_yAction = XR_NULL_HANDLE;
+	XrAction    s_aimAction[2] = { XR_NULL_HANDLE, XR_NULL_HANDLE };  // 0=left, 1=right, pointing pose
+	XrSpace     s_aimSpace[2]  = { XR_NULL_HANDLE, XR_NULL_HANDLE };
+	XrPosef     s_aimStage[2]  = {};   // aim pose in stage space, this frame
+	bool        s_aimValid[2]  = { false, false };
 	bool        s_actionsReady = false;
-	float       s_moveX = 0, s_moveY = 0, s_turnX = 0;
+	float       s_stickX[2] = {0,0}, s_stickY[2] = {0,0}, s_trigger[2] = {0,0};   // raw per-hand
+	float       s_moveX = 0, s_moveY = 0, s_turnX = 0;   // routed (handedness/switch-sticks applied)
 	bool        s_fire = false, s_altFire = false, s_action = false;
 	bool        s_bBtn = false, s_xBtn = false, s_yBtn = false;
 	bool        s_advancePrev = false;   // edge latch for cutscene-skip key injection
@@ -610,24 +620,28 @@ namespace {
 			aci.actionType = type;
 			xrCreateAction(s_actionSet, &aci, out);
 		};
-		mkAction("move", XR_ACTION_TYPE_VECTOR2F_INPUT, &s_moveAction);
-		mkAction("turn", XR_ACTION_TYPE_VECTOR2F_INPUT, &s_turnAction);
-		mkAction("fire", XR_ACTION_TYPE_FLOAT_INPUT,    &s_fireAction);
-		mkAction("altfire", XR_ACTION_TYPE_FLOAT_INPUT, &s_altFireAction);
+		mkAction("stickleft",  XR_ACTION_TYPE_VECTOR2F_INPUT, &s_stickAction[0]);
+		mkAction("stickright", XR_ACTION_TYPE_VECTOR2F_INPUT, &s_stickAction[1]);
+		mkAction("triggerleft",  XR_ACTION_TYPE_FLOAT_INPUT,  &s_triggerAction[0]);
+		mkAction("triggerright", XR_ACTION_TYPE_FLOAT_INPUT,  &s_triggerAction[1]);
 		mkAction("use", XR_ACTION_TYPE_BOOLEAN_INPUT,   &s_actionAction);
 		mkAction("bbtn", XR_ACTION_TYPE_BOOLEAN_INPUT,  &s_bAction);
 		mkAction("xbtn", XR_ACTION_TYPE_BOOLEAN_INPUT,  &s_xAction);
 		mkAction("ybtn", XR_ACTION_TYPE_BOOLEAN_INPUT,  &s_yAction);
+		mkAction("aimleft",  XR_ACTION_TYPE_POSE_INPUT, &s_aimAction[0]);
+		mkAction("aimright", XR_ACTION_TYPE_POSE_INPUT, &s_aimAction[1]);
 
 		XrActionSuggestedBinding binds[] = {
-			{ s_moveAction,    path("/user/hand/left/input/thumbstick") },
-			{ s_turnAction,    path("/user/hand/right/input/thumbstick") },
-			{ s_fireAction,    path("/user/hand/right/input/trigger/value") },
-			{ s_altFireAction, path("/user/hand/left/input/trigger/value") },
+			{ s_stickAction[0],   path("/user/hand/left/input/thumbstick") },
+			{ s_stickAction[1],   path("/user/hand/right/input/thumbstick") },
+			{ s_triggerAction[1], path("/user/hand/right/input/trigger/value") },
+			{ s_triggerAction[0], path("/user/hand/left/input/trigger/value") },
 			{ s_actionAction,  path("/user/hand/right/input/a/click") },
 			{ s_bAction,       path("/user/hand/right/input/b/click") },
 			{ s_xAction,       path("/user/hand/left/input/x/click") },
 			{ s_yAction,       path("/user/hand/left/input/y/click") },
+			{ s_aimAction[0],  path("/user/hand/left/input/aim/pose") },
+			{ s_aimAction[1],  path("/user/hand/right/input/aim/pose") },
 		};
 		XrInteractionProfileSuggestedBinding sb = { XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING };
 		sb.interactionProfile = path("/interaction_profiles/oculus/touch_controller");
@@ -639,6 +653,13 @@ namespace {
 		ai.countActionSets = 1;
 		ai.actionSets = &s_actionSet;
 		if (XR_FAILED(xrAttachSessionActionSets(s_session, &ai))) { A1VR_LOG("attachActionSets failed"); return; }
+
+		for (int h = 0; h < 2; ++h) {
+			XrActionSpaceCreateInfo sci = { XR_TYPE_ACTION_SPACE_CREATE_INFO };
+			sci.action = s_aimAction[h];
+			sci.poseInActionSpace.orientation.w = 1.0f;
+			if (XR_FAILED(xrCreateActionSpace(s_session, &sci, &s_aimSpace[h]))) A1VR_LOG("createActionSpace %d failed", h);
+		}
 
 		s_actionsReady = true;
 		A1VR_LOG("input actions attached");
@@ -654,13 +675,28 @@ namespace {
 
 		XrActionStateGetInfo gi = { XR_TYPE_ACTION_STATE_GET_INFO };
 		XrActionStateVector2f v2 = { XR_TYPE_ACTION_STATE_VECTOR2F };
-		gi.action = s_moveAction; xrGetActionStateVector2f(s_session, &gi, &v2);
-		s_moveX = v2.currentState.x; s_moveY = v2.currentState.y;
-		gi.action = s_turnAction; xrGetActionStateVector2f(s_session, &gi, &v2);
-		s_turnX = v2.currentState.x;
 		XrActionStateFloat f = { XR_TYPE_ACTION_STATE_FLOAT };
-		gi.action = s_fireAction;    xrGetActionStateFloat(s_session, &gi, &f); s_fire = f.currentState > 0.5f;
-		gi.action = s_altFireAction; xrGetActionStateFloat(s_session, &gi, &f); s_altFire = f.currentState > 0.5f;
+		for (int h = 0; h < 2; ++h) {
+			gi.action = s_stickAction[h];   xrGetActionStateVector2f(s_session, &gi, &v2);
+			s_stickX[h] = v2.currentState.x; s_stickY[h] = v2.currentState.y;
+			gi.action = s_triggerAction[h]; xrGetActionStateFloat(s_session, &gi, &f);
+			s_trigger[h] = f.currentState;
+		}
+
+		// Route the raw per-hand sticks/triggers into the logical move/turn/fire actions. The DOMINANT
+		// hand MOVES (stick) + FIRES the primary weapon (trigger); the OFF hand TURNS (stick) +
+		// secondary-fires (trigger). So a left-handed player moves+fires with the left controller.
+		// (QuestZDoom's default is the reverse -- dominant turns/aims, off-hand moves -- and its
+		// vr_switch_sticks flips that; switchSticks here is the same move/turn swap.) (index 0=left, 1=right)
+		const int domIdx = VR_Settings()->dominantHand ? 0 : 1;   // left-handed -> dominant is the left hand
+		const int offIdx = 1 - domIdx;
+		const int moveIdx = VR_Settings()->switchSticks ? offIdx : domIdx;
+		const int turnIdx = VR_Settings()->switchSticks ? domIdx : offIdx;
+		s_moveX = s_stickX[moveIdx]; s_moveY = s_stickY[moveIdx];
+		s_turnX = s_stickX[turnIdx];
+		s_fire    = s_trigger[domIdx] > 0.5f;
+		s_altFire = s_trigger[offIdx] > 0.5f;
+
 		XrActionStateBoolean b = { XR_TYPE_ACTION_STATE_BOOLEAN };
 		gi.action = s_actionAction;  xrGetActionStateBoolean(s_session, &gi, &b); s_action = b.currentState;
 		gi.action = s_bAction;       xrGetActionStateBoolean(s_session, &gi, &b); s_bBtn   = b.currentState;
@@ -723,6 +759,21 @@ extern "C" bool VR_BeginFrame(void)
 		xrLocateViews(s_session, &vli, &vs, kEyes, &got, s_views);
 		for (int e = 0; e < kEyes; ++e)
 			s_stageFromEye[e] = pose_mul(s_stageFromHead, s_views[e].pose);
+
+		// Controller aim poses (for the menu pointer), in stage space.
+		for (int h = 0; h < 2; ++h) {
+			s_aimValid[h] = false;
+			if (s_aimSpace[h] != XR_NULL_HANDLE) {
+				XrSpaceLocation al = { XR_TYPE_SPACE_LOCATION };
+				xrLocateSpace(s_aimSpace[h], s_stageSpace, s_frameState.predictedDisplayTime, &al);
+				if ((al.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) &&
+					(al.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT)) {
+					s_aimStage[h] = al.pose;
+					s_aimValid[h] = true;
+				}
+			}
+		}
+
 		s_frameShouldRender = true;
 	}
 	return s_frameShouldRender;
@@ -944,9 +995,23 @@ extern "C" bool VR_GetAction(void)             { return s_action; }
 extern "C" bool VR_GetAdvance(void)            { return s_action || s_xBtn; }   // A or X
 extern "C" bool VR_GetBack(void)               { return s_yBtn || s_bBtn; }     // Y or B
 
-namespace { bool s_worldFramePresented = false; }
-extern "C" void VR_MarkWorldFramePresented(void) { s_worldFramePresented = true; }
+namespace {
+	bool s_worldFramePresented = false;
+	// World-locked 2D panel (placed in stage space when a menu/terminal is shown). Vectors in stage m.
+	float s_panelC[3] = {0,0,0}, s_panelR[3] = {1,0,0}, s_panelU[3] = {0,1,0}, s_panelN[3] = {0,0,1};
+	float s_panelHalfW = 1, s_panelHalfH = 1;
+	bool  s_panelPlaced = false;
+	// Pointer result (computed in VR_PresentScreenLayer): which hand hit the panel + screen pixel + UV.
+	bool  s_ptrActive = false; int s_ptrHand = 1;
+	int   s_ptrX = 0, s_ptrY = 0; float s_ptrU = 0.5f, s_ptrV = 0.5f;
+}
+extern "C" void VR_MarkWorldFramePresented(void) { s_worldFramePresented = true; s_panelPlaced = false; /* re-place the 2D panel next time a menu is shown */ }
 extern "C" bool VR_TakeWorldFramePresented(void) { bool v = s_worldFramePresented; s_worldFramePresented = false; return v; }
+
+// Menu pointer: the screen-layer pixel the active controller ray is hitting (false = no hit), and
+// whether that controller's trigger is pressed (for a click). Computed in VR_PresentScreenLayer.
+extern "C" bool VR_GetPointerScreen(int* x, int* y) { if (s_ptrActive) { if (x) *x = s_ptrX; if (y) *y = s_ptrY; } return s_ptrActive; }
+extern "C" bool VR_GetPointerClick(void) { if (!s_ptrActive) return false; return s_trigger[s_ptrHand] > 0.5f; }   // raw per-hand trigger (s_fire is the routed dominant one)
 
 // ---------------------------------------------------------- screen layer ----
 namespace {
@@ -954,6 +1019,7 @@ namespace {
 	GLuint s_screenFBO = 0, s_screenTex = 0, s_screenDepth = 0;
 	GLuint s_quadProg = 0, s_quadVAO = 0, s_quadVBO = 0;
 	GLint  s_quadTexLoc = -1, s_quadMVPLoc = -1;
+	GLuint s_curProg = 0; GLint s_curMVPLoc = -1, s_curColorLoc = -1;   // pointer cursor (solid colour)
 
 	void ensureScreenLayer() {
 		if (s_screenFBO) return;
@@ -1001,6 +1067,24 @@ namespace {
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 		glBindVertexArray(0);
+
+		// Cursor program: a solid-coloured quad (reuses the same VAO) drawn at the pointer hit.
+		static const char* cvs =
+			"#version 300 es\n"
+			"layout(location=0) in vec2 aPos;\n"
+			"uniform mat4 uMVP;\n"
+			"void main(){ gl_Position = uMVP * vec4(aPos,0.0,1.0); }\n";
+		static const char* cfs =
+			"#version 300 es\n"
+			"precision mediump float;\n"
+			"uniform vec4 uColor; out vec4 o;\n"
+			"void main(){ o = uColor; }\n";
+		GLuint cv = compile(GL_VERTEX_SHADER, cvs), cf = compile(GL_FRAGMENT_SHADER, cfs);
+		s_curProg = glCreateProgram();
+		glAttachShader(s_curProg, cv); glAttachShader(s_curProg, cf); glLinkProgram(s_curProg);
+		glDeleteShader(cv); glDeleteShader(cf);
+		s_curMVPLoc   = glGetUniformLocation(s_curProg, "uMVP");
+		s_curColorLoc = glGetUniformLocation(s_curProg, "uColor");
 	}
 }
 
@@ -1061,34 +1145,94 @@ extern "C" unsigned VR_ScreenLayerFramebuffer(void) { ensureScreenLayer(); retur
 extern "C" int VR_ScreenLayerWidth(void)  { return kScreenW; }
 extern "C" int VR_ScreenLayerHeight(void) { return kScreenH; }
 
+namespace {
+	void vsub(const float* a, const float* b, float* o){ o[0]=a[0]-b[0]; o[1]=a[1]-b[1]; o[2]=a[2]-b[2]; }
+	float vdot(const float* a, const float* b){ return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]; }
+	void vcross(const float* a, const float* b, float* o){ o[0]=a[1]*b[2]-a[2]*b[1]; o[1]=a[2]*b[0]-a[0]*b[2]; o[2]=a[0]*b[1]-a[1]*b[0]; }
+	void vnorm(float* v){ float l=std::sqrt(vdot(v,v)); if(l>1e-6f){ v[0]/=l; v[1]/=l; v[2]/=l; } }
+	void poseFwd(const XrPosef& p, float* d){ float m[16]; mat_from_pose(m,p); d[0]=-m[8]; d[1]=-m[9]; d[2]=-m[10]; }
+
+	// Place the 2D panel fixed in stage space, in front of the head's horizontal facing (so it stays
+	// put while you point at it / look around). Called once each time a 2D screen is (re)entered.
+	void placePanel() {
+		float hp[3] = { s_stageFromHead.position.x, s_stageFromHead.position.y, s_stageFromHead.position.z };
+		float hf[3]; poseFwd(s_stageFromHead, hf); hf[1]=0; vnorm(hf);
+		if (hf[0]==0 && hf[2]==0) { hf[2]=-1; }
+		const float D = s_settings.screenDistanceM;
+		s_panelC[0]=hp[0]+hf[0]*D; s_panelC[1]=hp[1]; s_panelC[2]=hp[2]+hf[2]*D;
+		s_panelN[0]=-hf[0]; s_panelN[1]=0; s_panelN[2]=-hf[2];           // faces the head
+		const float up[3]={0,1,0};
+		vcross(up, s_panelN, s_panelR); vnorm(s_panelR);
+		vcross(s_panelN, s_panelR, s_panelU); vnorm(s_panelU);
+		s_panelHalfH = 0.5f*s_settings.screenHeightM;
+		s_panelHalfW = s_panelHalfH * (float)kScreenW/(float)kScreenH;
+		s_panelPlaced = true;
+	}
+
+	// Intersect each controller aim ray with the panel; pick the closest hit -> screen pixel + UV.
+	void updatePointer() {
+		s_ptrActive = false;
+		float bestT = 1e9f;
+		for (int h=0; h<2; ++h) {
+			if (!s_aimValid[h]) continue;
+			float O[3] = { s_aimStage[h].position.x, s_aimStage[h].position.y, s_aimStage[h].position.z };
+			float Dd[3]; poseFwd(s_aimStage[h], Dd);
+			float denom = vdot(Dd, s_panelN);
+			if (denom > -1e-4f) continue;                 // ray must point at the panel's front face
+			float oc[3]; vsub(s_panelC, O, oc);
+			float t = vdot(oc, s_panelN)/denom;
+			if (t <= 0 || t >= bestT) continue;
+			float hit[3] = { O[0]+Dd[0]*t, O[1]+Dd[1]*t, O[2]+Dd[2]*t };
+			float loc[3]; vsub(hit, s_panelC, loc);
+			float u = vdot(loc, s_panelR)/s_panelHalfW;
+			float v = vdot(loc, s_panelU)/s_panelHalfH;
+			if (u<-1||u>1||v<-1||v>1) continue;
+			bestT = t; s_ptrActive = true; s_ptrHand = h; s_ptrU = u; s_ptrV = v;
+			s_ptrX = (int)((u*0.5f+0.5f) * kScreenW);
+			s_ptrY = (int)((1.0f-(v*0.5f+0.5f)) * kScreenH);
+		}
+	}
+}
+
 extern "C" void VR_PresentScreenLayer(void)
 {
 	if (!s_active) return;
 	ensureScreenLayer();
 	const bool render = VR_BeginFrame();
 	if (render) {
-		// Draw the 2D UI as a flat, head-locked panel floating in a black void (the eye buffer is
-		// cleared black by VR_BeginEye) rather than a fullscreen blit that fills the whole FOV and
-		// hurts the eyes. The panel sits screenDistanceM ahead at screenHeightM tall (width follows
-		// the texture's aspect), with proper per-eye projection so it has comfortable stereo depth.
-		const float D = s_settings.screenDistanceM;
-		const float halfH = 0.5f * s_settings.screenHeightM;
-		const float halfW = halfH * (float)kScreenW / (float)kScreenH;
-		float model[16] = { halfW,0,0,0,  0,halfH,0,0,  0,0,1,0,  0,0,-D,1 };
+		if (!s_panelPlaced && s_headPoseValid) placePanel();
+		updatePointer();   // ray-cast both controllers onto the world-locked panel
+
+		// World-locked panel: local quad (-1..1 XY) -> stage via panelRight/Up/Center.
+		const float hw = s_panelHalfW, hh = s_panelHalfH;
+		float model[16] = {
+			s_panelR[0]*hw, s_panelR[1]*hw, s_panelR[2]*hw, 0,
+			s_panelU[0]*hh, s_panelU[1]*hh, s_panelU[2]*hh, 0,
+			s_panelN[0],    s_panelN[1],    s_panelN[2],    0,
+			s_panelC[0],    s_panelC[1],    s_panelC[2],    1 };
+		// Cursor: small quad at the hit point, a hair toward the head so it sits in front of the panel.
+		const float cs = 0.012f;
+		const float cc[3] = { s_panelC[0] + s_ptrU*hw*s_panelR[0] + s_ptrV*hh*s_panelU[0] + s_panelN[0]*0.01f,
+		                      s_panelC[1] + s_ptrU*hw*s_panelR[1] + s_ptrV*hh*s_panelU[1] + s_panelN[1]*0.01f,
+		                      s_panelC[2] + s_ptrU*hw*s_panelR[2] + s_ptrV*hh*s_panelU[2] + s_panelN[2]*0.01f };
+		float curModel[16] = {
+			s_panelR[0]*cs, s_panelR[1]*cs, s_panelR[2]*cs, 0,
+			s_panelU[0]*cs, s_panelU[1]*cs, s_panelU[2]*cs, 0,
+			s_panelN[0],    s_panelN[1],    s_panelN[2],    0,
+			cc[0],          cc[1],          cc[2],          1 };
 
 		for (int e = 0; e < kEyes; ++e) {
 			VR_BeginEye(e);
 			float proj[16];
 			VR_GetEyeProjection(e, proj, 0.05f, 50.0f);
-			// Head-locked: place the panel in head space, then map head->eye (= inverse of the eye's
-			// pose in VIEW space, since xrLocateViews used the head reference space).
-			float headFromEye[16]; mat_from_pose(headFromEye, s_views[e].pose);
-			float eyeFromHead[16]; mat_rigid_inverse(eyeFromHead, headFromEye);
-			float mv[16];  mat_mul(mv, eyeFromHead, model);
-			float mvp[16]; mat_mul(mvp, proj, mv);
+			float stageFromEye[16]; mat_from_pose(stageFromEye, s_stageFromEye[e]);
+			float eyeFromStage[16]; mat_rigid_inverse(eyeFromStage, stageFromEye);
+			float vp[16]; mat_mul(vp, proj, eyeFromStage);   // proj * eyeFromStage
 
 			glDisable(GL_DEPTH_TEST);
 			glDisable(GL_CULL_FACE);
+			// panel
+			float mvp[16]; mat_mul(mvp, vp, model);
 			glUseProgram(s_quadProg);
 			glUniformMatrix4fv(s_quadMVPLoc, 1, GL_FALSE, mvp);
 			glActiveTexture(GL_TEXTURE0);
@@ -1096,6 +1240,14 @@ extern "C" void VR_PresentScreenLayer(void)
 			glUniform1i(s_quadTexLoc, 0);
 			glBindVertexArray(s_quadVAO);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
+			// cursor
+			if (s_ptrActive) {
+				float cmvp[16]; mat_mul(cmvp, vp, curModel);
+				glUseProgram(s_curProg);
+				glUniformMatrix4fv(s_curMVPLoc, 1, GL_FALSE, cmvp);
+				glUniform4f(s_curColorLoc, 1.0f, 0.85f, 0.1f, 1.0f);
+				glDrawArrays(GL_TRIANGLES, 0, 6);
+			}
 			glBindVertexArray(0);
 			VR_FinishEye(e);
 		}
@@ -1127,7 +1279,7 @@ extern "C" bool VR_RenderTestFrame(void)
 extern "C" bool VR_InitOpenXR(void)     { return false; }
 extern "C" bool VR_IsActive(void)       { return false; }
 extern "C" vr_settings_t* VR_Settings(void) {
-	static vr_settings_t s = { 1, 2.5f, 2.0f, 512.0f, 1.6f, 1, 30.0f, 1.0f, 0 };
+	static vr_settings_t s = { 1, 2.5f, 2.0f, 512.0f, 1.6f, 1, 30.0f, 1.0f, 0, 0, 0 };
 	return &s;
 }
 extern "C" float VR_GetYawOffset(void)   { return 0.0f; }
@@ -1167,6 +1319,8 @@ extern "C" void VR_MarkWorldFramePresented(void) {}
 extern "C" bool VR_TakeWorldFramePresented(void) { return false; }
 extern "C" unsigned VR_ScreenLayerFramebuffer(void) { return 0; }
 extern "C" void VR_PresentScreenLayer(void) {}
+extern "C" bool VR_GetPointerScreen(int* x, int* y) { (void)x; (void)y; return false; }
+extern "C" bool VR_GetPointerClick(void) { return false; }
 extern "C" int  VR_ScreenLayerWidth(void)  { return 0; }
 extern "C" int  VR_ScreenLayerHeight(void) { return 0; }
 

@@ -1052,11 +1052,9 @@ bool idle_game_state(uint64_t time)
 				case _display_intro_screens_for_demo:
 				case _display_main_menu:
 #if defined(__ANDROID__)
-					// VR: the menu isn't navigable yet (no controller pointer wired up), so after the
-					// menu has shown briefly, auto-start a single-player game so we drop into a level.
-					// TEMP until OpenXR controller input + a VR menu cursor land (Phase 3).
-					if (!begin_game(_single_player, false))
-						game_state.phase = TICKS_UNTIL_DEMO_STARTS;
+					// VR: keep the main menu up (the controller pointer now drives it); don't auto-start
+					// a game or roll a demo. Just reset the idle timer so the menu stays.
+					game_state.phase = TICKS_UNTIL_DEMO_STARTS;
 					break;
 #endif
 					/* Start the demo.. */
@@ -1252,11 +1250,7 @@ void display_main_menu(
 {
 	game_state.state= _display_main_menu;
 	game_state.current_screen= 0;
-#if defined(__ANDROID__)
-	game_state.phase= MACHINE_TICKS_PER_SECOND;   // VR: drop into the level quickly (menu not navigable yet)
-#else
 	game_state.phase= TICKS_UNTIL_DEMO_STARTS;
-#endif
 	game_state.last_ticks_on_idle= machine_tick_count();
 	game_state.user= _single_player;
 	game_state.flags= 0;

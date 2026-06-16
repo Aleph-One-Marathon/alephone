@@ -24,6 +24,9 @@
 #include "preferences.h"
 #include "screen.h"
 #include "vr_openxr.h"
+#if defined(__ANDROID__)
+#include <android/log.h>
+#endif
 
 #ifdef HAVE_OPENGL
 
@@ -1247,26 +1250,32 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 		texCoords[1][0]
 	};
 
+#if defined(__ANDROID__)
+	// VR: nudge the sprite a small constant distance TOWARD the camera (its billboard normal is local
+	// +X) so its part at/below its own floor draws OVER that floor -- matching the software renderer,
+	// which painted sprites over their floor. Walls/ledges genuinely farther away than this nudge
+	// still win the depth test and clip the sprite. (Depth-test stays on; no crop, no proportional
+	// hacks.) The magnitude trades "how far below-floor still shows" against "how close a wall can be
+	// before a sprite pokes through it" -- tune via kVRSpriteForward.
+	if (VR_IsActive())
+	{
+		const float kVRSpriteForward = 48.0f;   // world units toward the camera
+		glTranslatef(kVRSpriteForward, 0.0f, 0.0f);
+	}
+#endif
+
 	glVertexPointer(3, GL_FLOAT, 0, vertex_array);
 	glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
 
-#if defined(__ANDROID__)
-	// VR: pull the sprite slightly toward the camera in depth so the floor it stands on doesn't clip
-	// off its lower portion (sprites extend below their floor-level origin). Walls are far enough in
-	// depth that this small bias doesn't make sprites poke through them.
-	const bool vrSpriteOffset = VR_IsActive();
-	if (vrSpriteOffset) { glEnable(GL_POLYGON_OFFSET_FILL); glPolygonOffset(-2.0f, -4.0f); }
-#endif
-
+	// NOTE: VR sprite floor-clipping is unsolved -- depth-test (force_sprite_depth) correctly occludes
+	// sprites behind walls but clips the bottom against the floor they stand on; glPolygonOffset is a
+	// no-op on billboards (zero depth slope) and glDepthRange shows them through all walls. A proper
+	// fix needs sprite-vs-own-floor clipping. Left as plain depth-tested for now (walls occlude right).
 	glDrawArrays(GL_QUADS, 0, 4);
 
 	if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, offset, renderStep)) {
 		glDrawArrays(GL_QUADS, 0, 4);
 	}
-
-#if defined(__ANDROID__)
-	if (vrSpriteOffset) glDisable(GL_POLYGON_OFFSET_FILL);
-#endif
 
 	glEnable(GL_DEPTH_TEST);
 	glPopMatrix();

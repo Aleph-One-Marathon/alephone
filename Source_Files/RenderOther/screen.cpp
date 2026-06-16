@@ -2429,8 +2429,29 @@ void MainScreenSwap()
 	if (VR_IsActive()) {
 		// If render_view already presented the stereo world this tick, we're done; otherwise present
 		// the 2D UI (menus/terminals/loading) from the screen-layer FBO as a flat panel.
-		if (!VR_TakeWorldFramePresented())
+		if (!VR_TakeWorldFramePresented()) {
 			VR_PresentScreenLayer();
+			// Drive the 2D UI with the controller pointer: VR_PresentScreenLayer just ray-cast the
+			// aiming controller(s) onto the world-locked panel; inject SDL mouse motion to that pixel
+			// and a left click on trigger so menus/terminals become interactable.
+			int px = 0, py = 0;
+			if (VR_GetPointerScreen(&px, &py)) {
+				SDL_Event m{};
+				m.type = SDL_MOUSEMOTION; m.motion.x = px; m.motion.y = py;
+				SDL_PushEvent(&m);
+				static bool clickPrev = false;
+				const bool click = VR_GetPointerClick();
+				if (click != clickPrev) {
+					SDL_Event b{};
+					b.type = click ? SDL_MOUSEBUTTONDOWN : SDL_MOUSEBUTTONUP;
+					b.button.button = SDL_BUTTON_LEFT;
+					b.button.state = click ? SDL_PRESSED : SDL_RELEASED;
+					b.button.clicks = 1; b.button.x = px; b.button.y = py;
+					SDL_PushEvent(&b);
+				}
+				clickPrev = click;
+			}
+		}
 		// Re-bind the screen-layer FBO so the next frame's 2D UI renders into it (not the pbuffer).
 		glBindFramebuffer(GL_FRAMEBUFFER, VR_ScreenLayerFramebuffer());
 		return;

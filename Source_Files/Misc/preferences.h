@@ -298,7 +298,16 @@ void read_preferences();
 void handle_preferences(void);
 void write_preferences(void);
 
+#if defined(__ANDROID__)
+extern "C" bool VR_IsActive(void);
+#endif
 static inline int16 get_fps_target() {
+#if defined(__ANDROID__)
+	// VR: OpenXR's xrWaitFrame paces the loop, and fps_target==0 also selects the smoothest (raw
+	// time-based) interpolation in get_heartbeat_fraction(). The preference's default 30 disables
+	// interpolation (choppy), so force 0 in VR regardless of the setting.
+	if (VR_IsActive()) return 0;
+#endif
 	return graphics_preferences->fps_target;
 }
 

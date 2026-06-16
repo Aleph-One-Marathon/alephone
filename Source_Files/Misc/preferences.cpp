@@ -74,6 +74,7 @@ May 22, 2003 (Woody Zenfell):
 #include "Plugins.h"
 
 #include "InfoTree.h"
+#include "vr_openxr.h"
 #include "StarGameProtocol.h"
 
 #include "tags.h"
@@ -167,6 +168,9 @@ void parse_input_preferences(InfoTree root, std::string version);
 void parse_sound_preferences(InfoTree root, std::string version);
 void parse_network_preferences(InfoTree root, std::string version);
 void parse_environment_preferences(InfoTree root, std::string version);
+#if defined(__ANDROID__)
+void parse_vr_preferences(InfoTree root, std::string version);
+#endif
 
 // Prototypes
 static void player_dialog(void *arg);
@@ -178,6 +182,9 @@ static void environment_dialog(void *arg);
 static void plugins_dialog(void *arg);
 static void keyboard_dialog(void *arg);
 //static void texture_options_dialog(void *arg);
+#if defined(__ANDROID__)
+static void vr_dialog(void *arg);
+#endif
 
 /*
  *  Get user name
@@ -246,6 +253,11 @@ void handle_preferences(void)
 	w_button *w_plugins = new w_button("PLUGINS", plugins_dialog, &d);
 	d.add(w_plugins);
 
+#if defined(__ANDROID__)
+	w_button *w_vr = new w_button("VR", vr_dialog, &d);
+	d.add(w_vr);
+#endif
+
 	w_button *w_return = new w_button("RETURN", dialog_cancel, &d);
 	d.add(w_return);
 
@@ -258,6 +270,9 @@ void handle_preferences(void)
 	placer->add(w_controls);
 	placer->add(w_environment);
 	placer->add(w_plugins);
+#if defined(__ANDROID__)
+	placer->add(w_vr);
+#endif
 	placer->add(new w_spacer, true);
 	placer->add(w_return);
 
@@ -1034,6 +1049,42 @@ static const char *bobbing_view_labels[] = {
 	"None", "Default", "Weapon Only", NULL
 };
 
+#if defined(__ANDROID__)
+// VR options menu (Quest). w_select label/value array pairs; index into the labels maps to the value
+// at the same index. The dialog finds the closest value to the current VR_Settings() field.
+static const char *vr_hand_labels[] = { "Right", "Left", NULL };
+
+static const char *vr_turn_style_labels[] = { "Smooth", "Snap", NULL };
+
+static const char *vr_turn_amount_labels[] = { "15\xb0", "30\xb0", "45\xb0", "60\xb0", "90\xb0", NULL };
+static const float vr_turn_amount_values[] = { 15.f, 30.f, 45.f, 60.f, 90.f };
+
+static const char *vr_screen_distance_labels[] = { "1.5 m", "2.0 m", "2.5 m", "3.0 m", "4.0 m", NULL };
+static const float vr_screen_distance_values[] = { 1.5f, 2.0f, 2.5f, 3.0f, 4.0f };
+
+static const char *vr_screen_height_labels[] = { "1.5 m", "2.0 m", "2.5 m", "3.0 m", NULL };
+static const float vr_screen_height_values[] = { 1.5f, 2.0f, 2.5f, 3.0f };
+
+static const char *vr_eye_height_labels[] = { "1.4 m", "1.5 m", "1.6 m", "1.7 m", "1.8 m", NULL };
+static const float vr_eye_height_values[] = { 1.4f, 1.5f, 1.6f, 1.7f, 1.8f };
+
+static const char *vr_brightness_labels[] = { "50%", "60%", "70%", "80%", "90%", "100%", NULL };
+static const float vr_brightness_values[] = { 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f };
+
+// Find the array index whose value is closest to cur (the settings are stored as raw floats but the
+// menu offers discrete steps).
+static int vr_closest_index(const float* values, int count, float cur)
+{
+	int best = 0;
+	float bestDist = 1e30f;
+	for (int i = 0; i < count; ++i) {
+		float d = std::fabs(values[i] - cur);
+		if (d < bestDist) { bestDist = d; best = i; }
+	}
+	return best;
+}
+#endif
+
 static const char* hud_scale_labels[] = {
 "Normal", "Double", "Largest", NULL
 };
@@ -1544,6 +1595,112 @@ static void graphics_dialog(void *arg)
 	    }
     }
 }
+
+#if defined(__ANDROID__)
+/*
+ *  VR options dialog (Quest). Binds to the runtime VR_Settings() struct; applies immediately on
+ *  ACCEPT and persists via write_preferences() (the Quest process is killed often, so persistence
+ *  matters). Reached from the top-level PREFERENCES dialog via the VR button.
+ */
+static void vr_dialog(void *arg)
+{
+	vr_settings_t *vr = VR_Settings();
+
+	dialog d;
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add(new w_title("VR OPTIONS"), d);
+	placer->add(new w_spacer(), true);
+
+	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	table->col_flags(0, placeable::kAlignRight);
+	table->col_flags(1, placeable::kAlignLeft);
+
+	// Controls
+	table->dual_add_row(new w_static_text("Controls"), d);
+
+	w_select *hand_w = new w_select(vr->dominantHand ? 1 : 0, vr_hand_labels);
+	table->dual_add(hand_w->label("Handedness"), d);
+	table->dual_add(hand_w, d);
+
+	w_toggle *switch_sticks_w = new w_toggle(vr->switchSticks != 0);
+	table->dual_add(switch_sticks_w->label("Switch Thumbsticks"), d);
+	table->dual_add(switch_sticks_w, d);
+
+	table->add_row(new w_spacer(), true);
+
+	// Comfort
+	table->dual_add_row(new w_static_text("Comfort"), d);
+
+	w_toggle *bob_w = new w_toggle(vr->disableBob != 0);
+	table->dual_add(bob_w->label("Disable View Bob"), d);
+	table->dual_add(bob_w, d);
+
+	w_select *turn_style_w = new w_select(vr->snapTurn ? 1 : 0, vr_turn_style_labels);
+	table->dual_add(turn_style_w->label("Turning"), d);
+	table->dual_add(turn_style_w, d);
+
+	w_select *turn_amount_w = new w_select(
+		vr_closest_index(vr_turn_amount_values, 5, vr->turnDegrees), vr_turn_amount_labels);
+	table->dual_add(turn_amount_w->label("Turn Amount"), d);
+	table->dual_add(turn_amount_w, d);
+
+	table->add_row(new w_spacer(), true);
+
+	// 2D screen panel
+	table->dual_add_row(new w_static_text("Menu / Terminal Panel"), d);
+
+	w_select *screen_dist_w = new w_select(
+		vr_closest_index(vr_screen_distance_values, 5, vr->screenDistanceM), vr_screen_distance_labels);
+	table->dual_add(screen_dist_w->label("Panel Distance"), d);
+	table->dual_add(screen_dist_w, d);
+
+	w_select *screen_height_w = new w_select(
+		vr_closest_index(vr_screen_height_values, 4, vr->screenHeightM), vr_screen_height_labels);
+	table->dual_add(screen_height_w->label("Panel Size"), d);
+	table->dual_add(screen_height_w, d);
+
+	table->add_row(new w_spacer(), true);
+
+	// World / view
+	table->dual_add_row(new w_static_text("World"), d);
+
+	w_select *eye_height_w = new w_select(
+		vr_closest_index(vr_eye_height_values, 5, vr->eyeHeightM), vr_eye_height_labels);
+	table->dual_add(eye_height_w->label("Eye Height"), d);
+	table->dual_add(eye_height_w, d);
+
+	w_select *brightness_w = new w_select(
+		vr_closest_index(vr_brightness_values, 6, vr->brightness), vr_brightness_labels);
+	table->dual_add(brightness_w->label("Brightness"), d);
+	table->dual_add(brightness_w, d);
+
+	placer->add(table, true);
+	placer->add(new w_spacer(), true);
+
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	placer->add(button_placer, true);
+
+	d.set_widget_placer(placer);
+
+	clear_screen();
+
+	if (d.run() == 0) {	// Accepted
+		vr->dominantHand    = hand_w->get_selection();
+		vr->switchSticks    = switch_sticks_w->get_selection() ? 1 : 0;
+		vr->disableBob      = bob_w->get_selection() ? 1 : 0;
+		vr->snapTurn        = turn_style_w->get_selection();
+		vr->turnDegrees     = vr_turn_amount_values[turn_amount_w->get_selection()];
+		vr->screenDistanceM = vr_screen_distance_values[screen_dist_w->get_selection()];
+		vr->screenHeightM   = vr_screen_height_values[screen_height_w->get_selection()];
+		vr->eyeHeightM      = vr_eye_height_values[eye_height_w->get_selection()];
+		vr->brightness      = vr_brightness_values[brightness_w->get_selection()];
+
+		write_preferences();
+	}
+}
+#endif // __ANDROID__
 
 /*
  *  Sound dialog
@@ -3564,7 +3721,11 @@ void read_preferences ()
 #endif
 			for (const InfoTree &child : root.children_named("environment"))
 				parse_environment_preferences(child, version);
-			
+#if defined(__ANDROID__)
+			for (const InfoTree &child : root.children_named("vr"))
+				parse_vr_preferences(child, version);
+#endif
+
 		} catch (const InfoTree::parse_error& ex) {
 			logError("Error parsing preferences file (%s): %s", FileSpec.GetPath(), ex.what());
 			parse_error = true;
@@ -4079,9 +4240,29 @@ InfoTree environment_preferences_tree()
 		enable.put_attr_path("path", plugin.string());
 		root.add_child("enable_plugin", enable);
 	}
-	
+
 	return root;
 }
+
+#if defined(__ANDROID__)
+InfoTree vr_preferences_tree()
+{
+	InfoTree root;
+	vr_settings_t *vr = VR_Settings();
+	root.put_attr("disable_bob", vr->disableBob);
+	root.put_attr("screen_distance_m", vr->screenDistanceM);
+	root.put_attr("screen_height_m", vr->screenHeightM);
+	root.put_attr("world_scale_wum", vr->worldScaleWUM);
+	root.put_attr("eye_height_m", vr->eyeHeightM);
+	root.put_attr("snap_turn", vr->snapTurn);
+	root.put_attr("turn_degrees", vr->turnDegrees);
+	root.put_attr("brightness", vr->brightness);
+	root.put_attr("room_scale", vr->roomScale);
+	root.put_attr("dominant_hand", vr->dominantHand);
+	root.put_attr("switch_sticks", vr->switchSticks);
+	return root;
+}
+#endif
 
 void write_preferences()
 {
@@ -4096,7 +4277,10 @@ void write_preferences()
 	root.put_child("network", network_preferences_tree());
 #endif
 	root.put_child("environment", environment_preferences_tree());
-	
+#if defined(__ANDROID__)
+	root.put_child("vr", vr_preferences_tree());
+#endif
+
 	InfoTree fileroot;
 	fileroot.put_child("mara_prefs", root);
 	
@@ -5129,6 +5313,24 @@ void parse_environment_preferences(InfoTree root, std::string version)
 		}
 	}
 }
+
+#if defined(__ANDROID__)
+void parse_vr_preferences(InfoTree root, std::string version)
+{
+	vr_settings_t *vr = VR_Settings();
+	root.read_attr("disable_bob", vr->disableBob);
+	root.read_attr("screen_distance_m", vr->screenDistanceM);
+	root.read_attr("screen_height_m", vr->screenHeightM);
+	root.read_attr("world_scale_wum", vr->worldScaleWUM);
+	root.read_attr("eye_height_m", vr->eyeHeightM);
+	root.read_attr("snap_turn", vr->snapTurn);
+	root.read_attr("turn_degrees", vr->turnDegrees);
+	root.read_attr("brightness", vr->brightness);
+	root.read_attr("room_scale", vr->roomScale);
+	root.read_attr("dominant_hand", vr->dominantHand);
+	root.read_attr("switch_sticks", vr->switchSticks);
+}
+#endif
 
 extern const char* GetSDLKeyName(SDL_Scancode);
 

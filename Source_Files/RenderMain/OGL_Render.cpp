@@ -157,6 +157,10 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "Random.h"
 #include "ViewControl.h"
 #include "OGL_Faders.h"
+#include "vr_openxr.h"
+#if defined(__ANDROID__)
+#include <android/log.h>
+#endif
 #include "ModelRenderer.h"
 #include "Logging.h"
 #include "screen.h"
@@ -940,22 +944,30 @@ bool OGL_EndMain()
 		Using_sRGB = false;
 	}
 	
-	// Proper projection
+	// Proper projection.
+	// SetView() loads the world perspective frustum straight into GL_PROJECTION without going
+	// through SetProjectionType(), so the cached ProjectionType can falsely read Projection_Screen
+	// here while GL_PROJECTION actually holds the perspective matrix. SetProjectionType() would then
+	// early-out and leave the perspective projection loaded, projecting the fullscreen fade quad off
+	// the screen. This bit the VR stereo path: the second eye's fade vanished (the first eye happened
+	// to have a non-Screen cached type from its own render). Invalidate the cache so the screen
+	// projection is guaranteed to load for every End (both eyes).
+	ProjectionType = Projection_NONE;
 	SetProjectionType(Projection_Screen);
-	
+
 	// Reset modelview matrix
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	
+
 	// No texture mapping now
 	glDisable(GL_TEXTURE_2D);
-	
+
 	// And no Z buffer
 	glDisable(GL_DEPTH_TEST);
-	
+
 	// Render OpenGL faders, if in use
 	OGL_DoFades(0,0,ViewWidth,ViewHeight);
-	
+
 	return true;
 }
 

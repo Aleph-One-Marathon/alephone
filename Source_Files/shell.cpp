@@ -807,7 +807,13 @@ void main_event_loop(void)
 		{
 			fps_target = 30;
 		}
-	
+#if defined(__ANDROID__)
+		// VR: OpenXR's xrWaitFrame already paces the frame loop to the headset; the engine's FPS cap
+		// only fights it and lowers the effective rate. Run uncapped.
+		if (VR_IsActive())
+			fps_target = 0;
+#endif
+
 		if (game_state == _game_in_progress && fps_target != 0)
 		{
 			int elapsed_machine_ticks = machine_tick_count() - cur_time;
