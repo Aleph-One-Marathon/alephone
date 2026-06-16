@@ -544,13 +544,15 @@ static void render_vr_aim_debug(view_data* view)
 		rayEnd.y = (world_distance)(cw.y + wy*tfix);
 		rayEnd.z = (world_distance)(cw.z + wz*tfix);
 
-		// Raycast hit (separate dot): cast from the EYE, not the controller. The controller floats in
-		// the air and can sit on the far side of a near wall, making the ray start past it ("hit beyond
-		// the closest wall"). The eye is always inside the current polygon, so the walk sees near walls.
-		world_point3d eyePt;
-		eyePt.x = (world_distance)camx; eyePt.y = (world_distance)camy; eyePt.z = (world_distance)camz;
-		world_point3d hit = vr_raycast_geometry(eyePt, view->origin_polygon_index, wx, wy, wz, 64.0 * WORLD_ONE);
-		short cpoly = view->origin_polygon_index;
+		// Raycast hit (the dot): cast from the CONTROLLER `cw` along the same dir as the drawn line, so
+		// the dot lands exactly ON the line (sharing the eye origin instead caused an arm's-length
+		// parallax that shifted the dot off the line as the hand moved). The earlier "hit beyond the
+		// near wall" was the int32 overflow, now fixed by the step-marched walk. cw's polygon is found
+		// by tracking from the eye (short segment, no overflow); NONE (hand poked through a wall) falls
+		// back to the eye's polygon.
+		short cpoly = find_new_object_polygon((world_point2d*)&view->origin, (world_point2d*)&cw, view->origin_polygon_index);
+		if (cpoly == NONE) cpoly = view->origin_polygon_index;
+		world_point3d hit = vr_raycast_geometry(cw, cpoly, wx, wy, wz, 64.0 * WORLD_ONE);
 
 		// Diagnostic for the "mirror at far-left rotation" report: dump BOTH hands' stage forward +
 		// world dir + cw/hit, periodically AND whenever the world direction reverses >90deg between
