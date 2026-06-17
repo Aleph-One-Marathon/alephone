@@ -287,6 +287,7 @@ struct EngineLocs {
     GLint fogColor, fogDensity, fogStart, fogEnd;
     GLint alphaTest, alphaRef;
     GLint brightness;
+    GLint depthScale;
 };
 std::unordered_map<GLuint, EngineLocs> g_engineLocs;
 
@@ -307,6 +308,7 @@ const EngineLocs& engineLocsFor(GLuint prog) {
     L.alphaTest  = glGetUniformLocation(prog, "a1_AlphaTest");
     L.alphaRef   = glGetUniformLocation(prog, "a1_AlphaRef");
     L.brightness = glGetUniformLocation(prog, "a1_Brightness");
+    L.depthScale = glGetUniformLocation(prog, "a1_DepthScale");
     return g_engineLocs.emplace(prog, L).first->second;
 }
 
@@ -580,6 +582,8 @@ void flushEngine(GLenum mode, const std::vector<int>& verts) {
     if (L.alphaTest  >= 0) glUniform1i(L.alphaTest, g_alphaTestEnabled ? 1 : 0);
     if (L.alphaRef   >= 0) glUniform1f(L.alphaRef, g_alphaTestRef);
     if (L.brightness >= 0) glUniform1f(L.brightness, VR_IsActive() ? VR_Settings()->brightness : 1.0f);
+    // Depth-cue / fog distance scale: VR eye-space is metres, but classicDepth & fog expect world units.
+    if (L.depthScale >= 0) glUniform1f(L.depthScale, VR_IsActive() ? VR_Settings()->worldScaleWUM : 1.0f);
 
     glDrawArrays(mode, 0, (GLsizei)verts.size());
 }

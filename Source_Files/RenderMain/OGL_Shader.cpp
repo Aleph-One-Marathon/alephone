@@ -222,7 +222,10 @@ GLhandleARB parseShader(const GLcharARB* str, GLenum shaderType) {
 		"#define gl_NormalMatrix a1_NormalMatrix\n"
 		"#define gl_TextureMatrix a1_TextureMatrix\n"
 		"out vec4 a1_TexCoordV[2];\n"
-		"#define gl_TexCoord a1_TexCoordV\n";
+		"#define gl_TexCoord a1_TexCoordV\n"
+		// Depth-cue / fog distance scale: the VR modelview is in METRES, but classicDepth & fog expect
+		// WORLD UNITS, so multiply the eye-space distance by WUperMetre (set by the shim). 1.0 in flat mode.
+		"uniform float a1_DepthScale;\n";
 	static const char* kFragPreamble =
 		"#version 300 es\n"
 		"precision highp float;\n"
@@ -250,10 +253,30 @@ GLhandleARB parseShader(const GLcharARB* str, GLenum shaderType) {
 		// VR world-brightness multiply (the VR render is over-bright); 1.0 = unchanged. Set per-program
 		// by the shim (gl_es_compat) from VR_Settings()->brightness; 1.0 in flat mode.
 		"uniform float a1_Brightness;\n"
+		"uniform float a1_DepthScale;\n"
 		"void a1_user_main(void);\n"
 		"void main(void) { a1_user_main(); if (a1_AlphaTest && a1_FragValue.a < a1_AlphaRef) discard; a1_FragColor_out = vec4(a1_FragValue.rgb * a1_Brightness, a1_FragValue.a); }\n"
 		"#define main a1_user_main\n";
 	source.push_back(shaderType == GL_FRAGMENT_SHADER ? kFragPreamble : kVertPreamble);
+
+	// The depth-cue (classicDepth = miner's-light falloff) and fog distance are derived from the
+	// eye-space position, which is in WORLD UNITS for the flat projection but in METRES under the VR
+	// projection -- so in VR they collapse to ~0 and dark areas never fall off (they stay lit at the
+	// helmet-light level). Rewrite both to world units: classicDepth uses the WU eye distance (the
+	// "more realistic" form the engine comments suggest), and length(viewDir) is scaled. a1_DepthScale
+	// = WUperMetre in VR, 1.0 otherwise -- so this is a no-op in flat mode. Android-only (desktop shaders
+	// are untouched). Kept in a function-scope string so it outlives glShaderSource below.
+	std::string androidSrc;
+	{
+		androidSrc.assign(str);
+		auto replaceAll = [](std::string& s, const std::string& from, const std::string& to) {
+			for (size_t p = 0; (p = s.find(from, p)) != std::string::npos; p += to.size())
+				s.replace(p, from.size(), to);
+		};
+		replaceAll(androidSrc, "gl_Position.z / 8192.0", "length((gl_ModelViewMatrix * gl_Vertex).xyz) * a1_DepthScale / 8192.0");
+		replaceAll(androidSrc, "length(viewDir)", "(length(viewDir) * a1_DepthScale)");
+		str = androidSrc.c_str();
+	}
 #endif
 
         if (DisableClipVertex()) {
