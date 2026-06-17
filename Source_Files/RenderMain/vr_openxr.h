@@ -108,6 +108,9 @@ bool VR_GetSecondaryFire(void);        // left trigger
 bool VR_GetAction(void);               // A button (use terminals/switches)
 bool VR_GetAdvance(void);              // A or X: advance terminal / skip cutscene
 bool VR_GetBack(void);                 // Y or B: terminal page back
+bool VR_GetButtonX(void);              // X button alone (in-game: previous weapon)
+bool VR_GetButtonY(void);              // Y button alone (in-game: next weapon)
+bool VR_GetMoveStickClick(void);       // press of the move thumbstick (in-game: run, honors toggle pref)
 
 // Increment 1: render one head-tracked stereo test frame (a colored room) to the headset and
 // submit it. Drives the OpenXR session lifecycle internally. Returns true if a VR frame was

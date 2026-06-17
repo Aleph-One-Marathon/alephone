@@ -1279,6 +1279,19 @@ uint32 parse_keymap(void)
 			if (VR_GetFire())          flags |= _left_trigger_state;
 			if (VR_GetSecondaryFire()) flags |= _right_trigger_state;
 			if (VR_GetAction())        flags |= _action_trigger_state;
+			// Move-thumbstick click -> run. Injected as the raw _run_dont_walk flag BEFORE the
+			// run/walk-toggle post-processing below, so it honors the _inputmod_run_key_toggle pref
+			// (toggle vs hold) exactly like the keyboard run key.
+			if (VR_GetMoveStickClick()) flags |= _run_dont_walk;
+			// X / Y -> previous / next weapon (in-game only; build_terminal_action_flags overwrites
+			// `flags` when in a terminal). Edge-triggered so a press = one switch.
+			{
+				static bool xPrev = false, yPrev = false;
+				const bool xb = VR_GetButtonX(), yb = VR_GetButtonY();
+				if (xb && !xPrev) flags |= _cycle_weapons_backward;   // X = previous weapon
+				if (yb && !yPrev) flags |= _cycle_weapons_forward;    // Y = next weapon
+				xPrev = xb; yPrev = yb;
+			}
 			// (terminal navigation is handled after build_terminal_action_flags below, since that
 			// call overwrites `flags` when in a terminal)
 		}

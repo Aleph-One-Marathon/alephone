@@ -590,6 +590,7 @@ namespace {
 	// Per-hand sticks/triggers (index 0=left, 1=right) so handedness/stick-switch can be routed in
 	// software each frame without re-attaching the action set when the setting changes.
 	XrAction    s_stickAction[2]   = { XR_NULL_HANDLE, XR_NULL_HANDLE };
+	XrAction    s_stickClickAction[2] = { XR_NULL_HANDLE, XR_NULL_HANDLE };   // thumbstick press (L3/R3)
 	XrAction    s_triggerAction[2] = { XR_NULL_HANDLE, XR_NULL_HANDLE };
 	XrAction    s_actionAction = XR_NULL_HANDLE;
 	XrAction    s_bAction = XR_NULL_HANDLE, s_xAction = XR_NULL_HANDLE, s_yAction = XR_NULL_HANDLE;
@@ -600,6 +601,7 @@ namespace {
 	bool        s_aimValid[2]  = { false, false };
 	bool        s_actionsReady = false;
 	float       s_stickX[2] = {0,0}, s_stickY[2] = {0,0}, s_trigger[2] = {0,0};   // raw per-hand
+	bool        s_stickClick[2] = {false, false};   // raw per-hand thumbstick press
 	float       s_moveX = 0, s_moveY = 0, s_turnX = 0;   // routed (handedness/switch-sticks applied)
 	bool        s_fire = false, s_altFire = false, s_action = false;
 	bool        s_bBtn = false, s_xBtn = false, s_yBtn = false;
@@ -626,6 +628,8 @@ namespace {
 		};
 		mkAction("stickleft",  XR_ACTION_TYPE_VECTOR2F_INPUT, &s_stickAction[0]);
 		mkAction("stickright", XR_ACTION_TYPE_VECTOR2F_INPUT, &s_stickAction[1]);
+		mkAction("stickclickleft",  XR_ACTION_TYPE_BOOLEAN_INPUT, &s_stickClickAction[0]);
+		mkAction("stickclickright", XR_ACTION_TYPE_BOOLEAN_INPUT, &s_stickClickAction[1]);
 		mkAction("triggerleft",  XR_ACTION_TYPE_FLOAT_INPUT,  &s_triggerAction[0]);
 		mkAction("triggerright", XR_ACTION_TYPE_FLOAT_INPUT,  &s_triggerAction[1]);
 		mkAction("use", XR_ACTION_TYPE_BOOLEAN_INPUT,   &s_actionAction);
@@ -639,6 +643,8 @@ namespace {
 		XrActionSuggestedBinding binds[] = {
 			{ s_stickAction[0],   path("/user/hand/left/input/thumbstick") },
 			{ s_stickAction[1],   path("/user/hand/right/input/thumbstick") },
+			{ s_stickClickAction[0], path("/user/hand/left/input/thumbstick/click") },
+			{ s_stickClickAction[1], path("/user/hand/right/input/thumbstick/click") },
 			{ s_triggerAction[1], path("/user/hand/right/input/trigger/value") },
 			{ s_triggerAction[0], path("/user/hand/left/input/trigger/value") },
 			{ s_actionAction,  path("/user/hand/right/input/a/click") },
@@ -682,11 +688,14 @@ namespace {
 		XrActionStateGetInfo gi = { XR_TYPE_ACTION_STATE_GET_INFO };
 		XrActionStateVector2f v2 = { XR_TYPE_ACTION_STATE_VECTOR2F };
 		XrActionStateFloat f = { XR_TYPE_ACTION_STATE_FLOAT };
+		XrActionStateBoolean bs = { XR_TYPE_ACTION_STATE_BOOLEAN };
 		for (int h = 0; h < 2; ++h) {
 			gi.action = s_stickAction[h];   xrGetActionStateVector2f(s_session, &gi, &v2);
 			s_stickX[h] = v2.currentState.x; s_stickY[h] = v2.currentState.y;
 			gi.action = s_triggerAction[h]; xrGetActionStateFloat(s_session, &gi, &f);
 			s_trigger[h] = f.currentState;
+			gi.action = s_stickClickAction[h]; xrGetActionStateBoolean(s_session, &gi, &bs);
+			s_stickClick[h] = bs.currentState;
 		}
 
 		// Route the raw per-hand sticks/triggers into the logical move/turn/fire actions. The DOMINANT
@@ -1006,6 +1015,16 @@ extern "C" bool VR_GetSecondaryFire(void)      { return s_altFire; }
 extern "C" bool VR_GetAction(void)             { return s_action; }
 extern "C" bool VR_GetAdvance(void)            { return s_action || s_xBtn; }   // A or X
 extern "C" bool VR_GetBack(void)               { return s_yBtn || s_bBtn; }     // Y or B
+extern "C" bool VR_GetButtonX(void)            { return s_xBtn; }
+extern "C" bool VR_GetButtonY(void)            { return s_yBtn; }
+// Press of the thumbstick you MOVE with (routed by handedness/switch-sticks, like the move stick).
+extern "C" bool VR_GetMoveStickClick(void)
+{
+	const int domIdx = s_settings.dominantHand ? 0 : 1;
+	const int offIdx = 1 - domIdx;
+	const int moveIdx = s_settings.switchSticks ? offIdx : domIdx;
+	return s_stickClick[moveIdx];
+}
 
 namespace {
 	bool s_worldFramePresented = false;
@@ -1371,6 +1390,9 @@ extern "C" bool VR_GetSecondaryFire(void)      { return false; }
 extern "C" bool VR_GetAction(void)             { return false; }
 extern "C" bool VR_GetAdvance(void)            { return false; }
 extern "C" bool VR_GetBack(void)               { return false; }
+extern "C" bool VR_GetButtonX(void)            { return false; }
+extern "C" bool VR_GetButtonY(void)            { return false; }
+extern "C" bool VR_GetMoveStickClick(void)     { return false; }
 extern "C" bool VR_BeginFrame(void)     { return false; }
 extern "C" void VR_BeginEye(int)        {}
 extern "C" void VR_FinishEye(int)       {}

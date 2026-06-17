@@ -1083,6 +1083,11 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	return true;
 }
 
+// VR: the current sprite clip window, so _render_node_object_helper can clip the billboard's horizontal
+// extent to it in world space (the GLES shim no-ops glClipPlane, so we do it on the CPU). nullptr =
+// no clipping (desktop / not a sprite).
+static clipping_window_data* g_vr_sprite_clip_window = nullptr;
+
 void RenderRasterize_Shader::render_node_object(render_object_data *object, bool other_side_of_media, RenderStep renderStep) {
 
     if (!object->clipping_windows)
@@ -1112,9 +1117,11 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
     for (win = object->clipping_windows; win; win = win->next_window)
     {
         clip_to_window(win);
+        g_vr_sprite_clip_window = win;   // VR: CPU-clip the billboard to this window
         _render_node_object_helper(object, renderStep);
     }
-    
+    g_vr_sprite_clip_window = nullptr;
+
     glDisable(GL_CLIP_PLANE5);
 }
 
@@ -1153,14 +1160,11 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 
 			
 	float offset = 0;
-	// In VR, keep depth-testing ON for sprites (like OGL_ForceSpriteDepth): the classic painter's-only
-	// path (depth test off) relies on the BSP back-to-front sort, which is computed for the mono body
-	// view and doesn't hold for each eye in stereo -> sprites punch through walls. Depth testing
-	// against the walls' depth buffer resolves occlusion correctly per-eye.
+	// Sprites use the ORIGINAL painter's path: depth-test OFF, drawn over their cell's floor/walls in
+	// BSP back-to-front order. (VR briefly forced depth-test ON to stop through-walls, but that z-fights
+	// the sprite's own floor -- the floor-clip bug. Depth-off restores the correct "sprite sits on its
+	// floor" look; the through-walls / horizontal portal bleed is fixed by the clip windows instead.)
 	bool force_sprite_depth = OGL_ForceSpriteDepth();
-#if defined(__ANDROID__)
-	if (VR_IsActive()) force_sprite_depth = true;
-#endif
 	if (force_sprite_depth) {
 		// look for parasitic objects based on y position,
 		// and offset them to draw in proper depth order
@@ -1250,31 +1254,60 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 		texCoords[1][0]
 	};
 
+	bool vr_fully_clipped = false;
 #if defined(__ANDROID__)
-	// VR: nudge the sprite a small constant distance TOWARD the camera (its billboard normal is local
-	// +X) so its part at/below its own floor draws OVER that floor -- matching the software renderer,
-	// which painted sprites over their floor. Walls/ledges genuinely farther away than this nudge
-	// still win the depth test and clip the sprite. (Depth-test stays on; no crop, no proportional
-	// hacks.) The magnitude trades "how far below-floor still shows" against "how close a wall can be
-	// before a sprite pokes through it" -- tune via kVRSpriteForward.
-	if (VR_IsActive())
+	// VR: clip the billboard's horizontal extent to the cell's clip window (the original GL_CLIP_PLANE0/1
+	// from clip_to_window, which the GLES shim no-ops). The window edges (long_vector2d left/right) are
+	// world-space vertical planes through view->origin, with the normal taken in a frame rotated by
+	// view->yaw+90 (exactly as clip_to_window builds the GL planes). We solve, along the billboard's
+	// width (local y, from WorldLeft to WorldRight), the sub-range that stays inside both planes, then
+	// shrink the quad + interpolate the horizontal texcoord. Fixes sprites bleeding past wall/door edges.
+	if (VR_IsActive() && g_vr_sprite_clip_window)
 	{
-		const float kVRSpriteForward = 48.0f;   // world units toward the camera
-		glTranslatef(kVRSpriteForward, 0.0f, 0.0f);
+		clipping_window_data* win = g_vr_sprite_clip_window;
+		const double PI = 3.14159265358979323846;
+		const double th = view->yaw * (360.0 / double(FULL_CIRCLE)) * (PI / 180.0);  // billboard yaw
+		const double ph = th + PI / 2.0;                                            // clip-plane frame
+		const double cph = cos(ph), sph = sin(ph), cth = cos(th), sth = sin(th);
+		const double dpx = pos.x - view->origin.x, dpy = pos.y - view->origin.y;
+		const double yL = vertex_array[1], yR = vertex_array[4];
+		double s0 = 0.0, s1 = 1.0;   // kept sub-range along left(0)->right(1)
+		auto apply = [&](double ni, double nj, bool active) {
+			if (!active) return;
+			const double Nx = ni*cph - nj*sph, Ny = ni*sph + nj*cph;   // world normal = Rz(ph)*(ni,nj)
+			const double A = Nx*dpx + Ny*dpy;
+			const double B = -Nx*sth + Ny*cth;                          // d(keep)/dy
+			const double k0 = A + yL*B, k1 = A + yR*B;                   // keep value at left/right vert
+			if (k0 >= 0 && k1 >= 0) return;                             // wholly inside this plane
+			if (k0 < 0 && k1 < 0) { s0 = 1.0; s1 = 0.0; return; }       // wholly outside
+			const double sc = k0 / (k0 - k1);                           // crossing parameter
+			if (k0 < 0) s0 = std::max(s0, sc); else s1 = std::min(s1, sc);
+		};
+		apply(win->left.i,  win->left.j,  (win->left.i  != leftmost_clip.i  || win->left.j  != leftmost_clip.j));
+		apply(win->right.i, win->right.j, (win->right.i != rightmost_clip.i || win->right.j != rightmost_clip.j));
+		if (s0 >= s1) {
+			vr_fully_clipped = true;
+		} else if (s0 > 0.0 || s1 < 1.0) {
+			const double bL = texcoord_array[1], bR = texcoord_array[3];
+			const float nyL = (float)(yL + s0*(yR-yL)), nyR = (float)(yL + s1*(yR-yL));
+			const float nbL = (float)(bL + s0*(bR-bL)), nbR = (float)(bL + s1*(bR-bL));
+			vertex_array[1] = vertex_array[10] = nyL;   // left verts
+			vertex_array[4] = vertex_array[7]  = nyR;   // right verts
+			texcoord_array[1] = texcoord_array[7] = nbL;
+			texcoord_array[3] = texcoord_array[5] = nbR;
+		}
 	}
 #endif
 
 	glVertexPointer(3, GL_FLOAT, 0, vertex_array);
 	glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
 
-	// NOTE: VR sprite floor-clipping is unsolved -- depth-test (force_sprite_depth) correctly occludes
-	// sprites behind walls but clips the bottom against the floor they stand on; glPolygonOffset is a
-	// no-op on billboards (zero depth slope) and glDepthRange shows them through all walls. A proper
-	// fix needs sprite-vs-own-floor clipping. Left as plain depth-tested for now (walls occlude right).
-	glDrawArrays(GL_QUADS, 0, 4);
-
-	if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, offset, renderStep)) {
+	if (!vr_fully_clipped) {
 		glDrawArrays(GL_QUADS, 0, 4);
+
+		if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, offset, renderStep)) {
+			glDrawArrays(GL_QUADS, 0, 4);
+		}
 	}
 
 	glEnable(GL_DEPTH_TEST);
