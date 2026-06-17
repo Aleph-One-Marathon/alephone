@@ -1233,6 +1233,26 @@ extern "C" bool VR_GetHeadPosStage(float pos3[3])
 	return true;
 }
 
+// The DOMINANT controller's aim direction as a Marathon-world unit vector (x/y horizontal, z up) --
+// the same mapping the aim-debug ray uses, so weapons fire exactly where the ray points. Returns
+// false if the controller pose isn't tracked. dir = Rz(yawOffset) * Z^T * aimForward(stage).
+extern "C" bool VR_GetWeaponAim(float dir[3])
+{
+	const int hand = s_settings.dominantHand ? 0 : 1;   // dominant hand holds the weapon
+	float pos[3], fwd[3];
+	if (!VR_GetAimPoseStage(hand, pos, fwd)) return false;   // fwd already has aimPitchAdjust applied
+	// stage(metres,Y-up) forward -> world(WU,Z-up): Z^T maps (sx,sy,sz)->(-sx,-sz,sy), then Rz(yawOffset).
+	const float zx = -fwd[0], zy = -fwd[2], zz = fwd[1];
+	const float yr = s_yawOffset * (2.0f * 3.14159265358979f / 512.0f);   // 512 = Marathon FULL_CIRCLE
+	const float cw = std::cos(yr), sw = std::sin(yr);
+	dir[0] = zx*cw - zy*sw;
+	dir[1] = zx*sw + zy*cw;
+	dir[2] = zz;
+	const float l = std::sqrt(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2]);
+	if (l > 1e-6f) { dir[0]/=l; dir[1]/=l; dir[2]/=l; }
+	return true;
+}
+
 // Menu (hamburger) button press, consumed once. The main loop turns this into the in-game quit dialog.
 extern "C" bool VR_TakeMenuButton(void) { bool v = s_menuLatch; s_menuLatch = false; return v; }
 
@@ -1369,6 +1389,7 @@ extern "C" bool VR_GetPointerScreen(int* x, int* y) { (void)x; (void)y; return f
 extern "C" bool VR_GetPointerClick(void) { return false; }
 extern "C" bool VR_GetAimPoseStage(int, float*, float*) { return false; }
 extern "C" bool VR_GetHeadPosStage(float*) { return false; }
+extern "C" bool VR_GetWeaponAim(float*) { return false; }
 extern "C" bool VR_TakeMenuButton(void) { return false; }
 extern "C" bool VR_HasFocus(void) { return false; }
 extern "C" int  VR_ScreenLayerWidth(void)  { return 0; }

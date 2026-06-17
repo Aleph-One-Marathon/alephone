@@ -171,6 +171,11 @@ bool VR_GetAimPoseStage(int hand, float pos3[3], float fwd3[3]);
 // it doesn't double-count the head offset (which the renderer applies to view.origin, not the eye matrix).
 bool VR_GetHeadPosStage(float pos3[3]);
 
+// The dominant controller's aim direction as a Marathon-world unit vector (x/y horizontal, z up) --
+// the same direction the aim-debug ray uses. Weapons fire along this instead of the player facing.
+// Returns false if the controller pose isn't tracked.
+bool VR_GetWeaponAim(float dir[3]);
+
 // Left-controller menu (hamburger) button press, consumed once -> the main loop opens the in-game
 // quit-with-confirmation dialog.
 bool VR_TakeMenuButton(void);

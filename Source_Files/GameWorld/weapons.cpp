@@ -104,6 +104,7 @@ Apr 10, 2003 (Woody Zenfell):
 #include "game_window.h"
 #include "preferences.h"
 #include "InfoTree.h"
+#include "vr_openxr.h"
 
 #include "Packing.h"
 #include "shell.h"
@@ -1995,13 +1996,31 @@ static void calculate_weapon_origin_and_vector(
 	angle projectile_facing;
 
 	trigger_definition= get_player_trigger_definition(player_index, which_trigger);
-	
-	*origin= player->camera_location;	
+
+	// VR: fire along the dominant controller's aim (where the aim-debug ray points) instead of the
+	// player's facing/elevation (screen centre). Same direction as the on-screen ray. Local player only.
+	angle fire_facing= player->facing;
+	angle fire_elevation= player->elevation;
+#if defined(__ANDROID__)
+	if (VR_IsActive() && player_index == local_player_index)
+	{
+		float dir[3];
+		if (VR_GetWeaponAim(dir))
+		{
+			const float S= 1024.0f;
+			fire_facing= arctangent((int32)(dir[0]*S), (int32)(dir[1]*S));
+			const float h= std::sqrt(dir[0]*dir[0] + dir[1]*dir[1]);
+			fire_elevation= arctangent((int32)(h*S), (int32)(dir[2]*S));
+		}
+	}
+#endif
+
+	*origin= player->camera_location;
 	origin->z += trigger_definition->dz;
-	
+
 	/* Translate the projectile out to the end of the gun barrel.. */
-	translate_point3d(origin, WEAPON_FORWARD_DISPLACEMENT, 
-		player->facing, player->elevation);
+	translate_point3d(origin, WEAPON_FORWARD_DISPLACEMENT,
+		fire_facing, fire_elevation);
 
 	/* Do left/right translation */
 	/* if it is twofisted, and both weapons aren't up, don't translate.. */
@@ -2016,14 +2035,14 @@ static void calculate_weapon_origin_and_vector(
 	}
 
 	/* Handle the left/right translation */
-	translate_point2d((world_point2d *) origin, dx_translation_amount, 
-		NORMALIZE_ANGLE(player->facing+QUARTER_CIRCLE));
+	translate_point2d((world_point2d *) origin, dx_translation_amount,
+		NORMALIZE_ANGLE(fire_facing+QUARTER_CIRCLE));
 
 	/* Get a second point to build up a vector.. */
 	destination= *origin;
-	projectile_facing= NORMALIZE_ANGLE(player->facing+delta_theta);
-	translate_point3d(&destination, WORLD_ONE_HALF, 
-		projectile_facing, player->elevation);
+	projectile_facing= NORMALIZE_ANGLE(fire_facing+delta_theta);
+	translate_point3d(&destination, WORLD_ONE_HALF,
+		projectile_facing, fire_elevation);
 	
 	/* And create the vector.. */
 	_vector->x= destination.x-origin->x;
