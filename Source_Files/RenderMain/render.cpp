@@ -705,6 +705,7 @@ void render_view(
 						if (!RenPtr->renders_viewer_sprites_in_tree())
 							render_viewer_sprite_layer(view, RasPtr);
 						RasPtr->End();
+						VR_PresentHudEye(eye);   // head-locked 2D HUD plane, in front of the world
 						VR_FinishEye(eye);
 					}
 				}

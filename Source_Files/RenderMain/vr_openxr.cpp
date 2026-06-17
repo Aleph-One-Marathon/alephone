@@ -481,6 +481,8 @@ namespace {
 		/* dominantHand    */ 0,      // right-handed
 		/* switchSticks    */ 0,
 		/* aimPitchAdjust  */ -20.0f, // aim pose sits ~20deg above a held-gun barrel; tilt down
+		/* hudDistanceM    */ 0.8f,   // head-locked HUD plane distance
+		/* hudSizeM        */ 0.55f,  // head-locked HUD plane height (width follows natural aspect)
 	};
 
 	// Locomotion yaw offset (snap/smooth turn), in Marathon angle units (512 = full circle).
@@ -1117,6 +1119,101 @@ namespace {
 		s_curMVPLoc   = glGetUniformLocation(s_curProg, "uMVP");
 		s_curColorLoc = glGetUniformLocation(s_curProg, "uColor");
 	}
+}
+
+// -------------------------------------------------------------- HUD layer ----
+// The engine's 2D HUD (Lua plugin HUD or the classic OGL HUD) is drawn into this transparent RGBA
+// offscreen each frame; VR_PresentHudEye then composites it head-locked, in front of the world, into
+// each eye. Unlike the menu screen-layer (world-locked, opaque), the HUD follows the head and is
+// alpha-blended so only the HUD elements occlude the scene.
+namespace {
+	constexpr int kHudW = 1280, kHudH = 1024;
+	GLuint s_hudFBO = 0, s_hudTex = 0;
+
+	void ensureHudLayer() {
+		if (s_hudFBO) return;
+		ensureScreenLayer();   // shares s_quadProg / s_quadVAO for the textured-quad draw
+		glGenTextures(1, &s_hudTex);
+		glBindTexture(GL_TEXTURE_2D, s_hudTex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, kHudW, kHudH, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glGenFramebuffers(1, &s_hudFBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, s_hudFBO);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, s_hudTex, 0);
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			A1VR_LOG("HUD layer FBO incomplete");
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+}
+
+extern "C" unsigned VR_HudLayerFramebuffer(void) { ensureHudLayer(); return s_hudFBO; }
+extern "C" int VR_HudLayerWidth(void)  { return kHudW; }
+extern "C" int VR_HudLayerHeight(void) { return kHudH; }
+
+// Composite the head-locked HUD plane into the currently-bound eye `eye`. Called inside the per-eye
+// world-render loop, after the world+sprites, before VR_FinishEye. The plane rides with the head
+// pose; its BOTTOM edge is anchored in the lower field of view (pitched down) and it grows UPWARD as
+// hudSizeM increases (a "dashboard" -- so cranking the size doesn't run it off the bottom/sides).
+// Width is capped to a comfortable horizontal FOV so wide HUDs don't spill past the binocular region.
+extern "C" void VR_PresentHudEye(int eye)
+{
+	if (!s_active || !s_headPoseValid) return;
+	ensureHudLayer();
+
+	// Head basis in stage space: right/up/forward from the located head pose.
+	float hm[16]; mat_from_pose(hm, s_stageFromHead);
+	const float hp[3] = { s_stageFromHead.position.x, s_stageFromHead.position.y, s_stageFromHead.position.z };
+	float R[3] = {  hm[0],  hm[1],  hm[2] };   // local +X (right)
+	float U[3] = {  hm[4],  hm[5],  hm[6] };   // local +Y (up)
+	float F[3] = { -hm[8], -hm[9], -hm[10] };  // local -Z (forward)
+
+	const float D = s_settings.hudDistanceM;
+	// Bottom-anchor: pitch the forward direction DOWN 30° so the HUD bottom sits in the lower field
+	// of view (~30° below horizontal = roughly the lower third of the Quest's vertical FOV). The HUD
+	// then grows UPWARD from there as hudSizeM increases, like a dashboard.
+	const float pitch = 30.0f * (3.14159265358979f / 180.0f);
+	const float cp = std::cos(pitch), sp = std::sin(pitch);
+	const float Fb[3]     = { F[0]*cp - U[0]*sp, F[1]*cp - U[1]*sp, F[2]*cp - U[2]*sp };
+	const float bottom[3] = { hp[0]+Fb[0]*D, hp[1]+Fb[1]*D, hp[2]+Fb[2]*D };  // bottom-centre anchor
+
+	const float hh     = 0.5f * s_settings.hudSizeM;        // half-height; grows up from the anchor
+	const float aspect = (float)kHudW/(float)kHudH;
+	const float hw     = hh * aspect;                        // natural aspect (no cap = no squash)
+	const float C[3]   = { bottom[0]+U[0]*hh, bottom[1]+U[1]*hh, bottom[2]+U[2]*hh };
+
+	float model[16] = {
+		R[0]*hw, R[1]*hw, R[2]*hw, 0,
+		U[0]*hh, U[1]*hh, U[2]*hh, 0,
+		-F[0],   -F[1],   -F[2],   0,   // plane normal faces the head (upright billboard)
+		C[0],    C[1],    C[2],    1 };
+
+	float proj[16];
+	VR_GetEyeProjection(eye, proj, 0.05f, 50.0f);
+	float stageFromEye[16]; mat_from_pose(stageFromEye, s_stageFromEye[eye]);
+	float eyeFromStage[16]; mat_rigid_inverse(eyeFromStage, stageFromEye);
+	float vp[16];  mat_mul(vp, proj, eyeFromStage);
+	float mvp[16]; mat_mul(mvp, vp, model);
+
+	// The world rasterizer leaves a view scissor + (possibly) a reduced viewport active; reset both so
+	// the HUD quad isn't clipped to the world's view rect (this was chopping the HUD's left side).
+	glViewport(0, 0, s_eyeW, s_eyeH);
+	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);   // HUD pixels (alpha>0) over the world
+	glUseProgram(s_quadProg);
+	glUniformMatrix4fv(s_quadMVPLoc, 1, GL_FALSE, mvp);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, s_hudTex);
+	glUniform1i(s_quadTexLoc, 0);
+	glBindVertexArray(s_quadVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+	glDisable(GL_BLEND);
 }
 
 // ----------------------------------------------------------- dim pass ----

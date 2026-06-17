@@ -1073,6 +1073,12 @@ static const float vr_screen_distance_values[] = { 1.5f, 2.0f, 2.5f, 3.0f, 4.0f 
 static const char *vr_screen_height_labels[] = { "1.5 m", "2.0 m", "2.5 m", "3.0 m", NULL };
 static const float vr_screen_height_values[] = { 1.5f, 2.0f, 2.5f, 3.0f };
 
+static const char *vr_hud_distance_labels[] = { "0.5 m", "0.65 m", "0.8 m", "1.0 m", "1.2 m", NULL };
+static const float vr_hud_distance_values[] = { 0.5f, 0.65f, 0.8f, 1.0f, 1.2f };
+
+static const char *vr_hud_size_labels[] = { "Small", "Medium", "Large", "Huge", NULL };
+static const float vr_hud_size_values[] = { 0.3f, 0.4f, 0.55f, 0.75f };
+
 static const char *vr_eye_height_labels[] = { "1.4 m", "1.5 m", "1.6 m", "1.7 m", "1.8 m", NULL };
 static const float vr_eye_height_values[] = { 1.4f, 1.5f, 1.6f, 1.7f, 1.8f };
 
@@ -1674,6 +1680,21 @@ static void vr_dialog(void *arg)
 
 	table->add_row(new w_spacer(), true);
 
+	// Head-locked HUD plane
+	table->dual_add_row(new w_static_text("HUD"), d);
+
+	w_select *hud_dist_w = new w_select(
+		vr_closest_index(vr_hud_distance_values, 5, vr->hudDistanceM), vr_hud_distance_labels);
+	table->dual_add(hud_dist_w->label("HUD Distance"), d);
+	table->dual_add(hud_dist_w, d);
+
+	w_select *hud_size_w = new w_select(
+		vr_closest_index(vr_hud_size_values, 4, vr->hudSizeM), vr_hud_size_labels);
+	table->dual_add(hud_size_w->label("HUD Size"), d);
+	table->dual_add(hud_size_w, d);
+
+	table->add_row(new w_spacer(), true);
+
 	// World / view
 	table->dual_add_row(new w_static_text("World"), d);
 
@@ -1708,6 +1729,8 @@ static void vr_dialog(void *arg)
 		vr->turnDegrees     = vr_turn_amount_values[turn_amount_w->get_selection()];
 		vr->screenDistanceM = vr_screen_distance_values[screen_dist_w->get_selection()];
 		vr->screenHeightM   = vr_screen_height_values[screen_height_w->get_selection()];
+		vr->hudDistanceM    = vr_hud_distance_values[hud_dist_w->get_selection()];
+		vr->hudSizeM        = vr_hud_size_values[hud_size_w->get_selection()];
 		vr->eyeHeightM      = vr_eye_height_values[eye_height_w->get_selection()];
 		vr->brightness      = vr_brightness_values[brightness_w->get_selection()];
 
@@ -4275,6 +4298,8 @@ InfoTree vr_preferences_tree()
 	root.put_attr("dominant_hand", vr->dominantHand);
 	root.put_attr("switch_sticks", vr->switchSticks);
 	root.put_attr("aim_pitch_adjust", vr->aimPitchAdjust);
+	root.put_attr("hud_distance_m", vr->hudDistanceM);
+	root.put_attr("hud_size_m", vr->hudSizeM);
 	return root;
 }
 #endif
@@ -5345,6 +5370,8 @@ void parse_vr_preferences(InfoTree root, std::string version)
 	root.read_attr("dominant_hand", vr->dominantHand);
 	root.read_attr("switch_sticks", vr->switchSticks);
 	root.read_attr("aim_pitch_adjust", vr->aimPitchAdjust);
+	root.read_attr("hud_distance_m", vr->hudDistanceM);
+	root.read_attr("hud_size_m", vr->hudSizeM);
 }
 #endif
 

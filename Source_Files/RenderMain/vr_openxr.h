@@ -38,6 +38,9 @@ typedef struct {
 	int   switchSticks;     // 1 = swap the move/turn thumbsticks (turn on the dominant hand instead)
 	float aimPitchAdjust;   // degrees added to the controller aim pitch (the OpenXR aim pose sits higher
 	                        //   than a held-gun barrel; negative tilts the ray DOWN). QZD's vr_weaponRotate.
+	float hudDistanceM;     // distance of the head-locked HUD plane in metres (bigger = HUD further out)
+	float hudSizeM;         // height of the head-locked HUD plane in metres (width follows HUD aspect);
+	                        //   acts as the VR "screen size" for the HUD so elements can be pushed wider.
 } vr_settings_t;
 
 vr_settings_t* VR_Settings(void);
@@ -178,6 +181,15 @@ bool VR_GetHeadPosStage(float pos3[3]);
 // the same direction the aim-debug ray uses. Weapons fire along this instead of the player facing.
 // Returns false if the controller pose isn't tracked.
 bool VR_GetWeaponAim(float dir[3]);
+
+// HUD layer: the engine draws the 2D HUD (Lua plugin HUD or classic OGL HUD) into this transparent
+// offscreen each frame; VR_PresentHudEye then composites it head-locked, in front of the world, into
+// each eye (alpha-blended, depth off). hudDistanceM/hudSizeM (VR settings) control its placement so
+// VR users can push HUD elements out toward the edges of their field of view.
+unsigned VR_HudLayerFramebuffer(void);
+int      VR_HudLayerWidth(void);
+int      VR_HudLayerHeight(void);
+void     VR_PresentHudEye(int eye);
 
 // Left-controller menu (hamburger) button press, consumed once -> the main loop opens the in-game
 // quit-with-confirmation dialog.

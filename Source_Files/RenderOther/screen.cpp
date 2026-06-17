@@ -312,11 +312,20 @@ float Screen::pixel_scale()
 
 int Screen::window_height()
 {
+#if defined(__ANDROID__)
+	// VR: the logical screen IS the 2D-UI surface (1280x1024 screen-layer FBO). The auto-resolution
+	// device mode in screen_mode.height would make window_rect()/bound_screen() offset+rescale the
+	// in-game HUD/terminal content, chopping its left+bottom. Use the surface size so they map 1:1.
+	if (VR_IsActive()) return MainScreenLogicalHeight();
+#endif
 	return std::max(static_cast<short>(480), screen_mode.height);
 }
 
 int Screen::window_width()
 {
+#if defined(__ANDROID__)
+	if (VR_IsActive()) return MainScreenLogicalWidth();
+#endif
 	return std::max(static_cast<short>(640), screen_mode.width);
 }
 
@@ -1586,6 +1595,30 @@ void render_screen(short ticks_elapsed)
 	else if (software_render_dest.empty() || ViewChangedSize)
 		software_render_dest = bitmap_definition_of_sdl_surface(world_pixels);
 	
+#if defined(__ANDROID__)
+	// VR: draw the 2D HUD (Lua plugin HUD or the classic OGL HUD) into the transparent head-locked HUD
+	// layer FBO BEFORE render_view (render_view runs the per-eye loop + frame submit, and composites
+	// this layer into each eye via VR_PresentHudEye). Must happen here while the engine's 2D GL state
+	// is set up the same way the on-screen HUD expects.
+	if (VR_IsActive() && !world_view->overhead_map_active && !world_view->terminal_mode_active)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, VR_HudLayerFramebuffer());
+		glViewport(0, 0, VR_HudLayerWidth(), VR_HudLayerHeight());
+		glDisable(GL_SCISSOR_TEST);
+		glClearColor(0.f, 0.f, 0.f, 0.f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		if (LuaHUDRunning())
+			Lua_DrawHUD(ticks_elapsed);
+		else
+		{
+			Rect dr = MakeRect(HUD_DestRect);
+			OGL_DrawHUD(dr, ticks_elapsed);
+		}
+		// Restore the screen-layer FBO as the default 2D target for anything that follows.
+		glBindFramebuffer(GL_FRAMEBUFFER, VR_ScreenLayerFramebuffer());
+	}
+#endif
+
 	// Render world view
 	render_view(world_view, software_render_dest.get());
 
