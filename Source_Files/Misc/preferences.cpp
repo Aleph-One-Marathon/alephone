@@ -1079,6 +1079,9 @@ static const float vr_hud_distance_values[] = { 0.5f, 0.65f, 0.8f, 1.0f, 1.2f };
 static const char *vr_hud_size_labels[] = { "Small", "Medium", "Large", "Huge", NULL };
 static const float vr_hud_size_values[] = { 0.3f, 0.4f, 0.55f, 0.75f };
 
+static const char *vr_hud_tilt_labels[] = { "0° (Eye Level)", "15°", "30° (Dashboard)", "45°", NULL };
+static const float vr_hud_tilt_values[] = { 0.0f, 15.0f, 30.0f, 45.0f };
+
 static const char *vr_eye_height_labels[] = { "1.4 m", "1.5 m", "1.6 m", "1.7 m", "1.8 m", NULL };
 static const float vr_eye_height_values[] = { 1.4f, 1.5f, 1.6f, 1.7f, 1.8f };
 
@@ -1693,6 +1696,11 @@ static void vr_dialog(void *arg)
 	table->dual_add(hud_size_w->label("HUD Size"), d);
 	table->dual_add(hud_size_w, d);
 
+	w_select *hud_tilt_w = new w_select(
+		vr_closest_index(vr_hud_tilt_values, 4, vr->hudTiltDeg), vr_hud_tilt_labels);
+	table->dual_add(hud_tilt_w->label("HUD Tilt"), d);
+	table->dual_add(hud_tilt_w, d);
+
 	table->add_row(new w_spacer(), true);
 
 	// World / view
@@ -1731,6 +1739,7 @@ static void vr_dialog(void *arg)
 		vr->screenHeightM   = vr_screen_height_values[screen_height_w->get_selection()];
 		vr->hudDistanceM    = vr_hud_distance_values[hud_dist_w->get_selection()];
 		vr->hudSizeM        = vr_hud_size_values[hud_size_w->get_selection()];
+		vr->hudTiltDeg      = vr_hud_tilt_values[hud_tilt_w->get_selection()];
 		vr->eyeHeightM      = vr_eye_height_values[eye_height_w->get_selection()];
 		vr->brightness      = vr_brightness_values[brightness_w->get_selection()];
 
@@ -4300,6 +4309,7 @@ InfoTree vr_preferences_tree()
 	root.put_attr("aim_pitch_adjust", vr->aimPitchAdjust);
 	root.put_attr("hud_distance_m", vr->hudDistanceM);
 	root.put_attr("hud_size_m", vr->hudSizeM);
+	root.put_attr("hud_tilt_deg", vr->hudTiltDeg);
 	return root;
 }
 #endif
@@ -5372,6 +5382,7 @@ void parse_vr_preferences(InfoTree root, std::string version)
 	root.read_attr("aim_pitch_adjust", vr->aimPitchAdjust);
 	root.read_attr("hud_distance_m", vr->hudDistanceM);
 	root.read_attr("hud_size_m", vr->hudSizeM);
+	root.read_attr("hud_tilt_deg", vr->hudTiltDeg);
 }
 #endif
 

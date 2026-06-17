@@ -90,42 +90,32 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 
 	glMatrixMode(GL_MODELVIEW);
 
-	// setup a rotation matrix for the landscape texture shader
-	// this aligns the landscapes to the center of the screen for standard
-	// pitch ranges, so that they don't need to be stretched
-
-	glLoadIdentity();
-	glTranslated(view.origin.x, view.origin.y, view.origin.z);
-	glRotated(yaw, 0.0, 0.0, 1.0);
-	glRotated(-pitch, 0.0, 1.0, 0.0);
-	glMultMatrixd(kViewBaseMatrixInverse);
-
-	GLfloat landscapeInverseMatrix[16];
-	glGetFloatv(GL_MODELVIEW_MATRIX, landscapeInverseMatrix);
-
-	Shader *s;
-
-	s = Shader::get(Shader::S_Landscape);
-	s->enable();
-	s->setMatrix4(Shader::U_LandscapeInverseMatrix, landscapeInverseMatrix);
-
-	s = Shader::get(Shader::S_LandscapeBloom);
-	s->enable();
-	s->setMatrix4(Shader::U_LandscapeInverseMatrix, landscapeInverseMatrix);
-
-	Shader::disable();
-
-	// setup the normal view matrix
-
+	// Build the classic view matrix (kViewBaseMatrix * Ry(pitch) * Rz(-yaw) * T(-origin)).
+	// Used for both the non-VR modelview AND as the landscape UV matrix, which the landscape
+	// shaders use (via landscapeInverseMatrix uniform) to compute relDir in a yaw-aligned
+	// classic eye space so landscape textures stay anchored to world directions.
 	glLoadMatrixd(kViewBaseMatrix);
 	if (!view.mimic_sw_perspective)
 		glRotated(pitch, 0.0, 1.0, 0.0);
-//	apperently 'roll' is not what i think it is
-//	rubicon sets it to some strange value
-//	double roll = view.roll * 360.0 / float(NUMBER_OF_ANGLES);
-//	glRotated(roll, 1.0, 0.0, 0.0);
 	glRotated(-yaw, 0.0, 0.0, 1.0);
 	glTranslated(-view.origin.x, -view.origin.y, -view.origin.z);
+
+	// Capture and set as the landscape UV matrix for all 6 landscape shader variants.
+	// In VR this is overridden below with the eye-height-adjusted version.
+	{
+		GLfloat landscapeMatrix[16];
+		glGetFloatv(GL_MODELVIEW_MATRIX, landscapeMatrix);
+		Shader *ls[] = {
+			Shader::get(Shader::S_Landscape),
+			Shader::get(Shader::S_LandscapeBloom),
+			Shader::get(Shader::S_LandscapeInfravision),
+			Shader::get(Shader::S_LandscapeSphere),
+			Shader::get(Shader::S_LandscapeSphereBloom),
+			Shader::get(Shader::S_LandscapeSphereInfravision),
+		};
+		for (auto s : ls) { s->enable(); s->setMatrix4(Shader::U_LandscapeInverseMatrix, landscapeMatrix); }
+		Shader::disable();
+	}
 
 #if defined(__ANDROID__)
 	if (VR_IsActive())
@@ -142,6 +132,28 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 		VR_GetEyeProjection(eye, vrProj, 0.05f, (128.0f * 1024.0f) / WUperMetre);
 		glMatrixMode(GL_PROJECTION);
 		glLoadMatrixf(vrProj);
+
+		// Override landscape UV matrix with VR eye-height-adjusted classic view.
+		// No head pitch: head orientation rides in vrView for world geometry, not landscape UVs.
+		{
+			const float eyeZAdj = VR_GetEyeZOffset() + eyeHeightM * WUperMetre;
+			glMatrixMode(GL_MODELVIEW);
+			glLoadMatrixd(kViewBaseMatrix);
+			glRotated(-yaw, 0.0, 0.0, 1.0);
+			glTranslated(-view.origin.x, -view.origin.y, -(view.origin.z - eyeZAdj));
+			GLfloat vrLandscapeMatrix[16];
+			glGetFloatv(GL_MODELVIEW_MATRIX, vrLandscapeMatrix);
+			Shader *ls[] = {
+				Shader::get(Shader::S_Landscape),
+				Shader::get(Shader::S_LandscapeBloom),
+				Shader::get(Shader::S_LandscapeInfravision),
+				Shader::get(Shader::S_LandscapeSphere),
+				Shader::get(Shader::S_LandscapeSphereBloom),
+				Shader::get(Shader::S_LandscapeSphereInfravision),
+			};
+			for (auto s : ls) { s->enable(); s->setMatrix4(Shader::U_LandscapeInverseMatrix, vrLandscapeMatrix); }
+			Shader::disable();
+		}
 
 		float vrView[16];   // eyeFromStage, metres
 		VR_GetEyeViewMetres(eye, vrView);

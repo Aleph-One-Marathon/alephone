@@ -483,6 +483,7 @@ namespace {
 		/* aimPitchAdjust  */ -20.0f, // aim pose sits ~20deg above a held-gun barrel; tilt down
 		/* hudDistanceM    */ 0.8f,   // head-locked HUD plane distance
 		/* hudSizeM        */ 0.55f,  // head-locked HUD plane height (width follows natural aspect)
+		/* hudTiltDeg      */ 30.0f,  // degrees the HUD bottom-anchor is pitched down from horizontal
 	};
 
 	// Locomotion yaw offset (snap/smooth turn), in Marathon angle units (512 = full circle).
@@ -594,6 +595,7 @@ namespace {
 	XrAction    s_stickAction[2]   = { XR_NULL_HANDLE, XR_NULL_HANDLE };
 	XrAction    s_stickClickAction[2] = { XR_NULL_HANDLE, XR_NULL_HANDLE };   // thumbstick press (L3/R3)
 	XrAction    s_triggerAction[2] = { XR_NULL_HANDLE, XR_NULL_HANDLE };
+	XrAction    s_gripAction[2]   = { XR_NULL_HANDLE, XR_NULL_HANDLE };
 	XrAction    s_actionAction = XR_NULL_HANDLE;
 	XrAction    s_bAction = XR_NULL_HANDLE, s_xAction = XR_NULL_HANDLE, s_yAction = XR_NULL_HANDLE;
 	XrAction    s_menuAction = XR_NULL_HANDLE;   // left controller hamburger/menu button -> in-game quit
@@ -603,6 +605,7 @@ namespace {
 	bool        s_aimValid[2]  = { false, false };
 	bool        s_actionsReady = false;
 	float       s_stickX[2] = {0,0}, s_stickY[2] = {0,0}, s_trigger[2] = {0,0};   // raw per-hand
+	float       s_grip[2] = {0,0};                   // raw per-hand squeeze/grip
 	bool        s_stickClick[2] = {false, false};   // raw per-hand thumbstick press
 	float       s_moveX = 0, s_moveY = 0, s_turnX = 0;   // routed (handedness/switch-sticks applied)
 	bool        s_fire = false, s_altFire = false, s_action = false;
@@ -634,6 +637,8 @@ namespace {
 		mkAction("stickclickright", XR_ACTION_TYPE_BOOLEAN_INPUT, &s_stickClickAction[1]);
 		mkAction("triggerleft",  XR_ACTION_TYPE_FLOAT_INPUT,  &s_triggerAction[0]);
 		mkAction("triggerright", XR_ACTION_TYPE_FLOAT_INPUT,  &s_triggerAction[1]);
+		mkAction("gripleft",  XR_ACTION_TYPE_FLOAT_INPUT,  &s_gripAction[0]);
+		mkAction("gripright", XR_ACTION_TYPE_FLOAT_INPUT,  &s_gripAction[1]);
 		mkAction("use", XR_ACTION_TYPE_BOOLEAN_INPUT,   &s_actionAction);
 		mkAction("bbtn", XR_ACTION_TYPE_BOOLEAN_INPUT,  &s_bAction);
 		mkAction("xbtn", XR_ACTION_TYPE_BOOLEAN_INPUT,  &s_xAction);
@@ -649,6 +654,8 @@ namespace {
 			{ s_stickClickAction[1], path("/user/hand/right/input/thumbstick/click") },
 			{ s_triggerAction[1], path("/user/hand/right/input/trigger/value") },
 			{ s_triggerAction[0], path("/user/hand/left/input/trigger/value") },
+			{ s_gripAction[1],   path("/user/hand/right/input/squeeze/value") },
+			{ s_gripAction[0],   path("/user/hand/left/input/squeeze/value") },
 			{ s_actionAction,  path("/user/hand/right/input/a/click") },
 			{ s_bAction,       path("/user/hand/right/input/b/click") },
 			{ s_xAction,       path("/user/hand/left/input/x/click") },
@@ -696,6 +703,8 @@ namespace {
 			s_stickX[h] = v2.currentState.x; s_stickY[h] = v2.currentState.y;
 			gi.action = s_triggerAction[h]; xrGetActionStateFloat(s_session, &gi, &f);
 			s_trigger[h] = f.currentState;
+			gi.action = s_gripAction[h]; xrGetActionStateFloat(s_session, &gi, &f);
+			s_grip[h] = f.currentState;
 			gi.action = s_stickClickAction[h]; xrGetActionStateBoolean(s_session, &gi, &bs);
 			s_stickClick[h] = bs.currentState;
 		}
@@ -1045,6 +1054,7 @@ extern "C" bool VR_TakeWorldFramePresented(void) { bool v = s_worldFramePresente
 // whether that controller's trigger is pressed (for a click). Computed in VR_PresentScreenLayer.
 extern "C" bool VR_GetPointerScreen(int* x, int* y) { if (s_ptrActive) { if (x) *x = s_ptrX; if (y) *y = s_ptrY; } return s_ptrActive; }
 extern "C" bool VR_GetPointerClick(void) { if (!s_ptrActive) return false; return s_trigger[s_ptrHand] > 0.5f; }   // raw per-hand trigger (s_fire is the routed dominant one)
+extern "C" bool VR_GetPointerGrip(void) { if (!s_ptrActive) return false; return s_grip[s_ptrHand] > 0.5f; }       // grip/squeeze on the pointing hand (cheat modifier in menus)
 
 // ---------------------------------------------------------- screen layer ----
 namespace {
@@ -1171,10 +1181,9 @@ extern "C" void VR_PresentHudEye(int eye)
 	float F[3] = { -hm[8], -hm[9], -hm[10] };  // local -Z (forward)
 
 	const float D = s_settings.hudDistanceM;
-	// Bottom-anchor: pitch the forward direction DOWN 30° so the HUD bottom sits in the lower field
-	// of view (~30° below horizontal = roughly the lower third of the Quest's vertical FOV). The HUD
-	// then grows UPWARD from there as hudSizeM increases, like a dashboard.
-	const float pitch = 30.0f * (3.14159265358979f / 180.0f);
+	// Bottom-anchor: pitch the forward direction DOWN by hudTiltDeg so the HUD bottom sits in the lower
+	// field of view. 0° = eye level, 30° = lower-dashboard look. Configurable in VR Options.
+	const float pitch = s_settings.hudTiltDeg * (3.14159265358979f / 180.0f);
 	const float cp = std::cos(pitch), sp = std::sin(pitch);
 	const float Fb[3]     = { F[0]*cp - U[0]*sp, F[1]*cp - U[1]*sp, F[2]*cp - U[2]*sp };
 	const float bottom[3] = { hp[0]+Fb[0]*D, hp[1]+Fb[1]*D, hp[2]+Fb[2]*D };  // bottom-centre anchor
@@ -1340,6 +1349,17 @@ extern "C" bool VR_GetAimPoseStage(int hand, float pos3[3], float fwd3[3])
 	return true;
 }
 
+// Returns the raw aim-pose right (+X, col0) and up (+Y, col1) vectors in stage space.
+// Does NOT apply aimPitchAdjust — those axes track the true physical controller orientation.
+extern "C" bool VR_GetAimOrientStage(int hand, float right3[3], float up3[3])
+{
+	if (hand < 0 || hand > 1 || !s_aimValid[hand]) return false;
+	float m[16]; mat_from_pose(m, s_aimStage[hand]);
+	right3[0] = m[0]; right3[1] = m[1]; right3[2] = m[2];  // col0
+	up3[0]    = m[4]; up3[1]    = m[5]; up3[2]    = m[6];  // col1
+	return true;
+}
+
 extern "C" bool VR_GetHeadPosStage(float pos3[3])
 {
 	if (!s_headPoseValid) return false;
@@ -1349,12 +1369,9 @@ extern "C" bool VR_GetHeadPosStage(float pos3[3])
 	return true;
 }
 
-// The DOMINANT controller's aim direction as a Marathon-world unit vector (x/y horizontal, z up) --
-// the same mapping the aim-debug ray uses, so weapons fire exactly where the ray points. Returns
-// false if the controller pose isn't tracked. dir = Rz(yawOffset) * Z^T * aimForward(stage).
-extern "C" bool VR_GetWeaponAim(float dir[3])
+// Shared helper: stage-space aim forward -> Marathon-world unit vector.
+static bool aimStageToWorld(int hand, float dir[3])
 {
-	const int hand = s_settings.dominantHand ? 0 : 1;   // dominant hand holds the weapon
 	float pos[3], fwd[3];
 	if (!VR_GetAimPoseStage(hand, pos, fwd)) return false;   // fwd already has aimPitchAdjust applied
 	// stage(metres,Y-up) forward -> world(WU,Z-up): Z^T maps (sx,sy,sz)->(-sx,-sz,sy), then Rz(yawOffset).
@@ -1367,6 +1384,23 @@ extern "C" bool VR_GetWeaponAim(float dir[3])
 	const float l = std::sqrt(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2]);
 	if (l > 1e-6f) { dir[0]/=l; dir[1]/=l; dir[2]/=l; }
 	return true;
+}
+
+// The DOMINANT controller's aim direction as a Marathon-world unit vector (x/y horizontal, z up) --
+// the same mapping the aim-debug ray uses, so weapons fire exactly where the ray points. Returns
+// false if the controller pose isn't tracked. dir = Rz(yawOffset) * Z^T * aimForward(stage).
+extern "C" bool VR_GetWeaponAim(float dir[3])
+{
+	const int hand = s_settings.dominantHand ? 0 : 1;   // dominant hand holds the weapon
+	return aimStageToWorld(hand, dir);
+}
+
+// Off-hand (non-dominant) aim direction -- same transform as VR_GetWeaponAim but for the other
+// controller, so the secondary weapon fires along the left gun when dual-wielding.
+extern "C" bool VR_GetSecondaryWeaponAim(float dir[3])
+{
+	const int hand = s_settings.dominantHand ? 1 : 0;   // off-hand (opposite of dominant)
+	return aimStageToWorld(hand, dir);
 }
 
 // Menu (hamburger) button press, consumed once. The main loop turns this into the in-game quit dialog.
@@ -1461,7 +1495,7 @@ extern "C" bool VR_RenderTestFrame(void)
 extern "C" bool VR_InitOpenXR(void)     { return false; }
 extern "C" bool VR_IsActive(void)       { return false; }
 extern "C" vr_settings_t* VR_Settings(void) {
-	static vr_settings_t s = { 1, 2.5f, 2.0f, 512.0f, 1.6f, 1, 30.0f, 1.0f, 0, 0, 0, -20.0f };
+	static vr_settings_t s = { 1, 2.5f, 2.0f, 512.0f, 1.6f, 1, 30.0f, 1.0f, 0, 0, 0, -20.0f, 0.8f, 0.55f, 30.0f };
 	return &s;
 }
 extern "C" float VR_GetYawOffset(void)   { return 0.0f; }
@@ -1506,9 +1540,12 @@ extern "C" unsigned VR_ScreenLayerFramebuffer(void) { return 0; }
 extern "C" void VR_PresentScreenLayer(void) {}
 extern "C" bool VR_GetPointerScreen(int* x, int* y) { (void)x; (void)y; return false; }
 extern "C" bool VR_GetPointerClick(void) { return false; }
+extern "C" bool VR_GetPointerGrip(void) { return false; }
 extern "C" bool VR_GetAimPoseStage(int, float*, float*) { return false; }
+extern "C" bool VR_GetAimOrientStage(int, float*, float*) { return false; }
 extern "C" bool VR_GetHeadPosStage(float*) { return false; }
 extern "C" bool VR_GetWeaponAim(float*) { return false; }
+extern "C" bool VR_GetSecondaryWeaponAim(float*) { return false; }
 extern "C" bool VR_TakeMenuButton(void) { return false; }
 extern "C" bool VR_HasFocus(void) { return false; }
 extern "C" int  VR_ScreenLayerWidth(void)  { return 0; }

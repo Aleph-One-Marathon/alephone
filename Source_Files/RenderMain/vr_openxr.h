@@ -41,6 +41,8 @@ typedef struct {
 	float hudDistanceM;     // distance of the head-locked HUD plane in metres (bigger = HUD further out)
 	float hudSizeM;         // height of the head-locked HUD plane in metres (width follows HUD aspect);
 	                        //   acts as the VR "screen size" for the HUD so elements can be pushed wider.
+	float hudTiltDeg;       // degrees the HUD bottom-anchor is pitched down from horizontal (0 = eye level,
+	                        //   30 = lower dashboard look, negative = above horizontal)
 } vr_settings_t;
 
 vr_settings_t* VR_Settings(void);
@@ -163,6 +165,7 @@ void     VR_PresentScreenLayer(void);
 // the 2D menus/terminals become interactable. Computed during VR_PresentScreenLayer.
 bool VR_GetPointerScreen(int* x, int* y);
 bool VR_GetPointerClick(void);
+bool VR_GetPointerGrip(void);   // true when the pointing hand's grip/squeeze is held (cheat modifier)
 int      VR_ScreenLayerWidth(void);
 int      VR_ScreenLayerHeight(void);
 
@@ -172,6 +175,8 @@ int      VR_ScreenLayerHeight(void);
 // maps stage->Marathon world with the same transform Rasterizer_Shader::SetView uses, anchoring at
 // the head (VR_GetHeadPosStage) so the player's absolute position in the play space cancels out.
 bool VR_GetAimPoseStage(int hand, float pos3[3], float fwd3[3]);
+// Raw pose right (+X) and up (+Y) in stage space — tracks full controller orientation (pitch, roll, yaw).
+bool VR_GetAimOrientStage(int hand, float right3[3], float up3[3]);
 
 // Head position this frame in STAGE space (metres, Y-up). The aim-debug uses controller-minus-head so
 // it doesn't double-count the head offset (which the renderer applies to view.origin, not the eye matrix).
@@ -181,6 +186,9 @@ bool VR_GetHeadPosStage(float pos3[3]);
 // the same direction the aim-debug ray uses. Weapons fire along this instead of the player facing.
 // Returns false if the controller pose isn't tracked.
 bool VR_GetWeaponAim(float dir[3]);
+// Off-hand (non-dominant) controller aim direction -- same transform as VR_GetWeaponAim but for the
+// other hand. Used when the secondary weapon fires so the left gun aims along the left controller.
+bool VR_GetSecondaryWeaponAim(float dir[3]);
 
 // HUD layer: the engine draws the 2D HUD (Lua plugin HUD or classic OGL HUD) into this transparent
 // offscreen each frame; VR_PresentHudEye then composites it head-locked, in front of the world, into

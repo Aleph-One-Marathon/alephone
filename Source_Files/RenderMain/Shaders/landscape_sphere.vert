@@ -15,7 +15,7 @@ void main(void) {
 #ifndef DISABLE_CLIP_VERTEX
 	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;
 #endif
-	relDir = (gl_ModelViewMatrix * gl_Vertex).xyz;
+	relDir = (landscapeInverseMatrix * gl_Vertex).xyz;
 	vertexColor = gl_Color;
 	
 	cosYaw = cos(yaw);

@@ -3279,6 +3279,78 @@ static void SetBlend(short _BlendType)
 	}
 }
 
+// VR: render a textured quad in Marathon world space (world units, Z-up) using the GL
+// projection + modelview that Rasterizer_Shader::SetView() loaded for the current VR eye.
+// Called after render_tree() / render_vr_aim_debug() while those matrices are still active.
+// verts[4][3]: TL, TR, BR, BL in world units. Depth test disabled so sprite is always visible.
+bool OGL_RenderVRWeaponQuad(rectangle_definition& RR, float verts[4][3])
+{
+	if (!OGL_IsActive()) return false;
+
+	TextureManager TMgr;
+	TMgr.ShapeDesc    = RR.ShapeDesc;
+	TMgr.LowLevelShape = RR.LowLevelShape;
+	TMgr.ShadingTables = RR.shading_tables;
+	TMgr.Texture      = RR.texture;
+	TMgr.TransferMode = RR.transfer_mode;
+	TMgr.TransferData = RR.transfer_data;
+	TMgr.IsShadeless  = (RR.flags & _SHADELESS_BIT) != 0;
+	TMgr.TextureType  = OGL_Txtr_WeaponsInHand;
+	if (!TMgr.Setup()) return false;
+
+	// Full texture coordinate ranges (no clipping)
+	GLfloat U0 = (GLfloat)TMgr.U_Offset;
+	GLfloat U1 = (GLfloat)(TMgr.U_Offset + TMgr.U_Scale);
+	GLfloat V0 = (GLfloat)TMgr.V_Offset;
+	GLfloat V1 = (GLfloat)(TMgr.V_Offset + TMgr.V_Scale);
+	if (RR.flip_vertical)   { GLfloat t = U0; U0 = U1; U1 = t; }
+	if (RR.flip_horizontal) { GLfloat t = V0; V0 = V1; V1 = t; }
+
+	// U = scanline / vertical axis (top→bottom), V = column / horizontal axis (left→right)
+	GLfloat texc[4][2] = {
+		{U0, V0}, {U0, V1}, {U1, V1}, {U1, V0}
+	};
+
+	glUseProgram(0);
+	glEnable(GL_TEXTURE_2D);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisable(GL_DEPTH_TEST);  // weapon sprite always in front
+	glDisable(GL_CULL_FACE);   // visible from both sides
+
+	float amb = std::min(1.0f, std::max(0.0f, float(RR.ambient_shade) / float(FIXED_ONE)));
+	glColor4f(amb, amb, amb, 1.0f);
+
+	// Always blend using texture alpha — the GLES3 builtin shader has no alpha-test,
+	// so blending is the only way to honour transparent pixels in the sprite.
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_ALPHA_TEST);
+
+	glVertexPointer(3, GL_FLOAT, sizeof(verts[0]), verts[0]);
+	glTexCoordPointer(2, GL_FLOAT, sizeof(texc[0]), texc[0]);
+
+	TMgr.SetupTextureMatrix();
+	TMgr.RenderNormal();
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	if (TMgr.IsGlowMapped()) {
+		float gc = TMgr.MinGlowIntensity();
+		glColor4f(std::max(gc, amb), std::max(gc, amb), std::max(gc, amb), 1.0f);
+		TMgr.RenderGlowing();
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	}
+
+	TMgr.RestoreTextureMatrix();
+	SetBlend(OGL_BlendType_Crossfade);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_ALPHA_TEST);
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	return true;
+}
+
 #else
 
 // No OpenGL present

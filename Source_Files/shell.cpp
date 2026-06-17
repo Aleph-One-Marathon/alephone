@@ -885,7 +885,11 @@ static void process_screen_click(const SDL_Event &event)
 {
 	int x = event.button.x, y = event.button.y;
 	alephone::Screen::instance()->window_to_screen(x, y);
-	portable_process_screen_click(x, y, has_cheat_modifiers());
+	bool cheat = has_cheat_modifiers();
+#if defined(__ANDROID__)
+	if (VR_IsActive()) cheat = cheat || VR_GetPointerGrip();
+#endif
+	portable_process_screen_click(x, y, cheat);
 }
 
 static void handle_game_key(const SDL_Event &event)

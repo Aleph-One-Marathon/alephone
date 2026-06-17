@@ -597,6 +597,139 @@ static void render_vr_aim_debug(view_data* view)
 	glEnable(GL_TEXTURE_2D);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 }
+
+// ---- 3D weapon sprites anchored to VR controllers -------------------------------------------
+// Replaces render_viewer_sprite_layer() in the VR eye loop. Renders each weapon sprite as a
+// world-space quad at the matching controller's aim position. World projection + modelview from
+// SetView() are still active (same GL state used by render_vr_aim_debug above).
+// sprite 0 = primary weapon → dominant hand controller
+// sprite 1 = secondary dual-wield weapon → non-dominant hand controller
+static void render_vr_weapon_sprites_3d(view_data* view)
+{
+	if (!view->show_weapons_in_hand) return;
+	if (!VR_IsActive() || !OGL_IsActive()) return;
+
+	const float W   = (float)VR_Settings()->worldScaleWUM;
+	const double yaw = view->virtual_yaw
+	                 * (360.0 / (double(FIXED_ONE) * double(FULL_CIRCLE)))
+	                 * (8.0 * atan(1.0) / 360.0);
+	const double cy = cos(yaw), sy = sin(yaw);
+	const float camx = (float)view->origin.x;
+	const float camy = (float)view->origin.y;
+	const float camz = (float)(view->origin.z - VR_GetEyeZOffset());
+
+	const int domHand = VR_Settings()->dominantHand ? 0 : 1;
+	const int offHand = 1 - domHand;
+
+	float hp[3];
+	if (!VR_GetHeadPosStage(hp)) return;
+
+	// Per-weapon-sprite VR hand index (not counting shell casings)
+	int vrWeaponIdx = 0;
+	short count = 0;
+	weapon_display_information display_data;
+
+	while (get_weapon_display_information(&count, &display_data))
+	{
+		// Skip shell casings (_shell_casing_type == 1 stored in low nibble of interpolation_data)
+		if ((display_data.interpolation_data & 0x0F) == 1) continue;
+
+		shape_information_data* si =
+			extended_get_shape_information(display_data.collection,
+			                               display_data.low_level_shape_index);
+		if (!si) { vrWeaponIdx++; continue; }
+
+		bitmap_definition* bmp = nullptr;
+		void* shade_table = nullptr;
+		extended_get_shape_bitmap_and_shading_table(
+			display_data.collection, display_data.low_level_shape_index,
+			&bmp, &shade_table, view->shading_mode);
+		if (!bmp) { vrWeaponIdx++; continue; }
+
+		// Primary (index 0) → dominant hand; secondary dual-wield (index 1) → non-dominant.
+		// (_twofisted_pistol_class is the only weapon that produces a second _weapon_type sprite.)
+		int hand = (vrWeaponIdx == 1) ? offHand : domHand;
+
+		float ps[3], fs[3];
+		if (!VR_GetAimPoseStage(hand, ps, fs)) { vrWeaponIdx++; continue; }
+		float stage_right[3], stage_up[3];
+		if (!VR_GetAimOrientStage(hand, stage_right, stage_up)) { vrWeaponIdx++; continue; }
+
+		// Controller world position: stage delta -> world (Z-up, Marathon WU)
+		// stage(metres, Y-up) -> world: (dx,dy,dz) -> (-dx,-dz,dy) then Rz(yaw)
+		const float qx  = (ps[0] - hp[0]) * W;
+		const float qsy = (ps[1] - hp[1]) * W;
+		const float qz  = (ps[2] - hp[2]) * W;
+		const float rx = -qx, ry = -qz, rz = qsy;
+		const float cwx = camx + (float)(rx * cy - ry * sy);
+		const float cwy = camy + (float)(rx * sy + ry * cy);
+		const float cwz = camz + rz;
+
+		// Transform stage right/up direction vectors to Marathon world space.
+		// Same mapping: (sx,sy,sz) -> (-sx,-sz,sy) then Rz(yaw)
+		auto stageToWorldDir = [&](const float s[3], float w[3]) {
+			const float zx = -s[0], zy = -s[2], zz = s[1];
+			w[0] = (float)(zx * cy - zy * sy);
+			w[1] = (float)(zx * sy + zy * cy);
+			w[2] = zz;
+		};
+		float wrx[3], wup[3];
+		stageToWorldDir(stage_right, wrx);
+		stageToWorldDir(stage_up,    wup);
+
+		// Sprite half-sizes in Marathon world units.
+		const float spriteScaleM = 0.5f;
+		float world_w = fabsf(float(si->world_right - si->world_left));
+		float world_h = fabsf(float(si->world_bottom - si->world_top));
+		if (world_w < 4.0f) world_w = 512.0f;
+		if (world_h < 4.0f) world_h = 512.0f;
+		const float hw = (world_w / 1024.0f) * spriteScaleM * W * 0.5f;
+		const float hh = (world_h / 1024.0f) * spriteScaleM * W * 0.5f;
+
+		// Apply shape mirror flags
+		if (si->flags & _X_MIRRORED_BIT) display_data.flip_horizontal = !display_data.flip_horizontal;
+		if (si->flags & _Y_MIRRORED_BIT) display_data.flip_vertical   = !display_data.flip_vertical;
+
+		// Quad corners in world space using full controller right/up (tracks pitch+roll+yaw)
+		float verts[4][3] = {
+			{ cwx - hw*wrx[0] + hh*wup[0], cwy - hw*wrx[1] + hh*wup[1], cwz - hw*wrx[2] + hh*wup[2] },  // TL
+			{ cwx + hw*wrx[0] + hh*wup[0], cwy + hw*wrx[1] + hh*wup[1], cwz + hw*wrx[2] + hh*wup[2] },  // TR
+			{ cwx + hw*wrx[0] - hh*wup[0], cwy + hw*wrx[1] - hh*wup[1], cwz + hw*wrx[2] - hh*wup[2] },  // BR
+			{ cwx - hw*wrx[0] - hh*wup[0], cwy - hw*wrx[1] - hh*wup[1], cwz - hw*wrx[2] - hh*wup[2] }   // BL
+		};
+
+		rectangle_definition rect;
+		rect.ModelPtr      = nullptr;
+		rect.Opacity       = 1;
+		rect.ShapeDesc     = BUILD_DESCRIPTOR(display_data.collection, 0);
+		rect.LowLevelShape = display_data.low_level_shape_index;
+		rect.texture       = bmp;
+		rect.shading_tables = shade_table;
+		rect.transfer_mode = display_data.transfer_mode;
+		rect.transfer_data = 0;
+		rect.flags         = 0;
+		rect.flip_horizontal = display_data.flip_horizontal;
+		rect.flip_vertical   = display_data.flip_vertical;
+		rect.depth = 0;
+		rect.ambient_shade = get_light_intensity(
+			get_polygon_data(view->origin_polygon_index)->floor_lightsource_index);
+		rect.ambient_shade = MAX(si->minimum_light_intensity, rect.ambient_shade);
+		if (view->shading_mode == _shading_infravision) rect.flags |= _SHADELESS_BIT;
+		instantiate_rectangle_transfer_mode(view, &rect,
+			display_data.transfer_mode, display_data.transfer_phase);
+
+		OGL_RenderVRWeaponQuad(rect, verts);
+		vrWeaponIdx++;
+	}
+
+	// Restore GL state for subsequent passes (HUD layer, etc.)
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_TEXTURE_2D);
+	glDisable(GL_ALPHA_TEST);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+}
 #endif // __ANDROID__
 
 /* origin,origin_polygon_index,yaw,pitch,roll,etc. have probably changed since last call */
@@ -702,8 +835,7 @@ void render_view(
 						RasPtr->Begin();
 						RenPtr->render_tree();
 						render_vr_aim_debug(view);   // controller aim marker/ray/dot (world matrices still active)
-						if (!RenPtr->renders_viewer_sprites_in_tree())
-							render_viewer_sprite_layer(view, RasPtr);
+						render_vr_weapon_sprites_3d(view);   // 3D weapon quads at controller positions
 						RasPtr->End();
 						VR_PresentHudEye(eye);   // head-locked 2D HUD plane, in front of the world
 						VR_FinishEye(eye);

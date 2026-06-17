@@ -1997,15 +1997,20 @@ static void calculate_weapon_origin_and_vector(
 
 	trigger_definition= get_player_trigger_definition(player_index, which_trigger);
 
-	// VR: fire along the dominant controller's aim (where the aim-debug ray points) instead of the
-	// player's facing/elevation (screen centre). Same direction as the on-screen ray. Local player only.
+	// VR: fire along the controller aim (where the aim-debug ray points) instead of the player's
+	// facing/elevation (screen centre). Primary weapon uses the dominant hand; secondary uses the
+	// off-hand so each gun in a dual-wield aims independently. Local player only.
 	angle fire_facing= player->facing;
 	angle fire_elevation= player->elevation;
 #if defined(__ANDROID__)
 	if (VR_IsActive() && player_index == local_player_index)
 	{
 		float dir[3];
-		if (VR_GetWeaponAim(dir))
+		const bool got = (which_trigger == _secondary_weapon
+				&& definition->weapon_class == _twofisted_pistol_class)
+			? VR_GetSecondaryWeaponAim(dir)
+			: VR_GetWeaponAim(dir);
+		if (got)
 		{
 			const float S= 1024.0f;
 			fire_facing= arctangent((int32)(dir[0]*S), (int32)(dir[1]*S));
@@ -2032,6 +2037,14 @@ static void calculate_weapon_origin_and_vector(
 		dx_translation_amount= 0;
 	} else {
 		dx_translation_amount= trigger_definition->dx;
+#if defined(__ANDROID__)
+		// In VR, each pistol fires along its controller's aim; the classic screen-space barrel
+		// offset shifts the origin away from the controller position and causes bullets to land
+		// left/right of the aim cursor. Zero it so each hand shoots exactly where it aims.
+		if (VR_IsActive() && player_index == local_player_index
+			&& definition->weapon_class == _twofisted_pistol_class)
+			dx_translation_amount = 0;
+#endif
 	}
 
 	/* Handle the left/right translation */
@@ -2409,6 +2422,16 @@ static bool handle_trigger_down(
 					/* Rocky modification */
 					if(PRIMARY_WEAPON_IS_VALID(weapon) && SECONDARY_WEAPON_IS_VALID(weapon))
 					{
+#if defined(__ANDROID__)
+						// In VR each controller is an independent hand: bypass the alternating
+						// stagger so each trigger fires its own gun at its own rate.
+						if (VR_IsActive() && definition->weapon_class == _twofisted_pistol_class
+							&& player_index == local_player_index)
+						{
+							fired = true;
+							break;
+						}
+#endif
 						if(definition->flags & _weapon_fires_out_of_phase)
 						{
 							short total_delay, delay;

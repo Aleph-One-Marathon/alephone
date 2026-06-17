@@ -11,6 +11,7 @@
 #include <iostream>
 
 #include "RenderRasterize_Shader.h"
+#include "Logging.h"
 
 #include "lightsource.h"
 #include "media.h"
@@ -496,7 +497,20 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 		s->enable();
 	}
 
-	if(TMgr->Setup()) {
+	bool setupOK = TMgr->Setup();
+#if defined(__ANDROID__)
+	if (transferMode == _xfer_landscape || transferMode == _xfer_big_landscape) {
+		static int s_lsSetupLog = 0;
+		if (s_lsSetupLog++ < 5) {
+			__android_log_print(ANDROID_LOG_WARN, "A1VR",
+				"landscape setupWallTexture: Setup()=%s ShapeDesc=0x%x",
+				setupOK ? "OK" : "FAIL", (unsigned)Texture);
+			logWarning("landscape setupWallTexture: Setup()=%s ShapeDesc=0x%x",
+				setupOK ? "OK" : "FAIL", (unsigned)Texture);
+		}
+	}
+#endif
+	if(setupOK) {
 		TMgr->RenderNormal(); // must allocate first
 		if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
 			glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -674,6 +688,20 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 	// note: wobble and pulsate behave the same way on floors and ceilings
 	// note 2: stronger wobble looks more like classic with default shaders
 	auto TMgr = setupWallTexture(texture, surface->transfer_mode, wobble * 4.0, 0, intensity, offset, renderStep);
+#if defined(__ANDROID__)
+	{
+		static int s_floorLog = 0;
+		if (s_floorLog++ < 20) {
+			__android_log_print(ANDROID_LOG_WARN, "A1VR",
+				"floor/ceil xfer=%d ceil=%d ShapeDesc=%s tex=0x%x",
+				surface->transfer_mode, ceil ? 1 : 0,
+				TMgr->ShapeDesc == UNONE ? "UNONE" : "OK", (unsigned)texture);
+			logWarning("floor/ceil xfer=%d ceil=%d ShapeDesc=%s tex=0x%x",
+				surface->transfer_mode, ceil ? 1 : 0,
+				TMgr->ShapeDesc == UNONE ? "UNONE" : "OK", (unsigned)texture);
+		}
+	}
+#endif
 	if(TMgr->ShapeDesc == UNONE) { return; }
 
 	if (TMgr->IsBlended()) {
@@ -760,6 +788,21 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 		glVertexPointer(3, GL_FLOAT, 0, vertex_array);
 		glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
 
+#if defined(__ANDROID__)
+		if (surface->transfer_mode == _xfer_landscape || surface->transfer_mode == _xfer_big_landscape) {
+			static int s_lsDrawLog = 0;
+			if (s_lsDrawLog++ < 5) {
+				__android_log_print(ANDROID_LOG_WARN, "A1VR",
+					"landscape draw: verts=%d ceil=%d v0=(%.0f,%.0f,%.0f)",
+					vertex_count, ceil ? 1 : 0,
+					vertex_array[0], vertex_array[1], vertex_array[2]);
+				logWarning("landscape draw: verts=%d ceil=%d v0=(%.0f,%.0f,%.0f)",
+					vertex_count, ceil ? 1 : 0,
+					vertex_array[0], vertex_array[1], vertex_array[2]);
+			}
+		}
+#endif
+
 		glDrawArrays(GL_POLYGON, 0, vertex_count);
 
 		// see note 2 above; pulsate uniform should stay set from setupWall call
@@ -790,6 +833,18 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 		wobble = 0;
 	}
 	auto TMgr = setupWallTexture(texture, surface->transfer_mode, pulsate, wobble, intensity, offset, renderStep);
+#if defined(__ANDROID__)
+	if (surface->transfer_mode == _xfer_landscape || surface->transfer_mode == _xfer_big_landscape) {
+		static int s_lsWallLog = 0;
+		if (s_lsWallLog++ < 5) {
+			__android_log_print(ANDROID_LOG_WARN, "A1VR",
+				"landscape wall: xfer=%d ShapeDesc=%s tex=0x%x",
+				surface->transfer_mode, TMgr->ShapeDesc == UNONE ? "UNONE" : "OK", (unsigned)texture);
+			logWarning("landscape wall: xfer=%d ShapeDesc=%s tex=0x%x",
+				surface->transfer_mode, TMgr->ShapeDesc == UNONE ? "UNONE" : "OK", (unsigned)texture);
+		}
+	}
+#endif
 	if(TMgr->ShapeDesc == UNONE) { return; }
 
 	if (TMgr->IsBlended()) {
@@ -1323,6 +1378,7 @@ extern GLdouble Screen_2_Clip[16];
 void RenderRasterize_Shader::render_viewer_sprite_layer(RenderStep renderStep)
 {
         if (!view->show_weapons_in_hand) return;
+        if (VR_IsActive()) return;  // weapons rendered as 3D world-space quads in VR
     
         glMatrixMode(GL_TEXTURE);
         glPushMatrix();

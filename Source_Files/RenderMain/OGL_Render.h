@@ -89,6 +89,11 @@ bool OGL_EndMain();
 bool OGL_RenderWall(polygon_definition& RenderPolygon, bool IsVertical);
 bool OGL_RenderSprite(rectangle_definition& RenderRectangle);
 
+// VR: render a weapon sprite as a textured world-space quad (Marathon world units, Z-up).
+// verts[4][3]: TL, TR, BR, BL corners. Call while world projection/modelview are active
+// (after render_tree, before SetForeground). Android-only.
+bool OGL_RenderVRWeaponQuad(rectangle_definition& RR, float verts[4][3]);
+
 // Rendering crosshairs
 bool OGL_RenderCrosshairs();
 
