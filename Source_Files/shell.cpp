@@ -734,13 +734,19 @@ void main_event_loop(void)
 #if defined(__ANDROID__)
 		if (VR_IsActive()) {
 			// Pause the game when the headset loses focus (Meta/home button -> system overlay) and
-			// resume when it returns. Edge-triggered on the focus transition.
-			static bool wasFocused = true;
+			// resume when it returns. LEVEL-triggered (not edge): pause on any iteration where focus is
+			// lost and we haven't already paused, so a missed transition frame can't skip the pause.
+			static bool vrPausedByFocus = false;
 			const bool focused = VR_HasFocus();
-			if (game_state == _game_in_progress && focused != wasFocused) {
-				if (!focused) pause_game(); else resume_game();
+			if (game_state == _game_in_progress) {
+				if (!focused && !vrPausedByFocus && get_keyboard_controller_status()) {
+					pause_game();
+					vrPausedByFocus = true;
+				} else if (focused && vrPausedByFocus) {
+					resume_game();
+					vrPausedByFocus = false;
+				}
 			}
-			wasFocused = focused;
 
 			// Left-controller menu button -> in-game quit with confirmation (same as the desktop
 			// Quit menu item: pauses, shows the "quit without saving?" dialog, resumes or closes).
