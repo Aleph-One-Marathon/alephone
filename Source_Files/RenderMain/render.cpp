@@ -239,6 +239,7 @@ extern WindowPtr screen_window;
 #include "RenderRasterize_Shader.h"
 #include "Rasterizer_Shader.h"
 #include "vr_openxr.h"
+#include "vr_sprite_handedness.h"
 #endif
 #include "preferences.h"
 #include "screen.h"
@@ -624,6 +625,14 @@ static void render_vr_weapon_sprites_3d(view_data* view)
 	float hp[3];
 	if (!VR_GetHeadPosStage(hp)) return;
 
+	// Determine handedness flip for this weapon.
+	// dominantHand: 0 = right-handed, 1 = left-handed.
+	bool player_left = (VR_Settings()->dominantHand == 1);
+	short weap_type = NONE, weap_mode = 0;
+	get_player_weapon_mode_and_type(current_player_index, &weap_type, &weap_mode);
+	bool naturally_left = VR_IsWeaponNaturallyLeftHanded(weap_type);
+	bool should_flip = (player_left != naturally_left);
+
 	// Per-weapon-sprite VR hand index (not counting shell casings)
 	int vrWeaponIdx = 0;
 	short count = 0;
@@ -646,9 +655,11 @@ static void render_vr_weapon_sprites_3d(view_data* view)
 			&bmp, &shade_table, view->shading_mode);
 		if (!bmp) { vrWeaponIdx++; continue; }
 
-		// Primary (index 0) → dominant hand; secondary dual-wield (index 1) → non-dominant.
-		// (_twofisted_pistol_class is the only weapon that produces a second _weapon_type sprite.)
-		int hand = (vrWeaponIdx == 1) ? offHand : domHand;
+		// Only split between hands for dual-wield weapons. All sprites for single-hand
+		// weapons (including multi-sprite ones like the rocket launcher) go to the dominant hand.
+		bool is_dual = (weap_type == _weapon_doublefisted_pistols ||
+		                weap_type == _weapon_doublefisted_shotguns);
+		int hand = (is_dual && vrWeaponIdx == 1) ? offHand : domHand;
 
 		float ps[3], fs[3];
 		if (!VR_GetAimPoseStage(hand, ps, fs)) { vrWeaponIdx++; continue; }
@@ -689,6 +700,9 @@ static void render_vr_weapon_sprites_3d(view_data* view)
 		// Apply shape mirror flags
 		if (si->flags & _X_MIRRORED_BIT) display_data.flip_horizontal = !display_data.flip_horizontal;
 		if (si->flags & _Y_MIRRORED_BIT) display_data.flip_vertical   = !display_data.flip_vertical;
+
+		if (should_flip)
+			display_data.flip_horizontal = !display_data.flip_horizontal;
 
 		// Quad corners in world space using full controller right/up (tracks pitch+roll+yaw)
 		float verts[4][3] = {
