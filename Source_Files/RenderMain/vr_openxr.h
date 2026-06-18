@@ -178,6 +178,22 @@ bool VR_GetAimPoseStage(int hand, float pos3[3], float fwd3[3]);
 // Raw pose right (+X) and up (+Y) in stage space — tracks full controller orientation (pitch, roll, yaw).
 bool VR_GetAimOrientStage(int hand, float right3[3], float up3[3]);
 
+// Two-handed weapon steadying: true when the off-hand grip is held and both controllers
+// are within 0.5 m of each other. Use to override single-hand orientation/aim.
+// Inform the VR layer whether dual-wield is active this frame. Two-handed steadying is
+// suppressed while dual-wielding (each hand independently holds its own weapon).
+void VR_SetIsDualWield(bool dual);
+// True if the off-hand actually has a weapon sprite this frame (false when a dual-wield type
+// is selected but only one weapon remains, so the off-hand trigger is suppressed).
+void VR_SetOffHandHasWeapon(bool has);
+// Enable/disable the dominant-grip secondary-fire binding. Disable for weapons whose secondary
+// fire is identical to primary (pistol, fist) to prevent accidental shots from gripping.
+void VR_SetGripAltFireEnabled(bool enabled);
+bool VR_IsTwoHandedActive();
+// Stage-space unit vector from dominant hand toward non-dominant hand — the two-handed
+// weapon forward direction. Valid only when VR_IsTwoHandedActive() returns true.
+bool VR_GetTwoHandedFwdStage(float fwd3[3]);
+
 // Head position this frame in STAGE space (metres, Y-up). The aim-debug uses controller-minus-head so
 // it doesn't double-count the head offset (which the renderer applies to view.origin, not the eye matrix).
 bool VR_GetHeadPosStage(float pos3[3]);

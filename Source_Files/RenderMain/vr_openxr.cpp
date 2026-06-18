@@ -609,6 +609,9 @@ namespace {
 	bool        s_stickClick[2] = {false, false};   // raw per-hand thumbstick press
 	float       s_moveX = 0, s_moveY = 0, s_turnX = 0;   // routed (handedness/switch-sticks applied)
 	bool        s_fire = false, s_altFire = false, s_action = false;
+	bool        s_isDualWield = false;
+	bool        s_offHandHasWeapon = true;
+	bool        s_gripAltFireEnabled = true;
 	bool        s_bBtn = false, s_xBtn = false, s_yBtn = false;
 	bool        s_advancePrev = false;   // edge latch for cutscene-skip key injection
 	bool        s_menuBtn = false, s_menuPrev = false;   // menu button + edge latch
@@ -1022,7 +1025,19 @@ extern "C" void VR_GetHeadOffset(float* wx, float* wy)
 	if (wy) *wy = W * (-s * dhx - c * dhz);
 }
 extern "C" bool VR_GetFire(void)               { return s_fire; }
-extern "C" bool VR_GetSecondaryFire(void)      { return s_altFire; }
+extern "C" bool VR_GetSecondaryFire(void)
+{
+	const int domIdx = s_settings.dominantHand ? 0 : 1;
+	const int offIdx = 1 - domIdx;
+	// Off-hand trigger always fires secondary. In dual-wield this fires the second weapon;
+	// for single weapons it allows weapon-mode transitions (e.g. raising the second pistol
+	// when switching to dual). The original "dual-only" restriction broke the raise mechanic.
+	if (s_trigger[offIdx] > 0.5f) return true;
+	// Dominant grip fires alt-fire only for weapons with a distinct secondary (assault rifle
+	// grenades, shotgun double-barrel). Suppressed for pistol/fist where secondary == primary.
+	if (!s_gripAltFireEnabled) return false;
+	return s_grip[domIdx] > 0.5f;
+}
 extern "C" bool VR_GetAction(void)             { return s_action; }
 extern "C" bool VR_GetAdvance(void)            { return s_action || s_xBtn; }   // A or X
 extern "C" bool VR_GetBack(void)               { return s_yBtn || s_bBtn; }     // Y or B
@@ -1360,6 +1375,38 @@ extern "C" bool VR_GetAimOrientStage(int hand, float right3[3], float up3[3])
 	return true;
 }
 
+extern "C" void VR_SetIsDualWield(bool dual) { s_isDualWield = dual; }
+extern "C" void VR_SetOffHandHasWeapon(bool has) { s_offHandHasWeapon = has; }
+extern "C" void VR_SetGripAltFireEnabled(bool en) { s_gripAltFireEnabled = en; }
+
+extern "C" bool VR_IsTwoHandedActive()
+{
+	if (s_isDualWield) return false;   // dual-wield uses both hands independently
+	const int domHand = s_settings.dominantHand ? 0 : 1;
+	const int offHand = 1 - domHand;
+	if (!s_aimValid[domHand] || !s_aimValid[offHand]) return false;
+	if (s_grip[offHand] <= 0.5f) return false;
+	// Proximity check: hands must be within 0.5 m
+	float dx = s_aimStage[domHand].position.x - s_aimStage[offHand].position.x;
+	float dy = s_aimStage[domHand].position.y - s_aimStage[offHand].position.y;
+	float dz = s_aimStage[domHand].position.z - s_aimStage[offHand].position.z;
+	return (dx*dx + dy*dy + dz*dz) < 0.5f * 0.5f;
+}
+
+extern "C" bool VR_GetTwoHandedFwdStage(float fwd3[3])
+{
+	const int domHand = s_settings.dominantHand ? 0 : 1;
+	const int offHand = 1 - domHand;
+	if (!s_aimValid[domHand] || !s_aimValid[offHand]) return false;
+	fwd3[0] = s_aimStage[offHand].position.x - s_aimStage[domHand].position.x;
+	fwd3[1] = s_aimStage[offHand].position.y - s_aimStage[domHand].position.y;
+	fwd3[2] = s_aimStage[offHand].position.z - s_aimStage[domHand].position.z;
+	const float l = std::sqrt(fwd3[0]*fwd3[0] + fwd3[1]*fwd3[1] + fwd3[2]*fwd3[2]);
+	if (l < 1e-6f) return false;
+	fwd3[0] /= l; fwd3[1] /= l; fwd3[2] /= l;
+	return true;
+}
+
 extern "C" bool VR_GetHeadPosStage(float pos3[3])
 {
 	if (!s_headPoseValid) return false;
@@ -1391,6 +1438,21 @@ static bool aimStageToWorld(int hand, float dir[3])
 // false if the controller pose isn't tracked. dir = Rz(yawOffset) * Z^T * aimForward(stage).
 extern "C" bool VR_GetWeaponAim(float dir[3])
 {
+	// Two-handed steadying: aim along the inter-hand vector instead of single controller
+	if (VR_IsTwoHandedActive()) {
+		float fwd[3];
+		if (VR_GetTwoHandedFwdStage(fwd)) {
+			const float zx = -fwd[0], zy = -fwd[2], zz = fwd[1];
+			const float yr = s_yawOffset * (2.0f * 3.14159265358979f / 512.0f);
+			const float cw = std::cos(yr), sw = std::sin(yr);
+			dir[0] = zx*cw - zy*sw;
+			dir[1] = zx*sw + zy*cw;
+			dir[2] = zz;
+			const float l = std::sqrt(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2]);
+			if (l > 1e-6f) { dir[0]/=l; dir[1]/=l; dir[2]/=l; }
+			return true;
+		}
+	}
 	const int hand = s_settings.dominantHand ? 0 : 1;   // dominant hand holds the weapon
 	return aimStageToWorld(hand, dir);
 }
@@ -1543,6 +1605,11 @@ extern "C" bool VR_GetPointerClick(void) { return false; }
 extern "C" bool VR_GetPointerGrip(void) { return false; }
 extern "C" bool VR_GetAimPoseStage(int, float*, float*) { return false; }
 extern "C" bool VR_GetAimOrientStage(int, float*, float*) { return false; }
+extern "C" void VR_SetIsDualWield(bool) {}
+extern "C" void VR_SetOffHandHasWeapon(bool) {}
+extern "C" void VR_SetGripAltFireEnabled(bool) {}
+extern "C" bool VR_IsTwoHandedActive() { return false; }
+extern "C" bool VR_GetTwoHandedFwdStage(float*) { return false; }
 extern "C" bool VR_GetHeadPosStage(float*) { return false; }
 extern "C" bool VR_GetWeaponAim(float*) { return false; }
 extern "C" bool VR_GetSecondaryWeaponAim(float*) { return false; }

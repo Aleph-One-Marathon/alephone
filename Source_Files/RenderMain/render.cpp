@@ -505,9 +505,21 @@ static void render_vr_aim_debug(view_data* view)
 	glDisable(GL_DEPTH_TEST);                         // overlay always visible during calibration
 	glLineWidth(2.0f);
 
+	const bool twoHanded = VR_IsTwoHandedActive();
 	for (int h = 0; h < 2; ++h) {
+		// When two-handed steadying is active, suppress the off-hand debug lines entirely.
+		if (twoHanded && h != domHand) continue;
+
 		float ps[3], fs[3];
 		if (!VR_GetAimPoseStage(h, ps, fs)) continue;
+
+		// When two-handed, override the dominant forward with the inter-hand aim direction.
+		if (twoHanded && h == domHand) {
+			float th_fwd[3];
+			if (VR_GetTwoHandedFwdStage(th_fwd)) {
+				fs[0] = th_fwd[0]; fs[1] = th_fwd[1]; fs[2] = th_fwd[2];
+			}
+		}
 
 		// controller relative to head (stage metres) -> world (WU,Z-up): w = camWorld + Rz(yaw)*Z^T*(rel*W).
 		// Z^T maps stage->world pre-rotation: (sx,sy,sz) -> (-sx, -sz, sy).
@@ -607,6 +619,16 @@ static void render_vr_aim_debug(view_data* view)
 // sprite 1 = secondary dual-wield weapon → non-dominant hand controller
 static void render_vr_weapon_sprites_3d(view_data* view)
 {
+	// Update input-routing flags unconditionally (before any early returns) so the game
+	// tick always sees current weapon state regardless of whether weapons are being drawn.
+	short weap_type = NONE, weap_mode = 0;
+	get_player_weapon_mode_and_type(current_player_index, &weap_type, &weap_mode);
+	const bool weapon_is_dual = (weap_type == _weapon_doublefisted_pistols ||
+	                              weap_type == _weapon_doublefisted_shotguns);
+	VR_SetIsDualWield(weapon_is_dual);
+	// Suppress grip-based secondary fire for weapons whose secondary is identical to primary.
+	VR_SetGripAltFireEnabled(weap_type != _weapon_fist && weap_type != _weapon_pistol);
+
 	if (!view->show_weapons_in_hand) return;
 	if (!VR_IsActive() || !OGL_IsActive()) return;
 
@@ -628,13 +650,12 @@ static void render_vr_weapon_sprites_3d(view_data* view)
 	// Determine handedness flip for this weapon.
 	// dominantHand: 0 = right-handed, 1 = left-handed.
 	bool player_left = (VR_Settings()->dominantHand == 1);
-	short weap_type = NONE, weap_mode = 0;
-	get_player_weapon_mode_and_type(current_player_index, &weap_type, &weap_mode);
 	bool naturally_left = VR_IsWeaponNaturallyLeftHanded(weap_type);
 	bool should_flip = (player_left != naturally_left);
 
 	// Per-weapon-sprite VR hand index (not counting shell casings)
 	int vrWeaponIdx = 0;
+	bool offHandRendered = false;
 	short count = 0;
 	weapon_display_information display_data;
 
@@ -665,6 +686,33 @@ static void render_vr_weapon_sprites_3d(view_data* view)
 		if (!VR_GetAimPoseStage(hand, ps, fs)) { vrWeaponIdx++; continue; }
 		float stage_right[3], stage_up[3];
 		if (!VR_GetAimOrientStage(hand, stage_right, stage_up)) { vrWeaponIdx++; continue; }
+
+		// Two-handed steadying: replace orientation with inter-hand vector + dominant roll.
+		// Only for single-hand weapons (dual-wield keeps independent per-hand orientation).
+		if (!is_dual && VR_IsTwoHandedActive()) {
+			float th_fwd[3];
+			if (VR_GetTwoHandedFwdStage(th_fwd)) {
+				// Gram-Schmidt: build right+up from new forward, preserving dominant hand roll
+				// new_up    = cross(stage_right, th_fwd)   — perp to both, roughly upward
+				// new_right = cross(th_fwd, new_up)        — re-orthogonalised right
+				float new_up[3] = {
+					stage_right[1]*th_fwd[2] - stage_right[2]*th_fwd[1],
+					stage_right[2]*th_fwd[0] - stage_right[0]*th_fwd[2],
+					stage_right[0]*th_fwd[1] - stage_right[1]*th_fwd[0]
+				};
+				float ul = sqrtf(new_up[0]*new_up[0] + new_up[1]*new_up[1] + new_up[2]*new_up[2]);
+				if (ul > 1e-6f) {
+					new_up[0] /= ul; new_up[1] /= ul; new_up[2] /= ul;
+					float new_right[3] = {
+						th_fwd[1]*new_up[2] - th_fwd[2]*new_up[1],
+						th_fwd[2]*new_up[0] - th_fwd[0]*new_up[2],
+						th_fwd[0]*new_up[1] - th_fwd[1]*new_up[0]
+					};
+					stage_right[0] = new_right[0]; stage_right[1] = new_right[1]; stage_right[2] = new_right[2];
+					stage_up[0]    = new_up[0];    stage_up[1]    = new_up[1];    stage_up[2]    = new_up[2];
+				}
+			}
+		}
 
 		// Controller world position: stage delta -> world (Z-up, Marathon WU)
 		// stage(metres, Y-up) -> world: (dx,dy,dz) -> (-dx,-dz,dy) then Rz(yaw)
@@ -733,8 +781,12 @@ static void render_vr_weapon_sprites_3d(view_data* view)
 			display_data.transfer_mode, display_data.transfer_phase);
 
 		OGL_RenderVRWeaponQuad(rect, verts);
+		if (weapon_is_dual && vrWeaponIdx == 1) offHandRendered = true;
 		vrWeaponIdx++;
 	}
+
+	// Tell VR whether the off-hand actually has a weapon (suppresses its trigger when absent).
+	VR_SetOffHandHasWeapon(!weapon_is_dual || offHandRendered);
 
 	// Restore GL state for subsequent passes (HUD layer, etc.)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
