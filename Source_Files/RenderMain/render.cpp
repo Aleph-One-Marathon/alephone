@@ -604,6 +604,30 @@ static void render_vr_aim_debug(view_data* view)
 		glDrawArrays(GL_LINES, 0, 14);
 	}
 
+	// When two-handed steadying is active, draw a blue crosshair at the off-hand controller
+	// world position — this marks the grip point on the weapon barrel.
+	if (twoHanded) {
+		const int offHand = 1 - domHand;
+		float ops[3], ofs[3];
+		if (VR_GetAimPoseStage(offHand, ops, ofs)) {
+			const double oqx = (ops[0]-hp[0])*W, oqsy = (ops[1]-hp[1])*W, oqz = (ops[2]-hp[2])*W;
+			const double orx = -oqx, ory = -oqz, orz = oqsy;
+			world_point3d ocw;
+			ocw.x = (world_distance)(camx + orx*cy - ory*sy);
+			ocw.y = (world_distance)(camy + orx*sy + ory*cy);
+			ocw.z = (world_distance)(camz + orz);
+			const float hc = (float)(0.04 * W);
+			GLfloat cv[6*3]; int cn = 0;
+			auto cpush = [&](float x, float y, float z){ cv[cn++]=x; cv[cn++]=y; cv[cn++]=z; };
+			cpush(ocw.x-hc, ocw.y,    ocw.z   ); cpush(ocw.x+hc, ocw.y,    ocw.z   );
+			cpush(ocw.x,    ocw.y-hc, ocw.z   ); cpush(ocw.x,    ocw.y+hc, ocw.z   );
+			cpush(ocw.x,    ocw.y,    ocw.z-hc); cpush(ocw.x,    ocw.y,    ocw.z+hc);
+			glColor4f(0.0f, 0.4f, 1.0f, 1.0f);
+			glVertexPointer(3, GL_FLOAT, 0, cv);
+			glDrawArrays(GL_LINES, 0, 6);
+		}
+	}
+
 	// restore the state the world/sprite passes expect
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
@@ -676,11 +700,38 @@ static void render_vr_weapon_sprites_3d(view_data* view)
 			&bmp, &shade_table, view->shading_mode);
 		if (!bmp) { vrWeaponIdx++; continue; }
 
-		// Only split between hands for dual-wield weapons. All sprites for single-hand
-		// weapons (including multi-sprite ones like the rocket launcher) go to the dominant hand.
-		bool is_dual = (weap_type == _weapon_doublefisted_pistols ||
-		                weap_type == _weapon_doublefisted_shotguns);
-		int hand = (is_dual && vrWeaponIdx == 1) ? offHand : domHand;
+		// Dual pistols: use horizontal position — separation puts primary right-of-centre
+		// (→ domHand) and secondary left-of-centre (→ offHand). Single pistol after one
+		// runs dry: the engine repositions the survivor to idle_width (exact centre), so
+		// position is useless; use trigger validity instead to decide which hand survived.
+		int hand;
+		if (weapon_is_dual) {
+			bool sprite_is_left;
+			if      (display_data.horizontal_positioning_mode == _position_low)
+				sprite_is_left = true;
+			else if (display_data.horizontal_positioning_mode == _position_high)
+				sprite_is_left = false;
+			else    // _position_center: fraction of screen; separation offsets are ±8192 from 32768
+				sprite_is_left = (display_data.horizontal_position < (FIXED_ONE / 2));
+			hand = sprite_is_left ? offHand : domHand;
+		} else if (weap_type == _weapon_pistol) {
+			// Check which trigger slot is still loaded.
+			// Primary (trigger 0) = dominant hand; secondary (trigger 1) = off-hand.
+			// If primary emptied and secondary is still alive, the off-hand pistol survived.
+			const bool primary_valid   = get_player_weapon_drawn(current_player_index, _weapon_pistol, 0);
+			const bool secondary_valid = get_player_weapon_drawn(current_player_index, _weapon_pistol, 1);
+			hand = (!primary_valid && secondary_valid) ? offHand : domHand;
+#ifdef __ANDROID__
+			static int plog = 0;
+			if ((plog++ % 15) == 0)
+				__android_log_print(ANDROID_LOG_INFO, "A1VR",
+					"pistol idx=%d hpos=%d pri=%d sec=%d hand=%d dom=%d off=%d",
+					vrWeaponIdx, (int)display_data.horizontal_position,
+					(int)primary_valid, (int)secondary_valid, hand, domHand, offHand);
+#endif
+		} else {
+			hand = domHand;
+		}
 
 		float ps[3], fs[3];
 		if (!VR_GetAimPoseStage(hand, ps, fs)) { vrWeaponIdx++; continue; }
@@ -689,7 +740,7 @@ static void render_vr_weapon_sprites_3d(view_data* view)
 
 		// Two-handed steadying: replace orientation with inter-hand vector + dominant roll.
 		// Only for single-hand weapons (dual-wield keeps independent per-hand orientation).
-		if (!is_dual && VR_IsTwoHandedActive()) {
+		if (!weapon_is_dual && VR_IsTwoHandedActive()) {
 			float th_fwd[3];
 			if (VR_GetTwoHandedFwdStage(th_fwd)) {
 				// Gram-Schmidt: build right+up from new forward, preserving dominant hand roll
@@ -781,7 +832,7 @@ static void render_vr_weapon_sprites_3d(view_data* view)
 			display_data.transfer_mode, display_data.transfer_phase);
 
 		OGL_RenderVRWeaponQuad(rect, verts);
-		if (weapon_is_dual && vrWeaponIdx == 1) offHandRendered = true;
+		if (weapon_is_dual && hand == offHand) offHandRendered = true;
 		vrWeaponIdx++;
 	}
 
