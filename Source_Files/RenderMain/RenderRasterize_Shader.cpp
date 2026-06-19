@@ -1192,6 +1192,31 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 
     for (win = object->clipping_windows; win; win = win->next_window)
     {
+		object->rectangle.clip_left = win->x0;
+		object->rectangle.clip_right = win->x1;
+		object->rectangle.clip_top = win->y0;
+		object->rectangle.clip_bottom = win->y1;
+
+		// Sprite media clipping must be done explicitly here. In the GLES path glClipPlane is a
+		// no-op, so without this a submerged sprite is rendered un-clipped in both media passes and
+		// appears above the liquid surface.
+		if (!object->rectangle.ModelPtr)
+		{
+			if (view->under_media_boundary ^ other_side_of_media)
+			{
+				object->rectangle.clip_top = MAX(object->rectangle.clip_top, object->ymedia);
+			}
+			else
+			{
+				object->rectangle.clip_bottom = MIN(object->rectangle.clip_bottom, object->ymedia);
+			}
+
+			if (object->rectangle.clip_top >= object->rectangle.clip_bottom)
+			{
+				continue;
+			}
+		}
+
         clip_to_window(win);
         g_vr_sprite_clip_window = win;   // VR: CPU-clip the billboard to this window
         _render_node_object_helper(object, renderStep);
@@ -1304,29 +1329,61 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 		glAlphaFunc(GL_GREATER, 0.5);
 	}
 
+	if (rect.clip_top >= rect.clip_bottom || rect.y0 >= rect.y1) {
+		glEnable(GL_DEPTH_TEST);
+		glPopMatrix();
+		Shader::disable();
+		TMgr->RestoreTextureMatrix();
+		return;
+	}
+
+	const float local_top0 = rect.WorldTop * rect.Scale;
+	const float local_bottom0 = rect.WorldBottom * rect.Scale;
+	const float u_top0 = texCoords[0][0];
+	const float u_bottom0 = texCoords[0][1];
+
+	const int clip_top_px = std::max<int>(rect.y0, rect.clip_top);
+	const int clip_bottom_px = std::min<int>(rect.y1, rect.clip_bottom);
+	if (clip_top_px >= clip_bottom_px) {
+		glEnable(GL_DEPTH_TEST);
+		glPopMatrix();
+		Shader::disable();
+		TMgr->RestoreTextureMatrix();
+		return;
+	}
+
+	const float inv_h = 1.0f / float(rect.y1 - rect.y0);
+	const float frac_top = (clip_top_px - rect.y0) * inv_h;
+	const float frac_bottom = (clip_bottom_px - rect.y0) * inv_h;
+
+	const float local_top = local_top0 + (local_bottom0 - local_top0) * frac_top;
+	const float local_bottom = local_top0 + (local_bottom0 - local_top0) * frac_bottom;
+	const float u_top = u_top0 + (u_bottom0 - u_top0) * frac_top;
+	const float u_bottom = u_top0 + (u_bottom0 - u_top0) * frac_bottom;
+
 	GLfloat vertex_array[12] = {
 		0,
 		rect.WorldLeft * rect.HorizScale * rect.Scale,
-		rect.WorldTop * rect.Scale,
+		local_top,
 		0,
 		rect.WorldRight * rect.HorizScale * rect.Scale,
-		rect.WorldTop * rect.Scale,
+		local_top,
 		0,
 		rect.WorldRight * rect.HorizScale * rect.Scale,
-		rect.WorldBottom * rect.Scale,
+		local_bottom,
 		0,
 		rect.WorldLeft * rect.HorizScale * rect.Scale,
-		rect.WorldBottom * rect.Scale
+		local_bottom
 	};
 
 	GLfloat texcoord_array[8] = {
-		texCoords[0][0],
+		u_top,
 		texCoords[1][0],
-		texCoords[0][0],
+		u_top,
 		texCoords[1][1],
-		texCoords[0][1],
+		u_bottom,
 		texCoords[1][1],
-		texCoords[0][1],
+		u_bottom,
 		texCoords[1][0]
 	};
 
