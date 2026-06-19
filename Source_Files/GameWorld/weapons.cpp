@@ -1991,6 +1991,7 @@ static void calculate_weapon_origin_and_vector(
 	struct trigger_definition *trigger_definition;
 	struct weapon_definition *definition= get_current_weapon_definition(player_index);
 	struct weapon_data *weapon_data= get_player_current_weapon(player_index);
+	world_point3d source_location;
 	short dx_translation_amount;
 	world_point3d destination;
 	angle projectile_facing;
@@ -2021,6 +2022,33 @@ static void calculate_weapon_origin_and_vector(
 #endif
 
 	*origin= player->camera_location;
+	source_location= *origin;
+#if defined(__ANDROID__)
+	if (VR_IsActive() && player_index == local_player_index)
+	{
+		float ox = 0.0f, oy = 0.0f;
+		VR_GetHeadOffset(&ox, &oy);
+
+		world_point3d vr_origin = *origin;
+		vr_origin.x += (world_distance)ox;
+		vr_origin.y += (world_distance)oy;
+		vr_origin.z += (world_distance)VR_GetEyeZOffset();
+
+		short support_polygon = player->camera_polygon_index;
+		if (support_polygon == NONE) support_polygon = object->polygon;
+		if (support_polygon != NONE)
+		{
+			world_point3d clamped = vr_origin;
+			world_distance floor_height, ceiling_height;
+			keep_line_segment_out_of_walls(support_polygon, &player->camera_location, &clamped,
+				WORLD_ONE, 0, &floor_height, &ceiling_height, &support_polygon);
+			vr_origin = clamped;
+		}
+
+		*origin = vr_origin;
+		source_location = vr_origin;
+	}
+#endif
 	origin->z += trigger_definition->dz;
 
 	/* Translate the projectile out to the end of the gun barrel.. */
@@ -2063,7 +2091,7 @@ static void calculate_weapon_origin_and_vector(
 	_vector->z= destination.z-origin->z;
 
 	/* Now calculate the origin polygon index */
-	*origin_polygon= find_new_object_polygon((world_point2d *) &player->location,
+	*origin_polygon= find_new_object_polygon((world_point2d *) &source_location,
 		(world_point2d *)origin, object->polygon);
 		
 	/* They blew the pooch- this is expensive, therefore let's hope it doesn't happen often */
@@ -2077,24 +2105,24 @@ static void calculate_weapon_origin_and_vector(
 		while(source_polygon != NONE)
 		{
 			line_crossed= find_line_crossed_leaving_polygon(source_polygon, (world_point2d *)
-				&player->location, (world_point2d *) origin);
+				&source_location, (world_point2d *) origin);
 			source_polygon= find_adjacent_polygon(source_polygon, line_crossed);
 		}
 
 		line= get_line_data(line_crossed);
 		find_line_intersection(&get_endpoint_data(line->endpoint_indexes[0])->vertex,
 			&get_endpoint_data(line->endpoint_indexes[1])->vertex, 
-			&player->location, origin, origin);
+			&source_location, origin, origin);
 		
 		/* Now guess the distance.. */
-		distance= distance2d((world_point2d *)&player->location, (world_point2d *) origin);
+		distance= distance2d((world_point2d *)&source_location, (world_point2d *) origin);
 		distance-= 50; /* Fudge factor */
 						
-		*origin= player->location;
+		*origin= source_location;
 		translate_point2d((world_point2d *) origin, distance, 
-			NORMALIZE_ANGLE(player->facing+QUARTER_CIRCLE));
+			NORMALIZE_ANGLE(fire_facing+QUARTER_CIRCLE));
 
-		*origin_polygon= find_new_object_polygon((world_point2d *) &player->location,
+		*origin_polygon= find_new_object_polygon((world_point2d *) &source_location,
 			(world_point2d *)origin, object->polygon);
 		assert(*origin_polygon != NONE);
 	}
