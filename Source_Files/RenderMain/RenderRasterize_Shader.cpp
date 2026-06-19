@@ -743,19 +743,67 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 		glNormal3f(N[0], N[1], N[2]);
 		glMultiTexCoord4fARB(GL_TEXTURE1_ARB, T[0], T[1], T[2], sign);
 
-		GLfloat vertex_array[MAXIMUM_VERTICES_PER_POLYGON * 3];
-		GLfloat texcoord_array[MAXIMUM_VERTICES_PER_POLYGON * 2];
+		// Build world-space xy vertex list. Ceiling reverses vertex order for back-face culling.
+		float wx[MAXIMUM_VERTICES_PER_WORLD_POLYGON], wy[MAXIMUM_VERTICES_PER_WORLD_POLYGON];
+		for (short i = 0; i < vertex_count; ++i) {
+			short idx = ceil ? (vertex_count - 1 - i) : i;
+			world_point2d v = get_endpoint_data(polygon->endpoint_indexes[idx])->vertex;
+			wx[i] = float(v.x); wy[i] = float(v.y);
+		}
 
-		GLfloat* vp = vertex_array;
-		GLfloat* tp = texcoord_array;
+		// Vertical clip: equivalent to z_clip_horizontal_polygon() in the SW renderer.
+		// Applied when the window is height-restricted (5D space or height-change portals).
+		// Geometry-based so it is projection-independent and works with OpenXR VR matrices
+		// (a screen-space scissor using y0/y1 fails in VR because those coords are computed
+		// from the wide-cone BSP projection, not the narrow per-eye OpenXR projection).
+		if (window->y0 > 0 || window->y1 < view->screen_height) {
+			const float adj_h = float(surface->height - view->origin.z);
+			const float vox   = float(view->origin.x), voy = float(view->origin.y);
+			const float yr    = float(view->yaw) * float(2.0 * M_PI / FULL_CIRCLE);
+			const float cy    = cosf(yr), sy = sinf(yr);
+
+			// Sutherland-Hodgman clip against one plane.  Visible side: heighti - plane.j*depth >= 0.
+			auto vclip = [&](const long_vector2d& plane) {
+				float hi = float(plane.i) * adj_h;
+				float tx[MAXIMUM_VERTICES_PER_WORLD_POLYGON], ty[MAXIMUM_VERTICES_PER_WORLD_POLYGON];
+				int out = 0;
+				for (short i = 0; i < vertex_count; i++) {
+					short j = (i + 1) % vertex_count;
+					float di = (wx[i]-vox)*cy + (wy[i]-voy)*sy;
+					float dj = (wx[j]-vox)*cy + (wy[j]-voy)*sy;
+					float cpi = hi - float(plane.j) * di;
+					float cpj = hi - float(plane.j) * dj;
+					if (cpi >= 0.f) { tx[out] = wx[i]; ty[out] = wy[i]; ++out; }
+					if ((cpi >= 0.f) != (cpj >= 0.f)) {
+						float t = cpi / (cpi - cpj);
+						tx[out] = wx[i] + t*(wx[j]-wx[i]);
+						ty[out] = wy[i] + t*(wy[j]-wy[i]);
+						++out;
+					}
+				}
+				vertex_count = short(out);
+				for (short k = 0; k < vertex_count; k++) { wx[k] = tx[k]; wy[k] = ty[k]; }
+			};
+
+			if (window->y0 > 0)
+				vclip(window->top);
+			if (vertex_count > 0 && window->y1 < view->screen_height)
+				vclip(window->bottom);
+
+			if (vertex_count == 0) {
+				Shader::disable();
+				glMatrixMode(GL_TEXTURE); glLoadIdentity(); glMatrixMode(GL_MODELVIEW);
+				return;
+			}
+		}
+
 		float scale;
-
 		switch (surface->transfer_mode)
 		{
 			case _xfer_2x:
 				scale = 2 * WORLD_ONE * TMgr->TileRatio();
 				break;
-		    case _xfer_4x:
+			case _xfer_4x:
 				scale = 4 * WORLD_ONE * TMgr->TileRatio();
 				break;
 			default:
@@ -763,45 +811,18 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 				break;
 		}
 
-		if (ceil)
-		{
-			for(short i = 0; i < vertex_count; ++i) {
-				world_point2d vertex = get_endpoint_data(polygon->endpoint_indexes[vertex_count - 1 - i])->vertex;
-				*vp++ = vertex.x;
-				*vp++ = vertex.y;
-				*vp++ = surface->height;
-				*tp++ = (vertex.x + surface->origin.x + x) / scale;
-				*tp++ = (vertex.y + surface->origin.y + y) / scale;
-			}
-		}
-		else
-		{
-			for(short i=0; i<vertex_count; ++i) {
-				world_point2d vertex = get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
-				*vp++ = vertex.x;
-				*vp++ = vertex.y;
-				*vp++ = surface->height;
-				*tp++ = (vertex.x + surface->origin.x + x) / scale;
-				*tp++ = (vertex.y + surface->origin.y + y) / scale;
-			}
+		GLfloat vertex_array[MAXIMUM_VERTICES_PER_WORLD_POLYGON * 3];
+		GLfloat texcoord_array[MAXIMUM_VERTICES_PER_WORLD_POLYGON * 2];
+		GLfloat* vp = vertex_array;
+		GLfloat* tp = texcoord_array;
+
+		for (short i = 0; i < vertex_count; i++) {
+			*vp++ = wx[i]; *vp++ = wy[i]; *vp++ = float(surface->height);
+			*tp++ = (wx[i] + float(surface->origin.x) + x) / scale;
+			*tp++ = (wy[i] + float(surface->origin.y) + y) / scale;
 		}
 		glVertexPointer(3, GL_FLOAT, 0, vertex_array);
 		glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
-
-#if defined(__ANDROID__)
-		if (surface->transfer_mode == _xfer_landscape || surface->transfer_mode == _xfer_big_landscape) {
-			static int s_lsDrawLog = 0;
-			if (s_lsDrawLog++ < 5) {
-				__android_log_print(ANDROID_LOG_WARN, "A1VR",
-					"landscape draw: verts=%d ceil=%d v0=(%.0f,%.0f,%.0f)",
-					vertex_count, ceil ? 1 : 0,
-					vertex_array[0], vertex_array[1], vertex_array[2]);
-				logWarning("landscape draw: verts=%d ceil=%d v0=(%.0f,%.0f,%.0f)",
-					vertex_count, ceil ? 1 : 0,
-					vertex_array[0], vertex_array[1], vertex_array[2]);
-			}
-		}
-#endif
 
 		glDrawArrays(GL_POLYGON, 0, vertex_count);
 

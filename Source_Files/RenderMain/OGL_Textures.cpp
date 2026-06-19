@@ -608,6 +608,25 @@ bool TextureManager::Setup()
 		NormalImage.set(&TxtrOptsPtr->NormalImg);
 		GlowImage.set(&TxtrOptsPtr->GlowImg);
 		OffsetImage.set(&TxtrOptsPtr->OffsetImg);
+
+		// Cached texture states remember whether the GL texture IDs were allocated/generated, but the
+		// fallback source images for shape-based textures live on this transient manager. Rebuild the
+		// missing source image only for the specific texture variants that have not been uploaded yet.
+		const bool needNormalSource =
+			!CTState.TexGened[TextureState::Normal] &&
+			(!NormalImage.get() || !NormalImage.get()->IsPresent());
+		const bool needGlowSource =
+			IsGlowing && !CTState.TexGened[TextureState::Glowing] &&
+			(!GlowImage.get() || !GlowImage.get()->IsPresent());
+		if (needNormalSource || needGlowSource)
+		{
+			if (!SetupTextureGeometry()) return false;
+			FindColorTables();
+			if (needNormalSource)
+				NormalImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(NormalColorTable)));
+			if (needGlowSource)
+				GlowImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(GlowColorTable)));
+		}
 	}
 		
 	// Done!!!

@@ -491,7 +491,8 @@ static void render_vr_aim_debug(view_data* view)
 	// vis-tree eye-Z bump so this sits at the rendered eye height.
 	const double camx = view->origin.x;
 	const double camy = view->origin.y;
-	const double camz = view->origin.z - VR_GetEyeZOffset();
+	// Keep the true eye Z (including VR eye-height offset) so crouch/seated motion lowers hands.
+	const double camz = view->origin.z;
 	const int domHand = VR_Settings()->dominantHand ? 0 : 1;   // 0=left,1=right
 
 	float hp[3];
@@ -663,7 +664,8 @@ static void render_vr_weapon_sprites_3d(view_data* view)
 	const double cy = cos(yaw), sy = sin(yaw);
 	const float camx = (float)view->origin.x;
 	const float camy = (float)view->origin.y;
-	const float camz = (float)(view->origin.z - VR_GetEyeZOffset());
+	// Keep the true eye Z (including VR eye-height offset) so crouch/seated motion lowers hands.
+	const float camz = (float)view->origin.z;
 
 	const int domHand = VR_Settings()->dominantHand ? 0 : 1;
 	const int offHand = 1 - domHand;
