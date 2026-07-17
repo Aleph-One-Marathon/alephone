@@ -41,8 +41,8 @@ runs:
         path: vcpkg/installed-arm64-osx
         key: ${{runner.os}}-${{env.runner_image_version}}-installed-arm64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}
       
-    - name: Switch to Xcode 15.4
-      run: sudo xcode-select --switch /Applications/Xcode_15.4.app
+    - name: Switch to Xcode 16.4
+      run: sudo xcode-select --switch /Applications/Xcode_16.4.app
       shell: bash
       
     - name: Install x64 dependencies
