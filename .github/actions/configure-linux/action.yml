@@ -51,7 +51,7 @@ runs:
       
     - name: Restore Vcpkg cache
       if: inputs.use_vcpkg == 'true'
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: vcpkg/installed-x64-linux
         key: ${{runner.os}}-installed-x64-linux-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}

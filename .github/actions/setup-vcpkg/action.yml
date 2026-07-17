@@ -22,7 +22,7 @@ runs:
       
     - name: Restore Vcpkg cached hash
       id: vcpkg-cache-hash
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ${{env.vcpkg_installation_root}}/vcpkg-cached-hash
         key: vcpkg-cached-hash

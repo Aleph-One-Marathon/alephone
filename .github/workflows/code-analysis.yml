@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         
       - name: Configure
         uses: ./.github/actions/configure-linux
@@ -25,6 +25,7 @@ jobs:
         with:
           languages: cpp
           queries: security-and-quality
+          build-mode: manual
 
       - name: Build
         run: make -j $(nproc)

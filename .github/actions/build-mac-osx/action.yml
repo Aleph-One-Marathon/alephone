@@ -20,7 +20,9 @@ runs:
         vcpkg_bootstrap_file: bootstrap-vcpkg.sh
         
     - name: Install tools
-      run: brew install nasm
+      run: |
+        brew untap aws/tap
+        brew install nasm
       shell: bash
       
     - name: Set Image Version
@@ -29,14 +31,14 @@ runs:
       
     - name: Restore Vcpkg cache for x64
       if: inputs.xcode_arch == 'x86_64' || inputs.xcode_arch == ''
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: vcpkg/installed-x64-osx
         key: ${{runner.os}}-${{env.runner_image_version}}-installed-x64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}
         
     - name: Restore Vcpkg cache for arm64
       if: inputs.xcode_arch == 'arm64' || inputs.xcode_arch == ''
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: vcpkg/installed-arm64-osx
         key: ${{runner.os}}-${{env.runner_image_version}}-installed-arm64-osx-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}

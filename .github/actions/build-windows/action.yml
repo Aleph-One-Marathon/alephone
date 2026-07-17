@@ -18,7 +18,7 @@ runs:
     steps:
      
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v2
+      uses: microsoft/setup-msbuild@v3
       
     - name: Setup Vcpkg
       uses: ./.github/actions/setup-vcpkg
@@ -30,7 +30,7 @@ runs:
       shell: pwsh
       
     - name: Cache Vcpkg
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: vcpkg/${{inputs.vcpkg_installed_folder}}
         key: ${{runner.os}}-${{env.runner_image_version}}-${{inputs.vcpkg_installed_folder}}-${{env.vcpkg_current_hash}}-${{hashFiles('**/vcpkg.json', '**/vcpkg-configuration.json')}}

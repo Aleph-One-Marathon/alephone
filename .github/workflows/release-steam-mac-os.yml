@@ -6,7 +6,7 @@ jobs:
   release-steam-mac-os:
     runs-on: macos-15
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Build Steam Marathon
       uses: ./.github/actions/build-mac-osx

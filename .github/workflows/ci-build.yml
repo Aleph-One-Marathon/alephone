@@ -9,7 +9,7 @@ jobs:
       github.event.pull_request.base.repo.full_name
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Configure
         uses: ./.github/actions/configure-linux
         with:
@@ -32,7 +32,7 @@ jobs:
       github.event.pull_request.base.repo.full_name
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Configure
         uses: ./.github/actions/configure-linux
         with:
@@ -50,7 +50,7 @@ jobs:
       github.event.pull_request.base.repo.full_name
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Configure
         uses: ./.github/actions/configure-linux
         with:
@@ -73,7 +73,7 @@ jobs:
       github.event.pull_request.base.repo.full_name
     runs-on: macos-15-intel
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build
         uses: ./.github/actions/build-mac-osx
         with:
@@ -93,7 +93,7 @@ jobs:
       github.event.pull_request.base.repo.full_name
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build
         uses: ./.github/actions/build-mac-osx
         with:
@@ -113,7 +113,7 @@ jobs:
       github.event.pull_request.base.repo.full_name
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build
         uses: ./.github/actions/build-windows
         with:
@@ -132,7 +132,7 @@ jobs:
       github.event.pull_request.base.repo.full_name
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Build
         uses: ./.github/actions/build-windows
         with:

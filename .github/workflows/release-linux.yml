@@ -6,7 +6,7 @@ jobs:
   release:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         submodules: true
         
@@ -25,7 +25,7 @@ jobs:
         make flatpaks
         
     - name: Upload
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: alephone-linux-release
         if-no-files-found: error

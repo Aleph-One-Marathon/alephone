@@ -6,7 +6,7 @@ jobs:
   release:
     runs-on: macos-15
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         submodules: true
         
@@ -98,7 +98,7 @@ jobs:
       run: cd tools && ./build_dmg.sh $GITHUB_WORKSPACE $GITHUB_WORKSPACE/Xcode/build/Release
       
     - name: Upload
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: alephone-macos-release
         if-no-files-found: error

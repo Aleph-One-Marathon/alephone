@@ -8,7 +8,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Get Standalone Hub Version
       run: echo "standalone_hub_version=$(awk -F'"' '/#define STANDALONE_HUB_VERSION/ {print $2}' Source_Files/Network/StandaloneHub/StandaloneHub.h)" >> $GITHUB_ENV
@@ -23,7 +23,7 @@ jobs:
       run: docker save -o alephone-standalone-hub-${{env.standalone_hub_version}}.tar alephone/standalone-hub:${{env.standalone_hub_version}}
       
     - name: Upload
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: alephone-standalone-hub
         if-no-files-found: error
