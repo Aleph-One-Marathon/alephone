@@ -2305,10 +2305,19 @@ void NetProcessMessagesInGame() {
 			last_network_stats_send = machine_tick_count();
 		}
 
-		// pump chat messages
+		// pump chat messages / dedicated server end game message
 		client_map_t::iterator it;
 		for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
 			it->second->channel->pump();
+
+#ifdef A1_NETWORK_STANDALONE_HUB
+			if (it->second->channel.get() == StandaloneHub::Instance()->GetGathererChannel())
+			{
+				//don't process more messages if the end game message was received or it could start dispatching the next level messages if the gatherer already sent those
+				while (!StandaloneHub::Instance()->HasGameEnded() && it->second->channel->dispatchOneIncomingMessage());
+			}
+			else
+#endif
 			it->second->channel->dispatchIncomingMessages();
 		}
 	}
