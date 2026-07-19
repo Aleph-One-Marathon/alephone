@@ -300,11 +300,13 @@ exit_predictive_mode()
 				// than []-scrolling did before prediction.  :)
 				int16 saved_interface_flags = player->interface_flags;
 				int16 saved_interface_decay = player->interface_decay;
+				bool is_net_oos = player->net_oos;
 				
 				*player = sSavedPlayerData[i];
 
 				player->interface_flags = saved_interface_flags;
 				player->interface_decay = saved_interface_decay;
+				player->net_oos = player->net_oos || is_net_oos; //can be set during the predictive mode
 			}
 
 			if(sSavedPlayerData[i].monster_index != NONE)

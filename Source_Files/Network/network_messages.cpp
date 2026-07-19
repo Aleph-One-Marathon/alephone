@@ -384,6 +384,26 @@ bool RemoteHubCommandMessage::reallyInflateFrom(AIStream& inputStream) {
 	return true;
 }
 
+void SynchronizationCheckMessage::reallyDeflateTo(AOStream& outputStream) const {
+	outputStream << mDynamicTickCount;
+	outputStream << mSeed;
+}
+
+bool SynchronizationCheckMessage::reallyInflateFrom(AIStream& inputStream) {
+	inputStream >> mDynamicTickCount;
+	inputStream >> mSeed;
+	return true;
+}
+
+void OutOfSynchronizationMessage::reallyDeflateTo(AOStream& outputStream) const {
+	outputStream << mPlayerIdentifier;
+}
+
+bool OutOfSynchronizationMessage::reallyInflateFrom(AIStream& inputStream) {
+	inputStream >> mPlayerIdentifier;
+	return true;
+}
+
 void RemoteHubHostResponseMessage::reallyDeflateTo(AOStream& outputStream) const {
 	outputStream << (Uint8)mAccepted;
 }

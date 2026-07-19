@@ -409,7 +409,8 @@ struct player_data
 
 	int32 netgame_parameters[2];
 
-	bool	netdead;	// ZZZ: added this; it should not be serialized/deserialized
+	bool netdead; // ZZZ: added this; it should not be serialized/deserialized
+	bool net_oos; //it should not be serialized/deserialized
 
 	world_distance step_height; // not serialized, used to correct chase cam bob
 	uint8_t hotkey_sequence;    // not serialized, used to decode hotkey

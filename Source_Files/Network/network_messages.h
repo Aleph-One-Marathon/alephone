@@ -55,6 +55,8 @@ enum {
   kREMOTE_HUB_READY_MESSAGE,
   kREMOTE_HUB_RESPONSE_MESSAGE,
   kREMOTE_HUB_REQUEST_MESSAGE,
+  kSYNC_CHECK_MESSAGE,
+  kOOS_MESSAGE
 };
 
 template <MessageTypeID tMessageType, typename tValueType>
@@ -502,6 +504,63 @@ private:
 	int mData = NONE;
 };
 
+class SynchronizationCheckMessage : public SmallMessageHelper
+{
+public:
+	enum { kType = kSYNC_CHECK_MESSAGE };
+
+	SynchronizationCheckMessage() : SmallMessageHelper() {}
+
+	SynchronizationCheckMessage(int dynamic_tick_count, int seed) : SmallMessageHelper() {
+		mDynamicTickCount = dynamic_tick_count;
+		mSeed = seed;
+	}
+
+	SynchronizationCheckMessage* clone() const {
+		return new SynchronizationCheckMessage(*this);
+	}
+
+	int Seed() const { return mSeed; }
+	int DynamicTickCount() const { return mDynamicTickCount; }
+
+	MessageTypeID type() const { return kType; }
+
+protected:
+	void reallyDeflateTo(AOStream& outputStream) const;
+	bool reallyInflateFrom(AIStream& inputStream);
+
+private:
+	int mDynamicTickCount;
+	int mSeed;
+};
+
+class OutOfSynchronizationMessage : public SmallMessageHelper
+{
+public:
+	enum { kType = kOOS_MESSAGE };
+
+	OutOfSynchronizationMessage() : SmallMessageHelper() {}
+
+	OutOfSynchronizationMessage(int player_identifier) : SmallMessageHelper() {
+		mPlayerIdentifier = player_identifier;
+	}
+
+	OutOfSynchronizationMessage* clone() const {
+		return new OutOfSynchronizationMessage(*this);
+	}
+
+	int PlayerIdentifier() const { return mPlayerIdentifier; }
+
+	MessageTypeID type() const { return kType; }
+
+protected:
+	void reallyDeflateTo(AOStream& outputStream) const;
+	bool reallyInflateFrom(AIStream& inputStream);
+
+private:
+	int mPlayerIdentifier;
+};
+
 struct Client {
 	Client(std::shared_ptr<CommunicationsChannel>);
 	enum {
@@ -540,6 +599,7 @@ struct Client {
 	void handleAcceptJoinMessage(AcceptJoinMessage*, CommunicationsChannel*);
 	void handleChatMessage(NetworkChatMessage*, CommunicationsChannel*);
 	void handleRemoteHubCommandMessage(RemoteHubCommandMessage*, CommunicationsChannel*);
+	void handleSynchronizationCheckMessage(SynchronizationCheckMessage*, CommunicationsChannel*);
 	void handleRemoteHubHostConnectMessage(RemoteHubHostConnectMessage*, CommunicationsChannel*);
 	void handleChangeColorsMessage(ChangeColorsMessage*, CommunicationsChannel*);
 
@@ -547,6 +607,7 @@ struct Client {
 	std::unique_ptr<MessageHandler> mJoinerInfoMessageHandler;
 	std::unique_ptr<MessageHandler> mUnexpectedMessageHandler;
 	std::unique_ptr<MessageHandler> mRemoteHubCommandMessageHandler;
+	std::unique_ptr<MessageHandler> mSynchronizationCheckMessageHandler;
 	std::unique_ptr<MessageHandler> mRemoteHubHostRequestMessageHandler;
 	std::unique_ptr<MessageHandler> mCapabilitiesMessageHandler;
 	std::unique_ptr<MessageHandler> mAcceptJoinMessageHandler;

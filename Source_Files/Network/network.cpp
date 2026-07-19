@@ -181,7 +181,7 @@ static client_chat_info_map_t client_chat_info;
 static std::unique_ptr<CommunicationsChannel> connection_to_server = NULL;
 static NonblockingConnect *server_nbc = 0;
 static bool nbc_is_resolving = false;
-static int next_stream_id = 1; // 0 is local player
+static int next_stream_id;
 static IPaddress host_address;
 static bool host_address_specified = false;
 static MessageInflater *inflater = NULL;
@@ -191,6 +191,7 @@ static Capabilities my_capabilities;
 static std::shared_ptr<Pinger> pinger = nullptr; //multithread safety
 static GatherCallbacks *gatherCallbacks = NULL;
 static ChatCallbacks *chatCallbacks = NULL;
+static std::map<std::pair<int, int>, int> synchronization_checks;
 
 #ifdef HAVE_MINIUPNPC
 static std::unique_ptr<PortForward> port_forward;
@@ -219,6 +220,20 @@ static bool player_is_ignored(int player_index)
 static bool local_is_server()
 {
 	return !connection_to_server;
+}
+
+static constexpr int get_gatherer_stream_id()
+{
+#ifdef A1_NETWORK_STANDALONE_HUB
+	return 1;
+#else
+	return 0;
+#endif
+}
+
+static void reset_next_stream_id()
+{
+	next_stream_id = 1; // 0 is local player
 }
 
 struct ignore_player {
@@ -285,7 +300,7 @@ static void NetDistributeTopology(short tag);
 
 static void NetDDPPacketHandler(UDPpacket& inPacket);
 
-int getStreamIdFromChannel(CommunicationsChannel *channel) {
+static int getStreamIdFromChannel(CommunicationsChannel *channel) {
   client_map_t::iterator it;
   for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
     if (it->second->channel.get() == channel) {
@@ -310,6 +325,7 @@ Client::Client(std::shared_ptr<CommunicationsChannel> inChannel) : channel(inCha
 	mChatMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleChatMessage));
 	mChangeColorsMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleChangeColorsMessage));
 	mRemoteHubCommandMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleRemoteHubCommandMessage));
+	mSynchronizationCheckMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleSynchronizationCheckMessage));
 	mRemoteHubHostRequestMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleRemoteHubHostConnectMessage));
 	mUnexpectedMessageHandler.reset(newMessageHandlerMethod(this, &Client::unexpectedMessageHandler));
 	mDispatcher->setDefaultHandler(mUnexpectedMessageHandler.get());
@@ -320,6 +336,7 @@ Client::Client(std::shared_ptr<CommunicationsChannel> inChannel) : channel(inCha
 	mDispatcher->setHandlerForType(mChangeColorsMessageHandler.get(), ChangeColorsMessage::kType);
 	mDispatcher->setHandlerForType(mRemoteHubCommandMessageHandler.get(), RemoteHubCommandMessage::kType);
 	mDispatcher->setHandlerForType(mRemoteHubHostRequestMessageHandler.get(), RemoteHubHostConnectMessage::kType);
+	mDispatcher->setHandlerForType(mSynchronizationCheckMessageHandler.get(), SynchronizationCheckMessage::kType);
 	channel->setMessageHandler(mDispatcher.get());
 }
 
@@ -570,6 +587,25 @@ NetworkInterface* NetGetNetworkInterface()
 	return network_interface.get();
 }
 
+static void SetPlayerToNetOos(int player_identifier)
+{
+	for (int playerIndex = 0; playerIndex < topology->player_count; playerIndex++)
+	{
+		auto& netPlayer = topology->players[playerIndex];
+
+		if (netPlayer.identifier == player_identifier)
+		{
+			if (!netPlayer.net_oos)
+			{
+				netPlayer.net_oos = true;
+				get_player_data(playerIndex)->net_oos = true;
+			}
+
+			break;
+		}
+	}
+}
+
 void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
 				     CommunicationsChannel *)
 {
@@ -578,6 +614,7 @@ void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
       topology->players[topology->player_count] = *acceptJoinMessage->player();
       topology->players[topology->player_count].stream_id = getStreamIdFromChannel(channel.get());
 	  topology->players[topology->player_count].net_dead = false;
+	  topology->players[topology->player_count].net_oos = false;
       prospective_joiner_info player;
       player.stream_id = topology->players[topology->player_count].stream_id;
       topology->players[topology->player_count].dspAddress = channel->peerAddress();
@@ -722,6 +759,19 @@ void Client::handleRemoteHubCommandMessage(RemoteHubCommandMessage* message, Com
 #endif
 
 	logAnomaly("unexpected remote hub command message received; ignoring");
+}
+
+void Client::handleSynchronizationCheckMessage(SynchronizationCheckMessage* message, CommunicationsChannel* channel)
+{
+	const auto id = getStreamIdFromChannel(channel);
+
+	if (id != NONE)
+	{
+		synchronization_checks.emplace(std::make_pair(message->DynamicTickCount(), id), message->Seed());
+		return;
+	}
+
+	logAnomaly("unexpected/unhandled synchronization check message received; ignoring");
 }
 
 void Client::handleChatMessage(NetworkChatMessage* netChatMessage, 
@@ -889,7 +939,8 @@ static void handleJoinPlayerMessage(JoinPlayerMessage* joinPlayerMessage, Commun
     /* Note that we share the buffers.. */
     localPlayerIdentifier= joinPlayerMessage->value();
     topology->players[localPlayerIndex].identifier= localPlayerIdentifier;
-    topology->players[localPlayerIndex].net_dead= false;
+    topology->players[localPlayerIndex].net_dead = false;
+	topology->players[localPlayerIndex].net_oos = false;
     
     /* Confirm. */
     AcceptJoinMessage acceptJoinMessage(true, &topology->players[localPlayerIndex]);
@@ -1086,6 +1137,17 @@ static void handleGameSessionMessage(GameSessionMessage* gameSessionMessage, Com
 	}
 }
 
+static void handleOutOfSynchronizationMessage(OutOfSynchronizationMessage* oosMessage, CommunicationsChannel*) {
+	if (netState == netActive)
+	{
+		SetPlayerToNetOos(oosMessage->PlayerIdentifier());
+	}
+	else 
+	{
+		logAnomaly("unexpected out of synchronization message received (netState is %i", netState);
+	}
+}
+
 static void handleUnexpectedMessage(Message *inMessage, CommunicationsChannel *) {
   if (handlerState == netAwaitingHello) {
     // an unexpected message before hello usually means we couldn't parse
@@ -1110,6 +1172,7 @@ static TypedMessageHandlerFunction<NetworkStatsMessage> networkStatsMessageHandl
 static TypedMessageHandlerFunction<GameSessionMessage> gameSessionMessageHandler(&handleGameSessionMessage);
 static TypedMessageHandlerFunction<AcceptJoinMessage> acceptJoinMessageHandler(&handleAcceptJoinMessage);
 static TypedMessageHandlerFunction<JoinerInfoMessage> joinerInfoMessageHandler(&handleJoinerInfoMessage);
+static TypedMessageHandlerFunction<OutOfSynchronizationMessage> outOfSynchronizationMessageHandler(&handleOutOfSynchronizationMessage);
 static TypedMessageHandlerFunction<Message> unexpectedMessageHandler(&handleUnexpectedMessage);
 
 void NetSetGatherCallbacks(GatherCallbacks *gc) {
@@ -1184,6 +1247,8 @@ bool NetEnter(bool use_remote_hub)
 {
 	::use_remote_hub = use_remote_hub;
 	network_interface = std::make_unique<NetworkInterface>();
+	synchronization_checks.clear();
+	reset_next_stream_id();
   
 	assert(netState==netUninitialized);
   
@@ -1233,6 +1298,8 @@ bool NetEnter(bool use_remote_hub)
 		inflater->learnPrototype(ClientInfoMessage());
 		inflater->learnPrototype(NetworkStatsMessage());
 		inflater->learnPrototype(GameSessionMessage());
+		inflater->learnPrototype(SynchronizationCheckMessage());
+		inflater->learnPrototype(OutOfSynchronizationMessage());
 		inflater->learnPrototype(RemoteHubCommandMessage());
 		inflater->learnPrototype(RemoteHubReadyMessage());
 		inflater->learnPrototype(RemoteHubHostResponseMessage());
@@ -1260,6 +1327,7 @@ bool NetEnter(bool use_remote_hub)
 		joinDispatcher->setHandlerForType(&gameSessionMessageHandler, GameSessionMessage::kType);
 		joinDispatcher->setHandlerForType(&acceptJoinMessageHandler, AcceptJoinMessage::kType);
 		joinDispatcher->setHandlerForType(&joinerInfoMessageHandler, JoinerInfoMessage::kType);
+		joinDispatcher->setHandlerForType(&outOfSynchronizationMessageHandler, OutOfSynchronizationMessage::kType);
 	}
 
 	my_capabilities.clear();
@@ -1823,6 +1891,7 @@ static void NetInitializeTopology(
 	local_player = topology->players + localPlayerIndex;
 	local_player->identifier = localPlayerIdentifier;
 	local_player->net_dead = false;
+	local_player->net_oos = false;
 	local_player->stream_id = 0;
 
 	local_player->dspAddress.set_port(GAME_PORT);
@@ -2274,7 +2343,104 @@ NetCheckWorldUpdate()
 
 extern const NetworkStats& hub_stats(int player_index);
 
+static void NetSendSynchronizationMessage()
+{
+	static constexpr int sync_check_rate = 100;
+	static int last_tick_sent = NONE;
+
+	if (dynamic_world->tick_count != last_tick_sent && dynamic_world->tick_count % sync_check_rate == 0)
+	{
+		if (connection_to_server)
+		{
+			SynchronizationCheckMessage syncMessage(dynamic_world->tick_count, get_random_seed());
+			connection_to_server->enqueueOutgoingMessage(syncMessage);
+		}
+		else
+		{
+			synchronization_checks.emplace(std::make_pair(dynamic_world->tick_count, localPlayerIdentifier), get_random_seed());
+		}
+
+		last_tick_sent = dynamic_world->tick_count;
+	}
+}
+
+static void NetProcessSynchronizationCheck()
+{
+	int processedTick = NONE;
+
+	for (auto it = synchronization_checks.rbegin(); it != synchronization_checks.rend(); it++)
+	{
+		const int gathererStreamId = it->first.second;
+		if (gathererStreamId != get_gatherer_stream_id()) continue;
+
+		const int gathererTick = it->first.first;
+		const int gathererSeed = it->second;
+
+		bool fullPassCheck = true;
+
+		for (int playerIndex = 0; playerIndex < topology->player_count; ++playerIndex)
+		{
+			NetPlayer& player = topology->players[playerIndex];
+
+			if (!player.net_dead && player.identifier != NONE && player.stream_id != gathererStreamId && !player.net_oos)
+			{
+				auto playerIt = synchronization_checks.find({ gathererTick, player.stream_id });
+
+				if (playerIt != synchronization_checks.end())
+				{
+					const auto playerSeed = playerIt->second;
+
+					if (playerSeed != gathererSeed)
+					{
+						OutOfSynchronizationMessage message(player.identifier);
+
+						for (auto client = connections_to_clients.begin(); client != connections_to_clients.end(); client++) {
+							client->second->channel->enqueueOutgoingMessage(message);
+						}
+
+#ifndef A1_NETWORK_STANDALONE_HUB
+						SetPlayerToNetOos(player.identifier);
+#else
+						player.net_oos = true;
+#endif
+					}
+				}
+				else
+				{
+					fullPassCheck = false;
+				}
+			}
+		}
+
+		if (fullPassCheck)
+		{
+			processedTick = gathererTick;
+			break;
+		}
+	}
+
+
+	if (processedTick != NONE)
+	{
+		auto eraseEnd = synchronization_checks.upper_bound({ processedTick, std::numeric_limits<int>::max() });
+		synchronization_checks.erase(synchronization_checks.begin(), eraseEnd);
+		return;
+	}
+
+	static constexpr int synchronization_cleaning_treshold = 100;
+
+	if (synchronization_checks.size() > topology->player_count * synchronization_cleaning_treshold)
+	{
+		synchronization_checks.clear();
+	}
+}
+
 void NetProcessMessagesInGame() {
+
+#ifndef A1_NETWORK_STANDALONE_HUB
+	NetSendSynchronizationMessage();
+#endif
+
 	if (connection_to_server) {
 		connection_to_server->pump();
 		connection_to_server->dispatchIncomingMessages();
@@ -2304,6 +2470,8 @@ void NetProcessMessagesInGame() {
 			
 			last_network_stats_send = machine_tick_count();
 		}
+
+		NetProcessSynchronizationCheck();
 
 		// pump chat messages / dedicated server end game message
 		client_map_t::iterator it;
