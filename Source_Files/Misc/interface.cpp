@@ -794,6 +794,7 @@ bool load_and_start_game(FileSpecifier& File)
 		interface_fade_out(MAIN_MENU_BASE, true);
 	}
 
+	initialize_map_for_new_game();
 	auto pluginMode = saved_game_was_networked(File) == 1 ? Plugins::kMode_Net : Plugins::kMode_Solo;
 	Plugins::instance()->set_mode(pluginMode);
 	success= load_game_from_file(File, false);
@@ -2942,7 +2943,9 @@ static void handle_network_game(
 	{
 		if (joined_resume_game)
 		{
-			if (join_networked_resume_game() == false) clean_up_after_failed_game(true /*netgame*/, false /*recording*/, true /*full cleanup*/);
+			initialize_map_for_new_game();
+			if (join_networked_resume_game() == false) 
+				clean_up_after_failed_game(true /*netgame*/, false /*recording*/, true /*full cleanup*/);
 		}
 		else
 		{
