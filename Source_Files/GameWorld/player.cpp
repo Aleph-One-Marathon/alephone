@@ -673,10 +673,10 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 			action_flags= 0;
 		}
 
-		if (!inPredictive && player->net_oos && !player->netdead)
+		if (!inPredictive && player->net_oos && !player->net_oos_notified && !player->netdead)
 		{
 			screen_printf("%s has been desynchronized from the host", player->name);
-			player->net_oos = false; //just to prevent reentering here
+			player->net_oos_notified = true;
 		}
 
 		if (PLAYER_IS_TELEPORTING(player)) action_flags= 0;

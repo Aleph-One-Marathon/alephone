@@ -784,6 +784,8 @@ static void DisplayScores(SDL_Surface *s)
 	int WPing = CWidth * kPingWidth;
 	int WJitter = CWidth * kPingWidth;
 	int WErrors = CWidth * kPingWidth;
+	static const int kSyncWidth = 12;
+	int WSync = CWidth * kSyncWidth;
 	static const int kIdWidth = 2;
 	int WId = CWidth * kIdWidth;
 
@@ -794,7 +796,7 @@ static void DisplayScores(SDL_Surface *s)
 	DisplayTextStyle = Font.Style;
 
 	int H = Font.LineSpacing * (dynamic_world->player_count + 1);
-	int W = WName + WScore + WPing + WJitter + WErrors + WId;
+	int W = WName + WScore + WPing + WJitter + WSync + WErrors + WId + 6 * CWidth;
 
 	auto text_margins = alephone::Screen::instance()->lua_text_margins;
 	int X = text_margins.left + (s->w - text_margins.right - W) / 2;
@@ -804,7 +806,8 @@ static void DisplayScores(SDL_Surface *s)
 	int XScore = XName + WName + CWidth;
 	int XPing = XScore + WScore + CWidth;
 	int XJitter = XPing + WPing + CWidth;
-	int XErrors = XJitter + WPing + CWidth;
+	int XSync = XJitter + WPing + CWidth;
+	int XErrors = XSync + WSync + CWidth;
 	int XId = XErrors + WPing + CWidth;
 
 	// draw headers
@@ -812,6 +815,7 @@ static void DisplayScores(SDL_Surface *s)
 	DisplayText(XScore + WScore - DisplayTextWidth("Score"), Y, "Score", 0xbf, 0xbf, 0xbf);
 	DisplayText(XPing + WPing - DisplayTextWidth("Delay"), Y, "Delay", 0xbf, 0xbf, 0xbf);
 	DisplayText(XJitter + WPing - DisplayTextWidth("Jitter"), Y, "Jitter", 0xbf, 0xbf, 0xbf);
+	DisplayText(XSync + WSync - DisplayTextWidth("Sync"), Y, "Sync", 0xbf, 0xbf, 0xbf);
 	DisplayText(XErrors + WPing - DisplayTextWidth("Errors"), Y, "Errors", 0xbf, 0xbf, 0xbf);
 	DisplayText(XId + WId - DisplayTextWidth("ID"), Y, "ID", 0xbf, 0xbf, 0xbf);
 	Y += Font.LineSpacing;
@@ -890,6 +894,20 @@ static void DisplayScores(SDL_Surface *s)
 		temporary[kPingWidth + 1] = '\0';
 		DisplayText(XJitter + WPing - DisplayTextWidth(temporary), Y, temporary, color2.r, color2.g, color2.b);
 
+		if (player->net_oos)
+		{
+			color2 = Red;
+			strncpy(temporary, "Out of Sync", 256);
+		}
+		else
+		{
+			color2 = Green;
+			strncpy(temporary, "In Sync", 256);
+		}
+
+		temporary[kSyncWidth + 1] = '\0';
+		DisplayText(XSync + WSync - DisplayTextWidth(temporary), Y, temporary, color2.r, color2.g, color2.b);
+
 		sprintf(temporary, "%i", stats.errors);
 		temporary[kPingWidth + 1] = '\0';
 		if (stats.errors > 0) 
@@ -923,7 +941,7 @@ static void DisplayNetLoadingScreen(SDL_Surface* s)
 	DisplayTextStyle = Font.Style;
 
 	int H = Font.LineSpacing * (dynamic_world->player_count + 1);
-	int W = WName + WStatus;
+	int W = WName + WStatus + CWidth;
 
 	int X = (s->w - W) / 2;
 	int Y = std::max((s->h - H) / 2, Font.LineSpacing * NumScreenMessages) + Font.LineSpacing;
