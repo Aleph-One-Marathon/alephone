@@ -29,3 +29,4 @@ finish-args:
   - --socket=pulseaudio
   - --share=network
   - --filesystem=home
+  - --filesystem=/tmp
