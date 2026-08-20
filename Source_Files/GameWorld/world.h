@@ -118,9 +118,9 @@ struct long_vector2d
 	template <class S> constexpr auto& operator*=(S s) { return (*this = {int32(s*i), int32(s*j)}); }
 };
 
-struct long_vector3d
+struct long_vector3d : public long_vector2d
 {
-	int32 i, j, k;
+	int32 k;
 	constexpr auto& operator+=(long_vector3d b) { i += b.i; j += b.j; k += b.k; return *this; }
 	constexpr auto& operator-=(long_vector3d b) { i -= b.i; j -= b.j; k -= b.k; return *this; }
 	template <class S> constexpr auto& operator*=(S s) { return (*this = {int32(s*i), int32(s*j), int32(s*k)}); }
@@ -134,9 +134,9 @@ struct long_point2d
 	constexpr auto& operator-=(long_vector2d v) { x -= v.i; y -= v.j; return *this; }
 };
 
-struct long_point3d
+struct long_point3d : public long_point2d
 {
-	int32 x, y, z;
+	int32 z;
 	constexpr auto& operator+=(long_vector3d v) { x += v.i; y += v.j; z += v.k; return *this; }
 	constexpr auto& operator-=(long_vector3d v) { x -= v.i; y -= v.j; z -= v.k; return *this; }
 	constexpr auto xy() const { return long_point2d{x, y}; }
@@ -148,22 +148,22 @@ struct world_vector2d
 	/*implicit*/ constexpr operator long_vector2d() const { return {i, j}; }
 };
 
-struct world_vector3d
+struct world_vector3d : public world_vector2d
 {
-	world_distance i, j, k;
+	world_distance k;
 	/*implicit*/ constexpr operator long_vector3d() const { return {i, j, k}; }
 	constexpr auto ij() const { return world_vector2d{i, j}; }
 };
-
+ 
 struct world_point2d
 {
 	world_distance x, y;
 	/*implicit*/ constexpr operator long_point2d() const { return {x, y}; }
 };
 
-struct world_point3d
+struct world_point3d : public world_point2d
 {
-	world_distance x, y, z;
+	world_distance z;
 	/*implicit*/ constexpr operator long_point3d() const { return {x, y, z}; }
 	constexpr auto xy() const { return world_point2d{x, y}; }
 };
@@ -171,6 +171,8 @@ struct world_point3d
 // world_ operands promote
 constexpr bool operator==(long_vector2d a, long_vector2d b) { return a.i == b.i && a.j == b.j; }
 constexpr bool operator==(long_vector3d a, long_vector3d b) { return a.i == b.i && a.j == b.j && a.k == b.k; }
+constexpr bool operator==(world_vector3d a, world_vector3d b) { return a.i == b.i && a.j == b.j && a.k == b.k; }
+constexpr bool operator==(world_point2d a, world_point2d b) { return a.x == b.x && a.y == b.y; }
 constexpr bool operator==(long_point2d a, long_point2d b) { return a.x == b.x && a.y == b.y; }
 constexpr bool operator==(long_point3d a, long_point3d b) { return a.x == b.x && a.y == b.y && a.z == b.z; }
 constexpr bool operator!=(long_vector2d a, long_vector2d b) { return !(a == b); }

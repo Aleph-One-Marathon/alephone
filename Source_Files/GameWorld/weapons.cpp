@@ -2016,7 +2016,7 @@ static void calculate_weapon_origin_and_vector(
 	}
 
 	/* Handle the left/right translation */
-	translate_point2d((world_point2d *) origin, dx_translation_amount, 
+	translate_point2d(origin, dx_translation_amount, 
 		NORMALIZE_ANGLE(player->facing+QUARTER_CIRCLE));
 
 	/* Get a second point to build up a vector.. */
@@ -2031,8 +2031,7 @@ static void calculate_weapon_origin_and_vector(
 	_vector->z= destination.z-origin->z;
 
 	/* Now calculate the origin polygon index */
-	*origin_polygon= find_new_object_polygon((world_point2d *) &player->location,
-		(world_point2d *)origin, object->polygon);
+	*origin_polygon= find_new_object_polygon(&player->location, origin, object->polygon);
 		
 	/* They blew the pooch- this is expensive, therefore let's hope it doesn't happen often */
 	if(*origin_polygon==NONE)
@@ -2044,8 +2043,7 @@ static void calculate_weapon_origin_and_vector(
 
 		while(source_polygon != NONE)
 		{
-			line_crossed= find_line_crossed_leaving_polygon(source_polygon, (world_point2d *)
-				&player->location, (world_point2d *) origin);
+			line_crossed= find_line_crossed_leaving_polygon(source_polygon, &player->location, origin);
 			source_polygon= find_adjacent_polygon(source_polygon, line_crossed);
 		}
 
@@ -2055,15 +2053,14 @@ static void calculate_weapon_origin_and_vector(
 			&player->location, origin, origin);
 		
 		/* Now guess the distance.. */
-		distance= distance2d((world_point2d *)&player->location, (world_point2d *) origin);
+		distance= distance2d(&player->location, origin);
 		distance-= 50; /* Fudge factor */
 						
 		*origin= player->location;
-		translate_point2d((world_point2d *) origin, distance, 
+		translate_point2d(origin, distance, 
 			NORMALIZE_ANGLE(player->facing+QUARTER_CIRCLE));
 
-		*origin_polygon= find_new_object_polygon((world_point2d *) &player->location,
-			(world_point2d *)origin, object->polygon);
+		*origin_polygon= find_new_object_polygon(&player->location, origin, object->polygon);
 		assert(*origin_polygon != NONE);
 	}
 }

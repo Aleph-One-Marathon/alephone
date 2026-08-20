@@ -342,7 +342,7 @@ short get_network_compass_state(
 	short player_index)
 {
 	short state= _network_compass_all_off;
-	world_point2d *beacon= (world_point2d *) NULL;
+	world_point2d *beacon= nullptr;
 
         if (use_lua_compass [player_index])
         {
@@ -377,7 +377,7 @@ short get_network_compass_state(
                                 {
                                         if (dynamic_world->game_player_index!=NONE)
                                         {
-                                                beacon= (world_point2d *) &get_player_data(dynamic_world->game_player_index)->location;
+                                                beacon= &get_player_data(dynamic_world->game_player_index)->location;
                                         }
                                 }
                                 break;
@@ -391,7 +391,7 @@ short get_network_compass_state(
                                 {
                                         if (dynamic_world->game_player_index!=NONE)
                                         {
-                                                beacon= (world_point2d *) &get_player_data(dynamic_world->game_player_index)->location;
+                                                beacon= &get_player_data(dynamic_world->game_player_index)->location;
                                         }
                                 }
                                 break;
@@ -405,7 +405,7 @@ short get_network_compass_state(
                                 {
                                         if (dynamic_world->game_player_index!=NONE)
                                         {
-                                                beacon= (world_point2d *) &get_player_data(dynamic_world->game_player_index)->location;
+                                                beacon= &get_player_data(dynamic_world->game_player_index)->location;
                                         }
                                 }
                                 break;
@@ -415,7 +415,7 @@ short get_network_compass_state(
 	if (beacon)
 	{        
 		struct player_data *player= get_player_data(player_index);
-		struct world_point2d *origin= (world_point2d *) &player->location;
+		struct world_point2d *origin= &player->location;
 		angle theta= NORMALIZE_ANGLE(get_object_data(player->object_index)->facing-arctangent(origin->x-beacon->x, origin->y-beacon->y));
 		
 		if (theta>FULL_CIRCLE-NETWORK_COMPASS_SLOP || theta<QUARTER_CIRCLE+NETWORK_COMPASS_SLOP) state|= _network_compass_se;

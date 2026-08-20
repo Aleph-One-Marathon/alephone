@@ -252,7 +252,7 @@ short flood_depth(
 /* when looking for a random path, always choose a random node.  if bias is not NULL, then try
 	and choose a destination in that direction */
 void choose_random_flood_node(
-	world_vector2d *bias)
+	const world_vector2d *bias)
 {
 	world_point2d origin;
 	

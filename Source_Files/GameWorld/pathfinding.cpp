@@ -127,7 +127,7 @@ void reset_paths(
 short new_path(
 	world_point2d *source_point,
 	short source_polygon_index,
-	world_point2d *destination_point,
+	const world_point2d *destination_point,
 	short destination_polygon_index,
 	world_distance minimum_separation,
 	cost_proc_ptr cost,
@@ -198,8 +198,16 @@ short new_path(
 			{
 				polygon_index= flood_map(NONE, INT32_MAX, cost, _breadth_first, data);
 			}
-			
-			choose_random_flood_node((world_vector2d *)destination_point); /* choose a random destination */
+
+			if (destination_point)
+			{
+				world_vector2d bias{destination_point->x, destination_point->y};
+				choose_random_flood_node(&bias); /* choose a random destination */
+			}
+			else
+			{
+				choose_random_flood_node(nullptr);
+			}
 			reached_destination= false; /* we didn’t even have one */
 		}
 

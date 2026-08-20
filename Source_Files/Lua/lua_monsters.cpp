@@ -783,7 +783,7 @@ int Lua_Monster_Move_By_Path(lua_State *L)
 
 	destination = get_polygon_data(polygon_index)->center;
 	
-	monster->path = new_path((world_point2d *) &object->location, object->polygon, &destination, polygon_index, 3 * definition->radius, monster_pathfinding_cost_function, &path);
+	monster->path = new_path(&object->location, object->polygon, &destination, polygon_index, 3 * definition->radius, monster_pathfinding_cost_function, &path);
 	if (monster->path == NONE)
 	{
 		if (monster->action != _monster_is_being_hit || MONSTER_IS_DYING(monster))

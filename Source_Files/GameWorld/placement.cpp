@@ -392,8 +392,8 @@ short get_random_player_starting_location_and_facing(
 			(starting_location_index+offset) % maximum_starting_locations, &current_location);
 
 		/* Determine the distances to the nearest monster and player */
-		point_is_player_visible(max_player_index, current_location.polygon_index, (world_point2d *)&current_location.p, &player_distance);
-		point_is_monster_visible(current_location.polygon_index, (world_point2d *)&current_location.p, &monster_distance);
+		point_is_player_visible(max_player_index, current_location.polygon_index, &current_location.p, &player_distance);
+		point_is_monster_visible(current_location.polygon_index, &current_location.p, &monster_distance);
 		
 		if (monster_distance != 0 && player_distance != 0)
 		{
@@ -522,11 +522,11 @@ static void add_objects(
 		
 		if (need_random_location)
 		{
-			if (choose_invisible_random_point(&location.polygon_index, (world_point2d *)&location.p, object_class, is_initial_drop))
+			if (choose_invisible_random_point(&location.polygon_index, &location.p, object_class, is_initial_drop))
 			{
 				if (object_class == _object_is_monster) 
 				{
-					location.yaw= pick_random_facing(location.polygon_index, (world_point2d *)&location.p);
+					location.yaw= pick_random_facing(location.polygon_index, &location.p);
 				}
 			}
 			else
@@ -586,7 +586,7 @@ static bool pick_random_initial_location_of_type(
 			location->yaw= saved_object->facing;
 			location->flags= saved_object->flags;
 
-			if (polygon_is_valid_for_object_drop((world_point2d *)&location->p, location->polygon_index, actual_type, true, false))
+			if (polygon_is_valid_for_object_drop(&location->p, location->polygon_index, actual_type, true, false))
 			{
 				found_location = true;
 				break;

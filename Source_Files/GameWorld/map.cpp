@@ -662,7 +662,7 @@ bool valid_point2d(
 bool valid_point3d(
 	world_point3d *p)
 {
-	short polygon_index= world_point_to_polygon_index((world_point2d *)p);
+	short polygon_index= world_point_to_polygon_index(p);
 	bool valid= false;
 	
 	if (polygon_index!=NONE)
@@ -965,11 +965,14 @@ bool translate_map_object(
 		new_polygon_index= old_polygon_index;
 		do
 		{
-			line_index= find_line_crossed_leaving_polygon(new_polygon_index, (world_point2d *)&object->location, (world_point2d *)new_location);
+			line_index= find_line_crossed_leaving_polygon(new_polygon_index, &object->location, new_location);
 			if (line_index!=NONE) new_polygon_index= find_adjacent_polygon(new_polygon_index, line_index);
 			if (new_polygon_index==NONE)
 			{
-				*(world_point2d *)new_location= get_polygon_data(old_polygon_index)->center;
+				auto center = get_polygon_data(old_polygon_index)->center;
+				new_location->x = center.x;
+				new_location->y = center.y;
+
 				new_polygon_index= old_polygon_index;
 				changed_polygons= true; /* tell the caller we switched polygons, even though we didn’t */
 				break;
@@ -1828,7 +1831,7 @@ bool keep_line_segment_out_of_walls(
 							case _first_line_pass:
 								/* first pass: set the flag and do the clip */
 								line_collision_bitmap|= 1<<i;
-								closest_point_on_line(&zone->e0, &zone->e1, (world_point2d*)p1, (world_point2d*)p1);
+								closest_point_on_line(&zone->e0, &zone->e1, p1, p1);
 								clipped= true;
 								break;
 							
@@ -1836,7 +1839,7 @@ bool keep_line_segment_out_of_walls(
 								if (line_collision_bitmap&(1<<i))
 								{
 									/* we hit this line before, change states (we can only hit one thing we hit before) */
-									closest_point_on_line(&zone->e0, &zone->e1, (world_point2d*)p1, (world_point2d*)p1);
+									closest_point_on_line(&zone->e0, &zone->e1, p1, p1);
 									state= _second_line_pass_made_contact;
 								}
 								else
@@ -1909,7 +1912,7 @@ bool keep_line_segment_out_of_walls(
 					endpoint->lowest_adjacent_ceiling_height-p1->z<height ||
 					ENDPOINT_IS_SOLID(endpoint))
 				{
-					closest_point_on_circle(&endpoint->vertex, MINIMUM_SEPARATION_FROM_WALL, (world_point2d*)p1, (world_point2d*)p1);
+					closest_point_on_circle(&endpoint->vertex, MINIMUM_SEPARATION_FROM_WALL, p1, p1);
 					clipped= true;
 				}
 				else
@@ -2162,9 +2165,9 @@ bool point_is_player_visible(
 		struct monster_data *monster= get_monster_data(player->monster_index);
 		struct object_data *object= get_object_data(monster->object_index);
 
-		if (!line_is_obstructed(object->polygon, (world_point2d*)&object->location, polygon_index, p))
+		if (!line_is_obstructed(object->polygon, &object->location, polygon_index, p))
 		{
-			int32 this_distance= guess_distance2d((world_point2d*)&object->location, p);
+			int32 this_distance= guess_distance2d(&object->location, p);
 			
 			if (*distance>this_distance) *distance= this_distance;
 			visible= true;
@@ -2194,7 +2197,7 @@ bool point_is_monster_visible(
 		struct object_data *object= get_object_data(IntersectedObjects[i]);
 		int32 this_distance;
 		
-		this_distance = guess_distance2d((world_point2d*)&object->location, p);
+		this_distance = guess_distance2d(&object->location, p);
 		if (*distance>this_distance) *distance= this_distance;
 	}
 
@@ -2217,11 +2220,11 @@ bool line_is_obstructed(
 		bool last_line = false;
 		if (film_profile.line_is_obstructed_fix)
 		{
-			line_index = find_line_crossed_leaving_polygon(polygon_index, (world_point2d *)p1, (world_point2d *)p2);
+			line_index = find_line_crossed_leaving_polygon(polygon_index, p1, p2);
 		}
 		else
 		{
-			line_index= _find_line_crossed_leaving_polygon(polygon_index, (world_point2d *)p1, (world_point2d *)p2, &last_line);
+			line_index= _find_line_crossed_leaving_polygon(polygon_index, p1, p2, &last_line);
 		}
 
 		if (line_index!=NONE)
@@ -2346,11 +2349,10 @@ void random_point_on_circle(
 	world_distance adjusted_floor_height, adjusted_ceiling_height, supporting_polygon_index; /* not used */
 	
 	*random_point= *center;
-	translate_point2d((world_point2d *)random_point, radius, global_random()&(NUMBER_OF_ANGLES-1));
+	translate_point2d(random_point, radius, global_random()&(NUMBER_OF_ANGLES-1));
 	keep_line_segment_out_of_walls(center_polygon_index, center, random_point, 0, WORLD_ONE/12,
 		&adjusted_floor_height, &adjusted_ceiling_height, &supporting_polygon_index);
-	*random_polygon_index= find_new_object_polygon((world_point2d *)center,
-		(world_point2d *)random_point, center_polygon_index);
+	*random_polygon_index= find_new_object_polygon(center, random_point, center_polygon_index);
 	if (*random_polygon_index!=NONE)
 	{
 		struct polygon_data *center_polygon= get_polygon_data(center_polygon_index);
@@ -2507,7 +2509,7 @@ void play_polygon_sound(
 	struct polygon_data *polygon= get_polygon_data(polygon_index);
 	world_location3d source;
 	
-	find_center_of_polygon(polygon_index, (world_point2d *)&source.point);
+	find_center_of_polygon(polygon_index, &source.point);
 	source.point.z= polygon->floor_height;
 	source.polygon_index= polygon_index;
 	
@@ -2561,8 +2563,8 @@ uint16 _sound_obstructed_proc(
 	
 	if (listener)
 	{
-		if (line_is_obstructed(source->polygon_index, (world_point2d *)&source->point,
-			listener->polygon_index, (world_point2d *)&listener->point, true))
+		if (line_is_obstructed(source->polygon_index, &source->point,
+			listener->polygon_index, &listener->point, true))
 		{
 			flags|= _sound_was_obstructed;
 		}

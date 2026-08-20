@@ -1453,7 +1453,7 @@ void damage_monsters_in_radius(
                         // damage the aggressor last, so tag suicides are handled correctly
                         aggressor = object;
                 } else {
-                        world_distance distance= distance2d((world_point2d*)epicenter, (world_point2d*)&object->location);
+                        world_distance distance= distance2d(epicenter, &object->location);
                         world_distance monster_radius, monster_height;
                         
                         get_monster_dimensions(object->permutation, &monster_radius, &monster_height);
@@ -1464,7 +1464,7 @@ void damage_monsters_in_radius(
                         {
                                 if (epicenter->z+radius-distance>object->location.z && epicenter->z-radius+distance<object->location.z+monster_height)
                                 {
-                                        if (!line_is_obstructed(epicenter_polygon_index, (world_point2d*)epicenter, object->polygon, (world_point2d*)&object->location))
+                                        if (!line_is_obstructed(epicenter_polygon_index, epicenter, object->polygon, &object->location))
                                         {
                                                 damage_monster(object->permutation, aggressor_index, aggressor_type, epicenter, damage, projectile_index);
                                         }
@@ -1476,7 +1476,7 @@ void damage_monsters_in_radius(
         // damage the aggressor
         if (film_profile.damage_aggressor_last_in_tag && aggressor != NULL) 
 	{
-                world_distance distance= distance2d((world_point2d*)epicenter, (world_point2d*)&aggressor->location);
+                world_distance distance= distance2d(epicenter, &aggressor->location);
                 world_distance monster_radius, monster_height;
                 
                 get_monster_dimensions(aggressor->permutation, &monster_radius, &monster_height);
@@ -1484,7 +1484,7 @@ void damage_monsters_in_radius(
                 {
                         if (epicenter->z+radius-distance>aggressor->location.z && epicenter->z-radius+distance<aggressor->location.z+monster_height)
                         {
-                                if (!line_is_obstructed(epicenter_polygon_index, (world_point2d*)epicenter, aggressor->polygon, (world_point2d*)&aggressor->location))
+                                if (!line_is_obstructed(epicenter_polygon_index, epicenter, aggressor->polygon, &aggressor->location))
                                 {
                                         damage_monster(aggressor->permutation, aggressor_index, aggressor_type, epicenter, damage, projectile_index);
 				}
@@ -1731,7 +1731,7 @@ bool legal_polygon_height_change(
 			{
 				if (damage)
 				{
-					damage_monster(object->permutation, NONE, NONE, (world_point3d *) NULL, damage, NONE);
+					damage_monster(object->permutation, NONE, NONE, NULL, damage, NONE);
 					play_object_sound(object_index, Sound_Crunched());
 				}
 				legal_change= false;
@@ -1863,7 +1863,7 @@ static void update_monster_vertical_physics_model(
 		{
 			struct damage_definition *damage= get_media_damage(polygon->media_index, FIXED_ONE);
 			
-			if (damage) damage_monster(monster_index, NONE, NONE, (world_point3d *) NULL, damage, NONE);
+			if (damage) damage_monster(monster_index, NONE, NONE, NULL, damage, NONE);
 		}
 	}
 	desired_height= (monster->desired_height==NONE||MONSTER_IS_DYING(monster)) ? polygon->floor_height : monster->desired_height;
@@ -1991,7 +1991,7 @@ static void update_monster_physics_model(
 		short supporting_polygon_index;
 
 		/* move the monster */		
-		translate_point2d((world_point2d*)&new_location, monster->external_velocity, negative_facing);
+		translate_point2d(&new_location, monster->external_velocity, negative_facing);
 		keep_line_segment_out_of_walls(object->polygon, &object->location, &new_location,
 			0, definition->height, &adjusted_floor_height, &adjusted_ceiling_height, &supporting_polygon_index);
 		if (legal_monster_move(monster_index, negative_facing, &new_location)==NONE)
@@ -2079,7 +2079,7 @@ static void generate_new_path_for_monster(
 	struct monster_pathfinding_data data;
 	short destination_polygon_index;
 	world_point2d *destination;
-	world_vector2d bias;
+	world_point2d bias;
 
 	/* delete this monster’s old path, if one exists, and clear the need path flag */
 	if (monster->path!=NONE) delete_path(monster->path), monster->path= NONE;
@@ -2102,15 +2102,15 @@ static void generate_new_path_for_monster(
 			{
 				// LP changed: unnecessary to interrupt for this
 				// dprintf("%p", monster);
-				destination= (world_point2d *) &bias;
-				bias.i= object->location.x - target_object->location.x;
-				bias.j= object->location.y - target_object->location.y;
+				destination= &bias;
+				bias.x= object->location.x - target_object->location.x;
+				bias.y= object->location.y - target_object->location.y;
 				destination_polygon_index= NONE;
 			}
 			else
 			{
 				/* if we still have lock, just build a new path and keep charging */
-				destination= (world_point2d *) &target_object->location;
+				destination= &target_object->location;
 				destination_polygon_index= MONSTER_IS_PLAYER(target) ?
 					get_polygon_index_supporting_player(monster->target_index) :
 					target_object->polygon;
@@ -2131,7 +2131,7 @@ static void generate_new_path_for_monster(
 			}
 			else
 			{	
-				destination= (world_point2d *) NULL;
+				destination= nullptr;
 			}
 			break;
 		
@@ -2146,7 +2146,7 @@ static void generate_new_path_for_monster(
 	data.monster= monster;
 	data.cross_zone_boundaries= destination_polygon_index==NONE ? false : true;
 
-	monster->path= new_path((world_point2d *)&object->location, object->polygon, destination,
+	monster->path= new_path(&object->location, object->polygon, destination,
 		destination_polygon_index, 3*definition->radius, monster_pathfinding_cost_function, &data);
 	if (monster->path==NONE)
 	{
@@ -2397,7 +2397,7 @@ static bool clear_line_of_sight(
 			
 			do
 			{
-				line_index= find_line_crossed_leaving_polygon(polygon_index, (world_point2d *)origin, (world_point2d *)destination);
+				line_index= find_line_crossed_leaving_polygon(polygon_index, origin, destination);
 				if (line_index!=NONE)
 				{
 					if (LINE_IS_TRANSPARENT(get_line_data(line_index)))
@@ -2740,7 +2740,7 @@ static bool translate_monster(
 	bool legal_move= false;
 
 	new_location= object->location;
-	translate_point2d((world_point2d *)&new_location, distance, object->facing);
+	translate_point2d(&new_location, distance, object->facing);
 
 	/* find out where we’re going and see if we could actually move there */
 	if ((obstacle_index= legal_monster_move(monster_index, object->facing, &new_location))==NONE)
@@ -2919,7 +2919,7 @@ static bool attempt_evasive_manouvers(
 	translate_point2d(&destination, EVASIVE_MANOUVER_DISTANCE, new_facing);
 	do
 	{
-		short line_index= find_line_crossed_leaving_polygon(polygon_index, (world_point2d *)&object->location, &destination);
+		short line_index= find_line_crossed_leaving_polygon(polygon_index, &object->location, &destination);
 		
 		if (line_index==NONE)
 		{
@@ -3009,7 +3009,7 @@ void advance_monster_path(
 	{
 		/* point ourselves at this new point in the path */
 		object->facing= arctangent(path_goal.x-object->location.x, path_goal.y-object->location.y);
-		monster->path_segment_length= distance2d(&path_goal, (world_point2d *)&object->location);
+		monster->path_segment_length= distance2d(&path_goal, &object->location);
 	}
 }
 
@@ -3027,7 +3027,7 @@ static bool try_monster_attack(
 	{
 		struct object_data *target_object= get_object_data(get_monster_data(monster->target_index)->object_index);
 		world_point3d origin= object->location, destination= target_object->location;
-		world_distance range= distance2d((world_point2d *)&origin, (world_point2d *)&destination);
+		world_distance range= distance2d(&origin, &destination);
 		short polygon_index;
 		world_point3d _vector;
 	
@@ -3080,7 +3080,7 @@ static bool try_monster_attack(
 					definition->melee_attack.type, monster_index, monster->type, &obstruction_index))
 				{
 					if ((obstruction_index!=NONE && get_monster_attitude(monster_index, obstruction_index)==_hostile) ||
-						!line_is_obstructed(object->polygon, (world_point2d *) &object->location, target_object->polygon, (world_point2d *) &target_object->location))
+						!line_is_obstructed(object->polygon, &object->location, target_object->polygon, &target_object->location))
 					{
 						repetitions= definition->melee_attack.repetitions;
 					}
@@ -3098,7 +3098,7 @@ static bool try_monster_attack(
 						definition->ranged_attack.type, monster_index, monster->type, &obstruction_index))
 					{
 						if ((obstruction_index!=NONE && get_monster_attitude(monster_index, obstruction_index)==_hostile) ||
-							(obstruction_index==NONE && !line_is_obstructed(object->polygon, (world_point2d *) &object->location, target_object->polygon, (world_point2d *) &target_object->location)))
+							(obstruction_index==NONE && !line_is_obstructed(object->polygon, &object->location, target_object->polygon, &target_object->location)))
 						{
 							repetitions= definition->ranged_attack.repetitions;
 						}
@@ -3167,13 +3167,13 @@ static void execute_monster_attack(
 		world_point3d origin= object->location;
 		world_point3d _vector;
 		
-		projectile_polygon_index= position_monster_projectile(monster_index, monster->target_index, attack, &origin, (world_point3d *) NULL, &_vector, object->facing);
+		projectile_polygon_index= position_monster_projectile(monster_index, monster->target_index, attack, &origin, NULL, &_vector, object->facing);
 		if (projectile_polygon_index != NONE)
 			new_projectile(&origin, projectile_polygon_index, &_vector, attack->error, attack->type, monster_index, monster->type, monster->target_index, FIXED_ONE);
 		if (definition->flags&_monster_fires_symmetrically)
 		{
 			attack->dy= -attack->dy;
-			projectile_polygon_index= position_monster_projectile(monster_index, monster->target_index, attack, &origin, (world_point3d *) NULL, &_vector, object->facing);
+			projectile_polygon_index= position_monster_projectile(monster_index, monster->target_index, attack, &origin, NULL, &_vector, object->facing);
 			if (projectile_polygon_index != NONE) 
 				new_projectile(&origin, projectile_polygon_index, &_vector, attack->error, attack->type, monster_index, monster->type, monster->target_index, FIXED_ONE);
 			attack->dy= -attack->dy;
@@ -3316,7 +3316,7 @@ static short find_obstructing_terrain_feature(
 	short polygon_index, feature_type;
 	world_point2d p1;
 
-	ray_to_line_segment((world_point2d *)&object->location, &p1, object->facing, MONSTER_PLATFORM_BUFFER_DISTANCE+definition->radius);
+	ray_to_line_segment(&object->location, &p1, object->facing, MONSTER_PLATFORM_BUFFER_DISTANCE+definition->radius);
 	
 	feature_type= NONE;
 	*feature_index= NONE;
@@ -3324,7 +3324,7 @@ static short find_obstructing_terrain_feature(
 	do
 	{
 		struct polygon_data *polygon= get_polygon_data(polygon_index);
-		short line_index= find_line_crossed_leaving_polygon(polygon_index, (world_point2d *)&object->location, &p1);
+		short line_index= find_line_crossed_leaving_polygon(polygon_index, &object->location, &p1);
 		
 		switch (polygon->type)
 		{
@@ -3458,8 +3458,8 @@ static short position_monster_projectile(
 	/* adjust origin */
 	*origin= aggressor_object->location;
 	origin->z+= attack->dz;
-	translate_point2d((world_point2d *)origin, attack->dy, NORMALIZE_ANGLE(theta+QUARTER_CIRCLE));
-	translate_point2d((world_point2d *)origin, attack->dx, theta);
+	translate_point2d(origin, attack->dy, NORMALIZE_ANGLE(theta+QUARTER_CIRCLE));
+	translate_point2d(origin, attack->dx, theta);
 	
 	if (destination)
 	{
@@ -3486,8 +3486,8 @@ static short position_monster_projectile(
 	}
 	
 	/* return polygon_index of the new origin point */
-	return find_new_object_polygon((world_point2d *)&aggressor_object->location,
-		(world_point2d *)origin, aggressor_object->polygon);
+	return find_new_object_polygon(&aggressor_object->location,
+		origin, aggressor_object->polygon);
 }
 
 short nearest_goal_polygon_index(

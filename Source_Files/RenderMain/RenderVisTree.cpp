@@ -154,7 +154,7 @@ void RenderVisTreeClass::build_render_tree()
 				
 				/* transform all visited endpoints */
 				endpoint->transformed= endpoint->vertex;
-				transform_overflow_point2d(&endpoint->transformed, (world_point2d *) &view->origin, view->yaw, &endpoint->flags);
+				transform_overflow_point2d(&endpoint->transformed, &view->origin, view->yaw, &endpoint->flags);
 
 				/* calculate an outbound vector to this endpoint */
 				// LP: changed to do long distance correctly.	
@@ -204,7 +204,7 @@ void RenderVisTreeClass::cast_render_ray(
 	{
 		short clipping_endpoint_index= endpoint_index;
 		short clipping_line_index;
-		uint16 clip_flags= next_polygon_along_line(&polygon_index, (world_point2d *) &view->origin, _vector, &clipping_endpoint_index, &clipping_line_index, bias);
+		uint16 clip_flags= next_polygon_along_line(&polygon_index, &view->origin, _vector, &clipping_endpoint_index, &clipping_line_index, bias);
 		
 		if (polygon_index==NONE)
 		{
@@ -659,14 +659,23 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 		so we have to do it ourselves */
 	// LP change: making the operation long-distance friendly
 	uint16 p0_flags = 0, p1_flags = 0;
-	transform_overflow_point2d(&p0_orig, (world_point2d *) &view->origin, view->yaw, &p0_flags);
-	transform_overflow_point2d(&p1_orig, (world_point2d *) &view->origin, view->yaw, &p1_flags);
+	transform_overflow_point2d(&p0_orig, &view->origin, view->yaw, &p0_flags);
+	transform_overflow_point2d(&p1_orig, &view->origin, view->yaw, &p1_flags);
 	
+#if old
 	// Defining long versions here and copying over
 	long_point2d p0, p1;
 	long_vector2d *pv0ptr = (long_vector2d*)(&p0), *pv1ptr = (long_vector2d*)(&p1);
 	overflow_short_to_long_2d(p0_orig,p0_flags,*pv0ptr);
 	overflow_short_to_long_2d(p1_orig,p1_flags,*pv1ptr);
+#endif
+
+	long_vector2d v0, v1;
+	overflow_short_to_long_2d(p0_orig, p0_flags, v0);
+	overflow_short_to_long_2d(p1_orig, p1_flags, v1);
+
+	long_point2d p0{v0.i, v0.j};
+	long_point2d p1{v1.i, v1.j};
 	
 	clip_flags&= _clip_up|_clip_down;	
 	assert(clip_flags&(_clip_up|_clip_down));
