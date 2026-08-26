@@ -2307,6 +2307,50 @@ static bool check_reload(
 	return reloaded_weapon;
 }
 
+bool reload_player_weapon_trigger(
+    short player_index,
+    short which_trigger)
+{
+	struct player_data *player= get_player_data(player_index);
+    struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
+    struct weapon_definition *weapon_def= get_current_weapon_definition(player_index);
+	struct trigger_definition *trigger_def= get_trigger_definition(player_index, player_weapons->current_weapon, which_trigger);
+    struct trigger_data *trigger= get_player_trigger_data(player_index, which_trigger);
+
+    if(!player_has_valid_weapon(player_index))
+        return false;
+
+    if(weapon_def->weapon_class == _melee_class) {
+		trigger->rounds_loaded = 1;
+        return false;
+	}
+
+	// this is only for the plasma pistol I think...
+	if(weapon_def->weapon_class == _dual_function_class && weapon_def->flags & _weapon_triggers_share_ammo) {
+		which_trigger = _primary_weapon;
+		trigger = get_player_trigger_data(player_index, which_trigger);
+		trigger_def = get_trigger_definition(player_index,player_weapons->current_weapon,which_trigger);
+	}
+
+	if(trigger->rounds_loaded == trigger_def->rounds_per_magazine)
+		return false;
+
+    if(trigger_def->ammunition_type != NONE &&
+        player->items[trigger_def->ammunition_type] <= 0)
+        return false;
+
+    if(trigger->state == _weapon_idle && trigger->rounds_loaded > 0)
+    {
+        trigger->rounds_loaded = 0;
+    }
+
+    if(!reload_weapon(player_index, which_trigger))
+        return false;
+
+    mark_weapon_display_as_dirty();
+    return true;
+}
+
 static void put_rounds_into_weapon(
 	short player_index,
 	short which_weapon,

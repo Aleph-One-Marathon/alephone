@@ -170,6 +170,9 @@ bool get_weapon_display_information(short *count,
 /* When the player runs over an item, check for reloads, etc. */
 void process_new_item_for_reloading(short player_index, short item_type);
 
+/* If possible empty current trigger and trigger reload. */
+bool reload_player_weapon_trigger(short player_index, short which_trigger);
+
 /* Update the given player's weapons */
 void update_player_weapons(short player_index, uint32 action_flags);
 
