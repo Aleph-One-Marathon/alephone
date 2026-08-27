@@ -401,7 +401,7 @@ static void a1_swipe_nearby_items(
 				object= get_object_data(next_object);
 				if (GET_OBJECT_OWNER(object)==_object_is_item && !OBJECT_IS_INVISIBLE(object)) 
 				{
-					if (guess_distance2d((world_point2d *) &player->location, (world_point2d *) &object->location)<=MAXIMUM_ARM_REACH)
+					if (guess_distance2d(&player->location, &object->location)<=MAXIMUM_ARM_REACH)
 					{
 						world_distance radius, height;
 						
@@ -461,7 +461,7 @@ static void m2_swipe_nearby_items(
 				object= get_object_data(next_object);
 				if (GET_OBJECT_OWNER(object)==_object_is_item && !OBJECT_IS_INVISIBLE(object)) 
 				{
-					if (guess_distance2d((world_point2d *) &player->location, (world_point2d *) &object->location)<=MAXIMUM_ARM_REACH)
+					if (guess_distance2d(&player->location, &object->location)<=MAXIMUM_ARM_REACH)
 					{
 						world_distance radius, height;
 						
@@ -767,8 +767,8 @@ static bool test_item_retrieval(
 
 	do
 	{
-		short line_index= find_line_crossed_leaving_polygon(polygon_index, (world_point2d *) location1,
-			(world_point2d *) location2);
+		short line_index= find_line_crossed_leaving_polygon(polygon_index, location1,
+			location2);
 		
 		if (line_index!=NONE)
 		{

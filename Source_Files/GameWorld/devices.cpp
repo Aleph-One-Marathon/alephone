@@ -568,14 +568,14 @@ short find_action_key_target(
 	*target_type = _target_is_unrecognized;
 
 	/* Should we use this one, the physics one, or the object one? */
-	ray_to_line_segment((world_point2d *) &player->location, &destination, player->facing, range);
+	ray_to_line_segment(&player->location, &destination, player->facing, range);
 
 //	dprintf("#%d(#%d,#%d) --> (#%d,#%d) (#%d along #%d)", current_polygon, player->location.x, player->location.y, destination.x, destination.y, range, player->facing);
 
 	itemhit= NONE;
 	while (!done)
 	{
-		line_index= find_line_crossed_leaving_polygon(current_polygon, (world_point2d *) &player->location, &destination);
+		line_index= find_line_crossed_leaving_polygon(current_polygon, &player->location, &destination);
 		
 		if (line_index==NONE)
 		{

@@ -192,9 +192,15 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			temp_tfm_origin.y = object->location.y;
 			transformed_origin.z = object->location.z - view->origin.z;
 			uint16 tfm_origin_flags;
-			transform_overflow_point2d(&temp_tfm_origin, (world_point2d *)&view->origin, view->yaw, &tfm_origin_flags);
+			transform_overflow_point2d(&temp_tfm_origin, &view->origin, view->yaw, &tfm_origin_flags);
+#ifdef old
 			long_vector2d *tfm_origin_ptr = (long_vector2d *)(&transformed_origin);
 			overflow_short_to_long_2d(temp_tfm_origin,tfm_origin_flags,*tfm_origin_ptr);
+#endif
+			long_vector2d temp_tfm_origin_v;
+			overflow_short_to_long_2d(temp_tfm_origin, tfm_origin_flags, temp_tfm_origin_v);
+			transformed_origin.x = temp_tfm_origin_v.i;
+			transformed_origin.y = temp_tfm_origin_v.j;
 		}
 		
 		// May do some calculation on spries that are behind the view position,

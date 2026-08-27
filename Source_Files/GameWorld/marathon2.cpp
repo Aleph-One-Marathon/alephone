@@ -129,6 +129,7 @@ Feb 8, 2003 (Woody Zenfell):
 
 #include "Plugins.h"
 #include "SoundsPatch.h"
+#include "shell_options.h"
 
 /* ---------- constants */
 
@@ -786,7 +787,7 @@ void changed_polygon(
 		case _polygon_must_be_explored:
 			/* When a player enters a must be explored, it now becomes a normal polygon, to allow */
 			/*  for must be explored flags to work across cooperative net games */
-			if(player)
+			if (player && !shell_options.editor)
 			{
 				new_polygon->type= _polygon_is_normal;
 			}
@@ -936,7 +937,7 @@ void cause_polygon_damage(
 		damage.random= 0;
 		damage.scale= FIXED_ONE;
 		
-		damage_monster(monster_index, NONE, NONE, (world_point3d *) NULL, &damage, NONE);
+		damage_monster(monster_index, NONE, NONE, NULL, &damage, NONE);
 	}
 }
 

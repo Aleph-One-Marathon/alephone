@@ -1168,8 +1168,8 @@ static void precalculate_polygon_sound_sources(
 					struct endpoint_data *endpoint= get_endpoint_data(polygon->endpoint_indexes[i]);
 					struct line_data *line= get_line_data(polygon->line_indexes[i]);
 					
-					if (guess_distance2d((world_point2d *)&object->location, &endpoint->vertex)<ZERO_VOLUME_DISTANCE ||
-						point_to_line_segment_distance_squared((world_point2d *)&object->location,
+					if (guess_distance2d(&object->location, &endpoint->vertex)<ZERO_VOLUME_DISTANCE ||
+						point_to_line_segment_distance_squared(&object->location,
 							&get_endpoint_data(line->endpoint_indexes[0])->vertex,
 							&get_endpoint_data(line->endpoint_indexes[1])->vertex)<ZERO_VOLUME_DISTANCE)
 					{

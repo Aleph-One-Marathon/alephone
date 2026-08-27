@@ -1155,8 +1155,7 @@ static void shake_view_origin(
 	new_origin.z+= half_delta - ((delta*sine_table[NORMALIZE_ANGLE(((view->tick_count+7*TICKS_PER_SECOND)&~3)*(7*FULL_CIRCLE))])>>TRIG_SHIFT);
 
 	/* only use the new origin if we didn’t cross a polygon boundary */
-	if (find_line_crossed_leaving_polygon(view->origin_polygon_index, (world_point2d *) &view->origin,
-		(world_point2d *) &new_origin)==NONE)
+	if (find_line_crossed_leaving_polygon(view->origin_polygon_index, &view->origin, &new_origin)==NONE)
 	{
 		view->origin= new_origin;
 	}

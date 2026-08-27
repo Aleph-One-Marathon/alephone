@@ -173,7 +173,7 @@ static int CC_PosUpdate(float Damping, float Spring, short x0, short x1, short x
 		{
 			// Floor check
 			find_floor_or_ceiling_intersection(height, &StartPosition, &EndPosition, &intersection);
-			if (find_line_crossed_leaving_polygon(Polygon, (world_point2d *)&StartPosition, (world_point2d *)&intersection) == NONE)
+			if (find_line_crossed_leaving_polygon(Polygon, &StartPosition, &intersection) == NONE)
 			{
 				if (!ThroughWalls) EndPosition = intersection;
 				break;
@@ -184,7 +184,7 @@ static int CC_PosUpdate(float Damping, float Spring, short x0, short x1, short x
 		{
 			// Ceiling check
 			find_floor_or_ceiling_intersection(height, &StartPosition, &EndPosition, &intersection);
-			if (find_line_crossed_leaving_polygon(Polygon, (world_point2d *)&StartPosition, (world_point2d *)&intersection) == NONE)
+			if (find_line_crossed_leaving_polygon(Polygon, &StartPosition, &intersection) == NONE)
 			{
 				if (!ThroughWalls) EndPosition = intersection;
 				break;
@@ -192,7 +192,7 @@ static int CC_PosUpdate(float Damping, float Spring, short x0, short x1, short x
 		}
 		
 		// Which line crossed?
-		line_index= find_line_crossed_leaving_polygon(Polygon, (world_point2d *)&StartPosition, (world_point2d *)&EndPosition);
+		line_index= find_line_crossed_leaving_polygon(Polygon, &StartPosition, &EndPosition);
 		if (line_index!=NONE)
 		{
 			// Where did the crossing happen?
@@ -267,7 +267,7 @@ bool ChaseCam_Update()
 	CC_Position = Ref_Position;
 	translate_point3d(&CC_Position,-ChaseCam.Behind,CC_Yaw,CC_Pitch);
 	CC_Position.z += ChaseCam.Upward;
-	translate_point2d((world_point2d *)&CC_Position,ChaseCam.Rightward,NORMALIZE_ANGLE(CC_Yaw+QUARTER_CIRCLE));
+	translate_point2d(&CC_Position,ChaseCam.Rightward,NORMALIZE_ANGLE(CC_Yaw+QUARTER_CIRCLE));
 	
 	// Can the camera go through walls?
 	// If it can, then go back as far as possible through polygons,

@@ -309,7 +309,7 @@ void motion_sensor_scan(void)
 			if (SLOT_IS_USED(monster)&&(MONSTER_IS_PLAYER(monster)||MONSTER_IS_ACTIVE(monster)))
 			{
 				struct object_data *object= get_object_data(monster->object_index);
-				world_distance distance= guess_distance2d((world_point2d *) &object->location, (world_point2d *) &owner_object->location);
+				world_distance distance= guess_distance2d(&object->location, &owner_object->location);
 				
 				if (distance<MOTION_SENSOR_RANGE && OBJECT_IS_VISIBLE_TO_MOTION_SENSOR(object))
 				{
@@ -415,7 +415,7 @@ void erase_all_entity_blips(void)
 			if (SLOT_IS_USED(monsters+entity->monster_index))
 			{
 				struct object_data *object= get_object_data(get_monster_data(entity->monster_index)->object_index);
-				world_distance distance= guess_distance2d((world_point2d *) &object->location, (world_point2d *) &owner_object->location);
+				world_distance distance= guess_distance2d(&object->location, &owner_object->location);
 				
 				/* verify that we’re still in range (and mark us as being removed if we’re not */
 				if (distance>MOTION_SENSOR_RANGE || !OBJECT_IS_VISIBLE_TO_MOTION_SENSOR(object))
@@ -456,13 +456,10 @@ void erase_all_entity_blips(void)
 				}
 				
 				/* calculate the 2d position on the motion sensor */
-				entity->previous_points[0].x= object->location.x;
-				entity->previous_points[0].y= object->location.y;
-				transform_point2d((world_point2d *)&entity->previous_points[0], (world_point2d *)&owner_object->location, NORMALIZE_ANGLE(owner_object->facing+QUARTER_CIRCLE));
-				//entity->previous_points[0].x>>= MOTION_SENSOR_SCALE;
-				entity->previous_points[0].x /= MOTION_SENSOR_SCALE;
-			//	entity->previous_points[0].y>>= MOTION_SENSOR_SCALE;
-				entity->previous_points[0].y /= MOTION_SENSOR_SCALE;
+				world_point2d p{object->location.x, object->location.y};
+				transform_point2d(&p, &owner_object->location, NORMALIZE_ANGLE(owner_object->facing+QUARTER_CIRCLE));
+				entity->previous_points[0].x = p.x / MOTION_SENSOR_SCALE;
+				entity->previous_points[0].y = p.y / MOTION_SENSOR_SCALE;
 			}
 			else
 			{

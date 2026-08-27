@@ -46,7 +46,7 @@ void allocate_pathfinding_memory(void);
 void reset_paths(void);
 
 short new_path(world_point2d *source_point, short source_polygon_index,
-	world_point2d *destination_point, short destination_polygon_index,
+	const world_point2d *destination_point, short destination_polygon_index,
 	world_distance minimum_separation, cost_proc_ptr cost, void *data);
 bool move_along_path(short path_index, world_point2d *p);
 void delete_path(short path_index);
@@ -61,7 +61,7 @@ short flood_map(short first_polygon_index, int32 maximum_cost, cost_proc_ptr cos
 short reverse_flood_map(void);
 short flood_depth(void);
 
-void choose_random_flood_node(world_vector2d *bias);
+void choose_random_flood_node(const world_vector2d *bias);
 
 #endif
 

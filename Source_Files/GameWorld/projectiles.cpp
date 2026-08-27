@@ -820,7 +820,7 @@ uint16 translate_projectile(
 			intersected_object_count = IntersectedObjects.size();
 		}
 		
- 		line_index= find_line_crossed_leaving_polygon(old_polygon_index, (world_point2d *)old_location, (world_point2d *)new_location);
+ 		line_index= find_line_crossed_leaving_polygon(old_polygon_index, old_location, new_location);
 		if (line_index!=NONE)
 		{
 			/* we crossed a line: if the line is solid, we detonate immediately on the wall,
@@ -971,13 +971,13 @@ uint16 translate_projectile(
 		world_distance best_radius = 0;
 		short best_intersection_object = NONE;
 		
-		distance_traveled= distance2d((world_point2d *)old_location, (world_point2d *)new_location);
+		distance_traveled= distance2d(old_location, new_location);
 		for (size_t i=0;i<intersected_object_count;++i)
 		{
 			// LP change:
 			struct object_data *object= get_object_data(IntersectedObjects[i]);
-			int32 separation= point_to_line_segment_distance_squared((world_point2d *)&object->location,
-				(world_point2d *)old_location, (world_point2d *)new_location);
+			int32 separation= point_to_line_segment_distance_squared(&object->location,
+			old_location, new_location);
 			world_distance radius, height;
 				
 			if (object->permutation!=owner_index) /* don’t hit ourselves */
@@ -996,7 +996,7 @@ uint16 translate_projectile(
 				
 				if (separation<radius_squared) /* if we’re within radius^2 we passed through this monster */
 				{
-					world_distance distance= distance2d((world_point2d *)old_location, (world_point2d *)&object->location);
+					world_distance distance= distance2d(old_location, &object->location);
 					world_distance projectile_z= distance_traveled ? 
 						old_location->z + (distance*(new_location->z-old_location->z))/distance_traveled :
 						old_location->z;
@@ -1046,15 +1046,15 @@ uint16 translate_projectile(
 			{
 				world_distance actual_distance_to_hit;
 				
-				actual_distance_to_hit= distance2d((world_point2d *)old_location, (world_point2d *) &object->location);
+				actual_distance_to_hit= distance2d(old_location, &object->location);
 				actual_distance_to_hit-= best_radius;
 				
 				new_location->x= old_location->x + (actual_distance_to_hit*(new_location->x-old_location->x))/distance_traveled;
 				new_location->y= old_location->y + (actual_distance_to_hit*(new_location->y-old_location->y))/distance_traveled;
 				new_location->z= old_location->z + (actual_distance_to_hit*(new_location->z-old_location->z))/distance_traveled;
 				
-				if (new_polygon_index) *new_polygon_index= find_new_object_polygon((world_point2d *) &object->location,
-					(world_point2d *) new_location, object->polygon);
+				if (new_polygon_index) *new_polygon_index= find_new_object_polygon(&object->location,
+				 new_location, object->polygon);
 			}
 			else
 			{
