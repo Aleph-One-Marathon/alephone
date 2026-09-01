@@ -2344,7 +2344,6 @@ bool reload_player_weapon_trigger(
     if(!reload_weapon(player_index, which_trigger))
         return false;
 
-    mark_weapon_display_as_dirty();
     return true;
 }
 
