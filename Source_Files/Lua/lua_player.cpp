@@ -1264,8 +1264,31 @@ static int Lua_Player_Weapon_Trigger_Get_Rounds(lua_State *L)
 	return 1;
 }
 
+extern player_weapon_data* get_player_weapon_data(const short);
+
+static int Lua_Player_Weapon_Trigger_Reload(lua_State* L)
+{
+	auto player_index = Lua_Player_Weapon_Trigger::PlayerIndex(L, 1);
+	auto weapon_index = Lua_Player_Weapon_Trigger::WeaponIndex(L, 1);
+
+	auto player_weapons = get_player_weapon_data(player_index);
+	if (player_weapons->current_weapon != weapon_index)
+	{
+		return luaL_error(L, "reload: can only reload player's current weapon");
+	}
+
+	auto trigger_index = Lua_Player_Weapon_Trigger::Index(L, 1);
+	lua_pushboolean(L, reload_player_weapon_trigger(player_index, trigger_index));
+	return 1;
+}
+
 const luaL_Reg Lua_Player_Weapon_Trigger_Get[] = {
 	{"rounds", Lua_Player_Weapon_Trigger_Get_Rounds},
+	{0, 0}
+};
+
+const luaL_Reg Lua_Player_Weapon_Trigger_Get_Mutable[] = {
+	{"reload", L_TableFunction<Lua_Player_Weapon_Trigger_Reload>},
 	{0, 0}
 };
 
@@ -2951,6 +2974,10 @@ int Lua_Player_register (lua_State *L, const LuaMutabilityInterface& m)
 	Lua_Player_Weapons::Valid = Lua_Player_Valid;
 
 	Lua_Player_Weapon_Trigger::Register(L, Lua_Player_Weapon_Trigger_Get);
+	if (m.world_mutable())
+	{
+		Lua_Player_Weapon_Trigger::RegisterAdditional(L, Lua_Player_Weapon_Trigger_Get_Mutable);
+	}
 	Lua_Player_Weapon_Trigger::Valid = Lua_Player_Weapon_Trigger::ValidRange((int) _secondary_weapon + 1);
 
 	Lua_OverlayColor::Register(L, 0, 0, 0, Lua_OverlayColor_Mnemonics);

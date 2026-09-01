@@ -1735,6 +1735,12 @@ end
       <subtable-accessor name="weapons" classname="player_weapon" index="weapon_type">
 		<subtable name="primary" classname="player_weapon_trigger">
 		  <alias>secondary</alias>
+		  <function name="reload" version="git">
+			<description>reloads if possible</description>
+			<type>boolean</type>
+			<note>only available for current weapon</note>
+			<note>discards remainder of magazine</note>
+		  </function>
 		  <variable name="rounds" access="read-only">
 			<description>how many rounds are currently loaded into the weapon</description>
 			<type>number</type>
