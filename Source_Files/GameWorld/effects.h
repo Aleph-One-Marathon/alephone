@@ -150,13 +150,7 @@ const int SIZEOF_effect_definition = 14;
 
 /* ---------- globals */
 
-// Turned the list of active effects into a variable array
-
-extern std::vector<effect_data> EffectList;
-
-// extern struct effect_data *effects;
-
-/* ---------- prototypes/EFFECTS.C */
+/* ---------- prototypes/effects.cpp */
 
 short new_effect(world_point3d *origin, short polygon_index, short type, angle facing);
 void update_effects(void); /* assumes ∂t==1 tick */
@@ -172,14 +166,16 @@ void teleport_object_out(short object_index);
 effect_data *get_effect_data(
 	const short effect_index);
 
+std::vector<effect_data> & get_effects_list();
+
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world
 
-uint8 *unpack_effect_data(uint8 *Stream, effect_data *Objects, size_t Count);
-uint8 *pack_effect_data(uint8 *Stream, effect_data *Objects, size_t Count);
-uint8 *unpack_effect_definition(uint8 *Stream, size_t Count);
-uint8 *pack_effect_definition(uint8 *Stream, size_t Count);
-uint8* unpack_m1_effect_definition(uint8* Stream, size_t Count);
+void unpack_effect_data(uint8 *Stream, effect_data *Objects, size_t Count);
+void pack_effect_data(uint8 *Stream, effect_data *Objects, size_t Count);
+void unpack_effect_definition(uint8 *Stream, size_t Count);
+void pack_effect_definition(uint8 *Stream, size_t Count);
+void unpack_m1_effect_definition(uint8* Stream, size_t Count);
 void init_effect_definitions();
 
 #endif
