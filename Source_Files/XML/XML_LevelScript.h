@@ -45,6 +45,8 @@ void RunScriptChunks();
 // Intended to be run at the end of a game
 void RunEndScript();
 
+void LoadEpilogueMusic();
+
 // Intended for restoring old parameter values, because MML sets values at a variety
 // of different places, and it may be easier to simply set stuff back to defaults
 // by including those defaults in the script.

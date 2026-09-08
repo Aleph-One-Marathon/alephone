@@ -1697,6 +1697,7 @@ static void display_introduction_screen_for_demo(
 static void display_epilogue(
 	void)
 {
+	LoadEpilogueMusic();
 	Music::instance()->RestartIntroMusic();
 	
 	{

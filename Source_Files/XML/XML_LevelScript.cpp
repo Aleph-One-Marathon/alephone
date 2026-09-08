@@ -145,6 +145,7 @@ static float MovieSize = NONE;
 // (defaults from interface.cpp)
 short EndScreenIndex = 99;
 short NumEndScreens = 1;
+std::string EndScreenMusic;
 
 
 // The level-script parsers are separate from the main MML ones,
@@ -177,6 +178,7 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 	// Set these to their defaults before trying to change them
 	EndScreenIndex = 99;
 	NumEndScreens = 1;
+	EndScreenMusic = "";
 	
 	// OpenedResourceFile OFile;
 	// if (!MapFile.Open(OFile)) return;
@@ -298,6 +300,19 @@ void RunEndScript()
 {
 	GeneralRunScript(LevelScriptHeader::Default);
 	GeneralRunScript(LevelScriptHeader::End);
+}
+
+extern bool get_default_music_spec(FileSpecifier &file);
+
+void LoadEpilogueMusic()
+{
+	FileSpecifier File;
+	if (EndScreenMusic.empty() || !File.SetNameWithPath(EndScreenMusic.c_str()))
+	{
+		get_default_music_spec(File);
+	}
+
+	Music::instance()->SetupIntroMusic(File);
 }
 
 // Intended for restoring old parameter values, because MML sets values at a variety
@@ -669,5 +684,6 @@ void parse_levels_xml(InfoTree root)
 	{
 		child.read_attr("index", EndScreenIndex);
 		child.read_indexed("count", NumEndScreens, SHRT_MAX+1);
+		child.read_attr("music", EndScreenMusic);
 	}
 }
