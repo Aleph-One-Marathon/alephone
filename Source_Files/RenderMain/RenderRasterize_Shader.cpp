@@ -510,6 +510,7 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 		if (opts->SphereMap)
 		{
 			s->setFloat(Shader::U_OffsetX, opts->Azimuth * TWO_PI * FullCircleReciprocal);
+			s->setFloat(Shader::U_OffsetY, opts->Elevation * TWO_PI * FullCircleReciprocal);
 		}
 		else
 		{

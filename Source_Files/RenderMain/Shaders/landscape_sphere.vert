@@ -7,8 +7,14 @@ varying float cosPitch;
 varying float sinPitch;
 varying float cosYaw;
 varying float sinYaw;
+varying float cosAzimuth;
+varying float sinAzimuth;
+varying float cosElevation;
+varying float sinElevation;
 uniform float yaw;
 uniform float pitch;
+uniform float offsetx;			// azimuth in the sphere map
+uniform float offsety;			// elevation in the sphere map
 
 void main(void) {
 	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
@@ -22,6 +28,10 @@ void main(void) {
 	cosPitch = cos(-pitch);
 	sinYaw = sin(yaw);
 	sinPitch = sin(-pitch);
+	cosAzimuth = cos(offsetx);
+	sinAzimuth = sin(offsetx);
+	cosElevation = cos(-offsety);
+	sinElevation = sin(-offsety);
 }
 
 )"

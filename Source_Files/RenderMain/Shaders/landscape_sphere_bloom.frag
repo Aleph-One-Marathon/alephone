@@ -9,7 +9,10 @@ varying float cosPitch;
 varying float sinPitch;
 varying float cosYaw;
 varying float sinYaw;
-uniform float offsetx; // azimuth in the sphere map
+varying float cosAzimuth;
+varying float sinAzimuth;
+varying float cosElevation;
+varying float sinElevation;
 const float M_PI = 3.14156;
 void main(void) {
 	mat3 rotateYaw = mat3(cosYaw, 0, sinYaw,
@@ -20,9 +23,18 @@ void main(void) {
 							0, cosPitch, -sinPitch,
 							0, sinPitch, cosPitch);
 
-	vec3 normRelDir = rotateYaw * rotatePitch * normalize(relDir);
-	
-	float theta = atan(normRelDir.x, normRelDir.z) - offsetx;
+	mat3 rotateAzimuth = mat3(cosAzimuth, 0, sinAzimuth,
+							  0, 1, 0,
+							  -sinAzimuth, 0, cosAzimuth);
+
+	mat3 rotateElevation = mat3(1, 0, 0,
+								0, cosElevation, -sinElevation,
+								0, sinElevation, cosElevation);
+
+	vec3 normRelDir = rotateAzimuth * rotateElevation *
+		rotateYaw * rotatePitch * normalize(relDir);
+
+	float theta = atan(normRelDir.x, normRelDir.z);
 	float phi = acos(normRelDir.y);
 
 	float u = (M_PI - theta) / (2.0 * M_PI);
