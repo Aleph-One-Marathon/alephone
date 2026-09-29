@@ -705,6 +705,10 @@ hub_received_identification_packet(AIStream& ps, const IPaddress& address)
 {
 	int16 theSenderIndex;
 	ps >> theSenderIndex;
+
+	if (theSenderIndex < 0 || theSenderIndex >= sNetworkPlayers.size()) {
+		return;
+	}
 	
 	if (!sNetworkPlayers[theSenderIndex].mAddressKnown) {
 		sAddressToPlayerIndex[address] = theSenderIndex;
