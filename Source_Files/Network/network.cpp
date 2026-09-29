@@ -626,6 +626,14 @@ void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
 void Client::handleChangeColorsMessage(ChangeColorsMessage *changeColorsMessage,
 				       CommunicationsChannel *channel)
 {
+	if (changeColorsMessage->color() < 0 || changeColorsMessage->color() >= NUMBER_OF_TEAM_COLORS) {
+		return;
+	}
+
+	if (changeColorsMessage->team() < 0 || changeColorsMessage->team() >= NUMBER_OF_TEAM_COLORS) {
+		return;
+	}
+	
 	if (can_pregame_chat()) {
 		int stream_id = getStreamIdFromChannel(channel);
 		if (client_chat_info[stream_id]) {
