@@ -699,7 +699,7 @@ handle_player_net_dead_message(AIStream& ps, IncomingGameDataPacketProcessingCon
 
         ps >> thePlayerIndex >> theTick;
 
-        if(thePlayerIndex > sNetworkPlayers.size())
+        if(thePlayerIndex >= sNetworkPlayers.size())
                 return;
 
         sNetworkPlayers[thePlayerIndex].mConnected = false;
