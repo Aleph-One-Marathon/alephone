@@ -335,6 +335,10 @@ void TopologyMessage::reallyDeflateTo(AOStream& outputStream) const {
 bool TopologyMessage::reallyInflateFrom(AIStream& inputStream) {
   inputStream >> mTopology.tag;
   inputStream >> mTopology.player_count;
+  if (mTopology.player_count < 0 || mTopology.player_count >= MAXIMUM_NUMBER_OF_NETWORK_PLAYERS) {
+	  return false;
+  }
+
   inputStream >> mTopology.nextIdentifier;
 
   inputStream >> mTopology.game_data.initial_random_seed;
