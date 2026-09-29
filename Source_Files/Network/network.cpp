@@ -855,7 +855,9 @@ static void handleClientInfoMessage(ClientInfoMessage* clientInfoMessage, Commun
 					joiner_info.stream_id = clientInfoMessage->stream_id();
 					joiner_info.color = clientInfoMessage->info()->color;
 					joiner_info.team = clientInfoMessage->info()->team;
-					std::strncpy(joiner_info.name, clientInfoMessage->info()->name.c_str(), clientInfoMessage->info()->name.length());
+
+					std::strncpy(joiner_info.name, clientInfoMessage->info()->name.c_str(), sizeof(joiner_info.name));
+					joiner_info.name[sizeof(joiner_info.name) - 1] = '\0';
 
 					if (!gatherCallbacks->JoiningPlayerDropped(&joiner_info)) //we don't really know the joiner state here so we deduce it like this
 					{ 
