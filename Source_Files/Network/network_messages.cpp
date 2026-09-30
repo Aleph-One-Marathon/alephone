@@ -104,6 +104,11 @@ bool BigChunkOfZippedDataMessage::inflateFrom(const UninflatedMessage& inUninfla
 	inputStream >> temp_size;
 	size = temp_size;
 
+	if (size > max_size) {
+		logWarning("Error decompressing BigChunkOfZippedDataMessage; %lu is too many bytes", size);
+		return false;
+	}
+
 	// extra copy because we can't access private mBuffer
 	std::vector<byte> temp(size);
 	if (size == 0)
