@@ -311,6 +311,8 @@ class BigChunkOfZippedDataMessage : public BigChunkOfDataMessage
 // zips on deflate, unzips on inflate
 {
 public:
+	static constexpr auto max_size = 10 * 1024 * 1024;
+	
 	BigChunkOfZippedDataMessage(MessageTypeID inType, const Uint8* inBuffer = NULL, size_t inLength = 0) : BigChunkOfDataMessage(inType, inBuffer, inLength) { }
 	BigChunkOfZippedDataMessage(const BigChunkOfDataMessage& other) : BigChunkOfDataMessage(other) { }
 
