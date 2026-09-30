@@ -150,7 +150,8 @@ SSLPint_FoundAnInstance(struct SSLP_ServiceInstance* inInstance) {
             // Found a match (would have to check service_type if we handled multiple types, but ok here)
             if(strncmp(theCurrentFoundInstance->mInstance->sslps_name, inInstance->sslps_name, SSLP_MAX_NAME_LENGTH) != 0) {
                 // name changed - copy new name and notify
-                strncpy(theCurrentFoundInstance->mInstance->sslps_name, inInstance->sslps_name, SSLP_MAX_NAME_LENGTH);
+                strncpy(theCurrentFoundInstance->mInstance->sslps_name, inInstance->sslps_name, SSLP_MAX_NAME_LENGTH - 1);
+				theCurrentFoundInstance->mInstance->sslps_name[SSLP_MAX_NAME_LENGTH - 1] = '\0';
                 if(sNameChangedCallback != NULL)
                     sNameChangedCallback(theCurrentFoundInstance->mInstance);
             }
@@ -352,8 +353,10 @@ SSLPint_ReceivedPacket() {
     
                     // It's the right type!  We found an instance out there!  Set up a structure to report our findings.
                     struct SSLP_ServiceInstance	theReceivedInstance;
-                    strncpy(theReceivedInstance.sslps_type, theReceivedPacket->sslpp_service_type, SSLP_MAX_TYPE_LENGTH);
-                    strncpy(theReceivedInstance.sslps_name, theReceivedPacket->sslpp_service_name, SSLP_MAX_NAME_LENGTH);
+                    strncpy(theReceivedInstance.sslps_type, theReceivedPacket->sslpp_service_type, SSLP_MAX_TYPE_LENGTH - 1);
+					theReceivedInstance.sslps_type[SSLP_MAX_TYPE_LENGTH - 1] = '\0';
+                    strncpy(theReceivedInstance.sslps_name, theReceivedPacket->sslpp_service_name, SSLP_MAX_NAME_LENGTH - 1);
+					theReceivedInstance.sslps_name[SSLP_MAX_NAME_LENGTH - 1] = '\0';
                     theReceivedInstance.sslps_address.set_address(sReceivingPacket.address.address());
                     theReceivedInstance.sslps_address.set_port(theReceivedPacket->sslpp_service_port);
                     
@@ -399,8 +402,10 @@ SSLPint_ReceivedPacket() {
     
                     // It's the right type.  Set up a structure to report our findings.
                     struct SSLP_ServiceInstance	theReceivedInstance;
-                    strncpy(theReceivedInstance.sslps_type, theReceivedPacket->sslpp_service_type, SSLP_MAX_TYPE_LENGTH);
-                    strncpy(theReceivedInstance.sslps_name, theReceivedPacket->sslpp_service_name, SSLP_MAX_NAME_LENGTH);
+                    strncpy(theReceivedInstance.sslps_type, theReceivedPacket->sslpp_service_type, SSLP_MAX_TYPE_LENGTH - 1);
+					theReceivedInstance.sslps_type[SSLP_MAX_TYPE_LENGTH - 1] = '\0';
+                    strncpy(theReceivedInstance.sslps_name, theReceivedPacket->sslpp_service_name, SSLP_MAX_NAME_LENGTH - 1);
+					theReceivedInstance.sslps_name[SSLP_MAX_NAME_LENGTH - 1] = '\0';
                     theReceivedInstance.sslps_address.set_address(sReceivingPacket.address.address());
                     theReceivedInstance.sslps_address.set_port(theReceivedPacket->sslpp_service_port);
                     
@@ -501,7 +506,8 @@ SSLP_Locate_Service_Instances(const char* inServiceType, SSLP_Service_Instance_S
     theFindPacket->sslpp_service_port	= 0;				// (service_port is unused in FIND)
     theFindPacket->sslpp_reserved	= 0;				// unused - set to 0
     // note: my strncpy states it fills remaining buffer with 0.  If yours doesn't, fill it yourself.
-    strncpy(theFindPacket->sslpp_service_type, inServiceType, SSLP_MAX_TYPE_LENGTH);
+    strncpy(theFindPacket->sslpp_service_type, inServiceType, SSLP_MAX_TYPE_LENGTH - 1);
+	theFindPacket->sslpp_service_type[SSLP_MAX_TYPE_LENGTH - 1] = '\0';
 	// bzero(theFindPacket->sslpp_service_name, sizeof(theFindPacket->sslpp_service_name));	// (service_name is unused in FIND)
 
 	// Hmm, maybe memset is more widely available than bzero.
@@ -565,8 +571,10 @@ SSLP_Allow_Service_Discovery(const struct SSLP_ServiceInstance* inServiceInstanc
     theResponsePacket->sslpp_service_port	= inServiceInstance->sslps_address.port();
     theResponsePacket->sslpp_reserved		= 0;				// unused - set to 0
     // note: my strncpy states it fills remaining buffer with 0.  If yours doesn't, fill it yourself.
-    strncpy(theResponsePacket->sslpp_service_type, inServiceInstance->sslps_type, SSLP_MAX_TYPE_LENGTH);
-    strncpy(theResponsePacket->sslpp_service_name, inServiceInstance->sslps_name, SSLP_MAX_NAME_LENGTH);
+    strncpy(theResponsePacket->sslpp_service_type, inServiceInstance->sslps_type, SSLP_MAX_TYPE_LENGTH - 1);
+	theResponsePacket->sslpp_service_type[SSLP_MAX_TYPE_LENGTH - 1] = '\0';
+    strncpy(theResponsePacket->sslpp_service_name, inServiceInstance->sslps_name, SSLP_MAX_NAME_LENGTH - 1);
+	theResponsePacket->sslpp_service_name[SSLP_MAX_NAME_LENGTH - 1] = '\0';
 
     // Load into the "real" packet
     PackPacket(sResponsePacket.buffer.data(), theResponsePacket);
