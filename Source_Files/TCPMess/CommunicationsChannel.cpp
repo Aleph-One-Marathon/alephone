@@ -41,7 +41,7 @@
 enum
 {
 	// If any incoming message claims to be longer than this, we bail
-	kMaximumMessageLength = 4 * 1024 * 1024,
+	kMaximumMessageLength = 10 * 1024 * 1024,
 
 	// Milliseconds we wait between pump() calls during receive[Specific]Message()
 	kSSRPumpInterval = 50,
