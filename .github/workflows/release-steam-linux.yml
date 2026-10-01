@@ -10,6 +10,12 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Fix bullseye
+      run: |
+        sudo sed -i -e '/bullseye-security/d' /etc/apt/sources.list
+        sudo echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg check-valid-until=no] http://snapshot.debian.org/archive/debian-security/20260903T220410Z bullseye-security main" >> /etc/apt/sources.list
+        sudo echo "deb-src [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg check-valid-until=no] http://snapshot.debian.org/archive/debian-security/20260903T220410Z bullseye-security main" >> /etc/apt/sources.list
+
     - name: Configure
       uses: ./.github/actions/configure-linux
       with:
