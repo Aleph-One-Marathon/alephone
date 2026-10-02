@@ -345,13 +345,20 @@ const lang_def Lua_ItemType_Mnemonics[] = {
 	{0, 0}
 };
 
+const lang_def Lua_MusicFadeType_Mnemonics[] = {
+	{"none", 0},
+	{"linear", 1},
+	{"sinusoidal", 2},
+	{0, 0}
+};
+
 const lang_def Lua_EphemeraQuality_Mnemonics[] = {
 	{"off", 0},
 	{"low", 1},
 	{"medium", 2},
 	{"high", 3},
 	{"ultra", 4},
-        {0, 0}
+	{0, 0}
 };
 
 const lang_def Lua_LightFunction_Mnenonics[] = {
