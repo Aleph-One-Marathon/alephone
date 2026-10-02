@@ -113,7 +113,7 @@ static void reset_dynamic_limits()
 static void reallocate_dynamic_limits()
 {
 	// Resize the arrays of objects, monsters, effects, and projectiles
-	EffectList.resize(MAXIMUM_EFFECTS_PER_MAP);
+	get_effects_list().resize(MAXIMUM_EFFECTS_PER_MAP);
 	ObjectList.resize(MAXIMUM_OBJECTS_PER_MAP);
 	MonsterList.resize(MAXIMUM_MONSTERS_PER_MAP);
 	ProjectileList.resize(MAXIMUM_PROJECTILES_PER_MAP);
