@@ -167,7 +167,6 @@ OpenGLDialog::~OpenGLDialog()
 	delete m_voidColourWidget;
 	delete m_anisotropicWidget;
 	delete m_sRGBWidget;
-	delete m_useNPOTWidget;
 	delete m_vsyncWidget;
 	delete m_wallsFilterWidget;
 	delete m_spritesFilterWidget;
@@ -214,9 +213,6 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 
 	BoolPref sRGBPref (graphics_preferences->OGL_Configure.Use_sRGB);
 	binders.insert<bool> (m_sRGBWidget, &sRGBPref);
-	
-	BoolPref useNPOTPref (graphics_preferences->OGL_Configure.Use_NPOT);
-	binders.insert<bool> (m_useNPOTWidget, &useNPOTPref);
 	
 	BoolPref vsyncPref (graphics_preferences->OGL_Configure.WaitForVSync);
 	binders.insert<bool> (m_vsyncWidget, &vsyncPref);
@@ -440,13 +436,6 @@ public:
 		table_placer *advanced_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 		advanced_table->col_flags(0, placeable::kAlignRight);
 	
-		w_toggle *use_npot_w = new w_toggle(false);
-		advanced_table->dual_add(use_npot_w->label("Non-Power-of-Two Textures"), m_dialog);
-		advanced_table->dual_add(use_npot_w, m_dialog);
-		advanced_table->dual_add_row(new w_static_text("Non-power-of-two textures conserve memory,"), m_dialog);
-		advanced_table->dual_add_row(new w_static_text("but cause problems on some machines."), m_dialog);
-
-		advanced_table->add_row(new w_spacer(), true);
 		advanced_table->dual_add_row(new w_static_text("Texture Filtering"), m_dialog);
 		advanced_placer->add(advanced_table, true);
 
@@ -551,7 +540,6 @@ public:
 
 		m_sRGBWidget = new ToggleWidget(srgb_w);
 
-		m_useNPOTWidget = new ToggleWidget (use_npot_w);
 		m_vsyncWidget = new ToggleWidget (vsync_w);
 		
 		m_wallsFilterWidget = new SelectSelectorWidget (far_filter_wa[OGL_Txtr_Wall]);

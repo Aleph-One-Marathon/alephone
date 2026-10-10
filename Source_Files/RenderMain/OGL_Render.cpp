@@ -538,16 +538,10 @@ bool OGL_StartRun()
 	    Wanting_sRGB = true;
 	}
 
-	npotTextures = false;
-	if (graphics_preferences->OGL_Configure.Use_NPOT)
+	npotTextures = OGL_CheckExtension("GL_ARB_texture_non_power_of_two");
+	if (!npotTextures)
 	{
-	  if (!OGL_CheckExtension("GL_ARB_texture_non_power_of_two"))
-	  {
-	    graphics_preferences->OGL_Configure.Use_NPOT = false;
 	    logWarning("Non-power-of-two textures are not available");
-	  }
-	  else
-	    npotTextures = true;
 	}
 
 	FBO_Allowed = false;

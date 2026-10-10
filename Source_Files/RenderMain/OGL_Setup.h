@@ -254,7 +254,6 @@ struct OGL_ConfigureData
 	bool GeForceFix;
 	bool WaitForVSync;
 	bool Use_sRGB;
-	bool Use_NPOT;
 
 	bool BillboardXY; // for when MimicSW is off
 };
