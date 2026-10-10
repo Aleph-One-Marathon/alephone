@@ -374,7 +374,18 @@ void parse_mml_landscapes(const InfoTree& root)
 				LandscapeOptionsEntry DataEntry;
 				DataEntry.Frame = frame;
 				DataEntry.OptionsData = data;
-				LOL.push_back(DataEntry);
+
+				if (LOL.size() > 0 && LOL[LOL.size() - 1].Frame == AnyFrame)
+				{
+					// keep AnyFrame at the end so it's found last for override purposes
+					auto it = LOL.end();
+					--it;
+					LOL.insert(it, DataEntry);
+				}
+				else
+				{
+					LOL.push_back(DataEntry);
+				}
 			}
 		}
 	}
