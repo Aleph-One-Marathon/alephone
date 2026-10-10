@@ -223,6 +223,7 @@
 <li><a href="#MonsterClasses">Monster Classes</a></li>
 <li><a href="#MonsterModes">Monster Modes</a></li>
 <li><a href="#MonsterTypes">Monsters</a></li>
+<li><a href="#MusicFadeTypes">Music Fade Types</a></li>
 <li><a href="#OverlayColors">Overlay Colors</a></li>
 <li><a href="#PlatformTypes">Platform Types</a></li>
 <li><a href="#PlayerColors">Player and Team Colors</a></li>
@@ -1269,17 +1270,21 @@ end
 <dd><p class="description">maximum number of music channels active simultaneously</p></dd>
 <dt>Music()</dt>
 <dd><p class="description">iterates through all the music channels</p></dd>
-<dt>Music.new(track [, volume] [, loop]) <span class="version">20231125</span>
+<dt>Music.new( [track] [, volume] [, loop]) <span class="version">20231125</span>
 </dt>
 <dd>
 <p class="description">returns a new music channel</p>
+<p class="note">the track file parameter should be omitted for segmented music and add_track should be used instead </p>
 <p class="note">volume is decimal [0 - 1] and is 1 if not specified </p>
 <p class="note">loop is enabled by default </p>
 </dd>
 <dt>Music.clear()</dt>
 <dd><p class="description">clears the level playlist</p></dd>
-<dt>Music.fade(duration)</dt>
-<dd><p class="description">fades out the currently playing track and clears the playlist</p></dd>
+<dt>Music.fade(duration [, fade_type])</dt>
+<dd>
+<p class="description">fades out the currently playing track and clears the playlist</p>
+<p class="note">fade_type is the fading function, see MusicFadeTypes for values, default is linear </p>
+</dd>
 <dt>Music.play(track1 [, track2] [, ...])</dt>
 <dd><p class="description">appends all of the specified tracks to the end of the playlist</p></dd>
 <dt>Music.stop()</dt>
@@ -1288,22 +1293,36 @@ end
 <dd><p class="description">for every track passed, return true if it exists and is playable and false otherwise</p></dd>
 <dt>Music[index]</dt>
 <dd><dl>
-	  <dt>:play() <span class="version">20231125</span>
+	  <dt>:play( [segment]) <span class="version">20231125</span>
 </dt>
 <dd>
 <p class="description">plays the music</p>
+<p class="note">for tracks containing multiple segments, an optional starting segment can be provided </p>
 <p class="note">if the music was stopped, restarts it </p>
 </dd>
 	  <dt>:stop() <span class="version">20231125</span>
 </dt>
 <dd><p class="description">stops the music</p></dd>
-	  <dt>:fade(volume [, duration] [, stop_after_fade]) <span class="version">20231125</span>
+	  <dt>:fade(volume [, duration] [, stop_after_fade] [, fade_type]) <span class="version">20231125</span>
 </dt>
 <dd>
 <p class="description">fades the music</p>
 <p class="note">it will fade in until volume is reached. volume is decimal [0 - 1] </p>
 <p class="note">duration unit is seconds and is 1 if not specified </p>
 <p class="note">stop_after_fade is disabled by default, if set to true if the volume reaches 0 while fading the music will automatically stop </p>
+<p class="note">fade_type is the fading function, see MusicFadeTypes for values, default is linear </p>
+</dd>
+	  <dt>:add_track(track) <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">adds an audio track used to create music segments</p>
+<p class="note">returns a unique identifier for the track, usable to create segments </p>
+</dd>
+	  <dt>:request_sequence_transition(sequence) <span class="version">git</span>
+</dt>
+<dd>
+<p class="description">requests a transition from the currently playing sequence to the specified one</p>
+<p class="note">the transition will happen at the end of the currently playing segment and as long as a segment transition is configured between it and one from the requested sequence </p>
 </dd>
 	  <dt>.volume <span class="version">20231125</span>
 </dt>
@@ -1314,6 +1333,36 @@ end
 	  <dt>.active<span class="access"> (read-only)</span> <span class="version">20231125</span>
 </dt>
 <dd><p class="description">returns true if the music is still playing</p></dd>
+	  <dt>.sequences <span class="version">git</span>
+</dt>
+<dd><dl>
+<dt>:new()</dt>
+<dd>
+<p class="description">creates a new empty sequence for the music channel and returns it</p>
+<p class="note">sequences can be seen as a set of segments configured to play in a specific order composing a track </p>
+<p class="note">sequences must be created and configured before the music channel starts playing otherwise they  will not be applied unless the music is stopped and restarted </p>
+</dd>
+<dt>.segments</dt>
+<dd><dl>
+<dt>:new(track_identifier)</dt>
+<dd>
+<p class="description">creates a new music segment with the specified track, adds it to the sequence and returns it</p>
+<p class="note">track_identifier is the unique identifier returned by the music add_track function </p>
+<p class="note">this function can be called multiple times with the same track identifier if multiple segments from the same track file are required </p>
+<p class="note">the order in which segments are created has no influence on the order in which they are played, see the add_transition function for that </p>
+</dd>
+<dt>:add_transition(segment [, fade_out_type] [, fade_out_duration] [, fade_in_type] [, fade_in_duration] [, cross_fade])</dt>
+<dd>
+<p class="description">specifies the next segment to play once the current one has finished and configures the transition</p>
+<p class="note">see MusicFadeTypes for the available fading functions, the default is none which means a seamless transition </p>
+<p class="note">the fades duration unit is seconds and is 0 if not specified </p>
+<p class="note">cross_fade is a boolean flag set to false if not specified </p>
+<p class="note">segment transitions across different sequences must also be configured to allow sequence transitions </p>
+<p class="note">the entire segment ordering system is handled through this function, if a full track must loop, the last segment of a sequence must transition to the first one of the same sequence </p>
+<p class="note">transition configuration must be completed before the music channel starts playing otherwise it will not be applied unless the music is stopped and restarted </p>
+</dd>
+</dl></dd>
+</dl></dd>
     </dl></dd>
 </dl>
 <h3>
@@ -3197,6 +3246,18 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"explodavacbob"</li>
 </ul></div>
 <div class="end-mnemonics"></div>
+<h3>
+<a name="MusicFadeTypes"></a>Music Fade Types</h3>
+<dl>
+<dt># MusicFadeTypes</dt>
+<dt>MusicFadeTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"none"</li>
+<li>"linear"</li>
+<li>"sinusoidal"</li>
+</ul>
 <h3>
 <a name="OverlayColors"></a>Overlay Colors</h3>
 <dl>
