@@ -158,7 +158,7 @@
 		<details><summary><a href="#triggers">Triggers</a></summary>
 		<ol>
 		  <xsl:for-each select="function">
-			<xsl:sort select="@name"/>
+			<xsl:sort select="@order" data-type="number"/><xsl:sort select="@name"/>
 			<li><a><xsl:attribute name="href">#<xsl:value-of select="@name"/></xsl:attribute><xsl:value-of select="@name"/></a></li>
 		  </xsl:for-each>
 		</ol>
@@ -168,7 +168,7 @@
 		<details><summary><a href="#tables">Tables</a></summary>
 	<ol>
 	  <xsl:for-each select="accessor">
-	    <xsl:sort select="@name"/>
+	    <xsl:sort select="@order" data-type="number"/><xsl:sort select="@name"/>
 	    <li><a><xsl:attribute name="href">#<xsl:value-of select="@name"/></xsl:attribute><xsl:value-of select="@name"/></a></li>
 	  </xsl:for-each>
 	</ol>
@@ -197,7 +197,7 @@
     <dd>
   <dl>
     <xsl:apply-templates select="function">
-	  <xsl:sort select="@name"/>
+	  <xsl:sort select="@order" data-type="number"/><xsl:sort select="@name"/>
 	</xsl:apply-templates>
   </dl>
     </dd>
@@ -210,7 +210,7 @@
   <div><xsl:attribute name="class">tables</xsl:attribute>
   <xsl:for-each select="description"><p><xsl:copy-of select="node()"/></p></xsl:for-each>
   <xsl:apply-templates select="accessor">
-    <xsl:sort select="@name"/>
+    <xsl:sort select="@order" data-type="number"/><xsl:sort select="@name"/>
   </xsl:apply-templates>
   </div>
 </xsl:template>
@@ -220,7 +220,7 @@
   <div class="tables">
     <xsl:for-each select="description"><p><xsl:copy-of select="node()"/></p></xsl:for-each>
     <xsl:apply-templates select="../tables/enum-accessor">
-      <xsl:sort select="@name"/>
+      <xsl:sort select="@order" data-type="number"/><xsl:sort select="@name"/>
     </xsl:apply-templates>
   </div>
 </xsl:template>
@@ -360,7 +360,7 @@
 	<p class="description"><xsl:copy-of select="description/node()"/></p>
       </xsl:when>
     </xsl:choose>
-    <dl><xsl:apply-templates select="function|function-variable|variable|subtable|subtable-accessor"><xsl:sort select="@name"/></xsl:apply-templates>
+    <dl><xsl:apply-templates select="function|function-variable|variable|subtable|subtable-accessor"><xsl:sort select="@order" data-type="number"/><xsl:sort select="@name"/></xsl:apply-templates>
   </dl></dd>
 </xsl:template>
 
@@ -492,7 +492,7 @@
     </xsl:choose>
     <xsl:choose>
       <xsl:when test="function|subtable|subtable-accessor|variable">
-	<dl><xsl:apply-templates select="function|subtable|subtable-accessor|variable"><xsl:sort select="@name"/></xsl:apply-templates></dl>
+	<dl><xsl:apply-templates select="function|subtable|subtable-accessor|variable"><xsl:sort select="@order" data-type="number"/><xsl:sort select="@name"/></xsl:apply-templates></dl>
       </xsl:when>
     </xsl:choose>
   </dd>
