@@ -509,15 +509,15 @@ std::unique_ptr<TextureManager> RenderRasterize_Shader::setupWallTexture(const s
 	if (TMgr->TextureType == OGL_Txtr_Landscape && opts) {
 		if (opts->SphereMap)
 		{
-			s->setFloat(Shader::U_OffsetX, opts->Azimuth * TWO_PI * FullCircleReciprocal);
-			s->setFloat(Shader::U_OffsetY, opts->Elevation * TWO_PI * FullCircleReciprocal);
+			s->setFloat(Shader::U_OffsetX, opts->Azimuth * TWO_PI / 360.0);
+			s->setFloat(Shader::U_OffsetY, opts->Elevation * TWO_PI / 360.0);
 		}
 		else
 		{
 			double TexScale = std::abs(TMgr->U_Scale);
 			double HorizScale = double(1 << opts->HorizExp);
 			s->setFloat(Shader::U_ScaleX, HorizScale * (npotTextures ? 1.0 : TexScale) * Radian2Circle);
-			s->setFloat(Shader::U_OffsetX, HorizScale * (0.25 + opts->Azimuth * FullCircleReciprocal));
+			s->setFloat(Shader::U_OffsetX, HorizScale * (0.25 + opts->Azimuth / 360.0));
 			
 			short AdjustedVertExp = opts->VertExp + opts->OGL_AspRatExp;
 			double VertScale = (AdjustedVertExp >= 0) ? double(1 << AdjustedVertExp)

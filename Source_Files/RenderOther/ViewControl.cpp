@@ -338,8 +338,8 @@ void parse_mml_landscapes(const InfoTree& root)
 			child.read_attr("vert_exp", data.VertExp);
 			child.read_attr("vert_repeat", data.VertRepeat);
 			child.read_attr("ogl_asprat_exp", data.OGL_AspRatExp);
-			child.read_angle("azimuth", data.Azimuth);
-			child.read_angle("elevation", data.Elevation);
+			child.read_attr_bounded("azimuth", data.Azimuth, 0.0, 360.0);
+			child.read_attr_bounded("elevation", data.Elevation, 0.0, 360.0);
 
 			int16 projection;
 			if (child.read_attr("projection", projection))

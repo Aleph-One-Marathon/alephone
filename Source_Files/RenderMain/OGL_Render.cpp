@@ -1873,7 +1873,7 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	LandscapeOptions *LandOpts = View_GetLandscapeOptions(RenderPolygon.ShapeDesc);
 	
 	// Adjusted using the texture azimuth (yaw)
-	double AdjustedYaw = Yaw + FullCircleReciprocal*(LandOpts->Azimuth);
+	double AdjustedYaw = Yaw + LandOpts->Azimuth / 360.0;
 	
 	// Horizontal is straightforward
 	double HorizScale = double(1 << LandOpts->HorizExp);

@@ -1119,7 +1119,7 @@ static void _prelandscape_horizontal_polygon_lines(
 	
 	// LP change: separate horizontal and vertical pixel deltas:
 	// LP change: using a "landscape yaw" that's at the left edge of the screen.
-	_fixed first_horizontal_pixel= (view->landscape_yaw + LandOpts->Azimuth)<<(landscape_width_bits+(LandOpts->HorizExp)+FIXED_FRACTIONAL_BITS-ANGULAR_BITS);
+	_fixed first_horizontal_pixel= (view->landscape_yaw + LandOpts->AzimuthAngle())<<(landscape_width_bits+(LandOpts->HorizExp)+FIXED_FRACTIONAL_BITS-ANGULAR_BITS);
 	_fixed horizontal_pixel_delta= (view->half_cone<<(1+landscape_width_bits+(LandOpts->HorizExp)+FIXED_FRACTIONAL_BITS-ANGULAR_BITS))/view->standard_screen_width;
 	_fixed vertical_pixel_delta= (view->half_cone<<(1+landscape_width_bits+(LandOpts->VertExp)+FIXED_FRACTIONAL_BITS-ANGULAR_BITS))/view->standard_screen_width;
 	short landscape_free_bits= 32-FIXED_FRACTIONAL_BITS-landscape_width_bits;
