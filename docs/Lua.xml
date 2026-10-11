@@ -2659,6 +2659,21 @@ end
       <variable name="bitmap_count">
 		<description>number of bitmaps in collection</description>
       </variable>
+	  <variable name="landscapes.default">
+		<type>landscape</type>
+		<description>default options for all landscapes in this collection</description>
+	  </variable>
+	  <subtable-accessor name="landscapes" classname="landscape" index="frame" access="local-player" version="git">
+		<variable name="azimuth">
+		  <description>angle in degrees to rotate the landscape leftward relative to the map</description>
+		  <type>angle</type>
+		</variable>
+		<variable name="elevation">
+		  <description>angle in degrees to rotate the landscape texture upward relative to the horizon</description>
+		  <type>angle</type>
+		  <note>only works with spherical landscapes</note>
+		</variable>
+	  </subtable-accessor>
       <mnemonics>
 		<mnemonic name="interface"/>
 		<mnemonic name="weapons in hand"/>

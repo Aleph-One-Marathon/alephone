@@ -113,6 +113,9 @@ struct LandscapeOptions
 
 LandscapeOptions *View_GetLandscapeOptions(shape_descriptor Desc);
 
+const LandscapeOptions& View_GetLandscapeOptions(int16_t coll, int16_t frame);
+void View_SetLandscapeOptions(int16_t coll, int16_t frame,
+							  const LandscapeOptions& options);
 
 class InfoTree;
 void parse_mml_view(const InfoTree& root);

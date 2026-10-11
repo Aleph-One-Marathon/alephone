@@ -244,6 +244,57 @@ LandscapeOptions *View_GetLandscapeOptions(shape_descriptor Desc)
 	return &DefaultLandscape;
 }
 
+const LandscapeOptions& View_GetLandscapeOptions(int16_t coll, int16_t frame)
+{
+	auto it = std::find_if(LOList[coll].begin(),
+						   LOList[coll].end(),
+						   [frame](auto entry) {
+							   return entry.Frame == frame ||
+								   entry.Frame == AnyFrame;
+						   });
+
+	if (it != LOList[coll].end())
+	{
+		return it->OptionsData;
+	} else {
+		return DefaultLandscape;
+	}
+}
+
+void View_SetLandscapeOptions(int16_t coll, int16_t frame,
+							  const LandscapeOptions& options)
+{
+	auto& v = LOList[coll];
+
+	auto it = std::find_if(v.begin(),
+						   v.end(),
+						   [frame](auto entry) {
+							   return entry.Frame == frame ||
+								   entry.Frame == AnyFrame;
+						   });
+
+	if (it != v.end())
+	{
+		it->OptionsData = options;
+	}
+	else
+	{
+		LandscapeOptionsEntry entry;
+		entry.Frame = frame;
+		entry.OptionsData = options;
+
+		if (v.size() > 0 && v[v.size() - 1].Frame == AnyFrame)
+		{
+			// keep AnyFrame at the end so it's found last for override purposes
+			--it;
+			v.insert(it, entry);
+		}
+		else
+		{
+			v.push_back(entry);
+		}
+	}
+}
 
 struct FOV_settings_definition *original_FOV_settings = NULL;
 struct view_settings_definition *original_view_settings = NULL;
@@ -353,40 +404,8 @@ void parse_mml_landscapes(const InfoTree& root)
 					data.SphereMap = false;
 				}
 			}
-			
-			// Check to see if a frame is already accounted for
-			bool found = false;
-			vector<LandscapeOptionsEntry>& LOL = LOList[coll];
-			for (vector<LandscapeOptionsEntry>::iterator LOIter = LOL.begin(); LOIter < LOL.end(); LOIter++)
-			{
-				if (LOIter->Frame == frame)
-				{
-					// Replace the data
-					LOIter->OptionsData = data;
-					found = true;
-					break;
-				}
-			}
-			
-			// If not, then add a new frame entry
-			if (!found)
-			{
-				LandscapeOptionsEntry DataEntry;
-				DataEntry.Frame = frame;
-				DataEntry.OptionsData = data;
 
-				if (LOL.size() > 0 && LOL[LOL.size() - 1].Frame == AnyFrame)
-				{
-					// keep AnyFrame at the end so it's found last for override purposes
-					auto it = LOL.end();
-					--it;
-					LOL.insert(it, DataEntry);
-				}
-				else
-				{
-					LOL.push_back(DataEntry);
-				}
-			}
+			View_SetLandscapeOptions(coll, frame, data);
 		}
 	}
 }

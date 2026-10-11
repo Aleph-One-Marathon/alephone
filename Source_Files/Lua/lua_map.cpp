@@ -38,6 +38,7 @@ LUA_MAP.CPP
 #include "projectiles.h"
 #include "OGL_Setup.h"
 #include "SoundManager.h"
+#include "ViewControl.h"
 
 #include "collection_definition.h"
 
@@ -48,6 +49,145 @@ extern collection_definition *get_collection_definition(short);
 
 char Lua_Collection_Name[] = "collection";
 
+template<char* name>
+class CollectionSubtable : public L_Class<name>
+{
+public:
+	int16_t m_collection_index;
+
+	template<typename instance_t = CollectionSubtable>
+	static instance_t *Push(lua_State* L, int16_t collection_index, int16_t index);
+
+	static int16_t CollectionIndex(lua_State* L, int index);
+};
+
+template<char* name>
+template<typename instance_t>
+instance_t* CollectionSubtable<name>::Push(lua_State* L, int16_t collection_index, int16_t index)
+{
+	instance_t* t = 0;
+
+	if (!L_Class<name, int16_t>::Valid(index) || !Lua_Collection::Valid(collection_index))
+	{
+		lua_pushnil(L);
+		return 0;
+	}
+
+	t = L_Class<name>::template NewInstance<instance_t>(L, index);
+	t->m_collection_index = collection_index;
+
+	return t;
+}
+
+template<char* name>
+int16_t CollectionSubtable<name>::CollectionIndex(lua_State* L, int index)
+{
+	CollectionSubtable<name>* t = static_cast<CollectionSubtable<name>*>(L_Class<name>::Instance(L, index));
+	if (!t) luaL_typerror(L, index, name);
+	return t->m_collection_index;
+}
+
+char Lua_Landscape_Name[] = "landscape";
+typedef CollectionSubtable<Lua_Landscape_Name> Lua_Landscape;
+
+static bool Lua_Landscape_Valid(int16_t index)
+{
+	return index >= -1 && index < 256;
+}
+
+static int Lua_Landscape_Get_Azimuth(lua_State* L)
+{
+	int collection_index = Lua_Landscape::CollectionIndex(L, 1);
+	int frame_index = Lua_Landscape::Index(L, 1);
+
+	auto& options = View_GetLandscapeOptions(collection_index, frame_index);
+	lua_pushnumber(L, options.Azimuth);
+	return 1;
+}
+
+static int Lua_Landscape_Get_Elevation(lua_State* L)
+{
+	int collection_index = Lua_Landscape::CollectionIndex(L, 1);
+	int frame_index = Lua_Landscape::Index(L, 1);
+
+	auto& options = View_GetLandscapeOptions(collection_index, frame_index);
+	lua_pushnumber(L, options.Elevation);
+	return 1;
+}
+
+const luaL_Reg Lua_Landscape_Get[] = {
+	{"azimuth", Lua_Landscape_Get_Azimuth},
+	{"elevation", Lua_Landscape_Get_Elevation},
+	{0, 0}
+};
+
+static int Lua_Landscape_Set_Azimuth(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "azimuth: incorrect argument type");
+
+	int collection_index = Lua_Landscape::CollectionIndex(L, 1);
+	int frame_index = Lua_Landscape::Index(L, 1);
+
+	auto options = View_GetLandscapeOptions(collection_index, frame_index);
+	options.Azimuth = lua_tonumber(L, 2);
+	View_SetLandscapeOptions(collection_index, frame_index, options);
+
+	return 0;
+}
+
+static int Lua_Landscape_Set_Elevation(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "elevation: incorrect argument type");
+
+	int collection_index = Lua_Landscape::CollectionIndex(L, 1);
+	int frame_index = Lua_Landscape::Index(L, 1);
+
+	auto options = View_GetLandscapeOptions(collection_index, frame_index);
+	options.Elevation = lua_tonumber(L, 2);
+	View_SetLandscapeOptions(collection_index, frame_index, options);
+
+	return 0;
+}
+
+const luaL_Reg Lua_Landscape_Set[] = {
+	{"azimuth", Lua_Landscape_Set_Azimuth},
+	{"elevation", Lua_Landscape_Set_Elevation},
+	{0, 0}
+};
+
+char Lua_Landscapes_Name[] = "landscapes";
+typedef L_Class<Lua_Landscapes_Name> Lua_Landscapes;
+
+static int Lua_Landscapes_Get(lua_State* L)
+{
+	int collection_index = Lua_Landscapes::Index(L, 1);
+	bool string_arg = lua_isstring(L, 2) && !lua_isnumber(L, 2);
+	if (string_arg && (strcmp(lua_tostring(L, 2), "default") == 0))
+	{
+		Lua_Landscape::Push(L, collection_index, NONE);
+	}
+	else
+	{
+		Lua_Landscape::Push(L, collection_index, lua_tonumber(L, 2));
+	}
+
+	return 1;
+}
+
+static int Lua_Landscapes_Length(lua_State* L)
+{
+	lua_pushnumber(L, 255);
+	return 1;
+}
+
+const luaL_Reg Lua_Landscapes_Metatable[]= {
+	{"__index", Lua_Landscapes_Get},
+	{"__len", Lua_Landscapes_Length},
+	{0, 0}
+};
+
 static int Lua_Collection_Get_Bitmap_Count(lua_State *L)
 {
 	collection_definition *collection = get_collection_definition(Lua_Collection::Index(L, 1));
@@ -55,8 +195,15 @@ static int Lua_Collection_Get_Bitmap_Count(lua_State *L)
 	return 1;
 }
 
+static int Lua_Collection_Get_Landscapes(lua_State* L)
+{
+	Lua_Landscapes::Push(L, Lua_Collection::Index(L, 1));
+	return 1;
+}
+
 const luaL_Reg Lua_Collection_Get[] = {
 	{"bitmap_count", Lua_Collection_Get_Bitmap_Count},
+	{"landscapes", Lua_Collection_Get_Landscapes},
 	{0, 0},
 };
 
@@ -3738,6 +3885,19 @@ int Lua_Map_register(lua_State *L, const LuaMutabilityInterface& m)
 	// CodeWarrior doesn't let me do this:
 //	Lua_Endpoints::Length = boost::bind(&std::vector<endpoint_data>::size, &EndpointList);
 	Lua_Endpoints::Length = Lua_Endpoints_Length;
+
+	if (m.world_mutable())
+	{
+		Lua_Landscape::Register(L, Lua_Landscape_Get, Lua_Landscape_Set);
+	}
+	else
+	{
+		Lua_Landscape::Register(L, Lua_Landscape_Get);
+	}
+	Lua_Landscape::Valid = Lua_Landscape_Valid;
+
+	Lua_Landscapes::Register(L, 0, 0, Lua_Landscapes_Metatable);
+	Lua_Landscapes::Valid = collection_loaded;
 
 	Lua_Line_Endpoints::Register(L, 0, 0, Lua_Line_Endpoints_Metatable);
 	
