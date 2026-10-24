@@ -31,7 +31,8 @@ enum { /* Menus available during the game */
 	iSave,
 	iRevert,
 	iCloseGame,
-	iQuitGame
+	iQuitGame,
+	iGameMenu
 };
 
 enum { /* Menu interface... */
