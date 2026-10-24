@@ -1012,7 +1012,10 @@ void show_ingame_menu()
 	vertical_placer* placer = new vertical_placer;
 	w_button* resume_button = new w_button("RETURN TO GAME", [](void* p) { dialog_cancel(p); }, d.get());
 	placer->dual_add(resume_button, *d);
-	
+
+	w_button* controls_button = new w_button("CONTROLS", [](void*) { controls_dialog(true); });
+	placer->dual_add(controls_button, *d);
+
 	const auto quit_callback = [](void* d)
 	{
 		if (PLAYER_IS_DEAD(local_player) ||
