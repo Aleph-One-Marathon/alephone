@@ -679,7 +679,7 @@ bool entering_map(bool restoring_saved)
 	MarkLuaCollections(true);
 	MarkLuaHUDCollections(true);
 
-	load_collections(true, get_screen_mode()->acceleration != _no_acceleration);
+	load_collections(true, get_screen_mode()->acceleration == _opengl_acceleration);
 
 	sounds_patches.clear();
 	Plugins::instance()->load_sounds_patches();

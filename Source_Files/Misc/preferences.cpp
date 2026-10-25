@@ -68,6 +68,7 @@ May 22, 2003 (Woody Zenfell):
 #include "find_files.h"
 #include "game_wad.h" // for set_map_file
 #include "screen.h"
+#include "D3D11_Context.h"
 #include "fades.h"
 #include "extensions.h"
 #include "Console.h"
@@ -1027,7 +1028,11 @@ static const char *gamma_labels[9] = {
 };
 
 static const char* renderer_labels[] = {
-	"Software", "OpenGL", NULL
+	"Software", "OpenGL",
+#ifdef HAVE_D3D11
+	"Direct3D 11",
+#endif
+	NULL
 };
 
 static const char *bobbing_view_labels[] = {
@@ -1195,6 +1200,12 @@ static void rendering_options_dialog_demux(void* arg)
 
 		case _opengl_acceleration:
 			OpenGLDialog::Create (theSelectedRenderer)->OpenGLPrefsByRunning ();
+			break;
+
+		case _d3d11_acceleration:
+			// For now Direct3D 11 draws the world with the software
+			// renderer and presents it on the GPU, so it shares those options.
+			software_rendering_options_dialog(arg);
 			break;
 
 		default:
@@ -4330,7 +4341,11 @@ static bool validate_graphics_preferences(graphics_preferences_data *preferences
 		changed= true;
 	}
 
-	if (preferences->screen_mode.acceleration != _no_acceleration && preferences->screen_mode.acceleration != _opengl_acceleration)
+	if (preferences->screen_mode.acceleration != _no_acceleration && preferences->screen_mode.acceleration != _opengl_acceleration
+#ifdef HAVE_D3D11
+		&& preferences->screen_mode.acceleration != _d3d11_acceleration
+#endif
+		)
 		preferences->screen_mode.acceleration = _opengl_acceleration;
 
 	// OpenGL requires at least 16 bit color depth

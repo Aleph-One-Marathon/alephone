@@ -523,6 +523,9 @@
     <ClCompile Include="..\..\Source_Files\RenderMain\OGL_Model_Def.cpp">
       <Filter>RenderMain\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source_Files\RenderMain\D3D11_Context.cpp">
+      <Filter>RenderMain\Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source_Files\RenderMain\OGL_FBO.cpp">
       <Filter>RenderMain\Source Files</Filter>
     </ClCompile>
@@ -1132,6 +1135,9 @@
       <Filter>RenderMain\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\RenderMain\OGL_Faders.h">
+      <Filter>RenderMain\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source_Files\RenderMain\D3D11_Context.h">
       <Filter>RenderMain\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source_Files\RenderMain\OGL_FBO.h">

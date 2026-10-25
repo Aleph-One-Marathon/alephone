@@ -412,7 +412,7 @@ int Lua_Images_New(lua_State *L)
 
 		// blitter from image
 #ifdef HAVE_OPENGL
-		Image_Blitter *blitter = (get_screen_mode()->acceleration != _no_acceleration)
+		Image_Blitter *blitter = (get_screen_mode()->acceleration == _opengl_acceleration)
 			? new OGL_Blitter(TxtrTypeInfoList[OGL_Txtr_HUD].NearFilter)
 			: new Image_Blitter();
 #else
@@ -507,7 +507,7 @@ int Lua_Images_New(lua_State *L)
 	
 	// blitter from image
 #ifdef HAVE_OPENGL
-	Image_Blitter *blitter = (get_screen_mode()->acceleration != _no_acceleration)
+	Image_Blitter *blitter = (get_screen_mode()->acceleration == _opengl_acceleration)
 		? new OGL_Blitter()
 		: new Image_Blitter();
 #else
@@ -2606,7 +2606,13 @@ static int Lua_Screen_Get_Height(lua_State *L)
 
 static int Lua_Screen_Get_Renderer(lua_State *L)
 {
-	Lua_RendererType::Push(L, get_screen_mode()->acceleration);
+	// Direct3D 11 mode currently draws the HUD exactly like the software
+	// renderer, so scripts should take their software path. (Its enum value
+	// would otherwise collide with the legacy "shader" mnemonic.)
+	short renderer = get_screen_mode()->acceleration;
+	if (renderer == _d3d11_acceleration)
+		renderer = _no_acceleration;
+	Lua_RendererType::Push(L, renderer);
 	return 1;
 }
 
