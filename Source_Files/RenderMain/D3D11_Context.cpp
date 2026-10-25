@@ -33,6 +33,7 @@
 #include <d3d11.h>
 #include <dxgi1_2.h>
 #include <dxgi1_5.h>
+#include <dxgi1_6.h>
 #include <d3dcompiler.h>
 
 #include <SDL2/SDL.h>
@@ -44,14 +45,15 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <vector>
 
 #include "cseries.h"
 #include "Logging.h"
 
 #ifdef _MSC_VER
-// Only D3D11CreateDevice needs an import library; DXGI is reached through
-// the device, and the HLSL compiler is loaded at run time.
+// The HLSL compiler is loaded at run time, so only these need linking.
 #pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "dxgi.lib")
 #endif
 
 namespace {
@@ -67,6 +69,7 @@ public:
 	ComRef& operator=(const ComRef&) = delete;
 
 	void reset() { if (p) { p->Release(); p = nullptr; } }
+	void attach(T *raw) { reset(); p = raw; }	// takes ownership of one reference
 	T *get() const { return p; }
 	T **put() { reset(); return &p; }
 	T *operator->() const { return p; }
@@ -140,6 +143,8 @@ struct State {
 	SDL_Surface *converted = nullptr;	// scratch for non-ARGB8888 surfaces
 
 	std::string description;
+	std::string adapter_choice;	// as requested in Initialize
+	std::string adapter_name;	// the card actually in use
 };
 
 State g;
@@ -210,6 +215,128 @@ void client_size(HWND hwnd, int &width, int &height)
 	height = rc.bottom - rc.top;
 }
 
+std::string narrow(const wchar_t *wide)
+{
+	char buffer[256] = {};
+	WideCharToMultiByte(CP_UTF8, 0, wide, -1, buffer, sizeof(buffer) - 1, nullptr, nullptr);
+	return buffer;
+}
+
+bool is_software_adapter(const DXGI_ADAPTER_DESC1 &desc)
+{
+	// Microsoft Basic Render Driver (WARP) reports the software flag; older
+	// systems only identify it by its vendor/device IDs.
+	return (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) ||
+		(desc.VendorId == 0x1414 && desc.DeviceId == 0x8c);
+}
+
+// Lists hardware adapters in Windows' order. If `keep` is given, it
+// receives one owned reference per listed adapter, parallel to `infos`.
+void list_adapters(IDXGIFactory1 *factory, std::vector<D3D11::AdapterInfo> &infos,
+				   std::vector<IDXGIAdapter1 *> *keep)
+{
+	for (UINT i = 0; ; ++i) {
+		IDXGIAdapter1 *adapter = nullptr;
+		HRESULT hr = factory->EnumAdapters1(i, &adapter);
+		if (hr == DXGI_ERROR_NOT_FOUND)
+			break;
+		if (FAILED(hr) || !adapter)
+			continue;
+
+		DXGI_ADAPTER_DESC1 desc = {};
+		adapter->GetDesc1(&desc);
+		if (is_software_adapter(desc)) {
+			adapter->Release();
+			continue;
+		}
+
+		char base[48];
+		std::snprintf(base, sizeof(base), "pci:%04x:%04x:%08x",
+					  static_cast<unsigned>(desc.VendorId), static_cast<unsigned>(desc.DeviceId),
+					  static_cast<unsigned>(desc.SubSysId));
+		int ordinal = 0;
+		for (const auto &other : infos)
+			if (other.id.compare(0, std::strlen(base), base) == 0)
+				++ordinal;
+
+		D3D11::AdapterInfo info;
+		info.id = std::string(base) + ":" + std::to_string(ordinal);
+		info.name = narrow(desc.Description);
+		info.dedicated_video_memory = desc.DedicatedVideoMemory;
+		info.is_default = (i == 0);
+		infos.push_back(info);
+
+		if (keep)
+			keep->push_back(adapter);
+		else
+			adapter->Release();
+	}
+}
+
+// Resolves an adapter choice to an adapter. Leaves `out` empty for the
+// Windows default (or when the choice can't be honoured, after logging why).
+void choose_adapter(IDXGIFactory1 *factory, const std::string &choice, ComRef<IDXGIAdapter1> &out)
+{
+	out.reset();
+	if (choice.empty())
+		return;
+
+	if (choice == D3D11::kAdapterHighPerformance || choice == D3D11::kAdapterMinimumPower) {
+		ComRef<IDXGIFactory6> factory6;
+		if (FAILED(factory->QueryInterface(__uuidof(IDXGIFactory6), reinterpret_cast<void **>(factory6.put())))) {
+			logNote("Direct3D 11: GPU preference needs Windows 10 (1803) or later; using the default adapter");
+			return;
+		}
+		DXGI_GPU_PREFERENCE preference = (choice == D3D11::kAdapterHighPerformance)
+			? DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE : DXGI_GPU_PREFERENCE_MINIMUM_POWER;
+		if (SUCCEEDED(factory6->EnumAdapterByGpuPreference(0, preference, __uuidof(IDXGIAdapter1),
+														   reinterpret_cast<void **>(out.put())))) {
+			DXGI_ADAPTER_DESC1 desc = {};
+			out->GetDesc1(&desc);
+			if (is_software_adapter(desc))
+				out.reset();
+		}
+		return;
+	}
+
+	std::vector<D3D11::AdapterInfo> infos;
+	std::vector<IDXGIAdapter1 *> adapters;
+	list_adapters(factory, infos, &adapters);
+	for (size_t i = 0; i < infos.size(); ++i) {
+		if (infos[i].id == choice) {
+			out.attach(adapters[i]);
+			adapters[i] = nullptr;
+		}
+	}
+	for (IDXGIAdapter1 *adapter : adapters)
+		if (adapter)
+			adapter->Release();
+	if (!out)
+		logWarning("Direct3D 11: the selected graphics card (%s) was not found; using the default adapter",
+				   choice.c_str());
+}
+
+HRESULT create_device_on(IDXGIAdapter *adapter, UINT flags)
+{
+	const D3D_FEATURE_LEVEL levels[] = {
+		D3D_FEATURE_LEVEL_11_1,
+		D3D_FEATURE_LEVEL_11_0,
+		D3D_FEATURE_LEVEL_10_1,
+		D3D_FEATURE_LEVEL_10_0,
+	};
+	const UINT count = sizeof(levels) / sizeof(levels[0]);
+	// An explicit adapter requires D3D_DRIVER_TYPE_UNKNOWN.
+	D3D_DRIVER_TYPE type = adapter ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE;
+
+	HRESULT hr = D3D11CreateDevice(adapter, type, nullptr, flags, levels, count, D3D11_SDK_VERSION,
+								   g.device.put(), &g.feature_level, g.context.put());
+	// Windows 7 without the platform update rejects 11_1 outright.
+	if (hr == E_INVALIDARG)
+		hr = D3D11CreateDevice(adapter, type, nullptr, flags, levels + 1, count - 1, D3D11_SDK_VERSION,
+							   g.device.put(), &g.feature_level, g.context.put());
+	return hr;
+}
+
 bool create_device()
 {
 	UINT flags = 0;
@@ -217,30 +344,22 @@ bool create_device()
 	if (debug && *debug && *debug != '0')
 		flags |= D3D11_CREATE_DEVICE_DEBUG;
 
-	const D3D_FEATURE_LEVEL levels[] = {
-		D3D_FEATURE_LEVEL_11_1,
-		D3D_FEATURE_LEVEL_11_0,
-		D3D_FEATURE_LEVEL_10_1,
-		D3D_FEATURE_LEVEL_10_0,
-	};
+	ComRef<IDXGIFactory1> enum_factory;
+	ComRef<IDXGIAdapter1> adapter;
+	if (SUCCEEDED(CreateDXGIFactory1(__uuidof(IDXGIFactory1), reinterpret_cast<void **>(enum_factory.put()))))
+		choose_adapter(enum_factory.get(), g.adapter_choice, adapter);
 
-	HRESULT hr = E_FAIL;
-	for (int attempt = 0; attempt < 2; ++attempt) {
-		// Windows 7 without the platform update rejects 11_1 outright.
-		const D3D_FEATURE_LEVEL *first = levels;
-		UINT count = sizeof(levels) / sizeof(levels[0]);
-		hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags,
-							   first, count, D3D11_SDK_VERSION,
-							   g.device.put(), &g.feature_level, g.context.put());
-		if (hr == E_INVALIDARG)
-			hr = D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags,
-								   first + 1, count - 1, D3D11_SDK_VERSION,
-								   g.device.put(), &g.feature_level, g.context.put());
-		if (SUCCEEDED(hr) || !(flags & D3D11_CREATE_DEVICE_DEBUG))
-			break;
+	HRESULT hr = create_device_on(adapter.get(), flags);
+	if (FAILED(hr) && (flags & D3D11_CREATE_DEVICE_DEBUG)) {
 		// Debug layer requested but the SDK layers aren't installed.
 		logWarning("Direct3D 11: debug layer unavailable, continuing without it");
 		flags &= ~D3D11_CREATE_DEVICE_DEBUG;
+		hr = create_device_on(adapter.get(), flags);
+	}
+	if (FAILED(hr) && adapter) {
+		logWarning("Direct3D 11: the selected graphics card can't run Direct3D 11 (0x%08lx); using the default adapter",
+				   static_cast<unsigned long>(hr));
+		hr = create_device_on(nullptr, flags);
 	}
 	if (FAILED(hr)) {
 		logWarning("Direct3D 11: no hardware device at feature level 10_0 or better (0x%08lx)",
@@ -248,20 +367,21 @@ bool create_device()
 		return false;
 	}
 
+	// The swap chain must come from the factory that owns the device's
+	// adapter, which may not be the default one.
 	ComRef<IDXGIDevice> dxgi_device;
-	ComRef<IDXGIAdapter> adapter;
+	ComRef<IDXGIAdapter> device_adapter;
 	if (FAILED(g.device.as(dxgi_device)) ||
-		FAILED(dxgi_device->GetAdapter(adapter.put())) ||
-		FAILED(adapter->GetParent(__uuidof(IDXGIFactory1), reinterpret_cast<void **>(g.factory.put())))) {
+		FAILED(dxgi_device->GetAdapter(device_adapter.put())) ||
+		FAILED(device_adapter->GetParent(__uuidof(IDXGIFactory1), reinterpret_cast<void **>(g.factory.put())))) {
 		logWarning("Direct3D 11: could not reach the DXGI factory");
 		return false;
 	}
 
 	DXGI_ADAPTER_DESC desc = {};
-	adapter->GetDesc(&desc);
-	char name[128] = {};
-	WideCharToMultiByte(CP_UTF8, 0, desc.Description, -1, name, sizeof(name) - 1, nullptr, nullptr);
-	g.description = std::string(name) + " (feature level " + feature_level_name(g.feature_level) + ")";
+	device_adapter->GetDesc(&desc);
+	g.adapter_name = narrow(desc.Description);
+	g.description = g.adapter_name + " (feature level " + feature_level_name(g.feature_level) + ")";
 	return true;
 }
 
@@ -591,7 +711,20 @@ D3D11_VIEWPORT letterbox_viewport(int frame_width, int frame_height)
 
 namespace D3D11 {
 
-bool Initialize(SDL_Window *window, bool vsync)
+const char *const kAdapterAutomatic = "";
+const char *const kAdapterHighPerformance = "high_performance";
+const char *const kAdapterMinimumPower = "minimum_power";
+
+std::vector<AdapterInfo> EnumerateAdapters()
+{
+	std::vector<AdapterInfo> infos;
+	ComRef<IDXGIFactory1> factory;
+	if (SUCCEEDED(CreateDXGIFactory1(__uuidof(IDXGIFactory1), reinterpret_cast<void **>(factory.put()))))
+		list_adapters(factory.get(), infos, nullptr);
+	return infos;
+}
+
+bool Initialize(SDL_Window *window, bool vsync, const std::string &adapter_choice)
 {
 	Shutdown();
 
@@ -605,17 +738,20 @@ bool Initialize(SDL_Window *window, bool vsync)
 	g.hwnd = info.info.win.window;
 	g.vsync = vsync;
 	g.device_lost = false;
+	g.adapter_choice = adapter_choice;
 	if (!create_all()) {
 		g.hwnd = nullptr;
+		g.adapter_choice.clear();
 		return false;
 	}
 
 	g.active = true;
-	static bool info_printed = false;
-	if (!info_printed) {
+	// Print once per device, not on every window recreation.
+	static std::string last_printed;
+	if (last_printed != g.description) {
 		printf("Direct3D 11: %s, %s swap chain\n", g.description.c_str(),
 			   g.flip_model ? "flip-model" : "blt-model");
-		info_printed = true;
+		last_printed = g.description;
 	}
 	logNote("Direct3D 11: %s", g.description.c_str());
 	return true;
@@ -631,6 +767,18 @@ void Shutdown()
 	g.active = false;
 	g.device_lost = false;
 	g.hwnd = nullptr;
+	g.adapter_choice.clear();
+	g.adapter_name.clear();
+}
+
+const std::string &ActiveAdapterChoice()
+{
+	return g.adapter_choice;
+}
+
+const std::string &ActiveAdapterName()
+{
+	return g.adapter_name;
 }
 
 bool IsActive()

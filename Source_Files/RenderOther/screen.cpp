@@ -785,8 +785,12 @@ static bool need_mode_change(int window_width, int window_height,
 	bool wantd3d = (screen_mode.acceleration == _d3d11_acceleration);
 	if (wantd3d != using_d3d11())
 		return true;
-	if (wantd3d)
-		D3D11::SetVSync(Get_OGL_ConfigureData().WaitForVSync);
+	if (wantd3d) {
+		// a different graphics card needs a new device, so a new window
+		if (D3D11::ActiveAdapterChoice() != graphics_preferences->d3d11_adapter)
+			return true;
+		D3D11::SetVSync(graphics_preferences->d3d11_vsync);
+	}
 #endif
 
 	// are we switching to/from OpenGL?
@@ -1107,7 +1111,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	} // end if need_window
 #ifdef HAVE_D3D11
 	if (screen_mode.acceleration == _d3d11_acceleration && !using_d3d11()) {
-		if (!D3D11::Initialize(main_screen, Get_OGL_ConfigureData().WaitForVSync)) {
+		if (!D3D11::Initialize(main_screen, graphics_preferences->d3d11_vsync, graphics_preferences->d3d11_adapter)) {
 			logWarning("Direct3D 11 renderer is not available");
 			fprintf(stderr, "WARNING: Failed to initialize Direct3D 11 renderer\n");
 			fprintf(stderr, "WARNING: Retrying with Software renderer\n");

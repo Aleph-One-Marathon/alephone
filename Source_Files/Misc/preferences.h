@@ -100,6 +100,11 @@ struct graphics_preferences_data
     int16 movie_export_audio_quality;
 
 	int16 ephemera_quality;
+
+	// Direct3D 11 (Windows): graphics card choice, as a D3D11::kAdapter*
+	// constant or a D3D11::AdapterInfo::id; empty means Windows' default.
+	char d3d11_adapter[64];
+	bool d3d11_vsync;
 };
 
 enum {

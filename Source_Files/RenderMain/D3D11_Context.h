@@ -34,6 +34,10 @@
 
 #ifdef HAVE_D3D11
 
+#include <cstdint>
+#include <string>
+#include <vector>
+
 struct SDL_Window;
 struct SDL_Surface;
 struct ID3D11Device;
@@ -41,10 +45,40 @@ struct ID3D11DeviceContext;
 
 namespace D3D11 {
 
-// Creates the device and a swap chain for the window. Returns false
-// (and leaves nothing behind) if Direct3D 11 at feature level 10_0 or
-// better is unavailable; the caller should fall back to software.
-bool Initialize(SDL_Window *window, bool vsync);
+// Which graphics card to render on. A choice is stored in preferences as
+// one of these strings, or as a specific card's AdapterInfo::id.
+extern const char *const kAdapterAutomatic;		// Windows' default adapter ("")
+extern const char *const kAdapterHighPerformance;	// Windows' high-performance GPU
+extern const char *const kAdapterMinimumPower;	// Windows' power-saving GPU
+
+struct AdapterInfo {
+	// Stable across reboots and driver updates: PCI vendor, device and
+	// subsystem IDs, plus an ordinal to tell identical cards apart.
+	// (Windows' own adapter LUIDs change on every boot.)
+	std::string id;
+	std::string name;				// e.g. "NVIDIA GeForce RTX 3060"
+	uint64_t dedicated_video_memory;	// bytes; 0 for most integrated GPUs
+	bool is_default;				// the adapter Windows uses by default
+};
+
+// Hardware graphics cards Windows reports, in Windows' order (the default
+// adapter first). Microsoft's software renderer is left out. Safe to call
+// whether or not Direct3D 11 is active.
+std::vector<AdapterInfo> EnumerateAdapters();
+
+// Creates the device on the chosen adapter and a swap chain for the
+// window. If the chosen card isn't present any more, falls back to the
+// Windows default. Returns false (and leaves nothing behind) if Direct3D
+// 11 at feature level 10_0 or better is unavailable; the caller should
+// fall back to software.
+bool Initialize(SDL_Window *window, bool vsync, const std::string &adapter_choice = kAdapterAutomatic);
+
+// The adapter choice passed to the last successful Initialize, so callers
+// can tell whether the preference has changed since.
+const std::string &ActiveAdapterChoice();
+
+// Name of the card actually in use (empty when inactive).
+const std::string &ActiveAdapterName();
 
 // Releases everything. Must be called before the window is destroyed.
 void Shutdown();
