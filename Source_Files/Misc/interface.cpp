@@ -1013,7 +1013,7 @@ void show_ingame_menu()
 	w_button* resume_button = new w_button("RETURN TO GAME", [](void* p) { dialog_cancel(p); }, d.get());
 	placer->dual_add(resume_button, *d);
 
-	placer->add(new w_spacer{get_theme_space(BUTTON_WIDGET, BUTTON_HEIGHT)/2}, true);
+	placer->add(new w_spacer{static_cast<uint16_t>(get_theme_space(BUTTON_WIDGET, BUTTON_HEIGHT)/2)}, true);
 
 	w_button* controls_button = new w_button("CONTROLS", [](void*) { controls_dialog(true); });
 	placer->dual_add(controls_button, *d);
@@ -1038,7 +1038,7 @@ void show_ingame_menu()
 		}
 	};
 	
-	placer->add(new w_spacer{get_theme_space(BUTTON_WIDGET, BUTTON_HEIGHT)/2}, true);
+	placer->add(new w_spacer{static_cast<uint16_t>(get_theme_space(BUTTON_WIDGET, BUTTON_HEIGHT)/2)}, true);
 
 	w_button* quit_button = new w_button("EXIT GAME", quit_callback, d.get());
 	placer->dual_add(quit_button, *d);
