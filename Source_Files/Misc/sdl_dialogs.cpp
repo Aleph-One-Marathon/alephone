@@ -40,6 +40,7 @@
 #include "screen_drawing.h"
 #include "shell.h"
 #include "screen.h"
+#include "D3D11_Context.h"
 #include "images.h"
 #include "world.h"
 #include "SoundManager.h"
@@ -2067,6 +2068,25 @@ widget *dialog::get_widget_by_id(short inID) const
  *  Handle event
  */
 
+
+// Converts a mouse position from window coordinates to the coordinates of
+// the logical screen the dialog is drawn on. In software mode SDL's
+// renderer already did this; OpenGL and Direct3D 11 scale the frame
+// themselves, so they have to map the mouse back.
+static void window_to_dialog_coords(int &x, int &y)
+{
+#ifdef HAVE_OPENGL
+	if (OGL_IsActive()) {
+		OGL_Blitter::WindowToScreen(x, y);
+		return;
+	}
+#endif
+#ifdef HAVE_D3D11
+	if (D3D11::IsActive())
+		alephone::Screen::instance()->window_to_screen(x, y);
+#endif
+}
+
 void dialog::event(SDL_Event &e)
 {
 
@@ -2107,10 +2127,7 @@ void dialog::event(SDL_Event &e)
 	  if (e.type == SDL_MOUSEMOTION)
 	  {
 		  int x = e.motion.x, y = e.motion.y;
-#ifdef HAVE_OPENGL
-		  if (OGL_IsActive())
-			  OGL_Blitter::WindowToScreen(x, y);
-#endif
+		  window_to_dialog_coords(x, y);
 		  widget *target = 0;
 		  if (mouse_widget)
 			  target = mouse_widget;
@@ -2133,10 +2150,7 @@ void dialog::event(SDL_Event &e)
 	  else if (e.type == SDL_MOUSEBUTTONDOWN)
 	  {
 		  int x = e.button.x, y = e.button.y;
-#ifdef HAVE_OPENGL
-		  if (OGL_IsActive())
-			  OGL_Blitter::WindowToScreen(x, y);
-#endif
+		  window_to_dialog_coords(x, y);
 		  int num = find_widget(x, y);
 		  if (num >= 0)
 		  {
@@ -2155,10 +2169,7 @@ void dialog::event(SDL_Event &e)
 			  if (e.button.button == SDL_BUTTON_LEFT || e.button.button == SDL_BUTTON_RIGHT)
 			  {
 				  int x = e.button.x, y = e.button.y;
-#ifdef HAVE_OPENGL
-				  if (OGL_IsActive())
-					  OGL_Blitter::WindowToScreen(x, y);
-#endif
+				  window_to_dialog_coords(x, y);
 				  mouse_widget->mouse_up(x - rect.x - mouse_widget->rect.x, y - rect.y - mouse_widget->rect.y);
 			  }
 			  

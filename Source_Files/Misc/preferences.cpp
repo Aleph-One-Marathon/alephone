@@ -68,6 +68,7 @@ May 22, 2003 (Woody Zenfell):
 #include "find_files.h"
 #include "game_wad.h" // for set_map_file
 #include "screen.h"
+#include "D3D11_Context.h"
 #include "fades.h"
 #include "extensions.h"
 #include "Console.h"
@@ -97,6 +98,7 @@ May 22, 2003 (Woody Zenfell):
 
 #include <cmath>
 #include <sstream>
+#include <algorithm>
 #include <boost/algorithm/hex.hpp>
 
 #include "shell_options.h"
@@ -1027,7 +1029,11 @@ static const char *gamma_labels[9] = {
 };
 
 static const char* renderer_labels[] = {
-	"Software", "OpenGL", NULL
+	"Software", "OpenGL",
+#ifdef HAVE_D3D11
+	"Direct3D 11",
+#endif
+	NULL
 };
 
 static const char *bobbing_view_labels[] = {
@@ -1183,6 +1189,136 @@ static void software_rendering_options_dialog(void* arg)
 	}
 }
 
+#ifdef HAVE_D3D11
+// Set when the Direct3D 11 options change something that needs a new
+// device (the graphics card), so the Graphics dialog applies it on accept.
+static bool d3d11_device_settings_changed = false;
+
+static std::string d3d11_adapter_label(const D3D11::AdapterInfo& adapter)
+{
+	std::ostringstream label;
+	label << adapter.name;
+	const uint64_t mb = adapter.dedicated_video_memory / (1024 * 1024);
+	if (mb >= 1024)
+		label << " (" << (mb + 512) / 1024 << " GB)";
+	else if (mb >= 64)	// integrated GPUs report a small carve-out or nothing
+		label << " (" << mb << " MB)";
+	return label.str();
+}
+
+static void d3d11_rendering_options_dialog(void* arg)
+{
+	dialog d;
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add(new w_title("DIRECT3D 11 RENDERING OPTIONS"), d);
+	placer->add(new w_spacer(), true);
+
+	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	table->col_flags(0, placeable::kAlignRight);
+
+	// Graphics card: Windows' choices first, then each detected card.
+	std::vector<std::string> adapter_choices = {
+		D3D11::kAdapterAutomatic, D3D11::kAdapterHighPerformance, D3D11::kAdapterMinimumPower
+	};
+	std::vector<std::string> adapter_labels = {
+		"Automatic (Windows Default)", "High Performance GPU", "Power Saving GPU"
+	};
+	for (const auto& adapter : D3D11::EnumerateAdapters()) {
+		adapter_choices.push_back(adapter.id);
+		adapter_labels.push_back(d3d11_adapter_label(adapter));
+	}
+	const std::string saved_adapter = graphics_preferences->d3d11_adapter;
+	auto found = std::find(adapter_choices.begin(), adapter_choices.end(), saved_adapter);
+	if (found == adapter_choices.end()) {
+		// Keep a card that's unplugged right now instead of silently
+		// forgetting it; the renderer falls back to the default meanwhile.
+		adapter_choices.push_back(saved_adapter);
+		adapter_labels.push_back("Saved Card (Not Connected)");
+		found = adapter_choices.end() - 1;
+	}
+
+	w_select_popup *adapter_w = new w_select_popup();
+	adapter_w->set_labels(adapter_labels);
+	adapter_w->set_selection(static_cast<int>(found - adapter_choices.begin()));
+	table->dual_add(adapter_w->label("Graphics Card"), d);
+	table->dual_add(adapter_w, d);
+
+	std::string in_use = "In use: ";
+	in_use += D3D11::IsActive() ? D3D11::ActiveAdapterName() : std::string("(starts with the game)");
+	table->dual_add_row(new w_static_text(in_use.c_str()), d);
+
+	w_toggle *vsync_w = new w_toggle(graphics_preferences->d3d11_vsync);
+	table->dual_add(vsync_w->label("VSync"), d);
+	table->dual_add(vsync_w, d);
+
+	// The world is still drawn by the software renderer in this mode, so
+	// its options keep applying.
+	table->add_row(new w_spacer(), true);
+	table->dual_add_row(new w_static_text("World Rendering (Software)"), d);
+
+	w_toggle *resolution_w = new w_toggle(graphics_preferences->screen_mode.high_resolution, resolution_labels);
+	table->dual_add(resolution_w->label("Resolution"), d);
+	table->dual_add(resolution_w, d);
+
+	w_select *sw_alpha_blending_w = new w_select(graphics_preferences->software_alpha_blending, sw_alpha_blending_labels);
+	table->dual_add(sw_alpha_blending_w->label("Transparent Liquids"), d);
+	table->dual_add(sw_alpha_blending_w, d);
+
+	w_select* ephemera_quality_w = new w_select(graphics_preferences->ephemera_quality, ephemera_quality_labels);
+	table->dual_add(ephemera_quality_w->label("Scripted Effects Quality"), d);
+	table->dual_add(ephemera_quality_w, d);
+
+	placer->add(table, true);
+
+	placer->add(new w_spacer(), true);
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	placer->add(button_placer, true);
+
+	d.set_widget_placer(placer);
+	clear_screen();
+
+	if (d.run() == 0) {	// Accepted
+		bool changed = false;
+
+		const std::string& adapter = adapter_choices[adapter_w->get_selection()];
+		if (adapter != graphics_preferences->d3d11_adapter) {
+			strncpy(graphics_preferences->d3d11_adapter, adapter.c_str(), sizeof(graphics_preferences->d3d11_adapter) - 1);
+			graphics_preferences->d3d11_adapter[sizeof(graphics_preferences->d3d11_adapter) - 1] = '\0';
+			d3d11_device_settings_changed = true;
+			changed = true;
+		}
+
+		bool vsync = vsync_w->get_selection() != 0;
+		if (vsync != graphics_preferences->d3d11_vsync) {
+			graphics_preferences->d3d11_vsync = vsync;
+			D3D11::SetVSync(vsync);	// takes effect on the next frame
+			changed = true;
+		}
+
+		bool hi_res = resolution_w->get_selection() != 0;
+		if (hi_res != graphics_preferences->screen_mode.high_resolution) {
+			graphics_preferences->screen_mode.high_resolution = hi_res;
+			changed = true;
+		}
+
+		if (sw_alpha_blending_w->get_selection() != graphics_preferences->software_alpha_blending) {
+			graphics_preferences->software_alpha_blending = sw_alpha_blending_w->get_selection();
+			changed = true;
+		}
+
+		if (ephemera_quality_w->get_selection() != graphics_preferences->ephemera_quality) {
+			graphics_preferences->ephemera_quality = ephemera_quality_w->get_selection();
+			changed = true;
+		}
+
+		if (changed)
+			write_preferences();
+	}
+}
+#endif
+
 // ZZZ addition: bounce to correct renderer-config box based on selected rendering system.
 static void rendering_options_dialog_demux(void* arg)
 {
@@ -1195,6 +1331,12 @@ static void rendering_options_dialog_demux(void* arg)
 
 		case _opengl_acceleration:
 			OpenGLDialog::Create (theSelectedRenderer)->OpenGLPrefsByRunning ();
+			break;
+
+		case _d3d11_acceleration:
+#ifdef HAVE_D3D11
+			d3d11_rendering_options_dialog(arg);
+#endif
 			break;
 
 		default:
@@ -1418,6 +1560,9 @@ static void graphics_dialog(void *arg)
 	clear_screen();
     
     // Run dialog
+#ifdef HAVE_D3D11
+	d3d11_device_settings_changed = false;
+#endif
     if (d.run() == 0) {	// Accepted
 	    bool changed = false;
 	    
@@ -1529,6 +1674,11 @@ static void graphics_dialog(void *arg)
 			changed = true;
 		}
 		
+#ifdef HAVE_D3D11
+		// A new graphics card needs a new device and window.
+		if (d3d11_device_settings_changed)
+			changed = true;
+#endif
 	    if (changed) {
 			Plugins::instance()->invalidate();
 		    write_preferences();
@@ -3640,6 +3790,8 @@ InfoTree graphics_preferences_tree()
 	root.put_attr("ogl_flags", graphics_preferences->OGL_Configure.Flags);
 	root.put_attr("software_alpha_blending", graphics_preferences->software_alpha_blending);
 	root.put_attr("software_sdl_driver", graphics_preferences->software_sdl_driver);
+	root.put_attr("d3d11_adapter", graphics_preferences->d3d11_adapter);
+	root.put_attr("d3d11_vsync", graphics_preferences->d3d11_vsync);
 	root.put_attr("fps_target", graphics_preferences->fps_target);
 	root.put_attr("anisotropy_level", graphics_preferences->OGL_Configure.AnisotropyLevel);
 	root.put_attr("multisamples", graphics_preferences->OGL_Configure.Multisamples);
@@ -4151,6 +4303,8 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 
 	preferences->software_alpha_blending = _sw_alpha_off;
 	preferences->software_sdl_driver = _sw_driver_default;
+	obj_clear(preferences->d3d11_adapter);
+	preferences->d3d11_vsync = true;
 	preferences->fps_target = 30;
 
 	preferences->movie_export_video_quality = 50;
@@ -4330,7 +4484,11 @@ static bool validate_graphics_preferences(graphics_preferences_data *preferences
 		changed= true;
 	}
 
-	if (preferences->screen_mode.acceleration != _no_acceleration && preferences->screen_mode.acceleration != _opengl_acceleration)
+	if (preferences->screen_mode.acceleration != _no_acceleration && preferences->screen_mode.acceleration != _opengl_acceleration
+#ifdef HAVE_D3D11
+		&& preferences->screen_mode.acceleration != _d3d11_acceleration
+#endif
+		)
 		preferences->screen_mode.acceleration = _opengl_acceleration;
 
 	// OpenGL requires at least 16 bit color depth
@@ -4626,6 +4784,8 @@ void parse_graphics_preferences(InfoTree root, std::string version)
 	root.read_attr("ogl_flags", graphics_preferences->OGL_Configure.Flags);
 	root.read_attr("software_alpha_blending", graphics_preferences->software_alpha_blending);
 	root.read_attr("software_sdl_driver", graphics_preferences->software_sdl_driver);
+	root.read_cstr("d3d11_adapter", graphics_preferences->d3d11_adapter, sizeof(graphics_preferences->d3d11_adapter) - 1);
+	root.read_attr("d3d11_vsync", graphics_preferences->d3d11_vsync);
 	root.read_attr("fps_target", graphics_preferences->fps_target);
 	root.read_attr("anisotropy_level", graphics_preferences->OGL_Configure.AnisotropyLevel);
 	root.read_attr("multisamples", graphics_preferences->OGL_Configure.Multisamples);

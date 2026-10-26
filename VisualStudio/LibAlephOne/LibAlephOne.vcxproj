@@ -568,6 +568,7 @@
     <ClCompile Include="..\..\Source_Files\RenderMain\ImageLoader_SDL.cpp" />
     <ClCompile Include="..\..\Source_Files\RenderMain\ImageLoader_Shared.cpp" />
     <ClCompile Include="..\..\Source_Files\RenderMain\OGL_Faders.cpp" />
+    <ClCompile Include="..\..\Source_Files\RenderMain\D3D11_Context.cpp" />
     <ClCompile Include="..\..\Source_Files\RenderMain\OGL_FBO.cpp" />
     <ClCompile Include="..\..\Source_Files\RenderMain\OGL_Model_Def.cpp" />
     <ClCompile Include="..\..\Source_Files\RenderMain\OGL_Render.cpp" />
@@ -785,6 +786,7 @@
     <ClInclude Include="..\..\Source_Files\RenderMain\ImageLoader.h" />
     <ClInclude Include="..\..\Source_Files\RenderMain\low_level_textures.h" />
     <ClInclude Include="..\..\Source_Files\RenderMain\OGL_Faders.h" />
+    <ClInclude Include="..\..\Source_Files\RenderMain\D3D11_Context.h" />
     <ClInclude Include="..\..\Source_Files\RenderMain\OGL_FBO.h" />
     <ClInclude Include="..\..\Source_Files\RenderMain\OGL_Headers.h" />
     <ClInclude Include="..\..\Source_Files\RenderMain\OGL_Model_Def.h" />

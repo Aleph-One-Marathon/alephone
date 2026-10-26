@@ -103,7 +103,7 @@ void HUD_Lua_Class::start_draw(void)
 	alephone::Screen *scr = alephone::Screen::instance();
 	scr->bound_screen();
     m_wr = scr->window_rect();
-	m_opengl = (get_screen_mode()->acceleration != _no_acceleration);
+	m_opengl = (get_screen_mode()->acceleration == _opengl_acceleration);
 	m_masking_mode = _mask_disabled;
 	
 #ifdef HAVE_OPENGL
