@@ -172,7 +172,6 @@ void parse_environment_preferences(InfoTree root, std::string version);
 static void player_dialog(void *arg);
 static void online_dialog(void *arg);
 static void graphics_dialog(void *arg);
-static void sound_dialog(void *arg);
 static void environment_dialog(void *arg);
 static void plugins_dialog(void *arg);
 static void keyboard_dialog(void *arg);
@@ -236,7 +235,7 @@ void handle_preferences(void)
 	d.add(w_online);
 	w_button *w_graphics = new w_button("GRAPHICS", graphics_dialog, &d);
 	d.add(w_graphics);
-	w_button *w_sound = new w_button("SOUND", sound_dialog, &d);
+	w_button *w_sound = new w_button("SOUND", [](void*) { sound_dialog(false); });
 	d.add(w_sound);
 	w_button *w_controls = new w_button("CONTROLS", [](void*) { controls_dialog(false); });
 	d.add(w_controls);
@@ -1584,12 +1583,12 @@ public:
 	}
 };
 
-static void sound_dialog(void *arg)
+void sound_dialog(bool in_game)
 {
 	// Create dialog
-	dialog d;
+	auto d = std::make_unique<dialog>();
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("SOUND SETUP"), d);
+	placer->dual_add(new w_title("SOUND SETUP"), *d);
 	placer->add(new w_spacer(), true);
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -1599,24 +1598,28 @@ static void sound_dialog(void *arg)
 	w_select_popup* channel_w = new w_select_popup();
 	channel_w->set_labels(channel_labels);
 	channel_w->set_selection(mapping_channel_index.at(sound_preferences->channel_type));
-	table->dual_add(channel_w->label("Channels"), d);
-	table->dual_add(channel_w, d);
+	table->dual_add(channel_w->label("Channels"), *d);
+	table->dual_add(channel_w, *d);
+	if (in_game)
+	{
+		channel_w->set_enabled(false);
+	}
 
 	w_toggle* dynamic_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _dynamic_tracking_flag));
-	table->dual_add(dynamic_w->label("Active Panning"), d);
-	table->dual_add(dynamic_w, d);
+	table->dual_add(dynamic_w->label("Active Panning"), *d);
+	table->dual_add(dynamic_w, *d);
 
 	bool is_3d_sounds_enabled = sound_preferences->flags & _3d_sounds_flag;
 	w_toggle *sounds3d_w = new w_toggle(is_3d_sounds_enabled);
-	table->dual_add(sounds3d_w->label("3D Sounds"), d);
-	table->dual_add(sounds3d_w, d);
+	table->dual_add(sounds3d_w->label("3D Sounds"), *d);
+	table->dual_add(sounds3d_w, *d);
 
 	w_toggle *hrtf_w = new w_toggle((OpenALManager::Get() && OpenALManager::Get()->IsHrtfEnabled()) || sound_preferences->flags & _hrtf_flag);
-	table->dual_add(hrtf_w->label("HRTF (Headphones)"), d);
-	table->dual_add(hrtf_w, d);
-	hrtf_w->set_enabled(OpenALManager::Get() && OpenALManager::Get()->GetHrtfSupport() != OpenALManager::HrtfSupport::Unsupported && is_3d_sounds_enabled && sound_preferences->channel_type == ChannelType::_stereo);
+	table->dual_add(hrtf_w->label("HRTF (Headphones)"), *d);
+	table->dual_add(hrtf_w, *d);
+	hrtf_w->set_enabled(OpenALManager::Get() && OpenALManager::Get()->GetHrtfSupport() != OpenALManager::HrtfSupport::Unsupported && is_3d_sounds_enabled && sound_preferences->channel_type == ChannelType::_stereo && !in_game);
 
-	auto hrtf_enable_callback = [&](void*) {
+	auto hrtf_enable_callback = [=](void*) {
 		bool can_enable_hrtf = sounds3d_w->get_selection() == 1
 			&& mapping_index_channel.at(channel_w->get_selection()) == ChannelType::_stereo
 			&& OpenALManager::Get() && OpenALManager::Get()->GetHrtfSupport() == OpenALManager::HrtfSupport::Supported;
@@ -1634,61 +1637,50 @@ static void sound_dialog(void *arg)
 	table->add_row(new w_spacer(), true);
 
 	w_volume_slider *volume_w = new w_volume_slider(static_cast<int>(sound_preferences->volume_db / 2 + 20));
-	table->dual_add(volume_w->label("Master Volume"), d);
-	table->dual_add(volume_w, d);
+	table->dual_add(volume_w->label("Master Volume"), *d);
+	table->dual_add(volume_w, *d);
 
 	w_slider *music_volume_w = new w_music_slider(sound_preferences->music_db + 20);
-	table->dual_add(music_volume_w->label("Music Volume"), d);
-	table->dual_add(music_volume_w, d);
+	table->dual_add(music_volume_w->label("Music Volume"), *d);
+	table->dual_add(music_volume_w, *d);
 
 	table->add_row(new w_spacer(), true);
 	
 	static const char *quality_labels[3] = {"8-bit Slot", "16-bit Slot", NULL};
 	w_toggle *quality_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _16bit_sound_flag), quality_labels);
-	table->dual_add(quality_w->label("Source"), d);
-	table->dual_add(quality_w, d);
+	table->dual_add(quality_w->label("Source"), *d);
+	table->dual_add(quality_w, *d);
 
 	w_toggle *ambient_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _ambient_sound_flag));
-	table->dual_add(ambient_w->label("Ambient Sounds"), d);
-	table->dual_add(ambient_w, d);
+	table->dual_add(ambient_w->label("Ambient Sounds"), *d);
+	table->dual_add(ambient_w, *d);
 
 	w_toggle *more_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _more_sounds_flag));
-	table->dual_add(more_w->label("More Sounds"), d);
-	table->dual_add(more_w, d);
+	table->dual_add(more_w->label("More Sounds"), *d);
+	table->dual_add(more_w, *d);
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("Interface Sounds"), d);
+	table->dual_add_row(new w_static_text("Interface Sounds"), *d);
 	
 	w_toggle *button_sounds_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
-	table->dual_add(button_sounds_w->label("In Game (F-key)"), d);
-	table->dual_add(button_sounds_w, d);
+	table->dual_add(button_sounds_w->label("In Game (F-key)"), *d);
+	table->dual_add(button_sounds_w, *d);
 
 	w_toggle *dialog_sounds_w = new w_toggle(!TEST_FLAG(sound_preferences->flags, _mute_dialogs));
-	table->dual_add(dialog_sounds_w->label("Dialogs"), d);
-	table->dual_add(dialog_sounds_w, d);
+	table->dual_add(dialog_sounds_w->label("Dialogs"), *d);
+	table->dual_add(dialog_sounds_w, *d);
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("Experimental Sound Options"), d);
+	table->dual_add_row(new w_static_text("Experimental Sound Options"), *d);
 		w_toggle *zrd_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _lower_restart_delay));
-	table->dual_add(zrd_w->label("Rapid-fire Sounds"), d);
-	table->dual_add(zrd_w, d);
+	table->dual_add(zrd_w->label("Rapid-fire Sounds"), *d);
+	table->dual_add(zrd_w, *d);
 
 	placer->add(table, true);
 
 	placer->add(new w_spacer(), true);
 
-	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
-	
-	placer->add(button_placer, true);
-
-	d.set_widget_placer(placer);
-	// Clear screen
-	clear_screen();
-
-	// Run dialog
-	if (d.run() == 0) {	// Accepted
+	const auto accept = [=]() {
 		bool changed = false;
 
 		uint16 flags = 0;
@@ -1738,11 +1730,40 @@ static void sound_dialog(void *arg)
 			write_preferences();
 			if (is_music_playing) Music::instance()->RestartIntroMusic();
 		}
-	}
-	else if (OpenALManager::Get())
+	};
+
+	const auto cancel = [=]() {
+		if (OpenALManager::Get())
+		{
+			OpenALManager::Get()->SetMasterVolume(SoundManager::From_db(sound_preferences->volume_db));
+			OpenALManager::Get()->SetMusicVolume(SoundManager::From_db(sound_preferences->music_db, true));
+		}
+	};
+
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("ACCEPT",
+										 [=](void* d) {
+											 accept();
+											 dialog_ok(d);
+										 }, d.get()), *d);
+	button_placer->dual_add(new w_button("CANCEL",
+										 [=](void* d) {
+											 cancel();
+											 dialog_cancel(d);
+										 }, d.get()), *d);
+	
+	placer->add(button_placer, true);
+
+	d->set_widget_placer(placer);
+
+	if (in_game)
 	{
-		OpenALManager::Get()->SetMasterVolume(SoundManager::From_db(sound_preferences->volume_db));
-		OpenALManager::Get()->SetMusicVolume(SoundManager::From_db(sound_preferences->music_db, true));
+		ingame_dialog_push(std::move(d));
+	}
+	else
+	{
+		clear_screen();
+		d->run();
 	}
 }
 
