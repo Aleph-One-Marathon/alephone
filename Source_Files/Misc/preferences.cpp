@@ -1543,6 +1543,114 @@ static void graphics_dialog(void *arg)
     }
 }
 
+extern void UpdateFieldOfView();
+extern void init_interpolated_world();
+
+void graphics_dialog_ingame()
+{
+	auto d = std::make_unique<dialog>();
+
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add(new w_title("GRAPHICS SETUP"), *d);
+	placer->add(new w_spacer(), true);
+
+	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	table->col_flags(0, placeable::kAlignRight);
+	table->col_flags(1, placeable::kAlignLeft);
+
+	w_select *gamma_w = new w_select(0, gamma_labels);
+	gamma_w->set_selection(graphics_preferences->screen_mode.gamma_level);
+	table->dual_add(gamma_w->label("Brightness"), *d);
+	table->dual_add(gamma_w, *d);
+
+	w_select *fps_target_w = new w_select(0, fps_target_labels);
+	for (auto i = 0; fps_target_labels[i] != NULL; ++i)
+	{
+		if (fps_target_values[i] == graphics_preferences->fps_target)
+		{
+			fps_target_w->set_selection(i);
+		}
+	}
+	table->dual_add(fps_target_w->label("Framerate Target"), *d);
+	table->dual_add(fps_target_w, *d);
+
+	table->add_row(new w_spacer(), true);
+
+	w_toggle *override_fov_w = new w_toggle(graphics_preferences->screen_mode.fov != 0);
+	w_fov_slider *fov_slider_w = new w_fov_slider((graphics_preferences->screen_mode.fov == 0 ? static_cast<int>(View_FOV_Normal()) : graphics_preferences->screen_mode.fov) - 30);
+	fov_slider_w->set_enabled(graphics_preferences->screen_mode.fov != 0);
+	override_fov_w->set_selection_changed_callback([=](w_select*)
+	{
+		if (override_fov_w->get_selection())
+		{
+			fov_slider_w->set_enabled(true);
+		}
+		else
+		{
+			fov_slider_w->set_enabled(false);
+		}
+	});
+	
+	table->dual_add(override_fov_w->label("Override FOV*"), *d);
+	auto fov_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET));
+	fov_placer->dual_add(override_fov_w, *d);
+	fov_placer->dual_add(fov_slider_w, *d);
+	
+	table->add(fov_placer);
+	
+	table->dual_add_row(new w_static_text("*may interfere with third-party scenario effects"), *d);
+
+	const auto accept = [=]()
+	{
+		bool changed = false;
+		
+		short gamma = static_cast<short>(gamma_w->get_selection());
+	    if (gamma != graphics_preferences->screen_mode.gamma_level) {
+		    graphics_preferences->screen_mode.gamma_level = gamma;
+		    changed = true;
+	    }
+
+		auto fps_target = fps_target_values[fps_target_w->get_selection()];
+		if (fps_target != graphics_preferences->fps_target)
+		{
+			graphics_preferences->fps_target = fps_target;
+			changed = true;
+		}
+
+		int fov = override_fov_w->get_selection() == 0 ? 0 : fov_slider_w->get_selection() + 30;
+		if (fov != graphics_preferences->screen_mode.fov)
+		{
+			graphics_preferences->screen_mode.fov = fov;
+			changed = true;
+		}
+
+		if (changed)
+		{
+			write_preferences();
+			UpdateFieldOfView();
+			init_interpolated_world();
+		}
+	};
+
+	placer->add(table, true);
+
+	placer->add(new w_spacer(), true);
+
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("ACCEPT",
+										 [=](void *d)
+										 {
+											 accept();
+											 dialog_ok(d);
+										 }, d.get()), *d);
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, d.get()), *d);
+	placer->add(button_placer, true);
+    
+	d->set_widget_placer(placer);
+
+	ingame_dialog_push(std::move(d));
+}
+
 /*
  *  Sound dialog
  */
@@ -3032,11 +3140,11 @@ void controls_dialog(bool in_game)
 	tabs->add(iface, true);
 	tabs->add(other, true);
 	placer->add(tabs, true);
-	
+
 	placer->add(new w_spacer(), true);
 	placer->dual_add(new w_button("RESET ALL KEYS TO DEFAULTS", load_default_keys, d.get()), *d);
 	placer->add(new w_spacer(), true);
-
+	
 	const auto accept = [=]()
 	{
 		bool changed = false;

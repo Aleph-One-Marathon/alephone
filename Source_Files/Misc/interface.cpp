@@ -1015,6 +1015,10 @@ void show_ingame_menu()
 
 	placer->add(new w_spacer{static_cast<uint16_t>(get_theme_space(BUTTON_WIDGET, BUTTON_HEIGHT)/2)}, true);
 
+	w_button* graphics_button = new w_button("GRAPHICS", [](void*) { graphics_dialog_ingame(); });
+	placer->dual_add(graphics_button, *d);
+
+
 	w_button* controls_button = new w_button("CONTROLS", [](void*) { controls_dialog(true); });
 	placer->dual_add(controls_button, *d);
 

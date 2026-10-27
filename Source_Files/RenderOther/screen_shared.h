@@ -401,6 +401,25 @@ void ResetFieldOfView()
 	}
 }
 
+void UpdateFieldOfView()
+{
+	if (world_view->tunnel_vision_active)
+	{
+		world_view->target_field_of_view = TUNNEL_VISION_FIELD_OF_VIEW;
+		world_view->target_field_of_view = TUNNEL_VISION_FIELD_OF_VIEW;
+	}
+	else if (current_player->extravision_duration)
+	{
+		world_view->field_of_view = EXTRAVISION_FIELD_OF_VIEW;
+		world_view->target_field_of_view = EXTRAVISION_FIELD_OF_VIEW;
+	}
+	else
+	{
+		world_view->field_of_view = NORMAL_FIELD_OF_VIEW;
+		world_view->target_field_of_view = NORMAL_FIELD_OF_VIEW;
+	}
+}
+
 
 bool zoom_overhead_map_out(
 	void)
