@@ -2461,18 +2461,25 @@ void dialog_disable_ok_if_empty(w_text_entry* inTextEntry) {
 }
 
 static std::stack<std::unique_ptr<dialog>> ingame_dialogs;
+static bool ingame_dialog_started = false;
 
 void ingame_dialog_push(std::unique_ptr<dialog> d)
 {
 	set_keyboard_controller_status(false);
 	ingame_dialogs.push(std::move(d));
-	ingame_dialogs.top()->start(false);
+	ingame_dialog_started = false; // don't push more than once per main event loop!
 }
 
 void ingame_dialog_poll()
 {
 	if (!ingame_dialogs.empty())
 	{
+		if (!ingame_dialog_started)
+		{
+			ingame_dialogs.top()->start(false);
+			ingame_dialog_started = true;
+		}
+
 		if (ingame_dialogs.top()->poll())
 		{
 			ingame_dialogs.top()->finish();
