@@ -130,6 +130,7 @@ struct NetPlayer
 	int16 stream_id; // to remind gatherer how to contact joiners
 
 	bool net_dead; // only valid if you are the server.
+	bool net_oos; // not sent through network.
 
   //uint8 player_data[MAXIMUM_PLAYER_DATA_SIZE];
   player_info player_data;
