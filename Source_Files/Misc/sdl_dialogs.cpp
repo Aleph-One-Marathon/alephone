@@ -2482,7 +2482,7 @@ void ingame_dialog_poll()
 
 		if (ingame_dialogs.top()->poll())
 		{
-			ingame_dialogs.top()->finish();
+			ingame_dialogs.top()->finish(false);
 			ingame_dialogs.pop();
 		}
 	}
