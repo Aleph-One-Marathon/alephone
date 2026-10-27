@@ -46,9 +46,10 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_CXXCPP
-AC_PROG_OBJCXX
 AC_PROG_INSTALL
+AC_PROG_OBJCXX
 AC_PROG_RANLIB
+AM_PROG_AR
 
 dnl Require C++17 or newer and enable C++17 if needed.
 AX_CXX_COMPILE_STDCXX([17], [], [mandatory])
@@ -322,6 +323,7 @@ dnl Print summary of key compilation variables.
 AS_ECHO([""])
 AS_ECHO(["Compilation settings:"])
 AS_ECHO([""])
+AS_ECHO(["         AR: ${AR}"])
 AS_ECHO(["         CC: ${CC}"])
 AS_ECHO(["        CXX: ${CXX}"])
 AS_ECHO(["        CPP: ${CPP}"])
