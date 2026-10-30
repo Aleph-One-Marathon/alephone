@@ -985,6 +985,82 @@ void resume_game(
 	if (OpenALManager::Get()) OpenALManager::Get()->Pause(false);
 }
 
+void show_quit_without_saving(std::function<void()> accept_callback)
+{
+	auto d = std::make_unique<dialog>();
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add (new w_static_text("Are you sure you wish to"), *d);
+	placer->dual_add (new w_static_text("cancel the game in progress?"), *d);
+	placer->add (new w_spacer(), true);
+	
+	horizontal_placer *button_placer = new horizontal_placer;
+	w_button *default_button = new w_button("YES", [=](void* d) {
+		dialog_ok(d);
+		accept_callback();
+	}, d.get());
+	button_placer->dual_add (default_button, *d);
+	button_placer->dual_add (new w_button("NO", dialog_cancel, d.get()), *d);
+	d->activate_widget(default_button);
+	placer->add(button_placer, true);
+	d->set_widget_placer(placer);
+
+	ingame_dialog_push(std::move(d));
+}
+
+void show_ingame_menu()
+{
+	auto d = std::make_unique<dialog>();
+	vertical_placer* placer = new vertical_placer;
+	w_button* resume_button = new w_button("RETURN TO GAME", [](void* p) { dialog_cancel(p); }, d.get());
+	placer->dual_add(resume_button, *d);
+
+	placer->add(new w_spacer{static_cast<uint16_t>(get_theme_space(BUTTON_WIDGET, BUTTON_HEIGHT)/2)}, true);
+
+	w_button* graphics_button = new w_button("GRAPHICS", [](void*) { graphics_dialog_ingame(); });
+	placer->dual_add(graphics_button, *d);
+
+
+	w_button* controls_button = new w_button("CONTROLS", [](void*) { controls_dialog(true); });
+	placer->dual_add(controls_button, *d);
+
+	w_button* sound_button = new w_button("SOUND", [](void*) { sound_dialog(true); });
+	placer->dual_add(sound_button, *d);
+
+	const auto quit_callback = [](void* d)
+	{
+		if (PLAYER_IS_DEAD(local_player) ||
+			dynamic_world->tick_count - local_player->ticks_at_last_successful_save < CLOSE_WITHOUT_WARNING_DELAY)
+		{
+			dialog_ok(d);
+			set_game_state(_close_game);
+		}
+		else
+		{
+			show_quit_without_saving([=]() {
+				dialog_ok(d);
+				set_game_state(_close_game);
+			});
+		}
+	};
+	
+	placer->add(new w_spacer{static_cast<uint16_t>(get_theme_space(BUTTON_WIDGET, BUTTON_HEIGHT)/2)}, true);
+
+	w_button* quit_button = new w_button("EXIT GAME", quit_callback, d.get());
+	placer->dual_add(quit_button, *d);
+	
+	const auto desktop_callback = [](void* d)
+	{
+		dialog_ok(d);
+		set_game_state(_quit_game);
+	};
+	
+	w_button* desktop_button = new w_button("QUIT TO DESKTOP", desktop_callback, d.get());
+	placer->dual_add(desktop_button, *d);
+	
+	d->set_widget_placer(placer);
+	ingame_dialog_push(std::move(d));
+}
+
 void draw_menu_button_for_command(
 	short index)
 {
@@ -1158,7 +1234,7 @@ bool idle_game_state(uint64_t time)
 				redraw = game_is_networked && is_network_pregame;
 		}
 		else
-			redraw = true;
+			redraw = !ingame_dialog_active();
 
 		if (redraw)
 		{
@@ -1353,11 +1429,7 @@ void do_menu_item_command(
 								{
 									really_wants_to_quit= true;
 								} else {
-									pause_game();
-									show_cursor();
-									really_wants_to_quit= quit_without_saving();
-									hide_cursor();
-									resume_game();
+									show_quit_without_saving([]() { set_game_state(_close_game); });
 								}
 								break;
 							
@@ -1382,6 +1454,22 @@ void do_menu_item_command(
 					}
 					break;
 					
+				case iGameMenu:
+					switch (game_state.user)
+					{
+					case _single_player:
+					case _network_player:
+						show_ingame_menu();
+						break;
+					case _demo:
+					case _replay:
+						set_game_state(_close_game);
+						break;
+					default:
+						assert(false);
+						break;
+					}
+					break;
 				default:
 					assert(false);
 					break;

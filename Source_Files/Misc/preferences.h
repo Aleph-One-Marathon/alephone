@@ -304,4 +304,8 @@ static inline int16 get_fps_target() {
 
 void transition_preferences(const DirectorySpecifier& legacy_prefs_dir);
 
+void controls_dialog(bool in_game);
+void sound_dialog(bool in_game);
+void graphics_dialog_ingame();
+
 #endif

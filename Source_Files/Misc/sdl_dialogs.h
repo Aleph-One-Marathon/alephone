@@ -205,6 +205,9 @@ public:
 	// Put dialog on screen
 	void start(bool play_sound = true);
 
+	// run dialog non-modally, returns "done" flag
+	bool poll();
+
 	// Process pending events, returns "done" flag
 	bool process_events();
 
@@ -437,5 +440,11 @@ extern void dialog_cancel(void *arg);
 class w_text_entry;
 extern void dialog_try_ok(w_text_entry* text_entry);
 extern void dialog_disable_ok_if_empty(w_text_entry* inTextEntry);
+
+// in-game dialog manager
+void ingame_dialog_push(std::unique_ptr<dialog> d);
+void ingame_dialog_poll();
+void ingame_dialog_pop();
+bool ingame_dialog_active();
 
 #endif

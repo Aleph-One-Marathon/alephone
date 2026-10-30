@@ -615,24 +615,6 @@ static void initialize_marathon_music_handler(void)
 		Music::instance()->SetupIntroMusic(file);
 }
 
-bool quit_without_saving(void)
-{
-	dialog d;
-	vertical_placer *placer = new vertical_placer;
-	placer->dual_add (new w_static_text("Are you sure you wish to"), d);
-	placer->dual_add (new w_static_text("cancel the game in progress?"), d);
-	placer->add (new w_spacer(), true);
-	
-	horizontal_placer *button_placer = new horizontal_placer;
-	w_button *default_button = new w_button("YES", dialog_ok, &d);
-	button_placer->dual_add (default_button, d);
-	button_placer->dual_add (new w_button("NO", dialog_cancel, &d), d);
-	d.activate_widget(default_button);
-	placer->add(button_placer, true);
-	d.set_widget_placer(placer);
-	return d.run() == 0;
-}
-
 // ZZZ: moved level-numbers widget into sdl_widgets for a wider audience.
 
 const int32 AllPlayableLevels = _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point | _kill_the_man_with_the_ball_entry_point | _king_of_hill_entry_point | _rugby_entry_point | _capture_the_flag_entry_point;
@@ -754,20 +736,24 @@ void main_event_loop(void)
 		if (poll_event) {
 			global_idle_proc();
 
-			SDL_Event event;
-			if (yield_time)
+			if (!(ingame_dialog_active() && game_state == _game_in_progress))
 			{
-				// The game is not in a "hot" state, yield time to other
-				// processes but only try for a maximum of 30ms
-				if (SDL_WaitEventTimeout(&event, 30))
+				
+				SDL_Event event;
+				if (yield_time)
+				{
+					// The game is not in a "hot" state, yield time to other
+					// processes but only try for a maximum of 30ms
+					if (SDL_WaitEventTimeout(&event, 30))
+					{
+						process_event(event);
+					}
+				}
+				
+				while (SDL_PollEvent(&event))
 				{
 					process_event(event);
 				}
-			}
-
-			while (SDL_PollEvent(&event))
-			{
-				process_event(event);
 			}
 
 #ifdef HAVE_STEAM
@@ -787,8 +773,13 @@ void main_event_loop(void)
 #endif
 		}
 
+
 		execute_timer_tasks(machine_tick_count());
 		idle_game_state(machine_tick_count());
+		if (ingame_dialog_active() && game_state == _game_in_progress)
+		{
+			ingame_dialog_poll();
+		}
 
 		auto fps_target = get_fps_target();
 		if (!get_keyboard_controller_status())
@@ -940,21 +931,9 @@ static void handle_game_key(const SDL_Event &event)
 	{
 		if (sc == SDL_SCANCODE_ESCAPE || sc == AO_SCANCODE_JOYSTICK_ESCAPE) // (ZZZ) Quit gesture (now safer)
 		{
-			if(!player_controlling_game())
-				do_menu_item_command(mGame, iQuitGame, false);
-			else {
-				if(get_ticks_since_local_player_in_terminal() > 1 * TICKS_PER_SECOND) {
-					if(!game_is_networked) {
-						do_menu_item_command(mGame, iQuitGame, false);
-					}
-					else {
-#if defined(__APPLE__) && defined(__MACH__)
-						screen_printf("If you wish to quit, press Command-Q");
-#else
-						screen_printf("If you wish to quit, press Alt+Q.");
-#endif
-					}
-				}
+			if (!player_controlling_game() || get_ticks_since_local_player_in_terminal() > 1 * TICKS_PER_SECOND)
+			{
+				do_menu_item_command(mGame, iGameMenu, false);
 			}
 		}
 		else if (input_preferences->shell_key_bindings[_key_volume_up].count(sc))
@@ -1372,7 +1351,7 @@ static void process_event(const SDL_Event &event)
 	case SDL_MOUSEBUTTONDOWN:
 		if (get_game_state() == _game_in_progress) 
 		{
-			if (!get_keyboard_controller_status())
+			if (!get_keyboard_controller_status() && !ingame_dialog_active())
 			{
 				resume_game();
 			}

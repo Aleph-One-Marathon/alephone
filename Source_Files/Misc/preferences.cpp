@@ -172,8 +172,6 @@ void parse_environment_preferences(InfoTree root, std::string version);
 static void player_dialog(void *arg);
 static void online_dialog(void *arg);
 static void graphics_dialog(void *arg);
-static void sound_dialog(void *arg);
-static void controls_dialog(void *arg);
 static void environment_dialog(void *arg);
 static void plugins_dialog(void *arg);
 static void keyboard_dialog(void *arg);
@@ -237,9 +235,9 @@ void handle_preferences(void)
 	d.add(w_online);
 	w_button *w_graphics = new w_button("GRAPHICS", graphics_dialog, &d);
 	d.add(w_graphics);
-	w_button *w_sound = new w_button("SOUND", sound_dialog, &d);
+	w_button *w_sound = new w_button("SOUND", [](void*) { sound_dialog(false); });
 	d.add(w_sound);
-	w_button *w_controls = new w_button("CONTROLS", controls_dialog, &d);
+	w_button *w_controls = new w_button("CONTROLS", [](void*) { controls_dialog(false); });
 	d.add(w_controls);
 	w_button *w_environment = new w_button("ENVIRONMENT", environment_dialog, &d);
 	d.add(w_environment);
@@ -1545,6 +1543,114 @@ static void graphics_dialog(void *arg)
     }
 }
 
+extern void UpdateFieldOfView();
+extern void init_interpolated_world();
+
+void graphics_dialog_ingame()
+{
+	auto d = std::make_unique<dialog>();
+
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add(new w_title("GRAPHICS SETUP"), *d);
+	placer->add(new w_spacer(), true);
+
+	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	table->col_flags(0, placeable::kAlignRight);
+	table->col_flags(1, placeable::kAlignLeft);
+
+	w_select *gamma_w = new w_select(0, gamma_labels);
+	gamma_w->set_selection(graphics_preferences->screen_mode.gamma_level);
+	table->dual_add(gamma_w->label("Brightness"), *d);
+	table->dual_add(gamma_w, *d);
+
+	w_select *fps_target_w = new w_select(0, fps_target_labels);
+	for (auto i = 0; fps_target_labels[i] != NULL; ++i)
+	{
+		if (fps_target_values[i] == graphics_preferences->fps_target)
+		{
+			fps_target_w->set_selection(i);
+		}
+	}
+	table->dual_add(fps_target_w->label("Framerate Target"), *d);
+	table->dual_add(fps_target_w, *d);
+
+	table->add_row(new w_spacer(), true);
+
+	w_toggle *override_fov_w = new w_toggle(graphics_preferences->screen_mode.fov != 0);
+	w_fov_slider *fov_slider_w = new w_fov_slider((graphics_preferences->screen_mode.fov == 0 ? static_cast<int>(View_FOV_Normal()) : graphics_preferences->screen_mode.fov) - 30);
+	fov_slider_w->set_enabled(graphics_preferences->screen_mode.fov != 0);
+	override_fov_w->set_selection_changed_callback([=](w_select*)
+	{
+		if (override_fov_w->get_selection())
+		{
+			fov_slider_w->set_enabled(true);
+		}
+		else
+		{
+			fov_slider_w->set_enabled(false);
+		}
+	});
+	
+	table->dual_add(override_fov_w->label("Override FOV*"), *d);
+	auto fov_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET));
+	fov_placer->dual_add(override_fov_w, *d);
+	fov_placer->dual_add(fov_slider_w, *d);
+	
+	table->add(fov_placer);
+	
+	table->dual_add_row(new w_static_text("*may interfere with third-party scenario effects"), *d);
+
+	const auto accept = [=]()
+	{
+		bool changed = false;
+		
+		short gamma = static_cast<short>(gamma_w->get_selection());
+	    if (gamma != graphics_preferences->screen_mode.gamma_level) {
+		    graphics_preferences->screen_mode.gamma_level = gamma;
+		    changed = true;
+	    }
+
+		auto fps_target = fps_target_values[fps_target_w->get_selection()];
+		if (fps_target != graphics_preferences->fps_target)
+		{
+			graphics_preferences->fps_target = fps_target;
+			changed = true;
+		}
+
+		int fov = override_fov_w->get_selection() == 0 ? 0 : fov_slider_w->get_selection() + 30;
+		if (fov != graphics_preferences->screen_mode.fov)
+		{
+			graphics_preferences->screen_mode.fov = fov;
+			changed = true;
+		}
+
+		if (changed)
+		{
+			write_preferences();
+			UpdateFieldOfView();
+			init_interpolated_world();
+		}
+	};
+
+	placer->add(table, true);
+
+	placer->add(new w_spacer(), true);
+
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("ACCEPT",
+										 [=](void *d)
+										 {
+											 accept();
+											 dialog_ok(d);
+										 }, d.get()), *d);
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, d.get()), *d);
+	placer->add(button_placer, true);
+    
+	d->set_widget_placer(placer);
+
+	ingame_dialog_push(std::move(d));
+}
+
 /*
  *  Sound dialog
  */
@@ -1585,12 +1691,12 @@ public:
 	}
 };
 
-static void sound_dialog(void *arg)
+void sound_dialog(bool in_game)
 {
 	// Create dialog
-	dialog d;
+	auto d = std::make_unique<dialog>();
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("SOUND SETUP"), d);
+	placer->dual_add(new w_title("SOUND SETUP"), *d);
 	placer->add(new w_spacer(), true);
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -1600,24 +1706,28 @@ static void sound_dialog(void *arg)
 	w_select_popup* channel_w = new w_select_popup();
 	channel_w->set_labels(channel_labels);
 	channel_w->set_selection(mapping_channel_index.at(sound_preferences->channel_type));
-	table->dual_add(channel_w->label("Channels"), d);
-	table->dual_add(channel_w, d);
+	table->dual_add(channel_w->label("Channels"), *d);
+	table->dual_add(channel_w, *d);
+	if (in_game)
+	{
+		channel_w->set_enabled(false);
+	}
 
 	w_toggle* dynamic_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _dynamic_tracking_flag));
-	table->dual_add(dynamic_w->label("Active Panning"), d);
-	table->dual_add(dynamic_w, d);
+	table->dual_add(dynamic_w->label("Active Panning"), *d);
+	table->dual_add(dynamic_w, *d);
 
 	bool is_3d_sounds_enabled = sound_preferences->flags & _3d_sounds_flag;
 	w_toggle *sounds3d_w = new w_toggle(is_3d_sounds_enabled);
-	table->dual_add(sounds3d_w->label("3D Sounds"), d);
-	table->dual_add(sounds3d_w, d);
+	table->dual_add(sounds3d_w->label("3D Sounds"), *d);
+	table->dual_add(sounds3d_w, *d);
 
 	w_toggle *hrtf_w = new w_toggle((OpenALManager::Get() && OpenALManager::Get()->IsHrtfEnabled()) || sound_preferences->flags & _hrtf_flag);
-	table->dual_add(hrtf_w->label("HRTF (Headphones)"), d);
-	table->dual_add(hrtf_w, d);
-	hrtf_w->set_enabled(OpenALManager::Get() && OpenALManager::Get()->GetHrtfSupport() != OpenALManager::HrtfSupport::Unsupported && is_3d_sounds_enabled && sound_preferences->channel_type == ChannelType::_stereo);
+	table->dual_add(hrtf_w->label("HRTF (Headphones)"), *d);
+	table->dual_add(hrtf_w, *d);
+	hrtf_w->set_enabled(OpenALManager::Get() && OpenALManager::Get()->GetHrtfSupport() != OpenALManager::HrtfSupport::Unsupported && is_3d_sounds_enabled && sound_preferences->channel_type == ChannelType::_stereo && !in_game);
 
-	auto hrtf_enable_callback = [&](void*) {
+	auto hrtf_enable_callback = [=](void*) {
 		bool can_enable_hrtf = sounds3d_w->get_selection() == 1
 			&& mapping_index_channel.at(channel_w->get_selection()) == ChannelType::_stereo
 			&& OpenALManager::Get() && OpenALManager::Get()->GetHrtfSupport() == OpenALManager::HrtfSupport::Supported;
@@ -1635,61 +1745,50 @@ static void sound_dialog(void *arg)
 	table->add_row(new w_spacer(), true);
 
 	w_volume_slider *volume_w = new w_volume_slider(static_cast<int>(sound_preferences->volume_db / 2 + 20));
-	table->dual_add(volume_w->label("Master Volume"), d);
-	table->dual_add(volume_w, d);
+	table->dual_add(volume_w->label("Master Volume"), *d);
+	table->dual_add(volume_w, *d);
 
 	w_slider *music_volume_w = new w_music_slider(sound_preferences->music_db + 20);
-	table->dual_add(music_volume_w->label("Music Volume"), d);
-	table->dual_add(music_volume_w, d);
+	table->dual_add(music_volume_w->label("Music Volume"), *d);
+	table->dual_add(music_volume_w, *d);
 
 	table->add_row(new w_spacer(), true);
 	
 	static const char *quality_labels[3] = {"8-bit Slot", "16-bit Slot", NULL};
 	w_toggle *quality_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _16bit_sound_flag), quality_labels);
-	table->dual_add(quality_w->label("Source"), d);
-	table->dual_add(quality_w, d);
+	table->dual_add(quality_w->label("Source"), *d);
+	table->dual_add(quality_w, *d);
 
 	w_toggle *ambient_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _ambient_sound_flag));
-	table->dual_add(ambient_w->label("Ambient Sounds"), d);
-	table->dual_add(ambient_w, d);
+	table->dual_add(ambient_w->label("Ambient Sounds"), *d);
+	table->dual_add(ambient_w, *d);
 
 	w_toggle *more_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _more_sounds_flag));
-	table->dual_add(more_w->label("More Sounds"), d);
-	table->dual_add(more_w, d);
+	table->dual_add(more_w->label("More Sounds"), *d);
+	table->dual_add(more_w, *d);
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("Interface Sounds"), d);
+	table->dual_add_row(new w_static_text("Interface Sounds"), *d);
 	
 	w_toggle *button_sounds_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
-	table->dual_add(button_sounds_w->label("In Game (F-key)"), d);
-	table->dual_add(button_sounds_w, d);
+	table->dual_add(button_sounds_w->label("In Game (F-key)"), *d);
+	table->dual_add(button_sounds_w, *d);
 
 	w_toggle *dialog_sounds_w = new w_toggle(!TEST_FLAG(sound_preferences->flags, _mute_dialogs));
-	table->dual_add(dialog_sounds_w->label("Dialogs"), d);
-	table->dual_add(dialog_sounds_w, d);
+	table->dual_add(dialog_sounds_w->label("Dialogs"), *d);
+	table->dual_add(dialog_sounds_w, *d);
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("Experimental Sound Options"), d);
+	table->dual_add_row(new w_static_text("Experimental Sound Options"), *d);
 		w_toggle *zrd_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _lower_restart_delay));
-	table->dual_add(zrd_w->label("Rapid-fire Sounds"), d);
-	table->dual_add(zrd_w, d);
+	table->dual_add(zrd_w->label("Rapid-fire Sounds"), *d);
+	table->dual_add(zrd_w, *d);
 
 	placer->add(table, true);
 
 	placer->add(new w_spacer(), true);
 
-	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
-	
-	placer->add(button_placer, true);
-
-	d.set_widget_placer(placer);
-	// Clear screen
-	clear_screen();
-
-	// Run dialog
-	if (d.run() == 0) {	// Accepted
+	const auto accept = [=]() {
 		bool changed = false;
 
 		uint16 flags = 0;
@@ -1739,11 +1838,40 @@ static void sound_dialog(void *arg)
 			write_preferences();
 			if (is_music_playing) Music::instance()->RestartIntroMusic();
 		}
-	}
-	else if (OpenALManager::Get())
+	};
+
+	const auto cancel = [=]() {
+		if (OpenALManager::Get())
+		{
+			OpenALManager::Get()->SetMasterVolume(SoundManager::From_db(sound_preferences->volume_db));
+			OpenALManager::Get()->SetMusicVolume(SoundManager::From_db(sound_preferences->music_db, true));
+		}
+	};
+
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("ACCEPT",
+										 [=](void* d) {
+											 accept();
+											 dialog_ok(d);
+										 }, d.get()), *d);
+	button_placer->dual_add(new w_button("CANCEL",
+										 [=](void* d) {
+											 cancel();
+											 dialog_cancel(d);
+										 }, d.get()), *d);
+	
+	placer->add(button_placer, true);
+
+	d->set_widget_placer(placer);
+
+	if (in_game)
 	{
-		OpenALManager::Get()->SetMasterVolume(SoundManager::From_db(sound_preferences->volume_db));
-		OpenALManager::Get()->SetMusicVolume(SoundManager::From_db(sound_preferences->music_db, true));
+		ingame_dialog_push(std::move(d));
+	}
+	else
+	{
+		clear_screen();
+		d->run();
 	}
 }
 
@@ -2285,11 +2413,12 @@ static bool apply_mouse_feel(int selection)
 	return changed;
 }
 
-static void mouse_custom_dialog(void *arg)
+static void mouse_custom_dialog(bool in_game)
 {
-	dialog d;
+	auto d = std::make_unique<dialog>();
+	
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("MOUSE ADVANCED"), d);
+	placer->dual_add(new w_title("MOUSE ADVANCED"), *d);
 	placer->add(new w_spacer());
 	
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -2301,8 +2430,8 @@ static void mouse_custom_dialog(void *arg)
 	int hSliderPosition =
 		(int) ((hSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
 	w_sens_slider *mouse_h_sens_w = new w_sens_slider(1000, hSliderPosition);
-	table->dual_add(mouse_h_sens_w->label("Horizontal Sensitivity"), d);
-	table->dual_add(mouse_h_sens_w, d);
+	table->dual_add(mouse_h_sens_w->label("Horizontal Sensitivity"), *d);
+	table->dual_add(mouse_h_sens_w, *d);
 
 	float vSensitivity = ((float) input_preferences->sens_vertical) / FIXED_ONE;
 	if (vSensitivity <= 0.0f) vSensitivity = 1.0f;
@@ -2310,13 +2439,13 @@ static void mouse_custom_dialog(void *arg)
 	int vSliderPosition =
 		(int) ((vSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
 	w_sens_slider *mouse_v_sens_w = new w_sens_slider(1000, vSliderPosition);
-	table->dual_add(mouse_v_sens_w->label("Vertical Sensitivity"), d);
-	table->dual_add(mouse_v_sens_w, d);
+	table->dual_add(mouse_v_sens_w->label("Vertical Sensitivity"), *d);
+	table->dual_add(mouse_v_sens_w, *d);
 
 	w_toggle *mouse_v_invert_w = new w_toggle(input_preferences->modifiers & _inputmod_invert_mouse);
 	mouse_v_invert_w->set_selection_changed_callback(update_mouse_feel_details);
-	table->dual_add(mouse_v_invert_w->label("Invert Vertical Aim"), d);
-	table->dual_add(mouse_v_invert_w, d);
+	table->dual_add(mouse_v_invert_w->label("Invert Vertical Aim"), *d);
+	table->dual_add(mouse_v_invert_w, *d);
 
 	table->add_row(new w_spacer(), true);
 
@@ -2324,47 +2453,39 @@ static void mouse_custom_dialog(void *arg)
 	mouse_feel_details_w->set_labels(mouse_feel_labels);
 	mouse_feel_details_w->set_selection(mouse_feel_w->get_selection());
 	mouse_feel_details_w->set_popup_callback(mouse_feel_details_changed, NULL);
-	table->dual_add(mouse_feel_details_w->label("Mouse Feel"), d);
-	table->dual_add(mouse_feel_details_w, d);
+	table->dual_add(mouse_feel_details_w->label("Mouse Feel"), *d);
+	table->dual_add(mouse_feel_details_w, *d);
 	
 	mouse_raw_w = new w_toggle(input_preferences->raw_mouse_input);
 	mouse_raw_w->set_selection_changed_callback(update_mouse_feel_details);
-	table->dual_add(mouse_raw_w->label("Raw Input Mode"), d);
-	table->dual_add(mouse_raw_w, d);
+	table->dual_add(mouse_raw_w->label("Raw Input Mode"), *d);
+	table->dual_add(mouse_raw_w, *d);
 	
 	mouse_accel_w = new w_toggle(input_preferences->mouse_accel_type == _mouse_accel_classic);
 	mouse_accel_w->set_selection_changed_callback(update_mouse_feel_details);
-	table->dual_add(mouse_accel_w->label("Acceleration"), d);
-	table->dual_add(mouse_accel_w, d);
+	table->dual_add(mouse_accel_w->label("Acceleration"), *d);
+	table->dual_add(mouse_accel_w, *d);
 	
 	mouse_vertical_w = new w_toggle(input_preferences->classic_vertical_aim);
 	mouse_vertical_w->set_selection_changed_callback(update_mouse_feel_details);
-	table->dual_add(mouse_vertical_w->label("Adjust Vertical Speed"), d);
-	table->dual_add(mouse_vertical_w, d);
+	table->dual_add(mouse_vertical_w->label("Adjust Vertical Speed"), *d);
+	table->dual_add(mouse_vertical_w, *d);
 	
 	mouse_precision_w = new w_toggle(!input_preferences->extra_mouse_precision);
 	mouse_precision_w->set_selection_changed_callback(update_mouse_feel_details);
-	table->dual_add(mouse_precision_w->label("Snap View to Weapon Aim"), d);
-	table->dual_add(mouse_precision_w, d);
+	table->dual_add(mouse_precision_w->label("Snap View to Weapon Aim"), *d);
+	table->dual_add(mouse_precision_w, *d);
 
 	mouse_speed_limit_w = new w_toggle(input_preferences->classic_aim_speed_limits);
 	mouse_speed_limit_w->set_selection_changed_callback(update_mouse_feel_details);
-	table->dual_add(mouse_speed_limit_w->label("Classic Aim Speed Limit"), d);
-	table->dual_add(mouse_speed_limit_w, d);
+	table->dual_add(mouse_speed_limit_w->label("Classic Aim Speed Limit"), *d);
+	table->dual_add(mouse_speed_limit_w, *d);
 	
 	placer->add(table);
 	placer->add(new w_spacer(), true);
 
-	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
-	placer->add(button_placer, true);
-
-	d.set_widget_placer(placer);
-	mouse_feel_details_changed(NULL);
-	
-	// Run dialog
-	if (d.run() == 0) {	// Accepted
+	const auto accept = [=]()
+	{
 		bool changed = false;
 		
 		int hPos = mouse_h_sens_w->get_selection();
@@ -2426,15 +2547,32 @@ static void mouse_custom_dialog(void *arg)
 			write_preferences();
 		}
 		update_mouse_feel(NULL);
+	};
+
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("ACCEPT", [=](void* d) { accept(); dialog_ok(d); }, d.get()), *d);
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, d.get()), *d);
+	placer->add(button_placer, true);
+
+	d->set_widget_placer(placer);
+	mouse_feel_details_changed(NULL);
+
+	if (in_game)
+	{
+		ingame_dialog_push(std::move(d));
+	}
+	else
+	{
+		d->run();
 	}
 }
 
 
-static void controller_details_dialog(void *arg)
+static void controller_details_dialog(bool in_game)
 {
-	dialog d;
+	auto d = std::make_unique<dialog>();
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("CONTROLLER ADVANCED"), d);
+	placer->dual_add(new w_title("CONTROLLER ADVANCED"), *d);
 	placer->add(new w_spacer());
 	
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -2446,13 +2584,13 @@ static void controller_details_dialog(void *arg)
 	int joySliderPositionX = (int) ((joySensitivityLogX - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
 
 	w_sens_slider* sens_joy_w_x = new w_sens_slider(1000, joySliderPositionX);
-	table->dual_add(sens_joy_w_x->label("Aiming Horizontal Sensitivity"), d);
-	table->dual_add(sens_joy_w_x, d);
+	table->dual_add(sens_joy_w_x->label("Aiming Horizontal Sensitivity"), *d);
+	table->dual_add(sens_joy_w_x, *d);
 	
 	int joyDeadzoneX = (int)((input_preferences->controller_deadzone_horizontal / 655.36f) + 0.5f);
 	w_deadzone_slider* dead_joy_w_x = new w_deadzone_slider(11, joyDeadzoneX);
-	table->dual_add(dead_joy_w_x->label("Analog Horizontal Dead Zone"), d);
-	table->dual_add(dead_joy_w_x, d);
+	table->dual_add(dead_joy_w_x->label("Analog Horizontal Dead Zone"), *d);
+	table->dual_add(dead_joy_w_x, *d);
 
 	float joySensitivityY = ((float)input_preferences->controller_sensitivity_vertical) / FIXED_ONE;
 	if (joySensitivityY <= 0.0f) joySensitivityY = 1.0f;
@@ -2460,30 +2598,22 @@ static void controller_details_dialog(void *arg)
 	int joySliderPositionY = (int)((joySensitivityLogY - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange) + 0.5f);
 
 	w_sens_slider* sens_joy_w_y = new w_sens_slider(1000, joySliderPositionY);
-	table->dual_add(sens_joy_w_y->label("Aiming Vertical Sensitivity"), d);
-	table->dual_add(sens_joy_w_y, d);
+	table->dual_add(sens_joy_w_y->label("Aiming Vertical Sensitivity"), *d);
+	table->dual_add(sens_joy_w_y, *d);
 
 	int joyDeadzoneY = (int)((input_preferences->controller_deadzone_vertical / 655.36f) + 0.5f);
 	w_deadzone_slider* dead_joy_w_y = new w_deadzone_slider(11, joyDeadzoneY);
-	table->dual_add(dead_joy_w_y->label("Analog Vertical Dead Zone"), d);
-	table->dual_add(dead_joy_w_y, d);
+	table->dual_add(dead_joy_w_y->label("Analog Vertical Dead Zone"), *d);
+	table->dual_add(dead_joy_w_y, *d);
 
 	w_toggle* controller_inverted = new w_toggle(input_preferences->controller_aim_inverted);
-	table->dual_add(controller_inverted->label("Invert Vertical Aim"), d);
-	table->dual_add(controller_inverted, d);
+	table->dual_add(controller_inverted->label("Invert Vertical Aim"), *d);
+	table->dual_add(controller_inverted, *d);
 	
 	table->add_row(new w_spacer(), true);
 	placer->add(table, true);
 
-	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
-	placer->add(button_placer, true);
-	
-	d.set_widget_placer(placer);
-	
-	// Run dialog
-	if (d.run() == 0) {	// Accepted
+	const auto accept = [=]() {
 		bool changed = false;
 
 		int sensPosX = sens_joy_w_x->get_selection();
@@ -2524,12 +2654,28 @@ static void controller_details_dialog(void *arg)
 
 		if (changed) {
 			write_preferences();
-		}
+		}		
+	};
+
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("ACCEPT", [=](void* d) { accept(); dialog_ok(d); }, d.get()), *d);
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, d.get()), *d);
+	placer->add(button_placer, true);
+	
+	d->set_widget_placer(placer);
+
+	if (in_game)
+	{
+		ingame_dialog_push(std::move(d));
+	}
+	else
+	{
+		d->run();
 	}
 }
 
 
-static void controls_dialog(void *arg)
+void controls_dialog(bool in_game)
 {
 	// Clear array of key widgets (because w_prefs_key::set_key() scans it)
 	key_w.clear();
@@ -2537,9 +2683,9 @@ static void controls_dialog(void *arg)
 	hotkey_w.clear();
 
 	// Create dialog
-	dialog d;
+	auto d = std::make_unique<dialog>();
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("CONTROLS"), d);
+	placer->dual_add(new w_title("CONTROLS"), *d);
 	placer->add(new w_spacer());
 	
 	// create all key widgets
@@ -2605,7 +2751,7 @@ static void controls_dialog(void *arg)
 	std::vector<std::string> labels = { "AIM", "MOVE", "ACTIONS", "HOTKEYS", "INTERFACE", "OTHER" };
 	w_tab *tab_w = new w_tab(labels, tabs);
 	
-	placer->dual_add(tab_w, d);
+	placer->dual_add(tab_w, *d);
 	placer->add(new w_spacer(), true);
 	
 	vertical_placer *move = new vertical_placer();
@@ -2615,9 +2761,9 @@ static void controls_dialog(void *arg)
 	move_table->col_flags(2, placeable::kAlignLeft);
 	move_table->col_flags(3, placeable::kAlignLeft);
 	move_table->add(new w_spacer(), true);
-	move_table->dual_add(new w_label("Keyboard"), d);
-	move_table->dual_add(new w_label("Mouse"), d);
-	move_table->dual_add(new w_label("Controller"), d);
+	move_table->dual_add(new w_label("Keyboard"), *d);
+	move_table->dual_add(new w_label("Mouse"), *d);
+	move_table->dual_add(new w_label("Controller"), *d);
 	
 	std::vector<int> move_keys = { 0, 1, 4, 5, -1, 16, 15, 17 };
 	for (auto it = move_keys.begin(); it != move_keys.end(); ++it) {
@@ -2625,17 +2771,17 @@ static void controls_dialog(void *arg)
 			move_table->add_row(new w_spacer(), true);
 		} else if (*it >= 100) {
 			int i = *it - 100;
-			move_table->dual_add(new w_label(shell_action_name[i]), d);
+			move_table->dual_add(new w_label(shell_action_name[i]), *d);
 			auto range = shell_key_w.equal_range(i);
 			for (auto ik = range.first; ik != range.second; ++ik) {
-				move_table->dual_add(ik->second, d);
+				move_table->dual_add(ik->second, *d);
 			}
 		} else {
 			int i = *it;
-			move_table->dual_add(new w_label(action_name[i]), d);
+			move_table->dual_add(new w_label(action_name[i]), *d);
 			auto range = key_w.equal_range(i);
 			for (auto ik = range.first; ik != range.second; ++ik) {
-				move_table->dual_add(ik->second, d);
+				move_table->dual_add(ik->second, *d);
 			}
 		}
 	}
@@ -2666,13 +2812,13 @@ static void controls_dialog(void *arg)
 	};
 
 	w_select *run_w = new w_select(input_preferences->modifiers & _inputmod_run_key_toggle ? 2 : input_preferences->modifiers & _inputmod_interchange_run_walk ? 1 : 0, run_option_labels);
-	move_options->dual_add(run_w->label("Run/Swim Behavior"), d);
-	move_options->dual_add(run_w, d);
+	move_options->dual_add(run_w->label("Run/Swim Behavior"), *d);
+	move_options->dual_add(run_w, *d);
 
 	w_select *swim_w = new w_select(input_preferences->modifiers & _inputmod_interchange_swim_sink ? 1 : 0, swim_option_labels);
-	move_options->dual_add(swim_w, d);
+	move_options->dual_add(swim_w, *d);
 
-	const auto update_swim_w = [&](w_select*) {
+	const auto update_swim_w = [=](w_select*) {
 		if (run_w->get_selection() == 2)
 		{
 			swim_w->set_labels(swim_toggle_labels);
@@ -2690,8 +2836,8 @@ static void controls_dialog(void *arg)
 
 	move->add(move_options, true);
 	move->add(new w_spacer(), true);
-	move->dual_add(new w_static_text("Double-tap Run/Walk to activate control panels and doors"), d);
-	move->dual_add(new w_static_text("Double-tap Move -> Look to center vertical view"), d);
+	move->dual_add(new w_static_text("Double-tap Run/Walk to activate control panels and doors"), *d);
+	move->dual_add(new w_static_text("Double-tap Move -> Look to center vertical view"), *d);
 
 	vertical_placer *look = new vertical_placer();
 	table_placer *look_table = new table_placer(4, get_theme_space(ITEM_WIDGET), true);
@@ -2700,9 +2846,9 @@ static void controls_dialog(void *arg)
 	look_table->col_flags(2, placeable::kAlignLeft);
 	look_table->col_flags(3, placeable::kAlignLeft);
 	look_table->add(new w_spacer(), true);
-	look_table->dual_add(new w_label("Keyboard"), d);
-	look_table->dual_add(new w_label("Mouse"), d);
-	look_table->dual_add(new w_label("Controller"), d);
+	look_table->dual_add(new w_label("Keyboard"), *d);
+	look_table->dual_add(new w_label("Mouse"), *d);
+	look_table->dual_add(new w_label("Controller"), *d);
 	
 	std::vector<int> look_keys = { 8, 9, 2, 3, -1, 6, 7, 10 };
 	for (auto it = look_keys.begin(); it != look_keys.end(); ++it) {
@@ -2710,14 +2856,14 @@ static void controls_dialog(void *arg)
 			look_table->add_row(new w_spacer(), true);
 		} else if (*it >= 100) {
 			int i = *it - 100;
-			look_table->dual_add(new w_label(shell_action_name[i]), d);
+			look_table->dual_add(new w_label(shell_action_name[i]), *d);
 			auto range = shell_key_w.equal_range(i);
 			for (auto ik = range.first; ik != range.second; ++ik) {
-				look_table->dual_add(ik->second, d);
+				look_table->dual_add(ik->second, *d);
 			}
 		} else {
 			int i = *it;
-			look_table->dual_add(new w_label(action_name[i]), d);
+			look_table->dual_add(new w_label(action_name[i]), *d);
 			auto range = key_w.equal_range(i);
 			for (auto ik = range.first; ik != range.second; ++ik) {
 				if (ik->second->event_type == w_key::MouseButton) {
@@ -2741,11 +2887,11 @@ static void controls_dialog(void *arg)
 					if (txt) {
 						txt->set_enabled(false);
 						txt->set_min_width(50);
-						look_table->dual_add(txt, d);
+						look_table->dual_add(txt, *d);
 						continue;
 					}
 				}
-				look_table->dual_add(ik->second, d);
+				look_table->dual_add(ik->second, *d);
 			}
 		}
 	}
@@ -2756,8 +2902,8 @@ static void controls_dialog(void *arg)
 	look_options->col_flags(0, placeable::kAlignRight);
 	
 	w_toggle* auto_recenter_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_auto_recenter));
-	look_options->dual_add(auto_recenter_w->label("Auto-Recenter View"), d);
-	look_options->dual_add(auto_recenter_w, d);
+	look_options->dual_add(auto_recenter_w->label("Auto-Recenter View"), *d);
+	look_options->dual_add(auto_recenter_w, *d);
 	
 	look_options->add_row(new w_spacer(), true);
 	
@@ -2766,17 +2912,17 @@ static void controls_dialog(void *arg)
 	mouse_options->col_flags(1, placeable::kAlignLeft);
 
 	w_toggle *enable_mouse_w = new w_toggle(input_preferences->input_device == _mouse_yaw_pitch);
-	mouse_options->dual_add(enable_mouse_w->label("Mouse Aiming"), d);
-	mouse_options->dual_add(enable_mouse_w, d);
+	mouse_options->dual_add(enable_mouse_w->label("Mouse Aiming"), *d);
+	mouse_options->dual_add(enable_mouse_w, *d);
 	
 	mouse_feel_w = new w_select_popup();
 	mouse_feel_w->set_labels(mouse_feel_labels);
 	update_mouse_feel(NULL);
-	mouse_options->dual_add(mouse_feel_w->label("Mouse Feel"), d);
-	mouse_options->dual_add(mouse_feel_w, d);
+	mouse_options->dual_add(mouse_feel_w->label("Mouse Feel"), *d);
+	mouse_options->dual_add(mouse_feel_w, *d);
 	
 	mouse_options->add_row(new w_spacer(), true);
-	mouse_options->dual_add_row(new w_button("MOUSE ADVANCED", mouse_custom_dialog, &d), d);
+	mouse_options->dual_add_row(new w_button("MOUSE ADVANCED", [=](void*) { mouse_custom_dialog(in_game); }), *d);
 	
 	look_options->add(mouse_options, true);
 	
@@ -2784,16 +2930,16 @@ static void controls_dialog(void *arg)
 	controller_options->col_flags(0, placeable::kAlignRight);
 	controller_options->col_flags(1, placeable::kAlignLeft);
 	
-	controller_options->dual_add_row(new w_label(""), d);
+	controller_options->dual_add_row(new w_label(""), *d);
 	std::vector<std::string> joystick_aiming_labels = { "Treat as Analog Stick", "Treat as D-Pad" };
 	w_select_popup *joystick_aiming_w = new w_select_popup();
 	joystick_aiming_w->set_labels(joystick_aiming_labels);
 	joystick_aiming_w->set_selection(input_preferences->controller_analog ? 0 : 1);
-	controller_options->dual_add(joystick_aiming_w->label("Controller Feel"), d);
-	controller_options->dual_add(joystick_aiming_w, d);
+	controller_options->dual_add(joystick_aiming_w->label("Controller Feel"), *d);
+	controller_options->dual_add(joystick_aiming_w, *d);
 	
 	controller_options->add_row(new w_spacer(), true);
-	controller_options->dual_add_row(new w_button("CONTROLLER ADVANCED", controller_details_dialog, &d), d);
+	controller_options->dual_add_row(new w_button("CONTROLLER ADVANCED", [=](void*) { controller_details_dialog(in_game); }), *d);
 	
 	look_options->add(controller_options, true);
 
@@ -2806,9 +2952,9 @@ static void controls_dialog(void *arg)
 	actions_table->col_flags(2, placeable::kAlignLeft);
 	actions_table->col_flags(3, placeable::kAlignLeft);
 	actions_table->add(new w_spacer(), true);
-	actions_table->dual_add(new w_label("Keyboard"), d);
-	actions_table->dual_add(new w_label("Mouse"), d);
-	actions_table->dual_add(new w_label("Controller"), d);
+	actions_table->dual_add(new w_label("Keyboard"), *d);
+	actions_table->dual_add(new w_label("Mouse"), *d);
+	actions_table->dual_add(new w_label("Controller"), *d);
 	
 	std::vector<int> actions_keys = { 13, 14, 11, 12, -1, 18, -1, 20, 108 };
 	for (auto it = actions_keys.begin(); it != actions_keys.end(); ++it) {
@@ -2816,17 +2962,17 @@ static void controls_dialog(void *arg)
 			actions_table->add_row(new w_spacer(), true);
 		} else if (*it >= 100) {
 			int i = *it - 100;
-			actions_table->dual_add(new w_label(shell_action_name[i]), d);
+			actions_table->dual_add(new w_label(shell_action_name[i]), *d);
 			auto range = shell_key_w.equal_range(i);
 			for (auto ik = range.first; ik != range.second; ++ik) {
-				actions_table->dual_add(ik->second, d);
+				actions_table->dual_add(ik->second, *d);
 			}
 		} else {
 			int i = *it;
-			actions_table->dual_add(new w_label(action_name[i]), d);
+			actions_table->dual_add(new w_label(action_name[i]), *d);
 			auto range = key_w.equal_range(i);
 			for (auto ik = range.first; ik != range.second; ++ik) {
-				actions_table->dual_add(ik->second, d);
+				actions_table->dual_add(ik->second, *d);
 			}
 		}
 	}
@@ -2837,15 +2983,15 @@ static void controls_dialog(void *arg)
 	actions_options->col_flags(0, placeable::kAlignRight);
 
 	w_toggle *weapon_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_switch_to_new_weapon));
-	actions_options->dual_add(weapon_w->label("Auto-Switch Weapons"), d);
-	actions_options->dual_add(weapon_w, d);
+	actions_options->dual_add(weapon_w->label("Auto-Switch Weapons"), *d);
+	actions_options->dual_add(weapon_w, *d);
 	
 	actions->add(actions_options, true);
 	
 	actions->add(new w_spacer(), true);
-	actions->dual_add(new w_static_text("Warning: Auto-Switch Weapons is always ON in"), d);
-	actions->dual_add(new w_static_text("network play.  Turning it OFF will also disable"), d);
-	actions->dual_add(new w_static_text("film recording for single-player games."), d);
+	actions->dual_add(new w_static_text("Warning: Auto-Switch Weapons is always ON in"), *d);
+	actions->dual_add(new w_static_text("network play.  Turning it OFF will also disable"), *d);
+	actions->dual_add(new w_static_text("film recording for single-player games."), *d);
 
 	vertical_placer* hotkeys = new vertical_placer();
 	table_placer* hotkey_table = new table_placer(4, get_theme_space(ITEM_WIDGET), true);
@@ -2854,9 +3000,9 @@ static void controls_dialog(void *arg)
 	hotkey_table->col_flags(2, placeable::kAlignLeft);
 	hotkey_table->col_flags(3, placeable::kAlignLeft);
 	hotkey_table->add(new w_spacer(), true);
-	hotkey_table->dual_add(new w_label("Keyboard"), d);
-	hotkey_table->dual_add(new w_label("Mouse"), d);
-	hotkey_table->dual_add(new w_label("Controller"), d);
+	hotkey_table->dual_add(new w_label("Keyboard"), *d);
+	hotkey_table->dual_add(new w_label("Mouse"), *d);
+	hotkey_table->dual_add(new w_label("Controller"), *d);
 
 	for (auto i = 0; i < NUMBER_OF_HOTKEYS; ++i)
 	{
@@ -2865,18 +3011,18 @@ static void controls_dialog(void *arg)
 			hotkey_table->add_row(new w_spacer(), true);			
 		}
 		
-		hotkey_table->dual_add(new w_label(hotkey_action_name[i]), d);
+		hotkey_table->dual_add(new w_label(hotkey_action_name[i]), *d);
 		auto range = hotkey_w.equal_range(i);
 		for (auto ik = range.first; ik != range.second; ++ik)
 		{
-			hotkey_table->dual_add(ik->second, d);
+			hotkey_table->dual_add(ik->second, *d);
 		}
 	}
 	hotkeys->add(hotkey_table, true);
 
 	hotkeys->add(new w_spacer(), true);
-	hotkeys->dual_add(new w_static_text("Hotkeys 1-9 are used to switch weapons, but can be overridden by Lua scripts"), d);
-	hotkeys->dual_add(new w_static_text("Hotkeys 10-12 are reserved for Lua scripts"), d);
+	hotkeys->dual_add(new w_static_text("Hotkeys 1-9 are used to switch weapons, but can be overridden by Lua scripts"), *d);
+	hotkeys->dual_add(new w_static_text("Hotkeys 10-12 are reserved for Lua scripts"), *d);
 
 	vertical_placer *iface = new vertical_placer();
 	table_placer *interface_table = new table_placer(4, get_theme_space(ITEM_WIDGET), true);
@@ -2885,48 +3031,48 @@ static void controls_dialog(void *arg)
 	interface_table->col_flags(2, placeable::kAlignLeft);
 	interface_table->col_flags(3, placeable::kAlignLeft);
 	interface_table->add(new w_spacer(), true);
-	interface_table->dual_add(new w_label("Keyboard"), d);
-	interface_table->dual_add(new w_label("Mouse"), d);
-	interface_table->dual_add(new w_label("Controller"), d);
+	interface_table->dual_add(new w_label("Keyboard"), *d);
+	interface_table->dual_add(new w_label("Mouse"), *d);
+	interface_table->dual_add(new w_label("Controller"), *d);
 	
 	std::vector<int> interface_keys = { 19, 105, 106, -1, 103, 104, -1, 100, 101, -1, 102, 107, 109, -1, -2 };
 	for (auto it = interface_keys.begin(); it != interface_keys.end(); ++it) {
 		if (*it == -2) {
-			interface_table->dual_add(new w_label("Exit Game"), d);
+			interface_table->dual_add(new w_label("Exit Game"), *d);
 			w_prefs_key *kb = new w_prefs_key(SDL_SCANCODE_ESCAPE, w_key::KeyboardKey);
 			kb->set_enabled(false);
-			interface_table->dual_add(kb, d);
-			interface_table->dual_add(new w_label(""), d);
+			interface_table->dual_add(kb, *d);
+			interface_table->dual_add(new w_label(""), *d);
 			w_prefs_key *cn = new w_prefs_key(AO_SCANCODE_JOYSTICK_ESCAPE, w_key::JoystickButton);
 			cn->set_enabled(false);
-			interface_table->dual_add(cn, d);
+			interface_table->dual_add(cn, *d);
 		} else if (*it < 0) {
 			interface_table->add_row(new w_spacer(), true);
 		} else if (*it >= 100) {
 			int i = *it - 100;
-			interface_table->dual_add(new w_label(shell_action_name[i]), d);
+			interface_table->dual_add(new w_label(shell_action_name[i]), *d);
 			auto range = shell_key_w.equal_range(i);
 			for (auto ik = range.first; ik != range.second; ++ik) {
-				interface_table->dual_add(ik->second, d);
+				interface_table->dual_add(ik->second, *d);
 			}
 		} else {
 			int i = *it;
-			interface_table->dual_add(new w_label(action_name[i]), d);
+			interface_table->dual_add(new w_label(action_name[i]), *d);
 			auto range = key_w.equal_range(i);
 			for (auto ik = range.first; ik != range.second; ++ik) {
-				interface_table->dual_add(ik->second, d);
+				interface_table->dual_add(ik->second, *d);
 			}
 		}
 	}
 	iface->add(interface_table, true);
 
 	vertical_placer *other = new vertical_placer();
-	other->dual_add(new w_static_text("These keyboard shortcuts cannot be changed."), d);
+	other->dual_add(new w_static_text("These keyboard shortcuts cannot be changed."), *d);
 	other->add(new w_spacer());
 
 	table_placer *other_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
-	other_table->dual_add(new w_label("Main Menu"), d);
-	other_table->dual_add(new w_label("In Game"), d);
+	other_table->dual_add(new w_label("Main Menu"), *d);
+	other_table->dual_add(new w_label("In Game"), *d);
 
 	table_placer *other_menu = new table_placer(2, get_theme_space(ITEM_WIDGET), false);
 	other_menu->col_flags(0, placeable::kAlignRight);
@@ -2953,7 +3099,7 @@ static void controls_dialog(void *arg)
 #endif
 	};
 	for (auto it = menu_shortcuts.begin(); it != menu_shortcuts.end(); ++it) {
-		other_menu->dual_add(new w_label(it->c_str()), d);
+		other_menu->dual_add(new w_label(it->c_str()), *d);
 	}
 	other_table->add(other_menu, true);
 
@@ -2981,7 +3127,7 @@ static void controls_dialog(void *arg)
 		"Escape", "Exit game"
 	};
 	for (auto it = game_shortcuts.begin(); it != game_shortcuts.end(); ++it) {
-		other_game->dual_add(new w_label(it->c_str()), d);
+		other_game->dual_add(new w_label(it->c_str()), *d);
 	}
 	other_table->add(other_game, true);
 
@@ -2994,25 +3140,13 @@ static void controls_dialog(void *arg)
 	tabs->add(iface, true);
 	tabs->add(other, true);
 	placer->add(tabs, true);
+
+	placer->add(new w_spacer(), true);
+	placer->dual_add(new w_button("RESET ALL KEYS TO DEFAULTS", load_default_keys, d.get()), *d);
+	placer->add(new w_spacer(), true);
 	
-	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_button("RESET ALL KEYS TO DEFAULTS", load_default_keys, &d), d);
-	placer->add(new w_spacer(), true);
-
-	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
-	placer->add(button_placer, true);
-
-	d.set_widget_placer(placer);
-
-	// Clear screen
-	clear_screen();
-
-	enter_joystick();
-
-	// Run dialog
-	if (d.run() == 0) {	// Accepted
+	const auto accept = [=]()
+	{
 		bool changed = false;
 		
 		uint16 flags = input_preferences->modifiers & (_inputmod_use_button_sounds|_inputmod_invert_mouse);
@@ -3097,9 +3231,30 @@ static void controls_dialog(void *arg)
 	
 		if (changed)
 			write_preferences();
-	}
+	};	
 
-	exit_joystick();
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("ACCEPT",
+										 [=](void* d) {
+											 accept();
+											 dialog_ok(d);
+										 }, d.get()), *d);
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, d.get()), *d);
+	placer->add(button_placer, true);
+
+	d->set_widget_placer(placer);
+
+	if (in_game)
+	{
+		ingame_dialog_push(std::move(d));
+	}
+	else
+	{
+		clear_screen();
+		enter_joystick();
+		d->run();
+		exit_joystick();
+	}		
 }
 
 static void plugins_dialog(void* arg)

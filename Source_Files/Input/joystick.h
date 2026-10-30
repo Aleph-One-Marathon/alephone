@@ -26,6 +26,7 @@ May 18, 2009 (Eric Peterson):
 #ifndef JOYSTICK_H
 #define JOYSTICK_H
 
+#include "cseries.h"
 #include "cstypes.h"
 
 // this is where we start stuffing button presses into the big keymap array,
