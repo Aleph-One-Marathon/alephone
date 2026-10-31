@@ -86,7 +86,7 @@ struct Plugin {
 	std::string version;
 	std::vector<std::string> mmls;
 	std::string hud_lua;
-	std::string solo_lua;
+	std::vector<std::string> solo_luas;
 	SoloLuaWriteAccess solo_lua_write_access;
 	std::string stats_lua;
 	std::string theme;

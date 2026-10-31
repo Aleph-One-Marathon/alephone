@@ -285,7 +285,7 @@ std::vector<const Plugin*> Plugins::find_solo_lua()
 	std::vector<const Plugin*> v;
 	for (const auto& plugin : m_plugins)
 	{
-		if (plugin.solo_lua.size() && plugin.valid())
+		if (plugin.solo_luas.size() && plugin.valid())
 		{
 			v.push_back(&plugin);
 		}
@@ -381,67 +381,58 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 				if (root.read_attr("hud_lua", Data.hud_lua) &&
 					!plugin_file_exists(Data, Data.hud_lua))
 					Data.hud_lua = "";
-				
-				const auto solo_luas = root.children_named("solo_lua");
-				auto solo_luas_size = boost::size(solo_luas);
-				if (solo_luas_size == 1)
-				{
-					for (const auto& solo_lua : solo_luas)
-					{
-						if (solo_lua.read_attr("file", Data.solo_lua) &&
-							!plugin_file_exists(Data, Data.solo_lua))
-						{
-							Data.solo_lua = "";
-						}
 
-						auto write_accesses = solo_lua.children_named("write_access");
-						if (!boost::empty(write_accesses))
+				uint32_t solo_lua_flags = 0;
+				const auto solo_luas = root.children_named("solo_lua");
+				for (const auto& solo_lua : solo_luas)
+				{
+					std::string lua_path;
+					if (solo_lua.read_attr("file", lua_path) &&
+						plugin_file_exists(Data, lua_path))
+					{
+						Data.solo_luas.push_back(lua_path);
+					}
+
+					for (const auto& write_access_tree : solo_lua.children_named("write_access"))
+					{
+						auto write_access = write_access_tree.get_value(std::string(""));
+						if (write_access == "ephemera")
 						{
-							uint32_t flags = 0;
-							for (const auto& write_access_tree : write_accesses)
-							{
-								auto write_access = write_access_tree.get_value(std::string(""));
-								if (write_access == "ephemera")
-								{
-									flags |= SoloLuaWriteAccess::ephemera;
-								}
-								else if (write_access == "fog")
-								{
-									flags |= SoloLuaWriteAccess::fog;
-								}
-								else if (write_access == "music")
-								{
-									flags |= SoloLuaWriteAccess::music;
-								}
-								else if (write_access == "overlays")
-								{
-									flags |= SoloLuaWriteAccess::overlays;
-								}
-								else if (write_access == "sound")
-								{
-									flags |= SoloLuaWriteAccess::sound;
-								}
-								else if (write_access == "world")
-								{
-									flags |= SoloLuaWriteAccess::world;
-								}
-							}
-							Data.solo_lua_write_access = SoloLuaWriteAccess{flags};
+							solo_lua_flags |= SoloLuaWriteAccess::ephemera;
+						}
+						else if (write_access == "fog")
+						{
+							solo_lua_flags |= SoloLuaWriteAccess::fog;
+						}
+						else if (write_access == "music")
+						{
+							solo_lua_flags |= SoloLuaWriteAccess::music;
+						}
+						else if (write_access == "overlays")
+						{
+							solo_lua_flags |= SoloLuaWriteAccess::overlays;
+						}
+						else if (write_access == "sound")
+						{
+							solo_lua_flags |= SoloLuaWriteAccess::sound;
+						}
+						else if (write_access == "world")
+						{
+							solo_lua_flags |= SoloLuaWriteAccess::world;
 						}
 					}
 				}
-				else if (solo_luas_size == 0)
+				Data.solo_lua_write_access = SoloLuaWriteAccess{solo_lua_flags};
+
+				if (boost::size(solo_luas) == 0)
 				{
 					// check the legacy attribute
-					if (root.read_attr("solo_lua", Data.solo_lua) &&
-						!plugin_file_exists(Data, Data.solo_lua))
+					std::string lua_path;
+					if (root.read_attr("solo_lua", lua_path) &&
+						plugin_file_exists(Data, lua_path))
 					{
-						Data.solo_lua = "";
+						Data.solo_luas.push_back(lua_path);
 					}					
-				}
-				else
-				{
-					logError("There were parsing errors in %s Plugin.xml: only one solo_lua tag is allowed", current_plugin_directory.GetName().c_str());
 				}
 
 				if (root.read_attr("stats_lua", Data.stats_lua) &&
@@ -533,7 +524,7 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 					std::sort(Data.mmls.begin(), Data.mmls.end());
 					if (Data.theme.size()) {
 						Data.hud_lua = "";
-						Data.solo_lua = "";
+						Data.solo_luas.clear();
 						Data.shapes_patches.clear();
 						Data.sounds_patches.clear();
 						Data.map_patches.clear();
@@ -686,7 +677,7 @@ void Plugins::validate()
 	{
 		rit->overridden_solo = false;
 		if (!rit->enabled || !rit->compatible() || !rit->allowed() ||
-			(rit->solo_lua.size() &&
+			(rit->solo_luas.size() &&
 			 rit->solo_lua_write_access.is_excluded(solo_lua_flags)) ||
 			(found_hud_lua && rit->hud_lua.size()) ||
 			(found_stats_lua && rit->stats_lua.size()) ||
@@ -696,7 +687,7 @@ void Plugins::validate()
 			continue;
 		}
 
-		if (rit->solo_lua.size())
+		if (rit->solo_luas.size())
 		{
 			solo_lua_flags |= rit->solo_lua_write_access.get_exclusive_flags();
 		}
@@ -717,7 +708,7 @@ void Plugins::validate()
 	{
 		rit->overridden = false;
 		if (!rit->enabled || !rit->compatible() || !rit->allowed() ||
-			(rit->solo_lua.size()) ||
+			(rit->solo_luas.size()) ||
 			(found_hud_lua && rit->hud_lua.size()) ||
 			(found_stats_lua && rit->stats_lua.size()) ||
 			(found_theme && rit->theme.size()))

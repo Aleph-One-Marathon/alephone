@@ -344,7 +344,7 @@ void w_plugins::draw_item(Plugins::iterator it, SDL_Surface* s, int16 x, int16 y
 
 	y += font->get_ascent() + 1;
 	std::string types;
-	if (it->solo_lua.size()) {
+	if (it->solo_luas.size()) {
 		types += ", Solo Lua";
 	}
 	if (it->hud_lua.size()) {
