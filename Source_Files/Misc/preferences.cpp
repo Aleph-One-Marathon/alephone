@@ -1721,6 +1721,10 @@ void sound_dialog(bool in_game)
 	w_toggle *sounds3d_w = new w_toggle(is_3d_sounds_enabled);
 	table->dual_add(sounds3d_w->label("3D Sounds"), *d);
 	table->dual_add(sounds3d_w, *d);
+	if (in_game)
+	{
+		sounds3d_w->set_enabled(false);
+	}
 
 	w_toggle *hrtf_w = new w_toggle((OpenALManager::Get() && OpenALManager::Get()->IsHrtfEnabled()) || sound_preferences->flags & _hrtf_flag);
 	table->dual_add(hrtf_w->label("HRTF (Headphones)"), *d);
