@@ -44,7 +44,7 @@ namespace algo = boost::algorithm;
 
 bool SoloLuaWriteAccess::is_excluded(uint32_t flags) const
 {
-	return flags & get_exclusive_flags();
+	return environment_preferences->enforce_plugin_compatibility && (flags & get_exclusive_flags());
 }
 
 uint32_t SoloLuaWriteAccess::get_exclusive_flags() const

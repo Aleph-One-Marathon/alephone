@@ -281,6 +281,7 @@ struct environment_preferences_data
 #endif
 
 	bool auto_play_demos;
+	bool enforce_plugin_compatibility; // if off, loads all solo lua plugins
 };
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */

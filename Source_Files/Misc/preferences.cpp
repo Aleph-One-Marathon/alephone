@@ -3261,6 +3261,10 @@ void controls_dialog(bool in_game)
 	}		
 }
 
+static const char* solo_lua_compatibility_labels[3] = {
+	"Automatic", "Manual", nullptr
+};
+
 static void plugins_dialog(void* arg)
 {
 	dialog* parent = (dialog*)arg;
@@ -3275,6 +3279,17 @@ static void plugins_dialog(void* arg)
 	w_plugins* plugins_w = new w_plugins(plugins, 400, 7);
 	placer->dual_add(plugins_w, d);
 	
+	placer->add(new w_spacer, true);
+
+	auto table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	table->col_flags(0, placeable::kAlignRight);
+
+	auto solo_lua_compat_w = new w_select(environment_preferences->enforce_plugin_compatibility ? 0 : 1,
+										  solo_lua_compatibility_labels);
+	table->dual_add(solo_lua_compat_w->label("Solo Lua Compatibility"), d);
+	table->dual_add(solo_lua_compat_w, d);
+
+	placer->add(table, true);
 	placer->add(new w_spacer, true);
 
 	horizontal_placer* button_placer = new horizontal_placer;
@@ -3301,6 +3316,12 @@ static void plugins_dialog(void* arg)
 		for (Plugins::iterator it = plugins.begin(); it != plugins.end(); ++it, ++plugin) {
 			changed |= (plugin->enabled != it->enabled);
 			plugin->enabled = it->enabled;
+		}
+
+		if ((solo_lua_compat_w->get_selection() == 0) != environment_preferences->enforce_plugin_compatibility)
+		{
+			changed |= true;
+			environment_preferences->enforce_plugin_compatibility = (solo_lua_compat_w->get_selection() == 0);
 		}
 
 		if (changed) {
@@ -4206,6 +4227,7 @@ InfoTree environment_preferences_tree()
 	root.put_attr("use_native_file_dialogs", environment_preferences->use_native_file_dialogs);
 #endif
 	root.put_attr("auto_play_demos", environment_preferences->auto_play_demos);
+	root.put_attr("enforce_plugin_compatibility", environment_preferences->enforce_plugin_compatibility);
 
 	for (Plugins::iterator it = Plugins::instance()->begin(); it != Plugins::instance()->end(); ++it)
 	{
@@ -4466,6 +4488,7 @@ static void default_environment_preferences(environment_preferences_data *prefer
 	preferences->use_native_file_dialogs = false;
 #endif
 	preferences->auto_play_demos = true;
+	preferences->enforce_plugin_compatibility = true;
 }
 
 
@@ -5259,6 +5282,7 @@ void parse_environment_preferences(InfoTree root, std::string version)
 	root.read_attr("use_native_file_dialogs", environment_preferences->use_native_file_dialogs);
 #endif
 	root.read_attr("auto_play_demos", environment_preferences->auto_play_demos);
+	root.read_attr("enforce_plugin_compatibility", environment_preferences->enforce_plugin_compatibility);
 	
 	orphan_disabled_plugins.clear();
 	for (const InfoTree &plugin : root.children_named("disable_plugin"))
