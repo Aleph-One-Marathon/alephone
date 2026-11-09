@@ -2103,7 +2103,36 @@ void LoadSoloLua()
 		auto plugins = Plugins::instance()->find_solo_lua();
 		for (const auto& plugin : plugins)
 		{
-			LoadOneSoloLua(plugin->solo_lua, plugin->directory.GetPath(), plugin->solo_lua_write_access);
+			auto loaded = false;
+			auto state = LuaStateFactory(_solo_lua_script, plugin->solo_lua_write_access);
+			state->Initialize();
+			auto dir = plugin->directory.GetPath();
+
+			for (const auto& path : plugin->solo_luas)
+			{
+				FileSpecifier fs;
+				fs.SetNameWithPath(path.c_str(), dir);
+
+				OpenedFile script_file;
+				if (fs.Open(script_file))
+				{
+					int32_t script_length;
+					script_file.GetLength(script_length);
+
+					std::vector<char> script_buffer(script_length);
+					if (script_file.Read(script_length, script_buffer.data()))
+					{
+						state->Load(script_buffer.data(), script_length, fs.GetName().c_str());
+						loaded = true;
+					}
+				}
+			}
+
+			if (loaded)
+			{
+				state->SetSearchPath(dir);
+				states.emplace(std::make_pair(_solo_lua_script, std::move(state)));
+			}
 		}
 	}
 }
