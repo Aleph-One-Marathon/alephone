@@ -7,7 +7,7 @@
     {
       "kind": "git",
       "repository": "https://github.com/Aleph-One-Marathon/vcpkg-registry",
-      "baseline": "2ac80009e3c0d12b40ee65b0752b3bc71539c74f",
+      "baseline": "08098dce081e9411889686fc3f4aecbde95fc2b1",
       "packages": [ "steamworks-sdk" ]
     }
   ]
