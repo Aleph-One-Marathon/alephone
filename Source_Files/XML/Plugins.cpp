@@ -432,6 +432,7 @@ bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 						plugin_file_exists(Data, lua_path))
 					{
 						Data.solo_luas.push_back(lua_path);
+						Data.solo_lua_write_access = SoloLuaWriteAccess::world;
 					}					
 				}
 
