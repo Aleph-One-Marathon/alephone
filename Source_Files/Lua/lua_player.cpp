@@ -1398,13 +1398,13 @@ static int Lua_Player_Weapons_Set(lua_State *L)
 
 const luaL_Reg Lua_Player_Weapons_Metatable[] = {
 	{"__index", Lua_Player_Weapons_Get},
-	{"__newindex", Lua_Player_Weapons_Set},
 	{"__len", Lua_Player_Weapons_Length},
 	{0, 0}
 };
 
 const luaL_Reg Lua_Player_Weapons_Metatable_Mutable[] = {
 	{"__index", Lua_Player_Weapons_Get},
+	{"__newindex", Lua_Player_Weapons_Set},
 	{"__len", Lua_Player_Weapons_Length},
 	{0, 0}
 };
