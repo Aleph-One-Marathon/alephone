@@ -861,7 +861,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 	
 	int sdl_width = (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) ? 0 : vmode_width;
 	int sdl_height = (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) ? 0 : vmode_height;
-	if (force_menu && screen_mode.ui_scale_level == 0 && !screen_mode.fullscreen)
+	if (force_menu && (screen_mode.ui_scale_level == 0 || screen_mode.acceleration == _no_acceleration))
 	{
 		vmode_width = 640;
 		vmode_height = 480;
@@ -1182,7 +1182,7 @@ void change_screen_mode(struct screen_mode_data *mode, bool redraw, bool resize_
 	if (redraw) {
 		short w = std::max(mode->width, static_cast<short>(640));
 		short h = std::max(mode->height, static_cast<short>(480));
-		if (!in_game && mode->ui_scale_level == 0 && !mode->fullscreen)
+		if (!in_game && (mode->ui_scale_level == 0 || mode->acceleration == _no_acceleration))
 		{
 			w = 640;
 			h = 480;
@@ -1203,7 +1203,7 @@ void change_screen_mode(short screentype)
 	
 	short w = std::max(mode->width, static_cast<short>(640));
 	short h = std::max(mode->height, static_cast<short>(480));
-	if (screentype == _screentype_menu && mode->ui_scale_level == 0 && !mode->fullscreen)
+	if (screentype == _screentype_menu && (mode->ui_scale_level == 0 || mode->acceleration == _no_acceleration))
 	{
 		w = 640;
 		h = 480;
