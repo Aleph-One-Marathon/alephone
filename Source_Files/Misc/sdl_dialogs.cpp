@@ -1793,6 +1793,10 @@ void dialog::update(SDL_Rect r) const
 		OGL_Blitter blitter;
 		SDL_Rect src = { 0, 0, rect.w, rect.h };
 		blitter.Load(*dialog_surface, src);
+		short ui_scale = graphics_preferences->screen_mode.ui_scale_level;
+		if (ui_scale > 0 && ui_scale < 5) {
+			blitter.nearFilter = GL_NEAREST;
+		}
 		blitter.Draw(rect);
 
 		MainScreenSwap();
