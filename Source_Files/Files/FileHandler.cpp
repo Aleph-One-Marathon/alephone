@@ -1317,6 +1317,23 @@ static std::map<Typecode, std::vector<nfdu8filteritem_t>> typecode_filters {
 
 // from nativefiledialog-extended nfd_sdl2.h
 // we copied it because nfd_sdl2.h is including SDL2 headers directly and we would have to adjust the include paths
+bool NFD_SetDisplayPropertiesFromSDLWindow(SDL_Window* sdlWindow) {
+#if defined(SDL_VIDEO_DRIVER_WAYLAND)
+    SDL_SysWMinfo info;
+    SDL_VERSION(&info.version);
+    if (!SDL_GetWindowWMInfo(sdlWindow, &info)) {
+        return false;
+    }
+    if (info.subsystem != SDL_SYSWM_WAYLAND) {
+        return true;
+    }
+    return NFD_SetWaylandDisplay(info.info.wl.display) == NFD_OKAY;
+#else
+    (void)sdlWindow;
+    return true;
+#endif
+}
+
 static bool GetNativeWindowFromSDLWindowForNFD(SDL_Window* sdlWindow, nfdwindowhandle_t* nativeWindow)
 {
 	SDL_SysWMinfo info;
@@ -1342,6 +1359,12 @@ static bool GetNativeWindowFromSDLWindowForNFD(SDL_Window* sdlWindow, nfdwindowh
 		nativeWindow->type = NFD_WINDOW_HANDLE_TYPE_X11;
 		nativeWindow->handle = (void*)info.info.x11.window;
 		return true;
+#endif
+#if defined(SDL_VIDEO_DRIVER_WAYLAND)
+    case SDL_SYSWM_WAYLAND:
+        nativeWindow->type = NFD_WINDOW_HANDLE_TYPE_WAYLAND;
+        nativeWindow->handle = (void*)info.info.wl.surface;
+        return true;
 #endif
 	default:
 		return false;

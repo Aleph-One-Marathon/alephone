@@ -843,6 +843,9 @@ static int change_window_filter(void *ctx, SDL_Event *event)
 	return 1;
 }
 
+#ifdef HAVE_NFD
+extern bool NFD_SetDisplayPropertiesFromSDLWindow(SDL_Window*);
+#endif
 static void change_screen_mode(int width, int height, int depth, bool nogl, bool force_menu, bool force_resize_hud)
 {
 	int prev_width = 0;
@@ -1071,6 +1074,10 @@ static void change_screen_mode(int width, int height, int depth, bool nogl, bool
 		logWarning("Unable to find working display mode; exiting");
 		vhalt("Cannot find a working video mode.");
 	}
+
+#ifdef HAVE_NFD
+    NFD_SetDisplayPropertiesFromSDLWindow(main_screen);
+#endif
 #ifdef HAVE_OPENGL
 	if (!context_created && !nogl && screen_mode.acceleration != _no_acceleration) {
 		SDL_GL_CreateContext(main_screen);
