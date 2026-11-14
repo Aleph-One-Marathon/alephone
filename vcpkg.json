@@ -32,16 +32,13 @@
          "name":"sdl2-image",
          "features":[
             "libjpeg-turbo"
-         ],
-         "platform": "!linux"
+         ]
       },
       {
-         "name":"asio",
-         "platform": "!linux"
+         "name":"asio"
       },
       {
-         "name":"sdl2-ttf",
-         "platform": "!linux"
+         "name":"sdl2-ttf"
       },
       {
          "name":"curl",
