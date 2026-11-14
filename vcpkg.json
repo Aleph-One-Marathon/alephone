@@ -33,7 +33,6 @@
          "features":[
             "libjpeg-turbo"
          ],
-         "platform": "!linux"
       },
       {
          "name":"asio",
@@ -41,7 +40,6 @@
       },
       {
          "name":"sdl2-ttf",
-         "platform": "!linux"
       },
       {
          "name":"curl",
