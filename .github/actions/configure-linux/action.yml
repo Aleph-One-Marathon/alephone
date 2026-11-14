@@ -32,6 +32,19 @@ runs:
     - name: Install dependencies with the distribution package manager
       run: sudo apt-get install -y ${{env.apt_dependencies}}
       shell: bash
+
+    - name: Install static GLU
+      if: inputs.use_vcpkg == 'true'
+      run: |
+        wget https://gitlab.freedesktop.org/mesa/glu/-/archive/glu-9.0.2/glu-glu-9.0.2.zip
+        echo "88fbc3262e55e932be71f5ee5ca59dcfdf1425f6551d4a31ccd0daf6d0d833d1 glu-glu-9.0.2.zip" | sha256sum -c
+        unzip gli-glu-9.0.2.zip
+        cd glu-glu-9.0.2
+        NOCONFIGURE=1 ./autogen.sh
+        ./configure --prefix=/usr --disable-shared
+        make && make install
+        cd "$GITHUB_WORKSPACE"
+      shell: bash
       
     - name: Setup Vcpkg
       if: inputs.use_vcpkg == 'true'
