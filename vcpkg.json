@@ -93,7 +93,7 @@
 	 {
 	   "name": "vcpkg-tool-meson",
 	   "version": "1.9.0",
-	   "port-version":10,
+	   "port-version":10
 	 }
    ]
 }
