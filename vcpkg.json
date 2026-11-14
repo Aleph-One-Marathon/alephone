@@ -35,8 +35,7 @@
          ]
       },
       {
-         "name":"asio",
-         "platform": "!linux"
+         "name":"asio"
       },
       {
          "name":"sdl2-ttf"
