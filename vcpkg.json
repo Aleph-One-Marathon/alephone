@@ -90,10 +90,15 @@
          "version":"1.23.1",
          "port-version":2
       },
-	 {
-	   "name": "vcpkg-tool-meson",
-	   "version": "1.9.0",
-	   "port-version":10
-	 }
+     {
+       "name": "vcpkg-tool-meson",
+       "version": "1.9.0",
+       "port-version":10
+     },
+     {
+       "name": "gperf",
+       "version": "3.1",
+       "port-version":7
+     }
    ]
 }
