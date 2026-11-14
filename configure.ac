@@ -278,9 +278,9 @@ fi
 
 AS_IF([test "x{with_nfd}" != "xno"],
     [AC_CHECK_HEADERS([nfd.h],
-        [AC_CHECK_LIB([nfd], [NFD_Quit], , , [-ldbus-1])])
+        [AC_CHECK_LIB([nfd], [NFD_Quit], , , [-ldbus-1 -lwayland-client])])
                AS_IF([test "x${ac_cv_lib_nfd_NFD_Quit}" = "xyes"],
-                         [ have_nfd=true LIBS="$LIBS -ldbus-1"
+                         [ have_nfd=true LIBS="$LIBS -ldbus-1 -lwayland-client"
                            AC_DEFINE([HAVE_NFD], [1], [${desc_nfd} enabled]) ],
                          [AS_IF([test "x${with_nfd}" = "xyes"],
                                 [AC_MSG_ERROR([${desc_nfd} requested but not found])])])
