@@ -16,12 +16,12 @@ runs:
       shell: bash
       
     - name: Define the list of dependencies to install with the distribution package manager even if Vcpkg is used
-      run: echo "apt_dependencies=autoconf-archive libsdl2-dev libsdl2-image-dev libasio-dev libsdl2-ttf-dev libpng-dev libsndfile-dev libcurl4-gnutls-dev libopenal-dev libglu1-mesa-dev" >> $GITHUB_ENV
+      run: echo "apt_dependencies=autoconf-archive" >> $GITHUB_ENV
       shell: bash
       
     - name: Update the list of dependencies with missing dependencies since Vcpkg won't be used
       if: inputs.use_vcpkg == 'false'
-      run: echo "apt_dependencies=${{env.apt_dependencies}} catch2 libboost-all-dev libmatroska-dev libebml-dev libyuv-dev libvorbis-dev libvorbisenc2 libzzip-dev libvpx-dev libminiupnpc-dev" >> $GITHUB_ENV
+      run: echo "apt_dependencies=${{env.apt_dependencies}} catch2 libasio-dev libboost-all-dev libcurl4-gnutls-dev libmatroska-dev libebml-dev libglu1-mesa-dev libopenal-dev libpng-dev libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsndfile-dev libyuv-dev libvorbis-dev libvorbisenc2 libzzip-dev libvpx-dev libminiupnpc-dev" >> $GITHUB_ENV
       shell: bash
       
     - name: Update the list of dependencies with tools for Vcpkg
@@ -31,6 +31,19 @@ runs:
       
     - name: Install dependencies with the distribution package manager
       run: sudo apt-get install -y ${{env.apt_dependencies}}
+      shell: bash
+
+    - name: Install static GLU
+      if: inputs.use_vcpkg == 'true'
+      run: |
+        wget https://gitlab.freedesktop.org/mesa/glu/-/archive/glu-9.0.2/glu-glu-9.0.2.zip
+        echo "88fbc3262e55e932be71f5ee5ca59dcfdf1425f6551d4a31ccd0daf6d0d833d1 glu-glu-9.0.2.zip" | sha256sum -c
+        unzip glu-glu-9.0.2.zip
+        cd glu-glu-9.0.2
+        NOCONFIGURE=1 ./autogen.sh
+        ./configure --prefix=/usr --disable-shared
+        make && make install
+        cd "$GITHUB_WORKSPACE"
       shell: bash
       
     - name: Setup Vcpkg
