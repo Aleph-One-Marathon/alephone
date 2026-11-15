@@ -22,7 +22,7 @@
 #include "MessageInflater.h"
 #include "network_messages.h"
 
-#define STANDALONE_HUB_VERSION "01.02"
+#define STANDALONE_HUB_VERSION "01.03"
 
 class StandaloneHub {
 private:
