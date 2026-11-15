@@ -64,7 +64,7 @@ ryan reports get_object_data() failing on effect->data after a teleport effect t
 // struct effect_data *effects = NULL;
 
 static effect_definition *get_effect_definition(const short type);
-
+static std::vector<effect_data> EffectList;
 /* ---------- code */
 
 effect_data *get_effect_data(
@@ -111,7 +111,7 @@ short new_effect(
 		}
 		else
 		{
-			for (effect_index= 0,effect = EffectList.data(); effect_index<MAXIMUM_EFFECTS_PER_MAP; ++effect_index, ++effect)
+			for (effect_index= 0,effect = get_effects_list().data(); effect_index<MAXIMUM_EFFECTS_PER_MAP; ++effect_index, ++effect)
 			{
 				if (SLOT_IS_FREE(effect))
 				{
@@ -156,7 +156,7 @@ void update_effects(
 	struct effect_data *effect;
 	short effect_index;
 	
-	for (effect_index= 0, effect = EffectList.data(); effect_index<MAXIMUM_EFFECTS_PER_MAP; ++effect_index, ++effect)
+	for (effect_index= 0, effect = get_effects_list().data(); effect_index<MAXIMUM_EFFECTS_PER_MAP; ++effect_index, ++effect)
 	{
 		if (SLOT_IS_USED(effect))
 		{
@@ -284,7 +284,7 @@ void teleport_object_in(
 	struct effect_data *effect;
 	short effect_index;
 
-	for (effect_index= 0, effect = EffectList.data(); effect_index<MAXIMUM_EFFECTS_PER_MAP; ++effect_index, ++effect)
+	for (effect_index= 0, effect = get_effects_list().data(); effect_index<MAXIMUM_EFFECTS_PER_MAP; ++effect_index, ++effect)
 	{
 		if (SLOT_IS_USED(effect))
 		{
@@ -322,7 +322,7 @@ void teleport_object_in(
 /* ---------- private code */
 
 
-uint8 *unpack_effect_data(uint8 *Stream, effect_data* Objects, size_t Count)
+void unpack_effect_data(uint8 *Stream, effect_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	effect_data* ObjPtr = Objects;
@@ -341,10 +341,9 @@ uint8 *unpack_effect_data(uint8 *Stream, effect_data* Objects, size_t Count)
 	}
 	
 	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_effect_data));
-	return S;
 }
 
-uint8 *pack_effect_data(uint8 *Stream, effect_data* Objects, size_t Count)
+void pack_effect_data(uint8 *Stream, effect_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	effect_data* ObjPtr = Objects;
@@ -363,16 +362,15 @@ uint8 *pack_effect_data(uint8 *Stream, effect_data* Objects, size_t Count)
 	}
 	
 	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_effect_data));
-	return S;
 }
 
 
-uint8 *unpack_effect_definition(uint8 *Stream, size_t Count)
+void unpack_effect_definition(uint8 *Stream, size_t Count)
 {
 	return unpack_effect_definition(Stream,effect_definitions,Count);
 }
 
-uint8 *unpack_effect_definition(uint8 *Stream, effect_definition *Objects, size_t Count)
+void unpack_effect_definition(uint8 *Stream, effect_definition *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	effect_definition* ObjPtr = Objects;
@@ -390,10 +388,9 @@ uint8 *unpack_effect_definition(uint8 *Stream, effect_definition *Objects, size_
 	}
 	
 	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_effect_definition));
-	return S;
 }
 
-uint8* unpack_m1_effect_definition(uint8* Stream, size_t Count)
+void unpack_m1_effect_definition(uint8* Stream, size_t Count)
 {
 	uint8* S = Stream;
 	effect_definition* ObjPtr = effect_definitions;
@@ -407,17 +404,15 @@ uint8* unpack_m1_effect_definition(uint8* Stream, size_t Count)
 		ObjPtr->delay = 0;
 		ObjPtr->delay_sound = NONE;
 	}
-
-	return S;
 }
 
 
-uint8 *pack_effect_definition(uint8 *Stream, size_t Count)
+void pack_effect_definition(uint8 *Stream, size_t Count)
 {
 	return pack_effect_definition(Stream,effect_definitions,Count);
 }
 
-uint8 *pack_effect_definition(uint8 *Stream, effect_definition *Objects, size_t Count)
+void pack_effect_definition(uint8 *Stream, effect_definition *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	effect_definition* ObjPtr = Objects;
@@ -435,10 +430,13 @@ uint8 *pack_effect_definition(uint8 *Stream, effect_definition *Objects, size_t 
 	}
 	
 	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_effect_definition));
-	return S;
 }
 
 void init_effect_definitions()
 {
 	memcpy(effect_definitions, original_effect_definitions, sizeof(effect_definitions));
+}
+
+std::vector<effect_data> & get_effects_list(){
+	return EffectList;
 }
