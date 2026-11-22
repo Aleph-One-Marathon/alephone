@@ -13,6 +13,8 @@ varying vec3 viewXY;
 varying vec3 viewDir;
 varying vec4 vertexColor;
 
+const float neutralValue = 128.0 / 255.0;
+
 float getFogFactor(float distance) {
 	if (fogMode == 0.0) {
         return clamp((gl_Fog.end - distance) / (gl_Fog.end - gl_Fog.start), 0.0, 1.0);
@@ -33,12 +35,14 @@ void main (void) {
 	vec3 viewv = normalize(viewDir);
 	// iterative parallax mapping
 	float scale = 0.010;
-	float bias = -0.005;
 	for(int i = 0; i < 4; ++i) {
 		vec4 normal = texture2D(texture1, texCoords.xy);
-		float h = normal.a * scale + bias;
-		texCoords.x += h * viewv.x;
-		texCoords.y -= h * viewv.y;
+		
+		float h = (normal.a - neutralValue) * scale;
+		if (normal.a != neutralValue) {
+			texCoords.x += h * viewv.x;
+			texCoords.y -= h * viewv.y;
+		}
 	}
 	vec3 norm = (texture2D(texture1, texCoords.xy).rgb - 0.5) * 2.0;
 	float diffuse = 0.5 + abs(dot(norm, viewv))*0.5;
