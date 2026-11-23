@@ -12,9 +12,6 @@ varying vec3 viewXY;
 varying vec3 viewDir;
 varying vec4 vertexColor;
 
-const float neutralValue = 128.0 / 255.0; //The neutral value is 128, which is not evenly divisible by 255, and is what the sampler divides by.
-const vec3 flatNormal = vec3(neutralValue, neutralValue, 1.0);
-
 float getFogFactor(float distance) {
 	if (fogMode == 0.0) {
         return clamp((gl_Fog.end - distance) / (gl_Fog.end - gl_Fog.start), 0.0, 1.0);
@@ -41,29 +38,20 @@ void main (void) {
 	vec3 viewv = normalize(viewDir);
 	// iterative parallax mapping
 	float scale = 0.010;
+	float bias = -0.005;
 	for(int i = 0; i < 4; ++i) {
 		vec4 normal = texture2D(texture1, texCoords.xy);
-		
-		float h = (normal.a - neutralValue) * scale;
-		if (normal.a != neutralValue) { // Just don't displace the texture sample when at the neutral height.
-			texCoords.x += h * viewv.x;
-			texCoords.y -= h * viewv.y;
-		}
+		float h = normal.a * scale + bias;
+		texCoords.x += h * viewv.x;
+		texCoords.y -= h * viewv.y;
 	}
-	vec3 normal = texture2D(texture1, texCoords.xy).rgb;
-
-	// Apply only the normal map's lighting change relative to the flat surface.
-	// A flat normal should leave the base intensity unchanged at every view angle to match the original flat shader.
-	float diffuse = 1.0;
-	if (any(notEqual(normal, flatNormal))) {
-		// converts the texture sample into a signed surface direction. x and y use the correct neutral value, and normalize gives the direction a consistent length.
-		vec3 norm = normalize((normal - vec3(flatNormal.xy, 0.5)) * 2.0);
-		
-		// Previously, even with a flat map, we would have different shading based on distance from the camera.
-		// This divides the bumped response by the flat response.
-		// Now, A flat surface gives a ratio of 1. Bumps can give a higher or lower ratio, making details brighter or darker
-		diffuse = (0.5 + abs(dot(norm, viewv))*0.5) / (0.5 + abs(viewv.z)*0.5);
-	}
+	vec3 norm = (texture2D(texture1, texCoords.xy).rgb - 0.5) * 2.0;
+	
+	// Previously, even with a flat map, we would have different shading based on the camera->surface viewing angle.
+	// This divides the bumped response by the flat response.
+	// Now, A flat surface gives a ratio of 1. Bumps can give a higher or lower ratio, making details brighter or darker
+	float diffuse = (0.5 + abs(dot(norm, viewv))*0.5) / (0.5 + abs(viewv.z)*0.5);
+	
 	if (glow > 0.001) {
 		diffuse = 1.0;
 	}
