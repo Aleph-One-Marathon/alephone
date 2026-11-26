@@ -46,7 +46,12 @@ void main (void) {
 		texCoords.y -= h * viewv.y;
 	}
 	vec3 norm = (texture2D(texture1, texCoords.xy).rgb - 0.5) * 2.0;
-	float diffuse = 0.5 + abs(dot(norm, viewv))*0.5;
+	
+	// Previously, even with a flat map, we would have different shading based on the camera->surface viewing angle.
+	// This divides the bumped response by the flat response.
+	// Now, A flat surface gives a ratio of 1. Bumps can give a higher or lower ratio, making details brighter or darker
+	float diffuse = (0.5 + abs(dot(norm, viewv))*0.5) / (0.5 + abs(viewv.z)*0.5);
+	
 	if (glow > 0.001) {
 		diffuse = 1.0;
 	}
